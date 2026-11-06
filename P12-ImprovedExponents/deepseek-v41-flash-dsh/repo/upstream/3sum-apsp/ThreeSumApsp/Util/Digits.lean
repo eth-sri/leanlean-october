@@ -9,6 +9,7 @@ public import ThreeSumApsp.Util.List
 public import Mathlib.Data.List.OfFn
 public import Mathlib.Logic.Equiv.Basic
 public import Mathlib.Tactic.Ring
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Strings of digits as numbers
@@ -92,7 +93,7 @@ theorem code_lt {b n : ℕ} {d : Fin n → ℕ} (hd : ∀ ℓ, d ℓ < b) : code
 theorem code_div_mod {b n : ℕ} {d : Fin (n + 1) → ℕ} (hd : ∀ ℓ, d ℓ < b) :
     code b d / b ^ n = d 0 ∧ code b d % b ^ n = code b (Fin.tail d) := by
   have hrest : code b (Fin.tail d) < b ^ n := code_lt fun ℓ => hd _
-  have hpos : 0 < b ^ n := Nat.zero_lt_of_lt hrest
+  have hpos := Nat.zero_lt_of_lt hrest
   rw [code, Nat.add_comm]
   exact ⟨by rw [Nat.add_mul_div_right _ _ hpos, Nat.div_eq_of_lt hrest, Nat.zero_add],
     by rw [Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt hrest]⟩
@@ -129,7 +130,7 @@ theorem code_digit {b n c : ℕ} (hc : c < b ^ n) : code b (fun ℓ : Fin n => d
     rw [hc, code]
   | succ n ih =>
     rw [pow_succ'] at hc
-    have hpos : 0 < b ^ n := Nat.pos_of_mul_pos_left (Nat.zero_lt_of_lt hc)
+    have hpos := Nat.pos_of_mul_pos_left (Nat.zero_lt_of_lt hc)
     have hfirst : digit b (n + 1) c 0 = c / b ^ n := by
       rw [digit, Nat.sub_zero, Nat.add_sub_cancel]
       exact Nat.mod_eq_of_lt ((Nat.div_lt_iff_lt_mul hpos).mpr hc)
@@ -175,15 +176,11 @@ theorem lt_of_mem_digitList {b : ℕ} (hb : 0 < b) {n c x : ℕ} (hx : x ∈ dig
 /-- The list of digits of a code. -/
 theorem digitList_code {b n : ℕ} {d : Fin n → ℕ} (hd : ∀ ℓ, d ℓ < b) :
     digitList b n (code b d) = List.ofFn d := by
-  refine List.ext_getElem (by simp) fun i hi _ => ?_
+  refine List.ext_getElem tac_simp fun i hi _ => ?_
   simpa using digit_code hd ⟨i, by simpa using hi⟩
 
 /-- The empty list of digits has the value `0`. -/
 @[simp]
-theorem ofDigitList_nil (b : ℕ) : ofDigitList b [] = 0 :=
-  rfl
-
-/-- One more digit at the end multiplies the value by `b` and adds the digit. -/
 theorem ofDigitList_append_singleton (b : ℕ) (l : List ℕ) (x : ℕ) :
     ofDigitList b (l ++ [x]) = ofDigitList b l * b + x := by
   simp [ofDigitList]

@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Sec2.Levels
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Definitions for the tiling of the `N × D × N` product
@@ -27,7 +28,7 @@ namespace ThreeSumApsp
 def K0 (L m : ℕ) : ℕ := Nat.sqrt (K L m)
 
 /-- `N₀ = 3^{L-m}` is positive. -/
-theorem N0_pos (L m : ℕ) : 0 < N0 L m := Nat.pow_pos (by decide)
+theorem N0_pos (L m : ℕ) : 0 < N0 L m := Nat.pow_pos tac_decide
 
 /-- `K₀ = ⌊√binom(L, m)⌋` is positive when `m ≤ L`. -/
 theorem K0_pos {L m : ℕ} (h : m ≤ L) : 0 < K0 L m := Nat.sqrt_pos.mpr (Nat.choose_pos h)

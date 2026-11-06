@@ -5,6 +5,7 @@ public import ImprovedExponents.AllEdges.Pairs.Passes
 public import ImprovedExponents.MinPlus.ExactTriangle
 public import ThreeSumApsp.Spec.Sec3.Theorem21b.NegativeTriangle
 public import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.Tasks
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -27,13 +28,13 @@ the disjunction of the flags of the instances asked so far.
 
 namespace ImprovedExponents.AllEdges
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
 
 /-- The number of levels: for `U ≥ 1`, the least `b` with `2^b > 3U`. -/
 def aeLevels (U : ℕ) : ℕ := Nat.log 2 (3 * U) + 1
 
 theorem lt_two_pow_aeLevels (U : ℕ) : 3 * U < 2 ^ aeLevels U :=
-  Nat.lt_pow_succ_log_self (by norm_num) _
+  Nat.lt_pow_succ_log_self tac_norm_num _
 
 theorem two_pow_aeLevels_le {U : ℕ} (hU : 1 ≤ U) : 2 ^ aeLevels U ≤ 6 * U := by
   have := Nat.pow_log_le_self 2 (show 3 * U ≠ 0 by omega)
@@ -131,8 +132,8 @@ theorem pairFlags_iff (hX : AbsLe X U) (hY : AbsLe Y U) (hV : AbsLe V U)
       (aeFlags n (instAB U V c.1 c.2) (instBC n U Y c.1) (instAC U X c.1)).getD q 0 = 1 := by
   have hn : 0 < n := by rcases n with _ | n <;> simp_all
   have hi : q / n < n := by rwa [Nat.div_lt_iff_lt_mul hn]
-  have hj : q % n < n := Nat.mod_lt q hn
-  have hqe : q / n * n + q % n = q := Nat.div_add_mod' q n
+  have hj := Nat.mod_lt q hn
+  have hqe := Nat.div_add_mod' q n
   have hbN := lt_two_pow_aeLevels U
   have hb : (3 * U : ℤ) < 2 ^ aeLevels U := by exact_mod_cast hbN
   -- the matrices as functions on `Fin n`
@@ -145,7 +146,7 @@ theorem pairFlags_iff (hX : AbsLe X U) (hY : AbsLe Y U) (hV : AbsLe V U)
       rw [List.getD_eq_getElem _ _ (hl ▸ hidx a b)]
       exact List.getElem_mem _
   have key := exists_lt_iff_exists_exactTriangle A B t (W := U) (b := aeLevels U)
-    (fun i k => hX _ (hmem X hlX i k)) (fun k j => hY _ (hmem Y hlY k j)) (by omega)
+    (fun i k => hX _ (hmem X hlX i k)) (fun k j => hY _ (hmem Y hlY k j)) tac_omega
     (fun i j => by
       have := abs_le.1 (hV _ (hmem V hlV i j))
       exact ⟨by simp only [ht]; omega, by simp only [ht]; omega⟩) ⟨q / n, hi⟩ ⟨q % n, hj⟩
@@ -163,17 +164,17 @@ theorem pairFlags_iff (hX : AbsLe X U) (hY : AbsLe Y U) (hV : AbsLe V U)
   · rintro ⟨k, hk⟩
     refine ⟨k, k.2, ?_⟩
     simp only [instAB, instBC, instAC, affL, etIK, etKJ, etJI] at hk ⊢
-    rw [hmap _ _ _ hq (by simp [hlV]), hmap _ _ _ hq (by simp [hlV]), hmap _ _ _ hq hlV,
-      hmap _ _ _ (hidx ⟨q % n, hj⟩ k) (by simp), transposeL_getD _ _ hj k.2,
-      hmap _ _ _ (hidx ⟨q / n, hi⟩ k) (by simp [hlX]), hmap _ _ _ (hidx ⟨q / n, hi⟩ k) hlX]
+    rw [hmap _ _ _ hq tac_simp [hlV], hmap _ _ _ hq tac_simp [hlV], hmap _ _ _ hq hlV,
+      hmap _ _ _ (hidx ⟨q % n, hj⟩ k) tac_simp, transposeL_getD _ _ hj k.2,
+      hmap _ _ _ (hidx ⟨q / n, hi⟩ k) tac_simp [hlX], hmap _ _ _ (hidx ⟨q / n, hi⟩ k) hlX]
     simp only [prefQ, one_mul, hqe] at hk ⊢
     linarith
   · rintro ⟨k, hk, h⟩
     refine ⟨⟨k, hk⟩, ?_⟩
     simp only [instAB, instBC, instAC, affL, etIK, etKJ, etJI] at h ⊢
-    rw [hmap _ _ _ hq (by simp [hlV]), hmap _ _ _ hq (by simp [hlV]), hmap _ _ _ hq hlV,
-      hmap _ _ _ (hidx ⟨q % n, hj⟩ ⟨k, hk⟩) (by simp), transposeL_getD _ _ hj hk,
-      hmap _ _ _ (hidx ⟨q / n, hi⟩ ⟨k, hk⟩) (by simp [hlX]),
+    rw [hmap _ _ _ hq tac_simp [hlV], hmap _ _ _ hq tac_simp [hlV], hmap _ _ _ hq hlV,
+      hmap _ _ _ (hidx ⟨q % n, hj⟩ ⟨k, hk⟩) tac_simp, transposeL_getD _ _ hj hk,
+      hmap _ _ _ (hidx ⟨q / n, hi⟩ ⟨k, hk⟩) tac_simp [hlX],
       hmap _ _ _ (hidx ⟨q / n, hi⟩ ⟨k, hk⟩) hlX] at h
     simp only [prefQ, one_mul, hqe] at h ⊢
     linarith
@@ -201,7 +202,7 @@ theorem orFlags_mem (N : ℕ) (S : ℕ × ℤ → Prop) (hit : ℕ × ℤ → �
 /-- Before any question the flags are zero. -/
 theorem orFlags_false (N : ℕ) (hit : ℕ × ℤ → ℕ → Prop) {l : List ℤ} (hl : l.length = N) :
     orFlags N (fun _ => False) hit = affL 0 0 l := by
-  refine List.ext_getElem (by simp [hl]) fun i h1 h2 => ?_
+  refine List.ext_getElem tac_simp [hl] fun i h1 h2 => ?_
   simp [orFlags, affL, flag]
 
 /-- The disjunction with the flags of one more instance. -/
@@ -209,7 +210,7 @@ theorem orL_orFlags {N : ℕ} {S : ℕ × ℤ → Prop} {hit : ℕ × ℤ → �
     (hF : F.length = N) (hhit : ∀ q < N, hit c q ↔ F.getD q 0 = 1)
     (h01 : ∀ f ∈ F, f = 0 ∨ f = 1) :
     orL (orFlags N S hit) F = orFlags N (fun c' => S c' ∨ c' = c) hit := by
-  refine List.ext_getElem (by simp [hF]) fun i h1 h2 => ?_
+  refine List.ext_getElem tac_simp [hF] fun i h1 h2 => ?_
   have hi : i < N := by simpa using h2
   have hFi : F.getD i 0 = F[i] := List.getD_eq_getElem _ _ (hF ▸ hi)
   have hc := hhit i hi
@@ -272,10 +273,10 @@ theorem orFlags_eq_pairFlags {n U : ℕ} {X Y V : List ℤ} (hX : AbsLe X U) (hY
     orFlags (n * n) (fun c => c ∈ lemmaFInstances (aeLevels U))
       (fun c q => (aeFlags n (instAB U V c.1 c.2) (instBC n U Y c.1) (instAC U X c.1)).getD q 0 = 1)
       = pairFlags n X Y V := by
-  refine List.ext_getElem (by simp [pairFlags]) fun q h1 h2 => ?_
+  refine List.ext_getElem tac_simp [pairFlags] fun q h1 h2 => ?_
   have hq : q < n * n := by simpa using h1
   have h := pairFlags_iff hX hY hV hlX hlY hlV hq
-  rw [List.getD_eq_getElem _ _ (by simp [pairFlags, hq])] at h
+  rw [List.getD_eq_getElem _ _ tac_simp [pairFlags, hq]] at h
   simp only [orFlags, List.getElem_map, List.getElem_range]
   by_cases hp : (pairFlags n X Y V)[q] = 1
   · rw [hp, flag_of (h.1 hp)]

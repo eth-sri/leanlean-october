@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Spec.Sec3.Theorem21b.NegativeTriangle
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Two loops over arrays for the reduction from Negative Triangle to Exact Triangle
@@ -77,7 +78,7 @@ abbrev Twice : ℕ := 5
 
 end PrefDown
 
-open PrefDown in
+open PrefDown
 /-- One step on the pair (q[i], r[i]). -/
 def prefDownRound : Stmt :=
   .set Twice (k 2 *' M (v ArrR +' v Idx)) ;;
@@ -86,7 +87,7 @@ def prefDownRound : Stmt :=
     (.store (v ArrQ +' v Idx) (k 2 *' M (v ArrQ +' v Idx) +' k 1) ;;
       .store (v ArrR +' v Idx) (v Twice -' v Power))
 
-open PrefDown in
+open PrefDown
 /-- prefDown(len, q, r, P): for i < len, one step on (q[i], r[i]). -/
 def prefDownBody : Stmt := .for Idx (v Len) prefDownRound
 
@@ -104,8 +105,8 @@ theorem affine_meets {p : ℕ} (hp : P[p]? = some affineBody) {μ : ℕ → ℤ}
   refine Ends.pass (fun i => m * l.getD i 0 + c) (fun j hj => ?_) ?_ hw hdst rfl rfl
   · -- round j reads src[j], which lies outside the cells that are written
     have hread : wrote μ dst (fun i => m * l.getD i 0 + c) j (src + j) = l[j] :=
-      (wrote_rest (by omega)).trans (hl j hj)
-    obtain ⟨hfits, haddr⟩ := Limits.addr_of_lt hw (x := src + j) (by omega)
+      (wrote_rest tac_omega).trans (hl j hj)
+    obtain ⟨hfits, haddr⟩ := Limits.addr_of_lt hw (x := src + j) tac_omega
     push_cast at hfits haddr
     obtain ⟨hprod, hsum⟩ := hb _ (List.getElem_mem hj)
     have hsrcLoc : frame [(l.length : ℤ), src, m, c, dst] 1 = src := rfl
@@ -132,7 +133,7 @@ variable {μ : ℕ → ℤ} {q r : ℕ} {Pw : ℤ} {Q R : List ℤ} {j : ℕ}
 private theorem prefMem_q_done (hsep : q + Q.length ≤ r ∨ r + Q.length ≤ q) (hj : j ≤ Q.length)
     {i : ℕ} (hi : i < j) :
     prefMem μ q r Pw Q R j (q + i) = shiftQ Pw (Q.getD i 0) (R.getD i 0) :=
-  (wrote_rest (by omega)).trans (wrote_done hi)
+  (wrote_rest tac_omega).trans (wrote_done hi)
 
 /-- A cell of r that has made its step. -/
 private theorem prefMem_r_done {i : ℕ} (hi : i < j) :
@@ -150,7 +151,7 @@ private theorem prefMem_succ (hsep : q + Q.length ≤ r ∨ r + Q.length ≤ q) 
       (shiftQ Pw (Q.getD j 0) (R.getD j 0))) (r + j) (shiftR Pw (R.getD j 0)) =
         prefMem μ q r Pw Q R (j + 1) := by
   unfold prefMem
-  rw [update_wrote (by omega), wrote_succ, wrote_succ]
+  rw [update_wrote tac_omega, wrote_succ, wrote_succ]
 
 end prefMem
 
@@ -179,11 +180,10 @@ private theorem prefDownRound_spec {μ : ℕ → ℤ} {q r : ℕ} {Pw : ℤ} {Q 
   have hq := C.inQ
   have hr := C.inR
   have hsep := C.apart
-  have h2 := C.two_le
   have hreadQ : prefMem μ q r Pw Q R j (q + j) = Q.getD j 0 :=
-    (prefMem_rest (by omega) (by omega)).trans (C.segQ.getD hj 0)
+    (prefMem_rest tac_omega tac_omega).trans (C.segQ.getD hj 0)
   have hreadR : prefMem μ q r Pw Q R j (r + j) = R.getD j 0 :=
-    (prefMem_rest (by omega) (by omega)).trans (C.segR.getD (hlen ▸ hj) 0)
+    (prefMem_rest tac_omega tac_omega).trans (C.segR.getD (hlen ▸ hj) 0)
   obtain ⟨hQ2, hQ3⟩ := C.fitsQ _ (List.getD_eq_getElem Q 0 hj ▸ List.getElem_mem hj)
   obtain ⟨hR2, hR3⟩ :=
     C.fitsR _ (List.getD_eq_getElem R 0 (hlen ▸ hj) ▸ List.getElem_mem (hlen ▸ hj))

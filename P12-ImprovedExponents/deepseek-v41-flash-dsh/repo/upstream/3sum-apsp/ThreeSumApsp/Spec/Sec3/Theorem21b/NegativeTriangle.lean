@@ -9,6 +9,7 @@ public import ThreeSumApsp.Sec3.Theorem21
 public import ThreeSumApsp.Sec3.Theorem21b.NegativeTriangle
 public import ThreeSumApsp.Spec.Sec3.Problems
 public import ThreeSumApsp.Util.BinaryPrefixes
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Negative Triangle from Exact Triangle, on lists of integers
@@ -89,17 +90,17 @@ theorem triOf_level (lAB : AB.length = n * n) (lBC : BC.length = n * n) (lAC : A
     triOf n ((affL 2 (2 * U) AB).map (prefQ ℓ)) ((affL 2 (2 * U) BC).map (prefQ ℓ))
         (negThird U ℓ e AC) =
       (triOf n AB BC AC).mapWeights (Theorem21.negToExact U ℓ e) := by
-  have hU : (0 : ℤ) ≤ U := Int.natCast_nonneg U
+  have hU := Int.natCast_nonneg U
   simp only [triOf, TriangleInstance.mapWeights, Theorem21.negToExact, negThird, affL, List.map_map]
   congr 1 <;> funext a b
   · have hw := abs_le.1 (AbsLe.abs_getD_le hU hAB (a * n + b))
-    rw [getD_map_entry lAB, Function.comp_apply, ← prefQ_two_mul (by omega)]
-    exact congrArg _ (by ring)
+    rw [getD_map_entry lAB, Function.comp_apply, ← prefQ_two_mul tac_omega]
+    exact congrArg _ tac_ring
   · have hw := abs_le.1 (AbsLe.abs_getD_le hU hBC (a * n + b))
-    rw [getD_map_entry lBC, Function.comp_apply, ← prefQ_two_mul (by omega)]
-    exact congrArg _ (by ring)
+    rw [getD_map_entry lBC, Function.comp_apply, ← prefQ_two_mul tac_omega]
+    exact congrArg _ tac_ring
   · have hw := abs_le.1 (AbsLe.abs_getD_le hU hAC (a * n + b))
-    rw [getD_map_entry lAC, ← prefQ_two_mul (by omega)]
+    rw [getD_map_entry lAC, ← prefQ_two_mul tac_omega]
     simp only [Function.comp_apply]
     rw [show -2 * AC.getD (a * n + b) 0 + 4 * (U : ℤ) = 2 * (2 * U - AC.getD (a * n + b) 0) by ring]
     ring

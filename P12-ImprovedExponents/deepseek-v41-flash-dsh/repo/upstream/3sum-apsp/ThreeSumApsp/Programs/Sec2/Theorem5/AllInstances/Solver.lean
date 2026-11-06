@@ -36,7 +36,7 @@ open ThreeSumApsp
 /-- Local 10 of thin: the result of the test of the regime. -/
 abbrev Thin.Expo : ℕ := 10
 
-open ThinArg Thin in
+open ThinArg Thin
 /-- thin(N, D, w, U, x, y, wi, wj, out, fr). -/
 def thinBody : Stmt :=
   .call pRegime [v Rows, v Cols, v Wanted] Expo ;;

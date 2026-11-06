@@ -8,6 +8,7 @@ module
 public import Mathlib.Data.Bool.Count
 public import Mathlib.Data.Fintype.Fin
 public import Mathlib.Data.Nat.Choose.Basic
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The subsets of size `m` of `{1, …, L}`, enumerated
@@ -131,7 +132,7 @@ theorem card_maskSet_unrank {L m r : ℕ} (hr : r < L.choose m) :
 theorem maskOf_maskSet {L : ℕ} (mask : List Bool) (h : mask.length = L) :
     maskOf (maskSet L mask) = mask := by
   subst h
-  refine List.ext_getElem (by simp [maskOf]) fun i _ _ => ?_
+  refine List.ext_getElem tac_simp [maskOf] fun i _ _ => ?_
   simp [maskOf, maskSet]
 
 /-- Different numbers give different sets of levels. -/
@@ -151,7 +152,7 @@ theorem unrank_zero {L m : ℕ} (hm : m ≤ L) :
     cases m with
     | zero => simpa [unrank, List.replicate_succ] using ih (Nat.zero_le L)
     | succ m =>
-      have hm' : m ≤ L := Nat.le_of_succ_le_succ hm
+      have hm' := Nat.le_of_succ_le_succ hm
       simp [unrank, Nat.choose_pos hm', ih hm', List.replicate_succ]
 
 /-- The last mask: `L - m` times `false`, then `m` times `true`. -/
@@ -196,7 +197,7 @@ theorem unrank_succ_shape {L m r : ℕ} (hr : r + 1 < L.choose m) :
       · -- Both masks contain the first level.
         obtain ⟨pre, a, b, hlen, hthis, hnext⟩ := ih hboth
         refine ⟨true :: pre, a, b, by rw [List.length_cons]; omega, ?_, ?_⟩
-        · rw [unrank, if_pos (by omega), hthis, List.cons_append]
+        · rw [unrank, if_pos tac_omega, hthis, List.cons_append]
         · rw [unrank, if_pos hboth, hnext, List.cons_append]
       · -- The last mask with the first level, and the first one without it.
         have hmL : m + 1 ≤ L := by
@@ -204,16 +205,16 @@ theorem unrank_succ_shape {L m r : ℕ} (hr : r + 1 < L.choose m) :
           rw [Nat.choose_eq_zero_of_lt (by omega : L < m + 1)] at hr
           omega
         refine ⟨[], L - m - 1, m, by rw [List.length_nil]; omega, ?_, ?_⟩
-        · rw [unrank, if_pos (by omega), show r = L.choose m - 1 by omega, unrank_last (by omega),
+        · rw [unrank, if_pos tac_omega, show r = L.choose m - 1 by omega, unrank_last tac_omega,
             show L - m = L - m - 1 + 1 by omega]
           rfl
-        · rw [unrank, if_neg (by omega), hlast, Nat.sub_self, unrank_zero hmL, Nat.sub_sub]
+        · rw [unrank, if_neg tac_omega, hlast, Nat.sub_self, unrank_zero hmL, Nat.sub_sub]
           rfl
       · -- Neither mask contains the first level.
-        obtain ⟨pre, a, b, hlen, hthis, hnext⟩ := ih (m := m + 1) (r := r - L.choose m) (by omega)
+        obtain ⟨pre, a, b, hlen, hthis, hnext⟩ := ih (m := m + 1) (r := r - L.choose m) tac_omega
         refine ⟨false :: pre, a, b, by rw [List.length_cons]; omega, ?_, ?_⟩
-        · rw [unrank, if_neg (by omega), hthis, List.cons_append]
-        · rw [unrank, if_neg (by omega), show r + 1 - L.choose m = r - L.choose m + 1 by omega,
+        · rw [unrank, if_neg tac_omega, hthis, List.cons_append]
+        · rw [unrank, if_neg tac_omega, show r + 1 - L.choose m = r - L.choose m + 1 by omega,
             hnext, List.cons_append]
 
 end ThreeSumApsp.Spec

@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Memory
 public import ThreeSumApsp.Sec2.Theorem5.WordSize
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The block of Theorem 30: the directory, sizes and limits
@@ -54,7 +55,7 @@ theorem length_dsTries_le (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L)
 theorem Lim30.pow_le (h : Lim30 lim p t b0 U) : (10 : ℤ) ^ p.L ≤ lim.word := by
   refine le_trans ?_ h.pow
   push_cast
-  exact pow_le_pow_right₀ (by norm_num) (by omega)
+  exact pow_le_pow_right₀ tac_norm_num tac_omega
 
 /-- Proof of Theorem 30, "Word size": the encoded numbers are at most 7^L U in absolute value. -/
 theorem abs_enc_le (hmL : p.m ≤ p.L) (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ)

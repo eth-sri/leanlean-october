@@ -7,6 +7,7 @@ module
 
 public import Mathlib.Analysis.Complex.ExponentialBounds
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Logarithms and real powers
@@ -30,11 +31,11 @@ namespace Real
 
 /-- `1 / 2 < log 2`. -/
 theorem one_half_lt_log_two : 1 / 2 < log 2 :=
-  lt_trans (by norm_num) log_two_gt_d9
+  lt_trans tac_norm_num log_two_gt_d9
 
 /-- `log 2 < 1`. -/
 theorem log_two_lt_one : log 2 < 1 :=
-  log_two_lt_d9.trans (by norm_num)
+  log_two_lt_d9.trans tac_norm_num
 
 /-- `log 4 = 2 log 2`. -/
 theorem log_four : log 4 = 2 * log 2 := by
@@ -50,11 +51,11 @@ theorem one_le_log_four : 1 ≤ log 4 := by
 
 /-- `1 ≤ log x` for `x ≥ 3`. -/
 theorem one_le_log_of_three_le {x : ℝ} (hx : 3 ≤ x) : 1 ≤ log x :=
-  (le_log_iff_exp_le (by linarith)).2 (exp_one_lt_three.le.trans hx)
+  (le_log_iff_exp_le tac_linarith).2 (exp_one_lt_three.le.trans hx)
 
 /-- `1 ≤ log n` for a natural number `n ≥ 3`. -/
 theorem one_le_log_natCast_of_three_le {n : ℕ} (hn : 3 ≤ n) : 1 ≤ log n :=
-  one_le_log_of_three_le (by exact_mod_cast hn)
+  one_le_log_of_three_le ((by exact_mod_cast hn))
 
 /-- `1 / 2 ≤ log x` for `x ≥ 2`. -/
 theorem one_half_le_log_of_two_le {x : ℝ} (hx : 2 ≤ x) : 1 / 2 ≤ log x :=
@@ -76,7 +77,7 @@ theorem natCast_clog_lt_logb_add_one (b n : ℕ) : (Nat.clog b n : ℝ) < logb b
 `c ≥ 1`. -/
 theorem pow_clog_le_mul_rpow_logb (b : ℕ) {n : ℕ} {c : ℝ} (hn : 1 ≤ n) (hc : 1 ≤ c) :
     c ^ Nat.clog b n ≤ c * (n : ℝ) ^ logb b c := by
-  have hc0 : 0 < c := zero_lt_one.trans_le hc
+  have hc0 := zero_lt_one.trans_le hc
   have hswap : c ^ logb b n = (n : ℝ) ^ logb b c := by
     rw [rpow_def_of_pos hc0, rpow_def_of_pos (Nat.cast_pos.2 hn), logb, logb]
     ring_nf

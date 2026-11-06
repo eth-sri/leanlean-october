@@ -11,6 +11,7 @@ public import ThreeSumApsp.Programs.Sec3.Theorem17.Instances.Chunks
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Instances.WriteMatrices
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Parameters.Sizes
 public import ThreeSumApsp.Util.Asymptotics.Scale
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 17: the time of each routine, up to a constant
@@ -198,11 +199,11 @@ theorem steps_of_softO {t : CostParams → ℕ} {e : Fin 3 → ℕ} (h : costSca
 
 /-- The number of vertices per part. -/
 theorem steps_n : StepsMon (fun θ => θ.n) 1 0 0 :=
-  (Scale.SoftO.of_le_base 0 fun _ _ => le_rfl).mono (by decide)
+  (Scale.SoftO.of_le_base 0 fun _ _ => le_rfl).mono tac_decide
 
 /-- `s = ⌊√D⌋ ≤ √D`. -/
 theorem steps_sqrt : StepsMon (fun θ => Nat.sqrt θ.D) 0 1 0 :=
-  (Scale.SoftO.of_le_base 1 fun _ _ => Real.nat_sqrt_le_real_sqrt).mono (by decide)
+  (Scale.SoftO.of_le_base 1 fun _ _ => Real.nat_sqrt_le_real_sqrt).mono tac_decide
 
 /-- `D = (√D)²`. -/
 theorem steps_D : StepsMon (fun θ => θ.D) 0 2 0 :=
@@ -211,7 +212,7 @@ theorem steps_D : StepsMon (fun θ => θ.D) 0 2 0 :=
 
 /-- `g ≤ √D`. -/
 private theorem steps_g : StepsMon (fun θ => θ.g) 0 1 0 :=
-  (Scale.SoftO.of_le_base (s := costScale) 1 fun _ hθ => hθ.hgD).mono (by decide)
+  (Scale.SoftO.of_le_base (s := costScale) 1 fun _ hθ => hθ.hgD).mono tac_decide
 
 /-- `2^⌈log₂ n⌉ ≤ 2n`. -/
 private theorem steps_two_pow_clog : StepsMon (fun θ => 2 ^ Nat.clog 2 θ.n) 1 0 0 :=
@@ -225,15 +226,15 @@ private theorem steps_clog : StepsMon (fun θ => Nat.clog 2 θ.n) 1 0 0 :=
 /-- The number of binary digits of `U ≤ n^κ` is `O(κ log n)`: `2^{len - 1} ≤ U` gives
 `(len - 1) log 2 ≤ κ log n`. -/
 private theorem steps_bitLen : StepsMon (fun θ => bitLen θ.U) 0 0 1 := by
-  refine .of_dominated (Dominated.of_le_const_mul (C := 3) (by norm_num) fun θ hθ => ?_)
+  refine .of_dominated (Dominated.of_le_const_mul (C := 3) tac_norm_num fun θ hθ => ?_)
   simp only [mon_eq, pow_zero, one_mul, pow_one]
   have hΛ : 1 ≤ θ.κ * Real.log θ.n := hθ.one_le_κ_mul_log
   rcases Nat.eq_zero_or_pos θ.U with hU | hU
   · rw [hU, bitLen, Nat.size_zero, Nat.cast_zero]
     linarith [hΛ]
   · have hlen : 1 ≤ bitLen θ.U := Nat.size_pos.2 hU
-    have hpow : 2 ^ (bitLen θ.U - 1) ≤ θ.U := Nat.lt_size.1 (Nat.sub_lt hlen one_pos)
-    have hlog := Real.log_le_log (by positivity)
+    have hpow := Nat.lt_size.1 (Nat.sub_lt hlen one_pos)
+    have hlog := Real.log_le_log tac_positivity
       (le_trans (by exact_mod_cast hpow : (2 : ℝ) ^ (bitLen θ.U - 1) ≤ θ.U) hθ.hUn)
     rw [Real.log_pow, Real.log_rpow (zero_lt_one.trans_le hθ.one_le_n), Nat.cast_sub hlen,
       Nat.cast_one] at hlog
@@ -250,12 +251,12 @@ private theorem steps_pieceSizeNat : StepsMon (fun θ => pieceSizeNat θ.D θ.g)
 theorem cast_queryCapNat_le {θ : CostParams} (hθ : θ.Hyp) :
     (queryCapNat θ.n θ.D : ℝ) ≤ (θ.n : ℝ) ^ 2 / Real.sqrt θ.D := by
   rw [queryCapNat_eq θ.n hθ.one_le_D_nat]
-  exact Nat.floor_le (by positivity)
+  exact Nat.floor_le tac_positivity
 
 /-- `⌊n²/√D⌋ ≤ n²`. -/
 private theorem steps_queryCapNat : StepsMon (fun θ => queryCapNat θ.n θ.D) 2 0 0 :=
   .of_dominated <| .of_le fun θ hθ => (cast_queryCapNat_le hθ).trans (by
-    simpa only [mon_eq, pow_zero, mul_one] using div_le_self (by positivity) hθ.one_le_sqrt)
+    simpa only [mon_eq, pow_zero, mul_one] using div_le_self tac_positivity hθ.one_le_sqrt)
 
 /-! ## The routines -/
 
@@ -330,8 +331,8 @@ theorem steps_tCeilDiv_piece : StepsMon (fun θ => tCeilDiv (Nat.sqrt θ.D) θ.g
 theorem steps_tCeilDiv_num : StepsMon (fun θ => tCeilDiv θ.n (pieceSizeNat θ.D θ.g)) 1 0 0 := by
   have hnum : StepsMon (fun θ => θ.n ⌈/⌉ pieceSizeNat θ.D θ.g) 1 0 0 :=
     steps_n.of_le fun θ hθ => by
-      have hsqrt : 0 < Nat.sqrt θ.D := Nat.sqrt_pos.2 ((by norm_num : 0 < 16).trans_le hθ.hD16)
-      have hpiece : 0 < pieceSizeNat θ.D θ.g := (Nat.lt_ceilDiv_iff hθ.hg).2 (by rwa [zero_mul])
+      have hsqrt := Nat.sqrt_pos.2 ((by norm_num : 0 < 16).trans_le hθ.hD16)
+      have hpiece := (Nat.lt_ceilDiv_iff hθ.hg).2 tac_rwa [zero_mul]
       exact (Nat.ceilDiv_le_iff hpiece).2 (Nat.le_mul_of_pos_right _ hpiece)
   unfold tCeilDiv
   growth [hnum]
@@ -361,7 +362,7 @@ private theorem mon_le_termScans {θ : CostParams} (hθ : θ.Hyp) :
 private theorem mon_le_termPrime {θ : CostParams} (hθ : θ.Hyp) :
     mon 2 3 0 θ ≤ termPrime strassen θ.n θ.D := by
   have htwo : (2 : ℝ) ≤ Real.logb 2 7 := by
-    rw [Real.le_logb_iff_rpow_le (by norm_num) (by norm_num)]
+    rw [Real.le_logb_iff_rpow_le tac_norm_num tac_norm_num]
     norm_num
   rw [termPrime, strassen, rpow_three_half, mon_eq, pow_zero, mul_one, ← Real.rpow_ofNat]
   gcongr
@@ -371,7 +372,7 @@ private theorem mon_le_termPrime {θ : CostParams} (hθ : θ.Hyp) :
 private theorem mon_le_termBuild {θ : CostParams} (hθ : θ.Hyp) :
     mon 2 2 0 θ ≤ termBuild θ.n θ.D θ.g := by
   rw [termBuild, mon_eq, pow_zero, mul_one, Real.sq_sqrt θ.D.cast_nonneg]
-  exact le_mul_of_one_le_right (by positivity) hθ.one_le_g
+  exact le_mul_of_one_le_right tac_positivity hθ.one_le_g
 
 /-- The sum of the three terms of the bound of Theorem 17. -/
 noncomputable def budget (θ : CostParams) : ℝ :=
@@ -467,8 +468,8 @@ private theorem le_mul_seven_pow {a : ℕ → ℕ} {b c x : ℕ}
 /-- `7^⌈log₂ n⌉ = O(n^{log₂ 7})`. -/
 private theorem steps_seven_pow_clog :
     Steps (fun θ => 7 ^ Nat.clog 2 θ.n) fun θ => (θ.n : ℝ) ^ Real.logb 2 7 :=
-  Dominated.of_le_const_mul (C := 7) (by norm_num) fun θ hθ => by
-    have hn : 1 ≤ θ.n := hθ.one_le_n_nat
+  Dominated.of_le_const_mul (C := 7) tac_norm_num fun θ hθ => by
+    have hn := hθ.one_le_n_nat
     exact_mod_cast seven_pow_clog_le hn
 
 /-- Strassen's recursion on matrices over `ℤ[x]/(x^p - 1)`, for all primes of the range:
@@ -482,7 +483,7 @@ private theorem steps_sqrt_mul_strSteps :
     growth [steps_sqrt]
   refine (((steps_of_softO steps_sqrt).mul ((steps_of_softO hbase).mul
     steps_seven_pow_clog)).mono_left fun θ _ => ?_).mono_right fun θ hθ => ?_
-  · exact Nat.mul_le_mul_left _ (le_trans (by omega)
+  · exact Nat.mul_le_mul_left _ (le_trans tac_omega
       (le_mul_seven_pow (a := strSteps (Nat.sqrt θ.D)) (fun _ => rfl) (Nat.clog 2 θ.n)))
   · refine le_trans (le_of_eq ?_) (termPrime_le_budget hθ)
     simp only [termPrime, strassen, rpow_three_half, mon_eq]

@@ -124,7 +124,7 @@ private theorem polyBounded_sup {f : List ℕ → ℕ} {s k : ℕ} (hf : ∀ ps,
       PolyBounded fun n _ => 2 ^ s * ((n + 1) * ((D n + 1) * (queryCapNat n (D n) + 1))) ^ k := by
     growth_poly [hD, polyBounded_queryCapNat]
   refine hbound.of_le fun n _ => Finset.sup_le fun w hw => (hf _).trans ?_
-  have hw' : w ≤ queryCapNat n (D n) := Nat.lt_succ_iff.1 (Finset.mem_range.1 hw)
+  have hw' := Nat.lt_succ_iff.1 (Finset.mem_range.1 hw)
   simp only [polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
   gcongr
 
@@ -132,7 +132,7 @@ end parts
 
 end HostPoly
 
-open HostPoly in
+open HostPoly
 /-- **The need of the host stays polynomial**, if the parameters, the numbers that the parameter
 procedures form, and the need of the solver are polynomially bounded. -/
 theorem hostNeed_poly {Dfun Gfun wD wG : ℕ → ℕ} {need : List ℕ → Need}

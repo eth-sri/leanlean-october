@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Util.Ceil
 public import ThreeSumApsp.Util.List
 public import Mathlib.Algebra.Order.Floor.Div
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The table of the chunks (proof of Theorem 17)
@@ -21,7 +22,6 @@ it starts, and its number of pairs.
 * The list has every pair once (`sortedIdx_nodup`, `classStart_eq_sq`), and the places of a class
   hold pairs of that class (`getD_sortedIdx_class`).
 * An entry of the table is a nonempty segment of at most `cap` places (`chunkTab_entry`) whose pairs
-  have the residue of the entry (`chunkTab_class`).
 * The chunks follow each other (`chunkTab_pairwise`), so every place lies in exactly one chunk
   (`chunkTab_cover`, `chunkTab_unique`).
 * "There are at most p + √D ≤ 2√D chunks in all" (`length_chunkTab_le`).
@@ -175,7 +175,7 @@ theorem chunkTab_eq (n p cap : ℕ) (RAB : List ℕ) :
   unfold chunkTab chunkTabOf
   refine List.flatMap_congr fun rho hrho => ?_
   have h := List.mem_range.1 hrho
-  rw [getD_classStarts_eq n p RAB (by omega), getD_classStarts_eq n p RAB (by omega), chunksOf,
+  rw [getD_classStarts_eq n p RAB tac_omega, getD_classStarts_eq n p RAB tac_omega, chunksOf,
     classStart_succ, Nat.add_sub_cancel_left]
   rfl
 
@@ -199,9 +199,8 @@ theorem chunkTab_entry (hcap : 1 ≤ cap) (hlt : ∀ i < n * n, RAB.getD i 0 < p
 theorem chunkTab_class (hcap : 1 ≤ cap) {x : Chunk} (hx : x ∈ chunkTab n p cap RAB) {i : ℕ}
     (hi : i < x.len) : RAB.getD ((sortedIdx n p RAB).getD (x.start + i) 0) 0 = x.residue := by
   obtain ⟨rho, hrho, i', hi', rfl⟩ := (mem_chunkTab x).1 hx
-  have hleft := (Nat.lt_ceilDiv_iff hcap).1 hi'
   simp only [chunkAt] at hi ⊢
-  exact getD_sortedIdx_class hrho (by omega) (by rw [classStart_succ]; omega)
+  exact getD_sortedIdx_class hrho tac_omega (by rw [classStart_succ]; omega)
 
 /-- The chunks follow each other: a chunk ends where a later one starts, or before. -/
 theorem chunkTab_pairwise (hcap : 1 ≤ cap) :
@@ -236,7 +235,7 @@ theorem chunkTab_cover (hcap : 1 ≤ cap) (hlt : ∀ i < n * n, RAB.getD i 0 < p
   have hdiv := Nat.div_add_mod' (j - classStart n RAB rho) cap
   have hmod := Nat.mod_lt (j - classStart n RAB rho) hcap
   generalize (j - classStart n RAB rho) / cap = i at hdiv
-  have hi : i < (classIdx n RAB rho).length ⌈/⌉ cap := (Nat.lt_ceilDiv_iff hcap).2 (by omega)
+  have hi : i < (classIdx n RAB rho).length ⌈/⌉ cap := (Nat.lt_ceilDiv_iff hcap).2 tac_omega
   refine ⟨_, (mem_chunkTab _).2 ⟨rho, hrho, i, hi, rfl⟩, ?_⟩
   -- `start + i cap ≤ j < start + i cap + min cap (len - i cap)`, from `hdiv`, `hmod` and `hhi`.
   simp only [Chunk.Contains, chunkAt]
@@ -276,7 +275,7 @@ theorem length_chunkTab_le (hcap : 1 ≤ cap) (hlt : ∀ i < n * n, RAB.getD i 0
     -- One more class: `⌈x/cap⌉ ≤ x/cap + 1`, and rounding down is superadditive.
     have hceil : (classIdx n RAB q).length ⌈/⌉ cap ≤ (classIdx n RAB q).length / cap + 1 := by
       rw [Nat.ceilDiv_eq_add_pred_div, ← Nat.add_div_right _ hcap]
-      exact Nat.div_le_div_right (by omega)
+      exact Nat.div_le_div_right tac_omega
     have hfloor : classStart n RAB q / cap + (classIdx n RAB q).length / cap ≤
         (classStart n RAB q + (classIdx n RAB q).length) / cap := Nat.div_add_div_le_add_div
     rw [List.sum_range_succ, classStart_succ]

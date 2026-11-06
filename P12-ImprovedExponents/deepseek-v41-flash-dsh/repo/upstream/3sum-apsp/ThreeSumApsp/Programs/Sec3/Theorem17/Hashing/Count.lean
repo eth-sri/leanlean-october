@@ -9,6 +9,7 @@ public import ThreeSumApsp.Lang.Lib.NextPair
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.ZOrderFacts
 public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Strassen
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The count of the proof of Theorem 17, read off the product PQ
@@ -33,7 +34,7 @@ adds the coefficient number (p - ϱ) mod p of the vector of (a, b) (`countTerm`,
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -43,20 +44,20 @@ namespace CountZero
 Num = n, Prime = p.  Then Square = n²; Idx = t = a n + b, the number of the pair; Row = a; Col = b;
 Total, the sum; Expo, the exponent (p - ϱ) mod p. -/
 abbrev Mat : ℕ := 0
-@[inherit_doc Mat] abbrev Residues : ℕ := 1
-@[inherit_doc Mat] abbrev Places : ℕ := 2
-@[inherit_doc Mat] abbrev Num : ℕ := 3
-@[inherit_doc Mat] abbrev Prime : ℕ := 4
-@[inherit_doc Mat] abbrev Square : ℕ := 5
-@[inherit_doc Mat] abbrev Idx : ℕ := 6
-@[inherit_doc Mat] abbrev Row : ℕ := 7
-@[inherit_doc Mat] abbrev Col : ℕ := 8
-@[inherit_doc Mat] abbrev Total : ℕ := 9
-@[inherit_doc Mat] abbrev Expo : ℕ := 10
+ abbrev Residues : ℕ := 1
+ abbrev Places : ℕ := 2
+ abbrev Num : ℕ := 3
+ abbrev Prime : ℕ := 4
+ abbrev Square : ℕ := 5
+ abbrev Idx : ℕ := 6
+ abbrev Row : ℕ := 7
+ abbrev Col : ℕ := 8
+ abbrev Total : ℕ := 9
+ abbrev Expo : ℕ := 10
 
 end CountZero
 
-open CountZero in
+open CountZero
 /-- The term of the pair (a, b) is added to the sum. -/
 def countZeroAdd : Stmt :=
   .set Expo (M (v Residues +' v Idx)) ;;
@@ -64,7 +65,7 @@ def countZeroAdd : Stmt :=
   .set Total (v Total
     +' M (v Mat +' (k 2 *' M (v Places +' v Row) +' M (v Places +' v Col)) *' v Prime +' v Expo))
 
-open CountZero in
+open CountZero
 /-- countZero(rm, rab, mort, n, p).  The sum is returned in local 0. -/
 def countZeroBody : Stmt :=
   .set Square (v Num *' v Num) ;;
@@ -102,9 +103,9 @@ theorem index_lt (pre : CountZeroPre lim μ rm rab mort n K p RM RAB V) (ht : t 
     zIdx (t / n) (t % n) * p + (p - RAB.getD t 0) % p < 4 ^ K * p := by
   have hn := pre.n_le
   have hp := pre.res.getD_lt ht
-  have hrow : t / n < n := Nat.div_lt_of_lt_mul' ht
-  have hcol : t % n < n := Nat.mod_lt_of_lt_mul ht
-  exact Nat.mul_add_lt_mul (zIdx_lt (by omega) (by omega)) (Nat.mod_lt _ (by omega))
+  have hrow := Nat.div_lt_of_lt_mul' ht
+  have hcol := Nat.mod_lt_of_lt_mul ht
+  exact Nat.mul_add_lt_mul (zIdx_lt tac_omega tac_omega) (Nat.mod_lt _ tac_omega)
 
 /-- The term of the pair number t. -/
 theorem readTerm (pre : CountZeroPre lim μ rm rab mort n K p RM RAB V) (ht : t < n * n) :
@@ -120,7 +121,7 @@ end CountZeroPre
 
 variable {μ : ℕ → ℤ} {rm rab mort n K p : ℕ} {RM : List ℤ} {RAB : List ℕ} {V : ℤ}
 
-open CountZero in
+open CountZero
 /-- **The term of the pair number t is added.** -/
 theorem countZeroAdd_spec (pre : CountZeroPre lim μ rm rab mort n K p RM RAB V) {t : ℕ}
     (ht : t < n * n) (S ex : ℤ) (hfits : |S + countTerm n p RM RAB t| ≤ lim.word) :
@@ -129,17 +130,17 @@ theorem countZeroAdd_spec (pre : CountZeroPre lim μ rm rab mort n K p RM RAB V)
       fun σ' => ∃ ex' : ℤ, σ' = ⟨frame [rm, rab, mort, n, p, (n * n : ℕ), t, (t / n : ℕ),
         (t % n : ℕ), S + countTerm n p RM RAB t, ex'], μ⟩ := by
   light_facts pre pre.mat pre.res pre.table
-  have hrow : t / n < n := Nat.div_lt_of_lt_mul' ht
-  have hcol : t % n < n := Nat.mod_lt_of_lt_mul ht
+  have hrow := Nat.div_lt_of_lt_mul' ht
+  have hcol := Nat.mod_lt_of_lt_mul ht
   have hreadA : μ (mort + t / n) = (spread (t / n) : ℕ) :=
-    seg_spreadList_get pre.table.seg (by omega)
+    seg_spreadList_get pre.table.seg tac_omega
   have hreadB : μ (mort + t % n) = (spread (t % n) : ℕ) :=
-    seg_spreadList_get pre.table.seg (by omega)
+    seg_spreadList_get pre.table.seg tac_omega
   have hreadR := pre.res.read ht
   have hrho := pre.res.getD_lt ht
   have hidx := pre.index_lt ht
   have hterm := pre.readTerm ht
-  have hp : p ≤ 4 ^ K * p := Nat.le_mul_of_pos_left p (by positivity)
+  have hp : p ≤ 4 ^ K * p := Nat.le_mul_of_pos_left p tac_positivity
   replace hfits := abs_le.1 hfits
   generalize countTerm n p RM RAB t = term at *
   generalize RAB.getD t 0 = rho at *
@@ -158,22 +159,21 @@ theorem countZeroAdd_spec (pre : CountZeroPre lim μ rm rab mort n K p RM RAB V)
     · obtain rfl : rho = 0 := by simpa using h0
       rw [Nat.sub_zero, Nat.mod_self]
     · have h0 : rho ≠ 0 := by simpa using h0
-      rw [Nat.mod_eq_of_lt (by omega)]
+      rw [Nat.mod_eq_of_lt tac_omega]
       rfl
   refine Ends.next 8 (label.mono le_rfl ?_)
   rintro _ rfl
   generalize (p - rho) % p = s at hidx hterm
   -- sum := sum + rm[(2 mort[a] + mort[b]) p + ex]
-  have hidxZ : (2 * (sa : ℤ) + sb) * p + s < (4 ^ K * p : ℕ) := by exact_mod_cast hidx
   have hle : 2 * (sa : ℤ) + sb ≤ (2 * (sa : ℤ) + sb) * p :=
-    le_mul_of_one_le_right (by positivity) (by exact_mod_cast (by omega : 1 ≤ p))
+    le_mul_of_one_le_right tac_positivity (by exact_mod_cast (by omega : 1 ≤ p))
   have haddr : ((rm : ℤ) + (2 * (sa : ℤ) + sb) * p + s).toNat = rm + ((2 * sa + sb) * p + s) := by
     rw [show (rm : ℤ) + (2 * (sa : ℤ) + sb) * p + s = ((rm + ((2 * sa + sb) * p + s) : ℕ) : ℤ) by
       push_cast; ring, Int.toNat_natCast]
   light_set (S + term) using hreadA, hreadB, haddr, hterm
   exact ⟨_, rfl⟩
 
-open CountZero in
+open CountZero
 /-- **countZero** returns the count and leaves the memory as it was. -/
 theorem countZero_spec (pre : CountZeroPre lim μ rm rab mort n K p RM RAB V) :
     Ends lim P d countZeroBody ⟨frame [rm, rab, mort, n, p], μ⟩ (countZeroTime n) fun σ' =>
@@ -213,7 +213,7 @@ theorem countZero_spec (pre : CountZeroPre lim μ rm rab mort n K p RM RAB V) :
     refine Ends.next 34 ((countZeroAdd_spec pre ht _ ex hfits).mono le_rfl ?_)
     rintro _ ⟨ex', rfl⟩
     have hn : 0 < n := Nat.pos_of_ne_zero fun e => by simp [e] at ht
-    refine Ends.nextPair ?_ hn (by omega) (by omega) rfl rfl rfl
+    refine Ends.nextPair ?_ hn tac_omega tac_omega rfl rfl rfl
     exact ⟨by simp, ex', by rw [update_frame_setLocal, Finset.sum_range_succ]; rfl, hnew⟩
   case done =>
     rintro _ - ⟨ex, rfl, -⟩

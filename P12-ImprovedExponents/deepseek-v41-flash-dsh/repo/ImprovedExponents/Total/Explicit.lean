@@ -2,6 +2,7 @@ module
 
 public import ImprovedExponents.Total.Params
 public import ImprovedExponents.Total.Terms
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -29,7 +30,7 @@ The first four are `O(κ n^{3-s} (log n + 1)³)` with `s = d min(η, min(γa, 1/
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec4 Filter
+open ThreeSumApsp ThreeSumApsp.Spec Light.Sec4 Filter
 
 /-- `explicitFrom_of_hostBound` with the three inequalities for the exponent `s` as hypotheses. -/
 theorem explicitFrom_of_hostBound_aux (M : DetTimeModel) {d η a ε γ q δ s : ℝ} {D g Dc : ℕ → ℕ}
@@ -47,10 +48,10 @@ theorem explicitFrom_of_hostBound_aux (M : DetTimeModel) {d η a ε γ q δ s : 
   obtain ⟨T, hT, hhost⟩ := hhost Td hTd
   obtain ⟨c₁, c₂, hc₁, hDc⟩ := hDc
   have hd1 : d ≤ 1 := by linarith
-  have hda : d * a ≤ d * 1 := mul_le_mul_of_nonneg_left ha1 hd0.le
+  have hda := mul_le_mul_of_nonneg_left ha1 hd0.le
   have hP := eventually_hostParams hd0 hd1 hη0 hη1 hD hg
   obtain ⟨K₁, K₂, hK₁, hK₂, hQ⟩ := eventually_callParams (ε := ε) (γ := γ) (q := q) ha0
-    (by linarith) hγ hq hthin hc₁ hP hDc
+    tac_linarith hγ hq hthin hc₁ hP hDc
   obtain ⟨n₀, hn₀⟩ := eventually_atTop.1 (hP.and hQ)
   have hτ : 0 < s - δ := sub_pos.2 hδ
   obtain ⟨K', hK'⟩ : ∃ K' : ℝ, K' = (3 / (s - δ) + 1) ^ 3 := ⟨_, rfl⟩
@@ -58,7 +59,7 @@ theorem explicitFrom_of_hostBound_aux (M : DetTimeModel) {d η a ε γ q δ s : 
   refine ⟨max n₀ 3, 4 * |CL| * (2 * K₁ * K') + 4 * |CL| * (4 * K₂ * K') + 4 * C * (4 * K')
     + C * (2 * K') + C + C * 2, T, hT, fun n κ u hn hκ hu => ?_⟩
   obtain ⟨P, Q⟩ := hn₀ n ((le_max_left _ _).trans hn)
-  have hn3 : 3 ≤ n := (le_max_right _ _).trans hn
+  have hn3 := (le_max_right _ _).trans hn
   have h17 := hhost n κ u P.sixteen_le P.le_n P.one_le_g P.g_le_sqrt hκ hu
   have hL := hlop n (Dc n) (queryCap n (D n)) P.one_le_n Q.one_le Q.le_rpow
   have hN1 : (1 : ℝ) ≤ n := by exact_mod_cast P.one_le_n
@@ -67,46 +68,43 @@ theorem explicitFrom_of_hostBound_aux (M : DetTimeModel) {d η a ε γ q δ s : 
   have hY0 : (0 : ℝ) < Dc n := by linarith
   have hG0 : (0 : ℝ) ≤ g n := Nat.cast_nonneg _
   have hX0 : (0 : ℝ) ≤ D n := Nat.cast_nonneg _
-  have hlogn : 1 ≤ Real.log n := Real.one_le_log_natCast_of_three_le hn3
-  have hlogY0 : 0 ≤ Real.log (Dc n) := Real.log_nonneg hY1
-  have hlogY : Real.log (Dc n) ≤ Real.log n := Real.log_le_log hY0 Q.le_n
+  have hlogn := Real.one_le_log_natCast_of_three_le hn3
+  have hlogY0 := Real.log_nonneg hY1
+  have hlogY := Real.log_le_log hY0 Q.le_n
   have hL1 : 1 ≤ Real.log n + 1 := by linarith
   have hL3 : (Real.log n + 1) ^ 3 ≤ K' * (n : ℝ) ^ (s - δ) := by
     rw [hK']; exact log_add_one_pow_three_le hN1 hτ
   -- the logarithmic factors
   have hlam2 : (Real.log (Dc n) + 1) ^ 2 ≤ K' * (n : ℝ) ^ (s - δ) :=
-    ((pow_le_pow_left₀ (by linarith) (by linarith) 2).trans
-      (pow_le_pow_right₀ hL1 (by norm_num))).trans hL3
+    ((pow_le_pow_left₀ tac_linarith tac_linarith 2).trans
+      (pow_le_pow_right₀ hL1 tac_norm_num)).trans hL3
   have hlam1 : Real.log (Dc n) + 1 ≤ K' * (n : ℝ) ^ (s - δ) :=
     ((by linarith : Real.log (Dc n) + 1 ≤ Real.log n + 1).trans
-      (le_self_pow₀ hL1 (by norm_num))).trans hL3
-  have hlam0 : (1 : ℝ) ≤ K' * (n : ℝ) ^ (s - δ) := (one_le_pow₀ hL1).trans hL3
+      (le_self_pow₀ hL1 tac_norm_num)).trans hL3
+  have hlam0 := (one_le_pow₀ hL1).trans hL3
   have hlamn : Real.log n ≤ K' * (n : ℝ) ^ (s - δ) :=
-    ((by linarith : Real.log n ≤ Real.log n + 1).trans (le_self_pow₀ hL1 (by norm_num))).trans hL3
+    ((by linarith : Real.log n ≤ Real.log n + 1).trans (le_self_pow₀ hL1 tac_norm_num)).trans hL3
   -- the factors, as powers of `n`
-  have fN : (n : ℝ) ≤ 1 * (n : ℝ) ^ (1 : ℝ) := by rw [Real.rpow_one, one_mul]
-  have fN2 : (n : ℝ) ^ 2 ≤ 1 * (n : ℝ) ^ (2 : ℝ) := by rw [Real.rpow_two, one_mul]
-  have fN3 : (n : ℝ) ^ 3 ≤ 1 * (n : ℝ) ^ (3 : ℝ) := by
-    rw [one_mul, ← Real.rpow_natCast]
-    norm_num
-  have f1 : (1 : ℝ) ≤ 1 * (n : ℝ) ^ (0 : ℝ) := by rw [Real.rpow_zero, one_mul]
+  have fN : (n : ℝ) ≤ 1 * (n : ℝ) ^ (1 : ℝ) := by simp
+  have fN2 : (n : ℝ) ^ 2 ≤ 1 * (n : ℝ) ^ (2 : ℝ) := by simp
+  have fN3 : (n : ℝ) ^ 3 ≤ 1 * (n : ℝ) ^ (3 : ℝ) := by simp
+  have f1 : (1 : ℝ) ≤ 1 * (n : ℝ) ^ (0 : ℝ) := by simp
   have fG := P.g_le hη0.le
-  have fGi := P.inv_g_le hη0.le (by linarith)
+  have fGi := P.inv_g_le hη0.le tac_linarith
   have hw : (queryCap n (D n) : ℝ) ≤ (n : ℝ) ^ 2 / Real.sqrt (D n) :=
-    Nat.floor_le (by positivity)
+    Nat.floor_le tac_positivity
   have fW : (n : ℝ) ^ 2 / Real.sqrt (D n) ≤ 2 * (n : ℝ) ^ (2 + -(d / 2)) := by
     rw [Real.rpow_add hN0, Real.rpow_two, div_eq_mul_one_div]
     calc (n : ℝ) ^ 2 * (1 / Real.sqrt (D n)) ≤ (n : ℝ) ^ 2 * (2 * (n : ℝ) ^ (-(d / 2))) :=
-          mul_le_mul_of_nonneg_left P.inv_sqrt_le (by positivity)
+          mul_le_mul_of_nonneg_left P.inv_sqrt_le tac_positivity
       _ = 2 * ((n : ℝ) ^ 2 * (n : ℝ) ^ (-(d / 2))) := by ring
   have fX : (D n : ℝ) ≤ 1 * (n : ℝ) ^ d := by rw [one_mul]; exact P.D_le
   have fX32 : (D n : ℝ) ^ (3 / 2 : ℝ) ≤ 1 * (n : ℝ) ^ (d * (3 / 2)) := by
     rw [one_mul, Real.rpow_mul hN0.le]
-    exact Real.rpow_le_rpow hX0 P.D_le (by norm_num)
+    exact Real.rpow_le_rpow hX0 P.D_le tac_norm_num
   have fMM : strassen n ≤ 1 * (n : ℝ) ^ (2.81 : ℝ) := by
     rw [one_mul]
     exact Real.rpow_le_rpow_of_exponent_le hN1 logb_two_seven_le
-  have hdη : d * η ≤ d * (1 / 2) := mul_le_mul_of_nonneg_left hη1.le hd0.le
   have hdqa : 0 ≤ d * (q * a) := by positivity
   -- the six terms
   have t1 : (n : ℝ) * g n * preBound31 γ n (Dc n) ≤ 2 * K₁ * K' * (n : ℝ) ^ (3 - δ) := by
@@ -115,9 +113,9 @@ theorem explicitFrom_of_hostBound_aux (M : DetTimeModel) {d η a ε γ q δ s : 
       rw [preBound31, Real.rpow_neg hY0.le]
       ring
     rw [e]
-    exact (prod5_le (E := 3 - δ) hN1 hG0 (by positivity) (by positivity) (by positivity)
-      (by norm_num) (by norm_num) (by norm_num) hK₁ hK'0 fN fG fN2 Q.neg_rpow_le hlam2
-      (by linarith)).trans_eq (by ring)
+    exact (prod5_le (E := 3 - δ) hN1 hG0 tac_positivity tac_positivity tac_positivity
+      tac_norm_num tac_norm_num tac_norm_num hK₁ hK'0 fN fG fN2 Q.neg_rpow_le hlam2
+      tac_linarith).trans_eq tac_ring
   have t2 : (n : ℝ) * g n * ((queryCap n (D n) : ℝ) * queryBound31 q (Dc n))
       ≤ 4 * K₂ * K' * (n : ℝ) ^ (3 - δ) := by
     have e : (n : ℝ) * g n * ((queryCap n (D n) : ℝ) * queryBound31 q (Dc n))
@@ -125,57 +123,57 @@ theorem explicitFrom_of_hostBound_aux (M : DetTimeModel) {d η a ε γ q δ s : 
       rw [queryBound31]
       ring
     rw [e]
-    exact (prod5_le (E := 3 - δ) hN1 hG0 (by positivity) (by positivity) (by linarith)
-      (by norm_num) (by norm_num) (by norm_num) hK₂ hK'0 fN fG (hw.trans fW) Q.rpow_le hlam1
-      (by linarith)).trans_eq (by ring)
+    exact (prod5_le (E := 3 - δ) hN1 hG0 tac_positivity tac_positivity tac_linarith
+      tac_norm_num tac_norm_num tac_norm_num hK₂ hK'0 fN fG (hw.trans fW) Q.rpow_le hlam1
+      tac_linarith).trans_eq tac_ring
   have t3 : (n : ℝ) * g n * ((n : ℝ) ^ 2 / Real.sqrt (D n)) ≤ 4 * K' * (n : ℝ) ^ (3 - δ) := by
     have e : (n : ℝ) * g n * ((n : ℝ) ^ 2 / Real.sqrt (D n))
         = (n : ℝ) * g n * ((n : ℝ) ^ 2 / Real.sqrt (D n)) * 1 * 1 := by ring
     rw [e]
-    exact (prod5_le (E := 3 - δ) hN1 hG0 (by positivity) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num) (by norm_num) (by norm_num) hK'0 fN fG fW f1 hlam0
-      (by linarith)).trans_eq (by ring)
+    exact (prod5_le (E := 3 - δ) hN1 hG0 tac_positivity tac_norm_num tac_norm_num
+      tac_norm_num tac_norm_num tac_norm_num tac_norm_num hK'0 fN fG fW f1 hlam0
+      tac_linarith).trans_eq tac_ring
   have t4 : termScans n (g n) κ ≤ κ * (2 * K' * (n : ℝ) ^ (3 - δ)) := by
     have e : termScans n (g n) κ
         = κ * ((n : ℝ) ^ 3 * (1 / (g n : ℝ)) * 1 * 1 * Real.log n) := by
       rw [termScans]
       ring
     rw [e]
-    exact mul_le_mul_of_nonneg_left ((prod5_le (E := 3 - δ) hN1 (by positivity) (by norm_num)
-      (by norm_num) (by linarith) (by norm_num) (by norm_num) (by norm_num) (by norm_num) hK'0
-      fN3 fGi f1 f1 hlamn (by linarith)).trans_eq (by ring)) (by linarith)
+    exact mul_le_mul_of_nonneg_left ((prod5_le (E := 3 - δ) hN1 tac_positivity tac_norm_num
+      tac_norm_num tac_linarith tac_norm_num tac_norm_num tac_norm_num tac_norm_num hK'0
+      fN3 fGi f1 f1 hlamn tac_linarith).trans_eq tac_ring) tac_linarith
   have t5 : termPrime strassen n (D n) ≤ (n : ℝ) ^ (3 - δ) := by
     have e : termPrime strassen n (D n) = strassen n * (D n : ℝ) ^ (3 / 2 : ℝ) * 1 * 1 * 1 := by
       rw [termPrime]
       ring
     rw [e]
-    exact (prod5_le (E := 3 - δ) hN1 (by positivity) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) fMM fX32 f1 f1 f1
-      (by linarith)).trans_eq (by ring)
+    exact (prod5_le (E := 3 - δ) hN1 tac_positivity tac_norm_num tac_norm_num tac_norm_num
+      tac_norm_num tac_norm_num tac_norm_num tac_norm_num tac_norm_num fMM fX32 f1 f1 f1
+      tac_linarith).trans_eq tac_ring
   have t6 : termBuild n (D n) (g n) ≤ 2 * (n : ℝ) ^ (3 - δ) := by
     have e : termBuild n (D n) (g n) = (n : ℝ) ^ 2 * (D n : ℝ) * (g n : ℝ) * 1 * 1 := by
       rw [termBuild]
       ring
     rw [e]
-    exact (prod5_le (E := 3 - δ) hN1 hX0 hG0 (by norm_num) (by norm_num)
-      (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) fN2 fX fG f1 f1
-      (by linarith)).trans_eq (by ring)
+    exact (prod5_le (E := 3 - δ) hN1 hX0 hG0 tac_norm_num tac_norm_num
+      tac_norm_num tac_norm_num tac_norm_num tac_norm_num tac_norm_num fN2 fX fG f1 f1
+      tac_linarith).trans_eq tac_ring
   -- the sum
   have hS0 : 0 ≤ (n : ℝ) ^ (3 - δ) := by positivity
   have hpre0 : 0 ≤ preBound31 γ n (Dc n) := by rw [preBound31]; positivity
   have hquery0 : 0 ≤ queryBound31 q (Dc n) := by
     rw [queryBound31]
-    exact mul_nonneg (by positivity) (by linarith)
+    exact mul_nonneg tac_positivity tac_linarith
   have hS : (n : ℝ) ^ (3 - δ) ≤ κ * ((n : ℝ) ^ (3 - δ) * Real.log n ^ 1) := by
     rw [pow_one]
     calc (n : ℝ) ^ (3 - δ) = 1 * ((n : ℝ) ^ (3 - δ) * 1) := by ring
       _ ≤ κ * ((n : ℝ) ^ (3 - δ) * Real.log n) :=
-          mul_le_mul hκ (mul_le_mul_of_nonneg_left hlogn hS0) (by positivity) (by linarith)
+          mul_le_mul hκ (mul_le_mul_of_nonneg_left hlogn hS0) tac_positivity tac_linarith
   have hκS : κ * (n : ℝ) ^ (3 - δ) ≤ κ * ((n : ℝ) ^ (3 - δ) * Real.log n ^ 1) := by
     rw [pow_one]
-    exact mul_le_mul_of_nonneg_left (le_mul_of_one_le_right hS0 hlogn) (by linarith)
+    exact mul_le_mul_of_nonneg_left (le_mul_of_one_le_right hS0 hlogn) tac_linarith
   exact total_le h17 hL (add_nonneg hpre0 (mul_nonneg (Nat.cast_nonneg _) hquery0))
-    (mul_nonneg hN0.le hG0) hC (by positivity) (by positivity) (by positivity) (by positivity)
+    (mul_nonneg hN0.le hG0) hC tac_positivity tac_positivity tac_positivity tac_positivity
     t1 t2 t3 t4 t5 t6 hS hκS
 
 /-- **The total time, for arbitrary parameters.** Let `D = ⌊n^d⌋`, `g = ⌈D^η⌉` with `0 < η < 1/2`,
@@ -209,8 +207,8 @@ theorem explicitFrom_mid (M : DetTimeModel) {d η ε γ q δ : ℝ} {D g : ℕ �
     (hhost : HostBound M strassen D g (fun n => pieceSizeNat (D n) (g n) * Nat.sqrt (D n)))
     (hlop : LopClaim M ε γ q) (hthin : d * (1 - η) < ε)
     (hδ : δ < d * min η (min (γ * (1 - η)) (1 / 2 - q * (1 - η)) - η)) : ExplicitFrom M δ 1 :=
-  explicitFrom_of_hostBound M (a := 1 - η) hd0 hη0 hη1 (by linarith) (by linarith) hγ hq hδ0
+  explicitFrom_of_hostBound M (a := 1 - η) hd0 hη0 hη1 tac_linarith tac_linarith hγ hq hδ0
     hsmall hD hg
-    (exists_bounds_pieceSize hd0 (by linarith) hη0 hη1 hD hg) hthin hhost hlop hδ
+    (exists_bounds_pieceSize hd0 tac_linarith hη0 hη1 hD hg) hthin hhost hlop hδ
 
 end ImprovedExponents

@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Sec4.ChoosingParameters
 public import ThreeSumApsp.Sec4.Theorem30
 public import ThreeSumApsp.Util.Asymptotics.Dominated
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Section 4.4: the steps of the proof of Corollary 26 that hold for all parameters
@@ -46,11 +47,11 @@ theorem Corollary26.setting_up (D₀ m : ℕ) (hD : 2 ≤ D₀) (hm : m = ⌈Rea
   obtain rfl : m = Nat.clog 4 D₀ := by
     rw [hm, ← Real.natCeil_logb_natCast]
     norm_num
-  have hpos : 1 ≤ Nat.clog 4 D₀ := Nat.clog_pos (by norm_num) hD
-  have hlt : 4 ^ (Nat.clog 4 D₀ - 1) < D₀ := Nat.pow_pred_clog_lt_self (by norm_num) (by omega)
+  have hpos : 1 ≤ Nat.clog 4 D₀ := Nat.clog_pos tac_norm_num hD
+  have hlt : 4 ^ (Nat.clog 4 D₀ - 1) < D₀ := Nat.pow_pred_clog_lt_self tac_norm_num tac_omega
   have hsucc : 4 ^ Nat.clog 4 D₀ = 4 * 4 ^ (Nat.clog 4 D₀ - 1) := by
     rw [← pow_succ', Nat.sub_add_cancel hpos]
-  refine ⟨Nat.le_pow_clog (by norm_num) _, ?_, hlt⟩
+  refine ⟨Nat.le_pow_clog tac_norm_num _, ?_, hlt⟩
   unfold D
   omega
 
@@ -109,27 +110,27 @@ have logarithms.) -/
 theorem padded_le (a : ℝ) (k : ℕ) :
     Dominated Sizes.SetUp (fun p => (D p.m : ℝ) ^ a * Real.log (D p.m) ^ k)
       fun p => (p.D₀ : ℝ) ^ a * Real.log p.D₀ ^ k := by
-  refine .of_le_const_mul (C := 4 ^ |a| * 3 ^ k) (by positivity) fun ⟨D₀, _, m⟩ h => ?_
+  refine .of_le_const_mul (C := 4 ^ |a| * 3 ^ k) tac_positivity fun ⟨D₀, _, m⟩ h => ?_
   have htwo : (2 : ℝ) ≤ D₀ := by exact_mod_cast h.two_le
   have hD₀ : (0 : ℝ) < D₀ := by linarith
   have hle' : 1 ≤ (D m : ℝ) / D₀ := (one_le_div hD₀).2 (by exact_mod_cast h.le)
   have hle4 : (D m : ℝ) ≤ 4 * D₀ := by exact_mod_cast h.lt.le
   have hpow : (D m : ℝ) ^ a ≤ 4 ^ |a| * (D₀ : ℝ) ^ a :=
     calc (D m : ℝ) ^ a = ((D m : ℝ) / D₀) ^ a * (D₀ : ℝ) ^ a := by
-          rw [← Real.mul_rpow (by positivity) hD₀.le, div_mul_cancel₀ _ hD₀.ne']
+          rw [← Real.mul_rpow tac_positivity hD₀.le, div_mul_cancel₀ _ hD₀.ne']
       _ ≤ 4 ^ |a| * (D₀ : ℝ) ^ a :=
           mul_le_mul_of_nonneg_right
             ((Real.rpow_le_rpow_of_exponent_le hle' (le_abs_self a)).trans
-              (Real.rpow_le_rpow (by positivity) ((div_le_iff₀ hD₀).2 hle4) (abs_nonneg a)))
-            (by positivity)
+              (Real.rpow_le_rpow tac_positivity ((div_le_iff₀ hD₀).2 hle4) (abs_nonneg a)))
+            tac_positivity
   have hlog : Real.log (D m) ≤ 3 * Real.log D₀ :=
     calc Real.log (D m) ≤ Real.log (4 * D₀) := Real.log_le_log (cast_D_pos m) hle4
       _ = 2 * Real.log 2 + Real.log D₀ := by
-          rw [Real.log_mul (by norm_num) hD₀.ne', Real.log_four]
+          rw [Real.log_mul tac_norm_num hD₀.ne', Real.log_four]
       _ ≤ 3 * Real.log D₀ := by linarith [Real.log_le_log two_pos htwo]
   calc (D m : ℝ) ^ a * Real.log (D m) ^ k
       ≤ 4 ^ |a| * (D₀ : ℝ) ^ a * (3 * Real.log D₀) ^ k :=
-        mul_le_mul hpow (pow_le_pow_left₀ (by positivity) hlog k) (by positivity) (by positivity)
+        mul_le_mul hpow (pow_le_pow_left₀ tac_positivity hlog k) tac_positivity tac_positivity
     _ = 4 ^ |a| * 3 ^ k * ((D₀ : ℝ) ^ a * Real.log D₀ ^ k) := by
         rw [mul_pow]
         ring
@@ -167,7 +168,7 @@ theorem sum_alpha_le {x : ℝ} (hx : 0 < x) (h9x : 1 ≤ 9 * x) {m t : ℕ} (htm
       ≤ ∑ d ∈ range (t + 1), (9 * x) ^ t * ((1 / x) ^ d * 1 ^ (m - d) * (m.choose d : ℝ)) :=
         sum_le_sum hterm
     _ ≤ ∑ d ∈ range (m + 1), (9 * x) ^ t * ((1 / x) ^ d * 1 ^ (m - d) * (m.choose d : ℝ)) :=
-        sum_le_sum_of_subset_of_nonneg (range_subset_range.2 (by omega))
+        sum_le_sum_of_subset_of_nonneg (range_subset_range.2 tac_omega)
           fun _ _ _ => by positivity
     _ = (9 * x) ^ t * (1 + 1 / x) ^ m := by rw [← mul_sum, ← add_pow, add_comm]
 
@@ -178,9 +179,9 @@ theorem rpow_mul_pow_eq_D_rpow_qOf {θ : ℝ} (hθ0 : 0 < θ) (hθ1 : θ < 1) (m
   have hinv : 1 + 1 / ((1 - θ) / θ) = (1 - θ)⁻¹ := by
     field_simp
     ring
-  rw [← exp_entropy_eq_D_rpow_qOf, hinv, Real.rpow_def_of_pos (by positivity),
-    ← Real.rpow_natCast, Real.rpow_def_of_pos (by positivity), ← Real.exp_add, Real.log_inv,
-    Real.log_mul (by norm_num) (by positivity), Real.log_div h1θ.ne' hθ0.ne', entropy]
+  rw [← exp_entropy_eq_D_rpow_qOf, hinv, Real.rpow_def_of_pos tac_positivity,
+    ← Real.rpow_natCast, Real.rpow_def_of_pos tac_positivity, ← Real.exp_add, Real.log_inv,
+    Real.log_mul tac_norm_num tac_positivity, Real.log_div h1θ.ne' hθ0.ne', entropy]
   congr 1
   ring
 

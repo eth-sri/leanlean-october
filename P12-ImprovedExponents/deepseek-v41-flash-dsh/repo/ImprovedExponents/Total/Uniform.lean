@@ -1,6 +1,7 @@
 module
 
 public import ImprovedExponents.Pipeline.HostBound
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -29,7 +30,7 @@ noncomputable abbrev uniformShape (δ : ℝ) (e : ℕ) (p : SizeBound) : ℝ :=
 theorem one_le_uniformShape {δ : ℝ} (e : ℕ) (hδ1 : δ ≤ 1) {p : SizeBound} (hs : 1 ≤ p.s) :
     1 ≤ uniformShape δ e p :=
   one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le
-    (Real.one_le_rpow (Nat.one_le_cast.2 hs) (by linarith)) (one_le_log_add_one_pow p.s e))
+    (Real.one_le_rpow (Nat.one_le_cast.2 hs) tac_linarith) (one_le_log_add_one_pow p.s e))
     (one_le_pow₀ (one_le_one_add_logU p.u))
 
 /-- "Smaller instances are solved by brute force": below a fixed size `n₀`, the time
@@ -37,7 +38,7 @@ theorem one_le_uniformShape {δ : ℝ} (e : ℕ) (hδ1 : δ ≤ 1) {p : SizeBoun
 theorem dominated_bruteForce {δ : ℝ} (e n₀ : ℕ) (hδ0 : 0 ≤ δ) :
     Dominated (fun p : SizeBound => (1 ≤ p.s ∧ 1 ≤ p.u) ∧ p.s < n₀)
       (fun p => (p.s : ℝ) ^ 3 * (1 + logU p.u)) (uniformShape δ e) := by
-  refine .of_le_const_mul (C := (n₀ : ℝ) ^ δ) (by positivity) fun p hp => ?_
+  refine .of_le_const_mul (C := (n₀ : ℝ) ^ δ) tac_positivity fun p hp => ?_
   have hlog := one_le_log_add_one_pow p.s e
   have hwords := one_le_one_add_logU p.u
   have hs0 : (0 : ℝ) < p.s := Nat.cast_pos.2 hp.1.1
@@ -57,13 +58,13 @@ theorem dominated_bruteForce {δ : ℝ} (e n₀ : ℕ) (hδ0 : 0 ≤ δ) :
 /-- Weights up to `u` are weights up to `s^κ` for `κ = max 1 (log u / log s)`. -/
 theorem le_rpow_max_log_div {s : ℕ} {u : ℝ} (hs : 3 ≤ s) (hu : 1 ≤ u) :
     u ≤ (s : ℝ) ^ max 1 (Real.log u / Real.log s) := by
-  have hs0 : (0 : ℝ) < s := Nat.cast_pos.2 (by omega)
-  have hlogs : 1 ≤ Real.log s := Real.one_le_log_natCast_of_three_le hs
+  have hs0 : (0 : ℝ) < s := Nat.cast_pos.2 tac_omega
+  have hlogs := Real.one_le_log_natCast_of_three_le hs
   calc u = (s : ℝ) ^ (Real.log u / Real.log s) := by
-        rw [Real.rpow_def_of_pos hs0, mul_div_cancel₀ _ (by linarith),
+        rw [Real.rpow_def_of_pos hs0, mul_div_cancel₀ _ tac_linarith,
           Real.exp_log (zero_lt_one.trans_le hu)]
     _ ≤ (s : ℝ) ^ max 1 (Real.log u / Real.log s) :=
-        Real.rpow_le_rpow_of_exponent_le (Nat.one_le_cast.2 (by omega)) (le_max_right _ _)
+        Real.rpow_le_rpow_of_exponent_le (Nat.one_le_cast.2 tac_omega) (le_max_right _ _)
 
 /-- The exponent `max 1 (log u / log s)` is at most `1 + log u`. -/
 theorem max_log_div_le {s : ℕ} {u : ℝ} (hs : 3 ≤ s) (hu : 1 ≤ u) :
@@ -88,7 +89,6 @@ theorem dominated_explicitFrom {T : ℕ → ℝ → ℝ} {K δ : ℝ} {e n₀ n�
       (le_rpow_max_log_div (h3' p hp.2) hp.1.2)
   · positivity
   · have hκ := max_log_div_le (h3' p hp.2) hp.1.2
-    have hlog := Real.log_natCast_nonneg p.s
     have hwords := le_self_pow₀ (one_le_one_add_logU p.u) two_ne_zero
     calc max 1 (Real.log p.u / Real.log p.s) * ((p.s : ℝ) ^ (3 - δ) * Real.log p.s ^ e)
         ≤ (1 + logU p.u) ^ 2 * ((p.s : ℝ) ^ (3 - δ) * (Real.log p.s + 1) ^ e) := by
@@ -111,7 +111,7 @@ theorem exactTriangleUniform_of_explicitFrom (M : DetTimeModel) {δ : ℝ} (e : 
   have hshape : ∀ p : SizeBound, 1 ≤ p.s ∧ 1 ≤ p.u → 1 ≤ uniformShape δ e p := fun p hp =>
     one_le_uniformShape e hδ1 hp.1
   have hsmall := (dominated_bruteForce e (max n₀ 3) hδ0).const_mul_of_nonneg C fun p _ =>
-    mul_nonneg (by positivity) (zero_le_one.trans (one_le_one_add_logU p.u))
+    mul_nonneg tac_positivity (zero_le_one.trans (one_le_one_add_logU p.u))
   obtain ⟨K', hK'0, hK'⟩ := (Dominated.ite hsmall
     (dominated_explicitFrom (le_max_left _ _) (le_max_right _ _) hb) fun p hp =>
     zero_le_one.trans (hshape p hp)).add (.const C₀ hshape)

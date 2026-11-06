@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Util.List
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # One pass over a list
@@ -97,7 +98,7 @@ structure DistSt (L D : List ℤ) (i : ℕ) : Prop where
 
 /-- At the start there are no values. -/
 theorem DistSt.zero (L : List ℤ) : DistSt L [] 0 :=
-  ⟨List.nodup_nil, by simp, le_rfl, fun h => absurd h (by omega)⟩
+  ⟨List.nodup_nil, by simp, le_rfl, fun h => absurd h tac_omega⟩
 
 /-- If element `i` of a sorted list differs from the last value written, or nothing is written yet,
 then it has not occurred before, and appending it gives the distinct values among the first `i + 1`
@@ -110,7 +111,7 @@ theorem DistSt.opens {L D : List ℤ} {i : ℕ} (h : DistSt L D i) (hs : L.Pairw
     rcases Nat.eq_zero_or_pos i with h0 | h0
     · exact Or.inl h0
     · obtain ⟨hpos, hlast⟩ := h.last h0
-      exact Or.inr (hlast ▸ hne.resolve_left (by omega))
+      exact Or.inr (hlast ▸ hne.resolve_left tac_omega)
   refine ⟨⟨?_, fun x => ?_, ?_, fun _ => by simp⟩, hnot⟩
   · -- no value twice
     exact List.nodup_append.2 ⟨h.nodup, List.nodup_singleton _, fun a ha b hb e =>
@@ -130,7 +131,7 @@ theorem DistSt.bumps {L D : List ℤ} {i : ℕ} (h : DistSt L D i) (hi : i < L.l
   refine ⟨Or.inl, ?_⟩
   rintro (hx | rfl)
   · exact hx
-  · rw [he, List.getD_eq_getElem _ _ (by omega)]
+  · rw [he, List.getD_eq_getElem _ _ tac_omega]
     exact List.getElem_mem _
 
 /-- The multiplicities after a new value: the old ones, and a 1 at the end. -/
@@ -151,14 +152,14 @@ theorem map_countTo_bumps {L D : List ℤ} {i : ℕ} (h : DistSt L D i) (hi : i 
     (hpos : 0 < D.length) (he : L.getD i 0 = D.getD (D.length - 1) 0) :
     D.map (countTo L (i + 1)) =
       (D.map (countTo L i)).set (D.length - 1) (countTo L i (D.getD (D.length - 1) 0) + 1) := by
-  refine List.ext_getElem (by simp) fun j hj _ => ?_
+  refine List.ext_getElem tac_simp fun j hj _ => ?_
   rw [List.length_map] at hj
   have hlast : D.getD (D.length - 1) 0 = D[D.length - 1] := List.getD_eq_getElem _ _ _
   rw [List.getElem_map, countTo_succ L hi, he]
   by_cases hc : j = D.length - 1
   · subst hc
     rw [List.getElem_set_self, if_pos hlast.symm, hlast]
-  · rw [List.getElem_set_of_ne (by omega), List.getElem_map, if_neg, add_zero]
+  · rw [List.getElem_set_of_ne tac_omega, List.getElem_map, if_neg, add_zero]
     exact fun e => hc ((List.Nodup.getElem_inj_iff h.nodup).1 (e.trans hlast))
 
 end ThreeSumApsp.Spec

@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import PaperStatements
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 21(b): repeated squaring computes the distances
@@ -183,7 +184,7 @@ theorem theorem_21b_repeated_squaring {R : Type} [AddCommGroup R] [LinearOrder R
     obtain ⟨rest', hend, hlt, -, hle⟩ := Theorem21.exists_short_walk w hw i rest
     rw [← hend]
     exact (Theorem21.entry_le_walkWeight w hw _ i rest'
-      (hlt.le.trans (Nat.le_pow_clog (by norm_num) n))).trans hle
+      (hlt.le.trans (Nat.le_pow_clog tac_norm_num n))).trans hle
 
 /-- For **Theorem 21(b)**, repeated squaring: a bound on the entries.  If the edge weights have
 absolute value at most `U`, every finite entry of every matrix of the repeated squaring has absolute

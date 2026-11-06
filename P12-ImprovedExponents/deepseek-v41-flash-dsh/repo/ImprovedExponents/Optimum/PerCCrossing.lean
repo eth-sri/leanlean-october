@@ -1,6 +1,7 @@
 module
 
 public import ImprovedExponents.Optimum.PerCBasic
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -21,7 +22,7 @@ and `Γ(c) = sup_θ min(γX(c, θ), γ_Q(θ))` is their common value there (`Gam
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Real Set
+open Set
 
 variable {c θ θ₀ : ℝ}
 
@@ -33,14 +34,14 @@ theorem exists_crossing (hc : 10 < c) : ∃ θ ∈ Ioo (0 : ℝ) (9 / 10), gamma
     rw [gammaX_zero, gammaQ_zero]
     norm_num
   have h1 : 0 < gammaX c (9 / 10) - gammaQ (9 / 10) := by
-    have h := gammaX_pos hc (by norm_num : (0 : ℝ) < 9 / 10) (by norm_num)
+    have h := gammaX_pos hc (by norm_num : (0 : ℝ) < 9 / 10) tac_norm_num
     linarith [gammaQ_nine_tenths_neg]
   obtain ⟨θ, hθ, h⟩ := intermediate_value_Ioo (by norm_num : (0 : ℝ) ≤ 9 / 10) hcont ⟨h0, h1⟩
   exact ⟨θ, hθ, sub_eq_zero.1 h⟩
 
 /-- `γX(c, ·)` increases strictly on `[0, 9/10]`, for `c > 10`. -/
 theorem gammaX_strictMonoOn' (hc : 10 < c) : StrictMonoOn (gammaX c) (Icc 0 (9 / 10)) :=
-  (gammaX_strictMonoOn hc).mono (Icc_subset_Icc_right (by norm_num))
+  (gammaX_strictMonoOn hc).mono (Icc_subset_Icc_right tac_norm_num)
 
 /-- At every `θ₀ ∈ [0, 9/10]`, the smaller of `γX(c, θ₀)` and `γ_Q(θ₀)` is at most the common
 value at the crossing point. -/
@@ -89,7 +90,7 @@ theorem Gam_pos (hc : 10 < c) : 0 < Gam c := by
 theorem Gam_lt_two_thirds (hc : 10 < c) : Gam c < 2 / 3 := by
   obtain ⟨θ, hθ, -, hQ⟩ := exists_crossing_eq_Gam hc
   rw [← hQ, ← gammaQ_zero]
-  exact gammaQ_strictAntiOn (left_mem_Icc.2 (by norm_num)) (Ioo_subset_Icc_self hθ) hθ.1
+  exact gammaQ_strictAntiOn (left_mem_Icc.2 tac_norm_num) (Ioo_subset_Icc_self hθ) hθ.1
 
 /-- **Lower bound for `Γ`**: `min(γX(c, θ₀), γ_Q(θ₀)) ≤ Γ(c)` for every `θ₀ ∈ (0, 9/10)`. -/
 theorem Gam_ge_min (hc : 10 < c) (hθ₀ : θ₀ ∈ Ioo (0 : ℝ) (9 / 10)) :

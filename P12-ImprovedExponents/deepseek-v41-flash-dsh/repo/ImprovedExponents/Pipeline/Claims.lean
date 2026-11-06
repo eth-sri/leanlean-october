@@ -28,7 +28,7 @@ For the time model `lightModel` of upstream (procedures of programs of its langu
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3 Light.Sec4 ParamRoutines HostMid
+open ThreeSumApsp ThreeSumApsp.Spec Light ParamRoutines HostMid
 
 /-! ## The thin product -/
 

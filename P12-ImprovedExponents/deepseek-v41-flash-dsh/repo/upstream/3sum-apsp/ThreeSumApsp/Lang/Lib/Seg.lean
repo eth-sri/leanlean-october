@@ -13,6 +13,7 @@ public import Mathlib.Data.List.GetD
 public import Mathlib.Data.Nat.SuccPred
 public import Mathlib.LinearAlgebra.Matrix.Defs
 public import Mathlib.Tactic.Positivity
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Segments of the memory
@@ -44,7 +45,7 @@ variable {μ μ' μ'' : ℕ → ℤ} {a b n : ℕ} {l l₁ l₂ : List ℤ} {x :
     (readSeg μ a n)[i] = μ (a + i) := by
   simp [readSeg]
 
-@[simp] theorem Seg.nil : Seg μ a [] := fun i h => absurd h (by simp)
+@[simp] theorem Seg.nil : Seg μ a [] := fun i h => absurd h tac_simp
 
 /-- Reading a cell of a segment. -/
 theorem Seg.get (h : Seg μ a l) {i : ℕ} (hi : i < l.length) : μ (a + i) = l[i] := h i hi
@@ -55,12 +56,12 @@ theorem Seg.getD (h : Seg μ a l) {i : ℕ} (hi : i < l.length) (d : ℤ) : μ (
 
 /-- A segment determines its list. -/
 theorem Seg.eq_readSeg (h : Seg μ a l) : l = readSeg μ a l.length :=
-  List.ext_getElem (by simp) fun i h₁ h₂ => by rw [getElem_readSeg, h i h₁]
+  List.ext_getElem tac_simp fun i h₁ h₂ => by rw [getElem_readSeg, h i h₁]
 
 theorem seg_cons : Seg μ a (x :: l) ↔ μ a = x ∧ Seg μ (a + 1) l := by
   constructor
   · intro h
-    refine ⟨by have h0 := h 0 (by simp); rwa [Nat.add_zero, List.getElem_cons_zero] at h0,
+    refine ⟨by have h0 := h 0 tac_simp; rwa [Nat.add_zero, List.getElem_cons_zero] at h0,
       fun i hi => ?_⟩
     have := h (i + 1) (by simpa using hi)
     simpa [Nat.add_assoc, Nat.add_comm 1 i] using this
@@ -77,13 +78,13 @@ theorem seg_append : Seg μ a (l₁ ++ l₂) ↔ Seg μ a l₁ ∧ Seg μ (a + l
     refine ⟨fun i hi => ?_, fun i hi => ?_⟩
     · rw [h i (by simp; omega), List.getElem_append_left hi]
     · have := h (l₁.length + i) (by simp; omega)
-      rw [List.getElem_append_right (by omega)] at this
+      rw [List.getElem_append_right tac_omega] at this
       simpa [Nat.add_assoc] using this
   · rintro ⟨h₁, h₂⟩ i hi
     by_cases hi₁ : i < l₁.length
     · rw [List.getElem_append_left hi₁, h₁ i hi₁]
     · have hi₂ : i - l₁.length < l₂.length := by simp at hi; omega
-      rw [List.getElem_append_right (by omega), ← h₂ _ hi₂]
+      rw [List.getElem_append_right tac_omega, ← h₂ _ hi₂]
       congr 1
       omega
 
@@ -112,12 +113,12 @@ theorem Seg.update_in (h : Seg μ a l) {i : ℕ} (hi : i < l.length) (x : ℤ) :
   have hj' : j < l.length := by simpa using hj
   by_cases hji : j = i
   · subst hji; simp
-  · rw [Function.update_of_ne (by omega), List.getElem_set_of_ne (by omega), h j hj']
+  · rw [Function.update_of_ne tac_omega, List.getElem_set_of_ne tac_omega, h j hj']
 
 /-- Writing outside a segment. -/
 theorem Seg.update_out (h : Seg μ a l) (hb : b < a ∨ a + l.length ≤ b) (x : ℤ) :
     Seg (Function.update μ b x) a l :=
-  h.congr fun i hi => Function.update_of_ne (by omega) _ _
+  h.congr fun i hi => Function.update_of_ne tac_omega _ _
 
 /-- Writing just after a segment makes it longer. -/
 theorem Seg.snoc (h : Seg μ a l) (x : ℤ) : Seg (Function.update μ (a + l.length) x) a (l ++ [x]) :=
@@ -132,19 +133,19 @@ theorem SameOutside.refl : SameOutside μ μ a n := SameOn.refl
 /-- A larger region may change. -/
 theorem SameOutside.mono {a' n' : ℕ} (h : SameOutside μ μ' a n) (ha : a' ≤ a)
     (hn : a + n ≤ a' + n') :
-    SameOutside μ μ' a' n' := fun b hb => h b (by omega)
+    SameOutside μ μ' a' n' := fun b hb => h b tac_omega
 
 /-- Writing inside the region. -/
 theorem SameOutside.update (h : SameOutside μ μ' a n) (hb : a ≤ b ∧ b < a + n) (x : ℤ) :
     SameOutside μ (Function.update μ' b x) a n := fun c hc => by
-  rw [Function.update_of_ne (by omega)]; exact h c hc
+  rw [Function.update_of_ne tac_omega]; exact h c hc
 
 theorem SameOutside2.refl {m : ℕ} : SameOutside2 μ μ a n b m := SameOn.refl
 
 /-- A segment that does not meet the region is kept. -/
 theorem Seg.of_sameOutside (h : Seg μ b l) (hs : SameOutside μ μ' a n)
     (hd : b + l.length ≤ a ∨ a + n ≤ b) : Seg μ' b l :=
-  h.congr fun i hi => hs _ (by omega)
+  h.congr fun i hi => hs _ tac_omega
 
 /-- The cells a, a + 1, … hold a list of natural numbers. -/
 abbrev SegN (μ : ℕ → ℤ) (a : ℕ) (l : List ℕ) : Prop := Seg μ a (l.map fun x : ℕ => (x : ℤ))
@@ -193,12 +194,12 @@ def MatAt {n k : ℕ} (μ : ℕ → ℤ) (a : ℕ) (A : Matrix (Fin n) (Fin k) �
 theorem MatAt.congr {n k : ℕ} {A : Matrix (Fin n) (Fin k) ℤ} (h : MatAt μ a A)
     (he : ∀ b, a ≤ b → b < a + n * k → μ' b = μ b) : MatAt μ' a A := fun i j => by
   have := Nat.mul_add_lt_mul i.isLt j.isLt
-  rw [he _ (by omega) (by omega)]
+  rw [he _ tac_omega tac_omega]
   exact h i j
 
 /-- A matrix that lies below e is still there in a memory that agrees below e. -/
 theorem MatAt.congr_below {n k e : ℕ} {A : Matrix (Fin n) (Fin k) ℤ} (h : MatAt μ a A)
     (hlow : ∀ x < e, μ' x = μ x) (hle : a + n * k ≤ e) : MatAt μ' a A :=
-  h.congr fun b _ hb => hlow b (by omega)
+  h.congr fun b _ hb => hlow b tac_omega
 
 end Light

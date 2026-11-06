@@ -2,6 +2,7 @@ module
 
 public import ImprovedExponents.Pipeline.ThinClaim
 public import ImprovedExponents.PrunedProgram.Wrapper.Offline
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -17,7 +18,7 @@ layout and forms the same numbers, so `lim31_of_need` applies verbatim.
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec4
+open Light Light.Sec4
 
 /-- **Where the hypotheses of Theorem 30 hold from the threshold on**, the pruned offline routine
 solves the task. -/
@@ -52,7 +53,7 @@ theorem offline32P_meets_thinTask {lim : Limits} {P : Program} {G : RatParams} {
       out_rows := by rw [hpre.lenWI]; exact hpre.apartWI
       out_cols := by rw [hpre.lenWI]; exact hpre.apartWJ }
   rw [hpre.lenWI, map_entryN_thin hpre] at spec
-  exact (spec _ (by omega)).mono le_rfl fun r μ' h => ⟨h.1, fun a ha => h.2 a ha.1 ha.2⟩
+  exact (spec _ tac_omega).mono le_rfl fun r μ' h => ⟨h.1, fun a ha => h.2 a ha.1 ha.2⟩
 
 /-- The time of the pruned offline routine is monotone in the number of wanted positions. -/
 -- adapted from ImprovedExponents/Pipeline/ThinClaim.lean (tOffline32_mono)

@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Setup
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Time
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Corollaries 26 and 31 in the light language: rational parameters in the program text
@@ -27,7 +28,7 @@ proof (`QuerySpec31`, `query31_meets`), and the text and the specification of th
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 /-! ## Parameters -/
 
@@ -67,7 +68,7 @@ theorem RatParams.ten_le_L (G : RatParams) (m : ℕ) : 10 * m ≤ G.L m := by
 theorem RatParams.t_le (G : RatParams) (m : ℕ) : G.t m ≤ m := by
   unfold RatParams.t
   have hq := G.hq
-  rw [Nat.div_le_iff_le_mul_add_pred (by omega)]
+  rw [Nat.div_le_iff_le_mul_add_pred tac_omega]
   have h1 : 10 * G.p * m ≤ 9 * G.q * m := Nat.mul_le_mul_right _ G.hθ.le
   have h2 : G.p * m ≤ G.q * m := by
     have e1 : 10 * G.p * m = 10 * (G.p * m) := by ring
@@ -206,23 +207,23 @@ namespace Pre31
 the addresses of the padded matrices, the base address b0 of the block of Theorem 30, a result that
 is not used, and the product N 4^m. -/
 abbrev Size : ℕ := 0
-@[inherit_doc Size] abbrev Dim : ℕ := 1
-@[inherit_doc Size] abbrev MatX : ℕ := 2
-@[inherit_doc Size] abbrev MatY : ℕ := 3
-@[inherit_doc Size] abbrev Free : ℕ := 4
-@[inherit_doc Size] abbrev Log : ℕ := 5
-@[inherit_doc Size] abbrev Padded : ℕ := 6
-@[inherit_doc Size] abbrev Levels : ℕ := 7
-@[inherit_doc Size] abbrev Switch : ℕ := 8
-@[inherit_doc Size] abbrev PadX : ℕ := 9
-@[inherit_doc Size] abbrev PadY : ℕ := 10
-@[inherit_doc Size] abbrev Block : ℕ := 11
-@[inherit_doc Size] abbrev Res : ℕ := 12
-@[inherit_doc Size] abbrev Area : ℕ := 13
+ abbrev Dim : ℕ := 1
+ abbrev MatX : ℕ := 2
+ abbrev MatY : ℕ := 3
+ abbrev Free : ℕ := 4
+ abbrev Log : ℕ := 5
+ abbrev Padded : ℕ := 6
+ abbrev Levels : ℕ := 7
+ abbrev Switch : ℕ := 8
+ abbrev PadX : ℕ := 9
+ abbrev PadY : ℕ := 10
+ abbrev Block : ℕ := 11
+ abbrev Res : ℕ := 12
+ abbrev Area : ℕ := 13
 
 end Pre31
 
-open Pre31 in
+open Pre31
 /-- The first part of pre31 for m ≥ m₀: L, t, the addresses, and the padded matrices. -/
 def prePad31 : Stmt :=
   .set Padded (M (v Free +' k 2)) ;;
@@ -236,7 +237,7 @@ def prePad31 : Stmt :=
   .call Proc.copy [v MatY, v PadY, v Dim *' v Size] Res ;;
   .call Proc.fill [v PadY +' v Dim *' v Size, (v Padded -' v Dim) *' v Size, k 0] Res
 
-open Pre31 in
+open Pre31
 /-- The second part: the preprocessing of Theorem 30, the base address and the flag 1. -/
 def preBuild31 : Stmt :=
   .call Proc.preCore [v Levels, v Log, v Switch, v Size, v Padded, v PadX, v PadY, v Block] Res ;;
@@ -246,7 +247,7 @@ def preBuild31 : Stmt :=
 /-- The part of pre31 for m ≥ m₀. -/
 def preLarge31 : Stmt := prePad31 ;; preBuild31
 
-open Pre31 in
+open Pre31
 /-- pre31(N, D, aX, aY, fr): m and 4^m; for m < m₀ the flag 0, for m ≥ m₀ preLarge31. -/
 def pre31Body (G : RatParams) : Stmt :=
   .call Proc.log4 [v Dim, v Free +' k 2] Log ;;

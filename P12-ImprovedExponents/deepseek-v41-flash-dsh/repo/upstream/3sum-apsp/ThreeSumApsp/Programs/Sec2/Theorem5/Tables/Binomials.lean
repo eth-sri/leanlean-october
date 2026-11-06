@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # A binomial coefficient, by Pascal's triangle
@@ -29,10 +30,10 @@ namespace Binom
 /-- The local variables of binom: Levels = L, Size = m, Addr = pas (the arguments); Row is the
 number of the row, and Place the place in it. -/
 abbrev Levels : ℕ := 0
-@[inherit_doc Levels] abbrev Size : ℕ := 1
-@[inherit_doc Levels] abbrev Addr : ℕ := 2
-@[inherit_doc Levels] abbrev Row : ℕ := 3
-@[inherit_doc Levels] abbrev Place : ℕ := 4
+ abbrev Size : ℕ := 1
+ abbrev Addr : ℕ := 2
+ abbrev Row : ℕ := 3
+ abbrev Place : ℕ := 4
 
 end Binom
 
@@ -81,9 +82,9 @@ theorem Mixed.step {μ μ' : ℕ → ℤ} {L pas i p : ℕ} (h : Mixed μ L pas 
     Mixed μ L pas i p (Function.update μ' (pas + (p + 1)) ((i + 1).choose (p + 1) : ℕ)) := by
   refine ⟨fun j hj => ?_, h.2.update ⟨by omega, by omega⟩ _⟩
   by_cases hjp : j = p + 1
-  · rw [hjp, Function.update_self, if_pos (by omega)]
-  · rw [Function.update_of_ne (by omega), h.1 j hj]
-    exact if_congr (by omega) rfl rfl
+  · rw [hjp, Function.update_self, if_pos tac_omega]
+  · rw [Function.update_of_ne tac_omega, h.1 j hj]
+    exact if_congr tac_omega rfl rfl
 
 variable {μ : ℕ → ℤ} {L m pas i : ℕ} {T : ℕ} {Q : State → Prop}
 
@@ -104,18 +105,18 @@ theorem binomPlace_spec (std : Std lim) (hsp : pas + (L + 2) ≤ lim.space) (hi 
   rw [show L - (r + 1) = p by omega]
   -- The two entries that are added are still those of row i, and their sum fits in a word.
   have habove : μ' (pas + (p + 1)) = (i.choose (p + 1) : ℕ) := by
-    rw [hI.1 (p + 1) (by omega), if_neg (by omega)]
-  have hleft : μ' (pas + p) = (i.choose p : ℕ) := by rw [hI.1 p (by omega), if_neg (by omega)]
-  have hsum : (i + 1).choose (p + 1) = i.choose p + i.choose (p + 1) := Nat.choose_succ_succ' i p
+    rw [hI.1 (p + 1) tac_omega, if_neg tac_omega]
+  have hleft : μ' (pas + p) = (i.choose p : ℕ) := by rw [hI.1 p tac_omega, if_neg tac_omega]
+  have hsum := Nat.choose_succ_succ' i p
   have hfits : (i + 1).choose (p + 1) ≤ 2 ^ L :=
-    (Nat.choose_le_two_pow _ _).trans (Nat.pow_le_pow_right (by norm_num) hi)
+    (Nat.choose_le_two_pow _ _).trans (Nat.pow_le_pow_right tac_norm_num hi)
   have haddr : ((pas : ℤ) + ((p : ℤ) + 1) - 1).toNat = pas + p := by omega
   have haddr' : ((pas : ℤ) + ((p : ℤ) + 1)).toNat = pas + (p + 1) := by omega
   unfold binomPlace
   -- mem[pas + Place] := mem[pas + Place] + mem[pas + Place - 1]; Place := Place - 1
   light_store (pas + (p + 1)) ((i + 1).choose (p + 1) : ℕ) using habove, hleft, haddr, haddr', hsum
   light_set p
-  exact ⟨_, rfl, hI.step (by omega)⟩
+  exact ⟨_, rfl, hI.step tac_omega⟩
 
 /-- **One row**: the loop over the places turns row i of the triangle into row i + 1. -/
 theorem binomInner_spec (std : Std lim) (hsp : pas + (L + 2) ≤ lim.space) (hi : i < L)
@@ -124,11 +125,10 @@ theorem binomInner_spec (std : Std lim) (hsp : pas + (L + 2) ≤ lim.space) (hi 
       SameOutside μ μ' pas (L + 2) → Q ⟨frame [L, m, pas, i, 0], μ'⟩)
     (hT : 23 * L + 4 ≤ T) :
     Ends lim P d binomInner ⟨frame [L, m, pas, i, L], μ⟩ T Q := by
-  have h100 := std.const_le
   -- while 0 < Place
   refine Ends.whileConst (Inv μ L m pas i) L binomPlace.blockCost ?start ?round ?done
     (by simp [binomPlace]; omega)
-  case start => exact ⟨μ, rfl, fun j hj => by rw [if_neg (by omega), hrow j hj], .refl⟩
+  case start => exact ⟨μ, rfl, fun j hj => by rw [if_neg tac_omega, hrow j hj], .refl⟩
   case round =>
     intro r σ hr h
     have hplace := binomPlace_spec (P := P) (d := d) std hsp hi hw hr h
@@ -194,11 +194,11 @@ theorem binomFirst_spec (std : Std lim) (hsp : pas + (L + 2) ≤ lim.space)
     rintro _ rfl
     refine ⟨by light_side, by light_side, done _ ⟨_, _, rfl, fun j hj => ?_,
       (SameOutside.refl.update ⟨by omega, by omega⟩ 1).trans
-        ((sameOutside_wrote le_rfl).mono (by omega) (by omega))⟩⟩
+        ((sameOutside_wrote le_rfl).mono tac_omega tac_omega)⟩⟩
     -- (0 choose 0) = 1, and (0 choose j + 1) = 0.
     cases j with
-    | zero => rw [wrote_rest (Or.inl (by omega)), Nat.add_zero, Function.update_self]; rfl
-    | succ j => rw [← Nat.add_assoc, Nat.add_right_comm, wrote_done (by omega)]; rfl
+    | zero => rw [wrote_rest (Or.inl tac_omega), Nat.add_zero, Function.update_self]; rfl
+    | succ j => rw [← Nat.add_assoc, Nat.add_right_comm, wrote_done tac_omega]; rfl
 
 end Binom
 

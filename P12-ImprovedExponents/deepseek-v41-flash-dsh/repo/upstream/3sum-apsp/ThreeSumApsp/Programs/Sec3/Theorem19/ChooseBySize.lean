@@ -28,7 +28,7 @@ the second one from the threshold on (`bySize_spec`).  The need stays polynomial
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 variable {lim : Limits} {d : ℕ}
 
@@ -104,7 +104,7 @@ theorem closure_chooseBySize : Closure.ChooseBySize lightModel := by
   obtain ⟨Q₁, p₁, Tn₁, r₁, hr₁, hs₁, ht₁⟩ := hT₁
   obtain ⟨Q₂, p₂, Tn₂, r₂, hr₂, hs₂, ht₂⟩ := hT₂
   have g₁ : Solves etTask (Program.behind Q₁ Q₂) p₁ Tn₁ r₁ := hs₁.append _
-  have g₂ : Solves etTask (Program.behind Q₁ Q₂) (p₂ + Q₁.length) Tn₂ r₂ := solves_behind hs₂ Q₁
+  have g₂ := solves_behind hs₂ Q₁
   refine ⟨Program.behind Q₁ Q₂ ++ [bySizeBody n₀ p₁ (p₂ + Q₁.length)],
     (Program.behind Q₁ Q₂).length, bySizeTime n₀ Tn₁ Tn₂,
     bySizeNeed n₀ r₁ r₂, polyNeed_bySize n₀ hr₁ hr₂, ?_, fun n U u hn hU hu => ?_⟩

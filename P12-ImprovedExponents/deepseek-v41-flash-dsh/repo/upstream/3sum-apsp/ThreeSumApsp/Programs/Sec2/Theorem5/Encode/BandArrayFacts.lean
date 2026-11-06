@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The input array of a band: what the loops compute
@@ -47,7 +48,7 @@ theorem codeUpTo_succ (hl : l < bs.length) :
     codeUpTo bs o i (l + 1) = codeUpTo bs o i l * 7 +
       if bs.getD l false then (i.map (3 + ·)).getD ((bs.take l).count true) 0
       else o.getD ((bs.take l).count false) 0 := by
-  rw [codeUpTo, ThreeSumApsp.ofDigitList_take_succ 7 _ (by rwa [Spec.length_gluedDigits]),
+  rw [codeUpTo, ThreeSumApsp.ofDigitList_take_succ 7 _ tac_rwa [Spec.length_gluedDigits],
     Spec.gluedDigits, ThreeSumApsp.getD_weaveList, if_pos hl]
   rfl
 
@@ -66,17 +67,17 @@ theorem codeUpTo_unrank (L m s r k : ℕ) :
     codeUpTo (Spec.unrank L m s) (ThreeSumApsp.digitList 3 (L - m) r) (ThreeSumApsp.digitList 4 m k)
         L
       = Spec.gluedCode L m (Spec.unrank L m s) r k := by
-  rw [codeUpTo, List.take_of_length_le (by simp [Spec.length_unrank]), Spec.gluedCode]
+  rw [codeUpTo, List.take_of_length_le tac_simp [Spec.length_unrank], Spec.gluedCode]
 
 /-! ## Sizes -/
 
 /-- A band has at most 7^L rows. -/
 private theorem bandSize_le (L m : ℕ) : bandSize L m ≤ 7 ^ L := by
   have hK0 : ThreeSumApsp.K0 L m ≤ 2 ^ L := (Nat.sqrt_le_self _).trans (Nat.choose_le_two_pow _ _)
-  have hN0 : ThreeSumApsp.N0 L m ≤ 3 ^ L := Nat.pow_le_pow_right (by omega) (Nat.sub_le _ _)
+  have hN0 : ThreeSumApsp.N0 L m ≤ 3 ^ L := Nat.pow_le_pow_right tac_omega (Nat.sub_le _ _)
   calc bandSize L m ≤ 2 ^ L * 3 ^ L := Nat.mul_le_mul hK0 hN0
     _ = 6 ^ L := by rw [← Nat.mul_pow]
-    _ ≤ 7 ^ L := Nat.pow_le_pow_left (by omega) _
+    _ ≤ 7 ^ L := Nat.pow_le_pow_left tac_omega _
 
 /-- The arguments of bandArray. -/
 structure BandArgs where
@@ -143,7 +144,7 @@ theorem rowNo_lt {g h r : ℕ} (hβ : A.β < A.p.nB) (hg : g < A.p.K0) (hh : h <
   have hsize := bandSize_le A.p.L A.p.m
   have hsize_pos : 0 < bandSize A.p.L A.p.m :=
     Nat.mul_pos (by change 0 < A.p.K0; omega) (N0_pos _ _)
-  have hle : A.blockNo g h ≤ A.blockNo g h * A.p.N0 := Nat.le_mul_of_pos_right _ (by omega)
+  have hle : A.blockNo g h ≤ A.blockNo g h * A.p.N0 := Nat.le_mul_of_pos_right _ tac_omega
   have hS7 : A.p.S7 = 7 ^ A.p.L := rfl
   have hfirst : A.β * A.p.K0 ≤ A.blockNo g h := Nat.le_add_right ..
   unfold rowNo
@@ -165,11 +166,11 @@ theorem subsetIndex_lt (p : Par) {g h : ℕ} (hg : g < p.K0) (hh : h < p.K0) :
 theorem Par.sizes_le_S7 (p : Par) :
     p.L.choose p.m ≤ p.S7 ∧ p.K0 ≤ p.S7 ∧ p.N0 ≤ p.S7 ∧ p.L < p.S7 := by
   have hchoose : p.L.choose p.m ≤ 2 ^ p.L := Nat.choose_le_two_pow _ _
-  have hpow : 2 ^ p.L ≤ 7 ^ p.L := Nat.pow_le_pow_left (by omega) _
+  have hpow : 2 ^ p.L ≤ 7 ^ p.L := Nat.pow_le_pow_left tac_omega _
   have hK0 : p.K0 ≤ p.L.choose p.m := Nat.sqrt_le_self _
   have hN0 : p.N0 ≤ 7 ^ p.L :=
-    (Nat.pow_le_pow_right (by omega) (Nat.sub_le _ _)).trans (Nat.pow_le_pow_left (by omega) _)
-  have hL : p.L < 7 ^ p.L := Nat.lt_pow_self (by omega)
+    (Nat.pow_le_pow_right tac_omega (Nat.sub_le _ _)).trans (Nat.pow_le_pow_left tac_omega _)
+  have hL : p.L < 7 ^ p.L := Nat.lt_pow_self tac_omega
   have hS7 : p.S7 = 7 ^ p.L := rfl
   omega
 
@@ -200,7 +201,7 @@ theorem OverwrittenWith.write {c : ℕ} (hc : c < n) :
   refine ⟨SameOutside.refl.update ⟨by omega, by omega⟩ _, fun x _ => ?_⟩
   by_cases hx : x = c
   · exact Or.inr (hx ▸ Function.update_self ..)
-  · exact Or.inl (Function.update_of_ne (by omega) _ _)
+  · exact Or.inl (Function.update_of_ne tac_omega _ _)
 
 /-- A cell that is right stays right. -/
 theorem OverwrittenWith.keep (h : OverwrittenWith T arr n μ μ') {c : ℕ} (hc : c < n)

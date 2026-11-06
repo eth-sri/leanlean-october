@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.HostContracts
 public import ThreeSumApsp.Programs.Tasks
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The host of the reduction from 3SUM to Convolution-3SUM
@@ -71,13 +72,13 @@ theorem hostPow_ends {n B : ℕ} {U a fr : ℤ} {μ : ℕ → ℤ} (hB : (B : �
   | succ κ ih =>
     intro j hb
     have hfits : (n : ℤ) ^ j * n ≤ lim.word :=
-      le_trans (by exact_mod_cast hb (j + 1) (by omega)) hB
+      le_trans (by exact_mod_cast hb (j + 1) tac_omega) hB
     have hpos : 0 ≤ (n : ℤ) ^ j * n := by positivity
     unfold hostPow
     -- Power := Power * Num
     light_set (n ^ (j + 1) : ℕ) using pow_succ
     rw [show j + (κ + 1) = j + 1 + κ by omega]
-    exact (ih (j + 1) fun i hi => hb i (by omega)).mono (by simp; omega) fun _ h => h
+    exact (ih (j + 1) fun i hi => hb i tac_omega).mono (by simp; omega) fun _ h => h
 
 /-- **The call of core**, with max U (n^κ) in Power. -/
 theorem hostCall_ends {κ pCore : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ → Need}
@@ -92,12 +93,12 @@ theorem hostCall_ends {κ pCore : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → �
   simp only [chNeed] at hword hdepth
   have hU := hpre.U_pos
   have hUle : x.U ≤ max x.U (x.N ^ κ) := le_max_left _ _
-  have hle : max x.U (x.N ^ κ) ≤ x.N ^ κ + x.U := max_le (by omega) (by omega)
+  have hle : max x.U (x.N ^ κ) ≤ x.N ^ κ + x.U := max_le tac_omega tac_omega
   have hcells : fr + (coreNeed r x.N (2 * max x.U (x.N ^ κ))).cells ≤ lim.space := hok.cells
   generalize max x.U (x.N ^ κ) = U' at *
   have hentries : AbsLe x.X U' := fun y hy => (hpre.le y hy).trans (by exact_mod_cast hUle)
   have hneed : (coreNeed r x.N (2 * U')).Ok lim fr (d + 1) :=
-    { word := le_trans (by exact_mod_cast (by omega)) hword
+    { word := le_trans (by exact_mod_cast tac_omega) hword
       cells := hcells
       space := hok.space
       depth := by omega }
@@ -114,14 +115,14 @@ theorem host_spec {κ pCore : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ �
   have hword := hok.word
   simp only [chNeed] at hword
   have hpow : 1 ≤ x.N ^ κ := Nat.one_le_pow _ _ hpre.N_pos
-  have hB : ((x.N ^ κ : ℕ) : ℤ) ≤ lim.word := le_trans (by exact_mod_cast (by omega)) hword
+  have hB : ((x.N ^ κ : ℕ) : ℤ) ≤ lim.word := le_trans (by exact_mod_cast tac_omega) hword
   have hcall := hostCall_ends hC hpre hok
   unfold hostBody chTime
   -- Power := 1
   light_set (x.N ^ 0 : ℕ)
   -- the κ multiplications
   light_piece (hostPow_ends hB κ 0 fun i hi =>
-    Nat.pow_le_pow_right hpre.N_pos (by omega)) with _ rfl
+    Nat.pow_le_pow_right hpre.N_pos tac_omega) with _ rfl
   rw [Nat.zero_add]
   -- if Power < Bound then Power := Bound
   refine Ends.iteThen (fun hc => ?_) (fun hc => ?_)

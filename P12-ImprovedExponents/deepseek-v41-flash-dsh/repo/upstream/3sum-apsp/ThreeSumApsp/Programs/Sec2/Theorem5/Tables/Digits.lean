@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Tables of digits, by an odometer
@@ -59,12 +60,12 @@ private theorem carryInto_le_one (b j x : ℕ) : carryInto b j x ≤ 1 := by
 private theorem add_carry {b : ℕ} (hb : 0 < b) (q : ℕ) {c : ℕ} (hc : c ≤ 1) :
     (q + c) / b = q / b + (if q % b + c < b then 0 else 1) ∧
       (q + c) % b = if q % b + c < b then q % b + c else 0 := by
-  have hlt : q % b < b := Nat.mod_lt q hb
+  have hlt := Nat.mod_lt q hb
   obtain rfl | rfl : c = 0 ∨ c = 1 := by omega
   · simp [hlt]
   · split_ifs with h
     · exact Nat.succ_div_mod_of_lt h
-    · exact Nat.succ_div_mod_of_eq (by omega)
+    · exact Nat.succ_div_mod_of_eq tac_omega
 
 /-- The digits of x + 1 from the place of weight b^j on are those of x plus the carry. -/
 private theorem succ_div_pow {b : ℕ} (hb : 0 < b) (j x : ℕ) :
@@ -103,15 +104,15 @@ private theorem getElem_digitList {b len x q : ℕ} (hq : q < len)
 is the number of the row being written, Cur its address and Prev the address of the row before it;
 Place is the place, Carry the carry into it, and Digit the new digit. -/
 abbrev Total : ℕ := 0
-@[inherit_doc Total] abbrev Base : ℕ := 1
-@[inherit_doc Total] abbrev Len : ℕ := 2
-@[inherit_doc Total] abbrev Dest : ℕ := 3
-@[inherit_doc Total] abbrev Row : ℕ := 4
-@[inherit_doc Total] abbrev Cur : ℕ := 5
-@[inherit_doc Total] abbrev Prev : ℕ := 6
-@[inherit_doc Total] abbrev Place : ℕ := 7
-@[inherit_doc Total] abbrev Carry : ℕ := 8
-@[inherit_doc Total] abbrev Digit : ℕ := 9
+ abbrev Base : ℕ := 1
+ abbrev Len : ℕ := 2
+ abbrev Dest : ℕ := 3
+ abbrev Row : ℕ := 4
+ abbrev Cur : ℕ := 5
+ abbrev Prev : ℕ := 6
+ abbrev Place : ℕ := 7
+ abbrev Carry : ℕ := 8
+ abbrev Digit : ℕ := 9
 
 end Digits
 
@@ -173,7 +174,7 @@ theorem Placed.step {μ μ' : ℕ → ℤ} {b len cur y r : ℕ} (h : Placed μ 
       (Function.update μ' (cur + (len - 1 - r)) (placeDigit b r (y + 1) : ℕ)) := by
   refine ⟨fun j hj => ?_, h.2.update ⟨by omega, by omega⟩ _⟩
   rcases Nat.lt_succ_iff_lt_or_eq.1 hj with hj | rfl
-  · rw [Function.update_of_ne (by omega)]
+  · rw [Function.update_of_ne tac_omega]
     exact h.1 j hj
   · exact Function.update_self ..
 
@@ -201,7 +202,7 @@ theorem digitsPlace_spec (std : Std lim) (hb : 2 ≤ b) (hbw : (b : ℤ) ≤ lim
   rw [show len - 1 - r = len - (r + 1) by omega, hnew] at hstep
   -- The digit of the row before has not been overwritten.
   have hread : μ' (prev + (len - (r + 1))) = (placeDigit b r y : ℕ) := by
-    rw [hI.2 _ (Or.inl (by omega)), hrow _ (by omega), show len - 1 - (len - (r + 1)) = r by omega]
+    rw [hI.2 _ (Or.inl tac_omega), hrow _ tac_omega, show len - 1 - (len - (r + 1)) = r by omega]
   unfold digitsPlace
   -- Place := Place - 1; Digit := mem[Prev + Place] + Carry
   light_set (len - (r + 1) : ℕ)
@@ -233,12 +234,11 @@ theorem digitsInner_spec (std : Std lim) (hb : 2 ≤ b) (hbw : (b : ℤ) ≤ lim
       SameOutside μ μ' cur len → Q ⟨frame [n, b, len, dst, row, cur, prev, 0, c, x], μ'⟩)
     (hT : 26 * len + 4 ≤ T) :
     Ends lim P d digitsInner ⟨frame [n, b, len, dst, row, cur, prev, len, 1, x₀], μ⟩ T Q := by
-  have h100 := std.const_le
   -- while 0 < Place
   refine Ends.whileConst (Inv μ n b len dst row cur prev y) len digitsPlace.blockCost ?start ?round
     ?done
     (by simp [digitsPlace]; omega)
-  case start => exact ⟨x₀, μ, rfl, fun j hj => absurd hj (by omega), .refl⟩
+  case start => exact ⟨x₀, μ, rfl, fun j hj => absurd hj tac_omega, .refl⟩
   case round =>
     intro r σ hr h
     have hplace := digitsPlace_spec (P := P) (d := d) std hb hbw hcur hprev hrow hr h
@@ -249,7 +249,7 @@ theorem digitsInner_spec (std : Std lim) (hb : 2 ≤ b) (hbw : (b : ℤ) ≤ lim
     refine ⟨by light_side, by light_side, ?_⟩
     have hdone := done (carryInto b len y) x μ' (fun q hq => ?_) same
     · simpa using hdone
-    · rw [← hcells (len - 1 - q) (by omega), show len - 1 - (len - 1 - q) = q by omega]
+    · rw [← hcells (len - 1 - q) tac_omega, show len - 1 - (len - 1 - q) = q by omega]
 
 /-! ## The loop over the rows -/
 
@@ -279,19 +279,19 @@ theorem digitsRow_spec (std : Std lim) (hb : 2 ≤ b) (hbw : (b : ℤ) ≤ lim.w
   light_set len
   light_set 1
   -- while 0 < Place
-  refine Ends.next _ (digitsInner_spec (y := i) std hb hbw (by omega) (by omega)
-    (fun q hq => hrows i (by omega) q hq) ?_ le_rfl)
+  refine Ends.next _ (digitsInner_spec (y := i) std hb hbw tac_omega tac_omega
+    (fun q hq => hrows i tac_omega q hq) ?_ le_rfl)
   intro c' x' μ'' hnew same'
   -- Row := Row + 1; Prev := Cur; Cur := Cur + len
   light_set (i + 1 + 1 : ℕ)
   light_set (dst + (i + 1) * len : ℕ)
   light_set (dst + (i + 1 + 1) * len : ℕ) using Nat.succ_mul
   refine ⟨_, _, _, _, rfl, fun y hy q hq => ?_,
-      same.trans (same'.mono (by omega) (by omega))⟩
+      same.trans (same'.mono tac_omega tac_omega)⟩
   rcases Nat.lt_succ_iff_lt_or_eq.1 hy with hy | rfl
   · -- An earlier row lies before the cells that were written.
     have hbefore : y * len + len ≤ (i + 1) * len := Nat.mul_add_le_mul hy le_rfl
-    rw [same' _ (Or.inl (by omega))]
+    rw [same' _ (Or.inl tac_omega)]
     exact hrows y hy q hq
   · exact hnew q hq
 
@@ -334,7 +334,7 @@ theorem digits_spec (std : Std lim) (hsp : dst + n * len ≤ lim.space) (hb : 2 
   obtain ⟨t, rfl⟩ : ∃ t, n = t + 1 := ⟨n - 1, by simp at hpos; omega⟩
   have hlen : (t + 1) * len = t * len + len := Nat.succ_mul t len
   -- Row 0.
-  refine Ends.next _ (digitsZero_spec std (by omega) ?_ le_rfl) (by simp; ring_nf; omega)
+  refine Ends.next _ (digitsZero_spec std tac_omega ?_ le_rfl) (by simp; ring_nf; omega)
   -- Row := 1; Prev := dst; Cur := dst + len, written as the invariant at i = 0 has them
   light_set (0 + 1 : ℕ)
   light_set (dst + 0 * len : ℕ)
@@ -353,7 +353,7 @@ theorem digits_spec (std : Std lim) (hsp : dst + n * len ≤ lim.space) (hb : 2 
       simp [placeDigit]
   case round =>
     intro i σ hi h
-    have hrow := digitsRow_spec (P := P) (d := d) std hb hbw hsp hnw (by omega) h
+    have hrow := digitsRow_spec (P := P) (d := d) std hb hbw hsp hnw tac_omega h
     obtain ⟨p, c, x, μ', rfl, -⟩ := h
     exact ⟨by light_side, by light_side, hrow⟩
   case done =>

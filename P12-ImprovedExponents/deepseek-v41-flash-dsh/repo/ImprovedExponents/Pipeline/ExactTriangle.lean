@@ -6,6 +6,7 @@ public import ImprovedExponents.Pipeline.Solved
 public import ImprovedExponents.Total.Explicit
 public import ImprovedExponents.Total.Uniform
 public import ImprovedExponents.Total.Lop
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -31,7 +32,7 @@ The deduction of Section 3 of the paper for programs, with rational exponents in
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3 Light.Sec4 ParamRoutines
+open ThreeSumApsp Light Light.Sec3 ParamRoutines
 
 /-- **From Exact Triangle to the four problems**, for the programs. -/
 theorem allSolved_of_explicitFrom {δ : ℝ} {e : ℕ} (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 1)
@@ -63,16 +64,15 @@ theorem explicitFrom_of_thinClaim_mid {ε γ q δ : ℝ} {σ e : ℚ}
     (hδ : δ < (e : ℝ) * min (2 * (σ : ℝ) - 1) (min γ (σ - q) - (2 * (σ : ℝ) - 1)))
     (M : DetTimeModel) (hM : M.lopDetect = lightModel.lopDetect) (hhost : MidHostRat M) :
     ExplicitFrom M δ 1 := by
-  have hσ0 : (0 : ℝ) < σ := by linarith
   -- the exponents of the host
   set d : ℚ := 2 * σ * e with hd
   set η : ℚ := (2 * σ - 1) / (2 * σ) with hη
   have hdR : (d : ℝ) = 2 * σ * e := by rw [hd]; push_cast; ring
   have hηR : (η : ℝ) = (2 * σ - 1) / (2 * σ) := by rw [hη]; push_cast; ring
   have hd0R : (0 : ℝ) < d := by rw [hdR]; positivity
-  have hη0R : (0 : ℝ) < η := by rw [hηR]; exact div_pos (by linarith) (by linarith)
+  have hη0R : (0 : ℝ) < η := by rw [hηR]; exact div_pos tac_linarith tac_linarith
   have hη1R : (η : ℝ) < 1 / 2 := by
-    rw [hηR, div_lt_iff₀ (by linarith)]
+    rw [hηR, div_lt_iff₀ tac_linarith]
     linarith
   have hd0 : 0 < d := by exact_mod_cast hd0R
   have hη0 : 0 < η := by exact_mod_cast hη0R
@@ -87,11 +87,11 @@ theorem explicitFrom_of_thinClaim_mid {ε γ q δ : ℝ} {σ e : ℚ}
     rw [hdR]
     nlinarith
   have hab : d.num.toNat ≤ 2 * d.den := by
-    have h := mul_num_lt_mul_den hd0.le (k := 1) (l := 1) (by norm_num)
+    have h := mul_num_lt_mul_den hd0.le (k := 1) (l := 1) tac_norm_num
       (by push_cast; linarith)
     omega
   have hcd : η.num.toNat ≤ 3 * η.den := by
-    have h := mul_num_lt_mul_den hη0.le (k := 1) (l := 2) (by norm_num)
+    have h := mul_num_lt_mul_den hη0.le (k := 1) (l := 2) tac_norm_num
       (by push_cast; linarith)
     omega
   have hhost := hhost d.num.toNat d.den η.num.toNat η.den d.den_pos η.den_pos hab hcd
@@ -128,7 +128,7 @@ theorem explicitFrom_of_thinClaim_mid {ε γ q δ : ℝ} {σ e : ℚ}
   refine explicitFrom_mid M (D := paramDRat d.num.toNat d.den)
     (g := paramGRatOf d.num.toNat d.den η.num.toNat η.den) hd0R hη0R hη1R
     (le_min hγ zero_le_one) hq hδ0 (by rw [hdR]; linarith) (fun n => ?_) (fun n => ?_) hhost hlop
-    ?_ (by rwa [hkey])
+    ?_ tac_rwa [hkey]
   · rw [hd_eq]
     rfl
   · rw [hη_eq]
@@ -162,7 +162,6 @@ theorem explicitFrom_tuple {A c θ ε δ : ℝ} {σ : ℚ} (hadm : AdmissibleX A
   have hle : min (2 * (σ : ℝ) - 1) (min γ (σ - qOf θ) - (2 * (σ : ℝ) - 1))
       ≤ min (2 * (σ : ℝ) - 1) (1 - σ) :=
     min_le_min le_rfl (by have := min_le_right γ ((σ : ℝ) - qOf θ); linarith)
-  have hthird := min_le_third (σ : ℝ)
   have hσ2 := hadm.σ_lt
   have hw : 3 * (σ : ℝ) + min (2 * (σ : ℝ) - 1) (1 - σ) ≤ 3 := by
     rcases le_total (σ : ℝ) (2 / 3) with h | h
@@ -170,10 +169,9 @@ theorem explicitFrom_tuple {A c θ ε δ : ℝ} {σ : ℚ} (hadm : AdmissibleX A
       linarith
     · have := min_le_right (2 * (σ : ℝ) - 1) (1 - σ)
       linarith
-  refine explicitFrom_of_thinClaim_mid (hthin γ hγ0 hγlt) hγ0.le hq (by linarith) hσ hσ2 he0 he
+  refine explicitFrom_of_thinClaim_mid (hthin γ hγ0 hγlt) hγ0.le hq tac_linarith hσ hσ2 he0 he
     hδ0 ?_ hδ' M hM hhost
-  have hprod : (e : ℝ) * min (2 * (σ : ℝ) - 1) (min γ (σ - qOf θ) - (2 * (σ : ℝ) - 1))
-      ≤ e * min (2 * (σ : ℝ) - 1) (1 - σ) := mul_le_mul_of_nonneg_left hle he0.le
+  have hprod := mul_le_mul_of_nonneg_left hle he0.le
   have hall : 3 * (σ : ℝ) * e + (e : ℝ) * min (2 * (σ : ℝ) - 1) (1 - σ) ≤ 3 * e := by
     have := mul_le_mul_of_nonneg_left hw he0.le
     linarith

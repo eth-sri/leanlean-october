@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Sec4.ParameterSteps
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Corollary 31: the costs of Theorem 30 as powers of `D`
@@ -67,7 +68,7 @@ theorem ten_mul_le_levelsOf {c : ℝ} (hc : 10 < c) (m : ℕ) : 10 * m ≤ level
 private lemma levelsOf_le {c : ℝ} (hc : 10 < c) {m : ℕ} (hm : 1 ≤ m) :
     (levelsOf c m : ℝ) ≤ (c + 1) * m := by
   have hm' : (1 : ℝ) ≤ m := by exact_mod_cast hm
-  have hL : (levelsOf c m : ℝ) < c * m + 1 := Nat.ceil_lt_add_one (by positivity)
+  have hL : (levelsOf c m : ℝ) < c * m + 1 := Nat.ceil_lt_add_one tac_positivity
   linarith
 
 /-- `m = O(log D)` for `D = 4^m`. -/
@@ -78,7 +79,7 @@ private lemma dominated_cast_log_D :
 /-- `L = ⌈cm⌉ = O(log D)` for `D = 4^m`. -/
 private lemma dominated_levelsOf_log_D {c : ℝ} (hc : 10 < c) :
     Dominated (fun m : ℕ => 1 ≤ m) (fun m => (levelsOf c m : ℝ)) fun m => Real.log (D m) :=
-  (Dominated.of_le_const_mul (C := c + 1) (by linarith) fun _ hm => levelsOf_le hc hm).trans
+  (Dominated.of_le_const_mul (C := c + 1) tac_linarith fun _ hm => levelsOf_le hc hm).trans
     dominated_cast_log_D
 
 /-- Proof of Corollary 31: "After the padding, the assumption D ≤ N^ε now reads N ≥ 4^{(m-1)/ε}",
@@ -90,8 +91,8 @@ theorem Corollary31.hypothesis {m D₀ N : ℕ} {ε : ℝ} (hm : 1 ≤ m) (hε :
     rw [← Nat.cast_one, ← Nat.cast_sub hm, Real.rpow_natCast]
     exact le_trans (by exact_mod_cast hgt.le) hthin
   calc (4 : ℝ) ^ (((m : ℝ) - 1) / ε) = ((4 : ℝ) ^ ((m : ℝ) - 1)) ^ (1 / ε) := by
-        rw [← Real.rpow_mul (by norm_num), mul_one_div]
-    _ ≤ ((N : ℝ) ^ ε) ^ (1 / ε) := Real.rpow_le_rpow (by positivity) hle (by positivity)
+        rw [← Real.rpow_mul tac_norm_num, mul_one_div]
+    _ ≤ ((N : ℝ) ^ ε) ^ (1 / ε) := Real.rpow_le_rpow tac_positivity hle tac_positivity
     _ = (N : ℝ) := by
         rw [← Real.rpow_mul N.cast_nonneg, mul_one_div_cancel hε.ne', Real.rpow_one]
 
@@ -100,10 +101,10 @@ theorem Corollary31.hypothesis {m D₀ N : ℕ} {ε : ℝ} (hm : 1 ≤ m) (hε :
 /-- Proof of Corollary 31: "ρ < ρ_c", where `ρ = 9m/(L-m+1)` and `L = ⌈cm⌉ ≥ cm`. -/
 theorem Corollary31.rho_lt {c : ℝ} (hc : 10 < c) (m : ℕ) : rho (levelsOf c m) m < rhoC c := by
   have hL : c * m ≤ levelsOf c m := Nat.le_ceil _
-  have hm : (m : ℝ) ≤ c * m := le_mul_of_one_le_left (Nat.cast_nonneg m) (by linarith)
+  have hm : (m : ℝ) ≤ c * m := le_mul_of_one_le_left (Nat.cast_nonneg m) tac_linarith
   unfold rho rhoC
   -- after clearing denominators: `9m (c - 1) < 9 (L - m + 1)`, from `cm ≤ L`
-  rw [div_lt_div_iff₀ (by linarith) (by linarith)]
+  rw [div_lt_div_iff₀ tac_linarith tac_linarith]
   linarith
 
 /-! ### Queries -/
@@ -114,21 +115,21 @@ because θ < 0.9, gives ∑_{d≤t} α_d ≤ (9x)^t (1+1/x)^m = O(D^q)". The con
 theorem Corollary31.sum_alpha {θ : ℝ} (hθ0 : 0 < θ) (hθ1 : θ < 0.9) :
     Dominated (fun m : ℕ => 1 ≤ m) (fun m => ∑ d ∈ range (switchOf θ m + 1), (alpha m d : ℝ))
       fun m => (D m : ℝ) ^ qOf θ := by
-  have hx : 0 < (1 - θ) / θ := div_pos (by linarith) hθ0
+  have hx : 0 < (1 - θ) / θ := div_pos tac_linarith hθ0
   have h9x : 1 < 9 * ((1 - θ) / θ) := by
     rw [← mul_div_assoc, lt_div_iff₀ hθ0]
     linarith
-  refine .of_le_const_mul (C := 9 * ((1 - θ) / θ)) (by positivity) fun m _ => ?_
-  have ht : ((switchOf θ m : ℕ) : ℝ) ≤ θ * m + 1 := (Nat.ceil_lt_add_one (by positivity)).le
+  refine .of_le_const_mul (C := 9 * ((1 - θ) / θ)) tac_positivity fun m _ => ?_
+  have ht : ((switchOf θ m : ℕ) : ℝ) ≤ θ * m + 1 := (Nat.ceil_lt_add_one tac_positivity).le
   calc ∑ d ∈ range (switchOf θ m + 1), (alpha m d : ℝ)
       ≤ (9 * ((1 - θ) / θ)) ^ switchOf θ m * (1 + 1 / ((1 - θ) / θ)) ^ m :=
-        sum_alpha_le hx h9x.le (switchOf_le (by linarith) m)
+        sum_alpha_le hx h9x.le (switchOf_le tac_linarith m)
     _ ≤ (9 * ((1 - θ) / θ)) ^ (θ * (m : ℝ) + 1) * (1 + 1 / ((1 - θ) / θ)) ^ m := by
         gcongr
         rw [← Real.rpow_natCast]
         exact Real.rpow_le_rpow_of_exponent_le h9x.le ht
     _ = 9 * ((1 - θ) / θ) * (D m : ℝ) ^ qOf θ := by
-        rw [← rpow_mul_pow_eq_D_rpow_qOf hθ0 (by linarith) m, Real.rpow_add (by positivity),
+        rw [← rpow_mul_pow_eq_D_rpow_qOf hθ0 tac_linarith m, Real.rpow_add tac_positivity,
           Real.rpow_one]
         ring
 

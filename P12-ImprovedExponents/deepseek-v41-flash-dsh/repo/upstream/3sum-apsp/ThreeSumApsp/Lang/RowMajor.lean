@@ -7,6 +7,7 @@ module
 
 public import PaperStatements
 public import ThreeSumApsp.Lang.Lib.Seg
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Reading the trusted layout
@@ -19,7 +20,7 @@ public section
 
 namespace Light
 
-open ThreeSumApsp ThreeSumApsp.WordRam
+open ThreeSumApsp.WordRam
 
 private theorem rowMajor_succ {n m : ℕ} (A : Fin (n + 1) → Fin m → ℤ) :
     rowMajor A = (List.finRange m).map (A 0) ++ rowMajor fun i : Fin n => A i.succ := by
@@ -38,7 +39,7 @@ theorem getD_rowMajor : ∀ {n m : ℕ} (A : Fin n → Fin m → ℤ) (i : Fin n
   | n + 1, m, A, i, j => by
     rw [rowMajor_succ]
     refine Fin.cases ?_ (fun i' => ?_) i
-    · rw [Fin.val_zero, Nat.zero_mul, Nat.zero_add, List.getD_append _ _ _ _ (by simp)]
+    · rw [Fin.val_zero, Nat.zero_mul, Nat.zero_add, List.getD_append _ _ _ _ tac_simp]
       simp [List.getD_eq_getElem?_getD]
     · rw [List.getD_append_right _ _ _ _ (by simp [Fin.val_succ, Nat.add_mul]; omega)]
       have : ((i'.succ : Fin (n + 1)) : ℕ) * m + (j : ℕ) - ((List.finRange m).map (A 0)).length =
@@ -63,7 +64,7 @@ theorem memOf_append_left {l₁ : List ℤ} (l₂ : List ℤ) {a : ℕ} (h : a <
 theorem memOf_append_right (l₁ l₂ : List ℤ) (a : ℕ) :
     memOf (l₁ ++ l₂) (l₁.length + a) = memOf l₂ a := by
   unfold memOf
-  rw [List.getD_append_right _ _ _ _ (by omega), Nat.add_sub_cancel_left]
+  rw [List.getD_append_right _ _ _ _ tac_omega, Nat.add_sub_cancel_left]
 
 /-- A part of a concatenation is a segment of the memory. -/
 theorem seg_memOf (l₁ l l₂ : List ℤ) : Seg (memOf (l₁ ++ l ++ l₂)) l₁.length l := by

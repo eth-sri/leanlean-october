@@ -9,6 +9,7 @@ public import ThreeSumApsp.Lang.Lib.PowTable
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Places
 public import ThreeSumApsp.Spec.Sec2.Theorem5.Layout
 public import ThreeSumApsp.Spec.Sec2.Theorem5.PrunedList
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 5 in the light language: the map
@@ -49,7 +50,7 @@ def SegB (μ : ℕ → ℤ) (a : ℕ) (l : List Bool) : Prop :=
 /-- A cell of a segment of bits. -/
 theorem SegB.get {μ : ℕ → ℤ} {a : ℕ} {l : List Bool} (h : SegB μ a l) {q : ℕ} (hq : q < l.length) :
     μ (a + q) = if l.getD q false then 1 else 0 :=
-  (Seg.getD h (by rwa [List.length_map]) 0).trans (List.getD_map_of_lt _ hq false 0)
+  (Seg.getD h tac_rwa [List.length_map] 0).trans (List.getD_map_of_lt _ hq false 0)
 
 /-! ## The numbers of the procedures
 
@@ -278,19 +279,6 @@ structure RowTables (p : Par) (b0 : ℕ) (μ : ℕ → ℤ) : Prop where
 structure SharedTables (p : Par) (b0 : ℕ) (μ : ℕ → ℤ) : Prop
   extends PowTables p b0 μ, RowTables p b0 μ
 
-/-- What the shared stage leaves behind: the tables, the directory, and the encodings of all bands.
-(Cell 31 of the directory is not used by it.) -/
-structure SharedReady (p : Par) (hmL : p.m ≤ p.L) (aX aY b0 : ℕ)
-    (X : Matrix (Fin p.N) (Fin (ThreeSumApsp.D p.m)) ℤ)
-    (Y : Matrix (Fin (ThreeSumApsp.D p.m)) (Fin p.N) ℤ) (μ : ℕ → ℤ) : Prop
-  extends SharedTables p b0 μ where
-  dir : SegN μ (p.aDIR b0) (dirList p aX aY b0)
-  encA : ∀ β < p.nB, Seg μ (p.aENCA b0 + β * p.T)
-    (Spec.arrT (encodingL (bandArrayL (Spec.stdLayout hmL) X β)))
-  encB : ∀ β < p.nB, Seg μ (p.aENCB b0 + β * p.T)
-    (Spec.arrT (encodingR (bandArrayR (Spec.stdLayout hmL) Y β)))
-
-/-- The shape of the running time of the shared stage. -/
 def sharedShape (p : Par) : ℕ :=
   (p.L + 1) ^ 2 + (Nat.sqrt p.K + 1) + (p.KK + 1) * (p.L + 1) + (p.N + 1) * (p.Lo + 1)
     + (p.D + 1) * (p.m + 1)
@@ -363,28 +351,6 @@ structure PickArgs : Type where
   (pSub pU pVal pDst : ℕ)
   (small big : List ℕ) (values : List ℤ)
 
-/-- What pick assumes: big is an increasing list, values has a value for each of its numbers, and
-small is an increasing list of numbers of big; all of it lies above the cells that pick writes. -/
-structure PickPre (μ : ℕ → ℤ) (x : PickArgs) : Prop where
-  small : SegN μ x.pSub x.small
-  big : SegN μ x.pU x.big
-  values : Seg μ x.pVal x.values
-  len : x.values.length = x.big.length
-  big_sorted : x.big.Pairwise (· < ·)
-  small_sorted : x.small.Pairwise (· < ·)
-  sub : ∀ c ∈ x.small, c ∈ x.big
-  dst_sub : x.pDst + x.small.length ≤ x.pSub := by light_arith
-  dst_big : x.pDst + x.small.length ≤ x.pU := by light_arith
-  dst_val : x.pDst + x.small.length ≤ x.pVal := by light_arith
-  sub_le : x.pSub + x.small.length ≤ lim.space := by light_arith
-  big_le : x.pU + x.big.length ≤ lim.space := by light_arith
-  val_le : x.pVal + x.big.length ≤ lim.space := by light_arith
-
-/-- The arguments of pruned but for the number n of levels that are left, with the data behind them.
-The two encodings are the lists EA at aEA and EB at aEB, and the parts of them below the current
-vertex begin at the position base.  The list codes stands at l, the values are written to out, the
-stack begins at sp, and the powers of ten up to 10^Lmax stand at p10.  A and B bound the numbers in
-the two encodings. -/
 structure PrunedArgs : Type where
   (aEA aEB base l out sp p10 : ℕ)
   (Lmax : ℕ) (EA EB : List ℤ) (codes : List ℕ) (A B : ℤ)

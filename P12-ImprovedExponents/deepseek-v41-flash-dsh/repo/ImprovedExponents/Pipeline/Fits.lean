@@ -2,6 +2,7 @@ module
 
 public import ImprovedExponents.Pipeline.RegimeRS
 public import ImprovedExponents.Optimum.PerCBasic
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -21,7 +22,7 @@ With `L = ⌈cm⌉`, `√K N₀ ≤ e^{m A(L/m)}` for `A(c) = (c/2) H(1/c) + (c 
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Light Light.Sec4 Real
+open ThreeSumApsp Light.Sec4 Real
 
 /-- `binom(L, m) ≤ e^{m · (L/m) H(m/L)}`, with `c H(1/c)` written as `cEntropy c`. -/
 theorem K_le_exp {L m : ℕ} (hm : 1 ≤ m) (hmL : m ≤ L) :
@@ -48,7 +49,7 @@ theorem K_le_exp {L m : ℕ} (hm : 1 ≤ m) (hmL : m ≤ L) :
     congr 1
     ring
   have hpos : (0 : ℝ) < ((L - m : ℕ) : ℝ) ^ (L - m) * (m : ℝ) ^ m := by
-    have h : 0 < (L - m) ^ (L - m) * m ^ m := Nat.mul_pos Nat.pow_self_pos (Nat.pow_pos (by omega))
+    have h : 0 < (L - m) ^ (L - m) * m ^ m := Nat.mul_pos Nat.pow_self_pos (Nat.pow_pos tac_omega)
     exact_mod_cast h
   rw [hval, le_div_iff₀ hpos]
   have hnat : L.choose m * m ^ m * (L - m) ^ (L - m) ≤ L ^ L := by
@@ -78,7 +79,7 @@ theorem sqrtKN0_le_exp {L m : ℕ} (hm : 1 ≤ m) (hmL : m < L) :
       ring]
     exact Real.sqrt_le_sqrt hK
   have hN0 : (N0 L m : ℝ) = exp (((L : ℝ) - m) * log 3) := by
-    rw [N0, Nat.cast_pow, ← Nat.cast_sub hmL.le, exp_nat_mul, exp_log (by norm_num)]
+    rw [N0, Nat.cast_pow, ← Nat.cast_sub hmL.le, exp_nat_mul, exp_log tac_norm_num]
     norm_num
   rw [sqrtKN0, basePruned_eq hLm, hN0]
   calc Real.sqrt (K L m : ℝ) * exp (((L : ℝ) - m) * log 3)
@@ -97,9 +98,7 @@ theorem exists_fitsRS {a b p q : ℕ} (hb : 1 ≤ b) (hq : 1 ≤ q) (hc : 10 * b
     ∃ m₂ : ℕ, ∀ (m₀ : ℕ) (hm₀ : 1 ≤ m₀), m₂ ≤ m₀ →
       FitsRS ⟨a, b, p, q, m₀, hb, hq, hc, hp, hθ, hm₀⟩ r s := by
   have hbR : (0 : ℝ) < b := by exact_mod_cast hb
-  have hrR : (0 : ℝ) < r := by exact_mod_cast hr
   have hsR : (0 : ℝ) < s := by exact_mod_cast hs
-  have h4 := log_four_pos
   have hcR : (10 : ℝ) < (a : ℝ) / b := by
     rw [lt_div_iff₀ hbR]
     exact_mod_cast hc
@@ -120,7 +119,7 @@ theorem exists_fitsRS {a b p q : ℕ} (hb : 1 ≤ b) (hq : 1 ≤ q) (hc : 10 * b
   refine ⟨max ⌈1 / δ₀⌉₊ ⌈r * log 4 / (r * log 4 - s * B)⌉₊, fun m₀ hm₀ hm₂ N D₀ hN hm => ?_⟩
   change m₀ ≤ logFour D₀ at hm
   set m := logFour D₀ with hmdef
-  have hm1 : 1 ≤ m := le_trans hm₀ hm
+  have hm1 := le_trans hm₀ hm
   have hm0 : (0 : ℝ) < m := by exact_mod_cast hm1
   have hmδ : 1 / δ₀ ≤ (m : ℝ) :=
     (Nat.le_ceil _).trans (by exact_mod_cast (le_trans (le_max_left _ _) (le_trans hm₂ hm)))
@@ -131,7 +130,7 @@ theorem exists_fitsRS {a b p q : ℕ} (hb : 1 ≤ b) (hq : 1 ≤ q) (hc : 10 * b
     rw [levelsOf_div a _ hb]
     rfl
   have hLge : c * m ≤ (levelsOf c m : ℝ) := Nat.le_ceil _
-  have hLlt : (levelsOf c m : ℝ) < c * m + 1 := Nat.ceil_lt_add_one (by positivity)
+  have hLlt : (levelsOf c m : ℝ) < c * m + 1 := Nat.ceil_lt_add_one tac_positivity
   have hmL : m < levelsOf c m := by
     have h : (m : ℝ) < (levelsOf c m : ℝ) := by nlinarith
     exact_mod_cast h
@@ -154,17 +153,17 @@ theorem exists_fitsRS {a b p q : ℕ} (hb : 1 ≤ b) (hq : 1 ≤ q) (hc : 10 * b
     push_cast [Nat.cast_sub hm1]
     linarith
   have hfour : exp (((r * (m - 1) : ℕ) : ℝ) * log 4) = (4 : ℝ) ^ (r * (m - 1)) := by
-    rw [exp_nat_mul, exp_log (by norm_num)]
+    rw [exp_nat_mul, exp_log tac_norm_num]
   -- `4^{r(m-1)} ≤ D₀^r ≤ N^s`
-  have hD2 : 2 ≤ D₀ := two_le_of_clog hm1
-  have hpow : 4 ^ (m - 1) < D₀ := Nat.pow_pred_clog_lt_self (by norm_num) (by omega)
+  have hD2 := two_le_of_clog hm1
+  have hpow : 4 ^ (m - 1) < D₀ := Nat.pow_pred_clog_lt_self tac_norm_num tac_omega
   have hNge : (4 : ℝ) ^ (r * (m - 1)) ≤ (N : ℝ) ^ s := by
-    have h : (4 ^ (m - 1)) ^ r ≤ N ^ s := (Nat.pow_le_pow_left hpow.le r).trans hN
+    have h := (Nat.pow_le_pow_left hpow.le r).trans hN
     rw [← pow_mul, mul_comm] at h
     exact_mod_cast h
   -- `e^{m B} ≤ N`, as `e^{s m B} ≤ N^s`
   have hmain : exp ((m : ℝ) * B) ≤ (N : ℝ) := by
-    refine le_of_pow_le_pow_left₀ (by omega : s ≠ 0) (by positivity) ?_
+    refine le_of_pow_le_pow_left₀ (by omega : s ≠ 0) tac_positivity ?_
     rw [← exp_nat_mul]
     calc exp ((s : ℝ) * ((m : ℝ) * B)) ≤ exp (((r * (m - 1) : ℕ) : ℝ) * log 4) := exp_le_exp.2 hexp
       _ = (4 : ℝ) ^ (r * (m - 1)) := hfour

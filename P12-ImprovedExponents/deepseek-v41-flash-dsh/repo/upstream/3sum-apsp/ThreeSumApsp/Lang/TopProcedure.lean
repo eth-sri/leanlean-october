@@ -11,6 +11,7 @@ public import ThreeSumApsp.Lang.Tasks
 public import ThreeSumApsp.Lang.ToMachine
 public import ThreeSumApsp.Machine.Realized
 public import ThreeSumApsp.Util.Flag
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # From a solver of a task to a program for the layout of the end statement
@@ -33,7 +34,7 @@ constant times T.
 
 namespace Light
 
-open ThreeSumApsp ThreeSumApsp.WordRam
+open ThreeSumApsp.WordRam
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -59,10 +60,10 @@ def topBody (κ p : ℕ) (args : List Expr) (dec : Bool) : Stmt :=
 /-- The loop that is written out κ times turns U = 1 into U = n^κ. -/
 theorem pow_spec {n : ℕ} (hn : 1 ≤ n) (a : ℤ) (μ : ℕ → ℤ) : ∀ κ : ℕ, ((n ^ κ : ℕ) : ℤ) ≤ lim.word →
     Ends lim P d (powStmt κ) ⟨frame [a, n, 1], μ⟩ (4 * κ) (· = ⟨frame [a, n, ((n ^ κ : ℕ) : ℤ)], μ⟩)
-  | 0, _ => Ends.skip (by simp)
+  | 0, _ => Ends.skip tac_simp
   | κ + 1, hw => by
     have hle : ((n ^ κ : ℕ) : ℤ) ≤ ((n ^ (κ + 1) : ℕ) : ℤ) := by
-      exact_mod_cast Nat.pow_le_pow_right hn (by omega)
+      exact_mod_cast Nat.pow_le_pow_right hn tac_omega
     have hval : ((n ^ κ : ℕ) : ℤ) * n = ((n ^ (κ + 1) : ℕ) : ℤ) := by
       push_cast
       ring
@@ -85,7 +86,6 @@ theorem safe_fourAddresses {c : ℕ} (hc : c ≤ 4) {n : ℕ} {lim : Limits} {σ
   have hcn : (c : ℤ) * ((n : ℤ) * n) ≤ 4 * ((n : ℤ) * n) :=
     mul_le_mul_of_nonneg_right (by exact_mod_cast hc) hnn
   have hcn0 : (0 : ℤ) ≤ (c : ℤ) * ((n : ℤ) * n) := by positivity
-  have hc' : (c : ℤ) ≤ 4 := by exact_mod_cast hc
   push_cast at hw h3
   simp only [List.forall_mem_cons, List.not_mem_nil, false_imp_iff, implies_true, and_true]
   simp only [Expr.Safe, Expr.val, Op.eval, h3, true_and, Nat.cast_ofNat, Nat.cast_one]
@@ -115,7 +115,7 @@ theorem ofEnd_cell0 (loc : ℕ → ℤ) : (M (k 0)).val ⟨loc, memOf ((ofEnd Q)
 theorem ofEnd_input_le : ∀ a ∈ (ofEnd Q).input x, |a| ≤ ((x.n + x.U + 1 : ℕ) : ℤ) := by
   intro a ha
   rcases List.mem_cons.1 ha with rfl | ha
-  · rw [abs_of_nonneg (by positivity)]
+  · rw [abs_of_nonneg tac_positivity]
     push_cast
     omega
   · have := Bounded.abs_le ha
@@ -137,7 +137,7 @@ private theorem polyBound_pow_le (s k κ n : ℕ) {r : ℕ} (hr : (κ + 1) * k �
     polyBound s k [n, n ^ κ] ≤ 2 ^ (s + k) * (n + 1) ^ r := by
   have hpos : 1 ≤ n + 1 := by omega
   have hU : n ^ κ + 1 ≤ 2 * (n + 1) ^ κ := by
-    have h1 : n ^ κ ≤ (n + 1) ^ κ := Nat.pow_le_pow_left (by omega) κ
+    have h1 : n ^ κ ≤ (n + 1) ^ κ := Nat.pow_le_pow_left tac_omega κ
     have h2 : 1 ≤ (n + 1) ^ κ := Nat.one_le_pow _ _ hpos
     omega
   unfold polyBound
@@ -235,12 +235,12 @@ theorem body_ends (w : Wrap Q task dec) {P : Program} {p : ℕ} {Tn : ℕ → �
   have hcells := hroom.cells
   have hdepth := hroom.depth
   have hcst : x.n * x.n + 1 ≤ w.cst * (x.n * x.n + 1) := Nat.le_mul_of_pos_left _ w.cst_pos
-  have hsquare : ((x.n * x.n : ℕ) : ℤ) ≤ lim.word := le_trans (Nat.cast_le.2 (by omega)) hcells
-  have hU1 : 1 ≤ x.U := hU ▸ Nat.one_le_pow _ _ hn
+  have hsquare := le_trans (Nat.cast_le.2 tac_omega) hcells
+  have hU1 := hU ▸ Nat.one_le_pow _ _ hn
   push_cast at hbound hsquare
   unfold topBody bodySteps
   -- n := mem[0]
-  refine Ends.setToThen (x.n : ℤ) ?_ ⟨safe_cell0 (by omega) hroom.space, ofEnd_cell0 x _⟩
+  refine Ends.setToThen (x.n : ℤ) ?_ ⟨safe_cell0 tac_omega hroom.space, ofEnd_cell0 x _⟩
   -- if n ≠ 0
   refine Ends.iteLast (fun h => absurd h (by simp; omega)) (fun _ => ?_)
   -- U := 1
@@ -254,7 +254,7 @@ theorem body_ends (w : Wrap Q task dec) {P : Program} {p : ℕ} {Tn : ℕ → �
   -- result := solver(…)
   refine Ends.callToThen (hsol.meets _ (w.inst x) (w.fr x) (w.pre x hn hU1)
     (by rw [w.size_eq, w.bound_eq]; exact hroom.solver)) ?_
-    ⟨w.safe x lim _ rfl rfl rfl hcells, w.vals x _ rfl rfl rfl⟩ (by omega)
+    ⟨w.safe x lim _ rfl rfl rfl hcells, w.vals x _ rfl rfl rfl⟩ tac_omega
     (by rw [w.size_eq, w.bound_eq]; light_time)
   intro r μ' hpost
   rw [w.size_eq, w.bound_eq]
@@ -273,9 +273,9 @@ theorem body_ends_zero (w : Wrap Q task dec) (P : Program) (p κ : ℕ) (x : Bou
   push_cast at hbound
   unfold topBody
   -- n := mem[0]
-  refine Ends.setToThen (x.n : ℤ) ?_ ⟨safe_cell0 (by omega) hroom.space, ofEnd_cell0 x _⟩
+  refine Ends.setToThen (x.n : ℤ) ?_ ⟨safe_cell0 tac_omega hroom.space, ofEnd_cell0 x _⟩
   -- if n ≠ 0 … else result := 0 or 1
-  refine Ends.iteLast (fun _ => ?_) (fun h => absurd (by simp [hn]) h)
+  refine Ends.iteLast (fun _ => ?_) (fun h => absurd tac_simp [hn] h)
   have hanswer := w.zero x hn
   cases dec <;>
     exact Ends.set (by simp; omega) (by light_time) (by simpa [Answered, verdictOf] using hanswer _)
@@ -287,7 +287,7 @@ theorem ends_of_body (w : Wrap Q task dec) {P : Program} {p κ T : ℕ} (x : Bou
       ⟨frame [0, 0], memOf ((ofEnd Q).input x)⟩ T (Answered x dec)) :
     Ends (w.limits need x) (P ++ [topBody κ p w.args dec]) 0 (mainStmt P.length)
       ⟨frame [0, 0, 0], memOf ((ofEnd Q).input x)⟩ (T + 4) (Answered x dec) :=
-  Ends.call T (by simp) (by simp) (by simp only [limits]; omega)
+  Ends.call T tac_simp tac_simp (by simp only [limits]; omega)
     (h.mono le_rfl fun _ hσ => by simpa [Answered] using hσ) (by light_time)
 
 /-- The limits are polynomial in the size. -/
@@ -298,16 +298,16 @@ theorem small (w : Wrap Q task dec) {need : ℕ → ℕ → Need} (hpoly : PolyN
   refine ⟨s + k + 5 + Nat.size w.cst, r, fun x hU => ?_⟩
   obtain ⟨hword, hcells, hdepth⟩ := hpoly x.n x.U
   have hpos : 1 ≤ x.n + 1 := by omega
-  have hneed := polyBound_pow_le s k κ x.n (r := r) (by omega)
+  have hneed := polyBound_pow_le s k κ x.n (r := r) tac_omega
   have hsquare : x.n * x.n + 1 ≤ (x.n + 1) ^ r :=
-    (by nlinarith : x.n * x.n + 1 ≤ (x.n + 1) ^ 2).trans (Nat.pow_le_pow_right hpos (by omega))
+    (by nlinarith : x.n * x.n + 1 ≤ (x.n + 1) ^ 2).trans (Nat.pow_le_pow_right hpos tac_omega)
   have hbound : x.n ^ κ ≤ (x.n + 1) ^ r :=
-    (Nat.pow_le_pow_left (by omega) κ).trans (Nat.pow_le_pow_right hpos (by omega))
-  have hsize : x.n + 1 ≤ (x.n + 1) ^ r := Nat.le_self_pow (by omega) _
+    (Nat.pow_le_pow_left tac_omega κ).trans (Nat.pow_le_pow_right hpos tac_omega)
+  have hsize : x.n + 1 ≤ (x.n + 1) ^ r := Nat.le_self_pow tac_omega _
   have hfr := w.fr_le x
   rw [← hU] at hneed hbound
   -- `X` bounds the parts that do not come from the solver, `Z ≥ X` those that do
-  have hXZ : (x.n + 1) ^ r ≤ 2 ^ (s + k) * (x.n + 1) ^ r := Nat.le_mul_of_pos_left _ (by positivity)
+  have hXZ : (x.n + 1) ^ r ≤ 2 ^ (s + k) * (x.n + 1) ^ r := Nat.le_mul_of_pos_left _ tac_positivity
   have hgoal : polyBound (s + k + 5 + Nat.size w.cst) r [x.n] =
       32 * (2 ^ Nat.size w.cst * (2 ^ (s + k) * (x.n + 1) ^ r)) := by
     unfold polyBound
@@ -315,12 +315,10 @@ theorem small (w : Wrap Q task dec) {need : ℕ → ℕ → Need} (hpoly : PolyN
     rw [pow_add 2 (s + k + 5) (Nat.size w.cst), pow_add 2 (s + k) 5]
     ring
   generalize 2 ^ (s + k) * (x.n + 1) ^ r = Z at *
-  generalize (x.n + 1) ^ r = X at *
   -- `Y ≥ Z` takes in the constant of the layout
   have hcst : w.cst * (x.n * x.n + 1) ≤ 2 ^ Nat.size w.cst * Z :=
     Nat.mul_le_mul (Nat.lt_size_self w.cst).le (hsquare.trans hXZ)
   have hZY : Z ≤ 2 ^ Nat.size w.cst * Z := Nat.le_mul_of_pos_left _ Nat.one_le_two_pow
-  generalize 2 ^ Nat.size w.cst * Z = Y at *
   refine ⟨?_, ?_, ?_, ?_⟩ <;> simp only [limits, hgoal] <;> omega
 
 /-- The compiled program is run within these limits: what the interface to the machine asks for. -/

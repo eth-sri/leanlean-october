@@ -30,7 +30,7 @@ Adapted from upstream (Apache-2.0).
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3 Light.Sec4
+open Light Light.Sec3 Light.Sec4
 
 /-- The bodies of the procedures number 77 to 83. -/
 def procsP (G : RatParams) : List Stmt :=

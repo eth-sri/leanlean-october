@@ -2,6 +2,7 @@ module
 
 public import ImprovedExponents.Pipeline.OfflineWithin
 public import ImprovedExponents.Cost8P.Costs
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -26,20 +27,19 @@ Adapted from `ImprovedExponents/Cost8X/Offline.lean`.
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Real Light Light.Sec4
+open ThreeSumApsp Real Light.Sec4
 
 /-- `ln 4 ≤ (c - 1) ln 3 ≤ A'(c)` for `c > 10`, because `4 ≤ 3^9`. -/
 theorem log_four_le_basePruned {c : ℝ} (hc : 10 < c) : log 4 ≤ basePruned c := by
   have hc0 : 0 < c := by linarith
   have hH : 0 ≤ entropy (1 / c) :=
-    entropy_nonneg (by positivity) ((div_le_one hc0).2 (by linarith))
-  have h2 : 0 ≤ c / 2 * entropy (1 / c) := mul_nonneg (by positivity) hH
+    entropy_nonneg tac_positivity ((div_le_one hc0).2 tac_linarith)
   have h3 : log 4 ≤ 9 * log 3 := by
-    have h := log_le_log (by norm_num) (by norm_num : (4 : ℝ) ≤ 3 ^ 9)
+    have h := log_le_log tac_norm_num (by norm_num : (4 : ℝ) ≤ 3 ^ 9)
     rw [log_pow] at h
     push_cast at h
     exact h
-  have hlog3 : 0 < log 3 := log_pos (by norm_num)
+  have hlog3 : 0 < log 3 := log_pos tac_norm_num
   unfold basePruned
   nlinarith
 
@@ -100,10 +100,10 @@ theorem offlineWithinP (c₀ : ℕ) {a b p q : ℕ} (hb : 1 ≤ b) (hq : 1 ≤ q
     have h : (10 : ℝ) * p < 9 * q := by exact_mod_cast hθ
     linarith
   -- a positive thinness exponent at least `ε` and below `R'_c(γ)`: `costsP` wants `ε > 0`
-  have hR0 : 0 < RcP ((a : ℝ) / b) γ := thinR_pos (basePruned_pos (by linarith)) hγ0.le
+  have hR0 : 0 < RcP ((a : ℝ) / b) γ := thinR_pos (basePruned_pos tac_linarith) hγ0.le
   set ε₁ := max ε (RcP ((a : ℝ) / b) γ / 2) with hε₁
-  have hε₁0 : 0 < ε₁ := lt_max_of_lt_right (by positivity)
-  have hε₁R : ε₁ < RcP ((a : ℝ) / b) γ := max_lt hε (by linarith)
+  have hε₁0 : 0 < ε₁ := lt_max_of_lt_right tac_positivity
+  have hε₁R : ε₁ < RcP ((a : ℝ) / b) γ := max_lt hε tac_linarith
   have hεε₁ : ε ≤ ε₁ := le_max_left _ _
   obtain ⟨C, m₁, hC, hcost⟩ := costsP hcR hθ0 hθ1 hγ0.le hγ hε₁0 hε₁R
   have hε₁1 : ε₁ ≤ 1 := hε₁R.le.trans (RcP_le_one hcR hγ0.le)
@@ -114,7 +114,7 @@ theorem offlineWithinP (c₀ : ℕ) {a b p q : ℕ} (hb : 1 ≤ b) (hq : 1 ≤ q
   refine ⟨hN, hD, le_of_le_rpow hN hε₁1 hDN₁,
     one_le_preBound31 hD (rpow_le_sq hN hγ0.le hεγ hDN₁),
     one_le_queryBound31 hD (qOf_nonneg _ hθ0 hθ1), fun hm => ?_⟩
-  have hm1 : 1 ≤ logFour D₀ := le_trans hm₀ hm
+  have hm1 := le_trans hm₀ hm
   obtain ⟨hfit, hpre, hquery⟩ := hcost D₀ N (logFour D₀) (two_le_of_clog hm1) hDN₁
     (ceil_logb_four D₀).symm (le_trans hm₁ hm)
   rw [levelsOf_div a _ hb] at hfit hpre hquery

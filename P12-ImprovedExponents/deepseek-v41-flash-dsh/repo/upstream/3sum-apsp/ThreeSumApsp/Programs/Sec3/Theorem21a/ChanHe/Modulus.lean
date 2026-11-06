@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.NodeMemory
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The reduction from 3SUM to Convolution-3SUM: the modulus of a node
@@ -30,7 +31,7 @@ these pairs still collide modulo p₁ q (`secondP`).
 
 namespace Light.Sec3.ChanHe
 
-open ThreeSumApsp ThreeSumApsp.ChanHe Finset
+open ThreeSumApsp.ChanHe Finset
 
 variable {lim : Limits} {P : Program}
 
@@ -53,7 +54,7 @@ theorem hit_snoc {l : List ℕ} (hl : ∀ x ∈ l, x ≠ 0) (q : ℕ) :
   | none =>
     by_cases hq : good q <;> simp [hq]
   | some x =>
-    have hx : x ≠ 0 := hl x (List.mem_of_find?_eq_some h)
+    have hx := hl x (List.mem_of_find?_eq_some h)
     simp [hx]
 
 /-- The first good element among the first t + 1 elements of a list. -/
@@ -119,25 +120,25 @@ cnt, fr; the number of the candidate; the first good candidate found so far (0 i
 mult · q; a number of colliding pairs; and whether the candidate has passed all tests so far.  Local
 0 also takes the result. -/
 abbrev Mult : ℕ := 0
-@[inherit_doc Mult] abbrev Result : ℕ := 0
-@[inherit_doc Mult] abbrev Set1 : ℕ := 1
-@[inherit_doc Mult] abbrev Len1 : ℕ := 2
-@[inherit_doc Mult] abbrev Set2 : ℕ := 3
-@[inherit_doc Mult] abbrev Len2 : ℕ := 4
-@[inherit_doc Mult] abbrev Set3 : ℕ := 5
-@[inherit_doc Mult] abbrev Len3 : ℕ := 6
-@[inherit_doc Mult] abbrev Bound1 : ℕ := 7
-@[inherit_doc Mult] abbrev Bound2 : ℕ := 8
-@[inherit_doc Mult] abbrev Bound3 : ℕ := 9
-@[inherit_doc Mult] abbrev NumPrimes : ℕ := 10
-@[inherit_doc Mult] abbrev Primes : ℕ := 11
-@[inherit_doc Mult] abbrev Count : ℕ := 12
-@[inherit_doc Mult] abbrev Free : ℕ := 13
-@[inherit_doc Mult] abbrev Idx : ℕ := 14
-@[inherit_doc Mult] abbrev Found : ℕ := 15
-@[inherit_doc Mult] abbrev Modulus : ℕ := 16
-@[inherit_doc Mult] abbrev Pairs : ℕ := 17
-@[inherit_doc Mult] abbrev Passed : ℕ := 18
+ abbrev Result : ℕ := 0
+ abbrev Set1 : ℕ := 1
+ abbrev Len1 : ℕ := 2
+ abbrev Set2 : ℕ := 3
+ abbrev Len2 : ℕ := 4
+ abbrev Set3 : ℕ := 5
+ abbrev Len3 : ℕ := 6
+ abbrev Bound1 : ℕ := 7
+ abbrev Bound2 : ℕ := 8
+ abbrev Bound3 : ℕ := 9
+ abbrev NumPrimes : ℕ := 10
+ abbrev Primes : ℕ := 11
+ abbrev Count : ℕ := 12
+ abbrev Free : ℕ := 13
+ abbrev Idx : ℕ := 14
+ abbrev Found : ℕ := 15
+ abbrev Modulus : ℕ := 16
+ abbrev Pairs : ℕ := 17
+ abbrev Passed : ℕ := 18
 
 end Search
 
@@ -165,14 +166,14 @@ theorem check_ends {pColl : ℕ} (hColl : CollSpec lim P pColl)
   obtain ⟨el, es, eb, emod, ecnt, efr, enp⟩ := hloc
   have hdepth := hok.depth
   have hcoll : (coll S Mo : ℤ) * np ≤ lim.word := by
-    have hsq : coll S Mo ≤ len ^ 2 := hB.set.card ▸ coll_le_sq S Mo
-    exact le_trans (mul_le_mul_of_nonneg_right (by exact_mod_cast hsq) (by positivity)) hprod
+    have hsq := hB.set.card ▸ coll_le_sq S Mo
+    exact le_trans (mul_le_mul_of_nonneg_right (by exact_mod_cast hsq) tac_positivity) hprod
   have hnonneg : (0 : ℤ) ≤ (coll S Mo : ℤ) * np := by positivity
   simp only [checkStmt, Search.Modulus, Search.Count, Search.Free, Search.Pairs, Search.NumPrimes,
     Search.Passed]
   -- pairs := coll(len, s, modulus, cnt, fr)
   refine Ends.callThen (hColl (d + 1) fr V Mo s len cnt cap S μ hB hok) ?_
-    (by simp [el, es, emod, ecnt, efr])
+    tac_simp [el, es, emod, ecnt, efr]
   rintro _ μ' ⟨rfl, kept⟩
   -- if b < pairs * np
   refine Ends.iteLast (fun hlarge => ?_) (fun hsmall => ?_) (by simp [enp]; omega)
@@ -253,8 +254,8 @@ theorem searchChecks_ends (hColl : CollSpec lim P pColl) (hN : NodeMem μ x.toNo
       ∃ (c' : ℤ) (μ' : ℕ → ℤ), Kept μ μ' x.fr ∧ σ' = ⟨frame (x.vals ++
         [(t : ℤ), found, (x.mult * q : ℕ), c', if x.Good q then 1 else 0]), μ'⟩ := by
   have hprod : ∀ l ≤ x.n, (l : ℤ) ^ 2 * x.np ≤ lim.word := fun l hl => by
-    simpa using mul_le_word (x := l ^ 2) (z := 1) hok.word (Nat.pow_le_pow_left (by omega) 2)
-      hN.envOk.np_le (by omega)
+    simpa using mul_le_word (x := l ^ 2) (z := 1) hok.word (Nat.pow_le_pow_left tac_omega 2)
+      hN.envOk.np_le tac_omega
   unfold tChecks
   -- the first set
   light_piece (check_ends hColl (hN.set₁.bucket hN.envOk hM1 hM)
@@ -295,15 +296,15 @@ theorem searchRecord_ends {g : Prop} [Decidable g] {t found q : ℕ} {y c : ℤ}
   by_cases hg : g
   · simp only [if_pos hg]
     -- if passed = 1
-    refine Ends.iteLast (fun _ => ?_) (fun h => absurd h (by simp))
+    refine Ends.iteLast (fun _ => ?_) (fun h => absurd h tac_simp)
     -- if found = 0 then found := mem[pr + t]
     refine Ends.iteLast (fun hfirst => ?_) (fun hlater => ?_)
     · have hzero : found = 0 := by simpa using hfirst
-      exact Ends.setTo (q : ℤ) (by simp [hzero]) (by light_side [hread])
+      exact Ends.setTo (q : ℤ) tac_simp [hzero] (by light_side [hread])
     · have hpos : ¬ found = 0 := by simpa using hlater
-      exact Ends.skip (by simp [hpos])
+      exact Ends.skip tac_simp [hpos]
   · simp only [if_neg hg]
-    refine Ends.iteLast (fun h => absurd h (by simp)) (fun _ => Ends.skip ?_)
+    refine Ends.iteLast (fun h => absurd h tac_simp) (fun _ => Ends.skip ?_)
     by_cases hzero : found = 0 <;> simp [hzero]
 
 /-- **A round of search** tests candidate number t and records it if it is the first good one.  The
@@ -327,9 +328,9 @@ theorem searchRound_ends (hColl : CollSpec lim P pColl) (hN : NodeMem μ x.toNod
   obtain ⟨hqp, hqm⟩ := hprime ps[t] (List.getElem_mem htl)
   have hread : μ' (x.pr + t) = (ps[t] : ℕ) := SegN.getElem (hps ▸ hN'.envOk.primes.2) htl
   have hsucc := hit_take_succ (good := x.Good) (fun q hq => (hprime q hq).1.ne_zero) htl
-  have hMo : x.mult * ps[t] ≤ x.m * x.m := Nat.mul_le_mul hmult_le hqm
+  have hMo := Nat.mul_le_mul hmult_le hqm
   have hMw : (x.mult : ℤ) * ps[t] ≤ lim.word := by
-    exact_mod_cast le_word_of_le (y := x.mult * ps[t]) hok.word (by omega)
+    exact_mod_cast le_word_of_le (y := x.mult * ps[t]) hok.word tac_omega
   have hMpos : (1 : ℤ) ≤ (x.mult : ℤ) * ps[t] := by
     exact_mod_cast Nat.mul_pos hmult_pos hqp.one_le
   have hw := hok.space
@@ -343,7 +344,7 @@ theorem searchRound_ends (hColl : CollSpec lim P pColl) (hN : NodeMem μ x.toNod
   light_piece (searchChecks_ends hColl hN' hok (Nat.mul_pos hmult_pos hqp.one_le) hMo)
     with _ ⟨c, μ'', kept', rfl⟩
   -- the candidate is recorded
-  light_piece (searchRecord_ends ((kept' _ (by omega)).trans hread) (by omega) hw (by omega))
+  light_piece (searchRecord_ends ((kept' _ tac_omega).trans hread) tac_omega hw tac_omega)
     with _ rfl
   exact ⟨by simp, _, c, _, μ'', kept.trans kept', by rw [update_frame_setLocal, hsucc]; rfl⟩
 
@@ -352,8 +353,8 @@ theorem search_spec {p : ℕ} (hP : P[p]? = some (searchBody pColl)) (hColl : Co
     SearchSpec lim P p := by
   intro x μ hN hmult_pos hmult_le d hok
   refine .of_body hP ?_
-  have hone : ((1 : ℕ) : ℤ) ≤ lim.word := le_word_of_le hok.word (by omega)
-  have hnp : (x.np : ℤ) ≤ lim.word := le_word_of_le hok.word hN.envOk.np_le
+  have hone : ((1 : ℕ) : ℤ) ≤ lim.word := le_word_of_le hok.word tac_omega
+  have hnp := le_word_of_le hok.word hN.envOk.np_le
   -- found := 0
   refine Ends.setToThen 0 ?_ (hT := by simp [tSearch])
   -- for t < np
@@ -391,33 +392,33 @@ namespace Modulus
 two primes; and the numbers of colliding pairs of the three sets modulo the first prime.  Local 0
 also takes the result. -/
 abbrev Set1 : ℕ := 0
-@[inherit_doc Set1] abbrev Result : ℕ := 0
-@[inherit_doc Set1] abbrev Len1 : ℕ := 1
-@[inherit_doc Set1] abbrev Set2 : ℕ := 2
-@[inherit_doc Set1] abbrev Len2 : ℕ := 3
-@[inherit_doc Set1] abbrev Set3 : ℕ := 4
-@[inherit_doc Set1] abbrev Len3 : ℕ := 5
-@[inherit_doc Set1] abbrev Digits : ℕ := 6
-@[inherit_doc Set1] abbrev NumPrimes : ℕ := 7
-@[inherit_doc Set1] abbrev Primes : ℕ := 8
-@[inherit_doc Set1] abbrev Count : ℕ := 9
-@[inherit_doc Set1] abbrev Free : ℕ := 10
-@[inherit_doc Set1] abbrev Prime1 : ℕ := 11
-@[inherit_doc Set1] abbrev Prime2 : ℕ := 12
-@[inherit_doc Set1] abbrev Pairs1 : ℕ := 13
-@[inherit_doc Set1] abbrev Pairs2 : ℕ := 14
-@[inherit_doc Set1] abbrev Pairs3 : ℕ := 15
+ abbrev Result : ℕ := 0
+ abbrev Len1 : ℕ := 1
+ abbrev Set2 : ℕ := 2
+ abbrev Len2 : ℕ := 3
+ abbrev Set3 : ℕ := 4
+ abbrev Len3 : ℕ := 5
+ abbrev Digits : ℕ := 6
+ abbrev NumPrimes : ℕ := 7
+ abbrev Primes : ℕ := 8
+ abbrev Count : ℕ := 9
+ abbrev Free : ℕ := 10
+ abbrev Prime1 : ℕ := 11
+ abbrev Prime2 : ℕ := 12
+ abbrev Pairs1 : ℕ := 13
+ abbrev Pairs2 : ℕ := 14
+ abbrev Pairs3 : ℕ := 15
 
 end Modulus
 
-open Modulus in
+open Modulus
 /-- The numbers of colliding pairs of the three sets modulo the first prime. -/
 def modulusColls (pColl : ℕ) : Stmt :=
   .call pColl [v Len1, v Set1, v Prime1, v Count, v Free] Pairs1 ;;
   .call pColl [v Len2, v Set2, v Prime1, v Count, v Free] Pairs2 ;;
   .call pColl [v Len3, v Set3, v Prime1, v Count, v Free] Pairs3
 
-open Modulus in
+open Modulus
 /-- The two searches of modulus, with the three calls of coll between them, and the product. -/
 def modulusMain (pSearch pColl : ℕ) : Stmt :=
   .call pSearch
@@ -435,7 +436,7 @@ def modulusMain (pSearch pColl : ℕ) : Stmt :=
       v NumPrimes, v Primes, v Count, v Free] Prime2 ;;
   .set Result (v Prime1 *' v Prime2)
 
-open Modulus in
+open Modulus
 /-- modulus(s₁, l₁, s₂, l₂, s₃, l₃, Λ, np, pr, cnt, fr) returns 1 if there is no prime, and the
 product of the two primes otherwise. -/
 def modulusBody (pSearch pColl : ℕ) : Stmt :=
@@ -490,7 +491,7 @@ variable {n V m : ℕ}
 /-- The bounds that are handed to search fit in a word: 3 Λ x for x up to (n + 1)². -/
 theorem three_lam_mul_le (hword : ((wordNeed n V (m * m) : ℕ) : ℤ) ≤ lim.word) (hΛ : Λ ≤ V + 2)
     {x : ℕ} (hx : x ≤ (n + 1) ^ 2) : 0 ≤ 3 * (Λ : ℤ) * x ∧ 3 * (Λ : ℤ) * x ≤ lim.word := by
-  have h := mul_le_word (y := 1) (z := 3 * Λ) hword hx (by omega) (by omega)
+  have h := mul_le_word (y := 1) (z := 3 * Λ) hword hx tac_omega tac_omega
   push_cast at h
   exact ⟨by positivity, by linarith⟩
 
@@ -498,7 +499,7 @@ theorem three_lam_mul_le (hword : ((wordNeed n V (m * m) : ℕ) : ℤ) ≤ lim.w
 theorem three_lam_sq_le (hword : ((wordNeed n V (m * m) : ℕ) : ℤ) ≤ lim.word) (hΛ : Λ ≤ V + 2)
     {l : ℕ} (hl : l ≤ n) : (0 ≤ 3 * (Λ : ℤ) * l ∧ 3 * (Λ : ℤ) * l ≤ lim.word) ∧
       0 ≤ 3 * (Λ : ℤ) * l * l ∧ 3 * (Λ : ℤ) * l * l ≤ lim.word := by
-  have hsq : l * l ≤ (n + 1) ^ 2 := by rw [sq]; exact Nat.mul_le_mul (by omega) (by omega)
+  have hsq : l * l ≤ (n + 1) ^ 2 := by rw [sq]; exact Nat.mul_le_mul tac_omega tac_omega
   have h := three_lam_mul_le hword hΛ hsq
   push_cast at h
   rw [← mul_assoc] at h
@@ -508,7 +509,7 @@ theorem three_lam_sq_le (hword : ((wordNeed n V (m * m) : ℕ) : ℤ) ≤ lim.wo
 theorem three_lam_coll_le (hword : ((wordNeed n V (m * m) : ℕ) : ℤ) ≤ lim.word) (hΛ : Λ ≤ V + 2)
     {s l M : ℕ} {S : Finset ℤ} (hS : SetAt μ s l S) (hl : l ≤ n) :
     0 ≤ 3 * (Λ : ℤ) * coll S M ∧ 3 * (Λ : ℤ) * coll S M ≤ lim.word :=
-  three_lam_mul_le hword hΛ ((coll_le_sq S M).trans (hS.card ▸ Nat.pow_le_pow_left (by omega) 2))
+  three_lam_mul_le hword hΛ ((coll_le_sq S M).trans (hS.card ▸ Nat.pow_le_pow_left tac_omega 2))
 
 end words
 
@@ -570,9 +571,9 @@ theorem modulusMain_ends (hSearch : SearchSpec lim P pSearch) (hColl : CollSpec 
     rw [hsecond, secondP]
     exact pick_bounds hm (Finset.filter_subset _ _)
   -- The words that are formed: 3, 3 Λ, 3 Λ lᵢ, 3 Λ lᵢ², 3 Λ cᵢ and p₁ p₂.
-  have hthree := three_lam_mul_le (Λ := 1) hok.word (by omega) (x := 1)
-    (Nat.one_le_pow _ _ (by omega))
-  have hlam := three_lam_mul_le hok.word hΛ (x := 1) (Nat.one_le_pow _ _ (by omega))
+  have hthree := three_lam_mul_le (Λ := 1) hok.word tac_omega (x := 1)
+    (Nat.one_le_pow _ _ tac_omega)
+  have hlam := three_lam_mul_le hok.word hΛ (x := 1) (Nat.one_le_pow _ _ tac_omega)
   have hlen₁ := three_lam_sq_le hok.word hΛ hN.set₁.le
   have hlen₂ := three_lam_sq_le hok.word hΛ hN.set₂.le
   have hlen₃ := three_lam_sq_le hok.word hΛ hN.set₃.le
@@ -581,7 +582,7 @@ theorem modulusMain_ends (hSearch : SearchSpec lim P pSearch) (hColl : CollSpec 
   have hcoll₃ := three_lam_coll_le (M := p₁) hok.word hΛ hN.set₃.set hN.set₃.le
   have hprod : 0 ≤ (p₁ : ℤ) * p₂ ∧ (p₁ : ℤ) * p₂ ≤ lim.word := ⟨by positivity, by
     exact_mod_cast le_word_of_le (y := p₁ * p₂) hok.word
-      ((Nat.mul_le_mul hp₁_le hp₂_le).trans (by omega))⟩
+      ((Nat.mul_le_mul hp₁_le hp₂_le).trans tac_omega)⟩
   simp only [tModulus]
   -- p₁ := search(1, s₁, l₁, s₂, l₂, s₃, l₃, 3 Λ l₁², 3 Λ l₂², 3 Λ l₃², np, pr, cnt, fr)
   light_call (search_meets_firstP (Λ := Λ) hSearch hN hm hokS) with _ μ₁ ⟨rfl, kept₁⟩
@@ -603,7 +604,7 @@ theorem modulus_spec {p : ℕ} (hP : P[p]? = some (modulusBody pSearch pColl))
     (hSearch : SearchSpec lim P pSearch) (hColl : CollSpec lim P pColl) : ModulusSpec lim P p := by
   intro a Λ μ hN hΛ d hok
   refine .of_body hP ?_
-  have hone : ((1 : ℕ) : ℤ) ≤ lim.word := le_word_of_le hok.word (by omega)
+  have hone : ((1 : ℕ) : ℤ) ≤ lim.word := le_word_of_le hok.word tac_omega
   have hcard := hN.envOk.primes.1
   -- if np = 0
   refine Ends.iteLast (fun hnone => ?_) (fun hsome => ?_) (hT := by simp [tModulus])
@@ -619,7 +620,7 @@ theorem modulus_spec {p : ℕ} (hP : P[p]? = some (modulusBody pSearch pColl))
         omega
       obtain ⟨q, hq⟩ := Finset.card_pos.1 hpos
       exact (Nat.prime_of_mem_primesLE hq).one_le.trans (Nat.le_of_mem_primesLE hq)
-    exact (modulusMain_ends hSearch hColl hN hΛ hok hm).mono (by simp [tModulus]) fun _ h => h
+    exact (modulusMain_ends hSearch hColl hN hΛ hok hm).mono tac_simp [tModulus] fun _ h => h
 
 /-- The modulus, in a program that holds modulus and search, from the specification of coll. -/
 theorem modulusSpec_of {p : ℕ} (hP : P[p]? = some (modulusBody pSearch pColl))

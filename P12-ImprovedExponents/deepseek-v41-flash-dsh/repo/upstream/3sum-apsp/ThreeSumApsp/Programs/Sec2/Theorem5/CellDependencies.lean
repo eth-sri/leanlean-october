@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The memory map of Theorem 5: what depends on which cells
@@ -40,17 +41,17 @@ theorem SharedTables.congr {p : Par} {b0 : ℕ} {μ μ' : ℕ → ℤ} (h : Shar
   have lphi := Spec.length_phiFlat
   have lpsi := Spec.length_psiFlat
   refine
-    { p3 := h.p3.congr fun i hi => he _ (by omega) (by rw [lp] at hi; omega)
-      p4 := h.p4.congr fun i hi => he _ (by omega) (by rw [lp] at hi; omega)
-      p7 := h.p7.congr fun i hi => he _ (by omega) (by rw [lp] at hi; omega)
-      p10 := h.p10.congr fun i hi => he _ (by omega) (by rw [lp] at hi; omega)
-      phi := h.phi.congr fun i hi => he _ (by omega) (by omega)
-      psi := h.psi.congr fun i hi => he _ (by omega) (by omega)
-      mask := fun s hs => (h.mask s hs).congr fun i hi => he _ (by omega) ?_
-      band := fun I hI => (he _ (by omega) (by omega)).trans (h.band I hI)
-      block := fun I hI => (he _ (by omega) (by omega)).trans (h.block I hI)
-      dig3 := fun I hI => (h.dig3 I hI).congr fun i hi => he _ (by omega) ?_
-      dig4 := fun x hx => (h.dig4 x hx).congr fun i hi => he _ (by omega) ?_ }
+    { p3 := h.p3.congr fun i hi => he _ tac_omega (by rw [lp] at hi; omega)
+      p4 := h.p4.congr fun i hi => he _ tac_omega (by rw [lp] at hi; omega)
+      p7 := h.p7.congr fun i hi => he _ tac_omega (by rw [lp] at hi; omega)
+      p10 := h.p10.congr fun i hi => he _ tac_omega (by rw [lp] at hi; omega)
+      phi := h.phi.congr fun i hi => he _ tac_omega tac_omega
+      psi := h.psi.congr fun i hi => he _ tac_omega tac_omega
+      mask := fun s hs => (h.mask s hs).congr fun i hi => he _ tac_omega ?_
+      band := fun I hI => (he _ tac_omega tac_omega).trans (h.band I hI)
+      block := fun I hI => (he _ tac_omega tac_omega).trans (h.block I hI)
+      dig3 := fun I hI => (h.dig3 I hI).congr fun i hi => he _ tac_omega ?_
+      dig4 := fun x hx => (h.dig4 x hx).congr fun i hi => he _ tac_omega ?_ }
   · rw [List.length_map, Spec.length_unrank] at hi
     have := Nat.mul_add_lt_mul hs hi
     omega

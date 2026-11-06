@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Compiler.Expressions
 public import ThreeSumApsp.Lang.RunsStayInLimits
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The compiler is correct on tests
@@ -48,9 +49,9 @@ theorem steps_pair (I : Framed Z σ q m)
     ∃ m', Steps code (a.size + b.size) ⟨pos, m⟩ ⟨pos + (a.size + b.size), m'⟩ ∧
       m' (cT 0) = wd W (a.val σ) ∧ m' (cT 1) = wd W (b.val σ) ∧
       AgreeOutside (Scratch Z.F) m m' := by
-  obtain ⟨va, Aa⟩ := effects_compileExpr_of_width I a 0 hwa hsa (by omega)
+  obtain ⟨va, Aa⟩ := effects_compileExpr_of_width I a 0 hwa hsa tac_omega
   have Aa' := Aa.mono temps_subset_scratch
-  obtain ⟨vb, Ab⟩ := effects_compileExpr_of_width (I.same Aa') b 1 hwb hsb (by omega)
+  obtain ⟨vb, Ab⟩ := effects_compileExpr_of_width (I.same Aa') b 1 hwb hsb tac_omega
   have run := steps_straight _ pos m hcode.left
     (List.forall_mem_append.2 ⟨straight_compileExpr a 0, straight_compileExpr b 1⟩)
   rw [List.length_append, length_compileExpr, length_compileExpr, effects_append] at run
@@ -103,7 +104,7 @@ private theorem decides_lt (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
   have run₄ := run₃.trans (steps_bltz restCode.tail.tail (Function.update_self _ _ _)
     (inRange_sub Z (Expr.abs_val_le hσ b hsb) (Expr.abs_val_le hσ a hsa)).2)
   exact ⟨_, _, by rw [Cond.size], (A₁.update (by cells) _).update (by cells) _,
-    run₄.branch (by omega) (by rw [Cond.size]; omega)⟩
+    run₄.branch tac_omega (by rw [Cond.size]; omega)⟩
 
 /-- The test a = b. -/
 private theorem decides_eq (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
@@ -124,7 +125,7 @@ private theorem decides_eq (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
     (inRange_sub Z ha hb).1)
   by_cases hlt : a.val σ - b.val σ < 0
   · rw [if_pos hlt] at run₃
-    exact ⟨_, _, by rw [Cond.size]; omega, A₂, fun h => absurd h (by omega), fun _ => run₃⟩
+    exact ⟨_, _, by rw [Cond.size]; omega, A₂, fun h => absurd h tac_omega, fun _ => run₃⟩
   rw [if_neg hlt] at run₃
   -- D := 0 - D
   have run₄ := run₃.trans (steps_sub restCode.tail.tail
@@ -135,7 +136,7 @@ private theorem decides_eq (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
   have run₅ := run₄.trans (steps_bltz restCode.tail.tail.tail (Function.update_self _ _ _)
     (inRange_sub Z hb ha).1)
   exact ⟨_, _, by rw [Cond.size], A₂.update (by cells) _,
-    run₅.branch (by omega) (by rw [Cond.size]; omega)⟩
+    run₅.branch tac_omega (by rw [Cond.size]; omega)⟩
 
 /-- The code of a test decides the test. -/
 theorem decides_compileCond (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim) (c : Cond)

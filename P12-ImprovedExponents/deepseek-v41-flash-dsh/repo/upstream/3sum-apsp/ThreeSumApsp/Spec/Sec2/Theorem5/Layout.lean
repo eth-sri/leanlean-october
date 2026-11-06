@@ -11,6 +11,7 @@ public import ThreeSumApsp.Spec.Sec2.Theorem5.Subsets
 public import ThreeSumApsp.Util.Counting
 public import ThreeSumApsp.Util.Index
 public import ThreeSumApsp.Util.Weave
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # One computable layout of the tiling
@@ -113,11 +114,11 @@ theorem ofFn_glue {L m : ℕ} (Q : Finset (Fin L)) (hQ : Q.card = m) (inner : Fi
     (outer : Fin (L - m) → ℕ) :
     List.ofFn (glue Q hQ inner outer)
       = weaveList (maskOf Q) (List.ofFn outer) (List.ofFn inner) := by
-  refine List.ext_getElem (by simp [length_maskOf]) fun n hn hweave => ?_
+  refine List.ext_getElem tac_simp [length_maskOf] fun n hn hweave => ?_
   replace hn : n < L := by simpa using hn
   obtain ⟨htrue, hfalse⟩ := count_take_maskOf Q n
   rw [List.getElem_ofFn, ← List.getD_eq_getElem _ 0 hweave, getD_weaveList,
-    if_pos (by rwa [length_maskOf]), htrue, hfalse, getD_maskOf Q hn]
+    if_pos tac_rwa [length_maskOf], htrue, hfalse, getD_maskOf Q hn]
   by_cases hmem : (⟨n, hn⟩ : Fin L) ∈ Q
   · -- Level `n` is the `k`-th level of `Q`, and `k` levels of `Q` lie below it.
     obtain ⟨k, hk⟩ := exists_innerLevel Q hQ hmem
@@ -172,12 +173,12 @@ theorem getD_outDigits_of_false (hI : rI.length = mask.count false)
   have hlt := List.count_take_lt hℓ false hb
   rw [outDigits, getD_weaveList, if_pos hℓ, if_neg (by rw [hb]; exact Bool.false_ne_true),
     List.getD_eq_getElem _ _ (by rw [List.length_zipWith]; omega), List.getElem_zipWith,
-    List.getD_eq_getElem _ _ (by omega), List.getD_eq_getElem _ _ (by omega)]
+    List.getD_eq_getElem _ _ tac_omega, List.getD_eq_getElem _ _ tac_omega]
 
 /-- The digits of an output string are below 10. -/
 theorem lt_of_mem_outDigits (hI : ∀ x ∈ rI, x < 3) (hJ : ∀ y ∈ rJ, y < 3) :
     ∀ d ∈ outDigits m mask rI rJ, d < 10 := by
-  refine lt_of_mem_weaveList (by norm_num) (fun d hd => ?_) fun d hd => ?_
+  refine lt_of_mem_weaveList tac_norm_num (fun d hd => ?_) fun d hd => ?_
   · obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hd
     rw [List.length_zipWith, lt_min_iff] at hi
     have hx := hI _ (List.getElem_mem hi.1)
@@ -199,7 +200,7 @@ theorem codeO_outStrOf {L m : ℕ} (Q : Finset (Fin L)) (hQ : Q.card = m) (r c :
     ← List.ofFn_const]
   simp only [outEquiv_apply, outIdx_z, outIdx_z0]
   congr 2
-  exact List.ext_getElem (by simp) fun n _ _ => by simp
+  exact List.ext_getElem tac_simp fun n _ _ => by simp
 
 /-- The number, in the enumeration `unrank`, of the subset of the block product of the position
 `(I, J)`. -/
@@ -222,8 +223,8 @@ def outCodeOfPos (L m I J : ℕ) : ℕ := ofDigitList 10 (outDigitsOfPos L m I J
 theorem digitList_outCodeOfPos (L m I J : ℕ) :
     digitList 10 L (outCodeOfPos L m I J) = outDigitsOfPos L m I J := by
   have hdigits := digitList_ofDigitList (outDigitsOfPos L m I J)
-    (lt_of_mem_outDigits (fun _ => lt_of_mem_digitList (by norm_num))
-      fun _ => lt_of_mem_digitList (by norm_num))
+    (lt_of_mem_outDigits (fun _ => lt_of_mem_digitList tac_norm_num)
+      fun _ => lt_of_mem_digitList tac_norm_num)
   rwa [length_outDigitsOfPos] at hdigits
 
 /-- `outCodeOfPos` computes the code of the output string of a position, for the computable layout.
@@ -250,7 +251,7 @@ def gluedDigits (mask : List Bool) (o i : List ℕ) : List ℕ := weaveList mask
 /-- The digits of a left or right string are below 7. -/
 theorem lt_of_mem_gluedDigits {mask : List Bool} {o i : List ℕ} (ho : ∀ x ∈ o, x < 3)
     (hi : ∀ x ∈ i, x < 4) : ∀ d ∈ gluedDigits mask o i, d < 7 := by
-  refine lt_of_mem_weaveList (by norm_num) (fun d hd => (ho d hd).trans (by norm_num))
+  refine lt_of_mem_weaveList tac_norm_num (fun d hd => (ho d hd).trans tac_norm_num)
     fun d hd => ?_
   obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hd
   have hlt := hi x hx
@@ -265,8 +266,8 @@ def gluedCode (L m : ℕ) (mask : List Bool) (r k : ℕ) : ℕ :=
 theorem gluedCode_lt {L : ℕ} (m : ℕ) {mask : List Bool} (hmask : mask.length = L) (r k : ℕ) :
     gluedCode L m mask r k < 7 ^ L := by
   have hlt := ofDigitList_lt (gluedDigits mask (digitList 3 (L - m) r) (digitList 4 m k))
-    (lt_of_mem_gluedDigits (fun _ => lt_of_mem_digitList (by norm_num))
-      fun _ => lt_of_mem_digitList (by norm_num))
+    (lt_of_mem_gluedDigits (fun _ => lt_of_mem_digitList tac_norm_num)
+      fun _ => lt_of_mem_digitList tac_norm_num)
   rwa [length_gluedDigits, hmask] at hlt
 
 /-- Left and right strings at once: over an alphabet of seven letters in which the outer letter

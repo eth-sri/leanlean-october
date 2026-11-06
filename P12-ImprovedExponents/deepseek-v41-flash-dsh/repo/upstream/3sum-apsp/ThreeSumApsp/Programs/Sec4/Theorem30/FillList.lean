@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
 public import ThreeSumApsp.Spec.Sec4.Theorem30.PartialSums
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The boxes with e stars go into the trie of their tile (Lemma 29)
@@ -146,20 +147,20 @@ pointer, the addresses of the leaf and of the box, their length, and m - t), whe
 another leaf, the position of the last star, the value of the box, its code, and results that are
 not used. -/
 abbrev Stars : ℕ := 0
-@[inherit_doc Stars] abbrev Root : ℕ := 1
-@[inherit_doc Stars] abbrev EncA : ℕ := 2
-@[inherit_doc Stars] abbrev EncB : ℕ := 3
-@[inherit_doc Stars] abbrev Area : ℕ := 4
-@[inherit_doc Stars] abbrev Free : ℕ := 5
-@[inherit_doc Stars] abbrev LeafAt : ℕ := 6
-@[inherit_doc Stars] abbrev BoxAt : ℕ := 7
-@[inherit_doc Stars] abbrev Len : ℕ := 8
-@[inherit_doc Stars] abbrev MaxNines : ℕ := 9
-@[inherit_doc Stars] abbrev More : ℕ := 10
-@[inherit_doc Stars] abbrev LastStar : ℕ := 11
-@[inherit_doc Stars] abbrev Value : ℕ := 12
-@[inherit_doc Stars] abbrev Code : ℕ := 13
-@[inherit_doc Stars] abbrev Junk : ℕ := 14
+ abbrev Root : ℕ := 1
+ abbrev EncA : ℕ := 2
+ abbrev EncB : ℕ := 3
+ abbrev Area : ℕ := 4
+ abbrev Free : ℕ := 5
+ abbrev LeafAt : ℕ := 6
+ abbrev BoxAt : ℕ := 7
+ abbrev Len : ℕ := 8
+ abbrev MaxNines : ℕ := 9
+ abbrev More : ℕ := 10
+ abbrev LastStar : ℕ := 11
+ abbrev Value : ℕ := 12
+ abbrev Code : ℕ := 13
+ abbrev Junk : ℕ := 14
 
 end FillList
 
@@ -289,11 +290,11 @@ private theorem tail_spec (K : Callees lim P) (H : FillListPre lim μ x) (hd : d
       fp := x.fp, cap := x.cap, T := Ti, kl := starFirst x.e l } ν
     { trie := R.trie, seg := R.box, len := hbox_len, digits := hbox_digits
       walk := R.rep.insertOK x.tile H.root_ne _ hbox_len hbox_digits
-      room := hbox_len ▸ R.room } _ (by omega)) with _ νins ⟨htrie, hins⟩
+      room := hbox_len ▸ R.room } _ tac_omega) with _ νins ⟨htrie, hins⟩
   dsimp only at htrie hins
   -- more := nineNext(leaf, len, stars, m - t)
-  light_call (K.next x.cur x.L x.e (x.m - x.t) l νins R.leaf.keep R.leaf_mem (by omega) _
-    (by omega)) with res νnext ⟨hnextLeaf, hres, hnext⟩
+  light_call (K.next x.cur x.L x.e (x.m - x.t) l νins R.leaf.keep R.leaf_mem tac_omega _
+    tac_omega) with res νnext ⟨hnextLeaf, hres, hnext⟩
   rw [hmore] at hres
   rw [R.next] at hnextLeaf
   refine ⟨_, _, _, _, νnext, by rw [hres]; rfl, fun h => ?_, ?_, R.segA.keep, R.segB.keep,
@@ -320,14 +321,14 @@ private theorem value_zero_spec (K : Callees lim P) (H : FillListPre lim μ x)
     rw [FillListArgs.value, he, starFirst_zero, boxValue_zero _ _ Ti x.root hdigits, leafProduct]
   rw [he, starFirst_zero] at hbox
   rw [hvalue]
-  have hcode : ofDigitList 10 l < 10 ^ x.L := hlen ▸ ofDigitList_lt l hdigits
+  have hcode := hlen ▸ ofDigitList_lt l hdigits
   -- code := horner(box, len)
-  light_call (K.horner x.box x.L l ν hbox hlen hdigits (by omega) C.pow_le _
-    (by omega)) with _ ν' ⟨rfl, hν'⟩
+  light_call (K.horner x.box x.L l ν hbox hlen hdigits tac_omega C.pow_le _
+    tac_omega) with _ ν' ⟨rfl, hν'⟩
   obtain rfl : ν = ν' := hν'.symm
   generalize ofDigitList 10 l = c at hcode
-  have hcellA : ν (x.aA + c) = (arrT x.encA).getD c 0 := R.segA.getD (by rwa [length_arrT]) 0
-  have hcellB : ν (x.aB + c) = (arrT x.encB).getD c 0 := R.segB.getD (by rwa [length_arrT]) 0
+  have hcellA := R.segA.getD tac_rwa [length_arrT] 0
+  have hcellB := R.segB.getD tac_rwa [length_arrT] 0
   -- the product of two encoded numbers fits in a word
   have hprod : |(arrT x.encA).getD c 0 * (arrT x.encB).getD c 0| ≤ lim.word := by
     have hAc := abs_getD_arrT_le x.encA hA hcode
@@ -336,7 +337,7 @@ private theorem value_zero_spec (K : Callees lim P) (H : FillListPre lim μ x)
         ≤ A * B := mul_le_mul hAc (abs_getD_arrT_le x.encB hB hcode) (abs_nonneg _)
           ((abs_nonneg _).trans hAc)
       _ ≤ 10 ^ x.m * (A * B) := le_mul_of_one_le_left
-          (mul_nonneg_of_abs_le hA hB) (one_le_pow₀ (by norm_num))
+          (mul_nonneg_of_abs_le hA hB) (one_le_pow₀ tac_norm_num)
       _ ≤ lim.word := hword
   generalize (arrT x.encA).getD c 0 = y at hcellA hprod
   generalize (arrT x.encB).getD c 0 = z at hcellB hprod
@@ -368,7 +369,7 @@ private theorem value_succ_spec (K : Callees lim P) (H : FillListPre lim μ x)
   have hlayout := C.layout
   -- the partial sums are at most 10^{e'+1} A B ≤ 10^m A B
   have hbound : (10 : ℤ) ^ (e' + 1) * (A * B) ≤ lim.word :=
-    (mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) (by omega))
+    (mul_le_mul_of_nonneg_right (pow_le_pow_right₀ tac_norm_num tac_omega)
       (mul_nonneg_of_abs_le hA hB)).trans hword
   have hvalue : x.value Ti bx
       = ((List.range 10).map fun d => trieLookup Ti x.root (bx.set p d)).sum := by
@@ -380,7 +381,7 @@ private theorem value_succ_spec (K : Callees lim P) (H : FillListPre lim μ x)
     { tr := x.tr, root := x.root, box := x.box, L := x.L, p := p, T := Ti, l := bx } ν
     { area := R.trie.seg, seg := hbox, len := hbox_len, star := hbox_len ▸ hstar.lt
       digits := hbox_digits, walk := hstar.walk
-      sums := fun j _ => (hstar.sums j).trans hbound } _ (by omega)) with _ ν' ⟨rfl, hν'⟩
+      sums := fun j _ => (hstar.sums j).trans hbound } _ tac_omega) with _ ν' ⟨rfl, hν'⟩
   rw [hν']
   rfl
 
@@ -420,8 +421,8 @@ private theorem round_spec (K : Callees lim P) (H : FillListPre lim μ x) (hd : 
   have hsame₀ := I.same
   unfold tFillRound
   -- lastStar := starFirst(leaf, box, len, stars)
-  light_call (K.star x.cur x.box x.L x.e _ ν (I.leaf hi) hlen (by omega) (by omega)
-    (by omega) _ (by omega)) with _ νbox ⟨hbox, rfl, hsame⟩
+  light_call (K.star x.cur x.box x.L x.e _ ν (I.leaf hi) hlen tac_omega tac_omega
+    tac_omega _ tac_omega) with _ νbox ⟨hbox, rfl, hsame⟩
   have R : RoundFacts μ x i x.leaves[i] (x.trieAt i) νbox :=
     { leaf_mem := List.getElem_mem hi, box_mem := starFirst_mem_starBoxes hi
       next := nineNext_getElem x.L x.e (x.m - x.t) i hi, succ := fillAt_succ x.root hi
@@ -443,13 +444,13 @@ private theorem body_spec (K : Callees lim P) (H : FillListPre lim μ x)
   have hword := C.std.const_le
   have heL : x.e ≤ x.L := by have := C.ht; have := C.hmL; have := H.stars_le; omega
   have hpos := length_nineStrs_pos heL H.stars_le
-  have hfirst : (nineStrs x.L x.e (x.m - x.t))[0] = nineFirst x.L x.e := getElem_nineStrs hpos
+  have hfirst := getElem_nineStrs hpos
   have hlayout := C.layout
   have hlenA := length_arrT x.encA
   have hlenB := length_arrT x.encB
   unfold tFillList
   -- junk := nineFirst(leaf, len, stars)
-  light_call (K.first x.cur x.L x.e μ heL (by omega) _ (by omega)) with res ν ⟨hleaf, hsame⟩
+  light_call (K.first x.cur x.L x.e μ heL tac_omega _ tac_omega) with res ν ⟨hleaf, hsame⟩
   -- more := 1
   light_set (1 : ℕ)
   -- while more = 1

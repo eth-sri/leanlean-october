@@ -10,6 +10,7 @@ public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Chunks
 public import ThreeSumApsp.Util.CountingSort
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The classes W_ϱ of the pairs (proof of Theorem 17)
@@ -138,18 +139,18 @@ abbrev Place : ℕ := 12
 
 end Classes
 
-open Classes in
+open Classes
 /-- cls[t] := 0 for t ≤ p. -/
 def clsZero : Stmt := .for Idx (v Prime +' k 1) (.store (v Cls +' v Idx) (k 0))
 
-open Classes in
+open Classes
 /-- cls[rab[i] + 1] += 1 for i < n². -/
 def clsCount : Stmt :=
   .for Idx (v Pairs) (
     .set Addr (v Cls +' M (v Rab +' v Idx) +' k 1) ;;
     .store (v Addr) (M (v Addr) +' k 1))
 
-open Classes in
+open Classes
 /-- cls[t] += cls[t - 1] for t = 1, …, p. -/
 def clsPrefix : Stmt :=
   .set Idx (k 1) ;;
@@ -157,11 +158,11 @@ def clsPrefix : Stmt :=
     .store (v Cls +' v Idx) (M (v Cls +' v Idx) +' M (v Cls +' v Idx -' k 1)) ;;
     .set Idx (v Idx +' k 1))
 
-open Classes in
+open Classes
 /-- cur[t] := cls[t] for t < p. -/
 def clsCopy : Stmt := pass Idx (v Prime) (v Cur) (M (v Cls +' v Idx))
 
-open Classes in
+open Classes
 /-- The pair number i, which is (row, col), goes to the next free place of its class. -/
 def clsPlaceOne : Stmt :=
   .set Addr (v Cur +' M (v Rab +' v Idx)) ;;
@@ -170,12 +171,12 @@ def clsPlaceOne : Stmt :=
   .store (v Cols +' v Place) (v Col) ;;
   .store (v Addr) (v Place +' k 1)
 
-open Classes in
+open Classes
 /-- All pairs go to their places. -/
 def clsPlace : Stmt :=
   .set Row (k 0) ;; .set Col (k 0) ;; .for Idx (v Pairs) (clsPlaceOne ;; nextPair Row Col Size)
 
-open Classes in
+open Classes
 /-- classes(rab, n, p, cls, cur, qi, qj). -/
 def classesBody : Stmt :=
   .set Pairs (v Size *' v Size) ;; clsZero ;; clsCount ;; clsPrefix ;; clsCopy ;; clsPlace
@@ -218,16 +219,16 @@ variable {μ μ' : ℕ → ℤ} {x : ClassesArgs}
 /-- The keys are below p. -/
 theorem ClassesPre.key_lt (pre : ClassesPre lim μ x) {i : ℕ} (hi : i < x.n * x.n) :
     clsKey x.RAB i < x.p := by
-  have hl : i < x.RAB.length := pre.len ▸ hi
+  have hl := pre.len ▸ hi
   rw [clsKey, List.getD_eq_getElem _ 0 hl]
   exact pre.lt _ (List.getElem_mem hl)
 
 /-- The residues lie before the areas that are written, so they can be read at any time. -/
 theorem ClassesPre.read (pre : ClassesPre lim μ x) (h : x.Same μ μ') {i : ℕ}
     (hi : i < x.n * x.n) : μ' (x.rab + i) = (clsKey x.RAB i : ℕ) := by
-  have hl : i < x.RAB.length := pre.len ▸ hi
+  have hl := pre.len ▸ hi
   have := pre.rab_le
-  rw [h _ (by omega), pre.seg _ (by simpa using hl), List.getElem_map, clsKey,
+  rw [h _ tac_omega, pre.seg _ (by simpa using hl), List.getElem_map, clsKey,
     List.getD_eq_getElem _ 0 hl]
 
 /-- A state of classes between two phases: the locals hold the arguments and n², only the four areas
@@ -258,15 +259,15 @@ theorem clsZero_ends (pre : ClassesPre lim μ x) (h : ClsState μ x (fun _ => Tr
   light_facts pre
   refine Ends.forFrame
     (fun j μ'' => x.Same μ μ'' ∧ ∀ t < j, μ'' (x.cls + t) = 0) (x.p + 1)
-    ⟨hrest, fun t ht => absurd ht (by omega)⟩ ?round ?done
+    ⟨hrest, fun t ht => absurd ht tac_omega⟩ ?round ?done
   case round =>
     rintro j μ'' hj ⟨hr, hz⟩
     refine Ends.storeTo (x.cls + j) 0 ⟨rfl, hr.update ⟨by omega, by omega⟩ _, fun t ht => ?_⟩
     rcases Nat.lt_succ_iff_lt_or_eq.1 ht with ht | rfl
-    · exact (Function.update_of_ne (by omega) _ _).trans (hz t ht)
+    · exact (Function.update_of_ne tac_omega _ _).trans (hz t ht)
     · exact Function.update_self ..
   case done =>
-    exact fun μ'' ⟨hr, hz⟩ => ⟨_, ad, row, col, pl, μ'', rfl, hr, fun t ht => hz t (by omega)⟩
+    exact fun μ'' ⟨hr, hz⟩ => ⟨_, ad, row, col, pl, μ'', rfl, hr, fun t ht => hz t tac_omega⟩
 
 /-- cls[rab[i] + 1] += 1 for i < n². -/
 theorem clsCount_ends (pre : ClassesPre lim μ x) (h : ClsState μ x (ClsZeroed x) σ) :
@@ -278,8 +279,8 @@ theorem clsCount_ends (pre : ClassesPre lim μ x) (h : ClsState μ x (ClsZeroed 
       ∀ t < x.p, μ'' (x.cls + (t + 1)) = (cntEq (clsKey x.RAB) t j : ℕ)) (x.n * x.n) 15
     ?start ?round ?done ?bound
   case start =>
-    exact ⟨ad, μ', by rw [update_frame_setLocal]; rfl, hrest, hz 0 (by omega),
-      fun t ht => by simpa [cntEq] using hz (t + 1) (by omega)⟩
+    exact ⟨ad, μ', by rw [update_frame_setLocal]; rfl, hrest, hz 0 tac_omega,
+      fun t ht => by simpa [cntEq] using hz (t + 1) tac_omega⟩
   case bound =>
     rintro j _ - - ⟨ad, μ'', rfl, -⟩
     simp
@@ -301,13 +302,13 @@ theorem clsCount_ends (pre : ClassesPre lim μ x) (h : ClsState μ x (ClsZeroed 
     refine Ends.storeTo (x.cls + (clsKey x.RAB j + 1))
       (cntEq (clsKey x.RAB) (clsKey x.RAB j) j + 1 : ℕ)
       ⟨by simp, _, _, by rw [update_frame_setLocal]; rfl, hr.update ⟨by omega, by omega⟩ _,
-        (Function.update_of_ne (by omega) _ _).trans hfirst, fun t ht => ?_⟩
+        (Function.update_of_ne tac_omega _ _).trans hfirst, fun t ht => ?_⟩
       (by light_side [haddr, hcell])
     rw [cntEq_succ]
     by_cases e : clsKey x.RAB j = t
     · subst e
       rw [if_pos rfl, Function.update_self]
-    · rw [if_neg e, Function.update_of_ne (by omega)]
+    · rw [if_neg e, Function.update_of_ne tac_omega]
       exact hc t ht
 
 /-- cls[t] += cls[t - 1] for t = 1, …, p. -/
@@ -345,32 +346,32 @@ theorem clsPrefix_ends (pre : ClassesPre lim μ x) (h : ClsState μ x (ClsCounte
     -- i := i + 1
     light_set (j + 1 + 1 : ℕ)
     refine ⟨_, rfl, hr.update ⟨by omega, by omega⟩ _, fun t ht => ?_,
-      fun t ht hjt => (Function.update_of_ne (by omega) _ _).trans (hc t ht (by omega))⟩
+      fun t ht hjt => (Function.update_of_ne tac_omega _ _).trans (hc t ht tac_omega)⟩
     rcases Nat.lt_succ_iff_lt_or_eq.1 (Nat.lt_succ_of_le ht) with ht | rfl
-    · exact (Function.update_of_ne (by omega) _ _).trans (hs t (by omega))
+    · exact (Function.update_of_ne tac_omega _ _).trans (hs t tac_omega)
     · exact Function.update_self ..
 
 /-- After the fourth phase: cur holds the starts as well. -/
 def ClsCopied (x : ClassesArgs) (μ' : ℕ → ℤ) : Prop :=
   ClsStarts x μ' ∧ ∀ t < x.p, μ' (x.cur + t) = (cntLt (clsKey x.RAB) t (x.n * x.n) : ℕ)
 
-open Classes in
+open Classes
 /-- cur[t] := cls[t] for t < p. -/
 theorem clsCopy_ends (pre : ClassesPre lim μ x) (h : ClsState μ x (ClsStarts x) σ) :
     Ends lim P d clsCopy σ (16 * x.p + 6) (ClsState μ x (ClsCopied x)) := by
   obtain ⟨i, ad, row, col, pl, μ', rfl, hrest, hs⟩ := h
   light_facts pre
   refine Ends.pass (x := Prime) (y := Cur) (dst := x.cur) (n := x.p)
-    (fun t => (cntLt (clsKey x.RAB) t (x.n * x.n) : ℕ)) (fun j hj => ?_) ?_ hw (by omega) rfl rfl
+    (fun t => (cntLt (clsKey x.RAB) t (x.n * x.n) : ℕ)) (fun j hj => ?_) ?_ hw tac_omega rfl rfl
   · have hcell := (wrote_rest (μ := μ') (dst := x.cur) (j := j)
-      (f := fun t => (cntLt (clsKey x.RAB) t (x.n * x.n) : ℕ)) (a := x.cls + j) (by omega)).trans
-      (hs j (by omega))
+      (f := fun t => (cntLt (clsKey x.RAB) t (x.n * x.n) : ℕ)) (a := x.cls + j) tac_omega).trans
+      (hs j tac_omega)
     simp [Limits.Addr, abs_le, hcell]
     omega
   · rw [update_frame_setLocal]
     exact ⟨_, ad, row, col, pl, _, rfl,
-      hrest.trans ((sameOutside_wrote le_rfl).mono (by omega) (by omega)),
-      fun t ht => (wrote_rest (by omega)).trans (hs t ht), fun t ht => wrote_done ht⟩
+      hrest.trans ((sameOutside_wrote le_rfl).mono tac_omega tac_omega),
+      fun t ht => (wrote_rest tac_omega).trans (hs t ht), fun t ht => wrote_done ht⟩
 
 /-- While the pairs are placed, before the pair number i: cls holds the starts, cur the next free
 place of each class, and the pairs before i stand at their places. -/
@@ -395,26 +396,26 @@ theorem ClsPlaced.step (pre : ClassesPre lim μ x) {i : ℕ} (hi : i < x.n * x.n
   have hk := pre.key_lt hi
   have hpos := sortPos_lt (clsKey x.RAB) hi
   refine ⟨fun t ht => ?_, fun t ht => ?_, fun j hj => ?_⟩
-  · rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega),
-      Function.update_of_ne (by omega)]
+  · rw [Function.update_of_ne tac_omega, Function.update_of_ne tac_omega,
+      Function.update_of_ne tac_omega]
     exact h.keep t ht
   · rw [cntEq_succ]
     by_cases e : clsKey x.RAB i = t
     · subst e
       rw [Function.update_self, if_pos rfl, sortPos, Nat.add_assoc]
-    · rw [if_neg e, Function.update_of_ne (by omega), Function.update_of_ne (by omega),
-        Function.update_of_ne (by omega)]
+    · rw [if_neg e, Function.update_of_ne tac_omega, Function.update_of_ne tac_omega,
+        Function.update_of_ne tac_omega]
       exact h.next t ht
   · rcases Nat.lt_succ_iff_lt_or_eq.1 hj with hj | rfl
     · have hne : sortPos (clsKey x.RAB) (x.n * x.n) j ≠ sortPos (clsKey x.RAB) (x.n * x.n) i :=
-        fun e => absurd (eq_of_sortPos_eq (by omega) hi e) (by omega)
+        fun e => absurd (eq_of_sortPos_eq tac_omega hi e) tac_omega
       have hlt := sortPos_lt (clsKey x.RAB) (show j < x.n * x.n by omega)
-      rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega),
-        Function.update_of_ne (by omega), Function.update_of_ne (by omega),
-        Function.update_of_ne (by omega), Function.update_of_ne (by omega)]
+      rw [Function.update_of_ne tac_omega, Function.update_of_ne tac_omega,
+        Function.update_of_ne tac_omega, Function.update_of_ne tac_omega,
+        Function.update_of_ne tac_omega, Function.update_of_ne tac_omega]
       exact h.done j hj
-    · rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega),
-        Function.update_self, Function.update_of_ne (by omega), Function.update_self]
+    · rw [Function.update_of_ne tac_omega, Function.update_of_ne tac_omega,
+        Function.update_self, Function.update_of_ne tac_omega, Function.update_self]
       exact ⟨rfl, rfl⟩
 
 /-- **The pair number i is written to its place.** -/
@@ -427,11 +428,9 @@ theorem clsPlaceOne_ends (pre : ClassesPre lim μ x) {i : ℕ} (hi : i < x.n * x
   light_facts pre
   have hread := pre.read hrest hi
   have hk := pre.key_lt hi
-  have hpos : sortPos (clsKey x.RAB) (x.n * x.n) i < x.n * x.n := sortPos_lt (clsKey x.RAB) hi
+  have hpos := sortPos_lt (clsKey x.RAB) hi
   have hcell : μ' (x.cur + clsKey x.RAB i) = (sortPos (clsKey x.RAB) (x.n * x.n) i : ℕ) :=
     h.next _ hk
-  have hrow := Nat.div_le_self i x.n
-  have hcol := Nat.mod_le i x.n
   have hstep := h.step pre hi
   have hrest' := ((hrest.update (b := x.qi + sortPos (clsKey x.RAB) (x.n * x.n) i)
     ⟨by omega, by omega⟩ (i / x.n : ℕ)).update (b := x.qj + sortPos (clsKey x.RAB) (x.n * x.n) i)
@@ -463,7 +462,7 @@ theorem clsPlace_ends (pre : ClassesPre lim μ x) (h : ClsState μ x (ClsCopied 
     ?start ?round ?done ?bound
   case start =>
     exact ⟨ad, pl, μ', by rw [update_frame_setLocal, Nat.zero_div, Nat.zero_mod]; rfl, hrest, hs,
-      fun t ht => by simpa [cntEq] using hcur t ht, fun j hj => absurd hj (by omega)⟩
+      fun t ht => by simpa [cntEq] using hcur t ht, fun j hj => absurd hj tac_omega⟩
   case bound =>
     rintro j _ - - ⟨ad, pl, μ'', rfl, -⟩
     simp
@@ -473,15 +472,15 @@ theorem clsPlace_ends (pre : ClassesPre lim μ x) (h : ClsState μ x (ClsCopied 
   case round =>
     rintro j _ hj - ⟨ad, pl, μ'', rfl, hr, hp⟩
     have hn : 0 < x.n := Nat.pos_of_ne_zero fun e => by simp [e] at hj
-    have hnn : x.n ≤ x.n * x.n := Nat.le_mul_of_pos_left x.n hn
+    have hnn := Nat.le_mul_of_pos_left x.n hn
     refine Ends.next 25 ((clsPlaceOne_ends hw pre hj ad pl hr hp).mono le_rfl ?_)
     rintro _ ⟨ad', pl', μ₃, rfl, hr', hp'⟩
-    refine Ends.nextPair ?_ hn (by omega) (by omega) rfl rfl rfl
+    refine Ends.nextPair ?_ hn tac_omega tac_omega rfl rfl rfl
     exact ⟨by simp, ad', pl', μ₃, by rw [update_frame_setLocal]; rfl, hr', hp'⟩
 
 end phases
 
-open Classes in
+open Classes
 /-- **classes** writes the starts of the classes and the rows and columns of the pairs, class after
 class. -/
 theorem classes_meets {pClasses : ℕ} (hP : P[pClasses]? = some classesBody)
@@ -507,7 +506,7 @@ theorem classes_meets {pClasses : ℕ} (hP : P[pClasses]? = some classesBody)
     segN_map_sortedIdx hkeys _ fun j hj => (hp.done j hj).2, hrest⟩
   have hl : t < (classStarts x.n x.p x.RAB).length := by simpa using ht
   have ht' : t < x.p + 1 := by simpa [classStarts] using hl
-  rw [List.getElem_map, ← List.getD_eq_getElem _ 0 hl, getD_classStarts x.n x.p x.RAB (by omega)]
-  exact hp.keep t (by omega)
+  rw [List.getElem_map, ← List.getD_eq_getElem _ 0 hl, getD_classStarts x.n x.p x.RAB tac_omega]
+  exact hp.keep t tac_omega
 
 end Light.Sec3

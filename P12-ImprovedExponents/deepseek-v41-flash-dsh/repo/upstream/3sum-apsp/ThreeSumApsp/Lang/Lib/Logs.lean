@@ -10,6 +10,7 @@ public import Mathlib.Data.Nat.Log
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Logarithms, the cube root and halves, without division
@@ -38,8 +39,8 @@ namespace Logs
 /-- The local variables of the routines: the argument, which the result replaces, the candidate,
 and a power of two. -/
 abbrev Arg : ℕ := 0
-@[inherit_doc Arg] abbrev Cand : ℕ := 1
-@[inherit_doc Arg] abbrev Power : ℕ := 2
+ abbrev Cand : ℕ := 1
+ abbrev Power : ℕ := 2
 
 end Logs
 
@@ -63,7 +64,7 @@ def log2Body : Stmt :=
 theorem log2_meets {p x : ℕ} (hp : P[p]? = some log2Body) (μ : ℕ → ℤ)
     (hword : ((2 * x + 2 : ℕ) : ℤ) ≤ lim.word) :
     Meets lim P p d [x] μ (log2Time x) fun r μ' => r = (Nat.log 2 x : ℤ) ∧ μ' = μ := by
-  have hlt : x < 2 ^ (Nat.log 2 x + 1) := Nat.lt_pow_succ_log_self (by norm_num) x
+  have hlt : x < 2 ^ (Nat.log 2 x + 1) := Nat.lt_pow_succ_log_self tac_norm_num x
   refine .of_body hp ?_
   unfold log2Body log2Time
   -- L := 0; p := 2
@@ -71,16 +72,16 @@ theorem log2_meets {p x : ℕ} (hp : P[p]? = some log2Body) (μ : ℕ → ℤ)
   light_set 2
   -- while p ≤ x.  Before round i, L = i and p = 2^(i + 1).
   refine Ends.next _ (Ends.whileBlock (fun i σ => σ = ⟨frame [x, i, (2 ^ (i + 1) : ℕ)], μ⟩)
-    (Nat.log 2 x) (by simp) ?round ?done le_rfl)
+    (Nat.log 2 x) tac_simp ?round ?done le_rfl)
   case round =>
     rintro i _ hi rfl
     have hx : x ≠ 0 := by
       rintro rfl
       simp at hi
     have hle : 2 ^ (i + 1) ≤ x :=
-      (Nat.pow_le_pow_right (by norm_num) (by omega)).trans (Nat.pow_log_le_self 2 hx)
-    have hix : i < x := lt_of_lt_of_le (Nat.lt_pow_self (by norm_num))
-      ((Nat.pow_le_pow_right (by norm_num) (by omega)).trans hle)
+      (Nat.pow_le_pow_right tac_norm_num tac_omega).trans (Nat.pow_log_le_self 2 hx)
+    have hix : i < x := lt_of_lt_of_le (Nat.lt_pow_self tac_norm_num)
+      ((Nat.pow_le_pow_right tac_norm_num tac_omega).trans hle)
     rw [show 2 ^ (i + 1 + 1) = 2 ^ (i + 1) + 2 ^ (i + 1) by ring]
     generalize 2 ^ (i + 1) = q at hle
     -- The test is safe and holds.  p := p + p; L := L + 1 is safe and leads to the next state.
@@ -111,7 +112,7 @@ def clog2Body : Stmt :=
 theorem clog2_meets {p x : ℕ} (hp : P[p]? = some clog2Body) (μ : ℕ → ℤ)
     (hword : ((2 * x + 1 : ℕ) : ℤ) ≤ lim.word) :
     Meets lim P p d [x] μ (clog2Time x) fun r μ' => r = (Nat.clog 2 x : ℤ) ∧ μ' = μ := by
-  have hle : x ≤ 2 ^ Nat.clog 2 x := Nat.le_pow_clog (by norm_num) x
+  have hle : x ≤ 2 ^ Nat.clog 2 x := Nat.le_pow_clog tac_norm_num x
   refine .of_body hp ?_
   unfold clog2Body clog2Time
   -- L := 0; p := 1
@@ -119,11 +120,11 @@ theorem clog2_meets {p x : ℕ} (hp : P[p]? = some clog2Body) (μ : ℕ → ℤ)
   light_set 1
   -- while p < x.  Before round i, L = i and p = 2^i.
   refine Ends.next _ (Ends.whileBlock (fun i σ => σ = ⟨frame [x, i, (2 ^ i : ℕ)], μ⟩)
-    (Nat.clog 2 x) (by simp) ?round ?done le_rfl)
+    (Nat.clog 2 x) tac_simp ?round ?done le_rfl)
   case round =>
     rintro i _ hi rfl
-    have hlt : 2 ^ i < x := (Nat.lt_clog_iff_pow_lt (by norm_num)).1 hi
-    have hix : i < x := lt_trans (Nat.lt_pow_self (by norm_num)) hlt
+    have hlt := (Nat.lt_clog_iff_pow_lt tac_norm_num).1 hi
+    have hix := lt_trans (Nat.lt_pow_self tac_norm_num) hlt
     rw [show 2 ^ (i + 1) = 2 ^ i + 2 ^ i by ring]
     generalize 2 ^ i = q at hlt
     -- The test is safe and holds.  p := p + p; L := L + 1 is safe and leads to the next state.
@@ -139,7 +140,7 @@ theorem clog2_meets {p x : ℕ} (hp : P[p]? = some clog2Body) (μ : ℕ → ℤ)
 /-! ## The cube root, rounded up -/
 
 /-- Some cube is at least n. -/
-theorem exists_le_cube (n : ℕ) : ∃ s, n ≤ s ^ 3 := ⟨n, Nat.le_self_pow (by norm_num) n⟩
+theorem exists_le_cube (n : ℕ) : ∃ s, n ≤ s ^ 3 := ⟨n, Nat.le_self_pow tac_norm_num n⟩
 
 /-- The least s with s³ ≥ n. -/
 def cbrtLeast (n : ℕ) : ℕ := Nat.find (exists_le_cube n)
@@ -153,7 +154,7 @@ theorem cbrtLeast_le {n s : ℕ} (h : n ≤ s ^ 3) : cbrtLeast n ≤ s :=
   Nat.find_min' (exists_le_cube n) h
 
 theorem cbrtLeast_le_self (n : ℕ) : cbrtLeast n ≤ n :=
-  cbrtLeast_le (Nat.le_self_pow (by norm_num) n)
+  cbrtLeast_le (Nat.le_self_pow tac_norm_num n)
 
 /-- The number ⌈n^{1/3}⌉ is at least 1 for n ≥ 1. -/
 theorem one_le_cbrtLeast {n : ℕ} (hn : 1 ≤ n) : 1 ≤ cbrtLeast n := by
@@ -167,12 +168,12 @@ theorem cbrtLeast_pow_le (n : ℕ) : cbrtLeast n ^ 3 ≤ 8 * n := by
   rcases Nat.eq_zero_or_pos (cbrtLeast n) with h | h
   · simp [h]
   obtain ⟨s, hs⟩ : ∃ s, cbrtLeast n = s + 1 := ⟨cbrtLeast n - 1, by omega⟩
-  have h1 : s ^ 3 < n := pow_lt_of_lt_cbrtLeast (by omega)
+  have h1 : s ^ 3 < n := pow_lt_of_lt_cbrtLeast tac_omega
   rw [hs]
   rcases Nat.eq_zero_or_pos s with h0 | h0
   · subst h0
     omega
-  · calc (s + 1) ^ 3 ≤ (2 * s) ^ 3 := Nat.pow_le_pow_left (by omega) 3
+  · calc (s + 1) ^ 3 ≤ (2 * s) ^ 3 := Nat.pow_le_pow_left tac_omega 3
       _ = 8 * s ^ 3 := by ring
       _ ≤ 8 * n := by omega
 
@@ -188,8 +189,6 @@ private theorem abs_cube_le {n i : ℕ} (hword : ((8 * n + 1 : ℕ) : ℤ) ≤ l
     · simp
     · exact Nat.le_mul_of_pos_right _ h
   have hcube' : (i : ℤ) * i * i ≤ 8 * n := by exact_mod_cast hcube
-  have hsquare' : (i : ℤ) * i ≤ 8 * n := by exact_mod_cast hsquare.trans hcube
-  have h2 : (0 : ℤ) ≤ (i : ℤ) * i := by positivity
   have h3 : (0 : ℤ) ≤ (i : ℤ) * i * i := by positivity
   push_cast at hword
   exact ⟨abs_le.2 ⟨by omega, by omega⟩, abs_le.2 ⟨by omega, by omega⟩⟩
@@ -208,13 +207,13 @@ def cbrtCeilBody : Stmt :=
 theorem cbrtCeil_meets {p n : ℕ} (hp : P[p]? = some cbrtCeilBody) (μ : ℕ → ℤ)
     (hword : ((8 * n + 1 : ℕ) : ℤ) ≤ lim.word) :
     Meets lim P p d [n] μ (cbrtCeilTime n) fun r μ' => r = (cbrtLeast n : ℤ) ∧ μ' = μ := by
-  have hsn : cbrtLeast n ≤ n := cbrtLeast_le_self n
+  have hsn := cbrtLeast_le_self n
   refine .of_body hp ?_
   unfold cbrtCeilBody cbrtCeilTime
   -- s := 0
   light_set 0
   -- while s³ < n.  Before round i, s = i.
-  refine Ends.next _ (Ends.whileBlock (fun i σ => σ = ⟨frame [n, i], μ⟩) (cbrtLeast n) (by simp)
+  refine Ends.next _ (Ends.whileBlock (fun i σ => σ = ⟨frame [n, i], μ⟩) (cbrtLeast n) tac_simp
     ?round ?done le_rfl)
   case round =>
     rintro i _ hi rfl
@@ -257,7 +256,7 @@ theorem half_meets {p h : ℕ} (hp : P[p]? = some halfBody) (μ : ℕ → ℤ)
   -- r := 0
   light_set 0
   -- while r + r < h.  Before round i, r = i.
-  refine Ends.next _ (Ends.whileBlock (fun i σ => σ = ⟨frame [h, i], μ⟩) ((h + 1) / 2) (by simp)
+  refine Ends.next _ (Ends.whileBlock (fun i σ => σ = ⟨frame [h, i], μ⟩) ((h + 1) / 2) tac_simp
     ?round ?done le_rfl)
   case round =>
     rintro i _ hi rfl

@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Buckets
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.NodeMemory
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The reduction from 3SUM to Convolution-3SUM: the array of a node
@@ -59,36 +60,36 @@ sign sg, the number g that is added, the address and the length of the set, the 
 in its group, and the distance to the second cell; the free pointer behind the remainders; and the
 padding pattern. -/
 abbrev MOD : ℕ := 0
-@[inherit_doc MOD] abbrev SET1 : ℕ := 1
-@[inherit_doc MOD] abbrev LEN1 : ℕ := 2
-@[inherit_doc MOD] abbrev SET2 : ℕ := 3
-@[inherit_doc MOD] abbrev LEN2 : ℕ := 4
-@[inherit_doc MOD] abbrev SET3 : ℕ := 5
-@[inherit_doc MOD] abbrev LEN3 : ℕ := 6
-@[inherit_doc MOD] abbrev VMAX : ℕ := 7
-@[inherit_doc MOD] abbrev MMAX : ℕ := 8
-@[inherit_doc MOD] abbrev ARRAY : ℕ := 9
-@[inherit_doc MOD] abbrev CNT : ℕ := 10
-@[inherit_doc MOD] abbrev FREE : ℕ := 11
-@[inherit_doc MOD] abbrev WIDTH : ℕ := 12
-@[inherit_doc MOD] abbrev GAP : ℕ := 13
-@[inherit_doc MOD] abbrev IDX : ℕ := 14
-@[inherit_doc MOD] abbrev ADDR : ℕ := 15
-@[inherit_doc MOD] abbrev KEY : ℕ := 16
-@[inherit_doc MOD] abbrev VAL : ℕ := 17
-@[inherit_doc MOD] abbrev RES : ℕ := 18
-@[inherit_doc MOD] abbrev GROUPS : ℕ := 19
-@[inherit_doc MOD] abbrev SIGN : ℕ := 20
-@[inherit_doc MOD] abbrev SHIFT : ℕ := 21
-@[inherit_doc MOD] abbrev SRC : ℕ := 22
-@[inherit_doc MOD] abbrev LEN : ℕ := 23
-@[inherit_doc MOD] abbrev OFF : ℕ := 24
-@[inherit_doc MOD] abbrev DIST : ℕ := 25
-@[inherit_doc MOD] abbrev FR2 : ℕ := 26
-@[inherit_doc MOD] abbrev PAD0 : ℕ := 27
-@[inherit_doc MOD] abbrev PAD1 : ℕ := 28
-@[inherit_doc MOD] abbrev PAD2 : ℕ := 29
-@[inherit_doc MOD] abbrev PAD3 : ℕ := 30
+ abbrev SET1 : ℕ := 1
+ abbrev LEN1 : ℕ := 2
+ abbrev SET2 : ℕ := 3
+ abbrev LEN2 : ℕ := 4
+ abbrev SET3 : ℕ := 5
+ abbrev LEN3 : ℕ := 6
+ abbrev VMAX : ℕ := 7
+ abbrev MMAX : ℕ := 8
+ abbrev ARRAY : ℕ := 9
+ abbrev CNT : ℕ := 10
+ abbrev FREE : ℕ := 11
+ abbrev WIDTH : ℕ := 12
+ abbrev GAP : ℕ := 13
+ abbrev IDX : ℕ := 14
+ abbrev ADDR : ℕ := 15
+ abbrev KEY : ℕ := 16
+ abbrev VAL : ℕ := 17
+ abbrev RES : ℕ := 18
+ abbrev GROUPS : ℕ := 19
+ abbrev SIGN : ℕ := 20
+ abbrev SHIFT : ℕ := 21
+ abbrev SRC : ℕ := 22
+ abbrev LEN : ℕ := 23
+ abbrev OFF : ℕ := 24
+ abbrev DIST : ℕ := 25
+ abbrev FR2 : ℕ := 26
+ abbrev PAD0 : ℕ := 27
+ abbrev PAD1 : ℕ := 28
+ abbrev PAD2 : ℕ := 29
+ abbrev PAD3 : ℕ := 30
 
 end ArrLocals
 
@@ -130,7 +131,7 @@ abbrev arrLocals (a : ArrArgs) (x : ArrScratch) (sg g : ℤ) (s len off δ : ℕ
 
 /-! ## The padding pattern -/
 
-open ArrLocals in
+open ArrLocals
 /-- For i < 2m²: the four cells of group i become the padding pattern. -/
 def padStmt : Stmt :=
   .for IDX (v GROUPS) (
@@ -151,8 +152,8 @@ theorem PadInv.succ {μ μ' : ℕ → ℤ} {y c j : ℕ} {p : ℕ → ℤ} (h : 
   refine ⟨fun i hi t ht => ?_, (((h.2.update ⟨by omega, by omega⟩ _).update ⟨by omega, by omega⟩
     _).update ⟨by omega, by omega⟩ _).update ⟨by omega, by omega⟩ _⟩
   rcases Nat.lt_succ_iff_lt_or_eq.1 hi with hlt | rfl
-  · rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega),
-      Function.update_of_ne (by omega), Function.update_of_ne (by omega), h.1 i hlt t ht]
+  · rw [Function.update_of_ne tac_omega, Function.update_of_ne tac_omega,
+      Function.update_of_ne tac_omega, Function.update_of_ne tac_omega, h.1 i hlt t ht]
   · interval_cases t <;> simp
 
 /-- **The padding pattern** is written to all groups. -/
@@ -165,7 +166,7 @@ theorem pad_ends {μ : ℕ → ℤ} {a : ArrArgs} (hw : (lim.space : ℤ) ≤ li
           μ'⟩ := by
   -- for i < 2m²
   refine Ends.forFrame (PadInv μ a.y (2 * (a.m * a.m)) (padVal a.V)) (2 * (a.m * a.m))
-    ⟨fun i hi => absurd hi (by omega), .refl⟩ ?round ?done
+    ⟨fun i hi => absurd hi tac_omega, .refl⟩ ?round ?done
   case round =>
     intro j μ' hj inv
     -- mem[y + 4i] := p₀; mem[y + 4i + 1] := p₁; mem[y + 4i + 2] := p₂; mem[y + 4i + 3] := p₃
@@ -178,7 +179,7 @@ theorem pad_ends {μ : ℕ → ℤ} {a : ArrArgs} (hw : (lim.space : ℤ) ≤ li
 
 /-! ## One pass over a set -/
 
-open ArrLocals in
+open ArrLocals
 /-- A round of the loop of a pass: key := mem[fr + j]; if mem[cnt + key] = 1 then
 sg * mem[s + j] + g is written to the cells y + 4 key + off and y + 4 key + off + δ. -/
 def placeRound : Stmt :=
@@ -190,11 +191,11 @@ def placeRound : Stmt :=
      .store (v ADDR +' v DIST) (v VAL))
     .skip
 
-open ArrLocals in
+open ArrLocals
 /-- The loop of a pass: a round for each j < len. -/
 def placeLoop : Stmt := .for IDX (v LEN) placeRound
 
-open ArrLocals in
+open ArrLocals
 /-- One pass.  The remainders of the numbers sg · x go to the cells from the free pointer and are
 counted; the loop writes sg · x + g for every x whose remainder has the count 1; the counts are
 removed. -/
@@ -242,7 +243,7 @@ theorem succ_one (h : PlaceInv μ μ' y off δ Mo K val j) (hj : j < K.length) (
     · subst hrK
       rw [if_pos ⟨hone, (mem_take_succ hj _).2 (Or.inr rfl)⟩]
       rcases he with rfl | rfl <;> simp [Function.update_apply]
-    · rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega), h.cells r hr e he]
+    · rw [Function.update_of_ne tac_omega, Function.update_of_ne tac_omega, h.cells r hr e he]
       simp only [mem_take_succ hj, hrK, or_false]
   · rw [Function.update_of_ne fun hEq => hb ⟨_, hlt, Or.inr hEq⟩,
       Function.update_of_ne fun hEq => hb ⟨_, hlt, Or.inl hEq⟩, h.rest b hb]
@@ -263,7 +264,7 @@ theorem done (h : PlaceInv μ μ' y off δ Mo K val K.length) {r : ℕ} (hr : r 
       if K.count r = 1 then val r else μ (y + 4 * r + off + e) := by
   rw [h.cells r hr e he, List.take_length]
   by_cases hone : K.count r = 1
-  · rw [if_pos ⟨hone, List.count_pos_iff.1 (by omega)⟩, if_pos hone]
+  · rw [if_pos ⟨hone, List.count_pos_iff.1 tac_omega⟩, if_pos hone]
   · rw [if_neg fun h => hone h.1, if_neg hone]
 
 end PlaceInv
@@ -313,20 +314,19 @@ theorem placeRound_ends (H : PassPre lim μ₀ d a sg g s off δ cap ylen L)
   light_facts H H.bucket H.bucket.ok
   have hcells := H.bucket.ok.cells
   simp only [collNeed] at hcells
-  have hjK : j < K.length := hlen ▸ hj
+  have hjK := hlen ▸ hj
   have hkey_lt := hlt _ (List.getElem_mem hjK)
   -- The three cells that the round reads lie outside the array, so they have not changed.
   have hout : ∀ b, (b < a.y ∨ a.y + ylen ≤ b) → μ' b = μ b := fun b hb =>
     inv.rest b fun ⟨r, hr, hEq⟩ => by omega
-  have hkey : μ' (a.fr + j) = (K[j] : ℕ) := (hout _ (by omega)).trans (counted.keys.getElem hjK)
+  have hkey := (hout _ tac_omega).trans (counted.keys.getElem hjK)
   have hcount : μ' (a.cnt + K[j]) = (K.count K[j] : ℤ) :=
-    (hout _ (by omega)).trans (counted.counts _ (by omega))
-  have hread : μ' (s + j) = L[j] := (hout _ (by omega)).trans (hL j hj)
+    (hout _ tac_omega).trans (counted.counts _ tac_omega)
+  have hread := (hout _ tac_omega).trans (hL j hj)
   -- The value that is written fits in a word.
   have hV : |sg * L[j]| ≤ (a.V : ℤ) := by
     rcases H.sign with rfl | rfl <;> simpa using H.bucket.bounded.getElem hj
   have hprod := abs_le.1 hV
-  have habs := abs_mul sg L[j]
   have hg' := abs_le.1 (le_refl |g|)
   -- key := mem[fr + j]
   light_set K[j] using hkey
@@ -380,8 +380,6 @@ theorem place_ends {pResid pTally : ℕ} (hR : ResidSpec lim P pResid) (hT : Tal
   simp only [tPlace]
   have hlen : (keys a.Mo (L.map (sg * ·))).length = L.length := by simp
   have hlt := keys_lt C.modulus_pos (L.map (sg * ·))
-  have hword := sq_add_le_word C.ok.word
-  have hsq : (0 : ℤ) ≤ (L.length : ℤ) * L.length := by positivity
   light_facts H C C.ok
   have hcells := C.ok.cells
   have hdepth := C.ok.depth
@@ -405,7 +403,7 @@ theorem place_ends {pResid pTally : ℕ} (hR : ResidSpec lim P pResid) (hT : Tal
   refine ⟨{ x₃ with res := res' }, μ₄, rfl, fun r hr e he => ?_, ?_⟩
   · have hcell := H.placeCell_lt (b := a.y + 4 * r + off + e) ⟨r, hr, by omega⟩
     rw [← hlen] at inv
-    rw [same₄ _ (by omega), inv.done hr he, kept₂ _ (by omega)]
+    rw [same₄ _ tac_omega, inv.done hr he, kept₂ _ tac_omega]
   · exact sameOn_of_zeroAt ((kept₂.then inv.rest fun b hb => ⟨⟨hb.1.1, hb.2⟩, hb.1.2⟩).then same₄
       fun b hb => ⟨hb, hb.2⟩) C.zero zero₄
 
@@ -473,15 +471,15 @@ theorem place_col (hR : ResidSpec lim P pResid) (hT : TallySpec lim P pTally)
   light_facts H
   refine (place_arr hR hT H hnd (pd := pd) (fun r hr e he => ?_) x).mono le_rfl ?_
   · obtain rfl : e = 0 := by omega
-    exact hpad r (by omega)
+    exact hpad r tac_omega
   rintro _ ⟨x', μ', rfl, hcells, hrest⟩
   refine ⟨x', μ', rfl, fun i hi => ?_, SameOn.mono hrest fun b hb => ⟨hb.1, ?_⟩⟩
   · by_cases hiM : i < a.Mo
     · simpa using hcells i hiM 0 (Or.inl rfl)
     · rw [hrest _ ⟨by omega, fun ⟨r, hr, hEq⟩ => by omega⟩,
-        arr_of_le H.bucket.modulus_pos _ _ (by omega), hpad i hi]
+        arr_of_le H.bucket.modulus_pos _ _ tac_omega, hpad i hi]
   · rintro ⟨r, hr, hEq⟩
-    exact hb.2 r (by omega) (by omega)
+    exact hb.2 r tac_omega tac_omega
 
 /-- **The pass for the third set**: if cell off of each of the c groups holds -(2V + 1) + g before,
 then afterwards cell off of group i holds entry i of the third array of the node, plus g, and no
@@ -500,32 +498,32 @@ theorem place_colZ (hR : ResidSpec lim P pResid) (hT : TallySpec lim P pTally)
     simp
   refine (place_arr hR hT H hnd (pd := -(2 * a.V + 1)) (fun r hr e he => ?_) x).mono le_rfl ?_
   · rcases he with rfl | rfl
-    · exact hpad r (by omega)
+    · exact hpad r tac_omega
     · rw [show a.y + 4 * r + off + 4 * a.Mo = a.y + 4 * (r + a.Mo) + off by ring]
-      exact hpad _ (by omega)
+      exact hpad _ tac_omega
   rintro _ ⟨x', μ', rfl, hcells, hrest⟩
   rw [himage] at hcells
   refine ⟨fun i hi => ?_, SameOn.mono hrest fun b hb => ⟨hb.1, ?_⟩⟩
   · change μ' (a.y + 4 * i + off) = _
     unfold arrZ pad
     by_cases hiM : i < a.Mo
-    · rw [if_pos (by omega), Nat.mod_eq_of_lt hiM]
+    · rw [if_pos tac_omega, Nat.mod_eq_of_lt hiM]
       simpa using hcells i hiM 0 (Or.inl rfl)
     · by_cases hi2 : i < 2 * a.Mo
-      · have h := hcells (i - a.Mo) (by omega) (4 * a.Mo) (Or.inr rfl)
+      · have h := hcells (i - a.Mo) tac_omega (4 * a.Mo) (Or.inr rfl)
         rw [show a.y + 4 * (i - a.Mo) + off + 4 * a.Mo = a.y + 4 * i + off by omega] at h
-        rw [if_pos hi2, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+        rw [if_pos hi2, Nat.mod_eq_sub_mod tac_omega, Nat.mod_eq_of_lt tac_omega]
         simpa using h
       · rw [if_neg hi2, hrest _ ⟨by omega, fun ⟨r, hr, hEq⟩ => by omega⟩, hpad i hi]
   · rintro ⟨r, hr, hEq | hEq⟩
-    · exact hb.2 r (by omega) hEq
-    · exact hb.2 (r + a.Mo) (by omega) (by omega)
+    · exact hb.2 r tac_omega hEq
+    · exact hb.2 (r + a.Mo) tac_omega tac_omega
 
 end column
 
 /-! ## The routine -/
 
-open ArrLocals in
+open ArrLocals
 /-- The constants: W = 2V + 1, G = 3W + 1, the number 2m² of groups, and the padding pattern. -/
 def arrConsts : Stmt :=
   .set WIDTH (k 2 *' v VMAX +' k 1) ;;
@@ -536,7 +534,7 @@ def arrConsts : Stmt :=
   .set PAD2 (v WIDTH +' k 3 *' v GAP) ;;
   .set PAD3 (k 4 *' v GAP -' v WIDTH)
 
-open ArrLocals in
+open ArrLocals
 /-- The pass for the first set: x + G goes to cell 1 of the group of its remainder. -/
 def arrPass₁ (pResid pTally : ℕ) : Stmt :=
   .set SIGN (k 1) ;;
@@ -547,14 +545,14 @@ def arrPass₁ (pResid pTally : ℕ) : Stmt :=
   .set DIST (k 0) ;;
   placeStmt pResid pTally
 
-open ArrLocals in
+open ArrLocals
 /-- The pass for the second set: x + 3G goes to cell 2 of the group of its remainder.  The sign 1
 and the distance 0 are as the first pass left them. -/
 def arrPass₂ (pResid pTally : ℕ) : Stmt :=
   .set SHIFT (k 3 *' v GAP) ;; .set SRC (v SET2) ;; .set LEN (v LEN2) ;; .set OFF (k 2) ;;
   placeStmt pResid pTally
 
-open ArrLocals in
+open ArrLocals
 /-- The pass for the third set: -x + 4G goes to cell 3 of the groups r and r + M, where r is the
 remainder of -x. -/
 def arrPass₃ (pResid pTally : ℕ) : Stmt :=
@@ -597,7 +595,7 @@ variable {μ μ' : ℕ → ℤ} {n : ℕ} {a : ArrArgs} {s : ℕ} {L : List ℤ}
 theorem ArrPre.keptBut (h : ArrPre lim μ d n a)
     (hk : KeptBut μ μ' a.fr a.y (4 * (2 * (a.m * a.m)))) : ArrPre lim μ' d n a := by
   light_facts h
-  exact { h with zero := fun q hq => (hk _ (by omega)).trans (h.zero q hq) }
+  exact { h with zero := fun q hq => (hk _ tac_omega).trans (h.zero q hq) }
 
 /-- The assumptions about a set do not depend on the cells of the array. -/
 theorem ArrSet.keptBut (h : ArrSet μ n a s L)
@@ -608,7 +606,7 @@ theorem ArrSet.keptBut (h : ArrSet μ n a s L)
 /-- The numbers up to 64 (V + 1) fit in a word. -/
 theorem ArrPre.word_le (h : ArrPre lim μ d n a) : 64 * ((a.V : ℤ) + 1) ≤ lim.word := by
   simpa using mul_le_word (x := 1) (y := 1) (z := 64 * (a.V + 1)) h.ok.word
-    (Nat.one_le_pow _ _ (by omega)) (by omega) le_rfl
+    (Nat.one_le_pow _ _ tac_omega) tac_omega le_rfl
 
 /-- What a pass assumes, from what nodeArray assumes. -/
 theorem ArrPre.pass (h : ArrPre lim μ d n a) (hS : ArrSet μ n a s L) {sg g : ℤ} {off δ : ℕ}
@@ -647,8 +645,6 @@ theorem arrConsts_ends (h : ArrPre lim μ d n a) :
       fun σ' => σ' = ⟨frame (arrLocals a ⟨0, 0, 0, 0, 0, 0⟩ 0 0 0 0 0 0), μ⟩ := by
   have hword := h.word_le
   light_facts h h.ok
-  have hnonneg : (0 : ℤ) ≤ (a.m : ℤ) * a.m := by positivity
-  have habs : |6 * (a.V : ℤ) + 4| = 6 * a.V + 4 := abs_of_nonneg (by positivity)
   have hgroups : 8 * ((a.m : ℤ) * a.m) ≤ lim.space := by
     have : 8 * (a.m * a.m) ≤ lim.space := by omega
     exact_mod_cast this
@@ -683,8 +679,8 @@ theorem arrPass₁_ends (hR : ResidSpec lim P pResid) (hT : TallySpec lim P pTal
   light_set L.length using hl
   light_set (1 : ℕ)
   light_set (0 : ℕ)
-  light_piece (place_col hR hT (h.pass hS (Or.inl rfl) (by omega) (Or.inl rfl)
-    (by positivity) (by omega)) hS.nodup (pd := 2 * a.V + 1)
+  light_piece (place_col hR hT (h.pass hS (Or.inl rfl) tac_omega (Or.inl rfl)
+    tac_positivity tac_omega) hS.nodup (pd := 2 * a.V + 1)
     (fun i hi => by rw [hpad i hi]; simp [padVal]) x)
 
 /-- **The pass for the second set.** -/
@@ -700,14 +696,13 @@ theorem arrPass₂_ends (hR : ResidSpec lim P pResid) (hT : TallySpec lim P pTal
           arr L.toFinset a.Mo (2 * a.V + 1) i + 3 * (6 * a.V + 4)) ∧
         KeptCol μ μ' a.fr a.y (2 * (a.m * a.m)) 2 := by
   have hword := h.word_le
-  have habs : |6 * (a.V : ℤ) + 4| = 6 * a.V + 4 := abs_of_nonneg (by positivity)
   -- g := 3 G; s := s₂; len := l₂; off := 2
   light_set (3 * (6 * a.V + 4))
   light_set a.s₂
   light_set L.length using hl
   light_set (2 : ℕ)
-  light_piece (place_col hR hT (h.pass hS (Or.inl rfl) (by omega) (Or.inl rfl)
-    (by positivity) (by omega)) hS.nodup (pd := 2 * a.V + 1)
+  light_piece (place_col hR hT (h.pass hS (Or.inl rfl) tac_omega (Or.inl rfl)
+    tac_positivity tac_omega) hS.nodup (pd := 2 * a.V + 1)
     (fun i hi => by rw [hpad i hi]; simp [padVal]) x)
 
 /-- **The pass for the third set.** -/
@@ -721,7 +716,6 @@ theorem arrPass₃_ends (hR : ResidSpec lim P pResid) (hT : TallySpec lim P pTal
         arrZ L.toFinset a.Mo a.V i + 4 * (6 * a.V + 4)) ∧
       KeptCol μ σ'.mem a.fr a.y (2 * (a.m * a.m)) 3 := by
   have hword := h.word_le
-  have habs : |6 * (a.V : ℤ) + 4| = 6 * a.V + 4 := abs_of_nonneg (by positivity)
   light_facts h h.ok
   -- sg := -1; g := 4 G; s := s₃; len := l₃; off := 3; δ := 4 M
   light_set (-1)
@@ -730,8 +724,8 @@ theorem arrPass₃_ends (hR : ResidSpec lim P pResid) (hT : TallySpec lim P pTal
   light_set L.length using hl
   light_set (3 : ℕ)
   light_set (4 * a.Mo : ℕ)
-  light_piece (place_colZ hR hT (h.pass hS (Or.inr rfl) (by omega) (Or.inr rfl)
-    (by positivity) (by omega)) hS.nodup (fun i hi => by rw [hpad i hi]; simp [padVal]) x)
+  light_piece (place_colZ hR hT (h.pass hS (Or.inr rfl) tac_omega (Or.inr rfl)
+    tac_positivity tac_omega) hS.nodup (fun i hi => by rw [hpad i hi]; simp [padVal]) x)
 
 /-- The four kinds of cells make up the one-array instance of the node. -/
 theorem oneArray_of_cells {ν : Node} {V y c : ℕ} (h₀ : ∀ i < c, μ (y + 4 * i + 0) = padVal V 0)
@@ -741,15 +735,15 @@ theorem oneArray_of_cells {ν : Node} {V y c : ℕ} (h₀ : ∀ i < c, μ (y + 4
     ∀ u < 4 * c, μ (y + u) = ν.oneArray V u := by
   intro u hu
   obtain ⟨i, t, ht, rfl⟩ : ∃ i t, t < 4 ∧ u = 4 * i + t :=
-    ⟨u / 4, u % 4, Nat.mod_lt _ (by norm_num), (Nat.div_add_mod u 4).symm⟩
+    ⟨u / 4, u % 4, Nat.mod_lt _ tac_norm_num, (Nat.div_add_mod u 4).symm⟩
   obtain ⟨c₀, c₁, c₂, c₃⟩ := oneArray_cells ν V i
   rw [← Nat.add_assoc]
   interval_cases t
-  · rw [h₀ i (by omega), Nat.add_zero, c₀]
+  · rw [h₀ i tac_omega, Nat.add_zero, c₀]
     simp [padVal]
-  · rw [h₁ i (by omega), c₁]
-  · rw [h₂ i (by omega), c₂]
-  · rw [h₃ i (by omega), c₃]
+  · rw [h₁ i tac_omega, c₁]
+  · rw [h₂ i tac_omega, c₂]
+  · rw [h₃ i tac_omega, c₃]
 
 /-- **The whole routine**, for the arguments a and the three sets as lists. -/
 theorem nodeArrayBody_ends {L₁ L₂ L₃ : List ℤ} (hR : ResidSpec lim P pResid)
@@ -767,30 +761,30 @@ theorem nodeArrayBody_ends {L₁ L₂ L₃ : List ℤ} (hR : ResidSpec lim P pRe
   -- the constants
   light_piece (arrConsts_ends h) with _ rfl
   -- the padding pattern
-  light_piece (pad_ends h.ok.space (by omega)) with _ ⟨μ₀, ⟨hpad, same₀⟩, rfl⟩
+  light_piece (pad_ends h.ok.space tac_omega) with _ ⟨μ₀, ⟨hpad, same₀⟩, rfl⟩
   have kept₀ : KeptBut μ μ₀ a.fr a.y (4 * (2 * (a.m * a.m))) := SameOn.mono same₀ fun _ hb => hb.2
   -- the first set
   light_piece (arrPass₁_ends hR hT (h.keptBut kept₀) (hS₁.keptBut kept₀) hl₁
-    fun i hi => hpad i hi 1 (by omega)) with _ ⟨x₁, μ₁, rfl, col₁, same₁⟩
+    fun i hi => hpad i hi 1 tac_omega) with _ ⟨x₁, μ₁, rfl, col₁, same₁⟩
   have kept₁ := same₁.keptBut kept₀
   -- the second set
   light_piece (arrPass₂_ends hR hT (h.keptBut kept₁) (hS₂.keptBut kept₁) hl₂
-    fun i hi => (same₁.cell (by omega)).trans (hpad i hi 2 (by omega)))
+    fun i hi => (same₁.cell tac_omega).trans (hpad i hi 2 tac_omega))
     with _ ⟨x₂, μ₂, rfl, col₂, same₂⟩
   have kept₂ := same₂.keptBut kept₁
   -- the third set
   light_piece (arrPass₃_ends hR hT (h.keptBut kept₂) (hS₃.keptBut kept₂) hl₃
-    fun i hi => (same₂.cell (by omega)).trans ((same₁.cell (by omega)).trans
-      (hpad i hi 3 (by omega)))) with ⟨_, μ₃⟩ ⟨col₃, same₃⟩
+    fun i hi => (same₂.cell tac_omega).trans ((same₁.cell tac_omega).trans
+      (hpad i hi 3 tac_omega))) with ⟨_, μ₃⟩ ⟨col₃, same₃⟩
   -- Each pass has left the cells of the other kinds as they were.
   refine ⟨oneArray_of_cells (fun i hi => ?_) (fun i hi => ?_) (fun i hi => ?_) col₃,
     same₃.keptBut kept₂⟩
-  · exact (same₃.cell (by omega)).trans
-      ((same₂.cell (by omega)).trans
-        ((same₁.cell (by omega)).trans (hpad i hi 0 (by omega))))
-  · exact (same₃.cell (by omega)).trans
-      ((same₂.cell (by omega)).trans (col₁ i hi))
-  · exact (same₃.cell (by omega)).trans (col₂ i hi)
+  · exact (same₃.cell tac_omega).trans
+      ((same₂.cell tac_omega).trans
+        ((same₁.cell tac_omega).trans (hpad i hi 0 tac_omega)))
+  · exact (same₃.cell tac_omega).trans
+      ((same₂.cell tac_omega).trans (col₁ i hi))
+  · exact (same₃.cell tac_omega).trans (col₂ i hi)
 
 end routine
 

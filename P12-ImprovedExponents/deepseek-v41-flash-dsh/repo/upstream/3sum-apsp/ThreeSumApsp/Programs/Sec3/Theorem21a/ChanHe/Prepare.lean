@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Lib.Copy
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.HostContracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # 3SUM from Convolution-3SUM: filling the arrays of the host
@@ -36,7 +37,7 @@ the specification.
 
 namespace Light.Sec3.ChanHe
 
-open ThreeSumApsp ThreeSumApsp.ChanHe ThreeSumApsp.Spec Finset
+open ThreeSumApsp ThreeSumApsp.ChanHe Finset
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -50,29 +51,29 @@ multiplicities, the table of digits, the three sets, the doubles and the cell th
 free pointer behind the arrays.  Then the number of primes, a local for results that are not read,
 and the number of distinct values. -/
 abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Bound : ℕ := 1
-@[inherit_doc Len] abbrev Digits : ℕ := 2
-@[inherit_doc Len] abbrev PrimeBound : ℕ := 3
-@[inherit_doc Len] abbrev Src : ℕ := 4
-@[inherit_doc Len] abbrev Base : ℕ := 5
-@[inherit_doc Len] abbrev Primes : ℕ := 6
-@[inherit_doc Len] abbrev Square : ℕ := 7
-@[inherit_doc Len] abbrev Count : ℕ := 8
-@[inherit_doc Len] abbrev Sorted : ℕ := 9
-@[inherit_doc Len] abbrev Val : ℕ := 10
-@[inherit_doc Len] abbrev Mul : ℕ := 11
-@[inherit_doc Len] abbrev Table : ℕ := 12
-@[inherit_doc Len] abbrev Sets : ℕ := 13
-@[inherit_doc Len] abbrev Doubles : ℕ := 14
-@[inherit_doc Len] abbrev Zero : ℕ := 15
-@[inherit_doc Len] abbrev Top : ℕ := 16
-@[inherit_doc Len] abbrev NumPrimes : ℕ := 17
-@[inherit_doc Len] abbrev Unread : ℕ := 18
-@[inherit_doc Len] abbrev NumValues : ℕ := 19
+ abbrev Bound : ℕ := 1
+ abbrev Digits : ℕ := 2
+ abbrev PrimeBound : ℕ := 3
+ abbrev Src : ℕ := 4
+ abbrev Base : ℕ := 5
+ abbrev Primes : ℕ := 6
+ abbrev Square : ℕ := 7
+ abbrev Count : ℕ := 8
+ abbrev Sorted : ℕ := 9
+ abbrev Val : ℕ := 10
+ abbrev Mul : ℕ := 11
+ abbrev Table : ℕ := 12
+ abbrev Sets : ℕ := 13
+ abbrev Doubles : ℕ := 14
+ abbrev Zero : ℕ := 15
+ abbrev Top : ℕ := 16
+ abbrev NumPrimes : ℕ := 17
+ abbrev Unread : ℕ := 18
+ abbrev NumValues : ℕ := 19
 
 end Prep
 
-open Prep in
+open Prep
 /-- The addresses of the arrays. -/
 def prepAddr : Stmt :=
   .set Primes (v Base +' k 6) ;;
@@ -87,25 +88,25 @@ def prepAddr : Stmt :=
   .set Zero (v Doubles +' v Len) ;;
   .set Top (v Zero +' k 1)
 
-open Prep in
+open Prep
 /-- The primes, and zeros in the count table. -/
 def prepTables (pPrimes pFill : ℕ) : Stmt :=
   .call pPrimes [v PrimeBound, v Primes, v Top] NumPrimes ;;
   .call pFill [v Count, v Square, k 0] Unread
 
-open Prep in
+open Prep
 /-- The sorted copy of the input. -/
 def prepSorted (pCopy pSort : ℕ) : Stmt :=
   .call pCopy [v Src, v Sorted, v Len] Unread ;;
   .call pSort [v Len, v Sorted, v Top] Unread
 
-open Prep in
+open Prep
 /-- The distinct values with their multiplicities, and the binary digits of their labels. -/
 def prepValues (pDistinct pBits : ℕ) : Stmt :=
   .call pDistinct [v Len, v Sorted, v Val, v Mul] NumValues ;;
   .call pBits [v NumValues, v Val, v Bound, v Digits, v Table, v Top] Unread
 
-open Prep in
+open Prep
 /-- The block of parameters, the cell that holds 0, and the result. -/
 def prepTail : Stmt :=
   .store (v Base) (v Bound) ;;
@@ -137,8 +138,6 @@ theorem prepAddr_runs (a : Map) (V x : ℕ) (μ : ℕ → ℤ) (htop : (a.top : 
     (hword : (6 : ℤ) ≤ lim.word) :
     prepAddr.Runs lim ⟨frame [a.n, V, a.Λ, a.m, x, a.b], μ⟩ (· = ⟨frame (prepFrame a V x), μ⟩) := by
   have hmap := a.layout
-  have : (0 : ℤ) ≤ (a.m : ℤ) * a.m := by positivity
-  have : (0 : ℤ) ≤ (a.n : ℤ) * a.Λ := by positivity
   exact ⟨by light_side [prepAddr],
     by simp [prepAddr, update_frame_setLocal, prepFrame, Map.top, Map.one, Map.tw, Map.A, Map.bt,
       Map.mul, Map.val, Map.srt, Map.cnt, Map.pr]⟩
@@ -146,7 +145,7 @@ theorem prepAddr_runs (a : Map) (V x : ℕ) (μ : ℕ → ℤ) (htop : (a.top : 
 /-- What prep may use covers what the sieve needs. -/
 private theorem ok_primes {n V Λ m fr : ℕ} (h : (prepNeed n V Λ m).Ok lim fr d) :
     (primesNeed m).Ok lim fr (d + 1) := by
-  have : m + 1 ≤ (m + 1) ^ 2 := Nat.le_self_pow (by norm_num) _
+  have : m + 1 ≤ (m + 1) ^ 2 := Nat.le_self_pow tac_norm_num _
   refine h.mono ?_ ?_ ?_ <;> simp only [primesNeed, prepNeed] <;> omega
 
 /-- What prep may use covers what sorting needs. -/
@@ -174,11 +173,11 @@ theorem prepTables_ends {pPrimes pFill : ℕ} (hPr : PrimesSpec lim P pPrimes)
   have hnp := Nat.card_primesLE_le a.m
   unfold prepTables
   -- NumPrimes := primes(PrimeBound, Primes, Top)
-  light_call (hPr (d + 1) a.top a.m a.pr μ (by omega) (ok_primes hok))
+  light_call (hPr (d + 1) a.top a.m a.pr μ tac_omega (ok_primes hok))
     with _ μ₁ ⟨rfl, hprimes, hkept₁⟩
   -- Unread := fill(Count, Square, 0)
   refine Ends.callTo
-    (fill_meets (μ := μ₁) (dst := a.cnt) (n := a.m * a.m) (x := 0) hFi hw (by omega)) ?_
+    (fill_meets (μ := μ₁) (dst := a.cnt) (n := a.m * a.m) (x := 0) hFi hw tac_omega) ?_
   rintro r μ₂ ⟨hzero, hkept₂⟩
   refine ⟨μ₂, r, rfl,
     ⟨rfl, hprimes.of_sameOutside hkept₂ (.inl (by rw [List.length_map, length_sort]; omega))⟩,
@@ -206,21 +205,21 @@ theorem prepSorted_ends {pCopy pSort : ℕ} (hCo : P[pCopy]? = some copyBody)
   -- Unread := copy(Src, Sorted, Len)
   have hroom : a.srt + X.length ≤ lim.space := by omega
   light_call (copy_meets (μ := μ) (src := x) (dst := a.srt) (n := X.length) hCo hw
-    (by omega) hroom (.inl (by omega))) with _ μ₁ ⟨hcells₁, hkept₁⟩
-  have hcopy : Seg μ₁ a.srt X := fun i hi => (hcells₁ i hi).trans (hseg i hi)
+    tac_omega hroom (.inl tac_omega)) with _ μ₁ ⟨hcells₁, hkept₁⟩
+  have hcopy := fun i hi => (hcells₁ i hi).trans (hseg i hi)
   -- Unread := sort(Len, Sorted, Top)
-  light_call (hSo (d + 1) a.top a.srt V X μ₁ hcopy C.bounded (by omega) (hlen ▸ ok_sort C.ok))
+  light_call (hSo (d + 1) a.top a.srt V X μ₁ hcopy C.bounded tac_omega (hlen ▸ ok_sort C.ok))
     with r' μ₂ ⟨⟨Ls, hLs, hperm, hsorted⟩, hkept₂⟩
   exact ⟨μ₂, r', Ls, rfl, hLs, hperm, hsorted,
     hkept₁.then hkept₂ fun c hc => ⟨by omega, by omega, by omega⟩⟩
 
 /-- The labels for V have `Lam V` binary digits. -/
 private theorem two_mul_lt_two_pow_Lam (V : ℕ) : 2 * V < 2 ^ Lam V :=
-  Nat.lt_pow_succ_log_self (by norm_num) _
+  Nat.lt_pow_succ_log_self tac_norm_num _
 
 /-- `2 ^ Lam V` is at most twice as large as it has to be. -/
 private theorem two_pow_Lam_le {V : ℕ} (hV : 1 ≤ V) : 2 ^ Lam V ≤ 4 * V + 4 := by
-  have := Nat.pow_log_le_self 2 (x := 2 * V) (by omega)
+  have := Nat.pow_log_le_self 2 (x := 2 * V) tac_omega
   rw [Lam, pow_succ]
   omega
 
@@ -237,7 +236,7 @@ private theorem Distinct.Ctx.of_consecutive {μ : ℕ → ℤ} {s val mul : ℕ}
   sorted := hsorted
   seg := hseg
   apartVal := .inl hval
-  apartMul := .inl (by omega)
+  apartMul := .inl tac_omega
   apart := .inl hmul
   spaceSrc := by omega
   spaceVal := by omega
@@ -270,8 +269,8 @@ theorem prepValues_ends {pDistinct pBits : ℕ} (hDi : DistinctSpec lim P pDisti
         σ' = ⟨frame (prepFrame a V x ++ [np, r', D.length]), μ'⟩ ∧ PrepValues μ' a V X D M ∧
         SameOn (· < a.val) μ μ' := by
   have hmap := a.layout
-  have hlen : Ls.length = a.n := hperm.length_eq.trans C.len
-  have hLsV : AbsLe Ls V := fun e he => C.bounded e (hperm.mem_iff.1 he)
+  have hlen := hperm.length_eq.trans C.len
+  have hLsV := fun e he => C.bounded e (hperm.mem_iff.1 he)
   have hw := C.ok.space
   have hcells := C.ok.cells
   have hword := C.ok.word
@@ -283,23 +282,23 @@ theorem prepValues_ends {pDistinct pBits : ℕ} (hDi : DistinctSpec lim P pDisti
   unfold prepValues
   -- NumValues := distinct(Len, Sorted, Val, Mul)
   have hctx : Distinct.Ctx lim μ a.srt a.val a.mul Ls :=
-    .of_consecutive hsorted hLs (by omega) (by omega) (show a.mul + Ls.length ≤ _ by omega) hw
-      (by omega)
+    .of_consecutive hsorted hLs tac_omega tac_omega (show a.mul + Ls.length ≤ _ by omega) hw
+      tac_omega
   light_call (hDi (d + 1) a.srt a.val a.mul Ls μ hctx)
     with _ μ₁ ⟨⟨D, rfl, hDn, hDv, hsegD, hsegM⟩, hkept₁⟩
   have hvalues := Values.of_perm C.len hperm hDn hDv
   have hDle := hvalues.length_le
   have hrows := Nat.mul_le_mul_right a.Λ hDle
-  have hDV : AbsLe D V := fun e he =>
+  have hDV := fun e he =>
     hLsV e (List.mem_toFinset.1 (hDv ▸ List.mem_toFinset.2 he))
   have htime' := tBits_mono hDle a.Λ
   -- Unread := bits(NumValues, Val, Bound, Digits, Table, Top)
-  have hapart : Apart a.val D.length a.bt (D.length * a.Λ) := .inl (by omega)
+  have hapart : Apart a.val D.length a.bt (D.length * a.Λ) := .inl tac_omega
   have hctx' : Bits.Ctx lim μ₁ a.val V a.Λ a.bt D :=
     ⟨hDV, C.digits ▸ two_mul_lt_two_pow_Lam V, C.digits ▸ two_pow_Lam_le C.bound_pos, hsegD,
       hapart, by omega, by omega, hw, by omega⟩
   light_call (hBi (d + 1) a.top a.val a.bt V a.Λ D μ₁ hctx') with r' μ₂ ⟨hsegB, hkept₂⟩
-  exact ⟨μ₂, r', D, _, rfl, ⟨hvalues, hDV, hsegD.of_sameOutside hkept₂ (.inl (by omega)),
+  exact ⟨μ₂, r', D, _, rfl, ⟨hvalues, hDV, hsegD.of_sameOutside hkept₂ (.inl tac_omega),
     hsegM.of_sameOutside hkept₂ (.inl (by simp; omega)), hsegB⟩,
     hkept₁.then hkept₂ fun c hc => ⟨⟨by omega, by omega⟩, by omega⟩⟩
 
@@ -408,11 +407,10 @@ theorem prepBody_ends {pPrimes pFill pCopy pSort pDistinct pBits : ℕ}
   light_facts C
   simp only [prepNeed] at hcells hword
   push_cast at hword
-  have : (0 : ℤ) ≤ ((a.m : ℤ) + 1) ^ 2 := by positivity
   unfold tPrep prepBody
   -- prepAddr
-  refine Ends.next _ (Ends.block ((prepAddr_runs a V x μ (by omega) (by omega)).mono ?_) le_rfl)
-    (by simp [prepAddr])
+  refine Ends.next _ (Ends.block ((prepAddr_runs a V x μ tac_omega tac_omega).mono ?_) le_rfl)
+    tac_simp [prepAddr]
   rintro _ rfl
   -- prepTables
   refine Ends.next _ ((prepTables_ends hPr hFi a C.ok).mono le_rfl ?_) (by simp [prepAddr]; omega)
@@ -427,9 +425,9 @@ theorem prepBody_ends {pPrimes pFill pCopy pSort pDistinct pBits : ℕ}
     (by simp [prepAddr]; omega)
   rintro _ ⟨μ₃, r₃, D, M, rfl, hvals, hkept₃⟩
   -- prepTail
-  refine (prepTail_ends a r₃ (by omega) hw (by omega)).mono (by simp [prepAddr]; omega) ?_
+  refine (prepTail_ends a r₃ tac_omega hw tac_omega).mono (by simp [prepAddr]; omega) ?_
   rintro ⟨_, μ₄⟩ ⟨hres, hctx, hone, hkept₄⟩
-  have hlate : SameOn (· < a.srt) μ₁ μ₃ := hkept₂.then hkept₃ fun c hc => ⟨hc, by omega⟩
+  have hlate := hkept₂.then hkept₃ fun c hc => ⟨hc, by omega⟩
   obtain ⟨hmul, hfront⟩ := hvals.frontMem hprimes hzero hlate hctx hkept₄
   exact ⟨⟨D, M, hres, hvals.values, hmul, hone, hfront⟩,
     (hkept₁.then hlate fun c hc => ⟨⟨by omega, by omega⟩, by omega⟩).then hkept₄

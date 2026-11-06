@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import PaperStatements
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 21(b): Negative Triangle reduces to Exact Triangle
@@ -38,14 +39,12 @@ private def prefixGap (x y v ℓ : ℕ) : ℤ :=
 private theorem add_lt_of_two_le_prefixGap {x y v ℓ : ℕ} (h : 2 ≤ prefixGap x y v ℓ) :
     x + y < v := by
   unfold prefixGap at h
-  have hpos : 0 < 2 ^ ℓ := Nat.pow_pos (by norm_num)
+  have hpos : 0 < 2 ^ ℓ := Nat.pow_pos tac_norm_num
   have hV := Nat.mul_div_le (2 * v) (2 ^ ℓ)
   have hX := Nat.div_add_mod (2 * x) (2 ^ ℓ)
-  have hXrem := Nat.mod_lt (2 * x) hpos
   have hY := Nat.div_add_mod (2 * y) (2 ^ ℓ)
-  have hYrem := Nat.mod_lt (2 * y) hpos
   have hmul : 2 ^ ℓ * (2 * x / 2 ^ ℓ + 2 * y / 2 ^ ℓ + 2) ≤ 2 ^ ℓ * (2 * v / 2 ^ ℓ) :=
-    Nat.mul_le_mul_left _ (by omega)
+    Nat.mul_le_mul_left _ tac_omega
   rw [Nat.mul_add, Nat.mul_add] at hmul
   omega
 
@@ -57,7 +56,7 @@ private theorem pow_le_of_two_le_prefixGap {x y v ℓ : ℕ} (h : 2 ≤ prefixGa
   have hX := Int.natCast_nonneg (2 * x / 2 ^ ℓ)
   have hY := Int.natCast_nonneg (2 * y / 2 ^ ℓ)
   have hV := Nat.mul_div_le (2 * v) (2 ^ ℓ)
-  have hmul : 2 ^ ℓ * 2 ≤ 2 ^ ℓ * (2 * v / 2 ^ ℓ) := Nat.mul_le_mul_left _ (by omega)
+  have hmul : 2 ^ ℓ * 2 ≤ 2 ^ ℓ * (2 * v / 2 ^ ℓ) := Nat.mul_le_mul_left _ tac_omega
   omega
 
 /-- A gap of at least 4 leaves a gap of at least 2 at the next level: a prefix at level `ℓ + 1` is
@@ -80,7 +79,7 @@ private theorem exists_prefixGap_eq {x y v ℓ : ℕ} (h : 2 ≤ prefixGap x y v
     omega
   | succ k ih =>
     by_cases h4 : 4 ≤ prefixGap x y v ℓ
-    · exact ih (two_le_prefixGap_succ h4) (by omega)
+    · exact ih (two_le_prefixGap_succ h4) tac_omega
     · exact ⟨ℓ, by omega⟩
 
 /-- For Theorem 21(b), after [VW13, Proposition 3.4]: whether a triangle has negative weight is
@@ -97,10 +96,10 @@ private theorem lt_iff_exists_prefixGap {x y v L : ℕ} (hL : v < 2 ^ L) :
       simp only [prefixGap, pow_zero, Nat.div_one]
       omega
     obtain ⟨ℓ, hℓ⟩ := exists_prefixGap_eq hzero
-    have hle : 2 ^ ℓ ≤ v := pow_le_of_two_le_prefixGap (x := x) (y := y) (by omega)
-    exact ⟨ℓ, (Nat.pow_lt_pow_iff_right (by norm_num)).mp (hle.trans_lt hL), _, hℓ, rfl⟩
+    have hle : 2 ^ ℓ ≤ v := pow_le_of_two_le_prefixGap (x := x) (y := y) tac_omega
+    exact ⟨ℓ, (Nat.pow_lt_pow_iff_right tac_norm_num).mp (hle.trans_lt hL), _, hℓ, rfl⟩
   · rintro ⟨ℓ, -, e, he, h⟩
-    exact add_lt_of_two_le_prefixGap (ℓ := ℓ) (by omega)
+    exact add_lt_of_two_le_prefixGap (ℓ := ℓ) tac_omega
 
 /-- The Exact Triangle instance for the level `ℓ` and the exact value `e`.  The weights `w(a,b)`,
 `w(b,c)` and `w(a,c)` in `[-U, U]` are first shifted to the natural numbers `x = w(a,b) + U`,
@@ -130,7 +129,6 @@ private theorem S_neg_iff {n : ℕ} (T : TriangleInstance ℤ n) (U : ℕ)
   obtain ⟨hTAB, hTBC, hTAC⟩ := hT
   have hAB := abs_le.mp (hTAB a b)
   have hBC := abs_le.mp (hTBC b c)
-  have hAC := abs_le.mp (hTAC a c)
   simp only [TriangleInstance.S]
   omega
 

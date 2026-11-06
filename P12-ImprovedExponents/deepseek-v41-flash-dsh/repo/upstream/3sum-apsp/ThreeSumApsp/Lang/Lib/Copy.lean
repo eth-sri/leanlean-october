@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Calls
 public import ThreeSumApsp.Lang.Lib.Pass
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Copying and filling a segment
@@ -29,9 +30,9 @@ namespace Copy
 
 /-- The local variables of copy: the arguments src, dst and n, and the counter. -/
 abbrev Src : ℕ := 0
-@[inherit_doc Src] abbrev Dst : ℕ := 1
-@[inherit_doc Src] abbrev Len : ℕ := 2
-@[inherit_doc Src] abbrev Idx : ℕ := 3
+ abbrev Dst : ℕ := 1
+ abbrev Len : ℕ := 2
+ abbrev Idx : ℕ := 3
 
 end Copy
 
@@ -53,7 +54,7 @@ theorem copy_meets {p : ℕ} (hp : P[p]? = some copyBody) {μ : ℕ → ℤ} {sr
     (hT := by light_time [copyTime]))
   -- Round i reads src[i], which no earlier round has written.
   have hread : wrote μ dst (fun i => μ (src + i)) i (src + i) = μ (src + i) :=
-    wrote_rest (by omega)
+    wrote_rest tac_omega
   light_side [hread]
 
 /-! ## fill -/
@@ -62,13 +63,13 @@ namespace Fill
 
 /-- The local variables of fill: the arguments dst, n and x, and the counter. -/
 abbrev Dst : ℕ := 0
-@[inherit_doc Dst] abbrev Len : ℕ := 1
-@[inherit_doc Dst] abbrev Val : ℕ := 2
-@[inherit_doc Dst] abbrev Idx : ℕ := 3
+ abbrev Len : ℕ := 1
+ abbrev Val : ℕ := 2
+ abbrev Idx : ℕ := 3
 
 end Fill
 
-open Fill in
+open Fill
 /-- fill(dst, n, x): for i < n, dst[i] := x. -/
 def fillBody : Stmt := pass Idx (v Len) (v Dst) (v Val)
 

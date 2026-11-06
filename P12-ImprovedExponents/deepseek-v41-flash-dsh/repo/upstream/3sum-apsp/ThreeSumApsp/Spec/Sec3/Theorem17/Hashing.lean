@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Cyclic
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Hashing modulo a prime (proof of Theorem 17), on numbers and lists
@@ -101,17 +102,17 @@ def primesList (D : ℕ) : List ℕ :=
 theorem primesInRange_eq (D : ℕ) : primesInRange D = (primesList D).toFinset := by
   ext q
   have hlow : Real.sqrt D / 2 ≤ (q : ℝ) ↔ D ≤ 4 * q ^ 2 := by
-    rw [div_le_iff₀ (by norm_num : (0 : ℝ) < 2), Real.sqrt_le_left (by positivity),
+    rw [div_le_iff₀ (by norm_num : (0 : ℝ) < 2), Real.sqrt_le_left tac_positivity,
       show ((q : ℝ) * 2) ^ 2 = ((4 * q ^ 2 : ℕ) : ℝ) by push_cast; ring, Nat.cast_le]
   have hhigh : (q : ℝ) < Real.sqrt D ↔ q ^ 2 < D := by
-    rw [Real.lt_sqrt (by positivity)]
+    rw [Real.lt_sqrt tac_positivity]
     exact_mod_cast Iff.rfl
   simp [primesInRange, primesList, hlow, hhigh]
 
 /-- The primes of the window, without the bound `q < D` of the search. -/
 theorem mem_primesList {D q : ℕ} : q ∈ primesList D ↔ q.Prime ∧ D ≤ 4 * q ^ 2 ∧ q ^ 2 < D := by
   simp only [primesList, List.mem_filter, List.mem_range, decide_eq_true_eq, and_iff_right_iff_imp]
-  exact fun h => (Nat.le_self_pow (by norm_num) q).trans_lt h.2.2
+  exact fun h => (Nat.le_self_pow tac_norm_num q).trans_lt h.2.2
 
 /-- A prime of the window is at most `⌊√D⌋`. -/
 theorem le_sqrt_of_mem_primesList {D q : ℕ} (h : q ∈ primesList D) : q ≤ Nat.sqrt D :=

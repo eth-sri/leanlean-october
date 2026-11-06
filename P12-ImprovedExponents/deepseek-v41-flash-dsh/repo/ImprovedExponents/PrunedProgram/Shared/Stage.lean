@@ -4,6 +4,7 @@ public import ThreeSumApsp.Programs.Sec2.Theorem5.SharedStage
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.BandArray
 public import ImprovedExponents.PrunedProgram.Encode.AllBands
 public import ImprovedExponents.PrunedProgram.Shared.Contracts
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -89,17 +90,17 @@ theorem SharedReadyP.of_calls {p : Par} (hmL : p.m ≤ p.L) {aX aY b0 : ℕ}
     (sdir : SegN μDir b0 (dirList p aX aY b0)) (fDir : SameOutside μEncB μDir b0 31) :
     SharedReadyP p hmL aX aY b0 X Y μDir ∧ SameOutside μ μDir b0 (p.sharedEnd b0 - b0) := by
   have hplaces := p.places b0
-  have above : ∀ x, p.aP3 b0 ≤ x → μDir x = μEncB x := fun x hx => fDir x (Or.inr (by omega))
+  have above : ∀ x, p.aP3 b0 ≤ x → μDir x = μEncB x := fun x hx => fDir x (Or.inr tac_omega)
   have tbDir : SharedTables p b0 μDir := tb.congr fun x h1 h2 => by
-    rw [above x h1, fEncB x (Or.inl (by omega)), fEncA x (Or.inl h2)]
+    rw [above x h1, fEncB x (Or.inl tac_omega), fEncA x (Or.inl h2)]
   refine ⟨{ tbDir with
     dir := sdir
     encA := fun β hβ => (sA β hβ).congr fun i hi => ?_
-    encB := fun β hβ => (sB β hβ).congr fun i hi => above _ (by omega) }, fun x hx => ?_⟩
+    encB := fun β hβ => (sB β hβ).congr fun i hi => above _ tac_omega }, fun x hx => ?_⟩
   · have := Nat.mul_add_lt_mul hβ (show i < p.T from hi)
-    rw [above _ (by omega), fEncB _ (Or.inl (by omega))]
+    rw [above _ tac_omega, fEncB _ (Or.inl tac_omega)]
   · show μDir x = μ x
-    rw [fDir x (by omega), fEncB x (by omega), fEncA x (by omega)]
+    rw [fDir x tac_omega, fEncB x tac_omega, fEncA x tac_omega]
 
 /-- **The third part of sharedP.** -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/SharedStage.lean (sharedC_spec)
@@ -114,10 +115,7 @@ theorem sharedCP_spec (std : Std lim) {c : ℕ} (C : SharedCalleesP lim P c) {d 
     Ends lim P d sharedCP ⟨frame (sharedLocB p aX aY b0 r0), μ⟩ (sharedTimeCP c p) fun σ' =>
       SharedReadyP p hmL aX aY b0 X Y σ'.mem ∧ SameOutside μ σ'.mem b0 (p.sharedEnd b0 - b0) := by
   have hw := std.space_le
-  have h100 := std.const_le
   have hplaces := p.places b0
-  have hsizes := p.sizes hmL
-  have hTw := Par.ten_T_le h10
   unfold sharedCP sharedTimeCP
   -- the number of bands
   refine Ends.next 13 ((sharedBands_spec std hmL hsp μ r0 tb).mono le_rfl ?_)
@@ -134,16 +132,16 @@ theorem sharedCP_spec (std : Std lim) {c : ℕ} (C : SharedCalleesP lim P c) {d 
   light_call (C.bandsLP p hmL _ aX μ X V preA hX
     (hXle.trans (show b0 ≤ p.aENCA b0 by omega)) hVX) with rEncA μEncA ⟨sA, fEncA⟩
   -- the encodings of the column bands of Y
-  have lowEncA : ∀ x < p.aENCA b0, μEncA x = μ x := fun x hx => fEncA x (Or.inl hx)
-  have tbEncA : SharedTables p b0 μEncA := tb.congr fun x _ hx => lowEncA x hx
-  have hYle' : aY + ThreeSumApsp.D p.m * p.N ≤ p.aENCA b0 := le_trans hYle (by omega)
+  have lowEncA := fun x hx => fEncA x (Or.inl hx)
+  have tbEncA := tb.congr fun x _ hx => lowEncA x hx
+  have hYle' : aY + ThreeSumApsp.D p.m * p.N ≤ p.aENCA b0 := le_trans hYle tac_omega
   have preB : BandsPre lim p μEncA (p.bandsArgs b0 (p.aPSI b0) (p.aENCB b0)) Spec.psiFlat V :=
     tbEncA.bandsPre hsp hV0 hVB tbEncA.psi (coef_le := by omega) (le_enc := by omega)
       (enc_le := by omega)
   light_call (C.bandsRP p hmL _ aY μEncA Y V preB (hY.congr_below lowEncA hYle')
     (hYle.trans (show b0 ≤ p.aENCB b0 by omega)) hVY) with rEncB μEncB ⟨sB, fEncB⟩
   -- the directory
-  refine (storeLocals_spec hw (base := b0) _ (by simp) _ 0 μEncB (by simp; omega)).mono
+  refine (storeLocals_spec hw (base := b0) _ tac_simp _ 0 μEncB (by simp; omega)).mono
     (by simp; omega) ?_
   rintro ⟨_, μDir⟩ ⟨sdir, fDir⟩
   exact SharedReadyP.of_calls hmL tb sA fEncA sB fEncB (by simpa [SegN, dirList] using sdir)
@@ -158,8 +156,8 @@ theorem sharedTimeP_le (c : ℕ) (p : Par) :
   unfold sharedTimeA sharedTimeB sharedTimeCP sharedShapeP
   -- The terms that are not in the shape: L + 1 ≤ (L + 1)², N + 1 ≤ (N + 1) (L - m + 1), 1 ≤ (L +
   -- 1)².
-  have hL : p.L + 1 ≤ (p.L + 1) ^ 2 := Nat.le_self_pow (by omega) _
-  have hN : p.N + 1 ≤ (p.N + 1) * (p.Lo + 1) := Nat.le_mul_of_pos_right _ (by omega)
+  have hL : p.L + 1 ≤ (p.L + 1) ^ 2 := Nat.le_self_pow tac_omega _
+  have hN : p.N + 1 ≤ (p.N + 1) * (p.Lo + 1) := Nat.le_mul_of_pos_right _ tac_omega
   generalize (p.L + 1) ^ 2 = s, Nat.sqrt p.K + 1 = q, (p.KK + 1) * (p.L + 1) = u,
     (p.N + 1) * (p.Lo + 1) = w, (p.D + 1) * (p.m + 1) = x,
     p.nB * (encWorkP p.L p.m + bandArrayShape p) = y at hL hN ⊢
@@ -195,19 +193,19 @@ theorem sharedP_entry_of_callees (std : Std lim) (hP : P[Proc.sharedP]? = some s
   dsimp only at hB
   -- the third part; the matrices lie below the block, and max V 0 bounds their entries as well
   have low : ∀ x < b0, μB x = μ x := fun x hx => by
-    rw [hB.same x (Or.inl (by omega)), hA.same x (Or.inl (by omega))]
+    rw [hB.same x (Or.inl tac_omega), hA.same x (Or.inl tac_omega)]
   have hVB' : 7 ^ (p.L + 1) * max V 0 ≤ lim.word := by
     rcases le_total V 0 with h | h
     · rw [max_eq_right h, mul_zero]
-      exact le_trans (by norm_num) std.const_le
+      exact le_trans tac_norm_num std.const_le
     · rw [max_eq_left h]
       exact pre.seven
   refine (sharedCP_spec std C hmL hd pre.space pre.ten μB rB (pre.matX.congr_below low pre.belowX)
     (pre.matY.congr_below low pre.belowY) pre.belowX pre.belowY (le_max_right V 0)
     (fun i j => (pre.absX i j).trans (le_max_left _ _))
-    (fun i j => (pre.absY i j).trans (le_max_left _ _)) hVB' (.of_parts hA hB)).mono (by omega) ?_
+    (fun i j => (pre.absY i j).trans (le_max_left _ _)) hVB' (.of_parts hA hB)).mono tac_omega ?_
   rintro σ' ⟨hR, hf⟩
-  exact ⟨hR, fun x hx => by rw [hf x hx, hB.same x (by omega), hA.same x (by omega)]⟩
+  exact ⟨hR, fun x hx => by rw [hf x hx, hB.same x tac_omega, hA.same x tac_omega]⟩
 
 /-- **sharedP** meets its entry of the map: if every callee of upstream's shared stage meets its
 entry with the constant c, and encodeBandsP, encodeP, encStep and bandArray are in the program at

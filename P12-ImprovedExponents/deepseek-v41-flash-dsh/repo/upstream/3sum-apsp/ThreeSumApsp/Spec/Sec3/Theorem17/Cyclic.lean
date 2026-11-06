@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Sec3.Theorem17.Hashing
 public import ThreeSumApsp.Util.List
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The ring `ℤ[x]/(x^p − 1)` as vectors of `p` integers
@@ -81,7 +82,7 @@ private theorem eq_add_mod_iff {p i j r : ℕ} (hi : i < p) (hj : j < p) (hr : r
   by_cases h : i + j < p
   · rw [Nat.mod_eq_of_lt h]
     split_ifs <;> omega
-  · rw [Nat.mod_eq_sub_mod (not_lt.mp h), Nat.mod_eq_of_lt (by omega)]
+  · rw [Nat.mod_eq_sub_mod (not_lt.mp h), Nat.mod_eq_of_lt tac_omega]
     split_ifs <;> omega
 
 /-! ## Vectors -/
@@ -105,14 +106,14 @@ theorem cycVec_zero : cycVec hp 0 = List.replicate p 0 := by
 /-- The vector of a sum. -/
 theorem cycVec_add (z w : CyclicRing p) :
     cycVec hp (z + w) = vadd (cycVec hp z) (cycVec hp w) := by
-  refine List.ext_getElem (by simp [vadd, length_cycVec]) fun r _ _ => ?_
+  refine List.ext_getElem tac_simp [vadd, length_cycVec] fun r _ _ => ?_
   simp only [vadd, cycVec, List.getElem_zipWith, List.getElem_map, List.getElem_range]
   exact map_add (CyclicRing.coeff hp r) z w
 
 /-- The vector of a difference. -/
 theorem cycVec_sub (z w : CyclicRing p) :
     cycVec hp (z - w) = vsub (cycVec hp z) (cycVec hp w) := by
-  refine List.ext_getElem (by simp [vsub, length_cycVec]) fun r _ _ => ?_
+  refine List.ext_getElem tac_simp [vsub, length_cycVec] fun r _ _ => ?_
   simp only [vsub, cycVec, List.getElem_zipWith, List.getElem_map, List.getElem_range]
   exact map_sub (CyclicRing.coeff hp r) z w
 

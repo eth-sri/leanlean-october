@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Limits
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Offline
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Section 4.4: the costs of the programs with rational parameters
@@ -25,7 +26,7 @@ constant. This gives the results that the end theorems use: `exists_tPre31_le`,
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec ThreeSumApsp.WordRam
+open ThreeSumApsp
 
 section
 variable (G : RatParams)
@@ -62,11 +63,11 @@ theorem exists_le_of_small_of_large {C : ℝ} (hC : 0 ≤ C) {S K : ℝ} (hS : 0
       (logFour D₀ < G.m₀ → z ≤ S) → (G.m₀ ≤ logFour D₀ → z ≤ K * cost + S) → z ≤ A * t := by
   refine ⟨S + K * C, by positivity, fun D₀ cost t z ht hcost hsmall hlarge => ?_⟩
   have hsplit : (S + K * C) * t = S * t + K * (C * t) := by ring
-  have hSt : S ≤ S * t := le_mul_of_one_le_right hS ht
+  have hSt := le_mul_of_one_le_right hS ht
   rw [hsplit]
   by_cases hm : logFour D₀ < G.m₀
   · linarith [hsmall hm, mul_nonneg hK (mul_nonneg hC (by linarith : (0 : ℝ) ≤ t))]
-  · linarith [hlarge (by omega), mul_le_mul_of_nonneg_left (hcost (by omega)) hK]
+  · linarith [hlarge tac_omega, mul_le_mul_of_nonneg_left (hcost tac_omega) hK]
 
 /-! ### The preprocessing -/
 
@@ -82,7 +83,6 @@ theorem exists_tPre31_le_setup : ∃ k : ℕ, ∀ c0 N D₀ : ℕ, G.m₀ ≤ lo
   unfold tPre31
   rw [if_neg (not_lt.2 hm)]
   simp only [tLog4, tCeilMul, tPadX, tCopy, tFill, D]
-  generalize tPreCore c0 (parOf G N D₀) (switchOf31 G D₀) = tp
   generalize G.L (logFour D₀) = L at *
   generalize logFour D₀ = m at *
   generalize 4 ^ m = F at *
@@ -94,7 +94,6 @@ theorem exists_tPre31_le_setup : ∃ k : ℕ, ∀ c0 N D₀ : ℕ, G.m₀ ≤ lo
   have hk : (20 + 20 * G.b + 20 * G.q + 352) * (L + 1 + N * F + N)
       = 20 * L + 20 * (G.b * L) + 20 * (G.q * L) + (20 + 20 * G.b + 20 * G.q) * (1 + N * F + N)
         + 352 * (L + 1 + N * F + N) := by ring
-  have := Nat.zero_le ((20 + 20 * G.b + 20 * G.q) * (1 + N * F + N))
   omega
 
 /-! ### A query -/
@@ -105,11 +104,11 @@ theorem exists_tQuery31_le {C : ℝ} (hC : 0 ≤ C) : ∃ A : ℝ, 0 ≤ A ∧
     ∀ {N D₀ : ℕ} {tp tq : ℝ}, CostsWithin G C N D₀ tp tq → (tQuery31 G D₀ : ℝ) ≤ A * tq := by
   obtain ⟨K, hK0, hK⟩ := exists_tQueryAt_le
   obtain ⟨A, hA0, hA⟩ := exists_le_of_small_of_large G hC
-    (S := ((40 * 4 ^ G.m₀ + 40 : ℕ) : ℝ)) (by positivity) hK0
+    (S := ((40 * 4 ^ G.m₀ + 40 : ℕ) : ℝ)) tac_positivity hK0
   refine ⟨A, hA0, fun {N D₀ tp tq} h =>
     hA D₀ _ tq _ h.one_le_query h.query_le (fun hm => ?_) fun hm => ?_⟩
   · -- an inner product of D ≤ 4^m₀ summands
-    have hD := (Nat.clog_le_iff_le_pow (by norm_num)).1 hm.le
+    have hD := (Nat.clog_le_iff_le_pow tac_norm_num).1 hm.le
     have hsmall : tQuery31 G D₀ ≤ 40 * 4 ^ G.m₀ + 40 := by
       unfold tQuery31 tIpAt
       rw [if_pos hm]
@@ -122,7 +121,7 @@ theorem exists_tQuery31_le {C : ℝ} (hC : 0 ≤ C) : ∃ A : ℝ, 0 ≤ A ∧
         tQuery31 G D₀ = tQueryAt (G.L (logFour D₀)) (logFour D₀) (switchOf31 G D₀) + 20 := by
       unfold tQuery31
       rw [if_neg (not_lt.2 hm)]
-    have h40 : (20 : ℝ) ≤ ((40 * 4 ^ G.m₀ + 40 : ℕ) : ℝ) := by exact_mod_cast (by omega)
+    have h40 : (20 : ℝ) ≤ ((40 * 4 ^ G.m₀ + 40 : ℕ) : ℝ) := by exact_mod_cast tac_omega
     rw [htime]
     push_cast at h40 ⊢
     linarith

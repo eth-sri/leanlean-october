@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Lang.Compiler.Cells
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The dispatcher
@@ -78,10 +79,10 @@ private theorem steps_dispatcher_from (hcode : CodeAt code disp (dispatcher n))
   | succ k ih =>
     have run := steps_dispatcher_pair hcode (show j < n by omega) m hone (v := k + 1)
       (by constructor <;> omega)
-    rw [if_neg (by omega), add_sub_cancel_right] at run
+    rw [if_neg tac_omega, add_sub_cancel_right] at run
     rw [Nat.cast_succ]
     -- 2 + 2 (k + 1) steps lead to the position j + 1 + k
-    exact ((run.trans (ih (j + 1) (by omega))).cast_count (by ring)).cast_pos (by ring)
+    exact ((run.trans (ih (j + 1) tac_omega)).cast_count tac_ring).cast_pos tac_ring
 
 /-- From the beginning of the dispatcher, with the position r in RR, the machine arrives at position
 r after 2 (r + 1) steps; RR then holds -1, and no other cell has changed.  The positions fit in a
@@ -90,7 +91,7 @@ theorem steps_dispatcher {r : ℕ} (hcode : CodeAt code disp (dispatcher n)) (hr
     (hn : 2 * (n : ℤ) < (2 : ℤ) ^ W) (m : ℤ → BitVec W) (hone : m cONE = wd W 1)
     (hRR : m cRR = wd W r) :
     Steps code (2 * (r + 1)) ⟨disp, m⟩ ⟨r, Function.update m cRR (wd W (-1))⟩ := by
-  have := steps_dispatcher_from hcode hn m hone r 0 (by omega)
+  have := steps_dispatcher_from hcode hn m hone r 0 tac_omega
   rwa [Nat.mul_zero, Nat.add_zero, Nat.zero_add, ← hRR, Function.update_eq_self] at this
 
 end Light.Compiler

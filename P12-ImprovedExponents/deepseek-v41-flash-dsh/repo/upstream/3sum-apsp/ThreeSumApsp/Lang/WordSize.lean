@@ -14,6 +14,7 @@ public import Mathlib.Tactic.GCongr
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # A polynomial bound in the parameters fits in a word
@@ -59,18 +60,18 @@ theorem polyBound_le {b W s k r : ℕ} {params : List ℕ} (h : Admissible b par
   have hexp : s + (S + params.length) * k ≤ W :=
     calc s + (S + params.length) * k ≤ s + (S + r) * k := by gcongr
       -- the difference is s S + k r S + k
-      _ ≤ (s + k * r + k) * (S + 1) := Nat.le.intro (k := s * S + k * r * S + k) (by ring)
+      _ ≤ (s + k * r + k) * (S + 1) := Nat.le.intro (k := s * S + k * r * S + k) tac_ring
       _ ≤ b * (S + 1) := Nat.mul_le_mul_right _ hb
       _ ≤ W := h
   calc polyBound s k params ≤ 2 ^ s * (2 ^ (S + params.length)) ^ k :=
         Nat.mul_le_mul_left _ (Nat.pow_le_pow_left (prod_succ_le params) k)
     _ = 2 ^ (s + (S + params.length) * k) := by rw [← pow_mul, ← pow_add]
-    _ ≤ 2 ^ W := Nat.pow_le_pow_right (by norm_num) hexp
+    _ ≤ 2 ^ W := Nat.pow_le_pow_right tac_norm_num hexp
 
 /-- The bound is positive. -/
 theorem one_le_polyBound (s k : ℕ) (params : List ℕ) : 1 ≤ polyBound s k params := by
-  have : 0 < (params.map (· + 1)).prod := List.prod_pos (by simp)
-  exact Nat.mul_pos (by positivity) (by positivity)
+  have : 0 < (params.map (· + 1)).prod := List.prod_pos tac_simp
+  exact Nat.mul_pos tac_positivity tac_positivity
 
 /-- The bound grows with its first parameter. -/
 theorem polyBound_cons_le {p p' : ℕ} (h : p ≤ p') (s k : ℕ) (params : List ℕ) :
@@ -81,8 +82,8 @@ theorem polyBound_cons_le {p p' : ℕ} (h : p ≤ p') (s k : ℕ) (params : List
 /-- The bound grows with its two exponents. -/
 theorem polyBound_mono {s s' k k' : ℕ} (hs : s ≤ s') (hk : k ≤ k') (params : List ℕ) :
     polyBound s k params ≤ polyBound s' k' params := by
-  have : 0 < (params.map (· + 1)).prod := List.prod_pos (by simp)
-  exact Nat.mul_le_mul (Nat.pow_le_pow_right (by norm_num) hs) (Nat.pow_le_pow_right this hk)
+  have : 0 < (params.map (· + 1)).prod := List.prod_pos tac_simp
+  exact Nat.mul_le_mul (Nat.pow_le_pow_right tac_norm_num hs) (Nat.pow_le_pow_right this hk)
 
 /-- A power of two times the bound is a bound of the same form. -/
 theorem polyBound_mul (s s' k : ℕ) (params : List ℕ) :

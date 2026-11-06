@@ -51,42 +51,42 @@ namespace CountSort
 (Offset), nb (Buckets), cnt; the counter of the loops (Idx); the address of a cell of cnt (Cell); a
 place in dst (Place). -/
 abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Src : ℕ := 1
-@[inherit_doc Len] abbrev Dst : ℕ := 2
-@[inherit_doc Len] abbrev Keys : ℕ := 3
-@[inherit_doc Len] abbrev Stride : ℕ := 4
-@[inherit_doc Len] abbrev Offset : ℕ := 5
-@[inherit_doc Len] abbrev Buckets : ℕ := 6
-@[inherit_doc Len] abbrev Cnt : ℕ := 7
-@[inherit_doc Len] abbrev Idx : ℕ := 8
-@[inherit_doc Len] abbrev Cell : ℕ := 9
-@[inherit_doc Len] abbrev Place : ℕ := 10
+ abbrev Src : ℕ := 1
+ abbrev Dst : ℕ := 2
+ abbrev Keys : ℕ := 3
+ abbrev Stride : ℕ := 4
+ abbrev Offset : ℕ := 5
+ abbrev Buckets : ℕ := 6
+ abbrev Cnt : ℕ := 7
+ abbrev Idx : ℕ := 8
+ abbrev Cell : ℕ := 9
+ abbrev Place : ℕ := 10
 
 end CountSort
 
-open CountSort in
+open CountSort
 /-- The key of item number i, where i is the value of the counter:
 mem[key + src[i] · stride + off]. -/
 def csKey : Expr := M (v Keys +' M (v Src +' v Idx) *' v Stride +' v Offset)
 
 @[simp] theorem csKey_cost : csKey.cost = 11 := rfl
 
-open CountSort in
+open CountSort
 /-- cnt[t] := 0 for t ≤ nb. -/
 def csZero : Stmt := .for Idx (v Buckets +' k 1) (.store (v Cnt +' v Idx) (k 0))
 
-open CountSort in
+open CountSort
 /-- cnt[(key of item i) + 1] += 1 for i < n. -/
 def csCount : Stmt :=
   .for Idx (v Len) (.set Cell (v Cnt +' csKey +' k 1) ;; .store (v Cell) (M (v Cell) +' k 1))
 
-open CountSort in
+open CountSort
 /-- cnt[t + 1] += cnt[t] for t < nb. -/
 def csPrefix : Stmt :=
   .for Idx (v Buckets)
     (.store (v Cnt +' v Idx +' k 1) (M (v Cnt +' v Idx +' k 1) +' M (v Cnt +' v Idx)))
 
-open CountSort in
+open CountSort
 /-- dst[cnt[key of item i]] := item i, cnt[key of item i] += 1, for i < n. -/
 def csPlace : Stmt :=
   .for Idx (v Len) (
@@ -95,7 +95,7 @@ def csPlace : Stmt :=
     .store (v Dst +' v Place) (M (v Src +' v Idx)) ;;
     .store (v Cell) (v Place +' k 1))
 
-open CountSort in
+open CountSort
 /-- cnt[t] := cnt[t - 1] for t = nb, …, 1, and cnt[0] := 0. -/
 def csShift : Stmt :=
   .set Idx (v Buckets) ;;

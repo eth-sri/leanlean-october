@@ -10,6 +10,7 @@ public import ThreeSumApsp.Util.Basic
 public import Mathlib.Data.Set.Function
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Ring
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Running the word RAM: words, steps, pieces of code, straight-line code, branches
@@ -181,7 +182,7 @@ theorem exec_mono {t t' : ℕ} {c : Cfg W} {r : Bool × (ℤ → BitVec W)}
     | inr v => rwa [exec_succ_of_verdict hs] at h ⊢
     | inl n =>
       rw [exec_succ_of_step hs] at h ⊢
-      exact ih h (by omega)
+      exact ih h tac_omega
 
 /-! ## Pieces of code -/
 

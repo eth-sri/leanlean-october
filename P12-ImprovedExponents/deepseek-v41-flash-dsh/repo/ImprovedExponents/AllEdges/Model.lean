@@ -2,6 +2,7 @@ module
 
 public import ImprovedExponents.AllEdges.Task
 public import ImprovedExponents.HostMid.Claim
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ So a host that solves `aeTask` from a solver of Lop-AE-SparseTri within the boun
 
 namespace ImprovedExponents.AllEdges
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec HostMid
+open Light ThreeSumApsp HostMid
 
 /-- Upstream's `lightModel`, with "Exact Triangle" read as all-edges Exact Triangle. -/
 noncomputable def lightModelAE : DetTimeModel :=
@@ -58,6 +59,6 @@ theorem claim17MidAE_of_host (MM : ℕ → ℝ) (D g : ℕ → ℕ) (time : (Lis
   obtain ⟨R, p', hs, hp⟩ := host Q pS Tn r hpoly hsolves
   exact ⟨timeUpTo (time Tn), hs.solvedIn hp, fun n κ u h16 hDn hg1 hg hκ hu =>
     timeUpTo_le fun U hU =>
-      bound Tn T hle n U κ h16 hDn hg1 hg hκ (hU.trans (max_le hu (by positivity)))⟩
+      bound Tn T hle n U κ h16 hDn hg1 hg hκ (hU.trans (max_le hu tac_positivity))⟩
 
 end ImprovedExponents.AllEdges

@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Lang.Compiler.Cells
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The compiler is correct on expressions
@@ -66,10 +67,10 @@ private theorem effects_digitsCode {c : ℤ} (hc : cONE ≠ c) (L : List ℕ) (h
       effect_sub c (wd_toInt (m c)).symm (wd_toInt (m c)).symm, sub_self]
     exact ⟨by simp, (AgreeOutside.refl _ m).update (Set.mem_singleton c) _⟩
   | cons d L ih =>
-    obtain ⟨val, A⟩ := ih fun x hx => hL x (by simp [hx])
+    obtain ⟨val, A⟩ := ih fun x hx => hL x tac_simp [hx]
     -- c := c + c
     rw [digitsCode, effects_append, effects_append, effects_cons, effects_nil, effect_add c val val]
-    have hd : d = 0 ∨ d = 1 := by have := hL d (by simp); omega
+    have hd : d = 0 ∨ d = 1 := by have := hL d tac_simp; omega
     obtain rfl | rfl := hd
     · refine ⟨?_, A.update (Set.mem_singleton c) _⟩
       rw [if_pos rfl, effects_nil, Function.update_self, Nat.ofDigits_cons]
@@ -116,7 +117,7 @@ private theorem effects_compileExpr (I : Framed Z σ q m) (e : Expr) (k : ℕ) (
   | const n =>
     have hk := cT_mem_temps_of_height _ hT
     obtain ⟨val, A⟩ := effects_digitsCode (c := cT k) (by cells) (Nat.digits 2 n)
-      (fun d hd => Nat.digits_lt_base (by norm_num) hd) m I.rel.one
+      (fun d hd => Nat.digits_lt_base tac_norm_num hd) m I.rel.one
     rw [Nat.ofDigits_digits] at val
     exact ⟨val, A.mono (Set.singleton_subset_iff.2 hk)⟩
   | var x =>
@@ -126,8 +127,8 @@ private theorem effects_compileExpr (I : Framed Z σ q m) (e : Expr) (k : ℕ) (
     have hQ := I.high
     -- ADDR := FP - 2 x; T_k := the cell at ADDR
     rw [compileExpr, effects_cons, effects_cons, effects_nil,
-      effect_sub cADDR I.rel.fp (I.rel.pool (2 * x) (by omega)), cStack_sub,
-      effect_load (cT k) (Function.update_self _ _ _) (Z.inRange_stack (by omega))]
+      effect_sub cADDR I.rel.fp (I.rel.pool (2 * x) tac_omega), cStack_sub,
+      effect_load (cT k) (Function.update_self _ _ _) (Z.inRange_stack tac_omega)]
     refine ⟨?_, ((AgreeOutside.refl _ m).update (by cells) _).update hk _⟩
     rw [Function.update_self, Function.update_of_ne (by cells), I.rel.loc x hx, Expr.val]
   | op o a b iha ihb =>
@@ -136,8 +137,8 @@ private theorem effects_compileExpr (I : Framed Z σ q m) (e : Expr) (k : ℕ) (
     have hhb : b.height + 1 ≤ (Expr.op o a b).height := le_max_right _ _
     obtain ⟨hwa, hwb⟩ := Expr.vars_op_le_iff.1 hvars
     obtain ⟨hsa, hsb, -⟩ := hs
-    obtain ⟨va, Aa⟩ := iha I k hwa hsa (by omega)
-    obtain ⟨vb, Ab⟩ := ihb (I.same (Aa.mono temps_subset_scratch)) (k + 1) hwb hsb (by omega)
+    obtain ⟨va, Aa⟩ := iha I k hwa hsa tac_omega
+    obtain ⟨vb, Ab⟩ := ihb (I.same (Aa.mono temps_subset_scratch)) (k + 1) hwb hsb tac_omega
     -- T_k := T_k o T_{k+1}
     rw [compileExpr, effects_append, effects_append, effects_cons, effects_nil,
       effect_instr o (cT k) (Ab.read (by cells) va) vb]
@@ -148,7 +149,7 @@ private theorem effects_compileExpr (I : Framed Z σ q m) (e : Expr) (k : ℕ) (
     obtain ⟨hsa, haddr⟩ := hs
     obtain ⟨va, Aa⟩ := ih I k hvars hsa hT
     -- the address is not negative, so it is neither ADDR nor a temporary
-    have hnonneg : 0 ≤ a.val σ := haddr.1
+    have hnonneg := haddr.1
     -- T_k := the cell at T_k
     rw [compileExpr, effects_append, effects_cons, effects_nil,
       effect_load (cT k) va (Z.inRange_addr haddr), Aa.cell (by cells), I.rel.read haddr]

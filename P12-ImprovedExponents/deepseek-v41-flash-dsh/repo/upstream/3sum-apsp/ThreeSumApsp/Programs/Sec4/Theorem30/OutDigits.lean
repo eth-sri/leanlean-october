@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
 public import Mathlib.Data.Bool.Count
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The digits of the output string of a position
@@ -25,7 +26,7 @@ from l to l + 1 (OutDigits.inner, OutDigits.outer).
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-! ## The program -/
 
@@ -34,26 +35,26 @@ namespace OutDigits
 /-- The local variables of outDigits: the arguments gI, gJ, dI, dJ, aMASK, K0, L, wd, then the
 address of the mask of the subset, the level, and the number of levels outside the subset so far. -/
 abbrev BlockI : ℕ := 0
-@[inherit_doc BlockI] abbrev BlockJ : ℕ := 1
-@[inherit_doc BlockI] abbrev DigitsI : ℕ := 2
-@[inherit_doc BlockI] abbrev DigitsJ : ℕ := 3
-@[inherit_doc BlockI] abbrev Masks : ℕ := 4
-@[inherit_doc BlockI] abbrev Blocks : ℕ := 5
-@[inherit_doc BlockI] abbrev Levels : ℕ := 6
-@[inherit_doc BlockI] abbrev Dest : ℕ := 7
-@[inherit_doc BlockI] abbrev Mask : ℕ := 8
-@[inherit_doc BlockI] abbrev Level : ℕ := 9
-@[inherit_doc BlockI] abbrev Outer : ℕ := 10
+ abbrev BlockJ : ℕ := 1
+ abbrev DigitsI : ℕ := 2
+ abbrev DigitsJ : ℕ := 3
+ abbrev Masks : ℕ := 4
+ abbrev Blocks : ℕ := 5
+ abbrev Levels : ℕ := 6
+ abbrev Dest : ℕ := 7
+ abbrev Mask : ℕ := 8
+ abbrev Level : ℕ := 9
+ abbrev Outer : ℕ := 10
 
 end OutDigits
 
-open OutDigits in
+open OutDigits
 /-- A level of the subset: wd[level] := 9; level := level + 1. -/
 def levelInner : Stmt :=
   .store (v Dest +' v Level) (k 9) ;;
   .set Level (v Level +' k 1)
 
-open OutDigits in
+open OutDigits
 /-- A level outside the subset: wd[level] := 3 dI[outer] + dJ[outer]; outer := outer + 1;
 level := level + 1. -/
 def levelOuter : Stmt :=
@@ -61,12 +62,12 @@ def levelOuter : Stmt :=
   .set Outer (v Outer +' k 1) ;;
   .set Level (v Level +' k 1)
 
-open OutDigits in
+open OutDigits
 /-- The walk along the mask: while level < L, treat the level according to mask[level]. -/
 def outDigitsWalk : Stmt :=
   .while (v Level <' v Levels) (.ite (M (v Mask +' v Level) =' k 1) levelInner levelOuter)
 
-open OutDigits in
+open OutDigits
 /-- outDigits(gI, gJ, dI, dJ, aMASK, K0, L, wd) writes the L digits of the output string at wd. -/
 def outDigitsBody : Stmt :=
   .set Mask (v Masks +' (v BlockI *' v Blocks +' v BlockJ) *' v Levels) ;;
@@ -97,8 +98,8 @@ theorem getD_digits_outer (C : OutDigitsPre lim μ x) (hl : l < x.L)
     (x.mask.take l).count false < x.L - x.m ∧
       x.digits.getD l 0 = 3 * x.rI.getD ((x.mask.take l).count false) 0
         + x.rJ.getD ((x.mask.take l).count false) 0 := by
-  have hl' : l < x.mask.length := length_mask.symm ▸ hl
-  have hcount : x.mask.count false = x.L - x.m := count_false_unrank C.index_lt
+  have hl' := length_mask.symm ▸ hl
+  have hcount := count_false_unrank C.index_lt
   exact ⟨hcount ▸ List.count_take_lt hl' false hb,
     getD_outDigits_of_false (C.lenI.trans hcount.symm) (C.lenJ.trans hcount.symm) hl' hb⟩
 
@@ -124,9 +125,9 @@ theorem read_mask (C : OutDigitsPre lim μ x) {μ' : ℕ → ℤ} (same : SameOu
     (hl : l < x.L) : μ' (x.base + l) = if x.mask.getD l false then 1 else 0 := by
   have hlen := length_mask (x := x)
   have hap := C.apartMask
-  rw [same (x.base + l) (by omega), C.segMask.read (by simp [hlen, hl]),
-    List.getD_eq_getElem _ _ (by simp [hlen, hl]), List.getElem_map,
-    List.getD_eq_getElem _ _ (by omega)]
+  rw [same (x.base + l) tac_omega, C.segMask.read tac_simp [hlen, hl],
+    List.getD_eq_getElem _ _ tac_simp [hlen, hl], List.getElem_map,
+    List.getD_eq_getElem _ _ tac_omega]
   split_ifs <;> rfl
 
 /-- wd[level] := 9; level := level + 1. -/
@@ -152,18 +153,16 @@ theorem outer (C : OutDigitsPre lim μ x) (h : Inv μ x l σ) (hl : l < x.L)
   -- the two digits that the level reads
   have hreadI : μ' (x.dI + (x.mask.take l).count false)
       = ((x.rI.getD ((x.mask.take l).count false) 0 : ℕ) : ℤ) := by
-    have hap := C.apartI
-    rw [same _ (by omega)]
+    rw [same _ tac_omega]
     exact C.segI.read (by have := C.lenI; omega)
   have hreadJ : μ' (x.dJ + (x.mask.take l).count false)
       = ((x.rJ.getD ((x.mask.take l).count false) 0 : ℕ) : ℤ) := by
-    have hap := C.apartJ
-    rw [same _ (by omega)]
+    rw [same _ tac_omega]
     exact C.segJ.read (by have := C.lenJ; omega)
   have hI3 : x.rI.getD ((x.mask.take l).count false) 0 < 3 :=
-    List.getD_of_forall_mem (by norm_num) C.ltI _
+    List.getD_of_forall_mem tac_norm_num C.ltI _
   have hJ3 : x.rJ.getD ((x.mask.take l).count false) 0 < 3 :=
-    List.getD_of_forall_mem (by norm_num) C.ltJ _
+    List.getD_of_forall_mem tac_norm_num C.ltJ _
   have hnext := seg.take_succ (length_digits.symm ▸ hl)
   have hcount : (x.mask.take (l + 1)).count false = (x.mask.take l).count false + 1 := by
     rw [List.count_take_succ_getD x.mask false (length_mask.symm ▸ hl) false, if_pos hb]
@@ -194,9 +193,9 @@ theorem walk {P : Program} {d : ℕ} (C : OutDigitsPre lim μ x) :
     -- if mask[level] = 1
     by_cases hb : x.mask.getD l false = true
     · rw [if_pos hb] at hread
-      exact .ite_pos (hinner hb) (by simp [hread]) (by light_side)
+      exact .ite_pos (hinner hb) tac_simp [hread] (by light_side)
     · rw [if_neg hb] at hread
-      exact .ite_neg (houter (by simpa using hb)) (by simp [hread])
+      exact .ite_neg (houter (by simpa using hb)) tac_simp [hread]
         (by light_side)
   case done =>
     rintro _ ⟨μ', rfl, seg, same⟩
@@ -212,11 +211,11 @@ theorem index_le (C : OutDigitsPre lim μ x) : x.gI * x.k0 + x.gJ ≤ lim.space 
   · have hm : x.m = 0 := by have := C.m_le; omega
     rw [h0, hm, Nat.choose_self] at hidx
     omega
-  · exact (Nat.le_mul_of_pos_right _ hL).trans (by omega)
+  · exact (Nat.le_mul_of_pos_right _ hL).trans tac_omega
 
 end OutDigits
 
-open OutDigits in
+open OutDigits
 /-- **outDigits** meets its specification. -/
 theorem outDigits_spec {lim : Limits} {P : Program}
     (hP : P[Proc.outDigits]? = some outDigitsBody) : OutDigitsSpec lim P := by
@@ -228,7 +227,6 @@ theorem outDigits_spec {lim : Limits} {P : Program}
   have hprod : ((x.gI * x.k0 : ℕ) : ℤ) ≤ lim.space := by
     exact_mod_cast (by omega : x.gI * x.k0 ≤ lim.space)
   have haddr : ((x.base : ℕ) : ℤ) ≤ lim.space := by exact_mod_cast (by omega : x.base ≤ lim.space)
-  have hprod0 : (0 : ℤ) ≤ (x.gI : ℤ) * x.k0 := by positivity
   have hoff0 : (0 : ℤ) ≤ ((x.gI : ℤ) * x.k0 + x.gJ) * x.L := by positivity
   unfold OutDigitsArgs.base at haddr
   push_cast at hprod haddr

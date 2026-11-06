@@ -711,7 +711,7 @@ end TriangleInstance
 
 /-! #### Hashing modulo a prime (proof of Theorem 17) -/
 
-open Classical in
+open Classical
 /-- Proof of Theorem 17: the primes "p ∈ [√D/2, √D)", called "the primes in the range". -/
 noncomputable def primesInRange (D : ℕ) : Finset ℕ :=
   (Finset.range D).filter fun p => p.Prime ∧ Real.sqrt D / 2 ≤ (p : ℝ) ∧ (p : ℝ) < Real.sqrt D
@@ -1216,7 +1216,6 @@ mathematics and not sentences about a machine.
   the additional time, `Theorem_17_hashing_sum_sq_le` and `Theorem_17_write_cost`.
 * Remark 18 compares the instances of Theorem 17 with graphs of [VX20]. Stated is what the
   comparison says about the paper's own instance, namely which residues its edges and query pairs
-  have: `Remark_18_block`.
 * Remark 20: `Remark_20_balance`, `Remark_20_brute_force`.
 * Theorem 21, which the paper cites from the literature without a proof: the correctness, the
   numbers and the sizes of the instances of the reductions, and the arithmetic behind the printed
@@ -1881,7 +1880,7 @@ differences", says why.
 
 section Sec5Statements
 
-open Finset Asymptotics Filter
+open Filter
 
 namespace PaperStatements
 

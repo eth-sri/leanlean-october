@@ -9,6 +9,7 @@ public import ThreeSumApsp.Lang.Lib.Sqrt
 public import ThreeSumApsp.Lang.PolyBounded
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.Convolution.Fill
 public import ThreeSumApsp.Programs.Tasks
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Convolution-3SUM from Exact Triangle: the host
@@ -43,15 +44,15 @@ namespace ConvHost
 (Bound), x (Input), fr (Free); then t (Side), the number s of the instance (Inst), the answer so far
 (Found), the result of a call (Answer), t² (Area) and the filler 2U + 1 (Filler). -/
 abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Bound : ℕ := 1
-@[inherit_doc Len] abbrev Input : ℕ := 2
-@[inherit_doc Len] abbrev Free : ℕ := 3
-@[inherit_doc Len] abbrev Side : ℕ := 4
-@[inherit_doc Len] abbrev Inst : ℕ := 5
-@[inherit_doc Len] abbrev Found : ℕ := 6
-@[inherit_doc Len] abbrev Answer : ℕ := 7
-@[inherit_doc Len] abbrev Area : ℕ := 8
-@[inherit_doc Len] abbrev Filler : ℕ := 9
+ abbrev Bound : ℕ := 1
+ abbrev Input : ℕ := 2
+ abbrev Free : ℕ := 3
+ abbrev Side : ℕ := 4
+ abbrev Inst : ℕ := 5
+ abbrev Found : ℕ := 6
+ abbrev Answer : ℕ := 7
+ abbrev Area : ℕ := 8
+ abbrev Filler : ℕ := 9
 
 end ConvHost
 
@@ -145,7 +146,7 @@ private theorem Ready.input_le (H : Ready lim r d x μ fr t) : AbsLe x.X ((2 * x
 
 /-- The filler is bounded by 2U + 1. -/
 private theorem abs_filler_le (x : VecInst) : |2 * (x.U : ℤ) + 1| ≤ ((2 * x.U + 1 : ℕ) : ℤ) := by
-  rw [abs_of_nonneg (by positivity)]
+  rw [abs_of_nonneg tac_positivity]
   push_cast
   exact le_rfl
 
@@ -203,7 +204,6 @@ private theorem round_spec (C : Ctx P R pET pSqrt pFill T r) (H : Ready lim r d 
           Kept μ μ'' fr := by
   obtain ⟨hword, hcells, haddr, hdepth⟩ := And.intro H.word (And.intro H.cells
     (And.intro H.addr H.depth))
-  have harea := mul_self_nonneg (t : ℤ)
   unfold c3Round c3RoundTime
   -- Answer := convFill(t, N, s, 2U + 1, x, fr, fr + t², fr + 2t²)
   refine Ends.callToThen (T' := convFillTime t) (convFill_meets C.fill (fill_ctx H hk hs)) ?_
@@ -215,15 +215,15 @@ private theorem round_spec (C : Ctx P R pET pSqrt pFill T r) (H : Ready lim r d 
   rintro res' μ₂ ⟨hres, hk₂⟩
   replace hres : res' = flag (Hit x t s) := hres
   -- both calls write only from the free pointer on
-  have hkept : Kept μ μ₂ fr := (hk.then hpost.same fun b hb => ⟨hb, Or.inl hb⟩).then hk₂
+  have hkept := (hk.then hpost.same fun b hb => ⟨hb, Or.inl hb⟩).then hk₂
     fun b hb => ⟨hb, by omega⟩
   -- if Answer = 1
   refine Ends.iteLast (fun hyes => ?_) (fun hno => ?_)
   · -- Found := 1
-    have hit : Hit x t s := flag_eq_one_iff.1 (by simpa [hres] using hyes)
+    have hit := flag_eq_one_iff.1 (by simpa [hres] using hyes)
     exact Ends.setTo 1
       ⟨res', μ₂, by rw [flag_of (Nat.exists_lt_succ_right.2 (Or.inr hit))]; rfl, hkept⟩
-  · have miss : ¬ Hit x t s := fun hit => hno (by simp [hres, flag_of hit])
+  · have miss : ¬ Hit x t s := fun hit => hno tac_simp [hres, flag_of hit]
     exact Ends.skip
       ⟨res', μ₂, by rw [flag_congr (Nat.exists_lt_succ_right.trans (or_iff_left miss))]; rfl, hkept⟩
 
@@ -247,7 +247,7 @@ private theorem ready (hpre : x.Pre μ fr) (hok : (c3Need r x.N x.U).Ok lim fr d
 
 end ConvHost
 
-open ConvHost in
+open ConvHost
 /-- **The host is correct**, in every program that begins with the solver's and contains the two
 helpers. -/
 private theorem c3_spec {P R : Program} {pET pSqrt pFill : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ → Need}
@@ -258,7 +258,6 @@ private theorem c3_spec {P R : Program} {pET pSqrt pFill : ℕ} {T : ℕ → ℕ
         σ'.loc 0 = flag (Convolution3SUM (vecOf x.N x.X)) ∧ Kept μ σ'.mem fr := by
   have H := ready hpre hok
   unfold c3Time
-  have hroot : Nat.sqrt x.N ≤ x.N := Nat.sqrt_le_self _
   obtain ⟨t, ht⟩ : ∃ t, t = Nat.sqrt x.N + 1 := ⟨_, rfl⟩
   rw [← ht] at H ⊢
   obtain ⟨hword, hdepth⟩ := And.intro H.word H.depth
@@ -286,7 +285,7 @@ private theorem c3_spec {P R : Program} {pET pSqrt pFill : ℕ} {T : ℕ → ℕ
     rintro _ - ⟨res, μ', rfl, hk⟩
     -- Len := Found: the result
     exact Ends.setTo (flag (∃ s' < 2 * t, Hit x t s'))
-      ⟨flag_congr (convolution3SUM_vecOf_iff hpre.N_pos H.lenLt (by positivity) hpre.le).symm, hk⟩
+      ⟨flag_congr (convolution3SUM_vecOf_iff hpre.N_pos H.lenLt tac_positivity hpre.le).symm, hk⟩
   case bound =>
     rintro s _ - - ⟨res, μ', rfl, -⟩
     exact ⟨by light_side, by simp⟩

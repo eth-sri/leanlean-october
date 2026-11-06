@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Assigns
 public import ThreeSumApsp.Lang.Rules
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Local variables as a list
@@ -78,9 +79,9 @@ theorem frame_append_zeros (l : List ℤ) (n : ℕ) : frame (l ++ List.replicate
   simp only [frame, List.getD_eq_getElem?_getD, List.getElem?_append, List.getElem?_replicate]
   split_ifs with h1 h2
   · rfl
-  · rw [List.getElem?_eq_none (by omega)]
+  · rw [List.getElem?_eq_none tac_omega]
     rfl
-  · rw [List.getElem?_eq_none (by omega)]
+  · rw [List.getElem?_eq_none tac_omega]
 
 /-! ## The value of an expression -/
 

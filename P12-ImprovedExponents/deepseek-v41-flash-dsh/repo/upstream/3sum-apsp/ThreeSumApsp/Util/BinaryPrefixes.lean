@@ -9,6 +9,7 @@ public import ThreeSumApsp.Util.List
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The prefixes of a binary representation, one bit at a time
@@ -83,20 +84,20 @@ theorem pref_step {L ℓ : ℕ} (h : ℓ + 1 ≤ L) (z : ℤ) :
 
 /-- The prefixes of a nonnegative number are nonnegative. -/
 theorem prefQ_nonneg {z : ℤ} (h0 : 0 ≤ z) (ℓ : ℕ) : 0 ≤ prefQ ℓ z :=
-  Int.ediv_nonneg h0 (by positivity)
+  Int.ediv_nonneg h0 tac_positivity
 
 /-- The prefixes of a nonnegative number are at most the number. -/
 theorem prefQ_le {z : ℤ} (h0 : 0 ≤ z) (ℓ : ℕ) : prefQ ℓ z ≤ z := Int.ediv_le_self _ h0
 
 /-- The rests are nonnegative. -/
 theorem prefR_nonneg (L ℓ : ℕ) (z : ℤ) : 0 ≤ prefR L ℓ z :=
-  mul_nonneg (Int.emod_nonneg _ (by positivity)) (by positivity)
+  mul_nonneg (Int.emod_nonneg _ tac_positivity) tac_positivity
 
 /-- The rests have `L` bits. -/
 theorem prefR_lt {L ℓ : ℕ} (h : ℓ ≤ L) (z : ℤ) : prefR L ℓ z < 2 ^ L := by
-  have hmod : z % 2 ^ ℓ < 2 ^ ℓ := Int.emod_lt_of_pos _ (by positivity)
+  have hmod : z % 2 ^ ℓ < 2 ^ ℓ := Int.emod_lt_of_pos _ tac_positivity
   rw [prefR, ← Nat.add_sub_cancel' h, pow_add, Nat.add_sub_cancel' h]
-  exact mul_lt_mul_of_pos_right hmod (by positivity)
+  exact mul_lt_mul_of_pos_right hmod tac_positivity
 
 /-- The prefix of a natural number is the quotient of natural numbers. -/
 theorem prefQ_natCast (ℓ z : ℕ) : prefQ ℓ (z : ℤ) = ((z / 2 ^ ℓ : ℕ) : ℤ) := by
@@ -109,8 +110,8 @@ theorem testBit_iff_shift {L ℓ : ℕ} (h : ℓ + 1 ≤ L) (z : ℕ) :
   rw [prefQ_natCast, prefQ_natCast, shiftQ] at hstep
   rw [Nat.testBit_eq_decide_div_mod_eq, decide_eq_true_eq]
   split_ifs at hstep with hc
-  · exact iff_of_false (by omega) (not_not.2 hc)
-  · exact iff_of_true (by omega) hc
+  · exact iff_of_false tac_omega (not_not.2 hc)
+  · exact iff_of_true tac_omega hc
 
 /-! ## The lists of the prefixes and of the rests -/
 

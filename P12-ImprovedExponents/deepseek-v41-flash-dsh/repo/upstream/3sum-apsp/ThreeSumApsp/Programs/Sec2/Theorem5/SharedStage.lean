@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.AllBands
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The shared stage: everything up to the encodings of all bands
@@ -133,12 +134,12 @@ theorem storeLocals_spec {d : ℕ} (hw : (lim.space : ℤ) ≤ lim.word) {base :
     -- mem[base + i] := x
     refine Ends.storeThen ?_ (by light_side [hbase])
     rw [haddr]
-    refine (ih (i + 1) _ (by omega)).mono (by simp; omega) ?_
+    refine (ih (i + 1) _ tac_omega).mono (by simp; omega) ?_
     rintro σ' ⟨hs, hf⟩
     refine ⟨seg_cons.2 ⟨?_, by rw [Nat.add_assoc]; exact hs⟩, fun b hb => ?_⟩
-    · rw [hf (base + i) (Or.inl (by omega)), Function.update_self]
+    · rw [hf (base + i) (Or.inl tac_omega), Function.update_self]
       rfl
-    · rw [hf b (by omega), Function.update_of_ne (by omega)]
+    · rw [hf b tac_omega, Function.update_of_ne tac_omega]
 
 /-- The first part of shared: the addresses of the first areas, the four tables of powers, and
 L - m, N₀, 10^L, 7^L. -/
@@ -276,7 +277,7 @@ theorem SharedA.of_calls {p : Par} {b0 : ℕ} {μ μP3 μP4 μP7 μP10 : ℕ →
       p7 := sP7.keep (by light_keep [lp])
       p10 := sP10
       same := fun x hx => ?_ }
-  rw [fP10 x (by omega), fP7 x (by omega), fP4 x (by omega), fP3 x (by omega)]
+  rw [fP10 x tac_omega, fP7 x tac_omega, fP4 x tac_omega, fP3 x tac_omega]
 
 /-- The entry of pow, for a table of the powers b^0, …, b^L of a base b ≤ 10. -/
 theorem SharedCallees.powTable {c : ℕ} (C : SharedCallees lim P c) {p : Par}
@@ -295,11 +296,8 @@ theorem sharedA_spec (std : Std lim) {c : ℕ} (C : SharedCallees lim P c) {d : 
     (μ : ℕ → ℤ) :
     Ends lim P d sharedA ⟨frame (sharedLoc0 p aX aY b0), μ⟩ (sharedTimeA c p) fun σ' =>
       (∃ r, σ'.loc = frame (sharedLocA p aX aY b0 r)) ∧ SharedA p b0 μ σ'.mem := by
-  have hw := std.space_le
-  have h100 := std.const_le
   have hplaces := p.places b0
   have hsizes := p.sizes hmL
-  have hTw := Par.ten_T_le h10
   unfold sharedA sharedTimeA sharedLoc0
   -- the addresses of the first eight areas
   light_set (p.aP3 b0 : ℕ)
@@ -320,7 +318,7 @@ theorem sharedA_spec (std : Std lim) {c : ℕ} (C : SharedCallees lim P c) {d : 
   have read : ∀ {b a i : ℕ}, Seg μP10 a (powList b (p.L + 1)) → i ≤ p.L →
       μP10 (a + i) = (b ^ i : ℕ) :=
     fun h hi => by rw [h.get (by rw [length_powList]; omega), getElem_powList]
-  have hN0 : μP10 (p.aP3 b0 + p.Lo) = (p.N0 : ℕ) := read hA.p3 (by omega)
+  have hN0 : μP10 (p.aP3 b0 + p.Lo) = (p.N0 : ℕ) := read hA.p3 tac_omega
   have hT : μP10 (p.aP10 b0 + p.L) = (p.T : ℕ) := read hA.p10 le_rfl
   have hS7 : μP10 (p.aP7 b0 + p.L) = (p.S7 : ℕ) := read hA.p7 le_rfl
   light_set (p.Lo : ℕ)
@@ -352,19 +350,19 @@ theorem SharedB.of_calls {p : Par} {b0 : ℕ} {μ μPas μPhi μMask μBand μDi
   have lphi := Spec.length_phiFlat
   have lpsi := Spec.length_psiFlat
   -- The last memory agrees with each earlier one below the area that was written next.
-  have lowDig3 : ∀ x < p.aDIG4 b0, μDig4 x = μDig3 x := fun x hx => fDig4 x (Or.inl hx)
+  have lowDig3 := fun x hx => fDig4 x (Or.inl hx)
   have lowBand : ∀ x < p.aDIG3 b0, μDig4 x = μBand x := fun x hx => by
-    rw [lowDig3 x (by omega), fDig3 x (Or.inl hx)]
+    rw [lowDig3 x tac_omega, fDig3 x (Or.inl hx)]
   have lowMask : ∀ x < p.aBAND b0, μDig4 x = μMask x := fun x hx => by
-    rw [lowBand x (by omega), fBand x (Or.inl hx)]
+    rw [lowBand x tac_omega, fBand x (Or.inl hx)]
   have lowPhi : ∀ x < p.aMASK b0, μDig4 x = μPhi x := fun x hx => by
-    rw [lowMask x (by omega), fMask x (Or.inl hx)]
+    rw [lowMask x tac_omega, fMask x (Or.inl hx)]
   refine
-    { phi := sphi.congr fun i hi => lowPhi _ (by omega)
-      psi := spsi.congr fun i hi => lowPhi _ (by omega)
+    { phi := sphi.congr fun i hi => lowPhi _ tac_omega
+      psi := spsi.congr fun i hi => lowPhi _ tac_omega
       mask := fun s hs => (smask s hs).congr fun i hi => lowMask _ ?_
-      band := fun I hI => (lowBand _ (by omega)).trans (sband I hI).1
-      block := fun I hI => (lowBand _ (by omega)).trans (sband I hI).2
+      band := fun I hI => (lowBand _ tac_omega).trans (sband I hI).1
+      block := fun I hI => (lowBand _ tac_omega).trans (sband I hI).2
       dig3 := fun I hI => (sdig3 I hI).congr fun i hi => lowDig3 _ ?_
       dig4 := fun x hx => ?_
       same := fun x hx => ?_ }
@@ -377,8 +375,8 @@ theorem SharedB.of_calls {p : Par} {b0 : ℕ} {μ μPas μPhi μMask μBand μDi
   · have h := sdig4 x hx
     rwa [Nat.mod_eq_of_lt (show x < 4 ^ p.m from hx)] at h
   · show μDig4 x = μ x
-    rw [fDig4 x (by omega), fDig3 x (by omega), fBand x (by omega), fMask x (by omega),
-      fPhi x (by omega), fPas x (by omega)]
+    rw [fDig4 x tac_omega, fDig3 x tac_omega, fBand x tac_omega, fMask x tac_omega,
+      fPhi x tac_omega, fPas x tac_omega]
 
 /-- **The second part of shared.** -/
 theorem sharedB_spec (std : Std lim) {c : ℕ} (C : SharedCallees lim P c) {d : ℕ} {p : Par}
@@ -388,14 +386,13 @@ theorem sharedB_spec (std : Std lim) {c : ℕ} (C : SharedCallees lim P c) {d : 
     Ends lim P d sharedB ⟨frame (sharedLocA p aX aY b0 r0), μ⟩ (sharedTimeB c p) fun σ' =>
       (∃ r, σ'.loc = frame (sharedLocB p aX aY b0 r)) ∧ SharedB p b0 μ σ'.mem := by
   have hw := std.space_le
-  have h100 := std.const_le
   have hplaces := p.places b0
   have hsizes := p.sizes hmL
   have eKK : p.KK = p.K0 * p.K0 := rfl
   have hTw := Par.ten_T_le h10
   unfold sharedB sharedTimeB sharedLocA
   -- K := binom(L, m)
-  light_call (C.binom p.L p.m (p.aPAS b0) μ (by omega) hmL
+  light_call (C.binom p.L p.m (p.aPAS b0) μ tac_omega hmL
     (le_trans (by exact_mod_cast p.two_pow_le_T) (by omega : (p.T : ℤ) ≤ lim.word)))
     with r μPas ⟨hr, fPas⟩
   obtain rfl : r = (p.K : ℕ) := hr
@@ -405,21 +402,21 @@ theorem sharedB_spec (std : Std lim) {c : ℕ} (C : SharedCallees lim P c) {d : 
   obtain rfl : μPas = μPas' := hμ.symm
   light_set (p.KK : ℕ)
   -- the coefficients and the table of subsets
-  light_call (C.coef (p.aPHI b0) μPas (by omega)) with rPhi μPhi ⟨sphi, spsi, fPhi⟩
-  light_call (C.subsets p.L p.m p.KK (p.aMASK b0) μPhi (by omega) hmL p.KK_le_K
+  light_call (C.coef (p.aPHI b0) μPas tac_omega) with rPhi μPhi ⟨sphi, spsi, fPhi⟩
+  light_call (C.subsets p.L p.m p.KK (p.aMASK b0) μPhi tac_omega hmL p.KK_le_K
     (by push_cast; omega)) with rMask μMask ⟨smask, fMask⟩
   -- band and block of every row
   light_set (p.aBAND b0 : ℕ)
   light_set (p.aBLOCK b0 : ℕ)
   light_set (p.aDIG3 b0 : ℕ)
-  light_call (C.counters p.N p.K0 p.N0 (p.aBAND b0) μMask (by omega) (by omega)
-    (by omega) (by push_cast; omega)) with rBand μBand ⟨sband, fBand⟩
+  light_call (C.counters p.N p.K0 p.N0 (p.aBAND b0) μMask tac_omega tac_omega
+    tac_omega (by push_cast; omega)) with rBand μBand ⟨sband, fBand⟩
   -- the digits of every row and of every column
-  light_call (C.digits p.N 3 p.Lo (p.aDIG3 b0) μBand (by omega) (by norm_num)
-    (by push_cast; omega) (by omega)) with rDig3 μDig3 ⟨sdig3, fDig3⟩
+  light_call (C.digits p.N 3 p.Lo (p.aDIG3 b0) μBand tac_omega tac_norm_num
+    (by push_cast; omega) tac_omega) with rDig3 μDig3 ⟨sdig3, fDig3⟩
   light_set (p.aDIG4 b0 : ℕ)
-  light_call (C.digits p.D 4 p.m (p.aDIG4 b0) μDig3 (by omega) (by norm_num)
-    (by push_cast; omega) (by omega)) with rDig4 μDig4 ⟨sdig4, fDig4⟩
+  light_call (C.digits p.D 4 p.m (p.aDIG4 b0) μDig3 tac_omega tac_norm_num
+    (by push_cast; omega) tac_omega) with rDig4 μDig4 ⟨sdig4, fDig4⟩
   light_set (p.aENCA b0 : ℕ)
   exact ⟨⟨rDig4, rfl⟩,
     .of_calls fPas sphi spsi fPhi smask fMask sband fBand sdig3 fDig3 sdig4 fDig4⟩
@@ -473,7 +470,7 @@ theorem nB_eq (p : Par) (hmL : p.m ≤ p.L) :
   constructor
   · intro h
     rw [e, h, Nat.zero_add]
-    exact Nat.div_eq_of_lt (by omega)
+    exact Nat.div_eq_of_lt tac_omega
   · intro h
     rw [e, ← Nat.add_div_right _ hb]
     congr 1
@@ -485,7 +482,6 @@ theorem sharedBands_spec (std : Std lim) {d : ℕ} {p : Par} (hmL : p.m ≤ p.L)
     (hsp : p.sharedEnd b0 ≤ lim.space) (μ : ℕ → ℤ) (r0 : ℤ) (tb : SharedTables p b0 μ) :
     Ends lim P d sharedBands ⟨frame (sharedLocB p aX aY b0 r0), μ⟩ 13 fun σ' =>
       σ' = ⟨frame (setLocal (sharedLocB p aX aY b0 r0) Bands (p.nB : ℕ)), μ⟩ := by
-  have hw := std.space_le
   have h100 := std.const_le
   have hplaces := p.places b0
   obtain ⟨hnB0, hnB1⟩ := nB_eq p hmL
@@ -495,8 +491,8 @@ theorem sharedBands_spec (std : Std lim) {d : ℕ} {p : Par} (hmL : p.m ≤ p.L)
     have hNzero : p.N = 0 := by simpa using hN
     exact Ends.setTo (p.nB : ℕ) rfl (by simp [hnB0 hNzero]; omega)
   · -- nB := mem[BAND + (N - 1)] + 1
-    have hNpos : 0 < p.N := Nat.pos_of_ne_zero (by simpa using hN)
-    have hlast := tb.band (p.N - 1) (by omega)
+    have hNpos := Nat.pos_of_ne_zero (by simpa using hN)
+    have hlast := tb.band (p.N - 1) tac_omega
     have haddr : ((p.aBAND b0 : ℤ) + ((p.N : ℤ) - 1)).toNat = p.aBAND b0 + (p.N - 1) := by omega
     have hle : (p.N - 1) / (p.K0 * p.N0) ≤ p.N := (Nat.div_le_self _ _).trans (Nat.sub_le _ _)
     have hnB := hnB1 hNpos

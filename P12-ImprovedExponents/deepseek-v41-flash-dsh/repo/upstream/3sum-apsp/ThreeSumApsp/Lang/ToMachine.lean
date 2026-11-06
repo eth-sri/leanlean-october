@@ -11,6 +11,7 @@ public import ThreeSumApsp.Lang.WordSize
 public import ThreeSumApsp.Machine.Solving
 public import Mathlib.Algebra.Order.Floor.Semiring
 public import Mathlib.Data.Nat.Size
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # From runs of light programs to the running-time notions of the word RAM
@@ -107,7 +108,7 @@ theorem fits_of_small {W s k r b : ℕ} {params : List ℕ} {lim : Limits} (P : 
   have hspace := h.space
   have hdepth := h.depth
   set pb := polyBound s k params with hpb
-  have hpb_pos : 1 ≤ pb := one_le_polyBound s k params
+  have hpb_pos := one_le_polyBound s k params
   -- the text's constant times the polynomial is below 2^W
   have hB : 2 ^ textBoundBits P dec * pb ≤ 2 ^ W := by
     rw [hpb, polyBound_mul]
@@ -119,7 +120,7 @@ theorem fits_of_small {W s k r b : ℕ} {params : List ℕ} {lim : Limits} (P : 
     unfold textBound; ring
   -- and each of the four numbers is below the text's constant times the polynomial
   have hstack : (frameSize P + 1) * (lim.depth + 1) ≤ 2 * ((frameSize P + 1) * pb) :=
-    (Nat.mul_le_mul_left _ (by omega : lim.depth + 1 ≤ 2 * pb)).trans_eq (by ring)
+    (Nat.mul_le_mul_left _ (by omega : lim.depth + 1 ≤ 2 * pb)).trans_eq tac_ring
   have hpool : dispPos P dec ≤ dispPos P dec * pb := Nat.le_mul_of_pos_right _ hpb_pos
   refine fits_of_lt hB ?_ ?_ ?_ ?_
   · -- 2 (2 word + 2) ≤ 4 pb + 4 ≤ 8 pb
@@ -165,8 +166,8 @@ theorem input_loadWords (W : ℕ) {ws : List ℤ} (h0 : 0 ≤ lim.word) (h : ∀
     Input lim (memOf ws) 0 0 (loadWords W ws) where
   rep := loadWords_mem_nat W ws
   bounded := AbsLe.abs_getD_le h0 h
-  arg1 := loadWords_mem_neg W ws (by decide)
-  arg2 := loadWords_mem_neg W ws (by decide)
+  arg1 := loadWords_mem_neg W ws tac_decide
+  arg2 := loadWords_mem_neg W ws tac_decide
   arg1_le := by simpa using h0
   arg2_le := by simpa using h0
 
@@ -198,36 +199,6 @@ theorem solves_of_programSolves {prob : Problem} {P : Program} {p0 : ℕ} {dec :
   exact h.answer
 
 /-! ## The two-stage data structure -/
-
-/-- From every memory with the property DS, procedure pQ, called on I and J, returns the entry
-(I, J) of the product within T steps and leaves a memory with the property DS. -/
-def AnswersQueries (lim : Limits) (P : Program) (pQ : ℕ) (x : ThinPair) (T : ℝ)
-    (DS : (ℕ → ℤ) → Prop) : Prop :=
-  ∀ μ, DS μ → ∀ I J : Fin x.N, ∃ (σ' : State) (c : ℕ),
-    Exec lim P 0 (mainStmt pQ) ⟨frame [0, (I : ℕ), (J : ℕ)], μ⟩ σ' c ∧ (c : ℝ) ≤ T ∧
-    σ'.loc 0 = (x.X * x.Y) I J ∧ DS σ'.mem
-
-/-- What is asked of the two procedures on the instance x, with the limits lim and the property DS
-of memories, "holds the data structure for X and Y". -/
-structure ProgramIsDataStructureAt (P : Program) (pPre pQ : ℕ) (s k : ℕ) (extra : List ℤ)
-    (x : ThinPair) (Tp Sp Tq : ℝ) (lim : Limits) (DS : (ℕ → ℤ) → Prop) : Prop where
-  /-- The limits are polynomial in N and D. -/
-  small : Small s k [x.N, x.D] lim
-  /-- The indices of rows and columns fit in a word. -/
-  index_fits : (x.N : ℤ) ≤ lim.word
-  /-- The numbers of the input fit in a word. -/
-  input_fits : ∀ v ∈ x.input extra, |v| ≤ lim.word
-  time_nonneg : 0 ≤ Tq
-  /-- The space bounds the addresses after the input. -/
-  space : (lim.space : ℝ) ≤ (x.input extra).length + Sp
-  /-- The space bounds the nesting of calls. -/
-  depth : (lim.depth : ℝ) ≤ Sp
-  /-- The preprocessing, on the memory that holds the input, establishes DS. -/
-  pre : ∃ (σ' : State) (c : ℕ),
-    Exec lim P 0 (mainStmt pPre) ⟨frame [0, 0, 0], memOf (x.input extra)⟩ σ' c ∧
-    (c : ℝ) ≤ Tp ∧ DS σ'.mem
-  /-- Every query needs and keeps DS. -/
-  query : AnswersQueries lim P pQ x Tq DS
 
 /-! ## Absorbing the additive constant -/
 

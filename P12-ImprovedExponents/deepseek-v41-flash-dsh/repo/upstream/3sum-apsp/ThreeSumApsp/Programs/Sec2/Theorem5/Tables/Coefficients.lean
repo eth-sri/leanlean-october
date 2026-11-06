@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The tables of the coefficients of Schönhage's identity
@@ -33,7 +34,7 @@ def signExpr (x : ℤ) : Expr := if x = 1 then k 1 else if x = 0 then k 0 else k
 /-- The only local variable of coef: its argument phi. -/
 abbrev Coef.Dest : ℕ := 0
 
-open Coef in
+open Coef
 /-- Stores the numbers of the list l, each of them 1, 0 or -1, into the cells from phi + i on. -/
 def storeSigns : ℕ → List ℤ → Stmt
   | _, [] => .skip
@@ -66,14 +67,14 @@ theorem storeSigns_spec (std : Std lim) {base : ℕ} (l : List ℤ) (i : ℕ) (�
     have hcost := signExpr_cost x
     -- mem[phi + i] := x, in at most 7 steps, and then the rest of the list
     refine Ends.storeToThen (base + i) x
-      ((ih (i + 1) _ (fun y hy => hl y (List.mem_cons_of_mem _ hy)) (by omega)).mono
+      ((ih (i + 1) _ (fun y hy => hl y (List.mem_cons_of_mem _ hy)) tac_omega).mono
         (by simp; omega) ?_)
-      (he := ⟨by light_side, signExpr_gives (by omega) (hl x List.mem_cons_self) _, by omega⟩)
+      (he := ⟨by light_side, signExpr_gives tac_omega (hl x List.mem_cons_self) _, by omega⟩)
       (hT := by simp; omega)
     rintro σ' ⟨hrest, same⟩
     refine ⟨seg_cons.2 ⟨?_, by rwa [Nat.add_assoc]⟩, fun b hb => ?_⟩
-    · rw [same (base + i) (Or.inl (by omega)), Function.update_self]
-    · rw [same b (by omega), Function.update_of_ne (by omega)]
+    · rw [same (base + i) (Or.inl tac_omega), Function.update_self]
+    · rw [same b tac_omega, Function.update_of_ne tac_omega]
 
 /-- All coefficients are 1, 0 or -1. -/
 private theorem coef_signs :
@@ -87,7 +88,7 @@ theorem coef_entry (std : Std lim) (hP : P[pCoef]? = some coefBody) {c : ℕ} (h
   intro phi μ hsp d _
   have hlen : (Spec.phiFlat ++ Spec.psiFlat).length = 140 := by simp
   have hphi := Spec.length_phiFlat
-  refine ⟨coefBody, hP, (storeSigns_spec std _ 0 μ coef_signs (by omega)).mono (by omega) ?_⟩
+  refine ⟨coefBody, hP, (storeSigns_spec std _ 0 μ coef_signs tac_omega).mono tac_omega ?_⟩
   rintro σ' ⟨hcells, same⟩
   rw [Nat.add_zero] at hcells same
   obtain ⟨hphiCells, hpsiCells⟩ := seg_append.1 hcells

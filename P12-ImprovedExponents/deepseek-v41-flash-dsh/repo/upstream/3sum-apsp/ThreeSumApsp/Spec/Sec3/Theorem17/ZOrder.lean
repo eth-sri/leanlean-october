@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Util.List
 public import Mathlib.Data.Nat.Digits.Lemmas
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Matrices in Z-order (Morton order)
@@ -51,7 +52,7 @@ theorem spread_eq (i : ℕ) : spread i = i % 2 + 4 * spread (i / 2) := by
   rcases Nat.eq_zero_or_pos i with rfl | hi
   · simp [spread]
   · unfold spread
-    rw [Nat.digits_eq_cons_digits_div (by norm_num) hi.ne', Nat.ofDigits_cons]
+    rw [Nat.digits_eq_cons_digits_div tac_norm_num hi.ne', Nat.ofDigits_cons]
 
 /-- The number 0 has no digits to move. -/
 theorem spread_zero : spread 0 = 0 := by simp [spread]
@@ -61,14 +62,14 @@ theorem zRow_eq (z : ℕ) : zRow z = z % 4 / 2 + 2 * zRow (z / 4) := by
   rcases Nat.eq_zero_or_pos z with rfl | hz
   · simp [zRow]
   · unfold zRow
-    rw [Nat.digits_eq_cons_digits_div (by norm_num) hz.ne', List.map_cons, Nat.ofDigits_cons]
+    rw [Nat.digits_eq_cons_digits_div tac_norm_num hz.ne', List.map_cons, Nat.ofDigits_cons]
 
 /-- The column, one digit in base 4 at a time. -/
 theorem zCol_eq (z : ℕ) : zCol z = z % 4 % 2 + 2 * zCol (z / 4) := by
   rcases Nat.eq_zero_or_pos z with rfl | hz
   · simp [zCol]
   · unfold zCol
-    rw [Nat.digits_eq_cons_digits_div (by norm_num) hz.ne', List.map_cons, Nat.ofDigits_cons]
+    rw [Nat.digits_eq_cons_digits_div tac_norm_num hz.ne', List.map_cons, Nat.ofDigits_cons]
 
 /-- The place 0 is in row 0. -/
 theorem zRow_zero : zRow 0 = 0 := by simp [zRow]
@@ -91,7 +92,7 @@ theorem zIdx_lt {K a c : ℕ} (ha : a < 2 ^ K) (hc : c < 2 ^ K) : zIdx a c < 4 ^
     simp [zIdx, spread_zero]
   | succ K ih =>
     rw [pow_succ] at ha hc
-    have h := ih (a := a / 2) (c := c / 2) (by omega) (by omega)
+    have h := ih (a := a / 2) (c := c / 2) tac_omega tac_omega
     rw [zIdx_eq, pow_succ]
     omega
 
@@ -102,7 +103,7 @@ private theorem zRow_zCol_zIdx (a c : ℕ) : zRow (zIdx a c) = a ∧ zCol (zIdx 
     rcases Nat.eq_zero_or_pos (a + c) with h0 | hpos
     · obtain ⟨rfl, rfl⟩ : a = 0 ∧ c = 0 := by omega
       simp [zIdx, spread_zero, zRow_zero, zCol_zero]
-    · obtain ⟨hrow, hcol⟩ := ih (a / 2 + c / 2) (by omega) (a / 2) (c / 2) rfl
+    · obtain ⟨hrow, hcol⟩ := ih (a / 2 + c / 2) tac_omega (a / 2) (c / 2) rfl
       rw [zRow_eq, zCol_eq, zIdx_eq]
       generalize zIdx (a / 2) (c / 2) = z at hrow hcol
       rw [show (2 * (a % 2) + c % 2 + 4 * z) / 4 = z by omega, hrow, hcol]
@@ -120,7 +121,7 @@ theorem zIdx_zRow_zCol (z : ℕ) : zIdx (zRow z) (zCol z) = z := by
   | _ z ih =>
     rcases Nat.eq_zero_or_pos z with rfl | hz
     · simp [zRow_zero, zCol_zero, zIdx, spread_zero]
-    · have h := ih (z / 4) (by omega)
+    · have h := ih (z / 4) tac_omega
       rw [zIdx_eq, zRow_eq z, zCol_eq z]
       generalize zRow (z / 4) = a at h
       generalize zCol (z / 4) = c at h
@@ -199,8 +200,8 @@ theorem zList_succ {p K : ℕ} (M : ℕ → ℕ → List ℤ) (hM : ∀ a c, (M 
     rw [length_zList _ _ hM, pow_succ]
     ring
   conv_lhs => rw [eq_append_quarters hlen]
-  rw [quarter_zList M hM (by norm_num), quarter_zList M hM (by norm_num),
-    quarter_zList M hM (by norm_num), quarter_zList M hM (by norm_num)]
+  rw [quarter_zList M hM tac_norm_num, quarter_zList M hM tac_norm_num,
+    quarter_zList M hM tac_norm_num, quarter_zList M hM tac_norm_num]
   simp only [Nat.reduceDiv, Nat.reduceMod, Nat.zero_mul, Nat.one_mul, Nat.add_zero]
 
 end ThreeSumApsp.Spec

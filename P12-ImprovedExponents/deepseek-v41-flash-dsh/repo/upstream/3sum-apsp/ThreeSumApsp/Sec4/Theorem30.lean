@@ -10,6 +10,7 @@ public import ThreeSumApsp.Sec4.Lemma27_28
 public import ThreeSumApsp.Sec4.Lemma29
 public import ThreeSumApsp.Util.Basic
 public import Mathlib.Algebra.Order.Field.GeomSum
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Equation (7) and Theorem 30: the data structure (Section 4.3)
@@ -53,15 +54,13 @@ namespace ThreeSumApsp
 /-- Section 4.3: `ρ = 9m/(L-m+1)` "is less than 1 since L ≥ 10m". -/
 theorem sec4_rho_lt_one (L m : ℕ) (hL : 10 * m ≤ L) : rho L m < 1 := by
   have hL' : (10 : ℝ) * m ≤ L := by exact_mod_cast hL
-  have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-  rw [rho, div_lt_one (by linarith)]
+  rw [rho, div_lt_one tac_linarith]
   linarith
 
 /-- The decay rate `ρ` is not negative when `L ≥ 10m`. -/
 theorem rho_nonneg {L m : ℕ} (hL : 10 * m ≤ L) : 0 ≤ rho L m := by
   have hL' : (10 : ℝ) * m ≤ L := by exact_mod_cast hL
-  have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-  exact div_nonneg (by positivity) (by linarith)
+  exact div_nonneg tac_positivity tac_linarith
 
 /-! ### Theorem 30, "Preprocessing": the count behind (8) -/
 
@@ -85,7 +84,7 @@ theorem Theorem30.subsets (L m : ℕ) : K L m * L ≤ 10 ^ L := by
   calc K L m * L ≤ 2 ^ L * 2 ^ L :=
         Nat.mul_le_mul (Nat.choose_le_two_pow L m) Nat.lt_two_pow_self.le
     _ = 4 ^ L := by rw [← Nat.mul_pow]
-    _ ≤ 10 ^ L := Nat.pow_le_pow_left (by norm_num) L
+    _ ≤ 10 ^ L := Nat.pow_le_pow_left tac_norm_num L
 
 /-- `binom(L, r) ≥ L` for `1 ≤ r ≤ L/2`: up to the middle the binomial coefficients increase. -/
 private lemma le_choose_of_le_half (L : ℕ) : ∀ r, 1 ≤ r → r ≤ L / 2 → L ≤ L.choose r := by
@@ -94,12 +93,12 @@ private lemma le_choose_of_le_half (L : ℕ) : ∀ r, 1 ≤ r → r ≤ L / 2 �
   | base => intro _; simp
   | succ r hr ih =>
     intro h
-    exact (ih (by omega)).trans (Nat.choose_le_succ_of_lt_half_left (by omega))
+    exact (ih tac_omega).trans (Nat.choose_le_succ_of_lt_half_left tac_omega)
 
 /-- `K₀ ≥ 3` in the range of Theorem 30, because `K = binom(L, m) ≥ L ≥ 10`. -/
 private lemma three_le_K0 (L m : ℕ) (hm : 1 ≤ m) (hL : 10 * m ≤ L) : 3 ≤ K0 L m := by
-  have hK : L ≤ K L m := le_choose_of_le_half L m hm (by omega)
-  exact Nat.le_sqrt.2 (by omega)
+  have hK : L ≤ K L m := le_choose_of_le_half L m hm tac_omega
+  exact Nat.le_sqrt.2 tac_omega
 
 /-- The number `b` of row bands, `N/(K₀ N₀)` rounded up, satisfies `b √K N₀ ≤ 2N`. The two bounds of
 the paper's proof on the numbers of bands and of tiles rest on this. If `b ≤ 2` it is the hypothesis
@@ -122,7 +121,7 @@ theorem Theorem30.numBands_mul_le {L m N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ 
     exact_mod_cast h'
   rcases Nat.lt_or_ge (numBands L m N) 3 with hb | hb
   · have hb' : (numBands L m N : ℝ) ≤ 2 := by exact_mod_cast Nat.le_of_lt_succ hb
-    exact (mul_le_mul_of_nonneg_right hb' (sqrtKN0_pos (by omega)).le).trans
+    exact (mul_le_mul_of_nonneg_right hb' (sqrtKN0_pos tac_omega).le).trans
       (mul_le_mul_of_nonneg_left hN zero_le_two)
   · have hb' : (3 : ℝ) ≤ (numBands L m N : ℝ) := by exact_mod_cast hb
     have hwide : sqrtKN0 L m ≤ 4 / 3 * ((K0 L m : ℝ) * (N0 L m : ℝ)) := by
@@ -137,7 +136,7 @@ them". There are `numBands L m N` row bands and as many column bands. Here `N` i
 not the padded one, and the bound comes from `Theorem30.numBands_mul_le`. -/
 theorem Theorem30.bands {L m N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) (hN : sqrtKN0 L m ≤ N) :
     (2 * numBands L m N : ℝ) ≤ 4 * (N : ℝ) / sqrtKN0 L m := by
-  rw [le_div_iff₀ (sqrtKN0_pos (by omega))]
+  rw [le_div_iff₀ (sqrtKN0_pos tac_omega)]
   linarith [Theorem30.numBands_mul_le hm hL hN]
 
 /-- Proof of Theorem 30, "Preprocessing": "K N₀ D ≤ 7^L". This bounds the number of nonzero entries
@@ -158,7 +157,7 @@ theorem Theorem30.form_array : ∀ L : ℕ, L * 7 ^ L ≤ 2 * 10 ^ L
   | 3 => by norm_num
   | L + 4 =>
     calc (L + 4) * 7 ^ (L + 4) = (7 * (L + 4)) * 7 ^ (L + 3) := by ring
-      _ ≤ (10 * (L + 3)) * 7 ^ (L + 3) := Nat.mul_le_mul_right _ (by omega)
+      _ ≤ (10 * (L + 3)) * 7 ^ (L + 3) := Nat.mul_le_mul_right _ tac_omega
       _ = 10 * ((L + 3) * 7 ^ (L + 3)) := by ring
       _ ≤ 10 * (2 * 10 ^ (L + 3)) := Nat.mul_le_mul_left _ (Theorem30.form_array (L + 3))
       _ = 2 * 10 ^ (L + 4) := by ring
@@ -168,12 +167,12 @@ output entries of a tile". There are `(numBands L m N)²` tiles. Here `N` is the
 bound comes from `Theorem30.numBands_mul_le`. -/
 theorem Theorem30.tiles {L m N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) (hN : sqrtKN0 L m ≤ N) :
     ((numBands L m N : ℝ)) ^ 2 ≤ 4 * (N : ℝ) ^ 2 / (M L m : ℝ) := by
-  have hpos := sqrtKN0_pos (L := L) (m := m) (by omega)
+  have hpos := sqrtKN0_pos (L := L) (m := m) tac_omega
   rw [← sqrtKN0_sq, le_div_iff₀ (pow_pos hpos 2)]
   calc (numBands L m N : ℝ) ^ 2 * sqrtKN0 L m ^ 2
       = ((numBands L m N : ℝ) * sqrtKN0 L m) ^ 2 := (mul_pow _ _ 2).symm
     _ ≤ (2 * (N : ℝ)) ^ 2 :=
-        pow_le_pow_left₀ (by positivity) (Theorem30.numBands_mul_le hm hL hN) 2
+        pow_le_pow_left₀ tac_positivity (Theorem30.numBands_mul_le hm hL hN) 2
     _ = 4 * (N : ℝ) ^ 2 := by ring
 
 /-! ### Theorem 30, "Query": a query returns `(XY)[I, J]` -/
@@ -243,10 +242,10 @@ theorem Theorem30.ten_pow_le (L m N : ℕ) (hL : 10 * m ≤ L) (hN : N0 L m ≤ 
   have hsq : ((10 ^ L) ^ 2) ^ 2 ≤ ((3 ^ (L - m)) ^ 5) ^ 2 :=
     calc ((10 ^ L) ^ 2) ^ 2 = 10000 ^ L := by
           rw [← pow_mul, ← pow_mul, mul_comm L, pow_mul]; norm_num
-      _ ≤ 19683 ^ L := Nat.pow_le_pow_left (by norm_num) L
+      _ ≤ 19683 ^ L := Nat.pow_le_pow_left tac_norm_num L
       _ = 3 ^ (9 * L) := by rw [pow_mul]; norm_num
-      _ ≤ 3 ^ ((L - m) * 5 * 2) := Nat.pow_le_pow_right (by norm_num) (by omega)
+      _ ≤ 3 ^ ((L - m) * 5 * 2) := Nat.pow_le_pow_right tac_norm_num tac_omega
       _ = ((3 ^ (L - m)) ^ 5) ^ 2 := by rw [pow_mul, pow_mul]
-  exact ((Nat.pow_le_pow_iff_left (by norm_num)).mp hsq).trans (Nat.pow_le_pow_left hN 5)
+  exact ((Nat.pow_le_pow_iff_left tac_norm_num).mp hsq).trans (Nat.pow_le_pow_left hN 5)
 
 end ThreeSumApsp

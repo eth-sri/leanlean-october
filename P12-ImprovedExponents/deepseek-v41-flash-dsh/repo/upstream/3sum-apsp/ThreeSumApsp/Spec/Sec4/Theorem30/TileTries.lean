@@ -9,6 +9,7 @@ public import ThreeSumApsp.Spec.Sec4.Theorem30.QueryLists
 public import ThreeSumApsp.Spec.Sec4.Theorem30.StarBoxes
 public import ThreeSumApsp.Spec.Sec4.Theorem30.Trie
 public import ThreeSumApsp.Util.Index
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The trie of a tile, and the tries of all tiles (Lemma 29)
@@ -245,7 +246,7 @@ private theorem storedAll_snoc {L m t : ℕ} (tiles : List TileEnc) (ab : TileEn
   simp only [storedUpTo]
   rcases Nat.lt_trichotomy n tiles.length with hn | hn | hn
   · -- an older tile
-    rw [if_neg (by omega), ← h, List.getElem?_append_left hn]
+    rw [if_neg tac_omega, ← h, List.getElem?_append_left hn]
     exact if_pos hl
   · -- the new tile
     rw [if_pos ⟨hn, Or.inl ⟨Nat.lt_succ_of_le (le_of_mem_starBoxes hl), hl⟩⟩, ← h, hn]
@@ -284,12 +285,12 @@ theorem fillTrie_rep (hi : roots i ≠ 0) (rest pre : List (List ℕ)) (T : List
   induction rest generalizing pre T with
   | nil => rwa [List.append_nil]
   | cons l rest ih =>
-    have hl : l ∈ starBoxes L m t e := hmem l (by simp)
+    have hl := hmem l tac_simp
     have hins := hrep.insert i hi l (starBoxes_digits hl).1 (starBoxes_digits hl).2
       (boxValue encA encB T (roots i) e l)
     rw [boxValue_eq hrep hl, ← storedUpTo_snoc pre hl] at hins
     rw [fillTrie_cons, List.append_cons, boxValue_eq hrep hl]
-    exact ih (pre ++ [l]) _ (fun x hx => hmem x (by simp [hx])) hins
+    exact ih (pre ++ [l]) _ (fun x hx => hmem x tac_simp [hx]) hins
 
 end
 
@@ -324,7 +325,7 @@ theorem length_roots_allTries (tiles : List TileEnc) :
 theorem allTries_rep (tiles : List TileEnc) :
     (allTries L m t tiles).Holds L 1 (storedAll L m t tiles) := by
   induction tiles using List.reverseRecOn with
-  | nil => exact (TrieRep.empty L [0] (by simp)).mono fun x v hx => by simp [storedAll] at hx
+  | nil => exact (TrieRep.empty L [0] tac_simp).mono fun x v hx => by simp [storedAll] at hx
   | append_singleton tiles ab ih =>
     have h := fillUpTo_rep ab.encA ab.encB m t _ ih (m - t + 1)
     rw [length_roots_allTries] at h
@@ -353,10 +354,10 @@ theorem length_fillTrie_le (root e L : ℕ) (boxes : List (List ℕ))
   induction boxes generalizing T with
   | nil => exact le_rfl
   | cons l boxes ih =>
-    have hrest := ih (fun x hx => hb x (by simp [hx]))
+    have hrest := ih (fun x hx => hb x tac_simp [hx])
       (trieInsert T root l (boxValue encA encB T root e l))
     have hins := length_trieInsert_le T root l (boxValue encA encB T root e l)
-    rw [hb l (by simp)] at hins
+    rw [hb l tac_simp] at hins
     rw [fillTrie_cons, List.length_cons, Nat.mul_add_one]
     omega
 
@@ -380,7 +381,7 @@ theorem length_tileTrie_le (s : TrieStore) :
       ≤ s.cells.length + 11 * (1 + L * (boxes L m t).card) := by
   have h := length_fillUpTo_le_sum encA encB L m t s.cells.length (m - t + 1) (trieNew s.cells)
   rw [sum_length_starBoxes, Nat.mul_assoc, length_trieNew] at h
-  exact h.trans (by omega)
+  exact h.trans tac_omega
 
 /-- All tiles together: cell 0, and for each tile the space of Lemma 29. -/
 theorem length_allTries_le (tiles : List TileEnc) :

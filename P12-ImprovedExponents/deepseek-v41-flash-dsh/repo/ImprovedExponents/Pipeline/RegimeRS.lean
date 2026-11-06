@@ -2,6 +2,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Parameters.Sizes
 public import ImprovedExponents.Pipeline.ThinClaim
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ routine of `ImprovedExponents.PrunedProgram`, whose solver is `allBody Proc.test
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3 Light.Sec4
+open Light Light.Sec3 Light.Sec4
 
 /-! ## The procedures -/
 
@@ -98,11 +99,11 @@ theorem testRS_meets {lim : Limits} {P : Program} {d : ℕ} (r s : ℕ)
   light_set (1 : ℕ)
   -- while cnt < s: acc := acc * N; cnt := cnt + 1.  Before round i, cnt = i and acc = N^i.
   refine Ends.next _ (Ends.whileBlock
-    (fun i σ => σ = ⟨frame [N, D, i, ((N ^ i : ℕ) : ℤ)], μ⟩) s (by simp) ?round ?done
+    (fun i σ => σ = ⟨frame [N, D, i, ((N ^ i : ℕ) : ℤ)], μ⟩) s tac_simp ?round ?done
     le_rfl) (by simp; omega)
   case round =>
     rintro i _ hi rfl
-    have hle : N ^ (i + 1) ≤ N ^ s := Nat.pow_le_pow_right hN hi
+    have hle := Nat.pow_le_pow_right hN hi
     have hleZ : ((N : ℤ) ^ i) * N ≤ (N : ℤ) ^ s := by
       rw [← pow_succ]
       exact_mod_cast hle
@@ -137,11 +138,11 @@ theorem wordRS_poly (r s N D : ℕ) :
   have hDQ : D ≤ Q := by nlinarith
   have hQp : 1 ≤ Q ^ (s + 1) := Nat.one_le_pow _ _ hQ1
   have hNs : N ^ s ≤ Q ^ (s + 1) :=
-    (Nat.pow_le_pow_left hNQ s).trans (Nat.pow_le_pow_right hQ1 (by omega))
+    (Nat.pow_le_pow_left hNQ s).trans (Nat.pow_le_pow_right hQ1 tac_omega)
   have h1 : N ^ s * D ≤ Q ^ (s + 1) := by
     calc N ^ s * D ≤ Q ^ s * Q := Nat.mul_le_mul (Nat.pow_le_pow_left hNQ s) hDQ
       _ = Q ^ (s + 1) := (pow_succ Q s).symm
-  have h2 : D ≤ Q ^ (s + 1) := hDQ.trans (Nat.le_self_pow (by omega) Q)
+  have h2 : D ≤ Q ^ (s + 1) := hDQ.trans (Nat.le_self_pow tac_omega Q)
   have hrs : r + s + 100 ≤ 128 * 2 ^ (r + s) := by
     have := Nat.lt_two_pow_self (n := r + s)
     omega

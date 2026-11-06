@@ -8,6 +8,7 @@ module
 public import Mathlib.Data.Int.Notation
 public import Mathlib.Data.Nat.Notation
 public import Mathlib.Logic.Function.Basic
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Regions of the memory, and the cells that a step leaves alone
@@ -128,17 +129,17 @@ def wrote (μ : ℕ → ℤ) (dst : ℕ) (f : ℕ → ℤ) (j : ℕ) : ℕ → �
 theorem wrote_zero : wrote μ dst f 0 = μ := by
   funext a
   unfold wrote
-  rw [if_neg (by omega)]
+  rw [if_neg tac_omega]
 
 /-- A cell that has been written. -/
 theorem wrote_done {i : ℕ} (h : i < j) : wrote μ dst f j (dst + i) = f i := by
   unfold wrote
-  rw [if_pos (by omega), Nat.add_sub_cancel_left]
+  rw [if_pos tac_omega, Nat.add_sub_cancel_left]
 
 /-- A cell that has not been written (yet). -/
 theorem wrote_rest {a : ℕ} (h : Outside dst j a) : wrote μ dst f j a = μ a := by
   unfold wrote
-  rw [if_neg (by omega)]
+  rw [if_neg tac_omega]
 
 /-- One more cell is written. -/
 theorem wrote_succ : Function.update (wrote μ dst f j) (dst + j) (f j) = wrote μ dst f (j + 1) := by
@@ -149,8 +150,8 @@ theorem wrote_succ : Function.update (wrote μ dst f j) (dst + j) (f j) = wrote 
   · rw [Function.update_of_ne h]
     unfold wrote
     by_cases h' : dst ≤ a ∧ a < dst + j
-    · rw [if_pos h', if_pos (by omega)]
-    · rw [if_neg h', if_neg (by omega)]
+    · rw [if_pos h', if_pos tac_omega]
+    · rw [if_neg h', if_neg tac_omega]
 
 /-- A write outside the cells that have been written can be done first. -/
 theorem update_wrote {y : ℕ} (hy : Outside dst j y) (w : ℤ) :
@@ -163,7 +164,7 @@ theorem update_wrote {y : ℕ} (hy : Outside dst j y) (w : ℤ) :
 
 /-- Writing `j ≤ n` cells from `dst` changes no cell outside the `n` cells from `dst`. -/
 theorem sameOutside_wrote {n : ℕ} (h : j ≤ n) : SameOutside μ (wrote μ dst f j) dst n :=
-  fun _ hb => wrote_rest (by omega)
+  fun _ hb => wrote_rest tac_omega
 
 /-! ## The tactics -/
 
@@ -171,7 +172,7 @@ theorem sameOutside_wrote {n : ℕ} (h : j ≤ n) : SameOutside μ (wrote μ dst
 `K' x` follows by linear arithmetic, it adds the equation `ν' x = ν x`.  Then it replaces the writes
 `Function.update ν b z` and `wrote ν dst f j` by their definitions. -/
 macro "light_keep_steps" x:ident : tactic => `(tactic|
-  (repeat ((with_reducible rename SameOn _ _ _ => h); (try have := h $x (by omega)); revert h)
+  (repeat ((with_reducible rename SameOn _ _ _ => h); (try have := h $x tac_omega); revert h)
    intros
    try simp only [Function.update_apply, wrote] at *))
 

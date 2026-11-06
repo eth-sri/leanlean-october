@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.RingOps
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Strassen
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Strassen's algorithm in seven uniform phases: the pure side
@@ -80,7 +81,7 @@ theorem absLe_zeros (q : ℕ) : AbsLe (zeros q) 0 := by
 /-- A quarter of a list of 4 q numbers has q numbers. -/
 theorem length_quarter {q t : ℕ} {l : List ℤ} (h : l.length = 4 * q) (ht : t < 4) :
     (quarter q t l).length = q := by
-  have h1 : (t + 1) * q ≤ 4 * q := Nat.mul_le_mul_right q (by omega)
+  have h1 : (t + 1) * q ≤ 4 * q := Nat.mul_le_mul_right q tac_omega
   have h2 : (t + 1) * q = t * q + q := by ring
   rw [quarter, List.length_take, List.length_drop, h]
   omega
@@ -119,8 +120,7 @@ theorem length_strassenList (p : ℕ) :
       fun t ht => length_quarter hA' ht
     have qb : ∀ t < 4, (quarter (4 ^ j * p) t B).length = 4 ^ j * p :=
       fun t ht => length_quarter hB' ht
-    have hs : ∀ X Y : List ℤ, X.length = 4 ^ j * p → Y.length = 4 ^ j * p →
-        (strassenList p j X Y).length = 4 ^ j * p := length_strassenList p j
+    have hs := length_strassenList p j
     have ha : ∀ X Y : List ℤ, X.length = 4 ^ j * p → Y.length = 4 ^ j * p →
         (vadd X Y).length = 4 ^ j * p :=
       fun X Y hX hY => by simp [vadd, hX, hY]
@@ -132,7 +132,7 @@ theorem length_strassenList (p : ℕ) :
     · ring
     all_goals
       repeat' first
-        | apply ha | apply hb | apply hs | exact qa _ (by omega) | exact qb _ (by omega)
+        | apply ha | apply hb | apply hs | exact qa _ tac_omega | exact qb _ tac_omega
 
 /-- The product of a phase. -/
 def phaseM (p j : ℕ) (sA : ℤ) (A1 A2 : List ℤ) (sB : ℤ) (B1 B2 : List ℤ) : List ℤ :=
@@ -163,18 +163,16 @@ theorem strassenBound_one_one (p K : ℕ) : strassenBound p K 1 1 = ((16 ^ K * p
 /-- The bound is at least the bound α for the first operand. -/
 theorem le_strassenBound_left {p j : ℕ} {α β : ℤ} (hp : 1 ≤ p) (hα : 1 ≤ α) (hβ : 1 ≤ β) :
     α ≤ strassenBound p j α β := by
-  have hpow : (1 : ℤ) ≤ 16 ^ j := one_le_pow₀ (by norm_num)
+  have hpow : (1 : ℤ) ≤ 16 ^ j := one_le_pow₀ tac_norm_num
   have hpZ : (1 : ℤ) ≤ p := by exact_mod_cast hp
-  have hα0 : 0 ≤ α := by omega
   calc α = 1 * (1 * α * 1) := by ring
     _ ≤ 16 ^ j * (p * α * β) := by gcongr
 
 /-- The bound is at least the bound β for the second operand. -/
 theorem le_strassenBound_right {p j : ℕ} {α β : ℤ} (hp : 1 ≤ p) (hα : 1 ≤ α) (hβ : 1 ≤ β) :
     β ≤ strassenBound p j α β := by
-  have hpow : (1 : ℤ) ≤ 16 ^ j := one_le_pow₀ (by norm_num)
+  have hpow : (1 : ℤ) ≤ 16 ^ j := one_le_pow₀ tac_norm_num
   have hpZ : (1 : ℤ) ≤ p := by exact_mod_cast hp
-  have hβ0 : 0 ≤ β := by omega
   calc β = 1 * (1 * 1 * β) := by ring
     _ ≤ 16 ^ j * (p * α * β) := by gcongr
 
@@ -191,25 +189,25 @@ theorem absLe_cconv {p : ℕ} {A B : List ℤ} {α β : ℤ} (leA : AbsLe A α) 
 theorem _root_.ThreeSumApsp.AbsLe.vadd {X Y : List ℤ} {x y : ℤ} (hX : AbsLe X x) (hY : AbsLe Y y) :
     AbsLe (vadd X Y) (x + y) := by
   rw [← vlinList_one]
-  exact hX.vlinList hY (by simp)
+  exact hX.vlinList hY tac_simp
 
 /-- The entries of a difference. -/
 theorem _root_.ThreeSumApsp.AbsLe.vsub {X Y : List ℤ} {x y : ℤ} (hX : AbsLe X x) (hY : AbsLe Y y) :
     AbsLe (vsub X Y) (x + y) := by
   rw [← vlinList_neg_one]
-  exact hX.vlinList hY (by simp)
+  exact hX.vlinList hY tac_simp
 
 /-- The entries of a sum of two lists with the same bound. -/
 theorem _root_.ThreeSumApsp.AbsLe.vadd_self {X Y : List ℤ} {c : ℤ} (hX : AbsLe X c)
     (hY : AbsLe Y c) :
     AbsLe (vadd X Y) (2 * c) :=
-  (hX.vadd hY).trans_le (by omega)
+  (hX.vadd hY).trans_le tac_omega
 
 /-- The entries of a difference of two lists with the same bound. -/
 theorem _root_.ThreeSumApsp.AbsLe.vsub_self {X Y : List ℤ} {c : ℤ} (hX : AbsLe X c)
     (hY : AbsLe Y c) :
     AbsLe (vsub X Y) (2 * c) :=
-  (hX.vsub hY).trans_le (by omega)
+  (hX.vsub hY).trans_le tac_omega
 
 /-- The entries of the result of the routine, and of the products of its phases, are bounded. -/
 theorem absLe_strassenList (p : ℕ) :
@@ -220,11 +218,11 @@ theorem absLe_strassenList (p : ℕ) :
   | j + 1, A, B, α, β, leA, leB, hα, hβ => by
     have ih : ∀ X Y : List ℤ, AbsLe X (2 * α) → AbsLe Y (2 * β) →
         AbsLe (strassenList p j X Y) (strassenBound p j (2 * α) (2 * β)) := fun X Y hX hY =>
-      absLe_strassenList p j X Y _ _ hX hY (by omega) (by omega)
+      absLe_strassenList p j X Y _ _ hX hY tac_omega tac_omega
     have qa : ∀ t, AbsLe (quarter (4 ^ j * p) t A) α := fun t => leA.quarter
     have qb : ∀ t, AbsLe (quarter (4 ^ j * p) t B) β := fun t => leB.quarter
-    have qa2 : ∀ t, AbsLe (quarter (4 ^ j * p) t A) (2 * α) := fun t => (qa t).trans_le (by omega)
-    have qb2 : ∀ t, AbsLe (quarter (4 ^ j * p) t B) (2 * β) := fun t => (qb t).trans_le (by omega)
+    have qa2 : ∀ t, AbsLe (quarter (4 ^ j * p) t A) (2 * α) := fun t => (qa t).trans_le tac_omega
+    have qb2 : ∀ t, AbsLe (quarter (4 ^ j * p) t B) (2 * β) := fun t => (qb t).trans_le tac_omega
     -- the seven products of Strassen's algorithm
     have m1 := ih _ _ ((qa 0).vadd_self (qa 3)) ((qb 0).vadd_self (qb 3))
     have m2 := ih _ _ ((qa 2).vadd_self (qa 3)) (qb2 0)
@@ -234,17 +232,17 @@ theorem absLe_strassenList (p : ℕ) :
     have m6 := ih _ _ ((qa 2).vsub_self (qa 0)) ((qb 0).vadd_self (qb 1))
     have m7 := ih _ _ ((qa 1).vsub_self (qa 3)) ((qb 2).vadd_self (qb 3))
     have hR : 0 ≤ strassenBound p j (2 * α) (2 * β) :=
-      strassenBound_nonneg (by omega) (by omega)
+      strassenBound_nonneg tac_omega tac_omega
     rw [strassenBound_succ]
     simp only [strassenList]
     intro x hx
     simp only [List.mem_append] at hx
     -- each quadrant of the result is a sum of at most four of them
     rcases hx with ((hx | hx) | hx) | hx
-    · exact (((m1.vadd m4).vsub m5).vadd m7).trans_le (by omega) x hx
-    · exact (m3.vadd m5).trans_le (by omega) x hx
-    · exact (m2.vadd m4).trans_le (by omega) x hx
-    · exact (((m1.vsub m2).vadd m3).vadd m6).trans_le (by omega) x hx
+    · exact (((m1.vadd m4).vsub m5).vadd m7).trans_le tac_omega x hx
+    · exact (m3.vadd m5).trans_le tac_omega x hx
+    · exact (m2.vadd m4).trans_le tac_omega x hx
+    · exact (((m1.vsub m2).vadd m3).vadd m6).trans_le tac_omega x hx
 
 /-- The product of a phase on quarters of the operands has the length of a quarter. -/
 theorem length_phaseM_quarter {p j : ℕ} {A B : List ℤ} (hA : A.length = 4 * (4 ^ j * p))

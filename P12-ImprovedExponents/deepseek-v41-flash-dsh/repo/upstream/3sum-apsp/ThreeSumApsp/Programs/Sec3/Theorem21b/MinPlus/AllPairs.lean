@@ -10,6 +10,7 @@ public import ThreeSumApsp.Lang.PolyBounded
 public import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.CopyBlock
 public import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.Tasks
 public import ThreeSumApsp.Spec.Sec3.Theorem21b.AllPairs
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # All pairs with a witness, with an algorithm that finds a negative triangle
@@ -48,10 +49,10 @@ namespace Mask
 /-- The local variables of mask: the arguments len, F (Large), ac (Mat), tmp (Flags), and the
 counter q (Index). -/
 abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Large : ℕ := 1
-@[inherit_doc Len] abbrev Mat : ℕ := 2
-@[inherit_doc Len] abbrev Flags : ℕ := 3
-@[inherit_doc Len] abbrev Index : ℕ := 4
+ abbrev Large : ℕ := 1
+ abbrev Mat : ℕ := 2
+ abbrev Flags : ℕ := 3
+ abbrev Index : ℕ := 4
 
 end Mask
 
@@ -68,18 +69,18 @@ namespace Ask
 /-- The local variables of ask: the arguments n, s (Side), F (Large), x, y, v, out, the offsets oI,
 oK, oJ, and fr (Free); then s² (Area), and results that are not used. -/
 abbrev N : ℕ := 0
-@[inherit_doc N] abbrev Side : ℕ := 1
-@[inherit_doc N] abbrev Large : ℕ := 2
-@[inherit_doc N] abbrev X : ℕ := 3
-@[inherit_doc N] abbrev Y : ℕ := 4
-@[inherit_doc N] abbrev V : ℕ := 5
-@[inherit_doc N] abbrev Out : ℕ := 6
-@[inherit_doc N] abbrev OffI : ℕ := 7
-@[inherit_doc N] abbrev OffK : ℕ := 8
-@[inherit_doc N] abbrev OffJ : ℕ := 9
-@[inherit_doc N] abbrev Free : ℕ := 10
-@[inherit_doc N] abbrev Area : ℕ := 11
-@[inherit_doc N] abbrev Unused : ℕ := 12
+ abbrev Side : ℕ := 1
+ abbrev Large : ℕ := 2
+ abbrev X : ℕ := 3
+ abbrev Y : ℕ := 4
+ abbrev V : ℕ := 5
+ abbrev Out : ℕ := 6
+ abbrev OffI : ℕ := 7
+ abbrev OffK : ℕ := 8
+ abbrev OffJ : ℕ := 9
+ abbrev Free : ℕ := 10
+ abbrev Area : ℕ := 11
+ abbrev Unused : ℕ := 12
 
 end Ask
 
@@ -107,34 +108,34 @@ namespace Pairs
 block and the number p of blocks; the numbers I, K, J of the three blocks and their offsets oI, oK,
 oJ; F = 2U + 1 (Large); the address fr + 3s² of the solver's answer; the last result (Reply). -/
 abbrev N : ℕ := 0
-@[inherit_doc N] abbrev U : ℕ := 1
-@[inherit_doc N] abbrev X : ℕ := 2
-@[inherit_doc N] abbrev Y : ℕ := 3
-@[inherit_doc N] abbrev V : ℕ := 4
-@[inherit_doc N] abbrev Out : ℕ := 5
-@[inherit_doc N] abbrev Free : ℕ := 6
-@[inherit_doc N] abbrev Side : ℕ := 7
-@[inherit_doc N] abbrev Blocks : ℕ := 8
-@[inherit_doc N] abbrev BlockI : ℕ := 9
-@[inherit_doc N] abbrev BlockK : ℕ := 10
-@[inherit_doc N] abbrev BlockJ : ℕ := 11
-@[inherit_doc N] abbrev OffI : ℕ := 12
-@[inherit_doc N] abbrev OffK : ℕ := 13
-@[inherit_doc N] abbrev OffJ : ℕ := 14
-@[inherit_doc N] abbrev Large : ℕ := 15
-@[inherit_doc N] abbrev Answer : ℕ := 16
-@[inherit_doc N] abbrev Reply : ℕ := 17
+ abbrev U : ℕ := 1
+ abbrev X : ℕ := 2
+ abbrev Y : ℕ := 3
+ abbrev V : ℕ := 4
+ abbrev Out : ℕ := 5
+ abbrev Free : ℕ := 6
+ abbrev Side : ℕ := 7
+ abbrev Blocks : ℕ := 8
+ abbrev BlockI : ℕ := 9
+ abbrev BlockK : ℕ := 10
+ abbrev BlockJ : ℕ := 11
+ abbrev OffI : ℕ := 12
+ abbrev OffK : ℕ := 13
+ abbrev OffJ : ℕ := 14
+ abbrev Large : ℕ := 15
+ abbrev Answer : ℕ := 16
+ abbrev Reply : ℕ := 17
 
 end Pairs
 
-open Pairs in
+open Pairs
 /-- The offset of the block whose number is in the local src, into the local dst: I s, or n - s if
 n < I s + s. -/
 def offStmt (dst src : ℕ) : Stmt :=
   .set dst (v src *' v Side) ;;
   .ite (v N <' v dst +' v Side) (.set dst (v N -' v Side)) .skip
 
-open Pairs in
+open Pairs
 /-- The next triple of blocks. -/
 def advanceStmt : Stmt :=
   .set BlockJ (v BlockJ +' k 1) ;;
@@ -143,13 +144,13 @@ def advanceStmt : Stmt :=
      .ite (v BlockK =' v Blocks) (.set BlockK (k 0) ;; .set BlockI (v BlockI +' k 1)) .skip)
     .skip
 
-open Pairs in
+open Pairs
 /-- The pair that the solver has found is marked: out[(oI + a) n + (oJ + c)] := 1, where a and c
 stand in the first and the third cell of the solver's answer. -/
 def markStmt : Stmt :=
   .store (v Out +' (v OffI +' M (v Answer)) *' v N +' (v OffJ +' M (v Answer +' k 2))) (k 1)
 
-open Pairs in
+open Pairs
 /-- One round of allPairs: the offsets of the three blocks, the question, and then either a new mark
 or the next triple of blocks. -/
 def pairsRound (pAsk : ℕ) : Stmt :=
@@ -157,13 +158,13 @@ def pairsRound (pAsk : ℕ) : Stmt :=
   .call pAsk [v N, v Side, v Large, v X, v Y, v V, v Out, v OffI, v OffK, v OffJ, v Free] Reply ;;
   .ite (v Reply =' k 1) markStmt advanceStmt
 
-open Pairs in
+open Pairs
 /-- p := ⌈n/s⌉, by counting up. -/
 def countStmt : Stmt :=
   .set Blocks (k 0) ;;
   .while (v Blocks *' v Side <' v N) (.set Blocks (v Blocks +' k 1))
 
-open Pairs in
+open Pairs
 /-- allPairs(n, U, x, y, v, out, fr): s, p, F and the address of the solver's answer; no pair is
 marked; then the rounds, from the first triple of blocks on. -/
 def pairsBody (pCbrt pFill pAsk : ℕ) : Stmt :=
@@ -249,9 +250,9 @@ theorem mask_meets {P : Program} {pMask : ℕ} (hp : P[pMask]? = some maskBody) 
   case round =>
     rintro q _ hq rfl
     -- The two cells that the round reads are as at the start.
-    have hmark : wrote μ ac f q (tmp + q) = O[q] := hO.keep.get (by omega)
-    have hval : wrote μ ac f q (ac + q) = A[q] := (wrote_rest (by omega)).trans (hA q (by omega))
-    have hfits := abs_le.1 ((hle.getElem (i := q) (by omega)).trans hU)
+    have hmark : wrote μ ac f q (tmp + q) = O[q] := hO.keep.get tac_omega
+    have hval : wrote μ ac f q (ac + q) = A[q] := (wrote_rest tac_omega).trans (hA q tac_omega)
+    have hfits := abs_le.1 ((hle.getElem (i := q) tac_omega).trans hU)
     have hfq : f q = if O[q] = 1 then F else -A[q] := by
       rw [hf]
       simp only [getD_maskNeg (F := F) (show q < O.length by omega) (show q < A.length by omega),
@@ -355,24 +356,24 @@ theorem ask_meets (C : Ctx P₀ R p₀ pCbrt pFill pAsk pSub pCopy pMask T r) {q
   -- area := s * s
   refine Ends.setToThen (s * s : ℕ) ?_
   -- subCopy(n, s, x, oI, oK, fr)
-  refine Ends.callToThen (subCopy_meets C.sub C.copy s oI oK fr hpre.segX hpre.lenX (by omega)
-    (by omega)) ?_
+  refine Ends.callToThen (subCopy_meets C.sub C.copy s oI oK fr hpre.segX hpre.lenX tac_omega
+    tac_omega) ?_
   rintro _ μ₁ ⟨sX, same₁⟩
   -- subCopy(n, s, y, oK, oJ, fr + area)
   refine Ends.callToThen (subCopy_meets C.sub C.copy s oK oJ (fr + s * s) hpre.segY.keep hpre.lenY
-    (by omega) (by omega)) ?_
+    tac_omega tac_omega) ?_
   rintro _ μ₂ ⟨sY, same₂⟩
   -- subCopy(n, s, v, oI, oJ, fr + area + area)
   refine Ends.callToThen (subCopy_meets C.sub C.copy s oI oJ (fr + s * s + s * s) hpre.segV.keep
-    hpre.lenV (by omega) (by omega)) ?_
+    hpre.lenV tac_omega tac_omega) ?_
   rintro _ μ₃ ⟨sV, same₃⟩
   -- subCopy(n, s, out, oI, oJ, fr + area + area + area)
   refine Ends.callToThen (subCopy_meets C.sub C.copy s oI oJ (fr + s * s + s * s + s * s) hO.keep lO
-    (by omega) (by omega)) ?_
+    tac_omega tac_omega) ?_
   rintro _ μ₄ ⟨sO, same₄⟩
   -- mask(area, F, fr + area + area, fr + area + area + area)
   refine Ends.callToThen (mask_meets C.mask (s * s) (2 * (q.U : ℤ) + 1) sV.keep sO
-    ⟨by simp, by simp⟩ (abs_le_of_mem_subMat (by positivity) hpre.leV) (by omega) (by omega)) ?_
+    ⟨by simp, by simp⟩ (abs_le_of_mem_subMat tac_positivity hpre.leV) tac_omega tac_omega) ?_
   rintro _ μ₅ ⟨sM, same₅⟩
   -- The solver is asked about the three matrices.
   refine Ends.callTo (T' := T s (2 * q.U + 1)) (C.sol.meets R (askInst q O fr s oI oK oJ)
@@ -466,7 +467,7 @@ theorem mark_spec {P : Program} {μ : ℕ → ℤ} {fr oI oK oJ a c : ℕ} {z : 
       σ' = ⟨frame (locals q fr s p I K J oI oK oJ z),
         Function.update μ (q.out + ((oI + a) * q.n + (oJ + c))) 1⟩ := by
   have hn : q.n ≤ q.n * q.n := Nat.le_mul_self _
-  have hidx : (oI + a) * q.n + (oJ + c) < q.n * q.n := Nat.mul_add_lt_mul hlt.1 hlt.2
+  have hidx := Nat.mul_add_lt_mul hlt.1 hlt.2
   have hidxZ : 0 ≤ ((oI : ℤ) + a) * q.n ∧
       ((oI : ℤ) + a) * q.n + ((oJ : ℤ) + c) < (q.n : ℤ) * q.n := by
     exact_mod_cast And.intro (Nat.zero_le _) hidx
@@ -500,7 +501,7 @@ theorem Progress.mark (h : Progress q s p I K J O) {i j k : ℕ}
     Progress q s p I K J (O.set (i * q.n + j) 1) ∧
       todo p I K J (O.set (i * q.n + j) 1) < todo p I K J O := by
   obtain ⟨hi, hj, hk⟩ := hlt
-  have hidx : i * q.n + j < O.length := h.marks.len ▸ Nat.mul_add_lt_mul hi hj
+  have hidx := h.marks.len ▸ Nat.mul_add_lt_mul hi hj
   have hcount := count_set_one hidx
     ((h.marks.sound i hi j hj).resolve_right fun hmarked => hun hmarked.1)
   exact ⟨{ h with
@@ -574,30 +575,30 @@ theorem round_spec (C : Ctx P₀ R p₀ pCbrt pFill pAsk pSub pCopy pMask T r) {
   rw [pairsVar_eq hO hP]
   unfold pairsRound roundTime
   -- oI, oK, oJ := the offsets of the three blocks
-  refine Ends.next _ (off_spec q.n s I ?_ ⟨(lt_blockCount_iff hs.1 I).1 hIlt, hs.2⟩ (by omega))
-  refine Ends.next _ (off_spec q.n s K ?_ ⟨(lt_blockCount_iff hs.1 K).1 hP.ltK, hs.2⟩ (by omega))
-  refine Ends.next _ (off_spec q.n s J ?_ ⟨(lt_blockCount_iff hs.1 J).1 hP.ltJ, hs.2⟩ (by omega))
+  refine Ends.next _ (off_spec q.n s I ?_ ⟨(lt_blockCount_iff hs.1 I).1 hIlt, hs.2⟩ tac_omega)
+  refine Ends.next _ (off_spec q.n s K ?_ ⟨(lt_blockCount_iff hs.1 K).1 hP.ltK, hs.2⟩ tac_omega)
+  refine Ends.next _ (off_spec q.n s J ?_ ⟨(lt_blockCount_iff hs.1 J).1 hP.ltJ, hs.2⟩ tac_omega)
   -- reply := ask(n, s, F, x, y, v, out, oI, oK, oJ, fr)
   refine Ends.callToThen (ask_meets C s (blockOff q.n s I) (blockOff q.n s K) (blockOff q.n s J)
-    hpre.keep hO hlen hs.1 ⟨bI, bK, bJ⟩ hlim.ok (by omega)) ?_
+    hpre.keep hO hlen hs.1 ⟨bI, bK, bJ⟩ hlim.ok tac_omega) ?_
   rintro reply μ'' ⟨hkAsk, hpost⟩
-  have hO'' : Seg μ'' q.out O := hO.keep
+  have hO'' := hO.keep
   -- if reply = 1
   refine Ends.iteLast (fun hyes => ?_) (fun hno => ?_)
   · -- The solver has found an unmarked pair with a witness: it is marked.
     obtain ⟨-, a, ha, b, hb, c, hc, ma, mc, hun, hwit⟩ :=
       hpost.resolve_left fun h => by simp [h.1] at hyes
-    obtain ⟨hP', hless⟩ := hP.mark (k := blockOff q.n s K + b) (by omega) hun hwit
+    obtain ⟨hP', hless⟩ := hP.mark (k := blockOff q.n s K + b) tac_omega hun hwit
     have hidx := Nat.mul_add_lt_mul (show blockOff q.n s I + a < q.n by omega)
       (show blockOff q.n s J + c < q.n by omega)
     have hO' := hO''.update_in (hlen ▸ hidx) 1
-    refine (mark_spec ma mc (by omega) hout ⟨hw, by omega⟩).mono (by light_time) ?_
+    refine (mark_spec ma mc tac_omega hout ⟨hw, by omega⟩).mono (by light_time) ?_
     rintro _ rfl
     exact ⟨⟨I, K, J, _, _, _, _, _, _, rfl, by light_keep, hO', hP'⟩,
       by rw [pairsVar_eq hO' hP']; exact hless⟩
   · -- The triple of blocks is done: the next one comes.
-    have hblock := (hpost.resolve_right fun h => hno (by simp [h.1])).2
-    refine (advance_spec ⟨hIlt, hP.ltK, hP.ltJ⟩ (by omega)).mono (by light_time) ?_
+    have hblock := (hpost.resolve_right fun h => hno tac_simp [h.1]).2
+    refine (advance_spec ⟨hIlt, hP.ltK, hP.ltJ⟩ tac_omega).mono (by light_time) ?_
     rintro _ ⟨I', K', J', rfl, hnext⟩
     obtain ⟨hP', hless⟩ := hP.next hIlt hblock hnext
     exact ⟨⟨I', K', J', O, _, _, _, _, μ'', rfl, by light_keep, hO'', hP'⟩,
@@ -620,10 +621,10 @@ theorem count_spec {P : Program} {l : List ℤ} {μ : ℕ → ℤ} {Q : State �
   refine Ends.setThen ?_
   -- while p * s < n: p := p + 1
   refine Ends.whileBlock (fun j σ => σ = ⟨Function.update loc Blocks j, μ⟩) (blockCount n s)
-    (by simp) ?round ?done
+    tac_simp ?round ?done
   case round =>
     rintro j _ hj rfl
-    have hjs : j * s < n := (lt_blockCount_iff hs.1 j).1 hj
+    have hjs := (lt_blockCount_iff hs.1 j).1 hj
     exact ⟨by light_norm [N, Side, Blocks, hS, abs_le]; omega,
       by light_norm [N, Side, Blocks, hN, hS]; omega,
       by light_norm [Stmt.BlockSafe, abs_le]; omega, by simp⟩
@@ -639,7 +640,7 @@ pair. -/
 theorem eq_pairFlags {n : ℕ} {X Y V O : List ℤ} (lO : O.length = n * n)
     (h : ∀ i < n, ∀ j < n, entry n O i j = flag (PairHit n X Y V i j)) :
     O = pairFlags n X Y V := by
-  refine List.ext_getElem (by simp [pairFlags, lO]) fun t ht _ => ?_
+  refine List.ext_getElem tac_simp [pairFlags, lO] fun t ht _ => ?_
   obtain ⟨i, hi, j, hj, rfl⟩ := Nat.exists_eq_mul_add_of_lt_mul (lO ▸ ht)
   rw [← List.getD_eq_getElem _ 0 ht, ← entry, h i hi j hj]
   simp only [pairFlags, List.getElem_map, List.getElem_range, PairHit, Witness,
@@ -667,7 +668,7 @@ theorem progress_start (q : PairsInst) (s : ℕ) {p : ℕ} (hp : 1 ≤ p) :
     ltJ := hp
     top := fun _ => ⟨rfl, rfl⟩
     marks := marks_replicate ..
-    done := fun I' _ K' _ J' _ hbefore => absurd hbefore (by simp [tripleIdx]) }
+    done := fun I' _ K' _ J' _ hbefore => absurd hbefore tac_simp [tripleIdx] }
 
 /-- What allPairs needs covers what the rounds need. -/
 private theorem lim_of_ok {fr : ℕ} (hok : (pairsNeed r q.n q.U).Ok lim fr d) :
@@ -685,7 +686,7 @@ private theorem lim_of_ok {fr : ℕ} (hok : (pairsNeed r q.n q.U).Ok lim fr d) :
 /-- A round, with the test of the loop (4 steps). -/
 private theorem roundTime_le (T : ℕ → ℕ → ℕ) (s U : ℕ) :
     roundTime T s U + 4 ≤ 220 * s ^ 2 + 250 + T s (2 * U + 1) := by
-  have hs : s ≤ s ^ 2 := Nat.le_self_pow (by norm_num) s
+  have hs : s ≤ s ^ 2 := Nat.le_self_pow tac_norm_num s
   have hcopy : s * (16 * s + 31) = 16 * s ^ 2 + 31 * s := by ring
   unfold roundTime askTime subCopyTime maskTime
   rw [hcopy, ← pow_two]
@@ -697,7 +698,7 @@ each with the test of the loop. -/
 private theorem time_le (T : ℕ → ℕ → ℕ) {n s p : ℕ} (U : ℕ) (hsn : s ≤ n) (hpn : p ≤ n) :
     12 * s + 10 * p + 13 * (n * n) + 56 + ((p * p * p + n * n) * (roundTime T s U + 4) + 4) ≤
       40 * n ^ 2 + 80 + (p ^ 3 + n ^ 2) * (220 * s ^ 2 + 250 + T s (2 * U + 1)) := by
-  have hn : n ≤ n ^ 2 := Nat.le_self_pow (by norm_num) n
+  have hn : n ≤ n ^ 2 := Nat.le_self_pow tac_norm_num n
   have hrounds := Nat.mul_le_mul_left (p ^ 3 + n ^ 2) (roundTime_le T s U)
   rw [show p * p * p = p ^ 3 by ring, ← pow_two]
   omega
@@ -726,12 +727,12 @@ theorem pairs_spec (C : Ctx P₀ R p₀ pCbrt pFill pAsk pSub pCopy pMask T r) {
   unfold cbrtCeilTime
   generalize cbrtLeast q.n = s at *
   -- p := ⌈n/s⌉
-  refine Ends.next _ (count_spec q.n s ?_ hs (by omega))
+  refine Ends.next _ (count_spec q.n s ?_ hs tac_omega)
   -- large := 2U + 1; answer := fr + 3 s²
   refine Ends.setToThen (2 * (q.U : ℤ) + 1) ?_
   refine Ends.setToThen (fr + 3 * (s * s) : ℕ) ?_
   -- fill(out, n², 0): no pair is marked
-  refine Ends.callToThen (fill_meets C.fill (dst := q.out) (n := q.n * q.n) (x := 0) hw (by omega))
+  refine Ends.callToThen (fill_meets C.fill (dst := q.out) (n := q.n * q.n) (x := 0) hw tac_omega)
     ?_
   rintro z μ₁ ⟨hO, hrest⟩
   -- I := 0; K := 0; J := 0

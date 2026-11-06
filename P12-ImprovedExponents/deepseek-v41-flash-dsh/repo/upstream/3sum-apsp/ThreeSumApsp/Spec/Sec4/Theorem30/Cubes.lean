@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Sec4.Boxes
 public import ThreeSumApsp.Spec.Sec2.Theorem5.Arrays
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Cubes, leaves and output strings as lists of digits (Sections 4.2 and 4.3)
@@ -117,7 +118,6 @@ theorem cubeIdx_term (lam : Term) : (cubeIdx (.term lam) : ℕ) = termIdx lam :=
 private theorem cubeIdx_eq_ten (s : CubeSymbol) : (cubeIdx s : ℕ) = 10 ↔ s = .star := by
   cases s with
   | term lam =>
-    have := (termIdx lam).isLt
     simp only [cubeIdx, reduceCtorEq, iff_false]
     omega
   | star => simp [cubeIdx]
@@ -141,14 +141,14 @@ theorem getD_digitsO_eq_nine (ℓ : Fin L) : (digitsO η).getD ℓ 0 = 9 ↔ ℓ
 /-- A statement on all positions of the digit 9 is a statement on all levels of the inner set. -/
 theorem forall_nine_digitsO (P : ℕ → Prop) :
     (∀ j, (digitsO η).getD j 0 = 9 → P j) ↔ ∀ ℓ ∈ innerSetO η, P ℓ :=
-  (forall_getD_digitsStr outEquiv η (by norm_num) P).trans <| forall_congr' fun ℓ => by
+  (forall_getD_digitsStr outEquiv η tac_norm_num P).trans <| forall_congr' fun ℓ => by
     rw [← getD_digitsO_eq_nine, getD_digitsO]
     rfl
 
 /-- A statement on all positions of the digit 10 is a statement on all levels with a star. -/
 private theorem forall_ten_digitsC (P : ℕ → Prop) :
     (∀ j, (digitsC π).getD j 0 = 10 → P j) ↔ ∀ ℓ ∈ Cube.starLevels π, P ℓ :=
-  (forall_getD_digitsStr cubeEquiv π (by norm_num) P).trans <| forall_congr' fun ℓ => by
+  (forall_getD_digitsStr cubeEquiv π tac_norm_num P).trans <| forall_congr' fun ℓ => by
     rw [Cube.starLevels, Finset.mem_filter_univ, ← cubeIdx_eq_ten]
     rfl
 

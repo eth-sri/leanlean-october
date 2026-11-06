@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Spec.Sec3.Problems
 public import ThreeSumApsp.Util.Ceil
 public import ThreeSumApsp.Util.Flag
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # All pairs with a witness, by marking
@@ -62,7 +63,7 @@ theorem le_blockCount_mul {n s : ℕ} (hs : 1 ≤ s) : n ≤ blockCount n s * s 
 
 /-- A range that is not empty has a block. -/
 theorem blockCount_pos {n s : ℕ} (hs : 1 ≤ s) (hn : 1 ≤ n) : 1 ≤ blockCount n s :=
-  (lt_blockCount_iff hs 0).2 (by omega)
+  (lt_blockCount_iff hs 0).2 tac_omega
 
 /-- There are at most `n` blocks. -/
 theorem blockCount_le {n s : ℕ} (hs : 1 ≤ s) : blockCount n s ≤ n :=
@@ -71,9 +72,9 @@ theorem blockCount_le {n s : ℕ} (hs : 1 ≤ s) : blockCount n s ≤ n :=
 /-- Every index lies in a block. -/
 theorem exists_block {n s i : ℕ} (hs1 : 1 ≤ s) (hs : s ≤ n) (hi : i < n) :
     ∃ I < blockCount n s, ∃ a < s, i = blockOff n s I + a := by
-  have hdiv : i / s * s + i % s = i := Nat.div_add_mod' i s
+  have hdiv := Nat.div_add_mod' i s
   have hmod : i % s < s := Nat.mod_lt _ hs1
-  refine ⟨i / s, (lt_blockCount_iff hs1 _).2 (by omega), ?_⟩
+  refine ⟨i / s, (lt_blockCount_iff hs1 _).2 tac_omega, ?_⟩
   unfold blockOff
   split_ifs with h
   · exact ⟨i % s, hmod, hdiv.symm⟩
@@ -182,7 +183,7 @@ theorem blockTri_S (n s : ℕ) (F : ℤ) (X Y V O : List ℤ) (oI oK oJ : ℕ) (
     (blockTri n s F X Y V O oI oK oJ).S a b c =
       entry n X (oI + a) (oK + b) + entry n Y (oK + b) (oJ + c) +
         if entry n O (oI + a) (oJ + c) = 1 then F else -entry n V (oI + a) (oJ + c) := by
-  have h : a.val * s + c.val < s * s := Nat.mul_add_lt_mul a.2 c.2
+  have h := Nat.mul_add_lt_mul a.2 c.2
   simp only [blockTri, TriangleInstance.S, triOf, entry_subMat a.2 b.2, entry_subMat b.2 c.2,
     getD_maskNeg (O := subMat n s oI oJ O) (V := subMat n s oI oJ V) (by simpa using h)
       (by simpa using h), entry_subMat a.2 c.2]
@@ -226,8 +227,8 @@ theorem Marks.set {n : ℕ} {X Y V O : List ℤ} (h : Marks n X Y V O) {i j : �
 theorem count_set_one {O : List ℤ} {q : ℕ} (hq : q < O.length) (h0 : O.getD q 0 = 0) :
     (O.set q 1).count 0 + 1 = O.count 0 := by
   rw [List.getD_eq_getElem _ _ hq] at h0
-  have hpos : 0 < O.count 0 := List.count_pos_iff.2 (h0 ▸ List.getElem_mem hq)
-  rw [List.count_set hq, h0, if_pos (by decide), if_neg (by decide)]
+  have hpos := List.count_pos_iff.2 (h0 ▸ List.getElem_mem hq)
+  rw [List.count_set hq, h0, if_pos tac_decide, if_neg tac_decide]
   omega
 
 /-- A triple of blocks that is done stays so when another pair is marked. -/
@@ -259,6 +260,6 @@ theorem Marks.complete {n s : ℕ} {X Y V O : List ℤ} (h : Marks n X Y V O) (h
 
 /-- At the beginning no pair is marked. -/
 theorem marks_replicate (n : ℕ) (X Y V : List ℤ) : Marks n X Y V (List.replicate (n * n) 0) :=
-  ⟨List.length_replicate, fun _ _ _ _ => Or.inl (by simp)⟩
+  ⟨List.length_replicate, fun _ _ _ _ => Or.inl tac_simp⟩
 
 end ThreeSumApsp.Spec

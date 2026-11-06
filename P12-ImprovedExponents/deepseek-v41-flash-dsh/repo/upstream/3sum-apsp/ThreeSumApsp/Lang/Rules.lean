@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Logic
 public import Mathlib.Algebra.Order.Group.Abs
 public import Mathlib.Algebra.Order.Ring.Abs
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Derived rules: time that is not typed, blocks, counting loops
@@ -165,7 +166,7 @@ theorem Ends.block {s : Stmt} {σ : State} {T : ℕ} {Q : State → Prop} (h : s
 theorem Ends.next {σ : State} {T : ℕ} {s₁ s₂ : Stmt} {Q : State → Prop} (T₁ : ℕ)
     (h : Ends lim P d s₁ σ T₁ fun σ' => Ends lim P d s₂ σ' (T - T₁) Q)
     (hT : T₁ ≤ T := by light_time) : Ends lim P d (s₁ ;; s₂) σ T Q :=
-  Ends.seq T₁ (T - T₁) h (by omega)
+  Ends.seq T₁ (T - T₁) h tac_omega
 
 /-- Brackets do not matter: a piece of several statements, followed by the rest of the program, is
 run statement by statement. -/
@@ -180,7 +181,7 @@ theorem Ends.seqAssoc {σ : State} {T : ℕ} {s₁ s₂ s₃ : Stmt} {Q : State 
 /-- A `skip` before the rest of the program takes no step. -/
 theorem Ends.skipThen {σ : State} {T : ℕ} {s : Stmt} {Q : State → Prop} (h : Ends lim P d s σ T Q) :
     Ends lim P d (.skip ;; s) σ T Q :=
-  Ends.seq 0 T (Ends.skip h) (by omega)
+  Ends.seq 0 T (Ends.skip h) tac_omega
 
 /-- A `skip` may be put behind a statement. -/
 theorem Ends.skipLast {σ : State} {T : ℕ} {s : Stmt} {Q : State → Prop}
@@ -245,7 +246,7 @@ theorem Ends.iteLast {σ : State} {T : ℕ} {c : Cond} {s₁ s₂ : Stmt} {Q : S
     (h₂ : ¬ c.Holds σ → Ends lim P d s₂ σ (T - (c.cost + 1)) Q)
     (hs : c.Safe lim σ := by light_side) (hT : c.cost + 1 ≤ T := by light_time) :
     Ends lim P d (.ite c s₁ s₂) σ T Q :=
-  Ends.ite _ hs h₁ h₂ (by omega)
+  Ends.ite _ hs h₁ h₂ tac_omega
 
 /-- A branch, followed by the rest of the program: each side, with the rest of the program behind
 it, gets the steps that the test leaves. -/
@@ -306,9 +307,9 @@ theorem Ends.for {σ : State} {i : ℕ} {hi : Expr} {body : Stmt} {T : ℕ} {Q :
     (hn : (n : ℤ) ≤ lim.word := by omega)
     (hT : n * (hi.cost + b + 7) + hi.cost + 5 ≤ T := by light_time) :
     Ends lim P d (Stmt.for i hi body) σ T Q := by
-  have h0 : (0 : ℤ) ≤ lim.word := le_trans (Int.natCast_nonneg n) hn
+  have h0 := le_trans (Int.natCast_nonneg n) hn
   refine Ends.seq 2 (n * (hi.cost + b + 7) + hi.cost + 3)
-    (Ends.set (by simpa using h0) (by simp) ?_) (by omega)
+    (Ends.set (by simpa using h0) tac_simp ?_) tac_omega
   refine Ends.whileConst (fun j σ => σ.loc i = j ∧ I j σ) n (b + 4) ⟨by simp, by simpa using start⟩
     ?_ ?_ (le_of_eq (by simp only [Cond.cost, Expr.cost]; ring))
   · rintro j σ hj ⟨hc, hI⟩
@@ -319,13 +320,12 @@ theorem Ends.for {σ : State} {i : ℕ} {hi : Expr} {body : Stmt} {T : ℕ} {Q :
       exact_mod_cast hj
     · rintro σ' ⟨hc', hI'⟩
       have hval : (v i +' k 1).val σ' = (j : ℤ) + 1 := by simp [hc']
-      have hj' : (j : ℤ) + 1 ≤ n := by exact_mod_cast hj
-      refine Ends.set ⟨trivial, ?_, ?_⟩ (by simp) ⟨?_, ?_⟩
+      refine Ends.set ⟨trivial, ?_, ?_⟩ tac_simp ⟨?_, ?_⟩
       · change ((1 : ℕ) : ℤ) ≤ lim.word
         push_cast
         omega
       · change |(v i +' k 1).val σ'| ≤ lim.word
-        rw [hval, abs_of_nonneg (by omega)]
+        rw [hval, abs_of_nonneg tac_omega]
         omega
       · simp [hc']
       · rw [hval]

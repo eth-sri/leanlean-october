@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Tasks
 public import ThreeSumApsp.Util.Asymptotics.SoftOSqrtPow
 public import Mathlib.Data.Nat.Size
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Polynomially bounded needs
@@ -50,12 +51,12 @@ variable {F : ℕ → ℕ → ℕ}
 /-- The size `n` is polynomially bounded. -/
 theorem fst : PolyBounded (fun n _ => n) :=
   (Scale.SoftO.of_le_hidden fun p _ => Nat.cast_le.2 <|
-    (Nat.le_succ _).trans (Nat.le_mul_of_pos_right _ p.2.succ_pos)).mono (by decide)
+    (Nat.le_succ _).trans (Nat.le_mul_of_pos_right _ p.2.succ_pos)).mono tac_decide
 
 /-- The bound `U` is polynomially bounded. -/
 theorem snd : PolyBounded (fun _ U => U) :=
   (Scale.SoftO.of_le_hidden fun p _ => Nat.cast_le.2 <|
-    (Nat.le_succ _).trans (Nat.le_mul_of_pos_left _ p.1.succ_pos)).mono (by decide)
+    (Nat.le_succ _).trans (Nat.le_mul_of_pos_left _ p.1.succ_pos)).mono tac_decide
 
 /-- A smaller function has the same bound. -/
 theorem of_le {G : ℕ → ℕ → ℕ} (h : PolyBounded G) (hle : ∀ n U, F n U ≤ G n U) : PolyBounded F :=

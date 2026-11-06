@@ -2,6 +2,7 @@ module
 
 public import ImprovedExponents.ParamRoutines.Routines
 public import ImprovedExponents.ParamRoutines.Pack
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -32,7 +33,7 @@ For `c = 0` the parameter `g` is 1 (`paramGRat_zero`).
 
 namespace ImprovedExponents.ParamRoutines
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3
+open ThreeSumApsp Light Light.Sec3
 
 /-! ## The routines as parameter procedures -/
 
@@ -47,7 +48,7 @@ theorem paramProc_dRat {b : ℕ} (hb : b ≠ 0) (a c d : ℕ) (Q R : Program) :
       (tDRat a b) (wDRat a b) := by
   intro lim dep x μ _ _ hw hd
   exact dRat_meets (getElem?_behind Q _ R (i := 2) rfl) (getElem?_behind Q _ R (i := 1) rfl)
-    (getElem?_behind Q _ R (i := 0) rfl) hb hw (by omega)
+    (getElem?_behind Q _ R (i := 0) rfl) hb hw tac_omega
 
 /-- `gRatBody c d` computes `⌈D^{c/d}⌉`. -/
 theorem paramProc_gRat {d : ℕ} (hd : d ≠ 0) (a b c : ℕ) (Q R : Program) :
@@ -55,7 +56,7 @@ theorem paramProc_gRat {d : ℕ} (hd : d ≠ 0) (a b c : ℕ) (Q R : Program) :
       (tGRat c d) (wGRat c d) := by
   intro lim dep x μ hx _ hw hd'
   exact gRat_meets (getElem?_behind Q _ R (i := 3) rfl) (getElem?_behind Q _ R (i := 1) rfl)
-    (getElem?_behind Q _ R (i := 0) rfl) hd hx hw (by omega)
+    (getElem?_behind Q _ R (i := 0) rfl) hd hx hw tac_omega
 
 /-! ## The parameters and the words are polynomially bounded -/
 
@@ -98,7 +99,7 @@ theorem steps_tDRat_pow {a b k : ℕ} (hb : b ≠ 0) (hab : a ≤ k * b) :
 /-- `dRatBody` takes `O(n²)` steps if `a ≤ 2 b`. -/
 theorem steps_tDRat {a b : ℕ} (hb : b ≠ 0) (hab : a ≤ 2 * b) :
     StepsMon (fun θ => tDRat a b θ.n) 2 2 0 :=
-  (steps_tDRat_pow hb hab).mono (by decide)
+  (steps_tDRat_pow hb hab).mono tac_decide
 
 /-- `gRatBody` takes `O(n² D)` steps if `c ≤ 3 d`: it takes a constant number of steps for each
 number up to `⌈D^{c/d}⌉ ≤ D³`, and `D ≤ n`. -/
@@ -127,16 +128,16 @@ def paramPackRat (a b c d : ℕ) (hb : 1 ≤ b) (hd : 1 ≤ d) (hab : a ≤ 2 * 
   tG := tGRat c d
   wD := wDRat a b
   wG := wGRat c d
-  procD := paramProc_dRat (by omega) a c d
-  procG := paramProc_gRat (by omega) a b c
-  D_pos _ hn := one_le_paramDRatNat (by omega) a hn
+  procD := paramProc_dRat tac_omega a c d
+  procG := paramProc_gRat tac_omega a b c
+  D_pos _ hn := one_le_paramDRatNat tac_omega a hn
   polyD := polyBounded_paramDRatNat a b
   polyG := polyBounded_paramGRatNat c d (polyBounded_paramDRatNat a b)
   polyWD := polyBounded_wDRat a b
   polyWG := polyBounded_wGRat c d (polyBounded_paramDRatNat a b)
-  D_eq := paramDRatNat_eq (by omega) a
-  G_eq _ hn := paramGRatNat_paramDRat (by omega) a b c (one_le_paramDRat (by omega) a hn)
-  stepsD := steps_tDRat (by omega) hab
-  stepsG := steps_tGRat (by omega) hcd
+  D_eq := paramDRatNat_eq tac_omega a
+  G_eq _ hn := paramGRatNat_paramDRat tac_omega a b c (one_le_paramDRat tac_omega a hn)
+  stepsD := steps_tDRat tac_omega hab
+  stepsG := steps_tGRat tac_omega hcd
 
 end ImprovedExponents.ParamRoutines

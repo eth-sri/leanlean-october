@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Sec3.Parameters
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Hashing
 public import Mathlib.Algebra.Order.Floor.Div
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The parameters of Theorems 17 and 19 in integer arithmetic
@@ -45,7 +46,7 @@ def rootCeil (e t : ℕ) : ℕ := Nat.findGreatest (fun g => g ^ e < t) t + 1
 
 /-- The power of `rootFloor e t` does not exceed `t`. -/
 theorem rootFloor_pow_le {e : ℕ} (he : e ≠ 0) (t : ℕ) : rootFloor e t ^ e ≤ t :=
-  Nat.findGreatest_spec (P := fun x => x ^ e ≤ t) (Nat.zero_le t) (by simp [he])
+  Nat.findGreatest_spec (P := fun x => x ^ e ≤ t) (Nat.zero_le t) tac_simp [he]
 
 /-- `rootFloor e t` is the greatest `x` with `x^e ≤ t`. -/
 theorem le_rootFloor {e : ℕ} (he : e ≠ 0) {t x : ℕ} (h : x ^ e ≤ t) : x ≤ rootFloor e t :=
@@ -59,7 +60,7 @@ theorem le_rootFloor_iff {e : ℕ} (he : e ≠ 0) {t x : ℕ} : x ≤ rootFloor 
 theorem floor_rpow_inv {e : ℕ} (he : e ≠ 0) (t : ℕ) :
     ⌊(t : ℝ) ^ ((e : ℝ)⁻¹)⌋₊ = rootFloor e t := by
   refine eq_of_forall_le_iff fun x => ?_
-  rw [Nat.le_floor_iff (by positivity), Real.natCast_le_rpow_inv_iff he, le_rootFloor_iff he]
+  rw [Nat.le_floor_iff tac_positivity, Real.natCast_le_rpow_inv_iff he, le_rootFloor_iff he]
 
 /-- The power of `rootCeil e t` reaches `t`. -/
 theorem le_rootCeil_pow {e : ℕ} (he : e ≠ 0) (t : ℕ) : t ≤ rootCeil e t ^ e := by
@@ -104,9 +105,9 @@ def numPiecesNat (n D g : ℕ) : ℕ := n ⌈/⌉ pieceSizeNat D g
 /-- `queryCapNat n D` is `⌊n²/√D⌋`: both are the greatest `c` with `c² D ≤ n⁴`. -/
 theorem queryCapNat_eq (n : ℕ) {D : ℕ} (hD : 1 ≤ D) : queryCapNat n D = queryCap n D := by
   refine (eq_of_forall_le_iff fun c => ?_).symm
-  have hs : 0 < Real.sqrt D := Real.sqrt_pos.mpr (Nat.cast_pos.2 hD)
-  rw [queryCap, Nat.le_floor_iff (by positivity), le_div_iff₀ hs, queryCapNat, Nat.le_sqrt',
-    Nat.le_div_iff_mul_le hD, ← sq_le_sq₀ (by positivity) (by positivity), mul_pow,
+  have hs := Real.sqrt_pos.mpr (Nat.cast_pos.2 hD)
+  rw [queryCap, Nat.le_floor_iff tac_positivity, le_div_iff₀ hs, queryCapNat, Nat.le_sqrt',
+    Nat.le_div_iff_mul_le hD, ← sq_le_sq₀ tac_positivity tac_positivity, mul_pow,
     Real.sq_sqrt (Nat.cast_nonneg D), ← pow_mul]
   exact_mod_cast Iff.rfl
 
@@ -115,7 +116,7 @@ theorem queryCapNat_eq (n : ℕ) {D : ℕ} (hD : 1 ≤ D) : queryCapNat n D = qu
 theorem queryCapNat_succ_le_iff {n D : ℕ} (hD : 1 ≤ D) (c : ℕ) :
     c + 1 ≤ queryCapNat n D ↔ (c + 1) * (c + 1) * D ≤ n ^ 4 := by
   unfold queryCapNat
-  rw [Nat.le_sqrt, Nat.le_div_iff_mul_le (by omega)]
+  rw [Nat.le_sqrt, Nat.le_div_iff_mul_le tac_omega]
 
 /-- The largest number that this test forms. -/
 theorem queryCapNat_succ_sq_mul_le {n D : ℕ} (hD : 1 ≤ D) :
@@ -127,7 +128,7 @@ theorem queryCapNat_succ_sq_mul_le {n D : ℕ} (hD : 1 ≤ D) :
     have hle := (queryCapNat_succ_le_iff hD c).1 hc.ge
     rw [hc]
     calc (c + 1 + 1) * (c + 1 + 1) * D ≤ (2 * (c + 1)) * (2 * (c + 1)) * D :=
-          Nat.mul_le_mul_right _ (Nat.mul_le_mul (by omega) (by omega))
+          Nat.mul_le_mul_right _ (Nat.mul_le_mul tac_omega tac_omega)
       _ = 4 * ((c + 1) * (c + 1) * D) := by ring
       _ ≤ 4 * n ^ 4 + D := by omega
 
@@ -154,9 +155,9 @@ vertices. -/
 theorem pieceSize_mul_le {D g p : ℕ} (hD : 16 ≤ D) (hg : 1 ≤ g) (hp : p ∈ primesInRange D) :
     1 ≤ pieceSize D g ∧ pieceSize D g * p ≤ D := by
   rw [primesInRange_eq, List.mem_toFinset] at hp
-  have hs : 4 ≤ Nat.sqrt D := Nat.le_sqrt'.2 (by omega)
+  have hs : 4 ≤ Nat.sqrt D := Nat.le_sqrt'.2 tac_omega
   rw [← pieceSizeNat_eq D hg]
-  refine ⟨(Nat.lt_ceilDiv_iff hg).2 (by omega), ?_⟩
+  refine ⟨(Nat.lt_ceilDiv_iff hg).2 tac_omega, ?_⟩
   calc pieceSizeNat D g * p ≤ Nat.sqrt D * Nat.sqrt D :=
         Nat.mul_le_mul ((Nat.ceilDiv_le_iff hg).2 (Nat.le_mul_of_pos_right _ hg))
           (le_sqrt_of_mem_primesList hp)

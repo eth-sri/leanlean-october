@@ -1,6 +1,7 @@
 module
 
 public import ImprovedExponents.HostMid.PrimeStage
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -16,7 +17,7 @@ proved again (`ready_of'`, `et17Tables_spec'`).
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3
 
 /-- What the third part needs holds for the data of a run of the variant. -/
 theorem ready_of' {lim : Limits} {d : ℕ} {x : TriInst} {μ : ℕ → ℤ} {fr : ℕ}
@@ -49,7 +50,7 @@ theorem ready_of' {lim : Limits} {d : ℕ} {x : TriInst} {μ : ℕ → ℤ} {fr 
       belowAC := hr.belowAC }
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Host/Arrays.lean
-open Et17 in
+open Et17
 /-- **The third part of the variant**: the result of the loop over the instances; only cells from
 the free pointer on change. -/
 theorem et17Tables_spec' {P₀ R : Program} {ν : Et17Nums} {Tn : List ℕ → ℕ} {need : List ℕ → Need}
@@ -71,16 +72,15 @@ theorem et17Tables_spec' {P₀ R : Program} {ν : Et17Nums} {Tn : List ℕ → �
     omega
   unfold et17Tables hostRunTime
   -- the table of doubles and the residues; the classes and the chunks
-  refine resid_then C.hDbl C.hResid C.hResidues hr (fun r₁ μ₁ hresid => ?_) (by omega)
+  refine resid_then C.hDbl C.hResid C.hResidues hr (fun r₁ μ₁ hresid => ?_) tac_omega
   refine classes_then C.hClasses C.hChunks hr hv.cap_pos hresid.rab
-    (fun r₂ μ₂ hclass => ?_) (by omega)
+    (fun r₂ μ₂ hclass => ?_) tac_omega
   -- NumInst := NumPieces * NumChunks
   have hcount := hlim.count
   have hm : (X.m : ℤ) = (X.h : ℤ) * X.chunkCount := by
     rw [HostData.m]
     push_cast
     rfl
-  have hpos : (0 : ℤ) ≤ (X.h : ℤ) * X.chunkCount := by positivity
   light_set (X.m : ℕ) using hm
   -- the result is pLoop(…)
   light_call (Meets.of_body (Q := fun r μ' => r = bit (X.found X.m) ∧
@@ -92,7 +92,7 @@ theorem et17Tables_spec' {P₀ R : Program} {ν : Et17Nums} {Tn : List ℕ → �
   have hcls : fr ≤ aCls X x.U fr := by
     have := host_places X x.U fr
     omega
-  exact (hkept c (lt_of_lt_of_le hc hfr)).trans ((hclass.same c (Or.inl (by omega))).trans
+  exact (hkept c (lt_of_lt_of_le hc hfr)).trans ((hclass.same c (Or.inl tac_omega)).trans
     (hresid.same c (Or.inl hc)))
 
 end ImprovedExponents.HostMid

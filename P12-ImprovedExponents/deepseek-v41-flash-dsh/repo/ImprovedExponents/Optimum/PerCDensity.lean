@@ -1,6 +1,7 @@
 module
 
 public import ImprovedExponents.Optimum.PerCSupremum
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -19,7 +20,7 @@ admissible rational tuple whose `c′` is as close to `c` as we wish
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Real Set Filter Topology
+open ThreeSumApsp Real Set Topology
 
 /-- The saving `tupleSaving c θ σ ε` is continuous in `(c, θ, σ, ε)`. -/
 theorem continuous_tupleSaving :
@@ -38,7 +39,7 @@ theorem continuous_tupleSaving :
 whatever the sign of `A`. -/
 theorem AdmissibleX.den_pos {A c θ σ ε : ℝ} (h : AdmissibleX A c θ σ ε) :
     0 < A + gammaX c θ * log 4 := by
-  have hpos : 0 < thinR A (gammaX c θ) := h.ε_pos.trans h.thin
+  have hpos := h.ε_pos.trans h.thin
   unfold thinR at hpos
   exact (div_pos_iff_of_pos_left log_four_pos).1 hpos
 
@@ -81,8 +82,8 @@ theorem exists_rat_tuple_gt {A : ℝ → ℝ} {c θ σ ε s : ℝ} (hA : Continu
   obtain ⟨θ', hθ'1, hθ'2⟩ := exists_rat_btwn (lt_add_of_pos_right θ hδ)
   obtain ⟨σ', hσ'1, hσ'2⟩ := exists_rat_btwn (lt_add_of_pos_right σ hδ)
   obtain ⟨ε', hε'1, hε'2⟩ := exists_rat_btwn (lt_add_of_pos_right ε hδ)
-  have hc'3 : (c' : ℝ) < c₁ := hc'2.trans_le (min_le_left _ _)
-  have hc'4 : (c' : ℝ) < c + δ := hc'2.trans_le (min_le_right _ _)
+  have hc'3 := hc'2.trans_le (min_le_left _ _)
+  have hc'4 := hc'2.trans_le (min_le_right _ _)
   have hdist : dist ((c' : ℝ), (θ' : ℝ), (σ' : ℝ), (ε' : ℝ)) (c, θ, σ, ε) < δ := by
     simp only [Prod.dist_eq, Real.dist_eq, max_lt_iff, abs_lt]
     refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩, ⟨?_, ?_⟩, ?_, ?_⟩ <;> linarith
@@ -114,6 +115,6 @@ theorem exists_rat_tuple_basePruned {c : ℝ} (hc : 10 < c) {s : ℝ}
       AdmissibleX (basePruned (c' : ℝ)) (c' : ℝ) (θ' : ℝ) (σ' : ℝ) (ε' : ℝ) ∧
       s < tupleSaving (c' : ℝ) (θ' : ℝ) (σ' : ℝ) (ε' : ℝ) :=
   exists_rat_tuple_of_lt_savingF' hc basePruned_continuousOn
-    (fun _ hx => basePruned_pos (by linarith)) hs c₁ hc₁
+    (fun _ hx => basePruned_pos tac_linarith) hs c₁ hc₁
 
 end ImprovedExponents

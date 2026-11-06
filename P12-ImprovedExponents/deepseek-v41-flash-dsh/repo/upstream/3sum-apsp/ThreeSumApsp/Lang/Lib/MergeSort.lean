@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Lib.Copy
 public import ThreeSumApsp.Lang.Lib.Logs
 public import ThreeSumApsp.Lang.Lib.Merge
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Merge sort
@@ -34,20 +35,20 @@ namespace MergeSort
 /-- The local variables of sort: the arguments n, a and fr; h = ⌈n/2⌉; and a local that takes the
 results of the calls, which are not used. -/
 abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Start : ℕ := 1
-@[inherit_doc Len] abbrev Free : ℕ := 2
-@[inherit_doc Len] abbrev Half : ℕ := 3
-@[inherit_doc Len] abbrev Unused : ℕ := 4
+ abbrev Start : ℕ := 1
+ abbrev Free : ℕ := 2
+ abbrev Half : ℕ := 3
+ abbrev Unused : ℕ := 4
 
 end MergeSort
 
-open MergeSort in
+open MergeSort
 /-- The two sorted halves are merged into the cells from fr and copied back. -/
 def sortJoin (pMerge pCopy : ℕ) : Stmt :=
   .call pMerge [v Start, v Half, v Start +' v Half, v Len -' v Half, v Free] Unused ;;
   .call pCopy [v Free, v Start, v Len] Unused
 
-open MergeSort in
+open MergeSort
 /-- sort(n, a, fr).  The parameters are the procedure numbers of sort itself, half, merge and
 copy. -/
 def sortBody (pSort pHalf pMerge pCopy : ℕ) : Stmt :=
@@ -67,9 +68,9 @@ theorem clog_split {n : ℕ} (hn : 2 ≤ n) :
     (n + 1) / 2 * Nat.clog 2 ((n + 1) / 2) + (n - (n + 1) / 2) * Nat.clog 2 (n - (n + 1) / 2) + n
       ≤ n * Nat.clog 2 n := by
   have h1 : Nat.clog 2 n = Nat.clog 2 ((n + 1) / 2) + 1 := by
-    simpa using Nat.clog_of_two_le (b := 2) (by norm_num) hn
+    simpa using Nat.clog_of_two_le (b := 2) tac_norm_num hn
   have h2 : Nat.clog 2 (n - (n + 1) / 2) ≤ Nat.clog 2 ((n + 1) / 2) :=
-    Nat.clog_mono_right 2 (by omega)
+    Nat.clog_mono_right 2 tac_omega
   have hh : (n + 1) / 2 ≤ n := by omega
   rw [h1]
   generalize (n + 1) / 2 = h at *
@@ -124,7 +125,6 @@ theorem sorted_merge {μ μ₁ μ₂ μ₃ μ₄ : ℕ → ℤ} {a fr h m : ℕ}
       _ = L := List.take_append_drop h L
   · have hl₁ : (L.take h).length = h := by simp; omega
     have hl₂ : (L.drop h).length = L.length - h := by simp
-    have := hc.2
     rw [hk₄ c hc.2, hk₃ c (Or.inl hc.1), hk₂ c ⟨hc.1, by omega⟩, hk₁ c ⟨hc.1, by omega⟩]
 
 variable {pSort pHalf pMerge pCopy : ℕ}
@@ -141,13 +141,13 @@ theorem join_ends (C : Procs P pSort pHalf pMerge pCopy)
   have hlm : (S₁.merge S₂).length = n := by rw [List.length_merge]; omega
   -- merge(a, h, a + h, n - h, fr)
   have hmerge := merge_meets (d := d + 1) C.merge (a := a) (b := a + h) (dst := fr) (l := S₁)
-    (r := S₂) ⟨hw, hS₁, hS₂, by omega, by omega, by omega, Or.inl (by omega), Or.inl (by omega)⟩
+    (r := S₂) ⟨hw, hS₁, hS₂, by omega, by omega, by omega, Or.inl tac_omega, Or.inl tac_omega⟩
   rw [hl₁, hl₂, show h + (n - h) = n by omega] at hmerge
   light_call hmerge with _ μ₁ ⟨hseg, hk₁⟩
   -- copy(fr, a, n)
-  light_call (copy_meets C.copy (src := fr) (dst := a) (n := n) hw (by omega) (by omega)
-    (by omega)) with _ μ₂ ⟨hcopy, hk₂⟩
-  exact ⟨μ₁, hk₁, fun i hi => (hcopy i (by omega)).trans (hseg i hi), hk₂⟩
+  light_call (copy_meets C.copy (src := fr) (dst := a) (n := n) hw tac_omega tac_omega
+    tac_omega) with _ μ₂ ⟨hcopy, hk₂⟩
+  exact ⟨μ₁, hk₁, fun i hi => (hcopy i tac_omega).trans (hseg i hi), hk₂⟩
 
 /-- The body of sort, given that the procedure sorts the lists of at most half the length, rounded
 up. -/
@@ -169,7 +169,6 @@ theorem body_ends (C : Procs P pSort pHalf pMerge pCopy)
   have hhalf := half_meets (d := d + 1) C.half μ (h := L.length)
     (le_trans (by exact_mod_cast (by omega : L.length + 1 ≤ lim.space)) hw)
   have hlt : (L.length + 1) / 2 < L.length := by omega
-  have hpos : 1 ≤ (L.length + 1) / 2 := by omega
   have htwice : 2 * ((L.length + 1) / 2) ≤ L.length + 1 := by omega
   have htwice' : L.length ≤ 2 * ((L.length + 1) / 2) := by omega
   generalize (L.length + 1) / 2 = h at *
@@ -179,17 +178,17 @@ theorem body_ends (C : Procs P pSort pHalf pMerge pCopy)
   light_call hhalf with _ μ₀ ⟨rfl, hμ₀⟩
   obtain rfl : μ = μ₀ := hμ₀.symm
   -- sort(h, a, fr)
-  have hsort₁ := ih a (L.take h) μ hn (by omega) (hseg.take h) (by omega)
+  have hsort₁ := ih a (L.take h) μ hn tac_omega (hseg.take h) tac_omega
   rw [hl₁] at hsort₁
   light_call hsort₁ with _ μ₁ ⟨⟨S₁, hS₁, hP₁, hO₁⟩, hk₁⟩
   have hseg₂ : Seg μ₁ (a + h) (L.drop h) :=
-    (hseg.drop h).congr fun i hi => hk₁ _ ⟨by omega, Or.inr (by omega)⟩
+    (hseg.drop h).congr fun i hi => hk₁ _ ⟨by omega, Or.inr tac_omega⟩
   -- sort(n - h, a + h, fr)
-  have hsort₂ := ih (a + h) (L.drop h) μ₁ hn (by omega) hseg₂ (by omega)
+  have hsort₂ := ih (a + h) (L.drop h) μ₁ hn tac_omega hseg₂ tac_omega
   rw [hl₂] at hsort₂
   light_call hsort₂ with _ μ₂ ⟨⟨S₂, hS₂, hP₂, hO₂⟩, hk₂⟩
   have hlS₁ := hP₁.length_eq
-  have hS₁' : Seg μ₂ a S₁ := hS₁.congr fun i hi => hk₂ _ ⟨by omega, Or.inl (by omega)⟩
+  have hS₁' := hS₁.congr fun i hi => hk₂ _ ⟨by omega, Or.inl tac_omega⟩
   -- merge and copy
   refine (join_ends C hw (hP₁.length_eq.trans hl₁) (hP₂.length_eq.trans hl₂) hlt.le hn.le hS₁' hS₂
     haf hfr hd).mono (by light_time) ?_
@@ -207,12 +206,12 @@ theorem _root_.Light.sort_meets (C : Procs P pSort pHalf pMerge pCopy)
   | _ n ih =>
     subst hn
     intro d hd
-    refine Meets.of_body C.sort (body_ends C hw h1 hseg haf hfr (by omega)
+    refine Meets.of_body C.sort (body_ends C hw h1 hseg haf hfr tac_omega
       fun a' L' μ' hn hhalf hseg' haf' =>
-        ih L'.length (by omega) hseg' haf' (by omega) rfl (d + 1) ?_)
+        ih L'.length tac_omega hseg' haf' tac_omega rfl (d + 1) ?_)
     -- one level of calls fewer for half the length
     have hclog : Nat.clog 2 L.length = Nat.clog 2 ((L.length + 1) / 2) + 1 := by
-      simpa using Nat.clog_of_two_le (b := 2) (by norm_num) hn
+      simpa using Nat.clog_of_two_le (b := 2) tac_norm_num hn
     have := Nat.clog_mono_right 2 (by omega : L'.length ≤ (L.length + 1) / 2)
     omega
 

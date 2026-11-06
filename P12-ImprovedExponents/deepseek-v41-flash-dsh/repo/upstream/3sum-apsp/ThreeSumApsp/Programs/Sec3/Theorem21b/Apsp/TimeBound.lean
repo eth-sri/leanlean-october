@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.LightModel
 public import ThreeSumApsp.Programs.Sec3.Theorem21b.Apsp.Host
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # APSP from the (min,+)-product: the claim
@@ -26,15 +27,14 @@ open ThreeSumApsp
 theorem claim_apspFromMinPlus : Claim.ApspFromMinPlus lightModel := by
   refine ⟨3, 135, by norm_num, fun T hT => isHost_ap.solvedIn hT fun Tn hTn n U u hn hU hu => ?_⟩
   have hn' : (1 : ℝ) ≤ n := by exact_mod_cast hn
-  have hU' : (1 : ℝ) ≤ U := by exact_mod_cast hU
   have hτ : (Tn n (3 * (n * U)) : ℝ) ≤ T n (3 * ((n : ℝ) * u)) := by
     refine hTn n (3 * (n * U)) _ hn (by have := Nat.mul_pos hn hU; omega) ?_
     push_cast
-    have : (n : ℝ) * U ≤ n * u := mul_le_mul_of_nonneg_left hu (by positivity)
+    have : (n : ℝ) * U ≤ n * u := mul_le_mul_of_nonneg_left hu tac_positivity
     linarith
   have hlog : 0 ≤ logU (3 * ((n : ℝ) * u)) :=
-    Real.log_nonneg (le_trans (by norm_num) (le_max_right _ _))
-  have hτ0 : 0 ≤ T n (3 * ((n : ℝ) * u)) := le_trans (by positivity) hτ
+    Real.log_nonneg (le_trans tac_norm_num (le_max_right _ _))
+  have hτ0 : 0 ≤ T n (3 * ((n : ℝ) * u)) := le_trans tac_positivity hτ
   have hc0 : (0 : ℝ) ≤ (Nat.clog 2 n : ℝ) := by positivity
   have hns : (n : ℝ) ≤ (n : ℝ) ^ 2 := by nlinarith
   have hs1 : (1 : ℝ) ≤ (n : ℝ) ^ 2 := by nlinarith
@@ -50,7 +50,6 @@ theorem claim_apspFromMinPlus : Claim.ApspFromMinPlus lightModel := by
   generalize (Nat.clog 2 n : ℝ) = c at hc0 ⊢
   generalize (n : ℝ) ^ 2 = s at hns hs1 hsℓ ⊢
   have hround : t + 23 * s + 29 ≤ τ + 135 * (s * (1 + ℓ)) := by linarith
-  have hends : 53 * s + 17 * n + 65 ≤ τ + 135 * (s * (1 + ℓ)) := by linarith
   calc c * (t + 23 * s + 29) + 53 * s + 17 * n + 65
       ≤ c * (τ + 135 * (s * (1 + ℓ))) + (τ + 135 * (s * (1 + ℓ))) := by
         linarith [mul_le_mul_of_nonneg_left hround hc0]

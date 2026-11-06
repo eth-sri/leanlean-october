@@ -9,6 +9,7 @@ public import ThreeSumApsp.Util.Log
 public import Mathlib.Analysis.Complex.ExponentialBounds
 public import Mathlib.Data.Nat.Prime.Factorial
 public import Mathlib.NumberTheory.Bertrand
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Counting the primes in a window of ratio two
@@ -73,7 +74,7 @@ private theorem mem_bertrandPrimes {n p : ℕ} :
 `(2n)^|s|`. -/
 private theorem prod_pow_factorization_le {n : ℕ} (hn : 0 < n) (s : Finset ℕ) :
     ∏ p ∈ s, p ^ n.centralBinom.factorization p ≤ (2 * n) ^ s.card :=
-  prod_le_pow_card _ _ _ fun _ _ => Nat.pow_factorization_choose_le (by omega)
+  prod_le_pow_card _ _ _ fun _ _ => Nat.pow_factorization_choose_le tac_omega
 
 /-- The primes in `(√(2n), n]` contribute at most `4^(2n/3)` to `C(2n, n)`: their exponent is at
 most 1, it is 0 above `2n/3`, and the product of the primes up to `2n/3` is at most `4^(2n/3)`.
@@ -88,14 +89,14 @@ private theorem prod_middle_le {n : ℕ} (hn : 2 < n) (s : Finset ℕ)
         split_ifs with h3
         · exact (pow_right_mono₀ hprime.one_lt.le
             (Nat.factorization_choose_le_one (Nat.sqrt_lt'.mp hsqrt))).trans (pow_one p).le
-        · rw [Nat.factorization_centralBinom_of_two_mul_self_lt_three_mul hn hpn (by omega),
+        · rw [Nat.factorization_centralBinom_of_two_mul_self_lt_three_mul hn hpn tac_omega,
             pow_zero]
     _ = ∏ p ∈ s.filter (· ≤ 2 * n / 3), p := (prod_filter _ _).symm
     _ ≤ primorial (2 * n / 3) := by
         refine prod_le_prod_of_subset_of_one_le' (fun p hp => ?_)
           fun p hp _ => (mem_filter.1 hp).2.one_lt.le
         obtain ⟨hps, hp3⟩ := mem_filter.1 hp
-        exact mem_filter.2 ⟨mem_range.2 (by omega), (hs p hps).1⟩
+        exact mem_filter.2 ⟨mem_range.2 tac_omega, (hs p hps).1⟩
     _ ≤ 4 ^ (2 * n / 3) := primorial_le_four_pow _
 
 /-- Erdős's bound, keeping the primes of `(n, 2n]`:
@@ -123,7 +124,7 @@ private theorem centralBinom_le (n : ℕ) (hn : 2 < n) :
       simp only [hT, mem_filter, mem_range] at hp
       obtain ⟨⟨⟨-, hprime⟩, -⟩, hsqrt⟩ := hp
       exact mem_Icc.mpr ⟨hprime.one_lt.le, hsqrt⟩
-    exact (prod_pow_factorization_le (by omega) _).trans (pow_right_mono₀ (by omega)
+    exact (prod_pow_factorization_le tac_omega _).trans (pow_right_mono₀ tac_omega
       ((card_le_card hsub).trans_eq (by rw [Nat.card_Icc, Nat.add_sub_cancel])))
   · -- The primes in `(√(2n), n]`.
     refine prod_middle_le hn _ fun p hp => ?_
@@ -131,8 +132,8 @@ private theorem centralBinom_le (n : ℕ) (hn : 2 < n) :
     obtain ⟨⟨⟨-, hprime⟩, hpn⟩, hsqrt⟩ := hp
     exact ⟨hprime, hsqrt, hpn⟩
   · -- The primes above `n` are those of `(n, 2n]`.
-    refine (prod_pow_factorization_le (by omega) _).trans
-      (pow_right_mono₀ (by omega) (card_le_card fun p hp => ?_))
+    refine (prod_pow_factorization_le tac_omega _).trans
+      (pow_right_mono₀ tac_omega (card_le_card fun p hp => ?_))
     simp only [hT, mem_filter, mem_range] at hp
     obtain ⟨⟨hp2n, hprime⟩, hnp⟩ := hp
     exact mem_bertrandPrimes.2 ⟨⟨by omega, by omega⟩, hprime⟩
@@ -148,7 +149,7 @@ private theorem concaveOn_log_add_sqrt_mul_log_sub (a : ℝ) (ha : 0 ≤ a) :
   apply ConcaveOn.sub
   · apply ConcaveOn.add
     · exact strictConcaveOn_log_Ioi.concaveOn.subset
-        (Set.Ioi_subset_Ioi (by norm_num)) (convex_Ioi _)
+        (Set.Ioi_subset_Ioi tac_norm_num) (convex_Ioi _)
     · have h := strictConcaveOn_sqrt_mul_log_Ioi.concaveOn.comp_linearMap
         ((2 : ℝ) • (LinearMap.id : ℝ →ₗ[ℝ] ℝ))
       have hset : (⇑((2 : ℝ) • (LinearMap.id : ℝ →ₗ[ℝ] ℝ))) ⁻¹' Set.Ioi 1 = Set.Ioi (1 / 2) := by
@@ -167,33 +168,33 @@ Adapted from Mathlib, Mathlib/NumberTheory/Bertrand.lean, Apache 2.0 (the same a
 `Bertrand.real_main_inequality` there, with other numbers). -/
 private theorem log_add_sqrt_mul_log_le {x : ℝ} (hx : 16562 ≤ x) :
     Real.log x + √(2 * x) * Real.log (2 * x) ≤ Real.log 2 / 6 * x := by
-  have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hlog2 : 0 < Real.log 2 := Real.log_pos tac_norm_num
   have hat2 : (0 : ℝ) ≤
       Real.log 2 + √(2 * 2) * Real.log (2 * 2) - Real.log 2 / 6 * 2 := by
-    rw [Real.sqrt_mul_self (by norm_num), Real.log_mul (by norm_num) (by norm_num)]
+    rw [Real.sqrt_mul_self tac_norm_num, Real.log_mul tac_norm_num tac_norm_num]
     linarith
   have hat16562 : Real.log 16562 + √(2 * 16562) * Real.log (2 * 16562)
       - Real.log 2 / 6 * 16562 ≤ 0 := by
     have hlog91 : 13 * Real.log 91 ≤ 85 * Real.log 2 := by
-      have h := Real.log_le_log (by positivity) (show (91 : ℝ) ^ 13 ≤ 2 ^ 85 by norm_num)
+      have h := Real.log_le_log tac_positivity (show (91 : ℝ) ^ 13 ≤ 2 ^ 85 by norm_num)
       rw [Real.log_pow, Real.log_pow] at h
       exact_mod_cast h
     have hlogx : Real.log 16562 = Real.log 2 + 2 * Real.log 91 := by
-      rw [show (16562 : ℝ) = 2 * 91 ^ 2 by norm_num, Real.log_mul (by norm_num) (by norm_num),
+      rw [show (16562 : ℝ) = 2 * 91 ^ 2 by norm_num, Real.log_mul tac_norm_num tac_norm_num,
         Real.log_pow]
       norm_num
     have hlog2x : Real.log (182 * 182) = 2 * Real.log 2 + 2 * Real.log 91 := by
       rw [show (182 * 182 : ℝ) = 2 ^ 2 * 91 ^ 2 by norm_num,
-        Real.log_mul (by norm_num) (by norm_num), Real.log_pow, Real.log_pow]
+        Real.log_mul tac_norm_num tac_norm_num, Real.log_pow, Real.log_pow]
       norm_num
-    rw [show (2 * 16562 : ℝ) = 182 * 182 by norm_num, Real.sqrt_mul_self (by norm_num), hlogx,
+    rw [show (2 * 16562 : ℝ) = 182 * 182 by norm_num, Real.sqrt_mul_self tac_norm_num, hlogx,
       hlog2x]
     -- `366 log 91 ≤ 366 · (85/13) log 2 < (16562/6 - 365) log 2`
     linarith only [hlog91, hlog2]
-  have hconcave := concaveOn_log_add_sqrt_mul_log_sub (Real.log 2 / 6) (by positivity)
+  have hconcave := concaveOn_log_add_sqrt_mul_log_sub (Real.log 2 / 6) tac_positivity
   have hatx := hconcave.right_le_of_le_left''
     (x := 2) (y := 16562) (z := x) (by norm_num [Set.mem_Ioi]) (by rw [Set.mem_Ioi]; linarith)
-    (by norm_num) hx (hat16562.trans hat2)
+    tac_norm_num hx (hat16562.trans hat2)
   linarith only [hatx, hat16562]
 
 /-- The same estimate for natural numbers, without logarithms. -/
@@ -203,12 +204,11 @@ private theorem pow_mul_pow_sqrt_le_two_pow {n : ℕ} (hn : 16562 ≤ n) :
   have hreal := log_add_sqrt_mul_log_le hx
   have hsqrt : (Nat.sqrt (2 * n) : ℝ) ≤ √(2 * n) := by
     exact_mod_cast Real.nat_sqrt_le_real_sqrt (a := 2 * n)
-  have hlog : 0 ≤ Real.log (2 * n) := Real.log_nonneg (by linarith)
-  have hpos : (0 : ℝ) < n := by linarith
+  have hlog : 0 ≤ Real.log (2 * n) := Real.log_nonneg tac_linarith
   rw [← Nat.cast_le (α := ℝ)]
   push_cast
-  rw [← Real.log_le_log_iff (by positivity) (by positivity),
-    Real.log_mul (by positivity) (by positivity), Real.log_pow, Real.log_pow, Real.log_pow]
+  rw [← Real.log_le_log_iff tac_positivity tac_positivity,
+    Real.log_mul tac_positivity tac_positivity, Real.log_pow, Real.log_pow, Real.log_pow]
   push_cast
   -- `6 log n + 6 ⌊√(2n)⌋ log(2n) ≤ 6 (log n + √(2n) log(2n)) ≤ n log 2`
   linarith [hreal, mul_le_mul_of_nonneg_right hsqrt hlog]
@@ -221,18 +221,18 @@ private theorem pow_mul_pow_sqrt_le_two_pow {n : ℕ} (hn : 16562 ≤ n) :
 private theorem two_pow_le_of_large {n : ℕ} (hn : 16562 ≤ n) :
     2 ^ n ≤ (2 * n) ^ (2 * (bertrandPrimes n).card) := by
   by_contra hcon
-  have hfew : (2 * n) ^ (2 * (bertrandPrimes n).card) ≤ 2 ^ n := (not_le.mp hcon).le
+  have hfew := (not_le.mp hcon).le
   have herdos : 4 ^ n < n * ((2 * n) ^ Nat.sqrt (2 * n) * 4 ^ (2 * n / 3)
       * (2 * n) ^ (bertrandPrimes n).card) :=
-    (Nat.four_pow_lt_mul_centralBinom n (by omega)).trans_le
-      (Nat.mul_le_mul_left _ (centralBinom_le n (by omega)))
+    (Nat.four_pow_lt_mul_centralBinom n tac_omega).trans_le
+      (Nat.mul_le_mul_left _ (centralBinom_le n tac_omega))
   have hsmall := pow_mul_pow_sqrt_le_two_pow hn
   have hmiddle : 4 ^ (6 * (2 * n / 3)) ≤ 4 ^ (4 * n) :=
-    Nat.pow_le_pow_right (by norm_num) (by omega)
+    Nat.pow_le_pow_right tac_norm_num tac_omega
   refine lt_irrefl ((4 ^ n) ^ 6) ?_
   calc (4 ^ n) ^ 6
       < (n * ((2 * n) ^ Nat.sqrt (2 * n) * 4 ^ (2 * n / 3)
-          * (2 * n) ^ (bertrandPrimes n).card)) ^ 6 := Nat.pow_lt_pow_left herdos (by norm_num)
+          * (2 * n) ^ (bertrandPrimes n).card)) ^ 6 := Nat.pow_lt_pow_left herdos tac_norm_num
     _ = (n ^ 6 * (2 * n) ^ (6 * Nat.sqrt (2 * n))) * 4 ^ (6 * (2 * n / 3))
           * ((2 * n) ^ (2 * (bertrandPrimes n).card)) ^ 3 := by ring
     _ ≤ 2 ^ n * 4 ^ (4 * n) * (2 ^ n) ^ 3 := by gcongr
@@ -245,7 +245,7 @@ private theorem mul_log_two_le_card_bertrandPrimes_mul_log {n : ℕ} (hn : 16562
     (n : ℝ) * Real.log 2 ≤ 2 * (bertrandPrimes n).card * Real.log (2 * n) := by
   have hpow : (2 : ℝ) ^ n ≤ (2 * (n : ℝ)) ^ (2 * (bertrandPrimes n).card) := by
     exact_mod_cast two_pow_le_of_large hn
-  have hlog := Real.log_le_log (by positivity) hpow
+  have hlog := Real.log_le_log tac_positivity hpow
   rw [Real.log_pow, Real.log_pow] at hlog
   exact_mod_cast hlog
 
@@ -257,8 +257,8 @@ satisfies `n ≥ 1`, `n ≥ x/4` and `2n < x`, and every natural number in `(n, 
 private theorem exists_nat_window {x : ℝ} (hx : 4 ≤ x) :
     ∃ n : ℕ, 1 ≤ n ∧ x / 4 ≤ (n : ℝ) ∧ 2 * (n : ℝ) < x ∧
       ∀ p : ℕ, n < p → p ≤ 2 * n → x / 2 ≤ (p : ℝ) ∧ (p : ℝ) < x := by
-  have hle : x ≤ (⌈x⌉₊ : ℝ) := Nat.le_ceil x
-  have hlt : (⌈x⌉₊ : ℝ) < x + 1 := Nat.ceil_lt_add_one (by linarith)
+  have hle := Nat.le_ceil x
+  have hlt : (⌈x⌉₊ : ℝ) < x + 1 := Nat.ceil_lt_add_one tac_linarith
   have hceil : 4 ≤ ⌈x⌉₊ := by exact_mod_cast hx.trans hle
   obtain ⟨n, hn⟩ : ∃ n, n = (⌈x⌉₊ - 1) / 2 := ⟨_, rfl⟩
   have hlow : (⌈x⌉₊ : ℝ) ≤ 2 * n + 2 := by exact_mod_cast (by omega : ⌈x⌉₊ ≤ 2 * n + 2)
@@ -272,7 +272,7 @@ private theorem exists_nat_window {x : ℝ} (hx : 4 ≤ x) :
 theorem exists_prime_half_le_and_lt (x : ℝ) (hx : 4 ≤ x) :
     ∃ p : ℕ, p.Prime ∧ x / 2 ≤ (p : ℝ) ∧ (p : ℝ) < x := by
   obtain ⟨n, hn1, -, -, hwindow⟩ := exists_nat_window hx
-  obtain ⟨p, hprime, hnp, hp2n⟩ := Nat.exists_prime_lt_and_le_two_mul n (by omega)
+  obtain ⟨p, hprime, hnp, hp2n⟩ := Nat.exists_prime_lt_and_le_two_mul n tac_omega
   exact ⟨p, hprime, hwindow p hnp hp2n⟩
 
 /-- If `(n, 2n]` lies in the window and `n ≥ x/4` is large, the window has at least `x / (12 log x)`
@@ -280,16 +280,13 @@ primes: `(x/4) log 2 ≤ n log 2 ≤ 2 k log (2n) ≤ 2 k log x`, and `log 2 ≥
 private theorem div_log_le_card_of_large {x : ℝ} {n : ℕ} {S : Finset ℕ} (hx : 4 ≤ x)
     (hn : 16562 ≤ n) (hn4 : x / 4 ≤ (n : ℝ)) (h2n : 2 * (n : ℝ) < x) (hsub : bertrandPrimes n ⊆ S) :
     x / (12 * Real.log x) ≤ (S.card : ℝ) := by
-  have hcard : ((bertrandPrimes n).card : ℝ) ≤ S.card := by exact_mod_cast card_le_card hsub
-  have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast (by omega : 1 ≤ n)
-  have hlog : Real.log (2 * n) ≤ Real.log x := Real.log_le_log (by linarith) h2n.le
-  have hlog0 : 0 ≤ Real.log (2 * n) := Real.log_nonneg (by linarith)
+  have hlog0 : 0 ≤ Real.log (2 * n) := Real.log_nonneg tac_linarith
   have hlog2 : 2 / 3 ≤ Real.log 2 := by linarith [Real.log_two_gt_d9]
-  rw [div_le_iff₀ (mul_pos (by norm_num) (Real.log_pos (by linarith)))]
+  rw [div_le_iff₀ (mul_pos tac_norm_num (Real.log_pos tac_linarith))]
   calc x = 6 * (x / 4 * (2 / 3)) := by ring
     _ ≤ 6 * (n * Real.log 2) := by gcongr
     _ ≤ 6 * (2 * (bertrandPrimes n).card * Real.log (2 * n)) :=
-        mul_le_mul_of_nonneg_left (mul_log_two_le_card_bertrandPrimes_mul_log hn) (by norm_num)
+        mul_le_mul_of_nonneg_left (mul_log_two_le_card_bertrandPrimes_mul_log hn) tac_norm_num
     _ ≤ 6 * (2 * S.card * Real.log x) := by gcongr
     _ = S.card * (12 * Real.log x) := by ring
 
@@ -303,10 +300,10 @@ theorem exists_forall_mul_div_log_le_card_primes :
   -- `66248 = 4 · 16562`: for `x` below it one prime is enough
   refine ⟨1 / 66248, by norm_num, fun x hx S hS => ?_⟩
   obtain ⟨n, hn1, hn4, h2n, hwindow⟩ := exists_nat_window hx
-  have hlogx : 1 ≤ Real.log x := Real.one_le_log_of_three_le (by linarith)
+  have hlogx := Real.one_le_log_of_three_le tac_linarith
   rcases le_or_gt 16562 n with hlarge | hsmall
   · -- The primes of `(n, 2n]` lie in the window.
-    have hsub : bertrandPrimes n ⊆ S := fun p hp => by
+    have hsub := fun p hp => by
       obtain ⟨⟨hnp, hp2n⟩, hprime⟩ := mem_bertrandPrimes.1 hp
       exact hS p hprime (hwindow p hnp hp2n).1 (hwindow p hnp hp2n).2
     calc 1 / 66248 * (x / Real.log x) ≤ 1 / 12 * (x / Real.log x) := by gcongr; norm_num

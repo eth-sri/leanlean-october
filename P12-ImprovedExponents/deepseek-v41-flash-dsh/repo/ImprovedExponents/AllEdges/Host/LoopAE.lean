@@ -4,6 +4,7 @@ public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Loop
 public import ThreeSumApsp.Lang.Lib.Copy
 public import ImprovedExponents.AllEdges.Host.ScanPairsAE
 public import ImprovedExponents.AllEdges.Host.Flags
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -25,7 +26,7 @@ flags.  The specifications of upstream's parts that do not involve the scans (`h
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec HostLocal
+open HostLocal
 
 variable {lim : Limits} {d : ℕ}
 
@@ -107,10 +108,10 @@ theorem HostCtxAE.scanPairsAE_meets
   have hstep := aeStep_congr (X.flagsAt t) hcongr
   have hexecs := aeExecs_congr (X.flagsAt t) hcongr
   refine Meets.of_body C.scanPairsAE ((scanPairsAE_spec C.scan (S.weights ht) (S.answers ht hans)
-    (Or.inr hout) (Or.inr (by omega)) (Or.inr (by omega))
+    (Or.inr hout) (Or.inr tac_omega) (Or.inr tac_omega)
     { len := X.length_flagsAt t, seg := hflags, below := by omega
-      apartAB := Or.inr (by omega), apartBC := Or.inr (by omega), apartAC := Or.inr (by omega) }
-    (by omega) (S.ok.valid.piece_le ht)).mono (le_of_eq ?_) ?_)
+      apartAB := Or.inr tac_omega, apartBC := Or.inr tac_omega, apartAC := Or.inr tac_omega }
+    tac_omega (S.ok.valid.piece_le ht)).mono (le_of_eq ?_) ?_)
   · rw [hexecs]
     rfl
   · rintro σ' ⟨hseg, hsame⟩
@@ -140,19 +141,19 @@ theorem hostCallsAE_spec
     hflags.keep fun b hb => hrest₁ b (Or.inr (by rw [hlen] at hb; omega))
   -- res := writeY(y, rbc, n, D, p, c0, len)
   light_call (C.writeY_meets S₁ ht) with r₂ μ₂ ⟨hY, hrest₂⟩
-  have S₂ := S₁.next fun a ha => hrest₂ a (Or.inl (by omega))
+  have S₂ := S₁.next fun a ha => hrest₂ a (Or.inl tac_omega)
   replace hX : Seg μ₂ A.x (X.matX t) :=
     hX.keep (by light_keep [X.length_matX t])
   replace hflags : Seg μ₂ flg (X.flagsAt t) :=
     hflags.keep fun b hb => hrest₂ b (Or.inr (by rw [hlen] at hb; omega))
   -- res := solver(n, D, w, 1, x, y, qi + lo, qj + lo, out, fr)
   light_call (C.solver_meets S₂ ht hX hY) with r₃ μ₃ ⟨hans, hkept₃⟩
-  have S₃ := S₂.next fun a ha => hkept₃ a (by omega)
+  have S₃ := S₂.next fun a ha => hkept₃ a tac_omega
   replace hflags : Seg μ₃ flg (X.flagsAt t) :=
     hflags.keep fun b hb => hkept₃ b (by rw [hlen] at hb; omega)
   -- res := scanPairsAE(out, qi + lo, qj + lo, w, flg, ab, bc, ac, n, c0, len)
   light_call (C.scanPairsAE_meets S₃ hF ht hans hflags) with r₄ μ₄ ⟨hflags', hsame⟩
-  exact ⟨r₄, μ₄, rfl, S₃.next fun a ha => hsame a (Or.inl (by omega)), hflags'⟩
+  exact ⟨r₄, μ₄, rfl, S₃.next fun a ha => hsame a (Or.inl tac_omega), hflags'⟩
 
 /-! ## The loop -/
 
@@ -220,7 +221,7 @@ theorem hostLoopAE_spec
         omega)
   case start =>
     refine ⟨0, 0, 0, 0, r₀, μ₁, ?_,
-      ⟨hok, hmem, hlay, hlim, fun a ha => hsame a (Or.inl (by omega))⟩, hzero⟩
+      ⟨hok, hmem, hlay, hlim, fun a ha => hsame a (Or.inl tac_omega)⟩, hzero⟩
     rw [hostState]
     simp only [HostData.c0, Nat.zero_div, Nat.zero_mul, Nat.cast_zero, Nat.zero_mod, setLocal]
   case round =>

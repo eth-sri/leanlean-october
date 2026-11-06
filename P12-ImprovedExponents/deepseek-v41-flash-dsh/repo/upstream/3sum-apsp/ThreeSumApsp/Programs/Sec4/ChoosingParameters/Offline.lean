@@ -33,7 +33,7 @@ of Theorem 30 uses too, and the routine meets its specification `OfflineSpec32` 
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ}
   {Y : Matrix (Fin D₀) (Fin N) ℤ} {aX aY fr : ℕ} {U : ℤ} {μ μ' : ℕ → ℤ}
@@ -52,27 +52,27 @@ that is not used, the addresses of X, of Y, of the rows and of the columns of th
 and of the output, and the free pointer. Then come the number of the current position and the result
 of a call. -/
 abbrev Size : ℕ := 0
-@[inherit_doc Size] abbrev Dim : ℕ := 1
-@[inherit_doc Size] abbrev Count : ℕ := 2
-@[inherit_doc Size] abbrev MatX : ℕ := 4
-@[inherit_doc Size] abbrev MatY : ℕ := 5
-@[inherit_doc Size] abbrev Rows : ℕ := 6
-@[inherit_doc Size] abbrev Cols : ℕ := 7
-@[inherit_doc Size] abbrev Out : ℕ := 8
-@[inherit_doc Size] abbrev Free : ℕ := 9
-@[inherit_doc Size] abbrev Pos : ℕ := 10
-@[inherit_doc Size] abbrev Res : ℕ := 11
+ abbrev Dim : ℕ := 1
+ abbrev Count : ℕ := 2
+ abbrev MatX : ℕ := 4
+ abbrev MatY : ℕ := 5
+ abbrev Rows : ℕ := 6
+ abbrev Cols : ℕ := 7
+ abbrev Out : ℕ := 8
+ abbrev Free : ℕ := 9
+ abbrev Pos : ℕ := 10
+ abbrev Res : ℕ := 11
 
 end Offline32
 
-open Offline32 in
+open Offline32
 /-- One round of offline32: ask the query for the current position and store its answer. -/
 def offlineAsk32 : Stmt :=
   .call Proc.query31 [M (v Rows +' v Pos), M (v Cols +' v Pos), v Size, v Dim, v MatX, v MatY,
     v Free] Res ;;
   .store (v Out +' v Pos) (v Res)
 
-open Offline32 in
+open Offline32
 /-- offline32(N, D, w, U, x, y, wi, wj, out, fr): preprocess, then ask one query for each wanted
 position and store its answer. -/
 def offline32Body : Stmt :=

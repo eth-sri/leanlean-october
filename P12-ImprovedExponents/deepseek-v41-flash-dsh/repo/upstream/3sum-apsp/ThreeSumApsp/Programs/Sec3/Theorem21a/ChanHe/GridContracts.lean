@@ -21,7 +21,7 @@ open ThreeSumApsp
 
 namespace Light.Sec3.ChanHe
 
-open ThreeSumApsp.ChanHe Finset
+open ThreeSumApsp.ChanHe
 
 /-- What the routines that run through the splittings are given, besides what the routines below
 the recursion tree share: the number `Λ` of binary digits, the number `nd` of the distinct values

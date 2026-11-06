@@ -1,6 +1,7 @@
 module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.ClaimAtParameters
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -22,7 +23,7 @@ parameters are rewritten by `midArgs` (`hostTime'_eq`, `hostNeed'_eq`).
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3 ThreeSumApsp.Spec
 
 /-! ## The inner dimension -/
 
@@ -43,9 +44,9 @@ theorem midSize_le (D g : ℕ) : midSize D g ≤ D :=
 
 /-- The inner dimension of the variant is positive under the hypotheses of Theorem 17. -/
 theorem one_le_midSize {D g : ℕ} (hD : 16 ≤ D) (hg : 1 ≤ g) : 1 ≤ midSize D g := by
-  have hsqrt : 4 ≤ Nat.sqrt D := Nat.le_sqrt.2 (by omega)
-  have hpiece : 1 ≤ pieceSizeNat D g := (Nat.lt_ceilDiv_iff hg).2 (by omega)
-  exact Nat.mul_pos hpiece (by omega)
+  have hsqrt : 4 ≤ Nat.sqrt D := Nat.le_sqrt.2 tac_omega
+  have hpiece : 1 ≤ pieceSizeNat D g := (Nat.lt_ceilDiv_iff hg).2 tac_omega
+  exact Nat.mul_pos hpiece tac_omega
 
 /-- The parameters `[n, D, w]` of an instance of upstream's host, rewritten to those of the
 variant: `[n, midSize D (G D), w]`, where `G` computes `g` from `D`. -/
@@ -73,7 +74,7 @@ theorem polyNeedN_midArgs {need : List ℕ → Need} (G : ℕ → ℕ) (h : Poly
 
 /-! ## The procedure -/
 
-open Et17 in
+open Et17
 /-- The second part of the variant: the prime, the sizes, then `ParD := PieceLen * RootD`, and the
 addresses of the arrays.  Upstream's `et17Sizes` with one more assignment. -/
 def et17Sizes' (ν : Et17Nums) : Stmt :=
@@ -85,7 +86,7 @@ def et17Sizes' (ν : Et17Nums) : Stmt :=
   .set ParD (v PieceLen *' v RootD) ;;
   et17Addr
 
-open Et17 in
+open Et17
 /-- The variant of et17(n, U, ab, bc, ac, fr): upstream's `et17Body` with `et17Sizes'`. -/
 def et17Body' (ν : Et17Nums) : Stmt :=
   et17Params ν ;;

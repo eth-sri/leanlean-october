@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Inserting a string into a trie (Lemma 29)
@@ -33,7 +34,7 @@ of a new vertex are cleared.  Addresses are relative to the base of the area, so
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -96,7 +97,7 @@ theorem TrieMem.new (h : TrieMem μ tr cap fp T) (hcap : T.length + 11 ≤ cap) 
   · rw [length_trieNew]
     exact hcap
   · rw [Function.update_of_ne hbfp]
-    exact hsame b (by omega)
+    exact hsame b tac_omega
 
 /-- Writing into a cell of the part of the trie area that is in use. -/
 theorem TrieMem.set (h : TrieMem μ tr cap fp T) {q : ℕ} (hq : q < T.length) (x : ℤ) :
@@ -105,8 +106,8 @@ theorem TrieMem.set (h : TrieMem μ tr cap fp T) {q : ℕ} (hq : q < T.length) (
   have hfp := h.fp_out
   have hcap := h.le_cap
   refine ⟨⟨h.seg.update_in hq x, ?_, by simpa using hcap, hfp⟩,
-    fun b hb => Function.update_of_ne (by omega) _ _⟩
-  rw [Function.update_of_ne (by omega), h.free, List.length_set]
+    fun b hb => Function.update_of_ne tac_omega _ _⟩
+  rw [Function.update_of_ne tac_omega, h.free, List.length_set]
 
 end
 
@@ -118,11 +119,11 @@ namespace NewRoot
 free pointer), the address of the new vertex, and the two ends of its cells in the memory.  Local 0
 also takes the result. -/
 abbrev Area : ℕ := 0
-@[inherit_doc Area] abbrev Result : ℕ := 0
-@[inherit_doc Area] abbrev Free : ℕ := 1
-@[inherit_doc Area] abbrev New : ℕ := 2
-@[inherit_doc Area] abbrev From : ℕ := 3
-@[inherit_doc Area] abbrev Upto : ℕ := 4
+ abbrev Result : ℕ := 0
+ abbrev Free : ℕ := 1
+ abbrev New : ℕ := 2
+ abbrev From : ℕ := 3
+ abbrev Upto : ℕ := 4
 
 end NewRoot
 
@@ -150,8 +151,8 @@ theorem newRoot_spec (hP : P[Proc.newRoot]? = some newRootBody) (hs : Std lim) :
   light_set (tr + T.length : ℕ)
   light_set (tr + T.length + 11 : ℕ)
   -- clear the cells of the new vertex
-  refine Ends.next _ (Ends.clearLoop hs (a := tr + T.length) (n := 11) (by decide) rfl rfl
-    (by omega) ?_ (hT := le_rfl))
+  refine Ends.next _ (Ends.clearLoop hs (a := tr + T.length) (n := 11) tac_decide rfl rfl
+    tac_omega ?_ (hT := le_rfl))
   rw [update_frame_setLocal]
   -- mem[free] := new + 11
   light_store fp (T.length + 11 : ℕ)
@@ -168,16 +169,16 @@ the current vertex, the address of the string, its length, the value, the addres
 pointer), the level, the address of the cell with the pointer to the child, and, for a new vertex,
 its address and the two ends of its cells in the memory. -/
 abbrev Area : ℕ := 0
-@[inherit_doc Area] abbrev Vertex : ℕ := 1
-@[inherit_doc Area] abbrev Key : ℕ := 2
-@[inherit_doc Area] abbrev Len : ℕ := 3
-@[inherit_doc Area] abbrev Value : ℕ := 4
-@[inherit_doc Area] abbrev Free : ℕ := 5
-@[inherit_doc Area] abbrev Level : ℕ := 6
-@[inherit_doc Area] abbrev Cell : ℕ := 7
-@[inherit_doc Area] abbrev New : ℕ := 8
-@[inherit_doc Area] abbrev From : ℕ := 9
-@[inherit_doc Area] abbrev Upto : ℕ := 10
+ abbrev Vertex : ℕ := 1
+ abbrev Key : ℕ := 2
+ abbrev Len : ℕ := 3
+ abbrev Value : ℕ := 4
+ abbrev Free : ℕ := 5
+ abbrev Level : ℕ := 6
+ abbrev Cell : ℕ := 7
+ abbrev New : ℕ := 8
+ abbrev From : ℕ := 9
+ abbrev Upto : ℕ := 10
 
 end Insertion
 
@@ -219,8 +220,8 @@ private theorem alloc_spec (hs : Std lim) {tr cap fp q p key L i : ℕ} {val x�
   light_set (tr + T.length : ℕ)
   light_set (tr + T.length + 11 : ℕ)
   -- clear the cells of the new vertex
-  refine Ends.next _ (Ends.clearLoop hs (a := tr + T.length) (n := 11) (by decide) rfl rfl
-    (by omega) ?_ (hT := le_rfl))
+  refine Ends.next _ (Ends.clearLoop hs (a := tr + T.length) (n := 11) tac_decide rfl rfl
+    tac_omega ?_ (hT := le_rfl))
   rw [update_frame_setLocal]
   -- mem[free] := new + 11
   light_store fp (T.length + 11 : ℕ)
@@ -294,7 +295,7 @@ theorem Progress.step (h : Progress T root kl val i Ti p) (hi : i < kl.length)
   by_cases hz : Ti.getD (p + kl[i]) 0 = 0
   · -- there is no child: a new vertex at the end of the array
     rw [if_pos hz] at hbranch heq ⊢
-    rw [getD_trieNew_set (by omega), Int.toNat_natCast]
+    rw [getD_trieNew_set tac_omega, Int.toNat_natCast]
     exact ⟨by omega, hbranch, heq, by rw [length_trieNew, List.length_set]; omega⟩
   · -- the child exists
     rw [if_neg hz] at hbranch heq ⊢
@@ -349,11 +350,10 @@ private theorem round_spec (hs : Std lim) (C : InsertPre lim μ x) (hi : i < x.k
       ⟨frame [x.tr, p, x.key, x.kl.length, x.val, x.fp, i, x₇, x₈, x₉, x₁₀], μ'⟩ tRound
       fun σ' => σ'.loc Level = i ∧ Inv x μ (i + 1)
         { σ' with loc := Function.update σ'.loc Level ((i : ℤ) + 1) } := by
-  have hroom := C.room
   have harea := C.area_in
   have hin := hprog.inside
   light_facts C hmem hprog hs
-  have hsym : x.kl[i] < 11 := C.digits _ (List.getElem_mem hi)
+  have hsym := C.digits _ (List.getElem_mem hi)
   obtain ⟨hchild, hnext⟩ := hprog.step hi hsym
   have hcell : μ' (x.key + i) = (x.kl[i] : ℕ) :=
     (hsame _ ⟨by omega, by omega⟩).trans (C.seg.getElem hi)
@@ -362,14 +362,14 @@ private theorem round_spec (hs : Std lim) (C : InsertPre lim μ x) (hi : i < x.k
   -- cell := area + vertex + mem[key + level]
   light_set (x.tr + (p + x.kl[i]) : ℕ) using hcell
   generalize p + x.kl[i] = q at hchild hnext hq ⊢
-  have hptr : μ' (x.tr + q) = Ti.getD q 0 := hmem.seg.getD hq 0
+  have hptr := hmem.seg.getD hq 0
   -- if mem[cell] = 0
   refine Ends.iteThen (fun hz => ?_) (fun hz => ?_) (by light_side)
   · -- there is no child: a new vertex
     have hz' : Ti.getD q 0 = 0 := by
       rw [← hptr]
       simpa using hz
-    refine Ends.next _ ((alloc_spec hs hmem hq (by omega) harea C.free_in).mono le_rfl ?_)
+    refine Ends.next _ ((alloc_spec hs hmem hq tac_omega harea C.free_in).mono le_rfl ?_)
     rintro _ ⟨y₈, y₉, y₁₀, μ₂, rfl, hmem₂, hsame₂⟩
     exact down_spec C (by light_time) hq hchild hnext (by rw [child, if_pos hz']; exact hmem₂)
       (hsame.trans hsame₂)
@@ -409,7 +409,7 @@ theorem insert_spec (hP : P[Proc.insert]? = some insertBody) (hs : Std lim) :
     rintro _ - ⟨Ti, p, x₇, x₈, x₉, x₁₀, μ', rfl, hprog, hmem, hsame⟩
     have hin := hprog.inside
     have hle := hmem.le_cap
-    obtain ⟨hset, hsame'⟩ := hmem.set (q := p) (by omega) x.val
+    obtain ⟨hset, hsame'⟩ := hmem.set (q := p) tac_omega x.val
     have heq := hprog.eq
     rw [List.drop_length, trieInsert] at heq
     simp only [tRound, tAlloc]

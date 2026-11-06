@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 public import ThreeSumApsp.Spec.Sec2.Theorem5.SubsetTable
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The table of subsets
@@ -40,15 +41,15 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 Row is the number of the current row and Addr its address; Phase, Ones and Pos are the state of the
 scan (phase, number of ones at the end, position found); Cell is the counter of the inner loops. -/
 abbrev Levels : ℕ := 0
-@[inherit_doc Levels] abbrev Size : ℕ := 1
-@[inherit_doc Levels] abbrev Rows : ℕ := 2
-@[inherit_doc Levels] abbrev Table : ℕ := 3
-@[inherit_doc Levels] abbrev Row : ℕ := 4
-@[inherit_doc Levels] abbrev Addr : ℕ := 5
-@[inherit_doc Levels] abbrev Phase : ℕ := 6
-@[inherit_doc Levels] abbrev Ones : ℕ := 7
-@[inherit_doc Levels] abbrev Pos : ℕ := 8
-@[inherit_doc Levels] abbrev Cell : ℕ := 9
+ abbrev Size : ℕ := 1
+ abbrev Rows : ℕ := 2
+ abbrev Table : ℕ := 3
+ abbrev Row : ℕ := 4
+ abbrev Addr : ℕ := 5
+ abbrev Phase : ℕ := 6
+ abbrev Ones : ℕ := 7
+ abbrev Pos : ℕ := 8
+ abbrev Cell : ℕ := 9
 
 /-- One cell of the first row: 1 for the first m cells, then 0. -/
 def firstRowRound : Stmt :=
@@ -199,7 +200,7 @@ theorem write_spec (std : Std lim) (hLa : L ≤ a) (ha : a + L ≤ lim.space)
   -- The cell of the old row has not been overwritten.
   have haddr : ((a : ℤ) - L + j).toNat = a - L + j := by omega
   have hold : wrote μ a (newRow μ a L S) j (a - L + j) = μ (a - L + j) :=
-    wrote_rest (Or.inl (by omega))
+    wrote_rest (Or.inl tac_omega)
   unfold writeRound
   rw [← wrote_succ, newRow, newCell]
   -- if Cell < Pos then mem[Addr + Cell] := mem[Addr - L + Cell] else if Cell < Pos + 1 then 0
@@ -225,7 +226,7 @@ theorem nextRow_spec (std : Std lim) (hLa : L ≤ a) (ha : a + L ≤ lim.space)
       wrote μ a (newRow μ a L (scanAt (prevRow μ a L) L L)) L⟩)
     (hT : 64 * L + 18 ≤ T) :
     Ends lim P d nextRow ⟨frame (locals L m KK mask s a S j₀), μ⟩ T Q :=
-  Ends.next _ (scan_spec std hLa (by omega) (write_spec std hLa ha hroom done (by omega)) le_rfl)
+  Ends.next _ (scan_spec std hLa tac_omega (write_spec std hLa ha hroom done tac_omega) le_rfl)
 
 /-! ## The loop over the rows -/
 
@@ -255,7 +256,7 @@ private theorem rowDone_spec (std : Std lim) (hmask : mask + KK * L ≤ lim.spac
   light_set (s + 1 : ℕ)
   light_set (mask + (s + 1) * L : ℕ) using Nat.succ_mul
   refine ⟨S, j, _, rfl, fun t ht => ?_,
-      same.trans ((sameOutside_wrote le_rfl).mono (by omega) (by omega))⟩
+      same.trans ((sameOutside_wrote le_rfl).mono tac_omega tac_omega)⟩
   rcases Nat.lt_succ_iff_lt_or_eq.mp ht with ht | rfl
   · -- An earlier row lies before the cells that were written.
     have hbefore : t * L + L ≤ s * L := Nat.mul_add_le_mul ht le_rfl
@@ -266,7 +267,7 @@ private theorem rowDone_spec (std : Std lim) (hmask : mask + KK * L ≤ lim.spac
     intro r hr
     rw [List.length_map, Spec.length_unrank] at hr
     rw [wrote_done hr, hf r hr, List.getElem_map,
-      List.getD_eq_getElem _ _ (by rwa [Spec.length_unrank])]
+      List.getD_eq_getElem _ _ tac_rwa [Spec.length_unrank]]
     rfl
 
 /-- **One round of the loop over the rows** writes row number `s`, the mask number `s`. -/
@@ -283,18 +284,18 @@ theorem tableRow_spec (std : Std lim) (hmask : mask + KK * L ≤ lim.space) (hm 
   refine Ends.iteThen (fun hc => ?_) (fun hc => ?_)
   · -- The first row.
     obtain rfl : s = 0 := by simp at hc; omega
-    refine Ends.next _ (firstRow_spec std (by omega) ?_ le_rfl)
-    exact rowDone_spec std hmask (by omega) hs hrows same fun r hr => (bit_unrank_zero hm hr).symm
+    refine Ends.next _ (firstRow_spec std tac_omega ?_ le_rfl)
+    exact rowDone_spec std hmask tac_omega hs hrows same fun r hr => (bit_unrank_zero hm hr).symm
   · -- A further row, from the row before it.
     obtain ⟨p, rfl⟩ : ∃ p, s = p + 1 := ⟨s - 1, by simp at hc; omega⟩
     have hsucc : (p + 1) * L = p * L + L := Nat.succ_mul p L
     have hprev : ∀ q < L, prevRow μ' (mask + (p + 1) * L) L q
         = bit ((Spec.unrank L m p).getD q false) := fun q hq => by
       rw [prevRow, show mask + (p + 1) * L - L + q = mask + p * L + q by omega]
-      exact SegB.get (hrows p (by omega)) (by rwa [Spec.length_unrank])
+      exact SegB.get (hrows p tac_omega) tac_rwa [Spec.length_unrank]
     have hnext : p + 1 < L.choose m := by omega
-    refine Ends.next _ (nextRow_spec std (by omega) (by omega) (scanAt_fits hnext hprev) ?_ le_rfl)
-    exact rowDone_spec std hmask (by omega) hs hrows same fun r hr =>
+    refine Ends.next _ (nextRow_spec std tac_omega tac_omega (scanAt_fits hnext hprev) ?_ le_rfl)
+    exact rowDone_spec std hmask tac_omega hs hrows same fun r hr =>
       (bit_unrank_succ hnext hprev hr).symm
 
 /-- **subsets** writes the table and changes nothing else. -/
@@ -311,7 +312,7 @@ theorem subsetTable_spec (std : Std lim) (hmask : mask + KK * L ≤ lim.space) (
   refine Ends.whileConst (RowsDone μ L m KK mask) KK (tRow L) ?start ?round ?done
     (by simp [tRow]; ring_nf; omega)
   case start =>
-    refine ⟨⟨0, 0, 0⟩, 0, μ, ?_, fun t ht => absurd ht (by omega), .refl⟩
+    refine ⟨⟨0, 0, 0⟩, 0, μ, ?_, fun t ht => absurd ht tac_omega, .refl⟩
     -- The state of the scan and the counter of the inner loops start at 0.
     simp only [setLocal, Nat.zero_mul, Nat.add_zero]
     rw [← frame_append_zeros _ 4]
@@ -331,7 +332,7 @@ end Light.Sec2.Subsets
 
 namespace Light.Sec2
 
-open ThreeSumApsp Subsets
+open Subsets
 
 variable {lim : Limits} {P : Program}
 

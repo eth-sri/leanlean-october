@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Lang.Compiler.StatementCode
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The cells of the compiled code, and the memories that represent a state
@@ -196,7 +197,6 @@ theorem cStack_succ_add (q : ℕ) : cStack (q + 1) + ((2 : ℕ) : ℤ) = cStack 
 
 /-- The addresses of the stack fit in a word. -/
 theorem Sizes.inRange_stack (Z : Sizes W) {j : ℕ} (hj : j ≤ Z.Q) : InRange W (cStack j) := by
-  have hjQ : (j : ℤ) ≤ Z.Q := by exact_mod_cast hj
   constructor <;> simp only [cStack] <;> linarith [Z.fits.stack]
 
 /-- The addresses of the memory fit in a word. -/
@@ -262,19 +262,19 @@ private theorem Rel.setLoc (R : Rel Z σ q m) (hq : 1 ≤ q) (x : ℕ) (v : ℤ)
   obtain rfl | hxy := eq_or_ne y x
   · simp
   · rw [Function.update_of_ne (by cells)]
-    exact (R.loc y hy).trans (by simp [hxy])
+    exact (R.loc y hy).trans tac_simp [hxy]
 
 /-- Writing a memory cell. -/
 theorem Rel.setMem (R : Rel Z σ q m) (hq : 1 ≤ q) {a : ℤ} (ha : Z.lim.Addr a) (v : ℤ) :
     Rel Z { σ with mem := Function.update σ.mem a.toNat v } q (Function.update m a (wd W v)) := by
   -- the address is not negative, so it is no register and no stack cell of the frame
-  have hnonneg : 0 ≤ a := ha.1
+  have hnonneg := ha.1
   refine R.of_agreeOutside ((AgreeOutside.refl {a} m).update rfl _) (by cells)
     (by cell_read using R.fp) (fun x hx => by cell_read using R.loc x hx) fun b hb => ?_
   obtain rfl | hab := eq_or_ne b a.toNat
   · simp [Int.toNat_of_nonneg hnonneg]
-  · rw [Function.update_of_ne (by omega)]
-    exact (R.mem b hb).trans (by simp [hab])
+  · rw [Function.update_of_ne tac_omega]
+    exact (R.mem b hb).trans tac_simp [hab]
 
 /-- Reading a memory cell. -/
 theorem Rel.read (R : Rel Z σ q m) {a : ℤ} (ha : Z.lim.Addr a) : m a = wd W (σ.mem a.toNat) := by
@@ -319,13 +319,13 @@ theorem steps_setVar {x : ℕ} {c v : ℤ} (I : Framed Z σ q m) (hx : x < Z.F)
   have hN := Z.offsets_le
   have hQ := I.high
   -- ADDR := FP - 2 x
-  have run₁ := steps_sub (i := cADDR) hcode I.rel.fp (I.rel.pool (2 * x) (by omega))
+  have run₁ := steps_sub (i := cADDR) hcode I.rel.fp (I.rel.pool (2 * x) tac_omega)
   rw [cStack_sub] at run₁
   have A₁ := (AgreeOutside.refl (Scratch Z.F) m).update (a := cADDR) (by cells)
     (wd W (cStack (q + x)))
   -- the cell at ADDR := c
   have run₂ := run₁.trans (steps_store hcode.tail (Function.update_self _ _ _)
-    (Z.inRange_stack (by omega)))
+    (Z.inRange_stack tac_omega))
   rw [Function.update_of_ne hne, hc] at run₂
   exact ⟨_, run₂, (I.rel.same A₁).setLoc I.low x v,
     (A₁.mono scratch_subset_writable).update (by cells) _⟩

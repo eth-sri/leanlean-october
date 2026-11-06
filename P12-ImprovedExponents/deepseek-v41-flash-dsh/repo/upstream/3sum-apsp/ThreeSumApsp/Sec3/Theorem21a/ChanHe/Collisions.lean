@@ -9,6 +9,7 @@ public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Definitions
 public import ThreeSumApsp.Util.Average
 public import ThreeSumApsp.Util.PrimeCounting
 public import Mathlib.Combinatorics.Enumerative.DoubleCounting
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 21(a), the reduction of Chan and He: the choice of the modulus
@@ -92,14 +93,14 @@ private theorem card_prime_divisors_le {Q : Finset ℕ} (hP : ∀ p ∈ Q, p.Pri
     (hd : d ≠ 0) (hb : |d| ≤ 2 * (U : ℤ)) : #{p ∈ Q | ((p : ℕ) : ℤ) ∣ d} ≤ Lam U := by
   set T := {p ∈ Q | ((p : ℕ) : ℤ) ∣ d}
   have hprime : ∀ p ∈ T, p.Prime := fun p hp => hP p (mem_filter.mp hp).1
-  have hsub : T ⊆ d.natAbs.primeFactors := fun p hp => Nat.mem_primeFactors.mpr
+  have hsub := fun p hp => Nat.mem_primeFactors.mpr
     ⟨hprime p hp, Int.natCast_dvd.mp (mem_filter.mp hp).2, Int.natAbs_ne_zero.mpr hd⟩
   have hpow : 2 ^ #T ≤ 2 * U :=
     calc 2 ^ #T ≤ ∏ p ∈ T, p := pow_card_le_prod _ _ _ fun p hp => (hprime p hp).two_le
       _ ≤ d.natAbs := Nat.le_of_dvd (Int.natAbs_pos.mpr hd)
           ((prod_dvd_prod_of_subset _ _ _ hsub).trans (Nat.prod_primeFactors_dvd _))
       _ ≤ 2 * U := by have := abs_le.mp hb; omega
-  exact (Nat.le_log_of_pow_le (by norm_num) hpow).trans (Nat.le_succ _)
+  exact (Nat.le_log_of_pow_le tac_norm_num hpow).trans (Nat.le_succ _)
 
 /-- Double counting.  Summed over the candidates `q ∈ Q`, the pairs that collide modulo `M₀ q`
 number at most `Lam U` times those that collide modulo `M₀`: such a pair collides modulo `M₀`, and
@@ -181,8 +182,7 @@ theorem modulus_spec (hQ : Q.Nonempty) (hP : ∀ p ∈ Q, p.Prime) (h₁ : Bdd U
   obtain ⟨hq, q₁, q₂, q₃⟩ :=
     mem_filter.mp (secondP_spec hQ hP h₁ h₂ h₃ (firstP Q (Lam U) S₁ S₂ S₃))
   -- the two tests multiply: `c` counts collisions modulo `pq`, `c'` modulo `p`, and `s = |S|`
-  have hmul : ∀ {c c' s : ℕ}, c' * #Q ≤ 3 * Lam U * s ^ 2 → c * #Q ≤ 3 * Lam U * c' →
-      c * #Q ^ 2 ≤ 9 * Lam U ^ 2 * s ^ 2 := fun {c c' s} hfirst hsecond =>
+  have hmul := fun {c c' s} hfirst hsecond =>
     calc c * #Q ^ 2 = c * #Q * #Q := by ring
       _ ≤ 3 * Lam U * c' * #Q := Nat.mul_le_mul_right _ hsecond
       _ = 3 * Lam U * (c' * #Q) := by ring
@@ -238,7 +238,7 @@ theorem wPar_le_card_primesLE (n U : ℕ) : wPar n U ≤ #(Nat.primesLE (mPar n 
 /-- The primes up to `mPar n U` are enough for `card_heavy_modulus_le`. -/
 theorem le_card_primesLE_mPar_sq (n U : ℕ) : 18 * Lam U ^ 2 * n ≤ #(Nat.primesLE (mPar n U)) ^ 2 :=
   calc 18 * Lam U ^ 2 * n ≤ 25 * Lam U ^ 2 * ((Nat.sqrt n + 1) * (Nat.sqrt n + 1)) :=
-        Nat.mul_le_mul (Nat.mul_le_mul_right _ (by norm_num)) (Nat.lt_succ_sqrt n).le
+        Nat.mul_le_mul (Nat.mul_le_mul_right _ tac_norm_num) (Nat.lt_succ_sqrt n).le
     _ = wPar n U ^ 2 := by unfold wPar; ring
     _ ≤ #(Nat.primesLE (mPar n U)) ^ 2 := Nat.pow_le_pow_left (wPar_le_card_primesLE n U) 2
 

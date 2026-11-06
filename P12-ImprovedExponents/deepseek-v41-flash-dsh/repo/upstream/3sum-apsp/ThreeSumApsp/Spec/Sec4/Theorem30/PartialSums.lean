@@ -81,7 +81,7 @@ theorem abs_dp_partial_sum_le (e : ℕ) (π : Cube L) (ℓ : Fin L) (k : ℕ) :
     (fun d hd => ?_) k).trans
     (le_of_eq ?_)
   · -- each of the ten strings is a cube
-    have hd' : d < 10 := List.mem_range.mp hd
+    have hd' := List.mem_range.mp hd
     have hcube : (digitsC π).set ℓ d = digitsC (Cube.replace π ℓ (termOfIdx ⟨d, hd'⟩)) := by
       rw [digitsC_replace]
       exact congrArg _ (congrArg Fin.val (termEquiv.apply_symm_apply ⟨d, hd'⟩).symm)

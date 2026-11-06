@@ -2,6 +2,7 @@ module
 
 public import ThreeSumApsp.Sec4.Table2.LogBounds
 public import ImprovedExponents.Optimum.PerCCrossing
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -65,8 +66,8 @@ The thinness bound with pruned encodings at `c = 22`, from these and from a boun
 
 ```
 example : (0.0549 : ℝ) < thinR (basePruned 22) (Gam 22) :=
-  lt_thinR (basePruned_pos (by norm_num)) (basePruned_le 4 : basePruned 22 ≤ 25.105)
-    (Gam_pos (by norm_num)).le (Gam_le (θ := 0.116037) (gammaX_le 4) (gammaQ_le (-3)) :
+  lt_thinR (basePruned_pos tac_norm_num) (basePruned_le 4 : basePruned 22 ≤ 25.105)
+    (Gam_pos tac_norm_num).le (Gam_le (θ := 0.116037) (gammaX_le 4) (gammaQ_le (-3)) :
       Gam 22 ≤ 0.0763)
 ```
 
@@ -143,7 +144,7 @@ theorem logThree_mem : log 3 ∈ Icc logThreeLo logThreeHi :=
 /-- `g2Lo k c δ ≤ g₂(c, δ) ≤ g2Hi k c δ` for `c > 1` and `0 ≤ δ < 1`. -/
 theorem g2_mem (k : ℤ) {c δ : ℝ} (hc : 1 < c) (h0 : 0 ≤ δ) (h1 : δ < 1) :
     g2 c δ ∈ Icc (g2Lo k c δ) (g2Hi k c δ) := by
-  have hc1 : 0 < c - 1 := sub_pos.2 hc
+  have hc1 := sub_pos.2 hc
   have hcδ : 0 < c - 1 + δ := by linarith
   have hδ1 : 0 < 1 - δ := sub_pos.2 h1
   have heq : g2 c δ = -(c - 1) * log ((c - 1 + δ) / (c - 1)) - δ * log (c - 1 + δ)
@@ -186,7 +187,7 @@ theorem gammaQ_le (k : ℤ) {θ r : ℝ} (h0 : 0 < θ := by numlog) (h1 : θ < 1
     (h : (2 - 3 * r) / 4 * (2 * logTwoHi)
       ≤ -θ * logHi k θ - (1 - θ) * logHi 0 (1 - θ) + θ * (2 * logThreeLo) := by numlog) :
     gammaQ θ ≤ r := by
-  have hq : (2 - 3 * r) / 4 ≤ qOf θ := le_qOf k h0 h1 hr h
+  have hq := le_qOf k h0 h1 hr h
   unfold gammaQ
   linarith
 
@@ -196,7 +197,7 @@ theorem le_gammaQ (k : ℤ) {θ r : ℝ} (h0 : 0 < θ := by numlog) (h1 : θ < 1
     (hr : 0 ≤ (2 - 3 * r) / 4 := by numlog)
     (h : -θ * logLo k θ - (1 - θ) * logLo 0 (1 - θ) + θ * (2 * logThreeHi)
       ≤ (2 - 3 * r) / 4 * (2 * logTwoLo) := by numlog) : r ≤ gammaQ θ := by
-  have hq : qOf θ ≤ (2 - 3 * r) / 4 := qOf_le k h0 h1 hr h
+  have hq := qOf_le k h0 h1 hr h
   unfold gammaQ
   linarith
 
@@ -216,7 +217,7 @@ theorem Gam_le {c θ r : ℝ} (hX : gammaX c θ ≤ r) (hQ : gammaQ θ ≤ r) (h
 
 /-- `cEntLo k c ≤ c H(1/c) ≤ cEntHi k c` for `c > 1`. -/
 theorem cEntropy_mem (k : ℤ) {c : ℝ} (hc : 1 < c) : cEntropy c ∈ Icc (cEntLo k c) (cEntHi k c) := by
-  have hc1 : 0 < c - 1 := sub_pos.2 hc
+  have hc1 := sub_pos.2 hc
   have hc0 : 0 < c := by linarith
   have heq : cEntropy c = (c - 1) * log (c / (c - 1)) + log c := by
     rw [cEntropy, log_div hc0.ne' hc1.ne']
@@ -257,9 +258,9 @@ theorem lt_savingF {A γ Ahi γlo s : ℝ} (hA : 0 < A) (hAhi : A ≤ Ahi) (hγ 
   have hγ0 := hγlo.trans hγ
   have hlo : (0 : ℝ) ≤ 2 * logTwoLo := by numlog
   have h1 : γlo * (1 - 2 * s) * (2 * logTwoLo) ≤ γ * (1 - 2 * s) * log 4 :=
-    mul_le_mul (mul_le_mul_of_nonneg_right hγ (by linarith)) h4.1 hlo
-      (mul_nonneg hγ0 (by linarith))
-  have h2 : 2 * s * A ≤ 2 * s * Ahi := mul_le_mul_of_nonneg_left hAhi (by linarith)
+    mul_le_mul (mul_le_mul_of_nonneg_right hγ tac_linarith) h4.1 hlo
+      (mul_nonneg hγ0 tac_linarith)
+  have h2 : 2 * s * A ≤ 2 * s * Ahi := mul_le_mul_of_nonneg_left hAhi tac_linarith
   rw [savingF_eq_div, lt_div_iff₀ (mul_pos two_pos (thinR_den_pos hA hγ0))]
   linarith
 

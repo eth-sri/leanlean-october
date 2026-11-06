@@ -7,6 +7,7 @@ module
 
 public import PaperStatements
 public import ThreeSumApsp.Util.Index
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The array of a node of the reduction after Chan and He, from lists
@@ -62,7 +63,7 @@ theorem card_bucket {M : ℕ} (hM : 1 ≤ M) {L : List ℤ} (hL : L.Nodup) (r : 
   refine List.filter_congr fun x _ => ?_
   have hcast := Int.natCast_toNat_emod hM x
   change decide (x % (M : ℤ) = (r : ℤ)) = decide ((x % (M : ℤ)).toNat = r)
-  exact decide_eq_decide.2 (by omega)
+  exact decide_eq_decide.2 tac_omega
 
 /-- A cell whose remainder occurs once holds the number with that remainder. -/
 theorem arr_of_count_eq_one {M : ℕ} (hM : 1 ≤ M) {L : List ℤ} (hL : L.Nodup) (pd : ℤ) {j : ℕ}
@@ -88,9 +89,9 @@ theorem arr_of_le {M : ℕ} (hM : 1 ≤ M) (S : Finset ℤ) (pd : ℤ) {i : ℕ}
   have hempty : bucket S M i = ∅ := by
     rw [bucket, filter_eq_empty_iff]
     intro x _ hx
-    have hlt : x % (M : ℤ) < M := Int.emod_lt_of_pos _ (by exact_mod_cast hM)
+    have hlt : x % (M : ℤ) < M := Int.emod_lt_of_pos _ ((by exact_mod_cast hM))
     omega
-  rw [arr, hempty, if_neg (by simp)]
+  rw [arr, hempty, if_neg tac_simp]
 
 /-- The four kinds of cells of the one-array instance of a node.  Here `6V + 4` is the number
 `G = 3W + 1` for `W = 2V + 1`. -/
@@ -100,9 +101,9 @@ theorem oneArray_cells (ν : Node) (V i : ℕ) :
       ν.oneArray V (4 * i + 2) = arr ν.S₂ ν.M (2 * V + 1) i + 3 * (6 * V + 4) ∧
       ν.oneArray V (4 * i + 3) = arrZ ν.S₃ ν.M V i + 4 * (6 * V + 4) := by
   have hcell : ∀ r < 4, (4 * i + r) % 4 = r ∧ (4 * i + r) / 4 = i := fun r hr => by omega
-  have hzero : 4 * i % 4 = 0 := Nat.mul_mod_right 4 i
+  have hzero := Nat.mul_mod_right 4 i
   refine ⟨?_, ?_, ?_, ?_⟩ <;>
-    simp only [Node.oneArray, ChanHe.oneArray, arrXY, pad, hzero, hcell 1 (by norm_num),
-      hcell 2 (by norm_num), hcell 3 (by norm_num)] <;> norm_num <;> ring
+    simp only [Node.oneArray, ChanHe.oneArray, arrXY, pad, hzero, hcell 1 tac_norm_num,
+      hcell 2 tac_norm_num, hcell 3 tac_norm_num] <;> norm_num <;> ring
 
 end ThreeSumApsp.Spec.ChanHeArray

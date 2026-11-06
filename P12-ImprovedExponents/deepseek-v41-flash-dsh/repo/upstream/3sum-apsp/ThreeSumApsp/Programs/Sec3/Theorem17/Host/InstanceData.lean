@@ -26,7 +26,7 @@ class after class, in the order of the residues, and a chunk is a segment of a c
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-- The hypotheses of Theorem 17 on its parameters, in natural numbers: "Let 16 ≤ D ≤ n, and let
 1 ≤ g ≤ √D be an integer." -/

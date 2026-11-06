@@ -3,6 +3,7 @@ module
 public import ImprovedExponents.AllEdges.Host.ProgramAE
 public import ImprovedExponents.AllEdges.Model
 public import ImprovedExponents.Pipeline.Claims
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -121,7 +122,7 @@ noncomputable def restBoundAE (θ : CostParams) : ℝ :=
 
 /-- What is within the three terms is within `restBoundAE`. -/
 theorem stepsRestAE_of_budget {t : CostParams → ℕ} (h : Steps t budget) : Steps t restBoundAE :=
-  h.mono_right fun θ _ => le_add_of_nonneg_left (by positivity)
+  h.mono_right fun θ _ => le_add_of_nonneg_left tac_positivity
 
 /-- A piece has `⌈s/g⌉ ≤ s` vertices. -/
 theorem steps_pieceSizeNatAE : StepsMon (fun θ => pieceSizeNat θ.D θ.g) 0 1 0 :=
@@ -188,10 +189,10 @@ theorem obeysBound17Mid_hostTimeAE (D g : ℕ → ℕ) {Dfun Gfun tD tG : ℕ �
   obtain ⟨C₁, hC₁, hextra⟩ := steps_extraAE
   refine ⟨2 * C₀ + C₁, by positivity, fun Tn T hT n U κ h16 hDn hg1 hg hκ hU => ?_⟩
   have hθ : CostParams.Hyp ⟨n, D n, g n, U, κ⟩ := ⟨h16, hDn, hg1, hg, hκ, hU⟩
-  have hn1 : 1 ≤ n := hθ.one_le_n_nat
-  have hD1 : 1 ≤ D n := hθ.one_le_D_nat
-  have hmid : 1 ≤ midSize (D n) (g n) := one_le_midSize h16 hg1
-  have hs : ¬ SmallCase n (D n) (g n) := not_smallCase_of_hyp h16 hDn hg1 hg
+  have hn1 := hθ.one_le_n_nat
+  have hD1 := hθ.one_le_D_nat
+  have hmid := one_le_midSize h16 hg1
+  have hs := not_smallCase_of_hyp h16 hDn hg1 hg
   -- the calls of the solver
   have hsolver := cast_supTime_le hT hn1 hmid (queryCapNat n (D n))
   -- the variant host without the solver, by its bound
@@ -203,7 +204,7 @@ theorem obeysBound17Mid_hostTimeAE (D g : ℕ → ℕ) {Dfun Gfun tD tG : ℕ �
   have hle := hostTimeAE_zero_le tD tG (hDf n) (hGf n hn1) hs (U := U)
   have hcalls : (4 * (n : ℝ) * g n) * (supTime Tn n (midSize (D n) (g n)) (queryCapNat n (D n)) : ℝ)
       ≤ (4 * (n : ℝ) * g n) * T n (midSize (D n) (g n)) (queryCapNat n (D n)) :=
-    mul_le_mul_of_nonneg_left hsolver (by positivity)
+    mul_le_mul_of_nonneg_left hsolver tac_positivity
   have hquery : 0 ≤ C₁ * ((n : ℝ) * g n * ((n : ℝ) ^ 2 / Real.sqrt (D n))) := by positivity
   rw [hostTimeAE_eq tD tG Tn (hDf n) (hGf n hn1) hs]
   rw [queryCapNat_eq n hD1] at hcalls ⊢

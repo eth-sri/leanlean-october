@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Spec.Sec2.Theorem5.Alphabets
 public import Mathlib.Data.List.GetD
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Arrays on strings as lists
@@ -41,7 +42,7 @@ theorem length_arrStr : (arrStr e a).length = b ^ n := by
 /-- The entry of the list at a number below `b^n`. -/
 theorem getD_arrStr_of_lt {c : ℕ} (hc : c < b ^ n) :
     (arrStr e a).getD c 0 = a (decodeStr e n c) := by
-  rw [List.getD_eq_getElem _ _ (by rwa [length_arrStr])]
+  rw [List.getD_eq_getElem _ _ tac_rwa [length_arrStr]]
   simp [arrStr]
 
 /-- The entry at a string is the entry of the list at its code. -/
@@ -54,7 +55,7 @@ theorem getD_arrStr_eq_zero {c : ℕ} (h : ∀ u, codeStr e u = c → a u = 0) :
   rcases Nat.lt_or_ge c (b ^ n) with hlt | hge
   · rw [getD_arrStr_of_lt e a hlt]
     exact h _ (codeStr_decodeStr e hlt)
-  · exact List.getD_eq_default _ _ (by rwa [length_arrStr])
+  · exact List.getD_eq_default _ _ tac_rwa [length_arrStr]
 
 end
 

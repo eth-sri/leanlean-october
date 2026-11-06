@@ -2,6 +2,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Directory
 public import ImprovedExponents.PrunedProgram.Shared.Contracts
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -22,7 +23,7 @@ Adapted from upstream `ThreeSumApsp/Programs/Sec4/Theorem30/Memory.lean` (Apache
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec ImprovedExponents
+open ThreeSumApsp ImprovedExponents
 
 /-- **The block from b0 on holds the data structure for X and Y**, with the encodings right at the
 leaves with at most `m` symbols `P₀`.  The pruned preprocessing establishes this, and every query
@@ -49,10 +50,10 @@ theorem DSReadyP.congr (h : DSReadyP p t hmL aX aY b0 X Y μ)
     DSReadyP p t hmL aX aY b0 X Y μ' := by
   have hend : p.sharedEnd b0 = aWD p b0 := rfl
   obtain ⟨⟩ := areas p t b0
-  exact ⟨h.shared.congr fun a ha hlt _ => he a ha (by omega),
-    by rw [he _ (by omega) (by omega)]; exact h.cellT,
-    h.roots.congr fun i _ => he _ (by omega) (by omega),
-    h.trie.congr fun i _ => he _ (by omega) (by omega)⟩
+  exact ⟨h.shared.congr fun a ha hlt _ => he a ha tac_omega,
+    by rw [he _ tac_omega tac_omega]; exact h.cellT,
+    h.roots.congr fun i _ => he _ tac_omega tac_omega,
+    h.trie.congr fun i _ => he _ tac_omega tac_omega⟩
 
 /-- A memory that differs from one that holds the data structure only on the scratch strings WD,
 CUR, BOX, SS holds it too. -/
@@ -128,19 +129,19 @@ theorem _root_.Light.Sec2.SharedReadyP.dir_read (h : Sec2.SharedReadyP p hmL aX 
 -- (SharedReady.dirCells)
 theorem _root_.Light.Sec2.SharedReadyP.dirCells (h : Sec2.SharedReadyP p hmL aX aY b0 X Y μ) :
     DirCells p b0 μ where
-  levels := dir_cellP h (j := Dir.levels) (by norm_num)
-  inner := dir_cellP h (j := Dir.inner) (by norm_num)
-  outer := h.dir_read (j := Dir.outer) (by norm_num)
-  blocks := h.dir_read (j := Dir.blocks) (by norm_num)
-  bands := h.dir_read (j := Dir.bands) (by norm_num)
-  leaves := h.dir_read (j := Dir.leaves) (by norm_num)
-  mask := h.dir_read (j := Dir.mask) (by norm_num)
-  band := h.dir_read (j := Dir.band) (by norm_num)
-  block := h.dir_read (j := Dir.block) (by norm_num)
-  digits := h.dir_read (j := Dir.digits) (by norm_num)
-  encA := h.dir_read (j := Dir.encA) (by norm_num)
-  encB := h.dir_read (j := Dir.encB) (by norm_num)
-  sharedEnd := h.dir_read (j := Dir.sharedEnd) (by norm_num)
+  levels := dir_cellP h (j := Dir.levels) tac_norm_num
+  inner := dir_cellP h (j := Dir.inner) tac_norm_num
+  outer := h.dir_read (j := Dir.outer) tac_norm_num
+  blocks := h.dir_read (j := Dir.blocks) tac_norm_num
+  bands := h.dir_read (j := Dir.bands) tac_norm_num
+  leaves := h.dir_read (j := Dir.leaves) tac_norm_num
+  mask := h.dir_read (j := Dir.mask) tac_norm_num
+  band := h.dir_read (j := Dir.band) tac_norm_num
+  block := h.dir_read (j := Dir.block) tac_norm_num
+  digits := h.dir_read (j := Dir.digits) tac_norm_num
+  encA := h.dir_read (j := Dir.encA) tac_norm_num
+  encB := h.dir_read (j := Dir.encB) tac_norm_num
+  sharedEnd := h.dir_read (j := Dir.sharedEnd) tac_norm_num
 
 end
 

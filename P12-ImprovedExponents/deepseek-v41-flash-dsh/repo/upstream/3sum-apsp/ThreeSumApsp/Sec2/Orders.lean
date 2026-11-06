@@ -11,6 +11,7 @@ public import Mathlib.Algebra.Order.Field.Basic
 public import Mathlib.Algebra.Order.Ring.Rat
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Positivity
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Section 2.4.3, first half: the orders of the leaves and equation (5)
@@ -24,7 +25,6 @@ fixed at the other levels.  Its order is `m` minus the number of levels at which
   and of variables of each kind to which a term contributes, are read off the ten terms.
 * Counts.  `10^m` leaves contribute to a string: ten terms for each level of `Q`
   (`card_filter_contributes`).  The other counts sort strings by the set of levels at which they
-  have a letter of a given kind (`Finset.card_pi_places_card`, `Finset.card_places_card`): `α_d` of
   the leaves contributing to a string have order `d` (`sec2_card_contributing_of_order`), the whole
   tree has `β_d` leaves of order `d` (`card_filter_order_eq`), with `β₀ = M` (`beta_zero_eq_M`), and
   a leaf of order `d` contributes to `binom(L-m+d, d)` strings (`sec2_card_outStr_of_leaf`). Figure
@@ -156,7 +156,7 @@ theorem sec2_card_contributing_of_order {L m : ℕ} (w : OutStr L) (hw : (innerS
     simp only [mem_filter, mem_univ, true_and, order_eq_iff]
     exact and_congr Iff.rfl (by unfold P0Levels; omega)
   · -- No leaf has order more than `m`.
-    rw [alpha, Nat.choose_eq_zero_of_lt (by omega), zero_mul, card_eq_zero]
+    rw [alpha, Nat.choose_eq_zero_of_lt tac_omega, zero_mul, card_eq_zero]
     refine filter_eq_empty_iff.mpr fun τ _ h => ?_
     have hle := order_le m τ
     omega

@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Lang.Compiler.ProgramCode
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The start-up code
@@ -86,7 +87,7 @@ private theorem effects_poolCode (hone : m cONE = wd W 1) (N : ℕ) :
     · rw [Function.update_self]
       push_cast
       rfl
-    · rw [Function.update_of_ne (by cells), ih n (by omega)]
+    · rw [Function.update_of_ne (by cells), ih n tac_omega]
 
 /-- The memory after the first three instructions and the code for the pool. -/
 private def poolMem (N : ℕ) (m : ℤ → BitVec W) : ℤ → BitVec W :=
@@ -96,7 +97,7 @@ private theorem agreeOutside_poolMem (N : ℕ) (m : ℤ → BitVec W) :
     AgreeOutside (Constants N) m (poolMem N m) := by
   refine AgreeOutside.trans_union ?_ (agreeOutside_poolCode N _)
   rw [effects_headStraight]
-  exact (((AgreeOutside.refl _ m).update (by simp) _).update (by simp) _).update (by simp) _
+  exact (((AgreeOutside.refl _ m).update tac_simp _).update tac_simp _).update tac_simp _
 
 /-- The code for the pool leaves the numbers 1, 0, -1 in their registers. -/
 private theorem poolMem_consts (N : ℕ) (m : ℤ → BitVec W) :
@@ -216,10 +217,10 @@ theorem rel_startMem (Z : Sizes W) (h3 : 3 ≤ Z.F) (hpool : 2 * mainFrame ≤ Z
       rw [written, Function.update_of_ne (by cells), Function.update_of_ne (by cells),
         (agreeOutside_effects (writesIn_zeroCode Z.F) _).cell (by cells), Function.update_self]
     loc := fun x hx => match x with
-      | 0 => zeros 0 hx (by omega) (by omega)
+      | 0 => zeros 0 hx tac_omega tac_omega
       | 1 => by rw [written, Function.update_of_ne (by cells)]; exact Function.update_self ..
       | 2 => by rw [written]; exact Function.update_self ..
-      | x + 3 => zeros (x + 3) hx (by omega) (by omega)
+      | x + 3 => zeros (x + 3) hx tac_omega tac_omega
     mem := fun a ha => keep₂.read (by cells) (keep₁.read (by cells) (hm a ha)) }
 
 /-! ## The run from the first instruction to the outermost statement -/

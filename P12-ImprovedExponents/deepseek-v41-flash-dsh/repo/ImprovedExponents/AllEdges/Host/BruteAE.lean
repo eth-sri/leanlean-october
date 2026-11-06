@@ -2,6 +2,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Witnesses.BruteForce
 public import ImprovedExponents.AllEdges.Task
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -17,7 +18,7 @@ returns one bit.  The variant bruteAE(n, U, ab, bc, ac, fr) stores the result of
 
 namespace ImprovedExponents.AllEdges
 
-open Light Light.Sec3 Light.Sec3.Brute ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3 Light.Sec3.Brute ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -59,9 +60,9 @@ theorem weights_bruteAEMem (C : Weights lim μ ab bc ac n U AB BC AC) (hfr : ab 
   light_facts C C.arrAB C.arrBC C.arrAC
   exact
     { C with
-      arrAB := C.arrAB.keep fun y hy => wrote_rest (by omega)
-      arrBC := C.arrBC.keep fun y hy => wrote_rest (by omega)
-      arrAC := C.arrAC.keep fun y hy => wrote_rest (by omega) }
+      arrAB := C.arrAB.keep fun y hy => wrote_rest tac_omega
+      arrBC := C.arrBC.keep fun y hy => wrote_rest tac_omega
+      arrAC := C.arrAC.keep fun y hy => wrote_rest tac_omega }
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Witnesses/BruteForce.lean
 /-- One pair: its flag is written. -/
@@ -75,7 +76,7 @@ theorem bruteAEPair_spec {b : ℕ} {r : ℤ} (hP : P[pScan]? = some scanBody)
         bruteAEMem μ fr n AB BC AC (a * n + b + 1)⟩ := by
   light_facts C C.arrAB C.arrBC C.arrAC
   have C' := weights_bruteAEMem C hfr hfr' hfr'' (a * n + b)
-  have hidx : a * n + b < n * n := Nat.mul_add_lt_mul ha hb
+  have hidx := Nat.mul_add_lt_mul ha hb
   -- res := scan(ab, bc, ac, n, a, b, 0, n)
   light_call (scan_meets hP C' ha hb (c0 := 0) (Nat.zero_add n).le) with _ _ ⟨rfl, rfl⟩
   rw [flag_eq_bit]
@@ -120,8 +121,8 @@ end
 theorem tBruteAE_ge (n : ℕ) : n * (1 + (n * (24 * n + 67) + 6) + 7) + 8 ≤ tBruteAE n := by
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · simp [tBruteAE]
-  · have hsq : n ^ 2 ≤ n ^ 3 := Nat.pow_le_pow_right hn (by omega)
-    have hlin : n ≤ n ^ 3 := Nat.le_self_pow (by omega) n
+  · have hsq : n ^ 2 ≤ n ^ 3 := Nat.pow_le_pow_right hn tac_omega
+    have hlin : n ≤ n ^ 3 := Nat.le_self_pow tac_omega n
     rw [show n * (1 + (n * (24 * n + 67) + 6) + 7) = 24 * n ^ 3 + 67 * n ^ 2 + 14 * n by ring,
       tBruteAE]
     omega
@@ -137,7 +138,7 @@ theorem bruteAE_spec {pScan : ℕ} (hP : P[pScan]? = some scanBody) (x : TriInst
       fun σ' => σ'.loc 0 = fr ∧ Seg σ'.mem fr (aeFlags x.n x.AB x.BC x.AC) ∧ Kept μ σ'.mem fr := by
   have C := hpre.weights hok
   have hw := C.hw
-  have hd : d < lim.depth := hok.depth
+  have hd := hok.depth
   have hn : x.n ≤ lim.space :=
     (Nat.le_mul_of_pos_left _ hpre.n_pos).trans ((Nat.le_add_left _ _).trans C.arrAB.below)
   have htime := tBruteAE_ge x.n
@@ -165,7 +166,7 @@ theorem bruteAE_spec {pScan : ℕ} (hP : P[pScan]? = some scanBody) (x : TriInst
   case done =>
     rintro _ - ⟨b, r, rfl⟩
     -- return fr
-    refine Ends.setTo fr ⟨by simp, ?_, ?_⟩ (by simp) (by simp; omega)
+    refine Ends.setTo fr ⟨by simp, ?_, ?_⟩ tac_simp (by simp; omega)
     · intro q hq
       rw [length_aeFlags] at hq
       change bruteAEMem μ fr x.n x.AB x.BC x.AC (x.n * x.n) (fr + q) = _

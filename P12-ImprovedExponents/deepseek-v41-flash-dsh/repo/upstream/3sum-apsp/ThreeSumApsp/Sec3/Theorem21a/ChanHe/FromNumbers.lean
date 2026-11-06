@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Recursion
 public import ThreeSumApsp.Util.List
 public import Mathlib.Data.Nat.Bitwise
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 21(a), the reduction of Chan and He: from n numbers to one-array Convolution-3SUM
@@ -56,7 +57,7 @@ private theorem lab_cast {x : ℤ} (hx : |x| ≤ (U : ℤ)) : ((lab U x : ℕ) :
 private theorem lab_lt {x : ℤ} (hx : |x| ≤ (U : ℤ)) : lab U x < 2 ^ Lam U := by
   have := lab_cast hx
   have := (abs_le.mp hx).2
-  exact (by omega : lab U x ≤ 2 * U).trans_lt (Nat.lt_pow_succ_log_self (by norm_num) _)
+  exact (by omega : lab U x ≤ 2 * U).trans_lt (Nat.lt_pow_succ_log_self tac_norm_num _)
 
 /-- The labels of two different elements of `[-U, U]` differ in one of their `Lam U` lowest binary
 digits. -/
@@ -66,7 +67,7 @@ private theorem exists_testBit_lab_ne {x y : ℤ} (hx : |x| ≤ (U : ℤ)) (hy :
   obtain ⟨β, hβ⟩ := Nat.exists_testBit_ne_of_ne hlab
   -- from digit `Lam U` on, all digits of both labels are 0
   refine ⟨β, lt_of_not_ge fun hΛ => hβ ?_, hβ⟩
-  have hpow := Nat.pow_le_pow_right (n := 2) (by norm_num) hΛ
+  have hpow := Nat.pow_le_pow_right (n := 2) tac_norm_num hΛ
   rw [Nat.testBit_eq_false_of_lt ((lab_lt hx).trans_le hpow),
     Nat.testBit_eq_false_of_lt ((lab_lt hy).trans_le hpow)]
 
@@ -99,7 +100,7 @@ theorem distinct_iff_split (h : Bdd U S) :
     · exact exists_split_of_testBit h ha hb hc hβ (Bool.eq_not_of_ne hbit.symm)
         (hcb.trans (Bool.eq_not_of_ne hbit.symm)) hbc hs
     · exact exists_split_of_testBit h hb ha hc hβ (Bool.eq_not_of_ne hbit)
-        (Bool.eq_not_of_ne hcb) hac (by omega)
+        (Bool.eq_not_of_ne hcb) hac tac_omega
   · rintro ⟨β, -, β', -, v, a, ha, b, hb, c, hc, hs⟩
     obtain ⟨haS, haβ⟩ := mem_filter.mp ha
     obtain ⟨hbS, hbβ, hbβ'⟩ := mem_filter.mp hb
@@ -144,9 +145,9 @@ theorem threeSum_iff_distinct_or_degenerate (x : Fin n → ℤ) :
     by_cases hxij : x i = x j
     · exact .inr (degenerate_of_eq hij hik hjk hxij hs)
     by_cases hxjk : x j = x k
-    · exact .inr (degenerate_of_eq hjk hij.symm hik.symm hxjk (by omega))
+    · exact .inr (degenerate_of_eq hjk hij.symm hik.symm hxjk tac_omega)
     by_cases hxik : x i = x k
-    · exact .inr (degenerate_of_eq hik hij hjk.symm hxik (by omega))
+    · exact .inr (degenerate_of_eq hik hij hjk.symm hxik tac_omega)
     · exact .inl ⟨x i, by simp, x j, by simp, x k, by simp, hxij, hxjk, hxik, hs⟩
   · rintro (⟨a, ha, b, hb, c, hc, hab, hbc, hac, hs⟩ | ⟨a, ha0, h2, k, hk⟩ | h3)
     · obtain ⟨i, -, rfl⟩ := mem_image.mp ha
@@ -171,7 +172,7 @@ theorem degenerate_iff (x : Fin n → ℤ) :
   refine or_congr ⟨?_, ?_⟩ ⟨fun h3 => ?_, ?_⟩
   · rintro ⟨a, ha0, h2, k, hk⟩
     obtain ⟨i, hi, -⟩ := one_lt_card.mp h2
-    have ha : a ∈ univ.image x := mem_image.mpr ⟨i, mem_univ i, (mem_filter.mp hi).2⟩
+    have ha := mem_image.mpr ⟨i, mem_univ i, (mem_filter.mp hi).2⟩
     exact ⟨2 * a, mem_image.mpr ⟨a, mem_filter.mpr ⟨ha, ha0, h2⟩, rfl⟩, 0, mem_singleton_self 0,
       x k, mem_image_of_mem x (mem_univ k), by omega⟩
   · rintro ⟨_, ha', b, hb, _, hc, hs⟩
@@ -221,9 +222,9 @@ private theorem convSol_of_oneArray (hX : ∀ i < N, |X i| ≤ (W : ℤ)) (hY : 
   have hW : ∀ i < N, (-(W : ℤ) ≤ X i ∧ X i ≤ W) ∧ (-(W : ℤ) ≤ Y i ∧ Y i ≤ W) ∧
       (-(W : ℤ) ≤ Z i ∧ Z i ≤ W) :=
     fun i hi => ⟨abs_le.mp (hX i hi), abs_le.mp (hY i hi), abs_le.mp (hZ i hi)⟩
-  have hWu := hW (u / 4) (by omega)
-  have hWv := hW (v / 4) (by omega)
-  have hWuv := hW ((u + v) / 4) (by omega)
+  have hWu := hW (u / 4) tac_omega
+  have hWv := hW (v / 4) tac_omega
+  have hWuv := hW ((u + v) / 4) tac_omega
   simp only [oneArray_val] at h
   by_cases h12 : u % 4 = 1 ∧ v % 4 = 2
   · refine ⟨u / 4, v / 4, by omega, ?_⟩
@@ -248,9 +249,9 @@ theorem oneArray_correct (hX : ∀ i < N, |X i| ≤ (W : ℤ)) (hY : ∀ i < N, 
 theorem abs_oneArray_le (hX : ∀ i < N, |X i| ≤ (W : ℤ)) (hY : ∀ i < N, |Y i| ≤ (W : ℤ))
     (hZ : ∀ i < N, |Z i| ≤ (W : ℤ)) {u : ℕ} (hu : u < 4 * N) :
     |oneArray W X Y Z u| ≤ 30 * (W : ℤ) + 10 := by
-  have := abs_le.mp (hX (u / 4) (by omega))
-  have := abs_le.mp (hY (u / 4) (by omega))
-  have := abs_le.mp (hZ (u / 4) (by omega))
+  have := abs_le.mp (hX (u / 4) tac_omega)
+  have := abs_le.mp (hY (u / 4) tac_omega)
+  have := abs_le.mp (hZ (u / 4) tac_omega)
   rw [oneArray_val, abs_le]
   split_ifs <;> constructor <;> omega
 
@@ -282,7 +283,7 @@ theorem Node.abs_oneArray_le (b₁ : Bdd U ν.S₁) (b₂ : Bdd U ν.S₂) (b₃
     |ν.oneArray U u| ≤ 60 * (U : ℤ) + 40 := by
   obtain ⟨hX, hY, hZ⟩ := Node.abs_arr_le b₁ b₂ b₃
   refine (ChanHe.abs_oneArray_le (N := u + 1) (fun i _ => hX i) (fun i _ => hY i)
-    (fun i _ => hZ i) (by omega)).trans_eq ?_
+    (fun i _ => hZ i) tac_omega).trans_eq ?_
   push_cast
   ring
 
@@ -308,7 +309,7 @@ variable {n U : ℕ} {x : Fin n → ℤ}
 private theorem bdd_image (hx : ∀ i, |x i| ≤ (U : ℤ)) : Bdd (2 * U) (univ.image x) := by
   intro a ha
   obtain ⟨i, -, rfl⟩ := mem_image.mp ha
-  exact (hx i).trans (by omega)
+  exact (hx i).trans tac_omega
 
 /-- The elements of `twiceSet x` are bounded by `2U`. -/
 theorem bdd_twiceSet (hx : ∀ i, |x i| ≤ (U : ℤ)) : Bdd (2 * U) (twiceSet x) := by
@@ -316,7 +317,7 @@ theorem bdd_twiceSet (hx : ∀ i, |x i| ≤ (U : ℤ)) : Bdd (2 * U) (twiceSet x
   obtain ⟨a, ha, rfl⟩ := mem_image.mp ha'
   obtain ⟨i, -, rfl⟩ := mem_image.mp (mem_filter.mp ha).1
   rw [abs_mul, abs_two, Nat.cast_mul, Nat.cast_two]
-  exact mul_le_mul_of_nonneg_left (hx i) (by norm_num)
+  exact mul_le_mul_of_nonneg_left (hx i) tac_norm_num
 
 /-- The set `{0}` is bounded by anything. -/
 theorem bdd_zero (U : ℕ) : Bdd U {0} := by
@@ -392,7 +393,7 @@ theorem IsInput.admissible (hn : 1 ≤ n) (hx : ∀ i, |x i| ≤ (U : ℤ)) {T�
     (h : IsInput U x T₁ T₂ T₃) : Admissible n (2 * U) T₁ T₂ T₃ := by
   have hb := bdd_image hx
   have hc := card_image_univ_le x
-  have hc0 : #({0} : Finset ℤ) ≤ n := hn
+  have hc0 := hn
   cases h with
   | split hβ hβ' v =>
     exact ⟨(card_filter_le _ _).trans hc, (card_filter_le _ _).trans hc,

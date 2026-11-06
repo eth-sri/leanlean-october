@@ -18,6 +18,7 @@ public import ThreeSumApsp.Programs.Sec2.Theorem5.Tables.Subsets
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Codes
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Gather
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.Sort
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 5: the program
@@ -33,7 +34,7 @@ constant cMain5 (mainCallees_of_prefix).
 
 namespace Light.Sec2
 
-open ThreeSumApsp ThreeSumApsp.WordRam
+open ThreeSumApsp.WordRam
 
 /-- The program of Theorem 5.  The numbers of the procedures begin with 1; number 0 is empty. -/
 def program5 : Program :=
@@ -56,16 +57,16 @@ def cShared5 : ℕ := 2000
 /-- The procedures that the shared stage calls meet their entries. -/
 theorem sharedCallees_of_prefix (R : Program) (lim : Limits) (std : Std lim) :
     SharedCallees lim (program5 ++ R) cShared5 where
-  pow := pow_entry std (at_prefix rfl R) (by decide)
-  binom := binom_entry std (at_prefix rfl R) (by decide)
-  sqrt := sqrt_entry (at_prefix rfl R) (by decide)
-  coef := coef_entry std (at_prefix rfl R) (by decide)
-  subsets := subsets_entry std (at_prefix rfl R) (by decide)
-  counters := counters_entry std (at_prefix rfl R) (by decide)
-  digits := digits_entry std (at_prefix rfl R) (by decide)
+  pow := pow_entry std (at_prefix rfl R) tac_decide
+  binom := binom_entry std (at_prefix rfl R) tac_decide
+  sqrt := sqrt_entry (at_prefix rfl R) tac_decide
+  coef := coef_entry std (at_prefix rfl R) tac_decide
+  subsets := subsets_entry std (at_prefix rfl R) tac_decide
+  counters := counters_entry std (at_prefix rfl R) tac_decide
+  digits := digits_entry std (at_prefix rfl R) tac_decide
   bandsL := encodeBandsL_entry std (at_prefix rfl R) (bandArrayL_entry std (at_prefix rfl R))
-    (encodeL_entry std (at_prefix rfl R) (at_prefix rfl R)) (by decide)
+    (encodeL_entry std (at_prefix rfl R) (at_prefix rfl R)) tac_decide
   bandsR := encodeBandsR_entry std (at_prefix rfl R) (bandArrayR_entry std (at_prefix rfl R))
-    (encodeR_entry std (at_prefix rfl R) (at_prefix rfl R)) (by decide)
+    (encodeR_entry std (at_prefix rfl R) (at_prefix rfl R)) tac_decide
 
 end Light.Sec2

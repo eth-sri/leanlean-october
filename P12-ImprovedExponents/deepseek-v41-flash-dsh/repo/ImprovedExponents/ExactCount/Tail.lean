@@ -2,6 +2,7 @@ module
 
 public import ThreeSumApsp.Sec4.Corollary31
 public import ImprovedExponents.ExactCount.G2
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -44,7 +45,7 @@ theorem choose_mul_nine_pow_le {L j j₀ : ℕ} (hj : j ≤ j₀) (hL : 10 * j�
       refine Nat.le_of_mul_le_mul_right ?_ (Nat.succ_pos k)
       rw [Nat.choose_succ_right_eq]
       calc L.choose k * 9 * (k + 1) = L.choose k * (9 * (k + 1)) := by ring
-        _ ≤ L.choose k * (L - k) := Nat.mul_le_mul_left _ (by omega)
+        _ ≤ L.choose k * (L - k) := Nat.mul_le_mul_left _ tac_omega
     calc L.choose k * 9 ^ (j₀ - k) = L.choose k * 9 * 9 ^ (j₀ - (k + 1)) := by
           rw [show j₀ - k = j₀ - (k + 1) + 1 by omega, pow_succ]
           ring
@@ -62,7 +63,7 @@ theorem beta_mul_le {L m t d : ℕ} (hL : 10 * m ≤ L) (htd : t ≤ d) (hdm : d
       ≤ (L + 1) * (M L m * (9 ^ t * (m ^ m * (L - m) ^ (L - m)))) := by
   have hmL : m ≤ L := by omega
   have h1 : L.choose (m - d) * 9 ^ (d - t) ≤ L.choose (m - t) := by
-    have h := choose_mul_nine_pow_le (L := L) (j := m - d) (j₀ := m - t) (by omega) (by omega)
+    have h := choose_mul_nine_pow_le (L := L) (j := m - d) (j₀ := m - t) tac_omega tac_omega
     rwa [show m - t - (m - d) = d - t by omega] at h
   have h2 : L.choose (m - t) * (m - t) ^ (m - t) * (L - m + t) ^ (L - m + t) ≤ L ^ L := by
     have h := Nat.choose_mul_pow_mul_pow_le (m - t) (L - m + t) L (m - t)
@@ -94,10 +95,10 @@ theorem beta_mul_le {L m t d : ℕ} (hL : 10 * m ≤ L) (htd : t ≤ d) (hdm : d
 theorem beta_le_exp {L m t d : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) (htd : t ≤ d) (hdm : d ≤ m) :
     (beta L m d : ℝ) ≤ ((L : ℝ) + 1) * (M L m : ℝ) * exp ((m : ℝ) * g2 (L / m) (t / m)) := by
   have hmL : m ≤ L := by omega
-  have ht : t ≤ m := htd.trans hdm
+  have ht := htd.trans hdm
   have hX : (0 : ℝ) < ((m - t : ℕ) : ℝ) ^ (m - t) * ((L - m + t : ℕ) : ℝ) ^ (L - m + t) := by
     have h : 0 < (m - t) ^ (m - t) * (L - m + t) ^ (L - m + t) :=
-      Nat.mul_pos (Nat.pow_self_pos) (Nat.pow_pos (by omega))
+      Nat.mul_pos (Nat.pow_self_pos) (Nat.pow_pos tac_omega)
     exact_mod_cast h
   have hcast : (beta L m d : ℝ)
       * (((m - t : ℕ) : ℝ) ^ (m - t) * ((L - m + t : ℕ) : ℝ) ^ (L - m + t))
@@ -152,7 +153,6 @@ theorem exp_mul_g2_eq_D_rpow (c θ : ℝ) (m : ℕ) :
     exp ((m : ℝ) * g2 c θ) = (D m : ℝ) ^ (-gammaX c θ) := by
   rw [cast_D_rpow]
   congr 1
-  have hfour := log_four_pos.ne'
   unfold gammaX
   field_simp
 
@@ -173,7 +173,7 @@ theorem exp_mul_g2_le_D_rpow {c θ : ℝ} (hc : 10 < c) (hθ0 : 0 ≤ θ) (hθ1 
     exact_mod_cast switchOf_le hθ1 m
   have ht0 : 0 ≤ (switchOf θ m : ℝ) / m := by positivity
   have hstep1 : g2 (levelsOf c m / m) (switchOf θ m / m) ≤ g2 c (switchOf θ m / m) :=
-    g2_antitoneOn_left ht0 (Set.mem_Ici.2 (by linarith)) (Set.mem_Ici.2 (by linarith)) hL
+    g2_antitoneOn_left ht0 (Set.mem_Ici.2 tac_linarith) (Set.mem_Ici.2 tac_linarith) hL
   have hstep2 : g2 c (switchOf θ m / m) ≤ g2 c θ :=
     g2_antitoneOn_right hc.le ⟨hθ0, hθ1⟩ ⟨ht0, ht1⟩ ht
   rw [← exp_mul_g2_eq_D_rpow]

@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Contracts
 public import ThreeSumApsp.Spec.Sec3.Theorem21a.Passes
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # 3SUM from Convolution-3SUM: distinct values, doubles of repeated values, a triple zero
@@ -48,7 +49,7 @@ times, and 0 if not. -/
 noncomputable def tripleZeroUpTo (D C : List ℤ) (i : ℕ) : ℤ :=
   flag (∃ j < i, D.getD j 0 = 0 ∧ 3 ≤ C.getD j 0)
 
-theorem tripleZeroUpTo_zero (D C : List ℤ) : tripleZeroUpTo D C 0 = 0 := flag_of_not (by simp)
+theorem tripleZeroUpTo_zero (D C : List ℤ) : tripleZeroUpTo D C 0 = 0 := flag_of_not tac_simp
 
 /-- One more value. -/
 theorem tripleZeroUpTo_succ (D C : List ℤ) (i : ℕ) :
@@ -76,10 +77,10 @@ namespace ZeroThree
 
 /-- The locals of zeroThree: the arguments nd, val and mul, the counter, and the answer so far. -/
 abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Val : ℕ := 1
-@[inherit_doc Len] abbrev Mul : ℕ := 2
-@[inherit_doc Len] abbrev Idx : ℕ := 3
-@[inherit_doc Len] abbrev Found : ℕ := 4
+ abbrev Val : ℕ := 1
+ abbrev Mul : ℕ := 2
+ abbrev Idx : ℕ := 3
+ abbrev Found : ℕ := 4
 
 end ZeroThree
 
@@ -142,7 +143,7 @@ theorem twicePart_succ {D C : List ℤ} (hlen : C.length = D.length) {i : ℕ} (
   have hi' : i < (D.zip C).length := by simp [hlen, hi]
   rw [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _ _ (hlen ▸ hi)]
   split_ifs with h
-  · exact (passList_succ_of _ hi' (by simpa using ⟨h.1, h.2⟩)).trans (by simp [twicePart])
+  · exact (passList_succ_of _ hi' (by simpa using ⟨h.1, h.2⟩)).trans tac_simp [twicePart]
   · exact passList_succ_of_not _ hi' (by simpa [Int.add_one_le_iff] using h)
 
 /-- At the end all the doubles are written. -/
@@ -157,11 +158,11 @@ namespace Twice
 /-- The locals of twice: the arguments nd, val, mul and out, the counter, and the number of cells
 written. -/
 abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Val : ℕ := 1
-@[inherit_doc Len] abbrev Mul : ℕ := 2
-@[inherit_doc Len] abbrev Out : ℕ := 3
-@[inherit_doc Len] abbrev Idx : ℕ := 4
-@[inherit_doc Len] abbrev Written : ℕ := 5
+ abbrev Val : ℕ := 1
+ abbrev Mul : ℕ := 2
+ abbrev Out : ℕ := 3
+ abbrev Idx : ℕ := 4
+ abbrev Written : ℕ := 5
 
 end Twice
 
@@ -203,16 +204,16 @@ theorem twiceRound_runs {μ : ℕ → ℤ} {val mul out V i : ℕ} {D C : List �
   light_facts K
   have hle : (twicePart D C i).length ≤ i := length_passList_le _ _ _ _
   -- what the program reads
-  have hreadVal : μ' (val + i) = D.getD i 0 := (hsame _ (by omega)).trans (K.segVal.getD hi 0)
+  have hreadVal := (hsame _ tac_omega).trans (K.segVal.getD hi 0)
   have hreadMul : μ' (mul + i) = C.getD i 0 :=
-    (hsame _ (by omega)).trans (K.segMul.getD (K.len ▸ hi) 0)
+    (hsame _ tac_omega).trans (K.segMul.getD (K.len ▸ hi) 0)
   have hfits := abs_le.1 (K.bounded.getElem hi)
   rw [← List.getD_eq_getElem _ 0 hi, ← hreadVal] at hfits
   have hstep := twicePart_succ K.len hi
   rw [← hreadVal, ← hreadMul] at hstep
   by_cases h0 : μ' (val + i) = 0
   · -- the value is 0: Idx := Idx + 1
-    rw [if_neg (by simp [h0])] at hstep
+    rw [if_neg tac_simp [h0]] at hstep
     exact ⟨by simp [twiceRound, h0, Limits.Addr, abs_le]; omega, μ',
       by simp [twiceRound, update_frame_setLocal, h0, hstep], hstep ▸ hseg, hsame⟩
   by_cases h1 : 1 < μ' (mul + i)
@@ -221,9 +222,9 @@ theorem twiceRound_runs {μ : ℕ → ℤ} {val mul out V i : ℕ} {D C : List �
     exact ⟨by light_side [twiceRound, h0, h1],
       Function.update μ' (out + (twicePart D C i).length) (2 * μ' (val + i)),
       by simp [twiceRound, update_frame_setLocal, h0, h1, hstep], hstep ▸ hseg.snoc _,
-      hsame.write (by omega) _⟩
+      hsame.write tac_omega _⟩
   · -- the value occurs once: Idx := Idx + 1
-    rw [if_neg (by simp [h1])] at hstep
+    rw [if_neg tac_simp [h1]] at hstep
     exact ⟨by simp [twiceRound, h0, h1, Limits.Addr, abs_le]; omega, μ',
       by simp [twiceRound, update_frame_setLocal, h0, h1, hstep], hstep ▸ hseg, hsame⟩
 
@@ -249,7 +250,7 @@ theorem twice_spec {p : ℕ} (hP : P[p]? = some twiceBody) : TwiceSpec lim P p :
     rintro _ ⟨μ', rfl, hseg, hsame⟩
     rw [twicePart_length K.len] at hseg
     exact ⟨by light_side, by light_side, Ends.setTo ((twiceList D C).length : ℕ)
-      ⟨rfl, hseg, hsame⟩ (by simp [twicePart_length K.len]) (by simp [twiceRound]; omega)⟩
+      ⟨rfl, hseg, hsame⟩ tac_simp [twicePart_length K.len] (by simp [twiceRound]; omega)⟩
 
 /-! ## distinct -/
 
@@ -280,7 +281,7 @@ theorem opens (h : DistinctMem μ μ' val mul L D i) (hs : L.Pairwise (· ≤ ·
   obtain ⟨hvalues, hnew⟩ := h.values.opens hs hi hne
   have hle := h.values.le
   refine ⟨hvalues, (h.segVal.snoc _).update_out (by simp; omega) _, ?_,
-    (h.same.write (by omega) _).write (by omega) _⟩
+    (h.same.write tac_omega _).write tac_omega _⟩
   rw [map_countTo_opens h.values hi hnew]
   simpa using (h.segMul.update_out (b := val + D.length) (by simp; omega) (L.getD i 0)).snoc 1
 
@@ -292,8 +293,8 @@ theorem bumps (h : DistinctMem μ μ' val mul L D i) (hi : i < L.length)
       (Function.update μ' (mul + (D.length - 1)) (countTo L i (D.getD (D.length - 1) 0) + 1))
       val mul L D (i + 1) := by
   have hle := h.values.le
-  refine ⟨h.values.bumps hi hpos he, h.segVal.update_out (by omega) _, ?_,
-    h.same.write (by omega) _⟩
+  refine ⟨h.values.bumps hi hpos he, h.segVal.update_out tac_omega _, ?_,
+    h.same.write tac_omega _⟩
   rw [map_countTo_bumps h.values hi hpos he]
   exact h.segMul.update_in (by simp; omega) _
 
@@ -304,22 +305,22 @@ namespace Distinct
 /-- The locals of distinct: the arguments n, a, val and mul, the counter, and the number of distinct
 values so far. -/
 abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Src : ℕ := 1
-@[inherit_doc Len] abbrev Val : ℕ := 2
-@[inherit_doc Len] abbrev Mul : ℕ := 3
-@[inherit_doc Len] abbrev Idx : ℕ := 4
-@[inherit_doc Len] abbrev Values : ℕ := 5
+ abbrev Src : ℕ := 1
+ abbrev Val : ℕ := 2
+ abbrev Mul : ℕ := 3
+ abbrev Idx : ℕ := 4
+ abbrev Values : ℕ := 5
 
 end Distinct
 
-open Distinct in
+open Distinct
 /-- A new value opens a new cell of val and of mul. -/
 def distinctOpen : Stmt :=
   .store (v Val +' v Values) (M (v Src +' v Idx)) ;;
   .store (v Mul +' v Values) (k 1) ;;
   .set Values (v Values +' k 1)
 
-open Distinct in
+open Distinct
 /-- One round of distinct: the next element opens a cell if there is no value yet or if it differs
 from the last value, and raises the last cell of mul if not. -/
 def distinctRound : Stmt :=
@@ -328,7 +329,7 @@ def distinctRound : Stmt :=
       (.store (v Mul +' v Values -' k 1) (M (v Mul +' v Values -' k 1) +' k 1))) ;;
   .set Idx (v Idx +' k 1)
 
-open Distinct in
+open Distinct
 /-- distinct(n, a, val, mul): a sorted list of n numbers stands at a.  Writes its distinct values to
 val and how often each occurs to mul, and returns the number of distinct values. -/
 def distinctBody : Stmt :=
@@ -362,22 +363,22 @@ theorem distinctRound_runs {μ : ℕ → ℤ} {a val mul i : ℕ} {L : List ℤ}
       by simp [distinctRound, distinctOpen, update_frame_setLocal, h0], hopen (.inl h0)⟩
   have haddrVal : ((val : ℤ) + D.length - 1).toNat = val + (D.length - 1) := by omega
   have haddrMul : ((mul : ℤ) + D.length - 1).toNat = mul + (D.length - 1) := by omega
-  have hlast : μ' (val + (D.length - 1)) = D.getD (D.length - 1) 0 := hmem.segVal.getD (by omega) 0
+  have hlast : μ' (val + (D.length - 1)) = D.getD (D.length - 1) 0 := hmem.segVal.getD tac_omega 0
   by_cases he : μ' (a + i) = μ' (val + (D.length - 1))
   · -- the last value again: mem[Mul + Values - 1] := mem[Mul + Values - 1] + 1 ; Idx := Idx + 1
     have hcount : μ' (mul + (D.length - 1)) = countTo L i (D.getD (D.length - 1) 0) := by
       rw [hmem.segMul (D.length - 1) (by simp; omega), List.getElem_map,
-        List.getD_eq_getElem _ _ (by omega)]
+        List.getD_eq_getElem _ _ tac_omega]
     have := countTo_nonneg L i (D.getD (D.length - 1) 0)
     have := countTo_le L i (D.getD (D.length - 1) 0)
-    have hbump := hmem.bumps hi C.apart (by omega) (by rw [← hread, he, hlast])
+    have hbump := hmem.bumps hi C.apart tac_omega (by rw [← hread, he, hlast])
     rw [← hcount] at hbump
     exact ⟨by light_side [distinctRound, h0, he, haddrVal, haddrMul], _, _,
       by simp [distinctRound, update_frame_setLocal, h0, he, haddrVal, haddrMul], hbump⟩
   · -- another value: open a cell ; Idx := Idx + 1
     exact ⟨by light_side [distinctRound, distinctOpen, h0, he, haddrVal],
       _, _, by simp [distinctRound, distinctOpen, update_frame_setLocal, h0, he, haddrVal],
-      hopen (.inr (by rwa [← hlast]))⟩
+      hopen (.inr tac_rwa [← hlast])⟩
 
 /-- **distinct** meets its specification. -/
 theorem distinct_spec {p : ℕ} (hP : P[p]? = some distinctBody) : DistinctSpec lim P p := by

@@ -3,6 +3,7 @@ module
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Costs
 public import ImprovedExponents.Cost8P.Within
 public import ImprovedExponents.PrunedProgram.Wrapper.Times
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ set-up before the preprocessing is upstream's (`exists_tPre31P_le_setup`).
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec4
+open ThreeSumApsp Light.Sec4
 
 /-- The cost `cost8P` of the pruned preprocessing of Theorem 30 at the parameters `G`. -/
 -- adapted from ImprovedExponents/Cost8X/Costs.lean (preCostX)
@@ -78,7 +79,7 @@ theorem CostsWithinP.toCostsWithin {C : ℝ} {N D₀ : ℕ} {tp tq : ℝ}
     CostsWithin G (max C 1) N D₀ (max 1 (G.preCost N D₀)) tq := by
   refine ⟨h.one_le_N, h.one_le_D, h.D_le_N, le_max_left _ _, h.one_le_query, fun hm =>
     ⟨h.hyp hm, ?_, (h.query_le hm).trans ?_⟩⟩
-  · exact (le_max_right 1 _).trans (le_mul_of_one_le_left (by positivity) (le_max_right C 1))
+  · exact (le_max_right 1 _).trans (le_mul_of_one_le_left tac_positivity (le_max_right C 1))
   · exact mul_le_mul_of_nonneg_right (le_max_left C 1) (zero_le_one.trans h.one_le_query)
 
 /-- From the threshold on, `tPre31P` and `tPre31` differ only in the time of the core. -/
@@ -110,7 +111,6 @@ theorem exists_tPre31P_le_cost8P (G : RatParams) (c0 : ℕ) : ∃ K : ℝ, 0 ≤
   obtain ⟨Cp, hCp0, hCp⟩ := exists_tPreCore_leP c0
   refine ⟨k * 4 + Cp, by positivity, fun N D₀ hN hm h => ?_⟩
   have hN' : (1 : ℝ) ≤ (N : ℝ) := by exact_mod_cast hN
-  have hL0 : (0 : ℝ) ≤ (G.L (logFour D₀) : ℝ) := by positivity
   have hcore : (tPreCoreP c0 (parOf G N D₀) (switchOf31 G D₀) : ℝ)
       ≤ Cp * preCostP G N D₀ := hCp (parOf G N D₀) (switchOf31 G D₀) h
   have hNF : (N : ℝ) * (4 : ℝ) ^ logFour D₀ ≤ preCostP G N D₀ := N_mul_pow_le_cost8P h
@@ -120,12 +120,12 @@ theorem exists_tPre31P_le_cost8P (G : RatParams) (c0 : ℕ) : ∃ K : ℝ, 0 ≤
         + (tPreCoreP c0 (parOf G N D₀) (switchOf31 G D₀) : ℝ) := by exact_mod_cast hk c0 N D₀ hm
   -- L + 1 ≤ N (L + 1) and N ≤ N (L + 1), so that the sum is at most 4 times `cost8P`
   have hL : (G.L (logFour D₀) : ℝ) + 1 ≤ (N : ℝ) * ((G.L (logFour D₀) : ℝ) + 1) :=
-    le_mul_of_one_le_left (by positivity) hN'
+    le_mul_of_one_le_left tac_positivity hN'
   have hNle : (N : ℝ) ≤ (N : ℝ) * ((G.L (logFour D₀) : ℝ) + 1) :=
-    le_mul_of_one_le_right (by positivity) (by linarith)
+    le_mul_of_one_le_right tac_positivity tac_linarith
   have hsum : (k : ℝ) * ((G.L (logFour D₀) : ℝ) + 1 + N * (4 : ℝ) ^ logFour D₀ + N)
       ≤ k * (4 * preCostP G N D₀) :=
-    mul_le_mul_of_nonneg_left (by linarith) (by positivity)
+    mul_le_mul_of_nonneg_left tac_linarith tac_positivity
   linarith
 
 /-- **The time of the pruned preprocessing** is at most a constant times every bound `tp ≥ 1`
@@ -135,7 +135,7 @@ theorem exists_tPre31P_le (G : RatParams) {C : ℝ} (hC : 0 ≤ C) (c0 : ℕ) : 
     ∀ {N D₀ : ℕ} {tp tq : ℝ}, CostsWithinP G C N D₀ tp tq → (tPre31P c0 G N D₀ : ℝ) ≤ A * tp := by
   obtain ⟨K, hK0, hK⟩ := exists_tPre31P_le_cost8P G c0
   obtain ⟨A, hA0, hA⟩ := exists_le_of_small_of_large G hC
-    (S := ((20 * G.m₀ + 50 : ℕ) : ℝ)) (by positivity) hK0
+    (S := ((20 * G.m₀ + 50 : ℕ) : ℝ)) tac_positivity hK0
   refine ⟨A, hA0, fun {N D₀ tp tq} h =>
     hA D₀ _ tp _ h.one_le_pre h.pre_le (fun hm => ?_) fun hm => ?_⟩
   · have hsmall : tPre31P c0 G N D₀ ≤ 20 * G.m₀ + 50 := by
@@ -144,7 +144,6 @@ theorem exists_tPre31P_le (G : RatParams) {C : ℝ} (hC : 0 ≤ C) (c0 : ℕ) : 
       omega
     exact_mod_cast hsmall
   · have := hK N D₀ h.one_le_N hm (h.hyp hm)
-    have : (0 : ℝ) ≤ ((20 * G.m₀ + 50 : ℕ) : ℝ) := by positivity
     linarith
 
 /-- **The time of the pruned offline routine**, with `k` further steps, is at most a constant
@@ -161,8 +160,7 @@ theorem exists_tOffline32P_le (G : RatParams) {C : ℝ} (hC : 0 ≤ C) (c0 k : �
   have htp := h.one_le_pre
   have htq := h.one_le_query
   have hw : (0 : ℝ) ≤ (w : ℝ) := by positivity
-  have hk : (0 : ℝ) ≤ (k : ℝ) := by positivity
-  have hwtq : 0 ≤ (w : ℝ) * tq := mul_nonneg hw (by linarith)
+  have hwtq := mul_nonneg hw tac_linarith
   have htime : (tOffline32P c0 G N D₀ w : ℝ)
       = (tPre31P c0 G N D₀ : ℝ) + (w : ℝ) * ((tQuery31 G D₀ : ℝ) + 30) + 20 := by
     simp only [tOffline32P]
@@ -173,10 +171,10 @@ theorem exists_tOffline32P_le (G : RatParams) {C : ℝ} (hC : 0 ≤ C) (c0 k : �
     linarith [le_mul_of_one_le_right (by positivity : (0 : ℝ) ≤ 20 + (k : ℝ)) htp]
   have hsecond : (w : ℝ) * ((tQuery31 G D₀ : ℝ) + 30) ≤ (Aq + 30) * ((w : ℝ) * tq) := by
     calc (w : ℝ) * ((tQuery31 G D₀ : ℝ) + 30) ≤ (w : ℝ) * ((Aq + 30) * tq) :=
-          mul_le_mul_of_nonneg_left (by linarith) hw
+          mul_le_mul_of_nonneg_left tac_linarith hw
       _ = (Aq + 30) * ((w : ℝ) * tq) := by ring
-  have hcross₁ : 0 ≤ (Ap + 20 + k) * ((w : ℝ) * tq) := mul_nonneg (by positivity) hwtq
-  have hcross₂ : 0 ≤ (Aq + 30) * tp := mul_nonneg (by positivity) (by linarith)
+  have hcross₁ : 0 ≤ (Ap + 20 + k) * ((w : ℝ) * tq) := mul_nonneg tac_positivity hwtq
+  have hcross₂ : 0 ≤ (Aq + 30) * tp := mul_nonneg tac_positivity tac_linarith
   rw [htime]
   linarith
 

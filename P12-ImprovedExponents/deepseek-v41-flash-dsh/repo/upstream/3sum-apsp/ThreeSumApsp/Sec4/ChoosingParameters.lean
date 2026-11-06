@@ -10,6 +10,7 @@ public import ThreeSumApsp.Util.Basic
 public import ThreeSumApsp.Util.Choose
 public import ThreeSumApsp.Util.Log
 public import Mathlib.Analysis.SpecialFunctions.BinaryEntropy
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # 4.4 Choosing the parameters: the entropy function, the exponents `γ` and `q`, equation (11)
@@ -59,13 +60,13 @@ theorem entropy_nonneg {x : ℝ} (hx0 : 0 ≤ x) (hx1 : x ≤ 1) : 0 ≤ entropy
 /-- The derivative of the entropy function, `H'(x) = ln((1-x)/x)` for `0 < x < 1`. -/
 theorem hasDerivAt_entropy (x : ℝ) (hx0 : 0 < x) (hx1 : x < 1) :
     HasDerivAt entropy (Real.log ((1 - x) / x)) x := by
-  rw [entropy_eq_binEntropy, Real.log_div (by linarith) hx0.ne']
+  rw [entropy_eq_binEntropy, Real.log_div tac_linarith hx0.ne']
   exact Real.hasDerivAt_binEntropy hx0.ne' hx1.ne
 
 /-! ### Powers and logarithms of `D = 4^m` -/
 
 /-- `ln 4 > 0`. -/
-theorem log_four_pos : 0 < Real.log 4 := Real.log_pos (by norm_num)
+theorem log_four_pos : 0 < Real.log 4 := Real.log_pos tac_norm_num
 
 /-- `D = 4^m` as a real number. -/
 theorem cast_D_eq (m : ℕ) : (D m : ℝ) = (4 : ℝ) ^ m := by
@@ -79,7 +80,7 @@ theorem cast_D_pos (m : ℕ) : (0 : ℝ) < (D m : ℝ) := by
 /-- `D ≥ 1`. -/
 theorem one_le_cast_D (m : ℕ) : (1 : ℝ) ≤ (D m : ℝ) := by
   rw [cast_D_eq]
-  exact one_le_pow₀ (by norm_num)
+  exact one_le_pow₀ tac_norm_num
 
 /-- `ln D = m ln 4`. -/
 theorem log_cast_D (m : ℕ) : Real.log (D m : ℝ) = (m : ℝ) * Real.log 4 := by
@@ -102,7 +103,7 @@ theorem cast_D_rpow (m : ℕ) (x : ℝ) :
 
 /-- `ρ_c = 9/(c-1) < 1` for `c > 10`. -/
 theorem rhoC_lt_one {c : ℝ} (hc : 10 < c) : rhoC c < 1 :=
-  (div_lt_one (by linarith)).2 (by linarith)
+  (div_lt_one tac_linarith).2 tac_linarith
 
 /-! ### The exponent `γ` -/
 
@@ -122,8 +123,8 @@ theorem qOf_strictMonoOn : StrictMonoOn qOf (Set.Icc 0 0.9) := by
     obtain ⟨hθ0, hθ1⟩ : 0 < θ ∧ θ < 0.9 := hθ
     have hderiv : HasDerivAt (fun θ : ℝ => entropy θ + θ * Real.log 9)
         (Real.log ((1 - θ) / θ) + 1 * Real.log 9) θ :=
-      (hasDerivAt_entropy θ hθ0 (by linarith)).add ((hasDerivAt_id θ).mul_const (Real.log 9))
-    rw [hderiv.deriv, one_mul, ← Real.log_mul (div_pos (by linarith) hθ0).ne' (by norm_num)]
+      (hasDerivAt_entropy θ hθ0 tac_linarith).add ((hasDerivAt_id θ).mul_const (Real.log 9))
+    rw [hderiv.deriv, one_mul, ← Real.log_mul (div_pos tac_linarith hθ0).ne' tac_norm_num]
     refine Real.log_pos ?_
     rw [div_mul_eq_mul_div, lt_div_iff₀ hθ0]
     linarith
@@ -131,8 +132,8 @@ theorem qOf_strictMonoOn : StrictMonoOn qOf (Set.Icc 0 0.9) := by
 
 /-- The exponent `q` is not negative for `0 < θ < 0.9`. -/
 theorem qOf_nonneg (θ : ℝ) (hθ0 : 0 < θ) (hθ1 : θ < 0.9) : 0 ≤ qOf θ :=
-  div_nonneg (add_nonneg (entropy_nonneg hθ0.le (by linarith))
-    (mul_nonneg hθ0.le (Real.log_nonneg (by norm_num)))) log_four_pos.le
+  div_nonneg (add_nonneg (entropy_nonneg hθ0.le tac_linarith)
+    (mul_nonneg hθ0.le (Real.log_nonneg tac_norm_num))) log_four_pos.le
 
 /-- `q` increases with `θ` from 0 to `log_4 10` on `(0, 0.9)`: the value at `θ = 0`. That `q`
 increases is `qOf_strictMonoOn`. -/
@@ -143,7 +144,7 @@ theorem qOf_zero : qOf 0 = 0 := by
 `H(0.9) + 0.9 ln 9 = ln 10`, because `ln 0.9 = ln 9 - ln 10` and `ln 0.1 = -ln 10`. -/
 theorem qOf_nine_tenths : qOf 0.9 = Real.logb 4 10 := by
   have hnine : Real.log 0.9 = Real.log 9 - Real.log 10 := by
-    rw [← Real.log_div (by norm_num) (by norm_num)]
+    rw [← Real.log_div tac_norm_num tac_norm_num]
     norm_num
   have htenth : Real.log (1 - 0.9) = -Real.log 10 := by
     rw [← Real.log_inv]
@@ -157,7 +158,6 @@ theorem exp_entropy_eq_D_rpow_qOf (θ : ℝ) (m : ℕ) :
     Real.exp ((m : ℝ) * (entropy θ + θ * Real.log 9)) = (D m : ℝ) ^ qOf θ := by
   rw [cast_D_rpow]
   congr 1
-  have hfour := log_four_pos.ne'
   unfold qOf
   field_simp
 

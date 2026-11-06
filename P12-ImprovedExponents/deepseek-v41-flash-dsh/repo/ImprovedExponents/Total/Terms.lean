@@ -1,6 +1,7 @@
 module
 
 public import ThreeSumApsp.Sec3.Parameters
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -30,15 +31,15 @@ theorem prod5_le {N x₁ x₂ x₃ x₄ x₅ c₁ c₂ c₃ c₄ c₅ e₁ e₂ 
         rw [Real.rpow_add hN0, Real.rpow_add hN0, Real.rpow_add hN0, Real.rpow_add hN0]
         ring
     _ ≤ c₁ * c₂ * c₃ * c₄ * c₅ * N ^ E :=
-        mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hN hE) (by positivity)
+        mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hN hE) tac_positivity
 
 /-- `(log N + 1)^3 ≤ (3/τ + 1)^3 N^τ` for `N ≥ 1` and `τ > 0`. -/
 theorem log_add_one_pow_three_le {N τ : ℝ} (hN : 1 ≤ N) (hτ : 0 < τ) :
     (Real.log N + 1) ^ 3 ≤ (3 / τ + 1) ^ 3 * N ^ τ := by
   have hN0 : 0 < N := by linarith
   have h3 : 0 < τ / 3 := by positivity
-  have hlog : Real.log N ≤ N ^ (τ / 3) / (τ / 3) := Real.log_le_rpow_div hN0.le h3
-  have hone : 1 ≤ N ^ (τ / 3) := Real.one_le_rpow hN h3.le
+  have hlog := Real.log_le_rpow_div hN0.le h3
+  have hone := Real.one_le_rpow hN h3.le
   have hle : Real.log N + 1 ≤ (3 / τ + 1) * N ^ (τ / 3) := by
     have : N ^ (τ / 3) / (τ / 3) = 3 / τ * N ^ (τ / 3) := by field_simp
     linarith
@@ -54,13 +55,13 @@ theorem log_add_one_pow_three_le {N τ : ℝ} (hN : 1 ≤ N) (hτ : 0 < τ) :
 /-- `log₂ 7 ≤ 250/89 ≤ 2.81`, because `7^89 ≤ 2^250`. -/
 theorem logb_two_seven_le : Real.logb 2 7 ≤ 2.81 := by
   have h7 : Real.logb 2 7 ≤ 250 / 89 := by
-    rw [Real.logb_le_iff_le_rpow (by norm_num) (by norm_num)]
-    refine le_of_pow_le_pow_left₀ (n := 89) (by norm_num) (by positivity) ?_
+    rw [Real.logb_le_iff_le_rpow tac_norm_num tac_norm_num]
+    refine le_of_pow_le_pow_left₀ (n := 89) tac_norm_num tac_positivity ?_
     have h : (250 / 89 : ℝ) * ((89 : ℕ) : ℝ) = ((250 : ℕ) : ℝ) := by norm_num
-    rw [← Real.rpow_natCast ((2 : ℝ) ^ (250 / 89 : ℝ)) 89, ← Real.rpow_mul (by norm_num), h,
+    rw [← Real.rpow_natCast ((2 : ℝ) ^ (250 / 89 : ℝ)) 89, ← Real.rpow_mul tac_norm_num, h,
       Real.rpow_natCast]
     norm_num
-  exact h7.trans (by norm_num)
+  exact h7.trans tac_norm_num
 
 /-- The sum of the bound of Theorem 17: with one call charged `CL (pre + wq)`, and the six products
 bounded by multiples of `S` (the scans by a multiple of `κ S`), the time is a multiple of any `R`
@@ -73,11 +74,10 @@ theorem total_le {Tn N G Tdv pre wq rd sc pr bd C CL S R κ k1 k2 k3 k4 : ℝ}
     (t1 : N * G * pre ≤ k1 * S) (t2 : N * G * wq ≤ k2 * S) (t3 : N * G * rd ≤ k3 * S)
     (t4 : sc ≤ κ * (k4 * S)) (t5 : pr ≤ S) (t6 : bd ≤ 2 * S) (hS : S ≤ R) (hκS : κ * S ≤ R) :
     Tn ≤ (4 * |CL| * k1 + 4 * |CL| * k2 + 4 * C * k3 + C * k4 + C + C * 2) * R := by
-  have hA := abs_nonneg CL
   have hTd : Tdv ≤ |CL| * (pre + wq) :=
     hL.trans (mul_le_mul_of_nonneg_right (le_abs_self CL) hB)
   have s0 : 4 * N * G * (Tdv + C * rd) ≤ 4 * N * G * (|CL| * (pre + wq) + C * rd) :=
-    mul_le_mul_of_nonneg_left (by linarith) (by linarith)
+    mul_le_mul_of_nonneg_left tac_linarith tac_linarith
   have b1 := mul_le_mul_of_nonneg_left t1 (by positivity : 0 ≤ 4 * |CL|)
   have b2 := mul_le_mul_of_nonneg_left t2 (by positivity : 0 ≤ 4 * |CL|)
   have b3 := mul_le_mul_of_nonneg_left t3 (by positivity : 0 ≤ 4 * C)

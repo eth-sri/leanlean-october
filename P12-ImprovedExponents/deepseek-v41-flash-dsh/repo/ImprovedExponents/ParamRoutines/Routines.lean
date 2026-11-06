@@ -2,6 +2,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Parameters.Sizes
 public import ImprovedExponents.ParamRoutines.Spec
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ procedures: `dRat_meets`, `gRat_meets`.
 
 namespace ImprovedExponents.ParamRoutines
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3
+open ThreeSumApsp.Spec Light Light.Sec3
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -46,14 +47,13 @@ theorem powThen_ends {μ : ℕ → ℤ} {x e B T : ℕ} {s : Stmt} {Q : State �
     (h : Ends lim P d s ⟨frame [x, e, (x ^ e : ℕ)], μ⟩ (T - (12 * e + 8)) Q) :
     Ends lim P d (powThen e s) ⟨frame [(x : ℤ)], μ⟩ T Q := by
   push_cast at hword
-  have hB0 : (0 : ℤ) ≤ B := Int.natCast_nonneg _
   unfold powThen
   -- cnt := 0; prod := 1
   light_set (0 : ℕ)
   light_set (1 : ℕ)
   -- while cnt < e: prod := prod * x; cnt := cnt + 1.  Before round i, prod = x^i.
   refine Ends.next (12 * e + 4) (Ends.whileBlock
-    (fun i σ => σ = ⟨frame [x, i, (x ^ i : ℕ)], μ⟩) e (by simp) ?round ?done
+    (fun i σ => σ = ⟨frame [x, i, (x ^ i : ℕ)], μ⟩) e tac_simp ?round ?done
     (by simp; omega)) (by simp; omega)
   case round =>
     rintro i _ hi rfl
@@ -95,32 +95,31 @@ theorem dRat_spec {μ : ℕ → ℤ} {a b pRoot pPow n : ℕ} (hR : P[pRoot]? = 
     · rcases i with _ | i <;> simp
     · exact (Nat.pow_le_pow_right hn hi).trans (Nat.le_succ _)
   have hmul : n ^ a + 1 ≤ (n ^ a + 1) * (paramDRatNat a b n + 1) :=
-    Nat.le_mul_of_pos_right _ (by omega)
+    Nat.le_mul_of_pos_right _ tac_omega
   have hmul' : paramDRatNat a b n + 1 ≤ (n ^ a + 1) * (paramDRatNat a b n + 1) :=
-    Nat.le_mul_of_pos_left _ (by omega)
+    Nat.le_mul_of_pos_left _ tac_omega
   unfold wDRat at hword
   unfold dRatBody tDRat
   generalize hD : paramDRatNat a b n = D at hroot hmul hmul' hword
   generalize hN : n ^ a = N at hroot hmul hmul' hword hpows
   have hfits : (((N + 1) * (D + 1) + b + 1 : ℕ) : ℤ) ≤ lim.word :=
-    le_trans (by exact_mod_cast (by omega)) hword
+    le_trans (by exact_mod_cast tac_omega) hword
   generalize hM : (N + 1) * (D + 1) = M at hmul hmul' hword hfits
-  refine powThen_ends (B := N + 1) hpows (le_trans (by exact_mod_cast (by omega)) hword)
-    (by omega) ?_
+  refine powThen_ends (B := N + 1) hpows (le_trans (by exact_mod_cast tac_omega) hword)
+    tac_omega ?_
   rw [hN]
-  have hN1 : ((N + 1 : ℕ) : ℤ) ≤ lim.word := le_trans (by exact_mod_cast (by omega)) hword
-  have hb1 : ((b : ℕ) : ℤ) ≤ lim.word := le_trans (by exact_mod_cast (by omega)) hword
+  have hN1 : ((N + 1 : ℕ) : ℤ) ≤ lim.word := le_trans (by exact_mod_cast tac_omega) hword
   push_cast at hN1
   -- root := rootCeil(b, n^a + 1)
-  refine Ends.callToThen (rootCeil_meets (e := b) (t := N + 1) hR hP hb (by omega)
-    (by rw [hroot, hM]; exact hfits) (by omega)) ?_
+  refine Ends.callToThen (rootCeil_meets (e := b) (t := N + 1) hR hP hb tac_omega
+    (by rw [hroot, hM]; exact hfits) tac_omega) ?_
     (hT := by simp [tRootCeil, hroot]; omega)
   rintro _ μ' ⟨rfl, hμ⟩
   -- return root - 1
   rw [hroot, hμ]
-  have hD1 : ((D + 1 : ℕ) : ℤ) ≤ lim.word := le_trans (by exact_mod_cast (by omega)) hword
+  have hD1 : ((D + 1 : ℕ) : ℤ) ≤ lim.word := le_trans (by exact_mod_cast tac_omega) hword
   push_cast at hD1
-  exact Ends.setTo D (by simp) (he := by light_side) (hT := by simp [tRootCeil, hroot]; omega)
+  exact Ends.setTo D tac_simp (he := by light_side) (hT := by simp [tRootCeil, hroot]; omega)
 
 /-- **dRat** as a procedure. -/
 theorem dRat_meets {μ : ℕ → ℤ} {a b pD pRoot pPow n : ℕ} (hD : P[pD]? = some (dRatBody a b pRoot))
@@ -149,7 +148,7 @@ theorem gRat_spec {μ : ℕ → ℤ} {c e pRoot pPow D : ℕ} (hR : P[pRoot]? = 
     (hword : ((wGRat c e D : ℕ) : ℤ) ≤ lim.word) (hd : d + 1 < lim.depth) :
     Ends lim P d (gRatBody c e pRoot) ⟨frame [(D : ℤ)], μ⟩ (tGRat c e D) fun σ' =>
       σ'.loc 0 = (paramGRatNat c e D : ℕ) ∧ σ'.mem = μ := by
-  have hpos : 1 ≤ paramGRatNat c e D := one_le_paramGRatNat c e D
+  have hpos := one_le_paramGRatNat c e D
   have hmul : D ^ c ≤ D ^ c * paramGRatNat c e D := Nat.le_mul_of_pos_right _ hpos
   have hN0 : 1 ≤ D ^ c := Nat.one_le_pow _ _ hD
   have hpows : ∀ i ≤ c, D ^ i ≤ D ^ c := fun i hi => Nat.pow_le_pow_right hD hi
@@ -158,17 +157,15 @@ theorem gRat_spec {μ : ℕ → ℤ} {c e pRoot pPow D : ℕ} (hR : P[pRoot]? = 
   unfold paramGRatNat at hpos hmul hword ⊢
   generalize hN : D ^ c = N at hpos hmul hword hpows hN0
   have hfits : ((N * rootCeil e N + e + 1 : ℕ) : ℤ) ≤ lim.word :=
-    le_trans (by exact_mod_cast (by omega)) hword
+    le_trans (by exact_mod_cast tac_omega) hword
   generalize hG : rootCeil e N = G at hpos hmul hword hfits
   generalize hM : N * G = M at hmul hword hfits
-  refine powThen_ends (B := N) hpows (le_trans (by exact_mod_cast (by omega)) hword)
-    (by omega) ?_
+  refine powThen_ends (B := N) hpows (le_trans (by exact_mod_cast tac_omega) hword)
+    tac_omega ?_
   rw [hN]
-  have hN1 : ((N : ℕ) : ℤ) ≤ lim.word := le_trans (by exact_mod_cast (by omega)) hword
-  have he1 : ((e : ℕ) : ℤ) ≤ lim.word := le_trans (by exact_mod_cast (by omega)) hword
   -- return rootCeil(d, prod)
   exact Ends.callTo (rootCeil_meets (e := e) (t := N) hR hP he hN0
-    (by rw [hG, hM]; exact hfits) (by omega)) (fun r μ' h => by simpa [hG] using h)
+    (by rw [hG, hM]; exact hfits) tac_omega) (fun r μ' h => by simpa [hG] using h)
     (hT := by simp [tRootCeil, hG]; omega)
 
 /-- **gRat** as a procedure. -/

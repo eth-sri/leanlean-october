@@ -9,6 +9,7 @@ public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.FrontFacts
 public import ThreeSumApsp.Spec.Sec3.Theorem21a.Passes
 public import ThreeSumApsp.Spec.Sec3.Theorem21b.NegativeTriangle
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # 3SUM from Convolution-3SUM: binary digits of the labels, and selection by digits
@@ -59,7 +60,7 @@ theorem pickPart_succ (Λ β β' : ℕ) (x x' two : ℤ) {L : List ℤ} (BT : Li
       else pickPart Λ β β' x x' two L BT i := by
   have hi' : i < (List.range L.length).length := by simpa using hi
   split_ifs with h
-  · exact (passList_succ_of _ hi' (by simpa using h)).trans (by simp [pickPart])
+  · exact (passList_succ_of _ hi' (by simpa using h)).trans tac_simp [pickPart]
   · exact passList_succ_of_not _ hi' (by simpa using h)
 
 /-- At the end all the selected elements are written. -/
@@ -76,18 +77,18 @@ namespace Pick
 position β' and digit x', the number two, which is 0 if only the first digit counts, and out.  Then
 the counter, the number of cells written, and the address of the digits of the current element. -/
 abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Src : ℕ := 1
-@[inherit_doc Len] abbrev Table : ℕ := 2
-@[inherit_doc Len] abbrev Width : ℕ := 3
-@[inherit_doc Len] abbrev PosA : ℕ := 4
-@[inherit_doc Len] abbrev DigitA : ℕ := 5
-@[inherit_doc Len] abbrev PosB : ℕ := 6
-@[inherit_doc Len] abbrev DigitB : ℕ := 7
-@[inherit_doc Len] abbrev Two : ℕ := 8
-@[inherit_doc Len] abbrev Out : ℕ := 9
-@[inherit_doc Len] abbrev Idx : ℕ := 10
-@[inherit_doc Len] abbrev Written : ℕ := 11
-@[inherit_doc Len] abbrev Row : ℕ := 12
+ abbrev Src : ℕ := 1
+ abbrev Table : ℕ := 2
+ abbrev Width : ℕ := 3
+ abbrev PosA : ℕ := 4
+ abbrev DigitA : ℕ := 5
+ abbrev PosB : ℕ := 6
+ abbrev DigitB : ℕ := 7
+ abbrev Two : ℕ := 8
+ abbrev Out : ℕ := 9
+ abbrev Idx : ℕ := 10
+ abbrev Written : ℕ := 11
+ abbrev Row : ℕ := 12
 
 end Pick
 
@@ -133,9 +134,9 @@ theorem Pick.Ctx.step {μ μ' : ℕ → ℤ} {s bt out Λ β β' i : ℕ} {L BT 
   light_facts C
   have hrows : i * Λ + Λ ≤ L.length * Λ := Nat.mul_add_le_mul hi le_rfl
   have hread : ∀ γ < Λ, μ' (bt + i * Λ + γ) = BT.getD (i * Λ + γ) 0 := fun γ hγ => by
-    rw [hsame _ (by omega), Nat.add_assoc]
+    rw [hsame _ tac_omega, Nat.add_assoc]
     exact C.segTable.getD (by have := C.lenTable; omega) 0
-  rw [hread β C.posA, hread β' C.posB, hsame (s + i) (by omega), C.segSrc.getD hi 0]
+  rw [hread β C.posA, hread β' C.posB, hsame (s + i) tac_omega, C.segSrc.getD hi 0]
   exact pickPart_succ Λ β β' x x' two BT hi
 
 /-- The invariant of the loop of pick before round number i: the elements selected among the first i
@@ -163,7 +164,7 @@ theorem pickRound_runs {μ : ℕ → ℤ} {s bt out Λ β β' i : ℕ} {x x' two
   have hrows : i * Λ + Λ ≤ L.length * Λ := Nat.mul_add_le_mul hi le_rfl
   by_cases hA : μ' (row + β) ≠ x
   · -- the first digit differs: pickNext
-    rw [if_neg (by simp [hA])] at hstep
+    rw [if_neg tac_simp [hA]] at hstep
     exact ⟨by light_side [pickRound, pickNext, hA], μ', row + Λ, hnext,
       by simp [pickRound, pickNext, update_frame_setLocal, hA, hstep], hstep ▸ hseg, hsame⟩
   rw [not_not] at hA
@@ -171,7 +172,7 @@ theorem pickRound_runs {μ : ℕ → ℤ} {s bt out Λ β β' i : ℕ} {x x' two
   · -- selected, by the test of Two or by the second digit: pickTake ; pickNext
     rw [if_pos ⟨hA, hsel⟩] at hstep
     refine ⟨?safe, Function.update μ' (out + (pickPart Λ β β' x x' two L BT i).length) (μ' (s + i)),
-      row + Λ, hnext, ?state, hstep ▸ hseg.snoc _, hsame.write (by omega) _⟩
+      row + Λ, hnext, ?state, hstep ▸ hseg.snoc _, hsame.write tac_omega _⟩
     -- the two cases of the test `two = 0`
     case safe =>
       by_cases h2 : two = 0
@@ -184,7 +185,7 @@ theorem pickRound_runs {μ : ℕ → ℤ} {s bt out Λ β β' i : ℕ} {x x' two
       · simp [pickRound, pickTake, pickNext, update_frame_setLocal, hA, h2,
           hsel.resolve_left h2, hstep]
   · -- the second digit differs: pickNext
-    rw [if_neg (by simp [hsel])] at hstep
+    rw [if_neg tac_simp [hsel]] at hstep
     rw [not_or] at hsel
     exact ⟨by light_side [pickRound, pickNext, hA, hsel.1, hsel.2], μ',
       row + Λ, hnext,
@@ -214,7 +215,7 @@ theorem pick_spec {p : ℕ} (hP : P[p]? = some pickBody) : PickSpec lim P p := b
     rintro _ ⟨μ', row, -, rfl, hseg, hsame⟩
     rw [pickPart_length] at hseg
     exact ⟨by light_side, by light_side, Ends.setTo ((pickList Λ β β' x x' two L BT).length : ℕ)
-      ⟨rfl, hseg, hsame⟩ (by simp [pickPart_length])
+      ⟨rfl, hseg, hsame⟩ tac_simp [pickPart_length]
       (by simp [pickRound, pickTake, pickNext]; omega)⟩
 
 /-! ## bits -/
@@ -231,11 +232,11 @@ structure DigitsFrom (μ μ' : ℕ → ℤ) (row Λ z ℓ : ℕ) : Prop where
 theorem DigitsFrom.write {μ μ' : ℕ → ℤ} {row Λ z ℓ : ℕ} (h : DigitsFrom μ μ' row Λ z (ℓ + 1))
     (hℓ : ℓ < Λ) {b : ℤ} (hb : b = if z.testBit ℓ then 1 else 0) :
     DigitsFrom μ (Function.update μ' (row + ℓ) b) row Λ z ℓ := by
-  refine ⟨fun β h₁ h₂ => ?_, h.same.write (by omega) _⟩
+  refine ⟨fun β h₁ h₂ => ?_, h.same.write tac_omega _⟩
   by_cases hβ : β = ℓ
   · rw [hβ, Function.update_self, hb]
-  · rw [Function.update_of_ne (by omega)]
-    exact h.digits β (by omega) h₂
+  · rw [Function.update_of_ne tac_omega]
+    exact h.digits β tac_omega h₂
 
 /-- When all digits are written, the row holds them. -/
 theorem DigitsFrom.seg {μ μ' : ℕ → ℤ} {row Λ z : ℕ} (h : DigitsFrom μ μ' row Λ z 0) :
@@ -249,21 +250,21 @@ namespace Bits
 Then the counter, the power 2^Λ, the address of the digits of the current element, the address of
 the current digit, the rest of the label, and the counter of the loop that computes the power. -/
 abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Src : ℕ := 1
-@[inherit_doc Len] abbrev Bound : ℕ := 2
-@[inherit_doc Len] abbrev Width : ℕ := 3
-@[inherit_doc Len] abbrev Table : ℕ := 4
-@[inherit_doc Len] abbrev Free : ℕ := 5
-@[inherit_doc Len] abbrev Idx : ℕ := 6
-@[inherit_doc Len] abbrev Pow : ℕ := 7
-@[inherit_doc Len] abbrev Row : ℕ := 8
-@[inherit_doc Len] abbrev Cur : ℕ := 9
-@[inherit_doc Len] abbrev Rest : ℕ := 10
-@[inherit_doc Len] abbrev Cnt : ℕ := 11
+ abbrev Src : ℕ := 1
+ abbrev Bound : ℕ := 2
+ abbrev Width : ℕ := 3
+ abbrev Table : ℕ := 4
+ abbrev Free : ℕ := 5
+ abbrev Idx : ℕ := 6
+ abbrev Pow : ℕ := 7
+ abbrev Row : ℕ := 8
+ abbrev Cur : ℕ := 9
+ abbrev Rest : ℕ := 10
+ abbrev Cnt : ℕ := 11
 
 end Bits
 
-open Bits in
+open Bits
 /-- The power 2^Λ, by doubling. -/
 def bitsPow : Stmt :=
   .set Pow (k 1) ;;
@@ -272,7 +273,7 @@ def bitsPow : Stmt :=
     .set Pow (k 2 *' v Pow) ;;
     .set Cnt (v Cnt +' k 1))
 
-open Bits in
+open Bits
 /-- The digits of one label, from the top down: the rest of the label is kept at the top of Λ bits;
 it is doubled, and the digit is 1 if the result reaches 2^Λ. -/
 def bitsRow : Stmt :=
@@ -282,7 +283,7 @@ def bitsRow : Stmt :=
     .ite (v Rest <' v Pow) (.store (v Cur) (k 0))
       (.store (v Cur) (k 1) ;; .set Rest (v Rest -' v Pow)))
 
-open Bits in
+open Bits
 /-- The digits of the label of the current element. -/
 def bitsElem : Stmt :=
   .set Rest (M (v Src +' v Idx) +' v Bound) ;;
@@ -290,7 +291,7 @@ def bitsElem : Stmt :=
   bitsRow ;;
   .set Row (v Row +' v Width)
 
-open Bits in
+open Bits
 /-- bits(len, s, V, Λ, bt, fr): len numbers of absolute value at most V stand at s.  Writes the Λ
 lowest binary digits of each label x + V to the table at bt. -/
 def bitsBody : Stmt :=
@@ -318,7 +319,7 @@ theorem bitsPow_ends {μ : ℕ → ℤ} {len s V bt fr : ℤ} {Λ B : ℕ} (hB :
   case round =>
     -- Pow := 2 * Pow ; Cnt := Cnt + 1
     rintro j _ hj rfl
-    have hpow : 2 ^ (j + 1) ≤ B := (Nat.pow_le_pow_right (by norm_num) hj).trans hB
+    have hpow := (Nat.pow_le_pow_right tac_norm_num hj).trans hB
     have hpow' : (2 : ℤ) ^ j * 2 ≤ B := by exact_mod_cast hpow
     have hj' : ((j + 1 : ℕ) : ℤ) ≤ B := by exact_mod_cast Nat.lt_two_pow_self.le.trans hpow
     have : (0 : ℤ) < 2 ^ j := by positivity
@@ -353,8 +354,8 @@ theorem bitsRow_ends {μ : ℕ → ℤ} {len s V bt fr idx : ℤ} {row Λ z B : 
   refine Ends.whileBlock (BitsRowInv μ len s V bt fr idx row Λ z) Λ ?start ?round ?done
     (by simp; omega)
   case start =>
-    exact ⟨μ, Λ, row + Λ, rfl, rfl, by rw [prefR_start (by positivity) (by exact_mod_cast hz)],
-      fun β h₁ h₂ => absurd h₂ (by omega), .refl⟩
+    exact ⟨μ, Λ, row + Λ, rfl, rfl, by rw [prefR_start tac_positivity (by exact_mod_cast hz)],
+      fun β h₁ h₂ => absurd h₂ tac_omega, .refl⟩
   case round =>
     -- Cur := Cur - 1 ; Rest := 2 * Rest
     rintro t _ ht ⟨μ', ℓ', cur, hℓ, hcur, rfl, hdig⟩
@@ -371,11 +372,11 @@ theorem bitsRow_ends {μ : ℕ → ℤ} {len s V bt fr idx : ℤ} {row Λ z B : 
     · -- the digit is 0: mem[Cur] := 0
       exact ⟨by light_side [hc], _, ℓ, cur - 1, by omega, by omega,
         by simp [update_frame_setLocal, hc, hpred, haddr, hstep, shiftR],
-        hdig.write (b := 0) (by omega) (by rw [if_neg fun h => hbit.1 h hc])⟩
+        hdig.write (b := 0) tac_omega (by rw [if_neg fun h => hbit.1 h hc])⟩
     · -- the digit is 1: mem[Cur] := 1 ; Rest := Rest - Pow
       exact ⟨by light_side [hc], _, ℓ, cur - 1, by omega, by omega,
         by simp [update_frame_setLocal, hc, hpred, haddr, hstep, shiftR],
-        hdig.write (b := 1) (by omega) (by rw [if_pos (hbit.2 hc)])⟩
+        hdig.write (b := 1) tac_omega (by rw [if_pos (hbit.2 hc)])⟩
   case done =>
     rintro _ ⟨μ', ℓ, cur, hℓ, hcur, rfl, hdig⟩
     obtain rfl : ℓ = 0 := by omega
@@ -403,25 +404,25 @@ theorem bitsElem_ends {μ : ℕ → ℤ} {s V Λ bt fr i : ℕ} {L : List ℤ}
   light_facts C
   have hrows : i * Λ + Λ ≤ L.length * Λ := Nat.mul_add_le_mul hi le_rfl
   have hnext : row + Λ = bt + (i + 1) * Λ := by rw [hrow, Nat.add_mul, Nat.one_mul, Nat.add_assoc]
-  have hread : μ' (s + i) = L.getD i 0 := (hsame _ (by omega)).trans (C.seg.getD hi 0)
+  have hread := (hsame _ tac_omega).trans (C.seg.getD hi 0)
   have hfits := abs_le.1 (C.bounded.getElem hi)
   rw [← List.getD_eq_getElem _ 0 hi, ← hread] at hfits
   obtain ⟨z, hz⟩ : ∃ z, z = lab V (L.getD i 0) := ⟨_, rfl⟩
   have hlab : (z : ℤ) = μ' (s + i) + V := by
     rw [hz, ← hread]
-    exact Int.toNat_of_nonneg (by omega)
+    exact Int.toNat_of_nonneg tac_omega
   unfold bitsElem
   -- Rest := mem[Src + Idx] + Bound
   light_set z
   -- Cur := Row + Width
   light_set (row + Λ : ℕ)
   -- the digits of the label
-  light_piece (bitsRow_ends (lim := lim) (z := z) (B := 4 * V + 4) (by omega) C.pow_le
-    (by push_cast; omega) hw (by omega)) with _ ⟨μ'', rfl, hrowSeg, hrowSame⟩
+  light_piece (bitsRow_ends (lim := lim) (z := z) (B := 4 * V + 4) tac_omega C.pow_le
+    (by push_cast; omega) hw tac_omega) with _ ⟨μ'', rfl, hrowSeg, hrowSame⟩
   -- Row := Row + Width
   light_set (row + Λ : ℕ)
   refine ⟨by simp, μ'', row + Λ, row, prefR Λ 0 z, hnext,
-    by simp [update_frame_setLocal], ?_, hsame.trans (hrowSame.mono (by omega) (by omega))⟩
+    by simp [update_frame_setLocal], ?_, hsame.trans (hrowSame.mono tac_omega tac_omega)⟩
   have hlen : (bitTable V Λ (L.take i)).length = i * Λ := by
     rw [length_bitTable, List.length_take, min_eq_left hi.le]
   rw [List.take_succ_getD L hi 0, bitTable_append, seg_append, hlen, ← hrow, ← hz]

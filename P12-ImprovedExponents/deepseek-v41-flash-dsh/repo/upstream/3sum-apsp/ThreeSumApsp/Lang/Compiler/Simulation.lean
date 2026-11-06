@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Compiler.CallFrames
 public import ThreeSumApsp.Lang.Compiler.Dispatcher
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The compiler is correct on statements: the simulation theorem
@@ -215,7 +216,7 @@ private theorem sim_set {x : ℕ} {e : Expr} (hs : e.Safe S.lim σ) :
   obtain ⟨exprCode, setCode⟩ := codeAt_set B.codeAt
   have hpos : pos + (e.size + 2) ≤ S.disp := B.below
   -- T₀ := e
-  obtain ⟨val, A⟩ := effects_compileExpr_of_width B.toFramed e 0 he hs (by omega)
+  obtain ⟨val, A⟩ := effects_compileExpr_of_width B.toFramed e 0 he hs tac_omega
   have A₁ := A.mono temps_subset_scratch
   have run₁ := steps_straight _ pos m exprCode (straight_compileExpr e 0)
   rw [length_compileExpr] at run₁
@@ -223,7 +224,7 @@ private theorem sim_set {x : ℕ} {e : Expr} (hs : e.Safe S.lim σ) :
   obtain ⟨m₂, run₂, R₂, A₂⟩ := steps_setVar (B.toFramed.same A₁) hx setCode val (by cells)
   exact ⟨m₂, _, {
     run := (run₁.trans run₂).cast_pos (by rw [Stmt.size, Nat.add_assoc])
-    le := le_stepsPerStep_mul (by omega) (by omega)
+    le := le_stepsPerStep_mul tac_omega tac_omega
     rel := R₂
     agree := (A₁.mono scratch_subset_writable).trans A₂ }⟩
 
@@ -243,7 +244,7 @@ private theorem sim_store {a e : Expr} (hsa : a.Safe S.lim σ) (hse : e.Safe S.l
   rw [ve] at run₂
   exact ⟨_, _, {
     run := run₂.cast_pos (by rw [Stmt.size, Nat.add_assoc])
-    le := le_stepsPerStep_mul (by omega) (by omega)
+    le := le_stepsPerStep_mul tac_omega tac_omega
     rel := (B.rel.same A₁).setMem B.low haddr _
     agree := (A₁.mono scratch_subset_writable).update (mem_writable_of_addr haddr) _ }⟩
 
@@ -255,9 +256,9 @@ private theorem sim_seq {c₁ c₂ : ℕ} (h₁ : Exec S.lim S.P d s₁ σ σ₁
   obtain ⟨hw₁, hw₂⟩ := Stmt.width_seq_le_iff.1 B.width
   obtain ⟨firstCode, secondCode⟩ := codeAt_seq B.codeAt
   have hpos : pos + (s₁.size S.F + s₂.size S.F) ≤ S.disp := B.below
-  obtain ⟨m₁, n₁, run₁, le₁, R₁, A₁⟩ := ih₁ _ _ _ (B.sub firstCode (by omega) hw₁ B.bounded B.rel)
+  obtain ⟨m₁, n₁, run₁, le₁, R₁, A₁⟩ := ih₁ _ _ _ (B.sub firstCode tac_omega hw₁ B.bounded B.rel)
   obtain ⟨m₂, n₂, run₂, le₂, R₂, A₂⟩ := ih₂ _ _ _
-    (B.sub secondCode (by omega) hw₂ (h₁.bounded B.bounded) R₁)
+    (B.sub secondCode tac_omega hw₂ (h₁.bounded B.bounded) R₁)
   exact ⟨m₂, n₁ + n₂, {
     run := (run₁.trans run₂).cast_pos (by rw [Stmt.size, Nat.add_assoc])
     le := Nat.mul_add _ c₁ c₂ ▸ Nat.add_le_add le₁ le₂
@@ -276,12 +277,12 @@ private theorem sim_iteTrue {c : Cond} {k : ℕ} (hs : c.Safe S.lim σ) (holds :
   obtain ⟨m₀, n₀, le₀, A₀, run₀⟩ := (B.test testCode hwc hs).of_holds holds
   -- the first branch
   obtain ⟨m₁, n₁, run₁, le₁, R₁, A₁⟩ := ih _ _ _
-    (B.sub thenCode (by omega) hw₁ B.bounded (B.rel.same A₀))
+    (B.sub thenCode tac_omega hw₁ B.bounded (B.rel.same A₀))
   -- the jump over the second branch
   have run₂ := (run₀.trans run₁).trans (steps_jump jumpCode R₁.neg S.inRange_neg_one)
   exact ⟨m₁, n₀ + 1 + n₁, {
-    run := (run₂.cast_count (by omega)).cast_pos (by rw [Stmt.size]; omega)
-    le := add_le_stepsPerStep_mul (by omega) (by omega) le₁
+    run := (run₂.cast_count tac_omega).cast_pos (by rw [Stmt.size]; omega)
+    le := add_le_stepsPerStep_mul tac_omega tac_omega le₁
     rel := R₁
     agree := (A₀.mono scratch_subset_writable).trans A₁ }⟩
 
@@ -296,10 +297,10 @@ private theorem sim_iteFalse {c : Cond} {k : ℕ} (hs : c.Safe S.lim σ) (fails 
   obtain ⟨m₀, n₀, le₀, A₀, run₀⟩ := (B.test testCode hwc hs).of_fails fails
   -- the second branch
   obtain ⟨m₁, n₁, run₁, le₁, R₁, A₁⟩ := ih _ _ _
-    (B.sub elseCode (by omega) hw₂ B.bounded (B.rel.same A₀))
+    (B.sub elseCode tac_omega hw₂ B.bounded (B.rel.same A₀))
   exact ⟨m₁, n₀ + n₁, {
     run := (run₀.trans run₁).cast_pos (by rw [Stmt.size]; omega)
-    le := add_le_stepsPerStep_mul (by omega) (by omega) le₁
+    le := add_le_stepsPerStep_mul tac_omega tac_omega le₁
     rel := R₁
     agree := (A₀.mono scratch_subset_writable).trans A₁ }⟩
 
@@ -313,7 +314,7 @@ private theorem sim_whileFalse {c : Cond} (hs : c.Safe S.lim σ) (fails : ¬ c.H
   obtain ⟨m₀, n₀, le₀, A₀, run₀⟩ := (B.test testCode hwc hs).of_fails fails
   exact ⟨m₀, n₀, {
     run := run₀.cast_pos (by rw [Stmt.size]; omega)
-    le := le_stepsPerStep_mul (by omega) (by omega)
+    le := le_stepsPerStep_mul tac_omega tac_omega
     rel := B.rel.same A₀
     agree := A₀.mono scratch_subset_writable }⟩
 
@@ -331,15 +332,15 @@ private theorem sim_whileTrue {c : Cond} {k₁ k₂ : ℕ} (hs : c.Safe S.lim σ
   obtain ⟨m₀, n₀, le₀, A₀, run₀⟩ := (B.test testCode hwc hs).of_holds holds
   -- the body
   obtain ⟨m₁, n₁, run₁, le₁, R₁, A₁⟩ := ih₁ _ _ _
-    (B.sub bodyCode (by omega) hw B.bounded (B.rel.same A₀))
+    (B.sub bodyCode tac_omega hw B.bounded (B.rel.same A₀))
   -- the jump back
   have run₂ := (run₀.trans run₁).trans (steps_jump jumpCode R₁.neg S.inRange_neg_one)
   -- the loop again
   obtain ⟨m₃, n₃, run₃, le₃, R₃, A₃⟩ := ih₂ _ _ _
     (B.sub B.codeAt B.below B.width (h₁.bounded B.bounded) R₁)
   exact ⟨m₃, n₀ + 1 + n₁ + n₃, {
-    run := (run₂.trans run₃).cast_count (by omega)
-    le := Nat.mul_add _ _ k₂ ▸ Nat.add_le_add (add_le_stepsPerStep_mul (by omega) (by omega) le₁)
+    run := (run₂.trans run₃).cast_count tac_omega
+    le := Nat.mul_add _ _ k₂ ▸ Nat.add_le_add (add_le_stepsPerStep_mul tac_omega tac_omega le₁)
         le₃
     rel := R₃
     agree := ((A₀.mono scratch_subset_writable).trans A₁).trans A₃ }⟩
@@ -366,12 +367,12 @@ private theorem steps_callEnter (B : Start S d (.call p args x) σ pos q m)
   have hpos : pos + (callSize S.F args + 2) ≤ S.disp := B.below
   rw [List.getD_eq_getElem?_getD, he, Option.getD_some] at jumpCode
   -- the arguments: there are at most F of them, each of width at most F
-  obtain ⟨vals, A⟩ := effects_argsCode B.toFramed args 0 hwa hsa (by omega)
+  obtain ⟨vals, A⟩ := effects_argsCode B.toFramed args 0 hwa hsa tac_omega
   have A₁ := A.mono temps_subset_scratch
   -- the new frame
   obtain ⟨R₂, hret, A₂⟩ := effects_newFrame (B.toFramed.same A₁)
     ((Nat.le_add_right _ _).trans (B.room_succ hd)) args (by simpa using vals)
-    (ret := pos + callSize S.F args) (by omega)
+    (ret := pos + callSize S.F args) tac_omega
   have run₂ := steps_straight _ pos m frameCode
     (List.forall_mem_append.2 ⟨straight_argsCode _ _, straight_newFrame _ _ _⟩)
   rw [effects_append, List.length_append, length_argsCode, length_newFrame] at run₂
@@ -396,12 +397,12 @@ private theorem steps_callLeave (S : Setting W) {ret : ℕ} (R : Rel S.toSizes �
   rw [R.loc_zero hF] at run₁
   have A₁ := (AgreeOutside.refl (Scratch S.F) m).update (a := cRET) (by cells) (wd W (σ.loc 0))
   -- ADDR := FP + 2, the address of the stack cell before the frame
-  have run₂ := run₁.trans (steps_add hcode.tail (R.same A₁).fp ((R.same A₁).pool 2 (by omega)))
+  have run₂ := run₁.trans (steps_add hcode.tail (R.same A₁).fp ((R.same A₁).pool 2 tac_omega))
   rw [cStack_succ_add] at run₂
   have A₂ := A₁.update (a := cADDR) (by cells) (wd W (cStack (q + S.F)))
   -- RR := the cell at ADDR, which holds ret
   have run₃ := run₂.trans (steps_load hcode.tail.tail (Function.update_self _ _ _)
-    (S.inRange_stack (by omega)))
+    (S.inRange_stack tac_omega))
   rw [A₂.read (by cells) hret] at run₃
   have A₃ := A₂.update (a := cRR) (by cells) (wd W ret)
   -- FP := FP + 2 (F + 1), the frame of the caller
@@ -440,12 +441,12 @@ private theorem sim_call {body : Stmt} {k : ℕ} (hsa : ∀ e ∈ args, e.Safe S
   have hret₂ := A₂.read (a := cStack (q + S.F)) (by cells) hret
   -- leave
   obtain ⟨m₃, run₃, hfp, hres, A₃⟩ := steps_callLeave S R₂
-    (procCode.right.cast_pos (by rw [length_compileStmt])) hret₂ (by omega) (by omega)
+    (procCode.right.cast_pos (by rw [length_compileStmt])) hret₂ tac_omega tac_omega
     (Nat.zero_lt_of_lt hx)
   -- since the call began, the stack has changed only from cell q + F on: the local variables of the
   -- caller are as before, and the memory is as the procedure left it
   have A : AgreeOutside (Writable S.toSizes (q + S.F)) m m₃ :=
-    (A₁.trans (A₂.mono (writable_subset_writable (by omega)))).trans
+    (A₁.trans (A₂.mono (writable_subset_writable tac_omega))).trans
       (A₃.mono (Set.insert_subset (by cells) scratch_subset_writable))
   have I₃ : Framed S.toSizes ⟨σ.loc, σ'.mem⟩ q m₃ := ⟨R₂.of_agreeOutside A₃ (by cells) hfp
     (fun y hy => A.read (by cells) (B.rel.loc y hy))
@@ -454,9 +455,9 @@ private theorem sim_call {body : Stmt} {k : ℕ} (hsa : ∀ e ∈ args, e.Safe S
   obtain ⟨m₄, run₄, R₄, A₄⟩ := steps_setVar I₃ hx resultCode hres (by cells)
   exact ⟨m₄, _, {
     run := (((run₁.trans run₂).trans run₃).trans run₄).cast_pos (by rw [Stmt.size, Nat.add_assoc])
-    le := call_le_stepsPerStep_mul hpos (by omega) le₂
+    le := call_le_stepsPerStep_mul hpos tac_omega le₂
     rel := R₄
-    agree := (A.mono (writable_subset_writable (by omega))).trans A₄ }⟩
+    agree := (A.mono (writable_subset_writable tac_omega)).trans A₄ }⟩
 
 end call
 

@@ -16,7 +16,7 @@ class is cut into chunks of at most `cap` pairs.  The list of the starts of the 
 entries, none above `n²`; the table of chunks has at most `n² + p` entries.
 -/
 
-public section
+@[expose] public section
 
 namespace ThreeSumApsp.Spec
 

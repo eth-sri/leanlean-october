@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec4.Theorem30.NineFirst
 public import ThreeSumApsp.Spec.Sec4.Theorem30.NineScan
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The next string of the enumeration
@@ -30,7 +31,7 @@ There are two passes, as in `Spec.nineNext_eq_scan`.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -40,11 +41,11 @@ namespace Nine
 (whether a position that can be raised has been found, the last such position, the number of nines
 before it, the number of nines seen so far), and a digit. -/
 abbrev MaxNines : ℕ := 3
-@[inherit_doc MaxNines] abbrev Found : ℕ := 5
-@[inherit_doc MaxNines] abbrev Best : ℕ := 6
-@[inherit_doc MaxNines] abbrev Before : ℕ := 7
-@[inherit_doc MaxNines] abbrev Nines : ℕ := 8
-@[inherit_doc MaxNines] abbrev Digit : ℕ := 9
+ abbrev Found : ℕ := 5
+ abbrev Best : ℕ := 6
+ abbrev Before : ℕ := 7
+ abbrev Nines : ℕ := 8
+ abbrev Digit : ℕ := 9
 
 end Nine
 
@@ -179,11 +180,10 @@ private theorem raiseStmt_spec (hs : Std lim) {μ : ℕ → ℤ} {a lo hi dg' : 
   have hbefore : s.before ≤ l.length := by
     rw [hinv.before hfound]
     exact List.count_le_length.trans (List.length_take_le' _ _)
-  have hlon : lo ≤ l.length := hlo.trans List.count_le_length
+  have hlon := hlo.trans List.count_le_length
   have hcost := needStmt_cost
   obtain ⟨dg, hdg⟩ : ∃ dg, l.getD s.pos 0 = dg := ⟨_, rfl⟩
   obtain ⟨need, hneed⟩ : ∃ need, lo - s.before - (if dg = 8 then 1 else 0) = need := ⟨_, rfl⟩
-  have hneed_le : need ≤ lo - s.before := hneed ▸ Nat.sub_le _ _
   rw [hdg] at hdigit_le
   -- digit := mem[str + best]; need := max (lo - before - [digit = 8]) 0
   refine Ends.next _ (Ends.block
@@ -195,14 +195,14 @@ private theorem raiseStmt_spec (hs : Std lim) {μ : ℕ → ℤ} {a lo hi dg' : 
   -- pos := best + 1
   light_set (s.pos + 1 : ℕ)
   -- fillTail
-  light_piece (fillTail_spec hs (i₀ := s.pos + 1) (need := need) ha (by omega) _ rfl rfl rfl
+  light_piece (fillTail_spec hs (i₀ := s.pos + 1) (need := need) ha tac_omega _ rfl rfl rfl
     rfl) with ⟨_, μ'⟩ ⟨rfl, htail, hsame⟩
   -- return 1
   refine Ends.setLast ⟨segN_raiseAt hseg hp (fun b hb => ?_) ?_ (by rw [hdg, hneed]; exact htail),
     by simp, ?_⟩
-  · rw [hsame b (Or.inl (by omega)), Function.update_of_ne (by omega)]
-  · rw [hsame _ (Or.inl (by omega)), Function.update_self, hdg]
-  · exact (SameOutside.refl.update ⟨by omega, by omega⟩ _).trans (hsame.mono (by omega) (by omega))
+  · rw [hsame b (Or.inl tac_omega), Function.update_of_ne tac_omega]
+  · rw [hsame _ (Or.inl tac_omega), Function.update_self, hdg]
+  · exact (SameOutside.refl.update ⟨by omega, by omega⟩ _).trans (hsame.mono tac_omega tac_omega)
 
 /-! ## The routine -/
 

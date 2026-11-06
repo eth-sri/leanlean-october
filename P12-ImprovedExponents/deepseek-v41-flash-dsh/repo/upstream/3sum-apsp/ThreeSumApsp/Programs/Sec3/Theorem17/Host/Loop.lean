@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.InstanceFacts
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Instances.WriteMatrices
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The host of Theorem 17: the loop over the instances
@@ -348,13 +349,13 @@ private theorem write (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) {
 theorem writeX (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) :
     WritePre lim μ' A.x (X.n * X.D) A.rac X.n X.D X.p (X.c0 t) (X.len t) X.RAC := by
   have hplaces := S.places ht
-  exact S.write ht S.mem'.segRAC S.length_RAC (Nat.mul_comm _ _) (by omega) (by omega)
+  exact S.write ht S.mem'.segRAC S.length_RAC (Nat.mul_comm _ _) tac_omega tac_omega
 
 /-- The precondition of writeY holds. -/
 theorem writeY (S : HostSetting lim d X U A need μ μ') (ht : t < X.m) :
     WritePre lim μ' A.y (X.D * X.n) A.rbc X.n X.D X.p (X.c0 t) (X.len t) X.RBC := by
   have hplaces := S.places ht
-  exact S.write ht S.mem'.segRBC S.length_RBC rfl (by omega) (by omega)
+  exact S.write ht S.mem'.segRBC S.length_RBC rfl tac_omega tac_omega
 
 /-- The instance number t, as the solver gets it. -/
 def inst (X : HostData) (A : HostAddr) (t : ℕ) : ThinInst :=
@@ -468,7 +469,7 @@ theorem hostParams_spec {P : Program} (S : HostSetting lim d X U A need μ μ') 
     exact Ends.setToThen (X.len t : ℤ) ((htail _ rfl).mono (by light_time) fun _ h => h)
   · replace hc : ¬ (X.n : ℤ) - X.c0 t < X.q := by simpa using hc
     refine Ends.next 0 (Ends.skip ?_)
-    exact (htail _ (by omega)).mono (by light_time) fun _ h => h
+    exact (htail _ tac_omega).mono (by light_time) fun _ h => h
 
 /-- The time of the four calls. -/
 def tCalls (Tn : List ℕ → ℕ) (X : HostData) (t : ℕ) : ℕ :=
@@ -510,7 +511,7 @@ theorem HostCtx.scanPairs_meets (C : HostCtx P₀ R pS pWriteX pWriteY pScanPair
       fun r μ₁ => r = bit (X.found (t + 1)) ∧ μ₁ = μ' := by
   have hplaces := S.places ht
   exact Meets.of_body C.scanPairs (scanPairs_spec (f := X.found t) C.scan (S.weights ht)
-    (S.answers ht hans) (by omega) (S.ok.valid.piece_le ht))
+    (S.answers ht hans) tac_omega (S.ok.valid.piece_le ht))
 
 /-- **The four calls for instance t.** -/
 theorem hostCalls_spec (C : HostCtx P₀ R pS pWriteX pWriteY pScanPairs pScan Tn need)
@@ -527,12 +528,12 @@ theorem hostCalls_spec (C : HostCtx P₀ R pS pWriteX pWriteY pScanPairs pScan T
   have S₁ := S.next fun a ha => hrest₁ a (Or.inl ha)
   -- res := writeY(y, rbc, n, D, p, c0, len)
   light_call (C.writeY_meets S₁ ht) with r₂ μ₂ ⟨hY, hrest₂⟩
-  have S₂ := S₁.next fun a ha => hrest₂ a (Or.inl (by omega))
+  have S₂ := S₁.next fun a ha => hrest₂ a (Or.inl tac_omega)
   replace hX : Seg μ₂ A.x (X.matX t) :=
     hX.keep (by light_keep [X.length_matX t])
   -- res := solver(n, D, w, 1, x, y, qi + lo, qj + lo, out, fr)
   light_call (C.solver_meets S₂ ht hX hY) with r₃ μ₃ ⟨hans, hkept₃⟩
-  have S₃ := S₂.next fun a ha => hkept₃ a (by omega)
+  have S₃ := S₂.next fun a ha => hkept₃ a tac_omega
   -- fnd := scanPairs(out, qi + lo, qj + lo, w, fnd, ab, bc, ac, n, c0, len)
   light_call (C.scanPairs_meets S₃ ht hans) with _ μ₄ ⟨rfl, rfl⟩
   exact ⟨r₃, μ₄, rfl, S₃⟩
@@ -545,7 +546,7 @@ theorem hostNext_spec {P : Program} (S : HostSetting lim d X U A need μ μ') (h
         μ') := by
   have hplaces := S.places ht
   have hlast := Nat.succ_div_mod_of_eq (n := X.chunkCount) (i := t)
-  have hinner := Nat.succ_div_mod_of_ne (n := X.chunkCount) (i := t) (by omega)
+  have hinner := Nat.succ_div_mod_of_ne (n := X.chunkCount) (i := t) tac_omega
   have hc0 : X.c0 t = t / X.chunkCount * X.q := rfl
   have hc0' : X.c0 (t + 1) = (t + 1) / X.chunkCount * X.q := rfl
   generalize t % X.chunkCount = ch at *

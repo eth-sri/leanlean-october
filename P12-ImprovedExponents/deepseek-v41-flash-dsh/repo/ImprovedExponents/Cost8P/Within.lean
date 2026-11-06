@@ -5,6 +5,7 @@ public import ImprovedExponents.Cost8X.Defs
 public import ImprovedExponents.PrunedEncoding.Costs
 public import ImprovedExponents.PrunedProgram.Pre.Defs
 import all ThreeSumApsp.Programs.Sec4.Theorem30.Time
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -38,9 +39,9 @@ The statements and proofs are adapted from upstream
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec4 Finset
+open ThreeSumApsp Light Light.Sec4
 
-open private exists_tTile_le from ThreeSumApsp.Programs.Sec4.Theorem30.Time
+open private from
 
 /-! ### Powers for `10 m ≤ L` -/
 
@@ -51,32 +52,32 @@ theorem pow_le_pow_sub_of_ten_mul_le {a b L m : ℕ} (hb : 0 < b) (hab : a ^ 10 
   calc (a ^ L) ^ 10 = (a ^ 10) ^ L := by rw [← pow_mul, ← pow_mul, mul_comm]
     _ ≤ (b ^ 9) ^ L := Nat.pow_le_pow_left hab L
     _ = b ^ (9 * L) := by rw [← pow_mul]
-    _ ≤ b ^ (10 * (L - m)) := Nat.pow_le_pow_right hb (by omega)
+    _ ≤ b ^ (10 * (L - m)) := Nat.pow_le_pow_right hb tac_omega
     _ = (b ^ (L - m)) ^ 10 := by rw [← pow_mul, mul_comm]
 
 /-- `K = binom(L, m) ≤ 2^L ≤ 3^{L-m} = N₀` for `10 m ≤ L`. -/
 theorem K_le_N0 {L m : ℕ} (hL : 10 * m ≤ L) : K L m ≤ N0 L m :=
-  (Nat.choose_le_two_pow L m).trans (pow_le_pow_sub_of_ten_mul_le (by norm_num) (by norm_num) hL)
+  (Nat.choose_le_two_pow L m).trans (pow_le_pow_sub_of_ten_mul_le tac_norm_num tac_norm_num hL)
 
 /-- `D = 4^m ≤ 3^{9m} ≤ 3^{L-m} = N₀` for `10 m ≤ L`. -/
 theorem D_le_N0 {L m : ℕ} (hL : 10 * m ≤ L) : D m ≤ N0 L m :=
   calc D m = 4 ^ m := rfl
-    _ ≤ (3 ^ 9) ^ m := Nat.pow_le_pow_left (by norm_num) m
+    _ ≤ (3 ^ 9) ^ m := Nat.pow_le_pow_left tac_norm_num m
     _ = 3 ^ (9 * m) := by rw [← pow_mul]
-    _ ≤ 3 ^ (L - m) := Nat.pow_le_pow_right (by norm_num) (by omega)
+    _ ≤ 3 ^ (L - m) := Nat.pow_le_pow_right tac_norm_num tac_omega
 
 /-- `L ≤ 10 (L - m) ≤ 10 N₀` for `10 m ≤ L`. -/
 theorem L_le_ten_mul_N0 {L m : ℕ} (hL : 10 * m ≤ L) : L ≤ 10 * N0 L m :=
   calc L ≤ 10 * (L - m) := by omega
-    _ ≤ 10 * 3 ^ (L - m) := Nat.mul_le_mul_left _ (Nat.lt_pow_self (by norm_num)).le
+    _ ≤ 10 * 3 ^ (L - m) := Nat.mul_le_mul_left _ (Nat.lt_pow_self tac_norm_num).le
 
 /-- `7^L ≤ 9^{L-m} = N₀² ≤ K N₀² = M` for `10 m ≤ L`. -/
 theorem seven_pow_le_M {L m : ℕ} (hL : 10 * m ≤ L) : 7 ^ L ≤ M L m :=
-  calc 7 ^ L ≤ 9 ^ (L - m) := pow_le_pow_sub_of_ten_mul_le (by norm_num) (by norm_num) hL
+  calc 7 ^ L ≤ 9 ^ (L - m) := pow_le_pow_sub_of_ten_mul_le tac_norm_num tac_norm_num hL
     _ = N0 L m ^ 2 := by
         change (3 ^ 2) ^ (L - m) = (3 ^ (L - m)) ^ 2
         rw [← pow_mul, ← pow_mul, mul_comm]
-    _ ≤ K L m * N0 L m ^ 2 := Nat.le_mul_of_pos_left _ (Nat.choose_pos (by omega))
+    _ ≤ K L m * N0 L m ^ 2 := Nat.le_mul_of_pos_left _ (Nat.choose_pos tac_omega)
 
 /-! ### The second summand of `cost8P` -/
 
@@ -97,9 +98,9 @@ theorem N0_le_sqrtKN0 {L m : ℕ} (hmL : m ≤ L) : (N0 L m : ℝ) ≤ sqrtKN0 L
 theorem cost8P_second_term_nonneg {L m : ℕ} (hL : 10 * m ≤ L) (N : ℕ) :
     0 ≤ (N : ℝ) * (L : ℝ) * (27 / 2 * (M L m : ℝ) / (1 - rho L m)) / sqrtKN0 L m := by
   have hρ := sec4_rho_lt_one L m hL
-  have hs := sqrtKN0_pos (L := L) (m := m) (by omega)
+  have hs := sqrtKN0_pos (L := L) (m := m) tac_omega
   have h1 : 0 ≤ 27 / 2 * (M L m : ℝ) / (1 - rho L m) :=
-    div_nonneg (by positivity) (sub_pos.2 hρ).le
+    div_nonneg tac_positivity (sub_pos.2 hρ).le
   positivity
 
 /-- **The base `N L √K N₀`**: the second summand of `cost8P` is at least `(27/2) N L √K N₀`,
@@ -109,11 +110,11 @@ theorem base_le_cost8P {L m : ℕ} (hL : 10 * m ≤ L) (t N : ℕ) :
   have hfirst := cost8X_first_term_nonneg L m t N
   have hρ0 := rho_nonneg hL
   have hρ1 := sec4_rho_lt_one L m hL
-  have hs := (sqrtKN0_pos (L := L) (m := m) (by omega)).le
+  have hs := (sqrtKN0_pos (L := L) (m := m) tac_omega).le
   have hB : 0 ≤ (N : ℝ) * ((L : ℝ) * sqrtKN0 L m) := by positivity
   have hsecond : 27 / 2 * ((N : ℝ) * (L : ℝ) * sqrtKN0 L m)
       ≤ (N : ℝ) * (L : ℝ) * (27 / 2 * (M L m : ℝ) / (1 - rho L m)) / sqrtKN0 L m := by
-    rw [encodingP_eq (by omega), le_div_iff₀ (sub_pos.2 hρ1)]
+    rw [encodingP_eq tac_omega, le_div_iff₀ (sub_pos.2 hρ1)]
     nlinarith
   unfold cost8P
   linarith
@@ -122,8 +123,8 @@ theorem base_le_cost8P {L m : ℕ} (hL : 10 * m ≤ L) (t N : ℕ) :
 theorem one_le_cost8P (L m t N : ℕ) (hL1 : 1 ≤ L) (hL : 10 * m ≤ L)
     (hN : sqrtKN0 L m ≤ (N : ℝ)) : 1 ≤ cost8P L m t N := by
   have hbase := base_le_cost8P hL t N
-  have hs1 := one_le_sqrtKN0 (L := L) (m := m) (by omega)
-  have hN1 : (1 : ℝ) ≤ N := hs1.trans hN
+  have hs1 := one_le_sqrtKN0 (L := L) (m := m) tac_omega
+  have hN1 := hs1.trans hN
   have hL1 : (1 : ℝ) ≤ L := by exact_mod_cast hL1
   have : (1 : ℝ) ≤ (N : ℝ) * (L : ℝ) * sqrtKN0 L m :=
     one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le hN1 hL1) hs1
@@ -192,9 +193,9 @@ theorem tables_le {p : Sec2.Par} {t : ℕ} (h : Hyp30 p t) :
   have hsqrt : Nat.sqrt p.K ≤ p.K := Nat.sqrt_le_self _
   have hKK : p.KK ≤ p.K := Nat.sqrt_le _
   have hDn : p.D ≤ N0 p.L p.m := D_le_N0 hL
-  have hLn : p.L ≤ 10 * N0 p.L p.m := L_le_ten_mul_N0 hL
+  have hLn := L_le_ten_mul_N0 hL
   have hLo : p.Lo ≤ p.L := Nat.sub_le _ _
-  have hn1 : 1 ≤ N0 p.L p.m := N0_pos p.L p.m
+  have hn1 := N0_pos p.L p.m
   generalize N0 p.L p.m = n at *
   generalize p.K = K at *
   generalize p.KK = KK at *
@@ -203,28 +204,17 @@ theorem tables_le {p : Sec2.Par} {t : ℕ} (h : Hyp30 p t) :
   generalize p.N = N at *
   generalize p.L = L at *
   generalize p.m = m at *
-  have h1 : (L + 1) ^ 2 ≤ 40 * (N * L * n) :=
-    calc (L + 1) ^ 2 ≤ (2 * L) ^ 2 := Nat.pow_le_pow_left (by omega) 2
-      _ = 4 * (L * L) := by ring
-      _ ≤ 4 * (L * (10 * n)) := by gcongr
-      _ = 40 * (1 * L * n) := by ring
-      _ ≤ 40 * (N * L * n) := by gcongr
-  have h2 : Nat.sqrt K + 1 ≤ 2 * (N * L * n) :=
-    calc Nat.sqrt K + 1 ≤ 2 * n := by omega
-      _ = 2 * (1 * 1 * n) := by ring
-      _ ≤ 2 * (N * L * n) := by gcongr; omega
-  have h3 : (KK + 1) * (L + 1) ≤ 4 * (N * L * n) :=
-    calc (KK + 1) * (L + 1) ≤ (2 * n) * (2 * L) := Nat.mul_le_mul (by omega) (by omega)
-      _ = 4 * (1 * L * n) := by ring
-      _ ≤ 4 * (N * L * n) := by gcongr
-  have h4 : (N + 1) * (Lo + 1) ≤ 4 * (N * L * n) :=
-    calc (N + 1) * (Lo + 1) ≤ (2 * N) * (2 * L) := Nat.mul_le_mul (by omega) (by omega)
-      _ = 4 * (N * L * 1) := by ring
-      _ ≤ 4 * (N * L * n) := by gcongr
-  have h5 : (D + 1) * (m + 1) ≤ 2 * (N * L * n) :=
-    calc (D + 1) * (m + 1) ≤ (2 * n) * L := Nat.mul_le_mul (by omega) (by omega)
-      _ = 2 * (1 * L * n) := by ring
-      _ ≤ 2 * (N * L * n) := by gcongr
+  have h1 : (L + 1) ^ 2 ≤ 40 * (N * L * n) := by nlinarith [Nat.mul_le_mul_left L hLn]
+  have h2 : Nat.sqrt K + 1 ≤ 2 * (N * L * n) := by
+    have hs := hsqrt.trans hKn
+    nlinarith [Nat.mul_le_mul_left L hLn]
+  have h3 : (KK + 1) * (L + 1) ≤ 4 * (N * L * n) := by nlinarith [Nat.mul_le_mul_left L hLn]
+  have h4 : (N + 1) * (Lo + 1) ≤ 4 * (N * L * n) := by
+    have : (N + 1) * (Lo + 1) ≤ (2 * N) * (2 * L) := Nat.mul_le_mul (by omega) (by omega)
+    nlinarith
+  have h5 : (D + 1) * (m + 1) ≤ 2 * (N * L * n) := by
+    have : (D + 1) * (m + 1) ≤ (2 * n) * L := Nat.mul_le_mul (by omega) (by omega)
+    nlinarith
   generalize N * L * n = P at *
   omega
 
@@ -233,17 +223,17 @@ theorem bandArrayShape_le {p : Sec2.Par} {t : ℕ} (h : Hyp30 p t) :
     Sec2.bandArrayShape p ≤ 5 * (p.L * 7 ^ p.L) := by
   have hL1 := h.L_pos
   have hKK : p.KK ≤ p.K := Nat.sqrt_le _
-  have hKND : p.K * p.N0 * p.D ≤ 7 ^ p.L := Theorem30.K_mul_N0_mul_D_le p.L p.m
+  have hKND := Theorem30.K_mul_N0_mul_D_le p.L p.m
   have hentries : p.KK * p.N0 * p.D ≤ 7 ^ p.L :=
     le_trans (Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _ hKK)) hKND
-  have hS1 : 1 ≤ 7 ^ p.L := Nat.one_le_pow _ _ (by norm_num)
+  have hS1 : 1 ≤ 7 ^ p.L := Nat.one_le_pow _ _ tac_norm_num
   unfold Sec2.bandArrayShape
   change 7 ^ p.L + (p.KK * p.N0 * p.D + 1) * (p.L + 1) ≤ _
   generalize p.KK * p.N0 * p.D = E at *
   generalize 7 ^ p.L = S7 at *
   generalize p.L = L at *
   have harray : (E + 1) * (L + 1) ≤ L * S7 + S7 + L + 1 :=
-    (Nat.mul_le_mul_right _ (by omega) : _ ≤ (S7 + 1) * (L + 1)).trans (le_of_eq (by ring))
+    (Nat.mul_le_mul_right _ tac_omega : _ ≤ (S7 + 1) * (L + 1)).trans (le_of_eq tac_ring)
   have hSL : S7 ≤ L * S7 := Nat.le_mul_of_pos_left _ hL1
   have hLS : L ≤ L * S7 := Nat.le_mul_of_pos_right _ hS1
   omega
@@ -257,7 +247,7 @@ theorem band_work_le {p : Sec2.Par} {t : ℕ} (h : Hyp30 p t) :
   have hρ0 := rho_nonneg hL
   have hM0 : (0 : ℝ) ≤ (M p.L p.m : ℝ) := Nat.cast_nonneg _
   have hMρ : (M p.L p.m : ℝ) ≤ (M p.L p.m : ℝ) / (1 - rho p.L p.m) :=
-    le_div_self hM0 (sub_pos.2 hρ) (by linarith)
+    le_div_self hM0 (sub_pos.2 hρ) tac_linarith
   have hMρ0 : 0 ≤ (M p.L p.m : ℝ) / (1 - rho p.L p.m) := hM0.trans hMρ
   have hL1 : (1 : ℝ) ≤ (p.L : ℝ) := by exact_mod_cast h.L_pos
   have henc : (encWorkP p.L p.m : ℝ) ≤ 9 / 2 * ((M p.L p.m : ℝ) / (1 - rho p.L p.m)) := by
@@ -272,7 +262,7 @@ theorem band_work_le {p : Sec2.Par} {t : ℕ} (h : Hyp30 p t) :
     exact_mod_cast hseven.trans hMρ
   have henc' : 9 / 2 * ((M p.L p.m : ℝ) / (1 - rho p.L p.m))
       ≤ 9 / 2 * ((p.L : ℝ) * ((M p.L p.m : ℝ) / (1 - rho p.L p.m))) :=
-    mul_le_mul_of_nonneg_left (le_mul_of_one_le_left hMρ0 hL1) (by norm_num)
+    mul_le_mul_of_nonneg_left (le_mul_of_one_le_left hMρ0 hL1) tac_norm_num
   push_cast
   linarith
 
@@ -301,7 +291,7 @@ theorem within8P_bands :
   have hprod : (p.nB : ℝ) * ((encWorkP p.L p.m + Sec2.bandArrayShape p : ℕ) : ℝ)
       ≤ (2 * (p.N : ℝ) / sqrtKN0 p.L p.m)
           * (10 * ((p.L : ℝ) * ((M p.L p.m : ℝ) / (1 - rho p.L p.m)))) :=
-    mul_le_mul hnB hwork (Nat.cast_nonneg _) (by positivity)
+    mul_le_mul hnB hwork (Nat.cast_nonneg _) tac_positivity
   have heq : (2 * (p.N : ℝ) / sqrtKN0 p.L p.m)
         * (10 * ((p.L : ℝ) * ((M p.L p.m : ℝ) / (1 - rho p.L p.m))))
       = 20 * ((p.N : ℝ) * (p.L : ℝ) * ((M p.L p.m : ℝ) / (1 - rho p.L p.m))
@@ -322,7 +312,7 @@ theorem within8P_tables :
   refine ⟨52 * (2 / 27), by norm_num, fun p t h => ?_⟩
   have hnat := tables_le h
   have hbase := base_le_cost8P h.L_ge t p.N
-  have hN0 : (N0 p.L p.m : ℝ) ≤ sqrtKN0 p.L p.m := N0_le_sqrtKN0 h.m_le
+  have hN0 := N0_le_sqrtKN0 h.m_le
   have hreal : (((p.L + 1) ^ 2 + (Nat.sqrt p.K + 1) + (p.KK + 1) * (p.L + 1)
         + (p.N + 1) * (p.Lo + 1) + (p.D + 1) * (p.m + 1) : ℕ) : ℝ)
       ≤ 52 * ((p.N : ℝ) * (p.L : ℝ) * (N0 p.L p.m : ℝ)) := by exact_mod_cast hnat
@@ -356,7 +346,7 @@ theorem within8P_tAllTiles : Within8P fun p t => tAllTiles p.L p.m t p.nB := by
   obtain ⟨c, hc⟩ := exists_tTile_le
   refine ((within8P_boxes.const_mul c).add (within8P_one.const_mul 30)).of_le fun p t h => ?_
   have htile := hc p.L p.m t h.L_pos h.m_le
-  have hn : p.nB ≤ p.nB ^ 2 := Nat.le_self_pow (by norm_num) _
+  have hn : p.nB ≤ p.nB ^ 2 := Nat.le_self_pow tac_norm_num _
   calc tAllTiles p.L p.m t p.nB
       = p.nB ^ 2 * (tTile p.L p.m t + 80) + p.nB * 40 + 30 := by simp only [tAllTiles]; ring
     _ ≤ p.nB ^ 2 * (tTile p.L p.m t + 80) + p.nB ^ 2 * 40 + 30 := by gcongr
@@ -404,6 +394,6 @@ stage. -/
 theorem exists_tPreCore_leP (c : ℕ) : ∃ C : ℝ, 0 ≤ C ∧ ∀ (p : Sec2.Par) (t : ℕ), Hyp30 p t →
     (tPreCoreP c p t : ℝ) ≤ C * cost8P p.L p.m t p.N :=
   (((within8P_sharedShapeP.const_mul c).add within8P_tAllTiles).add
-    (within8P_one.const_mul 300)).of_le fun _ _ _ => le_of_eq (by simp [tPreCoreP])
+    (within8P_one.const_mul 300)).of_le fun _ _ _ => le_of_eq tac_simp [tPreCoreP]
 
 end ImprovedExponents

@@ -35,7 +35,7 @@ on n.  What the calls do to the memory is proved in Pruned/Memory.lean; here eac
 
 namespace Light.Sec2
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-! ## The program -/
 

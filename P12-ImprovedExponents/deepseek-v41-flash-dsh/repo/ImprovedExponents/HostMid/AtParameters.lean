@@ -20,7 +20,7 @@ feed to `host_of_paramProcs`, `hostNeed_poly` and `obeysBound17_hostTime`.
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3 ThreeSumApsp
 
 /-! ## The host with parameter routines -/
 

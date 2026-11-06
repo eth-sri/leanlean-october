@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Lib.Sqrt
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.HostContracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The parameters of the reduction from 3SUM to Convolution-3SUM
@@ -23,7 +24,7 @@ value fits in a word: each is at most a small multiple of V, of m or of n + 2 (f
 
 namespace Light.Sec3.ChanHe
 
-open ThreeSumApsp ThreeSumApsp.ChanHe Finset
+open ThreeSumApsp.ChanHe
 
 variable {lim : Limits} {P : Program}
 
@@ -33,7 +34,7 @@ private theorem five_mul_Lam_le_wPar (n V : ℕ) : 5 * Lam V ≤ wPar n V :=
   Nat.le_mul_of_pos_right _ (Nat.succ_pos _)
 
 private theorem wPar_succ_le_mPar (n V : ℕ) : wPar n V + 1 ≤ mPar n V :=
-  Nat.le_mul_of_pos_right _ (by omega)
+  Nat.le_mul_of_pos_right _ tac_omega
 
 private theorem log_wPar_le_mPar (n V : ℕ) : 2 * Nat.log 2 (wPar n V + 1) + 4 ≤ mPar n V :=
   Nat.le_mul_of_pos_left _ (Nat.succ_pos _)
@@ -50,21 +51,21 @@ values, and the address of the three cells for the results.  Then, in the order 
 computed: ⌊log₂(2V)⌋; Λ; ⌊√n⌋; w + 1 with w = 5Λ(⌊√n⌋ + 1); ⌊log₂(w + 1)⌋; m; ⌊log₂ n⌋;
 ⌈log₂(⌊log₂ n⌋ + 2)⌉; the number of levels. -/
 abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Bound : ℕ := 1
-@[inherit_doc Len] abbrev Out : ℕ := 2
-@[inherit_doc Len] abbrev LogBound : ℕ := 3
-@[inherit_doc Len] abbrev Digits : ℕ := 4
-@[inherit_doc Len] abbrev Root : ℕ := 5
-@[inherit_doc Len] abbrev Want : ℕ := 6
-@[inherit_doc Len] abbrev LogWant : ℕ := 7
-@[inherit_doc Len] abbrev PrimeBound : ℕ := 8
-@[inherit_doc Len] abbrev LogLen : ℕ := 9
-@[inherit_doc Len] abbrev Height : ℕ := 10
-@[inherit_doc Len] abbrev Levels : ℕ := 11
+ abbrev Bound : ℕ := 1
+ abbrev Out : ℕ := 2
+ abbrev LogBound : ℕ := 3
+ abbrev Digits : ℕ := 4
+ abbrev Root : ℕ := 5
+ abbrev Want : ℕ := 6
+ abbrev LogWant : ℕ := 7
+ abbrev PrimeBound : ℕ := 8
+ abbrev LogLen : ℕ := 9
+ abbrev Height : ℕ := 10
+ abbrev Levels : ℕ := 11
 
 end Params
 
-open Params in
+open Params
 /-- params(n, V, out), over the procedures pLog2, pClog2 (logarithms, rounded down and up) and pSqrt
 (the integer square root): writes Λ, m and the number of levels to the three cells from out. -/
 def paramsBody (pLog2 pClog2 pSqrt : ℕ) : Stmt :=
@@ -101,9 +102,9 @@ theorem params_spec {p pLog2 pClog2 pSqrt : ℕ} (hP : P[p]? = some (paramsBody 
   have := height_le n
   have := Nat.sqrt_le_self n
   have := Nat.log_le_self 2 n
-  have : mPar n V + 1 ≤ (mPar n V + 1) ^ 2 := Nat.le_self_pow (by norm_num) _
+  have : mPar n V + 1 ≤ (mPar n V + 1) ^ 2 := Nat.le_self_pow tac_norm_num _
   have hword' : ((8 * (mPar n V + 1) + 8 * V + 4 * n + 64 : ℕ) : ℤ) ≤ lim.word :=
-    le_trans (by exact_mod_cast (by omega)) hword
+    le_trans (by exact_mod_cast tac_omega) hword
   push_cast at hword'
   unfold tParams paramsBody
   -- LogBound := log2(Bound + Bound)
@@ -119,7 +120,7 @@ theorem params_spec {p pLog2 pClog2 pSqrt : ℕ} (hP : P[p]? = some (paramsBody 
   -- PrimeBound := Want * (2 * LogWant + 4)
   light_set (mPar n V) using em
   -- LogLen := log2(Len)
-  light_call (hL (d + 1) n μ (by omega)) with _ μ ⟨rfl, rfl⟩
+  light_call (hL (d + 1) n μ tac_omega) with _ μ ⟨rfl, rfl⟩
   -- Height := clog2(LogLen + 2)
   light_call (hC (d + 1) (Nat.log 2 n + 2) μ (by push_cast; omega)) with _ μ ⟨rfl, rfl⟩
   -- Levels := 3 * Height - 2

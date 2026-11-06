@@ -25,7 +25,7 @@ from them.
 
 namespace Light.Sec3.ChanHe
 
-open ThreeSumApsp ThreeSumApsp.ChanHe Finset
+open ThreeSumApsp.ChanHe Finset
 
 /-- An upper bound on the number of calls of the recursive procedure for one three-set input. -/
 def callsB (n : ℕ) : ℕ := 2 * 3 ^ fuel n

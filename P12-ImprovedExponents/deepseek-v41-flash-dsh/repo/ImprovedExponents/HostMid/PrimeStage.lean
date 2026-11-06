@@ -15,7 +15,7 @@ data).  The time is that of upstream's second part: its constant covers the addi
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3 ThreeSumApsp.Spec
 
 variable {lim : Limits} {d : ℕ}
 

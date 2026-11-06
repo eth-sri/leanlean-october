@@ -12,6 +12,7 @@ public import Mathlib.Algebra.Order.Group.Int
 public import Mathlib.Algebra.Order.Group.Nat
 public import Mathlib.Data.List.GetD
 public import Mathlib.Data.Nat.Count
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Lists: entries with a default, blocks, sums, counting, sorted lists
@@ -67,14 +68,14 @@ theorem getD_take_of_lt (l : List α) {n j : ℕ} (hj : j < n) (d : α) :
 /-- Entry `i < n` of the table `f 0, …, f (n - 1)`. -/
 theorem getD_map_range (f : ℕ → α) {n i : ℕ} (hi : i < n) (d : α) :
     ((List.range n).map f).getD i d = f i := by
-  rw [List.getD_eq_getElem _ _ (by simpa using hi)]
+  rw [List.getD_eq_getElem _ _ ((by simpa using hi))]
   simp
 
 /-- Entry `i < l.length` of `l.map f`, whatever the two defaults. Mathlib's `List.getD_map` is for
 all `i`, with the default `f d`. -/
 theorem getD_map_of_lt (f : α → β) {l : List α} {i : ℕ} (hi : i < l.length) (d : α) (d' : β) :
     (l.map f).getD i d' = f (l.getD i d) := by
-  rw [List.getD_eq_getElem _ _ (by rwa [List.length_map]), List.getD_eq_getElem _ _ hi,
+  rw [List.getD_eq_getElem _ _ tac_rwa [List.length_map], List.getD_eq_getElem _ _ hi,
     List.getElem_map]
 
 /-- The entries of a list in which entry `q < l.length` was replaced by `a`. -/
@@ -84,7 +85,7 @@ theorem getD_set_of_lt {l : List α} {q : ℕ} (hq : q < l.length) (a d : α) (q
   split_ifs with h1 h2 h3
   · rfl
   · exact absurd h1.symm h2
-  · exact absurd (h3 ▸ hq) (by omega)
+  · exact absurd (h3 ▸ hq) tac_omega
   · rfl
 
 /-- One more member at the end changes the entry number `l.length` only. -/
@@ -114,7 +115,7 @@ theorem getD_flatMap_range_sum (f : ℕ → List α) {n r o : ℕ} (hr : r < n) 
   obtain ⟨c, rfl⟩ := Nat.exists_eq_add_of_lt hr
   rw [Nat.add_assoc, List.range_add, List.flatMap_append, ← List.length_flatMap, getD_append_add,
     Nat.add_comm c 1, List.range_add, List.map_append, List.flatMap_append,
-    List.getD_append _ _ _ _ (by simpa using ho)]
+    List.getD_append _ _ _ _ ((by simpa using ho))]
   simp
 
 /-- The length of `n` blocks of length `k`. -/
@@ -137,9 +138,9 @@ theorem take_drop_flatMap_range {k : ℕ} (m n c : ℕ) (f : ℕ → List α)
     (((List.range (m + n + c)).flatMap f).drop (m * k)).take (n * k) =
       (List.range n).flatMap fun z => f (m + z) := by
   have hm : ((List.range m).flatMap f).length = m * k :=
-    length_flatMap_range m f fun z hz => hf z (by omega)
+    length_flatMap_range m f fun z hz => hf z tac_omega
   have hn : ((List.range n).flatMap fun z => f (m + z)).length = n * k :=
-    length_flatMap_range n _ fun z hz => hf _ (by omega)
+    length_flatMap_range n _ fun z hz => hf _ tac_omega
   rw [List.range_add, List.range_add, List.flatMap_append, List.flatMap_append, List.append_assoc,
     List.flatMap_map, ← hm, List.drop_left, ← hn, List.take_left]
 
@@ -210,7 +211,7 @@ absolute value at most `l.length * B`. -/
 theorem abs_sum_take_map_le (l : List α) (f : α → ℤ) {B : ℤ} (h : ∀ x ∈ l, |f x| ≤ B) (k : ℕ) :
     |((l.map f).take k).sum| ≤ l.length * B := by
   refine (List.abs_sum_take_le_sum_abs _ k).trans ?_
-  simpa using List.sum_le_card_nsmul ((l.map f).map fun x => |x|) B (by simpa using h)
+  simpa using List.sum_le_card_nsmul ((l.map f).map fun x => |x|) B ((by simpa using h))
 
 /-- If `|f x| ≤ B` for all `x ∈ l`, then `|(l.map f).sum| ≤ l.length * B`. -/
 theorem abs_sum_map_le (l : List α) (f : α → ℤ) {B : ℤ} (h : ∀ x ∈ l, |f x| ≤ B) :
@@ -354,12 +355,12 @@ theorem getD_notMem_take_of_sorted {l : List α} (hs : l.Pairwise (· ≤ ·)) {
     (d : α) (h : i = 0 ∨ l.getD i d ≠ l.getD (i - 1) d) : l.getD i d ∉ l.take i := by
   intro hm
   obtain ⟨j, hj, hsame⟩ := List.mem_iff_getElem.1 hm
-  have hji : j < i := (List.length_take_le i l).trans_lt' hj
+  have hji := (List.length_take_le i l).trans_lt' hj
   rcases h with rfl | hne
   · omega
   rw [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _ _ (show i - 1 < l.length by omega)] at hne
   rw [List.getElem_take, List.getD_eq_getElem _ _ hi] at hsame
-  have hpred : l[i - 1] ≤ l[i] := List.pairwise_iff_getElem.1 hs _ _ _ _ (by omega)
+  have hpred : l[i - 1] ≤ l[i] := List.pairwise_iff_getElem.1 hs _ _ _ _ tac_omega
   have hle : l[j] ≤ l[i - 1] := by
     rcases Nat.lt_or_ge j (i - 1) with hlt | hge
     · exact List.pairwise_iff_getElem.1 hs _ _ _ _ hlt
@@ -388,7 +389,7 @@ theorem AbsLe.getElem {l : List ℤ} {U : ℤ} (h : AbsLe l U) {i : ℕ} (hi : i
 /-- A bound on the absolute values of all members bounds every `getD` with default `0`. -/
 theorem AbsLe.abs_getD_le {l : List ℤ} {U : ℤ} (hU : 0 ≤ U) (h : AbsLe l U) (i : ℕ) :
     |l.getD i 0| ≤ U :=
-  List.getD_of_forall_mem (p := fun x => |x| ≤ U) (by rwa [abs_zero]) h i
+  List.getD_of_forall_mem (p := fun x => |x| ≤ U) tac_rwa [abs_zero] h i
 
 /-! ## The entrywise sum of lists -/
 

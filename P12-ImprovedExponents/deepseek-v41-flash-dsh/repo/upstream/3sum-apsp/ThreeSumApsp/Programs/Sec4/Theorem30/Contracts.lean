@@ -102,19 +102,19 @@ The numbers 0 to 39 belong to Section 2, the numbers from 40 on to Section 4. Th
 namespace Proc
 /-- The numbers of the fourteen routines, in the order in which they call each other. -/
 abbrev nineFirst : ℕ := 40
-@[inherit_doc nineFirst] abbrev nineNext : ℕ := 41
-@[inherit_doc nineFirst] abbrev scatter : ℕ := 42
-@[inherit_doc nineFirst] abbrev starFirst : ℕ := 43
-@[inherit_doc nineFirst] abbrev horner : ℕ := 44
-@[inherit_doc nineFirst] abbrev lookup : ℕ := 45
-@[inherit_doc nineFirst] abbrev insert : ℕ := 46
-@[inherit_doc nineFirst] abbrev newRoot : ℕ := 47
-@[inherit_doc nineFirst] abbrev sumTen : ℕ := 48
-@[inherit_doc nineFirst] abbrev fillList : ℕ := 49
-@[inherit_doc nineFirst] abbrev tile : ℕ := 50
-@[inherit_doc nineFirst] abbrev allTiles : ℕ := 51
-@[inherit_doc nineFirst] abbrev outDigits : ℕ := 52
-@[inherit_doc nineFirst] abbrev queryCore : ℕ := 53
+ abbrev nineNext : ℕ := 41
+ abbrev scatter : ℕ := 42
+ abbrev starFirst : ℕ := 43
+ abbrev horner : ℕ := 44
+ abbrev lookup : ℕ := 45
+ abbrev insert : ℕ := 46
+ abbrev newRoot : ℕ := 47
+ abbrev sumTen : ℕ := 48
+ abbrev fillList : ℕ := 49
+ abbrev tile : ℕ := 50
+ abbrev allTiles : ℕ := 51
+ abbrev outDigits : ℕ := 52
+ abbrev queryCore : ℕ := 53
 end Proc
 
 /-! ## Time functions -/
@@ -122,12 +122,12 @@ end Proc
 /-- The routines with one loop over a string of n or L digits: a constant number of steps for each
 digit. -/
 def tNineFirst (n : ℕ) : ℕ := 30 * n + 30
-@[inherit_doc tNineFirst] def tNineNext (n : ℕ) : ℕ := 90 * n + 60
-@[inherit_doc tNineFirst] def tScatter (L : ℕ) : ℕ := 60 * L + 30
-@[inherit_doc tNineFirst] def tStarFirst (L : ℕ) : ℕ := 50 * L + 30
-@[inherit_doc tNineFirst] def tHorner (L : ℕ) : ℕ := 20 * L + 10
-@[inherit_doc tNineFirst] def tLookup (L : ℕ) : ℕ := 20 * L + 12
-@[inherit_doc tNineFirst] def tInsert (L : ℕ) : ℕ := 220 * L + 20
+ def tNineNext (n : ℕ) : ℕ := 90 * n + 60
+ def tScatter (L : ℕ) : ℕ := 60 * L + 30
+ def tStarFirst (L : ℕ) : ℕ := 50 * L + 30
+ def tHorner (L : ℕ) : ℕ := 20 * L + 10
+ def tLookup (L : ℕ) : ℕ := 20 * L + 12
+ def tInsert (L : ℕ) : ℕ := 220 * L + 20
 /-- Eleven cells are cleared. -/
 def tNewRoot : ℕ := 160
 /-- Ten times: write a digit, look up, add. -/
@@ -145,7 +145,7 @@ def tTile (L m t : ℕ) : ℕ :=
     + 60
 /-- All tiles. -/
 def tAllTiles (L m t nB : ℕ) : ℕ := nB * (nB * (tTile L m t + 80) + 40) + 30
-@[inherit_doc tNineFirst] def tOutDigits (L : ℕ) : ℕ := 70 * L + 40
+ def tOutDigits (L : ℕ) : ℕ := 70 * L + 40
 /-- A query, once the digits of its output string are known. -/
 def tQueryCore (L m t : ℕ) : ℕ :=
   2 * tNineFirst m + (lowList m t []).length * (tScatter L + tHorner L + tNineNext m + 90)

@@ -1,6 +1,7 @@
 module
 
 public import ImprovedExponents.HostMid.Arrays
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -16,7 +17,7 @@ is called with; writing the matrices is charged at `D`, which is more.
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3 ThreeSumApsp.Spec
 
 /-- Writing the two matrices of an instance takes longer for a larger inner dimension and for a
 longer piece. -/
@@ -34,7 +35,7 @@ theorem instance_le' (Tn : List ℕ → ℕ) (n D g execs : ℕ) {len q w cap : 
       ≤ tWrites n D q + supTime Tn n (midSize D g) cap + tAnswers cap + tScanCall q * execs := by
   have hwrites := tWrites_le n (midSize_le D g) hlen
   have hsolver : Tn [n, midSize D g, w] ≤ supTime Tn n (midSize D g) cap :=
-    Finset.le_sup (f := fun w => Tn [n, midSize D g, w]) (Finset.mem_range.2 (by omega))
+    Finset.le_sup (f := fun w => Tn [n, midSize D g, w]) (Finset.mem_range.2 tac_omega)
   have hanswers : tAnswers w ≤ tAnswers cap := by
     unfold tAnswers
     gcongr
@@ -65,7 +66,7 @@ theorem chunkCount_le_m {X : HostData} (hv : X.Valid) : X.chunkCount ≤ X.m := 
   have hn := hv.n_pos
   have hq := hv.q_pos
   have hpieces : 1 ≤ X.h := by
-    rw [HostData.h, Nat.ceilDiv_eq_add_pred_div, Nat.le_div_iff_mul_le (by omega)]
+    rw [HostData.h, Nat.ceilDiv_eq_add_pred_div, Nat.le_div_iff_mul_le tac_omega]
     omega
   rw [HostData.m]
   exact Nat.le_mul_of_pos_left _ hpieces
@@ -91,7 +92,7 @@ theorem hostRunTime_le' (hpre : x.Pre μ fr) (hbig : BigCase x.n D g) (Tn : List
       ≤ tDblTable (bitLen x.U) + 3 * tResidues (x.n * x.n) (bitLen x.U)
         + tClasses x.n (Nat.sqrt D) + tChunks (Nat.sqrt D) (4 * x.n * g)
         + hostLoopBound' Tn x.n x.U D g + 80 := by
-  have hprime : (hostData' x D g).p ≤ Nat.sqrt D := hostData'_p_le x g hbig.sixteen_le
+  have hprime := hostData'_p_le x g hbig.sixteen_le
   have hchunks : (hostData' x D g).chunkCount ≤ 4 * x.n * g :=
     (chunkCount_le_m (hostData'_valid hpre hbig)).trans (hostData'_m_le hbig)
   have hloop := tHostLoop_le' hpre hbig Tn

@@ -9,6 +9,7 @@ public import ThreeSumApsp.Lang.PolyBounded
 public import ThreeSumApsp.Programs.LightModel
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Time
 public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Sizes
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The arithmetic of the reduction from 3SUM to Convolution-3SUM
@@ -169,8 +170,8 @@ theorem claim_CH20_Theorem_5_1_of_host (h : ∀ κ : ℕ, IsHost c3Task s3Task (
   have hκ : κ ≤ ⌈κ⌉₊ := Nat.le_ceil κ
   generalize ⌈κ⌉₊ = k at hκ
   refine ⟨fun n => ownAt k n, fun n => callsAt k n, fun n => magAt k n, lenOf k, 160, k,
-    (ClaimF.softO_ownAt k).isPowPolylog (by norm_num),
-    (ClaimF.softO_callsAt k).isPowPolylog (by norm_num), isPowPolylog_lenOf k,
+    (ClaimF.softO_ownAt k).isPowPolylog tac_norm_num,
+    (ClaimF.softO_callsAt k).isPowPolylog tac_norm_num, isPowPolylog_lenOf k,
     fun n hn => ⟨one_le_lenOf k n, ?_, ?_⟩, ?_⟩
   · exact Nat.one_le_cast.2 (by unfold magAt boundAt; omega)
   · have hpow : 1 ≤ n ^ k := Nat.one_le_pow _ _ hn
@@ -183,7 +184,7 @@ theorem claim_CH20_Theorem_5_1_of_host (h : ∀ κ : ℕ, IsHost c3Task s3Task (
   refine ⟨timeUpTo (chTime k Tn), hsol'.solvedIn ((h k).2 r hr), fun n hn =>
     timeUpTo_le fun U hU => ?_⟩
   have hUk : U ≤ n ^ k := by
-    have hle : (U : ℝ) ≤ (n : ℝ) ^ (k : ℝ) := (hU.trans_eq (max_eq_left (by positivity))).trans
+    have hle := (hU.trans_eq (max_eq_left tac_positivity)).trans
       (Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hn) hκ)
     rw [Real.rpow_natCast] at hle
     exact_mod_cast hle

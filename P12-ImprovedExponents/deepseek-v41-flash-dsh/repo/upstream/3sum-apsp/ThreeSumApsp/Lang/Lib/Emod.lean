@@ -10,6 +10,7 @@ public import ThreeSumApsp.Lang.Tactics
 public import Mathlib.Data.Nat.Log
 public import Mathlib.Data.Nat.Size
 public import Mathlib.Tactic.NormNum
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The remainder of a division
@@ -31,43 +32,43 @@ namespace Emod
 /-- The local variables of emod: the arguments x, M and fr (the result replaces x), what is left
 of |x|, the number of entries of the table, and the next multiple of M. -/
 abbrev Arg : ℕ := 0
-@[inherit_doc Arg] abbrev Modulus : ℕ := 1
-@[inherit_doc Arg] abbrev Free : ℕ := 2
-@[inherit_doc Arg] abbrev Rest : ℕ := 3
-@[inherit_doc Arg] abbrev Count : ℕ := 4
-@[inherit_doc Arg] abbrev Mult : ℕ := 5
+ abbrev Modulus : ℕ := 1
+ abbrev Free : ℕ := 2
+ abbrev Rest : ℕ := 3
+ abbrev Count : ℕ := 4
+ abbrev Mult : ℕ := 5
 
 end Emod
 
-open Emod in
+open Emod
 /-- One entry of the table: the multiple is written to the table and doubled. -/
 def emodTableRound : Stmt :=
   .store (v Free +' v Count) (v Mult) ;;
   .set Count (v Count +' k 1) ;;
   .set Mult (v Mult +' v Mult)
 
-open Emod in
+open Emod
 /-- The table: M, 2M, 4M, … are written to the free pointer as long as they are at most |x|. -/
 def emodTable : Stmt := .while (v Mult ≤' v Rest) emodTableRound
 
-open Emod in
+open Emod
 /-- The last entry of the table that has not been tried is subtracted if possible. -/
 def emodReduceRound : Stmt :=
   .set Count (v Count -' k 1) ;;
   .ite (M (v Free +' v Count) ≤' v Rest) (.set Rest (v Rest -' M (v Free +' v Count))) .skip
 
-open Emod in
+open Emod
 /-- The entries of the table are subtracted, from the largest down, where possible. -/
 def emodReduce : Stmt := .while (k 0 <' v Count) emodReduceRound
 
-open Emod in
+open Emod
 /-- The sign: the remainder r of |x| gives the remainder of x. -/
 def emodSign : Stmt :=
   .ite (v Arg <' k 0)
     (.ite (v Rest =' k 0) (.set Arg (k 0)) (.set Arg (v Modulus -' v Rest)))
     (.set Arg (v Rest))
 
-open Emod in
+open Emod
 /-- emod(x, M, fr). -/
 def emodBody : Stmt :=
   .ite (v Arg <' k 0) (.set Rest (k 0 -' v Arg)) (.set Rest (v Arg)) ;;
@@ -85,21 +86,21 @@ def emodRounds (a M : ℕ) : ℕ := Nat.size (a / M)
 
 /-- The multiple M 2^i is at most a exactly for i below the number of doublings. -/
 theorem mul_two_pow_le_iff {a M i : ℕ} (hM : 1 ≤ M) : M * 2 ^ i ≤ a ↔ i < emodRounds a M := by
-  rw [emodRounds, Nat.lt_size, Nat.le_div_iff_mul_le (by omega), Nat.mul_comm]
+  rw [emodRounds, Nat.lt_size, Nat.le_div_iff_mul_le tac_omega, Nat.mul_comm]
 
 /-- There are at most log₂ (V + 1) + 1 doublings for a number up to V. -/
 theorem emodRounds_le {a M V : ℕ} (ha : a ≤ V) : emodRounds a M ≤ Nat.log 2 (V + 1) + 1 := by
   rw [emodRounds, Nat.size_le]
   calc a / M ≤ a := Nat.div_le_self _ _
     _ < V + 1 := by omega
-    _ < 2 ^ (Nat.log 2 (V + 1) + 1) := Nat.lt_pow_succ_log_self (by norm_num) _
+    _ < 2 ^ (Nat.log 2 (V + 1) + 1) := Nat.lt_pow_succ_log_self tac_norm_num _
 
 /-- The remainder of a negative number. -/
 theorem neg_emod_nat (a M : ℕ) (hM : 1 ≤ M) :
     (-(a : ℤ)) % (M : ℤ) = if a % M = 0 then 0 else (M : ℤ) - ((a % M : ℕ) : ℤ) := by
   have h : (a : ℤ) = (M : ℤ) * ((a / M : ℕ) : ℤ) + ((a % M : ℕ) : ℤ) := by
     exact_mod_cast (Nat.div_add_mod a M).symm
-  have hlt : a % M < M := Nat.mod_lt _ (by omega)
+  have hlt : a % M < M := Nat.mod_lt _ tac_omega
   split_ifs with h0
   · rw [h0] at h
     rw [h, Nat.cast_zero, add_zero, ← mul_neg]
@@ -109,7 +110,7 @@ theorem neg_emod_nat (a M : ℕ) (hM : 1 ≤ M) :
       push_cast
       ring
     rw [e, Int.add_mul_emod_self_left]
-    exact Int.emod_eq_of_lt (by omega) (by omega)
+    exact Int.emod_eq_of_lt tac_omega tac_omega
 namespace Emod
 
 /-- What emod asks of the limits, for a modulus M ≥ 1, numbers up to V and the free pointer fr. -/
@@ -137,7 +138,7 @@ theorem table_ends (F : Pre lim Mo V fr) (haV : a ≤ V) :
     σ = ⟨frame [x, Mo, fr, a, i, ((Mo * 2 ^ i : ℕ) : ℤ)], μ'⟩ ∧ Table μ μ' Mo fr i)
     (emodRounds a Mo) emodTableRound.blockCost ?start ?round ?done
     (by simp [emodTableRound]; omega)
-  case start => exact ⟨μ, by simp, fun j hj => absurd hj (by omega), fun _ _ => rfl⟩
+  case start => exact ⟨μ, by simp, fun j hj => absurd hj tac_omega, fun _ _ => rfl⟩
   case done =>
     rintro _ ⟨μ', rfl, tab⟩
     have hgt : ¬ Mo * 2 ^ emodRounds a Mo ≤ a := fun h =>
@@ -146,7 +147,7 @@ theorem table_ends (F : Pre lim Mo V fr) (haV : a ≤ V) :
     exact ⟨by light_side, by simp; omega, μ', rfl, tab⟩
   case round =>
     rintro i _ hi ⟨μ', rfl, tab, below⟩
-    have hle : Mo * 2 ^ i ≤ a := (mul_two_pow_le_iff F.mod_pos).2 hi
+    have hle := (mul_two_pow_le_iff F.mod_pos).2 hi
     have hnext : Mo * 2 ^ (i + 1) = Mo * 2 ^ i + Mo * 2 ^ i := by ring
     rw [hnext]
     generalize ht : Mo * 2 ^ i = t at hle
@@ -158,10 +159,10 @@ theorem table_ends (F : Pre lim Mo V fr) (haV : a ≤ V) :
     light_set (t + t : ℕ)
     refine ⟨_, rfl, fun j hj => ?_, fun b hb => ?_⟩
     · rcases Nat.lt_succ_iff_lt_or_eq.1 hj with h | rfl
-      · rw [Function.update_of_ne (by omega)]
+      · rw [Function.update_of_ne tac_omega]
         exact tab j h
       · rw [Function.update_self, ht]
-    · rw [Function.update_of_ne (by omega)]
+    · rw [Function.update_of_ne tac_omega]
       exact below b hb
 
 /-- **The subtractions.**  What is left of a after the multiples M 2^j have been subtracted, from
@@ -189,8 +190,8 @@ theorem reduce_ends (F : Pre lim Mo V fr) (haV : a ≤ V) {μ' : ℕ → ℤ} {t
     obtain ⟨c, hc⟩ : ∃ c, emodRounds a Mo - i = c + 1 := ⟨emodRounds a Mo - i - 1, by omega⟩
     rw [show emodRounds a Mo - (i + 1) = c by omega]
     rw [hc] at hr ⊢
-    have hcell : μ' (fr + c) = ((Mo * 2 ^ c : ℕ) : ℤ) := tab.1 c (by omega)
-    have hle : Mo * 2 ^ c ≤ a := (mul_two_pow_le_iff F.mod_pos).2 (by omega)
+    have hcell := tab.1 c tac_omega
+    have hle : Mo * 2 ^ c ≤ a := (mul_two_pow_le_iff F.mod_pos).2 tac_omega
     have hsub : ∀ r' : ℕ, Mo * 2 ^ c ≤ r' → (r' - Mo * 2 ^ c) % Mo = r' % Mo :=
       fun r' h => Nat.sub_mul_mod h
     rw [show Mo * 2 ^ (c + 1) = Mo * 2 ^ c + Mo * 2 ^ c by ring] at hr
@@ -238,7 +239,7 @@ theorem _root_.Light.emod_meets {p : ℕ} (hp : P[p]? = some emodBody) (F : Pre 
     Meets lim P p d [x, Mo, fr] μ (emodTime x.natAbs Mo) fun r μ' =>
       r = x % (Mo : ℤ) ∧ Kept μ μ' fr := by
   have hword := F.word
-  have hax : ((x.natAbs : ℕ) : ℤ) = |x| := Int.natCast_natAbs x
+  have hax := Int.natCast_natAbs x
   have haV : x.natAbs ≤ V := by omega
   refine .of_body hp ?_
   unfold emodTime

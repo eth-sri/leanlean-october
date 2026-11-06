@@ -133,7 +133,7 @@ theorem read (h : IndexAt μ a l N p top) (hi : i < N) : μ (a + i) = (l.getD i 
 
 /-- An entry is below `p`. -/
 theorem getD_lt (h : IndexAt μ a l N p top) (hi : i < N) : l.getD i 0 < p := by
-  have hl : i < l.length := h.len ▸ hi
+  have hl := h.len ▸ hi
   rw [List.getD_eq_getElem _ 0 hl]
   exact h.lt _ (List.getElem_mem hl)
 

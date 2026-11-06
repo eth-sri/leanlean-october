@@ -9,6 +9,7 @@ public import Mathlib.Algebra.Order.BigOperators.Group.Finset
 public import Mathlib.Analysis.Complex.Exponential
 public import Mathlib.Data.Nat.Choose.Bounds
 public import Mathlib.Data.Nat.Choose.Sum
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Binomial coefficients
@@ -63,15 +64,15 @@ private theorem modeTerm_succ_mul {n j : ℕ} (k : ℕ) (hj : j < n) :
 private theorem modeTerm_le_succ {n k j : ℕ} (hjk : j < k) (hkn : k ≤ n) :
     modeTerm n k j ≤ modeTerm n k (j + 1) := by
   refine Nat.le_of_mul_le_mul_right ?_ (Nat.mul_pos (by omega : 0 < n - j) (by omega : 0 < k))
-  rw [← modeTerm_succ_mul k (by omega)]
-  exact Nat.mul_le_mul_left _ (Nat.mul_le_mul (by omega) (by omega))
+  rw [← modeTerm_succ_mul k tac_omega]
+  exact Nat.mul_le_mul_left _ (Nat.mul_le_mul tac_omega tac_omega)
 
 /-- The terms decrease from `j = k` on. -/
 private theorem modeTerm_succ_le {n k j : ℕ} (hkj : k ≤ j) (hjn : j < n) :
     modeTerm n k (j + 1) ≤ modeTerm n k j := by
   refine Nat.le_of_mul_le_mul_right ?_ (Nat.mul_pos (by omega : 0 < n - k) j.succ_pos)
   rw [modeTerm_succ_mul k hjn]
-  exact Nat.mul_le_mul_left _ (Nat.mul_le_mul (by omega) (by omega))
+  exact Nat.mul_le_mul_left _ (Nat.mul_le_mul tac_omega tac_omega)
 
 /-- Every term is at most the term with `j = k`. -/
 private theorem modeTerm_le_mode {n k j : ℕ} (hkn : k ≤ n) (hjn : j ≤ n) :
@@ -79,10 +80,10 @@ private theorem modeTerm_le_mode {n k j : ℕ} (hkn : k ≤ n) (hjn : j ≤ n) :
   rcases le_total j k with hjk | hkj
   · induction hjk using Nat.decreasingInduction with
     | self => rfl
-    | of_succ j hjk ih => exact (modeTerm_le_succ hjk hkn).trans (ih (by omega))
+    | of_succ j hjk ih => exact (modeTerm_le_succ hjk hkn).trans (ih tac_omega)
   · induction j, hkj using Nat.le_induction with
     | base => rfl
-    | succ j hkj ih => exact (modeTerm_succ_le hkj hjn).trans (ih (by omega))
+    | succ j hkj ih => exact (modeTerm_succ_le hkj hjn).trans (ih tac_omega)
 
 /-- Proof of Corollary 26: "the standard bound binom(n, k) ≥ 1/(n+1) · n^n/(k^k (n-k)^{n-k})",
 without fractions.  Of the `n + 1` terms of the expansion of `n^n = (k + (n-k))^n`, the one with

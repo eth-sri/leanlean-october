@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.InstanceCount
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Text
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The host of Theorem 17: the limits
@@ -27,7 +28,7 @@ public section
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-! ## The case that n is not small -/
 
@@ -109,49 +110,5 @@ theorem choosePre_of_ok {lim : Limits} {d a b : ℕ} {need : List ℕ → Need} 
       wordStr := le_word_of_le_hostWord hok
       wordSum := le_word_of_le_hostWord hok
       depth := by omega }
-
-/-- The need of the solver on an instance with at most cap query pairs is at most supNeed. -/
-private theorem need_le_supNeed (need : List ℕ → Need) (n D : ℕ) {cap w : ℕ} (hw : w ≤ cap) :
-    (need [n, D, w]).word ≤ (supNeed need n D cap).word ∧
-      (need [n, D, w]).cells ≤ (supNeed need n D cap).cells ∧
-      (need [n, D, w]).depth ≤ (supNeed need n D cap).depth := by
-  have hm : w ∈ Finset.range (cap + 1) := Finset.mem_range.2 (by omega)
-  exact ⟨Finset.le_sup (f := fun v => (need [n, D, v]).word) hm,
-    Finset.le_sup (f := fun v => (need [n, D, v]).cells) hm,
-    Finset.le_sup (f := fun v => (need [n, D, v]).depth) hm⟩
-
-/-- What hostLoop asks of the limits. -/
-theorem hostLim_of_ok {lim : Limits} {d a b : ℕ} {need : List ℕ → Need} {x : TriInst}
-    {fr D g : ℕ} (hbig : BigCase x.n D g) (hok : (hostNeedAt a b need x.n x.U D g).Ok lim fr d) :
-    HostLim lim (d + 1) (hostData x D g) x.U (hostAddr x (hostData x D g) fr) need := by
-  have hD : 16 ≤ D := hbig.sixteen_le
-  have hcells : fr + (chooseCells x.n x.U D + hostLayout x.n x.U D
-      + (supNeed need x.n D (queryCapNat x.n D)).cells + 2) ≤ lim.space := hok.cells
-  have hdepth : d + (2 * Nat.clog 2 x.n + 8 + (supNeed need x.n D (queryCapNat x.n D)).depth)
-      ≤ lim.depth := hok.depth
-  have hword : ((hostWord a b x.n x.U D g + (supNeed need x.n D (queryCapNat x.n D)).word : ℕ) : ℤ)
-      ≤ lim.word := hok.word
-  have hfr := aFr_le (x := x) (g := g) hD fr
-  have hp := hostData_p_le x g hD
-  have hm := hostData_m_le hbig
-  have hlay : 2 * Nat.sqrt D ≤ hostLayout x.n x.U D := by unfold hostLayout; omega
-  exact
-    { space := hok.space
-      fr := by change aFr (hostData x D g) x.U fr < lim.space; omega
-      prime := by omega
-      count := le_word_of_le_hostWord hok (hm.trans (by unfold hostWord; omega))
-      step := le_word_of_le_hostWord hok (by
-        change x.n + pieceSizeNat D g ≤ _
-        unfold hostWord
-        omega)
-      weights := le_word_of_le_hostWord hok
-      depth := by omega
-      solver := fun t ht => by
-        have hwc : (hostData x D g).w t ≤ queryCapNat x.n D := (hostData x D g).w_le_cap ht
-        obtain ⟨hsword, hscells, hsdepth⟩ := need_le_supNeed need x.n D hwc
-        change (need [x.n, D, (hostData x D g).w t]).Ok lim (aFr (hostData x D g) x.U fr)
-          (d + 1 + 1)
-        exact ⟨le_trans (Nat.cast_le.2 (hsword.trans (Nat.le_add_left _ _))) hword, by omega,
-          hok.space, by omega⟩ }
 
 end Light.Sec3

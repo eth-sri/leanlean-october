@@ -8,6 +8,7 @@ module
 public import PaperStatements
 public import ThreeSumApsp.Util.Index
 public import ThreeSumApsp.Util.List
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The problems for Section 3.4, read from lists of integers
@@ -110,7 +111,7 @@ theorem length_minPlusList (n : ℕ) (A B : List ℤ) : (minPlusList n A B).leng
 /-- An entry of the product is at most each of the sums. -/
 theorem minPlusEntry_le (n : ℕ) (A B : List ℤ) (i j : ℕ) {k : ℕ} (hk : k < n) :
     minPlusEntry n A B i j ≤ entry n A i k + entry n B k j :=
-  List.foldl_min_le (fun k => entry n A i k + entry n B k j) (n - 1) (by omega)
+  List.foldl_min_le (fun k => entry n A i k + entry n B k j) (n - 1) tac_omega
 
 /-- An entry of the product is one of the sums. -/
 theorem exists_minPlusEntry_eq {n : ℕ} (hn : 1 ≤ n) (A B : List ℤ) (i j : ℕ) :
@@ -127,7 +128,7 @@ theorem abs_minPlusEntry_le {n : ℕ} (hn : 1 ≤ n) {A B : List ℤ} {U : ℤ} 
   have ha := AbsLe.abs_getD_le hU hA (i * n + k)
   have hb := AbsLe.abs_getD_le hU hB (k * n + j)
   rw [he]
-  exact (abs_add_le _ _).trans (by linarith)
+  exact (abs_add_le _ _).trans tac_linarith
 
 /-- The entry `(i, j)` of the product stands at the place `i n + j`. -/
 theorem entry_minPlusList {n : ℕ} (A B : List ℤ) {i j : ℕ} (hi : i < n) (hj : j < n) :

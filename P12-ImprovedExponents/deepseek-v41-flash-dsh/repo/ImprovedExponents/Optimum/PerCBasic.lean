@@ -1,6 +1,7 @@
 module
 
 public import ImprovedExponents.Optimum.Defs
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -74,7 +75,7 @@ theorem gammaQ_strictAntiOn : StrictAntiOn gammaQ (Icc 0 (9 / 10)) := by
 /-- `q(9/10) = log_4 10 > 1`. -/
 theorem one_lt_qOf_nine_tenths : 1 < qOf (9 / 10) := by
   rw [show (9 / 10 : ℝ) = 0.9 by norm_num, qOf_nine_tenths,
-    lt_logb_iff_rpow_lt (by norm_num) (by norm_num)]
+    lt_logb_iff_rpow_lt tac_norm_num tac_norm_num]
   norm_num
 
 /-- `γ_Q(9/10) = (2 - 4 log_4 10)/3 < 0`. -/
@@ -130,8 +131,8 @@ theorem hasDerivAt_cEntropy {c : ℝ} (hc : 1 < c) :
     (hasDerivAt_negMulLog (sub_pos.2 hc).ne').comp c ((hasDerivAt_id c).sub_const 1)
   have h2 : HasDerivAt negMulLog (-log c - 1) c :=
     hasDerivAt_negMulLog (zero_lt_one.trans hc).ne'
-  have h : HasDerivAt cEntropy _ c := h1.sub h2
-  exact h.congr_deriv (by ring)
+  have h := h1.sub h2
+  exact h.congr_deriv tac_ring
 
 /-- `basePruned c = (1/2) c H(1/c) + (c - 1) ln 3`, with `c H(1/c)` as `cEntropy c`. -/
 theorem basePruned_eq {c : ℝ} (hc : 1 < c) :
@@ -143,9 +144,9 @@ theorem basePruned_eq {c : ℝ} (hc : 1 < c) :
 theorem basePruned_pos {c : ℝ} (hc : 1 < c) : 0 < basePruned c := by
   have hc0 : 0 < c := by linarith
   have hH : 0 ≤ entropy (1 / c) :=
-    entropy_nonneg (by positivity) ((div_le_one hc0).2 hc.le)
-  have h3 : 0 < (c - 1) * log 3 := mul_pos (sub_pos.2 hc) (log_pos (by norm_num))
-  have h2 : 0 ≤ c / 2 * entropy (1 / c) := mul_nonneg (by positivity) hH
+    entropy_nonneg tac_positivity ((div_le_one hc0).2 hc.le)
+  have h3 : 0 < (c - 1) * log 3 := mul_pos (sub_pos.2 hc) (log_pos tac_norm_num)
+  have h2 := mul_nonneg tac_positivity hH
   unfold basePruned
   linarith
 
@@ -158,7 +159,7 @@ theorem basePruned_continuousOn_Ioi_one : ContinuousOn basePruned (Ioi 1) := by
 
 /-- `basePruned` is continuous on `(10, ∞)`. -/
 theorem basePruned_continuousOn : ContinuousOn basePruned (Ioi 10) :=
-  basePruned_continuousOn_Ioi_one.mono (Ioi_subset_Ioi (by norm_num))
+  basePruned_continuousOn_Ioi_one.mono (Ioi_subset_Ioi tac_norm_num)
 
 /-- `basePruned` is nondecreasing on `[10, ∞)`: its derivative is
 `ln 3 - (1/2) ln(1 - 1/c) ≥ 0`. -/
@@ -166,7 +167,7 @@ theorem basePruned_monotoneOn : MonotoneOn basePruned (Ici 10) := by
   have hder : ∀ c : ℝ, 10 < c →
       HasDerivAt (fun c : ℝ => 1 / 2 * cEntropy c + (c - 1) * log 3)
         (1 / 2 * (log c - log (c - 1)) + 1 * log 3) c := fun c hc =>
-    ((hasDerivAt_cEntropy (by linarith)).const_mul (1 / 2)).add
+    ((hasDerivAt_cEntropy tac_linarith).const_mul (1 / 2)).add
       (((hasDerivAt_id c).sub_const 1).mul_const (log 3))
   have key : MonotoneOn (fun c : ℝ => 1 / 2 * cEntropy c + (c - 1) * log 3) (Ici 10) := by
     refine monotoneOn_of_deriv_nonneg (convex_Ici 10) ?_ ?_ ?_
@@ -179,8 +180,8 @@ theorem basePruned_monotoneOn : MonotoneOn basePruned (Ici 10) := by
       rw [interior_Ici] at hc
       have hc' : 10 < c := hc
       rw [(hder c hc').deriv]
-      have h2 : log (c - 1) ≤ log c := log_le_log (by linarith) (by linarith)
-      have h3 : 0 < log 3 := log_pos (by norm_num)
+      have h2 : log (c - 1) ≤ log c := log_le_log tac_linarith tac_linarith
+      have h3 : 0 < log 3 := log_pos tac_norm_num
       linarith
   intro x hx y hy hxy
   have hx1 : (1 : ℝ) < x := by linarith [mem_Ici.1 hx]

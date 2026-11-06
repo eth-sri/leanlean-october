@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Lang.Compiler.Conditions
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Pieces of a call: the arguments and the new frame
@@ -42,13 +43,13 @@ theorem effects_argsCode (I : Framed Z σ q m) (es : List Expr) (k : ℕ)
         effects (argsCode es k) m (cT (k + i)) = wd W (frame (es.map (·.val σ)) i)) ∧
       AgreeOutside (Temps k Z.F) m (effects (argsCode es k) m) := by
   induction es generalizing k m with
-  | nil => exact ⟨fun i h => absurd h (by simp), AgreeOutside.refl _ m⟩
+  | nil => exact ⟨fun i h => absurd h tac_simp, AgreeOutside.refl _ m⟩
   | cons e es ih =>
     obtain ⟨hwe, hwes⟩ := List.forall_mem_cons.1 hw
     obtain ⟨hse, hses⟩ := List.forall_mem_cons.1 hs
     rw [List.length_cons] at hk
-    obtain ⟨ve, Ae⟩ := effects_compileExpr_of_width I e k hwe hse (by omega)
-    obtain ⟨ves, Aes⟩ := ih (I.same (Ae.mono temps_subset_scratch)) (k + 1) hwes hses (by omega)
+    obtain ⟨ve, Ae⟩ := effects_compileExpr_of_width I e k hwe hse tac_omega
+    obtain ⟨ves, Aes⟩ := ih (I.same (Ae.mono temps_subset_scratch)) (k + 1) hwes hses tac_omega
     rw [argsCode, effects_append]
     refine ⟨fun i hi => ?_, Ae.trans (Aes.mono (by cells))⟩
     cases i with
@@ -79,18 +80,18 @@ private theorem effects_frameInit (Z : Sizes W) (n q' F' : ℕ) (m : ℤ → Bit
         effects (frameInit F' n) m (cStack (q' + i)) = if i < n then m (cT i) else m cZERO) ∧
       AgreeOutside (insert cADDR (Stack q' Z.Q)) m (effects (frameInit F' n) m) := by
   induction F' with
-  | zero => exact ⟨fun i h => absurd h (by omega), AgreeOutside.refl _ m⟩
+  | zero => exact ⟨fun i h => absurd h tac_omega, AgreeOutside.refl _ m⟩
   | succ F' ih =>
-    obtain ⟨val, A⟩ := ih (fun i hi => hpool i (by omega)) (by omega)
+    obtain ⟨val, A⟩ := ih (fun i hi => hpool i tac_omega) tac_omega
     -- ADDR := NFP - 2 F'; the cell at ADDR := T_{F'} or 0
     rw [frameInit_succ, effects_append, effects_cons, effects_cons, effects_nil,
-      effect_sub cADDR (A.read (by cells) hNFP) (A.read (by cells) (hpool F' (by omega))),
-      cStack_sub, effect_store _ (Function.update_self _ _ _) (Z.inRange_stack (by omega))]
+      effect_sub cADDR (A.read (by cells) hNFP) (A.read (by cells) (hpool F' tac_omega)),
+      cStack_sub, effect_store _ (Function.update_self _ _ _) (Z.inRange_stack tac_omega)]
     refine ⟨fun i hi => ?_, (A.update (by cells) _).update (by cells) _⟩
     obtain rfl | hne := eq_or_ne i F'
     · rw [Function.update_self]
       split_ifs <;> rw [Function.update_of_ne (by cells), A.cell (by cells)]
-    · cell_read using val i (by omega)
+    · cell_read using val i tac_omega
 
 /-- The code of the new frame only changes the memory. -/
 theorem straight_newFrame (F n ret : ℕ) : ∀ i ∈ newFrame F n ret, Straight i :=
@@ -119,16 +120,16 @@ theorem effects_newFrame (I : Framed Z σ q m) (hQ : q + Z.F + 1 + Z.F ≤ Z.Q) 
     (wd W (cStack (q + Z.F + 1)))
   -- the local variables of the new frame
   obtain ⟨val, A⟩ := effects_frameInit Z args.length (q + Z.F + 1) Z.F _
-    (Function.update_self cNFP _ m) (fun i hi => (R.beyond hq A₁).pool _ (by omega)) hQ
+    (Function.update_self cNFP _ m) (fun i hi => (R.beyond hq A₁).pool _ tac_omega) hQ
   generalize effects (frameInit Z.F args.length) _ = m₂ at val A ⊢
   have hNFP : m₂ cNFP = wd W (cStack (q + Z.F + 1)) :=
     A.read (by cells) (Function.update_self _ _ _)
   have A₂ := A₁.trans (A.mono (by cells))
   -- ADDR := NFP + 2
-  rw [effect_add cADDR hNFP ((R.beyond hq A₂).pool 2 (by omega)), cStack_succ_add]
+  rw [effect_add cADDR hNFP ((R.beyond hq A₂).pool 2 tac_omega), cStack_succ_add]
   have A₃ := A₂.update (a := cADDR) (by cells) (wd W (cStack (q + Z.F)))
   -- the cell at ADDR := ret
-  rw [effect_store _ (Function.update_self _ _ _) (Z.inRange_stack (by omega)),
+  rw [effect_store _ (Function.update_self _ _ _) (Z.inRange_stack tac_omega),
     (R.beyond hq A₃).pool ret hret]
   have A₄ := A₃.update (a := cStack (q + Z.F)) (by cells) (wd W ret)
   have R₄ := R.beyond hq A₄

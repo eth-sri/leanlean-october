@@ -1,6 +1,7 @@
 module
 
 public import ImprovedExponents.HostMid.Time
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ its three parts and of the small case, as upstream's `et17_spec`.
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3 ThreeSumApsp
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Host/Correct.lean
 /-- **The variant of et17 decides Exact Triangle.**  In every program `P₀ ++ R` that satisfies the
@@ -37,15 +38,15 @@ theorem et17_spec' {P₀ R : Program} {ν : Et17Nums} {Tn : List ℕ → ℕ} {n
   generalize Dfun x.n = D at *
   generalize Gfun D = g at *
   -- the parameters
-  refine Ends.next _ (hparams.mono le_rfl ?_) (by omega)
+  refine Ends.next _ (hparams.mono le_rfl ?_) tac_omega
   rintro _ rfl
   -- if n is small: the brute force
   by_cases hs : SmallCase x.n D g
   · rw [ite_eq_left hs]
     exact Ends.iteLast (fun _ => (et17Small_spec' C x μ fr D g _ _ hpre hok).mono
-      (by simp; omega) fun _ h => h) (fun h => absurd (by simp [et17LocA, hs]) h) (by simp; omega)
+      (by simp; omega) fun _ h => h) (fun h => absurd tac_simp [et17LocA, hs] h) (by simp; omega)
   rw [ite_eq_right hs]
-  refine Ends.iteLast (fun h => absurd h (by simp [et17LocA, hs])) (fun _ => ?_) (by simp; omega)
+  refine Ends.iteLast (fun h => absurd h tac_simp [et17LocA, hs]) (fun _ => ?_) (by simp; omega)
   -- otherwise: the sizes, then the tables and the loop over the instances
   have hbig := not_smallCase_iff.1 hs
   have htime := hostRunTime_le' hpre hbig Tn

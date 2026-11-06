@@ -33,21 +33,9 @@ addresses, calls the solver, and returns 1.
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.WordRam
+open ThreeSumApsp.WordRam
 
 /-! ## The outermost procedure -/
-
-/-- The first three cells of the input hold N, D and the number of wanted positions. -/
-theorem memOf_input_N (x : ThinInstance) : memOf (x.input []) 0 = x.N := by
-  simp [memOf, ThinInstance.input]
-
-@[inherit_doc memOf_input_N]
-theorem memOf_input_D (x : ThinInstance) : memOf (x.input []) 1 = x.D := by
-  simp [memOf, ThinInstance.input]
-
-@[inherit_doc memOf_input_N]
-theorem memOf_input_w (x : ThinInstance) : memOf (x.input []) 2 = x.W.length := by
-  simp [memOf, ThinInstance.input]
 
 /-! ## The limits are polynomial in N and D -/
 

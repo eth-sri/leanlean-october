@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The tries of all tiles
@@ -34,26 +35,26 @@ namespace AllTiles
 mt; the row band β, the column band β', the cell for the root of the tile, the address of the
 encoding of the row band, that of the column band, and a local for a result that is not used. -/
 abbrev EncA : ℕ := 0
-@[inherit_doc EncA] abbrev EncB : ℕ := 1
-@[inherit_doc EncA] abbrev Bands : ℕ := 2
-@[inherit_doc EncA] abbrev Leaves : ℕ := 3
-@[inherit_doc EncA] abbrev RootTab : ℕ := 4
-@[inherit_doc EncA] abbrev Tries : ℕ := 5
-@[inherit_doc EncA] abbrev Free : ℕ := 6
-@[inherit_doc EncA] abbrev Cur : ℕ := 7
-@[inherit_doc EncA] abbrev Box : ℕ := 8
-@[inherit_doc EncA] abbrev Levels : ℕ := 9
-@[inherit_doc EncA] abbrev Last : ℕ := 10
-@[inherit_doc EncA] abbrev RowBand : ℕ := 11
-@[inherit_doc EncA] abbrev ColBand : ℕ := 12
-@[inherit_doc EncA] abbrev RootPtr : ℕ := 13
-@[inherit_doc EncA] abbrev RowEnc : ℕ := 14
-@[inherit_doc EncA] abbrev ColEnc : ℕ := 15
-@[inherit_doc EncA] abbrev Void : ℕ := 16
+ abbrev EncB : ℕ := 1
+ abbrev Bands : ℕ := 2
+ abbrev Leaves : ℕ := 3
+ abbrev RootTab : ℕ := 4
+ abbrev Tries : ℕ := 5
+ abbrev Free : ℕ := 6
+ abbrev Cur : ℕ := 7
+ abbrev Box : ℕ := 8
+ abbrev Levels : ℕ := 9
+ abbrev Last : ℕ := 10
+ abbrev RowBand : ℕ := 11
+ abbrev ColBand : ℕ := 12
+ abbrev RootPtr : ℕ := 13
+ abbrev RowEnc : ℕ := 14
+ abbrev ColEnc : ℕ := 15
+ abbrev Void : ℕ := 16
 
 end AllTiles
 
-open AllTiles in
+open AllTiles
 /-- One tile, and on to the next column band. -/
 def allTilesStep : Stmt :=
   .call Proc.tile [v RowEnc, v ColEnc, v RootPtr, v Tries, v Free, v Cur, v Box, v Levels, v Last]
@@ -62,7 +63,7 @@ def allTilesStep : Stmt :=
   .set ColEnc (v ColEnc +' v Leaves) ;;
   .set ColBand (v ColBand +' k 1)
 
-open AllTiles in
+open AllTiles
 /-- One row of tiles, and on to the first tile of the next row band. -/
 def allTilesRow : Stmt :=
   .while (v ColBand <' v Bands) allTilesStep ;;
@@ -71,7 +72,7 @@ def allTilesRow : Stmt :=
   .set ColBand (k 0) ;;
   .set ColEnc (v EncB)
 
-open AllTiles in
+open AllTiles
 /-- allTiles(aENCA, aENCB, nB, T, aR, tr, fp, cur, box, L, mt). -/
 def allTilesBody : Stmt :=
   .set RowBand (k 0) ;;
@@ -135,10 +136,6 @@ private theorem tileCtx (C : AllTilesPre lim μ x) (hβ : β < x.nB) (hβ' : β'
   have hrow := Nat.mul_add_le_mul hβ (le_refl (10 ^ x.L))
   have hcol := Nat.mul_add_le_mul hβ' (le_refl (10 ^ x.L))
   obtain ⟨A, B, hA, hB, hAB⟩ := C.value_le
-  generalize β * 10 ^ x.L = a at *
-  generalize β' * 10 ^ x.L = b at *
-  generalize x.nB * 10 ^ x.L = z at *
-  generalize x.nB * x.nB = q at *
   exact
     { std := C.std, ht := C.t_le, hmL := C.m_le, value_le := ⟨A, B, hA β, hB β', hAB⟩
       pow_le := C.pow_le, layout := by light_order }
@@ -197,7 +194,6 @@ private theorem tile_meets (hTile : TileSpec lim P) (C : AllTilesPre lim μ x) (
     ⟨tries_tileArgs x β β' ▸ htrie, tries_tileArgs x β β' ▸ hroots,
       M.same.then same fun c hc => ⟨hc, ?_⟩⟩
   -- a cell below cur or behind the trie area is none of those that tile may change
-  have hc' : c < x.cur ∨ x.tr + x.cap ≤ c := hc
   simp only [TileArgs.Kept, tileArgs, Outside]
   omega
 
@@ -208,20 +204,17 @@ private theorem step_spec (hTile : TileSpec lim P) (C : AllTilesPre lim μ x) (h
   obtain ⟨void, μ₁, rfl, M⟩ := h
   light_facts C C.std
   -- tile(rowEnc, colEnc, rootPtr, …)
-  light_call (tile_meets hTile C hβ hβ' (by omega) M) with void' μ₂ M₂
+  light_call (tile_meets hTile C hβ hβ' tac_omega M) with void' μ₂ M₂
   -- rootPtr := rootPtr + 1; colEnc := colEnc + leaves; colBand := colBand + 1
   have hptr : x.aR + (β * x.nB + (β' + 1)) = x.aR + (β * x.nB + β') + 1 := by ring
   have hcol : x.aENCB + (β' + 1) * 10 ^ x.L = x.aENCB + β' * 10 ^ x.L + 10 ^ x.L := by ring
   have hi := Nat.mul_add_lt_mul hβ hβ'
   have hcolS := Nat.mul_add_le_mul hβ' (le_refl (10 ^ x.L))
-  have hbands : x.nB ≤ x.nB * 10 ^ x.L := Nat.le_mul_of_pos_right _ (by positivity)
   unfold Inv
   rw [hptr, hcol]
   -- names for the products
   generalize β * x.nB + β' = ptr at *
-  generalize x.aENCA + β * 10 ^ x.L = row at *
   generalize β' * 10 ^ x.L = off at *
-  generalize x.nB * 10 ^ x.L = all at *
   generalize 10 ^ x.L = leaves at *
   light_set (x.aR + ptr + 1 : ℕ)
   light_set (x.aENCB + off + leaves : ℕ)
@@ -251,16 +244,14 @@ private theorem row_spec (hTile : TileSpec lim P) (C : AllTilesPre lim μ x) (h�
     have hrow : x.aENCA + (β + 1) * 10 ^ x.L = x.aENCA + β * 10 ^ x.L + 10 ^ x.L := by ring
     have hcol : x.aENCB + 0 * 10 ^ x.L = x.aENCB := by ring
     have hrowS := Nat.mul_add_le_mul hβ (le_refl (10 ^ x.L))
-    have hbands : x.nB ≤ x.nB * 10 ^ x.L := Nat.le_mul_of_pos_right _ (by positivity)
+    have hbands : x.nB ≤ x.nB * 10 ^ x.L := Nat.le_mul_of_pos_right _ tac_positivity
     have hbefore : triesBefore x β x.nB = triesBefore x (β + 1) 0 := by
       rw [triesBefore, tilesBefore_row, triesBefore]
     have M' : Mem μ μ' x (β + 1) 0 := ⟨hbefore ▸ M.trie, hbefore ▸ M.roots, M.same⟩
     unfold Inv
     rw [hptr, hrow, hcol]
     -- names for the products
-    generalize x.aR + (β * x.nB + x.nB) = ptr at *
     generalize β * 10 ^ x.L = off at *
-    generalize x.nB * 10 ^ x.L = all at *
     generalize 10 ^ x.L = leaves at *
     light_set (x.aENCA + off + leaves : ℕ)
     light_set (β + 1 : ℕ)
@@ -271,9 +262,9 @@ private theorem row_spec (hTile : TileSpec lim P) (C : AllTilesPre lim μ x) (h�
 /-- The time of all rows. -/
 private theorem time_le (nB T : ℕ) : 12 + (nB * (4 + (nB * (T + 27) + 16)) + 4)
     ≤ nB * (nB * (T + 80) + 40) + 30 := by
-  have hrow : nB * (T + 27) ≤ nB * (T + 80) := Nat.mul_le_mul_left _ (by omega)
+  have hrow : nB * (T + 27) ≤ nB * (T + 80) := Nat.mul_le_mul_left _ tac_omega
   have hall : nB * (4 + (nB * (T + 27) + 16)) ≤ nB * (nB * (T + 80) + 40) :=
-    Nat.mul_le_mul_left _ (by omega)
+    Nat.mul_le_mul_left _ tac_omega
   omega
 
 end AllTiles

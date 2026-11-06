@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The lowest symbols P₀ of a leaf turned into stars
@@ -28,7 +29,7 @@ the two numbers; `StarFirst.round_runs` says that a round of the program does ju
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-! ## One more digit -/
 
@@ -82,14 +83,14 @@ private theorem lastPos_succ (hi : i < l.length) :
 copy, the length, the number of stars), the position, the position of the last star so far, the
 digit, and the number of nines turned into stars so far.  Local 0 also takes the result. -/
 abbrev Src : ℕ := 0
-@[inherit_doc Src] abbrev Result : ℕ := 0
-@[inherit_doc Src] abbrev Dst : ℕ := 1
-@[inherit_doc Src] abbrev Len : ℕ := 2
-@[inherit_doc Src] abbrev Stars : ℕ := 3
-@[inherit_doc Src] abbrev Pos : ℕ := 4
-@[inherit_doc Src] abbrev Last : ℕ := 5
-@[inherit_doc Src] abbrev Digit : ℕ := 6
-@[inherit_doc Src] abbrev Turned : ℕ := 7
+ abbrev Result : ℕ := 0
+ abbrev Dst : ℕ := 1
+ abbrev Len : ℕ := 2
+ abbrev Stars : ℕ := 3
+ abbrev Pos : ℕ := 4
+ abbrev Last : ℕ := 5
+ abbrev Digit : ℕ := 6
+ abbrev Turned : ℕ := 7
 
 end StarFirst
 
@@ -128,7 +129,6 @@ private theorem round_runs {lim : Limits} (hs : Std lim) {μ : ℕ → ℤ} {cur
   light_facts hs
   have hcast9 : ((x : ℤ) = 9) = (x = 9) := by norm_cast
   have hcast10 : ((x : ℤ) = 10) = (x = 10) := by norm_cast
-  have haddr : ((box : ℤ) + i).toNat = box + i := by omega
   simp only [starFirstRound]
   -- The tests of the program: a nine, fewer than e turned, a star.  In each case the block is run:
   -- the first goal says that every address is in range and every value fits in a word, the second
@@ -152,7 +152,7 @@ theorem starFirst_spec {lim : Limits} {P : Program} (hP : P[Proc.starFirst]? = s
     (hs : Std lim) : StarFirstSpec lim P := by
   rintro cur box _ e l μ hseg rfl hapart hcur hbox
   refine fun d _ => ⟨starFirstBody, hP, ?_⟩
-  have hlen : (starFirst e l).length = l.length := length_starFirst e l
+  have hlen := length_starFirst e l
   unfold tStarFirst
   -- while pos < len
   refine Ends.next _ (Ends.whileBlock (Inv cur box e l μ) l.length ?start ?round ?done
@@ -164,7 +164,7 @@ theorem starFirst_spec {lim : Limits} {P : Program} (hP : P[Proc.starFirst]? = s
   case round =>
     rintro i _ hi ⟨μ', dg, rfl, hcopy, hsame⟩
     have hcell : μ' (cur + i) = (l.getD i 0 : ℕ) :=
-      (hsame _ (by omega)).trans (hseg.read hi)
+      (hsame _ tac_omega).trans (hseg.read hi)
     have hturned : turned e l i ≤ i :=
       (min_le_right _ _).trans (List.count_le_length.trans (List.length_take_le _ _))
     refine ⟨by simp, by simp; omega,

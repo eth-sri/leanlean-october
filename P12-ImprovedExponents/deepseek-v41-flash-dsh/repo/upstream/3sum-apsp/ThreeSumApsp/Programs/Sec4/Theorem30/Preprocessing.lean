@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Directory
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The preprocessing of Theorem 30, at a given place of the memory
@@ -22,7 +23,7 @@ preCore_spec puts them behind the shared stage.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 /-! ## The program -/
 
@@ -32,26 +33,26 @@ namespace PreCore
 that are not used; the address of WD, the number nB, the addresses of CUR, BOX, FP, ROOTS, the
 number m - t, and the address of TR. -/
 abbrev Levels : ℕ := 0
-@[inherit_doc Levels] abbrev Inner : ℕ := 1
-@[inherit_doc Levels] abbrev Switch : ℕ := 2
-@[inherit_doc Levels] abbrev Size : ℕ := 3
-@[inherit_doc Levels] abbrev Width : ℕ := 4
-@[inherit_doc Levels] abbrev MatX : ℕ := 5
-@[inherit_doc Levels] abbrev MatY : ℕ := 6
-@[inherit_doc Levels] abbrev Base : ℕ := 7
-@[inherit_doc Levels] abbrev Void : ℕ := 8
-@[inherit_doc Levels] abbrev Digits : ℕ := 9
-@[inherit_doc Levels] abbrev Bands : ℕ := 10
-@[inherit_doc Levels] abbrev Cur : ℕ := 11
-@[inherit_doc Levels] abbrev Box : ℕ := 12
-@[inherit_doc Levels] abbrev Free : ℕ := 13
-@[inherit_doc Levels] abbrev Roots : ℕ := 14
-@[inherit_doc Levels] abbrev Last : ℕ := 15
-@[inherit_doc Levels] abbrev Tries : ℕ := 16
+ abbrev Inner : ℕ := 1
+ abbrev Switch : ℕ := 2
+ abbrev Size : ℕ := 3
+ abbrev Width : ℕ := 4
+ abbrev MatX : ℕ := 5
+ abbrev MatY : ℕ := 6
+ abbrev Base : ℕ := 7
+ abbrev Void : ℕ := 8
+ abbrev Digits : ℕ := 9
+ abbrev Bands : ℕ := 10
+ abbrev Cur : ℕ := 11
+ abbrev Box : ℕ := 12
+ abbrev Free : ℕ := 13
+ abbrev Roots : ℕ := 14
+ abbrev Last : ℕ := 15
+ abbrev Tries : ℕ := 16
 
 end PreCore
 
-open PreCore in
+open PreCore
 /-- The addresses of the areas of Section 4, which lie one behind the other from WD on. -/
 def preCoreAddr : Stmt :=
   .set Digits (M (v Base +' k Dir.sharedEnd)) ;;
@@ -63,7 +64,7 @@ def preCoreAddr : Stmt :=
   .set Last (v Inner -' v Switch) ;;
   .set Tries (v Roots +' v Bands *' v Bands)
 
-open PreCore in
+open PreCore
 /-- The trie array starts as [0], of length 1; then the tries of all tiles. -/
 def preCoreFinish : Stmt :=
   .store (v Tries) (k 0) ;;
@@ -71,7 +72,7 @@ def preCoreFinish : Stmt :=
   .call Proc.allTiles [M (v Base +' k Dir.encA), M (v Base +' k Dir.encB), v Bands,
     M (v Base +' k Dir.leaves), v Roots, v Tries, v Free, v Cur, v Box, v Levels, v Last] Void
 
-open PreCore in
+open PreCore
 /-- preCore(L, m, t, N, D, aX, aY, b0) builds the data structure for the matrices at aX and aY in
 the block from b0 on. -/
 def preCoreBody : Stmt :=
@@ -121,9 +122,9 @@ theorem trieMem_start (p : Sec2.Par) (t b0 : ℕ) (μ : ℕ → ℤ) :
     TrieMem (Function.update (Function.update μ (aTR p b0) 0) (aFP p b0) 1) (aTR p b0)
       (trieCap p t) (aFP p b0) [0] := by
   obtain ⟨⟩ := areas p t b0
-  refine ⟨fun i hi => ?_, Function.update_self .., by simp [trieCap], Or.inl (by omega)⟩
+  refine ⟨fun i hi => ?_, Function.update_self .., by simp [trieCap], Or.inl tac_omega⟩
   obtain rfl : i = 0 := by simpa using hi
-  rw [Nat.add_zero, Function.update_of_ne (by omega), Function.update_self]
+  rw [Nat.add_zero, Function.update_of_ne tac_omega, Function.update_self]
   rfl
 
 /-! ## The routine -/

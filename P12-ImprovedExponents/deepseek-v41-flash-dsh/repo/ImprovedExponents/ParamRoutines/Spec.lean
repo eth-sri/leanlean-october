@@ -1,6 +1,7 @@
 module
 
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Parameters
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -28,7 +29,7 @@ Upstream instantiates the reduction of Theorem 17 with `D := ⌊n^{1/18}⌋` and
 
 namespace ImprovedExponents.ParamRoutines
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-! ## The parameters, with real powers -/
 

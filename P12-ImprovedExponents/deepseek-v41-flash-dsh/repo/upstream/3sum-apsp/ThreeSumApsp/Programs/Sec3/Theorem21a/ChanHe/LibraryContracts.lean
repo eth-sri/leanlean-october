@@ -9,6 +9,7 @@ public import ThreeSumApsp.Lang.Lib.Emod
 public import ThreeSumApsp.Lang.Lib.MergeSort
 public import ThreeSumApsp.Lang.Lib.Sieve
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # 3SUM from Convolution-3SUM: the routines of the general library
@@ -29,7 +30,7 @@ variable {lim : Limits} {P : Program} {p : ℕ}
 
 /-- `⌈log₂ x⌉ ≤ ⌊log₂ x⌋ + 1`. -/
 private theorem clog_le_log_succ (x : ℕ) : Nat.clog 2 x ≤ Nat.log 2 x + 1 :=
-  Nat.clog_le_of_le_pow (Nat.lt_pow_succ_log_self (by norm_num) x).le
+  Nat.clog_le_of_le_pow (Nat.lt_pow_succ_log_self tac_norm_num x).le
 
 /-- The remainder. -/
 theorem emodSpec_of (hP : P[p]? = some emodBody) : EmodSpec lim P p := by
@@ -83,7 +84,7 @@ theorem sortSpec_of {pHalf pMerge pCopy : ℕ} (C : MergeSort.Procs P p pHalf pM
   simp only [sortNeed] at hword hcells hdepth
   push_cast at hword
   have hclog := clog_le_log_succ L.length
-  refine (sort_meets C hok.space (by omega) hseg hbelow hcells d (by omega)).mono ?_ fun _ _ h => h
+  refine (sort_meets C hok.space tac_omega hseg hbelow hcells d tac_omega).mono ?_ fun _ _ h => h
   -- `n ⌈log₂ n⌉ ≤ n (⌊log₂ n⌋ + 1)`
   have hmul := Nat.mul_le_mul_left L.length hclog
   unfold tSort sortTime

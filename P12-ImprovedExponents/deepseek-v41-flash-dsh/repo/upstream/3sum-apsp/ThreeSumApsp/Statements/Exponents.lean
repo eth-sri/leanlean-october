@@ -7,6 +7,7 @@ module
 
 public import PaperStatements
 public import ThreeSumApsp.Machine.Steps
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # From a real exponent to a rational one
@@ -28,7 +29,6 @@ theorem rpow_pow_den {r : ℚ} (hr0 : 0 ≤ r) (n : ℕ) :
     ((n : ℝ) ^ (r : ℝ)) ^ r.den = (n : ℝ) ^ r.num.toNat := by
   have hnum : ((r.num.toNat : ℕ) : ℝ) = (r.num : ℝ) := by
     exact_mod_cast congrArg (Int.cast : ℤ → ℝ) (Int.toNat_of_nonneg (Rat.num_nonneg.2 hr0))
-  have hden : (r.den : ℝ) ≠ 0 := by exact_mod_cast r.den_nz
   have hmul : (r : ℝ) * (r.den : ℝ) = ((r.num.toNat : ℕ) : ℝ) := by
     rw [Rat.cast_def, hnum]
     field_simp
@@ -46,7 +46,7 @@ theorem bigO_of_le_rpow {C : ℝ} {r : ℚ} (hr0 : 0 ≤ r) {T : ℕ → ℕ}
             ((hT n hn).trans (mul_le_mul_of_nonneg_right (le_abs_self C) hrpow)) _
       _ = |C| ^ r.den * (n : ℝ) ^ r.num.toNat := by rw [mul_pow, rpow_pow_den hr0]
       _ ≤ (⌈|C| ^ r.den⌉₊ : ℝ) * (n : ℝ) ^ r.num.toNat :=
-          mul_le_mul_of_nonneg_right (Nat.le_ceil _) (by positivity)
+          mul_le_mul_of_nonneg_right (Nat.le_ceil _) tac_positivity
   exact_mod_cast hreal
 
 /-- The bound `C (n^a + 1)` of `SolvedInTimeAt` for `e = 0`, rounded up. -/
@@ -56,11 +56,11 @@ noncomputable def stepBound (C a : ℝ) (n : ℕ) : ℕ := ⌈C * ((n : ℝ) ^ a
 theorem bigO_stepBound (C : ℝ) {r : ℚ} (hr0 : 0 ≤ r) : EndStatement.BigO (stepBound C r) r := by
   refine bigO_of_le_rpow (C := 2 * |C| + 1) hr0 fun n hn => ?_
   have hone : (1 : ℝ) ≤ (n : ℝ) ^ (r : ℝ) :=
-    Real.one_le_rpow (by exact_mod_cast (by omega : 1 ≤ n)) (by exact_mod_cast hr0)
+    Real.one_le_rpow ((by exact_mod_cast (by omega : 1 ≤ n))) ((by exact_mod_cast hr0))
   have habs : C * ((n : ℝ) ^ (r : ℝ) + 1) ≤ |C| * ((n : ℝ) ^ (r : ℝ) + 1) :=
-    mul_le_mul_of_nonneg_right (le_abs_self C) (by positivity)
+    mul_le_mul_of_nonneg_right (le_abs_self C) tac_positivity
   have hceil : (stepBound C r n : ℝ) < |C| * ((n : ℝ) ^ (r : ℝ) + 1) + 1 :=
-    (Nat.cast_le.2 (Nat.ceil_le_ceil habs)).trans_lt (Nat.ceil_lt_add_one (by positivity))
+    (Nat.cast_le.2 (Nat.ceil_le_ceil habs)).trans_lt (Nat.ceil_lt_add_one tac_positivity)
   -- `|C| (X + 1) + 1 ≤ (2 |C| + 1) X` for `X ≥ 1`
   nlinarith [mul_nonneg (abs_nonneg C) (sub_nonneg.2 hone)]
 

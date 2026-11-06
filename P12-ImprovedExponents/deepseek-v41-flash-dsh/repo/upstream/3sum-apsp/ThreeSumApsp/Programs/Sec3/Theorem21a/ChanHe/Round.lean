@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.FrontFacts
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.GridContracts
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Nodes
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The reduction from 3SUM to Convolution-3SUM: one splitting
@@ -31,7 +32,7 @@ calls of the recursive procedure.
 
 namespace Light.Sec3.ChanHe
 
-open ThreeSumApsp ThreeSumApsp.ChanHe ThreeSumApsp.Spec Finset
+open ThreeSumApsp.ChanHe
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -40,27 +41,27 @@ namespace RoundLocals
 /-- The local variables of round: the arguments β, β', b, nd, val, bt, Λ, A, n, f, cx, fr; then
 1 - b, A + n, A + 2n, and the sizes of the three sets. -/
 abbrev BETA : ℕ := 0
-@[inherit_doc BETA] abbrev BETA' : ℕ := 1
-@[inherit_doc BETA] abbrev BIT : ℕ := 2
-@[inherit_doc BETA] abbrev NVALUES : ℕ := 3
-@[inherit_doc BETA] abbrev VAL : ℕ := 4
-@[inherit_doc BETA] abbrev BITS : ℕ := 5
-@[inherit_doc BETA] abbrev LAM : ℕ := 6
-@[inherit_doc BETA] abbrev OUT0 : ℕ := 7
-@[inherit_doc BETA] abbrev NMAX : ℕ := 8
-@[inherit_doc BETA] abbrev LEVELS : ℕ := 9
-@[inherit_doc BETA] abbrev CTX : ℕ := 10
-@[inherit_doc BETA] abbrev FREE : ℕ := 11
-@[inherit_doc BETA] abbrev NBIT : ℕ := 12
-@[inherit_doc BETA] abbrev OUT1 : ℕ := 13
-@[inherit_doc BETA] abbrev OUT2 : ℕ := 14
-@[inherit_doc BETA] abbrev SIZE0 : ℕ := 15
-@[inherit_doc BETA] abbrev SIZE1 : ℕ := 16
-@[inherit_doc BETA] abbrev SIZE2 : ℕ := 17
+ abbrev BETA' : ℕ := 1
+ abbrev BIT : ℕ := 2
+ abbrev NVALUES : ℕ := 3
+ abbrev VAL : ℕ := 4
+ abbrev BITS : ℕ := 5
+ abbrev LAM : ℕ := 6
+ abbrev OUT0 : ℕ := 7
+ abbrev NMAX : ℕ := 8
+ abbrev LEVELS : ℕ := 9
+ abbrev CTX : ℕ := 10
+ abbrev FREE : ℕ := 11
+ abbrev NBIT : ℕ := 12
+ abbrev OUT1 : ℕ := 13
+ abbrev OUT2 : ℕ := 14
+ abbrev SIZE0 : ℕ := 15
+ abbrev SIZE1 : ℕ := 16
+ abbrev SIZE2 : ℕ := 17
 
 end RoundLocals
 
-open RoundLocals in
+open RoundLocals
 /-- The three sets of the splitting are written to A, A + n and A + 2n. -/
 def roundSets (pPick : ℕ) : Stmt :=
   .set NBIT (k 1 -' v BIT) ;;
@@ -70,7 +71,7 @@ def roundSets (pPick : ℕ) : Stmt :=
   .call pPick [v NVALUES, v VAL, v BITS, v LAM, v BETA, v NBIT, v BETA', k 0, k 1, v OUT1] SIZE1 ;;
   .call pPick [v NVALUES, v VAL, v BITS, v LAM, v BETA, v NBIT, v BETA', k 1, k 1, v OUT2] SIZE2
 
-open RoundLocals in
+open RoundLocals
 /-- round(β, β', b, nd, val, bt, Λ, A, n, f, cx, fr), over the procedures number pPick and pNodes:
 the three sets are written, and the recursive procedure is called on them. -/
 def roundBody (pPick pNodes : ℕ) : Stmt :=
@@ -177,18 +178,18 @@ theorem roundSets_ends (hF : FrontMem μ a) {pPick : ℕ}
   light_set (a.A + a.n + a.n : ℕ)
   -- n₀ := pick(nd, val, bt, Λ, β, b, β', 0, 0, A)
   light_call (hF.pick_meets (o := 0) hPick hβ hβ' (if v then 1 else 0) 0 0
-    (by omega) hfr hw hword) with _ μ₁ ⟨rfl, seg₁, same₁⟩
-  have out₁ : SameOutside μ μ₁ a.A (3 * a.n) := same₁.mono (by omega) (by omega)
+    tac_omega hfr hw hword) with _ μ₁ ⟨rfl, seg₁, same₁⟩
+  have out₁ : SameOutside μ μ₁ a.A (3 * a.n) := same₁.mono tac_omega tac_omega
   have hF₁ := hF.of_sameOutside out₁
   -- n₁ := pick(nd, val, bt, Λ, β, b', β', 0, 1, A₁)
   light_call (hF₁.pick_meets (o := a.n) hPick hβ hβ' (if !v then 1 else 0) 0 1
-    (by omega) hfr hw hword) with _ μ₂ ⟨rfl, seg₂, same₂⟩
-  have out₂ : SameOutside μ₁ μ₂ a.A (3 * a.n) := same₂.mono (by omega) (by omega)
+    tac_omega hfr hw hword) with _ μ₂ ⟨rfl, seg₂, same₂⟩
+  have out₂ : SameOutside μ₁ μ₂ a.A (3 * a.n) := same₂.mono tac_omega tac_omega
   have hF₂ := hF₁.of_sameOutside out₂
   -- n₂ := pick(nd, val, bt, Λ, β, b', β', 1, 1, A₂)
   light_call (hF₂.pick_meets (o := a.n + a.n) hPick hβ hβ' (if !v then 1 else 0) 1 1
-    (by omega) hfr hw hword) with _ μ₃ ⟨rfl, seg₃, same₃⟩
-  have out₃ : SameOutside μ₂ μ₃ a.A (3 * a.n) := same₃.mono (by omega) (by omega)
+    tac_omega hfr hw hword) with _ μ₃ ⟨rfl, seg₃, same₃⟩
+  have out₃ : SameOutside μ₂ μ₃ a.A (3 * a.n) := same₃.mono tac_omega tac_omega
   -- The three lists are the three sets of the splitting.  (For the first set pick looks at one
   -- digit only, and the 0 stands for the value of the other digit, which it ignores.)
   obtain ⟨nodup₁, set₁⟩ := pick_splitA a.V a.Λ hβ hβ' v 0 hF.nodup
@@ -198,8 +199,8 @@ theorem roundSets_ends (hF : FrontMem μ a) {pPick : ℕ}
   have hlen₂ := hlen (if !v then 1 else 0) 0 1
   exact ⟨_, _, _, μ₃, out₁.trans (out₂.trans out₃),
     (hF₂.of_sameOutside out₃).nodeMem
-      ⟨_, rfl, (seg₁.of_sameOutside same₂ (by omega)).of_sameOutside same₃ (by omega), nodup₁, set₁⟩
-      ⟨_, rfl, seg₂.of_sameOutside same₃ (by omega), nodup₂, set₂⟩
+      ⟨_, rfl, (seg₁.of_sameOutside same₂ tac_omega).of_sameOutside same₃ tac_omega, nodup₁, set₁⟩
+      ⟨_, rfl, seg₂.of_sameOutside same₃ tac_omega, nodup₂, set₂⟩
       ⟨_, rfl, Nat.add_assoc a.A a.n a.n ▸ seg₃, nodup₃, set₃⟩ hlen₁ hlen₂ (hlen _ _ _)
       (Finset.filter_subset _ _) (Finset.filter_subset _ _) (Finset.filter_subset _ _), rfl⟩
 
@@ -233,8 +234,8 @@ theorem round_spec {p pPick pNodes : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ →
   have htime := le_tRound T hF.nd_le a.V a.m a.np a.Λ f (splitA a.V β v a.D.toFinset)
     (splitB a.V β β' v false a.D.toFinset) (splitB a.V β β' v true a.D.toFinset)
   -- the three sets
-  light_piece (roundSets_ends hF hPick hβ hβ' v (by omega) hw (by omega)
-    (by omega)) with _ ⟨k₁, k₂, k₃, μ₁, out, hmem, rfl⟩
+  light_piece (roundSets_ends hF hPick hβ hβ' v tac_omega hw tac_omega
+    tac_omega) with _ ⟨k₁, k₂, k₃, μ₁, out, hmem, rfl⟩
   -- return nodes(f, A, n₀, A₁, n₁, A₂, n₂, cx, fr)
   light_call (hN f _ a.Λ a.cx μ₁ (d + 1)
     { mem := hmem

@@ -18,7 +18,7 @@ proposition `p`.
 
 namespace ThreeSumApsp
 
-open Classical in
+open Classical
 /-- The answer of a decision problem as a number: 1 for yes, 0 for no. -/
 noncomputable def flag (p : Prop) : ℤ := if p then 1 else 0
 

@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Recursion
 public import ThreeSumApsp.Sec2.Lemma10
 public import ThreeSumApsp.Spec.Sec2.Theorem5.Arrays
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # What encode computes, in the paper's terms
@@ -30,7 +31,7 @@ open ThreeSumApsp
 
 namespace Light.Sec2
 
-open Finset ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-! ## From positions to strings -/
 
@@ -46,7 +47,7 @@ private theorem encIdx_eq_computeEncoding {c : ℕ → ℤ}
     encIdx c L arr i = computeEncoding coef L A (decodeT L i) := by
   induction L generalizing arr i with
   | zero =>
-    rw [encIdx, computeEncoding, harr 0 (by norm_num)]
+    rw [encIdx, computeEncoding, harr 0 tac_norm_num]
     exact congrArg A (Subsingleton.elim _ _)
   | succ L ih =>
     -- The first digit of i is the digit of a term λ, and the rest of i is the code of a leaf below.
@@ -84,13 +85,13 @@ private theorem EncodePre.of_seg {l T : List ℤ} (lay : EncodeLayout lim src ou
     (hVB : ((7 ^ L : ℕ) : ℤ) * V ≤ lim.word) :
     EncodePre lim μ src out scr tab p7 p10 V L (fun j => l.getD j 0) (fun i => T.getD i 0) :=
   { lay := lay
-    srcV := fun j hj => hsrc.getD (by omega) 0
+    srcV := fun j hj => hsrc.getD tac_omega 0
     src_bound := fun j hj => by
-      rw [List.getD_eq_getElem _ _ (by omega)]
+      rw [List.getD_eq_getElem _ _ tac_omega]
       exact hV _ (List.getElem_mem _)
-    tabV := fun i hi => htab.getD (by omega) 0
+    tabV := fun i hi => htab.getD tac_omega 0
     coef_bound := fun i hi => by
-      rw [List.getD_eq_getElem _ _ (by omega)]
+      rw [List.getD_eq_getElem _ _ tac_omega]
       exact hc _ (List.getElem_mem _)
     p7V := h7, p10V := h10, word_bound := hVB }
 

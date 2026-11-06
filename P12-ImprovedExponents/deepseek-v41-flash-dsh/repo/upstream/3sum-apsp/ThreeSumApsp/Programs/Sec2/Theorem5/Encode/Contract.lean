@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Meaning
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # What the callers of encode assume
@@ -60,28 +61,28 @@ theorem encode_entry {α : Type} [Fintype α] (e : α ≃ Fin 7) (coef : Term �
     Meets lim P pEncode d [n, src, dst, scr, tab, p7, p10] μ (cEncode * 10 ^ n) fun _ μ' =>
       Seg μ' dst (arrT (computeEncoding coef n A)) ∧
         SameOutside2 μ μ' dst (10 ^ n) scr (7 ^ n) := by
-  have hV0 : 0 ≤ V := (abs_nonneg _).trans (hV fun _ => e.symm 0)
+  have hV0 := (abs_nonneg _).trans (hV fun _ => e.symm 0)
   have hVB' : ((7 ^ n : ℕ) : ℤ) * V ≤ lim.word := by
     refine le_trans ?_ hVB
     push_cast
-    exact mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) (Nat.le_succ n)) hV0
+    exact mul_le_mul_of_nonneg_right (pow_le_pow_right₀ tac_norm_num (Nat.le_succ n)) hV0
   have hscr := scrSize_le n
   refine .of_body hE ((encode_str e coef hT hc hcoef hS hE (hpl.layout std) A hsrc hV htab
-    (pow_of_seg hpl.hp7 hpl.n_le) (pow_of_seg hpl.hp10 hpl.n_le) hVB' (by omega)).mono le_rfl
+    (pow_of_seg hpl.hp7 hpl.n_le) (pow_of_seg hpl.hp10 hpl.n_le) hVB' tac_omega).mono le_rfl
     fun σ' h => ⟨h.1, h.2.mono fun x hx => by omega⟩)
 
 /-- **The specification that the callers of encode assume, for the array a.** -/
 theorem encodeL_entry (std : Std lim) (hS : P[pEncStep]? = some encStepBody)
     (hE : P[pEncode]? = some (encodeBody pEncStep pEncode)) : EncodeLSpec lim P cEncode := by
   intro n Lmax src dst scr tab p7 p10 μ a V hpl htab hsrc hV hVB d hd
-  exact computeEncoding_phi a ▸ encode_entry leftEquiv phi (by decide) (by decide) phiFlat_spec std
+  exact computeEncoding_phi a ▸ encode_entry leftEquiv phi tac_decide tac_decide phiFlat_spec std
     hS hE hd hpl htab a hsrc hV hVB
 
 /-- **The specification that the callers of encode assume, for the array b.** -/
 theorem encodeR_entry (std : Std lim) (hS : P[pEncStep]? = some encStepBody)
     (hE : P[pEncode]? = some (encodeBody pEncStep pEncode)) : EncodeRSpec lim P cEncode := by
   intro n Lmax src dst scr tab p7 p10 μ b V hpl htab hsrc hV hVB d hd
-  exact computeEncoding_psi b ▸ encode_entry rightEquiv psi (by decide) (by decide) psiFlat_spec std
+  exact computeEncoding_psi b ▸ encode_entry rightEquiv psi tac_decide tac_decide psiFlat_spec std
     hS hE hd hpl htab b hsrc hV hVB
 
 end Light.Sec2

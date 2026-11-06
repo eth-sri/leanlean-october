@@ -3,6 +3,7 @@ module
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Program
 public import ImprovedExponents.PrunedProgram.Pre.Defs
 public import ImprovedExponents.PrunedProgram.Query.QuerySum
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -104,8 +105,8 @@ theorem outArgsP_pre (hlim : Lim30 lim p t b0 U) (hds : DSReadyP p t hmL aX aY b
       segJ := hds.shared.dig3 J hJ
       lenI := length_digitList ..
       lenJ := length_digitList ..
-      ltI := fun _ => lt_of_mem_digitList (by norm_num)
-      ltJ := fun _ => lt_of_mem_digitList (by norm_num)
+      ltI := fun _ => lt_of_mem_digitList tac_norm_num
+      ltJ := fun _ => lt_of_mem_digitList tac_norm_num
       spaceMasks := by change p.aMASK b0 + p.KK * p.L < lim.space; omega
       apartMask := ?_
       apartI := ?_
@@ -142,8 +143,6 @@ theorem queryAtOutP_spec (hOut : OutDigitsSpec lim P) (hlim : Lim30 lim p t b0 U
     exact_mod_cast (by omega : p.aDIG3 b0 + I * p.Lo ≤ lim.space)
   have hprodJ : ((p.aDIG3 b0 + J * p.Lo : ℕ) : ℤ) ≤ lim.space := by
     exact_mod_cast (by omega : p.aDIG3 b0 + J * p.Lo ≤ lim.space)
-  have hI0 : (0 : ℤ) ≤ (I : ℤ) * p.Lo := by positivity
-  have hJ0 : (0 : ℤ) ≤ (J : ℤ) * p.Lo := by positivity
   push_cast at hprodI hprodJ
   -- outDigits(blockTab[I], blockTab[J], digitTab + I (L - m), digitTab + J (L - m), dir[21], …)
   light_call (hOut _ μ hpre) using queryAtLocals, queryAtRead, outArgs, blockI, blockJ,
@@ -161,7 +160,7 @@ theorem coreArgsP_pre (ht : t ≤ p.m) (hlim : Lim30 lim p t b0 U) (hX : ∀ i j
     (hY : ∀ i j, |Y i j| ≤ U) (hds : DSReadyP p t hmL aX aY b0 X Y μ) (I J : Fin p.N)
     (hwd : SegN μ (aWD p b0) (digitsO (outStrOfPos (stdLayout hmL) I J))) :
     QueryCorePreP lim μ (coreArgs p t hmL b0 X Y I J) := by
-  have hU : 0 ≤ U := (abs_nonneg _).trans (hX I ⟨0, Nat.pow_pos (by norm_num)⟩)
+  have hU := (abs_nonneg _).trans (hX I ⟨0, Nat.pow_pos tac_norm_num⟩)
   have hβ : (I : ℕ) / (p.K0 * p.N0) < p.nB := bandOf_lt_numBands hmL p.N I I.isLt
   have hβ' : (J : ℕ) / (p.K0 * p.N0) < p.nB := bandOf_lt_numBands hmL p.N J J.isLt
   -- the encodings lie below WD, the tries behind the scratch strings
@@ -224,7 +223,7 @@ theorem queryAtCoreP_spec (hCore : QueryCoreSpecP lim P) (ht : t ≤ p.m)
     have hsp := hlim.space
     obtain ⟨⟩ := areas p t b0
     omega
-  have hmeets := (hCore _ μ hpre _ (by omega))
+  have hmeets := (hCore _ μ hpre _ tac_omega)
   have hencA := hpre.aA_lt
   have hencB := hpre.aB_lt
   simp only [coreArgs, tileOf] at hmeets hvalue hencA hencB htile cellRoot
@@ -233,14 +232,10 @@ theorem queryAtCoreP_spec (hCore : QueryCoreSpecP lim P) (ht : t ≤ p.m)
   generalize 10 ^ p.L = leaves at hencA hencB
   generalize (I : ℕ) / (p.K0 * p.N0) = β at *
   generalize (J : ℕ) / (p.K0 * p.N0) = β' at *
-  generalize (dsTries p t hmL X Y).root (β * p.nB + β') = root at *
-  have hencA' : ((p.aENCA b0 + β * p.T : ℕ) : ℤ) ≤ lim.space := by exact_mod_cast (by omega)
-  have hencB' : ((p.aENCB b0 + β' * p.T : ℕ) : ℤ) ≤ lim.space := by exact_mod_cast (by omega)
+  have hencA' : ((p.aENCA b0 + β * p.T : ℕ) : ℤ) ≤ lim.space := by exact_mod_cast tac_omega
+  have hencB' : ((p.aENCB b0 + β' * p.T : ℕ) : ℤ) ≤ lim.space := by exact_mod_cast tac_omega
   have hroot' : ((aROOTS p b0 + (β * p.nB + β') : ℕ) : ℤ) < lim.space := by
-    exact_mod_cast (by omega)
-  have hrow0 : (0 : ℤ) ≤ (β : ℤ) * p.T := by positivity
-  have hcol0 : (0 : ℤ) ≤ (β' : ℤ) * p.T := by positivity
-  have hband0 : (0 : ℤ) ≤ (β : ℤ) * p.nB := by positivity
+    exact_mod_cast tac_omega
   have haddr : ((aROOTS p b0 : ℤ) + ((β : ℤ) * p.nB + β')).toNat
       = aROOTS p b0 + (β * p.nB + β') := by exact_mod_cast Int.toNat_natCast _
   push_cast at hencA' hencB' hroot'
@@ -266,11 +261,11 @@ theorem queryAtP_spec (hP : P[Proc.queryAt]? = some queryAtBody) (hOut : OutDigi
   -- the areas
   light_piece (queryAtAreas_spec hlim I J) with _ rfl
   -- the digits of the output string, which change WD only
-  light_piece (queryAtOutP_spec hOut hlim hds I.isLt J.isLt (by omega))
+  light_piece (queryAtOutP_spec hOut hlim hds I.isLt J.isLt tac_omega)
     with _ ⟨r, μ₁, rfl, hwd, same₁⟩
-  have same₁' : SameOutside μ μ₁ (aWD p b0) (3 * p.L + p.m) := same₁.mono le_rfl (by omega)
+  have same₁' : SameOutside μ μ₁ (aWD p b0) (3 * p.L + p.m) := same₁.mono le_rfl tac_omega
   -- the sum of Lemma 28, which changes BOX and SS only
-  light_piece (queryAtCoreP_spec hCore ht hlim hX hY (hds.of_same same₁') I J (by omega) r hwd)
+  light_piece (queryAtCoreP_spec hCore ht hlim hX hY (hds.of_same same₁') I J tac_omega r hwd)
     with ⟨loc₂, μ₂⟩ ⟨hr, same₂⟩
   have same₂' : SameOutside μ μ₂ (aWD p b0) (3 * p.L + p.m) := by
     obtain ⟨⟩ := areas p t b0
@@ -287,7 +282,7 @@ their numbers. -/
 theorem queryCoreSpecP_of {lim : Limits} {P : Program} (h : Has40 P) (hs : Std lim) :
     QueryCoreSpecP lim P :=
   have S := specs40 h hs
-  queryCoreP_spec (h 13 (by omega)) ⟨S.nineFirst, S.nineNext, S.scatter, S.horner, S.lookup⟩
+  queryCoreP_spec (h 13 tac_omega) ⟨S.nineFirst, S.nineNext, S.scatter, S.horner, S.lookup⟩
 
 /-- A query at a given place of the memory on pruned encodings, for all limits. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Routines.lean (queryAtSpec_all)

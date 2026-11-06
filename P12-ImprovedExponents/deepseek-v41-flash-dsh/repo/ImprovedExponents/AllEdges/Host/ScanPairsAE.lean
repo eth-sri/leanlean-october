@@ -1,6 +1,7 @@
 module
 
 public import ImprovedExponents.AllEdges.Host.Flags
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -20,7 +21,7 @@ the result in the flag (`scanPairsAE_spec`).  The pure side is `aeStep` and `aeE
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -31,23 +32,23 @@ the columns of the query pairs, their number `w`, the address of the flags, the 
 three arrays of weights, `n`, and the first vertex and the number of vertices of the piece.  Then
 the counter, the address of the flag of the current pair, and the result of its scan. -/
 abbrev Out : ℕ := 0
-@[inherit_doc Out] abbrev Rows : ℕ := 1
-@[inherit_doc Out] abbrev Cols : ℕ := 2
-@[inherit_doc Out] abbrev Num : ℕ := 3
-@[inherit_doc Out] abbrev Flg : ℕ := 4
-@[inherit_doc Out] abbrev AdrAB : ℕ := 5
-@[inherit_doc Out] abbrev AdrBC : ℕ := 6
-@[inherit_doc Out] abbrev AdrAC : ℕ := 7
-@[inherit_doc Out] abbrev Size : ℕ := 8
-@[inherit_doc Out] abbrev First : ℕ := 9
-@[inherit_doc Out] abbrev Len : ℕ := 10
-@[inherit_doc Out] abbrev Cnt : ℕ := 11
-@[inherit_doc Out] abbrev Idx : ℕ := 12
-@[inherit_doc Out] abbrev Res : ℕ := 13
+ abbrev Rows : ℕ := 1
+ abbrev Cols : ℕ := 2
+ abbrev Num : ℕ := 3
+ abbrev Flg : ℕ := 4
+ abbrev AdrAB : ℕ := 5
+ abbrev AdrBC : ℕ := 6
+ abbrev AdrAC : ℕ := 7
+ abbrev Size : ℕ := 8
+ abbrev First : ℕ := 9
+ abbrev Len : ℕ := 10
+ abbrev Cnt : ℕ := 11
+ abbrev Idx : ℕ := 12
+ abbrev Res : ℕ := 13
 
 end ScanPairsAE
 
-open ScanPairsAE in
+open ScanPairsAE
 /-- One query pair: if out[i] ≠ 0 then idx := flg + qa[i] n + qb[i]; if M idx = 0 then
 M idx := scan(ab, bc, ac, n, qa[i], qb[i], c0, len). -/
 def scanPairsAEStep (pScan : ℕ) : Stmt :=
@@ -59,7 +60,7 @@ def scanPairsAEStep (pScan : ℕ) : Stmt :=
           .store (v Idx) (v Res))
         .skip)
 
-open ScanPairsAE in
+open ScanPairsAE
 /-- scanPairsAE(out, qa, qb, w, flg, ab, bc, ac, n, c0, len); the parameter is the procedure number
 of `scan`. -/
 def scanPairsAEBody (pScan : ℕ) : Stmt :=
@@ -117,9 +118,9 @@ theorem weights_wrote (C : Weights lim μ ab bc ac n U AB BC AC)
   light_facts C C.arrAB C.arrBC C.arrAC G
   exact
     { C with
-      arrAB := C.arrAB.keep fun b hb => wrote_rest (by omega)
-      arrBC := C.arrBC.keep fun b hb => wrote_rest (by omega)
-      arrAC := C.arrAC.keep fun b hb => wrote_rest (by omega) }
+      arrAB := C.arrAB.keep fun b hb => wrote_rest tac_omega
+      arrBC := C.arrBC.keep fun b hb => wrote_rest tac_omega
+      arrAC := C.arrAC.keep fun b hb => wrote_rest tac_omega }
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Witnesses/ScanPairs.lean
 /-- One query pair: a scan is made if the pair is accepted and its flag is 0. -/
@@ -141,11 +142,11 @@ theorem scanPairsAEStep_spec (hp : P[pScan]? = some scanBody)
     (fun q => (aeStep (accOf OUT) (hitOf n AB BC AC QA QB c0 len) (idxOf n QA QB) F i).getD q 0)
     (n * n) with hμ₁
   have hreadOUT : μ₁ (out + i) = OUT.getD i 0 := by
-    rw [hμ₁, wrote_rest (by omega)]; exact A.arrOUT.read hi
+    rw [hμ₁, wrote_rest tac_omega]; exact A.arrOUT.read hi
   have hreadQA : μ₁ (qa + i) = (QA.getD i 0 : ℕ) := by
-    rw [hμ₁, wrote_rest (by omega)]; exact A.arrQA.read hi
+    rw [hμ₁, wrote_rest tac_omega]; exact A.arrQA.read hi
   have hreadQB : μ₁ (qb + i) = (QB.getD i 0 : ℕ) := by
-    rw [hμ₁, wrote_rest (by omega)]; exact A.arrQB.read hi
+    rw [hμ₁, wrote_rest tac_omega]; exact A.arrQB.read hi
   have ha := A.arrQA.getD_lt hi
   have hb := A.arrQB.getD_lt hi
   have hidx : idxOf n QA QB i < n * n := Nat.mul_add_lt_mul ha hb
@@ -173,15 +174,15 @@ theorem scanPairsAEStep_spec (hp : P[pScan]? = some scanBody)
   -- if out[i] = 0
   by_cases hz : answer = 0
   · refine Ends.iteLast (fun _ => Ends.skip ⟨idx, res, ?_⟩)
-      (fun h => absurd (by simp [hreadOUT, hz]) h) (by light_side)
+      (fun h => absurd tac_simp [hreadOUT, hz] h) (by light_side)
     rw [hμ₁]
     simp [hz]
-  refine Ends.iteLast (fun h => absurd h (by simp [hreadOUT, hz])) (fun _ => ?_) (by light_side)
+  refine Ends.iteLast (fun h => absurd h tac_simp [hreadOUT, hz]) (fun _ => ?_) (by light_side)
   -- idx := flg + qa[i] n + qb[i]
   light_set (flg + (a * n + b) : ℕ) using hreadQA, hreadQB
   -- if M idx = 0
   by_cases hcell0 : cell = 0
-  · refine Ends.iteLast (fun _ => ?_) fun h => absurd (by simp [haddr, hreadF, hcell0]) h
+  · refine Ends.iteLast (fun _ => ?_) fun h => absurd tac_simp [haddr, hreadF, hcell0] h
     -- res := scan(ab, bc, ac, n, qa[i], qb[i], c0, len); M idx := res
     light_call (scan_meets hp C₁ ha hb hc) using hreadQA, hreadQB, hz, hcell0, tScanCallAE with
       _ _ ⟨rfl, rfl⟩
@@ -198,10 +199,10 @@ theorem scanPairsAEStep_spec (hp : P[pScan]? = some scanBody)
     · rw [Function.update_of_ne hy, hμ₁]
       by_cases hin : Inside flg (n * n) y
       · obtain ⟨q, rfl⟩ : ∃ q, y = flg + q := ⟨y - flg, by omega⟩
-        rw [wrote_done (by omega), wrote_done (by omega), getD_set_ne _ (by omega)]
+        rw [wrote_done tac_omega, wrote_done tac_omega, getD_set_ne _ tac_omega]
       · have hout : Outside flg (n * n) y := by simp only [Inside, Outside] at hin ⊢; omega
         rw [wrote_rest hout, wrote_rest hout]
-  · refine Ends.iteLast (fun h => absurd h (by simp [haddr, hreadF, hcell0])) fun _ =>
+  · refine Ends.iteLast (fun h => absurd h tac_simp [haddr, hreadF, hcell0]) fun _ =>
       Ends.skip ⟨(flg + (a * n + b) : ℕ), res, ?_⟩
     rw [hμ₁]
     simp [hcell0]
@@ -249,7 +250,7 @@ theorem scanPairsAE_spec (hp : P[pScan]? = some scanBody)
       funext y
       by_cases hin : Inside flg (n * n) y
       · obtain ⟨q, rfl⟩ : ∃ q, y = flg + q := ⟨y - flg, by omega⟩
-        rw [wrote_done (by omega), G.seg.getD (by rw [G.len]; omega)]
+        rw [wrote_done tac_omega, G.seg.getD (by rw [G.len]; omega)]
       · rw [wrote_rest (by simp only [Inside, Outside] at hin ⊢; omega)]
     refine ⟨0, 0, ?_⟩
     simp only [scanPairsAEState, aeStep_zero, ← hmem]
@@ -259,7 +260,7 @@ theorem scanPairsAE_spec (hp : P[pScan]? = some scanBody)
     refine ⟨by simp, by simp [scanPairsAEState]; omega, ?_⟩
     -- the query pair number i; then i := i + 1
     refine Ends.next _ ((scanPairsAEStep_spec hp C A hA hQA hQB G hd hc hi idx res).mono le_rfl
-      ?_) (by omega)
+      ?_) tac_omega
     rintro _ ⟨idx', res', rfl⟩
     unfold scanPairsAEState
     light_set (i + 1 : ℕ)

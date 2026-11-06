@@ -4,6 +4,7 @@ public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Recursion
 public import ImprovedExponents.PrunedProgram.SegOn
 public import ImprovedExponents.PrunedProgram.Work
 import all ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Recursion
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -58,7 +59,7 @@ private theorem choose_succ_mul_pow (k i : ℕ) :
   rcases Nat.lt_or_ge i k with h | h
   · have : k - i = (k - (i + 1)) + 1 := by omega
     rw [this, pow_succ]; ring
-  · rw [Nat.choose_eq_zero_of_lt (by omega)]; simp
+  · rw [Nat.choose_eq_zero_of_lt tac_omega]; simp
 
 /-- Pascal's rule for the counts of prefixes: a prefix of length `k + 1` with at most `j + 1`
 symbols `P₀` is one of length `k` with at most `j + 1` of them followed by one of the nine other
@@ -136,17 +137,17 @@ namespace EncodeP
 /-- The local variables of encodeP: the arguments L, j, src, out, scr, tab, p7, p10; the lengths
 7^{L-1} and 10^{L-1}; the number of the term; the result of a call, which is not used. -/
 abbrev Level : ℕ := 0
-@[inherit_doc Level] abbrev Budget : ℕ := 1
-@[inherit_doc Level] abbrev Src : ℕ := 2
-@[inherit_doc Level] abbrev Out : ℕ := 3
-@[inherit_doc Level] abbrev Scr : ℕ := 4
-@[inherit_doc Level] abbrev Table : ℕ := 5
-@[inherit_doc Level] abbrev Pow7 : ℕ := 6
-@[inherit_doc Level] abbrev Pow10 : ℕ := 7
-@[inherit_doc Level] abbrev Len7 : ℕ := 8
-@[inherit_doc Level] abbrev Len10 : ℕ := 9
-@[inherit_doc Level] abbrev TermNo : ℕ := 10
-@[inherit_doc Level] abbrev Res : ℕ := 11
+ abbrev Budget : ℕ := 1
+ abbrev Src : ℕ := 2
+ abbrev Out : ℕ := 3
+ abbrev Scr : ℕ := 4
+ abbrev Table : ℕ := 5
+ abbrev Pow7 : ℕ := 6
+ abbrev Pow10 : ℕ := 7
+ abbrev Len7 : ℕ := 8
+ abbrev Len10 : ℕ := 9
+ abbrev TermNo : ℕ := 10
+ abbrev Res : ℕ := 11
 
 end EncodeP
 
@@ -205,14 +206,14 @@ theorem tEncP_le_aux (L : ℕ) : ∀ j, tEncP L j + 724 * 7 ^ L + 46 ≤ cEncP *
     cases j with
     | zero =>
       have h0 := ih 0
-      have h7 : 1 ≤ 7 ^ L := Nat.one_le_pow _ _ (by norm_num)
+      have h7 : 1 ≤ 7 ^ L := Nat.one_le_pow _ _ tac_norm_num
       simp only [tEncP, tEncStep, encWorkP_succ_zero, pow_succ]
       omega
     | succ j =>
       have h1 := ih (j + 1)
       have h0 := ih j
-      have h7 : 1 ≤ 7 ^ L := Nat.one_le_pow _ _ (by norm_num)
-      rw [encWorkP_succ_left L (by omega), Nat.add_sub_cancel]
+      have h7 : 1 ≤ 7 ^ L := Nat.one_le_pow _ _ tac_norm_num
+      rw [encWorkP_succ_left L tac_omega, Nat.add_sub_cancel]
       simp only [tEncP, tEncStep, pow_succ]
       omega
 
@@ -234,7 +235,7 @@ def EncodePostP (μ : ℕ → ℤ) (out scr L : ℕ) (a c : ℕ → ℤ) (j : �
 variable {lim : Limits} {P : Program} {d : ℕ} {μ μ' μ₁ μ₂ : ℕ → ℤ}
   {src out scr tab p7 p10 L lam j : ℕ} {V : ℤ} {a c : ℕ → ℤ}
 
-open private EncodePre.toStep EncodePre.toRec
+open private
   from ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Recursion
 
 /-- The part of the encoding below the term number lam is the encoding of A_lam. -/
@@ -275,7 +276,7 @@ theorem TermsDoneP.step (lay : EncodeLayout lim src out scr tab p7 p10 (L + 1)) 
   have hkept := sameOutside2_succ' same
   refine ⟨fun τ hτ hlt => ?_, ?_⟩
   · have hcode := codeT_lt τ
-    have hcons : (Fin.cons (τ 0) (Fin.tail τ) : Leaf (L + 1)) = τ := Fin.cons_self_tail τ
+    have hcons := Fin.cons_self_tail τ
     have hcodeT : codeT τ = ((termIdx (τ 0) : Fin 10) : ℕ) * 10 ^ L + codeT (Fin.tail τ) := by
       rw [← hcons, codeT_cons, Fin.cons_zero, Fin.tail_cons]
     have htail := codeT_lt (Fin.tail τ)
@@ -283,7 +284,7 @@ theorem TermsDoneP.step (lay : EncodeLayout lim src out scr tab p7 p10 (L + 1)) 
     · -- The leaves below the earlier terms are not touched.
       have hi : codeT τ < lam * 10 ^ L := by
         rw [hcodeT]; exact Nat.mul_add_lt_mul hold htail
-      rw [same₂ _ (by omega), same₁ _ (by omega), hdone τ hτ hold]
+      rw [same₂ _ tac_omega, same₁ _ tac_omega, hdone τ hτ hold]
     · -- The leaves below this term.
       have heq : ((termIdx (τ 0) : Fin 10) : ℕ) = lam := by omega
       have hcard : (P0Levels τ).card
@@ -352,7 +353,6 @@ theorem encodeTermP_spec (hS : P[pS]? = some encStepBody)
   have hpart : lam * 10 ^ L + 10 ^ L ≤ 10 * 10 ^ L := Nat.mul_add_le_mul hlam le_rfl
   have hprod : ((lam * 10 ^ L : ℕ) : ℤ) = lam * 10 ^ L := by push_cast; rfl
   have hpow : ((7 ^ L : ℕ) : ℤ) = 7 ^ L := by push_cast; rfl
-  have hsub : ((j - dec : ℕ) : ℤ) = j - dec := by omega
   have hj' : j ≤ (j - dec) + if lam = 9 then 1 else 0 := by
     split_ifs with h9
     · omega
@@ -361,7 +361,7 @@ theorem encodeTermP_spec (hS : P[pS]? = some encStepBody)
   -- Res := encStep(src, scr, 7^L, lam, tab)
   light_call (encStep_meets hS (EncodePre.toStep pre hlam h.2)) with r₁ μ₁ ⟨hstep, same₁⟩
   -- Res := encodeP(L, j - dec, scr, out + lam 10^L, scr + 7^L, tab, p7, p10)
-  refine Ends.callTo (hrec (j - dec) _ _ _ _ _ _ (by omega)
+  refine Ends.callTo (hrec (j - dec) _ _ _ _ _ _ tac_omega
     (EncodePre.toRec pre hlam h.2 hstep same₁)) ?_
   exact fun r₂ μ₂ hpost => ⟨r₂, μ₂, rfl, h.step pre.lay hlam same₁ hj' hpost⟩
 
@@ -373,11 +373,11 @@ theorem encodeP_leaf (pre : EncodePre lim μ src out scr tab p7 p10 V 0 a c) :
     Ends lim P d (encodePBody pS pE) ⟨frame [(0 : ℕ), j, src, out, scr, tab, p7, p10], μ⟩
       (tEncP 0 j) fun σ' => EncodePostP μ out scr 0 a c j σ'.mem := by
   light_facts pre.lay pre.lay.std
-  have hread : μ src = a 0 := pre.srcV 0 (by norm_num)
+  have hread : μ src = a 0 := pre.srcV 0 tac_norm_num
   -- if Level = 0 then mem[Out] := mem[Src]
-  refine Ends.iteLast (fun _ => ?_) (fun h => absurd (by simp) h) (hT := by simp [tEncP])
+  refine Ends.iteLast (fun _ => ?_) (fun h => absurd tac_simp h) (hT := by simp [tEncP])
   refine Ends.storeTo out (a 0) ⟨fun τ _ => ?_, by light_keep⟩
-    (by light_side [hread]) (by simp [tEncP])
+    (by light_side [hread]) tac_simp [tEncP]
   have h0 : codeT τ = 0 := by have := codeT_lt τ; simpa using this
   rw [h0, Nat.add_zero]
   exact Function.update_self ..
@@ -394,8 +394,8 @@ theorem encodeP_node (hS : P[pS]? = some encStepBody)
   have hplaces := pre.lay.places_succ
   have haddr7 : ((p7 : ℤ) + ((L : ℤ) + 1) - 1).toNat = p7 + L := by omega
   have haddr10 : ((p10 : ℤ) + ((L : ℤ) + 1) - 1).toNat = p10 + L := by omega
-  have hread7 := pre.p7V L (by omega)
-  have hread10 := pre.p10V L (by omega)
+  have hread7 := pre.p7V L tac_omega
+  have hread10 := pre.p10V L tac_omega
   -- The time at this level, in both cases of the budget.
   have htime : tEncP (L + 1) j = 104 + 9 * tTermP L j tEncP
       + (4 + if j = 0 then 0 else tTermP L (j - 1) tEncP) := by
@@ -412,9 +412,9 @@ theorem encodeP_node (hS : P[pS]? = some encStepBody)
   refine Ends.next (9 * (1 + tTermP L j tEncP + 7) + 1 + 5) ?_
   refine Ends.forShape (fun lam r μ' => ⟨frame (locals L j src out scr tab p7 p10 lam r), μ'⟩)
     (TermsDoneP μ out scr L a c j) 9 (tTermP L j tEncP) 0
-    ⟨fun τ _ h => absurd h (by omega), .refl⟩
+    ⟨fun τ _ h => absurd h tac_omega, .refl⟩
     (fun lam r μ' hlam h => by
-      simpa using encodeTermP_spec hS hrec pre hd hj (by omega) (Nat.zero_le j) (Nat.zero_le 1)
+      simpa using encodeTermP_spec hS hrec pre hd hj tac_omega (Nat.zero_le j) (Nat.zero_le 1)
         (fun _ => rfl) h r)
     (fun r μ' h => ?_) (by rw [update_frame_setLocal, ← frame_append_zeros _ 1]; rfl)
   -- if Budget = 0 then skip else the two calls for P₀ with the budget j - 1
@@ -424,8 +424,8 @@ theorem encodeP_node (hS : P[pS]? = some encStepBody)
     subst hj
     exact Ends.skip h.skip.done
   · have hjne : j ≠ 0 := by simpa using hc
-    have hj1 : 1 ≤ j := Nat.one_le_iff_ne_zero.2 hjne
-    refine (encodeTermP_spec hS hrec pre hd hj (by omega) hj1 le_rfl (fun h => absurd rfl h)
+    have hj1 := Nat.one_le_iff_ne_zero.2 hjne
+    refine (encodeTermP_spec hS hrec pre hd hj tac_omega hj1 le_rfl (fun h => absurd rfl h)
       h r).mono
       (by simp [hjne]; omega) ?_
     rintro σ' ⟨r', μ'', rfl, h'⟩
@@ -443,6 +443,6 @@ theorem encodeP_spec (hS : P[pS]? = some encStepBody) (hE : P[pE]? = some (encod
   | zero => exact encodeP_leaf pre
   | succ L ih =>
     exact encodeP_node hS
-      (fun _ _ _ _ _ _ _ hj' pre' => Meets.of_body hE (ih (by omega) hj' pre')) pre (by omega) hj
+      (fun _ _ _ _ _ _ _ hj' pre' => Meets.of_body hE (ih tac_omega hj' pre')) pre tac_omega hj
 
 end Light.Sec2

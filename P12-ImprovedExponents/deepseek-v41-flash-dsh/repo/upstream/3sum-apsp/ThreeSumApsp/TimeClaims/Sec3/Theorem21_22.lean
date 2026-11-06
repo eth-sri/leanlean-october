@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.TimeClaims.Sec3.Arithmetic
 public import ThreeSumApsp.Util.Asymptotics.LogU
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Running-time claims of Section 3.4: Theorems 21 and 22
@@ -49,18 +50,18 @@ theorem Theorem21a.of_CH20_VW13 (M : DetTimeModel) (hCH : Claim.CH20_Theorem_5_1
     fun T hT => ?_⟩
   · -- the extra time: `Õ(n^{3/2}) + Õ(1) · N^{3/2+o(1)} · Õ(1)`
     exact hE₁.isPowLittleO.add ((hNum₁.isPowLittleO.mul
-      ((hE₂.comp hN' (by norm_num) (by norm_num)).mul hwords)).mono (by norm_num))
+      ((hE₂.comp hN' tac_norm_num tac_norm_num).mul hwords)).mono tac_norm_num)
   · -- the number of instances: `Õ(1) · O(N^{1/2})`
     exact (hNum₁.isPowLittleO.mul
-      (hNum₂.isPowLittleO.comp hN' (by norm_num) (by norm_num))).mono (by norm_num)
+      (hNum₂.isPowLittleO.comp hN' tac_norm_num tac_norm_num)).mono tac_norm_num
   · -- their size: `O(N^{1/2})`
-    exact (hsize₂.isPowLittleO.comp hN' (by norm_num) (by norm_num)).mono (by norm_num)
+    exact (hsize₂.isPowLittleO.comp hN' tac_norm_num tac_norm_num).mono tac_norm_num
   · obtain ⟨hN1, hmag1, hmag⟩ := hpos n hn
     refine ⟨hsize₂_pos _ hN1, one_le_mul_of_one_le_of_one_le hc hmag1, ?_⟩
     rw [mul_assoc]
     exact mul_le_mul_of_nonneg_left hmag (zero_le_one.trans hc)
   · obtain ⟨T', hT', hb⟩ := hCH _ (hVW T hT)
-    exact ⟨T', hT', fun n hn => (hb n hn).trans (le_of_eq (by ring))⟩
+    exact ⟨T', hT', fun n hn => (hb n hn).trans (le_of_eq tac_ring)⟩
 
 /-! ## Theorem 21(b): the (min,+)-product -/
 
@@ -81,7 +82,7 @@ theorem GoodTime.mul_logU {T : ℕ → ℝ → ℝ} (hT : GoodTime T) {c C : ℝ
     GoodTime fun s U => C * (T s (c * U) * logU U) := by
   refine ⟨fun s u hs => ?_, fun u s₁ s₂ hs₁ hs => ?_⟩
   · have hT0 := hT.nonneg hs (c * u)
-    have hhalf : 1 / 2 ≤ logU u := Real.one_half_lt_log_two.le.trans (log_two_le_logU u)
+    have hhalf := Real.one_half_lt_log_two.le.trans (log_two_le_logU u)
     calc (s : ℝ) ^ 2 * (1 + logU u) ≤ (s : ℝ) ^ 2 * (1 + logU (c * u)) := by
           gcongr
           exact logU_le_logU_mul hc u
@@ -106,9 +107,7 @@ theorem Theorem21b.minPlus_of_VW13_VW18 (M : DetTimeModel)
   obtain ⟨T'', hT'', hb⟩ := h42 _ (hT.mul_logU hc₁ hC₁) (h33 T hT hex)
   refine ⟨T'', hT'', fun n U hn hU => ?_⟩
   have hT0 := hT.nonneg (one_le_cbrtCeil hn) (c₁ * (c₂ * U))
-  have hC₁0 : 0 ≤ C₁ := zero_le_two.trans hC₁
   have hlogU := (logU_pos U).le
-  have hlogcU := (logU_pos (c₂ * U)).le
   calc T'' n U
       ≤ C₂ * ((n : ℝ) ^ 2 * (C₁ * (T (cbrtCeil n) (c₁ * (c₂ * U)) * logU (c₂ * U))) * logU U) :=
         hb n U hn hU
@@ -141,28 +140,28 @@ private theorem dominated_repeatedSquaring (C C₀ : ℝ) {B : ℝ} (hB : 0 ≤ 
   set dom : Squaring → Prop := fun p =>
     2 ≤ p.n ∧ 0 ≤ p.W ∧ p.W ≤ B * Real.log p.n ∧ 1 + p.W ≤ p.V
   have hV0 : ∀ p, dom p → 0 ≤ (p.n : ℝ) ^ 2 * p.V := fun p ⟨_, hW0, _, hV⟩ =>
-    mul_nonneg (by positivity) ((add_nonneg zero_le_one hW0).trans hV)
+    mul_nonneg tac_positivity ((add_nonneg zero_le_one hW0).trans hV)
   have hrounds : Dominated dom (fun p => (Nat.clog 2 p.n : ℝ) + 1) fun p => Real.log p.n :=
     (dominated_clog_add_one_log 2).comp Squaring.n fun _ hp => hp.1
   have hW : Dominated dom Squaring.W fun p => Real.log p.n :=
     .of_le_const_mul hB fun _ hp => hp.2.2.1
   have hone : Dominated dom (fun _ => (1 : ℝ)) fun p => Real.log p.n ^ 2 :=
-    .of_le_const_mul (C := 4) (by norm_num) fun p hp => by
+    .of_le_const_mul (C := 4) tac_norm_num fun p hp => by
       nlinarith [Real.one_half_le_log_of_two_le (Nat.ofNat_le_cast.2 hp.1 : (2 : ℝ) ≤ p.n)]
   -- one product: `C n² V W² = O(n² V log² n)`
   have hproduct : Dominated dom (fun p => C * ((p.n : ℝ) ^ 2 * p.V * p.W ^ 2))
       fun p => (p.n : ℝ) ^ 2 * p.V * Real.log p.n ^ 2 :=
     ((hW.pow (fun _ hp => hp.2.1) 2).mul_left hV0).const_mul_of_nonneg C fun p hp =>
-      mul_nonneg (hV0 p hp) (by positivity)
+      mul_nonneg (hV0 p hp) tac_positivity
   -- writing a matrix: `C₀ n² (1 + W) ≤ C₀ n² V = O(n² V log² n)`
   have hwrite : Dominated dom (fun p => C₀ * ((p.n : ℝ) ^ 2 * (1 + p.W)))
       fun p => (p.n : ℝ) ^ 2 * p.V * Real.log p.n ^ 2 :=
     (((hone.mul_left hV0).congr (fun _ _ => mul_one _) fun _ _ => rfl).mono_left fun p hp =>
-      mul_le_mul_of_nonneg_left hp.2.2.2 (by positivity)).const_mul_of_nonneg C₀ fun p hp =>
-        mul_nonneg (by positivity) (add_nonneg zero_le_one hp.2.1)
+      mul_le_mul_of_nonneg_left hp.2.2.2 tac_positivity).const_mul_of_nonneg C₀ fun p hp =>
+        mul_nonneg tac_positivity (add_nonneg zero_le_one hp.2.1)
   -- `⌈log₂ n⌉ + 1 = O(log n)` rounds
   exact (((hproduct.add hwrite).mul_left fun p _ => by positivity).trans
-    (hrounds.mul_right fun p hp => mul_nonneg (hV0 p hp) (by positivity))).congr
+    (hrounds.mul_right fun p hp => mul_nonneg (hV0 p hp) tac_positivity)).congr
       (fun _ _ => rfl) fun _ _ => by ring
 
 /-- Theorem 21(b), APSP: repeated squaring on top of the
@@ -177,19 +176,19 @@ theorem Theorem21b.apsp_of_minPlus (M : DetTimeModel) (h21 : Claim.Theorem_21b_m
   refine ⟨c * ca, K, one_le_mul_of_one_le_of_one_le hc hca, fun T hT hex => ?_⟩
   obtain ⟨T', hT', hb⟩ := h21 T hT hex
   refine ⟨_, hsq T' hT', fun n hn => ?_⟩
-  have hn1 : 1 ≤ n := one_le_two.trans hn
+  have hn1 := one_le_two.trans hn
   have hpow : (n : ℝ) * (n : ℝ) ^ κ = (n : ℝ) ^ (κ + 1) := by
     rw [Real.rpow_add_one (Nat.cast_pos.2 hn1).ne', mul_comm]
   -- the finite entries are at most n^{κ+1} in absolute value
   have hproduct := hb n (ca * (n : ℝ) ^ (κ + 1)) hn1 (one_le_mul_of_one_le_of_one_le hca
-    (Real.one_le_rpow (Nat.one_le_cast.2 hn1) (by linarith)))
+    (Real.one_le_rpow (Nat.one_le_cast.2 hn1) tac_linarith))
   have hV : 1 + logU (ca * (n : ℝ) ^ (κ + 1)) ≤ T (cbrtCeil n) (c * (ca * (n : ℝ) ^ (κ + 1))) :=
     (add_le_add_right (logU_le_logU_mul hc _) 1).trans
       (hT.one_add_logU_le (one_le_cbrtCeil hn1) _)
   have htotal := hK ⟨n, T (cbrtCeil n) (c * (ca * (n : ℝ) ^ (κ + 1))), _⟩
     ⟨hn, (logU_pos _).le, hB n hn, hV⟩
   rw [hpow, mul_assoc c ca]
-  exact (mul_le_mul_of_nonneg_left (add_le_add_left hproduct _) (by positivity)).trans htotal
+  exact (mul_le_mul_of_nonneg_left (add_le_add_left hproduct _) tac_positivity).trans htotal
 
 /-! ## "Plug Theorem 19 into Theorem 21"
 
@@ -202,7 +201,6 @@ Theorem 21(b) as rendered by `GoodTime`: it is at least `s² (1 + log u)`, and d
 nondecreasing in `s` ("for which T(s)/s is nondecreasing"). -/
 theorem goodTime_uniformTime {K δ : ℝ} (e : ℕ) (hK : 1 ≤ K) (hδ1 : δ ≤ 1) :
     GoodTime (uniformTime K δ e) := by
-  have hK0 : 0 ≤ K := zero_le_one.trans hK
   refine ⟨fun s u hs => ?_, fun u s₁ s₂ hs₁ hs => ?_⟩
   · have hs1 : (1 : ℝ) ≤ s := Nat.one_le_cast.2 hs
     have hwords := one_le_one_add_logU u
@@ -220,8 +218,6 @@ theorem goodTime_uniformTime {K δ : ℝ} (e : ℕ) (hK : 1 ≤ K) (hδ1 : δ �
       have hs0 : (s : ℝ) ≠ 0 := Nat.cast_ne_zero.2 (Nat.one_le_iff_ne_zero.1 hs)
       rw [uniformTime, show 3 - δ = 2 - δ + 1 by ring, Real.rpow_add_one hs0]
       field_simp
-    have hs₁' : (0 : ℝ) < s₁ := Nat.cast_pos.2 hs₁
-    have hlog : 0 ≤ Real.log s₁ + 1 := add_nonneg (Real.log_natCast_nonneg s₁) zero_le_one
     rw [hdiv _ hs₁, hdiv _ (hs₁.trans hs)]
     gcongr
     linarith
@@ -232,7 +228,7 @@ theorem isPowPolylog_uniformTime_cbrtCeil (K : ℝ) {δ : ℝ} (e : ℕ) (hδ : 
     (hc : 1 ≤ c) (hκ : 0 ≤ κ) :
     IsPowPolylog (fun n : ℕ => uniformTime K δ e (cbrtCeil n) (c * (n : ℝ) ^ κ)) (1 - δ / 3) := by
   have hsize := (isPowPolylog_rpow_mul_log_add_one_pow (3 - δ) e).comp
-    (isBigOPow_ceil_rpow (μ := 1 / 3) (by norm_num)) (by linarith) (by norm_num)
+    (isBigOPow_ceil_rpow (μ := 1 / 3) tac_norm_num) tac_linarith tac_norm_num
   have hwords := ((isPowPolylog_const 1).add (isPowPolylog_logU_mul_rpow hc hκ)).pow 2
   exact ((hsize.mul hwords).const_mul K).mono (le_of_eq (by push_cast; ring))
 
@@ -246,12 +242,12 @@ theorem threeSum_of_uniform_theorem_21a (M : DetTimeModel) {δ : ℝ} (e : ℕ) 
   obtain ⟨E, Num, mag, size, c', κ', hE, hNum, hsize, hpos, h⟩ := h21 κ hκ
   obtain ⟨T', hT', hb⟩ := h _ hex
   have hsizes := (isPowPolylog_rpow_mul_log_add_one_pow (3 - δ) e).isPowLittleO.comp hsize
-    (by linarith) (by norm_num)
+    tac_linarith tac_norm_num
   have hwords := (((isPowPolylog_const 1).add
     (isPowPolylog_logU_of_le fun n hn => (hpos n hn).2)).pow 2).isPowLittleO
   have htotal : IsPowLittleO (fun n => E n + Num n * uniformTime K δ e (size n) (mag n))
       (2 - δ / 2) :=
-    (hE.mono (by linarith)).add
+    (hE.mono tac_linarith).add
       ((hNum.mul ((hsizes.mul hwords).const_mul K)).mono (le_of_eq (by push_cast; ring)))
   exact ⟨T', hT', htotal.upperPowLittleO.mono_left (Filter.eventually_atTop.2 ⟨1, hb⟩)⟩
 
@@ -267,7 +263,7 @@ theorem minPlus_of_uniform_theorem_21b (M : DetTimeModel) {δ : ℝ} (e : ℕ) (
   have hone : ∀ n : ℕ, 1 ≤ n → 1 ≤ (n : ℝ) ^ κ := fun n hn =>
     Real.one_le_rpow (Nat.one_le_cast.2 hn) hκ
   have htotal := ((((isBigOPow_natCast_pow 2).isPowPolylog.mul
-    (isPowPolylog_uniformTime_cbrtCeil K (δ := δ) e (by linarith) hc hκ)).mul
+    (isPowPolylog_uniformTime_cbrtCeil K (δ := δ) e tac_linarith hc hκ)).mul
     ((isPowPolylog_logU_of_le (c := 1) fun n hn => ⟨hone n hn, (one_mul _).ge⟩).pow 2)).const_mul
     C).mono (b := 3 - δ / 3) (le_of_eq (by push_cast; ring))
   exact ⟨T', hT', htotal.upperPowPolylog.mono_left
@@ -282,7 +278,7 @@ theorem apsp_of_uniform_theorem_21b (M : DetTimeModel) {δ : ℝ} (e : ℕ) (hδ
   obtain ⟨c, C, hc, h21⟩ := h21 κ hκ
   obtain ⟨T', hT', hb⟩ := h21 _ (goodTime_uniformTime e hK hδ1) hex
   have htotal := ((((isBigOPow_natCast_pow 2).isPowPolylog.mul
-    (isPowPolylog_uniformTime_cbrtCeil K (δ := δ) e (by linarith) hc (by linarith : 0 ≤ κ + 1))).mul
+    (isPowPolylog_uniformTime_cbrtCeil K (δ := δ) e tac_linarith hc (by linarith : 0 ≤ κ + 1))).mul
     (isPowPolylog_log_pow 3)).const_mul C).mono (b := 3 - δ / 3) (le_of_eq (by push_cast; ring))
   exact ⟨T', hT', htotal.upperPowPolylog.mono_left (Filter.eventually_atTop.2 ⟨2, hb⟩)⟩
 

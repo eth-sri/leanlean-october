@@ -22,7 +22,7 @@ their specifications `PreSpec31` and `QuerySpec31`.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ}
   {Y : Matrix (Fin D₀) (Fin N) ℤ} {aX aY fr : ℕ} {U : ℤ} {μ μ' : ℕ → ℤ}
@@ -35,17 +35,17 @@ namespace Main31
 the column J; then N, D, the product N D, the address of Y, the free pointer, and in the
 preprocessing the result of the call. -/
 abbrev Ans : ℕ := 0
-@[inherit_doc Ans] abbrev Col : ℕ := 1
-@[inherit_doc Ans] abbrev Size : ℕ := 2
-@[inherit_doc Ans] abbrev Dim : ℕ := 3
-@[inherit_doc Ans] abbrev Area : ℕ := 4
-@[inherit_doc Ans] abbrev MatY : ℕ := 5
-@[inherit_doc Ans] abbrev Free : ℕ := 6
-@[inherit_doc Ans] abbrev Res : ℕ := 7
+ abbrev Col : ℕ := 1
+ abbrev Size : ℕ := 2
+ abbrev Dim : ℕ := 3
+ abbrev Area : ℕ := 4
+ abbrev MatY : ℕ := 5
+ abbrev Free : ℕ := 6
+ abbrev Res : ℕ := 7
 
 end Main31
 
-open Main31 in
+open Main31
 /-- The main procedure of the preprocessing: read the sizes, compute the two addresses, call pre31,
 answer 1. -/
 def preMain31Body : Stmt :=
@@ -54,7 +54,7 @@ def preMain31Body : Stmt :=
   .call Proc.pre31 [v Size, v Dim, k 2, v MatY, v Free] Res ;;
   .set Ans (k 1)
 
-open Main31 in
+open Main31
 /-- The main procedure of a query (I, J): the same five assignments, then call query31. -/
 def queryMain31Body : Stmt :=
   .set Size (M (k 0)) ;; .set Dim (M (k 1)) ;; .set Area (v Size *' v Dim) ;;

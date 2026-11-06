@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 public import ThreeSumApsp.Sec2.Theorem5.WordSize
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The encodings of all bands of one matrix (Section 2.4.1)
@@ -39,33 +40,33 @@ steps `StepRow` and `StepCol`; `MaskTable`, `Digits3` and `Digits4` are the tabl
 scratch areas, and the encodings are written from `Enc` on.  Then `BandNo` = β, and `Res` takes the
 results of the calls. -/
 abbrev Levels : ℕ := 0
-@[inherit_doc Levels] abbrev Size : ℕ := 1
-@[inherit_doc Levels] abbrev Rows : ℕ := 2
-@[inherit_doc Levels] abbrev Cols : ℕ := 3
-@[inherit_doc Levels] abbrev NumBlocks : ℕ := 4
-@[inherit_doc Levels] abbrev Width : ℕ := 5
-@[inherit_doc Levels] abbrev Cells : ℕ := 6
-@[inherit_doc Levels] abbrev Leaves : ℕ := 7
-@[inherit_doc Levels] abbrev NumBands : ℕ := 8
-@[inherit_doc Levels] abbrev Side : ℕ := 9
-@[inherit_doc Levels] abbrev Source : ℕ := 10
-@[inherit_doc Levels] abbrev StepRow : ℕ := 11
-@[inherit_doc Levels] abbrev StepCol : ℕ := 12
-@[inherit_doc Levels] abbrev MaskTable : ℕ := 13
-@[inherit_doc Levels] abbrev Digits3 : ℕ := 14
-@[inherit_doc Levels] abbrev Digits4 : ℕ := 15
-@[inherit_doc Levels] abbrev Arr : ℕ := 16
-@[inherit_doc Levels] abbrev Scratch : ℕ := 17
-@[inherit_doc Levels] abbrev Table : ℕ := 18
-@[inherit_doc Levels] abbrev Pow7 : ℕ := 19
-@[inherit_doc Levels] abbrev Pow10 : ℕ := 20
-@[inherit_doc Levels] abbrev Enc : ℕ := 21
-@[inherit_doc Levels] abbrev BandNo : ℕ := 22
-@[inherit_doc Levels] abbrev Res : ℕ := 23
+ abbrev Size : ℕ := 1
+ abbrev Rows : ℕ := 2
+ abbrev Cols : ℕ := 3
+ abbrev NumBlocks : ℕ := 4
+ abbrev Width : ℕ := 5
+ abbrev Cells : ℕ := 6
+ abbrev Leaves : ℕ := 7
+ abbrev NumBands : ℕ := 8
+ abbrev Side : ℕ := 9
+ abbrev Source : ℕ := 10
+ abbrev StepRow : ℕ := 11
+ abbrev StepCol : ℕ := 12
+ abbrev MaskTable : ℕ := 13
+ abbrev Digits3 : ℕ := 14
+ abbrev Digits4 : ℕ := 15
+ abbrev Arr : ℕ := 16
+ abbrev Scratch : ℕ := 17
+ abbrev Table : ℕ := 18
+ abbrev Pow7 : ℕ := 19
+ abbrev Pow10 : ℕ := 20
+ abbrev Enc : ℕ := 21
+ abbrev BandNo : ℕ := 22
+ abbrev Res : ℕ := 23
 
 end Bands
 
-open Bands in
+open Bands
 /-- encodeBands(L, m, N, D, K0, N0, S7, T, nB, side, aA, sI, sK, mask, dig3, dig4, arr, zs, tab, p7,
 p10, enc): for each band, the input array is formed at arr and encoded into the T cells from
 enc + β T. -/
@@ -80,8 +81,8 @@ def encodeBandsBody : Stmt :=
 theorem encodeBands_time (p : Par) (cB cE : ℕ) :
     p.nB * (cB * bandArrayShape p + cE * 10 ^ p.L + 50) + 6
       ≤ (cB + cE + 50) * (p.nB * (p.T + bandArrayShape p) + 1) := by
-  have hT : 1 ≤ p.T := Nat.one_le_pow _ _ (by norm_num)
-  have hfifty : p.nB * 50 ≤ p.nB * (50 * p.T) := Nat.mul_le_mul_left _ (by omega)
+  have hT : 1 ≤ p.T := Nat.one_le_pow _ _ tac_norm_num
+  have hfifty : p.nB * 50 ≤ p.nB * (50 * p.T) := Nat.mul_le_mul_left _ tac_omega
   change p.nB * (cB * bandArrayShape p + cE * p.T + 50) + 6 ≤ _
   calc p.nB * (cB * bandArrayShape p + cE * p.T + 50) + 6
       = p.nB * (cB * bandArrayShape p) + p.nB * (cE * p.T) + p.nB * 50 + 6 := by ring
@@ -155,7 +156,7 @@ theorem encodeBands_proc (std : Std lim) (hP : P[pEncodeBands]? = some encodeBan
       x.mask, x.dig3, x.dig4, x.arr, x.zs, x.tab, x.p7, x.p10, x.enc, β, r], μ'⟩)
     (fun β μ' => (∀ β' < β, Seg μ' (x.enc + β' * p.T) (E β')) ∧
       SameOutside μ μ' x.enc (x.zs + p.S7 - x.enc))
-    p.nB (cB * bandArrayShape p + cE * 10 ^ p.L + 42) 0 ⟨fun β' h => absurd h (by omega), .refl⟩
+    p.nB (cB * bandArrayShape p + cE * 10 ^ p.L + 42) 0 ⟨fun β' h => absurd h tac_omega, .refl⟩
     ?round (fun _ _ h => h) (by rw [update_frame_setLocal, ← frame_append_zeros _ 1]; rfl)
   rintro β r μ' hβ ⟨hdone, same⟩
   have hβT : β * p.T + p.T ≤ p.nB * p.T := Nat.mul_add_le_mul hβ le_rfl
@@ -245,18 +246,18 @@ theorem encodeBandsL_entry (std : Std lim) (hP : P[pEncodeBands]? = some encodeB
   intro p hmL x aX μ X V pre hM hMle hV d hd
   light_facts pre
   refine .mono_const ?_ hc
-  refine encodeBands_proc std hP pre (by omega) (fun β => Spec.length_arrT _)
+  refine encodeBands_proc std hP pre tac_omega (fun β => Spec.length_arrT _)
     (A := fun β => Spec.arrL (bandArrayL (Spec.stdLayout hmL) X β))
     (fun β hβ μ' hlow => ?_) fun β hβ μ' hlow hA => ?_
-  · simpa using hB p hmL β aX x.mask x.dig3 x.dig4 x.arr μ' X (by omega)
-      (hM.congr_below hlow hMle) (by omega) ((pre.tables.congr_below hlow).mono (by omega)) hβ
-      _ (by omega)
+  · simpa using hB p hmL β aX x.mask x.dig3 x.dig4 x.arr μ' X tac_omega
+      (hM.congr_below hlow hMle) tac_omega ((pre.tables.congr_below hlow).mono tac_omega) hβ
+      _ tac_omega
   · exact hE p.L p.L x.arr (x.enc + β * p.T) x.zs x.tab x.p7 x.p10 μ' _ V
       (pre.encodePlaces hβ hlow)
       (pre.coef.congr fun i hi => hlow _ (by
         have := Spec.length_phiFlat
         omega))
-      hA (abs_bandArrayL_le (Spec.stdLayout hmL) pre.V_nonneg hV β) pre.word _ (by omega)
+      hA (abs_bandArrayL_le (Spec.stdLayout hmL) pre.V_nonneg hV β) pre.word _ tac_omega
 
 /-- encodeBands for the column bands of Y: side = 1, the coefficients ψ at tab. -/
 def EncodeBandsRSpec (lim : Limits) (P : Program) (c : ℕ) : Prop :=
@@ -277,17 +278,17 @@ theorem encodeBandsR_entry (std : Std lim) (hP : P[pEncodeBands]? = some encodeB
   intro p hmL x aY μ Y V pre hM hMle hV d hd
   light_facts pre
   refine .mono_const ?_ hc
-  refine encodeBands_proc std hP pre (by omega) (fun β => Spec.length_arrT _)
+  refine encodeBands_proc std hP pre tac_omega (fun β => Spec.length_arrT _)
     (A := fun β => Spec.arrR (bandArrayR (Spec.stdLayout hmL) Y β))
     (fun β hβ μ' hlow => ?_) fun β hβ μ' hlow hA => ?_
-  · simpa using hB p hmL β aY x.mask x.dig3 x.dig4 x.arr μ' Y (by omega)
-      (hM.congr_below hlow hMle) (by omega) ((pre.tables.congr_below hlow).mono (by omega)) hβ
-      _ (by omega)
+  · simpa using hB p hmL β aY x.mask x.dig3 x.dig4 x.arr μ' Y tac_omega
+      (hM.congr_below hlow hMle) tac_omega ((pre.tables.congr_below hlow).mono tac_omega) hβ
+      _ tac_omega
   · exact hE p.L p.L x.arr (x.enc + β * p.T) x.zs x.tab x.p7 x.p10 μ' _ V
       (pre.encodePlaces hβ hlow)
       (pre.coef.congr fun i hi => hlow _ (by
         have := Spec.length_psiFlat
         omega))
-      hA (abs_bandArrayR_le (Spec.stdLayout hmL) pre.V_nonneg hV β) pre.word _ (by omega)
+      hA (abs_bandArrayR_le (Spec.stdLayout hmL) pre.V_nonneg hV β) pre.word _ tac_omega
 
 end Light.Sec2

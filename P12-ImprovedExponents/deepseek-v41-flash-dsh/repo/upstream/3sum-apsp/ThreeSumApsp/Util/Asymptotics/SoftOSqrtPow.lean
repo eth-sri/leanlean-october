@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Util.Asymptotics.PowPolylog
 public import ThreeSumApsp.Util.Asymptotics.Scale
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Bounds of the form "a polylogarithm times a power of √n"
@@ -28,13 +29,13 @@ namespace ThreeSumApsp
 
 /-- `⌊log₂ n⌋ + 1 ≤ 4 ln n` for `n ≥ 2`. -/
 theorem natLog_succ_le {n : ℕ} (hn : 2 ≤ n) : ((Nat.log 2 n + 1 : ℕ) : ℝ) ≤ 4 * Real.log n := by
-  have hhalf : 1 / 2 ≤ Real.log 2 := Real.one_half_lt_log_two.le
-  have hlog2 : Real.log 2 ≤ Real.log n := Real.log_le_log (by norm_num) (by exact_mod_cast hn)
+  have hhalf := Real.one_half_lt_log_two.le
+  have hlog2 : Real.log 2 ≤ Real.log n := Real.log_le_log tac_norm_num (by exact_mod_cast hn)
   have hfloor : Nat.log 2 n * Real.log 2 ≤ Real.log n :=
     calc Nat.log 2 n * Real.log 2 = Real.log ((2 ^ Nat.log 2 n : ℕ) : ℝ) := by
           rw [Nat.cast_pow, Real.log_pow, Nat.cast_two]
-      _ ≤ Real.log n := Real.log_le_log (by positivity)
-          (by exact_mod_cast Nat.pow_log_le_self 2 (by omega))
+      _ ≤ Real.log n := Real.log_le_log tac_positivity
+          (by exact_mod_cast Nat.pow_log_le_self 2 tac_omega)
   have hmul := mul_le_mul_of_nonneg_left hhalf (Nat.cast_nonneg (α := ℝ) (Nat.log 2 n))
   push_cast
   -- `⌊log₂ n⌋ ≤ 2 ⌊log₂ n⌋ ln 2 ≤ 2 ln n` and `1 ≤ 2 ln 2 ≤ 2 ln n`
@@ -62,13 +63,8 @@ namespace SoftOSqrtPow
 
 variable {F : ℕ → ℕ} {i : ℕ}
 
-/-- The function `⌊log₂ n⌋` is a polylogarithm. -/
-theorem natLog : SoftOSqrtPow (fun n => Nat.log 2 n) 0 :=
-  (Scale.SoftO.of_le_hidden fun _ _ => Nat.cast_le.2 (Nat.le_succ _)).mono (by decide)
-
-/-- The function `⌊√n⌋` has the first power of `√n`. -/
 theorem natSqrt : SoftOSqrtPow (fun n => Nat.sqrt n) 1 :=
-  (Scale.SoftO.of_le_base 0 fun _ _ => Nat.cast_le.2 (Nat.le_succ _)).mono (by decide)
+  (Scale.SoftO.of_le_base 0 fun _ _ => Nat.cast_le.2 (Nat.le_succ _)).mono tac_decide
 
 /-- `n` itself is at most `(⌊√n⌋ + 1)²`. -/
 theorem self : SoftOSqrtPow (fun n => n) 2 :=
@@ -78,7 +74,7 @@ theorem self : SoftOSqrtPow (fun n => n) 2 :=
 /-- The logarithm of a function with such a bound is a polylogarithm. -/
 theorem natLog_comp {e : Fin 1 → ℕ} (hF : sqrtScale.SoftO F e) :
     SoftOSqrtPow (fun n => Nat.log 2 (F n)) 0 := by
-  refine (Scale.SoftO.log2 (fun _ n _ => ?_) hF).mono (by decide)
+  refine (Scale.SoftO.log2 (fun _ n _ => ?_) hF).mono tac_decide
   have hsqrt : Nat.sqrt n + 1 ≤ 2 ^ (Nat.log 2 n + 1) := by
     have := Nat.lt_pow_succ_log_self (by norm_num : 1 < 2) n
     have := Nat.sqrt_le_self n
@@ -101,7 +97,7 @@ theorem isPowPolylog (hF : SoftOSqrtPow F i) {a : ℝ} (ha : a = i / 2) :
         simpa [sqrtScale, Scale.mon] using hK n hn
     _ ≤ K * ((4 * Real.log n) ^ e * (2 * √(n : ℝ)) ^ i) := by
         gcongr
-        exacts [natLog_succ_le hn, natSqrt_succ_le (by omega)]
+        exacts [natLog_succ_le hn, natSqrt_succ_le tac_omega]
     _ = K * 4 ^ e * 2 ^ i * ((n : ℝ) ^ a * Real.log n ^ e) := by
         rw [mul_pow, mul_pow, hsqrt]
         ring

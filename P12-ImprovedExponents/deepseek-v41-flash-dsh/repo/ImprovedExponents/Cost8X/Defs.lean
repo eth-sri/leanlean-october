@@ -1,6 +1,7 @@
 module
 
 public import ThreeSumApsp.Sec4.Theorem30
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -37,7 +38,7 @@ theorem tailX_nonneg (L m t : ℕ) : 0 ≤ tailX L m t :=
 /-- The first term of `cost8X` is not negative. -/
 theorem cost8X_first_term_nonneg (L m t N : ℕ) :
     0 ≤ (L : ℝ) * (m : ℝ) * tailX L m t * (N : ℝ) ^ 2 :=
-  mul_nonneg (mul_nonneg (by positivity) (tailX_nonneg L m t)) (by positivity)
+  mul_nonneg (mul_nonneg tac_positivity (tailX_nonneg L m t)) tac_positivity
 
 /-- The number of boxes of all tiles together is at most `4 (m+1) tailX(L, m, t) N²`: Lemma 29 for
 one tile, times the number of tiles. -/
@@ -53,7 +54,7 @@ theorem boxes_totalX {L m t N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) (ht : t 
   calc ((numBands L m N : ℝ)) ^ 2 * ((boxes L m t).card : ℝ)
       ≤ (4 * (N : ℝ) ^ 2 / (M L m : ℝ))
           * (((m : ℝ) + 1) * ∑ d ∈ Finset.Icc t m, (beta L m d : ℝ)) :=
-        mul_le_mul (Theorem30.tiles hm hL hN) hboxes (Nat.cast_nonneg _) (by positivity)
+        mul_le_mul (Theorem30.tiles hm hL hN) hboxes (Nat.cast_nonneg _) tac_positivity
     _ = 4 * ((m : ℝ) + 1) * tailX L m t * (N : ℝ) ^ 2 := by
         unfold tailX
         ring

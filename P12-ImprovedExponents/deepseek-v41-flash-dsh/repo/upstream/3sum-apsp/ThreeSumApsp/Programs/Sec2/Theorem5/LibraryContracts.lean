@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Lib.Copy
 public import ThreeSumApsp.Lang.Lib.Sqrt
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Three routines of the library, as their callers see them
@@ -41,7 +42,6 @@ theorem pow_entry (std : Std lim) (hP : P[pPow]? = some powBody) (hc : 35 ≤ c)
     PowSpec lim P c := by
   intro b n dst μ hdst1 hdst hb hpow d _
   have hw := std.space_le
-  have h100 := std.const_le
   refine .mono_const (.of_body hP ?_) hc
   -- The arguments b, n, dst become dst, n + 1, b.
   light_set b

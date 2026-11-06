@@ -30,7 +30,7 @@ this gives Theorem 30 and its offline form without hypotheses (`wordRam_theorem_
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.WordRam
+open ThreeSumApsp.WordRam
 
 /-- The procedures number 0 to 57: Section 2's program for the thin matrix product (0 to 28), eleven
 unused numbers, the routines of Section 4, the two routines that know the memory map, and the two

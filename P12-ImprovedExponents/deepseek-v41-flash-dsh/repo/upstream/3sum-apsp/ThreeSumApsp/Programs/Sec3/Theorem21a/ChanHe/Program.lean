@@ -38,35 +38,35 @@ namespace Proc
 
 /-- The places of the procedures in the list `chBodies`. -/
 abbrev emod : ℕ := 0
-@[inherit_doc emod] abbrev log2 : ℕ := 1
-@[inherit_doc emod] abbrev clog2 : ℕ := 2
-@[inherit_doc emod] abbrev sqrt : ℕ := 3
-@[inherit_doc emod] abbrev sieve : ℕ := 4
-@[inherit_doc emod] abbrev half : ℕ := 5
-@[inherit_doc emod] abbrev merge : ℕ := 6
-@[inherit_doc emod] abbrev copy : ℕ := 7
-@[inherit_doc emod] abbrev fill : ℕ := 8
-@[inherit_doc emod] abbrev sort : ℕ := 9
-@[inherit_doc emod] abbrev resid : ℕ := 10
-@[inherit_doc emod] abbrev tally : ℕ := 11
-@[inherit_doc emod] abbrev coll : ℕ := 12
-@[inherit_doc emod] abbrev heavy : ℕ := 13
-@[inherit_doc emod] abbrev search : ℕ := 14
-@[inherit_doc emod] abbrev modulus : ℕ := 15
-@[inherit_doc emod] abbrev nodeArray : ℕ := 16
-@[inherit_doc emod] abbrev nodes : ℕ := 17
-@[inherit_doc emod] abbrev distinct : ℕ := 18
-@[inherit_doc emod] abbrev twice : ℕ := 19
-@[inherit_doc emod] abbrev zeroThree : ℕ := 20
-@[inherit_doc emod] abbrev bits : ℕ := 21
-@[inherit_doc emod] abbrev pick : ℕ := 22
-@[inherit_doc emod] abbrev round : ℕ := 23
-@[inherit_doc emod] abbrev row : ℕ := 24
-@[inherit_doc emod] abbrev grid : ℕ := 25
-@[inherit_doc emod] abbrev params : ℕ := 26
-@[inherit_doc emod] abbrev prep : ℕ := 27
-@[inherit_doc emod] abbrev core : ℕ := 28
-@[inherit_doc emod] abbrev host : ℕ := 29
+ abbrev log2 : ℕ := 1
+ abbrev clog2 : ℕ := 2
+ abbrev sqrt : ℕ := 3
+ abbrev sieve : ℕ := 4
+ abbrev half : ℕ := 5
+ abbrev merge : ℕ := 6
+ abbrev copy : ℕ := 7
+ abbrev fill : ℕ := 8
+ abbrev sort : ℕ := 9
+ abbrev resid : ℕ := 10
+ abbrev tally : ℕ := 11
+ abbrev coll : ℕ := 12
+ abbrev heavy : ℕ := 13
+ abbrev search : ℕ := 14
+ abbrev modulus : ℕ := 15
+ abbrev nodeArray : ℕ := 16
+ abbrev nodes : ℕ := 17
+ abbrev distinct : ℕ := 18
+ abbrev twice : ℕ := 19
+ abbrev zeroThree : ℕ := 20
+ abbrev bits : ℕ := 21
+ abbrev pick : ℕ := 22
+ abbrev round : ℕ := 23
+ abbrev row : ℕ := 24
+ abbrev grid : ℕ := 25
+ abbrev params : ℕ := 26
+ abbrev prep : ℕ := 27
+ abbrev core : ℕ := 28
+ abbrev host : ℕ := 29
 
 end Proc
 

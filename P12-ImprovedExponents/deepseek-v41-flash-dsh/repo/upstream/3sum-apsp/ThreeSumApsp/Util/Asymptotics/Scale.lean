@@ -13,6 +13,7 @@ public import Mathlib.Analysis.Convex.SpecificFunctions.Basic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Data.Fin.VecNotation
 public import Mathlib.Data.Nat.Log
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Orders of growth of counts
@@ -187,11 +188,6 @@ protected theorem add (h₁ : s.SoftO t₁ e₁) (h₂ : s.SoftO t₂ e₂) :
       pow_mul_mon_le (e' := e₁ ⊔ e₂) (le_max_left _ _) (fun _ => le_sup_left) hx).add
       (h₂.mono_right fun _ hx => pow_mul_mon_le (le_max_right _ _) (fun _ => le_sup_right) hx)
 
-/-- A sum of two counts with the same bound. -/
-theorem add_le (h₁ : s.SoftO t₁ e) (h₂ : s.SoftO t₂ e) : s.SoftO (fun x => t₁ x + t₂ x) e :=
-  (h₁.add h₂).mono fun _ => (sup_idem _).le
-
-/-- In a product the exponents add up. -/
 protected theorem mul (h₁ : s.SoftO t₁ e₁) (h₂ : s.SoftO t₂ e₂) :
     s.SoftO (fun x => t₁ x * t₂ x) (e₁ + e₂) := by
   obtain ⟨c₁, h₁⟩ := h₁
@@ -243,9 +239,9 @@ theorem log2 (hs : ∀ i x, s.dom x → s.base i x ≤ 2 ^ s.hidden x) (h : s.So
   obtain ⟨C, c, hC, hle⟩ := h.exists_le
   obtain ⟨K, hK⟩ := pow_unbounded_of_one_lt C (one_lt_two (α := ℝ))
   refine ⟨1, K + c + ∑ i, e i, by positivity, fun x hx => ?_⟩
-  have hf : 1 ≤ s.hidden x := s.one_le_hidden x hx
+  have hf := s.one_le_hidden x hx
   have hhidden : s.hidden x ≤ 2 ^ s.hidden x := by
-    have := one_add_mul_self_le_rpow_one_add (s := 1) (by norm_num) hf
+    have := one_add_mul_self_le_rpow_one_add (s := 1) tac_norm_num hf
     norm_num at this
     linarith
   have hbase := fun i => zero_le_one.trans (s.one_le_base i x hx)

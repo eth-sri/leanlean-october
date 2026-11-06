@@ -9,6 +9,7 @@ public import ThreeSumApsp.Lang.Lib.ArrayAt
 public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Cyclic
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Vectors: sums, differences, and the product in ℤ[x]/(x^p - 1)
@@ -38,11 +39,11 @@ namespace Vlin
 
 /-- The local variables of vlin: the arguments dst, a, b, n, s, and the counter. -/
 abbrev Dst : ℕ := 0
-@[inherit_doc Dst] abbrev ArgA : ℕ := 1
-@[inherit_doc Dst] abbrev ArgB : ℕ := 2
-@[inherit_doc Dst] abbrev Len : ℕ := 3
-@[inherit_doc Dst] abbrev Sign : ℕ := 4
-@[inherit_doc Dst] abbrev Idx : ℕ := 5
+ abbrev ArgA : ℕ := 1
+ abbrev ArgB : ℕ := 2
+ abbrev Len : ℕ := 3
+ abbrev Sign : ℕ := 4
+ abbrev Idx : ℕ := 5
 
 end Vlin
 
@@ -92,11 +93,11 @@ theorem vlin_spec {μ : ℕ → ℤ} {dst a b n : ℕ} {s V : ℤ} {A B : List �
     intro j hj
     -- The two cells that round j reads have not been written yet.
     have hreadA : wrote μ dst (vlinAt s A B) j (a + j) = A.getD j 0 :=
-      (wrote_rest (by omega)).trans (pre.opA.read hj)
+      (wrote_rest tac_omega).trans (pre.opA.read hj)
     have hreadB : wrote μ dst (vlinAt s A B) j (b + j) = B.getD j 0 :=
-      (wrote_rest (by omega)).trans (pre.opB.read hj)
-    have hx : |A.getD j 0| ≤ V := pre.opA.read hj ▸ pre.opA.abs_read_le hj
-    have hy : |B.getD j 0| ≤ V := pre.opB.read hj ▸ pre.opB.abs_read_le hj
+      (wrote_rest tac_omega).trans (pre.opB.read hj)
+    have hx := pre.opA.read hj ▸ pre.opA.abs_read_le hj
+    have hy := pre.opB.read hj ▸ pre.opB.abs_read_le hj
     have hsy : |s * B.getD j 0| ≤ V := by
       rw [abs_mul]
       exact (mul_le_of_le_one_left (abs_nonneg _) pre.sign).trans hy
@@ -113,8 +114,8 @@ theorem vlin_spec {μ : ℕ → ℤ} {dst a b n : ℕ} {s V : ℤ} {A B : List �
       omega
     change wrote μ dst (vlinAt s A B) n (dst + i) = _
     simp only [vlinList, List.getElem_zipWith]
-    rw [wrote_done hi', vlinAt, List.getD_eq_getElem _ _ (by omega),
-      List.getD_eq_getElem _ _ (by omega)]
+    rw [wrote_done hi', vlinAt, List.getD_eq_getElem _ _ tac_omega,
+      List.getD_eq_getElem _ _ tac_omega]
 
 /-- **vlin** as a procedure. -/
 theorem vlin_meets {μ : ℕ → ℤ} {pVlin dst a b n : ℕ} {s V : ℤ} {A B : List ℤ}
@@ -167,29 +168,29 @@ namespace Cconv
 /-- The local variables of cconv: the arguments dst, a, b, p; the number r of the entry; the number
 i of the term; the sum (Acc); the index into b. -/
 abbrev Dst : ℕ := 0
-@[inherit_doc Dst] abbrev ArgA : ℕ := 1
-@[inherit_doc Dst] abbrev ArgB : ℕ := 2
-@[inherit_doc Dst] abbrev Len : ℕ := 3
-@[inherit_doc Dst] abbrev Row : ℕ := 4
-@[inherit_doc Dst] abbrev Idx : ℕ := 5
-@[inherit_doc Dst] abbrev Acc : ℕ := 6
-@[inherit_doc Dst] abbrev Jdx : ℕ := 7
+ abbrev ArgA : ℕ := 1
+ abbrev ArgB : ℕ := 2
+ abbrev Len : ℕ := 3
+ abbrev Row : ℕ := 4
+ abbrev Idx : ℕ := 5
+ abbrev Acc : ℕ := 6
+ abbrev Jdx : ℕ := 7
 
 end Cconv
 
-open Cconv in
+open Cconv
 /-- One term: j := r - i or r + p - i; sum := sum + a[i] b[j]. -/
 def cconvTerm : Stmt :=
   .ite (v Idx ≤' v Row) (.set Jdx (v Row -' v Idx)) (.set Jdx (v Row +' v Len -' v Idx)) ;;
   .set Acc (v Acc +' M (v ArgA +' v Idx) *' M (v ArgB +' v Jdx))
 
-open Cconv in
+open Cconv
 /-- One entry: sum := the entry number r of the convolution. -/
 def cconvEntry : Stmt :=
   .set Acc (k 0) ;;
   .for Idx (v Len) cconvTerm
 
-open Cconv in
+open Cconv
 /-- cconv(dst, a, b, p): for r < p: dst[r] := the entry number r. -/
 def cconvBody : Stmt :=
   .for Row (v Len) (cconvEntry ;; .store (v Dst +' v Row) (v Acc))
@@ -208,7 +209,7 @@ section cconv
 
 variable {μ : ℕ → ℤ} {dst a b p r : ℕ} {α β : ℤ} {A B : List ℤ}
 
-open Cconv in
+open Cconv
 /-- **One term of cconv.** -/
 theorem cconvTerm_spec (hw : (lim.space : ℤ) ≤ lim.word) (pre : CconvPre lim μ a b p α β A B)
     (hr : r < p) {i : ℕ} (hi : i < p) (t : ℤ) :
@@ -216,7 +217,7 @@ theorem cconvTerm_spec (hw : (lim.space : ℤ) ≤ lim.word) (pre : CconvPre lim
       ∃ t', σ' = ⟨frame [dst, a, b, p, r, i, convPartialSum p A B r (i + 1), t'], μ⟩ := by
   obtain ⟨opA, opB, hword, hα, hβ, room⟩ := pre
   light_facts opA opB
-  have hreadA : μ (a + i) = A.getD i 0 := opA.read hi
+  have hreadA := opA.read hi
   have hterm := abs_le.1 (abs_convTerm_le (p := p) opA.bound opB.bound hα hβ r i)
   have hsum := abs_le.1 (abs_convPartialSum_le (p := p) opA.bound opB.bound hα hβ r (i + 1))
   have hfits : ((i + 1 : ℕ) : ℤ) * (α * β) ≤ lim.word :=
@@ -231,7 +232,7 @@ theorem cconvTerm_spec (hw : (lim.space : ℤ) ≤ lim.word) (pre : CconvPre lim
           σ' = ⟨frame [dst, a, b, p, r, i, convPartialSum p A B r i + convTerm p A B r i, t'],
             μ⟩ := by
     intro j hj hc
-    have hreadB : μ (b + j) = B.getD j 0 := opB.read hj
+    have hreadB := opB.read hj
     rw [hc] at hterm hsum ⊢
     generalize A.getD i 0 = x at hreadA hterm hsum
     generalize B.getD j 0 = y at hreadB hterm hsum
@@ -239,11 +240,11 @@ theorem cconvTerm_spec (hw : (lim.space : ℤ) ≤ lim.word) (pre : CconvPre lim
   -- if i ≤ r then j := r - i else j := r + p - i
   refine Ends.next 12 (Ends.iteLast (fun hc => ?_) fun hc => ?_)
   · have hir : i ≤ r := by simpa using hc
-    exact Ends.setTo (r - i : ℕ) (add _ (by omega) (by rw [convTerm, if_pos hir]))
+    exact Ends.setTo (r - i : ℕ) (add _ tac_omega (by rw [convTerm, if_pos hir]))
   · have hir : ¬ i ≤ r := by simpa using hc
-    exact Ends.setTo (r + p - i : ℕ) (add _ (by omega) (by rw [convTerm, if_neg hir]))
+    exact Ends.setTo (r + p - i : ℕ) (add _ tac_omega (by rw [convTerm, if_neg hir]))
 
-open Cconv in
+open Cconv
 /-- **One entry of cconv**, in at most 32 p + 8 steps. -/
 theorem cconvEntry_spec (hw : (lim.space : ℤ) ≤ lim.word) (pre : CconvPre lim μ a b p α β A B)
     (hr : r < p) (i₀ s₀ t₀ : ℤ) :
@@ -266,14 +267,14 @@ theorem cconvEntry_spec (hw : (lim.space : ℤ) ≤ lim.word) (pre : CconvPre li
     exact ⟨by simp, t', by simp [update_frame_setLocal]⟩
   case done => exact fun _ _ h => h
 
-open Cconv in
+open Cconv
 /-- The state of cconv before round r: the first r entries are written, and no cell outside dst has
 changed. -/
 def CconvInv (μ : ℕ → ℤ) (dst a b p : ℕ) (A B : List ℤ) (r : ℕ) (σ : State) : Prop :=
   ∃ (i s t : ℤ) (μ' : ℕ → ℤ), σ = ⟨frame [dst, a, b, p, r, i, s, t], μ'⟩ ∧
     (∀ e < r, μ' (dst + e) = convPartialSum p A B e p) ∧ SameOutside μ μ' dst p
 
-open Cconv in
+open Cconv
 /-- **cconv** writes the cyclic convolution to dst and changes nothing else, in at most
 32 p² + 21 p + 6 steps. -/
 theorem cconv_spec (hw : (lim.space : ℤ) ≤ lim.word) (pre : CconvPre lim μ a b p α β A B)
@@ -281,13 +282,12 @@ theorem cconv_spec (hw : (lim.space : ℤ) ≤ lim.word) (pre : CconvPre lim μ 
     (apartB : dst + p ≤ b ∨ b + p ≤ dst) :
     Ends lim P d cconvBody ⟨frame [dst, a, b, p], μ⟩ (32 * p * p + 21 * p + 6) fun σ' =>
       Seg σ'.mem dst (cconv p A B) ∧ SameOutside μ σ'.mem dst p := by
-  have room := pre.room
   -- for r < p
   refine Ends.for (CconvInv μ dst a b p A B) p (32 * p + 13) ?start ?round ?done ?bound
   case start =>
     exact ⟨0, 0, 0, μ, congrArg (fun loc => (⟨loc, μ⟩ : State))
       ((update_frame_setLocal _ _ _).trans (frame_append_zeros _ 3).symm),
-      fun e he => absurd he (by omega), .refl⟩
+      fun e he => absurd he tac_omega, .refl⟩
   case bound =>
     rintro r _ - - ⟨i, s, t, μ', rfl, -, -⟩
     simp
@@ -304,7 +304,7 @@ theorem cconv_spec (hw : (lim.space : ℤ) ≤ lim.word) (pre : CconvPre lim μ 
       Function.update μ' (dst + r) (convPartialSum p A B r p), by simp [update_frame_setLocal],
       fun e he => ?_, rest.update ⟨by omega, by omega⟩ _⟩
     rcases Nat.lt_succ_iff_lt_or_eq.1 he with he | rfl
-    · exact (Function.update_of_ne (by omega) _ _).trans (filled e he)
+    · exact (Function.update_of_ne tac_omega _ _).trans (filled e he)
     · exact Function.update_self ..
   case done =>
     rintro _ - ⟨i, s, t, μ', rfl, filled, rest⟩

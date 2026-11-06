@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Parameters
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Strassen
 public import Mathlib.Data.List.MinMax
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The prime that is chosen (proof of Theorem 17)
@@ -119,7 +120,7 @@ theorem le_rpow_kappaOf {n U : ℕ} (hn : 2 ≤ n) (hU : 1 ≤ U) :
     (U : ℝ) ≤ (n : ℝ) ^ kappaOf n U := by
   have hn1 : (1 : ℝ) < (n : ℝ) := by exact_mod_cast hn
   have hU0 : (0 : ℝ) < (U : ℝ) := by exact_mod_cast hU
-  calc (U : ℝ) = (n : ℝ) ^ Real.logb n U := (Real.rpow_logb (by linarith) hn1.ne' hU0).symm
+  calc (U : ℝ) = (n : ℝ) ^ Real.logb n U := (Real.rpow_logb tac_linarith hn1.ne' hU0).symm
     _ ≤ (n : ℝ) ^ kappaOf n U := Real.rpow_le_rpow_of_exponent_le hn1.le (le_max_right _ _)
 
 /-- It is the least such exponent. -/
@@ -128,7 +129,7 @@ theorem kappaOf_le {n U : ℕ} (hn : 2 ≤ n) (hU : 1 ≤ U) {κ' : ℝ} (h1 : 1
   have hn1 : (1 : ℝ) < (n : ℝ) := by exact_mod_cast hn
   have hU0 : (0 : ℝ) < (U : ℝ) := by exact_mod_cast hU
   refine max_le h1 ?_
-  rw [div_le_iff₀ (Real.log_pos hn1), ← Real.log_rpow (by linarith)]
+  rw [div_le_iff₀ (Real.log_pos hn1), ← Real.log_rpow tac_linarith]
   exact Real.log_le_log hU0 h
 
 /-- Weights of absolute value at most `U` are at most `n^κ`. -/
@@ -148,6 +149,6 @@ theorem F_chosenPrime_le {n D U : ℕ} (hD : 16 ≤ D) (hDn : D ≤ n) (hU : 1 �
     ((triOf n AB BC AC).F (chosenPrime n D AB BC AC) : ℝ) ≤
       Hashing.falsePositiveConst * (kappaOf n U * (n : ℝ) ^ 3 * Real.log n / Real.sqrt D) :=
   Hashing.F_le_falsePositiveConst_mul hD hDn (one_le_kappaOf n U) _
-    (weightsPolyBounded_kappaOf (by omega) hU hAB hBC hAC) (chosenPrime_isSelected AB BC AC hD)
+    (weightsPolyBounded_kappaOf tac_omega hU hAB hBC hAC) (chosenPrime_isSelected AB BC AC hD)
 
 end ThreeSumApsp.Spec

@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Spec.Sec3.Problems
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Finding a negative triangle by halving
@@ -116,7 +117,7 @@ decreasing_by omega
 
 /-- The chain is empty for `n ≤ 1`. -/
 theorem halvingChain_of_lt {n : ℕ} (h : n < 2) : halvingChain n = [] := by
-  rw [halvingChain, if_neg (by omega)]
+  rw [halvingChain, if_neg tac_omega]
 
 /-- The chain starts with `⌈n/2⌉` for `n ≥ 2`. -/
 theorem halvingChain_of_le {n : ℕ} (h : 2 ≤ n) :
@@ -131,9 +132,9 @@ theorem bounds_of_mem_halvingChain {n h : ℕ} (hh : h ∈ halvingChain n) : 1 �
     · rw [halvingChain_of_le hn, List.mem_cons] at hh
       rcases hh with rfl | hh
       · omega
-      · have := ih _ (by omega) hh
+      · have := ih _ tac_omega hh
         omega
-    · rw [halvingChain_of_lt (by omega)] at hh
+    · rw [halvingChain_of_lt tac_omega] at hh
       exact absurd hh List.not_mem_nil
 
 /-- The side lengths of the chain add up to at most `2n` (to at most `2n - 2`, for `n ≥ 1`). -/
@@ -148,10 +149,10 @@ theorem sum_halvingChain_le (n : ℕ) : (halvingChain n).sum ≤ 2 * n := by
     intro hn1
     by_cases hn : 2 ≤ n
     · -- With `m = ⌈n/2⌉` the sum is `m` plus at most `2m - 2`, and `3m ≤ 2n` for `n ≥ 2`.
-      have hrest := ih ((n + 1) / 2) (by omega) (by omega)
+      have hrest := ih ((n + 1) / 2) tac_omega tac_omega
       rw [halvingChain_of_le hn, List.sum_cons]
       omega
-    · rw [halvingChain_of_lt (by omega), List.sum_nil]
+    · rw [halvingChain_of_lt tac_omega, List.sum_nil]
       omega
 
 end ThreeSumApsp.Spec

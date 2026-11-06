@@ -9,6 +9,7 @@ public import ThreeSumApsp.Spec.Sec3.Problems
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Hashing
 public import ThreeSumApsp.Spec.Sec3.Theorem17.ZOrder
 public import ThreeSumApsp.Util.Sum
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Strassen's algorithm on lists, and the count of the proof of Theorem 17
@@ -129,7 +130,7 @@ theorem strassenList_zRing {p : ℕ} (hp : p ≠ 0) (K : ℕ) (α β : ℕ → �
 this is the `O(n^{log₂ 7})` of the proof of Theorem 17: `7^{⌈log₂ n⌉} ≤ 7 n^{log₂ 7}`. -/
 theorem seven_pow_clog_le {n : ℕ} (hn : 1 ≤ n) :
     (7 : ℝ) ^ Nat.clog 2 n ≤ 7 * (n : ℝ) ^ Real.logb 2 7 := by
-  simpa using Real.pow_clog_le_mul_rpow_logb 2 hn (c := 7) (by norm_num)
+  simpa using Real.pow_clog_le_mul_rpow_logb 2 hn (c := 7) tac_norm_num
 
 /-! ## The count of the proof of Theorem 17 -/
 
@@ -205,7 +206,7 @@ theorem matQList_eq_zRing (hp : p ≠ 0) (K : ℕ) :
 three lists of weights, is the number of triples `(a,b,c)` with `S(a,b,c) ≡ 0 (mod p)`. -/
 theorem countOf_eq (hp : p ≠ 0) :
     countOf n p AB BC AC = (triOf n AB BC AC).countZeroMod p := by
-  have hnK : n ≤ 2 ^ Nat.clog 2 n := Nat.le_pow_clog (by norm_num) n
+  have hnK : n ≤ 2 ^ Nat.clog 2 n := Nat.le_pow_clog tac_norm_num n
   -- The two lists are `P` and `Q`, padded (step 3), and Strassen's algorithm gives their product
   -- (step 2); both sides become sums over the pairs `(a, b)`.
   rw [countZeroMod_eq _ hp, countOf, matPList_eq_zRing n AB BC AC hp,

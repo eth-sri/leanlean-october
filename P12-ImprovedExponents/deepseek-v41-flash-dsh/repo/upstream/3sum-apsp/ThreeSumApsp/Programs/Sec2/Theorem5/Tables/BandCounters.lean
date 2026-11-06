@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 public import ThreeSumApsp.Spec.Sec2.Theorem5.Counters
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Band and block of every row, by counting (Section 2.3.4)
@@ -35,17 +36,17 @@ namespace Counters
 /-- The local variables of counters: Total = N, Blocks = K0, Width = N0, Dest = dst (the arguments);
 Row is the current row, and Band, Block, Offset are its band, its block and its offset. -/
 abbrev Total : ℕ := 0
-@[inherit_doc Total] abbrev Blocks : ℕ := 1
-@[inherit_doc Total] abbrev Width : ℕ := 2
-@[inherit_doc Total] abbrev Dest : ℕ := 3
-@[inherit_doc Total] abbrev Row : ℕ := 4
-@[inherit_doc Total] abbrev Band : ℕ := 5
-@[inherit_doc Total] abbrev Block : ℕ := 6
-@[inherit_doc Total] abbrev Offset : ℕ := 7
+ abbrev Blocks : ℕ := 1
+ abbrev Width : ℕ := 2
+ abbrev Dest : ℕ := 3
+ abbrev Row : ℕ := 4
+ abbrev Band : ℕ := 5
+ abbrev Block : ℕ := 6
+ abbrev Offset : ℕ := 7
 
 end Counters
 
-open Counters in
+open Counters
 /-- One round: the band and the block of the current row are written, and the counters move on to
 the next row. -/
 def countersRound : Stmt :=
@@ -60,7 +61,7 @@ def countersRound : Stmt :=
       .set Block (k 0) ;;
       .set Band (v Band +' k 1)))
 
-open Counters in
+open Counters
 /-- counters(N, K0, N0, dst).  The row and the three counters are not set at the beginning: local
 variables that are not arguments start at 0. -/
 def countersBody : Stmt := .while (v Row <' v Total) countersRound
@@ -81,10 +82,10 @@ theorem Counted.step (h : Counted μ N K0 N0 dst i μ') (hi : i < N) :
       ((Spec.ctrAt K0 N0 i).band : ℕ)) (dst + N + i) ((Spec.ctrAt K0 N0 i).block : ℕ)) := by
   refine ⟨fun I hI => ?_, (h.2.update ⟨by omega, by omega⟩ _).update ⟨by omega, by omega⟩ _⟩
   rcases Nat.lt_succ_iff_lt_or_eq.1 hI with hI | rfl
-  · rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega),
-      Function.update_of_ne (by omega), Function.update_of_ne (by omega)]
+  · rw [Function.update_of_ne tac_omega, Function.update_of_ne tac_omega,
+      Function.update_of_ne tac_omega, Function.update_of_ne tac_omega]
     exact h.1 I hI
-  · rw [Function.update_of_ne (by omega), Function.update_self, Function.update_self]
+  · rw [Function.update_of_ne tac_omega, Function.update_self, Function.update_self]
     exact ⟨rfl, rfl⟩
 
 /-- The state before round i: the counters are those of row i. -/
@@ -143,12 +144,11 @@ theorem counters_spec (std : Std lim) (hsp : dst + 2 * N ≤ lim.space) (hK : 0 
     Ends lim P d countersBody ⟨frame [N, K0, N0, dst], μ⟩ (44 * (N + 1)) fun σ' =>
       (∀ I < N, σ'.mem (dst + I) = (I / (K0 * N0) : ℕ) ∧
         σ'.mem (dst + N + I) = (I / N0 % K0 : ℕ)) ∧ SameOutside μ σ'.mem dst (2 * N) := by
-  have hspace := std.space_le
   -- while Row < N; a round takes at most 40 steps
   refine Ends.whileConst (Inv μ N K0 N0 dst) N countersRound.blockCost ?start ?round ?done
     (by simp [countersRound]; omega)
   case start =>
-    refine ⟨μ, ?_, fun I hI => absurd hI (by omega), .refl⟩
+    refine ⟨μ, ?_, fun I hI => absurd hI tac_omega, .refl⟩
     -- The row and the three counters start at 0.
     rw [← frame_append_zeros _ 4]
     simp [Spec.ctrAt]

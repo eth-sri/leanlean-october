@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Tactics
 public import Mathlib.Tactic.Positivity
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The integer square root by counting up
@@ -26,12 +27,12 @@ namespace Sqrt
 /-- The local variables of sqrt: the argument K, which the result replaces, the candidate k, and the
 square (k + 1)². -/
 abbrev Arg : ℕ := 0
-@[inherit_doc Arg] abbrev Cand : ℕ := 1
-@[inherit_doc Arg] abbrev Square : ℕ := 2
+ abbrev Cand : ℕ := 1
+ abbrev Square : ℕ := 2
 
 end Sqrt
 
-open Sqrt in
+open Sqrt
 /-- sqrt(K). -/
 def sqrtBody : Stmt :=
   .set Cand (k 0) ;;
@@ -48,9 +49,9 @@ def sqrtBody : Stmt :=
 theorem sqrt_meets {p K : ℕ} (hp : P[p]? = some sqrtBody) (μ : ℕ → ℤ)
     (hword : ((3 * K + 4 : ℕ) : ℤ) ≤ lim.word) :
     Meets lim P p d [K] μ (sqrtTime K) fun r μ' => r = (Nat.sqrt K : ℤ) ∧ μ' = μ := by
-  have hle : Nat.sqrt K * Nat.sqrt K ≤ K := Nat.sqrt_le K
-  have hlt : K < (Nat.sqrt K + 1) * (Nat.sqrt K + 1) := Nat.lt_succ_sqrt K
-  have hself : Nat.sqrt K ≤ K := Nat.sqrt_le_self K
+  have hle := Nat.sqrt_le K
+  have hlt := Nat.lt_succ_sqrt K
+  have hself := Nat.sqrt_le_self K
   refine .of_body hp ?_
   unfold sqrtBody sqrtTime
   -- k := 0; sq := 1
@@ -58,11 +59,11 @@ theorem sqrt_meets {p K : ℕ} (hp : P[p]? = some sqrtBody) (μ : ℕ → ℤ)
   light_set 1
   -- while sq ≤ K.  Before round i, k = i and sq = (i + 1)².
   refine Ends.next _ (Ends.whileBlock
-    (fun i σ => σ = ⟨frame [K, i, ((i + 1) * (i + 1) : ℕ)], μ⟩) (Nat.sqrt K) (by simp) ?round ?done
+    (fun i σ => σ = ⟨frame [K, i, ((i + 1) * (i + 1) : ℕ)], μ⟩) (Nat.sqrt K) tac_simp ?round ?done
     le_rfl)
   case round =>
     rintro i _ hi rfl
-    have hsq : (i + 1) * (i + 1) ≤ Nat.sqrt K * Nat.sqrt K := Nat.mul_le_mul (by omega) (by omega)
+    have hsq : (i + 1) * (i + 1) ≤ Nat.sqrt K * Nat.sqrt K := Nat.mul_le_mul tac_omega tac_omega
     rw [show (i + 1 + 1) * (i + 1 + 1) = (i + 1) * (i + 1) + 2 * i + 3 by ring]
     generalize (i + 1) * (i + 1) = q at hsq
     -- The test is safe and holds.  sq := sq + 2 k + 3; k := k + 1 is safe and leads to the next

@@ -1,6 +1,7 @@
 module
 
 public import ImprovedExponents.HostMid.NeedPolynomial
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -19,7 +20,7 @@ obeys the bound (`ObeysBound17Mid`, `claim17Mid_of_host`).
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light ThreeSumApsp
 
 /-- **Theorem 17 with the inner dimension of the instances made explicit**: upstream's
 `Claim.Theorem_17`, except that the instances of Lop-AE-SparseTri have the inner dimension
@@ -68,6 +69,6 @@ theorem claim17Mid_of_host (MM : ℕ → ℝ) (D g : ℕ → ℕ) (time : (List 
   obtain ⟨R, p', hs, hp⟩ := host Q pS Tn r hpoly hsolves
   exact ⟨timeUpTo (time Tn), hs.solvedIn hp, fun n κ u h16 hDn hg1 hg hκ hu =>
     timeUpTo_le fun U hU =>
-      bound Tn T hle n U κ h16 hDn hg1 hg hκ (hU.trans (max_le hu (by positivity)))⟩
+      bound Tn T hle n U κ h16 hDn hg1 hg hκ (hU.trans (max_le hu tac_positivity))⟩
 
 end ImprovedExponents.HostMid

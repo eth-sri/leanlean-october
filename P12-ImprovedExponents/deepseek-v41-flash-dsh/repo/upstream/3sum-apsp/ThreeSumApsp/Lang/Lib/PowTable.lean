@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Lib.Seg
 public import ThreeSumApsp.Lang.Tactics
 public import Mathlib.Data.Int.SuccPred
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Tables of powers
@@ -36,10 +37,10 @@ namespace PowTable
 /-- The local variables of powTable: the arguments dst, L and b, the exponent j, and the power b^j.
 -/
 abbrev Dest : ℕ := 0
-@[inherit_doc Dest] abbrev Len : ℕ := 1
-@[inherit_doc Dest] abbrev Base : ℕ := 2
-@[inherit_doc Dest] abbrev Expo : ℕ := 3
-@[inherit_doc Dest] abbrev Power : ℕ := 4
+ abbrev Len : ℕ := 1
+ abbrev Base : ℕ := 2
+ abbrev Expo : ℕ := 3
+ abbrev Power : ℕ := 4
 
 end PowTable
 
@@ -79,7 +80,7 @@ theorem powTable_ends {μ : ℕ → ℤ} {dst L b : ℕ} (e p : ℤ) (t : List �
   -- for j < L
   refine Ends.for (Filled μ dst L b t) L powTableRound.blockCost ?start ?round ?done ?bound
     (hT := by light_time [powTableRound])
-  case start => exact ⟨μ, by simp [update_frame_setLocal], fun i hi => absurd hi (by omega), .refl⟩
+  case start => exact ⟨μ, by simp [update_frame_setLocal], fun i hi => absurd hi tac_omega, .refl⟩
   case bound =>
     rintro j _ - - ⟨μ', rfl, -⟩
     light_side
@@ -88,8 +89,7 @@ theorem powTable_ends {μ : ℕ → ℤ} {dst L b : ℕ} (e p : ℤ) (t : List �
     exact ⟨fun i hi => by rw [getElem_powList]; exact powers i (by simpa using hi), same⟩
   case round =>
     rintro j _ hj - ⟨μ', rfl, powers, same⟩
-    have hfits : (b : ℤ) ^ (j + 1) ≤ lim.word := by exact_mod_cast hpow (j + 1) (by omega)
-    have hnonneg : 0 ≤ (b : ℤ) ^ (j + 1) := by positivity
+    have hfits : (b : ℤ) ^ (j + 1) ≤ lim.word := by exact_mod_cast hpow (j + 1) tac_omega
     unfold powTableRound
     -- dst[j] := p
     light_store (dst + j) (b ^ j : ℕ)
@@ -98,7 +98,7 @@ theorem powTable_ends {μ : ℕ → ℤ} {dst L b : ℕ} (e p : ℤ) (t : List �
     refine ⟨by simp, Function.update μ' (dst + j) (b ^ j : ℕ), by simp [update_frame_setLocal],
       fun i hi => ?_, by light_keep⟩
     obtain hi | rfl := Nat.lt_succ_iff_lt_or_eq.1 hi
-    · rw [Function.update_of_ne (by omega)]
+    · rw [Function.update_of_ne tac_omega]
       exact powers i hi
     · exact Function.update_self ..
 

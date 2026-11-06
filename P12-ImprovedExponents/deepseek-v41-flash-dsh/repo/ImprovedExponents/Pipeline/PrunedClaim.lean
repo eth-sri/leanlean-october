@@ -3,6 +3,7 @@ module
 public import ImprovedExponents.Pipeline.General
 public import ImprovedExponents.Cost8P.Offline
 public import ImprovedExponents.PrunedProgram.Wrapper.Program
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -58,12 +59,12 @@ theorem prunedEncoderClaim : PrunedEncoderClaim := by
   have hbR : (0 : ℝ) < b := by exact_mod_cast hb
   have hc10 : (10 : ℝ) < (a : ℝ) / b := by
     rw [lt_div_iff₀ hbR]; exact_mod_cast hc
-  have hA0 : 0 < basePruned ((a : ℝ) / b) := basePruned_pos (by linarith)
+  have hA0 := basePruned_pos tac_linarith
   have hR0 : 0 < RcP ((a : ℝ) / b) γ := thinR_pos hA0 hγ0.le
   -- a positive thinness below `R'_c(γ)`; for `ε ≤ 0` the claim follows from the one at `ε₀`
   set ε₀ := max ε (RcP ((a : ℝ) / b) γ / 2) with hε₀def
   have hε0 : 0 < ε₀ := lt_of_lt_of_le (half_pos hR0) (le_max_right _ _)
-  have hε₀ : ε₀ < RcP ((a : ℝ) / b) γ := max_lt hε (by linarith)
+  have hε₀ : ε₀ < RcP ((a : ℝ) / b) γ := max_lt hε tac_linarith
   refine ThinClaim.mono (ε₀ := ε₀) (le_max_left _ _) ?_
   -- the exponent of the test: `A'(c)/ln 4 < r/s < 1/ε₀`
   have hlt : basePruned ((a : ℝ) / b) / log 4 < 1 / ε₀ := by
@@ -76,11 +77,11 @@ theorem prunedEncoderClaim : PrunedEncoderClaim := by
     nlinarith [mul_nonneg hε0.le hγ4]
   obtain ⟨t, ht1, ht2⟩ := exists_rat_btwn hlt
   have ht0 : (0 : ℚ) < t := by
-    have h : (0 : ℝ) < t := lt_trans (by positivity) ht1
+    have h := lt_trans tac_positivity ht1
     exact_mod_cast h
   have ht_eq := rat_eq_div ht0.le
-  have hr : 1 ≤ t.num.toNat := one_le_num_toNat ht0
-  have hs1 : 1 ≤ t.den := t.den_pos
+  have hr := one_le_num_toNat ht0
+  have hs1 := t.den_pos
   have htR : (0 : ℝ) < t := by exact_mod_cast ht0
   have hrs : basePruned ((a : ℝ) / b) < ((t.num.toNat : ℝ) / t.den) * log 4 := by
     rw [← ht_eq, ← div_lt_iff₀ h4]

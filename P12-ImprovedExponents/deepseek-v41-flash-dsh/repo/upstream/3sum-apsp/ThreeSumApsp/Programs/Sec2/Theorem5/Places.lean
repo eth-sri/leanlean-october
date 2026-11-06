@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Sec2.Tiling.Definitions
 public import Mathlib.Data.Nat.Choose.Bounds
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 5 in the light language: sizes and places
@@ -148,20 +149,20 @@ theorem Par.places (p : Par) (b0 : ℕ) :
 namespace Par
 variable (p : Par)
 
-theorem one_le_T : 1 ≤ p.T := Nat.one_le_pow _ _ (by omega)
+theorem one_le_T : 1 ≤ p.T := Nat.one_le_pow _ _ tac_omega
 
-theorem L_lt_T : p.L < p.T := Nat.lt_pow_self (by omega)
+theorem L_lt_T : p.L < p.T := Nat.lt_pow_self tac_omega
 
 /-- `2^L ≤ 10^L`. -/
-theorem two_pow_le_T : 2 ^ p.L ≤ p.T := Nat.pow_le_pow_left (by omega) _
+theorem two_pow_le_T : 2 ^ p.L ≤ p.T := Nat.pow_le_pow_left tac_omega _
 
 theorem K_le_T : p.K ≤ p.T := (Nat.choose_le_two_pow _ _).trans p.two_pow_le_T
 
 theorem N0_le_T : p.N0 ≤ p.T :=
-  (Nat.pow_le_pow_left (by omega) _).trans (Nat.pow_le_pow_right (by omega) (Nat.sub_le _ _))
+  (Nat.pow_le_pow_left tac_omega _).trans (Nat.pow_le_pow_right tac_omega (Nat.sub_le _ _))
 
 theorem D_le_T (hmL : p.m ≤ p.L) : p.D ≤ p.T :=
-  (Nat.pow_le_pow_left (by omega) _).trans (Nat.pow_le_pow_right (by omega) hmL)
+  (Nat.pow_le_pow_left tac_omega _).trans (Nat.pow_le_pow_right tac_omega hmL)
 
 theorem K0_le_K : p.K0 ≤ p.K := Nat.sqrt_le_self _
 

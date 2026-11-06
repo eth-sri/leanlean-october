@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Text
 public import ThreeSumApsp.Programs.Sec3.Theorem17.TimeBound.Terms
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The time of the host of Theorem 17 obeys the bound of Theorem 17
@@ -46,7 +47,7 @@ private theorem steps_tScanCall :
   have hone : ∀ θ : CostParams, θ.Hyp → 1 ≤ Real.sqrt θ.D / θ.g := fun θ hθ =>
     (one_le_div hθ.g_pos).2 hθ.hgD
   have hpiece : Steps (fun θ => pieceSizeNat θ.D θ.g) fun θ => Real.sqrt θ.D / θ.g := by
-    refine Dominated.of_le_const_mul (C := 2) (by norm_num) fun θ hθ => ?_
+    refine Dominated.of_le_const_mul (C := 2) tac_norm_num fun θ hθ => ?_
     have hlt : (pieceSizeNat θ.D θ.g : ℝ) * θ.g < (Nat.sqrt θ.D : ℝ) + θ.g := by
       exact_mod_cast Nat.ceilDiv_mul_lt (a := Nat.sqrt θ.D) hθ.hg
     rw [← mul_div_assoc, le_div_iff₀ hθ.g_pos]
@@ -77,7 +78,7 @@ private theorem steps_falsePositiveBound :
       exact kappaOf_le_of_hyp hθ
   · rw [one_le_div hθ.sqrt_pos]
     calc Real.sqrt θ.D ≤ mon 1 0 0 θ := by simpa [mon_eq] using hθ.sqrt_le_n
-      _ ≤ mon 3 0 1 θ := Scale.mon_le_mon (by decide) hθ
+      _ ≤ mon 3 0 1 θ := Scale.mon_le_mon tac_decide hθ
       _ = θ.κ * (θ.n : ℝ) ^ 3 * Real.log θ.n := by
           rw [mon_eq]
           ring
@@ -88,8 +89,7 @@ private theorem steps_scans :
       budget := by
   refine (steps_tScanCall.mul steps_falsePositiveBound).mono_right fun θ hθ =>
     le_trans (le_of_eq ?_) (termScans_le_budget θ)
-  have hr : 0 < Real.sqrt θ.D := hθ.sqrt_pos
-  have hg : (0 : ℝ) < θ.g := hθ.g_pos
+  have hr := hθ.sqrt_pos
   unfold termScans
   field_simp
 
@@ -127,7 +127,7 @@ private theorem steps_tAnswers :
 
 /-- The time of the host without the calls of the solver: its time over a solver that takes no time.
 -/
-private noncomputable def hostRest (tD tG : ℕ → ℕ) (θ : CostParams) : ℕ :=
+noncomputable def hostRest (tD tG : ℕ → ℕ) (θ : CostParams) : ℕ :=
   hostSetup tD tG θ.n θ.D + hostMain (fun _ => 0) θ.n θ.U θ.D θ.g
 
 private theorem supTime_zero (n D cap : ℕ) : supTime (fun _ => 0) n D cap = 0 := by
@@ -155,12 +155,12 @@ private theorem hostTime_eq {θ : CostParams} (hθ : θ.Hyp) {Dfun Gfun : ℕ �
 
 /-- What bounds the time of the host without the calls of the solver: `ng · n²/√D`, for reading the
 answers of the instances, plus the three terms of the bound of Theorem 17. -/
-private noncomputable def restBound (θ : CostParams) : ℝ :=
+noncomputable def restBound (θ : CostParams) : ℝ :=
   (θ.n : ℝ) * θ.g * ((θ.n : ℝ) ^ 2 / Real.sqrt θ.D) + budget θ
 
 /-- What is within the three terms is within `restBound`. -/
 private theorem Steps.toRest {t : CostParams → ℕ} (h : Steps t budget) : Steps t restBound :=
-  h.mono_right fun θ _ => le_add_of_nonneg_left (by positivity)
+  h.mono_right fun θ _ => le_add_of_nonneg_left tac_positivity
 
 /-- The parameters, the square root of `D` and the tests at the beginning are within the bound, if
 the routines that compute `D` and `g` are. -/
@@ -220,8 +220,8 @@ theorem obeysBound17_hostTime (D g : ℕ → ℕ) {Dfun Gfun tD tG : ℕ → ℕ
   obtain ⟨C, hC, hsteps⟩ := steps_hostRest hD hG
   refine ⟨C, hC, fun Tn T hT n U κ h16 hDn hg1 hg hκ hU => ?_⟩
   have hθ : CostParams.Hyp ⟨n, D n, g n, U, κ⟩ := ⟨h16, hDn, hg1, hg, hκ, hU⟩
-  have hn1 : 1 ≤ n := hθ.one_le_n_nat
-  have hD1 : 1 ≤ D n := hθ.one_le_D_nat
+  have hn1 := hθ.one_le_n_nat
+  have hD1 := hθ.one_le_D_nat
   have hsolver := cast_supTime_le hT hn1 hD1 (queryCapNat n (D n))
   have hrest : (hostRest tD tG ⟨n, D n, g n, U, κ⟩ : ℝ)
       ≤ C * ((n : ℝ) * g n * ((n : ℝ) ^ 2 / Real.sqrt (D n)) + budget ⟨n, D n, g n, U, κ⟩) :=

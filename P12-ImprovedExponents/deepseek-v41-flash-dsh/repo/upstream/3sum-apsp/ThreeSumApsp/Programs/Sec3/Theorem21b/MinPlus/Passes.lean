@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Calls
 public import ThreeSumApsp.Lang.Lib.Pass
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Two passes over an array, for the (min,+)-product found bit by bit
@@ -32,18 +33,18 @@ namespace Pass
 /-- The local variables of addc and bump: the arguments len, x (Summand), the array that is only
 read (src or fl) and the array that is written (dst or lo), and the counter. -/
 abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Summand : ℕ := 1
-@[inherit_doc Len] abbrev Source : ℕ := 2
-@[inherit_doc Len] abbrev Dest : ℕ := 3
-@[inherit_doc Len] abbrev Index : ℕ := 4
+ abbrev Summand : ℕ := 1
+ abbrev Source : ℕ := 2
+ abbrev Dest : ℕ := 3
+ abbrev Index : ℕ := 4
 
 end Pass
 
-open Pass in
+open Pass
 /-- addc(len, x, src, dst): for i < len, dst[i] := src[i] + x. -/
 def addcBody : Stmt := pass Index (v Len) (v Dest) (M (v Source +' v Index) +' v Summand)
 
-open Pass in
+open Pass
 /-- bump(len, x, fl, lo): for i < len, lo[i] := lo[i] + x (1 − fl[i]). -/
 def bumpBody : Stmt :=
   pass Index (v Len) (v Dest)
@@ -65,7 +66,7 @@ theorem addc_meets {p : ℕ} (hp : P[p]? = some addcBody) {μ : ℕ → ℤ} {sr
     simp only [List.getD_eq_getElem _ _ hi]
   refine .of_body hp (Ends.pass f (fun j hj => ?_) ?_ hw hdst rfl rfl)
   · -- round j reads src[j], which lies outside the cells that are written
-    have hread : wrote μ dst f j (src + j) = L[j] := (wrote_rest (by omega)).trans (hL j hj)
+    have hread : wrote μ dst f j (src + j) = L[j] := (wrote_rest tac_omega).trans (hL j hj)
     have hfitsj := abs_le.1 (hfits _ (List.getElem_mem hj))
     rw [update_frame_setLocal]
     simp [Limits.Addr, abs_le, hread, hfi j hj]; omega
@@ -92,16 +93,16 @@ theorem bump_meets {p : ℕ} (hp : P[p]? = some bumpBody) {μ : ℕ → ℤ} {fl
       simp only [List.getD_eq_getElem _ _ hF, List.getD_eq_getElem _ _ hL]
   refine .of_body hp (Ends.pass f (fun j hj => ?_) ?_ hw hlo rfl rfl)
   · -- round j reads the flag fl[j], which is never written, and lo[j], which it then overwrites
-    have hreadF : wrote μ lo f j (fl + j) = F[j] := (wrote_rest (by omega)).trans (hF j (by omega))
-    have hreadL : wrote μ lo f j (lo + j) = L[j] := (wrote_rest (by omega)).trans (hL j (by omega))
-    have hentry := abs_le.1 (hle.getElem (i := j) (by omega))
+    have hreadF : wrote μ lo f j (fl + j) = F[j] := (wrote_rest tac_omega).trans (hF j tac_omega)
+    have hreadL : wrote μ lo f j (lo + j) = L[j] := (wrote_rest tac_omega).trans (hL j tac_omega)
+    have hentry := abs_le.1 (hle.getElem (i := j) tac_omega)
     have hx := abs_le.1 (le_refl |x|)
     rw [update_frame_setLocal]
     rcases hflag _ (List.getElem_mem (show j < F.length by omega)) with h | h
     all_goals
-      simp [Limits.Addr, abs_le, -abs_mul, hreadF, hreadL, hfi j (by omega) (by omega), h]; omega
+      simp [Limits.Addr, abs_le, -abs_mul, hreadF, hreadL, hfi j tac_omega tac_omega, h]; omega
   · dsimp only
-    exact ⟨seg_wrote (by simp [lF, lL]) fun i hi => by
+    exact ⟨seg_wrote tac_simp [lF, lL] fun i hi => by
       rw [List.getElem_zipWith, hfi], sameOutside_wrote le_rfl⟩
 
 end Light.Sec3

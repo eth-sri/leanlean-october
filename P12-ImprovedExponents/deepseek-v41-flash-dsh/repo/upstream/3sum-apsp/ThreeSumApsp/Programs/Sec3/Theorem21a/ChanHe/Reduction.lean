@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.HostContracts
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Round
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # 3SUM from Convolution-3SUM: the core of the host
@@ -87,7 +88,7 @@ theorem ChCore.time_le (T : ℕ → ℕ → ℕ) (n V : ℕ) :
     simp only [coreTime, coreOwn, coreCalls, inputsB, tSetup]
     rw [htree]
     ring
-  have hsq : Λ ≤ Λ ^ 2 := Nat.le_self_pow two_ne_zero Λ
+  have hsq := Nat.le_self_pow two_ne_zero Λ
   rw [hgrid, hcore]
   omega
 
@@ -103,32 +104,32 @@ and the cell that holds 0, and the free pointer behind the arrays.  Then the ans
 splittings, the number of doubles and the answer for them, and the length of the set for a triple
 zero and the answer for it. -/
 abbrev Len : ℕ := 0
-@[inherit_doc Len] abbrev Bound : ℕ := 1
-@[inherit_doc Len] abbrev Src : ℕ := 2
-@[inherit_doc Len] abbrev Free : ℕ := 3
-@[inherit_doc Len] abbrev Unread : ℕ := 4
-@[inherit_doc Len] abbrev Digits : ℕ := 5
-@[inherit_doc Len] abbrev PrimeBound : ℕ := 6
-@[inherit_doc Len] abbrev Levels : ℕ := 7
-@[inherit_doc Len] abbrev Base : ℕ := 8
-@[inherit_doc Len] abbrev NumValues : ℕ := 9
-@[inherit_doc Len] abbrev Sorted : ℕ := 10
-@[inherit_doc Len] abbrev Val : ℕ := 11
-@[inherit_doc Len] abbrev Mul : ℕ := 12
-@[inherit_doc Len] abbrev Table : ℕ := 13
-@[inherit_doc Len] abbrev Sets : ℕ := 14
-@[inherit_doc Len] abbrev Doubles : ℕ := 15
-@[inherit_doc Len] abbrev Zero : ℕ := 16
-@[inherit_doc Len] abbrev Top : ℕ := 17
-@[inherit_doc Len] abbrev AnsSplit : ℕ := 18
-@[inherit_doc Len] abbrev NumDoubles : ℕ := 19
-@[inherit_doc Len] abbrev AnsDoubles : ℕ := 20
-@[inherit_doc Len] abbrev NumZero : ℕ := 21
-@[inherit_doc Len] abbrev AnsZero : ℕ := 22
+ abbrev Bound : ℕ := 1
+ abbrev Src : ℕ := 2
+ abbrev Free : ℕ := 3
+ abbrev Unread : ℕ := 4
+ abbrev Digits : ℕ := 5
+ abbrev PrimeBound : ℕ := 6
+ abbrev Levels : ℕ := 7
+ abbrev Base : ℕ := 8
+ abbrev NumValues : ℕ := 9
+ abbrev Sorted : ℕ := 10
+ abbrev Val : ℕ := 11
+ abbrev Mul : ℕ := 12
+ abbrev Table : ℕ := 13
+ abbrev Sets : ℕ := 14
+ abbrev Doubles : ℕ := 15
+ abbrev Zero : ℕ := 16
+ abbrev Top : ℕ := 17
+ abbrev AnsSplit : ℕ := 18
+ abbrev NumDoubles : ℕ := 19
+ abbrev AnsDoubles : ℕ := 20
+ abbrev NumZero : ℕ := 21
+ abbrev AnsZero : ℕ := 22
 
 end Core
 
-open Core in
+open Core
 /-- The parameters, and the arrays. -/
 def coreSetup (pParams pPrep : ℕ) : Stmt :=
   .call pParams [v Len, v Bound, v Free] Unread ;;
@@ -138,7 +139,7 @@ def coreSetup (pParams pPrep : ℕ) : Stmt :=
   .set Base (v Free +' k 3) ;;
   .call pPrep [v Len, v Bound, v Digits, v PrimeBound, v Src, v Base] NumValues
 
-open Core in
+open Core
 /-- The addresses of the arrays from the sorted copy on. -/
 def coreAddr : Stmt :=
   .set Sorted (v Base +' k 6 +' v PrimeBound +' v PrimeBound *' v PrimeBound) ;;
@@ -150,13 +151,13 @@ def coreAddr : Stmt :=
   .set Zero (v Doubles +' v Len) ;;
   .set Top (v Zero +' k 1)
 
-open Core in
+open Core
 /-- The loop over the splittings. -/
 def coreSplit (pGrid : ℕ) : Stmt :=
   .call pGrid [v NumValues, v Val, v Table, v Digits, v Sets, v Len, v Levels, v Base, v Top]
     AnsSplit
 
-open Core in
+open Core
 /-- The three-set input for the solutions a + a + c = 0 with a ≠ 0: the doubles of the repeated
 values, {0}, and the values. -/
 def coreDoubles (pTwice pNodes : ℕ) : Stmt :=
@@ -164,14 +165,14 @@ def coreDoubles (pTwice pNodes : ℕ) : Stmt :=
   .call pNodes [v Levels, v Doubles, v NumDoubles, v Zero, k 1, v Val, v NumValues, v Base, v Top]
     AnsDoubles
 
-open Core in
+open Core
 /-- The three-set input for the solution 0 + 0 + 0 = 0: {0} if 0 occurs three times and the empty
 set if not, {0}, and {0}. -/
 def coreZero (pZero pNodes : ℕ) : Stmt :=
   .call pZero [v NumValues, v Val, v Mul] NumZero ;;
   .call pNodes [v Levels, v Zero, v NumZero, v Zero, k 1, v Zero, k 1, v Base, v Top] AnsZero
 
-open Core in
+open Core
 /-- The answer: 1 if one of the three answers is 1. -/
 def coreAnswer : Stmt :=
   .ite (k 0 <' v AnsSplit +' v AnsDoubles +' v AnsZero) (.set Len (k 1)) (.set Len (k 0))
@@ -236,8 +237,8 @@ theorem Par.primes_nonempty {a : Map} {V f : ℕ} (h : Par a V f) : (Nat.primesL
   have hcard := wPar_le_card_primesLE a.n V
   rw [← h.primeBound] at hcard
   have hpos : 1 ≤ wPar a.n V :=
-    Nat.mul_pos (Nat.mul_pos (by norm_num) (Nat.succ_pos _)) (Nat.succ_pos _)
-  exact Finset.card_pos.1 (by omega)
+    Nat.mul_pos (Nat.mul_pos tac_norm_num (Nat.succ_pos _)) (Nat.succ_pos _)
+  exact Finset.card_pos.1 tac_omega
 
 /-- The bound on the primes is positive. -/
 theorem Par.primeBound_pos {a : Map} {V f : ℕ} (h : Par a V f) : 1 ≤ a.m :=
@@ -271,13 +272,13 @@ theorem Arrays.of_sameOn (h : Arrays a V D C μ) (hs : SameOn (Fixed a) μ ν) :
   have hmul := h.mul_le
   have hcard := Nat.card_primesLE_le a.m
   exact
-    { val := h.val.of_sameOn hs fun i hi => Or.inl (by omega)
-      mul := h.mul.of_sameOn hs fun i hi => Or.inl (by omega)
+    { val := h.val.of_sameOn hs fun i hi => Or.inl tac_omega
+      mul := h.mul.of_sameOn hs fun i hi => Or.inl tac_omega
       ctx := Seg.of_sameOn h.ctx hs fun i hi => Or.inl (by simp at hi; omega)
       primes := ⟨rfl, h.primes.2.of_sameOn hs fun i hi => Or.inl (by
         rw [List.length_map, Finset.length_sort] at hi
         omega)⟩
-      zero := fun q hq => (hs _ (Or.inl (by omega))).trans (h.zero q hq)
+      zero := fun q hq => (hs _ (Or.inl tac_omega)).trans (h.zero q hq)
       one := (hs _ (Or.inr rfl)).trans h.one
       val_le := hval, mul_le := hmul }
 
@@ -388,7 +389,7 @@ theorem Ctx.placed_zeroSet (K : Ctx lim r d a V f X D C μ) (h : Arrays a V D C 
     rwa [zeroSet, if_pos h3]
   · refine ⟨0, by rw [flag_of_not (mt K.values.zeroThree.1 h3)]; rfl, ?_⟩
     rw [zeroSet, if_neg h3]
-    exact ⟨⟨[], rfl, Seg.nil, by simp, by simp⟩, Nat.zero_le _, fun _ hx => absurd hx (by simp),
+    exact ⟨⟨[], rfl, Seg.nil, by simp, by simp⟩, Nat.zero_le _, fun _ hx => absurd hx tac_simp,
       by omega, by omega⟩
 
 end
@@ -485,8 +486,8 @@ theorem coreZero_ends {pZero pNodes : ℕ} (hZero : ZeroThreeSpec lim P pZero)
   obtain ⟨l, hflag, hplaced⟩ := K.placed_zeroSet harr
   have hzero := harr.placed_zero (V := V) K.par.len_pos
   -- numZero := zeroThree(numValues, val, mul)
-  light_call (hZero (d + 1) a.val a.mul D C ν hlenC harr.val harr.mul (by omega)
-    (by omega) hspace (by omega)) with _ ν₁ ⟨rfl, hν₁⟩
+  light_call (hZero (d + 1) a.val a.mul D C ν hlenC harr.val harr.mul tac_omega
+    tac_omega hspace tac_omega) with _ ν₁ ⟨rfl, hν₁⟩
   rw [hν₁, hflag]
   -- ansZero := nodes(levels, zero, numZero, zero, 1, zero, 1, base, top)
   light_call (harr.nodes_meets hNodes K.par hplaced hzero hzero K.okNodes)
@@ -547,12 +548,12 @@ theorem coreSetup_ends {pParams pPrep : ℕ} (hParams : ParamsSpec lim P pParams
   push_cast at hword
   have hsq : (0 : ℤ) ≤ 8 * ((a.m : ℤ) + 1) ^ 2 := by positivity
   -- unread := params(len, bound, free)
-  light_call (hParams (d + 1) a.n V b μ (by omega) hspace
-    (by rw [← hpar.primeBound]; push_cast; omega) (by omega)) with unread μ₁ ⟨hcellsP, hsame₁⟩
+  light_call (hParams (d + 1) a.n V b μ tac_omega hspace
+    (by rw [← hpar.primeBound]; push_cast; omega) tac_omega) with unread μ₁ ⟨hcellsP, hsame₁⟩
   rw [← hpar.primeBound, ← hpar.digits, ← hpar.levels] at hcellsP
-  have hdigits : μ₁ b = a.Λ := by simpa using hcellsP 0 (by simp)
-  have hprime : μ₁ (b + 1) = a.m := by simpa using hcellsP 1 (by simp)
-  have hlevels : μ₁ (b + 2) = f := by simpa using hcellsP 2 (by simp)
+  have hdigits : μ₁ b = a.Λ := by simpa using hcellsP 0 tac_simp
+  have hprime : μ₁ (b + 1) = a.m := by simpa using hcellsP 1 tac_simp
+  have hlevels : μ₁ (b + 2) = f := by simpa using hcellsP 2 tac_simp
   have haddr₁ : ((b : ℤ) + 1).toNat = b + 1 := by omega
   have haddr₂ : ((b : ℤ) + 2).toNat = b + 2 := by omega
   -- digits := mem[free]; primeBound := mem[free + 1]; levels := mem[free + 2]; base := free + 3
@@ -565,10 +566,10 @@ theorem coreSetup_ends {pParams pPrep : ℕ} (hParams : ParamsSpec lim P pParams
     { len := hlen, bounded := hX, below := by omega, bound_pos := hpar.bound_pos
       digits := hpar.digits
       ok := ⟨by simp only [prepNeed]; push_cast; omega, by simp only [prepNeed]; omega, hspace,
-        by simp only [prepNeed]; omega⟩ } (hseg.of_sameOutside hsame₁ (by omega)))
+        by simp only [prepNeed]; omega⟩ } (hseg.of_sameOutside hsame₁ tac_omega))
     with _ μ₂ ⟨⟨D, C, rfl, hvalues, hmul, hone, hfront⟩, hkept₂⟩
   exact ⟨unread, D, C, μ₂, rfl, hvalues, hmul, hone, hfront,
-    fun q hq => (hkept₂ q (by omega)).trans (hsame₁ q (Or.inl hq))⟩
+    fun q hq => (hkept₂ q tac_omega).trans (hsame₁ q (Or.inl hq))⟩
 
 /-- After coreSetup the other parts find what they assume. -/
 theorem Core.Setup.ctx {r : ℕ → ℕ → Need} {a : Map} {U b : ℕ} {X D C : List ℤ} {μ μ' : ℕ → ℤ}
@@ -620,7 +621,7 @@ theorem coreBody_ends {pParams pPrep pGrid pTwice pZero pNodes : ℕ} {T : ℕ �
   light_facts K
   -- coreAddr
   refine Ends.next _ (Ends.block ((coreAddr_runs a (2 * U) (fuel a.n) D.length x b unread μ₁
-    (by omega) (by omega)).mono ?_) le_rfl)
+    tac_omega tac_omega).mono ?_) le_rfl)
   rintro _ rfl
   -- coreSplit
   light_piece (coreSplit_ends hGrid K S.front) with _ ⟨μ₂, rfl, hμ₂⟩
@@ -629,10 +630,10 @@ theorem coreBody_ends {pParams pPrep pGrid pTwice pZero pNodes : ℕ} {T : ℕ �
   -- coreZero
   light_piece (coreZero_ends hZero hNodes K hμ₃ _ _ _) with _ ⟨len₃, μ₄, rfl, hμ₄⟩
   -- coreAnswer
-  refine Ends.block ((coreAnswer_runs _ _ _ _ _ _ (by omega)).mono ?_)
+  refine Ends.block ((coreAnswer_runs _ _ _ _ _ _ tac_omega).mono ?_)
   rintro σ' ⟨hres, hmem⟩
   exact ⟨by rw [hres, propext hfinal], fun q hq => by
-    rw [hmem, hμ₄ q (Or.inl (by omega)), S.kept q hq]⟩
+    rw [hmem, hμ₄ q (Or.inl tac_omega), S.kept q hq]⟩
 
 /-- **core meets its specification**, in every program that holds its body and meets the
 specifications of the routines that it calls. -/

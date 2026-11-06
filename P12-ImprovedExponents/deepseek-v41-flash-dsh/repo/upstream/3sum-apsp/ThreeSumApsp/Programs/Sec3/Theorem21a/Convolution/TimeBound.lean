@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.LightModel
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.Convolution.Host
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Convolution-3SUM from Exact Triangle: the claim
@@ -41,7 +42,7 @@ private theorem isBigOPow_natSqrt_succ :
     IsBigOPow (fun N : ℕ => ((Nat.sqrt N + 1 : ℕ) : ℝ)) (1 / 2) := by
   refine Asymptotics.IsBigO.of_bound 2 ?_
   filter_upwards [Filter.eventually_ge_atTop 1] with N hN
-  rw [Real.norm_of_nonneg (by positivity), Real.norm_of_nonneg (by positivity)]
+  rw [Real.norm_of_nonneg tac_positivity, Real.norm_of_nonneg tac_positivity]
   exact natSqrt_succ_le hN
 
 /-- The host's own work: its time over a solver that takes no time. -/
@@ -82,13 +83,13 @@ theorem c3_solvedIn_explicit {C : ℝ} (hC : 0 ≤ C)
   refine isHost_c3.solvedIn hT fun Tn hTn N U u hN hU hu => ?_
   have hU' : (1 : ℝ) ≤ U := by exact_mod_cast hU
   have hsolver : (Tn (Nat.sqrt N + 1) (2 * U + 1) : ℝ) ≤ T (Nat.sqrt N + 1) (3 * u) :=
-    hTn _ _ _ (by omega) (by omega) (by push_cast; linarith)
-  have hlog : 0 ≤ logU u := Real.log_nonneg (le_trans (by norm_num) (le_max_right u 2))
+    hTn _ _ _ tac_omega tac_omega (by push_cast; linarith)
+  have hlog : 0 ≤ logU u := Real.log_nonneg (le_trans tac_norm_num (le_max_right u 2))
   rw [c3Time_eq]
   push_cast
   -- the host's own work, and 2 (⌊√N⌋ + 1) runs of the solver
-  exact add_le_add ((hown N hN).trans (le_mul_of_one_le_right (by positivity) (by linarith)))
-    (mul_le_mul_of_nonneg_left hsolver (by positivity))
+  exact add_le_add ((hown N hN).trans (le_mul_of_one_le_right tac_positivity tac_linarith))
+    (mul_le_mul_of_nonneg_left hsolver tac_positivity)
 
 /-- [VW13, Theorem 4.3] for programs of the light language: Convolution-3SUM from Exact Triangle. -/
 theorem claim_VW13_Theorem_4_3 : Claim.VW13_Theorem_4_3 lightModel :=

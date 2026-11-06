@@ -2,6 +2,7 @@ module
 
 public import Mathlib.Algebra.CharP.Defs
 public import Mathlib.Tactic.NormNum.Ineq
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -36,7 +37,7 @@ theorem shiftDiff_zero (x y u : ℕ) : shiftDiff x y u 0 = (u : ℤ) - x - y := 
 /-- `f(ℓ) = 0` for `ℓ ≥ b`, if `x, y, u < 2^b`. -/
 theorem shiftDiff_eq_zero {b x y u ℓ : ℕ} (hx : x < 2 ^ b) (hy : y < 2 ^ b) (hu : u < 2 ^ b)
     (hℓ : b ≤ ℓ) : shiftDiff x y u ℓ = 0 := by
-  have hpow : 2 ^ b ≤ 2 ^ ℓ := Nat.pow_le_pow_right (by norm_num) hℓ
+  have hpow : 2 ^ b ≤ 2 ^ ℓ := Nat.pow_le_pow_right tac_norm_num hℓ
   simp [shiftDiff, Nat.div_eq_of_lt (hx.trans_le hpow), Nat.div_eq_of_lt (hy.trans_le hpow),
     Nat.div_eq_of_lt (hu.trans_le hpow)]
 
@@ -48,9 +49,6 @@ theorem shiftDiff_succ_bounds (x y u ℓ : ℕ) :
     rw [pow_succ, Nat.div_div_eq_div_mul]
   unfold shiftDiff
   rw [h x, h y, h u]
-  generalize x / 2 ^ ℓ = X
-  generalize y / 2 ^ ℓ = Y
-  generalize u / 2 ^ ℓ = U
   omega
 
 /-- If `f(ℓ) ≥ 2` at some level then `f(0) ≥ 2`. -/
@@ -67,12 +65,12 @@ theorem exists_shiftDiff_eq {b x y u : ℕ} (hx : x < 2 ^ b) (hy : y < 2 ^ b) (h
   induction d with
   | zero =>
     intro ℓ hℓ h2
-    rw [shiftDiff_eq_zero hx hy hu (by omega)] at h2
+    rw [shiftDiff_eq_zero hx hy hu tac_omega] at h2
     omega
   | succ d ih =>
     intro ℓ hℓ h2
     by_cases h : 2 ≤ shiftDiff x y u (ℓ + 1)
-    · exact ih (ℓ + 1) (by omega) h
+    · exact ih (ℓ + 1) tac_omega h
     · have := (shiftDiff_succ_bounds x y u ℓ).2
       exact ⟨ℓ, by omega, by omega⟩
 
@@ -87,7 +85,7 @@ theorem add_lt_iff_shiftDiff {b x y u : ℕ} (hx : x < 2 ^ b) (hy : y < 2 ^ b) (
   · intro h
     by_cases h1 : shiftDiff x y u 0 = 1
     · exact Or.inl h1
-    · exact Or.inr (exists_shiftDiff_eq hx hy hu b 0 (by omega) (by omega))
+    · exact Or.inr (exists_shiftDiff_eq hx hy hu b 0 tac_omega tac_omega)
   · rintro (h1 | ⟨ℓ, -, h2⟩)
     · omega
     · have := two_le_shiftDiff_zero ℓ (by omega : 2 ≤ shiftDiff x y u ℓ)

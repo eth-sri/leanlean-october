@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Sec4.Lemma29
 public import ThreeSumApsp.Spec.Sec4.Theorem30.Cubes
 public import ThreeSumApsp.Spec.Sec4.Theorem30.NineStrings
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The boxes with e stars, as a list (proof of Lemma 29)
@@ -126,8 +127,8 @@ theorem exists_lastStar_of_mem_starBoxes {L m t e : ℕ} {l : List ℕ}
     ∃ p, lastStar l = some p ∧ ∀ d < 10, l.set p d ∈ starBoxes L m t e := by
   obtain ⟨π, rfl⟩ := exists_of_mem_starBoxes l h
   have hπ : π ∈ boxesWithStars L m t (e + 1) := (mem_starBoxes m t (e + 1) π).mp h
-  have hcard : (Cube.starLevels π).card = e + 1 := (Finset.mem_filter.mp hπ).2
-  have hne : (Cube.starLevels π).Nonempty := Finset.card_pos.mp (by omega)
+  have hcard := (Finset.mem_filter.mp hπ).2
+  have hne : (Cube.starLevels π).Nonempty := Finset.card_pos.mp tac_omega
   refine ⟨_, lastStar_digitsC π hne, fun d hd => ?_⟩
   have hsplit := lemma_29_split hπ hne (termEquiv.symm ⟨d, hd⟩)
   rw [← mem_starBoxes, digitsC_replace] at hsplit

@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Calls
 public import ThreeSumApsp.Lang.Lib.Seg
 public import ThreeSumApsp.Lang.WordSize
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Problems, solvers, and the interpretation of "is solved in time T" in the light language

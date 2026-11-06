@@ -3,6 +3,7 @@ module
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Tile
 public import ImprovedExponents.PrunedProgram.Tiles.Contracts
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -22,7 +23,7 @@ Adapted from upstream `ThreeSumApsp/Programs/Sec4/Theorem30/Tile.lean` (Apache-2
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 namespace TileP
 
@@ -83,7 +84,6 @@ theorem round (hFill : FillListSpecP lim P) (C : TilePreP lim μ x) (hd : d + 3 
     Ends lim P d tileRound σ (tFillList x.L (starBoxes x.L x.m x.t e).length + 30)
       (Inv μ x (e + 1)) := by
   obtain ⟨void, μ₁, rfl, hM⟩ := h
-  have hlayout := C.ctx.layout
   light_facts C.ctx C.ctx.std
   -- the trie of the tile has the number s.roots.length, and its root is the last one
   have hroot := x.s.root_new
@@ -96,28 +96,26 @@ theorem round (hFill : FillListSpecP lim P) (C : TilePreP lim μ x) (hd : d + 3 
   simp only [Tile.fillArgs, FillListArgs.vals, FillListArgs.root, FillListArgs.boxes, hroot]
     at hfill
   -- fillList(e, root, …)
-  light_call (hfill _ (by omega)) with void' μ₂ ⟨htrie, same⟩
+  light_call (hfill _ tac_omega) with void' μ₂ ⟨htrie, same⟩
   -- e := e + 1
   light_set (e + 1 : ℕ)
   exact ⟨void', μ₂, rfl, hM.fill C same htrie⟩
 
 end TileP
 
-open TileP in
+open TileP
 /-- **tile on pruned encodings** meets its specification. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Tile.lean (tile_spec)
 theorem tileP_spec {lim : Limits} {P : Program} (hP : P[Proc.tile]? = some tileBody)
     (hNew : NewRootSpec lim P) (hFill : FillListSpecP lim P) : TileSpecP lim P := by
   intro x μ C
   refine fun d hd => ⟨tileBody, hP, ?_⟩
-  have hlayout := C.ctx.layout
   light_facts C C.ctx C.ctx.std
   have hcells : x.cells = x.s.roots.length + 1 := rfl
-  have hroom := C.room
   unfold tTile
   -- root := newRoot(tr, fp)
-  light_call (hNew x.tr x.cap x.fp x.s.cells μ C.trie (by omega) (by omega) (by omega) _
-    (by omega)) with _ μ₁ ⟨rfl, htrie, same⟩
+  light_call (hNew x.tr x.cap x.fp x.s.cells μ C.trie tac_omega tac_omega tac_omega _
+    tac_omega) with _ μ₁ ⟨rfl, htrie, same⟩
   -- mem[ra] := root
   light_store (x.aR + x.s.roots.length) x.s.cells.length
   -- while e ≤ mt
@@ -128,7 +126,7 @@ theorem tileP_spec {lim : Limits} {P : Program} (hP : P[Proc.tile]? = some tileB
     Mem.newRoot C same htrie⟩
   case round =>
     rintro e σ he hI
-    have hround := round hFill C hd (by omega) hI
+    have hround := round hFill C hd tac_omega hI
     obtain ⟨void, μ', rfl, -⟩ := hI
     exact ⟨by light_side, by simp; omega, hround⟩
   case done =>

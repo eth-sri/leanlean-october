@@ -232,7 +232,7 @@ theorem of_eventually {f g : ℕ → ℝ} {C : ℝ} (hfg : ∀ᶠ n in atTop, f 
   have hterm : ∀ m, 0 ≤ |f m| / |g m| := fun m => div_nonneg (abs_nonneg _) (abs_nonneg _)
   have hsum : 0 ≤ ∑ m ∈ Finset.range N, |f m| / |g m| := Finset.sum_nonneg fun m _ => hterm m
   refine ⟨|C| + ∑ m ∈ Finset.range N, |f m| / |g m|, add_nonneg (abs_nonneg C) hsum, fun n hn => ?_⟩
-  have hgn : 0 < g n := hg n hn
+  have hgn := hg n hn
   rw [add_mul]
   obtain hlt | hge := lt_or_ge n N
   · calc f n ≤ |f n| / |g n| * g n := by

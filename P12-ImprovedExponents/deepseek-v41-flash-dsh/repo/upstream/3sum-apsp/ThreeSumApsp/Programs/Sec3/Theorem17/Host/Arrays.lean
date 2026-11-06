@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Need
 public import ThreeSumApsp.Spec.Sec3.Theorem17.ClassStarts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The host of Theorem 17: the arrays and the loop
@@ -147,26 +148,23 @@ theorem resid_then {pDbl pResid pResidues : ℕ} (hDbl : P[pDbl]? = some dblTabl
   have hBC := hr.belowBC
   have hAC := hr.belowAC
   have hword : ((X.p * 2 ^ bitLen x.U : ℕ) : ℤ) ≤ lim.word := le_trans (by
-    exact_mod_cast Nat.mul_le_mul_left _ (Nat.pow_le_pow_right (by norm_num) (Nat.le_succ _)))
+    exact_mod_cast Nat.mul_le_mul_left _ (Nat.pow_le_pow_right tac_norm_num (Nat.le_succ _)))
     hr.word
-  have lenDbl : (dblList X.p (bitLen x.U)).length = bitLen x.U + 1 := by simp [dblList]
-  have lenRAB : X.RAB.length = X.n * X.n := (length_residList _ _).trans hr.lenAB
-  have lenRBC : X.RBC.length = X.n * X.n := (length_residList _ _).trans hr.lenBC
   -- Small := pDbl(Free, ThePrime, Bits)
   light_call (dblTable_meets (dst := fr) (p := X.p) (len := bitLen x.U) hDbl hr.space
-    (by omega) hword) with r₁ μ₁ ⟨hdbl, same₁⟩
+    tac_omega hword) with r₁ μ₁ ⟨hdbl, same₁⟩
   rw [setLocal_res]
   -- Small := pResidues(AdrAB, ResAB, SizeSq, Free, Bits)
-  light_call (residues_meets hResidues hResid (by omega) (hr.residuesPre
+  light_call (residues_meets hResidues hResid tac_omega (hr.residuesPre
     (dst := aRab X x.U fr) hdbl hr.segAB.keep hr.lenAB hr.leAB hr.belowAB)) with r₂ μ₂ ⟨hrab, same₂⟩
   rw [setLocal_res]
   -- Small := pResidues(AdrBC, ResBC, SizeSq, Free, Bits)
-  light_call (residues_meets hResidues hResid (by omega) (hr.residuesPre
+  light_call (residues_meets hResidues hResid tac_omega (hr.residuesPre
     (dst := aRbc X x.U fr) hdbl.keep hr.segBC.keep hr.lenBC hr.leBC hr.belowBC))
     with r₃ μ₃ ⟨hrbc, same₃⟩
   rw [setLocal_res]
   -- Small := pResidues(AdrAC, ResAC, SizeSq, Free, Bits)
-  light_call (residues_meets hResidues hResid (by omega) (hr.residuesPre
+  light_call (residues_meets hResidues hResid tac_omega (hr.residuesPre
     (dst := aRac X x.U fr) hdbl.keep hr.segAC.keep hr.lenAC hr.leAC hr.belowAC))
     with r₄ μ₄ ⟨hrac, same₄⟩
   rw [setLocal_res]
@@ -199,14 +197,14 @@ theorem classes_then {pClasses pChunks : ℕ} (hClasses : P[pClasses]? = some cl
   have htop := hr.top
   have hplaces := class_places X x.U fr
   have lenRAB : X.RAB.length = X.n * X.n := (length_residList _ _).trans hr.lenAB
-  have ltRAB : ∀ r ∈ X.RAB, r < X.p := fun r hmem => lt_of_mem_residList (by omega) hmem
+  have ltRAB : ∀ r ∈ X.RAB, r < X.p := fun r hmem => lt_of_mem_residList tac_omega hmem
   have hroom : (chunkTabOf X.p X.cap (classStarts X.n X.p X.RAB)).length ≤ X.n * X.n + X.p :=
     hr.chunkCount_le hcap
   -- Small := pClasses(ResAB, Size, ThePrime, Cls, Cur, Rows, Cols)
   refine Ends.callToThen (classes_meets hClasses hr.space
     { rab := aRab X x.U fr, n := X.n, p := X.p, cls := aCls X x.U fr, cur := aCur X x.U fr,
       qi := aQi X x.U fr, qj := aQj X x.U fr, RAB := X.RAB } μ₁
-    { seg := hrab, len := lenRAB, lt := ltRAB }) ?_ (by simp)
+    { seg := hrab, len := lenRAB, lt := ltRAB }) ?_ tac_simp
   rintro r₁ μ₂ ⟨hcls, hqi, hqj, same₂⟩
   dsimp only at hcls hqi hqj same₂
   rw [setLocal_res]
@@ -215,7 +213,7 @@ theorem classes_then {pClasses pChunks : ℕ} (hClasses : P[pClasses]? = some cl
     { cls := aCls X x.U fr, p := X.p, cap := X.cap, cr := aCr X x.U fr, cl := aCl X x.U fr,
       cw := aCw X x.U fr, R := X.n * X.n + X.p, B := X.n * X.n, C := classStarts X.n X.p X.RAB } μ₂
     { seg := hcls, len := length_classStarts X.n X.p X.RAB,
-      le := fun y hy => le_of_mem_classStarts hy, room := hroom }) ?_ (by simp)
+      le := fun y hy => le_of_mem_classStarts hy, room := hroom }) ?_ tac_simp
     (hT := by simp only [ChunksArgs.table]; light_time)
   rintro _ μ₃ ⟨rfl, hcr, hcl, hcw, same₃⟩
   simp only [ChunksArgs.table, ChunksArgs.Same] at hcr hcl hcw same₃ ⊢
@@ -298,49 +296,5 @@ theorem ready_of {need : List ℕ → Need} {D g a b : ℕ} (hpre : x.Pre μ fr)
 
 end Et17
 
-open Et17 in
-/-- **The third part of et17**: the result of the loop over the instances; only cells from the free
-pointer on change. -/
-theorem et17Tables_spec {P₀ R : Program} {ν : Et17Nums} {Tn : List ℕ → ℕ} {need : List ℕ → Need}
-    {Dfun Gfun tD tG wD wG : ℕ → ℕ} (C : Et17Ctx P₀ R ν Tn need Dfun Gfun tD tG wD wG)
-    {lim : Limits} {d : ℕ} (x : TriInst) (μ : ℕ → ℤ) (fr D g a b : ℕ) (hpre : x.Pre μ fr)
-    (hbig : BigCase x.n D g) (hok : (hostNeedAt a b need x.n x.U D g).Ok lim fr d) :
-    Ends lim (P₀ ++ R) d (et17Tables ν) ⟨frame (et17LocB x fr D g), μ⟩
-      (hostRunTime Tn (hostData x D g) x.U)
-      fun σ' => σ'.loc 0 = bit ((hostData x D g).found (hostData x D g).m) ∧ Kept μ σ'.mem fr := by
-  have hr := ready_of hpre hbig hok
-  have hlim := hostLim_of_ok hbig hok
-  have hv := hostData_valid hpre hbig
-  unfold et17LocB
-  generalize hostData x D g = X at hr hlim hv ⊢
-  have hdepth := hr.depth
-  have hfr : fr ≤ aX X x.U fr := by
-    have := host_places X x.U fr
-    omega
-  unfold et17Tables hostRunTime
-  -- the table of doubles and the residues; the classes and the chunks
-  refine resid_then C.hDbl C.hResid C.hResidues hr (fun r₁ μ₁ hresid => ?_) (by omega)
-  refine classes_then C.hClasses C.hChunks hr hv.cap_pos hresid.rab
-    (fun r₂ μ₂ hclass => ?_) (by omega)
-  -- NumInst := NumPieces * NumChunks
-  have hcount := hlim.count
-  have hm : (X.m : ℤ) = (X.h : ℤ) * X.chunkCount := by
-    rw [HostData.m]
-    push_cast
-    rfl
-  have hpos : (0 : ℤ) ≤ (X.h : ℤ) * X.chunkCount := by positivity
-  light_set (X.m : ℕ) using hm
-  -- the result is pLoop(…)
-  light_call (Meets.of_body (Q := fun r μ' => r = bit (X.found X.m) ∧
-      Kept μ₂ μ' (hostAddr x X fr).x) C.hLoop
-    (hostLoop_spec C.loop ⟨hv, hr.leAB, hr.leBC, hr.leAC⟩ (hostMem_of hr hresid hclass)
-      (hostLay_of hr (hr.chunkCount_le hv.cap_pos)) hlim)) using hostLoopArgs, hostAddr
-    with r μ₃ ⟨rfl, hkept⟩
-  refine ⟨rfl, fun c hc => ?_⟩
-  have hcls : fr ≤ aCls X x.U fr := by
-    have := host_places X x.U fr
-    omega
-  exact (hkept c (lt_of_lt_of_le hc hfr)).trans ((hclass.same c (Or.inl (by omega))).trans
-    (hresid.same c (Or.inl hc)))
-
+open Et17
 end Light.Sec3

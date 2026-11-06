@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Memory
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 30 in the light language: the tiles and a query against the expressions (8) and L ∑ α_d
@@ -71,7 +72,7 @@ theorem succ_le_card_boxes {L m t : ℕ} (hL : m ≤ L) : m - t + 1 ≤ (boxes L
     ((List.range (m - t + 1)).map fun e => (starBoxes L m t e).length) fun n hn => by
       obtain ⟨e, he, rfl⟩ := List.mem_map.1 hn
       have := List.mem_range.1 he
-      exact one_le_length_starBoxes (by omega) (by omega)
+      exact one_le_length_starBoxes tac_omega tac_omega
   rwa [sum_length_starBoxes, List.length_map, List.length_range] at hsum
 
 /-- The time for a tile, in closed form. -/
@@ -116,7 +117,7 @@ private theorem exists_tTile_le : ∃ c : ℕ, ∀ L m t : ℕ, 1 ≤ L → m �
 theorem cast_L_le_costQuery (L m t : ℕ) : (L : ℝ) ≤ costQuery L m t := by
   have hsum : (1 : ℝ) ≤ ∑ d ∈ range (t + 1), (alpha m d : ℝ) := by
     rw [show (1 : ℝ) = (alpha m 0 : ℝ) by simp [alpha]]
-    exact single_le_sum (f := fun d => (alpha m d : ℝ)) (fun _ _ => by positivity) (by simp)
+    exact single_le_sum (f := fun d => (alpha m d : ℝ)) (fun _ _ => by positivity) tac_simp
   exact le_mul_of_one_le_right (Nat.cast_nonneg L) hsum
 
 /-- **A query**, once the digits of its output string are known, takes O(L) steps for each number
@@ -125,15 +126,15 @@ theorem exists_tQueryCore_le : ∃ C : ℝ, 0 ≤ C ∧ ∀ L m t : ℕ, 1 ≤ L
     (tQueryCore L m t : ℝ) ≤ C * costQuery L m t := by
   refine ⟨900, by norm_num, fun L m t hL1 hmL ht => ?_⟩
   have hnat : tQueryCore L m t ≤ 900 * (L * ∑ d ∈ range (t + 1), alpha m d) := by
-    have hpos : 1 ≤ alpha m t := Nat.mul_pos (Nat.choose_pos ht) (by positivity)
+    have hpos : 1 ≤ alpha m t := Nat.mul_pos (Nat.choose_pos ht) tac_positivity
     rw [tQueryCore, length_lowList ht [], length_boxesOf ht [], sum_range_succ]
     simp only [tScatter, tHorner, tLookup, tNineNext, tNineFirst]
     generalize ∑ d ∈ range t, alpha m d = low
     generalize alpha m t = a at *
     have hlow : low * (60 * L + 30 + (20 * L + 10) + (90 * m + 60) + 90) ≤ low * (360 * L) :=
-      Nat.mul_le_mul_left _ (by omega)
+      Nat.mul_le_mul_left _ tac_omega
     have hboxes : a * (60 * L + 30 + (20 * L + 12) + (90 * m + 60) + 90) ≤ a * (362 * L) :=
-      Nat.mul_le_mul_left _ (by omega)
+      Nat.mul_le_mul_left _ tac_omega
     have hL : L ≤ a * L := Nat.le_mul_of_pos_left _ hpos
     rw [show 900 * (L * (low + a))
       = low * (360 * L) + a * (362 * L) + 540 * (low * L) + 538 * (a * L) by ring]

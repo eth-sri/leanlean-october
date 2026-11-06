@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.TopProcedure
 public import ThreeSumApsp.Programs.Tasks
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # 3SUM: from a solver of the task to a program for the layout of the end statement
@@ -71,7 +72,7 @@ noncomputable def wrap3Sum : Wrap EndStatement.ThreeSum s3Task true where
     push_cast at hw
     simp [hn, abs_le]
     omega
-  zero x hn _ := ⟨⟨fun h => absurd h (by simp), fun ⟨i, _⟩ => absurd i.isLt (by omega)⟩, trivial⟩
+  zero x hn _ := ⟨⟨fun h => absurd h tac_simp, fun ⟨i, _⟩ => absurd i.isLt tac_omega⟩, trivial⟩
   pre := pre_threeSum
   post x r μ' _ h := post_threeSum x r μ' h
 

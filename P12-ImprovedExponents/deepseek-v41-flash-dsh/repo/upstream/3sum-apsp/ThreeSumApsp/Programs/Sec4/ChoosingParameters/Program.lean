@@ -35,7 +35,7 @@ program is a data structure (`isDataStructure_of_costsWithin`) and solves the of
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.WordRam
+open ThreeSumApsp.WordRam
 
 /-! ## Two procedures for Corollary 26
 

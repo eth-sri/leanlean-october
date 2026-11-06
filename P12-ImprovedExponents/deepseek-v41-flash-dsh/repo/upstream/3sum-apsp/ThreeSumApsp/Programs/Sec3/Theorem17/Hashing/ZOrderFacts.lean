@@ -10,6 +10,7 @@ public import ThreeSumApsp.Spec.Sec3.Theorem17.ZOrder
 public import Mathlib.Tactic.Common
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.NormNum
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The table of `spread`: small facts
@@ -25,7 +26,7 @@ public section
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-- The number whose digits in base 4 are the binary digits of i is at most i². -/
 theorem spread_le_sq (i : ℕ) : spread i ≤ i * i := by
@@ -33,10 +34,10 @@ theorem spread_le_sq (i : ℕ) : spread i ≤ i * i := by
   | _ i ih =>
     rcases Nat.eq_zero_or_pos i with rfl | hi
     · simp [spread_zero]
-    · have h := ih (i / 2) (by omega)
+    · have h := ih (i / 2) tac_omega
       rw [spread_eq]
       obtain ⟨q, b, hb, rfl⟩ : ∃ q b, b < 2 ∧ i = 2 * q + b :=
-        ⟨i / 2, i % 2, Nat.mod_lt _ (by norm_num), by omega⟩
+        ⟨i / 2, i % 2, Nat.mod_lt _ tac_norm_num, by omega⟩
       rw [show (2 * q + b) / 2 = q by omega] at h ⊢
       rw [show (2 * q + b) % 2 = b by omega]
       nlinarith

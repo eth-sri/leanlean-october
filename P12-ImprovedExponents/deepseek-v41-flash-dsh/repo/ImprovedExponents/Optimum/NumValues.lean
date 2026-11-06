@@ -1,6 +1,7 @@
 module
 
 public import ImprovedExponents.Optimum.NumLog
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -24,7 +25,7 @@ inequality between rational numbers.
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Real Set
+open Set
 
 /-! ### The thinness constants -/
 
@@ -46,6 +47,6 @@ theorem Gam_22_mem : Gam 22 ∈ Icc (0.076207 : ℝ) 0.076209 :=
 /-- The saving at `c = 22` with pruned encodings is more than `0.002095`
 (it is `0.00209529…`). -/
 theorem savingF_pruned_gt : (0.002095 : ℝ) < savingF (basePruned 22) (Gam 22) :=
-  lt_savingF (basePruned_pos (by norm_num)) basePruned_22_mem.2 Gam_22_mem.1
+  lt_savingF (basePruned_pos tac_norm_num) basePruned_22_mem.2 Gam_22_mem.1
 
 end ImprovedExponents

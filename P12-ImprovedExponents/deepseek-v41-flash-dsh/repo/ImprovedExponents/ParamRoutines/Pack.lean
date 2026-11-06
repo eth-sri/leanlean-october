@@ -3,6 +3,7 @@ module
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.NeedPolynomial
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Program
 public import ThreeSumApsp.Programs.Sec3.Theorem17.TimeBound.Total
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -11,7 +12,7 @@ public import ThreeSumApsp.Programs.Sec3.Theorem17.TimeBound.Total
 
 Upstream's host of Theorem 17 (`et17`) takes the procedures that compute `D` from `n` and `g` from
 `D` as parameters, and upstream instantiates it with two fixed choices, by an assembly that is
-private (`ThreeSumApsp/Programs/Sec3/Theorem17/ClaimAtParameters.lean`).  This file states that
+(`ThreeSumApsp/Programs/Sec3/Theorem17/ClaimAtParameters.lean`).  This file states that
 assembly once, for arbitrary routines.
 
 * `ParamPack D g` bundles everything that is specific to the two routines: the list of procedures,
@@ -32,7 +33,7 @@ assembly once, for arbitrary routines.
 
 namespace ImprovedExponents.ParamRoutines
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3
+open Light Light.Sec3
 
 /-- The procedure number `i` of a list `L` that is placed behind a program `Q` stands at the place
 `Q.length + i` of every program that continues `Q ++ L`. -/
@@ -40,7 +41,7 @@ open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3
 -- (`paramProcs_get`, private there; here for an arbitrary list)
 theorem getElem?_behind (Q L R : Program) {i : ℕ} {body : Stmt} (h : L[i]? = some body) :
     (Q ++ L ++ R)[Q.length + i]? = some body := by
-  rw [List.append_assoc, List.getElem?_append_right (by omega), Nat.add_sub_cancel_left]
+  rw [List.append_assoc, List.getElem?_append_right tac_omega, Nat.add_sub_cancel_left]
   exact getElem?_append_of_eq_some h R
 
 /-- **The routine-specific part of Theorem 17 for programs**: two parameter routines for the

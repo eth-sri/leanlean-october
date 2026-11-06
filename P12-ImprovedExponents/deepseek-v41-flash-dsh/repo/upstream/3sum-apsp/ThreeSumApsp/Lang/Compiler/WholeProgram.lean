@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Compiler.Simulation
 public import ThreeSumApsp.Lang.Compiler.StartUp
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The compiler is correct on whole programs
@@ -74,27 +75,26 @@ private theorem steps_tail {code : List Instr} {pos : ℕ} {dec : Bool}
     -- accept
     have read : Function.update m cRESULT (wd W r) cRESULT = wd W r := Function.update_self ..
     exact ⟨1, _, by omega, copy, step_accept hcode.tail.head, read,
-      (AgreeOutside.refl _ m).update (by simp) _⟩
+      (AgreeOutside.refl _ m).update tac_simp _⟩
   | true =>
-    have rest : CodeAt code (pos + 1)
-      [.sub cD cZERO (cStack mainFrame), .bltz cD (pos + 4), .reject, .accept] := hcode.tail
+    have rest := hcode.tail
     -- D := 0 - the result; go to accept if D < 0; reject
     have run := (copy.trans (steps_sub rest (by cell_read using hzero)
       (by cell_read using hres))).trans
-      (steps_bltz rest.tail (Function.update_self ..) (by rwa [zero_sub]))
+      (steps_bltz rest.tail (Function.update_self ..) tac_rwa [zero_sub])
     have keep : AgreeOutside {cRESULT, cD} m
         (Function.update (Function.update m cRESULT (wd W r)) cD (wd W (0 - r))) :=
-      ((AgreeOutside.refl _ m).update (by simp) _).update (by simp) _
+      ((AgreeOutside.refl _ m).update tac_simp _).update tac_simp _
     have read : Function.update (Function.update m cRESULT (wd W r)) cD (wd W (0 - r)) cRESULT =
         wd W r := by
       cell_read
     by_cases hpos : 0 < r
-    · rw [if_pos (by omega)] at run
+    · rw [if_pos tac_omega] at run
       exact ⟨3, _, le_rfl, run,
-        (step_accept rest.tail.tail.tail.head).trans (by simp [verdictOf, hpos]), read, keep⟩
-    · rw [if_neg (by omega)] at run
+        (step_accept rest.tail.tail.tail.head).trans tac_simp [verdictOf, hpos], read, keep⟩
+    · rw [if_neg tac_omega] at run
       exact ⟨3, _, le_rfl, run,
-        (step_reject rest.tail.tail.head).trans (by simp [verdictOf, hpos]), read, keep⟩
+        (step_reject rest.tail.tail.head).trans tac_simp [verdictOf, hpos], read, keep⟩
 
 /-! ## Time and space of the compiled program -/
 
@@ -173,7 +173,6 @@ private theorem not_mem_of_far {a : ℤ}
     (ha : a < -(lowCell P dec lim : ℤ) ∨ (lim.space : ℤ) ≤ a) :
     a ∉ Constants (dispPos P dec) ∪ ({cFP} ∪ MainFrame (frameSize P)) ∪
       Writable (setting P p0 dec hfit).toSizes mainFrame ∪ {cRESULT, cD} := by
-  have hframe := frame_le_stackCells P lim
   have htemps := two_mul_frameSize_add_le_dispPos P dec
   have hstack : 2 * stackCells P lim ≤ lowCell P dec lim := le_max_left _ _
   have hpool : 25 + 4 * dispPos P dec ≤ lowCell P dec lim := le_max_right _ _
@@ -230,7 +229,7 @@ theorem compileProgram_correct {lim : Limits} {P : Program} {p0 : ℕ} {dec : Bo
   have hF := three_le_frameSize P
   have hdisp := two_mul_frameSize_add_le_dispPos P dec
   have hσ : State.Bounded lim ⟨frame [0, i, j], μ⟩ :=
-    bounded_frame (by simp [hm.arg1_le, hm.arg2_le, (abs_nonneg i).trans hm.arg1_le]) hm.bounded
+    bounded_frame tac_simp [hm.arg1_le, hm.arg2_le, (abs_nonneg i).trans hm.arg1_le] hm.bounded
   have hσ' := h.bounded hσ
   -- the start-up code
   have run₁ := steps_start P p0 dec (setting P p0 dec hfit).inRange_neg_one m

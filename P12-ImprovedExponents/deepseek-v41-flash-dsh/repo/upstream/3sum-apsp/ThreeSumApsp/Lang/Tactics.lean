@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Lang.Calls
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Tactics for proofs about programs
@@ -133,7 +134,7 @@ macro "light_call " fact:term:max " using " hs:Lean.Parser.Tactic.simpLemma,* " 
     focus
       light_head
       first
-        | refine Ends.callToThen ($fact _ (by omega)) ?_ ?_ ?_ ?_
+        | refine Ends.callToThen ($fact _ tac_omega) ?_ ?_ ?_ ?_
         | refine Ends.callToThen $fact ?_ ?_ ?_ ?_
       on_goal -1 => light_time [$hs,*]
       on_goal -1 => omega

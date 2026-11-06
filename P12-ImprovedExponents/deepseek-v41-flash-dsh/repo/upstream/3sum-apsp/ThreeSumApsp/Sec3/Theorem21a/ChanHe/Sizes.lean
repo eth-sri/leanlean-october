@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.FromNumbers
 public import ThreeSumApsp.Util.Asymptotics.SoftOSqrtPow
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 21(a), the reduction of Chan and He: inputs of absolute value at most n ^ κ
@@ -75,7 +76,7 @@ end input
 
 /-- The length of the instances is `n` times a polylogarithm. -/
 theorem isPowPolylog_lenOf (κ : ℕ) : IsPowPolylog (fun n => (lenOf κ n : ℝ)) 1 :=
-  SoftOSqrtPow.isPowPolylog (i := 2) (by unfold lenOf; growth_sqrt [softO_mPar κ]) (by norm_num)
+  SoftOSqrtPow.isPowPolylog (i := 2) (by unfold lenOf; growth_sqrt [softO_mPar κ]) tac_norm_num
 
 end ChanHe
 

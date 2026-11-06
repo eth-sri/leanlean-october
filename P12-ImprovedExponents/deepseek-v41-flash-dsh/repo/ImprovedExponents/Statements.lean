@@ -9,6 +9,7 @@ public import ImprovedExponents.Optimum.Global
 public import ImprovedExponents.Optimum.GlobalFull
 public import ImprovedExponents.AllEdges.Pairs.TimeBound
 public import ImprovedExponents.AllEdges.Host.ClaimAE
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -49,7 +50,7 @@ behind them are `allSolved_paper`, `allSolved_exact`, `allSolved_full`
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.WordRam Light Real
+open ThreeSumApsp.WordRam
 
 /-! ## From a saving to the end statements -/
 
@@ -71,7 +72,7 @@ every saving below `R'_c(Γ) Γ/2 = 0.0020952…`. -/
 theorem allSolved_pruned_num :
     ∃ δ : ℝ, (0.002095 : ℝ) < δ ∧ AllSolved δ :=
   ⟨(0.002095 + savingF (basePruned 22) (Gam 22)) / 2, by linarith [savingF_pruned_gt],
-    allSolved_pruned (c := 22) (by norm_num) (by linarith [savingF_pruned_gt])
+    allSolved_pruned (c := 22) tac_norm_num (by linarith [savingF_pruned_gt])
       (by linarith [savingF_pruned_gt])⟩
 
 /-! ## The paper's algorithm and analysis at better parameters -/
@@ -91,7 +92,7 @@ theorem endStatements_pruned :
       EndStatement.APSP.SolvedInTime 2.99931 := by
   obtain ⟨δ, hδ, h⟩ := allSolved_pruned_num
   exact h.endStatements (by norm_num; linarith) (by norm_num; linarith) (by norm_num; linarith)
-    (by norm_num) (by norm_num) (by norm_num)
+    tac_norm_num tac_norm_num tac_norm_num
 
 /-- **3SUM in `O(n^1.99896)` steps on the word RAM**: the exact count, the true middle size and
 pruned encodings. No hypothesis. -/
@@ -126,17 +127,17 @@ theorem AllEdges.MinPlusSolved.endStatements {δ : ℝ} (h : AllEdges.MinPlusSol
 theorem minPlusSolved_pruned {c δ : ℝ} (hc : 21 ≤ c) (hδ0 : 0 ≤ δ)
     (hδ : δ < savingF (basePruned c) (Gam c)) : AllEdges.MinPlusSolved δ := by
   have hhalf : savingF (basePruned c) (Gam c) ≤ 1 / 2 :=
-    savingF_le_half (basePruned_pos (by linarith)).le (Gam_pos (by linarith)).le
+    savingF_le_half (basePruned_pos tac_linarith).le (Gam_pos tac_linarith).le
   exact AllEdges.minPlusSolved_of_explicitFrom AllEdges.CA_nonneg AllEdges.pairsFromAllEdges
-    (by linarith)
+    tac_linarith
     (explicitFrom_pruned hc hδ0 hδ AllEdges.lightModelAE rfl AllEdges.midHostRat_ae)
 
 /-- The (min,+)-product and APSP in `O(n^2.99791)`, with pruned encodings and the all-edges host,
 at `c = 22`. -/
 theorem endStatements_allEdges_pruned :
     EndStatement.MinPlusProduct.SolvedInTime 2.99791 ∧ EndStatement.APSP.SolvedInTime 2.99791 :=
-  (minPlusSolved_pruned (c := 22) (by norm_num) (by norm_num)
-    savingF_pruned_gt).endStatements (by norm_num) (by norm_num)
+  (minPlusSolved_pruned (c := 22) tac_norm_num tac_norm_num
+    savingF_pruned_gt).endStatements tac_norm_num tac_norm_num
 
 /-- **The (min,+)-product in `O(n^2.99791)` steps on the word RAM.** No hypothesis. -/
 theorem minPlus_allEdges_pruned :

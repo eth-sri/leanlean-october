@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.TopProcedure
 public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Sec3.Theorem21b.PathsAndWalks
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # APSP: from a solver of the task to a program for the layout of the end statement
@@ -119,8 +120,8 @@ def wrapApsp : Wrap EndStatement.APSP apTask false where
   fr_pos x := by omega
   fr_le x := by omega
   vals x σ hn hU hnn := by simp [apTask, apspInst, hn, hU, hnn]
-  safe x lim σ _ _ hnn hw := safe_fourAddresses (by omega) hnn hw
-  zero x hn _ := ⟨⟨fun _ => trivial, fun _ => rfl⟩, fun i => absurd i.isLt (by omega)⟩
+  safe x lim σ _ _ hnn hw := safe_fourAddresses tac_omega hnn hw
+  zero x hn _ := ⟨⟨fun _ => trivial, fun _ => rfl⟩, fun i => absurd i.isLt tac_omega⟩
   pre := pre_apsp
   post x r μ' _ h := post_apsp x r μ' h
 

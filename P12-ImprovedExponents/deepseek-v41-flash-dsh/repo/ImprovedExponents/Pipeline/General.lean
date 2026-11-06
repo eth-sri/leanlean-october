@@ -3,6 +3,7 @@ module
 public import ImprovedExponents.Pipeline.ExactTriangle
 public import ImprovedExponents.Optimum.PerCDensity
 public import ImprovedExponents.PrunedEncoding.Costs
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -55,7 +56,7 @@ theorem thinR_le_inv {A γ k : ℝ} (hk : 0 < k) (hA : k * log 4 ≤ A) (hγ : 0
     thinR A γ ≤ 1 / k := by
   have h4 := log_four_pos
   unfold thinR
-  rw [div_le_div_iff₀ (by nlinarith) hk]
+  rw [div_le_div_iff₀ tac_nlinarith hk]
   nlinarith
 
 /-- **From an admissible tuple of rational numbers**, given thin-product claims at the two ratios
@@ -76,12 +77,12 @@ theorem explicitFrom_of_rat_tuple {A δ : ℝ} {c θ σ ε : ℚ}
   have hθ0 : (0 : ℚ) < θ := by exact_mod_cast hadm.θ_pos
   have hc_eq := rat_eq_div hc0
   have hθ_eq := rat_eq_div hθ0.le
-  have hcab : 10 * c.den < c.num.toNat := mul_den_lt_num hc0 (by exact_mod_cast hadm.c_gt)
+  have hcab := mul_den_lt_num hc0 (by exact_mod_cast hadm.c_gt)
   have hθpq : 10 * θ.num.toNat < 9 * θ.den :=
-    mul_num_lt_mul_den hθ0.le (by norm_num) (by exact_mod_cast hadm.θ_lt)
+    mul_num_lt_mul_den hθ0.le tac_norm_num (by exact_mod_cast hadm.θ_lt)
   refine explicitFrom_tuple hadm hσ hε (fun γ hγ0 hγ => ?_) hδ0 hδ M hM hhost
   have h := hthin c.den_pos θ.den_pos hcab (one_le_num_toNat hθ0) hθpq hc_eq hθ_eq γ hγ0
-    (by rwa [← hc_eq, ← hθ_eq])
+    tac_rwa [← hc_eq, ← hθ_eq]
   rwa [← hθ_eq] at h
 
 /-- The optimum `R(Γ) Γ/2` is at most `1/2`: `γ ln 4 ≤ A + γ ln 4`. -/
@@ -91,7 +92,7 @@ theorem savingF_le_half {A γ : ℝ} (hA : 0 ≤ A) (hγ : 0 ≤ γ) : savingF A
   rcases eq_or_lt_of_le (add_nonneg hA (mul_nonneg hγ h4.le)) with h | h
   · rw [← h, div_zero, zero_mul, zero_div]
     norm_num
-  · rw [div_mul_eq_mul_div, div_div, div_le_div_iff₀ (by positivity) (by norm_num)]
+  · rw [div_mul_eq_mul_div, div_div, div_le_div_iff₀ tac_positivity tac_norm_num]
     nlinarith
 
 /-! ## Pruned encodings: the conditional theorem -/
@@ -112,12 +113,12 @@ def PrunedEncoderClaim : Prop :=
 /-- `(c/2) H(1/c) + (c - 1) ln 3 ≥ 16 ln 4` for `c ≥ 21`: already `20 ln 3 + (ln 21)/2 ≥ 16 ln 4`.
 -/
 theorem basePruned_ge_16 {c : ℝ} (hc : 21 ≤ c) : 16 * log 4 ≤ basePruned c := by
-  refine le_trans ?_ (basePruned_monotoneOn (Set.mem_Ici.2 (by norm_num)) (Set.mem_Ici.2
-    (by linarith)) hc)
-  rw [basePruned_eq (by norm_num)]
+  refine le_trans ?_ (basePruned_monotoneOn (Set.mem_Ici.2 tac_norm_num) (Set.mem_Ici.2
+    tac_linarith) hc)
+  rw [basePruned_eq tac_norm_num]
   -- `cEntropy 21 = 21 ln 21 - 20 ln 20 ≥ ln 21`
   have hent : log 21 ≤ cEntropy 21 := by
-    have h20 : log 20 ≤ log 21 := log_le_log (by norm_num) (by norm_num)
+    have h20 : log 20 ≤ log 21 := log_le_log tac_norm_num tac_norm_num
     unfold cEntropy
     simp only [negMulLog]
     norm_num
@@ -125,8 +126,8 @@ theorem basePruned_ge_16 {c : ℝ} (hc : 21 ≤ c) : 16 * log 4 ≤ basePruned c
   -- `ln 21 + 40 ln 3 ≥ 32 ln 4`, as `21 · 3^40 ≥ 4^32`
   have hnum : 32 * log 4 ≤ log 21 + 40 * log 3 := by
     have h : (4 : ℝ) ^ 32 ≤ 21 * 3 ^ 40 := by norm_num
-    have hlog := log_le_log (by positivity) h
-    rwa [log_pow, log_mul (by norm_num) (by positivity), log_pow] at hlog
+    have hlog := log_le_log tac_positivity h
+    rwa [log_pow, log_mul tac_norm_num tac_positivity, log_pow] at hlog
   norm_num
   linarith
 
@@ -138,18 +139,18 @@ theorem explicitFrom_pruned_of_claim (hEnc : PrunedEncoderClaim) {c δ : ℝ} (h
     (hM : M.lopDetect = lightModel.lopDetect) (hhost : MidHostRat M) : ExplicitFrom M δ 1 := by
   have hc10 : (10 : ℝ) < c := by linarith
   obtain ⟨c', θ', σ', ε', hc1, -, hσ', hadm, hs⟩ :=
-    exists_rat_tuple_basePruned hc10 hδ (c + 1) (by linarith)
+    exists_rat_tuple_basePruned hc10 hδ (c + 1) tac_linarith
   have hc'10 : (10 : ℝ) < c' := by linarith
   have hγX0 : 0 ≤ gammaX (c' : ℝ) (θ' : ℝ) :=
     (gammaX_pos hc'10 hadm.θ_pos (by linarith [hadm.θ_lt])).le
   have hε16 : (ε' : ℝ) ≤ 1 / 16 :=
-    hadm.thin.le.trans (thinR_le_inv (by norm_num) (basePruned_ge_16 (by linarith)) hγX0)
+    hadm.thin.le.trans (thinR_le_inv tac_norm_num (basePruned_ge_16 tac_linarith) hγX0)
   refine explicitFrom_of_rat_tuple hadm hσ' hε16
     (fun {a b p q} hb hq hcab hp hθ hceq hθeq γ hγ0 hγ => ?_) hδ0 hs M hM hhost
   refine hEnc hb hq hcab hp hθ γ ε' hγ0 hγ ?_
   have h2 : thinR (basePruned (c' : ℝ)) (gammaX (c' : ℝ) (θ' : ℝ))
       ≤ thinR (basePruned (c' : ℝ)) γ :=
-    (thinR_strictAntiOn (basePruned_pos (by linarith))).antitoneOn (Set.mem_Ici.2 hγ0.le)
+    (thinR_strictAntiOn (basePruned_pos tac_linarith)).antitoneOn (Set.mem_Ici.2 hγ0.le)
       (Set.mem_Ici.2 hγX0) (by rw [hceq, hθeq]; exact hγ.le)
   rw [RcP, ← hceq]
   exact hadm.thin.trans_le h2
@@ -159,8 +160,8 @@ below the optimum `R'_c(Γ(c)) Γ(c)/2` at the ratio `c`, for `c ≥ 21`. -/
 theorem allSolved_pruned_of_claim (hEnc : PrunedEncoderClaim) {c δ : ℝ} (hc : 21 ≤ c) (hδ0 : 0 ≤ δ)
     (hδ : δ < savingF (basePruned c) (Gam c)) : AllSolved δ := by
   have hδ1 : δ ≤ 1 := by
-    have h := savingF_le_half (basePruned_pos (c := c) (by linarith)).le
-      (Gam_pos (c := c) (by linarith)).le
+    have h := savingF_le_half (basePruned_pos (c := c) tac_linarith).le
+      (Gam_pos (c := c) tac_linarith).le
     linarith
   exact allSolved_of_explicitFrom hδ0 hδ1
     (explicitFrom_pruned_of_claim hEnc hc hδ0 hδ lightModel rfl midHostRat_light)

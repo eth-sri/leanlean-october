@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.InstanceData
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Parameters
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The host of Theorem 17: what is true of the list of its instances
@@ -145,7 +146,7 @@ theorem Valid.place_lt (hv : X.Valid) {t i : ℕ} (ht : t < X.m) (hi : i < X.w t
     X.place t i < X.n * X.n := by
   have hend := hv.lo_add_le ht
   have hlen := hv.length_sortedIdx
-  rw [place, List.getD_eq_getElem _ _ (by omega)]
+  rw [place, List.getD_eq_getElem _ _ tac_omega]
   exact lt_of_mem_sortedIdx (List.getElem_mem _)
 
 /-- The row of a query pair is a vertex of `A`. -/
@@ -445,7 +446,7 @@ theorem valid_of_params {n D g p : ℕ} {AB BC AC : List ℤ} (h : BigCase n D g
     (hp : p ∈ primesInRange D) (lenAB : AB.length = n * n) (lenBC : BC.length = n * n)
     (lenAC : AC.length = n * n) :
     (⟨n, D, p, pieceSizeNat D g, queryCapNat n D, AB, BC, AC⟩ : HostData).Valid where
-  n_pos := le_trans (by norm_num) (h.sixteen_le.trans h.le_n)
+  n_pos := le_trans tac_norm_num (h.sixteen_le.trans h.le_n)
   p_pos := (mem_primesInRange.mp hp).1.one_le
   q_pos := by
     simp only
@@ -455,8 +456,8 @@ theorem valid_of_params {n D g p : ℕ} {AB BC AC : List ℤ} (h : BigCase n D g
     have hD := h.sixteen_le
     have hDn := h.le_n
     simp only
-    rw [queryCapNat, Nat.le_sqrt, Nat.le_div_iff_mul_le (by omega)]
-    have : n ≤ n ^ 4 := Nat.le_self_pow (by norm_num) n
+    rw [queryCapNat, Nat.le_sqrt, Nat.le_div_iff_mul_le tac_omega]
+    have : n ≤ n ^ 4 := Nat.le_self_pow tac_norm_num n
     omega
   qp_le := by
     simp only

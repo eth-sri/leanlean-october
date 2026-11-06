@@ -24,7 +24,7 @@ enters through its specification `OfflineSpec32`.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec ThreeSumApsp.WordRam
+open ThreeSumApsp.WordRam
 
 /-! ## The text -/
 
@@ -34,20 +34,20 @@ namespace OfflineMain32
 product N D, the addresses of Y, of the rows, of the columns and of the output, the free pointer,
 and the result of the call. -/
 abbrev Ans : ℕ := 0
-@[inherit_doc Ans] abbrev Size : ℕ := 2
-@[inherit_doc Ans] abbrev Dim : ℕ := 3
-@[inherit_doc Ans] abbrev Count : ℕ := 4
-@[inherit_doc Ans] abbrev Area : ℕ := 5
-@[inherit_doc Ans] abbrev MatY : ℕ := 6
-@[inherit_doc Ans] abbrev Rows : ℕ := 7
-@[inherit_doc Ans] abbrev Cols : ℕ := 8
-@[inherit_doc Ans] abbrev Out : ℕ := 9
-@[inherit_doc Ans] abbrev Free : ℕ := 10
-@[inherit_doc Ans] abbrev Res : ℕ := 11
+ abbrev Size : ℕ := 2
+ abbrev Dim : ℕ := 3
+ abbrev Count : ℕ := 4
+ abbrev Area : ℕ := 5
+ abbrev MatY : ℕ := 6
+ abbrev Rows : ℕ := 7
+ abbrev Cols : ℕ := 8
+ abbrev Out : ℕ := 9
+ abbrev Free : ℕ := 10
+ abbrev Res : ℕ := 11
 
 end OfflineMain32
 
-open OfflineMain32 in
+open OfflineMain32
 /-- offlineMain32: read the sizes, compute the addresses, call offline32, answer 1. -/
 def offlineMain32Body : Stmt :=
   .set Size (M (k 0)) ;; .set Dim (M (k 1)) ;; .set Count (M (k 2)) ;;

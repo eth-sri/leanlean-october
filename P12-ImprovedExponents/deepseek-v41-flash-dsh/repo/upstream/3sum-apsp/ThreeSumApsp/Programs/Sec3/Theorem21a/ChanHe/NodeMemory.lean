@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Contracts
 public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Recursion
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The reduction from 3SUM to Convolution-3SUM: the memory of a node, and what fits in a word
@@ -42,7 +43,7 @@ variable {μ μ' : ℕ → ℤ} {fr V m np pr cnt s len : ℕ} {S : Finset ℤ} 
 theorem SetAt.kept (h : SetAt μ s len S) (hb : s + len ≤ fr) (hk : Kept μ μ' fr) :
     SetAt μ' s len S := by
   obtain ⟨L, hL, hs, hn, ht⟩ := h
-  exact ⟨L, hL, hs.congr fun i hi => hk _ (by omega), hn, ht⟩
+  exact ⟨L, hL, hs.congr fun i hi => hk _ tac_omega, hn, ht⟩
 
 /-- The length of a set in the memory is its number of elements. -/
 theorem SetAt.card (h : SetAt μ s len S) : #S = len := by
@@ -99,9 +100,9 @@ the free pointer, which moves on by the length of the set. -/
 /-- The three children of a node with the modulus `M`. -/
 @[simp] def NodeArgs.child₁ (a : NodeArgs) (M : ℕ) : NodeArgs :=
   { a with toEnv := a.toEnv.push a.X₁.len, X₁ := a.X₁.heavy a.fr M }
-@[inherit_doc NodeArgs.child₁, simp] def NodeArgs.child₂ (a : NodeArgs) (M : ℕ) : NodeArgs :=
+@[simp] def NodeArgs.child₂ (a : NodeArgs) (M : ℕ) : NodeArgs :=
   { a with toEnv := a.toEnv.push a.X₂.len, X₂ := a.X₂.heavy a.fr M }
-@[inherit_doc NodeArgs.child₁, simp] def NodeArgs.child₃ (a : NodeArgs) (M : ℕ) : NodeArgs :=
+@[simp] def NodeArgs.child₃ (a : NodeArgs) (M : ℕ) : NodeArgs :=
   { a with toEnv := a.toEnv.push a.X₃.len, X₃ := a.X₃.heavy a.fr M }
 
 /-- The primes and the count table are not touched when cells from the free pointer on are
@@ -177,7 +178,7 @@ theorem mul_le_word {lim : Limits} {x y z n V M : ℕ} (h : ((wordNeed n V M : �
 /-- A number up to M + 1 fits in a word. -/
 theorem le_word_of_le {lim : Limits} {y n V M : ℕ} (h : ((wordNeed n V M : ℕ) : ℤ) ≤ lim.word)
     (hy : y ≤ M + 1) : (y : ℤ) ≤ lim.word := by
-  simpa using mul_le_word (x := 1) (z := 1) h (Nat.one_le_pow _ _ (by omega)) hy (by omega)
+  simpa using mul_le_word (x := 1) (z := 1) h (Nat.one_le_pow _ _ tac_omega) hy tac_omega
 
 /-- Larger sets and larger moduli need larger words. -/
 theorem wordNeed_mono {n n' V M M' : ℕ} (hn : n ≤ n') (hM : M ≤ M') :

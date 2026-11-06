@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.FailedScans
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Need
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The host of Theorem 17: the time of a run is within the worst case
@@ -29,7 +30,7 @@ public section
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-- The number of false positives of the chosen prime is at most `falsePositiveBound`. -/
 theorem F_le_falsePositiveBound {x : TriInst} {μ : ℕ → ℤ} {fr D g : ℕ} (hpre : x.Pre μ fr)
@@ -51,7 +52,7 @@ private theorem tWrites_mono (n D : ℕ) {a b : ℕ} (h : a ≤ b) : tWrites n D
 largest time on such instances. -/
 private theorem le_supTime (Tn : List ℕ → ℕ) (n D : ℕ) {w cap : ℕ} (h : w ≤ cap) :
     Tn [n, D, w] ≤ supTime Tn n D cap :=
-  Finset.le_sup (f := fun w => Tn [n, D, w]) (Finset.mem_range.2 (by omega))
+  Finset.le_sup (f := fun w => Tn [n, D, w]) (Finset.mem_range.2 tac_omega)
 
 /-- The time of an instance with a piece of `len ≤ q` vertices, `w ≤ cap` query pairs and `execs`
 scans is at most the worst case for `q` and `cap` plus the time of the scans. -/
@@ -91,7 +92,7 @@ private theorem chunkCount_le_m {X : HostData} (hv : X.Valid) : X.chunkCount ≤
   have hn := hv.n_pos
   have hq := hv.q_pos
   have hpieces : 1 ≤ X.h := by
-    rw [HostData.h, Nat.ceilDiv_eq_add_pred_div, Nat.le_div_iff_mul_le (by omega)]
+    rw [HostData.h, Nat.ceilDiv_eq_add_pred_div, Nat.le_div_iff_mul_le tac_omega]
     omega
   rw [HostData.m]
   exact Nat.le_mul_of_pos_left _ hpieces
@@ -109,29 +110,5 @@ end HostTime
 open HostTime
 
 variable {x : TriInst} {μ : ℕ → ℤ} {fr D g : ℕ}
-
-/-- The time of the loop over the instances is within its bound.  Both sides are a sum over the
-instances plus the same constant; the piece of an instance has `min q (n - c₀)` vertices. -/
-private theorem tHostLoop_le (hpre : x.Pre μ fr) (hbig : BigCase x.n D g) (Tn : List ℕ → ℕ) :
-    tHostLoop Tn (hostData x D g) ≤ hostLoopBound Tn x.n x.U D g :=
-  Nat.add_le_add_right (sum_le_mul_add
-    (fun _ ht => instance_le Tn x.n D _ (Nat.min_le_left _ _) ((hostData x D g).w_le_cap ht))
-    (hostData_m_le hbig) (sum_execs_le_falsePositiveBound hpre hbig)) 14
-
-/-- **The time of a run after the choice of the prime is within the worst case.** -/
-theorem hostRunTime_le (hpre : x.Pre μ fr) (hbig : BigCase x.n D g) (Tn : List ℕ → ℕ) :
-    hostRunTime Tn (hostData x D g) x.U
-      ≤ tDblTable (bitLen x.U) + 3 * tResidues (x.n * x.n) (bitLen x.U)
-        + tClasses x.n (Nat.sqrt D) + tChunks (Nat.sqrt D) (4 * x.n * g)
-        + hostLoopBound Tn x.n x.U D g + 80 := by
-  have hprime : (hostData x D g).p ≤ Nat.sqrt D := hostData_p_le x g hbig.sixteen_le
-  have hchunks : (hostData x D g).chunkCount ≤ 4 * x.n * g :=
-    (chunkCount_le_m (hostData_valid hpre hbig)).trans (hostData_m_le hbig)
-  have hloop := tHostLoop_le hpre hbig Tn
-  have hn : (hostData x D g).n = x.n := rfl
-  unfold hostRunTime
-  rw [hn]
-  unfold tClasses tChunks
-  omega
 
 end Light.Sec3

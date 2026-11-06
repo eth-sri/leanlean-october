@@ -1,6 +1,7 @@
 module
 
 public import ImprovedExponents.HostMid.Defs
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -16,7 +17,7 @@ small case behave as upstream's (`et17Params_spec'`, `et17Small_spec'`).
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3 ThreeSumApsp.Spec
 
 /-! ## The data of a run -/
 
@@ -62,15 +63,14 @@ theorem aFr_le' {x : TriInst} {D g : ℕ} (hD : 16 ≤ D) (fr : ℕ) :
 theorem hostLim_of_ok' {lim : Limits} {d a b : ℕ} {need : List ℕ → Need} {x : TriInst}
     {fr D g : ℕ} (hbig : BigCase x.n D g) (hok : (hostNeedAt' a b need x.n x.U D g).Ok lim fr d) :
     HostLim lim (d + 1) (hostData' x D g) x.U (hostAddr x (hostData' x D g) fr) need := by
-  have hD : 16 ≤ D := hbig.sixteen_le
+  have hD := hbig.sixteen_le
   have hok0 : (hostNeedAt a b (fun ps => need (midArgs (fun _ => g) ps)) x.n x.U D g).Ok lim fr d :=
     hok
   have hcells : fr + (chooseCells x.n x.U D + hostLayout x.n x.U D
       + (supNeed need x.n (midSize D g) (queryCapNat x.n D)).cells + 2) ≤ lim.space := hok.cells
   have hdepth : d + (2 * Nat.clog 2 x.n + 8
       + (supNeed need x.n (midSize D g) (queryCapNat x.n D)).depth) ≤ lim.depth := hok.depth
-  have hword : ((hostWord a b x.n x.U D g
-      + (supNeed need x.n (midSize D g) (queryCapNat x.n D)).word : ℕ) : ℤ) ≤ lim.word := hok.word
+  have hword := hok.word
   have hfr := aFr_le' (x := x) (g := g) hD fr
   have hp := hostData'_p_le x g hD
   have hm := hostData'_m_le hbig
@@ -89,7 +89,7 @@ theorem hostLim_of_ok' {lim : Limits} {d a b : ℕ} {need : List ℕ → Need} {
       solver := fun t ht => by
         have hwc : (hostData' x D g).w t ≤ queryCapNat x.n D := (hostData' x D g).w_le_cap ht
         have hmem : (hostData' x D g).w t ∈ Finset.range (queryCapNat x.n D + 1) :=
-          Finset.mem_range.2 (by omega)
+          Finset.mem_range.2 tac_omega
         have hsword : (need [x.n, midSize D g, (hostData' x D g).w t]).word
             ≤ (supNeed need x.n (midSize D g) (queryCapNat x.n D)).word :=
           Finset.le_sup (f := fun v => (need [x.n, midSize D g, v]).word) hmem
@@ -134,9 +134,9 @@ theorem et17Params_spec' (C : Et17Ctx P₀ R ν Tn need Dfun Gfun tD tG wD wG) (
   have h16 : ((16 : ℕ) : ℤ) ≤ lim.word := le_word_of_le_hostWord hok
   unfold et17Params et17Loc0 et17LocA
   -- D := Dfun(n); g := Gfun(D)
-  light_call (C.dProc lim d x.n μ hn hok.space hwD (by omega)) with _ μ ⟨rfl, rfl⟩
+  light_call (C.dProc lim d x.n μ hn hok.space hwD tac_omega) with _ μ ⟨rfl, rfl⟩
   rw [hD]
-  light_call (C.gProc lim d D μ hDpos hok.space hwG (by omega)) with _ μ ⟨rfl, rfl⟩
+  light_call (C.gProc lim d D μ hDpos hok.space hwG tac_omega) with _ μ ⟨rfl, rfl⟩
   rw [hg]
   -- s := sqrt(D)
   light_call (sqrt_meets (K := D) C.hSqrt μ hsqrt) with _ μ ⟨rfl, rfl⟩
@@ -146,7 +146,7 @@ theorem et17Params_spec' (C : Et17Ctx P₀ R ν Tn need Dfun Gfun tD tG wD wG) (
     by_cases hsg : Nat.sqrt D < g <;> simp [update_frame_setLocal, SmallCase, hD16, hnD, hg0, hsg]
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Host/ParametersStage.lean
-open Et17 in
+open Et17
 /-- **The small case**, within the limits of the variant: the call of the brute force. -/
 theorem et17Small_spec' (C : Et17Ctx P₀ R ν Tn need Dfun Gfun tD tG wD wG) (x : TriInst)
     (μ : ℕ → ℤ) (fr D g a b : ℕ) (hpre : x.Pre μ fr)
@@ -159,7 +159,7 @@ theorem et17Small_spec' (C : Et17Ctx P₀ R ν Tn need Dfun Gfun tD tG wD wG) (x
       (by simp only [bruteNeed]; omega) (by simp only [bruteNeed, hostNeedAt']; omega)
   have hdepth := hok.depth
   simp only [hostNeedAt'] at hdepth
-  refine Ends.callTo (brute_meets C.hBrute C.loop.scan x μ fr hpre hbrute) ?_ (by simp [et17LocA])
+  refine Ends.callTo (brute_meets C.hBrute C.loop.scan x μ fr hpre hbrute) ?_ tac_simp [et17LocA]
   rintro _ _ ⟨rfl, rfl⟩
   exact ⟨by simp [et17LocA], fun _ _ => rfl⟩
 

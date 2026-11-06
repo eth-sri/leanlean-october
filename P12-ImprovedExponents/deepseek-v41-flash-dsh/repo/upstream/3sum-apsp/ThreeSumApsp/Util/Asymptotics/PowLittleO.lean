@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Util.Asymptotics.PowPolylog
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Calculating with `n^{a+o(1)}`
@@ -26,7 +27,7 @@ rules for `O`:
 
 public section
 
-open Filter Asymptotics
+open Filter
 
 namespace ThreeSumApsp
 
@@ -41,7 +42,7 @@ theorem IsPowLittleO.eventually_abs_le (h : IsPowLittleO f a) (hab : a < b) :
   obtain ⟨ε, hε, hf⟩ := h
   filter_upwards [hf, hε.eventually_lt_const (sub_pos.2 hab), eventually_ge_atTop 1]
     with n hfn hεn hn
-  exact hfn.trans (Real.rpow_le_rpow_of_exponent_le (Nat.one_le_cast.2 hn) (by linarith))
+  exact hfn.trans (Real.rpow_le_rpow_of_exponent_le (Nat.one_le_cast.2 hn) tac_linarith)
 
 /-- If for every `η > 0`, `|f(n)| ≤ n^{a+η}` for all large `n`, then `f(n) = n^{a+o(1)}`. For
 `ε(n)` take the excess of the exponent that is needed at `n`: the number with
@@ -50,7 +51,7 @@ theorem IsPowLittleO.of_eventually_abs_le
     (h : ∀ η : ℝ, 0 < η → ∀ᶠ n : ℕ in atTop, |f n| ≤ (n : ℝ) ^ (a + η)) : IsPowLittleO f a := by
   -- All three claims are about `n ≥ 2`, where `n > 1` and the maximum is positive.
   have hbase : ∀ n : ℕ, 2 ≤ n → (1 : ℝ) < n ∧ 0 < max |f n| ((n : ℝ) ^ a) := fun n hn =>
-    ⟨by exact_mod_cast hn, lt_max_of_lt_right (Real.rpow_pos_of_pos (by positivity) a)⟩
+    ⟨by exact_mod_cast hn, lt_max_of_lt_right (Real.rpow_pos_of_pos tac_positivity a)⟩
   refine ⟨fun n => Real.logb n (max |f n| ((n : ℝ) ^ a)) - a,
     tendsto_order.2 ⟨fun δ hδ => ?_, fun δ hδ => ?_⟩, ?_⟩
   · -- `ε(n) ≥ 0`, because the maximum is at least `n^a`.
@@ -64,7 +65,7 @@ theorem IsPowLittleO.of_eventually_abs_le
     obtain ⟨hn1, hpos⟩ := hbase n hn
     have hle : Real.logb n (max |f n| ((n : ℝ) ^ a)) ≤ a + δ / 2 :=
       (Real.logb_le_iff_le_rpow hn1 hpos).2
-        (max_le hfn (Real.rpow_le_rpow_of_exponent_le hn1.le (by linarith)))
+        (max_le hfn (Real.rpow_le_rpow_of_exponent_le hn1.le tac_linarith))
     linarith [hδ, hle]
   · -- `n^{a+ε(n)}` is the maximum.
     filter_upwards [eventually_ge_atTop 2] with n hn
@@ -78,25 +79,25 @@ theorem isPowLittleO_iff : IsPowLittleO f a ↔ ∀ η : ℝ, 0 < η → IsBigOP
       ((h.eventually_abs_le (lt_add_of_pos_right a hη)).mono
         fun _ hfn => hfn.trans (le_abs_self _)),
     fun h => .of_eventually_abs_le fun η hη =>
-      (h (η / 2) (half_pos hη)).eventually_abs_le (by linarith)⟩
+      (h (η / 2) (half_pos hη)).eventually_abs_le tac_linarith⟩
 
 /-! ### The rules -/
 
 /-- `n^{a+o(1)} ⊆ n^{b+o(1)}` for `a ≤ b`. -/
 protected theorem IsPowLittleO.mono (h : IsPowLittleO f a) (hab : a ≤ b) : IsPowLittleO f b :=
-  isPowLittleO_iff.2 fun η hη => (isPowLittleO_iff.1 h η hη).mono (by linarith)
+  isPowLittleO_iff.2 fun η hη => (isPowLittleO_iff.1 h η hη).mono tac_linarith
 
 /-- `n^{a+o(1)} ⊆ O(n^b)` for `a < b`. -/
 theorem IsPowLittleO.isBigOPow (h : IsPowLittleO f a) (hab : a < b) : IsBigOPow f b :=
-  (isPowLittleO_iff.1 h (b - a) (sub_pos.2 hab)).mono (by linarith)
+  (isPowLittleO_iff.1 h (b - a) (sub_pos.2 hab)).mono tac_linarith
 
 /-- `O(n^a) ⊆ n^{a+o(1)}`. -/
 theorem IsBigOPow.isPowLittleO (h : IsBigOPow f a) : IsPowLittleO f a :=
-  isPowLittleO_iff.2 fun _ hη => h.mono (by linarith)
+  isPowLittleO_iff.2 fun _ hη => h.mono tac_linarith
 
 /-- `O(n^a (log n)^{O(1)}) ⊆ n^{a+o(1)}`. -/
 theorem IsPowPolylog.isPowLittleO (h : IsPowPolylog f a) : IsPowLittleO f a :=
-  isPowLittleO_iff.2 fun _ hη => h.isBigOPow (by linarith)
+  isPowLittleO_iff.2 fun _ hη => h.isBigOPow tac_linarith
 
 /-- `n^{a+o(1)} + n^{a+o(1)} = n^{a+o(1)}`. -/
 protected theorem IsPowLittleO.add (hf : IsPowLittleO f a) (hg : IsPowLittleO g a) :
@@ -107,7 +108,7 @@ protected theorem IsPowLittleO.add (hf : IsPowLittleO f a) (hg : IsPowLittleO g 
 protected theorem IsPowLittleO.mul (hf : IsPowLittleO f a) (hg : IsPowLittleO g b) :
     IsPowLittleO (fun n => f n * g n) (a + b) :=
   isPowLittleO_iff.2 fun η hη => ((isPowLittleO_iff.1 hf _ (half_pos hη)).mul
-    (isPowLittleO_iff.1 hg _ (half_pos hη))).mono (by linarith)
+    (isPowLittleO_iff.1 hg _ (half_pos hη))).mono tac_linarith
 
 /-- Constant factors are absorbed. -/
 theorem IsPowLittleO.const_mul (hf : IsPowLittleO f a) (c : ℝ) :
@@ -120,7 +121,7 @@ theorem IsPowLittleO.const_mul (hf : IsPowLittleO f a) (c : ℝ) :
 private theorem exists_pos_add_mul_add_le (hc : 0 ≤ c) (hd : 0 ≤ d) (hη : 0 < η) :
     ∃ t : ℝ, 0 < t ∧ (c + t) * (d + t) ≤ c * d + η := by
   have hcd : 0 < c + d + 1 := by linarith
-  have ht : 0 < min 1 (η / (c + d + 1)) := lt_min one_pos (div_pos hη hcd)
+  have ht := lt_min one_pos (div_pos hη hcd)
   refine ⟨min 1 (η / (c + d + 1)), ht, ?_⟩
   set t := min 1 (η / (c + d + 1))
   have hsq : t * t ≤ t * 1 := mul_le_mul_of_nonneg_left (min_le_left _ _) ht.le
@@ -135,7 +136,7 @@ protected theorem IsPowLittleO.comp (hT : IsPowLittleO T c)
     IsPowLittleO (fun n => T (size n)) (c * d) := by
   refine isPowLittleO_iff.2 fun η hη => ?_
   obtain ⟨t, ht, hexp⟩ := exists_pos_add_mul_add_le hc hd hη
-  exact ((isPowLittleO_iff.1 hT t ht).comp (isPowLittleO_iff.1 hs t ht) (by linarith)
-    (by linarith)).mono hexp
+  exact ((isPowLittleO_iff.1 hT t ht).comp (isPowLittleO_iff.1 hs t ht) tac_linarith
+    tac_linarith).mono hexp
 
 end ThreeSumApsp

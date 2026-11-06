@@ -28,7 +28,7 @@ between the places of a round; that a list is still where it was follows from th
 
 namespace Light.Sec2
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {n t : ℕ} {x : PrunedArgs} {μ μ' : ℕ → ℤ}
 

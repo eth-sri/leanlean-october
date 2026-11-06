@@ -10,6 +10,7 @@ public import Mathlib.Data.List.GetD
 public import Mathlib.Data.List.Induction
 public import Mathlib.Logic.Function.Basic
 public import Mathlib.Tactic.SplitIfs
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Tries in one array (Section 4.3)
@@ -128,7 +129,7 @@ private theorem cells_trieNew (T : List ℤ) : cells (trieNew T) = cells T := by
   simp only [cells, trieNew, List.getD_eq_getElem?_getD]
   by_cases hx : x < T.length
   · rw [List.getElem?_append_left hx]
-  · rw [List.getElem?_append_right (by omega), List.getElem?_eq_none (by omega : T.length ≤ x),
+  · rw [List.getElem?_append_right tac_omega, List.getElem?_eq_none (by omega : T.length ≤ x),
       List.getElem?_replicate]
     split_ifs <;> rfl
 
@@ -172,7 +173,7 @@ private theorem cell_inj (h : TrieInv L lo μ nd fr) {x y : ℕ × List ℕ} {a 
   have hrx := h.range x hx
   have hry := h.range y hy
   -- both addresses are lo plus a multiple of 11, and a, b < 11
-  exact ⟨h.inj x y hx (by omega), by omega⟩
+  exact ⟨h.inj x y hx tac_omega, by omega⟩
 
 /-- The prefixes of a prefix that has a vertex have vertices. -/
 private theorem prefix_ne (h : TrieInv L lo μ nd fr) {i : ℕ} {w : List ℕ} (l : List ℕ)
@@ -195,7 +196,7 @@ private theorem addVertex (h : TrieInv L lo μ nd fr) {x : ℕ × List ℕ} {μ'
   have hfr := h.fr_aligned
   refine { child := fun i w a hw ha hnd => ?_, range := fun y hnd => ?_,
            inj := fun y y' hnd heq => ?_, closed := fun i w a hnd => ?_,
-           fresh := fun c hc => hfresh c (by omega), lo_pos := hlo,
+           fresh := fun c hc => hfresh c tac_omega, lo_pos := hlo,
            fr_aligned := ⟨by omega, by omega⟩ }
   · -- child
     by_cases hwx : (i, w) = x
@@ -204,7 +205,7 @@ private theorem addVertex (h : TrieInv L lo μ nd fr) {x : ℕ × List ℕ} {μ'
       have hnone : nd (i, w ++ [a]) = 0 := by
         by_contra hc
         exact h.closed _ _ _ hc (by rw [hwx, hx])
-      rw [hwx, Function.update_self, Function.update_of_ne hne, hfresh _ (by omega), hnone]
+      rw [hwx, Function.update_self, Function.update_of_ne hne, hfresh _ tac_omega, hnone]
       rfl
     · rw [Function.update_of_ne hwx] at hnd ⊢
       exact hchild i w a hw ha hnd
@@ -219,7 +220,7 @@ private theorem addVertex (h : TrieInv L lo μ nd fr) {x : ℕ × List ℕ} {μ'
     rw [Function.update_apply, Function.update_apply] at heq
     split_ifs at hnd heq with hyx hyx'
     · rw [hyx, hyx']
-    · have := h.range y' (by omega)
+    · have := h.range y' tac_omega
       omega
     · have := h.range y hnd
       omega
@@ -252,7 +253,7 @@ private theorem newChild (h : TrieInv L lo μ nd fr) {i : ℕ} {w : List ℕ} {a
   refine h.addVertex hwa (fun j u b happ => ?_) (fun c hc => ?_) fun j u b hu hb hnd => ?_
   · obtain ⟨rfl, happ'⟩ := Prod.mk.inj happ
     rwa [(List.append_inj' happ' rfl).1]
-  · rw [Function.update_of_ne (by omega), h.fresh c hc]
+  · rw [Function.update_of_ne tac_omega, h.fresh c hc]
   · by_cases hcell : nd (j, u) + b = nd (i, w) + a
     · obtain ⟨hju, rfl⟩ := h.cell_inj hnd hw ha hb hcell
       obtain ⟨rfl, rfl⟩ := Prod.mk.inj hju
@@ -270,11 +271,11 @@ private theorem setVal (h : TrieInv L lo μ nd fr) {i : ℕ} {w : List ℕ} (hL 
   refine { h with child := fun j u b hu hb hnd => ?_, fresh := fun c hc => ?_ }
   · rw [Function.update_of_ne, h.child j u b hu hb hnd]
     intro hcell
-    obtain ⟨hju, -⟩ := h.cell_inj (a := 0) hnd hw (by omega) hb hcell
+    obtain ⟨hju, -⟩ := h.cell_inj (a := 0) hnd hw tac_omega hb hcell
     obtain ⟨-, rfl⟩ := Prod.mk.inj hju
     -- a vertex at depth L is not above depth L
     omega
-  · rw [Function.update_of_ne (by omega), h.fresh c hc]
+  · rw [Function.update_of_ne tac_omega, h.fresh c hc]
 
 end TrieInv
 
@@ -321,7 +322,7 @@ private theorem TrieInv.inserted_set (h : TrieInv L lo (cells T) nd T.length) (h
     (hw : nd (i, w) ≠ 0) (v : ℤ) : Inserted L lo (i, w) v T nd (T.set (nd (i, w)) v) nd := by
   have hin := h.inside hw
   have hcells : cells (T.set (nd (i, w)) v) = Function.update (cells T) (nd (i, w)) v :=
-    cells_set T _ _ (by omega)
+    cells_set T _ _ tac_omega
   refine { inv := ?_, vertex := hw, value := ?_,
            ext := { old_vertex := fun _ _ => rfl, old_root := fun _ hi => hi,
                     old_value := fun j u _ hu hne => ?_ } }
@@ -341,14 +342,14 @@ private theorem TrieInv.step_newChild (h : TrieInv L lo (cells T) nd T.length) {
       TrieExt L x (cells T) nd (cells (trieNew (T.set (nd (i, w) + d) T.length)))
         (Function.update nd (i, w ++ [d]) T.length) := by
   have hin := h.inside hw
-  rw [cells_trieNew, cells_set T _ _ (by omega), length_trieNew, List.length_set]
+  rw [cells_trieNew, cells_set T _ _ tac_omega, length_trieNew, List.length_set]
   refine ⟨h.newChild hd hw hnone,
     { old_vertex := fun y hy => ?_, old_root := fun j hj => ?_,
       old_value := fun j u hL hu _ => ?_ }⟩
   · exact Function.update_of_ne (fun hyw => hy (by rw [hyw, hnone])) _ _
-  · rwa [Function.update_of_ne (by simp)] at hj
+  · rwa [Function.update_of_ne tac_simp] at hj
   · refine Function.update_of_ne (fun hcell => ?_) _ _
-    obtain ⟨hju, -⟩ := h.cell_inj (b := 0) hu hw hd (by omega) hcell
+    obtain ⟨hju, -⟩ := h.cell_inj (b := 0) hu hw hd tac_omega hcell
     obtain ⟨-, rfl⟩ := Prod.mk.inj hju
     -- a vertex at depth L is not above depth L
     omega
@@ -365,17 +366,17 @@ private theorem trieInsert_spec (v : ℤ) (key : List ℕ) (hinv : TrieInv L lo 
     exact ⟨hinv.inside hw, nd, hinv.inserted_set hlen hw v⟩
   | cons d l ih =>
     obtain ⟨hpos, hin⟩ := hinv.inside hw
-    have hd : d < 11 := hkey d (by simp)
-    have hl : ∀ x ∈ l, x < 11 := fun x hx => hkey x (by simp [hx])
+    have hd := hkey d tac_simp
+    have hl : ∀ x ∈ l, x < 11 := fun x hx => hkey x tac_simp [hx]
     rw [List.length_cons] at hlen
-    have hchild : T.getD (nd (i, w) + d) 0 = nd (i, w ++ [d]) := hinv.child i w d (by omega) hd hw
+    have hchild : T.getD (nd (i, w) + d) 0 = nd (i, w ++ [d]) := hinv.child i w d tac_omega hd hw
     have hlen' : (w ++ [d]).length + l.length = L := by
       rw [List.length_append, List.length_singleton]
       omega
     rw [List.append_cons, trieInsert, InsertOK, hchild]
     by_cases hz : nd (i, w ++ [d]) = 0
     · -- there is no child: a new vertex at the end of the array
-      obtain ⟨hinv₁, hstep⟩ := hinv.step_newChild hd hw (by omega) hz (i, w ++ [d] ++ l)
+      obtain ⟨hinv₁, hstep⟩ := hinv.step_newChild hd hw tac_omega hz (i, w ++ [d] ++ l)
       obtain ⟨hok, nd', hins⟩ :=
         ih hinv₁ (w := w ++ [d]) (by rw [Function.update_self]; omega) hlen' hl
       rw [Function.update_self] at hok hins
@@ -401,14 +402,14 @@ private theorem trieWalk_spec (hinv : TrieInv L lo (cells T) nd T.length) (key :
   | cons d l ih =>
     rw [List.length_cons] at hlen
     rw [List.append_cons] at hne ⊢
-    have hwd : nd (i, w ++ [d]) ≠ 0 := hinv.prefix_ne l hne
-    have hw : nd (i, w) ≠ 0 := hinv.prefix_ne [d] hwd
+    have hwd := hinv.prefix_ne l hne
+    have hw := hinv.prefix_ne [d] hwd
     have hchild : T.getD (nd (i, w) + d) 0 = nd (i, w ++ [d]) :=
-      hinv.child i w d (by omega) (hkey d (by simp)) hw
+      hinv.child i w d tac_omega (hkey d tac_simp) hw
     obtain ⟨hpos, hin⟩ := hinv.inside hw
     obtain ⟨hok, hwalk⟩ := ih (w := w ++ [d])
       (by rw [List.length_append, List.length_singleton]; omega)
-      (fun x hx => hkey x (by simp [hx])) hne
+      (fun x hx => hkey x tac_simp [hx]) hne
     rw [WalkOK, trieWalk, hchild, Int.toNat_natCast]
     exact ⟨⟨hpos, hin, by omega, hok⟩, hwalk⟩
 
@@ -473,7 +474,7 @@ private theorem insert_spec (nd : ℕ × List ℕ → ℕ) (hinv : TrieInv L lo 
     (hk : key.length = L) (hd : ∀ d ∈ key, d < 11) (v : ℤ) :
     InsertOK T (roots i) key ∧
       ∃ nd', Inserted L lo (i, key) v T nd (trieInsert T (roots i) key v) nd' := by
-  have h := trieInsert_spec (i := i) (w := []) v key hinv (by rwa [hroots]) (by simpa using hk) hd
+  have h := trieInsert_spec (i := i) (w := []) v key hinv tac_rwa [hroots] (by simpa using hk) hd
   rwa [hroots] at h
 
 /-- Storing a value. -/
@@ -487,7 +488,7 @@ theorem insert (h : TrieRep L lo T roots f) (i : ℕ) (hi : roots i ≠ 0) (key 
     · -- a trie that does not exist still does not exist
       by_contra hc
       exact hins.ext.old_root j (fun hnd => hc (by rw [hnd, hz])) (by rw [hroots, hz])
-    · rw [hins.ext.old_vertex (j, []) (by rwa [hroots]), hroots]
+    · rw [hins.ext.old_vertex (j, []) tac_rwa [hroots], hroots]
   · by_cases hkey : (j, key') = (i, key)
     · obtain ⟨rfl, rfl⟩ := Prod.mk.inj hkey
       rw [Function.update_self] at hf
@@ -510,7 +511,7 @@ private theorem walk_spec (h : TrieRep L lo T roots f) (i : ℕ) (key : List ℕ
     WalkOK T (roots i) key ∧ T.getD (trieWalk T (roots i) key) 0 = v := by
   obtain ⟨nd, hinv, hroots, hval⟩ := h
   obtain ⟨hlen, hne, hv⟩ := hval i key v hf
-  obtain ⟨hok, hwalk⟩ := trieWalk_spec (i := i) (w := []) hinv key (by simp [hlen]) hd hne
+  obtain ⟨hok, hwalk⟩ := trieWalk_spec (i := i) (w := []) hinv key tac_simp [hlen] hd hne
   rw [hroots] at hok hwalk
   exact ⟨hok, by rw [hwalk]; exact hv⟩
 

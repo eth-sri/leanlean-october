@@ -42,7 +42,7 @@ def stepCtr (k₀ n₀ : ℕ) (s : Ctr) : Ctr :=
 /-- Stepping the counters of row `I` gives the counters of row `I + 1`. -/
 theorem ctrAt_succ {k₀ n₀ : ℕ} (hk : 0 < k₀) (hn : 0 < n₀) (I : ℕ) :
     ctrAt k₀ n₀ (I + 1) = stepCtr k₀ n₀ (ctrAt k₀ n₀ I) := by
-  have hoff_lt : I % n₀ < n₀ := Nat.mod_lt I hn
+  have hoff_lt := Nat.mod_lt I hn
   have hblock_lt : I / n₀ % k₀ < k₀ := Nat.mod_lt _ hk
   simp only [ctrAt, stepCtr, Nat.mul_comm k₀ n₀, ← Nat.div_div_eq_div_mul]
   split_ifs with hoff hlt

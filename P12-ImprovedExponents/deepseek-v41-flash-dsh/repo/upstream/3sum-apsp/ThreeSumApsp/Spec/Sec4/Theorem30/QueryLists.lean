@@ -9,6 +9,7 @@ public import ThreeSumApsp.Sec4.BoxesFromLeaves
 public import ThreeSumApsp.Sec4.Theorem30
 public import ThreeSumApsp.Spec.Sec4.Theorem30.Cubes
 public import ThreeSumApsp.Spec.Sec4.Theorem30.NineStrings
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # What a query reads (proof of Theorem 30, "Query")
@@ -303,7 +304,7 @@ private theorem exists_leaf_of_mem_boxesOf (ht : t ≤ m) (hη : (innerSetO η).
     ∃ τ : Leaf L, (Leaf.Contributes τ η ∧ order m τ = t) ∧ digitsC (starBelow η τ) = l := by
   obtain ⟨s, hs, rfl⟩ := List.mem_map.mp h
   obtain ⟨hlen, hdig, hlo, hhi⟩ := (mem_nineStrs s).mp hs
-  have hlen' : s.length = (digitsO η).count 9 := hlen.trans (count_nine_digitsO hη).symm
+  have hlen' := hlen.trans (count_nine_digitsO hη).symm
   obtain ⟨τ, hτ, hcontr, hcard⟩ := exists_leaf_scatter hlen' hdig
   refine ⟨τ, ⟨hcontr, ?_⟩, digitsC_starBelow hlen' hτ⟩
   -- exactly m - t nines (hlo, hhi): the order is t

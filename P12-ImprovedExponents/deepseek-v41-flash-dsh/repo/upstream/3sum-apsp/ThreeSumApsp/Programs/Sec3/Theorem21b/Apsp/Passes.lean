@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Spec.Sec3.Theorem21b.RepeatedSquaring
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # APSP by repeated squaring: the three passes over the matrix
@@ -77,8 +78,8 @@ theorem clip_meets {p : ℕ} (hp : P[p]? = some clipBody) {μ : ℕ → ℤ} {sr
   case round =>
     intro j μ' hj hμ
     have hread : μ' (src + j) = L.getD j 0 :=
-      hμ ▸ (wrote_rest (by omega)).trans (hL.getD hj 0)
-    have hnext : Function.update μ' (dst + j) (clip thr INF (L.getD j 0)) = _ := hμ ▸ wrote_succ
+      hμ ▸ (wrote_rest tac_omega).trans (hL.getD hj 0)
+    have hnext := hμ ▸ wrote_succ
     -- from here on x = src[j]
     generalize L.getD j 0 = x at hread hnext
     -- if Thresh < mem[Src + Idx]
@@ -238,9 +239,7 @@ theorem apInit_meets {p : ℕ} (hp : P[p]? = some apInitBody) {μ : ℕ → ℤ}
     Meets lim P p d [n, INF, adj, w, A] μ (23 * (n * n) + 17 * n + 18) fun _ μ' =>
       Seg μ' A (weightList n INF ADJ W) ∧ SameOutside μ μ' A (n * n) := by
   refine .of_body hp ?_
-  have hnn : n ≤ n * n := Nat.le_mul_of_pos_left n hn
-  have hword : (n : ℤ) * n ≤ lim.word := by exact_mod_cast (show ((n * n : ℕ) : ℤ) ≤ _ by omega)
-  have hpos : 0 ≤ (n : ℤ) * n := by positivity
+  have hnn := Nat.le_mul_of_pos_left n hn
   unfold apInitBody
   -- Cells := Verts * Verts
   light_set (n * n : ℕ)
@@ -251,10 +250,10 @@ theorem apInit_meets {p : ℕ} (hp : P[p]? = some apInitBody) {μ : ℕ → ℤ}
     rintro j _ hj rfl
     -- the cells adj[j] and w[j] are as at the start
     have hadjCell : wrote μ A (apInitCell INF ADJ W) j (adj + j) = ADJ.getD j 0 :=
-      (wrote_rest (by omega)).trans (segADJ.getD (lenADJ ▸ hj) 0)
+      (wrote_rest tac_omega).trans (segADJ.getD (lenADJ ▸ hj) 0)
     have hwtCell : wrote μ A (apInitCell INF ADJ W) j (w + j) = W.getD j 0 :=
-      (wrote_rest (by omega)).trans (segW.getD (lenW ▸ hj) 0)
-    refine (apInitFill_spec hadjCell hwtCell hw (by omega)).mono le_rfl ?_
+      (wrote_rest tac_omega).trans (segW.getD (lenW ▸ hj) 0)
+    refine (apInitFill_spec hadjCell hwtCell hw tac_omega).mono le_rfl ?_
     rintro _ rfl
     exact ⟨rfl, wrote_succ⟩
   case done =>
@@ -263,7 +262,7 @@ theorem apInit_meets {p : ℕ} (hp : P[p]? = some apInitBody) {μ : ℕ → ℤ}
     refine Ends.setToThen A ?_ (hT := by simp [apInitFill]; omega)
     -- for Idx < Verts: the second pass
     refine Ends.for (ApInitInv (wrote μ A (apInitCell INF ADJ W) (n * n)) n adj w A INF) n
-      apInitDiag.blockCost ?start ?round ?done ?bound (by omega)
+      apInitDiag.blockCost ?start ?round ?done ?bound tac_omega
       (by simp [apInitFill, apInitDiag]; omega)
     case start =>
       rw [ApInitInv, zeroedDiag_zero, Nat.zero_mul, Nat.add_zero]
@@ -272,7 +271,7 @@ theorem apInit_meets {p : ℕ} (hp : P[p]? = some apInitBody) {μ : ℕ → ℤ}
       rintro j _ hj - rfl
       have hrow := Nat.mul_add_le_mul hj (le_refl (n + 1))
       rw [Nat.mul_succ n n] at hrow
-      refine (apInitDiag_spec hw (by omega)).mono le_rfl ?_
+      refine (apInitDiag_spec hw tac_omega).mono le_rfl ?_
       rintro _ rfl
       exact ⟨rfl, by rw [ApInitInv, update_frame_setLocal, Nat.cast_succ, zeroedDiag_succ,
         Nat.succ_mul, Nat.add_assoc]; rfl⟩
@@ -302,18 +301,18 @@ abbrev Pos : ℕ := 5
 
 end ApOut
 
-open ApOut in
+open ApOut
 /-- The two cells of the output for the cell A[q]. -/
 def apOutWrite : Stmt :=
   .ite (M (v Mat +' v Idx) =' v Big)
     (.store (v Pos) (k 0) ;; .store (v Pos +' k 1) (k 0))
     (.store (v Pos) (k 1) ;; .store (v Pos +' k 1) (M (v Mat +' v Idx)))
 
-open ApOut in
+open ApOut
 /-- The round of apOut for the cell A[q]. -/
 def apOutRound : Stmt := apOutWrite ;; .set Pos (v Pos +' k 2)
 
-open ApOut in
+open ApOut
 /-- apOut(len, INF, A, out): for q < len, the cells out[2q], out[2q + 1] become 0, 0 if A[q] = INF,
 and 1, A[q] otherwise. -/
 def apOutBody : Stmt := .set Pos (v Out) ;; .for Idx (v Len) apOutRound
@@ -376,13 +375,13 @@ private theorem apOutRound_spec {μ : ℕ → ℤ} {A out : ℕ} {INF : ℤ} {L 
         σ' = ⟨frame [L.length, INF, A, out, j, (out + 2 * (j + 1) : ℕ)],
           wrote μ out (apOutCell INF L) (2 * (j + 1))⟩ := by
   have hread : wrote μ out (apOutCell INF L) (2 * j) (A + j) = L.getD j 0 :=
-    (wrote_rest (by omega)).trans (hL.getD hj 0)
+    (wrote_rest tac_omega).trans (hL.getD hj 0)
   rw [← wrote_apOutCell_succ]
-  refine Ends.next _ ((apOutWrite_spec hread hw (by omega)).mono le_rfl ?_)
-    (by simp [apOutRound])
+  refine Ends.next _ ((apOutWrite_spec hread hw tac_omega).mono le_rfl ?_)
+    tac_simp [apOutRound]
   rintro _ rfl
   -- Pos := Pos + 2
-  exact Ends.setTo (out + 2 * (j + 1) : ℕ) rfl (by light_side) (by simp [apOutRound])
+  exact Ends.setTo (out + 2 * (j + 1) : ℕ) rfl (by light_side) tac_simp [apOutRound]
 
 /-- What apOut leaves from the address `out` on: for each number of the list `L` a pair of cells.
 Its first cell holds 0 if the number is `INF`; otherwise the pair holds 1 and the number. -/
@@ -402,7 +401,7 @@ theorem apOut_meets {p : ℕ} (hp : P[p]? = some apOutBody) {μ : ℕ → ℤ} {
   -- Pos := Out
   light_set out
   refine Ends.for (ApOutInv μ A out INF L) L.length apOutRound.blockCost ?start ?round ?done ?bound
-    (by omega) (by simp [apOutRound, apOutWrite]; omega)
+    tac_omega (by simp [apOutRound, apOutWrite]; omega)
   case start =>
     rw [ApOutInv, wrote_zero]
     exact congrArg (State.mk · μ) (update_frame_setLocal _ _ _)
@@ -417,7 +416,7 @@ theorem apOut_meets {p : ℕ} (hp : P[p]? = some apOutBody) {μ : ℕ → ℤ} {
     change (_ → wrote μ out (apOutCell INF L) (2 * L.length) (out + 2 * i) = 0) ∧
       (_ → wrote μ out (apOutCell INF L) (2 * L.length) (out + 2 * i) = 1 ∧
         wrote μ out (apOutCell INF L) (2 * L.length) (out + 2 * i + 1) = L[i])
-    rw [wrote_done (by omega), Nat.add_assoc, wrote_done (by omega), apOutCell, apOutCell,
+    rw [wrote_done tac_omega, Nat.add_assoc, wrote_done tac_omega, apOutCell, apOutCell,
       show 2 * i / 2 = i by omega, show (2 * i + 1) / 2 = i by omega,
       List.getD_eq_getElem _ _ hi]
     exact ⟨fun h => if_pos h, fun h => ⟨by simp [h], by simp [h]⟩⟩

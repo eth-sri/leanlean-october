@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Util.Asymptotics.Dominated
 public import ThreeSumApsp.Util.Log
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Logarithms up to a constant factor
@@ -36,14 +37,13 @@ open Real
 /-- `log x + 1 = O(log x)` on `x ≥ 2`. -/
 theorem dominated_log_add_one_log :
     Dominated (fun x : ℝ => 2 ≤ x) (fun x => log x + 1) fun x => log x :=
-  .of_le_const_mul (C := 3) (by norm_num) fun _ hx => by
+  .of_le_const_mul (C := 3) tac_norm_num fun _ hx => by
     linarith [one_half_le_log_of_two_le hx]
 
 /-- `⌈log_b n⌉ + 1 = O(log n)` on `n ≥ 2`, for every natural number `b`. -/
 theorem dominated_clog_add_one_log (b : ℕ) :
     Dominated (fun n : ℕ => 2 ≤ n) (fun n => (Nat.clog b n : ℝ) + 1) fun n => log n := by
-  have hlogb : 0 ≤ log b := log_natCast_nonneg b
-  refine .of_le_const_mul (C := 1 / log b + 4) (by positivity) fun n hn => ?_
+  refine .of_le_const_mul (C := 1 / log b + 4) tac_positivity fun n hn => ?_
   have hhalf : 1 / 2 ≤ log n := one_half_le_log_of_two_le (by exact_mod_cast hn)
   have hclog := natCast_clog_lt_logb_add_one b n
   rw [add_mul, one_div_mul_eq_div]

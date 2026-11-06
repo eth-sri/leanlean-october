@@ -1,6 +1,7 @@
 module
 
 public import ImprovedExponents.HostMid.Claim
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -15,7 +16,7 @@ parameters.
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light.Sec3 ThreeSumApsp
 
 /-- **The bound of `Claim17Mid` for the variant host.**  The parameter routines compute `Dfun n`
 from `n` and `Gfun D` from `D`.  These agree with the parameters `D n` and `g n` of the claim, and
@@ -41,9 +42,9 @@ theorem obeysBound17Mid_hostTime (D g : ℕ → ℕ) {Dfun Gfun tD tG : ℕ → 
       exact hT m _ w w' hm hmid hw
     · simp only [T', ite_eq_right hmid]
       exact_mod_cast Finset.le_sup (f := fun v => Tn [m, midSize d (Gfun d), v])
-        (Finset.mem_range.2 (by omega))
+        (Finset.mem_range.2 tac_omega)
   have hn1 : 1 ≤ n := by omega
-  have hmid : 1 ≤ midSize (D n) (g n) := one_le_midSize h16 hg1
+  have hmid := one_le_midSize h16 hg1
   have h := hbound (fun ps => Tn (midArgs Gfun ps)) T' hT' n U κ h16 hDn hg1 hg hκ hU
   rw [hostTime'_eq]
   refine h.trans (le_of_eq ?_)

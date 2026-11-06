@@ -11,6 +11,7 @@ public import ThreeSumApsp.Util.Index
 public import ThreeSumApsp.Util.PrimesInWindow
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
 public import Mathlib.RingTheory.AdjoinRoot
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 17, first step: hashing modulo a prime
@@ -55,7 +56,7 @@ theorem mem_primesInRange {D p : ℕ} :
 
 /-! ### The ring `ℤ[x]/(x^p − 1)` -/
 
-open Polynomial in
+open Polynomial
 /-- Proof of Theorem 17: "the ring ℤ[x]/(x^p − 1)".  (`Polynomial.C 1` is the constant polynomial
 1.) -/
 abbrev CyclicRing (p : ℕ) : Type := AdjoinRoot ((X : ℤ[X]) ^ p - C 1)
@@ -123,12 +124,12 @@ S(a,b,c)". -/
 def IsFalsePositive (p : ℕ) (t : Fin n × Fin n × Fin n) : Prop :=
   T.S t.1 t.2.1 t.2.2 ≠ 0 ∧ (p : ℤ) ∣ T.S t.1 t.2.1 t.2.2
 
-open Classical in
+open Classical
 /-- Proof of Theorem 17: "let F(p) denote the number of false positives of p". -/
 noncomputable def F (p : ℕ) : ℕ :=
   (Finset.univ.filter fun t : Fin n × Fin n × Fin n => T.IsFalsePositive p t).card
 
-open Classical in
+open Classical
 /-- Proof of Theorem 17: "Z₀, the number of zero triangles". -/
 noncomputable def Z₀ : ℕ :=
   (Finset.univ.filter fun t : Fin n × Fin n × Fin n => T.IsZeroTriangle t.1 t.2.1 t.2.2).card
@@ -237,7 +238,7 @@ theorem abs_S_le (hT : T.WeightsPolyBounded κ) (a b c : Fin n) :
     exact_mod_cast habs
   linarith [hAB a b, hBC b c, hAC a c]
 
-open Classical in
+open Classical
 /-- Proof of Theorem 17: "a triple with S(a,b,c) ≠ 0 is a false positive exactly of the primes in
 the range that divide S(a,b,c).  Since 0 < |S(a,b,c)| ≤ 3n^ν and these primes are at least √D/2,
 there are at most log_{√D/2}(3n^ν) of them." -/
@@ -267,8 +268,8 @@ theorem card_falsePositive_primes_le (hD : 16 ≤ D) (hT : T.WeightsPolyBounded 
   have hpow : (Real.sqrt D / 2) ^ divisors.card ≤ ∏ p ∈ divisors, (p : ℝ) := by
     rw [← Finset.prod_const]
     exact Finset.prod_le_prod₀ (fun _ _ => by linarith) fun p hp => (hmem p hp).2.1
-  have hY : 0 < 3 * (n : ℝ) ^ κ := lt_of_lt_of_le (by positivity) (hpow.trans hprod)
-  rw [Real.le_logb_iff_rpow_le (by linarith) hY, Real.rpow_natCast]
+  have hY := lt_of_lt_of_le tac_positivity (hpow.trans hprod)
+  rw [Real.le_logb_iff_rpow_le tac_linarith hY, Real.rpow_natCast]
   exact hpow.trans hprod
 
 /-- Proof of Theorem 17: "Hence the numbers of false positives of all the primes in the range add up
@@ -291,8 +292,8 @@ theorem sum_F_le (hD : 16 ≤ D) (hκ : 1 ≤ κ) (hT : T.WeightsPolyBounded κ)
     · -- A zero triangle is a false positive of no prime.
       rw [Finset.filter_eq_empty_iff.2 fun p _ h => h.1 ht, Finset.card_empty, Nat.cast_zero]
       have hn : (1 : ℝ) ≤ n := by exact_mod_cast Fin.pos t.1
-      have hpow : (1 : ℝ) ≤ (n : ℝ) ^ κ := Real.one_le_rpow hn (by linarith)
-      exact Real.logb_nonneg (by linarith) (by linarith)
+      have hpow : (1 : ℝ) ≤ (n : ℝ) ^ κ := Real.one_le_rpow hn tac_linarith
+      exact Real.logb_nonneg tac_linarith tac_linarith
     · -- Otherwise this is the bound of `card_falsePositive_primes_le` for this triple.
       convert T.card_falsePositive_primes_le hD hT t ht
   rw [hswap, Nat.cast_sum]
@@ -334,10 +335,10 @@ theorem log_le_four_mul_log_sqrt_div_two (D : ℕ) (hD : 16 ≤ D) :
   have hsqrt : 0 < Real.sqrt D := by linarith [Real.four_le_sqrt_natCast_of_sixteen_le hD]
   -- `log(√D/2) = (log D)/2 - log 2`, and `4 log 2 = log 16 ≤ log D`.
   have hlog16 : 4 * Real.log 2 ≤ Real.log D := by
-    have h := Real.log_le_log (by norm_num) (show (2 : ℝ) ^ 4 ≤ D by linarith)
+    have h := Real.log_le_log tac_norm_num (show (2 : ℝ) ^ 4 ≤ D by linarith)
     rw [Real.log_pow] at h
     exact_mod_cast h
-  rw [Real.log_div hsqrt.ne' (by norm_num), Real.log_sqrt (by linarith)]
+  rw [Real.log_div hsqrt.ne' tac_norm_num, Real.log_sqrt tac_linarith]
   linarith [hlog16]
 
 /-- Proof of Theorem 17: "F(p) is at most the average over them, so [...] F(p) = O(n³
@@ -353,24 +354,24 @@ theorem TriangleInstance.F_le_of_le_card_primesInRange {n D p : ℕ} {κ c : ℝ
   set r := Real.sqrt D
   set Y := 3 * (n : ℝ) ^ κ with hY
   set numPrimes := (primesInRange D).card
-  have hr : 4 ≤ r := Real.four_le_sqrt_natCast_of_sixteen_le hD
+  have hr := Real.four_le_sqrt_natCast_of_sixteen_le hD
   have hn : (16 : ℝ) ≤ n := by exact_mod_cast hD.trans hDn
   have hlogD_pos : 0 < Real.log D := Real.log_pos (by exact_mod_cast (by omega : 1 < D))
-  have hlogr_pos : 0 < Real.log (r / 2) := Real.log_pos (by linarith)
+  have hlogr_pos : 0 < Real.log (r / 2) := Real.log_pos tac_linarith
   have hlogY_nonneg : 0 ≤ Real.log Y := by
-    have : 1 ≤ (n : ℝ) ^ κ := Real.one_le_rpow (by linarith) (by linarith)
+    have : 1 ≤ (n : ℝ) ^ κ := Real.one_le_rpow tac_linarith tac_linarith
     exact Real.log_nonneg (by rw [hY]; linarith)
   -- "F(p) is at most the average", multiplied out; the false positives of all the primes in the
   -- range add up to at most `n³ log_{r/2} Y`.
   have average : (T.F p : ℝ) * numPrimes ≤ (n : ℝ) ^ 3 * Real.logb (r / 2) Y :=
     le_trans (by exact_mod_cast hp.F_mul_card_le_sum) (T.sum_F_le hD hκ hT)
   -- The base of the logarithm changes: `log_{r/2} Y ≤ 4 log Y / log D`.
-  have hlogD_le : Real.log D ≤ 4 * Real.log (r / 2) := log_le_four_mul_log_sqrt_div_two D hD
+  have hlogD_le := log_le_four_mul_log_sqrt_div_two D hD
   have changeBase : Real.logb (r / 2) Y ≤ 4 * Real.log Y / Real.log D := by
     rw [Real.logb, div_le_div_iff₀ hlogr_pos hlogD_pos]
     linarith [mul_le_mul_of_nonneg_left hlogD_le hlogY_nonneg]
   rw [show 4 / c * ((n : ℝ) ^ 3 * Real.log Y / r) = 4 * (n : ℝ) ^ 3 * Real.log Y / (c * r) by
-    field_simp, le_div_iff₀ (by positivity)]
+    field_simp, le_div_iff₀ tac_positivity]
   calc (T.F p : ℝ) * (c * r) = T.F p * (c * (r / Real.log D)) * Real.log D := by field_simp
     _ ≤ T.F p * numPrimes * Real.log D := by gcongr
     _ ≤ (n : ℝ) ^ 3 * Real.logb (r / 2) Y * Real.log D := by gcongr
@@ -385,12 +386,12 @@ theorem TriangleInstance.exists_F_le :
   obtain ⟨c, hc, hcard⟩ := exists_le_card_primesInRange
   refine ⟨max 1 (8 / c), le_max_left _ _, fun {n D p κ} hD hDn hκ T hT hp => ?_⟩
   have hn : (16 : ℝ) ≤ n := by exact_mod_cast hD.trans hDn
-  have hlogn : 0 ≤ Real.log n := Real.log_nonneg (by linarith)
+  have hlogn : 0 ≤ Real.log n := Real.log_nonneg tac_linarith
   -- `log(3n^κ) = log 3 + κ log n ≤ 2κ log n`, because `3 ≤ n` and `κ ≥ 1`.
   have hlog : Real.log (3 * (n : ℝ) ^ κ) ≤ 2 * κ * Real.log n := by
     have hlog3 : Real.log 3 ≤ κ * Real.log n :=
-      (Real.log_le_log (by norm_num) (by linarith)).trans (le_mul_of_one_le_left hlogn hκ)
-    rw [Real.log_mul (by norm_num) (by positivity), Real.log_rpow (by linarith)]
+      (Real.log_le_log tac_norm_num tac_linarith).trans (le_mul_of_one_le_left hlogn hκ)
+    rw [Real.log_mul tac_norm_num tac_positivity, Real.log_rpow tac_linarith]
     linarith [hlog3]
   calc (T.F p : ℝ) ≤ 4 / c * ((n : ℝ) ^ 3 * Real.log (3 * (n : ℝ) ^ κ) / Real.sqrt D) :=
         T.F_le_of_le_card_primesInRange hc (hcard D hD) hD hDn hκ hT hp

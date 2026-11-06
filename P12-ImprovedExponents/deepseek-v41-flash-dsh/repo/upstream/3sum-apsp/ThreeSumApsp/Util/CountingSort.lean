@@ -8,6 +8,7 @@ module
 public import Mathlib.Algebra.Order.Ring.Nat
 public import Mathlib.Data.Nat.Count
 public import Mathlib.Data.Nat.SuccPred
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The pure side of counting sort
@@ -117,7 +118,7 @@ theorem eq_of_sortPos_eq {i j : ℕ} (hi : i < N) (hj : j < N)
 /-- Every place is taken. -/
 theorem exists_sortPos_eq (kf : ℕ → ℕ) {q : ℕ} (hq : q < N) : ∃ j < N, sortPos kf N j = q := by
   have hsurj := Finset.surjOn_of_injOn_of_card_le (s := Finset.range N) (t := Finset.range N)
-    (sortPos kf N) (fun j hj => by simpa using sortPos_lt kf (by simpa using hj))
+    (sortPos kf N) (fun j hj => by simpa using sortPos_lt kf ((by simpa using hj)))
     (fun i hi j hj => eq_of_sortPos_eq (by simpa using hi) (by simpa using hj)) le_rfl
   simpa using hsurj (by simpa using hq)
 

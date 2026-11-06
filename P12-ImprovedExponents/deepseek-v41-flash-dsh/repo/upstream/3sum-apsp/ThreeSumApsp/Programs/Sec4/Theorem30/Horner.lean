@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Horner's rule: the code of a string of decimal digits
@@ -33,10 +34,10 @@ namespace Horner
 /-- The local variables of horner: the arguments (the address of the string and its length), the
 level, and the number formed so far.  Local 0 also takes the result. -/
 abbrev Str : ℕ := 0
-@[inherit_doc Str] abbrev Result : ℕ := 0
-@[inherit_doc Str] abbrev Len : ℕ := 1
-@[inherit_doc Str] abbrev Level : ℕ := 2
-@[inherit_doc Str] abbrev Acc : ℕ := 3
+ abbrev Result : ℕ := 0
+ abbrev Len : ℕ := 1
+ abbrev Level : ℕ := 2
+ abbrev Acc : ℕ := 3
 
 /-- Before round i the number formed by the first i digits has been computed.  The memory is not
 changed. -/
@@ -45,7 +46,7 @@ def Inv (a : ℕ) (l : List ℕ) (μ : ℕ → ℤ) (i : ℕ) (σ : State) : Pro
 
 end Horner
 
-open Horner in
+open Horner
 /-- horner(str, len): multiply by ten and add the next digit, from the most significant digit on. -/
 def hornerBody : Stmt :=
   .set Level (k 0) ;;
@@ -55,7 +56,7 @@ def hornerBody : Stmt :=
     .set Level (v Level +' k 1)) ;;
   .set Result (v Acc)
 
-open Horner in
+open Horner
 /-- **horner** returns the number with the given decimal digits, and leaves the memory as it
 was. -/
 theorem horner_spec {lim : Limits} {P : Program} (hP : P[Proc.horner]? = some hornerBody)
@@ -67,7 +68,7 @@ theorem horner_spec {lim : Limits} {P : Program} (hP : P[Proc.horner]? = some ho
   have hfits : ∀ i ≤ l.length, ((ofDigitList 10 (l.take i) : ℕ) : ℤ) < lim.word := fun i hi => by
     have hlt := ofDigitList_lt (b := 10) (l.take i) fun x hx => hd x (List.mem_of_mem_take hx)
     have hpow' : 10 ^ (l.take i).length ≤ 10 ^ l.length :=
-      Nat.pow_le_pow_right (by norm_num) (List.length_take_le' _ _)
+      Nat.pow_le_pow_right tac_norm_num (List.length_take_le' _ _)
     exact lt_of_lt_of_le (by exact_mod_cast hlt.trans_le hpow') hpow
   unfold tHorner
   -- level := 0; acc := 0
@@ -78,7 +79,7 @@ theorem horner_spec {lim : Limits} {P : Program} (hP : P[Proc.horner]? = some ho
   case start => rfl
   case round =>
     rintro i _ hi rfl
-    have hcell : μ (a + i) = (l.getD i 0 : ℕ) := hseg.read hi
+    have hcell := hseg.read hi
     have hnext : ((ofDigitList 10 (l.take (i + 1)) : ℕ) : ℤ)
         = (ofDigitList 10 (l.take i) : ℕ) * 10 + (l.getD i 0 : ℕ) := by
       exact_mod_cast ofDigitList_take_succ 10 l hi

@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The least string with a given number of nines
@@ -25,7 +26,7 @@ Each of the two loops writes one digit again and again while a test holds (`fill
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -35,11 +36,11 @@ namespace Nine
 the least number of nines, the current position, and the number of nines that are still to be
 written.  Local 0 also takes the result. -/
 abbrev Str : ℕ := 0
-@[inherit_doc Str] abbrev Result : ℕ := 0
-@[inherit_doc Str] abbrev Len : ℕ := 1
-@[inherit_doc Str] abbrev MinNines : ℕ := 2
-@[inherit_doc Str] abbrev Pos : ℕ := 4
-@[inherit_doc Str] abbrev Need : ℕ := 10
+ abbrev Result : ℕ := 0
+ abbrev Len : ℕ := 1
+ abbrev MinNines : ℕ := 2
+ abbrev Pos : ℕ := 4
+ abbrev Need : ℕ := 10
 
 end Nine
 
@@ -102,15 +103,14 @@ theorem fillTail_spec (hs : Std lim) {μ : ℕ → ℤ} {a n i₀ need : ℕ} (h
     Ends lim P d fillTail ⟨loc, μ⟩ (15 * (n - i₀) + 10) fun σ' =>
       σ'.loc = Function.update loc Pos n ∧ SegN σ'.mem (a + i₀) (nineFirst (n - i₀) need) ∧
         SameOutside μ σ'.mem (a + i₀) (n - i₀) := by
-  have hw := hs.space_le
   have hmid : i₀ + (n - i₀ - need) = n - need := by omega
   -- zeros while pos + need < len
-  refine Ends.next _ (Ends.fillRun hs (a := a) (i₀ := i₀) (cnt := n - i₀ - need) (by norm_num)
-    (by omega) hstr hpos
+  refine Ends.next _ (Ends.fillRun hs (a := a) (i₀ := i₀) (cnt := n - i₀ - need) tac_norm_num
+    tac_omega hstr hpos
     (fun j hj μ' => by light_side [hlen, hneed]) ?_ (hT := le_rfl)) (by simp; omega)
   -- nines while pos < len
-  refine Ends.fillRun hs (a := a) (i₀ := n - need) (cnt := need) (by norm_num) (by omega)
-    (by simpa using hstr) (by simp [hmid]) (fun j hj μ' => by simp [hlen]; omega) ?_
+  refine Ends.fillRun hs (a := a) (i₀ := n - need) (cnt := need) tac_norm_num tac_omega
+    (by simpa using hstr) tac_simp [hmid] (fun j hj μ' => by simp [hlen]; omega) ?_
     (by simp; omega)
   -- the zeros are kept by the second loop, and both loops stay within the n - i₀ cells
   have hzeros := segN_wrote_const μ (a + i₀) 0 (n - i₀ - need)
@@ -120,7 +120,7 @@ theorem fillTail_spec (hs : Std lim) {μ : ℕ → ℤ} {a n i₀ need : ℕ} (h
   have hsame₉ : SameOutside μ₀ (wrote μ₀ (a + (n - need)) (fun _ => ((9 : ℕ) : ℤ)) need)
       (a + (n - need)) need := sameOutside_wrote le_rfl
   refine ⟨by simp [Nat.sub_add_cancel (show need ≤ n by omega)], ?_,
-    (hsame₀.mono le_rfl (by omega)).trans (hsame₉.mono (by omega) (by omega))⟩
+    (hsame₀.mono le_rfl tac_omega).trans (hsame₉.mono tac_omega tac_omega)⟩
   have hdst : a + i₀ + (List.map (fun x : ℕ => (x : ℤ)) (List.replicate (n - i₀ - need) 0)).length
       = a + (n - need) := by simp; omega
   rw [nineFirst, SegN, List.map_append, seg_append, hdst]
@@ -139,13 +139,12 @@ theorem nineFirst_spec (hP : P[Proc.nineFirst]? = some nineFirstBody) (hs : Std 
     NineFirstSpec lim P := by
   intro a n lo μ hlo ha
   refine fun d _ => ⟨nineFirstBody, hP, ?_⟩
-  have hword := hs.const_le
   unfold tNineFirst
   -- pos := 0; need := minNines
   light_set (0 : ℕ)
   light_set lo
   -- fillTail
-  refine (fillTail_spec hs (i₀ := 0) (need := lo) ha (by omega) _ rfl rfl rfl rfl).mono
+  refine (fillTail_spec hs (i₀ := 0) (need := lo) ha tac_omega _ rfl rfl rfl rfl).mono
     (by simp; omega) ?_
   rintro σ' ⟨-, hseg, hsame⟩
   exact ⟨hseg, hsame⟩

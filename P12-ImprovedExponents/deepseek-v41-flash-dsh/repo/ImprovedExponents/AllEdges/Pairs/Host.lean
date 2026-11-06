@@ -3,6 +3,7 @@ module
 public import ImprovedExponents.AllEdges.Pairs.Bridge
 public import ThreeSumApsp.Programs.Sec3.Theorem21b.NegativeTriangle.Passes
 public import ThreeSumApsp.Lang.PolyBounded
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -203,7 +204,7 @@ private theorem Ctx.affine_meets (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d
     Meets lim (P₀ ++ R') pAff (d + 1) [l.length, src, m, c, dst] μ' (20 * l.length + 6)
       fun _ μ'' => Seg μ'' dst (affL m c l) ∧ SameOutside μ' μ'' dst l.length := by
   have hplaces := C.places
-  exact Sec3.affine_meets C.aff hl C.ok.space (by omega) (by omega) hplace.2.2 hfits
+  exact Sec3.affine_meets C.aff hl C.ok.space tac_omega tac_omega hplace.2.2 hfits
 
 /-! ## The beginning -/
 
@@ -212,7 +213,6 @@ private theorem init_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ f
     Ends lim (P₀ ++ R') d paInit ⟨frame [x.n, x.U, x.x, x.y, x.v, x.out, fr], μ⟩ paInit.blockCost
       fun σ' => σ' = ⟨frame (locals x fr 1 0 0 0), μ⟩ := by
   have hplaces := C.places
-  have hsquare : (0 : ℤ) ≤ (x.n : ℤ) * x.n := by positivity
   unfold paInit
   light_set (x.n * x.n : ℕ)
   light_set (3 * x.U : ℕ)
@@ -240,11 +240,11 @@ private theorem pow_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr
     Ends lim (P₀ ++ R') d paPow ⟨frame (locals x fr 1 0 0 0), μ⟩ (14 * aeLevels x.U + 6)
       fun σ' => σ' = ⟨frame (locals x fr (2 ^ aeLevels x.U : ℕ) (aeLevels x.U) 0 0), μ⟩ := by
   have hplaces := C.places
-  refine Ends.whileBlock (PowInv x μ fr) (aeLevels x.U) (by simp [PowInv]) ?round ?done
+  refine Ends.whileBlock (PowInv x μ fr) (aeLevels x.U) tac_simp [PowInv] ?round ?done
     (by simp; omega)
   case round =>
     rintro i _ hi rfl
-    have hpow : 2 ^ (i + 1) ≤ 2 ^ aeLevels x.U := Nat.pow_le_pow_right (by norm_num) hi
+    have hpow : 2 ^ (i + 1) ≤ 2 ^ aeLevels x.U := Nat.pow_le_pow_right tac_norm_num hi
     have hlt : i + 1 < 2 ^ (i + 1) := Nat.lt_two_pow_self
     rw [pow_succ'] at hpow hlt
     generalize hpw : 2 ^ i = pw at hpow hlt ⊢
@@ -293,9 +293,8 @@ private theorem fill_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ f
   have hpre := C.pre
   have hplaces := C.places
   have hZ := Z_range hpre
-  have hn : x.n ≤ x.n * x.n := Nat.le_mul_self x.n
+  have hn := Nat.le_mul_self x.n
   have hapX := hpre.apartX
-  have hW : 24 * (x.U : ℤ) + 8 ≤ lim.word := by omega
   have hfit1 : ∀ c : ℤ, c = x.U ∨ c = 2 * x.U → ∀ w ∈ x.V ++ x.X, |1 * w| ≤ lim.word ∧
       |1 * w + c| ≤ lim.word := fun c hc w hw => by
     have := abs_le.1 ((List.mem_append.1 hw).elim (hpre.leV w) (hpre.leX w))
@@ -304,18 +303,18 @@ private theorem fill_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ f
   unfold paFill
   -- Res := pAff(Cells, MatX, 1, Bound, RestX)
   refine Ends.callToThen (C.affine_meets (m := 1) (c := x.U) (dst := fr + 3 * (x.n * x.n))
-    hpre.segX (by omega) fun w hw => hfit1 _ (Or.inl rfl) w (by simp [hw])) ?_
+    hpre.segX tac_omega fun w hw => hfit1 _ (Or.inl rfl) w tac_simp [hw]) ?_
     (ha := by light_side [hpre.lenX]) (hT := by simp [hpre.lenX]; omega)
   rintro r₁ μ₁ ⟨s₁, o₁⟩
   -- Res := pTr(Verts, MatY, Bound, RestY)
   refine Ends.callToThen (transpose_meets C.tr (dst := fr + 4 * (x.n * x.n)) (c := x.U)
-    hpre.segY.keep hpre.lenY (by omega) ⟨C.ok.space, by omega, by omega⟩ fun w hw => by
+    hpre.segY.keep hpre.lenY tac_omega ⟨C.ok.space, by omega, by omega⟩ fun w hw => by
       have := abs_le.1 (hpre.leY w hw); rw [abs_le]; omega) ?_
     (ha := by light_side) (hT := by simp [hpre.lenX]; omega)
   rintro r₂ μ₂ ⟨s₂, o₂⟩
   -- Res := pAff(Cells, MatV, 1, 2 * Bound, RestV)
   refine Ends.callToThen (C.affine_meets (m := 1) (c := 2 * x.U) (dst := fr + 5 * (x.n * x.n))
-    hpre.segV.keep (by omega) fun w hw => hfit1 _ (Or.inr rfl) w (by simp [hw])) ?_
+    hpre.segV.keep tac_omega fun w hw => hfit1 _ (Or.inr rfl) w tac_simp [hw]) ?_
     (ha := by light_side [hpre.lenV]) (hT := by simp [hpre.lenX, hpre.lenV]; omega)
   rintro r₃ μ₃ ⟨s₃, o₃⟩
   have sZ : Seg μ₃ (fr + 3 * (x.n * x.n)) (Z x) := by
@@ -325,11 +324,11 @@ private theorem fill_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ f
       show fr + 4 * (x.n * x.n) + x.n * x.n = fr + 5 * (x.n * x.n) by omega]
     exact ⟨s₁.keep, s₂.keep, s₃⟩
   -- Res := pAff(Cells3, RestX, 0, 0, PreX)
-  refine Ends.callToThen (C.affine_meets (m := 0) (c := 0) (dst := fr) sZ (by omega)
+  refine Ends.callToThen (C.affine_meets (m := 0) (c := 0) (dst := fr) sZ tac_omega
     fun w _ => by simp; omega) ?_ (ha := by light_side) (hT := by simp; omega)
   rintro r₄ μ₄ ⟨s₄, o₄⟩
   -- Res := pAff(Cells, MatX, 0, 0, Out)
-  refine Ends.callTo (C.affine_meets (m := 0) (c := 0) (dst := x.out) hpre.segX.keep (by omega)
+  refine Ends.callTo (C.affine_meets (m := 0) (c := 0) (dst := x.out) hpre.segX.keep tac_omega
     fun w _ => by simp; omega) ?_ (ha := by light_side [hpre.lenX])
     (hT := by simp [hpre.lenX]; omega)
   rintro r₅ μ₅ ⟨s₅, o₅⟩
@@ -421,29 +420,29 @@ private theorem probe_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ 
   unfold paProbe
   -- Res := pAff(Cells, PreV, 0 - 1, e, Third)
   refine Ends.callToThen (C.affine_meets (m := -1) (c := e) (dst := fr + 6 * (x.n * x.n))
-    (seg_parts hpre hq).2.2 (by omega) fun w hw => ?_) ?_
+    (seg_parts hpre hq).2.2 tac_omega fun w hw => ?_) ?_
     (ha := by light_side [hlenV]) (hT := by simp [hlenV, probeTime]; omega)
   · have := hV3 w hw
     simp only [abs_le]
     omega
   rintro r₁ μ₁ ⟨hthird, h₁⟩
   rw [hlenV] at h₁
-  have hq₁ : Seg μ₁ fr ((Z x).map (prefQ ℓ)) := hq.keep (by light_keep)
+  have hq₁ := hq.keep (by light_keep)
   -- Res := pAE(Verts, Bound9, Third, PreY, PreX, Flg, SolverFree)
   refine Ends.callToThen (C.solver.meets R' (question x fr ℓ e) (fr + 8 * (x.n * x.n))
     (question_pre C he' hq₁ hthird)
     { word := by simp only [aeTask, question]; omega
       cells := by simp only [aeTask, question]; omega
       space := C.ok.space
-      depth := by simp only [aeTask, question]; omega }) ?_ (by simp [aeTask, question])
+      depth := by simp only [aeTask, question]; omega }) ?_ tac_simp [aeTask, question]
     (hT := by simp [aeTask, question, probeTime]; omega)
   rintro r₂ μ₂ ⟨hflg, h₂⟩
   simp only [question] at hflg h₂
   have hout₂ : Seg μ₂ x.out (orFlags (x.n * x.n) S (hit x)) :=
     hout.keep (by light_keep)
   -- Res := pOr(Cells, Flg, Out)
-  refine Ends.callTo (or_meets C.orp (len := x.n * x.n) hflg hout₂ (by simp) (by omega)
-    ⟨C.ok.space, by omega, by omega⟩ h01 (orFlags_mem _ _ _) (by omega)) ?_
+  refine Ends.callTo (or_meets C.orp (len := x.n * x.n) hflg hout₂ tac_simp tac_omega
+    ⟨C.ok.space, by omega, by omega⟩ h01 (orFlags_mem _ _ _) tac_omega) ?_
     (ha := by light_side) (hT := by simp [aeTask, question, probeTime]; omega)
   rintro r₃ μ₃ ⟨hout₃, h₃⟩
   have hor := orL_orFlags (S := S) (c := (ℓ, (e : ℤ))) (length_aeFlags x.n _ _ _)
@@ -490,13 +489,13 @@ private theorem round_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ 
   have hplaces := C.places
   have hZl : (Z x).length = 3 * (x.n * x.n) := length_pStart C.pre.lenX C.pre.lenV
   unfold paRound
-  refine Ends.next _ ((probe_spec C (by norm_num) hσ).mono le_rfl fun σ₂ hσ₂ => ?_)
+  refine Ends.next _ ((probe_spec C tac_norm_num hσ).mono le_rfl fun σ₂ hσ₂ => ?_)
     (by simp only [roundTime, probeTime]; omega)
-  refine Ends.next _ ((probe_spec C (by norm_num) hσ₂).mono le_rfl fun σ₃ hσ₃ => ?_)
+  refine Ends.next _ ((probe_spec C tac_norm_num hσ₂).mono le_rfl fun σ₃ hσ₃ => ?_)
     (by simp only [roundTime, probeTime]; omega)
   obtain ⟨res, μ₀, rfl, hq, hr, hout, hk⟩ := hσ₃
   -- Res := pDown(Cells3, PreX, RestX, Power)
-  refine Ends.callTo (prefDown_meets C.down (down_pre C hℓ hq hr)) ?_ (by simp [hZl])
+  refine Ends.callTo (prefDown_meets C.down (down_pre C hℓ hq hr)) ?_ tac_simp [hZl]
     (hT := by simp [roundTime, probeTime]; omega)
   rintro r₁ μ₁ ⟨hq', hr', hrest⟩
   rw [zipWith_shiftQ hℓ] at hq'
@@ -511,8 +510,8 @@ private theorem round_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ 
     rw [← this]
     refine hout.keep fun a ha => ?_
     rw [length_orFlags] at ha
-    exact hrest a (Or.inl (by omega)) (Or.inl (by omega))
-  · exact (hrest c (Or.inl (by omega)) (Or.inl (by omega))).trans (hk c hc)
+    exact hrest a (Or.inl tac_omega) (Or.inl tac_omega)
+  · exact (hrest c (Or.inl tac_omega) (Or.inl tac_omega)).trans (hk c hc)
 
 /-- **The b rounds**: from the level b to the level 0. -/
 private theorem rounds_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr) {res : ℤ}
@@ -525,7 +524,7 @@ private theorem rounds_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ
   have hL : aeLevels x.U ≤ 6 * x.U :=
     (Nat.lt_two_pow_self (n := aeLevels x.U)).le.trans (two_pow_aeLevels_le C.pre.U_pos)
   refine Ends.for (fun t σ => St x μ fr t (aeLevels x.U - t) (Above (aeLevels x.U - t)
-    (aeLevels x.U)) σ) (aeLevels x.U) (roundTime T x) ?start ?round ?done ?bound (by omega)
+    (aeLevels x.U)) σ) (aeLevels x.U) (roundTime T x) ?start ?round ?done ?bound tac_omega
     (by simp; ring_nf; omega)
   case start =>
     refine ⟨res, μ', ?_, ?_⟩
@@ -544,7 +543,7 @@ private theorem rounds_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ
     obtain ⟨ℓ, hℓ⟩ : ∃ ℓ, aeLevels x.U - t = ℓ + 1 := ⟨aeLevels x.U - t - 1, by omega⟩
     rw [show aeLevels x.U - (t + 1) = ℓ by omega]
     rw [hℓ] at hσ
-    refine (round_spec C (by omega) hσ).mono le_rfl fun σ' hσ' => ?_
+    refine (round_spec C tac_omega hσ).mono le_rfl fun σ' hσ' => ?_
     obtain ⟨res', μ'', rfl, hm'⟩ := hσ'
     exact ⟨rfl, res', μ'', by rw [update_frame_setLocal]; rfl, hm'⟩
   case done =>
@@ -583,11 +582,11 @@ theorem pairsAE_spec (C : Ctx P₀ R' p pAff pTr pOr pDown T r lim d x μ fr) :
   refine Ends.next _ ((rounds_spec C hm).mono le_rfl ?_) (by simp [paInit]; omega)
   intro σ₂ hσ₂
   -- the three questions at the level 0
-  refine Ends.next _ ((probe_spec C (by norm_num) hσ₂).mono le_rfl fun σ₃ hσ₃ => ?_)
+  refine Ends.next _ ((probe_spec C tac_norm_num hσ₂).mono le_rfl fun σ₃ hσ₃ => ?_)
     (by simp [paInit]; omega)
-  refine Ends.next _ ((probe_spec C (by norm_num) hσ₃).mono le_rfl fun σ₄ hσ₄ => ?_)
+  refine Ends.next _ ((probe_spec C tac_norm_num hσ₃).mono le_rfl fun σ₄ hσ₄ => ?_)
     (by simp [paInit]; omega)
-  refine Ends.next _ ((probe_spec C (by norm_num) hσ₄).mono le_rfl fun σ₅ hσ₅ => ?_)
+  refine Ends.next _ ((probe_spec C tac_norm_num hσ₄).mono le_rfl fun σ₅ hσ₅ => ?_)
     (by simp [paInit]; omega)
   obtain ⟨res', μ₅, rfl, -, -, hout, hk⟩ := hσ₅
   refine Ends.setTo 0 ⟨?_, hk⟩ (hT := by simp [paInit]; omega)

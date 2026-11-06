@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Sec4.Boxes
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Lemma 29: the number of boxes, and their values (Section 4.3)
@@ -62,7 +63,7 @@ theorem Lemma29.card_filter (L m t f : ℕ) (hmL : m ≤ L) (hf : f ≤ m - t) :
   -- The pairs of a leaf with `f` symbols `P₀` and a number `e ≤ f`.
   have hpairs : ((univ.filter fun τ : Leaf L => (P0Levels τ).card = f) ×ˢ range (f + 1)).card
       = (f + 1) * beta L m (m - f) := by
-    rw [card_product, card_leaves_P0 hmL (by omega), card_range, mul_comm]
+    rw [card_product, card_leaves_P0 hmL tac_omega, card_range, mul_comm]
   have hpair : ∀ p ∈ (univ.filter fun τ : Leaf L => (P0Levels τ).card = f) ×ˢ range (f + 1),
       (P0Levels p.1).card = f ∧ p.2 < f + 1 := fun p hp =>
     ⟨(mem_filter.1 (mem_product.1 hp).1).2, mem_range.1 (mem_product.1 hp).2⟩
@@ -80,13 +81,13 @@ theorem Lemma29.card_filter (L m t f : ℕ) (hmL : m ≤ L) (hf : f ≤ m - t) :
   · -- the cube of such a pair is such a box: its leaf is the leaf of the pair
     obtain ⟨hτ, -⟩ := hpair p hp
     rw [mem_filter, mem_boxes, ← card_P0Levels_starsToP0, starsToP0_starLowest]
-    exact ⟨isBox_starLowest m t p.2 p.1 (by omega), hτ⟩
+    exact ⟨isBox_starLowest m t p.2 p.1 tac_omega, hτ⟩
   · -- from a box to its pair and back
     exact (eq_starLowest_starsToP0 π (mem_boxes.1 (mem_filter.1 hπ).1).2).symm
   · -- from a pair `(τ, e)` to its cube and back: the cube has `min e f = e` stars
     obtain ⟨hτ, he⟩ := hpair p hp
     rw [starsToP0_starLowest, starLevels_starLowest, card_lowest, hτ,
-      min_eq_left (by omega)]
+      min_eq_left tac_omega]
 
 /-- **Lemma 29**, first sentence.  "There are at most (m+1) ∑_{d=t}^{m} β_d boxes." -/
 theorem lemma_29_count (L m t : ℕ) (hL : 10 * m ≤ L) (ht : t ≤ m) :
@@ -101,7 +102,7 @@ theorem lemma_29_count (L m t : ℕ) (hL : 10 * m ≤ L) (ht : t ≤ m) :
     omega
   -- The order `d = m - f` runs from `t` to `m`.
   have hreflect : ∑ f ∈ range (m - t + 1), beta L m (m - f) = ∑ d ∈ Finset.Icc t m, beta L m d := by
-    rw [range_eq_Ico, sum_Ico_reflect _ _ (by omega)]
+    rw [range_eq_Ico, sum_Ico_reflect _ _ tac_omega]
     congr 1
     ext d
     simp only [mem_Ico, mem_Icc]
@@ -109,9 +110,9 @@ theorem lemma_29_count (L m t : ℕ) (hL : 10 * m ≤ L) (ht : t ≤ m) :
   -- "summing over f ≤ m - t gives the upper bound on the number of boxes", since `f + 1 ≤ m + 1`
   rw [hsort, ← hreflect, mul_sum]
   refine sum_le_sum fun f hf => ?_
-  have hfm : f < m - t + 1 := mem_range.1 hf
-  rw [Lemma29.card_filter L m t f (by omega) (by omega)]
-  exact Nat.mul_le_mul_right _ (by omega)
+  have hfm := mem_range.1 hf
+  rw [Lemma29.card_filter L m t f tac_omega tac_omega]
+  exact Nat.mul_le_mul_right _ tac_omega
 
 /-! ### The values -/
 

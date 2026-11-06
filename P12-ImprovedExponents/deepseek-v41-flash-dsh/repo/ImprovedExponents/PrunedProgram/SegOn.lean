@@ -1,6 +1,7 @@
 module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -58,7 +59,7 @@ theorem P0Levels_subset_innerSetO {η : OutStr L} {τ : Leaf L} (h : τ.Contribu
   · exact hin
   · rw [hℓ.2] at hpriv
     cases hz : η ℓ with
-    | z i j => rw [hz] at hpriv; exact absurd hpriv (by simp [OutVar.privateTerm])
+    | z i j => rw [hz] at hpriv; exact absurd hpriv tac_simp [OutVar.privateTerm]
     | z0 => trivial
 
 /-- A leaf that contributes to an output string with `m` inner levels has at most `m` symbols

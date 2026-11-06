@@ -133,19 +133,19 @@ They hold L, m, L - m, K₀, nB, 10^L, the addresses of the tables MASK, BAND, B
 encodings ENCA, ENCB, the end of the shared block (which is the address of WD), and t. All but the
 last are written by the shared stage. -/
 abbrev levels : ℕ := 0
-@[inherit_doc levels] abbrev inner : ℕ := 1
-@[inherit_doc levels] abbrev outer : ℕ := 4
-@[inherit_doc levels] abbrev blocks : ℕ := 7
-@[inherit_doc levels] abbrev bands : ℕ := 9
-@[inherit_doc levels] abbrev leaves : ℕ := 10
-@[inherit_doc levels] abbrev mask : ℕ := 21
-@[inherit_doc levels] abbrev band : ℕ := 22
-@[inherit_doc levels] abbrev block : ℕ := 23
-@[inherit_doc levels] abbrev digits : ℕ := 24
-@[inherit_doc levels] abbrev encA : ℕ := 26
-@[inherit_doc levels] abbrev encB : ℕ := 27
-@[inherit_doc levels] abbrev sharedEnd : ℕ := 30
-@[inherit_doc levels] abbrev switch : ℕ := 31
+ abbrev inner : ℕ := 1
+ abbrev outer : ℕ := 4
+ abbrev blocks : ℕ := 7
+ abbrev bands : ℕ := 9
+ abbrev leaves : ℕ := 10
+ abbrev mask : ℕ := 21
+ abbrev band : ℕ := 22
+ abbrev block : ℕ := 23
+ abbrev digits : ℕ := 24
+ abbrev encA : ℕ := 26
+ abbrev encB : ℕ := 27
+ abbrev sharedEnd : ℕ := 30
+ abbrev switch : ℕ := 31
 
 end Dir
 
@@ -166,16 +166,6 @@ def dsTries (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (X : Matrix (Fin p.N) (
     (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) :
     TrieStore :=
   allTries p.L p.m t (tileList p.nB (encRow p hmL X) (encCol p hmL Y))
-
-/-- **The block from b0 on holds the data structure for X and Y.** The preprocessing establishes
-this, and every query needs it and keeps it. -/
-structure DSReady (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (aX aY b0 : ℕ)
-    (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ)
-    (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) (μ : ℕ → ℤ) : Prop where
-  shared : Sec2.SharedReady p hmL aX aY b0 X Y μ
-  cellT : μ (b0 + 31) = t
-  roots : SegN μ (aROOTS p b0) (dsTries p t hmL X Y).roots
-  trie : Seg μ (aTR p b0) (dsTries p t hmL X Y).cells
 
 section
 
@@ -199,7 +189,7 @@ structure Lim30 (lim : Limits) (p : Sec2.Par) (t b0 : ℕ) (U : ℤ) : Prop wher
 
 /-- The numbers of the two routines. -/
 abbrev Proc.preCore : ℕ := 54
-@[inherit_doc Proc.preCore] abbrev Proc.queryAt : ℕ := 55
+ abbrev Proc.queryAt : ℕ := 55
 
 /-- The time of `queryAt`. -/
 def tQueryAt (L m t : ℕ) : ℕ := tOutDigits L + tQueryCore L m t + 400

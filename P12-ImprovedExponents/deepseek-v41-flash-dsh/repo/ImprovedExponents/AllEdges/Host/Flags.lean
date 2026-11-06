@@ -2,6 +2,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.InstanceFacts
 public import ImprovedExponents.AllEdges.Task
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -26,7 +27,7 @@ the flags of the task (`flagsAt_m`), and at most `Σ fails + n²` scans are made
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-! ## The flags through the query pairs of one instance -/
 
@@ -203,7 +204,7 @@ theorem aeExecs_add_ones_le (F : List ℤ) {w : ℕ} (hidx : ∀ i < w, idx i < 
   | succ w ih =>
     have := aeExec_add_ones_le (acc := acc) (hit := hit) F (hidx w (Nat.lt_succ_self w))
     rw [aeExecs_succ, failsUpto_succ]
-    have ih := ih fun i hi => hidx i (by omega)
+    have ih := ih fun i hi => hidx i tac_omega
     omega
 
 /-- The flags depend only on the first `w` query pairs. -/
@@ -214,7 +215,7 @@ theorem aeStep_congr {acc' hit' : ℕ → Bool} {idx' : ℕ → ℕ} (F : List �
   | zero => rfl
   | succ w ih =>
     obtain ⟨ha, hh, hi⟩ := h w (Nat.lt_succ_self w)
-    rw [aeStep_succ, aeStep_succ, ih fun i hi => h i (by omega), aePair, aePair, ha, hh, hi]
+    rw [aeStep_succ, aeStep_succ, ih fun i hi => h i tac_omega, aePair, aePair, ha, hh, hi]
 
 /-- The number of scans depends only on the first `w` query pairs. -/
 theorem aeExecs_congr {acc' hit' : ℕ → Bool} {idx' : ℕ → ℕ} (F : List ℤ) {w : ℕ}
@@ -224,8 +225,8 @@ theorem aeExecs_congr {acc' hit' : ℕ → Bool} {idx' : ℕ → ℕ} (F : List 
   | zero => rfl
   | succ w ih =>
     obtain ⟨ha, hh, hi⟩ := h w (Nat.lt_succ_self w)
-    rw [aeExecs_succ, aeExecs_succ, ih fun i hi => h i (by omega), aeExec, aeExec, ha, hi,
-      aeStep_congr F fun i hi => h i (by omega)]
+    rw [aeExecs_succ, aeExecs_succ, ih fun i hi => h i tac_omega, aeExec, aeExec, ha, hi,
+      aeStep_congr F fun i hi => h i tac_omega]
 
 end Generic
 
@@ -312,13 +313,13 @@ triangle is accepted and hit in the instance of the piece of its `c`, and every 
 triangle. -/
 theorem flagsAt_m (hv : X.Valid) :
     X.flagsAt X.m = ImprovedExponents.AllEdges.aeFlags X.n X.AB X.BC X.AC := by
-  apply List.ext_getElem (by simp)
+  apply List.ext_getElem tac_simp
   intro q hq _
   rw [← List.getD_eq_getElem _ 0 hq, ← List.getD_eq_getElem _ 0 (by simpa using hq)]
   rw [length_flagsAt] at hq
-  have ha : q / X.n < X.n := Nat.div_lt_of_lt_mul' hq
-  have hb : q % X.n < X.n := Nat.mod_lt_of_lt_mul hq
-  have hdivmod : q / X.n * X.n + q % X.n = q := Nat.div_add_mod' q X.n
+  have ha := Nat.div_lt_of_lt_mul' hq
+  have hb := Nat.mod_lt_of_lt_mul hq
+  have hdivmod := Nat.div_add_mod' q X.n
   rw [X.flagsAt_getD hq, ← hdivmod,
     ImprovedExponents.AllEdges.aeFlags_getD_eq_bit_scanHit _ _ _ ha hb, hdivmod]
   congr 1
@@ -362,9 +363,8 @@ theorem sum_execsAE_le (hv : X.Valid) :
       have hstep : X.execsAE T + ones (X.flagsAt T) ≤ X.fails T + ones (X.flagsAt (T + 1)) :=
         aeExecs_add_ones_le (X.flagsAt T) fun i hi => by
           rw [length_flagsAt]
-          exact hv.pairIdx_lt (by omega) hi
+          exact hv.pairIdx_lt tac_omega hi
       rw [Finset.sum_range_succ, Finset.sum_range_succ]
-      have := ih (by omega)
       omega
   have hle := ones_le_length (X.flagsAt X.m)
   rw [length_flagsAt] at hle

@@ -21,7 +21,7 @@ result: the host solves Exact Triangle (`et17_solves`).
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 /-- The numbers of the procedures of Strassen's algorithm, if the list of the procedures of the host
 starts at the number `o`. -/

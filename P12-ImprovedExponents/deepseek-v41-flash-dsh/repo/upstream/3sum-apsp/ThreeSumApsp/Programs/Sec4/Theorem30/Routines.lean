@@ -19,6 +19,7 @@ public import ThreeSumApsp.Programs.Sec4.Theorem30.Scatter
 public import ThreeSumApsp.Programs.Sec4.Theorem30.StarFirst
 public import ThreeSumApsp.Programs.Sec4.Theorem30.SumTen
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Tile
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The routines of Section 4, assembled
@@ -65,22 +66,22 @@ structure Specs40 (lim : Limits) (P : Program) : Prop where
 /-- **Every program that holds the routines of Section 4 at their numbers meets all their
 specifications.** -/
 theorem specs40 {lim : Limits} {P : Program} (h : Has40 P) (hs : Std lim) : Specs40 lim P := by
-  have nineFirst : NineFirstSpec lim P := nineFirst_spec (h 0 (by omega)) hs
-  have nineNext : NineNextSpec lim P := nineNext_spec (h 1 (by omega)) hs
-  have scatter : ScatterSpec lim P := scatter_spec (h 2 (by omega)) hs
-  have starFirst : StarFirstSpec lim P := starFirst_spec (h 3 (by omega)) hs
-  have horner : HornerSpec lim P := horner_spec (h 4 (by omega)) hs
-  have lookup : LookupSpec lim P := lookup_spec (h 5 (by omega)) hs
-  have insert : InsertSpec lim P := insert_spec (h 6 (by omega)) hs
-  have newRoot : NewRootSpec lim P := newRoot_spec (h 7 (by omega)) hs
-  have sumTen : SumTenSpec lim P := sumTen_spec (h 8 (by omega)) lookup hs
-  have fillList : FillListSpec lim P := fillList_spec
-    (h 9 (by omega)) nineFirst nineNext starFirst horner insert sumTen
-  have tile : TileSpec lim P := tile_spec (h 10 (by omega)) newRoot fillList
-  have allTiles : AllTilesSpec lim P := allTiles_spec (h 11 (by omega)) tile
-  have outDigits : OutDigitsSpec lim P := outDigits_spec (h 12 (by omega))
+  have nineFirst := nineFirst_spec (h 0 tac_omega) hs
+  have nineNext := nineNext_spec (h 1 tac_omega) hs
+  have scatter := scatter_spec (h 2 tac_omega) hs
+  have starFirst := starFirst_spec (h 3 tac_omega) hs
+  have horner := horner_spec (h 4 tac_omega) hs
+  have lookup := lookup_spec (h 5 tac_omega) hs
+  have insert := insert_spec (h 6 tac_omega) hs
+  have newRoot := newRoot_spec (h 7 tac_omega) hs
+  have sumTen := sumTen_spec (h 8 tac_omega) lookup hs
+  have fillList := fillList_spec
+    (h 9 tac_omega) nineFirst nineNext starFirst horner insert sumTen
+  have tile := tile_spec (h 10 tac_omega) newRoot fillList
+  have allTiles := allTiles_spec (h 11 tac_omega) tile
+  have outDigits : OutDigitsSpec lim P := outDigits_spec (h 12 tac_omega)
   have queryCore : QueryCoreSpec lim P :=
-    queryCore_spec (h 13 (by omega)) ⟨nineFirst, nineNext, scatter, horner, lookup⟩
+    queryCore_spec (h 13 tac_omega) ⟨nineFirst, nineNext, scatter, horner, lookup⟩
   exact ⟨nineFirst, nineNext, scatter, starFirst, horner, lookup, insert, newRoot, sumTen,
     fillList, tile, allTiles,
     outDigits, queryCore⟩
@@ -90,7 +91,7 @@ their numbers. -/
 theorem has40_of_append {A B : List Stmt} (hA : A.length = 40) : Has40 (A ++ procs40 ++ B) := by
   intro i hi
   have hlen : procs40.length = 14 := rfl
-  rw [List.append_assoc, List.getElem?_append_right (by omega), hA, Nat.add_sub_cancel_left,
-    List.getElem?_append_left (by omega)]
+  rw [List.append_assoc, List.getElem?_append_right tac_omega, hA, Nat.add_sub_cancel_left,
+    List.getElem?_append_left tac_omega]
 
 end Light.Sec4

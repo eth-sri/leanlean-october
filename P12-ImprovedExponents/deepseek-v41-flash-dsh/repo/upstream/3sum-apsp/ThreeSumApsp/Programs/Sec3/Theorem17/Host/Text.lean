@@ -103,43 +103,43 @@ of chunks, `X`, `Y`, the answers, and the solver's free pointer.  Then `n² + p`
 chunks, the number of instances, a flag (also the place for results that are not used), and `n D`.
 -/
 abbrev Size : ℕ := 0
-@[inherit_doc Size] abbrev Bound : ℕ := 1
-@[inherit_doc Size] abbrev AdrAB : ℕ := 2
-@[inherit_doc Size] abbrev AdrBC : ℕ := 3
-@[inherit_doc Size] abbrev AdrAC : ℕ := 4
-@[inherit_doc Size] abbrev Free : ℕ := 5
-@[inherit_doc Size] abbrev ParD : ℕ := 6
-@[inherit_doc Size] abbrev ParG : ℕ := 7
-@[inherit_doc Size] abbrev RootD : ℕ := 8
-@[inherit_doc Size] abbrev ThePrime : ℕ := 9
-@[inherit_doc Size] abbrev Cap : ℕ := 10
-@[inherit_doc Size] abbrev PieceLen : ℕ := 11
-@[inherit_doc Size] abbrev NumPieces : ℕ := 12
-@[inherit_doc Size] abbrev Bits : ℕ := 13
-@[inherit_doc Size] abbrev SizeSq : ℕ := 14
-@[inherit_doc Size] abbrev ResAB : ℕ := 16
-@[inherit_doc Size] abbrev ResBC : ℕ := 17
-@[inherit_doc Size] abbrev ResAC : ℕ := 18
-@[inherit_doc Size] abbrev Cls : ℕ := 19
-@[inherit_doc Size] abbrev Cur : ℕ := 20
-@[inherit_doc Size] abbrev Rows : ℕ := 21
-@[inherit_doc Size] abbrev Cols : ℕ := 22
-@[inherit_doc Size] abbrev TabR : ℕ := 23
-@[inherit_doc Size] abbrev TabL : ℕ := 24
-@[inherit_doc Size] abbrev TabW : ℕ := 25
-@[inherit_doc Size] abbrev MatX : ℕ := 26
-@[inherit_doc Size] abbrev MatY : ℕ := 27
-@[inherit_doc Size] abbrev AdrOut : ℕ := 28
-@[inherit_doc Size] abbrev SolverFree : ℕ := 29
-@[inherit_doc Size] abbrev Room : ℕ := 30
-@[inherit_doc Size] abbrev NumChunks : ℕ := 31
-@[inherit_doc Size] abbrev NumInst : ℕ := 32
-@[inherit_doc Size] abbrev Small : ℕ := 33
-@[inherit_doc Size] abbrev Area : ℕ := 34
+ abbrev Bound : ℕ := 1
+ abbrev AdrAB : ℕ := 2
+ abbrev AdrBC : ℕ := 3
+ abbrev AdrAC : ℕ := 4
+ abbrev Free : ℕ := 5
+ abbrev ParD : ℕ := 6
+ abbrev ParG : ℕ := 7
+ abbrev RootD : ℕ := 8
+ abbrev ThePrime : ℕ := 9
+ abbrev Cap : ℕ := 10
+ abbrev PieceLen : ℕ := 11
+ abbrev NumPieces : ℕ := 12
+ abbrev Bits : ℕ := 13
+ abbrev SizeSq : ℕ := 14
+ abbrev ResAB : ℕ := 16
+ abbrev ResBC : ℕ := 17
+ abbrev ResAC : ℕ := 18
+ abbrev Cls : ℕ := 19
+ abbrev Cur : ℕ := 20
+ abbrev Rows : ℕ := 21
+ abbrev Cols : ℕ := 22
+ abbrev TabR : ℕ := 23
+ abbrev TabL : ℕ := 24
+ abbrev TabW : ℕ := 25
+ abbrev MatX : ℕ := 26
+ abbrev MatY : ℕ := 27
+ abbrev AdrOut : ℕ := 28
+ abbrev SolverFree : ℕ := 29
+ abbrev Room : ℕ := 30
+ abbrev NumChunks : ℕ := 31
+ abbrev NumInst : ℕ := 32
+ abbrev Small : ℕ := 33
+ abbrev Area : ℕ := 34
 
 end Et17
 
-open Et17 in
+open Et17
 /-- The first part of et17: `D`, `g`, `s`, and the flag that says whether `n` is small. -/
 def et17Params (ν : Et17Nums) : Stmt :=
   .call ν.pD [v Size] ParD ;;
@@ -151,7 +151,7 @@ def et17Params (ν : Et17Nums) : Stmt :=
   .ite (v RootD <' v ParG) (.set Small (k 1)) (.set Small (v Small)) ;;
   .skip
 
-open Et17 in
+open Et17
 /-- The end of the second part: the sizes n², nD, n² + p, and the addresses of the arrays. -/
 def et17Addr : Stmt :=
   .set SizeSq (v Size *' v Size) ;;
@@ -173,17 +173,8 @@ def et17Addr : Stmt :=
   .set SolverFree (v AdrOut +' v Cap) ;;
   .skip
 
-open Et17 in
-/-- The second part: the prime, the sizes, and the addresses of the arrays. -/
-def et17Sizes (ν : Et17Nums) : Stmt :=
-  .call ν.pChoose [v Size, v Bound, v AdrAB, v AdrBC, v AdrAC, v ParD, v Free] ThePrime ;;
-  .call ν.pCap [v Size, v ParD] Cap ;;
-  .call ν.pCeil [v RootD, v ParG] PieceLen ;;
-  .call ν.pCeil [v Size, v PieceLen] NumPieces ;;
-  .call ν.pBitLen [v Bound] Bits ;;
-  et17Addr
-
-open Et17 in
+open Et17
+open Et17
 /-- The third part: the residues, the classes, the chunks, and the loop over the instances. -/
 def et17Tables (ν : Et17Nums) : Stmt :=
   .call ν.pDbl [v Free, v ThePrime, v Bits] Small ;;
@@ -197,14 +188,7 @@ def et17Tables (ν : Et17Nums) : Stmt :=
     v AdrAC, v ResAC, v ResBC, v Rows, v Cols, v TabR, v TabL, v TabW, v MatX, v MatY, v AdrOut,
     v SolverFree] 0
 
-open Et17 in
-/-- et17(n, U, ab, bc, ac, fr). -/
-def et17Body (ν : Et17Nums) : Stmt :=
-  et17Params ν ;;
-  .ite (v Small =' k 1)
-    (.call ν.pBrute [v Size, v Bound, v AdrAB, v AdrBC, v AdrAC, v Free] 0)
-    (et17Sizes ν ;; et17Tables ν)
-
+open Et17
 /-! ## Time and need
 
 The additive constants in the time functions are upper bounds for the cost of evaluating arguments,
@@ -394,11 +378,6 @@ abbrev Et17.locals (x : TriInst) (X : HostData) (fr : ℕ) (g s nch res : ℤ) :
     ((aOut X x.U fr : ℕ) : ℤ), ((aFr X x.U fr : ℕ) : ℤ), ((X.n * X.n + X.p : ℕ) : ℤ), nch, 0, res,
     ((X.n * X.D : ℕ) : ℤ)]
 
-/-- The locals after the second part (n is not small, so the flag is 0). -/
-def et17LocB (x : TriInst) (fr D g : ℕ) : List ℤ :=
-  Et17.locals x (hostData x D g) fr g (Nat.sqrt D : ℕ) 0 0
-
-/-- The time of the third part in a run: it depends on the data. -/
 def hostRunTime (Tn : List ℕ → ℕ) (X : HostData) (U : ℕ) : ℕ :=
   tDblTable (bitLen U) + 3 * tResidues (X.n * X.n) (bitLen U) + tClasses X.n X.p
     + tChunks X.p X.chunkCount + tHostLoop Tn X + 80

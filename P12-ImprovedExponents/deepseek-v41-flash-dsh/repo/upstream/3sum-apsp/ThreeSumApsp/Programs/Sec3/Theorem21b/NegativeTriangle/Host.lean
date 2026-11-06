@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.PolyBounded
 public import ThreeSumApsp.Programs.Sec3.Theorem21b.NegativeTriangle.Passes
 public import ThreeSumApsp.Programs.Tasks
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Negative Triangle from Exact Triangle, as a host
@@ -151,7 +152,7 @@ def ntNeed (r : ℕ → ℕ → Need) (n U : ℕ) : Need where
   depth := (r n (6 * U)).depth + 1
 
 private theorem lt_two_pow_ntLevels (U : ℕ) : 6 * U < 2 ^ ntLevels U :=
-  Nat.lt_pow_succ_log_self (by norm_num) _
+  Nat.lt_pow_succ_log_self tac_norm_num _
 
 private theorem two_pow_ntLevels_le {U : ℕ} (hU : 1 ≤ U) : 2 ^ ntLevels U ≤ 12 * U := by
   have := Nat.pow_log_le_self 2 (show 6 * U ≠ 0 by omega)
@@ -206,7 +207,7 @@ private theorem Ctx.affine_meets (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr
     Meets lim (P₀ ++ R') pAff (d + 1) [l.length, src, m, c, dst] μ' (20 * l.length + 6)
       fun _ μ'' => Seg μ'' dst (affL m c l) ∧ SameOutside μ' μ'' dst l.length := by
   have hplaces := C.places
-  exact Sec3.affine_meets C.aff hl C.ok.space (by omega) (by omega) hplace.2.2 hfits
+  exact Sec3.affine_meets C.aff hl C.ok.space tac_omega tac_omega hplace.2.2 hfits
 
 /-! ## The beginning -/
 
@@ -215,7 +216,6 @@ private theorem init_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) :
     Ends lim (P₀ ++ R') d ntInit ⟨frame [x.n, x.U, x.ab, x.bc, x.ac, fr], μ⟩ ntInit.blockCost
       fun σ' => σ' = ⟨frame (locals x fr 1 0 0 0 0), μ⟩ := by
   have hplaces := C.places
-  have hsquare : (0 : ℤ) ≤ (x.n : ℤ) * x.n := by positivity
   unfold ntInit
   -- Cells := Verts * Verts ; Bound6 := 6 * Bound
   light_set (x.n * x.n : ℕ)
@@ -247,11 +247,11 @@ private theorem pow_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) :
   have hplaces := C.places
   have hL := two_pow_ntLevels_le C.pre.U_pos
   -- while Power ≤ Bound6: Power := 2 * Power ; Levels := Levels + 1
-  refine Ends.whileBlock (PowInv x μ fr) (ntLevels x.U) (by simp [PowInv]) ?round ?done
+  refine Ends.whileBlock (PowInv x μ fr) (ntLevels x.U) tac_simp [PowInv] ?round ?done
     (by simp; omega)
   case round =>
     rintro i _ hi rfl
-    have hpow : 2 ^ (i + 1) ≤ 2 ^ ntLevels x.U := Nat.pow_le_pow_right (by norm_num) hi
+    have hpow : 2 ^ (i + 1) ≤ 2 ^ ntLevels x.U := Nat.pow_le_pow_right tac_norm_num hi
     have hlt : i + 1 < 2 ^ (i + 1) := Nat.lt_two_pow_self
     rw [pow_succ'] at hpow hlt
     generalize hpw : 2 ^ i = pw at hpow hlt ⊢
@@ -319,23 +319,23 @@ private theorem fill_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) (pw l
   unfold ntFill
   -- Res := pAff(Cells, MatAB, 2, 2 * Bound, RestAB)
   refine Ends.callToThen (C.affine_meets (m := 2) (c := 2 * x.U) (dst := fr + 3 * (x.n * x.n))
-    hpre.segAB (by omega) (fits_of_absLe hpre.leAB hW).1) ?_
+    hpre.segAB tac_omega (fits_of_absLe hpre.leAB hW).1) ?_
     (ha := by light_side [hpre.lenAB]) (hT := by simp [hpre.lenAB]; omega)
   rintro r₁ μ₁ ⟨s₁, o₁⟩
   -- Res := pAff(Cells, MatBC, 2, 2 * Bound, RestBC)
   refine Ends.callToThen (C.affine_meets (m := 2) (c := 2 * x.U) (dst := fr + 4 * (x.n * x.n))
-    hpre.segBC.keep (by omega) (fits_of_absLe hpre.leBC hW).1) ?_
+    hpre.segBC.keep tac_omega (fits_of_absLe hpre.leBC hW).1) ?_
     (ha := by light_side [hpre.lenBC]) (hT := by simp [hpre.lenAB, hpre.lenBC]; omega)
   rintro r₂ μ₂ ⟨s₂, o₂⟩
   -- Res := pAff(Cells, MatAC, 0 - 2, 4 * Bound, RestAC)
   refine Ends.callToThen (C.affine_meets (m := -2) (c := 4 * x.U) (dst := fr + 5 * (x.n * x.n))
-    hpre.segAC.keep (by omega) (fits_of_absLe hpre.leAC hW).2) ?_ (ha := by light_side [hpre.lenAC])
+    hpre.segAC.keep tac_omega (fits_of_absLe hpre.leAC hW).2) ?_ (ha := by light_side [hpre.lenAC])
     (hT := by simp [hpre.lenAB, hpre.lenBC, hpre.lenAC]; omega)
   rintro r₃ μ₃ ⟨s₃, o₃⟩
   have sZ : Seg μ₃ (fr + 3 * (x.n * x.n)) (negStart x.U x.AB x.BC x.AC) :=
     seg_negStart hpre s₁.keep s₂.keep s₃
   -- Res := pAff(Cells3, RestAB, 0, 0, PreAB)
-  refine Ends.callTo (C.affine_meets (m := 0) (c := 0) (dst := fr) sZ (by omega)
+  refine Ends.callTo (C.affine_meets (m := 0) (c := 0) (dst := fr) sZ tac_omega
     fun w _ => by simp; omega) ?_ (ha := by light_side [hlenZ])
     (hT := by simp [hpre.lenAB, hpre.lenBC, hpre.lenAC, hlenZ]; omega)
   rintro r₄ μ₄ ⟨s₄, o₄⟩
@@ -441,10 +441,10 @@ private theorem probe_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) {ℓ
   unfold ntProbe
   -- Res := pAff(Cells, PreAC, 0 - 1, e, Third)
   refine Ends.callToThen (C.affine_meets (m := -1) (c := e) (dst := fr + 6 * (x.n * x.n))
-    (seg_parts hpre hm.1).2.2 (by omega) fun w hx => ?_) ?_
+    (seg_parts hpre hm.1).2.2 tac_omega fun w hx => ?_) ?_
     (ha := by light_side [hlenV]) (hT := by simp [hlenV]; omega)
   · obtain ⟨z, hz, rfl⟩ := List.mem_map.1 hx
-    have := prefQ_range hpre ℓ (z := z) (by simp [negStart, hz])
+    have := prefQ_range hpre ℓ (z := z) tac_simp [negStart, hz]
     simp only [abs_le]
     omega
   rintro r₁ μ₁ ⟨hthird, h₁⟩
@@ -455,7 +455,7 @@ private theorem probe_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) {ℓ
     { word := by simp only [etTask, question]; omega
       cells := by simp only [etTask, question]; omega
       space := C.ok.space
-      depth := by simp only [etTask, question]; omega }) ?_ (by simp [etTask, question])
+      depth := by simp only [etTask, question]; omega }) ?_ tac_simp [etTask, question]
     (hT := by simp [etTask, question, hlenV]; omega)
   rintro r₂ μ₂ ⟨hres, h₂⟩
   replace hres : r₂ = flag (NtYes x ℓ e) := hres
@@ -535,7 +535,7 @@ private theorem round_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) {ℓ
   have hlenZ := length_negStart C.pre
   unfold ntRound
   -- Res := pDown(Cells3, PreAB, RestAB, Power)
-  refine Ends.callToThen (prefDown_meets C.down (down_pre C hℓ hm)) ?_ (by simp [hlenZ])
+  refine Ends.callToThen (prefDown_meets C.down (down_pre C hℓ hm)) ?_ tac_simp [hlenZ]
     (hT := by simp [hlenZ]; omega)
   rintro r₁ μ₁ ⟨hq, hr, hrest⟩
   rw [zipWith_shiftQ hℓ] at hq
@@ -544,7 +544,7 @@ private theorem round_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) {ℓ
       ⟨frame (locals x fr (2 ^ ntLevels x.U : ℕ) (ntLevels x.U) rd
         (flag (NtFound x (ntLevels x.U) (ℓ + 1))) r₁), μ₁⟩ :=
     ⟨r₁, μ₁, rfl, hq, hr,
-      fun c hc => (hrest c (Or.inl hc) (Or.inl (by omega))).trans (hm.2.2 c hc)⟩
+      fun c hc => (hrest c (Or.inl hc) (Or.inl tac_omega)).trans (hm.2.2 c hc)⟩
   -- the question for e = 2, then the question for e = 3
   refine Ends.next _ ((probe_spec C (Or.inl rfl) hσ₁).mono le_rfl fun σ₂ hσ₂ => ?_)
     (by simp [hlenZ]; omega)
@@ -570,7 +570,7 @@ private theorem rounds_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) {re
   -- for Round < Levels: the rounds
   refine Ends.for (fun t σ => St x μ fr t (flag (NtFound x (ntLevels x.U) (ntLevels x.U - t)))
     (ntLevels x.U - t) σ) (ntLevels x.U) (154 * (x.n * x.n) + 70 + 2 * T x.n (6 * x.U))
-    ?start ?round ?done ?bound (by omega) ?time
+    ?start ?round ?done ?bound tac_omega ?time
   case start =>
     refine ⟨res, μ', ?_, hm⟩
     rw [flag_of_not (by rintro ⟨ℓ, h1, h2, -⟩; omega), update_frame_setLocal]
@@ -580,7 +580,7 @@ private theorem rounds_spec (C : Ctx P₀ R' p pAff pDown T r lim d x μ fr) {re
     obtain ⟨ℓ, hℓ⟩ : ∃ ℓ, ntLevels x.U - t = ℓ + 1 := ⟨ntLevels x.U - t - 1, by omega⟩
     rw [show ntLevels x.U - (t + 1) = ℓ by omega]
     rw [hℓ] at hσ
-    refine (round_spec C (by omega) hσ).mono le_rfl fun σ' hσ' => ?_
+    refine (round_spec C tac_omega hσ).mono le_rfl fun σ' hσ' => ?_
     exact_mod_cast hσ'.round ((t : ℤ) + 1)
   case done =>
     intro σ _ hσ

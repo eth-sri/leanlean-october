@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Step
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The encoding of an array by the recursion of Section 2.4.1
@@ -32,23 +33,23 @@ proof is by induction on `L`:
 
 namespace Light.Sec2
 
-open Finset ThreeSumApsp
+open Finset
 
 namespace Encode
 
 /-- The local variables of encode: the arguments L, src, out, scr, tab, p7, p10; the lengths 7^{L-1}
 and 10^{L-1}; the number of the term; the result of a call, which is not used. -/
 abbrev Level : ℕ := 0
-@[inherit_doc Level] abbrev Src : ℕ := 1
-@[inherit_doc Level] abbrev Out : ℕ := 2
-@[inherit_doc Level] abbrev Scr : ℕ := 3
-@[inherit_doc Level] abbrev Table : ℕ := 4
-@[inherit_doc Level] abbrev Pow7 : ℕ := 5
-@[inherit_doc Level] abbrev Pow10 : ℕ := 6
-@[inherit_doc Level] abbrev Len7 : ℕ := 7
-@[inherit_doc Level] abbrev Len10 : ℕ := 8
-@[inherit_doc Level] abbrev TermNo : ℕ := 9
-@[inherit_doc Level] abbrev Res : ℕ := 10
+ abbrev Src : ℕ := 1
+ abbrev Out : ℕ := 2
+ abbrev Scr : ℕ := 3
+ abbrev Table : ℕ := 4
+ abbrev Pow7 : ℕ := 5
+ abbrev Pow10 : ℕ := 6
+ abbrev Len7 : ℕ := 7
+ abbrev Len10 : ℕ := 8
+ abbrev TermNo : ℕ := 9
+ abbrev Res : ℕ := 10
 
 end Encode
 
@@ -178,7 +179,7 @@ namespace EncodePre
 
 /-- The bound `V` is not negative. -/
 private theorem V_nonneg (pre : EncodePre lim μ src out scr tab p7 p10 V L a c) : 0 ≤ V := by
-  have := pre.src_bound 0 (by positivity)
+  have := pre.src_bound 0 tac_positivity
   omega
 
 /-- In the course of `encode` at level `L + 1`, the hypotheses of `encStep` hold for every term. -/
@@ -189,18 +190,18 @@ private theorem toStep (pre : EncodePre lim μ src out scr tab p7 p10 V (L + 1) 
   have hkept := sameOutside2_succ same
   have hV := pre.V_nonneg
   have hword := pre.word_bound
-  have hone : (1 : ℤ) ≤ 7 ^ L := one_le_pow₀ (by norm_num)
+  have hone : (1 : ℤ) ≤ 7 ^ L := one_le_pow₀ tac_norm_num
   rw [pow_succ'] at hword
   push_cast at hword
   exact
     { std := pre.lay.std, tab_le := by omega, src_le := by omega, dst_le := by omega
       coef := fun i hi => by
-        rw [Nat.add_assoc, hkept _ (by omega), pre.tabV _ (by omega)]
-        exact pre.coef_bound _ (by omega)
+        rw [Nat.add_assoc, hkept _ tac_omega, pre.tabV _ tac_omega]
+        exact pre.coef_bound _ tac_omega
       vals := fun i hi => by
-        rw [hkept _ (by omega), pre.srcV i (by rw [pow_succ']; omega)]
+        rw [hkept _ tac_omega, pre.srcV i (by rw [pow_succ']; omega)]
         exact pre.src_bound i (by rw [pow_succ']; omega)
-      word_bound := (mul_le_mul_of_nonneg_right (by omega) hV).trans hword }
+      word_bound := (mul_le_mul_of_nonneg_right tac_omega hV).trans hword }
 
 /-- After `encStep` has written `A_lam` to the scratch area, the hypotheses of `encode` hold at
 level `L` for the recursive call. -/
@@ -214,27 +215,27 @@ private theorem toRec (pre : EncodePre lim μ src out scr tab p7 p10 V (L + 1) a
   have hkept := sameOutside2_succ same
   have hword := pre.word_bound
   have hsrc : ∀ j < 7 * 7 ^ L, μ' (src + j) = a j := fun j hj => by
-    rw [hkept _ (by omega)]
+    rw [hkept _ tac_omega]
     exact pre.srcV j (by rw [pow_succ']; omega)
   have htab : ∀ i < 70, μ' (tab + i) = c i := fun i hi => by
-    rw [hkept _ (by omega)]
+    rw [hkept _ tac_omega]
     exact pre.tabV i hi
   exact
     { lay := pre.lay.toRec hlam
       srcV := fun j hj => by
         rw [hstep j hj]
         refine Finset.sum_congr rfl fun s hs => ?_
-        have hs7 : s < 7 := Finset.mem_range.mp hs
-        rw [Nat.add_assoc tab, htab (7 * lam + s) (by omega), Nat.add_assoc src,
+        have hs7 := Finset.mem_range.mp hs
+        rw [Nat.add_assoc tab, htab (7 * lam + s) tac_omega, Nat.add_assoc src,
           hsrc _ (Nat.mul_add_lt_mul hs7 hj)]
       src_bound := fun j hj => by
         simpa [encSlice] using enc_sum_bound 7 fun s hs =>
-          enc_coef_mul_bound (pre.coef_bound (7 * lam + s) (by omega))
+          enc_coef_mul_bound (pre.coef_bound (7 * lam + s) tac_omega)
             (pre.src_bound (s * 7 ^ L + j) (by rw [pow_succ']; exact Nat.mul_add_lt_mul hs hj))
-      tabV := fun i hi => by rw [same₁ _ (by omega), htab i hi]
+      tabV := fun i hi => by rw [same₁ _ tac_omega, htab i hi]
       coef_bound := pre.coef_bound
-      p7V := fun i hi => by rw [same₁ _ (by omega), hkept _ (by omega), pre.p7V i (by omega)]
-      p10V := fun i hi => by rw [same₁ _ (by omega), hkept _ (by omega), pre.p10V i (by omega)]
+      p7V := fun i hi => by rw [same₁ _ tac_omega, hkept _ tac_omega, pre.p7V i tac_omega]
+      p10V := fun i hi => by rw [same₁ _ tac_omega, hkept _ tac_omega, pre.p10V i tac_omega]
       word_bound := by
         rw [pow_succ'] at hword
         push_cast at hword ⊢
@@ -264,10 +265,10 @@ theorem TermsDone.step (lay : EncodeLayout lim src out scr tab p7 p10 (L + 1)) (
   · rw [Nat.succ_mul] at hi
     by_cases hold : i < lam * 10 ^ L
     · -- The parts below the earlier terms are not touched.
-      rw [same₂ _ (by omega), same₁ _ (by omega), hdone i hold]
+      rw [same₂ _ tac_omega, same₁ _ tac_omega, hdone i hold]
     · -- The part below this term.
       obtain ⟨i, rfl⟩ : ∃ i', i = lam * 10 ^ L + i' := ⟨i - lam * 10 ^ L, by omega⟩
-      rw [← Nat.add_assoc, hnew i (by omega), encIdx_succ c a L lam (by omega)]
+      rw [← Nat.add_assoc, hnew i tac_omega, encIdx_succ c a L lam tac_omega]
   · simp only [pow_succ', scrSize]
     clear same
     light_keep
@@ -313,11 +314,11 @@ theorem encode_leaf (pre : EncodePre lim μ src out scr tab p7 p10 V 0 a c) :
     Ends lim P d (encodeBody pS pE) ⟨frame [(0 : ℕ), src, out, scr, tab, p7, p10], μ⟩ (encTime 0)
       fun σ' => EncodePost μ out scr 0 a c σ'.mem := by
   light_facts pre.lay pre.lay.std
-  have hread : μ src = a 0 := pre.srcV 0 (by norm_num)
+  have hread : μ src = a 0 := pre.srcV 0 tac_norm_num
   -- if Level = 0 then mem[Out] := mem[Src]
-  refine Ends.iteLast (fun _ => ?_) (fun h => absurd (by simp) h) (hT := by simp [encTime])
+  refine Ends.iteLast (fun _ => ?_) (fun h => absurd tac_simp h) (hT := by simp [encTime])
   refine Ends.storeTo out (a 0) ⟨fun i hi => ?_, by light_keep⟩
-    (by light_side [hread]) (by simp [encTime])
+    (by light_side [hread]) tac_simp [encTime]
   obtain rfl : i = 0 := by simpa using hi
   exact Function.update_self ..
 
@@ -331,8 +332,8 @@ theorem encode_node (hS : P[pS]? = some encStepBody)
   have hplaces := pre.lay.places_succ
   have haddr7 : ((p7 : ℤ) + ((L : ℤ) + 1) - 1).toNat = p7 + L := by omega
   have haddr10 : ((p10 : ℤ) + ((L : ℤ) + 1) - 1).toNat = p10 + L := by omega
-  have hread7 := pre.p7V L (by omega)
-  have hread10 := pre.p10V L (by omega)
+  have hread7 := pre.p7V L tac_omega
+  have hread10 := pre.p10V L tac_omega
   rw [encTime]
   -- if Level = 0
   refine Ends.iteLast (fun h => absurd h (by simp; omega)) (fun _ => ?_)
@@ -341,7 +342,7 @@ theorem encode_node (hS : P[pS]? = some encStepBody)
   light_set (10 ^ L : ℕ) using haddr10, hread10
   -- for TermNo < 10: the parts of the output below the earlier terms are filled
   refine Ends.forShape (fun lam r μ' => ⟨frame (locals L src out scr tab p7 p10 lam r), μ'⟩)
-    (TermsDone μ out scr L a c) 10 (tTerm L) 0 ⟨fun i hi => absurd hi (by omega), .refl⟩
+    (TermsDone μ out scr L a c) 10 (tTerm L) 0 ⟨fun i hi => absurd hi tac_omega, .refl⟩
     (fun lam r μ' hlam h => encodeTerm_spec hS hrec pre hd hlam h r)
     (fun _ μ' h => ⟨fun i hi => h.1 i (by rwa [pow_succ'] at hi), h.2⟩)
     (by rw [update_frame_setLocal, ← frame_append_zeros _ 1]; rfl)
@@ -356,7 +357,7 @@ theorem encode_spec (hS : P[pS]? = some encStepBody) (hE : P[pE]? = some (encode
   induction L generalizing d μ src out scr V a with
   | zero => exact encode_leaf pre
   | succ L ih =>
-    exact encode_node hS (fun _ _ _ _ _ _ pre' => Meets.of_body hE (ih (by omega) pre')) pre
-      (by omega)
+    exact encode_node hS (fun _ _ _ _ _ _ pre' => Meets.of_body hE (ih tac_omega pre')) pre
+      tac_omega
 
 end Light.Sec2

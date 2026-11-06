@@ -39,13 +39,13 @@ dgt (Digits), perm (Perm); a counter (Idx); the unused results of the calls (Res
 (radixPass) reads w and perm from the locals 0 and 5 and writes to local 7, which are Num, Perm and
 Res. -/
 abbrev Num : ℕ := 0
-@[inherit_doc Num] abbrev Levels : ℕ := 1
-@[inherit_doc Num] abbrev Tiles : ℕ := 2
-@[inherit_doc Num] abbrev TileOf : ℕ := 3
-@[inherit_doc Num] abbrev Digits : ℕ := 4
-@[inherit_doc Num] abbrev Perm : ℕ := 5
-@[inherit_doc Num] abbrev Idx : ℕ := 6
-@[inherit_doc Num] abbrev Res : ℕ := 7
+ abbrev Levels : ℕ := 1
+ abbrev Tiles : ℕ := 2
+ abbrev TileOf : ℕ := 3
+ abbrev Digits : ℕ := 4
+ abbrev Perm : ℕ := 5
+ abbrev Idx : ℕ := 6
+ abbrev Res : ℕ := 7
 
 end SortWanted
 

@@ -1,6 +1,7 @@
 module
 
 public import ImprovedExponents.PrunedProgram.Wrapper.Times
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -20,7 +21,7 @@ Adapted from upstream (Apache-2.0).
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec ImprovedExponents
+open ThreeSumApsp ImprovedExponents
 
 variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ}
   {Y : Matrix (Fin D₀) (Fin N) ℤ} {aX aY fr : ℕ} {U : ℤ} {μ μ' : ℕ → ℤ}
@@ -63,9 +64,9 @@ theorem Ready31P.of_query (h : Ready31P G X Y aX aY fr μ) (bX : aX + N * D₀ �
     (hDS : Built31P G X Y fr μ') : Ready31P G X Y aX aY fr μ' := by
   have hb0 := add_three_le_blockAt N D₀ fr
   obtain ⟨hflag, hbase, -⟩ := h.large hm
-  exact ⟨h.matX.congr_below hkept (by omega), h.matY.congr_below hkept (by omega),
-    fun hm' => absurd hm (by omega),
-    fun _ => ⟨(hkept _ (by omega)).trans hflag, (hkept _ (by omega)).trans hbase, hDS⟩⟩
+  exact ⟨h.matX.congr_below hkept tac_omega, h.matY.congr_below hkept tac_omega,
+    fun hm' => absurd hm tac_omega,
+    fun _ => ⟨(hkept _ tac_omega).trans hflag, (hkept _ tac_omega).trans hbase, hDS⟩⟩
 
 /-- query31 reads the flag and calls the query of Theorem 30 if it is 1 and the inner product
 otherwise; it returns the entry (XY)[I, J] and keeps the structure ready. -/
@@ -79,7 +80,6 @@ theorem query31P_meets (G : RatParams) (hP : P[Proc.query31]? = some query31Body
   have bY := hin.belowY
   refine fun d hd => ⟨query31Body, hP, ?_⟩
   have hw := hlim.std.space_le
-  have h100 := hlim.std.const_le
   have hU0 := hin.zero_le_U
   have hfr3 := add_three_le_structEnd G N D₀ fr
   have hsp := hlim.space
@@ -89,7 +89,7 @@ theorem query31P_meets (G : RatParams) (hP : P[Proc.query31]? = some query31Body
   · -- the data structure has been built: return queryAt(I, J, mem[fr + 1])
     have hlarge : G.m₀ ≤ logFour D₀ := by
       by_contra hc
-      have hzero := hR.small (by omega)
+      have hzero := hR.small tac_omega
       have hone : μ fr = 1 := by simpa using hflag
       omega
     obtain ⟨-, hbase, hDS⟩ := hR.large hlarge
@@ -97,31 +97,31 @@ theorem query31P_meets (G : RatParams) (hP : P[Proc.query31]? = some query31Body
     refine Ends.callTo
       (hq (parOf G N D₀) (switchOf31 G D₀) (logFour_le_levels G N D₀) (paddedXAt fr)
         (paddedYAt N D₀ fr) (blockAt N D₀ fr) _ _ U μ I J (G.t_le _) (hlim.large hlarge)
-        (abs_padInnerCols_le hin.absX hU0) (abs_padInnerRows_le hin.absY hU0) hDS _ (by omega)) ?_
+        (abs_padInnerCols_le hin.absX hU0) (abs_padInnerRows_le hin.absY hU0) hDS _ tac_omega) ?_
       (by light_side [haddr, hbase])
       (hT := by simp [tQuery31, ite_eq_right (not_lt.mpr hlarge), parOf]; omega)
     rintro r μ' ⟨hr, hDS', hout⟩
     have hscratch := G.scratch_in_block N D₀ fr
     have hb0 := add_three_le_blockAt N D₀ fr
     have htop := structEnd_large hlarge N fr
-    refine ⟨?_, hR.of_query bX bY hlarge (fun a ha => hout a (by omega)) hDS',
-      fun a ha => hout a (by omega)⟩
+    refine ⟨?_, hR.of_query bX bY hlarge (fun a ha => hout a tac_omega) hDS',
+      fun a ha => hout a tac_omega⟩
     -- padding changes no entry of the product
     exact hr.trans (congrFun (congrFun
       (Corollary26.padding (D (logFour D₀)) (le_D_logFour D₀) X Y) I) J)
   · -- m is below the threshold: return the inner product ipAt(I, J, N, D, aX, aY)
     have hsmall : logFour D₀ < G.m₀ := by
       by_contra hc
-      exact hflag (by simpa using (hR.large (by omega)).1)
+      exact hflag (by simpa using (hR.large tac_omega).1)
     refine Ends.callTo (hip N D₀ aX aY X Y U μ I J hin.one_le_D hR.matX hR.matY hin.absX hin.absY
-      (by omega) (by omega) hlim.ip _ (by omega)) ?_
+      tac_omega tac_omega hlim.ip _ tac_omega) ?_
       (hT := by simp [tQuery31, ite_eq_left hsmall]; omega)
     rintro r μ' ⟨hr, rfl⟩
     exact ⟨hr, hR, .refl⟩
 
 /-! ## The preprocessing: text and interface -/
 
-open Pre31 in
+open Pre31
 /-- The second part of pre31P: the preprocessing of Theorem 30 with the pruned encoder, the base
 address and the flag 1. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Parameters.lean (preBuild31)
@@ -134,7 +134,7 @@ def preBuild31P : Stmt :=
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Parameters.lean (preLarge31)
 def preLarge31P : Stmt := prePad31 ;; preBuild31P
 
-open Pre31 in
+open Pre31
 /-- pre31P(N, D, aX, aY, fr): m and 4^m; for m < m₀ the flag 0, for m ≥ m₀ preLarge31P. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Parameters.lean (pre31Body)
 def pre31PBody (G : RatParams) : Stmt :=

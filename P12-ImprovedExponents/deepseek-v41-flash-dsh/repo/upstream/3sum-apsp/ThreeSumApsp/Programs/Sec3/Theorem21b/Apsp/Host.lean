@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.PolyBounded
 public import ThreeSumApsp.Programs.Sec3.Theorem21b.Apsp.Passes
 public import ThreeSumApsp.Programs.Tasks
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # APSP from the (min,+)-product
@@ -65,14 +66,14 @@ abbrev Res : ℕ := 13
 
 end ApspHost
 
-open ApspHost in
+open ApspHost
 /-- One round: the product of the matrix with itself, clipped and copied back. -/
 def apRound (pMP pClip : ℕ) : Stmt :=
   .call pMP [v Verts, v Big, v Free, v Free, v ProdAt, v SolverFree] Res ;;
   .call pClip [v Cells, v Thresh, v Big, v ProdAt, v Free] Res ;;
   .set Power (v Power +' v Power)
 
-open ApspHost in
+open ApspHost
 /-- ap(n, U, adj, w, out, fr), over the procedures number pMP (a solver of the (min,+)-product),
 pInit, pClip and pOut (the three passes). -/
 def apBody (pMP pInit pClip pOut : ℕ) : Stmt :=
@@ -183,14 +184,14 @@ private theorem round_spec (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x �
     { word := by simp only [mpTask]; omega
       cells := by simp only [mpTask]; omega
       space := hw
-      depth := by simp only [mpTask]; omega }) ?_ (by simp [mpTask]) (by omega)
+      depth := by simp only [mpTask]; omega }) ?_ tac_simp [mpTask] tac_omega
         (by simp [mpTask]; omega)
   rintro r₁ μ₁ ⟨hprod, hkept₁⟩
   simp only at hprod hkept₁
   -- Res := pClip(Cells, Thresh, Big, ProdAt, Free)
   refine Ends.callToThen (clip_meets C.clip (thr := (x.n * x.U : ℕ)) (INF := 3 * (x.n * x.U : ℕ))
-    (dst := fr) hprod hw (by omega) (by omega) (Or.inr (by omega))) ?_ (by simp [hlenP])
-    (by omega) (by simp [mpTask, hlenP]; omega)
+    (dst := fr) hprod hw tac_omega tac_omega (Or.inr tac_omega)) ?_ tac_simp [hlenP]
+    tac_omega (by simp [mpTask, hlenP]; omega)
   rintro r₂ μ₂ ⟨hseg₂, hsame₂⟩
   rw [hlenP] at hsame₂
   -- Power := Power + Power
@@ -214,14 +215,14 @@ private theorem out_spec (C : Ctx P₀ R₀ pMP pInit pClip pOut T r lim d x μ 
     length_squareList _ _ _ _ _
   -- Res := pOut(Cells, Big, Free, Out)
   refine Ends.callTo (apOut_meets C.out (INF := 3 * (x.n * x.U : ℕ)) (out := x.out) hseg hw
-    (by omega) (by omega) (Or.inr (by omega))) ?_ (by simp [hlen]) (hT := by rw [hlen]; light_time)
+    tac_omega tac_omega (Or.inr tac_omega)) ?_ tac_simp [hlen] (hT := by rw [hlen]; light_time)
   rintro r₂ μ₂ ⟨hans, hsame₂⟩
   rw [hlen] at hsame₂
   exact ⟨answer_correct C.pre hans, fun a ⟨ha, hout⟩ => (hsame₂ a hout).trans (hkept a ha)⟩
 
 end ApspHost
 
-open ApspHost in
+open ApspHost
 /-- **The host is correct**, in every program that begins with the solver's program and has the
 three passes. -/
 theorem ap_spec {P₀ R₀ : Program} {pMP pInit pClip pOut : ℕ} {T : ℕ → ℕ → ℕ} {r : ℕ → ℕ → Need}
@@ -232,8 +233,6 @@ theorem ap_spec {P₀ R₀ : Program} {pMP pInit pClip pOut : ℕ} {T : ℕ → 
   have hplaces := C.places
   have hw := C.ok.space
   have hpre := C.pre
-  have hsquare : (0 : ℤ) ≤ (x.n : ℤ) * x.n := by positivity
-  have hthresh : (0 : ℤ) ≤ (x.n : ℤ) * x.U := by positivity
   unfold apBody apTime
   change Ends _ _ _ _ ⟨frame [(x.n : ℤ), x.U, x.adj, x.w, x.out, fr], μ⟩ _ _
   -- Cells := Verts * Verts ; Thresh := Verts * Bound ; Big := 3 * Thresh
@@ -245,7 +244,7 @@ theorem ap_spec {P₀ R₀ : Program} {pMP pInit pClip pOut : ℕ} {T : ℕ → 
   light_set (fr + 2 * (x.n * x.n) : ℕ)
   -- Res := pInit(Verts, Big, AdjAt, WtsAt, Free)
   light_call (apInit_meets C.init (INF := 3 * (x.n * x.U : ℕ)) (A := fr) hpre.n_pos
-    hpre.lenADJ hpre.lenW hpre.segADJ hpre.segW hw (by omega) (by omega) (by omega)
+    hpre.lenADJ hpre.lenW hpre.segADJ hpre.segW hw tac_omega tac_omega tac_omega
     (Or.inl hpre.belowADJ) (Or.inl hpre.belowW)) with r₁ μ₁ ⟨hseg₁, hsame₁⟩
   -- Power := 1
   light_set (2 ^ 0 : ℕ)
@@ -255,13 +254,13 @@ theorem ap_spec {P₀ R₀ : Program} {pMP pInit pClip pOut : ℕ} {T : ℕ → 
     ⟨r₁, μ₁, rfl, hseg₁, fun a ha => hsame₁ a (Or.inl ha)⟩ ?round ?done le_rfl)
   case round =>
     rintro t σ ht hσ
-    have hpow : 2 ^ t < x.n := Nat.pow_lt_of_lt_clog ht
+    have hpow := Nat.pow_lt_of_lt_clog ht
     refine ⟨?_, ?_, round_spec C hpow hσ⟩ <;> obtain ⟨res, μ', rfl, -, -⟩ := hσ
     · exact ⟨trivial, trivial⟩
     · simpa using (by exact_mod_cast hpow : ((2 : ℤ) ^ t < x.n))
   case done =>
     intro σ hσ
-    have hpow : x.n ≤ 2 ^ Nat.clog 2 x.n := Nat.le_pow_clog (by norm_num) x.n
+    have hpow : x.n ≤ 2 ^ Nat.clog 2 x.n := Nat.le_pow_clog tac_norm_num x.n
     refine ⟨?_, ?_, (out_spec C hσ).mono (by light_time) fun _ h => h⟩ <;>
       obtain ⟨res, μ', rfl, -, -⟩ := hσ
     · exact ⟨trivial, trivial⟩

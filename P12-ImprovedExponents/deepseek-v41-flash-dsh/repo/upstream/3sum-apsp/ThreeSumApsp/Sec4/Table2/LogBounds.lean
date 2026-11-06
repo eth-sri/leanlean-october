@@ -81,7 +81,7 @@ theorem log_mem (k : ℤ) (n : ℕ) {θ : ℝ} (hθ : 0 < θ := by numerics) :
   have hx : |seriesArg k θ| < 1 := by
     rw [seriesArg, abs_div, abs_of_pos (add_pos hθ hpow), div_lt_one (add_pos hθ hpow), abs_lt]
     constructor <;> linarith
-  have hsq : 0 < 1 - seriesArg k θ ^ 2 := sub_pos.2 ((sq_lt_one_iff_abs_lt_one _).2 hx)
+  have hsq := sub_pos.2 ((sq_lt_one_iff_abs_lt_one _).2 hx)
   -- `log θ = k log 2 + log ((1 + x)/(1 - x))`
   have hlog : Real.log θ
       = k * Real.log 2 + Real.log ((1 + seriesArg k θ) / (1 - seriesArg k θ)) := by
@@ -126,7 +126,7 @@ theorem qOf_le (k : ℤ) {θ r : ℝ} (h0 : 0 < θ := by numerics) (h1 : θ < 1 
     (h : -θ * (logApprox k 4 θ - logErr k 4 θ)
         - (1 - θ) * (logApprox 0 4 (1 - θ) - logErr 0 4 (1 - θ)) + θ * (2 * logThreeHi)
       ≤ r * (2 * logTwoLo) := by numerics) : qOf θ ≤ r := by
-  have hcompl : 0 < 1 - θ := sub_pos.2 h1
+  have hcompl := sub_pos.2 h1
   rw [qOf_eq_div, div_le_iff₀ (mul_pos two_pos (Real.log_pos one_lt_two))]
   have hlog := mul_le_mul_of_nonneg_left (log_mem k 4 h0).1 h0.le
   have hlogc := mul_le_mul_of_nonneg_left (log_mem 0 4 hcompl).1 hcompl.le
@@ -141,7 +141,7 @@ theorem le_qOf (k : ℤ) {θ r : ℝ} (h0 : 0 < θ := by numerics) (h1 : θ < 1 
       ≤ -θ * (logApprox k 4 θ + logErr k 4 θ)
         - (1 - θ) * (logApprox 0 4 (1 - θ) + logErr 0 4 (1 - θ)) + θ * (2 * logThreeLo) := by
       numerics) : r ≤ qOf θ := by
-  have hcompl : 0 < 1 - θ := sub_pos.2 h1
+  have hcompl := sub_pos.2 h1
   rw [qOf_eq_div, le_div_iff₀ (mul_pos two_pos (Real.log_pos one_lt_two))]
   have hlog := mul_le_mul_of_nonneg_left (log_mem k 4 h0).2 h0.le
   have hlogc := mul_le_mul_of_nonneg_left (log_mem 0 4 hcompl).2 hcompl.le

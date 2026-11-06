@@ -9,6 +9,7 @@ public import PaperStatements
 public import ThreeSumApsp.Util.Asymptotics.Dominated
 public import ThreeSumApsp.Util.Asymptotics.Powers
 public import Mathlib.Tactic.Linarith
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The notions of solving are monotone
@@ -128,7 +129,7 @@ theorem SolvedInTimeAt.of_eventually_le {Q : EndStatement.Problem} {κ : ℕ} {a
   have hall : Dominated (fun _ : ℕ => True) (fun n => (n : ℝ) ^ a * Real.log n ^ e + 1)
       fun n => (n : ℝ) ^ a' * Real.log n ^ e' + 1 :=
     (Dominated.of_eventually_add_one hle fun n => by positivity).add
-      (.of_le fun n _ => le_add_of_nonneg_left (by positivity))
+      (.of_le fun n _ => le_add_of_nonneg_left tac_positivity)
   exact solvedInTimeAt_iff.2 (exists_solves_of_dominated (solvedInTimeAt_iff.1 h) (fun _ hx => hx)
     (hall.comp (fun x : Bounded Q => x.n) fun _ _ => trivial))
 

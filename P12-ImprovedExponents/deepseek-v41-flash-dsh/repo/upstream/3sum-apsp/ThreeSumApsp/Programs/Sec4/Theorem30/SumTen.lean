@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The value of a box with stars (proof of Lemma 29, "The values")
@@ -29,7 +30,7 @@ specification.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 namespace SumTen
 
@@ -37,26 +38,26 @@ namespace SumTen
 the address of the box, its length, the position of the star), the digit that stood at that
 position, the digit written, the sum, and a value looked up.  Local 0 also takes the result. -/
 abbrev Area : ℕ := 0
-@[inherit_doc Area] abbrev Result : ℕ := 0
-@[inherit_doc Area] abbrev Root : ℕ := 1
-@[inherit_doc Area] abbrev Box : ℕ := 2
-@[inherit_doc Area] abbrev Len : ℕ := 3
-@[inherit_doc Area] abbrev Star : ℕ := 4
-@[inherit_doc Area] abbrev Saved : ℕ := 5
-@[inherit_doc Area] abbrev Digit : ℕ := 6
-@[inherit_doc Area] abbrev Sum : ℕ := 7
-@[inherit_doc Area] abbrev Val : ℕ := 8
+ abbrev Result : ℕ := 0
+ abbrev Root : ℕ := 1
+ abbrev Box : ℕ := 2
+ abbrev Len : ℕ := 3
+ abbrev Star : ℕ := 4
+ abbrev Saved : ℕ := 5
+ abbrev Digit : ℕ := 6
+ abbrev Sum : ℕ := 7
+ abbrev Val : ℕ := 8
 
 end SumTen
 
-open SumTen in
+open SumTen
 /-- One round: write the digit at the position of the star, look the string up, and add. -/
 def sumTenRound : Stmt :=
   .store (v Box +' v Star) (v Digit) ;;
   .call Proc.lookup [v Area, v Root, v Box, v Len] Val ;;
   .set Sum (v Sum +' v Val)
 
-open SumTen in
+open SumTen
 /-- sumTen(area, root, box, len, star): the sum of the values of the ten strings; the digit at the
 position of the star is put back at the end. -/
 def sumTenBody : Stmt :=
@@ -75,7 +76,7 @@ private theorem segN_set {μ μ' : ℕ → ℤ} {a p : ℕ} {l : List ℕ} (h : 
   by_cases hip : i = p
   · subst hip
     simp [hx]
-  · rw [ho _ (by omega), SegN.getElem h hi']
+  · rw [ho _ tac_omega, SegN.getElem h hi']
     simp [List.getElem_set_of_ne (Ne.symm hip)]
 
 namespace SumTen
@@ -103,12 +104,12 @@ private theorem round_spec {lim : Limits} {P : Program} {d : ℕ} (hLookup : Loo
   have hp := C.star
   have hboxB := C.box_in
   light_facts C hs
-  have hsum := C.sums (j + 1) (by omega)
+  have hsum := C.sums (j + 1) tac_omega
   unfold tRound
   -- mem[box + star] := digit
   light_store (x.box + x.p) j
   have hsame₁ : SameOn (· ≠ x.box + x.p) μ (Function.update μ' (x.box + x.p) j) :=
-    hsame.write (by simp) _
+    hsame.write tac_simp _
   have hdigits : ∀ d ∈ x.l.set x.p j, d < 11 := fun d hd => by
     rcases List.mem_or_eq_of_mem_set hd with h | h
     · exact C.digits d h
@@ -116,8 +117,8 @@ private theorem round_spec {lim : Limits} {P : Program} {d : ℕ} (hLookup : Loo
   -- val := lookup(area, root, box, len)
   light_call (hLookup x.tr x.root x.box x.l.length x.T (x.l.set x.p j) _
     C.area.keep
-    (segN_set C.seg hp j (Function.update_self _ _ _) hsame₁) (by simp) hdigits (C.walk j hj)
-    C.area_in hboxB _ (by omega)) with _ _ ⟨rfl, rfl⟩
+    (segN_set C.seg hp j (Function.update_self _ _ _) hsame₁) tac_simp hdigits (C.walk j hj)
+    C.area_in hboxB _ tac_omega) with _ _ ⟨rfl, rfl⟩
   have hnext : (x.values.take (j + 1)).sum
       = (x.values.take j).sum + trieLookup x.T x.root (x.l.set x.p j) :=
     List.sum_take_map_range_succ (fun d => trieLookup x.T x.root (x.l.set x.p d)) hj
@@ -128,7 +129,7 @@ private theorem round_spec {lim : Limits} {P : Program} {d : ℕ} (hLookup : Loo
 
 end SumTen
 
-open SumTen in
+open SumTen
 /-- **sumTen** returns the sum of the values of the ten strings, and leaves the memory as it
 was. -/
 theorem sumTen_spec {lim : Limits} {P : Program} (hP : P[Proc.sumTen]? = some sumTenBody)
@@ -138,7 +139,7 @@ theorem sumTen_spec {lim : Limits} {P : Program} (hP : P[Proc.sumTen]? = some su
   rw [SumTenArgs.vals, ← pre.len]
   have hp := pre.star
   light_facts hs pre
-  have hsaved : μ (x.box + x.p) = (x.l[x.p] : ℕ) := pre.seg.getElem hp
+  have hsaved := pre.seg.getElem hp
   unfold tSumTen
   -- saved := mem[box + star]; sum := 0
   light_set (x.l[x.p] : ℕ) using hsaved
@@ -160,7 +161,7 @@ theorem sumTen_spec {lim : Limits} {P : Program} (hP : P[Proc.sumTen]? = some su
     -- mem[box + star] := saved
     light_store (x.box + x.p) (x.l[x.p] : ℕ)
     -- return sum
-    refine Ends.setTo _ ⟨by rw [List.take_of_length_le (by simp [tenValues])]; rfl,
+    refine Ends.setTo _ ⟨by rw [List.take_of_length_le tac_simp [tenValues]]; rfl,
       funext fun b => ?_⟩ ⟨by simp, rfl⟩
     dsimp only
     by_cases hb : b = x.box + x.p

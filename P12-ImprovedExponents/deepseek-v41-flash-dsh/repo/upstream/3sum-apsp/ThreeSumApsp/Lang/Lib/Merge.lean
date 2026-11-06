@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Lib.Seg
 public import ThreeSumApsp.Lang.Tactics
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Merging two segments
@@ -57,28 +58,28 @@ namespace Merge
 /-- The local variables of merge: the arguments a, na, b, nb, dst, and the numbers i and j of cells
 already taken from the first and the second list. -/
 abbrev ListA : ℕ := 0
-@[inherit_doc ListA] abbrev LenA : ℕ := 1
-@[inherit_doc ListA] abbrev ListB : ℕ := 2
-@[inherit_doc ListA] abbrev LenB : ℕ := 3
-@[inherit_doc ListA] abbrev Dest : ℕ := 4
-@[inherit_doc ListA] abbrev DoneA : ℕ := 5
-@[inherit_doc ListA] abbrev DoneB : ℕ := 6
+ abbrev LenA : ℕ := 1
+ abbrev ListB : ℕ := 2
+ abbrev LenB : ℕ := 3
+ abbrev Dest : ℕ := 4
+ abbrev DoneA : ℕ := 5
+ abbrev DoneB : ℕ := 6
 
 end Merge
 
-open Merge in
+open Merge
 /-- The next output is the head of the first list: dst[i + j] := a[i]; i := i + 1. -/
 def mergeTakeLeft : Stmt :=
   .store (v Dest +' v DoneA +' v DoneB) (M (v ListA +' v DoneA)) ;;
   .set DoneA (v DoneA +' k 1)
 
-open Merge in
+open Merge
 /-- The next output is the head of the second list: dst[i + j] := b[j]; j := j + 1. -/
 def mergeTakeRight : Stmt :=
   .store (v Dest +' v DoneA +' v DoneB) (M (v ListB +' v DoneB)) ;;
   .set DoneB (v DoneB +' k 1)
 
-open Merge in
+open Merge
 /-- merge(a, na, b, nb, dst). -/
 def mergeBody : Stmt :=
   .set DoneA (k 0) ;;
@@ -124,7 +125,7 @@ theorem takeLeft (C : Pre lim μ a b dst l r) {σ : State} (h : Inv μ a b dst l
     mergeTakeLeft.Runs lim σ (Taken μ a b dst l r (i + j + 1)) := by
   obtain ⟨μ', out, rfl, -, hj, same, hlen, seg, hout⟩ := h
   light_facts C
-  have hread : μ' (a + i) = l[i] := (same _ (by omega)).trans (C.segL.get hi)
+  have hread := (same _ tac_omega).trans (C.segL.get hi)
   have haddr : ((dst : ℤ) + i + j).toNat = dst + out.length := by omega
   refine ⟨by light_side [mergeTakeLeft], i + 1, j, by omega,
     Function.update μ' (dst + out.length) l[i], out ++ [l[i]], ?_, hi, hj,
@@ -140,7 +141,7 @@ theorem takeRight (C : Pre lim μ a b dst l r) {σ : State} (h : Inv μ a b dst 
     mergeTakeRight.Runs lim σ (Taken μ a b dst l r (i + j + 1)) := by
   obtain ⟨μ', out, rfl, hi, -, same, hlen, seg, hout⟩ := h
   light_facts C
-  have hread : μ' (b + j) = r[j] := (same _ (by omega)).trans (C.segR.get hj)
+  have hread := (same _ tac_omega).trans (C.segR.get hj)
   have haddr : ((dst : ℤ) + i + j).toNat = dst + out.length := by omega
   refine ⟨by light_side [mergeTakeRight], i, j + 1, by omega,
     Function.update μ' (dst + out.length) r[j], out ++ [r[j]], ?_, hi, hj,
@@ -171,7 +172,7 @@ theorem _root_.Light.merge_meets {p : ℕ} (hp : P[p]? = some mergeBody)
     exact ⟨0, 0, rfl, μ, [], rfl, Nat.zero_le _, Nat.zero_le _, .refl, rfl, Seg.nil, by simp⟩
   case done =>
     rintro _ ⟨i, j, hij, μ', out, rfl, hi, hj, same, hlen, seg, hout⟩
-    rw [List.drop_eq_nil_of_le (by omega), List.drop_eq_nil_of_le (by omega)] at hout
+    rw [List.drop_eq_nil_of_le tac_omega, List.drop_eq_nil_of_le tac_omega] at hout
     exact ⟨by light_side, by simp; omega, by simpa [← hout] using seg, same⟩
   case round =>
     rintro _ σ ht ⟨i, j, rfl, hI⟩
@@ -183,15 +184,15 @@ theorem _root_.Light.merge_meets {p : ℕ} (hp : P[p]? = some mergeBody)
     by_cases c1 : i < l.length
     · refine .ite_pos ?_
       by_cases c2 : j < r.length
-      · have hreadL : μ' (a + i) = l[i] := (same _ (by omega)).trans (C.segL.get c1)
-        have hreadR : μ' (b + j) = r[j] := (same _ (by omega)).trans (C.segR.get c2)
+      · have hreadL : μ' (a + i) = l[i] := (same _ tac_omega).trans (C.segL.get c1)
+        have hreadR := (same _ tac_omega).trans (C.segR.get c2)
         refine .ite_pos ?_
         by_cases c3 : r[j] < l[i]
         · exact .ite_pos (right c2 (step_right c1 c2 c3)) (by simpa [hreadL, hreadR] using c3)
         · exact .ite_neg (left c1 (step_left c1 c2 (not_lt.1 c3)))
             (by simpa [hreadL, hreadR] using c3)
-      · exact .ite_neg (left c1 (step_left_end c1 (by omega)))
-    · exact .ite_neg (right (by omega) (step_right_end (by omega) (by omega)))
+      · exact .ite_neg (left c1 (step_left_end c1 tac_omega))
+    · exact .ite_neg (right tac_omega (step_right_end tac_omega tac_omega))
 
 end Merge
 

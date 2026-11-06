@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Wanted.SortedFacts
 public import ThreeSumApsp.Programs.Tasks
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 5: an instance of the task, in the terms of Section 2
@@ -21,15 +22,6 @@ namespace Light.Sec2
 
 open ThreeSumApsp
 
-/-- The regime of Theorem 5, in terms of the sizes: D = 4^m with m ≥ 1, N ≥ D^18, and at
-most N²/√D wanted positions. -/
-structure Regime (N D w m : ℕ) : Prop where
-  hm : 1 ≤ m
-  hD : D = 4 ^ m
-  hN : D ^ 18 ≤ N
-  hw : w * 2 ^ m ≤ N ^ 2
-
-/-- The row of the wanted position number i. -/
 def thinI (x : ThinInst) (i : ℕ) : ℕ := x.WI.getD i 0
 
 /-- The column of the wanted position number i. -/

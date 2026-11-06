@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Directory
 public import ThreeSumApsp.Programs.Sec4.Theorem30.RoutineFacts
 public import ThreeSumApsp.Spec.Sec4.Theorem30.PartialSums
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # A query, from the block that holds the data structure (proof of Theorem 30, "Query")
@@ -40,30 +41,30 @@ the addresses of the tables BAND, BLOCK, DIG3 and of the area WD; the bands of I
 addresses of the areas BOX, SS, ROOTS, TR; and a local for the result of outDigits, which is not
 used. -/
 abbrev Row : ℕ := 0
-@[inherit_doc Row] abbrev Col : ℕ := 1
-@[inherit_doc Row] abbrev Base : ℕ := 2
-@[inherit_doc Row] abbrev Levels : ℕ := 3
-@[inherit_doc Row] abbrev Inner : ℕ := 4
-@[inherit_doc Row] abbrev Switch : ℕ := 5
-@[inherit_doc Row] abbrev Outer : ℕ := 6
-@[inherit_doc Row] abbrev Blocks : ℕ := 7
-@[inherit_doc Row] abbrev Bands : ℕ := 8
-@[inherit_doc Row] abbrev Leaves : ℕ := 9
-@[inherit_doc Row] abbrev BandTab : ℕ := 10
-@[inherit_doc Row] abbrev BlockTab : ℕ := 11
-@[inherit_doc Row] abbrev DigitTab : ℕ := 12
-@[inherit_doc Row] abbrev Digits : ℕ := 13
-@[inherit_doc Row] abbrev BandI : ℕ := 14
-@[inherit_doc Row] abbrev BandJ : ℕ := 15
-@[inherit_doc Row] abbrev Box : ℕ := 16
-@[inherit_doc Row] abbrev Str : ℕ := 17
-@[inherit_doc Row] abbrev Roots : ℕ := 18
-@[inherit_doc Row] abbrev Tries : ℕ := 19
-@[inherit_doc Row] abbrev Void : ℕ := 20
+ abbrev Col : ℕ := 1
+ abbrev Base : ℕ := 2
+ abbrev Levels : ℕ := 3
+ abbrev Inner : ℕ := 4
+ abbrev Switch : ℕ := 5
+ abbrev Outer : ℕ := 6
+ abbrev Blocks : ℕ := 7
+ abbrev Bands : ℕ := 8
+ abbrev Leaves : ℕ := 9
+ abbrev BandTab : ℕ := 10
+ abbrev BlockTab : ℕ := 11
+ abbrev DigitTab : ℕ := 12
+ abbrev Digits : ℕ := 13
+ abbrev BandI : ℕ := 14
+ abbrev BandJ : ℕ := 15
+ abbrev Box : ℕ := 16
+ abbrev Str : ℕ := 17
+ abbrev Roots : ℕ := 18
+ abbrev Tries : ℕ := 19
+ abbrev Void : ℕ := 20
 
 end QueryAt
 
-open QueryAt in
+open QueryAt
 /-- The first part of queryAt(I, J, b0): what is read from the directory and from the table BAND. -/
 def queryAtReads : Stmt :=
   .set Levels (M (v Base +' k Dir.levels)) ;;
@@ -80,7 +81,7 @@ def queryAtReads : Stmt :=
   .set BandI (M (v BandTab +' v Row)) ;;
   .set BandJ (M (v BandTab +' v Col))
 
-open QueryAt in
+open QueryAt
 /-- The second part: the areas of Section 4 lie one behind the other from WD on. -/
 def queryAtAreas : Stmt :=
   .set Box (v Digits +' v Levels +' v Levels) ;;
@@ -88,14 +89,14 @@ def queryAtAreas : Stmt :=
   .set Roots (v Str +' v Inner +' k 1) ;;
   .set Tries (v Roots +' v Bands *' v Bands)
 
-open QueryAt in
+open QueryAt
 /-- The call of outDigits: the digits of the output string. -/
 def queryAtOut : Stmt :=
   .call Proc.outDigits [M (v BlockTab +' v Row), M (v BlockTab +' v Col),
     v DigitTab +' v Row *' v Outer, v DigitTab +' v Col *' v Outer, M (v Base +' k Dir.mask),
     v Blocks, v Levels, v Digits] Void
 
-open QueryAt in
+open QueryAt
 /-- The call of queryCore: the sum of Lemma 28. The tile of (I, J) has the number bandI nB + bandJ,
 and the root of its trie is read from the table of roots. -/
 def queryAtCore : Stmt :=
@@ -135,7 +136,6 @@ theorem queryAtAreas_spec (hlim : Lim30 lim p t b0 U) (I J : ℕ) :
   -- the product nB², in the integers
   have htr : ((aROOTS p b0 + p.nB * p.nB : ℕ) : ℤ) = aTR p b0 := by
     exact_mod_cast (by omega : aROOTS p b0 + p.nB * p.nB = aTR p b0)
-  have hsq0 : (0 : ℤ) ≤ (p.nB : ℤ) * p.nB := by positivity
   push_cast at htr
   -- box := digits + L + L; str := box + L; roots := str + m + 1
   light_set (aBOX p b0 : ℕ)
@@ -195,7 +195,7 @@ theorem abs_enc_mul_le (hlim : Lim30 lim p t b0 U) (hU : 0 ≤ U) (hX : ∀ i j,
   calc |encRow p hmL X β τ| * |encCol p hmL Y β' τ| ≤ (7 ^ p.L * U) * (7 ^ p.L * U) :=
         mul_le_mul (hrow τ) (hcol τ) (abs_nonneg _) ((abs_nonneg _).trans (hrow τ))
     _ ≤ 10 ^ p.m * ((7 ^ p.L * U) * (7 ^ p.L * U)) :=
-        le_mul_of_one_le_left (mul_self_nonneg _) (one_le_pow₀ (by norm_num))
+        le_mul_of_one_le_left (mul_self_nonneg _) (one_le_pow₀ tac_norm_num)
     _ ≤ lim.word := hlim.value
 
 section Tile

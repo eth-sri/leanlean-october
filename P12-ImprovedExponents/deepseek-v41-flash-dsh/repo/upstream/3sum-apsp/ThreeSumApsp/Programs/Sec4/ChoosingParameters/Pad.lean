@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Padding X with zero columns
@@ -20,23 +21,23 @@ padded matrix have been written; `PadX.Rows.succ` is what a round does to the me
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 namespace PadX
 
 /-- The local variables of padX: the arguments N, D, D', aX, aX', the row, and a result that is not
 used. -/
 abbrev Height : ℕ := 0
-@[inherit_doc Height] abbrev Width : ℕ := 1
-@[inherit_doc Height] abbrev Padded : ℕ := 2
-@[inherit_doc Height] abbrev Source : ℕ := 3
-@[inherit_doc Height] abbrev Dest : ℕ := 4
-@[inherit_doc Height] abbrev Row : ℕ := 5
-@[inherit_doc Height] abbrev Unused : ℕ := 6
+ abbrev Width : ℕ := 1
+ abbrev Padded : ℕ := 2
+ abbrev Source : ℕ := 3
+ abbrev Dest : ℕ := 4
+ abbrev Row : ℕ := 5
+ abbrev Unused : ℕ := 6
 
 end PadX
 
-open PadX in
+open PadX
 /-- padX(N, D, D', aX, aX'): for each row i, copy its D entries from aX + i D to aX' + i D', and
 fill the D' - D cells behind them with zeros. -/
 def padXBody : Stmt :=
@@ -66,11 +67,11 @@ theorem Rows.succ (h : Rows μ aX' D' X i μ') (hX : MatAt μ aX X) (hsep : aX +
   · rcases Nat.lt_succ_iff_lt_or_eq.mp hr with hlt | heq
     · -- an earlier row lies below the cells that the round has written
       have := Nat.mul_add_lt_mul hlt j.isLt
-      rw [hout₂ _ (.inl (by omega)), hout₁ _ (.inl (by omega))]
+      rw [hout₂ _ (.inl tac_omega), hout₁ _ (.inl tac_omega)]
       exact h.1 r j hlt
     · by_cases hj : (j : ℕ) < D₀
       · -- an entry of X, which is as at the start
-        rw [heq, hout₂ _ (.inl (by omega)), hcopy _ hj, h.2 _ (.inl (by omega)), padInnerCols,
+        rw [heq, hout₂ _ (.inl tac_omega), hcopy _ hj, h.2 _ (.inl tac_omega), padInnerCols,
           dif_pos hj, ← heq]
         exact hX r ⟨j, hj⟩
       · -- a zero
@@ -78,17 +79,16 @@ theorem Rows.succ (h : Rows μ aX' D' X i μ') (hX : MatAt μ aX X) (hsep : aX +
           rw [heq]; omega
         rw [hcell, hfill _ (by have := j.isLt; omega), padInnerCols, dif_neg hj]
   · rw [Nat.succ_mul] at hb
-    rw [hout₂ b (by omega), hout₁ b (by omega), h.2 b (by omega)]
+    rw [hout₂ b tac_omega, hout₁ b tac_omega, h.2 b tac_omega]
 
 end PadX
 
-open PadX in
+open PadX
 theorem padX_meets {lim : Limits} {P : Program} (hP : P[Proc.padX]? = some padXBody)
     (hcopy : CopySpec lim P) (hfill : FillSpec lim P) (hstd : Std lim) : PadXSpec lim P := by
   intro N D₀ D' aX aX' X μ hDD hD1 hX hsep hsp
   refine fun d hd => ⟨padXBody, hP, ?_⟩
   have hw := hstd.space_le
-  have h100 := hstd.const_le
   have hN : N ≤ N * D' := Nat.le_mul_of_pos_right _ hD1
   have hsub : (D' : ℤ) - D₀ = ((D' - D₀ : ℕ) : ℤ) := (Nat.cast_sub hDD).symm
   unfold padXBody tPadX
@@ -111,12 +111,12 @@ theorem padX_meets {lim : Limits} {P : Program} (hP : P[Proc.padX]? = some padXB
     have hsrc : i * D₀ + D₀ ≤ N * D₀ := Nat.mul_add_le_mul hi le_rfl
     have hdst : i * D' + D' ≤ N * D' := Nat.mul_add_le_mul hi le_rfl
     -- copy(aX + i D, aX' + i D', D)
-    refine Ends.callToThen (hcopy (aX + i * D₀) (aX' + i * D') D₀ μ' (by omega) (by omega)
-      (by omega) (.inl (by omega)) _ (by omega)) ?_ (hT := by simp [tCopy]; omega)
+    refine Ends.callToThen (hcopy (aX + i * D₀) (aX' + i * D') D₀ μ' tac_omega tac_omega
+      tac_omega (.inl tac_omega) _ tac_omega) ?_ (hT := by simp [tCopy]; omega)
     rintro - μ₁ ⟨hc, hout₁⟩
     -- fill(aX' + i D' + D, D' - D, 0)
-    refine Ends.callTo (hfill (aX' + i * D' + D₀) (D' - D₀) 0 μ₁ (by omega) (by omega) _
-      (by omega)) ?_ (by light_side [hsub]) (hT := by simp [tCopy, tFill]; omega)
+    refine Ends.callTo (hfill (aX' + i * D' + D₀) (D' - D₀) 0 μ₁ tac_omega tac_omega _
+      tac_omega) ?_ (by light_side [hsub]) (hT := by simp [tCopy, tFill]; omega)
     rintro r' μ₂ ⟨hf, hout₂⟩
     exact ⟨by simp, r', μ₂, by rw [update_frame_setLocal]; rfl,
       hrows.succ hX hsep hi hc hout₁ hf hout₂ hDD⟩

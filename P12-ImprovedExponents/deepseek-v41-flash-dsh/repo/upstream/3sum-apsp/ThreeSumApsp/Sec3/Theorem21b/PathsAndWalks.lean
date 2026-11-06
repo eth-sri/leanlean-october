@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import PaperStatements
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Paths of the end statement and walks with weights in `WithTop ℤ`
@@ -96,7 +97,7 @@ theorem not_path_of_dist_eq_top (hdist : IsDistanceMatrix (fun i j => toTop (w i
   intro hp
   have hle := dist_le_of_path hdist hp
   rw [htop] at hle
-  exact absurd hle (by simp)
+  exact absurd hle tac_simp
 
 /-- A finite distance is the weight of a path, and no path is lighter. -/
 theorem isLeast_path_of_dist_eq_coe (hdist : IsDistanceMatrix (fun i j => toTop (w i j)) dist)

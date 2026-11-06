@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Parameters
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The parameters of Theorems 17 and 19, without division and without roots
@@ -34,7 +35,7 @@ No routine touches the memory.
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -73,10 +74,10 @@ namespace PowLt
 /-- The local variables of powLt: the arguments g, e, t; the number of factors so far; their
 product (Acc). -/
 abbrev Base : ℕ := 0
-@[inherit_doc Base] abbrev Exp : ℕ := 1
-@[inherit_doc Base] abbrev Bound : ℕ := 2
-@[inherit_doc Base] abbrev Cnt : ℕ := 3
-@[inherit_doc Base] abbrev Acc : ℕ := 4
+ abbrev Exp : ℕ := 1
+ abbrev Bound : ℕ := 2
+ abbrev Cnt : ℕ := 3
+ abbrev Acc : ℕ := 4
 
 end PowLt
 
@@ -104,7 +105,7 @@ theorem powLt_meets {μ : ℕ → ℤ} {pPow g e t : ℕ} (hP : P[pPow]? = some 
   light_set (1 : ℕ)
   -- while cnt < e.  Before round i, cnt = i and prod = capPow g t i.
   refine Ends.next _ (Ends.whileBlock
-    (fun i σ => σ = ⟨frame [g, e, t, i, (capPow g t i : ℕ)], μ⟩) e (by simp [capPow]) ?round ?done
+    (fun i σ => σ = ⟨frame [g, e, t, i, (capPow g t i : ℕ)], μ⟩) e tac_simp [capPow] ?round ?done
     le_rfl) (by simp; omega)
   case round =>
     rintro i _ hi rfl
@@ -125,9 +126,9 @@ theorem powLt_meets {μ : ℕ → ℤ} {pPow g e t : ℕ} (hP : P[pPow]? = some 
     refine ⟨by light_side, by light_side,
       Ends.iteLast (fun h => ?_) (fun h => ?_) (hT := by simp; omega)⟩
     · have hlt : g ^ e < t := hiff.1 (by simpa using h)
-      exact Ends.setTo 1 (by simp [hlt]) (hT := by simp; omega)
+      exact Ends.setTo 1 tac_simp [hlt] (hT := by simp; omega)
     · have hlt : ¬ g ^ e < t := fun h' => h (by simpa using hiff.2 h')
-      exact Ends.setTo 0 (by simp [hlt]) (hT := by simp; omega)
+      exact Ends.setTo 0 tac_simp [hlt] (hT := by simp; omega)
 
 /-! ## Roots, rounded up -/
 
@@ -135,13 +136,13 @@ namespace RootCeil
 
 /-- The local variables of rootCeil: the arguments e, t; the candidate g; whether g^e < t. -/
 abbrev Exp : ℕ := 0
-@[inherit_doc Exp] abbrev Bound : ℕ := 1
-@[inherit_doc Exp] abbrev Cand : ℕ := 2
-@[inherit_doc Exp] abbrev More : ℕ := 3
+ abbrev Bound : ℕ := 1
+ abbrev Cand : ℕ := 2
+ abbrev More : ℕ := 3
 
 end RootCeil
 
-open RootCeil in
+open RootCeil
 /-- rootCeil(e, t), over the procedure pPow (powLt). -/
 def rootCeilBody (pPow : ℕ) : Stmt :=
   .set Cand (k 1) ;;
@@ -182,23 +183,23 @@ theorem rootCeil_meets {μ : ℕ → ℤ} {pRoot pPow e t : ℕ} (hR : P[pRoot]?
   -- while more = 1.  Before round i, cand = i + 1.
   refine Ends.next _ (Ends.whileConst
     (fun i σ => σ = ⟨frame [e, t, (i + 1 : ℕ), if i + 1 < y + 1 then 1 else 0], μ⟩) y (16 * e + 23)
-    (by simp) ?round ?done le_rfl) (by simp; ring_nf; omega)
+    tac_simp ?round ?done le_rfl) (by simp; ring_nf; omega)
   case round =>
     rintro i _ hi rfl
     -- cand := cand + 1; more := powLt(cand, e, t)
     refine ⟨by light_side, by simp [hi], Ends.setToThen (i + 1 + 1 : ℕ)
-      (Ends.callTo (test (i + 1 + 1) (by omega) (by omega)) ?_)⟩
+      (Ends.callTo (test (i + 1 + 1) tac_omega tac_omega) ?_)⟩
     rintro _ μ' ⟨rfl, hμ⟩
     simp [hμ]
   case done =>
     rintro _ rfl
     -- return cand
-    exact ⟨by light_side, by simp, Ends.setTo (y + 1 : ℕ) (by simp) (hT := by simp; ring_nf; omega)⟩
+    exact ⟨by light_side, by simp, Ends.setTo (y + 1 : ℕ) tac_simp (hT := by simp; ring_nf; omega)⟩
 
 /-- Rounding a root down is rounding the root of the next number up, minus one. -/
 theorem rootCeil_succ {e : ℕ} (he : e ≠ 0) (t : ℕ) : rootCeil e (t + 1) = rootFloor e t + 1 := by
   have h : ∀ g, rootCeil e (t + 1) ≤ g ↔ rootFloor e t + 1 ≤ g := fun g => by
-    rw [rootCeil_le_iff he (by omega), Nat.succ_le_iff, Nat.succ_le_iff, ← not_le, ← not_le,
+    rw [rootCeil_le_iff he tac_omega, Nat.succ_le_iff, Nat.succ_le_iff, ← not_le, ← not_le,
       le_rootFloor_iff he]
   exact le_antisymm ((h _).2 le_rfl) ((h _).1 le_rfl)
 
@@ -224,7 +225,7 @@ private theorem queryCapNat_test_bounds {n D C c : ℕ} (hD : 1 ≤ D)
       ((c : ℤ) + 1) * ((c : ℤ) + 1) ≤ ((c : ℤ) + 1) * ((c : ℤ) + 1) * D ∧
       ((c : ℤ) + 1) * ((c : ℤ) + 1) * D ≤ 4 * ((n ^ 4 : ℕ) : ℤ) + D := by
   have hmono : (c + 1) * (c + 1) * D ≤ (C + 1) * (C + 1) * D :=
-    Nat.mul_le_mul_right _ (Nat.mul_le_mul (by omega) (by omega))
+    Nat.mul_le_mul_right _ (Nat.mul_le_mul tac_omega tac_omega)
   exact ⟨by exact_mod_cast Nat.le_mul_of_pos_right (c + 1) (Nat.succ_pos c),
     by exact_mod_cast Nat.le_mul_of_pos_right ((c + 1) * (c + 1)) hD,
     by exact_mod_cast hmono.trans hmax⟩
@@ -258,7 +259,7 @@ theorem queryCapNat_meets {μ : ℕ → ℤ} {q n D : ℕ} (hP : P[q]? = some qu
   light_set N using hfour
   light_set (0 : ℕ)
   -- while (cand + 1)² D ≤ n4: cand := cand + 1
-  refine Ends.next _ (Ends.whileBlock (fun c σ => σ = ⟨frame [n, D, N, c], μ⟩) C (by simp) ?round
+  refine Ends.next _ (Ends.whileBlock (fun c σ => σ = ⟨frame [n, D, N, c], μ⟩) C tac_simp ?round
     ?done le_rfl)
   case round =>
     rintro c _ hc rfl
@@ -270,7 +271,7 @@ theorem queryCapNat_meets {μ : ℕ → ℤ} {q n D : ℕ} (hP : P[q]? = some qu
     have hb := bounds C le_rfl
     have hnot := mt (test C).2 (Nat.not_succ_le_self C)
     -- return cand
-    exact ⟨by light_side, by light_side, Ends.setTo C (by simp)⟩
+    exact ⟨by light_side, by light_side, Ends.setTo C tac_simp⟩
 
 /-- ceilDiv(a, b).  Locals 0 and 1 are the arguments, local 2 is the candidate q, local 3 is
 q b. -/
@@ -297,20 +298,18 @@ theorem ceilDiv_meets {μ : ℕ → ℤ} {q a b : ℕ} (hP : P[q]? = some ceilDi
   light_set (0 : ℕ)
   light_set (0 : ℕ)
   -- while prod < a: prod := prod + b; cand := cand + 1.  Before round i, prod = i b.
-  refine Ends.next _ (Ends.whileBlock (fun i σ => σ = ⟨frame [a, b, i, (i * b : ℕ)], μ⟩) q (by simp)
+  refine Ends.next _ (Ends.whileBlock (fun i σ => σ = ⟨frame [a, b, i, (i * b : ℕ)], μ⟩) q tac_simp
     ?round ?done le_rfl)
   case round =>
     rintro i _ hi rfl
     have hlt := (test i).1 hi
-    have hle : i ≤ i * b := Nat.le_mul_of_pos_right i hb
+    have hle := Nat.le_mul_of_pos_right i hb
     rw [Nat.succ_mul]
-    generalize i * b = m at hlt hle
     exact ⟨by light_side, by light_side, by light_side, by simp [update_frame_setLocal]⟩
   case done =>
     rintro _ rfl
     have hnot := mt (test q).2 (lt_irrefl q)
-    generalize q * b = m at hnot
     -- return cand
-    exact ⟨by light_side, by light_side, Ends.setTo q (by simp)⟩
+    exact ⟨by light_side, by light_side, Ends.setTo q tac_simp⟩
 
 end Light.Sec3

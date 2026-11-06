@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Lib.Seg
 public import ThreeSumApsp.Lang.Rules
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # A pass over an array
@@ -54,7 +55,7 @@ theorem Ends.pass {c x y n T : ℕ} {e : Expr} {loc : ℕ → ℤ} {Q : State �
   refine Ends.forMem (fun j μ' => μ' = wrote μ dst f j) n _ wrote_zero.symm
     (fun j μ' hj hμ' => Ends.block ?round le_rfl)
     (fun μ' h => by rw [h]; exact done)
-    (fun j μ' _ _ => ⟨trivial, (Function.update_of_ne hx _ _).trans hlen⟩) (by omega)
+    (fun j μ' _ _ => ⟨trivial, (Function.update_of_ne hx _ _).trans hlen⟩) tac_omega
     (le_trans (le_of_eq (by simp only [Stmt.blockCost, Expr.cost]; ring)) hT)
   -- Round j: dst[j] := e.
   subst hμ'

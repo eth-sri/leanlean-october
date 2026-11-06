@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Lib.Copy
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Contracts
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Corollaries 26 and 31 in the light language: procedure numbers, time functions and interfaces
@@ -31,7 +32,7 @@ inner products. Nothing is assumed about the cells from fr on.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 namespace Proc
 abbrev copy : ℕ := 58
@@ -118,13 +119,13 @@ namespace Log4
 /-- The locals of log4: the argument D, which the result replaces; the address a; the power of 4;
 and its exponent. -/
 abbrev Dim : ℕ := 0
-@[inherit_doc Dim] abbrev Cell : ℕ := 1
-@[inherit_doc Dim] abbrev Power : ℕ := 2
-@[inherit_doc Dim] abbrev Exp : ℕ := 3
+ abbrev Cell : ℕ := 1
+ abbrev Power : ℕ := 2
+ abbrev Exp : ℕ := 3
 
 end Log4
 
-open Log4 in
+open Log4
 /-- log4(D, a): multiply by 4 until D is reached; store the power at a and return the exponent. -/
 def log4Body : Stmt :=
   .set Power (k 1) ;; .set Exp (k 0) ;;
@@ -135,9 +136,8 @@ theorem log4_meets {lim : Limits} {P : Program} (hP : P[Proc.log4]? = some log4B
     (hstd : Std lim) : Log4Spec lim P := by
   intro D₀ a μ ha hw hmw
   refine fun d _ => ⟨log4Body, hP, ?_⟩
-  have h100 := hstd.const_le
   obtain ⟨F, hF⟩ : ∃ F, F = 4 ^ Nat.clog 4 D₀ := ⟨_, rfl⟩
-  have hge : D₀ ≤ F := hF ▸ Nat.le_pow_clog (by norm_num) D₀
+  have hge := hF ▸ Nat.le_pow_clog tac_norm_num D₀
   rw [← hF] at hw ⊢
   unfold log4Body tLog4
   -- pow := 1 ; exp := 0
@@ -148,10 +148,10 @@ theorem log4_meets {lim : Limits} {P : Program} (hP : P[Proc.log4]? = some log4B
     (Nat.clog 4 D₀) rfl ?round ?done (hT := le_rfl))
   case round =>
     rintro i _ hi rfl
-    have hlt := (Nat.lt_clog_iff_pow_lt (by norm_num)).1 hi
+    have hlt := (Nat.lt_clog_iff_pow_lt tac_norm_num).1 hi
     have hpow : 4 ^ i * 4 ≤ F := by
       rw [hF, ← pow_succ]
-      exact Nat.pow_le_pow_right (by norm_num) hi
+      exact Nat.pow_le_pow_right tac_norm_num hi
     rw [pow_succ]
     generalize 4 ^ i = p at hlt hpow ⊢
     exact ⟨by light_side, by simp; omega, by light_side, by simp [update_frame_setLocal]⟩

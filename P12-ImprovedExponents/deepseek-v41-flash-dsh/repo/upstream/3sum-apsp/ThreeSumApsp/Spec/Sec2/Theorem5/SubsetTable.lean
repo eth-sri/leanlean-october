@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Spec.Sec2.Theorem5.Subsets
 public import Mathlib.Algebra.Order.Ring.Int
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The table of subsets: how a row is made from the row before it
@@ -103,7 +104,7 @@ include hL hrow
 before them, and 1 for the cell before these. -/
 private theorem row_sub (j : ℕ) (hj : j ≤ b + a + 1) :
     row (L - 1 - j) = if j < b then 1 else if j < b + a + 1 then 0 else 1 := by
-  rw [hrow _ (by omega), getD_shape]
+  rw [hrow _ tac_omega, getD_shape]
   grind [bit]
 
 /-- Phase 0: the `b` ones at the end of the row are counted. -/
@@ -111,19 +112,19 @@ private theorem scanAt_count (j : ℕ) (hj : j ≤ b) : scanAt row L j = ⟨0, j
   induction j with
   | zero => rfl
   | succ j ih =>
-    rw [scanAt, ih (by omega), row_sub hL hrow j (by omega), if_pos (by omega)]
+    rw [scanAt, ih tac_omega, row_sub hL hrow j tac_omega, if_pos tac_omega]
     simp [scanStep]
 
 /-- Phase 1: the `a + 1` zeros before the ones are passed. -/
 private theorem scanAt_pass (i : ℕ) (hi : i ≤ a) : scanAt row L (b + 1 + i) = ⟨1, b, 0⟩ := by
   induction i with
   | zero =>
-    rw [Nat.add_zero, scanAt, scanAt_count hL hrow b le_rfl, row_sub hL hrow b (by omega),
-      if_neg (by omega), if_pos (by omega)]
+    rw [Nat.add_zero, scanAt, scanAt_count hL hrow b le_rfl, row_sub hL hrow b tac_omega,
+      if_neg tac_omega, if_pos tac_omega]
     simp [scanStep]
   | succ i ih =>
-    rw [← Nat.add_assoc, scanAt, ih (by omega), row_sub hL hrow _ (by omega), if_neg (by omega),
-      if_pos (by omega)]
+    rw [← Nat.add_assoc, scanAt, ih tac_omega, row_sub hL hrow _ tac_omega, if_neg tac_omega,
+      if_pos tac_omega]
     simp [scanStep]
 
 /-- Phase 2: the 1 before the `a + 1` zeros is found, at the position after `pre`, and from then on
@@ -132,12 +133,12 @@ private theorem scanAt_found (i : ℕ) (hi : i ≤ pre.length) :
     scanAt row L (b + 1 + a + 1 + i) = ⟨2, b, pre.length⟩ := by
   induction i with
   | zero =>
-    rw [Nat.add_zero, scanAt, scanAt_pass hL hrow a le_rfl, row_sub hL hrow _ (by omega),
-      if_neg (by omega), if_neg (by omega),
+    rw [Nat.add_zero, scanAt, scanAt_pass hL hrow a le_rfl, row_sub hL hrow _ tac_omega,
+      if_neg tac_omega, if_neg tac_omega,
       show (L : ℤ) - 1 - ((b + 1 + a : ℕ) : ℤ) = pre.length by omega]
     simp [scanStep]
   | succ i ih =>
-    rw [← Nat.add_assoc, scanAt, ih (by omega)]
+    rw [← Nat.add_assoc, scanAt, ih tac_omega]
     rfl
 
 /-- The scan of a row of the shape `pre 1 0 0^a 1^b` finds `b` and the length of `pre`. -/

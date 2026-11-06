@@ -9,6 +9,7 @@ public import ThreeSumApsp.Lang.Lib.NextPair
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.ZOrderFacts
 public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Strassen
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Matrices over ℤ[x]/(x^p - 1) in Z-order: the table of places, and P and Q of Theorem 17's proof
@@ -44,10 +45,10 @@ namespace SpreadTable
 /-- The local variables of spreadTable.  The arguments: Dst = dst, Rows = N2.  Then Idx = i;
 Half = j = ⌊i/2⌋; Parity, the parity of i. -/
 abbrev Dst : ℕ := 0
-@[inherit_doc Dst] abbrev Rows : ℕ := 1
-@[inherit_doc Dst] abbrev Idx : ℕ := 2
-@[inherit_doc Dst] abbrev Half : ℕ := 3
-@[inherit_doc Dst] abbrev Parity : ℕ := 4
+ abbrev Rows : ℕ := 1
+ abbrev Idx : ℕ := 2
+ abbrev Half : ℕ := 3
+ abbrev Parity : ℕ := 4
 
 end SpreadTable
 
@@ -73,7 +74,7 @@ section spreadTable
 
 variable {μ μ' : ℕ → ℤ} {dst N₂ : ℕ}
 
-open SpreadTable in
+open SpreadTable
 /-- **One entry of the table.** -/
 theorem spreadStep_spec (hw : (lim.space : ℤ) ≤ lim.word) (h4 : (4 : ℤ) ≤ lim.word)
     (hsq : ((N₂ * N₂ : ℕ) : ℤ) ≤ lim.word) (hdst : dst + N₂ ≤ lim.space) {i : ℕ} (hi0 : 0 < i)
@@ -81,13 +82,11 @@ theorem spreadStep_spec (hw : (lim.space : ℤ) ≤ lim.word) (h4 : (4 : ℤ) �
     Ends lim P d spreadStep ⟨frame [dst, N₂, i, (i / 2 : ℕ), (i % 2 : ℕ)], μ'⟩ 26 fun σ' =>
       σ' = ⟨frame [dst, N₂, (i + 1 : ℕ), ((i + 1) / 2 : ℕ), ((i + 1) % 2 : ℕ)],
         Function.update μ' (dst + i) (spread i : ℕ)⟩ := by
-  have hcell : μ' (dst + i / 2) = (spread (i / 2) : ℕ) := seg_spreadList_get hseg (by omega)
+  have hcell : μ' (dst + i / 2) = (spread (i / 2) : ℕ) := seg_spreadList_get hseg tac_omega
   have hspread := spread_eq i
-  have hle : spread i ≤ N₂ * N₂ := (spread_le_sq i).trans (Nat.mul_le_mul hi.le hi.le)
+  have hle := (spread_le_sq i).trans (Nat.mul_le_mul hi.le hi.le)
   have heven : i % 2 = 0 → (i + 1) / 2 = i / 2 ∧ (i + 1) % 2 = 1 := by omega
   have hodd : i % 2 ≠ 0 → (i + 1) / 2 = i / 2 + 1 ∧ (i + 1) % 2 = 0 := by omega
-  have hj : i / 2 < i := by omega
-  have hb : i % 2 < 2 := by omega
   generalize i / 2 = j at *
   generalize i % 2 = b at *
   -- dst[i] := 4 dst[j] + parity
@@ -103,7 +102,7 @@ theorem spreadStep_spec (hw : (lim.space : ℤ) ≤ lim.word) (h4 : (4 : ℤ) �
     exact Ends.seqAssoc
       (Ends.setToThen (0 : ℕ) (Ends.setToThen (j + 1 : ℕ) (Ends.setTo (i + 1 : ℕ) rfl)))
 
-open SpreadTable in
+open SpreadTable
 /-- **spreadTable**: at most 30 N2 + 17 steps. -/
 theorem spreadTable_spec (hw : (lim.space : ℤ) ≤ lim.word) (h4 : (4 : ℤ) ≤ lim.word)
     (hsq : ((N₂ * N₂ : ℕ) : ℤ) ≤ lim.word) (hdst : dst + N₂ ≤ lim.space) :
@@ -136,7 +135,7 @@ theorem spreadTable_spec (hw : (lim.space : ℤ) ≤ lim.word) (h4 : (4 : ℤ) �
   case round =>
     rintro r _ hr ⟨μ', rfl, hseg, hrest⟩
     refine ⟨by light_side, by light_side,
-      (spreadStep_spec hw h4 hsq hdst (Nat.succ_pos r) (by omega) hseg).mono le_rfl ?_⟩
+      (spreadStep_spec hw h4 hsq hdst (Nat.succ_pos r) tac_omega hseg).mono le_rfl ?_⟩
     rintro _ rfl
     refine ⟨_, rfl, ?_, hrest.update ⟨by omega, by omega⟩ _⟩
     have hsnoc := hseg.snoc (spread (r + 1) : ℕ)
@@ -162,30 +161,30 @@ Rows = N2, Prime = p, MulX = mx, MulY = my.  Then Ptr, the first cell that is st
 Stop, the end of the matrix; Square = n²; Idx = t = x n + y, the number of the pair; Row = x;
 Col = y. -/
 abbrev Dst : ℕ := 0
-@[inherit_doc Dst] abbrev Residues : ℕ := 1
-@[inherit_doc Dst] abbrev Places : ℕ := 2
-@[inherit_doc Dst] abbrev Num : ℕ := 3
-@[inherit_doc Dst] abbrev Rows : ℕ := 4
-@[inherit_doc Dst] abbrev Prime : ℕ := 5
-@[inherit_doc Dst] abbrev MulX : ℕ := 6
-@[inherit_doc Dst] abbrev MulY : ℕ := 7
-@[inherit_doc Dst] abbrev Ptr : ℕ := 8
-@[inherit_doc Dst] abbrev Stop : ℕ := 9
-@[inherit_doc Dst] abbrev Square : ℕ := 10
-@[inherit_doc Dst] abbrev Idx : ℕ := 11
-@[inherit_doc Dst] abbrev Row : ℕ := 12
-@[inherit_doc Dst] abbrev Col : ℕ := 13
+ abbrev Residues : ℕ := 1
+ abbrev Places : ℕ := 2
+ abbrev Num : ℕ := 3
+ abbrev Rows : ℕ := 4
+ abbrev Prime : ℕ := 5
+ abbrev MulX : ℕ := 6
+ abbrev MulY : ℕ := 7
+ abbrev Ptr : ℕ := 8
+ abbrev Stop : ℕ := 9
+ abbrev Square : ℕ := 10
+ abbrev Idx : ℕ := 11
+ abbrev Row : ℕ := 12
+ abbrev Col : ℕ := 13
 
 end BuildZ
 
-open BuildZ in
+open BuildZ
 /-- The N2 N2 p cells of the matrix are cleared. -/
 def buildZClear : Stmt :=
   .set Ptr (v Dst) ;;
   .set Stop (v Dst +' v Rows *' v Rows *' v Prime) ;;
   .while (v Ptr <' v Stop) (.store (v Ptr) (k 0) ;; .set Ptr (v Ptr +' k 1))
 
-open BuildZ in
+open BuildZ
 /-- The pair (x, y) marks its cell: dst[(mx mort[x] + my mort[y]) p + r[t]] := 1. -/
 def buildZMark : Stmt :=
   .store
@@ -193,7 +192,7 @@ def buildZMark : Stmt :=
       +' M (v Residues +' v Idx))
     (k 1)
 
-open BuildZ in
+open BuildZ
 /-- buildZ(dst, r, mort, n, N2, p, mx, my). -/
 def buildZBody : Stmt :=
   buildZClear ;;
@@ -229,7 +228,7 @@ theorem length_markList (len : ℕ) (idx : ℕ → ℕ) (t : ℕ) : (markList le
   | zero => simp [markList]
   | succ t ih => simp [markList, ih]
 
-open Classical in
+open Classical
 /-- An entry of the list is 1 if its place has been marked, and 0 if not. -/
 theorem getD_markList {len : ℕ} (idx : ℕ → ℕ) (t : ℕ) {i : ℕ} (hi : i < len) :
     (markList len idx t).getD i 0 = if ∃ s < t, idx s = i then 1 else 0 := by
@@ -277,9 +276,9 @@ theorem markList_eq_zList {n K p m : ℕ} (R : List ℕ) (ρ κ : ℕ → ℕ) (
     · rw [h] at hi; omega
     · exact h
   rw [← List.getD_eq_getElem _ 0 hi₁, ← List.getD_eq_getElem _ 0 hi₂, getD_markList _ _ hi]
-  have hz : i / p < 4 ^ K := Nat.div_lt_of_lt_mul (by rwa [Nat.mul_comm] at hi)
+  have hz := Nat.div_lt_of_lt_mul (by rwa [Nat.mul_comm] at hi)
   have hs : i % p < p := Nat.mod_lt _ hp
-  have hsplit : i = i / p * p + i % p := (Nat.div_add_mod' i p).symm
+  have hsplit := (Nat.div_add_mod' i p).symm
   have hget :
       (zList K fun a c => if a < n ∧ c < n then vunit p (R.getD (τ a c) 0) else zeros p).getD i 0 =
         (if zRow (i / p) < n ∧ zCol (i / p) < n then
@@ -347,11 +346,11 @@ theorem readR (pre : BuildZPre lim μ dst r mort n K p R) (h : SameOutside μ μ
 theorem readM (pre : BuildZPre lim μ dst r mort n K p R) (h : SameOutside μ μ' dst (4 ^ K * p))
     {x : ℕ} (hx : x < n) : μ' (mort + x) = (spread x : ℕ) := by
   light_facts pre
-  exact seg_spreadList_get pre.table.keep.seg (by omega)
+  exact seg_spreadList_get pre.table.keep.seg tac_omega
 
 end BuildZPre
 
-open BuildZ in
+open BuildZ
 /-- **The matrix is cleared.** -/
 theorem buildZClear_spec (hw : (lim.space : ℤ) ≤ lim.word) {N₂ len : ℕ}
     (hlen : N₂ * N₂ * p = len) (hsq : N₂ * N₂ ≤ len) (hspace : dst + len < lim.space) :
@@ -382,7 +381,7 @@ theorem buildZClear_spec (hw : (lim.space : ℤ) ≤ lim.word) {N₂ len : ℕ}
     rw [List.length_replicate] at hsnoc
     rwa [List.replicate_succ']
 
-open BuildZ in
+open BuildZ
 /-- **The pair number t marks its cell.** -/
 theorem buildZMark_spec (pre : BuildZPre lim μ dst r mort n K p R)
     (hplace : ∀ x < n, ∀ y < n, mx * spread x + my * spread y < 4 ^ K) {t : ℕ} (ht : t < n * n)
@@ -394,8 +393,8 @@ theorem buildZMark_spec (pre : BuildZPre lim μ dst r mort n K p R)
         (t % n : ℕ)], Function.update μ'
           (dst + ((mx * spread (t / n) + my * spread (t % n)) * p + R.getD t 0)) 1⟩ := by
   light_facts pre pre.res pre.table
-  have hrow : t / n < n := Nat.div_lt_of_lt_mul' ht
-  have hcol : t % n < n := Nat.mod_lt_of_lt_mul ht
+  have hrow := Nat.div_lt_of_lt_mul' ht
+  have hcol := Nat.mod_lt_of_lt_mul ht
   have hreadX := pre.readM hrest hrow
   have hreadY := pre.readM hrest hcol
   have hreadR := pre.readR hrest ht
@@ -408,14 +407,11 @@ theorem buildZMark_spec (pre : BuildZPre lim μ dst r mort n K p R)
   generalize spread x = sx at *
   generalize spread y = sy at *
   have hidxZ : ((mx : ℤ) * sx + my * sy) * p + rho < (4 ^ K * p : ℕ) := by exact_mod_cast hidx
-  have hzZ : (mx : ℤ) * sx + my * sy < (4 ^ K : ℕ) := by exact_mod_cast hz
-  have hx0 : (0 : ℤ) ≤ (mx : ℤ) * sx := by positivity
-  have hy0 : (0 : ℤ) ≤ (my : ℤ) * sy := by positivity
   have hp0 : (0 : ℤ) ≤ ((mx : ℤ) * sx + my * sy) * p := by positivity
   exact Ends.storeTo (dst + ((mx * sx + my * sy) * p + rho)) 1 rfl
     (by light_side [hreadX, hreadY, hreadR])
 
-open BuildZ in
+open BuildZ
 /-- **buildZ**, for any two multipliers that keep the places inside the matrix. -/
 theorem buildZ_spec (pre : BuildZPre lim μ dst r mort n K p R)
     (hplace : ∀ x < n, ∀ y < n, mx * spread x + my * spread y < 4 ^ K) :
@@ -431,7 +427,7 @@ theorem buildZ_spec (pre : BuildZPre lim μ dst r mort n K p R)
   unfold buildZTime
   rw [h44]
   -- the matrix is cleared
-  light_piece (buildZClear_spec pre.space_le h44p (by omega) pre.dst_le)
+  light_piece (buildZClear_spec pre.space_le h44p tac_omega pre.dst_le)
     with _ ⟨μ₁, rfl, hzero, hrest⟩
   -- nn := n n; x := 0; y := 0
   light_set (n * n : ℕ)
@@ -462,7 +458,7 @@ theorem buildZ_spec (pre : BuildZPre lim μ dst r mort n K p R)
       (pre.res.getD_lt ht)
     refine Ends.next 24 ((buildZMark_spec pre hplace ht _ _ hr).mono le_rfl ?_)
     rintro _ rfl
-    refine Ends.nextPair ?_ hn (by omega) (by omega) rfl rfl rfl
+    refine Ends.nextPair ?_ hn tac_omega tac_omega rfl rfl rfl
     exact ⟨by simp, _, by rw [update_frame_setLocal]; rfl,
       hseg.update_in (by rw [length_markList]; exact hidx) 1,
       hr.update ⟨Nat.le_add_right _ _, Nat.add_lt_add_left hidx _⟩ _⟩

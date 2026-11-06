@@ -13,6 +13,7 @@ public import Mathlib.Logic.Function.Iterate
 public import Mathlib.Order.Interval.Finset.Nat
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Ring
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Strings of digits with a bounded number of nines (Section 4.2, proofs of Lemma 29, Theorem 30)
@@ -203,12 +204,12 @@ theorem length_nineStrs (n lo hi : ℕ) :
     rw [nineStrs]
     split_ifs with h
     · subst h
-      rw [Finset.sum_eq_single_of_mem 0 (by simp) fun b _ hb => by
+      rw [Finset.sum_eq_single_of_mem 0 tac_simp fun b _ hb => by
         rw [Nat.choose_eq_zero_of_lt (Nat.pos_of_ne_zero hb), zero_mul]]
       rfl
     · refine (Finset.sum_eq_zero fun f hf => ?_).symm
       have := (Finset.mem_Icc.1 hf).1
-      rw [Nat.choose_eq_zero_of_lt (by omega), zero_mul]
+      rw [Nat.choose_eq_zero_of_lt tac_omega, zero_mul]
   | succ n ih =>
     rw [length_nineStrs_succ, ih]
     rcases hi with _ | h
@@ -262,8 +263,8 @@ theorem head?_nineStrs {n lo hi : ℕ} (h : lo ≤ n) (h' : lo ≤ hi) :
     rcases Nat.lt_or_ge n lo with hlo | hlo
     · -- all digits are nines
       obtain rfl : lo = n + 1 := by omega
-      rw [nineStrs_eq_nil (Or.inl (Nat.lt_succ_self n)), if_neg (by omega), flatMap_map_nil,
-        List.nil_append, List.head?_map, Nat.add_sub_cancel, ih le_rfl (by omega),
+      rw [nineStrs_eq_nil (Or.inl (Nat.lt_succ_self n)), if_neg tac_omega, flatMap_map_nil,
+        List.nil_append, List.head?_map, Nat.add_sub_cancel, ih le_rfl tac_omega,
         nineFirst_self_succ]
       rfl
     · rw [List.range_succ_eq_map, List.flatMap_cons, List.append_assoc, List.head?_append,
@@ -296,7 +297,7 @@ private theorem NextTo.getElem {α : Type} {f : α → Option α} {A : List α} 
     | zero => rw [List.getElem_cons_zero, h.1, List.getElem?_cons_succ, List.head?_eq_getElem?]
     | succ i =>
       rw [List.getElem_cons_succ, List.getElem?_cons_succ]
-      exact ih h.2 i (by simpa using hi)
+      exact ih h.2 i ((by simpa using hi))
 
 /-- The block of the strings with the first digit d. -/
 private theorem nextTo_map_cons (lo hi n d : ℕ) (S : List (List ℕ)) (hS : ∀ l ∈ S, l.length = n)
@@ -305,10 +306,10 @@ private theorem nextTo_map_cons (lo hi n d : ℕ) (S : List (List ℕ)) (hS : �
   induction S with
   | nil => trivial
   | cons x r ih =>
-    refine ⟨?_, ih (fun l hl => hS l (by simp [hl])) h.2⟩
+    refine ⟨?_, ih (fun l hl => hS l tac_simp [hl]) h.2⟩
     rw [nineNext, h.1, Option.or_none]
     rcases r with _ | ⟨y, r⟩
-    · simp only [List.head?_nil, List.map_nil, Option.none_or, hS x (by simp)]
+    · simp only [List.head?_nil, List.map_nil, Option.none_or, hS x tac_simp]
     · rfl
 
 /-- The blocks of the strings with the first digits a, a + 1, …, a + k - 1, followed by the block
@@ -341,7 +342,7 @@ private theorem head_nineBlocks (hn : lo ≤ n) (hh : lo ≤ hi) {a k : ℕ} (ha
     rw [List.range'_zero, List.flatMap_nil, List.nil_append]
     by_cases h0 : hi = 0
     · simp [h0]
-    · rw [if_neg h0, List.head?_map, head?_nineStrs (by omega) (by omega), if_neg (lt_irrefl 8),
+    · rw [if_neg h0, List.head?_map, head?_nineStrs tac_omega tac_omega, if_neg (lt_irrefl 8),
         if_pos ⟨rfl, Nat.pos_of_ne_zero h0⟩]
       rfl
   | succ k =>
@@ -360,9 +361,9 @@ private theorem nextTo_nineBlocks (hn : lo ≤ n) (hh : lo ≤ hi)
     have hsplit : nineBlocks n lo hi a (k + 1)
         = (nineStrs n lo hi).map (a :: ·) ++ nineBlocks n lo hi (a + 1) k := by
       rw [nineBlocks, nineBlocks, List.range'_succ, List.flatMap_cons, List.append_assoc]
-    rw [hsplit, nextTo_append, Option.or_none, head_nineBlocks hn hh (by omega)]
-    refine ⟨nextTo_map_cons lo hi n a _ (fun _ => length_of_mem_nineStrs) ?_, ih (a + 1) (by omega)⟩
-    rwa [if_neg (by omega), if_neg (by omega)]
+    rw [hsplit, nextTo_append, Option.or_none, head_nineBlocks hn hh tac_omega]
+    refine ⟨nextTo_map_cons lo hi n a _ (fun _ => length_of_mem_nineStrs) ?_, ih (a + 1) tac_omega⟩
+    rwa [if_neg tac_omega, if_neg tac_omega]
 
 end
 
@@ -380,7 +381,7 @@ private theorem nextTo_nineStrs (n lo hi : ℕ) :
     · rw [nineStrs, List.range_eq_range']
       exact nextTo_nineBlocks h.1 h.2 (ih lo hi) (ih _ _) 9 0 rfl
     · -- only strings that begin with a nine
-      rw [nineStrs, nineStrs_eq_nil (by omega), flatMap_map_nil]
+      rw [nineStrs, nineStrs_eq_nil tac_omega, flatMap_map_nil]
       exact nextTo_nineBlocks_zero 0 (ih _ _)
 
 /-- `nineNext` goes from each string of the list to the following one, and from the last one to

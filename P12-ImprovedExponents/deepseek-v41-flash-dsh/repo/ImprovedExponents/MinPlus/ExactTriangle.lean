@@ -8,6 +8,7 @@ public import Mathlib.Data.Nat.Log
 public import Mathlib.Tactic.Linarith.Frontend
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Ring.RingNF
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -62,8 +63,8 @@ theorem exists_mem_lemmaFInstances_iff (b : ℕ) (f : ℕ → ℤ) :
     · exact Or.inr ⟨ℓ, by omega, Or.inr hf⟩
   · rintro (h | ⟨ℓ, hℓ, h | h⟩)
     · exact ⟨(0, 1), mem_insert_self _ _, h⟩
-    · exact ⟨(ℓ, 2), mem_insert_of_mem (mem_product.mpr ⟨mem_range.mpr (by omega), by simp⟩), h⟩
-    · exact ⟨(ℓ, 3), mem_insert_of_mem (mem_product.mpr ⟨mem_range.mpr (by omega), by simp⟩), h⟩
+    · exact ⟨(ℓ, 2), mem_insert_of_mem (mem_product.mpr ⟨mem_range.mpr tac_omega, by simp⟩), h⟩
+    · exact ⟨(ℓ, 3), mem_insert_of_mem (mem_product.mpr ⟨mem_range.mpr tac_omega, by simp⟩), h⟩
 
 /-- Lemma F for integers `p, q` of absolute value at most `W` and a threshold `t` with
 `0 ≤ t + 2W < 2^b`, where `2W < 2^b`. -/
@@ -73,7 +74,6 @@ theorem lt_iff_exists_instance {b W : ℕ} {p q t : ℤ} (hp : |p| ≤ W) (hq : 
       (p + W) / 2 ^ c.1 + (q + W) / 2 ^ c.1 + (c.2 - (t + 2 * W) / 2 ^ c.1) = 0 := by
   have hp' := abs_le.mp hp
   have hq' := abs_le.mp hq
-  have hW' : (2 * W : ℤ) < 2 ^ b := by exact_mod_cast hW
   obtain ⟨x, hx⟩ := Int.eq_ofNat_of_zero_le (by linarith : 0 ≤ p + W)
   obtain ⟨y, hy⟩ := Int.eq_ofNat_of_zero_le (by linarith : 0 ≤ q + W)
   obtain ⟨u, hu⟩ := Int.eq_ofNat_of_zero_le (by linarith : 0 ≤ t + 2 * W)

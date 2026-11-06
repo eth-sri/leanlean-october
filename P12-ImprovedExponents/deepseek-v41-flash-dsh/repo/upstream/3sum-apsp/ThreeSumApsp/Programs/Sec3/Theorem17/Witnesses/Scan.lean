@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Instances
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Scanning a piece (the proof of Theorem 17)
@@ -53,28 +54,28 @@ namespace Scan
 the first vertex `c0` and the number `len` of vertices of the interval.  Then the counter `c`, the
 result so far, the weight `w(a,b)`, and the addresses of `w(b, c0)` and of `w(a, c0)`. -/
 abbrev AdrAB : ℕ := 0
-@[inherit_doc AdrAB] abbrev AdrBC : ℕ := 1
-@[inherit_doc AdrAB] abbrev AdrAC : ℕ := 2
-@[inherit_doc AdrAB] abbrev Size : ℕ := 3
-@[inherit_doc AdrAB] abbrev VtxA : ℕ := 4
-@[inherit_doc AdrAB] abbrev VtxB : ℕ := 5
-@[inherit_doc AdrAB] abbrev First : ℕ := 6
-@[inherit_doc AdrAB] abbrev Len : ℕ := 7
-@[inherit_doc AdrAB] abbrev Cnt : ℕ := 8
-@[inherit_doc AdrAB] abbrev Hit : ℕ := 9
-@[inherit_doc AdrAB] abbrev Wab : ℕ := 10
-@[inherit_doc AdrAB] abbrev RowB : ℕ := 11
-@[inherit_doc AdrAB] abbrev RowA : ℕ := 12
+ abbrev AdrBC : ℕ := 1
+ abbrev AdrAC : ℕ := 2
+ abbrev Size : ℕ := 3
+ abbrev VtxA : ℕ := 4
+ abbrev VtxB : ℕ := 5
+ abbrev First : ℕ := 6
+ abbrev Len : ℕ := 7
+ abbrev Cnt : ℕ := 8
+ abbrev Hit : ℕ := 9
+ abbrev Wab : ℕ := 10
+ abbrev RowB : ℕ := 11
+ abbrev RowA : ℕ := 12
 
 end Scan
 
-open Scan in
+open Scan
 /-- One round of `scan`: if `w(a,b) + w(b, c0 + c) + w(a, c0 + c) = 0` then hit := 1; c := c + 1. -/
 def scanRound : Stmt :=
   .ite (v Wab +' M (v RowB +' v Cnt) +' M (v RowA +' v Cnt) =' k 0) (.set Hit (k 1)) .skip ;;
   .set Cnt (v Cnt +' k 1)
 
-open Scan in
+open Scan
 /-- scan(ab, bc, ac, n, a, b, c0, len). -/
 def scanBody : Stmt :=
   .set Hit (k 0) ;;
@@ -115,18 +116,18 @@ theorem scan_spec {μ : ℕ → ℤ} {ab bc ac n a b c0 len U : ℕ} {AB BC AC :
     Ends lim P d scanBody ⟨frame [ab, bc, ac, n, a, b, c0, len], μ⟩ (tScan len) fun σ' =>
       σ'.loc 0 = flag (scanHit n AB BC AC a b c0 len = true) ∧ σ'.mem = μ := by
   light_facts C C.arrAB C.arrBC C.arrAC
-  have iab : a * n + b < n * n := Nat.mul_add_lt_mul ha hb
-  have ibc : b * n + (c0 + len) ≤ n * n := Nat.mul_add_le_mul hb hc
-  have iac : a * n + (c0 + len) ≤ n * n := Nat.mul_add_le_mul ha hc
+  have iab := Nat.mul_add_lt_mul ha hb
+  have ibc := Nat.mul_add_le_mul hb hc
+  have iac := Nat.mul_add_le_mul ha hc
   -- The weight `w(a,b)` and the addresses of `w(b,c0)` and `w(a,c0)`.
   obtain ⟨wab, hwab⟩ : ∃ z, z = AB.getD (a * n + b) 0 := ⟨_, rfl⟩
   obtain ⟨rowB, hrowB⟩ : ∃ r, r = bc + b * n + c0 := ⟨_, rfl⟩
   obtain ⟨rowA, hrowA⟩ : ∃ r, r = ac + a * n + c0 := ⟨_, rfl⟩
-  have hreadAB : μ (ab + (a * n + b)) = wab := (C.arrAB.read iab).trans hwab.symm
+  have hreadAB := (C.arrAB.read iab).trans hwab.symm
   have haddrAB : ((ab : ℤ) + (a : ℤ) * (n : ℤ) + (b : ℤ)).toNat = ab + (a * n + b) := by
     rw [show (ab : ℤ) + (a : ℤ) * (n : ℤ) + (b : ℤ) = ((ab + (a * n + b) : ℕ) : ℤ) by
       push_cast; ring, Int.toNat_natCast]
-  have leAB : |wab| ≤ U := hwab ▸ AbsLe.abs_getD_le (Int.natCast_nonneg U) C.arrAB.bound _
+  have leAB := hwab ▸ AbsLe.abs_getD_le (Int.natCast_nonneg U) C.arrAB.bound _
   unfold scanBody tScan
   -- hit := 0; wab := ab[a n + b]; rowB := bc + b n + c0; rowA := ac + a n + c0; c := 0
   light_set (0 : ℕ)
@@ -142,12 +143,12 @@ theorem scan_spec {μ : ℕ → ℤ} {ab bc ac n a b c0 len U : ℕ} {AB BC AC :
   case round =>
     rintro c _ hcl rfl
     have hreadBC : μ (rowB + c) = BC.getD (b * n + c0 + c) 0 := by
-      rw [← C.arrBC.read (by omega), hrowB, Nat.add_assoc bc, Nat.add_assoc bc]
+      rw [← C.arrBC.read tac_omega, hrowB, Nat.add_assoc bc, Nat.add_assoc bc]
     have hreadAC : μ (rowA + c) = AC.getD (a * n + c0 + c) 0 := by
-      rw [← C.arrAC.read (by omega), hrowA, Nat.add_assoc ac, Nat.add_assoc ac]
+      rw [← C.arrAC.read tac_omega, hrowA, Nat.add_assoc ac, Nat.add_assoc ac]
     refine ⟨by light_side, by light_side, ?_⟩
     rw [scanHit_succ, ← hwab]
-    exact scanRound_runs C.hw C.hU hreadBC hreadAC (by omega) (by omega) leAB
+    exact scanRound_runs C.hw C.hU hreadBC hreadAC tac_omega tac_omega leAB
       (AbsLe.abs_getD_le (Int.natCast_nonneg U) C.arrBC.bound _)
       (AbsLe.abs_getD_le (Int.natCast_nonneg U) C.arrAC.bound _)
   case done =>

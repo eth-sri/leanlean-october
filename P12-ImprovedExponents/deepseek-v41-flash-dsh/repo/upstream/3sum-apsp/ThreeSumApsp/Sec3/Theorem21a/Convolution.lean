@@ -70,7 +70,7 @@ private theorem exists_hasZeroTriangle {t N : ℕ} {x : Fin N → ℤ} {fill : �
   have hjt := Nat.mod_lt j.val ht
   have hj := Nat.div_add_mod' j.val t
   -- The three indices are `i`, `j` and `i + j`, so they are in range.
-  have hAB : i.val / t * t + i.val % t = i.val := Nat.div_add_mod' i.val t
+  have hAB := Nat.div_add_mod' i.val t
   have hBC : j.val / t * t + (j.val % t + i.val % t) - i.val % t = j.val := by omega
   have hAC : (i.val / t + j.val / t) * t + (j.val % t + i.val % t) = i.val + j.val := by
     rw [Nat.add_mul]

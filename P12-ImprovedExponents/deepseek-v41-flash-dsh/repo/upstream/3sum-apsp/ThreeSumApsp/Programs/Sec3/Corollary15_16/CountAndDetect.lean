@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Programs.LightModel
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Corollary 15: counting triangles with the thin matrix product, and detecting with counting
@@ -28,7 +29,7 @@ Two steps of the proof of Corollary 15, with "the problem is solved in time T" r
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 variable {lim : Limits} {d : ℕ}
 
@@ -85,7 +86,7 @@ theorem claim_lopCountFromThinProduct : Claim.LopCountFromThinProduct lightModel
   obtain ⟨P, p, Tn, need, hneed, hsol, htime⟩ := hT
   refine ⟨P, p, _, _, polyNeedN_snoc_one hneed, solvesN_count_of_thin hsol,
     fun n D w w' hn hD hw => ?_⟩
-  have := htime n D w w' 1 1 hn hD le_rfl hw (by norm_num)
+  have := htime n D w w' 1 1 hn hD le_rfl hw tac_norm_num
   simpa using this
 
 /-! ## Detecting with counting -/
@@ -95,19 +96,19 @@ namespace LopArgs
 /-- The local variables that hold the arguments of a solver of the thin matrix product or of a
 lopsided triangle problem: N, D, w, U, x, y, wi, wj, out, fr. -/
 abbrev N : ℕ := 0
-@[inherit_doc N] abbrev DD : ℕ := 1
-@[inherit_doc N] abbrev W : ℕ := 2
-@[inherit_doc N] abbrev U : ℕ := 3
-@[inherit_doc N] abbrev X : ℕ := 4
-@[inherit_doc N] abbrev Y : ℕ := 5
-@[inherit_doc N] abbrev WI : ℕ := 6
-@[inherit_doc N] abbrev WJ : ℕ := 7
-@[inherit_doc N] abbrev OUT : ℕ := 8
-@[inherit_doc N] abbrev FR : ℕ := 9
+ abbrev DD : ℕ := 1
+ abbrev W : ℕ := 2
+ abbrev U : ℕ := 3
+ abbrev X : ℕ := 4
+ abbrev Y : ℕ := 5
+ abbrev WI : ℕ := 6
+ abbrev WJ : ℕ := 7
+ abbrev OUT : ℕ := 8
+ abbrev FR : ℕ := 9
 
 end LopArgs
 
-open LopArgs in
+open LopArgs
 /-- detect(N, D, w, U, x, y, wi, wj, out, fr): calls the counting solver on the same arguments, then
 replaces every nonzero answer by 1.  Local 10 takes the result of the call and is then the
 counter. -/
@@ -159,7 +160,7 @@ theorem detect_spec {P₀ R : Program} {p : ℕ} {Tn : List ℕ → ℕ} {need :
     (hT := by simp; omega)
   case round =>
     rintro j _ hj rfl
-    have hread : wrote μ₁ x.out f j (x.out + j) = μ₁ (x.out + j) := wrote_rest (by omega)
+    have hread : wrote μ₁ x.out f j (x.out + j) = μ₁ (x.out + j) := wrote_rest tac_omega
     rw [← wrote_succ]
     -- if out[i] ≠ 0 then out[i] := 1
     refine Ends.iteLast (fun hc => Ends.skip ⟨rfl, ?_⟩) fun hc =>
@@ -173,7 +174,7 @@ theorem detect_spec {P₀ R : Program} {p : ℕ} {Tn : List ℕ → ℕ} {need :
     rintro _ rfl
     refine ⟨fun i hi => ?_, fun a ha => (wrote_rest ha.2).trans (hk a ha)⟩
     have hi' : i < x.w := by simpa [hlen] using hi
-    rw [List.getElem_map, ← hseg i (by omega), ← hf]
+    rw [List.getElem_map, ← hseg i tac_omega, ← hf]
     exact wrote_done hi'
 
 /-- The need of detect is polynomially bounded if that of the counting solver is. -/

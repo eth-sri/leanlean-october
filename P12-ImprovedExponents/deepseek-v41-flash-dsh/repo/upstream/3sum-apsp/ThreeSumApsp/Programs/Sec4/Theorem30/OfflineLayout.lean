@@ -20,7 +20,7 @@ wantedCore (`wantedMain_meets`).
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec ThreeSumApsp.WordRam
+open ThreeSumApsp.WordRam
 
 namespace WantedMain
 
@@ -28,20 +28,20 @@ namespace WantedMain
 product N D, the addresses of Y, of the rows, of the columns, of the output and of the block, and
 the result of the call. -/
 abbrev Ans : ℕ := 0
-@[inherit_doc Ans] abbrev Size : ℕ := 2
-@[inherit_doc Ans] abbrev Dim : ℕ := 3
-@[inherit_doc Ans] abbrev Count : ℕ := 4
-@[inherit_doc Ans] abbrev Area : ℕ := 5
-@[inherit_doc Ans] abbrev MatY : ℕ := 6
-@[inherit_doc Ans] abbrev Rows : ℕ := 7
-@[inherit_doc Ans] abbrev Cols : ℕ := 8
-@[inherit_doc Ans] abbrev Out : ℕ := 9
-@[inherit_doc Ans] abbrev Block : ℕ := 10
-@[inherit_doc Ans] abbrev Res : ℕ := 11
+ abbrev Size : ℕ := 2
+ abbrev Dim : ℕ := 3
+ abbrev Count : ℕ := 4
+ abbrev Area : ℕ := 5
+ abbrev MatY : ℕ := 6
+ abbrev Rows : ℕ := 7
+ abbrev Cols : ℕ := 8
+ abbrev Out : ℕ := 9
+ abbrev Block : ℕ := 10
+ abbrev Res : ℕ := 11
 
 end WantedMain
 
-open WantedMain in
+open WantedMain
 /-- wantedMain: read the sizes, compute the addresses, call wantedCore, answer 1. -/
 def wantedMainBody : Stmt :=
   .set Size (M (k 0)) ;; .set Dim (M (k 1)) ;; .set Count (M (k 2)) ;;

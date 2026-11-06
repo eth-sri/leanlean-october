@@ -10,6 +10,7 @@ public import ThreeSumApsp.Lang.PolyBounded
 public import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.Passes
 public import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.Tasks
 public import ThreeSumApsp.Spec.Sec3.Theorem21b.BitSearch
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The (min,+)-product from "all pairs", bit by bit
@@ -51,26 +52,26 @@ and 6U; Count counts the powers up and then the rounds down; Power is the power 
 addresses fr + R of V (Asked), fr + R + n² of the flags and fr + R + 2n², the free pointer of the
 solver (SolverFree); and the results of the calls, which are not used. -/
 abbrev N : ℕ := 0
-@[inherit_doc N] abbrev U : ℕ := 1
-@[inherit_doc N] abbrev A : ℕ := 2
-@[inherit_doc N] abbrev B : ℕ := 3
-@[inherit_doc N] abbrev C : ℕ := 4
-@[inherit_doc N] abbrev Free : ℕ := 5
-@[inherit_doc N] abbrev Area : ℕ := 6
-@[inherit_doc N] abbrev TwoU : ℕ := 7
-@[inherit_doc N] abbrev FourU : ℕ := 8
-@[inherit_doc N] abbrev Low : ℕ := 9
-@[inherit_doc N] abbrev SixU : ℕ := 10
-@[inherit_doc N] abbrev Count : ℕ := 11
-@[inherit_doc N] abbrev Power : ℕ := 12
-@[inherit_doc N] abbrev Asked : ℕ := 13
-@[inherit_doc N] abbrev Flags : ℕ := 14
-@[inherit_doc N] abbrev SolverFree : ℕ := 15
-@[inherit_doc N] abbrev Unused : ℕ := 16
+ abbrev U : ℕ := 1
+ abbrev A : ℕ := 2
+ abbrev B : ℕ := 3
+ abbrev C : ℕ := 4
+ abbrev Free : ℕ := 5
+ abbrev Area : ℕ := 6
+ abbrev TwoU : ℕ := 7
+ abbrev FourU : ℕ := 8
+ abbrev Low : ℕ := 9
+ abbrev SixU : ℕ := 10
+ abbrev Count : ℕ := 11
+ abbrev Power : ℕ := 12
+ abbrev Asked : ℕ := 13
+ abbrev Flags : ℕ := 14
+ abbrev SolverFree : ℕ := 15
+ abbrev Unused : ℕ := 16
 
 end Mp
 
-open Mp in
+open Mp
 /-- The numbers n², 2U, 4U, −2U, 6U. -/
 def mpConsts : Stmt :=
   .set Area (v N *' v N) ;;
@@ -79,7 +80,7 @@ def mpConsts : Stmt :=
   .set Low (k 0 -' v TwoU) ;;
   .set SixU (v TwoU +' v FourU)
 
-open Mp in
+open Mp
 /-- The powers 1, 2, …, 2^(R−1) are written to the cells from fr, while R is found by doubling. -/
 def mpPowers : Stmt :=
   .set Count (k 0) ;;
@@ -89,7 +90,7 @@ def mpPowers : Stmt :=
     .set Count (v Count +' k 1) ;;
     .set Power (v Power +' v Power))
 
-open Mp in
+open Mp
 /-- The round for t = Count − 1: V := lo + 2^t, the solver's flags, and lo grows by 2^t where the
 flag is 0. -/
 def mpRound (pPairs pAddc pBump : ℕ) : Stmt :=
@@ -99,7 +100,7 @@ def mpRound (pPairs pAddc pBump : ℕ) : Stmt :=
   .call pPairs [v N, v SixU, v A, v B, v Asked, v Flags, v SolverFree] Unused ;;
   .call pBump [v Area, v Power, v Flags, v C] Unused
 
-open Mp in
+open Mp
 /-- mp(n, U, a, b, c, fr), over the procedures number pPairs (a solver of "all pairs"), pFill, pAddc
 and pBump. -/
 def mpBody (pPairs pFill pAddc pBump : ℕ) : Stmt :=
@@ -133,7 +134,7 @@ namespace Mp
 /-- The powers of two below 2^R are at most 4U. -/
 theorem pow_range {U i : ℕ} (hU : 1 ≤ U) (hi : i < mpRounds U) :
     0 < (2 : ℤ) ^ i ∧ (2 : ℤ) ^ i ≤ 4 * U := by
-  have hle : 2 ^ i ≤ 4 * U := Nat.pow_le_of_le_log (by omega) (by simp only [mpRounds] at hi; omega)
+  have hle : 2 ^ i ≤ 4 * U := Nat.pow_le_of_le_log tac_omega (by simp only [mpRounds] at hi; omega)
   exact ⟨by positivity, by exact_mod_cast hle⟩
 
 /-- 2^R is above 4U. -/
@@ -171,7 +172,7 @@ theorem getElem_lows (x : MatInst) (t q : ℕ) (hq : q < (lows x t).length) :
 /-- The entries of the product lie between −2U and 2U. -/
 theorem entry_range (hpre : x.Pre μ fr) (i j : ℕ) :
     -(2 * (x.U : ℤ)) ≤ minPlusEntry x.n x.A x.B i j ∧ minPlusEntry x.n x.A x.B i j ≤ 2 * x.U :=
-  abs_le.1 (abs_minPlusEntry_le hpre.n_pos (by positivity) hpre.leA hpre.leB i j)
+  abs_le.1 (abs_minPlusEntry_le hpre.n_pos tac_positivity hpre.leA hpre.leB i j)
 
 /-- The lower bounds lie between −2U and 2U. -/
 theorem lows_range (hpre : x.Pre μ fr) (t q : ℕ) (hq : q < (lows x t).length) :
@@ -183,13 +184,13 @@ theorem lows_range (hpre : x.Pre μ fr) (t q : ℕ) (hq : q < (lows x t).length)
 /-- At the beginning all lower bounds are −2U. -/
 theorem lows_top (hpre : x.Pre μ fr) :
     lows x (mpRounds x.U) = List.replicate (x.n * x.n) (-(2 * (x.U : ℤ))) := by
-  refine List.ext_getElem (by simp) fun q hq _ => ?_
+  refine List.ext_getElem tac_simp fun q hq _ => ?_
   rw [getElem_lows, List.getElem_replicate]
   exact bitLo_top (by linarith [(entry_range hpre (q / x.n) (q % x.n)).2, lt_pow_rounds x.U])
 
 /-- At the end the lower bounds are the product. -/
 theorem lows_zero (hpre : x.Pre μ fr) : lows x 0 = minPlusList x.n x.A x.B := by
-  refine List.ext_getElem (by simp [length_minPlusList]) fun q hq _ => ?_
+  refine List.ext_getElem tac_simp [length_minPlusList] fun q hq _ => ?_
   rw [getElem_lows, bitLo_zero (entry_range hpre _ _).1]
   simp [minPlusList]
 
@@ -209,7 +210,7 @@ theorem getElem_flags (hpre : x.Pre μ fr) (t q : ℕ) (hq : q < (flags x t).len
 theorem lows_round (hpre : x.Pre μ fr) (t : ℕ) :
     List.zipWith (fun l f => l + (2 : ℤ) ^ t * (1 - f)) (lows x (t + 1)) (flags x t) =
       lows x t := by
-  refine List.ext_getElem (by simp) fun q _ _ => ?_
+  refine List.ext_getElem tac_simp fun q _ _ => ?_
   rw [List.getElem_zipWith, getElem_flags hpre, getElem_lows, getElem_lows,
     bitLo_step (entry_range hpre _ _).1 t]
 
@@ -281,7 +282,6 @@ abbrev locals (x : MatInst) (fr count : ℕ) (power unused : ℤ) : List ℤ :=
 theorem consts_spec {P : Program} (hpre : x.Pre μ fr) (hlim : Lim lim d r x fr) :
     Ends lim P d mpConsts ⟨frame [x.n, x.U, x.a, x.b, x.c, fr], μ⟩ 20 fun σ' =>
       σ' = ⟨frame (consts x fr), μ⟩ := by
-  have hcells := hlim.cells
   light_facts hlim hpre
   unfold mpConsts
   refine Ends.setToThen (x.n * x.n : ℕ) ?_
@@ -295,7 +295,6 @@ theorem powers_spec {P : Program} (hpre : x.Pre μ fr) (hlim : Lim lim d r x fr)
     Ends lim P d mpPowers ⟨frame (consts x fr), μ⟩ (19 * mpRounds x.U + 10) fun σ' =>
       σ' = ⟨frame (consts x fr ++ [(mpRounds x.U : ℤ), 2 ^ mpRounds x.U]),
         wrote μ fr (fun i => 2 ^ i) (mpRounds x.U)⟩ := by
-  have hcells := hlim.cells
   light_facts hlim
   unfold mpPowers
   -- count := 0; power := 1
@@ -358,7 +357,7 @@ theorem pairsInst_pre (hpre : x.Pre μ fr) {t : ℕ} (ht : t < mpRounds x.U) {μ
     leY := hle _ hpre.leB
     leV := fun y hy => by
       obtain ⟨y', hy', rfl⟩ := List.mem_map.1 hy
-      exact (abs_asked_le hpre ht y' hy').trans (le_of_eq (by simp [pairsInst]))
+      exact (abs_asked_le hpre ht y' hy').trans (le_of_eq tac_simp [pairsInst])
     belowX := by simp only [pairsInst]; omega
     belowY := by simp only [pairsInst]; omega
     belowV := by simp only [pairsInst]; omega
@@ -374,7 +373,6 @@ theorem round_spec (C : Ctx P₀ R₀ pPairs pFill pAddc pBump T r) (hpre : x.Pr
     Ends lim (P₀ ++ R₀) d (mpRound pPairs pAddc pBump) σ (roundTime T x.n x.U) (Inv x μ fr t) := by
   obtain ⟨power, unused, μ₀, rfl, hM⟩ := hI
   have hw := hlim.space
-  have hlenLo := length_lows x (t + 1)
   light_facts hlim hpre hM
   unfold mpRound roundTime
   -- count := count - 1; power := mem[fr + count]
@@ -382,14 +380,14 @@ theorem round_spec (C : Ctx P₀ R₀ pPairs pFill pAddc pBump T r) (hpre : x.Pr
   light_set (2 ^ t) using hM.pows t ht
   -- addc(n², power, c, asked): V := lo + 2^t
   light_call (addc_meets C.addc (2 ^ t) (fr + mpRounds x.U) hM.lo (length_lows x _)
-    (by omega) (by omega) fun y hy => (abs_asked_le hpre ht y hy).trans (by omega))
+    tac_omega tac_omega fun y hy => (abs_asked_le hpre ht y hy).trans tac_omega)
     with _ μ₁ ⟨sV, sameAddc⟩
   -- The solver writes its flags.
   refine Ends.callToThen (T' := T x.n (6 * x.U)) (C.sol.meets R₀ (pairsInst x fr t)
     (fr + mpRounds x.U + x.n * x.n + x.n * x.n) (pairsInst_pre hpre ht
       hpre.segA.keep hpre.segB.keep sV)
     ⟨hlim.solver, by simp only [pairsTask, pairsInst]; omega, hw,
-      by simp only [pairsTask, pairsInst]; omega⟩) ?_ (by simp [pairsTask, pairsInst])
+      by simp only [pairsTask, pairsInst]; omega⟩) ?_ tac_simp [pairsTask, pairsInst]
   rintro _ μ₂ ⟨sF, keptSolver⟩
   -- What the task promises, in terms of x: the flags, and no other change below the solver's free
   -- pointer.
@@ -399,7 +397,7 @@ theorem round_spec (C : Ctx P₀ R₀ pPairs pFill pAddc pBump T r) (hpre : x.Pr
   -- bump(n², power, flags, c): lo grows by 2^t where the flag is 0
   have hpow := pow_range hpre.U_pos ht
   light_call (bump_meets C.bump (2 ^ t) sF hM.lo.keep ⟨length_flags x t, length_lows x _⟩
-    (by omega) (by omega) (flags_eq_zero_or_one x t) (absLe_lows hpre _)
+    tac_omega tac_omega (flags_eq_zero_or_one x t) (absLe_lows hpre _)
     ⟨by rw [abs_of_pos hpow.1]; omega, by omega⟩)
     with _ μ₃ ⟨hnew, sameBump⟩
   exact ⟨_, _, μ₃, rfl,
@@ -415,14 +413,14 @@ theorem rounds_spec (C : Ctx P₀ R₀ pPairs pFill pAddc pBump T r) (hpre : x.P
   have hzero : ((0 : ℕ) : ℤ) ≤ lim.word := by have := hlim.word; omega
   refine Ends.whileConst (fun j σ => Inv x μ fr (mpRounds x.U - j) σ) (mpRounds x.U)
     (roundTime T x.n x.U) (by simpa using hI) ?round ?done
-    (by simp only [Cond.cost, Expr.cost]; exact le_of_eq (by ring))
+    (by simp only [Cond.cost, Expr.cost]; exact le_of_eq tac_ring)
   case round =>
     intro j σ₂ hj hI₂
     obtain ⟨t, ht⟩ : ∃ t, mpRounds x.U - j = t + 1 := ⟨mpRounds x.U - j - 1, by omega⟩
     rw [show mpRounds x.U - (j + 1) = t by omega]
     rw [ht] at hI₂
     exact ⟨⟨hzero, trivial⟩, by light_norm [hI₂.loc_count]; omega,
-      round_spec C hpre hlim (by omega) hI₂⟩
+      round_spec C hpre hlim tac_omega hI₂⟩
   case done =>
     intro σ₂ hI₂
     rw [Nat.sub_self] at hI₂
@@ -432,7 +430,7 @@ end Mp
 
 /-! ## The host -/
 
-open Mp in
+open Mp
 /-- **The host is correct**, in every program that begins with the solver's program and has the
 three passes. -/
 theorem mp_spec {P₀ R₀ : Program} {pPairs pFill pAddc pBump : ℕ} {T : ℕ → ℕ → ℕ}
@@ -443,9 +441,7 @@ theorem mp_spec {P₀ R₀ : Program} {pPairs pFill pAddc pBump : ℕ} {T : ℕ 
       fun σ' => mpTask.Post x μ fr (σ'.loc 0) σ'.mem := by
   have hlim := lim_of_ok hok
   have hw := hlim.space
-  have hcells := hlim.cells
   light_facts hlim hpre
-  have harea : 1 ≤ x.n * x.n := Nat.mul_pos hpre.n_pos hpre.n_pos
   -- For the comparisons of times below: of the steps counted for each round, 24 pay for its power
   -- of two.
   have hsplit : mpRounds x.U * (T x.n (6 * x.U) + 49 * (x.n * x.n) + 70) =
@@ -460,11 +456,11 @@ theorem mp_spec {P₀ R₀ : Program} {pPairs pFill pAddc pBump : ℕ} {T : ℕ 
   light_set (fr + mpRounds x.U + x.n * x.n + x.n * x.n : ℕ)
   -- fill(c, n², −2U): the first lower bounds
   light_call (fill_meets C.fill (dst := x.c) (n := x.n * x.n) (x := -(2 * (x.U : ℤ))) hw
-    (by omega)) with _ μ₁ ⟨sLo, sameFill⟩
+    tac_omega) with _ μ₁ ⟨sLo, sameFill⟩
   -- The rounds.
   refine (rounds_spec C hpre hlim ⟨_, _, μ₁, rfl,
     { lo := lows_top hpre ▸ sLo
-      pows := fun i hi => (sameFill _ (by omega)).trans (wrote_done hi)
+      pows := fun i hi => (sameFill _ tac_omega).trans (wrote_done hi)
       kept := by light_keep }⟩).mono ?_ ?_
   · light_time
   · rintro _ ⟨_, _, μ', rfl, hM⟩

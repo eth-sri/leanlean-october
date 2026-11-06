@@ -4,6 +4,7 @@ public import ThreeSumApsp.Programs.Sec2.Theorem5.CellDependencies
 public import ImprovedExponents.PrunedProgram.SegOn
 public import ImprovedExponents.PrunedProgram.Work
 public import ImprovedExponents.PrunedProgram.Procs
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -24,7 +25,7 @@ Adapted from upstream `ThreeSumApsp/Programs/Sec2/Theorem5/Contracts.lean` and
 
 namespace Light.Sec2
 
-open ThreeSumApsp ThreeSumApsp.Spec ImprovedExponents
+open ThreeSumApsp ImprovedExponents
 
 variable {p : Par} {hmL : p.m ≤ p.L} {aX aY b0 : ℕ}
   {X : Matrix (Fin p.N) (Fin (ThreeSumApsp.D p.m)) ℤ}
@@ -53,21 +54,21 @@ theorem SharedReadyP.congr (h : SharedReadyP p hmL aX aY b0 X Y μ)
     SharedReadyP p hmL aX aY b0 X Y μ' := by
   have hplaces := p.places b0
   have tb : SharedTables p b0 μ' :=
-    h.toSharedTables.congr fun x hlo hx => hag x (by omega) (by omega) (by omega)
+    h.toSharedTables.congr fun x hlo hx => hag x tac_omega tac_omega tac_omega
   have henc : ∀ {a β i : ℕ}, p.aENCA b0 ≤ a → a + p.nB * p.T ≤ p.sharedEnd b0 → β < p.nB →
       i < p.T → μ' (a + β * p.T + i) = μ (a + β * p.T + i) := fun ha hend hβ hi => by
     have := Nat.mul_add_lt_mul hβ hi
-    exact hag _ (by omega) (by omega) (by omega)
+    exact hag _ tac_omega tac_omega tac_omega
   have hT : p.T = 10 ^ p.L := rfl
   refine
     { tb with
       dir := h.dir.congr fun i hi => ?_
-      encA := fun β hβ => (h.encA β hβ).congr fun i hi => henc le_rfl (by omega) hβ (hT ▸ hi)
+      encA := fun β hβ => (h.encA β hβ).congr fun i hi => henc le_rfl tac_omega hβ (hT ▸ hi)
       encB := fun β hβ => (h.encB β hβ).congr fun i hi =>
-        henc (by omega) (by omega) hβ (hT ▸ hi) }
+        henc tac_omega tac_omega hβ (hT ▸ hi) }
   simp only [dirList, List.length_map, List.length_cons, List.length_nil] at hi
   simp only [Par.aDIR]
-  exact hag _ (by omega) (by omega) (by omega)
+  exact hag _ tac_omega tac_omega tac_omega
 
 /-- What the pruned shared stage leaves behind is kept by a memory that agrees on all cells below
 the end of the shared block, but for cell 31 of the directory. -/

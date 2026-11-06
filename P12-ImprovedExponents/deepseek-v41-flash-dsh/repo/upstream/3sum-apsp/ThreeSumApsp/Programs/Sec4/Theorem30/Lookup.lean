@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Looking up a string in a trie (Section 4.3)
@@ -35,11 +36,11 @@ namespace Lookup
 the current vertex, the address of the string and its length) and the level.  Local 0 also takes the
 result. -/
 abbrev Area : ℕ := 0
-@[inherit_doc Area] abbrev Result : ℕ := 0
-@[inherit_doc Area] abbrev Vertex : ℕ := 1
-@[inherit_doc Area] abbrev Key : ℕ := 2
-@[inherit_doc Area] abbrev Len : ℕ := 3
-@[inherit_doc Area] abbrev Level : ℕ := 4
+ abbrev Result : ℕ := 0
+ abbrev Vertex : ℕ := 1
+ abbrev Key : ℕ := 2
+ abbrev Len : ℕ := 3
+ abbrev Level : ℕ := 4
 
 end Lookup
 
@@ -91,9 +92,9 @@ theorem lookup_spec {lim : Limits} {P : Program} (hP : P[Proc.lookup]? = some lo
   case round =>
     rintro i _ hi ⟨p, rfl, hok, hwk⟩
     obtain ⟨hpT, hpos, hok', hstep⟩ := walk_step hi hok
-    have hsym : kl[i] < 11 := hd _ (List.getElem_mem hi)
-    have hcell : μ (key + i) = (kl[i] : ℕ) := hkey.getElem hi
-    have hnext : μ (tr + (p + kl[i])) = T.getD (p + kl[i]) 0 := hT.getD (by omega) 0
+    have hsym := hd _ (List.getElem_mem hi)
+    have hcell := hkey.getElem hi
+    have hnext : μ (tr + (p + kl[i])) = T.getD (p + kl[i]) 0 := hT.getD tac_omega 0
     have haddr : ((tr : ℤ) + p + (kl[i] : ℕ)).toNat = tr + (p + kl[i]) := by omega
     -- vertex := mem[area + vertex + mem[key + level]]; level := level + 1
     refine ⟨by light_side, by light_side, by light_side [hcell],
@@ -104,7 +105,7 @@ theorem lookup_spec {lim : Limits} {P : Program} (hP : P[Proc.lookup]? = some lo
     rintro _ ⟨p, rfl, hok, hwk⟩
     rw [List.drop_of_length_le le_rfl] at hok hwk
     have hin := hok.2
-    have hread : μ (tr + p) = T.getD p 0 := hT.getD (by omega) 0
+    have hread : μ (tr + p) = T.getD p 0 := hT.getD tac_omega 0
     refine ⟨by light_side, by light_side, ?_⟩
     -- return mem[area + vertex]
     light_set (T.getD p 0) using hread

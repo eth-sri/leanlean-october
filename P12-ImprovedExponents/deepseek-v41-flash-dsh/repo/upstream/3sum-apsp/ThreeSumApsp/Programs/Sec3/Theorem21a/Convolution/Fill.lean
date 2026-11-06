@@ -9,6 +9,7 @@ public import ThreeSumApsp.Lang.Lib.NextPair
 public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Spec.Sec3.Theorem21a.Convolution
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Convolution-3SUM from Exact Triangle: writing one instance
@@ -43,20 +44,20 @@ namespace ConvFill
 (Row, Col, Cell); an index into x and what is picked there (Index, Value); -F (NegFiller) and t²
 (Area). -/
 abbrev Side : ℕ := 0
-@[inherit_doc Side] abbrev Len : ℕ := 1
-@[inherit_doc Side] abbrev Inst : ℕ := 2
-@[inherit_doc Side] abbrev Filler : ℕ := 3
-@[inherit_doc Side] abbrev Input : ℕ := 4
-@[inherit_doc Side] abbrev MatAB : ℕ := 5
-@[inherit_doc Side] abbrev MatBC : ℕ := 6
-@[inherit_doc Side] abbrev MatAC : ℕ := 7
-@[inherit_doc Side] abbrev Row : ℕ := 8
-@[inherit_doc Side] abbrev Col : ℕ := 9
-@[inherit_doc Side] abbrev Cell : ℕ := 10
-@[inherit_doc Side] abbrev Index : ℕ := 11
-@[inherit_doc Side] abbrev Value : ℕ := 12
-@[inherit_doc Side] abbrev NegFiller : ℕ := 13
-@[inherit_doc Side] abbrev Area : ℕ := 14
+ abbrev Len : ℕ := 1
+ abbrev Inst : ℕ := 2
+ abbrev Filler : ℕ := 3
+ abbrev Input : ℕ := 4
+ abbrev MatAB : ℕ := 5
+ abbrev MatBC : ℕ := 6
+ abbrev MatAC : ℕ := 7
+ abbrev Row : ℕ := 8
+ abbrev Col : ℕ := 9
+ abbrev Cell : ℕ := 10
+ abbrev Index : ℕ := 11
+ abbrev Value : ℕ := 12
+ abbrev NegFiller : ℕ := 13
+ abbrev Area : ℕ := 14
 
 end ConvFill
 
@@ -124,18 +125,18 @@ private theorem pick_runs {loc : ℕ → ℤ} {f : ℕ} (z : ℤ)
   refine .seq ⟨trivial, ?_⟩
   by_cases hneg : z < 0
   · -- if Index < 0
-    rw [cellOr_of_not (by omega)] at h
+    rw [cellOr_of_not tac_omega] at h
     exact .ite_pos ⟨trivial, by simpa [hf] using h⟩ (by simpa [hz] using hneg) (by simp; omega)
   refine .ite_neg ?_ (by simpa [hz] using hneg) (by simp; omega)
   by_cases hlt : z < N
   · -- if Index < N: Value := x[Index]
     obtain ⟨i, rfl⟩ := Int.eq_ofNat_of_zero_le (not_lt.1 hneg)
-    rw [cellOr_of_lt rfl (by omega), ← hseg.getD (by omega)] at h
-    refine .ite_pos ⟨?_, by simpa [hz, hx] using h⟩ (by simpa [hz, hN] using hlt) (by simp)
+    rw [cellOr_of_lt rfl tac_omega, ← hseg.getD tac_omega] at h
+    refine .ite_pos ⟨?_, by simpa [hz, hx] using h⟩ (by simpa [hz, hN] using hlt) tac_simp
     simp [hz, hx, Limits.Addr, abs_le]
     omega
-  · rw [cellOr_of_not (by omega)] at h
-    exact .ite_neg ⟨trivial, by simpa [hf] using h⟩ (by simpa [hz, hN] using hlt) (by simp)
+  · rw [cellOr_of_not tac_omega] at h
+    exact .ite_neg ⟨trivial, by simpa [hf] using h⟩ (by simpa [hz, hN] using hlt) tac_simp
 
 /-- putStmt stores `cellOr N F X z`, or minus it, into cell q of the matrix at D.  Of the locals it
 changes only Index and Value. -/
@@ -158,7 +159,7 @@ private theorem put_runs {l : List ℤ} {ze : Expr} {f dst : ℕ} {neg : Bool} (
   -- Index := ze
   refine .seq ⟨hsafe, ?_⟩
   -- Value := x[Index] or the filler
-  refine .seq (pick_runs z ?_ hX (by simp [hval]) (by simpa using hN) (by simpa using hx)
+  refine .seq (pick_runs z ?_ hX tac_simp [hval] (by simpa using hN) (by simpa using hx)
     (by simpa [hfI] using hf))
   -- dst[Cell] := Value or -Value
   cases neg
@@ -242,7 +243,7 @@ private theorem filled_succ (C : Ctx lim μ A V) (hq : q < A.t * A.t) :
   have offBC : A.ab + q < A.bc ∨ A.bc + q ≤ A.ab + q := by omega
   have offAC (y : ℕ) (hy : y ≤ A.bc + q) : y < A.ac ∨ A.ac + q ≤ y := by omega
   unfold Args.filled
-  rw [update_wrote (offAC _ (by omega)), update_wrote offBC, wrote_succ,
+  rw [update_wrote (offAC _ tac_omega), update_wrote offBC, wrote_succ,
     update_wrote (offAC _ le_rfl), wrote_succ, wrote_succ]
 
 /-- No cell before the first matrix or after the last one changes. -/
@@ -252,20 +253,20 @@ private theorem sameOutside_filled (C : Ctx lim μ A V) (hq : q ≤ A.t * A.t) :
   have off (dst : ℕ) (h₁ : A.ab ≤ dst) (h₂ : dst ≤ A.ac) : b < dst ∨ dst + q ≤ b := by
     unfold Outside at hb
     omega
-  rw [Args.filled, wrote_rest (off _ (by omega) le_rfl), wrote_rest (off _ (by omega) (by omega)),
-    wrote_rest (off _ le_rfl (by omega))]
+  rw [Args.filled, wrote_rest (off _ tac_omega le_rfl), wrote_rest (off _ tac_omega tac_omega),
+    wrote_rest (off _ le_rfl tac_omega)]
 
 /-- At the end the three matrices stand in the memory. -/
 private theorem post_filled (C : Ctx lim μ A V) : Post A μ (A.filled μ (A.t * A.t)) where
   segAB i hi := by
     obtain ⟨hBC, hAC⟩ := And.intro C.belowBC C.belowAC
     rw [length_convAB] at hi
-    rw [Args.filled, wrote_rest (by omega), wrote_rest (by omega), wrote_done hi]
+    rw [Args.filled, wrote_rest tac_omega, wrote_rest tac_omega, wrote_done hi]
     simp [convAB]
   segBC i hi := by
     have hAC := C.belowAC
     rw [length_convBC] at hi
-    rw [Args.filled, wrote_rest (by omega), wrote_done hi]
+    rw [Args.filled, wrote_rest tac_omega, wrote_done hi]
     simp [convBC, Args.idxBC]
   segAC i hi := by
     rw [length_convAC] at hi
@@ -315,7 +316,7 @@ private structure IndexBounds (t q : ℕ) : Prop where
   side : (t : ℤ) ≤ t * t
 
 private theorem indexBounds {t : ℕ} (hq : q < t * t) : IndexBounds t q := by
-  have hrow : q / t < t := Nat.div_lt_of_lt_mul hq
+  have hrow := Nat.div_lt_of_lt_mul hq
   have hcol : q % t < t := Nat.mod_lt _ (Nat.pos_of_ne_zero fun h => by simp [h] at hq)
   exact ⟨by exact_mod_cast And.intro (Nat.zero_le _) hrow,
     by exact_mod_cast And.intro (Nat.zero_le _) hcol,
@@ -336,12 +337,12 @@ private theorem cells_runs {R : State → Prop} (C : Ctx lim μ A V) (hq : q < A
   rw [← filled_succ C hq] at h
   unfold fillCells
   -- ab[q] := x[q] or F
-  refine .seq (put_runs (q : ℤ) A.ab q ?_ hX (by omega) (abs_cellOr_le_word C _).1)
+  refine .seq (put_runs (q : ℤ) A.ab q ?_ hX tac_omega (abs_cellOr_le_word C _).1)
   -- bc[q] := x[c t + s - b] or F, for row b and column c
-  refine .seq (put_runs (A.idxBC q) A.bc q ?_ (hX.write C (by omega) _) (by omega)
+  refine .seq (put_runs (A.idxBC q) A.bc q ?_ (hX.write C tac_omega _) tac_omega
     (abs_cellOr_le_word C _).1 (by light_side [Args.idxBC]))
   -- ac[q] := -(x[(a + c) t + s] or -F), for row a and column c
-  exact put_runs (A.idxAC q) A.ac q h ((hX.write C (by omega) _).write C (by omega) _) (by omega)
+  exact put_runs (A.idxAC q) A.ac q h ((hX.write C tac_omega _).write C tac_omega _) tac_omega
     (abs_cellOr_le_word C _).2 (by light_side [Args.idxAC])
 
 /-- The invariant of the loop: before round q the counters stand at cell q, and the first q cells of
@@ -359,9 +360,9 @@ private theorem round_spec (C : Ctx lim μ A V) (hq : q < A.t * A.t) (z w : ℤ)
   -- the three cells
   refine Ends.next _ (Ends.block (cells_runs C hq z w ?_) le_rfl)
   -- Cell := Cell + 1
-  refine Ends.setToThen ((q + 1 : ℕ) : ℤ) ?_ (by light_side) (by simp [nextPair])
+  refine Ends.setToThen ((q + 1 : ℕ) : ℤ) ?_ (by light_side) tac_simp [nextPair]
   -- on to the next row and column
-  exact Ends.nextPair ⟨_, _, rfl⟩ C.side (by omega) (by omega) rfl rfl rfl
+  exact Ends.nextPair ⟨_, _, rfl⟩ C.side tac_omega tac_omega rfl rfl rfl
     (hT := by simp [nextPair])
 
 end loop

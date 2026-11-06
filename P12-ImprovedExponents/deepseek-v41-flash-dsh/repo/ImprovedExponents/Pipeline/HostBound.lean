@@ -24,7 +24,7 @@ time model `M : DetTimeModel`, as upstream's `Claim.Corollary_16`, `Claim.Theore
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Light Light.Sec4
+open ThreeSumApsp Light.Sec4
 
 /-- Lop-AE-SparseTri (detection) is solved by one procedure whose time on the instances with
 `D ≤ n^ε` is at most a constant times `n² (log D + 1)²/D^γ + w D^q (log D + 1)`. -/

@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Need
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The host of Theorem 17: the prime, the sizes, the addresses
@@ -19,7 +20,7 @@ five calls (`et17Sizes_spec`) and then seventeen assignments (`et17Addr_spec`).
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -33,8 +34,6 @@ theorem et17Addr_spec {μ : ℕ → ℤ} (x : TriInst) (X : HostData) {fr : ℕ}
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], μ⟩
       et17Addr.blockCost fun σ' => σ' = ⟨frame (Et17.locals x X fr g s 0 0), μ⟩ := by
   have hplaces := host_places X x.U fr
-  have hsquare : (0 : ℤ) ≤ (X.n : ℤ) * X.n := by positivity
-  have harea : (0 : ℤ) ≤ (X.n : ℤ) * X.D := by positivity
   unfold et17Addr
   -- SizeSq := Size * Size ; Area := Size * ParD ; Room := SizeSq + ThePrime
   light_set (X.n * X.n : ℕ)
@@ -78,9 +77,9 @@ structure SizesReady (lim : Limits) (d : ℕ) (x : TriInst) (fr D g : ℕ) : Pro
 theorem sizesReady_of {need : List ℕ → Need} {x : TriInst} {fr D g a b : ℕ}
     (hbig : BigCase x.n D g) (hok : (hostNeedAt a b need x.n x.U D g).Ok lim fr d) :
     SizesReady lim d x fr D g := by
-  have hD16 : 16 ≤ D := hbig.sixteen_le
-  have hg1 : 1 ≤ g := hbig.one_le_g
-  have hsqrt : 4 ≤ Nat.sqrt D := Nat.le_sqrt.2 (by omega)
+  have hD16 := hbig.sixteen_le
+  have hg1 := hbig.one_le_g
+  have hsqrt : 4 ≤ Nat.sqrt D := Nat.le_sqrt.2 tac_omega
   have hdepth := hok.depth
   have hcells := hok.cells
   have htop := aFr_le (x := x) (g := g) hD16 fr
@@ -88,42 +87,12 @@ theorem sizesReady_of {need : List ℕ → Need} {x : TriInst} {fr D g a b : ℕ
   exact
     { one_le_D := by omega
       one_le_g := hg1
-      one_le_piece := (Nat.lt_ceilDiv_iff hg1).2 (by omega)
+      one_le_piece := (Nat.lt_ceilDiv_iff hg1).2 tac_omega
       depth := by omega
       top := by omega
       wordCap := le_word_of_le_hostWord hok
       wordPiece := le_word_of_le_hostWord hok
       wordPieces := le_word_of_le_hostWord hok
       wordBits := le_word_of_le_hostWord hok }
-
-/-- **The second part of et17**: the prime, the sizes and the addresses are in the locals; only
-cells from the free pointer on have changed. -/
-theorem et17Sizes_spec {P₀ R : Program} {ν : Et17Nums} {Tn : List ℕ → ℕ} {need : List ℕ → Need}
-    {Dfun Gfun tD tG wD wG : ℕ → ℕ} (C : Et17Ctx P₀ R ν Tn need Dfun Gfun tD tG wD wG)
-    (x : TriInst) (μ : ℕ → ℤ) (fr D g a b : ℕ) (hpre : x.Pre μ fr)
-    (hbig : BigCase x.n D g) (hok : (hostNeedAt a b need x.n x.U D g).Ok lim fr d) :
-    Ends lim (P₀ ++ R) d (et17Sizes ν) ⟨frame (et17LocA x fr D g), μ⟩
-      (chooseTime x.n x.U D + tQueryCapNat x.n D + tCeilDiv (Nat.sqrt D) g +
-        tCeilDiv x.n (pieceSizeNat D g) + tBitLen x.U + 120)
-      fun σ' => ∃ μ', σ' = ⟨frame (et17LocB x fr D g), μ'⟩ ∧ Kept μ μ' fr := by
-  have hr := sizesReady_of (x := x) hbig hok
-  have hdepth := hr.depth
-  unfold et17Sizes et17LocA
-  rw [if_neg (not_smallCase_iff.2 hbig)]
-  -- ThePrime := pChoose(Size, Bound, AdrAB, AdrBC, AdrAC, ParD, Free)
-  light_call (choosePrime_meets C.hChoose C.ch (choosePre_of_ok hpre hok)) with _ μ₁ ⟨rfl, hμ₁⟩
-  -- Cap := pCap(Size, ParD)
-  light_call (queryCapNat_meets C.hCap hr.one_le_D hr.wordCap) with _ μ₁ ⟨rfl, rfl⟩
-  -- PieceLen := pCeil(RootD, ParG)
-  light_call (ceilDiv_meets C.hCeil hr.one_le_g hr.wordPiece) with _ μ₁ ⟨rfl, rfl⟩
-  -- NumPieces := pCeil(Size, PieceLen)
-  light_call (ceilDiv_meets C.hCeil hr.one_le_piece hr.wordPieces) using pieceSizeNat
-    with _ μ₁ ⟨rfl, rfl⟩
-  -- Bits := pBitLen(Bound)
-  light_call (bitLen_meets C.hBitLen hr.wordBits) with _ μ₁ ⟨rfl, rfl⟩
-  -- the sizes and the addresses
-  refine (et17Addr_spec x (hostData x D g) hok.space hr.top).mono (by simp [et17Addr]; omega) ?_
-  rintro _ rfl
-  exact ⟨μ₁, rfl, fun c hc => hμ₁ c (Or.inl hc)⟩
 
 end Light.Sec3

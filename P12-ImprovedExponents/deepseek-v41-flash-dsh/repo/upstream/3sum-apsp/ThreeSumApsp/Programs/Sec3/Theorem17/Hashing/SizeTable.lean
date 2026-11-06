@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Lib.Seg
 public import ThreeSumApsp.Lang.Tactics
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The table of the sizes of Strassen's recursion
@@ -31,14 +32,14 @@ namespace SzTable
 
 /-- The local variables of szTable: the arguments dst, p, J; the exponent; the entry. -/
 abbrev Dst : ℕ := 0
-@[inherit_doc Dst] abbrev Prime : ℕ := 1
-@[inherit_doc Dst] abbrev Top : ℕ := 2
-@[inherit_doc Dst] abbrev Exp : ℕ := 3
-@[inherit_doc Dst] abbrev Entry : ℕ := 4
+ abbrev Prime : ℕ := 1
+ abbrev Top : ℕ := 2
+ abbrev Exp : ℕ := 3
+ abbrev Entry : ℕ := 4
 
 end SzTable
 
-open SzTable in
+open SzTable
 /-- szTable(dst, p, J). -/
 def szTableBody : Stmt :=
   .set Exp (k 0) ;;
@@ -70,7 +71,7 @@ theorem szTable_spec {μ : ℕ → ℤ} {dst p J : ℕ} (hw : (lim.space : ℤ) 
     Ends lim P d szTableBody ⟨frame [dst, p, J], μ⟩ (tSzTable J) fun σ' =>
       Seg σ'.mem dst (szList p J) ∧ SameOutside μ σ'.mem dst (J + 1) := by
   have hfits : ∀ j ≤ J, ((4 ^ j * p : ℕ) : ℤ) ≤ lim.word := fun j hj =>
-    le_trans (by exact_mod_cast Nat.mul_le_mul_right p (Nat.pow_le_pow_right (by norm_num) hj)) hp
+    le_trans (by exact_mod_cast Nat.mul_le_mul_right p (Nat.pow_le_pow_right tac_norm_num hj)) hp
   unfold tSzTable
   -- exp := 0; entry := p; dst[0] := entry
   light_set (0 : ℕ)

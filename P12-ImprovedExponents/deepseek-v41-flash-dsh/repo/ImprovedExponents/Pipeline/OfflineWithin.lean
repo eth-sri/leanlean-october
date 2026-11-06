@@ -2,6 +2,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.RealParameters
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Program
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -27,7 +28,7 @@ restatement of `Light.Sec4.exists_ratParams` for parameters that are given rathe
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Light Light.Sec4
+open Light.Sec4
 
 /-- A routine with the running time `t N D w` takes at most a constant times
 `N² (log D + 1)²/D^γ + w D^q (log D + 1)` steps (400 further steps included) on every instance with
@@ -55,9 +56,9 @@ theorem le_of_le_rpow {ε : ℝ} (hN : 1 ≤ N) (hε : ε ≤ 1) (h : (D₀ : �
 theorem rpow_le_sq {ε γ : ℝ} (hN : 1 ≤ N) (hγ : 0 ≤ γ) (hεγ : ε * γ ≤ 1)
     (h : (D₀ : ℝ) ≤ (N : ℝ) ^ ε) : (D₀ : ℝ) ^ γ ≤ (N : ℝ) ^ 2 := by
   have hNR : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  calc (D₀ : ℝ) ^ γ ≤ ((N : ℝ) ^ ε) ^ γ := Real.rpow_le_rpow (by positivity) h hγ
-    _ = (N : ℝ) ^ (ε * γ) := by rw [← Real.rpow_mul (by positivity)]
-    _ ≤ (N : ℝ) ^ (2 : ℝ) := Real.rpow_le_rpow_of_exponent_le hNR (by linarith)
+  calc (D₀ : ℝ) ^ γ ≤ ((N : ℝ) ^ ε) ^ γ := Real.rpow_le_rpow tac_positivity h hγ
+    _ = (N : ℝ) ^ (ε * γ) := by rw [← Real.rpow_mul tac_positivity]
+    _ ≤ (N : ℝ) ^ (2 : ℝ) := Real.rpow_le_rpow_of_exponent_le hNR tac_linarith
     _ = (N : ℝ) ^ 2 := by norm_cast
 
 /-- The bound on the preprocessing is at least 1 if `D^γ ≤ N²`. -/
@@ -66,14 +67,14 @@ theorem one_le_preBound31 {γ : ℝ} (hD : 1 ≤ D₀) (h : (D₀ : ℝ) ^ γ �
   have hDR : (1 : ℝ) ≤ D₀ := by exact_mod_cast hD
   have hlog := Real.log_nonneg hDR
   unfold preBound31
-  rw [le_div_iff₀ (Real.rpow_pos_of_pos (by linarith) _), one_mul]
-  exact h.trans (le_mul_of_one_le_right (by positivity) (one_le_pow₀ (by linarith)))
+  rw [le_div_iff₀ (Real.rpow_pos_of_pos tac_linarith _), one_mul]
+  exact h.trans (le_mul_of_one_le_right tac_positivity (one_le_pow₀ tac_linarith))
 
 /-- The bound on a query is at least 1. -/
 theorem one_le_queryBound31 {q : ℝ} (hD : 1 ≤ D₀) (hq : 0 ≤ q) : 1 ≤ queryBound31 q D₀ := by
   have hDR : (1 : ℝ) ≤ D₀ := by exact_mod_cast hD
   have hlog := Real.log_nonneg hDR
-  exact one_le_mul_of_one_le_of_one_le (Real.one_le_rpow hDR hq) (by linarith)
+  exact one_le_mul_of_one_le_of_one_le (Real.one_le_rpow hDR hq) tac_linarith
 
 /-- A larger exponent of `D` in the denominator, and `log D` in place of `log D + 1`, make the
 bound on the preprocessing smaller. -/
@@ -81,9 +82,9 @@ theorem le_preBound31 {γ γ' : ℝ} (hD : 1 ≤ D₀) (hγ : γ ≤ γ') :
     (N : ℝ) ^ 2 * Real.log (D₀ : ℝ) ^ 2 / (D₀ : ℝ) ^ γ' ≤ preBound31 γ N D₀ := by
   have hDR : (1 : ℝ) ≤ D₀ := by exact_mod_cast hD
   have hlog := Real.log_nonneg hDR
-  have hsq : Real.log (D₀ : ℝ) ^ 2 ≤ (Real.log D₀ + 1) ^ 2 := pow_le_pow_left₀ hlog (by linarith) 2
-  exact div_le_div₀ (by positivity) (mul_le_mul_of_nonneg_left hsq (by positivity))
-    (Real.rpow_pos_of_pos (by linarith) _) (Real.rpow_le_rpow_of_exponent_le hDR hγ)
+  have hsq : Real.log (D₀ : ℝ) ^ 2 ≤ (Real.log D₀ + 1) ^ 2 := pow_le_pow_left₀ hlog tac_linarith 2
+  exact div_le_div₀ tac_positivity (mul_le_mul_of_nonneg_left hsq tac_positivity)
+    (Real.rpow_pos_of_pos tac_linarith _) (Real.rpow_le_rpow_of_exponent_le hDR hγ)
 
 /-- A smaller exponent of `D`, and `log D` in place of `log D + 1`, make the bound on a query
 smaller. -/
@@ -91,7 +92,7 @@ theorem le_queryBound31 {q q' : ℝ} (hD : 1 ≤ D₀) (hq : q' ≤ q) :
     (D₀ : ℝ) ^ q' * Real.log (D₀ : ℝ) ≤ queryBound31 q D₀ := by
   have hDR : (1 : ℝ) ≤ D₀ := by exact_mod_cast hD
   have hlog := Real.log_nonneg hDR
-  exact mul_le_mul (Real.rpow_le_rpow_of_exponent_le hDR hq) (by linarith) hlog (by positivity)
+  exact mul_le_mul (Real.rpow_le_rpow_of_exponent_le hDR hq) tac_linarith hlog tac_positivity
 
 end bounds
 

@@ -1,6 +1,7 @@
 module
 
 public import ImprovedExponents.Optimum.PerCCrossing
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -22,7 +23,7 @@ parameters `(θ, σ, ε)` have the least upper bound `savingF A (Gam c) = R(Γ) 
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Real Set
+open ThreeSumApsp
 
 variable {A c θ σ ε : ℝ}
 
@@ -30,7 +31,7 @@ variable {A c θ σ ε : ℝ}
 `ε Γ/2`. -/
 theorem tupleSaving_crossing (hX : gammaX c θ = Gam c) (hQ : gammaQ θ = Gam c) (ε : ℝ) :
     tupleSaving c θ (1 / 2 + Gam c / 4) ε = ε * (Gam c / 2) := by
-  have hq : qOf θ = 1 / 2 - 3 * Gam c / 4 := gammaQ_eq_iff.1 hQ
+  have hq := gammaQ_eq_iff.1 hQ
   have e1 : 1 / 2 + Gam c / 4 - qOf θ = Gam c := by
     rw [hq]
     ring
@@ -46,9 +47,9 @@ theorem exists_tupleSaving_gt (hc : 10 < c) (hA : 0 < A) {s : ℝ}
   obtain ⟨θ, hθ, hX, hQ⟩ := exists_crossing_eq_Gam hc
   have hΓ := Gam_pos hc
   have hΓ' := Gam_lt_two_thirds hc
-  have hR : 0 < thinR A (Gam c) := thinR_pos hA hΓ.le
+  have hR := thinR_pos hA hΓ.le
   have hs' : s / (Gam c / 2) < thinR A (Gam c) := by
-    rw [div_lt_iff₀ (by linarith)]
+    rw [div_lt_iff₀ tac_linarith]
     unfold savingF at hs
     linarith
   obtain ⟨ε, hε1, hε2⟩ := exists_between (max_lt hs' hR)
@@ -57,6 +58,6 @@ theorem exists_tupleSaving_gt (hc : 10 < c) (hA : 0 < A) {s : ℝ}
   refine ⟨θ, 1 / 2 + Gam c / 4, ε, ⟨hc, hθ.1, hθ.2, by linarith, by linarith, hε0, ?_⟩, ?_⟩
   · rwa [hX]
   · rw [tupleSaving_crossing hX hQ]
-    rwa [div_lt_iff₀ (by linarith)] at hεs
+    rwa [div_lt_iff₀ tac_linarith] at hεs
 
 end ImprovedExponents

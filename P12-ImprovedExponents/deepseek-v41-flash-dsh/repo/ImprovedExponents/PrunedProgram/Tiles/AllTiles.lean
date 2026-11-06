@@ -4,6 +4,7 @@ public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.AllTiles
 public import ImprovedExponents.PrunedProgram.Tiles.Contracts
 import all ThreeSumApsp.Programs.Sec4.Theorem30.AllTiles
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -26,7 +27,7 @@ namespace Light.Sec4
 
 open ThreeSumApsp ThreeSumApsp.Spec
 
-open private length_roots_triesBefore tries_tileArgs time_le
+open private
   from ThreeSumApsp.Programs.Sec4.Theorem30.AllTiles
 
 namespace AllTilesP
@@ -44,10 +45,6 @@ private theorem tileCtx (C : AllTilesPreP lim μ x) (hβ : β < x.nB) (hβ' : β
   have hrow := Nat.mul_add_le_mul hβ (le_refl (10 ^ x.L))
   have hcol := Nat.mul_add_le_mul hβ' (le_refl (10 ^ x.L))
   obtain ⟨A, B, hA, hB, hAB⟩ := C.value_le
-  generalize β * 10 ^ x.L = a at *
-  generalize β' * 10 ^ x.L = b at *
-  generalize x.nB * 10 ^ x.L = z at *
-  generalize x.nB * x.nB = q at *
   exact
     { std := C.std, ht := C.t_le, hmL := C.m_le, value_le := ⟨A, B, hA β, hB β', hAB⟩
       pow_le := C.pow_le, layout := by light_order }
@@ -99,7 +96,6 @@ private theorem tile_meets (hTile : TileSpecP lim P) (C : AllTilesPreP lim μ x)
     ⟨tries_tileArgs x β β' ▸ htrie, tries_tileArgs x β β' ▸ hroots,
       M.same.then same fun c hc => ⟨hc, ?_⟩⟩
   -- a cell below cur or behind the trie area is none of those that tile may change
-  have hc' : c < x.cur ∨ x.tr + x.cap ≤ c := hc
   simp only [TileArgs.Kept, tileArgs, Outside]
   omega
 
@@ -111,20 +107,17 @@ private theorem step_spec (hTile : TileSpecP lim P) (C : AllTilesPreP lim μ x) 
   obtain ⟨void, μ₁, rfl, M⟩ := h
   light_facts C C.std
   -- tile(rowEnc, colEnc, rootPtr, …)
-  light_call (tile_meets hTile C hβ hβ' (by omega) M) with void' μ₂ M₂
+  light_call (tile_meets hTile C hβ hβ' tac_omega M) with void' μ₂ M₂
   -- rootPtr := rootPtr + 1; colEnc := colEnc + leaves; colBand := colBand + 1
   have hptr : x.aR + (β * x.nB + (β' + 1)) = x.aR + (β * x.nB + β') + 1 := by ring
   have hcol : x.aENCB + (β' + 1) * 10 ^ x.L = x.aENCB + β' * 10 ^ x.L + 10 ^ x.L := by ring
   have hi := Nat.mul_add_lt_mul hβ hβ'
   have hcolS := Nat.mul_add_le_mul hβ' (le_refl (10 ^ x.L))
-  have hbands : x.nB ≤ x.nB * 10 ^ x.L := Nat.le_mul_of_pos_right _ (by positivity)
   unfold AllTiles.Inv
   rw [hptr, hcol]
   -- names for the products
   generalize β * x.nB + β' = ptr at *
-  generalize x.aENCA + β * 10 ^ x.L = row at *
   generalize β' * 10 ^ x.L = off at *
-  generalize x.nB * 10 ^ x.L = all at *
   generalize 10 ^ x.L = leaves at *
   light_set (x.aR + ptr + 1 : ℕ)
   light_set (x.aENCB + off + leaves : ℕ)
@@ -153,16 +146,14 @@ private theorem row_spec (hTile : TileSpecP lim P) (C : AllTilesPreP lim μ x) (
     have hrow : x.aENCA + (β + 1) * 10 ^ x.L = x.aENCA + β * 10 ^ x.L + 10 ^ x.L := by ring
     have hcol : x.aENCB + 0 * 10 ^ x.L = x.aENCB := by ring
     have hrowS := Nat.mul_add_le_mul hβ (le_refl (10 ^ x.L))
-    have hbands : x.nB ≤ x.nB * 10 ^ x.L := Nat.le_mul_of_pos_right _ (by positivity)
+    have hbands : x.nB ≤ x.nB * 10 ^ x.L := Nat.le_mul_of_pos_right _ tac_positivity
     have hbefore : triesBefore x β x.nB = triesBefore x (β + 1) 0 := by
       rw [triesBefore, tilesBefore_row, triesBefore]
     have M' : Mem μ μ' x (β + 1) 0 := ⟨hbefore ▸ M.trie, hbefore ▸ M.roots, M.same⟩
     unfold AllTiles.Inv
     rw [hptr, hrow, hcol]
     -- names for the products
-    generalize x.aR + (β * x.nB + x.nB) = ptr at *
     generalize β * 10 ^ x.L = off at *
-    generalize x.nB * 10 ^ x.L = all at *
     generalize 10 ^ x.L = leaves at *
     light_set (x.aENCA + off + leaves : ℕ)
     light_set (β + 1 : ℕ)
@@ -172,7 +163,7 @@ private theorem row_spec (hTile : TileSpecP lim P) (C : AllTilesPreP lim μ x) (
 
 end AllTilesP
 
-open AllTiles AllTilesP in
+open AllTiles AllTilesP
 /-- **allTiles on pruned encodings** meets its specification. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/AllTiles.lean (allTiles_spec)
 theorem allTilesP_spec {lim : Limits} {P : Program} (hP : P[Proc.allTiles]? = some allTilesBody)

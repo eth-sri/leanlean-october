@@ -2,6 +2,7 @@ module
 
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Parameters
 public import ImprovedExponents.Pipeline.HostBound
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -20,7 +21,7 @@ The two dimensions that are used: `Dc = D` (`eventually_self_bounds`) and
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Filter
+open ThreeSumApsp.Spec Filter
 
 /-- For `d > 0`, `n^d` is eventually at least any given number. -/
 theorem eventually_le_rpow {d : ℝ} (hd0 : 0 < d) (B : ℝ) :
@@ -57,22 +58,21 @@ theorem eventually_hostParams {d η : ℝ} {D g : ℕ → ℕ} (hd0 : 0 < d) (hd
   filter_upwards [eventually_le_rpow hd0 (max 16 (2 * (2 : ℝ) ^ (1 / (1 / 2 - η)))),
     eventually_ge_atTop 1] with n hn hn1
   have hN1 : (1 : ℝ) ≤ n := by exact_mod_cast hn1
-  have h16 : (16 : ℝ) ≤ (n : ℝ) ^ d := (le_max_left _ _).trans hn
-  have hB : 2 * (2 : ℝ) ^ (1 / (1 / 2 - η)) ≤ (n : ℝ) ^ d := (le_max_right _ _).trans hn
-  have hfl : (D n : ℝ) ≤ (n : ℝ) ^ d := by rw [hD]; exact Nat.floor_le (by positivity)
+  have h16 := (le_max_left _ _).trans hn
+  have hB := (le_max_right _ _).trans hn
+  have hfl : (D n : ℝ) ≤ (n : ℝ) ^ d := by rw [hD]; exact Nat.floor_le tac_positivity
   have hlt : (n : ℝ) ^ d < (D n : ℝ) + 1 := by rw [hD]; exact Nat.lt_floor_add_one _
   have hD16 : 16 ≤ D n := by rw [hD]; exact Nat.le_floor (by exact_mod_cast h16)
-  have hX16 : (16 : ℝ) ≤ D n := by exact_mod_cast hD16
   have hX0 : (0 : ℝ) < D n := by linarith
-  have hXη1 : 1 ≤ (D n : ℝ) ^ η := Real.one_le_rpow (by linarith) hη0.le
+  have hXη1 : 1 ≤ (D n : ℝ) ^ η := Real.one_le_rpow tac_linarith hη0.le
   have hgl : (D n : ℝ) ^ η ≤ g n := by rw [hg]; exact Nat.le_ceil _
   have hgu : (g n : ℝ) < (D n : ℝ) ^ η + 1 := by
-    rw [hg]; exact Nat.ceil_lt_add_one (by positivity)
+    rw [hg]; exact Nat.ceil_lt_add_one tac_positivity
   have hhalf : (2 : ℝ) ^ (1 / (1 / 2 - η)) ≤ (D n : ℝ) := by linarith
   have h2 : (2 : ℝ) ≤ (D n : ℝ) ^ (1 / 2 - η) := by
     calc (2 : ℝ) = ((2 : ℝ) ^ (1 / (1 / 2 - η))) ^ (1 / 2 - η) := by
-          rw [← Real.rpow_mul (by norm_num), one_div, inv_mul_cancel₀ hτ.ne', Real.rpow_one]
-      _ ≤ (D n : ℝ) ^ (1 / 2 - η) := Real.rpow_le_rpow (by positivity) hhalf hτ.le
+          rw [← Real.rpow_mul tac_norm_num, one_div, inv_mul_cancel₀ hτ.ne', Real.rpow_one]
+      _ ≤ (D n : ℝ) ^ (1 / 2 - η) := Real.rpow_le_rpow tac_positivity hhalf hτ.le
   have hsqrt : Real.sqrt (D n) = (D n : ℝ) ^ η * (D n : ℝ) ^ (1 / 2 - η) := by
     rw [Real.sqrt_eq_rpow, ← Real.rpow_add hX0]
     congr 1
@@ -94,7 +94,7 @@ variable {d η : ℝ} {n Dn gn : ℕ}
 /-- `g ≤ 2 n^{dη}`. -/
 theorem g_le (h : HostParams d η n Dn gn) (hη0 : 0 ≤ η) :
     (gn : ℝ) ≤ 2 * (n : ℝ) ^ (d * η) := by
-  have h1 : (Dn : ℝ) ^ η ≤ ((n : ℝ) ^ d) ^ η := Real.rpow_le_rpow (Nat.cast_nonneg _) h.D_le hη0
+  have h1 := Real.rpow_le_rpow (Nat.cast_nonneg _) h.D_le hη0
   rw [← Real.rpow_mul (Nat.cast_nonneg _)] at h1
   linarith [h.g_le_rpow]
 
@@ -102,12 +102,12 @@ theorem g_le (h : HostParams d η n Dn gn) (hη0 : 0 ≤ η) :
 theorem le_g (h : HostParams d η n Dn gn) (hη0 : 0 ≤ η) (hη1 : η ≤ 1) :
     (n : ℝ) ^ (d * η) / 2 ≤ gn := by
   have hN0 : (0 : ℝ) ≤ (n : ℝ) ^ d := by positivity
-  have h1 : ((n : ℝ) ^ d / 2) ^ η ≤ (Dn : ℝ) ^ η := Real.rpow_le_rpow (by positivity) h.le_D hη0
-  rw [Real.div_rpow hN0 (by norm_num), ← Real.rpow_mul (Nat.cast_nonneg _)] at h1
+  have h1 := Real.rpow_le_rpow tac_positivity h.le_D hη0
+  rw [Real.div_rpow hN0 tac_norm_num, ← Real.rpow_mul (Nat.cast_nonneg _)] at h1
   have h2 : (2 : ℝ) ^ η ≤ 2 :=
-    (Real.rpow_le_rpow_of_exponent_le (by norm_num) hη1).trans_eq (Real.rpow_one _)
+    (Real.rpow_le_rpow_of_exponent_le tac_norm_num hη1).trans_eq (Real.rpow_one _)
   have h3 : (n : ℝ) ^ (d * η) / 2 ≤ (n : ℝ) ^ (d * η) / (2 : ℝ) ^ η :=
-    div_le_div_of_nonneg_left (by positivity) (by positivity) h2
+    div_le_div_of_nonneg_left tac_positivity tac_positivity h2
   linarith [h.rpow_le_g]
 
 /-- `1/g ≤ 2 n^{-dη}`. -/
@@ -124,7 +124,7 @@ theorem inv_sqrt_le (h : HostParams d η n Dn gn) :
     1 / Real.sqrt Dn ≤ 2 * (n : ℝ) ^ (-(d / 2)) := by
   have hN0 : (0 : ℝ) < n := by exact_mod_cast h.one_le_n
   have hX0 : (0 : ℝ) < Dn := by exact_mod_cast (by norm_num : 0 < 16).trans_le h.sixteen_le
-  have hs : 0 < Real.sqrt Dn := Real.sqrt_pos.2 hX0
+  have hs := Real.sqrt_pos.2 hX0
   have hp : (0 : ℝ) < (n : ℝ) ^ (d / 2) := by positivity
   have h1 : (n : ℝ) ^ (d / 2) ≤ 2 * Real.sqrt Dn := by
     have e : (n : ℝ) ^ (d / 2) = Real.sqrt ((n : ℝ) ^ d) := by
@@ -175,35 +175,35 @@ theorem eventually_callParams {d η a ε γ q c₁ c₂ : ℝ} {D g Dc : ℕ →
     rw [Real.rpow_mul hN0.le]
     exact Real.rpow_le_rpow hX0 P.D_le ha0.le
   have hXa' : (n : ℝ) ^ (d * a) / (2 : ℝ) ^ a ≤ (D n : ℝ) ^ a := by
-    rw [Real.rpow_mul hN0.le, ← Real.div_rpow (by positivity) (by norm_num)]
-    exact Real.rpow_le_rpow (by positivity) P.le_D ha0.le
+    rw [Real.rpow_mul hN0.le, ← Real.div_rpow tac_positivity tac_norm_num]
+    exact Real.rpow_le_rpow tac_positivity P.le_D ha0.le
   have hXa0 : 0 ≤ (D n : ℝ) ^ a := by positivity
   have hlow : c₁ / (2 : ℝ) ^ a * (n : ℝ) ^ (d * a) ≤ Dc n := by
     calc c₁ / (2 : ℝ) ^ a * (n : ℝ) ^ (d * a) = c₁ * ((n : ℝ) ^ (d * a) / (2 : ℝ) ^ a) := by ring
       _ ≤ c₁ * (D n : ℝ) ^ a := mul_le_mul_of_nonneg_left hXa' hc₁.le
       _ ≤ Dc n := hYl
   have hup : (Dc n : ℝ) ≤ max c₂ 1 * (n : ℝ) ^ (d * a) :=
-    hYu.trans (mul_le_mul (le_max_left _ _) hXa hXa0 (by positivity))
+    hYu.trans (mul_le_mul (le_max_left _ _) hXa hXa0 tac_positivity)
   have hup' : max c₂ 1 * (n : ℝ) ^ (d * a) ≤ (n : ℝ) ^ min ε 1 := by
     calc max c₂ 1 * (n : ℝ) ^ (d * a) ≤ (n : ℝ) ^ (min ε 1 - d * a) * (n : ℝ) ^ (d * a) :=
-          mul_le_mul_of_nonneg_right hn (by positivity)
+          mul_le_mul_of_nonneg_right hn tac_positivity
       _ = (n : ℝ) ^ min ε 1 := by
           rw [← Real.rpow_add hN0]
           congr 1
           ring
   have hlow0 : 0 < c₁ / (2 : ℝ) ^ a * (n : ℝ) ^ (d * a) := by positivity
-  have hY0 : (0 : ℝ) < Dc n := hlow0.trans_le hlow
+  have hY0 := hlow0.trans_le hlow
   refine ⟨Nat.succ_le_of_lt (by exact_mod_cast hY0), ?_, ?_, ?_, ?_⟩
   · exact (hup.trans hup').trans (Real.rpow_le_rpow_of_exponent_le hN1 (min_le_left _ _))
   · exact (hup.trans hup').trans
       ((Real.rpow_le_rpow_of_exponent_le hN1 (min_le_right _ _)).trans_eq (Real.rpow_one _))
   · calc (Dc n : ℝ) ^ (-γ) ≤ (c₁ / (2 : ℝ) ^ a * (n : ℝ) ^ (d * a)) ^ (-γ) :=
-          Real.rpow_le_rpow_of_nonpos hlow0 hlow (by linarith)
+          Real.rpow_le_rpow_of_nonpos hlow0 hlow tac_linarith
       _ = (c₁ / (2 : ℝ) ^ a) ^ (-γ) * (n : ℝ) ^ (d * a * -γ) := by
-          rw [Real.mul_rpow hc₀.le (by positivity), ← Real.rpow_mul hN0.le]
+          rw [Real.mul_rpow hc₀.le tac_positivity, ← Real.rpow_mul hN0.le]
   · calc (Dc n : ℝ) ^ q ≤ (max c₂ 1 * (n : ℝ) ^ (d * a)) ^ q := Real.rpow_le_rpow hY0.le hup hq
       _ = (max c₂ 1) ^ q * (n : ℝ) ^ (d * a * q) := by
-          rw [Real.mul_rpow (by positivity) (by positivity), ← Real.rpow_mul hN0.le]
+          rw [Real.mul_rpow tac_positivity tac_positivity, ← Real.rpow_mul hN0.le]
 
 /-! ## The two dimensions of a call -/
 
@@ -227,14 +227,12 @@ theorem HostParams.pieceSize_bounds {d η : ℝ} {n Dn gn : ℕ} (P : HostParams
   have hPl : (Nat.sqrt Dn : ℝ) / gn ≤ pieceSizeNat Dn gn := by
     rw [hpiece]; exact Nat.le_ceil _
   have hPu : (pieceSizeNat Dn gn : ℝ) < (Nat.sqrt Dn : ℝ) / gn + 1 := by
-    rw [hpiece]; exact Nat.ceil_lt_add_one (by positivity)
-  have hq1 : 1 ≤ (Nat.sqrt Dn : ℝ) / gn := (one_le_div hg0).2 hgS
+    rw [hpiece]; exact Nat.ceil_lt_add_one tac_positivity
+  have hq1 := (one_le_div hg0).2 hgS
   have hSS : (Nat.sqrt Dn : ℝ) * Nat.sqrt Dn ≤ Dn :=
     (mul_le_mul hS1 hS1 hS0 (Real.sqrt_nonneg _)).trans_eq (Real.mul_self_sqrt hX0.le)
   have hSS' : (Dn : ℝ) / 4 ≤ (Nat.sqrt Dn : ℝ) * Nat.sqrt Dn := by
     have hg1 : (1 : ℝ) ≤ gn := by exact_mod_cast P.one_le_g
-    have h1 : Real.sqrt Dn / 2 ≤ Nat.sqrt Dn := by linarith
-    have h2 := mul_le_mul h1 h1 (by positivity) hS0
     have h3 := Real.mul_self_sqrt hX0.le
     nlinarith
   have hpow : (Dn : ℝ) ^ (1 - η) = (Dn : ℝ) / (Dn : ℝ) ^ η := by
@@ -248,10 +246,10 @@ theorem HostParams.pieceSize_bounds {d η : ℝ} {n Dn gn : ℕ} (P : HostParams
       _ ≤ (pieceSizeNat Dn gn : ℝ) * Nat.sqrt Dn := mul_le_mul_of_nonneg_right hPl hS0
   · calc (pieceSizeNat Dn gn : ℝ) * Nat.sqrt Dn
         ≤ 2 * ((Nat.sqrt Dn : ℝ) / gn) * Nat.sqrt Dn :=
-          mul_le_mul_of_nonneg_right (by linarith) hS0
+          mul_le_mul_of_nonneg_right tac_linarith hS0
       _ = 2 * ((Nat.sqrt Dn : ℝ) * Nat.sqrt Dn / gn) := by ring
       _ ≤ 2 * ((Dn : ℝ) / (Dn : ℝ) ^ η) :=
-          mul_le_mul_of_nonneg_left (div_le_div₀ hX0.le hSS hXη P.rpow_le_g) (by norm_num)
+          mul_le_mul_of_nonneg_left (div_le_div₀ hX0.le hSS hXη P.rpow_le_g) tac_norm_num
 
 /-- The dimension `Dc = ⌈⌊√D⌋/g⌉ ⌊√D⌋` of the middle part is `Θ(D^{1-η})`. -/
 theorem eventually_pieceSize_bounds {d η : ℝ} {D g : ℕ → ℕ}

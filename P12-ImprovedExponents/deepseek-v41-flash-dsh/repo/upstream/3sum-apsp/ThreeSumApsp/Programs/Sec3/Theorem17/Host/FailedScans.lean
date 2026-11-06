@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.InstanceFacts
 public import ThreeSumApsp.Sec3.Theorem17.Witnesses
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The host of Theorem 17: failed scans and false positives
@@ -45,7 +46,7 @@ theorem Valid.eq_of_place_eq (hv : X.Valid) {t t' i i' : ℕ} (ht : t < X.m) (ht
   have hend' := hv.lo_add_le ht'
   -- The list of all pairs has no repetition, so the two pairs stand at the same position in it.
   have hpos : X.lo t + i = X.lo t' + i' := by
-    rw [place, place, List.getD_eq_getElem _ _ (by omega), List.getD_eq_getElem _ _ (by omega)]
+    rw [place, place, List.getD_eq_getElem _ _ tac_omega, List.getD_eq_getElem _ _ tac_omega]
       at hplace
     exact (List.Nodup.getElem_inj_iff (sortedIdx_nodup X.n X.p X.RAB)).1 hplace
   -- A position lies in one chunk only.
@@ -69,7 +70,7 @@ theorem exists_false_positive (hv : X.Valid) {t i : ℕ} (ht : t < X.m) (hi : i 
   obtain ⟨c, hc, hdvd⟩ := (acc_iff hv ht hi).1 hacc
   refine ⟨c, hc, hdvd, fun hzero => ?_⟩
   rw [(hit_iff hi).2 ⟨c, hc, hzero⟩] at hhit
-  exact absurd hhit (by decide)
+  exact absurd hhit tac_decide
 
 /-- A vertex of the piece of an instance determines the number of the piece. -/
 theorem c0_add_div {t c : ℕ} (hc : c < X.len t) : (X.c0 t + c) / X.q = t / X.chunkCount := by

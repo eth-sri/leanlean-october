@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Lang.Compiler.Dispatcher
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The code of a whole program
@@ -145,7 +146,7 @@ def _root_.Light.compileProgram (P : Program) (p0 : ℕ) (dec : Bool) : List Ins
 
 private theorem le_endPos (F : ℕ) : ∀ (bs : List Stmt) (pos : ℕ), pos ≤ endPos F bs pos
   | [], _ => le_rfl
-  | b :: bs, pos => le_trans (by omega) (le_endPos F bs (pos + b.size F + epilogueSize))
+  | b :: bs, pos => le_trans tac_omega (le_endPos F bs (pos + b.size F + epilogueSize))
 
 /-- The length of the outermost statement. -/
 theorem size_mainStmt (p0 F : ℕ) : (mainStmt p0).size F = 2 * F + 11 := by
@@ -254,6 +255,6 @@ theorem codeAt_bodies {code : List Instr} (G : CodeLayout) :
     codeAt_bodies G bs _
       (hc.right.cast_pos (by
         rw [List.length_append, length_compileStmt, length_epilogue, Nat.add_assoc])) p b
-      (by simpa using h)
+      ((by simpa using h))
 
 end Light.Compiler

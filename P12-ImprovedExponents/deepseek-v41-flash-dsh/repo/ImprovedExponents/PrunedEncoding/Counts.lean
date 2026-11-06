@@ -1,6 +1,7 @@
 module
 
 public import PaperStatements
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -85,15 +86,14 @@ theorem sub_mul_prefCount_le_aux (L m : ℕ) (h : 9 * m ≤ L - m + 1) :
     exact Nat.mul_le_mul_right _ (Nat.sub_le _ _)
   | succ j ih =>
     intro hj
-    have ih' := ih (by omega)
+    have ih' := ih tac_omega
     have hratio := prefCount_term_ratio L j
-    have hstep : (L - m + 1) * (L.choose j * 9 ^ (L - j))
-        ≤ 9 * m * (L.choose (j + 1) * 9 ^ (L - (j + 1))) := calc
+    have hstep := calc
       (L - m + 1) * (L.choose j * 9 ^ (L - j)) ≤ (L - j) * (L.choose j * 9 ^ (L - j)) :=
-        Nat.mul_le_mul_right _ (by omega)
+        Nat.mul_le_mul_right _ tac_omega
       _ = 9 * (j + 1) * (L.choose (j + 1) * 9 ^ (L - (j + 1))) := hratio
       _ ≤ 9 * m * (L.choose (j + 1) * 9 ^ (L - (j + 1))) :=
-        Nat.mul_le_mul_right _ (by omega)
+        Nat.mul_le_mul_right _ tac_omega
     have hsplit : prefCount L (j + 1)
         = prefCount L j + L.choose (j + 1) * 9 ^ (L - (j + 1)) := by
       unfold prefCount
@@ -112,7 +112,7 @@ theorem sub_mul_prefCount_le_aux (L m : ℕ) (h : 9 * m ≤ L - m + 1) :
 theorem sub_mul_prefCount_le {L m : ℕ} (h : 10 * m ≤ L) :
     (L - m + 1 - 9 * m) * prefCount L m ≤ (L - m + 1) * M L m := by
   rw [M_eq_choose_mul]
-  exact sub_mul_prefCount_le_aux L m (by omega) m le_rfl
+  exact sub_mul_prefCount_le_aux L m tac_omega m le_rfl
 
 /-- `|P_L| ≤ M/(1 - ρ)` for `10 m ≤ L`: the number of leaves with at most `m` symbols `P₀`. -/
 theorem prefCount_le_M_div {L m : ℕ} (h : 10 * m ≤ L) :
@@ -121,14 +121,14 @@ theorem prefCount_le_M_div {L m : ℕ} (h : 10 * m ≤ L) :
   have hnat := sub_mul_prefCount_le h
   have hcast : ((L : ℝ) - m + 1 - 9 * m) * prefCount L m ≤ ((L : ℝ) - m + 1) * M L m := by
     have := (Nat.cast_le (α := ℝ)).mpr hnat
-    rw [Nat.cast_mul, Nat.cast_mul, Nat.cast_sub (by omega), Nat.cast_add, Nat.cast_sub (by omega)]
+    rw [Nat.cast_mul, Nat.cast_mul, Nat.cast_sub tac_omega, Nat.cast_add, Nat.cast_sub tac_omega]
       at this
     simpa using this
   have hpos : (0 : ℝ) < (L : ℝ) - m + 1 := by linarith
   have hrho : 1 - rho L m = ((L : ℝ) - m + 1 - 9 * m) / ((L : ℝ) - m + 1) := by
     unfold rho
     field_simp
-  rw [hrho, div_div_eq_mul_div, le_div_iff₀ (by linarith)]
+  rw [hrho, div_div_eq_mul_div, le_div_iff₀ tac_linarith]
   linarith
 
 end ImprovedExponents

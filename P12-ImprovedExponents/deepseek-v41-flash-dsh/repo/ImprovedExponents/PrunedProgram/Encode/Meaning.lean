@@ -23,9 +23,9 @@ open ThreeSumApsp
 
 namespace Light.Sec2
 
-open Finset ThreeSumApsp.Spec ImprovedExponents
+open ThreeSumApsp.Spec ImprovedExponents
 
-open private encIdx_eq_computeEncoding EncodePre.of_seg
+open private
   from ThreeSumApsp.Programs.Sec2.Theorem5.Encode.Meaning
 
 variable {lim : Limits} {P : Program} {d : ℕ} {μ : ℕ → ℤ} {src out scr tab p7 p10 L j : ℕ}

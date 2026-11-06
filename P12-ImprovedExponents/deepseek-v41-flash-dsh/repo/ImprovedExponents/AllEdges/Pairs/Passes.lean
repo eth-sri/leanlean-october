@@ -4,6 +4,7 @@ public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Lang.Frames
 public import ThreeSumApsp.Spec.Sec3.Problems
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -42,7 +43,7 @@ abbrev Index : ℕ := 3
 
 end OrPass
 
-open OrPass in
+open OrPass
 /-- or(len, f, out): for i < len, out[i] := out[i] + f[i] − out[i] · f[i]. -/
 def orBody : Stmt :=
   pass Index (v Len) (v Dest)
@@ -75,19 +76,19 @@ theorem or_meets {p : ℕ} (hp : P[p]? = some orBody) {μ : ℕ → ℤ} {fl out
   refine .of_body hp (Ends.pass f (fun j hj => ?_) ?_ hsp hout rfl rfl)
   · -- round j reads f[j], which is never written, and out[j], which it then overwrites
     have hreadF : wrote μ out f j (fl + j) = F[j] :=
-      (wrote_rest (by omega)).trans (hF j (by omega))
+      (wrote_rest tac_omega).trans (hF j tac_omega)
     have hreadL : wrote μ out f j (out + j) = L[j] :=
-      (wrote_rest (by omega)).trans (hL j (by omega))
+      (wrote_rest tac_omega).trans (hL j tac_omega)
     rw [update_frame_setLocal]
     rcases hflag _ (List.getElem_mem (show j < F.length by omega)) with h | h <;>
     rcases hL01 _ (List.getElem_mem (show j < L.length by omega)) with h' | h'
     all_goals
-      simp [Limits.Addr, abs_le, hreadF, hreadL, hfi j (by omega) (by omega), h, h']; omega
+      simp [Limits.Addr, abs_le, hreadF, hreadL, hfi j tac_omega tac_omega, h, h']; omega
   · dsimp only
-    refine ⟨seg_wrote (by simp [orL, lF, lL]) fun i hi => ?_, sameOutside_wrote le_rfl⟩
+    refine ⟨seg_wrote tac_simp [orL, lF, lL] fun i hi => ?_, sameOutside_wrote le_rfl⟩
     simp only [orL, List.length_zipWith] at hi ⊢
     rw [List.getElem_zipWith]
-    exact (hfi i (by omega) (by omega)).symm
+    exact (hfi i tac_omega tac_omega).symm
 
 /-! ## The transpose -/
 
@@ -110,13 +111,13 @@ abbrev Idx : ℕ := 6
 
 end Transpose
 
-open Transpose in
+open Transpose
 /-- The row j of the destination: for i < n, dst[j n + i] := src[i n + j] + c. -/
 def transposeRow : Stmt :=
   .set Row (v Dst +' v Col *' v Side) ;;
   pass Idx (v Side) (v Row) (M (v Src +' v Idx *' v Side +' v Col) +' v Shift)
 
-open Transpose in
+open Transpose
 /-- transpose(n, src, c, dst): for j < n, the row j of the destination. -/
 def transposeBody : Stmt := .for Col (v Side) transposeRow
 
@@ -134,7 +135,7 @@ theorem transposeL_getD {n : ℕ} (c : ℤ) (Y : List ℤ) {j k : ℕ} (hj : j <
     (transposeL n c Y).getD (j * n + k) 0 = Y.getD (k * n + j) 0 + c := by
   have hq : j * n + k < n * n := by nlinarith
   have hdiv : (j * n + k) / n = j := by
-    rw [Nat.add_comm, Nat.add_mul_div_right _ _ (by omega), Nat.div_eq_of_lt hk]
+    rw [Nat.add_comm, Nat.add_mul_div_right _ _ tac_omega, Nat.div_eq_of_lt hk]
     simp
   have hmod : (j * n + k) % n = k := by
     rw [Nat.add_comm, Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt hk]
@@ -170,15 +171,15 @@ private theorem tMem_succ {μ : ℕ → ℤ} {dst n : ℕ} {c : ℤ} {Y : List �
   funext a
   simp only [tMem, wrote, Nat.succ_mul]
   by_cases h1 : dst + j * n ≤ a ∧ a < dst + j * n + n
-  · rw [ite_eq_left h1, ite_eq_left (by omega)]
+  · rw [ite_eq_left h1, ite_eq_left tac_omega]
     obtain ⟨i, hi, rfl⟩ : ∃ i, i < n ∧ a = dst + (j * n + i) :=
       ⟨a - dst - j * n, by omega, by omega⟩
     rw [show dst + (j * n + i) - (dst + j * n) = i by omega, Nat.add_sub_cancel_left,
       transposeL_getD c Y hj hi]
   · rw [ite_eq_right h1]
     by_cases h2 : dst ≤ a ∧ a < dst + j * n
-    · rw [ite_eq_left h2, ite_eq_left (by omega)]
-    · rw [ite_eq_right h2, ite_eq_right (by omega)]
+    · rw [ite_eq_left h2, ite_eq_left tac_omega]
+    · rw [ite_eq_right h2, ite_eq_right tac_omega]
 
 /-- **transpose** writes the transpose of the matrix at src, with c added to every entry, to the n²
 cells from dst, and changes nothing else. -/
@@ -195,7 +196,7 @@ theorem transpose_meets {p : ℕ} (hp : P[p]? = some transposeBody) {μ : ℕ �
   refine .of_body hp ?_
   simp only [transposeBody]
   refine Ends.forShape (fun j (s : ℤ × ℤ) μ' => ⟨frame [n, src, c, dst, j, s.1, s.2], μ'⟩)
-    (fun j μ' => μ' = tMem μ dst n c Y j) n (30 * n + 11) (0, 0) (by simp [tMem, wrote_zero])
+    (fun j μ' => μ' = tMem μ dst n c Y j) n (30 * n + 11) (0, 0) tac_simp [tMem, wrote_zero]
     ?round ?done
     (first := by
       rw [update_frame_setLocal]
@@ -207,13 +208,13 @@ theorem transpose_meets {p : ℕ} (hp : P[p]? = some transposeBody) {μ : ℕ �
     simp only [transposeRow]
     -- Row := Dst + Col * Side
     light_set (dst + j * n : ℕ)
-    refine Ends.pass (fun i => Y.getD (i * n + j) 0 + c) (fun i hi => ?_) ?_ hsp (by omega) rfl rfl
+    refine Ends.pass (fun i => Y.getD (i * n + j) 0 + c) (fun i hi => ?_) ?_ hsp tac_omega rfl rfl
       (hT := by simp; omega)
     · -- round i reads src[i n + j], which is never written
       have hin : i * n + j < n * n := by nlinarith
       have hread : wrote (tMem μ dst n c Y j) (dst + j * n) (fun i => Y.getD (i * n + j) 0 + c) i
           (src + (i * n + j)) = Y.getD (i * n + j) 0 := by
-        rw [wrote_rest (by omega), tMem, wrote_rest (by omega), hY.getD (hlen ▸ hin)]
+        rw [wrote_rest tac_omega, tMem, wrote_rest tac_omega, hY.getD (hlen ▸ hin)]
       have hmem : Y.getD (i * n + j) 0 ∈ Y := by
         rw [List.getD_eq_getElem _ _ (hlen ▸ hin)]
         exact List.getElem_mem _

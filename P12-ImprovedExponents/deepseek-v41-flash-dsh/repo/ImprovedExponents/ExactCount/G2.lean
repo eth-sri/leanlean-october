@@ -1,6 +1,7 @@
 module
 
 public import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -51,9 +52,9 @@ theorem hasDerivAt_g2_right {c δ : ℝ} (hc : 1 < c) (hδ0 : 0 < δ) (hδ1 : δ
     (hasDerivAt_negMulLog (sub_pos.2 hδ1).ne').comp δ ((hasDerivAt_id δ).const_sub 1)
   have h3 : HasDerivAt (fun δ : ℝ => δ * log 9) (1 * log 9) δ :=
     (hasDerivAt_id δ).mul_const (log 9)
-  have h : HasDerivAt (g2 c) _ δ := ((h1.sub_const (negMulLog (c - 1))).add h2).add h3
+  have h := ((h1.sub_const (negMulLog (c - 1))).add h2).add h3
   refine h.congr_deriv ?_
-  rw [log_div (by nlinarith) hpos.ne', log_mul (by norm_num) (sub_pos.2 hδ1).ne']
+  rw [log_div tac_nlinarith hpos.ne', log_mul tac_norm_num (sub_pos.2 hδ1).ne']
   ring
 
 /-- `∂g₂/∂c = ln((c - 1)/(c - 1 + δ))`. -/
@@ -76,13 +77,13 @@ theorem g2_antitoneOn_right {c : ℝ} (hc : 10 ≤ c) : AntitoneOn (g2 c) (Icc 0
   refine antitoneOn_of_deriv_nonpos (convex_Icc 0 1) (continuous_g2_right c).continuousOn ?_ ?_
   · intro δ hδ
     rw [interior_Icc] at hδ
-    exact (hasDerivAt_g2_right (by linarith) hδ.1 hδ.2).differentiableAt.differentiableWithinAt
+    exact (hasDerivAt_g2_right tac_linarith hδ.1 hδ.2).differentiableAt.differentiableWithinAt
   · intro δ hδ
     rw [interior_Icc] at hδ
     obtain ⟨hδ0, hδ1⟩ := hδ
-    rw [(hasDerivAt_g2_right (by linarith) hδ0 hδ1).deriv]
+    rw [(hasDerivAt_g2_right tac_linarith hδ0 hδ1).deriv]
     have hpos : 0 < c - 1 + δ := by linarith
-    refine log_nonpos (div_nonneg (by nlinarith) hpos.le) ?_
+    refine log_nonpos (div_nonneg tac_nlinarith hpos.le) ?_
     rw [div_le_one hpos]
     linarith
 
@@ -92,9 +93,9 @@ theorem g2_strictAntiOn_right {c : ℝ} (hc : 10 < c) : StrictAntiOn (g2 c) (Icc
   intro δ hδ
   rw [interior_Icc] at hδ
   obtain ⟨hδ0, hδ1⟩ := hδ
-  rw [(hasDerivAt_g2_right (by linarith) hδ0 hδ1).deriv]
+  rw [(hasDerivAt_g2_right tac_linarith hδ0 hδ1).deriv]
   have hpos : 0 < c - 1 + δ := by linarith
-  refine log_neg (div_pos (by nlinarith) hpos) ?_
+  refine log_neg (div_pos tac_nlinarith hpos) ?_
   rw [div_lt_one hpos]
   linarith
 
@@ -110,7 +111,7 @@ theorem g2_antitoneOn_left {δ : ℝ} (hδ : 0 ≤ δ) : AntitoneOn (fun c => g2
     have hc' : 1 < c := hc
     rw [(hasDerivAt_g2_left hc' hδ).deriv]
     have hpos : 0 < c - 1 + δ := by linarith
-    refine log_nonpos (div_nonneg (by linarith) hpos.le) ?_
+    refine log_nonpos (div_nonneg tac_linarith hpos.le) ?_
     rw [div_le_one hpos]
     linarith
 
@@ -166,7 +167,7 @@ theorem exp_mul_g2_div {L m t : ℕ} (hm : 1 ≤ m) (hmL : m ≤ L) (ht : t ≤ 
       = (9 : ℝ) ^ t * ((m : ℝ) ^ m * ((L - m : ℕ) : ℝ) ^ (L - m))
         / (((m - t : ℕ) : ℝ) ^ (m - t) * ((L - m + t : ℕ) : ℝ) ^ (L - m + t)) := by
   have h9 : exp ((t : ℝ) * log 9) = (9 : ℝ) ^ t := by
-    rw [exp_nat_mul, exp_log (by norm_num)]
+    rw [exp_nat_mul, exp_log tac_norm_num]
   have hA := exp_neg_negMulLog_natCast (L - m + t)
   have hB := exp_neg_negMulLog_natCast (L - m)
   have hC := exp_neg_negMulLog_natCast (m - t)

@@ -32,8 +32,8 @@ namespace RadixPass
 /-- The local variables that the pass uses: w, perm, and a local that takes the results of the two
 calls, which are not used. -/
 abbrev Num : ℕ := 0
-@[inherit_doc Num] abbrev Perm : ℕ := 5
-@[inherit_doc Num] abbrev Unused : ℕ := 7
+ abbrev Perm : ℕ := 5
+ abbrev Unused : ℕ := 7
 
 /-- The pass: procedure pc is countSort, procedure pp is copy. -/
 def _root_.Light.radixPass (pc pp : ℕ) (ekey estride eoff enb ecnt : Expr) : Stmt :=

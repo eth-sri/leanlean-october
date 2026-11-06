@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Lang.Tactics
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Contracts
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # A string put at the levels of the inner set
@@ -29,7 +30,7 @@ so far, followed by what is still to be written, are the whole string.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 namespace Scatter
 
@@ -112,13 +113,13 @@ end
 copy, the length, and the flag, whose first value is the argument star), the position, the pointer
 into the second string, and the digit to be written. -/
 abbrev First : ℕ := 0
-@[inherit_doc First] abbrev Second : ℕ := 1
-@[inherit_doc First] abbrev Dst : ℕ := 2
-@[inherit_doc First] abbrev Len : ℕ := 3
-@[inherit_doc First] abbrev Run : ℕ := 4
-@[inherit_doc First] abbrev Pos : ℕ := 5
-@[inherit_doc First] abbrev Ptr : ℕ := 6
-@[inherit_doc First] abbrev Digit : ℕ := 7
+ abbrev Second : ℕ := 1
+ abbrev Dst : ℕ := 2
+ abbrev Len : ℕ := 3
+ abbrev Run : ℕ := 4
+ abbrev Pos : ℕ := 5
+ abbrev Ptr : ℕ := 6
+ abbrev Digit : ℕ := 7
 
 end Scatter
 
@@ -157,8 +158,6 @@ private theorem round_runs {lim : Limits} (hs : Std lim) {μ : ℕ → ℤ}
   light_facts hs
   have hcastx : ((x : ℤ) = 9) = (x = 9) := by norm_cast
   have hcasty : ((y : ℤ) = 9) = (y = 9) := by norm_cast
-  have hcastr : ((run : ℤ) = 1) = (run = 1) := by norm_cast
-  have haddr : ((out : ℤ) + i).toNat = out + i := by omega
   simp only [scatterRound, outDigit, nextRun, nextPtr]
   -- The tests of the program: a nine of the first string, a nine of the second, the flag.  In each
   -- case the block is run: the first goal says that every address is in range and every value fits
@@ -195,11 +194,11 @@ theorem scatter_spec {lim : Limits} {P : Program} (hP : P[Proc.scatter]? = some 
   case round =>
     rintro i _ hi ⟨μ', run, o, dg, done, rfl, hprog, hdone, hsame⟩
     have hx : μ' (w + i) = (wl.getD i 0 : ℕ) :=
-      (hsame _ (by omega)).trans (hfirst.read hi)
+      (hsame _ tac_omega).trans (hfirst.read hi)
     have hy : wl.getD i 0 = 9 → μ' (s + o) = (sl.getD o 0 : ℕ) ∧ s + o + 1 < lim.space :=
       fun h9 => by
         have hptr := hprog.ptr_lt hi hsl h9
-        exact ⟨(hsame _ (by omega)).trans (hsecond.read hptr), by omega⟩
+        exact ⟨(hsame _ tac_omega).trans (hsecond.read hptr), by omega⟩
     refine ⟨by simp, by simp; omega, (round_runs hs hw_in hout_in hi hx hy).mono fun σ' hσ' =>
       ⟨_, _, _, _, _, hσ', hprog.succ hi hsl, ?_, hsame.update ⟨by omega, by omega⟩ _⟩⟩
     have hsnoc := hdone.snoc (outDigit (wl.getD i 0) (sl.getD o 0) run)

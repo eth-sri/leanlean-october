@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Collisions
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 21(a), the reduction of Chan and He: one node, and the recursion for three sets
@@ -130,14 +131,14 @@ private theorem abs_pad (U : ℕ) : |pad U| = 2 * (U : ℤ) + 1 :=
 most `2U + 1`. -/
 theorem abs_arrXY_le (M : ℕ) (h : Bdd U S) (i : ℕ) : |arrXY S M U i| ≤ 2 * (U : ℤ) + 1 := by
   rcases arrXY_cases M h i with ⟨-, hb⟩ | he
-  · exact hb.trans (by omega)
+  · exact hb.trans tac_omega
   · rw [he, abs_pad]
 
 /-- The entries of the third array of a node have absolute value at most `2U + 1`. -/
 theorem abs_arrZ_le (M : ℕ) (h : Bdd U S) (k : ℕ) : |arrZ S M U k| ≤ 2 * (U : ℤ) + 1 := by
   rcases arrZ_cases M h k with ⟨c, -, hb, he⟩ | he
   · rw [he, abs_neg]
-    exact hb.trans (by omega)
+    exact hb.trans tac_omega
   · rw [he, abs_neg, abs_pad]
 
 end cells
@@ -173,7 +174,7 @@ theorem node_correct {U M N : ℕ} (hM : 1 ≤ M) (hN : 2 * M ≤ N) {S₁ S₂ 
       omega
     refine ⟨i, j, by omega, ?_⟩
     rw [arrXY, arr_of_light ha _ hi.symm, arrXY, arr_of_light hb _ hj.symm,
-      arrZ_of_light hc U (by omega) hij]
+      arrZ_of_light hc U tac_omega hij]
     omega
 
 /-! ## The sizes of the sets along the recursion -/
@@ -191,22 +192,22 @@ private theorem dSeq_succ (j : ℕ) : dSeq (j + 1) = 2 * dSeq j ^ 2 := by
 
 /-- The sequence `dSeq` is nondecreasing. -/
 private theorem dSeq_mono {i j : ℕ} (h : i ≤ j) : dSeq i ≤ dSeq j :=
-  Nat.pow_le_pow_right (by norm_num) (Nat.sub_le_sub_right (Nat.pow_le_pow_right (by norm_num) h) 1)
+  Nat.pow_le_pow_right tac_norm_num (Nat.sub_le_sub_right (Nat.pow_le_pow_right tac_norm_num h) 1)
 
 /-- `d_h > n` at `h = height n`. -/
 private theorem lt_dSeq_height (n : ℕ) : n < dSeq (height n) := by
-  have hclog : Nat.log 2 n + 2 ≤ 2 ^ height n := Nat.le_pow_clog (by norm_num) _
-  calc n < 2 ^ (Nat.log 2 n + 1) := Nat.lt_pow_succ_log_self (by norm_num) n
-    _ ≤ dSeq (height n) := Nat.pow_le_pow_right (by norm_num) (by omega)
+  have hclog : Nat.log 2 n + 2 ≤ 2 ^ height n := Nat.le_pow_clog tac_norm_num _
+  calc n < 2 ^ (Nat.log 2 n + 1) := Nat.lt_pow_succ_log_self tac_norm_num n
+    _ ≤ dSeq (height n) := Nat.pow_le_pow_right tac_norm_num tac_omega
 
 /-- `height n` is at least 1, so the subtraction in `fuel` does not truncate. -/
 theorem height_pos (n : ℕ) : 1 ≤ height n :=
-  Nat.clog_pos (b := 2) (n := Nat.log 2 n + 2) (by norm_num) (by omega)
+  Nat.clog_pos (b := 2) (n := Nat.log 2 n + 2) tac_norm_num tac_omega
 
 /-- `2^(height n) ≤ 2⌊log₂ n⌋ + 2`. -/
 private theorem two_pow_height_le (n : ℕ) : 2 ^ height n ≤ 2 * Nat.log 2 n + 2 := by
   have hlt : 2 ^ (height n - 1) < Nat.log 2 n + 2 :=
-    Nat.pow_pred_clog_lt_self (b := 2) (x := Nat.log 2 n + 2) (by norm_num) (by omega)
+    Nat.pow_pred_clog_lt_self (b := 2) (x := Nat.log 2 n + 2) tac_norm_num tac_omega
   rw [← Nat.sub_add_cancel (height_pos n), pow_succ]
   omega
 
@@ -240,7 +241,7 @@ theorem heavy (h : Replaced n U j T) (hn : 1 ≤ n) {M : ℕ}
 /-- After `height n` replacements a set is empty. -/
 theorem eq_empty (h : Replaced n U j T) (hj : height n ≤ j) : T = ∅ := by
   by_contra hne
-  have hcard : 1 ≤ #T := card_pos.mpr (nonempty_iff_ne_empty.mpr hne)
+  have hcard := card_pos.mpr (nonempty_iff_ne_empty.mpr hne)
   -- `n < d_{height n} ≤ d_j ≤ |T| d_j ≤ n`
   have := lt_dSeq_height n
   have := dSeq_mono hj
@@ -254,7 +255,6 @@ end Replaced
 private theorem exists_eq_empty {n U j₁ j₂ j₃ : ℕ} {T₁ T₂ T₃ : Finset ℤ} (r₁ : Replaced n U j₁ T₁)
     (r₂ : Replaced n U j₂ T₂) (r₃ : Replaced n U j₃ T₃) (hj : 3 * height n - 2 ≤ j₁ + j₂ + j₃) :
     T₁ = ∅ ∨ T₂ = ∅ ∨ T₃ = ∅ := by
-  have := height_pos n
   rcases (by omega : height n ≤ j₁ ∨ height n ≤ j₂ ∨ height n ≤ j₃) with h | h | h
   · exact .inl (r₁.eq_empty h)
   · exact .inr (.inl (r₂.eq_empty h))
@@ -301,7 +301,7 @@ theorem length_nodes_le (Q : Finset ℕ) (Λ f : ℕ) (S₁ S₂ S₃ : Finset �
   | succ f ih =>
     unfold nodes
     split_ifs with h
-    · exact Nat.one_le_pow _ _ (by norm_num)
+    · exact Nat.one_le_pow _ _ tac_norm_num
     · simp only [List.length_cons, List.length_append]
       have := ih (heavy S₁ (modulus Q Λ S₁ S₂ S₃)) S₂ S₃
       have := ih S₁ (heavy S₂ (modulus Q Λ S₁ S₂ S₃)) S₃
@@ -353,7 +353,7 @@ theorem nodes_correct {n U N m : ℕ} (hn : 1 ≤ n) {Q : Finset ℕ} (hQ : Cand
     (hf : 3 * height n - 2 ≤ f + j₁ + j₂ + j₃) :
     HasSol T₁ T₂ T₃ ↔ ∃ ν ∈ nodes Q (Lam U) f T₁ T₂ T₃, ν.Conv U N := by
   induction f generalizing T₁ T₂ T₃ j₁ j₂ j₃ with
-  | zero => simp [nodes, not_hasSol_of_empty (exists_eq_empty r₁ r₂ r₃ (by omega))]
+  | zero => simp [nodes, not_hasSol_of_empty (exists_eq_empty r₁ r₂ r₃ tac_omega)]
   | succ f ih =>
     unfold nodes
     split_ifs with he
@@ -363,10 +363,10 @@ theorem nodes_correct {n U N m : ℕ} (hn : 1 ≤ n) {Q : Finset ℕ} (hQ : Cand
     have hheavy := card_heavy_modulus_le hQ.prime hQ.card hn r₁.bdd r₂.bdd r₃.bdd
     generalize modulus Q (Lam U) T₁ T₂ T₃ = M at hM1 hMm hheavy ⊢
     -- the node itself treats the light elements, and its three children the heavy ones
-    have hnode := node_correct (N := N) hM1 (by omega) r₁.bdd r₂.bdd r₃.bdd
-    have hchild₁ := ih (r₁.heavy hn (hheavy T₁ (by simp))) r₂ r₃ (by omega)
-    have hchild₂ := ih r₁ (r₂.heavy hn (hheavy T₂ (by simp))) r₃ (by omega)
-    have hchild₃ := ih r₁ r₂ (r₃.heavy hn (hheavy T₃ (by simp))) (by omega)
+    have hnode := node_correct (N := N) hM1 tac_omega r₁.bdd r₂.bdd r₃.bdd
+    have hchild₁ := ih (r₁.heavy hn (hheavy T₁ tac_simp)) r₂ r₃ tac_omega
+    have hchild₂ := ih r₁ (r₂.heavy hn (hheavy T₂ tac_simp)) r₃ tac_omega
+    have hchild₃ := ih r₁ r₂ (r₃.heavy hn (hheavy T₃ tac_simp)) tac_omega
     rw [hasSol_split T₁ T₂ T₃ M, ← hnode, hchild₁, hchild₂, hchild₃]
     simp only [List.mem_cons, List.mem_append, or_and_right, exists_or, exists_eq_left]
     -- `Node.Conv` of the new node is by definition the instance of `node_correct`
@@ -408,9 +408,9 @@ theorem reduction_correct {n U N : ℕ} (hn : 1 ≤ n) (hN : 2 * mPar n U ^ 2 �
 
 /-- A ternary tree with `fuel n` levels has polylogarithmically many nodes. -/
 theorem three_pow_fuel_le (n : ℕ) : 3 ^ fuel n ≤ (2 * Nat.log 2 n + 2) ^ 5 :=
-  calc 3 ^ fuel n ≤ 3 ^ (3 * height n) := Nat.pow_le_pow_right (by norm_num) (Nat.sub_le _ _)
+  calc 3 ^ fuel n ≤ 3 ^ (3 * height n) := Nat.pow_le_pow_right tac_norm_num (Nat.sub_le _ _)
     _ = 27 ^ height n := by rw [pow_mul]; norm_num
-    _ ≤ 32 ^ height n := Nat.pow_le_pow_left (by norm_num) _
+    _ ≤ 32 ^ height n := Nat.pow_le_pow_left tac_norm_num _
     _ = (2 ^ height n) ^ 5 := by rw [← pow_mul, mul_comm, pow_mul]; norm_num
     _ ≤ (2 * Nat.log 2 n + 2) ^ 5 := Nat.pow_le_pow_left (two_pow_height_le n) 5
 

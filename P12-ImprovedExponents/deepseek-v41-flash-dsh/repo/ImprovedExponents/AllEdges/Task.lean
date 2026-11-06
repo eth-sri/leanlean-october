@@ -2,6 +2,7 @@ module
 
 public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Witnesses.Scan
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -86,7 +87,7 @@ theorem aeFlags_getD_eq_bit_scanHit {n : ℕ} (AB BC AC : List ℤ) {a b : ℕ} 
     (aeFlags n AB BC AC).getD (a * n + b) 0 = bit (scanHit n AB BC AC a b 0 n) := by
   have hq : a * n + b < n * n := by nlinarith
   have hdiv : (a * n + b) / n = a := by
-    rw [Nat.add_comm, Nat.add_mul_div_right _ _ (by omega), Nat.div_eq_of_lt hb]
+    rw [Nat.add_comm, Nat.add_mul_div_right _ _ tac_omega, Nat.div_eq_of_lt hb]
     simp
   have hmod : (a * n + b) % n = b := by
     rw [Nat.add_comm, Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt hb]

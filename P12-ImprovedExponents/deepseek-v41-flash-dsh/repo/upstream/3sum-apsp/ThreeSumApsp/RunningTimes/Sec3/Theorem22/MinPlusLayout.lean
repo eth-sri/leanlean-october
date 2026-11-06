@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.TopProcedure
 public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Spec.Sec3.Theorem21b.RepeatedSquaring
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The (min,+)-product: from a solver of the task to a program for the layout of the end statement
@@ -27,7 +28,7 @@ attained, and it is a lower bound (`post_minPlusProduct`).
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.WordRam ThreeSumApsp.Spec
+open ThreeSumApsp.WordRam ThreeSumApsp.Spec
 
 /-- The input: the size and the two matrices, row by row. -/
 theorem input_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) :
@@ -67,8 +68,8 @@ theorem pre_minPlusProduct (x : Bounded EndStatement.MinPlusProduct) (hn : 1 ≤
     segB := by
       have := seg_second (x.n : ℤ) (rowMajor x.x.1) (rowMajor x.x.2)
       rwa [hA] at this
-    leA := fun a (ha : a ∈ rowMajor x.x.1) => abs_le_of_mem_minPlusProduct x (by simp [ha])
-    leB := fun a (ha : a ∈ rowMajor x.x.2) => abs_le_of_mem_minPlusProduct x (by simp [ha])
+    leA := fun a (ha : a ∈ rowMajor x.x.1) => abs_le_of_mem_minPlusProduct x tac_simp [ha]
+    leB := fun a (ha : a ∈ rowMajor x.x.2) => abs_le_of_mem_minPlusProduct x tac_simp [ha]
     belowA := by simp only [minPlusInst]; omega
     belowB := by simp only [minPlusInst]; omega
     belowC := by simp only [minPlusInst]; omega
@@ -111,8 +112,8 @@ def wrapMinPlus : Wrap EndStatement.MinPlusProduct mpTask false where
   fr_pos x := by omega
   fr_le x := by omega
   vals x σ hn hU hnn := by simp [mpTask, minPlusInst, hn, hU, hnn]
-  safe x lim σ _ _ hnn hw := safe_fourAddresses (by omega) hnn hw
-  zero x hn _ := ⟨⟨fun _ => trivial, fun _ => rfl⟩, fun i => absurd i.isLt (by omega)⟩
+  safe x lim σ _ _ hnn hw := safe_fourAddresses tac_omega hnn hw
+  zero x hn _ := ⟨⟨fun _ => trivial, fun _ => rfl⟩, fun i => absurd i.isLt tac_omega⟩
   pre := pre_minPlusProduct
   post := post_minPlusProduct
 

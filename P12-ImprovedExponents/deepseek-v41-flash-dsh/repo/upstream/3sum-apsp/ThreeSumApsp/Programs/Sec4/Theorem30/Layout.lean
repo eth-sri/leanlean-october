@@ -32,7 +32,7 @@ holds the two main procedures at their numbers and meets the specifications of p
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec ThreeSumApsp.WordRam
+open ThreeSumApsp
 
 namespace Thm30
 
@@ -40,13 +40,13 @@ namespace Thm30
 the column J; then N, D, the product N D, and in preMain the address of Y.  The last local is the
 address of the block. -/
 abbrev Ans : ℕ := 0
-@[inherit_doc Ans] abbrev Col : ℕ := 1
-@[inherit_doc Ans] abbrev Size : ℕ := 2
-@[inherit_doc Ans] abbrev Dim : ℕ := 3
-@[inherit_doc Ans] abbrev Area : ℕ := 4
-@[inherit_doc Ans] abbrev MatY : ℕ := 5
-@[inherit_doc Ans] abbrev Block : ℕ := 6
-@[inherit_doc Ans] abbrev QBlock : ℕ := 5
+ abbrev Col : ℕ := 1
+ abbrev Size : ℕ := 2
+ abbrev Dim : ℕ := 3
+ abbrev Area : ℕ := 4
+ abbrev MatY : ℕ := 5
+ abbrev Block : ℕ := 6
+ abbrev QBlock : ℕ := 5
 
 end Thm30
 

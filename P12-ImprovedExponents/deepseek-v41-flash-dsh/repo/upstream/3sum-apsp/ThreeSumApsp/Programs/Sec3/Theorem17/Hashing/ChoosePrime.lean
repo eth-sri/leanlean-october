@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Hashing.CountPrime
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Parameters.Primes
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Choice
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The choice of the prime (proof of Theorem 17, "Hashing modulo a prime")
@@ -33,7 +34,7 @@ more prime changes it as the program does (`BestSoFar.step`), and at the end it 
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -62,26 +63,26 @@ namespace ChoosePrime
 len; K; 2^K; the address of the work area of countPrime; the number of the prime; the prime; its
 count; the best prime so far; its count. -/
 abbrev Num : ℕ := 0
-@[inherit_doc Num] abbrev Bound : ℕ := 1
-@[inherit_doc Num] abbrev ListAB : ℕ := 2
-@[inherit_doc Num] abbrev ListBC : ℕ := 3
-@[inherit_doc Num] abbrev ListAC : ℕ := 4
-@[inherit_doc Num] abbrev Range : ℕ := 5
-@[inherit_doc Num] abbrev Work : ℕ := 6
-@[inherit_doc Num] abbrev Primes : ℕ := 7
-@[inherit_doc Num] abbrev Len : ℕ := 8
-@[inherit_doc Num] abbrev Level : ℕ := 9
-@[inherit_doc Num] abbrev Rows : ℕ := 10
-@[inherit_doc Num] abbrev Area : ℕ := 11
-@[inherit_doc Num] abbrev Idx : ℕ := 12
-@[inherit_doc Num] abbrev Prime : ℕ := 13
-@[inherit_doc Num] abbrev Count : ℕ := 14
-@[inherit_doc Num] abbrev Best : ℕ := 15
-@[inherit_doc Num] abbrev BestCount : ℕ := 16
+ abbrev Bound : ℕ := 1
+ abbrev ListAB : ℕ := 2
+ abbrev ListBC : ℕ := 3
+ abbrev ListAC : ℕ := 4
+ abbrev Range : ℕ := 5
+ abbrev Work : ℕ := 6
+ abbrev Primes : ℕ := 7
+ abbrev Len : ℕ := 8
+ abbrev Level : ℕ := 9
+ abbrev Rows : ℕ := 10
+ abbrev Area : ℕ := 11
+ abbrev Idx : ℕ := 12
+ abbrev Prime : ℕ := 13
+ abbrev Count : ℕ := 14
+ abbrev Best : ℕ := 15
+ abbrev BestCount : ℕ := 16
 
 end ChoosePrime
 
-open ChoosePrime in
+open ChoosePrime
 /-- K = ⌈log₂ n⌉ and 2^K, by doubling. -/
 def chLevel : Stmt :=
   .set Level (k 0) ;;
@@ -90,13 +91,13 @@ def chLevel : Stmt :=
     .set Rows (v Rows +' v Rows) ;;
     .set Level (v Level +' k 1))
 
-open ChoosePrime in
+open ChoosePrime
 /-- The prime is kept if it is the first one or its count is smaller than the best so far. -/
 def chKeep : Stmt :=
   .ite (v Idx =' k 0) (.set Best (v Prime) ;; .set BestCount (v Count))
     (.ite (v Count <' v BestCount) (.set Best (v Prime) ;; .set BestCount (v Count)) .skip)
 
-open ChoosePrime in
+open ChoosePrime
 /-- One round: the count for the prime number i. -/
 def chRound (ν : ChNums) : Stmt :=
   .set Prime (M (v Work +' v Idx)) ;;
@@ -104,7 +105,7 @@ def chRound (ν : ChNums) : Stmt :=
     [v Num, v ListAB, v ListBC, v ListAC, v Prime, v Len, v Level, v Rows, v Area] Count ;;
   chKeep
 
-open ChoosePrime in
+open ChoosePrime
 /-- choosePrime(n, U, ab, bc, ac, D, w). -/
 def choosePrimeBody (ν : ChNums) : Stmt :=
   .call ν.pPrimes [v Work, v Range] Primes ;;
@@ -145,7 +146,7 @@ structure ChoosePrimePre (lim : Limits) (d : ℕ) (μ : ℕ → ℤ) (x : TriIns
 /-- The count is not negative: it is a number of triples. -/
 theorem countOf_nonneg (n : ℕ) {p : ℕ} (hp : 1 ≤ p) (AB BC AC : List ℤ) :
     0 ≤ countOf n p AB BC AC := by
-  rw [countOf_eq n AB BC AC (by omega)]
+  rw [countOf_eq n AB BC AC tac_omega]
   exact Int.natCast_nonneg _
 
 /-- What the locals best and cnt hold after i primes: nothing yet, or the best prime so far and its
@@ -187,7 +188,7 @@ theorem chLevel_spec (hword : ((2 * n + 1 : ℕ) : ℤ) ≤ lim.word) :
       fun σ' => σ' = ⟨frame [n, U, ab, bc, ac, D, w, nP, len, (Nat.clog 2 n : ℕ),
         (2 ^ Nat.clog 2 n : ℕ)], μ⟩ := by
   have test : ∀ j, 2 ^ j < n ↔ j < Nat.clog 2 n := fun j =>
-    (Nat.lt_clog_iff_pow_lt (by norm_num)).symm
+    (Nat.lt_clog_iff_pow_lt tac_norm_num).symm
   generalize Nat.clog 2 n = L at test
   push_cast at hword
   -- level := 0; rows := 1
@@ -195,7 +196,7 @@ theorem chLevel_spec (hword : ((2 * n + 1 : ℕ) : ℤ) ≤ lim.word) :
   light_set (1 : ℕ)
   -- while rows < n: rows := rows + rows; level := level + 1.  Before round j, rows = 2^j.
   refine Ends.whileBlock
-    (fun j σ => σ = ⟨frame [n, U, ab, bc, ac, D, w, nP, len, j, (2 ^ j : ℕ)], μ⟩) L (by simp) ?round
+    (fun j σ => σ = ⟨frame [n, U, ab, bc, ac, D, w, nP, len, j, (2 ^ j : ℕ)], μ⟩) L tac_simp ?round
     ?done
   case round =>
     rintro j _ hj rfl
@@ -215,7 +216,7 @@ theorem chKeep_spec (h0 : 0 ≤ lim.word) (i : ℕ) (q c best cnt : ℤ) :
     Ends lim P d chKeep ⟨frame (chFrame n U ab bc ac D w nP len K i q c best cnt), μ⟩ 12 fun σ' =>
       σ' = ⟨frame (chFrame n U ab bc ac D w nP len K i q c
         (if i = 0 ∨ c < cnt then q else best) (if i = 0 ∨ c < cnt then c else cnt)), μ⟩ := by
-  refine Ends.block ⟨by simp [chKeep, h0], ?_⟩ (by simp [chKeep])
+  refine Ends.block ⟨by simp [chKeep, h0], ?_⟩ tac_simp [chKeep]
   by_cases hi : i = 0 <;> by_cases hc : c < cnt <;>
     simp [chKeep, update_frame_setLocal, hi, hc]
 
@@ -235,7 +236,7 @@ theorem ChoosePrimePre.countPre (pre : ChoosePrimePre lim d μ x D w)
   have cells := pre.cells_le
   have depth := pre.depth
   have hprimes := length_primesList_le D
-  have hqS : q ≤ Nat.sqrt D := le_sqrt_of_mem_primesList hq
+  have hqS := le_sqrt_of_mem_primesList hq
   have hcells := countCells_mono hqS x.n (bitLen x.U) (Nat.clog 2 x.n)
   exact
     { space_le := pre.space_le, inst := pre.inst.keep.mono (Nat.le_add_right _ _)
@@ -257,7 +258,7 @@ def ChInv (μ : ℕ → ℤ) (x : TriInst) (D w i : ℕ) (σ : State) : Prop :=
     BestSoFar (fun p => countOf x.n p x.AB x.BC x.AC) (primesList D) i best cnt ∧
     SegN μ' w (primesList D) ∧ SameOutside μ μ' w (chooseCells x.n x.U D)
 
-open ChoosePrime in
+open ChoosePrime
 /-- **One round of choosePrime.** -/
 theorem chRound_spec (ctx : ChCtx P ν) (pre : ChoosePrimePre lim d μ x D w) {i : ℕ}
     (hi : i < (primesList D).length) {σ : State} (h : ChInv μ x D w i σ) :
@@ -269,7 +270,7 @@ theorem chRound_spec (ctx : ChCtx P ν) (pre : ChoosePrimePre lim d μ x D w) {i
   have cells := pre.cells_le
   have depth := pre.depth
   have hprimes := length_primesList_le D
-  have hmem : (primesList D)[i] ∈ primesList D := List.getElem_mem hi
+  have hmem := List.getElem_mem hi
   have htime := countTime_mono (le_sqrt_of_mem_primesList hmem) x.n (bitLen x.U) (Nat.clog 2 x.n)
   have hcells :=
     countCells_mono (le_sqrt_of_mem_primesList hmem) x.n (bitLen x.U) (Nat.clog 2 x.n)
@@ -282,12 +283,12 @@ theorem chRound_spec (ctx : ChCtx P ν) (pre : ChoosePrimePre lim d μ x D w) {i
     (hT := by simp; omega)
   rintro _ μ'' ⟨rfl, rest'⟩
   -- The prime is kept if it is the first one or its count is smaller.
-  refine (chKeep_spec (by omega) i _ _ best cnt).mono (by simp; omega) ?_
+  refine (chKeep_spec tac_omega i _ _ best cnt).mono (by simp; omega) ?_
   rintro _ rfl
   refine ⟨by simp, ((primesList D)[i] : ℕ), countOf x.n (primesList D)[i] x.AB x.BC x.AC, _, _,
     μ'', by simp [update_frame_setLocal],
     hbest.step hi (countOf_nonneg x.n (mem_primesList.1 hmem).1.one_le x.AB x.BC x.AC),
-    seg.keep, rest.trans (rest'.mono (by omega) ?_)⟩
+    seg.keep, rest.trans (rest'.mono tac_omega ?_)⟩
   unfold chooseCells
   omega
 
@@ -307,7 +308,7 @@ theorem bitLen_meets {q : ℕ} (hP : P[q]? = some bitLenBody)
     Meets lim P q d [U] μ (tBitLen U) fun r μ' => r = (bitLen U : ℕ) ∧ μ' = μ :=
   Meets.of_body hP (bitLen_spec hU)
 
-open ChoosePrime in
+open ChoosePrime
 /-- **choosePrime** returns the first prime of the range with the smallest count (0 if the range has
 no prime), and changes only cells of its work area. -/
 theorem choosePrime_spec (ctx : ChCtx P ν) (pre : ChoosePrimePre lim d μ x D w) :
@@ -321,19 +322,18 @@ theorem choosePrime_spec (ctx : ChCtx P ν) (pre : ChoosePrimePre lim d μ x D w
   have hprimes := length_primesList_le D
   have hroom : Nat.sqrt D + 1 ≤ countCells x.n (Nat.sqrt D) (bitLen x.U) (Nat.clog 2 x.n) := by
     have hle : Nat.sqrt D ≤ 4 ^ Nat.clog 2 x.n * Nat.sqrt D :=
-      Nat.le_mul_of_pos_left _ (by positivity)
+      Nat.le_mul_of_pos_left _ tac_positivity
     unfold countCells
-    generalize 4 ^ Nat.clog 2 x.n * Nat.sqrt D = A at hle ⊢
     generalize 2 ^ Nat.clog 2 x.n = B
     omega
   have hloop : (primesList D).length *
       (countTime x.n (Nat.sqrt D) (bitLen x.U) (Nat.clog 2 x.n) + 36) ≤
       Nat.sqrt D * (countTime x.n (Nat.sqrt D) (bitLen x.U) (Nat.clog 2 x.n) + 50) :=
-    Nat.mul_le_mul (length_primesList_le D) (by omega)
+    Nat.mul_le_mul (length_primesList_le D) tac_omega
   unfold chooseTime
   -- primes := the primes of the range, at w
   light_call (primes_meets (dst := w) ctx.hPrimes ctx.primes pre.space_le pre.wordD
-    (by omega) (by omega)) with _ μ₁ ⟨rfl, seg, rest⟩
+    tac_omega tac_omega) with _ μ₁ ⟨rfl, seg, rest⟩
   -- len := bitLen(U)
   light_call (bitLen_meets ctx.hBitLen pre.wordU) with _ μ₂ ⟨rfl, hμ⟩
   rw [hμ]

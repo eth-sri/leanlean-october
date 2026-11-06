@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Instances
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The two matrices of an instance (proof of Theorem 17)
@@ -37,7 +38,7 @@ pair marks one cell with a 1.  So both are instances of one pair of loops:
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -50,7 +51,7 @@ have been handled; the pair (u', w') marks the cell pos u' w'. -/
 def CellMarked (pos : ℕ → ℕ → ℕ) (W u w i : ℕ) : Prop :=
   ∃ u' w', (u' < u ∨ (u' = u ∧ w' < w)) ∧ w' < W ∧ pos u' w' = i
 
-open Classical in
+open Classical
 /-- The content of the cell i when the pairs before (u, w) have been handled: 1 if it has been
 marked, else 0. -/
 noncomputable def markVal (pos : ℕ → ℕ → ℕ) (W u w i : ℕ) : ℤ :=
@@ -133,7 +134,7 @@ theorem step (h : Marked μ μ' base m pos W u w) (hlt : w < W) (hpos : pos u w 
   rw [markVal_step hlt]
   split_ifs with e
   · rw [e, Function.update_self]
-  · rw [Function.update_of_ne (by omega)]
+  · rw [Function.update_of_ne tac_omega]
     exact h.cells i hi
 
 /-- The end of a row of pairs is the beginning of the next row. -/
@@ -232,7 +233,7 @@ theorem clear_spec {μ : ℕ → ℤ} {l : List ℤ} {c t base m : ℕ} {Q : Sta
       Q ⟨frame (setLocal l c m), μ'⟩) :
     Ends lim P d (.for c (v t) (.store (v 0 +' v c) (k 0))) ⟨frame l, μ⟩ (13 * m + 6) Q := by
   refine Ends.pass (x := t) (y := 0) (dst := base) (n := m) (fun _ => 0)
-    (fun j _ => ⟨?_, by simp⟩) ?_ hw (by omega) hm hbase ht hc
+    (fun j _ => ⟨?_, by simp⟩) ?_ hw tac_omega hm hbase ht hc
   · change ((0 : ℕ) : ℤ) ≤ lim.word
     omega
   · rw [update_frame_setLocal]
@@ -285,14 +286,14 @@ theorem index_lt (pre : WritePre lim μ base m res n D p c0 len R) {u c : ℕ} (
 theorem read (pre : WritePre lim μ base m res n D p c0 len R) (h : SameOutside μ μ' base m) {i : ℕ}
     (hi : i < n * n) : μ' (res + i) = (R.getD i 0 : ℕ) := by
   have hap := pre.apart
-  have hil : i < R.length := pre.length ▸ hi
-  rw [h _ (by omega), pre.seg _ (by simpa using hil), List.getElem_map,
+  have hil := pre.length ▸ hi
+  rw [h _ tac_omega, pre.seg _ (by simpa using hil), List.getElem_map,
     List.getD_eq_getElem _ 0 hil]
 
 /-- The residues are below p. -/
 theorem getD_lt (pre : WritePre lim μ base m res n D p c0 len R) {i : ℕ} (hi : i < n * n) :
     R.getD i 0 < p := by
-  have hil : i < R.length := pre.length ▸ hi
+  have hil := pre.length ▸ hi
   rw [List.getD_eq_getElem _ 0 hil]
   exact pre.lt _ (List.getElem_mem hil)
 
@@ -311,16 +312,16 @@ namespace WriteY
 member of the piece (before that, the counter of the clearing); the vertex b; the residue, then the
 label, r; the number D n of cells. -/
 abbrev Y : ℕ := 0
-@[inherit_doc Y] abbrev RES : ℕ := 1
-@[inherit_doc Y] abbrev N : ℕ := 2
-@[inherit_doc Y] abbrev DD : ℕ := 3
-@[inherit_doc Y] abbrev PR : ℕ := 4
-@[inherit_doc Y] abbrev C0 : ℕ := 5
-@[inherit_doc Y] abbrev LEN : ℕ := 6
-@[inherit_doc Y] abbrev C : ℕ := 7
-@[inherit_doc Y] abbrev B : ℕ := 8
-@[inherit_doc Y] abbrev R : ℕ := 9
-@[inherit_doc Y] abbrev SZ : ℕ := 10
+ abbrev RES : ℕ := 1
+ abbrev N : ℕ := 2
+ abbrev DD : ℕ := 3
+ abbrev PR : ℕ := 4
+ abbrev C0 : ℕ := 5
+ abbrev LEN : ℕ := 6
+ abbrev C : ℕ := 7
+ abbrev B : ℕ := 8
+ abbrev R : ℕ := 9
+ abbrev SZ : ℕ := 10
 
 end WriteY
 
@@ -377,7 +378,7 @@ variable {μ μ' : ℕ → ℤ} {y rbc n D p c0 len : ℕ} {RBC : List ℕ}
 theorem posY_lt (pre : WritePre lim μ y (D * n) rbc n D p c0 len RBC) {c b : ℕ} (hc : c < len)
     (hb : b < n) : posY n p c0 RBC c b < D * n := by
   have hp := pre.getD_lt (pre.index_lt hb hc)
-  exact Nat.mul_add_lt_mul (pre.middle_lt hc (Nat.mod_lt _ (by omega))) hb
+  exact Nat.mul_add_lt_mul (pre.middle_lt hc (Nat.mod_lt _ tac_omega)) hb
 
 /-- The label, as the program computes it. -/
 theorem labY_eq {c b : ℕ} (hr : RBC.getD (b * n + c0 + c) 0 < p) : labY n p c0 RBC c b =
@@ -385,9 +386,9 @@ theorem labY_eq {c b : ℕ} (hr : RBC.getD (b * n + c0 + c) 0 < p) : labY n p c0
   unfold labY
   split_ifs with h
   · rw [h, Nat.sub_zero, Nat.mod_self]
-  · exact Nat.mod_eq_of_lt (by omega)
+  · exact Nat.mod_eq_of_lt tac_omega
 
-open WriteY in
+open WriteY
 /-- **One pair of writeY.** -/
 theorem writeYCell_spec (pre : WritePre lim μ y (D * n) rbc n D p c0 len RBC) {c b : ℕ} (t : ℤ)
     (hc : c < len) (hb : b < n) (hrest : SameOutside μ μ' y (D * n)) :
@@ -400,8 +401,8 @@ theorem writeYCell_spec (pre : WritePre lim μ y (D * n) rbc n D p c0 len RBC) {
   have hr := pre.getD_lt hidx
   have hlab := labY_eq hr
   have hpos : (c * p + labY n p c0 RBC c b) * n + b < D * n := posY_lt pre hc hb
-  have hrow : c * p + labY n p c0 RBC c b < D := pre.middle_lt hc (Nat.mod_lt _ (by omega))
-  have hDn : D ≤ D * n := Nat.le_mul_of_pos_right D (by omega)
+  have hrow : c * p + labY n p c0 RBC c b < D := pre.middle_lt hc (Nat.mod_lt _ tac_omega)
+  have hDn : D ≤ D * n := Nat.le_mul_of_pos_right D tac_omega
   have hposZ : ((c : ℤ) * p + labY n p c0 RBC c b) * n + b < D * n := by exact_mod_cast hpos
   have hpos0 : 0 ≤ ((c : ℤ) * p + labY n p c0 RBC c b) * n := by positivity
   have haddr : ((rbc : ℤ) + b * n + c0 + c).toNat = rbc + (b * n + c0 + c) := by omega
@@ -425,7 +426,7 @@ theorem writeYCell_spec (pre : WritePre lim μ y (D * n) rbc n D p c0 len RBC) {
   · have h0 : r ≠ 0 := by simpa using h0
     rw [hlab, if_neg h0]
 
-open WriteY in
+open WriteY
 /-- The two loops of writeY are loops that mark cells. -/
 theorem writeY_markCtx (pre : WritePre lim μ y (D * n) rbc n D p c0 len RBC) :
     MarkCtx lim P d μ y (D * n) len n 32 (posY n p c0 RBC) C B (v LEN) (v N) writeYCell
@@ -441,7 +442,7 @@ theorem writeY_markCtx (pre : WritePre lim μ y (D * n) rbc n D p c0 len RBC) :
   pos_lt _ _ hc hb := posY_lt pre hc hb
   cell_spec _ _ t _ hc hb hrest := writeYCell_spec pre t hc hb hrest
 
-open WriteY in
+open WriteY
 /-- **writeY** writes the matrix Y and changes nothing else. -/
 theorem writeY_spec (pre : WritePre lim μ y (D * n) rbc n D p c0 len RBC) :
     Ends lim P d writeYBody ⟨frame [y, rbc, n, D, p, c0, len], μ⟩ (tWriteY n D len) fun σ' =>
@@ -452,10 +453,10 @@ theorem writeY_spec (pre : WritePre lim μ y (D * n) rbc n D p c0 len RBC) :
   light_set (D * n : ℕ)
   -- for c < sz: y[c] := 0
   refine Ends.next _
-    (clear_spec pre.hw pre.spaceM (by decide) (by decide) rfl rfl fun μ' hzero hrest => ?_)
+    (clear_spec pre.hw pre.spaceM tac_decide tac_decide rfl rfl fun μ' hzero hrest => ?_)
   -- for c < len: for b < n: the pair (c, b) marks its cell
   refine ((markPairs (writeY_markCtx pre) _ _ _ (.start hzero hrest)).mono ?_ fun σ' hm =>
-    ⟨hm.seg (by simp [yList]) fun i hi => getElem_yList ?_ hi, hm.rest⟩)
+    ⟨hm.seg tac_simp [yList] fun i hi => getElem_yList ?_ hi, hm.rest⟩)
   · light_time
   · have hi' : i < D * n := by simpa [yList] using hi
     have hn : 0 < n := Nat.pos_of_ne_zero fun h => by simp [h] at hi'
@@ -473,21 +474,21 @@ namespace WriteX
 that, the counter of the clearing); the number c of the member of the piece; the label t; the number
 n D of cells. -/
 abbrev X : ℕ := 0
-@[inherit_doc X] abbrev RES : ℕ := 1
-@[inherit_doc X] abbrev N : ℕ := 2
-@[inherit_doc X] abbrev DD : ℕ := 3
-@[inherit_doc X] abbrev PR : ℕ := 4
-@[inherit_doc X] abbrev C0 : ℕ := 5
-@[inherit_doc X] abbrev LEN : ℕ := 6
-@[inherit_doc X] abbrev RHO : ℕ := 7
-@[inherit_doc X] abbrev A : ℕ := 8
-@[inherit_doc X] abbrev C : ℕ := 9
-@[inherit_doc X] abbrev T : ℕ := 10
-@[inherit_doc X] abbrev SZ : ℕ := 11
+ abbrev RES : ℕ := 1
+ abbrev N : ℕ := 2
+ abbrev DD : ℕ := 3
+ abbrev PR : ℕ := 4
+ abbrev C0 : ℕ := 5
+ abbrev LEN : ℕ := 6
+ abbrev RHO : ℕ := 7
+ abbrev A : ℕ := 8
+ abbrev C : ℕ := 9
+ abbrev T : ℕ := 10
+ abbrev SZ : ℕ := 11
 
 end WriteX
 
-open WriteX in
+open WriteX
 /-- The pair (a, c) marks its cell: t := rac[a n + c0 + c] + rho; if p ≤ t then t := t - p;
 x[a D + c p + t] := 1. -/
 def writeXCell : Stmt :=
@@ -495,7 +496,7 @@ def writeXCell : Stmt :=
   .ite (v T <' v PR) .skip (.set T (v T -' v PR)) ;;
   .store (v X +' v A *' v DD +' v C *' v PR +' v T) (k 1)
 
-open WriteX in
+open WriteX
 /-- writeX(x, rac, n, D, p, c0, len, rho). -/
 def writeXBody : Stmt :=
   .set SZ (v N *' v DD) ;;
@@ -528,7 +529,7 @@ theorem getElem_xList {n D p c0 len rho : ℕ} {RAC : List ℕ} (hp : 0 < p) (hD
         Nat.div_add_mod]
     · rintro ⟨a, ha, c, hc, rfl⟩
       have hl : labX n p c0 rho RAC a c < p := Nat.mod_lt _ hp
-      have hcol : c * p + labX n p c0 rho RAC a c < D := (Nat.mul_add_lt_mul hc hl).trans_le hD
+      have hcol := (Nat.mul_add_lt_mul hc hl).trans_le hD
       rw [posX, Nat.mul_add_div_of_lt hcol, Nat.mul_add_mod_of_lt hcol, Nat.mul_add_div_of_lt hl,
         Nat.mul_add_mod_of_lt hl]
       exact ⟨hc, rfl⟩
@@ -541,7 +542,7 @@ variable {μ μ' : ℕ → ℤ} {x rac n D p c0 len rho : ℕ} {RAC : List ℕ}
 theorem posX_lt (pre : WritePre lim μ x (n * D) rac n D p c0 len RAC) {a c : ℕ} (ha : a < n)
     (hc : c < len) : posX n D p c0 rho RAC a c < n * D := by
   have hp := pre.getD_lt (pre.index_lt ha hc)
-  exact Nat.mul_add_lt_mul ha (pre.middle_lt hc (Nat.mod_lt _ (by omega)))
+  exact Nat.mul_add_lt_mul ha (pre.middle_lt hc (Nat.mod_lt _ tac_omega))
 
 /-- The label, as the program computes it. -/
 theorem labX_eq {a c : ℕ} (hr : RAC.getD (a * n + c0 + c) 0 < p) (hrho : rho < p) :
@@ -550,9 +551,9 @@ theorem labX_eq {a c : ℕ} (hr : RAC.getD (a * n + c0 + c) 0 < p) (hrho : rho <
   unfold labX
   split_ifs with h
   · exact Nat.mod_eq_of_lt h
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  · rw [Nat.mod_eq_sub_mod tac_omega, Nat.mod_eq_of_lt tac_omega]
 
-open WriteX in
+open WriteX
 /-- **One pair of writeX.** -/
 theorem writeXCell_spec (pre : WritePre lim μ x (n * D) rac n D p c0 len RAC) (hrho : rho < p)
     {a c : ℕ} (t : ℤ) (ha : a < n) (hc : c < len) (hrest : SameOutside μ μ' x (n * D)) :
@@ -584,7 +585,7 @@ theorem writeXCell_spec (pre : WritePre lim μ x (n * D) rac n D p c0 len RAC) (
   · have h0 : ¬ r + rho < p := by simp at h0; omega
     exact Ends.setTo (r + rho - p : ℕ) (mark _ (by rw [hlab, if_neg h0]))
 
-open WriteX in
+open WriteX
 /-- The two loops of writeX are loops that mark cells. -/
 theorem writeX_markCtx (pre : WritePre lim μ x (n * D) rac n D p c0 len RAC) (hrho : rho < p) :
     MarkCtx lim P d μ x (n * D) n len 34 (posX n D p c0 rho RAC) A C (v N) (v LEN) writeXCell
@@ -600,7 +601,7 @@ theorem writeX_markCtx (pre : WritePre lim μ x (n * D) rac n D p c0 len RAC) (h
   pos_lt _ _ ha hc := posX_lt pre ha hc
   cell_spec _ _ t _ ha hc hrest := writeXCell_spec pre hrho t ha hc hrest
 
-open WriteX in
+open WriteX
 /-- **writeX** writes the matrix X and changes nothing else. -/
 theorem writeX_spec (pre : WritePre lim μ x (n * D) rac n D p c0 len RAC) (hrho : rho < p) :
     Ends lim P d writeXBody ⟨frame [x, rac, n, D, p, c0, len, rho], μ⟩ (tWriteX n D len) fun σ' =>
@@ -611,10 +612,10 @@ theorem writeX_spec (pre : WritePre lim μ x (n * D) rac n D p c0 len RAC) (hrho
   light_set (n * D : ℕ)
   -- for a < sz: x[a] := 0
   refine Ends.next _
-    (clear_spec pre.hw pre.spaceM (by decide) (by decide) rfl rfl fun μ' hzero hrest => ?_)
+    (clear_spec pre.hw pre.spaceM tac_decide tac_decide rfl rfl fun μ' hzero hrest => ?_)
   -- for a < n: for c < len: the pair (a, c) marks its cell
   refine ((markPairs (writeX_markCtx pre hrho) _ _ _ (.start hzero hrest)).mono ?_ fun σ' hm =>
-    ⟨hm.seg (by simp [xList]) fun i hi => getElem_xList (by omega) pre.fits hi, hm.rest⟩)
+    ⟨hm.seg tac_simp [xList] fun i hi => getElem_xList tac_omega pre.fits hi, hm.rest⟩)
   light_time
 
 end writeX

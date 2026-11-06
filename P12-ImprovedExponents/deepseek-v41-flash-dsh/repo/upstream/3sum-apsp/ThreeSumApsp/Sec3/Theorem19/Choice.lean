@@ -7,6 +7,7 @@ module
 
 public import ThreeSumApsp.Sec3.Parameters
 public import Mathlib.Algebra.Order.Floor.Semifield
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The cost analysis of Theorem 19 for a general choice of the parameters
@@ -51,7 +52,7 @@ structure Choice (n D : ℕ) (η c : ℝ) : Prop where
 
 /-- `x ≤ n^{1/18}` says that `x^18 ≤ n`. -/
 theorem le_root_iff (x n : ℕ) : (x : ℝ) ≤ (n : ℝ) ^ (1 / 18 : ℝ) ↔ x ^ 18 ≤ n := by
-  have h := Real.natCast_le_rpow_inv_iff (e := 18) (by norm_num) x n
+  have h := Real.natCast_le_rpow_inv_iff (e := 18) tac_norm_num x n
   rwa [show ((18 : ℕ) : ℝ)⁻¹ = 1 / 18 by norm_num] at h
 
 namespace Choice
@@ -67,10 +68,10 @@ theorem pow_eighteen_le : D ^ 18 ≤ n :=
 
 /-- `D ≤ n`, as Theorem 17 asks. -/
 theorem le_n : D ≤ n :=
-  (Nat.le_self_pow (by norm_num) D).trans P.pow_eighteen_le
+  (Nat.le_self_pow tac_norm_num D).trans P.pow_eighteen_le
 
 private theorem one_le_D : (1 : ℝ) ≤ D :=
-  Nat.one_le_cast.mpr (le_trans (by norm_num) P.sixteen_le)
+  Nat.one_le_cast.mpr (le_trans tac_norm_num P.sixteen_le)
 
 private theorem D_pos : (0 : ℝ) < D :=
   zero_lt_one.trans_le P.one_le_D

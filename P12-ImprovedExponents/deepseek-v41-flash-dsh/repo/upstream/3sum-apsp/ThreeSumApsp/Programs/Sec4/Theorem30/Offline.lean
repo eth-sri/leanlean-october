@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Memory
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 30, the offline form (9): preprocess, then one query for each wanted position
@@ -24,7 +25,7 @@ round asks one query and stores the answer (`wantedAsk_ends`), with the invarian
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 /-! ## One query for each wanted position: the invariant -/
 
@@ -53,7 +54,7 @@ theorem Answered.step (h : Answered Ready Kept out ans μ i μ') (hi : i < ans.l
     rw [hlen] at hsnoc
     rwa [List.take_add_one, List.getElem?_eq_getElem hi]
   · exact ((h.same.mono fun a ha => ⟨by have := ha.1; omega, ha.2⟩).then hquery
-      fun a ha => ⟨ha, hkept a ha.2⟩).write (by omega) _
+      fun a ha => ⟨ha, hkept a ha.2⟩).write tac_omega _
 
 /-- A cell of a list that stood in the memory at the start, away from the answers and in Kept, still
 holds its entry. -/
@@ -79,23 +80,23 @@ of Y, of the rows and of the columns of the wanted positions, the number of posi
 addresses of the output and of the free block. Then come the number of the current position and the
 result of a call. -/
 abbrev Levels : ℕ := 0
-@[inherit_doc Levels] abbrev Inner : ℕ := 1
-@[inherit_doc Levels] abbrev Switch : ℕ := 2
-@[inherit_doc Levels] abbrev Size : ℕ := 3
-@[inherit_doc Levels] abbrev Dim : ℕ := 4
-@[inherit_doc Levels] abbrev MatX : ℕ := 5
-@[inherit_doc Levels] abbrev MatY : ℕ := 6
-@[inherit_doc Levels] abbrev Rows : ℕ := 7
-@[inherit_doc Levels] abbrev Cols : ℕ := 8
-@[inherit_doc Levels] abbrev Count : ℕ := 9
-@[inherit_doc Levels] abbrev Out : ℕ := 10
-@[inherit_doc Levels] abbrev Block : ℕ := 11
-@[inherit_doc Levels] abbrev Pos : ℕ := 12
-@[inherit_doc Levels] abbrev Res : ℕ := 13
+ abbrev Inner : ℕ := 1
+ abbrev Switch : ℕ := 2
+ abbrev Size : ℕ := 3
+ abbrev Dim : ℕ := 4
+ abbrev MatX : ℕ := 5
+ abbrev MatY : ℕ := 6
+ abbrev Rows : ℕ := 7
+ abbrev Cols : ℕ := 8
+ abbrev Count : ℕ := 9
+ abbrev Out : ℕ := 10
+ abbrev Block : ℕ := 11
+ abbrev Pos : ℕ := 12
+ abbrev Res : ℕ := 13
 
 end WantedCore
 
-open WantedCore in
+open WantedCore
 /-- One round of wantedCore: ask the query for the current position and store its answer. -/
 def wantedAsk : Stmt :=
   .call Proc.queryAt [M (v Rows +' v Pos), M (v Cols +' v Pos), v Block] Res ;;
@@ -112,23 +113,6 @@ section
 variable {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L} {aX aY aI aJ out b0 : ℕ}
   {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ}
   {W : List (Fin p.N × Fin p.N)} {μ μ' μ'' : ℕ → ℤ}
-
-/-- Where the input of wantedCore stands: the two matrices, the rows and the columns of the wanted
-positions and the output all lie below the free block, and the output does not meet the two lists.
--/
-structure WantedInput (p : Sec2.Par) (aX aY aI aJ out b0 : ℕ) (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ)
-    (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) (W : List (Fin p.N × Fin p.N)) (μ : ℕ → ℤ) : Prop where
-  matX : MatAt μ aX X
-  matY : MatAt μ aY Y
-  rows : Seg μ aI (W.map fun q => ((q.1 : ℕ) : ℤ))
-  cols : Seg μ aJ (W.map fun q => ((q.2 : ℕ) : ℤ))
-  matX_le : aX + p.N * p.D ≤ b0
-  matY_le : aY + p.D * p.N ≤ b0
-  rows_le : aI + W.length ≤ b0
-  cols_le : aJ + W.length ≤ b0
-  out_le : out + W.length ≤ b0
-  out_rows : Apart out W.length aI W.length
-  out_cols : Apart out W.length aJ W.length
 
 end
 

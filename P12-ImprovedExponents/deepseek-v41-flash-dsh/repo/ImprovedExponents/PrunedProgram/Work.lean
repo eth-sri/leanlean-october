@@ -39,7 +39,7 @@ theorem encWorkP_le (L m : ℕ) : (encWorkP L m : ℝ) ≤ 9 / 2 * prefCount L m
   have hterm : ∀ k ∈ range (L + 1),
       ((prefCount k m * 7 ^ (L - k) : ℕ) : ℝ) ≤ prefCount L m * ((7 : ℝ) / 9) ^ (L - k) := by
     intro k hk
-    have hk' : k ≤ L := Nat.lt_succ_iff.mp (mem_range.mp hk)
+    have hk' := Nat.lt_succ_iff.mp (mem_range.mp hk)
     have h := pow_mul_prefCount_le k (L - k) m
     rw [Nat.add_sub_cancel' hk'] at h
     have h' : (9 : ℝ) ^ (L - k) * prefCount k m ≤ prefCount L m := by exact_mod_cast h

@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Contracts
 public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.FromNumbers
 public import ThreeSumApsp.Spec.Sec3.Problems
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # 3SUM from Convolution-3SUM: what the lists that the first routines produce stand for
@@ -29,7 +30,7 @@ the reduction makes its three-set inputs.
 
 namespace Light.Sec3.ChanHe
 
-open ThreeSumApsp ThreeSumApsp.ChanHe ThreeSumApsp.Spec Finset
+open ThreeSumApsp.ChanHe ThreeSumApsp.Spec Finset
 
 /-! ## The table of binary digits -/
 
@@ -82,7 +83,7 @@ theorem filter_by_position (L : List ℤ) (q : ℤ → Bool) :
     ((List.range L.length).filter fun i => q (L.getD i 0)).map (fun i => L.getD i 0) =
       L.filter q := by
   have hL : L = (List.range L.length).map fun i => L.getD i 0 := by
-    refine List.ext_getElem (by simp) fun i h1 h2 => ?_
+    refine List.ext_getElem tac_simp fun i h1 h2 => ?_
     simp [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h1]
   conv_rhs => rw [hL, List.filter_map]
   rfl
@@ -95,7 +96,7 @@ theorem pickList_eq (V Λ : ℕ) {β β' : ℕ} (hβ : β < Λ) (hβ' : β' < Λ
   unfold pickList
   congr 1
   refine List.filter_congr fun i hi => ?_
-  have hi' : i < L.length := List.mem_range.1 hi
+  have hi' := List.mem_range.1 hi
   rw [getD_bitTable V Λ L hi' hβ, getD_bitTable V Λ L hi' hβ']
 
 /-- The digit as an integer, against the digit as a Boolean. -/
@@ -133,13 +134,13 @@ theorem length_pickList_le (Λ β β' : ℕ) (b b' two : ℤ) (L BT : List ℤ) 
     (pickList Λ β β' b b' two L BT).length ≤ L.length := by
   unfold pickList
   rw [List.length_map]
-  exact (List.length_filter_le _ _).trans (by simp)
+  exact (List.length_filter_le _ _).trans tac_simp
 
 /-! ## The values of the input and how often they occur -/
 
 /-- A list of `n` numbers is the list of the values of its vector. -/
 theorem eq_ofFn_vecOf {n : ℕ} {X : List ℤ} (hX : X.length = n) : X = List.ofFn (vecOf n X) := by
-  refine List.ext_getElem (by simp [hX]) fun i h1 h2 => ?_
+  refine List.ext_getElem tac_simp [hX] fun i h1 h2 => ?_
   simp [vecOf, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h1]
 
 /-- The set of the members of a list of `n` numbers is the image of its vector. -/
@@ -206,7 +207,7 @@ theorem Values.twice {n : ℕ} {X D C : List ℤ} (h : Values n X D C) :
 theorem length_twiceList_le (D C : List ℤ) : (twiceList D C).length ≤ D.length := by
   unfold twiceList
   rw [List.length_map]
-  exact (List.length_filter_le _ _).trans (by simp [List.length_zip])
+  exact (List.length_filter_le _ _).trans tac_simp [List.length_zip]
 
 /-- Whether 0 occurs at least three times. -/
 theorem Values.zeroThree {n : ℕ} {X D C : List ℤ} (h : Values n X D C) :
@@ -221,7 +222,7 @@ theorem Values.zeroThree {n : ℕ} {X D C : List ℤ} (h : Values n X D C) :
   · intro h3
     have hne : (#{i : Fin n | vecOf n X i = 0}) ≠ 0 := by omega
     obtain ⟨i, hi⟩ := Finset.card_ne_zero.1 hne
-    have hi' : vecOf n X i = 0 := (Finset.mem_filter.1 hi).2
+    have hi' := (Finset.mem_filter.1 hi).2
     have h0 : (0 : ℤ) ∈ D := by
       rw [← List.mem_toFinset, h.values]
       exact Finset.mem_image.2 ⟨i, Finset.mem_univ _, hi'⟩

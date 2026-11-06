@@ -37,7 +37,7 @@ piece, whether the length of a piece is ⌊n²/√D⌋ as in the claim or min(�
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {d : ℕ}
 
@@ -49,10 +49,10 @@ namespace LopSplit
 bound of the counting, then the number lo of query pairs that are done; the length len of the
 piece; the result of the call. -/
 abbrev C : ℕ := 10
-@[inherit_doc C] abbrev N4 : ℕ := 11
-@[inherit_doc C] abbrev LO : ℕ := 12
-@[inherit_doc C] abbrev LEN : ℕ := 13
-@[inherit_doc C] abbrev RES : ℕ := 14
+ abbrev N4 : ℕ := 11
+ abbrev LO : ℕ := 12
+ abbrev LEN : ℕ := 13
+ abbrev RES : ℕ := 14
 
 end LopSplit
 

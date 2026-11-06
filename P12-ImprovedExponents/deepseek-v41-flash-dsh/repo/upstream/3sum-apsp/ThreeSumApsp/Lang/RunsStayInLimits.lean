@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Lang.Syntax
 public import ThreeSumApsp.Util.List
 public import Mathlib.Tactic.SplitIfs
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Runs stay within their limits
@@ -26,7 +27,7 @@ long as the number is in the range of words, and the third because its end theor
 cells of the memory, also of those that the run may not touch.
 -/
 
-public section
+@[expose] public section
 
 namespace Light
 
@@ -86,7 +87,7 @@ theorem Exec.mem_outside {s : Stmt} {σ σ' : State} {c : ℕ} (h : Exec lim P d
   | set _ => rfl
   | store _ _ haddr =>
     obtain ⟨h0, hlt⟩ := haddr
-    exact Function.update_of_ne (by omega) _ _
+    exact Function.update_of_ne tac_omega _ _
   | seq _ _ ih₁ ih₂ => rw [ih₂, ih₁]
   | iteTrue _ _ _ ih => exact ih
   | iteFalse _ _ _ ih => exact ih

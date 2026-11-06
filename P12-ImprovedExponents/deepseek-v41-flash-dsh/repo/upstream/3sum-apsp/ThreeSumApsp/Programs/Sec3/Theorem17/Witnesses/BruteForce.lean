@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Witnesses.Scan
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Brute force (the proof of Theorem 19)
@@ -57,29 +58,29 @@ namespace Brute
 /-- The locals of `brute`.  The arguments: `n`, `U`, the addresses of the three arrays, and the free
 pointer.  Then the vertices `a` and `b`, the result so far, and the result of a scan. -/
 abbrev Size : ℕ := 0
-@[inherit_doc Size] abbrev Bound : ℕ := 1
-@[inherit_doc Size] abbrev AdrAB : ℕ := 2
-@[inherit_doc Size] abbrev AdrBC : ℕ := 3
-@[inherit_doc Size] abbrev AdrAC : ℕ := 4
-@[inherit_doc Size] abbrev Free : ℕ := 5
-@[inherit_doc Size] abbrev VtxA : ℕ := 6
-@[inherit_doc Size] abbrev VtxB : ℕ := 7
-@[inherit_doc Size] abbrev Hit : ℕ := 8
-@[inherit_doc Size] abbrev Res : ℕ := 9
+ abbrev Bound : ℕ := 1
+ abbrev AdrAB : ℕ := 2
+ abbrev AdrBC : ℕ := 3
+ abbrev AdrAC : ℕ := 4
+ abbrev Free : ℕ := 5
+ abbrev VtxA : ℕ := 6
+ abbrev VtxB : ℕ := 7
+ abbrev Hit : ℕ := 8
+ abbrev Res : ℕ := 9
 
 end Brute
 
-open Brute in
+open Brute
 /-- One pair `(a, b)`: res := scan(ab, bc, ac, n, a, b, 0, n); if res = 1 then hit := 1. -/
 def brutePair (pScan : ℕ) : Stmt :=
   .call pScan [v AdrAB, v AdrBC, v AdrAC, v Size, v VtxA, v VtxB, k 0, v Size] Res ;;
   .ite (v Res =' k 1) (.set Hit (k 1)) .skip
 
-open Brute in
+open Brute
 /-- The inner loop of brute: all `b` for one `a`. -/
 def bruteInner (pScan : ℕ) : Stmt := Stmt.for VtxB (v Size) (brutePair pScan)
 
-open Brute in
+open Brute
 /-- brute(n, U, ab, bc, ac, fr); the parameter is the procedure number of `scan`. -/
 def bruteBody (pScan : ℕ) : Stmt :=
   .set Hit (k 0) ;; Stmt.for VtxA (v Size) (bruteInner pScan) ;; .set 0 (v Hit)
@@ -116,9 +117,9 @@ theorem brutePair_spec {b : ℕ} {hit : Bool} {r : ℤ} (hP : P[pScan]? = some s
   rw [flag_eq_bit]
   -- if res = 1 then hit := 1
   cases hscan : scanHit n AB BC AC a b 0 n
-  · exact Ends.iteLast (fun h => absurd h (by simp [bit])) fun _ => Ends.skip ⟨bit false, by simp⟩
+  · exact Ends.iteLast (fun h => absurd h tac_simp [bit]) fun _ => Ends.skip ⟨bit false, by simp⟩
   · exact Ends.iteLast (fun _ => Ends.setTo 1 ⟨bit true, by simp [bit]⟩)
-      fun h => absurd h (by simp [bit])
+      fun h => absurd h tac_simp [bit]
 
 /-- The inner loop: all `b` for one `a`. -/
 theorem bruteInner_spec {b₀ r₀ : ℤ} (hP : P[pScan]? = some scanBody)
@@ -152,8 +153,8 @@ end
 theorem tBrute_ge (n : ℕ) : n * (1 + (n * (24 * n + 59) + 6) + 7) + 10 ≤ tBrute n := by
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · simp [tBrute]
-  · have hsq : n ^ 2 ≤ n ^ 3 := Nat.pow_le_pow_right hn (by omega)
-    have hlin : n ≤ n ^ 3 := Nat.le_self_pow (by omega) n
+  · have hsq : n ^ 2 ≤ n ^ 3 := Nat.pow_le_pow_right hn tac_omega
+    have hlin : n ≤ n ^ 3 := Nat.le_self_pow tac_omega n
     rw [show n * (1 + (n * (24 * n + 59) + 6) + 7) = 24 * n ^ 3 + 59 * n ^ 2 + 14 * n by ring,
       tBrute]
     omega
@@ -167,7 +168,7 @@ theorem brute_spec {pScan : ℕ} (hP : P[pScan]? = some scanBody) (x : TriInst) 
       fun σ' => σ'.loc 0 = flag (triOf x.n x.AB x.BC x.AC).HasZeroTriangle ∧ σ'.mem = μ := by
   have C := hpre.weights hok
   have hw := C.hw
-  have hd : d < lim.depth := hok.depth
+  have hd := hok.depth
   have hn : x.n ≤ lim.space :=
     (Nat.le_mul_of_pos_left _ hpre.n_pos).trans ((Nat.le_add_left _ _).trans C.arrAB.below)
   have htime := tBrute_ge x.n
@@ -192,7 +193,7 @@ theorem brute_spec {pScan : ℕ} (hP : P[pScan]? = some scanBody) (x : TriInst) 
     rintro _ - ⟨b, r, rfl⟩
     -- return hit
     refine Ends.setTo (bit (hasZero x.n x.AB x.BC x.AC)) ⟨?_, rfl⟩
-      (by simp [bruteAll, hasZero, bruteRow]) (by simp; omega)
+      tac_simp [bruteAll, hasZero, bruteRow] (by simp; omega)
     exact (flag_eq_bit _).symm.trans (flag_congr (hasZero_iff x.n x.AB x.BC x.AC))
 
 /-- The specification of `brute`, for its callers. -/

@@ -9,6 +9,7 @@ public import ThreeSumApsp.Lang.Lib.Sieve
 public import ThreeSumApsp.Lang.Lib.Sqrt
 public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Hashing
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The primes of the window (proof of Theorem 17)
@@ -58,7 +59,7 @@ theorem mul_self_le_of_mem_primesBelow {D p : ℕ} (hp : p ∈ Sieve.primesBelow
 theorem length_primesBelow_succ_le (s : ℕ) : (Sieve.primesBelow (s + 1)).length ≤ s - 1 := by
   rcases Nat.eq_zero_or_pos s with rfl | hpos
   · simp [Sieve.primesBelow_one]
-  · have := Sieve.length_primesBelow_add_two_le (i := s + 1) (by omega)
+  · have := Sieve.length_primesBelow_add_two_le (i := s + 1) tac_omega
     omega
 
 theorem inWindow_take_succ_of_mem {D j : ℕ} {L : List ℕ} (hj : j < L.length) (h : InWindow D L[j]) :
@@ -81,13 +82,13 @@ namespace Primes
 the number j of those that have been looked at; the prime p that is looked at and its square; the
 number cnt of primes that have been kept. -/
 abbrev Dest : ℕ := 0
-@[inherit_doc Dest] abbrev Size : ℕ := 1
-@[inherit_doc Dest] abbrev Root : ℕ := 2
-@[inherit_doc Dest] abbrev Total : ℕ := 3
-@[inherit_doc Dest] abbrev Index : ℕ := 4
-@[inherit_doc Dest] abbrev Prime : ℕ := 5
-@[inherit_doc Dest] abbrev Square : ℕ := 6
-@[inherit_doc Dest] abbrev Count : ℕ := 7
+ abbrev Size : ℕ := 1
+ abbrev Root : ℕ := 2
+ abbrev Total : ℕ := 3
+ abbrev Index : ℕ := 4
+ abbrev Prime : ℕ := 5
+ abbrev Square : ℕ := 6
+ abbrev Count : ℕ := 7
 
 end Primes
 
@@ -146,7 +147,6 @@ theorem keep_spec {j : ℕ} {σ : State} (hw : (lim.space : ℤ) ≤ lim.word)
     (List.length_filter_le _ _).trans (List.length_take_le _ _)
   have hsq : ((L[j] : ℕ) : ℤ) * (L[j] : ℕ) ≤ D := by exact_mod_cast hL _ (List.getElem_mem hj)
   have hsq0 : (0 : ℤ) ≤ ((L[j] : ℕ) : ℤ) * (L[j] : ℕ) := by positivity
-  have hle : L[j] ≤ D := (Nat.le_mul_self _).trans (hL _ (List.getElem_mem hj))
   have htake := inWindow_take_succ_of_mem (D := D) hj
   have hpass := inWindow_take_succ_of_not_mem (D := D) hj
   unfold Sifted
@@ -167,7 +167,7 @@ theorem keep_spec {j : ℕ} {σ : State} (hw : (lim.space : ℤ) ≤ lim.word)
     -- dst[cnt] := p; cnt := cnt + 1
     refine Ends.storeToThen (dst + F.length) p ?_
     exact Ends.setTo (F.length + 1 : ℕ) ⟨Function.update μ' (dst + F.length) p, p, (p * p : ℕ),
-      by simp, front.snoc p, hrest.update_out (Or.inl (by omega)) _,
+      by simp, front.snoc p, hrest.update_out (Or.inl tac_omega) _,
       same.update ⟨by omega, by omega⟩ _⟩
   · rw [hpass fun hin => hnhigh (by simpa using (by exact_mod_cast hin.2 : (p : ℤ) * p < D))]
     exact Ends.skip ⟨μ', p, (p * p : ℕ), rfl, front, hrest, same⟩
@@ -199,7 +199,7 @@ theorem pass_spec (hw : (lim.space : ℤ) ≤ lim.word) (hD : ((4 * D + 4 : ℕ)
     obtain ⟨μ', p, q, rfl, front, -, same⟩ := h
     refine ⟨by light_side, by light_side, ?_⟩
     -- the result is cnt
-    exact Ends.setTo ((inWindow D L).length : ℕ) ⟨by simp, front, same⟩ (by simp)
+    exact Ends.setTo ((inWindow D L).length : ℕ) ⟨by simp, front, same⟩ tac_simp
       (by simp [primesKeep]; omega)
 
 /-- What primes needs of the program: the procedures sqrt and the sieve of Eratosthenes. -/
@@ -214,7 +214,7 @@ theorem time_le {s n : ℕ} (hn : n ≤ s - 1) :
   rcases Nat.lt_or_ge s 2 with hs | hs
   · interval_cases s <;> simp at hn ⊢ <;> omega
   · have hlog : 15 * s * (Nat.log 2 s + 5) ≤ 15 * s * (s + 4) :=
-      Nat.mul_le_mul_left _ (by have := Nat.log_lt_self 2 (x := s) (by omega); omega)
+      Nat.mul_le_mul_left _ (by have := Nat.log_lt_self 2 (x := s) tac_omega; omega)
     have hsq : 2 * (s * s) ≤ s ^ 3 := by
       rw [pow_succ, sq, Nat.mul_comm]
       exact Nat.mul_le_mul_left _ hs
@@ -232,7 +232,7 @@ theorem primes_spec {μ : ℕ → ℤ} {dst D pSqrt pSieve : ℕ} (C : Primes.Ct
     Ends lim P d (primesBody pSqrt pSieve) ⟨frame [dst, D], μ⟩ (tPrimes D) fun σ' =>
       σ'.loc 0 = ((primesList D).length : ℕ) ∧ SegN σ'.mem dst (primesList D) ∧
         SameOutside μ σ'.mem dst (2 * Nat.sqrt D + 1) := by
-  have hsD : Nat.sqrt D ≤ D := Nat.sqrt_le_self D
+  have hsD := Nat.sqrt_le_self D
   have hL := fun p => mul_self_le_of_mem_primesBelow (D := D) (p := p)
   have hlen := length_primesBelow_succ_le (Nat.sqrt D)
   have htime := time_le hlen
@@ -243,8 +243,6 @@ theorem primes_spec {μ : ℕ → ℤ} {dst D pSqrt pSieve : ℕ} (C : Primes.Ct
     ⟨hw, by push_cast at hD ⊢; omega, le_rfl, by omega⟩
   rw [Sieve.sort_primesLE, ← Sieve.length_primesBelow] at hsieve
   rw [← filter_primesBelow D, tPrimes]
-  generalize Sieve.primesBelow (Nat.sqrt D + 1) = L at *
-  generalize Nat.sqrt D = s at *
   -- s := sqrt(D)
   refine Ends.callToThen hsqrt ?_
   rintro _ μ₀ ⟨rfl, hμ₀⟩
@@ -253,7 +251,7 @@ theorem primes_spec {μ : ℕ → ℤ} {dst D pSqrt pSieve : ℕ} (C : Primes.Ct
   refine Ends.callToThen hsieve ?_
   rintro _ μ₁ ⟨rfl, seg, kept⟩
   -- the pass
-  refine (pass_spec hw hD (by omega) hL seg).mono (by light_time) ?_
+  refine (pass_spec hw hD tac_omega hL seg).mono (by light_time) ?_
   rintro σ' ⟨hcount, front, same⟩
   exact ⟨hcount, front, kept.then same fun b hb => ⟨⟨by omega, by omega⟩, by omega⟩⟩
 

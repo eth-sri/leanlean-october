@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Instance
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The wanted entries of a thin matrix product, as inner products
@@ -94,8 +95,8 @@ theorem abs_bruteTerm_le {X Y : List ℤ} {U : ℕ} (hX : AbsLe X U) (hY : AbsLe
     |X.getD a 0 * Y.getD b 0| ≤ (U * U : ℕ) := by
   rw [abs_mul]
   push_cast
-  exact mul_le_mul (hX.abs_getD_le (by positivity) a) (hY.abs_getD_le (by positivity) b)
-    (abs_nonneg _) (by positivity)
+  exact mul_le_mul (hX.abs_getD_le tac_positivity a) (hY.abs_getD_le tac_positivity b)
+    (abs_nonneg _) tac_positivity
 
 /-- The first n terms add up to at most n U². -/
 theorem abs_brutePartial_le {N D : ℕ} {X Y : List ℤ} {U : ℕ} (hX : AbsLe X U) (hY : AbsLe Y U)
@@ -121,28 +122,26 @@ theorem bruteInner_spec (std : Std lim) (x : ThinInst) {μ : ℕ → ℤ} {fr i 
     Ends lim P d bruteInner ⟨frame (bruteLocs x u fr i 0 (x.x + I * x.D) (x.y + J) 0), μ⟩
       (24 * x.D + 4) fun σ' => σ' = ⟨frame (bruteLocs x u fr i x.D (x.x + I * x.D + x.D)
         (x.y + x.D * x.N + J) (brutePartial x.N x.D x.X x.Y I J x.D)), μ⟩ := by
-  have hw := std.space_le
-  have h100 := std.const_le
   have hID := Nat.mul_add_le_mul hI (le_refl x.D)
   unfold bruteInner
   refine Ends.whileBlock (fun t σ => σ = ⟨frame (bruteLocs x u fr i t (x.x + I * x.D + t)
     (x.y + t * x.N + J) (brutePartial x.N x.D x.X x.Y I J t)), μ⟩) x.D
-    (by simp [brutePartial]) ?round ?done
+    tac_simp [brutePartial] ?round ?done
   case round =>
     rintro t _ ht rfl
     have htN := Nat.mul_add_le_mul ht (le_refl x.N)
     have rX : μ (x.x + I * x.D + t) = x.X.getD (I * x.D + t) 0 := by
       rw [Nat.add_assoc]
-      exact segX.getD (by omega) 0
+      exact segX.getD tac_omega 0
     have rY : μ (x.y + t * x.N + J) = x.Y.getD (t * x.N + J) 0 := by
       rw [Nat.add_assoc]
-      exact segY.getD (by omega) 0
+      exact segY.getD tac_omega 0
     have hmono : ∀ n ≤ x.D, ((n : ℤ) * (x.U * x.U : ℕ)) ≤ lim.word := fun n hn =>
       le_trans (by exact_mod_cast Nat.mul_le_mul_right (x.U * x.U) hn) hword
     have hsum := abs_le.mp ((abs_brutePartial_le (N := x.N) (D := x.D) bX bY I J (t + 1)).trans
-      (by exact_mod_cast hmono (t + 1) (by omega)))
+      (by exact_mod_cast hmono (t + 1) tac_omega))
     have hterm := abs_le.mp ((abs_bruteTerm_le bX bY (I * x.D + t) (t * x.N + J)).trans
-      (by simpa using hmono 1 (by omega)))
+      (by simpa using hmono 1 tac_omega))
     have hnext := brutePartial_succ x.N x.D x.X x.Y I J t
     rw [hnext] at hsum
     generalize x.X.getD (I * x.D + t) 0 = a, x.Y.getD (t * x.N + J) 0 = b at *
@@ -171,8 +170,6 @@ theorem bruteRound_spec (std : Std lim) {x : ThinInst} {μ : ℕ → ℤ} {fr : 
     (h : BruteInv x μ u fr i σ) :
     Ends lim P d bruteRound σ (24 * x.D + 33) (BruteInv x μ u fr (i + 1)) := by
   obtain ⟨t, px, py, s, μ', rfl, hdone, hfr⟩ := h
-  have hw := std.space_le
-  have h100 := std.const_le
   have hbelow := And.intro hpre.belowX (And.intro hpre.belowY (And.intro hpre.belowWI
     (And.intro hpre.belowWJ hpre.belowOut)))
   have hI := thinI_lt hpre hi
@@ -188,7 +185,6 @@ theorem bruteRound_spec (std : Std lim) {x : ThinInst} {μ : ℕ → ℤ} {fr : 
     rw [hfr _ (by rcases hpre.apartWJ with h | h <;> omega)]
     exact mem_thinJ hpre hi
   have hID := Nat.mul_add_le_mul hI (le_refl x.D)
-  have hND : x.N ≤ x.D * x.N := Nat.le_mul_of_pos_left _ hpre.D_pos
   unfold bruteRound bruteLocs
   -- t := 0; px := x + mem[wi + i] * D; py := y + mem[wj + i]; s := 0
   light_set 0
@@ -197,7 +193,7 @@ theorem bruteRound_spec (std : Std lim) {x : ThinInst} {μ : ℕ → ℤ} {fr : 
   light_set 0
   -- the inner product
   refine Ends.next (24 * x.D + 4) ((bruteInner_spec std x (i := i) segX segY hpre.lenX hpre.lenY
-    hpre.leX hpre.leY hI hJ (by omega) (by omega) hword).mono le_rfl ?_)
+    hpre.leX hpre.leY hI hJ tac_omega tac_omega hword).mono le_rfl ?_)
   rintro _ rfl
   unfold bruteLocs
   -- mem[out + i] := s; i := i + 1
@@ -206,7 +202,7 @@ theorem bruteRound_spec (std : Std lim) {x : ThinInst} {μ : ℕ → ℤ} {fr : 
   refine ⟨_, _, _, _, _, rfl, fun j hj => ?_,
     hfr.update ⟨by omega, by omega⟩ _⟩
   rcases Nat.lt_succ_iff_lt_or_eq.mp hj with hlt | rfl
-  · rw [Function.update_of_ne (by omega)]
+  · rw [Function.update_of_ne tac_omega]
     exact hdone j hlt
   · rw [Function.update_self]
     rfl
@@ -223,7 +219,7 @@ theorem thinBrute_spec (std : Std lim) (x : ThinInst) (μ : ℕ → ℤ) (fr : �
   unfold thinBruteBody
   refine Ends.whileConst (BruteInv x μ u fr) x.w (24 * x.D + 33) ?start ?round ?done ?time
   case start =>
-    exact ⟨0, 0, 0, 0, μ, by rw [← frame_append_zeros _ 5]; rfl, fun j hj => absurd hj (by omega),
+    exact ⟨0, 0, 0, 0, μ, by rw [← frame_append_zeros _ 5]; rfl, fun j hj => absurd hj tac_omega,
       SameOutside.refl⟩
   case round =>
     intro i σ hi h

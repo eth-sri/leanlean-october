@@ -9,6 +9,7 @@ public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Contracts
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Memory
 public import ThreeSumApsp.Sec4.Corollary31
 public import ThreeSumApsp.Util.Ceil
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Corollaries 26 and 31 in the light language: m, the places of the padded matrices, the query
@@ -23,7 +24,7 @@ specification is `QuerySpec31`, proved in `query31_meets`.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp
 
 /-! ## Parameters and map -/
 
@@ -41,16 +42,16 @@ namespace Query31
 
 /-- The locals of query31 are its arguments I, J, N, D, aX, aY, fr; the answer replaces I. -/
 abbrev Row : ℕ := 0
-@[inherit_doc Row] abbrev Col : ℕ := 1
-@[inherit_doc Row] abbrev Size : ℕ := 2
-@[inherit_doc Row] abbrev Dim : ℕ := 3
-@[inherit_doc Row] abbrev MatX : ℕ := 4
-@[inherit_doc Row] abbrev MatY : ℕ := 5
-@[inherit_doc Row] abbrev Free : ℕ := 6
+ abbrev Col : ℕ := 1
+ abbrev Size : ℕ := 2
+ abbrev Dim : ℕ := 3
+ abbrev MatX : ℕ := 4
+ abbrev MatY : ℕ := 5
+ abbrev Free : ℕ := 6
 
 end Query31
 
-open Query31 in
+open Query31
 /-- query31(I, J, N, D, aX, aY, fr): if the flag is 1, the query of Theorem 30, and otherwise the
 inner product. -/
 def query31Body : Stmt :=
@@ -73,7 +74,7 @@ theorem abs_padInnerRows_le {N D₀ D' : ℕ} {Y : Matrix (Fin D₀) (Fin N) ℤ
   · exact h _ _
   · simpa using hU
 
-theorem le_D_logFour (D₀ : ℕ) : D₀ ≤ D (logFour D₀) := Nat.le_pow_clog (by norm_num) D₀
+theorem le_D_logFour (D₀ : ℕ) : D₀ ≤ D (logFour D₀) := Nat.le_pow_clog tac_norm_num D₀
 
 /-- The ceiling ⌈log₄ D⌉ in natural numbers. -/
 theorem ceil_logb_four (D₀ : ℕ) : ⌈Real.logb 4 (D₀ : ℝ)⌉₊ = logFour D₀ := by
@@ -82,12 +83,12 @@ theorem ceil_logb_four (D₀ : ℕ) : ⌈Real.logb 4 (D₀ : ℝ)⌉₊ = logFou
 
 /-- m ≤ 4 D, because m ≤ 4^m ≤ 4 D. -/
 theorem logFour_le_four_mul {D₀ : ℕ} (hD : 1 ≤ D₀) : logFour D₀ ≤ 4 * D₀ :=
-  le_trans (Nat.lt_pow_self (by norm_num)).le (Nat.pow_clog_le_mul (b := 4) (by norm_num) hD)
+  le_trans (Nat.lt_pow_self tac_norm_num).le (Nat.pow_clog_le_mul (b := 4) tac_norm_num hD)
 
 /-- m ≥ 1 means D ≥ 2. -/
 theorem two_le_of_clog {D₀ : ℕ} (h : 1 ≤ logFour D₀) : 2 ≤ D₀ := by
   by_contra hc
-  have : logFour D₀ = 0 := Nat.clog_of_right_le_one (by omega) 4
+  have : logFour D₀ = 0 := Nat.clog_of_right_le_one tac_omega 4
   omega
 
 end Light.Sec4

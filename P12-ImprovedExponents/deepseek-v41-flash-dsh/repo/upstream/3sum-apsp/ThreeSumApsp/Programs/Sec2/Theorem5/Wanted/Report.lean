@@ -40,7 +40,7 @@ abbrev POS : ℕ := 4
 
 end ReportLocal
 
-open ReportLocal in
+open ReportLocal
 /-- report(w, perm, sv, out): OUT[PERM[i]] := VALS[i] for i < w, where VALS is the array at sv. -/
 def reportBody : Stmt :=
   .for POS (v LEN) (.store (v OUT +' M (v PERM +' v POS)) (M (v VALS +' v POS)))

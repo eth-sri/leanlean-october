@@ -3,6 +3,7 @@ module
 public import ThreeSumApsp.Programs.Sec4.Corollary26.Claim
 public import ThreeSumApsp.Programs.LightModel
 public import ImprovedExponents.Pipeline.OfflineWithin
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -42,7 +43,7 @@ of the program's test and routine, with `ε ≤ 1/18`.
 
 namespace ImprovedExponents
 
-open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec4
+open ThreeSumApsp Light Light.Sec4
 
 /-! ## The statement -/
 
@@ -136,7 +137,7 @@ def allBody (test off : ℕ) : Stmt :=
 
 /-! ## Time and need -/
 
-open Classical in
+open Classical
 /-- The time of the solver with the test `R` and the routine `O`, for the parameters N, D, w, U. -/
 noncomputable def allInstancesTimeR (R : RegimeTest) (O : OfflineRoutine) : List ℕ → ℕ
   | [N, D, w, _] => R.time + 64 + (if R.Reg N D then O.time N D w else 40 * ((w + 1) * (D + 1)))
@@ -163,8 +164,8 @@ theorem allInstancesNeedR_ok {lim : Limits} {R : RegimeTest} {O : OfflineRoutine
 theorem ratParams_L_le_mul (G : RatParams) (m : ℕ) : G.L m ≤ G.a * m := by
   unfold RatParams.L
   have hb := G.hb
-  rw [Nat.div_le_iff_le_mul_add_pred (by omega)]
-  have h : G.a * m ≤ G.b * (G.a * m) := Nat.le_mul_of_pos_left _ (by omega)
+  rw [Nat.div_le_iff_le_mul_add_pred tac_omega]
+  have h : G.a * m ≤ G.b * (G.a * m) := Nat.le_mul_of_pos_left _ tac_omega
   omega
 
 /-! ## The limits of offline32 -/
@@ -198,7 +199,7 @@ theorem top_le_of_need (hD : 1 ≤ D₀) (H : Hyp30 (parOf G N D₀) (switchOf31
   have hblock : top (parOf G N D₀) (switchOf31 G D₀) (blockAt N D₀ fr) - blockAt N D₀ fr
       ≤ 222 * ((N + 1) ^ 5) ^ 4 := top_sub_le_pow H (below H) _
   have hpad : N * D (logFour D₀) ≤ 4 * (N * D₀) :=
-    (Nat.mul_le_mul_left N (Nat.pow_clog_le_mul (b := 4) (by norm_num) hD)).trans_eq (by ring)
+    (Nat.mul_le_mul_left N (Nat.pow_clog_le_mul (b := 4) tac_norm_num hD)).trans_eq tac_ring
   have hbase : blockAt N D₀ fr = fr + 3 + N * D (logFour D₀) + N * D (logFour D₀) := rfl
   omega
 
@@ -223,9 +224,9 @@ theorem lim30_of_below {p : Sec2.Par} {t b0 B : ℕ} (hB : Below p t B) (std : S
   exact {
     std := std
     space := hspace
-    value := by exact_mod_cast fits _ (hvalue.trans (by omega))
-    enc := by exact_mod_cast fits _ (henc.trans (by omega))
-    pow := fits _ (hpow.trans (by omega)) }
+    value := by exact_mod_cast fits _ (hvalue.trans tac_omega)
+    enc := by exact_mod_cast fits _ (henc.trans tac_omega)
+    pow := fits _ (hpow.trans tac_omega) }
 
 /-- If the hypotheses of Theorem 30 hold from the threshold on, the need of offline32 covers what
 it asks of the limits. -/
@@ -234,16 +235,16 @@ theorem lim31_of_need (hD : 1 ≤ D₀)
     (ok : (offline32Need G N D₀ U).Ok lim fr d) : Lim31 lim G N D₀ fr (U : ℤ) := by
   have hcells : fr + (4 + N + 8 * (N * D₀) + 222 * ((N + 1) ^ 5) ^ 4) ≤ lim.space := ok.cells
   have fits {n : ℕ} := fits_of_need ok (n := n)
-  have h4 : 4 ^ logFour D₀ ≤ 4 * D₀ := Nat.pow_clog_le_mul (b := 4) (by norm_num) hD
-  have hm4 : logFour D₀ ≤ 4 * D₀ := logFour_le_four_mul hD
+  have h4 : 4 ^ logFour D₀ ≤ 4 * D₀ := Nat.pow_clog_le_mul (b := 4) tac_norm_num hD
+  have hm4 := logFour_le_four_mul hD
   have ha : G.a * logFour D₀ ≤ G.a * (4 * D₀) := Nat.mul_le_mul_left _ hm4
   have hp : G.p * logFour D₀ ≤ G.p * (4 * D₀) := Nat.mul_le_mul_left _ hm4
-  have std : Std lim := ⟨ok.space, by exact_mod_cast fits (n := 100) (by omega)⟩
+  have std : Std lim := ⟨ok.space, by exact_mod_cast fits (n := 100) tac_omega⟩
   have large (hm : G.m₀ ≤ logFour D₀) : Lim30 lim (parOf G N D₀) (switchOf31 G D₀)
       (blockAt N D₀ fr) (U : ℤ) :=
     have H := hfit hm
     lim30_of_below (B := (N + 1) ^ 5) (below H) std (top_le_of_need hD H ok)
-      fun n hn => fits (hn.trans (by omega))
+      fun n hn => fits (hn.trans tac_omega)
   exact {
     std := std
     space := by
@@ -251,10 +252,10 @@ theorem lim31_of_need (hD : 1 ≤ D₀)
       split_ifs with h
       · omega
       · exact (large (not_lt.mp h)).space
-    pow := fits (by omega)
-    mword := fits (by omega)
-    m0word := fits (n := G.m₀) (by omega)
-    ip := by exact_mod_cast fits (n := D₀ * (U * U)) (by omega)
+    pow := fits tac_omega
+    mword := fits tac_omega
+    m0word := fits (n := G.m₀) tac_omega
+    ip := by exact_mod_cast fits (n := D₀ * (U * U)) tac_omega
     large := large }
 
 end need
@@ -276,20 +277,20 @@ theorem word_le (hN : N + 1 ≤ Q) (hD : D ≤ Q) (hU : U ≤ Q) :
   have hQ : 1 ≤ Q := by omega
   have hN' : N ≤ Q := by omega
   have h1 : 1 ≤ Q ^ 20 := Nat.one_le_pow _ _ hQ
-  have hD1 : D ≤ Q ^ 20 := le_pow_twenty hQ 1 (by norm_num) (by simpa using hD)
-  have hND : N * D ≤ Q ^ 20 := le_pow_twenty hQ 2 (by norm_num) <|
+  have hD1 := le_pow_twenty hQ 1 tac_norm_num (by simpa using hD)
+  have hND := le_pow_twenty hQ 2 tac_norm_num <|
     calc N * D ≤ Q * Q := by gcongr
       _ = Q ^ 2 := by ring
-  have hDUU : D * (U * U) ≤ Q ^ 20 := le_pow_twenty hQ 3 (by norm_num) <|
+  have hDUU := le_pow_twenty hQ 3 tac_norm_num <|
     calc D * (U * U) ≤ Q * (Q * Q) := by gcongr
       _ = Q ^ 3 := by ring
-  have hvalue : ((N + 1) ^ 5) ^ 3 * (U * U) ≤ Q ^ 20 := le_pow_twenty hQ 17 (by norm_num) <|
+  have hvalue := le_pow_twenty hQ 17 tac_norm_num <|
     calc ((N + 1) ^ 5) ^ 3 * (U * U) ≤ (Q ^ 5) ^ 3 * (Q * Q) := by gcongr
       _ = Q ^ 17 := by ring
-  have henc : (N + 1) ^ 5 * U ≤ Q ^ 20 := le_pow_twenty hQ 6 (by norm_num) <|
+  have henc := le_pow_twenty hQ 6 tac_norm_num <|
     calc (N + 1) ^ 5 * U ≤ Q ^ 5 * Q := by gcongr
       _ = Q ^ 6 := by ring
-  have hpow : (N + 1) ^ 5 ≤ Q ^ 20 := le_pow_twenty hQ 5 (by norm_num) (by gcongr)
+  have hpow : (N + 1) ^ 5 ≤ Q ^ 20 := le_pow_twenty hQ 5 tac_norm_num (by gcongr)
   omega
 
 /-- The cells that offline32 uses. -/
@@ -298,8 +299,8 @@ theorem cells_le (hN : N + 1 ≤ Q) (hD : D ≤ Q) :
   have hQ : 1 ≤ Q := by omega
   have hN' : N ≤ Q := by omega
   have h1 : 1 ≤ Q ^ 20 := Nat.one_le_pow _ _ hQ
-  have hN1 : N ≤ Q ^ 20 := le_pow_twenty hQ 1 (by norm_num) (by simpa using hN')
-  have hND : N * D ≤ Q ^ 20 := le_pow_twenty hQ 2 (by norm_num) <|
+  have hN1 := le_pow_twenty hQ 1 tac_norm_num (by simpa using hN')
+  have hND := le_pow_twenty hQ 2 tac_norm_num <|
     calc N * D ≤ Q * Q := by gcongr
       _ = Q ^ 2 := by ring
   have hblock : ((N + 1) ^ 5) ^ 4 ≤ Q ^ 20 :=
@@ -319,23 +320,20 @@ theorem offline32Need_poly (G : RatParams) : ∃ s k : ℕ, ∀ N D U : ℕ,
   set κ : ℕ := 4 * G.a + 4 * G.p + G.b + G.q + G.m₀ + 12 with hκ
   refine ⟨12 + κ, 20, fun N D U => ?_⟩
   have hN : N + 1 ≤ (N + 1) * (D + 1) * (U + 1) :=
-    Nat.le_mul_of_pos_right _ (by positivity) |>.trans' (Nat.le_mul_of_pos_right _ (by positivity))
+    Nat.le_mul_of_pos_right _ tac_positivity |>.trans' (Nat.le_mul_of_pos_right _ tac_positivity)
   have hD : D ≤ (N + 1) * (D + 1) * (U + 1) :=
     calc D ≤ D + 1 := Nat.le_succ _
-      _ ≤ (N + 1) * (D + 1) := Nat.le_mul_of_pos_left _ (by omega)
-      _ ≤ (N + 1) * (D + 1) * (U + 1) := Nat.le_mul_of_pos_right _ (by omega)
+      _ ≤ (N + 1) * (D + 1) := Nat.le_mul_of_pos_left _ tac_omega
+      _ ≤ (N + 1) * (D + 1) * (U + 1) := Nat.le_mul_of_pos_right _ tac_omega
   have hU : U ≤ (N + 1) * (D + 1) * (U + 1) :=
-    (Nat.le_succ _).trans (Nat.le_mul_of_pos_left _ (by positivity))
+    (Nat.le_succ _).trans (Nat.le_mul_of_pos_left _ tac_positivity)
   generalize (N + 1) * (D + 1) * (U + 1) = Q at *
   have hQ : 1 ≤ Q := by omega
   have h1 : 1 ≤ Q ^ 20 := Nat.one_le_pow _ _ hQ
-  have hD1 : D ≤ Q ^ 20 := le_pow_twenty hQ 1 (by norm_num) (by simpa using hD)
+  have hD1 := le_pow_twenty hQ 1 tac_norm_num (by simpa using hD)
   -- the two constants: 2^11 + κ ≤ 2^(12 + κ)
   have hκ2 : κ ≤ 2 ^ κ := Nat.lt_two_pow_self.le
-  have hA : (2 : ℕ) ^ 11 ≤ 2 ^ 11 * 2 ^ κ := Nat.le_mul_of_pos_right _ (by positivity)
-  have hB : (2 : ℕ) ^ κ ≤ 2 ^ 11 * 2 ^ κ := Nat.le_mul_of_pos_left _ (by positivity)
   have hpow : (2 : ℕ) ^ (12 + κ) = 2 * (2 ^ 11 * 2 ^ κ) := by
-    rw [pow_add]
     ring
   have hsum : (2 ^ 11 + κ) * Q ^ 20 ≤ 2 ^ (12 + κ) * Q ^ 20 :=
     Nat.mul_le_mul_right _ (by rw [hpow]; omega)
@@ -348,10 +346,9 @@ theorem offline32Need_poly (G : RatParams) : ∃ s k : ℕ, ∀ N D U : ℕ,
     calc G.p * (4 * D) = 4 * G.p * D := by ring
       _ ≤ 4 * G.p * Q ^ 20 := Nat.mul_le_mul_left _ hD1
   have hrest : G.b + G.q + G.m₀ + 12 ≤ (G.b + G.q + G.m₀ + 12) * Q ^ 20 :=
-    Nat.le_mul_of_pos_right _ (by omega)
+    Nat.le_mul_of_pos_right _ tac_omega
   have hκQ : κ * Q ^ 20 = 4 * G.a * Q ^ 20 + 4 * G.p * Q ^ 20
       + (G.b + G.q + G.m₀ + 12) * Q ^ 20 := by
-    rw [hκ]
     ring
   have hw := word_le (U := U) hN hD hU
   have hc := cells_le hN hD
@@ -361,15 +358,13 @@ theorem offline32Need_poly (G : RatParams) : ∃ s k : ℕ, ∀ N D U : ℕ,
       + (G.a * (4 * D) + G.p * (4 * D) + G.b + G.q + G.m₀) ≤ _
     omega
   · change 4 + N + 8 * (N * D) + 222 * ((N + 1) ^ 5) ^ 4 ≤ _
-    have : 0 ≤ κ * Q ^ 20 := Nat.zero_le _
     omega
   · change G.a * (4 * D) + 12 ≤ _
-    have : 0 ≤ 2 ^ 11 * Q ^ 20 := Nat.zero_le _
     omega
 
 /-! ## The solver -/
 
-open Classical in
+open Classical
 /-- **The solver with the test `R` and the routine `O` solves the task on all instances**, in
 every program that holds it, the test, the routine and the brute force at their numbers, with the
 procedures the test and the routine call, if the regime lies where the routine is specified; also
@@ -387,17 +382,16 @@ theorem allInstances_solves {P : Program} {R : RegimeTest} {O : OfflineRoutine} 
   have hdepth := ok.depth
   simp only [allInstancesNeedR] at hword hcells hdepth
   have hfits : ∀ n : ℕ, n ≤ R.word x.N x.D + (100 + x.D * (x.U * x.U)) → (n : ℤ) ≤ lim.word :=
-    fun n hn => le_trans (by exact_mod_cast (by omega)) hword
-  have h100 := hfits 100 (by omega)
+    fun n hn => le_trans (by exact_mod_cast tac_omega) hword
+  have h100 := hfits 100 tac_omega
   have hroom : fr + x.N + 1 ≤ lim.space := by omega
   clear hword hcells
   change Ends lim (P ++ Q) d (allBody R.proc O.proc)
     ⟨frame [x.N, x.D, x.w, x.U, x.x, x.y, x.wi, x.wj, x.out, fr], μ⟩
     (R.time + 64 + if R.Reg x.N x.D then O.time x.N x.D x.w
       else 40 * ((x.w + 1) * (x.D + 1))) _
-  unfold allBody
   refine Ends.callToThen (R.meets (R.aux_append P Q haux) (getElem?_append_of_eq_some htest Q)
-    (by omega) x.N x.D hpre.N_pos hpre.D_pos (hfits _ (by omega)) μ) ?_ (hT := by simp; omega)
+    tac_omega x.N x.D hpre.N_pos hpre.D_pos (hfits _ tac_omega) μ) ?_ (hT := by simp; omega)
   rintro r μ ⟨rfl, hr⟩
   refine Ends.iteLast (fun hpos => ?_) (fun hneg => ?_)
   · have hreg : R.Reg x.N x.D := by
@@ -416,10 +410,10 @@ theorem allInstances_solves {P : Program} {R : RegimeTest} {O : OfflineRoutine} 
         [x.N, x.D, x.w, x.U, x.x, x.y, x.wi, x.wj, x.out, fr] μ (40 * ((x.w + 1) * (x.D + 1)))
         fun r μ' => thinTask.Post x μ fr r μ' :=
       .of_body (getElem?_append_of_eq_some hbrute Q) (Sec2.thinBrute_spec
-        ⟨ok.space, by exact_mod_cast h100⟩ x μ fr (x.U : ℤ) hpre hroom (hfits _ (by omega)))
+        ⟨ok.space, by exact_mod_cast h100⟩ x μ fr (x.U : ℤ) hpre hroom (hfits _ tac_omega))
     exact Ends.callTo hbrute fun _ _ h => h
 
-open Classical in
+open Classical
 /-- The time of the solver is monotone in the number of wanted positions and does not depend on
 the bound on the entries. -/
 theorem allInstancesTimeR_mono (R : RegimeTest) (O : OfflineRoutine) (N D₀ : ℕ) {w w' : ℕ}
@@ -447,37 +441,37 @@ theorem allInstancesNeedR_poly (R : RegimeTest) (O : OfflineRoutine) :
     obtain ⟨hOw, hOc, hOd⟩ := hnp N D U
     have hRw := hwp N D
     have hND : (N + 1) * (D + 1) ≤ (N + 1) * ((D + 1) * ((w + 1) * (U + 1))) :=
-      Nat.mul_le_mul_left _ (Nat.le_mul_of_pos_right _ (by positivity))
+      Nat.mul_le_mul_left _ (Nat.le_mul_of_pos_right _ tac_positivity)
     have hNDU : (N + 1) * (D + 1) * (U + 1) ≤ (N + 1) * ((D + 1) * ((w + 1) * (U + 1))) := by
       rw [mul_assoc]
-      exact Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ (Nat.le_mul_of_pos_left _ (by omega)))
+      exact Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ (Nat.le_mul_of_pos_left _ tac_omega))
     have hN : N + 1 ≤ (N + 1) * ((D + 1) * ((w + 1) * (U + 1))) :=
-      Nat.le_mul_of_pos_right _ (by positivity)
+      Nat.le_mul_of_pos_right _ tac_positivity
     have hD : D ≤ (N + 1) * ((D + 1) * ((w + 1) * (U + 1))) :=
       calc D ≤ D + 1 := Nat.le_succ _
-        _ ≤ (D + 1) * ((w + 1) * (U + 1)) := Nat.le_mul_of_pos_right _ (by positivity)
-        _ ≤ (N + 1) * ((D + 1) * ((w + 1) * (U + 1))) := Nat.le_mul_of_pos_left _ (by omega)
+        _ ≤ (D + 1) * ((w + 1) * (U + 1)) := Nat.le_mul_of_pos_right _ tac_positivity
+        _ ≤ (N + 1) * ((D + 1) * ((w + 1) * (U + 1))) := Nat.le_mul_of_pos_left _ tac_omega
     have hU : U ≤ (N + 1) * ((D + 1) * ((w + 1) * (U + 1))) :=
       calc U ≤ U + 1 := Nat.le_succ _
         _ ≤ (D + 1) * ((w + 1) * (U + 1)) :=
-          Nat.le_mul_of_pos_left _ (by positivity) |>.trans
-            (Nat.le_mul_of_pos_left _ (by positivity))
-        _ ≤ (N + 1) * ((D + 1) * ((w + 1) * (U + 1))) := Nat.le_mul_of_pos_left _ (by omega)
+          Nat.le_mul_of_pos_left _ tac_positivity |>.trans
+            (Nat.le_mul_of_pos_left _ tac_positivity)
+        _ ≤ (N + 1) * ((D + 1) * ((w + 1) * (U + 1))) := Nat.le_mul_of_pos_left _ tac_omega
     rw [show polyBound (9 + kR + s) (3 + e + k) [N, D, w, U] =
       2 ^ (9 + kR + s) * ((N + 1) * ((D + 1) * ((w + 1) * (U + 1)))) ^ (3 + e + k) by
         simp [polyBound]]
     generalize (N + 1) * ((D + 1) * ((w + 1) * (U + 1))) = Q at *
     have hQ : 1 ≤ Q := by omega
-    have h3 : Q ^ 3 ≤ Q ^ (3 + e + k) := Nat.pow_le_pow_right hQ (by omega)
+    have h3 : Q ^ 3 ≤ Q ^ (3 + e + k) := Nat.pow_le_pow_right hQ tac_omega
     -- the number the test forms
     have hRQ : R.word N D ≤ 2 ^ kR * Q ^ (3 + e + k) :=
       hRw.trans (Nat.mul_le_mul_left _ ((Nat.pow_le_pow_left hND e).trans
-        (Nat.pow_le_pow_right hQ (by omega))))
+        (Nat.pow_le_pow_right hQ tac_omega)))
     -- the need of the routine
     have hOQ : ∀ {n : ℕ}, n ≤ 2 ^ s * ((N + 1) * (D + 1) * (U + 1)) ^ k →
         n ≤ 2 ^ s * Q ^ (3 + e + k) :=
       fun h => h.trans (Nat.mul_le_mul_left _ ((Nat.pow_le_pow_left hNDU k).trans
-        (Nat.pow_le_pow_right hQ (by omega))))
+        (Nat.pow_le_pow_right hQ tac_omega)))
     have hOw' := hOQ hOw
     have hOc' := hOQ hOc
     have hOd' := hOQ hOd
@@ -488,12 +482,10 @@ theorem allInstancesNeedR_poly (R : RegimeTest) (O : OfflineRoutine) :
           _ = Q ^ 3 := by ring
       have h1 : 1 ≤ Q ^ 3 := Nat.one_le_pow _ _ hQ
       omega
-    have hN1 : N + 1 ≤ Q ^ (3 + e + k) := hN.trans ((Nat.le_self_pow (by omega) Q).trans h3)
-    have h1 : 1 ≤ Q ^ (3 + e + k) := Nat.one_le_pow _ _ hQ
+    have hN1 := hN.trans ((Nat.le_self_pow tac_omega Q).trans h3)
     -- the three constants: 2^kR + 101 + 2^s ≤ 2^(9 + kR + s)
     have hpow : (2 : ℕ) ^ (9 + kR + s) * Q ^ (3 + e + k)
         = 512 * (2 ^ kR * 2 ^ s * Q ^ (3 + e + k)) := by
-      rw [pow_add, pow_add]
       ring
     have hs1 : 1 ≤ 2 ^ s := Nat.one_le_two_pow
     have hkR1 : 1 ≤ 2 ^ kR := Nat.one_le_two_pow
@@ -504,8 +496,7 @@ theorem allInstancesNeedR_poly (R : RegimeTest) (O : OfflineRoutine) :
       calc 2 ^ s * Q ^ (3 + e + k) = 1 * 2 ^ s * Q ^ (3 + e + k) := by ring
         _ ≤ 2 ^ kR * 2 ^ s * Q ^ (3 + e + k) := by gcongr
     have hC : Q ^ (3 + e + k) ≤ 2 ^ kR * 2 ^ s * Q ^ (3 + e + k) :=
-      Nat.le_mul_of_pos_left _ (by positivity)
-    rw [hpow]
+      Nat.le_mul_of_pos_left _ tac_positivity
     refine ⟨?_, ?_, ?_⟩
     · change R.word N D + (100 + D * (U * U)) + (O.need N D U).word ≤ _
       omega
@@ -526,15 +517,13 @@ theorem OfflineWithinT.add_const {t : ℕ → ℕ → ℕ → ℕ} {ε γ q : �
   obtain ⟨A, hA⟩ := h
   refine ⟨A * (1 + K / 400), fun N D₀ w hN hD hDN => ?_⟩
   have h := hA N D₀ w hN hD hDN
-  have h0 : (0 : ℝ) ≤ t N D₀ w := by positivity
-  have hK : (0 : ℝ) ≤ K := by positivity
   have hB : 400 ≤ A * (preBound31 γ N D₀ + (w : ℝ) * queryBound31 q D₀) := by linarith
   calc (t N D₀ w : ℝ) + 400 + K
       ≤ A * (preBound31 γ N D₀ + (w : ℝ) * queryBound31 q D₀)
         + K / 400 * (A * (preBound31 γ N D₀ + (w : ℝ) * queryBound31 q D₀)) := by
         have : K ≤ K / 400 * (A * (preBound31 γ N D₀ + (w : ℝ) * queryBound31 q D₀)) := by
           calc (K : ℝ) = K / 400 * 400 := by ring
-            _ ≤ _ := mul_le_mul_of_nonneg_left hB (by positivity)
+            _ ≤ _ := mul_le_mul_of_nonneg_left hB tac_positivity
         linarith
     _ = A * (1 + K / 400) * (preBound31 γ N D₀ + (w : ℝ) * queryBound31 q D₀) := by ring
 
@@ -564,7 +553,6 @@ theorem thinClaimR_of_offlineWithin {P : Program} {R : RegimeTest} {O : OfflineR
       push_cast
       ring
     change (allInstancesTimeR R O [N, D₀, w, 0] : ℝ) ≤ _
-    rw [htime]
     linarith [hA N D₀ w hN hD hDN]
 
 /-- `D ≤ N^ε` with `ε ≤ s/r` puts the instance in the regime `D^r ≤ N^s`, for `1 ≤ r`. -/
@@ -573,8 +561,8 @@ theorem pow_le_pow_of_le_rpow {N D₀ r s : ℕ} {ε : ℝ} (hr : 1 ≤ r) (hε 
   have hNR : (1 : ℝ) ≤ N := by exact_mod_cast hN
   have hrR : (0 : ℝ) < r := by exact_mod_cast hr
   have h : ((D₀ : ℝ)) ^ r ≤ (N : ℝ) ^ s :=
-    calc ((D₀ : ℝ)) ^ r ≤ ((N : ℝ) ^ ε) ^ r := pow_le_pow_left₀ (by positivity) hDN r
-      _ = (N : ℝ) ^ (ε * r) := by rw [← Real.rpow_natCast, ← Real.rpow_mul (by positivity)]
+    calc ((D₀ : ℝ)) ^ r ≤ ((N : ℝ) ^ ε) ^ r := pow_le_pow_left₀ tac_positivity hDN r
+      _ = (N : ℝ) ^ (ε * r) := by rw [← Real.rpow_natCast, ← Real.rpow_mul tac_positivity]
       _ ≤ (N : ℝ) ^ (s : ℝ) := Real.rpow_le_rpow_of_exponent_le hNR
           (by rwa [le_div_iff₀ hrR] at hε)
       _ = (N : ℝ) ^ s := Real.rpow_natCast _ _

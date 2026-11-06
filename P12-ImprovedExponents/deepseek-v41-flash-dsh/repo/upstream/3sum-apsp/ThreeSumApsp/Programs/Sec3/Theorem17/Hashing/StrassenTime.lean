@@ -47,7 +47,7 @@ theorem strSteps_mono {p q : ℕ} (h : p ≤ q) (j : ℕ) : strSteps p j ≤ str
   induction j with
   | zero =>
     rw [strSteps, strSteps]
-    have h2 : p * p ≤ q * q := Nat.mul_le_mul h h
+    have h2 := Nat.mul_le_mul h h
     have e1 : 32 * p * p = 32 * (p * p) := by ring
     have e2 : 32 * q * q = 32 * (q * q) := by ring
     omega

@@ -2,6 +2,7 @@ module
 
 public import ImprovedExponents.Pipeline.ThinClaim
 public import ImprovedExponents.Optimum.PerCBasic
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -20,7 +21,7 @@ Small facts used when the parameters of the programs are fitted to a target savi
 
 namespace ImprovedExponents
 
-open ThreeSumApsp Light Light.Sec4
+open ThreeSumApsp Light.Sec4
 
 /-- A thin-product claim with the exponent `γ` gives the claim with every smaller exponent. -/
 theorem ThinClaim.mono_gamma {M : DetTimeModel} {ε γ γ' q : ℝ} (h : ThinClaim M ε γ q)
@@ -28,10 +29,9 @@ theorem ThinClaim.mono_gamma {M : DetTimeModel} {ε γ γ' q : ℝ} (h : ThinCla
   obtain ⟨C, T, hT, hb⟩ := h
   refine ⟨max C 0, T, hT, fun N D w u hN hD hDN => ?_⟩
   have hDR : (1 : ℝ) ≤ D := by exact_mod_cast hD
-  have hlog := Real.log_nonneg hDR
   have hpre : preBound31 γ N D ≤ preBound31 γ' N D := by
     unfold preBound31
-    exact div_le_div_of_nonneg_left (by positivity) (Real.rpow_pos_of_pos (by linarith) _)
+    exact div_le_div_of_nonneg_left tac_positivity (Real.rpow_pos_of_pos tac_linarith _)
       (Real.rpow_le_rpow_of_exponent_le hDR hγ)
   have hpre0 : 0 ≤ preBound31 γ N D := by unfold preBound31; positivity
   have hq0 : 0 ≤ (w : ℝ) * queryBound31 q D := by unfold queryBound31; positivity
@@ -39,7 +39,7 @@ theorem ThinClaim.mono_gamma {M : DetTimeModel} {ε γ γ' q : ℝ} (h : ThinCla
     _ ≤ max C 0 * (preBound31 γ N D + (w : ℝ) * queryBound31 q D) :=
         mul_le_mul_of_nonneg_right (le_max_left _ _) (add_nonneg hpre0 hq0)
     _ ≤ max C 0 * (preBound31 γ' N D + (w : ℝ) * queryBound31 q D) :=
-        mul_le_mul_of_nonneg_left (by linarith) (le_max_right _ _)
+        mul_le_mul_of_nonneg_left tac_linarith (le_max_right _ _)
 
 /-- A nonnegative rational number is the quotient of two natural numbers. -/
 theorem rat_eq_div {r : ℚ} (hr : 0 ≤ r) : (r : ℝ) = (r.num.toNat : ℝ) / (r.den : ℝ) := by
@@ -49,7 +49,7 @@ theorem rat_eq_div {r : ℚ} (hr : 0 ≤ r) : (r : ℝ) = (r.num.toNat : ℝ) / 
 
 /-- The numerator of a positive rational number, as a natural number, is positive. -/
 theorem one_le_num_toNat {r : ℚ} (hr : 0 < r) : 1 ≤ r.num.toNat := by
-  have h : 0 < r.num := Rat.num_pos.2 hr
+  have h := Rat.num_pos.2 hr
   omega
 
 /-- The numerator and the denominator of a rational number between two bounds given by natural
@@ -69,22 +69,15 @@ theorem mul_num_lt_mul_den {r : ℚ} (hr : 0 ≤ r) {k l : ℕ} (hl : 0 < l)
   have h' : (l : ℝ) * (r.num.toNat : ℝ) < (k : ℝ) * (r.den : ℝ) := by linarith
   exact_mod_cast h'
 
-/-- `min(2σ - 1, 1 - σ) ≤ 1/3`. -/
-theorem min_le_third (σ : ℝ) : min (2 * σ - 1) (1 - σ) ≤ 1 / 3 := by
-  rcases le_total σ (2 / 3) with h | h
-  · exact (min_le_left _ _).trans (by linarith)
-  · exact (min_le_right _ _).trans (by linarith)
-
-/-- The function `γ ↦ min(u, min(γ, s) - u)` does not drop by more than `γ` does. -/
 theorem min_sub_le (u s γ τ : ℝ) (hτ : 0 ≤ τ) :
     min u (min γ s - u) - τ ≤ min u (min (γ - τ) s - u) := by
   rcases le_total γ s with h | h
   · rw [min_eq_left h, min_eq_left (by linarith : γ - τ ≤ s)]
     rcases le_total u (γ - u) with h1 | h1
     · rw [min_eq_left h1]
-      exact le_min (by linarith) (by linarith)
+      exact le_min tac_linarith tac_linarith
     · rw [min_eq_right h1]
-      exact le_min (by linarith) (by linarith)
+      exact le_min tac_linarith tac_linarith
   · rw [min_eq_right h]
     rcases le_total (γ - τ) s with h2 | h2
     · rw [min_eq_left h2]
@@ -105,14 +98,13 @@ theorem exists_gamma_rat_of_lt {δ ε u s γ₀ : ℝ} (hδ0 : 0 ≤ δ) (hε : 
     have : ε * m₀ ≤ 0 := mul_nonpos_of_nonneg_of_nonpos hε.le (not_lt.1 hneg)
     linarith
   set τ := (ε * m₀ - δ) / (2 * ε) with hτ
-  have hτpos : 0 < τ := div_pos (by linarith) (by positivity)
+  have hτpos : 0 < τ := div_pos tac_linarith tac_positivity
   set m := min u (min (γ₀ - τ) s - u) with hm
-  have hmge : m₀ - τ ≤ m := min_sub_le u s γ₀ τ hτpos.le
+  have hmge := min_sub_le u s γ₀ τ hτpos.le
   have hετ : ε * τ = (ε * m₀ - δ) / 2 := by
     rw [hτ]
     field_simp
   have hεm : δ < ε * m := by
-    have : ε * (m₀ - τ) ≤ ε * m := mul_le_mul_of_nonneg_left hmge hε.le
     nlinarith
   have hmpos : 0 < m := by
     by_contra hneg
@@ -120,7 +112,7 @@ theorem exists_gamma_rat_of_lt {δ ε u s γ₀ : ℝ} (hδ0 : 0 ≤ δ) (hε : 
     linarith
   have hlt : δ / m < ε := by rwa [div_lt_iff₀ hmpos]
   obtain ⟨e, he1, he2⟩ := exists_rat_btwn hlt
-  have he0 : 0 < (e : ℝ) := lt_of_le_of_lt (div_nonneg hδ0 hmpos.le) he1
+  have he0 := lt_of_le_of_lt (div_nonneg hδ0 hmpos.le) he1
   refine ⟨γ₀ - τ, e, by linarith, he0, he2, ?_⟩
   rwa [div_lt_iff₀ hmpos] at he1
 

@@ -10,6 +10,7 @@ public import ThreeSumApsp.Util.Basic
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Mathlib.Order.ConditionallyCompleteLattice.Basic
 public import Mathlib.Tactic.Ring
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Proof rules for the light language
@@ -49,7 +50,7 @@ theorem getElem?_append_of_eq_some {P : Program} {p : ℕ} {body : Stmt} (h : P[
 whatever is appended after the list. -/
 theorem getElem?_append_append {P₀ B : Program} (R : Program) {i : ℕ} {body : Stmt}
     (h : B[i]? = some body) : (P₀ ++ (B ++ R))[P₀.length + i]? = some body := by
-  rw [List.getElem?_append_right (by omega), Nat.add_sub_cancel_left]
+  rw [List.getElem?_append_right tac_omega, Nat.add_sub_cancel_left]
   exact getElem?_append_of_eq_some h R
 
 /-- A run stays a run when procedures are appended to the program. -/
@@ -144,22 +145,22 @@ theorem Ends.while {σ c s} {Q : State → Prop} (I : ℕ → State → Prop) (n
       exact ⟨σ, _, .whileFalse h1 h2, by simp, h3⟩
     | succ j ih =>
       intro i σ hij hi
-      obtain ⟨h1, h2, σ', k₁, he₁, hk₁, hi'⟩ := hs i σ (by omega) hi
-      obtain ⟨σ'', k₂, he₂, hk₂, hq⟩ := ih (i + 1) σ' (by omega) hi'
+      obtain ⟨h1, h2, σ', k₁, he₁, hk₁, hi'⟩ := hs i σ tac_omega hi
+      obtain ⟨σ'', k₂, he₂, hk₂, hq⟩ := ih (i + 1) σ' tac_omega hi'
       refine ⟨σ'', _, .whileTrue h1 h2 he₁ he₂, ?_, hq⟩
       rw [Finset.sum_range_succ']
       have : ∀ k, i + 1 + k = i + (k + 1) := fun k => by omega
       simp only [this] at hk₂
       simp only [Nat.add_zero]
       omega
-  simpa using aux n 0 σ (by omega) hI
+  simpa using aux n 0 σ tac_omega hI
 
 /-- Loops in which every round costs at most b. -/
 theorem Ends.whileConst {σ c s T} {Q : State → Prop} (I : ℕ → State → Prop) (n b : ℕ) (hI : I 0 σ)
     (hs : ∀ i σ, i < n → I i σ → c.Safe lim σ ∧ c.Holds σ ∧ Ends lim P d s σ b (I (i + 1)))
     (hn : ∀ σ, I n σ → c.Safe lim σ ∧ ¬ c.Holds σ ∧ Q σ)
     (hT : n * (c.cost + 1 + b) + (c.cost + 1) ≤ T) : Ends lim P d (.while c s) σ T Q :=
-  (Ends.while I n (fun _ => b) hI hs hn).mono (by simpa using hT) fun _ h => h
+  (Ends.while I n (fun _ => b) hI hs hn).mono ((by simpa using hT)) fun _ h => h
 
 /-- Loops whose number of rounds depends on the data.  I is the invariant, m a quantity that every
 round decreases, and b bounds the cost of a round. -/
@@ -182,7 +183,7 @@ theorem Ends.whileVariant {σ c s T} {Q : State → Prop} (I : State → Prop) (
       intro σ h hm
       by_cases hc : c.Holds σ
       · obtain ⟨σ₁, k₁, he₁, hk₁, hI₁, hlt⟩ := hs σ h hc
-        obtain ⟨σ₂, k₂, he₂, hk₂, hq⟩ := ih σ₁ hI₁ (by omega)
+        obtain ⟨σ₂, k₂, he₂, hk₂, hq⟩ := ih σ₁ hI₁ tac_omega
         refine ⟨σ₂, _, .whileTrue (hsafe _ h) hc he₁ he₂, ?_, hq⟩
         have h1 : (m σ₁ + 1) * (c.cost + 1 + b) ≤ m σ * (c.cost + 1 + b) :=
           Nat.mul_le_mul_right _ hlt
@@ -217,13 +218,13 @@ infixl:65 " +' " => Expr.op Op.add
 infixl:65 " -' " => Expr.op Op.sub
 /-- The product of two expressions. -/
 infixl:70 " *' " => Expr.op Op.mul
-@[inherit_doc] infix:50 " <' " => Cond.lt
-@[inherit_doc] infix:50 " =' " => Cond.eq
-@[inherit_doc] infixr:30 " ;; " => Stmt.seq
+ infix:50 " <' " => Cond.lt
+ infix:50 " =' " => Cond.eq
+ infixr:30 " ;; " => Stmt.seq
 
 /-- The test a ≤ b, written as a < b + 1. -/
 abbrev Cond.le (a b : Expr) : Cond := a <' b +' k 1
-@[inherit_doc] infix:50 " ≤' " => Cond.le
+ infix:50 " ≤' " => Cond.le
 
 /-- Branching on a ≠ b: the branches of the test a = b, swapped. -/
 abbrev Stmt.iteNe (a b : Expr) (s₁ s₂ : Stmt) : Stmt := .ite (a =' b) s₂ s₁

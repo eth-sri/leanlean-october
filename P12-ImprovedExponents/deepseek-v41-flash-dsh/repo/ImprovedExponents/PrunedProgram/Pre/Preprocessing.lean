@@ -5,6 +5,7 @@ public import ImprovedExponents.PrunedProgram.Pre.Defs
 public import ImprovedExponents.PrunedProgram.Tiles.FillList
 public import ImprovedExponents.PrunedProgram.Tiles.Tile
 public import ImprovedExponents.PrunedProgram.Tiles.AllTiles
+public import ThreeSumApsp.TacticsShort
 
 @[expose] public section
 
@@ -32,7 +33,7 @@ Adapted from upstream `ThreeSumApsp/Programs/Sec4/Theorem30/Directory.lean`, `Ar
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec ImprovedExponents
+open ThreeSumApsp ImprovedExponents
 
 variable {lim : Limits} {P : Program} {d : ℕ} {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L}
   {aX aY b0 : ℕ} {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ}
@@ -40,7 +41,7 @@ variable {lim : Limits} {P : Program} {d : ℕ} {p : Sec2.Par} {t : ℕ} {hmL : 
 
 /-! ## The program -/
 
-open PreCore in
+open PreCore
 /-- preCoreP(L, m, t, N, D, aX, aY, b0) builds the data structure for the matrices at aX and aY in
 the block from b0 on, with the pruned shared stage: upstream's `preCoreBody` with `Proc.sharedP`
 in place of `Sec2.pShared`. -/
@@ -69,7 +70,6 @@ theorem preCoreAddrP_spec (ht : t ≤ p.m) (hlim : Lim30 lim p t b0 U)
     exact_mod_cast (by omega : p.nB * p.nB ≤ lim.space)
   have htr : ((aROOTS p b0 + p.nB * p.nB : ℕ) : ℤ) = aTR p b0 := by
     exact_mod_cast (by omega : aROOTS p b0 + p.nB * p.nB = aTR p b0)
-  have hsq0 : (0 : ℤ) ≤ (p.nB : ℤ) * p.nB := by positivity
   push_cast at hsq htr
   -- digits := dir[30]; bands := dir[9]
   light_set (aWD p b0 : ℕ) using dir.sharedEnd
@@ -98,7 +98,7 @@ theorem allArgsP_pre (h : Lim30 lim p t b0 U) (ht : t ≤ p.m) (hX : ∀ i j, |X
       (∀ i j, |Y i j| ≤ U') ∧ 10 ^ p.m * ((7 ^ p.L * U') * (7 ^ p.L * U')) ≤ lim.word := by
     rcases le_or_gt 0 U with h0 | h0
     · exact ⟨U, h0, hX, hY, h.value⟩
-    · have hword : (0 : ℤ) ≤ lim.word := le_trans (by norm_num) h.std.const_le
+    · have hword : (0 : ℤ) ≤ lim.word := le_trans tac_norm_num h.std.const_le
       exact ⟨0, le_rfl, fun i j => absurd ((abs_nonneg _).trans (hX i j)) (not_le.mpr h0),
         fun i j => absurd ((abs_nonneg _).trans (hY i j)) (not_le.mpr h0), by simpa using hword⟩
   have hsp := h.space
@@ -139,10 +139,10 @@ theorem preCoreFinishP_spec (hAll : AllTilesSpecP lim P) (hlim : Lim30 lim p t b
   have hTM := trieMem_start p t b0 μ
   have same : SameOutside μ (Function.update (Function.update μ (aTR p b0) 0) (aFP p b0) 1)
       (aCUR p b0) (top p t b0 - aCUR p b0) :=
-    (SameOutside.refl.update (by omega) 0).update (by omega) 1
+    (SameOutside.refl.update tac_omega 0).update tac_omega 1
   generalize Function.update (Function.update μ (aTR p b0) 0) (aFP p b0) 1 = μ₁ at *
   have hSR₁ : Sec2.SharedReadyP p hmL aX aY b0 X Y μ₁ :=
-    hSR.of_agree fun b hb _ => same b (Or.inl (by omega))
+    hSR.of_agree fun b hb _ => same b (Or.inl tac_omega)
   have dir := hSR₁.dirCells
   -- the tries of all tiles
   light_call (hAll _ μ₁ (allArgsP_pre hlim ht hX hY hSR₁ hTM))
@@ -150,8 +150,8 @@ theorem preCoreFinishP_spec (hAll : AllTilesSpecP lim P) (hlim : Lim30 lim p t b
   have same' : SameOutside μ μ₂ (aCUR p b0) (top p t b0 - aCUR p b0) :=
     same.then same₂ fun b hb =>
       ⟨hb, by change b < aCUR p b0 ∨ aTR p b0 + trieCap p t ≤ b; omega⟩
-  exact ⟨⟨hSR.of_agree fun b hb _ => same' b (Or.inl (by omega)),
-    (same' _ (Or.inl (by omega))).trans hcellT, hroots, hTM₂.seg⟩, same'⟩
+  exact ⟨⟨hSR.of_agree fun b hb _ => same' b (Or.inl tac_omega),
+    (same' _ (Or.inl tac_omega)).trans hcellT, hroots, hTM₂.seg⟩, same'⟩
 
 /-! ## The routine -/
 
@@ -177,11 +177,11 @@ theorem preCoreP_spec {c : ℕ} (hP : P[Proc.preCoreP]? = some preCorePBody)
   -- the addresses
   light_piece (preCoreAddrP_spec ht hlim hSR₂ r) with _ rfl
   -- the tries
-  refine (preCoreFinishP_spec hAll hlim ht hX hY (by omega) r hSR₂
+  refine (preCoreFinishP_spec hAll hlim ht hX hY tac_omega r hSR₂
     (Function.update_self ..)).mono (by simp; omega) ?_
   rintro σ' ⟨hDS, same₂⟩
   refine ⟨hDS, fun b hb => ?_⟩
-  rw [same₂ b (by omega), Function.update_of_ne (by omega), same₁ b (by omega)]
+  rw [same₂ b tac_omega, Function.update_of_ne tac_omega, same₁ b tac_omega]
 
 /-! ## In a program that begins with `base58` -/
 
@@ -195,13 +195,13 @@ theorem preCoreP_of_base58 {P R : Program} {c : ℕ} (hP : P = base58 ++ R)
     (hpre : P[Proc.preCoreP]? = some preCorePBody) (hsh : Sec2.SharedSpecP lim P c) :
     PreCoreSpecP lim P c := by
   intro p t hmL aX aY b0 X Y U μ ht hlim
-  have h40 : Has40 P := hP ▸ has40_base58 R
+  have h40 := hP ▸ has40_base58 R
   have S := specs40 h40 hlim.std
   have hFill : FillListSpecP lim P :=
-    fillListP_meets (h40 9 (by omega)) S.nineFirst S.nineNext S.starFirst S.horner S.insert
+    fillListP_meets (h40 9 tac_omega) S.nineFirst S.nineNext S.starFirst S.horner S.insert
       S.sumTen
-  have hTile : TileSpecP lim P := tileP_spec (h40 10 (by omega)) S.newRoot hFill
-  have hAll : AllTilesSpecP lim P := allTilesP_spec (h40 11 (by omega)) hTile
+  have hTile := tileP_spec (h40 10 tac_omega) S.newRoot hFill
+  have hAll := allTilesP_spec (h40 11 tac_omega) hTile
   exact preCoreP_spec hpre hsh hAll p t hmL aX aY b0 X Y U μ ht hlim
 
 end Light.Sec4

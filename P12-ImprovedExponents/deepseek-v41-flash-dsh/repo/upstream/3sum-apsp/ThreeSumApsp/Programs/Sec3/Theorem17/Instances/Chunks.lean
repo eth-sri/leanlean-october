@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Instances.Classes
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # The table of the chunks
@@ -22,7 +23,7 @@ returns the number of chunks (`chunks_meets`).  The proof follows the program: o
 
 namespace Light.Sec3
 
-open ThreeSumApsp ThreeSumApsp.Spec
+open ThreeSumApsp.Spec
 
 variable {lim : Limits} {P : Program} {d : ℕ}
 
@@ -33,20 +34,20 @@ of classes, the largest size `cap` of a chunk, and the addresses of the three ta
 residue, the start of the next chunk, the end of the class, the number of chunks so far, and the
 length of the chunk. -/
 abbrev Cls : ℕ := 0
-@[inherit_doc Cls] abbrev Num : ℕ := 1
-@[inherit_doc Cls] abbrev Cap : ℕ := 2
-@[inherit_doc Cls] abbrev TabR : ℕ := 3
-@[inherit_doc Cls] abbrev TabL : ℕ := 4
-@[inherit_doc Cls] abbrev TabW : ℕ := 5
-@[inherit_doc Cls] abbrev Rho : ℕ := 6
-@[inherit_doc Cls] abbrev Pos : ℕ := 7
-@[inherit_doc Cls] abbrev End : ℕ := 8
-@[inherit_doc Cls] abbrev Cnt : ℕ := 9
-@[inherit_doc Cls] abbrev Len : ℕ := 10
+ abbrev Num : ℕ := 1
+ abbrev Cap : ℕ := 2
+ abbrev TabR : ℕ := 3
+ abbrev TabL : ℕ := 4
+ abbrev TabW : ℕ := 5
+ abbrev Rho : ℕ := 6
+ abbrev Pos : ℕ := 7
+ abbrev End : ℕ := 8
+ abbrev Cnt : ℕ := 9
+ abbrev Len : ℕ := 10
 
 end Chunks
 
-open Chunks in
+open Chunks
 /-- One chunk: len := min(cap, end - pos); the three tables get (rho, pos, len) at place cnt;
 cnt := cnt + 1; pos := pos + len. -/
 def chunksRound : Stmt :=
@@ -58,7 +59,7 @@ def chunksRound : Stmt :=
   .set Cnt (v Cnt +' k 1) ;;
   .set Pos (v Pos +' v Len)
 
-open Chunks in
+open Chunks
 /-- The chunks of the class rho: pos := cls[rho]; end := cls[rho + 1]; while pos < end: one
 chunk. -/
 def chunksClass : Stmt :=
@@ -66,7 +67,7 @@ def chunksClass : Stmt :=
   .set End (M (v Cls +' v Rho +' k 1)) ;;
   .while (v Pos <' v End) chunksRound
 
-open Chunks in
+open Chunks
 /-- chunks(cls, p, cap, cr, cl, cw). -/
 def chunksBody : Stmt :=
   .set Rho (k 0) ;;
@@ -226,8 +227,8 @@ theorem TabInv.push {T : List Chunk} (h : TabInv μ μ' x T) (pre : ChunksPre li
     exact hl.update_out (by simp; omega) _
   · rw [List.map_append]
     exact hw
-  · rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega),
-      Function.update_of_ne (by omega)]
+  · rw [Function.update_of_ne tac_omega, Function.update_of_ne tac_omega,
+      Function.update_of_ne tac_omega]
     exact h.same b hb
 
 /-- A start of a class, read from a memory in which only the tables have changed. -/
@@ -299,13 +300,13 @@ theorem chunksClass_ends {rho : ℕ} {σ : State} (pre : ChunksPre lim μ x) (hr
   case start => exact ⟨len₀, μ', by simp, hT⟩
   case round =>
     rintro i _ hround ⟨len, μ₁, rfl, hT₁⟩
-    have hlt : i * x.cap < hi - lo := (hiff i).1 hround
+    have hlt := (hiff i).1 hround
     have hlen := hlenlt i hround
-    have hpush := hT₁.push pre (by omega) ⟨rho, lo + i * x.cap, min x.cap (hi - lo - i * x.cap)⟩
+    have hpush := hT₁.push pre tac_omega ⟨rho, lo + i * x.cap, min x.cap (hi - lo - i * x.cap)⟩
     rw [← hsucc i hround] at hpush
     rw [show lo + min (i * x.cap) (hi - lo) = lo + i * x.cap by omega]
-    refine ⟨by simp, by simp; omega, (chunksRound_runs hw (by omega) (by omega) (by omega)
-      (by omega) (by omega)).mono ?_⟩
+    refine ⟨by simp, by simp; omega, (chunksRound_runs hw tac_omega tac_omega tac_omega
+      tac_omega tac_omega).mono ?_⟩
     rintro _ rfl
     have hleft : hi - (lo + i * x.cap) = hi - lo - i * x.cap := by omega
     have hnext : lo + i * x.cap + min x.cap (hi - lo - i * x.cap) =
@@ -350,7 +351,7 @@ theorem chunks_meets {pChunks : ℕ} (hP : P[pChunks]? = some chunksBody)
     have hclass := chunksClass_ends (P := P) (d := d) hw pre hrho hσ
     obtain ⟨pos, hi, len, μ', rfl, -⟩ := hσ
     -- the chunks of the class rho; then rho := rho + 1
-    refine ⟨by simp, by simp; omega, Ends.next _ (hclass.mono le_rfl ?_) (by omega)⟩
+    refine ⟨by simp, by simp; omega, Ends.next _ (hclass.mono le_rfl ?_) tac_omega⟩
     rintro _ ⟨pos₁, hi₁, len₁, μ₁, rfl, hT⟩
     light_set (rho + 1 : ℕ)
     exact ⟨pos₁, hi₁, len₁, μ₁, by simp, hT⟩
@@ -359,7 +360,7 @@ theorem chunks_meets {pChunks : ℕ} (hP : P[pChunks]? = some chunksBody)
     rw [tabAt_end] at hT
     -- return cnt
     exact ⟨by simp, by simp, Ends.setTo ((tabAt x.cap x.C x.p 0).length : ℕ)
-      ⟨by simp [tabAt_end], hT.sr, hT.sl, hT.sw, hT.same⟩ (by simp)
+      ⟨by simp [tabAt_end], hT.sr, hT.sl, hT.sw, hT.same⟩ tac_simp
       (by simp only [Cond.cost, Expr.cost, Nat.reduceAdd]; omega)⟩
 
 end Light.Sec3

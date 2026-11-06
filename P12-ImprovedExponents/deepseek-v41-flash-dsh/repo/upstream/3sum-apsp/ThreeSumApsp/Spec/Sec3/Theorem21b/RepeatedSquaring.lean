@@ -8,6 +8,7 @@ module
 public import ThreeSumApsp.Sec3.Theorem21
 public import ThreeSumApsp.Sec3.Theorem21b.RepeatedSquaring
 public import ThreeSumApsp.Spec.Sec3.Problems
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Repeated squaring on lists of integers
@@ -124,11 +125,11 @@ theorem Encodes.square {n : ℕ} {B : ℤ} (hB : 1 ≤ B) {L : List ℤ}
   | top =>
     -- Every sum is `+∞`, so `m ≥ 2B > B`, and `m` is set to `3B`.
     have hbig := two_mul_le_untopD_add_untopD hB0 (hD i k₁) (hD k₁ j) (top_le_iff.1 (hx ▸ hinf k₁))
-    rw [WithTop.untopD_top, clip, if_pos (by omega)]
+    rw [WithTop.untopD_top, clip, if_pos tac_omega]
   | coe x =>
     -- The smallest sum is a number `x ≤ B`.  Then `m = x`, and `m` is not changed.
     have hxB := abs_le.1 (hD' i j x hx)
-    have hmx : m ≤ x := (hle k₀).trans_eq (untopD_add_untopD_of_coe (hk₀.symm.trans hx))
+    have hmx := (hle k₀).trans_eq (untopD_add_untopD_of_coe (hk₀.symm.trans hx))
     have hxm : x ≤ m := by
       cases hy : D i k₁ + D k₁ j with
       | top =>
@@ -138,7 +139,7 @@ theorem Encodes.square {n : ℕ} {B : ℤ} (hB : 1 ≤ B) {L : List ℤ}
       | coe y =>
         rw [hmin, untopD_add_untopD_of_coe hy]
         exact WithTop.coe_le_coe.1 (hx ▸ hy ▸ hinf k₁)
-    rw [WithTop.untopD_coe, clip, if_neg (by omega)]
+    rw [WithTop.untopD_coe, clip, if_neg tac_omega]
     omega
 
 /-- The edge weights of the graph read from lists are bounded if the list of the weights is. -/
@@ -158,8 +159,8 @@ value at most `nU`. -/
 theorem abs_minPlusSquares_le (hW : AbsLe W U) (hc : NoNegativeCycle (graphOf n ADJ W)) (t : ℕ)
     (i j : Fin n) (x : ℤ)
     (hx : minPlusSquares (graphOf n ADJ W) t i j = (x : WithTop ℤ)) : |x| ≤ ((n * U : ℕ) : ℤ) := by
-  simpa using theorem_21b_entries_bounded (graphOf n ADJ W) hc (U : ℤ) (by positivity)
-    (edgeWeightsBoundedBy_graphOf (by positivity) hW) t i j x hx
+  simpa using theorem_21b_entries_bounded (graphOf n ADJ W) hc (U : ℤ) tac_positivity
+    (edgeWeightsBoundedBy_graphOf tac_positivity hW) t i j x hx
 
 /-- **Repeated squaring on lists.**  After `t` rounds the list holds the matrix after `t` squarings
 (`minPlusSquares`). -/
@@ -182,7 +183,7 @@ theorem abs_squareList_le (hn : 1 ≤ n) (hU : 1 ≤ U) (hW : AbsLe W U)
   rw [← List.getD_eq_getElem _ 0 hq, ← entry, encodes_squareList hn hU hW hc t ⟨a, ha⟩ ⟨b, hb⟩]
   cases hd : minPlusSquares (graphOf n ADJ W) t ⟨a, ha⟩ ⟨b, hb⟩ with
   | top =>
-    rw [WithTop.untopD_top, abs_of_nonneg (by positivity)]
+    rw [WithTop.untopD_top, abs_of_nonneg tac_positivity]
     exact le_of_eq (by push_cast; rfl)
   | coe y =>
     have hy := abs_minPlusSquares_le hW hc t _ _ y hd
@@ -202,7 +203,7 @@ theorem squareList_distances (hn : 1 ≤ n) (hU : 1 ≤ U) (hW : AbsLe W U)
   · rw [encodes_squareList hn hU hW hc _ i j, h, WithTop.untopD_top]
   · rw [encodes_squareList hn hU hW hc _ i j, h, WithTop.untopD_coe]
     have hz := abs_le.1 (abs_minPlusSquares_le hW hc _ i j z h)
-    have hpos : 1 ≤ n * U := Nat.mul_pos hn hU
+    have hpos := Nat.mul_pos hn hU
     exact ⟨rfl, by omega⟩
 
 end ThreeSumApsp.Spec

@@ -14,7 +14,7 @@ bounded because `midSize D g ≤ D` (`polyNeedN_midArgs`).  So upstream's `hostN
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3
 
 /-- **The need of the variant host stays polynomial**, if the parameters, the numbers that the
 parameter procedures form, and the need of the solver are polynomially bounded. -/

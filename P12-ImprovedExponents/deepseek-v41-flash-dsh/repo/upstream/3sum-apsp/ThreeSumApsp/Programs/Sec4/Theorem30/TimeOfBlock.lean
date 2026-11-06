@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Time
+public import ThreeSumApsp.TacticsShort
 
 /-!
 # Theorem 30 in the light language: the two routines against the expressions (8) and L ∑ α_d
@@ -25,7 +26,7 @@ two bounds together.
 
 namespace Light.Sec4
 
-open ThreeSumApsp ThreeSumApsp.Spec Finset
+open ThreeSumApsp Finset
 
 /-! ## The shared stage, in natural numbers -/
 
@@ -41,7 +42,7 @@ theorem succ_sq_le_ten_pow (L : ℕ) : (L + 1) ^ 2 ≤ 10 ^ L := by
             omega
         _ ≤ 4 * 4 ^ L := Nat.mul_le_mul_left _ ih
         _ = 4 ^ (L + 1) := by ring
-  exact hfour.trans (Nat.pow_le_pow_left (by norm_num) L)
+  exact hfour.trans (Nat.pow_le_pow_left tac_norm_num L)
 
 /-- The facts about the sizes that the two estimates below use; T is `10^L` and S7 is `7^L`. -/
 private structure SizeFacts (L m K KK N0 D S7 T : ℕ) : Prop where
@@ -60,8 +61,8 @@ private structure SizeFacts (L m K KK N0 D S7 T : ℕ) : Prop where
 private theorem sizeFacts (p : Sec2.Par) (hL1 : 1 ≤ p.L) (hmL : p.m ≤ p.L) :
     SizeFacts p.L p.m p.K p.KK p.N0 p.D p.S7 p.T :=
   ⟨succ_sq_le_ten_pow p.L, Theorem30.subsets p.L p.m, Theorem30.K_mul_N0_mul_D_le p.L p.m,
-    Theorem30.form_array p.L, Nat.pow_le_pow_left (by norm_num) p.L, Nat.sqrt_le _,
-    Nat.choose_pos hmL, Nat.one_le_pow _ _ (by norm_num), Nat.one_le_pow _ _ (by norm_num), hL1,
+    Theorem30.form_array p.L, Nat.pow_le_pow_left tac_norm_num p.L, Nat.sqrt_le _,
+    Nat.choose_pos hmL, Nat.one_le_pow _ _ tac_norm_num, Nat.one_le_pow _ _ tac_norm_num, hL1,
     hmL⟩
 
 /-- The length of the shared block. -/
@@ -73,22 +74,16 @@ theorem sharedEnd_sub_le (p : Sec2.Par) (b0 : ℕ) (hL1 : 1 ≤ p.L) (hmL : p.m 
     Sec2.Par.aDIG4, Sec2.Par.aDIG3, Sec2.Par.aBLOCK, Sec2.Par.aBAND, Sec2.Par.aMASK, Sec2.Par.aPSI,
     Sec2.Par.aPHI, Sec2.Par.aPAS, Sec2.Par.aP10, Sec2.Par.aP7, Sec2.Par.aP4, Sec2.Par.aP3]
   change _ ≤ 190 * p.T + 2 * (p.N * (p.L + 1)) + 2 * (p.nB * p.T)
-  generalize p.T = T at *
-  generalize p.S7 = S7 at *
   generalize p.K = K at *
   generalize p.KK = KK at *
-  generalize p.N0 = N0 at *
-  generalize p.D = D at *
-  generalize p.nB = nB at *
   generalize p.Lo = Lo at *
   generalize p.N = N at *
   generalize p.L = L at *
-  generalize p.m = m at *
-  have hLT : L + 1 ≤ T := (Nat.le_self_pow (by norm_num) _).trans sq
-  have hDS : D ≤ S7 := le_trans (Nat.le_mul_of_pos_left _ (Nat.mul_pos K1 N1)) KND
+  have hLT := (Nat.le_self_pow tac_norm_num _).trans sq
+  have hDS := le_trans (Nat.le_mul_of_pos_left _ (Nat.mul_pos K1 N1)) KND
   have hmask : KK * L ≤ K * L := Nat.mul_le_mul_right _ KKle
   have hdig3 : N * Lo ≤ N * L := Nat.mul_le_mul_left _ hLo
-  have hdig4 : D * m ≤ L * S7 := (Nat.mul_le_mul hDS mL).trans (le_of_eq (Nat.mul_comm _ _))
+  have hdig4 := (Nat.mul_le_mul hDS mL).trans (le_of_eq (Nat.mul_comm _ _))
   rw [Nat.mul_add_one N L]
   omega
 

@@ -15,7 +15,7 @@ Exact Triangle with the time `hostTime'` and the need `hostNeed'` (`et17_solves'
 
 namespace ImprovedExponents.HostMid
 
-open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
+open Light Light.Sec3
 
 /-- The procedures of the variant host: procedure number `i` of this list gets the number `o + i`.
 The top procedure `et17Body'` has the number `o + 27`; everything else is as in upstream's
