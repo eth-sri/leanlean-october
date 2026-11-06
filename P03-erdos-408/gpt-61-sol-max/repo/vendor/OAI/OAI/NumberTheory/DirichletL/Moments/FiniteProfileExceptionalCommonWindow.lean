@@ -1,0 +1,38 @@
+module
+
+public import OAI.NumberTheory.DirichletL.Moments.CommonWindowColumn
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonHeight
+public import OAI.NumberTheory.DirichletL.Moments.LogDyadic
+public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonCanonical
+
+set_option linter.privateModule false
+
+@[expose] public section
+
+namespace OAI
+
+noncomputable section
+open scoped Classical BigOperators SchwartzMap ContDiff
+open Filter MeasureTheory
+
+namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
+open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
+open CenteredMomentCommonExceptionalCost
+open CenteredMomentCommonPairedSource CenteredMomentExceptionalAmplitudePair
+open CenteredMomentExceptionalSourceShell CenteredMomentCommonWindowColumn
+open CenteredMomentHeckeColumnWindow CenteredMomentSmooth
+open CenteredMomentSecondHeightFamily CenteredMomentLogDyadic
+open CenteredMomentSecondCanonical
+open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
+open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
+open CenteredMomentFiniteProfileExceptional
+local notation "O" => HeckeFamily.O
+universe u
+variable {ι:Type u}[Fintype ι][DecidableEq ι]
+
+end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
+
+end
+
+end OAI

@@ -1,0 +1,27 @@
+module
+
+public import OAI.NumberTheory.DirichletL.Moments.SourceProfileMassUniform
+public import OAI.NumberTheory.DirichletL.Moments.SupportedTailAggregate
+public import OAI.NumberTheory.DirichletL.Moments.SourceZeroEnergy
+
+set_option linter.privateModule false
+
+@[expose] public section
+
+namespace OAI
+
+noncomputable section
+open scoped BigOperators Classical SchwartzMap ContDiff
+
+namespace SevenEighths.CenteredMomentSourceSupportedTailUniform
+open ActualEisensteinCubic HeckeFamily CenteredMomentSourceProfileMass CenteredMomentSourceMass
+open CenteredMomentAddedZeroUniform CenteredMomentFirstTailAggregate CenteredMomentFirstScale
+open CenteredMomentSupportedTailAggregate CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy
+open CenteredMomentSourceRow CenteredMomentFirstDiscardedEnergy CenteredMomentSectorLocalization
+local notation "O" => ActualEisensteinCubic.O
+
+end SevenEighths.CenteredMomentSourceSupportedTailUniform
+
+end
+
+end OAI

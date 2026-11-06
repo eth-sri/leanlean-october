@@ -1,0 +1,155 @@
+{
+  "problem_idx": 3,
+  "id": "PALOMAR-2026-10-19-000009-v1",
+  "title": "Erdős Problem 408: distribution of iterated totient heights",
+  "abstract": "A Lean proof that the least k with φ_k(n) = 1 has normal order α log n for a constant 1 / log 3 ≤ α ≤ 1 / log 2, with mean-square error O(x (log x)² / (log log x)⁵). This answers the first two questions of Erdős Problem 408. The proof formalizes extensions of Theorems 3.1 and 6.1 of OpenAI's The Poisson-Dirichlet law for prime predecessors, and uses vendored Lean proofs of the zero-free half-plane re s > 7/8 for Dirichlet L-functions (openai/math) and of the weighted dilation graph results (Yao Xu's totient-fibers-lean4).",
+  "authors": [
+    "Jacob Parish"
+  ],
+  "repository": "plasma-ai/erdos-408",
+  "repository_url": "https://github.com/plasma-ai/erdos-408",
+  "commit": "4ea44bf911f8668aec10ec25c4b309e8ed476666",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc3",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "XL",
+  "baseline_tokens": 6268302,
+  "lean_files": 3728,
+  "protected_theorem_names": [
+    "Erdos408.normal_order_rate",
+    "Erdos408.erdos_408.parts.i",
+    "Erdos408.erdos_408.parts.ii"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "Challenge",
+  "challenge_path": "Challenge.lean",
+  "solution_module": "Solution",
+  "solution_path": "Solution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "math.NT"
+  ],
+  "msc2020": [
+    "11A25",
+    "11N37",
+    "11N64"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "Erdős Problem #408",
+      "authors": [
+        "Thomas F. Bloom"
+      ],
+      "type": null,
+      "identifier": "https://www.erdosproblems.com/408",
+      "location": null,
+      "relationship": "background"
+    },
+    {
+      "title": "Formal Conjectures: ErdosProblems/408.lean",
+      "authors": [
+        "The Formal Conjectures Authors"
+      ],
+      "type": null,
+      "identifier": "https://github.com/google-deepmind/formal-conjectures/blob/main/FormalConjectures/ErdosProblems/408.lean",
+      "location": null,
+      "relationship": "background"
+    },
+    {
+      "title": "The normal order of the number of iterations of Euler's function",
+      "authors": [
+        "Plasma AI"
+      ],
+      "type": "paper",
+      "identifier": "https://github.com/plasma-ai/erdos-408/blob/main/paper/totient_iterates.pdf",
+      "location": null,
+      "relationship": "formalizes"
+    },
+    {
+      "title": "On the normal behavior of the iterates of some arithmetic functions",
+      "authors": [
+        "P. Erdős",
+        "A. Granville",
+        "C. Pomerance",
+        "C. Spiro"
+      ],
+      "type": "paper",
+      "identifier": "Analytic number theory (Allerton Park, IL, 1989), Progr. Math. 85 (1990), 165–204",
+      "location": null,
+      "relationship": "adapts"
+    },
+    {
+      "title": "The Poisson-Dirichlet law for prime predecessors",
+      "authors": [
+        "OpenAI"
+      ],
+      "type": "paper",
+      "identifier": "https://github.com/openai/math/blob/main/preprints/The-Poisson-Dirichlet-Law-for-Prime-Predecessors-September-24-2026/paper.pdf",
+      "location": null,
+      "relationship": "formalizes"
+    },
+    {
+      "title": "Weighted dilation graphs, smooth shifted primes and totient fibers",
+      "authors": [
+        "OpenAI"
+      ],
+      "type": "paper",
+      "identifier": "https://github.com/openai/math/blob/main/preprints/Weighted-Dilation-Graphs-Smooth-Shifted-Primes-and-Totient-Fibers-September-24-2026/paper.pdf",
+      "location": null,
+      "relationship": "background"
+    },
+    {
+      "title": "The Quasi-Riemann Hypothesis: A Zero-Free Half-Plane Re(s) > 7/8",
+      "authors": [
+        "OpenAI"
+      ],
+      "type": "paper",
+      "identifier": "https://github.com/openai/math/blob/main/preprints/The-Quasi-Riemann-Hypothesis-September-30-2026/paper.pdf",
+      "location": null,
+      "relationship": "background"
+    },
+    {
+      "title": "PrimeNumberTheoremAnd",
+      "authors": [
+        "Alex Kontorovich",
+        "Terence Tao",
+        "and contributors"
+      ],
+      "type": null,
+      "identifier": "https://github.com/AlexKontorovich/PrimeNumberTheoremAnd",
+      "location": null,
+      "relationship": "adapts"
+    },
+    {
+      "title": "totient-fibers-lean4",
+      "authors": [
+        "Yao Xu"
+      ],
+      "type": null,
+      "identifier": "https://github.com/cadamcat/totient-fibers-lean4",
+      "location": null,
+      "relationship": "adapts"
+    },
+    {
+      "title": "rellich-kondrachov",
+      "authors": [
+        "Adam Benenson"
+      ],
+      "type": null,
+      "identifier": "https://github.com/abenenson/rellich-kondrachov",
+      "location": null,
+      "relationship": "adapts"
+    }
+  ],
+  "dependency_graph_nodes": 38690,
+  "dependency_graph_edges": 299968,
+  "project_path": "repos/PALOMAR-2026-10-19-000009-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-19-000009-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-19-000009-v1/LICENSE"
+}

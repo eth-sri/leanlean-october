@@ -1,0 +1,33 @@
+module
+
+public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAsymmetricSource
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalMass
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalGates
+
+set_option linter.privateModule false
+
+@[expose] public section
+
+namespace OAI
+
+noncomputable section
+open scoped Classical BigOperators
+open Filter
+
+namespace SevenEighths.CenteredMomentCommonExceptionalSource
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
+open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
+open CenteredMomentCommonLinearNormalization CenteredMomentCommonPairedSource
+open CenteredMomentCommonExceptionalCost CenteredMomentCommonExceptionalMass CenteredMomentCommonExceptionalGates
+open CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSource
+open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
+open CenteredMomentSecondHeightFamily
+local notation "O" => HeckeFamily.O
+universe u
+variable {ι:Type u} [Fintype ι] [DecidableEq ι]
+
+end SevenEighths.CenteredMomentCommonExceptionalSource
+
+end
+
+end OAI
