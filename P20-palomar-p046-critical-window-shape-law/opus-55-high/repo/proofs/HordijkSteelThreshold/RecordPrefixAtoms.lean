@@ -9,45 +9,39 @@ public import proofs.HordijkSteelThreshold.ReversibleRecordEvents
 namespace HordijkSteelThreshold
 open Classical
 
-abbrev RecordPrefixIndex := Σ M : ℕ, (splitPrefixCoordinates M → Prop)
+abbrev RecordPrefixIndex := Σ M : ℕ, splitPrefixCoordinates M → Prop
 
-def recordPrefixAtom (B : ℕ) (i : RecordPrefixIndex) : Set SplitField :=
+variable (B : ℕ)
+
+    (i : RecordPrefixIndex)
+
+def recordPrefixAtom   : Set SplitField :=
   {ω | currySplitField ω ∈ firstRecordEvent 2 B i.1 ∧
     ∀ z : splitPrefixCoordinates i.1, ω z.val = i.2 z}
 
-theorem recordPrefixAtom_determined (B : ℕ) (i : RecordPrefixIndex) :
+theorem recordPrefixAtom_determined   :
     SplitPrefixDetermined (splitPrefixCoordinates i.1) (recordPrefixAtom B i) := by
   intro ω η he
   have hrec : currySplitField ω ∈ firstRecordEvent 2 B i.1 ↔
       currySplitField η ∈ firstRecordEvent 2 B i.1 := by
     apply firstRecordEvent_congr_prefix
     intro w hw k hk
-    exact he (w,k) ((mem_splitPrefixCoordinates _ _).mpr ⟨hw,hk⟩)
+    exact he (w,k) $ (mem_splitPrefixCoordinates _ _).mpr ⟨hw,hk⟩
   change (_ ∧ _) ↔ (_ ∧ _)
-  apply and_congr hrec
-  apply forall_congr'
-  intro z
-  rw [he z.val z.property]
+  simp_all
 
-theorem recordPrefixAtoms_disjoint (B : ℕ) {i j : RecordPrefixIndex} (hij : i ≠ j) :
+theorem recordPrefixAtoms_disjoint  {i j : RecordPrefixIndex} (hij : i ≠ j) :
     Disjoint (recordPrefixAtom B i) (recordPrefixAtom B j) := by
-  apply Set.disjoint_left.mpr
-  intro ω hi hj
-  by_cases hM : i.1 = j.1
-  · have he : i = j := by
-      rcases i with ⟨M,η⟩
-      rcases j with ⟨N,ξ⟩
-      dsimp at hM
-      subst N
-      congr
-      funext z
-      exact (hi.2 z).symm.trans (hj.2 z)
-    exact hij he
+  refine Set.disjoint_left.mpr fun ω hi hj => ?_
+  obtain ⟨M, η⟩ := i
+  obtain ⟨N, ξ⟩ := j
+  obtain rfl | hM := eq_or_ne M N
+  · exact hij $ congrArg _ $ funext fun z => (hi.2 z).symm.trans $ hj.2 z
   · exact Set.disjoint_left.mp (firstRecordEvent_disjoint 2 B hM) hi.1 hj.1
 
 /-- Each nonempty atom fixes a usable word, chosen pointwise from one
 representative. No random measurable word selector is required. -/
-theorem recordPrefixAtom_word (B : ℕ) (i : RecordPrefixIndex)
+theorem recordPrefixAtom_word
     (hne : (recordPrefixAtom B i).Nonempty) :
     ∃ w : List Bool, w.length = i.1 ∧ B < w.length ∧
       ∀ ω ∈ recordPrefixAtom B i,

@@ -1,6 +1,8 @@
 module
 
-public import proofs.HordijkSteelThreshold.InfiniteSprinklingLaw
+public import proofs.HordijkSteelThreshold.BernoulliSprinkling
+public import Mathlib.Probability.ProductMeasure
+public import proofs.HordijkSteelThreshold.RandomBaseSprinkling
 
 @[expose] public section
 

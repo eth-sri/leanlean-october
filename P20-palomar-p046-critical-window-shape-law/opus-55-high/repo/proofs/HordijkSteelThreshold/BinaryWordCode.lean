@@ -13,68 +13,69 @@ def binaryWordCode : List Bool → ℕ
 
 theorem binaryWordCode_lt (s : List Bool) : binaryWordCode s < 2 ^ s.length := by
   induction s with
-  | nil => simp [binaryWordCode]
+  | nil => positivity
   | cons b s ih =>
     cases b <;> simp only [binaryWordCode, Bool.false_eq_true, ite_false,
-      ite_true, zero_add, List.length_cons, pow_succ] <;> omega
+      ite_true, List.length_cons] <;> omega
 
-theorem binaryWordCode_append (s t : List Bool) :
+variable (s t : List Bool)
+
+theorem binaryWordCode_append  :
     binaryWordCode (s ++ t) = binaryWordCode s * 2 ^ t.length + binaryWordCode t := by
   induction s with
-  | nil => simp [binaryWordCode]
+  | nil => aesop
   | cons b s ih =>
-    cases b <;> simp [binaryWordCode, ih, List.length_append, pow_add, Nat.add_mul, Nat.add_assoc]
+    cases b <;> simp [binaryWordCode, ih, pow_add, Nat.add_mul, Nat.add_assoc]
 
 def listWord (s : List Bool) : RAF.Polymer.Word s.length :=
   ⟨binaryWordCode s, binaryWordCode_lt s⟩
 
-theorem binaryWordCode_append_div (s t : List Bool) :
+theorem binaryWordCode_append_div  :
     binaryWordCode (s ++ t) / 2 ^ t.length = binaryWordCode s := by
-  rw [binaryWordCode_append, Nat.mul_comm, Nat.mul_add_div (by positivity),
-    Nat.div_eq_of_lt (binaryWordCode_lt t), Nat.add_zero]
+  rw [binaryWordCode_append, Nat.mul_comm, Nat.mul_add_div $ by positivity,
+    Nat.div_eq_of_lt $ binaryWordCode_lt t, Nat.add_zero]
 
-theorem binaryWordCode_append_mod (s t : List Bool) :
+theorem binaryWordCode_append_mod  :
     binaryWordCode (s ++ t) % 2 ^ t.length = binaryWordCode t := by
   rw [binaryWordCode_append, Nat.mul_add_mod_self_right,
-    Nat.mod_eq_of_lt (binaryWordCode_lt t)]
+    Nat.mod_eq_of_lt $ binaryWordCode_lt t]
+
 
 /-- Length together with code uniquely determines the binary word. -/
 theorem binaryWordCode_injective_length {s t : List Bool}
     (hlen : s.length = t.length) (hcode : binaryWordCode s = binaryWordCode t) : s = t := by
   induction s generalizing t with
-  | nil => cases t <;> simp_all
+  | nil => grind
   | cons b s ih =>
     cases t with
-    | nil => simp at hlen
+    | nil => simp_all
     | cons c t =>
-      have hst : s.length = t.length := by simpa using hlen
+      have hst : s.length = t.length := by simp_all
       have hs := binaryWordCode_lt s
       have ht := binaryWordCode_lt t
       rw [← hst] at ht
       cases b <;> cases c <;> simp only [binaryWordCode, Bool.false_eq_true,
-        ite_false, ite_true, zero_add, ← hst] at hcode
-      · exact congrArg (List.cons false) (ih hst hcode)
+        ite_false, ite_true, ← hst] at hcode
+      · grind
       · omega
       · omega
-      · exact congrArg (List.cons true) (ih hst (by omega))
+      grind
 
 theorem exists_binaryWordCode (m k : ℕ) (hk : k < 2 ^ m) :
     ∃ s : List Bool, s.length = m ∧ binaryWordCode s = k := by
   induction m generalizing k with
   | zero =>
-    have he : k = 0 := by simpa using hk
-    exact ⟨[], rfl, he.symm⟩
+    aesop
   | succ m ih =>
     by_cases hlow : k < 2 ^ m
     · obtain ⟨s, hs, hc⟩ := ih k hlow
-      refine ⟨false :: s, by simp [hs], ?_⟩
+      refine ⟨false :: s, by simp_all, ?_⟩
       simpa [binaryWordCode] using hc
     · have ht : k - 2 ^ m < 2 ^ m := by
-        rw [pow_succ] at hk
         omega
       obtain ⟨s, hs, hc⟩ := ih (k - 2 ^ m) ht
-      refine ⟨true :: s, by simp [hs], ?_⟩
-      simp only [binaryWordCode, ite_true, hs, hc]
+      refine ⟨true :: s, by simp_all, ?_⟩
+      simp only [binaryWordCode, ite_true, hs]
       omega
 
 /-- A length-preserving bijection with the source's actual fixed-length

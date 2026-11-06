@@ -8,15 +8,20 @@ namespace OverlapCorrectedRAF.Source
 
 open RAF.Polymer RAF.Concrete
 
+section
+variable {n : Nat} (u v : Molecule n)
+
 /-- The exact order used when `create_XFR` builds its molecule list: shorter
 words precede longer words, and equal-length words use binary-code order. -/
-abbrev moleculePrecedes {n : Nat} (u v : Molecule n) : Prop :=
+abbrev moleculePrecedes  : Prop :=
   molLength u < molLength v ∨
     (molLength u = molLength v ∧ u.2.val ≤ v.2.val)
 
 /-- Numeric code of the displayed concatenation `u ++ v`. -/
-def displayedConcat {n : Nat} (u v : Molecule n) : Nat :=
+def displayedConcat  : Nat :=
   u.2.val * 2 ^ molLength v + v.2.val
+
+end
 
 /-- Canonical representative of the repository's displayed-reaction quotient.
 Both orientations are retained when `u ++ v` and `v ++ u` differ.  When they

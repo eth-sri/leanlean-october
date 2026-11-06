@@ -11,19 +11,23 @@ def peelingActiveAt {X R : Type*} [Fintype X]
     (response : Finset X → Finset R) (closure : Finset R → Finset X) :
     ℕ → Finset R
   | 0 => response Finset.univ
-  | t + 1 => response (closure (peelingActiveAt response closure t))
+  | t + 1 => response $ closure $ peelingActiveAt response closure t
+
+variable {X R : Type*} [Fintype X]
 
 /-- Pools computed from a prescribed active-set history, before testing it
 against a random field. These are deterministic when the history is fixed. -/
-def prescribedPoolAt {X R : Type*} [Fintype X]
+def prescribedPoolAt
     (closure : Finset R → Finset X) (history : ℕ → Finset R) : ℕ → Finset X
   | 0 => Finset.univ
-  | t + 1 => closure (history t)
+  | t + 1 => closure $ history t
+
+variable (response : Finset X → Finset R) (closure : Finset R → Finset X)
 
 /-- A history event is exactly the intersection of its fixed-pool response
 constraints. There is no extra random closure-consistency condition. -/
-theorem peeling_history_iff {X R : Type*} [Fintype X]
-    (response : Finset X → Finset R) (closure : Finset R → Finset X)
+theorem peeling_history_iff
+    
     (history : ℕ → Finset R) (T : ℕ) :
     (∀ t ≤ T, peelingActiveAt response closure t = history t) ↔
       ∀ t ≤ T, response (prescribedPoolAt closure history t) = history t := by
@@ -32,27 +36,28 @@ theorem peeling_history_iff {X R : Type*} [Fintype X]
     cases t with
     | zero => exact h 0 ht
     | succ t =>
-      have hp := h t (by omega)
+      have hp := h t $ by omega
       simpa only [peelingActiveAt, hp, prescribedPoolAt] using h (t + 1) ht
   · intro h t
     induction t with
     | zero => exact h 0
     | succ t ih =>
       intro ht
-      have hp := ih (by omega)
+      have hp := ih $ by omega
       simpa only [peelingActiveAt, hp, prescribedPoolAt] using h (t + 1) ht
 
-theorem peelingActiveAt_antitone {X R : Type*} [Fintype X]
-    (response : Finset X → Finset R) (closure : Finset R → Finset X)
+theorem peelingActiveAt_antitone
+    
     (hresponse : Monotone response) (hclosure : Monotone closure) :
     Antitone (peelingActiveAt response closure) := by
   apply antitone_nat_of_succ_le
   intro t
   induction t with
-  | zero => exact hresponse (Finset.subset_univ _)
-  | succ t ih => exact hresponse (hclosure ih)
+  | zero => aesop
+  | succ t ih => aesop
 
-theorem prescribedPoolAt_antitone {X R : Type*} [Fintype X]
+
+theorem prescribedPoolAt_antitone
     (closure : Finset R → Finset X) (hclosure : Monotone closure)
     (history : ℕ → Finset R) (hhistory : Antitone history) :
     Antitone (prescribedPoolAt closure history) := by
@@ -60,6 +65,6 @@ theorem prescribedPoolAt_antitone {X R : Type*} [Fintype X]
   intro t
   cases t with
   | zero => exact Finset.subset_univ _
-  | succ t => exact hclosure (hhistory (Nat.le_succ t))
+  | succ t => aesop
 
 end HordijkSteelThreshold

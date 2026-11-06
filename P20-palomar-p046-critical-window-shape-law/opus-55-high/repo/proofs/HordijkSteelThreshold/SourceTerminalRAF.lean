@@ -2,9 +2,11 @@ module
 
 public import proofs.HordijkSteelThreshold.PeelingStabilization
 public import proofs.HordijkSteelThreshold.TerminalReactionClosure
-public import proofs.HordijkSteelThreshold.SourceBulkMass
+public import proofs.HordijkSteelThreshold.FixedPoolReactionLaw
+public import proofs.HordijkSteelThreshold.StaticSeedClosure
+public import proofs.HordijkSteelThreshold.StaticClosureMass
 
-@[expose] public section
+public section
 
 namespace HordijkSteelThreshold
 open Classical Filter MeasureTheory RAF RAF.Polymer RAF.Concrete
@@ -21,39 +23,15 @@ theorem binaryFood_card_le_cutoff (n L : ℕ) :
       omega⟩, x.val.2⟩
   have hf : Function.Injective f := by
     rintro ⟨⟨ai,aw⟩,ha⟩ ⟨⟨bi,bw⟩,hb⟩ h
-    apply Subtype.ext
-    have hi : ai = bi := Fin.ext (congrArg (fun z : Molecule L => z.1.val) h)
-    subst bi
-    congr
-    apply Fin.ext
-    exact congrArg (fun z : Molecule L => z.2.val) h
+    grind
   simpa using Fintype.card_le_of_injective f hf
 
-theorem source_terminal_hasRAF {n : ℕ} (ω : AmbientCoord n → Prop)
-    (hmass : 6 < (temporaryReactionClosure 2 (peelingActiveAt (catalystActive ω)
-      (temporaryReactionClosure 2) (Fintype.card (Reaction n)))).card) :
-    ∃ S : Finset (Reaction n), IsRevRAF (binaryPolymerCRS n 2) (fun x r => ω (x,r)) S := by
-  let A := peelingActiveAt (catalystActive ω) (temporaryReactionClosure 2) (Fintype.card (Reaction n))
-  have hm : Monotone (@temporaryReactionClosure n 2) := fun _ _ h => temporaryReactionClosure_mono h
-  have hstable : catalystActive ω (temporaryReactionClosure 2 A) = A :=
-    peelingActiveAt_stable_card (catalystActive ω) (temporaryReactionClosure 2)
-      (catalystActive_mono ω) hm
-  have hcat : ∀ r ∈ A, ∃ x ∈ temporaryReactionClosure 2 A, ω (x,r) := by
-    intro r hr
-    apply (mem_catalystActive ω _ r).mp
-    rwa [hstable]
-  have hx : ∃ x ∈ temporaryReactionClosure 2 A, 2 < molLength x := by
-    by_contra h
-    have hs : temporaryReactionClosure 2 A ⊆ binaryFood n 2 := by
-      intro x hx
-      apply Finset.mem_filter.mpr
-      refine ⟨Finset.mem_univ _, ?_⟩
-      by_contra hlen
-      exact h ⟨x,hx,Nat.lt_of_not_ge hlen⟩
-    have hb : (binaryFood n 2).card ≤ 6 := by
-      simpa only [show Fintype.card (Molecule 2) = 6 from by decide] using binaryFood_card_le_cutoff n 2
-    have hh := (Finset.card_le_card hs).trans hb
-    exact (Nat.not_lt_of_ge hh) hmass
-  exact ⟨usableClosureReactions 2 A, usableClosureReactions_isRAF A (fun x r => ω (x,r)) hcat hx⟩
+theorem exists_long_of_card {n : ℕ} {S : Finset $ Molecule n} (h : 6 < S.card) :
+    ∃ x ∈ S, 2 < molLength x := by
+  by_contra hc
+  have := (Finset.card_le_card $ show S ⊆ binaryFood n 2 from fun x hx =>
+    Finset.mem_filter.mpr ⟨Finset.mem_univ _, by grind⟩).trans $ binaryFood_card_le_cutoff n 2
+  have : Fintype.card (Molecule 2) = 6 := by decide
+  omega
 
 end HordijkSteelThreshold

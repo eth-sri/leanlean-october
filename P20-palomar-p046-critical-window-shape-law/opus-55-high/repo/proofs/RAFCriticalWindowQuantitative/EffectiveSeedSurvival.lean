@@ -1,63 +1,40 @@
 module
 
 public import proofs.RAFCriticalWindowQuantitative.EffectiveBulk
-public import proofs.HordijkSteelThreshold.SeedSurvivalApproximation
+public import proofs.HordijkSteelThreshold.StaticParameterMonotonicity
+public import proofs.HordijkSteelThreshold.SprinkledSeedLowerBound
+public import proofs.HordijkSteelThreshold.StaticClosureMass
+public import proofs.HordijkSteelThreshold.AmbientEscapeBound
+public import proofs.HordijkSteelThreshold.SourceTerminalRAF
 
-@[expose] public section
+public section
 
 namespace RAFCriticalWindowQuantitative
 open Classical Filter MeasureTheory HordijkSteelThreshold RAF.Polymer RAF.Concrete unitInterval
 open scoped ENNReal Topology
 
-/-- The computable cutoff controls seed acquisition for the actual split survival law. -/
-theorem effective_seed_probability_le_survival (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
-    (m : ℕ) (hm : 2 ≤ m) :
-    let b0 := rationalParameter q hq.le hq1
-    let L := 10 * seedIndex q hq hq1 m
-    ∀ b : I, b0 ≤ b →
-      infiniteStaticMeasure b {field | ∀ w ∈ actualBinaryWords L,
-        InfiniteReversibleGenerated 2 field w} ≤ staticSurvival b + (m : ENNReal)⁻¹ := by
-  dsimp only
-  let b0 := rationalParameter q hq.le hq1
-  let L := 10 * seedIndex q hq hq1 m
-  have hbulk := effective_static_bulk q hq hq1 m (by omega)
-  intro b hb
-  have hbad (N : ℕ) (hN : 0 < N) :
-      staticReactionMeasure N b {ω | m*(temporaryReactionClosure L
-        (staticOpenReactions ω)).card < (m-1)*Fintype.card (Molecule N)} ≤ (m : ENNReal)⁻¹ := by
-    apply (static_decreasing_event_mono N hb
-      (fun S => m*(temporaryReactionClosure L S).card < (m-1)*Fintype.card (Molecule N)) ?_).trans
-      (hbulk N hN)
-    intro S T hST hT
-    exact (Nat.mul_le_mul_left m (Finset.card_le_card (temporaryReactionClosure_mono hST))).trans_lt hT
-  have hK (K : ℕ) :
-      infiniteStaticMeasure b {field | ∀ w ∈ actualBinaryWords L,
-        InfiniteReversibleGenerated 2 field w} ≤
-      staticReactionMeasure (2*(K+2)) b (staticEscapeEvent 2 K) + (m : ENNReal)⁻¹ := by
-    apply le_of_tendsto (finite_static_seed_probability_tendsto 2 b (actualBinaryWords L))
-    filter_upwards [(tendsto_atTop.mp card_molecule_tendsto_atTop)
-      (m*Fintype.card (Molecule (K+2))+1),eventually_ge_atTop 1] with N hlarge hN
-    have hmass : staticReactionMeasure N b {ω | (m-1)*Fintype.card (Molecule N) ≤
-        m*(temporaryReactionClosure 2 (staticOpenReactions ω)).card} ≤
-        staticReactionMeasure (2*(K+2)) b (staticEscapeEvent 2 K) := by
-      rw [finite_static_escape_measure_eq]
-      apply (measure_mono (show {ω : Reaction N → Prop |
-        (m-1)*Fintype.card (Molecule N) ≤ m*(temporaryReactionClosure 2 (staticOpenReactions ω)).card} ⊆
-        {ω | ∃ x ∈ temporaryReactionClosure 2 (staticOpenReactions ω), K+2 < molLength x}
-        from ?_)).trans (static_capped_escape_le N K b)
-      intro ω hω
-      by_contra h
-      have hs : temporaryReactionClosure 2 (staticOpenReactions ω) ⊆ binaryFood N (K+2) := by
-        intro x hx
-        exact Finset.mem_filter.mpr ⟨Finset.mem_univ _,Nat.le_of_not_gt (fun hl => h ⟨x,hx,hl⟩)⟩
-      have hc := (Finset.card_le_card hs).trans (binaryFood_card_le_cutoff N (K+2))
-      change (m-1)*Fintype.card (Molecule N) ≤ m*(temporaryReactionClosure 2 (staticOpenReactions ω)).card at hω
-      have hmult : Fintype.card (Molecule N) ≤ (m-1)*Fintype.card (Molecule N) := by
-        have hh := Nat.mul_le_mul_right (Fintype.card (Molecule N)) (show 1 ≤ m-1 by omega)
-        simpa using hh
-      nlinarith
-    exact (same_field_seed_mass_bound N L m b).trans
-      (add_le_add hmass (hbad N (by omega)))
-  exact ge_of_tendsto' ((finite_static_escape_probability_tendsto b).add_const (m : ENNReal)⁻¹) hK
+theorem _root_.HordijkSteelThreshold.SplitModel.seed_survival (M : SplitModel) (b : I) (m L : ℕ) (hm : 2 ≤ m)
+    (hbulk : ∀ N, 0 < N → M.μ N b {q | m*(M.cl N L q).card < (m-1)*Fintype.card (Molecule N)} ≤ (m : ENNReal)⁻¹) :
+    M.ν b {field | ∀ w ∈ actualBinaryWords L, InfiniteReversibleGenerated 2 field w} ≤
+      M.ν b {field | ReversibleUnbounded 2 field} + (m : ENNReal)⁻¹ := by
+  refine ge_of_tendsto' ((M.esc_tendsto b).add_const _) fun K => ?_
+  apply le_of_tendsto $ M.seed_tendsto 2 b _
+  filter_upwards [tendsto_atTop.mp card_molecule_tendsto_atTop
+    (m*Fintype.card (Molecule $ K+2)+1),eventually_ge_atTop 1] with N hlarge hN
+  refine (measure_mono fun ω hω => ?_).trans $ (measure_union_le _ _).trans
+    (add_le_add (M.capped_le N K b) $ hbulk N hN)
+  by_cases hb : m*(M.cl N L ω).card < (m-1)*Fintype.card (Molecule N)
+  · exact Or.inr hb
+  refine Or.inl $ by_contra fun h => ?_
+  have hc := (Finset.card_le_card $ show M.cl N 2 ω ⊆ binaryFood N (K+2) from fun x hx =>
+    Finset.mem_filter.mpr ⟨Finset.mem_univ _,Nat.le_of_not_gt $ fun hl => h ⟨x,hx,hl⟩⟩).trans
+    (binaryFood_card_le_cutoff N $ K+2)
+  have : (M.cl N L ω).card ≤ (M.cl N 2 ω).card :=
+    Finset.card_le_card $ temporaryReactionClosure_seed_transfer Finset.Subset.rfl fun x hx => ?_
+  · have := Nat.mul_le_mul_right (Fintype.card $ Molecule N) (show 1 ≤ m-1 by omega)
+    nlinarith
+  obtain ⟨y,hy,he⟩ := hω _ $ (mem_actualBinaryWords _ _).mpr
+    ⟨moleculeWord_nonempty x, by rwa [moleculeWord_length]⟩
+  exact moleculeWord_injective he ▸ hy
 
 end RAFCriticalWindowQuantitative

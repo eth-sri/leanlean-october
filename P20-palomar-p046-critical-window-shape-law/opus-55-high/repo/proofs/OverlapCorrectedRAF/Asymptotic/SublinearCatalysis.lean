@@ -1,4 +1,0 @@
-module
-public import proofs.OverlapCorrectedRAF.Asymptotic.GatewayProbability
-public import proofs.OverlapCorrectedRAF.Source.ChannelLowerBound
-public import proofs.OverlapCorrectedRAF.Source.ActualGatewayDock

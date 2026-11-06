@@ -1,9 +1,9 @@
 module
 
 public import proofs.RAFReactionQuotient.SplitAdapter
-public import proofs.RAFReactionQuotient.CapCompatibility
+public import proofs.RAFReactionQuotient.QuotientMap
 
-@[expose] public section
+public section
 
 namespace RAFReactionQuotient
 open Classical RAF.Polymer RAF.Concrete OverlapCorrectedRAF.Source
@@ -20,14 +20,11 @@ theorem splitToOrdered_injective (n : ℕ) : Function.Injective (@splitToOrdered
   rcases s with ⟨si, sw, sk⟩
   have hi : ri = si := congrArg Sigma.fst hp
   subst si
-  have hw : rw = sw := Fin.ext (congrArg (fun x : Molecule n => x.2.val) hp)
-  subst sw
+  have hw : rw = sw := Fin.ext $ congrArg (fun x : Molecule n => x.2.val) hp
   have hk : rk = sk := by
-    apply Fin.ext
     dsimp [reactionLeftLength] at hl
     omega
-  subst sk
-  rfl
+  simp_all
 
 theorem split_fibre_le_two {n : ℕ} (j : RepositoryChannel n) :
     (Finset.univ.filter (fun r : Reaction n => splitToQuotient r = j)).card ≤ 2 := by
@@ -39,7 +36,7 @@ theorem split_fibre_le_two {n : ℕ} (j : RepositoryChannel n) :
     exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, (Finset.mem_filter.mp hr).2⟩
   calc
     S.card = (S.image splitToOrdered).card :=
-      (Finset.card_image_of_injective S (splitToOrdered_injective n)).symm
+      (Finset.card_image_of_injective S $ splitToOrdered_injective n).symm
     _ ≤ _ := Finset.card_le_card hs
     _ ≤ 2 := canonical_fibre_le_two j
 

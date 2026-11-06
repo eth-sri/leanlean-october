@@ -1,6 +1,7 @@
 module
 
-public import proofs.HordijkSteelThreshold.NucleusAmplification
+public import proofs.HordijkSteelThreshold.AmbientIndependence
+public import Mathlib
 
 @[expose] public section
 

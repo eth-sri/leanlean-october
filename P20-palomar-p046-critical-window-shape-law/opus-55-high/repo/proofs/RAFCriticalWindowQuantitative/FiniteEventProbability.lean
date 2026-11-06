@@ -10,46 +10,44 @@ namespace RAFCriticalWindowQuantitative
 open Classical HordijkSteelThreshold MeasureTheory unitInterval
 open scoped ENNReal
 
-def rationalEventProbability (J : Type*) [Fintype J] [DecidableEq J] (q : ℚ)
+variable (J : Type*) [Fintype J] [DecidableEq J] (q : ℚ)
+
+def rationalEventProbability
     (event : (J → Bool) → Bool) : ℚ :=
   ∑ ω : J → Bool, if event ω then ∏ j, if ω j then q else 1-q else 0
 
 /-- Exact probability semantics for an arbitrary executable Boolean event. -/
-theorem rationalEventProbability_correct (J : Type*) [Fintype J] [DecidableEq J] (q : ℚ)
+theorem rationalEventProbability_correct
     (hq : 0 ≤ q) (hq1 : q ≤ 1) (event : (J → Bool) → Bool) :
-    ((Measure.pi (fun _ : J => ambientCoordLaw (rationalParameter q hq hq1)))
-      {ω | event (fun j => decide (ω j))}).toReal =
+    (Measure.pi (fun _ : J => ambientCoordLaw $ rationalParameter q hq hq1)
+      {ω | event $ fun j => decide $ ω j}).toReal =
       (rationalEventProbability J q event : ℝ) := by
-  classical
   let a := rationalParameter q hq hq1
   let μ := Measure.pi (fun _ : J => ambientCoordLaw a)
-  let E : Set (J → Prop) := {ω | event (fun j => decide (ω j))}
-  let F : Finset (J → Prop) := Finset.univ.filter (fun ω => ω ∈ E)
-  have hF : (F : Set (J → Prop)) = E := by ext ω; simp [F]
-  have hatom (ω : J → Prop) : μ {ω} = (∏ j, staticAtomWeight a (ω j) : NNReal) := by
+  let E : Set (J → Prop) := {ω | event $ fun j => decide $ ω j}
+  let F : Finset (J → Prop) := Finset.univ.filter $ fun ω => ω ∈ E
+  have hF : F = E := by grind
+  have hatom ω : μ {ω} = (∏ j, staticAtomWeight a (ω j) : NNReal) := by
     rw [Measure.pi_singleton]
     simp only [ambientCoordLaw_atom, ENNReal.ofNNReal_finsetProd]
-  have he : μ E = ((∑ ω ∈ F, ∏ j, staticAtomWeight a (ω j) : NNReal) : ENNReal) := by
+  have he : μ E = ((∑ ω ∈ F, ∏ j, staticAtomWeight a (ω j) : NNReal)) := by
     rw [← hF, ← sum_measure_singleton]
-    simp only [hatom, ENNReal.ofNNReal_finsetSum]
-  change (μ E).toReal = _
+    simp_all
   rw [he]
-  simp only [ENNReal.coe_toReal, NNReal.coe_sum, NNReal.coe_prod]
+  simp only [ENNReal.coe_toReal, NNReal.coe_sum]
   rw [Finset.sum_filter]
-  let e : (J → Bool) ≃ (J → Prop) := Equiv.piCongrRight (fun _ => Equiv.propEquivBool.symm)
+  let e : (J → Bool) ≃ (J → Prop) := Equiv.piCongrRight $ fun _ => Equiv.propEquivBool.symm
   rw [← e.sum_comp]
-  have hw (P : Prop) : (staticAtomWeight a P : ℝ) = if P then (q : ℝ) else 1-q := by
+  have hw P : (staticAtomWeight a P) = if P then (q : ℝ) else 1-q := by
     by_cases hP : P <;> simp [staticAtomWeight,hP,a,rationalParameter]
-  simp only [hw]
   simp [rationalEventProbability,e,Equiv.propEquivBool,E]
   apply Finset.sum_congr rfl
   intro ω _
   by_cases hev : event ω = true
-  · simp only [hev,ite_true]
+  · simp only [hev]
     push_cast
     apply Finset.prod_congr rfl
-    intro j _
-    by_cases hbit : ω j = true <;> simp [hbit]
-  · simp [hev]
+    aesop
+  simp_all
 
 end RAFCriticalWindowQuantitative

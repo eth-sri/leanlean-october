@@ -1,8 +1,7 @@
 module
 
-public import proofs.HordijkSteelThreshold.ColumnEventProduct
-public import proofs.HordijkSteelThreshold.FamilyOpenProbability
-public import proofs.HordijkSteelThreshold.SourceStaticBarrier
+public import proofs.RAFEmergenceApprox.ThresholdSweep
+public import proofs.RAFEmergenceApprox.GenericHistory
 public import proofs.HordijkSteelThreshold.WordContourProbability
 public import proofs.HordijkSteelThreshold.WordEffectiveClosure
 
@@ -10,96 +9,80 @@ public import proofs.HordijkSteelThreshold.WordEffectiveClosure
 
 namespace HordijkSteelThreshold
 open Classical MeasureTheory ProbabilityTheory RAF.Polymer RAF.Concrete unitInterval
+open RAFEmergenceApprox.Generic
 open scoped ENNReal
 
-noncomputable def fixedPoolParameter (p : I) (k : ℕ) : I := σ ((σ p)^k)
+variable (p : I)
 
-@[simp] theorem fixedPoolParameter_coe (p : I) (k : ℕ) :
+variable (k : ℕ)
+
+noncomputable def fixedPoolParameter   : I := σ $ (σ p)^k
+
+@[simp] theorem fixedPoolParameter_coe   :
     (fixedPoolParameter p k : ℝ) = 1-(1-(p : ℝ))^k := by
-  simp [fixedPoolParameter]
-
-theorem fixedPoolParameter_ennreal (p : I) (k : ℕ) :
-    (toNNReal (fixedPoolParameter p k) : ENNReal) =
-      1-(toNNReal (σ p) : ENNReal)^k := by
-  have hpow : toNNReal ((σ p)^k) = (toNNReal (σ p))^k := by
-    apply NNReal.eq
-    simp
-  apply ENNReal.eq_sub_of_add_eq (by simp)
-  rw [← ENNReal.coe_pow, ← hpow, ← ENNReal.coe_add]
-  simp [fixedPoolParameter]
-
-theorem fixedPool_iIndep {n : ℕ} (lambda : ℝ) (C : Finset (Molecule n)) :
-    iIndepFun (fun r (ω : AmbientCoord n → Prop) => catalystPoolOpen ω C r)
-      (ambientPiMeasure n lambda) := by
-  rw [iIndepFun_iff_measure_inter_preimage_eq_mul]
-  intro S sets _hsets
-  have hh := measure_columnEvents lambda
-    (fun r col => (∃ x ∈ C, col x) ∈ sets r) S
-  have he : (⋂ r ∈ S, (fun ω : AmbientCoord n → Prop => catalystPoolOpen ω C r) ⁻¹' sets r) =
-      {ω | ∀ r ∈ S, (∃ x ∈ C, ω (x,r)) ∈ sets r} := by
-    ext ω
-    simp [catalystPoolOpen]
-  rw [he]
-  exact hh
-
-theorem fixedPool_open_measure {n : ℕ} (lambda : ℝ) (C : Finset (Molecule n))
-    (r : Reaction n) :
-    ambientPiMeasure n lambda {ω | catalystPoolOpen ω C r} =
-      (toNNReal (fixedPoolParameter (catalysisP n lambda) C.card) : ENNReal) := by
-  rw [fixedPoolParameter_ennreal]
-  simpa [catalystPoolFamilyOpen] using measure_catalystPoolFamilyOpen_card lambda C {r}
-
-theorem probability_prop_eq_of_true (μ ν : Measure Prop)
-    [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] (h : μ {True} = ν {True}) : μ = ν := by
-  apply Measure.ext_of_singleton
-  intro q
-  by_cases hq : q
-  · have he : q = True := propext (iff_true_intro hq)
-    simpa only [he] using h
-  · have he : q = False := propext (iff_false_intro hq)
-    have hs : ({False} : Set Prop) = {True}ᶜ := by ext t; simp
-    rw [he, hs, measure_compl (MeasurableSet.singleton _) (measure_ne_top _ _),
-      measure_compl (MeasurableSet.singleton _) (measure_ne_top _ _), measure_univ, measure_univ, h]
-
-theorem fixedPool_column_map {n : ℕ} (lambda : ℝ) (C : Finset (Molecule n))
-    (r : Reaction n) :
-    (ambientPiMeasure n lambda).map (fun ω => catalystPoolOpen ω C r) =
-      ambientCoordLaw (fixedPoolParameter (catalysisP n lambda) C.card) := by
-  have hm := measurable_of_finite (fun ω : AmbientCoord n → Prop => catalystPoolOpen ω C r)
-  apply probability_prop_eq_of_true
-  rw [Measure.map_apply hm (MeasurableSet.singleton _)]
-  have he : (fun ω : AmbientCoord n → Prop => catalystPoolOpen ω C r) ⁻¹' {True} =
-      {ω | catalystPoolOpen ω C r} := by ext ω; simp
-  rw [he, fixedPool_open_measure]
-  simp [ambientCoordLaw]
-
-/-- Exact full iid law of the field supported by a deterministic catalyst pool.
-This does not assert independence for a pool selected from the same sample. -/
-theorem fixedPool_reaction_map {n : ℕ} (lambda : ℝ) (C : Finset (Molecule n)) :
-    (ambientPiMeasure n lambda).map (fun ω r => catalystPoolOpen ω C r) =
-      staticReactionMeasure n (fixedPoolParameter (catalysisP n lambda) C.card) := by
-  rw [(fixedPool_iIndep lambda C).map_fun_eq_pi_map
-    (fun r => (measurable_of_finite _).aemeasurable)]
-  simp_rw [fixedPool_column_map]
-  exact (Measure.infinitePi_eq_pi _).symm
-
-theorem fixedPool_closure_statistic {n : ℕ} (lambda : ℝ) (C : Finset (Molecule n))
-    (closure : Finset (Reaction n) → Finset (Molecule n)) (P : Finset (Molecule n) → Prop) :
-    ambientPiMeasure n lambda {ω | P (closure (catalystActive ω C))} =
-      staticReactionMeasure n (fixedPoolParameter (catalysisP n lambda) C.card)
-        {ω | P (closure (staticOpenReactions ω))} := by
-  rw [← fixedPool_reaction_map lambda C, Measure.map_apply (measurable_of_finite _)
-    (Set.Finite.measurableSet (Set.toFinite _))]
   rfl
 
-theorem source_mass_ge_iid_static {n : ℕ} (lambda : ℝ)
-    (closure : Finset (Reaction n) → Finset (Molecule n)) (hclosure : Monotone closure)
+
+theorem union_card_le {Ω X R : Type*} [MeasurableSpace Ω] (μ : Measure Ω) (s : Finset X)
+    (t : Finset R) (E : X → R → Set Ω) {c : ℝ≥0∞} (hc : ∀ x r, μ (E x r) = c) {a b : ℕ}
+    (hs : s.card ≤ a) (ht : t.card ≤ b) :
+    μ {ω | ∃ x ∈ s, ∃ r ∈ t, ω ∈ E x r} ≤ a * b * c := by
+  calc _ = μ (⋃ x ∈ s, ⋃ r ∈ t, E x r) := by congr 1; ext; simp
+    _ ≤ ∑ x ∈ s, ∑ r ∈ t, μ (E x r) := (measure_biUnion_finset_le _ _).trans
+      (Finset.sum_le_sum fun _ _ => measure_biUnion_finset_le _ _)
+    _ ≤ _ := by
+      simp only [hc, Finset.sum_const, nsmul_eq_mul, ← mul_assoc]
+      gcongr
+
+theorem ambient_eq_law (n : ℕ) (lambda : ℝ) :
+    ambientPiMeasure n lambda = (RAFEmergenceApprox.Generic.law (X := Molecule n)
+      (fun _ : Reaction n => catalysisP n lambda)).map (fun ω c => ω c.2 c.1) := by
+  rw [ambientPiMeasure, Measure.infinitePi_eq_pi]
+  refine Measure.pi_eq fun s hs => ?_
+  rw [Measure.map_apply (by fun_prop) $ .univ_pi hs]
+  have : (fun ω c => ω c.2 c.1) ⁻¹' Set.univ.pi s =
+      Set.univ.pi (fun r => Set.univ.pi fun x => s (x,r)) := by
+    grind
+  simp [this, RAFEmergenceApprox.Generic.law, RAFEmergenceApprox.Generic.colLaw,
+    Fintype.prod_prod_type_right]
+
+variable {X R : Type*} [Fintype X] [Fintype R]
+
+theorem law_coord (p : R → I) (r : R) (x : X) : law (X := X) p {ω | ω r x} = toNNReal (p r) :=
+  ((measurePreserving_eval (colLaw X $ p ·) r).measure_preimage (s := {v | v x})
+    (by measurability)).trans $ ((measurePreserving_eval (fun _ => ambientCoordLaw $ p r) x).measure_preimage
+    (s := {P | P}) $ by measurability).trans $ by simp [ambientCoordLaw]
+
+theorem pool_statistic  (C : Finset X) (stat : Finset R → Prop) :
+    law (X := X) (fun _ => p) {ω | stat $ RAFEmergenceApprox.Generic.catalystActive ω C} =
+      Measure.pi (fun _ : R => ambientCoordLaw $ fixedPoolParameter p C.card)
+        {q | stat $ Finset.univ.filter q} := by
+  have : (law (X := X) (fun _ : R => p)).map (fun ω r => ∃ x ∈ C, ω r x) =
+      Measure.pi (fun _ : R => ambientCoordLaw $ fixedPoolParameter p C.card) := by
+    rw [law, Measure.pi_map_pi (f := fun _ (v : X → Prop) => ∃ x ∈ C, v x)
+      (fun _ => (measurable_of_finite _).aemeasurable)]
+    refine congrArg _ $ funext fun r => probability_prop_eq_of_false _ _ (measurable_of_finite _) ?_
+    rw [closed_probability]
+    simp [fixedPoolParameter, ambientCoordLaw]
+    rfl
+  rw [← this, Measure.map_apply (measurable_of_finite _) (Set.toFinite _).measurableSet]
+  rfl
+
+theorem mass_ge_static  (closure : Finset R → Finset X) (hclosure : Monotone closure)
     (k T : ℕ) :
-    staticReactionMeasure n (fixedPoolParameter (catalysisP n lambda)
-      (finiteInitialSegment (Molecule n) k).card) {ω | k ≤ (closure (staticOpenReactions ω)).card} ≤
-    ambientPiMeasure n lambda {ω | k ≤ (closure (peelingActiveAt (catalystActive ω) closure T)).card} := by
-  rw [← fixedPool_closure_statistic lambda (finiteInitialSegment (Molecule n) k)
-    closure (fun S => k ≤ S.card)]
-  exact measure_source_mass_ge_static lambda closure hclosure k T
+    Measure.pi (fun _ : R => ambientCoordLaw $ fixedPoolParameter p (finiteInitialSegment X k).card)
+      {q | k ≤ (closure $ Finset.univ.filter q).card} ≤
+    law (X := X) (fun _ => p) {ω | k ≤ (closure $ peelingActiveAt (RAFEmergenceApprox.Generic.catalystActive ω) closure T).card} := by
+  rw [← pool_statistic p _ $ fun A => k ≤ (closure A).card]
+  have he := congrArg (· {H | k ≤ (closure $ Finset.univ.filter $ H $ Fin.last T).card})
+    (activeTrace_map_eq_scalar (X := X) (fun _ => p) closure hclosure T)
+  unfold activeTrace at he
+  simp only [Measure.map_apply (measurable_of_finite _) (Set.toFinite _).measurableSet, Set.preimage,
+    Set.mem_ofPred_eq, Finset.filter_mem_eq_inter, Finset.univ_inter, Fin.val_last] at he
+  rw [he]
+  refine measure_mono fun ω hω => hω.trans $ Finset.card_le_card $ hclosure ?_
+  exact RAFEmergenceApprox.scalar_barrier_subset _ closure
+    ((RAFEmergenceApprox.Generic.catalystActive_mono ω).comp $ finiteInitialSegment_mono _) hclosure k
+    (hω.trans $ Finset.card_le_univ _) hω T
 
 end HordijkSteelThreshold

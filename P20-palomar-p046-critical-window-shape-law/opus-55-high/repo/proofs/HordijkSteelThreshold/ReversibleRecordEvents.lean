@@ -29,47 +29,15 @@ theorem finiteReversibleGenerated_transfer_prefix {N M L : ℕ} (hNM : N ≤ M)
     (he : ∀ w : List Bool, w.length ≤ M → ∀ k : ℕ, k ≤ M → field w k = other w k)
     {w : List Bool} (h : FiniteReversibleGenerated N L field w) :
     FiniteReversibleGenerated N L other w := by
-  induction h with
-  | food hn hL hN => exact .food hn hL hN
-  | @ligate u v _ _ ho hN ihu ihv =>
-    apply FiniteReversibleGenerated.ligate ihu ihv _ hN
-    have hk : u.length ≤ M := by simp only [List.length_append] at hN; omega
-    exact (he (u++v) (hN.trans hNM) u.length hk) ▸ ho
-  | @left u v hu hv hp ho ih =>
-    apply FiniteReversibleGenerated.left hu hv ih
-    have hlen := finiteReversibleGenerated_length_le hp
-    have hk : u.length ≤ M := by simp only [List.length_append] at hlen; omega
-    exact (he (u++v) (hlen.trans hNM) u.length hk) ▸ ho
-  | @right u v hu hv hp ho ih =>
-    apply FiniteReversibleGenerated.right hu hv ih
-    have hlen := finiteReversibleGenerated_length_le hp
-    have hk : u.length ≤ M := by simp only [List.length_append] at hlen; omega
-    exact (he (u++v) (hlen.trans hNM) u.length hk) ▸ ho
-
-theorem reversibleRecordEvent_congr_prefix {L N M : ℕ} (hNM : N ≤ M)
-    {field other : InfiniteSplitEnvironment}
-    (he : ∀ w : List Bool, w.length ≤ M → ∀ k : ℕ, k ≤ M → field w k = other w k) :
-    field ∈ reversibleRecordEvent L N ↔ other ∈ reversibleRecordEvent L N := by
-  constructor
-  · rintro ⟨w,hw,hg⟩
-    exact ⟨w,hw,finiteReversibleGenerated_transfer_prefix hNM he hg⟩
-  · rintro ⟨w,hw,hg⟩
-    exact ⟨w,hw,finiteReversibleGenerated_transfer_prefix hNM
-      (fun w hw k hk => (he w hw k hk).symm) hg⟩
+  induction h <;> grind [FiniteReversibleGenerated, finiteReversibleGenerated_length_le]
 
 theorem firstRecordEvent_congr_prefix {L B M : ℕ}
     {field other : InfiniteSplitEnvironment}
     (he : ∀ w : List Bool, w.length ≤ M → ∀ k : ℕ, k ≤ M → field w k = other w k) :
     field ∈ firstRecordEvent L B M ↔ other ∈ firstRecordEvent L B M := by
-  have hr (N : ℕ) (hN : N ≤ M) := reversibleRecordEvent_congr_prefix (L := L) hN he
-  constructor
-  · rintro ⟨hB,hM,hprev⟩
-    refine ⟨hB,(hr M le_rfl).mp hM,?_⟩
-    intro k hBk hk hrec
-    exact hprev k hBk hk ((hr k hk.le).mpr hrec)
-  · rintro ⟨hB,hM,hprev⟩
-    refine ⟨hB,(hr M le_rfl).mpr hM,?_⟩
-    intro k hBk hk hrec
-    exact hprev k hBk hk ((hr k hk.le).mp hrec)
+  have hr N hN : field ∈ reversibleRecordEvent L N ↔ other ∈ reversibleRecordEvent L N :=
+    ⟨fun ⟨w,hw,hg⟩ => ⟨w,hw,finiteReversibleGenerated_transfer_prefix hN he hg⟩,
+      fun ⟨w,hw,hg⟩ => ⟨w,hw,finiteReversibleGenerated_transfer_prefix hN (fun w hw k hk => (he w hw k hk).symm) hg⟩⟩
+  grind [firstRecordEvent]
 
 end HordijkSteelThreshold

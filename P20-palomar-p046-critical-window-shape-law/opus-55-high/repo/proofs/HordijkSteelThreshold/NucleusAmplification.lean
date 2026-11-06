@@ -1,3 +1,0 @@
-module
-public import proofs.HordijkSteelThreshold.AmbientIndependence
-public import proofs.RAF.Probability.UniformCatalysis

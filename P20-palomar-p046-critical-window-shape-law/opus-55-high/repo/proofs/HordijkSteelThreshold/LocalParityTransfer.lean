@@ -19,17 +19,11 @@ theorem quadParity_closed_subset (F C : Fin 4 → Bool)
   · obtain ⟨i, hi⟩ := h
     have he : F = C := by
       funext j
-      have hs := hsub j
       have hc := hclosed i j hi
       cases hf : F j <;> cases hc : C j <;> simp_all
-    rw [he]
-    exact hC
+    simp_all
   · have he : F = fun _ => false := by
-      funext i
-      cases hi : F i
-      · rfl
-      · exact (h ⟨i, hi⟩).elim
-    rw [he]
-    rfl
+      grind
+    aesop
 
 end HordijkSteelThreshold

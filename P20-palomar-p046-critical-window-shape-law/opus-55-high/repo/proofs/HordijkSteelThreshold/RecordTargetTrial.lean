@@ -8,10 +8,12 @@ public import proofs.HordijkSteelThreshold.InfiniteStaticLaw
 namespace HordijkSteelThreshold
 open Classical RAF.Polymer RAF.Concrete
 
-def splitPrefixCoordinates (M : ℕ) : Finset (List Bool × ℕ) :=
-  (shortBinaryWords M).product (Finset.range (M+1))
+variable (M : ℕ)
 
-@[simp] theorem mem_splitPrefixCoordinates (M : ℕ) (z : List Bool × ℕ) :
+def splitPrefixCoordinates  : Finset (List Bool × ℕ) :=
+  (shortBinaryWords M).product $ Finset.range $ M+1
+
+@[simp] theorem mem_splitPrefixCoordinates  (z : List Bool × ℕ) :
     z ∈ splitPrefixCoordinates M ↔ z.1.length ≤ M ∧ z.2 ≤ M := by
   simp [splitPrefixCoordinates,mem_shortBinaryWords]
 

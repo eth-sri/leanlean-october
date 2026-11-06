@@ -18,7 +18,6 @@ def orderedCRS (n t : ℕ) : ReversibleCRS (Molecule n) (OrderedChannel n) where
 
 theorem precedes_total {n : ℕ} (u v : Molecule n) :
     moleculePrecedes u v ∨ moleculePrecedes v u := by
-  unfold moleculePrecedes
   omega
 
 def canonical {n : ℕ} (r : OrderedChannel n) : RepositoryChannel n :=
@@ -26,22 +25,20 @@ def canonical {n : ℕ} (r : OrderedChannel n) : RepositoryChannel n :=
       moleculePrecedes r.val.1 r.val.2 then
     ⟨r.val, r.property, h⟩
   else
-    ⟨(r.val.2, r.val.1), (Nat.add_comm (molLength r.val.2) (molLength r.val.1)).le.trans r.property,
-      Or.inr ((precedes_total r.val.1 r.val.2).resolve_left (fun hp => h (Or.inr hp)))⟩
+    ⟨(r.val.2, r.val.1), (Nat.add_comm (molLength r.val.2) $ molLength r.val.1).le.trans r.property,
+      Or.inr $ (precedes_total r.val.1 r.val.2).resolve_left $ fun hp => h $ Or.inr hp⟩
 
 theorem molecule_ext {n : ℕ} {x y : Molecule n}
     (hl : molLength x = molLength y) (hc : x.2.val = y.2.val) : x = y := by
-  rcases x with ⟨i, x⟩
-  rcases y with ⟨j, y⟩
-  have hij : i = j := by apply Fin.ext; dsimp [molLength] at hl; omega
-  subst j
-  exact congrArg (Sigma.mk i) (Fin.ext hc)
+  rcases x with ⟨⟨i, _⟩, x⟩
+  rcases y with ⟨⟨j, _⟩, y⟩
+  obtain rfl : i = j := by simp only [molLength] at hl; omega
+  simp_all [Fin.ext_iff]
 
 theorem concat_code {n : ℕ} (u v : Molecule n)
     (h : molLength u + molLength v ≤ n) :
     (concatMolecule u v h).2.val = displayedConcat u v := by
-  simp [concatMolecule, moleculeOfCode, concatCode, displayedConcat,
-    finProdFinEquiv, Nat.add_comm, Nat.mul_comm]
+  simp [concatMolecule, moleculeOfCode, concatCode, displayedConcat, Nat.add_comm, Nat.mul_comm]
 
 theorem concat_comm_of_code {n : ℕ} (u v : Molecule n)
     (h : molLength u + molLength v ≤ n)
@@ -51,31 +48,26 @@ theorem concat_comm_of_code {n : ℕ} (u v : Molecule n)
   · simp [concatMolecule, Nat.add_comm]
   · simpa only [concat_code] using hc
 
-theorem canonical_lhs {n t : ℕ} (r : OrderedChannel n) :
+variable {n t : ℕ} (r : OrderedChannel n)
+
+theorem canonical_lhs  :
     (repositoryCRS n t).lhs (canonical r) = (orderedCRS n t).lhs r := by
   unfold canonical
-  split
-  · rfl
-  · simp [repositoryCRS, orderedCRS, Finset.pair_comm]
+  split <;> simp [repositoryCRS, orderedCRS, Finset.pair_comm]
 
-theorem canonical_rhs {n t : ℕ} (r : OrderedChannel n) :
+theorem canonical_rhs  :
     (repositoryCRS n t).rhs (canonical r) = (orderedCRS n t).rhs r := by
   unfold canonical
   split
   · rfl
-  · rename_i h
-    have hc : displayedConcat r.val.1 r.val.2 = displayedConcat r.val.2 r.val.1 := by
-      by_contra hn
-      exact h (Or.inl hn)
-    simp only [repositoryCRS, orderedCRS]
-    rw [concat_comm_of_code r.val.1 r.val.2 r.property hc]
+  · simp only [repositoryCRS, orderedCRS]
+    rw [concat_comm_of_code r.val.1 r.val.2 r.property $ by omega]
+
 
 theorem canonical_val_cases {n : ℕ} (r : OrderedChannel n) :
     (canonical r).val = r.val ∨ (canonical r).val = r.val.swap := by
   unfold canonical
-  split
-  · exact Or.inl rfl
-  · exact Or.inr rfl
+  grind
 
 theorem canonical_surjective (n : ℕ) : Function.Surjective (@canonical n) := by
   intro j
@@ -85,23 +77,9 @@ theorem canonical_surjective (n : ℕ) : Function.Surjective (@canonical n) := b
 theorem canonical_fibre_le_two {n : ℕ} (j : RepositoryChannel n) :
     (Finset.univ.filter (fun r : OrderedChannel n => canonical r = j)).card ≤ 2 := by
   let a : OrderedChannel n := ⟨j.val,j.property.1⟩
-  let b : OrderedChannel n := ⟨j.val.swap, by have := j.property.1; dsimp; omega⟩
-  have hs : Finset.univ.filter (fun r : OrderedChannel n => canonical r = j) ⊆ {a,b} := by
-    intro r hr
-    have he := (Finset.mem_filter.mp hr).2
-    have hv := canonical_val_cases r
-    rw [he] at hv
-    rcases hv with hv | hv
-    · have : r = a := Subtype.ext hv.symm
-      simp [this]
-    · have : r = b := by
-        apply Subtype.ext
-        exact (congrArg Prod.swap hv).symm
-      simp [this]
-  exact (Finset.card_le_card hs).trans (by
-    calc
-      ({a,b} : Finset (OrderedChannel n)).card ≤ ({b} : Finset (OrderedChannel n)).card + 1 :=
-        Finset.card_insert_le _ _
-      _ = 2 := by simp)
+  let b : OrderedChannel n := ⟨j.val.swap, by grind⟩
+  refine (Finset.card_le_card (t := {a, b}) fun r hr => ?_).trans Finset.card_le_two
+  have := canonical_val_cases r
+  grind
 
 end RAFReactionQuotient

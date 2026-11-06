@@ -9,11 +9,13 @@ namespace RAF.Concrete
 open MeasureTheory ProbabilityTheory
 open RAF RAF.Polymer
 
-def HasRAFEvent (n : Nat) : Set (CatalysisSample n) :=
-  {ω | ∃ S : Finset (Reaction n),
+variable (n : Nat)
+
+def HasRAFEvent  : Set (CatalysisSample n) :=
+  {ω | ∃ S : Finset $ Reaction n,
     IsRevRAF (binaryPolymerCRS n 2) (catalysisOf ω) S}
 
-theorem measurableSet_hasRAFEvent (n : Nat) : MeasurableSet (HasRAFEvent n) := by
+theorem measurableSet_hasRAFEvent  : MeasurableSet (HasRAFEvent n) := by
   exact Set.toFinite (HasRAFEvent n) |>.measurableSet
 
 end RAF.Concrete

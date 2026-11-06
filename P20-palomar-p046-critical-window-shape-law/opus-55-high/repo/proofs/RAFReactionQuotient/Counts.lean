@@ -1,3 +1,0 @@
-module
-public import proofs.RAFReactionQuotient.CountLoss
-public import proofs.HordijkSteelThreshold.GatewayProbability

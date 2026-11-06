@@ -20,12 +20,10 @@ theorem split_concat {n : ℕ} (r : Reaction n) :
       molLength (concatMolecule (reactionLeft r) (reactionRight r)
           (splitToOrdered r).property) =
           molLength (reactionLeft r) + molLength (reactionRight r) := by
-            unfold concatMolecule
-            apply molLength_moleculeOfCode
+            rfl
       _ = reactionLeftLength r + reactionRightLength r := by
-        rw [molLength_reactionLeft, molLength_reactionRight]
+        simp_all
       _ = reactionProductLength r := reaction_length_add r
-      _ = molLength (reactionProduct r) := (molLength_reactionProduct r).symm
   · have hc := concat_code (reactionLeft r) (reactionRight r)
       (splitToOrdered r).property
     rw [hc]
@@ -33,31 +31,34 @@ theorem split_concat {n : ℕ} (r : Reaction n) :
     rw [molLength_reactionRight]
     change r.2.1.val / 2 ^ reactionRightLength r * 2 ^ reactionRightLength r +
       r.2.1.val % 2 ^ reactionRightLength r = r.2.1.val
-    simpa only [Nat.mul_comm] using Nat.div_add_mod r.2.1.val (2 ^ reactionRightLength r)
+    simpa only [Nat.mul_comm] using Nat.div_add_mod r.2.1.val $ 2 ^ reactionRightLength r
 
 def splitToQuotient {n : ℕ} (r : Reaction n) : RepositoryChannel n :=
-  canonical (splitToOrdered r)
+  canonical $ splitToOrdered r
 
-theorem splitToQuotient_lhs {n t : ℕ} (r : Reaction n) :
+variable {n t : ℕ} (r : Reaction n)
+
+theorem splitToQuotient_lhs  :
     (repositoryCRS n t).lhs (splitToQuotient r) = (binaryPolymerCRS n t).lhs r :=
-  canonical_lhs (splitToOrdered r)
+  canonical_lhs $ splitToOrdered r
 
-theorem splitToQuotient_rhs {n t : ℕ} (r : Reaction n) :
+theorem splitToQuotient_rhs  :
     (repositoryCRS n t).rhs (splitToQuotient r) = (binaryPolymerCRS n t).rhs r := by
   rw [splitToQuotient, canonical_rhs]
   change {concatMolecule (reactionLeft r) (reactionRight r) _} = {reactionProduct r}
   rw [split_concat]
 
-theorem split_closure_eq_quotient {n : ℕ} (t : ℕ)
-    (S : Finset (Reaction n)) (k : ℕ) :
-    revClosureAt (repositoryCRS n t) (S.image splitToQuotient) k =
-      revClosureAt (binaryPolymerCRS n t) S k :=
-  closureAt_image _ _ splitToQuotient splitToQuotient_lhs splitToQuotient_rhs rfl S k
 
-theorem split_raf_iff_quotient {n : ℕ} (t : ℕ)
-    (C : Catalysis (Molecule n) (Reaction n)) :
-    (∃ S, IsRevRAF (binaryPolymerCRS n t) C S) ↔
-      ∃ T, IsRevRAF (repositoryCRS n t) (orCatalysis splitToQuotient C) T :=
-  hasRAF_or_iff _ _ splitToQuotient splitToQuotient_lhs splitToQuotient_rhs rfl C
+theorem split_closure_eq_quotient {n : ℕ} (t : ℕ)
+    (S : Finset $ Reaction n) (k : ℕ) :
+    revClosureAt (repositoryCRS n t) (S.image splitToQuotient) k =
+      revClosureAt (binaryPolymerCRS n t) S k := by
+  induction k with
+  | zero => rfl
+  | succ k ih =>
+    simp only [revClosureAt, ih, revClosureStep]
+    congr 1
+    ext x
+    simp only [Finset.mem_biUnion, Finset.mem_image, exists_exists_and_eq_and, RevEnabledLhs, RevEnabledRhs, splitToQuotient_lhs, splitToQuotient_rhs]
 
 end RAFReactionQuotient
