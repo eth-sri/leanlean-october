@@ -9,7 +9,7 @@ public import DOZZ.Complex.Identity
 
 /-! The exact fixed-region cutoff identity, extended from real to complex charges. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 namespace DOZZ.Proofs
 

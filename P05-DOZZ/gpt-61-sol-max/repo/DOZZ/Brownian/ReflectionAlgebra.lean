@@ -13,7 +13,7 @@ This module isolates the scalar reduction from the full reflection coefficient t
 moment. It uses only definition modules; witness independence is proved separately.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal

@@ -12,7 +12,7 @@ public import DOZZ.FourPoint.TaylorPowerTransport
 
 /-! The positive fundamental estimate on the actual supplied GMC, with a strict Taylor gain. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -45,8 +45,8 @@ theorem twoRooted_fundamental_estimate
   let C : ℝ := 16 * (Ce + Ca + Cs + Cn)
   refine ⟨η, C, r₀, hη, by dsimp only [C]; positivity, hr₀, ?_⟩
   intro z hz hzr
-  have hr : 0 < ‖z‖ := norm_pos_iff.mpr hz
-  have hr4 : ‖z‖ ≤ 1 / 4 := hzr.trans hr₀4
+  have hr  := norm_pos_iff.mpr hz
+  have hr4  := hzr.trans hr₀4
   have hr1 : ‖z‖ ≤ 1 := hr4.trans (by norm_num)
   let ρ : ℝ := ‖z‖ ^ (1 - δ)
   let d : ℝ := ‖z‖ ^ (1 + ε)
@@ -85,8 +85,7 @@ theorem twoRooted_fundamental_estimate
         ENNReal.ofReal (Creg i * ‖z‖ ^ E) := by
     fin_cases i
     · exact (he z hr4).trans (ENNReal.ofReal_le_ofReal (by
-        change Ce ≤ Ce * ‖z‖ ^ E
-        exact le_mul_of_one_le_right hCe.le hpow))
+        bound))
     · exact (ha ρ hρ hρhalf z hzrhalf).trans
         (ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left hpa hCa.le))
     · have hb := hs ρ hρ hρ4 z hzrρ d hd

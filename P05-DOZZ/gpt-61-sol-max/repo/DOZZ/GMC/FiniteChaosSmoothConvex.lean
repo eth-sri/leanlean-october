@@ -10,7 +10,7 @@ public import DOZZ.GMC.FiniteGaussianExponentialIntegrability
 
 /-! Gaussian-growth integrability for the smooth Kahane interpolation derivative. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions Topology
@@ -81,39 +81,28 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
         DOZZ.gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j)) :
     ∫ ω, kahaneInterpolatedTestDerivative X Y vX vY a γ F' t ω ∂(PX.prod PY) ≤ 0 := by
   classical
-  have hB₁ : 0 ≤ B₁ := by
-    by_contra h
-    have hneg : B₁ < 0 := lt_of_not_ge h
-    have hbound := hF'bound 0
-    have hnonneg := norm_nonneg (F' 0)
-    linarith
-  have hB₂ : 0 ≤ B₂ := by
-    by_contra h
-    have hneg : B₂ < 0 := lt_of_not_ge h
-    have hbound := hF''bound 0
-    have hnonneg := norm_nonneg (F'' 0)
-    linarith
-  letI : IsProbabilityMeasure PX := hX.1
-  letI : IsProbabilityMeasure PY := hY.1
-  let μ : Measure (ΩX × ΩY) := PX.prod PY
-  let v : ι → ℝ := fun i => t * vX i + (1 - t) * vY i
+  have hB₁ : 0 ≤ B₁ := (norm_nonneg _).trans (hF'bound 0)
+  have hB₂ : 0 ≤ B₂ := (norm_nonneg _).trans (hF''bound 0)
+  letI  := hX.1
+  letI  := hY.1
+  let μ  := PX.prod PY
+  let v  := fun i => t * vX i + (1 - t) * vY i
   let Z : ΩX × ΩY → Sum ι ι → ℝ := fun ω k => match k with
     | Sum.inl i => X ω.1 i
     | Sum.inr i => Y ω.2 i
-  have hZ : IsCenteredJointlyGaussian μ Z :=
+  have hZ  :=
     independent_product_concat_isCenteredJointlyGaussian PX PY X Y hX hY
   let c : Sum ι ι → ℝ := fun _ => 2 * |γ|
   have hc : ∀ k, 0 ≤ c k := fun _ => by positivity
-  have hEnv : Integrable (fun ω => Real.exp (∑ k, c k * |Z ω k|)) μ := by
-    exact centeredJointlyGaussian_abs_linear_exp_integrable μ Z hZ c
+  have hEnv  := centeredJointlyGaussian_abs_linear_exp_integrable μ Z hZ c
   have hCoordEnv (k : Sum ι ι) : Integrable
       (fun ω => Z ω k * Real.exp (∑ j, c j * |Z ω j|)) μ :=
     centeredJointlyGaussian_coordinate_mul_abs_linear_exp_integrable μ Z hZ c k
-  let score : ΩX × ΩY → ι → ℝ := fun ω i =>
+  let score  := fun ω i =>
     kahaneSumVectorScore a v γ t F' (Z ω) i
-  let fieldD : ΩX × ΩY → ι → ι → ℝ := fun ω i j =>
+  let fieldD  := fun ω i j =>
     kahaneSumVectorFieldScoreDerivative a v γ t F' F'' (Z ω) i j
-  let K : ΩX × ΩY → ι → ι → ℝ := fun ω i j =>
+  let K  := fun ω i j =>
     finiteChaosVectorWeight a v γ (kahaneSumVectorField t (Z ω)) i *
       finiteChaosVectorWeight a v γ (kahaneSumVectorField t (Z ω)) j *
       F'' (finiteChaosVectorMass a v γ (kahaneSumVectorField t (Z ω)))
@@ -131,8 +120,7 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
     simp only [Fintype.sum_sum_type, c]
     calc
       2 * (|γ| * ∑ i, |kahaneSumVectorField t z i|) ≤
-          2 * (|γ| * (∑ i, |z (Sum.inl i)| + ∑ i, |z (Sum.inr i)|)) := by
-            exact mul_le_mul_of_nonneg_left
+          2 * (|γ| * (∑ i, |z (Sum.inl i)| + ∑ i, |z (Sum.inr i)|)) := mul_le_mul_of_nonneg_left
               (mul_le_mul_of_nonneg_left hfield (abs_nonneg γ)) (by norm_num)
       _ = 2 * |γ| * (∑ i, |z (Sum.inl i)| + ∑ i, |z (Sum.inr i)|) := by
         ring
@@ -143,183 +131,51 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
   have hscoreBound' (z : Sum ι ι → ℝ) (i : ι) :
       ‖kahaneSumVectorScore a v γ t F' z i‖ ≤
         M * Real.exp (∑ k, c k * |z k|) := by
-    have h := (hscoreBound (kahaneSumVectorField t z) i i).1
+
     calc
       _ ≤ M * Real.exp (2 * (|γ| * ∑ j, |kahaneSumVectorField t z j|)) :=
         (hscoreBound (kahaneSumVectorField t z) i i).1
       _ ≤ M * Real.exp (∑ k, c k * |z k|) := by
-        apply mul_le_mul_of_nonneg_left _ hM
-        exact Real.exp_le_exp.mpr (hsum_le z)
+        bound
+  have hfieldBound (z : Sum ι ι → ℝ) (i j : ι) :
+      ‖kahaneSumVectorFieldScoreDerivative a v γ t F' F'' z i j‖ ≤
+        M * Real.exp (∑ k, c k * |z k|) := (hscoreBound (kahaneSumVectorField t z) i j).2.trans
+      (mul_le_mul_of_nonneg_left (Real.exp_le_exp.mpr (hsum_le z)) hM)
+  have hscaled (z : Sum ι ι → ℝ) (i j : ι) (u : ℝ) (hu : u ≤ 1) :
+      ‖Real.sqrt u * kahaneSumVectorFieldScoreDerivative a v γ t F' F'' z i j‖ ≤
+        M * Real.exp (∑ k, c k * |z k|) := by
+    rw [norm_mul, Real.norm_of_nonneg (Real.sqrt_nonneg _)]
+    exact (mul_le_mul_of_nonneg_left (hfieldBound z i j) (Real.sqrt_nonneg _)).trans
+      (mul_le_of_le_one_left (by positivity) (Real.sqrt_le_one.mpr hu))
   have hderivBound' (z : Sum ι ι → ℝ) (i : ι) (k : Sum ι ι) :
       ‖kahaneSumVectorScoreDerivative a v γ t F' F'' z i k‖ ≤
         M * Real.exp (∑ j, c j * |z j|) := by
     cases k with
-    | inl j =>
-        have hsqrt : Real.sqrt t ≤ 1 := by
-          have hs := Real.sq_sqrt (le_of_lt ht)
-          nlinarith [sq_nonneg (Real.sqrt t - 1)]
-        calc
-          ‖Real.sqrt t * kahaneSumVectorFieldScoreDerivative a v γ t F' F'' z i j‖ =
-              Real.sqrt t * ‖kahaneSumVectorFieldScoreDerivative a v γ t F' F'' z i j‖ := by
-                rw [norm_mul, Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _)]
-          _ ≤ Real.sqrt t * (M * Real.exp
-              (2 * (|γ| * ∑ l, |kahaneSumVectorField t z l|))) :=
-                mul_le_mul_of_nonneg_left
-                  (hscoreBound (kahaneSumVectorField t z) i j).2 (Real.sqrt_nonneg _)
-          _ ≤ M * Real.exp (2 * (|γ| * ∑ l, |kahaneSumVectorField t z l|)) := by
-                calc
-                  _ ≤ 1 * (M * Real.exp
-                      (2 * (|γ| * ∑ l, |kahaneSumVectorField t z l|))) :=
-                    mul_le_mul_of_nonneg_right hsqrt (by positivity)
-                  _ = _ := one_mul _
-          _ ≤ M * Real.exp (∑ l, c l * |z l|) := by
-                apply mul_le_mul_of_nonneg_left _ hM
-                exact Real.exp_le_exp.mpr (hsum_le z)
-    | inr j =>
-        have hsqrt : Real.sqrt (1 - t) ≤ 1 := by
-          have hs := Real.sq_sqrt (le_of_lt (by linarith : 0 < 1 - t))
-          nlinarith [sq_nonneg (Real.sqrt (1 - t) - 1)]
-        calc
-          ‖Real.sqrt (1 - t) * kahaneSumVectorFieldScoreDerivative a v γ t F' F'' z i j‖ =
-              Real.sqrt (1 - t) *
-                ‖kahaneSumVectorFieldScoreDerivative a v γ t F' F'' z i j‖ := by
-                  rw [norm_mul, Real.norm_eq_abs,
-                    abs_of_nonneg (Real.sqrt_nonneg _)]
-          _ ≤ Real.sqrt (1 - t) * (M * Real.exp
-              (2 * (|γ| * ∑ l, |kahaneSumVectorField t z l|))) :=
-                mul_le_mul_of_nonneg_left
-                  (hscoreBound (kahaneSumVectorField t z) i j).2
-                  (Real.sqrt_nonneg _)
-          _ ≤ M * Real.exp (2 * (|γ| * ∑ l, |kahaneSumVectorField t z l|)) := by
-                calc
-                  _ ≤ 1 * (M * Real.exp
-                      (2 * (|γ| * ∑ l, |kahaneSumVectorField t z l|))) :=
-                    mul_le_mul_of_nonneg_right hsqrt (by positivity)
-                  _ = _ := one_mul _
-          _ ≤ M * Real.exp (∑ l, c l * |z l|) := by
-                apply mul_le_mul_of_nonneg_left _ hM
-                exact Real.exp_le_exp.mpr (hsum_le z)
-  have hZae : AEMeasurable (fun ω => Z ω) μ := by
-    let hfst : MeasurePreserving Prod.fst μ PX := measurePreserving_fst
-    let hsnd : MeasurePreserving Prod.snd μ PY := measurePreserving_snd
-    apply AEMeasurable.of_eval
-    intro k
-    cases k with
-    | inl i =>
-        have hmap : AEMeasurable (fun ω => X ω i) (μ.map Prod.fst) := by
-          rw [hfst.map_eq]
-          exact hX.2.1 i
-        exact hmap.comp_measurable measurable_fst
-    | inr i =>
-        have hmap : AEMeasurable (fun ω => Y ω i) (μ.map Prod.snd) := by
-          rw [hsnd.map_eq]
-          exact hY.2.1 i
-        exact hmap.comp_measurable measurable_snd
+    | inl j => exact hscaled z i j t ht1.le
+    | inr j => exact hscaled z i j (1 - t) (by linarith)
+  have hZae : AEMeasurable (fun ω => Z ω) μ := AEMeasurable.of_eval hZ.2.1
   have hScoreMeas : ∀ i, Measurable (fun z => kahaneSumVectorScore a v γ t F' z i) := by
     intro i
     dsimp [kahaneSumVectorScore, finiteChaosVectorTestScore]
     fun_prop [kahaneSumVectorField, finiteChaosVectorMass, finiteChaosVectorWeight]
   have hScoreAEMeas : ∀ i, AEStronglyMeasurable (fun ω => score ω i) μ := by
-    intro i
-    exact (hScoreMeas i).aestronglyMeasurable.comp_aemeasurable hZae
-  let hfst : MeasurePreserving Prod.fst μ PX := measurePreserving_fst
-  let hsnd : MeasurePreserving Prod.snd μ PY := measurePreserving_snd
-  have hXae (i : ι) : AEMeasurable (fun ω : ΩX × ΩY => X ω.1 i) μ := by
-    have hmap : AEMeasurable (fun ω => X ω i) (μ.map Prod.fst) := by
-      rw [hfst.map_eq]
-      exact hX.2.1 i
-    exact hmap.comp_measurable measurable_fst
-  have hYae (i : ι) : AEMeasurable (fun ω : ΩX × ΩY => Y ω.2 i) μ := by
-    have hmap : AEMeasurable (fun ω => Y ω i) (μ.map Prod.snd) := by
-      rw [hsnd.map_eq]
-      exact hY.2.1 i
-    exact hmap.comp_measurable measurable_snd
+    fun_prop (disch := positivity)
   have hScoreInt : ∀ i, Integrable (fun ω => score ω i) μ := by
     intro i
     apply hEnv.const_mul M |>.mono'
     · exact hScoreAEMeas i
     · filter_upwards [] with ω
-      simpa [Real.norm_eq_abs, abs_of_nonneg
-        (mul_nonneg hM (Real.exp_nonneg _))] using hscoreBound' (Z ω) i
-  have hXScoreInt : ∀ i, Integrable
-      (fun ω : ΩX × ΩY => X ω.1 i * score ω i) μ := by
-    intro i
-    have hCoord : Integrable (fun ω => Z ω (Sum.inl i) *
-        Real.exp (∑ k, c k * |Z ω k|)) μ := hCoordEnv (Sum.inl i)
-    have hMajor : Integrable (fun ω => M * |Z ω (Sum.inl i)| *
-        Real.exp (∑ k, c k * |Z ω k|)) μ := by
-      have hnorm := hCoord.norm
-      convert hnorm.const_mul M using 1
-      ext ω
-      simp [Real.norm_eq_abs, abs_of_nonneg (Real.exp_nonneg _)]
-      ring
-    have hmeas : AEStronglyMeasurable
-        (fun ω : ΩX × ΩY => X ω.1 i * score ω i) μ := by
-      exact (hXae i).aestronglyMeasurable.mul (hScoreAEMeas i)
-    apply hMajor.mono' hmeas
-    filter_upwards [] with ω
-    have h := hscoreBound' (Z ω) i
-    change ‖X ω.1 i * score ω i‖ ≤
-      M * |Z ω (Sum.inl i)| * Real.exp (∑ k, c k * |Z ω k|)
-    calc
-      ‖X ω.1 i * score ω i‖ = |X ω.1 i| * ‖score ω i‖ := by
-        rw [norm_mul, Real.norm_eq_abs]
-      _ ≤ |X ω.1 i| * (M * Real.exp (∑ k, c k * |Z ω k|)) :=
-        mul_le_mul_of_nonneg_left h (abs_nonneg _)
-      _ = M * |X ω.1 i| * Real.exp (∑ k, c k * |Z ω k|) := by ring
-  have hYScoreInt : ∀ i, Integrable
-      (fun ω : ΩX × ΩY => Y ω.2 i * score ω i) μ := by
-    intro i
-    have hCoord : Integrable (fun ω => Z ω (Sum.inr i) *
-        Real.exp (∑ k, c k * |Z ω k|)) μ := hCoordEnv (Sum.inr i)
-    have hMajor : Integrable (fun ω => M * |Z ω (Sum.inr i)| *
-        Real.exp (∑ k, c k * |Z ω k|)) μ := by
-      have hnorm := hCoord.norm
-      convert hnorm.const_mul M using 1
-      ext ω
-      simp [Real.norm_eq_abs, abs_of_nonneg (Real.exp_nonneg _)]
-      ring
-    have hmeas : AEStronglyMeasurable
-        (fun ω : ΩX × ΩY => Y ω.2 i * score ω i) μ := by
-      exact (hYae i).aestronglyMeasurable.mul (hScoreAEMeas i)
-    apply hMajor.mono' hmeas
-    filter_upwards [] with ω
-    have h := hscoreBound' (Z ω) i
-    change ‖Y ω.2 i * score ω i‖ ≤
-      M * |Z ω (Sum.inr i)| * Real.exp (∑ k, c k * |Z ω k|)
-    calc
-      ‖Y ω.2 i * score ω i‖ = |Y ω.2 i| * ‖score ω i‖ := by
-        rw [norm_mul, Real.norm_eq_abs]
-      _ ≤ |Y ω.2 i| * (M * Real.exp (∑ k, c k * |Z ω k|)) :=
-        mul_le_mul_of_nonneg_left h (abs_nonneg _)
-      _ = M * |Y ω.2 i| * Real.exp (∑ k, c k * |Z ω k|) := by ring
-  have hFieldDMeas : ∀ i j, Measurable
-      (fun z => kahaneSumVectorFieldScoreDerivative a v γ t F' F'' z i j) := by
-    intro i j
-    by_cases hij : i = j
-    · simp [kahaneSumVectorFieldScoreDerivative,
-        finiteChaosVectorTestScoreDerivative, hij]
-      fun_prop [kahaneSumVectorField, finiteChaosVectorMass, finiteChaosVectorWeight]
-    · simp [kahaneSumVectorFieldScoreDerivative,
-        finiteChaosVectorTestScoreDerivative, hij]
-      fun_prop [kahaneSumVectorField, finiteChaosVectorMass, finiteChaosVectorWeight]
-  have hFieldDAEMeas : ∀ i j, AEStronglyMeasurable
-      (fun ω => fieldD ω i j) μ := by
-    intro i j
-    exact (hFieldDMeas i j).aestronglyMeasurable.comp_aemeasurable hZae
-  have hFieldDInt : ∀ i j, Integrable (fun ω => fieldD ω i j) μ := by
-    intro i j
-    apply hEnv.const_mul M |>.mono'
-    · exact hFieldDAEMeas i j
+      bound
+  have hCoordScoreInt (k : Sum ι ι) (i : ι) :
+      Integrable (fun ω => Z ω k * score ω i) μ := by
+    apply ((hCoordEnv k).norm.const_mul M).mono'
+    · exact (hZ.2.1 k).aestronglyMeasurable.mul (hScoreAEMeas i)
     · filter_upwards [] with ω
-      have h := (hscoreBound (kahaneSumVectorField t (Z ω)) i j).2
-      calc
-        ‖fieldD ω i j‖ ≤ M * Real.exp
-            (2 * (|γ| * ∑ k, |kahaneSumVectorField t (Z ω) k|)) := by
-          simpa [fieldD, kahaneSumVectorFieldScoreDerivative] using h
-        _ ≤ M * Real.exp (∑ k, c k * |Z ω k|) := by
-          apply mul_le_mul_of_nonneg_left _ hM
-          exact Real.exp_le_exp.mpr (hsum_le (Z ω))
+      have h := mul_le_mul_of_nonneg_left (hscoreBound' (Z ω) i) (norm_nonneg (Z ω k))
+      simpa only [score, norm_mul, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _),
+        mul_assoc, mul_left_comm] using h
+  have hXScoreInt (i : ι) := hCoordScoreInt (Sum.inl i) i
+  have hYScoreInt (i : ι) := hCoordScoreInt (Sum.inr i) i
   obtain ⟨W, hW, hWeightBound⟩ :=
     finiteChaosVectorWeight_absExp_bound a v γ
   let c2 : Sum ι ι → ℝ := fun _ => 2 * |γ|
@@ -334,7 +190,7 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
     exact (hKMeas i j).aestronglyMeasurable.comp_aemeasurable hZae
   have hKInt : ∀ i j, Integrable (fun ω => K ω i j) μ := by
     intro i j
-    have hEnv2 : Integrable (fun ω => Real.exp (∑ k, c2 k * |Z ω k|)) μ :=
+    have hEnv2  :=
       centeredJointlyGaussian_abs_linear_exp_integrable μ Z hZ c2
     have hpoint (z : Sum ι ι → ℝ) :
         ‖finiteChaosVectorWeight a v γ (kahaneSumVectorField t z) i *
@@ -353,8 +209,7 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
             ring
       have hfieldScaled :
           2 * (|γ| * ∑ k, |kahaneSumVectorField t z k|) ≤
-            2 * (|γ| * ∑ k, |z k|) := by
-        exact mul_le_mul_of_nonneg_left
+            2 * (|γ| * ∑ k, |z k|) := mul_le_mul_of_nonneg_left
           (mul_le_mul_of_nonneg_left hfield (abs_nonneg γ)) (by norm_num)
       have hproduct :
           ‖finiteChaosVectorWeight a v γ (kahaneSumVectorField t z) i‖ *
@@ -363,18 +218,14 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
             (W * Real.exp (|γ| * ∑ k, |kahaneSumVectorField t z k|)) *
               (W * Real.exp (|γ| * ∑ k, |kahaneSumVectorField t z k|)) * B₂ := by
         apply mul_le_mul
-        · exact mul_le_mul hwi hwj (norm_nonneg _) (by positivity)
+        · bound
         · exact hF''bound _
         · positivity
         · positivity
       calc
         _ ≤ (W * Real.exp (|γ| * ∑ k, |kahaneSumVectorField t z k|)) ^ 2 * B₂ := by
           rw [norm_mul, norm_mul]
-          calc
-            _ ≤ (W * Real.exp (|γ| * ∑ k, |kahaneSumVectorField t z k|)) *
-                  (W * Real.exp (|γ| * ∑ k, |kahaneSumVectorField t z k|)) * B₂ :=
-              hproduct
-            _ = _ := by rw [pow_two]
+          linarith
         _ ≤ W ^ 2 * B₂ *
             Real.exp (2 * (|γ| * ∑ k, |kahaneSumVectorField t z k|)) := by
           have hExpSq (x : ℝ) : Real.exp x ^ 2 = Real.exp (2 * x) := by
@@ -388,24 +239,17 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
             _ = _ := by rw [hExpSq]
             _ ≤ _ := le_rfl
         _ ≤ W ^ 2 * B₂ * Real.exp (∑ k, c2 k * |z k|) := by
-          apply mul_le_mul_of_nonneg_left _ (by positivity)
-          exact Real.exp_le_exp.mpr (hfieldScaled.trans_eq hexp)
+          bound
     apply hEnv2.const_mul (W ^ 2 * B₂) |>.mono'
     · exact hKAEmeas i j
     · filter_upwards [] with ω
-      simpa [K, Real.norm_eq_abs,
-        abs_of_nonneg (mul_nonneg (mul_nonneg (sq_nonneg W) hB₂)
-          (Real.exp_nonneg _))] using hpoint (Z ω)
-  have hGbound : ∀ z i,
-      ‖kahaneSumVectorScore a v γ t F' z i‖ ≤
-        M * Real.exp (∑ k, c k * |z k|) := hscoreBound'
-  have hDbound : ∀ z i k,
-      ‖kahaneSumVectorScoreDerivative a v γ t F' F'' z i k‖ ≤
-        M * Real.exp (∑ j, c j * |z j|) := hderivBound'
+      bound
+  have hGbound  := hscoreBound'
+  have hDbound  := hderivBound'
   exact kahaneSmoothInterpolation_integrand_nonpos_of_gaussian_ibp
     PX PY X Y hX hY a vX vY ha γ t F' F'' hF'meas hF''meas hF' hF''nonneg
     ht ht1 hvX hvY hcov c hc M hM hGbound hDbound hScoreInt hXScoreInt hYScoreInt
-    hFieldDInt hKInt
+    hKInt
 
 
 /-- Dominated differentiation and the Gaussian-IBP calculation together show that a smooth
@@ -453,10 +297,9 @@ theorem kahaneSmoothInterpolationExpectation_hasDerivAt_nonpos
   constructor
   · exact kahaneInterpolatedExpectation_hasDerivAt PX PY X Y vX vY a γ t ε F F' hF
       hε hεleft hεright hMeas hInt hDMeas b hb hbound
-  · have ht : 0 < t := lt_of_lt_of_le hε hεleft
+  · have ht  := lt_of_lt_of_le hε hεleft
     have ht1 : t < 1 := by
-      have : 0 < 1 - t := lt_of_lt_of_le hε hεright
-      linarith
+      bound
     exact kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
       PX PY X Y hX hY a vX vY ha γ t F' F'' B₁ B₂ hF'meas hF''meas hF'
       hF'bound hF''bound hF''nonneg ht ht1 hvX hvY hcov

@@ -9,20 +9,22 @@ import Mathlib.Analysis.MeanInequalitiesPow
 
 /-! Small-power estimates for the retained mass in the lastone limit. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable (a b p q : ℝ) (ha : 0 < a) (hb : 0 ≤ b) (hp : 0 < p) (hpq : p ≤ q) (hq1 : q ≤ 1)
+
+include a b p q ha hb hp hpq hq1 in
 /-- A fixed subunit moment controls the increment at a smaller exponent, with a coefficient
 that vanishes with that exponent. This controls the complementary-mass error term in the proof of
 [KRV, Lemma 10.6]. -/
-theorem lastone_rpow_add_increment_le (a b p q : ℝ)
-    (ha : 0 < a) (hb : 0 ≤ b) (hp : 0 < p) (hpq : p ≤ q) (hq1 : q ≤ 1) :
+theorem lastone_rpow_add_increment_le  :
     (a + b) ^ p - a ^ p ≤ (p / q) * b ^ q * a ^ (p - q) := by
-  have hq : 0 < q := hp.trans_le hpq
+  have hq  := hp.trans_le hpq
   have hpow : (a + b) ^ p ≤ (a ^ q + b ^ q) ^ (p / q) := by
     calc
       (a + b) ^ p = ((a + b) ^ q) ^ (p / q) := by
@@ -44,14 +46,13 @@ theorem lastone_rpow_add_increment_le (a b p q : ℝ)
 theorem lastone_rpow_le_one_add (x p u : ℝ)
     (hx : 0 ≤ x) (hp : 0 < p) (hpu : p ≤ u) :
     x ^ p ≤ 1 + (p / u) * x ^ u := by
-  have hu : 0 < u := hp.trans_le hpu
+  have hu  := hp.trans_le hpu
   have h := rpow_one_add_le_one_add_mul_self
     (s := x ^ u - 1) (p := p / u) (by linarith [Real.rpow_nonneg hx u])
     (div_pos hp hu).le ((div_le_one hu).mpr hpu)
   rw [add_sub_cancel, ← Real.rpow_mul hx, mul_div_cancel₀ _ hu.ne'] at h
-  have hpu0 : 0 ≤ p / u := (div_pos hp hu).le
-  calc x ^ p ≤ 1 + (p / u) * (x ^ u - 1) := h
-       _ ≤ 1 + (p / u) * x ^ u := by linarith
+  have hpu0  := (div_pos hp hu).le
+  grind
 
 /-- An inverse moment bounds the deficit of a small positive power. -/
 theorem lastone_one_le_rpow_add (x p v : ℝ)
@@ -65,13 +66,13 @@ theorem lastone_one_le_rpow_add (x p v : ℝ)
   have hcancel : (p / v) * (-v * Real.log x) = -(Real.log x * p) := by
     field_simp
   rw [hcancel] at hmul
-  have hcoef : 0 ≤ p / v := div_nonneg hp hv.le
+  have hcoef  := div_nonneg hp hv.le
   linarith
 
+include a b p q ha hb hp hpq hq1 in
 /-- Positive and inverse moments of fixed order dominate the complementary-mass error
 with a coefficient proportional to the vanishing exponent. -/
-theorem lastone_rpow_add_increment_le_moments (a b p q : ℝ)
-    (ha : 0 < a) (hb : 0 ≤ b) (hp : 0 < p) (hpq : p ≤ q) (hq1 : q ≤ 1) :
+theorem lastone_rpow_add_increment_le_moments  :
     (a + b) ^ p - a ^ p ≤ (p / q) * (1 + 2 * b ^ (2 * q) + a ^ (-2 * q)) := by
   have hweight : a ^ (p - q) ≤ 1 + a ^ (-q) := by
     by_cases ha1 : 1 ≤ a
@@ -81,7 +82,7 @@ theorem lastone_rpow_add_increment_le_moments (a b p q : ℝ)
         (by linarith : -q ≤ p - q)).trans
         (le_add_of_nonneg_left (by norm_num))
   have hbq := Real.rpow_nonneg hb q
-  have haq := Real.rpow_nonneg ha.le (-q)
+  
   have hbSq : (b ^ q) ^ (2 : ℕ) = b ^ (2 * q) := by
     rw [← Real.rpow_natCast, ← Real.rpow_mul hb]
     congr 1
@@ -92,11 +93,11 @@ theorem lastone_rpow_add_increment_le_moments (a b p q : ℝ)
     ring
   have hdom : b ^ q * a ^ (p - q) ≤ 1 + 2 * b ^ (2 * q) + a ^ (-2 * q) := by
     have hmul := mul_le_mul_of_nonneg_left hweight hbq
-    have hs1 := sq_nonneg (b ^ q - 1)
+    
     have hs2 := sq_nonneg (b ^ q - a ^ (-q))
     rw [← hbSq, ← haSq]
     nlinarith
-  have hcoef : 0 ≤ p / q := (div_pos hp (hp.trans_le hpq)).le
+  have hcoef  := (div_pos hp (hp.trans_le hpq)).le
   exact (lastone_rpow_add_increment_le a b p q ha hb hp hpq hq1).trans
     (by simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hdom hcoef)
 
@@ -113,7 +114,7 @@ theorem lastone_smallPower_moment_tendsto_one
     (huBound : ∀ᶠ i in l, ∫⁻ ω, f i ω ^ u ∂P ≤ Cu)
     (hvBound : ∀ᶠ i in l, ∫⁻ ω, f i ω ^ (-v) ∂P ≤ Cv) :
     Tendsto (fun i => (∫⁻ ω, f i ω ^ e i ∂P).toReal) l (𝓝 1) := by
-  have hsmall : ∀ᶠ i in l, e i ≤ u := he.eventually (eventually_le_nhds hu)
+  have hsmall  := he.eventually (eventually_le_nhds hu)
   have hbounds : ∀ᶠ i in l,
       1 - e i / v * Cv.toReal ≤ (∫⁻ ω, f i ω ^ e i ∂P).toReal ∧
       (∫⁻ ω, f i ω ^ e i ∂P).toReal ≤ 1 + e i / u * Cu.toReal := by
@@ -124,7 +125,7 @@ theorem lastone_smallPower_moment_tendsto_one
     have hpoint (ω : Ω) (hω : 0 < f i ω ∧ f i ω < ⊤) :
         f i ω ^ e i ≤ 1 + ENNReal.ofReal (e i / u) * f i ω ^ u ∧
         1 ≤ f i ω ^ e i + ENNReal.ofReal (e i / v) * f i ω ^ (-v) := by
-      have hx : 0 < (f i ω).toReal := ENNReal.toReal_pos hω.1.ne' hω.2.ne
+      have hx  := ENNReal.toReal_pos hω.1.ne' hω.2.ne
       have hrep (p : ℝ) : ENNReal.ofReal ((f i ω).toReal ^ p) = f i ω ^ p := by
         rw [← ENNReal.ofReal_rpow_of_pos hx, ENNReal.ofReal_toReal hω.2.ne]
       constructor
@@ -146,8 +147,7 @@ theorem lastone_smallPower_moment_tendsto_one
           rw [lintegral_add_left measurable_const, lintegral_const,
             measure_univ, mul_one, lintegral_const_mul'' _ (hpow u)]
         _ ≤ _ := add_le_add le_rfl (mul_le_mul' le_rfl hUi)
-    have htop : 1 + ENNReal.ofReal (e i / u) * Cu ≠ ⊤ := by
-      exact ENNReal.add_ne_top.mpr ⟨ENNReal.one_ne_top,
+    have htop : 1 + ENNReal.ofReal (e i / u) * Cu ≠ ⊤ := ENNReal.add_ne_top.mpr ⟨ENNReal.one_ne_top,
         (ENNReal.mul_lt_top ENNReal.ofReal_lt_top hCu).ne⟩
     have hItop := ne_top_of_le_ne_top htop hupper
     have hlower : 1 ≤ (∫⁻ ω, f i ω ^ e i ∂P) + ENNReal.ofReal (e i / v) * Cv := by
@@ -177,7 +177,6 @@ theorem lastone_smallPower_moment_tendsto_one
     (h := fun i => 1 + e i / u * Cu.toReal)
   · simpa using tendsto_const_nhds.sub ((he.div_const v).mul_const Cv.toReal)
   · simpa using tendsto_const_nhds.add ((he.div_const u).mul_const Cu.toReal)
-  · exact hbounds.mono fun i hi => hi.1
-  · exact hbounds.mono fun i hi => hi.2
+  all_goals simp_all
 
 end DOZZ.Proofs

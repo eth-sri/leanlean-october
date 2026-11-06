@@ -43,8 +43,7 @@ noncomputable def gffLpInnerCLM {ι : Type*}
 @[simp]
 theorem gffLpInnerCLM_apply {ι : Type*}
     (b c : lp (fun _ : ι => ℝ) (2 : ℝ≥0∞)) :
-    gffLpInnerCLM b c = ⟪b, c⟫_ℝ := by
-  rfl
+    gffLpInnerCLM b c = ⟪b, c⟫_ℝ := rfl
 
 /-- The cosine mode limits on a chart, packaged as an `ℓ²` vector whenever their square sum is
 finite. -/
@@ -84,14 +83,12 @@ theorem equatorHaarCommonSinEvalLp_apply (R : ℕ)
     equatorHaarCommonSinEvalLp R ω h k =
       equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω := rfl
 
+variable (R : ℕ) (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2) (hcos : Summable fun k : Fin 2 → ℤ => (equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω) ^ 2) (hsin : Summable fun k : Fin 2 → ℤ => (equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω) ^ 2)
+
+include R ω hcos hsin in
 /-- A square-summable pair of local mode coefficients defines a continuous functional on the
 corresponding pair of weighted Fourier coefficient spaces. -/
-noncomputable def equatorLocalModePairingCLM (R : ℕ)
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
-    (hcos : Summable fun k : Fin 2 → ℤ =>
-      (equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω) ^ 2)
-    (hsin : Summable fun k : Fin 2 → ℤ =>
-      (equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω) ^ 2) :
+noncomputable def equatorLocalModePairingCLM  :
     (lp (fun _ : Fin 2 → ℤ => ℝ) (2 : ℝ≥0∞) ×
       lp (fun _ : Fin 2 → ℤ => ℝ) (2 : ℝ≥0∞)) →L[ℝ] ℝ := by
   let bcos := equatorHaarCommonCosEvalLp R ω hcos
@@ -114,21 +111,17 @@ noncomputable def equatorLocalModePairingCLM (R : ℕ)
     have h₁ : Continuous fun c :
         lp (fun _ : Fin 2 → ℤ => ℝ) (2 : ℝ≥0∞) ×
           lp (fun _ : Fin 2 → ℤ => ℝ) (2 : ℝ≥0∞) => ⟪bcos, c.1⟫_ℝ := by
-      exact (innerSL ℝ bcos).continuous.comp continuous_fst
+      fun_prop (disch := positivity)
     have h₂ : Continuous fun c :
         lp (fun _ : Fin 2 → ℤ => ℝ) (2 : ℝ≥0∞) ×
           lp (fun _ : Fin 2 → ℤ => ℝ) (2 : ℝ≥0∞) => ⟪bsin, c.2⟫_ℝ := by
-      exact (innerSL ℝ bsin).continuous.comp continuous_snd
+      fun_prop (disch := positivity)
     exact h₁.add h₂
   exact ⟨F, hcont⟩
 
+include R ω hcos hsin in
 @[simp]
-theorem equatorLocalModePairingCLM_apply (R : ℕ)
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
-    (hcos : Summable fun k : Fin 2 → ℤ =>
-      (equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω) ^ 2)
-    (hsin : Summable fun k : Fin 2 → ℤ =>
-      (equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω) ^ 2)
+theorem equatorLocalModePairingCLM_apply
     (c : lp (fun _ : Fin 2 → ℤ => ℝ) (2 : ℝ≥0∞) ×
       lp (fun _ : Fin 2 → ℤ => ℝ) (2 : ℝ≥0∞)) :
     equatorLocalModePairingCLM R ω hcos hsin c =

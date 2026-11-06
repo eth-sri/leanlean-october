@@ -13,6 +13,7 @@ import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
 import Mathlib.MeasureTheory.MeasurableSpace.Prod
 import Mathlib.MeasureTheory.Integral.BoundedContinuousFunction
 import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import Mathlib.Tactic
 
 /-! Measurable versions for random measures defined by weak limits in probability. -/
 
@@ -25,26 +26,22 @@ noncomputable section
 
 namespace DOZZ.Proofs
 
-private theorem regularized_testIntegral_aemeasurable
+theorem regularizedGMC_testIntegral_aemeasurable
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
     (f : BoundedContinuousFunction ℂ ℝ) :
     AEMeasurable (fun ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω) P := by
-  let μ : Ω → Measure ℂ := fun ω => regularizedGMC P Xc γ r ω
-  have hμ : Measurable μ := regularizedGMC_measurable P X hX Xc hXc γ r
-  let pos : Ω → ℝ≥0∞ := fun ω =>
+  let μ  := fun ω => regularizedGMC P Xc γ r ω
+  have hμ  := regularizedGMC_measurable P X hX Xc hXc γ r
+  let pos  := fun ω =>
     ∫⁻ x, (f.nnrealPart x : ℝ≥0∞) ∂μ ω
-  let neg : Ω → ℝ≥0∞ := fun ω =>
+  let neg  := fun ω =>
     ∫⁻ x, ((-f).nnrealPart x : ℝ≥0∞) ∂μ ω
   have hpos : Measurable pos := by
-    dsimp [pos]
-    exact (Measure.measurable_lintegral
-      (BoundedContinuousFunction.measurable_coe_ennreal_comp f.nnrealPart)).comp hμ
+    fun_prop
   have hneg : Measurable neg := by
-    dsimp [neg]
-    exact (Measure.measurable_lintegral
-      (BoundedContinuousFunction.measurable_coe_ennreal_comp (-f).nnrealPart)).comp hμ
+    fun_prop
   have hproxy : Measurable (fun ω => (pos ω).toReal - (neg ω).toReal) := by
     fun_prop
   have hfinite := regularizedGMC_finite_ae P X hX Xc hXc γ r
@@ -57,11 +54,11 @@ private theorem regularized_testIntegral_aemeasurable
     rw [← BoundedContinuousFunction.toReal_lintegral_coe_eq_integral (-f).nnrealPart (μ ω)]
   exact hproxy.aemeasurable.congr heq.symm
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (M : Ω → Measure ℂ)
+
+include Ω _inst1 P X hX γ Xc hXc M in
 private theorem gmc_testIntegral_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (M : Ω → Measure ℂ)
+
     (hconv : ∀ f : BoundedContinuousFunction ℂ ℝ,
       TendstoInMeasure P
         (fun r ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω) atTop
@@ -70,7 +67,7 @@ private theorem gmc_testIntegral_aemeasurable
     AEMeasurable (fun ω => ∫ x, f x ∂M ω) P := by
   apply (hconv f).aemeasurable
   intro r
-  exact regularized_testIntegral_aemeasurable P X hX Xc hXc γ r f
+  exact regularizedGMC_testIntegral_aemeasurable P X hX Xc hXc γ r f
 
 private def ratLowerIntervals : Set (Set ℝ) :=
   ⋃ q : ℚ, {Set.Iic (q : ℝ)}
@@ -89,8 +86,7 @@ private def ratLowerRectangles : Set (Set (ℝ × ℝ)) :=
 
 private theorem ratLowerRectangles_generate :
     generateFrom ratLowerRectangles = borel (ℝ × ℝ) := by
-  have hreal : generateFrom ratLowerIntervals = borel ℝ := by
-    exact Real.borel_eq_generateFrom_Iic_rat.symm
+  have hreal : generateFrom ratLowerIntervals = borel ℝ := Real.borel_eq_generateFrom_Iic_rat.symm
   have hprod := generateFrom_eq_prod hreal hreal
     ratLowerIntervals_spanning ratLowerIntervals_spanning
   simpa only [ratLowerRectangles, BorelSpace.measurable_eq] using hprod
@@ -114,10 +110,7 @@ private theorem lowerBoxFamily_representation {s : Set ℂ} (hs : s ∈ lowerBox
   rcases Set.mem_image2.mp ht with ⟨a, ha, b, hb, rfl⟩
   rcases Set.mem_iUnion.mp ha with ⟨p, hp⟩
   rcases Set.mem_iUnion.mp hb with ⟨q, hq⟩
-  simp only [Set.mem_singleton_iff] at hp hq
-  subst a
-  subst b
-  exact ⟨(p, q), rfl⟩
+  continuity
 
 private theorem lowerBoxFamily_generate : generateFrom lowerBoxFamily = borel ℂ := by
   calc
@@ -149,8 +142,6 @@ private theorem basisFamily_eq : basisFamily = insert Set.univ lowerBoxFamily :=
     | some i =>
         right
         refine ⟨Set.Iic (i.1 : ℝ) ×ˢ Set.Iic (i.2 : ℝ), ?_, rfl⟩
-        change (Set.Iic (i.1 : ℝ) ×ˢ Set.Iic (i.2 : ℝ)) ∈
-          Set.image2 (fun a b : Set ℝ => a ×ˢ b) ratLowerIntervals ratLowerIntervals
         exact Set.mem_image2_of_mem
           (Set.mem_iUnion.mpr ⟨i.1, Set.mem_singleton _⟩)
           (Set.mem_iUnion.mpr ⟨i.2, Set.mem_singleton _⟩)
@@ -176,7 +167,7 @@ private theorem basisFamily_generate : generateFrom basisFamily = borel ℂ := b
     · have hgen := lowerBoxFamily_generate
       exact hgen ▸ GenerateMeasurable.basic s hs
   · rw [← lowerBoxFamily_generate]
-    exact generateFrom_mono (Set.subset_insert _ _)
+    simp_all
 
 private def lowerApprox (q : ℚ) (n : ℕ) (x : ℝ) : ℝ :=
   max 0 (min 1 (1 - (n : ℝ) * (x - q)))
@@ -199,19 +190,16 @@ private theorem lowerApprox_tendsto (q : ℚ) (x : ℝ) :
   · have heq : ∀ n, lowerApprox q n x = 1 := by
       intro n
       have harg : 1 ≤ 1 - (n : ℝ) * (x - q) := by
-        have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
-        have hxq : x - (q : ℝ) ≤ 0 := sub_nonpos.mpr hx
-        nlinarith [mul_nonpos_of_nonneg_of_nonpos hn hxq]
+        nlinarith
       simp [lowerApprox, min_eq_left harg]
     simp [hx, heq]
-  · have hpos : 0 < x - (q : ℝ) := sub_pos.mpr (lt_of_not_ge hx)
-    have hqx : (q : ℝ) < x := lt_of_not_ge hx
+  · have hpos  := sub_pos.mpr (lt_of_not_ge hx)
+
     obtain ⟨N, hN⟩ := exists_nat_gt (1 / (x - (q : ℝ)))
     have heventually : (fun _ : ℕ => (0 : ℝ)) =ᶠ[atTop]
         fun n => lowerApprox q n x := by
       filter_upwards [eventually_ge_atTop N] with n hn
-      have hNn : 1 / (x - (q : ℝ)) < (n : ℝ) := by
-        exact lt_of_lt_of_le hN (by exact_mod_cast hn)
+      have hNn : 1 / (x - (q : ℝ)) < (n : ℝ) := lt_of_lt_of_le hN (by exact_mod_cast hn)
       have hprod : 1 ≤ (n : ℝ) * (x - (q : ℝ)) := by
         have := (div_lt_iff₀ hpos).mp hNn
         nlinarith
@@ -219,17 +207,15 @@ private theorem lowerApprox_tendsto (q : ℚ) (x : ℝ) :
       have hmin : min 1 (1 - (n : ℝ) * (x - (q : ℝ))) ≤ 0 :=
         le_trans (min_le_right _ _) harg
       simp [lowerApprox, max_eq_left hmin]
-    have hT : Tendsto (fun n : ℕ => lowerApprox q n x) atTop (𝓝 0) :=
+    have hT  :=
       Tendsto.congr' heventually tendsto_const_nhds
-    convert hT using 1
-    simp [not_le_of_gt hqx]
+    grind
 
 private def lowerBoxApproxFun (i : ℚ × ℚ) (n : ℕ) (z : ℂ) : ℝ :=
   lowerApprox i.1 n z.re * lowerApprox i.2 n z.im
 
 private theorem lowerBoxApproxFun_continuous (i : ℚ × ℚ) (n : ℕ) :
-    Continuous (lowerBoxApproxFun i n) := by
-  exact ((lowerApprox_continuous i.1 n).comp Complex.continuous_re).mul
+    Continuous (lowerBoxApproxFun i n) := ((lowerApprox_continuous i.1 n).comp Complex.continuous_re).mul
     ((lowerApprox_continuous i.2 n).comp Complex.continuous_im)
 
 private theorem lowerBoxApprox_bounds (i : ℚ × ℚ) (n : ℕ) (z : ℂ) :
@@ -283,42 +269,31 @@ private theorem lowerBoxApprox_integral_tendsto (i : ℚ × ℚ)
     exact ⟨by linarith, hz.2⟩
   have hlim : ∀ᵐ z ∂μ,
       Tendsto (fun n : ℕ => lowerBoxApprox i n z) atTop
-        (𝓝 ((lowerBox i).indicator (fun _ => (1 : ℝ)) z)) := by
-    exact ae_of_all _ (lowerBoxApprox_tendsto i)
+        (𝓝 ((lowerBox i).indicator (fun _ => (1 : ℝ)) z)) := ae_of_all _ (lowerBoxApprox_tendsto i)
   have hs : MeasurableSet (lowerBox i) := by
     apply (realProdEquiv.measurable (MeasurableSet.prod measurableSet_Iic measurableSet_Iic))
   have hdomconv := tendsto_integral_of_dominated_convergence
     (fun _ : ℂ => (1 : ℝ))
     (fun n => (lowerBoxApprox i n).continuous.measurable.aestronglyMeasurable)
     hbound hdom hlim
-  rw [← integral_indicator_one hs]
-  exact hdomconv
+  simp_all
 
+include Ω _inst1 P X hX γ Xc hXc M in
 private theorem totalMass_real_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (M : Ω → Measure ℂ)
+
     (hconv : ∀ f : BoundedContinuousFunction ℂ ℝ,
       TendstoInMeasure P
         (fun r ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω) atTop
         (fun ω => ∫ x, f x ∂M ω)) :
     AEMeasurable (fun ω => (M ω Set.univ).toReal) P := by
-  have hInt : AEMeasurable (fun ω => ∫ x, (1 : ℝ) ∂M ω) P :=
+  have hInt  :=
     gmc_testIntegral_aemeasurable P X hX γ Xc hXc M hconv
       (1 : BoundedContinuousFunction ℂ ℝ)
-  have hEq : (fun ω => ∫ x, (1 : ℝ) ∂M ω) =
-      fun ω => (M ω Set.univ).toReal := by
-    funext ω
-    rw [integral_const]
-    simp [Measure.real_def]
-  exact hInt.congr (ae_of_all P (fun ω => congrFun hEq ω))
+  aesop
 
+include Ω _inst1 P X hX γ Xc hXc M in
 private theorem lowerBox_realMass_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (M : Ω → Measure ℂ) (hMfinite : ∀ ω, IsFiniteMeasure (M ω))
+     (hMfinite : ∀ ω, IsFiniteMeasure (M ω))
     (hconv : ∀ f : BoundedContinuousFunction ℂ ℝ,
       TendstoInMeasure P
         (fun r ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω) atTop
@@ -333,8 +308,7 @@ private theorem lowerBox_realMass_aemeasurable
       (fun n => ∫ z, lowerBoxApprox i n z ∂M ω) atTop
       (𝓝 ((M ω (lowerBox i)).toReal)) := by
     filter_upwards [] with ω
-    have hfiniteω : IsFiniteMeasure (M ω) := hMfinite ω
-    simpa [Measure.real_def] using lowerBoxApprox_integral_tendsto i (M ω)
+    exact lowerBoxApprox_integral_tendsto i (M ω)
   exact aemeasurable_of_tendsto_metrizable_ae' hseq hlim
 
 theorem equatorGFF_GMC_measurable_version
@@ -345,42 +319,37 @@ theorem equatorGFF_GMC_measurable_version
     ∃ N : Ω → Measure ℂ, Measurable N ∧ (∀ ω, IsFiniteMeasure (N ω)) ∧
       ∀ᵐ ω ∂P, M ω = N ω := by
   classical
-  have _hγrange : γ ∈ Set.Ioo (0 : ℝ) 2 := ⟨hγ, hγ2⟩
+
   rcases hM with ⟨hMfinite, Xc, hXc, hconv⟩
-  let coordinate : Option (ℚ × ℚ) → Ω → ℝ := fun i ω =>
+  let coordinate  := fun i ω =>
     (M ω (basisSet i)).toReal
   have hcoordinate : ∀ i, AEMeasurable (coordinate i) P := by
     intro i
     cases i with
     | none =>
-        simpa [coordinate, basisSet] using
-          totalMass_real_aemeasurable P X hX γ Xc hXc M hconv
+        exact id (totalMass_real_aemeasurable P X hX γ Xc hXc M hconv)
     | some i =>
-        simpa [coordinate, basisSet] using
-          lowerBox_realMass_aemeasurable P X hX γ Xc hXc M hMfinite hconv i
-  let coordinateMeas : Option (ℚ × ℚ) → Ω → ℝ :=
+        exact id (lowerBox_realMass_aemeasurable P X hX γ Xc hXc M hMfinite hconv i)
+  let coordinateMeas  :=
     fun i => (hcoordinate i).mk (coordinate i)
-  have hcoordinateMeas : ∀ i, Measurable (coordinateMeas i) :=
+  have hcoordinateMeas  :=
     fun i => (hcoordinate i).measurable_mk
-  have hcoordinateAE : ∀ᵐ ω ∂P, ∀ i, coordinate i ω = coordinateMeas i ω :=
+  have hcoordinateAE  :=
     ae_all_iff.mpr fun i => (hcoordinate i).ae_eq_mk
-  let bad : Set Ω := {ω | ∃ i, coordinate i ω ≠ coordinateMeas i ω}
+  let bad  := {ω | ∃ i, coordinate i ω ≠ coordinateMeas i ω}
   have hbad : P bad = 0 := by
     simpa [bad] using (ae_iff.mp hcoordinateAE)
   obtain ⟨badMeas, hbadSub, hbadMeasurable, hbadZero⟩ :=
     exists_measurable_superset_of_null hbad
-  let good : Set Ω := badMeasᶜ
-  have hgoodMeasurable : MeasurableSet good := hbadMeasurable.compl
+  let good  := badMeasᶜ
+  have hgoodMeasurable  := hbadMeasurable.compl
   have hgood : ∀ᵐ ω ∂P, ω ∈ good := by
     rw [ae_iff]
     simpa [good] using hbadZero
   have hcoordinate_eq : ∀ ω, ω ∈ good → ∀ i,
       coordinate i ω = coordinateMeas i ω := by
-    intro ω hω i
-    by_contra hne
-    change ω ∉ badMeas at hω
-    exact hω (hbadSub ⟨i, hne⟩)
-  let N : Ω → Measure ℂ := fun ω => if ω ∈ good then M ω else 0
+    grind
+  let N  := fun ω => if ω ∈ good then M ω else 0
   have hNfinite : ∀ ω, IsFiniteMeasure (N ω) := by
     intro ω
     by_cases hω : ω ∈ good
@@ -393,8 +362,8 @@ theorem equatorGFF_GMC_measurable_version
       funext ω
       by_cases hω : ω ∈ good
       · have hcoord := hcoordinate_eq ω hω i
-        have hMω : IsFiniteMeasure (M ω) := hMfinite ω
-        have hfiniteSet : M ω (basisSet i) ≠ ∞ :=
+        have hMω  := hMfinite ω
+        have hfiniteSet  :=
           measure_ne_top (M ω) (basisSet i)
         simp [N, hω]
         calc
@@ -411,12 +380,11 @@ theorem equatorGFF_GMC_measurable_version
       rw [basisFamily_eq] at hs
       rcases hs with hs | hs
       · subst s
-        simpa [basisSet] using hEvalMeasurable none
+        exact hEvalMeasurable none
       · obtain ⟨i, hi⟩ := lowerBoxFamily_representation hs
         subst s
-        simpa [basisSet] using hEvalMeasurable (some i)
-    have huniv : Measurable (fun ω => N ω Set.univ) := by
-      simpa [basisSet] using hEvalMeasurable none
+        exact hEvalMeasurable (some i)
+    have huniv : Measurable (fun ω => N ω Set.univ) := hEvalMeasurable none
     exact @Measurable.measure_of_isPiSystem Ω ℂ _ _ N hNfinite basisFamily
       (BorelSpace.measurable_eq.trans basisFamily_generate.symm) basisFamily_pi hbasic huniv
   refine ⟨N, hNmeasurable, hNfinite, ?_⟩

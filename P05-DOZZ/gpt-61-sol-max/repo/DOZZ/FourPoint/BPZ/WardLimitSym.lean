@@ -6,6 +6,7 @@ module
 
 public import DOZZ.FourPoint.BPZ.WardLimitKernel
 public import DOZZ.FourPoint.BPZ.WeakConvGMC
+import Mathlib.Tactic
 
 /-! # Symmetrization of the cutoff Ward identity
 
@@ -45,7 +46,7 @@ theorem bpz_integral_integral_symm {m : Measure ℂ} [SFinite m] {F : ℂ → �
     ∫ x, ∫ y, F x y ∂m ∂m = ∫ x, ∫ y, (F x y + F y x) / 2 ∂m ∂m := by
   have hF' : Integrable (fun p : ℂ × ℂ => F p.1 p.2) (m.prod m) := hF
   have hFs : Integrable (fun p : ℂ × ℂ => F p.2 p.1) (m.prod m) := hF.swap
-  have hsum : Integrable (fun p : ℂ × ℂ => (F p.1 p.2 + F p.2 p.1) / 2) (m.prod m) :=
+  have hsum  :=
     (hF'.add hFs).div_const 2
   rw [← integral_prod (fun p : ℂ × ℂ => F p.1 p.2) hF',
     ← integral_prod (fun p : ℂ × ℂ => (F p.1 p.2 + F p.2 p.1) / 2) hsum,
@@ -59,7 +60,7 @@ theorem bpz_integrable_prod_of_bdd {m : Measure ℂ} [IsFiniteMeasure m] {F : �
     (hF : Measurable (Function.uncurry F)) {C : ℝ} (hC : ∀ x y, |F x y| ≤ C) :
     Integrable (Function.uncurry F) (m.prod m) :=
   Integrable.of_bound hF.aestronglyMeasurable C (Eventually.of_forall fun p => by
-    rw [Real.norm_eq_abs]; exact hC p.1 p.2)
+    exact hC p.1 p.2)
 
 /-- The cutoff-region double integral equals the antisymmetrized one. -/
 theorem bpz_integral_symKer {m : Measure ℂ} [IsFiniteMeasure m] {φ ρ k L : ℂ → ℝ}
@@ -93,24 +94,22 @@ theorem bpz_cutoff_sym_identity {γ r : ℝ} {φ ρ k₁ k₂ : ℂ → ℝ} {m�
   set T : ℂ → ℝ := fun w => bpzTruncLogDeriv r w v with hTdef
   have hLm : Measurable L :=
     (ContinuousLinearMap.apply ℝ ℝ v).continuous.measurable.comp (measurable_bpzLamDeriv r)
-  have hTm : Measurable T :=
+  have hTm  :=
     (ContinuousLinearMap.apply ℝ ℝ v).continuous.measurable.comp (measurable_bpzTruncLogDeriv r)
   have hLb : ∀ w, |L w| ≤ Real.exp r * ‖v‖ := fun w => by
-    rw [← Real.norm_eq_abs]
     exact ((bpzLamDeriv r w).le_opNorm v).trans
       (mul_le_mul_of_nonneg_right (norm_bpzLamDeriv_le_exp r w) (norm_nonneg v))
   have hTb : ∀ w, |T w| ≤ Real.exp r * ‖v‖ := fun w => by
-    rw [← Real.norm_eq_abs]
     exact ((bpzTruncLogDeriv r w).le_opNorm v).trans
       (mul_le_mul_of_nonneg_right (norm_bpzTruncLogDeriv_le r w).1 (norm_nonneg v))
-  have hC₁ : 0 ≤ C₁ := (abs_nonneg _).trans (hφk 0)
-  have hC₂ : 0 ≤ C₂ := (abs_nonneg _).trans (hρk 0)
+  have hC₁  := (abs_nonneg _).trans (hφk 0)
+  have hC₂  := (abs_nonneg _).trans (hρk 0)
   set Cb : ℝ := C₁ * C₂ * (Real.exp r * ‖v‖)
   have hFb : ∀ x y, |φ x * k₁ x * (ρ y * k₁ y) * L (x - y)| ≤ Cb := fun x y => by
     rw [abs_mul, abs_mul]
     exact mul_le_mul (mul_le_mul (hφk x) (hρk y) (abs_nonneg _) hC₁) (hLb _) (abs_nonneg _)
       (by positivity)
-  have hFm : Measurable (Function.uncurry fun x y => φ x * k₁ x * (ρ y * k₁ y) * L (x - y)) :=
+  have hFm  :=
     (((hφ.comp measurable_fst).mul (hk₁.comp measurable_fst)).mul
       ((hρ.comp measurable_snd).mul (hk₁.comp measurable_snd))).mul
       (hLm.comp (measurable_fst.sub measurable_snd))
@@ -133,7 +132,6 @@ theorem bpz_cutoff_sym_identity {γ r : ℝ} {φ ρ k₁ k₂ : ℂ → ℝ} {m�
       (((measurable_const.sub (hρ.comp measurable_snd)).mul (hk₂.comp measurable_snd)).mul
         (((hφ.comp measurable_fst).mul (hk₁.comp measurable_fst)).mul
           (hTm.comp (measurable_fst.sub measurable_snd))))
-    unfold bpzMixTest
     exact (hj.stronglyMeasurable.integral_prod_right' (ν := m₂)).measurable
   have hI2 : Integrable (fun x => bpzMixTest φ ρ k₁ k₂ T m₂ x) m₁ := by
     refine integrable_of_bdd_finite hMm (C := C₁ * (Real.exp r * ‖v‖) *

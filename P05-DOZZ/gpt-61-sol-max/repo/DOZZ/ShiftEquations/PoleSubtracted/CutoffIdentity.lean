@@ -6,6 +6,7 @@ module
 
 public import DOZZ.ShiftEquations.PoleSubtracted.CutoffHolomorphic
 import DOZZ.GMC.Annulus.BallCover
+import Mathlib.Tactic
 
 /-!
 # The martingale identity of the cutoff family
@@ -31,12 +32,13 @@ theorem measurable_withDensity_measure {ρ : ℂ → ℝ≥0∞} (hρ : Measurab
     Measurable fun μ : Measure ℂ => μ.withDensity ρ := by
   refine Measure.measurable_of_measurable_coe _ fun s hs => ?_
   simp_rw [withDensity_apply _ hs, ← lintegral_indicator hs]
-  exact Measure.measurable_lintegral (hρ.indicator hs)
+  fun_prop (disch := positivity)
 
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
+include P X hX γ hγ hγ2 M hM Xc hXc
 /-- The tilt identity for the `ofReal` of a real functional. -/
-theorem lintegral_ofReal_circleTilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (a : ℝ) (m : ℕ)
+theorem lintegral_ofReal_circleTilt  (a : ℝ) (m : ℕ)
     {Φ : Measure ℂ → ℝ} (hΦ : Measurable Φ) :
     ∫⁻ ω, ENNReal.ofReal (Real.exp (a * Xc ω 0 m - m * a ^ 2 / 2) * Φ (M ω)) ∂P =
       ∫⁻ ω, ENNReal.ofReal (Φ ((M ω).withDensity (circleTiltDensity γ a m))) ∂P := by
@@ -44,14 +46,13 @@ theorem lintegral_ofReal_circleTilt (P : Measure Ω) (X : Ω → Distr) (hX : Is
   exact lintegral_circleTilt P X hX γ hγ hγ2 M hM Xc hXc a m _
     (ENNReal.measurable_ofReal.comp hΦ)
 
+
 /-- The tilt preserves integrability. -/
-theorem integrable_circleTilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (a : ℝ) (m : ℕ)
+theorem integrable_circleTilt  (a : ℝ) (m : ℕ)
     {Ψ : Measure ℂ → ℝ} (hΨ : Measurable Ψ)
     (hint : Integrable (fun ω => Real.exp (a * Xc ω 0 m - m * a ^ 2 / 2) * Ψ (M ω)) P) :
     Integrable (fun ω => Ψ ((M ω).withDensity (circleTiltDensity γ a m))) P := by
-  have hM' : AEMeasurable (fun ω => (M ω).withDensity (circleTiltDensity γ a m)) P :=
+  have hM'  :=
     (measurable_withDensity_measure (measurable_circleTiltDensity γ a m)).comp_aemeasurable
       (gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM)
   refine ⟨(hΨ.comp_aemeasurable hM').aestronglyMeasurable, ?_⟩
@@ -59,15 +60,11 @@ theorem integrable_circleTilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquato
   rw [← lintegral_ofReal_circleTilt P X hX γ hγ hγ2 M hM Xc hXc a m hΨ.norm]
   have h2 := hint.hasFiniteIntegral
   rw [hasFiniteIntegral_iff_norm] at h2
-  refine lt_of_le_of_lt (le_of_eq ?_) h2
-  congr 1
-  funext ω
-  rw [norm_mul, Real.norm_of_nonneg (Real.exp_pos _).le]
+  simp_all
+
 
 /-- **The real Cameron–Martin tilt** by the circle average at the origin. -/
-theorem integral_circleTilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (a : ℝ) (m : ℕ)
+theorem integral_circleTilt  (a : ℝ) (m : ℕ)
     {Ψ : Measure ℂ → ℝ} (hΨ : Measurable Ψ)
     (hint : Integrable (fun ω => Real.exp (a * Xc ω 0 m - m * a ^ 2 / 2) * Ψ (M ω)) P) :
     ∫ ω, Real.exp (a * Xc ω 0 m - m * a ^ 2 / 2) * Ψ (M ω) ∂P =
@@ -83,6 +80,8 @@ theorem integral_circleTilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorG
   have h := htilt (fun μ => -Ψ μ) hΨ.neg
   simp only [mul_neg] at h
   exact h
+omit P X hX γ hγ hγ2 M hM Xc hXc
+
 
 /-- The cutoff integrand at a real point is real. -/
 theorem cutoffIntegrand_ofReal (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → Measure ℂ) (γ η : ℝ) (m n : ℕ)
@@ -126,10 +125,9 @@ theorem cutoffIntegrand_ofReal_eq (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → 
   rw [cutoffIntegrand_ofReal, realCutoffFunctional, ← baseMassReal_eq]
   rfl
 
+include P X hX γ hγ hγ2 M hM Xc hXc
 /-- The real cutoff integrand is integrable at real points of the half-plane. -/
-theorem integrable_cutoffReal (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) {η δ : ℝ}
+theorem integrable_cutoffReal  {η δ : ℝ}
     (hW : TwoPoleWindow γ η δ) {m n : ℕ} (hnm : n ≤ m) {x : ℝ} (hx : -2 * η - δ < x) :
     Integrable (fun ω => Real.exp (x * Xc ω 0 m - m * x ^ 2 / 2) *
       realCutoffFunctional γ η x n (M ω)) P := by
@@ -139,11 +137,10 @@ theorem integrable_cutoffReal (P : Measure Ω) (X : Ω → Distr) (hX : IsEquato
   simp only
   rw [cutoffIntegrand_ofReal_eq, Complex.ofReal_re]
 
+
 /-- **Real values of the cutoff family**: for real `x > -2η - δ` and `n ≤ m`,
 `G_{m,n}(x) = E[T_{x,n}^{1-x/γ} - R₁^{1-x/γ}]`. -/
-theorem cutoffFamily_ofReal (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) {η δ : ℝ}
+theorem cutoffFamily_ofReal  {η δ : ℝ}
     (hW : TwoPoleWindow γ η δ) {m n : ℕ} (hnm : n ≤ m) {x : ℝ} (hx : -2 * η - δ < x) :
     cutoffFamily P Xc M γ η m n (x : ℂ) =
       ((∫ ω, ((cutoffTiltedMass γ η x n (M ω)).toReal ^ (1 - x / γ) -
@@ -158,10 +155,9 @@ theorem cutoffFamily_ofReal (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorG
   funext ω
   exact realCutoffFunctional_withDensity γ η x hnm (M ω)
 
+
 /-- The cutoff observable at charge `x` is integrable. -/
-theorem integrable_tiltedCutoff (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) {η δ : ℝ}
+theorem integrable_tiltedCutoff  {η δ : ℝ}
     (hW : TwoPoleWindow γ η δ) (n : ℕ) {x : ℝ} (hx : -2 * η - δ < x) :
     Integrable (fun ω => (cutoffTiltedMass γ η x n (M ω)).toReal ^ (1 - x / γ) -
       (poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω)).toReal ^ (1 - x / γ)) P := by
@@ -171,10 +167,9 @@ theorem integrable_tiltedCutoff (P : Measure Ω) (X : Ω → Distr) (hX : IsEqua
   refine h.congr (Eventually.of_forall fun ω => ?_)
   exact realCutoffFunctional_withDensity γ η x (le_refl n) (M ω)
 
+
 /-- **The martingale identity**: `G_{n+1,n} = G_{n,n}` on the half-plane. -/
-theorem cutoffFamily_succ_eqOn (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) {η δ : ℝ}
+theorem cutoffFamily_succ_eqOn  {η δ : ℝ}
     (hW : TwoPoleWindow γ η δ) (n : ℕ) :
     EqOn (cutoffFamily P Xc M γ η (n + 1) n) (cutoffFamily P Xc M γ η n n)
       (cutoffHalfPlane η δ) := by
@@ -203,6 +198,8 @@ theorem cutoffFamily_succ_eqOn (P : Measure Ω) (X : Ω → Distr) (hX : IsEquat
         simpa [Complex.ofReal_inj] using ht)
   exact hf.eqOn_of_preconnected_of_frequently_eq hg (isPreconnected_cutoffHalfPlane η δ) hx₀H
     (htend.frequently hev.frequently)
+omit P X hX γ hγ hγ2 M hM Xc hXc
+
 
 end DOZZ.Proofs
 

@@ -18,7 +18,7 @@ public import DOZZ.FourPoint.Reflected.RestartedWilliams
 public import DOZZ.FourPoint.Dual.RadialFirstOrder
 import Mathlib.Tactic
 /-! The actual translated restarted polar mass has the same-witness dual leading coefficient. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -55,7 +55,7 @@ theorem dual_source_restarted_polar_increment_tendsto
       (𝓝 ((a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃ ^(-(p+a)) ∂P).toReal*
         (∫⁻ ω, twoSidedReflectionMass γ B Z ω ^a ∂P).toReal)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let ν := Q γ-α₁
   let p := (α₁+α₂+α₃-2/γ-2*Q γ)/γ
   let A := originRadialPath Xc
@@ -70,12 +70,12 @@ theorem dual_source_restarted_polar_increment_tendsto
     (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds (by norm_num : ‖(0 : ℂ)‖ < 1))]
     with z hz0 hz
-  have hn0 : 0 < ‖z‖ := norm_pos_iff.mpr hz0
+  have hn0  := norm_pos_iff.mpr hz0
   have htime : 0 ≤ -Real.log ‖z‖+h := by
     have hl := Real.log_nonpos hn0.le hz.le
     linarith only [hl, hh]
   let T := Real.toNNReal (-Real.log ‖z‖+h)
-  have hT : (T : ℝ) = -Real.log ‖z‖+h := Real.coe_toNNReal _ htime
+  have hT  := Real.coe_toNNReal _ htime
   have hstrict : ‖z‖ < ‖z‖^(1-ξ) := by
     simpa only [Real.rpow_one] using Real.rpow_lt_rpow_of_exponent_gt hn0 hz
       (by linarith only [hξ] : 1-ξ < 1)
@@ -96,13 +96,13 @@ theorem dual_source_restarted_polar_increment_tendsto
   have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hβ : AEMeasurable (dual_radial_scale γ ν h Xc z) P :=
     ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
-  have hYm : AEMeasurable Y P := hβ.prodMk
+  have hYm  := hβ.prodMk
     (((dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal)
   let V := fun ω : Ω × Ω => ∫⁻ t,
     (if 0 < t then ENNReal.ofReal (Real.exp (γ*(D ω.1 (Real.toNNReal t)-ν*t))) else 0)
       ∂(Z ω.2).map (fun s => s-(T : ℝ))
-  have hVm : AEMeasurable V (P.prod P) :=
+  have hVm  :=
     dual_translated_polar_mass_aemeasurable P D hDm γ ν Z hZ hDZ T
   let J := fun q : ℝ × Ω => ENNReal.ofReal (Real.exp (γ*q.1))*twoSidedReflectionCutMass γ q.1 B Z q.2
   have hJm : AEMeasurable J R :=
@@ -115,6 +115,6 @@ theorem dual_source_restarted_polar_increment_tendsto
   have hG : Measurable G := by unfold G; fun_prop
   have he := dual_copied_joint_law_integral P R Y hYm V hVm J hJm hLaw G hG
   simp only [G, Y, J, ENNReal.toReal_mul, ENNReal.toReal_ofReal (Real.exp_pos _).le] at he
-  exact congrArg (fun t : ℝ => t/‖z‖^((4/γ)*ν)) he.symm
+  grind
 
 end DOZZ.Proofs

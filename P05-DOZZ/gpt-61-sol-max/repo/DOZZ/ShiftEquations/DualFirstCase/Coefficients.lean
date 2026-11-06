@@ -37,14 +37,10 @@ theorem dualFirstCase_parameters (γ x a₂ a₃ : ℝ) (hγ : γ ≠ 0) :
     dualFirstCase_C γ x = (gaussParameterC γ (2 / γ) x : ℂ) ∧
     dualFirstCase_C γ a₂ - 1 =
       (gaussParameterA γ (2 / γ) x a₂ a₃ + gaussParameterB γ (2 / γ) x a₂ a₃ - gaussParameterC γ (2 / γ) x : ℂ) := by
-  have hg : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
+  have hg  := Complex.ofReal_ne_zero.mpr hγ
   unfold dualFirstCase_A dualFirstCase_B dualFirstCase_C gaussParameterA gaussParameterB gaussParameterC Q
   push_cast
-  constructor
-  · field_simp; ring
-  constructor
-  · field_simp; ring
-  constructor <;> field_simp <;> ring
+  grind
 /-- The product is exactly the product of the two coefficients `dualCrossingMultiplier` and
 `dualCrossingL` of the dual crossing seeds on the real slice. -/
 theorem dualFirstCase_crossingProduct_ofReal (γ x a₂ a₃ : ℝ) (hγ : γ ≠ 0) :
@@ -68,8 +64,7 @@ theorem dualFirstCase_crossingProduct_ofReal (γ x a₂ a₃ : ℝ) (hγ : γ �
         gaussParameterB γ (2 / γ) x a₂ a₃ + 1 : ℝ) : ℂ) by push_cast; linear_combination habc]
   simp only [← Complex.ofReal_sub, lFun_ofReal, Complex.ofReal_re]
   push_cast
-  rw [show gaussParameterA γ (2 / γ) x a₂ a₃ + gaussParameterB γ (2 / γ) x a₂ a₃ -
-    gaussParameterC γ (2 / γ) x = gaussParameterC γ (2 / γ) a₂ - 1 by linarith only [hab]]
+  grind
 /-- The crossing product is meromorphic on the whole plane. -/
 theorem dualFirstCase_crossingProduct_meromorphic (γ : ℝ) (a₂ a₃ : ℂ) :
     MeromorphicOn (dualFirstCase_crossingProduct γ a₂ a₃) univ := by

@@ -5,30 +5,16 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.GMC.Moments.WeightedCutoffPositiveSubunit
+public import DOZZ.GMC.RealPower
 
 /-! Expected cutoff scaling for every insertion charge at subunit positive orders. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
-
-private theorem ennreal_ofReal_rpow_of_pos_scale {x p : ℝ} (hx : 0 < x) :
-    ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
-  have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
-  have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
-    ENNReal.rpow_ne_top_of_ne_zero hx0 ENNReal.ofReal_ne_top
-  have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
-  apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
-  calc
-    (ENNReal.rpow (ENNReal.ofReal x) p).toReal =
-        (ENNReal.ofReal x).toReal ^ p := (ENNReal.toReal_rpow _ _).symm
-    _ = x ^ p := by rw [ENNReal.toReal_ofReal hx.le]
-    _ = (ENNReal.ofReal (x ^ p)).toReal := by
-      rw [ENNReal.toReal_ofReal (Real.rpow_nonneg hx.le p)]
-
 
 /-- Explicit scale constant in the nonsingular sector, for use in compact parameter families. -/
 theorem cutoffWeightedGmcBallMoment_nonpos_subunit_scale_formula
@@ -59,10 +45,10 @@ theorem cutoffWeightedGmcBallMoment_nonpos_subunit_scale_formula
       ENNReal.ofReal (s ^ (-γ * α * p)) := by
     calc
       _ = ENNReal.rpow (ENNReal.rpow (ENNReal.ofReal s) (-γ * α)) p := by
-        rw [← ennreal_ofReal_rpow_of_pos_scale hs]
+        rw [← ennreal_rpow_ofReal_pos hs]
       _ = ENNReal.rpow (ENNReal.ofReal s) ((-γ * α) * p) :=
         (ENNReal.rpow_mul _ _ _).symm
-      _ = _ := ennreal_ofReal_rpow_of_pos_scale hs
+      _ = _ := ennreal_rpow_ofReal_pos hs
   have hpowProd : s ^ (-γ * α * p) * s ^ ξ = s ^ η := by
     rw [← Real.rpow_add hs]
     congr 1
@@ -88,6 +74,6 @@ theorem cutoffWeightedGmcBallMoment_nonpos_subunit_scale_formula
           rw [← ENNReal.ofReal_mul
             (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) η)]
         _ = _ := by ac_rfl
-    _ = _ := by rfl
+    _ = _ := rfl
 
 end DOZZ.Proofs

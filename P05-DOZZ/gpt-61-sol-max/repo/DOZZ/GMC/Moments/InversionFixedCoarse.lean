@@ -5,10 +5,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.GMC.Moments.InversionPotentialExtension
+import Mathlib.Tactic
 
 /-! Uniform fine-circle convergence against a fixed source circle on punctured charts. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Set Metric Real
 open DOZZ.Proofs.CirclePotential
@@ -22,8 +23,8 @@ theorem inversion_innerPot_lipschitz_on_norm_lower_bound
     (hu : m ≤ ‖u‖) (hx : m ≤ ‖x‖) :
     |innerPot y s u⁻¹ - innerPot y s x⁻¹| ≤
       ((Real.exp s + 1) / m ^ 2) * ‖u - x‖ := by
-  have hu0 : u ≠ 0 := norm_pos_iff.mp (hm.trans_le hu)
-  have hx0 : x ≠ 0 := norm_pos_iff.mp (hm.trans_le hx)
+  have hu0  := norm_pos_iff.mp (hm.trans_le hu)
+  have hx0  := norm_pos_iff.mp (hm.trans_le hx)
   have hlog := abs_log_max_sub_le u⁻¹ x⁻¹ y (Real.exp_pos (-s))
   have hpin := abs_log_normPlus_sub_le u⁻¹ x⁻¹
   have he : innerPot y s u⁻¹ - innerPot y s x⁻¹ =
@@ -35,7 +36,7 @@ theorem inversion_innerPot_lipschitz_on_norm_lower_bound
   have hdist : ‖u⁻¹ - x⁻¹‖ ≤ ‖u - x‖ / m ^ 2 := by
     rw [complexInv_distance_of_ne_zero hu0 hx0]
     apply div_le_div_of_nonneg_left (norm_nonneg _) (sq_pos_of_pos hm)
-    simpa only [pow_two] using mul_le_mul hu hx hm.le (norm_nonneg _)
+    nlinarith
   rw [he]
   calc
     _ ≤ |-(Real.log (max ‖u⁻¹ - y‖ (Real.exp (-s))) -
@@ -68,7 +69,6 @@ theorem inversion_circleAverage_fixed_source_error_le
     linarith only [ht, hsmall]
   have hU : sphere x |ε| ⊆ ({0} : Set ℂ)ᶜ := by
     intro u hu
-    change u ≠ 0
     exact norm_pos_iff.mp (hm.trans_le (hnorm u hu))
   have hi : CircleIntegrable (fun u => innerPot y s u⁻¹) x ε :=
     ((continuous_innerPot y s).comp_continuousOn
@@ -91,15 +91,7 @@ theorem inversion_mixed_fixed_coarse_difference_le
   have ht := inversion_circleAverage_fixed_source_error_le y s hm (Real.exp_pos (-r)) hsmall
   have ho := abs_circleKernel_sub_integral_gffKernel_le x⁻¹ y r s
   rw [integral_gffKernel_circleMeasure] at ho
-  calc
-    _ ≤ |circleAverage (fun u => innerPot y s u⁻¹) x (Real.exp (-r)) -
-        innerPot y s x⁻¹| + |innerPot y s x⁻¹ - circleKernel x⁻¹ r y s| :=
-      abs_sub_le _ _ _
-    _ ≤ ((Real.exp s + 1) / m ^ 2) * Real.exp (-r) +
-        (Real.exp s + 1) * Real.exp (-r) := by
-      rw [abs_sub_comm (innerPot y s x⁻¹)]
-      exact add_le_add ht ho
-    _ = _ := by ring
+  grind
 
 /-- Fixed-coarse mixed covariance convergence is uniform in both centers when the target
 centers have a common positive lower norm bound. -/
@@ -112,8 +104,8 @@ theorem inversion_mixed_fixed_coarse_uniform (s : ℝ) {m η : ℝ}
   have hC : 0 < C := by dsimp [C]; positivity
   refine ⟨min m (η / (2 * C)), lt_min hm (by positivity), ?_⟩
   intro ε hε hεδ x hx y
-  have hεm : ε ≤ m := hεδ.trans (min_le_left _ _)
-  have hεη : ε ≤ η / (2 * C) := hεδ.trans (min_le_right _ _)
+  have hεm  := hεδ.trans (min_le_left _ _)
+  have hεη  := hεδ.trans (min_le_right _ _)
   have hexp : Real.exp (-Real.log (1 / ε)) = ε := by
     rw [one_div, Real.log_inv, neg_neg, Real.exp_log hε]
   have hsmall : m + Real.exp (-Real.log (1 / ε)) ≤ ‖x‖ := by
@@ -125,6 +117,6 @@ theorem inversion_mixed_fixed_coarse_uniform (s : ℝ) {m η : ℝ}
     calc
       C * ε ≤ C * (η / (2 * C)) := mul_le_mul_of_nonneg_left hεη hC.le
       _ = η / 2 := by field_simp
-  exact ht.trans_lt (hbound.trans_lt (by linarith only [hη]))
+  grind
 
 end DOZZ.Proofs

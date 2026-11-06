@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Dual.SourceRadialMoments
 public import DOZZ.FourPoint.Reflected.LeadingRadialMoment
 import Mathlib.Tactic
 /-! The normalized leading Pareto weight has the actual reflected charge-shift limit. -/
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -31,7 +31,7 @@ theorem dual_leading_radial_moment_identity
       ENNReal.ofReal (‖z‖^((4/γ)*ν)) *
         ∫⁻ ω, ENNReal.ofReal (Real.exp
           (2*ν*Xc ω 0 (-Real.log ‖z‖+h)-(-Real.log ‖z‖+h)*(2*ν)^2/2))*F ω ∂P := by
-  have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  have hn  := norm_pos_iff.mpr hz
   have he (ω : Ω) : (dual_radial_scale γ ν h Xc z ω)^(2*ν/γ) =
       ‖z‖^((4/γ)*ν)*Real.exp
         (2*ν*Xc ω 0 (-Real.log ‖z‖+h)-(-Real.log ‖z‖+h)*(2*ν)^2/2) := by
@@ -62,7 +62,7 @@ theorem dual_leading_radial_moment_tendsto
     (2*ν) α₁ α₂ α₃ ξ q h hh hξ hξ1 hq hα₁ hα₂ hα₃
   apply ht.congr'
   filter_upwards [self_mem_nhdsWithin] with z hz
-  have hz0 : z ≠ 0 := hz
+  have hz0  := hz
   rw [dual_leading_radial_moment_identity P γ ν h hγ.ne' Xc _ z hz0]
   have hp : 0 < ‖z‖^((4/γ)*ν) := Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _
   symm

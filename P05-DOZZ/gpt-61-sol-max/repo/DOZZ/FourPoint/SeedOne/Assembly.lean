@@ -10,7 +10,7 @@ public import DOZZ.FourPoint.Dual.FullFusion
 /-! Proof of `dual_crossing_seed_one`: the dual-fusion reduction applied to
 `dual_full_fusion_and_asymptotic`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -31,8 +31,7 @@ theorem dual_crossing_seed_one {Ω : Type*} [MeasurableSpace Ω]
         structureConstant P M γ μ (α - 2 / γ) ε α' =
           dualCrossingMultiplier γ α' α ε *
             reflectionR P γ μ ε Bε Z *
-              structureConstant P M γ μ α (2 * Q γ - ε - 2 / γ) α' := by
-  exact dual_crossing_seed_one_of_fusion P M X γ μ α ε α' hγ hγ₂ hμ hα hε hα' hs hX hM
+              structureConstant P M γ μ α (2 * Q γ - ε - 2 / γ) α' := dual_crossing_seed_one_of_fusion P M X γ μ α ε α' hγ hγ₂ hμ hα hε hα' hs hX hM
     (fun hH P M X γ μ α₁ α₂ α₃ η ξ h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 hX hM =>
       dual_full_fusion_and_asymptotic hH P M X γ μ α₁ α₂ α₃ η ξ h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11
         h12 h13 h14 hX hM)

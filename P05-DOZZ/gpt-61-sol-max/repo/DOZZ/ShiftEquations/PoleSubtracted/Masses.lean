@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.Statements.ShiftEquations.PoleSubtractedObservable
+import Mathlib.Tactic
 
 /-!
 # The pole-subtracted masses
@@ -42,8 +43,11 @@ def cutoffRegion (n : ℕ) : Set ℂ := {x | Real.exp (-(n : ℝ)) ≤ ‖x‖}
 /-- The two unit balls around the poles. -/
 def poleBalls : Set ℂ := Metric.ball (2 : ℂ) 1 ∪ Metric.ball (-2 : ℂ) 1
 
+variable (γ η a : ℝ) (n : ℕ) (μ : Measure ℂ)
+
+include γ η a n μ in
 /-- The cutoff tilted mass `T_{a,n} = ∫_{C_n} (|x|_+/|x|)^{γa} w(x) μ(dx)`. -/
-noncomputable def cutoffTiltedMass (γ η a : ℝ) (n : ℕ) (μ : Measure ℂ) : ℝ≥0∞ :=
+noncomputable def cutoffTiltedMass  : ℝ≥0∞ :=
   ∫⁻ x in cutoffRegion n, zeroTilt γ a x * poleWeight γ η x ∂μ
 
 /-- The density of the Cameron–Martin tilt by `a X_m(0)`:
@@ -62,8 +66,7 @@ private theorem measurable_setLIntegral_measure {s : Set ℂ} (hs : MeasurableSe
     Measurable fun μ : Measure ℂ => ∫⁻ x in s, f x ∂μ := by
   have h : (fun μ : Measure ℂ => ∫⁻ x in s, f x ∂μ) =
       fun μ : Measure ℂ => ∫⁻ x, s.indicator f x ∂μ := by
-    funext μ
-    exact (lintegral_indicator hs f).symm
+    simp_all
   rw [h]
   exact Measure.measurable_lintegral (hf.indicator hs)
 
@@ -98,7 +101,6 @@ theorem measurable_cutoffTiltedMass (γ η a : ℝ) (n : ℕ) :
 
 theorem measurable_poleLocalMass (γ η : ℝ) :
     Measurable fun μ : Measure ℂ => poleLocalMass γ (2 / γ + η) (2 / γ - η) μ := by
-  unfold poleLocalMass
   exact Measure.measurable_lintegral
     (Measurable.ite measurableSet_poleBalls (measurable_poleWeight γ η) measurable_const)
 
@@ -106,9 +108,7 @@ theorem measurable_poleTotalMass (γ η a : ℝ) :
     Measurable fun μ : Measure ℂ => poleTotalMass γ a (2 / γ + η) (2 / γ - η) μ := by
   have h := measurable_normPlus_aux
   unfold poleTotalMass
-  refine Measure.measurable_lintegral ?_
-  simp only [ENNReal.rpow_eq_pow]
-  fun_prop
+  measurability
 
 /-! ### Regions -/
 
@@ -133,8 +133,7 @@ private theorem two_le_norm_add_norm_add (x : ℂ) : 2 ≤ ‖x‖ + ‖x + 2‖
 private theorem four_le_norm_add_add_norm_sub (x : ℂ) : 4 ≤ ‖x + 2‖ + ‖x - 2‖ := by
   have h := norm_sub_le (x + 2) (x - 2)
   have e : x + 2 - (x - 2) = 4 := by ring
-  have h4 : ‖(4 : ℂ)‖ = 4 := by simp
-  rwa [e, h4] at h
+  simp_all
 
 private theorem norm_le_norm_sub_add (x : ℂ) : ‖x‖ ≤ ‖x - 2‖ + 2 := by
   have h := norm_add_le (x - 2) 2
@@ -147,8 +146,7 @@ private theorem norm_le_norm_add_add (x : ℂ) : ‖x‖ ≤ ‖x + 2‖ + 2 := 
 private theorem norm_add_le_norm_sub_add (x : ℂ) : ‖x + 2‖ ≤ ‖x - 2‖ + 4 := by
   have h := norm_add_le (x - 2) 4
   have e : x - 2 + 4 = x + 2 := by ring
-  have h4 : ‖(4 : ℂ)‖ = 4 := by simp
-  rwa [e, h4] at h
+  simp_all
 
 private theorem exp_neg_natCast_le_one (n : ℕ) : Real.exp (-(n : ℝ)) ≤ 1 := by
   rw [Real.exp_le_one_iff]
@@ -169,9 +167,7 @@ theorem poleBalls_subset_cutoffRegion (n : ℕ) : poleBalls ⊆ cutoffRegion n :
 theorem cutoffRegion_mono : Monotone cutoffRegion := by
   intro n m hnm x hx
   have h : Real.exp (-(m : ℝ)) ≤ Real.exp (-(n : ℝ)) := by
-    apply Real.exp_le_exp.mpr
-    have : (n : ℝ) ≤ m := by exact_mod_cast hnm
-    linarith
+    simp_all
   exact h.trans hx
 
 theorem iUnion_cutoffRegion : ⋃ n, cutoffRegion n = {0}ᶜ := by
@@ -181,7 +177,7 @@ theorem iUnion_cutoffRegion : ⋃ n, cutoffRegion n = {0}ᶜ := by
   · rintro ⟨n, hn⟩ hx0
     exact (norm_pos_iff.mp (norm_pos_of_mem_cutoffRegion hn)) hx0
   · intro hx0
-    have hpos : 0 < ‖x‖ := norm_pos_iff.mpr hx0
+    have hpos  := norm_pos_iff.mpr hx0
     obtain ⟨n, hn⟩ := exists_nat_ge (-Real.log ‖x‖)
     refine ⟨n, ?_⟩
     change Real.exp (-(n : ℝ)) ≤ ‖x‖
@@ -193,13 +189,12 @@ theorem iUnion_cutoffRegion : ⋃ n, cutoffRegion n = {0}ᶜ := by
 
 theorem zeroTilt_zero (γ : ℝ) (x : ℂ) : zeroTilt γ 0 x = 1 := by
   unfold zeroTilt
-  rw [mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero]
+  simp_all
 
 theorem zeroTilt_of_one_le_norm (γ a : ℝ) {x : ℂ} (hx : 1 ≤ ‖x‖) : zeroTilt γ a x = 1 := by
   have h1 : normPlus x = ‖x‖ := max_eq_right hx
   have h0 : ENNReal.ofReal ‖x‖ ≠ 0 := by
-    rw [ne_eq, ENNReal.ofReal_eq_zero, not_le]
-    linarith
+    positivity
   unfold zeroTilt
   rw [h1, ENNReal.div_self h0 ENNReal.ofReal_ne_top, ENNReal.rpow_eq_pow, ENNReal.one_rpow]
 
@@ -225,7 +220,7 @@ theorem poleLocalMass_eq (γ η : ℝ) (μ : Measure ℂ) :
     rw [Set.indicator_of_mem hx, ite_eq_left hx']
     rfl
   · have hx' : ¬ (x ∈ Metric.ball (2 : ℂ) 1 ∨ x ∈ Metric.ball (-2 : ℂ) 1) := hx
-    rw [Set.indicator_of_notMem hx, ite_eq_right hx']
+    simp_all
 
 theorem poleTotalMass_eq (γ η a : ℝ) (μ : Measure ℂ) :
     poleTotalMass γ a (2 / γ + η) (2 / γ - η) μ =
@@ -237,7 +232,8 @@ theorem poleTotalMass_eq (γ η a : ℝ) (μ : Measure ℂ) :
 
 /-! ### Monotonicity, splitting and the limit -/
 
-theorem cutoffTiltedMass_eq_localMass_add (γ η a : ℝ) (n : ℕ) (μ : Measure ℂ) :
+include γ η a n μ
+theorem cutoffTiltedMass_eq_localMass_add  :
     cutoffTiltedMass γ η a n μ = poleLocalMass γ (2 / γ + η) (2 / γ - η) μ +
       ∫⁻ x in cutoffRegion n \ poleBalls, zeroTilt γ a x * poleWeight γ η x ∂μ := by
   have hcongr : ∫⁻ x in poleBalls, poleWeight γ η x ∂μ =
@@ -249,24 +245,29 @@ theorem cutoffTiltedMass_eq_localMass_add (γ η a : ℝ) (n : ℕ) (μ : Measur
     Set.union_sdiff_cancel (poleBalls_subset_cutoffRegion n)]
   rfl
 
-theorem localMass_le_cutoffTiltedMass (γ η a : ℝ) (n : ℕ) (μ : Measure ℂ) :
+
+theorem localMass_le_cutoffTiltedMass  :
     poleLocalMass γ (2 / γ + η) (2 / γ - η) μ ≤ cutoffTiltedMass γ η a n μ := by
   rw [cutoffTiltedMass_eq_localMass_add]
   exact le_self_add
 
-theorem cutoffTiltedMass_succ (γ η a : ℝ) (n : ℕ) (μ : Measure ℂ) :
+
+theorem cutoffTiltedMass_succ  :
     cutoffTiltedMass γ η a (n + 1) μ = cutoffTiltedMass γ η a n μ +
       ∫⁻ x in cutoffRegion (n + 1) \ cutoffRegion n, zeroTilt γ a x * poleWeight γ η x ∂μ := by
   unfold cutoffTiltedMass
   rw [← lintegral_union
     ((measurableSet_cutoffRegion (n + 1)).diff (measurableSet_cutoffRegion n))
     Set.disjoint_sdiff_right, Set.union_sdiff_cancel (cutoffRegion_mono (Nat.le_succ n))]
+omit γ η a n μ
+
 
 theorem monotone_cutoffTiltedMass (γ η a : ℝ) (μ : Measure ℂ) :
     Monotone fun n => cutoffTiltedMass γ η a n μ :=
   fun _ _ hnm => lintegral_mono_set (cutoffRegion_mono hnm)
 
-theorem cutoffTiltedMass_le_totalMass (γ η a : ℝ) (n : ℕ) (μ : Measure ℂ) :
+include γ η a n μ in
+theorem cutoffTiltedMass_le_totalMass  :
     cutoffTiltedMass γ η a n μ ≤ poleTotalMass γ a (2 / γ + η) (2 / γ - η) μ := by
   rw [poleTotalMass_eq]
   exact setLIntegral_le_lintegral _ _
@@ -296,8 +297,7 @@ theorem tendsto_cutoffTiltedMass (γ η a : ℝ) (μ : Measure ℂ) (h0 : μ {0}
         exact hx
       simpa using this
     refine le_antisymm (le_iSup_of_le N ?_) (iSup_le fun n => Set.indicator_le_self' ?_ x)
-    · rw [Set.indicator_of_mem hN]
-    · exact fun _ _ => zero_le
+    all_goals simp_all
   rw [hsup]
   exact tendsto_atTop_iSup (monotone_cutoffTiltedMass γ η a μ)
 
@@ -305,8 +305,8 @@ theorem tendsto_cutoffTiltedMass (γ η a : ℝ) (μ : Measure ℂ) (h0 : μ {0}
 
 theorem circleTiltDensity_eq_zeroTilt (γ a : ℝ) {n m : ℕ} (hnm : n ≤ m) {x : ℂ}
     (hx : x ∈ cutoffRegion n) : circleTiltDensity γ a m x = zeroTilt γ a x := by
-  have hmn : Real.exp (-(m : ℝ)) ≤ ‖x‖ := cutoffRegion_mono hnm hx
-  have hpos : 0 < ‖x‖ := norm_pos_of_mem_cutoffRegion hx
+  have hmn  := cutoffRegion_mono hnm hx
+  have hpos  := norm_pos_of_mem_cutoffRegion hx
   have hnp : 0 < normPlus x := lt_of_lt_of_le one_pos (le_max_left _ _)
   unfold circleTiltDensity zeroTilt
   rw [max_eq_right hmn, ← ENNReal.ofReal_div_of_pos hpos, ENNReal.rpow_eq_pow,
@@ -317,7 +317,7 @@ theorem circleTiltDensity_eq_zeroTilt (γ a : ℝ) {n m : ℕ} (hnm : n ≤ m) {
 
 theorem circleTiltDensity_of_one_le_norm (γ a : ℝ) (m : ℕ) {x : ℂ} (hx : 1 ≤ ‖x‖) :
     circleTiltDensity γ a m x = 1 := by
-  have h1 : Real.exp (-(m : ℝ)) ≤ ‖x‖ := (exp_neg_natCast_le_one m).trans hx
+  have h1  := (exp_neg_natCast_le_one m).trans hx
   unfold circleTiltDensity
   rw [max_eq_right h1, show normPlus x = ‖x‖ from max_eq_right hx]
   simp
@@ -371,8 +371,7 @@ private theorem exponent_sub {γ η : ℝ} (hγ : 0 < γ) : γ * (2 / γ - η) =
   field_simp
 
 private theorem mul_le_two {γ η : ℝ} (hγ : 0 < γ) (hηγ : η ≤ 2 / γ) : γ * η ≤ 2 := by
-  calc γ * η ≤ γ * (2 / γ) := mul_le_mul_of_nonneg_left hηγ hγ.le
-    _ = 2 := by field_simp
+  field_simp at * <;> nlinarith
 
 /-- Off the two balls the pole weight is at most `3^{γα₂} 3^{γα₃} = 81`. -/
 theorem poleWeight_le_of_notMem_poleBalls {γ η : ℝ} (hγ : 0 < γ) (hη : 0 ≤ η)
@@ -384,7 +383,7 @@ theorem poleWeight_le_of_notMem_poleBalls {γ η : ℝ} (hγ : 0 < γ) (hη : 0 
     by_contra h
     exact hx (Or.inr (mem_ball_neg_two_iff.mpr (not_le.mp h)))
   have hγη := mul_le_two hγ hηγ
-  have hγη0 : 0 ≤ γ * η := mul_nonneg hγ.le hη
+  have hγη0  := mul_nonneg hγ.le hη
   have hr1 : ENNReal.ofReal (normPlus x) / ENNReal.ofReal ‖x - 2‖ ≤ 3 :=
     ratio_le_three (by linarith) (max_le (by linarith) (by linarith [norm_le_norm_sub_add x]))
   have hr2 : ENNReal.ofReal (normPlus x) / ENNReal.ofReal ‖x + 2‖ ≤ 3 :=
@@ -397,21 +396,19 @@ theorem poleWeight_le_of_notMem_poleBalls {γ η : ℝ} (hγ : 0 < γ) (hη : 0 
     _ = (3 : ℝ≥0∞) ^ ((2 + γ * η) + (2 - γ * η)) :=
         (ENNReal.rpow_add _ _ (by norm_num) (by norm_num)).symm
     _ = 81 := by
-      rw [show (2 + γ * η) + (2 - γ * η) = ((4 : ℕ) : ℝ) by push_cast; ring,
-        ENNReal.rpow_natCast]
       norm_num
 
 /-- On `B(2, 1/2)` the pole weight is at least `3^{-2}`. -/
 theorem poleWeight_ge_of_mem_ball_two {γ η : ℝ} (hγ : 0 < γ) (hη : 0 ≤ η)
     (hηγ : η ≤ 2 / γ) {x : ℂ} (hx : x ∈ Metric.ball (2 : ℂ) (1 / 2)) :
     (1 / 9 : ℝ≥0∞) ≤ poleWeight γ η x := by
-  have hx1 : ‖x - 2‖ < 1 / 2 := mem_ball_two_iff.mp hx
+  have hx1  := mem_ball_two_iff.mp hx
   have h3 : 3 / 2 ≤ ‖x‖ := by linarith [two_le_norm_add_norm_sub x]
   have hnp : normPlus x = ‖x‖ := max_eq_right (by linarith)
   have hu : 0 < ‖x + 2‖ := by linarith [four_le_norm_add_add_norm_sub x]
   have hup : ‖x + 2‖ ≤ 9 / 2 := by linarith [norm_add_le_norm_sub_add x]
   have hγη := mul_le_two hγ hηγ
-  have hγη0 : 0 ≤ γ * η := mul_nonneg hγ.le hη
+  have hγη0  := mul_nonneg hγ.le hη
   have hr1 : 1 ≤ ENNReal.ofReal (normPlus x) / ENNReal.ofReal ‖x - 2‖ :=
     one_le_ratio (by rw [hnp]; linarith) (by rw [hnp]; linarith)
   have hr2 : ENNReal.ofReal (1 / 3) ≤ ENNReal.ofReal (normPlus x) / ENNReal.ofReal ‖x + 2‖ :=
@@ -442,9 +439,9 @@ theorem zeroTilt_le_one {γ a : ℝ} (hγ : 0 < γ) (ha : a ≤ 0) (x : ℂ) : z
 /-- On `C_n` a nonnegative zero charge gives a tilt at most `e^{γ a n}`. -/
 theorem zeroTilt_le_of_mem_cutoffRegion {γ a : ℝ} (hγ : 0 < γ) (ha : 0 ≤ a) {n : ℕ} {x : ℂ}
     (hx : x ∈ cutoffRegion n) : zeroTilt γ a x ≤ ENNReal.ofReal (Real.exp (γ * a * n)) := by
-  have hxn : Real.exp (-(n : ℝ)) ≤ ‖x‖ := hx
-  have hpos : 0 < ‖x‖ := norm_pos_of_mem_cutoffRegion hx
-  have hn1 : 1 ≤ Real.exp n := Real.one_le_exp (Nat.cast_nonneg n)
+  have hxn  := hx
+  have hpos  := norm_pos_of_mem_cutoffRegion hx
+  have hn1  := Real.one_le_exp (Nat.cast_nonneg n)
   have hratio : ENNReal.ofReal (normPlus x) / ENNReal.ofReal ‖x‖ ≤
       ENNReal.ofReal (Real.exp n) := by
     rw [← ENNReal.ofReal_div_of_pos hpos]

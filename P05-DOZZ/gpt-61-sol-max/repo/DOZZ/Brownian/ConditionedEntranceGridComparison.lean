@@ -14,14 +14,9 @@ sequence of uniform levels. The entrance shift bound controls the initial gap, a
 grid comparison propagates the order and the linear drift-gap estimate.
 -/
 
-@[expose] public section
-
-open ProbabilityTheory
-
-namespace DOZZ.Proofs
 
 
 
-end DOZZ.Proofs
 
-end
+
+

@@ -20,17 +20,6 @@ open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-/-- The actual retained dual mass is a measurable functional of its supplied measure. -/
-theorem dual_outerMass_measure_measurable (γ α₁ α₂ α₃ ξ : ℝ) (z : ℂ) :
-    Measurable (fun μ : Measure ℂ => dualOuterMass γ α₁ α₂ α₃ μ z ξ) := by
-  let D : Set ℂ := {x | ‖z‖ ^ (1 - ξ) ≤ ‖x‖}
-  have hD : MeasurableSet D := (isClosed_le continuous_const continuous_norm).measurableSet
-  have hf := (measurable_coulombWeight γ ![-2 / γ, α₁, α₂] ![z, 0, 1] α₃).indicator hD
-  have hm := Measure.measurable_lintegral hf
-  convert hm using 1
-  funext μ
-  unfold dualOuterMass
-  rw [coulombMass_eq_lintegral_coulombWeight, lintegral_indicator hD]
 
 /-- The rooted formula for every nonnegative deterministic spatial weight and inverse order. -/
 theorem dual_outerMass_rooted_weight_identity {Ω : Type*} [MeasurableSpace Ω]

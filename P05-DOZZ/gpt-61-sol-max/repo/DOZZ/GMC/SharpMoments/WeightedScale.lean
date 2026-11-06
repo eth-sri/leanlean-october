@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Statements.GMC.WeightedGmcBallMoment
 public import DOZZ.GMC.SharpMoments.OpenSetScale
+import Mathlib.Tactic
 
 /-! # Exact scaling of singular weighted GMC masses
 
@@ -51,8 +52,8 @@ theorem weightedScale_map_iSup_eq
     (hamono : ∀ ω, Monotone fun n => a n ω) (hbmono : ∀ q, Monotone fun n => b n q)
     (hlaw : ∀ n, Measure.map (a n) P = Measure.map (b n) Q) :
     Measure.map (fun ω => ⨆ n, a n ω) P = Measure.map (fun q => ⨆ n, b n q) Q := by
-  have haS : AEMeasurable (fun ω => ⨆ n, a n ω) P := AEMeasurable.iSup ha
-  have hbS : AEMeasurable (fun q => ⨆ n, b n q) Q := AEMeasurable.iSup hb
+  have haS  := AEMeasurable.iSup ha
+  have hbS  := AEMeasurable.iSup hb
   have hIoi (t : ℝ≥0∞) : Measure.map (fun ω => ⨆ n, a n ω) P (Ioi t) =
       Measure.map (fun q => ⨆ n, b n q) Q (Ioi t) := by
     rw [Measure.map_apply_of_aemeasurable haS measurableSet_Ioi,
@@ -72,22 +73,28 @@ the value `0 ^ β`, which is infinite for negative `β`. -/
 noncomputable def weightedScale_weight (β : ℝ) (x : ℂ) : ℝ≥0∞ :=
   ENNReal.ofReal ‖x‖ ^ β
 
+variable (β : ℝ) (n : ℕ) (t : ℝ)
+
+include β n t in
 /-- The radial profile of the weight truncated at height `n`, as a real function. -/
-noncomputable def weightedScale_profile (β : ℝ) (n : ℕ) (t : ℝ) : ℝ :=
+noncomputable def weightedScale_profile  : ℝ :=
   (min (n : ℝ≥0∞) (ENNReal.ofReal t ^ β)).toReal
 
+include β n t in
 /-- The truncated profile is finite. -/
-theorem weightedScale_profile_ne_top (β : ℝ) (n : ℕ) (t : ℝ) :
+theorem weightedScale_profile_ne_top  :
     min (n : ℝ≥0∞) (ENNReal.ofReal t ^ β) ≠ ⊤ :=
   ne_top_of_le_ne_top (ENNReal.natCast_ne_top n) (min_le_left _ _)
 
+include β n t in
 /-- The truncated profile is nonnegative. -/
-theorem weightedScale_profile_nonneg (β : ℝ) (n : ℕ) (t : ℝ) :
+theorem weightedScale_profile_nonneg  :
     0 ≤ weightedScale_profile β n t :=
   ENNReal.toReal_nonneg
 
+include β n t in
 /-- The truncated profile at height `n` is bounded by `n`. -/
-theorem weightedScale_profile_le (β : ℝ) (n : ℕ) (t : ℝ) :
+theorem weightedScale_profile_le  :
     weightedScale_profile β n t ≤ n := by
   calc weightedScale_profile β n t ≤ (n : ℝ≥0∞).toReal :=
         ENNReal.toReal_mono (ENNReal.natCast_ne_top n) (min_le_left _ _)
@@ -106,8 +113,9 @@ theorem weightedScale_profile_mono (β : ℝ) (t : ℝ) {m n : ℕ} (h : m ≤ n
   ENNReal.toReal_mono (weightedScale_profile_ne_top β n t)
     (min_le_min_right _ (Nat.cast_le.2 h))
 
+include β n t in
 /-- The extended value of the truncated profile is the truncation of the extended weight. -/
-theorem weightedScale_ofReal_profile (β : ℝ) (n : ℕ) (t : ℝ) :
+theorem weightedScale_ofReal_profile  :
     ENNReal.ofReal (weightedScale_profile β n t) = min (n : ℝ≥0∞) (ENNReal.ofReal t ^ β) :=
   ENNReal.ofReal_toReal (weightedScale_profile_ne_top β n t)
 
@@ -128,9 +136,9 @@ theorem weightedScale_cutoff_mono (U : Set ℂ) (x : ℂ) {m n : ℕ} (h : m ≤
 /-- At a point of an open set with nonempty complement the cutoffs are eventually equal to one. -/
 theorem weightedScale_cutoff_eventually_one {U : Set ℂ} (hU : IsOpen U) (hne : Uᶜ.Nonempty)
     {x : ℂ} (hx : x ∈ U) : ∀ᶠ n : ℕ in atTop, openSetApproxFun U n x = 1 := by
-  have hpos : 0 < Metric.infDist x Uᶜ :=
+  have hpos  :=
     (hU.isClosed_compl.notMem_iff_infDist_pos hne).1 (by simpa using hx)
-  have hev : ∀ᶠ n : ℕ in atTop, 1 ≤ (n : ℝ) * Metric.infDist x Uᶜ :=
+  have hev  :=
     (tendsto_natCast_atTop_atTop.atTop_mul_const hpos).eventually_ge_atTop 1
   exact hev.mono fun n hn => by simp [openSetApproxFun, hn]
 
@@ -212,8 +220,7 @@ theorem weightedScale_iSup_integral {μ : Measure ℂ} [IsFiniteMeasure μ]
     ofReal_integral_eq_lintegral_ofReal ((h n).integrable μ) (ae_of_all _ (hnn n))
   have hmeas (n : ℕ) : AEMeasurable (fun x => ENNReal.ofReal (h n x)) μ :=
     (ENNReal.measurable_ofReal.comp (h n).continuous.measurable).aemeasurable
-  have hlint : Tendsto (fun n => ∫⁻ x, ENNReal.ofReal (h n x) ∂μ) atTop
-      (𝓝 (∫⁻ x, F x ∂μ)) :=
+  have hlint  :=
     lintegral_tendsto_of_tendsto_of_monotone hmeas
       (ae_of_all _ fun x _ _ hmn => ENNReal.ofReal_le_ofReal (hmono x hmn))
       (ae_of_all _ hlim)
@@ -242,10 +249,13 @@ theorem weightedScale_iSup_test_integral (γ α r : ℝ) (μ : Measure ℂ) [IsF
 
 /-! ### Dilated tests -/
 
+variable {c : ℝ} (hc : 0 < c)
+
+include c hc in
 /-- Scaling the weight by a dilation: `c ^ β * |c⁻¹ x| ^ β = |x| ^ β`. -/
-theorem weightedScale_weight_smul {c : ℝ} (hc : 0 < c) (β : ℝ) (x : ℂ) :
+theorem weightedScale_weight_smul  (β : ℝ) (x : ℂ) :
     ENNReal.ofReal (c ^ β) * weightedScale_weight β (c⁻¹ • x) = weightedScale_weight β x := by
-  have hc' : 0 ≤ c⁻¹ := inv_nonneg.2 hc.le
+  have hc'  := inv_nonneg.2 hc.le
   unfold weightedScale_weight
   rw [norm_smul, Real.norm_of_nonneg hc', ENNReal.ofReal_mul hc',
     ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top,
@@ -253,9 +263,10 @@ theorem weightedScale_weight_smul {c : ℝ} (hc : 0 < c) (β : ℝ) (x : ℂ) :
     ← ENNReal.ofReal_mul (Real.rpow_nonneg hc.le β), ← Real.mul_rpow hc.le hc',
     mul_inv_cancel₀ hc.ne', Real.one_rpow, ENNReal.ofReal_one, one_mul]
 
+include c hc in
 /-- A dilated point lies in the ball of radius `R` exactly when the original point lies in the ball
 of radius `c * R`. -/
-theorem weightedScale_smul_mem_ball_iff {c : ℝ} (hc : 0 < c) (R : ℝ) (x : ℂ) :
+theorem weightedScale_smul_mem_ball_iff  (R : ℝ) (x : ℂ) :
     c⁻¹ • x ∈ Metric.ball (0 : ℂ) R ↔ x ∈ Metric.ball (0 : ℂ) (c * R) := by
   simp only [mem_ball_zero_iff, norm_smul, Real.norm_of_nonneg (inv_nonneg.2 hc.le)]
   exact inv_mul_lt_iff₀ hc
@@ -268,34 +279,39 @@ noncomputable def weightedScale_scaled (β c R : ℝ) (n : ℕ) : BoundedContinu
 theorem weightedScale_scaled_apply (β c R : ℝ) (n : ℕ) (x : ℂ) :
     weightedScale_scaled β c R n x = c ^ β * weightedScale_fun β R n (c⁻¹ • x) := rfl
 
+include c hc
 /-- The dilated tests are nonnegative. -/
-theorem weightedScale_scaled_nonneg {c : ℝ} (hc : 0 < c) (β R : ℝ) (n : ℕ) (x : ℂ) :
+theorem weightedScale_scaled_nonneg  (β R : ℝ) (n : ℕ) (x : ℂ) :
     0 ≤ weightedScale_scaled β c R n x :=
   mul_nonneg (Real.rpow_nonneg hc.le β) (weightedScale_fun_nonneg β R n _)
 
+
 /-- The dilated tests increase with the index. -/
-theorem weightedScale_scaled_mono {c : ℝ} (hc : 0 < c) (β R : ℝ) (x : ℂ) {m n : ℕ} (h : m ≤ n) :
+theorem weightedScale_scaled_mono  (β R : ℝ) (x : ℂ) {m n : ℕ} (h : m ≤ n) :
     weightedScale_scaled β c R m x ≤ weightedScale_scaled β c R n x :=
   mul_le_mul_of_nonneg_left (weightedScale_fun_mono β R _ h) (Real.rpow_nonneg hc.le β)
 
+
 /-- The dilated tests are supported in the dilated closed ball. -/
-theorem weightedScale_scaled_tsupport_subset {c : ℝ} (hc : 0 < c) (β R : ℝ) (n : ℕ) :
+theorem weightedScale_scaled_tsupport_subset  (β R : ℝ) (n : ℕ) :
     tsupport (weightedScale_scaled β c R n : ℂ → ℝ) ⊆ Metric.closedBall 0 (c * R) := by
   refine closure_minimal (fun x hx => ?_) Metric.isClosed_closedBall
   by_contra hxc
   apply hx
-  have hnot : c⁻¹ • x ∉ Metric.ball (0 : ℂ) R := fun hmem =>
+  have hnot  := fun hmem =>
     hxc (Metric.ball_subset_closedBall ((weightedScale_smul_mem_ball_iff hc R x).1 hmem))
   rw [weightedScale_scaled_apply, weightedScale_fun_eq_zero_of_notMem hnot, mul_zero]
 
+
 /-- Composing the dilated test with the dilation recovers the source test, up to the factor
 `c ^ β`. -/
-theorem weightedScale_scaled_comp {c : ℝ} (hc : 0 < c) (β R : ℝ) (n : ℕ) (y : ℂ) :
+theorem weightedScale_scaled_comp  (β R : ℝ) (n : ℕ) (y : ℂ) :
     weightedScale_scaled β c R n (0 + c • y) = c ^ β * weightedScale_test β R n y := by
   simp [weightedScale_scaled_apply, hc.ne', weightedScale_test_apply]
 
+
 /-- The dilated tests increase pointwise to the indicator of the smaller ball times the weight. -/
-theorem weightedScale_scaled_tendsto {c : ℝ} (hc : 0 < c) (β R : ℝ) (x : ℂ) :
+theorem weightedScale_scaled_tendsto  (β R : ℝ) (x : ℂ) :
     Tendsto (fun n : ℕ => ENNReal.ofReal (weightedScale_scaled β c R n x)) atTop
       (𝓝 ((Metric.ball (0 : ℂ) (c * R)).indicator (weightedScale_weight β) x)) := by
   have h := ENNReal.Tendsto.const_mul (weightedScale_fun_tendsto β R (c⁻¹ • x))
@@ -313,8 +329,9 @@ theorem weightedScale_scaled_tendsto {c : ℝ} (hc : 0 < c) (β R : ℝ) (x : �
   · rw [Set.indicator_of_notMem hx,
       Set.indicator_of_notMem (mt (weightedScale_smul_mem_ball_iff hc R x).1 hx), mul_zero]
 
+
 /-- The integrals of the dilated tests increase to the weighted mass of the smaller ball. -/
-theorem weightedScale_iSup_scaled_integral {c : ℝ} (hc : 0 < c) (γ α R : ℝ) (μ : Measure ℂ)
+theorem weightedScale_iSup_scaled_integral  (γ α R : ℝ) (μ : Measure ℂ)
     [IsFiniteMeasure μ] :
     ⨆ n, ENNReal.ofReal (∫ x, weightedScale_scaled (-γ * α) c R n x ∂μ) =
       weightedGmcBallMass γ μ α 0 (c * R) := by
@@ -323,15 +340,18 @@ theorem weightedScale_iSup_scaled_integral {c : ℝ} (hc : 0 < c) (γ α R : ℝ
     (fun n x => weightedScale_scaled_nonneg hc _ R n x)
     (fun x _ _ hmn => weightedScale_scaled_mono hc _ R x hmn)
     (fun x => weightedScale_scaled_tendsto hc _ R x)
+omit c hc
+
 
 /-! ### Measurability of the test integrals and weighted masses -/
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ M hM in
 /-- Test integrals of bounded continuous functions supported in a closed ball inside the unit disk
 are a.e. measurable. -/
 theorem weightedScale_integral_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {r : ℝ} (hr : r ≤ 1)
+     {r : ℝ} (hr : r ≤ 1)
     (f : BoundedContinuousFunction ℂ ℝ)
     (hf : tsupport (f : ℂ → ℝ) ⊆ Metric.closedBall 0 r) :
     AEMeasurable (fun ω => ∫ x, f x ∂M ω) P :=
@@ -340,12 +360,11 @@ theorem weightedScale_integral_aemeasurable
     (fun x hx => (by simpa using hx : ‖x‖ ≤ r).trans hr) f
     (boundedContinuousFunction_eq_zero_off_tsupport_subset f _ hf)
 
+include Ω _inst1 P X hX γ M hM in
 /-- The weighted mass of a ball inside the unit disk is a.e. measurable, as a supremum of
 a.e. measurable test integrals. -/
 theorem weightedScale_mass_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α : ℝ) {r : ℝ} (hr : r ≤ 1) :
+     (α : ℝ) {r : ℝ} (hr : r ≤ 1) :
     AEMeasurable (fun ω => weightedGmcBallMass γ (M ω) α 0 r) P := by
   have h : (fun ω => weightedGmcBallMass γ (M ω) α 0 r) = fun ω =>
       ⨆ n, ENNReal.ofReal (∫ x, weightedScale_test (-γ * α) r n x ∂M ω) := by
@@ -389,20 +408,20 @@ theorem weightedScale_ofReal_integral_mono {μ : Measure ℂ} [IsFiniteMeasure �
     ENNReal.ofReal (∫ x, h x ∂μ) ≤ ENNReal.ofReal (∫ x, h' x ∂μ) :=
   ENNReal.ofReal_le_ofReal (integral_mono (h.integrable μ) (h'.integrable μ) hle)
 
+include c hc in
 /-- Integrating the dilated test composed with the dilation recovers the source test integral up
 to the constant `c ^ β`. -/
-theorem weightedScale_integral_scaled_comp {c : ℝ} (hc : 0 < c) (β R : ℝ) (n : ℕ)
+theorem weightedScale_integral_scaled_comp  (β R : ℝ) (n : ℕ)
     (μ : Measure ℂ) :
     ∫ x, weightedScale_scaled β c R n (0 + c • x) ∂μ =
       c ^ β * ∫ x, weightedScale_test β R n x ∂μ := by
   simp_rw [weightedScale_scaled_comp hc]
   exact integral_const_mul _ _
 
+include Ω _inst1 P X hX γ M hM in
 /-- Passing the exact test laws to the monotone limit gives the law of the weighted mass. -/
 theorem weightedScale_mass_law_of_test_law
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α : ℝ)
+     (α : ℝ)
     {c R : ℝ} (hc : 0 < c) (hR1 : R ≤ 1) (hcR1 : c * R ≤ 1)
     {G : Measure ℝ} [IsProbabilityMeasure G] {s : ℝ → ℝ} (hs : Measurable s)
     (hs0 : ∀ w, 0 ≤ s w)
@@ -413,7 +432,7 @@ theorem weightedScale_mass_law_of_test_law
     Measure.map (fun ω => weightedGmcBallMass γ (M ω) α 0 (c * R)) P =
       Measure.map (fun q : Ω × ℝ => ENNReal.ofReal (s q.2) *
         (ENNReal.ofReal (c ^ (-γ * α)) * weightedGmcBallMass γ (M q.1) α 0 R)) (P.prod G) := by
-  have : IsProbabilityMeasure P := hX.1
+  have  := hX.1
   have hκ : 0 ≤ c ^ (-γ * α) := Real.rpow_nonneg hc.le _
   have hfint (n : ℕ) : AEMeasurable (fun ω => ∫ x, weightedScale_scaled (-γ * α) c R n x ∂M ω) P :=
     weightedScale_integral_aemeasurable P X hX γ M hM hcR1 _
@@ -436,10 +455,7 @@ theorem weightedScale_mass_law_of_test_law
       refine congrArg (fun F => Measure.map F (P.prod G)) ?_
       funext q j
       rw [weightedScale_integral_scaled_comp hc])
-    rw [h]
-    refine congrArg (fun F => Measure.map F (P.prod G)) ?_
-    funext q
-    rw [ENNReal.ofReal_mul (hs0 _), ENNReal.ofReal_mul hκ]
+    simp_all
   have key := weightedScale_map_iSup_eq
     (fun n ω => ENNReal.ofReal (∫ x, weightedScale_scaled (-γ * α) c R n x ∂M ω))
     (fun n (q : Ω × ℝ) => ENNReal.ofReal (s q.2) * (ENNReal.ofReal (c ^ (-γ * α)) *
@@ -471,13 +487,12 @@ theorem weightedScale_mass_law_of_test_law
   rw [hA, hB] at key
   exact key
 
+include Ω _inst1 P X hX γ M hM in
 /-- Exact affine law of the singular weighted mass: the weighted mass of `B(0, c R)` has the law of
 the weighted mass of `B(0, R)` multiplied by `c ^ (-γ α)` and by the independent Gaussian factor
 `c ^ 2 * exp (γ w - γ ^ 2 / 2 * (-log c))`. -/
 theorem weightedScale_mass_law
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α : ℝ)
+     (α : ℝ)
     {c R : ℝ} (hc : 0 < c) (hc1 : c ≤ 1) (hR : 0 < R) (hRsmall : R < 1) :
     Measure.map (fun ω => weightedGmcBallMass γ (M ω) α 0 (c * R)) P =
       Measure.map (fun q : Ω × ℝ => ENNReal.ofReal
@@ -488,7 +503,7 @@ theorem weightedScale_mass_law
   have : IsProbabilityMeasure (gaussianReal 0 ⟨-Real.log c,
       neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩) :=
     instIsProbabilityMeasureGaussianReal 0 _
-  have hcR : c * R ≤ R := mul_le_of_le_one_left hR.le hc1
+  have hcR  := mul_le_of_le_one_left hR.le hc1
   have hTsmall : ‖(0 : ℂ)‖ + c * R < 1 := by
     rw [norm_zero, zero_add]
     exact lt_of_le_of_lt hcR hRsmall
@@ -536,29 +551,29 @@ theorem weightedScale_moment_transfer
     _ = (K ^ p * ∫⁻ ω, WR ω ^ p ∂P) * ∫⁻ w, A w ^ p ∂G := by
         rw [lintegral_const_mul'' _ hpow]
 
+include c hc in
 /-- The weight factor `c ^ β` raised to the order `p` combines with a further power of `c` into one
 power of `c`. -/
-theorem weightedScale_factor_pow {c : ℝ} (hc : 0 < c) (β p ξ : ℝ) :
+theorem weightedScale_factor_pow  (β p ξ : ℝ) :
     ENNReal.ofReal (c ^ β) ^ p * ENNReal.ofReal (c ^ ξ) = ENNReal.ofReal (c ^ (β * p + ξ)) := by
   rw [ENNReal.ofReal_rpow_of_pos (Real.rpow_pos_of_pos hc β), ← Real.rpow_mul hc.le,
     ← ENNReal.ofReal_mul (Real.rpow_nonneg hc.le _), ← Real.rpow_add hc]
 
+include Ω _inst1 P X hX γ M hM in
 /-- Exact scaling of the `p`th moment of the singular weighted mass about the center `0` of the
 logarithmic chart, for every `IsGMCOf` version and every real order. The weighted mass may be
 infinite, and the extended-power conventions are retained. -/
 theorem gmc_weighted_ball_moment_scale
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α : ℝ)
+     (α : ℝ)
     {c R : ℝ} (hc : 0 < c) (hc1 : c ≤ 1) (hR : 0 < R) (hRsmall : R < 1) (p : ℝ) :
     weightedGmcBallMoment P M γ α 0 (c * R) p =
       ENNReal.ofReal (c ^ ((2 - γ * α) * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) *
         weightedGmcBallMoment P M γ α 0 R p := by
-  have : IsProbabilityMeasure P := hX.1
+  have  := hX.1
   have : IsProbabilityMeasure (gaussianReal 0 ⟨-Real.log c,
       neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩) :=
     instIsProbabilityMeasureGaussianReal 0 _
-  have hcR : c * R ≤ R := mul_le_of_le_one_left hR.le hc1
+  have hcR  := mul_le_of_le_one_left hR.le hc1
   have hκ0 : ENNReal.ofReal (c ^ (-γ * α)) ≠ 0 :=
     (ENNReal.ofReal_pos.2 (Real.rpow_pos_of_pos hc _)).ne'
   have hmom := weightedScale_moment_transfer

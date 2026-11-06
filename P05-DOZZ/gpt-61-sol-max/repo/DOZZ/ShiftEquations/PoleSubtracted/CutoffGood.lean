@@ -33,9 +33,11 @@ def CutoffGood (M : Ω → Measure ℂ) (γ η : ℝ) (ω : Ω) : Prop :=
   0 < poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ∧
     poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) < ⊤ ∧ M ω {0} = 0
 
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include P X hX γ hγ hγ2 M hM in
 /-- The good event has full measure. -/
-theorem ae_cutoffGood (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ}
+theorem ae_cutoffGood  {η δ : ℝ}
     (hW : TwoPoleWindow γ η δ) : ∀ᵐ ω ∂P, CutoffGood M γ η ω := by
   have hη := (window_eta_pos hW).le
   have hηγ := window_eta_le_two_div hγ hγ2 hW
@@ -87,9 +89,9 @@ theorem ofReal_sub_mul_rpow_add_rpow {T L : ℝ≥0∞} (hL : 0 < L) (hLT : L �
     (s : ℝ) :
     ENNReal.ofReal ((T.toReal - L.toReal) * (T.toReal ^ s + L.toReal ^ s)) =
       (T - L) * (T ^ s + L ^ s) := by
-  have hL' : L ≠ ⊤ := ne_top_of_le_ne_top hT hLT
-  have hLr : 0 < L.toReal := ENNReal.toReal_pos hL.ne' hL'
-  have hTr : 0 < T.toReal := ENNReal.toReal_pos (hL.trans_le hLT).ne' hT
+  have hL'  := ne_top_of_le_ne_top hT hLT
+  have hLr  := ENNReal.toReal_pos hL.ne' hL'
+  have hTr  := ENNReal.toReal_pos (hL.trans_le hLT).ne' hT
   rw [ENNReal.ofReal_mul (sub_nonneg.2 (ENNReal.toReal_mono hT hLT)),
     ENNReal.ofReal_sub _ ENNReal.toReal_nonneg, ENNReal.ofReal_toReal hT,
     ENNReal.ofReal_toReal hL', ENNReal.ofReal_add (by positivity) (by positivity),
@@ -102,16 +104,16 @@ theorem measurable_circleAverage_origin {P : Measure Ω} {X : Ω → Distr} {Xc 
     (hXc : IsCircleAverage P X Xc) (m : ℕ) : Measurable fun ω => Xc ω 0 m :=
   (hXc.1 m).comp (measurable_id.prodMk measurable_const)
 
-theorem aemeasurable_baseMassReal (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (η : ℝ)
+include P X hX γ hγ hγ2 M hM in
+theorem aemeasurable_baseMassReal  (η : ℝ)
     (n : ℕ) : AEMeasurable (baseMassReal M γ η n) P := by
-  have h : AEMeasurable (fun ω => (cutoffTiltedMass γ η 0 n (M ω)).toReal) P :=
+  have h  :=
     (aemeasurable_measure_functional P X hX γ hγ hγ2 M hM
       (measurable_cutoffTiltedMass γ η 0 n)).ennreal_toReal
   exact h.congr (Eventually.of_forall fun ω => (baseMassReal_eq M γ η n ω).symm)
 
-theorem aemeasurable_localMassReal (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (η : ℝ) :
+include P X hX γ hγ hγ2 M hM in
+theorem aemeasurable_localMassReal  (η : ℝ) :
     AEMeasurable (localMassReal M γ η) P :=
   (aemeasurable_measure_functional P X hX γ hγ hγ2 M hM
     (measurable_poleLocalMass γ η)).ennreal_toReal
@@ -132,9 +134,9 @@ theorem measurable_dominationFunctional (γ η s : ℝ) (n : ℕ) :
   exact ENNReal.measurable_ofReal.comp
     ((hT.sub hL).mul ((hT.pow_const s).add (hL.pow_const s)))
 
+include P X hX γ hγ hγ2 M hM in
 /-- **Integrability of the cutoff domination**: for `a > -2η - δ` and `n ≤ m`. -/
-theorem integrable_cutoffDomination (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem integrable_cutoffDomination 
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) {η δ : ℝ}
     (hW : TwoPoleWindow γ η δ) {a : ℝ} (ha : -2 * η - δ < a) {m n : ℕ} (hnm : n ≤ m) :
     Integrable (fun ω => (baseMassReal M γ η n ω - localMassReal M γ η ω) *
@@ -146,8 +148,7 @@ theorem integrable_cutoffDomination (P : Measure Ω) (X : Ω → Distr) (hX : Is
   have hmeas : AEMeasurable (fun ω => (baseMassReal M γ η n ω - localMassReal M γ η ω) *
       cutoffWeight γ (Xc ω 0 m) (baseMassReal M γ η n ω) (localMassReal M γ η ω) a) P := by
     unfold cutoffWeight
-    exact (hB.sub hL).mul ((Real.measurable_exp.comp_aemeasurable (hXm.const_mul a)).mul
-      ((hB.pow_const _).add (hL.pow_const _)))
+    fun_prop (disch := positivity)
   have hgood := ae_cutoffGood P X hX γ hγ hγ2 M hM hW
   have hnonneg : 0 ≤ᵐ[P] fun ω => (baseMassReal M γ η n ω - localMassReal M γ η ω) *
       cutoffWeight γ (Xc ω 0 m) (baseMassReal M γ η n ω) (localMassReal M γ η ω) a := by

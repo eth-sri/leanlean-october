@@ -9,6 +9,7 @@ public import DOZZ.Brownian.WienerExists
 public import DOZZ.Brownian.ConditionedEntranceProbability
 public import DOZZ.Brownian.ConditionedFDDMeasure
 public import DOZZ.GMC.FiniteGaussianTilt
+import Mathlib.Tactic
 
 /-!
 # Gaussian radial entrance law
@@ -33,7 +34,7 @@ theorem pi_gaussianReal_withDensity {n : ℕ} (m : Fin n → ℝ) (t : ℝ≥0) 
   intro S hS
   rw [withDensity_apply _ (MeasurableSet.univ_pi hS)]
   rw [← lintegral_indicator (MeasurableSet.univ_pi hS)]
-  let f : Fin n → ℝ → ℝ≥0∞ := fun i => (S i).indicator (gaussianPDF (m i) t)
+  let f  := fun i => (S i).indicator (gaussianPDF (m i) t)
   have hf (i : Fin n) : Measurable (f i) := (measurable_gaussianPDF _ _).indicator (hS i)
   have hpoint (z : Fin n → ℝ) :
       (univ.pi S).indicator (fun z => ∏ i, gaussianPDF (m i) t (z i)) z = ∏ i, f i (z i) := by
@@ -90,9 +91,7 @@ theorem radialGaussianConstant_angular {t : ℝ} (ht : 0 < t) :
   have hs : 0 < Real.sqrt (2 * Real.pi * t) := Real.sqrt_pos.mpr (by positivity)
   have hsq := Real.sq_sqrt (show 0 ≤ 2 * Real.pi * t by positivity)
   unfold radialGaussianConstant
-  generalize Real.sqrt (2 * Real.pi * t) = r at *
-  field_simp
-  nlinarith only [hsq]
+  grind
 
 /-- The explicit entrance-density coefficient equals the Gaussian angular normalizer. -/
 theorem radialGaussianConstant_eq_entranceCoefficient {t : ℝ} (ht : 0 < t) :
@@ -114,8 +113,7 @@ theorem entranceDensity_eq_radialGaussian {a t y : ℝ} (ha : 0 < a) (ht : 0 < t
       ((4 * Real.pi) * radialGaussianConstant t) *
         Real.exp (-y ^ 2 / (2 * t) - a ^ 2 * t / 2) * (y * Real.sinh (a * y) / a) := by
   rw [radialGaussianConstant_eq_entranceCoefficient ht, conditionedPositiveEntranceDensity]
-  simp only [ha.le, ht, hy, and_self, ite_true, ha.ne', ite_false]
-  ring
+  grind
 
 /-- The same angular normalizer identifies the Maxwell endpoint. -/
 theorem entranceDensity_zero_eq_radialGaussian {t y : ℝ} (ht : 0 < t) (hy : 0 < y) :
@@ -133,8 +131,7 @@ theorem lintegral_three_gaussian_radial_pos (F : ℝ → ℝ≥0∞) (hF : Measu
       ∫⁻ y in Ioi (0 : ℝ), F y * ENNReal.ofReal (conditionedPositiveEntranceDensity a t y) := by
   have htr : 0 < (t : ℝ) := ht
   have hpdf : Measurable (fun z : Fin 3 → ℝ =>
-      ∏ i, gaussianPDF (if i = 0 then a * (t : ℝ) else 0) t (z i)) := by
-    exact Finset.measurable_prod Finset.univ (fun i _ =>
+      ∏ i, gaussianPDF (if i = 0 then a * (t : ℝ) else 0) t (z i)) := Finset.measurable_prod Finset.univ (fun i _ =>
       (measurable_gaussianPDF _ _).comp (measurable_pi_apply i))
   have hnorm : Measurable (fun z : Fin 3 → ℝ => F ‖WithLp.toLp 2 z‖) :=
     hF.comp (PiLp.continuous_toLp 2 _).norm.measurable
@@ -147,10 +144,7 @@ theorem lintegral_three_gaussian_radial_pos (F : ℝ → ℝ≥0∞) (hF : Measu
     _ = ENNReal.ofReal (radialGaussianConstant t) *
         ∫⁻ z : Fin 3 → ℝ, G ‖WithLp.toLp 2 z‖ * ENNReal.ofReal (Real.exp (a * z 0)) := by
       rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
-      apply lintegral_congr
-      intro z
-      dsimp only [G]
-      ring
+      grind
     _ = ENNReal.ofReal (radialGaussianConstant t) * (ENNReal.ofReal (4 * Real.pi) *
         ∫⁻ y in Ioi (0 : ℝ), G y * ENNReal.ofReal (y * Real.sinh (a * y) / a)) := by
       rw [lintegral_three_radial_exp G hG a ha.ne']
@@ -170,8 +164,7 @@ theorem lintegral_three_gaussian_radial_zero (F : ℝ → ℝ≥0∞) (hF : Meas
     (t : ℝ≥0) (ht : 0 < t) :
     (∫⁻ z, F ‖WithLp.toLp 2 z‖ ∂Measure.pi (fun _ : Fin 3 => gaussianReal 0 t)) =
       ∫⁻ y in Ioi (0 : ℝ), F y * ENNReal.ofReal (conditionedPositiveEntranceDensity 0 t y) := by
-  have hpdf : Measurable (fun z : Fin 3 → ℝ => ∏ i, gaussianPDF 0 t (z i)) := by
-    exact Finset.measurable_prod Finset.univ (fun i _ =>
+  have hpdf : Measurable (fun z : Fin 3 → ℝ => ∏ i, gaussianPDF 0 t (z i)) := Finset.measurable_prod Finset.univ (fun i _ =>
       (measurable_gaussianPDF _ _).comp (measurable_pi_apply i))
   have hnorm : Measurable (fun z : Fin 3 → ℝ => F ‖WithLp.toLp 2 z‖) :=
     hF.comp (PiLp.continuous_toLp 2 _).norm.measurable
@@ -186,10 +179,7 @@ theorem lintegral_three_gaussian_radial_zero (F : ℝ → ℝ≥0∞) (hF : Meas
   calc
     _ = ENNReal.ofReal (radialGaussianConstant t) * ∫⁻ z : Fin 3 → ℝ, G ‖WithLp.toLp 2 z‖ := by
       rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
-      apply lintegral_congr
-      intro z
-      dsimp only [G]
-      ring
+      grind
     _ = ENNReal.ofReal (radialGaussianConstant t) * (ENNReal.ofReal (4 * Real.pi) *
         ∫⁻ y in Ioi (0 : ℝ), G y * ENNReal.ofReal (y ^ 2)) := by
       rw [lintegral_three_radial_zero G hG]
@@ -226,11 +216,14 @@ theorem lintegral_entranceDensity_Ioi (F : ℝ → ℝ≥0∞) (a t : ℝ) :
   apply setLIntegral_eq_of_support_subset
   intro y hy
   by_contra hpos
-  have hy0 : y ≤ 0 := le_of_not_gt hpos
+  have hy0  := le_of_not_gt hpos
   exact hy (by simp [entranceDensity_eq_zero_of_nonpositive a t y hy0])
 
+variable (a : ℝ) (ha : 0 ≤ a) (t : ℝ≥0) (ht : 0 < t)
+
+include a ha t ht in
 /-- Gaussian norm pushforward equals the actual entrance-density measure. -/
-theorem three_gaussian_norm_map_eq_entrance (a : ℝ) (ha : 0 ≤ a) (t : ℝ≥0) (ht : 0 < t) :
+theorem three_gaussian_norm_map_eq_entrance  :
     (Measure.pi (fun i : Fin 3 => gaussianReal (if i = 0 then a * (t : ℝ) else 0) t)).map
       (fun z => ‖WithLp.toLp 2 z‖) = conditionedPositiveEntranceMeasure a t := by
   apply Measure.ext_of_lintegral
@@ -243,19 +236,18 @@ theorem three_gaussian_norm_map_eq_entrance (a : ℝ) (ha : 0 ≤ a) (t : ℝ≥
   intro y
   exact mul_comm _ _
 
+include a ha t ht in
 /-- The GFF-derived unconditional radial path has the exact entrance marginal at every positive time. -/
-theorem rogersPitmanWienerMeasure_eval_eq_entrance (a : ℝ) (ha : 0 ≤ a)
-    (t : ℝ≥0) (ht : 0 < t) :
+theorem rogersPitmanWienerMeasure_eval_eq_entrance  :
     (rogersPitmanWienerMeasure a).map (fun p => p t) = conditionedPositiveEntranceMeasure a t := by
   rw [rogersPitmanWienerMeasure_eval_map, three_gaussian_norm_map_eq_entrance a ha t ht]
 
+include a ha t ht in
 /-- Reflection gives the negative conditioned entrance marginal on the original path carrier. -/
-theorem negativeRogersPitmanWienerMeasure_eval_eq_entrance (a : ℝ) (ha : 0 ≤ a)
-    (t : ℝ≥0) (ht : 0 < t) :
+theorem negativeRogersPitmanWienerMeasure_eval_eq_entrance  :
     (negativeRogersPitmanWienerMeasure a).map (fun p => p t) =
       (conditionedPositiveEntranceMeasure a t).map Neg.neg := by
-  have hnorm : Measurable (fun z : Fin 3 → ℝ => ‖WithLp.toLp 2 z‖) :=
-    (PiLp.continuous_toLp 2 _).norm.measurable
+  
   rw [← rogersPitmanWienerMeasure_eval_eq_entrance a ha t ht,
     rogersPitmanWienerMeasure, negativeRogersPitmanWienerMeasure,
     rogersPitmanEntranceMeasure, negativeRogersPitmanEntranceMeasure]
@@ -270,7 +262,7 @@ theorem three_gaussian_axis_norm_map_eq_transition (x : ℝ) (hx : 0 < x)
     (Measure.pi (fun i : Fin 3 => gaussianReal (if i = 0 then x else 0) t)).map
       (fun z => ‖WithLp.toLp 2 z‖) = conditionedPositiveTransitionMeasure 0 t x := by
   have htr : 0 < (t : ℝ) := ht
-  have ha : 0 < x / (t : ℝ) := div_pos hx htr
+  have ha  := div_pos hx htr
   have hmean : x / (t : ℝ) * (t : ℝ) = x := div_mul_cancel₀ _ htr.ne'
   have h := three_gaussian_norm_map_eq_entrance (x / (t : ℝ)) ha.le t ht
   rw [hmean] at h
@@ -298,9 +290,9 @@ theorem lintegral_three_gaussian_axis_transition (x : ℝ) (hx : 0 < x)
   intro y
   exact mul_comm _ _
 
+include a ha t ht in
 /-- The reflected path's entrance tests retain the literal signed state. -/
-theorem negativeRogersPitmanWienerMeasure_lintegral_eval (a : ℝ) (ha : 0 ≤ a)
-    (t : ℝ≥0) (ht : 0 < t) (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
+theorem negativeRogersPitmanWienerMeasure_lintegral_eval  (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p, F (p t) ∂negativeRogersPitmanWienerMeasure a) =
       ∫⁻ y, F (-y) * ENNReal.ofReal (conditionedPositiveEntranceDensity a t y) := by
   rw [← lintegral_map hF (ContinuousMap.measurable_eval t),
@@ -313,8 +305,9 @@ theorem negativeRogersPitmanWienerMeasure_lintegral_eval (a : ℝ) (ha : 0 ≤ a
   intro y
   exact mul_comm _ _
 
+include a ha t ht in
 /-- The raw independent Gaussian coordinates already realize the entrance law. -/
-theorem rogersPitmanVectorAt_norm_hasLaw (a : ℝ) (ha : 0 ≤ a) (t : ℝ≥0) (ht : 0 < t) :
+theorem rogersPitmanVectorAt_norm_hasLaw  :
     HasLaw (fun V : BrownianTriple => ‖rogersPitmanVectorAt a V t‖)
       (conditionedPositiveEntranceMeasure a t) wienerTripleMeasure := by
   have hmap : HasLaw (fun z : Fin 3 → ℝ => ‖WithLp.toLp 2 z‖)

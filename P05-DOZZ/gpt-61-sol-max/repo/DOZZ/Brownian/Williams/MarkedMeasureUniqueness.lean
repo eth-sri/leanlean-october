@@ -15,7 +15,7 @@ Open-closed lifetime intervals strictly beyond the final observation determine t
 on that domain. Pullback to the open interval avoids adding any boundary-atom assumption.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 
@@ -30,19 +30,11 @@ theorem measure_eq_of_Ioc_above (μ η : Measure ℝ) [IsFiniteMeasure μ] [IsFi
     intro a b hab
     rw [Measure.comap_apply e he.injective (fun _ => he.measurableSet_image.mpr) _ measurableSet_Ioc,
       Measure.comap_apply e he.injective (fun _ => he.measurableSet_image.mpr) _ measurableSet_Ioc]
-    have himage : e '' Ioc a b = Ioc (a : ℝ) (b : ℝ) := by
-      ext t
-      constructor
-      · rintro ⟨u, hu, rfl⟩
-        exact hu
-      · intro ht
-        exact ⟨⟨t, a.property.trans ht.1⟩, ht, rfl⟩
-    rw [himage]
-    exact h a b a.property hab
+    continuity
   have hrμ : μ.restrict (Ioi s) = μ := Measure.restrict_eq_self_of_ae_mem hμ
   have hrη : η.restrict (Ioi s) = η := Measure.restrict_eq_self_of_ae_mem hη
   ext A hA
-  have hpre : MeasurableSet (e ⁻¹' A) := hA.preimage he.measurable
+  have hpre  := hA.preimage he.measurable
   have heq := congrArg (fun M : Measure (Ioi s) => M (e ⁻¹' A)) hsub
   rw [Measure.comap_apply e he.injective (fun _ => he.measurableSet_image.mpr) _ hpre,
     Measure.comap_apply e he.injective (fun _ => he.measurableSet_image.mpr) _ hpre,
@@ -76,16 +68,11 @@ theorem measure_eq_of_prod_Ioc_above {α : Type*} [MeasurableSpace α]
     rw [Measure.map_apply measurable_snd hC,
       Measure.restrict_apply (hC.preimage measurable_snd)]
     congr 1
-    ext z
-    simp only [mem_inter_iff, mem_preimage, mem_prod, mem_univ, true_and, and_comm]
+    grind
   have heq : μA = ηA := by
     apply measure_eq_of_Ioc_above μA ηA s hsμ hsη
-    intro a b ha hab
-    rw [hslice _ measurableSet_Ioc, hslice _ measurableSet_Ioc]
-    exact h A hA a b ha hab
-  have hh := congrArg (fun M : Measure ℝ => M B) heq
-  rw [hslice B hB, hslice B hB] at hh
-  exact hh
+    continuity
+  grind
 
 end DOZZ.Proofs
 end

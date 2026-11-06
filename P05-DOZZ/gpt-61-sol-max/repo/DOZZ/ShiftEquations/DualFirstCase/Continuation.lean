@@ -20,15 +20,17 @@ theorem dualFirstCase_continue_interval {F G : ℂ → ℂ} {H lo hi : ℝ}
     simpa only [horizontalStrip, mem_ofPred_eq, Complex.ofReal_im, abs_zero] using hH
   have hfreq := frequently_eq_of_real_interval ((lo + hi) / 2) ((hi - lo) / 4)
     (by linarith only [hlohi]) F G (fun x hx => he x
-      (by have := (abs_lt.mp hx).1; linarith only [this, hlohi])
-      (by have := (abs_lt.mp hx).2; linarith only [this, hlohi]))
+      (by grind)
+      (by grind))
   apply eventuallyEq_codiscreteWithin_iff_forall_eventually_nhdsNE.mpr
   intro z hz
   exact (ShiftGluing.meromorphicOn_eventuallyEq_of_frequently hF hG
     (convex_horizontalStrip H).isPreconnected hm hz hfreq).mono fun _ hw _ => hw
+variable {F : ℂ → ℂ} {H : ℝ} (hF : MeromorphicOn F (horizontalStrip H)) (t : ℝ)
+
+include F H hF t in
 /-- Translations by real numbers preserve meromorphic strip germs. -/
-theorem dualFirstCase_meromorphic_translate {F : ℂ → ℂ} {H : ℝ}
-    (hF : MeromorphicOn F (horizontalStrip H)) (t : ℝ) :
+theorem dualFirstCase_meromorphic_translate  :
     MeromorphicOn (fun z => F (z + (t : ℂ))) (horizontalStrip H) := by
   intro z hz
   exact (hF (z + t) ((add_real_mem_horizontalStrip H z t).mpr hz)).comp_analyticAt (g := fun w : ℂ => w + (t : ℂ))
@@ -42,10 +44,10 @@ theorem dualFirstCase_codiscreteWithin_translate {p : ℂ → Prop} {H : ℝ}
   have hl := eventually_codiscreteWithin_iff_forall_eventually_nhdsNE.mp hp
     (z + t) ((add_real_mem_horizontalStrip H z t).mpr hz)
   filter_upwards [ShiftGluing.eventually_comp_add (t : ℂ) hl] with w hw hws
-  exact hw ((add_real_mem_horizontalStrip H w t).mpr hws)
+  simp_all
+include F H hF t in
 /-- Reflection across a real point preserves meromorphic strip germs. -/
-theorem dualFirstCase_meromorphic_reflect {F : ℂ → ℂ} {H : ℝ}
-    (hF : MeromorphicOn F (horizontalStrip H)) (t : ℝ) :
+theorem dualFirstCase_meromorphic_reflect  :
     MeromorphicOn (fun z => F ((t : ℂ) - z)) (horizontalStrip H) := by
   intro z hz
   have hz' : (t : ℂ) - z ∈ horizontalStrip H := by
@@ -84,30 +86,22 @@ theorem dualFirstCase_common_representative (F R D A : ℂ → ℂ)
     exact fun z hz => (hcl hz).trans_lt (half_lt_self hH)
   have hRDg := codiscreteWithin_restrict_closure (isOpen_horizontalStrip H) hclosure hRD
   have hglueg := codiscreteWithin_restrict_closure (isOpen_horizontalStrip H) hclosure hglue
-  have hC : MeromorphicOn C (horizontalStrip (H / 2)) :=
+  have hC  :=
     (hF.mono_set hsub).congr hCF.symm (isOpen_horizontalStrip _)
   have hshiftg := codiscreteWithin_restrict_closure (isOpen_horizontalStrip H) hclosure hshift
   refine ⟨C, S, hC, (hR.mono_set hsub).congr hRS (isOpen_horizontalStrip _),
     hCF, (fun z hz => by simp only [C, ite_eq_right hz]), hRS.symm, ?_, ?_, ?_⟩
   · filter_upwards [hRDg] with z hz
-    by_cases hin : z ∈ horizontalStrip (H / 2)
-    · simp only [S, ite_eq_left hin]; exact hz hin
-    · simp only [S, ite_eq_right hin]
+    continuity
   · filter_upwards [hglueg] with z hz
     have href : (q : ℂ) - z ∈ horizontalStrip (H / 2) ↔ z ∈ horizontalStrip (H / 2) := by
       simp only [horizontalStrip, mem_ofPred_eq, Complex.sub_im, Complex.ofReal_im, zero_sub, abs_neg]
-    by_cases hin : z ∈ horizontalStrip (H / 2)
-    · rw [hCF hin, hCF (href.mpr hin), ← hRS hin]
-      exact hz hin
-    · simp only [C, ite_eq_right hin, ite_eq_right (href.not.mpr hin), mul_zero]
+    continuity
   · filter_upwards [hshiftg] with z hz
-    have hp := add_real_mem_horizontalStrip (H / 2) z b
+    
     have hm : z - (b : ℂ) ∈ horizontalStrip (H / 2) ↔ z ∈ horizontalStrip (H / 2) := by
       simpa only [sub_eq_add_neg, Complex.ofReal_neg] using add_real_mem_horizontalStrip (H / 2) z (-b)
-    by_cases hin : z ∈ horizontalStrip (H / 2)
-    · rw [hCF (hp.mpr hin), hCF (hm.mpr hin)]
-      exact hz hin
-    · simp only [C, ite_eq_right (hp.not.mpr hin), ite_eq_right (hm.not.mpr hin), mul_zero]
+    continuity
 /-- Any additional homogeneous global shift survives the same zero extension. -/
 theorem dualFirstCase_transfer_global_shift (F C A : ℂ → ℂ) (h b : ℝ)
     (hCF : EqOn C F (horizontalStrip h))
@@ -118,8 +112,5 @@ theorem dualFirstCase_transfer_global_shift (F C A : ℂ → ℂ) (h b : ℝ)
   have hp := add_real_mem_horizontalStrip h z b
   have hm : z - (b : ℂ) ∈ horizontalStrip h ↔ z ∈ horizontalStrip h := by
     simpa only [sub_eq_add_neg, Complex.ofReal_neg] using add_real_mem_horizontalStrip h z (-b)
-  by_cases hin : z ∈ horizontalStrip h
-  · rw [hCF (hp.mpr hin), hCF (hm.mpr hin)]
-    exact hz
-  · rw [hCzero _ (hp.not.mpr hin), hCzero _ (hm.not.mpr hin), mul_zero]
+  grind
 end DOZZ.Proofs

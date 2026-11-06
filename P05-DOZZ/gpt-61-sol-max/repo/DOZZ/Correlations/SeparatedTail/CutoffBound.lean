@@ -9,7 +9,7 @@ public import DOZZ.Correlations.SeparatedTail.ActualCutoffDomination
 
 /-! Assemble the actual exterior-pinned cutoff domination, Kahane and Hölder estimates. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Metric Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -41,7 +41,7 @@ theorem separatedTail_cutoff_mixed_bound_of_markov_data
         (2*ENNReal.ofReal (C (2*(γ*T*p))))) ^ (1/p) *
       ((ENNReal.ofReal (Real.exp (γ^2*(4+2*R)/2*(T^2+T)))*B) *
         (ENNReal.ofReal (Real.exp (γ^2*(4+2*R)/2*(T^2+T)))*B)) ^ (1/q) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let _ : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   let r := Real.log (1/δ)
   let L := equatorRestorationScalar Xc R (show 0 < R by linarith)
@@ -66,7 +66,7 @@ theorem separatedTail_cutoff_mixed_bound_of_markov_data
       (data.measurable_Dc 0) r (hfield 0) _ _ (separatedTail_softWeight_measurable _ _ _ _) γ)
     (separatedTail_dirichletChaosMass_comap_measurable P (data.D 1) (data.Dc 1) (c 1)
       (data.measurable_Dc 1) r (hfield 1) _ _ (separatedTail_softWeight_measurable _ _ _ _) γ)
-  have hLm : Measurable L := equatorRestorationScalar_measurable X Xc hc R (by linarith)
+  have hLm  := equatorRestorationScalar_measurable X Xc hc R (by linarith)
   have hEm (i : Fin 2) (l : ℝ) : AEMeasurable (E i l) P := separatedTail_harmonicEnvelope_aemeasurable
     P (c i) (data.H i) L (data.measurable_H i) hLm (data.continuous_H i) l
   have hdom (i : Fin 2) : ∀ᵐ ω ∂P, W i ω ≤ d*E i γ ω*D i ω := by
@@ -94,8 +94,8 @@ theorem separatedTail_cutoff_mixed_bound_of_markov_data
     change (E 1 γ ω)^(a 1) = E 1 (γ*a 1) ω at he1
     rw [he0,he1] at h
     have hd : d^(a 0+a 1) = d^(a 0)*d^(a 1) :=
-      ENNReal.rpow_add _ _ (by dsimp [d]; exact (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne')
-        (by dsimp [d]; exact ENNReal.ofReal_ne_top)
+      ENNReal.rpow_add _ _ (by positivity)
+        (by exact ENNReal.ofReal_ne_top)
     refine h.trans_eq ?_
     dsimp [Eall]
     rw [hd]
@@ -116,7 +116,7 @@ theorem separatedTail_cutoff_mixed_bound_of_markov_data
       rw [ENNReal.mul_rpow_of_nonneg _ _ hp.le, ← ENNReal.rpow_mul]
     simp_rw [hpower]
     rw [lintegral_const_mul' _ _ (ENNReal.rpow_ne_top_of_nonneg (mul_nonneg (add_nonneg (ha 0).le (ha 1).le) hp.le)
-      (by dsimp [d]; exact ENNReal.ofReal_ne_top))]
+      (by exact ENNReal.ofReal_ne_top))]
     refine mul_le_mul' ?_ hEnv
     dsimp [d]
     rw [ENNReal.ofReal_rpow_of_pos (Real.exp_pos _), ← Real.exp_mul]

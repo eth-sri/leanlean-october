@@ -6,6 +6,7 @@ module
 
 public import DOZZ.FourPoint.BPZ.UnreflectedD
 public import DOZZ.FourPoint.Diagonal.Assembly
+public import DOZZ.FourPoint.GaussContracts
 
 /-! # The unreflected `γ/2` formula
 
@@ -13,7 +14,7 @@ Proof of `DOZZ.gammaHalf_full_unreflected_formula`: the conditional theorem
 `bpz_gammaHalf_full_unreflected_formula_of_diag` applied to the diagonal classification at
 `χ = γ/2`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -30,16 +31,7 @@ theorem gammaHalf_full_unreflected_formula {Ω : Type*} [MeasurableSpace Ω]
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
-    let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
-    let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃
-    let c := gaussParameterC γ (γ / 2) α₁
-    ∀ z ∈ gaussCutPlane,
-      fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z =
-        structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-            ‖gaussFMinus H a b c z‖ ^ 2 +
-          (-μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re) *
-            structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ *
-              ‖gaussFPlus H a b c z‖ ^ 2 := by
+    Contract.gammaHalfUnreflected P M γ μ α₁ α₂ α₃ H := by
   exact bpz_gammaHalf_full_unreflected_formula_of_diag hH P X M γ μ α₁ α₂ α₃ hγ hγ₂ hμ hαlo
     hαhi hα₂ hα₃ hs hX hM fun M' γ' t h0 h2 hM' hlo hhi h₂ h₃ hs' =>
       degenerateFourPoint_diagonal_classification hH P X M' γ' μ (γ' / 2) t α₂ α₃ h0 h2 hμ

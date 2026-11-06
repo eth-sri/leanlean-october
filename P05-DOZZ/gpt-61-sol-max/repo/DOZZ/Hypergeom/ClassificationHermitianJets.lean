@@ -28,10 +28,7 @@ noncomputable def hermitianQuadraticTensorZ (f g : ℂ → ℂ) (A B C D : ℂ) 
   fun z => A * deriv f z * star (f z) + B * deriv f z * star (g z) +
     C * deriv g z * star (f z) + D * deriv g z * star (g z)
 
-private theorem function_add_apply (f g : ℂ → ℂ) :
-    f + g = fun z => f z + g z := by
-  funext z
-  rfl
+
 
 private theorem wirtingerBar_star_eq_star_deriv_at {g : ℂ → ℂ} {z : ℂ}
     (hg : DifferentiableAt ℂ g z) :
@@ -68,14 +65,14 @@ private theorem wirtingerBar_const_mul_star_term (k : ℂ) {f g : ℂ → ℂ} {
 private theorem hermitianTensorTermDiffAt {k : ℂ} {f g : ℂ → ℂ} {z : ℂ}
     (hf : DifferentiableAt ℂ f z) (hg : DifferentiableAt ℂ g z) :
     DifferentiableAt ℝ (fun w => k * f w * star (g w)) z := by
-  exact (((differentiableAt_const k).mul hf).restrictScalars ℝ).mul
-    ((hg.restrictScalars ℝ).star)
+  fun_prop (disch := positivity)
 
+variable {f g : ℂ → ℂ} {U : Set ℂ} (hf : AnalyticOnNhd ℂ f U) (hg : AnalyticOnNhd ℂ g U) (A B C D : ℂ) {z : ℂ} (hz : z ∈ U)
+
+include f g U hf hg A B C D z hz in
 /-- First `∂z` derivative of the constant Hermitian tensor. -/
 theorem hermitianQuadraticTensor_wirtingerZ
-    {f g : ℂ → ℂ} {U : Set ℂ}
-    (hf : AnalyticOnNhd ℂ f U) (hg : AnalyticOnNhd ℂ g U)
-    (A B C D : ℂ) {z : ℂ} (hz : z ∈ U) :
+     :
     wirtingerZ (hermitianQuadraticTensor f g A B C D) z =
       hermitianQuadraticTensorZ f g A B C D z := by
   have hfAt := (hf z hz).differentiableAt
@@ -91,16 +88,10 @@ theorem hermitianQuadraticTensor_wirtingerZ
   have h₂ := hermitianTensorTermDiffAt (k := B) hfAt hgAt
   have h₃ := hermitianTensorTermDiffAt (k := C) hgAt hfAt
   have h₄ := hermitianTensorTermDiffAt (k := D) hgAt hgAt
-  have hsum₁ : wirtingerZ (t₁ + t₂) z = wirtingerZ t₁ z + wirtingerZ t₂ z := by
-    rw [function_add_apply]
-    exact wirtingerZ_add h₁ h₂
-  have hsum₂ : wirtingerZ (t₃ + t₄) z = wirtingerZ t₃ z + wirtingerZ t₄ z := by
-    rw [function_add_apply]
-    exact wirtingerZ_add h₃ h₄
+  have hsum₁ : wirtingerZ (t₁ + t₂) z = wirtingerZ t₁ z + wirtingerZ t₂ z := wirtingerZ_add h₁ h₂
+  have hsum₂ : wirtingerZ (t₃ + t₄) z = wirtingerZ t₃ z + wirtingerZ t₄ z := wirtingerZ_add h₃ h₄
   have hsum : wirtingerZ ((t₁ + t₂) + (t₃ + t₄)) z =
-      wirtingerZ (t₁ + t₂) z + wirtingerZ (t₃ + t₄) z := by
-    rw [function_add_apply]
-    exact wirtingerZ_add (h₁.add h₂) (h₃.add h₄)
+      wirtingerZ (t₁ + t₂) z + wirtingerZ (t₃ + t₄) z := wirtingerZ_add (h₁.add h₂) (h₃.add h₄)
   calc
     wirtingerZ (hermitianQuadraticTensor f g A B C D) z =
         wirtingerZ ((t₁ + t₂) + (t₃ + t₄)) z := by rw [hfun]
@@ -119,11 +110,10 @@ theorem hermitianQuadraticTensor_wirtingerZ
       simp [hermitianQuadraticTensorZ]
       ring
 
+include f g U hf hg A B C D z hz in
 /-- First `∂bar` derivative of the constant Hermitian tensor. -/
 theorem hermitianQuadraticTensor_wirtingerBar
-    {f g : ℂ → ℂ} {U : Set ℂ}
-    (hf : AnalyticOnNhd ℂ f U) (hg : AnalyticOnNhd ℂ g U)
-    (A B C D : ℂ) {z : ℂ} (hz : z ∈ U) :
+     :
     wirtingerBar (hermitianQuadraticTensor f g A B C D) z =
       A * f z * star (deriv f z) + B * f z * star (deriv g z) +
       C * g z * star (deriv f z) + D * g z * star (deriv g z) := by
@@ -140,16 +130,10 @@ theorem hermitianQuadraticTensor_wirtingerBar
   have h₂ := hermitianTensorTermDiffAt (k := B) hfAt hgAt
   have h₃ := hermitianTensorTermDiffAt (k := C) hgAt hfAt
   have h₄ := hermitianTensorTermDiffAt (k := D) hgAt hgAt
-  have hsum₁ : wirtingerBar (t₁ + t₂) z = wirtingerBar t₁ z + wirtingerBar t₂ z := by
-    rw [function_add_apply]
-    exact wirtingerBar_add h₁ h₂
-  have hsum₂ : wirtingerBar (t₃ + t₄) z = wirtingerBar t₃ z + wirtingerBar t₄ z := by
-    rw [function_add_apply]
-    exact wirtingerBar_add h₃ h₄
+  have hsum₁ : wirtingerBar (t₁ + t₂) z = wirtingerBar t₁ z + wirtingerBar t₂ z := wirtingerBar_add h₁ h₂
+  have hsum₂ : wirtingerBar (t₃ + t₄) z = wirtingerBar t₃ z + wirtingerBar t₄ z := wirtingerBar_add h₃ h₄
   have hsum : wirtingerBar ((t₁ + t₂) + (t₃ + t₄)) z =
-      wirtingerBar (t₁ + t₂) z + wirtingerBar (t₃ + t₄) z := by
-    rw [function_add_apply]
-    exact wirtingerBar_add (h₁.add h₂) (h₃.add h₄)
+      wirtingerBar (t₁ + t₂) z + wirtingerBar (t₃ + t₄) z := wirtingerBar_add (h₁.add h₂) (h₃.add h₄)
   calc
     wirtingerBar (hermitianQuadraticTensor f g A B C D) z =
         wirtingerBar ((t₁ + t₂) + (t₃ + t₄)) z := by rw [hfun]
@@ -168,36 +152,29 @@ theorem hermitianQuadraticTensor_wirtingerBar
         wirtingerBar_const_mul_star_term D hgAt hgAt]
       ring
 
+include f g U hf hg A B C D z hz in
 /-- A constant Hermitian tensor is twice continuously real-differentiable wherever its two
 holomorphic factors are analytic. -/
 theorem hermitianQuadraticTensor_contDiffAt_two
-    {f g : ℂ → ℂ} {U : Set ℂ}
-    (hf : AnalyticOnNhd ℂ f U) (hg : AnalyticOnNhd ℂ g U)
-    (A B C D : ℂ) {z : ℂ} (hz : z ∈ U) :
+     :
     ContDiffAt ℝ 2 (hermitianQuadraticTensor f g A B C D) z := by
   have hfAt : ContDiffAt ℝ 2 f z := (hf z hz).contDiffAt.restrict_scalars ℝ
   have hgAt : ContDiffAt ℝ 2 g z := (hg z hz).contDiffAt.restrict_scalars ℝ
   have hstarF : ContDiffAt ℝ 2 (fun w => star (f w)) z := by
     rw [show (fun w => star (f w)) = Complex.conjCLE ∘ f by
       funext w; rfl]
-    exact Complex.conjCLE.contDiff.contDiffAt.comp z hfAt
+    fun_prop (disch := positivity)
   have hstarG : ContDiffAt ℝ 2 (fun w => star (g w)) z := by
     rw [show (fun w => star (g w)) = Complex.conjCLE ∘ g by
       funext w; rfl]
-    exact Complex.conjCLE.contDiff.contDiffAt.comp z hgAt
-  have ht₁ : ContDiffAt ℝ 2 (fun w => A * f w * star (f w)) z :=
-    (contDiffAt_const.mul hfAt).mul hstarF
-  have ht₂ : ContDiffAt ℝ 2 (fun w => B * f w * star (g w)) z :=
-    (contDiffAt_const.mul hfAt).mul hstarG
-  have ht₃ : ContDiffAt ℝ 2 (fun w => C * g w * star (f w)) z :=
-    (contDiffAt_const.mul hgAt).mul hstarF
-  have ht₄ : ContDiffAt ℝ 2 (fun w => D * g w * star (g w)) z :=
-    (contDiffAt_const.mul hgAt).mul hstarG
+    fun_prop (disch := positivity)
+
+
+
+
   change ContDiffAt ℝ 2
     (fun w => A * f w * star (f w) + B * f w * star (g w) +
       C * g w * star (f w) + D * g w * star (g w)) z
-  convert (ht₁.add ht₂).add (ht₃.add ht₄) using 1
-  ext w
-  ring_nf
+  fun_prop (disch := positivity)
 
 end DOZZ.Proofs

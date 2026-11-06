@@ -6,6 +6,7 @@ Authors: Scott Armstrong, Amélie Loher
 module
 
 public import GaussianFields.WhiteNoise.Haar.Basic
+import Mathlib.Tactic
 
 /-!
 # GaussianFields Haar one dimensional refinements
@@ -25,17 +26,31 @@ namespace GaussianFields
 noncomputable def haar1D (j : ℤ) (k : ℤ) (signature : Bool) : ℝ → ℝ :=
   fun x => haarScaleFactor j * haarAtom1D signature (dyadicPower j * x - (k : ℝ))
 
+variable (j k : ℤ)
+
+variable (x : ℝ)
+
+include x in
+include x in
+include x in
+include x in
+include x in
+include x in
+include x in
+include x in
+include j k
 /-- The one-dimensional dyadic interval supporting the father packet at scale `j` and cell `k`. -/
 @[expose]
-def dyadicInterval (j k : ℤ) : Set ℝ :=
+def dyadicInterval  : Set ℝ :=
   Set.Ico ((k : ℝ) / dyadicPower j) (((k : ℝ) + 1) / dyadicPower j)
 
-theorem mem_dyadicInterval_iff (j k : ℤ) (x : ℝ) :
+
+theorem mem_dyadicInterval_iff   :
     x ∈ dyadicInterval j k ↔
       dyadicPower j * x - (k : ℝ) ∈ Set.Ico (0 : ℝ) 1 := by
   let a := dyadicPower j
   have ha : 0 < a := dyadicPower_pos j
-  have hane : a ≠ 0 := ne_of_gt ha
+  have hane  := ne_of_gt ha
   constructor
   · intro hx
     constructor
@@ -54,21 +69,21 @@ theorem mem_dyadicInterval_iff (j k : ℤ) (x : ℝ) :
     · have hlt : a * x < (k : ℝ) + 1 := by linarith [hx.2]
       exact (lt_div_iff₀ ha).2 (by simpa [mul_comm] using hlt)
 
-theorem measurableSet_dyadicInterval (j k : ℤ) :
-    MeasurableSet (dyadicInterval j k) := by
-  unfold dyadicInterval
-  exact measurableSet_Ico
 
-theorem haar1D_father_eq_indicator_dyadicInterval (j k : ℤ) (x : ℝ) :
+theorem measurableSet_dyadicInterval  :
+    MeasurableSet (dyadicInterval j k) := measurableSet_Ico
+
+
+theorem haar1D_father_eq_indicator_dyadicInterval   :
     haar1D j k false x =
       haarScaleFactor j *
         Set.indicator (dyadicInterval j k) (fun _ : ℝ => (1 : ℝ)) x := by
   unfold haar1D haarAtom1D haarFather1D
   by_cases hx : x ∈ dyadicInterval j k
-  · have hx' : dyadicPower j * x - (k : ℝ) ∈ Set.Ico (0 : ℝ) 1 :=
+  · have hx'  :=
       (mem_dyadicInterval_iff j k x).1 hx
     simp [hx, hx']
-  · have hx' : dyadicPower j * x - (k : ℝ) ∉ Set.Ico (0 : ℝ) 1 :=
+  · have hx'  :=
       mt (mem_dyadicInterval_iff j k x).2 hx
     simp [hx, hx']
 
@@ -76,24 +91,25 @@ theorem haar1D_father_eq_indicator_dyadicInterval (j k : ℤ) (x : ℝ) :
 theorem measurable_haar1D (j : ℤ) (k : ℤ) (signature : Bool) :
     Measurable (haar1D j k signature) := by
   unfold haar1D
-  exact measurable_const.mul
-    ((measurable_haarAtom1D signature).comp (by fun_prop))
+  fun_prop (disch := positivity)
 
-theorem integrable_haarFather1D_affine (j k : ℤ) :
+
+theorem integrable_haarFather1D_affine  :
     Integrable (fun x : ℝ => haarFather1D (dyadicPower j * x - (k : ℝ)))
       (volume : Measure ℝ) := by
   have hshift :
-      Integrable (fun y : ℝ => haarFather1D (y - (k : ℝ))) (volume : Measure ℝ) := by
-    simpa [sub_eq_add_neg] using integrable_haarFather1D.comp_add_right (-(k : ℝ))
-  simpa [sub_eq_add_neg] using hshift.comp_mul_left' (dyadicPower_ne_zero j)
+      Integrable (fun y : ℝ => haarFather1D (y - (k : ℝ))) (volume : Measure ℝ) := integrable_haarFather1D.comp_add_right (-(k : ℝ))
+  exact hshift.comp_mul_left' (dyadicPower_ne_zero j)
 
-theorem haar1D_sq (j k : ℤ) (signature : Bool) (x : ℝ) :
+
+theorem haar1D_sq  (signature : Bool) (x : ℝ) :
     haar1D j k signature x ^ (2 : Nat) =
       dyadicPower j * haarFather1D (dyadicPower j * x - (k : ℝ)) := by
   unfold haar1D
   rw [mul_pow, haarAtom1D_sq, haarScaleFactor_sq]
 
-theorem integrable_haar1D_sq (j k : ℤ) (signature : Bool) :
+
+theorem integrable_haar1D_sq  (signature : Bool) :
     Integrable (fun x : ℝ => haar1D j k signature x ^ (2 : Nat))
       (volume : Measure ℝ) := by
   refine ((integrable_haarFather1D_affine j k).const_mul (dyadicPower j)).congr
@@ -101,19 +117,22 @@ theorem integrable_haar1D_sq (j k : ℤ) (signature : Bool) :
   intro x
   exact (haar1D_sq j k signature x).symm
 
-theorem memLp_haar1D (j k : ℤ) (signature : Bool) :
+
+theorem memLp_haar1D  (signature : Bool) :
     MemLp (haar1D j k signature) 2 (volume : Measure ℝ) := by
   rw [memLp_two_iff_integrable_sq]
   · exact integrable_haar1D_sq j k signature
-  · exact (measurable_haar1D j k signature).aestronglyMeasurable
+  fun_prop (disch := positivity)
+
 
 /-- The one-dimensional Haar packet as an `L²` vector. -/
 @[expose]
-noncomputable def haar1DLp (j k : ℤ) (signature : Bool) :
+noncomputable def haar1DLp  (signature : Bool) :
     Lp ℝ 2 (volume : Measure ℝ) :=
   (memLp_haar1D j k signature).toLp (haar1D j k signature)
 
-theorem haar1D_mul_haar1D_same_scale_cell (j k : ℤ)
+
+theorem haar1D_mul_haar1D_same_scale_cell
     (signature₁ signature₂ : Bool) (x : ℝ) :
     haar1D j k signature₁ x * haar1D j k signature₂ x =
       dyadicPower j *
@@ -123,14 +142,13 @@ theorem haar1D_mul_haar1D_same_scale_cell (j k : ℤ)
   rw [← haarScaleFactor_sq]
   ring
 
-theorem integral_haar1D_mul_haar1D_same_scale_cell (j k : ℤ)
+
+theorem integral_haar1D_mul_haar1D_same_scale_cell
     (signature₁ signature₂ : Bool) :
     ∫ x : ℝ, haar1D j k signature₁ x * haar1D j k signature₂ x ∂volume =
       if signature₁ = signature₂ then 1 else 0 := by
-  let f : ℝ → ℝ := fun y => haarAtom1D signature₁ y * haarAtom1D signature₂ y
-  have hbase :
-      ∫ y : ℝ, f y ∂volume = if signature₁ = signature₂ then 1 else 0 := by
-    exact integral_haarAtom1D_mul_haarAtom1D signature₁ signature₂
+  let f  := fun y => haarAtom1D signature₁ y * haarAtom1D signature₂ y
+  have hbase  := integral_haarAtom1D_mul_haarAtom1D signature₁ signature₂
   have haffine :
       ∫ x : ℝ, f (dyadicPower j * x - (k : ℝ)) ∂volume =
         (dyadicPower j)⁻¹ * ∫ y : ℝ, f y ∂volume := by
@@ -138,7 +156,7 @@ theorem integral_haar1D_mul_haar1D_same_scale_cell (j k : ℤ)
       (a := dyadicPower j) (b := -(k : ℝ))
       (dyadicPower_ne_zero j) f
       (integrable_haarAtom1D_mul_haarAtom1D signature₁ signature₂)
-    have hpos : 0 < dyadicPower j := dyadicPower_pos j
+    have hpos  := dyadicPower_pos j
     simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr hpos), f] using h
   calc
     ∫ x : ℝ, haar1D j k signature₁ x * haar1D j k signature₂ x ∂volume =
@@ -164,14 +182,10 @@ theorem haar1D_mul_haar1D_same_scale_cell_ne (j k₁ k₂ : ℤ)
     haar1D j k₁ signature₁ x * haar1D j k₂ signature₂ x = 0 := by
   unfold haar1D
   let a₁ := haarAtom1D signature₁ (dyadicPower j * x - (k₁ : ℝ))
-  let a₂ := haarAtom1D signature₂ (dyadicPower j * x - (k₂ : ℝ))
-  have hprod : a₁ * a₂ = 0 := by
-    exact haarAtom1D_mul_eq_zero_of_cells_ne signature₁ signature₂
+
+  have hprod  := haarAtom1D_mul_eq_zero_of_cells_ne signature₁ signature₂
       (z := dyadicPower j * x) hk
-  calc
-    haarScaleFactor j * a₁ * (haarScaleFactor j * a₂) =
-        haarScaleFactor j * haarScaleFactor j * (a₁ * a₂) := by ring
-    _ = 0 := by rw [hprod, mul_zero]
+  aesop
 
 /-- One-dimensional Haar atoms at the same scale but in distinct cells are orthogonal. -/
 theorem integral_haar1D_mul_haar1D_same_scale_cell_ne (j k₁ k₂ : ℤ)
@@ -199,20 +213,23 @@ theorem integral_haar1D_mul_haar1D_same_scale (j k₁ k₂ : ℤ)
     exact integral_haar1D_mul_haar1D_same_scale_cell_ne j k₁ k₂
       signature₁ signature₂ hk
 
-theorem haar1D_left_child_arg (j k : ℤ) (x : ℝ) :
+
+theorem haar1D_left_child_arg   :
     dyadicPower (j + 1) * x - 2 * (k : ℝ) =
       2 * (dyadicPower j * x - (k : ℝ)) := by
   rw [dyadicPower_add_one]
   ring
 
-theorem haar1D_right_child_arg (j k : ℤ) (x : ℝ) :
+
+theorem haar1D_right_child_arg   :
     dyadicPower (j + 1) * x - (2 * (k : ℝ) + 1) =
       2 * (dyadicPower j * x - (k : ℝ)) - 1 := by
   rw [dyadicPower_add_one]
   ring
 
+
 /-- The normalized father packet is the normalized sum of its two next-scale father children. -/
-theorem haar1D_father_refine (j k : ℤ) (x : ℝ) :
+theorem haar1D_father_refine   :
     haar1D j k false x =
       (Real.sqrt 2)⁻¹ *
         (haar1D (j + 1) ((2 : ℤ) * k) false x +
@@ -222,12 +239,12 @@ theorem haar1D_father_refine (j k : ℤ) (x : ℝ) :
   rw [haar1D_left_child_arg, haar1D_right_child_arg]
   rw [haarFather1D_refine (dyadicPower j * x - (k : ℝ))]
   rw [haarScaleFactor_add_one]
-  have hsqrt : Real.sqrt 2 ≠ 0 := by positivity
-  field_simp [hsqrt]
+  field_simp <;> ring
+
 
 /-- The normalized mother packet is the normalized difference of the two next-scale father
 children. -/
-theorem haar1D_mother_refine (j k : ℤ) (x : ℝ) :
+theorem haar1D_mother_refine   :
     haar1D j k true x =
       (Real.sqrt 2)⁻¹ *
         (haar1D (j + 1) ((2 : ℤ) * k) false x -
@@ -237,62 +254,34 @@ theorem haar1D_mother_refine (j k : ℤ) (x : ℝ) :
   rw [haar1D_left_child_arg, haar1D_right_child_arg]
   rw [haarMother1D_refine (dyadicPower j * x - (k : ℝ))]
   rw [haarScaleFactor_add_one]
-  have hsqrt : Real.sqrt 2 ≠ 0 := by positivity
-  field_simp [hsqrt]
+  field_simp <;> ring
 
-theorem haar1D_left_child_father_refine_pointwise (j k : ℤ) (x : ℝ) :
+
+theorem haar1D_left_child_father_refine_pointwise   :
     haar1D (j + 1) ((2 : ℤ) * k) false x =
       (Real.sqrt 2)⁻¹ * (haar1D j k false x + haar1D j k true x) := by
   let L := haar1D (j + 1) ((2 : ℤ) * k) false x
   let R := haar1D (j + 1) ((2 : ℤ) * k + 1) false x
   let F := haar1D j k false x
   let M := haar1D j k true x
-  have hf : F = (Real.sqrt 2)⁻¹ * (L + R) := by
-    simpa [F, L, R] using haar1D_father_refine j k x
-  have hm : M = (Real.sqrt 2)⁻¹ * (L - R) := by
-    simpa [M, L, R] using haar1D_mother_refine j k x
-  rw [show haar1D j k false x = F from rfl, hf]
-  rw [show haar1D j k true x = M from rfl, hm]
-  let c : ℝ := (Real.sqrt 2)⁻¹
-  have hsqrt : Real.sqrt 2 ≠ 0 := by positivity
-  have hc : c * (c * 2) = 1 := by
-    dsimp [c]
-    field_simp [hsqrt]
-    rw [Real.sq_sqrt (by norm_num : 0 ≤ (2 : ℝ))]
-  change L = c * (c * (L + R) + c * (L - R))
-  symm
-  calc
-    c * (c * (L + R) + c * (L - R)) = c * (c * (2 * L)) := by ring
-    _ = (c * (c * 2)) * L := by ring
-    _ = L := by rw [hc, one_mul]
+  have hf : F = (Real.sqrt 2)⁻¹ * (L + R) := haar1D_father_refine j k x
+  have hm : M = (Real.sqrt 2)⁻¹ * (L - R) := haar1D_mother_refine j k x
+  grind
 
-theorem haar1D_right_child_father_refine_pointwise (j k : ℤ) (x : ℝ) :
+
+theorem haar1D_right_child_father_refine_pointwise   :
     haar1D (j + 1) ((2 : ℤ) * k + 1) false x =
       (Real.sqrt 2)⁻¹ * (haar1D j k false x - haar1D j k true x) := by
   let L := haar1D (j + 1) ((2 : ℤ) * k) false x
   let R := haar1D (j + 1) ((2 : ℤ) * k + 1) false x
   let F := haar1D j k false x
   let M := haar1D j k true x
-  have hf : F = (Real.sqrt 2)⁻¹ * (L + R) := by
-    simpa [F, L, R] using haar1D_father_refine j k x
-  have hm : M = (Real.sqrt 2)⁻¹ * (L - R) := by
-    simpa [M, L, R] using haar1D_mother_refine j k x
-  rw [show haar1D j k false x = F from rfl, hf]
-  rw [show haar1D j k true x = M from rfl, hm]
-  let c : ℝ := (Real.sqrt 2)⁻¹
-  have hsqrt : Real.sqrt 2 ≠ 0 := by positivity
-  have hc : c * (c * 2) = 1 := by
-    dsimp [c]
-    field_simp [hsqrt]
-    rw [Real.sq_sqrt (by norm_num : 0 ≤ (2 : ℝ))]
-  change R = c * (c * (L + R) - c * (L - R))
-  symm
-  calc
-    c * (c * (L + R) - c * (L - R)) = c * (c * (2 * R)) := by ring
-    _ = (c * (c * 2)) * R := by ring
-    _ = R := by rw [hc, one_mul]
+  have hf : F = (Real.sqrt 2)⁻¹ * (L + R) := haar1D_father_refine j k x
+  have hm : M = (Real.sqrt 2)⁻¹ * (L - R) := haar1D_mother_refine j k x
+  grind
 
-theorem haar1D_child_father_refine_bool (j k : ℤ) (side : Bool) (x : ℝ) :
+
+theorem haar1D_child_father_refine_bool  (side : Bool) (x : ℝ) :
     haar1D (j + 1) ((2 : ℤ) * k + if side then 1 else 0) false x =
       ∑ signature : Bool,
         ((Real.sqrt 2)⁻¹ * (if side && signature then (-1 : ℝ) else 1)) *
@@ -307,8 +296,9 @@ theorem haar1D_child_father_refine_bool (j k : ℤ) (side : Bool) (x : ℝ) :
     simp
     ring
 
+
 /-- The father refinement identity as an equality in `L²(R)`. -/
-theorem haar1DLp_father_refine (j k : ℤ) :
+theorem haar1DLp_father_refine  :
     haar1DLp j k false =
       (Real.sqrt 2)⁻¹ •
         (haar1DLp (j + 1) ((2 : ℤ) * k) false +
@@ -342,8 +332,9 @@ theorem haar1DLp_father_refine (j k : ℤ) :
   rw [hleft, hright]
   exact haar1D_father_refine j k x
 
+
 /-- The mother refinement identity as an equality in `L²(R)`. -/
-theorem haar1DLp_mother_refine (j k : ℤ) :
+theorem haar1DLp_mother_refine  :
     haar1DLp j k true =
       (Real.sqrt 2)⁻¹ •
         (haar1DLp (j + 1) ((2 : ℤ) * k) false -
@@ -377,20 +368,19 @@ theorem haar1DLp_mother_refine (j k : ℤ) :
   rw [hleft, hright]
   exact haar1D_mother_refine j k x
 
+
 /-- A normalized mother Haar atom is orthogonal to the left mother atom at the next dyadic scale. -/
-theorem integral_haar1D_mul_left_child_mother (j k : ℤ) :
+theorem integral_haar1D_mul_left_child_mother  :
     ∫ x : ℝ, haar1D j k true x * haar1D (j + 1) ((2 : ℤ) * k) true x ∂volume = 0 := by
-  let f : ℝ → ℝ := fun y => haarMother1D y * haarMother1D (2 * y)
-  have hbase : ∫ y : ℝ, f y ∂volume = 0 := by
-    simpa [f] using integral_haarMother1D_mul_left_child
+  let f  := fun y => haarMother1D y * haarMother1D (2 * y)
+  have hbase : ∫ y : ℝ, f y ∂volume = 0 := integral_haarMother1D_mul_left_child
   have haffine :
       ∫ x : ℝ, f (dyadicPower j * x - (k : ℝ)) ∂volume =
         (dyadicPower j)⁻¹ * ∫ y : ℝ, f y ∂volume := by
     have h := integral_comp_mul_add_volume
       (a := dyadicPower j) (b := -(k : ℝ))
       (dyadicPower_ne_zero j) f integrable_haarMother1D_mul_left_child
-    have hpos : 0 < dyadicPower j := dyadicPower_pos j
-    simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr hpos), f] using h
+    continuity
   calc
     ∫ x : ℝ, haar1D j k true x * haar1D (j + 1) ((2 : ℤ) * k) true x ∂volume =
         ∫ x : ℝ, (haarScaleFactor j * haarScaleFactor (j + 1)) *
@@ -407,20 +397,19 @@ theorem integral_haar1D_mul_left_child_mother (j k : ℤ) :
     _ = 0 := by
           rw [haffine, hbase, mul_zero, mul_zero]
 
+
 /-- A normalized mother Haar atom is orthogonal to the right mother atom at the next dyadic scale. -/
-theorem integral_haar1D_mul_right_child_mother (j k : ℤ) :
+theorem integral_haar1D_mul_right_child_mother  :
     ∫ x : ℝ, haar1D j k true x * haar1D (j + 1) ((2 : ℤ) * k + 1) true x ∂volume = 0 := by
-  let f : ℝ → ℝ := fun y => haarMother1D y * haarMother1D (2 * y - 1)
-  have hbase : ∫ y : ℝ, f y ∂volume = 0 := by
-    simpa [f] using integral_haarMother1D_mul_right_child
+  let f  := fun y => haarMother1D y * haarMother1D (2 * y - 1)
+  have hbase : ∫ y : ℝ, f y ∂volume = 0 := integral_haarMother1D_mul_right_child
   have haffine :
       ∫ x : ℝ, f (dyadicPower j * x - (k : ℝ)) ∂volume =
         (dyadicPower j)⁻¹ * ∫ y : ℝ, f y ∂volume := by
     have h := integral_comp_mul_add_volume
       (a := dyadicPower j) (b := -(k : ℝ))
       (dyadicPower_ne_zero j) f integrable_haarMother1D_mul_right_child
-    have hpos : 0 < dyadicPower j := dyadicPower_pos j
-    simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr hpos), f] using h
+    continuity
   calc
     ∫ x : ℝ, haar1D j k true x * haar1D (j + 1) ((2 : ℤ) * k + 1) true x ∂volume =
         ∫ x : ℝ, (haarScaleFactor j * haarScaleFactor (j + 1)) *
@@ -437,20 +426,19 @@ theorem integral_haar1D_mul_right_child_mother (j k : ℤ) :
     _ = 0 := by
           rw [haffine, hbase, mul_zero, mul_zero]
 
-theorem integral_haar1D_mul_left_child_mother_any_signature (j k : ℤ) (signature : Bool) :
+
+theorem integral_haar1D_mul_left_child_mother_any_signature  (signature : Bool) :
     ∫ x : ℝ, haar1D j k signature x * haar1D (j + 1) ((2 : ℤ) * k) true x ∂volume = 0 := by
   cases signature
-  · let f : ℝ → ℝ := fun y => haarFather1D y * haarMother1D (2 * y)
-    have hbase : ∫ y : ℝ, f y ∂volume = 0 := by
-      simpa [f] using integral_haarFather1D_mul_left_child_mother
+  · let f  := fun y => haarFather1D y * haarMother1D (2 * y)
+    have hbase : ∫ y : ℝ, f y ∂volume = 0 := integral_haarFather1D_mul_left_child_mother
     have haffine :
         ∫ x : ℝ, f (dyadicPower j * x - (k : ℝ)) ∂volume =
           (dyadicPower j)⁻¹ * ∫ y : ℝ, f y ∂volume := by
       have h := integral_comp_mul_add_volume
         (a := dyadicPower j) (b := -(k : ℝ))
         (dyadicPower_ne_zero j) f integrable_haarFather1D_mul_left_child_mother
-      have hpos : 0 < dyadicPower j := dyadicPower_pos j
-      simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr hpos), f] using h
+      aesop
     calc
       ∫ x : ℝ, haar1D j k false x * haar1D (j + 1) ((2 : ℤ) * k) true x ∂volume =
           ∫ x : ℝ, (haarScaleFactor j * haarScaleFactor (j + 1)) *
@@ -467,20 +455,19 @@ theorem integral_haar1D_mul_left_child_mother_any_signature (j k : ℤ) (signatu
       _ = 0 := by rw [haffine, hbase, mul_zero, mul_zero]
   · exact integral_haar1D_mul_left_child_mother j k
 
-theorem integral_haar1D_mul_right_child_mother_any_signature (j k : ℤ) (signature : Bool) :
+
+theorem integral_haar1D_mul_right_child_mother_any_signature  (signature : Bool) :
     ∫ x : ℝ, haar1D j k signature x * haar1D (j + 1) ((2 : ℤ) * k + 1) true x ∂volume = 0 := by
   cases signature
-  · let f : ℝ → ℝ := fun y => haarFather1D y * haarMother1D (2 * y - 1)
-    have hbase : ∫ y : ℝ, f y ∂volume = 0 := by
-      simpa [f] using integral_haarFather1D_mul_right_child_mother
+  · let f  := fun y => haarFather1D y * haarMother1D (2 * y - 1)
+    have hbase : ∫ y : ℝ, f y ∂volume = 0 := integral_haarFather1D_mul_right_child_mother
     have haffine :
         ∫ x : ℝ, f (dyadicPower j * x - (k : ℝ)) ∂volume =
           (dyadicPower j)⁻¹ * ∫ y : ℝ, f y ∂volume := by
       have h := integral_comp_mul_add_volume
         (a := dyadicPower j) (b := -(k : ℝ))
         (dyadicPower_ne_zero j) f integrable_haarFather1D_mul_right_child_mother
-      have hpos : 0 < dyadicPower j := dyadicPower_pos j
-      simpa [sub_eq_add_neg, abs_of_pos (inv_pos.mpr hpos), f] using h
+      aesop
     calc
       ∫ x : ℝ, haar1D j k false x * haar1D (j + 1) ((2 : ℤ) * k + 1) true x ∂volume =
           ∫ x : ℝ, (haarScaleFactor j * haarScaleFactor (j + 1)) *
@@ -515,15 +502,9 @@ theorem adjacent_child_overlap_cells {y : ℝ} {k l : ℤ}
     (hz : 2 * y + 2 * (k : ℝ) - (l : ℝ) ∈ Set.Ico (0 : ℝ) 1) :
     l = (2 : ℤ) * k ∨ l = (2 : ℤ) * k + 1 := by
   have hz' : 2 * y - ((l - (2 : ℤ) * k : ℤ) : ℝ) ∈ Set.Ico (0 : ℝ) 1 := by
-    convert hz using 1
-    simp only [Int.cast_sub, Int.cast_mul, Int.cast_ofNat]
-    ring
+    grind
   have h := int_eq_zero_or_one_of_mem_Ico hy hz'
-  rcases h with h | h
-  · left
-    omega
-  · right
-    omega
+  omega
 
 /-- If an adjacent-scale child is not one of the two children of the parent cell, the 1D product is
 pointwise zero. -/
@@ -539,9 +520,7 @@ theorem haar1D_mul_adjacent_child_mother_ne (j k l : ℤ) (signature : Bool)
         rw [dyadicPower_add_one]
         ring
       have hoverlap := adjacent_child_overlap_cells (k := k) (l := l) hparent hchild'
-      rcases hoverlap with h | h
-      · exact False.elim (hl0 h)
-      · exact False.elim (hl1 h)
+      simp_all
     · have hzero : haar1D (j + 1) l true x = 0 := by
         unfold haar1D
         rw [haarAtom1D_eq_zero_of_notMem_Ico true hchild, mul_zero]
@@ -579,9 +558,9 @@ noncomputable def haar1DFatherSubmodule (j : ℤ) :
     Submodule ℝ (Lp ℝ 2 (volume : Measure ℝ)) :=
   Submodule.span ℝ (Set.range fun k : ℤ => haar1DLp j k false)
 
-theorem haar1DLp_father_mem_fatherSubmodule (j k : ℤ) :
-    haar1DLp j k false ∈ haar1DFatherSubmodule j := by
-  exact Submodule.subset_span ⟨k, rfl⟩
+
+theorem haar1DLp_father_mem_fatherSubmodule  :
+    haar1DLp j k false ∈ haar1DFatherSubmodule j := Submodule.subset_span ⟨k, rfl⟩
 
 theorem inner_haar1DLp_eq_integral (j₁ k₁ : ℤ) (signature₁ : Bool)
     (j₂ k₂ : ℤ) (signature₂ : Bool) :
@@ -593,7 +572,8 @@ theorem inner_haar1DLp_eq_integral (j₁ k₁ : ℤ) (signature₁ : Bool)
     (memLp_haar1D j₂ k₂ signature₂).coeFn_toLp] with x hx₁ hx₂
   simp [hx₁, hx₂, mul_comm]
 
-theorem haar1DLp_mem_fatherSubmodule_succ (j k : ℤ) (signature : Bool) :
+
+theorem haar1DLp_mem_fatherSubmodule_succ  (signature : Bool) :
     haar1DLp j k signature ∈ haar1DFatherSubmodule (j + 1) := by
   cases signature
   · rw [haar1DLp_father_refine]
@@ -643,28 +623,28 @@ theorem haar1DFatherSubmodule_le_add_nat (j : ℤ) (n : ℕ) :
       simpa using hv
   | succ n ih =>
       intro v hv
-      have hvn : v ∈ haar1DFatherSubmodule (j + (n : ℤ)) := ih hv
-      have hvnext :
-          v ∈ haar1DFatherSubmodule ((j + (n : ℤ)) + 1) :=
+      have hvn  := ih hv
+      have hvnext  :=
         haar1DFatherSubmodule_le_succ (j + (n : ℤ)) hvn
-      simpa only [Int.ofNat_eq_natCast, Nat.cast_add, Nat.cast_one, add_assoc] using hvnext
+      grind
 
-theorem haar1DLp_mem_fatherSubmodule_add_nat_succ (j k : ℤ)
+
+theorem haar1DLp_mem_fatherSubmodule_add_nat_succ
     (signature : Bool) (n : ℕ) :
     haar1DLp j k signature ∈ haar1DFatherSubmodule (j + ((n + 1 : ℕ) : ℤ)) := by
-  have hfirst : haar1DLp j k signature ∈ haar1DFatherSubmodule (j + 1) :=
+  have hfirst  :=
     haar1DLp_mem_fatherSubmodule_succ j k signature
   have hle := haar1DFatherSubmodule_le_add_nat (j + 1) n
-  have hmem : haar1DLp j k signature ∈ haar1DFatherSubmodule ((j + 1) + (n : ℤ)) :=
+  have hmem  :=
     hle hfirst
-  simpa only [Int.ofNat_eq_natCast, Nat.cast_add, Nat.cast_one, add_assoc,
-    add_comm, add_left_comm] using hmem
+  grind
+omit j k
+
 
 theorem inner_haar1DLp_finer_mother_nat_succ_succ (j k l : ℤ)
     (signature : Bool) (n : ℕ) :
     ⟪haar1DLp j k signature,
-      haar1DLp (j + ((n + 1 : ℕ) : ℤ) + 1) l true⟫_ℝ = 0 := by
-  exact inner_haar1DFatherSubmodule_adjacent_mother
+      haar1DLp (j + ((n + 1 : ℕ) : ℤ) + 1) l true⟫_ℝ = 0 := inner_haar1DFatherSubmodule_adjacent_mother
     (j + ((n + 1 : ℕ) : ℤ)) l
     (haar1DLp_mem_fatherSubmodule_add_nat_succ j k signature n)
 
@@ -674,12 +654,11 @@ theorem inner_haar1DLp_finer_mother_nat_succ (j k l : ℤ)
       haar1DLp (j + ((n + 1 : ℕ) : ℤ)) l true⟫_ℝ = 0 := by
   cases n with
   | zero =>
-      simpa using inner_haar1DLp_adjacent_child_mother j k l signature
+      exact inner_haar1DLp_adjacent_child_mother j k l signature
   | succ n =>
       have h :=
         inner_haar1DLp_finer_mother_nat_succ_succ j k l signature n
-      simpa only [Int.ofNat_eq_natCast, Nat.cast_add, Nat.cast_one,
-        Nat.succ_eq_add_one, add_assoc, add_comm, add_left_comm] using h
+      grind
 
 theorem integral_haar1D_mul_finer_mother_nat_succ (j k l : ℤ)
     (signature : Bool) (n : ℕ) :

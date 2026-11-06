@@ -15,7 +15,7 @@ import Mathlib.MeasureTheory.Measure.Prod
 
 /-! The finite-cutoff rooted identity for functionals of the field coordinates. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal

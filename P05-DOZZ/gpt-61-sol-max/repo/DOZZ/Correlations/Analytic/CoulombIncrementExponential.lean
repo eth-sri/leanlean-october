@@ -11,7 +11,7 @@ public import DOZZ.Correlations.Analytic.ThresholdFiniteConstants
 
 /-! Uniform exponential decay of the actual complex Coulomb mass-power increment. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -81,22 +81,22 @@ theorem coulomb_power_increment_exponential
     ((c * M ω (Metric.ball (((R + 1 : ℝ)) : ℂ) (1 / 8))).toReal ^ lo +
       (coulombMass γ (M ω) α z αinf).toReal ^ hi)
   have hα : ∀ i, |α i| ≤ A := fun i => hβA i.castSucc
-  have hinf : |αinf| ≤ A := hβA (Fin.last N)
+  have hinf  := hβA (Fin.last N)
   have haq : ∀ i, α i < Q γ := fun i => (hβa i.castSucc).trans_lt (by linarith)
   have hiq : αinf < Q γ := (hβa (Fin.last N)).trans_lt (by linarith)
   have hroots : ∀ i, hi * q + g ≤ 2 / γ * (Q γ - α i) := fun i =>
     hroot.trans (mul_le_mul_of_nonneg_left (by dsimp only [α]; linarith [hβa i.castSucc]) (by positivity))
   have hinfty : hi * q + g ≤ 2 / γ * (Q γ - αinf) :=
-    hroot.trans (mul_le_mul_of_nonneg_left (by dsimp only [αinf]; linarith [hβa (Fin.last N)]) (by positivity))
+    hroot.trans (mul_le_mul_of_nonneg_left (by gcongr <;> aesop) (by positivity))
   have henv1 : (∫⁻ ω, H ω ∂P) ≤ H₁ := by
     have he := henv₁ α αinf hα hinf haq hiq
-      (by simpa only [mul_one] using (show hi + g ≤ 4 / γ ^ 2 from (by linarith)))
+      (by bound)
       (fun i => by simpa only [mul_one] using (show hi + g ≤ 2 / γ * (Q γ - α i) from (by linarith [hroots i])))
-      (by simpa only [mul_one] using (show hi + g ≤ 2 / γ * (Q γ - αinf) from (by linarith [hinfty])))
+      (by bound)
     simpa only [ENNReal.rpow_one] using he
-  have henvQ : (∫⁻ ω, H ω ^ q ∂P) ≤ Hq :=
+  have henvQ  :=
     henvq α αinf hα hinf haq hiq hbulk hroots hinfty
-  have hO : Metric.ball (((R + 1 : ℝ)) : ℂ) (1 / 8) ⊆ O₀ :=
+  have hO  :=
     exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) (Nat.cast_nonneg _) hgeo.2.2.2
   have hsub : O₀ ⊆ O₁ := retainedRegion_mono z
     (by exact_mod_cast Nat.le_succ n)
@@ -128,8 +128,7 @@ theorem coulomb_power_increment_exponential
         exact (mul_le_mul' (mul_le_mul' le_rfl hc₁) henv1).trans_eq (mul_assoc _ _ _)
       · apply mul_le_mul'
         · exact ENNReal.rpow_le_rpow (mul_le_mul' le_rfl henvQ) (by positivity)
-        · apply ENNReal.rpow_le_rpow _ (by positivity)
-          exact ENNReal.div_le_div_right hsmall _
+        gcongr
     _ ≤ _ := hdec (n : ℝ) (Nat.cast_nonneg _)
 
 end DOZZ.Proofs

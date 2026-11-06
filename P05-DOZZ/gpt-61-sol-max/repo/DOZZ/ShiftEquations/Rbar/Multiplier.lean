@@ -71,7 +71,7 @@ theorem gaussParameters_diag {γ ε a : ℝ} (hγ : 0 < γ) :
       gaussParameterA γ (γ / 2) a ε a + gaussParameterB γ (γ / 2) a ε a -
           gaussParameterC γ (γ / 2) a = γ * ε / 2 - γ ^ 2 / 4 - 1 := by
   unfold gaussParameterA gaussParameterB gaussParameterC Q
-  refine ⟨by field_simp; ring, by field_simp; ring, by ring, by field_simp; ring⟩
+  grind
 
 /-- The real `l`-function `l(r) = Γ(r)/Γ(1-r)`. -/
 noncomputable def lR (r : ℝ) : ℝ := Real.Gamma r / Real.Gamma (1 - r)
@@ -88,14 +88,11 @@ theorem lR_ne_zero_of_mem_unit {r : ℝ} (h0 : 0 < r) (h1 : r < 1) : lR r ≠ 0 
 theorem lR_ne_zero_of_mem_neg {r : ℝ} (h0 : -1 < r) (h1 : r < 0) : lR r ≠ 0 := by
   refine div_ne_zero (Real.Gamma_ne_zero (real_ne_neg_nat_of_frac (k := -1) ?_ ?_))
     (Real.Gamma_pos_of_pos (by linarith)).ne'
-  · push_cast
-    linarith
-  · push_cast
-    linarith
+  all_goals simp_all
 
 /-- `l(y) l(1-y) = 1` on `(-1, 0)`. -/
 theorem lR_mul_lR_one_sub {y : ℝ} (h0 : -1 < y) (h1 : y < 0) : lR y * lR (1 - y) = 1 := by
-  have hy1 : ∀ m : ℕ, y ≠ -m := real_ne_neg_nat_of_frac (k := -1) (by push_cast; linarith)
+  have hy1  := real_ne_neg_nat_of_frac (k := -1) (by push_cast; linarith)
     (by push_cast; linarith)
   have hy2 : Real.Gamma (1 - y) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
   have := Real.Gamma_ne_zero hy1
@@ -108,15 +105,7 @@ theorem multiplier_algebra {μ π x γ GA1 G1A lA lB lC ly l1y lm le : ℝ} (hμ
     (hly : ly * l1y = 1) (hlA : x * lA = 4 / γ ^ 2 * (GA1 / G1A)) :
     μ⁻¹ * x * (-μ * π * (lA * lB) / (lC * ly * lm * le * l1y)) =
       -(4 * π / γ ^ 2) * GA1 * G1A⁻¹ * lB * lC⁻¹ * (lm * le)⁻¹ := by
-  have hly' : lC * ly * lm * le * l1y = lC * lm * le * (ly * l1y) := by ring
-  rw [hly', hly, mul_one]
-  calc μ⁻¹ * x * (-μ * π * (lA * lB) / (lC * lm * le))
-      = μ⁻¹ * μ * (-π * (x * lA) * lB / (lC * lm * le)) := by ring
-    _ = -π * (4 / γ ^ 2 * (GA1 / G1A)) * lB / (lC * lm * le) := by
-        rw [inv_mul_cancel₀ hμ, one_mul, hlA]
-    _ = _ := by
-        rw [div_eq_mul_inv, div_eq_mul_inv, mul_inv, mul_inv]
-        ring
+  grind
 
 /-- The bounds on the diagonal parameters. -/
 theorem cross_bounds {γ ε : ℝ} (hγ : 0 < γ) (hε₁ : γ / 2 < ε)
@@ -124,20 +113,19 @@ theorem cross_bounds {γ ε : ℝ} (hγ : 0 < γ) (hε₁ : γ / 2 < ε)
     (-1 < γ * ε / 2 - γ ^ 2 / 4 - 1 ∧ γ * ε / 2 - γ ^ 2 / 4 - 1 < 0) ∧
       (0 < γ * ε / 2 ∧ γ * ε / 2 < 1) ∧ (-1 < -(γ ^ 2) / 4 ∧ -(γ ^ 2) / 4 < 0) ∧
       (0 < γ / 4 * (ε - γ / 2) ∧ γ / 4 * (ε - γ / 2) < 1) := by
-  have h1 : γ * (γ / 2) < γ * ε := mul_lt_mul_of_pos_left hε₁ hγ
+  have h1  := mul_lt_mul_of_pos_left hε₁ hγ
   have h2 : γ * ε / 2 < 1 := by
     have := mul_lt_mul_of_pos_left hε₂ hγ
-    rw [mul_div_assoc', mul_div_cancel_left₀ _ hγ.ne'] at this
-    linarith
+    grind
   have h3 : 0 < γ ^ 2 := by positivity
-  have h4 : γ ^ 2 < 4 := by nlinarith
-  refine ⟨⟨by nlinarith, by nlinarith⟩, ⟨by nlinarith, h2⟩, ⟨by linarith, by linarith⟩,
-    ⟨by nlinarith, by nlinarith⟩⟩
+  grind
 
 
+variable {γ μ ε a : ℝ} (hγ : 0 < γ) (hμ : 0 < μ) (hε₁ : γ / 2 < ε) (hε₂ : ε < 2 / γ) (hx : 0 < (2 * a + ε - γ / 2 - 2 * Q γ) / γ)
+
+include γ μ ε a hγ hμ hε₁ hε₂ hx in
 /-- **The unit crossing multiplier on the crossing region, in closed form.** -/
-theorem gammaHalfUnitCrossingMultiplier_diag_real {γ μ ε a : ℝ} (hγ : 0 < γ) (hμ : 0 < μ) (hε₁ : γ / 2 < ε) (hε₂ : ε < 2 / γ)
-    (hx : 0 < (2 * a + ε - γ / 2 - 2 * Q γ) / γ) :
+theorem gammaHalfUnitCrossingMultiplier_diag_real  :
     gammaHalfUnitCrossingMultiplier γ μ a ε a =
       -(4 * Real.pi / γ ^ 2) * Real.Gamma (γ ^ 2 / 4 * ((2 * a + ε - γ / 2 - 2 * Q γ) / γ) + 1) *
         (Real.Gamma (1 - γ ^ 2 / 4 * ((2 * a + ε - γ / 2 - 2 * Q γ) / γ)))⁻¹ *
@@ -179,7 +167,7 @@ noncomputable def crossingMultiplierReal (γ ε a : ℝ) : ℝ :=
 theorem crossA_ofReal {γ : ℝ} (hγ : 0 < γ) (ε a : ℝ) :
     crossA γ ε (a : ℂ) = ((γ ^ 2 / 4 * ((2 * a + ε - γ / 2 - 2 * Q γ) / γ) : ℝ) : ℂ) := by
   unfold crossA
-  have hγ0 : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+  have hγ0  := Complex.ofReal_ne_zero.mpr hγ.ne'
   rw [Q]
   push_cast
   field_simp
@@ -202,9 +190,9 @@ theorem crossingMultiplierDiag_ofReal {γ : ℝ} (hγ : 0 < γ) (ε a : ℝ) :
   push_cast
   ring
 
+include γ μ ε a hγ hμ hε₁ hε₂ hx in
 /-- **On the crossing region the unit multiplier is the analytic one.** -/
-theorem gammaHalfUnitCrossingMultiplier_eq_diag {γ μ ε a : ℝ} (hγ : 0 < γ) (hμ : 0 < μ)
-    (hε₁ : γ / 2 < ε) (hε₂ : ε < 2 / γ) (hx : 0 < (2 * a + ε - γ / 2 - 2 * Q γ) / γ) :
+theorem gammaHalfUnitCrossingMultiplier_eq_diag  :
     (gammaHalfUnitCrossingMultiplier γ μ a ε a : ℂ) = crossingMultiplierDiag γ ε a := by
   rw [crossingMultiplierDiag_ofReal hγ,
     gammaHalfUnitCrossingMultiplier_diag_real hγ hμ hε₁ hε₂ hx]
@@ -222,8 +210,7 @@ theorem ne_neg_nat_of_re_pos {w : ℂ} (h : 0 < w.re) : ∀ m : ℕ, w ≠ -m :=
   intro m hm
   rw [hm] at h
   simp only [Complex.neg_re, Complex.natCast_re] at h
-  have : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-  linarith
+  bound
 
 theorem crossA_add_one_re (γ ε : ℝ) (z : ℂ) :
     (crossA γ ε z + 1).re = γ / 4 * (2 * z.re + ε - Q γ - γ) + 1 / 2 := by
@@ -261,7 +248,7 @@ theorem differentiableOn_crossingMultiplierDiag {γ ε : ℝ} (hγ : 0 < γ) (h�
   have hCpos : 0 < (1 - crossC γ z).re := by
     rw [one_sub_crossC_re]
     exact mul_pos (by positivity) (by linarith [hz.2])
-  have hGA : DifferentiableAt ℂ (fun w : ℂ => Complex.Gamma (crossA γ ε w + 1)) z :=
+  have hGA  :=
     (Complex.differentiableAt_Gamma _ (ne_neg_nat_of_re_pos hApos)).comp z hA
   have hG1A : DifferentiableAt ℂ (fun w : ℂ => (Complex.Gamma (1 - crossA γ ε w))⁻¹) z := by
     have h : DifferentiableAt ℂ (fun w : ℂ => 1 - crossA γ ε w) z := by
@@ -278,8 +265,6 @@ theorem differentiableOn_crossingMultiplierDiag {γ ε : ℝ} (hγ : 0 < γ) (h�
       fun_prop
     exact ((Complex.differentiableAt_Gamma _ (ne_neg_nat_of_re_pos hCpos)).comp z h1).mul
       ((Complex.differentiable_one_div_Gamma _).comp z h2)
-  show DifferentiableAt ℂ (fun w => crossingMultiplierDiag γ ε w) z
-  unfold crossingMultiplierDiag
   exact ((((differentiableAt_const _).mul hGA).mul hG1A).mul (differentiableAt_const _)).mul
     hlC |>.mul (differentiableAt_const _)
 

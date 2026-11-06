@@ -10,7 +10,7 @@ public import DOZZ.FourPoint.TaylorRadialBall
 
 /-! The near-root positive Taylor contribution from weighted Jensen and one insertion. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -33,13 +33,12 @@ theorem twoRooted_near_bound
   let C : ℝ := C₀ * k * C₁
   refine ⟨C, by dsimp only [C, k]; positivity, ?_⟩
   intro z hz hz4 d hd hdsmall
-  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  
   have hnear (x : ℂ) (hx : x ∈ Metric.ball z d) : ‖x - z‖ ≤ ‖z‖ / 2 :=
     (show ‖x - z‖ < d by simpa only [Metric.mem_ball, dist_eq_norm] using hx).le.trans hdsmall
   have hunit (x : ℂ) (hx : x ∈ Metric.ball z d) : ‖x‖ ≤ 1 / 2 := by
     have hh := norm_sub_norm_le x z
-    have hn := hnear x hx
-    linarith only [hh, hn, hz4]
+    grind
   have hkernel : (∫⁻ x in Metric.ball z d, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2)) ≤
       ENNReal.ofReal (k * ‖z‖ ^ (-γ * α₁)) * ENNReal.ofReal (C₁ * d ^ (γ ^ 2 / 2)) := by
     have he : γ ^ 2 / 2 - 2 + 2 = γ ^ 2 / 2 := by ring

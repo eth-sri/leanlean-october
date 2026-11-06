@@ -13,11 +13,12 @@ open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ₂ M hM in
 /-- Rooting and spatial integration give the deleted-disk power for the actual
 retained inverse mass, uniformly in the insertion and retained radius. -/
-theorem dual_deleted_disk_rooted_bound {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem dual_deleted_disk_rooted_bound 
     (α₁ α₂ α₃ q : ℝ) (hq : 0 ≤ q) (hβ : γ * α₁ < 4) :
     ∃ C : ℝ, 0 < C ∧ ∀ (z : ℂ) (ξ r : ℝ), ‖z‖ ≤ 1 → ‖z‖ ^ (1 - ξ) ≤ 1 →
       0 < r → r ≤ 1 / 2 →
@@ -56,10 +57,9 @@ theorem dual_deleted_disk_rooted_bound {Ω : Type*} [MeasurableSpace Ω]
     congr 1
     ring))
 
+include Ω _inst1 P X hX γ hγ hγ₂ M hM in
 /-- The actual rooted deleted-disk term is negligible at the dual fusion power. -/
-theorem dual_deleted_disk_rooted_littleO {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem dual_deleted_disk_rooted_littleO 
     (α₁ α₂ α₃ q ξ κ : ℝ) (hq : 0 ≤ q) (hβ : γ * α₁ < 4) (hξ₁ : ξ < 1)
     (hslack : κ < (1 - ξ) * (4 - γ * α₁)) :
     Tendsto (fun z : ℂ =>

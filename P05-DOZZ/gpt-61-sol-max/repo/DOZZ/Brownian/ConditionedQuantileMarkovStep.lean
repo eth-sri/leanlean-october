@@ -33,9 +33,9 @@ theorem map_prod_graph_apply_rect
     (μ.prod η).map (fun z => (z.1, f z)) (A ×ˢ B) =
       ∫⁻ x in A, K x B ∂μ := by
   let F : X × U → X × Y := fun z => (z.1, f z)
-  have hF : Measurable F := measurable_fst.prodMk hf
-  have hRect : MeasurableSet (A ×ˢ B) := hA.prod hB
-  have hPre : MeasurableSet (F ⁻¹' (A ×ˢ B)) := hRect.preimage hF
+  have hF  := measurable_fst.prodMk hf
+  have hRect  := hA.prod hB
+  have hPre  := hRect.preimage hF
   rw [Measure.map_apply hF hRect, Measure.prod_apply hPre]
   rw [← lintegral_indicator hA]
   apply lintegral_congr
@@ -65,11 +65,9 @@ theorem conditionedPositiveTransitionQuantile_map_uniformSubtype
   let μ := conditionedPositiveTransitionMeasure ν t x.1
   let q : ℝ → ℝ := fun u =>
     cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u
-  let : IsProbabilityMeasure μ :=
+  let  :=
     isProbabilityMeasure_conditionedPositiveTransitionMeasure ν t x.1 hν ht x.2
-  have hqUniform : AEMeasurable q uniformOpenUnit := by
-    simpa [q, uniformOpenUnit] using
-      (aemeasurable_cdfGeneralizedQuantile_Ioo μ)
+  have hqUniform : AEMeasurable q uniformOpenUnit := id (aemeasurable_cdfGeneralizedQuantile_Ioo μ)
   have hcoe :
       (volume : Measure (Set.Ioo (0 : ℝ) 1)).map Subtype.val = uniformOpenUnit := by
     rw [MeasurableSet.map_coe_volume measurableSet_Ioo, uniformOpenUnit]
@@ -82,13 +80,9 @@ theorem conditionedPositiveTransitionQuantile_map_uniformSubtype
   calc
     (volume : Measure (Set.Ioo (0 : ℝ) 1)).map
         (fun u => conditionedTransitionQuantile ν t x.1 u.1) =
-      ((volume : Measure (Set.Ioo (0 : ℝ) 1)).map Subtype.val).map q := by
-        change (volume : Measure (Set.Ioo (0 : ℝ) 1)).map (fun u => q u.1) = _
-        exact (AEMeasurable.map_map_of_aemeasurable hqMap hval).symm
+      ((volume : Measure (Set.Ioo (0 : ℝ) 1)).map Subtype.val).map q := (AEMeasurable.map_map_of_aemeasurable hqMap hval).symm
     _ = uniformOpenUnit.map q := by rw [hcoe]
-    _ = μ := by
-      dsimp [q, μ]
-      exact conditionedPositiveTransitionQuantile_map_uniformOpenUnit hν ht x.2
+    _ = μ := conditionedPositiveTransitionQuantile_map_uniformOpenUnit hν ht x.2
 
 end DOZZ.Proofs
 

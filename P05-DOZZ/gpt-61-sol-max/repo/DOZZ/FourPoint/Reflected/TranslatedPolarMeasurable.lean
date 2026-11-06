@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Reflected.CopiedWilliamsLaw
 public import DOZZ.Brownian.MeasureTranslationFinite
 /-! Measurability of the literal translated inner polar mass. -/
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -23,16 +23,12 @@ theorem reflected_translated_polar_aemeasurable
     (aemeasurable_const.prodMk hZ)
   have he : W =ᵐ[P] (fun ω => (Z ω).map (fun s => s-T)) := by
     filter_upwards [hfin] with ω hω
-    simpa only [sub_eq_add_neg] using locallyFiniteTranslation_eq_map (-T) (Z ω)
+    exact locallyFiniteTranslation_eq_map (-T) (Z ω)
       (fun n => hω (-(n : ℝ)) (n : ℝ))
   have hWf : ∀ᵐ ω ∂P, ∀ a b : ℝ, W ω (Icc a b) < ⊤ := by
     filter_upwards [he,hfin] with ω hω hf a b
     rw [hω,Measure.map_apply (show Measurable (fun s : ℝ => s-T) from measurable_id.sub_const T) measurableSet_Icc]
-    have hh : (fun s : ℝ => s-T) ⁻¹' Icc a b = Icc (a+T) (b+T) := by
-      ext s
-      simp only [mem_preimage,mem_Icc,le_sub_iff_add_le,sub_le_iff_le_add]
-    rw [hh]
-    exact hf _ _
+    simp_all
   have hc := (reflected_measurable_inwardPolarMassCode γ ν).comp_aemeasurable
     ((hD.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving).prodMk
       (hW.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving))

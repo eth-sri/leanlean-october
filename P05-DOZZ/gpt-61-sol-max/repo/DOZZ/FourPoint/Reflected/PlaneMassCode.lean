@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.FourPoint.Reflected.ChartMassMeasurable
+import Mathlib.Tactic
 /-! Measurable plane-mass codes on arbitrary measure inputs for the stopped-past observable. -/
 @[expose] public section
 open MeasureTheory Set
@@ -42,8 +43,11 @@ noncomputable def reflectedPuncturedExhaustion : CompactExhaustion reflectedPunc
 noncomputable def reflectedPuncturedCompact (n : ℕ) : Set ℂ :=
   Subtype.val '' reflectedPuncturedExhaustion n
 
+variable {A : Type*} (F : A × ℂ → ℝ≥0∞)
+
+include A F in
 /-- A globally measurable code agrees with the full punctured mass on locally finite inputs. -/
-noncomputable def reflectedPuncturedMassCode {A : Type*} (F : A × ℂ → ℝ≥0∞)
+noncomputable def reflectedPuncturedMassCode
     (p : A × Measure ℂ) : ℝ≥0∞ :=
   ⨆ n : ℕ, ∫⁻ x, F (p.1,x) ∂(reflectedFinitePlaneRestriction (reflectedPuncturedCompact n) p.2 : Measure ℂ)
 
@@ -51,12 +55,13 @@ theorem reflected_puncturedMassCode_measurable {A : Type*} [MeasurableSpace A]
     (F : A × ℂ → ℝ≥0∞) (hF : Measurable F) : Measurable (reflectedPuncturedMassCode F) := by
   apply Measurable.iSup
   intro n
-  have hK : IsCompact (reflectedPuncturedCompact n) :=
+  have hK  :=
     (reflectedPuncturedExhaustion.isCompact n).image continuous_subtype_val
   exact (measurable_lintegral_finiteMeasure_parameter hF).comp
     (measurable_fst.prodMk ((reflected_finitePlaneRestriction_measurable _ hK.measurableSet).comp measurable_snd))
 
-theorem reflected_puncturedMassCode_eq {A : Type*} (F : A × ℂ → ℝ≥0∞)
+include A F in
+theorem reflected_puncturedMassCode_eq
     (p : A) (μ : Measure ℂ)
     (hfin : ∀ K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → μ K < ⊤) :
     reflectedPuncturedMassCode F (p,μ) = ∫⁻ x in ({0} : Set ℂ)ᶜ, F (p,x) ∂μ := by

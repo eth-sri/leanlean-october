@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.FourPoint.BPZ.WeakConvGrid
+import Mathlib.Tactic
 
 /-! # Double integrals under weak convergence in probability
 
@@ -15,7 +16,7 @@ probability. The proof compares both sides with finite grid sums, which converge
 integral convergence; the error is a modulus-of-continuity term plus the near-diagonal mass,
 which is small in probability because `μ₀` has no atoms. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -117,7 +118,7 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       |H n x y - H₀ x y| ≤ ε) :
     TendstoInMeasure P (fun n ω => ∫ x, ∫ y, H n x y ∂μ n ω ∂μ n ω) atTop
       (fun ω => ∫ x, ∫ y, H₀ x y ∂μ₀ ω ∂μ₀ ω) := by
-  have hC : 0 ≤ C := (abs_nonneg _).trans (hbd₀ 0 0)
+  have hC  := (abs_nonneg _).trans (hbd₀ 0 0)
   set ρ₂ : ℝ := 2 * R + 1 with hρ₂
   set ρ₃ : ℝ := 2 * ρ₂ + 1 with hρ₃
   have hρ₂0 : 0 ≤ ρ₂ := by positivity
@@ -150,7 +151,7 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
   obtain ⟨k₂, hk₂⟩ := bpz_exists_scale_small (P := P) (hWm.mul hWm) (s := ε / 8) (by positivity)
     (t := ENNReal.ofReal (ε / 4)) (ENNReal.ofReal_pos.2 (by positivity))
   set t : ℝ := 1 / ((k₁ : ℝ) + 1) with ht
-  have ht0 : 0 < t := by positivity
+
   set η : ℝ := t / 2 with hη
   have hη0 : 0 < η := by positivity
   set ε₁ : ℝ := 1 / ((k₂ : ℝ) + 1) with hε₁
@@ -203,8 +204,7 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
     exact h
   have hmassm : ∀ (s : Set ℂ), MeasurableSet s → ∀ n, Measurable fun ω => (μ n ω).real s :=
     fun s hs n => ((Measure.measurable_coe hs).comp (hμ.meas n)).ennreal_toReal
-  have hmassm₀ : ∀ (s : Set ℂ), MeasurableSet s → Measurable fun ω => (μ₀ ω).real s :=
-    fun s hs => ((Measure.measurable_coe hs).comp hμ.meas₀).ennreal_toReal
+
   have hGm : ∀ n, Measurable (G n) := fun n => Finset.measurable_sum _ fun i _ =>
     (hmassm _ (hcellm i) n).mul (hmassm _ measurableSet_ball n)
   -- the error bounds
@@ -271,11 +271,11 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       push Not at hcon
       obtain ⟨h1, h2⟩ := hcon
       have hND0 : 0 ≤ ND k₁ ω := by
-        have := hμ.fin₀ ω; exact bpzNearDiag_nonneg _ _ _
-      have h1' : ε₁ * (Wv ω * Wv ω) < ε / 8 := lt_of_le_of_lt (le_abs_self _) h1
+        exact bpzNearDiag_nonneg _ _ _
+      have h1'  := lt_of_le_of_lt (le_abs_self _) h1
       have h2' : 2 * C * ND k₁ ω < ε / 4 := by
         have : C * ND k₁ ω ≤ C' * ND k₁ ω := mul_le_mul_of_nonneg_right (by linarith) hND0
-        have h3 : C' * ND k₁ ω < C' * (ε / (8 * C')) := mul_lt_mul_of_pos_left h2 hC'0
+        have h3  := mul_lt_mul_of_pos_left h2 hC'0
         have h4 : C' * (ε / (8 * C')) = ε / 8 := by field_simp
         linarith
       linarith
@@ -313,12 +313,10 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
               2 * C * bpzNearDiag ρ₂ η (μ n ω) := herr
           _ ≤ Bn n ω := by
               simp only [hBn, hG]
-              have := mul_le_mul_of_nonneg_left hnd (mul_nonneg zero_le_two hC)
-              linarith only [this]
+              gcongr
       · rw [abs_zero]; exact hBn0
     have hfin := bpz_eventually_measure_le_of_le_tendstoInMeasure hBconv hEB hε
       (lt_of_le_of_lt ((measure_mono fun ω hω => (by
-        simp only [Set.mem_ofPred_eq] at hω ⊢
         exact hω.trans (hB₀le ω))).trans hP₀)
         (ENNReal.ofReal_lt_ofReal_iff hε |>.2 (by linarith)))
     filter_upwards [hfin, eventually_ge_atTop n₀] with n hn hn'

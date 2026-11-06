@@ -9,6 +9,7 @@ public import DOZZ.Brownian.ConditionedKernelProbability
 public import DOZZ.Brownian.ConditionedEntranceProbability
 public import Mathlib.Probability.Kernel.Composition.WithDensity
 public import Mathlib.Probability.Kernel.CondDistrib
+import Mathlib.Tactic
 
 /-!
 # Real-state transition kernel for the conditioned entrance process
@@ -49,7 +50,7 @@ theorem measurable_conditionedPositiveTransitionKernelOnReal_density (ν dt : �
     if 0 < z.1 then ENNReal.ofReal (conditionedPositiveTransitionDensity ν dt z.1 z.2)
     else ENNReal.ofReal (conditionedPositiveEntranceDensity ν 1 z.2))
   apply Measurable.ite
-  · exact measurableSet_lt measurable_const measurable_fst
+  · measurability
   · exact ENNReal.measurable_ofReal.comp
       (measurable_conditionedPositiveTransitionDensity_pair ν dt)
   · exact ENNReal.measurable_ofReal.comp
@@ -62,7 +63,7 @@ theorem conditionedPositiveTransitionKernelOnReal_apply_of_pos
   rw [conditionedPositiveTransitionKernelOnReal, Kernel.withDensity_apply
     (Kernel.const ℝ (volume : Measure ℝ))
     (measurable_conditionedPositiveTransitionKernelOnReal_density ν dt), Kernel.const_apply]
-  simp [conditionedPositiveTransitionMeasure, hx]
+  ring_nf at * <;> aesop
 
 theorem conditionedPositiveTransitionKernelOnReal_apply_of_nonpos
     {ν dt x : ℝ} (hx : x ≤ 0) :
@@ -71,7 +72,7 @@ theorem conditionedPositiveTransitionKernelOnReal_apply_of_nonpos
   rw [conditionedPositiveTransitionKernelOnReal, Kernel.withDensity_apply
     (Kernel.const ℝ (volume : Measure ℝ))
     (measurable_conditionedPositiveTransitionKernelOnReal_density ν dt), Kernel.const_apply]
-  simp [conditionedPositiveEntranceMeasure, not_lt.mpr hx]
+  bound
 
 theorem isMarkovKernel_conditionedPositiveTransitionKernelOnReal
     (ν dt : ℝ) (hν : 0 ≤ ν) (hdt : 0 < dt) :
@@ -80,7 +81,7 @@ theorem isMarkovKernel_conditionedPositiveTransitionKernelOnReal
   by_cases hx : 0 < x
   · rw [conditionedPositiveTransitionKernelOnReal_apply_of_pos hx]
     exact isProbabilityMeasure_conditionedPositiveTransitionMeasure ν dt x hν hdt hx
-  · have hx' : x ≤ 0 := le_of_not_gt hx
+  · have hx'  := le_of_not_gt hx
     rw [conditionedPositiveTransitionKernelOnReal_apply_of_nonpos hx']
     exact isProbabilityMeasure_conditionedPositiveEntranceMeasure ν 1 hν (by norm_num)
 
@@ -109,13 +110,10 @@ theorem negativeConditionedLaw_twoTime_compProd
           conditionedPositiveTransitionDensity ν (dt : ℝ) z.1 z.2))) := by
     funext z
     by_cases hx : 0 < z.1
-    · have he : 0 ≤ conditionedPositiveEntranceDensity ν (t₀ : ℝ) z.1 :=
+    · have he  :=
         conditionedPositiveEntranceDensity_nonneg hP.1 ht₀ z.1
-      have ht : 0 ≤ conditionedPositiveTransitionDensity ν (dt : ℝ) z.1 z.2 :=
-        conditionedPositiveTransitionDensity_nonneg hP.1 hdt hx z.2
-      simp [hx, max_eq_right (mul_nonneg he ht)]
-      rw [← ENNReal.ofReal_mul he]
-    · have hx' : z.1 ≤ 0 := le_of_not_gt hx
+      simp_all
+    · have hx'  := le_of_not_gt hx
       have he : conditionedPositiveEntranceDensity ν (t₀ : ℝ) z.1 = 0 := by
         simp [conditionedPositiveEntranceDensity, not_lt.mpr hx']
       simp [hx, he]
@@ -149,13 +147,9 @@ theorem negativeConditionedLaw_twoTime_compProd
             (if 0 < z.1 then
               ENNReal.ofReal (conditionedPositiveTransitionDensity ν (dt : ℝ) z.1 z.2)
             else ENNReal.ofReal (conditionedPositiveEntranceDensity ν 1 z.2))) := by
-    rw [conditionedPositiveEntranceMeasure, conditionedPositiveTransitionKernelOnReal,
-      hcompAux, ← Measure.volume_eq_prod ℝ ℝ]
+    bound
   rw [negativeConditionedLaw_twoTime_positiveFDD hP t₀ dt ht₀ hdt]
-  rw [hcomp]
-  congr 1
-  funext z
-  exact (congrFun hdensity z).symm
+  simp_all
 
 end DOZZ.Proofs
 

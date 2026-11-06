@@ -13,6 +13,9 @@ import DOZZ.ShiftEquations.Rbar.Multiplier
 import DOZZ.ShiftEquations.Shift.FirstShift
 import DOZZ.Hypergeom.ODE.SlitPlaneGluing
 import DOZZ.Complex.Basic
+public import DOZZ.ShiftEquations.Contracts
+public import DOZZ.FourPoint.GaussContracts
+public import DOZZ.ShiftEquations.ContinuationContracts
 
 /-!
 # The reflected shift and gluing from the two first shifts and the two γ/2 diagonal formulas
@@ -25,7 +28,7 @@ hence near every point of the common strip. With the first structure shift
 identities hold along the codiscrete filter of `ℂ`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -45,34 +48,11 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
     (α₂ α₃ : ℝ)
     (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
     (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ)
-    (hFirstShift : ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-      IsSourceLateralProjection P X γ M Z ∧
-        (∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) ∧
-          ∃ h : ℝ, 0 < h ∧ ∃ R : ℂ → ℂ,
-            MeromorphicOn R {z | |z.im| < h} ∧
-            (∀ α : ℝ, γ / 2 < α → α < Q γ → R (α : ℂ) = (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-            ∀ᶠ z in codiscrete ℂ,
-              R (z - γ / 2) =
-                -(μ * Real.pi : ℂ) * R z /
-                  (lFun (-((γ : ℂ) ^ 2) / 4) *
-                    lFun ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4) *
-                    lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2)))
-    (hFirstStrip : ∃ h : ℝ, 0 < h ∧ ∃ C : ℂ → ℂ,
-      MeromorphicOn C {z | |z.im| < h} ∧
-      (∀ α : ℝ, 2 * η < α → α < Q γ → C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-      ∀ᶠ z in codiscrete ℂ,
-        C (z + γ / 2) =
-          -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) * C (z - γ / 2))
+    (hFirstShift : Contract.firstShift P X M γ μ)
+    (hFirstStrip : Contract.singleChargeContinuation P M γ μ η α₂ α₃)
     (hDiagonal : ∀ {H : ℂ → ℂ → ℂ → ℂ → ℂ}, IsGaussHypergeometricFamily H → ∀ α₁ : ℝ,
       α₁ < Q γ → 2 * Q γ + γ / 2 < α₁ + α₂ + α₃ →
-      let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
-      let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃
-      let c := gaussParameterC γ (γ / 2) α₁
-      ∀ z ∈ gaussCutPlane,
-        fourPointT P M γ μ (-(γ / 2)) α₁ α₂ α₃ z =
-          structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-            (‖gaussFMinus H a b c z‖ ^ 2 +
-              gaussCoefficientRatio a b c * ‖gaussFPlus H a b c z‖ ^ 2))
+      Contract.gaussDiagonal P M γ μ α₁ α₂ α₃ H (γ / 2))
     (hReflected : ∀ {H : ℂ → ℂ → ℂ → ℂ → ℂ}, IsGaussHypergeometricFamily H → ∀ α₁ : ℝ,
       α₁ < Q γ → 2 * Q γ + γ / 2 < α₁ + α₂ + α₃ → Q γ - α₁ < γ / 2 →
       (∃ ξ : ℝ, 0 < ξ ∧ ξ < 1 ∧ γ * (Q γ - α₁) < ξ ∧
@@ -81,37 +61,8 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
         ∃ Z : Ω → Measure ℝ,
           IsSourceLateralProjection P X γ M Z ∧
           IsReflectionData P γ α₁ (B α₁) Z ∧
-          let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
-          let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃
-          let c := gaussParameterC γ (γ / 2) α₁
-          ∀ z ∈ gaussCutPlane,
-            fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z =
-              structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-                  ‖gaussFMinus H a b c z‖ ^ 2 +
-                reflectionR P γ μ α₁ (B α₁) Z *
-                  structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ *
-                    ‖gaussFPlus H a b c z‖ ^ 2) :
-    ∃ B : ℝ → Ω → BrownianPath ×
-        BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ →
-            IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) =
-                  (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) =
-                  (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2)) := by
+          Contract.gammaHalfReflected P M γ μ α₁ α₂ α₃ H (B α₁) Z) :
+    Contract.fixedChargeShiftGluing P X M γ μ η α₂ α₃ := by
   obtain ⟨hη0, hηγ⟩ := hη
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have h2γ : γ / 16 < 2 / γ := by
@@ -169,7 +120,7 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
           (by linarith only [hγα₁, hγQ, hγsq])))
         (lR_ne_zero_of_mem_one_two (by linarith only [hγα₁, hγQ])
           (by linarith only [hγα₁', hγQ, hγsq]))
-    have hRα : R (α₁ : ℂ) = (reflectionR P γ μ α₁ (B α₁) Z : ℂ) := hRval α₁ hα₁ h2
+    have hRα  := hRval α₁ hα₁ h2
     have hC₁ : C (2 * Q γ - (α₁ : ℂ) - γ / 2) =
         (structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ : ℂ) := by
       rw [show (2 * Q γ - (α₁ : ℂ) - γ / 2) = ((2 * Q γ - α₁ - γ / 2 : ℝ) : ℂ) by push_cast; ring]
@@ -178,7 +129,7 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
       rw [show ((α₁ : ℂ) - γ / 2) = ((α₁ - γ / 2 : ℝ) : ℂ) by push_cast; ring]
       exact hCval _ (by rw [hQ] at h1; linarith) (by linarith)
     rw [add_sub_cancel_right, hD] at hshift
-    have hμπ : ((μ : ℂ) * Real.pi) ≠ 0 :=
+    have hμπ  :=
       mul_ne_zero (Complex.ofReal_ne_zero.mpr hμ.ne') (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)
     have hcoef' : R (α₁ : ℂ) * C (2 * Q γ - (α₁ : ℂ) - γ / 2) =
         (gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)

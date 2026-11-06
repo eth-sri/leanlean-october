@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.ReflectedOuter.KernelPerturbation
 import Mathlib.Tactic
 /-! The moving kernel on the spatial buffer is bounded by the zero-root kernel. -/
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs

@@ -17,7 +17,7 @@ lemma keeps the full strict subcritical margin needed by the proof of the reflec
 statements.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set Filter
 open scoped ENNReal NNReal Topology
@@ -53,17 +53,16 @@ theorem lateralGMC_compact_moment_endpoints_across_one
     intro γ hγ q hqm
     have hγp := (hZ γ hγ).1
     have hγhi := (hZ γ hγ).2.1
-    have hs : 0 < γ ^ 2 := sq_pos_of_pos hγp
+    have hs  := sq_pos_of_pos hγp
     rcases hqm with hqm | hqm
     · exact hq γ hγ q hqm
-    · have hq01 : q = 0 ∨ q = 1 := by simpa only [mem_insert_iff, mem_singleton_iff] using hqm
+    · have hq01 : q = 0 ∨ q = 1 := by simp_all
       rcases hq01 with rfl | rfl
       · exact div_pos (by norm_num) hs
       · apply (lt_div_iff₀ hs).mpr
         nlinarith
   obtain ⟨l, u, δ, hδ, hend, hmargin⟩ := lateralGMC_compact_moment_endpoints
     Kγ K hKγ hK hγne ⟨0, h0⟩ (fun γ hγ => (hZ γ hγ).1) hsub
-  exact ⟨l, u, δ, (hend 0 h0).1, (hend 1 h1).2, hδ,
-    fun q hqm => hend q (Or.inl hqm), hmargin⟩
+  grind
 
 end DOZZ.Proofs

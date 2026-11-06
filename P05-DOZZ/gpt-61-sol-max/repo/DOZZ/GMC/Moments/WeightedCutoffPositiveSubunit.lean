@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
+public import DOZZ.GMC.RealPower
 public import DOZZ.GMC.Moments.WeightedCutoffSubunit
 public import DOZZ.GMC.Moments.WeightedDyadic
 
@@ -52,8 +53,7 @@ private theorem cutoff_dyadic_product_rpow {R e ξ η : ℝ} (hR : 0 < R)
     _ = ((R / 2) ^ e * (2 * R) ^ ξ) * (1 / 2 : ℝ) ^ (n * e + n * ξ) := by
       rw [← Real.rpow_add hhalf (n * e) (n * ξ)]
     _ = ((R / 2) ^ e * (2 * R) ^ ξ) * (1 / 2 : ℝ) ^ (n * η) := by
-      congr 2
-      rw [show n * e + n * ξ = n * η by rw [← hη]; ring]
+      grind
     _ = _ := by
       rw [show (n : ℝ) * η = η * (n : ℝ) by ring,
         Real.rpow_mul_natCast hhalf.le η n]
@@ -62,7 +62,7 @@ private theorem cutoff_positive_shell_base_scale {R a ξ η : ℝ} (hR : 0 < R)
     (haξ : a + ξ = η) :
     (R / 2) ^ a * (2 * R) ^ ξ =
       ((1 / 2 : ℝ) ^ a * 2 ^ ξ) * R ^ η := by
-  have hR0 : 0 ≤ R := le_of_lt hR
+  have hR0  := le_of_lt hR
   rw [show R / 2 = R * (1 / 2 : ℝ) by ring,
     show 2 * R = 2 * R by rfl,
     Real.mul_rpow hR0 (by norm_num),
@@ -87,13 +87,13 @@ theorem cutoffWeightedGmcBallMass_le_positive_dyadic_cover
           ENNReal.ofReal ((cutoffDyadicBallRadius R (n + 1)) ^ (-γ * α)) *
             μ (Metric.ball z (cutoffDyadicBallRadius R n)) else 0) := by
   classical
-  let B : Set ℂ := Metric.ball z R
-  let core : Set ℂ := Metric.ball z δ
-  let f : ℂ → ℝ≥0∞ := B.indicator
+  let B  := Metric.ball z R
+  let core  := Metric.ball z δ
+  let f  := B.indicator
     (fun x => ENNReal.ofReal ((‖x - z‖ + δ) ^ (-γ * α)))
-  let coreTerm : ℂ → ℝ≥0∞ := core.indicator
+  let coreTerm  := core.indicator
     (fun _ => ENNReal.ofReal (δ ^ (-γ * α)))
-  let shellTerm : ℕ → ℂ → ℝ≥0∞ := fun n =>
+  let shellTerm  := fun n =>
     (Metric.ball z (cutoffDyadicBallRadius R n)).indicator
       (fun _ => cutoffDyadicBallWeight γ α R N n)
   have hexp : -γ * α < 0 := by linarith only [mul_pos hγ hα]
@@ -104,8 +104,7 @@ theorem cutoffWeightedGmcBallMass_le_positive_dyadic_cover
       by_cases hcore : ‖x - z‖ < δ
       · have hxcore : x ∈ core := by
           simpa [core, Metric.mem_ball, dist_eq_norm] using hcore
-        have hbase : δ ≤ ‖x - z‖ + δ := by
-          exact le_add_of_nonneg_left (norm_nonneg _)
+        have hbase : δ ≤ ‖x - z‖ + δ := le_add_of_nonneg_left (norm_nonneg _)
         have hweight : ENNReal.ofReal ((‖x - z‖ + δ) ^ (-γ * α)) ≤
             ENNReal.ofReal (δ ^ (-γ * α)) := by
           apply ENNReal.ofReal_le_ofReal
@@ -114,25 +113,20 @@ theorem cutoffWeightedGmcBallMass_le_positive_dyadic_cover
           simp [coreTerm, hxcore]
         have hsumCore : ENNReal.ofReal (δ ^ (-γ * α)) ≤
             ENNReal.ofReal (δ ^ (-γ * α)) + ∑' n : ℕ, shellTerm n x := by
-          calc
-            _ = 0 + ENNReal.ofReal (δ ^ (-γ * α)) := by simp
-            _ ≤ (∑' n : ℕ, shellTerm n x) + ENNReal.ofReal (δ ^ (-γ * α)) :=
-              add_le_add_left (bot_le : (0 : ℝ≥0∞) ≤ ∑' n : ℕ, shellTerm n x) _
-            _ = _ := add_comm _ _
+          simp_all
         simpa [f, hx, hcoreTerm] using hweight.trans hsumCore
-      · have hδd : δ ≤ ‖x - z‖ := le_of_not_gt hcore
-        have hdpos : 0 < ‖x - z‖ := lt_of_lt_of_le hδ hδd
+      · have hδd  := le_of_not_gt hcore
+        have hdpos  := lt_of_lt_of_le hδ hδd
         obtain ⟨n, hlow, hhigh⟩ := exists_dyadic_shell_index hdpos hd
         have hnle : n ≤ N := by
           by_contra hn
-          have hNlt : N < n := Nat.lt_of_not_ge hn
-          have hpow : (2 : ℝ) ^ (N + 1) ≤ (2 : ℝ) ^ n := by
-            exact pow_le_pow_right₀ (by norm_num) (by omega)
+
+          have hpow : (2 : ℝ) ^ (N + 1) ≤ (2 : ℝ) ^ n := pow_le_pow_right₀ (by norm_num) (by omega)
           have hradius : cutoffDyadicBallRadius R n ≤
               cutoffDyadicBallRadius R (N + 1) := by
             dsimp [cutoffDyadicBallRadius]
-            exact div_le_div_of_nonneg_left hR.le (by positivity) hpow
-          have : ‖x - z‖ < δ := lt_of_lt_of_le hhigh
+            bound
+          have  := lt_of_lt_of_le hhigh
             (le_trans hradius hNlo)
           exact (not_lt_of_ge hδd) this
         have hball : x ∈ Metric.ball z (cutoffDyadicBallRadius R n) := by
@@ -154,7 +148,7 @@ theorem cutoffWeightedGmcBallMass_le_positive_dyadic_cover
         have hshell : shellTerm n x =
             ENNReal.ofReal ((cutoffDyadicBallRadius R (n + 1)) ^ (-γ * α)) := by
           simp [shellTerm, hball, hcoef]
-        have hsum : shellTerm n x ≤ ∑' j : ℕ, shellTerm j x :=
+        have hsum  :=
           ENNReal.le_tsum (f := fun j => shellTerm j x) n
         have hsumShell :
             ENNReal.ofReal ((cutoffDyadicBallRadius R (n + 1)) ^ (-γ * α)) ≤
@@ -167,10 +161,8 @@ theorem cutoffWeightedGmcBallMass_le_positive_dyadic_cover
             _ = coreTerm x + shellTerm n x := by rw [← hshell]
             _ ≤ _ := add_le_add_right hsum _
         simpa [f, hx, hshell] using hweight.trans hsumShell
-    · have hf : f x = 0 := by simp [f, hx]
-      rw [hf]
-      exact bot_le
-  let g : ℂ → ℝ≥0∞ := coreTerm + fun x => ∑' n : ℕ, shellTerm n x
+    continuity
+  let g  := coreTerm + fun x => ∑' n : ℕ, shellTerm n x
   calc
     _ = ∫⁻ x, f x ∂μ := by
       rw [← lintegral_indicator Metric.isOpen_ball.measurableSet]
@@ -199,27 +191,13 @@ theorem cutoffWeightedGmcBallMass_le_positive_dyadic_cover
       · intro n
         exact (measurable_const.indicator Metric.isOpen_ball.measurableSet).aemeasurable
 
-private theorem ennreal_ofReal_rpow_of_pos_cutoff {x p : ℝ} (hx : 0 < x) :
-    ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
-  have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
-  have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
-    ENNReal.rpow_ne_top_of_ne_zero hx0 ENNReal.ofReal_ne_top
-  have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
-  apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
-  calc
-    (ENNReal.rpow (ENNReal.ofReal x) p).toReal =
-        (ENNReal.ofReal x).toReal ^ p := (ENNReal.toReal_rpow _ _).symm
-    _ = x ^ p := by rw [ENNReal.toReal_ofReal hx.le]
-    _ = (ENNReal.ofReal (x ^ p)).toReal := by
-      rw [ENNReal.toReal_ofReal (Real.rpow_nonneg hx.le p)]
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ α : ℝ) (hγ : 0 < γ) (hα : 0 < α) (z : ℂ)
 
+include Ω _inst1 P X hX Xc hXc γ α hγ hα z in
 /-- The cutoff weighted moment is bounded by the subunit moments of the core disk and the
 finite dyadic shells down to the cutoff scale. -/
 theorem cutoffWeightedGmcBallMoment_le_positive_dyadic_moments
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (γ α : ℝ) (hγ : 0 < γ) (hα : 0 < α) (z : ℂ) (R δ p : ℝ)
+     (R δ p : ℝ)
     (N : ℕ) (hR : 0 < R) (hδ : 0 < δ)
     (hNlo : cutoffDyadicBallRadius R (N + 1) ≤ δ)
     (hp : 0 < p) (hp1 : p ≤ 1) :
@@ -233,7 +211,7 @@ theorem cutoffWeightedGmcBallMoment_le_positive_dyadic_moments
           (regularizedGMC P Xc γ (Real.log (1 / δ)) ω
             (Metric.ball z (cutoffDyadicBallRadius R n))) p ∂P) := by
   classical
-  let coreCoeff : ℝ≥0∞ := ENNReal.ofReal (δ ^ (-γ * α))
+  let coreCoeff  := ENNReal.ofReal (δ ^ (-γ * α))
   let coreMass (ω : Ω) : ℝ≥0∞ :=
     regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z δ)
   let shellMass (n : ℕ) (ω : Ω) : ℝ≥0∞ :=
@@ -241,8 +219,7 @@ theorem cutoffWeightedGmcBallMoment_le_positive_dyadic_moments
       (Metric.ball z (cutoffDyadicBallRadius R n))
   let shellCoeff (n : ℕ) : ℝ≥0∞ := cutoffDyadicBallWeight γ α R N n
   let shellTerm (n : ℕ) (ω : Ω) : ℝ≥0∞ := shellCoeff n * shellMass n ω
-  have hcoreMassMeas : AEMeasurable coreMass P := by
-    exact regularizedGMC_mass_aemeasurable P X hX Xc hXc γ (Real.log (1 / δ))
+  have hcoreMassMeas  := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ (Real.log (1 / δ))
       (Metric.ball z δ) Metric.isOpen_ball.measurableSet
   have hcorePowMeas : AEMeasurable (fun ω => ENNReal.rpow (coreMass ω) p) P :=
     ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hcoreMassMeas
@@ -251,12 +228,10 @@ theorem cutoffWeightedGmcBallMoment_le_positive_dyadic_moments
   have hcoreTermPowMeas : AEMeasurable
       (fun ω => ENNReal.rpow (coreCoeff * coreMass ω) p) P :=
     ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hcoreTermMeas
-  have hshellMassMeas (n : ℕ) : AEMeasurable (shellMass n) P := by
-    exact regularizedGMC_mass_aemeasurable P X hX Xc hXc γ (Real.log (1 / δ))
+  have hshellMassMeas (n : ℕ) : AEMeasurable (shellMass n) P := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ (Real.log (1 / δ))
       (Metric.ball z (cutoffDyadicBallRadius R n)) Metric.isOpen_ball.measurableSet
   have hshellTermPowMeas (n : ℕ) : AEMeasurable
-      (fun ω => ENNReal.rpow (shellTerm n ω) p) P := by
-    exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
+      (fun ω => ENNReal.rpow (shellTerm n ω) p) P := ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
       ((aemeasurable_const.mul (hshellMassMeas n)))
   have hpoint (ω : Ω) :
       ENNReal.rpow (cutoffWeightedGmcBallMass P Xc γ α z R δ ω) p ≤
@@ -277,8 +252,7 @@ theorem cutoffWeightedGmcBallMoment_le_positive_dyadic_moments
         ENNReal.rpow_add_le_add_rpow _ _ hp.le hp1
       _ ≤ _ := add_le_add_right
         (ennreal_rpow_tsum_le_tsum_rpow (fun n => shellTerm n ω) hp hp1) _
-  have hshellTsumMeas : ∀ n : ℕ,
-      AEMeasurable (fun ω => ENNReal.rpow (shellTerm n ω) p) P := hshellTermPowMeas
+  have hshellTsumMeas  := hshellTermPowMeas
   calc
     _ ≤ ∫⁻ ω, ENNReal.rpow (coreCoeff * coreMass ω) p +
         ∑' n : ℕ, ENNReal.rpow (shellTerm n ω) p ∂P := lintegral_mono hpoint
@@ -304,18 +278,15 @@ theorem cutoffWeightedGmcBallMoment_le_positive_dyadic_moments
             apply lintegral_congr
             intro ω
             exact ENNReal.mul_rpow_of_nonneg _ _ hp.le
-          _ = _ := lintegral_const_mul'' _ (by
-            exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
+          _ = _ := lintegral_const_mul'' _ (ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
               (hshellMassMeas n))
-    _ = _ := by rfl
+    _ = _ := rfl
 
+include Ω _inst1 P X hX Xc hXc γ α hγ hα z in
 /-- For positive insertion charge and strict insertion slack, the cutoff weighted moment is
 uniformly bounded as the regularization scale tends to zero, at every subunit order. -/
 theorem cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (γ α : ℝ) (hγ : 0 < γ) (hα : 0 < α) (z : ℂ) (R p : ℝ)
+     (R p : ℝ)
     (hR : 0 < R) (hR1 : R ≤ 1 / 2) (hchart : ‖z‖ + 2 * R ≤ 1)
     (hp : 0 < p) (hp1 : p ≤ 1)
     (hpRange : p < min (4 / γ ^ 2) (2 / γ * (Q γ - α))) :
@@ -326,15 +297,15 @@ theorem cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
           cutoffWeightedPositiveSubunitScaleConstant γ α p *
             ENNReal.ofReal (R ^ weightedCutoffMomentScaleExponent γ α p)) := by
   classical
-  let xi : ℝ := 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2
-  let eta : ℝ := weightedCutoffMomentScaleExponent γ α p
-  let q : ℝ≥0∞ := ENNReal.ofReal ((1 / 2 : ℝ) ^ eta)
-  let scale : ℝ≥0∞ := ENNReal.ofReal (R ^ eta)
-  let shellConst : ℝ≥0∞ := ENNReal.ofReal
+  let xi  := 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2
+  let eta  := weightedCutoffMomentScaleExponent γ α p
+  let q  := ENNReal.ofReal ((1 / 2 : ℝ) ^ eta)
+  let scale  := ENNReal.ofReal (R ^ eta)
+  let shellConst  := ENNReal.ofReal
     ((1 / 2 : ℝ) ^ (-γ * α * p) * 2 ^ xi) * scale
-  let refBase : ℝ≥0∞ := 1 + gmcReferenceMeasure (Metric.ball 0 (1 / 2))
-  let coreConst : ℝ≥0∞ := ENNReal.ofReal (2 ^ xi) * scale * refBase
-  let C : ℝ≥0∞ := ENNReal.ofReal (2 ^ xi) * refBase +
+  let refBase  := 1 + gmcReferenceMeasure (Metric.ball 0 (1 / 2))
+  let coreConst  := ENNReal.ofReal (2 ^ xi) * scale * refBase
+  let C  := ENNReal.ofReal (2 ^ xi) * refBase +
     ENNReal.ofReal ((1 / 2 : ℝ) ^ (-γ * α * p) * 2 ^ xi) *
       refBase * (1 - q)⁻¹
   change C < ⊤ ∧ (∀ δ : ℝ, 0 < δ → δ ≤ R →
@@ -354,28 +325,26 @@ theorem cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
   have hq : q < 1 := ENNReal.ofReal_lt_one.mpr (by simpa [q] using hqReal)
   have hden : 1 - q ≠ 0 := by
     intro h
-    have hqle : 1 ≤ q := tsub_eq_zero_iff_le.mp h
+    have hqle  := tsub_eq_zero_iff_le.mp h
     exact (not_le_of_gt hq) hqle
-  have hgeom : (1 - q)⁻¹ < ⊤ :=
+  have hgeom  :=
     lt_top_iff_ne_top.mpr (ENNReal.inv_ne_top.mpr hden)
   have hRefBall : gmcReferenceMeasure (Metric.ball 0 (1 / 2)) ≤
       gmcReferenceMeasure Set.univ :=
     measure_mono (Set.subset_univ _)
-  have hRefBallTop : gmcReferenceMeasure (Metric.ball 0 (1 / 2)) < ⊤ :=
+  have hRefBallTop  :=
     lt_of_le_of_lt hRefBall (lt_top_iff_ne_top.mpr gmcReferenceMeasure_univ_ne_top)
   have hrefBase : refBase < ⊤ := by
-    dsimp [refBase]
-    exact ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hRefBallTop⟩
+    continuity
   have hscale : scale < ⊤ := by
     dsimp [scale]
     exact ENNReal.ofReal_lt_top
   have hcoreConst : coreConst < ⊤ := by
     dsimp [coreConst]
-    exact ENNReal.mul_lt_top
-      (ENNReal.mul_lt_top ENNReal.ofReal_lt_top hscale) hrefBase
+    finiteness
   have hshellConst : shellConst < ⊤ := by
     dsimp [shellConst]
-    exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top hscale
+    finiteness
   have hC : C < ⊤ := by
     dsimp [C]
     exact ENNReal.add_lt_top.mpr ⟨
@@ -389,17 +358,16 @@ theorem cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
     by_cases hδeq : δ = R
     · refine ⟨0, ?_, ?_⟩
       · have hRhalf : R / 2 ≤ R := by
-          apply (div_le_iff₀ (by norm_num : (0 : ℝ) < 2)).2
-          linarith only [hR]
+          bound
         simpa [cutoffDyadicBallRadius, hδeq] using hRhalf
       · rw [hδeq]
         simp [cutoffDyadicBallRadius]
-    · have hδlt : δ < R := lt_of_le_of_ne hδR hδeq
+    · have hδlt  := lt_of_le_of_ne hδR hδeq
       obtain ⟨N, hlow, hhigh⟩ := exists_dyadic_shell_index hδ hδlt
       exact ⟨N, hlow, hhigh.le⟩
-  let base : ℝ≥0∞ := refBase
-  let coreCoeff : ℝ≥0∞ := ENNReal.ofReal (δ ^ (-γ * α))
-  let coreMoment : ℝ≥0∞ := ∫⁻ ω,
+  let base  := refBase
+  let coreCoeff  := ENNReal.ofReal (δ ^ (-γ * α))
+  let coreMoment  := ∫⁻ ω,
     ENNReal.rpow (regularizedGMC P Xc γ (Real.log (1 / δ)) ω
       (Metric.ball z δ)) p ∂P
   have hcoreChart : ‖z‖ + 2 * δ ≤ 1 := by linarith only [hchart, hδR]
@@ -409,10 +377,10 @@ theorem cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
     calc
       _ = (ENNReal.ofReal δ) ^ ((-γ * α) * p) := by
         dsimp [coreCoeff]
-        rw [← ennreal_ofReal_rpow_of_pos_cutoff hδ]
+        rw [← ennreal_rpow_ofReal_pos hδ]
         exact (ENNReal.rpow_mul (ENNReal.ofReal δ) (-γ * α) p).symm
       _ = ENNReal.ofReal (δ ^ ((-γ * α) * p)) :=
-        ennreal_ofReal_rpow_of_pos_cutoff hδ
+        ennreal_rpow_ofReal_pos hδ
       _ = _ := by congr 1
   have hcoreReal : δ ^ (-γ * α * p) * (2 * δ) ^ xi ≤ 2 ^ xi * R ^ eta := by
     have he := hEtaDyad
@@ -452,25 +420,20 @@ theorem cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
             (Metric.ball z (cutoffDyadicBallRadius R n))) p ∂P) ≤
         shellConst * q ^ n * refBase := by
     by_cases hn : n ≤ N
-    · have hpow : (2 : ℝ) ^ n ≤ (2 : ℝ) ^ N := by
-        exact pow_le_pow_right₀ (by norm_num) hn
+    · have hpow : (2 : ℝ) ^ n ≤ (2 : ℝ) ^ N := pow_le_pow_right₀ (by norm_num) hn
       have hradN : cutoffDyadicBallRadius R N ≤ cutoffDyadicBallRadius R n := by
         dsimp [cutoffDyadicBallRadius]
-        exact div_le_div_of_nonneg_left hR.le (by positivity) hpow
-      have hδn : δ ≤ cutoffDyadicBallRadius R n := hNhi.trans hradN
+        bound
+      have hδn  := hNhi.trans hradN
       have hRn : cutoffDyadicBallRadius R n ≤ R := by
         dsimp [cutoffDyadicBallRadius]
-        apply (div_le_iff₀ (by positivity)).2
-        have hpow1 : (1 : ℝ) ≤ (2 : ℝ) ^ n :=
-          one_le_pow₀ (by norm_num : (1 : ℝ) ≤ (2 : ℝ))
-        exact le_mul_of_one_le_right hR.le hpow1
-      have hRn1 : cutoffDyadicBallRadius R n ≤ 1 / 2 := hRn.trans hR1
+        bound
+      have hRn1  := hRn.trans hR1
       have hchartn : ‖z‖ + 2 * cutoffDyadicBallRadius R n ≤ 1 := by
         linarith only [hchart, hRn]
       have hscale := regularizedGMC_openBall_subunit_scale_bound P X hX Xc hXc γ z
         (cutoffDyadicBallRadius R n) δ p (by
-          dsimp [cutoffDyadicBallRadius]
-          positivity) hRn1 hδ hδn hchartn hp.le hp1
+          bound) hRn1 hδ hδn hchartn hp.le hp1
       have hradpos : 0 < cutoffDyadicBallRadius R (n + 1) := by
         dsimp [cutoffDyadicBallRadius]
         positivity
@@ -482,12 +445,12 @@ theorem cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
             simp [cutoffDyadicBallWeight, hn]
           _ = (ENNReal.rpow (ENNReal.ofReal (cutoffDyadicBallRadius R (n + 1)))
               (-γ * α)) ^ p := by
-            rw [← ennreal_ofReal_rpow_of_pos_cutoff hradpos]
+            rw [← ennreal_rpow_ofReal_pos hradpos]
           _ = ENNReal.rpow (ENNReal.ofReal (cutoffDyadicBallRadius R (n + 1)))
               ((-γ * α) * p) := (ENNReal.rpow_mul _ _ _).symm
           _ = ENNReal.ofReal
               ((cutoffDyadicBallRadius R (n + 1)) ^ ((-γ * α) * p)) :=
-            ennreal_ofReal_rpow_of_pos_cutoff hradpos
+            ennreal_rpow_ofReal_pos hradpos
           _ = _ := by congr 1
       have hradDecomp : cutoffDyadicBallRadius R (n + 1) =
           (R / 2) * (1 / 2 : ℝ) ^ n := by
@@ -504,8 +467,7 @@ theorem cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
           (2 * R) * (1 / 2 : ℝ) ^ n := by
         rw [hstep, hradDecomp]
         ring
-      have hη : -γ * α * p + xi = eta := by
-        exact hEtaDyad
+      have hη : -γ * α * p + xi = eta := hEtaDyad
       have hbaseScale := cutoff_positive_shell_base_scale hR hη
       have hprod :
           (cutoffDyadicBallRadius R (n + 1)) ^ (-γ * α * p) *
@@ -548,9 +510,7 @@ theorem cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
       _ = shellConst * refBase * (1 - q)⁻¹ := by
         calc
           _ = ∑' n : ℕ, (shellConst * refBase) * q ^ n := by
-            apply tsum_congr
-            intro n
-            ac_rfl
+            ring
           _ = (shellConst * refBase) * ∑' n : ℕ, q ^ n := ENNReal.tsum_mul_left
           _ = _ := by rw [ENNReal.tsum_geometric]
   have hmoment := cutoffWeightedGmcBallMoment_le_positive_dyadic_moments
@@ -567,16 +527,7 @@ theorem cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
       _ ≤ coreConst + shellConst * refBase * (1 - q)⁻¹ :=
         add_le_add hcoreMomentBound hsumBound
       _ = C * scale := by
-        dsimp [C, coreConst, shellConst, scale]
-        rw [add_mul]
-        ac_rfl
-  have hetaScale : eta = γ * (Q γ - α) * p - γ ^ 2 * p ^ 2 / 2 := by
-    exact heta.symm
-  have htotal' :
-      (∫⁻ ω, ENNReal.rpow
-        (cutoffWeightedGmcBallMass P Xc γ α z R δ ω) p ∂P) ≤ C *
-          ENNReal.ofReal (R ^ (γ * (Q γ - α) * p - γ ^ 2 * p ^ 2 / 2)) := by
-    simpa [scale, hetaScale] using htotal
-  simpa [weightedCutoffMomentScaleExponent, hetaScale] using htotal'
+        ring
+  omega
 
 end DOZZ.Proofs

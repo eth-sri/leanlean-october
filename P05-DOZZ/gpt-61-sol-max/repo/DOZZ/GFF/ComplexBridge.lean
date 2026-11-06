@@ -31,8 +31,7 @@ noncomputable def complexToVecTwo : ℂ ≃ᵐ GaussianFields.Vec 2 := Complex.m
 /-- The complex-to-`Vec 2` equivalence preserves Lebesgue measure. -/
 theorem volume_preserving_complexToVecTwo :
     MeasurePreserving complexToVecTwo (volume : Measure ℂ)
-      (volume : Measure (GaussianFields.Vec 2)) := by
-  simpa [complexToVecTwo] using Complex.volume_preserving_equiv_pi
+      (volume : Measure (GaussianFields.Vec 2)) := Complex.volume_preserving_equiv_pi
 
 /-- The GaussianFields Euclidean norm transported to `Vec 2` is the complex norm. -/
 theorem euclideanNorm_complexToVecTwo (z : ℂ) :
@@ -49,11 +48,7 @@ theorem euclideanNorm_complexToVecTwo (z : ℂ) :
 underlying map. -/
 theorem complexLinearEquivVecTwo_apply (z : ℂ) :
     complexLinearEquivVecTwo z = complexToVecTwo z := by
-  funext i
-  fin_cases i <;>
-    simp [complexToVecTwo, complexLinearEquivVecTwo,
-      Complex.basisOneI.equivFun_apply,
-      Complex.coe_basisOneI_repr, Complex.measurableEquivPi_apply]
+  continuity
 
 /-- The measurable coordinate bridge preserves subtraction, since it is the same coordinate map
 as the continuous real-linear equivalence. -/

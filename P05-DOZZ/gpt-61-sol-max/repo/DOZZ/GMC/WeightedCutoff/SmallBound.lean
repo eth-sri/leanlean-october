@@ -5,7 +5,7 @@ public import DOZZ.GMC.WeightedCutoff.CompactLocation
 
 /-! # The weighted cutoff bound at small radii and arbitrary compact centers -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -33,9 +33,7 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_small_bound
   have hC : 0 < C := by dsimp [C]; positivity
   have hEC : E ≤ ENNReal.ofReal C := by
     rw [← ENNReal.ofReal_toReal hE.ne]
-    apply ENNReal.ofReal_le_ofReal
-    dsimp [C]
-    linarith
+    bound
   refine ⟨C, hC, ?_⟩
   intro γ hγ t ht z hz R δ hR hRhalf hδ hδR
   have hfirst := hmove γ hγ t ht z hz R δ hR hRhalf hδ hδR

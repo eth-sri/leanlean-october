@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.Fusion.ExteriorSecondKernel
 
 /-! # The exterior second derivative kernel has a bounded denominator -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

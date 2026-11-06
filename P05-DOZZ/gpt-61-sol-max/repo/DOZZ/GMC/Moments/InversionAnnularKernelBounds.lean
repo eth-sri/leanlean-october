@@ -9,7 +9,7 @@ public import DOZZ.GFFStructure.CircleCovariance
 
 /-! Uniform mixed logarithmic bounds on annular inversion charts. -/
 
-@[expose] public section
+public section
 
 open Set Metric Real
 open DOZZ.Proofs.CirclePotential
@@ -20,14 +20,11 @@ namespace DOZZ.Proofs
 theorem inversion_log_norm_bound_on_annulus {u : ℂ} {m R : ℝ}
     (hm : 0 < m) (hR : 0 ≤ R) (hlo : m ≤ ‖u‖) (hhi : ‖u‖ ≤ R + 1) :
     |Real.log ‖u‖| ≤ |Real.log m| + Real.log (R + 1) := by
-  have hloglo : Real.log m ≤ Real.log ‖u‖ := Real.log_le_log hm hlo
-  have hloghi : Real.log ‖u‖ ≤ Real.log (R + 1) :=
+  have hloglo  := Real.log_le_log hm hlo
+  have hloghi  :=
     Real.log_le_log (hm.trans_le hlo) hhi
   have hRp : 0 ≤ Real.log (R + 1) := Real.log_nonneg (by linarith only [hR])
-  apply abs_le.mpr
-  constructor
-  · linarith only [hloglo, neg_abs_le (Real.log m), hRp]
-  · linarith only [hloghi, abs_nonneg (Real.log m)]
+  grind
 
 /-- Fine target and pulled-source circles obey one common logarithmic covariance estimate
 throughout a bounded annulus, including equal centers. -/
@@ -40,7 +37,7 @@ theorem inversion_mixed_log_bound_on_annulus
       Real.log (1 / max ‖x - y‖ (max (Real.exp (-r)) (Real.exp (-s))))| ≤
       (2 * (|Real.log m| + Real.log (R + 1)) + 2) +
         (Real.log 3 + 2 * Real.log (1 + R)) := by
-  have hy : y ≠ 0 := norm_pos_iff.mp (by linarith only [hm, hylo])
+  have hy  := norm_pos_iff.mp (by linarith only [hm, hylo])
   have hylog := inversion_log_norm_bound_on_annulus hm hR
     (show m ≤ ‖y‖ by linarith only [hm, hylo])
     (hyhi.trans (le_add_of_nonneg_right zero_le_one))
@@ -73,7 +70,7 @@ theorem inversion_mixed_coarse_center_bound_on_annulus
         (Real.log 3 + 2 * Real.log (1 + R)) := by
   have ht := inversion_mixed_log_bound_on_annulus hm hR hxlo hxlo hxhi hxhi hs hr hε
   have hlog : Real.log (1 / Real.exp (-r)) = r := by
-    rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
+    simp_all
   simpa only [sub_self, norm_zero, max_eq_right hscales,
     max_eq_right (Real.exp_pos (-r)).le, hlog] using ht
 
@@ -103,6 +100,6 @@ theorem inversion_mixed_offDiagonal_point_error_le
     rw [hcircle]
     simpa only [add_sub_cancel_left, regAvg] using
       abs_circleAverage_log_normPlus_sub_le x (Real.exp_pos (-r))
-  exact (abs_sub_le _ _ _).trans (add_le_add hmixed hpoint)
+  grind
 
 end DOZZ.Proofs

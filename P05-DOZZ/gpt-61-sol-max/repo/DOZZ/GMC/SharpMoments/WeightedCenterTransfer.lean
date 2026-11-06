@@ -21,27 +21,36 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable (γ α : ℝ) (N : ℕ) (y : ℂ)
+
+include γ α N y
 /-- The singular weight `‖y‖^{-γα}` truncated at height `N`, as an extended real. -/
-noncomputable def insertionTruncWeightE (γ α : ℝ) (N : ℕ) (y : ℂ) : ℝ≥0∞ :=
+noncomputable def insertionTruncWeightE  : ℝ≥0∞ :=
   min (N : ℝ≥0∞) (ENNReal.rpow (ENNReal.ofReal ‖y‖) (-γ * α))
 
+
 /-- The singular weight `‖y‖^{-γα}` truncated at height `N`. -/
-noncomputable def insertionTruncWeight (γ α : ℝ) (N : ℕ) (y : ℂ) : ℝ≥0 :=
+noncomputable def insertionTruncWeight  : ℝ≥0 :=
   (insertionTruncWeightE γ α N y).toNNReal
 
-theorem insertionTruncWeightE_le (γ α : ℝ) (N : ℕ) (y : ℂ) :
+
+theorem insertionTruncWeightE_le  :
     insertionTruncWeightE γ α N y ≤ N :=
   min_le_left _ _
 
-theorem coe_insertionTruncWeight (γ α : ℝ) (N : ℕ) (y : ℂ) :
+
+theorem coe_insertionTruncWeight  :
     (insertionTruncWeight γ α N y : ℝ≥0∞) = insertionTruncWeightE γ α N y :=
   ENNReal.coe_toNNReal (ne_top_of_le_ne_top (ENNReal.natCast_ne_top N)
     (insertionTruncWeightE_le γ α N y))
 
-theorem insertionTruncWeight_le (γ α : ℝ) (N : ℕ) (y : ℂ) :
+
+theorem insertionTruncWeight_le  :
     insertionTruncWeight γ α N y ≤ (N : ℝ≥0) := by
   rw [← ENNReal.coe_le_coe, coe_insertionTruncWeight, ENNReal.coe_natCast]
   exact insertionTruncWeightE_le γ α N y
+omit γ α N y
+
 
 theorem measurable_insertionTruncWeightE (γ α : ℝ) (N : ℕ) :
     Measurable (insertionTruncWeightE γ α N) :=
@@ -52,7 +61,8 @@ theorem measurable_insertionTruncWeight (γ α : ℝ) (N : ℕ) :
     Measurable (insertionTruncWeight γ α N) :=
   ENNReal.measurable_toNNReal.comp (measurable_insertionTruncWeightE γ α N)
 
-theorem insertionTruncWeightE_le_weight (γ α : ℝ) (N : ℕ) (y : ℂ) :
+include γ α N y in
+theorem insertionTruncWeightE_le_weight  :
     insertionTruncWeightE γ α N y ≤ ENNReal.rpow (ENNReal.ofReal ‖y‖) (-γ * α) :=
   min_le_right _ _
 
@@ -112,8 +122,7 @@ theorem weightedGmcBallMoment_center_le_transfer
     rw [coe_insertionTruncWeight]
     exact insertionTruncWeightE_le_weight γ α N (x - z)
   -- monotone convergence in the truncation height
-  have hmeas : ∀ N : ℕ, AEMeasurable (fun ω => (∫⁻ x in Metric.ball (0 : ℂ) ρ,
-      (insertionTruncWeight γ α N (x - 0) : ℝ≥0∞) ∂M ω) ^ p) P := fun N =>
+  have hmeas  := fun N =>
     (gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
       (measurable_coe_nnreal_ennreal.comp ((measurable_insertionTruncWeight γ α N).comp
         (measurable_id.sub_const 0))) _ hB).pow_const p

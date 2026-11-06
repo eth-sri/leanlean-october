@@ -9,10 +9,11 @@ public import DOZZ.FourPoint.Fusion.RootedMass
 public import DOZZ.FourPoint.Fusion.MovingRootFiniteness
 import DOZZ.GMC.Construction.RootedMeasureKernel
 import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
+import Mathlib.Tactic
 
 /-! # Domination away from the colliding roots -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -23,7 +24,7 @@ theorem fusion_rootDensity_formula (γ : ℝ) (u x : ℂ) (hxu : x ≠ u) :
       normPlus u ^ (γ ^ 2) * normPlus x ^ (γ ^ 2) * ‖x - u‖ ^ (-γ ^ 2) := by
   have hu : 0 < normPlus u := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
   have hx : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hd : 0 < ‖x - u‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxu)
+  have hd  := norm_pos_iff.mpr (sub_ne_zero.mpr hxu)
   rw [Real.rpow_def_of_pos hu, Real.rpow_def_of_pos hx, Real.rpow_def_of_pos hd,
     ← Real.exp_add, ← Real.exp_add, gffKernel, norm_sub_rev]
   congr 1
@@ -33,7 +34,7 @@ theorem fusion_rootDensity_formula (γ : ℝ) (u x : ℂ) (hxu : x ≠ u) :
 theorem fusion_exterior_power_bound (a b c k : ℝ) (ha : 0 < a) (hb : 0 < b)
     (hc : 0 ≤ c) (hk : 0 ≤ k) (hca : c ≤ 2 * a) (hab : a / 2 ≤ b) :
     c ^ k * b ^ (-(2 * k)) ≤ (2 : ℝ) ^ (3 * k) * a ^ (-k) := by
-  have hc' : c ^ k ≤ (2 * a) ^ k := Real.rpow_le_rpow hc hca hk
+  have hc'  := Real.rpow_le_rpow hc hca hk
   have hb' : b ^ (-(2 * k)) ≤ (a / 2) ^ (-(2 * k)) :=
     Real.rpow_le_rpow_of_nonpos (by positivity) hab (by linarith)
   calc
@@ -55,15 +56,12 @@ theorem fusion_rootedKernel_exterior_bound (γ α₁ α₂ α₃ : ℝ) (z u x :
     gammaHalfKernel γ α₁ α₂ α₃ z x * Real.exp (γ ^ 2 * gffKernel u x) ≤
       (2 : ℝ) ^ (3 * (γ ^ 2 / 2)) *
         (gammaHalfKernel γ α₁ α₂ α₃ 0 x * Real.exp (γ ^ 2 * gffKernel 0 x)) := by
-  have ha : 0 < ‖x‖ := norm_pos_iff.mpr hx
+  have ha  := norm_pos_iff.mpr hx
   have hb : ‖x‖ / 2 ≤ ‖x - u‖ := by
     have h := norm_sub_norm_le x u
     linarith
   have hxu : x ≠ u := by
-    intro he
-    rw [he] at hu
-    have hu0 : 0 < ‖u‖ := by simpa [he] using ha
-    linarith
+    bound
   have hc : ‖x - z‖ ≤ 2 * ‖x‖ := by
     have h := norm_sub_le x z
     linarith
@@ -84,7 +82,7 @@ theorem fusion_rootedKernel_exterior_bound (γ α₁ α₂ α₃ : ℝ) (z u x :
   have hf : 0 ≤ normPlus x ^ (γ * (α₁ + α₂ + α₃ - γ / 2)) * normPlus x ^ (γ ^ 2) /
       (‖x‖ ^ (γ * α₁) * ‖x - 1‖ ^ (γ * α₂)) := by positivity
   have h := mul_le_mul_of_nonneg_right hm hf
-  have heq : ‖x‖ ^ (-(γ ^ 2 / 2)) = ‖x‖ ^ (γ ^ 2 / 2) * ‖x‖ ^ (-γ ^ 2) := hpow.symm
+  have heq  := hpow.symm
   rw [heq] at h
   unfold normPlus at h
   convert h using 1 <;> ring
@@ -108,8 +106,7 @@ theorem fusion_rootedKernel_exterior_tendsto (γ α₁ α₂ α₃ : ℝ) (y : �
     intro z
     apply ENNReal.measurable_ofReal.comp
     apply Measurable.mul
-    · exact (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp (f := fun x : ℂ => (z, x))
-        (measurable_const.prodMk measurable_id)
+    · exact Measurable.comp (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃) (Measurable.prodMk measurable_const measurable_id)
     · exact (measurable_const.mul (measurable_pointRootPotential.comp
         (measurable_const.prodMk measurable_id))).exp
   have hzlim : Tendsto (fun z : ℂ => ‖z‖) (nhds 0) (nhds 0) := by
@@ -117,14 +114,14 @@ theorem fusion_rootedKernel_exterior_tendsto (γ α₁ α₂ α₃ : ℝ) (y : �
   have hulim : Tendsto (fun z : ℂ => ‖y * z‖) (nhds 0) (nhds 0) := by
     have hc : Continuous (fun z : ℂ => ‖y * z‖) := by fun_prop
     simpa only [mul_zero, norm_zero] using (hc.continuousAt (x := (0 : ℂ))).tendsto
-  have hev : ∀ᶠ z : ℂ in nhds 0, ‖z‖ < δ ∧ ‖y * z‖ < δ / 2 ∧ ‖y * z‖ < 1 :=
+  have hev  :=
     (hzlim.eventually_lt_const hδ).and
       ((hulim.eventually_lt_const (half_pos hδ)).and (hulim.eventually_lt_const zero_lt_one))
   apply tendsto_lintegral_filter_of_dominated_convergence (fun x => C * F 0 x)
   · exact Eventually.of_forall hm
   · filter_upwards [hev] with z hz
     filter_upwards [ae_restrict_mem (measurableSet_le measurable_const measurable_norm)] with x hx
-    have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
+    have hx0  := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
     have h := ENNReal.ofReal_le_ofReal (fusion_rootedKernel_exterior_bound γ α₁ α₂ α₃ z (y * z) x
       hx0 (hz.1.le.trans hx) (by linarith [hz.2.1]) hz.2.2.le)
     rw [ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)] at h
@@ -135,7 +132,7 @@ theorem fusion_rootedKernel_exterior_tendsto (γ α₁ α₂ α₃ : ℝ) (y : �
     exact (ENNReal.mul_lt_top ENNReal.ofReal_lt_top
       (lt_of_le_of_lt (setLIntegral_le_lintegral _ _) hfin)).ne
   · filter_upwards [ae_restrict_mem (measurableSet_le measurable_const measurable_norm)] with x hx
-    have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
+    have hx0  := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
     exact ENNReal.continuous_ofReal.continuousAt.tendsto.comp
       (fusion_rootedKernel_tendsto γ α₁ α₂ α₃ y x hx0)
 

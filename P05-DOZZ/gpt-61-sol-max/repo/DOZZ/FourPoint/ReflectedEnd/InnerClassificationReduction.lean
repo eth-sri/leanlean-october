@@ -6,6 +6,7 @@ module
 
 public import DOZZ.FourPoint.ReflectedEnd.FormulaReduction
 import Mathlib.Tactic
+public import DOZZ.FourPoint.GaussContracts
 
 /-! # The reflected formula directly from the inner-limit and classification conclusions
 
@@ -13,7 +14,7 @@ The inner-limit and BPZ classification conclusions are the only inputs taken as 
 The outer estimate and every deterministic coefficient-identification step are proved.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -50,29 +51,12 @@ theorem gammaHalf_reflected_formula_of_inner_limit {Ω : Type*} [MeasurableSpace
                 ((‖z‖ ^ κ : ℝ) : ℂ)) + r z)) ∧
             IsComplexLittleOAtZero κ r)
     (hclassification :
-    let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
-    let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃
-    let c := gaussParameterC γ (γ / 2) α₁
-    ∀ z ∈ gaussCutPlane,
-      fourPointT P M γ μ (-(γ / 2)) α₁ α₂ α₃ z =
-        structureConstant P M γ μ (α₁ - (γ / 2)) α₂ α₃ *
-          (‖gaussFMinus H a b c z‖ ^ 2 +
-            gaussCoefficientRatio a b c *
-              ‖gaussFPlus H a b c z‖ ^ 2)) :
+    Contract.gaussDiagonal P M γ μ α₁ α₂ α₃ H (γ / 2)) :
     ∃ B : ℝ → Ω → BrownianPath × BrownianPath,
       ∃ Z : Ω → Measure ℝ,
         IsSourceLateralProjection P X γ M Z ∧
         IsReflectionData P γ α₁ (B α₁) Z ∧
-        let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
-        let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃
-        let c := gaussParameterC γ (γ / 2) α₁
-        ∀ z ∈ gaussCutPlane,
-          fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z =
-            structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-                ‖gaussFMinus H a b c z‖ ^ 2 +
-              reflectionR P γ μ α₁ (B α₁) Z *
-                structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ *
-                  ‖gaussFPlus H a b c z‖ ^ 2 := by
+        Contract.gammaHalfReflected P M γ μ α₁ α₂ α₃ H (B α₁) Z := by
   have hfusion := gammaHalf_reflected_fusion_asymptotic_of_inner_limit
     P M X γ μ α₁ α₂ α₃ ξ hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hreflect
     hξ hξ₂ hslack hfreeze hX hM hinner

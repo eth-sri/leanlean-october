@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Correlations.Residue.EqualReduction
 public import DOZZ.Correlations.Residue.UniformFamilies
+public import DOZZ.Correlations.TailContracts
 
 /-! Reduction of the complete residue bridge (erratum K30, see docs/ERRATA-AND-DEVIATIONS.md) to
 the two exact tail theorems `DOZZ.oneInsertion_tail_uniform` and
@@ -15,7 +16,7 @@ proof-binder names are prefixed by an underscore; their premises and quantifier 
 unchanged.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -28,22 +29,7 @@ theorem residue_unitVolume_bridge_of_insertion_tails
     (M : Ω → Measure ℂ) (γ α2 α3 : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hα : 0 < α2 ∧ α2 ≤ α3 ∧ γ / 2 < α3 ∧ α3 < Q γ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hone : ∀
-    (Kz : Set ℂ) (_hKz : IsCompact Kz) (_hz : ∀ z ∈ Kz, 2 ≤ ‖z‖)
-    (Kα : Set ℝ) (_hKα : IsCompact Kα)
-    (_hα : ∀ α ∈ Kα, γ / 2 < α ∧ α < Q γ)
-    (Family : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
-    (_hFamily : UniformPositiveC1Family Kz Family radius supBound derivBound lowerBound),
-    ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-      IsSourceLateralProjection P X γ M Z ∧
-        (∀ α ∈ Kα, IsReflectionData P γ α (B α) Z) ∧
-        ∀ η : ℝ, 0 < η → (∀ α ∈ Kα, η < oneInsertionErrorCeiling γ α) →
-          ∃ C : ℝ, 0 ≤ C ∧
-            ∀ z ∈ Kz, ∀ α ∈ Kα, ∀ F ∈ Family z, ∀ x : ℝ, 1 ≤ x →
-              |(P {ω | ENNReal.ofReal x < localSingularMass M F z γ α ω}).toReal -
-                oneInsertionTailCoefficient γ α z (F z) (reflectionBarR P γ α (B α) Z) *
-                  Real.rpow x (-reflectionExponent γ α)| ≤
-                C * Real.rpow x (-reflectionExponent γ α - η) )
+    (hone : Contract.uniformOneInsertionTail P X M γ )
     (htwo : ∀
     (K2 K3 : Set ℂ) (_hK2 : IsCompact K2) (_hK3 : IsCompact K3)
     (_hpos2 : ∀ z ∈ K2, 2 ≤ ‖z‖) (_hpos3 : ∀ z ∈ K3, 2 ≤ ‖z‖)
@@ -125,7 +111,7 @@ theorem residue_unitVolume_bridge_of_insertion_tails
     obtain ⟨B, Z, hZ, hB, htail⟩ := hone {3} isCompact_singleton hpos3 {α3}
       isCompact_singleton hcharge Fs (1 / 2) s d l hF
     let η := oneInsertionErrorCeiling γ α3 / 2
-    have he : 0 < oneInsertionErrorCeiling γ α3 := residue_oneInsertionErrorCeiling_pos γ α3 hγ hα.2.2.1 hα.2.2.2
+    have he  := residue_oneInsertionErrorCeiling_pos γ α3 hγ hα.2.2.1 hα.2.2.2
     have hη : 0 < η := by dsimp only [η]; positivity
     have hηbound : ∀ α ∈ ({α3} : Set ℝ), η < oneInsertionErrorCeiling γ α := by
       intro α hαs

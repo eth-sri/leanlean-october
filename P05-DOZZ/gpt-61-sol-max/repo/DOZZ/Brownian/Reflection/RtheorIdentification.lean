@@ -21,6 +21,8 @@ import DOZZ.Brownian.Reflection.WitnessIndependence
 import DOZZ.Brownian.ReflectionPoleIsolation
 import DOZZ.Roots.Existence
 import DOZZ.GMC.Assembly.AdmissibleGMC
+public import DOZZ.ShiftEquations.Contracts
+public import DOZZ.ShiftEquations.ContinuationContracts
 
 /-!
 # `R = R^DOZZ` from the shift equations
@@ -122,14 +124,16 @@ theorem reflectionDualShiftDenom_ne_zero {γ : ℝ} (hγ : 0 < γ)
   · convert hw2 using 2
     ring
 
+variable {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
+
+include γ μ hγ hγ2 hμ in
 /-- The DOZZ dual multiplier is nonzero when `4/γ²` is not an integer. -/
-theorem reflectionDOZZDualConst_ne_zero {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
+theorem reflectionDOZZDualConst_ne_zero 
     (hγk : ∀ n : ℤ, 4 / γ ^ 2 ≠ n) : reflectionDOZZDualConst γ μ ≠ 0 := by
   have hbase : ((dozzBase γ μ : ℝ) : ℂ) ≠ 0 := by
     exact_mod_cast (dozzBase_pos hγ hγ2 hμ).ne'
   refine div_ne_zero ?_ (lFun_ne_zero_of_forall_ne_int fun n hn => hγk n (by exact_mod_cast hn))
-  exact (Complex.cpow_ne_zero_iff_of_exponent_ne_zero (by
-    exact_mod_cast (div_pos (by norm_num : (0 : ℝ) < 4) (by positivity)).ne')).mpr hbase
+  simp_all
 
 /-- Irrationality of `γ²` excludes integer values of `4/γ²`. -/
 theorem four_div_sq_ne_int_of_irrational {γ : ℝ} (hγirr : Irrational (γ ^ 2)) (n : ℤ) :
@@ -144,10 +148,7 @@ theorem four_div_sq_ne_int_of_irrational {γ : ℝ} (hγirr : Irrational (γ ^ 2
     intro h0
     rw [h0, mul_zero] at hmul
     norm_num at hmul
-  have hsq : γ ^ 2 = ((4 / n : ℚ) : ℝ) := by
-    push_cast
-    exact eq_div_of_mul_eq hn0 hmul
-  exact hγirr ⟨4 / n, hsq.symm⟩
+  simp_all
 
 /-- Two meromorphic functions on strips that agree on a real interval share their punctured germ
 at every point of the smaller strip. -/
@@ -171,16 +172,12 @@ theorem eventuallyEq_nhdsNE_strip_of_eq_on_Ioo {h₁ h₂ : ℝ} (hh₁ : 0 < h�
   exact eventuallyEq_nhdsNE_of_isPreconnected (convex_horizontalStrip _).isPreconnected
     (hf.mono_set hsub₁) (hg.mono_set hsub₂) hmem h0
 
+include γ μ hγ hγ2 hμ in
 /-- The quotient by the DOZZ coefficient of a solution of the first shift equation is
 `γ/2`-periodic as a germ at every point. -/
-theorem reflectionQuotient_period {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
+theorem reflectionQuotient_period 
     {R : ℂ → ℂ}
-    (hshift : ∀ᶠ z in codiscrete ℂ,
-      R (z - γ / 2) =
-        -(μ * Real.pi : ℂ) * R z /
-          (lFun (-((γ : ℂ) ^ 2) / 4) *
-            lFun ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4) *
-            lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2))) (z : ℂ) :
+    (hshift : Contract.reflectionShift γ μ R) (z : ℂ) :
     (fun w => R (w + ((γ / 2 : ℝ) : ℂ)) / reflectionDOZZ γ μ (w + ((γ / 2 : ℝ) : ℂ))) =ᶠ[𝓝[≠] z]
       fun w => R w / reflectionDOZZ γ μ w := by
   have hK : -(μ * Real.pi : ℂ) ≠ 0 :=
@@ -201,9 +198,10 @@ theorem reflectionQuotient_period {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (
   rw [hcast]
   simpa only [add_sub_cancel_right] using hw.symm
 
+include γ μ hγ hγ2 hμ in
 /-- The quotient by the DOZZ coefficient of a solution of the dual shift equation with multiplier
 `c` is quasi-periodic under `2/γ`, with multiplier `c / c^DOZZ`. -/
-theorem reflectionQuotient_dualShift {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
+theorem reflectionQuotient_dualShift 
     (hγirr : Irrational (γ ^ 2)) {R : ℂ → ℂ} {c : ℂ}
     (hshift : ∀ᶠ z in codiscrete ℂ,
       R z = -c * R (z + 2 / γ) /
@@ -218,9 +216,7 @@ theorem reflectionQuotient_dualShift {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2
     intro w
     unfold reflectionDualShiftDenom
     have e1 : (-4 / (γ : ℂ) ^ 2) = -((4 / γ ^ 2 : ℝ) : ℂ) := by push_cast; ring
-    have e2 : (2 + 4 / (γ : ℂ) ^ 2 - 2 * w / γ) = 2 + ((4 / γ ^ 2 : ℝ) : ℂ) - 2 * w / γ := by
-      push_cast; ring
-    rw [e1, e2]
+    simp_all
   have hR : ∀ᶠ w in codiscrete ℂ,
       R w = -c * R (w + 2 / γ) / reflectionDualShiftDenom γ w := by
     filter_upwards [hshift] with w hw
@@ -287,7 +283,7 @@ theorem reflectionR_eq_reflectionDOZZ_of_shifts
     (hR₁.mono_set hsub₁).div ((meromorphicOn_reflectionDOZZ γ μ hγ hγ2 hμ).mono_set
       (subset_univ _))
   -- the two interpolants share their punctured germs on the common strip
-  have hR₁₂ : ∀ z ∈ horizontalStrip (min h₁ h₂), R₁ =ᶠ[𝓝[≠] z] R₂ :=
+  have hR₁₂  :=
     eventuallyEq_nhdsNE_strip_of_eq_on_Ioo hh₁ hh₂ hR₁ hR₂ hQ
       (fun y hy => (hR₁α y hy.1 hy.2).trans (hR₂α y hy.1 hy.2).symm)
   -- first period `γ/2`
@@ -307,13 +303,10 @@ theorem reflectionR_eq_reflectionDOZZ_of_shifts
       (hR₁₂ z hz).mono fun w hw => by
         show R₁ w / RD w = R₂ w / RD w
         rw [hw]
-    have h2 : ∀ᶠ w in 𝓝[≠] z, R₁ (w + ((2 / γ : ℝ) : ℂ)) = R₂ (w + ((2 / γ : ℝ) : ℂ)) :=
+    have h2  :=
       (tendsto_add_const_nhdsNE z _).eventually (hR₁₂ _ hzT)
     filter_upwards [h1, h2, eventually_nhdsNE_of_eventually_codiscrete hdual z] with w hw1 hw2 hw3
-    rw [hw1, hw3]
-    show κ * (R₂ (w + 2 / (γ : ℂ)) / RD (w + 2 / (γ : ℂ))) =
-      κ * (R₁ (w + ((2 / γ : ℝ) : ℂ)) / RD (w + ((2 / γ : ℝ) : ℂ)))
-    rw [hw2, hT₂]
+    grind
   -- positivity and continuity on the physical interval force the multiplier to be one
   have hE : ContinuousOn (fun x => reflectionDOZZRatio γ μ x (reflectionBarR P γ x (B x) Z))
       (Ioo (γ / 2) (Q γ)) :=
@@ -325,7 +318,7 @@ theorem reflectionR_eq_reflectionDOZZ_of_shifts
   have hfE : ∀ x ∈ Ioo (γ / 2) (Q γ), ∀ᶠ y : ℝ in 𝓝[≠] x,
       F (y : ℂ) = (reflectionDOZZRatio γ μ y (reflectionBarR P γ y (B y) Z) : ℂ) :=
     fun x hx => reflectionQuotient_eventually_eq_ratio P hγ hγ2 hμ B Z hR₁α hx
-  have hκ : κ = 1 :=
+  have hκ  :=
     quasiPeriod_multiplier_eq_one hh hFm (by positivity : (0 : ℝ) < γ / 2)
       (fun z hz => (hp₁ z hz).symm) hq (half_add_half_lt_Q hγ hγ2) hE hEpos hfE
   -- the two periods are rationally independent, so the quotient is constant
@@ -363,7 +356,7 @@ theorem reflectionR_eq_reflectionDOZZ_of_shifts
     filter_upwards [Ioo_mem_nhdsLT hQ] with y hy
     show (reflectionR P γ μ y (B y) Z : ℂ) / RD y = R₁ y / RD y
     rw [hR₁α y hy.1 hy.2]
-  have hc₁ : c₀ = 1 :=
+  have hc₁  :=
     tendsto_nhds_unique (tendsto_const_nhds.congr' (hconst.mono fun y hy => hy.symm)) hratio
   -- equality off the poles, by continuity of both coefficients
   have hone : ∀ᶠ y : ℝ in 𝓝[≠] α, F (y : ℂ) = 1 := by
@@ -463,15 +456,12 @@ theorem continuousAt_reflectionDOZZ_gamma {γ₀ μ α : ℝ} (hγ₀ : 0 < γ�
       (continuousAt_id.div_const 2)).sub continuousAt_const)).div_const 2
   have hpos := (reflectionExponent_in_subcritical_range γ₀ α hγ₀ hα).2.1
   have htα := reflectionGammaArg_mem_Ioo hγ₀ hα
-  have hbase : 0 < dozzBase γ₀ μ := dozzBase_pos hγ₀ hγ₀2 hμ
+  have hbase  := dozzBase_pos hγ₀ hγ₀2 hμ
   have hG1 : ContinuousAt (fun γ : ℝ => Real.Gamma (-(γ * (Q γ - α) / 2))) γ₀ := by
     have hs : ∀ m : ℕ, -(γ₀ * (Q γ₀ - α) / 2) ≠ -m := by
       intro m hm
       have hm' : γ₀ * (Q γ₀ - α) / 2 = m := by linarith only [hm]
-      rcases Nat.eq_zero_or_pos m with h0 | hm0
-      · rw [h0, Nat.cast_zero] at hm'; linarith only [hm', htα.1]
-      · have : (1 : ℝ) ≤ m := by exact_mod_cast hm0
-        linarith only [hm', this, htα.2]
+      aesop
     exact ContinuousAt.comp (g := Real.Gamma) (Real.differentiableAt_Gamma hs).continuousAt ht.neg
   have hG2 : ContinuousAt (fun γ : ℝ => Real.Gamma (γ * (Q γ - α) / 2)) γ₀ := by
     have hs : ∀ m : ℕ, γ₀ * (Q γ₀ - α) / 2 ≠ -m := by
@@ -494,10 +484,10 @@ theorem continuousAt_reflectionDOZZ_gamma {γ₀ μ α : ℝ} (hγ₀ : 0 < γ�
       have : (0 : ℝ) ≤ m := Nat.cast_nonneg m
       linarith only [hm, this, hpos]
     exact ContinuousAt.comp (g := Real.Gamma) (Real.differentiableAt_Gamma hs).continuousAt hp
-  have hpowb : ContinuousAt (fun γ : ℝ => dozzBase γ μ ^ reflectionExponent γ α) γ₀ :=
+  have hpowb  :=
     (continuousAt_dozzBase_gamma hγ₀ hγ₀2 μ).rpow hp (Or.inl hbase.ne')
-  have hne2 : Real.Gamma (γ₀ * (Q γ₀ - α) / 2) ≠ 0 := (Real.Gamma_pos_of_pos htα.1).ne'
-  have hne4 : Real.Gamma (reflectionExponent γ₀ α) ≠ 0 := (Real.Gamma_pos_of_pos hpos).ne'
+  have hne2  := (Real.Gamma_pos_of_pos htα.1).ne'
+  have hne4  := (Real.Gamma_pos_of_pos hpos).ne'
   exact (hpowb.neg.mul (hG1.div hG2 hne2)).mul (hG3.div hG4 hne4)
 
 /-- Couplings with irrational square accumulate at every positive `γ₀`: along irrational
@@ -558,10 +548,7 @@ theorem reflectionR_eq_reflectionDOZZ_of_irrational_of_continuousOn
       (reflectionR P (Real.sqrt x) μ α₀ (B (Real.sqrt x) α₀) (Z (Real.sqrt x)) : ℂ) =
         reflectionDOZZ (Real.sqrt x) μ (α₀ : ℂ) := by
     filter_upwards [hsqrt.eventually hgood, self_mem_nhdsWithin, hpos] with x hx hirrx hx0
-    have hirr' : Irrational (Real.sqrt x ^ 2) := by
-      rw [Real.sq_sqrt hx0.le]
-      exact hirrx
-    exact hirr _ hx.1.1 hx.1.2.1 hirr' α₀ hx.1.2.2.1 hx.1.2.2.2 hx.2
+    grind
   have h1 : Tendsto (fun x => (reflectionR P (Real.sqrt x) μ α₀ (B (Real.sqrt x) α₀)
       (Z (Real.sqrt x)) : ℂ)) (𝓝[{x : ℝ | Irrational x}] (γ₀ ^ 2))
       (𝓝 (reflectionR P γ₀ μ α₀ (B γ₀ α₀) (Z γ₀) : ℂ)) :=
@@ -604,44 +591,12 @@ theorem reflection_Rtheor_off_poles_of_shift_equations
         (M : Ω → Measure ℂ) (γ μ : ℝ)
         (_ : 0 < γ) (_ : γ < 2) (_ : 0 < μ)
         (_ : IsEquatorGFF P X) (_ : IsGMCOf P X γ M),
-        ∃ B : ℝ → Ω → BrownianPath ×
-            BrownianPath,
-          ∃ Z : Ω → Measure ℝ,
-            IsSourceLateralProjection P X γ M Z ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                IsReflectionData P γ α (B α) Z) ∧
-                ∃ h : ℝ, 0 < h ∧ ∃ R : ℂ → ℂ,
-                  MeromorphicOn R {z | |z.im| < h} ∧
-                  (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                    R (α : ℂ) =
-                      (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-                  ∀ᶠ z in codiscrete ℂ,
-                    R (z - γ / 2) =
-                      -(μ * Real.pi : ℂ) * R z /
-                        (lFun (-((γ : ℂ) ^ 2) / 4) *
-                          lFun ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4) *
-                          lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2)))
+        Contract.firstShift P X M γ μ)
     (hDual : ∀ {Ω : Type} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
         (M : Ω → Measure ℂ) (γ μ : ℝ)
         (_ : 0 < γ) (_ : γ < 2) (_ : Irrational (γ ^ 2)) (_ : 0 < μ)
         (_ : IsEquatorGFF P X) (_ : IsGMCOf P X γ M),
-        ∃ B : ℝ → Ω → BrownianPath ×
-            BrownianPath,
-          ∃ Z : Ω → Measure ℝ,
-            IsSourceLateralProjection P X γ M Z ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                IsReflectionData P γ α (B α) Z) ∧
-                ∃ h : ℝ, 0 < h ∧ ∃ R : ℂ → ℂ,
-                  MeromorphicOn R {z | |z.im| < h} ∧
-                  (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                    R (α : ℂ) =
-                      (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-                  ∃ cγ : ℂ, cγ ≠ 0 ∧
-                    cγ = ((γ : ℂ) ^ 2 / 4) * (μ * Real.pi : ℂ) * R γ ∧
-                    ∀ᶠ z in codiscrete ℂ,
-                      R z = -cγ * R (z + 2 / γ) /
-                        (lFun (-4 / (γ : ℂ) ^ 2) * lFun (2 * z / γ) *
-                          lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * z / γ)))
+        Contract.dualReflectionContinuation P X M γ μ)
     (hCont : ∀ {Ω : Type} [MeasurableSpace Ω] (P : Measure Ω)
         (X : Ω → Distr) (M : ℝ → Ω → Measure ℂ) (_ : IsEquatorGFF P X)
         (μ : ℝ) (_ : 0 < μ)
@@ -693,7 +648,7 @@ theorem reflection_Rtheor_off_poles_of_shift_equations
   refine reflectionR_eq_reflectionDOZZ_of_irrational_of_continuousOn P₀ μ hμ B₀ Z₀ ?_
     (fun K hK hKphys hKpole => (hCont₀ K hK hKphys).2 hKpole) hγ hγ2 hα hPole
   intro g hg hg2 hirr a ha1 ha2 hPole'
-  have hD₀ : ∀ b : ℝ, g / 2 < b → b < Q g → IsReflectionData P₀ g b (B₀ g b) (Z₀ g) :=
+  have hD₀  :=
     (hData₀ g hg hg2).2
   -- the two shift laws (`hFirst`, `hDual`) for interpolants along their own witnesses
   obtain ⟨B₁, Z₁, -, hD₁, h₁, hh₁, R₁, hR₁, hR₁α, hshift₁⟩ :=

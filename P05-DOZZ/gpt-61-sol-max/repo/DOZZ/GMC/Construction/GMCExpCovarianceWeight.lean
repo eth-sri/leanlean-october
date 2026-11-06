@@ -29,15 +29,13 @@ private noncomputable def gmcExpBCF
           γ * f z ≤ |γ * f z| := le_abs_self _
           _ = |γ| * |f z| := abs_mul _ _
           _ ≤ |γ| * K := mul_le_mul_of_nonneg_left (hf z) (abs_nonneg γ)
-      have hexp (z : ℂ) : Real.exp (γ * f z) ≤ Real.exp (|γ| * K) :=
-        Real.exp_le_exp.mpr (harg z)
+
       calc
         |Real.exp (γ * f x) - Real.exp (γ * f y)| ≤
             |Real.exp (γ * f x)| + |Real.exp (γ * f y)| := abs_sub _ _
-        _ ≤ Real.exp (|γ| * K) + Real.exp (|γ| * K) := by
-              exact add_le_add
-                (by rw [abs_of_nonneg (Real.exp_nonneg _)]; exact hexp x)
-                (by rw [abs_of_nonneg (Real.exp_nonneg _)]; exact hexp y)
+        _ ≤ Real.exp (|γ| * K) + Real.exp (|γ| * K) := add_le_add
+                (by simp_all)
+                (by simp_all)
         _ = 2 * Real.exp (|γ| * K) := by ring⟩
 
 /-- The covariance weights `exp (γ c_r)` admit a BCF family which agrees with them eventually
@@ -60,11 +58,10 @@ theorem equatorGFF_circleCovariance_exp_weight_family
   let covCont (r : ℝ) : C(ℂ, ℝ) :=
     ⟨cov r, continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
       P X hX Xc hXc L hL r⟩
-  have hnear : ∀ᶠ r : ℝ in atTop, ∀ x : ℂ, dist (c x) (cov r x) < 1 := by
-    exact (Metric.tendstoUniformly_iff.mp hc) 1 zero_lt_one
+  have hnear  := (Metric.tendstoUniformly_iff.mp hc) 1 zero_lt_one
   obtain ⟨R, hR⟩ := Filter.eventually_atTop.mp hnear
   let K : ℝ := ‖c‖ + 1
-  have hK : 0 ≤ K := by dsimp [K]; positivity
+
   have hcBound (x : ℂ) : |c x| ≤ K := by
     calc
       |c x| = ‖c x‖ := (Real.norm_eq_abs _).symm
@@ -85,44 +82,24 @@ theorem equatorGFF_circleCovariance_exp_weight_family
   let covBCF (r : ℝ) : BoundedContinuousFunction ℂ ℝ :=
     if hr : R ≤ r then
       BoundedContinuousFunction.mk (covCont r)
-        ⟨2 * K, by
-          intro x y
-          rw [Real.dist_eq]
-          calc
-            |cov r x - cov r y| ≤ |cov r x| + |cov r y| := abs_sub _ _
-            _ ≤ K + K := add_le_add (hcovBound r hr x) (hcovBound r hr y)
-            _ = 2 * K := by ring⟩
+        ⟨2 * K, fun x y => BoundedContinuousFunction.dist_le_two_norm' (hcovBound r hr) x y⟩
     else c
   have hcovBCF_bound (r : ℝ) (x : ℂ) : |covBCF r x| ≤ K := by
     dsimp only [covBCF]
-    by_cases hr : R ≤ r
-    · rw [dite_eq_left hr]
-      exact hcovBound r hr x
-    · rw [dite_eq_right hr]
-      exact hcBound x
+    bound
   have hcovBCF_eq (r : ℝ) (hr : R ≤ r) (x : ℂ) : covBCF r x = cov r x := by
-    change (if h : R ≤ r then (BoundedContinuousFunction.mk (covCont r)
-      ⟨2 * K, by
-        intro x y
-        rw [Real.dist_eq]
-        calc
-          |cov r x - cov r y| ≤ |cov r x| + |cov r y| := abs_sub _ _
-          _ ≤ K + K := add_le_add (hcovBound r h x) (hcovBound r h y)
-          _ = 2 * K := by ring⟩ : BoundedContinuousFunction ℂ ℝ) else c) x = cov r x
-    rw [dite_eq_left hr]
-    rfl
+    continuity
   let w : BoundedContinuousFunction ℂ ℝ := gmcExpBCF γ c K hcBound
   let u : ℝ → BoundedContinuousFunction ℂ ℝ := fun r => gmcExpBCF γ (covBCF r) K
     (hcovBCF_bound r)
   have hu (r : ℝ) (x : ℂ) : 0 ≤ u r x := Real.exp_nonneg _
   have hw (x : ℂ) : 0 ≤ w x := Real.exp_nonneg _
-  have heventR : ∀ᶠ r : ℝ in atTop, R ≤ r :=
+  have heventR  :=
     Filter.eventually_atTop.2 ⟨R, fun r hr => hr⟩
   have huEq (r : ℝ) (hr : R ≤ r) (x : ℂ) : u r x = Real.exp (γ * cov r x) := by
     change Real.exp (γ * covBCF r x) = Real.exp (γ * cov r x)
     rw [hcovBCF_eq r hr x]
-  have hwEq (x : ℂ) : w x = Real.exp (γ * c x) := by
-    rfl
+  have hwEq (x : ℂ) : w x = Real.exp (γ * c x) := rfl
   have hgcont : Continuous (fun t : ℝ => Real.exp (γ * t)) :=
     Real.continuous_exp.comp (continuous_const.mul continuous_id)
   have huc : UniformContinuousOn (fun t : ℝ => Real.exp (γ * t)) (Set.Icc (-K) K) :=
@@ -131,7 +108,7 @@ theorem equatorGFF_circleCovariance_exp_weight_family
     rw [Metric.tendstoUniformly_iff]
     intro ε hε
     obtain ⟨δ, hδ, hcontrol⟩ := (Metric.uniformContinuousOn_iff.mp huc) ε hε
-    have hclose : ∀ᶠ r : ℝ in atTop, ∀ x : ℂ, dist (c x) (cov r x) < δ :=
+    have hclose  :=
       (Metric.tendstoUniformly_iff.mp hc) δ hδ
     filter_upwards [hclose, heventR] with r hclose hr x
     rw [hwEq, huEq r hr x]

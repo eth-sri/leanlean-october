@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.TaylorMassInterpolation
 
 /-! Endpoint-safe scalar reduction for the intermediate positive Taylor square. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

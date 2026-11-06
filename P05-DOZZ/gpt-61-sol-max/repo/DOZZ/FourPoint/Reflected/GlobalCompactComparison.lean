@@ -4,8 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.FourPoint.Reflected.CopiedRadialPlane
+import Mathlib.Tactic
 /-! Limiting compact comparisons expressed on the single global lateral carrier. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -77,15 +78,14 @@ theorem reflected_global_compact_chaos_comparison
     ((tsupport_originRadialWeightedTest_subset ρ γ hρ a f₀ hfc₀).trans hf₀A)
     ((tsupport_originRadialWeightedTest_subset ρ γ hρ a f₁ hfc₁).trans hf₁A) q hq
   simp only [originRadialWeightedTest_apply, BoundedContinuousFunction.add_apply, ← add_mul] at hb
-  have hfU : tsupport ((f₀+f₁ : BoundedContinuousFunction ℂ ℝ) : ℂ → ℝ) ⊆ originLateralChart ρ :=
+  have hfU  :=
     (tsupport_add (f := (f₀ : ℂ → ℝ)) (g := (f₁ : ℂ → ℝ))).trans
       ((union_subset hf₀K hf₁K).trans hKU)
   have hsum (μ : Measure ℂ) :
       (∫ x, (f₀ x+f₁ x)*originRadialReinsertionWeight ρ γ a x
         ∂μ.restrict (originLateralChart ρ)) =
         ∫ x, (f₀ x+f₁ x)*reflected_global_reinsertionWeight γ a x ∂μ := by
-    simpa only [BoundedContinuousFunction.add_apply] using
-      reflected_global_radial_test_integral ρ γ hρ a (f₀+f₁) hfU μ
+    exact reflected_global_radial_test_integral ρ γ hρ a (f₀+f₁) hfU μ
   simpa only [hsum,
     reflected_global_radial_test_integral ρ γ hρ a f₀ (hf₀K.trans hKU),
     reflected_global_radial_test_integral ρ γ hρ a f₁ (hf₁K.trans hKU),

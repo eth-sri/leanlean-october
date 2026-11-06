@@ -12,7 +12,7 @@ public import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
 
 /-! The critical small-power limit for the genuine equator singular mass at the origin. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
@@ -33,13 +33,13 @@ theorem lastone_origin_williams_law
       ((brownianMaximumReferenceLaw ν).prod P).map (fun z : ℝ × Ω =>
         williamsMassFunctional γ
           (((z.1, negativeConditionedLastExitSegment z.1 (B z.2).2), (B z.2).1), Z z.2)) := by
-  let : IsProbabilityMeasure P := hZ.2.2.1
-  let : IsProbabilityMeasure (brownianMaximumReferenceLaw ν) :=
+  let  := hZ.2.2.1
+  let  :=
     isProbabilityMeasure_brownianMaximumReferenceLaw hν
   let D : Ω → BrownianPath := fun ω => radialPositiveHalf (A ω)
-  have hD : AEMeasurable D P := continuous_radialPositiveHalf.measurable.comp_aemeasurable hA
+  have hD  := continuous_radialPositiveHalf.measurable.comp_aemeasurable hA
   have hDB := radialPositiveHalf_map_isBrownian P A hA hBp
-  have hDZ : IndepFun D Z P := hAZ.comp continuous_radialPositiveHalf.measurable measurable_id
+  have hDZ  := hAZ.comp continuous_radialPositiveHalf.measurable measurable_id
   have hmass : (localSingularMass M (fun _ => 1) 0 γ (Q γ - ν)) =ᵐ[P]
       (fun ω => ∫⁻ t, (if 0 < t then ENNReal.ofReal
         (Real.exp (γ * (D ω (Real.toNNReal t) - ν * t))) else 0) ∂Z ω) := by
@@ -58,7 +58,7 @@ theorem lastone_origin_williams_law
       ring
     · rw [ite_eq_right ht, ite_eq_right ht]
   let Qν := P.map (fun ω => (B ω).1)
-  have hQν : IsNegativeConditionedBrownianLaw ν Qν := hB.1.2
+  have hQν  := hB.1.2
   have hW := williams_polar_mass_law P D hD hDB γ Z hZ hDZ ν hν Qν hQν
   have hInput := lastone_williamsInput_law_on_given_space P
     (brownianMaximumReferenceLaw ν) ν Qν hQν B Z hB hZ.2.2.2.1 hInd
@@ -81,7 +81,7 @@ theorem lastone_origin_smallPower_limit
     Tendsto (fun ν : ℝ =>
       (∫⁻ ω, localSingularMass M (fun _ => 1) 0 γ (Q γ - ν) ω ^ (ν / γ) ∂P).toReal)
       (𝓝[>] 0) (𝓝 2) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   obtain ⟨A, hc, hA, hA0, hBp, hBn, hhalves, hZm, hAZ, hZ⟩ :=
     DOZZ.equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ2 hX hM
   let Z : Ω → Measure ℝ := fun ω => lateralProjectedGMC γ (A ω) (M ω)
@@ -96,7 +96,7 @@ theorem lastone_origin_smallPower_limit
   have hlim := lastone_williamsModel_smallPower_limit P γ hγ hγ2 Z B hB hZ hInd
   apply hlim.congr'
   filter_upwards [self_mem_nhdsWithin] with ν hν
-  have hνpos : 0 < ν := hν
+  have hνpos  := hν
   have hm := localSingularMass_aemeasurable P X hX γ hγ hγ2 M hM
     (fun _ => 1) measurable_const 0 (Q γ - ν)
   have hlaw := lastone_origin_williams_law P γ ν hνpos M A hA hBp Z hZ hAZ

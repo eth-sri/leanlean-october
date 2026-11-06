@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Tails.OriginalMassComparison
 
 /-! Literal prefactored copied-mass comparisons with their total remainder. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 

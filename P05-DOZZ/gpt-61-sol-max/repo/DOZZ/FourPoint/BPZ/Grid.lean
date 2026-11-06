@@ -40,25 +40,29 @@ theorem measurableSet_bpzGridCell (h : ℝ) (i : ℤ × ℤ) :
     MeasurableSet (bpzGridIdx h ⁻¹' {i}) :=
   measurable_bpzGridIdx h (measurableSet_singleton i)
 
-theorem bpzGrid_floor_bounds {h : ℝ} (hh : 0 < h) (t : ℝ) :
+variable {h : ℝ} (hh : 0 < h)
+
+include h hh in
+theorem bpzGrid_floor_bounds  (t : ℝ) :
     (⌊t / h⌋ : ℝ) * h ≤ t ∧ t < (⌊t / h⌋ : ℝ) * h + h := by
   have h1 := Int.floor_le (t / h)
   have h2 := Int.lt_floor_add_one (t / h)
   constructor
-  · calc (⌊t / h⌋ : ℝ) * h ≤ t / h * h := mul_le_mul_of_nonneg_right h1 hh.le
-      _ = t := div_mul_cancel₀ t hh.ne'
+  · exact (le_mul_inv_iff₀ hh).mp h1
   · calc t = t / h * h := (div_mul_cancel₀ t hh.ne').symm
       _ < ((⌊t / h⌋ : ℝ) + 1) * h := mul_lt_mul_of_pos_right h2 hh
       _ = (⌊t / h⌋ : ℝ) * h + h := by ring
 
-theorem abs_sub_bpzGrid_floor_le {h : ℝ} (hh : 0 < h) (t : ℝ) :
+include h hh in
+theorem abs_sub_bpzGrid_floor_le  (t : ℝ) :
     |t - (⌊t / h⌋ : ℝ) * h| ≤ h := by
   obtain ⟨h1, h2⟩ := bpzGrid_floor_bounds hh t
   rw [abs_le]
   constructor <;> linarith
 
+include h hh in
 /-- A point is within `2h` of the corner of its grid square. -/
-theorem norm_sub_bpzGridCorner_le {h : ℝ} (hh : 0 < h) (x : ℂ) :
+theorem norm_sub_bpzGridCorner_le  (x : ℂ) :
     ‖x - bpzGridCorner h (bpzGridIdx h x)‖ ≤ 2 * h := by
   have hre : (x - bpzGridCorner h (bpzGridIdx h x)).re = x.re - (⌊x.re / h⌋ : ℝ) * h := by
     simp [bpzGridCorner, bpzGridIdx]
@@ -68,24 +72,23 @@ theorem norm_sub_bpzGridCorner_le {h : ℝ} (hh : 0 < h) (x : ℂ) :
       ≤ |(x - bpzGridCorner h (bpzGridIdx h x)).re| +
           |(x - bpzGridCorner h (bpzGridIdx h x)).im| := Complex.norm_le_abs_re_add_abs_im _
     _ ≤ h + h := by
-        rw [hre, him]
         exact add_le_add (abs_sub_bpzGrid_floor_le hh _) (abs_sub_bpzGrid_floor_le hh _)
     _ = 2 * h := by ring
 
 theorem bpzGrid_floor_mem_Icc {h R t : ℝ} (hh : 0 < h) (ht : |t| ≤ R) :
     ⌊t / h⌋ ∈ Finset.Icc (-(⌈R / h⌉₊ : ℤ)) ⌈R / h⌉₊ := by
   rw [Finset.mem_Icc]
-  have hR : 0 ≤ R := (abs_nonneg t).trans ht
+  
   have hc : R / h ≤ (⌈R / h⌉₊ : ℝ) := Nat.le_ceil _
   have hlo : -(R / h) ≤ t / h := by
     rw [neg_div', div_le_div_iff_of_pos_right hh]
     linarith [neg_abs_le t]
-  have hhi : t / h ≤ R / h := div_le_div_of_nonneg_right ((le_abs_self t).trans ht) hh.le
+  have hhi  := div_le_div_of_nonneg_right ((le_abs_self t).trans ht) hh.le
   constructor
   · rw [Int.le_floor]
     push_cast
     linarith
-  · have : (⌊t / h⌋ : ℝ) ≤ (⌈R / h⌉₊ : ℝ) := ((Int.floor_le _).trans hhi).trans hc
+  · have  := ((Int.floor_le _).trans hhi).trans hc
     exact_mod_cast this
 
 /-- Points of a closed ball have grid indices in a fixed finite box. -/
@@ -105,8 +108,9 @@ theorem bpzGrid_abs_le_of_floor_mem {h t : ℝ} (hh : 0 < h) {N : ℕ}
   rw [abs_le]
   constructor <;> nlinarith
 
+include h hh in
 /-- Points whose grid index lies in the box `[-N, N]²` lie in a ball. -/
-theorem norm_le_of_bpzGridIdx_mem_box {h : ℝ} (hh : 0 < h) {N : ℕ} {x : ℂ}
+theorem norm_le_of_bpzGridIdx_mem_box  {N : ℕ} {x : ℂ}
     (hx : bpzGridIdx h x ∈ bpzGridBox N) : ‖x‖ ≤ 2 * ((N + 1) * h) := by
   unfold bpzGridIdx bpzGridBox at hx
   rw [Finset.mem_product] at hx
@@ -123,10 +127,7 @@ theorem bpzGrid_step_eq_sum (h : ℝ) (s : Finset (ℤ × ℤ)) (G : ℤ × ℤ 
   classical
   have hterm : ∀ i ∈ s, (bpzGridIdx h ⁻¹' {i}).indicator (fun _ => G i) x =
       if bpzGridIdx h x = i then G i else 0 := by
-    intro i _
-    by_cases hi : bpzGridIdx h x = i
-    · rw [Set.indicator_of_mem (by simpa using hi), ite_eq_left hi]
-    · rw [Set.indicator_of_notMem (by simpa using hi), ite_eq_right hi]
+    continuity
   rw [Finset.sum_congr rfl hterm, Finset.sum_ite_eq]
 
 /-- The integral of a step function of the grid index against a finite measure. -/

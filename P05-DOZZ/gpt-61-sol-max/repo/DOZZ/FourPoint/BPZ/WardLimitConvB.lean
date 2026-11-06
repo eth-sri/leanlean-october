@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.FourPoint.BPZ.WardLimitConvA
+import Mathlib.Tactic
 
 /-! # Limits of the double integrals of the cutoff Ward identity
 
@@ -14,7 +15,7 @@ limit chaos: the kernels are bounded uniformly, coincide with the limit kernel a
 diagonal up to the uniformly convergent pinned weights, and the limit chaos has no atoms. The
 far-region test functions converge as random test functions. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -30,8 +31,8 @@ theorem bpz_abs_mul_sub_mul_le {p p' u u' A B : ℝ} (hp : |p'| ≤ A) (hu : |u|
   have : p * u - p' * u' = (p - p') * u + p' * (u - u') := by ring
   rw [this]
   refine (abs_add_le _ _).trans (add_le_add ?_ ?_)
-  · rw [abs_mul]; exact mul_le_mul_of_nonneg_left hu (abs_nonneg _)
-  · rw [abs_mul]; exact mul_le_mul_of_nonneg_right hp (abs_nonneg _)
+  · rw [abs_mul]; bound
+  · rw [abs_mul]; bound
 
 theorem bpz_frac_mul_le_one {S V : ℝ} (hS : 0 ≤ S) (hV : 0 ≤ V) :
     S * V / ((S + 1) * (V + 1)) ≤ 1 := by
@@ -41,9 +42,7 @@ theorem bpz_frac_mul_le_one {S V : ℝ} (hS : 0 ≤ S) (hV : 0 ≤ V) :
 theorem bpz_three_frac_mul_le_one {S K V : ℝ} (hS : 0 ≤ S) (hK : 0 ≤ K) (hV : 0 ≤ V) :
     S * K * V / ((S + 1) * (K + 1) * (V + 1)) ≤ 1 := by
   rw [div_le_one (by positivity)]
-  have h1 : S * K ≤ (S + 1) * (K + 1) := by nlinarith
-  have h2 : S * K * V ≤ (S + 1) * (K + 1) * V := mul_le_mul_of_nonneg_right h1 hV
-  nlinarith [mul_nonneg (mul_nonneg hS hK) hV]
+  nlinarith
 
 /-- The antisymmetrized limit kernel is uniformly continuous in the first variable away from
 the diagonal. -/
@@ -60,22 +59,22 @@ theorem bpz_antisym_kern_cont {a b : ℂ → ℝ} (ha : Continuous a) (hac : Has
   have hA0 : 0 ≤ A := le_max_right _ _
   have hB0 : 0 ≤ B := le_max_right _ _
   have hAx : ∀ x, |a x| ≤ A := fun x => by
-    rw [← Real.norm_eq_abs]; exact (hBa x).trans (le_max_left _ _)
+    simp_all
   have hBx : ∀ x, |b x| ≤ B := fun x => by
-    rw [← Real.norm_eq_abs]; exact (hBb x).trans (le_max_left _ _)
+    simp_all
   set V : ℝ := ‖v‖ with hVdef
-  have hV0 : 0 ≤ V := norm_nonneg v
+  have hV0  := norm_nonneg v
   set e₀ : ℝ := ε * η / ((A + B + 1) * (V + 1)) with he₀
   have he₀p : 0 < e₀ := by positivity
   obtain ⟨δa, hδa, hua⟩ := bpz_unifCont_of_compact ha hac e₀ he₀p
   obtain ⟨δb, hδb, hub⟩ := bpz_unifCont_of_compact hb hbc e₀ he₀p
   set δk : ℝ := ε * (η / 2) ^ 2 / (6 * ((A * B + 1) * (V + 1))) with hδk
-  have hδkp : 0 < δk := by positivity
+  
   refine ⟨min (min δa δb) (min (η / 2) δk), by positivity, fun x x' y hxy hxx' => ?_⟩
-  have h1 : ‖x - x'‖ ≤ δa := hxx'.trans ((min_le_left _ _).trans (min_le_left _ _))
-  have h2 : ‖x - x'‖ ≤ δb := hxx'.trans ((min_le_left _ _).trans (min_le_right _ _))
-  have h3 : ‖x - x'‖ ≤ η / 2 := hxx'.trans ((min_le_right _ _).trans (min_le_left _ _))
-  have h4 : ‖x - x'‖ ≤ δk := hxx'.trans ((min_le_right _ _).trans (min_le_right _ _))
+  have h1  := hxx'.trans ((min_le_left _ _).trans (min_le_left _ _))
+  have h2  := hxx'.trans ((min_le_left _ _).trans (min_le_right _ _))
+  have h3  := hxx'.trans ((min_le_right _ _).trans (min_le_left _ _))
+  have h4  := hxx'.trans ((min_le_right _ _).trans (min_le_right _ _))
   have hη2 : 0 < η / 2 := by positivity
   have hx'y : η / 2 ≤ ‖x' - y‖ := by
     have := norm_sub_le_norm_sub_add_norm_sub x x' y
@@ -87,10 +86,9 @@ theorem bpz_antisym_kern_cont {a b : ℂ → ℝ} (ha : Continuous a) (hac : Has
     have e2 := mul_le_mul (hAx y) (hBx x') (abs_nonneg _) hA0
     have : |a x' * b y - a y * b x'| ≤ 2 * (A * B) := by
       refine (abs_sub _ _).trans ?_
-      rw [abs_mul (a x') (b y), abs_mul (a y) (b x')]
-      linarith
+      grind
     linarith
-  have hKb : |bpzKern v (x - y)| ≤ V / η :=
+  have hKb  :=
     (abs_bpzKern_le v _).trans (div_le_div_of_nonneg_left (norm_nonneg v) hη hxy)
   have hPd : |(a x * b y - a y * b x) / 2 - (a x' * b y - a y * b x') / 2| ≤
       e₀ * (A + B) / 2 := by
@@ -136,13 +134,16 @@ theorem bpz_antisym_kern_cont {a b : ℂ → ℝ} (ha : Continuous a) (hac : Has
 
 namespace BPZLimitData
 
-theorem rho_abs_cutWeight_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {K : ℝ}
+variable (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
+
+include hd in
+theorem rho_abs_cutWeight_le  {K : ℝ}
     (hK : ∀ r : ℝ, 0 ≤ r → ∀ y, ρ y ≠ 0 →
       bpzWardCutWeight γ q r kt y ≤ K ∧ kt y * normPlus y ^ (4 + γ ^ 2 * q) ≤ K)
     (hK0 : 0 ≤ K) (n : ℕ) (y : ℂ) :
     ρ y * |bpzWardCutWeight γ q n kt y| ≤ K ∧ ρ y * |k₂ y| ≤ K := by
   by_cases hy : ρ y = 0
-  · rw [hy, zero_mul, zero_mul]; exact ⟨hK0, hK0⟩
+  · simp_all
   have hw0 : 0 ≤ bpzWardCutWeight γ q n kt y := by
     unfold bpzWardCutWeight
     have := hd.kt_nonneg y
@@ -154,7 +155,8 @@ theorem rho_abs_cutWeight_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {K : �
   exact ⟨(mul_le_mul (hd.ρ_le_one y) h1 hw0 zero_le_one).trans (by linarith),
     (mul_le_mul (hd.ρ_le_one y) h2 (hd.k₂_nonneg y) zero_le_one).trans (by linarith)⟩
 
-theorem symKer_eq_zero (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {R : ℝ}
+include hd in
+theorem symKer_eq_zero  {R : ℝ}
     (hR : ∀ y, R < ‖y‖ → ρ y = 0) (k L : ℂ → ℝ) {x y : ℂ} (h : R < ‖x‖ ∨ R < ‖y‖) :
     bpzSymKer φ ρ k L x y = 0 := by
   unfold bpzSymKer
@@ -166,8 +168,9 @@ theorem symKer_eq_antisym (k L : ℂ → ℝ) (x y : ℂ) :
     bpzSymKer φ ρ k L x y = ((φ x * k x) * (ρ y * k y) - (φ y * k y) * (ρ x * k x)) / 2 * L (x - y) := by
   unfold bpzSymKer; ring
 
+include hd in
 /-- The cutoff kernels converge uniformly away from the diagonal. -/
-theorem symKer_unif (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
+theorem symKer_unif  (v : ℂ) :
     ∀ η : ℝ, 0 < η → ∀ ε : ℝ, 0 < ε → ∀ᶠ n : ℕ in atTop, ∀ x y, η ≤ ‖x - y‖ →
       |bpzSymKer φ ρ (bpzWardCutWeight γ q n kt) (fun w => bpzLamDeriv n w v) x y -
         bpzSymKer φ ρ k₂ (bpzKern v) x y| ≤ ε := by
@@ -175,15 +178,15 @@ theorem symKer_unif (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
   obtain ⟨K, hK0, hK⟩ := hd.cutWeight_bound
   obtain ⟨B, hB0, hB⟩ := hd.phi_bdd
   set V : ℝ := ‖v‖ with hVdef
-  have hV0 : 0 ≤ V := norm_nonneg v
+  have hV0  := norm_nonneg v
   set ε' : ℝ := ε * η / (2 * ((B + 1) * (K + 1) * (V + 1))) with hε'
   have hε'0 : 0 < ε' := by positivity
   have htail : ∀ᶠ n : ℕ in atTop, 2 * Real.exp (-(n : ℝ)) < η := by
     have := ((Real.tendsto_exp_neg_atTop_nhds_zero.comp tendsto_natCast_atTop_atTop).const_mul
       2).eventually (gt_mem_nhds (show (2 : ℝ) * 0 < η by linarith))
-    simpa [Function.comp_def] using this
+    exact this
   filter_upwards [hd.cutWeight_tendsto ε' hε'0, htail] with n hn htn x y hxy
-  have hL : bpzLamDeriv n (x - y) v = bpzKern v (x - y) :=
+  have hL  :=
     bpzLamDeriv_apply_eq_kern n (lt_of_lt_of_le htn hxy) v
   have heq : bpzSymKer φ ρ (bpzWardCutWeight γ q n kt) (fun w => bpzLamDeriv n w v) x y -
       bpzSymKer φ ρ k₂ (bpzKern v) x y =
@@ -231,7 +234,7 @@ theorem symKer_unif (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
       exact (mul_le_mul (hB y) (hd.ρ_le_one x) (hd.ρ_nonneg x) hB0).trans (by linarith)
     have := (abs_sub _ _).trans (add_le_add e1 e2)
     linarith
-  have hKb : |bpzKern v (x - y)| ≤ V / η :=
+  have hKb  :=
     (abs_bpzKern_le v _).trans (div_le_div_of_nonneg_left (norm_nonneg v) hη hxy)
   rw [abs_div, abs_two, abs_mul, abs_mul]
   have hfin : 2 * B * (2 * (K * ε')) * (V / η) / 2 ≤ ε := by
@@ -249,14 +252,15 @@ theorem symKer_unif (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
       ≤ 2 * B * (2 * (K * ε')) * (V / η) / 2 := by gcongr
     _ ≤ ε := hfin
 
+include hd in
 /-- The symmetric double integrals converge. -/
-theorem conv_sym (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb P X γ M Xc ρ k₂ D)
+theorem conv_sym  (hp : BPZWardProb P X γ M Xc ρ k₂ D)
     (v : ℂ) :
     TendstoInMeasure P
       (fun (n : ℕ) ω => ∫ x, ∫ y, bpzSymKer φ ρ (bpzWardCutWeight γ q n kt)
         (fun w => bpzLamDeriv n w v) x y ∂bpzCutChaos P Xc γ n ω ∂bpzCutChaos P Xc γ n ω) atTop
       (fun ω => ∫ x, ∫ y, bpzSymKer φ ρ k₂ (bpzKern v) x y ∂M ω ∂M ω) := by
-  have : IsProbabilityMeasure P := hp.hX.1
+  have  := hp.hX.1
   have hμ := bpzWeakConv_gmc P X hp.hX hd.γ_pos hp.γ2 M hp.hM hp.hMm Xc hp.hXc
   have hatom := gmc_noAtoms_ae P X hp.hX γ hd.γ_pos hp.γ2 M hp.hM hp.hMm
   obtain ⟨K, hK0, hK⟩ := hd.cutWeight_bound

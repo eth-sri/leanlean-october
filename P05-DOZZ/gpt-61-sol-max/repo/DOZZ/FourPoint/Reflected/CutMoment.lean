@@ -8,6 +8,7 @@ public import DOZZ.Statements.Brownian.ReflectionMassLastCutBound
 public import DOZZ.Statements.Brownian.ReflectionBarR
 public import DOZZ.FourPoint.Reflected.RadialTilt
 import Mathlib.Tactic
+import Mathlib.Tactic
 
 /-! # Ordered removal of the reflected maximum cutoff
 
@@ -31,22 +32,18 @@ theorem reflected_cut_moment_tendsto {Ω : Type*} [MeasurableSpace Ω]
     Tendsto (fun H : ℝ =>
       (∫⁻ ω, (twoSidedReflectionCutMass γ H B Z ω) ^ (reflectionExponent γ α) ∂P).toReal)
       atTop (nhds (reflectionBarR P γ α B Z)) := by
-  have hν : 0 < Q γ - α := sub_pos.mpr hα
+  have hν  := sub_pos.mpr hα
   have ha := reflected_exponent_mem_Ioo γ α hγ hα hreflect
   have hbulk : 1 < 4 / γ ^ 2 := by
-    rw [lt_div_iff₀ (sq_pos_of_pos hγ)]
-    nlinarith only [hγ, hγ₂]
+    field_simp <;> nlinarith
   obtain ⟨C, -, hb⟩ := DOZZ.reflectionMass_lastCut_bound P γ hγ hγ₂
     {Q γ - α} {reflectionExponent γ α} isCompact_singleton isCompact_singleton
     (fun _ => B) (by
       intro ν hνmem
-      have he : ν = Q γ - α := mem_singleton_iff.mp hνmem
+      have he  := mem_singleton_iff.mp hνmem
       subst ν
       exact ⟨hν, hData.1⟩) Z hData.2.1 (fun _ _ => hData.2.2) (by
-      intro p hpmem
-      have he : p = reflectionExponent γ α := mem_singleton_iff.mp hpmem
-      subst p
-      exact ⟨ha.1, ha.2.trans hbulk⟩)
+      grind)
   have ht : Tendsto (fun H : ℝ => C * Real.exp (-γ * H)) atTop (nhds 0) := by
     have hexp := Real.tendsto_exp_neg_atTop_nhds_zero.comp
       (tendsto_id.const_mul_atTop hγ)
@@ -61,6 +58,6 @@ theorem reflected_cut_moment_tendsto {Ω : Type*} [MeasurableSpace Ω]
       exact (hb _ (mem_singleton _) _ (mem_singleton _) H hH).2
     · exact ht
   have hlimit := (tendsto_const_nhds (x := reflectionBarR P γ α B Z)).sub hdiff
-  simpa only [sub_sub_cancel, sub_zero] using hlimit
+  simp_all
 
 end DOZZ.Proofs

@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Brownian.Williams.ReversalMarkedRectangles
 public import DOZZ.Brownian.Williams.MarkedMeasureUniqueness
+import Mathlib.Tactic
 
 /-!
 # Equality of the lifetime-marked preterminal observation laws
@@ -21,13 +22,15 @@ open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
 
+variable (c : ℝ) (n : ℕ) (ss : Fin (n+1) → ℝ≥0)
+
+include c n ss in
 /-- Finite positive entrance observations with the actual last-exit lifetime. -/
-noncomputable def conditionedLastExitMarkedObservation (c : ℝ) (n : ℕ)
-    (ss : Fin (n+1) → ℝ≥0) (p : BrownianPath) : (Fin (n+1) → ℝ) × ℝ :=
+noncomputable def conditionedLastExitMarkedObservation  (p : BrownianPath) : (Fin (n+1) → ℝ) × ℝ :=
   ((fun i => -(p (ss i))), (negativeLastExitTime p c : ℝ))
 
-theorem measurable_conditionedLastExitMarkedObservation (c : ℝ) (n : ℕ)
-    (ss : Fin (n+1) → ℝ≥0) : Measurable (conditionedLastExitMarkedObservation c n ss) :=
+include c n ss in
+theorem measurable_conditionedLastExitMarkedObservation  : Measurable (conditionedLastExitMarkedObservation c n ss) :=
   (measurable_pi_iff.mpr fun _ => (ContinuousMap.measurable_eval _).neg).prodMk
     (NNReal.continuous_coe.measurable.comp (measurable_negativeLastExitTime_joint.comp
       (measurable_const.prodMk measurable_id)))
@@ -42,8 +45,8 @@ theorem brownian_firstHit_reversal_finite_marked_law
       (brownianFirstHitReversedIncreasingObservation ν c n ss) =
     (Q.restrict {p : BrownianPath | ss (Fin.last n) < negativeLastExitTime p c}).map
       (conditionedLastExitMarkedObservation c n ss) := by
-  let : IsProbabilityMeasure P := (hB.hasLaw_eval 0).isProbabilityMeasure
-  let : IsProbabilityMeasure Q := hQ.2.1
+  let  := (hB.hasLaw_eval 0).isProbabilityMeasure
+  let  := hQ.2.1
   let T : BrownianPath → ℝ≥0 := fun p => firstPassageTime (driftedBrownianPath ν p) c
   let L : BrownianPath → ℝ≥0 := fun p => negativeLastExitTime p c
   let μ := (P.restrict {p | ss (Fin.last n) < T p}).map
@@ -68,16 +71,16 @@ theorem brownian_firstHit_reversal_finite_marked_law
     exact NNReal.coe_lt_coe.mpr hp
   apply measure_eq_of_prod_Ioc_above μ η (ss (Fin.last n) : ℝ) hsμ hsη
   intro A hA a b ha hab
-  have ha0 : 0 ≤ a := (NNReal.coe_nonneg _).trans ha.le
-  have hb0 : 0 ≤ b := ha0.trans hab.le
+  have ha0  := (NNReal.coe_nonneg _).trans ha.le
+  have hb0  := ha0.trans hab.le
   let u := Real.toNNReal a
   let v := Real.toNNReal b
   let cN := Real.toNNReal c
   have hu : ss (Fin.last n) < u := by
     apply NNReal.coe_lt_coe.mp
     simpa only [u, Real.coe_toNNReal _ ha0] using ha
-  have huv : u ≤ v := Real.toNNReal_mono hab.le
-  have hcN : 0 < (cN : ℝ) := by simpa only [cN, Real.coe_toNNReal _ hc.le] using hc
+  have huv  := Real.toNNReal_mono hab.le
+  have hcN : 0 < (cN : ℝ) := by continuity
   have htimes (i : Fin (n+1)) : 0 < (ss i : ℝ) :=
     NNReal.coe_pos.mpr (hs0.trans_le (hss.monotone (Fin.zero_le i)))
   have hηrect : η.real (A ×ˢ Ioc a b) =
@@ -96,10 +99,8 @@ theorem brownian_firstHit_reversal_finite_marked_law
         conditionedLastExitMarkedObservation, mem_ofPred_eq, NNReal.coe_lt_coe,
         NNReal.coe_le_coe, L]
       constructor
-      · rintro ⟨⟨hp, hlow, hhigh⟩, _⟩
-        exact ⟨hp, hlow, hhigh⟩
-      · rintro ⟨hp, hlow, hhigh⟩
-        exact ⟨⟨hp, hlow, hhigh⟩, hu.trans hlow⟩
+      · simp_all
+      grind
     unfold Measure.real
     change ((Q.restrict {p | ss (Fin.last n) < L p}).map
       (conditionedLastExitMarkedObservation c n ss) (A ×ˢ Ioc a b)).toReal = _

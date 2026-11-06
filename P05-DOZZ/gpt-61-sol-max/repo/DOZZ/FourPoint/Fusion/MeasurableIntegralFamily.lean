@@ -9,25 +9,27 @@ import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
 /-! # Signed integrals against measurable families of finite measures -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+variable {U E : Type*} [_inst1 : MeasurableSpace U] [_inst2 : MeasurableSpace E] (μ : U → Measure E) (hμ : Measurable μ) (hfinite : ∀ u, IsFiniteMeasure (μ u))
+
+include U E _inst1 _inst2 μ hμ hfinite in
 /-- Real signed integration is measurable for a finite family even without a common mass bound. -/
 theorem fusion_measurable_real_integral_finite_family
-    {U E : Type*} [MeasurableSpace U] [MeasurableSpace E]
-    (μ : U → Measure E) (hμ : Measurable μ) (hfinite : ∀ u, IsFiniteMeasure (μ u))
+
     (f : U × E → ℝ) (hf : Measurable f) :
     Measurable (fun u => ∫ x, f (u, x) ∂μ u) := by
   let J := fun u => ∫⁻ x, ENNReal.ofReal |f (u, x)| ∂μ u
   let L := fun u => ∫⁻ x, ENNReal.ofReal (f (u, x)) ∂μ u
   let R := fun u => ∫⁻ x, ENNReal.ofReal (-f (u, x)) ∂μ u
-  have hJ : Measurable J := measurable_lintegral_finite_family μ hμ hfinite _
-    (by simpa only [Real.norm_eq_abs] using ENNReal.measurable_ofReal.comp hf.norm)
-  have hL : Measurable L := measurable_lintegral_finite_family μ hμ hfinite _
+  have hJ  := measurable_lintegral_finite_family μ hμ hfinite _
+    (by exact ENNReal.measurable_ofReal.comp hf.norm)
+  have hL  := measurable_lintegral_finite_family μ hμ hfinite _
     (ENNReal.measurable_ofReal.comp hf)
-  have hR : Measurable R := measurable_lintegral_finite_family μ hμ hfinite _
+  have hR  := measurable_lintegral_finite_family μ hμ hfinite _
     (ENNReal.measurable_ofReal.comp hf.neg)
   have heq : (fun u => ∫ x, f (u, x) ∂μ u) =
       fun u => if J u < ⊤ then (L u).toReal - (R u).toReal else 0 := by
@@ -46,14 +48,14 @@ theorem fusion_measurable_real_integral_finite_family
   exact Measurable.ite (measurableSet_lt hJ measurable_const)
     (hL.ennreal_toReal.sub hR.ennreal_toReal) measurable_const
 
+include U E _inst1 _inst2 μ hμ hfinite in
 /-- Complex integration is measurable by its real and imaginary parts on the integrable locus. -/
 theorem fusion_measurable_integral_finite_family
-    {U E : Type*} [MeasurableSpace U] [MeasurableSpace E]
-    (μ : U → Measure E) (hμ : Measurable μ) (hfinite : ∀ u, IsFiniteMeasure (μ u))
+
     (f : U × E → ℂ) (hf : Measurable f) :
     Measurable (fun u => ∫ x, f (u, x) ∂μ u) := by
   let J := fun u => ∫⁻ x, ENNReal.ofReal ‖f (u, x)‖ ∂μ u
-  have hJ : Measurable J := measurable_lintegral_finite_family μ hμ hfinite _
+  have hJ  := measurable_lintegral_finite_family μ hμ hfinite _
     (ENNReal.measurable_ofReal.comp hf.norm)
   have hRe := fusion_measurable_real_integral_finite_family μ hμ hfinite _ (Complex.measurable_re.comp hf)
   have hIm := fusion_measurable_real_integral_finite_family μ hμ hfinite _ (Complex.measurable_im.comp hf)

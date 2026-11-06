@@ -10,7 +10,7 @@ public import DOZZ.Hypergeom.BasisRegularity
 /-! Classification of the real single-valued C² solutions of the Gauss PDE, including coefficient
 uniqueness. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
@@ -48,12 +48,12 @@ theorem real_gauss_solution_classification
     apply hc n
     exact_mod_cast hn
   have hzero := gauss_local_basis_zero hH (a : ℂ) (b : ℂ) (c : ℂ) hcC
-  have hF : AnalyticOnNhd ℂ (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)) gaussCutPlane :=
+  have hF  :=
     hzero.1.analyticOnNhd gaussCutPlane_isOpen
-  have hG : AnalyticOnNhd ℂ (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) gaussCutPlane :=
+  have hG  :=
     hzero.2.1.analyticOnNhd gaussCutPlane_isOpen
   have hmid : (1 / 2 : ℂ) ∈ gaussCutPlane := by norm_num [gaussCutPlane]
-  have hWr := (hzero.2.2.1 (1 / 2 : ℂ) hmid).2.2
+  
   have h1c : (1 : ℂ) - (c : ℂ) ≠ 0 := by
     intro he
     apply hc 1
@@ -61,18 +61,14 @@ theorem real_gauss_solution_classification
     simpa using hreal
   have hmid0 : (1 / 2 : ℂ) ≠ 0 := by norm_num
   have hmid1 : 1 - (1 / 2 : ℂ) ≠ 0 := by norm_num
-  have hpow0 : (1 / 2 : ℂ) ^ (-(c : ℂ)) ≠ 0 :=
-    Complex.cpow_ne_zero_iff.mpr (Or.inl hmid0)
-  have hpow1 : (1 - (1 / 2 : ℂ)) ^
-      ((c : ℂ) - (a : ℂ) - (b : ℂ) - 1) ≠ 0 :=
-    Complex.cpow_ne_zero_iff.mpr (Or.inl hmid1)
+  
+  
   have hWmid :
       gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) (1 / 2 : ℂ) *
           deriv (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) (1 / 2 : ℂ) -
         deriv (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)) (1 / 2 : ℂ) *
           gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) (1 / 2 : ℂ) ≠ 0 := by
-    rw [hWr]
-    exact mul_ne_zero (mul_ne_zero h1c hpow0) hpow1
+    simp_all
   have hEq : ∀ z ∈ gaussCutPlane,
       hermitianQuadraticTensor (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ))
         (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) (α : ℂ) 0 0 (δ : ℂ) z =
@@ -83,9 +79,7 @@ theorem real_gauss_solution_classification
         δ * ‖gaussFPlus H a b c z‖ ^ 2 =
         v.1 * ‖gaussFMinus H a b c z‖ ^ 2 +
           v.2 * ‖gaussFPlus H a b c z‖ ^ 2 := by
-      calc
-        _ = T z := (hrep z hz).symm
-        _ = _ := hv.2 z hz
+      simp_all
     calc
       _ = ((α * Complex.normSq (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z) +
           δ * Complex.normSq (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z) : ℝ) : ℂ) :=
@@ -101,8 +95,6 @@ theorem real_gauss_solution_classification
       _ = _ := (hermitianQuadraticTensor_realDiagonal_eq v.1 v.2 z).symm
   have hcoeff := hermitianTensor_coefficients_eq_of_eqOn gaussCutPlane_isOpen
     hF hG α 0 0 δ v.1 0 0 v.2 hmid hWmid hEq
-  apply Prod.ext
-  · exact Complex.ofReal_injective hcoeff.1.symm
-  · exact Complex.ofReal_injective hcoeff.2.2.2.symm
+  simp_all
 
 end DOZZ.Proofs

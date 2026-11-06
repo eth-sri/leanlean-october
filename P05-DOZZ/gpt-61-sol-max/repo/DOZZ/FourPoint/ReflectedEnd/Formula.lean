@@ -7,11 +7,12 @@ module
 public import DOZZ.FourPoint.ReflectedEnd.InnerClassificationReduction
 public import DOZZ.Statements.FourPoint.GammaHalfReflectedInnerLimit
 public import DOZZ.Statements.FourPoint.DegenerateFourPointDiagonalClassification
+public import DOZZ.FourPoint.GaussContracts
 
 /-! The reflected formula follows from the inner limit `DOZZ.gammaHalf_reflected_inner_limit` and
 the physical diagonal classification `DOZZ.degenerateFourPoint_diagonal_classification`. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -33,16 +34,7 @@ theorem gammaHalf_reflected_formula {Ω : Type*} [MeasurableSpace Ω]
       ∃ Z : Ω → Measure ℝ,
         IsSourceLateralProjection P X γ M Z ∧
         IsReflectionData P γ α₁ (B α₁) Z ∧
-        let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
-        let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃
-        let c := gaussParameterC γ (γ / 2) α₁
-        ∀ z ∈ gaussCutPlane,
-          fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z =
-            structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-                ‖gaussFMinus H a b c z‖ ^ 2 +
-              reflectionR P γ μ α₁ (B α₁) Z *
-                structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ *
-                  ‖gaussFPlus H a b c z‖ ^ 2 := by
+        Contract.gammaHalfReflected P M γ μ α₁ α₂ α₃ H (B α₁) Z := by
   obtain ⟨ξ, hξ, hξ₂, hslack, hfreeze⟩ := hnear
   have hinner := DOZZ.gammaHalf_reflected_inner_limit P M X γ μ α₁ α₂ α₃ ξ
     hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hξ hξ₂ hreflect

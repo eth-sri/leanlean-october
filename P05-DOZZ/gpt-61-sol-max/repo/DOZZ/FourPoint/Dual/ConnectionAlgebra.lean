@@ -19,27 +19,21 @@ public section
 namespace DOZZ.Proofs
 
 
-/-- The second one-channel diagonal coefficient gives the first crossing seed. -/
-theorem dual_connection_diagonal_second_from_first (d₀ d₁ u v w x : ℝ)
-    (hcross : d₀ * u * v + d₁ * w * x = 0) (hw : w ≠ 0) :
-    d₀ * v ^ 2 + d₁ * x ^ 2 = -d₀ * v * (u * x - v * w) / w := by
-  apply (eq_div_iff hw).2
-  linear_combination x * hcross
+variable (d₀ d₁ u v w x : ℝ) (hcross : d₀ * u * v + d₁ * w * x = 0)
 
+
+
+include d₀ d₁ u v w x hcross in
 /-- The same diagonal coefficient gives the distinct second crossing seed. -/
-theorem dual_connection_diagonal_second_from_second (d₀ d₁ u v w x : ℝ)
-    (hcross : d₀ * u * v + d₁ * w * x = 0) (hu : u ≠ 0) :
+theorem dual_connection_diagonal_second_from_second  (hu : u ≠ 0) :
     d₀ * v ^ 2 + d₁ * x ^ 2 = d₁ * x * (u * x - v * w) / u := by
-  apply (eq_div_iff hu).2
-  linear_combination v * hcross
+  grind
 
+include d₀ d₁ u v w x hcross in
 /-- The first coefficient extraction can be inverted once the connection entry and determinant are nonzero. -/
-theorem dual_connection_first_seed_scalar (d₀ d₁ u v w x : ℝ)
-    (hcross : d₀ * u * v + d₁ * w * x = 0)
+theorem dual_connection_first_seed_scalar 
     (hw : w ≠ 0) (hv : v ≠ 0) (hdet : u * x - v * w ≠ 0) :
     d₀ = (-w / (v * (u * x - v * w))) * (d₀ * v ^ 2 + d₁ * x ^ 2) := by
-  rw [dual_connection_diagonal_second_from_first d₀ d₁ u v w x hcross hw]
-  have hd : u * x - w * v ≠ 0 := by simpa only [mul_comm w v] using hdet
-  field_simp [hdet, hd]
+  grind
 
 end DOZZ.Proofs

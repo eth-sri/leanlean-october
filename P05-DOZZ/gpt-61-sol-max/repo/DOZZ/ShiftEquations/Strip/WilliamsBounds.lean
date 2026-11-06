@@ -10,7 +10,7 @@ public import DOZZ.Correlations.Tails.WilliamsPolarMassLaw
 
 /-! Expectation bounds on the independent Williams maximum/conditioned-path model. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
@@ -25,7 +25,7 @@ theorem lastone_height_product_moment
       (ENNReal.ofReal (Real.exp (γ * z.1)) * f z.2) ^ (ν / γ)
         ∂(brownianMaximumReferenceLaw ν).prod P) =
       2 * ∫⁻ ω, f ω ^ (ν / γ) ∂P := by
-  let : IsProbabilityMeasure (brownianMaximumReferenceLaw ν) :=
+  let  :=
     isProbabilityMeasure_brownianMaximumReferenceLaw hν
   have heq (m : ℝ) (ω : Ω) :
       (ENNReal.ofReal (Real.exp (γ * m)) * f ω) ^ (ν / γ) =
@@ -63,7 +63,7 @@ theorem lastone_williamsModel_moment_bounds
           (((z.1, negativeConditionedLastExitSegment z.1 (B z.2).2), (B z.2).1), Z z.2)
             ^ (ν / γ) ∂(brownianMaximumReferenceLaw ν).prod P) ≤
         2 * (∫⁻ ω, twoSidedReflectionMass γ B Z ω ^ (ν / γ) ∂P) := by
-  let : IsProbabilityMeasure (brownianMaximumReferenceLaw ν) :=
+  let  :=
     isProbabilityMeasure_brownianMaximumReferenceLaw hν
   have hJm := initialUnitBlockMass_aemeasurable P γ
     (fun ω => (B ω).1) Z hBm.fst hZm hfin

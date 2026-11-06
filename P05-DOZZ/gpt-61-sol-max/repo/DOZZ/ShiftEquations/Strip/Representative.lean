@@ -9,7 +9,7 @@ public import DOZZ.Complex.Basic
 /-! Narrow-strip representatives with whole-plane codiscrete shift equations. Real translations
 preserve both the strip and its exterior. -/
 
-@[expose] public section
+public section
 open Filter Topology Set
 
 namespace DOZZ.Proofs

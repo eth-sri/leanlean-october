@@ -30,9 +30,11 @@ theorem fourPointSExp_gammaHalf (γ α₁ α₂ α₃ : ℝ) :
   congr 1
   ring
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ)
+
+include Ω _inst1 P M in
 /-- The reduced four-point function is the literal half-charge moment times its prefactor. -/
-theorem fourPointT_eq_gammaHalfMoment {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (γ μ α₁ α₂ α₃ : ℝ) (z : ℂ) :
+theorem fourPointT_eq_gammaHalfMoment  (γ μ α₁ α₂ α₃ : ℝ) (z : ℂ) :
     fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z =
       (2 * μ ^ (-(α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ) / γ *
         Real.Gamma ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ)) *
@@ -49,15 +51,12 @@ theorem reflected_prefactor_cancel (γ μ p R C : ℝ) (hγ : 0 < γ)
       (1 / 2 * μ ^ p * γ * (Real.Gamma p)⁻¹ * R * C) = R * C := by
   have hpow : μ ^ (-p) * μ ^ p = 1 := by
     rw [← Real.rpow_add hμ, neg_add_cancel, Real.rpow_zero]
-  have hΓ : Real.Gamma p ≠ 0 := (Real.Gamma_pos_of_pos hp).ne'
-  calc
-    _ = (μ ^ (-p) * μ ^ p) * (γ / γ) *
-        (Real.Gamma p * (Real.Gamma p)⁻¹) * R * C := by ring
-    _ = R * C := by rw [hpow, div_self hγ.ne', mul_inv_cancel₀ hΓ]; ring
+  have hΓ  := (Real.Gamma_pos_of_pos hp).ne'
+  grind
 
+include Ω _inst1 P M in
 /-- The independent-maximum coefficient is exactly the inner-limit coefficient. -/
-theorem reflected_inner_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (B : Ω → BrownianPath × BrownianPath)
+theorem reflected_inner_coefficient_eq  (B : Ω → BrownianPath × BrownianPath)
     (Z : Ω → Measure ℝ) (γ μ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hμ : 0 < μ)
     (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
     let p := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
@@ -70,9 +69,8 @@ theorem reflected_inner_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
   dsimp only
   let p := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
   let a := reflectionExponent γ α₁
-  have hp : 0 < p := div_pos (by linarith only [hs]) hγ
+  
   have horder : sExp γ (2 * Q γ - α₁ - γ / 2) α₂ α₃ = p + a := by
-    unfold sExp
     exact reflected_zero_mode_order γ α₁ α₂ α₃
   change (a * Real.Gamma (-a) * Real.Gamma (p + a) / Real.Gamma p) *
     reflectionBarR P γ α₁ B Z *
@@ -90,12 +88,6 @@ theorem reflected_inner_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
         (∫⁻ ω, rho γ (M ω) (2 * Q γ - α₁ - γ / 2) α₂ α₃ ^ (-(p + a)) ∂P).toReal)
   have hpow : μ ^ p * μ ^ a * μ ^ (-(p + a)) = 1 := by
     rw [← Real.rpow_add hμ, ← Real.rpow_add hμ, add_neg_cancel, Real.rpow_zero]
-  have hΓ : Real.Gamma p ≠ 0 := (Real.Gamma_pos_of_pos hp).ne'
-  have hγne : γ ≠ 0 := hγ.ne'
-  field_simp
-  linear_combination -(a * Real.Gamma (-a) * Real.Gamma (p + a) *
-    reflectionBarR P γ α₁ B Z *
-    (∫⁻ ω, rho γ (M ω) ((2 * (2 * Q γ - α₁) - γ) / 2) α₂ α₃ ^
-      (-(p + a)) ∂P).toReal) * hpow
+  grind
 
 end DOZZ.Proofs

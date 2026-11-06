@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Fusion.LocalDifferenceRooting
 public import DOZZ.FourPoint.Fusion.DifferenceExteriorExpectation
 public import DOZZ.FourPoint.Fusion.DifferenceMassIntegral
 /-! # The signed local and exterior split -/
-@[expose] public section
+public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 /-- Local rooting and the exterior mass majorant justify splitting the signed expectation. -/

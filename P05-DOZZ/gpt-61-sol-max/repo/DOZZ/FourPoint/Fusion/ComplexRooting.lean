@@ -9,7 +9,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
 /-! # Complex rooting for the pure second derivative kernel -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -33,12 +33,12 @@ theorem fusion_rooted_complex_integral {Ω : Type*} [MeasurableSpace Ω]
       (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) ∂gmcReferenceMeasure) < ⊤ := by
     apply lt_of_le_of_lt (lintegral_mono ?_) hb
     intro u
-    exact mul_le_mul' (ENNReal.ofReal_le_ofReal (Complex.abs_re_le_norm _)) le_rfl
+    bound
   have hbi : (∫⁻ u, ENNReal.ofReal |(f u).im| *
       (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) ∂gmcReferenceMeasure) < ⊤ := by
     apply lt_of_le_of_lt (lintegral_mono ?_) hb
     intro u
-    exact mul_le_mul' (ENNReal.ofReal_le_ofReal (Complex.abs_im_le_norm _)) le_rfl
+    bound
   obtain ⟨hLr, hRr, her⟩ := fusion_rooted_real_integral P X hX γ hγ hγ2 M hM
     (fun u => (f u).re) (Complex.measurable_re.comp hf) (hfi.mono fun _ h => h.re) G hG hbr
   obtain ⟨hLi, hRi, hei⟩ := fusion_rooted_real_integral P X hX γ hγ hγ2 M hM
@@ -58,11 +58,9 @@ theorem fusion_rooted_complex_integral {Ω : Type*} [MeasurableSpace Ω]
   have hLint : Integrable L P := Integrable.re_im_iff.mp
     ⟨hLr.congr heLr, hLi.congr heLi⟩
   have hRre : Integrable (fun u => (R u).re) gmcReferenceMeasure := by
-    simpa only [R, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
-      using hRr
+    continuity
   have hRim : Integrable (fun u => (R u).im) gmcReferenceMeasure := by
-    simpa only [R, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, mul_zero, zero_add]
-      using hRi
+    continuity
   have hRint : Integrable R gmcReferenceMeasure := Integrable.re_im_iff.mp ⟨hRre, hRim⟩
   refine ⟨hLint, hRint, ?_⟩
   change (∫ ω, L ω ∂P) = ∫ u, R u ∂gmcReferenceMeasure
@@ -72,18 +70,14 @@ theorem fusion_rooted_complex_integral {Ω : Type*} [MeasurableSpace Ω]
       _ = _ := integral_congr_ae heLr.symm
       _ = _ := her
       _ = ∫ u, (R u).re ∂gmcReferenceMeasure := by
-        apply integral_congr_ae
-        filter_upwards [] with u
-        simp only [R, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
+        continuity
       _ = _ := integral_re hRint
   · calc
       _ = ∫ ω, (L ω).im ∂P := (integral_im hLint).symm
       _ = _ := integral_congr_ae heLi.symm
       _ = _ := hei
       _ = ∫ u, (R u).im ∂gmcReferenceMeasure := by
-        apply integral_congr_ae
-        filter_upwards [] with u
-        simp only [R, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, mul_zero, zero_add]
+        continuity
       _ = _ := integral_im hRint
 
 end DOZZ.Proofs

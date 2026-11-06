@@ -53,55 +53,55 @@ theorem structureConstantH_complexify {Ω : Type*} [MeasurableSpace Ω] (P : Mea
   push_cast
   ring
 
+variable {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 → ℂ)} (hV : IsOpen V) (hf : DifferentiableOn ℂ f V) {γ μ : ℝ} (hμ : 0 < μ) {ℓ : ℂ → Fin 3 → ℂ} (hℓ : Differentiable ℂ ℓ)
+
+include f V hV hf γ μ hμ ℓ hℓ in
 /-- **The continued structure constant is meromorphic along analytic charge curves** staying in
 the open domain of holomorphy of `f`. -/
-theorem meromorphicOn_structureConstantH_comp {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 → ℂ)}
-    (hV : IsOpen V) (hf : DifferentiableOn ℂ f V) {γ μ : ℝ} (hμ : 0 < μ)
-    {ℓ : ℂ → Fin 3 → ℂ} (hℓ : Differentiable ℂ ℓ) :
+theorem meromorphicOn_structureConstantH_comp  :
     MeromorphicOn (fun t => structureConstantH f γ μ (ℓ t)) (ℓ ⁻¹' V) := by
   intro t ht
-  have hUo : IsOpen (ℓ ⁻¹' V) := hV.preimage hℓ.continuous
-  have hfℓ : DifferentiableOn ℂ (fun t => f (ℓ t)) (ℓ ⁻¹' V) :=
+  have hUo  := hV.preimage hℓ.continuous
+  have hfℓ  :=
     hf.comp hℓ.differentiableOn fun _ hx => hx
-  have hfa : AnalyticAt ℂ (fun t => f (ℓ t)) t := hfℓ.analyticAt (hUo.mem_nhds ht)
+  have hfa  := hfℓ.analyticAt (hUo.mem_nhds ht)
   have hs : AnalyticAt ℂ (fun t => sExpC γ (ℓ t)) t := by
     unfold sExpC
-    have h0 : AnalyticAt ℂ (fun t => ℓ t 0) t :=
+    have h0  :=
       ((differentiable_pi.mp hℓ) 0).analyticAt t
-    have h1 : AnalyticAt ℂ (fun t => ℓ t 1) t :=
+    have h1  :=
       ((differentiable_pi.mp hℓ) 1).analyticAt t
-    have h2 : AnalyticAt ℂ (fun t => ℓ t 2) t :=
+    have h2  :=
       ((differentiable_pi.mp hℓ) 2).analyticAt t
-    exact (((h0.add h1).add h2).sub analyticAt_const).div_const
-  have hμs : (μ : ℂ) ∈ Complex.slitPlane := Complex.ofReal_mem_slitPlane.mpr hμ
-  have hpow : AnalyticAt ℂ (fun t => (μ : ℂ) ^ (-sExpC γ (ℓ t))) t :=
+    fun_prop (disch := positivity)
+  have hμs  := Complex.ofReal_mem_slitPlane.mpr hμ
+  have hpow  :=
     analyticAt_const.cpow hs.neg hμs
-  have hΓ : MeromorphicAt (fun t => Complex.Gamma (sExpC γ (ℓ t))) t :=
+  have hΓ  :=
     (Meromorphic.Gamma _).comp_analyticAt (g := fun t => sExpC γ (ℓ t)) hs
   exact (hpow.meromorphicAt.mul hΓ).mul hfa.meromorphicAt
 
+include f V hV hf γ μ hμ ℓ hℓ in
 /-- **The continued structure constant is analytic** along analytic charge curves at points
 where `s ∉ -ℕ`. -/
-theorem analyticAt_structureConstantH_comp {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 → ℂ)}
-    (hV : IsOpen V) (hf : DifferentiableOn ℂ f V) {γ μ : ℝ} (hμ : 0 < μ)
-    {ℓ : ℂ → Fin 3 → ℂ} (hℓ : Differentiable ℂ ℓ) {t : ℂ} (ht : ℓ t ∈ V)
+theorem analyticAt_structureConstantH_comp  {t : ℂ} (ht : ℓ t ∈ V)
     (hs : ∀ n : ℕ, sExpC γ (ℓ t) ≠ -(n : ℂ)) :
     AnalyticAt ℂ (fun t => structureConstantH f γ μ (ℓ t)) t := by
-  have hUo : IsOpen (ℓ ⁻¹' V) := hV.preimage hℓ.continuous
-  have hfℓ : DifferentiableOn ℂ (fun t => f (ℓ t)) (ℓ ⁻¹' V) :=
+  have hUo  := hV.preimage hℓ.continuous
+  have hfℓ  :=
     hf.comp hℓ.differentiableOn fun _ hx => hx
-  have hfa : AnalyticAt ℂ (fun t => f (ℓ t)) t := hfℓ.analyticAt (hUo.mem_nhds ht)
+  have hfa  := hfℓ.analyticAt (hUo.mem_nhds ht)
   have hsa : AnalyticAt ℂ (fun t => sExpC γ (ℓ t)) t := by
     unfold sExpC
-    have h0 : AnalyticAt ℂ (fun t => ℓ t 0) t :=
+    have h0  :=
       ((differentiable_pi.mp hℓ) 0).analyticAt t
-    have h1 : AnalyticAt ℂ (fun t => ℓ t 1) t :=
+    have h1  :=
       ((differentiable_pi.mp hℓ) 1).analyticAt t
-    have h2 : AnalyticAt ℂ (fun t => ℓ t 2) t :=
+    have h2  :=
       ((differentiable_pi.mp hℓ) 2).analyticAt t
-    exact (((h0.add h1).add h2).sub analyticAt_const).div_const
-  have hμs : (μ : ℂ) ∈ Complex.slitPlane := Complex.ofReal_mem_slitPlane.mpr hμ
-  have hpow : AnalyticAt ℂ (fun t => (μ : ℂ) ^ (-sExpC γ (ℓ t))) t :=
+    fun_prop (disch := positivity)
+  have hμs  := Complex.ofReal_mem_slitPlane.mpr hμ
+  have hpow  :=
     analyticAt_const.cpow hsa.neg hμs
   have hΓa : AnalyticAt ℂ Complex.Gamma (sExpC γ (ℓ t)) := by
     have h1 : AnalyticAt ℂ (fun u => (Complex.Gamma u)⁻¹) (sExpC γ (ℓ t)) :=
@@ -111,7 +111,7 @@ theorem analyticAt_structureConstantH_comp {f : (Fin 3 → ℂ) → ℂ} {V : Se
       funext u
       simp
     rwa [hfun] at h2
-  have hΓ : AnalyticAt ℂ (fun t => Complex.Gamma (sExpC γ (ℓ t))) t :=
+  have hΓ  :=
     AnalyticAt.comp_of_eq hΓa hsa rfl
   exact (hpow.mul hΓ).mul hfa
 

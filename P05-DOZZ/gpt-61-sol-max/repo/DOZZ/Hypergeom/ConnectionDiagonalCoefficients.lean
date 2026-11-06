@@ -9,7 +9,7 @@ public import DOZZ.Hypergeom.ODE.ConnectionGammaCoefficients
 
 /-! Gamma algebra for the real diagonal connection constraint. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
@@ -60,22 +60,13 @@ theorem gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero
   by_cases hd : d = 0
   · have hFactor : Real.Gamma (c - a) = 0 ∨ Real.Gamma (c - b) = 0 ∨
         Real.Gamma a = 0 ∨ Real.Gamma b = 0 := by
-      dsimp [d] at hd
-      rcases mul_eq_zero.mp hd with h | h
-      · rcases mul_eq_zero.mp h with h | h
-        · rcases mul_eq_zero.mp h with h | h
-          · exact Or.inl h
-          · exact Or.inr (Or.inl h)
-        · exact Or.inr (Or.inr (Or.inl h))
-      · exact Or.inr (Or.inr (Or.inr h))
+      continuity
     have hK₁ : gaussK₁ a b c = 0 := by
       rcases hFactor with h | h | h | h <;>
         simp [gaussK₁, h]
     have hden : Real.Gamma (2 - c) ^ 2 * Real.Gamma (c - a) * Real.Gamma (c - b) *
         Real.Gamma a * Real.Gamma b = 0 := by
-      calc
-        _ = Real.Gamma (2 - c) ^ 2 * d := by dsimp [d]; ring
-        _ = 0 := by rw [hd]; ring
+      continuity
     have hratio : gaussCoefficientRatio a b c = 0 := by
       simp [gaussCoefficientRatio, hden]
     rw [hratio, hK₁]
@@ -97,8 +88,6 @@ theorem gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero
       apply hd
       simp [d, h]
     dsimp [gaussCoefficientRatio, gaussK₁, gaussK₂]
-    field_simp [hGamma₂c, hGammaCa, hGammaCb, hGammaA, hGammaB,
-      hGamma₁a, hGamma₁b, hGammaAc, hGammaBc]
-    ring
+    grind
 
 end DOZZ.Proofs

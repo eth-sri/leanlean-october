@@ -68,11 +68,11 @@ theorem segT_mem {γ : ℝ} (hγ : 0 < γ) {V : Set (Fin 3 → ℂ)}
   rw [segT_ofReal]
   exact hVmem _ (extendedSeiberg3_segment hγ h₀ h₁ ht0 ht1)
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ) {γ μ : ℝ} (hμ : 0 < μ) {f : (Fin 3 → ℂ) → ℂ} (hfeq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → f (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
+
+include Ω _inst1 P M γ μ hμ f hfeq in
 /-- The continued structure constant at a real point of a segment. -/
-theorem segH_ofReal {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ)
-    {γ μ : ℝ} (hμ : 0 < μ) {f : (Fin 3 → ℂ) → ℂ}
-    (hfeq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-      f (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
+theorem segH_ofReal 
     {a₀ a₁ b₀ b₁ c₀ c₁ t : ℝ}
     (h : ExtendedSeiberg3 γ (a₀ + t * (a₁ - a₀)) (b₀ + t * (b₁ - b₀)) (c₀ + t * (c₁ - c₀))) :
     structureConstantH f γ μ (segT a₀ a₁ b₀ b₁ c₀ c₁ (t : ℂ)) =
@@ -81,11 +81,9 @@ theorem segH_ofReal {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω �
   rw [segT_ofReal]
   exact structureConstantH_complexify P M hμ _ (hfeq _ h)
 
+include Ω _inst1 P M γ μ hμ f hfeq in
 /-- The continued structure constant at the end of a segment. -/
-theorem segH_one {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ)
-    {γ μ : ℝ} (hμ : 0 < μ) {f : (Fin 3 → ℂ) → ℂ}
-    (hfeq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-      f (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
+theorem segH_one 
     {a₀ a₁ b₀ b₁ c₀ c₁ : ℝ} (h : ExtendedSeiberg3 γ a₁ b₁ c₁) :
     structureConstantH f γ μ (segT a₀ a₁ b₀ b₁ c₀ c₁ 1) =
       (structureConstant P M γ μ a₁ b₁ c₁ : ℂ) := by

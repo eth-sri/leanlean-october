@@ -6,8 +6,9 @@ module
 public import DOZZ.FourPoint.Reflected.ReferenceParetoLaw
 public import DOZZ.FourPoint.Reflected.InverseIncrementIntegrable
 import Mathlib.Tactic
+import Mathlib.Tactic
 /-! The full and fixed-cut Williams expectations are the literal source Pareto expectations. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 
@@ -28,15 +29,14 @@ theorem reflected_williams_pareto_integral
     ∫ v : Ω × Λ, (∫ w,
       (A v.1+b v.1*S v.2*w)^(-p)-(A v.1)^(-p) ∂paretoMeasure 1 (2*ν/γ)) ∂P.prod R := by
   let μ := brownianMaximumReferenceLaw ν
-  let _ : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw hν
+  let _  := isProbabilityMeasure_brownianMaximumReferenceLaw hν
   let Q := (P.prod R).prod μ
   let f := fun v : (Ω × Λ) × ℝ =>
     (A v.1.1+b v.1.1*S v.1.2*Real.exp (γ*v.2))^(-p)-(A v.1.1)^(-p)
   let e : Ω × (ℝ × Λ) ≃ᵐ (Ω × Λ) × ℝ :=
     ((MeasurableEquiv.refl Ω).prodCongr (MeasurableEquiv.prodComm : ℝ × Λ ≃ᵐ Λ × ℝ)).trans
       MeasurableEquiv.prodAssoc.symm
-  have he : MeasurePreserving e (P.prod (μ.prod R)) Q := by
-    exact (MeasurePreserving.symm MeasurableEquiv.prodAssoc (measurePreserving_prodAssoc P R μ)).comp
+  have he : MeasurePreserving e (P.prod (μ.prod R)) Q := (MeasurePreserving.symm MeasurableEquiv.prodAssoc (measurePreserving_prodAssoc P R μ)).comp
       ((MeasurePreserving.id P).prod (Measure.measurePreserving_swap (μ := μ) (ν := R)))
   have hA0 := (measurePreserving_fst (μ := P) (ν := R)).quasiMeasurePreserving.ae hA
   have hb0 := (measurePreserving_fst (μ := P) (ν := R)).quasiMeasurePreserving.ae hb
@@ -58,11 +58,11 @@ theorem reflected_williams_pareto_integral
     (measurePreserving_fst (μ := P.prod R) (ν := μ)).quasiMeasurePreserving
   have hT : ∀ᵐ v : (Ω × Λ) × ℝ ∂Q, 0 ≤ b v.1.1*S v.1.2*Real.exp (γ*v.2) := by
     filter_upwards [hbq,hSq] with v hv hSv
-    exact mul_nonneg (mul_nonneg hv hSv) (Real.exp_pos _).le
+    bound
   have hInvq : Integrable (fun v : (Ω × Λ) × ℝ => (A v.1.1)^(-p)) Q := by
     simpa only [mul_one] using
       (hInv.mul_prod (integrable_const (1 : ℝ))).mul_prod (integrable_const (1 : ℝ))
-  have hf : Integrable f Q := reflected_inverse_increment_integrable Q p hp _ _ hAq hT hAmq
+  have hf  := reflected_inverse_increment_integrable Q p hp _ _ hAq hT hAmq
     ((hbmq.mul hSmq).mul
       (show AEMeasurable (fun v : (Ω × Λ) × ℝ => Real.exp (γ*v.2)) Q from
         (by fun_prop : Measurable (fun v : (Ω × Λ) × ℝ => Real.exp (γ*v.2))).aemeasurable)) hInvq

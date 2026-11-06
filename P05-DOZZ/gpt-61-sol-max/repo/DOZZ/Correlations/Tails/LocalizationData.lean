@@ -12,7 +12,7 @@ public import DOZZ.Correlations.Tails.PrefactoredAnnularRemainder
 
 /-! Actual law, measurability and pointwise comparisons for the one-insertion localization. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -46,14 +46,14 @@ theorem localized_insertion_comparison_data
         canonicalLeading N Xc (F z) z γ α q+copiedRemainder N Xc F z γ α ρ q ∧
       canonicalLeading N Xc (F z) z γ α q ≤
         localizedCopy N Xc χ F z γ α q+copiedRemainder N Xc F z γ α ρ q) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   have hFm := (hFamily.2.2.2.2 z hzk F hF).1
   have hF0 (x : ℂ) : 0 ≤ F x := (hFamily.2.2.2.2 z hzk F hF).2.1 x |>.1
   have hχzero (x : ℂ) (hx : x ∉ Metric.ball (0 : ℂ) ρ) : χ x = 0 :=
     image_eq_zero_of_notMem_tsupport (fun h => hx (hχs h))
   have hone (x : ℂ) (hx : x ∈ Metric.ball (0 : ℂ) (ρ/4)) : χ x = 1 :=
     hχone x (Metric.ball_subset_closedBall hx)
-  have hρ1 : ρ ≤ 1 := hρR.trans (min_le_right _ _)
+  have hρ1  := hρR.trans (min_le_right _ _)
   have hχchart := hχs.trans (Metric.ball_subset_ball hρR)
   have hl := localized_copied_singular_law P X Xc hX hc hm γ hγ hγ2 M hM
     K Family radius supBound derivBound lowerBound hFamily z hzk hz F hF N hN
@@ -63,8 +63,7 @@ theorem localized_insertion_comparison_data
       (ENNReal.ofReal ‖y-z‖)^(-γ*α)) := by fun_prop
     have h := (Measure.measurable_lintegral hk).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM)
-    change AEMeasurable (fun ω => ∫⁻ y, ENNReal.ofReal (χ (y-z)*F y)*(ENNReal.ofReal ‖y-z‖)^(-γ*α) ∂M ω) P
-    simpa only [Function.comp_def] using h
+    assumption_mod_cast
   have hAm : AEMeasurable (originalAnnular M F z γ α (ρ/4)) P := by
     have hk : Measurable (fun y : ℂ => ENNReal.ofReal (F y)*(ENNReal.ofReal ‖y-z‖)^(-γ*α)) := by fun_prop
     have hd : MeasurableSet (Metric.ball z 1 \ Metric.ball z (ρ/4)) :=

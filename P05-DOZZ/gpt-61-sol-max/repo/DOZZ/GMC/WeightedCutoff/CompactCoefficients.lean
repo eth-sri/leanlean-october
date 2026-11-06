@@ -4,7 +4,7 @@ public import DOZZ.GMC.WeightedCutoff.SmallBound
 
 /-! # Compact bounds for the deterministic weight and scale factors -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -21,13 +21,12 @@ theorem exists_compact_cutoff_weight_bound
     apply ContinuousOn.rpow
     · fun_prop
     · fun_prop
-    · intro u hu
-      exact Or.inl (ne_of_gt (ha.trans_le hu.2.2.1))
+    grind
   obtain ⟨W, hW, hnorm⟩ := (hS.image_of_continuousOn hf).isBounded.exists_pos_norm_le
   refine ⟨W, hW, ?_⟩
   intro γ hγ t ht s hs
   have h := hnorm (f (γ, t, s)) ⟨(γ, t, s), ⟨hγ, ht, hs⟩, rfl⟩
-  exact (le_abs_self _).trans (by simpa only [Real.norm_eq_abs] using h)
+  exact (le_abs_self _).trans (by exact h)
 
 theorem exists_compact_cutoff_scale_bounds
     (Γ : Set ℝ) (hΓ : IsCompact Γ) (hΓpos : ∀ γ ∈ Γ, 0 < γ)
@@ -52,25 +51,24 @@ theorem exists_compact_cutoff_scale_bounds
     apply ContinuousOn.rpow
     · fun_prop
     · fun_prop
-    · intro u hu
-      exact Or.inl (ne_of_gt (ha.trans_le hu.2.2.1))
+    grind
   have hfpos : ∀ u ∈ S, 0 < f u := fun u hu =>
     Real.rpow_pos_of_pos (ha.trans_le hu.2.2.1) _
   obtain ⟨L, hL, hLower⟩ := hS.exists_forall_le' hf hfpos
   let V : Set (ℝ × (ℝ × ℝ)) := Γ ×ˢ T
-  have hV : IsCompact V := hΓ.prod hT
+  have hV  := hΓ.prod hT
   have hQV : ContinuousOn (fun u : ℝ × (ℝ × ℝ) => Q u.1) V :=
     hQ.comp continuousOn_fst (fun u hu => hu.1)
   let g : ℝ × (ℝ × ℝ) → ℝ := fun u => a ^ weightedCutoffMomentScaleExponent u.1 u.2.1 u.2.2
   have hg : ContinuousOn g V := by
-    have ha0 : a ≠ 0 := ha.ne'
+    have ha0  := ha.ne'
     dsimp [g, weightedCutoffMomentScaleExponent]
     fun_prop
   obtain ⟨U, hU, hnorm⟩ := (hV.image_of_continuousOn hg).isBounded.exists_pos_norm_le
   refine ⟨L, U, hL, hU, ?_, ?_⟩
   · intro γ hγ t ht
     have h := hnorm (g (γ, t)) ⟨(γ, t), ⟨hγ, ht⟩, rfl⟩
-    exact (le_abs_self _).trans (by simpa only [Real.norm_eq_abs] using h)
+    exact (le_abs_self _).trans (by exact h)
   · intro γ hγ t ht R hR
     exact hLower (γ, t, R) ⟨hγ, ht, hR⟩
 

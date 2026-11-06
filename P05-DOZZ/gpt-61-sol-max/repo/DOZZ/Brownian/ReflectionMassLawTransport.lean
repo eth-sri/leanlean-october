@@ -15,7 +15,7 @@ moment. Reflection data provide this through their path measurability and the la
 almost-sure local finiteness, so the measurability premise can be discharged at the data boundary.
 -/
 
-@[expose] public section
+public section
 
 open Filter MeasureTheory
 open scoped ENNReal NNReal
@@ -47,35 +47,25 @@ theorem reflectionBarR_eq_of_joint_input_law_of_reflectionData
   let pair' : Ω' → (BrownianPath × BrownianPath) × Measure ℝ := fun ω => (B' ω, Z' ω)
   have hBm : AEMeasurable B P := by
     have hp := hB₁m.prodMk hB₂m
-    exact hp.congr (Eventually.of_forall fun ω => rfl)
+    assumption_mod_cast
   have hB'm : AEMeasurable B' P' := by
     have hp := hB₁'m.prodMk hB₂'m
-    exact hp.congr (Eventually.of_forall fun ω => rfl)
+    assumption_mod_cast
   have hpair : AEMeasurable pair P := by
-    change AEMeasurable (fun ω => (B ω, Z ω)) P
-    exact hBm.prodMk hZm
+    fun_prop (disch := positivity)
   have hpair' : AEMeasurable pair' P' := by
-    change AEMeasurable (fun ω => (B' ω, Z' ω)) P'
-    exact hB'm.prodMk hZ'm
+    fun_prop (disch := positivity)
   have hLocal : ∀ᵐ ω ∂P, LocallyFiniteOnTranslationWindows (Z ω) := by
     filter_upwards [hZlocal] with ω hω
     intro n
-    simpa [LocallyFiniteOnTranslationWindows, translationWindow] using
-      hω (-(n : ℝ)) (n : ℝ)
+    bound
   have hMass := aemeasurable_reflectionMassInput_map_of_locallyFinite
-    P γ pair hpair (by simpa [pair] using hLocal)
+    P γ pair hpair (hLocal)
   have hpow : Measurable (fun x : ℝ≥0∞ =>
       ENNReal.rpow x (reflectionExponent γ α)) :=
     ENNReal.continuous_rpow_const.measurable
-  have hMoment : AEMeasurable
-      (fun z : (BrownianPath × BrownianPath) × Measure ℝ =>
-        ENNReal.rpow (twoSidedReflectionMassInput γ z) (reflectionExponent γ α))
-      (P.map pair) := by
-    exact hpow.comp_aemeasurable hMass
-  have hLaw' : P.map pair = P'.map pair' := by
-    simpa [pair, pair'] using hLaw
-  exact reflectionBarR_eq_of_joint_input_law P P' γ α B Z B' Z'
-    hpair hpair' hLaw' hMoment
+  have hMoment  := hpow.comp_aemeasurable hMass
+  exact reflectionBarR_eq_of_joint_input_law P P' γ α B Z B' Z' hpair hpair' hLaw hMoment
 
 end DOZZ.Proofs
 

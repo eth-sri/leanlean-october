@@ -17,7 +17,7 @@ attained finite last exit, continuity makes the conditioned state at those endpo
 the barrier. This is the pathwise concentration input for the entrance-kernel limit.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped NNReal

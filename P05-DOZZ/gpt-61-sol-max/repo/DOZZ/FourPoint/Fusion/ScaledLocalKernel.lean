@@ -9,18 +9,20 @@ public import DOZZ.FourPoint.Fusion.ComplexScaling
 
 /-! # Exact scaling of the local pure derivative kernel -/
 
-@[expose] public section
+public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
+variable (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (hz : z ≠ 0)
+
+include γ α₁ α₂ α₃ y z hz in
 /-- The local real kernel has scaling degree `γ²/2 - γ*α₁`. -/
-theorem fusion_gammaHalfKernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
-    (hz : z ≠ 0) (hlocal : ‖y * z‖ < 1 / 2) :
+theorem fusion_gammaHalfKernel_scaled  (hlocal : ‖y * z‖ < 1 / 2) :
     gammaHalfKernel γ α₁ α₂ α₃ z (y * z) =
       ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) *
         (‖y - 1‖ ^ (γ ^ 2 / 2) / ‖y‖ ^ (γ * α₁)) *
           ‖y * z - 1‖ ^ (-γ * α₂) := by
-  have hr : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  have hr  := norm_pos_iff.mpr hz
   have hn : normPlus (y * z) = 1 := max_eq_left (by linarith)
   have h1 : 0 < ‖y * z - 1‖ := by
     have h := norm_sub_norm_le (1 : ℂ) (y * z)
@@ -35,9 +37,9 @@ theorem fusion_gammaHalfKernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
   simp only [div_eq_mul_inv, mul_inv_rev]
   ring
 
+include γ α₁ α₂ α₃ y z hz in
 /-- The pure derivative contributes the phase `z⁻²` in addition to its real scaling degree. -/
-theorem fusion_localR1_kernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
-    (hz : z ≠ 0) (hlocal : ‖y * z‖ < 1 / 2) :
+theorem fusion_localR1_kernel_scaled  (hlocal : ‖y * z‖ < 1 / 2) :
     (gammaHalfKernel γ α₁ α₂ α₃ z (y * z) : ℂ) / (y * z - z) ^ 2 =
       (‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) : ℝ) / z ^ 2 *
         planarWirtingerKernel (γ ^ 2 / 2) (γ * α₁) 1 y *
@@ -48,12 +50,11 @@ theorem fusion_localR1_kernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
   have hs : (1 - y) ^ 2 = (y - 1) ^ 2 := by ring
   rw [hsub, hs]
   push_cast
-  simp only [mul_pow, div_eq_mul_inv, mul_inv_rev]
-  ring
+  grind
 
+include γ α₁ α₂ α₃ y z hz in
 /-- The mixed derivative has the same absolute scaling, without a complex phase. -/
-theorem fusion_localR2_kernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
-    (hz : z ≠ 0) (hy0 : y ≠ 0) (hy1 : y ≠ 1) (hlocal : ‖y * z‖ < 1 / 2) :
+theorem fusion_localR2_kernel_scaled  (hy0 : y ≠ 0) (hy1 : y ≠ 1) (hlocal : ‖y * z‖ < 1 / 2) :
     (gammaHalfKernel γ α₁ α₂ α₃ z (y * z) : ℂ) / (‖y * z - z‖ ^ 2 : ℝ) =
       ((‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) / ‖z‖ ^ (2 : ℕ) : ℝ) : ℂ) *
         (planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y : ℝ) *
@@ -63,7 +64,6 @@ theorem fusion_localR2_kernel_scaled (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
     Complex.norm_real, Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg z) _), norm_pow,
     norm_planarWirtingerKernel_eq _ _ _ _ hy0 hy1,
     Complex.norm_real, Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _)] at h
-  have hc := congrArg Complex.ofReal h
-  simpa only [Complex.ofReal_div, Complex.ofReal_mul, planarMixedKernel] using hc
+  assumption_mod_cast
 
 end DOZZ.Proofs

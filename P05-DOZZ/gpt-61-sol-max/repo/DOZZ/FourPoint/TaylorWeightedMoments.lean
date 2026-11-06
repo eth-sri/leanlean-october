@@ -9,7 +9,7 @@ public import DOZZ.GMC.SharpMoments.WeightedScale
 
 /-! The sharp supplied-GMC weighted small-radius estimate used by intermediate Taylor fusion. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -25,7 +25,7 @@ theorem weighted_ball_moment_small_radius_bound
       weightedGmcBallMoment P M γ α 0 r p ≤
         ENNReal.ofReal (C * r ^ (γ * (Q γ - α) * p - γ ^ 2 * p ^ 2 / 2)) := by
   let m : ℝ≥0∞ := weightedGmcBallMoment P M γ α 0 (1 / 2) p
-  have hm : m < ⊤ := (equatorGFF_GMC_weighted_local_moment_range P X hX γ hγ hγ2 M hM
+  have hm  := (equatorGFF_GMC_weighted_local_moment_range P X hX γ hγ hγ2 M hM
     α hα p hp 0 (1 / 2) (by norm_num)).mpr hrange
   let E : ℝ := γ * (Q γ - α) * p - γ ^ 2 * p ^ 2 / 2
   let C : ℝ := (2 : ℝ) ^ E * (m.toReal + 1)

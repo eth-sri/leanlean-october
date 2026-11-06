@@ -6,17 +6,16 @@ module
 
 public import DOZZ.Statements.Defs.DualMu
 import DOZZ.Upsilon.Uniqueness
+import Batteries.Tactic.Alias
 
 /-! The statement `DOZZ.IsUpsilon.unique`, proved by `DOZZ.Proofs.IsUpsilon.unique`. -/
 
 public section
 
-open Complex MeasureTheory Set Filter Topology
 
 namespace DOZZ
 
 /-- Uniqueness of `Υ_{γ/2}` (identity theorem on the strip). -/
-theorem IsUpsilon.unique {γ : ℝ} {U V : ℂ → ℂ} (hγ : 0 < γ) (hU : IsUpsilon γ U) (hV : IsUpsilon γ V) :
-    U = V := by exact DOZZ.Proofs.IsUpsilon.unique hγ hU hV
+alias IsUpsilon.unique := DOZZ.Proofs.IsUpsilon.unique
 
 end DOZZ

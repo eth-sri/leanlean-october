@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.RetainedNegativeMoments
 
 /-! The geometric requirements for the analytic cutoff hold eventually. -/
 
-@[expose] public section
+public section
 open Filter Topology
 namespace DOZZ.Proofs
 

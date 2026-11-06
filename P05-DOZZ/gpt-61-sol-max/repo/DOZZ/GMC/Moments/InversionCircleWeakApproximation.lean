@@ -9,7 +9,7 @@ public import DOZZ.GFFStructure.AnnularWeakLimit
 
 /-! Punctured circle approximants with convergence against continuous potentials. -/
 
-@[expose] public section
+public section
 
 open Filter MeasureTheory Set Metric
 open scoped Topology Distributions

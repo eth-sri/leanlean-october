@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Dual.PastExteriorIdentity
 public import DOZZ.FourPoint.Dual.PathLikelihood
 import Mathlib.Tactic
 /-! Source-space future independence of the actual dual exterior and restart likelihood. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.IndependentRegroup
 /-! Independent copies on distinct source spaces preserve the exterior past mark. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 

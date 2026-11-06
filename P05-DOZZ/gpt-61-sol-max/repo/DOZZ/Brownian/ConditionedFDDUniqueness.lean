@@ -30,28 +30,28 @@ private def conditionedEvalRectangles : Set (Set BrownianPath) :=
   {A | ∃ I : Finset ℝ≥0, ∃ S : ℝ≥0 → Set ℝ,
     (∀ t, MeasurableSet (S t)) ∧ A = conditionedEvalRect I S}
 
+variable {ν : ℝ} {P Q : Measure BrownianPath} (hP : IsNegativeConditionedBrownianLaw ν P) (hQ : IsNegativeConditionedBrownianLaw ν Q) (I : Finset ℝ≥0)
+
+include ν P Q hP hQ I in
 private theorem conditionedEvalRect_measure_eq_of_pos
-    {ν : ℝ} {P Q : Measure BrownianPath}
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (hQ : IsNegativeConditionedBrownianLaw ν Q)
-    (I : Finset ℝ≥0) (hI : ∀ t ∈ I, t ≠ 0)
+     (hI : ∀ t ∈ I, t ≠ 0)
     (S : ℝ≥0 → Set ℝ) (hS : ∀ t, MeasurableSet (S t)) :
     P (conditionedEvalRect I S) = Q (conditionedEvalRect I S) := by
   classical
   let n := I.card
   by_cases hIempty : I = ∅
   · simp [conditionedEvalRect, hIempty, hP.2.1.measure_univ, hQ.2.1.measure_univ]
-  · have hn : 0 < n := Finset.card_pos.mpr (Finset.nonempty_iff_ne_empty.mpr hIempty)
+  · have hn  := Finset.card_pos.mpr (Finset.nonempty_iff_ne_empty.mpr hIempty)
     let e : Fin n ≃o I := I.orderIsoOfFin rfl
     let times : Fin n → ℝ≥0 := fun i => (e i).val
     have htime : ∀ i, 0 < (times i : ℝ) := by
       intro i
       have hi := hI (e i).val (e i).property
       exact_mod_cast (pos_iff_ne_zero.mpr hi)
-    have hmono : StrictMono times := e.strictMono
+    have hmono  := e.strictMono
     have fddP := hP.2.2.2 n hn times htime hmono
     have fddQ := hQ.2.2.2 n hn times htime hmono
-    have hlaw : P.map (fun p i => p (times i)) = Q.map (fun p i => p (times i)) :=
+    have hlaw  :=
       fddP.trans fddQ.symm
     let A : Set (Fin n → ℝ) := ⋂ i, {x | x i ∈ S (times i)}
     have hA : MeasurableSet A := by
@@ -69,8 +69,7 @@ private theorem conditionedEvalRect_measure_eq_of_pos
         let i : Fin n := e.symm ⟨t, ht⟩
         have hi := h i
         simpa [times, i] using hi
-      · intro h i
-        exact h (e i).val (e i).property
+      grind
     calc
       P (conditionedEvalRect I S) = P (f ⁻¹' A) := by rw [hpre]
       _ = (P.map f) A := (Measure.map_apply hf hA).symm
@@ -78,11 +77,9 @@ private theorem conditionedEvalRect_measure_eq_of_pos
       _ = Q (f ⁻¹' A) := Measure.map_apply hf hA
       _ = Q (conditionedEvalRect I S) := by rw [hpre]
 
+include ν P Q hP hQ I in
 private theorem conditionedEvalRect_measure_eq
-    {ν : ℝ} {P Q : Measure BrownianPath}
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (hQ : IsNegativeConditionedBrownianLaw ν Q)
-    (I : Finset ℝ≥0) (S : ℝ≥0 → Set ℝ)
+     (S : ℝ≥0 → Set ℝ)
     (hS : ∀ t, MeasurableSet (S t)) :
     P (conditionedEvalRect I S) = Q (conditionedEvalRect I S) := by
   classical
@@ -99,29 +96,13 @@ private theorem conditionedEvalRect_measure_eq
         filter_upwards [hP.2.2.1] with p hp0
         apply propext
         simp only [conditionedEvalRect, Set.mem_ofPred_eq]
-        constructor
-        · intro hp t ht
-          exact hp t (Finset.mem_of_mem_erase ht)
-        · intro hp t ht
-          by_cases ht0 : t = 0
-          · subst t
-            rw [hp0]
-            exact hval
-          · exact hp t (Finset.mem_erase.mpr ⟨ht0, ht⟩)
+        grind
       have hQae : (conditionedEvalRect I S : Set BrownianPath) =ᵐ[Q]
           conditionedEvalRect J T := by
         filter_upwards [hQ.2.2.1] with p hp0
         apply propext
         simp only [conditionedEvalRect, Set.mem_ofPred_eq]
-        constructor
-        · intro hp t ht
-          exact hp t (Finset.mem_of_mem_erase ht)
-        · intro hp t ht
-          by_cases ht0 : t = 0
-          · subst t
-            rw [hp0]
-            exact hval
-          · exact hp t (Finset.mem_erase.mpr ⟨ht0, ht⟩)
+        grind
       rw [measure_congr hPae, measure_congr hQae]
       exact hJ
     · have hPzero : P (conditionedEvalRect I S) = 0 := by
@@ -140,9 +121,7 @@ private theorem conditionedEvalRect_measure_eq
         exact hval hmem
       rw [hPzero, hQzero]
   · exact conditionedEvalRect_measure_eq_of_pos hP hQ I (by
-      intro t ht ht0
-      apply h0
-      simpa [ht0] using ht) S hS
+      simp_all) S hS
 
 private theorem conditionedEvalRectangles_isPiSystem :
     IsPiSystem conditionedEvalRectangles := by
@@ -154,34 +133,10 @@ private theorem conditionedEvalRectangles_isPiSystem :
   let R : ℝ≥0 → Set ℝ := fun t =>
     (if t ∈ I then S t else Set.univ) ∩ (if t ∈ J then T t else Set.univ)
   refine ⟨I ∪ J, R, ?_, ?_⟩
-  · intro t
-    dsimp [R]
-    split_ifs <;> simp [hS, hT]
+  · continuity
   ext p
   simp only [Set.mem_inter_iff, conditionedEvalRect, Set.mem_ofPred_eq, R]
-  constructor
-  · rintro ⟨hI, hJ⟩ t ht
-    rcases Finset.mem_union.mp ht with ht | ht
-    · have hfirst : p t ∈ (if t ∈ I then S t else Set.univ) := by
-        simpa [ht] using hI t ht
-      have hsecond : p t ∈ (if t ∈ J then T t else Set.univ) := by
-        by_cases htJ : t ∈ J
-        · simpa [htJ] using hJ t htJ
-        · simp [htJ]
-      exact ⟨hfirst, hsecond⟩
-    · have hfirst : p t ∈ (if t ∈ I then S t else Set.univ) := by
-        by_cases htI : t ∈ I
-        · simpa [htI] using hI t htI
-        · simp [htI]
-      have hsecond : p t ∈ (if t ∈ J then T t else Set.univ) := by
-        simpa [ht] using hJ t ht
-      exact ⟨hfirst, hsecond⟩
-  · intro h
-    constructor
-    · intro t ht
-      simpa [ht] using (h t (Finset.mem_union.mpr (Or.inl ht))).1
-    · intro t ht
-      simpa [ht] using (h t (Finset.mem_union.mpr (Or.inr ht))).2
+  continuity
 
 /-- Two conditioned entrance laws with the same parameter coincide as measures on continuous
 paths. The value at zero and the positive-time entrance FDDs generate the path sigma algebra. -/
@@ -214,8 +169,8 @@ theorem isNegativeConditionedBrownianLaw_eq
       apply MeasurableSet.iInter
       intro t
       exact MeasurableSet.preimage (hS t.val) (ContinuousMap.measurable_eval t.val)
-  have : IsProbabilityMeasure P := hP.2.1
-  have : IsProbabilityMeasure Q := hQ.2.1
+  have  := hP.2.1
+  
   refine ext_of_generate_finite conditionedEvalRectangles hgen
     conditionedEvalRectangles_isPiSystem ?_ ?_
   · intro A hA

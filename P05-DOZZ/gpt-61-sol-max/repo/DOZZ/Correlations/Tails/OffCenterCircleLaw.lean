@@ -45,7 +45,7 @@ theorem offCenter_unpinned_circle_covariance
         -circleLogPotential ‖p.val.1 - q.val.1‖₊
           ⟨Real.exp (-p.val.2), Real.exp_pos _⟩
           ⟨Real.exp (-q.val.2), Real.exp_pos _⟩ := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   have hp := circle_pin_exterior (z + p.val.1) p.val.2
     (localCircle_exterior z hz p)
   have hq := circle_pin_exterior (z + q.val.1) q.val.2

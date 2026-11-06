@@ -15,7 +15,7 @@ The full-path joint law transports the exact source polar expectation to the cop
 Its leading coefficient retains the supplied reflection witness and the fixed radial buffer.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -77,6 +77,6 @@ theorem dual_source_copied_polar_increment_tendsto
     N hNm hfin Z hData.2.1 α₁ α₂ α₃ ξ h
     ((α₁+α₂+α₃-2/γ-2*Q γ)/γ) z (Real.toNNReal (-Real.log ‖z‖+h))
     (hlaw α₁ α₂ α₃ ξ z hstrict)
-  exact congrArg (fun t : ℝ => t/‖z‖^((4/γ)*(Q γ-α₁))) he
+  grind
 
 end DOZZ.Proofs

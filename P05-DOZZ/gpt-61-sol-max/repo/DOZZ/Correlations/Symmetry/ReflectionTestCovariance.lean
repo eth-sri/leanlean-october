@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.Correlations.Symmetry.ReflectionCircleCovariance
 public import DOZZ.GFF.EnergyPositivity
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped Distributions
 namespace DOZZ.Proofs
@@ -40,17 +40,13 @@ theorem symmetryReflection_testPotential (f : TestFn) :
   have h := symmetryReflection_integral (fun x => f x * Real.log (normPlus (1 - x)))
   have he : (fun x : ℂ => f (1 - x) * Real.log (normPlus (1 - (1 - x)))) =
       fun x => f (1 - x) * Real.log (normPlus x) := by
-    funext x
-    rw [show (1 : ℂ) - (1 - x) = x by ring]
+    simp_all
   rw [he] at h
   change (∫ x, f (1 - x) * Real.log (normPlus x)) =
     (∫ x, f x * Real.log (normPlus x)) + ∫ x, f x * symmetryReflectionPotential x
   rw [h]
   have hi : Integrable (fun x : ℂ => f x * Real.log (normPlus x)) volume := by
-    have hn : Continuous (fun x : ℂ => Real.log (normPlus x)) :=
-      (continuous_const.max continuous_norm).log
-        (fun x => (lt_of_lt_of_le zero_lt_one (le_max_left 1 ‖x‖)).ne')
-    exact (f.continuous.mul hn).integrable_of_hasCompactSupport f.hasCompactSupport.mul_right
+    exact integrable_testFn_mul_logPlus f
   have hd : Integrable (fun x : ℂ => f x * symmetryReflectionPotential x) volume :=
     (f.continuous.mul symmetryReflectionPotential_continuous).integrable_of_hasCompactSupport
       f.hasCompactSupport.mul_right

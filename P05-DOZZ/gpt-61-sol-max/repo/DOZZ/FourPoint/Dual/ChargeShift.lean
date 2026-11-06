@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Dual.RootedIdentity
 public import DOZZ.FourPoint.Dual.OuterInverseLimit
-public import DOZZ.FourPoint.Reflected.ChargeShift
+public import DOZZ.FourPoint.RetainedMass
 import Mathlib.Tactic
 /-! # Exact circle tilts of the supplied dual retained mass -/
 public section
@@ -13,53 +13,7 @@ open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-/-- The density changes the first ordinary charge and retains the moving degenerate root. -/
-theorem dual_coulombWeight_charge_shift (γ a α₁ α₂ α₃ : ℝ) (z x : ℂ)
-    (hx : x ≠ 0) :
-    ENNReal.ofReal ((normPlus x / ‖x‖) ^ (γ * a)) *
-      coulombWeight γ ![-2 / γ, α₁, α₂] ![z, 0, 1] α₃ x =
-        coulombWeight γ ![-2 / γ, α₁ + a, α₂] ![z, 0, 1] α₃ x := by
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
-  have hp : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hd : 0 < normPlus x / ‖x‖ := div_pos hp hn
-  simp only [coulombWeight, Fin.prod_univ_succ, Matrix.cons_val_zero,
-    Matrix.cons_val_succ, Fin.prod_univ_zero, mul_one, sub_zero]
-  rw [coulombWeight_rpow_ofReal hd, coulombWeight_rpow_ofReal hd]
-  have he : γ * (α₁ + a) = γ * a + γ * α₁ := by ring
-  rw [he, Real.rpow_add hd, ENNReal.ofReal_mul (Real.rpow_pos_of_pos hd _).le]
-  ring
-
-/-- Circle tilting of the literal retained mass is exactly the charge shift whenever the
-retained region lies outside that circle. No atom assumptions on the underlying measure enter. -/
-theorem dual_outerMass_circle_density_shift (γ a m α₁ α₂ α₃ ξ : ℝ)
-    (μ : Measure ℂ) (z : ℂ) (hr : 0 < ‖z‖ ^ (1 - ξ))
-    (hm : Real.exp (-m) ≤ ‖z‖ ^ (1 - ξ)) :
-    dualOuterMass γ α₁ α₂ α₃
-      (μ.withDensity (fun x : ℂ => ENNReal.ofReal
-        (Real.exp (γ * a * (Real.log (normPlus x) -
-          Real.log (max (Real.exp (-m)) ‖x‖)))))) z ξ =
-      dualOuterMass γ (α₁ + a) α₂ α₃ μ z ξ := by
-  let D : Set ℂ := {x | ‖z‖ ^ (1 - ξ) ≤ ‖x‖}
-  have hD : MeasurableSet D := (isClosed_le continuous_const continuous_norm).measurableSet
-  have hd : Measurable (fun x : ℂ => ENNReal.ofReal
-      (Real.exp (γ * a * (Real.log (normPlus x) -
-        Real.log (max (Real.exp (-m)) ‖x‖))))) := by
-    unfold normPlus
-    fun_prop
-  unfold dualOuterMass
-  rw [restrict_withDensity hD,
-    coulombMass_eq_lintegral_coulombWeight,
-    lintegral_withDensity_eq_lintegral_mul _ hd (measurable_coulombWeight _ _ _ _),
-    coulombMass_eq_lintegral_coulombWeight]
-  apply lintegral_congr_ae
-  filter_upwards [ae_restrict_mem hD] with x hx
-  have hn : 0 < ‖x‖ := hr.trans_le hx
-  dsimp only [Pi.mul_apply]
-  rw [reflected_circle_density_outside γ a m x hn (hm.trans hx)]
-  exact dual_coulombWeight_charge_shift γ a α₁ α₂ α₃ z x
-    (norm_pos_iff.mp hn)
-
-/-- Exact Cameron-Martin identification of the inverse outer moment at arbitrary real circle time. -/
+/-- The common charge-shift identity at the dual degenerate charge. -/
 theorem dual_outerMass_circle_tilt {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
@@ -69,13 +23,9 @@ theorem dual_outerMass_circle_tilt {Ω : Type*} [MeasurableSpace Ω]
     (∫⁻ ω, ENNReal.ofReal (Real.exp (a * Xc ω 0 m - m * a ^ 2 / 2)) *
       dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^ (-q) ∂P) =
       ∫⁻ ω, dualOuterMass γ (α₁ + a) α₂ α₃ (M ω) z ξ ^ (-q) ∂P := by
-  rw [reflected_lintegral_circleTilt P X hX γ hγ hγ₂ M hM Xc hXc a m hm
-    (fun μ => dualOuterMass γ α₁ α₂ α₃ μ z ξ ^ (-q))
-    ((dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).pow_const (-q))]
-  apply lintegral_congr
-  intro ω
-  rw [dual_outerMass_circle_density_shift γ a m α₁ α₂ α₃ ξ (M ω) z hr houtside]
-
+  simpa only [retainedCoulombMass, dualOuterMass] using
+    retained_coulombMass_circle_tilt P X hX γ hγ hγ₂ M hM Xc hXc (-2 / γ)
+      a m α₁ α₂ α₃ ξ q hm z hr houtside
 
 /-- The tilted retained moment converges to the rho with shifted charge, in the full complex
 punctured limit. Choosing `a = 2*(Q-alpha1)` gives the reflected leading coefficient. -/

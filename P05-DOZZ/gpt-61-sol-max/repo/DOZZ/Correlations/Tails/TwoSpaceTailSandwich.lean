@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Tails.ENNRealTailPerturbation
 
 /-! Transport a localized law while bounding the two remainders on their own probability spaces. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 
@@ -48,9 +48,7 @@ theorem two_space_localization_tail_sandwich
     have hb := ennreal_tail_domination P' L' B E'
       (hCopy.mono fun _ h => h.1) (x-h) h hh (by linarith only [hhx])
     rw [hT (x-h)] at ha
-    have heq : x-h-h = x-2*h := by ring
-    rw [heq] at hb
-    linarith only [ha,hb]
+    grind
 
 
 end DOZZ.Proofs

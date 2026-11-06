@@ -6,6 +6,7 @@ module
 
 public import DOZZ.GMC.SharpMoments.CutoffUIBound
 public import DOZZ.GMC.SharpMoments.InverseGamma
+public import DOZZ.GMC.SharpMoments.CompactBounds
 
 /-! # Uniform higher moments of regularized Coulomb masses
 
@@ -15,7 +16,7 @@ zero and controlled by the uniform positive bound; nonpositive orders use one fi
 on which the regularized weight is bounded below, together with the γ-uniform inverse moments of
 cutoff disk masses. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
@@ -33,7 +34,7 @@ theorem regularizedCoulombMass_moment_uniform_nonpos
     ∃ K : ℝ≥0∞, K < ⊤ ∧ ∀ γ ∈ Γ, ∀ (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf t r : ℝ),
       ∑ j, ‖z j‖ ≤ Zs → (∀ j, |γ * α j| ≤ E) → |γ * αinf| ≤ E → tmin ≤ t → t ≤ 0 → 0 ≤ r →
       ∫⁻ ω, ENNReal.rpow (regularizedCoulombMass P Xc γ partition α z αinf r ω) t ∂P ≤ K := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   set R0 : ℝ := 2 * Zs + 2 with hR0
   obtain ⟨c, hc, hcb⟩ := coulombCutoffWeight_ge_ball partition N (E := E) hZs (le_refl R0)
   set B : Set ℂ := Metric.ball (((R0 + 1 : ℝ)) : ℂ) (1 / 8) with hB
@@ -109,10 +110,10 @@ theorem regularizedCoulombMass_higher_moment_uniform
         (regularizedCoulombMass P Xc c.1 partition c.2.2.1 c.2.1 c.2.2.2 r ω)
         ((1 + η) * ((2 * Q c.1 - (∑ k, c.2.2.1 k + c.2.2.2)) / c.1)) ∂P ≤ B := by
   classical
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   set sf : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) → ℝ := fun c =>
     (2 * Q c.1 - (∑ k, c.2.2.1 k + c.2.2.2)) / c.1 with hsf
-  have hne : ∀ c ∈ S, c.1 ≠ 0 := fun c hc => (hadm c hc).1.ne'
+  have hne  := fun c hc => (hadm c hc).1.ne'
   have hconton : ∀ f : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) → ℝ,
       (∀ c ∈ S, ContinuousAt f c) → ContinuousOn f S := fun f hf c hc =>
     (hf c hc).continuousWithinAt
@@ -122,35 +123,11 @@ theorem regularizedCoulombMass_higher_moment_uniform
     fun_prop (disch := first | exact h | exact pow_ne_zero _ h)
   -- uniform sizes
   obtain ⟨σ0, hσ0⟩ := hS.exists_bound_of_continuousOn hsfc
-  obtain ⟨Zs0, hZs0⟩ := hS.exists_bound_of_continuousOn
-    (f := fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) => ∑ j, ‖c.2.1 j‖) (by fun_prop)
-  obtain ⟨E0, hE0⟩ := hS.exists_bound_of_continuousOn
-    (f := fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) =>
-      ∑ j, |c.1 * c.2.2.1 j| + |c.1 * c.2.2.2|) (by fun_prop)
+  obtain ⟨Zs, E, hZs, hE, hZc, _, hEα, hEinf⟩ := compact_coulomb_parameter_bounds hS
   set σ : ℝ := max σ0 0 with hσdef
-  set Zs : ℝ := max Zs0 0 with hZsdef
-  set E : ℝ := max E0 0 with hEdef
   have hσ : 0 ≤ σ := le_max_right _ _
-  have hZs : 0 ≤ Zs := le_max_right _ _
-  have hE : 0 ≤ E := le_max_right _ _
   have hsσ : ∀ c ∈ S, |sf c| ≤ σ := fun c hc =>
     (by simpa [Real.norm_eq_abs] using hσ0 c hc : |sf c| ≤ σ0).trans (le_max_left _ _)
-  have hZc : ∀ c ∈ S, ∑ j, ‖c.2.1 j‖ ≤ Zs := fun c hc => by
-    have h := hZs0 c hc
-    rw [Real.norm_eq_abs, abs_of_nonneg (Finset.sum_nonneg fun j _ => norm_nonneg _)] at h
-    exact h.trans (le_max_left _ _)
-  have hEsum : ∀ c ∈ S, ∑ j, |c.1 * c.2.2.1 j| + |c.1 * c.2.2.2| ≤ E := fun c hc => by
-    have h := hE0 c hc
-    rw [Real.norm_eq_abs, abs_of_nonneg (add_nonneg (Finset.sum_nonneg fun j _ =>
-      abs_nonneg _) (abs_nonneg _))] at h
-    exact h.trans (le_max_left _ _)
-  have hEα : ∀ c ∈ S, ∀ j, |c.1 * c.2.2.1 j| ≤ E := fun c hc j => by
-    have := Finset.single_le_sum (f := fun j => |c.1 * c.2.2.1 j|) (fun j _ => abs_nonneg _)
-      (Finset.mem_univ j)
-    linarith [hEsum c hc, abs_nonneg (c.1 * c.2.2.2)]
-  have hEinf : ∀ c ∈ S, |c.1 * c.2.2.2| ≤ E := fun c hc => by
-    have := Finset.sum_nonneg (fun j (_ : j ∈ Finset.univ) => abs_nonneg (c.1 * c.2.2.1 j))
-    linarith [hEsum c hc]
   -- uniform slack, threshold size and root separation
   have e1 : ∀ᶠ ε in 𝓝[>] (0 : ℝ), ∀ c ∈ S, ε ≤ 4 / c.1 ^ 2 - sf c :=
     eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by

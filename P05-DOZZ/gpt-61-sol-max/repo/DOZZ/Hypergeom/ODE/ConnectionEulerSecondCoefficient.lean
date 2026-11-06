@@ -10,7 +10,7 @@ public import DOZZ.Hypergeom.ODE.ConnectionGammaCoefficients
 
 /-! Evaluation of the second zero-basis connection coefficient from Euler's transformation. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
@@ -41,13 +41,11 @@ theorem connectionMinusSecondCramer_eq_gamma_of_real
     · intro n heq
       apply hδInt
       refine ⟨n, ?_⟩
-      calc
-        (n : ℂ) = (c : ℂ) - (a : ℂ) - (b : ℂ) := heq.symm
-        _ = ((c - a - b : ℝ) : ℂ) := by push_cast; ring
+      simp_all
   let F : Filter ℝ := 𝓝[Iio 1] 1
   let η : ℝ := a + b - c
   have hη : η = c - (c - a) - (c - b) := by dsimp [η]; ring
-  have hη' : c - (c - a) - (c - b) = η := hη.symm
+  
   have hca' : c - (c - a) = a := by ring
   have hcb' : c - (c - b) = b := by ring
   have hη'' : a - (c - b) = η := by dsimp [η]; ring
@@ -55,7 +53,7 @@ theorem connectionMinusSecondCramer_eq_gamma_of_real
     rw [hcb']
     exact hb
   have hEulerValue := realGaussEulerKernelIntegral_tendsto_gauss_value
-    (c - a) (c - b) c hca hcb (by rw [show c - (c - a) - (c - b) = a + b - c by ring]; exact heta)
+    (c - a) (c - b) c hca hcb (by continuity)
   have hEulerValueC : Tendsto
       (fun x : ℝ =>
         ((Real.Gamma c / (Real.Gamma (c - b) * Real.Gamma b) : ℂ) *
@@ -76,29 +74,14 @@ theorem connectionMinusSecondCramer_eq_gamma_of_real
             realGaussEulerKernelIntegral (c - a) (c - b) c x : ℝ) : ℂ))
         F (𝓝 ((Real.Gamma c * Real.Gamma η /
           (Real.Gamma a * Real.Gamma b) : ℝ) : ℂ)) := by
-      simpa only [Function.comp_def] using
-        (Complex.continuous_ofReal.continuousAt.tendsto.comp hvalue')
-    have hEq : (fun x : ℝ =>
-        (((Real.Gamma c / (Real.Gamma (c - b) * Real.Gamma b) : ℝ) *
-          realGaussEulerKernelIntegral (c - a) (c - b) c x : ℝ) : ℂ)) =ᶠ[F]
-        (fun x : ℝ =>
-          ((Real.Gamma c / (Real.Gamma (c - b) * Real.Gamma b) : ℂ) *
-            (realGaussEulerKernelIntegral (c - a) (c - b) c x : ℂ))) := by
-      filter_upwards with x
-      rw [Complex.ofReal_mul, Complex.ofReal_div, Complex.ofReal_mul]
-    exact hvalueC0.congr' hEq
+      exact (Complex.continuous_ofReal.continuousAt.tendsto.comp hvalue')
+    simp_all
   have hxpos : ∀ᶠ x : ℝ in F, 0 < x := by
-    dsimp [F]
     exact Filter.Eventually.filter_mono nhdsWithin_le_nhds
       (eventually_gt_nhds (show (0 : ℝ) < 1 by norm_num))
   have hxlt : ∀ᶠ x : ℝ in F, x < 1 := by
-    dsimp [F]
-    change ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x ∈ Iio 1
-    simpa only [mem_Iio] using
-      (eventually_mem_nhdsWithin : ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x ∈ Iio 1)
-  have hδcast : ((c - a - b : ℝ) : ℂ) = (c : ℂ) - (a : ℂ) - (b : ℂ) := by
-    push_cast
-    ring
+    exact eventually_mem_nhdsWithin
+  
   have hEulerEq :
       (fun x : ℝ => (1 - (x : ℂ)) ^ (-((c : ℂ) - (a : ℂ) - (b : ℂ))) *
         gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ)) =ᶠ[F]
@@ -132,31 +115,22 @@ theorem connectionMinusSecondCramer_eq_gamma_of_real
           (realGaussEulerKernelIntegral (c - a) (c - b) c x : ℂ) := by
         simpa [realGaussEulerKernelIntegral, Complex.ofReal_div,
           Complex.ofReal_mul] using hfamily.symm
-  have hscaled : Tendsto
-      (fun x : ℝ => (1 - (x : ℂ)) ^
-        (-((c : ℂ) - (a : ℂ) - (b : ℂ))) *
-          gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ))
-      F (𝓝 ((Real.Gamma c * Real.Gamma η /
-        (Real.Gamma a * Real.Gamma b) : ℝ) : ℂ)) :=
+  have hscaled  :=
     hEulerValueC.congr' hEulerEq.symm
   have hcastEta : p.1 + p.2.1 - p.2.2 = ((a + b - c : ℝ) : ℂ) := by
-    change (a : ℂ) + (b : ℂ) - (c : ℂ) = ((a + b - c : ℝ) : ℂ)
-    push_cast
-    ring
+    push_cast <;> ring
   have hδendpoint : 0 < (p.1 + p.2.1 - p.2.2).re := by
-    rw [hcastEta]
-    simp only [Complex.ofReal_re]
-    exact heta
+    simp_all
   have hcoeff := connectionMinusSecondCramer_eq_of_scaled_endpoint_limit
     hH hp hδendpoint (by simpa [F, p, η] using hscaled)
   have hGamma :
       ((Real.Gamma c * Real.Gamma η /
           (Real.Gamma a * Real.Gamma b) : ℝ) : ℂ) =
         gaussConnectionMinusGammaCoefficient₂ p := by
-    have hΓc : Real.Gamma c ≠ 0 := (Real.Gamma_pos_of_pos hc).ne'
-    have hΓη : Real.Gamma η ≠ 0 := (Real.Gamma_pos_of_pos heta).ne'
-    have hΓa : Real.Gamma a ≠ 0 := (Real.Gamma_pos_of_pos ha).ne'
-    have hΓb : Real.Gamma b ≠ 0 := (Real.Gamma_pos_of_pos hb).ne'
+    have hΓc  := (Real.Gamma_pos_of_pos hc).ne'
+    have hΓη  := (Real.Gamma_pos_of_pos heta).ne'
+    have hΓa  := (Real.Gamma_pos_of_pos ha).ne'
+    have hΓb  := (Real.Gamma_pos_of_pos hb).ne'
     dsimp [gaussConnectionMinusGammaCoefficient₂, p, η]
     rw [show (a : ℂ) + (b : ℂ) - (c : ℂ) = ((a + b - c : ℝ) : ℂ) by
       push_cast; ring,
@@ -168,7 +142,7 @@ theorem connectionMinusSecondCramer_eq_gamma_of_real
       (Real.Gamma c : ℂ) * (Real.Gamma η : ℂ) /
           ((Real.Gamma a : ℂ) * (Real.Gamma b : ℂ)) =
         gaussConnectionMinusGammaCoefficient₂ p := by
-    simpa only [Complex.ofReal_mul, Complex.ofReal_div] using hGamma
+    simp_all
   simpa [p] using hcoeff.trans hGamma'
 
 end DOZZ.Proofs

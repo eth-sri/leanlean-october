@@ -7,24 +7,24 @@ public import DOZZ.FourPoint.Fusion.MassSegment
 public import DOZZ.FourPoint.Fusion.InterpolatedInverseMoments
 public import DOZZ.FourPoint.Fusion.RootedIntegrability
 /-! # Signed rooting for the positive KRV mass segment -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM
 /-- Rooting the unrooted segment gives exactly the two moving rooted endpoints. -/
-theorem fusionUnrootedSegment_rooted_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusionUnrootedSegment_rooted_ae 
     (α₁ α₂ α₃ t : ℝ) (y z : ℂ) :
     ∀ᵐ ω ∂P, fusionUnrootedSegment γ α₁ α₂ α₃ t z (gmcRootedMeasure γ (y * z) (M ω)) =
       fusionInterpolatedMass γ α₁ α₂ α₃ t y z (M ω) := by
   filter_upwards [fusionMovingMass_eq_rooted_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y z,
     fusionRootOnlyMass_eq_rooted_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y z] with ω h1 h0
   simp only [fusionUnrootedSegment, fusionInterpolatedMass, h1, h0]
+
 /-- The rooted inverse expectation is bounded uniformly at every spatial root. -/
-theorem fusionUnrootedSegment_rooted_inverse_uniform {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusionUnrootedSegment_rooted_inverse_uniform 
     (α₁ α₂ α₃ s : ℝ) (hs : s ≤ 0) :
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ t ∈ Icc (0 : ℝ) 1, ∀ z : ℂ, z ≠ 0 → ‖z‖ ≤ 1 → ∀ u : ℂ,
       (∫⁻ ω, fusionUnrootedSegment γ α₁ α₂ α₃ t z (gmcRootedMeasure γ u (M ω)) ^ s ∂P) ≤ C := by
@@ -35,13 +35,12 @@ theorem fusionUnrootedSegment_rooted_inverse_uniform {Ω : Type*} [MeasurableSpa
       ∫⁻ ω, fusionInterpolatedMass γ α₁ α₂ α₃ t (u / z) z (M ω) ^ s ∂P := by
     apply lintegral_congr_ae
     filter_upwards [fusionUnrootedSegment_rooted_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ t (u / z) z] with ω hω
-    simpa only [div_mul_cancel₀ _ hz] using congrArg (fun q : ℝ≥0∞ => q ^ s) hω
+    simp_all
   rw [he]
   exact hb t ht (u / z) z hz1
+
 /-- Finite endpoint masses make a negative segment power nonzero almost surely. -/
-theorem fusionUnrootedSegment_inverse_ne_zero_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusionUnrootedSegment_inverse_ne_zero_ae 
     (α₁ α₂ α₃ : ℝ) (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (t s : ℝ) (hs : s < 0) (z : ℂ) (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4) :
     ∀ᵐ ω ∂P, fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ s ≠ 0 := by
@@ -54,10 +53,9 @@ theorem fusionUnrootedSegment_inverse_ne_zero_ae {Ω : Type*} [MeasurableSpace �
   rcases ENNReal.rpow_eq_zero_iff.mp he with ⟨_, hp⟩ | ⟨ht, _⟩
   · linarith
   · exact hf ht
+
 /-- An integrable signed reference observable can be rooted against the segment inverse power. -/
-theorem fusion_segment_rooting {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_segment_rooting 
     (α₁ α₂ α₃ : ℝ) (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) (s : ℝ) (hs : s < 0)
     (z : ℂ) (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4)
@@ -76,16 +74,18 @@ theorem fusion_segment_rooting {Ω : Type*} [MeasurableSpace Ω]
       _ ≤ ∫⁻ u, ENNReal.ofReal |f u| * C ∂gmcReferenceMeasure :=
         lintegral_mono fun u => mul_le_mul' le_rfl (hb t ht z hz (by linarith) u)
       _ = (∫⁻ u, ENNReal.ofReal |f u| ∂gmcReferenceMeasure) * C :=
-        lintegral_mul_const _ (ENNReal.measurable_ofReal.comp (by simpa only [Real.norm_eq_abs] using hfm.norm))
+        lintegral_mul_const _ (ENNReal.measurable_ofReal.comp (by exact hfm.norm))
       _ < ⊤ := ENNReal.mul_lt_top (by
         have h := hfi.hasFiniteIntegral
         rw [hasFiniteIntegral_iff_norm] at h
-        simpa only [Real.norm_eq_abs] using h) hC
+        exact h) hC
   have hsample := fusion_rooted_spatial_integrable P X hX γ hγ hγ2 M hM (fun u => (f u : ℂ))
     (Complex.measurable_ofReal.comp hfm) G hG
     (fusionUnrootedSegment_inverse_ne_zero_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ t s hs z hz hz4)
-    (by simpa only [Complex.norm_real, Real.norm_eq_abs] using habs)
-  have hreal : ∀ᵐ ω ∂P, Integrable f (M ω) := hsample.mono fun ω h => by
+    (by simp_all)
+  have hreal  := hsample.mono fun ω h => by
     convert h.re using 1
   exact fusion_rooted_real_integral P X hX γ hγ hγ2 M hM f hfm hreal G hG habs
+omit Ω _inst1 P X hX γ hγ hγ2 M hM
+
 end DOZZ.Proofs

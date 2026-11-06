@@ -76,7 +76,7 @@ theorem hasDerivAt_radialShiftFirstDerivative (p : ℝ) (x : ℂ) (hx : x ≠ 0)
     HasDerivAt (radialShiftFirstDerivative p x)
       (p * (p - 1) * (‖x‖ ^ 2) ^ (p - 2) * (2 * x.re) ^ 2 +
         p * (‖x‖ ^ 2) ^ (p - 1) * 2) 0 := by
-  let q : ℝ → ℝ := radialShiftSq x
+  let q  := radialShiftSq x
   have hq : HasDerivAt q (2 * x.re) 0 := by
     change HasDerivAt (fun t : ℝ => ‖x‖ ^ 2 + x.re * t * 2 + t ^ 2) _ _
     have hlin : HasDerivAt (fun t : ℝ => x.re * t * 2) (2 * x.re) 0 := by
@@ -98,8 +98,7 @@ theorem hasDerivAt_radialShiftFirstDerivative (p : ℝ) (x : ℂ) (hx : x ≠ 0)
       ((p - 1) * q 0 ^ (p - 2) * (2 * x.re)) 0 := by
     convert (Real.hasDerivAt_rpow_const (x := q 0) (p := p - 1)
       (Or.inl hqpos.ne')).comp 0 hq using 1
-    · rfl
-    · rw [show p - 1 - 1 = p - 2 by ring]
+    all_goals grind
   have hlin : HasDerivAt (fun t : ℝ => 2 * x.re + 2 * t) 2 0 := by
     convert ((hasDerivAt_id (0 : ℝ)).const_mul (2 : ℝ)).const_add (2 * x.re)
       using 1 <;> norm_num
@@ -117,27 +116,27 @@ theorem hasDerivAt_radialShiftFirstDerivative (p : ℝ) (x : ℂ) (hx : x ≠ 0)
     ring
 
 /-- The second derivative of a radial power along a real coordinate line, at its nonzero center. -/
-theorem hasDerivAt_deriv_radialShiftRpow (p : ℝ) (x : ℂ) (hx : x ≠ 0) :
-    HasDerivAt (fun t : ℝ => deriv (fun s => radialShiftSq x s ^ p) t)
-      (p * (p - 1) * (‖x‖ ^ 2) ^ (p - 2) * (2 * x.re) ^ 2 +
-        p * (‖x‖ ^ 2) ^ (p - 1) * 2) 0 := by
-  let q : ℝ → ℝ := radialShiftSq x
+def hasDerivAt_deriv_radialShiftRpow (p : ℝ) (x : ℂ) (hx : x ≠ 0)  := 
+  let q  := radialShiftSq x
   have hq0 : q 0 = ‖x‖ ^ 2 := by simp [q, radialShiftSq]
   have hqpos : 0 < q 0 := by rw [hq0]; positivity
   have hqcont : Continuous q := by
     change Continuous (fun t : ℝ => ‖x‖ ^ 2 + x.re * t * 2 + t ^ 2)
     fun_prop
-  have hqposEv : ∀ᶠ t in 𝓝 (0 : ℝ), 0 < q t :=
+  have hqposEv  :=
     hqcont.continuousAt.eventually (isOpen_Ioi.mem_nhds hqpos)
   have hderivEq : deriv (fun s => q s ^ p) =ᶠ[𝓝 (0 : ℝ)]
       radialShiftFirstDerivative p x := by
     filter_upwards [hqposEv] with t ht
     exact (hasDerivAt_radialShiftRpow p x t ht).deriv
   have hsecond := hasDerivAt_radialShiftFirstDerivative p x hx
-  exact hsecond.congr_of_eventuallyEq hderivEq
+  hsecond.congr_of_eventuallyEq hderivEq
 
+variable (k : ℝ) (x : ℂ) (hx : x ≠ 0)
+
+include k x hx in
 /-- The second derivative of `‖x+t‖^k` at `t=0`, written through the squared norm. -/
-theorem hasDerivAt_deriv_norm_rpow_shift (k : ℝ) (x : ℂ) (hx : x ≠ 0) :
+theorem hasDerivAt_deriv_norm_rpow_shift  :
     HasDerivAt (fun t : ℝ => deriv (fun s : ℝ => ‖x + (s : ℂ)‖ ^ k) t)
       ((k / 2) * (k / 2 - 1) * (‖x‖ ^ 2) ^ (k / 2 - 2) *
           (2 * x.re) ^ 2 +
@@ -150,12 +149,13 @@ theorem hasDerivAt_deriv_norm_rpow_shift (k : ℝ) (x : ℂ) (hx : x ≠ 0) :
       (fun t => deriv (fun s : ℝ => radialShiftSq x s ^ (k / 2)) t) := by
     rw [hfun]
   have hsecond := hasDerivAt_deriv_radialShiftRpow (k / 2) x hx
-  exact hsecond.congr_of_eventuallyEq (Filter.EventuallyEq.of_eq hderiv)
+  simp_all
 
 
+include k x hx in
 /-- The sum of the two coordinate second derivatives is the planar Laplacian
 coefficient `k^2 ‖x‖^(k-2)`. -/
-theorem radial_rpow_laplacian_coefficient (k : ℝ) (x : ℂ) (hx : x ≠ 0) :
+theorem radial_rpow_laplacian_coefficient  :
     ((k / 2) * (k / 2 - 1) * (‖x‖ ^ 2) ^ (k / 2 - 2) *
           (2 * x.re) ^ 2 +
         (k / 2) * (‖x‖ ^ 2) ^ (k / 2 - 1) * 2) +
@@ -163,8 +163,8 @@ theorem radial_rpow_laplacian_coefficient (k : ℝ) (x : ℂ) (hx : x ≠ 0) :
           (2 * x.im) ^ 2 +
         (k / 2) * (‖x‖ ^ 2) ^ (k / 2 - 1) * 2) =
       k ^ 2 * ‖x‖ ^ (k - 2) := by
-  let p : ℝ := k / 2
-  let r : ℝ := ‖x‖ ^ 2
+  let p  := k / 2
+  let r  := ‖x‖ ^ 2
   have hr : 0 < r := by
     dsimp [r]
     positivity
@@ -181,18 +181,7 @@ theorem radial_rpow_laplacian_coefficient (k : ℝ) (x : ℂ) (hx : x ≠ 0) :
     dsimp [p, r]
     rw [show k / 2 - 1 = (k - 2) / 2 by ring]
     exact (norm_rpow_eq_norm_sq_rpow x (k - 2)).symm
-  calc
-    _ = p * (p - 1) * r ^ (p - 2) *
-          ((2 * x.re) ^ 2 + (2 * x.im) ^ 2) + 4 * p * r ^ (p - 1) := by
-            dsimp [p, r]
-            ring
-    _ = p * (p - 1) * r ^ (p - 2) * (4 * r) +
-          4 * p * r ^ (p - 1) := by rw [hcoord]
-    _ = 4 * p ^ 2 * r ^ (p - 1) := by rw [← hpow]; ring
-    _ = k ^ 2 * ‖x‖ ^ (k - 2) := by
-          rw [hnormpow]
-          dsimp [p]
-          ring
+  grind
 
 /-- A centered second difference of a radial power is quadratically bounded when the
 increment is at most half the distance to the origin. -/
@@ -201,15 +190,14 @@ theorem norm_rpow_centered_difference_le (k : ℝ) (hk : 0 < k) (hk₂ : k < 2)
     |‖x + y‖ ^ k + ‖x - y‖ ^ k - 2 * ‖x‖ ^ k| ≤
       (2 * (k * (1 + (15 / 4) * ((1 - k / 2) * (1 / 4 : ℝ) ^ (k / 2 - 2))))) *
         ‖y‖ ^ 2 * ‖x‖ ^ (k - 2) := by
-  let q : ℂ := y / x
-  let C : ℝ := k * (1 + (15 / 4) *
+  let q  := y / x
+  let C  := k * (1 + (15 / 4) *
     ((1 - k / 2) * (1 / 4 : ℝ) ^ (k / 2 - 2)))
-  have hxpos : 0 < ‖x‖ := norm_pos_iff.mpr hx
+  have hxpos  := norm_pos_iff.mpr hx
   have hqnorm : ‖q‖ = ‖y‖ / ‖x‖ := by simp [q]
   have hq : ‖q‖ ≤ 1 / 2 := by
     rw [hqnorm]
-    apply (div_le_iff₀ hxpos).2
-    nlinarith [hy]
+    field_simp <;> nlinarith
   have hplus : x + y = x * (1 + q) := by
     dsimp [q]
     field_simp [hx]
@@ -223,11 +211,9 @@ theorem norm_rpow_centered_difference_le (k : ℝ) (hk : 0 < k) (hk₂ : k < 2)
   have hremMinus := norm_unit_taylor_remainder_le k hk hk₂ q hq
   have hremPlus := norm_unit_taylor_remainder_le k hk hk₂ (-q) (by simpa using hq)
   have hC : 0 ≤ C := by
-    dsimp [C]
-    have hfactor : 0 ≤ 1 - k / 2 := by linarith
-    positivity
+    bound
   have hCnorm : |‖1 - q‖ ^ k - 1 + k * q.re| ≤ C * ‖q‖ ^ 2 := by
-    simpa [C] using hremMinus
+    exact hremMinus
   have hCnorm' : |‖1 + q‖ ^ k - 1 - k * q.re| ≤ C * ‖q‖ ^ 2 := by
     calc
       |‖1 + q‖ ^ k - 1 - k * q.re| =
@@ -235,14 +221,14 @@ theorem norm_rpow_centered_difference_le (k : ℝ) (hk : 0 < k) (hk₂ : k < 2)
             congr 1
             simp only [sub_neg_eq_add, Complex.neg_re]
             ring
-      _ ≤ C * ‖-q‖ ^ 2 := by simpa [C] using hremPlus
+      _ ≤ C * ‖-q‖ ^ 2 := by exact hremPlus
       _ = C * ‖q‖ ^ 2 := by simp
   have hpair : ‖x + y‖ ^ k + ‖x - y‖ ^ k - 2 * ‖x‖ ^ k =
       ‖x‖ ^ k * ((‖1 + q‖ ^ k - 1 - k * q.re) +
         (‖1 - q‖ ^ k - 1 + k * q.re)) := by
     rw [hplusPow, hminusPow]
     ring
-  have hnormx : 0 ≤ ‖x‖ ^ k := Real.rpow_nonneg (norm_nonneg x) k
+  have hnormx  := Real.rpow_nonneg (norm_nonneg x) k
   calc
     _ = ‖x‖ ^ k * |(‖1 + q‖ ^ k - 1 - k * q.re) +
           (‖1 - q‖ ^ k - 1 + k * q.re)| := by
@@ -251,17 +237,13 @@ theorem norm_rpow_centered_difference_le (k : ℝ) (hk : 0 < k) (hk₂ : k < 2)
           |‖1 - q‖ ^ k - 1 + k * q.re|) :=
             mul_le_mul_of_nonneg_left (abs_add_le _ _) hnormx
     _ ≤ ‖x‖ ^ k * (C * ‖q‖ ^ 2 + C * ‖q‖ ^ 2) := by
-          exact mul_le_mul_of_nonneg_left (add_le_add hCnorm' hCnorm) hnormx
+          bound
     _ = (2 * C) * ‖y‖ ^ 2 * ‖x‖ ^ (k - 2) := by
           rw [hqnorm, div_pow]
-          have hpow : ‖x‖ ^ k / ‖x‖ ^ (2 : ℝ) = ‖x‖ ^ (k - 2) :=
+          have hpow  :=
             (Real.rpow_sub hxpos k 2).symm
           rw [← Real.rpow_natCast ‖x‖ 2]
-          calc
-            ‖x‖ ^ k * (C * (‖y‖ ^ 2 / ‖x‖ ^ (2 : ℝ)) +
-                C * (‖y‖ ^ 2 / ‖x‖ ^ (2 : ℝ))) =
-                2 * C * ‖y‖ ^ 2 * (‖x‖ ^ k / ‖x‖ ^ (2 : ℝ)) := by ring
-            _ = (2 * C) * ‖y‖ ^ 2 * ‖x‖ ^ (k - 2) := by rw [hpow]
+          grind
 
 /-- A global second-difference majorant, including increments that reach or cross the origin.
 The constant is deliberately explicit so it can be used under an integral. -/
@@ -270,14 +252,12 @@ theorem norm_rpow_centered_difference_le_global (k : ℝ) (hk : 0 < k) (hk₂ : 
     |‖x + y‖ ^ k + ‖x - y‖ ^ k - 2 * ‖x‖ ^ k| ≤
       (2 * (k * (1 + (15 / 4) * ((1 - k / 2) * (1 / 4 : ℝ) ^ (k / 2 - 2)))) +
         2 * (3 ^ k + 2 ^ k) * 2 ^ (2 - k)) * ‖y‖ ^ 2 * ‖x‖ ^ (k - 2) := by
-  let C : ℝ := k * (1 + (15 / 4) *
+  let C  := k * (1 + (15 / 4) *
     ((1 - k / 2) * (1 / 4 : ℝ) ^ (k / 2 - 2)))
   let B : ℝ := 2 * (3 ^ k + 2 ^ k) * 2 ^ (2 - k)
-  have hxpos : 0 < ‖x‖ := norm_pos_iff.mpr hx
+  
   have hC : 0 ≤ C := by
-    dsimp [C]
-    have hfactor : 0 ≤ 1 - k / 2 := by linarith
-    positivity
+    bound
   have hB : 0 ≤ B := by
     dsimp [B]
     positivity
@@ -289,11 +269,10 @@ theorem norm_rpow_centered_difference_le_global (k : ℝ) (hk : 0 < k) (hk₂ : 
     calc
       _ ≤ 2 * C * (‖y‖ ^ 2 * ‖x‖ ^ (k - 2)) := by
         simpa [C, mul_assoc] using hlocal
-      _ ≤ (2 * C + B) * (‖y‖ ^ 2 * ‖x‖ ^ (k - 2)) := by
-        exact mul_le_mul_of_nonneg_right (by linarith) hweight
+      _ ≤ (2 * C + B) * (‖y‖ ^ 2 * ‖x‖ ^ (k - 2)) := mul_le_mul_of_nonneg_right (by linarith) hweight
       _ = (2 * C + B) * ‖y‖ ^ 2 * ‖x‖ ^ (k - 2) := by ring
-  · have hlarge : ‖x‖ / 2 < ‖y‖ := lt_of_not_ge hsmall
-    have hypos : 0 < ‖y‖ := lt_of_le_of_lt (by positivity) hlarge
+  · have hlarge  := lt_of_not_ge hsmall
+    have hypos  := lt_of_le_of_lt (by positivity) hlarge
     have hxle : ‖x‖ ≤ 2 * ‖y‖ := by linarith
     have hplus : ‖x + y‖ ≤ 3 * ‖y‖ := by
       calc
@@ -303,11 +282,11 @@ theorem norm_rpow_centered_difference_le_global (k : ℝ) (hk : 0 < k) (hk₂ : 
       calc
         ‖x - y‖ ≤ ‖x‖ + ‖y‖ := norm_sub_le _ _
         _ ≤ 3 * ‖y‖ := by linarith
-    have hplusPow : ‖x + y‖ ^ k ≤ (3 * ‖y‖) ^ k :=
+    have hplusPow  :=
       Real.rpow_le_rpow (norm_nonneg _) hplus hk.le
-    have hminusPow : ‖x - y‖ ^ k ≤ (3 * ‖y‖) ^ k :=
+    have hminusPow  :=
       Real.rpow_le_rpow (norm_nonneg _) hminus hk.le
-    have hxPow : ‖x‖ ^ k ≤ (2 * ‖y‖) ^ k :=
+    have hxPow  :=
       Real.rpow_le_rpow (norm_nonneg _) hxle hk.le
     have hraw : |‖x + y‖ ^ k + ‖x - y‖ ^ k - 2 * ‖x‖ ^ k| ≤
         2 * (3 * ‖y‖) ^ k + 2 * (2 * ‖y‖) ^ k := by
@@ -342,8 +321,7 @@ theorem norm_rpow_centered_difference_le_global (k : ℝ) (hk : 0 < k) (hk₂ : 
       Real.rpow_le_rpow_of_nonpos (by positivity) (by linarith) hnegative
     have hyBound : ‖y‖ ^ k ≤
         ‖y‖ ^ 2 * (2 ^ (2 - k) * ‖x‖ ^ (k - 2)) := by
-      rw [hySplit]
-      exact mul_le_mul_of_nonneg_left (hdecrease.trans_eq hhalf) (sq_nonneg ‖y‖)
+      simp_all
     change |‖x + y‖ ^ k + ‖x - y‖ ^ k - 2 * ‖x‖ ^ k| ≤
       (2 * C + B) * ‖y‖ ^ 2 * ‖x‖ ^ (k - 2)
     calc
@@ -371,7 +349,7 @@ theorem norm_rpow_discrete_laplacian_le (k : ℝ) (hk : 0 < k) (hk₂ : k < 2)
       (2 * (2 * (k * (1 + (15 / 4) *
         ((1 - k / 2) * (1 / 4 : ℝ) ^ (k / 2 - 2)))) +
         2 * (3 ^ k + 2 ^ k) * 2 ^ (2 - k))) * ‖x‖ ^ (k - 2) := by
-  let C : ℝ := 2 * (k * (1 + (15 / 4) *
+  let C  := 2 * (k * (1 + (15 / 4) *
     ((1 - k / 2) * (1 / 4 : ℝ) ^ (k / 2 - 2)))) +
     2 * (3 ^ k + 2 ^ k) * 2 ^ (2 - k)
   have hR := norm_rpow_centered_difference_le_global k hk hk₂ x (t : ℂ) hx
@@ -379,23 +357,17 @@ theorem norm_rpow_discrete_laplacian_le (k : ℝ) (hk : 0 < k) (hk₂ : k < 2)
     ((t : ℂ) * Complex.I) hx
   have hR' : |‖x + (t : ℂ)‖ ^ k + ‖x - (t : ℂ)‖ ^ k - 2 * ‖x‖ ^ k| ≤
       C * t ^ 2 * ‖x‖ ^ (k - 2) := by
-    simpa [C, Complex.norm_real, Real.norm_eq_abs, sq_abs] using hR
+    continuity
   have hI' : |‖x + (t : ℂ) * Complex.I‖ ^ k +
       ‖x - (t : ℂ) * Complex.I‖ ^ k - 2 * ‖x‖ ^ k| ≤
       C * t ^ 2 * ‖x‖ ^ (k - 2) := by
-    simpa [C, norm_mul, Complex.norm_real, Real.norm_eq_abs, sq_abs] using hI
+    continuity
   have hsum :
       |(‖x + (t : ℂ)‖ ^ k + ‖x - (t : ℂ)‖ ^ k - 2 * ‖x‖ ^ k) +
         (‖x + (t : ℂ) * Complex.I‖ ^ k + ‖x - (t : ℂ) * Complex.I‖ ^ k -
           2 * ‖x‖ ^ k)| ≤ 2 * C * t ^ 2 * ‖x‖ ^ (k - 2) := by
-    calc
-      _ ≤ |‖x + (t : ℂ)‖ ^ k + ‖x - (t : ℂ)‖ ^ k - 2 * ‖x‖ ^ k| +
-          |‖x + (t : ℂ) * Complex.I‖ ^ k + ‖x - (t : ℂ) * Complex.I‖ ^ k -
-            2 * ‖x‖ ^ k| := abs_add_le _ _
-      _ ≤ C * t ^ 2 * ‖x‖ ^ (k - 2) + C * t ^ 2 * ‖x‖ ^ (k - 2) :=
-        add_le_add hR' hI'
-      _ = _ := by ring
-  have ht2 : 0 < t ^ 2 := sq_pos_of_ne_zero ht
+    grind
+  have ht2  := sq_pos_of_ne_zero ht
   have hnum :
       ‖x + (t : ℂ)‖ ^ k + ‖x - (t : ℂ)‖ ^ k +
         ‖x + (t : ℂ) * Complex.I‖ ^ k + ‖x - (t : ℂ) * Complex.I‖ ^ k -
@@ -405,11 +377,7 @@ theorem norm_rpow_discrete_laplacian_le (k : ℝ) (hk : 0 < k) (hk₂ : k < 2)
           2 * ‖x‖ ^ k) := by ring
   rw [hnum, abs_div, abs_of_pos ht2]
   apply (div_le_iff₀ ht2).2
-  calc
-    |(‖x + (t : ℂ)‖ ^ k + ‖x - (t : ℂ)‖ ^ k - 2 * ‖x‖ ^ k) +
-        (‖x + (t : ℂ) * Complex.I‖ ^ k + ‖x - (t : ℂ) * Complex.I‖ ^ k -
-          2 * ‖x‖ ^ k)| ≤ 2 * C * t ^ 2 * ‖x‖ ^ (k - 2) := hsum
-    _ = (2 * C * ‖x‖ ^ (k - 2)) * t ^ 2 := by ring
+  grind
 
 /-- Explicit second-order Taylor polynomial at an interior point of an open interval. -/
 theorem taylorWithinEval_two_eq (f : ℝ → ℝ) (s : Set ℝ) (hs : IsOpen s)
@@ -418,10 +386,10 @@ theorem taylorWithinEval_two_eq (f : ℝ → ℝ) (s : Set ℝ) (hs : IsOpen s)
       f 0 + t * deriv f 0 + (t ^ 2 / 2) * deriv (deriv f) 0 := by
   have h1 : iteratedDerivWithin 1 f s 0 = deriv f 0 := by
     have h := iteratedDerivWithin_of_isOpen_eq_iterate (n := 1) (f := f) hs h0
-    simpa [iteratedDeriv_eq_iterate] using h
+    exact h
   have h2 : iteratedDerivWithin 2 f s 0 = deriv (deriv f) 0 := by
     have h := iteratedDerivWithin_of_isOpen_eq_iterate (n := 2) (f := f) hs h0
-    simpa [iteratedDeriv_eq_iterate] using h
+    exact h
   simp only [taylorWithinEval_succ, taylor_within_zero_eval, h1, h2,
     Nat.factorial_zero, Nat.factorial_one, Nat.cast_zero, Nat.cast_one,
     zero_add, one_mul, inv_one, sub_zero, pow_one]
@@ -429,13 +397,11 @@ theorem taylorWithinEval_two_eq (f : ℝ → ℝ) (s : Set ℝ) (hs : IsOpen s)
 
 /-- For a function that is twice continuously differentiable near zero, the symmetric
 second-difference quotient converges to its second derivative. -/
-theorem central_second_difference_tendsto {f : ℝ → ℝ} {s : Set ℝ}
+def central_second_difference_tendsto {f : ℝ → ℝ} {s : Set ℝ}
     (hs : Convex ℝ s) (hso : IsOpen s) (h0 : (0 : ℝ) ∈ s)
-    (hf : ContDiffOn ℝ 2 f s) :
-    Tendsto (fun t : ℝ => (f t + f (-t) - 2 * f 0) / t ^ 2)
-      (𝓝[≠] (0 : ℝ)) (𝓝 (deriv (deriv f) 0)) := by
-  let P : ℝ → ℝ := fun t => taylorWithinEval f 2 s 0 t
-  have hsNhds : s ∈ 𝓝 (0 : ℝ) := hso.mem_nhds h0
+    (hf : ContDiffOn ℝ 2 f s)  := 
+  let P  := fun t => taylorWithinEval f 2 s 0 t
+  have hsNhds  := hso.mem_nhds h0
   have hTaylor : Tendsto (fun t : ℝ => (f t - P t) / t ^ 2)
       (𝓝 (0 : ℝ)) (𝓝 0) := by
     have h := Real.taylor_tendsto (f := f) (x₀ := (0 : ℝ)) (s := s) hs h0 hf
@@ -445,8 +411,7 @@ theorem central_second_difference_tendsto {f : ℝ → ℝ} {s : Set ℝ}
     tendsto_id.mono_right nhdsWithin_le_nhds
   have hneg : Tendsto (fun t : ℝ => -t) (𝓝[≠] (0 : ℝ)) (𝓝 (0 : ℝ)) := by
     simpa using hid.neg
-  have hposErr : Tendsto (fun t : ℝ => (f t - P t) / t ^ 2)
-      (𝓝[≠] (0 : ℝ)) (𝓝 0) := hTaylor.comp hid
+  have hposErr  := hTaylor.comp hid
   have hnegErr : Tendsto (fun t : ℝ => (f (-t) - P (-t)) / t ^ 2)
       (𝓝[≠] (0 : ℝ)) (𝓝 0) := by
     convert hTaylor.comp hneg using 1
@@ -460,12 +425,9 @@ theorem central_second_difference_tendsto {f : ℝ → ℝ} {s : Set ℝ}
     simpa [add_assoc] using tendsto_const_nhds.add hsumErr
   have hne : ∀ᶠ t : ℝ in 𝓝[≠] (0 : ℝ), t ≠ 0 := by
     filter_upwards [self_mem_nhdsWithin] with t ht
-    simpa using ht
+    exact ht
   have hmem : ∀ᶠ t : ℝ in 𝓝[≠] (0 : ℝ), t ∈ s ∧ -t ∈ s := by
-    filter_upwards [hid.eventually hsNhds, hneg.eventually hsNhds] with t ht₁ ht₂
-    change t ∈ s at ht₁
-    change -t ∈ s at ht₂
-    exact ⟨ht₁, ht₂⟩
+    exact Eventually.and (hid hsNhds) (hneg hsNhds)
   have heq : (fun t : ℝ => (f t + f (-t) - 2 * f 0) / t ^ 2) =ᶠ[𝓝[≠] (0 : ℝ)]
       fun t => (deriv (deriv f) 0) +
         ((f t - P t) / t ^ 2 + (f (-t) - P (-t)) / t ^ 2) := by
@@ -473,44 +435,36 @@ theorem central_second_difference_tendsto {f : ℝ → ℝ} {s : Set ℝ}
     obtain ⟨hts, hnts⟩ := hmem
     have hPt := taylorWithinEval_two_eq f s hso h0 t hts
     have hPnt := taylorWithinEval_two_eq f s hso h0 (-t) hnts
-    dsimp [P]
-    rw [hPt, hPnt]
-    field_simp [ht]
-    ring
-  exact hsum.congr' heq.symm
+    grind
+  hsum.congr' heq.symm
 
+include k x hx in
 /-- The real-coordinate centered difference of `‖x+t‖^k` converges to its second derivative
 at every nonzero center. -/
-theorem norm_rpow_real_centered_difference_tendsto (k : ℝ) (x : ℂ) (hx : x ≠ 0) :
+theorem norm_rpow_real_centered_difference_tendsto  :
     Tendsto (fun t : ℝ =>
       (‖x + (t : ℂ)‖ ^ k + ‖x - (t : ℂ)‖ ^ k - 2 * ‖x‖ ^ k) / t ^ 2)
       (𝓝[≠] (0 : ℝ))
       (𝓝 ((k / 2) * (k / 2 - 1) * (‖x‖ ^ 2) ^ (k / 2 - 2) *
           (2 * x.re) ^ 2 + (k / 2) * (‖x‖ ^ 2) ^ (k / 2 - 1) * 2)) := by
-  let ρ : ℝ := ‖x‖ / 2
-  let s : Set ℝ := Ioo (-ρ) ρ
+  let ρ  := ‖x‖ / 2
+  let s  := Ioo (-ρ) ρ
   let f : ℝ → ℝ := fun t => ‖x + (t : ℂ)‖ ^ k
-  let q : ℝ → ℝ := radialShiftSq x
+  let q  := radialShiftSq x
   have hρ : 0 < ρ := by dsimp [ρ]; positivity
-  have hxpos : 0 < ‖x‖ := norm_pos_iff.mpr hx
+  
   have h0 : (0 : ℝ) ∈ s := by
-    simp only [s, mem_Ioo]
-    constructor <;> linarith
-  have hsOpen : IsOpen s := by dsimp [s]; exact isOpen_Ioo
-  have hsConvex : Convex ℝ s := by dsimp [s]; exact convex_Ioo _ _
+    continuity
+  have hsOpen : IsOpen s := by exact isOpen_Ioo
+  have hsConvex : Convex ℝ s := by exact convex_Ioo _ _
   have hqpos : ∀ t ∈ s, q t ≠ 0 := by
     intro t ht
-    have htAbs : |t| < ρ := abs_lt.mpr ⟨ht.1, ht.2⟩
+    have htAbs  := abs_lt.mpr ⟨ht.1, ht.2⟩
     have hnormLower : ‖x‖ - |t| ≤ ‖x + (t : ℂ)‖ := by
       have h := norm_sub_norm_le x (-(t : ℂ))
-      have hnormt : ‖-(t : ℂ)‖ = |t| := by
-        rw [norm_neg, Complex.norm_real, Real.norm_eq_abs]
-      have hadd : x - -(t : ℂ) = x + (t : ℂ) := by ring
-      rw [hnormt, hadd] at h
-      exact h
+      simp_all
     have hpositive : 0 < ‖x + (t : ℂ)‖ := by
-      have : 0 < ‖x‖ - |t| := by dsimp [ρ] at htAbs; linarith
-      exact lt_of_lt_of_le this hnormLower
+      grind
     have hqeq : q t = ‖x + (t : ℂ)‖ ^ 2 := by
       rw [← Complex.normSq_eq_norm_sq, ← radialShiftSq_eq_normSq]
     rw [hqeq]
@@ -529,25 +483,22 @@ theorem norm_rpow_real_centered_difference_tendsto (k : ℝ) (x : ℂ) (hx : x �
   have hf : ContDiffOn ℝ 2 f s := by rw [hfun]; exact hcontQ
   have hlimit := central_second_difference_tendsto hsConvex hsOpen h0 hf
   have hsecond := hasDerivAt_deriv_norm_rpow_shift k x hx
-  have hsecondVal : deriv (deriv f) 0 =
-      (k / 2) * (k / 2 - 1) * (‖x‖ ^ 2) ^ (k / 2 - 2) *
-        (2 * x.re) ^ 2 + (k / 2) * (‖x‖ ^ 2) ^ (k / 2 - 1) * 2 := by
-    exact hsecond.deriv
+  have hsecondVal  := hsecond.deriv
   rw [hsecondVal] at hlimit
   simpa [f, sub_eq_add_neg] using hlimit
 
+include k x hx in
 /-- The imaginary-coordinate centered difference has the corresponding second derivative
 limit. -/
-theorem norm_rpow_imag_centered_difference_tendsto (k : ℝ) (x : ℂ) (hx : x ≠ 0) :
+theorem norm_rpow_imag_centered_difference_tendsto  :
     Tendsto (fun t : ℝ =>
       (‖x + (t : ℂ) * Complex.I‖ ^ k + ‖x - (t : ℂ) * Complex.I‖ ^ k -
         2 * ‖x‖ ^ k) / t ^ 2)
       (𝓝[≠] (0 : ℝ))
       (𝓝 ((k / 2) * (k / 2 - 1) * (‖x‖ ^ 2) ^ (k / 2 - 2) *
           (2 * x.im) ^ 2 + (k / 2) * (‖x‖ ^ 2) ^ (k / 2 - 1) * 2)) := by
-  let y : ℂ := -Complex.I * x
+  let y  := -Complex.I * x
   have hy : y ≠ 0 := by
-    dsimp [y]
     exact mul_ne_zero (by simp) hx
   have hnorm : ‖y‖ = ‖x‖ := by
     dsimp [y]
@@ -562,11 +513,7 @@ theorem norm_rpow_imag_centered_difference_tendsto (k : ℝ) (x : ℂ) (hx : x �
       dsimp [y]
       rw [mul_add]
       congr 1
-      calc
-        (-Complex.I) * ((t : ℂ) * Complex.I) = -((t : ℂ) * (Complex.I * Complex.I)) := by
-          rw [neg_mul]
-          ring
-        _ = (t : ℂ) := by simp
+      ring_nf at * <;> aesop
     calc
       ‖x + (t : ℂ) * Complex.I‖ =
           ‖(-Complex.I) * (x + (t : ℂ) * Complex.I)‖ := by simp
@@ -587,27 +534,20 @@ theorem norm_rpow_imag_centered_difference_tendsto (k : ℝ) (x : ℂ) (hx : x �
           ‖(-Complex.I) * (x - (t : ℂ) * Complex.I)‖ := by simp
       _ = ‖y - (t : ℂ)‖ := by rw [hm]
   have hreal := norm_rpow_real_centered_difference_tendsto k y hy
-  have hEq : (fun t : ℝ =>
-      (‖x + (t : ℂ) * Complex.I‖ ^ k + ‖x - (t : ℂ) * Complex.I‖ ^ k -
-        2 * ‖x‖ ^ k) / t ^ 2) =ᶠ[𝓝[≠] (0 : ℝ)]
-      fun t => (‖y + (t : ℂ)‖ ^ k + ‖y - (t : ℂ)‖ ^ k -
-        2 * ‖y‖ ^ k) / t ^ 2 := by
-    filter_upwards [] with t
-    rw [hplus, hminus, hnorm]
-  have hlim := hreal.congr' hEq.symm
-  simpa [hRe, hnorm] using hlim
+  simp_all
 
+include k x hx in
 /-- The symmetric four-direction discrete Laplacian of a radial power converges to its
 planar Laplacian away from the origin. -/
-theorem norm_rpow_discrete_laplacian_tendsto (k : ℝ) (x : ℂ) (hx : x ≠ 0) :
+theorem norm_rpow_discrete_laplacian_tendsto  :
     Tendsto (fun t : ℝ =>
       (‖x + (t : ℂ)‖ ^ k + ‖x - (t : ℂ)‖ ^ k +
         ‖x + (t : ℂ) * Complex.I‖ ^ k + ‖x - (t : ℂ) * Complex.I‖ ^ k -
         4 * ‖x‖ ^ k) / t ^ 2)
       (𝓝[≠] (0 : ℝ)) (𝓝 (k ^ 2 * ‖x‖ ^ (k - 2))) := by
-  let dRe : ℝ := (k / 2) * (k / 2 - 1) * (‖x‖ ^ 2) ^ (k / 2 - 2) *
+  let dRe  := (k / 2) * (k / 2 - 1) * (‖x‖ ^ 2) ^ (k / 2 - 2) *
     (2 * x.re) ^ 2 + (k / 2) * (‖x‖ ^ 2) ^ (k / 2 - 1) * 2
-  let dIm : ℝ := (k / 2) * (k / 2 - 1) * (‖x‖ ^ 2) ^ (k / 2 - 2) *
+  let dIm  := (k / 2) * (k / 2 - 1) * (‖x‖ ^ 2) ^ (k / 2 - 2) *
     (2 * x.im) ^ 2 + (k / 2) * (‖x‖ ^ 2) ^ (k / 2 - 1) * 2
   have hRe := norm_rpow_real_centered_difference_tendsto k x hx
   have hIm := norm_rpow_imag_centered_difference_tendsto k x hx
@@ -617,7 +557,7 @@ theorem norm_rpow_discrete_laplacian_tendsto (k : ℝ) (x : ℂ) (hx : x ≠ 0) 
         (‖x + (t : ℂ) * Complex.I‖ ^ k + ‖x - (t : ℂ) * Complex.I‖ ^ k -
           2 * ‖x‖ ^ k) / t ^ 2)
       (𝓝[≠] (0 : ℝ)) (𝓝 (dRe + dIm)) := by
-    simpa [dRe, dIm] using hRe.add hIm
+    exact hRe.add hIm
   have hEq : (fun t : ℝ =>
       (‖x + (t : ℂ)‖ ^ k + ‖x - (t : ℂ)‖ ^ k +
         ‖x + (t : ℂ) * Complex.I‖ ^ k + ‖x - (t : ℂ) * Complex.I‖ ^ k -

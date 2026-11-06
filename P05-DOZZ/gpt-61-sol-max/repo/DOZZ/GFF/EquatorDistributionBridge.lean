@@ -14,7 +14,7 @@ The locally defined Fourier charts assemble to a measurable random distribution 
 evaluations agree almost everywhere with the accepted G4 field.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Set Metric TopologicalSpace
 open scoped Distributions ENNReal InnerProductSpace Topology lp
@@ -35,13 +35,13 @@ theorem equatorPartitionCLM_support_subset_localBall (n : ℕ) (f : TestFn) :
   intro z hz
   have hzclosed := equatorPartitionCLM_support_subset n f hz
   have hnorm : ‖z‖ ≤ (n : ℝ) + 3 := by
-    simpa [mem_closedBall, dist_eq_norm] using hzclosed
+    simp_all
   have hrad : gffLocalModeRadius (n + 5) - 1 = (n : ℝ) + 5 := by
     simp [gffLocalModeRadius]
   have hstrict : (n : ℝ) + 3 < gffLocalModeRadius (n + 5) - 1 := by
     rw [hrad]
     linarith
-  have hnorm' : ‖z‖ < gffLocalModeRadius (n + 5) - 1 := lt_of_le_of_lt hnorm hstrict
+  have hnorm'  := lt_of_le_of_lt hnorm hstrict
   simpa [mem_ball, dist_eq_norm] using hnorm'
 
 
@@ -64,16 +64,15 @@ theorem sum_equatorPartitionCLM_range_eq_self_of_cutoff_eq_one
   calc
     (∑ n ∈ Finset.range (N + 1), equatorPartitionCLM n f) z =
         ∑ n ∈ Finset.range (N + 1), f z * equatorPartitionFunction n z := by
-      simp only [FunLike.coe_sum, equatorPartitionCLM_apply, Finset.sum_apply]
+      simp_all
     _ = f z * equatorGlobalCutoff N z := by
       rw [← Finset.mul_sum, sum_equatorPartitionFunction_range]
     _ = f z := by
       by_cases hz : z ∈ tsupport f
       · simp [hcut z hz]
       · have hfz : f z = 0 := by
-          have hnot : z ∉ Function.support f := fun hs => hz (subset_tsupport f hs)
-          by_contra hne
-          exact hnot (Function.mem_support.mpr hne)
+          have hnot  := fun hs => hz (subset_tsupport f hs)
+          simp_all
         simp [hfz]
 
 /-- Every global test evaluation of the measurable distribution is almost everywhere the G4
@@ -94,23 +93,15 @@ theorem ae_equatorDistributionEval_eq_equatorFieldL2 (f : TestFn) :
     intro z hz
     apply equatorGlobalCutoff_eq_one N
     exact closedBall_subset_closedBall (by
-      have hNle : (Ncut : ℝ) ≤ (N : ℝ) := by
-        dsimp [N]
-        exact_mod_cast Nat.le_max_right Ntail Ncut
-      linarith) (hcutSupport z hz)
-  have hpartition :
-      (∑ n ∈ Finset.range (N + 1), equatorPartitionCLM n f) = f :=
+      continuity) (hcutSupport z hz)
+  have hpartition  :=
     sum_equatorPartitionCLM_range_eq_self_of_cutoff_eq_one N f hcutN
   have hlocal (n : ℕ) :
       (fun ω => equatorLocalFourierEval (n + 5) (equatorPartitionCLM n f) ω) =ᵐ[
         GaussianFields.scaleSpaceWhiteNoiseMeasure 2]
-        (fun ω => equatorFieldL2 (equatorPartitionCLM n f) ω) := by
-    exact ae_equatorLocalFourierEval_eq_equatorFieldL2 (n + 5)
+        (fun ω => equatorFieldL2 (equatorPartitionCLM n f) ω) := ae_equatorLocalFourierEval_eq_equatorFieldL2 (n + 5)
       (equatorPartitionCLM n f) (equatorPartitionCLM_support_subset_localBall n f)
-  have hlocalAll : ∀ᵐ ω ∂GaussianFields.scaleSpaceWhiteNoiseMeasure 2,
-      ∀ n : ℕ,
-        equatorLocalFourierEval (n + 5) (equatorPartitionCLM n f) ω =
-          equatorFieldL2 (equatorPartitionCLM n f) ω :=
+  have hlocalAll  :=
     ae_all_iff.mpr hlocal
   let s : Finset ℕ := Finset.range (N + 1)
   have hsumLp : equatorFieldL2 (s.sum fun n => equatorPartitionCLM n f) =

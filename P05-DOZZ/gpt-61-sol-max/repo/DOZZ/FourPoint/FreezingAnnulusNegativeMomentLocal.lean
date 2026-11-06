@@ -9,7 +9,7 @@ public import DOZZ.GMC.BallAnnulus.Ball
 
 /-! Local freezing from the separated retained-mass comparison and sharp ball moments. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -28,17 +28,17 @@ theorem freezing_annulus_negative_moment_local {Ω : Type*} [MeasurableSpace Ω]
       ∀ z ∈ K, ∀ ε : ℝ, 0 < ε → ε < ε₀ →
         (∫⁻ ω, ENNReal.rpow (freezingAnnulusMassLocal γ α (M ω) z ε R) (-p) ∂P) ≤
           ENNReal.ofReal (C * ε ^ ((α - Q γ) ^ 2 / 2)) := by
-  have _hPositiveOrder := hp
+  
   let a : ℝ := (α - Q γ) / γ
   let b : ℝ := p - a
-  have ha : 0 < a := div_pos (sub_pos.mpr hα) hγ
-  have hap : a < p := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hthreshold)
-  have hb : 0 < b := sub_pos.mpr hap
+  have ha  := div_pos (sub_pos.mpr hα) hγ
+  have hap  := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hthreshold)
+  have hb  := sub_pos.mpr hap
   have hab : a + b = p := by dsimp only [b]; ring
   have hQ : 0 < Q γ := by
     unfold Q
-    exact add_pos (div_pos (by norm_num) hγ) (div_pos hγ (by norm_num))
-  have hγα : 0 < γ * α := mul_pos hγ (hQ.trans hα)
+    positivity
+  have hγα  := mul_pos hγ (hQ.trans hα)
   let t : ℝ := min (R / 2) (1 / 8)
   have ht : 0 < t := lt_min (by positivity) (by norm_num)
   have htR : t ≤ R / 2 := min_le_left _ _
@@ -60,7 +60,7 @@ theorem freezing_annulus_negative_moment_local {Ω : Type*} [MeasurableSpace Ω]
       ((a + b) ^ 2 + a + b))
   let C : ℝ := 4 ^ (γ * α * a) * (2 * t) ^ (γ * α * b) * k *
     Ca * (1 / 2 : ℝ) ^ ξa * Cb * (t / 8) ^ ξb
-  have hk : 0 < k := Real.exp_pos _
+  
   have hC : 0 < C := by dsimp only [C]; positivity
   refine ⟨C, t / 32, hC, by positivity, ?_⟩
   intro z hz ε hε hεt
@@ -71,12 +71,12 @@ theorem freezing_annulus_negative_moment_local {Ω : Type*} [MeasurableSpace Ω]
   have hun : ‖u‖ ≤ B + 3 * ε := by
     have hh := norm_add_le z ((3 * ε : ℝ) : ℂ)
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)] at hh
-    exact hh.trans (add_le_add (hnorm z hz) le_rfl)
+    grind
   have hvn : ‖v‖ ≤ B + t := by
     have hh := norm_add_le z (t : ℂ)
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht.le] at hh
-    exact hh.trans (add_le_add (hnorm z hz) le_rfl)
-  have huL : ‖u‖ + ε / 2 ≤ L := by dsimp only [L]; linarith only [hun, hεt, ht8]
+    grind
+  have huL : ‖u‖ + ε / 2 ≤ L := by linarith
   have hvL : ‖v‖ + t / 8 ≤ L := by dsimp only [L]; linarith only [hvn, ht8]
   have huK : u ∈ K' := by
     change dist u 0 ≤ L

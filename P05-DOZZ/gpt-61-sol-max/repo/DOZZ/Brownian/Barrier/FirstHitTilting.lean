@@ -42,7 +42,7 @@ Differentiating that integral and proving the multi-time lifetime-marked
 ceiling-grid law are separate remaining steps in the first-hit reversal.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
@@ -52,7 +52,7 @@ theorem brownian_lintegral_gaussianLikelihood_one (P : Measure BrownianPath)
     (hB : IsPreBrownianReal (fun t p => p t) P) (a : ℝ) (T : ℝ≥0) :
     (∫⁻ p, brownianGaussianLikelihood a T (p T) ∂P) = 1 := by
   have hi : Integrable (fun p => Real.exp (a*p T-a^2*(T : ℝ)/2)) P := by
-    simpa only [Function.comp_def] using (hB.hasLaw_eval T).integrable_comp
+    exact (hB.hasLaw_eval T).integrable_comp
       (integrable_real_brownianGaussianLikelihood a T)
   change (∫⁻ p, ENNReal.ofReal (Real.exp (a*p T-a^2*(T : ℝ)/2)) ∂P) = _
   rw [← ofReal_integral_eq_lintegral_ofReal hi (ae_of_all _ (fun p => (Real.exp_pos _).le)),
@@ -62,16 +62,13 @@ theorem brownian_lintegral_gaussianLikelihood_one (P : Measure BrownianPath)
 theorem measurable_brownian_remainingLikelihood (a : ℝ) (T : ℝ≥0) :
     Measurable (fun z : ℝ≥0 × BrownianPath => brownianGaussianLikelihood a (T-z.1) (z.2 (T-z.1))) := by
   unfold brownianGaussianLikelihood
-  apply Measurable.ennreal_ofReal
-  apply Measurable.exp
-  have hv : Measurable (fun z : ℝ≥0 × BrownianPath => z.2 (T-z.1)) :=
-    measurable_brownianPath_evaluation.comp ((measurable_const.sub measurable_fst).prodMk measurable_snd)
-  have ht : Measurable (fun z : ℝ≥0 × BrownianPath => ((T-z.1 : ℝ≥0) : ℝ)) := by fun_prop
-  exact (measurable_const.mul hv).sub ((measurable_const.mul ht).div_const 2)
+  fun_prop
 
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
+
+include P hB in
 /-- A bounded stopped clock may select the remaining Gaussian likelihood without changing any nonnegative clock test. -/
-theorem brownianPath_bounded_restart_remainingLikelihood (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (τ : BrownianPath → ℝ≥0)
+theorem brownianPath_bounded_restart_remainingLikelihood  (τ : BrownianPath → ℝ≥0)
     (hτ : IsStoppingTime (brownianRawFiltration (fun t (p : BrownianPath) => p t)
       (fun t => ContinuousMap.measurable_eval t)) (fun p => (τ p : WithTop ℝ≥0)))
     (T : ℝ≥0) (hτT : ∀ p, τ p ≤ T) (a : ℝ) (F : ℝ≥0 → ℝ≥0∞) (hF : Measurable F) :
@@ -79,10 +76,10 @@ theorem brownianPath_bounded_restart_remainingLikelihood (P : Measure BrownianPa
       ∫⁻ p, F (τ p) ∂P := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   have hmτ := measurable_finite_brownian_stoppingTime _ τ hτ
-  have hmV : Measurable (fun p => brownianShiftPath (τ p) p) :=
+  have hmV  :=
     continuous_brownianShiftPath.measurable.comp (hmτ.prodMk measurable_id)
   let G : ℝ≥0 × BrownianPath → ℝ≥0∞ := fun z => F z.1*brownianGaussianLikelihood a (T-z.1) (z.2 (T-z.1))
-  have hG : Measurable G := (hF.comp measurable_fst).mul (measurable_brownian_remainingLikelihood a T)
+  have hG  := (hF.comp measurable_fst).mul (measurable_brownian_remainingLikelihood a T)
   have hj := brownianPath_bounded_restart_joint_map P hB τ hτ T hτT τ
     (measurable_finite_stoppingTime_stopped _ τ hτ)
   calc
@@ -115,17 +112,16 @@ theorem brownianPath_firstHit_likelihood_factor (a β : ℝ) (T : ℝ≥0) (p : 
           (brownianShiftPath (cappedBrownianFirstPassage β T p) p (T-cappedBrownianFirstPassage β T p)) := by
   let τ := cappedBrownianFirstPassage β T p
   have hτT := cappedBrownianFirstPassage_le β T p
-  have hv : p τ = β := cappedBrownianFirstPassage_value β T p hp0 hh
+  have hv  := cappedBrownianFirstPassage_value β T p hp0 hh
   have he : β+brownianShiftPath τ p (T-τ) = p T := by
     change β+(p (τ+(T-τ))-p τ) = p T
-    rw [add_tsub_cancel_of_le hτT,hv]
-    ring_nf
+    continuity
   rw [← he,← brownianGaussianLikelihood_add,
     add_tsub_cancel_of_le hτT]
 
+include P hB in
 /-- First-hit conditioning retains exactly the stopped scalar likelihood on every preterminal lifetime test. -/
-theorem brownianPath_firstHit_likelihood_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a β : ℝ) (hβ : 0 < β) (T : ℝ≥0)
+theorem brownianPath_firstHit_likelihood_lintegral  (a β : ℝ) (hβ : 0 < β) (T : ℝ≥0)
     (F : ℝ≥0 → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p in {p | cappedBrownianFirstPassage β T p < T},
       F (cappedBrownianFirstPassage β T p)*brownianGaussianLikelihood a T (p T) ∂P) =
@@ -135,9 +131,9 @@ theorem brownianPath_firstHit_likelihood_lintegral (P : Measure BrownianPath)
   let τ := cappedBrownianFirstPassage β T
   have hτ := cappedBrownianFirstPassage_isStoppingTime β T
   have hmτ := measurable_finite_brownian_stoppingTime _ τ hτ
-  let H : Set BrownianPath := {p | τ p < T}
+  let H  := {p | τ p < T}
   have hH : MeasurableSet H := measurableSet_lt hmτ measurable_const
-  let F' : ℝ≥0 → ℝ≥0∞ := (Iio T).indicator (fun t => F t*brownianGaussianLikelihood a t β)
+  let F'  := (Iio T).indicator (fun t => F t*brownianGaussianLikelihood a t β)
   have hmL : Measurable (fun t : ℝ≥0 => brownianGaussianLikelihood a t β) := by
     unfold brownianGaussianLikelihood
     fun_prop
@@ -151,10 +147,9 @@ theorem brownianPath_firstHit_likelihood_lintegral (P : Measure BrownianPath)
     · have hf := brownianPath_firstHit_likelihood_factor a β T p (hp ▸ hβ) hh
       simp only [H,F',Set.indicator_apply,mem_ofPred_eq,mem_Iio,ite_eq_left hh]
       rw [hf,mul_assoc]
-    · simp only [H,F',Set.indicator_apply,mem_ofPred_eq,mem_Iio,ite_eq_right hh,zero_mul]
+    continuity
   have hr : (fun p => F' (τ p)) = H.indicator (fun p => F (τ p)*brownianGaussianLikelihood a (τ p) β) := by
-    funext p
-    simp only [F',H,Set.indicator_apply,mem_Iio,mem_ofPred_eq]
+    abel
   rw [← lintegral_indicator hH,← lintegral_indicator hH]
   exact (lintegral_congr_ae hl).trans (hi.trans (by rw [hr]))
 /-- Capping a path at the same terminal horizon preserves the literal capped first-hit time. -/
@@ -163,14 +158,12 @@ theorem cappedBrownianFirstPassage_stop (β : ℝ) (T : ℝ≥0) (p : BrownianPa
   have he : {u : ℝ≥0 | u ≤ T ∧ β ≤ stopBrownianPath p T u} = {u : ℝ≥0 | u ≤ T ∧ β ≤ p u} := by
     ext u
     change (u ≤ T ∧ β ≤ p (min u T)) ↔ (u ≤ T ∧ β ≤ p u)
-    by_cases hu : u ≤ T
-    · rw [min_eq_left hu]
-    · simp only [hu,false_and]
+    simp_all
   simp only [cappedBrownianFirstPassage,he]
 
+include P hB
 /-- Finite-horizon change of drift transports every preterminal capped first-hit lifetime test. -/
-theorem brownianPath_drift_firstHit_likelihood_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a β : ℝ) (hβ : 0 < β)
+theorem brownianPath_drift_firstHit_likelihood_lintegral  (a β : ℝ) (hβ : 0 < β)
     (T : ℝ≥0) (F : ℝ≥0 → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p in {p | cappedBrownianFirstPassage β T (driftedBrownianPath a p) < T},
       F (cappedBrownianFirstPassage β T (driftedBrownianPath a p)) ∂P) =
@@ -179,10 +172,10 @@ theorem brownianPath_drift_firstHit_likelihood_lintegral (P : Measure BrownianPa
   classical
   let τ := cappedBrownianFirstPassage β T
   have hmτ := measurable_finite_brownian_stoppingTime _ τ (cappedBrownianFirstPassage_isStoppingTime β T)
-  let H : Set BrownianPath := {p | τ p < T}
+  let H  := {p | τ p < T}
   have hH : MeasurableSet H := measurableSet_lt hmτ measurable_const
-  let G : BrownianPath → ℝ≥0∞ := H.indicator (fun p => F (τ p))
-  have hG : Measurable G := (hF.comp hmτ).indicator hH
+  let G  := H.indicator (fun p => F (τ p))
+  have hG  := (hF.comp hmτ).indicator hH
   have he := brownianFiniteTilt_stoppedPath_lintegral_all P hB.toIsPreBrownianReal a T G hG
   have hl : (fun p => G (stopBrownianPath (driftedBrownianPath a p) T)) =
       ((fun p => τ (driftedBrownianPath a p)) ⁻¹' Iio T).indicator (fun p => F (τ (driftedBrownianPath a p))) := by
@@ -201,19 +194,18 @@ theorem brownianPath_drift_firstHit_likelihood_lintegral (P : Measure BrownianPa
   have hHD : MeasurableSet ((fun p => τ (driftedBrownianPath a p)) ⁻¹' Iio T) := measurableSet_Iio.preimage hmD
   rw [hl,hr,lintegral_indicator hHD,lintegral_indicator hH] at he
   exact he.trans (brownianPath_firstHit_likelihood_lintegral P hB a β hβ T F hF)
+
 /-- A zero-drift Brownian path reaches every positive fixed upper level almost surely. -/
-theorem brownianPath_zeroDrift_hits_ae (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β) :
+theorem brownianPath_zeroDrift_hits_ae  (β : ℝ) (hβ : 0 < β) :
     ∀ᵐ p ∂P, ∃ u : ℝ≥0, β ≤ p u := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   let E : Set BrownianPath := {p | ¬∃ u : ℝ≥0, β ≤ p u}
   have hle (n : ℕ) : P E ≤ ENNReal.ofReal (Real.sqrt (2/Real.pi)*β/((n : ℝ)+1)) := by
-    let t : ℝ := ((n : ℝ)+1)^2
+    let t  := ((n : ℝ)+1)^2
     have ht : 0 < t := by dsimp [t]; positivity
     have he := (brownian_zeroDrift_barrier_bound P (fun t p => p t) hB β t hβ ht).2
     have hsub : E ⊆ {p : BrownianPath | ∀ u : ℝ≥0, (u : ℝ) ≤ t → p u ≤ β} := by
-      intro p hp u hu
-      exact (not_le.mp (fun h => hp ⟨u,h⟩)).le
+      grind
     have hs : Real.sqrt t = (n : ℝ)+1 := by
       dsimp [t]
       rw [Real.sqrt_sq_eq_abs,abs_of_nonneg (by positivity : 0 ≤ (n : ℝ)+1)]
@@ -222,19 +214,20 @@ theorem brownianPath_zeroDrift_hits_ae (P : Measure BrownianPath)
   have hh : Tendsto (fun n : ℕ => Real.sqrt (2/Real.pi)*β/((n : ℝ)+1)) atTop (𝓝 0) := by
     simpa only [mul_zero,mul_one_div] using tendsto_one_div_add_atTop_nhds_zero_nat.const_mul
       (Real.sqrt (2/Real.pi)*β)
-  have hr : (P E).toReal ≤ 0 := ge_of_tendsto' hh (fun n =>
+  have hr  := ge_of_tendsto' hh (fun n =>
     ENNReal.toReal_le_of_le_ofReal (by positivity) (hle n))
-  have hz : P E = 0 := ((ENNReal.toReal_eq_zero_iff (P E)).mp
+  have hz  := ((ENNReal.toReal_eq_zero_iff (P E)).mp
     (le_antisymm hr ENNReal.toReal_nonneg)).resolve_right (measure_ne_top _ _)
-  rw [ae_iff]
   exact hz
 
+
 /-- The zero-drift first-passage lifetime is positive and reaches its level exactly. -/
-theorem brownianPath_zeroDrift_firstHit_ae (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β) :
+theorem brownianPath_zeroDrift_firstHit_ae  (β : ℝ) (hβ : 0 < β) :
     ∀ᵐ p ∂P, 0 < firstPassageTime p β ∧ p (firstPassageTime p β) = β := by
   filter_upwards [hB.eval_zero_ae_eq_zero,brownianPath_zeroDrift_hits_ae P hB β hβ] with p hp hh
   exact ⟨firstPassageTime_pos_of_hit p β (hp ▸ hβ) hh,firstPassageTime_value_of_hit p β (hp ▸ hβ) hh⟩
+omit P hB
+
 /-- For a path reaching the level, the uncapped and capped first-hit tests agree before the cap. -/
 theorem firstPassageTime_capped_indicator (p : BrownianPath) (β : ℝ)
     (hh : ∃ u : ℝ≥0, β ≤ p u) (T : ℝ≥0) (F : ℝ≥0 → ℝ≥0∞) :
@@ -247,9 +240,7 @@ theorem firstPassageTime_capped_indicator (p : BrownianPath) (β : ℝ)
     · intro h
       have hm := cappedBrownianFirstPassage_mem β T p
       have hc : β ≤ p τ := by
-        rcases hm with h | he
-        · exact h.2
-        · exact (h.ne he).elim
+        continuity
       have he := firstPassageTime_eq_capped_of_hit p β T ⟨τ,(cappedBrownianFirstPassage_le β T p),hc⟩
       simpa only [σ,τ,he] using h
     · intro h
@@ -259,14 +250,12 @@ theorem firstPassageTime_capped_indicator (p : BrownianPath) (β : ℝ)
   by_cases hs : σ < T
   · have hc := ht.mpr hs
     have he := firstPassageTime_eq_capped_of_hit p β T ⟨σ,hs.le,firstPassageTime_mem p β hh⟩
-    simp only [Set.indicator_apply,mem_Iio,ite_eq_left hs,ite_eq_left hc]
-    exact congrArg F he
-  · have hc : ¬τ < T := fun h => hs (ht.mp h)
-    simp only [Set.indicator_apply,mem_Iio,ite_eq_right hs,ite_eq_right hc]
+    continuity
+  simp_all
 
+include P hB
 /-- Positive and zero drift have the exact stopped-likelihood relation on every bounded lifetime interval. -/
-theorem brownianPath_firstHit_lifetime_tilt_preterminal (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a β : ℝ) (ha : 0 < a) (hβ : 0 < β)
+theorem brownianPath_firstHit_lifetime_tilt_preterminal  (a β : ℝ) (ha : 0 < a) (hβ : 0 < β)
     (T : ℝ≥0) (F : ℝ≥0 → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p, (Iio T).indicator F (firstPassageTime (driftedBrownianPath a p) β) ∂P) =
       ∫⁻ p, (Iio T).indicator (fun t => F t*brownianGaussianLikelihood a t β) (firstPassageTime p β) ∂P := by
@@ -287,19 +276,17 @@ theorem brownianPath_firstHit_lifetime_tilt_preterminal (P : Measure BrownianPat
   have hL : (fun p => (Iio T).indicator F (cappedBrownianFirstPassage β T (driftedBrownianPath a p))) =
       {p : BrownianPath | cappedBrownianFirstPassage β T (driftedBrownianPath a p) < T}.indicator
         (fun p => F (cappedBrownianFirstPassage β T (driftedBrownianPath a p))) := by
-    funext p
-    simp only [Set.indicator_apply,mem_Iio,mem_ofPred_eq]
+    continuity
   have hR : (fun p => (Iio T).indicator (fun t => F t*brownianGaussianLikelihood a t β) (cappedBrownianFirstPassage β T p)) =
       {p : BrownianPath | cappedBrownianFirstPassage β T p < T}.indicator
         (fun p => F (cappedBrownianFirstPassage β T p)*brownianGaussianLikelihood a (cappedBrownianFirstPassage β T p) β) := by
-    funext p
-    simp only [Set.indicator_apply,mem_Iio,mem_ofPred_eq]
+    continuity
   rw [hL,hR,lintegral_indicator (measurableSet_lt hmD measurable_const),
     lintegral_indicator (measurableSet_lt hmτ measurable_const)]
   exact he
+
 /-- The full positive-drift first-hit lifetime law is the stopped-likelihood tilt of the zero-drift lifetime law. -/
-theorem brownianPath_firstHit_lifetime_map_tilt (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a β : ℝ) (ha : 0 < a) (hβ : 0 < β) :
+theorem brownianPath_firstHit_lifetime_map_tilt  (a β : ℝ) (ha : 0 < a) (hβ : 0 < β) :
     P.map (fun p => firstPassageTime (driftedBrownianPath a p) β) =
       (P.map (fun p => firstPassageTime p β)).withDensity (fun t => brownianGaussianLikelihood a t β) := by
   classical
@@ -307,7 +294,7 @@ theorem brownianPath_firstHit_lifetime_map_tilt (P : Measure BrownianPath)
   let τ := fun p : BrownianPath => firstPassageTime p β
   have hmσ : Measurable σ := (measurable_firstPassageTime β).comp
     (continuous_driftedBrownianPath.measurable.comp (measurable_const.prodMk measurable_id))
-  have hmτ : Measurable τ := measurable_firstPassageTime β
+  have hmτ  := measurable_firstPassageTime β
   have hmW : Measurable (fun t : ℝ≥0 => brownianGaussianLikelihood a t β) := by
     unfold brownianGaussianLikelihood
     fun_prop
@@ -335,13 +322,11 @@ theorem brownianPath_firstHit_lifetime_map_tilt (P : Measure BrownianPath)
         ∫⁻ t, (Iio T).indicator (fun t => F t*brownianGaussianLikelihood a t β) t ∂P.map τ := by
       rw [lintegral_map h1 hmσ,lintegral_map h2 hmτ]
       exact ht
-    rw [hleft,hright,lintegral_indicator (hS.inter measurableSet_Iio),
-      lintegral_indicator (hS.inter measurableSet_Iio),lintegral_one,← withDensity_apply _ (hS.inter measurableSet_Iio)] at ht'
-    simpa only [Measure.restrict_apply MeasurableSet.univ,univ_inter] using ht'
+    simp_all
   have hmono : Monotone (fun n : ℕ => S ∩ Iio ((n : ℝ≥0)+1)) := by
     intro n m hnm
     have hnm' : (n : ℝ≥0)+1 ≤ (m : ℝ≥0)+1 := by exact_mod_cast Nat.add_le_add_right hnm 1
-    exact inter_subset_inter_right S (Iio_subset_Iio hnm')
+    grind
   have hu : (⋃ n : ℕ, S ∩ Iio ((n : ℝ≥0)+1)) = S := by
     ext t
     simp only [mem_iUnion,mem_inter_iff,mem_Iio]
@@ -353,12 +338,10 @@ theorem brownianPath_firstHit_lifetime_map_tilt (P : Measure BrownianPath)
       have hn' : t < (n : ℝ≥0) := by exact_mod_cast hn
       exact ⟨n,ht,hn'.trans (lt_add_one _)⟩
   rw [← hu,hmono.measure_iUnion,hmono.measure_iUnion]
-  congr 1
-  funext n
-  exact he ((n : ℝ≥0)+1)
+  continuity
+
 /-- The zero-drift first-hit lifetime tail equals the closed finite-horizon barrier probability. -/
-theorem brownianPath_zeroDrift_firstHit_tail_eq_barrier (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β)
+theorem brownianPath_zeroDrift_firstHit_tail_eq_barrier  (β : ℝ) (hβ : 0 < β)
     (T : ℝ≥0) (hT : T ≠ 0) :
     P {p | T < firstPassageTime p β} = P {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → p u ≤ β} := by
   have hn : ∀ᵐ p ∂P, (⨆ u : Iic T, p u) ≠ β := by
@@ -368,34 +351,34 @@ theorem brownianPath_zeroDrift_firstHit_tail_eq_barrier (P : Measure BrownianPat
   filter_upwards [brownianPath_zeroDrift_hits_ae P hB β hβ,hn] with p hp hn
   apply propext
   rw [← not_le,firstPassageTime_le_iff]
-  have hfalse : (¬∃ u : ℝ≥0, β ≤ p u) = False := propext (iff_false_intro (not_not_intro hp))
+  have hfalse  := propext (iff_false_intro (not_not_intro hp))
   rw [hfalse,false_or]
   constructor
-  · intro h u hu
-    by_contra hb
-    exact h ⟨u,hu,(lt_of_not_ge hb).le⟩
+  · grind
   · intro h hh
     obtain ⟨u,hu,hβu⟩ := hh
-    have hm : (⨆ u : Iic T, p u) ≤ β := (brownianPath_barrier_iff_runningMaximum p T β).mp h
+    have hm  := (brownianPath_barrier_iff_runningMaximum p T β).mp h
     have hl := hβu.trans (le_ciSup (brownianPath_Iic_bddAbove p T) ⟨u,hu⟩)
     exact hn (le_antisymm hm hl)
 
+
 /-- The exact Gaussian interval expression for the actual zero-drift first-hit lifetime tail. -/
-theorem brownianPath_zeroDrift_firstHit_tail_gaussian (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β)
+theorem brownianPath_zeroDrift_firstHit_tail_gaussian  (β : ℝ) (hβ : 0 < β)
     (T : ℝ≥0) (hT : T ≠ 0) :
     P {p | T < firstPassageTime p β} = gaussianReal 0 T (Icc (-β) β) := by
   rw [brownianPath_zeroDrift_firstHit_tail_eq_barrier P hB β hβ T hT,
     brownianPath_barrier_probability_interval P hB β hβ T hT]
   exact (hB.hasLaw_eval T).measure_eq measurableSet_Icc
 
+
 /-- The first-hit lifetime tail is the literal half-normal integral to be differentiated in the density calculation. -/
-theorem brownianPath_zeroDrift_firstHit_tail_integral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β)
+theorem brownianPath_zeroDrift_firstHit_tail_integral  (β : ℝ) (hβ : 0 < β)
     (T : ℝ≥0) (hT : T ≠ 0) :
     P {p | T < firstPassageTime p β} = ENNReal.ofReal (Real.sqrt (2/Real.pi)*
       ∫ x in Icc (0 : ℝ) (β/Real.sqrt (T : ℝ)), Real.exp (-x^2/2)) := by
   rw [brownianPath_zeroDrift_firstHit_tail_gaussian P hB β hβ T hT]
   exact gaussianReal_barrier_integral T hT β hβ.le
+omit P hB
+
 
 end DOZZ.Proofs

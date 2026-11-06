@@ -14,7 +14,7 @@ public import DOZZ.GFFStructure.CircleCovariance
 
 /-! Circle-average Gaussianity, covariance, and admissibility for the GMC statements. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -64,15 +64,13 @@ end DOZZ.Proofs
 namespace DOZZ.Proofs
 
 theorem log_one_div_exp_neg_eq (t : ℝ) : Real.log (1 / Real.exp (-t)) = t := by
-  rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
+  simp_all
 
 theorem exp_neg_log_one_div {ε : ℝ} (hε : 0 < ε) : Real.exp (-Real.log (1 / ε)) = ε := by
   rw [one_div, Real.log_inv, neg_neg, Real.exp_log hε]
 
 theorem log_one_div_nonneg_of_le_one {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1) : 0 ≤ Real.log (1 / ε) := by
-  apply Real.log_nonneg
-  rw [le_div_iff₀ hε]
-  linarith
+  bound
 
 theorem normPlus_pos (x : ℂ) : 0 < normPlus x :=
   lt_of_lt_of_le one_pos (le_max_left _ _)
@@ -117,9 +115,7 @@ theorem circleAverage_admissible_of_inputs
     exact this.trans (le_max_left _ _)
   have hC0 : ∀ R : ℝ, 0 ≤ R → 0 ≤ Real.log 3 + 2 * Real.log (1 + R) := by
     intro R hR
-    have h3 : 0 ≤ Real.log 3 := Real.log_nonneg (by norm_num)
-    have h1 : 0 ≤ Real.log (1 + R) := Real.log_nonneg (by linarith)
-    linarith
+    bound
   refine
     { measurableAtScale := fun ε => hXc.1 (Real.log (1 / ε))
       openChart := hU
@@ -162,8 +158,8 @@ theorem circleAverage_admissible_of_inputs
     obtain ⟨R, hR0, hR⟩ := hball K hK
     refine ⟨Real.log 3 + 2 * Real.log (1 + R), hC0 R hR0, ?_⟩
     intro k _ ε hε hεk x hx
-    have hε1 : ε ≤ 1 := hεk.trans (Real.exp_le_one_iff.2 (by
-      have := Nat.cast_nonneg (α := ℝ) k; linarith))
+    have hε1  := hεk.trans (Real.exp_le_one_iff.2 (by
+      norm_num))
     have h := hD1 R hR0 x x (hR x hx) (hR x hx) (k : ℝ) (Real.log (1 / ε))
       (Nat.cast_nonneg k) (log_one_div_nonneg_of_le_one hε hε1)
     rw [exp_neg_log_one_div hε, sub_self, norm_zero, max_eq_left hεk,
@@ -173,16 +169,16 @@ theorem circleAverage_admissible_of_inputs
     exact h
   · -- separated off-diagonal limit with continuous regular part
     refine ⟨fun x y => Real.log (normPlus x) + Real.log (normPlus y), ?_, ?_⟩
-    · have hc : Continuous (fun x : ℂ => Real.log (normPlus x)) :=
+    · have hc  :=
         continuous_normPlus.log (fun x => (normPlus_pos x).ne')
       exact ((hc.comp continuous_fst).add (hc.comp continuous_snd)).continuousOn
     · intro K _ _ s hs η hη
       refine ⟨min (s / 2) (η / 3), lt_min (by linarith) (by linarith), ?_⟩
       intro ε ε' hε hεδ hε' hε'δ x _ y _ hxy
-      have hεs : ε ≤ s / 2 := hεδ.trans ((min_le_left _ _).trans (min_le_left _ _))
-      have hε's : ε' ≤ s / 2 := hε'δ.trans ((min_le_left _ _).trans (min_le_left _ _))
-      have hεη : ε ≤ η / 3 := hεδ.trans ((min_le_left _ _).trans (min_le_right _ _))
-      have hε'η : ε' ≤ η / 3 := hε'δ.trans ((min_le_left _ _).trans (min_le_right _ _))
+      have hεs  := hεδ.trans ((min_le_left _ _).trans (min_le_left _ _))
+      have hε's  := hε'δ.trans ((min_le_left _ _).trans (min_le_left _ _))
+      have hεη  := hεδ.trans ((min_le_left _ _).trans (min_le_right _ _))
+      have hε'η  := hε'δ.trans ((min_le_left _ _).trans (min_le_right _ _))
       have h := hD2 x y (Real.log (1 / ε)) (Real.log (1 / ε'))
         (by rw [exp_neg_log_one_div hε, exp_neg_log_one_div hε']; linarith)
       rw [exp_neg_log_one_div hε, exp_neg_log_one_div hε'] at h
@@ -191,16 +187,14 @@ theorem circleAverage_admissible_of_inputs
         unfold gffKernel
         rw [one_div, Real.log_inv]
         ring
-      simp only [hCov]
-      rw [← hk]
-      linarith
+      grind
   · -- fixed-coarse-scale limit
     refine ⟨fun k x y => ∫ v, gffKernel x v ∂circleMeasure y k, ?_⟩
     intro K _ _ k _ η hη
     have hpos : 0 < Real.exp k + 1 := by positivity
     refine ⟨η / (2 * (Real.exp k + 1)), by positivity, ?_⟩
     intro ε hε hεδ x _ y _
-    have hεη : ε ≤ η / (2 * (Real.exp k + 1)) := hεδ.trans (min_le_left _ _)
+    have hεη  := hεδ.trans (min_le_left _ _)
     have h := hD3 x y (Real.log (1 / ε)) (k : ℝ)
     rw [exp_neg_log_one_div hε] at h
     simp only [log_one_div_exp_neg_eq]
@@ -217,12 +211,6 @@ theorem isCircleAverage_admissible
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (U : Set ℂ) (hU : IsOpen U) :
     IsAdmissibleLogRegularization P U (fun x => normPlus x ^ (-4 : ℝ)) 1
-      (fun ω ε x => Xc ω x (Real.log (1 / ε))) := by
-  exact circleAverage_admissible_of_inputs P X Xc hXc U hU
-    (fun n p => circleAverage_finite_family_jointly_gaussian P X hX Xc hXc p)
-    (fun x y r s => by
-      simpa only [circleKernel] using
-        isCircleAverage_covariance P X hX Xc hXc x y r s)
-    abs_circleKernel_sub_log_le abs_circleKernel_sub_gffKernel_le abs_circleKernel_sub_integral_gffKernel_le
+      (fun ω ε x => Xc ω x (Real.log (1 / ε))) := circleAverage_admissible_of_inputs P X Xc hXc U hU (fun n p => circleAverage_finite_family_jointly_gaussian P X hX Xc hXc p) (fun x y r s => id (isCircleAverage_covariance P X hX Xc hXc x y r s)) abs_circleKernel_sub_log_le abs_circleKernel_sub_gffKernel_le abs_circleKernel_sub_integral_gffKernel_le
 
 end DOZZ.Proofs

@@ -32,13 +32,13 @@ theorem dual_past_radial_value_eq (A : TwoSidedPath) (T : ℝ≥0) (t : ℝ) (ht
   unfold dualPastRadialValue
   by_cases ht0 : 0 ≤ t
   · rw [ite_eq_left ht0]
-    have hn : Real.toNNReal t ≤ T := (Real.toNNReal_le_iff_le_coe).mpr ht
+    have hn  := (Real.toNNReal_le_iff_le_coe).mpr ht
     simp only [stopBrownianPath, ContinuousMap.coe_mk, min_eq_left hn,
       radialPositiveHalf, ContinuousMap.comp_apply]
     change A (Real.toNNReal t : ℝ) = A t
     rw [Real.coe_toNNReal t ht0]
   · rw [ite_eq_right ht0]
-    have hneg : 0 ≤ -t := neg_nonneg.mpr (le_of_not_ge ht0)
+    have hneg  := neg_nonneg.mpr (le_of_not_ge ht0)
     simp only [radialNegativeHalf, ContinuousMap.comp_apply]
     change A (-(Real.toNNReal (-t) : ℝ)) = A t
     rw [Real.coe_toNNReal (-t) hneg, neg_neg]
@@ -62,7 +62,7 @@ theorem dual_past_reinsertion_weight_eq (γ : ℝ) (A : TwoSidedPath) (T : ℝ�
     (x : ℂ) (hx : Real.exp (-(T : ℝ)) ≤ ‖x‖) :
     dualPastReinsertionWeight γ (stopBrownianPath (radialPositiveHalf A) T, radialNegativeHalf A) x =
       reflected_global_reinsertionWeight γ A x := by
-  have hn : 0 < ‖x‖ := (Real.exp_pos _).trans_le hx
+  have hn  := (Real.exp_pos _).trans_le hx
   have ht : -Real.log ‖x‖ ≤ T := by
     have hh := Real.log_le_log (Real.exp_pos _) hx
     rw [Real.log_exp] at hh

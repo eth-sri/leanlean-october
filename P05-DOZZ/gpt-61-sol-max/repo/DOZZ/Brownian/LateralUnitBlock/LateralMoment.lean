@@ -9,7 +9,7 @@ public import DOZZ.GMC.SharpMoments.InverseLimit
 
 /-! Every inverse moment of the lateral unit interval, using the actual source witnesses. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal

@@ -11,7 +11,7 @@ public import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-! Lebesgue change of variables for local affine charts in the complex plane. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 open scoped ENNReal
@@ -39,9 +39,7 @@ theorem complexVolume_map_affine {a : ℂ} {c : ℝ} (hc : c ≠ 0) :
           rw [hcomp, ← Measure.map_map (measurable_const_add a) (measurable_const_smul c)]
     _ = (ENNReal.ofReal (|(c ^ 2)⁻¹|) • volume).map (fun z => a + z) := by
           rw [complexVolume_map_smul hc]
-    _ = ENNReal.ofReal (|(c ^ 2)⁻¹|) • volume := by
-          rw [Measure.map_smul _ (measurable_const_add a).aemeasurable,
-            Measure.IsAddLeftInvariant.map_add_left_eq_self (μ := volume) a]
+    _ = ENNReal.ofReal (|(c ^ 2)⁻¹|) • volume := Measure.IsAddLeftInvariant.map_add_left_eq_self a
 
 /-- A positive complex dilation maps a centered closed disk to the disk with its scaled radius. -/
 theorem complex_affine_image_closedBall {a : ℂ} {c R : ℝ} (hc : 0 < c) :
@@ -58,10 +56,9 @@ theorem complex_affine_image_closedBall {a : ℂ} {c R : ℝ} (hc : 0 < c) :
   constructor
   · rintro ⟨x, hx, rfl⟩
     rw [Metric.mem_closedBall, hdist]
-    have hx' : dist x 0 ≤ R := by simpa [Metric.mem_closedBall] using hx
-    nlinarith [mul_le_mul_of_nonneg_left hx' (le_of_lt hc)]
+    simp_all
   · intro hy
-    have hy' : dist y a ≤ c * R := by simpa [Metric.mem_closedBall] using hy
+    have hy' : dist y a ≤ c * R := hy
     let x : ℂ := (c⁻¹ : ℝ) • (y - a)
     have hdistInv : dist x 0 = c⁻¹ * dist y a := by
       dsimp [x]
@@ -69,14 +66,11 @@ theorem complex_affine_image_closedBall {a : ℂ} {c R : ℝ} (hc : 0 < c) :
         dist ((c⁻¹ : ℝ) • (y - a)) 0 = ‖(c⁻¹ : ℝ) • (y - a)‖ := by
           rw [dist_eq_norm, sub_zero]
         _ = c⁻¹ * ‖y - a‖ := by
-          rw [norm_smul, Real.norm_eq_abs, abs_of_pos (inv_pos.mpr hc)]
+          simp_all
         _ = c⁻¹ * dist y a := by rw [dist_eq_norm]
     have hx : x ∈ Metric.closedBall (0 : ℂ) R := by
       rw [Metric.mem_closedBall, hdistInv]
-      calc
-        c⁻¹ * dist y a ≤ c⁻¹ * (c * R) :=
-          mul_le_mul_of_nonneg_left hy' (le_of_lt (inv_pos.mpr hc))
-        _ = R := by field_simp [hc.ne']
+      field_simp <;> nlinarith
     refine ⟨x, hx, ?_⟩
     dsimp [x]
     calc
@@ -85,11 +79,13 @@ theorem complex_affine_image_closedBall {a : ℂ} {c R : ℝ} (hc : 0 < c) :
         simp [hc.ne']
       _ = y := by abel
 
+variable {a : ℂ} {c : ℝ} (hc : c ≠ 0) (K : Set ℂ) (himage : MeasurableSet ((fun z : ℂ => a + c • z) '' K))
+
+include a c hc K himage in
 /-- Restricting the change of variables to a measurable chart domain transports its volume to
 the affine image domain with the same Jacobian factor. -/
 theorem complexVolume_map_affine_restrict
-    {a : ℂ} {c : ℝ} (hc : c ≠ 0) (K : Set ℂ)
-    (himage : MeasurableSet ((fun z : ℂ => a + c • z) '' K)) :
+     :
     Measure.map (fun z : ℂ => a + c • z) (volume.restrict K) =
       ENNReal.ofReal (|(c ^ 2)⁻¹|) •
         volume.restrict ((fun z : ℂ => a + c • z) '' K) := by
@@ -97,8 +93,7 @@ theorem complexVolume_map_affine_restrict
   have hf : Measurable f := by fun_prop
   have hinj : Function.Injective f := by
     intro x y hxy
-    have hsmul : c • x = c • y := add_left_cancel hxy
-    exact (smul_right_injective ℂ hc) hsmul
+    continuity
   calc
     Measure.map f (volume.restrict K) = (Measure.map f volume).restrict (f '' K) := by
       rw [Measure.restrict_map hf himage, Set.preimage_image_eq _ hinj]
@@ -107,20 +102,18 @@ theorem complexVolume_map_affine_restrict
     _ = ENNReal.ofReal (|(c ^ 2)⁻¹|) • volume.restrict (f '' K) := by
       rw [Measure.restrict_smul]
 
+include a c hc K himage in
 /-- Integral form of the affine change of variables on a restricted planar domain. The inverse
 Jacobian appears because the affine map is pushed forward. -/
 theorem complex_integral_affine_restrict
-    {a : ℂ} {c : ℝ} (hc : c ≠ 0) (K : Set ℂ)
-    (himage : MeasurableSet ((fun z : ℂ => a + c • z) '' K))
+
     (g : ℂ → ℝ) (hg : Measurable g) :
     (∫ y, g y ∂volume.restrict ((fun z : ℂ => a + c • z) '' K)) =
       (|(c ^ 2)⁻¹|)⁻¹ *
         ∫ x, g (a + c • x) ∂volume.restrict K := by
   let J : ℝ := (c ^ 2)⁻¹
-  have hc2 : 0 < c ^ 2 := sq_pos_of_ne_zero hc
-  have hJ : J ≠ 0 := by
-    dsimp [J]
-    exact inv_ne_zero (pow_ne_zero 2 hc)
+  have hc2  := sq_pos_of_ne_zero hc
+  have hJ : J ≠ 0 := inv_ne_zero (pow_ne_zero 2 hc)
   have hf : Measurable (fun z : ℂ => a + c • z) := by fun_prop
   have hmap := complexVolume_map_affine_restrict hc K himage
   have hgm : AEStronglyMeasurable g (Measure.map (fun z : ℂ => a + c • z)
@@ -137,15 +130,6 @@ theorem complex_integral_affine_restrict
       ∫ x, g (a + c • x) ∂volume.restrict K := by
     rw [hcoef, smul_eq_mul] at hint
     exact hint
-  have hJabs : J = |(c ^ 2)⁻¹| := by
-    dsimp [J]
-    exact (abs_of_pos (inv_pos.mpr hc2)).symm
-  calc
-    (∫ y, g y ∂volume.restrict ((fun z : ℂ => a + c • z) '' K)) =
-        J⁻¹ * (J * ∫ y, g y ∂volume.restrict ((fun z : ℂ => a + c • z) '' K)) := by
-          field_simp [hJ]
-    _ = J⁻¹ * ∫ x, g (a + c • x) ∂volume.restrict K := by rw [hsource]
-    _ = (|(c ^ 2)⁻¹|)⁻¹ *
-        ∫ x, g (a + c • x) ∂volume.restrict K := by rw [hJabs]
+  grind
 
 end DOZZ.Proofs

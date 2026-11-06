@@ -9,7 +9,7 @@ public import DOZZ.GMC.SharpMoments.SeibergUniform
 
 /-! Uniform small moments of the actual Coulomb mass near a finite insertion. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -72,7 +72,7 @@ theorem coulomb_insertion_moment_decay
       rw [abs_mul, abs_of_pos hγ]
       exact mul_le_mul_of_nonneg_left hi hγ.le
     linarith
-  have hb : ENNReal.ofReal (L ^ (∑ j, |γ * α j| + |γ * αinf|)) ≤ B :=
+  have hb  :=
     ENNReal.ofReal_le_ofReal (Real.rpow_le_rpow_of_exponent_le hL he)
   have hatom := gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM (z k)
   have hw := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM (α k) (z k) ρ

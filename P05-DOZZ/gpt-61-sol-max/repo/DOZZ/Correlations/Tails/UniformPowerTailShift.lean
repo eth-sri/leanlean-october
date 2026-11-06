@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Tails.ShiftedPowerBound
 
 /-! Uniform control of the leading tail at the shifted thresholds in the localization sandwich. -/
 
-@[expose] public section
+public section
 open Set
 
 namespace DOZZ.Proofs
@@ -22,13 +22,13 @@ theorem uniform_power_tail_shift
     (hTail : |T (x*y)-c*(x*y)^(-p)| ≤ E*(x*y)^(-p-η)) :
     |T (x*y)-c*x^(-p)| ≤
       (E*2^(P+η)+cmax*P*2^(P+1))*x^(-p-η) := by
-  have hx0 : 0 < x := zero_lt_one.trans_le hx
+  have hx0  := zero_lt_one.trans_le hx
   have hy0 : 0 < y := by linarith only [hy.1]
-  have hP : 0 ≤ P := hp.trans hpP
+  have hP  := hp.trans hpP
   have hpow (q : ℝ) : (x*y)^q = x^q*y^q := Real.mul_rpow hx0.le hy0.le
   have hsmall : x^(-p)*x^(-a) ≤ x^(-p-η) := by
     rw [← Real.rpow_add hx0]
-    exact Real.rpow_le_rpow_of_exponent_le hx (by linarith only [ha])
+    bound
   have hybound : y^(-p-η) ≤ 2^(P+η) := by
     calc y^(-p-η) ≤ (1/2 : ℝ)^(-p-η) := Real.rpow_le_rpow_of_nonpos
           (by norm_num) hy.1 (by linarith only [hp,hη])
@@ -40,7 +40,7 @@ theorem uniform_power_tail_shift
   have hLeading : E*(x*y)^(-p-η) ≤ (E*2^(P+η))*x^(-p-η) := by
     rw [hpow]
     have h := mul_le_mul_of_nonneg_left hybound (mul_nonneg hE (Real.rpow_nonneg hx0.le (-p-η)))
-    simpa only [mul_assoc,mul_comm,mul_left_comm] using h
+    grind
   have hDifference : |c*(x*y)^(-p)-c*x^(-p)| ≤
       (cmax*P*2^(P+1))*x^(-p-η) := by
     have hv := shifted_negative_power_bound p P y hp hpP hy
@@ -62,11 +62,7 @@ theorem uniform_power_tail_shift
             _ = _ := by ring
       _ ≤ (cmax*P*2^(P+1))*x^(-p-η) := mul_le_mul_of_nonneg_left hsmall
           (mul_nonneg (mul_nonneg (hc.trans hcc) hP) (Real.rpow_nonneg zero_le_two _))
-  calc |T (x*y)-c*x^(-p)| ≤ |T (x*y)-c*(x*y)^(-p)|+|c*(x*y)^(-p)-c*x^(-p)| :=
-        abs_sub_le _ _ _
-    _ ≤ (E*2^(P+η))*x^(-p-η)+(cmax*P*2^(P+1))*x^(-p-η) :=
-        add_le_add (hTail.trans hLeading) hDifference
-    _ = _ := by ring
+  grind
 
 
 end DOZZ.Proofs

@@ -8,7 +8,7 @@ public import DOZZ.GMC.CircleAverageGaussian
 
 /-! Finite-dimensional Gaussian laws for the vertex coordinates. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 

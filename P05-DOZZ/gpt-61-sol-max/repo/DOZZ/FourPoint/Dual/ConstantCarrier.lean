@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Dual.FullCopiedLimit
 import Mathlib.Tactic
 /-! Actual lateral decoupling is negligible at the prescribed dual fusion exponent. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -19,7 +19,7 @@ theorem dual_copied_inverse_moment_congr
     (γ α₁ α₂ α₃ q : ℝ) (z : ℂ) (s r : ℝ) :
     dualCopiedSeparatedInverseMoment P Xc N₁ γ α₁ α₂ α₃ q z s r =
       dualCopiedSeparatedInverseMoment P Xc N₂ γ α₁ α₂ α₃ q z s r := by
-  let _ : IsProbabilityMeasure (P.map (originRadialPath Xc)) :=
+  let _  :=
     (Measure.isProbabilityMeasure_map_iff hAr).mpr inferInstance
   have hpair : ∀ᵐ v : Ω × Ω ∂P.prod P, N₁ v.1 = N₂ v.1 ∧ N₁ v.2 = N₂ v.2 := by
     filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae he,
@@ -52,7 +52,7 @@ theorem dual_full_copied_constant_carrier
          (dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ q z
           (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ))).toReal)/‖z‖^κ)
         (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   obtain ⟨N, hNm, hi, hfin, heq, _, _⟩ := reflected_copied_radial_plane_observable
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM
   obtain ⟨Nz, hNz, ht⟩ := dual_full_copied_inverse_littleO P X Xc hX hc hm hcont

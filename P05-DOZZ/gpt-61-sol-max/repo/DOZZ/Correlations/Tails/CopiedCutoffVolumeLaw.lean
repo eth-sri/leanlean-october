@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Tails.UnpinnedCutoffIdentity
 
 /-! Copied-pin laws for the literal local cutoff volume integrals. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -32,7 +32,7 @@ theorem copied_cutoff_volume_law
         localPinCoefficient z x*(Xc q.2 z 0-Xc q.1 z 0)) -
           γ^2/2 * (r+2*Real.log ‖z+x‖)) ∂volume) := by
   classical
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   let K := Metric.closedBall (0 : ℂ) ρ
   have hK : MeasurableSet K := Metric.isClosed_closedBall.measurableSet
   let ν : FiniteMeasure ℂ := ⟨volume.restrict K, ⟨by
@@ -43,22 +43,19 @@ theorem copied_cutoff_volume_law
     linarith
   let p : ℂ → localCircle := fun x =>
     if hx : x ∈ K then ⟨(x,r), by
-      have hn : ‖x‖ ≤ ρ := by simpa only [K, Metric.mem_closedBall, dist_zero_right] using hx
+      have hn : ‖x‖ ≤ ρ := by continuity
       dsimp
       linarith⟩
-    else ⟨(0,r), by dsimp; simpa only [norm_zero, zero_add] using (by linarith : Real.exp (-r) ≤ 1)⟩
+    else ⟨(0,r), by simp_all⟩
   have hp : Measurable p := by
     apply Measurable.subtype_mk
     have heq : (fun x => (p x).val) = (fun x : ℂ => if x ∈ K then (x,r) else (0,r)) := by
-      funext x
-      by_cases hx : x ∈ K
-      · simp only [p, dite_eq_left hx, ite_eq_left hx]
-      · simp only [p, dite_eq_right hx, ite_eq_right hx]
+      grind
     change Measurable (fun x => (p x).val)
     rw [heq]
     exact Measurable.ite hK (measurable_id.prodMk measurable_const) measurable_const
   have hpx (x : ℂ) (hx : x ∈ K) : (p x).val = (x,r) := by simp only [p, dite_eq_left hx]
-  have hweight : Integrable (f : ℂ → ℝ) (ν : Measure ℂ) := f.integrable (μ := (ν : Measure ℂ))
+  have hweight  := f.integrable (μ := (ν : Measure ℂ))
   have hlaw := offCenter_wick_copy_finite_law P X Xc hX hc hm z hz ν p hp γ
     (fun _ : Fin 1 => (f : ℂ → ℝ)) (fun _ => f.continuous.measurable) (fun _ => hf0)
       (fun _ => hweight)
@@ -67,33 +64,23 @@ theorem copied_cutoff_volume_law
         ((p x).val.2+2*Real.log ‖z+(p x).val.1‖).toNNReal) ∂(ν : Measure ℂ)) := by
     apply measurable_pi_iff.mpr
     intro i
-    have hpv := measurable_subtype_coe.comp hp
+    
     have hh : Measurable (fun q : Ω × ℂ => f q.2 * Real.exp
       (γ * Xc q.1 (z+(p q.2).val.1) (p q.2).val.2 - γ^2/2 *
         ((p q.2).val.2+2*Real.log ‖z+(p q.2).val.1‖).toNNReal)) := by
-      have hx : Measurable (fun q : Ω × ℂ => Xc q.1
-        (z+(p q.2).val.1) (p q.2).val.2) := hm.comp (measurable_fst.prodMk
-        (((measurable_const (a := z)).add (hpv.fst.comp measurable_snd)).prodMk (hpv.snd.comp measurable_snd)))
-      fun_prop
+      fun_prop (disch := positivity)
     exact hh.stronglyMeasurable.integral_prod_right.measurable
   have htar : Measurable (fun q (_ : Fin 1) => ∫ x, f x * Real.exp
       (γ * copiedCircle Xc z q (p x) - γ^2/2 *
         ((p x).val.2+2*Real.log ‖z+(p x).val.1‖).toNNReal) ∂(ν : Measure ℂ)) := by
     apply measurable_pi_iff.mpr
     intro i
-    have hpv := measurable_subtype_coe.comp hp
+    
     have hh : Measurable (fun q : (Ω × Ω) × ℂ => f q.2 * Real.exp
       (γ * copiedCircle Xc z q.1 (p q.2) - γ^2/2 *
         ((p q.2).val.2+2*Real.log ‖z+(p q.2).val.1‖).toNNReal)) := by
       unfold copiedCircle localPinCoefficient
-      have h1 (x : ℂ) (r : ℝ) : Measurable (fun q : (Ω × Ω) × ℂ => Xc q.1.1 x r) := hm.comp
-        (measurable_fst.fst.prodMk (measurable_const (a := (x,r))))
-      have h2 (x : ℂ) (r : ℝ) : Measurable (fun q : (Ω × Ω) × ℂ => Xc q.1.2 x r) := hm.comp
-        (measurable_fst.snd.prodMk (measurable_const (a := (x,r))))
-      have hloc : Measurable (fun q : (Ω × Ω) × ℂ => Xc q.1.1
-        (z+(p q.2).val.1) (p q.2).val.2) := hm.comp (measurable_fst.fst.prodMk
-        (((measurable_const (a := z)).add (hpv.fst.comp measurable_snd)).prodMk (hpv.snd.comp measurable_snd)))
-      fun_prop
+      fun_prop (disch := positivity)
     exact hh.stronglyMeasurable.integral_prod_right.measurable
   have h := congrArg (fun μ : Measure (Fin 1 → ℝ) => μ.map (fun v => v 0)) hlaw
   rw [Measure.map_map (measurable_pi_apply 0) hsrc,

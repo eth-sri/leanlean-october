@@ -58,7 +58,6 @@ theorem negativeEntranceFamilyOrder_compact_bound {F : ℝ → BrownianPath}
     {K : Set ℝ≥0} {T : ℝ} (hT : ∀ t ∈ K, (t : ℝ) ≤ T) :
     ∀ t ∈ K, dist (F a t) (F b t) ≤ |a - b| * T := by
   intro t ht
-  rw [Real.dist_eq]
   exact (negativeEntranceFamilyOrder_abs_sub_le hF ha hb t).trans
     (mul_le_mul_of_nonneg_left (hT t ht) (abs_nonneg _))
 
@@ -110,7 +109,7 @@ theorem negativeConditionedBrownianProcess_comp_measurePreserving
     (hG : MeasurePreserving G Q P) {F : Ω → BrownianPath} {a : ℝ}
     (hF : IsNegativeConditionedBrownianProcess P F a) :
     IsNegativeConditionedBrownianProcess Q (fun ω => F (G ω)) a := by
-  have hmeas : AEMeasurable (fun ω => F (G ω)) Q :=
+  have hmeas  :=
     hF.1.comp_quasiMeasurePreserving hG.quasiMeasurePreserving
   refine ⟨hmeas, ?_⟩
   have hcomp : Q.map (fun ω => F (G ω)) = P.map F := by
@@ -120,37 +119,39 @@ theorem negativeConditionedBrownianProcess_comp_measurePreserving
   rw [hcomp]
   exact hF.2
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] {P : Measure Ω} [_inst3 : IsProbabilityMeasure P] {F : ℝ → Ω → BrownianPath} {a : ℝ}
+
+include Ω _inst1 P _inst3 F a in
 /-- The first copy has exactly the prescribed entrance process law. -/
 theorem independentEntranceCopies_first_law
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    {F : ℝ → Ω → BrownianPath} {a : ℝ}
+    
     (hF : IsNegativeConditionedBrownianProcess P (F a) a) :
     IsNegativeConditionedBrownianProcess (P.prod P)
       (fun ω => (independentEntranceCopies F a ω).1) a :=
   negativeConditionedBrownianProcess_comp_measurePreserving measurePreserving_fst hF
 
+include Ω _inst1 P _inst3 F a in
 /-- The second copy has the same exact entrance process law. -/
 theorem independentEntranceCopies_second_law
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    {F : ℝ → Ω → BrownianPath} {a : ℝ}
+    
     (hF : IsNegativeConditionedBrownianProcess P (F a) a) :
     IsNegativeConditionedBrownianProcess (P.prod P)
       (fun ω => (independentEntranceCopies F a ω).2) a :=
   negativeConditionedBrownianProcess_comp_measurePreserving measurePreserving_snd hF
 
+include Ω _inst1 P _inst3 F a in
 /-- The two whole paths are independent, rather than merely their fixed-time evaluations. -/
 theorem independentEntranceCopies_indep
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    {F : ℝ → Ω → BrownianPath} {a : ℝ} (hF : AEMeasurable (F a) P) :
+     (hF : AEMeasurable (F a) P) :
     IndepFun (fun ω => (independentEntranceCopies F a ω).1)
       (fun ω => (independentEntranceCopies F a ω).2) (P.prod P) :=
   indepFun_prod₀ hF hF
 
+include Ω _inst1 P _inst3 F a in
 /-- The two-sided process characterization `DOZZ.IsTwoSidedConditionedBrownianProcess` from the
 actual product construction. -/
 theorem independentEntranceCopies_twoSided
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    {F : ℝ → Ω → BrownianPath} {a : ℝ}
+    
     (hF : IsNegativeConditionedBrownianProcess P (F a) a) :
     IsTwoSidedConditionedBrownianProcess (P.prod P) (independentEntranceCopies F a) a :=
   ⟨independentEntranceCopies_first_law hF,

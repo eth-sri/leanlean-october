@@ -10,7 +10,7 @@ public import DOZZ.Correlations.Residue.EqualDecomposition
 /-! The equal-charge unit-volume residue of the three-to-two residue bridge, reduced solely to the
 exact two-insertion tail. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Classical
 namespace DOZZ.Proofs
@@ -32,7 +32,7 @@ theorem residue_unit_equal_of_twoInsertion_estimate
           C * t ^ (-(twoInsertionTailCeiling γ α α - θ))) :
     Tendsto (fun ε : ℝ => ε * unitVolumeStructureConstant P M γ ε α α)
       (𝓝[>] 0) (𝓝 (4 * reflectionExponent γ α * Rbar)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let p := reflectionExponent γ α
   have hp := (residue_critical_order_bounds γ α hγ hα hαQ).1
   let θ := (twoInsertionTailCeiling γ α α - p) / 2
@@ -42,7 +42,7 @@ theorem residue_unit_equal_of_twoInsertion_estimate
   obtain ⟨dR, ρ, hdR, hρ, K, hK, hKb⟩ := residue_equal_complement_moment_uniform
     P X M γ α hγ hγ2 hX hM hα hαQ
   let d₀ := min dT (min dR (γ * p))
-  have hd₀ : 0 < d₀ := lt_min hdT (lt_min hdR (mul_pos hγ hp))
+  have hd₀  := lt_min hdT (lt_min hdR (mul_pos hγ hp))
   have hdT' : d₀ ≤ dT := min_le_left _ _
   have hdR' : d₀ ≤ dR := (min_le_right _ _).trans (min_le_left _ _)
   have hdβ : d₀ ≤ γ * p := (min_le_right _ _).trans (min_le_right _ _)
@@ -78,13 +78,11 @@ theorem residue_unit_equal_of_twoInsertion_estimate
       obtain ⟨C, hC, hh⟩ := htail θ hθ
       exact ⟨C, hC, fun ε hε hεd => hh ε hε (hεd.trans_le hdT')⟩)
   have hq (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) : 0 < p - ε / γ ∧ p - ε / γ < p := by
-    have hh : ε / γ < p := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hεd.trans_le hdβ)
+    have hh  := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hεd.trans_le hdβ)
     exact ⟨sub_pos.mpr hh, sub_lt_self _ (div_pos hε hγ)⟩
   have htail' (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) (t : ℝ) (ht : 1 ≤ t) :
       |(P {ω | ENNReal.ofReal t < A ε ω}).toReal - c ε * t ^ (-p)| ≤ C * t ^ (-p - θ) := by
-    have hh := hCb ε hε (hεd.trans_le hdT') t ht
-    rw [hexp, ← add_mul] at hh
-    exact hh
+    grind
   have hAfin (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) : ∀ᵐ ω ∂P, A ε ω ≠ ⊤ :=
     residue_ae_finite_of_tail P (A ε) (c ε) p θ C hp hθ (htail' ε hε hεd)
   have hiA (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) :
@@ -95,7 +93,7 @@ theorem residue_unit_equal_of_twoInsertion_estimate
     (2 * γ * p * (4 : ℝ) ^ (-(γ * α * p)) * Rbar) K hp hγ hd₀ hdβ
     (lt_add_of_pos_right _ hρ) hK (fun ε _ _ => hA ε) (fun ε _ _ => hR ε)
     hAfin hiA (fun ε hε hεd => hKb ε hε (hεd.trans_le hdR')) hlimA
-  have hatoms : ∀ᵐ ω ∂P, M ω {3} = 0 ∧ M ω {7} = 0 :=
+  have hatoms  :=
     (gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 3).and
       (gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 7)
   have hdecomp (ε : ℝ) : ∀ᵐ ω ∂P,

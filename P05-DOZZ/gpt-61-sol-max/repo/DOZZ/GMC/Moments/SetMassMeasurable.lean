@@ -9,7 +9,7 @@ public import DOZZ.GMC.Construction.GMCMeasurableVersion
 
 /-! Measurability of set masses for arbitrary weak-limit GMC versions. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 open scoped Distributions ENNReal NNReal

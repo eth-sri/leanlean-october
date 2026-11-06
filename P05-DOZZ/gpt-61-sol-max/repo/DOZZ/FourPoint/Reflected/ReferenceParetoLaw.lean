@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.MaximumParetoLaw
 /-! The exponentiated Williams reference maximum has the literal Pareto law. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 

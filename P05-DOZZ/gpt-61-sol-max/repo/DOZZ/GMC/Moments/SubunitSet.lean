@@ -9,7 +9,7 @@ public import DOZZ.GMC.Moments.SubunitLimit
 
 /-! Subunit moments of arbitrary GMC masses, localized by measure monotonicity. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 open scoped Distributions ENNReal NNReal

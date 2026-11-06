@@ -14,7 +14,7 @@ public import DOZZ.Correlations.Tails.ENNRealPowerTail
 
 /-! The original one-insertion estimate from its localized copied law and bounded remainders. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -37,24 +37,22 @@ theorem oneInsertion_estimate_uniform
       |(P {ω | ENNReal.ofReal x < localSingularMass M F z γ α ω}).toReal-
         oneInsertionTailCoefficient γ α z (F z) (reflectionBarR P γ α (B α) Z)*
           x^(-reflectionExponent γ α)| ≤ C*x^(-reflectionExponent γ α-η) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   rcases Kα.eq_empty_or_nonempty with he | hn
-  · refine ⟨0,le_rfl,?_⟩
-    intro z hzk α hαk
-    simp only [he,mem_empty_iff_false] at hαk
+  · continuity
   obtain ⟨a,r,R,g,pH,qH,hηa,ha1,hR,hRbulk,hg,hpq,hcuts⟩ :=
     uniform_oneInsertion_cut_moments γ hγ Kα hKα hn hα η hη hceil
-  have ha0 : 0 < a := hη.trans hηa
+  have ha0  := hη.trans hηa
   obtain ⟨αA,hαA,hAmax⟩ := hKα.exists_isMaxOn hn continuous_abs.continuousOn
   let A := |αA|
   have hA (α : ℝ) (hαk : α ∈ Kα) : α ≤ A := (le_abs_self α).trans (hAmax hαk)
   have hAmax (α : ℝ) (hαk : α ∈ Kα) : |α-1/γ| ≤ A+|1/γ| :=
     (show |α-1/γ| ≤ |α|+|1/γ| by
-      simpa only [sub_zero,zero_sub,abs_neg] using abs_sub_le α 0 (1/γ)).trans
+      grind).trans
         (add_le_add (hAmax hαk) le_rfl)
   let ρ := min radius 1/2
   have hρ : 0 < ρ := div_pos (lt_min hFamily.1 zero_lt_one) (by norm_num)
-  have hρR : ρ ≤ min radius 1 := by dsimp [ρ]; linarith only [lt_min hFamily.1 zero_lt_one]
+  have hρR : ρ ≤ min radius 1 := by grind
   have hδ : 0 < ρ/4 := by positivity
   have hδ1 : ρ/4 ≤ 1 := by linarith only [hρR.trans (min_le_right _ _),hρ]
   obtain ⟨χ,hχc,hχ,hχs,hχone⟩ := localization_bump ρ hρ
@@ -74,15 +72,15 @@ theorem oneInsertion_estimate_uniform
   obtain ⟨N,hN,_⟩ := translated_source_gmc_exists P X Xc hX hc z (hz z hzk)
     γ hγ hγ2 M hM
   obtain ⟨hFm,hFb,hFl,_,_⟩ := hFamily.2.2.2.2 z hzk F hF
-  have hFz : 0 < F z := hFamily.2.2.2.1.trans_le hFl
-  have hFzb : F z ≤ supBound := (le_abs_self _).trans (hFb z).2
-  have hα0 : 0 ≤ α := (div_pos hγ (by norm_num : (0 : ℝ) < 2)).le.trans (hα α hαk).1.le
-  have hp : 0 < reflectionExponent γ α :=
+  have hFz  := hFamily.2.2.2.1.trans_le hFl
+  have hFzb  := (le_abs_self _).trans (hFb z).2
+  have hα0  := (div_pos hγ (by norm_num : (0 : ℝ) < 2)).le.trans (hα α hαk).1.le
+  have hp  :=
     (residue_critical_order_bounds γ α hγ (hα α hαk).1 (hα α hαk).2).1
   obtain ⟨hr,hrR,hpr,hmargin⟩ := hcuts α hαk
   have hpR : reflectionExponent γ α ≤ R := by
     nlinarith only [hpr,hr,hrR,ha0,hη]
-  have hbulk : r α*qH+g ≤ 4/γ^2 := hmargin.trans (min_le_right _ _)
+  have hbulk  := hmargin.trans (min_le_right _ _)
   have hins : r α*qH+g ≤ 2/γ*(Q γ-(α-1/γ)) := by
     have hi : reflectionExponent γ α+2/γ^2 = 2/γ*(Q γ-(α-1/γ)) := by
       unfold reflectionExponent
@@ -90,7 +88,7 @@ theorem oneInsertion_estimate_uniform
       ring
     rw [← hi]
     exact hmargin.trans (min_le_left _ _)
-  have hOrigMoment : (∫⁻ ω, originalAnnular M F z γ α (ρ/4) ω^(r α) ∂P) ≤ D₁ :=
+  have hOrigMoment  :=
     hOrig z hzk α (r α) hα0 (hA α hαk) hr hrR F
       (fun y => ⟨(hFb y).1,(le_abs_self _).trans (hFb y).2⟩)
   have hCopyMoment := hCopy z hzk F hF N hN α (r α) hα0 (hA α hαk) (hAmax α hαk) hr hrR hbulk hins
@@ -104,7 +102,6 @@ theorem oneInsertion_estimate_uniform
   let L := fun t : ℝ => ((P.prod P) {q | ENNReal.ofReal t < canonicalLeading N Xc (F z) z γ α q}).toReal
   let c := oneInsertionTailCoefficient γ α z (F z) (reflectionBarR P γ α (B α) Z)
   have hc0 : 0 ≤ c := by
-    unfold c oneInsertionTailCoefficient reflectionBarR
     exact mul_nonneg (mul_nonneg (Real.rpow_nonneg (norm_nonneg z) _)
       (Real.rpow_nonneg hFz.le _)) ENNReal.toReal_nonneg
   have hL (t : ℝ) (ht : 1 ≤ t) : |L t-c*t^(-reflectionExponent γ α)| ≤ E*t^(-reflectionExponent γ α-η) :=
@@ -112,12 +109,10 @@ theorem oneInsertion_estimate_uniform
   have hT (t : ℝ) (_ : 1 ≤ t) : 0 ≤ T t ∧ T t ≤ 1 := by
     constructor
     · exact ENNReal.toReal_nonneg
-    · change (P {ω | ENNReal.ofReal t < localSingularMass M F z γ α ω}).toReal ≤ 1
-      exact measureReal_le_one
+    · exact id measureReal_le_one
   have hcc : c ≤ 1+E := by
     have ht := (abs_le.mp (hL 1 le_rfl)).1
     have h1 : L 1 ≤ 1 := by
-      change ((P.prod P) {q | ENNReal.ofReal 1 < canonicalLeading N Xc (F z) z γ α q}).toReal ≤ 1
       exact measureReal_le_one
     simp only [Real.one_rpow,mul_one] at ht
     linarith only [ht,h1]
@@ -126,7 +121,7 @@ theorem oneInsertion_estimate_uniform
       L (t+h)-D₂.toReal*h^(-(r α)) ≤ T t ∧
       T t ≤ L (t-2*h)+(D₁.toReal+D₂.toReal)*h^(-(r α)) := by
     dsimp only
-    have ht1 : 1 ≤ t := (by norm_num : (1 : ℝ) ≤ 2).trans ht
+    have ht1  := (by norm_num : (1 : ℝ) ≤ 2).trans ht
     have hsize := polynomial_shift_size t a ht1 ha0.le
     have hh : 2*(t^(1-a)/4) ≤ t := by linarith only [hsize.2.1,ht]
     have hs := two_space_localization_tail_sandwich P (P.prod P)
@@ -143,8 +138,7 @@ theorem oneInsertion_estimate_uniform
     · dsimp only [L,T] at *
       linarith only [hs.1,h₂]
     · rw [add_mul]
-      dsimp only [L,T] at *
-      linarith only [hs.2,h₁,h₂]
+      linarith
   have hb := uniform_tail_sandwich_bound T L (reflectionExponent γ α) R η a (r α) R c
     (1+E) E D₁.toReal D₂.toReal hp.le hpR hη hηa.le hrR hpr.le hc0 hcc hE
     ENNReal.toReal_nonneg ENNReal.toReal_nonneg

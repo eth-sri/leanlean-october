@@ -9,6 +9,7 @@ public import Mathlib.Analysis.Calculus.FDeriv.Measurable
 public import Mathlib.Analysis.Calculus.ContDiff.Defs
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import Mathlib.Tactic
 
 /-! # Derivatives of limits, Wirtinger derivatives, and a `C²` criterion
 
@@ -22,7 +23,7 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
   derivatives `∂_z` of a real function, in terms of its real derivatives.
 * `bpz_contDiffOn_two_of`: a `C²` criterion on an open set. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 
@@ -61,11 +62,11 @@ theorem bpz_aestronglyMeasurable_segment {F : Type*} [NormedAddCommGroup F] [Nor
   refine Eventually.of_forall fun t ht => ?_
   exact (bpz_hasDerivAt_segment hf hh (Set.uIoc_subset_uIcc ht)).deriv
 
+variable {F : Type*} [_inst1 : NormedAddCommGroup F] [_inst2 : NormedSpace ℝ F] [_inst3 : CompleteSpace F] {f : ℂ → F} {f' : ℂ → ℂ →L[ℝ] F} {z h : ℂ} {r C : ℝ} (hf : ∀ w ∈ Metric.ball z r, HasFDerivAt f (f' w) w) (hC : ∀ w ∈ Metric.ball z r, ‖f' w‖ ≤ C) (hh : ‖h‖ < r)
+
+include F _inst1 _inst2 _inst3 f f' z h r C hf hC hh in
 /-- A bounded derivative along a segment is interval integrable. -/
-theorem bpz_intervalIntegrable_segment {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
-    [CompleteSpace F] {f : ℂ → F} {f' : ℂ → ℂ →L[ℝ] F} {z h : ℂ} {r C : ℝ}
-    (hf : ∀ w ∈ Metric.ball z r, HasFDerivAt f (f' w) w)
-    (hC : ∀ w ∈ Metric.ball z r, ‖f' w‖ ≤ C) (hh : ‖h‖ < r) :
+theorem bpz_intervalIntegrable_segment  :
     IntervalIntegrable (fun t : ℝ => f' (z + t • h) h) volume 0 1 := by
   rw [intervalIntegrable_iff]
   refine Integrable.mono' (g := fun _ => C * ‖h‖) ?_ (bpz_aestronglyMeasurable_segment hf hh) ?_
@@ -73,15 +74,12 @@ theorem bpz_intervalIntegrable_segment {F : Type*} [NormedAddCommGroup F] [Norme
   · rw [ae_restrict_iff' measurableSet_uIoc]
     refine Eventually.of_forall fun t ht => ?_
     have hmem := bpz_segment_mem_ball (z := z) hh (Set.uIoc_subset_uIcc ht)
-    calc ‖f' (z + t • h) h‖ ≤ ‖f' (z + t • h)‖ * ‖h‖ := (f' (z + t • h)).le_opNorm h
-      _ ≤ C * ‖h‖ := mul_le_mul_of_nonneg_right (hC _ hmem) (norm_nonneg h)
+    exact ContinuousLinearMap.le_of_opNorm_le (f' (z + t • h)) (hC (z + t • h) hmem) h
 
+include F _inst1 _inst2 _inst3 f f' z h r C hf hC hh in
 /-- The fundamental theorem of calculus along a segment, for a function that is differentiable
 with bounded (not necessarily continuous) derivative on a ball. -/
-theorem bpz_segment_ftc {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F] [CompleteSpace F]
-    {f : ℂ → F} {f' : ℂ → ℂ →L[ℝ] F} {z h : ℂ} {r C : ℝ}
-    (hf : ∀ w ∈ Metric.ball z r, HasFDerivAt f (f' w) w)
-    (hC : ∀ w ∈ Metric.ball z r, ‖f' w‖ ≤ C) (hh : ‖h‖ < r) :
+theorem bpz_segment_ftc  :
     f (z + h) - f z = ∫ t in (0 : ℝ)..1, f' (z + t • h) h := by
   have h1 := intervalIntegral.integral_eq_sub_of_hasDerivAt
     (fun t ht => bpz_hasDerivAt_segment hf hh ht) (bpz_intervalIntegrable_segment hf hC hh)
@@ -101,12 +99,12 @@ theorem bpz_sub_eq_integral_of_tendsto_deriv {F : Type*} [NormedAddCommGroup F]
     (hrU : Metric.ball z r ⊆ U) (hC : ∀ n, ∀ w ∈ Metric.ball z r, ‖f' n w‖ ≤ C)
     (hh : ‖h‖ < r) :
     g (z + h) - g z = ∫ t in (0 : ℝ)..1, g' (z + t • h) h := by
-  have hfb : ∀ n, ∀ w ∈ Metric.ball z r, HasFDerivAt (f n) (f' n w) w :=
+  have hfb  :=
     fun n w hw => hf n w (hrU hw)
-  have hz : z ∈ U := hrU (Metric.mem_ball_self (lt_of_le_of_lt (norm_nonneg h) hh))
+  have hz  := hrU (Metric.mem_ball_self (lt_of_le_of_lt (norm_nonneg h) hh))
   have hzh : z + h ∈ U := by
     refine hrU ?_
-    simpa using bpz_segment_mem_ball (z := z) (t := 1) hh (by simp)
+    simp_all
   have hL1 : Tendsto (fun n => ∫ t in (0 : ℝ)..1, f' n (z + t • h) h) atTop
       (𝓝 (∫ t in (0 : ℝ)..1, g' (z + t • h) h)) := by
     refine intervalIntegral.tendsto_integral_filter_of_dominated_convergence
@@ -115,8 +113,7 @@ theorem bpz_sub_eq_integral_of_tendsto_deriv {F : Type*} [NormedAddCommGroup F]
     · exact bpz_aestronglyMeasurable_segment (hfb n) hh
     · refine Eventually.of_forall fun t ht => ?_
       have hmem := bpz_segment_mem_ball (z := z) hh (Set.uIoc_subset_uIcc ht)
-      calc ‖f' n (z + t • h) h‖ ≤ ‖f' n (z + t • h)‖ * ‖h‖ := (f' n (z + t • h)).le_opNorm h
-        _ ≤ C * ‖h‖ := mul_le_mul_of_nonneg_right (hC n _ hmem) (norm_nonneg h)
+      exact ContinuousLinearMap.le_of_opNorm_le (f' n (z + t • h)) (hC n (z + t • h) hmem) h
     · have hmem := bpz_segment_mem_ball (z := z) hh (Set.uIoc_subset_uIcc ht)
       exact ((ContinuousLinearMap.apply ℝ F h).continuous.tendsto _).comp (hlim' _ (hrU hmem))
   have hL2 : Tendsto (fun n => ∫ t in (0 : ℝ)..1, f' n (z + t • h) h) atTop
@@ -140,7 +137,7 @@ theorem bpz_hasFDerivAt_of_tendsto_deriv {F : Type*} [NormedAddCommGroup F] [Nor
   obtain ⟨r₀, hr₀, hr₀U⟩ := Metric.isOpen_iff.mp hU z hz
   obtain ⟨r₁, hr₁, C, hC⟩ := hbd z hz
   set r : ℝ := min r₀ r₁ with hr
-  have hrpos : 0 < r := lt_min hr₀ hr₁
+  have hrpos  := lt_min hr₀ hr₁
   have hrU : Metric.ball z r ⊆ U :=
     (Metric.ball_subset_ball (min_le_left _ _)).trans hr₀U
   have hrC : ∀ n, ∀ w ∈ Metric.ball z r, ‖f' n w‖ ≤ C := fun n w hw =>
@@ -166,7 +163,7 @@ theorem bpz_hasFDerivAt_of_tendsto_deriv {F : Type*} [NormedAddCommGroup F] [Nor
   rw [hint]
   have hbound : ∀ t ∈ Set.uIoc (0 : ℝ) 1, ‖g' (z + t • h) h - g' z h‖ ≤ ρ * ‖h‖ := by
     intro t ht
-    have ht' : t ∈ Set.uIcc (0 : ℝ) 1 := Set.uIoc_subset_uIcc ht
+    have ht'  := Set.uIoc_subset_uIcc ht
     have hdist : dist (z + t • h) z < δ := by
       have := bpz_segment_mem_ball (z := z) (r := δ) hhδ ht'
       rwa [Metric.mem_ball] at this
@@ -223,7 +220,7 @@ theorem bpz_contDiffOn_two_of {T : ℂ → ℝ} {DT : ℂ → ℂ →L[ℝ] ℝ}
     (h3 : ContinuousOn D2T U) : ContDiffOn ℝ 2 T U := by
   have hev : ∀ w ∈ U, fderiv ℝ T =ᶠ[𝓝 w] DT := fun w hw => by
     filter_upwards [hU.mem_nhds hw] with y hy using (h1 y hy).fderiv
-  have hd2 : ∀ w ∈ U, HasFDerivAt (fderiv ℝ T) (D2T w) w := fun w hw =>
+  have hd2  := fun w hw =>
     (h2 w hw).congr_of_eventuallyEq (hev w hw)
   have hC1 : ContDiffOn ℝ 1 (fderiv ℝ T) U := by
     have h0 : ContDiffOn ℝ ((0 : WithTop ℕ∞) + 1) (fderiv ℝ T) U := by
@@ -232,11 +229,11 @@ theorem bpz_contDiffOn_two_of {T : ℂ → ℝ} {DT : ℂ → ℂ →L[ℝ] ℝ}
         fun h => absurd h (by simp), ?_⟩
       rw [contDiffOn_zero]
       exact h3.congr fun w hw => (hd2 w hw).fderiv
-    simpa using h0
+    exact h0
   have h2' : ContDiffOn ℝ ((1 : WithTop ℕ∞) + 1) T U := by
     rw [contDiffOn_succ_iff_fderiv_of_isOpen hU]
     exact ⟨fun w hw => (h1 w hw).differentiableAt.differentiableWithinAt,
       fun h => absurd h (by simp), hC1⟩
-  simpa [one_add_one_eq_two] using h2'
+  exact h2'
 
 end DOZZ.Proofs

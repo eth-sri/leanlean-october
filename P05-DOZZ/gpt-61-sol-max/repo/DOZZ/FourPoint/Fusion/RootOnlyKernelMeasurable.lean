@@ -9,7 +9,7 @@ public import DOZZ.GMC.Construction.RootedMeasureKernel
 
 /-! # Joint measurability of the moving inverse expectation -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -27,9 +27,6 @@ theorem fusionRootOnlyKernel_joint_measurable (γ α₁ α₂ α₃ : ℝ) :
     by simpa only [Function.comp_def] using ((measurable_pointRootPotential.comp hr).const_mul (γ ^ 2)).exp
   change Measurable (fun q : (ℂ × ℂ) × ℂ => ENNReal.ofReal
     (gammaHalfKernel γ α₁ α₂ α₃ 0 q.2 * Real.exp (γ ^ 2 * gffKernel (q.1.1 * q.1.2) q.2)))
-  have hprod : Measurable (fun q : (ℂ × ℂ) × ℂ =>
-    gammaHalfKernel γ α₁ α₂ α₃ 0 q.2 * Real.exp (γ ^ 2 * gffKernel (q.1.1 * q.1.2) q.2)) :=
-    hK.mul hD
-  simpa only [Function.comp_def] using ENNReal.measurable_ofReal.comp hprod
+  fun_prop (disch := positivity)
 
 end DOZZ.Proofs

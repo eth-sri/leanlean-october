@@ -11,7 +11,7 @@ public import Mathlib.Analysis.Calculus.MeanValue
 
 /-! The small-annulus derivative estimate for complex mass powers. -/
 
-@[expose] public section
+public section
 open Set
 namespace DOZZ.Proofs
 
@@ -23,12 +23,12 @@ theorem cpow_mass_increment_le (Z Y : ℝ) (hZ : 0 < Z) (hY : 0 ≤ Y) (p : ℂ)
   let F : ℝ → ℂ := fun x => (x : ℂ) ^ p
   let D : ℝ → ℂ := fun x => p * (x : ℂ) ^ (p - 1)
   have hd (x : ℝ) (hx : x ∈ Icc Z (Z + Y)) : HasDerivAt F (D x) x := by
-    have hp : 0 < x := hZ.trans_le hx.1
+    have hp  := hZ.trans_le hx.1
     exact (Complex.hasStrictDerivAt_cpow_const
       (Complex.ofReal_mem_slitPlane.mpr hp)).hasDerivAt.comp_ofReal
   have hb (x : ℝ) (hx : x ∈ Ico Z (Z + Y)) :
       ‖D x‖ ≤ ‖p‖ * (Z ^ (p.re - 1) + (Z + Y) ^ (p.re - 1)) := by
-    have hp : 0 < x := hZ.trans_le hx.1
+    have hp  := hZ.trans_le hx.1
     dsimp [D]
     rw [norm_mul, norm_cpow_positive x hp, Complex.sub_re, Complex.one_re]
     apply mul_le_mul_of_nonneg_left _ (norm_nonneg p)

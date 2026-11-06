@@ -16,20 +16,20 @@ shell bound; at and above `4/γ²` an off-center subdisk already diverges; betwe
 bulk thresholds the moment at the chart center diverges by exact scaling, and the truncated-weight
 location transfer carries the divergence to every center. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α : ℝ)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM α in
 /-- Below the bulk threshold and at or above the insertion threshold, weighted local moments
 diverge at every center and radius. -/
 theorem weightedGmcBallMoment_eq_top_of_insertion
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α : ℝ) (hα : 0 < α) (p : ℝ) (hp : 0 < p) (hp4 : p < 4 / γ ^ 2)
+     (hα : 0 < α) (p : ℝ) (hp : 0 < p) (hp4 : p < 4 / γ ^ 2)
     (he : (2 - γ * α) * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 ≤ 0)
     (z : ℂ) (r : ℝ) (hr : 0 < r) :
     weightedGmcBallMoment P M γ α z r p = ⊤ := by
@@ -80,18 +80,14 @@ theorem weightedInsertion_exponent_nonpos {γ α p : ℝ} (hγ : 0 < γ) (hp : 0
   refine ⟨by linarith, ?_⟩
   have hexp : (2 - γ * α) * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 =
       γ * p * ((Q γ - α) - γ * p / 2) := by
-    have h2a : 2 - γ * α = γ * Q γ - γ ^ 2 / 2 - γ * α := by rw [hQ]; ring
-    rw [h2a]
-    ring
+    grind
   rw [hexp]
   exact mul_nonpos_of_nonneg_of_nonpos (by positivity) (by linarith)
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM α in
 /-- Sharp one-root weighted local moment threshold. -/
 theorem equatorGFF_GMC_weighted_local_moment_range
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (α : ℝ) (hα : α < Q γ)
+     (hα : α < Q γ)
     (p : ℝ) (hp : 0 < p) (z : ℂ) (r : ℝ) (hr : 0 < r) :
     (weightedGmcBallMoment P M γ α z r p < ⊤) ↔
       p < min (4 / γ ^ 2) (2 / γ * (Q γ - α)) := by
@@ -102,7 +98,7 @@ theorem equatorGFF_GMC_weighted_local_moment_range
     by_contra hnot
     rw [lt_min_iff, not_and_or, not_lt, not_lt] at hnot
     by_cases hp4 : p < 4 / γ ^ 2
-    · have hins : 2 / γ * (Q γ - α) ≤ p := hnot.resolve_left (not_le.mpr hp4)
+    · have hins  := hnot.resolve_left (not_le.mpr hp4)
       obtain ⟨hα0, he⟩ := weightedInsertion_exponent_nonpos hγ hp hp4 hins
       rw [weightedGmcBallMoment_eq_top_of_insertion P X hX γ hγ hγ2 M hM α hα0 p hp hp4 he z r
         hr] at hfin

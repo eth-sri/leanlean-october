@@ -12,7 +12,7 @@ public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
 /-! The KRV difference integral follows from scaling and its Riesz discrete Laplacian. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter
 open scoped Topology
@@ -37,8 +37,7 @@ theorem planarDifference_constant_from_discrete_laplacian (k β : ℝ)
   have hα : 0 < α := by dsimp [α]; linarith
   have hscale (z : ℂ) :
       (∫ u : ℂ, DOZZ.planarDifferenceKernel k β z u) = ‖z‖ ^ α * A := by
-    simpa [α, A] using
-      planarDifferenceKernel_integral_scale_norm k β hk hβ hβ₂ z
+    exact planarDifferenceKernel_integral_scale_norm k β hk hβ hβ₂ z
   have hParentEq : P =ᶠ[l]
       fun t => A * normPowerDiscreteLaplacian α t 1 := by
     filter_upwards [] with t
@@ -66,8 +65,7 @@ theorem planarDifference_constant_from_discrete_laplacian (k β : ℝ)
   have hQEq :
       (fun t : ℝ => ∫ u : ℂ, planarDifferenceDiscreteQuotient k β t u) =ᶠ[l] P := by
     filter_upwards [] with t
-    simpa [P, A] using
-      integral_planarDifferenceDiscreteQuotient k β hk hβ hβ₂ hβtail t
+    exact integral_planarDifferenceDiscreteQuotient k β hk hβ hβ₂ hβtail t
   have hDctP := hDct.congr' hQEq
   have hDctP' : Tendsto P l
       (𝓝 (k ^ 2 * (∫ u : ℂ, ‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2)))) := by
@@ -81,23 +79,13 @@ theorem planarDifference_constant_from_discrete_laplacian (k β : ℝ)
   have hRieszVal :
       (∫ u : ℂ, ‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2)) = G := by
     simpa [G, norm_one, Real.one_rpow] using hRiesz
-  have hRealCoeff : k ^ 2 * G = α ^ 2 * A := by
-    simpa [hRieszVal] using hCoeff
-  have hαsq : α ^ 2 ≠ 0 := pow_ne_zero 2 hα.ne'
-  have hA : A = (k ^ 2 / α ^ 2) * G := by
-    calc
-      A = α ^ 2 * A / α ^ 2 := by field_simp [hαsq]
-      _ = k ^ 2 * G / α ^ 2 := by rw [hRealCoeff]
-      _ = (k ^ 2 / α ^ 2) * G := by ring
+  
+  have hαsq  := pow_ne_zero 2 hα.ne'
+  
   have hratio : k ^ 2 / α ^ 2 = (k / 2) ^ 2 / (α / 2) ^ 2 := by
     field_simp [hαsq]
   have hconst := positive_riesz_coefficient_eq_planarGaussConstant k β hk hβ hβ₂
-  calc
-    (A : ℂ) = (((k ^ 2 / α ^ 2) * G : ℝ) : ℂ) := congrArg Complex.ofReal hA
-    _ = ((((k / 2) ^ 2 / (α / 2) ^ 2) * G : ℝ) : ℂ) := by rw [hratio]
-    _ = DOZZ.planarGaussConstant k β := by
-      dsimp [G, α]
-      simpa [mul_assoc, mul_left_comm, mul_comm] using hconst
+  grind
 
 /-- Proof of the difference-integral statement `DOZZ.planar_difference_integral`. -/
 theorem planar_difference_integral (k β : ℝ) (hk : 0 < k)
@@ -110,9 +98,7 @@ theorem planar_difference_integral (k β : ℝ) (hk : 0 < k)
   have hscale := planarDifferenceKernel_integral_scale_norm k β hk (by linarith) hβ₂
   intro z
   refine ⟨hInt z, ?_⟩
-  have hval : (∫ u : ℂ, DOZZ.planarDifferenceKernel k β z u) =
-      ‖z‖ ^ (2 + k - β) *
-        (∫ u : ℂ, DOZZ.planarDifferenceKernel k β 1 u) := hscale z
+  have hval  := hscale z
   rw [integral_complex_ofReal]
   calc
     ((∫ u : ℂ, DOZZ.planarDifferenceKernel k β z u : ℝ) : ℂ) =

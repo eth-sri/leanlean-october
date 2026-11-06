@@ -21,7 +21,7 @@ theorem roots_eq_of_meromorphic_continuation (V : Set ℂ) (hV : IsPreconnected 
   have horderb := hfg.meromorphicOrderAt_eq_top_of_isPreconnected hV ha hb horder
   have hzerob := meromorphicOrderAt_eq_top_iff.mp horderb
   have heqb : (fun z => f z - g z) =ᶠ[nhdsWithin b {b}ᶜ] (fun _ => (0 : ℂ)) := hzerob
-  have hlim : Tendsto (fun z => f z - g z) (nhdsWithin b {b}ᶜ) (nhds 0) :=
+  have hlim  :=
     tendsto_const_nhds.congr' heqb.symm
   exact sub_eq_zero.mp (tendsto_nhds_unique
     ((hfc.sub hgc).tendsto.mono_left nhdsWithin_le_nhds) hlim)

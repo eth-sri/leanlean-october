@@ -10,7 +10,7 @@ import Mathlib.Tactic
 
 /-! # Inverse-power differences and finite nonnegative expectations -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -33,15 +33,15 @@ theorem reflected_lintegral_toReal_difference_bound {Ω : Type*} [MeasurableSpac
   have hr2 := ENNReal.toReal_mono (ENNReal.add_ne_top.mpr ⟨hF, hR⟩) h2
   rw [ENNReal.toReal_add hG hR] at hr1
   rw [ENNReal.toReal_add hF hR] at hr2
-  exact abs_le.mpr ⟨by linarith only [hr2], by linarith only [hr1]⟩
+  grind
 
 /-- Adding a nonnegative mass has a first-order inverse-power error controlled by the
 retained mass, including the literal ENNReal totalizations. -/
 theorem reflected_ennreal_inverse_add_bound (p : ℝ) (hp : 0 < p) (S I : ℝ≥0∞)
     (hS : S ≠ 0) (hSt : S ≠ ⊤) (hIt : I ≠ ⊤) :
     S ^ (-p) ≤ (S + I) ^ (-p) + ENNReal.ofReal p * I * S ^ (-(p + 1)) := by
-  have hs : 0 < S.toReal := ENNReal.toReal_pos hS hSt
-  have ht : S + I ≠ ⊤ := ENNReal.add_ne_top.mpr ⟨hSt, hIt⟩
+  have hs  := ENNReal.toReal_pos hS hSt
+  have ht  := ENNReal.add_ne_top.mpr ⟨hSt, hIt⟩
   have hsz : S + I ≠ 0 := ne_zero_of_lt (lt_of_lt_of_le (pos_iff_ne_zero.mpr hS) le_self_add)
   have hrt : (S + I) ^ (-p) + ENNReal.ofReal p * I * S ^ (-(p + 1)) ≠ ⊤ :=
     ENNReal.add_ne_top.mpr ⟨ENNReal.rpow_ne_top_of_ne_zero hsz ht,
@@ -59,8 +59,7 @@ theorem reflected_ennreal_inverse_add_bound (p : ℝ) (hp : 0 < p) (S I : ℝ≥
   rw [show -p - 1 = -(p + 1) by ring,
     show S.toReal - (S.toReal + I.toReal) = -I.toReal by ring,
     abs_neg, abs_of_nonneg ENNReal.toReal_nonneg] at hh
-  have hl := (le_abs_self (S.toReal ^ (-p) - (S.toReal + I.toReal) ^ (-p))).trans hh
-  nlinarith only [hl]
+  grind
 
 /-- A relative mass error, with a common quarter-mass lower bound, gives a relative
 inverse-power error. -/
@@ -77,13 +76,11 @@ theorem reflected_real_inverse_relative_bound (p d S T : ℝ) (hp : 0 < p)
         _ = S ^ (-p - 1) * S ^ (1 : ℝ) := by rw [Real.rpow_one]
         _ = S ^ (-p - 1 + 1) := (Real.rpow_add hS _ _).symm
         _ = _ := by congr 1; ring
-    rw [mul_assoc, hpw, show -p - 1 = -(p + 1) by ring]
+    grind
   calc
     _ ≤ p * (S / 4) ^ (-p - 1) * (d * S) :=
       hh.trans (mul_le_mul_of_nonneg_left hd (by positivity))
     _ = _ := by
-      calc
-        _ = (p * d) * ((S / 4) ^ (-p - 1) * S) := by ring
-        _ = _ := by rw [he]; ring
+      grind
 
 end DOZZ.Proofs

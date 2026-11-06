@@ -9,7 +9,7 @@ public import DOZZ.FourPoint.Reflected.SourceLateralWitness
 public import DOZZ.Brownian.Lateral.GlobalIndependence
 import Mathlib.Tactic
 /-! The corrected near-Q window has a common source witness for actual full fusion. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -43,8 +43,8 @@ theorem dual_source_full_inverse_fusion_witness {Ω : Type*} [MeasurableSpace Ω
   obtain ⟨Xc, B, hc, hm, hcont, hSource, hZ, hB⟩ :=
     reflected_regular_source_reflection_family P X hX γ hγ hγ₂ M hM
   let Z := fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)
-  have hData : IsReflectionData P γ α₁ (B α₁) Z := hB α₁ hαhi
-  have hiZ : IndepFun (originRadialPath Xc) Z P :=
+  have hData  := hB α₁ hαhi
+  have hiZ  :=
     lateralProjectedGMC_indep P X Xc hX hc hm hcont γ hγ hγ₂ M hM
   obtain ⟨hν, hreflect, hκ, hκ1, houter, hα2, hαup, hβ, hν2, hfirst⟩ :=
     dual_window_margins γ α₁ η ξ hγ hγ₂ hη hη₂ hξ₂ hαlo hαhi hslack₁ hslack₂

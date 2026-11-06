@@ -26,13 +26,13 @@ theorem realSecondDifferenceLimit_integral_eq (k β α A : ℝ)
       planarRealSecondDifferenceQuotient k β t u =
         (F (1 + (t : ℂ)) u + F (1 - (t : ℂ)) u - 2 * F 1 u) / t ^ 2) :
     (∫ u : ℂ, planarRealSecondDifferenceLimit k β u) = α * (α - 1) * A := by
-  let l : Filter ℝ := 𝓝[≠] (0 : ℝ)
+  let l  := 𝓝[≠] (0 : ℝ)
   let P : ℝ → ℝ := fun t =>
     ((∫ u : ℂ, F (1 + (t : ℂ)) u) + (∫ u : ℂ, F (1 - (t : ℂ)) u) -
       2 * (∫ u : ℂ, F 1 u)) / t ^ 2
-  let A₀ : ℝ := ∫ u : ℂ, F 1 u
+  let A₀  := ∫ u : ℂ, F 1 u
   have hA₀ : A₀ = A := by
-    simpa [A₀, norm_one, Real.one_rpow] using hFscale (1 : ℂ)
+    continuity
   have hParentEq : P =ᶠ[l]
       fun t => A₀ * normPowerRealSecondDifference α t 1 := by
     filter_upwards [] with t
@@ -48,27 +48,25 @@ theorem realSecondDifferenceLimit_integral_eq (k β α A : ℝ)
   have hRad' : Tendsto (fun t : ℝ => normPowerRealSecondDifference α t 1) l
       (𝓝 (α * (α - 1))) := by
     convert hRad using 1
-    · simp [normPowerRealSecondDifference, norm_one, Real.one_rpow]
+    · abel
     · simp [norm_one, Real.one_rpow]
       ring
   have hScaled : Tendsto (fun t : ℝ => A₀ * normPowerRealSecondDifference α t 1) l
       (𝓝 (A₀ * (α * (α - 1)))) := tendsto_const_nhds.mul hRad'
   have hParentLimit : Tendsto P l (𝓝 (α * (α - 1) * A₀)) := by
     have h := hScaled.congr' hParentEq.symm
-    simpa [mul_assoc, mul_left_comm, mul_comm] using h
+    grind
   have hDct := planarRealSecondDifferenceQuotient_integral_tendsto k β
     hk hβ hβ₂
   have hQEq :
       (fun t : ℝ => ∫ u : ℂ, planarRealSecondDifferenceQuotient k β t u) =ᶠ[l] P := by
     filter_upwards [self_mem_nhdsWithin] with t ht
-    have ht0 : t ≠ 0 := by simpa using ht
-    let N : ℂ → ℝ := fun u => F (1 + (t : ℂ)) u + F (1 - (t : ℂ)) u - 2 * F 1 u
+    have ht0 : t ≠ 0 := by exact ht
+    let N  := fun u => F (1 + (t : ℂ)) u + F (1 - (t : ℂ)) u - 2 * F 1 u
     have hplus := hFint (1 + (t : ℂ))
     have hminus := hFint (1 - (t : ℂ))
     have hzero := hFint 1
-    have hN : Integrable N volume := by
-      dsimp [N]
-      exact (hplus.add hminus).sub (hzero.const_mul 2)
+    
     have hpointAE : planarRealSecondDifferenceQuotient k β t =ᵐ[volume]
         fun u => (N u) / t ^ 2 := by
       filter_upwards [Measure.ae_ne volume (0 : ℂ)] with u hu
@@ -81,8 +79,7 @@ theorem realSecondDifferenceLimit_integral_eq (k β α A : ℝ)
         (∫ u : ℂ, F (1 + (t : ℂ)) u + F (1 - (t : ℂ)) u -
             2 * F 1 u) =
             (∫ u : ℂ, F (1 + (t : ℂ)) u + F (1 - (t : ℂ)) u) -
-              (∫ u : ℂ, 2 * F 1 u) := by
-                exact integral_sub (hplus.add hminus) (hzero.const_mul 2)
+              (∫ u : ℂ, 2 * F 1 u) := integral_sub (hplus.add hminus) (hzero.const_mul 2)
         _ = (∫ u : ℂ, F (1 + (t : ℂ)) u) +
               (∫ u : ℂ, F (1 - (t : ℂ)) u) -
               2 * (∫ u : ℂ, F 1 u) := by
@@ -96,15 +93,10 @@ theorem realSecondDifferenceLimit_integral_eq (k β α A : ℝ)
             fun u => (t ^ 2)⁻¹ * N u by funext u; simp [div_eq_mul_inv, mul_comm],
             integral_const_mul]
         _ = _ := by simp [div_eq_mul_inv, mul_comm]
-    change (∫ u : ℂ, planarRealSecondDifferenceQuotient k β t u) =
-      ((∫ u : ℂ, F (1 + (t : ℂ)) u) +
-        (∫ u : ℂ, F (1 - (t : ℂ)) u) -
-        2 * (∫ u : ℂ, F 1 u)) / t ^ 2
-    rw [hIntEq, hsum]
+    grind
   have hDctP := hDct.congr' hQEq
   have hlim := tendsto_nhds_unique hDctP hParentLimit
-  rw [hA₀] at hlim
-  simpa [mul_assoc, mul_left_comm, mul_comm] using hlim
+  simp_all
 
 private noncomputable def planarTaylorLinearCounterterm (u z : ℂ) : ℝ :=
   (z / u + star z / star u).re
@@ -150,10 +142,9 @@ private theorem planarTaylorRealSecondDifference_pointwise (k β t : ℝ) (u : �
           (k / 2) * ‖u‖ ^ k * planarTaylorLinearCounterterm u 1) =
       ‖(u - 1) + (t : ℂ)‖ ^ k + ‖(u - 1) - (t : ℂ)‖ ^ k -
         2 * ‖u - 1‖ ^ k := by
-    rw [h₁, h₂]
-    linear_combination (k / 2 * ‖u‖ ^ k) * hlinear
+    grind
   rw [h₁, h₂] at hnum
-  have hden : 0 < ‖u‖ ^ β := Real.rpow_pos_of_pos (norm_pos_iff.mpr hu) β
+  have hden  := Real.rpow_pos_of_pos (norm_pos_iff.mpr hu) β
   have hparent :
       DOZZ.planarTaylorRemainder k β (1 + (t : ℂ)) u +
         DOZZ.planarTaylorRemainder k β (1 - (t : ℂ)) u -
@@ -162,16 +153,15 @@ private theorem planarTaylorRealSecondDifference_pointwise (k β t : ℝ) (u : �
           2 * ‖u - 1‖ ^ k) / ‖u‖ ^ β := by
     unfold DOZZ.planarTaylorRemainder
     rw [h₁, h₂]
-    let Nplus : ℝ := ‖u - 1 - (t : ℂ)‖ ^ k - ‖u‖ ^ k +
+    let Nplus  := ‖u - 1 - (t : ℂ)‖ ^ k - ‖u‖ ^ k +
       (k / 2) * ‖u‖ ^ k * planarTaylorLinearCounterterm u (1 + (t : ℂ))
-    let Nminus : ℝ := ‖u - 1 + (t : ℂ)‖ ^ k - ‖u‖ ^ k +
+    let Nminus  := ‖u - 1 + (t : ℂ)‖ ^ k - ‖u‖ ^ k +
       (k / 2) * ‖u‖ ^ k * planarTaylorLinearCounterterm u (1 - (t : ℂ))
-    let Nzero : ℝ := ‖u - 1‖ ^ k - ‖u‖ ^ k +
+    let Nzero  := ‖u - 1‖ ^ k - ‖u‖ ^ k +
       (k / 2) * ‖u‖ ^ k * planarTaylorLinearCounterterm u 1
     change (Nplus / ‖u‖ ^ β + Nminus / ‖u‖ ^ β -
         2 * (Nzero / ‖u‖ ^ β)) = _
-    rw [← add_div, ← mul_div_assoc, ← sub_div]
-    congr 1
+    grind
   change ‖u‖ ^ (-β) *
       ((‖u - 1 + (t : ℂ)‖ ^ k + ‖u - 1 - (t : ℂ)‖ ^ k -
         2 * ‖u - 1‖ ^ k) / t ^ 2) = _
@@ -179,20 +169,21 @@ private theorem planarTaylorRealSecondDifference_pointwise (k β t : ℝ) (u : �
   rw [hparent]
   field_simp [hden.ne', ht]
 
-theorem planarTaylor_real_second_derivative_relation (k β : ℝ) (hk : 0 < k)
-    (hβ : k < β) (hβ₂ : β < 2) (hβlin : β < k + 1) :
+variable (k β : ℝ) (hk : 0 < k) (hβ : k < β) (hβ₂ : β < 2)
+
+include k β hk hβ hβ₂ in
+theorem planarTaylor_real_second_derivative_relation  (hβlin : β < k + 1) :
     (∫ u : ℂ, planarRealSecondDifferenceLimit k β u) =
       (2 + k - β) * (1 + k - β) *
         (∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u) := by
-  let α : ℝ := 2 + k - β
-  let A : ℝ := ∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u
-  have hα : 0 < α := by dsimp [α]; linarith
-  have hFint : ∀ z : ℂ, Integrable (DOZZ.planarTaylorRemainder k β z) volume :=
+  let α  := 2 + k - β
+  let A  := ∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u
+  
+  have hFint  :=
     integrable_planarTaylorRemainder k β hk hβ hβ₂ hβlin
   have hFscale (z : ℂ) :
       (∫ u : ℂ, DOZZ.planarTaylorRemainder k β z u) = ‖z‖ ^ α * A := by
-    simpa [α, A] using
-      planarTaylorRemainder_integral_scale_norm k β hk hβ hβ₂ z
+    exact planarTaylorRemainder_integral_scale_norm k β hk hβ hβ₂ z
   have hpoint : ∀ t : ℝ, t ≠ 0 → ∀ u : ℂ, u ≠ 0 →
       planarRealSecondDifferenceQuotient k β t u =
         (DOZZ.planarTaylorRemainder k β (1 + (t : ℂ)) u +
@@ -202,51 +193,38 @@ theorem planarTaylor_real_second_derivative_relation (k β : ℝ) (hk : 0 < k)
     exact planarTaylorRealSecondDifference_pointwise k β t u hu ht
   have hresult := realSecondDifferenceLimit_integral_eq k β α A hk hβ hβ₂
     (DOZZ.planarTaylorRemainder k β) hFint hFscale hpoint
-  calc
-    (∫ u : ℂ, planarRealSecondDifferenceLimit k β u) = α * (α - 1) * A := hresult
-    _ = (2 + k - β) * (1 + k - β) *
-        (∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u) := by
-          dsimp [α, A]
-          ring
+  grind
 
-theorem planarDifference_real_second_derivative_relation (k β : ℝ) (hk : 0 < k)
-    (hβ : k < β) (hβ₂ : β < 2) (hβtail : k + 1 < β) :
+include k β hk hβ hβ₂ in
+theorem planarDifference_real_second_derivative_relation  (hβtail : k + 1 < β) :
     (∫ u : ℂ, planarRealSecondDifferenceLimit k β u) =
       (2 + k - β) * (1 + k - β) *
         (∫ u : ℂ, DOZZ.planarDifferenceKernel k β 1 u) := by
-  let α : ℝ := 2 + k - β
-  let A : ℝ := ∫ u : ℂ, DOZZ.planarDifferenceKernel k β 1 u
-  have hα : 0 < α := by dsimp [α]; linarith
-  have hFint : ∀ z : ℂ, Integrable (DOZZ.planarDifferenceKernel k β z) volume :=
+  let α  := 2 + k - β
+  let A  := ∫ u : ℂ, DOZZ.planarDifferenceKernel k β 1 u
+  
+  have hFint  :=
     integrable_planarDifferenceKernel k β hk hβ hβ₂ hβtail
   have hFscale (z : ℂ) :
       (∫ u : ℂ, DOZZ.planarDifferenceKernel k β z u) = ‖z‖ ^ α * A := by
-    simpa [α, A] using
-      planarDifferenceKernel_integral_scale_norm k β hk hβ hβ₂ z
+    exact planarDifferenceKernel_integral_scale_norm k β hk hβ hβ₂ z
   have hpoint : ∀ t : ℝ, t ≠ 0 → ∀ u : ℂ, u ≠ 0 →
       planarRealSecondDifferenceQuotient k β t u =
         (DOZZ.planarDifferenceKernel k β (1 + (t : ℂ)) u +
           DOZZ.planarDifferenceKernel k β (1 - (t : ℂ)) u -
           2 * DOZZ.planarDifferenceKernel k β 1 u) / t ^ 2 := by
     intro t ht u hu
-    have h₁ : u - (1 + (t : ℂ)) = (u - 1) - (t : ℂ) := by ring
-    have h₂ : u - (1 - (t : ℂ)) = (u - 1) + (t : ℂ) := by ring
-    have hden : 0 < ‖u‖ ^ β := Real.rpow_pos_of_pos (norm_pos_iff.mpr hu) β
+    
+    
+    
     change ‖u‖ ^ (-β) *
         ((‖u - 1 + (t : ℂ)‖ ^ k + ‖u - 1 - (t : ℂ)‖ ^ k -
           2 * ‖u - 1‖ ^ k) / t ^ 2) = _
     rw [Real.rpow_neg (norm_nonneg u) β]
     simp only [DOZZ.planarDifferenceKernel]
-    rw [h₁, h₂]
-    field_simp [hden.ne', ht]
     ring
   have hresult := realSecondDifferenceLimit_integral_eq k β α A hk hβ hβ₂
     (DOZZ.planarDifferenceKernel k β) hFint hFscale hpoint
-  calc
-    (∫ u : ℂ, planarRealSecondDifferenceLimit k β u) = α * (α - 1) * A := hresult
-    _ = (2 + k - β) * (1 + k - β) *
-        (∫ u : ℂ, DOZZ.planarDifferenceKernel k β 1 u) := by
-          dsimp [α, A]
-          ring
+  grind
 
 end DOZZ.Proofs

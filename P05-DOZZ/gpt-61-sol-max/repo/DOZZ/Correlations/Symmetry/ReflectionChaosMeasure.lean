@@ -11,15 +11,17 @@ open MeasureTheory
 open scoped Distributions ENNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} (γ : ℝ) (M : Ω → Measure ℂ) (L : Ω → ℝ)
+
+include Ω γ M L in
 /-- The coupled chaos measure obtained by reflection and correlated equator re-pinning. -/
-noncomputable def symmetryRepinnedChaos {Ω : Type*} (γ : ℝ) (M : Ω → Measure ℂ)
-    (L : Ω → ℝ) (ω : Ω) : Measure ℂ :=
+noncomputable def symmetryRepinnedChaos  (ω : Ω) : Measure ℂ :=
   ENNReal.ofReal (Real.exp (-γ * L ω)) •
     ((M ω).map (fun x : ℂ => 1 - x)).withDensity
       (fun x => ENNReal.ofReal (symmetryReflectionLimitWeight γ x))
 
-theorem symmetryRepinnedChaos_finite {Ω : Type*} (γ : ℝ) (M : Ω → Measure ℂ)
-    (L : Ω → ℝ) (hM : ∀ ω, IsFiniteMeasure (M ω)) (ω : Ω) :
+include Ω γ M L in
+theorem symmetryRepinnedChaos_finite  (hM : ∀ ω, IsFiniteMeasure (M ω)) (ω : Ω) :
     IsFiniteMeasure (symmetryRepinnedChaos γ M L ω) := by
   let := hM ω
   let := symmetry_bcf_withDensity_finite ((M ω).map (fun x : ℂ => 1 - x))
@@ -43,14 +45,14 @@ theorem symmetry_reflection_weighted_integral (μ : Measure ℂ)
   exact integral_map (measurable_const.sub measurable_id).aemeasurable
     (f.continuous.mul w.continuous).aestronglyMeasurable
 
-theorem symmetryRepinnedChaos_integral {Ω : Type*} (γ : ℝ) (M : Ω → Measure ℂ)
-    (L : Ω → ℝ) (ω : Ω) (f : BoundedContinuousFunction ℂ ℝ) :
+include Ω γ M L in
+theorem symmetryRepinnedChaos_integral  (ω : Ω) (f : BoundedContinuousFunction ℂ ℝ) :
     (∫ x, f x ∂symmetryRepinnedChaos γ M L ω) = Real.exp (-γ * L ω) *
       ∫ x, f (1 - x) * symmetryReflectionLimitWeight γ (1 - x) ∂M ω := by
   rw [symmetryRepinnedChaos, integral_smul_measure,
     ENNReal.toReal_ofReal (Real.exp_pos _).le, smul_eq_mul,
     symmetry_reflection_weighted_integral _ _ f
-      (fun x => by rw [symmetryReflectionLimitWeight_apply]; exact (Real.exp_pos _).le)]
+      (fun x => by exact (Real.exp_pos _).le)]
 
 theorem regularizedGMC_symmetryRepinned_integral
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -76,5 +78,5 @@ theorem regularizedGMC_symmetryRepinned_integral
   rw [he, withDensity_smul _ hW, integral_smul_measure,
     ENNReal.toReal_ofReal (Real.exp_pos _).le, smul_eq_mul,
     symmetry_reflection_weighted_integral _ _ f
-      (fun x => by rw [symmetryReflectionCutoffWeight_apply]; exact (Real.exp_pos _).le)]
+      (fun x => by exact (Real.exp_pos _).le)]
 end DOZZ.Proofs

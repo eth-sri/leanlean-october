@@ -9,7 +9,7 @@ public import DOZZ.GMC.AdmissibleGMCUniqueConcrete
 
 /-! Almost-sure measure identification of the translated unpinned chaos. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
@@ -40,8 +40,8 @@ theorem unpinned_source_measure_identity
     exact hω.trans (transferred_measure_test_integral (M ω) z γ (Xc ω z 0)
       (f nm) g (hf nm.1 nm.2).2.2 hg).symm
   filter_upwards [ae_all_iff.mpr hEach] with ω hω
-  let : IsFiniteMeasure (M ω) := hM.1 ω
-  let : IsFiniteMeasure (transferredMeasure (M ω) z γ (Xc ω z 0)) :=
+  let  := hM.1 ω
+  let  :=
     transferred_measure_finite (M ω) z γ (Xc ω z 0)
   exact admissible_countable_tests_determine_chart_measures U Metric.isOpen_ball (N ω)
     (transferredMeasure (M ω) z γ (Xc ω z 0))

@@ -7,10 +7,11 @@ module
 public import DOZZ.FourPoint.DualFusionRadialThreeCase
 public import DOZZ.FourPoint.TwoRootedDomination
 public import DOZZ.Statements.FourPoint.IsComplexLittleOAtZero
+import Mathlib.Tactic
 
 /-! Integrating an absolute Taylor majorant and turning a strict power margin into little-o. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -37,13 +38,13 @@ theorem time_integral_bound (F : ℂ → ℂ) (C e r : ℝ)
     hint.const_mul _
   have hae : ∀ᵐ t : ℝ ∂volume, t ≠ 0 := by
     rw [ae_iff]
-    simpa only [not_not, Set.ofPred_eq_eq_singleton] using (measure_singleton (μ := volume) (0 : ℝ))
+    simp_all
   have hdom : ∀ᵐ t ∂volume.restrict (Icc (0 : ℝ) 1),
       ‖(1 - t : ℝ) * F ((t : ℂ) * z)‖ ≤ (C * ‖z‖ ^ e) * t ^ e := by
     filter_upwards [ae_restrict_mem measurableSet_Icc, ae_restrict_of_ae hae] with t ht ht0
-    have htpos : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
+
     have htz : ‖(t : ℂ) * z‖ = t * ‖z‖ := by
-      rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
+      simp_all
     have htr : ‖(t : ℂ) * z‖ ≤ r := by
       rw [htz]
       exact (mul_le_of_le_one_left (norm_nonneg _) ht.2).trans hzr
@@ -74,14 +75,13 @@ theorem power_bound_littleO (f : ℂ → ℂ) (κ η C r : ℝ)
   · have hradius : ∀ᶠ z : ℂ in nhds (0 : ℂ), ‖z‖ < r := by
       have hball : ∀ᶠ z : ℂ in nhds (0 : ℂ), z ∈ Metric.ball 0 r :=
         Metric.ball_mem_nhds (0 : ℂ) hr
-      filter_upwards [hball] with z hz
-      simpa only [Metric.mem_ball, dist_zero_right] using hz
+      simp_all
     filter_upwards [hradius.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with z hzr hz
-    have hnz : 0 < ‖z‖ := norm_pos_iff.mpr hz
+    have hnz  := norm_pos_iff.mpr hz
     have h := div_le_div_of_nonneg_right (hf z hz hzr.le) (Real.rpow_pos_of_pos hnz κ).le
     rw [Real.rpow_add hnz] at h
     have heq : C * (‖z‖ ^ κ * ‖z‖ ^ η) / ‖z‖ ^ κ = C * ‖z‖ ^ η := by
-      field_simp [(Real.rpow_pos_of_pos hnz κ).ne']
+      field_simp at *
     rw [heq] at h
     exact h
 

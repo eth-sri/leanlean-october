@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.RootedPairMoments
 
 /-! Identifying the literal positive Taylor mass with the Coulomb mass. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -29,12 +29,12 @@ theorem gammaHalfKernel_coulombWeight (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
     coulombWeight γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ x =
       ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) := by
   have hn : 0 < normPlus x := by unfold normPlus; positivity
-  have ha : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
-  have hb : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have hc : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
-  have hbase₀ : 0 < normPlus x / ‖x - z‖ := div_pos hn ha
-  have hbase₁ : 0 < normPlus x / ‖x‖ := div_pos hn hb
-  have hbase₂ : 0 < normPlus x / ‖x - 1‖ := div_pos hn hc
+  have ha  := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+  have hb  := norm_pos_iff.mpr hx0
+  have hc  := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have hbase₀  := div_pos hn ha
+  have hbase₁  := div_pos hn hb
+  have hbase₂  := div_pos hn hc
   unfold coulombWeight
   simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
     Fin.prod_univ_zero, mul_one, sub_zero]

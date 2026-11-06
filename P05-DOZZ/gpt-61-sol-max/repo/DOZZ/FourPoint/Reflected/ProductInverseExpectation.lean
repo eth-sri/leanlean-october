@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Reflected.InverseMassExpectation
 public import Mathlib.MeasureTheory.Integral.Prod
 /-! A finite added mass converts extended-real inverse moments to signed real increments. -/
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -32,13 +32,11 @@ theorem reflected_product_inverse_increment_expectation
     hT.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving
   have hbase : (∫⁻ v : Ω × Λ, A v.1^(-p) ∂P.prod R) = ∫⁻ ω, A ω^(-p) ∂P := by
     have hf : AEMeasurable (fun ω => A ω^(-p)) ((P.prod R).map Prod.fst) := by
-      rw [(measurePreserving_fst (μ := P) (ν := R)).map_eq]
-      exact hA.pow_const (-p)
+      measurability
     have he := lintegral_map' hf
       (measurable_fst.aemeasurable : AEMeasurable (Prod.fst : Ω × Λ → Ω) (P.prod R))
-    rw [(measurePreserving_fst (μ := P) (ν := R)).map_eq] at he
-    exact he.symm
-  have hS : AEMeasurable (fun v : Ω × Λ => ENNReal.ofReal (b v.1)*T v.2) (P.prod R) :=
+    simp_all
+  have hS  :=
     hbm.ennreal_ofReal.mul hTm
   have h := reflected_ennreal_inverse_increment_expectation (P.prod R)
     (fun v : Ω × Λ => A v.1) (fun v => ENNReal.ofReal (b v.1)*T v.2) hAm hS p hp

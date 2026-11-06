@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.Reflected.SourceLateralWitness
 public import DOZZ.FourPoint.Reflected.Normalization
 /-! The reflected inner limit `DOZZ.gammaHalf_reflected_inner_limit` follows from the actual source
 Williams squeeze. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -40,11 +40,11 @@ theorem gammaHalf_reflected_inner_limit {Ω : Type*} [MeasurableSpace Ω]
                   structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ : ℝ) : ℂ) *
                 ((‖z‖ ^ κ : ℝ) : ℂ)) + r z)) ∧
             IsComplexLittleOAtZero κ r := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   obtain ⟨Xc,B,hc,hm,hcont,hSource,hL,hB⟩ := reflected_regular_source_reflection_family
     P X hX γ hγ hγ₂ M hM
   let Z := fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)
-  have hData : IsReflectionData P γ α₁ (B α₁) Z := hB α₁ hα₁
+  have hData  := hB α₁ hα₁
   obtain ⟨N,hN,hi,hfin,heq,hNa,hwhole⟩ := reflected_copied_radial_plane_observable
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM
   let B₀ := P.map (fun ω => radialPositiveHalf (originRadialPath Xc ω))
@@ -81,14 +81,12 @@ theorem gammaHalf_reflected_inner_limit {Ω : Type*} [MeasurableSpace Ω]
         (𝓝[≠] 0) (𝓝 0) := by simpa only [sub_self] using hs
     apply hs0.congr'
     filter_upwards [self_mem_nhdsWithin] with z hz
-    have hn : ‖z‖^κ ≠ 0 := (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) κ).ne'
-    dsimp only [rReal]
-    simp only [sub_div,mul_div_cancel_right₀ C hn]
+    have hn  := (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) κ).ne'
+    grind
   refine ⟨B,Z,hSource,hData,fun z => (rReal z : ℂ),?_,?_⟩
   · intro z
     dsimp only [rReal,C]
-    simp only [Complex.ofReal_sub,Complex.ofReal_mul]
-    ring
+    push_cast <;> ring
   · exact (isComplexLittleOAtZero_ofReal_iff κ rReal).mpr hrem
 
 end DOZZ.Proofs

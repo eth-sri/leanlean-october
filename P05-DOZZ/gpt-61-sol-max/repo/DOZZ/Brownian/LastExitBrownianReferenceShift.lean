@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Brownian.LastExitKernel
 public import DOZZ.Brownian.Williams.ConditionedBandFinite
+import Mathlib.Tactic
 
 /-!
 # Full-future avoidance shift for the Brownian reference law
@@ -40,9 +41,7 @@ theorem measurable_brownianUpperConditionedPositivePath (x : ℝ) :
 private theorem conditionedH_pos_of_pos {ν x : ℝ} (hν : 0 < ν) (hx : 0 < x) :
     0 < conditionedH ν x := by
   rw [conditionedH, ite_eq_right hν.ne']
-  apply sub_pos.mpr
-  apply Real.exp_lt_one_iff.mpr
-  nlinarith
+  simp_all
 
 /-- For the actual Brownian reference law, strict avoidance of `c` by the positive path started
 at `x` has mass `a_c(x)`, and after shifting down by `c` its entire future path law is the same
@@ -62,8 +61,8 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
   have _ := hB
   let hx : ℝ := conditionedH ν x
   let hxc : ℝ := conditionedH ν (x - c)
-  have hxpos : 0 < hx := conditionedH_pos_of_pos hν (lt_trans hc hcx)
-  have hxcpos : 0 < hxc := conditionedH_pos_of_pos hν (sub_pos.mpr hcx)
+  have hxpos  := conditionedH_pos_of_pos hν (lt_trans hc hcx)
+  have hxcpos  := conditionedH_pos_of_pos hν (sub_pos.mpr hcx)
   have hset : MeasurableSet (brownianPathStrictlyBelow (x - c)) :=
     measurableSet_brownianPath_below (x - c)
   have hD : Measurable (driftedBrownianPath (-ν)) :=
@@ -72,11 +71,8 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
   have hF' : Measurable (fun q : BrownianPath =>
       F (brownianUpperConditionedPositivePath (x - c) q)) :=
     hF.comp (measurable_brownianUpperConditionedPositivePath (x - c))
-  have hF'' : Measurable (fun p : BrownianPath =>
-      F (brownianUpperConditionedPositivePath (x - c) (driftedBrownianPath (-ν) p))) :=
-    hF'.comp hD
-  have htest : Measurable ((brownianPathStrictlyBelow (x - c)).indicator
-      (fun q => F (brownianUpperConditionedPositivePath (x - c) q))) :=
+
+  have htest  :=
     hF'.indicator hset
   have hraw (a : ℝ) : MeasurableSet
       {p : BrownianPath | ∀ t : ℝ≥0, driftedBrownianPath (-ν) p t < a} :=
@@ -85,10 +81,7 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
       driftedBrownianPath (-ν) p t < x - c} ⊆
       {p : BrownianPath | ∀ t : ℝ≥0,
         driftedBrownianPath (-ν) p t < x} := by
-    intro p hp
-    simp only [Set.mem_ofPred_eq] at hp ⊢
-    intro t
-    exact (hp t).trans (by linarith)
+    gcongr <;> first | positivity | linarith
   have hrawIntegrand :
       ({p : BrownianPath | ∀ t : ℝ≥0,
           driftedBrownianPath (-ν) p t < x}).indicator
@@ -102,18 +95,15 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
     funext p
     by_cases hp : p ∈ {p : BrownianPath | ∀ t : ℝ≥0,
         driftedBrownianPath (-ν) p t < x - c}
-    · have hp' : p ∈ {p : BrownianPath | ∀ t : ℝ≥0,
-          driftedBrownianPath (-ν) p t < x} := hsub hp
-      have hq : driftedBrownianPath (-ν) p ∈ brownianPathStrictlyBelow (x - c) := by
-        simpa [brownianPathStrictlyBelow] using hp
+    · have hp'  := hsub hp
+      have hq : driftedBrownianPath (-ν) p ∈ brownianPathStrictlyBelow (x - c) := hp
       simp [hp, hp', hq]
-    · have hq : driftedBrownianPath (-ν) p ∉ brownianPathStrictlyBelow (x - c) := by
-        simpa [brownianPathStrictlyBelow] using hp
+    · have hq : driftedBrownianPath (-ν) p ∉ brownianPathStrictlyBelow (x - c) := hp
       simp [hp, hq]
   have hcoeff : ENNReal.ofReal (hxc / hx) * (ENNReal.ofReal hxc)⁻¹ =
       (ENNReal.ofReal hx)⁻¹ := by
     rw [ENNReal.ofReal_div_of_pos hxpos, div_eq_mul_inv]
-    have ha0 : ENNReal.ofReal hxc ≠ 0 :=
+    have ha0  :=
       ne_of_gt (ENNReal.ofReal_pos.mpr hxcpos)
     have hatop : ENNReal.ofReal hxc ≠ ∞ := ENNReal.ofReal_ne_top
     calc
@@ -141,8 +131,7 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
         rw [lintegral_brownianBelowConditionedLaw B ν x _ htest]
         rw [← lintegral_indicator (hraw x)]
         congr 1
-        rw [hrawIntegrand]
-        rw [lintegral_indicator (hraw (x - c))]
+        simp_all
     _ = (ENNReal.ofReal hx)⁻¹ *
         ((ENNReal.ofReal hxc) *
           ∫⁻ q, F (brownianUpperConditionedPositivePath (x - c) q) ∂
@@ -153,7 +142,7 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
     _ = ENNReal.ofReal (lastExitAvoidanceFactor ν c x) *
         ∫⁻ q, F (brownianUpperConditionedPositivePath (x - c) q) ∂
           brownianBelowConditionedLaw B ν (x - c) := by
-        have hA0 : ENNReal.ofReal hxc ≠ 0 :=
+        have hA0  :=
           ne_of_gt (ENNReal.ofReal_pos.mpr hxcpos)
         have hAtop : ENNReal.ofReal hxc ≠ ∞ := ENNReal.ofReal_ne_top
         rw [hfactor]

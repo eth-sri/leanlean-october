@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.ThresholdExponential
 
 /-! The exponential threshold arithmetic in the ENNReal moment estimates. -/
 
-@[expose] public section
+public section
 open scoped ENNReal
 namespace DOZZ.Proofs
 

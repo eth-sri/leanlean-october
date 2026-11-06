@@ -5,20 +5,23 @@ module
 
 public import DOZZ.GMC.Construction.RootedCircleTilt
 public import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
+import Mathlib.Tactic
 
 /-! Spatial integration of a circle root tilt with a fixed limiting chaos mark. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+
+include Ω _inst1 P X hX in
 /-- Spatial integration of the Wick root density is integration against the cutoff chaos. -/
 theorem regularizedGMC_root_sample_lintegral
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ r : ℝ) (Ψ : ℂ × Ω → ℝ≥0∞) (hΨ : Measurable Ψ) :
     (∫⁻ ω, ∫⁻ u, Ψ (u, ω) ∂regularizedGMC P Xc γ r ω ∂P) =
@@ -30,26 +33,17 @@ theorem regularizedGMC_root_sample_lintegral
   let w : ℂ × Ω → ℝ≥0∞ := fun q => ENNReal.ofReal
     (Real.exp (γ * Xc q.2 q.1 r - γ ^ 2 / 2 * V q.1))
   have hV : Measurable V := by
-    have hg : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r ^ 2) :=
+    have hg  :=
       ((hXc.1 r).comp measurable_swap).pow_const 2
     exact hg.stronglyMeasurable.integral_prod_right.measurable
   have hn : Measurable (fun u : ℂ => normPlus u) :=
     measurable_const.max measurable_norm
   have hb : Measurable b := by
-    dsimp [b]
-    apply ENNReal.measurable_ofReal.comp
-    have heq : (fun u : ℂ => normPlus u ^ (-4 : ℝ)) =
-        fun u => Real.exp ((-4 : ℝ) * Real.log (normPlus u)) := by
-      funext u
-      rw [Real.rpow_def_of_pos (by unfold normPlus; positivity), mul_comm]
-    rw [heq]
-    exact Real.measurable_exp.comp
-      (measurable_const.mul (Real.measurable_log.comp hn))
+    fun_prop (disch := positivity)
   have hw : Measurable w := by
-    have hx : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r) :=
+    have hx  :=
       (hXc.1 r).comp measurable_swap
     have hv : Measurable (fun q : ℂ × Ω => V q.1) := hV.comp measurable_fst
-    dsimp [w]
     exact ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
       ((measurable_const.mul hx).sub (measurable_const.mul hv)))
   have hprod : Measurable (fun q : Ω × ℂ => b q.2 * w (q.2, q.1) * Ψ (q.2, q.1)) :=
@@ -85,15 +79,13 @@ theorem regularizedGMC_root_sample_lintegral
       simp only [mul_assoc]
       exact lintegral_const_mul (b u)
         ((hw.mul hΨ).comp (measurable_const.prodMk measurable_id))
-    _ = ∫⁻ u, ∫⁻ ω, w (u, ω) * Ψ (u, ω) ∂P ∂gmcReferenceMeasure := by
-      rw [gmcReferenceMeasure]
-      exact (lintegral_withDensity_eq_lintegral_mul volume hb hinner).symm
+    _ = ∫⁻ u, ∫⁻ ω, w (u, ω) * Ψ (u, ω) ∂P ∂gmcReferenceMeasure := (lintegral_withDensity_eq_lintegral_mul volume hb hinner).symm
     _ = _ := rfl
 
+include Ω _inst1 P X hX in
 /-- The integrated finite-circle root identity with the limiting chaos as its mark. -/
 theorem regularizedGMC_integrated_rooted_limiting_mark_identity
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (hMmeas : Measurable M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (r : ℝ)

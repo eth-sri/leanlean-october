@@ -9,7 +9,7 @@ public import DOZZ.ShiftEquations.Strip.CoulombLimit
 /-! The `lastone` structure-constant limit ([KRV, Lemma 10.6]), assembled from the supplied-space
 Williams mass limit, GMC moment comparison, root symmetry, and the Gamma pole normalization. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology

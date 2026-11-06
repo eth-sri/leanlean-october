@@ -8,7 +8,7 @@ public import DOZZ.ShiftEquations.Strip.SmallPower
 
 /-! A vanishing small-power error for adding a subcritical mass. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 
@@ -20,12 +20,12 @@ theorem lastone_ennreal_add_rpow_le (a b : ℝ≥0∞) (p q : ℝ)
     (hp : 0 < p) (hpq : p ≤ q) (hq1 : q ≤ 1) :
     (a + b) ^ p ≤ a ^ p + ENNReal.ofReal (p / q) *
       (1 + 2 * b ^ (2 * q) + a ^ (-2 * q)) := by
-  have hq : 0 < q := hp.trans_le hpq
-  have hAp : a ^ p ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hp.le haT
+  have hq  := hp.trans_le hpq
+  have hAp  := ENNReal.rpow_ne_top_of_nonneg hp.le haT
   have hBp : b ^ (2 * q) ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg (by positivity) hbT
   have hAi : a ^ (-2 * q) ≠ ⊤ := ENNReal.rpow_ne_top_of_ne_zero ha0 haT
   have h2B : (2 : ℝ≥0∞) * b ^ (2 * q) ≠ ⊤ := ENNReal.mul_ne_top (by norm_num) hBp
-  have hK : 1 + 2 * b ^ (2 * q) + a ^ (-2 * q) ≠ ⊤ :=
+  have hK  :=
     ENNReal.add_ne_top.mpr ⟨ENNReal.add_ne_top.mpr ⟨ENNReal.one_ne_top, h2B⟩, hAi⟩
   have hE : ENNReal.ofReal (p / q) * (1 + 2 * b ^ (2 * q) + a ^ (-2 * q)) ≠ ⊤ :=
     ENNReal.mul_ne_top ENNReal.ofReal_ne_top hK

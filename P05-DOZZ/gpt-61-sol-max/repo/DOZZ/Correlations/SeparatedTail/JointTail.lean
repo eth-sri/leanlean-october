@@ -11,7 +11,7 @@ public import DOZZ.Correlations.SeparatedTail.JointMarkov
 two-insertion tail [KRV, Lemma 7.3] (erratum K9, see docs/ERRATA-AND-DEVIATIONS.md), proved here
 with its literal statement. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -41,18 +41,17 @@ theorem separatedSingularMass_joint_tail
             ENNReal.ofReal v < localSingularMass M F3 z3 γ α3 ω}).toReal ≤
             C * Real.rpow u (-reflectionExponent γ α2 + ε) *
               Real.rpow v (-reflectionExponent γ α3 + ε) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   have _ := hpos2
   have _ := hpos3
   obtain ⟨B,hB,hbound⟩ := separatedTail_singular_mixed_moment_uniform P X hX γ hγ hγ2 M hM
     K2 K3 hK2 hK3 hsep A2 A3 hA2 hA3 hα2 hα3 ε hε hε2 hε3
   let T : ℝ := 4/γ^2
-  have hT : 0 < T := by dsimp [T]; positivity
+  
   let S : ℝ≥0∞ := ENNReal.ofReal (max supBound 1)
   have hS : S ≠ ⊤ := ENNReal.ofReal_ne_top
   have hS1 : 1 ≤ S := by
-    simpa only [S, ENNReal.ofReal_one] using
-      ENNReal.ofReal_le_ofReal (le_max_right supBound 1)
+    continuity
   let Bfinal := S^(2*T)*B
   have hBfinal : Bfinal ≠ ⊤ := (ENNReal.mul_lt_top
     (ENNReal.rpow_ne_top_of_nonneg (by positivity) hS).lt_top hB).ne
@@ -64,8 +63,8 @@ theorem separatedSingularMass_joint_tail
     ((le_abs_self _).trans ((hf2.2.1 x).2.trans (le_max_left _ _)))
   have hFs3 (x : ℂ) : ENNReal.ofReal (F3 x) ≤ S := ENNReal.ofReal_le_ofReal
     ((le_abs_self _).trans ((hf3.2.1 x).2.trans (le_max_left _ _)))
-  have ha2 : 0 ≤ reflectionExponent γ α2-ε := (sub_pos.mpr (hε2 α2 hα2mem)).le
-  have ha3 : 0 ≤ reflectionExponent γ α3-ε := (sub_pos.mpr (hε3 α3 hα3mem)).le
+  have ha2  := (sub_pos.mpr (hε2 α2 hα2mem)).le
+  have ha3  := (sub_pos.mpr (hε3 α3 hα3mem)).le
   have ha2T : reflectionExponent γ α2-ε ≤ T := by
     have hh := separatedTail_reflectionExponent_lt_bulk hγ (hα2 α2 hα2mem).1
     dsimp [T]
@@ -85,6 +84,6 @@ theorem separatedSingularMass_joint_tail
   have he2 : -(reflectionExponent γ α2-ε) = -reflectionExponent γ α2+ε := by ring
   have he3 : -(reflectionExponent γ α3-ε) = -reflectionExponent γ α3+ε := by ring
   rw [he2,he3] at ht
-  simpa only [Real.rpow_eq_pow] using ht
+  exact ht
 
 end DOZZ.Proofs

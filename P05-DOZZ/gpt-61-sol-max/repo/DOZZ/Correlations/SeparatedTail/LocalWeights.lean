@@ -10,7 +10,7 @@ public import DOZZ.Correlations.Tails.SingularMassMeasurability
 /-! Bounded multipliers preserve the uniform mixed moment estimate of the separated joint-tail
 argument. -/
 
-@[expose] public section
+public section
 open MeasureTheory Metric Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -42,7 +42,7 @@ theorem separatedTail_local_mixed_moment_le
       weightedGmcBallMass γ (M ω) α3 z3 1 ^ a3 ∂P) ≤ B) :
     (∫⁻ ω, localSingularMass M F2 z2 γ α2 ω ^ a2 *
       localSingularMass M F3 z3 γ α3 ω ^ a3 ∂P) ≤ S^(2*T)*B := by
-  have hSn : S ≠ 0 := ne_of_gt (lt_of_lt_of_le zero_lt_one hS1)
+  have hSn  := ne_of_gt (lt_of_lt_of_le zero_lt_one hS1)
   calc
     _ ≤ ∫⁻ ω, (S*weightedGmcBallMass γ (M ω) α2 z2 1)^a2 *
         (S*weightedGmcBallMass γ (M ω) α3 z3 1)^a3 ∂P := by

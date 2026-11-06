@@ -10,7 +10,7 @@ public import DOZZ.FourPoint.Fusion.LocalMixedRooting
 
 /-! # The exact rescaled rooted local spatial integral -/
 
-@[expose] public section
+public section
 open MeasureTheory Set Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -38,7 +38,7 @@ theorem fusion_localR2_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
           (fusionScaledFactor P M γ α₁ α₂ α₃ s y z : ℂ)) := by
     filter_upwards [Measure.ae_ne volume (0 : ℂ), Measure.ae_ne volume 1] with y hy0 hy1
     by_cases hyz : ‖y * z‖ < 1 / 2
-    · have hyB : y * z ∈ B := by simpa only [B, Metric.mem_ball, dist_zero_right] using hyz
+    · have hyB : y * z ∈ B := by continuity
       dsimp only [F]
       rw [Set.indicator_of_mem hyB, fusion_localR2_kernel_scaled γ α₁ α₂ α₃ y z hz hy0 hy1 hyz]
       have he : (∫⁻ ω, coulombMass γ (gmcRootedMeasure γ (y * z) (M ω))
@@ -51,7 +51,7 @@ theorem fusion_localR2_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
       rw [he]
       simp only [fusionScaledFactor, ite_eq_left hyz, Complex.ofReal_mul]
       ring
-    · have hyB : y * z ∉ B := by simpa only [B, Metric.mem_ball, dist_zero_right] using hyz
+    · have hyB : y * z ∉ B := by continuity
       simp only [F, Set.indicator_of_notMem hyB, fusionScaledFactor, ite_eq_right hyz,
         Complex.ofReal_zero, mul_zero]
   have hscale := fusion_integral_mul_complex F z hz
@@ -62,10 +62,10 @@ theorem fusion_localR2_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
     rw [← integral_const_mul]
     exact integral_congr_ae hpoint
   rw [hcalc] at hscale
-  have hr : 0 < ‖z‖ := norm_pos_iff.mpr hz
+
   have hp : ‖z‖ ^ (2 : ℕ) * (‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) / ‖z‖ ^ (2 : ℕ)) =
       ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) := by
-    rw [mul_div_cancel₀ _ (pow_ne_zero 2 hr.ne')]
+    field_simp at *
   calc
     _ = ∫ x : ℂ, F x := (integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)).symm
     _ = _ := hscale

@@ -9,7 +9,7 @@ import Mathlib.Analysis.Complex.RealDeriv
 
 /-! Pointwise Cramer reconstruction and holomorphy of the conjugate coefficients. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
@@ -35,31 +35,13 @@ theorem realGaussCramer_reconstruct
     dsimp [A, B, W, gaussCramerNumerator₁, gaussCramerNumerator₂,
       gaussCramerWronskian]
     ring
-  have hW' : W ≠ 0 := hW
+  
   constructor
   · change (T z : ℂ) = (A * W⁻¹) * f z + (B * W⁻¹) * g z
-    calc
-      (T z : ℂ) = ((T z : ℂ) * W) * W⁻¹ := by
-        calc
-          (T z : ℂ) = (T z : ℂ) * (W * W⁻¹) := by
-            rw [mul_inv_cancel₀ hW']
-            simp
-          _ = ((T z : ℂ) * W) * W⁻¹ := by ring
-      _ = (A * f z + B * g z) * W⁻¹ := by rw [hA]
-      _ = (A * W⁻¹) * f z + (B * W⁻¹) * g z := by ring
+    grind
   · change wirtingerZ (fun w => (T w : ℂ)) z =
       (A * W⁻¹) * deriv f z + (B * W⁻¹) * deriv g z
-    calc
-      wirtingerZ (fun w => (T w : ℂ)) z =
-          (wirtingerZ (fun w => (T w : ℂ)) z * W) * W⁻¹ := by
-        calc
-          wirtingerZ (fun w => (T w : ℂ)) z =
-              wirtingerZ (fun w => (T w : ℂ)) z * (W * W⁻¹) := by
-            rw [mul_inv_cancel₀ hW']
-            simp
-          _ = (wirtingerZ (fun w => (T w : ℂ)) z * W) * W⁻¹ := by ring
-      _ = (A * deriv f z + B * deriv g z) * W⁻¹ := by rw [hB]
-      _ = (A * W⁻¹) * deriv f z + (B * W⁻¹) * deriv g z := by ring
+    grind
 
 /-- The conjugates of the Cramer coefficients are holomorphic on the slit plane. -/
 theorem realGaussCramer_conjugates_analytic

@@ -12,12 +12,12 @@ open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
+include Ω _inst1 P X hX γ hγ hγ₂ M hM Xc hXc in
 /-- The actual first-order restart-weighted inverse moment has deterministic power
 2+γ(Q−α₁)−γ²/2. The estimate uses the supplied GMC under its exact circle tilt. -/
-theorem dual_radial_first_order_bound {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+theorem dual_radial_first_order_bound 
     (α₁ α₂ α₃ ξ q h : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ₁ : ξ < 1) (hq : 0 ≤ q) :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ z : ℂ in nhdsWithin 0 {z : ℂ | z ≠ 0},
       (∫⁻ ω, ENNReal.ofReal (‖z‖ ^ (2 : ℝ) * Real.exp
@@ -33,7 +33,7 @@ theorem dual_radial_first_order_bound {Ω : Type*} [MeasurableSpace Ω]
       (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) := by
     simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one), self_mem_nhdsWithin] with z hz hz0
-  have hp : 0 < ‖z‖ := norm_pos_iff.mpr hz0
+  have hp  := norm_pos_iff.mpr hz0
   have hm : 0 ≤ -Real.log ‖z‖ + h := by
     have hl := Real.log_nonpos hp.le hz.le
     linarith only [hl, hh]
@@ -55,7 +55,7 @@ theorem dual_radial_first_order_bound {Ω : Type*} [MeasurableSpace Ω]
     congr 1
     ring
   have hs : 0 ≤ D * ‖z‖ ^ (2 + γ * (Q γ - α₁) - γ ^ 2 / 2) := by
-    exact mul_nonneg (Real.exp_pos _).le (Real.rpow_nonneg hp.le _)
+    bound
   simp_rw [he, ENNReal.ofReal_mul hs, mul_assoc]
   rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
   have ht := dual_outerMass_circle_tilt P X hX γ hγ hγ₂ M hM Xc hXc
@@ -70,12 +70,10 @@ theorem dual_radial_first_order_bound {Ω : Type*} [MeasurableSpace Ω]
       congr 1
       ring
 
+include Ω _inst1 P X hX γ hγ hγ₂ M hM Xc hXc in
 /-- The actual first-order radial error vanishes after division by the dual power,
 whenever its explicit radial exponent has the strict source margin. -/
-theorem dual_radial_first_order_littleO {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+theorem dual_radial_first_order_littleO 
     (α₁ α₂ α₃ ξ q h κ : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ₁ : ξ < 1) (hq : 0 ≤ q)
     (hslack : κ < 2 + γ * (Q γ - α₁) - γ ^ 2 / 2) :
     Tendsto (fun z : ℂ =>

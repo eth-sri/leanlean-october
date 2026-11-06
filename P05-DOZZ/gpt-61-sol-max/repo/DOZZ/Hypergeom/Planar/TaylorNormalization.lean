@@ -8,9 +8,6 @@ public import DOZZ.Hypergeom.Planar.RieszNormalization
 
 /-! Coefficient recovery for the Taylor-subtracted parent from its mixed derivative. -/
 
-@[expose] public section
-
-namespace DOZZ.Proofs
 
 
-end DOZZ.Proofs
+

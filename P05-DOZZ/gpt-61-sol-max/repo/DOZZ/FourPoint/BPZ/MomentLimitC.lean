@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.FourPoint.BPZ.MomentLimitB
+import Mathlib.Tactic
 
 /-! # Ingredients for the limits of the moment fields
 
@@ -80,8 +81,7 @@ theorem bpz_farBall_lower {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X 
     filter_upwards [hfin] with ω hω
     have hne : M ω (bpzFarBall R) ≠ 0 := by
       intro h0
-      rw [h0, ENNReal.zero_rpow_of_neg (by norm_num)] at hω
-      exact lt_irrefl _ hω
+      simp_all
     have hlt : M ω (bpzFarBall R) ≠ ⊤ := by
       have := hM.1 ω
       exact measure_ne_top _ _
@@ -99,12 +99,11 @@ theorem bpz_farBall_lower {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X 
       filter_upwards [hfin] with ω hω
       have hne : M ω (bpzFarBall R) ≠ 0 := by
         intro h0
-        rw [h0, ENNReal.zero_rpow_of_neg (by norm_num)] at hω
-        exact lt_irrefl _ hω
+        simp_all
       have hlt : M ω (bpzFarBall R) ≠ ⊤ := by
         have := hM.1 ω
         exact measure_ne_top _ _
-      have ht : 0 < (M ω (bpzFarBall R)).toReal := ENNReal.toReal_pos hne hlt
+      have ht  := ENNReal.toReal_pos hne hlt
       rw [Real.mul_rpow hc.le ht.le, ENNReal.ofReal_mul (Real.rpow_nonneg hc.le _),
         ← ENNReal.ofReal_rpow_of_pos ht, ENNReal.ofReal_toReal hlt]
     rw [lintegral_congr_ae heq, lintegral_const_mul _ (hBm.pow_const _)]
@@ -134,13 +133,13 @@ theorem bpz_near_real_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (
           else 0) * ‖x - z‖ ^ β) (M ω) := by
   obtain ⟨r₁, hr₁, C, hC0, hC⟩ := bpz_near_expect_bound (χ := χ) (α₁ := α₁) (α₂ := α₂)
     (α₃ := α₃) P X hX hγ hγ2 M hM (p := s + 1) (by linarith) hz0 hz1
-  have h0 : 0 < ‖z₀‖ := norm_pos_iff.mpr hz0
-  have h1 : 0 < ‖z₀ - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hz1)
+  have h0  := norm_pos_iff.mpr hz0
+  have h1  := norm_pos_iff.mpr (sub_ne_zero.mpr hz1)
   refine ⟨min r₁ (min ‖z₀‖ ‖z₀ - 1‖), lt_min hr₁ (lt_min h0 h1), C, hC0,
     fun r hr hrr z hz ε hε0 hε1 β hβ => ?_⟩
-  have hrr₁ : r ≤ r₁ := hrr.trans (min_le_left _ _)
-  have hr0 : r ≤ ‖z₀‖ := hrr.trans ((min_le_right _ _).trans (min_le_left _ _))
-  have hr1 : r ≤ ‖z₀ - 1‖ := hrr.trans ((min_le_right _ _).trans (min_le_right _ _))
+  have hrr₁  := hrr.trans (min_le_left _ _)
+  have hr0  := hrr.trans ((min_le_right _ _).trans (min_le_left _ _))
+  have hr1  := hrr.trans ((min_le_right _ _).trans (min_le_right _ _))
   have hzne0 : z ≠ 0 := by
     intro h
     rw [h, zero_sub, norm_neg] at hz
@@ -188,7 +187,7 @@ theorem bpz_tendsto_mom0 {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
     {zs : ℕ → ℂ} (hz : Tendsto zs atTop (𝓝 z₀)) :
     Tendsto (fun n => ∫ ω, bpzSoftMassReal a (εs n) w (M ω) (zs n) ^ (-s) ∂P) atTop
       (𝓝 (∫ ω, bpzSoftMassReal a 0 w (M ω) z₀ ^ (-s) ∂P)) := by
-  have hnear : ∀ᶠ n in atTop, ‖zs n - z₀‖ ≤ 1 :=
+  have hnear  :=
     (tendsto_iff_norm_sub_tendsto_zero.mp hz).eventually (ge_mem_nhds one_pos)
   refine tendsto_integral_filter_of_dominated_convergence (fun ω => Y ω ^ (-s)) ?_ ?_ hYint ?_
   · exact Eventually.of_forall fun n =>
@@ -202,24 +201,19 @@ theorem bpz_tendsto_mom0 {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
   · filter_upwards [hgood] with ω hω
     obtain ⟨hY, hintw, hint, hlow⟩ := hω
     have hI := bpz_tendsto_softMassReal ha ha1 hw hw0 hint hintw hε0 hε1 hε hz
-    have hpos : 0 < bpzSoftMassReal a 0 w (M ω) z₀ :=
+    have hpos  :=
       hY.trans_le (hlow z₀ (by simp) 0 le_rfl zero_le_one)
     exact hI.rpow_const (Or.inl hpos.ne')
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] {P : Measure Ω} {M : Ω → Measure ℂ} (hMm : Measurable M) {a s : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hs : 0 ≤ s) {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {z₀ : ℂ} {r : ℝ} (hr : 0 < r) {Y : Ω → ℝ} (hYint : Integrable (fun ω => Y ω ^ (-s)) P) (hgood : ∀ᵐ ω ∂P, 0 < Y ω ∧ Integrable w (M ω) ∧ Integrable (fun x => Complex.normSq (x - z₀) ^ a * w x) (M ω) ∧ ∀ z : ℂ, ‖z - z₀‖ ≤ 1 → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 → Y ω ≤ bpzSoftMassReal a ε w (M ω) z) {εs : ℕ → ℝ} (hε0 : ∀ n, 0 ≤ εs n) (hε1 : ∀ n, εs n ≤ 1) (hε : Tendsto εs atTop (𝓝 0)) {zs : ℕ → ℂ} (hz : Tendsto zs atTop (𝓝 z₀))
+
+include Ω _inst1 P M hMm a s ha ha1 hs w hw hw0 z₀ r hr Y hYint hgood εs hε0 hε1 hε zs hz in
 /-- Dominated convergence for the far part of the first moment field. -/
-theorem bpz_tendsto_momField1_far {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    {M : Ω → Measure ℂ} (hMm : Measurable M) {a s : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hs : 0 ≤ s)
-    {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {z₀ : ℂ} {r : ℝ} (hr : 0 < r)
-    {Y : Ω → ℝ} (hYint : Integrable (fun ω => Y ω ^ (-s)) P)
-    (hgood : ∀ᵐ ω ∂P, 0 < Y ω ∧ Integrable w (M ω) ∧
-      Integrable (fun x => Complex.normSq (x - z₀) ^ a * w x) (M ω) ∧
-      ∀ z : ℂ, ‖z - z₀‖ ≤ 1 → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 → Y ω ≤ bpzSoftMassReal a ε w (M ω) z)
-    {εs : ℕ → ℝ} (hε0 : ∀ n, 0 ≤ εs n) (hε1 : ∀ n, εs n ≤ 1) (hε : Tendsto εs atTop (𝓝 0))
-    {zs : ℕ → ℂ} (hz : Tendsto zs atTop (𝓝 z₀)) :
+theorem bpz_tendsto_momField1_far  :
     Tendsto (fun n => ∫ ω, bpzMomField1 a s (εs n) w
         (fun x => if r ≤ ‖x - z₀‖ then w x else 0) (M ω) (zs n) ∂P) atTop
       (𝓝 (∫ ω, bpzMomField1 a s 0 w (fun x => if r ≤ ‖x - z₀‖ then w x else 0) (M ω) z₀ ∂P)) := by
-  have hnear : ∀ᶠ n in atTop, ‖zs n - z₀‖ ≤ min 1 (r / 2) :=
+  have hnear  :=
     (tendsto_iff_norm_sub_tendsto_zero.mp hz).eventually
       (ge_mem_nhds (lt_min one_pos (half_pos hr)))
   refine tendsto_integral_filter_of_dominated_convergence
@@ -229,8 +223,8 @@ theorem bpz_tendsto_momField1_far {Ω : Type*} [MeasurableSpace Ω] {P : Measure
   · filter_upwards [hnear] with n hn
     filter_upwards [hgood] with ω hω
     obtain ⟨hY, hintw, hint, hlow⟩ := hω
-    have hz1 : ‖zs n - z₀‖ ≤ 1 := hn.trans (min_le_left _ _)
-    have hz2 : ‖zs n - z₀‖ ≤ r / 2 := hn.trans (min_le_right _ _)
+    have hz1  := hn.trans (min_le_left _ _)
+    have hz2  := hn.trans (min_le_right _ _)
     have hintz := bpzSoft_integrable_near ha ha1 (hε0 n) (hε1 n) hw hw0 hint hintw hz1
     have hYI := hlow (zs n) hz1 (εs n) (hε0 n) (hε1 n)
     have hDf := norm_bpzSoftMassDeriv_far_le ha hw0 hr hz2 hintz
@@ -239,30 +233,21 @@ theorem bpz_tendsto_momField1_far {Ω : Type*} [MeasurableSpace Ω] {P : Measure
     obtain ⟨hY, hintw, hint, hlow⟩ := hω
     have hI := bpz_tendsto_softMassReal ha ha1 hw hw0 hint hintw hε0 hε1 hε hz
     have hD := bpz_tendsto_softMassDeriv_far ha ha1 hw hw0 hint hintw hε0 hε1 hε hz hr
-    have hpos : 0 < bpzSoftMassReal a 0 w (M ω) z₀ :=
+    have hpos  :=
       hY.trans_le (hlow z₀ (by simp) 0 le_rfl zero_le_one)
-    unfold bpzMomField1
     exact (tendsto_const_nhds.mul (hI.rpow_const (Or.inl hpos.ne'))).smul hD
 
+include Ω _inst1 P M hMm a s ha ha1 hs w hw hw0 z₀ r hr Y hYint hgood εs hε0 hε1 hε zs hz in
 /-- Dominated convergence for the far part of the second moment field. -/
-theorem bpz_tendsto_momField2_far {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    {M : Ω → Measure ℂ} (hMm : Measurable M) {a s : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hs : 0 ≤ s)
-    {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {z₀ : ℂ} {r : ℝ} (hr : 0 < r)
-    {Y : Ω → ℝ} (hYint : Integrable (fun ω => Y ω ^ (-s)) P)
-    (hgood : ∀ᵐ ω ∂P, 0 < Y ω ∧ Integrable w (M ω) ∧
-      Integrable (fun x => Complex.normSq (x - z₀) ^ a * w x) (M ω) ∧
-      ∀ z : ℂ, ‖z - z₀‖ ≤ 1 → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 → Y ω ≤ bpzSoftMassReal a ε w (M ω) z)
-    {εs : ℕ → ℝ} (hε0 : ∀ n, 0 ≤ εs n) (hε1 : ∀ n, εs n ≤ 1) (hε : Tendsto εs atTop (𝓝 0))
-    {zs : ℕ → ℂ} (hz : Tendsto zs atTop (𝓝 z₀)) :
+theorem bpz_tendsto_momField2_far  :
     Tendsto (fun n => ∫ ω, bpzMomField2 a s (εs n) w
         (fun x => if r ≤ ‖x - z₀‖ then w x else 0) (M ω) (zs n) ∂P) atTop
       (𝓝 (∫ ω, bpzMomField2 a s 0 w (fun x => if r ≤ ‖x - z₀‖ then w x else 0) (M ω) z₀ ∂P)) := by
-  have hnear : ∀ᶠ n in atTop, ‖zs n - z₀‖ ≤ min 1 (r / 2) :=
+  have hnear  :=
     (tendsto_iff_norm_sub_tendsto_zero.mp hz).eventually
       (ge_mem_nhds (lt_min one_pos (half_pos hr)))
   have hK : 0 ≤ 4 * (4 * a * (1 - a) + 2 * a) / r ^ 2 := by
-    have : 0 ≤ 1 - a := sub_nonneg.mpr ha1
-    positivity
+    bound
   refine tendsto_integral_filter_of_dominated_convergence
     (fun ω => (s * (s + 1) * (4 * a / r) ^ 2 + s * (4 * (4 * a * (1 - a) + 2 * a) / r ^ 2)) *
       Y ω ^ (-s)) ?_ ?_ (hYint.const_mul _) ?_
@@ -271,8 +256,8 @@ theorem bpz_tendsto_momField2_far {Ω : Type*} [MeasurableSpace Ω] {P : Measure
   · filter_upwards [hnear] with n hn
     filter_upwards [hgood] with ω hω
     obtain ⟨hY, hintw, hint, hlow⟩ := hω
-    have hz1 : ‖zs n - z₀‖ ≤ 1 := hn.trans (min_le_left _ _)
-    have hz2 : ‖zs n - z₀‖ ≤ r / 2 := hn.trans (min_le_right _ _)
+    have hz1  := hn.trans (min_le_left _ _)
+    have hz2  := hn.trans (min_le_right _ _)
     have hintz := bpzSoft_integrable_near ha ha1 (hε0 n) (hε1 n) hw hw0 hint hintw hz1
     have hYI := hlow (zs n) hz1 (εs n) (hε0 n) (hε1 n)
     have hDf := norm_bpzSoftMassDeriv_far_le ha hw0 hr hz2 hintz
@@ -283,7 +268,7 @@ theorem bpz_tendsto_momField2_far {Ω : Type*} [MeasurableSpace Ω] {P : Measure
     have hI := bpz_tendsto_softMassReal ha ha1 hw hw0 hint hintw hε0 hε1 hε hz
     have hD := bpz_tendsto_softMassDeriv_far ha ha1 hw hw0 hint hintw hε0 hε1 hε hz hr
     have hD2 := bpz_tendsto_softMassDeriv2_far ha ha1 hw hw0 hint hintw hε0 hε1 hε hz hr
-    have hpos : 0 < bpzSoftMassReal a 0 w (M ω) z₀ :=
+    have hpos  :=
       hY.trans_le (hlow z₀ (by simp) 0 le_rfl zero_le_one)
     have hc : Continuous (fun L : ℂ →L[ℝ] ℝ => L.smulRight L) :=
       (ContinuousLinearMap.smulRightL ℝ ℂ (ℂ →L[ℝ] ℝ)).continuous₂.comp

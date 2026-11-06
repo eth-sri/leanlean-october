@@ -10,7 +10,7 @@ public import DOZZ.GMC.SharpMoments.WeightedUniformGrid
 
 /-! Small positive moments of shrinking insertion disks from a strict charge gap. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -24,7 +24,7 @@ theorem weighted_mass_charge_gap (μ : Measure ℂ) (γ a δ : ℝ)
       weightedGmcBallMass γ μ (a + δ) z R := by
   have hne : ∀ᵐ x ∂μ, x ≠ z := by
     rw [ae_iff]
-    simpa only [not_not, ofPred_eq_eq_singleton] using hroot
+    simp_all
   have hm : Measurable (fun x : ℂ => ENNReal.ofReal ‖x - z‖ ^ (-γ * (a + δ))) :=
     (ENNReal.measurable_ofReal.comp (measurable_id.sub_const z).norm).pow_const _
   unfold weightedGmcBallMass
@@ -33,9 +33,8 @@ theorem weighted_mass_charge_gap (μ : Measure ℂ) (γ a δ : ℝ)
         (ENNReal.ofReal ‖x - z‖ ^ (-γ * (a + δ))) ∂μ := by
       apply setLIntegral_mono_ae' Metric.isOpen_ball.measurableSet
       filter_upwards [hne] with x hx hball
-      have hd : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
-      have hr : ‖x - z‖ ≤ ρ := by
-        exact (show ‖x - z‖ < ρ by simpa only [Metric.mem_ball, dist_eq_norm] using hball).le
+      have hd  := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
+      have hr  := (show ‖x - z‖ < ρ by simpa only [Metric.mem_ball, dist_eq_norm] using hball).le
       rw [ENNReal.rpow_eq_pow, ENNReal.ofReal_rpow_of_pos hd,
         ENNReal.ofReal_rpow_of_pos hd, ← ENNReal.ofReal_mul (Real.rpow_nonneg hρ.le _)]
       apply ENNReal.ofReal_le_ofReal
@@ -53,8 +52,7 @@ theorem weighted_mass_charge_gap (μ : Measure ℂ) (γ a δ : ℝ)
       have hmono : (∫⁻ x in Metric.ball z ρ, ENNReal.ofReal ‖x - z‖ ^ (-γ * (a + δ)) ∂μ) ≤
           ∫⁻ x in Metric.ball z R, ENNReal.ofReal ‖x - z‖ ^ (-γ * (a + δ)) ∂μ :=
         lintegral_mono_set (Metric.ball_subset_ball hρR)
-      simpa only [ENNReal.rpow_eq_pow] using
-        mul_le_mul (le_refl (ENNReal.ofReal (ρ ^ (γ * δ)))) hmono zero_le zero_le
+      exact mul_le_mul_right hmono (ENNReal.ofReal (ρ ^ (γ * δ)))
 
 /-- A single larger-charge moment gives uniform polynomial decay for all smaller charges. -/
 theorem weighted_small_ball_moment_decay
@@ -67,7 +65,7 @@ theorem weighted_small_ball_moment_decay
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ α ≤ a, ∀ ρ : ℝ, 0 < ρ → ρ ≤ min R 1 →
       weightedGmcBallMoment P M γ α z ρ m ≤ ENNReal.ofReal (ρ ^ (γ * δ * m)) * C := by
   let C := weightedGmcBallMoment P M γ (a + δ) z R m
-  have hC : C < ⊤ := (equatorGFF_GMC_weighted_local_moment_range
+  have hC  := (equatorGFF_GMC_weighted_local_moment_range
     P X hX γ hγ hγ2 M hM (a + δ) ha m hm z R hR).mpr hms
   refine ⟨C, hC, fun α hα ρ hρ hρR => ?_⟩
   have hatom := gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z

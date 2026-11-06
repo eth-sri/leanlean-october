@@ -10,7 +10,7 @@ public import DOZZ.GFFStructure.HarmonicMoments
 /-! Gaussian moments for the spatial correction envelope in the one-insertion tail estimate.
 The two pins may be correlated; the bound only uses their centered Gaussian marginals. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal

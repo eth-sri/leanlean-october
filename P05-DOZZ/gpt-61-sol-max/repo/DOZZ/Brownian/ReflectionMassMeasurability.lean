@@ -32,61 +32,57 @@ private theorem measurable_reflectionPairValue :
     Measurable (Function.uncurry reflectionPairValue) := by
   classical
   have heval : Measurable (fun z : (ℝ≥0 × BrownianPath) => z.2 z.1) :=
-    by exact (continuous_eval.comp continuous_swap).measurable
+    by fun_prop (disch := positivity)
   let pos : (BrownianPath × BrownianPath) × ℝ → ℝ := fun z =>
     z.1.1 ⟨max z.2 0, le_max_right _ _⟩
   let neg : (BrownianPath × BrownianPath) × ℝ → ℝ := fun z =>
     z.1.2 ⟨max (-z.2) 0, le_max_right _ _⟩
-  have hpos : Measurable pos := by
-    dsimp [pos]
-    exact heval.comp ((by fun_prop : Measurable fun z : (BrownianPath × BrownianPath) × ℝ =>
+  have hpos : Measurable pos := heval.comp ((by fun_prop : Measurable fun z : (BrownianPath × BrownianPath) × ℝ =>
       ((⟨max z.2 0, le_max_right _ _⟩ : ℝ≥0), z.1.1)))
-  have hneg : Measurable neg := by
-    dsimp [neg]
-    exact heval.comp ((by fun_prop : Measurable fun z : (BrownianPath × BrownianPath) × ℝ =>
+  have hneg : Measurable neg := heval.comp ((by fun_prop : Measurable fun z : (BrownianPath × BrownianPath) × ℝ =>
       ((⟨max (-z.2) 0, le_max_right _ _⟩ : ℝ≥0), z.1.2)))
   have hm : Measurable (fun z : (BrownianPath × BrownianPath) × ℝ =>
-      if 0 ≤ z.2 then pos z else neg z) := by
-    exact Measurable.ite (measurableSet_le measurable_const measurable_snd)
+      if 0 ≤ z.2 then pos z else neg z) := Measurable.ite (measurableSet_le measurable_const measurable_snd)
       hpos hneg
   convert hm using 1
   funext z
   change (if hs : 0 ≤ z.2 then z.1.1 ⟨z.2, hs⟩ else
       z.1.2 ⟨-z.2, by linarith⟩) =
     (if 0 ≤ z.2 then pos z else neg z)
-  by_cases hs : 0 ≤ z.2
-  · simp [hs, pos]
-  · have hneg : 0 ≤ -z.2 := by linarith
-    simp [hs, neg, max_eq_left hneg]
+  grind
 
+variable (γ : ℝ)
+
+include γ in
 /-- The exponential integrand as a jointly measurable function of a path pair and signed time. -/
-noncomputable def reflectionMassInputIntegrand (γ : ℝ)
+noncomputable def reflectionMassInputIntegrand
     (z : (BrownianPath × BrownianPath) × ℝ) : ℝ≥0∞ :=
   ENNReal.ofReal (Real.exp (γ * reflectionPairValue z.1 z.2))
 
-private theorem measurable_reflectionMassInputIntegrand (γ : ℝ) :
+include γ in
+private theorem measurable_reflectionMassInputIntegrand  :
     Measurable (reflectionMassInputIntegrand γ) := by
   have hval : Measurable (fun z : (BrownianPath × BrownianPath) × ℝ =>
-      reflectionPairValue z.1 z.2) := by
-    change Measurable (Function.uncurry reflectionPairValue)
-    exact measurable_reflectionPairValue
+      reflectionPairValue z.1 z.2) := measurable_reflectionPairValue
   change Measurable (fun z : (BrownianPath × BrownianPath) × ℝ =>
     ENNReal.ofReal (Real.exp (γ * reflectionPairValue z.1 z.2)))
-  exact ENNReal.measurable_ofReal.comp
-    (Real.measurable_exp.comp (measurable_const.mul hval))
+  fun_prop (disch := positivity)
 
+include γ in
 /-- The contribution of one finite shell to the reflection mass input. -/
-noncomputable def reflectionMassInputShell (γ : ℝ) (n : ℕ)
+noncomputable def reflectionMassInputShell  (n : ℕ)
     (z : (BrownianPath × BrownianPath) × Measure ℝ) : ℝ≥0∞ :=
   ∫⁻ s, reflectionMassInputIntegrand γ (z.1, s) ∂
     (finiteRestrictionOnSet (translationShell n) z.2 : Measure ℝ)
 
+include γ in
 /-- Summing the shell contributions gives a measurable extension to arbitrary path-measure pairs. -/
-noncomputable def reflectionMassInputShellSum (γ : ℝ)
+noncomputable def reflectionMassInputShellSum
     (z : (BrownianPath × BrownianPath) × Measure ℝ) : ℝ≥0∞ :=
   ∑' n, reflectionMassInputShell γ n z
 
-theorem measurable_reflectionMassInputShell (γ : ℝ) (n : ℕ) :
+include γ in
+theorem measurable_reflectionMassInputShell  (n : ℕ) :
     Measurable (reflectionMassInputShell γ n) := by
   have hInt := measurable_lintegral_finiteMeasure_parameter
     (f := reflectionMassInputIntegrand γ) (measurable_reflectionMassInputIntegrand γ)
@@ -94,27 +90,23 @@ theorem measurable_reflectionMassInputShell (γ : ℝ) (n : ℕ) :
       finiteRestrictionOnSet (translationShell n) z.2) :=
     (measurable_finiteRestrictionOnSet _ (measurableSet_translationShell n)).comp
       measurable_snd
-  have hpair : Measurable (fun z : (BrownianPath × BrownianPath) × Measure ℝ =>
-      (z.1, finiteRestrictionOnSet (translationShell n) z.2)) :=
+  have hpair  :=
     measurable_fst.prodMk hrest
-  change Measurable (fun z : (BrownianPath × BrownianPath) × Measure ℝ =>
-    ∫⁻ s, reflectionMassInputIntegrand γ (z.1, s) ∂
-      (finiteRestrictionOnSet (translationShell n) z.2 : Measure ℝ))
   exact hInt.comp hpair
 
-theorem measurable_reflectionMassInputShellSum (γ : ℝ) :
-    Measurable (reflectionMassInputShellSum γ) := by
-  exact Measurable.tsum fun n => measurable_reflectionMassInputShell γ n
+include γ in
+theorem measurable_reflectionMassInputShellSum  :
+    Measurable (reflectionMassInputShellSum γ) := Measurable.tsum fun n => measurable_reflectionMassInputShell γ n
 
+include γ in
 /-- On measures finite on every compact translation window, the shell sum agrees with the full
 reflection mass input. -/
 theorem reflectionMassInput_eq_shellSum_of_locallyFinite
-    (γ : ℝ) (z : (BrownianPath × BrownianPath) × Measure ℝ)
+     (z : (BrownianPath × BrownianPath) × Measure ℝ)
     (hlocal : LocallyFiniteOnTranslationWindows z.2) :
     twoSidedReflectionMassInput γ z = reflectionMassInputShellSum γ z := by
   let f : ℝ → ℝ≥0∞ := fun s => reflectionMassInputIntegrand γ (z.1, s)
-  have hfinite (n : ℕ) : z.2 (translationShell n) < ⊤ := by
-    exact lt_of_le_of_lt (measure_mono (translationShell_subset_window n)) (hlocal n)
+  have hfinite (n : ℕ) : z.2 (translationShell n) < ⊤ := lt_of_le_of_lt (measure_mono (translationShell_subset_window n)) (hlocal n)
   have hshellMeasure (n : ℕ) :
       finiteRestrictionOnSet (translationShell n) z.2 =
         ⟨z.2.restrict (translationShell n),

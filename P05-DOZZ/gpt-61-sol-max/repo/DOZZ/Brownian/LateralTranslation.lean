@@ -7,6 +7,7 @@ module
 public import DOZZ.Brownian.MeasureTranslationFinite
 public import DOZZ.Statements.Brownian.IsLateralGMCOf
 public import DOZZ.Statements.Brownian.BrownianPath
+import Mathlib.Tactic
 
 /-!
 # Random translation of locally finite lateral measures
@@ -16,7 +17,7 @@ agrees with ordinary pushforward on locally finite measures, which is the almost
 the lateral GMC carrier.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -24,14 +25,15 @@ open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 private theorem measurable_fixedLocallyFiniteTranslation (t : ℝ) :
-    Measurable (fun μ : Measure ℝ => locallyFiniteTranslation (t, μ)) := by
-  exact measurable_locallyFiniteTranslation.comp (measurable_const.prodMk measurable_id)
+    Measurable (fun μ : Measure ℝ => locallyFiniteTranslation (t, μ)) := measurable_locallyFiniteTranslation.comp (measurable_const.prodMk measurable_id)
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
+
+include Ω _inst1 P γ Z hZ in
 /-- Deterministic stationarity of the original lateral measure transfers to the measurable
 extension of translation on its locally finite carrier. -/
 private theorem locallyFiniteTranslation_stationary
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ : ℝ) (Z : Ω → Measure ℝ)
-    (hZ : IsLateralGMCOf P γ Z) (hZA : AEMeasurable Z P) (t : ℝ) :
+     (hZA : AEMeasurable Z P) (t : ℝ) :
     (P.map Z).map (fun μ => locallyFiniteTranslation (t, μ)) = P.map Z := by
   have hloc : (fun ω => locallyFiniteTranslation (t, Z ω)) =ᵐ[P]
       fun ω => (Z ω).map (fun s => s + t) := by
@@ -68,13 +70,13 @@ private theorem product_randomTranslation_invariant
   apply Measure.prod_eq
   intro S U hS hU
   rw [Measure.map_apply hG (hS.prod hU)]
-  have hpre : MeasurableSet (G ⁻¹' (S ×ˢ U)) := hG (hS.prod hU)
+  have hpre  := hG (hS.prod hU)
   rw [Measure.prod_apply hpre]
   have hsection (a : A) :
       μB ((Prod.mk a) ⁻¹' G ⁻¹' (S ×ˢ U)) =
         (S.indicator (fun _ => μB U)) a := by
     by_cases ha : a ∈ S
-    · have hshift : Measurable (fun b : Measure ℝ => locallyFiniteTranslation (T a, b)) :=
+    · have hshift  :=
         measurable_fixedLocallyFiniteTranslation (T a)
       have hsection_eq : (Prod.mk a) ⁻¹' G ⁻¹' (S ×ˢ U) =
           (fun b : Measure ℝ => locallyFiniteTranslation (T a, b)) ⁻¹' U := by
@@ -84,26 +86,24 @@ private theorem product_randomTranslation_invariant
     · have hsection_eq : (Prod.mk a) ⁻¹' G ⁻¹' (S ×ˢ U) = ∅ := by
         ext b
         simp [G, ha]
-      rw [hsection_eq, measure_empty, Set.indicator_of_notMem ha]
+      simp_all
   calc
     (∫⁻ a, μB (Prod.mk a ⁻¹' G ⁻¹' (S ×ˢ U)) ∂μA) =
         ∫⁻ a, (S.indicator (fun _ => μB U)) a ∂μA := by
-          apply lintegral_congr
-          intro a
-          exact hsection a
+          simp_all
     _ = μB U * μA S := by rw [lintegral_indicator_const hS]
     _ = μA S * μB U := mul_comm _ _
 
+include Ω _inst1 P γ Z hZ in
 /-- The random translated lateral measure is almost-everywhere measurable. -/
 theorem lateralGMC_randomTranslation_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ : ℝ) (Z : Ω → Measure ℝ)
-    (hZ : IsLateralGMCOf P γ Z) (D : Ω → BrownianPath) (hD : AEMeasurable D P)
+     (D : Ω → BrownianPath) (hD : AEMeasurable D P)
     (T : BrownianPath → ℝ) (hT : Measurable T) :
     AEMeasurable (fun ω => (Z ω).map (fun s => s + T (D ω))) P := by
-  have hZA : AEMeasurable Z P := hZ.2.2.2.1
-  have hparam : AEMeasurable (fun ω => (T (D ω), Z ω)) P :=
+  have hZA  := hZ.2.2.2.1
+  have hparam  :=
     AEMeasurable.prodMk (hT.comp_aemeasurable hD) hZA
-  have hsurrogate : AEMeasurable (fun ω => locallyFiniteTranslation (T (D ω), Z ω)) P :=
+  have hsurrogate  :=
     measurable_locallyFiniteTranslation.comp_aemeasurable hparam
   have htranslate : (fun ω => (Z ω).map (fun s => s + T (D ω))) =ᵐ[P]
       fun ω => locallyFiniteTranslation (T (D ω), Z ω) := by
@@ -113,12 +113,12 @@ theorem lateralGMC_randomTranslation_aemeasurable
       exact hloc (-(n : ℝ)) (n : ℝ))).symm
   exact (aemeasurable_congr htranslate).2 hsurrogate
 
+include Ω _inst1 P γ Z hZ in
 /-- Proof of the complete random-translation statement `DOZZ.lateralGMC_random_translation`:
 independence replaces the input law by a product, while deterministic stationarity preserves the
 second marginal in every section. -/
 theorem lateralGMC_random_translation
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ : ℝ) (Z : Ω → Measure ℝ)
-    (hZ : IsLateralGMCOf P γ Z) (D : Ω → BrownianPath) (hD : AEMeasurable D P)
+     (D : Ω → BrownianPath) (hD : AEMeasurable D P)
     (hInd : IndepFun D Z P) (T : BrownianPath → ℝ) (hT : Measurable T) :
     AEMeasurable (fun ω => (Z ω).map (fun s => s + T (D ω))) P ∧
       P.map (fun ω => (Z ω).map (fun s => s + T (D ω))) = P.map Z ∧
@@ -126,12 +126,12 @@ theorem lateralGMC_random_translation
   let Y : Ω → Measure ℝ := fun ω => (Z ω).map (fun s => s + T (D ω))
   let μD : Measure BrownianPath := P.map D
   let μZ : Measure (Measure ℝ) := P.map Z
-  have hZA : AEMeasurable Z P := hZ.2.2.2.1
-  have hY : AEMeasurable Y P := lateralGMC_randomTranslation_aemeasurable P γ Z hZ D hD T hT
-  have : IsProbabilityMeasure P := hZ.2.2.1
-  have : IsProbabilityMeasure μD := (Measure.isProbabilityMeasure_map_iff hD).2 inferInstance
-  have : IsProbabilityMeasure μZ := (Measure.isProbabilityMeasure_map_iff hZA).2 inferInstance
-  have hDZ : P.map (fun ω => (D ω, Z ω)) = μD.prod μZ :=
+  have hZA  := hZ.2.2.2.1
+  have hY  := lateralGMC_randomTranslation_aemeasurable P γ Z hZ D hD T hT
+  have  := hZ.2.2.1
+  have  := (Measure.isProbabilityMeasure_map_iff hD).2 inferInstance
+  have  := (Measure.isProbabilityMeasure_map_iff hZA).2 inferInstance
+  have hDZ  :=
     (indepFun_iff_map_prod_eq_prod_map_map hD hZA).1 hInd
   have hstat : ∀ t : ℝ, μZ.map (fun μ => locallyFiniteTranslation (t, μ)) = μZ := by
     intro t
@@ -141,15 +141,15 @@ theorem lateralGMC_random_translation
     (z.1, locallyFiniteTranslation (T z.1, z.2))
   have hTprod : Measurable (fun z : BrownianPath × Measure ℝ => (T z.1, z.2)) :=
     (hT.comp measurable_fst).prodMk measurable_snd
-  have hG : Measurable G := measurable_fst.prodMk
+  have hG  := measurable_fst.prodMk
     (measurable_locallyFiniteTranslation.comp hTprod)
-  have hpairDZ : AEMeasurable (fun ω => (D ω, Z ω)) P := hD.prodMk hZA
+  have hpairDZ  := hD.prodMk hZA
   have htranslate : Y =ᵐ[P] fun ω => locallyFiniteTranslation (T (D ω), Z ω) := by
     filter_upwards [hZ.2.2.2.2.1] with ω hloc
     exact (locallyFiniteTranslation_eq_map (T (D ω)) (Z ω) (by
       intro n
       exact hloc (-(n : ℝ)) (n : ℝ))).symm
-  have hpairY : AEMeasurable (fun ω => (D ω, Y ω)) P := hD.prodMk hY
+  have hpairY  := hD.prodMk hY
   have hpairLaw : P.map (fun ω => (D ω, Y ω)) = μD.prod μZ := by
     calc
       P.map (fun ω => (D ω, Y ω)) = P.map (fun ω => G (D ω, Z ω)) :=
@@ -165,7 +165,7 @@ theorem lateralGMC_random_translation
         symm
         exact AEMeasurable.map_map_of_aemeasurable measurable_snd.aemeasurable hpairY
       _ = (μD.prod μZ).map Prod.snd := congrArg (fun m : Measure (BrownianPath × Measure ℝ) => m.map Prod.snd) hpairLaw
-      _ = μZ := by rw [Measure.map_snd_prod, measure_univ, one_smul]
+      _ = μZ := by ext <;> simp_all
   refine ⟨hY, hYlaw, ?_⟩
   apply (indepFun_iff_map_prod_eq_prod_map_map hD hY).2
   rw [hYlaw]

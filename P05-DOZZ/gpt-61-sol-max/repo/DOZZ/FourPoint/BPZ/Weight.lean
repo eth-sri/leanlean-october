@@ -38,17 +38,15 @@ theorem bpz_normPlus_pos (x : ℂ) : 0 < normPlus x :=
 theorem bpz_one_le_normPlus (x : ℂ) : 1 ≤ normPlus x := le_max_left _ _
 
 theorem bpz_measurable_normPlus : Measurable normPlus := by
-  unfold normPlus
   exact measurable_const.max measurable_norm
 
 theorem bpz_continuous_normPlus : Continuous normPlus := by
-  unfold normPlus
   exact continuous_const.max continuous_norm
 
 theorem bpzBaseWeight_nonneg (x : ℂ) : 0 ≤ bpzBaseWeight γ χ α₁ α₂ α₃ x := by
   unfold bpzBaseWeight
-  have h1 := Real.rpow_nonneg (norm_nonneg x) (-(γ * α₁))
-  have h2 := Real.rpow_nonneg (norm_nonneg (x - 1)) (-(γ * α₂))
+  
+  
   have h3 := Real.rpow_nonneg (bpz_normPlus_pos x).le (γ * (α₁ + α₂ + α₃ - χ))
   positivity
 
@@ -67,9 +65,7 @@ theorem measurable_bpzSoftWeight (ε : ℝ) (z : ℂ) :
     Measurable (bpzSoftWeight γ χ α₁ α₂ α₃ ε z) := by
   unfold bpzSoftWeight
   refine Measurable.mul ?_ measurable_bpzBaseWeight
-  refine Measurable.pow_const ?_ _
-  exact (Complex.continuous_normSq.measurable.comp (measurable_id.sub_const z)).add
-    measurable_const
+  fun_prop (disch := positivity)
 
 /-- At `ε = 0` the softened factor is the power of the distance to the degenerate root. -/
 theorem bpzSoftWeight_zero (z x : ℂ) :
@@ -107,10 +103,10 @@ theorem coulombWeight_eq_ofReal_bpzSoftWeight {z x : ℂ} (hxz : x ≠ z) (hx0 :
     (hx1 : x ≠ 1) :
     coulombWeight γ ![-χ, α₁, α₂] ![z, 0, 1] α₃ x =
       ENNReal.ofReal (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x) := by
-  have hn : 0 < normPlus x := bpz_normPlus_pos x
-  have h₀ : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
-  have h₁ : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have h₂ : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have hn  := bpz_normPlus_pos x
+  have h₀  := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+  have h₁  := norm_pos_iff.mpr hx0
+  have h₂  := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
   unfold coulombWeight
   simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
     Fin.prod_univ_zero, mul_one, sub_zero]

@@ -15,7 +15,7 @@ Chernoff bound turns this into a Gaussian small-value tail, which gives Gaussian
 logarithmic level of the Laplace transform of the cutoff mass, with constants uniform in the
 cutoff. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -29,8 +29,8 @@ theorem laplaceBase_exp_neg_exp_half_le {x : ℝ} (hx : 0 ≤ x) :
     Real.exp (-Real.exp (x / 2)) ≤ Real.exp (-(x ^ 2 / 8)) := by
   refine Real.exp_le_exp.mpr ?_
   have h := Real.quadratic_le_exp_of_nonneg (show 0 ≤ x / 2 by linarith)
-  have e : (x / 2) ^ 2 / 2 = x ^ 2 / 8 := by ring
-  have h2 : 0 ≤ x / 2 := by linarith
+  
+  
   linarith
 
 /-- A shifted Gaussian is bounded by a constant multiple of a Gaussian of smaller variance. -/
@@ -64,36 +64,30 @@ theorem laplaceBase_real_core (a b : ℝ) (hb : 0 < b) :
   set E : ℝ := Real.exp (-c * x ^ 2) with hE
   have hE0 : 0 < E := Real.exp_pos _
   by_cases hax : a < x / 2
-  · have h1 := h hax
+  · 
     have h2 := laplaceBase_gaussian_shift_le hb a x
     have h3 := laplaceBase_exp_neg_exp_half_le hx
     have h4 : Real.exp (-(x ^ 2 / (32 * b))) ≤ E := by
       refine Real.exp_le_exp.mpr ?_
       have hmul := mul_le_mul_of_nonneg_right hc1 (sq_nonneg x)
-      have e : 1 / (32 * b) * x ^ 2 = x ^ 2 / (32 * b) := by ring
-      linarith
+      grind
     have h5 : Real.exp (-(x ^ 2 / 8)) ≤ E := by
       refine Real.exp_le_exp.mpr ?_
       have hmul := mul_le_mul_of_nonneg_right hc2 (sq_nonneg x)
-      have e : 1 / 8 * x ^ 2 = x ^ 2 / 8 := by ring
+      
       linarith
     have h6 : Real.exp (a ^ 2 / (4 * b)) * Real.exp (-(x ^ 2 / (32 * b))) ≤
         Real.exp (a ^ 2 / (4 * b)) * E :=
       mul_le_mul_of_nonneg_left h4 (Real.exp_pos _).le
     have h7 : 0 ≤ Real.exp (c * (2 * a) ^ 2) * E := (mul_pos (Real.exp_pos _) hE0).le
-    calc L ≤ Real.exp (a ^ 2 / (4 * b)) * E + E := by linarith
-      _ ≤ (Real.exp (a ^ 2 / (4 * b)) + 1 + Real.exp (c * (2 * a) ^ 2)) * E := by linarith
+    grind
   · have hxa : x ≤ 2 * a := by linarith [not_lt.mp hax]
-    have hx2 : x ^ 2 ≤ (2 * a) ^ 2 := pow_le_pow_left₀ hx hxa 2
+    have hx2  := pow_le_pow_left₀ hx hxa 2
     have h1 : 1 ≤ Real.exp (c * (2 * a) ^ 2) * E := by
       rw [hE, ← Real.exp_add]
-      apply Real.one_le_exp
-      have hmul := mul_nonneg hc0.le (sub_nonneg.mpr hx2)
-      linarith
+      simp_all
     have h2 : 0 ≤ Real.exp (a ^ 2 / (4 * b)) * E := (mul_pos (Real.exp_pos _) hE0).le
-    calc L ≤ 1 := hL
-      _ ≤ Real.exp (c * (2 * a) ^ 2) * E := h1
-      _ ≤ (Real.exp (a ^ 2 / (4 * b)) + 1 + Real.exp (c * (2 * a) ^ 2)) * E := by linarith
+    grind
 
 /-! ### From small-value tails to the Laplace transform -/
 
@@ -123,8 +117,8 @@ theorem laplaceBase_integral_le_measureReal_add
       linarith
     · rw [Set.indicator_of_notMem (show ω ∉ {ω | m ω ≤ Real.exp (-(x / 2))} from hω), zero_add]
       refine Real.exp_le_exp.mpr ?_
-      have hlt : Real.exp (-(x / 2)) < m ω := not_le.mp hω
-      have hmul : Real.exp x * Real.exp (-(x / 2)) < Real.exp x * m ω :=
+      have hlt  := not_le.mp hω
+      have hmul  :=
         mul_lt_mul_of_pos_left hlt (Real.exp_pos x)
       rw [← Real.exp_add, show x + -(x / 2) = x / 2 by ring] at hmul
       linarith
@@ -146,20 +140,21 @@ theorem laplaceBase_measure_toReal_le
   filter_upwards [hY] with ω hω h
   exact (ENNReal.le_ofReal_iff_toReal_le hω hε).mpr h
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
+include Ω _inst1 P X hX Xc hXc in
 /-- Gaussian-type negative moments of the cutoff mass of `A` bound its Laplace transform at level
 `exp x`, once `a < x / 2`, by the Chernoff small-value tail plus the double exponential. -/
 theorem laplaceBase_cutoffLaplace_le_of_negMoment
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
+     (γ r : ℝ)
     (A : Set ℂ) (hA : MeasurableSet A) (a b : ℝ) (hb : 0 < b)
     (hmom : ∀ q : ℝ, 0 < q → ∫⁻ ω, (regularizedGMC P Xc γ r ω A) ^ (-q) ∂P ≤
       ENNReal.ofReal (Real.exp (a * q + b * q ^ 2)))
     (x : ℝ) (hx : a < x / 2) :
     cutoffLaplace P Xc γ r A x ≤
       Real.exp (-(x / 2 - a) ^ 2 / (4 * b)) + Real.exp (-Real.exp (x / 2)) := by
-  have hP : IsProbabilityMeasure P := hX.1
-  have hYm : Measurable (fun ω => regularizedGMC P Xc γ r ω A) :=
+  have hP  := hX.1
+  have hYm  :=
     (Measure.measurable_coe hA).comp (regularizedGMC_measurable P X hX Xc hXc γ r)
   have hLaplace := laplaceBase_integral_le_measureReal_add P _
     (measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ r A hA)
@@ -178,13 +173,12 @@ theorem laplaceBase_cutoffLaplace_le_of_negMoment
   unfold cutoffLaplace
   linarith
 
+include Ω _inst1 P X hX Xc hXc in
 /-- On a set of positive finite reference mass where the circle variance is at most `V`, the
 inverse moments of the cutoff mass have Gaussian growth in the order, with linear coefficient
 `b - log σ` and quadratic coefficient `b`, where `b = γ² V / 2` and `σ` is the reference mass. -/
 theorem laplaceBase_negMoment_le
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r V : ℝ)
+     (γ r V : ℝ)
     (A : Set ℂ) (hA : MeasurableSet A) (hA0 : gmcReferenceMeasure A ≠ 0)
     (hAtop : gmcReferenceMeasure A ≠ ⊤)
     (hV : ∀ x ∈ A, gaussianVariance P (fun ω => Xc ω x r) ≤ V) (a b : ℝ)
@@ -194,7 +188,7 @@ theorem laplaceBase_negMoment_le
       ENNReal.ofReal (Real.exp (a * q + b * q ^ 2)) := by
   refine (regularizedGMC_inverse_moment_le_variance P X hX Xc hXc γ r q V hq A hA hA0 hAtop
     hV).trans (le_of_eq ?_)
-  have hσ : 0 < (gmcReferenceMeasure A).toReal := ENNReal.toReal_pos hA0 hAtop
+  have hσ  := ENNReal.toReal_pos hA0 hAtop
   rw [← ENNReal.ofReal_toReal hAtop, ENNReal.ofReal_rpow_of_pos hσ,
     ← ENNReal.ofReal_mul (Real.rpow_nonneg hσ.le _), Real.rpow_def_of_pos hσ, ← Real.exp_add]
   congr 2
@@ -226,36 +220,31 @@ theorem laplaceBase_chartRemainder_pos {R : ℝ} (hR : 0 < R) :
   add_pos_of_pos_of_nonneg (Real.log_pos (by norm_num))
     (mul_nonneg (by norm_num) (Real.log_nonneg (by linarith)))
 
+include Ω _inst1 P X hX Xc hXc in
 /-- At cutoffs in a bounded range, the Laplace transform of a reference-ball mass has Gaussian
 decay in the logarithmic level, uniformly in the cutoff. -/
 theorem cutoffLaplace_le_gaussian_bounded_cutoff
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ) (hγ : 0 < γ)
+     (γ : ℝ) (hγ : 0 < γ)
     (R T : ℝ) (hR : 0 < R) (hR1 : R ≤ 1) (hT : 0 ≤ T) :
     ∃ A c : ℝ, 0 < c ∧ ∀ r : ℝ, 0 ≤ r → r ≤ T → ∀ x : ℝ, 0 ≤ x →
       cutoffLaplace P Xc γ r (Metric.ball 0 R) x ≤ A * Real.exp (-c * x ^ 2) := by
   have hDm : MeasurableSet (Metric.ball (0 : ℂ) R) := Metric.isOpen_ball.measurableSet
-  have hD0 : gmcReferenceMeasure (Metric.ball (0 : ℂ) R) ≠ 0 :=
+  have hD0  :=
     (laplaceBase_ball_pos hR hR1).ne'
   have hDtop := laplaceBase_ball_ne_top R
-  have hVpos : 0 < T + gmcCircleChartRemainder R :=
+  have hVpos  :=
     add_pos_of_nonneg_of_pos hT (laplaceBase_chartRemainder_pos hR)
   obtain ⟨b, hb⟩ : ∃ b : ℝ, b = γ ^ 2 * (T + gmcCircleChartRemainder R) / 2 := ⟨_, rfl⟩
   obtain ⟨a, ha⟩ : ∃ a : ℝ,
       a = b - Real.log (gmcReferenceMeasure (Metric.ball (0 : ℂ) R)).toReal := ⟨_, rfl⟩
   have hbpos : 0 < b := by
-    rw [hb]
-    exact div_pos (mul_pos (pow_pos hγ 2) hVpos) two_pos
+    simp_all
   obtain ⟨A, c, hc, hcore⟩ := laplaceBase_real_core a b hbpos
   refine ⟨A, c, hc, fun r hr0 hrT x hx0 => ?_⟩
-  have hvar : ∀ y ∈ Metric.ball (0 : ℂ) R,
-      gaussianVariance P (fun ω => Xc ω y r) ≤ T + gmcCircleChartRemainder R := fun y hy =>
+  have hvar  := fun y hy =>
     gmcCircle_variance_le_coarse_chart P X hX Xc hXc R r T hR.le hr0 hrT y
       (mem_ball_zero_iff.mp hy).le
-  have hmom : ∀ q : ℝ, 0 < q →
-      ∫⁻ ω, (regularizedGMC P Xc γ r ω (Metric.ball 0 R)) ^ (-q) ∂P ≤
-        ENNReal.ofReal (Real.exp (a * q + b * q ^ 2)) := fun q hq =>
+  have hmom  := fun q hq =>
     laplaceBase_negMoment_le P X hX Xc hXc γ r _ _ hDm hD0 hDtop hvar a b hb ha q hq
   exact hcore _ x hx0 (cutoffLaplace_le_one P X hX Xc γ r _ x) fun hax =>
     laplaceBase_cutoffLaplace_le_of_negMoment P X hX Xc hXc γ r _ hDm a b hbpos hmom x hax

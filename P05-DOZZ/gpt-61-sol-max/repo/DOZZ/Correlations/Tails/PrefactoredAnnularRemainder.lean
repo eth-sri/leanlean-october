@@ -10,22 +10,23 @@ public import DOZZ.Correlations.Tails.TranslatedSourceMass
 
 /-! Actual independent pin moments control the canonical annular remainder uniformly. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+
+include Ω _inst1 P X Xc hX hc γ hγ hγ2 in
 theorem prefactored_annular_remainder_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (z : ℂ) (f α ρ : ℝ)
+     (z : ℂ) (f α ρ : ℝ)
     (N : Ω → Measure ℂ) (hN : IsGMCOf P (translatedField X Xc z) γ N) :
     AEMeasurable (fun q : Ω × Ω =>
       ENNReal.ofReal (f*‖z‖^(-4 : ℝ)*Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖))*
         ∫⁻ x in Metric.ball (0 : ℂ) 1 \ Metric.ball (0 : ℂ) ρ,
           (ENNReal.ofReal ‖x‖)^(-γ*α) ∂N q.1) (P.prod P) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   have hY := translated_field_isEquatorGFF P X Xc hX hc z
   have hk : Measurable (fun x : ℂ => (ENNReal.ofReal ‖x‖)^(-γ*α)) := by fun_prop
   have hd : MeasurableSet (Metric.ball (0 : ℂ) 1 \ Metric.ball (0 : ℂ) ρ) :=
@@ -34,17 +35,16 @@ theorem prefactored_annular_remainder_aemeasurable
     (equatorGFF_GMC_aemeasurable P _ hY γ hγ hγ2 N hN)
   have hmass : AEMeasurable (fun ω => ∫⁻ x in Metric.ball (0 : ℂ) 1 \ Metric.ball (0 : ℂ) ρ,
       (ENNReal.ofReal ‖x‖)^(-γ*α) ∂N ω) P := by
-    simpa only [lintegral_indicator hd,Function.comp_def] using hm
+    continuity
   have hpin := (hc.1 0).comp (measurable_id.prodMk (measurable_const : Measurable (fun _ : Ω => z)))
   have hS := (((((hpin.comp (measurable_snd : Measurable (Prod.snd : Ω × Ω → Ω))).const_mul γ).sub_const (γ^2*Real.log ‖z‖)).exp).const_mul
     (f*‖z‖^(-4 : ℝ))).ennreal_ofReal
   exact hS.aemeasurable.mul (hmass.comp_quasiMeasurePreserving
     (measurePreserving_fst (μ := P) (ν := P)).quasiMeasurePreserving)
 
+include Ω _inst1 P X Xc hX hc γ hγ hγ2 in
 theorem prefactored_annular_remainder_moment_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (K : Set ℂ) (hK : IsCompact K) (hz : ∀ z ∈ K, 2 ≤ ‖z‖)
     (ρ A b R : ℝ) (hρ : 0 < ρ) (hρ1 : ρ ≤ 1) (hb : 0 ≤ b)
@@ -56,7 +56,7 @@ theorem prefactored_annular_remainder_moment_uniform
         (ENNReal.ofReal (f*‖z‖^(-4 : ℝ)*Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖))*
           ∫⁻ x in Metric.ball (0 : ℂ) 1 \ Metric.ball (0 : ℂ) ρ,
             (ENNReal.ofReal ‖x‖)^(-γ*α) ∂N q.1)^r ∂P.prod P) ≤ C := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   obtain ⟨D,hD,hMass⟩ := annular_remainder_moment_uniform_models
     P X hX γ hγ hγ2 M hM {0} isCompact_singleton ρ A 1 R hρ hρ1 zero_le_one hR hRbulk
   obtain ⟨L,hL,hPin⟩ := actual_prefactor_moment_uniform
@@ -84,7 +84,7 @@ theorem prefactored_annular_remainder_moment_uniform
   change (∫⁻ q : Ω × Ω, (S q.2*mass q.1)^r ∂P.prod P) ≤ D*L
   simp_rw [ENNReal.mul_rpow_of_nonneg _ _ hr.le,mul_comm (S _^r)]
   rw [lintegral_prod_mul (hmass.pow_const r) (hS.aemeasurable.pow_const r)]
-  exact mul_le_mul' hm (hPin z hzk f hf hfb r hr hrR)
+  bound
 
 
 end DOZZ.Proofs

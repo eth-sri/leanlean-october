@@ -62,10 +62,7 @@ theorem finite_random_measure_law_of_open_fdd
     exact hcn.comap_le
   have hOpenGen : (inferInstance : MeasurableSpace ℂ) =
       MeasurableSpace.generateFrom {s : Set ℂ | IsOpen s} := by
-    calc
-      (inferInstance : MeasurableSpace ℂ) = borel ℂ := BorelSpace.measurable_eq
-      _ = _ := borel_eq_generateFrom_of_subbasis
-        (TopologicalSpace.generateFrom_setOfPred_isOpen (inferInstance : TopologicalSpace ℂ)).symm
+    bound
   have hforget : Measurable (fun q : InversionFiniteMeasure => q.1) := by
     let : ∀ q : InversionFiniteMeasure, IsFiniteMeasure q.1 := fun q => q.2
     apply Measurable.measure_of_isPiSystem hOpenGen isPiSystem_isOpen
@@ -95,8 +92,7 @@ theorem finite_random_measure_law_of_open_fdd
           (cylinder_mem_measurableCylinders (α := fun _ : InversionOpen => ℝ≥0∞) s As hAs)
       rw [Measure.map_apply hom hs, Measure.map_apply hon hs]
       exact hp
-    · simp only [Measure.map_apply hom MeasurableSet.univ,
-        Measure.map_apply hon MeasurableSet.univ, preimage_univ]
+    simp_all
   have hh := hH.comp hforget
   calc
     ∫⁻ ω, H (M ω) ∂P = ∫⁻ q, H q.1 ∂P.map outM := (lintegral_map hh hom).symm

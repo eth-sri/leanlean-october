@@ -9,32 +9,36 @@ public import DOZZ.Brownian.Lateral.GlobalIndependence
 
 /-! The translated source projection uses the literal off-center radial Brownian motion. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω]
+
+include Ω _inst1 in
 theorem translated_circle_jointMeasurable
-    {Ω : Type*} [MeasurableSpace Ω] (Xc : Ω → ℂ → ℝ → ℝ)
+     (Xc : Ω → ℂ → ℝ → ℝ)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2)) (z : ℂ) :
     Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 (z+p.2.1) p.2.2 - Xc p.1 z 0) :=
   (hm.comp (measurable_fst.prodMk
     ((measurable_const.add measurable_snd.fst).prodMk measurable_snd.snd))).sub
       (hm.comp (measurable_fst.prodMk (measurable_const (a := (z,(0 : ℝ))))))
 
+include Ω _inst1 in
 theorem translated_circle_continuous
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
+     (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) (z : ℂ) :
     ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω (z+p.1) p.2 - Xc ω z 0) := by
   filter_upwards [hcont] with ω hω
-  exact (hω.comp ((continuous_const.add continuous_fst).prodMk continuous_snd)).sub
-    continuous_const
+  fun_prop (disch := positivity)
 
+include Ω _inst1 in
 /-- The literal off-center radial path and the projected translated chaos form a genuine
 source projection. In particular the complete radial path is independent of the lateral chaos. -/
 theorem translated_radial_sourceProjection
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+     (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))

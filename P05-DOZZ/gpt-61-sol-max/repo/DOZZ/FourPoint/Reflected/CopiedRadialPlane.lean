@@ -33,14 +33,14 @@ theorem reflected_copied_radial_plane_observable
       ∫⁻ ω, G (originRadialPath Xc ω.1, ∫⁻ x in (({0} : Set ℂ)ᶜ),
         f x * ENNReal.ofReal (reflected_global_reinsertionWeight γ
           (originRadialPath Xc ω.1) x) ∂N ω.2) ∂P.prod P := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   obtain ⟨N, hNm, hi, hfin, heq, hNa⟩ := reflected_global_lateral_admissible
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM
   refine ⟨N, hNm, hi, hfin, heq, hNa, ?_⟩
   intro f hf G hG
   let U : Set ℂ := ({0} : Set ℂ)ᶜ
-  have hU : IsOpen U := (isClosed_singleton (x := (0 : ℂ))).isOpen_compl
-  let _ : LocallyCompactSpace U := hU.locallyCompactSpace
+  have hU  := (isClosed_singleton (x := (0 : ℂ))).isOpen_compl
+  let _  := hU.locallyCompactSpace
   let E := CompactExhaustion.choice U
   let K : ℕ → Set ℂ := fun n => Subtype.val '' E n
   have hK (n : ℕ) : IsCompact (K n) := (E.isCompact n).image continuous_subtype_val
@@ -59,8 +59,7 @@ theorem reflected_copied_radial_plane_observable
       obtain ⟨n, hn⟩ := E.exists_mem ⟨x, hx⟩
       exact mem_iUnion.mpr ⟨n, ⟨⟨x, hx⟩, hn, rfl⟩⟩
   let NF : Ω → ℕ → FiniteMeasure ℂ := fun ω n =>
-    ⟨(N ω).restrict (K n), ⟨by simpa only [Measure.restrict_apply_univ] using
-      (hfin ω (K n) (hK n) (hKU n))⟩⟩
+    ⟨(N ω).restrict (K n), ⟨by simp_all⟩⟩
   have hNF : Measurable NF := Measurable.of_eval fun n => Measurable.subtype_mk
     ((measurable_measure_restrict (K n) (hK n).measurableSet).comp hNm)
   let A := originRadialPath Xc
@@ -70,7 +69,7 @@ theorem reflected_copied_radial_plane_observable
     let : MeasurableSpace Ω := MeasurableSpace.comap N inferInstance
     exact Measurable.of_eval fun n => Measurable.subtype_mk
       ((measurable_measure_restrict (K n) (hK n).measurableSet).comp (comap_measurable N))
-  have hAN : IndepFun A NF P :=
+  have hAN  :=
     indep_of_indep_of_le_right hi hNFc.comap_le
   let F : TwoSidedPath × (ℕ → FiniteMeasure ℂ) → ℝ≥0∞ := fun p =>
     G (p.1, ⨆ n, ∫⁻ x, f x * ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 x)
@@ -101,7 +100,7 @@ theorem reflected_copied_radial_plane_observable
     rw [← hd, ← restrict_withDensity ((isClosed_singleton (x := (0 : ℂ))).isOpen_compl).measurableSet, he,
       reflected_global_reinsertion_measure,
       Measure.restrict_restrict_of_subset (Subset.refl _)]
-  have hj : P.map (fun ω => (A ω, NF ω)) = (P.map A).prod (P.map NF) :=
+  have hj  :=
     (indepFun_iff_map_prod_eq_prod_map_map hA hNF.aemeasurable).mp hAN
   have hAc : AEMeasurable (fun ω : Ω × Ω => A ω.1) (P.prod P) :=
     hA.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving
@@ -120,7 +119,7 @@ theorem reflected_copied_radial_plane_observable
     have hsnd : (P.prod P).map (fun ω : Ω × Ω => NF ω.2) = P.map NF := by
       have h := AEMeasurable.map_map_of_aemeasurable
         (show AEMeasurable NF ((P.prod P).map Prod.snd) by
-          simpa only [Measure.map_snd_prod, measure_univ, one_smul] using hNF.aemeasurable)
+          fun_prop (disch := positivity))
         measurable_snd.aemeasurable
       simpa only [Function.comp_def, Measure.map_snd_prod, measure_univ, one_smul] using h.symm
     exact hi'.trans (by rw [hfst, hsnd])

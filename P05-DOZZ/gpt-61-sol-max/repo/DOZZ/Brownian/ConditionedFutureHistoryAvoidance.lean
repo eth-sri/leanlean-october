@@ -71,14 +71,7 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance
       ({y : ℚ → ℝ | ∀ q : ℚ, 0 < (q : ℝ) → (c : ℝ) < y q} : Set (ℚ → ℝ))
     rw [hrepr]
     apply MeasurableSet.iInter
-    intro q
-    have hset : {y : ℚ → ℝ | 0 < (q : ℝ) → (c : ℝ) < y q} =
-        if hq : 0 < (q : ℝ) then {y : ℚ → ℝ | (c : ℝ) < y q} else Set.univ := by
-      by_cases hq : 0 < (q : ℝ) <;> simp [hq]
-    rw [hset]
-    split_ifs with hq
-    · exact measurableSet_lt measurable_const (measurable_pi_apply q)
-    · exact MeasurableSet.univ
+    measurability
   have hpre : conditionedPositiveFutureRationalAvoidance t c =
       (conditionedPositiveFutureRationalEvals t) ⁻¹' A := by
     ext p
@@ -87,37 +80,13 @@ theorem conditionedPositiveHistory_condExp_rationalFuture_avoidance
       ]
     constructor
     · intro h q hq
-      have := h q
-      simp only [hq, dite_true] at this
-      exact this
-    · intro h q
-      by_cases hq : 0 < (q : ℝ)
-      · simpa [hq] using h q hq
-      · simp [hq]
-  have hSeqG : StronglyMeasurable (A.indicator G) := hG.indicator hA
-  have hPathG : Integrable (fun p => (A.indicator G)
-      (conditionedPositiveFutureRationalEvals t p)) P := by
-    exact hGint.indicator (hA.preimage (measurable_conditionedPositiveFutureRationalEvals t))
+      simp_all
+    continuity
+  have hSeqG  := hG.indicator hA
+  have hPathG  := hGint.indicator (hA.preimage (measurable_conditionedPositiveFutureRationalEvals t))
   have hcond := conditionedPositiveHistory_condExp_rationalFuture hP t ht
     (A.indicator G) hSeqG hPathG
-  have hpath : (conditionedPositiveFutureRationalAvoidance t c).indicator
-      (fun p => G (conditionedPositiveFutureRationalEvals t p)) =
-      fun p => A.indicator G (conditionedPositiveFutureRationalEvals t p) := by
-    funext p
-    have hmem : p ∈ conditionedPositiveFutureRationalAvoidance t c ↔
-        conditionedPositiveFutureRationalEvals t p ∈ A := by
-      rw [hpre]
-      rfl
-    by_cases hp : p ∈ conditionedPositiveFutureRationalAvoidance t c
-    · have hp' : conditionedPositiveFutureRationalEvals t p ∈ A := hmem.mp hp
-      simp [hp, hp']
-    · have hp' : conditionedPositiveFutureRationalEvals t p ∉ A := fun h => hp (hmem.mpr h)
-      simp [hp, hp']
-  rw [hpath]
-  filter_upwards [hcond] with p hp
-  simpa [conditionedPositiveEndpointFutureKernel,
-    Kernel.comp_deterministic_eq_comap, Kernel.comap_apply,
-    conditionedPositiveHistory_current, A, conditionedPositiveFutureAvoidanceSequence] using hp
+  continuity
 
 end DOZZ.Proofs
 

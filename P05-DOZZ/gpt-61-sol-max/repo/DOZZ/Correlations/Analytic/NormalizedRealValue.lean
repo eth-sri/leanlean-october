@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.NormalizedRealPolynomial
 
 /-! Real restriction of the holomorphic normalized cutoff is the retained Coulomb moment. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs

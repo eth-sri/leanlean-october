@@ -7,10 +7,11 @@ module
 public import DOZZ.Correlations.Tails.CopiedTestCutoffLaw
 public import DOZZ.Correlations.Tails.CopiedWeightTestLimit
 public import DOZZ.Correlations.Symmetry.CorrelatedScalarLimit
+import Mathlib.Tactic
 
 /-! Equality in law of actual compact chaos masses after the pin copy. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal
 
@@ -33,7 +34,7 @@ theorem copied_compact_chaos_law
       P.map (fun ω => Real.exp (-γ^2*Real.log ‖z‖) * ∫ y, G y ∂M ω) =
         (P.prod P).map (fun q => Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖) *
           ∫ x, g x * Real.exp (γ*localPinCoefficient z x*(Xc q.2 z 0-Xc q.1 z 0)) ∂N q.1) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   obtain ⟨G, hGc, hG⟩ := transferred_compact_test z γ g hgc
   refine ⟨G, hGc, hG, ?_⟩
   obtain ⟨ρ, hρ, hgρ⟩ := compact_test_unit_margin g hgc hgs
@@ -104,9 +105,9 @@ theorem copied_compact_chaos_law
     tendstoInMeasure_mul_same_space _ _ _ measurable_const
       ((DOZZ.Assembly.isGMCOf_tendstoInMeasure P X hX Xc hc γ M hM G).comp
         (tendsto_natCast_atTop_atTop.comp ht))
-  have hgs' : tsupport (g : ℂ → ℝ) ⊆ Metric.closedBall 0 1 :=
+  have hgs'  :=
     hgs.trans Metric.ball_subset_closedBall
-  have hBc : TendstoInMeasure (P.prod P) B atTop Blim :=
+  have hBc  :=
     tendstoInMeasure_mul_same_space _ _ S hS
       ((translated_copied_pin_weight_test_limit P X Xc hX hc γ hγ hγ2 z hz N hN
         g hgc hgs').comp ht)

@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Residue.LocalWeightFamily
 /-! Common bounds for the two exact weight classes supplied to the two-insertion tail theorem
 `DOZZ.twoInsertion_tail_sum_uniform`. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 
@@ -23,8 +23,7 @@ theorem residue_uniformFamily_mono_bounds
   refine ⟨hr, hs0.trans hs, hd0.trans hd, hl', ?_⟩
   intro z hz f hf
   rcases hF z hz f hf with ⟨hm, hb, hlz, hc, hder⟩
-  exact ⟨hm, fun x => ⟨(hb x).1, (hb x).2.trans hs⟩, hl.trans hlz,
-    hc, fun x hx => (hder x hx).trans hd⟩
+  grind
 
 /-- Two separately constructed positive C1 classes admit the shared bounds required by the
 exact two-insertion tail statement. -/

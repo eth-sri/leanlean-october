@@ -42,19 +42,12 @@ theorem finite_gaussian_wick_pair_tilt_with_coarse_rectangle
   let F : (ι → ℝ) → ℝ≥0∞ := fun z =>
     Set.indicator {z | ∀ i, z (e i) ≤ barrier i}
       (fun _ => (1 : ℝ≥0∞)) z
-  have hEq : (⋂ i : κ, {z : ι → ℝ | z (e i) ≤ barrier i}) =
-      {z | ∀ i : κ, z (e i) ≤ barrier i} := by
-    ext z
-    simp only [Set.mem_iInter, Set.mem_ofPred_eq]
+
   have hset : MeasurableSet {z : ι → ℝ | ∀ i : κ, z (e i) ≤ barrier i} := by
-    rw [← hEq]
-    apply MeasurableSet.iInter
-    intro i
-    exact measurableSet_le (measurable_pi_apply (e i)) measurable_const
+    measurability
   have hF : Measurable F := by
-    dsimp [F]
-    exact measurable_const.indicator hset
-  simpa [F] using finite_gaussian_wick_pair_tilt P V hV p q γ F hF
+    fun_prop (disch := positivity)
+  exact finite_gaussian_wick_pair_tilt P V hV p q γ F hF
 
 
 /-- Every finite Gaussian rectangle indicator has expectation between zero and one. -/
@@ -66,28 +59,16 @@ theorem integral_gaussianRectangleIndicator_abs_le_one
   classical
   let R : Set (ι → ℝ) := {z | ∀ i, z i + shift i ≤ barrier i}
   have hR : MeasurableSet R := by
-    have hEq : (⋂ i, {z : ι → ℝ | z i + shift i ≤ barrier i}) = R := by
-      ext z
-      simp [R]
-    rw [← hEq]
-    apply MeasurableSet.iInter
-    intro i
-    have hcoord : Measurable (fun z : ι → ℝ => z i + shift i) := by fun_prop
-    exact measurableSet_le hcoord measurable_const
+    measurability
   have hZae : AEMeasurable Z P := by
     apply AEMeasurable.of_eval
     intro i
     exact hZ.2.1 i
   let F : (ι → ℝ) → ℝ := fun z => if z ∈ R then 1 else 0
-  have hF : Measurable F := by
-    dsimp [F]
-    exact Measurable.ite hR measurable_const measurable_const
+  have hF : Measurable F := Measurable.ite hR measurable_const measurable_const
   have hEq : gaussianRectangleIndicator Z barrier shift = F ∘ Z := by
-    funext ω
-    simp [gaussianRectangleIndicator, F, R]
-  have hRect : AEStronglyMeasurable (gaussianRectangleIndicator Z barrier shift) P := by
-    rw [hEq]
-    exact (hF.comp_aemeasurable hZae).aestronglyMeasurable
+    continuity
+  have hRect : AEStronglyMeasurable (gaussianRectangleIndicator Z barrier shift) P := (hF.comp_aemeasurable hZae).aestronglyMeasurable
   have hbound : ∀ᵐ ω ∂P, ‖gaussianRectangleIndicator Z barrier shift ω‖ ≤ 1 := by
     apply ae_of_all
     intro ω
@@ -97,9 +78,8 @@ theorem integral_gaussianRectangleIndicator_abs_le_one
     refine ⟨?_⟩
     rw [hZ.1.measure_univ]
     exact ENNReal.one_lt_top
-  have hone : Integrable (fun _ : Ω => (1 : ℝ)) P := by
-    exact (integrable_const_iff (μ := P) (c := (1 : ℝ))).2 (Or.inr hPfinite)
-  have hRectIntegrable : Integrable (gaussianRectangleIndicator Z barrier shift) P :=
+  have hone  := (integrable_const_iff (μ := P) (c := (1 : ℝ))).2 (Or.inr hPfinite)
+  have hRectIntegrable  :=
     hone.mono' hRect hbound
   have hnorm := norm_integral_le_integral_norm (μ := P)
     (gaussianRectangleIndicator Z barrier shift)
@@ -111,9 +91,9 @@ theorem integral_gaussianRectangleIndicator_abs_le_one
       _ = 1 := by
         rw [integral_const, Measure.real_def, hZ.1.measure_univ]
         norm_num
-  have hnormResult : ‖∫ ω, gaussianRectangleIndicator Z barrier shift ω ∂P‖ ≤ 1 :=
+  have hnormResult  :=
     hnorm.trans hnormBound
-  simpa [Real.norm_eq_abs] using hnormResult
+  exact hnormResult
 
 /-- Uniform convergence of the Wick prefactor and the finite-barrier probability implies uniform
 convergence of their mixed two-point product. The probability factors are bounded by one; only
@@ -134,20 +114,20 @@ theorem tendsto_uniformlyOn_product_of_tendsto_uniformlyOn
       0 < ε → ε ≤ ε₀ → 0 < ε' → ε' ≤ ε₀ → ∀ p ∈ S,
         |F ε ε' p * G ε ε' p - F₀ 0 0 p * G₀ 0 0 p| < η' := by
   intro η' hη'
-  let δ : ℝ := min 1 (η' / (4 * (M + 1)))
+  let δ  := min 1 (η' / (4 * (M + 1)))
   have hδ : 0 < δ := lt_min one_pos (div_pos hη' (by positivity))
   have hδone : δ ≤ 1 := min_le_left _ _
   have hδsmall : δ ≤ η' / (4 * (M + 1)) := min_le_right _ _
   obtain ⟨εF, hεF, hFclose⟩ := hF δ hδ
   obtain ⟨εG, hεG, hGclose⟩ := hGcloseFam δ hδ
-  let ε₀ : ℝ := min εF εG
-  have hε₀ : 0 < ε₀ := lt_min hεF hεG
+  let ε₀  := min εF εG
+  have hε₀  := lt_min hεF hεG
   refine ⟨ε₀, hε₀, ?_⟩
   intro ε ε' hε hεcut hε' hε'cut p hp
-  have hFc : |F ε ε' p - F₀ 0 0 p| < δ :=
+  have hFc  :=
     hFclose ε ε' hε (le_trans hεcut (min_le_left _ _)) hε'
       (le_trans hε'cut (min_le_left _ _)) p hp
-  have hGc : |G ε ε' p - G₀ 0 0 p| < δ :=
+  have hGc  :=
     hGclose ε ε' hε (le_trans hεcut (min_le_right _ _)) hε'
       (le_trans hε'cut (min_le_right _ _)) p hp
   have hFbound : |F ε ε' p| ≤ M + δ := by
@@ -174,7 +154,7 @@ theorem tendsto_uniformlyOn_product_of_tendsto_uniformlyOn
                 _ = _ := by rw [abs_mul, abs_mul]
       _ ≤ (M + δ) * δ + δ := by
         apply add_le_add
-        · exact mul_le_mul (hFbound) hGc.le (abs_nonneg _) (by positivity)
+        · bound
         · calc
             |F ε ε' p - F₀ 0 0 p| * |G₀ 0 0 p| ≤ δ * 1 :=
               mul_le_mul hFc.le (hG₀ p hp) (abs_nonneg _) (by positivity)
@@ -192,12 +172,7 @@ theorem tendsto_uniformlyOn_product_of_tendsto_uniformlyOn
           nlinarith [hM]
         _ = η' / 4 := by ring
     have hδsmall' : δ ≤ η' / 4 := by
-      calc
-        δ ≤ η' / (4 * (M + 1)) := hδsmall
-        _ ≤ η' / 4 := by
-          apply (div_le_div_iff₀ (by positivity : (0 : ℝ) < 4 * (M + 1))
-            (by norm_num : (0 : ℝ) < 4)).2
-          nlinarith [hM, hη']
+      bound
     have hδsq : δ ^ 2 ≤ δ := by nlinarith [hδone, sq_nonneg (δ - 1)]
     nlinarith [hMd, hδsmall', hδsq]
   exact lt_of_le_of_lt hprod hsmall
@@ -209,11 +184,12 @@ noncomputable def admissibleLogWickWeight
   ENNReal.ofReal (Real.exp
     (γ * Y ω ε x - γ ^ 2 / 2 * gaussianVariance P (fun ω' => Y ω' ε x)))
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (Y Z : Ω → ℝ → ℂ → ℝ) (γ a : ℝ)
+
+include Ω _inst1 P Y Z γ a in
 /-- Mixed two-root Wick kernel with the growing barrier imposed at each root. -/
 noncomputable def compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω)
-    (Y Z : Ω → ℝ → ℂ → ℝ) (γ a : ℝ) (k₀ : ℕ)
+     (k₀ : ℕ)
     (r s : ℝ) (x y : ℂ) (b₁ b₂ : Bool) : ℝ≥0∞ := by
   classical
   exact ∫⁻ ω,
@@ -225,11 +201,11 @@ noncomputable def compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel
       (fun _ => (1 : ℝ≥0∞)) (ω, y) ∂P
 
 
+include Ω _inst1 P Y Z γ a in
 /-- The mixed Wick kernel with both growing barriers truncated at the fixed integer level `m`.
 This is the finite-dimensional approximation used on separated spatial slices. -/
 noncomputable def compatibleAdmissibleSelectedFiniteBarrierPairKernel
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Y Z : Ω → ℝ → ℂ → ℝ) (γ a : ℝ) (k₀ m : ℕ)
+     (k₀ m : ℕ)
     (ε δ : ℝ) (x y : ℂ) (b₁ b₂ : Bool) : ℝ≥0∞ := by
   classical
   exact ∫⁻ ω,
@@ -240,11 +216,11 @@ noncomputable def compatibleAdmissibleSelectedFiniteBarrierPairKernel
     Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
       (fun _ => (1 : ℝ≥0∞)) (ω, y) ∂P
 
+include Ω _inst1 P Y Z γ a in
 /-- Once both cutoffs include every scale through `m`, the full growing-barrier kernel is
 dominated by its finite-barrier truncation. -/
 theorem compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_le_finiteBarrier
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Y Z : Ω → ℝ → ℂ → ℝ) (γ a : ℝ) (k₀ m : ℕ)
+     (k₀ m : ℕ)
     (r s : ℝ) (x y : ℂ) (b₁ b₂ : Bool)
     (hmr : (m : ℝ) ≤ r) (hms : (m : ℝ) ≤ s) :
     compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel P Y Z γ a k₀ r s x y b₁ b₂ ≤
@@ -259,61 +235,14 @@ theorem compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_le_finiteBarri
     by_cases hgood : (ω, z) ∈ admissibleGrowingBarrierSet Y a k₀ t
     · have hsmall : (ω, z) ∈ admissibleGrowingBarrierSet Y a k₀ (m : ℝ) := by
         intro k hk₀ hkm
-        have hkt : (k : ℝ) ≤ t := le_trans hkm hmt
-        exact hgood k hk₀ hkt
+        bound
       simp [Set.indicator, hgood, hsmall]
     · simp [Set.indicator, hgood]
   unfold compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel
     compatibleAdmissibleSelectedFiniteBarrierPairKernel
   apply lintegral_mono
   intro ω
-  let w₁ := admissibleLogWickWeight P (if b₁ then Y else Z) γ (Real.exp (-r)) x ω
-  let w₂ := admissibleLogWickWeight P (if b₂ then Y else Z) γ (Real.exp (-s)) y ω
-  change w₁ * w₂ *
-      Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)
-        (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-      Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
-        (fun _ => (1 : ℝ≥0∞)) (ω, y) ≤
-    w₁ * w₂ * Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-      (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-      Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-        (fun _ => (1 : ℝ≥0∞)) (ω, y)
-  have hbarrierProduct :
-      Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)
-          (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-        Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
-          (fun _ => (1 : ℝ≥0∞)) (ω, y) ≤
-      Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-          (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-        Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-          (fun _ => (1 : ℝ≥0∞)) (ω, y) := by
-    calc
-      _ = Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
-            (fun _ => (1 : ℝ≥0∞)) (ω, y) *
-          Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)
-            (fun _ => (1 : ℝ≥0∞)) (ω, x) := mul_comm _ _
-      _ ≤ Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
-            (fun _ => (1 : ℝ≥0∞)) (ω, y) *
-          Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-            (fun _ => (1 : ℝ≥0∞)) (ω, x) :=
-          mul_le_mul_of_nonneg_left (hsubset r hmr ω x) (by positivity)
-      _ = _ := mul_comm _ _
-      _ ≤ Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-            (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-          Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-            (fun _ => (1 : ℝ≥0∞)) (ω, y) :=
-          mul_le_mul_of_nonneg_left (hsubset s hms ω y) (by positivity)
-  calc
-    _ = (Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)
-          (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-        Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
-          (fun _ => (1 : ℝ≥0∞)) (ω, y)) * (w₁ * w₂) := by ac_rfl
-    _ ≤ (Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-          (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-        Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-          (fun _ => (1 : ℝ≥0∞)) (ω, y)) * (w₁ * w₂) :=
-      mul_le_mul_left hbarrierProduct (w₁ * w₂)
-    _ = _ := by ac_rfl
+  bound
 
 
 

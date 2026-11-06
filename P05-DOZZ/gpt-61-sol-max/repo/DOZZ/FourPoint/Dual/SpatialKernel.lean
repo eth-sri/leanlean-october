@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Dual.MassComparison
 public import DOZZ.FourPoint.Reflected.SpatialKernelApprox
 /-! Compact spatial tests for the literal reflected kernel. -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 

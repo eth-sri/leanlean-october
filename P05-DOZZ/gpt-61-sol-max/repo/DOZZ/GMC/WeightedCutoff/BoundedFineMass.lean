@@ -4,7 +4,7 @@ public import DOZZ.GMC.WeightedCutoff.SmallBound
 
 /-! # Uniform fine-cutoff moments on bounded disks -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -77,8 +77,7 @@ theorem regularizedGMC_bounded_ball_moment_compact_gamma_fine
       rw [lintegral_const_mul'' _ (Finset.aemeasurable_fun_sum _ (fun w hw => hmeas w)),
         lintegral_finsetSum' S (f := fun w ω => (f w ω) ^ q) (fun w hw => hmeas w)]
     _ ≤ (S.card : ℝ≥0∞) ^ q * ∑ _w ∈ S, H := by
-      apply mul_le_mul_right
-      exact Finset.sum_le_sum (fun w hw => hlocal w)
+      bound
     _ = D := by simp [D]; ac_rfl
 
 end DOZZ.Proofs

@@ -9,7 +9,7 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 /-! Convergence of bounded continuous marked observables under circle-root insertion. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal BoundedContinuousFunction
@@ -59,8 +59,7 @@ theorem circleRooted_bounded_coordinate_lintegral_tendsto
       (𝓝 (∫⁻ ω, G (u, ω) ∂P)) := by
     filter_upwards [hRoot] with u hu
     apply tendsto_lintegral_of_dominated_convergence (fun _ => ENNReal.ofReal ‖φ‖)
-    · intro n
-      exact (hF n).comp (measurable_const.prodMk measurable_id)
+    · fun_prop (disch := positivity)
     · intro n
       exact ae_of_all _ fun ω => hbound n (u, ω)
     · simp
@@ -81,7 +80,7 @@ theorem circleRooted_bounded_coordinate_lintegral_tendsto
           lintegral_mono fun ω => hbound n (u, ω)
         _ = _ := by simp
   · simp only [lintegral_const]
-    exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top (measure_ne_top ν Set.univ)
+    finiteness
   · exact hlim
 
 end DOZZ.Proofs

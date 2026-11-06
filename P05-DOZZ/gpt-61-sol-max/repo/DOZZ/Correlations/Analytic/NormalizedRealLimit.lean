@@ -10,17 +10,18 @@ public import DOZZ.Correlations.Analytic.CutoffGeometry
 
 /-! Identification of the canonical analytic cutoff limit on real charges. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] {N : ℕ} (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 N P X hX γ hγ hγ2 M hM in
 /-- The literal full Coulomb moment is finite throughout the strict moment range, for either
 sign of the exponent. -/
 theorem coulomb_moment_finite
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (α : Fin N → ℝ) (z : Fin N → ℂ) (hz : Function.Injective z) (αinf p : ℝ)
     (hpbulk : p < 4 / γ ^ 2) (hproot : ∀ i, p < 2 / γ * (Q γ - α i))
     (hpinf : p < 2 / γ * (Q γ - αinf)) :
@@ -32,12 +33,11 @@ theorem coulomb_moment_finite
       Set.univ (1 + 2 * ∑ j, ‖z j‖) hR hzR (Set.subset_univ _) p (le_of_not_gt hp)
     simpa only [Measure.restrict_univ, ← coulombMass_eq_lintegral_coulombWeight] using hi
 
+include Ω _inst1 N P X hX γ hγ hγ2 M hM in
 /-- The actual complex cutoff observable converges on every strictly admissible real vector
 to the exact full Coulomb expectation. -/
 theorem normalized_vertex_real_limit
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
     (z : Fin N → ℂ) (hz : Function.Injective z) (α : Fin (N + 1) → ℝ)
     (hp : (2 * Q γ - ∑ i, α i) / γ < 4 / γ ^ 2)
@@ -61,7 +61,7 @@ theorem normalized_vertex_real_limit
     (1 + 2 * ∑ j, ‖z j‖) (by norm_num)] with n hn
   have hball := exterior_ball_subset_retainedRegion z _ hR hzR (n : ℝ)
     (Nat.cast_nonneg _) hn.2.2.2
-  have hne : (retainedRegion z (n : ℝ)).Nonempty :=
+  have hne  :=
     (Metric.nonempty_ball.mpr (by norm_num : (0 : ℝ) < 1 / 8)).mono hball
   exact (normalized_vertex_moment_ofReal P X hX γ hγ hγ2 M hM Xc hc α z (n : ℝ)
     (Nat.cast_nonneg _) (retainedRegion z (n : ℝ)) (retainedRegion_isOpen z _)

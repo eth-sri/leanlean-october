@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Tails.PinEnvelopeMoment
 
 /-! Uniform Gaussian correction moments over the compact insertion-center geometry. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
@@ -27,7 +27,7 @@ theorem compact_pin_parameters (K : Set ℂ) (hK : IsCompact K)
     (offCenter_pin_variance_pos zmax (hz zmax hzmax)).le,
     div_nonneg (abs_nonneg γ) (by positivity), ?_⟩
   intro z hzk
-  have hlog2 : Real.log 2 ≤ Real.log ‖z‖ := Real.log_le_log (by norm_num) (hz z hzk)
+  have hlog2  := Real.log_le_log (by norm_num) (hz z hzk)
   have hlogmax : Real.log ‖z‖ ≤ Real.log ‖zmax‖ :=
     Real.log_le_log (by linarith [hz z hzk]) (hmax hzk)
   exact ⟨by linarith, div_le_div_of_nonneg_left (abs_nonneg γ)

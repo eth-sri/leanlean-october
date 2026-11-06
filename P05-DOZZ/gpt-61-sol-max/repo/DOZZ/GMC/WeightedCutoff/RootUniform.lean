@@ -4,7 +4,7 @@ public import DOZZ.GMC.WeightedCutoff.LargeScaleUniform
 
 /-! # Uniform root estimates through the whole finite chart -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -30,22 +30,21 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_chart
   obtain ⟨D, hD, hlarge⟩ := regularizedGMC_openBall_moment_compact_gamma_large_chart
     P X hX Xc hXc Γ hΓ hΓpos q hq hcrit
   let B : ℝ≥0∞ := 1 + D
-  have hB : B < ⊤ := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hD⟩
+  have hB  := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hD⟩
   have hBone : 1 ≤ B := le_add_of_nonneg_right (by positivity)
   let A : ℝ≥0∞ := Asmall + B
-  have hA : A < ⊤ := ENNReal.add_lt_top.mpr ⟨hAsmall, hB⟩
+  have hA  := ENNReal.add_lt_top.mpr ⟨hAsmall, hB⟩
   refine ⟨A, hA, ?_⟩
   intro γ hγ p hp hpq z R δ hR hRhalf hδ hδR hchart
-  have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
+  have hp0  := lt_of_lt_of_le zero_lt_one hp
   by_cases hRsmall : R ≤ 1 / 8
   · obtain ⟨hs, htop⟩ := hsmall γ hγ p hp hpq z R δ hR hRsmall hδ hδR hchart
     refine ⟨hs.trans ?_, htop⟩
-    apply mul_le_mul_left
-    exact le_add_of_nonneg_right (by positivity)
-  have hRlo : 1 / 8 ≤ R := le_of_not_ge hRsmall
+    bound
+  have hRlo  := le_of_not_ge hRsmall
   let f : Ω → ℝ≥0∞ := fun ω =>
     regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z R)
-  have hf : AEMeasurable f P := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
+  have hf  := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
     (Real.log (1 / δ)) (Metric.ball z R) Metric.isOpen_ball.measurableSet
   have hqbound := hlarge γ hγ z R δ hRlo hRhalf hδ hδR hchart
   have hmoment : (∫⁻ ω, f ω ^ p ∂P) ≤ B := by
@@ -53,8 +52,7 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_chart
       _ ≤ P Set.univ + ∫⁻ ω, f ω ^ q ∂P :=
         lintegral_rpow_le_measure_add_larger_order P f hf hp0.le hpq
       _ ≤ B := by
-        rw [hX.1.measure_univ]
-        simpa [B, f, add_comm] using add_le_add_left hqbound 1
+        bound
   have hroot : (∫⁻ ω, f ω ^ p ∂P) ^ (1 / p) ≤ B := by
     calc
       _ ≤ B ^ (1 / p) := ENNReal.rpow_le_rpow hmoment (by positivity)

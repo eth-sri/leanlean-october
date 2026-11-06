@@ -7,6 +7,7 @@ module
 public import DOZZ.FourPoint.Crossing.ConnectionDet
 public import DOZZ.FourPoint.Crossing.ConnectionRatio
 import Mathlib.Tactic
+public import DOZZ.Hypergeom.RealConnectionCoefficients
 
 /-! # Crossing from the two diagonal coefficients
 
@@ -27,29 +28,19 @@ theorem crossing_diagonal_coefficient_extraction (a b c d₀ d₁ E : ℝ)
     (hcn : ∀ n : ℤ, c ≠ (n : ℝ))
     (hδn : ∀ n : ℤ, c - a - b ≠ (n : ℝ))
     (hcross :
-      let u := Real.Gamma c * Real.Gamma (c - a - b) *
-        (Real.Gamma (c - a))⁻¹ * (Real.Gamma (c - b))⁻¹
-      let v := Real.Gamma c * Real.Gamma (a + b - c) *
-        (Real.Gamma a)⁻¹ * (Real.Gamma b)⁻¹
-      let w := Real.Gamma (2 - c) * Real.Gamma (c - a - b) *
-        (Real.Gamma (1 - a))⁻¹ * (Real.Gamma (1 - b))⁻¹
-      let x := Real.Gamma (2 - c) * Real.Gamma (a + b - c) *
-        (Real.Gamma (a - c + 1))⁻¹ * (Real.Gamma (b - c + 1))⁻¹
+      let u := realGaussConnection₀₀ a b c
+      let v := realGaussConnection₀₁ a b c
+      let w := realGaussConnection₁₀ a b c
+      let x := realGaussConnection₁₁ a b c
       d₀ * u * v + d₁ * w * x = 0)
     (hE : E =
-      d₀ * (Real.Gamma c * Real.Gamma (a + b - c) *
-        (Real.Gamma a)⁻¹ * (Real.Gamma b)⁻¹) ^ 2 +
-      d₁ * (Real.Gamma (2 - c) * Real.Gamma (a + b - c) *
-        (Real.Gamma (a - c + 1))⁻¹ * (Real.Gamma (b - c + 1))⁻¹) ^ 2) :
+      d₀ * (realGaussConnection₀₁ a b c) ^ 2 +
+      d₁ * (realGaussConnection₁₁ a b c) ^ 2) :
     d₀ = (lR a * lR b / (lR c * lR (a + b - c))) * E := by
-  let u := Real.Gamma c * Real.Gamma (c - a - b) *
-    (Real.Gamma (c - a))⁻¹ * (Real.Gamma (c - b))⁻¹
-  let v := Real.Gamma c * Real.Gamma (a + b - c) *
-    (Real.Gamma a)⁻¹ * (Real.Gamma b)⁻¹
-  let w := Real.Gamma (2 - c) * Real.Gamma (c - a - b) *
-    (Real.Gamma (1 - a))⁻¹ * (Real.Gamma (1 - b))⁻¹
-  let x := Real.Gamma (2 - c) * Real.Gamma (a + b - c) *
-    (Real.Gamma (a - c + 1))⁻¹ * (Real.Gamma (b - c + 1))⁻¹
+  let u := realGaussConnection₀₀ a b c
+  let v := realGaussConnection₀₁ a b c
+  let w := realGaussConnection₁₀ a b c
+  let x := realGaussConnection₁₁ a b c
   have hw : w ≠ 0 := by
     dsimp [w]
     exact mul_ne_zero (mul_ne_zero (mul_ne_zero

@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.TaylorKernelMass
 
 /-! A small-region Taylor mass is controlled by the sharp one-root weighted GMC mass. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -20,7 +20,7 @@ theorem gammaHalf_local_kernel_bound (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (�
       ENNReal.ofReal ((2 : ℝ) ^ |γ * α₂| * (2 * ρ) ^ (γ ^ 2 / 2)) *
         (ENNReal.ofReal ‖x‖) ^ (-γ * α₁) := by
   have hn : normPlus x = 1 := max_eq_left (hx.trans (by linarith only [hρ2]))
-  have hxpos : 0 < ‖x‖ := norm_pos_iff.mpr hx0
+  have hxpos  := norm_pos_iff.mpr hx0
   have hlow : 1 / 2 ≤ ‖x - 1‖ := by
     have hh := norm_sub_norm_le (1 : ℂ) x
     rw [norm_one, norm_sub_rev] at hh
@@ -65,7 +65,7 @@ theorem gammaHalf_local_mass_bound (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (ρ : 
   apply lintegral_mono_ae
   filter_upwards [ae_restrict_of_ae hx0, ae_restrict_mem measurableSet_ball] with x hnonzero hx
   have hn : ‖x‖ ≤ ρ := by
-    have hh : ‖x‖ < ρ := by simpa only [Metric.mem_ball, dist_zero_right] using hx
+    have hh : ‖x‖ < ρ := by simp_all
     exact hh.le
   simpa only [sub_zero, ENNReal.rpow_eq_pow] using
     gammaHalf_local_kernel_bound γ α₁ α₂ α₃ z x ρ hρ hρ2 hz hn hnonzero

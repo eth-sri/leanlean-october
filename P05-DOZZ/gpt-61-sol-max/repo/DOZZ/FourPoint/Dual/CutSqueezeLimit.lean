@@ -6,7 +6,7 @@ module
 public import Mathlib.Topology.Order.Basic
 public import Mathlib.Topology.Instances.Real.Lemmas
 /-! Two-stage signed squeezing for the Williams last-cut limit. -/
-@[expose] public section
+public section
 open Filter Topology
 namespace DOZZ.Proofs
 

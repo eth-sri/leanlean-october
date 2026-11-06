@@ -15,7 +15,7 @@ public import DOZZ.FourPoint.Reflected.RestartedWilliams
 public import DOZZ.FourPoint.Dual.RadialFirstOrder
 import Mathlib.Tactic
 /-! The actual Williams random last cut has the full same-witness leading coefficient. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -46,7 +46,7 @@ theorem dual_source_williams_cut_increment_tendsto
       (𝓝 ((a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃ ^(-(p+a)) ∂P).toReal*
         (∫⁻ ω, twoSidedReflectionMass γ B Z ω ^a ∂P).toReal)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let ν := Q γ-α₁
   let a := 2*ν/γ
   let p := (α₁+α₂+α₃-2/γ-2*Q γ)/γ
@@ -69,19 +69,17 @@ theorem dual_source_williams_cut_increment_tendsto
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   have ha : 0 < a := div_pos (mul_pos (by norm_num) (sub_pos.mpr hα₁)) hγ
   have ha1 : a < 1 := by
-    dsimp only [a, ν]
-    rw [div_lt_one hγ]
-    linarith only [hreflect]
+    bound
   have h4 : 1 < 4/γ^2 := by
     rw [lt_div_iff₀ (sq_pos_of_pos hγ)]
     nlinarith only [hγ, hγ₂]
-  have hfull : Tendsto (fun z => Dfull z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 L) :=
+  have hfull  :=
     dual_source_full_maximum_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh hs hshifted hslack hξ hξ1 B Z hData
   have hcut (c : ℝ) : Tendsto (fun z => Dc c z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 (Cc c)) :=
     dual_source_cut_maximum_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h c hα₁ hreflect hα₂ hα₃ hh hs hshifted hslack hξ hξ1 B Z hData
-  have hCoeff : Tendsto Cc atTop (𝓝 L) :=
+  have hCoeff  :=
     (dual_reflection_cut_moment_tendsto P γ α₁ a hγ hγ₂ B Z hα₁ hData ha (ha1.trans h4)).const_mul C
   have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 ‖(0 : ℂ)‖) :=
     (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
@@ -101,11 +99,7 @@ theorem dual_source_williams_cut_increment_tendsto
     simp only [ν, show -(p+1) = -p-1 by ring]
   have hErr (c : ℝ) : Tendsto (fun z => Err c z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
     have ht := hF.const_mul (p*Real.exp (γ*c)*J₁)
-    simp only [mul_zero] at ht
-    apply ht.congr
-    intro z
-    dsimp only [Err]
-    ring
+    grind
   change Tendsto (fun z => D z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 L)
   apply dual_cut_squeeze_tendsto _ _ (fun z => Dfull z/‖z‖^κ)
     (fun c z => Dc c z/‖z‖^κ) (fun c z => Err c z/‖z‖^κ) Cc L hfull

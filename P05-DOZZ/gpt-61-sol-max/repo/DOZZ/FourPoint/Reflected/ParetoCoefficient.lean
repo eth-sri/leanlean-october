@@ -7,6 +7,7 @@ module
 public import DOZZ.Hypergeom.Planar.Beta
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Tactic
+import Mathlib.Tactic
 
 /-! # The signed Pareto coefficient in the inner cluster
 
@@ -29,9 +30,7 @@ theorem reflected_pareto_integral (p a : ℝ) (hp : 0 < p) (ha : 0 < a)
         Real.Gamma (-a) * Real.Gamma (p + a) / Real.Gamma p := by
   have h := beta_negative_power_integral p (a + 1) hp (by linarith only [ha])
     (by linarith only [ha₁])
-  simpa only [show -(a + 1) = -a - 1 by ring,
-    show 1 - (a + 1) = -a by ring,
-    show p + (a + 1) - 1 = p + a by ring] using h
+  grind
 
 /-- The omitted small Pareto values have a first-order bound, valid on the entire half-line. -/
 theorem reflected_negative_power_increment (p v : ℝ) (hp : 0 < p) (hv : 0 ≤ v) :
@@ -58,9 +57,11 @@ theorem reflected_negative_power_increment (p v : ℝ) (hp : 0 < p) (hv : 0 ≤ 
   simpa only [add_zero, Real.one_rpow, sub_zero, Real.norm_eq_abs, abs_of_nonneg hv]
     using hm
 
+variable (p a ε : ℝ) (hp : 0 < p) (ha : 0 < a) (ha₁ : a < 1) (hε : 0 ≤ ε)
+
+include p a ε hp ha ha₁ hε in
 /-- The lower-cutoff Pareto error is bounded by its explicit integrable power primitive. -/
-theorem reflected_pareto_lower_cut_bound (p a ε : ℝ) (hp : 0 < p) (ha : 0 < a)
-    (ha₁ : a < 1) (hε : 0 ≤ ε) :
+theorem reflected_pareto_lower_cut_bound  :
     |∫ w : ℝ in Ioc 0 ε, ((1 + w) ^ (-p) - 1) * w ^ (-a - 1)| ≤
       p * ε ^ (1 - a) / (1 - a) := by
   have hf := (reflected_pareto_integral p a hp ha ha₁).1.mono_set
@@ -72,7 +73,7 @@ theorem reflected_pareto_lower_cut_bound (p a ε : ℝ) (hp : 0 < p) (ha : 0 < a
   have hb : ∀ᵐ w ∂(volume.restrict (Ioc 0 ε)),
       ‖((1 + w) ^ (-p) - 1) * w ^ (-a - 1)‖ ≤ p * w ^ (-a) := by
     filter_upwards [ae_restrict_mem measurableSet_Ioc] with w hw
-    have hwpos : 0 < w := hw.1
+    have hwpos  := hw.1
     rw [Real.norm_eq_abs, abs_mul, abs_of_pos (Real.rpow_pos_of_pos hwpos _)]
     calc
       |(1 + w) ^ (-p) - 1| * w ^ (-a - 1) ≤ (p * w) * w ^ (-a - 1) :=
@@ -98,9 +99,9 @@ theorem reflected_pareto_lower_cut_bound (p a ε : ℝ) (hp : 0 < p) (ha : 0 < a
     _ ≤ ∫ w : ℝ in Ioc 0 ε, p * w ^ (-a) := integral_mono_ae hf.norm hg hb
     _ = _ := hint
 
+include p a ε hp ha ha₁ hε in
 /-- Truncating the Pareto integral at ε changes its full coefficient by an explicit small error. -/
-theorem reflected_pareto_tail_coefficient_bound (p a ε : ℝ) (hp : 0 < p)
-    (ha : 0 < a) (ha₁ : a < 1) (hε : 0 ≤ ε) :
+theorem reflected_pareto_tail_coefficient_bound  :
     |(∫ w : ℝ in Ioi ε, ((1 + w) ^ (-p) - 1) * w ^ (-a - 1)) -
       Real.Gamma (-a) * Real.Gamma (p + a) / Real.Gamma p| ≤
         p * ε ^ (1 - a) / (1 - a) := by
@@ -138,8 +139,6 @@ theorem reflected_pareto_scaled_error (p a A x : ℝ) (hp : 0 < p) (ha : 0 < a)
     _ = (a * p / (1 - a)) * A ^ (-p) * x := by
       have hpow : x ^ a * x ^ (1 - a) = x := by
         rw [← Real.rpow_add hx, add_sub_cancel, Real.rpow_one]
-      calc
-        _ = (a * p / (1 - a)) * A ^ (-p) * (x ^ a * x ^ (1 - a)) := by ring
-        _ = _ := by rw [hpow]
+      grind
 
 end DOZZ.Proofs

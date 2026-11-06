@@ -16,6 +16,4 @@ This file proves the scale-level Abel limit that connects the canonically
 normalized ABK scale-space covariance to the logarithmic kernel pairing.
 -/
 
-public section
 
-end

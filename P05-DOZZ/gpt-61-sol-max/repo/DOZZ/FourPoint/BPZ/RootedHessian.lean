@@ -8,6 +8,7 @@ public import DOZZ.FourPoint.BPZ.WirtingerMoment
 public import DOZZ.FourPoint.Fusion.SpatialFunctions
 public import DOZZ.Statements.FourPoint.GammaHalfRootKernelZ
 public import DOZZ.Statements.FourPoint.GammaHalfRootKernelBar
+import Mathlib.Tactic
 
 /-! # The `(1, 1)` entry of the expected second moment field of the degenerate mass
 
@@ -46,8 +47,8 @@ theorem bpzRH_softDeriv_one (a w : ℝ) {x z : ℂ} (hxz : x ≠ z) :
     ((w * bpzSoftDeriv a 0 x z 1 : ℝ) : ℂ) =
       -(a : ℂ) * (((Complex.normSq (x - z) ^ a * w : ℝ) : ℂ) / (x - z) +
         ((Complex.normSq (x - z) ^ a * w : ℝ) : ℂ) / conj (x - z)) := by
-  have hv : x - z ≠ 0 := sub_ne_zero.mpr hxz
-  have hN : 0 < Complex.normSq (x - z) := Complex.normSq_pos.mpr hv
+  have hv  := sub_ne_zero.mpr hxz
+  have hN  := Complex.normSq_pos.mpr hv
   rw [bpzSoftDeriv_apply]
   simp only [Complex.one_re, Complex.one_im, mul_one, mul_zero, add_zero, ne_eq,
     OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow]
@@ -68,8 +69,8 @@ theorem bpzRH_softDeriv2_one_one (a w : ℝ) {x z : ℂ} (hxz : x ≠ z) :
         ((Complex.normSq (x - z) ^ a * w : ℝ) : ℂ) / conj (x - z) ^ 2) +
       ((2 * a ^ 2 : ℝ) : ℂ) * (((Complex.normSq (x - z) ^ a * w : ℝ) : ℂ) /
         ((‖x - z‖ ^ 2 : ℝ) : ℂ)) := by
-  have hv : x - z ≠ 0 := sub_ne_zero.mpr hxz
-  have hN : 0 < Complex.normSq (x - z) := Complex.normSq_pos.mpr hv
+  have hv  := sub_ne_zero.mpr hxz
+  have hN  := Complex.normSq_pos.mpr hv
   rw [bpzSoftDeriv2_apply]
   simp only [Complex.one_re, Complex.one_im, mul_one, mul_zero, add_zero, ne_eq,
     OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow]
@@ -129,8 +130,11 @@ section Pathwise
 
 variable {a : ℝ} {w k : ℂ → ℝ} {m : Measure ℂ} {z : ℂ}
 
+variable (H : BPZWMData a w k m z)
+
+include H
 /-- `k / (x - z)` is integrable. -/
-theorem bpzRH_integrable_div1 (H : BPZWMData a w k m z) :
+theorem bpzRH_integrable_div1  :
     Integrable (fun x => ((k x : ℝ) : ℂ) / (x - z)) m := by
   have h := bpz_integrable_div_root H.hw H.hw0 H.hz (bpzWM_integrable_w1 H)
   simp only [bpzWM_normSq_eq H] at h
@@ -138,35 +142,38 @@ theorem bpzRH_integrable_div1 (H : BPZWMData a w k m z) :
   simp only [Pi.neg_apply]
   rw [← neg_sub x z, div_neg, neg_neg]
 
+
 /-- `k / conj (x - z)` is integrable. -/
-theorem bpzRH_integrable_div1_conj (H : BPZWMData a w k m z) :
+theorem bpzRH_integrable_div1_conj  :
     Integrable (fun x => ((k x : ℝ) : ℂ) / conj (x - z)) m :=
   (bpzRH_integrable_conj (bpzRH_integrable_div1 H)).congr (Eventually.of_forall fun x => by
     simp [map_div₀, Complex.conj_ofReal])
 
+
 /-- `k / (x - z)^2` is integrable. -/
-theorem bpzRH_integrable_div2 (H : BPZWMData a w k m z) :
+theorem bpzRH_integrable_div2  :
     Integrable (fun x => ((k x : ℝ) : ℂ) / (x - z) ^ 2) m := by
   have h := bpz_integrable_div_root_sq H.hw H.hw0 H.hz (bpzWM_integrable_w2 H)
   simp only [bpzWM_normSq_eq H] at h
-  refine h.congr (Eventually.of_forall fun x => ?_)
-  show ((k x : ℝ) : ℂ) / (z - x) ^ 2 = ((k x : ℝ) : ℂ) / (x - z) ^ 2
-  rw [← neg_sub x z, neg_sq]
+  grind
+
 
 /-- `k / conj (x - z)^2` is integrable. -/
-theorem bpzRH_integrable_div2_conj (H : BPZWMData a w k m z) :
+theorem bpzRH_integrable_div2_conj  :
     Integrable (fun x => ((k x : ℝ) : ℂ) / conj (x - z) ^ 2) m :=
   (bpzRH_integrable_conj (bpzRH_integrable_div2 H)).congr (Eventually.of_forall fun x => by
     simp [map_div₀, Complex.conj_ofReal])
+omit H
+
 
 /-- The modulus of the mixed kernel `k / |x - z|²` is that of `k / (x - z)^2`. -/
 theorem bpzRH_norm_mixed (x z : ℂ) (k : ℝ) :
     ‖(k : ℂ) / ((‖x - z‖ ^ 2 : ℝ) : ℂ)‖ = ‖(k : ℂ) / (x - z) ^ 2‖ := by
-  rw [norm_div, norm_div, norm_pow, Complex.norm_real (‖x - z‖ ^ 2),
-    Real.norm_of_nonneg (sq_nonneg _)]
+  simp_all
 
+include H
 /-- `k / |x - z|²` is integrable. -/
-theorem bpzRH_integrable_mixed (H : BPZWMData a w k m z) :
+theorem bpzRH_integrable_mixed  :
     Integrable (fun x => ((k x : ℝ) : ℂ) / ((‖x - z‖ ^ 2 : ℝ) : ℂ)) m := by
   refine (bpzRH_integrable_div2 H).mono ?_ (Eventually.of_forall fun x =>
     (bpzRH_norm_mixed x z (k x)).le)
@@ -174,40 +181,43 @@ theorem bpzRH_integrable_mixed (H : BPZWMData a w k m z) :
     (Complex.measurable_ofReal.comp
       ((measurable_id.sub_const z).norm.pow_const 2))).aestronglyMeasurable
 
+
 /-- The first derivative mass at `ε = 0` evaluated in a direction. -/
-theorem bpzRH_massDeriv_apply (H : BPZWMData a w k m z) (h : ℂ) :
+theorem bpzRH_massDeriv_apply  (h : ℂ) :
     bpzSoftMassDeriv a 0 w m z h = ∫ x, w x * bpzSoftDeriv a 0 x z h ∂m := by
   have hI := bpz_integrable_softDeriv_zero H.ha H.ha1 H.hw H.hw0 H.hz (bpzWM_integrable_w1 H)
   unfold bpzSoftMassDeriv
   rw [ContinuousLinearMap.integral_apply hI h]
   simp only [smul_apply, smul_eq_mul]
 
+
 /-- The second derivative mass at `ε = 0` evaluated in two directions. -/
-theorem bpzRH_massDeriv2_apply (H : BPZWMData a w k m z) (h l : ℂ) :
+theorem bpzRH_massDeriv2_apply  (h l : ℂ) :
     bpzSoftMassDeriv2 a 0 w m z h l = ∫ x, w x * bpzSoftDeriv2 a 0 x z h l ∂m := by
   have hI := bpz_integrable_softDeriv2_zero H.ha H.ha1 H.hw H.hw0 H.hz (bpzWM_integrable_w2 H)
   unfold bpzSoftMassDeriv2
   rw [ContinuousLinearMap.integral_apply hI h,
     ContinuousLinearMap.integral_apply (hI.apply_continuousLinearMap h) l]
   simp only [smul_apply, smul_eq_mul]
+omit H
+
 
 /-- `k / conj (x - z)` integrates to the conjugate of `∫ k / (x - z)`. -/
 theorem bpzRH_integral_div1_conj (k : ℂ → ℝ) (m : Measure ℂ) (z : ℂ) :
     ∫ x, ((k x : ℝ) : ℂ) / conj (x - z) ∂m = conj (∫ x, ((k x : ℝ) : ℂ) / (x - z) ∂m) := by
   rw [← integral_conj]
-  refine integral_congr_ae (Eventually.of_forall fun x => ?_)
-  simp [map_div₀, Complex.conj_ofReal]
+  simp_all
 
 /-- `k / conj (x - z)^2` integrates to the conjugate of `∫ k / (x - z)^2`. -/
 theorem bpzRH_integral_div2_conj (k : ℂ → ℝ) (m : Measure ℂ) (z : ℂ) :
     ∫ x, ((k x : ℝ) : ℂ) / conj (x - z) ^ 2 ∂m =
       conj (∫ x, ((k x : ℝ) : ℂ) / (x - z) ^ 2 ∂m) := by
   rw [← integral_conj]
-  refine integral_congr_ae (Eventually.of_forall fun x => ?_)
-  simp [map_div₀, Complex.conj_ofReal]
+  simp_all
 
+include H in
 /-- The first derivative mass in the direction `1` is `-a (Z + conj Z)`, `Z = ∫ k/(x - z)`. -/
-theorem bpzRH_deriv_one_cast (H : BPZWMData a w k m z) :
+theorem bpzRH_deriv_one_cast  :
     ((bpzSoftMassDeriv a 0 w m z 1 : ℝ) : ℂ) = -(a : ℂ) *
       ((∫ x, ((k x : ℝ) : ℂ) / (x - z) ∂m) + conj (∫ x, ((k x : ℝ) : ℂ) / (x - z) ∂m)) := by
   rw [bpzRH_massDeriv_apply H, ← integral_complex_ofReal, ← bpzRH_integral_div1_conj,
@@ -217,9 +227,10 @@ theorem bpzRH_deriv_one_cast (H : BPZWMData a w k m z) :
   filter_upwards [bpz_ae_ne_of_measure_singleton H.hz] with x hx
   rw [bpzRH_softDeriv_one a (w x) hx, bpzWM_normSq_eq H x]
 
+include H in
 /-- The second derivative mass in the direction `(1, 1)` is `a(a-1) (A + conj A) + 2a² B`, with
 `A = ∫ k/(x - z)²` and `B = ∫ k/|x - z|²`. -/
-theorem bpzRH_deriv2_one_one_cast (H : BPZWMData a w k m z) :
+theorem bpzRH_deriv2_one_one_cast  :
     ((bpzSoftMassDeriv2 a 0 w m z 1 1 : ℝ) : ℂ) =
       ((a * (a - 1) : ℝ) : ℂ) * ((∫ x, ((k x : ℝ) : ℂ) / (x - z) ^ 2 ∂m) +
         conj (∫ x, ((k x : ℝ) : ℂ) / (x - z) ^ 2 ∂m)) +
@@ -239,13 +250,13 @@ theorem bpzRH_momField2_apply (a s : ℝ) (w : ℂ → ℝ) (m : Measure ℂ) (z
       s * (s + 1) * bpzSoftMassReal a 0 w m z ^ (-s - 2) *
           (bpzSoftMassDeriv a 0 w m z 1 * bpzSoftMassDeriv a 0 w m z 1) +
         -s * bpzSoftMassReal a 0 w m z ^ (-s - 1) * bpzSoftMassDeriv2 a 0 w m z 1 1 := by
-  simp only [bpzMomField2, add_apply, smul_apply, ContinuousLinearMap.smulRight_apply,
-    smul_eq_mul]
+  bound
 
+include H
 /-- **The pathwise six-term identity.** For `ε = 0` and a measure without atom at the root, the
 `(1, 1)` entry of the second moment field is the six-term expression in the meromorphic
 integrals `Z = ∫ k/(x - z)`, `A = ∫ k/(x - z)²`, `B = ∫ k/|x - z|²` and the mass `I = ∫ k`. -/
-theorem bpzRH_momField2_six (H : BPZWMData a w k m z) (s : ℝ) :
+theorem bpzRH_momField2_six  (s : ℝ) :
     ((bpzMomField2 a s 0 w w m z 1 1 : ℝ) : ℂ) =
       ((-s * a * (a - 1) : ℝ) : ℂ) * ((((∫ x, k x ∂m) ^ (-s - 1) : ℝ) : ℂ) *
           ∫ x, ((k x : ℝ) : ℂ) / (x - z) ^ 2 ∂m) +
@@ -274,8 +285,9 @@ theorem bpzRH_momField2_six (H : BPZWMData a w k m z) (s : ℝ) :
   rw [hD, hD2]
   ring
 
+
 /-- `|∫ k / |x - z|²| ≤ ∫ w |x - z|^{2a-2}`. -/
-theorem bpzRH_norm_Jmixed_le (H : BPZWMData a w k m z) :
+theorem bpzRH_norm_Jmixed_le  :
     ‖∫ x, ((k x : ℝ) : ℂ) / ((‖x - z‖ ^ 2 : ℝ) : ℂ) ∂m‖ ≤
       ∫ x, w x * ‖x - z‖ ^ (2 * a - 2) ∂m := by
   refine norm_integral_le_of_norm_le (bpzWM_integrable_w2 H) ?_
@@ -283,10 +295,11 @@ theorem bpzRH_norm_Jmixed_le (H : BPZWMData a w k m z) :
   have h := bpz_norm_div_root_pow a 2 (H.hw0 x) hx
   rw [bpzWM_normSq_eq H x] at h
   rw [bpzRH_norm_mixed, show (x - z) ^ 2 = (z - x) ^ 2 by ring]
-  simpa using h.le
+  exact h.le
+
 
 /-- The pathwise bound `|I^{-s-1} ∫ k/|x - z|²| ≤ I^{-(s+1)} ∫ (1 + |x - z|^{-2}) k`. -/
-theorem bpzRH_norm_Tmixed_le (H : BPZWMData a w k m z) (s : ℝ) (hI : 0 < ∫ x, k x ∂m) :
+theorem bpzRH_norm_Tmixed_le  (s : ℝ) (hI : 0 < ∫ x, k x ∂m) :
     ‖(((∫ x, k x ∂m) ^ (-s - 1) : ℝ) : ℂ) *
         ∫ x, ((k x : ℝ) : ℂ) / ((‖x - z‖ ^ 2 : ℝ) : ℂ) ∂m‖ ≤
       (∫ x, k x ∂m) ^ (-(s + 1)) * ∫ x, (1 + ‖x - z‖ ^ (-2 : ℝ)) * k x ∂m := by
@@ -294,6 +307,8 @@ theorem bpzRH_norm_Tmixed_le (H : BPZWMData a w k m z) (s : ℝ) (hI : 0 < ∫ x
     show -(s + 1) = -s - 1 by ring]
   exact mul_le_mul_of_nonneg_left ((bpzRH_norm_Jmixed_le H).trans (bpzWM_n2_le H))
     (Real.rpow_nonneg hI.le _)
+omit H
+
 
 end Pathwise
 
@@ -306,14 +321,12 @@ variable {γ α₁ α₂ α₃ : ℝ}
 /-- Off `{0, 1}` the degenerate weight at `χ = γ/2` is the kernel `gammaHalfKernel`. -/
 theorem bpzRH_softWeight_eq_kernel (u : ℂ) {x : ℂ} (hx0 : x ≠ 0) (hx1 : x ≠ 1) :
     bpzSoftWeight γ (γ / 2) α₁ α₂ α₃ 0 u x = gammaHalfKernel γ α₁ α₂ α₃ u x := by
-  have h0 : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have h1 : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have h0  := norm_pos_iff.mpr hx0
+  have h1  := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
   rw [bpzSoftWeight_zero]
   unfold bpzBaseWeight gammaHalfKernel
   rw [Real.rpow_neg h0.le, Real.rpow_neg h1.le, show γ * (γ / 2) = γ ^ 2 / 2 by ring]
-  have e0 : ‖x‖ ^ (γ * α₁) ≠ 0 := (Real.rpow_pos_of_pos h0 _).ne'
-  have e1 : ‖x - 1‖ ^ (γ * α₂) ≠ 0 := (Real.rpow_pos_of_pos h1 _).ne'
-  field_simp
+  ring
 
 /-- Integrals against `gammaHalfKernel` are integrals against the degenerate weight, for a
 measure without atoms at `0` and `1`. -/
@@ -358,10 +371,7 @@ end Kernel
 /-- The conjugate-root kernel integral is the conjugate of the root kernel integral. -/
 theorem bpzRH_bar_eq_conj {Ω : Type*} (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ : ℝ) (ω : Ω) (z : ℂ) :
     gammaHalfRootKernelBar M γ α₁ α₂ α₃ ω z = conj (gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω z) := by
-  unfold gammaHalfRootKernelBar gammaHalfRootKernelZ
-  rw [← integral_conj]
-  refine integral_congr_ae (Eventually.of_forall fun x => ?_)
-  simp [map_div₀, Complex.conj_ofReal]
+  exact bpzRH_integral_div1_conj (gammaHalfKernel γ α₁ α₂ α₃ z) (M ω) z
 
 /-! ### Integrability of the six terms -/
 
@@ -390,16 +400,13 @@ theorem bpzRH_measurable_Jmixed {Ω : Type*} [MeasurableSpace Ω] {M : Ω → Me
 theorem bpzRH_integral_div_neg (k : ℂ → ℝ) (m : Measure ℂ) (z : ℂ) :
     ∫ x, ((k x : ℝ) : ℂ) / (z - x) ∂m = -∫ x, ((k x : ℝ) : ℂ) / (x - z) ∂m := by
   rw [← integral_neg]
-  refine integral_congr_ae (Eventually.of_forall fun x => ?_)
-  show ((k x : ℝ) : ℂ) / (z - x) = -(((k x : ℝ) : ℂ) / (x - z))
-  rw [← neg_sub x z, div_neg]
+  grind
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s) {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1)
+
+include Ω _inst1 P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ s hs z hz0 hz1
 /-- `I^{-s-2} (∫ k/(x - z))²` is integrable. -/
-theorem bpzRH_integrable_T2 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
-    (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s) {z : ℂ}
-    (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
+theorem bpzRH_integrable_T2  :
     Integrable (fun ω =>
       (((∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (-s - 2) : ℝ) : ℂ) *
         (∫ x, ((bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x : ℝ) : ℂ) / (x - z) ∂M ω) ^ 2) P := by
@@ -408,19 +415,16 @@ theorem bpzRH_integrable_T2 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
   simp only
   rw [bpzRH_integral_div_neg, neg_sq]
 
+
 /-- `I^{-s-2} ∫ k/(x - z) · conj (∫ k/(x - z))` is integrable. -/
-theorem bpzRH_integrable_T5 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
-    (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s) {z : ℂ}
-    (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
+theorem bpzRH_integrable_T5  :
     Integrable (fun ω =>
       (((∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (-s - 2) : ℝ) : ℂ) *
         (∫ x, ((bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x : ℝ) : ℂ) / (x - z) ∂M ω) *
         conj (∫ x, ((bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x : ℝ) : ℂ) / (x - z) ∂M ω)) P := by
   have hT2 := bpzRH_integrable_T2 P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs hz0 hz1
   have hkm := measurable_bpzSoftWeight (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) 0 z
-  have hIm : Measurable fun ω => ∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω :=
+  have hIm  :=
     (measurable_integral_measure hkm).comp hMm
   have hZ := bpzRH_measurable_Z hMm hkm z
   refine hT2.norm.mono' ?_ (Eventually.of_forall fun ω => ?_)
@@ -429,19 +433,16 @@ theorem bpzRH_integrable_T5 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
   · simp only [norm_mul, RCLike.norm_conj, norm_pow]
     rw [mul_assoc, sq]
 
+
 /-- `I^{-s-1} ∫ k/|x - z|²` is integrable. -/
-theorem bpzRH_integrable_Tmixed {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
-    (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s) {z : ℂ}
-    (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
+theorem bpzRH_integrable_Tmixed  :
     Integrable (fun ω =>
       (((∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (-s - 1) : ℝ) : ℂ) *
         ∫ x, ((bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x : ℝ) : ℂ) / ((‖x - z‖ ^ 2 : ℝ) : ℂ) ∂M ω) P := by
   have hdom := bpz_singular_dom_integrable (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) P X hX hγ hγ2 M hM
     hMm hχ hα₁ hα₂ hα₃ (q := s + 1) (by linarith) hz0 hz1
   have hkm := measurable_bpzSoftWeight (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) 0 z
-  have hIm : Measurable fun ω => ∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω :=
+  have hIm  :=
     (measurable_integral_measure hkm).comp hMm
   refine Integrable.mono' hdom ?_ ?_
   · exact ((Complex.measurable_ofReal.comp (hIm.pow_const _)).mul
@@ -450,18 +451,17 @@ theorem bpzRH_integrable_Tmixed {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
       with ω ⟨H, hI⟩
     exact bpzRH_norm_Tmixed_le H s hI
 
+
 /-- `I^{-s-1} ∫ k/(x - z)²` is integrable. -/
-theorem bpzRH_integrable_T1 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
-    (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s) {z : ℂ}
-    (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
+theorem bpzRH_integrable_T1  :
     Integrable (fun ω =>
       (((∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (-s - 1) : ℝ) : ℂ) *
         ∫ x, ((bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x : ℝ) : ℂ) / (x - z) ^ 2 ∂M ω) P := by
   refine (bpzWM_integrable_T1 P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs hz0 hz1).congr
     (Eventually.of_forall fun ω => ?_)
-  simp only [show ∀ x : ℂ, (z - x) ^ 2 = (x - z) ^ 2 from fun x => by ring]
+  ring
+omit Ω _inst1 P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ s hs z hz0 hz1
+
 
 end Integrability
 
@@ -497,8 +497,7 @@ theorem bpz_momField2_one_one_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
             (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω u ^ 2 ∂P)) := by
   have hχ : 0 < γ / 2 := by positivity
   have ha1 : γ * (γ / 2) / 2 ≤ 1 := by
-    have h : γ * γ ≤ 2 * 2 := mul_le_mul hγ2.le hγ2.le hγ.le (by norm_num)
-    linarith
+    nlinarith
   have hγ4 : γ ^ 2 / 4 = γ * (γ / 2) / 2 := by ring
   have hnoat := gmc_noAtoms_ae P X hX γ hγ hγ2 M hM hMm
   have hgood := bpzWM_good_ae P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hu0 hu1
@@ -551,22 +550,13 @@ theorem bpz_momField2_one_one_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
     rw [bpzRH_bar_eq_conj, bpzRH_Z_eq (hω 0) (hω 1)]
     exact congrArg (fun r : ℝ => (r : ℂ) * _ * _)
       (bpzRH_coulombMass_rpow_toReal (hω u) (hω 0) (hω 1) (-p - 2))
-  have h1 : Integrable (fun ω =>
-      ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃ ^ (-p - 1)).toReal : ℂ) *
-        (∫ x in Set.univ, (gammaHalfKernel γ α₁ α₂ α₃ u x : ℂ) / (x - u) ^ 2 ∂M ω)) P :=
+  have h1  :=
     h1c.congr (hnoat.mono fun ω hω => (e1 ω hω).symm)
-  have h2 : Integrable (fun ω =>
-      ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃ ^ (-p - 1)).toReal : ℂ) *
-        (∫ x in Set.univ, (gammaHalfKernel γ α₁ α₂ α₃ u x : ℂ) / (‖x - u‖ ^ 2 : ℝ) ∂M ω)) P :=
+  have h2  :=
     h2c.congr (hnoat.mono fun ω hω => (e2 ω hω).symm)
-  have h4 : Integrable (fun ω =>
-      ((ENNReal.rpow (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃)
-          (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω u ^ 2) P :=
+  have h4  :=
     h4c.congr (hnoat.mono fun ω hω => (e4 ω hω).symm)
-  have h5 : Integrable (fun ω =>
-      ((ENNReal.rpow (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![u, 0, 1] α₃)
-          (-p - 2)).toReal : ℂ) * gammaHalfRootKernelZ M γ α₁ α₂ α₃ ω u *
-        gammaHalfRootKernelBar M γ α₁ α₂ α₃ ω u) P :=
+  have h5  :=
     h5c.congr (hnoat.mono fun ω hω => (e5 ω hω).symm)
   have hae : ∀ᵐ ω ∂P, ((bpzMomField2 (γ * (γ / 2) / 2) p 0
         (bpzBaseWeight γ (γ / 2) α₁ α₂ α₃) (bpzBaseWeight γ (γ / 2) α₁ α₂ α₃) (M ω) u 1 1 :

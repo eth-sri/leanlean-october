@@ -8,7 +8,7 @@ public import DOZZ.Brownian.Reflection.Moments
 
 /-! Uniform Brownian block envelopes and positive reflection moments across charge ranges. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
@@ -34,7 +34,7 @@ theorem twosided_conditioned_block_envelope_uniform
     (r / (r - 1) * max Θ 0) N (by positivity)
   refine ⟨K, c, hK, hc, C, hC, ?_⟩
   intro θ hθ₀θ hθΘ ν hν₀ν hνN Q hQ n
-  have hθ : 0 < θ := lt_of_lt_of_le hθ₀ hθ₀θ
+  have hθ  := lt_of_lt_of_le hθ₀ hθ₀θ
   have hE : (∫⁻ p, ENNReal.ofReal (Real.exp (r * θ * p (n : ℝ≥0))) ∂Q) ≤
       ENNReal.ofReal (K * Real.exp (-c * (n : ℝ))) := by
     apply le_trans _ (hEval ν hν₀ν hνN Q hQ n)
@@ -51,8 +51,7 @@ theorem twosided_conditioned_block_envelope_uniform
     apply ENNReal.ofReal_le_ofReal
     apply Real.exp_le_exp.mpr
     apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
-    exact mul_le_mul_of_nonneg_left (hθΘ.trans (le_max_left _ _))
-      (div_nonneg hr0.le (sub_pos.mpr hr).le)
+    simp_all
   exact (positiveBlockEnvelope_lintegral_le Q θ r hθ.le hr n).trans
     (mul_le_mul' (ENNReal.rpow_le_rpow hE (one_div_nonneg.mpr hr0.le))
       (ENNReal.rpow_le_rpow hO (div_nonneg (sub_pos.mpr hr).le hr0.le)))
@@ -90,7 +89,7 @@ theorem twosided_positive_moment_uniform_from_lateral
       (ENNReal.add_lt_top.mpr ⟨hSum, hSum⟩), ?_⟩
   intro γ hγ ν hν
   obtain ⟨hB, hZ, hi⟩ := hData γ hγ ν hν
-  have hγp : 0 < γ := lt_of_lt_of_le hγ₀ (hγbound γ hγ).1
+  have hγp  := lt_of_lt_of_le hγ₀ (hγbound γ hγ).1
   apply twoSidedReflectionMass_rpow_lintegral_le_blockBound P γ q hγp.le hq (B ν) (Z γ)
     (aemeasurable_of_twoSidedConditioned hB) hZ.2.2.2.1 hZ.2.2.2.2.1
     (lateralGMC_singleton_ae P γ (Z γ) hZ 0) hi L

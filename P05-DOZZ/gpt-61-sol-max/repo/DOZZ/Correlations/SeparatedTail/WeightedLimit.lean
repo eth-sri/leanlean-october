@@ -10,7 +10,7 @@ public import DOZZ.GMC.SharpMoments.WeightedLocalRange
 
 /-! Mixed moments of two bounded weights pass from regularized GMC to the actual GMC. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Metric Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -48,8 +48,7 @@ theorem separatedTail_bounded_weight_mixed_moment_limit_le
     exact ne_top_of_le_ne_top (ENNReal.mul_ne_top ENNReal.coe_ne_top (measure_ne_top _ _))
       (weightedSetLIntegral_le_const_mul _ z 1 w b hb)
   have hgfin (z : ℂ) (w : ℂ → ℝ≥0) (b : ℝ≥0) (hb : ∀ y, w y ≤ b) :
-      ∀ᵐ ω ∂P, (∫⁻ x in ball z 1, (w (x-z) : ℝ≥0∞) ∂M ω) ≠ ⊤ := by
-    exact ae_of_all P fun ω => by
+      ∀ᵐ ω ∂P, (∫⁻ x in ball z 1, (w (x-z) : ℝ≥0∞) ∂M ω) ≠ ⊤ := ae_of_all P fun ω => by
       have := hM.1 ω
       exact ne_top_of_le_ne_top (ENNReal.mul_ne_top ENNReal.coe_ne_top (measure_ne_top _ _))
         (weightedSetLIntegral_le_const_mul _ z 1 w b hb)

@@ -10,7 +10,7 @@ public import DOZZ.Hypergeom.ODE.SeriesSpatialDerivative
 
 /-! Parameter regularity of spatial derivatives on the ordinary-series disk. -/
 
-@[expose] public section
+public section
 
 open Filter
 open scoped Topology
@@ -22,17 +22,16 @@ private theorem gaussParameterPoleFreeDomain_shift_add_one
     (p.1 + 1, p.2.1 + 1, p.2.2 + 1) ∈ gaussParameterPoleFreeDomain := by
   intro n hn
   apply hp (n + 1)
-  have h' : p.2.2 = -((n + 1 : ℕ) : ℂ) := by
-    push_cast at hn ⊢
-    linear_combination hn
-  exact h'
+  grind
 
+variable {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
+
+include H hH in
 /-- The spatial derivative of any characterized family is the shifted-series value on the unit
 disk. This uses only its ordinary-series characterization and is independent of the chosen
 global continuation. -/
 theorem IsGaussHypergeometricFamily.hasDerivAt_unitDisk
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-    (hH : IsGaussHypergeometricFamily H) (a b c z : ℂ)
+     (a b c z : ℂ)
     (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) (hz : ‖z‖ < 1) :
     HasDerivAt (H a b c)
       (a * b / c * H (a + 1) (b + 1) (c + 1) z) z := by
@@ -50,48 +49,38 @@ theorem IsGaussHypergeometricFamily.hasDerivAt_unitDisk
     have hcShift : ∀ n : ℕ, c + 1 ≠ -(n : ℂ) := by
       intro n heq
       apply hc (n + 1)
-      have h' : c = -((n + 1 : ℕ) : ℂ) := by
-        push_cast at heq ⊢
-        linear_combination heq
-      exact h'
+      grind
     exact (hH (a + 1) (b + 1) (c + 1) hcShift).2 z hz
   rw [← hseriesShift] at hseries
   exact hseries.congr_of_eventuallyEq hnear
 
+include H hH in
 /-- At each admissible parameter tuple, the spatial derivative at a fixed unit-disk point varies
 holomorphically with all three parameters. This supplies the derivative entries in the midpoint
 Cramer formulas for the connection matrix. -/
 theorem IsGaussHypergeometricFamily.differentiableAt_params_deriv_unitDisk
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-    (hH : IsGaussHypergeometricFamily H) {p : ℂ × ℂ × ℂ}
+     {p : ℂ × ℂ × ℂ}
     (hp : p ∈ gaussParameterPoleFreeDomain) {z : ℂ} (hz : ‖z‖ < 1) :
     DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ =>
       deriv (fun w => H q.1 q.2.1 q.2.2 w) z) p := by
   let shift : ℂ × ℂ × ℂ → ℂ × ℂ × ℂ := fun q => q + ((1 : ℂ), 1, 1)
-  have hpShift : shift p ∈ gaussParameterPoleFreeDomain := by
-    exact gaussParameterPoleFreeDomain_shift_add_one hp
+  have hpShift  := gaussParameterPoleFreeDomain_shift_add_one hp
   have hshiftOn :=
     IsGaussHypergeometricFamily.differentiableOn_params_unitDisk hH hz
-  have hshiftAt : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => H q.1 q.2.1 q.2.2 z) (shift p) :=
+  have hshiftAt  :=
     (hshiftOn (shift p) hpShift).differentiableAt
       (gaussParameterPoleFreeDomain_isOpen.mem_nhds hpShift)
-  have hshiftMap : DifferentiableAt ℂ shift p := by
-    fun_prop
+
   have hshiftComp : DifferentiableAt ℂ
       (fun q : ℂ × ℂ × ℂ => H (q.1 + 1) (q.2.1 + 1) (q.2.2 + 1) z) p := by
-    change DifferentiableAt ℂ
-      ((fun q : ℂ × ℂ × ℂ => H q.1 q.2.1 q.2.2 z) ∘ shift) p
-    exact hshiftAt.comp p hshiftMap
+    fun_prop (disch := positivity)
   have hpC : p.2.2 ≠ 0 := by
     intro hzero
     exact hp 0 (by simpa using hzero)
   have hfactor : DifferentiableAt ℂ
       (fun q : ℂ × ℂ × ℂ => q.1 * q.2.1 / q.2.2) p := by
     fun_prop (disch := assumption)
-  have hright : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ =>
-        q.1 * q.2.1 / q.2.2 * H (q.1 + 1) (q.2.1 + 1) (q.2.2 + 1) z) p :=
+  have hright  :=
     hfactor.mul hshiftComp
   have hlocal : (fun q : ℂ × ℂ × ℂ =>
       deriv (fun w => H q.1 q.2.1 q.2.2 w) z) =ᶠ[𝓝 p]

@@ -9,7 +9,7 @@ public import DOZZ.Correlations.SumTail.Ceiling
 
 /-! Prove finiteness before translating the extended-mass sum and the joint events. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -39,9 +39,11 @@ theorem sumtail_extended_event_eq_real
   filter_upwards [hf] with ω hω
   exact propext (ENNReal.ofReal_lt_iff_lt_toReal hx hω)
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (W2 W3 : Ω → ℝ≥0∞) (hf2 : ∀ᵐ ω ∂P, W2 ω ≠ ⊤) (hf3 : ∀ᵐ ω ∂P, W3 ω ≠ ⊤)
+
+include Ω _inst1 P W2 W3 hf2 hf3 in
 theorem sumtail_extended_joint_eq_real
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (W2 W3 : Ω → ℝ≥0∞)
-    (hf2 : ∀ᵐ ω ∂P, W2 ω ≠ ⊤) (hf3 : ∀ᵐ ω ∂P, W3 ω ≠ ⊤)
+    
     (u v : ℝ) (hu : 0 ≤ u) (hv : 0 ≤ v) :
     P.real {ω | ENNReal.ofReal u < W2 ω ∧ ENNReal.ofReal v < W3 ω} =
       P.real {ω | u < (W2 ω).toReal ∧ v < (W3 ω).toReal} := by
@@ -51,15 +53,14 @@ theorem sumtail_extended_joint_eq_real
   exact propext (and_congr (ENNReal.ofReal_lt_iff_lt_toReal hu h2)
     (ENNReal.ofReal_lt_iff_lt_toReal hv h3))
 
+include Ω _inst1 P W2 W3 hf2 hf3 in
 theorem sumtail_extended_sum_eq_real
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (W2 W3 : Ω → ℝ≥0∞)
-    (hf2 : ∀ᵐ ω ∂P, W2 ω ≠ ⊤) (hf3 : ∀ᵐ ω ∂P, W3 ω ≠ ⊤)
+    
     (x : ℝ) (hx : 0 ≤ x) :
     P.real {ω | ENNReal.ofReal x < W2 ω+W3 ω} =
       P.real {ω | x < (W2 ω).toReal+(W3 ω).toReal} := by
   have hf : ∀ᵐ ω ∂P, W2 ω+W3 ω ≠ ⊤ := by
-    filter_upwards [hf2,hf3] with ω h2 h3
-    exact ENNReal.add_ne_top.mpr ⟨h2,h3⟩
+    simp_all
   rw [sumtail_extended_event_eq_real P _ hf x hx]
   apply congrArg ENNReal.toReal
   apply measure_congr

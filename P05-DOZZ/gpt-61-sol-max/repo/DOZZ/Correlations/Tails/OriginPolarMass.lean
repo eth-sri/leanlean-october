@@ -10,7 +10,7 @@ public import DOZZ.Statements.Brownian.LateralProjectedGMC
 
 /-! The exact positive-time polar integral for the canonical translated equator chaos. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 
@@ -27,8 +27,7 @@ theorem origin_polar_measure_eq (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) 
         Real.exp (-γ * A (-Real.log ‖x‖) + γ * Q γ * |Real.log ‖x‖|))) := by
     funext x
     by_cases hx : x = 0
-    · subst x
-      simp only [norm_zero, ite_true, mul_zero, ENNReal.ofReal_zero]
+    · simp_all
     · simp only [translatedLogRadius, sub_zero, zero_add, abs_neg,
         ENNReal.ofReal_one, one_mul, ite_eq_right hx,
         ite_eq_right (norm_ne_zero_iff.mpr hx)]
@@ -47,7 +46,7 @@ theorem origin_singular_mass_polar
           ∂lateralProjectedGMC γ A M := by
   rw [localSingularMass_translatedPolar γ α 0 A M (fun _ => 1)
     measurable_const 0 hM0, origin_polar_measure_eq]
-  simp only [mul_zero, Real.exp_zero, ENNReal.ofReal_one, one_mul]
+  simp_all
 
 /-- The positive-time polar identity applies almost surely to the actual translated source
 GMC, since its deterministic insertion center has zero mass. -/

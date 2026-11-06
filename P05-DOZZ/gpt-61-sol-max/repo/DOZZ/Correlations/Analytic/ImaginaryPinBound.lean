@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.VertexVarianceBound
 
 /-! The imaginary equator pin is a bounded quadratic form. -/
 
-@[expose] public section
+public section
 namespace DOZZ.Proofs
 
 /-- The imaginary zero-mode power has the exact total-charge scaling. -/
@@ -16,10 +16,7 @@ theorem complexMomentPower_im_scaled {N : ℕ} (γ : ℝ) (hγ : γ ≠ 0)
     (β : Fin N → ℂ) :
     γ * (complexMomentPower γ β).im = -∑ i, (β i).im := by
   unfold complexMomentPower
-  rw [← Complex.ofReal_inv]
-  simp only [Complex.neg_im, Complex.add_im, Complex.ofReal_im, Complex.mul_im,
-    Complex.ofReal_re, Complex.im_sum, zero_mul, add_zero, zero_add]
-  field_simp
+  simp_all
 
 /-- A bounded pin vector gives a quadratic bound in all imaginary charges, including the
 outward vertex. -/
@@ -40,7 +37,7 @@ theorem imaginary_pin_le {N : ℕ} (b : Fin (N + 1) → ℝ) (A : Fin N → ℝ)
       _ ≤ ∑ i, |b i.castSucc * A i| := Finset.abs_sum_le_sum_abs _ _
       _ ≤ ∑ i, |b i.castSucc| * B := Finset.sum_le_sum (fun i _ => by
         rw [abs_mul]
-        exact mul_le_mul_of_nonneg_left (hA i) (abs_nonneg _))
+        bound)
       _ = (∑ i : Fin N, |b i.castSucc|) * B := (Finset.sum_mul ..).symm
       _ ≤ S * B := mul_le_mul_of_nonneg_right hsub hB
   have hsq : S ^ 2 ≤ (N + 1 : ℕ) * ∑ i, b i ^ 2 := by

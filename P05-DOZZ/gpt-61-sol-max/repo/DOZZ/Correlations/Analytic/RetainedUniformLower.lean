@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.RetainedUniformNegative
 
 /-! A charge-independent lower random mass for all retained Coulomb integrals. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -37,11 +37,7 @@ theorem retained_uniform_disk_lower {N : ℕ} (μ : Measure ℂ)
       ENNReal.ofReal ((R + 2) ^ (-(γ * A))) ≤
       ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
         ENNReal.ofReal ((R + 2) ^ (-|γ * αinf|)) := by
-    apply mul_le_mul'
-    · exact ENNReal.ofReal_le_ofReal
-        (Real.rpow_le_rpow_of_exponent_le (by norm_num) (by linarith))
-    · exact ENNReal.ofReal_le_ofReal
-        (Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith))
+    gcongr <;> first | positivity | linarith
   exact (mul_le_mul' hc le_rfl).trans
     (retained_coulomb_mass_ge_exterior_ball μ γ α z αinf O R hR hz hO)
 

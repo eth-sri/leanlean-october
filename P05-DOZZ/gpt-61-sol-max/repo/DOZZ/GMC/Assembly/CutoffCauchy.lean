@@ -36,7 +36,7 @@ theorem admissibleLogWickWeight_measurable_joint
   have hv0 := admissibleLogRegularization_variance_measurable P U dens ε₀ Y hY ε
   have hvar : Measurable (fun q : Ω × ℂ => gaussianVariance P (fun ω => Y ω ε q.2)) :=
     hv0.comp measurable_snd
-  have hfield : Measurable (fun q : Ω × ℂ => Y q.1 ε q.2) := hY.measurableAtScale ε
+  have hfield  := hY.measurableAtScale ε
   unfold admissibleLogWickWeight
   fun_prop
 
@@ -87,9 +87,9 @@ theorem lintegral_wickEventMass_mul
           admissibleLogWickWeight P Y g (Real.exp (-s)) p.2 ω *
           Set.indicator E₁ (fun _ => (1 : ℝ≥0∞)) (ω, p.1) *
           Set.indicator E₂ (fun _ => (1 : ℝ≥0∞)) (ω, p.2) ∂P ∂(μ.prod μ) := by
-  let F : Ω → ℂ → ℝ≥0∞ := fun ω x => ENNReal.ofReal (f x) *
+  let F  := fun ω x => ENNReal.ofReal (f x) *
     admissibleLogWickWeight P Y g (Real.exp (-r)) x ω * Set.indicator E₁ (fun _ => 1) (ω, x)
-  let G : Ω → ℂ → ℝ≥0∞ := fun ω x => ENNReal.ofReal (f x) *
+  let G  := fun ω x => ENNReal.ofReal (f x) *
     admissibleLogWickWeight P Y g (Real.exp (-s)) x ω * Set.indicator E₂ (fun _ => 1) (ω, x)
   have hF : Measurable (fun q : Ω × ℂ => F q.1 q.2) :=
     wickEventMass_integrand_measurable P U dens ε₀ Y hY g r E₁ hE₁ f hf
@@ -123,11 +123,7 @@ theorem lintegral_wickEventMass_mul
               (Real.exp (-r))).comp (measurable_id.prodMk (measurable_const (a := p.1)))
             have h2 := (admissibleLogWickWeight_measurable_joint P U dens ε₀ Y hY g
               (Real.exp (-s))).comp (measurable_id.prodMk (measurable_const (a := p.2)))
-            have h3 : Measurable (fun ω : Ω => Set.indicator E₁ (fun _ => (1 : ℝ≥0∞)) (ω, p.1)) :=
-              (measurable_const.indicator hE₁).comp (measurable_id.prodMk measurable_const)
-            have h4 : Measurable (fun ω : Ω => Set.indicator E₂ (fun _ => (1 : ℝ≥0∞)) (ω, p.2)) :=
-              (measurable_const.indicator hE₂).comp (measurable_id.prodMk measurable_const)
-            exact ((h1.mul h2).mul h3).mul h4
+            fun_prop
           rw [← lintegral_const_mul _ hmeasW]
           apply lintegral_congr
           intro ω
@@ -199,11 +195,7 @@ theorem lintegral_le_rpow_lintegral_sq
     ∫⁻ ω, X ω ∂P ≤ (∫⁻ ω, X ω ^ 2 ∂P) ^ (1 / 2 : ℝ) := by
   have h := ENNReal.lintegral_mul_le_Lp_mul_Lq P Real.HolderConjugate.two_two hX
     (aemeasurable_const (b := (1 : ℝ≥0∞)))
-  simp only [Pi.mul_apply, mul_one, ENNReal.one_rpow, lintegral_const, measure_univ,
-    ENNReal.one_rpow] at h
-  have hsq : ∀ ω, X ω ^ (2 : ℝ) = X ω ^ 2 := fun ω => ENNReal.rpow_two (X ω)
-  simp only [hsq] at h
-  simpa using h
+  simp_all
 
 /-- The barrier-good cutoff mass of a test on the compact chart `K`. -/
 noncomputable abbrev goodMass {Ω : Type*} [MeasurableSpace Ω]
@@ -311,9 +303,7 @@ theorem goodMass_L1_uniform_cauchy
   have h₂ := hcompare s s r s
   rw [← hmom, ← hmom] at h₁
   rw [← hmom, ← hmom] at h₂
-  have hsym : ∫⁻ ω, goodMass P U dens K Y g a k₀ s f ω *
-      goodMass P U dens K Y g a k₀ s f ω ∂P = ∫⁻ ω, goodMass P U dens K Y g a k₀ s f ω *
-      goodMass P U dens K Y g a k₀ s f ω ∂P := rfl
+  
   have hsq := lintegral_ennDist_sq_le P _ _ (hmeasJ r) (hmeasJ s) hABfin _ _ h₁ h₂
   have hD₁ := hR₁ r r r s hR₁r hR₁r hR₁r hR₁s g hg
   have hD₂ := hR₁ s s r s hR₁s hR₁s hR₁r hR₁s g hg
@@ -330,7 +320,7 @@ theorem goodMass_L1_uniform_cauchy
           ring
       _ < ENNReal.ofReal (ε ^ 2) := by
           rw [ENNReal.ofReal_lt_ofReal_iff (by positivity), hε'def]
-          have hden : 0 < 2 * (L ^ 2 + 1) := by positivity
+          
           rw [show L ^ 2 * (2 * (ε ^ 2 / (2 * (L ^ 2 + 1)))) = ε ^ 2 * (L ^ 2 / (L ^ 2 + 1)) by
             field_simp]
           have hfrac : L ^ 2 / (L ^ 2 + 1) < 1 := by
@@ -399,13 +389,7 @@ theorem chartMass_eq_good_add_bad
   apply lintegral_congr
   intro x
   by_cases hx : (ω, x) ∈ admissibleGrowingBarrierSet Y a k₀ r
-  · rw [Set.indicator_of_mem (Set.mem_univ _), Set.indicator_of_mem hx,
-      Set.indicator_of_notMem (show (ω, x) ∉ (admissibleGrowingBarrierSet Y a k₀ r)ᶜ from
-        fun h => h hx)]
-    ring
-  · rw [Set.indicator_of_mem (Set.mem_univ _), Set.indicator_of_notMem hx,
-      Set.indicator_of_mem (show (ω, x) ∈ (admissibleGrowingBarrierSet Y a k₀ r)ᶜ from hx)]
-    ring
+  all_goals simp_all
 
 /-- The symmetric difference is subadditive under addition. -/
 theorem ennDist_add_add_le (a b c d : ℝ≥0∞) :
@@ -437,10 +421,7 @@ theorem tsum_indicator_ge_le_tsum_nat_add (k₀ : ℕ) (T f : ℕ → ℝ≥0∞
       exact hk (Set.indicator_of_notMem h f)
     exact ⟨k - k₀, by show k - k₀ + k₀ = k; omega⟩
   rw [← hinj.tsum_eq hsupp]
-  apply tsum_congr
-  intro j
-  rw [Set.indicator_of_mem (show j + k₀ ∈ {k : ℕ | k₀ ≤ k} from
-    show k₀ ≤ j + k₀ by omega)]
+  simp_all
 
 /-- One root violates its growing barrier with exponentially small tilted weight, uniformly for
 charges in `[gLo, gHi]` once the barrier starts at a large scale. -/
@@ -461,9 +442,9 @@ theorem wick_root_barrier_violation_le
   intro gLo gHi a hgLo hga k₀ hk₀cut hk₀C hk₀gap g hg r x hx
   have hgpos : 0 < g := lt_of_lt_of_le hgLo hg.1
   have hga' : g < a := lt_of_le_of_lt hg.2 hga
-  let w : Ω → ℝ≥0∞ := fun ω => admissibleLogWickWeight P Y g (Real.exp (-r)) x ω
+  let w  := fun ω => admissibleLogWickWeight P Y g (Real.exp (-r)) x ω
   have hw : Measurable w := admissibleLogWickWeight_measurable_sample P U dens ε₀ Y hY g _ x
-  let bad : ℕ → Ω → Prop := fun k ω =>
+  let bad  := fun k ω =>
     k₀ ≤ k ∧ (k : ℝ) ≤ r ∧ a * (k : ℝ) < Y ω (Real.exp (-(k : ℝ))) x
   have hset (k : ℕ) : MeasurableSet {ω | bad k ω} := by
     by_cases hk : k₀ ≤ k ∧ (k : ℝ) ≤ r
@@ -483,11 +464,7 @@ theorem wick_root_barrier_violation_le
     have hiff : (ω, x) ∈ (admissibleGrowingBarrierSet Y a k₀ r)ᶜ ↔ ω ∈ {ω | ∃ k, bad k ω} := by
       simp only [Set.mem_compl_iff, admissibleGrowingBarrierSet, Set.mem_ofPred_eq, not_forall,
         not_le, bad]
-      constructor
-      · rintro ⟨k, hk₀, hkr, hk⟩
-        exact ⟨k, hk₀, hkr, hk⟩
-      · rintro ⟨k, hk₀, hkr, hk⟩
-        exact ⟨k, hk₀, hkr, hk⟩
+      grind
     by_cases h : (ω, x) ∈ (admissibleGrowingBarrierSet Y a k₀ r)ᶜ
     · rw [Set.indicator_of_mem h, Set.indicator_of_mem (hiff.mp h)]
     · rw [Set.indicator_of_notMem h, Set.indicator_of_notMem (fun h' => h (hiff.mpr h'))]
@@ -554,7 +531,7 @@ theorem lintegral_badMass_le
   refine ⟨C, hC, ?_⟩
   intro gLo gHi a hgLo hga k₀ hk₀cut hk₀C hk₀gap g hg r L f hf hfL
   set τ := ∑' j : ℕ, ENNReal.ofReal (Real.exp (-((a - gHi) ^ 2 * ((j + k₀ : ℕ) : ℝ) / 16)))
-  have hAc : MeasurableSet (admissibleGrowingBarrierSet Y a k₀ r)ᶜ :=
+  have hAc  :=
     (admissibleGrowingBarrierSet_measurable P U dens ε₀ Y hY a k₀ r).compl
   have hF := wickEventMass_integrand_measurable P U dens ε₀ Y hY g r _ hAc f hf
   have hswap := lintegral_lintegral_swap (μ := P)

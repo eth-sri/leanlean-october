@@ -14,7 +14,7 @@ public import DOZZ.Brownian.Reflection.MomentAssembly
 
 /-! Uniform leading Williams tails on the original source reflection family. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -41,22 +41,18 @@ theorem source_williams_tail_uniform
               ENNReal.ofReal (Real.exp (γ*q.1))}).toReal -
           oneInsertionTailCoefficient γ α z f (reflectionBarR P γ α (B α) Z)*
             x^(-reflectionExponent γ α)| ≤ C*x^(-reflectionExponent γ α-η) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   rcases Kα.eq_empty_or_nonempty with he | hn
-  · refine ⟨0,le_rfl,?_⟩
-    intro z hzk α hαk
-    simp only [he,mem_empty_iff_false] at hαk
+  · grind
   obtain ⟨αlo,hαlo,hlo⟩ := hKα.exists_isMinOn hn continuous_id.continuousOn
   obtain ⟨αhi,hαhi,hhi⟩ := hKα.exists_isMaxOn hn continuous_id.continuousOn
   let ν₁ := Q γ-αhi
   let ν₂ := Q γ-αlo
-  have hν₁ : 0 < ν₁ := sub_pos.mpr (hα αhi hαhi).2
+  have hν₁  := sub_pos.mpr (hα αhi hαhi).2
   have hνrange (α : ℝ) (hαk : α ∈ Kα) : ν₁ ≤ Q γ-α ∧ Q γ-α ≤ ν₂ := by
     have h1 := hlo hαk
     have h2 := hhi hαk
-    change αlo ≤ α at h1
-    change α ≤ αhi at h2
-    constructor <;> dsimp [ν₁,ν₂] <;> linarith only [h1,h2]
+    grind
   let Kν := (fun α => Q γ-α) '' Kα
   let Kp := (fun α => reflectionExponent γ α) '' Kα
   have hKν : IsCompact Kν := hKα.image (continuous_const.sub continuous_id)
@@ -82,8 +78,8 @@ theorem source_williams_tail_uniform
   intro z hzk α hαk f hf hfb x hx
   let p := reflectionExponent γ α
   let ν := Q γ-α
-  have hν : 0 < ν := sub_pos.mpr (hα α hαk).2
-  have hp : 0 < p := (hpK p ⟨α,hαk,rfl⟩).1
+  have hν  := sub_pos.mpr (hα α hαk).2
+  have hp  := (hpK p ⟨α,hαk,rfl⟩).1
   have hrα := (hr α hαk).1
   have hpR : p ≤ R := by
     have ha0 := hη.trans ha
@@ -101,7 +97,7 @@ theorem source_williams_tail_uniform
   let Jc := fun c (q : Ω × Ω) => S q.2*Jc₀ c q.1
   let A := fun q : ℝ × (Ω × Ω) => Jc q.1 q.2
   have hB := aemeasurable_of_twoSidedConditioned (hData α hαk).1
-  have hJ₀ : AEMeasurable J₀ P := twoSidedReflectionMass_aemeasurable_of_lateral P γ (B α) Z hB hZ
+  have hJ₀  := twoSidedReflectionMass_aemeasurable_of_lateral P γ (B α) Z hB hZ
   have hJc₀ (c : ℝ) : AEMeasurable (Jc₀ c) P :=
     twoSidedReflectionCutMass_aemeasurable P γ c (B α) Z hB hZ.2.2.2.1 hZ.2.2.2.2.1
   have hJ : AEMeasurable J (P.prod P) :=
@@ -115,8 +111,8 @@ theorem source_williams_tail_uniform
   have hMom (s : ℝ) (hs : 0 < s) (hsR : s ≤ R) : (∫⁻ q, J q^s ∂P.prod P) ≤ T :=
     hMass z hzk f hf.le hfb ν (hνrange α hαk).1 (hνrange α hαk).2 s hs hsR
       (B α) (hData α hαk).1 (hData α hαk).2.2
-  have hJp : (∫⁻ q, J q^p ∂P.prod P) < ⊤ := (hMom p hp hpR).trans_lt hT
-  have hJr : (∫⁻ q, J q^(r α) ∂P.prod P) < ⊤ := (hMom _ hrα (hr α hαk).2).trans_lt hT
+  have hJp  := (hMom p hp hpR).trans_lt hT
+  have hJr  := (hMom _ hrα (hr α hαk).2).trans_lt hT
   have hupper : ∀ᵐ q ∂(brownianMaximumReferenceLaw ν).prod (P.prod P), A q ≤ J q.2 :=
     ae_of_all _ fun q => hJcle q.1 q.2
   have hD₀ := (hData α hαk).1.2.1
@@ -162,9 +158,7 @@ theorem source_williams_tail_uniform
   change |(((brownianMaximumReferenceLaw ν).prod (P.prod P))
     {q | ENNReal.ofReal x < A q*ENNReal.ofReal (Real.exp (γ*q.1))}).toReal-
     x^(-p)*(∫⁻ q, J q^p ∂P.prod P).toReal| ≤ (L.toReal*D+3*T.toReal)*x^(-p-η) at hmodel
-  rw [hCoefficient] at hmodel
-  rw [mul_comm (x^(-p))] at hmodel
-  simpa only [A,Jc,Jc₀,S,p,ν,C] using hmodel
+  grind
 
 
 end DOZZ.Proofs

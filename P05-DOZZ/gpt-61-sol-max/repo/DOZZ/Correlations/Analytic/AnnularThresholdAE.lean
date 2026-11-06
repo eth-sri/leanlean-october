@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.AnnularThresholdEstimate
 
 /-! The threshold estimate for the a.e. measurable masses of an arbitrary GMC version. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs

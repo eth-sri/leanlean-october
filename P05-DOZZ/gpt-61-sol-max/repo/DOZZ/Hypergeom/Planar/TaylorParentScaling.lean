@@ -9,7 +9,7 @@ public import DOZZ.Hypergeom.Planar.TaylorTail
 
 /-! Rotation and scaling give the integral of the corrected Taylor kernel at every center. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 
@@ -37,10 +37,7 @@ theorem planarTaylorRemainder_integral_scale_norm (k β : ℝ) (hk : 0 < k)
     have hr : 0 < r := by dsimp [r]; exact norm_pos_iff.mpr hz
     have hrC : (r : ℂ) ≠ 0 := by exact_mod_cast hr.ne'
     have hξ : ‖ξ‖ = 1 := by
-      dsimp [ξ]
-      rw [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hr]
-      dsimp [r]
-      exact div_self (norm_ne_zero_iff.mpr hz)
+      continuity
     have hξr : ξ * (r : ℂ) = z := by
       dsimp [ξ]
       field_simp [hrC]

@@ -12,17 +12,15 @@ public import DOZZ.FourPoint.Fusion.LocalR1Scaling
 public import DOZZ.FourPoint.Fusion.LocalR2Scaling
 public import DOZZ.Statements.FourPoint.GammaHalfRootedR2
 /-! # Splitting the literal full Taylor contributions -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter
 namespace DOZZ.Proofs
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ) (hlo : γ / 2 < α₁) (hsq : 2 < γ ^ 2) (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (p : ℝ) (hp : 0 ≤ p) (z : ℂ) (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp z hz hz4 in
 /-- The full `r₁` term splits into the local term `fusionLocalR1` and a bounded exterior time
 integral. -/
-theorem fusionRootedR1_split {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hlo : γ / 2 < α₁) (hsq : 2 < γ ^ 2) (hα₁ : α₁ < 2 / γ)
-    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (p : ℝ) (hp : 0 ≤ p)
-    (z : ℂ) (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4) :
+theorem fusionRootedR1_split  :
     gammaHalfRootedR1 P M γ α₁ α₂ α₃ p z = fusionLocalR1 P M γ α₁ α₂ α₃ p z +
       ((-p * (γ ^ 2 / 4) * (γ ^ 2 / 4 - 1) : ℝ) : ℂ) * z ^ 2 *
         (∫ t in Icc (0 : ℝ) 1, (1 - t : ℝ) *
@@ -47,7 +45,7 @@ theorem fusionRootedR1_split {Ω : Type*} [MeasurableSpace Ω]
   have hsplit : ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1), F ((t : ℂ) * z) = L ((t : ℂ) * z) + E ((t : ℂ) * z) := by
     filter_upwards [ae_restrict_mem measurableSet_Icc,
       ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
-    have htz : (t : ℂ) * z ≠ 0 := mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz
+    have htz  := mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz
     have htz4 : ‖(t : ℂ) * z‖ ≤ 1 / 4 := by
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
       exact (mul_le_of_le_one_left (norm_nonneg _) ht.2).trans hz4
@@ -59,14 +57,10 @@ theorem fusionRootedR1_split {Ω : Type*} [MeasurableSpace Ω]
   simpa only [gammaHalfRootedR1, fusionLocalR1, F, L, E, B, fusionPureSpatial,
     Measure.restrict_univ, ENNReal.rpow_eq_pow, Complex.ofReal_pow, mul_add] using hc
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp z hz hz4 in
 /-- The full `r₂` term splits into the local term `fusionLocalR2` and a bounded exterior time
 integral. -/
-theorem fusionRootedR2_split {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hlo : γ / 2 < α₁) (hsq : 2 < γ ^ 2) (hα₁ : α₁ < 2 / γ)
-    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (p : ℝ) (hp : 0 ≤ p)
-    (z : ℂ) (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4) :
+theorem fusionRootedR2_split  :
     gammaHalfRootedR2 P M γ α₁ α₂ α₃ p z = fusionLocalR2 P M γ α₁ α₂ α₃ p z +
       ((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) * z * star z *
         (∫ t in Icc (0 : ℝ) 1, (1 - t : ℝ) *
@@ -91,7 +85,7 @@ theorem fusionRootedR2_split {Ω : Type*} [MeasurableSpace Ω]
   have hsplit : ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1), F ((t : ℂ) * z) = L ((t : ℂ) * z) + E ((t : ℂ) * z) := by
     filter_upwards [ae_restrict_mem measurableSet_Icc,
       ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
-    have htz : (t : ℂ) * z ≠ 0 := mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz
+    have htz  := mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz
     have htz4 : ‖(t : ℂ) * z‖ ≤ 1 / 4 := by
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
       exact (mul_le_of_le_one_left (norm_nonneg _) ht.2).trans hz4

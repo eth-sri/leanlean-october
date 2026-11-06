@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Analytic.CutoffGeometry
 
 /-! Exponential cutoff-time decay of the omitted-mass small moment. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs

@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.Reflected.RestartPast
 public import DOZZ.FourPoint.Reflected.InnerKernelSqueeze
 import Mathlib.Tactic
 /-! Exact polar identification of the actual inner radial comparison mass. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -35,12 +35,12 @@ theorem reflected_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
     intro s
     by_cases hs : (T : ℝ) < s
     · rw [indicator_of_mem (show s ∈ Ioi (T : ℝ) from hs)]
-      have hsp : 0 ≤ s := T.coe_nonneg.trans hs.le
+      have hsp  := T.coe_nonneg.trans hs.le
       simp only [f, ite_eq_left hs, lateralForwardWeight, abs_of_nonneg hsp]
       rw [← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
       congr 2
       ring
-    · simp only [f, ite_eq_right hs, mul_zero, indicator_of_notMem (show s ∉ Ioi (T : ℝ) from hs)]
+    continuity
   have hright : (∫⁻ x, if x = 0 then 0 else f (-Real.log ‖x‖) ∂M) =
       ∫⁻ x in {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))},
         ENNReal.ofReal (‖x‖ ^ (-(γ * α))) ∂M := by
@@ -52,7 +52,7 @@ theorem reflected_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
     intro x
     by_cases hx : x = 0
     · simp [hx]
-    · have hxp : 0 < ‖x‖ := norm_pos_iff.mpr hx
+    · have hxp  := norm_pos_iff.mpr hx
       have he : (T : ℝ) < -Real.log ‖x‖ ↔ ‖x‖ < Real.exp (-(T : ℝ)) := by
         rw [← Real.log_lt_iff_lt_exp hxp]
         constructor <;> intro hh <;> linarith
@@ -63,9 +63,7 @@ theorem reflected_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
         rw [Real.rpow_def_of_pos hxp]
         congr 2
         ring
-      · rw [indicator_of_notMem (show x ∉ {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))}
-          from fun hh => hs (he.mpr hh.2))]
-        simp only [hx, ite_false, f, ite_eq_right hs]
+      continuity
   exact hright.symm.trans (hi.symm.trans hleft)
 
 /-- Deterministic radial restart extracts the exact scalar prefactor and translates the actual
@@ -94,7 +92,7 @@ theorem reflected_inner_polar_restart (γ ν : ℝ) (A : TwoSidedPath)
   intro s
   by_cases hs : (T : ℝ) < s
   · rw [indicator_of_mem (show s ∈ Ioi (T : ℝ) from hs)]
-    have hu : 0 < s - (T : ℝ) := sub_pos.mpr hs
+    have hu  := sub_pos.mpr hs
     have htime : (T : ℝ) + (Real.toNNReal (s - (T : ℝ)) : ℝ) = s := by
       rw [Real.coe_toNNReal _ hu.le]
       ring
@@ -105,8 +103,6 @@ theorem reflected_inner_polar_restart (γ ν : ℝ) (A : TwoSidedPath)
     rw [← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
     congr 2
     ring
-  · rw [indicator_of_notMem (show s ∉ Ioi (T : ℝ) from hs)]
-    have hu : ¬0 < s - (T : ℝ) := fun h => hs (sub_pos.mp h)
-    simp only [f, ite_eq_right hu, mul_zero]
+  continuity
 
 end DOZZ.Proofs

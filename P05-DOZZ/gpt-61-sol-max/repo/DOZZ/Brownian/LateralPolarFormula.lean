@@ -14,7 +14,7 @@ radius. This module records its exact annular-integral formula, which is the mea
 change of variables needed before identifying a polar GMC limit.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 open scoped ENNReal

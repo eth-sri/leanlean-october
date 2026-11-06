@@ -8,7 +8,7 @@ public import DOZZ.GMC.KahaneFiniteAffineMax
 
 /-! Affine maxima preserve convergence in mean. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 
@@ -29,14 +29,13 @@ theorem affineMax_abs_sub_le
     intro i hi
     have hline := affineMax_le a b y i
     have hdiff : a i * (x - y) ≤ C * |x - y| :=
-      (le_abs_self _).trans (by rw [abs_mul]; exact mul_le_mul_of_nonneg_right (ha i) (abs_nonneg _))
+      (le_abs_self _).trans (by rw [abs_mul]; bound)
     linarith only [hline, hdiff]
   refine ⟨C, hC, fun x y => ?_⟩
   rw [abs_le]
   have hxy := hbound x y
   have hyx := hbound y x
-  rw [abs_sub_comm y x] at hyx
-  constructor <;> linarith only [hxy, hyx]
+  grind
 
 /-- Convergence in mean of real masses implies convergence of affine-max expectations. -/
 theorem affineMax_integral_tendsto_of_L1
@@ -59,7 +58,7 @@ theorem affineMax_integral_tendsto_of_L1
       norm_integral_le_integral_norm _
     _ ≤ ∫ ω, C * |f n ω - g ω| ∂P :=
       integral_mono ((hI n).sub hJ).norm (((hf n).sub hg).abs.const_mul C)
-        (fun ω => by simpa only [Real.norm_eq_abs] using hbound (f n ω) (g ω))
+        (fun ω => by simp_all)
     _ = C * ∫ ω, |f n ω - g ω| ∂P := integral_const_mul _ _
 
 end DOZZ.Proofs

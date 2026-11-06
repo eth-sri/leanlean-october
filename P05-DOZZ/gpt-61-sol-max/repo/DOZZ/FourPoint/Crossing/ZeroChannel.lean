@@ -48,11 +48,6 @@ theorem gammaHalf_zero_channel_of_gauss_solution {Ω : Type*} [MeasurableSpace �
   have hnorm := real_gauss_solution_physical_normalization hH γ (γ / 2) a b c
     hγ hγ2 (Or.inl rfl) hs ha hb hc
     (fun z => fourPointT P M γ μ (-γ / 2) a b c z) hT hcont
-  dsimp only
-  intro z hz
-  have hzrep := hnorm z hz
-  simp only [neg_div] at hzrep ⊢
-  rw [hzero] at hzrep
-  exact hzrep
+  grind
 
 end DOZZ.Proofs

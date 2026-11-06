@@ -27,14 +27,6 @@ theorem dual_seed_channel_parameter (γ α ε α' : ℝ) (hγ : γ ≠ 0) :
   field_simp
   ring
 
-/-- The first Gauss parameter is one half minus the total deficit divided by γ. -/
-theorem dual_seed_parameterA_deficits (γ α ε α' : ℝ) (hγ : γ ≠ 0) :
-    gaussParameterA γ (2 / γ) α ε α' =
-      1 / 2 - ((Q γ - α) + (Q γ - ε) + (Q γ - α')) / γ := by
-  unfold gaussParameterA Q
-  field_simp
-  ring
-
 /-- All arguments in the two crossing multipliers lie in their strict Gamma intervals. -/
 theorem dual_seed_parameter_intervals (γ α ε α' : ℝ)
     (hγ : 0 < γ) (hγ₂ : γ < 2)
@@ -57,14 +49,8 @@ theorem dual_seed_parameter_intervals (γ α ε α' : ℝ)
       hγ hγ₂ (Or.inr rfl) hs hα hε hα'
   have hC₁ := dual_seed_channel_parameter γ α ε α' hγ.ne'
   have hAhalf : gaussParameterA γ (2 / γ) α ε α' < 1 / 2 := by
-    rw [dual_seed_parameterA_deficits γ α ε α' hγ.ne']
-    have ht : 0 < ((Q γ - α) + (Q γ - ε) + (Q γ - α')) / γ :=
-      div_pos (add_pos (add_pos (sub_pos.mpr hα) (sub_pos.mpr hε))
-        (sub_pos.mpr hα')) hγ
-    linarith only [ht]
-  refine ⟨hA, hAhalf, ?_, ?_, ?_, hC, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-    ?_, ?_, ?_, ?_, hK₂⟩ <;>
-    linarith only [hA, hAB, hBC, hC, hδ, hδ₁, hC₁]
+    bound
+  grind
 
 
 end DOZZ.Proofs

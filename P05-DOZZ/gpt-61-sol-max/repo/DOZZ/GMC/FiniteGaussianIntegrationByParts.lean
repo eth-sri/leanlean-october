@@ -9,7 +9,7 @@ public import Mathlib.Analysis.Calculus.ParametricIntegral
 
 /-! Finite-dimensional Gaussian integration by parts from the signed Cameron--Martin identity. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter
 open scoped Distributions Topology
@@ -85,23 +85,19 @@ theorem finite_gaussian_integration_by_parts
   let R' : ℝ → Ω → ℝ := fun t ω =>
     ∑ j, gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) *
       D (fun j => Z ω j + t * gaussianCovariance P (fun ω => Z ω j) (fun ω => Z ω i)) j
-  have hLmeas' : ∀ᶠ t in 𝓝 0, AEStronglyMeasurable (L t) P := by
-    simpa [L, c] using hLmeas
-  have hLint' : Integrable (L 0) P := by simpa [L, c] using hLint
-  have hLDmeas' : AEStronglyMeasurable (L' 0) P := by simpa [L', c] using hLDmeas
-  have hLbound' : ∀ᵐ ω ∂P, ∀ t ∈ Metric.ball 0 ε, ‖L' t ω‖ ≤ bL ω := by
-    simpa [L', c] using hLbound
+  have hLmeas' : ∀ᶠ t in 𝓝 0, AEStronglyMeasurable (L t) P := hLmeas
+  have hLint' : Integrable (L 0) P := hLint
+  have hLDmeas' : AEStronglyMeasurable (L' 0) P := hLDmeas
+  have hLbound' : ∀ᵐ ω ∂P, ∀ t ∈ Metric.ball 0 ε, ‖L' t ω‖ ≤ bL ω := hLbound
   have hLdiff' : ∀ᵐ ω ∂P, ∀ t ∈ Metric.ball 0 ε,
-      HasDerivAt (L · ω) (L' t ω) t := by simpa [L, L', c] using hLdiff
-  have hRmeas' : ∀ᶠ t in 𝓝 0, AEStronglyMeasurable (R t) P := by
-    simpa [R] using hRmeas
-  have hRint' : Integrable (R 0) P := by simpa [R] using hShiftInt 0
+      HasDerivAt (L · ω) (L' t ω) t := hLdiff
+  have hRmeas' : ∀ᶠ t in 𝓝 0, AEStronglyMeasurable (R t) P := hRmeas
+  have hRint' : Integrable (R 0) P := hShiftInt 0
   have hRderivMeas' : AEStronglyMeasurable (R' 0) P := by
     simpa [R', c] using hRderivMeas
-  have hRbound' : ∀ᵐ ω ∂P, ∀ t ∈ Metric.ball 0 ε, ‖R' t ω‖ ≤ bR ω := by
-    simpa [R'] using hRbound
+  have hRbound' : ∀ᵐ ω ∂P, ∀ t ∈ Metric.ball 0 ε, ‖R' t ω‖ ≤ bR ω := hRbound
   have hRdiff' : ∀ᵐ ω ∂P, ∀ t ∈ Metric.ball 0 ε,
-      HasDerivAt (R · ω) (R' t ω) t := by simpa [R, R'] using hRdiff
+      HasDerivAt (R · ω) (R' t ω) t := hRdiff
   have hLderiv := hasDerivAt_integral_of_dominated_loc_of_deriv_le
     (Metric.ball_mem_nhds 0 hε) hLmeas' hLint' hLDmeas' hLbound' hLb hLdiff'
   have hRderiv := hasDerivAt_integral_of_dominated_loc_of_deriv_le
@@ -131,12 +127,7 @@ theorem finite_gaussian_integration_by_parts
           ((∑ j, a j * Z ω j) -
             (∑ k, ∑ j, a k * gaussianCovariance P
               (fun ω => Z ω k) (fun ω => Z ω j) * a j) / 2) * F (Z ω) ∂P := by
-                apply integral_congr_ae
-                filter_upwards [] with ω
-                simp only [L]
-                rw [hlin ω, hvar]
-                congr 2
-                ring
+                grind
       _ = ∫ ω, F (fun k => Z ω k +
           ∑ j, gaussianCovariance P (fun ω => Z ω k) (fun ω => Z ω j) * a j) ∂P :=
             finite_gaussian_tilt_signed P Z hZ a F hF hShiftInt'
@@ -146,15 +137,12 @@ theorem finite_gaussian_integration_by_parts
             congr 2
             funext k
             rw [hshift k]
-  have hLhas : HasDerivAt (fun t => ∫ ω, L t ω ∂P)
-      (∫ ω, L' 0 ω ∂P) 0 := hLderiv.2
-  have hRhas : HasDerivAt (fun t => ∫ ω, R t ω ∂P)
-      (∫ ω, R' 0 ω ∂P) 0 := hRderiv.2
+  have hLhas  := hLderiv.2
+  have hRhas  := hRderiv.2
   have heq : (fun t => ∫ ω, L t ω ∂P) = fun t => ∫ ω, R t ω ∂P := by
     funext t
     exact hTilt t
-  have hderivEq : (∫ ω, L' 0 ω ∂P) = ∫ ω, R' 0 ω ∂P := by
-    exact HasDerivAt.unique (heq ▸ hLhas) hRhas
+  have hderivEq  := HasDerivAt.unique (heq ▸ hLhas) hRhas
   have hLvalue : (∫ ω, L' 0 ω ∂P) = ∫ ω, Z ω i * F (Z ω) ∂P := by
     apply integral_congr_ae
     filter_upwards [] with ω
@@ -173,10 +161,6 @@ theorem finite_gaussian_integration_by_parts
       rw [integral_const_mul]
     · intro j hj
       exact (hDint j).const_mul _
-  calc
-    ∫ ω, Z ω i * F (Z ω) ∂P = ∫ ω, L' 0 ω ∂P := hLvalue.symm
-    _ = ∫ ω, R' 0 ω ∂P := hderivEq
-    _ = ∑ j, gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) *
-          ∫ ω, D (Z ω) j ∂P := hRvalue
+  grind
 
 end DOZZ.Proofs

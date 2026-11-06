@@ -8,7 +8,7 @@ public import DOZZ.Brownian.WilliamsMaximumLaw
 
 /-! Exact scalar tails of the independent Williams maximum. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 
 namespace DOZZ.Proofs

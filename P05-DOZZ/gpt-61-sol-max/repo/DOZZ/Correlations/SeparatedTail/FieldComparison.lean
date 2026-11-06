@@ -10,7 +10,7 @@ public import DOZZ.GMC.FieldChaosConstantTrickConcave
 /-! Finite-cutoff Kahane comparison for every positive moment in the separated joint-tail
 estimate. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal NNReal
 

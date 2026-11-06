@@ -40,32 +40,38 @@ section Parameters
 
 variable {γ χ z α₂ α₃ : ℝ}
 
+variable (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ)
+
+include hχ hQ in
 /-- `c = χ z - χ²`. -/
-theorem gaussRatio_param_c (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
+theorem gaussRatio_param_c  :
     gaussParameterC γ χ z = χ * z - χ ^ 2 := by
   unfold gaussParameterC
   rw [hQ]
   field_simp
   ring
 
+include hχ hQ in
 /-- `a = χ/2 · (Σ - χ - 2 Q)`. -/
-theorem gaussRatio_param_a (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
+theorem gaussRatio_param_a  :
     gaussParameterA γ χ z α₂ α₃ = χ / 2 * ((z + α₂ + α₃) - χ - 2 * Q γ) := by
   unfold gaussParameterA
   rw [hQ]
   field_simp
   ring
 
+include hχ hQ in
 /-- `b = χ/2 · (Σ - 2 α₃ - χ)`. -/
-theorem gaussRatio_param_b (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
+theorem gaussRatio_param_b  :
     gaussParameterB γ χ z α₂ α₃ = χ / 2 * ((z + α₂ + α₃) - 2 * α₃ - χ) := by
   unfold gaussParameterB
   rw [hQ]
   field_simp
   ring
 
+include hχ hQ in
 /-- `a - c + 1 = χ/2 · (Σ - 2 z - χ)`. -/
-theorem gaussRatio_param_a_sub_c (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
+theorem gaussRatio_param_a_sub_c  :
     gaussParameterA γ χ z α₂ α₃ - gaussParameterC γ χ z + 1 =
       χ / 2 * ((z + α₂ + α₃) - 2 * z - χ) := by
   unfold gaussParameterA gaussParameterC
@@ -73,8 +79,9 @@ theorem gaussRatio_param_a_sub_c (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
   field_simp
   ring
 
+include hχ hQ in
 /-- `c - b = χ/2 · (Σ - 2 α₂ - χ)`. -/
-theorem gaussRatio_param_c_sub_b (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
+theorem gaussRatio_param_c_sub_b  :
     gaussParameterC γ χ z - gaussParameterB γ χ z α₂ α₃ =
       χ / 2 * ((z + α₂ + α₃) - 2 * α₂ - χ) := by
   unfold gaussParameterB gaussParameterC
@@ -82,8 +89,9 @@ theorem gaussRatio_param_c_sub_b (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
   field_simp
   ring
 
+include hχ hQ in
 /-- `2 - c = 2 + χ² - χ z`. -/
-theorem gaussRatio_param_two_sub_c (hχ : χ ≠ 0) (hQ : Q γ = χ + 1 / χ) :
+theorem gaussRatio_param_two_sub_c  :
     2 - gaussParameterC γ χ z = 2 + χ ^ 2 - χ * z := by
   rw [gaussRatio_param_c hχ hQ]
   ring
@@ -107,8 +115,8 @@ theorem gaussRatio_l_sub (b c : ℝ) :
 /-- The key scalar identity `-(Γ(c) / Γ(2-c))² · l(2-c) = l(c)` for `c ≠ 1`. -/
 theorem gaussRatio_key {c : ℝ} (hc : c ≠ 1) :
     -(Real.Gamma c / Real.Gamma (2 - c)) ^ 2 * gaussRatio_l (2 - c) = gaussRatio_l c := by
-  have hc1 : c - 1 ≠ 0 := sub_ne_zero.mpr hc
-  have hc2 : 1 - c ≠ 0 := sub_ne_zero.mpr hc.symm
+  have hc1  := sub_ne_zero.mpr hc
+  have hc2  := sub_ne_zero.mpr hc.symm
   have h1 : Real.Gamma c = (c - 1) * Real.Gamma (c - 1) := by
     have := Real.Gamma_add_one hc1
     rwa [sub_add_cancel] at this
@@ -120,15 +128,7 @@ theorem gaussRatio_key {c : ℝ} (hc : c ≠ 1) :
     rw [show 1 - (2 - c) = c - 1 by ring]
   rw [h3]
   unfold gaussRatio_l
-  rw [h1, h2]
-  generalize Real.Gamma (c - 1) = g
-  generalize Real.Gamma (1 - c) = h
-  by_cases hg : g = 0
-  · simp [hg]
-  by_cases hh : h = 0
-  · simp [hh]
-  field_simp
-  ring
+  grind
 
 /-- The real form of the identity: for `c ≠ 1` and arbitrary real factors `L₁, L₂`. -/
 theorem gaussRatio_real_identity {a b c : ℝ} (hc : c ≠ 1) (L₁ L₂ : ℝ) :
@@ -139,8 +139,7 @@ theorem gaussRatio_real_identity {a b c : ℝ} (hc : c ≠ 1) (L₁ L₂ : ℝ) 
   unfold gaussCoefficientRatio
   generalize gaussRatio_l (2 - c) = T
   unfold gaussRatio_l
-  simp only [div_eq_mul_inv, mul_inv, inv_inv]
-  ring
+  grind
 
 /-! ### Passage to `ℂ` -/
 
@@ -201,7 +200,7 @@ theorem gaussCoefficientRatio_mul_eq_shiftCoeffA_half {γ z α₂ α₃ : ℝ} (
       (lFun (-((γ / 2 : ℝ) : ℂ) ^ 2) * lFun (((γ / 2 : ℝ) : ℂ) * z) *
         lFun (2 + ((γ / 2 : ℝ) : ℂ) ^ 2 - ((γ / 2 : ℝ) : ℂ) * z)) =
       shiftCoeffA γ ((γ / 2 : ℝ) : ℂ) z α₂ α₃ := by
-  have hγ0 : γ ≠ 0 := hγ.ne'
+  have hγ0  := hγ.ne'
   refine gaussCoefficientRatio_mul_eq_shiftCoeffA (by positivity) ?_ hc
   unfold Q
   field_simp

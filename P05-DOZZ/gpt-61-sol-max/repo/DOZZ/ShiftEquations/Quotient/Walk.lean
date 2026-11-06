@@ -23,10 +23,13 @@ public section
 
 namespace DOZZ.Proofs
 
+variable {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a')
+
+include a a' g ha ha'
 /-- The greedy induction of `exists_bounded_walk`: from a current sum `s` in the window
 `(g - a', g + a]`, with `i` steps `+a` and `j` steps `-a'` still to be made, the walk that takes
 `+a` while it sits at or below `g` and `-a'` otherwise stays inside that window. -/
-theorem boundedWalk_greedy {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a') :
+theorem boundedWalk_greedy  :
     ∀ (N i j : ℕ), i + j = N → ∀ s : ℝ, s + i * a - j * a' = g → g - a' < s → s ≤ g + a →
       ∃ l : List ℝ, (∀ e ∈ l, e = a ∨ e = -a ∨ e = a' ∨ e = -a') ∧ l.length = i + j ∧
         s + l.sum = g ∧
@@ -34,12 +37,7 @@ theorem boundedWalk_greedy {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a') :
   intro N
   induction N with
   | zero =>
-    intro i j hij s hs hlo hhi
-    obtain ⟨rfl, rfl⟩ : i = 0 ∧ j = 0 := by omega
-    refine ⟨[], by simp, by simp, by simpa using hs, ?_⟩
-    intro k hk
-    obtain rfl : k = 0 := by simpa using hk
-    simpa using ⟨hlo, hhi⟩
+    simp_all
   | succ N ih =>
     intro i j hij s hs hlo hhi
     by_cases hsg : s ≤ g
@@ -55,10 +53,7 @@ theorem boundedWalk_greedy {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a') :
       obtain ⟨l, hl, hlen, hsum, hk⟩ :=
         ih i' j (by omega) (s + a) (by linarith) (by linarith) (by linarith)
       refine ⟨a :: l, ?_, ?_, ?_, ?_⟩
-      · intro e he
-        rcases List.mem_cons.1 he with rfl | he
-        · exact Or.inl rfl
-        · exact hl e he
+      · grind
       · simp only [List.length_cons, hlen]
         omega
       · simp only [List.sum_cons]
@@ -66,14 +61,12 @@ theorem boundedWalk_greedy {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a') :
       · intro k hk'
         rcases k with _ | k
         · simpa using ⟨hlo, hhi⟩
-        · have := hk k (by simpa using hk')
-          simp only [List.take_succ_cons, List.sum_cons]
-          constructor <;> linarith [this.1, this.2]
+        grind
     · obtain ⟨j', rfl⟩ : ∃ j', j = j' + 1 := by
         refine ⟨j - 1, ?_⟩
         rcases Nat.eq_zero_or_pos j with rfl | hj
         · exfalso
-          have hi : (0 : ℝ) ≤ i := Nat.cast_nonneg i
+          
           push_cast at hs
           nlinarith
         · omega
@@ -81,10 +74,7 @@ theorem boundedWalk_greedy {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a') :
       obtain ⟨l, hl, hlen, hsum, hk⟩ :=
         ih i j' (by omega) (s - a') (by linarith) (by linarith) (by linarith)
       refine ⟨(-a') :: l, ?_, ?_, ?_, ?_⟩
-      · intro e he
-        rcases List.mem_cons.1 he with rfl | he
-        · exact Or.inr (Or.inr (Or.inr rfl))
-        · exact hl e he
+      · grind
       · simp only [List.length_cons, hlen]
         omega
       · simp only [List.sum_cons]
@@ -92,12 +82,11 @@ theorem boundedWalk_greedy {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a') :
       · intro k hk'
         rcases k with _ | k
         · simpa using ⟨hlo, hhi⟩
-        · have := hk k (by simpa using hk')
-          simp only [List.take_succ_cons, List.sum_cons]
-          constructor <;> linarith [this.1, this.2]
+        grind
+
 
 /-- The bounded walk for `g = i a - j a'` with `i, j` natural numbers. -/
-theorem boundedWalk_exists_of_nat {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a')
+theorem boundedWalk_exists_of_nat 
     (hga : |g| < min a a') (i j : ℕ) (hij : g = i * a - j * a') :
     ∃ l : List ℝ, (∀ e ∈ l, e = a ∨ e = -a ∨ e = a' ∨ e = -a') ∧ l.sum = g ∧
       ∀ k ≤ l.length, |(l.take k).sum| < a + a' := by
@@ -106,13 +95,11 @@ theorem boundedWalk_exists_of_nat {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a')
   have hma' : min a a' ≤ a' := min_le_right _ _
   obtain ⟨l, hl, -, hsum, hk⟩ :=
     boundedWalk_greedy ha ha' (i + j) i j rfl 0 (by linarith) (by linarith) (by linarith)
-  refine ⟨l, hl, by linarith, fun k hk' => ?_⟩
-  obtain ⟨h3, h4⟩ := hk k hk'
-  rw [abs_lt]
-  constructor <;> linarith
+  grind
+
 
 /-- The bounded walk for `g = m a + n a'` with `m ≥ 0 ≥ n` integers. -/
-theorem boundedWalk_exists_of_int {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a')
+theorem boundedWalk_exists_of_int 
     (hga : |g| < min a a') {m n : ℤ} (hm : 0 ≤ m) (hn : n ≤ 0)
     (hmn : (m : ℝ) * a + n * a' = g) :
     ∃ l : List ℝ, (∀ e ∈ l, e = a ∨ e = -a ∨ e = a' ∨ e = -a') ∧ l.sum = g ∧
@@ -124,9 +111,10 @@ theorem boundedWalk_exists_of_int {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a')
   push_cast at hmn
   linarith
 
+
 /-- Sign analysis: a nonzero combination `m a + n a'` shorter than both `a` and `a'` has `m` and
 `n` of opposite strict signs. -/
-theorem boundedWalk_opposite_signs {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a') (hg0 : g ≠ 0)
+theorem boundedWalk_opposite_signs  (hg0 : g ≠ 0)
     (hga : |g| < min a a') {m n : ℤ} (hmn : (m : ℝ) * a + n * a' = g) :
     (1 ≤ m ∧ n ≤ -1) ∨ (m ≤ -1 ∧ 1 ≤ n) := by
   obtain ⟨h1, h2⟩ := abs_lt.1 hga
@@ -151,17 +139,12 @@ theorem boundedWalk_opposite_signs {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a') (h
   · exfalso
     linarith
   · exact absurd (by linarith) hg0
-  · exfalso
-    linarith
-  · exact Or.inl ⟨hm, hn⟩
-  · exfalso
-    linarith
-  · exfalso
-    linarith
+  all_goals grind
+
 
 /-- **Bounded walks.** A nonzero element `g` of the group generated by two positive reals, shorter
 than both, is a sum of steps `±a, ±a'` whose partial sums all stay shorter than `a + a'`. -/
-theorem exists_bounded_walk {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a')
+theorem exists_bounded_walk 
     (hg : g ∈ AddSubgroup.closure ({a, a'} : Set ℝ)) (hg0 : g ≠ 0) (hga : |g| < min a a') :
     ∃ l : List ℝ, (∀ e ∈ l, e = a ∨ e = -a ∨ e = a' ∨ e = -a') ∧ l.sum = g ∧
       ∀ k ≤ l.length, |(l.take k).sum| < a + a' := by
@@ -171,21 +154,16 @@ theorem exists_bounded_walk {a a' g : ℝ} (ha : 0 < a) (ha' : 0 < a')
   · exact boundedWalk_exists_of_int ha ha' hga (by omega) (by omega) hmn
   · obtain ⟨l, hl, hsum, hk⟩ := boundedWalk_exists_of_int (m := n) (n := m) ha' ha
       (by rwa [min_comm]) (by omega) (by omega) (by linarith)
-    refine ⟨l, fun e he => ?_, hsum, fun k hk' => ?_⟩
-    · rcases hl e he with h | h | h | h
-      · exact Or.inr (Or.inr (Or.inl h))
-      · exact Or.inr (Or.inr (Or.inr h))
-      · exact Or.inl h
-      · exact Or.inr (Or.inl h)
-    · rw [add_comm]
-      exact hk k hk'
+    grind
+omit a a' g ha ha'
+
 
 /-- Near zero the positive part of the group generated by two incommensurable reals is
 infinite. -/
 theorem infinite_closure_pair_pos_lt {a a' ε : ℝ} (hirr : Irrational (a / a')) (hε : 0 < ε) :
     {g : ℝ | g ∈ AddSubgroup.closure ({a, a'} : Set ℝ) ∧ 0 < g ∧ g < ε}.Infinite := by
   intro hfin
-  have hd : Dense (AddSubgroup.closure ({a, a'} : Set ℝ) : Set ℝ) :=
+  have hd  :=
     dense_addSubgroupClosure_pair_iff.2 hirr
   obtain ⟨x, hx, hx0, hxε⟩ := hd.exists_between hε
   obtain ⟨m, hmT, hmin⟩ := Set.exists_min_image _ id hfin ⟨x, hx, hx0, hxε⟩

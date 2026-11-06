@@ -3,11 +3,12 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.FourPoint.TwoRegionLaw
 public import DOZZ.FourPoint.Reflected.SourceBufferRate
 public import DOZZ.FourPoint.Reflected.Decorrelation
 /-! The actual error from the full source moment to the copied moment combines the buffer and
 decorrelation rates. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -20,12 +21,7 @@ theorem reflected_source_full_copied_littleO
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N)
     (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
-    (hwhole : ∀ (f : ℂ → ℝ≥0∞), Measurable f →
-      ∀ G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞, Measurable G →
-      (∫⁻ ω, G (originRadialPath Xc ω, ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω) ∂P) =
-      ∫⁻ ω, G (originRadialPath Xc ω.1, ∫⁻ x in ({0} : Set ℂ)ᶜ,
-        f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ
-          (originRadialPath Xc ω.1) x) ∂N ω.2) ∂P.prod P)
+    (hwhole : Contract.radialPlaneLaw P (originRadialPath Xc) γ M N)
     (hNa : ∀ ρ : ℝ, 0 < ρ → IsAdmissibleGMCVersion P (originLateralChart ρ)
       originLateralPlaneDensity (originLateralCircleRegularization Xc ρ) γ
       (fun ω => (N ω).restrict (originLateralChart ρ)))

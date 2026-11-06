@@ -13,7 +13,7 @@ public import DOZZ.Correlations.Residue.ChartLimit
 /-! The full unequal-charge unit-volume residue (erratum K30, see docs/ERRATA-AND-DEVIATIONS.md),
 reduced solely to the exact insertion tail. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Classical
 namespace DOZZ.Proofs
@@ -34,13 +34,13 @@ theorem residue_unit_unequal_of_oneInsertion_estimate
           t ^ (-reflectionExponent γ α3)| ≤ C * t ^ (-reflectionExponent γ α3 - η)) :
     Tendsto (fun ε : ℝ => ε * unitVolumeStructureConstant P M γ
       (α3 - α2 + ε) α2 α3) (𝓝[>] 0) (𝓝 (2 * reflectionExponent γ α3 * Rbar)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let p := reflectionExponent γ α3
   have hp := (residue_critical_order_bounds γ α3 hγ hα3 hα3Q).1
   obtain ⟨dR, ρ, hdR, hρ, K, hK, hKb⟩ := residue_unequal_complement_moment_uniform
     P X M γ α2 α3 hγ hγ2 hX hM hα2 hα23 hα3 hα3Q
   let d₀ := min dT (min dR (γ * p))
-  have hd₀ : 0 < d₀ := lt_min hdT (lt_min hdR (mul_pos hγ hp))
+  have hd₀  := lt_min hdT (lt_min hdR (mul_pos hγ hp))
   have hdT' : d₀ ≤ dT := min_le_left _ _
   have hdR' : d₀ ≤ dR := (min_le_right _ _).trans (min_le_left _ _)
   have hdβ : d₀ ≤ γ * p := (min_le_right _ _).trans (min_le_right _ _)
@@ -61,8 +61,8 @@ theorem residue_unit_unequal_of_oneInsertion_estimate
     hγ hγ2 hα3 hα3Q hX hM hη hd₀ hC
     (fun ε hε hεd => htail ε hε (hεd.trans_le hdT'))
   have hq (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) : 0 < p - ε / γ ∧ p - ε / γ < p := by
-    have hh : ε / γ < p := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hεd.trans_le hdβ)
-    exact ⟨sub_pos.mpr hh, sub_lt_self _ (div_pos hε hγ)⟩
+    have hh  := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hεd.trans_le hdβ)
+    simp_all
   have htail' (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) := htail ε hε (hεd.trans_le hdT')
   have hAfin (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) : ∀ᵐ ω ∂P, A ε ω ≠ ⊤ :=
     residue_ae_finite_of_tail P (A ε)
@@ -77,7 +77,7 @@ theorem residue_unit_unequal_of_oneInsertion_estimate
     (γ * p * (4 : ℝ) ^ (-(γ * α2 * p)) * Rbar) K hp hγ hd₀ hdβ
     (lt_add_of_pos_right _ hρ) hK (fun ε _ _ => hA ε) (fun ε _ _ => hR ε)
     hAfin hiA (fun ε hε hεd => hKb ε hε (hεd.trans_le hdR')) hlimA
-  have hatoms : ∀ᵐ ω ∂P, M ω {3} = 0 ∧ M ω {7} = 0 :=
+  have hatoms  :=
     (gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 3).and
       (gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 7)
   have hdecomp (ε : ℝ) : ∀ᵐ ω ∂P,

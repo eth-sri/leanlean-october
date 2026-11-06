@@ -50,10 +50,7 @@ theorem circle_test_approximation_tendstoInMeasure
     (f : ℕ → TestFn) (hf : Tendsto (fun n => circleEnergyGap x r (f n)) atTop (𝓝 0)) :
     TendstoInMeasure P (fun n ω => X ω (f n)) atTop (fun ω => Xc ω x r) := by
   apply tendstoInMeasure_of_tendsto_eLpNorm (by norm_num : (2 : ℝ≥0∞) ≠ 0)
-  change Tendsto (fun n => eLpNorm (fun ω => X ω (f n) - Xc ω x r) 2 P) atTop (𝓝 0)
-  have hcomm n : eLpNorm (fun ω => X ω (f n) - Xc ω x r) 2 P =
-      eLpNorm (fun ω => Xc ω x r - X ω (f n)) 2 P := eLpNorm_sub_comm _ _ _ _
-  simpa only [hcomm] using hc.2.2 x r f hf
+  exact hc.2.2 x r f hf
 
 /-- One circle coordinate is the same measurable function of field evaluations in both models.
 The reconstruction function may depend on the pair of models, but is shared between them. -/
@@ -126,9 +123,9 @@ theorem exists_common_radial_field_proxy
   have hproxy := fun q : ℚ =>
     exists_common_circle_field_proxy P X Xc hc P' X' Xc' hc' 0 (q : ℝ)
   choose g hg he he' using hproxy
-  let G : (TestFn → ℝ) → TwoSidedPath := fun e =>
+  let G  := fun e =>
     radialPathFromRationalCode (fun q => g q e)
-  have hG : Measurable G := measurable_radialPathFromRationalCode.comp
+  have hG  := measurable_radialPathFromRationalCode.comp
     (Measurable.of_eval hg)
   have hcode : ∀ᵐ ω ∂P, (fun q : ℚ => g q (fun f => X ω f)) = radialRationalCode (A ω) := by
     have heall := ae_all_iff.mpr he
@@ -168,58 +165,41 @@ theorem radial_GMC_pair_aemeasurable
     (hM : IsGMCOf P X γ M) (A : Ω → TwoSidedPath)
     (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
     (hA : ∀ s : ℝ, ∀ᵐ ω ∂P, A ω s = Xc ω 0 s) :
-    AEMeasurable (fun ω => (A ω, M ω)) P := by
-  exact (radial_circle_witness_aemeasurable P X A Xc hc hA).prodMk
+    AEMeasurable (fun ω => (A ω, M ω)) P := (radial_circle_witness_aemeasurable P X A Xc hc hA).prodMk
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM)
 
+variable {Ω Ω' : Type*} [_inst1 : MeasurableSpace Ω] [_inst2 : MeasurableSpace Ω'] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (P' : Measure Ω') (X' : Ω' → Distr) (hX' : IsEquatorGFF P' X') (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (M' : Ω' → Measure ℂ) (hM' : IsGMCOf P' X' γ M') (A : Ω → TwoSidedPath) (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc) (hA : ∀ s : ℝ, ∀ᵐ ω ∂P, A ω s = Xc ω 0 s) (A' : Ω' → TwoSidedPath) (Xc' : Ω' → ℂ → ℝ → ℝ) (hc' : IsCircleAverage P' X' Xc') (hA' : ∀ s : ℝ, ∀ᵐ ω ∂P', A' ω s = Xc' ω 0 s)
+
+include Ω Ω' _inst1 _inst2 P X hX P' X' hX' γ hγ hγ2 M hM M' hM' A Xc hc hA A' Xc' hc' hA' in
 /-- Equality of the joint field/GMC law transports any nonnegative test of the radial path
 and chaos. Both witnesses use the same measurable field reconstruction. -/
 theorem equatorGFF_radial_GMC_lintegral_law
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (P' : Measure Ω') (X' : Ω' → Distr) (hX' : IsEquatorGFF P' X')
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (M' : Ω' → Measure ℂ) (hM' : IsGMCOf P' X' γ M')
-    (A : Ω → TwoSidedPath) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hc : IsCircleAverage P X Xc) (hA : ∀ s : ℝ, ∀ᵐ ω ∂P, A ω s = Xc ω 0 s)
-    (A' : Ω' → TwoSidedPath) (Xc' : Ω' → ℂ → ℝ → ℝ)
-    (hc' : IsCircleAverage P' X' Xc') (hA' : ∀ s : ℝ, ∀ᵐ ω ∂P', A' ω s = Xc' ω 0 s)
+    
     (W : TwoSidedPath → Measure ℂ → ℝ≥0∞)
     (hW : Measurable (fun p : TwoSidedPath × Measure ℂ => W p.1 p.2)) :
     (∫⁻ ω, W (A ω) (M ω) ∂P) = ∫⁻ ω, W (A' ω) (M' ω) ∂P' := by
   obtain ⟨G, hG, he, he'⟩ := exists_common_radial_field_proxy
     P X A Xc hc hA P' X' A' Xc' hc' hA'
-  let H : (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := fun e μ => W (G e) μ
-  have hH : Measurable (fun p : (TestFn → ℝ) × Measure ℂ => H p.1 p.2) :=
+  let H  := fun e μ => W (G e) μ
+  have hH  :=
     hW.comp ((hG.comp measurable_fst).prodMk measurable_snd)
   calc
     _ = ∫⁻ ω, H (fun f => X ω f) (M ω) ∂P := by
       apply lintegral_congr_ae
       filter_upwards [he] with ω hω
-      change W (A ω) (M ω) = W (G (fun f => X ω f)) (M ω)
-      rw [hω]
+      continuity
     _ = ∫⁻ ω, H (fun f => X' ω f) (M' ω) ∂P' :=
       equatorGFF_GMC_law_transport P X hX P' X' hX' γ hγ hγ2 M hM M' hM' H hH
     _ = _ := by
       apply lintegral_congr_ae
       filter_upwards [he'] with ω hω
-      change W (G (fun f => X' ω f)) (M' ω) = W (A' ω) (M' ω)
-      rw [hω]
+      continuity
 
+include Ω Ω' _inst1 _inst2 P X hX P' X' hX' γ hγ hγ2 M hM M' hM' A Xc hc hA A' Xc' hc' hA' in
 /-- The entire continuous radial path and chaos have a common joint law. The
 path carrier is retained, so every measurable path functional is covered. -/
 theorem equatorGFF_radial_GMC_map_eq
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (P' : Measure Ω') (X' : Ω' → Distr) (hX' : IsEquatorGFF P' X')
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (M' : Ω' → Measure ℂ) (hM' : IsGMCOf P' X' γ M')
-    (A : Ω → TwoSidedPath) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hc : IsCircleAverage P X Xc) (hA : ∀ s : ℝ, ∀ᵐ ω ∂P, A ω s = Xc ω 0 s)
-    (A' : Ω' → TwoSidedPath) (Xc' : Ω' → ℂ → ℝ → ℝ)
-    (hc' : IsCircleAverage P' X' Xc') (hA' : ∀ s : ℝ, ∀ᵐ ω ∂P', A' ω s = Xc' ω 0 s) :
+     :
     P.map (fun ω => (A ω, M ω)) = P'.map (fun ω => (A' ω, M' ω)) := by
   have hm := radial_GMC_pair_aemeasurable P X hX γ hγ hγ2 M hM A Xc hc hA
   have hm' := radial_GMC_pair_aemeasurable P' X' hX' γ hγ hγ2 M' hM' A' Xc' hc' hA'
@@ -232,12 +212,10 @@ theorem equatorGFF_radial_GMC_map_eq
     (measurable_const.indicator hS)
   have he : (fun ω => S.indicator (fun _ => (1 : ℝ≥0∞)) (A ω, M ω)) =
       ((fun ω => (A ω, M ω)) ⁻¹' S).indicator (fun _ => 1) := by
-    funext ω
-    by_cases hω : (A ω, M ω) ∈ S <;> simp [hω]
+    continuity
   have he' : (fun ω => S.indicator (fun _ => (1 : ℝ≥0∞)) (A' ω, M' ω)) =
       ((fun ω => (A' ω, M' ω)) ⁻¹' S).indicator (fun _ => 1) := by
-    funext ω
-    by_cases hω : (A' ω, M' ω) ∈ S <;> simp [hω]
+    continuity
   rw [he, he'] at h
   change (∫⁻ ω, ((fun ω => (A ω, M ω)) ⁻¹' S).indicator 1 ω ∂P) =
     (∫⁻ ω, ((fun ω => (A' ω, M' ω)) ⁻¹' S).indicator 1 ω ∂P') at h
@@ -270,7 +248,6 @@ theorem measurable_finitePlaneMeasureOrZero : Measurable finitePlaneMeasureOrZer
   have hs : MeasurableSet {μ : Measure ℂ | μ univ < ⊤} :=
     measurableSet_lt (Measure.measurable_coe MeasurableSet.univ) measurable_const
   apply Measurable.subtype_mk
-  change Measurable (fun μ : Measure ℂ => if μ univ < ⊤ then μ else 0)
   exact Measurable.ite hs measurable_id measurable_const
 
 /-- Totalization preserves every finite plane measure exactly. -/
@@ -303,23 +280,15 @@ theorem totalizedLateralProjection_eq (γ : ℝ) (A : TwoSidedPath)
   unfold totalizedLateralProjection
   rw [finitePlaneMeasureOrZero_eq μ hμ]
 
+include Ω Ω' _inst1 _inst2 P X hX P' X' hX' γ hγ hγ2 M hM M' hM' A Xc hc hA A' Xc' hc' hA' in
 /-- Joint radial/GMC law transport identifies the whole projected random measure law.
 Finiteness of the underlying GMC suffices even though the projected measure need not be finite. -/
 theorem equatorGFF_radial_projection_map_eq
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (P' : Measure Ω') (X' : Ω' → Distr) (hX' : IsEquatorGFF P' X')
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (M' : Ω' → Measure ℂ) (hM' : IsGMCOf P' X' γ M')
-    (A : Ω → TwoSidedPath) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hc : IsCircleAverage P X Xc) (hA : ∀ s : ℝ, ∀ᵐ ω ∂P, A ω s = Xc ω 0 s)
-    (A' : Ω' → TwoSidedPath) (Xc' : Ω' → ℂ → ℝ → ℝ)
-    (hc' : IsCircleAverage P' X' Xc') (hA' : ∀ s : ℝ, ∀ᵐ ω ∂P', A' ω s = Xc' ω 0 s) :
+     :
     P.map (fun ω => lateralProjectedGMC γ (A ω) (M ω)) =
       P'.map (fun ω => lateralProjectedGMC γ (A' ω) (M' ω)) := by
   let T : TwoSidedPath × Measure ℂ → Measure ℝ := fun p => totalizedLateralProjection γ p.1 p.2
-  have hT : Measurable T := measurable_totalizedLateralProjection γ
+  have hT  := measurable_totalizedLateralProjection γ
   have hm := radial_GMC_pair_aemeasurable P X hX γ hγ hγ2 M hM A Xc hc hA
   have hm' := radial_GMC_pair_aemeasurable P' X' hX' γ hγ hγ2 M' hM' A' Xc' hc' hA'
   have hcomp : (fun ω => lateralProjectedGMC γ (A ω) (M ω)) =

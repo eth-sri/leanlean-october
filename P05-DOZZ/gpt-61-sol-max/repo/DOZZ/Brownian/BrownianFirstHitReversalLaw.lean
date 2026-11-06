@@ -16,7 +16,7 @@ the reversed first-hit law. The initial and terminal values then determine the w
 continuous path measure. No Markov property at a last exit is used.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
@@ -32,16 +32,16 @@ theorem brownian_firstHit_reversal_law
       AEMeasurable (negativeConditionedLastExitSegment c) Qν ∧
       P.map (reversedPositiveFirstHitSegment ν c) =
         Qν.map (negativeConditionedLastExitSegment c) := by
-  let : IsProbabilityMeasure P := (hP.hasLaw_eval 0).isProbabilityMeasure
-  let : IsProbabilityMeasure Qν := hQν.2.1
+  let  := (hP.hasLaw_eval 0).isProbabilityMeasure
+  let  := hQν.2.1
   refine ⟨(measurable_reversedPositiveFirstHitSegment ν c).aemeasurable,
     (measurable_negativeConditionedLastExitSegment c).aemeasurable, ?_⟩
   let X := reversedPositiveFirstHitSegment ν c
   let Y := negativeConditionedLastExitSegment c
   let μ := P.map X
   let η := Qν.map Y
-  have hX : Measurable X := measurable_reversedPositiveFirstHitSegment ν c
-  have hY : Measurable Y := measurable_negativeConditionedLastExitSegment c
+  have hX  := measurable_reversedPositiveFirstHitSegment ν c
+  have hY  := measurable_negativeConditionedLastExitSegment c
   have hmark : SameStoppedPreterminalLaws μ η := by
     intro n ss hss hs0
     rw [Measure.restrict_map hX (measurableSet_lt measurable_const measurable_fst),
@@ -57,8 +57,7 @@ theorem brownian_firstHit_reversal_law
           (firstPassageTime (driftedBrownianPath ν p) c-
             min (ss i) (firstPassageTime (driftedBrownianPath ν p) c))-c) = _
         rw [min_comm, tsub_min]
-        change -(p _+ν*(_ : ℝ)-c) = c-(p _+ν*(_ : ℝ))
-        ring
+        continuity
       · rfl
     rw [heX]
     change (P.restrict {p | ss (Fin.last n) < firstPassageTime (driftedBrownianPath ν p) c}).map
@@ -79,7 +78,7 @@ theorem brownian_firstHit_reversal_law
     exact brownian_firstHit_reversal_finite_marked_law ν c hν hc P hP Qν hQν n ss hss hs0
   have hfirst := brownianPath_positiveDrift_firstHit_ae P hP ν c hν hc
   let cN := Real.toNNReal c
-  have hcN : 0 < (cN : ℝ) := by simpa only [cN, Real.coe_toNNReal _ hc.le] using hc
+  have hcN : 0 < (cN : ℝ) := by continuity
   have hgood := ae_negativeConditionedLevelHitSet_nonempty_bddAbove hQν hP hν cN hcN
   simp only [cN, Real.coe_toNNReal _ hc.le] at hgood
   have hlast : ∀ᵐ p ∂Qν, p (negativeLastExitTime p c) = -c ∧ 0 < negativeLastExitTime p c := by
@@ -104,7 +103,7 @@ theorem brownian_firstHit_reversal_law
     filter_upwards [hfirst] with p hp
     change -(driftedBrownianPath ν p
       (firstPassageTime (driftedBrownianPath ν p) c-min 0 (firstPassageTime (driftedBrownianPath ν p) c))-c) = 0
-    simp only [zero_min, tsub_zero, hp.2, sub_self, neg_zero]
+    simp_all
   have hηzero : ∀ᵐ z ∂η, -(z.2 0) = 0 := by
     apply (ae_map_iff hY.aemeasurable
       (measurableSet_eq_fun (((ContinuousMap.measurable_eval 0).comp measurable_snd).neg)
@@ -122,10 +121,7 @@ theorem brownian_firstHit_reversal_law
           refine ⟨?_, hz z.1 le_rfl⟩
           ext t
           change z.2 t = z.2 (min t z.1)
-          by_cases ht : t ≤ z.1
-          · rw [min_eq_left ht]
-          · rw [min_eq_right (not_le.mp ht).le]
-            exact neg_injective ((hz t (not_le.mp ht).le).trans (hz z.1 le_rfl).symm)
+          grind
         · rintro ⟨hstop, hend⟩ t ht
           have he := congrArg (fun p : BrownianPath => p t) hstop
           change z.2 t = z.2 (min t z.1) at he

@@ -8,7 +8,7 @@ public import Mathlib.MeasureTheory.Measure.HasOuterApproxClosed
 
 /-! Rooted laws of the determining field and measure coordinates. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -32,17 +32,12 @@ theorem measurable_pointRootedCoordinatePath
   exact measurable_gmcTiltCoordinatePath.comp
     (hfield.prodMk (measurable_gmcRootedMeasure_family M hMmeas hfinite γ))
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hMmeas : Measurable M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (A : Set ℂ) (hA : MeasurableSet A) (R : ℝ) (hAR : A ⊆ Metric.closedBall (0 : ℂ) R) (hRoot : ∀ᵐ u ∂gmcReferenceMeasure.restrict A, ∀ᵐ ω ∂P, IsFiniteMeasure (gmcRootedMeasure γ u (M ω)))
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM hMmeas Xc hXc A hA R hAR hRoot in
 /-- The finite-dimensional rooted marked law on a bounded root set. -/
 theorem rooted_finite_coordinate_law
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hMmeas : Measurable M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (A : Set ℂ) (hA : MeasurableSet A) (R : ℝ)
-    (hAR : A ⊆ Metric.closedBall (0 : ℂ) R)
-    (hRoot : ∀ᵐ u ∂gmcReferenceMeasure.restrict A,
-      ∀ᵐ ω ∂P, IsFiniteMeasure (gmcRootedMeasure γ u (M ω)))
+    
     (s : Finset gmcTiltCoordinateIndex) :
     Measure.map (fun ω => gmcTiltFiniteCoordinatePath s (fun f => X ω f) (M ω))
       (P.withDensity (fun ω => M ω A)) =
@@ -72,8 +67,7 @@ theorem rooted_finite_coordinate_law
   have hj : AEMeasurable (fun q : ℂ × Ω => (φ (gmcTiltFiniteCoordinatePath s
       (fun f => X q.2 f + γ * gffRootCovariance q.1 f)
       (gmcRootedMeasure γ q.1 (M q.2))) : ℝ≥0∞))
-      ((gmcReferenceMeasure.restrict A).prod P) := by
-    exact (measurable_coe_nnreal_ennreal.comp (φ.continuous.measurable.comp hr)).aemeasurable
+      ((gmcReferenceMeasure.restrict A).prod P) := (measurable_coe_nnreal_ennreal.comp (φ.continuous.measurable.comp hr)).aemeasurable
   rw [lintegral_prod _ hj]
   let ψ := φ.comp ((↑) : ℝ≥0 → ℝ) NNReal.isometry_coe.lipschitzWith
   have heq := rooted_finite_coordinate_identity P X hX γ hγ hγ2 M hM hMmeas
@@ -100,18 +94,11 @@ theorem measure_eq_of_finite_coordinate_map_eq
     isPiSystem_measurableCylinders hC
     (hC Set.univ (univ_mem_measurableCylinders (fun _ : ι => ℝ)))
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM hMmeas Xc hXc A hA R hAR hRoot in
 /-- The complete determining-coordinate law on a bounded root set, without restricting the
 observable to finitely many coordinates. -/
 theorem rooted_full_coordinate_law
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hMmeas : Measurable M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (A : Set ℂ) (hA : MeasurableSet A) (R : ℝ)
-    (hAR : A ⊆ Metric.closedBall (0 : ℂ) R)
-    (hRoot : ∀ᵐ u ∂gmcReferenceMeasure.restrict A,
-      ∀ᵐ ω ∂P, IsFiniteMeasure (gmcRootedMeasure γ u (M ω))) :
+     :
     Measure.map (fun ω => gmcTiltCoordinatePath (fun f => X ω f) (M ω))
       (P.withDensity (fun ω => M ω A)) =
     Measure.map (fun q : ℂ × Ω => gmcTiltCoordinatePath

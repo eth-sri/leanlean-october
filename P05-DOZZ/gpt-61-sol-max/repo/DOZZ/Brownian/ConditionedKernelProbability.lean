@@ -186,8 +186,8 @@ theorem integrable_conditionedPositiveTransitionDensity
       (by fun_prop) measurable_const
   by_cases hνzero : ν = 0
   · subst ν
-    let C : ℝ := x⁻¹
-    let g : ℝ → ℝ := fun y => C *
+    let C  := x⁻¹
+    let g  := fun y => C *
       (‖(y - x) * brownianHeatDensity t (y - x)‖ +
         x * brownianHeatDensity t (y - x))
     have hq : Integrable (fun y : ℝ => brownianHeatDensity t (y - x))
@@ -223,11 +223,7 @@ theorem integrable_conditionedPositiveTransitionDensity
               x * brownianHeatDensity t (y - x) := by
           have hfirst : (y - x) * brownianHeatDensity t (y - x) ≤
               ‖(y - x) * brownianHeatDensity t (y - x)‖ := le_abs_self _
-          calc
-            y * brownianHeatDensity t (y - x) =
-                (y - x) * brownianHeatDensity t (y - x) +
-                  x * brownianHeatDensity t (y - x) := by ring
-            _ ≤ _ := by nlinarith [hfirst]
+          grind
         calc
           (y / x) * (brownianHeatDensity t (y - x) - brownianHeatDensity t (y + x)) ≤
               (y / x) * brownianHeatDensity t (y - x) :=
@@ -245,8 +241,8 @@ theorem integrable_conditionedPositiveTransitionDensity
     exact Integrable.mono' hg hmeasKernel.aestronglyMeasurable (ae_of_all _ hbound)
   · have hνpos : 0 < ν := lt_of_le_of_ne hν (Ne.symm hνzero)
     let Hx := conditionedH ν x
-    let C : ℝ := Hx⁻¹
-    let g : ℝ → ℝ := fun y => C * brownianHeatDensity t (y - (x + ν * t))
+    let C  := Hx⁻¹
+    let g  := fun y => C * brownianHeatDensity t (y - (x + ν * t))
     have hHx : 0 < Hx := conditionedH_pos_of_pos_drift hνpos hx
     have hq : Integrable (fun y : ℝ => brownianHeatDensity t (y - (x + ν * t)))
         (volume : Measure ℝ) := by
@@ -275,8 +271,7 @@ theorem integrable_conditionedPositiveTransitionDensity
               Real.exp (ν * (y - x) - ν ^ 2 * t / 2) * brownianHeatDensity t (y - x) := by
           calc
             _ ≤ (Real.exp (ν * (y - x) - ν ^ 2 * t / 2) *
-                  brownianHeatDensity t (y - x)) * conditionedH ν y := by
-                    exact mul_le_mul_of_nonneg_right
+                  brownianHeatDensity t (y - x)) * conditionedH ν y := mul_le_mul_of_nonneg_right
                       (mul_le_mul_of_nonneg_left hdiffle hU.le) hHy.1
             _ = (Real.exp (ν * (y - x) - ν ^ 2 * t / 2) *
                   brownianHeatDensity t (y - x)) * conditionedH ν y := by ring
@@ -346,12 +341,7 @@ theorem conditionedPositiveTransitionDensity_integral_eq_one
   have hsplit := integral_add_compl (μ := (volume : Measure ℝ))
     (f := conditionedPositiveTransitionDensity ν t x) (s := Set.Iic 0)
     measurableSet_Iic hkernel
-  calc
-    ∫ y : ℝ, conditionedPositiveTransitionDensity ν t x y =
-        (∫ y in Set.Iic 0, conditionedPositiveTransitionDensity ν t x y) +
-          ∫ y in Set.Ioi 0, conditionedPositiveTransitionDensity ν t x y := by
-            simpa [Set.compl_Iic] using hsplit.symm
-    _ = 1 := by rw [hIic, hIoi]; norm_num
+  simp_all
 
 /-- The probability measure whose density is the explicit positive conditioned transition
 kernel, extended by zero to the whole real line. -/
@@ -382,7 +372,7 @@ theorem conditionedPositiveTransitionDensity_start_cdf_le
   have hx : 0 < x := lt_of_lt_of_le hx' hxx'
   have hf := integrable_conditionedPositiveTransitionDensity hν ht hx'
   have hg := integrable_conditionedPositiveTransitionDensity hν ht hx
-  have hfnonneg : ∀ y, 0 ≤ conditionedPositiveTransitionDensity ν t x' y :=
+  have hfnonneg  :=
     conditionedPositiveTransitionDensity_nonneg hν ht hx'
   have hzeroF : ∀ y, y ≤ 0 → conditionedPositiveTransitionDensity ν t x' y = 0 :=
     fun y hy => conditionedPositiveTransitionDensity_eq_zero_of_nonpos hν ht hx' hy
@@ -390,7 +380,7 @@ theorem conditionedPositiveTransitionDensity_start_cdf_le
     fun y hy => conditionedPositiveTransitionDensity_eq_zero_of_nonpos hν ht hx hy
   have hunitF := conditionedPositiveTransitionDensity_integral_eq_one hν ht hx'
   have hunitG := conditionedPositiveTransitionDensity_integral_eq_one hν ht hx
-  let r : ℝ → ℝ := fun y =>
+  let r  := fun y =>
     conditionedPositiveTransitionDensity ν t x y /
       conditionedPositiveTransitionDensity ν t x' y
   have hfactor : ∀ y, 0 < y →
@@ -417,7 +407,7 @@ theorem conditionedPositiveTransitionDensity_drift_cdf_le
   have hν' : 0 ≤ ν' := hν.trans hνν'
   have hf := integrable_conditionedPositiveTransitionDensity hν ht hx
   have hg := integrable_conditionedPositiveTransitionDensity hν' ht hx
-  have hfnonneg : ∀ y, 0 ≤ conditionedPositiveTransitionDensity ν t x y :=
+  have hfnonneg  :=
     conditionedPositiveTransitionDensity_nonneg hν ht hx
   have hzeroF : ∀ y, y ≤ 0 → conditionedPositiveTransitionDensity ν t x y = 0 :=
     fun y hy => conditionedPositiveTransitionDensity_eq_zero_of_nonpos hν ht hx hy
@@ -425,7 +415,7 @@ theorem conditionedPositiveTransitionDensity_drift_cdf_le
     fun y hy => conditionedPositiveTransitionDensity_eq_zero_of_nonpos hν' ht hx hy
   have hunitF := conditionedPositiveTransitionDensity_integral_eq_one hν ht hx
   have hunitG := conditionedPositiveTransitionDensity_integral_eq_one hν' ht hx
-  let r : ℝ → ℝ := fun y =>
+  let r  := fun y =>
     conditionedPositiveTransitionDensity ν' t x y /
       conditionedPositiveTransitionDensity ν t x y
   have hfactor : ∀ y, 0 < y →
@@ -463,7 +453,7 @@ theorem conditionedPositiveTransitionMeasure_cdf_eq_integral
     {ν t x z : ℝ} (hν : 0 ≤ ν) (ht : 0 < t) (hx : 0 < x) :
     ProbabilityTheory.cdf (conditionedPositiveTransitionMeasure ν t x) z =
       ∫ y in Set.Iic z, conditionedPositiveTransitionDensity ν t x y := by
-  have hμ : IsProbabilityMeasure (conditionedPositiveTransitionMeasure ν t x) :=
+  have hμ  :=
     isProbabilityMeasure_conditionedPositiveTransitionMeasure ν t x hν ht hx
   rw [@ProbabilityTheory.cdf_eq_real
     (conditionedPositiveTransitionMeasure ν t x) hμ z]
@@ -476,29 +466,6 @@ theorem conditionedPositiveTransitionMeasure_cdf_eq_integral
   have hmeas : AEStronglyMeasurable (conditionedPositiveTransitionDensity ν t x)
       ((volume : Measure ℝ).restrict (Set.Iic z)) := hkernel.integrableOn.aestronglyMeasurable
   rw [← integral_eq_lintegral_of_nonneg_ae hnonneg hmeas]
-
-private theorem probability_cdf_superlevel_nonempty
-    {μ : Measure ℝ} [IsProbabilityMeasure μ] {u : ℝ} (hu : u < 1) :
-    {x | u ≤ ProbabilityTheory.cdf μ x}.Nonempty := by
-  have hev : ∀ᶠ x : ℝ in atTop, u < ProbabilityTheory.cdf μ x :=
-    (ProbabilityTheory.tendsto_cdf_atTop μ).eventually (Ioi_mem_nhds hu)
-  obtain ⟨a, ha⟩ := Filter.eventually_atTop.1 hev
-  refine ⟨max a 0, ?_⟩
-  change u ≤ ProbabilityTheory.cdf μ (max a 0)
-  apply le_of_lt
-  exact ha (max a 0) (le_max_left _ _)
-
-private theorem probability_cdf_superlevel_bddBelow_of_zero
-    {μ : Measure ℝ} [IsProbabilityMeasure μ] {u : ℝ} (hu : 0 < u)
-    (hzero : ∀ x ≤ 0, ProbabilityTheory.cdf μ x = 0) :
-    BddBelow {x | u ≤ ProbabilityTheory.cdf μ x} := by
-  refine ⟨0, ?_⟩
-  intro x hx
-  change u ≤ ProbabilityTheory.cdf μ x at hx
-  by_contra hxlt
-  have hxnonpos : x ≤ 0 := le_of_lt (lt_of_not_ge hxlt)
-  rw [hzero x hxnonpos] at hx
-  linarith
 
 private theorem conditionedPositiveTransitionMeasure_cdf_eq_zero_of_nonpos
     {ν t x z : ℝ} (hν : 0 ≤ ν) (ht : 0 < t) (hx : 0 < x) (hz : z ≤ 0) :
@@ -516,7 +483,7 @@ theorem conditionedPositiveTransitionQuantile_pos
     (hu : 0 < u) (hu1 : u < 1) :
     0 < cdfGeneralizedQuantile
       (ProbabilityTheory.cdf (conditionedPositiveTransitionMeasure ν t x)) u := by
-  have hμ : IsProbabilityMeasure (conditionedPositiveTransitionMeasure ν t x) :=
+  have hμ  :=
     isProbabilityMeasure_conditionedPositiveTransitionMeasure ν t x hν ht hx
   exact @cdfGeneralizedQuantile_pos_of_cdf_zero_nonpos
     (conditionedPositiveTransitionMeasure ν t x) hμ u hu hu1
@@ -545,11 +512,7 @@ theorem conditionedPositiveTransitionQuantile_start_le
     rw [conditionedPositiveTransitionMeasure_cdf_eq_integral hν ht hx,
       conditionedPositiveTransitionMeasure_cdf_eq_integral hν ht hx']
     exact conditionedPositiveTransitionDensity_start_cdf_le hν ht hx' hxx' z
-  have hF := @probability_cdf_superlevel_nonempty μlarge hμlarge u hu1
-  have hG : BddBelow {z | u ≤ ProbabilityTheory.cdf μsmall z} :=
-    @probability_cdf_superlevel_bddBelow_of_zero μsmall hμsmall u hu
-      (fun z hz => conditionedPositiveTransitionMeasure_cdf_eq_zero_of_nonpos hν ht hx' hz)
-  exact cdfGeneralizedQuantile_antitone horder hF hG
+  exact cdfGeneralizedQuantile_antitone_of_cdf_le hu hu1 horder
 
 /-- Increasing the drift parameter moves every common-uniform quantile of the conditioned
 transition law to the right. -/
@@ -572,11 +535,7 @@ theorem conditionedPositiveTransitionQuantile_drift_le
     rw [conditionedPositiveTransitionMeasure_cdf_eq_integral hν' ht hx,
       conditionedPositiveTransitionMeasure_cdf_eq_integral hν ht hx]
     exact conditionedPositiveTransitionDensity_drift_cdf_le hν hνν' ht hx z
-  have hF := @probability_cdf_superlevel_nonempty μhigh hμhigh u hu1
-  have hG : BddBelow {z | u ≤ ProbabilityTheory.cdf μlow z} :=
-    @probability_cdf_superlevel_bddBelow_of_zero μlow hμlow u hu
-      (fun z hz => conditionedPositiveTransitionMeasure_cdf_eq_zero_of_nonpos hν ht hx hz)
-  exact cdfGeneralizedQuantile_antitone horder hF hG
+  exact cdfGeneralizedQuantile_antitone_of_cdf_le hu hu1 horder
 
 end DOZZ.Proofs
 

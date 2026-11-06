@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.Brownian.Coupling.FiniteGrid
+import Mathlib.Tactic
 
 /-!
 # Continuous interpolation of the shared entrance grids
@@ -46,7 +47,7 @@ theorem couplingRamp_eq_one {a δ t : ℝ} (hδ : 0 < δ) (ht : a + δ ≤ t) :
 /-- The ramp's contribution to elapsed time never exceeds the elapsed time itself. -/
 theorem couplingRamp_time_budget {a δ t : ℝ} (hδ : 0 < δ) (hat : a ≤ t) :
     couplingRamp a δ t * δ ≤ t - a := by
-  have hdiv : 0 ≤ (t - a) / δ := div_nonneg (sub_nonneg.mpr hat) hδ.le
+  have hdiv  := div_nonneg (sub_nonneg.mpr hat) hδ.le
   rw [couplingRamp, max_eq_right hdiv]
   exact (mul_le_mul_of_nonneg_right (min_le_right _ _) hδ.le).trans_eq (div_mul_cancel₀ _ hδ.ne')
 
@@ -71,7 +72,7 @@ theorem measurable_couplingGridInterpolant (δ : ℝ) (n : ℕ) :
   | zero =>
       change Measurable (fun x : ConditionedEntranceGridPath 0 =>
         (x 0).1 * couplingRamp 0 δ (t : ℝ))
-      exact (measurable_subtype_coe.comp (measurable_pi_apply 0)).mul_const _
+      fun_prop (disch := positivity)
   | succ n ih =>
       have hinit : Measurable (Fin.init : ConditionedEntranceGridPath (n + 1) →
           ConditionedEntranceGridPath n) :=
@@ -80,9 +81,7 @@ theorem measurable_couplingGridInterpolant (δ : ℝ) (n : ℕ) :
         couplingGridInterpolant δ n (Fin.init x) t +
           ((x (Fin.last (n + 1))).1 - (x (Fin.last n).castSucc).1) *
             couplingRamp (((n : ℝ) + 1) * δ) δ (t : ℝ))
-      exact (ih.comp hinit).add (((measurable_subtype_coe.comp
-        (measurable_pi_apply (Fin.last (n + 1)))).sub
-          (measurable_subtype_coe.comp (measurable_pi_apply (Fin.last n).castSucc))).mul_const _)
+      fun_prop
 
 /-- Beyond the terminal grid time, the interpolant is exactly its last sampled value. -/
 theorem couplingGridInterpolant_terminal {δ : ℝ} (hδ : 0 < δ) (n : ℕ)
@@ -203,7 +202,7 @@ theorem couplingInterpolatedFamily_mem_orderSet {J : Type*}
     (hx : x ∈ coupledEntranceGridOrderSet v δ (fun _ => δ) n) :
     couplingInterpolatedFamily δ n x ∈ negativeEntranceOrderSet (fun j => (v j : ℝ)) := by
   intro j k _ hjk t
-  have hjk' : v j ≤ v k := hjk
+  have hjk'  := hjk
   have hxy : ∀ i : Fin (n + 1), (x j i).1 ≤ (x k i).1 ∧
       (x k i).1 ≤ (x j i).1 + ((v k : ℝ) - (v j : ℝ)) * (((i.val : ℝ) + 1) * δ) := by
     intro i
@@ -215,22 +214,24 @@ theorem couplingInterpolatedFamily_mem_orderSet {J : Type*}
       -couplingGridInterpolant δ n (x k) t + ((v k : ℝ) - (v j : ℝ)) * (t : ℝ)
   constructor <;> linarith
 
+variable {J : Type*} (v : J → ℝ≥0) (δ : ℝ) (hδ : 0 < δ) (n : ℕ)
+
+include J v δ hδ n in
 /-- The actual continuous-path joint grid law. -/
-noncomputable def couplingInterpolatedGridMeasure {J : Type*}
-    (v : J → ℝ≥0) (δ : ℝ) (hδ : 0 < δ) (n : ℕ) : Measure (J → BrownianPath) :=
+noncomputable def couplingInterpolatedGridMeasure  : Measure (J → BrownianPath) :=
   (coupledEntranceGridMeasure v δ (fun _ => δ) hδ (fun _ => hδ) n).map
     (couplingInterpolatedFamily δ n)
 
-theorem couplingInterpolatedGridMeasure_isProbabilityMeasure {J : Type*}
-    (v : J → ℝ≥0) (δ : ℝ) (hδ : 0 < δ) (n : ℕ) :
+include J v δ hδ n in
+theorem couplingInterpolatedGridMeasure_isProbabilityMeasure  :
     IsProbabilityMeasure (couplingInterpolatedGridMeasure v δ hδ n) := by
   let _ := coupledEntranceGridMeasure_isProbabilityMeasure v δ (fun _ => δ) hδ (fun _ => hδ) n
   exact (Measure.isProbabilityMeasure_map_iff
     (measurable_couplingInterpolatedFamily δ n).aemeasurable).mpr inferInstance
 
+include J v δ hδ n in
 /-- Continuous interpolation introduces no error into the full marginal finite-grid law. -/
-theorem couplingInterpolatedGridMeasure_coordinate_map {J : Type*}
-    (v : J → ℝ≥0) (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (j : J) :
+theorem couplingInterpolatedGridMeasure_coordinate_map  (j : J) :
     (couplingInterpolatedGridMeasure v δ hδ n).map (fun F => F j) =
     (conditionedPositiveEntranceGridMeasure (v j) δ (fun _ => δ) (NNReal.coe_nonneg (v j))
       hδ (fun _ => hδ) n).map (fun x => -(couplingGridInterpolant δ n x)) := by
@@ -253,9 +254,9 @@ theorem couplingInterpolatedGridMeasure_order_ae {J : Type*} [Countable J]
   exact (coupledEntranceGridMeasure_order_ae v δ (fun _ => δ) hδ (fun _ => hδ) n).mono
     fun x hx => couplingInterpolatedFamily_mem_orderSet v hδ n x hx
 
+include J v δ hδ n in
 /-- The joint interpolation law in the probability-measure carrier used by Prokhorov. -/
-noncomputable def couplingInterpolatedGridProbability {J : Type*}
-    (v : J → ℝ≥0) (δ : ℝ) (hδ : 0 < δ) (n : ℕ) : ProbabilityMeasure (J → BrownianPath) :=
+noncomputable def couplingInterpolatedGridProbability  : ProbabilityMeasure (J → BrownianPath) :=
   ⟨couplingInterpolatedGridMeasure v δ hδ n,
     couplingInterpolatedGridMeasure_isProbabilityMeasure v δ hδ n⟩
 

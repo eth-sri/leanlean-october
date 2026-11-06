@@ -13,6 +13,7 @@ import DOZZ.ShiftEquations.Shift.Reflection
 import DOZZ.ShiftEquations.Gluing.Meromorphy
 import DOZZ.Brownian.Reflection.WitnessIndependence
 import DOZZ.Brownian.Reflection.RtheorAnalytic
+public import DOZZ.ShiftEquations.Contracts
 
 /-!
 # The dual shift of `R` at generic points below `γ/2`
@@ -23,7 +24,7 @@ inversion turn into the dual shift (`dualShift_of_product`) as soon as `R` is an
 of `Γ`. All of these hold for every small `u ≠ 0`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -33,38 +34,13 @@ namespace DOZZ.Proofs
 theorem dualShift_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγirr : Irrational (γ ^ 2))
     (hμ : 0 < μ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hSeed : ∀ α ε α' : ℝ, α < Q γ → ε < Q γ → α' < Q γ → 2 * Q γ + 2 / γ < α + ε + α' →
-      ∃ Bε Bα : Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧ IsReflectionData P γ ε Bε Z ∧
-          IsReflectionData P γ α Bα Z ∧
-          reflectionR P γ μ ε Bε Z * structureConstant P M γ μ (2 * Q γ - ε - 2 / γ) α α' =
-            dualCrossingL γ ε α α' * reflectionR P γ μ α Bα Z *
-              structureConstant P M γ μ ε (2 * Q γ - α - 2 / γ) α')
-    (hShiftGluing : ∀ η : ℝ, (0 < η ∧ Q γ - 2 * η > γ) → ∀ α₂ α₃ : ℝ,
-      (Q γ - η < α₂ ∧ α₂ < Q γ) → (Q γ - η < α₃ ∧ α₃ < Q γ) →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) = (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ, C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2)))
+    (hSeed : Contract.dualSecondSeed P X M γ μ)
+    (hShiftGluing : Contract.shiftGluing P X M γ μ)
     {hR : ℝ} (hhR : 0 < hR) {R : ℂ → ℂ} (hRm : MeromorphicOn R (horizontalStrip hR))
     {BR : ℝ → Ω → BrownianPath × BrownianPath} {ZR : Ω → Measure ℝ}
     (hBR : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (BR α) ZR)
     (hRv : ∀ α : ℝ, γ / 2 < α → α < Q γ → R (α : ℂ) = (reflectionR P γ μ α (BR α) ZR : ℂ))
-    (hshift : ∀ᶠ z in codiscrete ℂ,
-      R (z - γ / 2) = -(μ * Real.pi : ℂ) * R z /
-        (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4) *
-          lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2)))
+    (hshift : Contract.reflectionShift γ μ R)
     (hRγ : AnalyticAt ℂ R (γ : ℂ))
     {h₅ : ℝ} (hh₅ : 0 < h₅) {R₅ : ℂ → ℂ} (hR₅m : MeromorphicOn R₅ (horizontalStrip h₅))
     {B₅ : ℝ → Ω → BrownianPath × BrownianPath} {Z₅ : Ω → Measure ℝ}
@@ -78,9 +54,8 @@ theorem dualShift_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) 
             lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * ((γ / 2 - (γ / 8 + u) : ℝ) : ℂ) / γ)) := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+    gcongr
+  have hγc  := Complex.ofReal_ne_zero.mpr hγ.ne'
   -- the two representatives agree as germs on the common strip
   set h' : ℝ := min hR h₅ with hh'
   have hh'0 : 0 < h' := lt_min hhR hh₅
@@ -148,10 +123,10 @@ theorem dualShift_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) 
   rw [r2] at a2 a4 a6
   rw [r3] at a3 a5
   -- the inversion for `R`
-  have hxp : R ((Q γ + θ : ℝ) : ℂ) = R₅ ((Q γ + θ : ℝ) : ℂ) :=
+  have hxp  :=
     eq_of_eventuallyEq_nhdsNE_of_continuousAt
       (hgerm _ (ofReal_mem_horizontalStrip hh'0 _)) a2.continuousAt a4.continuousAt
-  have hxm : R ((Q γ - θ : ℝ) : ℂ) = R₅ ((Q γ - θ : ℝ) : ℂ) :=
+  have hxm  :=
     eq_of_eventuallyEq_nhdsNE_of_continuousAt
       (hgerm _ (ofReal_mem_horizontalStrip hh'0 _)) a3.continuousAt a5.continuousAt
   have hinvR : R ((Q γ + θ : ℝ) : ℂ) * R ((Q γ - θ : ℝ) : ℂ) = 1 := by

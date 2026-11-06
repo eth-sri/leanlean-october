@@ -9,7 +9,7 @@ public import DOZZ.GMC.Construction.GMCRootedMeasureFinite
 
 /-! Almost-sure convergence of the field and chaos coordinates under a circle root shift. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal
@@ -38,8 +38,6 @@ theorem ae_circleRootedCoordinatePath_tendsto
   intro i
   cases i with
   | inl f =>
-    change Tendsto (fun n : ℕ => X ω f + γ * circleCross u (n : ℝ) f) atTop
-      (𝓝 (X ω f + γ * gffRootCovariance u f))
     exact tendsto_const_nhds.add
       (((circleCross_tendsto_gffRootCovariance u f).comp
         (tendsto_natCast_atTop_atTop : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop)).const_mul γ)

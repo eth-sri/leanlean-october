@@ -9,15 +9,18 @@ public import Mathlib.Topology.Semicontinuity.Lindelof
 
 /-! Countable supporting affine functions on the positive half-line. -/
 
-@[expose] public section
+public section
 
 open Set Function
 
 namespace DOZZ.Proofs
 
+variable (F : ℝ → ℝ) (hF : ConvexOn ℝ (Ici 0) F)
+
+include F hF in
 /-- The right derivative at an interior positive point defines a supporting affine function. -/
 theorem convex_right_tangent_le
-    (F : ℝ → ℝ) (hF : ConvexOn ℝ (Ici 0) F) (r : ℝ) (hr : 0 < r)
+     (r : ℝ) (hr : 0 < r)
     (x : ℝ) (hx : 0 < x) :
     F r + derivWithin F (Ioi r) r * (x - r) ≤ F x := by
   have hrint : r ∈ interior (Ici (0 : ℝ)) := by simpa only [interior_Ici, mem_Ioi] using hr
@@ -34,10 +37,11 @@ theorem convex_right_tangent_le
     have hmul := (div_le_iff₀ (sub_pos.mpr hgt)).mp h
     linarith
 
+include F hF in
 /-- Every convex test on the nonnegative half-line is the pointwise supremum on positive
 arguments of a countable family of globally affine minorants. -/
 theorem convex_positive_countable_affine_minorants
-    (F : ℝ → ℝ) (hF : ConvexOn ℝ (Ici 0) F) :
+     :
     ∃ (a b : ℕ → ℝ),
       (∀ n x, 0 < x → a n * x + b n ≤ F x) ∧
         ∀ x, 0 < x → (⨆ n, a n * x + b n) = F x := by
@@ -65,10 +69,8 @@ theorem convex_positive_countable_affine_minorants
   obtain ⟨A', hsub, hcount, hlub⟩ := exists_countable_lowerSemicontinuous_isLUB hAcont hAlub
   have hnonempty : A'.Nonempty := by
     by_contra hempty
-    have heq : A' = ∅ := Set.not_nonempty_iff_eq_empty.mp hempty
-    have hbound : (fun x : S => G x - 1) ∈ upperBounds A' := by simp [heq]
-    have h := hlub.2 hbound (⟨1, by change (0 : ℝ) < 1; norm_num⟩ : S)
-    linarith
+    have heq  := Set.not_nonempty_iff_eq_empty.mp hempty
+    simp_all
   obtain ⟨f, hf⟩ := hcount.exists_eq_range hnonempty
   have hrep (n : ℕ) : ∃ r : ℝ, 0 < r ∧ f n = fun x => L r x.val :=
     hsub (hf ▸ mem_range_self n)
@@ -85,7 +87,7 @@ theorem convex_positive_countable_affine_minorants
   refine ⟨a, b, ?_, ?_⟩
   · intro n x hx
     rw [← hline n ⟨x, hx⟩]
-    exact hAupper (hsub (hf ▸ mem_range_self n)) ⟨x, hx⟩
+    bound
   · intro x hx
     have h := congrFun hsup (⟨x, hx⟩ : S)
     simpa only [iSup_apply, hline, G] using h

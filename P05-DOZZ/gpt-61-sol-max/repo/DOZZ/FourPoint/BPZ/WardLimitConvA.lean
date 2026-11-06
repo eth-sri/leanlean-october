@@ -13,7 +13,7 @@ Along integer cutoffs, the cutoff part `∫ ρ k₁ dM_n` of the mixed mass conv
 `∫ ∂_v(φ k̃) |x|₊^{4+γ²q} dM`, where `k = k̃ |x|₊^{4+γ²q}`. Both follow from the convergence of
 random test functions, since the pinned weights converge uniformly on the cutoff region. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -27,8 +27,7 @@ variable {P : Measure Ω} {X : Ω → Distr} {M : Ω → Measure ℂ} {Xc : Ω �
 theorem bpz_hasCompactSupport_of_ball {f : ℂ → ℝ} {R : ℝ} (hf : ∀ x, R < ‖x‖ → f x = 0) :
     HasCompactSupport f :=
   HasCompactSupport.intro (isCompact_closedBall 0 R) fun x hx => hf x (by
-    rw [Metric.mem_closedBall, dist_zero_right, not_le] at hx
-    exact hx)
+    simp_all)
 
 namespace BPZLimitData
 
@@ -52,7 +51,6 @@ theorem phi_zero_of_rho_zero (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {x : �
 
 theorem measurable_cutWeight (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (r : ℝ) :
     Measurable (bpzWardCutWeight γ q r kt) := by
-  unfold bpzWardCutWeight
   exact (hd.kt_meas.mul (bpz_measurable_normPlus.pow_const _)).mul
     (Real.measurable_exp.comp ((continuous_bpzPin r).measurable.const_mul _))
 
@@ -61,7 +59,7 @@ theorem conv_cut (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb P
     TendstoInMeasure P
       (fun (n : ℕ) ω => ∫ y, ρ y * bpzWardCutWeight γ q n kt y ∂bpzCutChaos P Xc γ n ω) atTop
       (fun ω => ∫ y, ρ y * k₂ y ∂M ω) := by
-  have : IsProbabilityMeasure P := hp.hX.1
+  have  := hp.hX.1
   have hμ := bpzWeakConv_gmc P X hp.hX hd.γ_pos hp.γ2 M hp.hM hp.hMm Xc hp.hXc
   obtain ⟨K, hK0, hK⟩ := hd.cutWeight_bound
   obtain ⟨R, hR0, hR⟩ := hd.rho_zero_of_norm
@@ -138,17 +136,17 @@ theorem conv_left (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb 
     TendstoInMeasure P
       (fun (n : ℕ) ω => ∫ x, bpzWardLeftWeight γ q n kt φ v x ∂bpzCutChaos P Xc γ n ω) atTop
       (fun ω => ∫ x, fderiv ℝ (fun x => φ x * kt x) x v * normPlus x ^ (4 + γ ^ 2 * q) ∂M ω) := by
-  have : IsProbabilityMeasure P := hp.hX.1
+  have  := hp.hX.1
   have hμ := bpzWeakConv_gmc P X hp.hX hd.γ_pos hp.γ2 M hp.hM hp.hMm Xc hp.hXc
   obtain ⟨K, hK0, hK⟩ := hd.cutWeight_bound
   obtain ⟨c, hc, hck⟩ := hd.kt_pos
   set f' : ℂ → ℝ := fun x => fderiv ℝ (fun x => φ x * kt x) x v with hf'
-  have hf'c : Continuous f' := hd.continuous_fderiv_apply v
+  have hf'c  := hd.continuous_fderiv_apply v
   obtain ⟨Rφ, hRφ⟩ := hd.φ_compact.isCompact.isBounded.exists_norm_le
   set R : ℝ := max Rφ 0 with hRdef
   have hR0 : 0 ≤ R := le_max_right _ _
   have hf's : ∀ x, R < ‖x‖ → f' x = 0 := fun x hx => bpz_fderiv_mul_zero_of_notMem v (fun h =>
-    by have := (hRφ x h).trans (le_max_left Rφ 0); linarith)
+    by grind)
   obtain ⟨B₁, hB₁⟩ := hf'c.bounded_above_of_compact_support (bpz_hasCompactSupport_of_ball hf's)
   set A : ℝ := max B₁ 0 / c * K with hA
   have hA0 : 0 ≤ A := by positivity
@@ -157,21 +155,19 @@ theorem conv_left (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb 
   have hrel : ∀ (r : ℝ) x, x ∈ tsupport φ →
       bpzWardLeftWeight γ q r kt φ v x = f' x / kt x * bpzWardCutWeight γ q r kt x := by
     intro r x hx
-    have hkt : kt x ≠ 0 := (lt_of_lt_of_le hc (hck x hx)).ne'
+    have hkt  := (lt_of_lt_of_le hc (hck x hx)).ne'
     unfold bpzWardLeftWeight bpzWardCutWeight
     simp only [hf']
     field_simp
   have hrel₀ : ∀ x, x ∈ tsupport φ →
       f' x * normPlus x ^ (4 + γ ^ 2 * q) = f' x / kt x * (kt x * normPlus x ^ (4 + γ ^ 2 * q)) := by
-    intro x hx
-    have hkt : kt x ≠ 0 := (lt_of_lt_of_le hc (hck x hx)).ne'
-    field_simp
+    grind
   have hratio : ∀ x, x ∈ tsupport φ → |f' x / kt x| ≤ max B₁ 0 / c := by
     intro x hx
-    have hkt : 0 < kt x := lt_of_lt_of_le hc (hck x hx)
+    have hkt  := lt_of_lt_of_le hc (hck x hx)
     rw [abs_div, abs_of_pos hkt, div_le_div_iff₀ hkt hc]
     have h1 : |f' x| ≤ max B₁ 0 := by
-      rw [← Real.norm_eq_abs]; exact (hB₁ x).trans (le_max_left _ _)
+      exact (hB₁ x).trans (le_max_left _ _)
     calc |f' x| * c ≤ max B₁ 0 * c := mul_le_mul_of_nonneg_right h1 hc.le
       _ ≤ max B₁ 0 * kt x := mul_le_mul_of_nonneg_left (hck x hx) (le_max_right _ _)
   have hwb : ∀ (n : ℕ) x, |bpzWardLeftWeight γ q n kt φ v x| ≤ A + 1 := by
@@ -190,8 +186,7 @@ theorem conv_left (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb 
         _ ≤ A + 1 := by linarith
     · unfold bpzWardLeftWeight
       rw [bpz_fderiv_mul_zero_of_notMem v hx]
-      simp only [zero_mul, abs_zero]
-      exact hV.le
+      grind
   have hg₀b : ∀ x, |f' x * normPlus x ^ (4 + γ ^ 2 * q)| ≤ A + 1 := by
     intro x
     by_cases hx : x ∈ tsupport φ
@@ -209,7 +204,6 @@ theorem conv_left (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb 
     hf'c.mul (bpz_continuous_normPlus.rpow_const fun x => Or.inl (bpz_normPlus_pos x).ne')
   have hwm : ∀ n : ℕ, Measurable (bpzWardLeftWeight γ q n kt φ v) := by
     intro n
-    unfold bpzWardLeftWeight
     exact (hf'c.measurable.mul (bpz_measurable_normPlus.pow_const _)).mul
       (Real.measurable_exp.comp ((continuous_bpzPin _).measurable.const_mul _))
   refine hμ.tendstoInMeasure_random_test (fun n _ x => bpzWardLeftWeight γ q n kt φ v x)
@@ -220,8 +214,7 @@ theorem conv_left (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb 
     (Eventually.of_forall fun _ x => hg₀b x)
     (fun n _ x hx => by
       unfold bpzWardLeftWeight
-      rw [show fderiv ℝ (fun x => φ x * kt x) x v = 0 from hf's x hx]
-      simp)
+      grind)
     (fun _ x hx => by rw [show f' x = 0 from hf's x hx, zero_mul]) ?_ ?_
   · intro ε hε
     obtain ⟨δ', hδ', h⟩ := bpz_unifCont_of_compact hg₀c

@@ -46,7 +46,7 @@ theorem bpzDyadic_cell_subset_ball (k : ℕ) (x : ℂ) :
   rw [Metric.mem_closedBall, dist_eq_norm]
   set c := bpzGridCorner h (bpzGridIdx h x)
   have h1 := norm_sub_bpzGridCorner_le hh y
-  have h2 : ‖x - c‖ ≤ 2 * h := norm_sub_bpzGridCorner_le hh x
+  have h2  := norm_sub_bpzGridCorner_le hh x
   rw [hy] at h1
   calc ‖y - x‖ = ‖(y - c) - (x - c)‖ := by ring_nf
     _ ≤ ‖y - c‖ + ‖x - c‖ := norm_sub_le _ _
@@ -63,7 +63,7 @@ theorem iInter_closedBall_four_mul_inv_pow (x : ℂ) :
   constructor
   · intro hy
     by_contra hne
-    have hpos : 0 < dist y x := dist_pos.mpr hne
+    have hpos  := dist_pos.mpr hne
     obtain ⟨k, hk⟩ := exists_pow_lt_of_lt_one (show 0 < dist y x / 4 by positivity)
       (show (1 / 2 : ℝ) < 1 by norm_num)
     have := hy k
@@ -79,9 +79,7 @@ theorem iInf_bpzDyadicMass_le (m : Measure ℂ) [IsFiniteMeasure m] (x : ℂ) :
   have hanti : Antitone fun k : ℕ => Metric.closedBall x (4 * (2 ^ k)⁻¹ : ℝ) := by
     intro i j hij
     apply Metric.closedBall_subset_closedBall
-    have : ((2 : ℝ) ^ j)⁻¹ ≤ ((2 : ℝ) ^ i)⁻¹ :=
-      inv_anti₀ (by positivity) (pow_le_pow_right₀ (by norm_num) hij)
-    linarith
+    bound
   calc ⨅ k, bpzDyadicMass k m x ≤ ⨅ k : ℕ, m (Metric.closedBall x (4 * (2 ^ k)⁻¹)) :=
         iInf_mono fun k => measure_mono (bpzDyadic_cell_subset_ball k x)
     _ = m (⋂ k : ℕ, Metric.closedBall x (4 * (2 ^ k)⁻¹)) :=
@@ -103,7 +101,7 @@ theorem gmc_noAtoms_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : �
     (hM : IsGMCOf P X γ M) (hMm : Measurable M) :
     ∀ᵐ ω ∂P, ∀ x, M ω {x} = 0 := by
   set g : Measure ℂ → ℂ → ℝ≥0∞ := fun m u => ⨅ k, bpzDyadicMass k m u with hg
-  have hgm : Measurable (Function.uncurry g) :=
+  have hgm  :=
     Measurable.iInf fun k => measurable_bpzDyadicMass k
   set H : ℂ → (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := fun u _ m => g m u with hH
   have hHm : Measurable (fun q : ℂ × ((TestFn → ℝ) × Measure ℂ) => H q.1 q.2.1 q.2.2) :=
@@ -130,15 +128,12 @@ theorem gmc_noAtoms_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : �
           hMm
       exact (hgm.comp (hroot.prodMk measurable_const)).aemeasurable
   have hlhs : ∫⁻ ω, ∫⁻ u, g (M ω) u ∂M ω ∂P = 0 := by
-    have h := hid
-    simp only [hH] at h hzero
-    rw [h]
-    simp [hzero]
-  have hmeas : Measurable fun ω => ∫⁻ u, g (M ω) u ∂M ω :=
+    simp_all
+  have hmeas  :=
     (bpz_measurable_lintegral_finite_family M hMm hM.1 g hgm).comp
       (measurable_id.prodMk hMm)
   filter_upwards [(lintegral_eq_zero_iff hmeas).mp hlhs] with ω hω
-  have hgω : g (M ω) =ᵐ[M ω] 0 :=
+  have hgω  :=
     (lintegral_eq_zero_iff (hgm.comp (measurable_const.prodMk measurable_id))).mp hω
   refine measure_singleton_eq_zero_of_ae ?_
   filter_upwards [hgω] with u hu

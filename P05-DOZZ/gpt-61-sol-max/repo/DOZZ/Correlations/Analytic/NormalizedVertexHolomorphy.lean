@@ -26,29 +26,31 @@ def mixedVertexTimes (N : ℕ) (r : ℝ) : Fin (N + 1) → ℝ :=
 noncomputable def complexMomentPower {N : ℕ} (γ : ℝ) (β : Fin N → ℂ) : ℂ :=
   - (((-2 * Q γ / γ : ℝ) : ℂ) + (γ : ℂ)⁻¹ * ∑ i, β i)
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] {N : ℕ} (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
+
+include Ω _inst1 N P Xc in
 /-- Joint Wick normalization uses the full covariance matrix of the actual vertex coordinates. -/
 noncomputable def jointVertexPolynomial
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ} (P : Measure Ω)
-    (Xc : Ω → ℂ → ℝ → ℝ) (z : Fin N → ℂ) (r : Fin N → ℝ) (β : Fin N → ℂ) : ℂ :=
+     (z : Fin N → ℂ) (r : Fin N → ℝ) (β : Fin N → ℂ) : ℂ :=
   -(∑ i, ∑ j, β i * β j *
     (gaussianCovariance P (fun ω => Xc ω (z i) (r i))
       (fun ω => Xc ω (z j) (r j)) : ℂ)) / 2
 
+include Ω _inst1 N P Xc in
 /-- The pin factor cancels the constant equator contribution to the tilted retained mass.
 Joint rather than coordinatewise Wick normalization removes the deterministic pair factor;
 the finite-position Coulomb prefactor can then be multiplied after taking the limit. -/
 noncomputable def normalizedVertexPolynomial
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ} (P : Measure Ω)
-    (Xc : Ω → ℂ → ℝ → ℝ) (γ : ℝ) (z : Fin N → ℂ) (r : ℝ)
+     (γ : ℝ) (z : Fin N → ℂ) (r : ℝ)
     (β : Fin (N + 1) → ℂ) : ℂ :=
   jointVertexPolynomial P Xc (mixedVertexCenters z) (mixedVertexTimes N r) β -
     complexMomentPower γ β * (γ : ℂ) *
       ∑ i, β i.castSucc * (equatorCircleMean (z i) r : ℂ)
 
+include Ω _inst1 N P Xc in
 /-- The normalized cutoff observable retains a charge-independent unweighted mass. -/
 noncomputable def normalizedVertexMoment
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ} (P : Measure Ω)
-    (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → Measure ℂ) (O : Set ℂ)
+     (M : Ω → Measure ℂ) (O : Set ℂ)
     (γ : ℝ) (z : Fin N → ℂ) (r : ℝ) (β : Fin (N + 1) → ℂ) : ℂ :=
   ∫ ω, Complex.exp (normalizedVertexPolynomial P Xc γ z r β +
     ∑ i, β i * (Xc ω (mixedVertexCenters z i) (mixedVertexTimes N r i) : ℂ)) *
@@ -72,13 +74,13 @@ theorem normalized_vertex_moment_holomorphic
   let := hX.1
   let A : Ω → ℝ := fun ω => (M ω O).toReal
   have hm := gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM O ho.measurableSet
-  have hA : AEMeasurable A P := ENNReal.measurable_toReal.comp_aemeasurable hm
+  have hA  := ENNReal.measurable_toReal.comp_aemeasurable hm
   have hpos : ∀ᵐ ω ∂P, 0 < A ω := by
     filter_upwards [open_mass_pos_finite_ae P X hX γ hγ hγ2 M hM O ho hb hn] with ω hω
     exact ENNReal.toReal_pos hω.1 hω.2
   have hinv (q : ℝ) (hq : 0 < q) : Integrable (fun ω => A ω ^ (-q)) P := by
     apply open_mass_real_power_integrable P X hX γ hγ hγ2 M hM O ho hb hn
-    linarith [show (0 : ℝ) < 4 / γ ^ 2 by positivity]
+    field_simp <;> nlinarith
   have hmoment (p : ℝ) (_ : 0 ≤ p) (hp : p < 4 / γ ^ 2) :
       Integrable (fun ω => A ω ^ p) P :=
     open_mass_real_power_integrable P X hX γ hγ hγ2 M hM O ho hb hn p hp

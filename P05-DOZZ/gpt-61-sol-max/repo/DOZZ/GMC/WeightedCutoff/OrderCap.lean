@@ -4,7 +4,7 @@ public import DOZZ.GMC.WeightedCutoff.RootUniform
 
 /-! # A common subcritical order cap for compact parameter families -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -20,8 +20,7 @@ theorem exists_weighted_cutoff_order_cap
   have hgpos : 0 < g := (hΓ2 hg).1
   have hg2 : g < 2 := (hΓ2 hg).2
   have hone : 1 < 4 / g ^ 2 := by
-    apply (lt_div_iff₀ (sq_pos_of_pos hgpos)).mpr
-    nlinarith
+    field_simp <;> nlinarith
   have hmax : max 1 tmax.2 < 4 / g ^ 2 :=
     max_lt_iff.mpr ⟨hone, hcrit g hg tmax htmax⟩
   obtain ⟨q, hqlo, hqhi⟩ := exists_between hmax

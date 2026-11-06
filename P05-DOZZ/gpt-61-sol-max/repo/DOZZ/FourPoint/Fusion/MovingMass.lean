@@ -8,6 +8,7 @@ public import DOZZ.FourPoint.Fusion.Kernel
 public import DOZZ.FourPoint.Fusion.RootedMass
 import DOZZ.GMC.Construction.RootedMeasureKernel
 import DOZZ.GMC.SharpMoments.SeibergMoment
+import Mathlib.Tactic
 
 /-! # The moving mass after rooting at `y*z` -/
 
@@ -38,8 +39,7 @@ theorem fusionMovingKernel_measurable (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) :
     Measurable (fusionMovingKernel γ α₁ α₂ α₃ y z) := by
   apply ENNReal.measurable_ofReal.comp
   apply Measurable.mul
-  · exact (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp (f := fun x : ℂ => (z, x))
-      (measurable_const.prodMk measurable_id)
+  · exact Measurable.comp (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃) (Measurable.prodMk measurable_const measurable_id)
   · exact (measurable_const.mul (measurable_pointRootPotential.comp
       (measurable_const.prodMk measurable_id))).exp
 
@@ -47,8 +47,7 @@ theorem fusionMovingMass_split (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : �
     fusionMovingMass γ α₁ α₂ α₃ y z μ =
       fusionMovingBadMass γ α₁ α₂ α₃ y z δ μ + fusionMovingGoodMass γ α₁ α₂ α₃ y z δ μ := by
   have hc : (Metric.ball (0 : ℂ) δ)ᶜ = {x : ℂ | δ ≤ ‖x‖} := by
-    ext x
-    simp only [Set.mem_compl_iff, Metric.mem_ball, dist_zero_right, Set.mem_ofPred_eq, not_lt]
+    continuity
   exact (lintegral_add_compl _ Metric.isOpen_ball.measurableSet).symm.trans
     (by rw [hc]; rfl)
 
@@ -73,10 +72,10 @@ theorem fusionMovingMass_eq_rooted (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (μ 
   dsimp [fusionMovingKernel]
   rw [mul_comm, ENNReal.ofReal_mul (Real.exp_nonneg _)]
 
-theorem fusionMovingMass_eq_rooted_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) :
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ) (y z : ℂ)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y z in
+theorem fusionMovingMass_eq_rooted_ae  :
     ∀ᵐ ω ∂P, fusionMovingMass γ α₁ α₂ α₃ y z (M ω) =
       coulombMass γ (gmcRootedMeasure γ (y * z) (M ω)) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ := by
   filter_upwards [gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z,
@@ -84,10 +83,8 @@ theorem fusionMovingMass_eq_rooted_ae {Ω : Type*} [MeasurableSpace Ω]
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hz h0 h1
   exact fusionMovingMass_eq_rooted γ α₁ α₂ α₃ y z (M ω) hz h0 h1
 
-theorem fusionMovingMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) :
+include Ω _inst1 P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y z in
+theorem fusionMovingMass_aemeasurable  :
     AEMeasurable (fun ω => fusionMovingMass γ α₁ α₂ α₃ y z (M ω)) P :=
   gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _ (fusionMovingKernel_measurable _ _ _ _ _ _)
 

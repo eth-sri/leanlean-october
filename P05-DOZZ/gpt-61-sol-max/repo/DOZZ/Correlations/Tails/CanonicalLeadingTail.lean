@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Tails.SourceWilliamsUniformTail
 
 /-! The uniform Williams estimate for the actual independently prefactored canonical mass. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -36,7 +36,7 @@ theorem canonical_leading_tail_uniform
             localSingularMass N (fun _ => 1) 0 γ α q.1}).toReal -
           oneInsertionTailCoefficient γ α z f (reflectionBarR P γ α (B α) Z)*
             x^(-reflectionExponent γ α)| ≤ C*x^(-reflectionExponent γ α-η) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   obtain ⟨C,hC,hbound⟩ := source_williams_tail_uniform P X Xc hX hc γ hγ hγ2
     Kz hKz hz Kα hKα hα B Z hZ hData b R η a hb hR hRbulk hη ha r hr hpr
   refine ⟨C,hC,?_⟩
@@ -44,10 +44,9 @@ theorem canonical_leading_tail_uniform
   let S : Ω → ℝ≥0∞ := fun ω =>
     ENNReal.ofReal (f*‖z‖^(-4 : ℝ)*Real.exp (γ*Xc ω z 0-γ^2*Real.log ‖z‖))
   have hS : Measurable S := by
-    have hpin := (hc.1 0).comp (measurable_id.prodMk (measurable_const : Measurable (fun _ : Ω => z)))
-    exact ((((hpin.const_mul γ).sub_const _).exp).const_mul _).ennreal_ofReal
+    fun_prop (disch := positivity)
   let μ := brownianMaximumReferenceLaw (Q γ-α)
-  let : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw
+  let  := isProbabilityMeasure_brownianMaximumReferenceLaw
     (sub_pos.mpr (hα α hαk).2)
   have hLaw := prefactored_canonical_source_williams_law P X Xc hX hc hm hcont
     z γ α hγ hγ2 (hα α hαk).2 N hN (B α) Z (hData α hαk) S hS.aemeasurable
@@ -67,11 +66,7 @@ theorem canonical_leading_tail_uniform
     (μ.prod (P.prod P)) {q | ENNReal.ofReal x <
       (S q.2.2*twoSidedReflectionCutMass γ q.1 (B α) Z q.2.1)*
         ENNReal.ofReal (Real.exp (γ*q.1))} at hTail
-  change |((P.prod P) {q | ENNReal.ofReal x < S q.2*localSingularMass N (fun _ => 1) 0 γ α q.1}).toReal -
-    oneInsertionTailCoefficient γ α z f (reflectionBarR P γ α (B α) Z)*
-      x^(-reflectionExponent γ α)| ≤ C*x^(-reflectionExponent γ α-η)
-  rw [hTail]
-  exact hbound z hzk α hαk f hf hfb x hx
+  grind
 
 
 end DOZZ.Proofs

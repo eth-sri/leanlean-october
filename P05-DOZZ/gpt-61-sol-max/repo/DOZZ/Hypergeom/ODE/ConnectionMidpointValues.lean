@@ -37,9 +37,7 @@ private theorem connectionFPlusParameters_mem
     dsimp [connectionFPlusParameters] at hn
     linear_combination -hn
   have hcast : p.2.2 = (((n : ℤ) + 2 : ℤ) : ℂ) := by
-    calc
-      p.2.2 = (n : ℂ) + 2 := hcastNat
-      _ = (((n : ℤ) + 2 : ℤ) : ℂ) := by push_cast; ring
+    simp_all
   exact (hp.1 ((n : ℤ) + 2)) hcast
 
 private theorem connectionGMinusParameters_mem
@@ -50,9 +48,7 @@ private theorem connectionGMinusParameters_mem
     dsimp [connectionGMinusParameters] at hn
     linear_combination -hn
   have hcast : p.2.2 - p.1 - p.2.1 = (((n : ℤ) + 1 : ℤ) : ℂ) := by
-    calc
-      p.2.2 - p.1 - p.2.1 = (n : ℂ) + 1 := hcastNat
-      _ = (((n : ℤ) + 1 : ℤ) : ℂ) := by push_cast; ring
+    simp_all
   exact (hp.2 ((n : ℤ) + 1)) hcast
 
 private theorem connectionGPlusParameters_mem
@@ -64,10 +60,7 @@ private theorem connectionGPlusParameters_mem
     linear_combination hn
   let m : ℤ := -((n : ℤ) + 1)
   have hcast : p.2.2 - p.1 - p.2.1 = (m : ℂ) := by
-    calc
-      p.2.2 - p.1 - p.2.1 = -((n : ℂ) + 1) := hcastNat
-      _ = -(((n : ℤ) + 1 : ℤ) : ℂ) := by push_cast; ring
-      _ = (m : ℂ) := by dsimp [m]; rw [Int.cast_neg]
+    continuity
   exact (hp.2 m) hcast
 
 private theorem familyParameterValue_comp_differentiableAt
@@ -78,31 +71,30 @@ private theorem familyParameterValue_comp_differentiableAt
     (hSDiff : DifferentiableAt ℂ S p) (z : ℂ) (hz : ‖z‖ < 1) :
     DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => H (S q).1 (S q).2.1 (S q).2.2 z) p := by
   have hOn := IsGaussHypergeometricFamily.differentiableOn_params_unitDisk hH hz
-  have hAt : DifferentiableAt ℂ
-      (fun q : ℂ × ℂ × ℂ => H q.1 q.2.1 q.2.2 z) (S p) :=
+  have hAt  :=
     (hOn (S p) hS).differentiableAt
       (gaussParameterPoleFreeDomain_isOpen.mem_nhds hS)
-  change DifferentiableAt ℂ
-    ((fun q : ℂ × ℂ × ℂ => H q.1 q.2.1 q.2.2 z) ∘ S) p
-  exact hAt.comp p hSDiff
+  fun_prop (disch := positivity)
 
+variable {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H) {p : ℂ × ℂ × ℂ} (hp : p ∈ gaussConnectionParameterDomain)
+
+include H hH p hp in
 /-- The first zero-basis value at `1/2` varies holomorphically with the parameters on the
 nonresonant connection domain. -/
 theorem gaussFMinus_midpoint_differentiableAt_params
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    {p : ℂ × ℂ × ℂ} (hp : p ∈ gaussConnectionParameterDomain) :
+     :
     DifferentiableAt ℂ
       (fun q => gaussFMinus H q.1 q.2.1 q.2.2 (1 / 2 : ℂ)) p := by
   have hp0 := connectionDomain_subset_poleFree hp
   have hmap : DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => q) p := by fun_prop
   have h := familyParameterValue_comp_differentiableAt hH p id hp0 hmap
     (1 / 2 : ℂ) (by norm_num)
-  simpa [gaussFMinus] using h
+  exact h
 
+include H hH p hp in
 /-- The second zero-basis value at `1/2` varies holomorphically with the parameters. -/
 theorem gaussFPlus_midpoint_differentiableAt_params
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    {p : ℂ × ℂ × ℂ} (hp : p ∈ gaussConnectionParameterDomain) :
+     :
     DifferentiableAt ℂ
       (fun q => gaussFPlus H q.1 q.2.1 q.2.2 (1 / 2 : ℂ)) p := by
   have hSDiff : DifferentiableAt ℂ connectionFPlusParameters p := by
@@ -111,18 +103,13 @@ theorem gaussFPlus_midpoint_differentiableAt_params
     (connectionFPlusParameters_mem hp) hSDiff (1 / 2 : ℂ) (by norm_num)
   have hpower : DifferentiableAt ℂ
       (fun q : ℂ × ℂ × ℂ => (1 / 2 : ℂ) ^ (1 - q.2.2)) p := by
-    have hExponent : DifferentiableAt ℂ (fun q : ℂ × ℂ × ℂ => 1 - q.2.2) p := by
-      fun_prop
-    exact hExponent.const_cpow (Or.inl (by norm_num))
-  change DifferentiableAt ℂ
-    (fun q => (1 / 2 : ℂ) ^ (1 - q.2.2) *
-      H (q.1 - q.2.2 + 1) (q.2.1 - q.2.2 + 1) (2 - q.2.2) (1 / 2 : ℂ)) p
-  exact hpower.mul hvalue
+    fun_prop (disch := aesop)
+  exact DifferentiableAt.fun_mul hpower hvalue
 
+include H hH p hp in
 /-- The first one-basis value at `1/2` varies holomorphically with the parameters. -/
 theorem gaussGMinus_midpoint_differentiableAt_params
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    {p : ℂ × ℂ × ℂ} (hp : p ∈ gaussConnectionParameterDomain) :
+     :
     DifferentiableAt ℂ
       (fun q => gaussGMinus H q.1 q.2.1 q.2.2 (1 / 2 : ℂ)) p := by
   have hSDiff : DifferentiableAt ℂ connectionGMinusParameters p := by
@@ -132,10 +119,10 @@ theorem gaussGMinus_midpoint_differentiableAt_params
   norm_num [gaussGMinus, connectionGMinusParameters] at ⊢
   exact hvalue
 
+include H hH p hp in
 /-- The second one-basis value at `1/2` varies holomorphically with the parameters. -/
 theorem gaussGPlus_midpoint_differentiableAt_params
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    {p : ℂ × ℂ × ℂ} (hp : p ∈ gaussConnectionParameterDomain) :
+     :
     DifferentiableAt ℂ
       (fun q => gaussGPlus H q.1 q.2.1 q.2.2 (1 / 2 : ℂ)) p := by
   have hSDiff : DifferentiableAt ℂ connectionGPlusParameters p := by
@@ -144,13 +131,11 @@ theorem gaussGPlus_midpoint_differentiableAt_params
     (connectionGPlusParameters_mem hp) hSDiff (1 / 2 : ℂ) (by norm_num)
   have hpower : DifferentiableAt ℂ
       (fun q : ℂ × ℂ × ℂ => (1 / 2 : ℂ) ^ (q.2.2 - q.1 - q.2.1)) p := by
-    have hExponent : DifferentiableAt ℂ
-        (fun q : ℂ × ℂ × ℂ => q.2.2 - q.1 - q.2.1) p := by fun_prop
-    exact hExponent.const_cpow (Or.inl (by norm_num))
+    fun_prop (disch := aesop)
   have hvalue' : DifferentiableAt ℂ
       (fun q : ℂ × ℂ × ℂ =>
         H (q.2.2 - q.2.1) (q.2.2 - q.1) (1 + q.2.2 - q.1 - q.2.1) (1 / 2 : ℂ)) p := by
-    simpa [connectionGPlusParameters] using hvalue
+    exact hvalue
   have hprod := hpower.mul hvalue'
   norm_num [gaussGPlus] at ⊢
   exact hprod

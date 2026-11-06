@@ -16,7 +16,7 @@ with the killed kernel. This file proves the explicit Gaussian difference estima
 identity, with its exact dependence on the barrier height and time.
 -/
 
-@[expose] public section
+public section
 
 open Real MeasureTheory Set
 

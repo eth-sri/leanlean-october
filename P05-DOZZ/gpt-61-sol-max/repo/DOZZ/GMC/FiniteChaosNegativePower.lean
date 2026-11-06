@@ -11,7 +11,7 @@ public import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic
 
 /-! Negative finite-chaos powers from the finite Laplace comparison. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal Distributions
@@ -20,10 +20,10 @@ namespace DOZZ.Proofs
 
 /-- Integrating the pointwise Mellin formula expresses a negative moment as a weighted integral
 of Laplace transforms. Tonelli is applied on the probability space times the positive half-line. -/
-theorem finite_rpow_neg_lintegral_eq_weighted_laplace
+theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) [IsProbabilityMeasure P] (m : Ω → ℝ)
-    (hm : ∀ ω, 0 < m ω) (hmA : AEMeasurable m P) (q : ℝ) (hq : 0 < q) :
+    (hm : ∀ᵐ ω ∂P, 0 ≤ m ω) (hmA : AEMeasurable m P) (q : ℝ) (hq : 0 < q) :
     ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (m ω)) (-q) ∂P =
       ENNReal.ofReal (1 / Real.Gamma q) *
         ∫⁻ t in Ioi (0 : ℝ), ENNReal.ofReal (t ^ (q - 1)) *
@@ -34,18 +34,7 @@ theorem finite_rpow_neg_lintegral_eq_weighted_laplace
     ENNReal.ofReal (t ^ (q - 1) * Real.exp (-(m ω * t)))
   have hc : c ≠ ∞ := ENNReal.ofReal_ne_top
   have hf : AEMeasurable (Function.uncurry f) (P.prod ν) := by
-    have hmprod : AEMeasurable (fun z : Ω × ℝ => m z.1) (P.prod ν) := hmA.comp_fst
-    have htprod : AEMeasurable (fun z : Ω × ℝ => z.2) (P.prod ν) :=
-      measurable_snd.aemeasurable
-    have harg : AEMeasurable (fun z : Ω × ℝ => -(m z.1 * z.2)) (P.prod ν) :=
-      (hmprod.mul htprod).neg
-    have hexp : AEMeasurable (fun z : Ω × ℝ => Real.exp (-(m z.1 * z.2)))
-        (P.prod ν) := Real.measurable_exp.comp_aemeasurable harg
-    have hpow : Measurable (fun z : Ω × ℝ => z.2 ^ (q - 1)) := by fun_prop
-    have hreal : AEMeasurable (fun z : Ω × ℝ =>
-        z.2 ^ (q - 1) * Real.exp (-(m z.1 * z.2))) (P.prod ν) :=
-      hpow.aemeasurable.mul hexp
-    exact hreal.ennreal_ofReal
+    fun_prop (disch := positivity)
   have hfactor : ∀ᵐ t ∂ν,
       (∫⁻ ω, f ω t ∂P) = ENNReal.ofReal (t ^ (q - 1)) *
         (∫⁻ ω, ENNReal.ofReal (Real.exp (-(m ω * t))) ∂P) := by
@@ -57,17 +46,14 @@ theorem finite_rpow_neg_lintegral_eq_weighted_laplace
           funext ω
           rw [← ENNReal.ofReal_mul (Real.rpow_nonneg ht0.le _)] ]
     exact lintegral_const_mul' _ _ hct
-  have hpoint (ω : Ω) :
+  have hpoint : ∀ᵐ ω ∂P,
       ENNReal.rpow (ENNReal.ofReal (m ω)) (-q) =
         c * ∫⁻ t in Ioi (0 : ℝ), f ω t ∂volume := by
-    change ENNReal.ofReal (m ω) ^ (-q) = _
-    rw [ENNReal.ofReal_rpow_of_pos (hm ω)]
-    simpa [c, f] using ofReal_rpow_neg_eq_mellin_lintegral (hm ω) hq
+    filter_upwards [hm] with ω hω
+    exact nonneg_rpow_neg_eq_mellin_lintegral hω hq
   calc
     ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (m ω)) (-q) ∂P =
-        ∫⁻ ω, c * (∫⁻ t in Ioi (0 : ℝ), f ω t ∂volume) ∂P := by
-          apply lintegral_congr_ae
-          exact ae_of_all P hpoint
+        ∫⁻ ω, c * (∫⁻ t in Ioi (0 : ℝ), f ω t ∂volume) ∂P := lintegral_congr_ae hpoint
     _ = c * ∫⁻ ω, ∫⁻ t, f ω t ∂ν ∂P := lintegral_const_mul' c _ hc
     _ = c * ∫⁻ t, ∫⁻ ω, f ω t ∂P ∂ν := by
           congr 1

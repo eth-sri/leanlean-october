@@ -14,9 +14,11 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ : ℝ) (ω : Ω) (z : ℂ)
+
+include Ω M γ α₁ α₂ α₃ ω z in
 /-- Restrict the absolute first-root mass to one spatial region. -/
-noncomputable def gammaHalfRootMajorantOn {Ω : Type*}
-    (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ : ℝ) (ω : Ω) (z : ℂ) (B : Set ℂ) : ℝ≥0∞ :=
+noncomputable def gammaHalfRootMajorantOn  (B : Set ℂ) : ℝ≥0∞ :=
   ∫⁻ x in B, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖) ∂M ω
 
 /-- The source `I(B,z)` for an arbitrary Borel region. -/
@@ -25,9 +27,9 @@ noncomputable def gammaHalfTwoRootedMajorantOn {Ω : Type*} [MeasurableSpace Ω]
   ∫⁻ ω, (gammaHalfRootMajorantOn M γ α₁ α₂ α₃ ω z B) ^ 2 *
     (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃) ^ (-p - 2) ∂P
 
+include Ω M γ α₁ α₂ α₃ ω z in
 /-- Outside the half-unit disk the absolute numerator is at most four times the full mass. -/
-theorem twoRooted_exterior_numerator_bound {Ω : Type*}
-    (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ : ℝ) (ω : Ω) (z : ℂ) (hz : ‖z‖ ≤ 1 / 4) :
+theorem twoRooted_exterior_numerator_bound  (hz : ‖z‖ ≤ 1 / 4) :
     gammaHalfRootMajorantOn M γ α₁ α₂ α₃ ω z (Metric.ball 0 (1 / 2))ᶜ ≤
       ENNReal.ofReal 4 * ∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω := by
   calc
@@ -36,7 +38,7 @@ theorem twoRooted_exterior_numerator_bound {Ω : Type*}
       apply setLIntegral_mono' measurableSet_ball.compl
       intro x hx
       have hxnorm : 1 / 2 ≤ ‖x‖ := by
-        simpa only [Set.mem_compl_iff, Metric.mem_ball, dist_zero_right, not_lt] using hx
+        simp_all
       have hdist : 1 / 4 ≤ ‖x - z‖ := by
         have hh := norm_sub_norm_le x z
         linarith only [hxnorm, hz, hh]
@@ -44,9 +46,7 @@ theorem twoRooted_exterior_numerator_bound {Ω : Type*}
       have hk := gammaHalfKernel_nonneg γ α₁ α₂ α₃ z x
       rw [← ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 4)]
       apply ENNReal.ofReal_le_ofReal
-      apply (div_le_iff₀ hdistpos).mpr
-      have hh := mul_le_mul_of_nonneg_left (show 1 ≤ 4 * ‖x - z‖ by linarith only [hdist]) hk
-      nlinarith only [hh]
+      field_simp <;> nlinarith
     _ ≤ ∫⁻ x, ENNReal.ofReal 4 * ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω :=
       setLIntegral_le_lintegral _ _
     _ = _ := lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
@@ -80,10 +80,7 @@ theorem twoRooted_exterior_bound
     fin_cases i
     · change ‖z‖ ≤ 1
       linarith only [hz]
-    · change ‖(0 : ℂ)‖ ≤ 1
-      norm_num
-    · change ‖(1 : ℂ)‖ ≤ 1
-      norm_num
+    all_goals norm_num
   calc
     _ ≤ ∫⁻ ω, ENNReal.ofReal 16 *
         (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃) ^ (-p) ∂P :=

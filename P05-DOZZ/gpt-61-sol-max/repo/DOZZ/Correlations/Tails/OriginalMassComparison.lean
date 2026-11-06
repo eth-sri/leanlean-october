@@ -9,7 +9,7 @@ public import DOZZ.Statements.Correlations.LocalSingularMass
 
 /-! The original insertion mass and its common compact localization. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 
@@ -33,7 +33,7 @@ theorem original_localized_mass_comparison
     apply hχzero
     intro h
     apply hy
-    have hnorm : ‖y-z‖ < ρ := by simpa only [Metric.mem_ball,dist_zero_right] using h
+    have hnorm : ‖y-z‖ < ρ := by simp_all
     simpa only [Metric.mem_ball,dist_eq_norm] using hnorm.trans_le hρ1
   have hone (y : ℂ) (hy : y ∈ Metric.ball z δ) : χ (y-z) = 1 := by
     apply hχone

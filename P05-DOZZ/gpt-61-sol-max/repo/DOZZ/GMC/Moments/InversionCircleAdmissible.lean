@@ -9,7 +9,7 @@ public import DOZZ.GMC.CircleAverage
 
 /-! Admissibility of the coupled transformed-circle regularization. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped Distributions Topology

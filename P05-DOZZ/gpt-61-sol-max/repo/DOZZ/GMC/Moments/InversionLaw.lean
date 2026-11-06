@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.GMC.Moments.InversionMeasureLaw
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs
@@ -23,9 +23,9 @@ theorem equatorGFF_GMC_inversion_law
     exact tendstoInMeasure_integral_after_ae_measure_change
       (fun r ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω) M N f
       (hMN.mono fun _ h => h.symm) (hconv f)
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   let A := fun ω => (N ω).map (fun z : ℂ => z⁻¹)
-  have hAmeas : Measurable A := (Measure.measurable_map _ measurable_inv).comp hNmeas
+  have hAmeas  := (Measure.measurable_map _ measurable_inv).comp hNmeas
   have hAfin : ∀ ω, IsFiniteMeasure (A ω) := by
     intro ω
     let := hNfin ω

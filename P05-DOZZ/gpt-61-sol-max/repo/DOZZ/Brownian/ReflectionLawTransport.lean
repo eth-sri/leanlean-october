@@ -68,7 +68,6 @@ theorem reflectionBarR_eq_of_joint_input_law
         apply lintegral_congr
         intro ω
         rfl
-  unfold reflectionBarR
   exact congrArg ENNReal.toReal hmoment
 
 end DOZZ.Proofs

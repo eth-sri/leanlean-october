@@ -17,6 +17,8 @@ import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 import DOZZ.ShiftEquations.Reflection.RbarContinuity
 import DOZZ.ShiftEquations.Gluing.Meromorphy
+public import DOZZ.FourPoint.GaussContracts
+public import DOZZ.ShiftEquations.ContinuationContracts
 
 /-!
 # The first structure shift on a strip, from the unreflected formula
@@ -32,7 +34,7 @@ shift near every point, and the cut-off makes the first shift hold along the cod
 `ℂ` ([KRV, §11]: "Therefore `F` extends to a meromorphic function on a strip").
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -53,24 +55,8 @@ theorem structureConstant_first_shift_strip_of_unreflected
     (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ)
     (hUnreflectedFormula : ∀ {H : ℂ → ℂ → ℂ → ℂ → ℂ}, IsGaussHypergeometricFamily H → ∀ α₁ α₂ α₃ : ℝ,
       γ / 2 < α₁ → α₁ < 2 / γ → α₂ < Q γ → α₃ < Q γ → 2 * Q γ + γ / 2 < α₁ + α₂ + α₃ →
-      let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
-      let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃
-      let c := gaussParameterC γ (γ / 2) α₁
-      ∀ z ∈ gaussCutPlane,
-        fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z =
-          structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-              ‖gaussFMinus H a b c z‖ ^ 2 +
-            (-μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re) *
-              structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ *
-                ‖gaussFPlus H a b c z‖ ^ 2) :
-    ∃ h : ℝ, 0 < h ∧ ∃ C : ℂ → ℂ,
-      MeromorphicOn C {z | |z.im| < h} ∧
-      (∀ α : ℝ, 2 * η < α → α < Q γ →
-        C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-      ∀ᶠ z in codiscrete ℂ,
-        C (z + γ / 2) =
-          -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-            C (z - γ / 2) := by
+      Contract.gammaHalfUnreflected P M γ μ α₁ α₂ α₃ H) :
+    Contract.singleChargeContinuation P M γ μ η α₂ α₃ := by
   obtain ⟨V₃, hV₃, hV₃mem, f₃, hf₃, hf₃eq⟩ :=
     unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   obtain ⟨hη0, hηQ⟩ := hη
@@ -78,9 +64,9 @@ theorem structureConstant_first_shift_strip_of_unreflected
   have hγh : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ (by norm_num) hγ]
     linarith only [mul_lt_mul'' hγ2 hγ2 hγ.le hγ.le]
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
-  have hμc : (μ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hμ.ne'
-  have hπc : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_pos.ne'
+  have hγc  := Complex.ofReal_ne_zero.mpr hγ.ne'
+  have hμc  := Complex.ofReal_ne_zero.mpr hμ.ne'
+  have hπc  := Complex.ofReal_ne_zero.mpr Real.pi_pos.ne'
   -- the continued slice and its window of holomorphy
   set ℓ : ℂ → Fin 3 → ℂ := tripleFirst (α₂ : ℂ) (α₃ : ℂ) with hℓ
   set g : ℂ → ℂ := fun z => structureConstantH f₃ γ μ (ℓ z) with hg
@@ -182,9 +168,7 @@ theorem structureConstant_first_shift_strip_of_unreflected
       (g := fun w : ℂ => w - γ / 2) (by fun_prop)).inv
   have hm0 : ∃ z₀ : ℂ, AnalyticAt ℂ m z₀ ∧ m z₀ ≠ 0 := by
     refine ⟨(x₁ : ℂ), ?_, ?_⟩
-    · have ha : AnalyticAt ℂ (fun z : ℂ => A (z - γ / 2)) (x₁ : ℂ) :=
-        AnalyticAt.comp_of_eq (g := A) (f := fun z : ℂ => z - γ / 2) hu1 (by fun_prop) rfl
-      exact analyticAt_const.mul (ha.inv hu2)
+    · fun_prop
     · simp only [hm]
       exact mul_ne_zero (neg_ne_zero.mpr (mul_ne_zero hπc hμc)) (inv_ne_zero hu2)
   have hrel : ∀ x : ℝ, d₁ < x → x < d₂ → g ((x : ℂ) - (γ : ℂ)) = m x * g x := by

@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Reflected.SourceOuterPast
 public import DOZZ.FourPoint.Reflected.CopiedPolarTransport
 public import DOZZ.Correlations.Tails.WilliamsSourceInputLaw
 /-! The copied restarted inner polar mass retains its joint law with the literal source outer mark. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -42,7 +42,7 @@ theorem reflected_source_copied_williams_joint_law
         ∂(Z v.2).map (fun s => s-(T : ℝ)))) =
     (P.map Y).prod (((brownianMaximumReferenceLaw (Q γ-α₁)).prod P).map
       (fun q => ENNReal.ofReal (Real.exp (γ*q.1))*twoSidedReflectionCutMass γ q.1 B Z q.2)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let A := originRadialPath Xc
   let Z := fun ω => lateralProjectedGMC γ (A ω) (M ω)
   let D := fun ω => brownianShiftPath T (radialPositiveHalf (A ω))
@@ -57,7 +57,7 @@ theorem reflected_source_copied_williams_joint_law
   have hDb : IsBrownianReal (fun t p => p t) (P.map D) := by
     rw [show P.map D = P.map (fun ω => radialPositiveHalf (A ω)) from hlaw]
     exact radialPositiveHalf_map_isBrownian P A hA hB₀
-  have hDZ : IndepFun D Z P :=
+  have hDZ  :=
     (lateralProjectedGMC_indep P X Xc hX hc hm hcont γ hγ hγ₂ M hM).comp₀ hA
       hL.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable
   have hYD := (reflected_source_outer_past_indep P X hX Xc hc hcont γ hγ hγ₂ M hM
@@ -66,8 +66,7 @@ theorem reflected_source_copied_williams_joint_law
     have ho := (reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)
     have ht := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
-    have hb : AEMeasurable (reflected_radial_scale γ (Q γ-α₁) h Xc z) P := by
-      exact ((ht.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
+    have hb : AEMeasurable (reflected_radial_scale γ (Q γ-α₁) h Xc z) P := ((ht.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
     exact ho.prodMk hb
   have hh := reflected_copied_translated_williams_joint_law P D hD hDb γ Z hL hDZ
     Y hYm hYD (Q γ-α₁) (sub_pos.mpr hα₁) Qν hQν T

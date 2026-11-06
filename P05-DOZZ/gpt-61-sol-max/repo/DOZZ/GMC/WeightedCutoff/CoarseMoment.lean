@@ -4,7 +4,7 @@ public import DOZZ.GMC.WeightedCutoff.CoarseVariance
 
 /-! # Gaussian Jensen bound for cutoff masses with uniformly bounded variance -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -52,10 +52,7 @@ theorem regularizedGMC_moment_upper_of_variance_bound
           apply setLIntegral_mono' hO
           intro x hx
           rw [gmcCircleWickDensity_moment P X hX Xc hXc γ r p x]
-          apply ENNReal.ofReal_le_ofReal
-          apply Real.exp_le_exp.mpr
-          apply mul_le_mul_of_nonneg_left (hvar x hx)
-          exact div_nonneg (mul_nonneg (sq_nonneg γ) (by nlinarith)) (by norm_num)
+          bound
         _ = _ := by rw [lintegral_const, Measure.restrict_apply_univ, mul_comm]
     _ = _ := by
       have he : (gmcReferenceMeasure O) ^ (p - 1) * gmcReferenceMeasure O =

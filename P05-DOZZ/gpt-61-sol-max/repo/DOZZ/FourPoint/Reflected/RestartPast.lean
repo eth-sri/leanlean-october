@@ -6,8 +6,9 @@ module
 public import DOZZ.FourPoint.Reflected.RestartedWilliams
 public import DOZZ.FourPoint.Reflected.IndependentRegroup
 public import DOZZ.Brownian.Williams.StoppedPaths
+import Mathlib.Tactic
 /-! Full stopped-past independence at the deterministic radial restart. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -41,7 +42,7 @@ theorem reflected_radial_future_indep_stopped_past
     (T : ℝ≥0) :
     IndepFun (fun ω => brownianShiftPath T (radialPositiveHalf (A ω)))
       (fun ω => stopBrownianPath (radialPositiveHalf (A ω)) T) P := by
-  let _ : IsProbabilityMeasure P := (hB.hasLaw_eval 0).isProbabilityMeasure
+  let _  := (hB.hasLaw_eval 0).isProbabilityMeasure
   let D := fun ω => radialPositiveHalf (A ω)
   have hD : AEMeasurable D P := continuous_radialPositiveHalf.measurable.comp_aemeasurable hA
   have hs : Measurable (brownianShiftPath T) :=
@@ -70,7 +71,7 @@ theorem reflected_radial_future_indep_full_past_lateral
     IndepFun (fun ω => brownianShiftPath T (radialPositiveHalf (A ω)))
       (fun ω => ((stopBrownianPath (radialPositiveHalf (A ω)) T,
         radialNegativeHalf (A ω)), N ω)) P := by
-  let _ : IsProbabilityMeasure P := (hB.hasLaw_eval 0).isProbabilityMeasure
+  let _  := (hB.hasLaw_eval 0).isProbabilityMeasure
   let F : TwoSidedPath → BrownianPath := fun a => brownianShiftPath T (radialPositiveHalf a)
   let H : TwoSidedPath → BrownianPath := fun a => stopBrownianPath (radialPositiveHalf a) T
   have hF : Measurable F := continuous_brownianShiftPath.measurable.comp
@@ -91,7 +92,7 @@ theorem reflected_radial_future_indep_full_past_lateral
   have hfull := reflected_independence_regroup P
     (fun ω => F (A ω)) (fun ω => H (A ω)) (fun ω => radialNegativeHalf (A ω))
     (hF.comp_aemeasurable hA) (hH.comp_aemeasurable hA) hminus hfp hpair
-  have hfullN : IndepFun (fun ω => (F (A ω), (H (A ω), radialNegativeHalf (A ω)))) N P :=
+  have hfullN  :=
     hi.comp₀ hA hN (hF.prodMk (hH.prodMk continuous_radialNegativeHalf.measurable)).aemeasurable
       measurable_id.aemeasurable
   exact reflected_independence_regroup P (fun ω => F (A ω))

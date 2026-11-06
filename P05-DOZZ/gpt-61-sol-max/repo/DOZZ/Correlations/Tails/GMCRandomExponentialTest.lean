@@ -11,7 +11,7 @@ public import DOZZ.GMC.Construction.FiniteMeasureTotalize
 
 /-! Actual GMC cutoff convergence for compact exponential tests with a correlated pin. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal
 
@@ -31,15 +31,15 @@ theorem gmc_correlated_exponential_test_limit
     TendstoInMeasure P
       (fun (n : ℕ) ω => ∫ x, f x * Real.exp (c x * θ ω) ∂regularizedGMC P Xc γ n ω)
       atTop (fun ω => ∫ x, f x * Real.exp (c x * θ ω) ∂M ω) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   have hcrit : 1 < 4 / γ^2 := (lt_div_iff₀ (by positivity)).mpr (by nlinarith)
   obtain ⟨q, hq1, hqc⟩ := exists_between hcrit
   let p := Real.conjExponent q
-  have hpq : p.HolderConjugate q := (Real.HolderConjugate.conjExponent hq1).symm
-  have hp : 0 < p := hpq.pos
+  have hpq  := (Real.HolderConjugate.conjExponent hq1).symm
+  have hp  := hpq.pos
   let Lcoef : ℝ → ℝ := fun t => ‖f‖ * ‖c‖ * Real.exp (‖c‖ * (|t|+1))
   let E : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal (Lcoef (θ ω))
-  have hE : Measurable E :=
+  have hE  :=
     (((continuous_abs.measurable.comp hθ).add_const 1).const_mul ‖c‖).exp.const_mul (‖f‖ * ‖c‖) |>.ennreal_ofReal
   have hEp : (∫⁻ ω, E ω ^ p ∂P) < ⊤ := by
     let B : ℝ := ‖f‖ * ‖c‖ * Real.exp ‖c‖
@@ -77,11 +77,9 @@ theorem gmc_correlated_exponential_test_limit
       (regularizedGMC_finite_ae P X hX Xc hc γ n)
   choose N hNm hNf hNe using hversions
   have hNmK (n : ℕ) (ω : Ω) : N n ω K < ⊤ := by
-    let : IsFiniteMeasure (N n ω) := hNf n ω
-    exact measure_lt_top _ _
+    simp_all
   have hM'mK (ω : Ω) : M' ω K < ⊤ := by
-    let : IsFiniteMeasure (M' ω) := hM'f ω
-    exact measure_lt_top _ _
+    simp_all
   have hconv (t : ℝ) : TendstoInMeasure P
       (fun n ω => ∫ x, exponentialParameterTest f c t x ∂N n ω)
       atTop (fun ω => ∫ x, exponentialParameterTest f c t x ∂M' ω) := by

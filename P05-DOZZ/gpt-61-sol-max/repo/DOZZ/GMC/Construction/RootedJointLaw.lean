@@ -8,7 +8,7 @@ public import DOZZ.GMC.Construction.RootedMarkedMeasure
 
 /-! The law of the root together with all determining field and chaos coordinates. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal
@@ -39,9 +39,9 @@ theorem rooted_joint_coordinate_law
   let rightPath : ℂ × Ω → gmcTiltCoordinateIndex → ℝ := fun q =>
     gmcTiltCoordinatePath (fun f => X q.2 f + γ * gffRootCovariance q.1 f)
       (gmcRootedMeasure γ q.1 (M q.2))
-  have hl : Measurable leftPath := measurable_gmcTiltCoordinatePath.comp
+  have hl  := measurable_gmcTiltCoordinatePath.comp
     ((measurable_pi_iff.mpr fun f => (hX.2 f).1).prodMk hMmeas)
-  have hr : Measurable rightPath := measurable_pointRootedCoordinatePath P X hX γ M hMmeas hM.1
+  have hr  := measurable_pointRootedCoordinatePath P X hX γ M hMmeas hM.1
   have hres : Measurable (fun ω => (M ω).restrict B) := by
     apply Measure.measurable_of_measurable_coe
     intro A hA
@@ -77,8 +77,6 @@ theorem rooted_joint_coordinate_law
   rw [← Measure.restrict_restrict hA, Measure.restrict_prod_eq_prod_univ,
     Measure.restrict_apply (hr hD)]
   congr 1
-  ext q
-  simp only [Set.mem_inter_iff, Set.mem_preimage, Set.mem_prod, Set.mem_univ, and_true]
-  exact and_comm
+  grind
 
 end DOZZ.Proofs

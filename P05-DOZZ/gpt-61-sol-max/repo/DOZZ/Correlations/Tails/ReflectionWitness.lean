@@ -9,7 +9,7 @@ public import DOZZ.ShiftEquations.Reflection.Witness
 
 /-! One source lateral measure and one reflection family for all charges below the Seiberg bound. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 

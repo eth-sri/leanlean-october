@@ -10,6 +10,7 @@ public import DOZZ.Brownian.LastExitPostPathMeasurability
 public import DOZZ.Brownian.WienerExists
 public import DOZZ.Brownian.ConditionedFDDUniqueness
 import Mathlib.MeasureTheory.Measure.Portmanteau
+import Mathlib.Tactic
 
 /-!
 # Finite rational projections of the post-last-exit path
@@ -60,21 +61,15 @@ theorem dyadicLastExitPathApproximation_tendsto
       (𝓝 (negativeConditionedPostLastExitPath c p)) := by
   let τ := negativeLastExitTime p c
   have htimeReal : Tendsto
-      (fun n : ℕ => (dyadicLastExitCeilingTime n τ : ℝ)) atTop (𝓝 (τ : ℝ)) := by
-    simpa [τ] using dyadicLastExitCeilingTime_coe_tendsto τ
-  have htime : Tendsto (fun n : ℕ => dyadicLastExitCeilingTime n τ) atTop (𝓝 τ) :=
+      (fun n : ℕ => (dyadicLastExitCeilingTime n τ : ℝ)) atTop (𝓝 (τ : ℝ)) := dyadicLastExitCeilingTime_coe_tendsto τ
+  have htime  :=
     NNReal.tendsto_coe.mp htimeReal
   have hpair : Tendsto
       (fun n : ℕ => (dyadicLastExitCeilingTime n τ, p)) atTop (𝓝 (τ, p)) :=
     htime.prodMk_nhds tendsto_const_nhds
-  have hcont : Tendsto
-      (fun n : ℕ => shiftPathAddConstant c (dyadicLastExitCeilingTime n τ, p))
-      atTop (𝓝 (shiftPathAddConstant c (τ, p))) :=
+  have hcont  :=
     (continuous_shiftPathAddConstant c).continuousAt.tendsto.comp hpair
-  have heq : shiftPathAddConstant c (τ, p) = negativeConditionedPostLastExitPath c p := by
-    ext s
-    rfl
-  simpa [dyadicLastExitPathApproximation, τ, heq] using hcont
+  aesop
 
 /-- Every measurable finite projection at positive rational offsets of the post-last-exit path
 has the conditioned entrance law. -/
@@ -92,15 +87,13 @@ theorem negativeConditionedPostLastExit_positiveRationalProjection
         (brownianFirstHitElapsed n (fun i => Real.toNNReal (offsets i)))) := by
   classical
   let := hP.2.1
-  let ts : Fin n → ℝ≥0 := fun i => Real.toNNReal (offsets i)
-  let ds : Fin n → ℝ≥0 := brownianFirstHitElapsed n ts
-  have hts0 : ∀ i, 0 < ts i := fun i => Real.toNNReal_pos.mpr (hoff i)
+  let ts  := fun i => Real.toNNReal (offsets i)
+  let ds  := brownianFirstHitElapsed n ts
+  have hts0  := fun i => Real.toNNReal_pos.mpr (hoff i)
   have htsmono : StrictMono ts := by
     intro i j hij
-    rw [← NNReal.coe_lt_coe, Real.coe_toNNReal _ (hoff i).le,
-      Real.coe_toNNReal _ (hoff j).le]
-    exact_mod_cast hmono hij
-  have hds : ∀ i, 0 < ds i :=
+    aesop
+  have hds  :=
     fun i => brownianFirstHitElapsed_pos n ts hts0 htsmono i
   have htime (i : Fin n) :
       (⟨(offsets i : ℝ), (hoff i).le⟩ : ℝ≥0) = ts i := by
@@ -114,9 +107,9 @@ theorem negativeConditionedPostLastExit_positiveRationalProjection
     simpa only [setLIntegral_univ] using
       lintegral_brownianEntranceFinitePDF_one Q ν hν hQ n ds hds
   let μ : ProbabilityMeasure (Fin n → ℝ) := ⟨M, hMprob⟩
-  let f : BrownianPath → Fin n → ℝ := fun p i =>
+  let f  := fun p i =>
     -(negativeConditionedPostLastExitPath c p (ts i))
-  let fdyad : ℕ → BrownianPath → Fin n → ℝ := fun k p i =>
+  let fdyad  := fun k p i =>
     dyadicPositiveLastExitRationalEvals k c p (offsets i)
   have hfdyad : ∀ k, Measurable (fdyad k) := by
     intro k
@@ -129,25 +122,18 @@ theorem negativeConditionedPostLastExit_positiveRationalProjection
     intro i
     exact ((ContinuousMap.measurable_eval (ts i)).comp
       (measurable_negativeConditionedPostLastExitPath c)).neg
-  let μdyad : ℕ → ProbabilityMeasure (Fin n → ℝ) := fun k =>
+  let μdyad  := fun k =>
     ProbabilityMeasure.map (⟨P, hP.2.1⟩ : ProbabilityMeasure BrownianPath)
       (fdyad k)
-  let μpost : ProbabilityMeasure (Fin n → ℝ) :=
+  let μpost  :=
     ProbabilityMeasure.map (⟨P, hP.2.1⟩ : ProbabilityMeasure BrownianPath) f
   have hpoint : ∀ p, Tendsto (fun k => fdyad k p) atTop (𝓝 (f p)) := by
     intro p
     have hpath := dyadicLastExitPathApproximation_tendsto p c
     apply tendsto_pi_nhds.mpr
     intro i
-    have heval : (fun k => fdyad k p i) =
-        fun k => -(dyadicLastExitPathApproximation k c p (ts i)) := by
-      funext k
-      simp only [fdyad, dyadicPositiveLastExitRationalEvals,
-        brownianPathRationalEvals, max_eq_left (hoff i).le]
-      rw [htime i]
-    rw [heval]
     exact (continuous_eval_const (ts i)).neg.continuousAt.tendsto.comp hpath
-  have hpathLaw : Tendsto μdyad atTop (𝓝 μpost) :=
+  have hpathLaw  :=
     tendsto_map_of_ae_pointwise ⟨P, hP.2.1⟩ fdyad f hfdyad hf
       (Filter.Eventually.of_forall hpoint)
   have hmix := negativeConditionedDyadicLastExit_finiteProjection_tendsto_entrance
@@ -171,41 +157,34 @@ theorem negativeConditionedPostLastExit_positiveRationalProjection
           rw [Measure.map_apply (hfdyad k) hA]
         rw [happly, hpre]
         rfl
-      simpa [M, ds] using Tendsto.congr'
+      exact Tendsto.congr'
         (Filter.Eventually.of_forall fun k => (heq k).symm) (hmix A hA)
     have hfinite : ∀ k, (μdyad k : Measure (Fin n → ℝ)) A ≠ ∞ :=
       fun k => measure_ne_top _ _
-    have hmeasure : Tendsto (fun k => (μdyad k : Measure (Fin n → ℝ)) A)
-        atTop (𝓝 (M A)) :=
+    have hmeasure  :=
       (ENNReal.tendsto_toReal_iff hfinite (measure_ne_top M A)).mp hreal
     have hnn := (ENNReal.tendsto_toNNReal_iff (measure_ne_top M A) hfinite).2 hmeasure
-    change Tendsto (fun k => ((μdyad k : Measure (Fin n → ℝ)) A).toNNReal)
-      atTop (𝓝 ((M A).toNNReal))
-    exact hnn
+    assumption_mod_cast
   have hweak : Tendsto μdyad atTop (𝓝 μ) := by
     apply IsPiSystem.tendsto_probabilityMeasure_of_tendsto_of_mem
       (S := {U : Set (Fin n → ℝ) | @IsOpen (Fin n → ℝ) inferInstance U})
     · intro U hU V hV hne
       change IsOpen U at hU
-      change IsOpen V at hV
       exact hU.inter hV
     · intro U hU
       change IsOpen U at hU
       exact hU.measurableSet
     · intro U hU x hx
-      change IsOpen U at hU
       exact ⟨U, hU, hU.mem_nhds hx, Subset.rfl⟩
     · intro U hU
       change IsOpen U at hU
       exact hprobEvent U hU.measurableSet
-  have hμeq : μpost = μ := tendsto_nhds_unique hpathLaw hweak
+  have hμeq  := tendsto_nhds_unique hpathLaw hweak
   have hdsEq : ds = brownianFirstHitElapsed n
       (fun i => Real.toNNReal (offsets i)) := rfl
-  have hμeq' : (μpost : Measure (Fin n → ℝ)) = (μ : Measure (Fin n → ℝ)) :=
+  have hμeq'  :=
     congrArg (fun R : ProbabilityMeasure (Fin n → ℝ) => (R : Measure (Fin n → ℝ))) hμeq
-  change (ProbabilityMeasure.map (⟨P, hP.2.1⟩ : ProbabilityMeasure BrownianPath) f).toMeasure = M at hμeq'
-  change P.map f = M at hμeq'
-  simpa [f, ts, M, ds, hdsEq] using hμeq'
+  assumption_mod_cast
 
 /-- The finite positive rational projections of any conditioned path law are the same
 entrance-density measures used by the dyadic mixture. -/
@@ -218,15 +197,13 @@ theorem negativeConditionedLaw_positiveRationalProjection
       volume.withDensity (brownianEntranceFinitePDF ν n
         (brownianFirstHitElapsed n (fun i => Real.toNNReal (offsets i : ℝ)))) := by
   classical
-  let ts : Fin n → ℝ≥0 := fun i => Real.toNNReal (offsets i : ℝ)
-  let ds : Fin n → ℝ≥0 := brownianFirstHitElapsed n ts
-  have hts0 : ∀ i, 0 < ts i := fun i => Real.toNNReal_pos.mpr (hoff i)
+  let ts  := fun i => Real.toNNReal (offsets i : ℝ)
+  let ds  := brownianFirstHitElapsed n ts
+  have hts0  := fun i => Real.toNNReal_pos.mpr (hoff i)
   have htsmono : StrictMono ts := by
     intro i j hij
-    rw [← NNReal.coe_lt_coe, Real.coe_toNNReal _ (hoff i).le,
-      Real.coe_toNNReal _ (hoff j).le]
-    exact_mod_cast hmono hij
-  have hds : ∀ i, 0 < ds i :=
+    aesop
+  have hds  :=
     fun i => brownianFirstHitElapsed_pos n ts hts0 htsmono i
   have htimes : brownianFirstHitTimes n ds = ts := by
     cases n with
@@ -238,19 +215,13 @@ theorem negativeConditionedLaw_positiveRationalProjection
         ENNReal.ofReal (max 0 (conditionedPositiveFDDDensity ν
           (List.ofFn fun i => (ts i : ℝ)) (List.ofFn fun i => x i))) := by
     rw [brownianEntranceFinitePDF_eq_conditionedPositiveFDDDensity ν hν n ds hds x, htimes]
-    rw [ENNReal.ofReal_max]
-    have hnonneg := conditionedPositiveFDDDensity_nonneg hP.1
-      (List.ofFn fun i => (ts i : ℝ)) (List.ofFn fun i => x i) (by simp)
-    simp
-  have hmeas : Measurable (brownianEntranceFinitePDF ν n ds) :=
-    measurable_brownianEntranceFinitePDF ν hν n ds hds
+    simp_all
+
   have hmeasure : volume.withDensity (brownianEntranceFinitePDF ν n ds) =
       volume.withDensity (fun x => ENNReal.ofReal (max 0
         (conditionedPositiveFDDDensity ν (List.ofFn fun i => (ts i : ℝ))
           (List.ofFn fun i => x i)))) := by
-    rw [show brownianEntranceFinitePDF ν n ds = fun x =>
-        ENNReal.ofReal (max 0 (conditionedPositiveFDDDensity ν
-          (List.ofFn fun i => (ts i : ℝ)) (List.ofFn fun i => x i))) from funext hpdf]
+    ext <;> simp_all
   rw [hfd, hmeasure]
 
 private def postLastExitPositiveRationalEvals (p : BrownianPath) :
@@ -278,7 +249,7 @@ private theorem postLastExitRationalEvalRectangles_piSystem :
   intro A hA B hB hne
   rcases hA with ⟨I, S, hS, rfl⟩
   rcases hB with ⟨J, T, hT, rfl⟩
-  let U : {q : ℚ // 0 < (q : ℝ)} → Set ℝ := fun q =>
+  let U  := fun q =>
     (if q ∈ I then S q else Set.univ) ∩ (if q ∈ J then T q else Set.univ)
   refine ⟨I ∪ J, U, ?_, ?_⟩
   · intro q
@@ -286,31 +257,7 @@ private theorem postLastExitRationalEvalRectangles_piSystem :
     split_ifs <;> simp [hS, hT]
   · ext p
     simp only [postLastExitRationalEvalRect, Set.mem_ofPred_eq, Set.mem_inter_iff]
-    constructor
-    · intro h q hq
-      rcases Finset.mem_union.mp hq with hq | hq
-      · have hleft : postLastExitPositiveRationalEvals p q ∈ S q := h.1 q hq
-        have hright : postLastExitPositiveRationalEvals p q ∈
-            (if q ∈ J then T q else Set.univ) := by
-          by_cases hj : q ∈ J
-          · simpa [hj] using h.2 q hj
-          · simp [hj]
-        exact ⟨by simpa [hq] using hleft, hright⟩
-      · have hleft : postLastExitPositiveRationalEvals p q ∈
-            (if q ∈ I then S q else Set.univ) := by
-          by_cases hi : q ∈ I
-          · simpa [hi] using h.1 q hi
-          · simp [hi]
-        have hright : postLastExitPositiveRationalEvals p q ∈ T q := h.2 q hq
-        exact ⟨hleft, by simpa [hq] using hright⟩
-    · intro h
-      constructor
-      · intro q hq
-        have hq' := h q (Finset.mem_union.mpr (Or.inl hq))
-        simpa [U, hq] using hq'.1
-      · intro q hq
-        have hq' := h q (Finset.mem_union.mpr (Or.inr hq))
-        simpa [U, hq] using hq'.2
+    grind
 
 /-- Rational evaluations on positive times generate the Borel sigma algebra of continuous path
 space. Every real evaluation is a pointwise limit of evaluations at rational times from above. -/
@@ -321,13 +268,10 @@ private theorem postLastExitRationalEvalRectangles_generate_measurableSpace :
   have hcoord (q : {q : ℚ // 0 < (q : ℝ)}) : Measurable[mRat]
       (fun p : BrownianPath => postLastExitPositiveRationalEvals p q) := by
     intro s hs
-    let S : {q : ℚ // 0 < (q : ℝ)} → Set ℝ := fun r =>
+    let S  := fun r =>
       if r = q then s else Set.univ
     have hS : ∀ r, MeasurableSet (S r) := by
-      intro r
-      by_cases hr : r = q
-      · simp [S, hr, hs]
-      · simp [S, hr]
+      continuity
     have hrect : postLastExitRationalEvalRect {q} S =
         {p | postLastExitPositiveRationalEvals p q ∈ s} := by
       ext p
@@ -338,14 +282,13 @@ private theorem postLastExitRationalEvalRectangles_generate_measurableSpace :
     rw [← hrect]
     exact MeasurableSpace.measurableSet_generateFrom hbasic
   have hEval (t : ℝ≥0) : Measurable[mRat] (fun p : BrownianPath => p t) := by
-    let qfun : ℕ → ℚ := (Real.exists_seq_rat_strictAnti_tendsto (t : ℝ)).choose
-    have hqfun : StrictAnti qfun ∧ (∀ n, (t : ℝ) < (qfun n : ℝ)) ∧
-        Tendsto (fun n => (qfun n : ℝ)) atTop (𝓝 (t : ℝ)) :=
+    let qfun  := (Real.exists_seq_rat_strictAnti_tendsto (t : ℝ)).choose
+    have hqfun  :=
       (Real.exists_seq_rat_strictAnti_tendsto (t : ℝ)).choose_spec
     have hzeroLe : (0 : ℝ) ≤ (t : ℝ) := by exact_mod_cast t.property
     let rfun : ℕ → ℝ≥0 := fun n => ⟨(qfun n : ℝ),
       (lt_of_le_of_lt hzeroLe (hqfun.2.1 n)).le⟩
-    have hrfunReal : Tendsto (fun n => (rfun n : ℝ)) atTop (𝓝 (t : ℝ)) := hqfun.2.2
+    have hrfunReal  := hqfun.2.2
     have hrfun : Tendsto rfun atTop (𝓝 t) := NNReal.tendsto_coe.mp hrfunReal
     let rfunQ : ℕ → {q : ℚ // 0 < (q : ℝ)} := fun n =>
       ⟨qfun n, lt_of_le_of_lt hzeroLe (hqfun.2.1 n)⟩
@@ -362,9 +305,7 @@ private theorem postLastExitRationalEvalRectangles_generate_measurableSpace :
         Tendsto (fun n => p (rfun n)) atTop (𝓝 (p t)) := by
       intro p
       exact p.continuous.continuousAt.tendsto.comp hrfun
-    have hlimitFun : Tendsto
-        (fun n => fun p : BrownianPath => p (rfun n))
-        atTop (𝓝 fun p : BrownianPath => p t) := tendsto_pi_nhds.mpr hlimit
+    have hlimitFun  := tendsto_pi_nhds.mpr hlimit
     exact measurable_of_tendsto_metrizable happrox hlimitFun
   have hfull_le : ContinuousMap.measurableSpace ≤ mRat := by
     rw [ContinuousMap.measurableSpace_eq_iSup_comap_eval]
@@ -399,43 +340,29 @@ private theorem postLastExitRationalEvalRect_measure_eq
         (postLastExitRationalEvalRect I S) = P (postLastExitRationalEvalRect I S) := by
   classical
   let n := I.card
-  have hn : 0 < n := Finset.card_pos.mpr hI
+  have hn  := Finset.card_pos.mpr hI
   let e : Fin n ≃o I := I.orderIsoOfFin rfl
-  let qidx : Fin n → {q : ℚ // 0 < (q : ℝ)} := fun i => (e i).val
-  let offsets : Fin n → ℚ := fun i => (qidx i).val
-  have hoff : ∀ i, 0 < (offsets i : ℝ) := fun i => (qidx i).property
+  let qidx  := fun i => (e i).val
+  let offsets  := fun i => (qidx i).val
+  have hoff  := fun i => (qidx i).property
   have hmono : StrictMono offsets := by
     intro i j hij
     exact_mod_cast e.strictMono hij
-  let fpost : BrownianPath → Fin n → ℝ := fun p i =>
+  let fpost  := fun p i =>
     -(negativeConditionedPostLastExitPath c p
       (Real.toNNReal (offsets i : ℝ)))
   let forig : BrownianPath → Fin n → ℝ := fun p i =>
     -(p (Real.toNNReal (offsets i : ℝ)))
-  let rpost : BrownianPath → Fin n → ℝ := fun p i =>
+  let rpost  := fun p i =>
     postLastExitPositiveRationalEvals
       (negativeConditionedPostLastExitPath c p) (qidx i)
-  let rorig : BrownianPath → Fin n → ℝ := fun p i =>
+  let rorig  := fun p i =>
     postLastExitPositiveRationalEvals p (qidx i)
   have hB := wienerPathMeasure_isBrownian
-  let : IsProbabilityMeasure wienerPathMeasure := isProbabilityMeasure_wienerPathMeasure
+  let  := isProbabilityMeasure_wienerPathMeasure
   let : IsFiniteMeasure wienerPathMeasure := ⟨by
-    rw [measure_univ]
-    exact ENNReal.one_lt_top⟩
-  let : SFinite wienerPathMeasure := by
-    refine ⟨fun k => if k = 0 then wienerPathMeasure else 0, ?_, ?_⟩
-    · intro k
-      change IsFiniteMeasure (if k = 0 then wienerPathMeasure else 0)
-      by_cases hk : k = 0
-      · rw [ite_eq_left hk]
-        exact ‹IsFiniteMeasure wienerPathMeasure›
-      · rw [ite_eq_right hk]
-        infer_instance
-    · ext s hs
-      rw [Measure.sum_apply _ hs, tsum_eq_single 0 (by
-        intro k hk
-        simp [hk])]
-      simp
+    simp_all⟩
+  let : SFinite wienerPathMeasure := instSFiniteOfSigmaFinite
   have hpost := negativeConditionedPostLastExit_positiveRationalProjection
     hP hB hP hν hc n offsets hoff hmono
   have horig := negativeConditionedLaw_positiveRationalProjection
@@ -448,12 +375,11 @@ private theorem postLastExitRationalEvalRect_measure_eq
   have hfunpost : fpost = rpost := by
     funext p i
     dsimp [fpost, rpost, postLastExitPositiveRationalEvals]
-    exact congrArg (fun t : ℝ≥0 => -(negativeConditionedPostLastExitPath c p t))
-      (htime i)
+    simp_all
   have hfunorig : forig = rorig := by
     funext p i
     dsimp [forig, rorig, postLastExitPositiveRationalEvals]
-    exact congrArg (fun t : ℝ≥0 => -(p t)) (htime i)
+    simp_all
   have hpost' : P.map rpost =
       volume.withDensity (brownianEntranceFinitePDF ν n
         (brownianFirstHitElapsed n (fun i => Real.toNNReal (offsets i)))) := by
@@ -464,7 +390,7 @@ private theorem postLastExitRationalEvalRect_measure_eq
         (brownianFirstHitElapsed n (fun i => Real.toNNReal (offsets i)))) := by
     rw [← hfunorig]
     exact horig
-  have hproj : P.map rpost = P.map rorig := hpost'.trans horig'.symm
+  have hproj  := hpost'.trans horig'.symm
   let A : Set (Fin n → ℝ) := {x | ∀ i, x i ∈ S (qidx i)}
   have hA : MeasurableSet A := by
     change MeasurableSet {x : Fin n → ℝ | ∀ i, x i ∈ S (qidx i)}
@@ -488,37 +414,21 @@ private theorem postLastExitRationalEvalRect_measure_eq
       Set.mem_ofPred_eq]
     constructor
     · intro hp q hq
-      let i : Fin n := e.symm ⟨q, hq⟩
+      let i  := e.symm ⟨q, hq⟩
       have hqi : qidx i = q := congrArg Subtype.val (e.apply_symm_apply ⟨q, hq⟩)
       simpa [hqi] using hp i
-    · intro hp i
-      exact hp (qidx i) (e i).property
+    grind
   have hpreorig : rorig ⁻¹' A = postLastExitRationalEvalRect I S := by
     ext p
     simp only [Set.mem_preimage, A, rorig, postLastExitRationalEvalRect,
       Set.mem_ofPred_eq]
     constructor
     · intro hp q hq
-      let i : Fin n := e.symm ⟨q, hq⟩
+      let i  := e.symm ⟨q, hq⟩
       have hqi : qidx i = q := congrArg Subtype.val (e.apply_symm_apply ⟨q, hq⟩)
       simpa [hqi] using hp i
-    · intro hp i
-      exact hp (qidx i) (e i).property
-  have hRect : MeasurableSet (postLastExitRationalEvalRect I S) := by
-    change MeasurableSet[ContinuousMap.measurableSpace]
-      {p | ∀ q ∈ I, postLastExitPositiveRationalEvals p q ∈ S q}
-    have hset : {p | ∀ q ∈ I, postLastExitPositiveRationalEvals p q ∈ S q} =
-        ⋂ q, ⋂ (_ : q ∈ I), {p | postLastExitPositiveRationalEvals p q ∈ S q} := by
-      ext p
-      simp
-    rw [hset]
-    apply MeasurableSet.iInter
-    intro q
-    apply MeasurableSet.iInter
-    intro hq
-    let t : ℝ≥0 := ⟨(q.val : ℝ), q.property.le⟩
-    exact (hS q).preimage
-      ((ContinuousMap.measurable_eval t).neg)
+    grind
+  have hRect  := MeasurableSet.congr (hrorig hA) hpreorig
   calc
     (P.map (negativeConditionedPostLastExitPath c))
         (postLastExitRationalEvalRect I S) = P
@@ -539,12 +449,12 @@ theorem negativeConditioned_postLastExit_law
     AEMeasurable (negativeConditionedPostLastExitPath c) P ∧
       P.map (negativeConditionedPostLastExitPath c) = P := by
   classical
-  have hmap : AEMeasurable (negativeConditionedPostLastExitPath c) P :=
+  have hmap  :=
     aemeasurable_negativeConditionedPostLastExitPath c P
   refine ⟨hmap, ?_⟩
-  let : IsProbabilityMeasure (P.map (negativeConditionedPostLastExitPath c)) :=
+  let  :=
     (Measure.isProbabilityMeasure_map_iff hmap).mpr hP.2.1
-  let : IsProbabilityMeasure P := hP.2.1
+  let  := hP.2.1
   have hrect : ∀ A ∈ postLastExitRationalEvalRectangles,
       (P.map (negativeConditionedPostLastExitPath c)) A = P A := by
     intro A hA

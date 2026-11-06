@@ -18,7 +18,7 @@ unit-volume moment at `(0, 2, -2)`:
 `C̄(α₁, α₂, α₃) = 2^{γ(α₂+α₃)(-s)} / C(α, z) · C̄_{(0,2,-2)}(α)`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -43,13 +43,13 @@ theorem frame_infSExp_gen (γ α₁ α₂ α₃ : ℝ) :
     -infSExp γ (![α₂, α₃] : Fin 2 → ℝ) α₁ = -sExp γ α₁ α₂ α₃ := by
   unfold infSExp sExp
   rw [Fin.sum_univ_two]
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one]
-  ring
+  push_cast <;> ring
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM α₁ α₂ α₃ in
 /-- **The general frame identity** `E[I_{(0,2,-2)}^q] = 2^{-γ(α₂+α₃)q} E[ρ^q]`, `q = -s`. -/
-theorem lintegral_coulombMass_frame_eq_rho {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ) :
+theorem lintegral_coulombMass_frame_eq_rho  :
     ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) ![α₁, α₂, α₃] ![0, 2, -2] 0)
         (-sExp γ α₁ α₂ α₃) ∂P =
       ENNReal.ofReal (2 ^ (-(γ * (α₂ + α₃) * (-sExp γ α₁ α₂ α₃)))) *
@@ -82,8 +82,7 @@ theorem lintegral_coulombMass_frame_eq_rho {Ω : Type*} [MeasurableSpace Ω] (P 
     fin_cases k
     norm_num
   rw [hc3, one_mul, hinv3] at h3
-  have hswap : ∀ ω, coulombMass γ (M ω) ![α₂, α₃] ![1, 0] α₁ =
-      coulombMass γ (M ω) (Fin.cons α₃ ![α₂] : Fin 2 → ℝ) (Fin.cons 0 ![1] : Fin 2 → ℂ) α₁ :=
+  have hswap  :=
     fun ω => coulombMass_swap γ (M ω) α₂ α₃ 1 0 α₁
   simp_rw [hswap] at h2
   -- step 4: the structure-constant mass
@@ -94,14 +93,11 @@ theorem lintegral_coulombMass_frame_eq_rho {Ω : Type*} [MeasurableSpace Ω] (P 
     filter_upwards [gmc_rho_eq_coulombMass_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃] with ω hω
     rw [hω, ENNReal.rpow_eq_pow]
     rfl
-  have h0 : (![α₁, α₂, α₃] : Fin 3 → ℝ) = Fin.cons α₁ ![α₂, α₃] := rfl
-  have h0' : (![0, 2, -2] : Fin 3 → ℂ) = Fin.cons 0 ![2, -2] := rfl
-  rw [h0, h0', h1, ← h2, h3, ← h4]
+  simp_all
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM α₁ α₂ α₃ in
 /-- **The structure constant through a finite frame.** -/
-theorem unitVolumeStructureConstant_eq_nPoint {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ) :
+theorem unitVolumeStructureConstant_eq_nPoint  :
     unitVolumeStructureConstant P M γ α₁ α₂ α₃ =
       2 ^ (γ * (α₂ + α₃) * (-sExp γ α₁ α₂ α₃)) /
           nPointCoulombPrefactor ![α₁, α₂, α₃] ![0, 2, -2] *

@@ -23,12 +23,12 @@ def admissibleGrowingBarrierSet {Ω : Type*}
   {q | ∀ k : ℕ, k₀ ≤ k → (k : ℝ) ≤ r →
     Y q.1 (Real.exp (-(k : ℝ))) q.2 ≤ a * (k : ℝ)}
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
+
+include Ω _inst1 P U dens ε₀ Y hY in
 /-- The growing-barrier event is jointly measurable in the sample and spatial point. -/
 theorem admissibleGrowingBarrierSet_measurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
+
     (a : ℝ) (k₀ : ℕ) (r : ℝ) :
     MeasurableSet (admissibleGrowingBarrierSet Y a k₀ r) := by
   classical
@@ -39,14 +39,7 @@ theorem admissibleGrowingBarrierSet_measurable
   have hEq : admissibleGrowingBarrierSet Y a k₀ r = ⋂ k, B k := by
     ext q
     simp only [admissibleGrowingBarrierSet, Set.mem_iInter]
-    constructor
-    · intro h k
-      by_cases hk : k₀ ≤ k ∧ (k : ℝ) ≤ r
-      · simpa [B, hk] using h k hk.1 hk.2
-      · simp [B, hk]
-    · intro h k hk₀ hkr
-      have hk : k₀ ≤ k ∧ (k : ℝ) ≤ r := ⟨hk₀, hkr⟩
-      simpa [B, hk] using h k
+    continuity
   rw [hEq]
   apply MeasurableSet.iInter
   intro k
@@ -57,12 +50,10 @@ theorem admissibleGrowingBarrierSet_measurable
     simpa [B, hk] using hset
   · simp [B, hk]
 
+include Ω _inst1 P U dens ε₀ Y hY in
 /-- Every admissible Gaussian regularization is defined over a probability measure. -/
 theorem admissibleLogRegularization_isProbabilityMeasure
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) :
+     :
     IsProbabilityMeasure P := by
   let q : Fin 1 → ℝ × ℂ := fun _ => (ε₀ / 2, 0)
   have hq : ∀ i, 0 < (q i).1 ∧ (q i).1 ≤ ε₀ := by
@@ -79,16 +70,15 @@ theorem admissibleLogRegularization_variance_measurable
     (Y : Ω → ℝ → ℂ → ℝ)
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (ε : ℝ) :
     Measurable (fun x => gaussianVariance P (fun ω => Y ω ε x)) := by
-  have hfield : Measurable (fun q : Ω × ℂ => Y q.1 ε q.2) := hY.measurableAtScale ε
-  have hswap : Measurable (fun q : ℂ × Ω => Y q.2 ε q.1) :=
+  have hfield  := hY.measurableAtScale ε
+  have hswap  :=
     hfield.comp measurable_swap
-  have hsquare : Measurable (fun q : ℂ × Ω => Y q.2 ε q.1 ^ 2) := hswap.pow_const 2
+  have hsquare  := hswap.pow_const 2
   have hvar : Measurable (fun x : ℂ => ∫ ω, Y ω ε x ^ 2 ∂P) :=
     hsquare.stronglyMeasurable.integral_prod_right.measurable
   have heq : (fun x : ℂ => gaussianVariance P (fun ω => Y ω ε x)) =
       fun x => ∫ ω, Y ω ε x ^ 2 ∂P := by
-    funext x
-    simp [gaussianVariance, gaussianCovariance, pow_two]
+    noncomm_ring
   rw [heq]
   exact hvar
 

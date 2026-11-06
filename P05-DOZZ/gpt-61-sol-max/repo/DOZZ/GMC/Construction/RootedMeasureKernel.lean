@@ -5,21 +5,24 @@ module
 
 public import DOZZ.GMC.Construction.RootedCircleKernel
 public import Mathlib.Probability.Kernel.MeasurableLIntegral
+import Mathlib.Tactic
 
 /-! Joint measurability of inserted measures with a varying root. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal
 
 namespace DOZZ.Proofs
 
+variable {U E : Type*} [_inst1 : MeasurableSpace U] [_inst2 : MeasurableSpace E] (μ : U → Measure E) (hμ : Measurable μ) (hfinite : ∀ u, IsFiniteMeasure (μ u))
+
+include U E _inst1 _inst2 μ hμ hfinite in
 /-- Integrating a jointly measurable function against a measurable family of finite measures
 is measurable; the masses of the family need not have a common bound. -/
 theorem measurable_lintegral_finite_family
-    {U E : Type*} [MeasurableSpace U] [MeasurableSpace E]
-    (μ : U → Measure E) (hμ : Measurable μ) (hfinite : ∀ u, IsFiniteMeasure (μ u))
+
     (f : U × E → ℝ≥0∞) (hf : Measurable f) :
     Measurable (fun u => ∫⁻ x, f (u, x) ∂μ u) := by
   let κ : Kernel U E := ⟨μ, hμ⟩
@@ -31,7 +34,7 @@ theorem measurable_lintegral_finite_family
       ⨆ n, ∫⁻ x, F n (u, x) ∂μ u := by
     intro u
     rw [lintegral_iSup]
-    · exact fun n => (F n).measurable.comp measurable_prodMk_left
+    · fun_prop (disch := positivity)
     · exact fun i j hij x => SimpleFunc.monotone_eapprox f hij (u, x)
   simp_rw [hi]
   refine Measurable.iSup fun n => ?_
@@ -59,11 +62,11 @@ theorem measurable_lintegral_finite_family
     rw [hadd]
     exact hm₁.add hm₂
 
+include U E _inst1 _inst2 μ hμ hfinite in
 /-- A jointly measurable density preserves measurability of a finite random-measure family,
 even when the inserted measures themselves have infinite mass. -/
 theorem measurable_withDensity_finite_family
-    {U E : Type*} [MeasurableSpace U] [MeasurableSpace E]
-    (μ : U → Measure E) (hμ : Measurable μ) (hfinite : ∀ u, IsFiniteMeasure (μ u))
+
     (w : U × E → ℝ≥0∞) (hw : Measurable w) :
     Measurable (fun u => (μ u).withDensity (fun x => w (u, x))) := by
   apply Measure.measurable_of_measurable_coe
@@ -107,9 +110,7 @@ theorem measurable_circleRootPotential (r : ℝ) :
 
 /-- The point potential is jointly measurable, including its prescribed value on the diagonal. -/
 theorem measurable_pointRootPotential :
-    Measurable (fun q : ℂ × ℂ => gffKernel q.1 q.2) := by
-  unfold gffKernel
-  exact ((Real.measurable_log.comp (measurable_fst.sub measurable_snd).norm).neg.add
+    Measurable (fun q : ℂ × ℂ => gffKernel q.1 q.2) := ((Real.measurable_log.comp (measurable_fst.sub measurable_snd).norm).neg.add
     (continuous_log_normPlus.measurable.comp measurable_fst)).add
       (continuous_log_normPlus.measurable.comp measurable_snd)
 
@@ -146,7 +147,7 @@ theorem measurable_circleRootedMeasure_family
 theorem measurable_circleCross_center (r : ℝ) (f : TestFn) :
     Measurable (fun u : ℂ => circleCross u r f) := by
   let k : ℂ → ℝ := fun u => gffRootCovariance u f
-  have hk : Measurable k := (gffRootCovariance_continuous f).measurable
+  have hk  := (gffRootCovariance_continuous f).measurable
   have heq : (fun u : ℂ => circleCross u r f) =
       fun u => Real.circleAverage k u (Real.exp (-r)) := by
     funext u

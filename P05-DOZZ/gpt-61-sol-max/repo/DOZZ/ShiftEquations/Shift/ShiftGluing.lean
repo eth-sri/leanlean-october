@@ -10,6 +10,7 @@ import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.Analysis.Convex.PathConnected
 import Mathlib.Analysis.Meromorphic.IsolatedZeros
 import Mathlib.Topology.MetricSpace.Thickening
+import Mathlib.Tactic
 
 /-!
 # Meromorphic continuation by a shift equation
@@ -50,11 +51,11 @@ theorem meromorphicOn_eventuallyEq_of_frequently {f g : ℂ → ℂ} {U : Set �
     (hf : MeromorphicOn f U) (hg : MeromorphicOn g U) (hU : IsPreconnected U)
     {x₀ y : ℂ} (hx₀ : x₀ ∈ U) (hy : y ∈ U) (hfreq : ∃ᶠ z in 𝓝[≠] x₀, f z = g z) :
     f =ᶠ[𝓝[≠] y] g := by
-  have hsub : MeromorphicOn (f - g) U := hf.sub hg
+  have hsub  := hf.sub hg
   have h0 : (f - g) =ᶠ[𝓝[≠] x₀] 0 := by
     refine ((hsub x₀ hx₀).frequently_zero_iff_eventuallyEq_zero).mp ?_
     exact hfreq.mono fun z hz => by simp [hz]
-  have htop : meromorphicOrderAt (f - g) x₀ = ⊤ := meromorphicOrderAt_eq_top_iff.mpr h0
+  have htop  := meromorphicOrderAt_eq_top_iff.mpr h0
   have htop' := hsub.meromorphicOrderAt_eq_top_of_isPreconnected hU hx₀ hy htop
   have := meromorphicOrderAt_eq_top_iff.mp htop'
   exact this.mono fun z hz => sub_eq_zero.mp hz
@@ -68,7 +69,7 @@ theorem eventually_ne_zero_nhdsNE_of_meromorphicOn_univ {m : ℂ → ℂ}
   have h0 : meromorphicOrderAt m z₀ ≠ ⊤ := by
     rw [meromorphicOrderAt_ne_top_iff_eventually_ne_zero (hm z₀ (mem_univ z₀))]
     exact eventually_nhdsWithin_of_eventually_nhds (han.continuousAt.eventually_ne hne)
-  have hz : meromorphicOrderAt m z ≠ ⊤ :=
+  have hz  :=
     hm.meromorphicOrderAt_ne_top_of_isPreconnected isPreconnected_univ (mem_univ z₀)
       (mem_univ z) h0
   exact (meromorphicOrderAt_ne_top_iff_eventually_ne_zero (hm z (mem_univ z))).mp hz
@@ -83,12 +84,9 @@ theorem shift_relation_eventually {c a b d₁ d₂ : ℝ} (hc : 0 < c)
     {P : Set ℂ} (hP : IsPreconnected P) (hPO : P ⊆ W ∩ (fun z : ℂ => z - c) ⁻¹' W)
     {x₁ : ℝ} (hx₁a : a + c < x₁) (hx₁b : x₁ < b) (hx₁P : (x₁ : ℂ) ∈ P) :
     ∀ y ∈ P, (fun z : ℂ => g (z - c)) =ᶠ[𝓝[≠] y] (fun z : ℂ => m z * g z) := by
-  have hgan : AnalyticOnNhd ℂ g W := hg.analyticOnNhd hW
+  have hgan  := hg.analyticOnNhd hW
   have hL : MeromorphicOn (fun z : ℂ => g (z - c)) (W ∩ (fun z : ℂ => z - c) ⁻¹' W) := by
-    intro z hz
-    have hzc : z - (c : ℂ) ∈ W := hz.2
-    have hsub : AnalyticAt ℂ (fun w : ℂ => w - (c : ℂ)) z := analyticAt_id.sub analyticAt_const
-    exact ((hgan (z - c) hzc).comp_of_eq hsub rfl).meromorphicAt
+    fun_prop
   have hR : MeromorphicOn (fun z : ℂ => m z * g z) (W ∩ (fun z : ℂ => z - c) ⁻¹' W) :=
     fun z hz => (hm z (mem_univ z)).mul (hgan z hz.1).meromorphicAt
   have hSpre : IsPreconnected ((fun t : ℝ => (t : ℂ)) '' Ioo (a + c) b) :=
@@ -97,13 +95,10 @@ theorem shift_relation_eventually {c a b d₁ d₂ : ℝ} (hc : 0 < c)
     rintro _ ⟨t, ⟨ht1, ht2⟩, rfl⟩
     refine ⟨hWab t (by linarith) ht2, ?_⟩
     have hcast : ((t : ℂ) - (c : ℂ)) = ((t - c : ℝ) : ℂ) := by push_cast; ring
-    show ((t : ℂ) - (c : ℂ)) ∈ W
-    rw [hcast]
-    exact hWab _ (by linarith) (by linarith)
+    grind
   have hP'pre : IsPreconnected (P ∪ (fun t : ℝ => (t : ℂ)) '' Ioo (a + c) b) :=
     hP.union (x₁ : ℂ) hx₁P ⟨x₁, ⟨hx₁a, hx₁b⟩, rfl⟩ hSpre
-  have hP'O : P ∪ (fun t : ℝ => (t : ℂ)) '' Ioo (a + c) b ⊆
-      W ∩ (fun z : ℂ => z - c) ⁻¹' W := union_subset hPO hSO
+  have hP'O  := union_subset hPO hSO
   obtain ⟨x₀, hx₀1, hx₀2⟩ : ∃ x₀ : ℝ, d₁ < x₀ ∧ x₀ < d₂ :=
     ⟨(d₁ + d₂) / 2, by linarith, by linarith⟩
   have hx₀S : (x₀ : ℂ) ∈ (fun t : ℝ => (t : ℂ)) '' Ioo (a + c) b :=
@@ -115,7 +110,7 @@ theorem shift_relation_eventually {c a b d₁ d₂ : ℝ} (hc : 0 < c)
   have hev : ∀ᶠ t : ℝ in 𝓝[≠] x₀, g ((t : ℂ) - c) = m (t : ℂ) * g (t : ℂ) :=
     eventually_nhdsWithin_of_eventually_nhds
       (Filter.mem_of_superset (Ioo_mem_nhds hx₀1 hx₀2) fun t ht => hrel t ht.1 ht.2)
-  have hfreq : ∃ᶠ z in 𝓝[≠] (x₀ : ℂ), g (z - c) = m z * g z :=
+  have hfreq  :=
     htend.frequently (p := fun z : ℂ => g (z - c) = m z * g z) hev.frequently
   intro y hy
   exact meromorphicOn_eventuallyEq_of_frequently (hL.mono_set hP'O) (hR.mono_set hP'O) hP'pre
@@ -154,8 +149,7 @@ theorem sub_mem_shiftRect {a b h t t' c : ℝ} {z : ℂ} (hz : z ∈ shiftRect a
   have e1 : (z - (c : ℂ)).re = z.re - c := by simp
   have e2 : (z - (c : ℂ)).im = z.im := by simp
   show a + t' < (z - (c : ℂ)).re ∧ (z - (c : ℂ)).re < b + t' ∧ |(z - (c : ℂ)).im| < h
-  rw [e1, e2]
-  exact ⟨by linarith, by linarith, h3⟩
+  grind
 
 /-- Adding a real step moves a point of the rectangle to the translated rectangle. -/
 theorem add_mem_shiftRect {a b h t t' c : ℝ} {z : ℂ} (hz : z ∈ shiftRect a b h t)
@@ -164,8 +158,7 @@ theorem add_mem_shiftRect {a b h t t' c : ℝ} {z : ℂ} (hz : z ∈ shiftRect a
   have e1 : (z + (c : ℂ)).re = z.re + c := by simp
   have e2 : (z + (c : ℂ)).im = z.im := by simp
   show a + t' < (z + (c : ℂ)).re ∧ (z + (c : ℂ)).re < b + t' ∧ |(z + (c : ℂ)).im| < h
-  rw [e1, e2]
-  exact ⟨by linarith, by linarith, h3⟩
+  grind
 
 /-- Punctured germs are transported by the translation `w ↦ w - c`. -/
 theorem eventually_comp_sub {p : ℂ → Prop} {z : ℂ} (c : ℂ)
@@ -221,7 +214,7 @@ theorem meromorphicOn_shiftUp {c a b h : ℝ} {m g : ℂ → ℂ} (hm : Meromorp
     intro z hz
     have hz' : z - (c : ℂ) ∈ shiftRect a b h (k * c) :=
       sub_mem_shiftRect hz (by push_cast; ring)
-    have h1 : MeromorphicAt (fun w : ℂ => shiftUp c m g k (w - c)) z :=
+    have h1  :=
       meromorphicAt_fun_comp_sub_const_iff_meromorphicAt.mpr (ih _ hz')
     exact h1.div (hm z (mem_univ z))
 
@@ -235,16 +228,17 @@ theorem meromorphicOn_shiftDown {c a b h : ℝ} {m g : ℂ → ℂ} (hm : Meromo
     intro z hz
     have hz' : z + (c : ℂ) ∈ shiftRect a b h (-(k * c)) :=
       add_mem_shiftRect hz (by push_cast; ring)
-    have h1 : MeromorphicAt (fun w : ℂ => shiftDown c m g k (w + c)) z :=
+    have h1  :=
       meromorphicAt_fun_comp_add_const_iff_meromorphicAt.mpr (ih _ hz')
-    have h2 : MeromorphicAt (fun w : ℂ => m (w + c)) z :=
+    have h2  :=
       meromorphicAt_fun_comp_add_const_iff_meromorphicAt.mpr (hm (z + c) (mem_univ _))
     exact h2.mul h1
 
+variable {c a b h : ℝ} {m g : ℂ → ℂ} (hm0 : ∀ z, ∀ᶠ w in 𝓝[≠] z, m w ≠ 0) (hrel : ∀ y ∈ shiftRect a b h 0 ∩ shiftRect a b h c, ∀ᶠ w in 𝓝[≠] y, g (w - c) = m w * g w)
+
+include c a b h m g hm0 hrel in
 /-- Neighbouring right continuations agree on punctured neighbourhoods of the overlap. -/
-theorem shiftUp_compat {c a b h : ℝ} {m g : ℂ → ℂ} (hm0 : ∀ z, ∀ᶠ w in 𝓝[≠] z, m w ≠ 0)
-    (hrel : ∀ y ∈ shiftRect a b h 0 ∩ shiftRect a b h c,
-      ∀ᶠ w in 𝓝[≠] y, g (w - c) = m w * g w) (k : ℕ) :
+theorem shiftUp_compat  (k : ℕ) :
     ∀ z ∈ shiftRect a b h (k * c), z ∈ shiftRect a b h ((k + 1) * c) →
       ∀ᶠ w in 𝓝[≠] z, shiftUp c m g (k + 1) w = shiftUp c m g k w := by
   induction k with
@@ -276,12 +270,11 @@ theorem shiftDown_compat {c a b h : ℝ} {m g : ℂ → ℂ}
   | zero =>
     intro z hz₁ hz₂
     have hz₁' : z + (c : ℂ) ∈ shiftRect a b h 0 := add_mem_shiftRect hz₁ (by push_cast; ring)
-    have hz₂' : z + (c : ℂ) ∈ shiftRect a b h c := add_mem_shiftRect hz₂ (by push_cast; ring)
+    have hz₂'  := add_mem_shiftRect hz₂ (by push_cast; ring)
     filter_upwards [eventually_comp_add (p := fun w => g (w - c) = m w * g w) c
       (hrel _ ⟨hz₁', hz₂'⟩)] with w hw
     show m (w + c) * g (w + c) = g w
-    have hw' : g (w + c - c) = m (w + c) * g (w + c) := hw
-    rw [← hw', add_sub_cancel_right]
+    simp_all
   | succ k ih =>
     intro z hz₁ hz₂
     have h₁ : z + (c : ℂ) ∈ shiftRect a b h (-((k + 1) * c)) :=
@@ -300,9 +293,7 @@ theorem meromorphicOn_shiftPiece {c a b h : ℝ} {m g : ℂ → ℂ} (hm : Merom
   cases n with
   | ofNat k =>
     have hk := meromorphicOn_shiftUp (c := c) hm hg k
-    have e : (((Int.ofNat k : ℤ) : ℝ)) * c = k * c := by simp
-    rw [e]
-    exact hk
+    continuity
   | negSucc k =>
     have hk := meromorphicOn_shiftDown (c := c) hm hg (k + 1)
     have e : (((Int.negSucc k : ℤ) : ℝ)) * c = -(((k + 1 : ℕ) : ℝ) * c) := by
@@ -310,10 +301,9 @@ theorem meromorphicOn_shiftPiece {c a b h : ℝ} {m g : ℂ → ℂ} (hm : Merom
     rw [e]
     exact hk
 
+include c a b h m g hm0 hrel in
 /-- Neighbouring pieces agree on punctured neighbourhoods of the overlap of their rectangles. -/
-theorem shiftPiece_adj {c a b h : ℝ} {m g : ℂ → ℂ} (hm0 : ∀ z, ∀ᶠ w in 𝓝[≠] z, m w ≠ 0)
-    (hrel : ∀ y ∈ shiftRect a b h 0 ∩ shiftRect a b h c,
-      ∀ᶠ w in 𝓝[≠] y, g (w - c) = m w * g w) (n : ℤ) {z : ℂ}
+theorem shiftPiece_adj  (n : ℤ) {z : ℂ}
     (hz₁ : z ∈ shiftRect a b h (n * c)) (hz₂ : z ∈ shiftRect a b h ((n + 1 : ℤ) * c)) :
     ∀ᶠ w in 𝓝[≠] z, shiftPiece c m g n w = shiftPiece c m g (n + 1) w := by
   cases n with
@@ -327,8 +317,7 @@ theorem shiftPiece_adj {c a b h : ℝ} {m g : ℂ → ℂ} (hm0 : ∀ z, ∀ᶠ 
     have e₁ : (((Int.negSucc k : ℤ) : ℝ)) * c = -((k + 1) * c) := by
       rw [Int.cast_negSucc]; push_cast; ring
     have e₂ : ((((Int.negSucc k : ℤ) + 1 : ℤ) : ℝ)) * c = -(k * c) := by
-      have : (Int.negSucc k : ℤ) + 1 = -(k : ℤ) := by omega
-      rw [this]; push_cast; ring
+      simp_all
     rw [e₁] at hz₁
     rw [e₂] at hz₂
     have e : (Int.negSucc k : ℤ) + 1 = -(k : ℤ) := by omega
@@ -345,7 +334,7 @@ theorem shiftPiece_compat {c a b h : ℝ} {m g : ℂ → ℂ} (hc : 0 < c) (hlen
     (hi : z ∈ shiftRect a b h (i * c)) (hj : z ∈ shiftRect a b h (j * c)) :
     ∀ᶠ w in 𝓝[≠] z, shiftPiece c m g i w = shiftPiece c m g j w := by
   wlog hij : i ≤ j generalizing i j
-  · exact (this j i hj hi (le_of_not_ge hij)).mono fun w hw => hw.symm
+  · grind
   have hj1 : j ≤ i + 1 := by
     by_contra hcon
     have h2 : (i : ℝ) + 2 ≤ j := by exact_mod_cast (by omega : i + 2 ≤ j)
@@ -394,10 +383,7 @@ theorem iUnion_shiftRect_eq {a b c h : ℝ} (hc : 0 < c) (hlen : c < b - a) :
     rw [div_lt_iff₀ hc] at h1
     rw [le_div_iff₀ hc] at h2
     refine ⟨?_, ?_, hz⟩
-    · push_cast
-      nlinarith
-    · push_cast
-      nlinarith
+    all_goals grind
 
 /-- Gluing the pieces gives a meromorphic function on the strip which agrees with `g` near every
 point of the base rectangle and satisfies the shift equation near every point of the strip. -/
@@ -425,8 +411,8 @@ theorem exists_meromorphicOn_strip_of_base_relation {c a b h : ℝ} (hc : 0 < c)
     obtain ⟨n, hn⟩ := mem_iUnion.mp hz'
     have hzc : z - (c : ℂ) ∈ shiftRect a b h (((n - 1 : ℤ) : ℝ) * c) :=
       sub_mem_shiftRect hn (by push_cast; ring)
-    have h1 : ∀ᶠ w in 𝓝[≠] z, F w = shiftPiece c m g n w := hpiece n z hn
-    have h2 : ∀ᶠ w in 𝓝[≠] (z - c), F w = shiftPiece c m g (n - 1) w :=
+    have h1  := hpiece n z hn
+    have h2  :=
       hpiece (n - 1) (z - c) hzc
     filter_upwards [h1, eventually_comp_sub c h2, hm0 z] with w h1w h3w hmw
     rw [h3w, h1w]
@@ -441,8 +427,7 @@ theorem exists_shiftRect_subset {a b : ℝ} {W : Set ℂ} (hW : IsOpen W)
   have hK : IsCompact ((fun t : ℝ => (t : ℂ)) '' Icc a b) :=
     isCompact_Icc.image Complex.continuous_ofReal
   have hKW : (fun t : ℝ => (t : ℂ)) '' Icc a b ⊆ W := by
-    rintro _ ⟨t, ⟨ht1, ht2⟩, rfl⟩
-    exact hab t ht1 ht2
+    grind
   obtain ⟨δ, hδ, hthick⟩ := hK.exists_thickening_subset_open hW hKW
   refine ⟨δ, hδ, fun z hz => hthick ?_⟩
   obtain ⟨h1, h2, h3⟩ := hz
@@ -486,19 +471,16 @@ theorem exists_override_on_segment {a b h : ℝ} {g F : ℂ → ℂ}
     · obtain ⟨him, hwa, hwb⟩ := hcond
       have hwe : ((w.re : ℝ) : ℂ) = w := Complex.ext (by simp) (by simp [him])
       have hFgw : F =ᶠ[𝓝[≠] w] g := by
-        have := hFg w.re hwa hwb
-        rwa [hwe] at this
+        grind
       have hcF : Tendsto F (𝓝[≠] w) (𝓝 (F w)) :=
         hw.continuousAt.tendsto.mono_left nhdsWithin_le_nhds
       have hcg : Tendsto g (𝓝[≠] w) (𝓝 (g w)) := by
         have := hgc w.re hwa hwb
         rw [hwe] at this
         exact this.tendsto.mono_left nhdsWithin_le_nhds
-      have hFw : F w = g w := tendsto_nhds_unique (hcF.congr' hFgw) hcg
-      show (if w.im = 0 ∧ a < w.re ∧ w.re < b then g w else F w) = F w
-      rw [ite_eq_left ⟨him, hwa, hwb⟩, hFw]
-    · show (if w.im = 0 ∧ a < w.re ∧ w.re < b then g w else F w) = F w
-      rw [ite_eq_right hcond]
+      have hFw  := tendsto_nhds_unique (hcF.congr' hFgw) hcg
+      simp_all
+    simp_all
 
 end ShiftGluing
 
@@ -520,7 +502,7 @@ theorem exists_meromorphicOn_strip_of_shift {c a b d₁ d₂ : ℝ} (hc : 0 < c)
   obtain ⟨a', b', haa', hb'b, hlen, hlen2⟩ := exists_base_interval hc hab
   obtain ⟨h, hh, hrectW⟩ := exists_shiftRect_subset (a := a') (b := b') hW
     (fun x hx1 hx2 => hWab x (by linarith) (by linarith))
-  have hgan : AnalyticOnNhd ℂ g W := hg.analyticOnNhd hW
+  have hgan  := hg.analyticOnNhd hW
   have hm0' := eventually_ne_zero_nhdsNE_of_meromorphicOn_univ hm hm0
   -- the shift relation on the overlap of the base rectangle with its translate
   have hPpre : IsPreconnected (shiftRect a' b' h 0 ∩ shiftRect a' b' h c) :=
@@ -532,7 +514,7 @@ theorem exists_meromorphicOn_strip_of_shift {c a b d₁ d₂ : ℝ} (hc : 0 < c)
       (ofReal_mem_shiftRect_iff hh).mpr ⟨by linarith, by linarith⟩⟩
   have hrelP := shift_relation_eventually hc hd₁ hd hd₂ hW hWab hg hm hrel hPpre hPO
     (x₁ := (a' + c + b') / 2) (by linarith) (by linarith) hx₁P
-  have hg0 : MeromorphicOn g (shiftRect a' b' h 0) := hgan.meromorphicOn.mono_set hrectW
+  have hg0  := hgan.meromorphicOn.mono_set hrectW
   obtain ⟨F, hF, hFg0, hFrel⟩ := exists_meromorphicOn_strip_of_base_relation hc hh hlen hlen2 hm
     hm0' hg0 fun y hy => hrelP y hy
   -- `F` agrees with `g` near every point of the real segment `(a, b)`
@@ -543,8 +525,7 @@ theorem exists_meromorphicOn_strip_of_shift {c a b d₁ d₂ : ℝ} (hc : 0 < c)
       rintro _ ⟨t, _, rfl⟩
       simpa [horizontalStrip] using hh
     have hSW : (fun t : ℝ => (t : ℂ)) '' Ioo a b ⊆ W := by
-      rintro _ ⟨t, ⟨ht1, ht2⟩, rfl⟩
-      exact hWab t ht1 ht2
+      grind
     have hx₂S : (((a' + b') / 2 : ℝ) : ℂ) ∈ (fun t : ℝ => (t : ℂ)) '' Ioo a b :=
       ⟨(a' + b') / 2, ⟨by linarith, by linarith⟩, rfl⟩
     have hx₂R : (((a' + b') / 2 : ℝ) : ℂ) ∈ shiftRect a' b' h 0 :=

@@ -14,7 +14,7 @@ public import DOZZ.Hypergeom.Planar.TwoPointRpow
 
 /-! Gaussian and Laplace foundations for the positive planar Riesz convolution. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Set
 open scoped RealInnerProductSpace
@@ -34,108 +34,18 @@ theorem beta_integral_gamma (a b : ℝ) (ha : 0 < a) (hb : 0 < b) :
     Complex.Gamma_ofReal] at hbetaC'
   simpa [Complex.ofReal_mul, Complex.ofReal_div] using hbetaC'
 
-private theorem beta_tail_change_variables (x y : ℝ) :
-    (∫ v : ℝ in Ioi 0, v ^ (x - 1) * (1 + v) ^ (-(x + y))) =
-      ∫ t : ℝ in Ioc 0 1, t ^ (x - 1) * (1 - t) ^ (y - 1) := by
-  let f : ℝ → ℝ := fun v => v / (1 + v)
-  have hImage : f '' Ioi (0 : ℝ) = Ioo 0 1 := by
-    ext t
-    constructor
-    · rintro ⟨v, hv, rfl⟩
-      have hv' : 0 < v := mem_Ioi.mp hv
-      have hden : 0 < 1 + v := by linarith
-      constructor
-      · exact div_pos hv' hden
-      · rw [div_lt_one hden]
-        linarith
-    · rintro ⟨ht, ht1⟩
-      refine ⟨t / (1 - t), div_pos ht (sub_pos.mpr ht1), ?_⟩
-      dsimp [f]
-      field_simp
-      ring
-  have hInj : InjOn f (Ioi (0 : ℝ)) := by
-    intro v hv w hw h
-    have hvpos : 0 < v := mem_Ioi.mp hv
-    have hwpos : 0 < w := mem_Ioi.mp hw
-    have hv' : 1 + v ≠ 0 := by linarith
-    have hw' : 1 + w ≠ 0 := by linarith
-    have hcross : v * (1 + w) = w * (1 + v) :=
-      (div_eq_div_iff hv' hw').mp (by simpa [f] using h)
-    nlinarith [hcross]
-  have hderiv : ∀ v ∈ Ioi (0 : ℝ),
-      HasDerivWithinAt f ((1 + v) ^ 2)⁻¹ (Ioi (0 : ℝ)) v := by
-    intro v hv
-    have hvpos : 0 < v := mem_Ioi.mp hv
-    have hd : 0 < 1 + v := by linarith
-    have hden : HasDerivAt (fun t : ℝ => 1 + t) 1 v := by
-      convert (hasDerivAt_id v).const_add 1 using 1
-      · funext t
-        simp
-    have hdiv := (hasDerivAt_id v).div hden hd.ne'
-    have hfun : HasDerivAt (fun t : ℝ => t / (1 + t)) ((1 + v) ^ 2)⁻¹ v := by
-      convert hdiv using 1
-      · rfl
-      · field_simp
-        simp only [id_eq]
-        ring
-    simpa only [f] using hfun.hasDerivWithinAt
-  have hchange := MeasureTheory.integral_image_eq_integral_abs_deriv_smul
-    (s := Ioi (0 : ℝ)) (f := f) (f' := fun v => ((1 + v) ^ 2)⁻¹)
-    measurableSet_Ioi hderiv hInj (fun t : ℝ => t ^ (x - 1) * (1 - t) ^ (y - 1))
-  rw [hImage] at hchange
-  rw [setIntegral_congr_set Ioo_ae_eq_Ioc] at hchange
-  calc
-    ∫ v : ℝ in Ioi 0, v ^ (x - 1) * (1 + v) ^ (-(x + y))
-        = ∫ v : ℝ in Ioi 0,
-          |((1 + v) ^ 2)⁻¹| * ((f v) ^ (x - 1) * (1 - f v) ^ (y - 1)) := by
-            symm
-            apply setIntegral_congr_fun measurableSet_Ioi
-            intro v hv
-            have hv0 : 0 < v := hv
-            have hd : 0 < 1 + v := by linarith
-            change |((1 + v) ^ 2)⁻¹| *
-                ((f v) ^ (x - 1) * (1 - f v) ^ (y - 1)) =
-              v ^ (x - 1) * (1 + v) ^ (-(x + y))
-            have hcomp : 1 - f v = 1 / (1 + v) := by
-              dsimp [f]
-              field_simp
-              ring
-            rw [hcomp, abs_of_pos (by positivity)]
-            rw [← Real.rpow_natCast (1 + v) 2]
-            rw [Real.div_rpow hv0.le hd.le, Real.div_rpow zero_le_one hd.le]
-            rw [Real.one_rpow]
-            rw [Real.rpow_neg hd.le]
-            have hpowers : (1 + v) ^ (2 : ℝ) * (1 + v) ^ (x - 1) * (1 + v) ^ (y - 1) =
-                (1 + v) ^ (x + y) := by
-              rw [← Real.rpow_add hd]
-              rw [← Real.rpow_add hd]
-              congr 1
-              ring
-            field_simp [ne_of_gt (Real.rpow_pos_of_pos hd (x - 1)),
-              ne_of_gt (Real.rpow_pos_of_pos hd (y - 1)),
-              ne_of_gt (Real.rpow_pos_of_pos hd (x + y))]
-            rw [← hpowers]
-            ring_nf
-    _ = ∫ t : ℝ in Ioc 0 1, t ^ (x - 1) * (1 - t) ^ (y - 1) := hchange.symm
-
 /-- The positive beta integral on the positive half-line. -/
 theorem beta_tail_integral_gamma (x y : ℝ) (hx : 0 < x) (hy : 0 < y) :
     (∫ v : ℝ in Ioi 0, v ^ (x - 1) * (1 + v) ^ (-(x + y))) =
       Real.Gamma x * Real.Gamma y / Real.Gamma (x + y) := by
-  rw [beta_tail_change_variables]
+  rw [beta_change_variables]
   exact beta_integral_gamma x y hx hy
 
 private theorem beta_tail_integrable (x y : ℝ) (hx : 0 < x) (hy : 0 < y) :
     IntegrableOn (fun v : ℝ => v ^ (x - 1) * (1 + v) ^ (-(x + y))) (Ioi 0) := by
-  by_contra hnot
-  have hzero : (∫ v : ℝ in Ioi 0,
-      v ^ (x - 1) * (1 + v) ^ (-(x + y))) = 0 := integral_undef hnot
-  have hBeta := beta_tail_integral_gamma x y hx hy
-  rw [hzero] at hBeta
-  have hpos : 0 < Real.Gamma x * Real.Gamma y / Real.Gamma (x + y) := by
-    exact div_pos (mul_pos (Real.Gamma_pos_of_pos hx) (Real.Gamma_pos_of_pos hy))
-      (Real.Gamma_pos_of_pos (add_pos hx hy))
-  linarith [hBeta]
+  apply Integrable.of_integral_ne_zero
+  rw [beta_tail_integral_gamma x y hx hy]
+  positivity
 
 /-- Euler's Gamma integral with a positive exponential rate. -/
 theorem integral_laplace_power (a x : ℝ) (ha : 0 < a) (hx : 0 < x) :
@@ -170,8 +80,7 @@ private theorem lintegral_laplace_power_mul (a r : ℝ) (ha : 0 < a) (hr : 0 < r
   rw [lintegral_laplace_power a (r ^ 2) ha (by positivity)]
   have hpow : (r ^ (2 : ℕ)) ^ (-a) = r ^ (-2 * a) := by
     calc
-      (r ^ (2 : ℕ)) ^ (-a) = (r ^ (2 : ℝ)) ^ (-a) := by
-        exact congrArg (fun x : ℝ => x ^ (-a)) (Real.rpow_natCast r 2).symm
+      (r ^ (2 : ℕ)) ^ (-a) = (r ^ (2 : ℝ)) ^ (-a) := congrArg (fun x : ℝ => x ^ (-a)) (Real.rpow_natCast r 2).symm
       _ = r ^ (2 * (-a)) := (Real.rpow_mul hr.le 2 (-a)).symm
       _ = r ^ (-2 * a) := by congr 1; ring
   rw [hpow, ← ENNReal.ofReal_mul (by positivity : 0 ≤ Real.Gamma a)]
@@ -193,29 +102,10 @@ private theorem lintegral_scale_Ioi (t : ℝ) (ht : 0 < t)
     (u : ℝ → ENNReal) :
     (∫⁻ s : ℝ in Ioi 0, u s) =
       ∫⁻ y : ℝ in Ioi 0, ENNReal.ofReal t * u (t * y) := by
-  let f : ℝ → ℝ := fun y => t * y
-  have hImage : f '' Ioi (0 : ℝ) = Ioi 0 := by
-    ext s
-    constructor
-    · rintro ⟨y, hy, rfl⟩
-      exact mul_pos ht hy
-    · intro hs
-      refine ⟨s / t, div_pos hs ht, ?_⟩
-      dsimp [f]
-      field_simp
-  have hmono : MonotoneOn f (Ioi (0 : ℝ)) := by
-    intro x hx y hy hxy
-    exact mul_le_mul_of_nonneg_left hxy ht.le
-  have hderiv : ∀ y ∈ Ioi (0 : ℝ),
-      HasDerivWithinAt f t (Ioi (0 : ℝ)) y := by
-    intro y hy
-    have hfun : HasDerivAt f t y := by
-      simpa [f, mul_comm] using (hasDerivAt_id y).const_mul t
-    exact hfun.hasDerivWithinAt
-  have hchange := MeasureTheory.lintegral_image_eq_lintegral_deriv_mul_of_monotoneOn
-    measurableSet_Ioi hderiv hmono u
-  rw [hImage] at hchange
-  simpa [f] using hchange
+  simpa [Set.image_const_mul_Ioi_zero ht] using
+    (lintegral_image_eq_lintegral_deriv_mul_of_monotoneOn (s := Ioi (0 : ℝ)) measurableSet_Ioi
+      (fun y _ => (by simpa using ((hasDerivAt_id y).const_mul t).hasDerivWithinAt))
+      ((monotone_id.const_mul ht.le).monotoneOn _) u)
 
 private theorem laplace_parameter_scale_identity (a b R t y : ℝ)
     (ht : 0 < t) (hy : 0 < y) :
@@ -300,12 +190,7 @@ theorem laplace_scale_ratio_lintegral (a b R : ℝ) (ha' : a < 1)
                 (Real.Gamma p * (R ^ (2 : ℝ) * y / (1 + y)) ^ (-p)) =
                 (Real.Gamma p * R ^ (-2 * p)) *
                   (y ^ ((1 - a) - 1) * (1 + y) ^ (-((1 - a) + (1 - b)))) := by
-              calc
-                _ = (Real.Gamma p * R ^ (-2 * p)) *
-                    ((y ^ (b - 1) * y ^ (-p)) * ((1 + y) ^ p / (1 + y))) := by
-                      rw [hfactor]
-                      field_simp [ne_of_gt hden]
-                _ = _ := by rw [hysum, hdenpow]
+              grind
             rw [← ENNReal.ofReal_mul
               (by positivity : 0 ≤ y ^ (b - 1) / (1 + y))]
             exact congrArg ENNReal.ofReal hreal
@@ -337,7 +222,7 @@ theorem laplace_parameter_lintegral (a b R : ℝ) (ha' : a < 1)
         Real.exp (-((t * s / (t + s)) * R ^ (2 : ℝ))))) =
       ENNReal.ofReal (Real.Gamma (a + b - 1) * R ^ (-2 * (a + b - 1)) *
         (Real.Gamma (1 - a) * Real.Gamma (1 - b) / Real.Gamma (2 - a - b))) := by
-  let F : ℝ → ℝ → ENNReal := fun t s => ENNReal.ofReal
+  let F  := fun t s => ENNReal.ofReal
     (t ^ (a - 1) * s ^ (b - 1) / (t + s) *
       Real.exp (-((t * s / (t + s)) * R ^ (2 : ℝ))))
   calc
@@ -390,12 +275,7 @@ theorem integral_real_gaussian_shift (a : ℝ) (ha : 0 < a) (w : ℂ) :
   have hshift := (MeasureTheory.measurePreserving_add_right volume w).integral_comp
     (Homeomorph.addRight w).measurableEmbedding
     (fun u : ℂ => Real.exp (-a * ‖u - w‖ ^ 2))
-  calc
-    ∫ u : ℂ, Real.exp (-a * ‖u - w‖ ^ 2) =
-        ∫ u : ℂ, Real.exp (-a * ‖u‖ ^ 2) := by
-          symm
-          simpa only [add_sub_cancel_right] using hshift
-    _ = Real.pi / a := hgauss
+  simp_all
 
 /-- The convolution of two planar Gaussians, obtained by completing the square. -/
 theorem integral_planar_gaussian_product (s t : ℝ) (hs : 0 < s) (ht : 0 < t) (z : ℂ) :
@@ -445,60 +325,13 @@ private theorem lintegral_planar_gaussian_product (s t : ℝ) (hs : 0 < s) (ht :
       (Real.exp (-s * ‖u‖ ^ 2) * Real.exp (-t * ‖u - z‖ ^ 2))) =
       ENNReal.ofReal ((Real.pi / (s + t)) *
         Real.exp (-(s * t / (s + t)) * ‖z‖ ^ 2)) := by
-  let q := s + t
-  let c := t / q
-  have hq : 0 < q := by dsimp [q]; linarith
-  have hc : 0 < c := div_pos ht hq
-  have hsq (u : ℂ) :
-      s * ‖u‖ ^ 2 + t * ‖u - z‖ ^ 2 =
-        q * ‖u - c • z‖ ^ 2 + (s * t / q) * ‖z‖ ^ 2 := by
-    have h1 := norm_sub_sq_real u z
-    have h2 := norm_sub_sq_real u (c • z)
-    rw [h1, h2, real_inner_smul_right, norm_smul, Real.norm_eq_abs, abs_of_pos hc]
-    dsimp [q, c]
-    field_simp
-    ring
-  have hfun (u : ℂ) :
-      Real.exp (-s * ‖u‖ ^ 2) * Real.exp (-t * ‖u - z‖ ^ 2) =
-        Real.exp (-q * ‖u - c • z‖ ^ 2) *
-          Real.exp (-(s * t / q) * ‖z‖ ^ 2) := by
-    calc
-      _ = Real.exp (-(s * ‖u‖ ^ 2 + t * ‖u - z‖ ^ 2)) := by
-        rw [← Real.exp_add]
-        congr 1
-        ring
-      _ = Real.exp (-(q * ‖u - c • z‖ ^ 2 + (s * t / q) * ‖z‖ ^ 2)) := by
-        rw [hsq]
-      _ = _ := by
-        rw [← Real.exp_add]
-        congr 1
-        ring
-  have hbaseC : Integrable (fun u : ℂ => Complex.exp (-(q : ℂ) * ‖u‖ ^ 2)) := by
-    simpa [Complex.ofReal_exp] using
-      (GaussianFourier.integrable_cexp_neg_mul_sq_norm_add
-        (V := ℂ) (b := (q : ℂ)) (by simp [hq]) 0 (0 : ℂ))
-  have hbase : Integrable (fun u : ℂ => Real.exp (-q * ‖u‖ ^ 2)) := by
-    apply hbaseC.re.congr
-    filter_upwards [] with u
-    rw [show (-(q : ℂ) * ‖u‖ ^ 2) = (-(q * ‖u‖ ^ 2) : ℝ) by push_cast; ring]
-    rw [show -q * ‖u‖ ^ 2 = -(q * ‖u‖ ^ 2) by ring]
-    exact Complex.exp_ofReal_re _
-  have hshift : Integrable (fun u : ℂ => Real.exp (-q * ‖u - c • z‖ ^ 2)) := by
-    simpa [sub_eq_add_neg, add_comm] using hbase.comp_add_left (-(c • z))
   have hprod : Integrable (fun u : ℂ =>
       Real.exp (-s * ‖u‖ ^ 2) * Real.exp (-t * ‖u - z‖ ^ 2)) := by
-    have hconst := hshift.const_mul (Real.exp (-(s * t / q) * ‖z‖ ^ 2))
-    apply hconst.congr
-    filter_upwards [] with u
-    calc
-      Real.exp (-(s * t / q) * ‖z‖ ^ 2) * Real.exp (-q * ‖u - c • z‖ ^ 2) =
-          Real.exp (-q * ‖u - c • z‖ ^ 2) * Real.exp (-(s * t / q) * ‖z‖ ^ 2) := by ring
-      _ = Real.exp (-s * ‖u‖ ^ 2) * Real.exp (-t * ‖u - z‖ ^ 2) := (hfun u).symm
-  have hnonneg : 0 ≤ᵐ[volume]
-      (fun u : ℂ => Real.exp (-s * ‖u‖ ^ 2) * Real.exp (-t * ‖u - z‖ ^ 2)) := by
-    filter_upwards [] with u
-    exact mul_nonneg (le_of_lt (Real.exp_pos _)) (le_of_lt (Real.exp_pos _))
-  rw [← ofReal_integral_eq_lintegral_ofReal hprod hnonneg,
+    apply Integrable.of_integral_ne_zero
+    rw [integral_planar_gaussian_product s t hs ht z]
+    positivity
+  rw [← ofReal_integral_eq_lintegral_ofReal hprod
+    (ae_of_all _ fun _ => mul_nonneg (Real.exp_nonneg _) (Real.exp_nonneg _)),
     integral_planar_gaussian_product s t hs ht z]
 
 private theorem lintegral_laplace_gaussian_product (c t s : ℝ)
@@ -517,12 +350,7 @@ private theorem lintegral_laplace_gaussian_product (c t s : ℝ)
                 (Real.exp (-(‖u‖ ^ 2 * t)) * Real.exp (-(‖u - z‖ ^ 2 * s)))) =
                 (∫⁻ u : ℂ, ENNReal.ofReal
                   (Real.exp (-t * ‖u‖ ^ 2) * Real.exp (-s * ‖u - z‖ ^ 2))) := by
-            apply lintegral_congr_ae
-            filter_upwards [] with u
-            apply congrArg ENNReal.ofReal
-            congr 1
-            · ring_nf
-            · ring_nf
+            grind
           rw [hExp, lintegral_planar_gaussian_product t s ht hs z]
 
 private theorem laplace_gaussian_parameter_factor (a b t s : ℝ)
@@ -589,22 +417,17 @@ private theorem positive_riesz_lintegral_scaled (a b : ℝ) (z : ℂ)
           (Real.Gamma (1 - a) * Real.Gamma (1 - b) / Real.Gamma (2 - a - b))) := by
   let A : ℂ → ℝ → ENNReal := fun u t => ENNReal.ofReal
     (t ^ (a - 1) * Real.exp (-(‖u‖ ^ 2 * t)))
-  let B : ℂ → ℝ → ENNReal := fun u s => ENNReal.ofReal
+  let B  := fun u s => ENNReal.ofReal
     (s ^ (b - 1) * Real.exp (-(‖u - z‖ ^ 2 * s)))
-  let F : ℂ → ℝ → ℝ → ENNReal := fun u t s => A u t * B u s
-  let C : ENNReal := ENNReal.ofReal (Real.Gamma a) * ENNReal.ofReal (Real.Gamma b)
-  let T : ℝ := Real.Gamma (a + b - 1) * ‖z‖ ^ (-2 * (a + b - 1)) *
+  let F  := fun u t s => A u t * B u s
+  let C  := ENNReal.ofReal (Real.Gamma a) * ENNReal.ofReal (Real.Gamma b)
+  let T  := Real.Gamma (a + b - 1) * ‖z‖ ^ (-2 * (a + b - 1)) *
     (Real.Gamma (1 - a) * Real.Gamma (1 - b) / Real.Gamma (2 - a - b))
   have hR : 0 < ‖z‖ := norm_pos_iff.mpr hz
-  have hGa : 0 < Real.Gamma a := Real.Gamma_pos_of_pos ha
-  have hGb : 0 < Real.Gamma b := Real.Gamma_pos_of_pos hb
-  have hCpos : 0 < Real.Gamma a * Real.Gamma b :=
-    mul_pos hGa hGb
-  have hC0 : C ≠ 0 := by
-    dsimp [C]
-    apply mul_ne_zero
-    · exact ENNReal.ofReal_ne_zero_iff.mpr hGa
-    · exact ENNReal.ofReal_ne_zero_iff.mpr hGb
+  have hGa  := Real.Gamma_pos_of_pos ha
+  have hGb  := Real.Gamma_pos_of_pos hb
+
+
   have hCtop : C ≠ ⊤ := by
     dsimp [C]
     exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top
@@ -676,9 +499,7 @@ private theorem positive_riesz_lintegral_scaled (a b : ℝ) (z : ℂ)
                     (∫⁻ u : ℂ, ENNReal.ofReal (t ^ (a - 1) * s ^ (b - 1)) *
                       ENNReal.ofReal (Real.exp (-(‖u‖ ^ 2 * t)) *
                         Real.exp (-(‖u - z‖ ^ 2 * s)))) := by
-                apply lintegral_congr_ae
-                filter_upwards [] with u
-                exact hFactor u t s (mem_Ioi.mp ht) (mem_Ioi.mp hs)
+                simp_all
               exact hF.trans (lintegral_laplace_gaussian_product
                 (t ^ (a - 1) * s ^ (b - 1)) t s (mem_Ioi.mp ht) (mem_Ioi.mp hs) z)
       _ = ∫⁻ t : ℝ in Ioi 0, ∫⁻ s : ℝ in Ioi 0,
@@ -720,17 +541,14 @@ private theorem positive_riesz_lintegral_formula (a b : ℝ) (z : ℂ)
         (Real.Gamma (a + b - 1) * ‖z‖ ^ (-2 * (a + b - 1)) *
           (Real.Gamma (1 - a) * Real.Gamma (1 - b) /
             (Real.Gamma a * Real.Gamma b * Real.Gamma (2 - a - b))))) := by
-  let C : ENNReal := ENNReal.ofReal (Real.Gamma a) * ENNReal.ofReal (Real.Gamma b)
-  let T : ℝ := Real.Gamma (a + b - 1) * ‖z‖ ^ (-2 * (a + b - 1)) *
+  let C  := ENNReal.ofReal (Real.Gamma a) * ENNReal.ofReal (Real.Gamma b)
+  let T  := Real.Gamma (a + b - 1) * ‖z‖ ^ (-2 * (a + b - 1)) *
     (Real.Gamma (1 - a) * Real.Gamma (1 - b) / Real.Gamma (2 - a - b))
-  have hGa : 0 < Real.Gamma a := Real.Gamma_pos_of_pos ha
-  have hGb : 0 < Real.Gamma b := Real.Gamma_pos_of_pos hb
+  have hGa  := Real.Gamma_pos_of_pos ha
+  have hGb  := Real.Gamma_pos_of_pos hb
   have hCpos : 0 < Real.Gamma a * Real.Gamma b := mul_pos hGa hGb
   have hC0 : C ≠ 0 := by
-    dsimp [C]
-    apply mul_ne_zero
-    · exact ENNReal.ofReal_ne_zero_iff.mpr hGa
-    · exact ENNReal.ofReal_ne_zero_iff.mpr hGb
+    positivity
   have hCtop : C ≠ ⊤ := by
     dsimp [C]
     exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top
@@ -758,15 +576,7 @@ private theorem positive_riesz_lintegral_formula (a b : ℝ) (z : ℂ)
             rw [ENNReal.div_mul_cancel (ENNReal.ofReal_ne_zero_iff.mpr hCpos)
               ENNReal.ofReal_ne_top]
             rw [← ENNReal.ofReal_mul (by positivity : 0 ≤ Real.pi)]
-  calc
-    _ = ENNReal.ofReal (Real.pi * T / (Real.Gamma a * Real.Gamma b)) := hquot
-    _ = ENNReal.ofReal (Real.pi *
-          (Real.Gamma (a + b - 1) * ‖z‖ ^ (-2 * (a + b - 1)) *
-            (Real.Gamma (1 - a) * Real.Gamma (1 - b) /
-              (Real.Gamma a * Real.Gamma b * Real.Gamma (2 - a - b))))) := by
-          congr 1
-          rw [hformula]
-          ring
+  grind
 
 /-- The positive planar Riesz kernel is integrable exactly in the range needed below. -/
 theorem positive_riesz_convolution_integrable (k β : ℝ) (hk : 0 < k)
@@ -811,14 +621,7 @@ theorem positive_riesz_convolution_integral (k β : ℝ) (hk : 0 < k)
         Real.Gamma ((β - k) / 2) /
           (Real.Gamma (β / 2) * Real.Gamma (1 - k / 2) *
             Real.Gamma (1 + (k - β) / 2))) * ‖z‖ ^ (k - β) := by
-    rw [show -2 * (β / 2 + (1 - k / 2) - 1) = k - β by ring,
-      show β / 2 + (1 - k / 2) - 1 = (β - k) / 2 by ring,
-      show 1 - (1 - k / 2) = k / 2 by ring,
-      show 2 - β / 2 - (1 - k / 2) = 1 + (k - β) / 2 by ring]
-    field_simp [
-      ne_of_gt (Real.Gamma_pos_of_pos (by linarith : 0 < β / 2)),
-      ne_of_gt (Real.Gamma_pos_of_pos (by linarith : 0 < 1 - k / 2)),
-      ne_of_gt (Real.Gamma_pos_of_pos (by linarith : 0 < 1 + (k - β) / 2))]
+    ring
   have hlin' :
       (∫⁻ u : ℂ, ENNReal.ofReal (‖u‖ ^ (-β) * ‖u - z‖ ^ (k - 2))) =
         ENNReal.ofReal (Real.pi *
@@ -831,9 +634,7 @@ theorem positive_riesz_convolution_integral (k β : ℝ) (hk : 0 < k)
           (‖u‖ ^ (-2 * (β / 2)) * ‖u - z‖ ^ (-2 * (1 - k / 2))) := by
             apply lintegral_congr_ae
             filter_upwards [] with u
-            apply congrArg ENNReal.ofReal
-            rw [show -2 * (β / 2) = -β by ring,
-              show -2 * (1 - k / 2) = k - 2 by ring]
+            ring
       _ = ENNReal.ofReal
           (Real.pi * (Real.Gamma (β / 2 + (1 - k / 2) - 1) *
             ‖z‖ ^ (-2 * (β / 2 + (1 - k / 2) - 1)) *
@@ -855,19 +656,16 @@ theorem positive_riesz_convolution_integral (k β : ℝ) (hk : 0 < k)
   have h5 : 0 < 1 - k / 2 := by linarith
   have h6 : 0 < 1 + (k - β) / 2 := by linarith
   have hnum : 0 < Real.Gamma (1 - β / 2) * Real.Gamma (k / 2) *
-      Real.Gamma ((β - k) / 2) := by
-    exact mul_pos (mul_pos (Real.Gamma_pos_of_pos h1) (Real.Gamma_pos_of_pos h2))
+      Real.Gamma ((β - k) / 2) := mul_pos (mul_pos (Real.Gamma_pos_of_pos h1) (Real.Gamma_pos_of_pos h2))
       (Real.Gamma_pos_of_pos h3)
   have hden : 0 < Real.Gamma (β / 2) * Real.Gamma (1 - k / 2) *
-      Real.Gamma (1 + (k - β) / 2) := by
-    exact mul_pos (mul_pos (Real.Gamma_pos_of_pos h4) (Real.Gamma_pos_of_pos h5))
+      Real.Gamma (1 + (k - β) / 2) := mul_pos (mul_pos (Real.Gamma_pos_of_pos h4) (Real.Gamma_pos_of_pos h5))
       (Real.Gamma_pos_of_pos h6)
   have hrhs : 0 ≤ Real.pi *
       (Real.Gamma (1 - β / 2) * Real.Gamma (k / 2) *
         Real.Gamma ((β - k) / 2) /
           (Real.Gamma (β / 2) * Real.Gamma (1 - k / 2) *
-            Real.Gamma (1 + (k - β) / 2))) * ‖z‖ ^ (k - β) := by
-    exact le_of_lt (mul_pos (mul_pos Real.pi_pos (div_pos hnum hden))
+            Real.Gamma (1 + (k - β) / 2))) * ‖z‖ ^ (k - β) := le_of_lt (mul_pos (mul_pos Real.pi_pos (div_pos hnum hden))
       (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) _))
   exact (ENNReal.ofReal_eq_ofReal_iff (integral_nonneg_of_ae hnonneg) hrhs).mp hreal
 end DOZZ.Proofs

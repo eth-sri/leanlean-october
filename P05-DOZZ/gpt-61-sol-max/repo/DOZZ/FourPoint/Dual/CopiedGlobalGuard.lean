@@ -3,10 +3,11 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.FourPoint.TwoRegionLaw
 public import DOZZ.FourPoint.Reflected.GlobalCompactMass
 public import DOZZ.FourPoint.Dual.SpatialGuard
 /-! The genuine radial reinsertion law transfers the actual exterior guard moments. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -21,12 +22,7 @@ theorem dual_copied_global_guard_inverse_finite
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N)
     (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
-    (hlaw : ∀ (f : ℂ → ℝ≥0∞), Measurable f →
-      ∀ G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞, Measurable G →
-      (∫⁻ ω, G (originRadialPath Xc ω, ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω) ∂P) =
-      ∫⁻ ω, G (originRadialPath Xc ω.1, ∫⁻ x in ({0} : Set ℂ)ᶜ,
-        f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ
-          (originRadialPath Xc ω.1) x) ∂N ω.2) ∂P.prod P)
+    (hlaw : Contract.radialPlaneLaw P (originRadialPath Xc) γ M N)
     (α₁ α₂ α₃ q : ℝ) (hq : 0 ≤ q) (z : ℂ) (hz : ‖z‖ ≤ 1) :
     (∫⁻ a, ∫⁻ ω, (∫⁻ x in Metric.closedBall (3 : ℂ) (1/8),
       ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x)*

@@ -16,21 +16,23 @@ import DOZZ.Correlations.Residue.FullFromUnit
 `DOZZ.structureConstant_reflected_shift_and_gluing`. Finite positive Coulomb moments and inverse
 moments justify both positivity and the `toReal` totalization in the moment definition. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
+
+include Ω _inst1 P X M in
 /-- The unit-volume three-point value is positive when all charges are below `Q`
 and the zero-mode exponent is positive. -/
 theorem unitVolume_pos_of_positive_sExp
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+     (γ a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (ha : a < Q γ) (hb : b < Q γ) (hc : c < Q γ)
     (hs : 0 < sExp γ a b c) :
     0 < unitVolumeStructureConstant P M γ a b c := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let Z : Ω → ℝ≥0∞ := fun ω => coulombMass γ (M ω) ![a, b] ![0, 1] c
   have hZm : AEMeasurable Z P :=
     gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _
@@ -42,8 +44,7 @@ theorem unitVolume_pos_of_positive_sExp
         (mul_pos (by positivity) (sub_pos.mpr hc))))
   obtain ⟨t, ht, htT⟩ := exists_between hT
   have hz : Function.Injective (![0, 1] : Fin 2 → ℂ) := by
-    intro i j hij
-    fin_cases i <;> fin_cases j <;> simp_all
+    simp_all
   have htf : ∫⁻ ω, Z ω ^ t ∂P < ⊤ := by
     apply coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ2 M hM
       ![0, 1] hz ![a, b] c t ht (htT.trans_le (min_le_left _ _))
@@ -52,8 +53,7 @@ theorem unitVolume_pos_of_positive_sExp
       · exact htT.trans_le ((min_le_right _ _).trans (min_le_left _ _))
       · exact htT.trans_le ((min_le_right _ _).trans
           ((min_le_right _ _).trans (min_le_left _ _)))
-    · exact htT.trans_le ((min_le_right _ _).trans
-        ((min_le_right _ _).trans (min_le_right _ _)))
+    grind
   have hZfin := ae_lt_top_of_lintegral_rpow_lt_top hZm ht htf
   obtain ⟨K, hK, hKb⟩ := coulombMass_moment_uniform_nonpos P X hX γ hγ hγ2 M hM
     2 3 (by norm_num) (|a| + |b| + |c|) (-sExp γ a b c) (neg_nonpos.mpr hs.le)
@@ -89,11 +89,11 @@ theorem unitVolume_pos_of_positive_sExp
   rw [he]
   exact mul_pos (by positivity) (ENNReal.toReal_pos hne hnf.ne)
 
+include Ω _inst1 P X M in
 /-- Positivity of the full physical three-point constant, including the moment
 normalization, for a positive zero-mode exponent. -/
 theorem structureConstant_pos
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ μ a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+     (γ μ a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hμ : 0 < μ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (ha : a < Q γ) (hb : b < Q γ) (hc : c < Q γ)
     (hs : 0 < sExp γ a b c) :

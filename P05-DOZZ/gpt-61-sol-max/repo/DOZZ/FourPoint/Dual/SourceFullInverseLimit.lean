@@ -9,8 +9,9 @@ public import DOZZ.FourPoint.Dual.BufferRelativeLimit
 public import DOZZ.FourPoint.Dual.KernelFactors
 public import DOZZ.FourPoint.Dual.OuterLittleO
 import Mathlib.Tactic
+import Mathlib.Tactic
 /-! The actual full dual inverse expectation has the same-witness stochastic fusion coefficient. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -46,13 +47,13 @@ theorem dual_source_full_inverse_increment_tendsto
       (𝓝 ((a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃^(-(p+a)) ∂P).toReal*
         (∫⁻ ω, twoSidedReflectionMass γ B Z ω^a ∂P).toReal)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let ν := Q γ-α₁
   let a := 2*ν/γ
   let p := (α₁+α₂+α₃-2/γ-2*Q γ)/γ
   let κ := (4/γ)*ν
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
-  have hαshift : α₁-2/γ < Q γ := by linarith only [hα₁, div_pos (by norm_num : (0 : ℝ) < 2) hγ]
+  have hαshift : α₁-2/γ < Q γ := by bound
   let W := fun h : ℝ => dual_full_copied_path_law_carrier P X Xc hX hc hm hcont γ hγ hγ₂ M hM
     α₁ α₂ α₃ p h ξ κ hp hα₁ hα₂ hα₃ hβ hspatial hξ hξ1 hκξ
   let N := fun h => Classical.choose (W h)
@@ -102,7 +103,7 @@ theorem dual_source_full_inverse_increment_tendsto
     simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1))]
     with z hz0 hz
-  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz0
+  have hzpos  := norm_pos_iff.mpr hz0
   have hz1 : z ≠ 1 := by intro he; simp only [he, norm_one, lt_self_iff_false] at hz
   have hstrict : ‖z‖ < ‖z‖^(1-ξ) := by
     simpa only [Real.rpow_one] using Real.rpow_lt_rpow_of_exponent_gt hzpos hz
@@ -110,12 +111,12 @@ theorem dual_source_full_inverse_increment_tendsto
   have htime : 0 ≤ -Real.log ‖z‖+h := by
     have hl := Real.log_nonpos hzpos.le hz.le
     linarith only [hl, hh]
-  have hT : (T h z : ℝ) = -Real.log ‖z‖+h := Real.coe_toNNReal _ htime
+  have hT  := Real.coe_toNNReal _ htime
   have hηEq : Real.exp (-(T h z : ℝ)) = Real.exp (-h)*‖z‖ := by
     rw [hT]
     have he : -(-Real.log ‖z‖+h) = -h+Real.log ‖z‖ := by ring
     rw [he, Real.exp_add, Real.exp_log hzpos]
-  have hR : Real.exp (-h) < 1 := Real.exp_lt_one_iff.mpr (neg_neg_of_pos hh)
+  have hR  := Real.exp_lt_one_iff.mpr (neg_neg_of_pos hh)
   have hη : Real.exp (-(T h z : ℝ)) < 1 := by
     rw [hηEq]
     exact (mul_lt_mul_of_pos_left hz (Real.exp_pos _)).trans_le (by simpa only [mul_one] using hR.le)

@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
+public import DOZZ.FourPoint.Fusion.MeasurableIntegralFamily
+
 public import DOZZ.FourPoint.BPZ.WardPsi
 
 /-! # Real mixed masses and their tilts
@@ -22,9 +24,11 @@ namespace DOZZ.Proofs
 noncomputable def bpzMixedReal (ρ k₁ k₂ : ℂ → ℝ) (m₁ m₂ : Measure ℂ) : ℝ :=
   ∫ y, ρ y * k₁ y ∂m₁ + ∫ y, (1 - ρ y) * k₂ y ∂m₂
 
+variable (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x v : ℂ) (m₁ m₂ : Measure ℂ)
+
+include γ r ρ k₁ k₂ x v m₁ m₂ in
 /-- The untilted root-derivative functional in a real direction `v`. -/
-noncomputable def bpzMixedDerivReal (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x v : ℂ)
-    (m₁ m₂ : Measure ℂ) : ℝ :=
+noncomputable def bpzMixedDerivReal  : ℝ :=
   ∫ y, ρ y * k₁ y * (γ ^ 2 * bpzLamDeriv r (x - y) v) ∂m₁ +
     ∫ y, (1 - ρ y) * k₂ y * (γ ^ 2 * bpzTruncLogDeriv r (x - y) v) ∂m₂
 
@@ -43,8 +47,7 @@ theorem measurable_integral_measure {g : ℂ → ℝ} (hg : Measurable g) :
       have hI : Integrable g m := by
         refine ⟨hg.aestronglyMeasurable, ?_⟩
         rw [hasFiniteIntegral_iff_norm]
-        have hm' : ∫⁻ y, ENNReal.ofReal |g y| ∂m < ⊤ := hm
-        simpa only [Real.norm_eq_abs] using hm'
+        simp_all
       exact integral_eq_lintegral_pos_part_sub_lintegral_neg_part hI
     · rw [Set.indicator_of_notMem hm]
       apply integral_undef
@@ -52,12 +55,8 @@ theorem measurable_integral_measure {g : ℂ → ℝ} (hg : Measurable g) :
       apply hm
       have := hI.2
       rw [hasFiniteIntegral_iff_norm] at this
-      show ∫⁻ y, ENNReal.ofReal |g y| ∂m < ⊤
-      simpa only [Real.norm_eq_abs] using this
-  rw [heq]
-  refine Measurable.indicator ?_ hAm
-  exact ((Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp hg)).ennreal_toReal).sub
-    ((Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp hg.neg)).ennreal_toReal)
+      simp_all
+  measurability
 
 theorem measurable_bpzMixedReal {ρ k₁ k₂ : ℂ → ℝ} (hρm : Measurable ρ) (hk₁ : Measurable k₁)
     (hk₂ : Measurable k₂) :
@@ -106,15 +105,16 @@ theorem bpzMixedReal_tilt (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x : ℂ) (m
       Real.exp_add]
     ring
 
+include γ r ρ k₁ k₂ x v m₁ m₂ in
 /-- The scalar root derivative of the rooted mixed mass in a direction `v`. -/
-noncomputable def bpzRootedMixedDerivApply (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x v : ℂ)
-    (m₁ m₂ : Measure ℂ) : ℝ :=
+noncomputable def bpzRootedMixedDerivApply  : ℝ :=
   ∫ y, ρ y * k₁ y * (bpzCutRootKernel γ r x y * γ ^ 2) * bpzLamDeriv r (x - y) v ∂m₁ +
     ∫ y, (1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x y * γ ^ 2) *
       bpzTruncLogDeriv r (x - y) v ∂m₂
 
+include γ r ρ k₁ k₂ x v m₁ m₂ in
 /-- Tilting the untilted root-derivative functional factors out the root pinning. -/
-theorem bpzMixedDerivReal_tilt (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x v : ℂ) (m₁ m₂ : Measure ℂ) :
+theorem bpzMixedDerivReal_tilt  :
     bpzMixedDerivReal γ r ρ k₁ k₂ x v (m₁.withDensity (bpzCutRootDensity γ r x))
         (m₂.withDensity (bpzLimRootDensity γ r x)) =
       Real.exp (γ ^ 2 * bpzPin r x) * bpzRootedMixedDerivApply γ r ρ k₁ k₂ x v m₁ m₂ := by
@@ -159,7 +159,7 @@ theorem bpzRootedMixedDeriv_apply {γ r δ : ℝ} {ρ k₁ k₂ : ℂ → ℝ} {
     · exact (((hρm.mul hk₁).mul ((continuous_bpzCutRootKernel_snd γ r x₀).measurable.mul_const
         _)).smul ((measurable_bpzLamDeriv r).comp
           (measurable_const.sub measurable_id))).aestronglyMeasurable
-    · have hw : 0 ≤ ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2) :=
+    · have hw  :=
         mul_nonneg (mul_nonneg (hρ0 y) (hk₁0 y))
           (mul_nonneg (bpzCutRootKernel_pos γ r x₀ y).le (sq_nonneg γ))
       rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg hw]
@@ -194,37 +194,8 @@ theorem measurable_integral_finite_family {α β : Type*} [MeasurableSpace α] [
     (m : α → Measure ℂ) (hm : Measurable m) (hfin : ∀ a, IsFiniteMeasure (m a))
     (g : β → ℂ → ℝ) (hg : Measurable (Function.uncurry g)) :
     Measurable (fun p : α × β => ∫ y, g p.2 y ∂m p.1) := by
-  set c : α → ℝ≥0∞ := fun a => m a Set.univ + 1 with hc
-  have hcm : Measurable c :=
-    (Measure.measurable_coe MeasurableSet.univ |>.comp hm).add measurable_const
-  have hc0 : ∀ a, c a ≠ 0 := fun a => by simp [hc]
-  have hctop : ∀ a, c a ≠ ⊤ := fun a => by
-    simp only [hc, ne_eq, ENNReal.add_eq_top, ENNReal.one_ne_top, or_false]
-    exact measure_ne_top _ _
-  have hnm : Measurable (fun p : α × β => (c p.1)⁻¹ • m p.1) := by
-    refine Measure.measurable_of_measurable_coe _ fun s hs => ?_
-    simp only [Measure.smul_apply, smul_eq_mul]
-    exact ((hcm.comp measurable_fst).inv).mul
-      ((Measure.measurable_coe hs).comp (hm.comp measurable_fst))
-  let κ : ProbabilityTheory.Kernel (α × β) ℂ := ⟨fun p => (c p.1)⁻¹ • m p.1, hnm⟩
-  have hκfin : ProbabilityTheory.IsFiniteKernel κ := by
-    refine ⟨⟨1, ENNReal.one_lt_top, fun p => ?_⟩⟩
-    change ((c p.1)⁻¹ • m p.1) Set.univ ≤ 1
-    rw [Measure.smul_apply, smul_eq_mul]
-    calc (c p.1)⁻¹ * m p.1 Set.univ ≤ (c p.1)⁻¹ * c p.1 := by
-          gcongr
-          simp [hc]
-      _ = 1 := ENNReal.inv_mul_cancel (hc0 _) (hctop _)
-  have hint : StronglyMeasurable fun p : α × β => ∫ y, g p.2 y ∂κ p :=
-    StronglyMeasurable.integral_kernel_prod_right (κ := κ) (f := fun p y => g p.2 y)
-      ((hg.comp (measurable_fst.snd.prodMk measurable_snd)).stronglyMeasurable)
-  have heq : (fun p : α × β => ∫ y, g p.2 y ∂m p.1) =
-      fun p => (c p.1).toReal * ∫ y, g p.2 y ∂κ p := by
-    funext p
-    change _ = (c p.1).toReal * ∫ y, g p.2 y ∂((c p.1)⁻¹ • m p.1)
-    rw [integral_smul_measure, smul_eq_mul, ← mul_assoc, ← ENNReal.toReal_mul,
-      ENNReal.mul_inv_cancel (hc0 _) (hctop _), ENNReal.toReal_one, one_mul]
-  rw [heq]
-  exact (hcm.comp measurable_fst).ennreal_toReal.mul hint.measurable
+  exact fusion_measurable_real_integral_finite_family (fun p : α × β => m p.1)
+    (hm.comp measurable_fst) (fun p => hfin p.1) (fun q => g q.1.2 q.2)
+    (hg.comp (measurable_fst.snd.prodMk measurable_snd))
 
 end DOZZ.Proofs

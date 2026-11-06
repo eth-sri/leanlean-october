@@ -13,33 +13,36 @@ namespace DOZZ.Proofs
 /-- Coupling, finite roots, finite charges and the charge at infinity. -/
 abbrev ContinuityCoulombParameter (N : ℕ) := ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ)
 
+variable {N : ℕ} (partition : GMCChartPartition) (r : ℝ)
+
+include N partition r
 /-- The real finite-chart cutoff test, including its partition weight. -/
-noncomputable def continuityFiniteCutoffTest {N : ℕ} (partition : GMCChartPartition)
-    (r : ℝ) (c : ContinuityCoulombParameter N) (x : ℂ) : ℝ :=
+noncomputable def continuityFiniteCutoffTest  (c : ContinuityCoulombParameter N) (x : ℂ) : ℝ :=
   (partition.finiteWeight x : ℝ) *
     (∏ k, (normPlus x / (‖x - c.2.1 k‖ + Real.exp (-r))) ^ (c.1 * c.2.2.1 k)) *
       normPlus x ^ (c.1 * c.2.2.2)
 
+
 /-- The real inverted-chart cutoff test, including its partition weight. -/
-noncomputable def continuityInfinityCutoffTest {N : ℕ} (partition : GMCChartPartition)
-    (r : ℝ) (c : ContinuityCoulombParameter N) (u : ℂ) : ℝ :=
+noncomputable def continuityInfinityCutoffTest  (c : ContinuityCoulombParameter N) (u : ℂ) : ℝ :=
   (partition.infinityWeight u : ℝ) *
     (∏ k, (normPlus u / (‖1 - c.2.1 k * u‖ + Real.exp (-r))) ^ (c.1 * c.2.2.1 k)) *
       (normPlus u / (‖u‖ + Real.exp (-r))) ^ (c.1 * c.2.2.2)
 
-theorem continuityFiniteCutoffTest_nonneg {N : ℕ} (partition : GMCChartPartition)
-    (r : ℝ) (c : ContinuityCoulombParameter N) (x : ℂ) :
+
+theorem continuityFiniteCutoffTest_nonneg  (c : ContinuityCoulombParameter N) (x : ℂ) :
     0 ≤ continuityFiniteCutoffTest partition r c x := by
   unfold continuityFiniteCutoffTest normPlus
   positivity
 
-theorem continuityInfinityCutoffTest_nonneg {N : ℕ} (partition : GMCChartPartition)
-    (r : ℝ) (c : ContinuityCoulombParameter N) (x : ℂ) :
+
+theorem continuityInfinityCutoffTest_nonneg  (c : ContinuityCoulombParameter N) (x : ℂ) :
     0 ≤ continuityInfinityCutoffTest partition r c x := by
   unfold continuityInfinityCutoffTest normPlus
   positivity
 
-theorem continuityFiniteCutoffTest_continuous {N : ℕ} (partition : GMCChartPartition) (r : ℝ) :
+
+theorem continuityFiniteCutoffTest_continuous  :
     Continuous (fun p : ContinuityCoulombParameter N × ℂ =>
       continuityFiniteCutoffTest partition r p.1 p.2) := by
   have hp : Continuous (fun p : ContinuityCoulombParameter N × ℂ =>
@@ -59,7 +62,8 @@ theorem continuityFiniteCutoffTest_continuous {N : ℕ} (partition : GMCChartPar
   · exact hn.rpow (by fun_prop) (fun p => Or.inl
       (lt_of_lt_of_le zero_lt_one (one_le_normPlus _)).ne')
 
-theorem continuityInfinityCutoffTest_continuous {N : ℕ} (partition : GMCChartPartition) (r : ℝ) :
+
+theorem continuityInfinityCutoffTest_continuous  :
     Continuous (fun p : ContinuityCoulombParameter N × ℂ =>
       continuityInfinityCutoffTest partition r p.1 p.2) := by
   have hp : Continuous (fun p : ContinuityCoulombParameter N × ℂ =>
@@ -82,6 +86,8 @@ theorem continuityInfinityCutoffTest_continuous {N : ℕ} (partition : GMCChartP
       (Real.exp_pos _)).ne')).rpow (by fun_prop) (fun p => Or.inl
         (div_pos (lt_of_lt_of_le zero_lt_one (one_le_normPlus _))
           (add_pos_of_nonneg_of_pos (norm_nonneg _) (Real.exp_pos _))).ne')
+omit N partition r
+
 
 /-- Compact parameters and a common compact spatial support give one test bound. -/
 theorem continuity_compact_support_bound
@@ -92,14 +98,13 @@ theorem continuity_compact_support_bound
   obtain ⟨L, hL⟩ := (hS.prod hK).exists_bound_of_continuousOn hF.continuousOn
   refine ⟨max L 0, le_max_right _ _, fun c hc x => ?_⟩
   by_cases hx : x ∈ K
-  · have hh : |F (c, x)| ≤ L := by simpa only [Real.norm_eq_abs] using hL (c, x) ⟨hc, hx⟩
-    exact hh.trans (le_max_left _ _)
-  · rw [hz c x hx, abs_zero]
-    exact le_max_right _ _
+  · simp_all
+  simp_all
 
+include N partition r in
 /-- Both softened chart tests are uniformly bounded on a compact parameter set,
 including charges of either sign. -/
-theorem continuityCutoffTests_uniform_bound {N : ℕ} (partition : GMCChartPartition) (r : ℝ)
+theorem continuityCutoffTests_uniform_bound 
     (S : Set (ContinuityCoulombParameter N)) (hS : IsCompact S) :
     ∃ L : ℝ, 0 ≤ L ∧ ∀ c ∈ S, ∀ x,
       |continuityFiniteCutoffTest partition r c x| ≤ L ∧
@@ -114,13 +119,11 @@ theorem continuityCutoffTests_uniform_bound {N : ℕ} (partition : GMCChartParti
     (continuityInfinityCutoffTest_continuous partition r) (fun c x hx => by
       have hz := image_eq_zero_of_notMem_tsupport hx
       simp only [continuityInfinityCutoffTest, hz, NNReal.coe_zero, zero_mul])
-  exact ⟨Lf + Li, add_nonneg hLf hLi, fun c hc x =>
-    ⟨(hf c hc x).trans (le_add_of_nonneg_right hLi),
-      (hi c hc x).trans (le_add_of_nonneg_left hLf)⟩⟩
+  grind
 
+include N partition r in
 /-- Passing from real chart tests to the extended weight `coulombCutoffWeight` is exact. -/
-theorem coulombCutoffWeight_eq_ofReal_continuityCutoffTest {N : ℕ}
-    (partition : GMCChartPartition) (r : ℝ) (c : ContinuityCoulombParameter N) (x : ℂ) :
+theorem coulombCutoffWeight_eq_ofReal_continuityCutoffTest  (c : ContinuityCoulombParameter N) (x : ℂ) :
     coulombCutoffWeight partition c.1 c.2.2.1 c.2.1 c.2.2.2 r x =
       ENNReal.ofReal (continuityFiniteCutoffTest partition r c x +
         continuityInfinityCutoffTest partition r c x⁻¹) := by

@@ -43,26 +43,13 @@ theorem mem_gmcSubSquare_iff (s σ₁ σ₂ : ℝ) (z : ℂ) :
   · rintro ⟨y, ⟨hy1, hy2⟩, rfl⟩
     simp only [Complex.add_re, Complex.add_im, Complex.real_smul, Complex.re_ofReal_mul,
       Complex.im_ofReal_mul]
-    constructor
-    · rw [show σ₁ * s / 2 + 1 / 2 * y.re - σ₁ * s / 2 = (1 / 2) * y.re by ring, abs_mul]
-      rw [abs_of_pos (by norm_num : (0 : ℝ) < 1 / 2)]
-      linarith
-    · rw [show σ₂ * s / 2 + 1 / 2 * y.im - σ₂ * s / 2 = (1 / 2) * y.im by ring, abs_mul]
-      rw [abs_of_pos (by norm_num : (0 : ℝ) < 1 / 2)]
-      linarith
+    grind
   · rintro ⟨h1, h2⟩
     refine ⟨⟨2 * (z.re - σ₁ * s / 2), 2 * (z.im - σ₂ * s / 2)⟩, ⟨?_, ?_⟩, ?_⟩
-    · change |2 * (z.re - σ₁ * s / 2)| < s
-      rw [abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
-      linarith
-    · change |2 * (z.im - σ₂ * s / 2)| < s
-      rw [abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
-      linarith
+    · grind
+    · grind
     · apply Complex.ext
-      · simp only [Complex.add_re, Complex.real_smul, Complex.re_ofReal_mul]
-        ring
-      · simp only [Complex.add_im, Complex.real_smul, Complex.im_ofReal_mul]
-        ring
+      all_goals simp_all
 
 theorem gmcSubSquare_subset (s : ℝ) {σ₁ σ₂ : ℝ} (h₁ : |σ₁| = 1) (h₂ : |σ₂| = 1) :
     gmcSubSquare s σ₁ σ₂ ⊆ gmcOpenSquare s := by
@@ -70,21 +57,14 @@ theorem gmcSubSquare_subset (s : ℝ) {σ₁ σ₂ : ℝ} (h₁ : |σ₁| = 1) (
   rw [mem_gmcSubSquare_iff] at hz
   obtain ⟨hz1, hz2⟩ := hz
   have hs : 0 < s := by
-    have := abs_nonneg (z.re - σ₁ * s / 2)
-    linarith
+    grind
   have hr : |σ₁ * s / 2| = s / 2 := by
-    rw [abs_div, abs_mul, h₁, abs_of_pos hs]; norm_num
+    grind
   have hi : |σ₂ * s / 2| = s / 2 := by
-    rw [abs_div, abs_mul, h₂, abs_of_pos hs]; norm_num
+    grind
   constructor
-  · calc |z.re| = |(z.re - σ₁ * s / 2) + σ₁ * s / 2| := by ring_nf
-      _ ≤ |z.re - σ₁ * s / 2| + |σ₁ * s / 2| := abs_add_le _ _
-      _ < s / 2 + s / 2 := by rw [hr]; linarith
-      _ = s := by ring
-  · calc |z.im| = |(z.im - σ₂ * s / 2) + σ₂ * s / 2| := by ring_nf
-      _ ≤ |z.im - σ₂ * s / 2| + |σ₂ * s / 2| := abs_add_le _ _
-      _ < s / 2 + s / 2 := by rw [hi]; linarith
-      _ = s := by ring
+  · grind
+  grind
 
 /-- Two subsquares whose first sign differs are disjoint. -/
 theorem gmcSubSquare_disjoint_re (s σ₂ τ₂ : ℝ) :
@@ -92,9 +72,7 @@ theorem gmcSubSquare_disjoint_re (s σ₂ τ₂ : ℝ) :
   rw [Set.disjoint_left]
   intro z hz hz'
   rw [mem_gmcSubSquare_iff] at hz hz'
-  have h1 := (abs_lt.mp hz.1)
-  have h2 := (abs_lt.mp hz'.1)
-  linarith
+  grind
 
 /-- Two subsquares whose second sign differs are disjoint. -/
 theorem gmcSubSquare_disjoint_im (s σ₁ τ₁ : ℝ) :
@@ -102,9 +80,7 @@ theorem gmcSubSquare_disjoint_im (s σ₁ τ₁ : ℝ) :
   rw [Set.disjoint_left]
   intro z hz hz'
   rw [mem_gmcSubSquare_iff] at hz hz'
-  have h1 := (abs_lt.mp hz.2)
-  have h2 := (abs_lt.mp hz'.2)
-  linarith
+  grind
 
 theorem gmcOpenSquare_subset_closedBall (s : ℝ) :
     gmcOpenSquare s ⊆ Metric.closedBall 0 (2 * s) := by
@@ -116,10 +92,7 @@ theorem gmcOpenSquare_subset_closedBall (s : ℝ) :
 theorem norm_gmcSubSquare_center (s : ℝ) (hs : 0 ≤ s) {σ₁ σ₂ : ℝ} (h₁ : |σ₁| = 1)
     (h₂ : |σ₂| = 1) : ‖(⟨σ₁ * s / 2, σ₂ * s / 2⟩ : ℂ)‖ ≤ s := by
   have := Complex.norm_le_abs_re_add_abs_im (⟨σ₁ * s / 2, σ₂ * s / 2⟩ : ℂ)
-  simp only at this
-  rw [abs_div, abs_mul, abs_div, abs_mul, h₁, h₂, abs_of_nonneg hs] at this
-  norm_num at this
-  linarith
+  grind
 
 /-- At the critical order the scaling factor of a half-size subsquare is `1/4`. -/
 theorem gmc_critical_exponent_eq_two (γ : ℝ) (hγ : γ ≠ 0) :
@@ -127,12 +100,12 @@ theorem gmc_critical_exponent_eq_two (γ : ℝ) (hγ : γ ≠ 0) :
   field_simp
   ring
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (s : ℝ) (hs : 0 < s) (hs2 : s < 1 / 4)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM s hs hs2 in
 /-- The critical moment of a subsquare is one quarter of the critical moment of the square. -/
 theorem gmc_subSquare_critical_moment
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (s : ℝ) (hs : 0 < s) (hs2 : s < 1 / 4) {σ₁ σ₂ : ℝ} (h₁ : |σ₁| = 1) (h₂ : |σ₂| = 1) :
+     {σ₁ σ₂ : ℝ} (h₁ : |σ₁| = 1) (h₂ : |σ₂| = 1) :
     gmcMassMoment P M (gmcSubSquare s σ₁ σ₂) (4 / γ ^ 2) =
       ENNReal.ofReal (1 / 4) * gmcMassMoment P M (gmcOpenSquare s) (4 / γ ^ 2) := by
   have h := gmc_affine_openSet_moment_scale P X hX γ hγ hγ2 M hM
@@ -144,17 +117,15 @@ theorem gmc_subSquare_critical_moment
   rw [show ((1 : ℝ) / 2) ^ (2 : ℝ) = 1 / 4 by norm_num] at h
   exact h
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM s hs hs2 in
 /-- If the four subsquare masses are almost surely positive, the critical moment of the square
 is infinite. -/
 theorem gmc_openSquare_critical_moment_eq_top
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (s : ℝ) (hs : 0 < s) (hs2 : s < 1 / 4)
+    
     (hpos : ∀ᵐ ω ∂P, 0 < M ω (gmcSubSquare s 1 1) ∧ 0 < M ω (gmcSubSquare s (-1) 1) ∧
       0 < M ω (gmcSubSquare s (-1) (-1)) ∧ 0 < M ω (gmcSubSquare s 1 (-1))) :
     gmcMassMoment P M (gmcOpenSquare s) (4 / γ ^ 2) = ⊤ := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   set p : ℝ := 4 / γ ^ 2 with hpdef
   have hp1 : 1 < p := by
     rw [hpdef, lt_div_iff₀ (by positivity)]
@@ -176,22 +147,18 @@ theorem gmc_openSquare_critical_moment_eq_top
     exact (isOpen_lt (continuous_abs.comp (Complex.continuous_re.sub continuous_const))
       continuous_const).inter (isOpen_lt (continuous_abs.comp
         (Complex.continuous_im.sub continuous_const)) continuous_const)
-  have hTmeas : ∀ σ₁ σ₂ : ℝ, MeasurableSet (gmcSubSquare s σ₁ σ₂) :=
+  have hTmeas  :=
     fun σ₁ σ₂ => (hTopen σ₁ σ₂).measurableSet
-  have hSmeas : MeasurableSet (gmcOpenSquare s) := (isOpen_gmcOpenSquare s).measurableSet
+  
   -- the four subsquares are disjoint subsets of the square
-  have d12 : Disjoint T₁ T₂ := gmcSubSquare_disjoint_re s 1 1
-  have d13 : Disjoint T₁ T₃ := gmcSubSquare_disjoint_re s 1 (-1)
-  have d14 : Disjoint T₁ T₄ := gmcSubSquare_disjoint_im s 1 1
-  have d23 : Disjoint T₂ T₃ := gmcSubSquare_disjoint_im s (-1) (-1)
-  have d24 : Disjoint T₂ T₄ := (gmcSubSquare_disjoint_re s (-1) 1).symm
-  have d34 : Disjoint T₃ T₄ := (gmcSubSquare_disjoint_re s (-1) (-1)).symm
+  have d12  := gmcSubSquare_disjoint_re s 1 1
+  have d13  := gmcSubSquare_disjoint_re s 1 (-1)
+  have d14  := gmcSubSquare_disjoint_im s 1 1
+  have d23  := gmcSubSquare_disjoint_im s (-1) (-1)
+  have d24  := (gmcSubSquare_disjoint_re s (-1) 1).symm
+  have d34  := (gmcSubSquare_disjoint_re s (-1) (-1)).symm
   have hunion_sub : T₁ ∪ T₂ ∪ T₃ ∪ T₄ ⊆ gmcOpenSquare s := by
-    refine Set.union_subset (Set.union_subset (Set.union_subset ?_ ?_) ?_) ?_
-    · exact gmcSubSquare_subset s habs1 habs1
-    · exact gmcSubSquare_subset s habsm1 habs1
-    · exact gmcSubSquare_subset s habsm1 habsm1
-    · exact gmcSubSquare_subset s habs1 habsm1
+    exact union_subset (union_subset (union_subset (gmcSubSquare_subset s habs1 habs1) (gmcSubSquare_subset s habsm1 habs1)) (gmcSubSquare_subset s habsm1 habsm1)) (gmcSubSquare_subset s habs1 habsm1)
   have hsum_le : ∀ ω, M ω T₁ + M ω T₂ + M ω T₃ + M ω T₄ ≤ M ω (gmcOpenSquare s) := by
     intro ω
     have h1 : M ω (T₁ ∪ T₂ ∪ T₃ ∪ T₄) = M ω T₁ + M ω T₂ + M ω T₃ + M ω T₄ := by
@@ -208,8 +175,8 @@ theorem gmc_openSquare_critical_moment_eq_top
     fun σ₁ σ₂ h₁ h₂ => gmc_subSquare_critical_moment P X hX γ hγ hγ2 M hM s hs hs2 h₁ h₂
   by_contra hfin
   set E : ℝ≥0∞ := gmcMassMoment P M (gmcOpenSquare s) p with hEdef
-  have hEfin : E ≠ ⊤ := hfin
-  have hmeasT : ∀ σ₁ σ₂ : ℝ, AEMeasurable (fun ω => M ω (gmcSubSquare s σ₁ σ₂) ^ p) P :=
+  have hEfin  := hfin
+  have hmeasT  :=
     fun σ₁ σ₂ => (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
       (hTmeas σ₁ σ₂)).pow_const p
   -- the sum of the four subsquare moments equals the square moment
@@ -228,7 +195,7 @@ theorem gmc_openSquare_critical_moment_eq_top
   have hstrict : ∀ᵐ ω ∂P, (M ω T₁ ^ p + M ω T₂ ^ p + M ω T₃ ^ p + M ω T₄ ^ p) <
       (M ω T₁ + M ω T₂ + M ω T₃ + M ω T₄) ^ p := by
     filter_upwards [hpos] with ω ⟨h1, h2, h3, h4⟩
-    have hfinω : IsFiniteMeasure (M ω) := hM.1 ω
+    have hfinω  := hM.1 ω
     have t1 : M ω T₁ ≠ ⊤ := measure_ne_top _ _
     have t2 : M ω T₂ ≠ ⊤ := measure_ne_top _ _
     have t3 : M ω T₃ ≠ ⊤ := measure_ne_top _ _
@@ -240,13 +207,11 @@ theorem gmc_openSquare_critical_moment_eq_top
       intro t ht
       rw [← ENNReal.ofReal_rpow_of_nonneg ENNReal.toReal_nonneg hp0, ENNReal.ofReal_toReal ht]
     have hsumtop : M ω T₁ + M ω T₂ + M ω T₃ + M ω T₄ ≠ ⊤ := by
-      simp only [ne_eq, ENNReal.add_eq_top, not_or]
-      exact ⟨⟨⟨t1, t2⟩, t3⟩, t4⟩
+      norm_num
     have hsumreal : (M ω T₁ + M ω T₂ + M ω T₃ + M ω T₄).toReal =
         (M ω T₁).toReal + (M ω T₂).toReal + (M ω T₃).toReal + (M ω T₄).toReal := by
-      rw [ENNReal.toReal_add (by simp only [ne_eq, ENNReal.add_eq_top, not_or]; exact
-          ⟨⟨t1, t2⟩, t3⟩) t4,
-        ENNReal.toReal_add (by simp only [ne_eq, ENNReal.add_eq_top, not_or]; exact ⟨t1, t2⟩) t3,
+      rw [ENNReal.toReal_add (by norm_num) t4,
+        ENNReal.toReal_add (by norm_num) t3,
         ENNReal.toReal_add t1 t2]
     rw [hpowE _ t1, hpowE _ t2, hpowE _ t3, hpowE _ t4, hpowE _ hsumtop, hsumreal,
       ← ENNReal.ofReal_add (by positivity) (by positivity),
@@ -256,7 +221,7 @@ theorem gmc_openSquare_critical_moment_eq_top
   have hgmeas : AEMeasurable (fun ω => (M ω T₁ + M ω T₂ + M ω T₃ + M ω T₄) ^ p) P := by
     have hm := fun σ₁ σ₂ => gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
       (hTmeas σ₁ σ₂)
-    exact ((((hm 1 1).add (hm (-1) 1)).add (hm (-1) (-1))).add (hm 1 (-1))).pow_const p
+    fun_prop (disch := positivity)
   have hlt := lintegral_strict_mono (IsProbabilityMeasure.ne_zero P) hgmeas
     (by rw [hsumE]; exact hEfin) hstrict
   rw [hsumE] at hlt

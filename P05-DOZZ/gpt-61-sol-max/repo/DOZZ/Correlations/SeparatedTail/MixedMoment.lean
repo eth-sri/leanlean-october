@@ -11,19 +11,19 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 /-! The Hölder step of the separated joint-tail estimate retains every correlation of the
 harmonic and restoration envelope. Only the two Dirichlet cutoff masses are independent. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (W2 W3 D2 D3 E : Ω → ℝ≥0∞) (hD2 : AEMeasurable D2 P) (hD3 : AEMeasurable D3 P) (hE : AEMeasurable E P) (hD : IndepFun D2 D3 P)
+
+include Ω _inst1 P W2 W3 D2 D3 E hD2 hD3 hE hD in
 /-- The finite-cutoff mixed moment bound of the separated joint-tail estimate. `E` includes the
 Wick variance correction, the harmonic suprema and the correlated restoration scalar. -/
 theorem separatedTail_mixed_moment_le_of_independent_domination
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (W2 W3 D2 D3 E : Ω → ℝ≥0∞)
-    (hD2 : AEMeasurable D2 P) (hD3 : AEMeasurable D3 P)
-    (hE : AEMeasurable E P) (hD : IndepFun D2 D3 P)
+    
     (a2 a3 p q : ℝ) (_ha2 : 0 ≤ a2) (_ha3 : 0 ≤ a3)
     (hpq : p.HolderConjugate q)
     (hdom : ∀ᵐ ω ∂P, W2 ω ^ a2 * W3 ω ^ a3 ≤ E ω *
@@ -46,12 +46,10 @@ theorem separatedTail_mixed_moment_le_of_independent_domination
       simpa only [Pi.mul_apply, ENNReal.mul_rpow_of_nonneg _ _ hpq.symm.pos.le,
         ← ENNReal.rpow_mul, hfactor] using hh
 
+include Ω _inst1 P W2 W3 D2 D3 E hD2 hD3 hE hD in
 /-- Uniform finite bounds on the three moments give one finite mixed-moment constant. -/
 theorem separatedTail_mixed_moment_le_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (W2 W3 D2 D3 E : Ω → ℝ≥0∞)
-    (hD2 : AEMeasurable D2 P) (hD3 : AEMeasurable D3 P)
-    (hE : AEMeasurable E P) (hD : IndepFun D2 D3 P)
+    
     (a2 a3 p q : ℝ) (ha2 : 0 ≤ a2) (ha3 : 0 ≤ a3)
     (hpq : p.HolderConjugate q)
     (hdom : ∀ᵐ ω ∂P, W2 ω ^ a2 * W3 ω ^ a3 ≤ E ω *

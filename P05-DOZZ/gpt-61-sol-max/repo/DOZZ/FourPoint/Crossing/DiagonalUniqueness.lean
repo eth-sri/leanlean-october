@@ -42,7 +42,7 @@ theorem crossing_diagonal_norm_coefficients_unique
     rw [hd, hd, hEq w hw]
   have hcoeff := hermitianTensor_coefficients_eq_of_eqOn hU hf hg A 0 0 D A' 0 0 D'
     hz hW he
-  exact ⟨Complex.ofReal_injective hcoeff.1, Complex.ofReal_injective hcoeff.2.2.2⟩
+  simp_all
 
 /-- In particular, the two real one-channel coefficients in a physical crossing
 comparison can be identified without taking a subleading endpoint limit. -/

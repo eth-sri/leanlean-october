@@ -10,6 +10,7 @@ public import Mathlib.MeasureTheory.Function.JacobianOneDim
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 public import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
 public import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Tactic
 
 /-!
 # Cylindrical integration for three-dimensional radial tests
@@ -36,7 +37,7 @@ theorem continuous_cylindricalRadius (x : ℝ) : Continuous (cylindricalRadius x
 theorem cylindricalRadius_pos (x : ℝ) {ρ : ℝ} (hρ : 0 < ρ) :
     0 < cylindricalRadius x ρ := by
   apply Real.sqrt_pos.2
-  nlinarith only [sq_nonneg x, sq_pos_of_pos hρ]
+  positivity
 
 theorem cylindricalRadius_sq (x ρ : ℝ) : (cylindricalRadius x ρ) ^ 2 = x ^ 2 + ρ ^ 2 :=
   Real.sq_sqrt (add_nonneg (sq_nonneg x) (sq_nonneg ρ))
@@ -66,7 +67,7 @@ theorem cylindricalRadius_image_Ioi (x : ℝ) : cylindricalRadius x '' Ioi 0 = I
     exact abs_lt_cylindricalRadius x hρ
   · intro hy
     change |x| < y at hy
-    have hypos : 0 < y := (abs_nonneg x).trans_lt hy
+    have hypos  := (abs_nonneg x).trans_lt hy
     have hsq : 0 < y ^ 2 - x ^ 2 := by
       nlinarith only [hy, abs_nonneg x, sq_abs x]
     refine ⟨Real.sqrt (y ^ 2 - x ^ 2), Real.sqrt_pos.2 hsq, ?_⟩
@@ -79,8 +80,7 @@ theorem cylindricalRadius_image_Ioi (x : ℝ) : cylindricalRadius x '' Ioi 0 = I
 theorem hasDerivAt_cylindricalRadius (x : ℝ) {ρ : ℝ} (hρ : 0 < ρ) :
     HasDerivAt (cylindricalRadius x) (ρ / cylindricalRadius x ρ) ρ := by
   have hnonzero : x ^ 2 + ρ ^ 2 ≠ 0 := by
-    have hpos : 0 < x ^ 2 + ρ ^ 2 := by nlinarith only [sq_nonneg x, sq_pos_of_pos hρ]
-    exact hpos.ne'
+    positivity
   have hder := (((hasDerivAt_id ρ).pow 2).const_add (x ^ 2)).sqrt hnonzero
   simp only [Pi.pow_apply, id_eq, Nat.cast_ofNat, Nat.reduceSub, pow_one, mul_one] at hder
   change HasDerivAt (cylindricalRadius x) (2 * ρ / (2 * cylindricalRadius x ρ)) ρ at hder
@@ -143,8 +143,7 @@ noncomputable def cylindricalStrip (F H : ℝ → ℝ≥0∞) (p : ℝ × ℝ) :
   if |p.1| < p.2 then ENNReal.ofReal p.2 * F p.2 * H p.1 else 0
 
 theorem measurable_cylindricalStrip (F H : ℝ → ℝ≥0∞)
-    (hF : Measurable F) (hH : Measurable H) : Measurable (cylindricalStrip F H) := by
-  exact ((measurable_snd.ennreal_ofReal.mul (hF.comp measurable_snd)).mul
+    (hF : Measurable F) (hH : Measurable H) : Measurable (cylindricalStrip F H) := ((measurable_snd.ennreal_ofReal.mul (hF.comp measurable_snd)).mul
     (hH.comp measurable_fst)).ite
       (measurableSet_lt (continuous_fst.abs.measurable) measurable_snd) measurable_const
 
@@ -187,11 +186,7 @@ theorem lintegral_cylindrical_tails (F H : ℝ → ℝ≥0∞)
       symm
       apply setLIntegral_eq_of_support_subset
       intro y hy
-      by_contra hpos
-      have hy0 : y ≤ 0 := le_of_not_gt hpos
-      have hempty : Ioo (-y) y = ∅ := Ioo_eq_empty_of_le (by linarith only [hy0])
-      apply hy
-      simp only [hempty, Measure.restrict_empty, lintegral_zero_measure, mul_zero]
+      simp_all
 
 /-- Cylindrical integration on `ℝ × ℂ`: an arbitrary longitudinal weight is integrated on each
 radial cross-section, without spherical coordinates or an angular disintegration theorem. -/
@@ -219,8 +214,11 @@ theorem lintegral_radial_longitudinal (F H : ℝ → ℝ≥0∞)
   rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top,
     lintegral_cylindrical_tails F H hF hH]
 
+variable (c y : ℝ) (hc : c ≠ 0) (hy : 0 ≤ y)
+
+include c y hc hy in
 /-- Explicit longitudinal exponential integral, allowing either sign of the tilt. -/
-theorem integral_exp_longitudinal (c y : ℝ) (hc : c ≠ 0) (hy : 0 ≤ y) :
+theorem integral_exp_longitudinal  :
     (∫ x in Ioo (-y) y, Real.exp (c * x)) = 2 * Real.sinh (c * y) / c := by
   rw [← integral_Ioc_eq_integral_Ioo, ← intervalIntegral.integral_of_le (by linarith only [hy]),
     intervalIntegral.integral_comp_mul_left Real.exp hc, integral_exp]
@@ -234,26 +232,29 @@ theorem integrableOn_exp_longitudinal (c y : ℝ) :
   have hcont : Continuous (fun x : ℝ => Real.exp (c * x)) := by fun_prop
   exact (hcont.continuousOn.integrableOn_compact isCompact_Icc).mono_set Ioo_subset_Icc_self
 
+include c y hc hy in
 /-- Nonnegative integral version of the longitudinal tilt calculation. -/
-theorem lintegral_exp_longitudinal (c y : ℝ) (hc : c ≠ 0) (hy : 0 ≤ y) :
+theorem lintegral_exp_longitudinal  :
     (∫⁻ x in Ioo (-y) y, ENNReal.ofReal (Real.exp (c * x))) =
       ENNReal.ofReal (2 * Real.sinh (c * y) / c) := by
   rw [← ofReal_integral_eq_lintegral_ofReal (integrableOn_exp_longitudinal c y)
     (Filter.Eventually.of_forall (fun x => (Real.exp_pos _).le)),
     integral_exp_longitudinal c y hc hy]
 
+include c y hc hy in
 /-- The longitudinal tilt average is nonnegative for either sign of nonzero drift. -/
-theorem sinh_div_nonneg_longitudinal (c y : ℝ) (hc : c ≠ 0) (hy : 0 ≤ y) :
+theorem sinh_div_nonneg_longitudinal  :
     0 ≤ Real.sinh (c * y) / c := by
   have h : 0 ≤ ∫ x in Ioo (-y) y, Real.exp (c * x) :=
     integral_nonneg (fun x => (Real.exp_pos _).le)
   rw [integral_exp_longitudinal c y hc hy] at h
-  have heq : 2 * Real.sinh (c * y) / c = 2 * (Real.sinh (c * y) / c) := by ring
-  rw [heq] at h
-  linarith only [h]
+  grind
 
+variable (F : ℝ → ℝ≥0∞) (hF : Measurable F)
+
+include F hF in
 /-- Weighted radial identity in cylindrical coordinates. This is valid also for infinite tests. -/
-theorem lintegral_radial_exp (F : ℝ → ℝ≥0∞) (hF : Measurable F)
+theorem lintegral_radial_exp 
     (c : ℝ) (hc : c ≠ 0) :
     (∫⁻ p : ℝ × ℂ, F (cylindricalRadius p.1 ‖p.2‖) * ENNReal.ofReal (Real.exp (c * p.1))) =
       ENNReal.ofReal (4 * Real.pi) * ∫⁻ y in Ioi (0 : ℝ),
@@ -269,7 +270,7 @@ theorem lintegral_radial_exp (F : ℝ → ℝ≥0∞) (hF : Measurable F)
     intro y hy
     dsimp only
     rw [lintegral_exp_longitudinal c y hc hy.le]
-    have hn := sinh_div_nonneg_longitudinal c y hc hy.le
+    
     have heq : 2 * Real.sinh (c * y) / c = 2 * (Real.sinh (c * y) / c) := by ring
     have heq' : y * Real.sinh (c * y) / c = y * (Real.sinh (c * y) / c) := by ring
     rw [heq, heq', ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 2),
@@ -279,8 +280,9 @@ theorem lintegral_radial_exp (F : ℝ → ℝ≥0∞) (hF : Measurable F)
   congr 2
   ring
 
+include F hF in
 /-- Zero tilt gives the ordinary three-dimensional radial weight `4πy²`. -/
-theorem lintegral_radial_zero (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
+theorem lintegral_radial_zero  :
     (∫⁻ p : ℝ × ℂ, F (cylindricalRadius p.1 ‖p.2‖)) =
       ENNReal.ofReal (4 * Real.pi) * ∫⁻ y in Ioi (0 : ℝ), F y * ENNReal.ofReal (y ^ 2) := by
   have h := lintegral_radial_longitudinal F (fun _ => 1) hF measurable_const
@@ -307,8 +309,7 @@ noncomputable def cylindricalCoordinates : (Fin 3 → ℝ) ≃ᵐ (ℝ × ℂ) :
     (MeasurableEquiv.prodCongr (MeasurableEquiv.refl ℝ) Complex.measurableEquivPi.symm)
 
 /-- Cylindrical coordinates preserve three-dimensional Lebesgue volume. -/
-theorem cylindricalCoordinates_measurePreserving : MeasurePreserving cylindricalCoordinates := by
-  exact ((MeasurePreserving.id (volume : Measure ℝ)).prod
+theorem cylindricalCoordinates_measurePreserving : MeasurePreserving cylindricalCoordinates := ((MeasurePreserving.id (volume : Measure ℝ)).prod
     Complex.volume_preserving_equiv_pi.symm).comp
       (volume_preserving_piFinSuccAbove (fun _ : Fin 3 => ℝ) 0)
 
@@ -335,8 +336,9 @@ theorem lintegral_cylindricalCoordinates (f : ℝ × ℂ → ℝ≥0∞) :
   cylindricalCoordinates_measurePreserving.lintegral_comp_emb
     cylindricalCoordinates.measurableEmbedding f
 
+include F hF in
 /-- Weighted radial identity on the exact Euclidean three-coordinate carrier. -/
-theorem lintegral_three_radial_exp (F : ℝ → ℝ≥0∞) (hF : Measurable F)
+theorem lintegral_three_radial_exp 
     (c : ℝ) (hc : c ≠ 0) :
     (∫⁻ z : Fin 3 → ℝ, F ‖WithLp.toLp 2 z‖ * ENNReal.ofReal (Real.exp (c * z 0))) =
       ENNReal.ofReal (4 * Real.pi) * ∫⁻ y in Ioi (0 : ℝ),
@@ -347,8 +349,9 @@ theorem lintegral_three_radial_exp (F : ℝ → ℝ≥0∞) (hF : Measurable F)
   intro z
   rw [cylindricalCoordinates_radius, cylindricalCoordinates_fst]
 
+include F hF in
 /-- The Maxwell radial integration formula on the same Cartesian carrier. -/
-theorem lintegral_three_radial_zero (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
+theorem lintegral_three_radial_zero  :
     (∫⁻ z : Fin 3 → ℝ, F ‖WithLp.toLp 2 z‖) =
       ENNReal.ofReal (4 * Real.pi) * ∫⁻ y in Ioi (0 : ℝ), F y * ENNReal.ofReal (y ^ 2) := by
   rw [← lintegral_radial_zero F hF, ← lintegral_cylindricalCoordinates]

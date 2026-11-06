@@ -9,7 +9,7 @@ public import DOZZ.GMC.Moments.InversionSpatialLaw
 
 /-! Pin-copy Wick integral laws over the actual finite spatial reference measure. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 
@@ -25,11 +25,10 @@ theorem ae_integrable_wick_finite
     (hLaw : ∀ x, HasLaw (fun ω => W ω x) (gaussianReal 0 (v x)) P)
     (hw0 : ∀ x, 0 ≤ w x) (hwi : Integrable w (ν : Measure S)) :
     ∀ᵐ ω ∂P, Integrable (fun x => w x * Real.exp (γ*W ω x-γ^2/2*v x)) (ν : Measure S) := by
-  have hmeasure : (ν : Measure S) = (ν.mass : ℝ≥0) • (ν.normalize : Measure S) :=
+  have hmeasure  :=
     congrArg (fun μ : FiniteMeasure S => (μ : Measure S)) ν.self_eq_mass_smul_normalize
   by_cases hm : ν.mass = 0
-  · rw [hmeasure, hm, zero_smul]
-    exact ae_of_all _ fun ω => integrable_zero_measure
+  · simp_all
   · have hwi' : Integrable w (ν.normalize : Measure S) := by
       rw [hmeasure] at hwi
       exact (integrable_smul_measure (ENNReal.coe_ne_zero.mpr hm) ENNReal.coe_ne_top).mp hwi
@@ -54,36 +53,31 @@ theorem offCenter_wick_copy_finite_law
     (P.prod P).map (fun q j => ∫ x, w j x * Real.exp
       (γ * copiedCircle Xc z q (p x) - γ ^ 2 / 2 *
         ((p x).val.2 + 2 * Real.log ‖z + (p x).val.1‖).toNNReal) ∂(ν : Measure S)) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   let U : Ω → S → ℝ := fun ω x => Xc ω (z + (p x).val.1) (p x).val.2
   let V : Ω × Ω → S → ℝ := fun q x => copiedCircle Xc z q (p x)
   let v : S → ℝ≥0 := fun x => ((p x).val.2 + 2 * Real.log ‖z + (p x).val.1‖).toNNReal
-  have hpv : Measurable (fun x => (p x).val) := measurable_subtype_coe.comp hp
+  have hpv  := measurable_subtype_coe.comp hp
   have hU : Measurable (fun q : Ω × S => U q.1 q.2) :=
     hm.comp (measurable_fst.prodMk
       ((measurable_const.add (hpv.fst.comp measurable_snd)).prodMk
         (hpv.snd.comp measurable_snd)))
   have hV : Measurable (fun q : (Ω × Ω) × S => V q.1 q.2) := by
     unfold V copiedCircle
-    have h1 : Measurable (fun q : (Ω × Ω) × S => Xc q.1.1 z 0) :=
-      hm.comp (measurable_fst.fst.prodMk (measurable_const (a := (z, (0 : ℝ)))))
-    have h2 : Measurable (fun q : (Ω × Ω) × S => Xc q.1.2 z 0) :=
-      hm.comp (measurable_fst.snd.prodMk (measurable_const (a := (z, (0 : ℝ)))))
-    have hloc : Measurable (fun q : (Ω × Ω) × S =>
-        Xc q.1.1 (z + (p q.2).val.1) (p q.2).val.2) :=
-      hU.comp ((measurable_fst.fst).prodMk measurable_snd)
+    
+    
+    
     have ha : Measurable (fun q : (Ω × Ω) × S =>
         localPinCoefficient z (p q.2).val.1) := by
       unfold localPinCoefficient
       fun_prop
-    exact (h2.add (hloc.sub h1)).add (ha.mul (h2.sub h1))
+    fun_prop (disch := positivity)
   have hv : Measurable v := by
     dsimp [v]
     fun_prop
   let φ : Fin m → S → ℝ → ℝ := fun j x t => w j x * Real.exp (γ*t-γ^2/2*v x)
   have hφ (j : Fin m) : Measurable (fun q : S × ℝ => φ j q.1 q.2) := by
-    exact ((hw j).comp measurable_fst).mul
-      ((measurable_snd.const_mul γ).sub ((hv.comp measurable_fst).coe_nnreal_real.const_mul _)).exp
+    fun_prop (disch := positivity)
   exact spatialIntegral_vector_law_of_fdd_finite ν U V φ hU hV hφ
     (fun j => ae_integrable_wick_finite ν U v (w j) γ hU hv (hw j)
       (fun x => offCenter_circle_hasLaw P X Xc hX hc z hz (p x))

@@ -9,7 +9,7 @@ public import Mathlib.MeasureTheory.Group.Measure
 
 /-! Positive planar kernels controlling the two near-diagonal fusion sectors. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set Metric
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -24,12 +24,11 @@ theorem translated_ball_rpow_integral (u : ℂ) (R b : ℝ) :
   have hcomp : (fun x : ℂ => f (x + u)) =
       (Metric.ball (0 : ℂ) R).indicator (fun x => ENNReal.ofReal (‖x‖ ^ b)) := by
     funext x
-    have hsub : u - (x + u) = -x := by abel
+    
     have hmem : x + u ∈ Metric.ball u R ↔ x ∈ Metric.ball (0 : ℂ) R := by
-      simp only [Metric.mem_ball, dist_eq_norm, add_sub_cancel_right, sub_zero]
+      simp_all
     by_cases hx : x ∈ Metric.ball (0 : ℂ) R
-    · simp only [f, Set.indicator_of_mem (hmem.mpr hx), Set.indicator_of_mem hx, hsub, norm_neg]
-    · simp only [f, Set.indicator_of_notMem (hmem.not.mpr hx), Set.indicator_of_notMem hx]
+    all_goals continuity
   have h := (measurePreserving_add_right volume u).lintegral_comp hf
   rw [show (fun x : ℂ => f (x + u)) = _ from hcomp] at h
   dsimp only [f] at h

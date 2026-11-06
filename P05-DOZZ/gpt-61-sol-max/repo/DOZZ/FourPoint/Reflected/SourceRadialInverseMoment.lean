@@ -7,8 +7,9 @@ public import DOZZ.FourPoint.Reflected.SourceRadialJointLaw
 public import DOZZ.FourPoint.Reflected.CopiedRegionRegroup
 public import DOZZ.FourPoint.Reflected.WilliamsRealCutData
 public import DOZZ.FourPoint.Reflected.VariableCutMeasurable
+import Mathlib.Tactic
 /-! Exact inverse-moment transport of the actual copied radial inner mass. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -39,10 +40,10 @@ theorem reflected_source_copied_radial_inverse_moment
         (ENNReal.ofReal (Real.exp (γ*v.2.1))*twoSidedReflectionCutMass γ v.2.1 B
           (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) v.2.2))^(-p)
       ∂P.prod ((brownianMaximumReferenceLaw (Q γ-α₁)).prod P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let ν := Q γ-α₁
   let μ := (brownianMaximumReferenceLaw ν).prod P
-  let _ : IsProbabilityMeasure (brownianMaximumReferenceLaw ν) :=
+  let _  :=
     isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα₁)
   let Y := fun ω => (gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ,
     reflected_radial_scale γ ν h Xc z ω)
@@ -51,17 +52,17 @@ theorem reflected_source_copied_radial_inverse_moment
   let F := fun q : (ℝ≥0∞ × ℝ) × ℝ≥0∞ => (q.1.1,ENNReal.ofReal q.1.2*q.2)
   have hF : Measurable F := (measurable_fst.comp measurable_fst).prodMk
     (((measurable_snd.comp measurable_fst).ennreal_ofReal).mul measurable_snd)
-  have ho : AEMeasurable (fun ω => gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ) P :=
+  have ho  :=
     (reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)
   have ht := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hb : AEMeasurable (reflected_radial_scale γ ν h Xc z) P :=
     ((ht.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
-  have hY : AEMeasurable Y P := ho.prodMk hb
+  have hY  := ho.prodMk hb
   have hBm := conditionedPair_aemeasurable P B ν hData.1
   have hcut := reflected_williams_variable_cut_aemeasurable P (brownianMaximumReferenceLaw ν)
     γ B Z hBm hL.2.2.2.1 hL.2.2.2.2.1
-  have hJ : AEMeasurable J μ :=
+  have hJ  :=
     (((measurable_fst.const_mul γ).exp.ennreal_ofReal).aemeasurable).mul hcut
   have hpack : AEMeasurable (fun v : Ω × (ℝ × Ω) => (Y v.1,J v.2)) (P.prod μ) :=
     (hY.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving).prodMk
@@ -76,7 +77,7 @@ theorem reflected_source_copied_radial_inverse_moment
     (measurableSet_lt measurable_norm measurable_const)
   have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hx.1
+    exact norm_pos_iff.mp hx.1
   have hK : Measurable (fun x : ℂ => ENNReal.ofReal (‖x‖^(-(γ*α₁)))) := by fun_prop
   have hI := reflected_copied_region_mass_aemeasurable P (originRadialPath Xc) N
     (originRadialPath_aemeasurable P X Xc hc hcont) hN hfin γ U hU hU0 _ hK
@@ -88,7 +89,6 @@ theorem reflected_source_copied_radial_inverse_moment
   have hG : Measurable G := by fun_prop
   have hiLeft := lintegral_map' hG.aemeasurable hactual
   have hiRight := lintegral_map' hG.aemeasurable (hF.comp_aemeasurable hpack)
-  rw [hlaw] at hiLeft
-  exact hiLeft.symm.trans hiRight
+  grind
 
 end DOZZ.Proofs

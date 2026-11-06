@@ -28,8 +28,10 @@ noncomputable def localTorusModeEnergyConstant (R : ℝ) : ℝ :=
       (volume (ball (0 : ℂ) (R + 3))).toReal
 
 
-theorem norm_sq_equatorKernelLimitMap_localTorusCosTest_le (R L : ℝ) (hR : 0 < R)
-    (k : Fin 2 → ℤ) :
+variable (R L : ℝ) (hR : 0 < R) (k : Fin 2 → ℤ)
+
+include R L hR k in
+theorem norm_sq_equatorKernelLimitMap_localTorusCosTest_le  :
     ‖equatorKernelLimitMap (localTorusCosTest R L hR k)‖ ^ 2 ≤
       localTorusModeEnergyConstant (R := R) := by
   have henergy := norm_sq_equatorKernelLimitMap_le_localL2 (R + 3)
@@ -49,8 +51,8 @@ theorem norm_sq_equatorKernelLimitMap_localTorusCosTest_le (R L : ℝ) (hR : 0 <
             (volume (ball (0 : ℂ) (R + 3))).toReal :=
       mul_le_mul_of_nonneg_left hL2 hK
 
-theorem norm_sq_equatorKernelLimitMap_localTorusSinTest_le (R L : ℝ) (hR : 0 < R)
-    (k : Fin 2 → ℤ) :
+include R L hR k in
+theorem norm_sq_equatorKernelLimitMap_localTorusSinTest_le  :
     ‖equatorKernelLimitMap (localTorusSinTest R L hR k)‖ ^ 2 ≤
       localTorusModeEnergyConstant (R := R) := by
   have henergy := norm_sq_equatorKernelLimitMap_le_localL2 (R + 3)
@@ -70,8 +72,9 @@ theorem norm_sq_equatorKernelLimitMap_localTorusSinTest_le (R L : ℝ) (hR : 0 <
             (volume (ball (0 : ℂ) (R + 3))).toReal :=
       mul_le_mul_of_nonneg_left hL2 hK
 
+include R L hR k in
 theorem norm_sq_equatorKernelLimitMap_smul_localTorusCosTest_le
-    (R L : ℝ) (hR : 0 < R) (k : Fin 2 → ℤ) (c : ℝ) :
+     (c : ℝ) :
     ‖equatorKernelLimitMap (c • localTorusCosTest R L hR k)‖ ^ 2 ≤
       c ^ 2 * localTorusModeEnergyConstant R := by
   rw [map_smul, norm_smul]
@@ -83,8 +86,9 @@ theorem norm_sq_equatorKernelLimitMap_smul_localTorusCosTest_le
       mul_le_mul_of_nonneg_left
         (norm_sq_equatorKernelLimitMap_localTorusCosTest_le R L hR k) (sq_nonneg c)
 
+include R L hR k in
 theorem norm_sq_equatorKernelLimitMap_smul_localTorusSinTest_le
-    (R L : ℝ) (hR : 0 < R) (k : Fin 2 → ℤ) (c : ℝ) :
+     (c : ℝ) :
     ‖equatorKernelLimitMap (c • localTorusSinTest R L hR k)‖ ^ 2 ≤
       c ^ 2 * localTorusModeEnergyConstant R := by
   rw [map_smul, norm_smul]

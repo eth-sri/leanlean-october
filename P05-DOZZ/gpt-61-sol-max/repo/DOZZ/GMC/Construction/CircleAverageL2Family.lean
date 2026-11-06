@@ -14,7 +14,7 @@ probability space. Each coordinate has a representative measurable in the raw di
 evaluation sigma algebra.
 -/
 
-@[expose] public section
+public section
 
 open Filter MeasureTheory ProbabilityTheory
 open scoped Topology
@@ -37,7 +37,7 @@ theorem exists_equatorGFF_circle_L2_family
           Tendsto (fun n => eLpNorm (fun ω => X ω (f p n) - Y p ω) 2 P)
             atTop (𝓝 0)) ∧
         IsGaussianProcess (fun p ω => Y p ω) P := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   have hlim (p : ℂ × ℝ) :=
     exists_equatorGFF_circle_test_L2_limit_with_cross X hX p.1 p.2
   choose f W hgap hcross hW using hlim
@@ -45,15 +45,11 @@ theorem exists_equatorGFF_circle_L2_family
     exists_measurable_equatorGFF_circle_L2_limit X hX (f p) (W p) (hW p)
   choose Y hYraw hYm hYmem hYae hYlim using hrep
   refine ⟨f, W, Y, hgap, hcross, hW, ?_, ?_⟩
-  · intro p
-    exact ⟨hYraw p, hYm p, hYmem p, hYae p, hYlim p⟩
+  · simp_all
   · apply isGaussianProcess_of_eLpNorm_sub
       (fun n p ω => X ω (f p n)) Y
     · intro n
       exact equatorGFF_test_family_isGaussianProcess X hX (fun p => f p n)
-    · intro p
-      exact hYmem p
-    · intro p
-      exact hYlim p
+    all_goals assumption_mod_cast
 
 end DOZZ.Proofs

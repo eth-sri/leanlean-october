@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.ReflectedOuter.DeletedDisk
 public import DOZZ.FourPoint.ReflectedOuter.MassPerturbation
 import Mathlib.Tactic
 /-! Actual spatial buffer expectations at the reflected freezing rate. -/
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -32,7 +32,7 @@ theorem reflected_buffer_weight_bound {Ω : Type*} [MeasurableSpace Ω]
   let q : ℝ := (α₁+α₂+α₃-γ/2-2*Q γ)/γ+1
   let e : ℝ := γ*(Q γ-α₁)+(α₁+γ/2-Q γ)^2/2
   let c : ℝ := (1+R)^(γ^2/2)*(1/4 : ℝ)^(-q)
-  have hq : 0 < q := (reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs).2.1
+  have hq  := (reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs).2.1
   have hc : 0 < c := by dsimp only [c]; positivity
   obtain ⟨C, ε₀, hC, hε₀, hb⟩ := reflected_deleted_disk_weight_bound
     P X M γ α₁ α₂ α₃ hγ hγ₂ hα₁ hreflect hs hX hM

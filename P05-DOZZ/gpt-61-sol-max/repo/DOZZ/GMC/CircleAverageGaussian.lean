@@ -11,7 +11,7 @@ public import DOZZ.GFFStructure.GaussianClosure
 
 /-! Finite circle-average families are jointly Gaussian, by Gaussian closure of the field. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -31,14 +31,8 @@ theorem circleAverage_finite_family_jointly_gaussian
   · intro a
     let S : Ω → ℝ := fun ω => ∑ i, a i * Xc ω (p i).1 (p i).2
     have hWeighted : IsGaussianProcess
-        (fun i => fun ω => a i * Xc ω (p i).1 (p i).2) P := by
-      have hParam : IsGaussianProcess
-          (fun i => fun ω => Xc ω (p i).1 (p i).2) P := by
-        simpa only [Function.comp_def] using hProcess.comp_right p
-      simpa only [smul_eq_mul] using hParam.smul a
-    have hLaw : HasGaussianLaw S P := by
-      simpa only [S, smul_eq_mul] using
-        hWeighted.hasGaussianLaw_fun_sum (I := Finset.univ)
+        (fun i => fun ω => a i * Xc ω (p i).1 (p i).2) P := have hParam := IsGaussianProcess.comp_right hProcess p;   IsGaussianProcess.smul a hParam
+    have hLaw : HasGaussianLaw S P := hWeighted.hasGaussianLaw_fun_sum (I := Finset.univ)
     have hMeanS : (∫ ω, S ω ∂P) = 0 := by
       dsimp [S]
       rw [integral_finsetSum]

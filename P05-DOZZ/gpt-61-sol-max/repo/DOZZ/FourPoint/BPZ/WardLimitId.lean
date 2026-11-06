@@ -12,7 +12,7 @@ For every integer cutoff below the separation scale, the cutoff Ward identity ho
 cutoff chaos replaced by its finite version and the right side written through the antisymmetrized
 cutoff kernel and the far-region test function. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -41,8 +41,7 @@ theorem cutWeight_mul_bdd (hd : BPZLimitData γ q δ ρ kt k₂ φ D) :
       _ ≤ B * K := mul_le_mul_of_nonneg_left h hB0
       _ ≤ (B + 1) * K := by nlinarith
   · rw [abs_mul, abs_of_nonneg (hd.ρ_nonneg x)]
-    calc ρ x * |bpzWardCutWeight γ q n kt x| ≤ K := h
-      _ ≤ (B + 1) * K := by nlinarith
+    nlinarith
 
 /-- The cutoff Ward identity in symmetrized form, with the finite cutoff chaos. -/
 theorem cutoff_identity_sym (hd : BPZLimitData γ q δ ρ kt k₂ φ D)

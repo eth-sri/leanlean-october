@@ -16,7 +16,7 @@ prove positivity for continuous densities by smooth approximation, then pass thr
 annular approximations of a circle.
 -/
 
-@[expose] public section
+public section
 
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology
@@ -44,10 +44,11 @@ theorem densityEnergy_comm {f g : ℂ → ℝ} (hf : Continuous f) (hg : Continu
     _ = ∫ p : ℂ × ℂ, g p.1 * gffKernel p.1 p.2 * f p.2 ∂(volume.prod volume) :=
       (integral_prod _ (integrable_densityEnergy hg hf hsg hsf)).symm
 
+variable {f g h : ℂ → ℝ} (hf : Continuous f) (hg : Continuous g) (hh : Continuous h) (hsf : HasCompactSupport f) (hsg : HasCompactSupport g) (hsh : HasCompactSupport h)
+
+include f g h hf hg hh hsf hsg hsh in
 /-- Subtraction in the first density slot is compatible with pinned energy. -/
-theorem densityEnergy_sub_left {f g h : ℂ → ℝ} (hf : Continuous f) (hg : Continuous g)
-    (hh : Continuous h) (hsf : HasCompactSupport f) (hsg : HasCompactSupport g)
-    (hsh : HasCompactSupport h) :
+theorem densityEnergy_sub_left  :
     densityEnergy (fun z => f z - g z) h = densityEnergy f h - densityEnergy g h := by
   have hi₁ := integrable_densityEnergy hf hh hsf hsh
   have hi₂ := integrable_densityEnergy hg hh hsg hsh
@@ -61,10 +62,9 @@ theorem densityEnergy_sub_left {f g h : ℂ → ℝ} (hf : Continuous f) (hg : C
       ring
     _ = _ := integral_sub hi₁ hi₂
 
+include f g h hf hg hh hsf hsg hsh in
 /-- Subtraction in the second density slot is compatible with pinned energy. -/
-theorem densityEnergy_sub_right {f g h : ℂ → ℝ} (hf : Continuous f) (hg : Continuous g)
-    (hh : Continuous h) (hsf : HasCompactSupport f) (hsg : HasCompactSupport g)
-    (hsh : HasCompactSupport h) :
+theorem densityEnergy_sub_right  :
     densityEnergy f (fun z => g z - h z) = densityEnergy f g - densityEnergy f h := by
   have hi₁ := integrable_densityEnergy hf hg hsf hsg
   have hi₂ := integrable_densityEnergy hf hh hsf hsh
@@ -104,8 +104,8 @@ theorem densityEnergy_self_nonneg {f : ℂ → ℝ} (hf : Continuous f)
   have hts : tsupport f ⊆ closedBall (0 : ℂ) R := by
     have hsupp : Function.support f ⊆ closedBall (0 : ℂ) R := by
       intro z hz
-      have hz' : z ∈ tsupport f := subset_tsupport f hz
-      simpa only [Metric.mem_closedBall, dist_zero_right] using hRsup z hz'
+      have hz'  := subset_tsupport f hz
+      simp_all
     exact closure_minimal hsupp isClosed_closedBall
   let ε : ℕ → ℝ := fun n => 1 / ((n : ℝ) + 2)
   have hε n : 0 < ε n := by dsimp [ε]; positivity
@@ -116,28 +116,22 @@ theorem densityEnergy_self_nonneg {f : ℂ → ℝ} (hf : Continuous f)
     ext n
     simp [ε, Nat.cast_add]
   obtain ⟨M, hM⟩ := hsf.exists_bound_of_continuous hf
-  have hM0 : 0 ≤ M := (norm_nonneg (f 0)).trans (hM 0)
+  have hM0  := (norm_nonneg (f 0)).trans (hM 0)
   have hbound n z : |g n z| ≤ M + 1 := by
     have htri := abs_add_le (g n z - f z) (f z)
-    have hdiff : |g n z - f z| < ε n := by simpa only [abs_sub_comm] using hge n z
+    have hdiff : |g n z - f z| < ε n := hge n z
     have hε1 : ε n ≤ 1 := by
-      dsimp [ε]
-      apply (div_le_one (by positivity)).mpr
-      linarith only [Nat.cast_nonneg (α := ℝ) n]
-    have hfM : |f z| ≤ M := by simpa only [Real.norm_eq_abs] using hM z
-    have habs : |g n z| ≤ |g n z - f z| + |f z| := by
-      simpa only [sub_add_cancel] using htri
-    linarith
+      bound
+    have hfM : |f z| ≤ M := hM z
+    grind
   have hpoint z : Tendsto (fun n => g n z) atTop (𝓝 (f z)) := by
     apply tendsto_of_tendsto_of_tendsto_of_le_of_le
       (by simpa using tendsto_const_nhds.sub hεlim)
       (by simpa using tendsto_const_nhds.add hεlim)
     · intro n
-      have h := (abs_lt.mp (hge n z)).1
-      linarith
+      grind
     · intro n
-      have h := (abs_lt.mp (hge n z)).2
-      linarith
+      grind
   have hlim := tendsto_densityEnergy_of_common_support (fun n z => g n z) f
     (R := R + 1) (M := M + 1) (by linarith) (by linarith)
     (fun n => (g n).continuous.measurable)
@@ -152,16 +146,14 @@ theorem densityEnergy_self_nonneg {f : ℂ → ℝ} (hf : Continuous f)
 /-- Every circle energy gap `DOZZ.circleEnergyGap` is nonnegative. -/
 theorem circleEnergyGap_nonneg (x : ℂ) (r : ℝ) (f : TestFn) :
     0 ≤ circleEnergyGap x r f := by
-  let a : ℕ → ℂ → ℝ := fun n => circleAnnularDensity x r n
-  let kσ : ℂ → ℝ := fun z => ∫ w, gffKernel z w ∂circleMeasure x r
-  have hkσ : Continuous kσ := continuous_circleKernelPotential x r
+  let a  := fun n => circleAnnularDensity x r n
+  let kσ  := fun z => ∫ w, gffKernel z w ∂circleMeasure x r
+  have hkσ  := continuous_circleKernelPotential x r
   have hcrossσ : Tendsto (fun n => ∫ z, a n z * kσ z) atTop
       (𝓝 (circleSelfEnergy x r)) := by
     have h := tendsto_integral_circleAnnular_mul x r kσ hkσ
-    have htarget : (∫ z, kσ z ∂circleMeasure x r) = circleSelfEnergy x r := rfl
-    simpa only [a, kσ, htarget] using h
-  have hgapA : Tendsto (fun n => densityCircleGap x r (a n)) atTop (𝓝 0) := by
-    simpa only [a] using tendsto_densityCircleGap_circleAnnular x r
+    aesop
+  have hgapA : Tendsto (fun n => densityCircleGap x r (a n)) atTop (𝓝 0) := tendsto_densityCircleGap_circleAnnular x r
   have hdiag : Tendsto (fun n => densityEnergy (a n) (a n)) atTop
       (𝓝 (circleSelfEnergy x r)) := by
     have h := (hgapA.add (hcrossσ.const_mul 2)).sub_const (circleSelfEnergy x r)
@@ -169,17 +161,15 @@ theorem circleEnergyGap_nonneg (x : ℂ) (r : ℝ) (f : TestFn) :
         (∫ z, a n z * kσ z) - circleSelfEnergy x r = densityEnergy (a n) (a n) := by
       simp only [densityCircleGap, a, kσ]
       ring
-    have hh := h.congr' (Filter.Eventually.of_forall he)
-    convert hh using 1; ring_nf
+    grind
   have hcrossF' : Tendsto
       (fun n => ∫ z, a n z * (∫ w, gffKernel z w * f w)) atTop
       (𝓝 (circleCross x r f)) := by
-    have hkf : Continuous (fun z => ∫ w, gffKernel z w * f w) :=
+    have hkf  :=
       continuous_testKernelPotential f
     have h := tendsto_integral_circleAnnular_mul x r
       (fun z => ∫ w, gffKernel z w * f w) hkf
-    have htarget : (∫ z, (∫ w, gffKernel z w * f w) ∂circleMeasure x r) =
-        circleCross x r f := (circleCross_eq_integral_testKernel x r f).symm
+    have htarget  := (circleCross_eq_integral_testKernel x r f).symm
     simpa only [a, htarget] using h
   have hcrossF : Tendsto (fun n => densityEnergy f (a n)) atTop
       (𝓝 (circleCross x r f)) := by
@@ -211,8 +201,7 @@ theorem circleEnergyGap_nonneg (x : ℂ) (r : ℝ) (f : TestFn) :
       (f.hasCompactSupport.sub (hasCompactSupport_circleAnnularDensity x r n))
   have hgaplim : Tendsto (fun n => densityEnergy f f - 2 * densityEnergy f (a n) +
       densityEnergy (a n) (a n)) atTop
-      (𝓝 (densityEnergy f f - 2 * circleCross x r f + circleSelfEnergy x r)) := by
-    exact (tendsto_const_nhds.sub (hcrossF.const_mul 2)).add hdiag
+      (𝓝 (densityEnergy f f - 2 * circleCross x r f + circleSelfEnergy x r)) := (tendsto_const_nhds.sub (hcrossF.const_mul 2)).add hdiag
   have hlim : Tendsto
       (fun n => densityEnergy (fun z => f z - a n z) (fun z => f z - a n z)) atTop
       (𝓝 (circleEnergyGap x r f)) := by
@@ -224,8 +213,7 @@ theorem circleEnergyGap_nonneg (x : ℂ) (r : ℝ) (f : TestFn) :
         densityEnergy f f - 2 * densityEnergy f (a n) + densityEnergy (a n) (a n) := by
       rw [densityEnergy_sub_self_eq f.continuous (continuous_circleAnnularDensity x r n)
         f.hasCompactSupport (hasCompactSupport_circleAnnularDensity x r n)]
-    rw [← hgap]
-    exact hgaplim.congr' (Filter.Eventually.of_forall fun n => (he n).symm)
+    simp_all
   apply le_of_tendsto_of_tendsto' (tendsto_const_nhds : Tendsto
     (fun _ : ℕ => (0 : ℝ)) atTop (𝓝 0)) hlim
   exact hsubnon
@@ -235,16 +223,13 @@ theorem gffCov_smul_self (a : ℝ) (f g : TestFn) :
     gffCov (a • f) (a • g) = a ^ 2 * gffCov f g := by
   rw [← inner_equatorKernelLimitMap_eq_gffCov, ← inner_equatorKernelLimitMap_eq_gffCov]
   rw [map_smul, map_smul, inner_smul_left, inner_smul_right]
-  simp only [starRingEnd_apply, star_trivial]
-  ring_nf
+  noncomm_ring
 
 /-- The covariance form expands on sums. -/
 theorem gffCov_sub_self (f g : TestFn) :
     gffCov (f - g) (f - g) = gffCov f f - 2 * gffCov f g + gffCov g g := by
   rw [show f - g = f + (-g) by
-    ext z
-    change f z - g z = f z + -g z
-    ring, gffCov_add_self]
+    continuity, gffCov_add_self]
   have hleft : gffCov f (-g) = -gffCov f g := by
     rw [← inner_equatorKernelLimitMap_eq_gffCov, ← inner_equatorKernelLimitMap_eq_gffCov,
       map_neg, inner_neg_right]
@@ -258,8 +243,8 @@ theorem gffCov_sub_self (f g : TestFn) :
 /-- The cross energy is linear in a test. -/
 theorem circleCross_add (x : ℂ) (r : ℝ) (f g : TestFn) :
     circleCross x r (f + g) = circleCross x r f + circleCross x r g := by
-  let k : ℂ → ℝ := fun z => ∫ w, gffKernel z w ∂circleMeasure x r
-  have hk : Continuous k := continuous_circleKernelPotential x r
+  let k  := fun z => ∫ w, gffKernel z w ∂circleMeasure x r
+  have hk  := continuous_circleKernelPotential x r
   have hfi : Integrable (fun z => f z * k z) :=
     (f.continuous.mul hk).integrable_of_hasCompactSupport f.hasCompactSupport.mul_right
   have hgi : Integrable (fun z => g z * k z) :=
@@ -276,10 +261,9 @@ theorem circleCross_add (x : ℂ) (r : ℝ) (f g : TestFn) :
 /-- The cross energy is homogeneous in a test. -/
 theorem circleCross_smul (x : ℂ) (r a : ℝ) (f : TestFn) :
     circleCross x r (a • f) = a * circleCross x r f := by
-  let k : ℂ → ℝ := fun z => ∫ w, gffKernel z w ∂circleMeasure x r
-  have hk : Continuous k := continuous_circleKernelPotential x r
-  have hfi : Integrable (fun z => f z * k z) :=
-    (f.continuous.mul hk).integrable_of_hasCompactSupport f.hasCompactSupport.mul_right
+  let k  := fun z => ∫ w, gffKernel z w ∂circleMeasure x r
+
+
   unfold circleCross
   have heq : (fun z => (a • f) z * k z) = fun z => a * (f z * k z) := by
     funext z
@@ -314,16 +298,12 @@ theorem equatorGFF_testL2_sub_norm_sq
         gffCov (f - g) (f - g) := by
   let Uf := (equatorGFF_test_memLp X hX f).toLp (fun ω => X ω f)
   let Ug := (equatorGFF_test_memLp X hX g).toLp (fun ω => X ω g)
-  have hsubAE : (fun ω => (Uf - Ug) ω) =ᵐ[P] (fun ω => Uf ω - Ug ω) := by
-    exact Lp.coeFn_sub Uf Ug
+  have hsubAE  := Lp.coeFn_sub Uf Ug
   have hdiff : (fun ω => Uf ω - Ug ω) =ᵐ[P] (fun ω => X ω (f - g)) := by
     filter_upwards [(equatorGFF_test_memLp X hX f).coeFn_toLp,
       (equatorGFF_test_memLp X hX g).coeFn_toLp] with ω hf hg
-    have hf' : Uf ω = X ω f := by simpa only [Uf] using hf
-    have hg' : Ug ω = X ω g := by simpa only [Ug] using hg
-    rw [hf', hg']
-    exact (map_sub (X ω) f g).symm
-  have hae : (fun ω => (Uf - Ug) ω) =ᵐ[P] (fun ω => X ω (f - g)) :=
+    aesop
+  have hae  :=
     hsubAE.trans hdiff
   have hmean : (∫ ω, (Uf - Ug) ω ∂P) = 0 := by
     rw [integral_congr_ae hae]
@@ -340,16 +320,12 @@ theorem equatorGFF_testL2_sub_norm_sq
   rw [hmean, zero_mul, sub_zero, real_inner_self_eq_norm_sq] at hinner
   change ‖Uf - Ug‖ ^ 2 = gffCov (f - g) (f - g)
   have hinnerFun : ‖Uf - Ug‖ ^ 2 =
-      covariance (fun ω => (Uf - Ug) ω) (fun ω => (Uf - Ug) ω) P := by
-    simpa only using hinner.symm
-  have hcovFun :
-      covariance (Uf - Ug) (fun ω => Uf ω - Ug ω) P =
-        gffCov (f - g) (f - g) := hcov
+      covariance (fun ω => (Uf - Ug) ω) (fun ω => (Uf - Ug) ω) P := hinner.symm
+  have hcovFun  := hcov
   calc
     ‖Uf - Ug‖ ^ 2 =
         covariance (fun ω => (Uf - Ug) ω) (fun ω => (Uf - Ug) ω) P := hinnerFun
-    _ = covariance (Uf - Ug) (fun ω => Uf ω - Ug ω) P := by
-      exact covariance_congr_ae
+    _ = covariance (Uf - Ug) (fun ω => Uf ω - Ug ω) P := covariance_congr_ae
         (U := fun ω => (Uf - Ug) ω) (V := fun ω => (Uf - Ug) ω)
         (U' := fun ω => (Uf - Ug) ω) (V' := fun ω => Uf ω - Ug ω)
         Filter.EventuallyEq.rfl hsubAE
@@ -366,7 +342,7 @@ theorem equatorGFF_testL2_cauchy_of_circleEnergyGap
   let U n := (equatorGFF_test_memLp X hX (f n)).toLp (fun ω => X ω (f n))
   rw [Metric.cauchySeq_iff]
   intro ε hε
-  let δ : ℝ := ε ^ 2 / 8
+  let δ  := ε ^ 2 / 8
   have hδ : 0 < δ := by dsimp [δ]; positivity
   obtain ⟨N, hN⟩ := (eventually_atTop.mp (hf.eventually (gt_mem_nhds hδ)))
   refine ⟨N, fun m hm n hn => ?_⟩
@@ -374,8 +350,8 @@ theorem equatorGFF_testL2_cauchy_of_circleEnergyGap
   have hqn := hN n hn
   have hnorm := equatorGFF_testL2_sub_norm_sq X hX (f m) (f n)
   have hbound := gffCov_sub_le_circleEnergyGaps x r (f m) (f n)
-  have hnonm := circleEnergyGap_nonneg x r (f m)
-  have hnon n := circleEnergyGap_nonneg x r (f n)
+
+
   have hsquare : ‖U m - U n‖ ^ 2 < ε ^ 2 := by
     dsimp [U, δ] at *
     rw [hnorm]

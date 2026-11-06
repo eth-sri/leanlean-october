@@ -15,8 +15,11 @@ open scoped ENNReal
 
 namespace DOZZ.Proofs
 
+variable (μ : Measure ℂ) (z : ℂ) (γ N : ℝ)
+
+include μ z γ N in
 /-- The unpinned source measure, carried by the open unit insertion chart. -/
-noncomputable def transferredMeasure (μ : Measure ℂ) (z : ℂ) (γ N : ℝ) : Measure ℂ :=
+noncomputable def transferredMeasure  : Measure ℂ :=
   ((μ.restrict (Metric.ball z 1)).withDensity (fun w => ENNReal.ofReal
     (Real.exp (-γ * N) * Real.exp ((γ ^ 2 + 4) * Real.log (normPlus w))))).map (fun w => w-z)
 
@@ -30,12 +33,10 @@ theorem transferred_measure_density_bound (z : ℂ) (γ N : ℝ) :
   have hn : normPlus w ≤ normPlus z + 1 := by
     unfold normPlus
     apply max_le
-    · have h := norm_nonneg z
-      have h' : (1 : ℝ) ≤ max 1 ‖z‖ := le_max_left _ _
-      linarith
+    · simp_all
     · have htri : ‖w‖ ≤ ‖w-z‖ + ‖z‖ := by
         simpa only [sub_add_cancel] using norm_add_le (w-z) z
-      exact htri.trans (by linarith [le_max_right (1 : ℝ) ‖z‖])
+      grind
   apply mul_le_mul_of_nonneg_left _ (Real.exp_nonneg _)
   apply Real.exp_le_exp.mpr
   apply mul_le_mul_of_nonneg_left _ (by positivity)
@@ -55,15 +56,16 @@ theorem transferred_measure_finite (μ : Measure ℂ) [IsFiniteMeasure μ]
       exact ENNReal.ofReal_le_ofReal (transferred_measure_density_bound z γ N w hw))
     simpa only [lintegral_const, Measure.restrict_apply MeasurableSet.univ,
       univ_inter, d, C] using h
-  have hd : IsFiniteMeasure ((μ.restrict (Metric.ball z 1)).withDensity d) :=
+  have hd  :=
     isFiniteMeasure_withDensity (ne_top_of_le_ne_top
       (ENNReal.mul_ne_top ENNReal.ofReal_ne_top (measure_ne_top μ _)) hb)
   let := hd
   change IsFiniteMeasure (((μ.restrict (Metric.ball z 1)).withDensity d).map (fun w => w-z))
   infer_instance
 
+include μ z γ N in
 /-- The transferred measure assigns no mass outside the unit chart. -/
-theorem transferred_measure_carried (μ : Measure ℂ) (z : ℂ) (γ N : ℝ) :
+theorem transferred_measure_carried  :
     transferredMeasure μ z γ N (Metric.ball 0 1)ᶜ = 0 := by
   have htrans : Measurable (fun w : ℂ => w-z) := by fun_prop
   rw [transferredMeasure, Measure.map_apply htrans
@@ -73,10 +75,11 @@ theorem transferred_measure_carried (μ : Measure ℂ) (z : ℂ) (γ N : ℝ) :
     simp only [mem_preimage, mem_compl_iff, Metric.mem_ball, dist_eq_norm, sub_zero]
   rw [hpre, withDensity_apply _ Metric.isOpen_ball.measurableSet.compl,
     Measure.restrict_restrict Metric.isOpen_ball.measurableSet.compl]
-  simp only [compl_inter_self, Measure.restrict_empty, lintegral_zero_measure]
+  simp_all
 
+include μ z γ N in
 /-- Every compact test integral of the transferred measure has the exact source-GMC formula. -/
-theorem transferred_measure_test_integral (μ : Measure ℂ) (z : ℂ) (γ N : ℝ)
+theorem transferred_measure_test_integral 
     (f g : BoundedContinuousFunction ℂ ℝ)
     (hfU : tsupport (f : ℂ → ℝ) ⊆ Metric.ball 0 1)
     (hg : ∀ w, g w = f (w-z) * Real.exp ((γ ^ 2 + 4) * Real.log (normPlus w))) :

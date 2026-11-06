@@ -4,12 +4,15 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
+public import DOZZ.GMC.SharpMoments.WeightedCutoffEstimates
+
 public import DOZZ.GMC.SharpMoments.CoulombCutoffBounds
 public import DOZZ.GMC.SharpMoments.CutoffPieces
 public import DOZZ.GMC.SharpMoments.PiecesMoment
 public import DOZZ.GMC.SharpMoments.WeightedCutoffCompact
 public import DOZZ.GMC.SharpMoments.ExteriorMoment
 public import DOZZ.GMC.SharpMoments.SeibergUniform
+public import DOZZ.GMC.SharpMoments.CompactBounds
 
 /-! # Uniform positive moments of regularized Coulomb masses
 
@@ -19,7 +22,7 @@ uniformly in the parameters and the cutoff: the root pieces are cutoff weighted 
 by the γ-uniform weighted cutoff bound, the bulk piece is a cutoff disk mass, and the exterior
 piece is summed over dyadic annuli by exact exterior scaling. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
@@ -50,7 +53,7 @@ theorem geometric_factor_le {ζ ζ0 t tm : ℝ} (hζ0 : 0 < ζ0) (hζ : ζ0 ≤ 
   set m : ℝ := max 1 t with hm
   set mm : ℝ := max 1 tm with hmm
   have hm1 : 1 ≤ m := le_max_left _ _
-  have hmm1 : 1 ≤ mm := le_max_left _ _
+  
   have hmmm : m ≤ mm := max_le_max le_rfl htm
   have hqq0 : q ≤ q0 := ENNReal.ofReal_le_ofReal
     (Real.rpow_le_rpow_of_exponent_ge (by norm_num) (by norm_num) hζ)
@@ -69,23 +72,13 @@ theorem geometric_factor_le {ζ ζ0 t tm : ℝ} (hζ0 : 0 < ζ0) (hζ : ζ0 ≤ 
 
 theorem geometric_factor_lt_top {ζ0 tm : ℝ} (hζ0 : 0 < ζ0) :
     ((1 - ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) ^ (1 / max 1 tm)) ^ (max 1 tm))⁻¹ < ⊤ := by
-  have hmm : 0 < max 1 tm := lt_of_lt_of_le one_pos (le_max_left _ _)
+  
   have hq0 : ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) < 1 :=
     ENNReal.ofReal_lt_one.mpr (Real.rpow_lt_one (by norm_num) (by norm_num) hζ0)
   have hroot : ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) ^ (1 / max 1 tm) < 1 :=
     ENNReal.rpow_lt_one hq0 (by positivity)
   refine ENNReal.inv_lt_top.mpr (ENNReal.rpow_pos (tsub_pos_of_lt hroot) ?_)
   exact ne_top_of_le_ne_top ENNReal.one_ne_top tsub_le_self
-
-/-- A cutoff weighted mass with zero charge is a cutoff disk mass. -/
-theorem cutoffWeightedGmcBallMass_zero_charge {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (Xc : Ω → ℂ → ℝ → ℝ) (γ : ℝ) (z : ℂ) (R r : ℝ) (ω : Ω) :
-    cutoffWeightedGmcBallMass P Xc γ 0 z R (Real.exp (-r)) ω =
-      regularizedGMC P Xc γ r ω (Metric.ball z R) := by
-  have hlog : Real.log (1 / Real.exp (-r)) = r := by
-    rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
-  rw [cutoffWeightedGmcBallMass, hlog]
-  simp
 
 /-- Cutoff weighted masses are measurable in the sample. -/
 theorem measurable_cutoffWeightedGmcBallMass
@@ -117,7 +110,7 @@ theorem regularizedCoulombMass_moment_uniform_pos
       ∫⁻ ω, ENNReal.rpow (regularizedCoulombMass P Xc c.1 partition c.2.2.1 c.2.1 c.2.2.2 r ω)
         (τ c) ∂P ≤ K := by
   classical
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   -- admissibility facts at each parameter
   have hadmInf : ∀ c ∈ S, 0 < c.1 ∧ c.1 < 2 ∧ 0 < τ c ∧ τ c < 4 / c.1 ^ 2 ∧
       τ c < 2 / c.1 * (Q c.1 - max c.2.2.2 0) := by
@@ -125,34 +118,10 @@ theorem regularizedCoulombMass_moment_uniform_pos
     have h := (weightedCutoffSlack_pos_iff _).mp (hinf c hc)
     exact ⟨h.1, h.2.1, h.2.2.2.1, (lt_min_iff.mp h.2.2.2.2).1, (lt_min_iff.mp h.2.2.2.2).2⟩
   -- uniform sizes
-  obtain ⟨Zs0, hZs0⟩ := hS.exists_bound_of_continuousOn
-    (f := fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) => ∑ j, ‖c.2.1 j‖) (by fun_prop)
-  obtain ⟨E0, hE0⟩ := hS.exists_bound_of_continuousOn
-    (f := fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) =>
-      ∑ j, |c.1 * c.2.2.1 j| + |c.1 * c.2.2.2|) (by fun_prop)
+  obtain ⟨Zs, E, hZs, hE, hZc, _, hEα, hEinf⟩ := compact_coulomb_parameter_bounds hS
   obtain ⟨tm0, htm0⟩ := hS.exists_bound_of_continuousOn hτ
-  set Zs : ℝ := max Zs0 0 with hZsdef
-  set E : ℝ := max E0 0 with hEdef
   set tm : ℝ := max tm0 0 with htmdef
-  have hZs : 0 ≤ Zs := le_max_right _ _
-  have hE : 0 ≤ E := le_max_right _ _
   have htm : 0 ≤ tm := le_max_right _ _
-  have hZc : ∀ c ∈ S, ∑ j, ‖c.2.1 j‖ ≤ Zs := fun c hc => by
-    have h := hZs0 c hc
-    rw [Real.norm_eq_abs, abs_of_nonneg (Finset.sum_nonneg fun j _ => norm_nonneg _)] at h
-    exact h.trans (le_max_left _ _)
-  have hEsum : ∀ c ∈ S, ∑ j, |c.1 * c.2.2.1 j| + |c.1 * c.2.2.2| ≤ E := fun c hc => by
-    have h := hE0 c hc
-    rw [Real.norm_eq_abs, abs_of_nonneg (add_nonneg (Finset.sum_nonneg fun j _ =>
-      abs_nonneg _) (abs_nonneg _))] at h
-    exact h.trans (le_max_left _ _)
-  have hEα : ∀ c ∈ S, ∀ j, |c.1 * c.2.2.1 j| ≤ E := fun c hc j => by
-    have := Finset.single_le_sum (f := fun j => |c.1 * c.2.2.1 j|) (fun j _ => abs_nonneg _)
-      (Finset.mem_univ j)
-    linarith [hEsum c hc, abs_nonneg (c.1 * c.2.2.2)]
-  have hEinf : ∀ c ∈ S, |c.1 * c.2.2.2| ≤ E := fun c hc => by
-    have := Finset.sum_nonneg (fun j (_ : j ∈ Finset.univ) => abs_nonneg (c.1 * c.2.2.1 j))
-    linarith [hEsum c hc]
   have hτle : ∀ c ∈ S, τ c ≤ tm := fun c hc =>
     ((le_abs_self _).trans (by simpa [Real.norm_eq_abs] using htm0 c hc)).trans (le_max_left _ _)
   -- the exterior decay rate is bounded below
@@ -166,19 +135,9 @@ theorem regularizedCoulombMass_moment_uniform_pos
     have hQ : c.1 * Q c.1 = 2 + c.1 ^ 2 / 2 := by
       rw [Q]
       field_simp
-    have h1 : c.1 * τ c / 2 < Q c.1 - max c.2.2.2 0 := by
-      have h := mul_lt_mul_of_pos_left htinf (by positivity : (0 : ℝ) < c.1 / 2)
-      have hl : c.1 / 2 * (2 / c.1 * (Q c.1 - max c.2.2.2 0)) = Q c.1 - max c.2.2.2 0 := by
-        field_simp
-      rw [hl] at h
-      linarith
-    have hexp : ζf c = c.1 * τ c * ((Q c.1 - max c.2.2.2 0) - c.1 * τ c / 2) := by
-      simp only [hζf]
-      rw [hmax]
-      have h2 : 2 * τ c + c.1 ^ 2 * τ c / 2 = c.1 * Q c.1 * τ c := by rw [hQ]; ring
-      linear_combination h2
-    rw [hexp]
-    exact mul_pos (mul_pos hγ0 ht0) (by linarith)
+    have hp := weightedCutoff_exponent_pos (hinf c hc)
+    dsimp [ζf]
+    nlinarith [hQ, hmax]
   have hζcont : ContinuousOn ζf S := by
     have hτ2 : ContinuousOn (fun c => τ c ^ 2) S := hτ.pow 2
     have hγc : Continuous fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) => c.1 := by fun_prop
@@ -221,46 +180,12 @@ theorem regularizedCoulombMass_moment_uniform_pos
     have h := hCb _ ⟨c, hc, rfl⟩ _ hzk δ 1 hδ hδ1 le_rfl
     simpa [Real.one_rpow] using h
   choose Ck hCkpos hCkb using hCk
-  have hcont0 : ContinuousOn (fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) =>
-      (c.1, (0 : ℝ), τ c)) S :=
-    (continuous_fst.continuousOn).prodMk (continuousOn_const.prodMk hτ)
-  have hadm0 : ∀ c ∈ S, 0 < weightedCutoffSlack (c.1, (0 : ℝ), τ c) := by
-    intro c hc
-    obtain ⟨hγ0, hγ2, ht0, ht4, -⟩ := hadmInf c hc
-    have hQ0 : 0 < Q c.1 := by rw [Q]; positivity
-    refine (weightedCutoffSlack_pos_iff _).mpr ⟨hγ0, hγ2, by simpa using hQ0, ht0, ?_⟩
-    refine lt_min ht4 ?_
-    have : 4 / c.1 ^ 2 < 2 / c.1 * (Q c.1 - 0) := by
-      rw [sub_zero, Q]
-      field_simp
-      linarith only [pow_pos hγ0 2]
-    linarith
-  obtain ⟨C0, hC0, hC0b⟩ := weightedCutoff_bound_uniform_compact P X hX Xc hXc _
-    (hS.image_of_continuousOn hcont0) (by
-      rintro _ ⟨c, hc, rfl⟩
-      exact hadm0 c hc) (closedBall 0 0) (isCompact_closedBall _ _) (2 * R0 + 1) (by linarith)
-  -- the zero-charge bound on disks about the origin
-  have hdisk : ∀ c ∈ S, ∀ R : ℝ, 1 ≤ R → R ≤ 2 * R0 + 1 → ∀ r : ℝ, 0 ≤ r →
-      ∫⁻ ω, regularizedGMC P Xc c.1 r ω (Metric.ball 0 R) ^ τ c ∂P ≤
-        ENNReal.ofReal (C0 * (2 * R0 + 1) ^ (4 * tm)) := by
-    intro c hc R hR1 hR r hr
-    obtain ⟨hγ0, hγ2, ht0, -, -⟩ := hadmInf c hc
-    have hδ : Real.exp (-r) ≤ R := (Real.exp_le_one_iff.mpr (by linarith)).trans hR1
-    have h := hC0b _ ⟨c, hc, rfl⟩ 0 (mem_closedBall_self le_rfl) (Real.exp (-r)) R
-      (Real.exp_pos _) hδ hR
-    simp only [cutoffWeightedGmcBallMass_zero_charge] at h
-    refine h.trans (ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left ?_ hC0.le))
-    have hexp : c.1 * (Q c.1 - 0) * τ c - c.1 ^ 2 * τ c ^ 2 / 2 ≤ 4 * tm := by
-      have hQ : c.1 * Q c.1 = 2 + c.1 ^ 2 / 2 := by rw [Q]; field_simp
-      have hγsq : c.1 ^ 2 < 2 ^ 2 := pow_lt_pow_left₀ hγ2 hγ0.le two_ne_zero
-      have htt : τ c ≤ tm := hτle c hc
-      have hQt : c.1 * (Q c.1 - 0) * τ c = (2 + c.1 ^ 2 / 2) * τ c := by rw [sub_zero, hQ]
-      have h1 : c.1 ^ 2 * τ c < 2 ^ 2 * τ c := mul_lt_mul_of_pos_right hγsq ht0
-      have h2 : 0 ≤ c.1 ^ 2 * τ c ^ 2 := by positivity
-      linarith only [hQt, h1, h2, htt]
-    calc Real.rpow R (c.1 * (Q c.1 - 0) * τ c - c.1 ^ 2 * τ c ^ 2 / 2)
-        ≤ R ^ (4 * tm) := Real.rpow_le_rpow_of_exponent_le hR1 hexp
-      _ ≤ (2 * R0 + 1) ^ (4 * tm) := Real.rpow_le_rpow (by linarith) hR (by positivity)
+  obtain ⟨C0, hC0, hdisk⟩ := regularizedGMC_disk_moment_uniform_compact
+    P X hX Xc hXc hS Prod.fst τ (by fun_prop) hτ
+    (fun c hc => by
+      obtain ⟨hg, hg2, ht, ht4, _⟩ := hadmInf c hc
+      exact ⟨hg, hg2, ht, ht4⟩)
+    (by positivity : 0 ≤ tm) hτle (by linarith : 1 ≤ 2 * R0 + 1)
   -- the uniform constant
   have hζ0pos : 0 < ζ0 := hζ0
   set two : ℝ≥0∞ := (2 : ℝ≥0∞) ^ tm with htwo

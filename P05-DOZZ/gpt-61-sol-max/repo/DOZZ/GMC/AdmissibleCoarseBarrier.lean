@@ -9,7 +9,7 @@ public import DOZZ.GMC.GaussianTailBound
 
 /-! Coarse-scale barrier tails for admissible logarithmic Gaussian regularizations. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
@@ -35,7 +35,7 @@ theorem admissible_coarse_barrier_tail_rate
   obtain ⟨Cv, hCv, hvar⟩ := hY.coarseVarianceBound K hK hKU
   obtain ⟨Cm, hCm, hmix⟩ := hY.coarseMixedBound K hK hKU
   let C : ℝ := max Cv Cm
-  have hCnonneg : 0 ≤ C := by dsimp [C]; exact le_trans hCv (le_max_left Cv Cm)
+  have hCnonneg : 0 ≤ C := le_trans hCv (le_max_left Cv Cm)
   refine ⟨C, hCnonneg, ?_⟩
   intro k hkcut hCk x hx ε hε hεk g a hg hga hgap
   let p : Fin 2 → ℝ × ℂ := fun i =>
@@ -43,26 +43,16 @@ theorem admissible_coarse_barrier_tail_rate
   let Z : Ω → Fin 2 → ℝ := fun ω i => Y ω (p i).1 (p i).2
   have hZ : IsCenteredJointlyGaussian P Z := by
     apply hY.gaussian 2 p
-    intro i
-    fin_cases i
-    · simp [p, Real.exp_pos, hkcut]
-    · simp [p, hε, le_trans hεk hkcut]
+    grind
   have hvarZ : |gaussianVariance P (fun ω => Z ω 0) - (k : ℝ)| ≤ C := by
-    have h := hvar k hkcut x hx
-    have h' : |gaussianVariance P (fun ω => Z ω 0) - (k : ℝ)| ≤ max Cv Cm := by
-      simpa [Z, p] using h.trans (le_max_left Cv Cm)
-    simpa [C] using h'
+    continuity
   have hcovZ : |gaussianCovariance P (fun ω => Z ω 0)
       (fun ω => Z ω 1) - (k : ℝ)| ≤ C := by
-    have h := hmix k hkcut ε hε hεk x hx
-    have h' : |gaussianCovariance P (fun ω => Z ω 0)
-        (fun ω => Z ω 1) - (k : ℝ)| ≤ max Cv Cm := by
-      simpa [Z, p] using h.trans (le_max_right Cv Cm)
-    simpa [C] using h'
-  have hk : 0 < (k : ℝ) := lt_of_le_of_lt hCnonneg hCk
+    continuity
+  have hk  := lt_of_le_of_lt hCnonneg hCk
   have hbound := finite_gaussian_tilt_coarse_barrier_tail_rate P Z hZ
     1 0 (k : ℝ) g a C hg hga hk
     hCk hvarZ hcovZ hgap
-  simpa [Z, p] using hbound
+  exact hbound
 
 end DOZZ.Proofs

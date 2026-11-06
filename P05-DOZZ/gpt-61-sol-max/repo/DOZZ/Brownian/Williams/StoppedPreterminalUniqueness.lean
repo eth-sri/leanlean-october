@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.Brownian.Williams.StoppedPreterminalCylinders
+import Mathlib.Tactic
 
 /-!
 # Uniqueness of stopped continuous path laws
@@ -14,19 +15,17 @@ whole stopped-path measure. Finite evaluation cylinders generate the process sig
 and the continuous-path measurable structure is the pullback of that process structure.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
 
+variable {μ η : Measure StoppedBrownianPath} [_inst1 : IsFiniteMeasure μ] [_inst2 : IsFiniteMeasure η] (h : SameStoppedPreterminalLaws μ η) (hμpos : ∀ᵐ z ∂μ, 0 < z.1) (hηpos : ∀ᵐ z ∂η, 0 < z.1) (hμzero : ∀ᵐ z ∂μ, -(z.2 0) = 0) (hηzero : ∀ᵐ z ∂η, -(z.2 0) = 0) (c : ℝ) (hμend : ∀ᵐ z ∂μ, ∀ t, z.1 ≤ t → -(z.2 t) = c) (hηend : ∀ᵐ z ∂η, ∀ t, z.1 ≤ t → -(z.2 t) = c)
+
+include μ η _inst1 _inst2 h hμpos hηpos hμzero hηzero c hμend hηend in
 /-- Adding the almost-sure initial value recovers cylinders at arbitrary nonnegative times. -/
 theorem SameStoppedPreterminalLaws.cylinder_eq
-    {μ η : Measure StoppedBrownianPath} [IsFiniteMeasure μ] [IsFiniteMeasure η]
-    (h : SameStoppedPreterminalLaws μ η)
-    (hμpos : ∀ᵐ z ∂μ, 0 < z.1) (hηpos : ∀ᵐ z ∂η, 0 < z.1)
-    (hμzero : ∀ᵐ z ∂μ, -(z.2 0) = 0) (hηzero : ∀ᵐ z ∂η, -(z.2 0) = 0)
-    (c : ℝ) (hμend : ∀ᵐ z ∂μ, ∀ t, z.1 ≤ t → -(z.2 t) = c)
-    (hηend : ∀ᵐ z ∂η, ∀ t, z.1 ≤ t → -(z.2 t) = c)
+    
     (U : Set ℝ) (hU : MeasurableSet U) (I : Finset ℝ≥0)
     (S : ℝ≥0 → Set ℝ) (hS : ∀ t, MeasurableSet (S t)) :
     μ (stoppedPathCylinder U I S) = η (stoppedPathCylinder U I S) := by
@@ -41,16 +40,7 @@ theorem SameStoppedPreterminalLaws.cylinder_eq
         filter_upwards [hz] with z hzero
         apply propext
         simp only [stoppedPathCylinder, mem_ofPred_eq]
-        constructor
-        · rintro ⟨hU, hI⟩
-          exact ⟨hU, fun t ht => hI t (Finset.mem_of_mem_erase ht)⟩
-        · rintro ⟨hU, hJ⟩
-          refine ⟨hU, ?_⟩
-          intro t ht
-          by_cases ht0 : t = 0
-          · subst t
-            rwa [hzero]
-          · exact hJ t (Finset.mem_erase.mpr ⟨ht0, ht⟩)
+        grind
       rw [measure_congr (hevent μ hμzero), measure_congr (hevent η hηzero)]
       exact h.positive_cylinder_eq hμpos hηpos c hμend hηend U hU J hJpos S hS
     · have hzero (M : Measure StoppedBrownianPath) (hz : ∀ᵐ z ∂M, -(z.2 0) = 0) :
@@ -65,15 +55,11 @@ theorem SameStoppedPreterminalLaws.cylinder_eq
   · exact h.positive_cylinder_eq hμpos hηpos c hμend hηend U hU I
       (fun t ht => pos_iff_ne_zero.mpr (by intro heq; subst t; exact h0 ht)) S hS
 
+include μ η _inst1 _inst2 h hμpos hηpos hμzero hηzero c hμend hηend in
 /-- The complete stopped continuous path measure is determined by the actual preterminal
 marked laws, its positive lifetime, its initial value, and its fixed terminal value. -/
 theorem SameStoppedPreterminalLaws.measure_eq
-    {μ η : Measure StoppedBrownianPath} [IsFiniteMeasure μ] [IsFiniteMeasure η]
-    (h : SameStoppedPreterminalLaws μ η)
-    (hμpos : ∀ᵐ z ∂μ, 0 < z.1) (hηpos : ∀ᵐ z ∂η, 0 < z.1)
-    (hμzero : ∀ᵐ z ∂μ, -(z.2 0) = 0) (hηzero : ∀ᵐ z ∂η, -(z.2 0) = 0)
-    (c : ℝ) (hμend : ∀ᵐ z ∂μ, ∀ t, z.1 ≤ t → -(z.2 t) = c)
-    (hηend : ∀ᵐ z ∂η, ∀ t, z.1 ≤ t → -(z.2 t) = c) : μ = η := by
+     : μ = η := by
   classical
   let f : StoppedBrownianPath → ℝ × (ℝ≥0 → ℝ) := fun z =>
     ((z.1 : ℝ), fun t => -(z.2 t))
@@ -90,8 +76,7 @@ theorem SameStoppedPreterminalLaws.measure_eq
       rw [Measure.map_apply measurable_snd hW,
         Measure.restrict_apply (hW.preimage measurable_snd)]
       have he : Prod.snd ⁻¹' W ∩ (U ×ˢ univ) = U ×ˢ W := by
-        ext z
-        simp only [mem_inter_iff, mem_preimage, mem_prod, mem_univ, true_and, and_comm]
+        grind
       rw [he, Measure.map_apply hf (hU.prod hW)]
     have heq : μU = ηU := by
       apply ext_of_generate_finite
@@ -103,10 +88,6 @@ theorem SameStoppedPreterminalLaws.measure_eq
         have hmW : MeasurableSet ((I : Set ℝ≥0).pi S) :=
           MeasurableSet.pi (Finset.countable_toSet _) (fun t _ => hmS t)
         rw [hslice _ _ hmW, hslice _ _ hmW]
-        have hpre : f ⁻¹' (U ×ˢ (I : Set ℝ≥0).pi S) = stoppedPathCylinder U I S := by
-          ext z
-          simp [f, stoppedPathCylinder, mem_pi]
-        rw [hpre]
         exact h.cylinder_eq hμpos hηpos hμzero hηzero c hμend hηend U hU I S hmS
       · rw [hslice _ univ MeasurableSet.univ, hslice _ univ MeasurableSet.univ]
         have hpre : f ⁻¹' (U ×ˢ univ) = {z : StoppedBrownianPath | (z.1 : ℝ) ∈ U} := by
@@ -120,7 +101,7 @@ theorem SameStoppedPreterminalLaws.measure_eq
   apply Measure.ext_prod
   intro A B hA hB
   let U : Set ℝ := Real.toNNReal ⁻¹' A
-  have hU : MeasurableSet U := hA.preimage measurable_real_toNNReal
+  have hU  := hA.preimage measurable_real_toNNReal
   obtain ⟨W, hW, hBW⟩ := brownianPath_measurableSpace_eq_comap.le B hB
   let V : Set (ℝ≥0 → ℝ) := (fun g t => -(g t)) ⁻¹' W
   have hV : MeasurableSet V := hW.preimage

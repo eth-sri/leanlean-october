@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Fusion.InterpolatedSpatialConvergence
 /-! # Signed spatial and time dominated convergence for KRV -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- A single uniform majorant gives spatial and time dominated convergence over the mass
@@ -22,20 +22,18 @@ theorem fusionInterpolatedTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
         ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal : ℂ))) := by
   obtain ⟨B, hB, hb⟩ := fusionInterpolatedFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s hs.le
   let D := (∫ y : ℂ, ‖K y‖) * B
-  have hD : 0 ≤ D := mul_nonneg (integral_nonneg fun _ => norm_nonneg _) hB
+
   have hm := fusionInterpolatedFactor_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s
   have hmeas : ∀ᶠ z : ℂ in nhds 0, AEStronglyMeasurable
       (fun t : ℝ => ∫ y : ℂ, K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ))
       (volume.restrict (Icc 0 1)) := by
     apply Eventually.of_forall
     intro z
-    have hp : Measurable (fun q : ℝ × ℂ => (q.1, (q.2, z))) :=
-      measurable_fst.prodMk (measurable_snd.prodMk measurable_const)
+
     have hfactor : Measurable (fun q : ℝ × ℂ =>
         (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s q.1 q.2 z : ℂ)) := by
-      simpa only [Function.comp_def] using Complex.measurable_ofReal.comp (hm.comp hp)
-    have hf : Measurable (fun q : ℝ × ℂ => K q.2 *
-        (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s q.1 q.2 z : ℂ)) :=
+      fun_prop (disch := positivity)
+    have hf  :=
       (hKm.comp measurable_snd).mul hfactor
     exact hf.stronglyMeasurable.integral_prod_right'.aestronglyMeasurable
   have hdom : ∀ᶠ z : ℂ in nhds 0, ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1),
@@ -48,7 +46,7 @@ theorem fusionInterpolatedTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
       _ ≤ ∫ y : ℂ, ‖K y‖ * B := norm_integral_le_of_norm_le (hK.norm.mul_const B)
         (ae_of_all _ fun y => by
           rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-          exact mul_le_mul_of_nonneg_left (hb t ht y z hz) (norm_nonneg _))
+          bound)
       _ = D := integral_mul_const _ _
   have hlim : ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1), Tendsto
       (fun z : ℂ => ∫ y : ℂ, K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ))

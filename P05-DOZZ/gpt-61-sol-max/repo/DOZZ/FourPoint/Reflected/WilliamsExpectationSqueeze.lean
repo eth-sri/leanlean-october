@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Reflected.WilliamsIncrementSqueeze
 public import DOZZ.FourPoint.Reflected.InverseIncrementIntegrable
 import Mathlib.Tactic
 /-! Integrating the signed Williams sandwich without a moment of the maximum. -/
-@[expose] public section
+public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
@@ -49,7 +49,7 @@ theorem reflected_williams_expectation_squeeze
     have hSp := (measurePreserving_snd (μ := P) (ν := R)).quasiMeasurePreserving.ae hS
     have hT : ∀ᵐ v : Ω × Λ ∂P.prod R, 0 ≤ b v.1*Real.exp (γ*m v.2)*S v.2 := by
       filter_upwards [hbp,hSp] with v hv hSv
-      exact mul_nonneg (mul_nonneg hv (Real.exp_pos _).le) hSv
+      bound
     exact reflected_inverse_increment_integrable (P.prod R) p hp _ _ hAp hT hApm
       ((hbpm.mul hemp).mul (hSm.comp_quasiMeasurePreserving
         (measurePreserving_snd (μ := P) (ν := R)).quasiMeasurePreserving)) hInvp
@@ -65,10 +65,7 @@ theorem reflected_williams_expectation_squeeze
     have hs := reflected_williams_increment_squeeze p (A v.1) (b v.1) γ H (m v.2)
       (J v.2) (K v.2) (j v.2) hp hAv hbv hγ hcv.1 hcv.2.1 hcv.2.2.1
         hcv.2.2.2.1 hcv.2.2.2.2
-    refine ⟨hs.1, ?_⟩
-    convert hs.2 using 1
-    dsimp only [D,E,F]
-    ring
+    grind
   refine ⟨hij,integral_mono_ae hiJ hij (hbnd.mono fun _ h => h.1), ?_⟩
   have hh := integral_mono_ae hij (hiK.add hiE) (hbnd.mono fun _ h => h.2)
   simp only [Pi.add_apply] at hh

@@ -26,7 +26,7 @@ theorem reflected_leading_radial_moment_identity
       ENNReal.ofReal (‖z‖^(γ*ν)) *
         ∫⁻ ω, ENNReal.ofReal (Real.exp
           (2*ν*Xc ω 0 (-Real.log ‖z‖+h)-(-Real.log ‖z‖+h)*(2*ν)^2/2))*F ω ∂P := by
-  have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  have hn  := norm_pos_iff.mpr hz
   have he (ω : Ω) : (reflected_radial_scale γ ν h Xc z ω)^(2*ν/γ) =
       ‖z‖^(γ*ν)*Real.exp
         (2*ν*Xc ω 0 (-Real.log ‖z‖+h)-(-Real.log ‖z‖+h)*(2*ν)^2/2) := by
@@ -37,15 +37,13 @@ theorem reflected_leading_radial_moment_identity
   simp_rw [he, ENNReal.ofReal_mul (Real.rpow_nonneg hn.le _), mul_assoc]
   exact lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc) (ν α₁ α₂ α₃ ξ q h : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ1 : ξ < 1) (hq : 0 ≤ q) (hα₁ : α₁+2*ν-γ/2 < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
+
+include Ω _inst1 P X hX γ hγ hγ₂ M hM Xc hc ν α₁ α₂ α₃ ξ q h hh hξ hξ1 hq hα₁ hα₂ hα₃ in
 /-- The normalized actual leading moment converges to the reflected rho, independently of
 the fixed radial buffer. -/
 theorem reflected_leading_radial_moment_tendsto
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (ν α₁ α₂ α₃ ξ q h : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ1 : ξ < 1) (hq : 0 ≤ q)
-    (hα₁ : α₁+2*ν-γ/2 < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) :
+     :
     Tendsto (fun z : ℂ =>
       (∫⁻ ω, ENNReal.ofReal ((reflected_radial_scale γ ν h Xc z ω)^(2*ν/γ))*
         gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^(-q) ∂P) /
@@ -56,7 +54,7 @@ theorem reflected_leading_radial_moment_tendsto
     (2*ν) α₁ α₂ α₃ ξ q h hh hξ hξ1 hq hα₁ hα₂ hα₃
   apply ht.congr'
   filter_upwards [self_mem_nhdsWithin] with z hz
-  have hz0 : z ≠ 0 := hz
+  have hz0  := hz
   rw [reflected_leading_radial_moment_identity P γ ν h hγ.ne' Xc _ z hz0]
   have hp : 0 < ‖z‖^(γ*ν) := Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _
   symm
@@ -84,14 +82,10 @@ theorem reflected_rho_inverse_expectation_lt_top
   rw [he]
   exact (hb _ hroots).trans_lt ENNReal.ofReal_lt_top
 
+include Ω _inst1 P X hX γ hγ hγ₂ M hM Xc hc ν α₁ α₂ α₃ ξ q h hh hξ hξ1 hq hα₁ hα₂ hα₃ in
 /-- The normalized leading Pareto expectation has its genuine finite real limit. -/
 theorem reflected_leading_radial_moment_toReal_tendsto
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (ν α₁ α₂ α₃ ξ q h : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ1 : ξ < 1) (hq : 0 ≤ q)
-    (hα₁ : α₁+2*ν-γ/2 < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) :
+     :
     Tendsto (fun z : ℂ =>
       (∫⁻ ω, ENNReal.ofReal ((reflected_radial_scale γ ν h Xc z ω)^(2*ν/γ))*
         gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^(-q) ∂P).toReal / ‖z‖^(γ*ν))

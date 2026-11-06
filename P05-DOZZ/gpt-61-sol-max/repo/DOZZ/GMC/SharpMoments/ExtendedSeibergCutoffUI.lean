@@ -14,7 +14,7 @@ The regularized Coulomb masses converge in probability to the Coulomb masses of 
 uniformly on compact admissible sets of couplings, roots and charges, and a common higher moment
 is bounded uniformly there and in the cutoff. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped Distributions ENNReal NNReal
@@ -46,8 +46,7 @@ theorem equatorGFF_extendedSeiberg_cutoff_UI
     (∃ η : ℝ, 0 < η ∧ ∃ B : ℝ≥0∞, B < ⊤ ∧ ∀ c ∈ S, ∀ r : ℝ, 0 ≤ r →
       ∫⁻ ω, ENNReal.rpow
         (regularizedCoulombMass P Xc c.1 partition c.2.2.1 c.2.1 c.2.2.2 r ω)
-        ((1 + η) * ((2 * Q c.1 - (∑ k, c.2.2.1 k + c.2.2.2)) / c.1)) ∂P ≤ B) := by
-  exact ⟨regularizedCoulombMass_tendstoInProbability_uniform P X hX Xc hXc partition Mfam hMfam S
+        ((1 + η) * ((2 * Q c.1 - (∑ k, c.2.2.1 k + c.2.2.2)) / c.1)) ∂P ≤ B) := ⟨regularizedCoulombMass_tendstoInProbability_uniform P X hX Xc hXc partition Mfam hMfam S
     hS (fun c hc => ⟨(hadm c hc).1, (hadm c hc).2.1, (hadm c hc).2.2.1, (hadm c hc).2.2.2.1,
       (hadm c hc).2.2.2.2.1⟩),
     regularizedCoulombMass_higher_moment_uniform P X hX Xc hXc partition S hS hadm⟩

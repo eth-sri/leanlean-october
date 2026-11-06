@@ -17,7 +17,7 @@ subcritical moment range is now proved. Radial independence then transfers that 
 to the given lateral measure. No moment assumption is added to its source predicate.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal Distributions

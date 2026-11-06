@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.Brownian.Williams.BandAverage
+import Mathlib.Tactic
 /-!
 # The Williams maximum disintegration
 
@@ -44,9 +45,10 @@ namespace DOZZ.Proofs
 private noncomputable def williamsMark (ν : ℝ) (p : BrownianPath) : ℝ × StoppedBrownianPath :=
   (driftedBrownianMaximum ν p,brownianPreMaximumSegment ν p)
 
-private theorem aemeasurable_mark (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν) :
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ) (hν : 0 < ν)
+
+include P hB ν hν in
+private theorem aemeasurable_mark  :
     AEMeasurable (williamsMark ν) P :=
   (aemeasurable_driftedBrownianMaximum P hB ν hν).prodMk
     (aemeasurable_brownianPreMaximumSegment P hB ν hν)
@@ -72,9 +74,8 @@ theorem lintegral_brownianWilliamsPrefixLaw (P : Measure BrownianPath)
   rw [brownianWilliamsPrefixLaw,lintegral_map hF (measurable_prefixMap ν)]
   exact lintegral_prod _ (hF.comp (measurable_prefixMap ν)).aemeasurable
 
-private theorem prefix_finite (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν) :
+include P hB ν hν in
+private theorem prefix_finite  :
     IsFiniteMeasure (brownianWilliamsPrefixLaw P ν) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   let _ := isProbabilityMeasure_brownianMaximumReferenceLaw hν
@@ -103,9 +104,8 @@ private theorem weightedFuture_finite (P : Measure BrownianPath)
   unfold weightedFutureLaw
   infer_instance
 
-private theorem weightedFuture_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν)
+include P hB ν hν in
+private theorem weightedFuture_lintegral 
     (F : ℝ × StoppedBrownianPath → ℝ≥0∞) (hF : Measurable F)
     (G : BrownianPath → ℝ≥0∞) (hG : Measurable G) :
     (∫⁻ q, G q ∂weightedFutureLaw P ν F) =
@@ -119,9 +119,8 @@ private theorem weightedFuture_lintegral (P : Measure BrownianPath)
     lintegral_withDensity_eq_lintegral_mul₀ hW hGP]
   rfl
 
-private theorem weightedFuture_ordered_map (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν)
+include P hB ν hν in
+private theorem weightedFuture_ordered_map 
     (Q : Measure BrownianPath) (hQ : IsNegativeConditionedBrownianLaw ν Q)
     (F : ℝ × StoppedBrownianPath → ℝ≥0∞)
     (hF : Continuous F)
@@ -160,7 +159,7 @@ private theorem positive_ordered_path_law_unique (μ η : Measure BrownianPath)
     have ht0 (i : Fin J.card) : 0 < ts i := by
       have hm := J.orderEmbOfFin_mem rfl i
       exact pos_iff_ne_zero.mpr (Finset.mem_erase.mp hm).1
-    have hts : StrictMono ts := (J.orderEmbOfFin rfl).strictMono
+    have hts  := (J.orderEmbOfFin rfl).strictMono
     have hmaps : μ.map (fun q i => q (ts i)) = η.map (fun q i => q (ts i)) := by
       by_cases hc : J.card = 0
       ·
@@ -201,9 +200,8 @@ private theorem positive_ordered_path_law_unique (μ η : Measure BrownianPath)
         apply congrArg q
         exact (congrArg Subtype.val ((J.orderIsoOfFin rfl).apply_symm_apply
           ⟨i.1,Finset.mem_erase.mpr ⟨hi.ne',i.2⟩⟩)).symm
-      · have hz : i.1 = 0 := le_antisymm (le_of_not_gt hi) bot_le
-        dsimp only [R]
-        rw [dite_eq_right hi,hz,hq]
+      · have hz  := le_antisymm (le_of_not_gt hi) bot_le
+        grind
     calc
       _ = (μ.map (fun q i => q (ts i))).map R := by
         rw [Measure.map_map hR hEvalJ]
@@ -224,9 +222,8 @@ private theorem positive_ordered_path_law_unique (μ η : Measure BrownianPath)
     rw [Measure.map_map (Finset.measurable_restrict I) heval]
     rfl
 
-private theorem post_start_zero (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν) :
+include P hB ν hν
+private theorem post_start_zero  :
     ∀ᵐ p ∂P, brownianPostMaximumPath ν p 0 = 0 := by
   filter_upwards [brownianPath_globalMaximumTime_attains_ae P hB ν hν] with p hp
   change p (driftedBrownianMaximumTime ν p+0)-ν*((driftedBrownianMaximumTime ν p+0 : ℝ≥0) : ℝ)-
@@ -234,11 +231,10 @@ private theorem post_start_zero (P : Measure BrownianPath)
   rw [add_zero]
   linarith only [hp]
 
+
 /-- Ordered finite-cylinder factorization identifies the full prefix-weighted future law.
 The mass and time-zero boundary are transported from the actual maximum split. -/
-private theorem weightedFuture_law (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν)
+private theorem weightedFuture_law 
     (Q : Measure BrownianPath) (hQ : IsNegativeConditionedBrownianLaw ν Q)
     (F : ℝ × StoppedBrownianPath → ℝ≥0∞)
     (hF : Continuous F)
@@ -249,7 +245,7 @@ private theorem weightedFuture_law (P : Measure BrownianPath)
   let _ := prefix_finite P hB ν hν
   let _ := weightedFuture_finite P hB ν F KF hKF hFb
   let c := ∫⁻ z, F z ∂brownianWilliamsPrefixLaw P ν
-  have hc : c ≠ ∞ := ne_top_of_le_ne_top
+  have hc  := ne_top_of_le_ne_top
     (ENNReal.mul_ne_top hKF (measure_ne_top (brownianWilliamsPrefixLaw P ν) univ)) ((lintegral_mono hFb).trans_eq (lintegral_const KF))
   let _ := Measure.smul_finite Q hc
   have hpost := aemeasurable_brownianPostMaximumPath P hB ν hν
@@ -274,22 +270,21 @@ private theorem weightedFuture_law (P : Measure BrownianPath)
   rw [Measure.map_smul _ (Measurable.of_eval (fun i => ContinuousMap.measurable_eval (ts i))).aemeasurable]
   exact weightedFuture_ordered_map P hB ν hν Q hQ F hF KF hKF hFb n ts ht0 hts
 
+
 /-- The actual maximum split has the complete product law, including its lifetime-marked prefix. -/
-theorem brownianPath_williams_joint_map (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν)
+theorem brownianPath_williams_joint_map 
     (Q : Measure BrownianPath) (hQ : IsNegativeConditionedBrownianLaw ν Q) :
     P.map (fun p => ((driftedBrownianMaximum ν p,brownianPreMaximumSegment ν p),
       brownianPostMaximumPath ν p)) = (brownianWilliamsPrefixLaw P ν).prod Q := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   let _ := hQ.2.1
-  let _ := prefix_finite P hB ν hν
+  
   have hm := aemeasurable_mark P hB ν hν
   have hp := aemeasurable_brownianPostMaximumPath P hB ν hν
   apply Measure.ext_prod
   intro A B hA hBset
-  let S : Set BrownianPath := (brownianPostMaximumPath ν) ⁻¹' B
-  have hS : NullMeasurableSet S P := hp.nullMeasurableSet_preimage hBset
+  let S  := (brownianPostMaximumPath ν) ⁻¹' B
+  have hS  := hp.nullMeasurableSet_preimage hBset
   let μB := (P.restrict S).map (williamsMark ν)
   have hμB : μB = (Q B) • brownianWilliamsPrefixLaw P ν := by
     apply ext_of_forall_lintegral_eq_of_IsFiniteMeasure
@@ -309,13 +304,11 @@ theorem brownianPath_williams_joint_map (P : Measure BrownianPath)
   have heA := congrArg (fun μ : Measure (ℝ × StoppedBrownianPath) => μ A) hμB
   rw [Measure.map_apply_of_aemeasurable hm.restrict hA,Measure.restrict_apply₀ (hm.restrict.nullMeasurableSet_preimage hA),
     Measure.smul_apply,smul_eq_mul] at heA
-  change P (((williamsMark ν) ⁻¹' A) ∩ S) = (brownianWilliamsPrefixLaw P ν) A*Q B
   exact heA.trans (mul_comm _ _)
 
+
 /-- The full measurable source identity follows from the actual product split law. -/
-theorem brownianPath_williams_measurable_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν)
+theorem brownianPath_williams_measurable_lintegral 
     (Q : Measure BrownianPath) (hQ : IsNegativeConditionedBrownianLaw ν Q)
     (F : ℝ × StoppedBrownianPath → ℝ≥0∞) (hF : Measurable F)
     (G : BrownianPath → ℝ≥0∞) (hG : Measurable G) :
@@ -326,7 +319,7 @@ theorem brownianPath_williams_measurable_lintegral (P : Measure BrownianPath)
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   let _ := hQ.2.1
   have hmap := (aemeasurable_mark P hB ν hν).prodMk (aemeasurable_brownianPostMaximumPath P hB ν hν)
-  have htest : Measurable (fun z : (ℝ × StoppedBrownianPath) × BrownianPath => F z.1*G z.2) :=
+  have htest  :=
     (hF.comp measurable_fst).mul (hG.comp measurable_snd)
   calc
     _ = ∫⁻ z, F z.1*G z.2 ∂P.map (fun p => ((driftedBrownianMaximum ν p,brownianPreMaximumSegment ν p),
@@ -345,17 +338,18 @@ theorem brownianPath_williams_measurable_lintegral (P : Measure BrownianPath)
       simp_rw [← he]
       rw [lintegral_mul_const _ hK]
 
+
 /-- The positive-drift first-hit prefix kernel is a probability law on the exact carrier
 `ℝ × StoppedBrownianPath`. -/
-theorem isProbabilityMeasure_brownianWilliamsPrefixLaw (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν) :
+theorem isProbabilityMeasure_brownianWilliamsPrefixLaw  :
     IsProbabilityMeasure (brownianWilliamsPrefixLaw P ν) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   let _ := isProbabilityMeasure_brownianMaximumReferenceLaw hν
   constructor
   rw [brownianWilliamsPrefixLaw,Measure.map_apply (measurable_prefixMap ν) MeasurableSet.univ,
     preimage_univ,measure_univ]
+omit P hB ν hν
+
 
 
 

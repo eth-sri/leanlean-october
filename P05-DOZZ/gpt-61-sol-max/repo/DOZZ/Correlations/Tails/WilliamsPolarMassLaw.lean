@@ -69,15 +69,7 @@ theorem williams_polar_mass_law
     filter_upwards [hZ.2.2.2.2.1, lateralGMC_singleton_ae P γ Z hZ 0] with ω hfin hzero
     have hYfin (a b : ℝ) : Y ω (Icc a b) < ⊤ := by
       have hm : Measurable (fun s : ℝ => s - (driftedBrownianMaximumTime ν (D ω) : ℝ)) := by fun_prop
-      rw [show Y ω = (Z ω).map (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ)) from rfl,
-        Measure.map_apply hm measurableSet_Icc]
-      apply lt_of_le_of_lt (measure_mono ?_) (hfin
-        (a + (driftedBrownianMaximumTime ν (D ω) : ℝ))
-        (b + (driftedBrownianMaximumTime ν (D ω) : ℝ)))
-      intro s hs
-      change a ≤ s - (driftedBrownianMaximumTime ν (D ω) : ℝ) ∧
-        s - (driftedBrownianMaximumTime ν (D ω) : ℝ) ≤ b at hs
-      exact ⟨by linarith only [hs.1], by linarith only [hs.2]⟩
+      continuity
     rw [williams_polar_split γ ν (D ω) (Z ω) hzero]
     change _ = ENNReal.ofReal (Real.exp (γ * driftedBrownianMaximum ν (D ω))) *
       stoppedReflectionMassCode γ
@@ -89,8 +81,7 @@ theorem williams_polar_mass_law
   rw [← AEMeasurable.map_map_of_aemeasurable
     (measurable_williamsMassFunctional γ).aemeasurable hpair]
   have hlaw := williams_shifted_lateral_joint_law P D hD hB γ Z hZ hInd ν hν Qν hQν
-  change P.map (fun ω => (williamsReversedMark ν (D ω),Y ω)) = _ at hlaw
-  rw [hlaw]
+  continuity
 
 
 end DOZZ.Proofs

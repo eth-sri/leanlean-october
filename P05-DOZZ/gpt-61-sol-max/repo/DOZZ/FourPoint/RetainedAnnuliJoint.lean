@@ -9,7 +9,7 @@ public import DOZZ.GMC.SharpMoments.ArbitraryCenter
 
 /-! Covariance and inverse-product bounds for two geometrically separated retained disks. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions
@@ -28,10 +28,12 @@ theorem retained_disk_separation (u v x y : ℂ) (ρ σ d : ℝ)
   rw [← he, norm_sub_rev u x] at hn
   linarith only [hx', hy', hsep, hn]
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+
+include Ω _inst1 P X hX in
 /-- Bounded charts and a positive spatial gap give one covariance constant for every cutoff. -/
 theorem circle_cross_covariance_bound
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (L d r : ℝ) (hL : 0 ≤ L) (hd : 0 < d) (hr : 0 ≤ r)
     (x y : ℂ) (hx : ‖x‖ ≤ L) (hy : ‖y‖ ≤ L) (hxy : d ≤ ‖x - y‖) :
@@ -39,17 +41,17 @@ theorem circle_cross_covariance_bound
       max 0 (Real.log (1 / d) + gmcCircleChartRemainder L) := by
   have hb := circleField_covariance_le_log P X hX Xc hXc L r hL hr x y hx hy
   have hmax : d ≤ max ‖x - y‖ (Real.exp (-r)) := hxy.trans (le_max_left _ _)
-  have hp : 0 < max ‖x - y‖ (Real.exp (-r)) := lt_of_lt_of_le hd hmax
-  have hl : Real.log (1 / max ‖x - y‖ (Real.exp (-r))) ≤ Real.log (1 / d) :=
+  have hp  := lt_of_lt_of_le hd hmax
+  have hl  :=
     Real.log_le_log (one_div_pos.mpr hp) (one_div_le_one_div_of_le hd hmax)
   have hsum := add_le_add hl (le_refl (Real.log 3 + 2 * Real.log (1 + L)))
-  exact (hb.trans (by simpa only [gmcCircleChartRemainder] using hsum)).trans
+  exact (hb.trans (by bound)).trans
     (le_max_right _ _)
 
+include Ω _inst1 P X hX in
 /-- Cutoff joint inverse moments decouple at a cost independent of either retained radius. -/
 theorem joint_retained_disks_cutoff_inverse_bound
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ r : ℝ) (hr : 0 ≤ r) (u v : ℂ) (ρ σ L d a b : ℝ)
     (hL : 0 ≤ L) (hd : 0 < d)
@@ -68,7 +70,7 @@ theorem joint_retained_disks_cutoff_inverse_bound
   let U := A ∪ B
   have hA : MeasurableSet A := Metric.isOpen_ball.measurableSet
   have hB : MeasurableSet B := Metric.isOpen_ball.measurableSet
-  have hU : MeasurableSet U := hA.union hB
+  have hU  := hA.union hB
   let ν := gmcReferenceMeasure.restrict U
   have : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   have : IsFiniteMeasure ν := inferInstance
@@ -80,8 +82,7 @@ theorem joint_retained_disks_cutoff_inverse_bound
     refine ⟨1, ?_⟩
     intro x
     by_cases hx : x ∈ D
-    · simp only [Set.indicator_of_mem hx, le_refl]
-    · simp only [Set.indicator_of_notMem hx, zero_le]
+    all_goals simp_all
   have hs₀ : ∀ x, x ∉ A → h₀ x = 0 := fun x hx => Set.indicator_of_notMem hx _
   have hs₁ : ∀ x, x ∈ A → h₁ x = 0 := by
     intro x hx
@@ -90,7 +91,7 @@ theorem joint_retained_disks_cutoff_inverse_bound
     have h := retained_disk_separation u v x x ρ σ d hsep hx hxB
     rw [sub_self, norm_zero] at h
     exact not_le_of_gt hd h
-  let Φ : Ω → ℂ → ℝ := fun ω x => Xc ω x r
+  let Φ  := fun ω x => Xc ω x r
   have hΦ := circleAverage_isCenteredGaussianField P X hX Xc hXc r
   have hprod : ν.prod ν = (gmcReferenceMeasure.prod gmcReferenceMeasure).restrict (U ×ˢ U) := by
     dsimp only [ν]
@@ -114,10 +115,10 @@ theorem joint_retained_disks_cutoff_inverse_bound
     apply circle_cross_covariance_bound P X hX Xc hXc L d r hL hd hr
       xy.1 xy.2 (hn xy.1 hxy.1) (hn xy.2 hxy.2)
     by_cases hx : xy.1 ∈ A
-    · have hy : xy.2 ∈ B := hxy.2.resolve_left (hdifferent.mp hx)
+    · have hy  := hxy.2.resolve_left (hdifferent.mp hx)
       exact retained_disk_separation u v xy.1 xy.2 ρ σ d hsep hx hy
-    · have hxB : xy.1 ∈ B := hxy.1.resolve_left hx
-      have hy : xy.2 ∈ A := by_contra fun h => hx (hdifferent.mpr h)
+    · have hxB  := hxy.1.resolve_left hx
+      have hy  := by_contra fun h => hx (hdifferent.mpr h)
       rw [norm_sub_rev]
       exact retained_disk_separation u v xy.2 xy.1 ρ σ d hsep hy hxB
   have hk := two_retained_blocks_inverse_compare P Φ hΦ A hA ν h₀ h₁ hm₀ hm₁
@@ -133,12 +134,12 @@ theorem joint_retained_disks_cutoff_inverse_bound
   simp_rw [hm0, hm1] at hk
   exact hk
 
+include Ω _inst1 P X hX in
 /-- The retained-annulus comparison on the supplied chaos: two separated retained disks
 have joint inverse moments bounded by their marginal moments and one geometric Gaussian factor.
 The radii may shrink; the separation and chart constants precede them. -/
 theorem joint_retained_annuli_inverse_bound
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (u v : ℂ) (ρ σ L d a b : ℝ) (hρ : 0 < ρ) (hσ : 0 < σ)
     (hρ8 : ρ ≤ 1 / 8) (hσ8 : σ ≤ 1 / 8)
@@ -153,15 +154,15 @@ theorem joint_retained_annuli_inverse_bound
   obtain ⟨Xc, hXc, -⟩ := hM.2
   let A := Metric.ball u ρ
   let B := Metric.ball v σ
-  let K : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ ^ 2 *
+  let K  := ENNReal.ofReal (Real.exp (γ ^ 2 *
     max 0 (Real.log (1 / d) + gmcCircleChartRemainder L) / 2 * ((a + b) ^ 2 + a + b)))
   let f₀ : ℕ → Ω → ℝ := fun n ω => (regularizedGMC P Xc γ n ω A).toReal
   let f₁ : ℕ → Ω → ℝ := fun n ω => (regularizedGMC P Xc γ n ω B).toReal
-  let g₀ : Ω → ℝ := fun ω => (M ω A).toReal
-  let g₁ : Ω → ℝ := fun ω => (M ω B).toReal
+  let g₀  := fun ω => (M ω A).toReal
+  let g₁  := fun ω => (M ω B).toReal
   have hcrit : 0 < 4 / γ ^ 2 := div_pos (by norm_num) (sq_pos_of_pos hγ)
-  have hp₀ : -a < 4 / γ ^ 2 := lt_of_le_of_lt (neg_nonpos.mpr ha) hcrit
-  have hp₁ : -b < 4 / γ ^ 2 := lt_of_le_of_lt (neg_nonpos.mpr hb) hcrit
+  have hp₀  := lt_of_le_of_lt (neg_nonpos.mpr ha) hcrit
+  have hp₁  := lt_of_le_of_lt (neg_nonpos.mpr hb) hcrit
   have hma := gmc_ball_moment_lt_top_any_center P X hX γ hγ hγ2 M hM u ρ hρ hρ8 (-a) hp₀
   have hmb := gmc_ball_moment_lt_top_any_center P X hX γ hγ hγ2 M hM v σ hσ hσ8 (-b) hp₁
   have hta := gmc_ball_moment_tendsto P X hX γ hγ hγ2 M hM Xc hXc u ρ hρ hρ8 (-a) hp₀
@@ -183,8 +184,7 @@ theorem joint_retained_annuli_inverse_bound
       Metric.isOpen_ball.measurableSet
     have hm₁ := measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ n B
       Metric.isOpen_ball.measurableSet
-    exact ((ENNReal.measurable_ofReal.comp hm₀).pow_const _).aemeasurable.mul
-      ((ENNReal.measurable_ofReal.comp hm₁).pow_const _).aemeasurable
+    fun_prop (disch := positivity)
   have hg₀ : ∀ᵐ ω ∂P, 0 < g₀ ω := by
     filter_upwards [gmc_ball_mass_pos_ae P X hX γ hγ hγ2 M hM u ρ hρ] with ω hω
     let _ := hM.1 ω
@@ -200,7 +200,7 @@ theorem joint_retained_annuli_inverse_bound
       filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ n] with ω hω
       let _ := hω
       dsimp only [f₀, f₁]
-      rw [ENNReal.ofReal_toReal (measure_ne_top _ _), ENNReal.ofReal_toReal (measure_ne_top _ _)]
+      simp_all
     rw [lintegral_congr_ae he]
     exact joint_retained_disks_cutoff_inverse_bound P X hX Xc hXc γ n (Nat.cast_nonneg n)
       u v ρ σ L d a b hL hd hu hv hsep ha hb
@@ -211,7 +211,7 @@ theorem joint_retained_annuli_inverse_bound
     funext ω
     let _ := hM.1 ω
     dsimp only [g₀, g₁]
-    rw [ENNReal.ofReal_toReal (measure_ne_top _ _), ENNReal.ofReal_toReal (measure_ne_top _ _)]
+    simp_all
   rw [he] at hfatou
   exact hfatou
 

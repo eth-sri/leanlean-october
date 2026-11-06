@@ -5,9 +5,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Dual.IncrementIntegrability
 public import DOZZ.FourPoint.Dual.ReferencePareto
-public import DOZZ.FourPoint.Dual.SourceParetoWeights
+public import DOZZ.FourPoint.Dual.SourceRadialMoments
 /-! Exact independent-maximum transport for the actual source outer mass. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 namespace DOZZ.Proofs

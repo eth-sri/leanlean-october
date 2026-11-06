@@ -9,7 +9,7 @@ import Mathlib.Topology.Instances.Irrational
 import Mathlib.Topology.ClusterPt
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 /-! # Irrational-square density and pole-free gamma neighborhoods -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- Irrational squared parameters occur in every neighborhood of a positive gamma. -/
@@ -19,33 +19,30 @@ theorem roots_frequently_irrational_sq (γ : ℝ) (hγ : 0 < γ) :
   intro V hV
   have ht : Tendsto Real.sqrt (nhds (γ ^ 2)) (nhds γ) := by
     have ht := Real.continuous_sqrt.tendsto (γ ^ 2)
-    have he : Real.sqrt (γ ^ 2) = γ := Real.sqrt_sq hγ.le
+    have he  := Real.sqrt_sq hγ.le
     rw [he] at ht
     exact ht
   have hq : ∀ᶠ q : ℝ in nhds (γ ^ 2), Real.sqrt q ∈ V ∧ 0 ≤ q := by
     filter_upwards [ht.eventually hV, ((continuousAt_const.eventually_lt (show ContinuousAt (fun q : ℝ => q) (γ ^ 2) from continuousAt_id) (by positivity : (0 : ℝ) < γ ^ 2)))] with q hq hpos
     exact ⟨hq, hpos.le⟩
-  have hi : ∃ᶠ q : ℝ in nhds (γ ^ 2), Irrational q :=
+  have hi  :=
     mem_closure_iff_frequently.mp (dense_irrational (γ ^ 2))
   obtain ⟨q, hqi, hqV, hqpos⟩ := (hi.and_eventually hq).exists
-  exact ⟨Real.sqrt q, hqV, by rwa [Real.sq_sqrt hqpos]⟩
+  continuity
 /-- The zero-mode exponent is continuous as gamma varies away from zero. -/
 theorem roots_sExp_gamma_continuousAt (γ a b c : ℝ) (hγ : γ ≠ 0) :
-    ContinuousAt (fun g => sExp g a b c) γ := by
-  unfold sExp
-  exact (continuousAt_const.sub (continuousAt_const.mul (continuousAt_Q hγ))).div continuousAt_id hγ
+    ContinuousAt (fun g => sExp g a b c) γ := (continuousAt_const.sub (continuousAt_const.mul (continuousAt_Q hγ))).div continuousAt_id hγ
 /-- Avoidance of all Gamma poles persists locally at a pole-free triple. -/
 theorem roots_poleFree_gamma_nhds (γ a b c : ℝ) (hγ : γ ≠ 0)
     (hs : ∀ n : ℕ, sExp γ a b c ≠ -(n : ℝ)) :
     ∀ᶠ g : ℝ in nhds γ, ∀ n : ℕ, sExp g a b c ≠ -(n : ℝ) := by
-  have hS : ContinuousAt (fun g : ℝ => (sExp g a b c : ℂ)) γ :=
+  have hS  :=
     Complex.continuous_ofReal.continuousAt.comp (roots_sExp_gamma_continuousAt γ a b c hγ)
-  have hc : ContinuousAt (fun g : ℝ => (Complex.Gamma (sExp g a b c : ℂ))⁻¹) γ := by
-    simpa only [Function.comp_def] using Complex.differentiable_one_div_Gamma.continuous.continuousAt.comp (f := fun g : ℝ => (sExp g a b c : ℂ)) hS
-  have hΓ : (Complex.Gamma (sExp γ a b c : ℂ))⁻¹ ≠ 0 := inv_ne_zero
+  have hc : ContinuousAt (fun g : ℝ => (Complex.Gamma (sExp g a b c : ℂ))⁻¹) γ := Complex.differentiable_one_div_Gamma.continuous.continuousAt.comp (f := fun g : ℝ => (sExp g a b c : ℂ)) hS
+  have hΓ  := inv_ne_zero
     (Complex.Gamma_ne_zero (fun n hn => hs n (Complex.ofReal_inj.mp
-      (by simpa only [Complex.ofReal_neg, Complex.ofReal_natCast] using hn))))
-  have he : ∀ᶠ g : ℝ in nhds γ, (Complex.Gamma (sExp g a b c : ℂ))⁻¹ ≠ 0 :=
+      (by continuity))))
+  have he  :=
     hc.eventually_ne hΓ
   filter_upwards [he] with g hg n hn
   apply hg

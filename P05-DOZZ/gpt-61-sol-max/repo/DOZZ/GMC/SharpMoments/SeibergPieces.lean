@@ -7,6 +7,7 @@ module
 public import DOZZ.GMC.SharpMoments.WeightedLocalSufficiency
 public import DOZZ.GMC.Moments.InversionLaw
 public import DOZZ.GMC.Annulus.BallCover
+import Mathlib.Tactic
 
 /-! # Probabilistic pieces of the global extended moment
 
@@ -15,18 +16,19 @@ of shrinking disks tend to zero. The power weight at infinity integrated over th
 disk is the weighted local mass of the inverted measure at the origin, so the inversion law turns
 its moments into weighted local moments at the origin. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Every `IsGMCOf` version almost surely has no atom at a given point. -/
 theorem gmc_singleton_mass_eq_zero_ae
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (z : ℂ) :
+     (z : ℂ) :
     ∀ᵐ ω ∂P, M ω {z} = 0 := by
   have hγsq : γ ^ 2 < 4 := by nlinarith
   have hp4 : (1 / 2 : ℝ) < 4 / γ ^ 2 := by
@@ -37,7 +39,7 @@ theorem gmc_singleton_mass_eq_zero_ae
   have hξpos : 0 < ξ := by
     rw [hξ]
     nlinarith
-  have hmeas : AEMeasurable (fun ω => M ω {z}) P :=
+  have hmeas  :=
     gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM {z} (measurableSet_singleton z)
   have hle : ∀ ρ : ℝ, 0 < ρ → ρ ≤ 1 / 8 →
       ∫⁻ ω, M ω {z} ^ (1 / 2 : ℝ) ∂P ≤ ENNReal.ofReal (C * ρ ^ ξ) := by
@@ -90,7 +92,7 @@ theorem exterior_lintegral_le_inversion_weighted (μ : Measure ℂ) (γ αinf : 
   apply lintegral_mono
   intro x
   by_cases hx : Rr < ‖x‖
-  · have hxpos : 0 < ‖x‖ := hRr.trans hx
+  · have hxpos  := hRr.trans hx
     have hxinv : x⁻¹ ∈ Metric.ball (0 : ℂ) (1 / Rr) := by
       rw [Metric.mem_ball, dist_zero_right, norm_inv, one_div]
       exact (inv_lt_inv₀ hxpos hRr).mpr hx
@@ -99,15 +101,13 @@ theorem exterior_lintegral_le_inversion_weighted (μ : Measure ℂ) (γ αinf : 
       Set.indicator_of_mem hxinv, sub_zero, norm_inv, ENNReal.ofReal_inv_of_pos hxpos]
     rw [show -γ * αinf = -(γ * αinf) by ring]
     rw [ENNReal.rpow_eq_pow, ENNReal.rpow_eq_pow, ENNReal.rpow_neg, ENNReal.inv_rpow, inv_inv]
-  · rw [Set.indicator_of_notMem (show x ∉ {x : ℂ | Rr < ‖x‖} from hx)]
-    exact zero_le
+  simp_all
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Positive moments of the exterior power-weight integral are bounded by the weighted local
 moment at the origin with the charge at infinity. -/
 theorem gmc_exterior_moment_le_weighted
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (αinf : ℝ) {Rr : ℝ} (hRr : 0 < Rr) (t : ℝ) (ht : 0 ≤ t) :
     ∫⁻ ω, (∫⁻ x in {x : ℂ | Rr < ‖x‖}, ENNReal.rpow (ENNReal.ofReal ‖x‖) (γ * αinf) ∂M ω) ^ t
         ∂P ≤ weightedGmcBallMoment P M γ αinf 0 (1 / Rr) t := by
@@ -116,8 +116,7 @@ theorem gmc_exterior_moment_le_weighted
   have hB : MeasurableSet (Metric.ball (0 : ℂ) (1 / Rr)) := Metric.isOpen_ball.measurableSet
   have hHm : Measurable H := by
     have hw : Measurable fun μ : Measure ℂ => weightedGmcBallMass γ μ αinf 0 (1 / Rr) := by
-      have hf : Measurable ((Metric.ball (0 : ℂ) (1 / Rr)).indicator
-          (fun u => ENNReal.rpow (ENNReal.ofReal ‖u - 0‖) (-γ * αinf))) :=
+      have hf  :=
         ((ENNReal.continuous_rpow_const (y := -γ * αinf)).measurable.comp
           (ENNReal.measurable_ofReal.comp (measurable_id.sub_const 0).norm)).indicator hB
       have heq : (fun μ : Measure ℂ => weightedGmcBallMass γ μ αinf 0 (1 / Rr)) = fun μ =>
@@ -127,7 +126,7 @@ theorem gmc_exterior_moment_le_weighted
         exact (lintegral_indicator hB _).symm
       rw [heq]
       exact Measure.measurable_lintegral hf
-    exact (ENNReal.continuous_rpow_const (y := t)).measurable.comp hw
+    measurability
   have hinv := equatorGFF_GMC_inversion_law P X hX γ hγ hγ2 M hM H hHm
   calc ∫⁻ ω, (∫⁻ x in {x : ℂ | Rr < ‖x‖}, ENNReal.rpow (ENNReal.ofReal ‖x‖) (γ * αinf) ∂M ω) ^ t
         ∂P ≤ ∫⁻ ω, H ((M ω).map (fun x => x⁻¹)) ∂P := by

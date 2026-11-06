@@ -14,7 +14,7 @@ An abstract approximation lemma: expectations converge if, for every tolerance, 
 converted to bounds on real expectations `E[I^{-p} ∫ w |x − z|^β dM]`, where `I` is the softened
 four-point mass as a real number. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal

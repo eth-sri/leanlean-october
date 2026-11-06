@@ -29,16 +29,16 @@ theorem lintegral_tsum_rpow_le_of_geometric
     {K q : ℝ≥0∞} (hbound : ∀ n, ∫⁻ ω, f n ω ^ t ∂P ≤ K * q ^ n) :
     ∫⁻ ω, (∑' n, f n ω) ^ t ∂P ≤ K * ((1 - q ^ (1 / max 1 t)) ^ (max 1 t))⁻¹ := by
   rcases le_or_gt t 1 with ht1 | ht1
-  · have hm : max 1 t = 1 := max_eq_left ht1
+  · have hm  := max_eq_left ht1
     rw [hm, div_one, ENNReal.rpow_one, ENNReal.rpow_one]
     calc ∫⁻ ω, (∑' n, f n ω) ^ t ∂P ≤ ∫⁻ ω, ∑' n, f n ω ^ t ∂P :=
           lintegral_mono fun ω => ennreal_rpow_tsum_le_tsum_rpow _ ht ht1
       _ = ∑' n, ∫⁻ ω, f n ω ^ t ∂P := lintegral_tsum fun n => (hf n).pow_const t
       _ ≤ ∑' n : ℕ, K * q ^ n := ENNReal.tsum_le_tsum hbound
       _ = K * (1 - q)⁻¹ := by rw [ENNReal.tsum_mul_left, ENNReal.tsum_geometric]
-  · have hm : max 1 t = t := max_eq_right ht1.le
+  · have hm  := max_eq_right ht1.le
     rw [hm]
-    have hinv : 0 < 1 / t := one_div_pos.2 ht
+    have hinv  := one_div_pos.2 ht
     have hroot (n : ℕ) :
         (∫⁻ ω, f n ω ^ t ∂P) ^ (1 / t) ≤ K ^ (1 / t) * (q ^ (1 / t)) ^ n :=
       calc (∫⁻ ω, f n ω ^ t ∂P) ^ (1 / t) ≤ (K * q ^ n) ^ (1 / t) :=
@@ -55,16 +55,21 @@ theorem lintegral_tsum_rpow_le_of_geometric
           rw [ENNReal.mul_rpow_of_nonneg _ _ ht.le, ← ENNReal.rpow_mul,
             one_div_mul_cancel ht.ne', ENNReal.rpow_one, ENNReal.inv_rpow]
 
+variable (R0 : ℝ) (n : ℕ)
+
+include R0 n in
 /-- The dyadic exterior annuli `2ⁿ R₀ ≤ |x| < 2ⁿ⁺¹ R₀`. -/
-def exteriorAnnulus (R0 : ℝ) (n : ℕ) : Set ℂ :=
+def exteriorAnnulus  : Set ℂ :=
   {x : ℂ | 2 ^ n * R0 ≤ ‖x‖ ∧ ‖x‖ < 2 ^ (n + 1) * R0}
 
-theorem measurableSet_exteriorAnnulus (R0 : ℝ) (n : ℕ) :
+include R0 n in
+theorem measurableSet_exteriorAnnulus  :
     MeasurableSet (exteriorAnnulus R0 n) :=
   (measurableSet_le measurable_const measurable_norm).inter
     (measurableSet_lt measurable_norm measurable_const)
 
-theorem exteriorAnnulus_eq_preimage (R0 : ℝ) (n : ℕ) :
+include R0 n in
+theorem exteriorAnnulus_eq_preimage  :
     exteriorAnnulus R0 n =
       {y : ℂ | ((((2 : ℝ) ^ n : ℝ)) : ℂ)⁻¹ * y ∈ exteriorAnnulus R0 0} := by
   ext y
@@ -149,13 +154,13 @@ theorem cutoff_exterior_power_moment_le
       ENNReal.ofReal ((2 * R0) ^ (β * t)) * K0 *
         ((1 - ENNReal.ofReal ((1 / 2 : ℝ) ^ (2 * t + γ ^ 2 * t / 2 - γ ^ 2 * t ^ 2 / 2 - β * t)) ^
           (1 / max 1 t)) ^ (max 1 t))⁻¹ := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   have hR0pos : 0 < R0 := by linarith
   set ζ : ℝ := 2 * t + γ ^ 2 * t / 2 - γ ^ 2 * t ^ 2 / 2 - β * t with hζ
   set A : ℕ → Set ℂ := exteriorAnnulus R0 with hA
   set f : ℕ → Ω → ℝ≥0∞ := fun n ω =>
     ENNReal.ofReal ((2 ^ (n + 1) * R0) ^ β) * regularizedGMC P Xc γ r ω (A n) with hf
-  have hAm : ∀ n, MeasurableSet (A n) := measurableSet_exteriorAnnulus R0
+  have hAm  := measurableSet_exteriorAnnulus R0
   have hfm : ∀ n, AEMeasurable (f n) P := fun n =>
     aemeasurable_const.mul (((Measure.measurable_coe (hAm n)).comp
       (regularizedGMC_measurable P X hX Xc hXc γ r)).aemeasurable)
@@ -200,7 +205,7 @@ theorem cutoff_exterior_power_moment_le
             (ENNReal.ofReal ((2 ^ n) ^ (-2 * t) * Real.exp (γ ^ 2 * Real.log (2 ^ n) / 2 *
               (t ^ 2 - t))) * K0) := by
           gcongr
-          exact hK0 _ (by have := Real.log_nonneg hc; linarith)
+          bound
       _ = (ENNReal.ofReal ((2 * R0) ^ (β * t)) * K0) * ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ) ^ n := by
           rw [ENNReal.ofReal_rpow_of_nonneg (by positivity) ht.le, ← mul_assoc,
             ← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_pow (by positivity),

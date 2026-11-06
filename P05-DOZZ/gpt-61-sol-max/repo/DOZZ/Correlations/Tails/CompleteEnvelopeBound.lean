@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Tails.CompleteCopiedEnvelope
 
 /-! A fixed Gaussian envelope controls the complete copied error over compact centers. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
@@ -21,13 +21,10 @@ theorem complete_envelope_gaussian_bound (z : ℂ) (γ N Nbar d s a : ℝ)
       ((d+5*s)*Real.exp (2*γ^2+4))*
         Real.exp ((|γ|+2*a)*(|Nbar|+|N|)) := by
   have hln : 0 ≤ Real.log ‖z‖ := Real.log_nonneg (by linarith)
-  have ha0 : 0 ≤ a :=
-    (div_nonneg (abs_nonneg γ) (offCenter_pin_variance_pos z hz).le).trans ha
+  
   have hD0 : 0 ≤ pinCorrectionEnvelope z γ N Nbar := by
     unfold pinCorrectionEnvelope
-    exact add_nonneg (mul_nonneg
-      (div_nonneg (abs_nonneg _) (offCenter_pin_variance_pos z hz).le)
-      (abs_nonneg _)) (sq_nonneg _)
+    bound
   have hD := pin_envelope_bound z γ N Nbar a hz ha
   have hg : γ*Nbar ≤ |γ| *|Nbar| := by simpa only [abs_mul] using le_abs_self (γ*Nbar)
   have hn := mul_nonneg (abs_nonneg γ) (abs_nonneg N)

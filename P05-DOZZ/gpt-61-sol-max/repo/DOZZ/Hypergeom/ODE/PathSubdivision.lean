@@ -11,7 +11,7 @@ public import Mathlib.Analysis.Complex.Basic
 /-! A continuous path on a compact interval admits a finite equal subdivision with small image
 increments. This is the compactness step for disk-chain continuation. -/
 
-@[expose] public section
+public section
 
 open Set
 
@@ -31,7 +31,7 @@ theorem exists_path_subdivision {γ : ℝ → ℂ}
   obtain ⟨δ, hδ, hclose⟩ := hu ε hε
   obtain ⟨n, hn⟩ := exists_nat_one_div_lt hδ
   let N := n + 1
-  have hNnat : 0 < N := Nat.succ_pos n
+  have hNnat  := Nat.succ_pos n
   have hN : (0 : ℝ) < (N : ℝ) := by exact_mod_cast hNnat
   have hgap : 1 / (N : ℝ) < δ := by simpa [N] using hn
   refine ⟨N, hNnat, ?_⟩
@@ -54,7 +54,7 @@ theorem exists_path_subdivision {γ : ℝ → ℂ}
       abs_of_pos (one_div_pos.mpr hN)]
     exact hgap
   refine ⟨?_, ?_⟩
-  · exact hclose _ ⟨hi0, hi1⟩ _ ⟨hiNext0, hiNext1⟩ htime
+  · grind
   · intro t ht
     have hleft : (i : ℝ) / (N : ℝ) ∈ Icc (0 : ℝ) 1 := ⟨hi0, hi1⟩
     have hright : ((i + 1 : ℕ) : ℝ) / (N : ℝ) ∈ Icc (0 : ℝ) 1 :=
@@ -64,15 +64,7 @@ theorem exists_path_subdivision {γ : ℝ → ℂ}
         (((i + 1 : ℕ) : ℝ) / (N : ℝ)) - (i : ℝ) / (N : ℝ) := by
       rw [Real.dist_eq, abs_le]
       constructor <;> linarith [ht.1, ht.2]
-    have hstepGap :
-        (((i + 1 : ℕ) : ℝ) / (N : ℝ)) - (i : ℝ) / (N : ℝ) = 1 / (N : ℝ) := by
-      rw [Nat.cast_add, Nat.cast_one]
-      ring
-    have htime' : dist t ((i : ℝ) / (N : ℝ)) < δ := by
-      rw [hstepGap] at hinterval
-      exact hinterval.trans_lt hgap
-    simpa [dist_comm] using
-      hclose _ ⟨hi0, hi1⟩ t ht01 (by simpa [dist_comm] using htime')
+    grind
 
 /-- Every parameter lies in a member of a fixed equal subdivision. The selected index is the
 right-hand interval at an interior subdivision point, leaving only the terminal point in the
@@ -86,14 +78,12 @@ theorem exists_equal_subdivision_interval (N : ℕ) (hN : 0 < N)
   have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
   let x : ℝ := (N : ℝ) * t
   have hxnonneg : 0 ≤ x := by
-    dsimp [x]
-    exact mul_nonneg (by positivity) ht.1
+    continuity
   have hxupper : x ≤ (N : ℝ) := by
     dsimp [x]
     nlinarith [ht.2]
   let q : ℕ := Nat.floor x
   have hqle : (q : ℝ) ≤ x := by
-    dsimp [q]
     exact Nat.floor_le hxnonneg
   have hqN : q ≤ N := by
     exact_mod_cast hqle.trans hxupper
@@ -103,32 +93,23 @@ theorem exists_equal_subdivision_interval (N : ℕ) (hN : 0 < N)
     omega
   have hix : (i : ℝ) ≤ x := by
     dsimp [i]
-    exact (Nat.cast_le.mpr (Nat.min_le_left q (N - 1))).trans hqle
+    simp_all
   have hxupper' : x ≤ (i + 1 : ℕ) := by
     by_cases hqLt : q < N
     · have hiq : i = q := by
-        dsimp [i]
-        rw [Nat.min_eq_left]
         omega
       rw [hiq]
       have hstrict : x < (q + 1 : ℕ) := by
         simpa [q] using Nat.lt_floor_add_one x
       exact hstrict.le
-    · have hqEq : q = N := by omega
+    · 
       have hiEq : i = N - 1 := by
-        dsimp [i]
-        rw [Nat.min_eq_right]
         omega
-      rw [hiEq]
-      have hsucc : N - 1 + 1 = N := by omega
-      rw [hsucc]
-      exact_mod_cast hxupper
+      simp_all
   have hleft : (i : ℝ) / (N : ℝ) ≤ t := by
-    apply (div_le_iff₀ hNreal).2
-    simpa [x, mul_comm] using hix
+    field_simp <;> nlinarith
   have hright : t ≤ ((i + 1 : ℕ) : ℝ) / (N : ℝ) := by
-    apply (le_div_iff₀ hNreal).2
-    simpa [x, mul_comm] using hxupper'
+    field_simp <;> nlinarith
   refine ⟨i, hiN, hleft, hright, ?_⟩
   by_cases hqLt : q < N
   · have hiq : i = q := by
@@ -142,12 +123,6 @@ theorem exists_equal_subdivision_interval (N : ℕ) (hN : 0 < N)
       simpa [x, mul_comm] using hstrict
     left
     simpa [hiq] using hstrict'
-  · have hqEq : q = N := by omega
-    have hxEq : x = (N : ℝ) := le_antisymm hxupper (by
-      simpa [q, hqEq] using hqle)
-    have htEq : t = 1 := by
-      dsimp [x] at hxEq
-      nlinarith [hNreal]
-    exact Or.inr htEq
+  grind
 
 end DOZZ.Proofs

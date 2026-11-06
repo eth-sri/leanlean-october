@@ -14,7 +14,7 @@ the logarithmic lateral kernel of `DOZZ.circleAverage_offCenter_decomposition` i
 step.
 -/
 
-@[expose] public section
+public section
 
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal

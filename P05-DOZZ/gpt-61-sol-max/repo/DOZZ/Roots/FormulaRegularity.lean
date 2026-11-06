@@ -8,7 +8,7 @@ public import DOZZ.Roots.FormulaLine
 import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 /-! # Regularity at pole-free extended charges -/
-@[expose] public section
+public section
 open Complex Set
 namespace DOZZ.Proofs
 /-- Every denominator factor of the DOZZ expression is nonzero at finite extended charges. -/
@@ -26,8 +26,7 @@ theorem roots_dozz_denominator_ne_zero {γ a b c : ℝ} (hγ : 0 < γ) (hγ2 : �
   have h1 := hu ((a + b + c) / 2 - a) (by linarith only [ht1]) (by linarith only [h.2.1, h.2.2.1, ha])
   have h2 := hu ((a + b + c) / 2 - b) (by linarith only [ht2]) (by linarith only [h.1, h.2.2.1, hb])
   have h3 := hu ((a + b + c) / 2 - c) (by linarith only [ht3]) (by linarith only [h.1, h.2.1, hc])
-  norm_cast at h0 h1 h2 h3 ⊢
-  exact mul_ne_zero (mul_ne_zero (mul_ne_zero h0 h1) h2) h3
+  simp_all
 /-- The normalized DOZZ expression is analytic along a charge curve at each finite extended triple. -/
 theorem roots_formula_line_analyticAt {γ μ : ℝ} {U : ℂ → ℂ}
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) (hU : IsUpsilon γ U)
@@ -39,12 +38,10 @@ theorem roots_formula_line_analyticAt {γ μ : ℝ} {U : ℂ → ℂ}
         dozzFormula γ μ U (A 0 w) (A 1 w) (A 2 w)) z := by
   have hS : AnalyticAt ℂ (fun w => (A 0 w + A 1 w + A 2 w - 2 * Q γ) / γ) z :=
     (((hA 0).add (hA 1)).add (hA 2)).sub analyticAt_const |>.div_const
-  have hGamma : AnalyticAt ℂ (fun w => (Complex.Gamma ((A 0 w + A 1 w + A 2 w - 2 * Q γ) / γ))⁻¹) z :=
+  have hGamma  :=
     (Complex.differentiable_one_div_Gamma.analyticAt _).comp hS
   have hnorm : AnalyticAt ℂ (fun w => (μ : ℂ) ^ ((A 0 w + A 1 w + A 2 w - 2 * Q γ) / γ) /
-      Complex.Gamma ((A 0 w + A 1 w + A 2 w - 2 * Q γ) / γ)) z := by
-    simpa only [Function.comp_def, Pi.mul_apply, div_eq_mul_inv] using
-      (analyticAt_const.cpow hS (Complex.ofReal_mem_slitPlane.mpr hμ)).fun_mul hGamma
+      Complex.Gamma ((A 0 w + A 1 w + A 2 w - 2 * Q γ) / γ)) z := (analyticAt_const.cpow hS (Complex.ofReal_mem_slitPlane.mpr hμ)).fun_mul hGamma
   have hUa : ∀ f : ℂ → ℂ, AnalyticAt ℂ f z → AnalyticAt ℂ (fun w => U (f w)) z :=
     fun f hf => (hU.1.analyticAt (f z)).comp hf
   have hpow : AnalyticAt ℂ (fun w =>

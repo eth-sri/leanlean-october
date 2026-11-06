@@ -10,7 +10,7 @@ public import DOZZ.GMC.SharpMoments.WeightedUniformGrid
 
 /-! Uniform moments of the complete copied error envelope. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -62,8 +62,7 @@ theorem complete_envelope_moment_uniform_compact
     _ ≤ ∫⁻ ω, 1+E ω^R ∂P := lintegral_mono fun ω =>
       weightedGrid_ennreal_rpow_le_one_add_rpow (E ω) hr hrR
     _ = 1+∫⁻ ω, E ω^R ∂P := by
-      rw [lintegral_add_left measurable_const]
-      simp only [lintegral_const, measure_univ, mul_one]
+      simp_all
     _ ≤ 1+(ENNReal.ofReal L)^R*∫⁻ ω,
         ENNReal.ofReal (Real.exp ((R*k)*|Nb ω|))*ENNReal.ofReal (Real.exp ((R*k)*|N ω|)) ∂P := by
       apply add_le_add le_rfl

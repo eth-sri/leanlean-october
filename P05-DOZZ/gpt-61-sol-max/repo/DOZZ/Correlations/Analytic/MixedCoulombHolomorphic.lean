@@ -10,7 +10,7 @@ public import DOZZ.Correlations.Analytic.NormalizedRealLimit
 
 /-! Holomorphic extension of the literal mixed-frame Coulomb expectation. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs

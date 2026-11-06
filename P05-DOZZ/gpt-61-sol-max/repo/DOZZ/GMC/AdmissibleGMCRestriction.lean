@@ -10,7 +10,7 @@ public import Mathlib.MeasureTheory.Integral.Bochner.Set
 
 /-! Restriction of admissible GMC limits to measurable subcharts. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
@@ -50,8 +50,7 @@ theorem boundedContinuousFunction_eq_zero_off_tsupport_subset
     ∀ x, x ∉ V → f x = 0 := by
   intro x hx
   by_contra hne
-  have hxSupport : x ∈ Function.support (f : ℂ → ℝ) := by
-    simpa [Function.mem_support] using hne
+  have hxSupport : x ∈ Function.support (f : ℂ → ℝ) := hne
   exact hx (hfV (subset_tsupport (f : ℂ → ℝ) hxSupport))
 
 /-- Restricting the limiting random measure to a measurable subchart preserves the admissible GMC
@@ -68,13 +67,10 @@ theorem admissibleGMCVersion_restrict_of_subset
   · apply Measure.measurable_of_measurable_coe
     intro s hs
     have hcoe : (fun ω => (M ω).restrict V s) = fun ω => M ω (s ∩ V) := by
-      funext ω
-      exact Measure.restrict_apply hs
+      ext <;> simp_all
     rw [hcoe]
     exact (Measure.measurable_coe (hs.inter hV)).comp hMMeas
-  · intro ω
-    rw [Measure.restrict_apply (MeasurableSet.compl hV)]
-    simp
+  · simp_all
   · intro ω K hK hKV
     rw [Measure.restrict_apply hK.measurableSet,
       Set.inter_eq_left.mpr hKV]
@@ -95,14 +91,6 @@ theorem admissibleGMCVersion_restrict_of_subset
         (∫ x, f x ∂(M ω).restrict V) = ∫ x, f x ∂M ω :=
       integral_restrict_eq_integral_of_zero_on_compl (M ω) V hV
         (fun x => f x) (hfzero)
-    have hleft : ∀ r, (fun ω => regularizedLogChaosTestMass P U dens Y γ r ω f) =ᵐ[P]
-        fun ω => regularizedLogChaosTestMass P V dens Y γ r ω f := by
-      intro r
-      exact Eventually.of_forall fun ω => (hMass r ω).symm
-    have hright : (fun ω => ∫ x, f x ∂M ω) =ᵐ[P]
-        fun ω => ∫ x, f x ∂(M ω).restrict V :=
-      Eventually.of_forall fun ω => (hTarget ω).symm
-    have hlim := hMLimit f hfCompact (hfSupport.trans hVU)
-    exact TendstoInMeasure.congr hleft hright hlim
+    grind
 
 end DOZZ.Proofs

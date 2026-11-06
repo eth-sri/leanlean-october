@@ -20,7 +20,7 @@ public import Mathlib.MeasureTheory.Function.LocallyIntegrable
   No integrability of `f` is needed, since an affine change of variables is valid for all
   Bochner integrals (non-integrable integrands have value `0` on both sides). -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -42,7 +42,7 @@ theorem bpzTS_hasDerivAt_primitive {g g' g'' : ℝ → ℝ} {t u : ℝ}
     (hg : HasDerivAt g (g' u) u) (hg' : HasDerivAt g' (g'' u) u) :
     HasDerivAt (fun v => g v + (t - v) * g' v) ((t - u) * g'' u) u := by
   have h1 : HasDerivAt (fun v : ℝ => t - v) (-1) u := by
-    simpa using (hasDerivAt_id u).const_sub t
+    exact (hasDerivAt_id u).const_sub t
   convert hg.add (h1.mul hg') using 1
   ring
 
@@ -98,6 +98,6 @@ theorem bpzTS_subst_smul {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] 
 theorem bpz_taylor_remainder_subst_complex {f : ℝ → ℂ} {t : ℝ} (ht : 0 < t) :
     ∫ u in (0 : ℝ)..t, ((t - u : ℝ) : ℂ) * f u =
       ((t ^ 2 : ℝ) : ℂ) * ∫ s in Icc (0 : ℝ) 1, ((1 - s : ℝ) : ℂ) * f (s * t) := by
-  simpa only [Complex.real_smul] using bpzTS_subst_smul (f := f) ht
+  exact bpzTS_subst_smul ht
 
 end DOZZ.Proofs

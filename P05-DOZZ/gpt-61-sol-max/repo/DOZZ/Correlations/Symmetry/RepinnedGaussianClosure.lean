@@ -6,7 +6,7 @@ module
 public import DOZZ.Correlations.Symmetry.RepinnedLaw
 public import Mathlib.MeasureTheory.Function.LpSeminorm.SMul
 public import Mathlib.Topology.Instances.ENNReal.Lemmas
-@[expose] public section
+public section
 open MeasureTheory Filter Set
 open scoped Distributions Topology ENNReal
 namespace DOZZ.Proofs
@@ -17,14 +17,13 @@ theorem reflection_normalization_in_repinned_closure
     (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) :
     IsGaussianL2Limit P (symmetryRepinnedField X (fun ω => Xc ω 1 0))
       (fun ω => Xc ω 1 0) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   let L := fun ω => Xc ω 1 0
-  have hL : MemLp L 2 P := hXc.2.1 1 0
+  have hL  := hXc.2.1 1 0
   obtain ⟨f, hgap, hint⟩ := exists_testFn_circleEnergyGap_and_integral_tendsto 0 0
   have hmass : Tendsto (fun n => testMass (f n)) atTop (𝓝 1) := by
     have h := hint (fun _ => (1 : ℝ)) continuous_const
-    let := circleMeasure_isProbability (0 : ℂ) 0
-    simpa [testMass] using h
+    continuity
   have hsource : Tendsto (fun n => eLpNorm (fun ω => X ω (f n)) 2 P) atTop (𝓝 0) := by
     have h := hXc.2.2 0 0 f hgap
     have he n : eLpNorm (fun ω => X ω (f n) - Xc ω 0 0) 2 P =
@@ -43,8 +42,7 @@ theorem reflection_normalization_in_repinned_closure
     simp only [zero_mul] at h
     have he n : eLpNorm (fun ω => (1 - testMass (f n)) * L ω) 2 P =
         ‖1 - testMass (f n)‖ₑ * eLpNorm L 2 P := by
-      simpa only [Pi.smul_def, smul_eq_mul] using
-        eLpNorm_const_smul (1 - testMass (f n)) L 2 P
+      exact eLpNorm_const_smul (1 - testMass (f n)) L 2 P
     simpa only [he] using h
   let g := fun n => -(symmetryReflectionTest (f n))
   refine ⟨hL, g, ?_⟩
@@ -72,5 +70,5 @@ theorem reflection_normalization_in_repinned_closure
   rw [he]
   have h := eLpNorm_add_le (μ := P) (p := (2 : ℝ≥0∞))
     (f := fun ω => X ω (f n)) (g := fun ω => (1 - testMass (f n)) * L ω) (by norm_num)
-  simpa only [Pi.add_def] using h
+  exact h
 end DOZZ.Proofs

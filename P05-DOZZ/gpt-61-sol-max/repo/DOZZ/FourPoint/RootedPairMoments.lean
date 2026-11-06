@@ -9,7 +9,7 @@ public import DOZZ.GMC.SharpMoments.SeibergWeight
 
 /-! The positive Taylor square as an exact two-root integral, preserving both density factors. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

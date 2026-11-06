@@ -7,10 +7,11 @@ module
 public import DOZZ.GMC.CircleAverage
 public import DOZZ.GMC.CircleAverageGaussian
 public import DOZZ.GMC.Moments.GaussianFDD
+import Mathlib.Tactic
 
 /-! Local covariance scaling for equator circle averages. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
@@ -57,8 +58,8 @@ theorem circleLogPotential_scale {c : ℝ} (hc : 0 < c) (x y : ℂ) (r s : ℝ) 
         ⟨Real.exp (-(s - Real.log c)), Real.exp_pos _⟩ =
       Real.log c + circleLogPotential ‖x - y‖₊
         ⟨Real.exp (-r), Real.exp_pos _⟩ ⟨Real.exp (-s), Real.exp_pos _⟩ := by
-  let f : ℂ → ℝ := fun w => Real.log (max (Real.exp (-(s - Real.log c))) ‖w - c * y‖)
-  let g : ℂ → ℝ := fun w => Real.log (max (Real.exp (-s)) ‖w - y‖)
+  let f  := fun w => Real.log (max (Real.exp (-(s - Real.log c))) ‖w - c * y‖)
+  let g  := fun w => Real.log (max (Real.exp (-s)) ‖w - y‖)
   have hfcont : Continuous f := by
     dsimp [f]
     have hdist : Continuous (fun w : ℂ => ‖w - c * y‖) := by fun_prop
@@ -69,9 +70,7 @@ theorem circleLogPotential_scale {c : ℝ} (hc : 0 < c) (x y : ℂ) (r s : ℝ) 
     have hdist : Continuous (fun w : ℂ => ‖w - y‖) := by fun_prop
     exact (continuous_const.max hdist).log
       (fun _ => ne_of_gt ((Real.exp_pos _).trans_le (le_max_left _ _)))
-  have hfint : Integrable f (circleMeasure (c * x) (r - Real.log c)) :=
-    integrable_circleMeasure_of_circleIntegrable _ _ hfcont.measurable
-      hfcont.continuousOn.circleIntegrable'
+
   have hgint : Integrable g (circleMeasure x r) :=
     integrable_circleMeasure_of_circleIntegrable _ _ hgcont.measurable
       hgcont.continuousOn.circleIntegrable'
@@ -101,8 +100,7 @@ theorem circleLogPotential_scale {c : ℝ} (hc : 0 < c) (x y : ℂ) (r s : ℝ) 
         rw [circleMeasure_scale hc x r]
         exact integral_map hscale.aemeasurable hfcont.measurable.aestronglyMeasurable
     _ = ∫ z, (Real.log c + g z) ∂circleMeasure x r := by
-        apply integral_congr_ae
-        exact Filter.Eventually.of_forall hintegrand
+        simp_all
     _ = Real.log c + ∫ z, g z ∂circleMeasure x r := by
         let _ := circleMeasure_isProbability x r
         rw [integral_add (integrable_const _) hgint, integral_const, probReal_univ, one_smul]
@@ -162,31 +160,21 @@ theorem circleAverage_affine_scaled_fdd_law
       Measure.map (fun p : Ω × ℝ => fun i => Xc p.1 (z i) (r i) + p.2)
         (P.prod (gaussianReal 0 ⟨-Real.log c,
           neg_nonneg.mpr (Real.log_nonpos (le_of_lt hscale) hc_le)⟩)) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   let v : ℝ≥0 := ⟨-Real.log c, neg_nonneg.mpr (Real.log_nonpos (le_of_lt hscale) hc_le)⟩
-  let G : Measure ℝ := gaussianReal 0 v
-  let A : ι → Ω → ℝ := fun i ω => Xc ω (z i) (r i)
-  let T : Ω → ι → ℝ := fun ω i => Xc ω (a + c * z i) (r i - Real.log c)
+  let G  := gaussianReal 0 v
+  let A  := fun i ω => Xc ω (z i) (r i)
+  let T  := fun ω i => Xc ω (a + c * z i) (r i - Real.log c)
   let B : Ω × ℝ → ι → ℝ := fun p i => A i p.1 + p.2
-  have hW : HasLaw (id : ℝ → ℝ) (gaussianReal 0 v) G := by
-    exact ⟨aemeasurable_id, Measure.map_id⟩
-  have hA : IsCenteredJointlyGaussian P (fun ω i => A i ω) := by
-    simpa [A] using circleAverage_finite_family_jointly_gaussian P X hX Xc hc
-      (fun i => (z i, r i))
-  have hT : IsCenteredJointlyGaussian P T := by
-    simpa [T] using circleAverage_finite_family_jointly_gaussian P X hX Xc hc
+  have hW : HasLaw (id : ℝ → ℝ) (gaussianReal 0 v) G := ⟨aemeasurable_id, Measure.map_id⟩
+  have hA  := id (circleAverage_finite_family_jointly_gaussian P X hX Xc hc fun i => (z i, r i))
+  have hT : IsCenteredJointlyGaussian P T := circleAverage_finite_family_jointly_gaussian P X hX Xc hc
       (fun i => (a + c * z i, r i - Real.log c))
-  have hB : IsCenteredJointlyGaussian (P.prod G) B := by
-    simpa [A, B, G] using
-      isCenteredJointlyGaussian_add_independent_scalar (fun ω i => Xc ω (z i) (r i))
-        (id : ℝ → ℝ) hA hW
+  have hB  := id (isCenteredJointlyGaussian_add_independent_scalar (fun ω i => Xc ω (z i) (r i)) id hA hW)
   have hcircleMean := (circleAverage_isGaussianProcess P X Xc hX hc).2
-  have hTmean (i : ι) : (∫ ω, T ω i ∂P) = 0 := by
-    exact hcircleMean (a + c * z i) (r i - Real.log c)
-  have hAmean (i : ι) : (∫ ω, A i ω ∂P) = 0 := by
-    exact hcircleMean (z i) (r i)
-  have hBmean (i : ι) : (∫ p, B p i ∂(P.prod G)) = 0 := by
-    exact coord_mean (P.prod G) B hB i
+  have hTmean (i : ι) : (∫ ω, T ω i ∂P) = 0 := hcircleMean (a + c * z i) (r i - Real.log c)
+
+  have hBmean (i : ι) : (∫ p, B p i ∂(P.prod G)) = 0 := coord_mean (P.prod G) B hB i
   have htargetCov (i j : ι) :
       gaussianCovariance P (fun ω => T ω i) (fun ω => T ω j) =
         covariance (fun ω => T ω i) (fun ω => T ω j) P := by
@@ -212,16 +200,16 @@ theorem circleAverage_affine_scaled_fdd_law
   have hproductCov (i j : ι) :
       covariance (fun p : Ω × ℝ => A i p.1 + p.2)
           (fun p => A j p.1 + p.2) (P.prod G) = covariance (A i) (A j) P + (v : ℝ) := by
-    let Ai : Ω → ℝ := A i
-    let Aj : Ω → ℝ := A j
-    have hAi : MemLp Ai 2 P := hc.2.1 (z i) (r i)
-    have hAj : MemLp Aj 2 P := hc.2.1 (z j) (r j)
+    let Ai  := A i
+    let Aj  := A j
+    have hAi  := hc.2.1 (z i) (r i)
+    have hAj  := hc.2.1 (z j) (r j)
     have hScalar : MemLp (id : ℝ → ℝ) 2 G := memLp_id_gaussianReal 2
     let AiProd : Ω × ℝ → ℝ := fun p => Ai p.1
     let AjProd : Ω × ℝ → ℝ := fun p => Aj p.1
     let WProd : Ω × ℝ → ℝ := fun p => p.2
-    have hAiProd : MemLp AiProd 2 (P.prod G) := hAi.comp_fst G
-    have hAjProd : MemLp AjProd 2 (P.prod G) := hAj.comp_fst G
+    have hAiProd  := hAi.comp_fst G
+    have hAjProd  := hAj.comp_fst G
     have hWProd : MemLp WProd 2 (P.prod G) := hScalar.comp_snd P
     have hBaseCov : covariance Ai Aj P = covariance AiProd AjProd (P.prod G) := by
       have hAiMap : AEStronglyMeasurable Ai ((P.prod G).map Prod.fst) := by
@@ -239,8 +227,7 @@ theorem circleAverage_affine_scaled_fdd_law
       have h := covariance_map_fun hWMap hWMap measurable_snd.aemeasurable
       rw [measurePreserving_snd.map_eq] at h
       calc
-        covariance WProd WProd (P.prod G) = covariance (id : ℝ → ℝ) id G := by
-          simpa [WProd] using h.symm
+        covariance WProd WProd (P.prod G) = covariance (id : ℝ → ℝ) id G := h.symm
         _ = variance (id : ℝ → ℝ) G :=
           covariance_self hScalar.aestronglyMeasurable.aemeasurable
         _ = (v : ℝ) := by simp [G]
@@ -253,21 +240,17 @@ theorem circleAverage_affine_scaled_fdd_law
     rw [covariance_add_left hAiProd hWProd (hAjProd.add hWProd),
       covariance_add_right hAiProd hAjProd hWProd,
       covariance_add_right hWProd hAjProd hWProd]
-    rw [hcross₁, hcross₂, hNoiseCov, ← hBaseCov]
-    ring
+    bound
   have hcov (i j : ι) :
       gaussianCovariance P (fun ω => T ω i) (fun ω => T ω j) =
         gaussianCovariance (P.prod G) (fun p => B p i) (fun p => B p j) := by
     calc
       gaussianCovariance P (fun ω => T ω i) (fun ω => T ω j) =
           covariance (fun ω => T ω i) (fun ω => T ω j) P := htargetCov i j
-      _ = covariance (A i) (A j) P - Real.log c := by
-          exact circleAverage_covariance_affine_scale P X Xc hX hc hscale
+      _ = covariance (A i) (A j) P - Real.log c := circleAverage_covariance_affine_scale P X Xc hX hc hscale
             (z i) (z j) (r i) (r j) (hbase i) (hbase j) (hscaled i) (hscaled j)
       _ = covariance (A i) (A j) P + (v : ℝ) := by
-          have hv : (v : ℝ) = -Real.log c := rfl
-          rw [hv]
-          ring
+          bound
       _ = covariance (fun p => B p i) (fun p => B p j) (P.prod G) :=
           (hproductCov i j).symm
       _ = gaussianCovariance (P.prod G) (fun p => B p i) (fun p => B p j) :=

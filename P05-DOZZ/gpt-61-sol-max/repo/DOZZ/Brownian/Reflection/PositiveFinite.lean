@@ -15,7 +15,7 @@ drift `Q-α` is positive. The block-envelope estimate makes the defining moment 
 exact lateral intensity makes it strictly positive ([KRV, Lemma 3.3], [KRV, §12.3]).
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology

@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Hypergeom.ODE.PathChainUniqueness
 public import DOZZ.Hypergeom.ODE.UniformPathDisks
+import Mathlib.Tactic
 
 /-! Packaged finite-chain continuation along a path, with existence and uniqueness. -/
 
@@ -44,9 +45,12 @@ structure PathContinuationLift (γ : ℝ → ℂ) (H : ℂ → E →L[ℂ] E) (y
     (((i + 1 : ℕ) : ℝ) / (subdivision : ℝ)),
     value t = (disks i).solution (γ t)
 
+variable {H : ℂ → E →L[ℂ] E}
+
+include H in
 /-- A disk solution gives a packaged lift along a constant path at its center. -/
 def constant_path_continuation_lift
-    {H : ℂ → E →L[ℂ] E} {y : E} (z : ℂ) (r M : ℝ) (hr : 0 < r)
+     {y : E} (z : ℂ) (r M : ℝ) (hr : 0 < r)
     (hM : 0 ≤ M) (D : HolomorphicDiskSolution H r)
     (hcenter : D.center = z)
     (hbound : ∀ w ∈ Metric.ball z r, ‖H w‖ ≤ M)
@@ -99,24 +103,27 @@ theorem pathContinuationSegment_mem_unitInterval {N i : ℕ} (hN : 0 < N)
     (ht : t ∈ Icc ((i : ℝ) / (N : ℝ)) (((i + 1 : ℕ) : ℝ) / (N : ℝ))) :
     t ∈ Icc (0 : ℝ) 1 := by
   have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
-  have hi1 : i + 1 ≤ N := Nat.succ_le_iff.mpr hi
+  have hi1  := Nat.succ_le_iff.mpr hi
   have hupper : ((i + 1 : ℕ) : ℝ) / (N : ℝ) ≤ 1 := by
     apply (div_le_one hNreal).2
     exact_mod_cast hi1
   exact ⟨le_trans (by positivity) ht.1, le_trans ht.2 hupper⟩
 
+variable {γ : ℝ → ℂ} (hγ : ContinuousOn γ (Icc (0 : ℝ) 1))
+
+include γ hγ in
 /-- A packaged finite-chain lift inherits local holomorphic charts along its path. -/
 theorem path_continuation_lift_has_solution_charts
-    {γ : ℝ → ℂ} (hγ : ContinuousOn γ (Icc (0 : ℝ) 1))
+    
     {H : ℂ → E →L[ℂ] E} {y : E} (A : PathContinuationLift γ H y) :
-    ∀ t ∈ Icc (0 : ℝ) 1, Nonempty (PathSolutionChart γ H A.value t) := by
-  exact disk_chain_lift_has_path_solution_charts hγ A.subdivision A.subdivision_pos
+    ∀ t ∈ Icc (0 : ℝ) 1, Nonempty (PathSolutionChart γ H A.value t) := disk_chain_lift_has_path_solution_charts hγ A.subdivision A.subdivision_pos
     A.radius A.coefficient_bound A.radius_pos A.coefficient_bound_nonneg H A.disks
     A.centers A.operator_bound A.path_cover A.overlap A.local_formula
 
+include H in
 /-- Re-express a continuation along another path function with the same values on `[0,1]`. -/
 def path_continuation_lift_congr
-    {H : ℂ → E →L[ℂ] E} {y : E} {γ δ : ℝ → ℂ}
+     {y : E} {γ δ : ℝ → ℂ}
     (A : PathContinuationLift γ H y)
     (hpath : ∀ t ∈ Icc (0 : ℝ) 1, γ t = δ t) :
     PathContinuationLift δ H y := by
@@ -153,29 +160,14 @@ def path_continuation_lift_congr
       A.value t = (A.disks i).solution (γ t) := A.local_formula i hi t ht
       _ = (A.disks i).solution (δ t) := by rw [hpath t ht01]
 
+include H in
 /-- Change the named initial vector of a packaged lift along an equality. -/
 def path_continuation_lift_initial_congr
-    {H : ℂ → E →L[ℂ] E} {y y' : E} {γ : ℝ → ℂ}
+     {y y' : E} {γ : ℝ → ℂ}
     (A : PathContinuationLift γ H y) (h : y = y') :
-    PathContinuationLift γ H y' := by
-  refine {
-    subdivision := A.subdivision
-    subdivision_pos := A.subdivision_pos
-    radius := A.radius
-    coefficient_bound := A.coefficient_bound
-    radius_pos := A.radius_pos
-    coefficient_bound_nonneg := A.coefficient_bound_nonneg
-    disks := A.disks
+    PathContinuationLift γ H y' := { A with
     disks_initial := A.disks_initial.trans h
-    centers := A.centers
-    operator_bound := A.operator_bound
-    path_cover := A.path_cover
-    overlap := A.overlap
-    value := A.value
-    value_continuous := A.value_continuous
-    value_initial := A.value_initial.trans h
-    local_formula := A.local_formula
-  }
+    value_initial := A.value_initial.trans h }
 
 /-- Every path in an open regular domain has a packaged finite-chain continuation from any initial
 vector. -/
@@ -196,19 +188,10 @@ theorem exists_path_continuation_lift [CompleteSpace E]
     · apply (div_le_one hNreal).2
       exact_mod_cast hi
   have hbound : ∀ i ≤ N, ∀ z ∈ Metric.ball (D i).center r, ‖H z‖ ≤ M := by
-    intro i hi z hz
-    have h := (hlocal ((i : ℝ) / (N : ℝ)) (hcoord i hi)).2
-    have hz' : z ∈ Metric.ball (γ ((i : ℝ) / (N : ℝ))) r := by
-      rw [← hcenters i hi]
-      exact hz
-    exact h z hz'
+    grind
   have hoverlap' : ∀ i < N, ∀ z ∈ Metric.ball (D (i + 1)).center (r / 2),
       (D i).solution z = (D (i + 1)).solution z := by
-    intro i hi z hz
-    have hc := hcenters (i + 1) (Nat.succ_le_iff.mpr hi)
-    have hz' : z ∈ Metric.ball (γ (((i + 1 : ℕ) : ℝ) / (N : ℝ))) (r / 2) := by
-      simpa [hc] using hz
-    exact hoverlap i hi z hz'
+    grind
   obtain ⟨F, hFcont, hFstart, _, hFformula⟩ :=
     exists_continuous_lift_from_disk_chain H hγ N hN r hr D y hD0c hD0i
       hcenters hcover hoverlap'
@@ -223,19 +206,17 @@ theorem path_continuation_lift_value_one_eq_final_disk
   let i := A.subdivision - 1
   have hi : i < A.subdivision := by have hpos := A.subdivision_pos; dsimp [i]; omega
   have hsucc : i + 1 = A.subdivision := by
-    have hpos := A.subdivision_pos
-    dsimp [i]
     omega
   have hNreal : 0 < (A.subdivision : ℝ) := by exact_mod_cast A.subdivision_pos
   have hseg : (1 : ℝ) ∈ Icc ((i : ℝ) / (A.subdivision : ℝ))
       (((i + 1 : ℕ) : ℝ) / (A.subdivision : ℝ)) := by
     constructor
     · apply (div_le_one hNreal).2
-      exact_mod_cast (show i ≤ A.subdivision by omega)
+      continuity
     · rw [hsucc, div_self (by exact_mod_cast A.subdivision_pos.ne')]
   have hform := A.local_formula i hi 1 hseg
   have hcenter := A.centers A.subdivision le_rfl
-  have hNdiv : (A.subdivision : ℝ) / (A.subdivision : ℝ) = 1 :=
+  have hNdiv  :=
     div_self hNreal.ne'
   have hfinalCenter : (A.disks (i + 1)).center = γ 1 := by
     rw [hsucc]
@@ -243,10 +224,7 @@ theorem path_continuation_lift_value_one_eq_final_disk
   have hover := A.overlap i hi (γ 1) (by
     rw [← hfinalCenter]
     exact Metric.mem_ball_self (by linarith [A.radius_pos]))
-  calc
-    A.value 1 = (A.disks i).solution (γ 1) := hform
-    _ = (A.disks (i + 1)).solution (γ 1) := hover
-    _ = (A.disks A.subdivision).solution (γ 1) := by rw [hsucc]
+  simp_all
 
 /-- Restrict a packaged lift to an affine subinterval of its path. A fresh finite chain on the
 subpath has the same terminal vector as the original continuous lift at the subinterval endpoint.
@@ -261,16 +239,16 @@ theorem exists_path_continuation_lift_affine_reparam [CompleteSpace E]
     (hparam : ∀ s ∈ Icc (0 : ℝ) 1, a + c * s ∈ Icc (0 : ℝ) 1) :
     ∃ B : PathContinuationLift (fun s => γ (a + c * s)) H (A.value a),
       B.value 1 = A.value (a + c) := by
-  let φ : ℝ → ℝ := fun s => a + c * s
+  let φ  := fun s => a + c * s
   have hφcont : ContinuousOn φ (Icc (0 : ℝ) 1) := by
-    exact (continuous_const.add (continuous_const.mul continuous_id)).continuousOn
+    fun_prop (disch := positivity)
   have hγ' : ContinuousOn (fun s => γ (φ s)) (Icc (0 : ℝ) 1) :=
     hγ.comp hφcont (fun s hs => hparam s hs)
-  have hpath' : ∀ s ∈ Icc (0 : ℝ) 1, γ (φ s) ∈ U :=
+  have hpath'  :=
     fun s hs => hpath (φ s) (hparam s hs)
   obtain ⟨B⟩ := exists_path_continuation_lift hγ' U hU H hH hpath' (A.value a)
-  let F : ℝ → E := fun s => A.value (φ s)
-  have hFcont : ContinuousOn F (Icc (0 : ℝ) 1) :=
+  let F  := fun s => A.value (φ s)
+  have hFcont  :=
     A.value_continuous.comp hφcont (fun s hs => hparam s hs)
   have hFchart : ∀ s ∈ Icc (0 : ℝ) 1,
       Nonempty (PathSolutionChart (fun u => γ (φ u)) H F s) := by
@@ -284,15 +262,12 @@ theorem exists_path_continuation_lift_affine_reparam [CompleteSpace E]
   have hEq := continuous_path_solution_lifts_unique hγ' H hFcont
     B.value_continuous hFchart hBchart hstart
   refine ⟨B, ?_⟩
-  have hlast := hEq 1 (by norm_num)
-  change A.value (φ 1) = B.value 1 at hlast
-  calc
-    B.value 1 = A.value (φ 1) := hlast.symm
-    _ = A.value (a + c) := by congr 1; simp [φ]
+  grind
 
+include γ hγ in
 /-- The finite-chain path lift is independent of its local disk choices and subdivision. -/
 theorem path_continuation_lifts_unique
-    {γ : ℝ → ℂ} (hγ : ContinuousOn γ (Icc (0 : ℝ) 1))
+    
     (H : ℂ → E →L[ℂ] E) (y : E)
     (A B : PathContinuationLift γ H y) :
     ∀ t ∈ Icc (0 : ℝ) 1, A.value t = B.value t := by

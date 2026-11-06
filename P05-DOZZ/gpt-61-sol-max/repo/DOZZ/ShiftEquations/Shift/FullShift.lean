@@ -40,7 +40,7 @@ theorem reflectionExponentC_ofReal (γ α : ℝ) :
 theorem reflectionExponentC_sub_half {γ : ℝ} (hγ : 0 < γ) (z : ℂ) :
     reflectionExponentC γ (z - γ / 2) = reflectionExponentC γ z + 1 := by
   unfold reflectionExponentC
-  have hγ0 : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+  have hγ0  := Complex.ofReal_ne_zero.mpr hγ.ne'
   field_simp
   ring
 
@@ -62,14 +62,10 @@ theorem meromorphicOn_reflectionRFromBar {γ μ : ℝ} (hμ : 0 < μ) {G : ℂ �
   have hp : AnalyticAt ℂ (reflectionExponentC γ) z := by
     unfold reflectionExponentC
     fun_prop
-  have hμ0 : (μ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hμ.ne'
+
   have hpow : AnalyticAt ℂ (fun w => (μ : ℂ) ^ reflectionExponentC γ w) z := by
-    have hd : Differentiable ℂ (fun w => (μ : ℂ) ^ reflectionExponentC γ w) := fun w =>
-      (show DifferentiableAt ℂ (reflectionExponentC γ) w by
-        unfold reflectionExponentC
-        fun_prop).const_cpow (Or.inl hμ0)
-    exact hd.analyticAt z
-  have hΓ : MeromorphicAt (fun w => Complex.Gamma (-reflectionExponentC γ w)) z :=
+    fun_prop (disch := aesop)
+  have hΓ  :=
     (Meromorphic.Gamma _).comp_analyticAt (g := fun w => -reflectionExponentC γ w) hp.neg
   exact ((hpow.meromorphicAt.mul hΓ).mul hp.meromorphicAt).mul (hG z hz)
 
@@ -81,7 +77,7 @@ theorem reflectionRFromBar_shift {γ μ : ℝ} (hγ : 0 < γ) (hμ : 0 < μ) {G 
       -(μ * Real.pi : ℂ) * reflectionRFromBar γ μ G w /
         (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) * w / 2 - (γ : ℂ) ^ 2 / 4) *
           lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * w / 2)) := by
-  have hμ0 : (μ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hμ.ne'
+  have hμ0  := Complex.ofReal_ne_zero.mpr hμ.ne'
   have hw : w - (γ : ℂ) / 2 = w - ((γ / 2 : ℝ) : ℂ) := by push_cast; ring
   unfold reflectionRFromBar
   rw [hw, hrel, ← hw, reflectionExponentC_sub_half hγ, Complex.cpow_add _ _ hμ0,

@@ -23,7 +23,7 @@ theorem reflected_exponent_mem_Ioo (γ α : ℝ) (hγ : 0 < γ)
     reflectionExponent γ α ∈ Set.Ioo (0 : ℝ) 1 := by
   unfold reflectionExponent
   constructor
-  · exact div_pos (mul_pos (by norm_num) (sub_pos.mpr hα)) hγ
+  · simp_all
   · rw [div_lt_one hγ]
     linarith only [hreflect]
 

@@ -12,6 +12,7 @@ public import Mathlib.Topology.Instances.Rat
 public import Mathlib.Topology.UniformSpace.UniformEmbedding
 public import Mathlib.MeasureTheory.Function.Floor
 public import Mathlib.MeasureTheory.Constructions.BorelSpace.Metrizable
+import Mathlib.Tactic
 
 /-!
 # Extension of an ordered rational-drift family
@@ -59,14 +60,12 @@ theorem couplingRationalApprox_error (n : ℕ) (a : ℝ) :
 theorem couplingRationalApprox_mono (n : ℕ) : Monotone (couplingRationalApprox n) := by
   intro a b hab
   unfold couplingRationalApprox
-  apply div_le_div_of_nonneg_right
-  · exact_mod_cast Int.floor_mono (mul_le_mul_of_nonneg_left hab (by positivity))
-  · positivity
+  gcongr
 
 /-- The floor approximation converges at every real drift. -/
 theorem couplingRationalApprox_tendsto (a : ℝ) :
     Tendsto (fun n => (couplingRationalApprox n a : ℝ)) atTop (𝓝 a) := by
-  have herr : Tendsto (fun n => a - (couplingRationalApprox n a : ℝ)) atTop (𝓝 0) :=
+  have herr  :=
     squeeze_zero (fun n => (couplingRationalApprox_error n a).1)
       (fun n => (couplingRationalApprox_error n a).2.le)
       tendsto_one_div_add_atTop_nhds_zero_nat
@@ -89,7 +88,7 @@ theorem uniformContinuous_rationalPaths_of_drift_bound
     (ContinuousMap.mem_compactConvergence_entourage_iff U).mp hU
   obtain ⟨ε, hε, hεV⟩ := Metric.mem_uniformity_dist.mp hV
   obtain ⟨T, hTpos, hT⟩ := compact_nonnegative_times_bounded K hK
-  have hδ : 0 < ε / T := div_pos hε hTpos
+  have hδ  := div_pos hε hTpos
   change {p : ℚ × ℚ | (F p.1, F p.2) ∈ U} ∈ 𝓤 ℚ
   filter_upwards [Metric.dist_mem_uniformity hδ] with p hp
   apply hVU
@@ -97,7 +96,7 @@ theorem uniformContinuous_rationalPaths_of_drift_bound
   apply hεV
   rw [Real.dist_eq]
   have hsource : |(p.1 : ℝ) - (p.2 : ℝ)| < ε / T := by
-    simpa only [Rat.dist_eq] using hp
+    exact hp
   have hbound := (hF p.1 p.2 t).trans
     (mul_le_mul_of_nonneg_left (hT t ht) (abs_nonneg _))
   exact hbound.trans_lt ((lt_div_iff₀ hTpos).mp hsource)
@@ -152,22 +151,24 @@ theorem rationalPathExtension_order
 /-- Extend a rational family constantly below zero before extending its parameter carrier. -/
 def clippedRationalPathFamily (F : ℚ → BrownianPath) (q : ℚ) : BrownianPath := F (max q 0)
 
+variable {F : ℚ → BrownianPath} (hF : F ∈ negativeEntranceOrderSet ((↑) : ℚ → ℝ))
+
+include F hF in
 /-- The constant negative-drift part satisfies the same global drift-gap bounds. -/
 theorem clippedRationalPathFamily_order
-    {F : ℚ → BrownianPath}
-    (hF : F ∈ negativeEntranceOrderSet ((↑) : ℚ → ℝ)) :
+     :
     ∀ q r : ℚ, q ≤ r → ∀ t : ℝ≥0,
       clippedRationalPathFamily F r t ≤ clippedRationalPathFamily F q t ∧
         clippedRationalPathFamily F q t ≤ clippedRationalPathFamily F r t +
           ((r : ℝ) - (q : ℝ)) * (t : ℝ) := by
   intro q r hqr t
   have hqrR : (q : ℝ) ≤ (r : ℝ) := by exact_mod_cast hqr
-  have htn : 0 ≤ (t : ℝ) := t.2
+  have htn  := t.2
   by_cases hr : r ≤ 0
   · have hq := hqr.trans hr
     simp only [clippedRationalPathFamily, max_eq_right hr, max_eq_right hq]
     exact ⟨le_rfl, le_add_of_nonneg_right (mul_nonneg (sub_nonneg.mpr hqrR) htn)⟩
-  · have hr0 : 0 ≤ r := (lt_of_not_ge hr).le
+  · have hr0  := (lt_of_not_ge hr).le
     by_cases hq : q ≤ 0
     · have hqR : (q : ℝ) ≤ 0 := by exact_mod_cast hq
       have hrR : 0 ≤ (r : ℝ) := by exact_mod_cast hr0
@@ -178,15 +179,15 @@ theorem clippedRationalPathFamily_order
       · have hgap := h.2
         simp only [Rat.cast_zero, sub_zero] at hgap
         nlinarith
-    · have hq0 : 0 ≤ q := (lt_of_not_ge hq).le
+    · have hq0  := (lt_of_not_ge hq).le
       have hqR : 0 ≤ (q : ℝ) := by exact_mod_cast hq0
       simpa only [clippedRationalPathFamily, max_eq_left hr0, max_eq_left hq0]
         using hF q r hqR hqrR t
 
+include F hF in
 /-- The clipped rational family's drift difference bounds its path difference. -/
 theorem clippedRationalPathFamily_abs_sub_le
-    {F : ℚ → BrownianPath}
-    (hF : F ∈ negativeEntranceOrderSet ((↑) : ℚ → ℝ)) (q r : ℚ) (t : ℝ≥0) :
+     (q r : ℚ) (t : ℝ≥0) :
     |clippedRationalPathFamily F q t - clippedRationalPathFamily F r t| ≤
       |(q : ℝ) - (r : ℝ)| * (t : ℝ) := by
   rcases le_total q r with hqr | hrq
@@ -199,9 +200,9 @@ theorem clippedRationalPathFamily_abs_sub_le
     rw [abs_of_nonpos (sub_nonpos.mpr h.1), abs_of_nonneg (sub_nonneg.mpr hrqR)]
     nlinarith [h.2]
 
+include F hF in
 theorem uniformContinuous_clippedRationalPathFamily
-    {F : ℚ → BrownianPath}
-    (hF : F ∈ negativeEntranceOrderSet ((↑) : ℚ → ℝ)) :
+     :
     UniformContinuous (clippedRationalPathFamily F) :=
   uniformContinuous_rationalPaths_of_drift_bound (clippedRationalPathFamily_abs_sub_le hF)
 
@@ -334,14 +335,14 @@ theorem couplingRationalReindex_mem_orderSet (x : ℕ → BrownianPath)
     (hx : x ∈ negativeEntranceOrderSet couplingEnumeratedDrift) :
     couplingRationalReindex x ∈ negativeEntranceOrderSet ((↑) : ℚ → ℝ) := by
   intro q r hq hqr t
-  have hr : 0 ≤ (r : ℝ) := hq.trans hqr
+  have hr  := hq.trans hqr
   have hq' : couplingEnumeratedDrift (couplingRationalEnumeration q) = (q : ℝ) := by
     simp [couplingEnumeratedDrift, max_eq_left hq]
   have hr' : couplingEnumeratedDrift (couplingRationalEnumeration r) = (r : ℝ) := by
     simp [couplingEnumeratedDrift, max_eq_left hr]
   have h := hx (couplingRationalEnumeration q) (couplingRationalEnumeration r)
     (by rw [hq']; exact hq) (by rw [hq', hr']; exact hqr) t
-  simpa only [couplingRationalReindex, hq', hr'] using h
+  continuity
 
 /-- Almost-sure convergence of measurable random paths gives convergence of their full path laws. -/
 theorem coupling_probabilityMap_tendsto_of_ae
@@ -353,11 +354,9 @@ theorem coupling_probabilityMap_tendsto_of_ae
   apply ProbabilityMeasure.tendsto_iff_forall_integral_tendsto.mpr
   intro test
   have hmap (n : ℕ) : (∫ x, test x ∂(Q.map (f n) : Measure E)) =
-      ∫ ω, test (f n ω) ∂(Q : Measure Ω) := by
-    exact integral_map (hf n).aemeasurable test.continuous.measurable.aestronglyMeasurable
+      ∫ ω, test (f n ω) ∂(Q : Measure Ω) := integral_map (hf n).aemeasurable test.continuous.measurable.aestronglyMeasurable
   have hmapg : (∫ x, test x ∂(Q.map g : Measure E)) =
-      ∫ ω, test (g ω) ∂(Q : Measure Ω) := by
-    exact integral_map hg.aemeasurable test.continuous.measurable.aestronglyMeasurable
+      ∫ ω, test (g ω) ∂(Q : Measure Ω) := integral_map hg.aemeasurable test.continuous.measurable.aestronglyMeasurable
   simp_rw [hmap, hmapg]
   apply tendsto_integral_of_dominated_convergence (fun _ => ‖test‖)
   · intro n
@@ -418,14 +417,13 @@ theorem orderedRationalPathExtension_probability_tendsto
   · exact measurable_orderedRationalPathExtension_at a
   · exact ae_of_all _ fun F => orderedRationalPathExtension_approx_tendsto F a
 
+variable (Q : ProbabilityMeasure (ℚ → BrownianPath)) (hgood : ∀ᵐ F ∂(Q : Measure (ℚ → BrownianPath)), F ∈ negativeEntranceOrderSet ((↑) : ℚ → ℝ)) (hrational : ∀ q : ℚ, 0 ≤ q → Q.map (fun F => F q) = negativeRogersPitmanWienerProbability q)
+
+include Q hgood hrational in
 /-- Uniqueness of weak limits identifies the real-drift extension from its rational path marginals.
 The norm candidate supplies parameter continuity, so no density limit interchange is required. -/
 theorem orderedRationalPathExtension_map_eq_radial
-    (Q : ProbabilityMeasure (ℚ → BrownianPath))
-    (hgood : ∀ᵐ F ∂(Q : Measure (ℚ → BrownianPath)),
-      F ∈ negativeEntranceOrderSet ((↑) : ℚ → ℝ))
-    (hrational : ∀ q : ℚ, 0 ≤ q →
-      Q.map (fun F => F q) = negativeRogersPitmanWienerProbability q)
+
     (a : ℝ) (ha : 0 ≤ a) :
     Q.map (fun F => orderedRationalPathExtension F a) =
       negativeRogersPitmanWienerProbability a := by
@@ -438,9 +436,7 @@ theorem orderedRationalPathExtension_map_eq_radial
         apply Subtype.ext
         apply Measure.map_congr
         exact hgood.mono fun F hF => by
-          dsimp only
-          rw [ite_eq_left hF]
-          rfl
+          continuity
       _ = _ := hrational _ (le_max_right _ _)
   have hparameter : Tendsto (fun n => ((max (couplingRationalApprox n a) 0 : ℚ) : ℝ)) atTop
       (𝓝 a) := by
@@ -451,14 +447,11 @@ theorem orderedRationalPathExtension_map_eq_radial
   simp_rw [← hmap] at hradial
   exact tendsto_nhds_unique (orderedRationalPathExtension_probability_tendsto Q a) hradial
 
+include Q hgood hrational in
 /-- Once the actual radial candidate is characterized, every real marginal of the completed
 family has the literal conditioned law. -/
 theorem orderedRationalPathExtension_real_law_of_radial
-    (Q : ProbabilityMeasure (ℚ → BrownianPath))
-    (hgood : ∀ᵐ F ∂(Q : Measure (ℚ → BrownianPath)),
-      F ∈ negativeEntranceOrderSet ((↑) : ℚ → ℝ))
-    (hrational : ∀ q : ℚ, 0 ≤ q →
-      Q.map (fun F => F q) = negativeRogersPitmanWienerProbability q)
+
     (hradial : ∀ a : ℝ, 0 ≤ a → IsNegativeConditionedBrownianLaw a
       (negativeRogersPitmanWienerProbability a : Measure BrownianPath))
     (a : ℝ) (ha : 0 ≤ a) :
@@ -466,9 +459,6 @@ theorem orderedRationalPathExtension_real_law_of_radial
       ((Q : Measure (ℚ → BrownianPath)).map (fun F => orderedRationalPathExtension F a)) := by
   have h := congrArg (fun R : ProbabilityMeasure BrownianPath => (R : Measure BrownianPath))
     (orderedRationalPathExtension_map_eq_radial Q hgood hrational a ha)
-  change (Q : Measure (ℚ → BrownianPath)).map (fun F => orderedRationalPathExtension F a) =
-    (negativeRogersPitmanWienerProbability a : Measure BrownianPath) at h
-  rw [h]
-  exact hradial a ha
+  simp_all
 
 end DOZZ.Proofs

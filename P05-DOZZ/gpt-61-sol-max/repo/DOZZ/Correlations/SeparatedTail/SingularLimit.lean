@@ -9,7 +9,7 @@ public import DOZZ.Correlations.SeparatedTail.DirichletMoment
 
 /-! Two bounded softened weights, followed by monotone removal of the two root cutoffs. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Metric Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -40,11 +40,11 @@ theorem separatedTail_softened_mixed_moment_le_of_cutoff
     a2 a3 ha2 ha3 C n₀ ?_
   intro n hn
   have hδ : 0 < Real.exp (-(n : ℝ)) := Real.exp_pos _
-  have hδs : Real.exp (-(n : ℝ)) ≤ s := (hn₀ n hn).trans (min_le_left _ _)
+  have hδs  := (hn₀ n hn).trans (min_le_left _ _)
   have hδ4 : Real.exp (-(n : ℝ)) < 1/4 := lt_of_le_of_lt
     ((hn₀ n hn).trans (min_le_right _ _)) (by norm_num)
   have hlog : Real.log (1/Real.exp (-(n : ℝ))) = (n : ℝ) := by
-    rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
+    simp_all
   apply le_trans (lintegral_mono fun ω => mul_le_mul'
     (ENNReal.rpow_le_rpow (lintegral_mono fun x =>
       limitWeightedFatou_ofReal_rpow_le (norm_nonneg _) hδ hδs he2) ha2)

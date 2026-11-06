@@ -10,7 +10,7 @@ public import Mathlib.Tactic.Ring
 
 /-! An independent Gaussian pin preserves the exponential last-cut moment rate. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 

@@ -16,6 +16,7 @@ public import DOZZ.GMC.Moments.ReferenceFinite
 import DOZZ.GMC.Construction.RegularizedGMCExpectedMeasure
 import DOZZ.GMC.Construction.GMCMeasurableVersion
 import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
+import Mathlib.Tactic
 
 /-! Finite joint laws of the field and arbitrary circle-average regularizations. -/
 
@@ -26,12 +27,13 @@ open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω Ω' : Type*} [_inst1 : MeasurableSpace Ω] [_inst2 : MeasurableSpace Ω'] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (P' : Measure Ω') (X' : Ω' → Distr) (hX' : IsEquatorGFF P' X')
+
+include Ω Ω' _inst1 _inst2 P X hX P' X' hX' in
 /-- Finite families of test evaluations and circle averages have the same joint law for any two
 equator GFF models. The mixed covariances are fixed by the test and circle kernel identities. -/
 theorem equatorGFF_test_circle_fdd_law
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (P' : Measure Ω') (X' : Ω' → Distr) (hX' : IsEquatorGFF P' X')
+
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (Xc' : Ω' → ℂ → ℝ → ℝ) (hXc' : IsCircleAverage P' X' Xc')
     {k m : ℕ} (f : Fin k → TestFn) (z : Fin m → ℂ) (r : Fin m → ℝ) :
@@ -39,15 +41,15 @@ theorem equatorGFF_test_circle_fdd_law
       Measure.map (fun ω => (fun i => X' ω (f i), fun j => Xc' ω (z j) (r j))) P' := by
   classical
   let T := Fin k ⊕ Fin m
-  let q : T → (ℂ × ℝ) ⊕ TestFn := fun i =>
+  let q  := fun i =>
     match i with
     | Sum.inl i => Sum.inr (f i)
     | Sum.inr j => Sum.inl (z j, r j)
-  let U : Ω → T → ℝ := fun ω i =>
+  let U  := fun ω i =>
     match i with
     | Sum.inl i => X ω (f i)
     | Sum.inr j => Xc ω (z j) (r j)
-  let U' : Ω' → T → ℝ := fun ω i =>
+  let U'  := fun ω i =>
     match i with
     | Sum.inl i => X' ω (f i)
     | Sum.inr j => Xc' ω (z j) (r j)
@@ -85,19 +87,19 @@ theorem equatorGFF_test_circle_fdd_law
     cases i with
     | inl i => exact equatorGFF_test_integral X' hX' (f i)
     | inr j => exact (circleAverage_isGaussianProcess P' X' Xc' hX' hXc').2 (z j) (r j)
-  have hUX : IsCenteredJointlyGaussian P U :=
+  have hUX  :=
     centeredJointlyGaussian_of_isGaussianProcess P (fun i ω => U ω i) hUXproc hmeanX
-  have hUY : IsCenteredJointlyGaussian P' U' :=
+  have hUY  :=
     centeredJointlyGaussian_of_isGaussianProcess P' (fun i ω => U' ω i) hUYproc hmeanY
   have hcov : ∀ i j : T,
       gaussianCovariance P (fun ω => U ω i) (fun ω => U ω j) =
         gaussianCovariance P' (fun ω => U' ω i) (fun ω => U' ω j) := by
     have hsymX (A B : Ω → ℝ) : gaussianCovariance P A B = gaussianCovariance P B A := by
       unfold gaussianCovariance
-      exact integral_congr_ae (Filter.Eventually.of_forall fun ω => mul_comm (A ω) (B ω))
+      grind
     have hsymY (A B : Ω' → ℝ) : gaussianCovariance P' A B = gaussianCovariance P' B A := by
       unfold gaussianCovariance
-      exact integral_congr_ae (Filter.Eventually.of_forall fun ω => mul_comm (A ω) (B ω))
+      grind
     intro i j
     cases i with
     | inl i =>
@@ -133,20 +135,16 @@ theorem equatorGFF_test_circle_fdd_law
       | inl j =>
         have hx := isCircleAverage_cross_covariance P X hX Xc hXc (z i) (r i) (f j)
         have hy := isCircleAverage_cross_covariance P' X' hX' Xc' hXc' (z i) (r i) (f j)
-        simp only [U, U']
-        rw [hsymX, hx, hsymY, hy]
+        grind
       | inr j =>
         simp only [U, U']
         rw [isCircleAverage_covariance P X hX Xc hXc,
           isCircleAverage_covariance P' X' hX' Xc' hXc']
-  have hUlaw : Measure.map U P = Measure.map U' P' := by
-    exact map_eq_of_centeredJointlyGaussian_of_covariance_eq P P' U U' hUX hUY hcov
+  have hUlaw  := map_eq_of_centeredJointlyGaussian_of_covariance_eq P P' U U' hUX hUY hcov
   let π : (T → ℝ) → (Fin k → ℝ) × (Fin m → ℝ) := fun w =>
     (fun i => w (Sum.inl i), fun j => w (Sum.inr j))
   have hπ : Measurable π := by
-    apply Measurable.prodMk
-    · exact measurable_pi_iff.2 fun i => (measurable_pi_apply (Sum.inl i))
-    · exact measurable_pi_iff.2 fun j => (measurable_pi_apply (Sum.inr j))
+    fun_prop
   have hUmeas : AEMeasurable U P := by
     apply AEMeasurable.of_eval
     intro i
@@ -156,11 +154,9 @@ theorem equatorGFF_test_circle_fdd_law
     intro i
     exact hUY.2.1 i
   have hXmap : Measure.map (fun ω => (fun i => X ω (f i), fun j => Xc ω (z j) (r j))) P =
-      (Measure.map U P).map π := by
-    exact (AEMeasurable.map_map_of_aemeasurable hπ.aemeasurable hUmeas).symm
+      (Measure.map U P).map π := (AEMeasurable.map_map_of_aemeasurable hπ.aemeasurable hUmeas).symm
   have hYmap : Measure.map (fun ω => (fun i => X' ω (f i), fun j => Xc' ω (z j) (r j))) P' =
-      (Measure.map U' P').map π := by
-    exact (AEMeasurable.map_map_of_aemeasurable hπ.aemeasurable hUYmeas).symm
+      (Measure.map U' P').map π := (AEMeasurable.map_map_of_aemeasurable hπ.aemeasurable hUYmeas).symm
   rw [hXmap, hYmap, hUlaw]
 
 
@@ -173,10 +169,10 @@ theorem regularizedGMC_test_integral_eq_reference_wick
     (∫ x, f x ∂regularizedGMC P Xc γ r ω) =
       ∫ x, f x * Real.exp (γ * Xc ω x r - γ ^ 2 / 2 *
         gaussianVariance P (fun ω' => Xc ω' x r)) ∂gmcReferenceMeasure := by
-  let V : ℂ → ℝ := fun x => ∫ ω', Xc ω' x r ^ 2 ∂P
-  let D : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal
+  let V  := fun x => ∫ ω', Xc ω' x r ^ 2 ∂P
+  let D  := fun x => ENNReal.ofReal
     (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) * normPlus x ^ (-4 : ℝ))
-  let G : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ))
+  let G  := fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ))
   have hVmeas : Measurable V := by
     have h := @circleAverage_variance_measurable Ω _ P hX.1 Xc hXc.1 r
     convert h using 1
@@ -184,9 +180,7 @@ theorem regularizedGMC_test_integral_eq_reference_wick
     simp [V, gaussianVariance, gaussianCovariance, pow_two]
   have hfield : Measurable (fun x : ℂ => Xc ω x r) :=
     (hXc.1 r).comp (measurable_const.prodMk measurable_id)
-  have hnorm : Measurable (fun x : ℂ => normPlus x) := by
-    unfold normPlus
-    exact measurable_const.max measurable_norm
+  have hnorm : Measurable (fun x : ℂ => normPlus x) := measurable_const.max measurable_norm
   have hD : Measurable D := by
     dsimp [D]
     fun_prop
@@ -194,8 +188,7 @@ theorem regularizedGMC_test_integral_eq_reference_wick
     dsimp [G]
     fun_prop
   have hDtop : ∀ᵐ x ∂volume, D x < ∞ := by
-    filter_upwards [] with x
-    exact ENNReal.ofReal_lt_top
+    continuity
   have hGtop : ∀ᵐ x ∂volume, G x < ∞ := by
     filter_upwards [] with x
     exact ENNReal.ofReal_lt_top
@@ -229,8 +222,7 @@ theorem regularizedGMC_test_integral_eq_reference_wick
     _ = ∫ x, (G x).toReal * (f x *
         Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * gaussianVariance P
           (fun ω' => Xc ω' x r))) ∂volume := by
-      apply integral_congr_ae
-      exact Filter.Eventually.of_forall hfactor
+      simp_all
     _ = ∫ x, f x * Real.exp (γ * Xc ω x r - γ ^ 2 / 2 *
         gaussianVariance P (fun ω' => Xc ω' x r)) ∂gmcReferenceMeasure := by
       rw [gmcReferenceMeasure, show
@@ -239,13 +231,12 @@ theorem regularizedGMC_test_integral_eq_reference_wick
       simp only [smul_eq_mul]
 
 
+include Ω Ω' _inst1 _inst2 P X hX P' X' hX' in
 /-- Any finite vector of cutoff test masses has the same law jointly with finitely many field
 tests for two equator GFF models. Signed tests are split into their positive and negative parts;
 the Wick laws are transferred by `ChaosLawFDD`. -/
 theorem equatorGFF_regularized_test_vector_law
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (P' : Measure Ω') (X' : Ω' → Distr) (hX' : IsEquatorGFF P' X')
+
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (Xc' : Ω' → ℂ → ℝ → ℝ) (hXc' : IsCircleAverage P' X' Xc')
     {k m : ℕ} (tests : Fin k → TestFn) (f : Fin m → BoundedContinuousFunction ℂ ℝ)
@@ -255,32 +246,32 @@ theorem equatorGFF_regularized_test_vector_law
     Measure.map (fun ω => (fun i => X' ω (tests i), fun j =>
       ∫ x, f j x ∂regularizedGMC P' Xc' γ r ω)) P' := by
   classical
-  let : IsProbabilityMeasure P := hX.1
-  let : IsProbabilityMeasure P' := hX'.1
+  let  := hX.1
+  let  := hX'.1
   let ν : FiniteMeasure ℂ := ⟨gmcReferenceMeasure,
     ⟨lt_top_iff_ne_top.mpr gmcReferenceMeasure_univ_ne_top⟩⟩
   let N := m + m
-  let V : Ω → Fin k → ℝ := fun ω i => X ω (tests i)
-  let V' : Ω' → Fin k → ℝ := fun ω i => X' ω (tests i)
-  let FX : Ω → ℂ → ℝ := fun ω x => Xc ω x r
-  let FY : Ω' → ℂ → ℝ := fun ω x => Xc' ω x r
-  let variance : ℂ → ℝ≥0 := fun x =>
+  let V  := fun ω i => X ω (tests i)
+  let V'  := fun ω i => X' ω (tests i)
+  let FX  := fun ω x => Xc ω x r
+  let FY  := fun ω x => Xc' ω x r
+  let variance  := fun x =>
     (gaussianVariance P (fun ω => Xc ω x r)).toNNReal
-  let wPos : Fin m → BoundedContinuousFunction ℂ ℝ := fun j => max (f j) 0
-  let wNeg : Fin m → BoundedContinuousFunction ℂ ℝ := fun j => max (-(f j)) 0
+  let wPos  := fun j => max (f j) 0
+  let wNeg  := fun j => max (-(f j)) 0
   let weightBCF : Fin N → BoundedContinuousFunction ℂ ℝ := Fin.addCases wPos wNeg
-  let weight : Fin N → ℂ → ℝ := fun i x => weightBCF i x
-  let WickX : Ω → Fin N → ℝ := fun ω i =>
+  let weight  := fun i x => weightBCF i x
+  let WickX  := fun ω i =>
     ∫ x, weight i x * Real.exp (γ * FX ω x - γ ^ 2 / 2 * (variance x : ℝ)) ∂(ν : Measure ℂ)
-  let WickY : Ω' → Fin N → ℝ := fun ω i =>
+  let WickY  := fun ω i =>
     ∫ x, weight i x * Real.exp (γ * FY ω x - γ ^ 2 / 2 * (variance x : ℝ)) ∂(ν : Measure ℂ)
-  let LX : Ω → (Fin k → ℝ) × (Fin N → ℝ) := fun ω => (V ω, WickX ω)
-  let LY : Ω' → (Fin k → ℝ) × (Fin N → ℝ) := fun ω => (V' ω, WickY ω)
+  let LX  := fun ω => (V ω, WickX ω)
+  let LY  := fun ω => (V' ω, WickY ω)
   let A : ((Fin k → ℝ) × (Fin N → ℝ)) → (Fin k → ℝ) × (Fin m → ℝ) := fun p =>
     (p.1, fun j => p.2 (Fin.castAdd m j) - p.2 (Fin.natAdd m j))
-  let TargetX : Ω → (Fin k → ℝ) × (Fin m → ℝ) := fun ω =>
+  let TargetX  := fun ω =>
     (V ω, fun j => ∫ x, f j x ∂regularizedGMC P Xc γ r ω)
-  let TargetY : Ω' → (Fin k → ℝ) × (Fin m → ℝ) := fun ω =>
+  let TargetY  := fun ω =>
     (V' ω, fun j => ∫ x, f j x ∂regularizedGMC P' Xc' γ r ω)
   have hV : Measurable V := by
     apply measurable_pi_iff.2
@@ -290,48 +281,32 @@ theorem equatorGFF_regularized_test_vector_law
     apply measurable_pi_iff.2
     intro i
     exact (hX'.2 (tests i)).1
-  have hFX : Measurable (fun p : Ω × ℂ => FX p.1 p.2) := by
-    exact hXc.1 r
-  have hFY : Measurable (fun p : Ω' × ℂ => FY p.1 p.2) := by
-    exact hXc'.1 r
-  have hvariance : Measurable variance := by
-    exact measurable_real_toNNReal.comp
+  have hFX  := hXc.1 r
+  have hFY  := hXc'.1 r
+  have hvariance  := measurable_real_toNNReal.comp
       (@circleAverage_variance_measurable Ω _ P hX.1 Xc hXc.1 r)
   have hvariance_nonneg (x : ℂ) :
       0 ≤ gaussianVariance P (fun ω => Xc ω x r) :=
     (circleAverage_gaussian_law_and_variance_nonneg P X hX Xc hXc x r).2
   have hvariance_real (x : ℂ) : (variance x : ℝ) =
       gaussianVariance P (fun ω => Xc ω x r) := by
-    dsimp [variance]
-    exact Real.coe_toNNReal _ (hvariance_nonneg x)
+    continuity
   have hvariance_eq (x : ℂ) :
       gaussianVariance P (fun ω => Xc ω x r) =
         gaussianVariance P' (fun ω => Xc' ω x r) := by
     have hleft := isCircleAverage_covariance P X hX Xc hXc x x r r
     have hright := isCircleAverage_covariance P' X' hX' Xc' hXc' x x r r
-    simpa [gaussianVariance] using hleft.trans hright.symm
-  have hvarianceY_nonneg (x : ℂ) :
-      0 ≤ gaussianVariance P' (fun ω => Xc' ω x r) := by
-    rw [← hvariance_eq x]
-    exact hvariance_nonneg x
+    exact hleft.trans hright.symm
+
   have hvarianceY_real (x : ℂ) : (variance x : ℝ) =
       gaussianVariance P' (fun ω => Xc' ω x r) := by
-    calc
-      (variance x : ℝ) = gaussianVariance P (fun ω => Xc ω x r) := hvariance_real x
-      _ = gaussianVariance P' (fun ω => Xc' ω x r) := hvariance_eq x
+    simp_all
   have hweightCast (j : Fin m) : weight (Fin.castAdd m j) = wPos j := by
-    funext x
-    simp [weight, weightBCF, Fin.addCases_left]
+    grind
   have hweightNat (j : Fin m) : weight (Fin.natAdd m j) = wNeg j := by
-    funext x
-    simpa only [weight, weightBCF] using
-      congrArg (fun g : BoundedContinuousFunction ℂ ℝ => g x)
-        (Fin.addCases_right (m := m) (n := m)
-          (motive := fun _ => BoundedContinuousFunction ℂ ℝ)
-          (left := wPos) (right := wNeg) j)
+    grind
   have hweight_meas : ∀ i, Measurable (weight i) := by
-    intro i
-    exact (weightBCF i).continuous.measurable
+    fun_prop (disch := positivity)
   have hweight_nonneg : ∀ i x, 0 ≤ weight i x := by
     intro i
     refine Fin.addCases ?_ ?_ i
@@ -348,18 +323,9 @@ theorem equatorGFF_regularized_test_vector_law
       have hC0 : 0 ≤ C := by simpa using hC 0 0
       refine ⟨|g 0| + C, by positivity, ?_⟩
       intro x
-      have hd : |g x - g 0| ≤ C := by simpa [Real.dist_eq] using hC x 0
-      have h := (abs_le.mp hd).2
-      have hzero : g 0 ≤ |g 0| := le_abs_self _
-      linarith
-    intro i
-    refine Fin.addCases ?_ ?_ i
-    · intro j
-      rw [hweightCast]
-      exact hbound (wPos j) (fun x => le_max_right _ _)
-    · intro j
-      rw [hweightNat]
-      exact hbound (wNeg j) (fun x => le_max_right _ _)
+      have hd : |g x - g 0| ≤ C := hC x 0
+      grind
+    bound
   have hweight_int : ∀ i, Integrable (weight i) (ν.normalize : Measure ℂ) := by
     intro i
     obtain ⟨C, hC0, hC⟩ := hweight_bdd i
@@ -369,8 +335,7 @@ theorem equatorGFF_regularized_test_vector_law
     exact hC x
   have hXlaw : ∀ x, HasLaw (fun ω => FX ω x) (gaussianReal 0 (variance x)) P := by
     intro x
-    simpa [FX, variance] using
-      (circleAverage_gaussian_law_and_variance_nonneg P X hX Xc hXc x r).1
+    exact (circleAverage_gaussian_law_and_variance_nonneg P X hX Xc hXc x r).1
   have hYlaw : ∀ x, HasLaw (fun ω => FY ω x) (gaussianReal 0 (variance x)) P' := by
     intro x
     have h := (circleAverage_gaussian_law_and_variance_nonneg P' X' hX' Xc' hXc' x r).1
@@ -381,13 +346,10 @@ theorem equatorGFF_regularized_test_vector_law
       Measure.map (fun ω => (V ω, fun i => FX ω (xs i))) P =
         Measure.map (fun ω => (V' ω, fun i => FY ω (xs i))) P' := by
     intro s xs
-    simpa [V, V', FX, FY] using
-      (equatorGFF_test_circle_fdd_law P X hX P' X' hX' Xc hXc Xc' hXc'
+    exact (equatorGFF_test_circle_fdd_law P X hX P' X' hX' Xc hXc Xc' hXc'
         tests xs (fun _ => r))
-  have hvarianceXJoint : Measurable (fun p : Ω × ℂ => variance p.2) :=
-    hvariance.comp measurable_snd
-  have hvarianceYJoint : Measurable (fun p : Ω' × ℂ => variance p.2) :=
-    hvariance.comp measurable_snd
+
+
   have hWickXmeas (i : Fin N) : Measurable
       (fun ω => ∫ x, weight i x * Real.exp
         (γ * FX ω x - γ ^ 2 / 2 * (variance x : ℝ)) ∂(ν : Measure ℂ)) := by
@@ -425,11 +387,7 @@ theorem equatorGFF_regularized_test_vector_law
       _ = ∫ y, φ y ∂Measure.map LY P' :=
         (integral_map hLYmeas.aemeasurable φ.continuous.measurable.aestronglyMeasurable).symm
   have hA : Measurable A := by
-    apply Measurable.prodMk measurable_fst
-    apply measurable_pi_iff.2
-    intro j
-    exact ((measurable_pi_apply (Fin.castAdd m j)).comp measurable_snd).sub
-      ((measurable_pi_apply (Fin.natAdd m j)).comp measurable_snd)
+    fun_prop
   have hALaw : Measure.map (A ∘ LX) P = Measure.map (A ∘ LY) P' := by
     calc
       Measure.map (A ∘ LX) P = Measure.map A (Measure.map LX P) :=
@@ -437,8 +395,7 @@ theorem equatorGFF_regularized_test_vector_law
       _ = Measure.map A (Measure.map LY P') := congrArg (Measure.map A) hLaw
       _ = Measure.map (A ∘ LY) P' :=
         Measure.map_map hA hLYmeas
-  have hνeq : (ν : Measure ℂ) = (ν.mass : ℝ≥0) • (ν.normalize : Measure ℂ) := by
-    exact congrArg (fun μ : FiniteMeasure ℂ => (μ : Measure ℂ)) ν.self_eq_mass_smul_normalize
+  have hνeq : (ν : Measure ℂ) = (ν.mass : ℝ≥0) • (ν.normalize : Measure ℂ) := congrArg (fun μ : FiniteMeasure ℂ => (μ : Measure ℂ)) ν.self_eq_mass_smul_normalize
   have hWickIntXNorm : ∀ i, ∀ᵐ ω ∂P, Integrable (fun x => weight i x *
       Real.exp (γ * FX ω x - γ ^ 2 / 2 * (variance x : ℝ))) (ν.normalize : Measure ℂ) := by
     intro i
@@ -465,10 +422,7 @@ theorem equatorGFF_regularized_test_vector_law
       weight (Fin.castAdd m j) x - weight (Fin.natAdd m j) x := by
     rw [hweightCast, hweightNat]
     change f j x = max (f j x) 0 - max (-(f j x)) 0
-    by_cases hx : 0 ≤ f j x
-    · simp [hx]
-    · have hx' : f j x < 0 := lt_of_not_ge hx
-      simp [le_of_lt hx']
+    norm_num
   have hmassX (ω : Ω) (j : Fin m)
       (hω : ∀ i, Integrable (fun x => weight i x *
         Real.exp (γ * FX ω x - γ ^ 2 / 2 * (variance x : ℝ))) (ν : Measure ℂ)) :
@@ -539,37 +493,6 @@ theorem equatorGFF_regularized_test_vector_law
     _ = Measure.map TargetY P' := (Measure.map_congr hTargetY).symm
 
 
-/-- Test integrals against a GMC version are almost surely measurable, by the cutoff
-approximations in its definition. -/
-theorem regularizedGMC_test_integral_aemeasurable_EquatorGFFChaosTransport
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
-    (f : BoundedContinuousFunction ℂ ℝ) :
-    AEMeasurable (fun ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω) P := by
-  let μ : Ω → Measure ℂ := fun ω => regularizedGMC P Xc γ r ω
-  have hμ : Measurable μ := regularizedGMC_measurable P X hX Xc hXc γ r
-  let pos : Ω → ℝ≥0∞ := fun ω => ∫⁻ x, (f.nnrealPart x : ℝ≥0∞) ∂μ ω
-  let neg : Ω → ℝ≥0∞ := fun ω => ∫⁻ x, ((-f).nnrealPart x : ℝ≥0∞) ∂μ ω
-  have hpos : Measurable pos := by
-    dsimp [pos]
-    exact (Measure.measurable_lintegral
-      (BoundedContinuousFunction.measurable_coe_ennreal_comp f.nnrealPart)).comp hμ
-  have hneg : Measurable neg := by
-    dsimp [neg]
-    exact (Measure.measurable_lintegral
-      (BoundedContinuousFunction.measurable_coe_ennreal_comp (-f).nnrealPart)).comp hμ
-  have hproxy : Measurable (fun ω => (pos ω).toReal - (neg ω).toReal) := by
-    fun_prop
-  have hfinite := regularizedGMC_finite_ae P X hX Xc hXc γ r
-  have heq : (fun ω => ∫ x, f x ∂μ ω) =ᵐ[P]
-      fun ω => (pos ω).toReal - (neg ω).toReal := by
-    filter_upwards [hfinite] with ω hω
-    rw [BoundedContinuousFunction.integral_eq_integral_nnrealPart_sub (μ := μ ω) f]
-    rw [← BoundedContinuousFunction.toReal_lintegral_coe_eq_integral f.nnrealPart (μ ω)]
-    rw [← BoundedContinuousFunction.toReal_lintegral_coe_eq_integral (-f).nnrealPart (μ ω)]
-  exact hproxy.aemeasurable.congr heq.symm
-
 theorem gmc_test_integral_aemeasurable_of_IsGMCOf
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
@@ -579,28 +502,27 @@ theorem gmc_test_integral_aemeasurable_of_IsGMCOf
   rcases hM.2 with ⟨Xc, hXc, hconv⟩
   apply (hconv f).aemeasurable
   intro r
-  exact regularizedGMC_test_integral_aemeasurable_EquatorGFFChaosTransport P X hX Xc hXc γ r f
+  exact regularizedGMC_testIntegral_aemeasurable P X hX Xc hXc γ r f
 
+include Ω Ω' _inst1 _inst2 P X hX P' X' hX' in
 /-- Finite test evaluations and finite families of bounded-continuous GMC integrals have the
 same joint law for any two equator-GFF GMC versions. -/
 theorem equatorGFF_GMC_test_integral_vector_law
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (P' : Measure Ω') (X' : Ω' → Distr) (hX' : IsEquatorGFF P' X')
+
     (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (M' : Ω' → Measure ℂ) (hM' : IsGMCOf P' X' γ M')
     {k m : ℕ} (tests : Fin k → TestFn) (f : Fin m → BoundedContinuousFunction ℂ ℝ) :
     Measure.map (fun ω => (fun i => X ω (tests i), fun j => ∫ x, f j x ∂M ω)) P =
       Measure.map (fun ω => (fun i => X' ω (tests i), fun j => ∫ x, f j x ∂M' ω)) P' := by
   classical
-  let : IsProbabilityMeasure P := hX.1
-  let : IsProbabilityMeasure P' := hX'.1
+  let  := hX.1
+  let  := hX'.1
   rcases hM.2 with ⟨Xc, hXc, hconvX⟩
   rcases hM'.2 with ⟨Xc', hXc', hconvY⟩
   let I := Fin k ⊕ Fin m
-  let pairX : Ω → (Fin k → ℝ) × (Fin m → ℝ) := fun ω =>
+  let pairX  := fun ω =>
     (fun i => X ω (tests i), fun j => ∫ x, f j x ∂M ω)
-  let pairY : Ω' → (Fin k → ℝ) × (Fin m → ℝ) := fun ω =>
+  let pairY  := fun ω =>
     (fun i => X' ω (tests i), fun j => ∫ x, f j x ∂M' ω)
   let cutoffX : ℕ → Ω → (Fin k → ℝ) × (Fin m → ℝ) := fun n ω =>
     (fun i => X ω (tests i), fun j =>
@@ -612,10 +534,10 @@ theorem equatorGFF_GMC_test_integral_vector_law
     Sum.elim q.1 q.2 i
   let unpack : (I → ℝ) → (Fin k → ℝ) × (Fin m → ℝ) := fun q =>
     (fun i => q (Sum.inl i), fun j => q (Sum.inr j))
-  let UcutX : ℕ → Ω → I → ℝ := fun n => pack ∘ cutoffX n
-  let UcutY : ℕ → Ω' → I → ℝ := fun n => pack ∘ cutoffY n
-  let UlimX : Ω → I → ℝ := fun ω => pack (pairX ω)
-  let UlimY : Ω' → I → ℝ := fun ω => pack (pairY ω)
+  let UcutX  := fun n => pack ∘ cutoffX n
+  let UcutY  := fun n => pack ∘ cutoffY n
+  let UlimX  := fun ω => pack (pairX ω)
+  let UlimY  := fun ω => pack (pairY ω)
   have hV : Measurable (fun ω : Ω => fun i => X ω (tests i)) := by
     apply measurable_pi_iff.2
     intro i
@@ -628,49 +550,39 @@ theorem equatorGFF_GMC_test_integral_vector_law
     rw [measurable_pi_iff]
     intro i
     cases i with
-    | inl i => exact (measurable_pi_apply i).comp measurable_fst
-    | inr j => exact (measurable_pi_apply j).comp measurable_snd
+    | inl i => measurability
+    | inr j => measurability
   have hunpack : Measurable unpack := by
-    apply Measurable.prodMk
-    · apply measurable_pi_iff.2
-      intro i
-      exact measurable_pi_apply (Sum.inl i)
-    · apply measurable_pi_iff.2
-      intro j
-      exact measurable_pi_apply (Sum.inr j)
+    fun_prop
   have hpairCutX : ∀ n, AEMeasurable (cutoffX n) P := by
     intro n
     refine hV.aemeasurable.prodMk ?_
     apply AEMeasurable.of_eval
     intro j
-    exact regularizedGMC_test_integral_aemeasurable_EquatorGFFChaosTransport P X hX Xc hXc γ (n : ℝ) (f j)
+    exact regularizedGMC_testIntegral_aemeasurable P X hX Xc hXc γ (n : ℝ) (f j)
   have hpairCutY : ∀ n, AEMeasurable (cutoffY n) P' := by
     intro n
     refine hV'.aemeasurable.prodMk ?_
     apply AEMeasurable.of_eval
     intro j
-    exact regularizedGMC_test_integral_aemeasurable_EquatorGFFChaosTransport P' X' hX' Xc' hXc' γ (n : ℝ) (f j)
+    exact regularizedGMC_testIntegral_aemeasurable P' X' hX' Xc' hXc' γ (n : ℝ) (f j)
   have hpairLimX : AEMeasurable pairX P := by
     refine hV.aemeasurable.prodMk ?_
     apply AEMeasurable.of_eval
-    intro j
-    exact gmc_test_integral_aemeasurable_of_IsGMCOf P X hX γ M ⟨hM.1, ⟨Xc, hXc, hconvX⟩⟩ (f j)
+    exact fun a => gmc_test_integral_aemeasurable_of_IsGMCOf P X hX γ M hM (f a)
   have hpairLimY : AEMeasurable pairY P' := by
     refine hV'.aemeasurable.prodMk ?_
     apply AEMeasurable.of_eval
-    intro j
-    exact gmc_test_integral_aemeasurable_of_IsGMCOf P' X' hX' γ M'
-      ⟨hM'.1, ⟨Xc', hXc', hconvY⟩⟩ (f j)
-  have hUcutX : ∀ n, AEMeasurable (UcutX n) P := fun n =>
+    exact fun a => gmc_test_integral_aemeasurable_of_IsGMCOf P' X' hX' γ M' hM' (f a)
+  have hUcutX  := fun n =>
     hpack.aemeasurable.comp_aemeasurable (hpairCutX n)
-  have hUcutY : ∀ n, AEMeasurable (UcutY n) P' := fun n =>
+  have hUcutY  := fun n =>
     hpack.aemeasurable.comp_aemeasurable (hpairCutY n)
-  have hUlimX : AEMeasurable UlimX P :=
+  have hUlimX  :=
     hpack.aemeasurable.comp_aemeasurable hpairLimX
-  have hUlimY : AEMeasurable UlimY P' :=
+  have hUlimY  :=
     hpack.aemeasurable.comp_aemeasurable hpairLimY
-  have hcutoffPairLaw (n : ℕ) : Measure.map (cutoffX n) P = Measure.map (cutoffY n) P' := by
-    exact equatorGFF_regularized_test_vector_law P X hX P' X' hX' Xc hXc Xc' hXc'
+  have hcutoffPairLaw (n : ℕ) : Measure.map (cutoffX n) P = Measure.map (cutoffY n) P' := equatorGFF_regularized_test_vector_law P X hX P' X' hX' Xc hXc Xc' hXc'
       tests f γ (n : ℝ)
   have hcutoffLaw (n : ℕ) : Measure.map (UcutX n) P = Measure.map (UcutY n) P' := by
     have hcompX : pack ∘ cutoffX n = UcutX n := rfl
@@ -693,13 +605,8 @@ theorem equatorGFF_GMC_test_integral_vector_law
         intro n
         ext ω
         simp [UcutX, UlimX, pack, cutoffX, pairX, not_le_of_gt hε]
-      simp_rw [hset, measure_empty]
-      exact tendsto_const_nhds
+      simp_all
     | inr j =>
-      change TendstoInMeasure P
-        (fun n : ℕ => fun ω =>
-          ∫ x, f j x ∂regularizedGMC P Xc γ (n : ℝ) ω) atTop
-        (fun ω => ∫ x, f j x ∂M ω)
       exact (hconvX (f j)).comp hr
   have hconvYcoord (i : I) : TendstoInMeasure P' (fun n ω => UcutY n ω i) atTop
       (fun ω => UlimY ω i) := by
@@ -711,35 +618,26 @@ theorem equatorGFF_GMC_test_integral_vector_law
         intro n
         ext ω
         simp [UcutY, UlimY, pack, cutoffY, pairY, not_le_of_gt hε]
-      simp_rw [hset, measure_empty]
-      exact tendsto_const_nhds
+      simp_all
     | inr j =>
-      change TendstoInMeasure P'
-        (fun n : ℕ => fun ω =>
-          ∫ x, f j x ∂regularizedGMC P' Xc' γ (n : ℝ) ω) atTop
-        (fun ω => ∫ x, f j x ∂M' ω)
       exact (hconvY (f j)).comp hr
-  have hconvUlimX : TendstoInMeasure P UcutX atTop UlimX :=
+  have hconvUlimX  :=
     tendstoInMeasure_pi_finite P UcutX UlimX hconvXcoord
-  have hconvUlimY : TendstoInMeasure P' UcutY atTop UlimY :=
+  have hconvUlimY  :=
     tendstoInMeasure_pi_finite P' UcutY UlimY hconvYcoord
-  have hULaw : Measure.map UlimX P = Measure.map UlimY P' :=
+  have hULaw  :=
     map_eq_of_seq_map_eq_of_tendstoInMeasure UcutX UcutY UlimX UlimY
       hUcutX hUcutY hUlimX hUlimY hcutoffLaw hconvUlimX hconvUlimY
   have hpackUnpackX : unpack ∘ UlimX = pairX := by
-    funext ω
-    apply Prod.ext <;> funext i <;> simp [UlimX, pack, unpack]
+    abel
   have hpackUnpackY : unpack ∘ UlimY = pairY := by
-    funext ω
-    apply Prod.ext <;> funext i <;> simp [UlimY, pack, unpack]
+    abel
   calc
     Measure.map pairX P = Measure.map (unpack ∘ UlimX) P := by rw [hpackUnpackX]
     _ = (Measure.map UlimX P).map unpack :=
       (AEMeasurable.map_map_of_aemeasurable hunpack.aemeasurable hUlimX).symm
     _ = (Measure.map UlimY P').map unpack := congrArg (Measure.map unpack) hULaw
-    _ = Measure.map pairY P' := by
-      rw [← hpackUnpackY]
-      exact AEMeasurable.map_map_of_aemeasurable hunpack.aemeasurable hUlimY
+    _ = Measure.map pairY P' := AEMeasurable.map_map_of_aemeasurable hunpack.aemeasurable hUlimY
 
 
 /-- Bounded continuous distance cutoffs increasing to the indicator of an open set. -/
@@ -776,28 +674,21 @@ theorem gmcOpenApprox_tendsto (U : Set ℂ) (hU : IsOpen U) (x : ℂ) :
   · simp [gmcOpenApprox, h]
   · have hcomp : (Uᶜ : Set ℂ).Nonempty := by
       by_contra hn
-      have he : Uᶜ = ∅ := Set.not_nonempty_iff_eq_empty.mp hn
-      have heq : U = Set.univ := by
-        ext y
-        have hy : y ∉ Uᶜ := by simp [he]
-        simpa using hy
-      exact h heq
+      have he  := Set.not_nonempty_iff_eq_empty.mp hn
+      simp_all
     by_cases hx : x ∈ U
-    · let d : ℝ := Metric.infDist x (Uᶜ : Set ℂ)
+    · let d  := Metric.infDist x (Uᶜ : Set ℂ)
       have hx' : x ∉ Uᶜ := by simpa using hx
-      have hd : 0 < d := by
-        simpa [d] using (hU.isClosed_compl.notMem_iff_infDist_pos hcomp).1 hx'
+      have hd : 0 < d := (hU.isClosed_compl.notMem_iff_infDist_pos hcomp).1 hx'
       obtain ⟨N, hN⟩ := exists_nat_gt (d⁻¹)
       have hev : ∀ᶠ n : ℕ in atTop,
           gmcOpenApprox U hU n x = 1 := by
         filter_upwards [eventually_ge_atTop N] with n hn
-        have hn' : d⁻¹ < (n : ℝ) := by
-          exact lt_of_lt_of_le hN (by exact_mod_cast hn)
+        have hn' : d⁻¹ < (n : ℝ) := lt_of_lt_of_le hN (by exact_mod_cast hn)
         have hmul : 1 ≤ (n : ℝ) * d := by
           have hlt := mul_lt_mul_of_pos_right hn' hd
-          have hinv : d⁻¹ * d = 1 := by field_simp
-          linarith
-        have hmul' : 1 ≤ (n : ℝ) * Metric.infDist x Uᶜ := by simpa [d] using hmul
+          grind
+        have hmul' : 1 ≤ (n : ℝ) * Metric.infDist x Uᶜ := hmul
         simp [gmcOpenApprox, h, min_eq_left hmul']
       have htarget : U.indicator (1 : ℂ → ℝ) x = 1 := by simp [hx]
       rw [htarget]
@@ -834,10 +725,9 @@ theorem gmcOpenApprox_integral_tendsto
 
 /-! For each finite family of open sets, the joint law of their limiting masses and field
 evaluations follows by the distance-cutoff approximation and `IsGMCOf` convergence. -/
+include Ω Ω' _inst1 _inst2 P X hX P' X' hX' in
 theorem equatorGFF_GMC_open_mass_test_vector_law
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (P' : Measure Ω') (X' : Ω' → Distr) (hX' : IsEquatorGFF P' X')
+
     (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (M' : Ω' → Measure ℂ) (hM' : IsGMCOf P' X' γ M')
     {k m : ℕ} (tests : Fin k → TestFn) (U : Fin m → Set ℂ)
@@ -845,26 +735,26 @@ theorem equatorGFF_GMC_open_mass_test_vector_law
     Measure.map (fun ω => (fun i => X ω (tests i), fun j => M ω (U j))) P =
       Measure.map (fun ω => (fun i => X' ω (tests i), fun j => M' ω (U j))) P' := by
   classical
-  let : IsProbabilityMeasure P := hX.1
-  let : IsProbabilityMeasure P' := hX'.1
+  let  := hX.1
+  let  := hX'.1
   let I := Fin k ⊕ Fin m
-  let cutoffX : ℕ → Ω → (Fin k → ℝ) × (Fin m → ℝ) := fun n ω =>
+  let cutoffX  := fun n ω =>
     (fun i => X ω (tests i), fun j =>
       ∫ x, gmcOpenApprox (U j) (hU j) n x ∂M ω)
-  let cutoffY : ℕ → Ω' → (Fin k → ℝ) × (Fin m → ℝ) := fun n ω =>
+  let cutoffY  := fun n ω =>
     (fun i => X' ω (tests i), fun j =>
       ∫ x, gmcOpenApprox (U j) (hU j) n x ∂M' ω)
-  let limitX : Ω → (Fin k → ℝ) × (Fin m → ℝ) := fun ω =>
+  let limitX  := fun ω =>
     (fun i => X ω (tests i), fun j => (M ω (U j)).toReal)
-  let limitY : Ω' → (Fin k → ℝ) × (Fin m → ℝ) := fun ω =>
+  let limitY  := fun ω =>
     (fun i => X' ω (tests i), fun j => (M' ω (U j)).toReal)
   let pack : ((Fin k → ℝ) × (Fin m → ℝ)) → I → ℝ := fun q i => Sum.elim q.1 q.2 i
   let unpack : (I → ℝ) → (Fin k → ℝ) × (Fin m → ℝ) := fun q =>
     (fun i => q (Sum.inl i), fun j => q (Sum.inr j))
-  let FX : ℕ → Ω → I → ℝ := fun n => pack ∘ cutoffX n
-  let FY : ℕ → Ω' → I → ℝ := fun n => pack ∘ cutoffY n
-  let LX : Ω → I → ℝ := fun ω => pack (limitX ω)
-  let LY : Ω' → I → ℝ := fun ω => pack (limitY ω)
+  let FX  := fun n => pack ∘ cutoffX n
+  let FY  := fun n => pack ∘ cutoffY n
+  let LX  := fun ω => pack (limitX ω)
+  let LY  := fun ω => pack (limitY ω)
   have hV : Measurable (fun ω : Ω => fun i => X ω (tests i)) := by
     apply measurable_pi_iff.2
     intro i
@@ -875,18 +765,9 @@ theorem equatorGFF_GMC_open_mass_test_vector_law
     exact (hX'.2 (tests i)).1
   have hpack : Measurable pack := by
     rw [measurable_pi_iff]
-    intro i
-    cases i with
-    | inl i => exact (measurable_pi_apply i).comp measurable_fst
-    | inr j => exact (measurable_pi_apply j).comp measurable_snd
+    measurability
   have hunpack : Measurable unpack := by
-    apply Measurable.prodMk
-    · apply measurable_pi_iff.2
-      intro i
-      exact measurable_pi_apply (Sum.inl i)
-    · apply measurable_pi_iff.2
-      intro j
-      exact measurable_pi_apply (Sum.inr j)
+    fun_prop
   have hcutAEX : ∀ n, AEMeasurable (cutoffX n) P := by
     intro n
     refine hV.aemeasurable.prodMk ?_
@@ -905,38 +786,38 @@ theorem equatorGFF_GMC_open_mass_test_vector_law
     refine hV.aemeasurable.prodMk ?_
     apply AEMeasurable.of_eval
     intro j
-    let f : ℕ → Ω → ℝ := fun n ω =>
+    let f  := fun n ω =>
       ∫ x, gmcOpenApprox (U j) (hU j) n x ∂M ω
-    have hf : ∀ n, AEMeasurable (f n) P := fun n =>
+    have hf  := fun n =>
       gmc_test_integral_aemeasurable_of_IsGMCOf P X hX γ M hM
         (gmcOpenApprox (U j) (hU j) n)
     have hlim : ∀ᵐ ω ∂P, Tendsto (fun n => f n ω) atTop
         (𝓝 ((M ω (U j)).toReal)) := by
       filter_upwards [] with ω
-      let : IsFiniteMeasure (M ω) := hM.1 ω
+      let  := hM.1 ω
       exact gmcOpenApprox_integral_tendsto (M ω) (U j) (hU j)
-    simpa [f] using aemeasurable_of_tendsto_metrizable_ae atTop hf hlim
+    exact aemeasurable_of_tendsto_metrizable_ae atTop hf hlim
   have hlimAEY : AEMeasurable limitY P' := by
     refine hV'.aemeasurable.prodMk ?_
     apply AEMeasurable.of_eval
     intro j
-    let f : ℕ → Ω' → ℝ := fun n ω =>
+    let f  := fun n ω =>
       ∫ x, gmcOpenApprox (U j) (hU j) n x ∂M' ω
-    have hf : ∀ n, AEMeasurable (f n) P' := fun n =>
+    have hf  := fun n =>
       gmc_test_integral_aemeasurable_of_IsGMCOf P' X' hX' γ M' hM'
         (gmcOpenApprox (U j) (hU j) n)
     have hlim : ∀ᵐ ω ∂P', Tendsto (fun n => f n ω) atTop
         (𝓝 ((M' ω (U j)).toReal)) := by
       filter_upwards [] with ω
-      let : IsFiniteMeasure (M' ω) := hM'.1 ω
+      let  := hM'.1 ω
       exact gmcOpenApprox_integral_tendsto (M' ω) (U j) (hU j)
-    simpa [f] using aemeasurable_of_tendsto_metrizable_ae atTop hf hlim
-  have hFXae : ∀ n, AEMeasurable (FX n) P := fun n =>
+    exact aemeasurable_of_tendsto_metrizable_ae atTop hf hlim
+  have hFXae  := fun n =>
     hpack.aemeasurable.comp_aemeasurable (hcutAEX n)
-  have hFYae : ∀ n, AEMeasurable (FY n) P' := fun n =>
+  have hFYae  := fun n =>
     hpack.aemeasurable.comp_aemeasurable (hcutAEY n)
-  have hLXae : AEMeasurable LX P := hpack.aemeasurable.comp_aemeasurable hlimAEX
-  have hLYae : AEMeasurable LY P' := hpack.aemeasurable.comp_aemeasurable hlimAEY
+  have hLXae  := hpack.aemeasurable.comp_aemeasurable hlimAEX
+  have hLYae  := hpack.aemeasurable.comp_aemeasurable hlimAEY
   have hcutLaw : ∀ n, Measure.map (FX n) P = Measure.map (FY n) P' := by
     intro n
     have hbase := equatorGFF_GMC_test_integral_vector_law P X hX P' X' hX' γ M hM M' hM'
@@ -960,13 +841,12 @@ theorem equatorGFF_GMC_open_mass_test_vector_law
         intro n
         ext ω
         simp [FX, LX, pack, cutoffX, limitX, not_le_of_gt hε]
-      simp_rw [he, measure_empty]
-      exact tendsto_const_nhds
+      simp_all
     | inr j =>
       have hpt : ∀ᵐ ω ∂P, Tendsto (fun n => FX n ω (Sum.inr j)) atTop
           (𝓝 (LX ω (Sum.inr j))) := by
         filter_upwards [] with ω
-        let : IsFiniteMeasure (M ω) := hM.1 ω
+        let  := hM.1 ω
         exact gmcOpenApprox_integral_tendsto (M ω) (U j) (hU j)
       exact tendstoInMeasure_of_tendsto_ae
         (fun n => ((hcutAEX n).snd.eval j).aestronglyMeasurable) hpt
@@ -980,27 +860,24 @@ theorem equatorGFF_GMC_open_mass_test_vector_law
         intro n
         ext ω
         simp [FY, LY, pack, cutoffY, limitY, not_le_of_gt hε]
-      simp_rw [he, measure_empty]
-      exact tendsto_const_nhds
+      simp_all
     | inr j =>
       have hpt : ∀ᵐ ω ∂P', Tendsto (fun n => FY n ω (Sum.inr j)) atTop
           (𝓝 (LY ω (Sum.inr j))) := by
         filter_upwards [] with ω
-        let : IsFiniteMeasure (M' ω) := hM'.1 ω
+        let  := hM'.1 ω
         exact gmcOpenApprox_integral_tendsto (M' ω) (U j) (hU j)
       exact tendstoInMeasure_of_tendsto_ae
         (fun n => ((hcutAEY n).snd.eval j).aestronglyMeasurable) hpt
-  have hvecX : TendstoInMeasure P FX atTop LX := tendstoInMeasure_pi_finite P FX LX hcoordX
-  have hvecY : TendstoInMeasure P' FY atTop LY := tendstoInMeasure_pi_finite P' FY LY hcoordY
-  have hlaw : Measure.map LX P = Measure.map LY P' :=
+  have hvecX  := tendstoInMeasure_pi_finite P FX LX hcoordX
+  have hvecY  := tendstoInMeasure_pi_finite P' FY LY hcoordY
+  have hlaw  :=
     map_eq_of_seq_map_eq_of_tendstoInMeasure FX FY LX LY hFXae hFYae hLXae hLYae
       hcutLaw hvecX hvecY
   have hpackUnpackX : unpack ∘ LX = limitX := by
-    funext ω
-    apply Prod.ext <;> funext i <;> simp [LX, pack, unpack]
+    abel
   have hpackUnpackY : unpack ∘ LY = limitY := by
-    funext ω
-    apply Prod.ext <;> funext i <;> simp [LY, pack, unpack]
+    abel
   have hrealLaw : Measure.map limitX P = Measure.map limitY P' := by
     rw [← hpackUnpackX, ← hpackUnpackY]
     calc
@@ -1015,12 +892,12 @@ theorem equatorGFF_GMC_open_mass_test_vector_law
   have htoMass : Measurable toMass := by fun_prop
   have hmassX : ∀ ω j, ENNReal.ofReal ((M ω (U j)).toReal) = M ω (U j) := by
     intro ω j
-    let : IsFiniteMeasure (M ω) := hM.1 ω
-    exact ENNReal.ofReal_toReal (measure_ne_top (M ω) (U j))
+    let  := hM.1 ω
+    simp_all
   have hmassY : ∀ ω j, ENNReal.ofReal ((M' ω (U j)).toReal) = M' ω (U j) := by
     intro ω j
-    let : IsFiniteMeasure (M' ω) := hM'.1 ω
-    exact ENNReal.ofReal_toReal (measure_ne_top (M' ω) (U j))
+    let  := hM'.1 ω
+    simp_all
   have hfinal : Measure.map (toMass ∘ limitX) P = Measure.map (toMass ∘ limitY) P' := by
     calc
       Measure.map (toMass ∘ limitX) P = (Measure.map limitX P).map toMass :=
@@ -1032,19 +909,11 @@ theorem equatorGFF_GMC_open_mass_test_vector_law
     Measure.map (fun ω => (fun i => X ω (tests i), fun j => M ω (U j))) P =
         Measure.map (toMass ∘ limitX) P := by
           congr 1
-          funext ω
-          apply Prod.ext
-          · rfl
-          · funext j
-            exact (hmassX ω j).symm
+          grind
     _ = Measure.map (toMass ∘ limitY) P' := hfinal
     _ = Measure.map (fun ω => (fun i => X' ω (tests i), fun j => M' ω (U j))) P' := by
           congr 1
-          funext ω
-          apply Prod.ext
-          · rfl
-          · funext j
-            exact hmassY ω j
+          bound
 
 
 end DOZZ.Proofs

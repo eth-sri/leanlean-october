@@ -11,7 +11,7 @@ public import DOZZ.FourPoint.TaylorExterior
 
 /-! The actual intermediate Taylor region: local square reduction and sharp weighted moments. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -58,7 +58,7 @@ theorem twoRooted_intermediate_physical_bound
   let T : ℝ := (2 : ℝ) ^ (|γ * α₂| * s + (γ ^ 2 / 2) * s)
   let C : ℝ := T * Cmix
   have hT : 0 < T := by dsimp only [T]; positivity
-  have hC : 0 < C := mul_pos hT hCmix
+  have hC  := mul_pos hT hCmix
   refine ⟨C, hC, ?_⟩
   intro ρ hρ hρ4 z hz d hd
   have hρ2 : ρ ≤ 1 / 2 := hρ4.trans (by norm_num)

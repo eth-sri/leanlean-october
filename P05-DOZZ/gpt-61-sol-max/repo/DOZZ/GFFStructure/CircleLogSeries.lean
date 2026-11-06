@@ -41,9 +41,7 @@ theorem norm_circleLogSeriesTerm_le {u : ℝ} (hu : u ∈ Icc 0 1) (θ : ℝ) (k
     abs_neg, abs_one, one_pow, one_mul,
     abs_of_nonneg (Nat.cast_nonneg (k+1) : (0 : ℝ) ≤ ((k+1 : ℕ) : ℝ))]
   apply div_le_div_of_nonneg_right _ (sq_nonneg _)
-  calc
-    _ ≤ 1 * 1 := mul_le_mul hp hs (abs_nonneg _) (by norm_num)
-    _ = _ := one_mul _
+  bound
 
 /-- The quadratic majorant is summable without excluding the endpoint u = 1. -/
 theorem summable_circleLogSeries_majorant :
@@ -86,8 +84,7 @@ theorem re_circleLogTaylorTerm (u t : ℝ) (k : ℕ) :
     push_cast
     ring
   have hsign : (-1 : ℂ)^(k+1+1) = ((-1 : ℝ)^k : ℂ) := by
-    simp only [pow_add, pow_one, Complex.ofReal_neg, Complex.ofReal_one]
-    ring
+    push_cast <;> ring
   rw [hsign, mul_pow, hexp]
   simp only [← Complex.ofReal_pow]
   rw [← mul_assoc, ← Complex.ofReal_mul]
@@ -100,16 +97,14 @@ theorem re_circleLogTaylorTerm (u t : ℝ) (k : ℕ) :
 theorem hasSum_circleLogCosine {u : ℝ} (hu : |u| < 1) (t : ℝ) :
     HasSum (fun k : ℕ => (-1 : ℝ)^k * u^(k+1) * Real.cos ((k+1 : ℕ)*t) /
       ((k+1 : ℕ) : ℝ)) (Real.log ‖1 + (u : ℂ) * Complex.exp ((t : ℂ)*Complex.I)‖) := by
-  let z : ℂ := (u : ℂ) * Complex.exp ((t : ℂ)*Complex.I)
+  let z  := (u : ℂ) * Complex.exp ((t : ℂ)*Complex.I)
   have hz : ‖z‖ < 1 := by
-    simpa only [z, norm_mul, Complex.norm_real, Real.norm_eq_abs,
-      Complex.norm_exp_ofReal_mul_I, mul_one] using hu
+    continuity
   have h0 := Complex.hasSum_taylorSeries_log hz
   have hshift : HasSum (fun k : ℕ => (-1 : ℂ)^(k+1+1) * z^(k+1) /
       ((k+1 : ℕ) : ℂ)) (Complex.log (1+z)) :=
     (hasSum_nat_add_iff 1 (f := fun n : ℕ => (-1 : ℂ)^(n+1) * z^n / (n : ℂ))).mpr
-      (by simpa only [Finset.sum_range_one, pow_zero,
-      Nat.cast_zero, div_zero, add_zero] using h0)
+      (by simp_all)
   have h := Complex.hasSum_re hshift
   rw [Complex.log_re] at h
   exact h.congr_fun (fun k => (re_circleLogTaylorTerm u t k).symm)
@@ -126,7 +121,7 @@ theorem norm_circleLogCosine_le {u : ℝ} (hu : u ∈ Icc 0 1) (t : ℝ) (k : �
     _ ≤ u^(k+1) / ((k+1 : ℕ) : ℝ) :=
       div_le_div_of_nonneg_right (mul_le_of_le_one_right hp (Real.abs_cos_le_one _)) (by positivity)
     _ ≤ u^(k+1) := div_le_self hp hn
-    _ ≤ u^k := by rw [pow_succ]; exact mul_le_of_le_one_right (pow_nonneg hu.1 _) hu.2
+    _ ≤ u^k := mul_le_of_le_one_right (pow_nonneg hu.1 _) hu.2
 
 /-- Termwise integration of the logarithmic Fourier expansion in the open disk. -/
 theorem hasSum_integral_circleLogCosine {u : ℝ} (hu : u ∈ Ico 0 1) (θ : ℝ) :
@@ -157,8 +152,7 @@ theorem circleLogSection_ne_zero {u t : ℝ} (hu : u ∈ Icc 0 1) (ht : t ∈ Ic
     by_cases hcos : 0 ≤ Real.cos t
     · exact add_pos_of_pos_of_nonneg zero_lt_one (mul_nonneg hu.1 hcos)
     · have hm := mul_le_mul_of_nonpos_right hu.2 (le_of_not_ge hcos)
-      simp only [one_mul] at hm
-      linarith only [hm, hc]
+      grind
   intro h
   have hr := congrArg Complex.re h
   simp only [Complex.add_re, Complex.one_re, Complex.re_ofReal_mul,
@@ -169,9 +163,8 @@ theorem circleLogSection_ne_zero {u t : ℝ} (hu : u ∈ Icc 0 1) (ht : t ∈ Ic
 theorem continuous_circleLogArc {θ : ℝ} (hθ : θ ∈ Ico 0 Real.pi) :
     Continuous (fun u : Icc (0 : ℝ) 1 =>
       ∫ t in 0..θ, Real.log ‖1 + (u.val : ℂ) * Complex.exp ((t : ℂ)*Complex.I)‖) := by
-  let clip : ℝ → ℝ := fun t => max 0 (min θ t)
-  have hclip (t : ℝ) : clip t ∈ Ico 0 Real.pi := by
-    exact ⟨le_max_left _ _, (max_le hθ.1 (min_le_left _ _)).trans_lt hθ.2⟩
+  let clip  := fun t => max 0 (min θ t)
+  have hclip (t : ℝ) : clip t ∈ Ico 0 Real.pi := ⟨le_max_left _ _, (max_le hθ.1 (min_le_left _ _)).trans_lt hθ.2⟩
   have hc : Continuous (fun p : Icc (0 : ℝ) 1 × ℝ =>
       Real.log ‖1 + (p.1.val : ℂ) * Complex.exp ((clip p.2 : ℂ)*Complex.I)‖) := by
     apply Continuous.log (by unfold clip; fun_prop)
@@ -185,8 +178,7 @@ theorem continuous_circleLogArc {θ : ℝ} (hθ : θ ∈ Ico 0 Real.pi) :
   apply intervalIntegral.integral_congr
   intro t ht
   rw [uIcc_of_le hθ.1] at ht
-  dsimp only [clip]
-  rw [min_eq_right ht.2, max_eq_right ht.1]
+  grind
 
 
 
@@ -207,8 +199,7 @@ theorem integral_circleLog_eq_tsum_closed {u θ : ℝ} (hu : u ∈ Icc 0 1)
   have himage : Subtype.val '' {u : Icc (0 : ℝ) 1 | u.val < 1} = Ico (0 : ℝ) 1 := by
     ext v
     constructor
-    · rintro ⟨w, hw, rfl⟩
-      exact ⟨w.property.1, hw⟩
+    · grind
     · intro hv
       exact ⟨⟨v, hv.1, hv.2.le⟩, hv.2, rfl⟩
   apply heq.closure (continuous_circleLogArc hθ) hs (x := ⟨u, hu⟩)
@@ -253,14 +244,15 @@ theorem norm_circleLogSection_factor {d a : ℝ} (hd : 0 < d) (ha : 0 < a) (t : 
       field_simp [Complex.ofReal_ne_zero.mpr hc.ne']
     rw [heq, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hc]
   rcases le_total a d with h | h
-  · rw [max_eq_left h, min_eq_right h]
-    exact hfactor d a hd
+  · simp_all
   · rw [max_eq_right h, min_eq_left h, norm_circleLogSection_swap]
     exact hfactor a d ha
 
+variable {d a b : ℝ} (hd : 0 < d) (ha : 0 < a) (hb : 0 < b) (hupper : b < d+a) (hlower : |d-a| < b)
+
+include d a b hd ha hb hupper hlower in
 /-- Interior intersection produces an arccos argument strictly between minus one and one. -/
-theorem circleLog_intersection_argument {d a b : ℝ} (hd : 0 < d) (ha : 0 < a)
-    (hb : 0 < b) (hupper : b < d+a) (hlower : |d-a| < b) :
+theorem circleLog_intersection_argument  :
     (b^2-d^2-a^2)/(2*d*a) ∈ Ioo (-1 : ℝ) 1 := by
   have hden : 0 < 2*d*a := by positivity
   constructor
@@ -270,12 +262,11 @@ theorem circleLog_intersection_argument {d a b : ℝ} (hd : 0 < d) (ha : 0 < a)
       simpa only [sq_abs, ← sq] using h
     linarith only [hs]
   · apply (div_lt_iff₀ hden).mpr
-    have hs := mul_self_lt_mul_self hb.le hupper
-    linarith only [hs]
+    nlinarith
 
+include d a b hd ha hb hupper hlower in
 /-- The angular cutoff of `DOZZ.circleLogPotential` is strictly before the antipodal singularity. -/
-theorem circleLog_intersection_angle {d a b : ℝ} (hd : 0 < d) (ha : 0 < a)
-    (hb : 0 < b) (hupper : b < d+a) (hlower : |d-a| < b) :
+theorem circleLog_intersection_angle  :
     Real.arccos ((b^2-d^2-a^2)/(2*d*a)) ∈ Ioo (0 : ℝ) Real.pi := by
   have h := circleLog_intersection_argument hd ha hb hupper hlower
   exact ⟨Real.arccos_pos.mpr h.2, Real.arccos_lt_pi.mpr h.1⟩
@@ -291,9 +282,9 @@ theorem antitoneOn_norm_circleLogSection {d a : ℝ} (hd : 0 ≤ d) (ha : 0 ≤ 
   have h2 := norm_circleLogSection_sq d a s
   exact (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).1 (by linarith only [h1, h2, hm])
 
+include d a b hd ha hb hupper hlower in
 /-- The arccos cutoff is exactly where the circle section crosses the clipping radius. -/
-theorem norm_circleLogSection_cutoff {d a b : ℝ} (hd : 0 < d) (ha : 0 < a)
-    (hb : 0 < b) (hupper : b < d+a) (hlower : |d-a| < b) :
+theorem norm_circleLogSection_cutoff  :
     ‖(d : ℂ)+(a : ℂ)*Complex.exp
       ((Real.arccos ((b^2-d^2-a^2)/(2*d*a)) : ℂ)*Complex.I)‖ = b := by
   have hk := circleLog_intersection_argument hd ha hb hupper hlower
@@ -336,10 +327,10 @@ theorem integral_geometric_circleLog_arc {d a θ : ℝ} (hd : 0 < d) (ha : 0 < a
     intervalIntegral.integral_add intervalIntegrable_const (intervalIntegrable_circleLogSection hu hθ),
     intervalIntegral.integral_const, sub_zero, smul_eq_mul, integral_circleLog_eq_tsum_closed hu hθ]
 
+include d a b hd ha hb hupper hlower in
 /-- The clipped upper-semicircle potential has the exact intersecting-circle series of
 `DOZZ.circleLogPotential`. -/
-theorem clipped_circleLog_integral_intersection {d a b : ℝ} (hd : 0 < d) (ha : 0 < a)
-    (hb : 0 < b) (hupper : b < d+a) (hlower : |d-a| < b) :
+theorem clipped_circleLog_integral_intersection  :
     (1/Real.pi) * (∫ t in 0..Real.pi,
       Real.log (max b ‖(d : ℂ)+(a : ℂ)*Complex.exp ((t : ℂ)*Complex.I)‖)) =
       let θ := Real.arccos ((b^2-d^2-a^2)/(2*d*a))
@@ -350,11 +341,10 @@ theorem clipped_circleLog_integral_intersection {d a b : ℝ} (hd : 0 < d) (ha :
   let θ := Real.arccos ((b^2-d^2-a^2)/(2*d*a))
   let f : ℝ → ℝ := fun t => Real.log
     (max b ‖(d : ℂ)+(a : ℂ)*Complex.exp ((t : ℂ)*Complex.I)‖)
-  have hθ : θ ∈ Ioo (0 : ℝ) Real.pi := circleLog_intersection_angle hd ha hb hupper hlower
+  have hθ  := circleLog_intersection_angle hd ha hb hupper hlower
   have hf : Continuous f := by
     apply Continuous.log (by fun_prop)
-    intro t
-    exact (hb.trans_le (le_max_left _ _)).ne'
+    grind
   have hcut := norm_circleLogSection_cutoff hd ha hb hupper hlower
   change ‖(d : ℂ)+(a : ℂ)*Complex.exp ((θ : ℂ)*Complex.I)‖ = b at hcut
   have hmono := antitoneOn_norm_circleLogSection hd.le ha.le
@@ -364,10 +354,7 @@ theorem clipped_circleLog_integral_intersection {d a b : ℝ} (hd : 0 < d) (ha :
     intro t ht
     rw [uIcc_of_le hθ.1.le] at ht
     have hbound := hmono ⟨ht.1, ht.2.trans hθ.2.le⟩ ⟨hθ.1.le, hθ.2.le⟩ ht.2
-    dsimp only at hbound
-    rw [hcut] at hbound
-    dsimp only [f]
-    rw [max_eq_right hbound]
+    continuity
   have hright : (∫ t in θ..Real.pi, f t) = (Real.pi-θ)*Real.log b := by
     calc
       _ = ∫ _t in θ..Real.pi, Real.log b := by
@@ -375,11 +362,8 @@ theorem clipped_circleLog_integral_intersection {d a b : ℝ} (hd : 0 < d) (ha :
         intro t ht
         rw [uIcc_of_le hθ.2.le] at ht
         have hbound := hmono ⟨hθ.1.le, hθ.2.le⟩ ⟨hθ.1.le.trans ht.1, ht.2⟩ ht.1
-        dsimp only at hbound
-        rw [hcut] at hbound
-        dsimp only [f]
-        rw [max_eq_left hbound]
-      _ = _ := by rw [intervalIntegral.integral_const, smul_eq_mul]
+        continuity
+      _ = _ := by simp_all
   change (1/Real.pi)*(∫ t in 0..Real.pi, f t) = _
   rw [← intervalIntegral.integral_add_adjacent_intervals (hf.intervalIntegrable 0 θ)
       (hf.intervalIntegrable θ Real.pi), hleft, hright,

@@ -13,7 +13,7 @@ The physical charge interval is exactly the positive subcritical moment range fo
 reflection mass, with drift `ν = Q - α`.
 -/
 
-@[expose] public section
+public section
 
 open Filter Topology
 
@@ -36,8 +36,7 @@ theorem reflectionExponent_in_subcritical_range
     unfold reflectionExponent
     calc
       2 * (Q γ - α) / γ < 2 * (2 / γ) / γ := by
-        apply (div_lt_div_iff₀ hγ hγ).2
-        nlinarith
+        bound
       _ = 4 / γ ^ 2 := by
         field_simp [hγ.ne']
         ring

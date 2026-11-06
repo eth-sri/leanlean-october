@@ -15,7 +15,7 @@ integration by parts closes the identity
 
   `E[Î^{-q} ∫ ∂_v(φ k̃) |x|₊⁴ e^{γ² q h_r} dM_r] = q E[Î^{-q-1} ∫ φ k₁ Ŷ_v dM_r]`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -36,13 +36,15 @@ theorem bpz_integrable_mul_of_bdd_on_tsupport {f g : ℂ → ℝ} (hf : Continuo
   rw [norm_mul, Real.norm_eq_abs (g x)]
   by_cases hx : x ∈ tsupport f
   · rw [mul_comm K]
-    exact mul_le_mul_of_nonneg_left (hK x hx) (norm_nonneg _)
+    bound
   · simp [image_eq_zero_of_notMem_tsupport hx]
 
+variable (hd : BPZWardData γ q r δ ρ kt k₂ φ D) (hp : BPZWardProb P X γ M Xc ρ k₂ D) (v : ℂ)
+
+include hd hp v in
 /-- The rooted moment and its line derivative are bounded on the support of the test
 function. -/
-theorem bpzWard_Psi_bounds (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
-    (hp : BPZWardProb P X γ M Xc ρ k₂ D) (v : ℂ) :
+theorem bpzWard_Psi_bounds  :
     ∃ K : ℝ, ∀ x ∈ tsupport φ,
       |∫ ω, bpzRootedMixedReal γ r ρ (bpzWardCutWeight γ q r kt) k₂ x
           (regularizedGMC P Xc γ r ω) (M ω) ^ (-q) ∂P| ≤ K ∧
@@ -51,15 +53,15 @@ theorem bpzWard_Psi_bounds (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
         bpzRootedMixedDerivApply γ r ρ (bpzWardCutWeight γ q r kt) k₂ x v
           (regularizedGMC P Xc γ r ω) (M ω) ∂P| ≤ K := by
   set k₁ := bpzWardCutWeight γ q r kt with hk₁def
-  have hk₁m : Measurable k₁ := measurable_bpzWardCutWeight hd
-  have hk₁0 : ∀ y, 0 ≤ k₁ y := bpzWardCutWeight_nonneg hd
-  have hq0 : 0 ≤ q := le_trans zero_le_one hd.q_ge
+  have hk₁m  := measurable_bpzWardCutWeight hd
+  have hk₁0  := bpzWardCutWeight_nonneg hd
+  have hq0  := le_trans zero_le_one hd.q_ge
   obtain ⟨R, hR⟩ := hd.φ_compact.isCompact.isBounded.exists_norm_le
   obtain ⟨c, hc, hlow⟩ := bpzWard_J_lower (r := r) hd k₁ hk₁0 R
   set G : Ω → ℝ := fun ω => (c * (M ω D).toReal) ^ (-q) with hG
-  have hmD : Measurable fun ω => (M ω D).toReal :=
+  have hmD  :=
     ((Measure.measurable_coe hd.D_meas).comp hp.hMm).ennreal_toReal
-  have hGi : Integrable G P := bpzWard_integrable_rpow_neg hp hd.D_meas
+  have hGi  := bpzWard_integrable_rpow_neg hp hd.D_meas
     (hmD.const_mul c).aestronglyMeasurable hc (Eventually.of_forall fun ω => le_rfl) hq0
   set L : ℝ := γ ^ 2 * Real.exp r * ‖v‖ with hL
   have hL0 : 0 ≤ L := by positivity
@@ -79,8 +81,8 @@ theorem bpzWard_Psi_bounds (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
     have hcut := integrable_bpz_cut_part hd.ρ_meas hk₁m hd.ρ_nonneg hk₁0 h1 x
     set J := bpzRootedMixedReal γ r ρ k₁ k₂ x (regularizedGMC P Xc γ r ω) (M ω) with hJdef
     have hJ := hlow (regularizedGMC P Xc γ r ω) (M ω) x (hR x hx) hlim
-    have hcpos : 0 < c * (M ω D).toReal := mul_pos hc hpos
-    have hJpos : 0 < J := lt_of_lt_of_le hcpos hJ
+    have hcpos  := mul_pos hc hpos
+    have hJpos  := lt_of_lt_of_le hcpos hJ
     have hJq : J ^ (-q) ≤ G ω := Real.rpow_le_rpow_of_nonpos hcpos hJ (by linarith)
     have hS := abs_bpzRootedMixedDerivApply_le hd.ρ_nonneg hd.ρ_le_one hk₁0 hd.k₂_nonneg hcut
       hlim v
@@ -108,15 +110,14 @@ theorem bpzWard_Psi_bounds (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
   · calc |∫ ω, -q * bpzRootedMixedReal γ r ρ k₁ k₂ x (regularizedGMC P Xc γ r ω) (M ω) ^
           (-q - 1) * bpzRootedMixedDerivApply γ r ρ k₁ k₂ x v (regularizedGMC P Xc γ r ω) (M ω)
           ∂P| ≤ ∫ ω, q * L * G ω ∂P := by
-          rw [← Real.norm_eq_abs]
           exact norm_integral_le_of_norm_le (hGi.const_mul (q * L))
             (hpath.mono fun ω h => by rw [Real.norm_eq_abs]; exact h.2)
       _ = q * L * ∫ ω, G ω ∂P := integral_const_mul _ _
       _ ≤ (1 + q * L) * ∫ ω, G ω ∂P := mul_le_mul_of_nonneg_right (by linarith) hG0
 
+include hd hp v in
 /-- Integration by parts against the rooted moment. -/
-theorem bpzWard_ibp (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
-    (hp : BPZWardProb P X γ M Xc ρ k₂ D) (v : ℂ) :
+theorem bpzWard_ibp  :
     ∫ x, fderiv ℝ (fun x => φ x * kt x) x v *
         ∫ ω, bpzRootedMixedReal γ r ρ (bpzWardCutWeight γ q r kt) k₂ x
           (regularizedGMC P Xc γ r ω) (M ω) ^ (-q) ∂P =
@@ -125,9 +126,9 @@ theorem bpzWard_ibp (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
             (regularizedGMC P Xc γ r ω) (M ω) ^ (-q - 1) *
           bpzRootedMixedDerivApply γ r ρ (bpzWardCutWeight γ q r kt) k₂ x v
             (regularizedGMC P Xc γ r ω) (M ω) ∂P := by
-  have : IsProbabilityMeasure P := hp.hX.1
+  have  := hp.hX.1
   set k₁ := bpzWardCutWeight γ q r kt with hk₁def
-  have hk₁m : Measurable k₁ := measurable_bpzWardCutWeight hd
+  have hk₁m  := measurable_bpzWardCutWeight hd
   set f : ℂ → ℝ := fun x => φ x * kt x with hf
   set Ψ : ℂ → ℝ := fun x => ∫ ω, bpzRootedMixedReal γ r ρ k₁ k₂ x
     (regularizedGMC P Xc γ r ω) (M ω) ^ (-q) ∂P with hΨ
@@ -154,24 +155,21 @@ theorem bpzWard_ibp (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
     (((measurable_const.mul (hJm.pow_const (-q - 1))).mul hSm).stronglyMeasurable.integral_prod_left'
       (μ := P)).aestronglyMeasurable
   obtain ⟨K, hK⟩ := bpzWard_Psi_bounds hd hp v
-  have hfc : Continuous f := hd.f_C1.continuous
+  have hfc  := hd.f_C1.continuous
   have hfcs : HasCompactSupport f := hd.φ_compact.mul_right
   have hf'c : Continuous fun x => fderiv ℝ f x v :=
     (hd.f_C1.continuous_fderiv one_ne_zero).clm_apply continuous_const
-  have hf'cs : HasCompactSupport fun x => fderiv ℝ f x v :=
+  have hf'cs  :=
     (hfcs.fderiv (𝕜 := ℝ)).comp_left (g := fun L : ℂ →L[ℝ] ℝ => L v) (by simp)
   have htsf : tsupport f ⊆ tsupport φ := tsupport_mul_subset_left
-  have htsf' : tsupport (fun x => fderiv ℝ f x v) ⊆ tsupport φ :=
+  have htsf'  :=
     ((tsupport_comp_subset (g := fun L : ℂ →L[ℝ] ℝ => L v) (by simp) (fderiv ℝ f)).trans
       (tsupport_fderiv_subset ℝ)).trans htsf
   have hf'g : Integrable (fun x => ContinuousLinearMap.mul ℝ ℝ (fderiv ℝ f x v) (Ψ x)) := by
-    simp only [ContinuousLinearMap.mul_apply']
     exact bpz_integrable_mul_of_bdd_on_tsupport hf'c hf'cs hΨm fun x hx => (hK x (htsf' hx)).1
   have hfg' : Integrable (fun x => ContinuousLinearMap.mul ℝ ℝ (f x) (Ψ' x)) := by
-    simp only [ContinuousLinearMap.mul_apply']
     exact bpz_integrable_mul_of_bdd_on_tsupport hfc hfcs hΨ'm fun x hx => (hK x (htsf hx)).2
   have hfg : Integrable (fun x => ContinuousLinearMap.mul ℝ ℝ (f x) (Ψ x)) := by
-    simp only [ContinuousLinearMap.mul_apply']
     exact bpz_integrable_mul_of_bdd_on_tsupport hfc hfcs hΨm fun x hx => (hK x (htsf hx)).1
   have hfd : ∀ x ∈ tsupport Ψ, HasLineDerivAt ℝ f (fderiv ℝ f x v) x v := fun x _ =>
     ((hd.f_C1.differentiable one_ne_zero) x).hasFDerivAt.hasLineDerivAt v
@@ -183,14 +181,13 @@ theorem bpzWard_ibp (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
   have hfE : ∀ x, f x * Ψ' x = -q * (f x * E x) := fun x => by rw [hΨ'E]; ring
   simp_rw [hfE] at key
   rw [integral_const_mul] at key
-  change ∫ x, fderiv ℝ f x v * Ψ x = q * ∫ x, f x * E x
-  linarith
+  grind
 
+include hd hp v in
 /-- **The cutoff Ward identity.** For the mixed mass `Î` (the cutoff chaos with the pinned
 weight `k₁` on `{ρ > 0}` and the limit chaos with the weight `k₂` elsewhere),
 `E[Î^{-q} ∫ ∂_v(φ k̃) |x|₊⁴ e^{γ² q h_r} dM_r] = q E[Î^{-q-1} ∫ φ k₁ Ŷ_v dM_r]`. -/
-theorem bpzWard_cutoff_identity (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
-    (hp : BPZWardProb P X γ M Xc ρ k₂ D) (v : ℂ) :
+theorem bpzWard_cutoff_identity  :
     ∫ ω, bpzMixedReal ρ (bpzWardCutWeight γ q r kt) k₂ (regularizedGMC P Xc γ r ω) (M ω) ^ (-q) *
         ∫ x, bpzWardLeftWeight γ q r kt φ v x ∂regularizedGMC P Xc γ r ω ∂P =
       q * ∫ ω, bpzMixedReal ρ (bpzWardCutWeight γ q r kt) k₂ (regularizedGMC P Xc γ r ω) (M ω) ^

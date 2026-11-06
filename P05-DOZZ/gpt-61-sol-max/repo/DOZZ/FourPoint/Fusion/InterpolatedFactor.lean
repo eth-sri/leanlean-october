@@ -19,24 +19,24 @@ noncomputable def fusionInterpolatedFactor {Ω : Type*} [MeasurableSpace Ω]
   if ‖y * z‖ < 1 / 2 then ‖y * z - 1‖ ^ (-γ * α₂) *
     (∫⁻ ω, fusionInterpolatedMass γ α₁ α₂ α₃ t y z (M ω) ^ s ∂P).toReal else 0
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Joint measurability includes the interpolation time. -/
-theorem fusionInterpolatedFactor_measurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusionInterpolatedFactor_measurable 
     (α₁ α₂ α₃ s : ℝ) :
     Measurable (fun q : ℝ × (ℂ × ℂ) => fusionInterpolatedFactor P M γ α₁ α₂ α₃ s q.1 q.2.1 q.2.2) := by
   have hy : Measurable (fun q : ℝ × (ℂ × ℂ) => q.2.1) := measurable_fst.comp measurable_snd
   have hz : Measurable (fun q : ℝ × (ℂ × ℂ) => q.2.2) := measurable_snd.comp measurable_snd
   apply Measurable.ite
-  · exact measurableSet_lt (hy.mul hz).norm measurable_const
+  · measurability
   · exact (((hy.mul hz).sub_const (1 : ℂ)).norm.pow_const _).mul
       (fusionInterpolatedMass_expectation_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s).ennreal_toReal
   · exact measurable_const
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- A uniform inverse moment bound also controls the entire remaining scaled factor. -/
-theorem fusionInterpolatedFactor_uniform_bound {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusionInterpolatedFactor_uniform_bound 
     (α₁ α₂ α₃ s : ℝ) (hs : s ≤ 0) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ t ∈ Set.Icc (0 : ℝ) 1, ∀ y z : ℂ, ‖z‖ ≤ 1 →
       |fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z| ≤ B := by
@@ -66,10 +66,9 @@ theorem fusionInterpolatedFactor_uniform_bound {Ω : Type*} [MeasurableSpace Ω]
       ENNReal.toReal_nonneg hb
   · simpa using mul_nonneg hb ENNReal.toReal_nonneg
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- At each nonzero rescaled root the remaining factor tends to the common inverse expectation. -/
-theorem fusionInterpolatedFactor_tendsto {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusionInterpolatedFactor_tendsto 
     (α₁ α₂ α₃ : ℝ) (hα : γ / 2 ≤ α₁) (hα₁ : α₁ < 2 / γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (t : ℝ) (ht : t ∈ Set.Icc (0 : ℝ) 1) (y : ℂ) (hy : y ≠ 0)
     (s : ℝ) (hs : s < 0) :

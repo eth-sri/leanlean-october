@@ -8,11 +8,13 @@ public import DOZZ.Correlations.SumTail.OneTail
 public import DOZZ.Correlations.SumTail.Sandwich
 public import DOZZ.Correlations.SumTail.ExtendedEvents
 public import DOZZ.Statements.Correlations.SeparatedSingularMassJointTail
+import Mathlib.Tactic
+public import DOZZ.Correlations.TailContracts
 
 /-! `DOZZ.twoInsertion_tail_sum_uniform` reduced to precisely the one-insertion input
 `DOZZ.oneInsertion_tail_uniform`, with its full ceiling retained. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -34,22 +36,7 @@ theorem sumtail_twoInsertion_tail_sum_uniform_of_oneInsertion_tail
     (F2s F3s : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
     (hF2 : UniformPositiveC1Family K2 F2s radius supBound derivBound lowerBound)
     (hF3 : UniformPositiveC1Family K3 F3s radius supBound derivBound lowerBound)
-    (hone : ∀
-    (Kz : Set ℂ) (_hKz : IsCompact Kz) (_hz : ∀ z ∈ Kz, 2 ≤ ‖z‖)
-    (Kα : Set ℝ) (_hKα : IsCompact Kα)
-    (_hα : ∀ α ∈ Kα, γ / 2 < α ∧ α < Q γ)
-    (Family : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
-    (_hFamily : UniformPositiveC1Family Kz Family radius supBound derivBound lowerBound),
-    ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-      IsSourceLateralProjection P X γ M Z ∧
-        (∀ α ∈ Kα, IsReflectionData P γ α (B α) Z) ∧
-        ∀ η : ℝ, 0 < η → (∀ α ∈ Kα, η < oneInsertionErrorCeiling γ α) →
-          ∃ C : ℝ, 0 ≤ C ∧
-            ∀ z ∈ Kz, ∀ α ∈ Kα, ∀ F ∈ Family z, ∀ x : ℝ, 1 ≤ x →
-              |(P {ω | ENNReal.ofReal x < localSingularMass M F z γ α ω}).toReal -
-                oneInsertionTailCoefficient γ α z (F z) (reflectionBarR P γ α (B α) Z) *
-                  Real.rpow x (-reflectionExponent γ α)| ≤
-                C * Real.rpow x (-reflectionExponent γ α - η) ) :
+    (hone : Contract.uniformOneInsertionTail P X M γ ) :
     ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
       IsSourceLateralProjection P X γ M Z ∧
         (∀ α, (α ∈ A2 ∨ α ∈ A3) → IsReflectionData P γ α (B α) Z) ∧
@@ -64,13 +51,11 @@ theorem sumtail_twoInsertion_tail_sum_uniform_of_oneInsertion_tail
                     Real.rpow x (-reflectionExponent γ α3))| ≤
                 C * Real.rpow x (-(twoInsertionTailCeiling γ α2 α3 - θ)) := by
   classical
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let Kz := K2 ∪ K3
   let Kα := A2 ∪ A3
   have hαK (α : ℝ) (ha : α ∈ Kα) : γ/2 < α ∧ α < Q γ := by
-    rcases ha with ha | ha
-    · exact hα2 α ha
-    · exact hα3 α ha
+    grind
   let Family (z : ℂ) : Set (ℂ → ℝ) := {F | (z ∈ K2 ∧ F ∈ F2s z) ∨ (z ∈ K3 ∧ F ∈ F3s z)}
   have hFamily : UniformPositiveC1Family Kz Family radius supBound derivBound lowerBound := by
     refine ⟨hF2.1,hF2.2.1,hF2.2.2.1,hF2.2.2.2.1,?_⟩
@@ -80,9 +65,7 @@ theorem sumtail_twoInsertion_tail_sum_uniform_of_oneInsertion_tail
     · exact hF2.2.2.2.2 z hF.1 F hF.2
     · exact hF3.2.2.2.2 z hF.1 F hF.2
   have hzK (z : ℂ) (hz : z ∈ Kz) : 2 ≤ ‖z‖ := by
-    rcases hz with hz | hz
-    · exact hpos2 z hz
-    · exact hpos3 z hz
+    grind
   obtain ⟨B,Z,hsource,hBall⟩ := exists_source_reflection_witness P X M γ hγ hγ2 hX hM
   have hBK (α : ℝ) (ha : α ∈ Kα) := hBall α (hαK α ha).2
   refine ⟨B,Z,hsource,fun α ha => hBK α ha,?_⟩
@@ -101,20 +84,15 @@ theorem sumtail_twoInsertion_tail_sum_uniform_of_oneInsertion_tail
   let ε := min (θ/4) (m/2)
   have hε : 0 < ε := lt_min (by positivity) (by positivity)
   have hεK (α : ℝ) (ha : α ∈ Kα) : ε < reflectionExponent γ α := by
-    have hb := min_le_right (θ/4) (m/2)
-    have hh := hmK α ha
-    dsimp [ε]
-    linarith only [hb,hh,hm]
+    grind
   have hεθ : 2*ε ≤ θ := by
-    have hb := min_le_left (θ/4) (m/2)
-    dsimp [ε]
-    linarith only [hb,hθ]
+    grind
   obtain ⟨D,hD,hDb⟩ := DOZZ.separatedSingularMass_joint_tail P X M γ hγ hγ2 hX hM
     K2 K3 hK2 hK3 hpos2 hpos3 hsep A2 A3 hA2 hA3 hα2 hα3
     F2s F3s radius supBound derivBound lowerBound hF2 hF3 ε hε
     (fun α ha => hεK α (Or.inl ha)) (fun α ha => hεK α (Or.inr ha))
-  let T : ℝ := 4/γ^2
-  have hT : 0 ≤ T := by dsimp [T]; positivity
+  let T  := 4/γ^2
+  
   refine ⟨(1+2*H)*4^(T+1)+(2*C+D+2*((C+H*T)*2^(T+1))+2*D*2^T),by positivity,?_⟩
   intro z2 hz2 z3 hz3 α2 hα2mem α3 hα3mem F2 hF2mem F3 hF3mem x hx
   let W2 := localSingularMass M F2 z2 γ α2

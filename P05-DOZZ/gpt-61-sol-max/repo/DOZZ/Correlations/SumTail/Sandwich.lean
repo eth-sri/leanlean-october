@@ -10,7 +10,7 @@ public import Mathlib.MeasureTheory.Measure.Typeclasses.Probability
 
 /-! The sharp sum-tail estimate from the proved event sandwiches. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 
@@ -33,8 +33,8 @@ theorem sumtail_real_sum_error
       P.real {ω | u < A ω ∧ v < B ω} ≤ D*u^(-p2+ε)*v^(-p3+ε)) :
     ∀ x : ℝ, 1 ≤ x → |P.real {ω | x < A ω+B ω}-(c2*x^(-p2)+c3*x^(-p3))| ≤
       ((1+2*H)*4^(T+1)+(2*C+D+2*((C+H*T)*2^(T+1))+2*D*2^T))*x^(-β+θ) := by
-  have hT : 0 ≤ T := hp2.le.trans hp2T
-  have hθ : 0 ≤ θ := hd.trans hdθ
+  have hT  := hp2.le.trans hp2T
+  have hθ  := hd.trans hdθ
   have hCb : 0 ≤ 2*C+D+2*((C+H*T)*2^(T+1))+2*D*2^T := by positivity
   have hCs : 0 ≤ (1+2*H)*4^(T+1) := by positivity
   intro x hx
@@ -100,11 +100,11 @@ theorem sumtail_real_sum_error
     have hcoef2 : |c2*x^(-p2)| ≤ H := by
       rw [abs_mul, abs_of_nonneg (Real.rpow_nonneg hx0.le _)]
       exact (mul_le_mul_of_nonneg_right hc2 (Real.rpow_nonneg hx0.le _)).trans
-        (by simpa only [mul_one] using mul_le_mul_of_nonneg_left hp2one hH)
+        (by bound)
     have hcoef3 : |c3*x^(-p3)| ≤ H := by
       rw [abs_mul, abs_of_nonneg (Real.rpow_nonneg hx0.le _)]
       exact (mul_le_mul_of_nonneg_right hc3 (Real.rpow_nonneg hx0.le _)).trans
-        (by simpa only [mul_one] using mul_le_mul_of_nonneg_left hp3one hH)
+        (by bound)
     calc
       _ ≤ |P.real {ω | x < A ω+B ω}|+|c2*x^(-p2)+c3*x^(-p3)| := abs_sub _ _
       _ ≤ 1+(H+H) := add_le_add

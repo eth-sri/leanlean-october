@@ -79,7 +79,7 @@ lemma isLimitOfIndicator_holderModification
     IsLimitOfIndicator (holderModification X β p U) X P U := by
   let A := holderSet X (denseCountable T) p β U
   have hA_meas : MeasurableSet A := DOZZ.Proofs.IsKolmogorovProcess.measurableSet_holderSet hX countable_denseCountable
-  have hA_ae : ∀ᵐ ω ∂P, ω ∈ A := ae_mem_holderSet hT hX hc hd_pos hdq_lt hβ_pos hβ_lt
+  have hA_ae  := ae_mem_holderSet hT hX hc hd_pos hdq_lt hβ_pos hβ_lt
     countable_denseCountable
   refine ⟨A, hA_meas, hA_ae, fun t htU ω hω ↦ ?_, fun t htU ω ↦ ?_, fun t htUc ω ↦ ?_⟩
   · exact exists_tendsto_of_mem_holderSet hT hU hX.p_pos hβ_pos dense_denseCountable
@@ -113,8 +113,7 @@ lemma holderOnWith_holderModification
     refine ⟨C, ?_⟩
     -- missing congr lemma?
     intro s hs t ht
-    specialize hHolder s hs t ht
-    simpa only [hs, ↓reduceIte, ht]
+    continuity
   classical
   by_cases hω : ω ∈ holderSet X (denseCountable T) p β U
   · simp only [hω, ↓reduceIte, indicatorProcess_apply]
@@ -214,18 +213,16 @@ lemma edist_modification_holderModification (hT : HasBoundedCoveringNumber U c d
   -- Let `A` be the event that `C ω < ∞` and `X s ω = X t ω` for `edist s t = 0`.
   -- This is an event of probability 1.
   let A := holderSet X (denseCountable T) p β U
-  have hA_ae : ∀ᵐ ω ∂P, ω ∈ A := ae_mem_holderSet hT hX hc hd_pos hdq_lt hβ_pos hβ_lt
+  have hA_ae  := ae_mem_holderSet hT hX hc hd_pos hdq_lt hβ_pos hβ_lt
     countable_denseCountable
   have hPA {s : Set Ω} : P (s ∩ A) = P s := by
     rw [Set.inter_comm, Measure.measure_inter_eq_of_ae hA_ae]
   -- Properties of the modification
   let Y := holderModification X β p U
   have hY_eq {ω : Ω} (hω : ω ∈ A) (t : denseCountable T) (htU : ↑t ∈ U) :
-      edist (Y t ω) (X t ω) = 0 := by
-    exact edist_holderModification_eq_zero hT hU hX hβ_pos t htU hω
+      edist (Y t ω) (X t ω) = 0 := edist_holderModification_eq_zero hT hU hX hβ_pos t htU hω
   classical
-  have hY_unif ω : UniformContinuousOn (fun t ↦ Y t ω) U :=
-    uniformContinuousOn_holderModification hT hU hX hβ_pos ω
+  
   have hY_cont ω : ContinuousOn (fun t ↦ Y t ω) U :=
     continuousOn_holderModification hT hU hX hβ_pos ω
   -- Main proof
@@ -241,10 +238,7 @@ lemma edist_modification_holderModification (hT : HasBoundedCoveringNumber U c d
       obtain ⟨t', ht'⟩ := dense_denseCountable.exists_mem_open hU ⟨t, htU⟩
       exact ⟨⟨t', ht'.1⟩, ht'.2⟩
     refine ⟨fun n ↦ if u' n ∈ U then ⟨u' n, hu'_mem n⟩ else t₀, fun n ↦ ?_, ?_⟩
-    · simp only
-      split_ifs with hmem
-      · simp [hmem]
-      · simp [ht₀]
+    · grind
     · have h_eventually_mem := Tendsto.eventually_mem hu' (hU.mem_nhds htU)
       refine hu'.congr' ?_
       filter_upwards [h_eventually_mem] with n hmem
@@ -254,7 +248,7 @@ lemma edist_modification_holderModification (hT : HasBoundedCoveringNumber U c d
     refine (edist_triangle4 (Y t ω) (Y (u n) ω) (X (u n) ω) (X t ω)).trans_eq ?_
     simp [hY_eq hω (u n) (huU n)]
   -- `X (u n)` converges in measure to `X t`
-  have h_tendsto_X : TendstoInMeasure P (fun n ↦ X (u n)) atTop (X t) :=
+  have h_tendsto_X  :=
     DOZZ.Proofs.IsKolmogorovProcess.tendstoInMeasure hX (hd_pos.trans hdq_lt) hu
   -- `Y (u n)` converges in measure to `Y t`
   have h_tendsto_Y : TendstoInMeasure P (fun n ↦ Y (u n)) atTop (Y t) := by
@@ -304,8 +298,7 @@ lemma HolderOnWith.congr_edist {T E : Type*} [PseudoEMetricSpace T] [PseudoEMetr
     (hf : HolderOnWith C β f U) :
     HolderOnWith C β g U := by
   rw [HolderOnWith] at hf ⊢
-  convert hf using 5 with s hsU t htU
-  exact hfg s t hsU htU
+  simp_all
 
 lemma exists_modification_holder_aux' (hT : HasBoundedCoveringNumber U c d)
     (hU : IsOpen U)
@@ -350,8 +343,7 @@ lemma indistinguishable_of_edist_modification_on {T Ω E : Type*} {mΩ : Measura
   filter_upwards [hX, hY, eq (fun t ht ↦ h t ht.2)] with ω hX hY h t htU
   suffices Set.EqOn (fun t ↦ edist (X t ω) (Y t ω)) 0 U from this htU
   refine Set.EqOn.of_subset_closure h ?_ (by fun_prop) Set.inter_subset_right ?_
-  · intro s hsU
-    exact (hX s hsU).edist (hY s hsU)
+  · fun_prop (disch := positivity)
   exact subset_closure_dense_inter D_dense hU
 
 end PseudoEMetricSpace

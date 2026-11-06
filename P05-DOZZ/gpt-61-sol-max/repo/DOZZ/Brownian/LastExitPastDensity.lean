@@ -13,7 +13,7 @@ Taking increments of the deterministic-time last-exit CDF identifies the joint l
 while retaining every measurable finite past cylinder.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
@@ -36,7 +36,7 @@ theorem negativeConditionedLaw_finitePast_lastExit_Ioc
         ∂(volume : Measure ℝ)
         ∂(volume : Measure (Fin (k+1) → ℝ)).withDensity
           (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ))) := by
-  let : IsProbabilityMeasure P := hP.2.1
+  let  := hP.2.1
   let evalPast : BrownianPath → (Fin (k+1) → ℝ) := fun p i => -(p (ss i))
   let μ : Measure (Fin (k+1) → ℝ) := volume.withDensity
     (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ)))
@@ -74,14 +74,9 @@ theorem negativeConditionedLaw_finitePast_lastExit_Ioc
   have hdiff : {p : BrownianPath | evalPast p ∈ A ∧ negativeLastExitTime p (c : ℝ) ∈ Ioc u v} =
       E v \ E u := by
     ext p
-    simp only [E, mem_ofPred_eq, Set.mem_sdiff, mem_Ioc]
-    constructor
-    · rintro ⟨hA, huL, hLv⟩
-      exact ⟨⟨hA,hLv⟩, fun h => (not_le_of_gt huL) h.2⟩
-    · rintro ⟨⟨hA,hLv⟩, hnot⟩
-      exact ⟨hA, lt_of_not_ge (fun hLu => hnot ⟨hA,hLu⟩), hLv⟩
+    grind
   have hsub : E u ⊆ E v := fun p hp => ⟨hp.1, hp.2.trans huv⟩
-  have hv : ss (Fin.last k) < v := hu.trans_le huv
+  have hv  := hu.trans_le huv
   calc
     _ = P.real (E v) - P.real (E u) := by
       rw [hdiff, measureReal_sdiff hsub (hE u) (measure_ne_top _ _)]

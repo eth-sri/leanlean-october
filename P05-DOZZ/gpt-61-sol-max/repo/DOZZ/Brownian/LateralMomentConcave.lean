@@ -15,7 +15,7 @@ through order one by the concave-power form of Hölder's inequality. This gives 
 the lateral interval moment theorem without invoking any higher-order chaos estimate.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 open scoped ENNReal

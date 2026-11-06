@@ -21,15 +21,17 @@ the integrand by `2 g ω / r`, and then differentiates under the integral sign
 obtained as an almost everywhere limit of difference quotients.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set Metric
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) {U : Set ℂ}
+
+include Ω _inst1 P U in
 /-- Under the same local domination every section is integrable. -/
-theorem integrable_of_locally_dominated {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) {U : Set ℂ} (f : ℂ → Ω → ℂ)
+theorem integrable_of_locally_dominated  (f : ℂ → Ω → ℂ)
     (hmeas : ∀ z ∈ U, AEStronglyMeasurable (f z) P)
     (hdom : ∀ z ∈ U, ∃ r > 0, closedBall z r ⊆ U ∧ ∃ g : Ω → ℝ, Integrable g P ∧
       ∀ᵐ ω ∂P, ∀ ζ ∈ closedBall z r, ‖f ζ ω‖ ≤ g ω) :
@@ -50,11 +52,9 @@ theorem aestronglyMeasurable_deriv_of_ae_differentiableAt {Ω : Type*} [Measurab
   obtain ⟨t, ht_pos, ht_le, ht_zero⟩ : ∃ t : ℕ → ℝ, (∀ n, 0 < t n) ∧ (∀ n, t n ≤ r / 2) ∧
       Tendsto t atTop (𝓝 0) := by
     refine ⟨fun n => r / 2 / ((n : ℝ) + 1), fun n => by positivity, fun n => ?_, ?_⟩
-    · rw [div_le_iff₀ (by positivity)]
-      nlinarith [(Nat.cast_nonneg n : (0 : ℝ) ≤ n), half_pos hr]
+    · bound
     · have h := (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)).const_mul (r / 2)
-      rw [mul_zero] at h
-      exact h.congr fun n => mul_one_div _ _
+      continuity
   have hh_zero : Tendsto (fun n => (t n : ℂ)) atTop (𝓝[≠] 0) := by
     refine tendsto_nhdsWithin_iff.2 ⟨?_, Eventually.of_forall fun n => ?_⟩
     · exact (Complex.continuous_ofReal.tendsto' 0 0 Complex.ofReal_zero).comp ht_zero
@@ -65,15 +65,15 @@ theorem aestronglyMeasurable_deriv_of_ae_differentiableAt {Ω : Type*} [Measurab
     linarith [ht_le n, half_pos hr]
   refine aestronglyMeasurable_of_tendsto_ae atTop
     (f := fun n ω => ((t n : ℂ))⁻¹ • (f (z₀ + (t n : ℂ)) ω - f z₀ ω)) (fun n => ?_) ?_
-  · exact ((hmeas _ (hh_mem n)).sub (hmeas z₀ (mem_ball_self hr))).const_smul ((t n : ℂ)⁻¹)
+  · measurability
   · filter_upwards [hdiff] with ω hω
     exact hω.hasDerivAt.tendsto_slope_zero.comp hh_zero
 
+include Ω _inst1 P U in
 /-- **Holomorphy of a parametric integral** under local uniform domination: if almost every
 section `z ↦ f z ω` is holomorphic on the open set `U` and `‖f‖` is dominated near each point of
 `U` by an integrable function, then `z ↦ ∫ f z ω ∂P` is holomorphic on `U`. -/
-theorem differentiableOn_integral_of_locally_dominated {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) {U : Set ℂ} (hU : IsOpen U) (f : ℂ → Ω → ℂ)
+theorem differentiableOn_integral_of_locally_dominated  (hU : IsOpen U) (f : ℂ → Ω → ℂ)
     (hmeas : ∀ z ∈ U, AEStronglyMeasurable (f z) P)
     (hdiff : ∀ᵐ ω ∂P, DifferentiableOn ℂ (fun z => f z ω) U)
     (hdom : ∀ z ∈ U, ∃ r > 0, closedBall z r ⊆ U ∧ ∃ g : Ω → ℝ, Integrable g P ∧
@@ -81,7 +81,7 @@ theorem differentiableOn_integral_of_locally_dominated {Ω : Type*} [MeasurableS
     DifferentiableOn ℂ (fun z => ∫ ω, f z ω ∂P) U := by
   intro z₀ hz₀
   obtain ⟨r, hr, hrU, g, hg, hbound⟩ := hdom z₀ hz₀
-  have hhalf : 0 < r / 2 := half_pos hr
+  have hhalf  := half_pos hr
   have hballU : ball z₀ (r / 2) ⊆ U :=
     (ball_subset_ball (by linarith)).trans (ball_subset_closedBall.trans hrU)
   have hderiv_bound : ∀ᵐ ω ∂P, ∀ ζ ∈ ball z₀ (r / 2),
@@ -96,7 +96,7 @@ theorem differentiableOn_integral_of_locally_dominated {Ω : Type*} [MeasurableS
       HasDerivAt (fun z => f z ω) (deriv (fun z => f z ω) ζ) ζ := by
     filter_upwards [hdiff] with ω hω ζ hζ
     exact (hω.differentiableAt (hU.mem_nhds (hballU hζ))).hasDerivAt
-  have hF'_meas : AEStronglyMeasurable (fun ω => deriv (fun z => f z ω) z₀) P :=
+  have hF'_meas  :=
     aestronglyMeasurable_deriv_of_ae_differentiableAt hr
       (fun z hz => hmeas z (hrU (ball_subset_closedBall hz)))
       (hdiff.mono fun ω hω => hω.differentiableAt (hU.mem_nhds hz₀))

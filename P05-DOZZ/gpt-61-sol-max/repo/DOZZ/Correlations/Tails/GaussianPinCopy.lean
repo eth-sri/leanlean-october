@@ -6,11 +6,12 @@ module
 
 public import DOZZ.Correlations.Tails.GaussianRegression
 public import Mathlib.Probability.Independence.Basic
+import Mathlib.Tactic
 
 /-! Replace the correlated pin by an independent copy after Gaussian regression.
 The full coordinate law is preserved, including the pin coordinate. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 
@@ -27,7 +28,7 @@ theorem gaussian_pin_copy_law
       (P.prod P).map (fun q j => j.elim (Z none q.2) (fun i =>
         Z (some i) q.1 + (covariance (Z (some i)) (Z none) P / v) *
           (Z none q.2 - Z none q.1))) := by
-  let : IsProbabilityMeasure P := hZ.isProbabilityMeasure
+  let  := hZ.isProbabilityMeasure
   let a : I → ℝ := fun i => covariance (Z (some i)) (Z none) P / v
   let R : Ω → I → ℝ := fun ω i => Z (some i) ω - a i * Z none ω
   have hN : Measurable (Z none) := (measurable_pi_apply none).comp hZm
@@ -35,7 +36,7 @@ theorem gaussian_pin_copy_law
     apply measurable_pi_iff.mpr
     intro i
     exact ((measurable_pi_apply (some i)).comp hZm).sub (hN.const_mul (a i))
-  have hi : IndepFun (Z none) R P := gaussian_regression_indep P Z hZ v hv hvar
+  have hi  := gaussian_regression_indep P Z hZ v hv hvar
   have hNR := hi.map_prod_eq_prod_map_map hN.aemeasurable hR.aemeasurable
   have hRc : Measurable (fun q : Ω × Ω => R q.1) := hR.comp measurable_fst
   have hNc : Measurable (fun q : Ω × Ω => Z none q.2) := hN.comp measurable_snd
@@ -70,10 +71,7 @@ theorem gaussian_pin_copy_law
       fun q j => j.elim (Z none q.2) (fun i =>
         Z (some i) q.1 + (covariance (Z (some i)) (Z none) P / v) *
           (Z none q.2 - Z none q.1)) := by
-    funext q j
-    cases j <;> simp only [restore, Function.comp_def, Option.elim_none,
-      Option.elim_some, R, a]
-    all_goals ring
+    grind
   rw [hsource, htarget] at he
   exact he.symm
 

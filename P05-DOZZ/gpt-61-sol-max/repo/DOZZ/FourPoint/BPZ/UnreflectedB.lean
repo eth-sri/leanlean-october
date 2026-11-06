@@ -16,7 +16,7 @@ interval `J = {γ/2 < α₁ < 2/γ, 2Q + γ/2 < α₁ + α₂ + α₃}`: the str
 are positive (respectively non-integer) there. They agree on the KRV subinterval
 `α₁ > γ/2 + 1/γ`, which is nonempty, so they agree on `J` by the identity theorem. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -53,31 +53,26 @@ theorem bpz_gauss_args_pos {γ t α₂ α₃ : ℝ} (hγ : 0 < γ) (hlo : γ / 2
     have := mul_lt_mul_of_pos_left hlo hγ
     linarith only [this]
   have hα₂γ : γ < α₂ := by
-    have : t < 2 / γ := hhi
-    have h3 : α₃ < 2 / γ + γ / 2 := by rw [← hQ]; exact hα₃
-    rw [hQ] at hs
-    linarith only [this, h3, hs]
+    linarith
   have hα₃γ : γ < α₃ := by
-    have h2 : α₂ < 2 / γ + γ / 2 := by rw [← hQ]; exact hα₂
-    rw [hQ] at hs
-    linarith only [hhi, h2, hs]
+    bound
   have hsum : γ * (t + α₂ + α₃) > 2 * (γ * Q γ) + γ ^ 2 / 2 := by
     have := mul_lt_mul_of_pos_left hs hγ
     linarith only [this]
-  have hα₂' : γ * α₂ < γ * Q γ := mul_lt_mul_of_pos_left hα₂ hγ
-  have hα₃' : γ * α₃ < γ * Q γ := mul_lt_mul_of_pos_left hα₃ hγ
-  have hα₂'' : γ * γ < γ * α₂ := mul_lt_mul_of_pos_left hα₂γ hγ
-  have hα₃'' : γ * γ < γ * α₃ := mul_lt_mul_of_pos_left hα₃γ hγ
+  have hα₂'  := mul_lt_mul_of_pos_left hα₂ hγ
+  have hα₃'  := mul_lt_mul_of_pos_left hα₃ hγ
+  have hα₂''  := mul_lt_mul_of_pos_left hα₂γ hγ
+  have hα₃''  := mul_lt_mul_of_pos_left hα₃γ hγ
   have hγsq : γ ^ 2 < 4 := by linarith only [hα₂'', hα₂', hγQ]
   simp only [a, b, c, ha, hb, hc]
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
     linarith only [hγQ, ht2, ht1, hsum, hα₂', hα₃', hα₂'', hα₃'', hγsq, sq_nonneg γ, hγ]
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (M : Ω → Measure ℂ) (γ μ α₂ α₃ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) (hM : IsGMCOf P X γ M) {t : ℝ} (hlo : γ / 2 < t) (hhi : t < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (hs : 2 * Q γ + γ / 2 < t + α₂ + α₃)
+
+include Ω _inst1 P X hX M γ μ α₂ α₃ hγ hγ2 hμ hM t hlo hhi hα₂ hα₃ hs in
 /-- The left side of the shift relation is real-analytic in `α₁` on the unreflected domain. -/
-theorem bpz_analyticAt_shift_lhs {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (M : Ω → Measure ℂ) (γ μ α₂ α₃ : ℝ) (hγ : 0 < γ)
-    (hγ2 : γ < 2) (hμ : 0 < μ) (hM : IsGMCOf P X γ M) {t : ℝ} (hlo : γ / 2 < t)
-    (hhi : t < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (hs : 2 * Q γ + γ / 2 < t + α₂ + α₃) :
+theorem bpz_analyticAt_shift_lhs  :
     AnalyticAt ℝ (fun t => gaussCoefficientRatio (gaussParameterA γ (γ / 2) t α₂ α₃)
       (gaussParameterB γ (γ / 2) t α₂ α₃) (gaussParameterC γ (γ / 2) t) *
         structureConstant P M γ μ (t - γ / 2) α₂ α₃) t := by
@@ -96,42 +91,29 @@ theorem bpz_analyticAt_shift_lhs {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hES : ExtendedSeiberg3 γ (t - γ / 2) α₂ α₃ ∧ 0 < sExp γ (t - γ / 2) α₂ α₃ := by
     have hsE : 0 < sExp γ (t - γ / 2) α₂ α₃ := by
-      unfold sExp
       exact div_pos (by linarith only [hs]) hγ
     have hmin : 0 < min (4 / γ ^ 2) (min (2 / γ * (Q γ - (t - γ / 2)))
         (min (2 / γ * (Q γ - α₂)) (2 / γ * (Q γ - α₃)))) := by
       have e1 : 0 < 2 / γ * (Q γ - (t - γ / 2)) := by
         apply mul_pos (by positivity)
-        rw [hQ]
-        have : t < 2 / γ := hhi
-        linarith only [this, hγ]
-      have e2 : 0 < 2 / γ * (Q γ - α₂) := mul_pos (by positivity) (by linarith only [hα₂])
-      have e3 : 0 < 2 / γ * (Q γ - α₃) := mul_pos (by positivity) (by linarith only [hα₃])
-      exact lt_min (by positivity) (lt_min e1 (lt_min e2 e3))
+        bound
+      positivity
     refine ⟨⟨?_, hα₂, hα₃, by linarith only [hsE, hmin]⟩, hsE⟩
-    rw [hQ]
-    have : t < 2 / γ := hhi
-    linarith only [this, hγ]
+    grind
   have hCm := bpz_analyticAt_structureConstant P X hX M γ μ hγ hγ2 hμ hM hES.1 hES.2
-  have hshift : AnalyticAt ℝ (fun t => t - γ / 2) t := by fun_prop
-  exact hρ.mul (AnalyticAt.comp (g := fun s => structureConstant P M γ μ s α₂ α₃)
-    (f := fun t => t - γ / 2) hCm hshift)
+  fun_prop
 
+include Ω _inst1 P X hX M γ μ α₂ α₃ hγ hγ2 hμ hM t hlo hhi hα₂ hα₃ hs in
 /-- The right side of the shift relation is real-analytic in `α₁` on the unreflected domain. -/
-theorem bpz_analyticAt_shift_rhs {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (M : Ω → Measure ℂ) (γ μ α₂ α₃ : ℝ) (hγ : 0 < γ)
-    (hγ2 : γ < 2) (hμ : 0 < μ) (hM : IsGMCOf P X γ M) {t : ℝ} (hlo : γ / 2 < t)
-    (hhi : t < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (hs : 2 * Q γ + γ / 2 < t + α₂ + α₃) :
+theorem bpz_analyticAt_shift_rhs  :
     AnalyticAt ℝ (fun t => -μ * (planarGaussConstant (γ ^ 2 / 2) (γ * t)).re *
         structureConstant P M γ μ (t + γ / 2) α₂ α₃) t := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγt1 : γ * t / 2 < 1 := by
     have := mul_lt_mul_of_pos_left hhi hγ
-    have e : γ * (2 / γ) = 2 := by field_simp
-    linarith only [this, e]
+    grind
   have hγt0 : γ ^ 2 / 4 < γ * t / 2 := by
-    have := mul_lt_mul_of_pos_left hlo hγ
-    linarith only [this]
+    nlinarith
   have hγsq : γ ^ 2 < 4 := by linarith only [hγt0, hγt1]
   have hpos : 0 < γ ^ 2 / 4 := by positivity
   -- the three arguments of `lFun` are not integers
@@ -160,30 +142,21 @@ theorem bpz_analyticAt_shift_rhs {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
     omega
   have hPGC := bpz_analyticAt_re_planarGaussConstant (k := fun _ => γ ^ 2 / 2)
     (β := fun t => γ * t) (x₀ := t) analyticAt_const (by fun_prop)
-    (by simpa [mul_div_assoc] using harg1) (by simpa using harg2)
-    (by simpa [mul_div_assoc] using harg3)
+    (by exact harg1) (by exact harg2)
+    (by exact harg3)
   have hES : ExtendedSeiberg3 γ (t + γ / 2) α₂ α₃ ∧ 0 < sExp γ (t + γ / 2) α₂ α₃ := by
     have hsE : 0 < sExp γ (t + γ / 2) α₂ α₃ := by
       unfold sExp
-      exact div_pos (by linarith only [hs, hγ]) hγ
+      bound
     have hmin : 0 < min (4 / γ ^ 2) (min (2 / γ * (Q γ - (t + γ / 2)))
         (min (2 / γ * (Q γ - α₂)) (2 / γ * (Q γ - α₃)))) := by
       have e1 : 0 < 2 / γ * (Q γ - (t + γ / 2)) := by
-        apply mul_pos (by positivity)
-        rw [hQ]
-        have : t < 2 / γ := hhi
-        linarith only [this]
-      have e2 : 0 < 2 / γ * (Q γ - α₂) := mul_pos (by positivity) (by linarith only [hα₂])
-      have e3 : 0 < 2 / γ * (Q γ - α₃) := mul_pos (by positivity) (by linarith only [hα₃])
-      exact lt_min (by positivity) (lt_min e1 (lt_min e2 e3))
+        simp_all
+      positivity
     refine ⟨⟨?_, hα₂, hα₃, by linarith only [hsE, hmin]⟩, hsE⟩
-    rw [hQ]
-    have : t < 2 / γ := hhi
-    linarith only [this]
+    grind
   have hCp := bpz_analyticAt_structureConstant P X hX M γ μ hγ hγ2 hμ hM hES.1 hES.2
-  have hshift : AnalyticAt ℝ (fun t => t + γ / 2) t := by fun_prop
-  exact (analyticAt_const.mul hPGC).mul (AnalyticAt.comp
-    (g := fun s => structureConstant P M γ μ s α₂ α₃) (f := fun t => t + γ / 2) hCp hshift)
+  fun_prop
 
 /-- **The shift relation for `γ² < 2`.** -/
 theorem bpz_shift_small_gamma {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ → ℂ → ℂ → ℂ}
@@ -207,11 +180,7 @@ theorem bpz_shift_small_gamma {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ
           structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ := by
   have hγ2 : γ < 2 := lt_of_pow_lt_pow_left₀ 2 zero_le_two (by linarith only [hγsq])
   set J : Set ℝ := {t | γ / 2 < t ∧ t < 2 / γ ∧ 2 * Q γ + γ / 2 < t + α₂ + α₃} with hJ
-  have hJo : IsOpen J :=
-    (isOpen_lt (f := fun _ : ℝ => γ / 2) (g := fun t : ℝ => t) continuous_const
-      continuous_id).inter ((isOpen_lt (f := fun t : ℝ => t) (g := fun _ : ℝ => 2 / γ)
-        continuous_id continuous_const).inter (isOpen_lt (f := fun _ : ℝ => 2 * Q γ + γ / 2)
-          (g := fun t : ℝ => t + α₂ + α₃) continuous_const (by fun_prop)))
+  
   have hJc : IsPreconnected J := by
     have hord : J.OrdConnected := ⟨fun x hx y hy z hz =>
       ⟨lt_of_lt_of_le hx.1 hz.1, lt_of_le_of_lt hz.2 hy.2.1, by linarith only [hx.2.2, hz.1]⟩⟩
@@ -227,20 +196,10 @@ theorem bpz_shift_small_gamma {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ
   set lo : ℝ := max (γ / 2 + 1 / γ) (2 * Q γ + γ / 2 - α₂ - α₃) with hlo
   have hlo2 : lo < 2 / γ := by
     refine max_lt ?_ (by linarith only [hs, hαhi])
-    have : γ * γ < 2 := by linarith only [hγsq]
-    have e : γ / 2 + 1 / γ = (γ * γ + 2) / (2 * γ) := by field_simp
-    have e2 : 2 / γ = 4 / (2 * γ) := by
-      rw [div_eq_div_iff (by positivity) (by positivity)]; ring
-    rw [e, e2]
-    exact div_lt_div_of_pos_right (by linarith only [this]) (by positivity)
+    field_simp <;> nlinarith
   set t₀ : ℝ := (lo + 2 / γ) / 2 with ht₀
   have hKRV : ∀ t, lo < t → t < 2 / γ → t ∈ J ∧ γ / 2 + 1 / γ < t := by
-    intro t h1 h2
-    have hA : γ / 2 + 1 / γ ≤ lo := le_max_left _ _
-    have hB : 2 * Q γ + γ / 2 - α₂ - α₃ ≤ lo := le_max_right _ _
-    have h1γ : 0 < 1 / γ := by positivity
-    exact ⟨⟨by linarith only [hA, h1, h1γ], h2, by linarith only [hB, h1]⟩,
-      by linarith only [hA, h1]⟩
+    grind
   have ht₀mem : lo < t₀ ∧ t₀ < 2 / γ := ⟨by linarith only [hlo2, ht₀], by linarith only [hlo2, ht₀]⟩
   have hev : (fun t => gaussCoefficientRatio (gaussParameterA γ (γ / 2) t α₂ α₃)
       (gaussParameterB γ (γ / 2) t α₂ α₃) (gaussParameterC γ (γ / 2) t) *

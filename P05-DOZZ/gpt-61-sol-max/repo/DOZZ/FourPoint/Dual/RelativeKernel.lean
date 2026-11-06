@@ -12,8 +12,11 @@ open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+variable (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (hx : 0 < ‖x‖)
+
+include γ α₁ α₂ α₃ z x hx in
 /-- The perturbed kernel factors through the ratio of its two distances. -/
-theorem dual_kernel_distance_ratio (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (hx : 0 < ‖x‖) :
+theorem dual_kernel_distance_ratio  :
     dualFusionKernel γ α₁ α₂ α₃ z x =
       (‖x - z‖ / ‖x‖) ^ ((2 : ℝ)) * dualFusionKernel γ α₁ α₂ α₃ 0 x := by
   have hn : ‖x‖ ^ ((2 : ℝ)) ≠ 0 := (Real.rpow_pos_of_pos hx _).ne'
@@ -21,8 +24,9 @@ theorem dual_kernel_distance_ratio (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (hx 
   rw [sub_zero, Real.div_rpow (norm_nonneg _) hx.le]
   field_simp
 
+include γ α₁ α₂ α₃ z x hx in
 /-- On a separated retained region, moving the root gives a relative first-order error. -/
-theorem dual_kernel_relative_difference (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (hx : 0 < ‖x‖) (hz : ‖z‖ ≤ ‖x‖ / 2) :
+theorem dual_kernel_relative_difference  (hz : ‖z‖ ≤ ‖x‖ / 2) :
     |dualFusionKernel γ α₁ α₂ α₃ z x - dualFusionKernel γ α₁ α₂ α₃ 0 x| ≤
       (4 * (‖z‖ / ‖x‖)) * dualFusionKernel γ α₁ α₂ α₃ 0 x := by
   let b : ℝ := (2 : ℝ)
@@ -52,8 +56,9 @@ theorem dual_kernel_relative_difference (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
   exact mul_le_mul_of_nonneg_right
     ((reflected_rpow_near_one b t hb hb₂ ht ht₂).trans (mul_le_mul_of_nonneg_left htd (by norm_num))) hK
 
+include γ α₁ α₂ α₃ z x hx in
 /-- The moving retained kernel stays above one quarter of the zero kernel. -/
-theorem dual_kernel_relative_lower (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (hx : 0 < ‖x‖) (hz : ‖z‖ ≤ ‖x‖ / 2) :
+theorem dual_kernel_relative_lower  (hz : ‖z‖ ≤ ‖x‖ / 2) :
     dualFusionKernel γ α₁ α₂ α₃ 0 x / 4 ≤ dualFusionKernel γ α₁ α₂ α₃ z x := by
   have hb : 0 ≤ (2 : ℝ) := by positivity
   have hb₂ : (2 : ℝ) ≤ 2 := by norm_num

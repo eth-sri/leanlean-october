@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Tails.GMCRandomExponentialTest
 
 /-! Retaining actual GFF and GMC witnesses on the independent pin-copy space. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal
 
@@ -34,10 +34,11 @@ theorem isEquatorGFF_measurePreserving
   change P'.map ((fun ω => X ω f) ∘ T) = _
   rw [← Measure.map_map hm hT.measurable, hT.map_eq, hl]
 
+variable {Ω Ω' : Type*} [_inst1 : MeasurableSpace Ω] [_inst2 : MeasurableSpace Ω'] (P : Measure Ω) (P' : Measure Ω') (T : Ω' → Ω) (hT : MeasurePreserving T P' P) (X : Ω → Distr)
+
+include Ω Ω' _inst1 _inst2 P P' T hT X in
 theorem isCircleAverage_measurePreserving
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (T : Ω' → Ω) (hT : MeasurePreserving T P' P)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+     (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) :
     IsCircleAverage P' (X ∘ T) (Xc ∘ T) := by
   refine ⟨fun r => (hc.1 r).comp ((hT.measurable.comp measurable_fst).prodMk measurable_snd),
@@ -49,10 +50,9 @@ theorem isCircleAverage_measurePreserving
       ((hc.1 r).comp (measurable_id.prodMk measurable_const))).aestronglyMeasurable) hT
   simpa only [Function.comp_def, heq] using hc.2.2 x r f hf
 
+include Ω Ω' _inst1 _inst2 P P' T hT X in
 theorem regularizedGMC_measurePreserving
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (T : Ω' → Ω) (hT : MeasurePreserving T P' P)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
+     (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
     (γ r : ℝ) (ω : Ω') :
     regularizedGMC P' (Xc ∘ T) γ r ω = regularizedGMC P Xc γ r (T ω) := by
   have hv (x : ℂ) : (∫ ω', Xc (T ω') x r ^ 2 ∂P') = ∫ ω', Xc ω' x r ^ 2 ∂P :=
@@ -63,10 +63,9 @@ theorem regularizedGMC_measurePreserving
   unfold regularizedGMC
   simp only [Function.comp_def, hv]
 
+include Ω Ω' _inst1 _inst2 P P' T hT X in
 theorem isGMCOf_measurePreserving
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (T : Ω' → Ω) (hT : MeasurePreserving T P' P)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
+     (hX : IsEquatorGFF P X) (γ : ℝ)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     IsGMCOf P' (X ∘ T) γ (M ∘ T) := by
   obtain ⟨hf, Xc, hc, hconv⟩ := hM

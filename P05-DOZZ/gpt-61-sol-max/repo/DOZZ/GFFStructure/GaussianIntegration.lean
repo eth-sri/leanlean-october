@@ -37,7 +37,7 @@ theorem hasGaussianLaw_of_mem_span {Z : T → Lp ℝ 2 P}
   obtain ⟨a, ha⟩ := Finsupp.mem_span_range_iff_exists_finsupp.mp hU
   have he : U = ∑ i : a.support, a i • Z i := by
     rw [← ha]
-    simpa only [Finsupp.sum] using (Finset.sum_coe_sort a.support (fun i => a i • Z i)).symm
+    exact (Finset.sum_coe_sort a.support (fun i => a i • Z i)).symm
   rw [he]
   exact (gaussianProcess_linearCombination hZ a.support (fun i => a i)).congr
     (coeFn_L2_linearCombination (fun i : a.support => a i) (fun i => Z i)).symm
@@ -79,7 +79,7 @@ theorem integral_mem_closedSubmodule {A E : Type*} [MeasurableSpace A]
     (hK : IsClosed (K : Set E)) (F : A → E) (hF : Integrable F μ)
     (hmem : ∀ᵐ a ∂μ, F a ∈ K) : (∫ a, F a ∂μ) ∈ K := by
   by_cases hμ : μ = 0
-  · simp only [hμ, integral_zero_measure, Submodule.zero_mem]
+  · simp_all
   · let _ : NeZero μ := ⟨hμ⟩
     have hav := K.convex.average_mem hK hmem hF
     have h := K.smul_mem (μ.real univ) hav
@@ -130,7 +130,7 @@ theorem integral_mem_closedHilbertSubmodule {A E : Type*} [MeasurableSpace A]
     (μ : Measure A) (K : Submodule ℝ E) (hK : IsClosed (K : Set E))
     (F : A → E) (hF : Integrable F μ) (hmem : ∀ᵐ a ∂μ, F a ∈ K) :
     (∫ a, F a ∂μ) ∈ K := by
-  let _ : CompleteSpace K := hK.completeSpace_coe
+  let _  := hK.completeSpace_coe
   have hae : (fun a => K.starProjection (F a)) =ᵐ[μ] F := by
     filter_upwards [hmem] with a ha
     exact Submodule.starProjection_eq_self_iff.mpr ha
@@ -139,16 +139,18 @@ theorem integral_mem_closedHilbertSubmodule {A E : Type*} [MeasurableSpace A]
   have hm := K.starProjection_apply_mem (∫ a, F a ∂μ)
   rwa [← hcomm] at hm
 
+variable (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+
+include X Xc hX hc in
 /-- Circles and smooth tests lifted into their original probability space's L². -/
-noncomputable def gffStructureL2Family (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) :
+noncomputable def gffStructureL2Family  :
     (ℂ × ℝ) ⊕ TestFn → Lp ℝ 2 P :=
   Sum.elim (circleAverageL2 hc) (fun f => (equatorGFF_test_memLp X hX f).toLp (fun ω => X ω f))
 
 omit [IsProbabilityMeasure P] in
+include X Xc hX hc in
 /-- Coordinatewise agreement of the lifted family with the actual circle/test family. -/
-theorem gffStructureL2Family_ae_eq (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (j : (ℂ × ℝ) ⊕ TestFn) :
+theorem gffStructureL2Family_ae_eq  (j : (ℂ × ℝ) ⊕ TestFn) :
     gffStructureL2Family X Xc hX hc j =ᵐ[P]
       Sum.elim (fun p ω => Xc ω p.1 p.2) (fun f ω => X ω f) j := by
   cases j with
@@ -156,9 +158,9 @@ theorem gffStructureL2Family_ae_eq (X : Ω → Distr) (Xc : Ω → ℂ → ℝ �
   | inr f => exact MemLp.coeFn_toLp (equatorGFF_test_memLp X hX f)
 
 omit [IsProbabilityMeasure P] in
+include X Xc hX hc in
 /-- The given-space lifted family is jointly Gaussian. -/
-theorem gffStructureL2Family_isGaussianProcess (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) :
+theorem gffStructureL2Family_isGaussianProcess  :
     IsGaussianProcess (fun j => ⇑(gffStructureL2Family X Xc hX hc j)) P :=
   (circleAverage_tests_isGaussianProcess X Xc hX hc).congr
     (fun j => (gffStructureL2Family_ae_eq X Xc hX hc j).symm)
@@ -168,14 +170,14 @@ omit [IsProbabilityMeasure P] in
 theorem integral_mean_L2_smul (a : ℝ) (U : Lp ℝ 2 P) :
     (∫ ω, (a • U) ω ∂P) = a * (∫ ω, U ω ∂P) := by
   rw [integral_congr_ae (Lp.coeFn_smul a U)]
-  simpa only [Pi.smul_apply, smul_eq_mul] using integral_const_mul a (fun ω => U ω)
+  exact integral_const_mul a (fun ω => U ω)
 
 omit [IsProbabilityMeasure P] in
 /-- Scalar multiplication commutes with covariance of L² representatives. -/
 theorem covariance_L2_smul_left (a : ℝ) (U V : Lp ℝ 2 P) :
     covariance (⇑(a • U)) V P = a * covariance U V P := by
   rw [covariance_congr_ae (Lp.coeFn_smul a U) (EventuallyEq.rfl : (⇑V) =ᵐ[P] V)]
-  simpa only [Pi.smul_def, smul_eq_mul] using covariance_const_mul_left a
+  exact covariance_const_mul_left a
 
 /-- On a probability space, the L¹ norm of an L² representative is bounded by its L² norm. -/
 theorem integral_norm_L2_le (U : Lp ℝ 2 P) : (∫ ω, ‖U ω‖ ∂P) ≤ ‖U‖ := by
@@ -185,12 +187,12 @@ theorem integral_norm_L2_le (U : Lp ℝ 2 P) : (∫ ω, ‖U ω‖ ∂P) ≤ ‖
     ← eLpNorm_one_eq_lintegral_enorm (Lp.aestronglyMeasurable U), Lp.norm_def]
   exact ENNReal.toReal_mono (Lp.memLp U).ne_top h
 
+variable {A : Type*} [_inst1 : MeasurableSpace A] (μ : Measure A) [_inst3 : SFinite μ] (F : A → Lp ℝ 2 P) (hF : Integrable F μ) (f : A → Ω → ℝ) (hm : AEStronglyMeasurable (Function.uncurry f) (μ.prod P)) (heq : ∀ a, (⇑(F a)) =ᵐ[P] f a)
+
+include A _inst1 μ _inst3 F hF f hm heq in
 /-- A jointly measurable representative of an integrable L²-valued family is product
 integrable. This proves the Fubini premise rather than assuming it. -/
-theorem integrable_L2_representative_prod {A : Type*} [MeasurableSpace A]
-    (μ : Measure A) [SFinite μ] (F : A → Lp ℝ 2 P) (hF : Integrable F μ)
-    (f : A → Ω → ℝ) (hm : AEStronglyMeasurable (Function.uncurry f) (μ.prod P))
-    (heq : ∀ a, (⇑(F a)) =ᵐ[P] f a) : Integrable (Function.uncurry f) (μ.prod P) := by
+theorem integrable_L2_representative_prod  : Integrable (Function.uncurry f) (μ.prod P) := by
   apply (integrable_prod_iff hm).mpr
   refine ⟨Eventually.of_forall (fun a => ((Lp.memLp (F a)).integrable (by norm_num)).congr (heq a)), ?_⟩
   apply hF.norm.mono' hm.norm.integral_prod_right'
@@ -201,12 +203,10 @@ theorem integrable_L2_representative_prod {A : Type*} [MeasurableSpace A]
     _ = ∫ ω, ‖F a ω‖ ∂P := integral_congr_ae ((heq a).fun_comp norm).symm
     _ ≤ ‖F a‖ := integral_norm_L2_le (F a)
 
+include A _inst1 μ _inst3 F hF f hm heq in
 /-- The representative of the L² Bochner integral agrees almost surely with integration of
 any jointly measurable coordinate representatives. -/
-theorem L2_integral_ae_eq_integral {A : Type*} [MeasurableSpace A]
-    (μ : Measure A) [SFinite μ] (F : A → Lp ℝ 2 P) (hF : Integrable F μ)
-    (f : A → Ω → ℝ) (hm : AEStronglyMeasurable (Function.uncurry f) (μ.prod P))
-    (heq : ∀ a, (⇑(F a)) =ᵐ[P] f a) :
+theorem L2_integral_ae_eq_integral  :
     (⇑(∫ a, F a ∂μ)) =ᵐ[P] fun ω => ∫ a, f a ω ∂μ := by
   have hi := integrable_L2_representative_prod μ F hF f hm heq
   apply Integrable.ae_eq_of_forall_setIntegral_eq _ _

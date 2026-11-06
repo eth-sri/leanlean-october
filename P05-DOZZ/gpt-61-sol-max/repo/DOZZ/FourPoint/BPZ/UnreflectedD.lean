@@ -8,6 +8,7 @@ public import DOZZ.FourPoint.BPZ.UnreflectedC
 public import DOZZ.FourPoint.BPZ.StructureConstantGammaCont
 public import DOZZ.GMC.Assembly.AdmissibleGMC
 public import DOZZ.GMC.Construction.GMCUniqueAe
+public import DOZZ.FourPoint.GaussContracts
 
 /-! # The unreflected `γ/2` formula on the whole range `0 < γ < 2`
 
@@ -21,7 +22,7 @@ The diagonal formula is the statement `DOZZ.degenerateFourPoint_diagonal_classif
 `χ = γ/2`); it enters here as a hypothesis, for all GMC measures, all `γ ∈ (0, 2)` and all first
 charges of the unreflected domain. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -58,7 +59,7 @@ theorem bpz_planar_args_nonint {γ t : ℝ} (hγ : 0 < γ) (hlo : γ / 2 < t) (h
     have := mul_lt_mul_of_pos_left hlo hγ
     nlinarith
   have hpos : 0 < γ ^ 2 / 4 := by positivity
-  have hγsq : γ ^ 2 < 4 := by nlinarith
+  
   refine ⟨fun n hn => ?_, fun n hn => ?_, fun n hn => ?_⟩
   · have h0 : (0 : ℝ) < n := by rw [← hn]; linarith
     have h1 : (n : ℝ) < 1 := by rw [← hn]; exact hγt1
@@ -154,14 +155,14 @@ theorem bpz_shift_all {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ → ℂ
     intro γ' hγ'
     obtain ⟨_, M', -, hM'⟩ := equatorGFF_circle_average_GMC_exists P X hX γ' hγ'.1 hγ'.2
     exact ⟨M', hM'⟩
-  let Mfam : ℝ → Ω → Measure ℂ := fun γ' =>
+  let Mfam  := fun γ' =>
     if h : γ' ∈ Ioo (0 : ℝ) 2 then Classical.choose (hex γ' h) else M
   have hMfam : ∀ γ' ∈ Ioo (0 : ℝ) 2, IsGMCOf P X γ' (Mfam γ') := by
     intro γ' hγ'
     simp only [Mfam, hγ', ↓reduceDIte]
     exact Classical.choose_spec (hex γ' hγ')
   have hγmem : γ ∈ Ioo (0 : ℝ) 2 := ⟨hγ, hγ2⟩
-  have hMγ : ∀ᵐ ω ∂P, Mfam γ ω = M ω :=
+  have hMγ  :=
     equatorGFF_GMC_unique_ae P X hX γ (Mfam γ) M (hMfam γ hγmem) hM
   -- the two sides along the family
   set L : ℝ → ℝ := fun γ' => gaussCoefficientRatio (gaussParameterA γ' (γ' / 2) α₁ α₂ α₃)
@@ -189,14 +190,8 @@ theorem bpz_shift_all {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ → ℂ
   have hev : L =ᶠ[𝓝[≠] γ] R := by
     have hdom := bpz_unreflected_domain_eventually hγ hγ2 hαlo hαhi hα₂ hα₃ hs
     filter_upwards [nhdsWithin_le_nhds hdom, self_mem_nhdsWithin] with γ' h hne
-    obtain ⟨h0, h2, hlo, hhi, h₂, h₃, hs'⟩ := h
-    have hne2 : γ' ^ 2 ≠ 2 := by
-      intro heq
-      apply hne
-      have : γ' ^ 2 = γ ^ 2 := by rw [heq, hcrit]
-      exact (pow_left_inj₀ h0.le hγ.le two_ne_zero).mp this
-    exact hnc (Mfam γ') γ' h0 h2 (hMfam γ' ⟨h0, h2⟩) hne2 hlo hhi h₂ h₃ hs'
-  have hLR : L γ = R γ := tendsto_nhds_unique
+    grind
+  have hLR  := tendsto_nhds_unique
     ((hLc.tendsto.mono_left nhdsWithin_le_nhds).congr' hev)
     (hRc.tendsto.mono_left nhdsWithin_le_nhds)
   simp only [hL, hR] at hLR
@@ -223,17 +218,7 @@ theorem bpz_gammaHalf_full_unreflected_formula_of_diag {Ω : Type*} [MeasurableS
                 (gaussParameterB γ' (γ' / 2) t α₂ α₃) (gaussParameterC γ' (γ' / 2) t) *
               ‖gaussFPlus H (gaussParameterA γ' (γ' / 2) t α₂ α₃)
                 (gaussParameterB γ' (γ' / 2) t α₂ α₃) (gaussParameterC γ' (γ' / 2) t) z‖ ^ 2)) :
-    let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
-    let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃
-    let c := gaussParameterC γ (γ / 2) α₁
-    ∀ z ∈ gaussCutPlane,
-      fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z =
-        structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-            ‖gaussFMinus H a b c z‖ ^ 2 +
-          (-μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re) *
-            structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ *
-              ‖gaussFPlus H a b c z‖ ^ 2 := by
-  intro a b c
+    Contract.gammaHalfUnreflected P M γ μ α₁ α₂ α₃ H := by
   exact bpz_unreflected_of_shift P M γ μ α₁ α₂ α₃
     (hdiag M γ α₁ hγ hγ₂ hM hαlo hαhi hα₂ hα₃ hs)
     (bpz_shift_all hH P X M γ μ α₁ α₂ α₃ hγ hγ₂ hμ hαlo hαhi hα₂ hα₃ hs hX hM hdiag)

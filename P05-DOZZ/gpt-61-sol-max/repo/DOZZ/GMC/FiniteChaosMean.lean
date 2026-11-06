@@ -7,18 +7,21 @@ module
 public import DOZZ.Statements.GMC.FiniteChaosMoment
 public import Mathlib.Probability.Distributions.Gaussian.Real
 public import Mathlib.Probability.Distributions.Gaussian.Fernique
+import Mathlib.Tactic
 
 /-! First-moment normalization for finite Wick chaos sums. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions NNReal
 
 namespace DOZZ.Proofs
 
-private lemma coordinate_law {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z) (i : ι) :
+variable {Ω ι : Type*} [_inst1 : MeasurableSpace Ω] [_inst2 : Fintype ι] (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z)
+
+include Ω ι _inst1 _inst2 P Z hZ
+private lemma coordinate_law  (i : ι) :
     ∃ v : ℝ≥0, P.map (fun ω => Z ω i) = gaussianReal (0 : ℝ) v := by
   classical
   let e : ι → ℝ := Pi.single i (1 : ℝ)
@@ -29,10 +32,10 @@ private lemma coordinate_law {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
     simp [e, Pi.single_apply]
   simpa only [hsum] using hv
 
+
 /-- A coordinate of a centered jointly Gaussian vector has the centered Gaussian law whose
 variance is its covariance-form diagonal. -/
-lemma coordinate_mean_variance {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z) (i : ι) :
+lemma coordinate_mean_variance  (i : ι) :
     ∃ v : ℝ≥0, P.map (fun ω => Z ω i) = gaussianReal (0 : ℝ) v ∧
       (∫ ω, Z ω i ∂P) = 0 ∧ gaussianVariance P (fun ω => Z ω i) = (v : ℝ) := by
   classical
@@ -44,28 +47,21 @@ lemma coordinate_mean_variance {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
     exact ProbabilityTheory.IsGaussian.integrable_id
   have hmeanMap := integral_map hZi hIdMap.aestronglyMeasurable
   have hmean : (∫ ω, Zi ω ∂P) = 0 := by
-    calc
-      ∫ ω, Zi ω ∂P = ∫ x, x ∂P.map Zi := hmeanMap.symm
-      _ = 0 := by rw [hmap, integral_id_gaussianReal]
-  have hvarMap : Var[id; P.map Zi] = Var[Zi; P] := by
-    simpa only [Function.comp_def, id_def] using
-      (variance_map (X := id) (Y := Zi) (μ := P)
-        (aemeasurable_id) hZi)
+    continuity
+  have hvarMap  := variance_map aemeasurable_id hZi
   have hvarP : Var[Zi; P] = (v : ℝ) := by
-    change P.map Zi = gaussianReal (0 : ℝ) v at hmap
-    rw [hmap, variance_id_gaussianReal] at hvarMap
-    exact hvarMap.symm
+    continuity
   have hvarEq : Var[Zi; P] = gaussianVariance P Zi := by
     rw [variance_eq_integral hZi, hmean, gaussianVariance, gaussianCovariance]
     congr 1
     funext ω
     simp [pow_two]
-  exact ⟨v, hmap, hmean, hvarEq.symm.trans hvarP⟩
+  grind
+
 
 /-- Each coordinate Wick exponential is integrable and has expectation one. -/
 theorem wick_exponential_integrable_expectation
-    {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z)
+
     (i : ι) (γ : ℝ) :
     Integrable (fun ω => Real.exp (γ * Z ω i - γ ^ 2 / 2 *
       gaussianVariance P (fun ω => Z ω i))) P ∧
@@ -73,13 +69,11 @@ theorem wick_exponential_integrable_expectation
         gaussianVariance P (fun ω => Z ω i)) ∂P) = 1 := by
   obtain ⟨v, hmap, _, hvar⟩ := coordinate_mean_variance P Z hZ i
   let Zi : Ω → ℝ := fun ω => Z ω i
-  have hZi : AEMeasurable Zi P := hZ.2.1 i
+  have hZi  := hZ.2.1 i
   have hExpMap : Integrable (fun x : ℝ => Real.exp (γ * x)) (P.map Zi) := by
     rw [hmap]
     exact integrable_exp_mul_gaussianReal γ
-  have hExp : Integrable (fun ω => Real.exp (γ * Zi ω)) P := by
-    simpa only [Function.comp_def] using
-      (integrable_map_measure hExpMap.aestronglyMeasurable hZi).mp hExpMap
+  have hExp : Integrable (fun ω => Real.exp (γ * Zi ω)) P := (integrable_map_measure hExpMap.aestronglyMeasurable hZi).mp hExpMap
   have hWick : Integrable
       (fun ω => Real.exp (γ * Zi ω - γ ^ 2 / 2 * gaussianVariance P Zi)) P := by
     convert hExp.const_mul (Real.exp (-(γ ^ 2 / 2 * gaussianVariance P Zi))) using 1
@@ -116,11 +110,11 @@ theorem wick_exponential_integrable_expectation
     _ = 1 := by rw [show (v : ℝ) * γ ^ 2 / 2 - γ ^ 2 / 2 * (v : ℝ) = 0 by ring,
       Real.exp_zero]
 
+
 /-- The normalized exponential also has extended expectation one. This is the pointwise
 Tonelli input for the intensity of a finite-cutoff chaos measure. -/
 theorem wick_exponential_lintegral_expectation
-    {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z)
+
     (i : ι) (γ : ℝ) :
     ∫⁻ ω, ENNReal.ofReal (Real.exp (γ * Z ω i - γ ^ 2 / 2 *
       gaussianVariance P (fun ω => Z ω i))) ∂P = 1 := by
@@ -129,10 +123,10 @@ theorem wick_exponential_lintegral_expectation
     (ae_of_all _ fun ω => Real.exp_nonneg _), h.2]
   simp
 
+
 /-- The normalized exponential at each coordinate has expectation one, so a finite chaos sum has
 the deterministic first moment given by its total weight. -/
-theorem finiteChaosMass_integral {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z)
+theorem finiteChaosMass_integral
     (a : ι → ℝ) (γ : ℝ) :
     Integrable (fun ω => finiteChaosMass P Z a γ ω) P ∧
       (∫ ω, finiteChaosMass P Z a γ ω ∂P) = ∑ i, a i := by
@@ -144,7 +138,7 @@ theorem finiteChaosMass_integral {Ω ι : Type*} [MeasurableSpace Ω] [Fintype �
     have h := (wick_exponential_integrable_expectation P Z hZ i γ).1
     exact h.const_mul (a i)
   have hsumInt : Integrable (fun ω => ∑ i, term i ω) P := by
-    exact integrable_finsetSum Finset.univ fun i hi => hterm i
+    fun_prop (disch := positivity)
   have hmass : finiteChaosMass P Z a γ = fun ω => ∑ i, term i ω := by
     funext ω
     simp [finiteChaosMass, term]
@@ -159,5 +153,7 @@ theorem finiteChaosMass_integral {Ω ι : Type*} [MeasurableSpace Ω] [Fintype �
     simp
   · intro i hi
     exact hterm i
+omit Ω ι _inst1 _inst2 P Z hZ
+
 
 end DOZZ.Proofs

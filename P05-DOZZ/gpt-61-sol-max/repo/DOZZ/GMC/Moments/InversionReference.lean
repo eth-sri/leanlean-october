@@ -12,6 +12,7 @@ import Mathlib.Geometry.Euclidean.Inversion.Calculus
 import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
 import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
+import Mathlib.Tactic
 
 /-! The compactifying reference measure is invariant under planar inversion. -/
 
@@ -28,7 +29,7 @@ noncomputable def euclideanInv : ℂ → ℂ := EuclideanGeometry.inversion 0 1
 theorem euclideanInv_eq_star_inv (z : ℂ) : euclideanInv z = star (z⁻¹) := by
   by_cases hz : z = 0
   · simp [euclideanInv, hz, EuclideanGeometry.inversion]
-  have hn : ‖z‖ ≠ 0 := (norm_pos_iff.mpr hz).ne'
+  
   rw [euclideanInv, EuclideanGeometry.inversion, dist_eq_norm]
   simp only [sub_zero, vadd_eq_add, add_zero]
   rw [Complex.inv_def, Complex.normSq_eq_norm_sq]
@@ -47,7 +48,7 @@ theorem euclideanInv_involutive : Function.Involutive euclideanInv := by
 
 theorem euclideanInv_abs_det (x : ℂ) (hx : x ≠ 0) :
     |(fderiv ℝ euclideanInv x).det| = ‖x‖ ^ (-4 : ℝ) := by
-  let K : Submodule ℝ ℂ := ℝ ∙ x
+  let K  := ℝ ∙ x
   let R : ℂ →L[ℝ] ℂ := Kᗮ.reflection
   have hdim : Module.finrank ℝ Kᗮ = 1 := by
     dsimp [K]
@@ -60,8 +61,7 @@ theorem euclideanInv_abs_det (x : ℂ) (hx : x ≠ 0) :
   have hdetR : R.det = -1 := by
     change LinearMap.det R.toLinearMap = -1
     rw [show R.toLinearMap = Kᗮ.reflection.toLinearEquiv.toLinearMap by rfl]
-    rw [Submodule.det_reflection, hdimDouble]
-    norm_num
+    simp_all
   have hfd : fderiv ℝ euclideanInv x = (‖x‖⁻¹) ^ 2 • R := by
     change fderiv ℝ (EuclideanGeometry.inversion (0 : ℂ) 1) x = _
     rw [(EuclideanGeometry.hasFDerivAt_inversion (c := (0 : ℂ)) (R := (1 : ℝ))
@@ -72,14 +72,13 @@ theorem euclideanInv_abs_det (x : ℂ) (hx : x ≠ 0) :
   rw [LinearMap.det_smul]
   have hdetR' : LinearMap.det R.toLinearMap = -1 := hdetR
   rw [hdetR', Complex.finrank_real_complex]
-  have hnorm : 0 < ‖x‖ := norm_pos_iff.mpr hx
+  
   rw [abs_mul, abs_neg, abs_one, mul_one, abs_of_nonneg (by positivity)]
   calc
     ((‖x‖⁻¹) ^ 2) ^ 2 = (‖x‖⁻¹) ^ 4 := by rw [← pow_mul]
     _ = (‖x‖ ^ 4)⁻¹ := by simp
     _ = ‖x‖ ^ (-4 : ℝ) := by
-      rw [Real.rpow_neg hnorm.le]
-      norm_num [Real.rpow_natCast]
+      simp_all
 
 noncomputable def refWeight (x : ℂ) : ℝ≥0∞ :=
   ENNReal.ofReal (normPlus x ^ (-4 : ℝ))
@@ -87,7 +86,7 @@ noncomputable def refWeight (x : ℂ) : ℝ≥0∞ :=
 theorem normPlus_euclideanInv (x : ℂ) : normPlus (euclideanInv x) = normPlus x⁻¹ := by
   have hnorm : ‖euclideanInv x‖ = ‖x‖⁻¹ := by
     have h := EuclideanGeometry.dist_inversion_center (0 : ℂ) x (1 : ℝ)
-    simpa [euclideanInv, dist_eq_norm, norm_inv] using h
+    continuity
   have hcomplex : ‖euclideanInv x‖ = ‖x⁻¹‖ := by
     simpa [norm_inv, one_div] using hnorm
   unfold normPlus
@@ -147,7 +146,7 @@ theorem refWeight_integral_euclideanInv_preimage_punctured (A : Set ℂ)
     (hA : MeasurableSet A) :
     (∫⁻ x in euclideanInv ⁻¹' A ∩ {x | x ≠ 0}, refWeight x ∂volume) =
       (∫⁻ x in A ∩ {x | x ≠ 0}, refWeight x ∂volume) := by
-  let S : Set ℂ := A ∩ {x | x ≠ 0}
+  let S  := A ∩ {x | x ≠ 0}
   have hS : MeasurableSet S := hA.inter (measurableSet_singleton 0).compl
   have hInj : Set.InjOn euclideanInv S := euclideanInv_involutive.injective.injOn
   have hderiv : ∀ x ∈ S,
@@ -169,7 +168,7 @@ theorem refWeight_integral_euclideanInv_preimage_punctured (A : Set ℂ)
         apply MeasureTheory.setLIntegral_congr_fun hS
         intro x hx
         exact refWeight_jac x hx.2
-  simpa [S] using hchange'
+  exact hchange'
 
 theorem gmcReferenceMeasure_euclideanInv_preimage (A : Set ℂ)
     (hA : MeasurableSet A) :
@@ -219,8 +218,7 @@ theorem gmcReferenceMeasure_map_conj :
   change (volume.withDensity refWeight) (star ⁻¹' A) =
     (volume.withDensity refWeight) A
   rw [withDensity_apply _ (hA.preimage hstar.measurable), withDensity_apply _ hA]
-  have hrestrict : MeasurePreserving star
-      (volume.restrict (star ⁻¹' A)) (volume.restrict A) :=
+  have hrestrict  :=
     hstar.restrict_preimage hA
   calc
     ∫⁻ x in star ⁻¹' A, refWeight x ∂volume =

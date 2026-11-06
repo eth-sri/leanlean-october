@@ -7,6 +7,7 @@ module
 public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 public import Mathlib.Analysis.InnerProductSpace.Calculus
 public import Mathlib.Analysis.Complex.Basic
+import Mathlib.Tactic
 
 /-! # Calculus of the softened distance factor
 
@@ -25,17 +26,21 @@ open scoped ComplexConjugate
 
 namespace DOZZ.Proofs
 
+variable (a ε : ℝ) (x z : ℂ)
+
+include a ε x z in
 /-- The real `z`-derivative of `(|x − z|² + ε²)^a`: `h ↦ −2a N^{a−1} ⟨x − z, h⟩`. -/
-noncomputable def bpzSoftDeriv (a ε : ℝ) (x z : ℂ) : ℂ →L[ℝ] ℝ :=
+noncomputable def bpzSoftDeriv  : ℂ →L[ℝ] ℝ :=
   (-2 * a * (Complex.normSq (x - z) + ε ^ 2) ^ (a - 1)) • innerSL ℝ (x - z)
 
+include a ε x z in
 /-- The second real `z`-derivative:
 `(h, k) ↦ 4a(a−1) N^{a−2} ⟨x−z,h⟩⟨x−z,k⟩ + 2a N^{a−1} ⟨h,k⟩`.
 
 The last term is the real inner product viewed as an `ℝ`-bilinear map; the `id` records the
 (definitional) identification of `innerSL ℝ`, a map that is conjugate-linear over the trivially
 conjugated `ℝ`, with an ordinary bilinear map. -/
-noncomputable def bpzSoftDeriv2 (a ε : ℝ) (x z : ℂ) : ℂ →L[ℝ] ℂ →L[ℝ] ℝ :=
+noncomputable def bpzSoftDeriv2  : ℂ →L[ℝ] ℂ →L[ℝ] ℝ :=
   (4 * a * (a - 1) * (Complex.normSq (x - z) + ε ^ 2) ^ (a - 2)) •
       (innerSL ℝ (x - z)).smulRight (innerSL ℝ (x - z)) +
     (2 * a * (Complex.normSq (x - z) + ε ^ 2) ^ (a - 1)) •
@@ -104,8 +109,9 @@ theorem bpzSoft_hasFDerivAt_base (ε : ℝ) (x z : ℂ) :
   simp
   ring
 
+include a ε x z
 /-- `bpzSoftDeriv` is the `z`-derivative of `z ↦ (|x - z|² + ε²)^a` where `N > 0`. -/
-theorem hasFDerivAt_bpzSoft (a ε : ℝ) (x z : ℂ) (hN : 0 < Complex.normSq (x - z) + ε ^ 2) :
+theorem hasFDerivAt_bpzSoft  (hN : 0 < Complex.normSq (x - z) + ε ^ 2) :
     HasFDerivAt (fun w : ℂ => (Complex.normSq (x - w) + ε ^ 2) ^ a) (bpzSoftDeriv a ε x z) z := by
   refine ((bpzSoft_hasFDerivAt_base ε x z).rpow_const (Or.inl hN.ne')).congr_fderiv ?_
   ext h
@@ -113,8 +119,9 @@ theorem hasFDerivAt_bpzSoft (a ε : ℝ) (x z : ℂ) (hN : 0 < Complex.normSq (x
     bpzSoft_innerSL_apply]
   ring
 
+
 /-- `bpzSoftDeriv2` is the `z`-derivative of `bpzSoftDeriv` where `N > 0`. -/
-theorem hasFDerivAt_bpzSoftDeriv (a ε : ℝ) (x z : ℂ)
+theorem hasFDerivAt_bpzSoftDeriv 
     (hN : 0 < Complex.normSq (x - z) + ε ^ 2) :
     HasFDerivAt (fun w : ℂ => bpzSoftDeriv a ε x w) (bpzSoftDeriv2 a ε x z) z := by
   have hc : HasFDerivAt (fun w : ℂ => -2 * a * (Complex.normSq (x - w) + ε ^ 2) ^ (a - 1))
@@ -139,19 +146,20 @@ theorem hasFDerivAt_bpzSoftDeriv (a ε : ℝ) (x z : ℂ)
 
 /-! ### Norm bounds -/
 
+
 /-- Operator-norm bound on the first derivative. -/
-theorem norm_bpzSoftDeriv_le (a ε : ℝ) (x z : ℂ) :
+theorem norm_bpzSoftDeriv_le  :
     ‖bpzSoftDeriv a ε x z‖ ≤ 2 * |a| * (Complex.normSq (x - z) + ε ^ 2) ^ (a - 1) * ‖x - z‖ := by
   have hp : 0 ≤ (Complex.normSq (x - z) + ε ^ 2) ^ (a - 1) :=
     Real.rpow_nonneg (bpzSoft_normSq_add_nonneg ε _) _
   unfold bpzSoftDeriv
   rw [norm_smul, innerSL_apply_norm, Real.norm_eq_abs, abs_mul, abs_mul, abs_of_nonneg hp]
-  have h2 : |(-2 : ℝ)| = 2 := by norm_num
-  rw [h2]
+  simp_all
+
 
 /-- Operator-norm bound on the second derivative: the factor `|x - z|² ≤ N` absorbs one power
 of `N`. -/
-theorem norm_bpzSoftDeriv2_le (a ε : ℝ) (x z : ℂ)
+theorem norm_bpzSoftDeriv2_le 
     (hN : 0 < Complex.normSq (x - z) + ε ^ 2) :
     ‖bpzSoftDeriv2 a ε x z‖ ≤
       (4 * |a * (a - 1)| + 2 * |a|) * (Complex.normSq (x - z) + ε ^ 2) ^ (a - 1) := by
@@ -170,8 +178,8 @@ theorem norm_bpzSoftDeriv2_le (a ε : ℝ) (x z : ℂ)
   have hh := bpzSoft_abs_inner_le (x - z) h
   have hk := bpzSoft_abs_inner_le (x - z) k
   have hhk := bpzSoft_abs_inner_le h k
-  have hnh : 0 ≤ ‖h‖ := norm_nonneg h
-  have hnk : 0 ≤ ‖k‖ := norm_nonneg k
+  have hnh  := norm_nonneg h
+  
   have hnu : 0 ≤ ‖x - z‖ := norm_nonneg _
   have habs1 : |4 * a * (a - 1) * N ^ (a - 2)| = 4 * |a * (a - 1)| * N ^ (a - 2) := by
     rw [mul_assoc 4 a (a - 1), abs_mul, abs_mul, abs_of_nonneg hP]
@@ -195,7 +203,7 @@ theorem norm_bpzSoftDeriv2_le (a ε : ℝ) (x z : ℂ)
     _ = (4 * |a * (a - 1)| * N ^ (a - 2)) *
           |((x - z).re * h.re + (x - z).im * h.im) * ((x - z).re * k.re + (x - z).im * k.im)| +
         (2 * |a| * N ^ (a - 1)) * |h.re * k.re + h.im * k.im| := by
-      rw [abs_mul, abs_mul (2 * a * N ^ (a - 1)), habs1, habs2]
+      simp_all
     _ ≤ (4 * |a * (a - 1)| * N ^ (a - 2)) * (‖x - z‖ ^ 2 * (‖h‖ * ‖k‖)) +
         (2 * |a| * N ^ (a - 1)) * (‖h‖ * ‖k‖) := by
       gcongr
@@ -208,34 +216,37 @@ theorem norm_bpzSoftDeriv2_le (a ε : ℝ) (x z : ℂ)
 
 /-! ### Wirtinger derivatives -/
 
+
 /-- Wirtinger form of the first derivative. -/
-theorem bpzSoftDeriv_wirtinger (a ε : ℝ) (x z : ℂ) :
+theorem bpzSoftDeriv_wirtinger  :
     ((bpzSoftDeriv a ε x z 1 : ℂ) - Complex.I * (bpzSoftDeriv a ε x z Complex.I : ℂ)) / 2 =
       -((a * (Complex.normSq (x - z) + ε ^ 2) ^ (a - 1) : ℝ) : ℂ) * conj (x - z) := by
   rw [bpzSoftDeriv_apply, bpzSoftDeriv_apply]
   apply Complex.ext <;> simp <;> ring
 
+
 /-- Wirtinger form of the second derivative. -/
-theorem bpzSoftDeriv2_wirtinger (a ε : ℝ) (x z : ℂ) :
+theorem bpzSoftDeriv2_wirtinger  :
     ((bpzSoftDeriv2 a ε x z 1 1 : ℂ) - 2 * Complex.I * (bpzSoftDeriv2 a ε x z 1 Complex.I : ℂ) -
         (bpzSoftDeriv2 a ε x z Complex.I Complex.I : ℂ)) / 4 =
       ((a * (a - 1) * (Complex.normSq (x - z) + ε ^ 2) ^ (a - 2) : ℝ) : ℂ) * conj (x - z) ^ 2 := by
   rw [bpzSoftDeriv2_apply, bpzSoftDeriv2_apply, bpzSoftDeriv2_apply]
   apply Complex.ext <;> simp [pow_two] <;> ring
+omit a ε x z
+
 
 /-- At `ε = 0` and `x ≠ z` the Wirtinger derivatives are the meromorphic expressions. -/
 theorem bpzSoftDeriv_wirtinger_zero (a : ℝ) {x z : ℂ} (hxz : x ≠ z) :
     ((bpzSoftDeriv a 0 x z 1 : ℂ) - Complex.I * (bpzSoftDeriv a 0 x z Complex.I : ℂ)) / 2 =
       ((a * Complex.normSq (x - z) ^ a : ℝ) : ℂ) / (z - x) := by
   rw [bpzSoftDeriv_wirtinger]
-  have hu : x - z ≠ 0 := sub_ne_zero.mpr hxz
-  have hN : 0 < Complex.normSq (x - z) := Complex.normSq_pos.mpr hu
+  have hu  := sub_ne_zero.mpr hxz
+  have hN  := Complex.normSq_pos.mpr hu
   have hz : (z - x : ℂ) = -(x - z) := by ring
   have hc : conj (x - z) ≠ 0 := (map_ne_zero _).mpr hu
   have hNc : ((Complex.normSq (x - z) : ℝ) : ℂ) = (x - z) * conj (x - z) :=
     (Complex.mul_conj _).symm
-  have hpow : Complex.normSq (x - z) ^ (a - 1) =
-      Complex.normSq (x - z) ^ a / Complex.normSq (x - z) :=
+  have hpow  :=
     Real.rpow_sub_one hN.ne' a
   simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, add_zero]
   rw [hpow, hz]
@@ -249,8 +260,8 @@ theorem bpzSoftDeriv2_wirtinger_zero (a : ℝ) {x z : ℂ} (hxz : x ≠ z) :
         (bpzSoftDeriv2 a 0 x z Complex.I Complex.I : ℂ)) / 4 =
       ((a * (a - 1) * Complex.normSq (x - z) ^ a : ℝ) : ℂ) / (z - x) ^ 2 := by
   rw [bpzSoftDeriv2_wirtinger]
-  have hu : x - z ≠ 0 := sub_ne_zero.mpr hxz
-  have hN : 0 < Complex.normSq (x - z) := Complex.normSq_pos.mpr hu
+  have hu  := sub_ne_zero.mpr hxz
+  have hN  := Complex.normSq_pos.mpr hu
   have hz : (z - x : ℂ) = -(x - z) := by ring
   have hc : conj (x - z) ≠ 0 := (map_ne_zero _).mpr hu
   have hNc : ((Complex.normSq (x - z) : ℝ) : ℂ) = (x - z) * conj (x - z) :=

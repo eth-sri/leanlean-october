@@ -49,19 +49,13 @@ theorem dual_inner_kernel_mass_squeeze
     filter_upwards [ae_restrict_mem hE] with x hx
     rw [← ENNReal.ofReal_mul (by positivity)]
     apply ENNReal.ofReal_le_ofReal
-    calc
-      _ = ((1-R) ^ (2 : ℝ) * (1-Real.exp (-(T : ℝ)))⁻¹ ^ (-|γ*α₂|)) *
-        (‖z‖ ^ (2 : ℝ) * ‖x‖ ^ (-(γ*α₁))) := by ring
-      _ ≤ _ := (hb x hx).1
+    grind
   · rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     apply lintegral_mono_ae
     filter_upwards [ae_restrict_mem hE] with x hx
     rw [← ENNReal.ofReal_mul (by positivity)]
     apply ENNReal.ofReal_le_ofReal
-    calc
-      _ ≤ ((1+R) ^ (2 : ℝ) * (1-Real.exp (-(T : ℝ)))⁻¹ ^ |γ*α₂|) *
-        (‖z‖ ^ (2 : ℝ) * ‖x‖ ^ (-(γ*α₁))) := (hb x hx).2
-      _ = _ := by ring
+    grind
 
 
 end DOZZ.Proofs

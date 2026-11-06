@@ -6,7 +6,7 @@ module
 public import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 /-! Signed inverse increments are dominated by the retained inverse moment. -/
-@[expose] public section
+public section
 open MeasureTheory
 namespace DOZZ.Proofs
 

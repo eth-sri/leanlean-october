@@ -44,7 +44,7 @@ theorem bpz_stronglyMeasurable_momField1 {Ω : Type*} [MeasurableSpace Ω] {M : 
   unfold bpzMomField1
   have hI := (bpz_measurable_softMassReal a ε hw z).comp hMm
   have hD := (bpz_stronglyMeasurable_softMassDeriv a ε hv z).comp_measurable hMm
-  exact ((hI.pow_const _).const_mul _).stronglyMeasurable.smul hD
+  fun_prop (disch := positivity)
 
 theorem bpz_stronglyMeasurable_momField2 {Ω : Type*} [MeasurableSpace Ω] {M : Ω → Measure ℂ}
     (hMm : Measurable M) (a s ε : ℝ) {w v : ℂ → ℝ} (hw : Measurable w) (hv : Measurable v)
@@ -56,19 +56,15 @@ theorem bpz_stronglyMeasurable_momField2 {Ω : Type*} [MeasurableSpace Ω] {M : 
   have hc : Continuous (fun L : ℂ →L[ℝ] ℝ => L.smulRight L) :=
     (ContinuousLinearMap.smulRightL ℝ ℂ (ℂ →L[ℝ] ℝ)).continuous₂.comp
       (continuous_id.prodMk continuous_id)
-  have hS : StronglyMeasurable (fun ω =>
-      (bpzSoftMassDeriv a ε v (M ω) z).smulRight (bpzSoftMassDeriv a ε v (M ω) z)) :=
+  have hS  :=
     hc.comp_stronglyMeasurable hD
-  exact (((hI.pow_const _).const_mul _).stronglyMeasurable.smul hS).add
-    (((hI.pow_const _).const_mul _).stronglyMeasurable.smul hD2)
+  fun_prop (disch := positivity)
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] {P : Measure Ω} {M : Ω → Measure ℂ} (hMm : Measurable M) {a s : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hs : 0 ≤ s) {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {z₀ z : ℂ} {r ε : ℝ} (hr : 0 < r) (hz : ‖z - z₀‖ ≤ r / 2) {Y : Ω → ℝ} (hYint : Integrable (fun ω => Y ω ^ (-s)) P) (hgood : ∀ᵐ ω ∂P, M ω {z} = 0 ∧ 0 < Y ω ∧ Y ω ≤ bpzSoftMassReal a ε w (M ω) z ∧ Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) (M ω))
+
+include Ω _inst1 P M hMm a s ha ha1 hs w hw hw0 z₀ z r ε hr hz Y hYint hgood in
 /-- Expectation bounds for the first moment field and its far part. -/
-theorem bpz_momField1_near {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    {M : Ω → Measure ℂ} (hMm : Measurable M) {a s : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hs : 0 ≤ s)
-    {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {z₀ z : ℂ} {r ε : ℝ} (hr : 0 < r)
-    (hz : ‖z - z₀‖ ≤ r / 2) {Y : Ω → ℝ} (hYint : Integrable (fun ω => Y ω ^ (-s)) P)
-    (hgood : ∀ᵐ ω ∂P, M ω {z} = 0 ∧ 0 < Y ω ∧ Y ω ≤ bpzSoftMassReal a ε w (M ω) z ∧
-      Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) (M ω))
+theorem bpz_momField1_near 
     (hnear : ∀ᵐ ω ∂P, Integrable
       (fun x => (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a - 1)) (M ω))
     {B : ℝ} (hBint : Integrable (fun ω => bpzSoftMassReal a ε w (M ω) z ^ (-(s + 1)) *
@@ -92,8 +88,8 @@ theorem bpz_momField1_near {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
         s * (2 * a) * N ω := by
     filter_upwards [hgood, hnear] with ω hω hn
     obtain ⟨hzm, hY, hYI, hintz⟩ := hω
-    have hJ : 0 < bpzSoftMassReal a ε w (M ω) z := hY.trans_le hYI
-    have hDf : ‖bpzSoftMassDeriv a ε far (M ω) z‖ ≤ 4 * a / r * bpzSoftMassReal a ε w (M ω) z :=
+    have hJ  := hY.trans_le hYI
+    have hDf  :=
       norm_bpzSoftMassDeriv_far_le ha hw0 hr hz hintz
     refine ⟨norm_bpzMomentField_le hs hY hYI (by positivity) hDf, ?_⟩
     have hdec := bpzSoftMassDeriv_eq_near_add_far (ε := ε) ha ha1 hw hw0 hr hz hzm hintz hn
@@ -101,15 +97,11 @@ theorem bpz_momField1_near {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
       hzm hn
     have h := bpz_mom1_sub_le hs hJ hdec hDn
     unfold bpzMomField1
-    refine h.trans (le_of_eq ?_)
-    simp only [hN]
-    rw [show -(s + 1) = -s - 1 by ring]
-    ring
-  have hGint : Integrable (fun ω => bpzMomField1 a s ε w far (M ω) z) P :=
+    grind
+  have hGint  :=
     Integrable.mono' (hYint.const_mul _) hG.aestronglyMeasurable
       (hpath.mono fun ω h => h.1)
-  have hDint : Integrable (fun ω => bpzMomField1 a s ε w w (M ω) z -
-      bpzMomField1 a s ε w far (M ω) z) P :=
+  have hDint  :=
     Integrable.mono' (hBint.const_mul _) (hF.sub hG).aestronglyMeasurable
       (hpath.mono fun ω h => h.2)
   have hFint : Integrable (fun ω => bpzMomField1 a s ε w w (M ω) z) P := by
@@ -128,13 +120,9 @@ theorem bpz_momField1_near {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
     _ = s * (2 * a) * ∫ ω, N ω ∂P := integral_const_mul _ _
     _ ≤ s * (2 * a) * B := mul_le_mul_of_nonneg_left hB (by positivity)
 
+include Ω _inst1 P M hMm a s ha ha1 hs w hw hw0 z₀ z r ε hr hz Y hYint hgood in
 /-- Expectation bounds for the second moment field and its far part. -/
-theorem bpz_momField2_near {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    {M : Ω → Measure ℂ} (hMm : Measurable M) {a s : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hs : 0 ≤ s)
-    {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {z₀ z : ℂ} {r ε : ℝ} (hr : 0 < r)
-    (hz : ‖z - z₀‖ ≤ r / 2) {Y : Ω → ℝ} (hYint : Integrable (fun ω => Y ω ^ (-s)) P)
-    (hgood : ∀ᵐ ω ∂P, M ω {z} = 0 ∧ 0 < Y ω ∧ Y ω ≤ bpzSoftMassReal a ε w (M ω) z ∧
-      Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) (M ω))
+theorem bpz_momField2_near 
     (hnear1 : ∀ᵐ ω ∂P, Integrable
       (fun x => (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a - 1)) (M ω))
     (hnear2 : ∀ᵐ ω ∂P, Integrable
@@ -160,8 +148,7 @@ theorem bpz_momField2_near {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
   set far : ℂ → ℝ := fun x => if r ≤ ‖x - z₀‖ then w x else 0 with hfar
   set K₂ : ℝ := 4 * a * (1 - a) + 2 * a with hK₂
   have hK₂0 : 0 ≤ K₂ := by
-    have : 0 ≤ 1 - a := sub_nonneg.mpr ha1
-    positivity
+    bound
   set N₁ : Ω → ℝ := fun ω => bpzSoftMassReal a ε w (M ω) z ^ (-(s + 1)) *
     ∫ x, (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a - 1) ∂M ω with hN₁
   set N₂ : Ω → ℝ := fun ω => bpzSoftMassReal a ε w (M ω) z ^ (-(s + 1)) *
@@ -174,11 +161,10 @@ theorem bpz_momField2_near {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
         (4 * a ^ 2 * s * (s + 1) + s * K₂) * N₂ ω + 16 * a ^ 2 * s * (s + 1) / r * N₁ ω := by
     filter_upwards [hgood, hnear1, hnear2] with ω hω hn1 hn2
     obtain ⟨hzm, hY, hYI, hintz⟩ := hω
-    have hJ : 0 < bpzSoftMassReal a ε w (M ω) z := hY.trans_le hYI
-    have hDf : ‖bpzSoftMassDeriv a ε far (M ω) z‖ ≤ 4 * a / r * bpzSoftMassReal a ε w (M ω) z :=
+    have hJ  := hY.trans_le hYI
+    have hDf  :=
       norm_bpzSoftMassDeriv_far_le ha hw0 hr hz hintz
-    have hD2f : ‖bpzSoftMassDeriv2 a ε far (M ω) z‖ ≤
-        4 * K₂ / r ^ 2 * bpzSoftMassReal a ε w (M ω) z :=
+    have hD2f  :=
       norm_bpzSoftMassDeriv2_far_le ha ha1 hw0 hr hz hintz
     refine ⟨norm_bpzMomentField2_le hs hY hYI (by positivity) hDf hD2f, ?_⟩
     have hdec := bpzSoftMassDeriv_eq_near_add_far (ε := ε) ha ha1 hw hw0 hr hz hzm hintz hn1

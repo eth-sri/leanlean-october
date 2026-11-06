@@ -19,21 +19,21 @@ noncomputable def fusionScaledFactor {Ω : Type*} [MeasurableSpace Ω]
   if ‖y * z‖ < 1 / 2 then ‖y * z - 1‖ ^ (-γ * α₂) *
     (∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ y z (M ω) ^ s ∂P).toReal else 0
 
-theorem fusionScaledFactor_measurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
+theorem fusionScaledFactor_measurable 
     (α₁ α₂ α₃ s : ℝ) :
     Measurable (fun q : ℂ × ℂ => fusionScaledFactor P M γ α₁ α₂ α₃ s q.1 q.2) := by
   apply Measurable.ite
-  · exact measurableSet_lt (measurable_fst.mul measurable_snd).norm measurable_const
+  · measurability
   · exact (((measurable_fst.mul measurable_snd).sub_const (1 : ℂ)).norm.pow_const _).mul
       (fusionMovingMass_expectation_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s).ennreal_toReal
   · exact measurable_const
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- A uniform inverse moment bound also controls the entire remaining scaled factor. -/
-theorem fusionScaledFactor_uniform_bound {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusionScaledFactor_uniform_bound 
     (α₁ α₂ α₃ s : ℝ) (hs : s ≤ 0) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ y z : ℂ, ‖z‖ ≤ 1 →
       |fusionScaledFactor P M γ α₁ α₂ α₃ s y z| ≤ B := by
@@ -63,10 +63,9 @@ theorem fusionScaledFactor_uniform_bound {Ω : Type*} [MeasurableSpace Ω]
       ENNReal.toReal_nonneg hb
   · simpa using mul_nonneg hb ENNReal.toReal_nonneg
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- At each nonzero rescaled root the remaining factor tends to the common inverse expectation. -/
-theorem fusionScaledFactor_tendsto {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusionScaledFactor_tendsto 
     (α₁ α₂ α₃ : ℝ) (hα : γ / 2 ≤ α₁) (hα₁ : α₁ < 2 / γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (y : ℂ) (hy : y ≠ 0)
     (s : ℝ) (hs : s < 0) :

@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Reflected.OuterMassLimit
 public import DOZZ.Statements.GMC.EquatorGFFGMCIntensity
 public import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 /-! Removing the deterministic circle boundary from the literal retained region. -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -21,7 +21,6 @@ theorem reflected_gmc_sphere_null
   have hint := equatorGFF_GMC_intensity P X hX γ hγ hγ₂ M hM
     (Metric.sphere c r) Metric.isClosed_sphere.measurableSet
   have href : gmcReferenceMeasure (Metric.sphere c r) = 0 := by
-    unfold gmcReferenceMeasure
     exact withDensity_absolutelyContinuous _ _ (MeasureTheory.Measure.addHaar_sphere volume c r)
   rw [href] at hint
   exact (lintegral_eq_zero_iff'
@@ -34,18 +33,17 @@ theorem reflected_exterior_integral_open (μ : Measure ℂ) (r : ℝ)
     (∫⁻ x in {x : ℂ | r ≤ ‖x‖}, f x ∂μ) =
       ∫⁻ x in {x : ℂ | r < ‖x‖}, f x ∂μ := by
   have he : ({x : ℂ | r ≤ ‖x‖} : Set ℂ) =ᵐ[μ] {x : ℂ | r < ‖x‖} := by
-    have hn : ∀ᵐ x ∂μ, x ∉ Metric.sphere (0 : ℂ) r := by
-      exact measure_eq_zero_iff_ae_notMem.mp hcircle
+    have hn  := measure_eq_zero_iff_ae_notMem.mp hcircle
     filter_upwards [hn] with x hx
-    have hne : ‖x‖ ≠ r := by simpa only [Metric.mem_sphere, dist_zero_right] using hx
-    exact propext ⟨fun h => lt_of_le_of_ne h hne.symm, fun h => h.le⟩
+    have hne : ‖x‖ ≠ r := by simp_all
+    grind
   rw [Measure.restrict_congr_set he]
 
+variable (γ α₁ α₂ α₃ ξ : ℝ) (z : ℂ) (μ : Measure ℂ) (h0 : μ {0} = 0) (h1 : μ {1} = 0) (hz : ‖z‖ < ‖z‖ ^ (1 - ξ)) (hs : μ (Metric.sphere (0 : ℂ) (‖z‖ ^ (1 - ξ))) = 0)
+
+include γ α₁ α₂ α₃ ξ z μ h0 h1 hz hs in
 /-- The literal retained Coulomb mass equals its open-exterior kernel integral. -/
-theorem reflected_outerMass_eq_open_kernel (γ α₁ α₂ α₃ ξ : ℝ) (z : ℂ)
-    (μ : Measure ℂ) (h0 : μ {0} = 0) (h1 : μ {1} = 0)
-    (hz : ‖z‖ < ‖z‖ ^ (1 - ξ))
-    (hs : μ (Metric.sphere (0 : ℂ) (‖z‖ ^ (1 - ξ))) = 0) :
+theorem reflected_outerMass_eq_open_kernel  :
     gammaHalfOuterMass γ α₁ α₂ α₃ μ z ξ =
       ∫⁻ x in {x : ℂ | ‖z‖ ^ (1 - ξ) < ‖x‖},
         ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
@@ -57,11 +55,11 @@ theorem reflected_open_exterior_remove_roots (μ : Measure ℂ) (r : ℝ) (hr : 
     (h1 : μ {1} = 0) (f : ℂ → ℝ≥0∞) :
     (∫⁻ x in {x : ℂ | r < ‖x‖}, f x ∂μ) =
       ∫⁻ x in {x : ℂ | r < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ, f x ∂μ := by
-  have hn : ∀ᵐ x ∂μ, x ∉ ({1} : Set ℂ) := measure_eq_zero_iff_ae_notMem.mp h1
+  have hn  := measure_eq_zero_iff_ae_notMem.mp h1
   have he : ({x : ℂ | r < ‖x‖} : Set ℂ) =ᵐ[μ]
       {x : ℂ | r < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ := by
     filter_upwards [hn] with x hx
-    have hx1 : x ≠ 1 := by simpa only [mem_singleton_iff] using hx
+    have hx1 : x ≠ 1 := by exact hx
     apply propext
     constructor
     · intro h
@@ -72,12 +70,10 @@ theorem reflected_open_exterior_remove_roots (μ : Measure ℂ) (r : ℝ) (hr : 
     · exact fun h => h.1
   rw [Measure.restrict_congr_set he]
 
+include γ α₁ α₂ α₃ ξ z μ h0 h1 hz hs in
 /-- The retained mass `gammaHalfOuterMass` is exactly the full open region required by
 comparison. -/
-theorem reflected_outerMass_eq_comparison_region (γ α₁ α₂ α₃ ξ : ℝ) (z : ℂ)
-    (μ : Measure ℂ) (h0 : μ {0} = 0) (h1 : μ {1} = 0)
-    (hz : ‖z‖ < ‖z‖ ^ (1 - ξ))
-    (hs : μ (Metric.sphere (0 : ℂ) (‖z‖ ^ (1 - ξ))) = 0) :
+theorem reflected_outerMass_eq_comparison_region  :
     gammaHalfOuterMass γ α₁ α₂ α₃ μ z ξ =
       ∫⁻ x in {x : ℂ | ‖z‖ ^ (1 - ξ) < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ,
         ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by

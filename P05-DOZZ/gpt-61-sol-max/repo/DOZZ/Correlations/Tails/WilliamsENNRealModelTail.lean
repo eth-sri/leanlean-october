@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Tails.ENNRealMomentVersion
 
 /-! Apply the scalar Williams estimate to actual extended-real chaos masses. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 
@@ -37,14 +37,13 @@ theorem williams_ennreal_model_tail_bound
         x^(-(2*ν/γ))*(∫⁻ ω, J ω^(2*ν/γ) ∂P).toReal| ≤
           (D+3*K)*x^(-(2*ν/γ)-η) := by
   let μ := brownianMaximumReferenceLaw ν
-  let : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw hν
+  let  := isProbabilityMeasure_brownianMaximumReferenceLaw hν
   have hp : 0 < 2*ν/γ := by positivity
   have hJf : ∀ᵐ ω ∂P, J ω ≠ ⊤ := by
     have hf := ae_lt_top' (hJ.pow_const r) hJr.ne
     filter_upwards [hf] with ω hω
     intro ht
-    rw [ht,ENNReal.top_rpow_of_pos hr] at hω
-    exact lt_irrefl _ hω
+    simp_all
   obtain ⟨f,hfm,hf0,hfe,hfMom⟩ := nonnegative_moment_version P J hJ hJf
   have hJcf (c : ℝ) : ∀ᵐ ω ∂P, Jc c ω ≠ ⊤ :=
     hJf.mono fun ω hω => ne_top_of_le_ne_top hω (hJcle c ω)
@@ -90,7 +89,7 @@ theorem williams_ennreal_model_tail_bound
     (fun c _ => (hfcMom c r hr.le (hJcr c)).1) (fun c _ => hfcK c)
     hupper' hlower' hfgap
   intro x hx
-  have hx0 : 0 ≤ x := zero_le_one.trans hx
+  have hx0  := zero_le_one.trans hx
   have hevent : {q : ℝ × Ω | ENNReal.ofReal x < A q*ENNReal.ofReal (Real.exp (γ*q.1))}
       =ᵐ[μ.prod P] {q | x < (A q).toReal*Real.exp (γ*q.1)} := by
     filter_upwards [hAfinite] with q hq

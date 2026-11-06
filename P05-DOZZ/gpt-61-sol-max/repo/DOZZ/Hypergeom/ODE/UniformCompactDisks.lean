@@ -11,7 +11,7 @@ public import DOZZ.Hypergeom.ODE.LocalTransfer
 /-! Compact subsets of an open regular domain admit a uniform family of coefficient disks and a
 uniform coefficient norm bound. -/
 
-@[expose] public section
+public section
 
 open Set
 
@@ -31,7 +31,6 @@ theorem exists_uniform_holomorphic_disks_on_compact
           ∀ z ∈ Metric.ball (f x) r, ‖H z‖ ≤ M := by
   let S : Set ℂ := f '' K
   have hS : IsCompact S := by
-    dsimp [S]
     exact hK.image_of_continuousOn hf
   have hSU : S ⊆ U := by
     rintro z ⟨x, hx, rfl⟩
@@ -40,7 +39,7 @@ theorem exists_uniform_holomorphic_disks_on_compact
     Metric.exists_isOpen_isBounded_image_of_isCompact_of_continuousOn
       hS hU hSU hH.continuousOn
   let W := V ∩ U
-  have hWopen : IsOpen W := hVopen.inter hU
+  have hWopen  := hVopen.inter hU
   have hSW : S ⊆ W := fun z hz => ⟨hSV hz, hSU hz⟩
   obtain ⟨δ, hδ, hδW⟩ := hS.exists_cthickening_subset_open hWopen hSW
   let r := δ / 2
@@ -53,9 +52,8 @@ theorem exists_uniform_holomorphic_disks_on_compact
     intro z hz
     apply hδW
     apply Metric.mem_cthickening_of_dist_le z (f x) δ S hfxS
-    have hdist : dist z (f x) < r := Metric.mem_ball.mp hz
-    have hrδ : r ≤ δ := by dsimp [r]; linarith
-    exact hdist.le.trans hrδ
+    have hdist  := Metric.mem_ball.mp hz
+    grind
   have hballU : Metric.ball (f x) r ⊆ U := fun _ hz => (hballW hz).2
   have hballV : Metric.ball (f x) r ⊆ V := fun _ hz => (hballW hz).1
   refine ⟨hH.mono hballU, ?_⟩

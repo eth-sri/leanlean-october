@@ -16,6 +16,4 @@ This file packages the orthonormal Haar system used for scalar white noise: scal
 packets together with all nonnegative-scale tensor Haar wavelets.
 -/
 
-public section
 
-end

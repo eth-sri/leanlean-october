@@ -8,10 +8,11 @@ public import DOZZ.FourPoint.ReflectedOuter.RootedFreezing
 public import DOZZ.FourPoint.TaylorOneRootIdentity
 public import DOZZ.FourPoint.TaylorRadialBall
 import Mathlib.Tactic
+import Mathlib.Tactic
 
 /-! # The deleted-disk error at the reflected freezing power -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -26,7 +27,7 @@ theorem reflected_zero_kernel_local_upper (γ α₁ α₂ α₃ : ℝ) (hγ : 0 
     have hk : γ ^ 2 / 2 ≠ 0 := (div_pos (sq_pos_of_pos hγ) (by norm_num)).ne'
     simp only [gammaHalfKernel, sub_zero, norm_zero, Real.zero_rpow hk, zero_mul, zero_div]
     positivity
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx0
+  have hn  := norm_pos_iff.mpr hx0
   have hd1 : (2 : ℝ)⁻¹ ≤ ‖x - 1‖ := by
     have hh := norm_sub_norm_le (1 : ℂ) x
     rw [norm_one, norm_sub_rev] at hh
@@ -36,8 +37,8 @@ theorem reflected_zero_kernel_local_upper (γ α₁ α₂ α₃ : ℝ) (hγ : 0 
     have hh := norm_sub_le x (1 : ℂ)
     rw [norm_one] at hh
     linarith only [hh, hx]
-  have hd : 0 < ‖x - 1‖ := lt_of_lt_of_le (by norm_num : (0 : ℝ) < 2⁻¹) hd1
-  have hx1 : x ≠ 1 := sub_ne_zero.mp (norm_pos_iff.mp hd)
+  have hd  := lt_of_lt_of_le (by norm_num : (0 : ℝ) < 2⁻¹) hd1
+  have hx1  := sub_ne_zero.mp (norm_pos_iff.mp hd)
   have he : -(γ * (α₁ - γ / 2)) = γ * (Q γ - α₁) - 2 := by
     unfold Q
     field_simp
@@ -68,15 +69,15 @@ theorem reflected_deleted_disk_weight_bound {Ω : Type*} [MeasurableSpace Ω]
   let κ : ℝ := γ * (Q γ - α₁)
   let δ : ℝ := (α₁ + γ / 2 - Q γ) ^ 2 / 2
   let w : ℝ := (2 : ℝ) ^ |γ * α₂|
-  have hκ : 0 < κ := mul_pos hγ (sub_pos.mpr hα₁)
+  have hκ  := mul_pos hγ (sub_pos.mpr hα₁)
   have hw : 0 < w := Real.rpow_pos_of_pos (by norm_num) _
   obtain ⟨Cr, εr, hCr, hεr, hb⟩ := reflected_retainedZero_rooted_inverse_freezing
     P X M γ α₁ α₂ α₃ hγ hγ₂ hα₁ hreflect hs hX hM
   obtain ⟨Cd, hCd, hdb⟩ := planar_radial_ball_bound (κ - 2) (by linarith only [hκ])
   refine ⟨Cr * w * Cd, min εr (1 / 2), by positivity, lt_min hεr (by norm_num), ?_⟩
   intro r hr hr₀
-  have hrr : r < εr := (lt_min_iff.mp hr₀).1
-  have hrh : r < 1 / 2 := (lt_min_iff.mp hr₀).2
+  have hrr  := (lt_min_iff.mp hr₀).1
+  have hrh  := (lt_min_iff.mp hr₀).2
   let B : Set ℂ := Metric.ball 0 r
   let f : ℂ → ℝ≥0∞ := B.indicator (fun x => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x))
   let G : Measure ℂ → ℝ≥0∞ := fun μ => (reflectedRetainedZeroMass γ α₁ α₂ α₃ r μ) ^ (-q)
@@ -127,9 +128,6 @@ theorem reflected_deleted_disk_weight_bound {Ω : Type*} [MeasurableSpace Ω]
     _ = _ := by
       rw [← ENNReal.ofReal_mul (by positivity : 0 ≤ Cr * r ^ δ)]
       have he : r ^ δ * r ^ κ = r ^ (κ + δ) := by rw [← Real.rpow_add hr, add_comm]
-      congr 1
-      calc
-        _ = (Cr * w * Cd) * (r ^ δ * r ^ κ) := by ring
-        _ = _ := by rw [he]
+      grind
 
 end DOZZ.Proofs

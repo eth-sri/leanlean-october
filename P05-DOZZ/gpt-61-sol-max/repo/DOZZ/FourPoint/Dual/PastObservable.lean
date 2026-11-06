@@ -34,15 +34,12 @@ theorem dual_past_exterior_mass_measurable (γ α₁ α₂ α₃ : ℝ) (z : ℂ
     (fun p => (reflected_outerRegion r).indicator
       (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) *
         ENNReal.ofReal (dualPastReinsertionWeight γ p.1 x)) p.2)
-  have hm : Measurable (fun p : (BrownianPath × BrownianPath) × ℂ =>
-      ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z p.2) *
-      ENNReal.ofReal (dualPastReinsertionWeight γ p.1 p.2)) :=
+  have hm  :=
     ((dual_kernel_measurable γ α₁ α₂ α₃ z).comp measurable_snd).ennreal_ofReal.mul
       (dual_past_reinsertion_weight_measurable γ).ennreal_ofReal
   have hr : MeasurableSet (reflected_outerRegion r) := by
     unfold reflected_outerRegion
-    exact (isOpen_lt continuous_const continuous_norm).measurableSet.inter
-      (Set.Finite.measurableSet (by simp)).compl
+    measurability
   exact hm.indicator (hr.preimage measurable_snd)
 
 /-- Lifting an independent variable to a subtype with the induced sigma algebra preserves
@@ -92,9 +89,7 @@ theorem dual_past_restart_exterior_measurable (γ ν α₁ α₂ α₃ : ℝ)
   have hb : Measurable (fun p : (BrownianPath × BrownianPath) × DualLocalPlaneMeasure =>
       dualPastRestartWeight γ ν T z p.1) := by
     unfold dualPastRestartWeight
-    exact measurable_const.mul (Real.measurable_exp.comp (measurable_const.mul
-      (((ContinuousMap.measurable_eval T).comp
-        (measurable_fst.comp measurable_fst)).sub measurable_const)))
+    fun_prop (disch := positivity)
   exact hb.prodMk (dual_past_exterior_mass_measurable γ α₁ α₂ α₃ z r)
 
 /-- The likelihood and exterior mass remain jointly independent of the future inward path. -/
@@ -111,8 +106,7 @@ theorem dual_radial_future_indep_restart_exterior
         (stopBrownianPath (radialPositiveHalf (A ω)) T, radialNegativeHalf (A ω)),
         dualPastExteriorMass γ α₁ α₂ α₃ z r
           ((stopBrownianPath (radialPositiveHalf (A ω)) T,
-            radialNegativeHalf (A ω)), N ω))) P := by
-  exact (reflected_radial_future_indep_full_past_lateral
+            radialNegativeHalf (A ω)), N ω))) P := (reflected_radial_future_indep_full_past_lateral
     P A hA hB hhalves N hN hi T).comp measurable_id
       (dual_past_restart_exterior_measurable γ ν α₁ α₂ α₃ T z r)
 

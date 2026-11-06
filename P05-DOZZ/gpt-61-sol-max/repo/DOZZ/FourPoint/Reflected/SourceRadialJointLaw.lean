@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Reflected.SourceCopiedWilliamsLaw
 public import DOZZ.FourPoint.Reflected.SourceRadialRestart
 public import DOZZ.FourPoint.Reflected.TranslatedPolarMeasurable
 /-! Exact joint law of the radial inner mass and the retained source mass. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -40,7 +40,7 @@ theorem reflected_source_copied_radial_joint_law
       ((P.map Y).prod (((brownianMaximumReferenceLaw (Q γ-α₁)).prod P).map
         (fun q => ENNReal.ofReal (Real.exp (γ*q.1))*twoSidedReflectionCutMass γ q.1 B
           (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) q.2))).map F := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let A := originRadialPath Xc
   let Z := fun ω => lateralProjectedGMC γ (A ω) (M ω)
   let D := fun ω => brownianShiftPath T (radialPositiveHalf (A ω))
@@ -56,7 +56,7 @@ theorem reflected_source_copied_radial_joint_law
   have hD : AEMeasurable D P :=
     (continuous_brownianShiftPath.measurable.comp
       (measurable_const.prodMk continuous_radialPositiveHalf.measurable)).comp_aemeasurable hA
-  have hI : AEMeasurable I (P.prod P) := reflected_translated_polar_aemeasurable
+  have hI  := reflected_translated_polar_aemeasurable
     P D hD Z hL.2.2.2.1 hL.2.2.2.2.1 γ (Q γ-α₁) T
   have ho := (reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)

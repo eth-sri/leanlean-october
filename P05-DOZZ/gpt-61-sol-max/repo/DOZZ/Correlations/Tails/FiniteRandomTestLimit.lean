@@ -8,7 +8,7 @@ public import DOZZ.GMC.Moments.ChaosLawFDDLimit
 
 /-! Correlated finite test selection in the pin-copy limit passage. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

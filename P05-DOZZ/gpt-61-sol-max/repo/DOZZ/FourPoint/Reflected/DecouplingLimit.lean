@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.Reflected.CommonScalarLimit
 public import DOZZ.Statements.GMC.KahaneLimitFieldNegativePower
 import Mathlib.Tactic
 /-! Two-sided lateral comparison passes through the actual mass limits in probability. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -48,9 +48,7 @@ theorem reflected_kahane_decoupling_limit
     by_cases he : x ∈ A ↔ y ∈ A
     · rw [ite_eq_left he]
       exact ⟨le_add_of_nonneg_right (sq_nonneg c), le_add_of_nonneg_right (sq_nonneg c)⟩
-    · rw [ite_eq_right he]
-      obtain ⟨hl, hu⟩ := abs_le.mp (hb he)
-      constructor <;> linarith only [hl, hu]
+    grind
   have hu (r : ℝ) (x y : S)
       (hb : ¬(x ∈ A ↔ y ∈ A) →
         |gaussianCovariance P (fun ω => Φ r ω x) (fun ω => Φ r ω y)| ≤ c ^ 2) :
@@ -67,9 +65,9 @@ theorem reflected_kahane_decoupling_limit
           (fun u => Φ r u.1 x + c*u.2) (fun u => Φ r u.1 y + c*u.2) := by
     rw [gaussianCovariance_field_independent_common_scalar_add P (Φ r) (hΦ r) c]
     exact (hsand r x y hb).2
-  have hXm : AEMeasurable ZX P := hXconv.aemeasurable fun r =>
+  have hXm  := hXconv.aemeasurable fun r =>
     (centeredGaussianField_fieldChaosMass_measurable P (Φ r) (hΦ r) ν h hh γ).ennreal_toReal.aemeasurable
-  have hYm : AEMeasurable ZY (P.prod P) := hYconv.aemeasurable fun r =>
+  have hYm  := hYconv.aemeasurable fun r =>
     (centeredGaussianField_fieldChaosMass_measurable (P.prod P) (Ψ r) (hΨ r) ν h hh γ).ennreal_toReal.aemeasurable
   have hup := DOZZ.kahane_limit_field_negative_power P ((P.prod P).prod (gaussianReal 0 1))
     Φ (fun r u x => Ψ r u.1 x + c*u.2) hΦ
@@ -90,6 +88,6 @@ theorem reflected_kahane_decoupling_limit
   simp only [ENNReal.rpow_eq_pow] at hup hlo
   rw [reflected_common_scalar_moment (P.prod P) ZY hYm γ c (-q)] at hup
   rw [reflected_common_scalar_moment P ZX hXm γ c (-q)] at hlo
-  simpa only [neg_sq, sub_neg_eq_add] using And.intro hup hlo
+  grind
 
 end DOZZ.Proofs

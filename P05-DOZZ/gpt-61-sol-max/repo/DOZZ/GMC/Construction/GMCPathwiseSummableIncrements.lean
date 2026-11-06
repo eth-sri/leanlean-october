@@ -9,7 +9,7 @@ public import Mathlib.Topology.Algebra.InfiniteSum.Real
 
 /-! Summable expected successive increments give an almost-sure cutoff limit. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal
@@ -25,12 +25,11 @@ theorem ae_tendsto_of_summable_lintegral_abs_increments
     ∀ᵐ ω ∂P, ∃ L : ℝ, Tendsto (fun n => F n ω) atTop (𝓝 L) := by
   let Q : ℕ → Ω → ℝ≥0∞ := fun n ω => ENNReal.ofReal |F n.succ ω - F n ω|
   have hQ (n : ℕ) : Measurable (Q n) := by
-    exact ENNReal.measurable_ofReal.comp
-      (continuous_abs.measurable.comp ((hF n.succ).sub (hF n)))
+    fun_prop (disch := positivity)
   have htotal : (∫⁻ ω, ∑' n, Q n ω ∂P) ≠ ∞ := by
     rw [lintegral_tsum (fun n => (hQ n).aemeasurable)]
-    simpa only [Q] using hsum
-  have hfinite : ∀ᵐ ω ∂P, (∑' n, Q n ω) < ∞ :=
+    exact hsum
+  have hfinite  :=
     ae_lt_top' (AEMeasurable.tsum fun n => (hQ n).aemeasurable) htotal
   filter_upwards [hfinite] with ω hω
   have hCauchy : CauchySeq (fun n => F n ω) := by
@@ -52,9 +51,6 @@ theorem ae_forall_tendsto_of_summable_lintegral_abs_increments
       ENNReal.ofReal |F i n.succ ω - F i n ω| ∂P) ≠ ∞) :
     ∀ᵐ ω ∂P, ∀ i, ∃ L : ℝ, Tendsto (fun n => F i n ω) atTop (𝓝 L) := by
   apply ae_all_iff.mpr
-  intro i
-  apply ae_tendsto_of_summable_lintegral_abs_increments P (fun n => F i n)
-    (fun n => hF i n)
-  exact hsum i
+  exact fun i => ae_tendsto_of_summable_lintegral_abs_increments P (F i) (hF i) (hsum i)
 
 end DOZZ.Proofs

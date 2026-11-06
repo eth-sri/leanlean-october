@@ -7,6 +7,7 @@ module
 public import DOZZ.GMC.Assembly.Realization
 public import Mathlib.MeasureTheory.Integral.RieszMarkovKakutani.Real
 public import DOZZ.GMC.Assembly.CircleIntensity
+import Mathlib.Tactic
 
 /-! The Riesz measure of the almost sure limit functional on an open chart, its basic properties, and its measurability. -/
 
@@ -114,30 +115,20 @@ noncomputable def realizationLimit {Ω : Type*} [MeasurableSpace Ω]
     (ω : Ω) (f : ℂ → ℝ) : ℝ :=
   limUnder atTop (fun j => admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j) f ω)
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) [_inst3 : IsProbabilityMeasure P] (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (T : ChartTestSystem U) (γ : ℝ) (R : ChartTestSystem.Index → ℕ → ℝ) (e : ℕ → ChartTestSystem.Index) (he : Function.Surjective e) (c : ℝ) (ω : Ω) (hω : ω ∈ realizationGoodSet P U dens Y T γ R e c)
+
+include Ω _inst1 P _inst3 U dens ε₀ Y hY T γ R e he c ω hω
 theorem tendsto_realizationLimit
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (T : ChartTestSystem U) (γ : ℝ)
-    (R : ChartTestSystem.Index → ℕ → ℝ) (e : ℕ → ChartTestSystem.Index)
-    (he : Function.Surjective e) (c : ℝ) (ω : Ω)
-    (hω : ω ∈ realizationGoodSet P U dens Y T γ R e c)
+    
     (f : ℂ → ℝ) (hf : Continuous f) (hfc : HasCompactSupport f) (hfU : tsupport f ⊆ U) :
     Tendsto (fun j => admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j) f ω) atTop
       (𝓝 (realizationLimit P U dens Y γ R e c ω f)) :=
   tendsto_nhds_limUnder (exists_tendsto_fastCutoff_of_mem_goodSet P U dens ε₀ Y hY T γ R e he c
     ω hω f hf hfc hfU)
 
+
 theorem realizationLimit_add
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (T : ChartTestSystem U) (γ : ℝ)
-    (R : ChartTestSystem.Index → ℕ → ℝ) (e : ℕ → ChartTestSystem.Index)
-    (he : Function.Surjective e) (c : ℝ) (ω : Ω)
-    (hω : ω ∈ realizationGoodSet P U dens Y T γ R e c)
+    
     (f₁ f₂ : ℂ → ℝ) (hf₁ : Continuous f₁) (hf₂ : Continuous f₂)
     (hf₁c : HasCompactSupport f₁) (hf₂c : HasCompactSupport f₂)
     (hf₁U : tsupport f₁ ⊆ U) (hf₂U : tsupport f₂ ⊆ U) :
@@ -147,65 +138,52 @@ theorem realizationLimit_add
     (union_subset hf₁U hf₂U)
   obtain ⟨L₁, hL₁⟩ := hf₁.bounded_above_of_compact_support hf₁c
   obtain ⟨L₂, hL₂⟩ := hf₂.bounded_above_of_compact_support hf₂c
-  have hsumc : HasCompactSupport (fun x => f₁ x + f₂ x) := hf₁c.add hf₂c
-  have hsumU : tsupport (fun x => f₁ x + f₂ x) ⊆ U :=
+  have hsumc  := hf₁c.add hf₂c
+  have hsumU  :=
     (tsupport_add f₁ f₂).trans (union_subset hf₁U hf₂U)
   have hlin (j : ℕ) : admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j)
       (fun x => f₁ x + f₂ x) ω = admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j) f₁ ω +
         admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j) f₂ ω :=
     admissibleCutoffIntegral_add P U dens ε₀ Y hY (T.chart (.inl (n, 0))) γ _ ω
       (hω.2 j (.inl (n, 0))) L₁ L₂ f₁ f₂ hf₁.measurable hf₂.measurable
-      (fun x => by rw [← Real.norm_eq_abs]; exact hL₁ x)
-      (fun x => by rw [← Real.norm_eq_abs]; exact hL₂ x)
+      (fun x => by exact hL₁ x)
+      (fun x => by exact hL₂ x)
       (fun x hx => image_eq_zero_of_notMem_tsupport (fun h => hx (hn (Or.inl h))))
       (fun x hx => image_eq_zero_of_notMem_tsupport (fun h => hx (hn (Or.inr h))))
   have h₁ := tendsto_realizationLimit P U dens ε₀ Y hY T γ R e he c ω hω f₁ hf₁ hf₁c hf₁U
   have h₂ := tendsto_realizationLimit P U dens ε₀ Y hY T γ R e he c ω hω f₂ hf₂ hf₂c hf₂U
   have hsum := tendsto_realizationLimit P U dens ε₀ Y hY T γ R e he c ω hω
     (fun x => f₁ x + f₂ x) (hf₁.add hf₂) hsumc hsumU
-  have hfun : (fun j => admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j)
-      (fun x => f₁ x + f₂ x) ω) = fun j =>
-        admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j) f₁ ω +
-          admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j) f₂ ω := funext hlin
+  have hfun  := funext hlin
   rw [hfun] at hsum
   exact tendsto_nhds_unique hsum (h₁.add h₂)
 
+
 theorem realizationLimit_smul
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (T : ChartTestSystem U) (γ : ℝ)
-    (R : ChartTestSystem.Index → ℕ → ℝ) (e : ℕ → ChartTestSystem.Index)
-    (he : Function.Surjective e) (c : ℝ) (ω : Ω)
-    (hω : ω ∈ realizationGoodSet P U dens Y T γ R e c)
+    
     (a : ℝ) (f : ℂ → ℝ) (hf : Continuous f) (hfc : HasCompactSupport f) (hfU : tsupport f ⊆ U) :
     realizationLimit P U dens Y γ R e c ω (fun x => a * f x) =
       a * realizationLimit P U dens Y γ R e c ω f := by
   have h := tendsto_realizationLimit P U dens ε₀ Y hY T γ R e he c ω hω f hf hfc hfU
   have hc : HasCompactSupport (fun x => a * f x) := hfc.mul_left
-  have hU' : tsupport (fun x => a * f x) ⊆ U :=
+  have hU'  :=
     (tsupport_mul_subset_right (f := fun _ => a)).trans hfU
   have hsmul := tendsto_realizationLimit P U dens ε₀ Y hY T γ R e he c ω hω
     (fun x => a * f x) (continuous_const.mul hf) hc hU'
   simp only [admissibleCutoffIntegral_smul] at hsmul
   exact tendsto_nhds_unique hsmul (h.const_mul a)
 
+
 theorem realizationLimit_nonneg
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (T : ChartTestSystem U) (γ : ℝ)
-    (R : ChartTestSystem.Index → ℕ → ℝ) (e : ℕ → ChartTestSystem.Index)
-    (he : Function.Surjective e) (c : ℝ) (ω : Ω)
-    (hω : ω ∈ realizationGoodSet P U dens Y T γ R e c)
+    
     (f : ℂ → ℝ) (hf : Continuous f) (hfc : HasCompactSupport f) (hfU : tsupport f ⊆ U)
     (hf0 : ∀ x, 0 ≤ f x) :
     0 ≤ realizationLimit P U dens Y γ R e c ω f := by
   refine ge_of_tendsto (tendsto_realizationLimit P U dens ε₀ Y hY T γ R e he c ω hω f hf hfc hfU)
     (Eventually.of_forall fun j => ?_)
   exact integral_nonneg fun x => mul_nonneg (hf0 x) (Real.exp_pos _).le
+omit Ω _inst1 P _inst3 U dens ε₀ Y hY T γ R e he c ω hω
+
 
 /-- The positive linear limit functional of a sample on continuous tests compactly supported in
 the chart; it vanishes off the good set. -/
@@ -261,7 +239,7 @@ noncomputable def realizationMeasure {Ω : Type*} [MeasurableSpace Ω]
     (R : ChartTestSystem.Index → ℕ → ℝ) (e : ℕ → ChartTestSystem.Index)
     (he : Function.Surjective e) (c : ℝ) (ω : Ω) : Measure ℂ := by
   classical
-  letI : LocallyCompactSpace U := hU.locallyCompactSpace
+  letI  := hU.locallyCompactSpace
   exact if ω ∈ realizationGoodSet P U dens Y T γ R e c then
     Measure.map Subtype.val
       (RealRMK.rieszMeasure (realizationFunctional P U hU dens ε₀ Y hY T γ R e he c ω))
@@ -308,10 +286,7 @@ theorem realizationMeasure_compl (ω : Ω) :
   by_cases hω : ω ∈ realizationGoodSet P U dens Y T γ R e c
   · rw [realizationMeasure_of_mem P U hU dens ε₀ Y hY T γ R e he c ω hω,
       Measure.map_apply measurable_subtype_coe hU.isClosed_compl.measurableSet]
-    have hempty : (Subtype.val : U → ℂ) ⁻¹' Uᶜ = ∅ := by
-      ext y
-      simp
-    rw [hempty, measure_empty]
+    simp_all
   · rw [realizationMeasure_of_notMem P U hU dens ε₀ Y hY T γ R e he c ω hω, Measure.coe_zero,
       Pi.zero_apply]
 
@@ -319,7 +294,7 @@ theorem realizationMeasure_compl (ω : Ω) :
 theorem realizationMeasure_lt_top_of_isCompact (ω : Ω) (K : Set ℂ) (hK : IsCompact K)
     (hKU : K ⊆ U) : realizationMeasure P U hU dens ε₀ Y hY T γ R e he c ω K < ⊤ := by
   by_cases hω : ω ∈ realizationGoodSet P U dens Y T γ R e c
-  · let : LocallyCompactSpace U := hU.locallyCompactSpace
+  · let  := hU.locallyCompactSpace
     rw [realizationMeasure_of_mem P U hU dens ε₀ Y hY T γ R e he c ω hω,
       Measure.map_apply measurable_subtype_coe hK.measurableSet]
     have hcomp : IsCompact ((Subtype.val : U → ℂ) ⁻¹' K) := by
@@ -336,7 +311,7 @@ theorem integral_realizationMeasure (ω : Ω) (hω : ω ∈ realizationGoodSet P
     (f : ℂ → ℝ) (hf : Continuous f) (hfc : HasCompactSupport f) (hfU : tsupport f ⊆ U) :
     ∫ x, f x ∂realizationMeasure P U hU dens ε₀ Y hY T γ R e he c ω =
       realizationLimit P U dens Y γ R e c ω f := by
-  let : LocallyCompactSpace U := hU.locallyCompactSpace
+  let  := hU.locallyCompactSpace
   rw [realizationMeasure_of_mem P U hU dens ε₀ Y hY T γ R e he c ω hω,
     integral_map measurable_subtype_coe.aemeasurable hf.aestronglyMeasurable]
   have hcomp : IsCompact ((Subtype.val : U → ℂ) ⁻¹' tsupport f) := by
@@ -419,8 +394,7 @@ theorem measurable_indicator_realizationLimit (f : ℂ → ℝ) (hf : Continuous
   by_cases hω : ω ∈ realizationGoodSet P U dens Y T γ R e c
   · simp only [Set.indicator_of_mem hω]
     exact tendsto_realizationLimit P U dens ε₀ Y hY T γ R e he c ω hω f hf hfc hfU
-  · simp only [Set.indicator_of_notMem hω]
-    exact tendsto_const_nhds
+  simp_all
 
 /-- On the good set, nonnegative continuous tests supported in the chart integrate to their
 cutoff limits in the extended sense. -/
@@ -430,7 +404,7 @@ theorem lintegral_realizationMeasure (ω : Ω) (hω : ω ∈ realizationGoodSet 
     ∫⁻ x, ENNReal.ofReal (f x) ∂realizationMeasure P U hU dens ε₀ Y hY T γ R e he c ω =
       ENNReal.ofReal (realizationLimit P U dens Y γ R e c ω f) := by
   set μ := realizationMeasure P U hU dens ε₀ Y hY T γ R e he c ω
-  have hfin : μ (tsupport f) < ⊤ :=
+  have hfin  :=
     realizationMeasure_lt_top_of_isCompact P U hU dens ε₀ Y hY T γ R e he c ω _ hfc hfU
   obtain ⟨L, hL⟩ := hf.bounded_above_of_compact_support hfc
   have hint : Integrable f μ := by
@@ -445,7 +419,7 @@ theorem lintegral_realizationMeasure (ω : Ω) (hω : ω ∈ realizationGoodSet 
 theorem measurable_realizationMeasure_isOpen (n : ℕ) (V : Set ℂ) (hV : IsOpen V)
     (hVK : closure V ⊆ T.K n) :
     Measurable (fun ω => realizationMeasure P U hU dens ε₀ Y hY T γ R e he c ω V) := by
-  have hG := realizationGoodSet_measurable P U dens ε₀ Y hY T γ R e c
+  
   have hVc : Vᶜ.Nonempty := by
     by_contra h
     rw [Set.not_nonempty_iff_eq_empty, Set.compl_empty_iff] at h
@@ -500,7 +474,7 @@ measurable random finite measures. -/
 theorem measurable_realizationMeasure_restrict_interior (n : ℕ) :
     Measurable (fun ω => (realizationMeasure P U hU dens ε₀ Y hY T γ R e he c ω).restrict
       (interior (T.K n))) := by
-  have hcl : closure (interior (T.K n)) ⊆ T.K n :=
+  have hcl  :=
     (closure_mono interior_subset).trans (T.compact n).isClosed.closure_subset
   have hfin : ∀ ω, IsFiniteMeasure ((realizationMeasure P U hU dens ε₀ Y hY T γ R e he c ω).restrict
       (interior (T.K n))) := fun ω => ⟨by

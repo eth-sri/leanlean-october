@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Tails.WilliamsTailSandwich
 
 /-! Quantitative scalar tail estimate before choosing the logarithmic cut level. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 
 namespace DOZZ.Proofs
@@ -33,9 +33,9 @@ theorem truncated_williams_tail_error
         x^(-r)*((∫ ω, J ω^r ∂P)+(∫ ω, Jc ω^r ∂P)) +
           (x*Real.exp (-γ*c))^(-r)*(∫ ω, Jc ω^r ∂P) := by
   let μ := brownianMaximumReferenceLaw ν
-  let : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw hν
+  let  := isProbabilityMeasure_brownianMaximumReferenceLaw hν
   have hp : 0 < 2*ν/γ := by positivity
-  have hr : 0 < r := hp.trans_le hpr
+  have hr  := hp.trans_le hpr
   have hs := truncated_williams_tail_sandwich μ P A J Jc hJc0 γ c x hγ hupper hlower
   have hu := williams_pareto_tail_error P J hJ hJ0 ν γ x r hν hγ hx hpr hJp hJr
   have hl := williams_pareto_tail_error P Jc hJc hJc0 ν γ x r hν hγ hx hpr hJcp hJcr

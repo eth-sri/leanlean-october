@@ -6,8 +6,9 @@ module
 public import DOZZ.FourPoint.Fusion.DifferenceExteriorMass
 public import DOZZ.FourPoint.Fusion.SegmentSpatialMeasurable
 public import DOZZ.FourPoint.Fusion.MassPositiveFinite
+import Mathlib.Tactic
 /-! # A uniform first-order exterior error for KRV -/
-@[expose] public section
+public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 /-- The signed exterior expectation is integrable and uniformly of order the root displacement. -/
@@ -35,7 +36,7 @@ theorem fusion_difference_exterior_expectation_bound {Ω : Type*} [MeasurableSpa
   have hIm : AEMeasurable (fun ω => I ω ^ (-p)) P :=
     ((gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _).const_mul _ |>.add
       ((gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _).const_mul _)).pow_const _
-  have hib : (∫⁻ ω, I ω ^ (-p) ∂P) ≤ ENNReal.ofReal C := hb t ht z (by linarith)
+  have hib  := hb t ht z (by linarith)
   have hit := ne_top_of_le_ne_top ENNReal.ofReal_ne_top hib
   have hmaj : Integrable (fun ω => (D * ‖z‖) * (I ω ^ (-p)).toReal) P :=
     (integrable_toReal_of_lintegral_ne_top hIm hit).const_mul _
@@ -59,9 +60,8 @@ theorem fusion_difference_exterior_expectation_bound {Ω : Type*} [MeasurableSpa
       ENNReal.toReal_ofReal (mul_nonneg hD (norm_nonneg z))] at hbound
     calc
       _ = (I ω ^ (-p - 1)).toReal * ‖∫ x in B, f x ∂M ω‖ := by
-        rw [norm_mul, Real.norm_eq_abs, abs_of_nonneg ENNReal.toReal_nonneg]
-      _ ≤ (I ω ^ (-p - 1)).toReal * (∫⁻ x in B, ENNReal.ofReal |f x| ∂M ω).toReal := by
-        exact mul_le_mul_of_nonneg_left (by simpa only [Real.norm_eq_abs] using norm_integral_le_lintegral_norm (μ := (M ω).restrict B) f) ENNReal.toReal_nonneg
+        norm_num
+      _ ≤ (I ω ^ (-p - 1)).toReal * (∫⁻ x in B, ENNReal.ofReal |f x| ∂M ω).toReal := mul_le_mul_of_nonneg_left (by exact norm_integral_le_lintegral_norm (μ := (M ω).restrict B) f) ENNReal.toReal_nonneg
       _ ≤ _ := by simpa only [mul_comm] using hbound
   refine ⟨hmaj.mono' hm hd, ?_⟩
   calc

@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Reflected.CopiedInnerPolar
 public import DOZZ.FourPoint.Reflected.LeadingRadialMoment
 /-! The actual copied radial inner mass has precisely the source restart scale. -/
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -27,7 +27,7 @@ theorem reflected_source_copied_radial_restart
           (γ*(brownianShiftPath T (radialPositiveHalf (originRadialPath Xc ω.1)) (Real.toNNReal u)-
             (Q γ-α)*u))) else 0)
           ∂(lateralProjectedGMC γ (originRadialPath Xc ω.2) (M ω.2)).map (fun s => s-(T : ℝ)) := by
-  have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  have hn  := norm_pos_iff.mpr hz
   filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae (originRadialPath_eval_ae hcont),
     measurePreserving_snd.quasiMeasurePreserving.ae
       (reflected_copied_inner_source_restart P γ α (originRadialPath Xc) M N heq)] with ω hev hi

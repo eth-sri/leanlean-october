@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Tails.PolynomialShiftParameters
 
 /-! Uniform tail errors from the two localization comparisons and their moment bounds. -/
 
-@[expose] public section
+public section
 open Set
 
 namespace DOZZ.Proofs
@@ -26,9 +26,9 @@ theorem uniform_tail_sandwich_bound
     (x : ℝ) (hx : 1 ≤ x) :
     |T x-c*x^(-p)| ≤
       ((1+cmax)*2^(P+η)+E*2^(P+η)+cmax*P*2^(P+1)+(K₁+K₂)*4^R)*x^(-p-η) := by
-  have hx0 : 0 < x := zero_lt_one.trans_le hx
-  have hP : 0 ≤ P := hp.trans hpP
-  have hcm : 0 ≤ cmax := hc.trans hcc
+  have hx0  := zero_lt_one.trans_le hx
+  have hP  := hp.trans hpP
+  have hcm  := hc.trans hcc
   let Csmall := (1+cmax)*2^(P+η)
   let Cshift := E*2^(P+η)+cmax*P*2^(P+1)
   let Cerr := (K₁+K₂)*4^R
@@ -40,7 +40,7 @@ theorem uniform_tail_sandwich_bound
   by_cases hx2 : 2 ≤ x
   · let h := x^(1-a)/4
     have hs := hSand x hx2
-    have hrate : h^(-r) ≤ 4^R*x^(-p-η) :=
+    have hrate  :=
       polynomial_shift_moment_rate x a r R p η hx hrR hslack
     have hshift (s : ℝ) (hs : |s| ≤ 2) :
         |L (x+s*h)-c*x^(-p)| ≤ Cshift*x^(-p-η) := by
@@ -69,14 +69,13 @@ theorem uniform_tail_sandwich_bound
       simpa only [neg_mul,sub_eq_add_neg] using hupper
     apply abs_le.mpr
     constructor <;> rw [add_mul,add_mul] <;> dsimp only at hs <;> linarith only [hs.1,hs.2,hlower,hU,herr₁,herr₂,hsmall]
-  · have hx2' : x ≤ 2 := le_of_not_ge hx2
-    have hpone : x^(-p) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hx (neg_nonpos.mpr hp)
-    have hcx : c*x^(-p) ≤ cmax := (mul_le_of_le_one_right hc hpone).trans hcc
+  · have hx2'  := le_of_not_ge hx2
+    have hpone  := Real.rpow_le_one_of_one_le_of_nonpos hx (neg_nonpos.mpr hp)
+    have hcx  := (mul_le_of_le_one_right hc hpone).trans hcc
     have hcx0 : 0 ≤ c*x^(-p) := mul_nonneg hc (Real.rpow_nonneg hx0.le _)
     have hrough : |T x-c*x^(-p)| ≤ 1+cmax := by
       apply abs_le.mpr
-      obtain ⟨ht0,ht1⟩ := hT x hx
-      constructor <;> linarith only [ht0,ht1,hcx,hcx0,hcm]
+      grind
     have hpow : (2 : ℝ)^(-(P+η)) ≤ x^(-p-η) := by
       calc (2 : ℝ)^(-(P+η)) ≤ 2^(-p-η) :=
             Real.rpow_le_rpow_of_exponent_le (by norm_num) (by linarith only [hpP])

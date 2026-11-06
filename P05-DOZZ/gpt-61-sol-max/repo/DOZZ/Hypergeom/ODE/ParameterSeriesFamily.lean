@@ -8,7 +8,7 @@ public import DOZZ.Hypergeom.ODE.ParameterSeriesDerivativeBounds
 
 /-! Parameter regularity of every characterized family on the ordinary-series disk. -/
 
-@[expose] public section
+public section
 
 open Filter
 open scoped Topology

@@ -14,7 +14,7 @@ exact interval mean and the corresponding uniform moment bound at order one; hig
 orders require the subcritical chaos estimates.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 open scoped ENNReal

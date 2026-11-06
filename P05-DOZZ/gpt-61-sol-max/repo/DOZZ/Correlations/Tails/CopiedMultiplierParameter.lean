@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Tails.OffCenterMultiplier
 
 /-! Parameter approximation of the copied Gaussian pin weight. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 

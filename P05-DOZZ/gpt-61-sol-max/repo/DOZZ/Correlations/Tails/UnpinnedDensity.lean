@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Tails.RandomScalarLimit
 
 /-! Samplewise pin removal, with the original equator reference density retained. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -47,7 +47,7 @@ theorem local_circle_second_moments
     (∫ ω, Xc ω (z+p.val.1) p.val.2 ^ 2 ∂P) =
         p.val.2 + 2 * Real.log ‖z+p.val.1‖ ∧
       (∫ ω, (Xc ω (z+p.val.1) p.val.2 - Xc ω z 0) ^ 2 ∂P) = p.val.2 := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   obtain ⟨hG, hm⟩ := circleAverage_isGaussianProcess P X Xc hX hc
   have hmU : (∫ ω, Xc ω (z+p.val.1) p.val.2 - Xc ω z 0 ∂P) = 0 := by
     rw [integral_sub ((hc.2.1 _ _).integrable (by norm_num))
@@ -57,7 +57,6 @@ theorem local_circle_second_moments
   rw [local_circle_self_potential] at hU
   simp only [covariance, hm] at hO
   simp only [covariance, hmU] at hU
-  simp only [sub_zero, ← pow_two] at hO hU
-  exact ⟨hO, hU⟩
+  grind
 
 end DOZZ.Proofs

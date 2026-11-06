@@ -10,7 +10,7 @@ import Mathlib.MeasureTheory.Integral.Prod
 
 /-! # Dominated convergence for the signed rescaled spatial integral -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -33,16 +33,14 @@ theorem fusionInterpolatedIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
       (fun y => K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ)) volume := by
     apply Eventually.of_forall
     intro z
-    exact hK.aestronglyMeasurable.mul
-      ((Complex.measurable_ofReal.comp (hmeas.comp (measurable_const.prodMk (measurable_id.prodMk measurable_const)))).aestronglyMeasurable)
+    fun_prop (disch := positivity)
   have hdom : ∀ᶠ z : ℂ in nhds 0, ∀ᵐ y : ℂ ∂volume,
       ‖K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ)‖ ≤ ‖K y‖ * B := by
-    have hz : ∀ᶠ z : ℂ in nhds 0, ‖z‖ ≤ 1 := by
-      exact ((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)).mono fun z h => h.le
+    have hz : ∀ᶠ z : ℂ in nhds 0, ‖z‖ ≤ 1 := ((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)).mono fun z h => h.le
     filter_upwards [hz] with z hz
     exact ae_of_all _ fun y => by
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-      exact mul_le_mul_of_nonneg_left (hbound t ht y z hz) (norm_nonneg _)
+      bound
   have hlim : ∀ᵐ y : ℂ ∂volume, Tendsto
       (fun z : ℂ => K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ)) (nhds 0)
       (nhds (K y * ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal : ℂ))) := by

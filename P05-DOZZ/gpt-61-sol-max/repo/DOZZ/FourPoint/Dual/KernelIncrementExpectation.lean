@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Dual.RelativeIncrement
 import Mathlib.Tactic
 /-! Integrated relative kernel errors are controlled by the finite signed polar increment. -/
-@[expose] public section
+public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
@@ -32,22 +32,18 @@ theorem dual_negative_increment_kernel_integral
       convert hm.aestronglyMeasurable using 1
     apply hInv.mono' hm'
     filter_upwards [hA, hv] with ω hAω hvω
-    simpa only [Real.norm_eq_abs] using
-      dual_negative_increment_abs_le p (A ω) (v ω) hp.le hAω hvω
+    exact dual_negative_increment_abs_le p (A ω) (v ω) hp.le hAω hvω
   have hit := hInt t ht htm
   have hiu := hInt u hu hum
   have hLoss : Integrable (fun ω => (A ω)^(-p)-(A ω+t ω)^(-p)) P := by
     convert hit.neg using 1
-    ext ω
-    change (A ω)^(-p)-(A ω+t ω)^(-p) = -((A ω+t ω)^(-p)-(A ω)^(-p))
-    ring
+    bound
   rw [← integral_sub hiu hit]
   have hb := norm_integral_le_of_norm_le
     (f := fun ω => ((A ω+u ω)^(-p)-(A ω)^(-p))-((A ω+t ω)^(-p)-(A ω)^(-p)))
     (hLoss.const_mul (max |θlo-1| |θhi-1|)) (by
       filter_upwards [hA, ht, hsqueeze] with ω hAω htω hs
-      simpa only [Real.norm_eq_abs] using
-        dual_negative_increment_kernel_squeeze p (A ω) (t ω) (u ω) θlo θhi
+      exact dual_negative_increment_kernel_squeeze p (A ω) (t ω) (u ω) θlo θhi
           hp hAω htω hlo hhi hs.1 hs.2)
   simpa only [Real.norm_eq_abs, integral_const_mul] using hb
 

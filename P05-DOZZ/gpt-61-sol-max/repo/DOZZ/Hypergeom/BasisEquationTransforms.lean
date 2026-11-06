@@ -5,40 +5,39 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.Hypergeom.BasisEquationSource
+import Mathlib.Tactic
 
 /-! The unpowered local solution at one solves the Gauss equation by reflection. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
-private theorem gaussSlitPlane_isOpen_for_basis : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z | z.re < 1})
-  exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
+private theorem gaussSlitPlane_isOpen_for_basis : IsOpen gaussSlitPlane := (isOpen_compl_singleton.preimage Complex.continuous_im).union
     (isOpen_Iio.preimage Complex.continuous_re)
 
+variable {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H) (a b c : ℂ)
+
+include H hH a b c in
 /-- The reflected unpowered local solution at one solves the Gauss equation. -/
 theorem gaussGMinus_holomorphicOperator_eq_zero
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    (a b c : ℂ) (hδ : ∀ n : ℤ, c - a - b ≠ (n : ℂ)) :
+     (hδ : ∀ n : ℤ, c - a - b ≠ (n : ℂ)) :
     ∀ z ∈ gaussCutPlane, gaussHolomorphicOperator a b c (gaussGMinus H a b c) z = 0 := by
-  let c' : ℂ := 1 + a + b - c
-  let g : ℂ → ℂ := H a b c'
-  let f : ℂ → ℂ := gaussGMinus H a b c
-  have hc' : ∀ n : ℕ, c' ≠ -(n : ℂ) := by
-    simpa [c'] using one_add_a_add_b_sub_c_ne_nat_neg hδ
+  let c'  := 1 + a + b - c
+  let g  := H a b c'
+  let f  := gaussGMinus H a b c
+  have hc' : ∀ n : ℕ, c' ≠ -(n : ℂ) := one_add_a_add_b_sub_c_ne_nat_neg hδ
   have hsource := gauss_family_holomorphicOperator_eq_zero hH a b c' hc'
   have hAnal : AnalyticOnNhd ℂ g gaussSlitPlane := by
     have hchar := hH a b c' hc'
-    simpa [g] using hchar.1.analyticOnNhd gaussSlitPlane_isOpen_for_basis
-  have hAnal' : AnalyticOnNhd ℂ (deriv g) gaussSlitPlane := hAnal.deriv
-  have hAnal'' : AnalyticOnNhd ℂ (deriv (deriv g)) gaussSlitPlane := hAnal'.deriv
-  have hmap (z : ℂ) : HasDerivAt (fun w : ℂ => 1 - w) (-1) z := by
-    simpa using (hasDerivAt_id z).const_sub (1 : ℂ)
+    exact hchar.1.analyticOnNhd gaussSlitPlane_isOpen_for_basis
+  have hAnal'  := hAnal.deriv
+
+  have hmap (z : ℂ) : HasDerivAt (fun w : ℂ => 1 - w) (-1) z := (hasDerivAt_id z).const_sub (1 : ℂ)
   have hderivEq : gaussCutPlane.EqOn (deriv f) (fun z => -deriv g (1 - z)) := by
     intro z hz
-    have hw : 1 - z ∈ gaussCutPlane := one_sub_gaussCutPlane_subset_gaussCutPlane hz
-    have hwslit : 1 - z ∈ gaussSlitPlane := gaussCutPlane_subset_gaussSlitPlane hw
+    have hw  := one_sub_gaussCutPlane_subset_gaussCutPlane hz
+    have hwslit  := gaussCutPlane_subset_gaussSlitPlane hw
     have hcomp := (hAnal (1 - z) hwslit).differentiableAt.hasDerivAt.comp z (hmap z)
     change deriv (fun w => g (1 - w)) z = -deriv g (1 - z)
     simpa [g, Function.comp_def, mul_comm] using hcomp.deriv
@@ -46,8 +45,8 @@ theorem gaussGMinus_holomorphicOperator_eq_zero
       (fun z => deriv (deriv g) (1 - z)) := by
     intro z hz
     have hfirst := hderivEq.deriv gaussCutPlane_isOpen hz
-    have hw : 1 - z ∈ gaussCutPlane := one_sub_gaussCutPlane_subset_gaussCutPlane hz
-    have hwslit : 1 - z ∈ gaussSlitPlane := gaussCutPlane_subset_gaussSlitPlane hw
+    have hw  := one_sub_gaussCutPlane_subset_gaussCutPlane hz
+    have hwslit  := gaussCutPlane_subset_gaussSlitPlane hw
     have hcomp := (hAnal' (1 - z) hwslit).differentiableAt.hasDerivAt.comp z (hmap z)
     have hneg := hcomp.neg
     calc
@@ -56,8 +55,7 @@ theorem gaussGMinus_holomorphicOperator_eq_zero
         simpa [Function.comp_def, mul_comm, mul_left_comm, mul_assoc] using hneg.deriv
   intro z hz
   let w := 1 - z
-  have hw : w ∈ gaussCutPlane := by simpa [w] using
-    one_sub_gaussCutPlane_subset_gaussCutPlane hz
+  have hw : w ∈ gaussCutPlane := one_sub_gaussCutPlane_subset_gaussCutPlane hz
   have hEqOp : gaussHolomorphicOperator a b c f z =
       gaussHolomorphicOperator a b c' g w := by
     rw [gaussHolomorphicOperator, gaussHolomorphicOperator,
@@ -65,42 +63,33 @@ theorem gaussGMinus_holomorphicOperator_eq_zero
     dsimp [f, g, w, c', gaussGMinus]
     ring
   rw [hEqOp]
-  simpa [g, c'] using hsource w hw
+  exact hsource w hw
 
+include H hH a b c in
 /-- The powered second local solution at zero solves the Gauss equation. -/
 theorem gaussFPlus_holomorphicOperator_eq_zero
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    (a b c : ℂ) (hc : ∀ n : ℤ, c ≠ (n : ℂ)) :
+     (hc : ∀ n : ℤ, c ≠ (n : ℂ)) :
     ∀ z ∈ gaussCutPlane, gaussHolomorphicOperator a b c (gaussFPlus H a b c) z = 0 := by
-  let δ : ℂ := 1 - c
-  let A : ℂ := a - c + 1
-  let B : ℂ := b - c + 1
-  let C : ℂ := 2 - c
+  let δ  := 1 - c
+  let A  := a - c + 1
+  let B  := b - c + 1
+  let C  := 2 - c
   let P : ℂ → ℂ := fun z => z ^ δ
-  let P₁ : ℂ → ℂ := fun z => δ * z ^ (δ - 1)
-  let P₂ : ℂ → ℂ := fun z => δ * (δ - 1) * z ^ (δ - 2)
-  let G : ℂ → ℂ := H A B C
-  let F : ℂ → ℂ := gaussFPlus H a b c
-  have hCfree : ∀ n : ℕ, C ≠ -(n : ℂ) := by
-    simpa [C] using two_sub_parameter_ne_nat_neg hc
+  let P₁  := fun z => δ * z ^ (δ - 1)
+  let P₂  := fun z => δ * (δ - 1) * z ^ (δ - 2)
+  let G  := H A B C
+  let F  := gaussFPlus H a b c
+  have hCfree : ∀ n : ℕ, C ≠ -(n : ℂ) := two_sub_parameter_ne_nat_neg hc
   have hsource := gauss_family_holomorphicOperator_eq_zero hH A B C hCfree
   have hGanalytic : AnalyticOnNhd ℂ G gaussSlitPlane := by
     have hchar := hH A B C hCfree
-    simpa [G] using hchar.1.analyticOnNhd gaussSlitPlane_isOpen_for_basis
-  have hGanalytic₁ : AnalyticOnNhd ℂ (deriv G) gaussSlitPlane := hGanalytic.deriv
-  have hGanalytic₂ : AnalyticOnNhd ℂ (deriv (deriv G)) gaussSlitPlane :=
-    hGanalytic₁.deriv
-  have hPdiff : DifferentiableOn ℂ P gaussCutPlane := by
-    change DifferentiableOn ℂ (fun z : ℂ => z ^ δ) gaussCutPlane
-    exact differentiableOn_id.cpow_const gaussCutPlane_subset_Complex_slitPlane
-  have hP₁diff : DifferentiableOn ℂ P₁ gaussCutPlane := by
-    change DifferentiableOn ℂ (fun z : ℂ => δ * z ^ (δ - 1)) gaussCutPlane
-    exact (differentiableOn_const δ).mul
+    exact hchar.1.analyticOnNhd gaussSlitPlane_isOpen_for_basis
+  have hGanalytic₁  := hGanalytic.deriv
+
+  have hPdiff : DifferentiableOn ℂ P gaussCutPlane := differentiableOn_id.cpow_const gaussCutPlane_subset_Complex_slitPlane
+  have hP₁diff : DifferentiableOn ℂ P₁ gaussCutPlane := (differentiableOn_const δ).mul
       (differentiableOn_id.cpow_const gaussCutPlane_subset_Complex_slitPlane)
-  have hP₁eq : gaussCutPlane.EqOn (deriv P) P₁ := by
-    intro z hz
-    have hzslit := gaussCutPlane_subset_Complex_slitPlane hz
-    simpa [P, P₁] using (Complex.deriv_cpow_const (c := δ) hzslit)
+  have hP₁eq : gaussCutPlane.EqOn (deriv P) P₁ := fun ⦃z⦄ hz =>   have hzslit := gaussCutPlane_subset_Complex_slitPlane hz;   id (Complex.deriv_cpow_const hzslit)
   have hP₂eq : gaussCutPlane.EqOn (deriv P₁) P₂ := by
     intro z hz
     have hzslit := gaussCutPlane_subset_Complex_slitPlane hz
@@ -109,28 +98,23 @@ theorem gaussFPlus_holomorphicOperator_eq_zero
     change deriv (fun w => δ * w ^ (δ - 1)) z = δ * (δ - 1) * z ^ (δ - 2)
     rw [deriv_const_mul_field δ, hpow, hexp]
     ring
-  have hGdiff : DifferentiableOn ℂ G gaussCutPlane := by
-    exact hGanalytic.differentiableOn.mono gaussCutPlane_subset_gaussSlitPlane
-  have hG₁diff : DifferentiableOn ℂ (deriv G) gaussCutPlane := by
-    exact hGanalytic₁.differentiableOn.mono gaussCutPlane_subset_gaussSlitPlane
+
+
   have hF₁eq : gaussCutPlane.EqOn (deriv F)
       (fun z => P₁ z * G z + P z * deriv G z) := by
     intro z hz
-    have hPAt : DifferentiableAt ℂ P z :=
+    have hPAt  :=
       (hPdiff z hz).differentiableAt (gaussCutPlane_isOpen.mem_nhds hz)
     have hzslit := gaussCutPlane_subset_gaussSlitPlane hz
-    have hGAt : DifferentiableAt ℂ G z := (hGanalytic z hzslit).differentiableAt
+    have hGAt  := (hGanalytic z hzslit).differentiableAt
     have hprod := hPAt.hasDerivAt.mul hGAt.hasDerivAt
     change deriv (P * G) z = P₁ z * G z + P z * deriv G z
     rw [hprod.deriv, hP₁eq hz]
-  have hRhsDiff : DifferentiableOn ℂ
-      (fun z => P₁ z * G z + P z * deriv G z) gaussCutPlane := by
-    exact (hP₁diff.mul hGdiff).add (hPdiff.mul hG₁diff)
-  have hF₂eq : gaussCutPlane.EqOn (deriv (deriv F))
-      (fun z => deriv (fun w => P₁ w * G w + P w * deriv G w) z) :=
+
+  have hF₂eq  :=
     hF₁eq.deriv gaussCutPlane_isOpen
   intro z hz
-  have hz0 : z ≠ 0 := (gaussCutPlane_subset_regularPlane hz).1
+  have hz0  := (gaussCutPlane_subset_regularPlane hz).1
   have hzslit := gaussCutPlane_subset_gaussSlitPlane hz
   have hPAt := (hPdiff z hz).differentiableAt (gaussCutPlane_isOpen.mem_nhds hz)
   have hP₁At := (hP₁diff z hz).differentiableAt (gaussCutPlane_isOpen.mem_nhds hz)
@@ -149,9 +133,7 @@ theorem gaussFPlus_holomorphicOperator_eq_zero
       change P₁ w * G w + P w * deriv G w =
         P w * deriv G w + P₁ w * G w
       ring
-    rw [hfun]
-    rw [add_comm (P * deriv G) (P₁ * G), hleft']
-    ring
+    grind
   have hpow₁ : z ^ (δ - 1) = z ^ δ / z := by
     simpa using Complex.cpow_sub δ 1 hz0
   have hpow₂ : z ^ (δ - 2) = z ^ δ / z ^ 2 := by
@@ -161,12 +143,7 @@ theorem gaussFPlus_holomorphicOperator_eq_zero
     rw [hpow₁]
     ring
   have hP₂val : P₂ z = δ * (δ - 1) * P z / z ^ 2 := by
-    simp only [P₂, P]
-    calc
-      δ * (δ - 1) * z ^ (δ - 2) = δ * (δ - 1) * (z ^ δ / z ^ 2) :=
-        congrArg (fun x : ℂ => δ * (δ - 1) * x) hpow₂
-      _ = δ * (δ - 1) * z ^ δ / z ^ 2 := by
-        field_simp [hz0]
+    grind
   have hFval : F z = P z * G z := by
     simp [F, gaussFPlus, P, G, δ, A, B, C]
   have hEqOp : gaussHolomorphicOperator a b c F z =
@@ -177,62 +154,45 @@ theorem gaussFPlus_holomorphicOperator_eq_zero
       P z * (z * (1 - z) * deriv (deriv G) z +
         (C - (A + B + 1) * z) * deriv G z - A * B * G z)
     rw [hsumDeriv, hF₁eq hz, hFval, hP₁val, hP₂val]
-    simp only [hP₁val]
-    dsimp [A, B, C, δ]
-    field_simp [hz0]
-    ring_nf
+    grind
   rw [hEqOp]
   simp [hsource z hz, G, A, B, C]
 
+include H hH a b c in
 /-- The powered second local solution at one solves the Gauss equation by reflection. -/
 theorem gaussGPlus_holomorphicOperator_eq_zero
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    (a b c : ℂ) (hδ : ∀ n : ℤ, c - a - b ≠ (n : ℂ)) :
+     (hδ : ∀ n : ℤ, c - a - b ≠ (n : ℂ)) :
     ∀ z ∈ gaussCutPlane, gaussHolomorphicOperator a b c (gaussGPlus H a b c) z = 0 := by
-  let c₀ : ℂ := 1 + a + b - c
-  let A : ℂ := a - c₀ + 1
-  let B : ℂ := b - c₀ + 1
-  let C : ℂ := 2 - c₀
+  let c₀  := 1 + a + b - c
+  let A  := a - c₀ + 1
+  let B  := b - c₀ + 1
+  let C  := 2 - c₀
   let P : ℂ → ℂ := fun z => z ^ (1 - c₀)
-  let G : ℂ → ℂ := H A B C
-  let g : ℂ → ℂ := gaussFPlus H a b c₀
-  let f : ℂ → ℂ := gaussGPlus H a b c
+
+  let g  := gaussFPlus H a b c₀
+  let f  := gaussGPlus H a b c
   have hc₀ : ∀ n : ℤ, c₀ ≠ (n : ℂ) := by
     intro n heq
     have hshift : c - a - b = (1 - n : ℤ) := by
-      have hδ₀ : c - a - b = 1 - c₀ := by dsimp [c₀]; ring
-      rw [hδ₀, heq]
-      push_cast
-      ring
+      grind
     exact hδ (1 - n) hshift
-  have hCfree : ∀ n : ℕ, C ≠ -(n : ℂ) := by
-    simpa [C] using two_sub_parameter_ne_nat_neg hc₀
+  have hCfree : ∀ n : ℕ, C ≠ -(n : ℂ) := two_sub_parameter_ne_nat_neg hc₀
   have hchar := hH A B C hCfree
-  have hGanalytic : AnalyticOnNhd ℂ G gaussCutPlane := by
-    exact (hchar.1.analyticOnNhd gaussSlitPlane_isOpen_for_basis).mono
+  have hGanalytic  := (hchar.1.analyticOnNhd gaussSlitPlane_isOpen_for_basis).mono
       gaussCutPlane_subset_gaussSlitPlane
-  have hPanalytic : AnalyticOnNhd ℂ P gaussCutPlane := by
-    change AnalyticOnNhd ℂ (fun z : ℂ => z ^ (1 - c₀)) gaussCutPlane
-    exact analyticOnNhd_id.cpow analyticOnNhd_const
+  have hPanalytic : AnalyticOnNhd ℂ P gaussCutPlane := analyticOnNhd_id.cpow analyticOnNhd_const
       (fun z hz => gaussCutPlane_subset_Complex_slitPlane hz)
-  have hganalytic : AnalyticOnNhd ℂ g gaussCutPlane := by
-    change AnalyticOnNhd ℂ (fun z => P z * G z) gaussCutPlane
-    exact hPanalytic.mul hGanalytic
-  have hganalytic₁ : AnalyticOnNhd ℂ (deriv g) gaussCutPlane := hganalytic.deriv
-  have hmap (z : ℂ) : HasDerivAt (fun w : ℂ => 1 - w) (-1) z := by
-    simpa using (hasDerivAt_id z).const_sub (1 : ℂ)
+  have hganalytic : AnalyticOnNhd ℂ g gaussCutPlane := hPanalytic.mul hGanalytic
+  have hganalytic₁  := hganalytic.deriv
+  have hmap (z : ℂ) : HasDerivAt (fun w : ℂ => 1 - w) (-1) z := (hasDerivAt_id z).const_sub (1 : ℂ)
   have hident : f = (fun z => g (1 - z)) := by
     funext z
     change (1 - z) ^ (c - a - b) * H (c - b) (c - a) (1 + c - a - b) (1 - z) =
       (1 - z) ^ (1 - c₀) * H (a - c₀ + 1) (b - c₀ + 1) (2 - c₀) (1 - z)
-    have he : c - a - b = 1 - c₀ := by dsimp [c₀]; ring
-    have ha : c - b = a - c₀ + 1 := by dsimp [c₀]; ring
-    have hb : c - a = b - c₀ + 1 := by dsimp [c₀]; ring
-    have hc : 1 + c - a - b = 2 - c₀ := by dsimp [c₀]; ring
-    rw [he, ha, hb, hc]
+    grind
   have hderivEq : gaussCutPlane.EqOn (deriv f) (fun z => -deriv g (1 - z)) := by
     intro z hz
-    have hw : 1 - z ∈ gaussCutPlane := one_sub_gaussCutPlane_subset_gaussCutPlane hz
+    have hw  := one_sub_gaussCutPlane_subset_gaussCutPlane hz
     have hcomp := (hganalytic (1 - z) hw).differentiableAt.hasDerivAt.comp z (hmap z)
     calc
       deriv f z = deriv (fun w => g (1 - w)) z := by rw [hident]
@@ -242,7 +202,7 @@ theorem gaussGPlus_holomorphicOperator_eq_zero
       (fun z => deriv (deriv g) (1 - z)) := by
     intro z hz
     have hfirst := hderivEq.deriv gaussCutPlane_isOpen hz
-    have hw : 1 - z ∈ gaussCutPlane := one_sub_gaussCutPlane_subset_gaussCutPlane hz
+    have hw  := one_sub_gaussCutPlane_subset_gaussCutPlane hz
     have hcomp := (hganalytic₁ (1 - z) hw).differentiableAt.hasDerivAt.comp z (hmap z)
     have hneg := hcomp.neg
     calc
@@ -252,8 +212,7 @@ theorem gaussGPlus_holomorphicOperator_eq_zero
   have hsource := gaussFPlus_holomorphicOperator_eq_zero hH a b c₀ hc₀
   intro z hz
   let w := 1 - z
-  have hw : w ∈ gaussCutPlane := by simpa [w] using
-    one_sub_gaussCutPlane_subset_gaussCutPlane hz
+  have hw : w ∈ gaussCutPlane := one_sub_gaussCutPlane_subset_gaussCutPlane hz
   have hEqOp : gaussHolomorphicOperator a b c f z =
       gaussHolomorphicOperator a b c₀ g w := by
     rw [gaussHolomorphicOperator, gaussHolomorphicOperator,
@@ -261,6 +220,6 @@ theorem gaussGPlus_holomorphicOperator_eq_zero
     dsimp [w, c₀]
     ring
   rw [hEqOp]
-  simpa [g] using hsource w hw
+  exact hsource w hw
 
 end DOZZ.Proofs

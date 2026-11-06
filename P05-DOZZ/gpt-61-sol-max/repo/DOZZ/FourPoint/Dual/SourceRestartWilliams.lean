@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.Reflected.CopiedPolarTransport
 public import DOZZ.Correlations.Tails.WilliamsSourceInputLaw
 import Mathlib.Tactic
 /-! Exact source joint Williams law, including the translated inner lateral copy. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -47,20 +47,19 @@ theorem dual_source_restart_outer_williams_law
   have hs : Measurable (fun a => brownianShiftPath T (radialPositiveHalf a)) :=
     continuous_brownianShiftPath.measurable.comp
       (measurable_const.prodMk continuous_radialPositiveHalf.measurable)
-  have hD : AEMeasurable D P := hs.comp_aemeasurable hA
+  have hD  := hs.comp_aemeasurable hA
   have hDb : IsBrownianReal (fun t p => p t) (P.map D) := by
     rw [reflected_restarted_radial_path_law P A hA hB T]
     exact radialPositiveHalf_map_isBrownian P A hA hB
   have hDZ := hiZ.comp₀ hA hZ.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable
   have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
-  have hβ : AEMeasurable (dual_radial_scale γ (Q γ-α₁) h Xc z) P := by
-    exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
+  have hβ : AEMeasurable (dual_radial_scale γ (Q γ-α₁) h Xc z) P := ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hYm := hβ.prodMk (((dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal)
   have hYD := (dual_source_future_indep_outer_restart P X Xc hX hc hm hcont γ hγ hγ₂ M hM
     (Q γ-α₁) h α₁ α₂ α₃ ξ z hz0 hz T hT hr).symm
   let Qν := P.map (fun ω => (B ω).1)
-  have hQν : IsNegativeConditionedBrownianLaw (Q γ-α₁) Qν := hData.1.1.2
+  have hQν  := hData.1.1.2
   have hl := reflected_copied_translated_williams_joint_law P D hD hDb γ Z hZ hDZ
     _ hYm hYD (Q γ-α₁) (sub_pos.mpr hα₁) Qν hQν T
   rw [isLateralGMCOf_map_eq P P γ Z Z₀ hZ hData.2.1,

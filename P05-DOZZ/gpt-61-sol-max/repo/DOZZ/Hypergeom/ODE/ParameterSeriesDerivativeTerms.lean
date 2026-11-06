@@ -27,13 +27,11 @@ theorem ordinaryHypergeometricCoefficient_gauss_recurrence_of_finite_pole_free
       ((n : ℂ) + a) * ((n : ℂ) + b) *
         ordinaryHypergeometricCoefficient a b c n := by
   have hcn : c + (n : ℂ) ≠ 0 := by
-    intro h
-    have h' : c = -(n : ℂ) := by linear_combination h
-    exact hc n (Finset.mem_range.mpr (Nat.lt_succ_self n)) h'
+    grind
   have hcpn : Polynomial.eval c (ascPochhammer ℂ n) ≠ 0 := by
     intro h
     obtain ⟨k, hkn, hkc⟩ := (ascPochhammer_eval_eq_zero_iff n c).mp h
-    exact hc k (Finset.mem_range.mpr (by omega)) (by linear_combination hkc)
+    grind
   have hfact : ((n + 1).factorial : ℂ) = (n + 1 : ℂ) * (n.factorial : ℂ) := by
     exact_mod_cast Nat.factorial_succ n
   have hfact0 : (n.factorial : ℂ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero n
@@ -42,10 +40,13 @@ theorem ordinaryHypergeometricCoefficient_gauss_recurrence_of_finite_pole_free
   field_simp [hcpn, hcn, hfact0]
   ring
 
+variable (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ)
+
+include p z n in
 /-- Successive parameterized terms obey their recurrence whenever the finite denominator prefix is
 pole-free. -/
 theorem gaussParameterSeriesTerm_recurrence_of_finite_pole_free
-    (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ)
+    
     (hc : ∀ k ∈ Finset.range (n + 1), p.2.2 ≠ -(k : ℂ)) :
     ((n + 1 : ℂ) * ((n : ℂ) + p.2.2)) *
         gaussParameterSeriesTerm p z (n + 1) =
@@ -54,16 +55,7 @@ theorem gaussParameterSeriesTerm_recurrence_of_finite_pole_free
   rw [gaussParameterSeriesTerm, gaussParameterSeriesTerm, pow_succ]
   have hcoeff := ordinaryHypergeometricCoefficient_gauss_recurrence_of_finite_pole_free
     p.1 p.2.1 p.2.2 n hc
-  calc
-    ((n + 1 : ℂ) * ((n : ℂ) + p.2.2)) *
-        (ordinaryHypergeometricCoefficient p.1 p.2.1 p.2.2 (n + 1) * (z ^ n * z))
-        = (((n + 1 : ℂ) * ((n : ℂ) + p.2.2)) *
-            ordinaryHypergeometricCoefficient p.1 p.2.1 p.2.2 (n + 1)) * z ^ n * z := by ring
-    _ = (((n : ℂ) + p.1) * ((n : ℂ) + p.2.1) *
-          ordinaryHypergeometricCoefficient p.1 p.2.1 p.2.2 n) * z ^ n * z := by
-      rw [hcoeff]
-    _ = ((n : ℂ) + p.1) * ((n : ℂ) + p.2.1) * z *
-          (ordinaryHypergeometricCoefficient p.1 p.2.1 p.2.2 n * z ^ n) := by ring
+  grind
 
 private def gaussParameterSeriesPrefixDomain (n : ℕ) : Set (ℂ × ℂ × ℂ) :=
   ⋂ k ∈ Finset.range (n + 1), {p | p.2.2 ≠ -(k : ℂ)}
@@ -74,10 +66,11 @@ private theorem gaussParameterSeriesPrefixDomain_isOpen (n : ℕ) :
   intro k hk
   exact isOpen_ne.preimage (continuous_snd.comp continuous_snd)
 
+include p z n in
 /-- The Fréchet derivatives of adjacent parameter-series terms satisfy the derivative of their
 scalar term recurrence. -/
 theorem gaussParameterSeriesTerm_fderiv_succ
-    (p : ℂ × ℂ × ℂ) (z : ℂ) (n : ℕ)
+    
     (hc : ∀ k : ℕ, p.2.2 ≠ -(k : ℂ)) :
     fderiv ℂ (fun q => gaussParameterSeriesTerm q z (n + 1)) p =
       gaussParameterSeriesRatio p z n •
@@ -99,26 +92,15 @@ theorem gaussParameterSeriesTerm_fderiv_succ
     have hden : (n + 1 : ℂ) * ((n : ℂ) + q.2.2) ≠ 0 := by
       apply mul_ne_zero
       · exact_mod_cast Nat.succ_ne_zero n
-      · intro hzero
-        have hneg : q.2.2 = -(n : ℂ) := by linear_combination hzero
-        exact hqfinite n (Finset.mem_range.mpr (Nat.lt_succ_self n)) hneg
+      grind
     dsimp [gaussParameterSeriesRatio]
-    have hsolve : gaussParameterSeriesTerm q z (n + 1) =
-        (((n : ℂ) + q.1) * ((n : ℂ) + q.2.1) * z *
-          gaussParameterSeriesTerm q z n) /
-          ((n + 1 : ℂ) * ((n : ℂ) + q.2.2)) := by
-      apply (eq_div_iff hden).2
-      simpa [mul_assoc, mul_left_comm, mul_comm] using hterm
-    rw [hsolve]
-    field_simp [hden]
+    grind
   have hnear : (fun q => gaussParameterSeriesTerm q z (n + 1)) =ᶠ[𝓝 p]
       (fun q => gaussParameterSeriesRatio q z n * gaussParameterSeriesTerm q z n) := by
     filter_upwards [hUopen.mem_nhds hpU] with q hq
     exact hrec q hq
   have hratioPole : (n : ℂ) + p.2.2 ≠ 0 := by
-    intro hzero
-    have hneg : p.2.2 = -(n : ℂ) := by linear_combination hzero
-    exact hc n hneg
+    grind
   have hratio := gaussParameterSeriesRatio_hasFDerivAt p z n hratioPole
   have hterm := gaussParameterSeriesTerm_differentiableAt p z n hc |>.hasFDerivAt
   exact (hratio.mul hterm).congr_of_eventuallyEq hnear |>.fderiv

@@ -14,8 +14,10 @@ open MeasureTheory Metric Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-noncomputable def separatedTail_harmonicEnvelope {Ω : Type*} (c : ℂ)
-    (H : Ω → ℂ → ℝ) (L : Ω → ℝ) (l : ℝ) (ω : Ω) : ℝ≥0∞ :=
+variable {Ω : Type*} (c : ℂ) (H : Ω → ℂ → ℝ) (L : Ω → ℝ)
+
+include Ω c H L in
+noncomputable def separatedTail_harmonicEnvelope  (l : ℝ) (ω : Ω) : ℝ≥0∞ :=
   ENNReal.ofReal (Real.exp (l*|L ω|)) *
     ⨆ z : closedBall c 1, ENNReal.ofReal (Real.exp (l*|H ω z|))
 
@@ -31,9 +33,10 @@ theorem separatedTail_harmonicEnvelope_aemeasurable
     simpa only [iSup_subtype] using hm
   exact (measurable_ofReal_exp_mul_abs L hL l).aemeasurable.mul hm'
 
+include Ω c H L in
 /-- The envelope's power is the same envelope at the multiplied linear order. -/
 theorem separatedTail_harmonicEnvelope_rpow
-    {Ω : Type*} (c : ℂ) (H : Ω → ℂ → ℝ) (L : Ω → ℝ)
+
     (l r : ℝ) (hr : 0 < r) (ω : Ω) :
     separatedTail_harmonicEnvelope c H L l ω ^ r = separatedTail_harmonicEnvelope c H L (l*r) ω := by
   unfold separatedTail_harmonicEnvelope
@@ -49,22 +52,19 @@ theorem separatedTail_harmonicEnvelope_rpow
     ring
   simp_rw [he]
 
+include Ω c H L in
 /-- The envelope increases with its linear order. -/
 theorem separatedTail_harmonicEnvelope_mono
-    {Ω : Type*} (c : ℂ) (H : Ω → ℂ → ℝ) (L : Ω → ℝ)
+
     {l m : ℝ} (hlm : l ≤ m) (ω : Ω) :
     separatedTail_harmonicEnvelope c H L l ω ≤ separatedTail_harmonicEnvelope c H L m ω := by
   apply mul_le_mul'
-  · exact ENNReal.ofReal_le_ofReal (Real.exp_le_exp.mpr
-      (mul_le_mul_of_nonneg_right hlm (abs_nonneg _)))
-  · apply iSup_mono
-    intro z
-    exact ENNReal.ofReal_le_ofReal (Real.exp_le_exp.mpr
-      (mul_le_mul_of_nonneg_right hlm (abs_nonneg _)))
+  all_goals gcongr
 
+include Ω c H L in
 /-- Every point in the closed unit disk is dominated by the correlated envelope. -/
 theorem separatedTail_exp_harmonic_sub_le_envelope
-    {Ω : Type*} (c : ℂ) (H : Ω → ℂ → ℝ) (L : Ω → ℝ)
+
     (l : ℝ) (hl : 0 ≤ l) (ω : Ω) (x : ℂ) (hx : x ∈ closedBall c 1) :
     ENNReal.ofReal (Real.exp (l*(H ω x-L ω))) ≤ separatedTail_harmonicEnvelope c H L l ω := by
   have h := mul_le_mul_of_nonneg_left
@@ -108,6 +108,6 @@ theorem separatedTail_product_envelope_moment_le
     simpa only [separatedTail_harmonicEnvelope_rpow _ _ _ T 2 (by norm_num), mul_comm T 2] using
       hC3 (2*T) (by positivity)
   exact (lintegral_mono hdom).trans ((separatedTail_correlated_envelope_product_le P _ _ (hE2 T) _ _
-    h2 h3).trans_eq (by exact (two_mul _).symm))
+    h2 h3).trans_eq ((two_mul _).symm))
 
 end DOZZ.Proofs

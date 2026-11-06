@@ -33,9 +33,7 @@ theorem fusion_difference_exterior_absolute_bound (γ α₁ α₂ α₃ t p : �
   have hC1 : 1 ≤ ENNReal.ofReal C := by
     apply (ENNReal.ofReal_le_ofReal (Real.one_le_rpow (by norm_num : (1 : ℝ) ≤ 2) (by positivity))).trans'
     norm_num
-  have hk : Measurable (fun x : ℂ => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x)) :=
-    ENNReal.measurable_ofReal.comp ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp
-      (f := fun x : ℂ => ((0 : ℂ), x)) (measurable_const.prodMk measurable_id))
+  
   have hJ0 : J ≤ coulombMass γ μ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ := by
     rw [fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ 0 μ h0μ h0μ h1μ]
     exact setLIntegral_le_lintegral _ _
@@ -44,7 +42,7 @@ theorem fusion_difference_exterior_absolute_bound (γ α₁ α₂ α₃ t p : �
       _ ≤ ∫⁻ x in B, ENNReal.ofReal (C * gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
         apply lintegral_mono_ae
         filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet.compl] with x hx
-        have hx' : 1 / 2 ≤ ‖x‖ := by simpa only [B, mem_compl_iff, Metric.mem_ball, dist_zero_right, not_lt] using hx
+        have hx' : 1 / 2 ≤ ‖x‖ := by continuity
         exact ENNReal.ofReal_le_ofReal (fusion_gammaHalfKernel_exterior_compare γ α₁ α₂ α₃ z x hz hx')
       _ = ENNReal.ofReal C * ∫⁻ x in B, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
         simp only [ENNReal.ofReal_mul hC]
@@ -52,7 +50,7 @@ theorem fusion_difference_exterior_absolute_bound (γ α₁ α₂ α₃ t p : �
       _ ≤ ENNReal.ofReal C * ∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ :=
         mul_le_mul' le_rfl (setLIntegral_le_lintegral _ _)
       _ = _ := by rw [← fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ z μ hzμ h0μ h1μ]
-  have hJseg : J ≤ ENNReal.ofReal C * fusionUnrootedSegment γ α₁ α₂ α₃ t z μ :=
+  have hJseg  :=
     fusion_convex_mass_majorant J _ _ _ t ht hJz
       (hJ0.trans (le_mul_of_one_le_left' hC1))
   have hA : (∫⁻ x in B, ENNReal.ofReal |fusionDifferenceKernel γ α₁ α₂ α₃ z x| ∂μ) ≤
@@ -61,7 +59,7 @@ theorem fusion_difference_exterior_absolute_bound (γ α₁ α₂ α₃ t p : �
       _ ≤ ∫⁻ x in B, ENNReal.ofReal (D * ‖z‖ * gammaHalfKernel γ α₁ α₂ α₃ 0 x) ∂μ := by
         apply lintegral_mono_ae
         filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet.compl] with x hx
-        have hx' : 1 / 2 ≤ ‖x‖ := by simpa only [B, mem_compl_iff, Metric.mem_ball, dist_zero_right, not_lt] using hx
+        have hx' : 1 / 2 ≤ ‖x‖ := by continuity
         exact ENNReal.ofReal_le_ofReal (fusion_difference_exterior_kernel_bound γ α₁ α₂ α₃ z x hz hx')
       _ = _ := by
         simp only [ENNReal.ofReal_mul (mul_nonneg hD (norm_nonneg _))]

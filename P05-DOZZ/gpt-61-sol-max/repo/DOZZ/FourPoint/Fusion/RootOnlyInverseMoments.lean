@@ -10,7 +10,7 @@ import DOZZ.GMC.SharpMoments.MomentConvergence
 
 /-! # Convergence of the inverse moments of the moving rooted mass -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

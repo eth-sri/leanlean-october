@@ -13,7 +13,7 @@ Integrating the full-history conditional avoidance identity over any event measu
 deterministic time gives the past/future factorization needed on each dyadic last-exit cell.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
@@ -55,10 +55,8 @@ theorem conditionedPositiveHistory_avoidance_shift_setIntegral
     apply measurable_pi_iff.mpr
     intro r
     exact (measurable_pi_apply r).sub measurable_const
-  have heval : @Measurable BrownianPath (ℚ → ℝ)
-      ContinuousMap.measurableSpace inferInstance eval := by
-    exact measurable_conditionedPositiveFutureRationalEvals t
-  have hpath : MeasurableSet (shiftedEval ⁻¹' C) :=
+  have heval  := measurable_conditionedPositiveFutureRationalEvals t
+  have hpath  :=
     hC.preimage (hshift.comp heval)
   have havoid : MeasurableSet avoid := by
     change MeasurableSet (⋂ q : ℚ,
@@ -67,11 +65,9 @@ theorem conditionedPositiveHistory_avoidance_shift_setIntegral
     intro q
     by_cases hq : 0 < (q : ℝ)
     · simp only [conditionedPositiveFutureAvoidanceCoordinate, hq]
-      exact measurableSet_lt measurable_const
-        ((measurable_pi_apply q).comp heval)
+      measurability
     · simp [conditionedPositiveFutureAvoidanceCoordinate, hq]
-  have hset : @MeasurableSet BrownianPath ContinuousMap.measurableSpace
-      (avoid ∩ shiftedEval ⁻¹' C) := havoid.inter hpath
+  have hset  := havoid.inter hpath
   have hf_eq : f = (avoid ∩ shiftedEval ⁻¹' C).indicator (fun _ => (1 : ℝ)) := by
     funext p
     by_cases hp : p ∈ avoid
@@ -84,9 +80,9 @@ theorem conditionedPositiveHistory_avoidance_shift_setIntegral
   have hfInt : Integrable f P := by
     rw [hf_eq]
     exact (integrable_const (1 : ℝ)).indicator hset
-  have hm : conditionedPositiveNaturalFiltration t ≤ ContinuousMap.measurableSpace :=
+  have hm  :=
     conditionedPositiveNaturalFiltration_le t
-  have hAambient : @MeasurableSet BrownianPath ContinuousMap.measurableSpace A :=
+  have hAambient  :=
     hm A hA
   have hce := conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift
     hP B hB t ht hν c hc C hC
@@ -97,8 +93,7 @@ theorem conditionedPositiveHistory_avoidance_shift_setIntegral
     _ = ∫ p in A, lastExitAvoidanceFactor ν (c : ℝ)
         (conditionedPositiveStateAt t p) *
           (brownianUpperConditionedReferenceFutureKernel B ν hν
-            (conditionedPositiveStateAt t p - c)).real C ∂P := by
-      exact setIntegral_congr_ae hAambient
+            (conditionedPositiveStateAt t p - c)).real C ∂P := setIntegral_congr_ae hAambient
         (hce.mono fun p hp _ => hp)
 
 end DOZZ.Proofs

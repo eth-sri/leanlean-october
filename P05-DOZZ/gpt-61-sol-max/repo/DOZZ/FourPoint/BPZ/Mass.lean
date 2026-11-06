@@ -9,6 +9,7 @@ public import DOZZ.GMC.SharpMoments.SeibergMoment
 public import DOZZ.GMC.SharpMoments.SeibergPieces
 public import DOZZ.GMC.SharpMoments.MomentRange
 public import DOZZ.Statements.FourPoint.FourPointT
+import Mathlib.Tactic
 
 /-! # The degenerate four-point mass
 
@@ -65,9 +66,9 @@ theorem bpzSoftWeight_ge_on_farBall (R : ℝ) (hR : 0 ≤ R) :
     ∃ c : ℝ, 0 < c ∧ ∀ z : ℂ, ‖z‖ ≤ R → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 →
       ∀ x ∈ bpzFarBall R, c ≤ bpzSoftWeight γ χ α₁ α₂ α₃ ε z x := by
   set L : ℝ := (2 * R + 6) ^ 2 + 1 with hL
-  have hL1 : 1 ≤ L := by rw [hL]; linarith only [sq_nonneg (2 * R + 6)]
-  have hLpos : 0 < L := by linarith
-  have hLinv : L⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hL1
+  have hL1 : 1 ≤ L := by bound
+  
+  have hLinv  := inv_le_one_of_one_le₀ hL1
   refine ⟨L ^ (-|γ * χ / 2|) * (L ^ (-|-(γ * α₁)|) * L ^ (-|-(γ * α₂)|) *
       L ^ (-|γ * (α₁ + α₂ + α₃ - χ)|)), by positivity, ?_⟩
   intro z hz ε hε0 hε1 x hx
@@ -98,8 +99,7 @@ theorem bpzSoftWeight_ge_on_farBall (R : ℝ) (hR : 0 ≤ R) :
       pow_le_pow_left₀ (by linarith only [] : (0 : ℝ) ≤ R + 3 - R) hxz1 2]
   have hb0b : Complex.normSq (x - z) + ε ^ 2 ≤ L := by
     rw [Complex.normSq_eq_norm_sq, hL]
-    have h0 : 0 ≤ ‖x - z‖ := norm_nonneg _
-    linarith only [pow_le_pow_left₀ h0 hxz2 2, pow_le_one₀ (n := 2) hε0 hε1, hR]
+    bound
   have f0 := coulombWeight_le_rpow hL1 (le_trans hLinv hb0a) hb0b (γ * χ / 2)
   have f1 := coulombWeight_le_rpow hL1 (le_trans hLinv (by linarith)) (by linarith : ‖x‖ ≤ L)
     (-(γ * α₁))
@@ -108,12 +108,12 @@ theorem bpzSoftWeight_ge_on_farBall (R : ℝ) (hR : 0 ≤ R) :
   have f3 := coulombWeight_le_rpow hL1 (le_trans hLinv (by rw [hnp]; linarith))
     (by rw [hnp]; linarith : normPlus x ≤ L) (γ * (α₁ + α₂ + α₃ - χ))
   unfold bpzSoftWeight bpzBaseWeight
-  have p0 : 0 ≤ L ^ (-|γ * χ / 2|) := by positivity
-  have p1 : 0 ≤ L ^ (-|-(γ * α₁)|) := by positivity
-  have p2 : 0 ≤ L ^ (-|-(γ * α₂)|) := by positivity
-  have p3 : 0 ≤ L ^ (-|γ * (α₁ + α₂ + α₃ - χ)|) := by positivity
-  have q1 : 0 ≤ ‖x‖ ^ (-(γ * α₁)) := Real.rpow_nonneg (norm_nonneg _) _
-  have q2 : 0 ≤ ‖x - 1‖ ^ (-(γ * α₂)) := Real.rpow_nonneg (norm_nonneg _) _
+  
+  
+  
+  
+  
+  
   gcongr
 
 /-- The mass is at least a fixed positive multiple of the chaos mass of the far disk. -/
@@ -128,20 +128,21 @@ theorem bpzMass_ge_farBall (R : ℝ) (hR : 0 ≤ R) :
       ≤ ∫⁻ x in bpzFarBall R, ENNReal.ofReal (bpzSoftWeight γ χ α₁ α₂ α₃ ε z x) ∂m := by
         apply setLIntegral_mono' (bpzFarBall_measurableSet R)
         intro x hx
-        exact ENNReal.ofReal_le_ofReal (hcw z hz ε hε0 hε1 x hx)
+        bound
     _ ≤ _ := setLIntegral_le_lintegral _ _
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX hγ hγ2 M hM in
 /-- Every negative moment of the chaos mass of the far disk is finite. -/
 theorem bpz_farBall_negMoment_lt_top
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (R q : ℝ) (hq : 0 ≤ q) :
     ∫⁻ ω, ENNReal.rpow (M ω (bpzFarBall R)) (-q) ∂P < ⊤ := by
   have h := (equatorGFF_GMC_moment_range P X hX γ hγ hγ2 M hM (bpzFarBall R)
     (bpzFarBall_isOpen R) (bpzFarBall_bounded R) (bpzFarBall_nonempty R) (-q)).mpr
-    (by have : 0 < 4 / γ ^ 2 := by positivity
-        linarith)
-  simpa [gmcMassMoment] using h
+    (by field_simp <;> nlinarith)
+  exact h
 
 /-- A lower bound transfers to negative powers. -/
 theorem bpz_rpow_neg_le_of_le {a b : ℝ≥0∞} {c : ℝ} (hc : 0 < c) (hb : b ≠ ⊤)
@@ -160,10 +161,10 @@ theorem bpz_rpow_neg_le_of_le {a b : ℝ≥0∞} {c : ℝ} (hc : 0 < c) (hb : b 
         rw [ENNReal.ofReal_rpow_of_pos hc]
         rfl
 
+include Ω _inst1 P X hX hγ hγ2 M hM in
 /-- Uniform finiteness of the negative moments of the mass. -/
 theorem bpzMass_negMoment_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (R : ℝ) (hR : 0 ≤ R) (q : ℝ) (hq : 0 ≤ q) :
     ∃ B : ℝ≥0∞, B < ⊤ ∧ ∀ z : ℂ, ‖z‖ ≤ R → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 →
       ∫⁻ ω, ENNReal.rpow (bpzMass γ χ α₁ α₂ α₃ ε (M ω) z) (-q) ∂P ≤ B := by
@@ -182,37 +183,36 @@ theorem bpzMass_negMoment_uniform
     exact measure_ne_top _ _
   exact bpz_rpow_neg_le_of_le hc hfin (hlow z hz ε hε0 hε1 (M ω)) q hq
 
+include Ω _inst1 P X hX hγ hγ2 M hM in
 /-- The mass is almost surely positive. -/
 theorem bpzMass_pos_ae
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (ε : ℝ) (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) (z : ℂ) :
     ∀ᵐ ω ∂P, 0 < bpzMass γ χ α₁ α₂ α₃ ε (M ω) z := by
   set R : ℝ := ‖z‖
   obtain ⟨c, hc, hlow⟩ := bpzMass_ge_farBall (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂)
     (α₃ := α₃) R (norm_nonneg z)
   have hfin := bpz_farBall_negMoment_lt_top P X hX hγ hγ2 M hM R 1 zero_le_one
-  have hmeas : AEMeasurable (fun ω => M ω (bpzFarBall R)) P :=
+  have hmeas  :=
     gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _ (bpzFarBall_measurableSet R)
   have hfin' : ∫⁻ ω, M ω (bpzFarBall R) ^ (-1 : ℝ) ∂P ≠ ⊤ := hfin.ne
-  have hae : ∀ᵐ ω ∂P, M ω (bpzFarBall R) ^ (-1 : ℝ) < ⊤ :=
+  have hae  :=
     ae_lt_top' (hmeas.pow_const _) hfin'
   filter_upwards [hae] with ω hω
   have hpos : M ω (bpzFarBall R) ≠ 0 := by
     intro h0
-    rw [h0] at hω
-    simp [ENNReal.zero_rpow_of_neg] at hω
+    simp_all
   refine lt_of_lt_of_le ?_ (hlow z le_rfl ε hε0 hε1 (M ω))
-  exact ENNReal.mul_pos (ENNReal.ofReal_pos.mpr hc).ne' hpos |>.bot_lt
+  positivity
 
 /-- The base factor is the Coulomb weight of the two finite charges and the shifted charge at
 infinity. -/
 theorem coulombWeight_two_eq_ofReal_bpzBaseWeight {x : ℂ} (hx0 : x ≠ 0) (hx1 : x ≠ 1) :
     coulombWeight γ ![α₁, α₂] ![0, 1] (α₃ - χ) x =
       ENNReal.ofReal (bpzBaseWeight γ χ α₁ α₂ α₃ x) := by
-  have hn : 0 < normPlus x := bpz_normPlus_pos x
-  have h₁ : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have h₂ : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have hn  := bpz_normPlus_pos x
+  have h₁  := norm_pos_iff.mpr hx0
+  have h₂  := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
   unfold coulombWeight
   simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
     Fin.prod_univ_zero, mul_one, sub_zero]
@@ -236,9 +236,7 @@ theorem coulombWeight_two_eq_ofReal_bpzBaseWeight {x : ℂ} (hx0 : x ≠ 0) (hx1
 theorem bpz_add_rpow_le (u v a : ℝ) (hu : 0 ≤ u) (hv : 0 ≤ v) (ha : 0 ≤ a) :
     (u + v) ^ a ≤ 2 ^ a * (u ^ a + v ^ a) := by
   have hmax : u + v ≤ 2 * max u v := by
-    rcases le_total u v with h | h
-    · rw [max_eq_right h]; linarith
-    · rw [max_eq_left h]; linarith
+    grind
   calc (u + v) ^ a ≤ (2 * max u v) ^ a :=
         Real.rpow_le_rpow (add_nonneg hu hv) hmax ha
     _ = 2 ^ a * (max u v) ^ a := Real.mul_rpow (by norm_num) (le_max_of_le_left hu)
@@ -246,11 +244,9 @@ theorem bpz_add_rpow_le (u v a : ℝ) (hu : 0 ≤ u) (hv : 0 ≤ v) (ha : 0 ≤ 
         gcongr
         rcases le_total u v with h | h
         · rw [max_eq_right h]
-          have := Real.rpow_nonneg hu a
-          linarith
+          bound
         · rw [max_eq_left h]
-          have := Real.rpow_nonneg hv a
-          linarith
+          bound
 
 /-- The softened weight is bounded by the unsoftened weight plus a multiple of the base. -/
 theorem bpzSoftWeight_le (hγχ : 0 ≤ γ * χ) (ε : ℝ) (z x : ℂ) :
@@ -267,10 +263,10 @@ theorem bpzSoftWeight_le (hγχ : 0 ≤ γ * χ) (ε : ℝ) (z x : ℂ) :
           bpzBaseWeight γ χ α₁ α₂ α₃ x := mul_le_mul_of_nonneg_right hle hb
     _ = _ := by ring
 
+include Ω _inst1 P X hX hγ hγ2 M hM in
 /-- The reduced four-point function, written with the real degenerate weight. -/
 theorem fourPointT_eq_bpzMass
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (μ : ℝ) (z : ℂ) :
+     (μ : ℝ) (z : ℂ) :
     fourPointT P M γ μ (-χ) α₁ α₂ α₃ z =
       2 * μ ^ (-fourPointSExp γ (-χ) α₁ α₂ α₃) / γ *
         Real.Gamma (fourPointSExp γ (-χ) α₁ α₂ α₃) *
@@ -288,12 +284,9 @@ theorem fourPointT_eq_bpzMass
 private theorem bpz_ae_lt_top_of_moment
     {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {Y : Ω → ℝ≥0∞} (hY : AEMeasurable Y P)
     {t : ℝ} (ht : 0 < t) (hfin : ∫⁻ ω, ENNReal.rpow (Y ω) t ∂P < ⊤) : ∀ᵐ ω ∂P, Y ω < ⊤ := by
-  have hfin' : ∫⁻ ω, Y ω ^ t ∂P ≠ ⊤ := hfin.ne
+  have hfin'  := hfin.ne
   filter_upwards [ae_lt_top' (hY.pow_const t) hfin'] with ω hω
-  by_contra h
-  rw [not_lt, top_le_iff] at h
-  rw [h, ENNReal.top_rpow_of_pos ht] at hω
-  exact lt_irrefl _ hω
+  exact (ENNReal.rpow_lt_top_iff_of_pos ht).mp hω
 
 /-- For a measure without atoms at `0` and `1`, the integral of the base factor is a two-root
 Coulomb mass. -/
@@ -312,32 +305,23 @@ theorem bpz_injective_three {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     Function.Injective ![z, (0 : ℂ), 1] := by
   intro i j hij
   fin_cases i <;> fin_cases j
-  all_goals first
-    | rfl
-    | (exfalso; revert hij; simp [hz0, hz1, eq_comm])
+  all_goals simp_all
 
 theorem bpz_injective_two : Function.Injective ![(0 : ℂ), 1] := by
-  intro i j hij
-  fin_cases i <;> fin_cases j
-  all_goals first
-    | rfl
-    | (exfalso; revert hij; simp)
+  simp_all
 
 /-- A positive order below six positive bounds. -/
 theorem bpz_exists_pos_lt_six {a b c d e f : ℝ} (ha : 0 < a) (hb : 0 < b) (hc : 0 < c)
     (hd : 0 < d) (he : 0 < e) (hf : 0 < f) :
     ∃ t : ℝ, 0 < t ∧ t < a ∧ t < b ∧ t < c ∧ t < d ∧ t < e ∧ t < f := by
   refine ⟨min a (min b (min c (min d (min e f)))) / 2, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · have : 0 < min a (min b (min c (min d (min e f)))) := by
-      simp only [lt_min_iff]; exact ⟨ha, hb, hc, hd, he, hf⟩
-    linarith
+  · simp_all
   all_goals
     have h0 : 0 < min a (min b (min c (min d (min e f)))) := by
-      simp only [lt_min_iff]; exact ⟨ha, hb, hc, hd, he, hf⟩
-  · have := min_le_left a (min b (min c (min d (min e f)))); linarith
-  · have := (min_le_right a _).trans (min_le_left b (min c (min d (min e f)))); linarith
-  · have := (min_le_right a _).trans ((min_le_right b _).trans
-      (min_le_left c (min d (min e f)))); linarith
+      simp_all
+  · grind
+  · grind
+  · grind
   · have := (min_le_right a _).trans ((min_le_right b _).trans ((min_le_right c _).trans
       (min_le_left d (min e f)))); linarith
   · have := (min_le_right a _).trans ((min_le_right b _).trans ((min_le_right c _).trans
@@ -345,10 +329,10 @@ theorem bpz_exists_pos_lt_six {a b c d e f : ℝ} (ha : 0 < a) (hb : 0 < b) (hc 
   · have := (min_le_right a _).trans ((min_le_right b _).trans ((min_le_right c _).trans
       ((min_le_right d _).trans (min_le_right e f)))); linarith
 
+include Ω _inst1 P X hX hγ hγ2 M hM in
 /-- The degenerate four-point mass is almost surely finite. -/
 theorem bpzMass_lt_top_ae
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (hχ : 0 < χ) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (ε : ℝ) (z : ℂ) (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     ∀ᵐ ω ∂P, bpzMass γ χ α₁ α₂ α₃ ε (M ω) z < ⊤ := by
@@ -403,7 +387,7 @@ theorem bpzMass_lt_top_ae
         have hsum : Measurable fun x => ENNReal.ofReal (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x) +
             ENNReal.ofReal c * ENNReal.ofReal (bpzBaseWeight γ χ α₁ α₂ α₃ x) :=
           hm0.add (hmb.const_mul _)
-        rw [lintegral_const_mul _ hsum, lintegral_add_left hm0, lintegral_const_mul _ hmb]
+        simp_all
     _ < ⊤ := ENNReal.mul_lt_top ENNReal.ofReal_lt_top
         (ENNReal.add_lt_top.mpr ⟨h3, ENNReal.mul_lt_top ENNReal.ofReal_lt_top h2⟩)
 

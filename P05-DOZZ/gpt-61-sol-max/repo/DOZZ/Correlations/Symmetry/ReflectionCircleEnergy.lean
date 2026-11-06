@@ -5,22 +5,21 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.Correlations.Symmetry.ReflectionCircleTransport
 public import DOZZ.Correlations.Symmetry.ReflectionTestCovariance
-@[expose] public section
+public section
 open MeasureTheory Filter
 open scoped Topology
 namespace DOZZ.Proofs
 
+variable (x : ℂ) (r : ℝ)
+
+include x r in
 /-- The mixed energy transforms with both pinning corrections. -/
-theorem reflection_circle_cross (x : ℂ) (r : ℝ) (f : TestFn) :
+theorem reflection_circle_cross  (f : TestFn) :
     circleCross (1 - x) r (symmetryReflectionTest f) = circleCross x r f +
       (∫ z, f z * symmetryReflectionPotential z) +
       testMass f * (∫ z, symmetryReflectionPotential z ∂circleMeasure x r) := by
   have hc : Continuous (fun z => ∫ w, gffKernel z w ∂circleMeasure x r) := by
-    simp_rw [integral_gffKernel_circleMeasure]
-    have hl : Continuous (fun z : ℂ => Real.log (max (Real.exp (-r)) ‖x - z‖)) :=
-      (continuous_const.max (continuous_const.sub continuous_id).norm).log
-        (fun z => (lt_of_lt_of_le (Real.exp_pos _) (le_max_left _ _)).ne')
-    exact (hl.neg.add continuous_log_normPlus).add continuous_const
+    exact continuous_circleKernelPotential x r
   have hi : Integrable (fun z => f z * ∫ w, gffKernel z w ∂circleMeasure x r) :=
     (f.continuous.mul hc).integrable_of_hasCompactSupport f.hasCompactSupport.mul_right
   have hd : Integrable (fun z => f z * symmetryReflectionPotential z) :=
@@ -42,15 +41,17 @@ theorem reflection_circle_cross (x : ℂ) (r : ℝ) (f : TestFn) :
   rw [ho, hin, integral_mul_const]
   rfl
 
+include x r in
 /-- Circle self-energy transforms by twice the mean pinning correction. -/
-theorem reflection_circle_self (x : ℂ) (r : ℝ) :
+theorem reflection_circle_self  :
     circleSelfEnergy (1 - x) r = circleSelfEnergy x r +
       2 * (∫ z, symmetryReflectionPotential z ∂circleMeasure x r) := by
   rw [circleSelfEnergy_eq, circleSelfEnergy_eq, symmetryReflection_circle_potential]
   ring
 
+include x r in
 /-- Reflection preserves the zero-gap limit for normalized weak circle approximations. -/
-theorem reflection_circle_energy_gap (x : ℂ) (r : ℝ) (f : TestFn) :
+theorem reflection_circle_energy_gap  (f : TestFn) :
     circleEnergyGap (1 - x) r (symmetryReflectionTest f) = circleEnergyGap x r f +
       2 * (testMass f - 1) * ((∫ z, f z * symmetryReflectionPotential z) -
         (∫ z, symmetryReflectionPotential z ∂circleMeasure x r)) := by

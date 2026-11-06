@@ -11,6 +11,7 @@ public import DOZZ.Statements.Brownian.BrownianPath
 import DOZZ.Roots.CubeContinuation
 import DOZZ.ShiftEquations.Reflection.Witness
 import DOZZ.Brownian.Lateral.ReflectionJointLaw
+public import DOZZ.ShiftEquations.ContinuationContracts
 
 /-!
 # The residual factor from the first and the first-case dual structure shifts
@@ -28,7 +29,7 @@ to every pole-free extended triple, in particular to the cube of size `η` (wher
 `3η < Q`).
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -66,21 +67,7 @@ theorem unitVolume_residual_factor_eq_one_of_shifts
           C (z + 2 / γ) =
             -(1 / (Real.pi * dualMu γ μ)) *
               shiftCoeffA γ (2 / γ) z (α₂ : ℂ) (α₃ : ℂ) * C (z - 2 / γ)) :
-    ∃ B : ℝ → Ω → BrownianPath ×
-        BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α, γ / 2 < α → α < Q γ →
-            IsReflectionData P γ α (B α) Z) ∧
-            ∃ cγ : ℂ, cγ = 1 ∧
-              ∀ α₁ α₂ α₃ : ℝ,
-                Q γ - η < α₁ → α₁ < Q γ →
-                Q γ - η < α₂ → α₂ < Q γ →
-                Q γ - η < α₃ → α₃ < Q γ →
-                  (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ) =
-                    cγ * ((μ : ℂ) ^ ((sExp γ α₁ α₂ α₃ : ℂ)) /
-                      Complex.Gamma (sExp γ α₁ α₂ α₃ : ℂ) *
-                        dozzFormula γ μ U (α₁ : ℂ) (α₂ : ℂ) (α₃ : ℂ)) := by
+    Contract.residualUnitVolume P X M γ μ η U := by
   obtain ⟨hη0, hηγ, hη3⟩ := hη
   -- the small cube
   set η₀ : ℝ := min η (γ / 4) with hη₀
@@ -117,8 +104,7 @@ theorem unitVolume_residual_factor_eq_one_of_shifts
   exact roots_unitVolume_of_cube P X M γ μ η₀ hγ hγ2 hμ hη₀0 hη₀3 U hU hX hM hsmall α₁ α₂ α₃
     (roots_extended_cube hγ hη3 h1 h2 h3 h4 h5 h6)
     (fun n hn => by
-      have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-      linarith)
+      bound)
 
 end DOZZ.Proofs
 

@@ -26,6 +26,4 @@ The ABK test kernel is
 `(r, y) ↦ c r^{- (d+1)/2} (ζ_r * ψ)(y)` on `r > 0`, extended by zero to all of scale-space.
 -/
 
-public section
 
-end

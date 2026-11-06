@@ -7,6 +7,8 @@ module
 public import DOZZ.Brownian.ConditionedKernelScoreParameter
 public import DOZZ.Brownian.ConditionedKernelParameterRatio
 public import DOZZ.Brownian.ConditionedKernelCDFOrder
+import Mathlib.MeasureTheory.Group.Integral
+import DOZZ.Brownian.ConditionedKernelProbability
 public import Mathlib.Analysis.Calculus.Deriv.MeanValue
 
 /-!
@@ -265,13 +267,10 @@ theorem conditionedPositiveTransitionDensity_shifted_ratio_antitoneOn
       (fun y => conditionedPositiveTransitionDensity b t x (y + d) /
         conditionedPositiveTransitionDensity a t x y) (Set.Ioi 0) := by
   have hb : 0 < b := lt_of_lt_of_le ha hab
-  let C : ℝ := Real.exp (-((b ^ 2 - a ^ 2) * t / 2)) *
+  let C  := Real.exp (-((b ^ 2 - a ^ 2) * t / 2)) *
     (Real.sinh (a * x) / Real.sinh (b * x))
   have hC : 0 < C := by
-    dsimp [C]
-    exact mul_pos (Real.exp_pos _)
-      (div_pos (Real.sinh_pos_iff.mpr (mul_pos ha hx))
-        (Real.sinh_pos_iff.mpr (mul_pos hb hx)))
+    positivity
   have hR := conditionedKernelShiftedDensityRatio_antitoneOn
     ha hab (div_pos hx ht) ht hd hshift
   have hdenPos (y : ℝ) (hy : 0 < y) :
@@ -408,20 +407,11 @@ theorem conditionedKernelShiftedZeroDensityRatio_antitoneOn
       exact hanti (Set.mem_Ioi.mpr hy') (Set.mem_Ioi.mpr hyD) (by linarith)
     have hratio : 0 < conditionedKernelShiftedZeroDensityRatio b c t d y := by
       dsimp [conditionedKernelShiftedZeroDensityRatio]
-      have hsB : 0 < Real.sinh (b * (y + d)) :=
-        Real.sinh_pos_iff.mpr (mul_pos hb hyD)
-      have hsCy : 0 < Real.sinh (c * y) :=
-        Real.sinh_pos_iff.mpr (mul_pos hc hy')
-      have hsCyd : 0 < Real.sinh (c * (y + d)) :=
-        Real.sinh_pos_iff.mpr (mul_pos hc hyD)
       positivity
     have hlast : conditionedKernelScore c (y + d) - conditionedKernelScore c y ≤ 0 :=
       sub_nonpos.mpr hscoreStateC
     have hfirst : conditionedKernelScore b (y + d) - 1 / y ≤ b := by
-      calc
-        conditionedKernelScore b (y + d) - 1 / y ≤
-            conditionedKernelScore b y - 1 / y := sub_le_sub_right hscoreStateB _
-        _ ≤ b := hscoreB.2
+      linarith
     have hslope : -(d / t) + (conditionedKernelScore b (y + d) - 1 / y) +
         (conditionedKernelScore c (y + d) - conditionedKernelScore c y) ≤ 0 := by
       rw [hdt]
@@ -537,28 +527,17 @@ theorem conditionedPositiveTransitionDensity_shifted_zero_ratio_antitoneOn
   exact mul_le_mul_of_nonneg_left (hR hy₁ hy₂ hy₁₂) (le_of_lt hC)
 
 /-- Under the probability-density normalizations, the shifted positive-drift kernel's CDF is at
-least the unshifted BES(3) CDF. The hypothesis `m` is the shifted law's mass on the positive
-half-line; the remaining mass lies to the left of the comparison's common support. -/
+least the unshifted BES(3) CDF. The shifted law's mass to the left of zero lies outside the comparison's common support. -/
 theorem conditionedPositiveTransitionDensity_shifted_zero_cdf_ge
-    {b t x d m : ℝ} (hb : 0 < b) (ht : 0 < t) (hx : 0 < x)
+    {b t x d : ℝ} (hb : 0 < b) (ht : 0 < t) (hx : 0 < x)
     (hd : 0 ≤ d) (hdt : d / t = b)
-    (hf : Integrable (fun y : ℝ => conditionedPositiveTransitionDensity 0 t x y)
-      (volume : Measure ℝ))
-    (hg : Integrable (fun y : ℝ => conditionedPositiveTransitionDensity b t x (y + d))
-      (volume : Measure ℝ))
-    (hng : ∀ y, 0 ≤ conditionedPositiveTransitionDensity b t x (y + d))
-    (hunitf : ∫ y, conditionedPositiveTransitionDensity 0 t x y = 1)
-    (hunitg : ∫ y, conditionedPositiveTransitionDensity b t x (y + d) = 1)
-    (hmpos : 0 < m) (hmle : m ≤ 1)
-    (hmass : (∫ y in Set.Ioi 0,
-      conditionedPositiveTransitionDensity b t x (y + d) ∂(volume : Measure ℝ)) = m)
     (z : ℝ) :
     ∫ y in Set.Iic z, conditionedPositiveTransitionDensity 0 t x y ∂(volume : Measure ℝ) ≤
       ∫ y in Set.Iic z, conditionedPositiveTransitionDensity b t x (y + d)
         ∂(volume : Measure ℝ) := by
-  let f : ℝ → ℝ := fun y => conditionedPositiveTransitionDensity 0 t x y
-  let g : ℝ → ℝ := fun y => conditionedPositiveTransitionDensity b t x (y + d)
-  let r : ℝ → ℝ := fun y => g y / f y
+  let f  := fun y => conditionedPositiveTransitionDensity 0 t x y
+  let g  := fun y => conditionedPositiveTransitionDensity b t x (y + d)
+  let r  := fun y => g y / f y
   have hzero : ∀ y, y ≤ 0 → f y = 0 := by
     intro y hy
     simp [f, conditionedPositiveTransitionDensity, hy]
@@ -574,10 +553,6 @@ theorem conditionedPositiveTransitionDensity_shifted_zero_cdf_ge
     change 0 < conditionedPositiveTransitionDensity b t x (y + d)
     rw [conditionedPositiveTransitionDensity_eq_sinh_gaussian_factor hb ht hx
       (by linarith [hd])]
-    have hsin₁ : 0 < Real.sinh (b * (y + d)) :=
-      Real.sinh_pos_iff.mpr (mul_pos hb (by linarith [hy, hd]))
-    have hsin₂ : 0 < Real.sinh (x * (y + d) / t) :=
-      Real.sinh_pos_iff.mpr (div_pos (mul_pos hx (by linarith [hy, hd])) ht)
     positivity
   have hratio : AntitoneOn r (Set.Ioi 0) := by
     have hR := conditionedPositiveTransitionDensity_shifted_zero_ratio_antitoneOn
@@ -592,12 +567,13 @@ theorem conditionedPositiveTransitionDensity_shifted_zero_cdf_ge
     dsimp [r]
     field_simp [ne_of_gt (hfpos y hy)]
   exact integral_Iic_ge_of_shiftedAntitoneDensityRatio
-    (by simpa [f] using hf) (by simpa [g] using hg)
-    (by simpa [g] using hng) hzero
-    (by simpa [f] using hunitf) (by simpa [g] using hunitg)
-    hmpos hmle (by simpa [g] using hmass)
-    (by simpa [f, g] using hfactor)
-    (by simpa [r] using hrpos) (by simpa [r] using hratio) z
+    (integrable_conditionedPositiveTransitionDensity le_rfl ht hx)
+    ((integrable_conditionedPositiveTransitionDensity hb.le ht hx).comp_add_right d)
+    (fun y => conditionedPositiveTransitionDensity_nonneg hb.le ht hx (y + d)) hzero
+    (conditionedPositiveTransitionDensity_integral_eq_one le_rfl ht hx)
+    ((integral_add_right_eq_self _ d).trans
+      (conditionedPositiveTransitionDensity_integral_eq_one hb.le ht hx))
+    hfactor hrpos hratio z
 
 end DOZZ.Proofs
 

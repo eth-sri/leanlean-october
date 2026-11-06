@@ -9,7 +9,7 @@ public import DOZZ.GMC.GoodBarrierL2Cauchy
 
 /-! Growing-barrier tail bounds, their spatial integration, and the L² algebra criterion. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal
@@ -79,7 +79,7 @@ theorem tendsto_compatible_mixed_double_root_barrier_tail_sum
         ENNReal.ofReal (Real.exp (-((a - g) ^ 2 * ((k + N : ℕ) : ℝ) / 16))))
       atTop (𝓝 0) := by
   let c : ℝ := (a - g) ^ 2 / 16
-  have hc : 0 < c := by dsimp [c]; positivity
+
   have hsummable : Summable (fun k : ℕ => Real.exp (-c * (k : ℝ))) := by
     have h := summable_compatible_mixed_double_root_barrier_rate g a hga
     apply h.congr
@@ -88,22 +88,8 @@ theorem tendsto_compatible_mixed_double_root_barrier_tail_sum
     dsimp [c]
     ring
   let f : ℕ → ℝ≥0∞ := fun k => ENNReal.ofReal (Real.exp (-c * (k : ℝ)))
-  have hfinite : ∑' k, f k ≠ ∞ := by
-    exact hsummable.tsum_ofReal_ne_top
+  have hfinite  := hsummable.tsum_ofReal_ne_top
   have htail := ENNReal.tendsto_sum_nat_add f hfinite
-  have hfun :
-      (fun N : ℕ => ∑' k : ℕ,
-        ENNReal.ofReal (Real.exp (-((a - g) ^ 2 * ((k + N : ℕ) : ℝ) / 16)))) =
-      fun N => ∑' k : ℕ, f (k + N) := by
-    funext N
-    apply tsum_congr
-    intro k
-    simp only [f]
-    congr 1
-    rw [Nat.cast_add]
-    dsimp [c]
-    ring_nf
-  rw [hfun]
-  exact htail
+  grind
 
 end DOZZ.Proofs

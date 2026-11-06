@@ -10,7 +10,7 @@ import Mathlib.Tactic
 
 /-! # Uniform rooted inverse moments at the freezing rate -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -34,7 +34,7 @@ theorem reflected_retainedZero_rooted_inverse_freezing
   let c : ℝ := Real.exp (-γ ^ 2 * Real.log 2) *
     ((1 / 2 : ℝ) ^ (γ ^ 2 / 2) * (2 : ℝ) ^ (-|γ * α₂|))
   have hc : 0 < c := by dsimp only [c]; positivity
-  have hq : 0 < q := (reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs).2.1
+  have hq  := (reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs).2.1
   obtain ⟨C, ε₀, hC, hε₀, hb⟩ := reflected_freezing_local_input
     P X M γ α₁ α₂ α₃ hγ hγ₂ hα₁ hreflect hs hX hM
   refine ⟨c ^ (-q) * C, ε₀, mul_pos (Real.rpow_pos_of_pos hc _) hC, hε₀, ?_⟩

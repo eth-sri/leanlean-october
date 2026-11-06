@@ -10,7 +10,7 @@ public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 
 /-! Modify a random measure on a null set so it is finite at every outcome. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 open scoped ENNReal
@@ -27,7 +27,7 @@ theorem exists_everywhere_finite_measure_version
       Measurable N ∧ (∀ ω, IsFiniteMeasure (N ω)) ∧ ∀ᵐ ω ∂P, N ω = M ω := by
   classical
   let good : Set Ω := {ω | M ω Set.univ < ∞}
-  have hEval : Measurable (fun ω => M ω Set.univ) :=
+  have hEval  :=
     (Measure.measurable_coe MeasurableSet.univ).comp hM
   have hgood : MeasurableSet good := by
     dsimp [good]
@@ -37,13 +37,12 @@ theorem exists_everywhere_finite_measure_version
   refine ⟨N, hN, ?_, ?_⟩
   · intro ω
     by_cases hω : ω ∈ good
-    · have hmass : M ω Set.univ < ∞ := by simpa [good] using hω
+    · have hmass : M ω Set.univ < ∞ := hω
       exact ⟨by simpa [N, hω] using hmass⟩
     · have hzero : IsFiniteMeasure (0 : Measure ℂ) := ⟨by simp⟩
       simpa [N, hω] using hzero
   · filter_upwards [hfinite] with ω hω
-    have hmass : M ω Set.univ < ∞ := hω.measure_univ_lt_top
-    simp [N, good, hmass]
+    continuity
 
 /-- Compact-test convergence in measure is unchanged when the limiting random measure is modified
 on a null set. -/

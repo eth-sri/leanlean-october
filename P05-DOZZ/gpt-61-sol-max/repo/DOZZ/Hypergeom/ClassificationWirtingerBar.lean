@@ -19,40 +19,36 @@ open scoped Topology
 noncomputable def wirtingerBar (f : ℂ → ℂ) (z : ℂ) : ℂ :=
   star (wirtingerZ (fun w => star (f w)) z)
 
+variable {f g : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z)
+
+include f g z hf hg in
 /-- The conjugate Wirtinger derivative obeys the product rule for real-differentiable maps. -/
-theorem wirtingerBar_mul {f g : ℂ → ℂ} {z : ℂ}
-    (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z) :
+theorem wirtingerBar_mul  :
     wirtingerBar (fun w => f w * g w) z =
       f z * wirtingerBar g z + g z * wirtingerBar f z := by
   have hfstar : DifferentiableAt ℝ (fun w => star (f w)) z := by
-    have hclm : DifferentiableAt ℝ (starRingEnd ℂ) (f z) :=
+    have hclm  :=
       Complex.differentiable_conj.differentiableAt (x := f z)
     exact hclm.comp z hf
   have hgstar : DifferentiableAt ℝ (fun w => star (g w)) z := by
-    have hclm : DifferentiableAt ℝ (starRingEnd ℂ) (g z) :=
+    have hclm  :=
       Complex.differentiable_conj.differentiableAt (x := g z)
     exact hclm.comp z hg
   have hmul := wirtingerZ_mul hfstar hgstar
-  have hfun : (fun w => star (f w * g w)) =
-      (fun w => star (f w) * star (g w)) := by
-    funext w
-    rw [star_mul]
-    ring
+  
   unfold wirtingerBar
-  rw [hfun, hmul]
-  simp only [star_add, star_mul, star_star]
-  ring
+  simp_all
 
+include f g z hf hg in
 /-- The conjugate Wirtinger derivative is additive on real-differentiable maps. -/
-theorem wirtingerBar_add {f g : ℂ → ℂ} {z : ℂ}
-    (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z) :
+theorem wirtingerBar_add  :
     wirtingerBar (fun w => f w + g w) z = wirtingerBar f z + wirtingerBar g z := by
   have hfstar : DifferentiableAt ℝ (fun w => star (f w)) z := by
-    have hclm : DifferentiableAt ℝ (starRingEnd ℂ) (f z) :=
+    have hclm  :=
       Complex.differentiable_conj.differentiableAt (x := f z)
     exact hclm.comp z hf
   have hgstar : DifferentiableAt ℝ (fun w => star (g w)) z := by
-    have hclm : DifferentiableAt ℝ (starRingEnd ℂ) (g z) :=
+    have hclm  :=
       Complex.differentiable_conj.differentiableAt (x := g z)
     exact hclm.comp z hg
   have hfun : (fun w => star (f w + g w)) =
@@ -63,23 +59,22 @@ theorem wirtingerBar_add {f g : ℂ → ℂ} {z : ℂ}
   rw [hfun, wirtingerZ_add hfstar hgstar]
   simp only [star_add]
 
+include f g z hf hg in
 /-- The conjugate Wirtinger derivative is unchanged by local equality of differentiable maps. -/
-theorem wirtingerBar_congr_of_eventuallyEq {f g : ℂ → ℂ} {z : ℂ}
-    (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z)
+theorem wirtingerBar_congr_of_eventuallyEq 
     (hfg : f =ᶠ[𝓝 z] g) : wirtingerBar f z = wirtingerBar g z := by
   have hfstar : DifferentiableAt ℝ (fun w => star (f w)) z := by
-    have hclm : DifferentiableAt ℝ (starRingEnd ℂ) (f z) :=
+    have hclm  :=
       Complex.differentiable_conj.differentiableAt (x := f z)
     exact hclm.comp z hf
   have hgstar : DifferentiableAt ℝ (fun w => star (g w)) z := by
-    have hclm : DifferentiableAt ℝ (starRingEnd ℂ) (g z) :=
+    have hclm  :=
       Complex.differentiable_conj.differentiableAt (x := g z)
     exact hclm.comp z hg
   have hstar : (fun w => star (f w)) =ᶠ[𝓝 z] (fun w => star (g w)) := by
     filter_upwards [hfg] with w hw
     rw [hw]
   have h := wirtingerZ_congr_of_eventuallyEq hfstar hgstar hstar
-  unfold wirtingerBar
   exact congrArg star h
 
 /-- The conjugate Wirtinger derivative annihilates a holomorphic function. -/
@@ -108,11 +103,6 @@ conjugate of two `∂z` derivatives. -/
     wirtingerBar (fun w => wirtingerBar f w) z =
       star (wirtingerZ (fun w => wirtingerZ f w) z) := by
   unfold wirtingerBar
-  have hinner : (fun w => star (wirtingerBar f w)) = wirtingerZ f := by
-    funext w
-    simp only [wirtingerBar, star_star]
-    rw [hself]
-  change star (wirtingerZ (fun w => star (wirtingerBar f w)) z) = _
-  rw [hinner]
+  simp_all
 
 end DOZZ.Proofs

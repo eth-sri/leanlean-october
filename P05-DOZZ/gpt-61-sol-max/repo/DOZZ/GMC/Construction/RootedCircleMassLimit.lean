@@ -6,10 +6,11 @@ module
 public import DOZZ.GMC.Construction.RootedCircleKernel
 public import DOZZ.GMC.Construction.GMCIntensityAdapter
 public import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
+import Mathlib.Tactic
 
 /-! The single-circle inserted measure converges to the singular rooted measure. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal
@@ -25,8 +26,7 @@ theorem gmc_atomless_at_root_of_isGMCOf
     ∀ᵐ ω ∂P, M ω {u} = 0 := by
   have hmeas := gmc_set_mass_aemeasurable_of_isGMCOf
     P X hX γ hγ hγ2 M hM {u} (measurableSet_singleton u)
-  have href : gmcReferenceMeasure {u} = 0 := by
-    exact (withDensity_absolutelyContinuous volume
+  have href  := (withDensity_absolutelyContinuous volume
       (fun x : ℂ => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)))) (measure_singleton u)
   exact (lintegral_eq_zero_iff' hmeas).mp
     ((equatorGFF_GMC_intensity P X hX γ hγ hγ2 M hM {u}
@@ -48,8 +48,7 @@ theorem circleRootedMeasure_mass_tendsto
     (Real.exp (γ ^ 2 * ∫ v, gffKernel x v ∂circleMeasure u (n : ℝ)))) x
   have hw : Measurable w := ENNReal.measurable_ofReal.comp
     (Real.measurable_exp.comp (measurable_const.mul (CirclePotential.measurable_gffKernel u)))
-  have hF (n : ℕ) : Measurable (F n) := by
-    exact (ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
+  have hF (n : ℕ) : Measurable (F n) := (ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
       (measurable_const.mul (continuous_circleKernelPotential u (n : ℝ)).measurable))).indicator hA
   have hne : ∀ᵐ x ∂μ, x ≠ u := by
     apply ae_iff.mpr
@@ -89,8 +88,7 @@ theorem circleRootedMeasure_mass_tendsto
       (Real.continuous_exp.continuousAt.tendsto.comp (hpot.const_mul (γ ^ 2)))
     by_cases hx : x ∈ A
     · simpa only [F, Set.indicator_of_mem hx, w] using h
-    · simp only [F, Set.indicator_of_notMem hx]
-      exact tendsto_const_nhds
+    continuity
   have ht := tendsto_lintegral_of_dominated_convergence (fun x => C * w x) hF hbound hfin hlim
   simpa only [F, gmcRootedMeasure, withDensity_apply _ hA,
     ← lintegral_indicator hA, w] using ht

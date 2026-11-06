@@ -12,7 +12,7 @@ public import DOZZ.Correlations.Analytic.RetainedMassMoments
 
 /-! The common-envelope threshold estimate for the actual nested Coulomb masses. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -64,19 +64,14 @@ theorem coulomb_nested_increment_threshold
   have hLm : AEMeasurable L P := by
     have hb := gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM B
       Metric.isOpen_ball.measurableSet
-    simpa only [L, Function.comp_def, Pi.mul_def] using
-      ENNReal.measurable_toReal.comp_aemeasurable (aemeasurable_const.mul hb)
-  have hUm : AEMeasurable U P := by
-    exact ENNReal.measurable_toReal.comp_aemeasurable
+    fun_prop (disch := positivity)
+  have hUm  := ENNReal.measurable_toReal.comp_aemeasurable
       (gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM α z αinf)
-  have hYm : AEMeasurable Y P := by
-    exact ENNReal.measurable_toReal.comp_aemeasurable
+  have hYm  := ENNReal.measurable_toReal.comp_aemeasurable
       (gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
         (measurable_coulombWeight γ α z αinf) _ (h₁.diff h₀))
   have hH : AEMeasurable (fun ω => ENNReal.ofReal (L ω ^ lo + U ω ^ hi)) P := by
-    have ht := (hLm.pow_const lo).add (hUm.pow_const hi)
-    simpa only [Function.comp_def, Pi.add_def] using
-      ENNReal.measurable_ofReal.comp_aemeasurable ht
+    fun_prop (disch := positivity)
   have hLp : ∀ᵐ ω ∂P, 0 < L ω := by
     filter_upwards [hB] with ω hω
     exact ENNReal.toReal_pos (mul_ne_zero hc hω.1) (ENNReal.mul_ne_top hc' hω.2)
@@ -84,17 +79,17 @@ theorem coulomb_nested_increment_threshold
     filter_upwards [hfull] with ω hω
     have hf : (∫⁻ x in O₀, coulombWeight γ α z αinf x ∂M ω) ≠ ⊤ := by
       apply ne_top_of_le_ne_top _ (setLIntegral_le_lintegral _ _)
-      simpa only [← coulombMass_eq_lintegral_coulombWeight] using hω.2
+      bound
     exact ENNReal.toReal_mono hf
       (retained_uniform_disk_lower (M ω) γ hγ A α z αinf hα hinf O₀ R hR hzR hO)
   have hreal : ∀ᵐ ω ∂P, Z ω + Y ω =
       (∫⁻ x in O₁, coulombWeight γ α z αinf x ∂M ω).toReal ∧ Z ω + Y ω ≤ U ω := by
     filter_upwards [hfull] with ω hω
     have hf : (∫⁻ x, coulombWeight γ α z αinf x ∂M ω) ≠ ⊤ := by
-      simpa only [← coulombMass_eq_lintegral_coulombWeight] using hω.2
+      bound
     have he := nested_weighted_mass_real (M ω) (coulombWeight γ α z αinf)
       O₀ O₁ h₀ h₁ hsub hf
-    exact ⟨he.1, he.1.le.trans (by simpa only [← coulombMass_eq_lintegral_coulombWeight] using he.2)⟩
+    exact ⟨he.1, he.1.le.trans (by bound)⟩
   calc
     _ = ∫⁻ ω, ENNReal.ofReal ‖((Z ω + Y ω : ℝ) : ℂ) ^ p - (Z ω : ℂ) ^ p‖ ∂P := by
       apply lintegral_congr_ae

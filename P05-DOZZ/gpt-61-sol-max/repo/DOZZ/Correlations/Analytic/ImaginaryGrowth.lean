@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.ImaginaryPinBound
 
 /-! Linear cutoff growth of the imaginary normalization. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
@@ -38,7 +38,7 @@ theorem normalized_imaginary_growth
   have hpin (i : Fin N) (r : ℝ) (hr : 0 ≤ r) :
       |equatorCircleMean (z i) r| ≤ B := by
     have he := equator_circle_mean_abs_le (z i) r
-    have he1 : Real.exp (-r) ≤ 1 := Real.exp_le_one_iff.mpr (neg_nonpos.mpr hr)
+    have he1  := Real.exp_le_one_iff.mpr (neg_nonpos.mpr hr)
     have hi := Finset.single_le_sum
       (f := fun j : Fin N => Real.log (normPlus (z j)) + 1)
       (fun j _ => by linarith [CirclePotential.log_normPlus_nonneg (z j)]) (Finset.mem_univ i)

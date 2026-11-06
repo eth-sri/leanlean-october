@@ -5,11 +5,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.Correlations.Tails.PowerTailBound
+import Mathlib.Tactic
 
 /-! Event comparison for the maximum-dependent retained amplitude in the one-insertion tail
 estimate. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 
 namespace DOZZ.Proofs
@@ -42,8 +43,8 @@ theorem truncated_williams_tail_sandwich
       intro he
       by_cases hc : c ≤ q.1
       · exact Or.inl (he.trans_le (mul_le_mul_of_nonneg_right (hq hc) (Real.exp_nonneg _)))
-      · have hm : q.1 < c := lt_of_not_ge hc
-        have h : x < Jc q.2*Real.exp (γ*c) := he.trans_le
+      · have hm  := lt_of_not_ge hc
+        have h  := he.trans_le
           (mul_le_mul_of_nonneg_left (Real.exp_le_exp.mpr
             (mul_le_mul_of_nonneg_left hm.le hγ.le)) (hJc0 q.2))
         have hh := mul_lt_mul_of_pos_right h (Real.exp_pos (-γ*c))
@@ -54,8 +55,7 @@ theorem truncated_williams_tail_sandwich
       ENNReal.toReal_mono (measure_ne_top _ _) (measure_mono_ae hinc)
     have hu := measureReal_union_le (μ := μ.prod P) E (univ ×ˢ T)
     have ht : (μ.prod P).real (univ ×ˢ T) = P.real T := by
-      rw [measureReal_prod_prod]
-      simp only [Measure.real_def, measure_univ, ENNReal.toReal_one, one_mul]
+      simp_all
     rw [ht] at hu
     linarith
 

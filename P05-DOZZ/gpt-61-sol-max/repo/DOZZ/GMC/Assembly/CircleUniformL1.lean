@@ -9,6 +9,7 @@ public import DOZZ.GMC.Construction.GMCUniformL1FromCauchy
 public import DOZZ.GMC.Assembly.CutoffIntegral
 public import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
 public import DOZZ.GMC.Construction.ReferenceMeasureTight
+import Mathlib.Tactic
 
 /-! Uniform `L¹` convergence of the circle cutoff chaos (proof of `DOZZ.equatorGFF_GMC_uniform_L1`)
 and `L¹` continuity of circle GMC masses in the charge (proof of
@@ -48,7 +49,7 @@ theorem equatorGFF_GMC_uniform_L1
           |∫ x, f x ∂regularizedGMC P Xc γ r ω - ∫ x, f x ∂Mfam γ ω| ∂P)
       atTop (𝓝 0) := by
   classical
-  have : IsProbabilityMeasure P := hX.1
+  have  := hX.1
   have : IsFiniteMeasure gmcReferenceMeasure :=
     ⟨lt_top_iff_ne_top.mpr gmcReferenceMeasure_univ_ne_top⟩
   obtain ⟨ρ, hρ⟩ : ∃ ρ, K ⊆ Metric.closedBall (0 : ℂ) ρ := hK.isBounded.subset_closedBall 0
@@ -58,7 +59,7 @@ theorem equatorGFF_GMC_uniform_L1
   let ι := {p : ℝ × (ℂ → ℝ) // p.1 ∈ I ∧ Continuous p.2 ∧ (∀ x, |p.2 x| ≤ Lb') ∧
     ∀ x, ρ + 1 < ‖x‖ → p.2 x = 0}
   let bcf : ι → BoundedContinuousFunction ℂ ℝ := fun i => BoundedContinuousFunction.ofNormedAddCommGroup i.1.2
-    i.2.2.1 Lb' (fun x => by rw [Real.norm_eq_abs]; exact i.2.2.2.1 x)
+    i.2.2.1 Lb' (fun x => by exact i.2.2.2.1 x)
   let F : ℝ → ι → Ω → ℝ := fun r i ω => ∫ x, i.1.2 x ∂regularizedGMC P Xc i.1.1 r ω
   let G : ι → Ω → ℝ := fun i ω => ∫ x, i.1.2 x ∂Mfam i.1.1 ω
   have hFmeas : ∀ r i, Measurable (F r i) := fun r i =>
@@ -143,8 +144,7 @@ theorem equatorGFF_GMC_uniform_L1
           intro x
           rw [abs_sub_comm]
       _ ≤ _ := happrox
-  have hB : ∫⁻ ω, ENNReal.ofReal |F r i ω - G i ω| ∂P ≤
-      ⨆ j, ∫⁻ ω, ENNReal.ofReal |F r j ω - G j ω| ∂P :=
+  have hB  :=
     le_iSup (fun j => ∫⁻ ω, ENNReal.ofReal |F r j ω - G j ω| ∂P) i
   calc ∫⁻ ω, ENNReal.ofReal |∫ x, f x ∂regularizedGMC P Xc γ r ω - ∫ x, f x ∂Mfam γ ω| ∂P
       ≤ ∫⁻ ω, ∫⁻ x, ENNReal.ofReal |f x - h x| ∂regularizedGMC P Xc γ r ω +
@@ -176,14 +176,12 @@ namespace DOZZ.Assembly
 
 open DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) [_inst3 : IsProbabilityMeasure P] (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (ε : ℝ) (hε : 0 < ε) (hεcut : ε ≤ ε₀) (x : ℂ)
+
+include Ω _inst1 P _inst3 U dens ε₀ Y hY ε hε hεcut x in
 /-- The Gaussian exponential moments of one admissible coordinate are finite. -/
 theorem admissible_lintegral_exp_mul_ne_top
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (ε : ℝ) (hε : 0 < ε) (hεcut : ε ≤ ε₀)
-    (x : ℂ) (t : ℝ) :
+     (t : ℝ) :
     ∫⁻ ω, ENNReal.ofReal (Real.exp (t * Y ω ε x)) ∂P ≠ ⊤ := by
   have hone := lintegral_admissibleLogWickWeight P U dens ε₀ Y hY t ε hε hεcut x
   have heq : (fun ω => ENNReal.ofReal (Real.exp (t * Y ω ε x))) = fun ω =>
@@ -198,23 +196,19 @@ theorem admissible_lintegral_exp_mul_ne_top
     hone, mul_one]
   exact ENNReal.ofReal_ne_top
 
+include Ω _inst1 P _inst3 U dens ε₀ Y hY ε hε hεcut x in
 /-- The Wick weight at one point is continuous in the charge in `L¹(P)`. -/
 theorem admissible_wick_weight_L1_continuous
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (ε : ℝ) (hε : 0 < ε) (hεcut : ε ≤ ε₀)
-    (x : ℂ) (γ₀ : ℝ) :
+     (γ₀ : ℝ) :
     Tendsto (fun γ => ∫⁻ ω, ENNReal.ofReal
         |Real.exp (γ * Y ω ε x - γ ^ 2 / 2 * ∫ ω', Y ω' ε x ^ 2 ∂P) -
           Real.exp (γ₀ * Y ω ε x - γ₀ ^ 2 / 2 * ∫ ω', Y ω' ε x ^ 2 ∂P)| ∂P)
       (𝓝 γ₀) (𝓝 0) := by
   set v : ℝ := ∫ ω', Y ω' ε x ^ 2 ∂P with hvdef
-  have hv : 0 ≤ v := integral_nonneg fun ω => sq_nonneg _
+  
   set c : ℝ := |γ₀| + 1 with hcdef
-  have hZ : Measurable (fun ω => Y ω ε x) := admissible_field_measurable_sample P U dens ε₀ Y hY ε x
-  let bound : Ω → ℝ≥0∞ := fun ω => 2 * (ENNReal.ofReal (Real.exp (c * Y ω ε x)) +
+  have hZ  := admissible_field_measurable_sample P U dens ε₀ Y hY ε x
+  let bound  := fun ω => 2 * (ENNReal.ofReal (Real.exp (c * Y ω ε x)) +
     ENNReal.ofReal (Real.exp (-c * Y ω ε x)))
   have hexp_le (t z : ℝ) (ht : |t| ≤ c) :
       Real.exp (t * z) ≤ Real.exp (c * z) + Real.exp (-c * z) := by
@@ -236,15 +230,11 @@ theorem admissible_wick_weight_L1_continuous
   rw [show (𝓝 (0 : ℝ≥0∞)) = 𝓝 (∫⁻ _ : Ω, (0 : ℝ≥0∞) ∂P) by rw [lintegral_zero]]
   apply tendsto_lintegral_filter_of_dominated_convergence (f := fun _ => 0) bound
   · filter_upwards [] with γ
-    exact ENNReal.measurable_ofReal.comp (continuous_abs.measurable.comp
-      ((Real.measurable_exp.comp ((hZ.const_mul γ).sub_const _)).sub
-        (Real.measurable_exp.comp ((hZ.const_mul γ₀).sub_const _))))
+    fun_prop
   · have hball : ∀ᶠ γ in 𝓝 γ₀, |γ| ≤ c := by
       filter_upwards [Metric.ball_mem_nhds γ₀ one_pos] with γ hγ
       rw [Metric.mem_ball, Real.dist_eq] at hγ
-      have := abs_sub_abs_le_abs_sub γ γ₀
-      rw [hcdef]
-      linarith
+      grind
     filter_upwards [hball] with γ hγ
     filter_upwards [] with ω
     have hγ₀c : |γ₀| ≤ c := by rw [hcdef]; linarith
@@ -267,7 +257,7 @@ theorem admissible_wick_weight_L1_continuous
     have h2 := admissible_lintegral_exp_mul_ne_top P U dens ε₀ Y hY ε hε hεcut x (-c)
     have hm1 : Measurable (fun ω => ENNReal.ofReal (Real.exp (c * Y ω ε x))) :=
       ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp (hZ.const_mul c))
-    have hm2 : Measurable (fun ω => ENNReal.ofReal (Real.exp (-c * Y ω ε x))) :=
+    have hm2  :=
       ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp (hZ.const_mul (-c)))
     have hm12 : Measurable (fun ω => ENNReal.ofReal (Real.exp (c * Y ω ε x)) +
         ENNReal.ofReal (Real.exp (-c * Y ω ε x))) := hm1.add hm2
@@ -315,8 +305,7 @@ theorem lintegral_ofReal_abs_sub_le_add
   beta_reduce
   rw [← ENNReal.ofReal_add (abs_nonneg _) (abs_nonneg _)]
   apply ENNReal.ofReal_le_ofReal
-  calc |U ω - W ω| = |(U ω - V ω) + (V ω - W ω)| := by ring_nf
-    _ ≤ |U ω - V ω| + |V ω - W ω| := abs_add_le _ _
+  grind
 
 end DOZZ.Assembly
 

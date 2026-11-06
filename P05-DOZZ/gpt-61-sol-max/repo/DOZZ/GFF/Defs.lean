@@ -12,4 +12,3 @@ public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
 Facade for the field definitions of `DOZZ/Statements/Defs`.
 -/
 
-public section

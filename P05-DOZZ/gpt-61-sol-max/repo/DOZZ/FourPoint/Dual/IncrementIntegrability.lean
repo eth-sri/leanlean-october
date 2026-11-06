@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Dual.MaximumSandwich
 public import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Tactic
 /-! Integrability of signed inverse-power increments from the retained inverse moment. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 
@@ -19,7 +19,7 @@ theorem dual_negative_increment_abs_le (p A t : ℝ) (hp : 0 ≤ p)
   have hu : (A+t)^(-p) ≤ A^(-p) :=
     Real.rpow_le_rpow_of_nonpos hA (by linarith only [ht]) (neg_nonpos.mpr hp)
   have hl : 0 ≤ (A+t)^(-p) := Real.rpow_nonneg (by positivity) _
-  exact abs_le.mpr ⟨by linarith only [hl], by linarith only [hu, Real.rpow_nonneg hA.le (-p)]⟩
+  grind
 
 /-- No moment of the inner mass is needed for integrability of the signed increment
 when the retained inverse moment is finite. -/
@@ -42,7 +42,6 @@ theorem dual_negative_increment_integrable
   filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae hA,
     measurePreserving_fst.quasiMeasurePreserving.ae hb,
     measurePreserving_snd.quasiMeasurePreserving.ae hS] with v hAv hbv hSv
-  simpa only [Real.norm_eq_abs] using
-    dual_negative_increment_abs_le p (A v.1) (b v.1*S v.2) hp hAv (mul_nonneg hbv hSv)
+  exact dual_negative_increment_abs_le p (A v.1) (b v.1*S v.2) hp hAv (mul_nonneg hbv hSv)
 
 end DOZZ.Proofs

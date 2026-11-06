@@ -64,8 +64,8 @@ theorem fusionLocalR2_scaled {Ω : Type*} [MeasurableSpace Ω]
           (fusionScaledFactor P M γ α₁ α₂ α₃ (-p - 1) y ((t : ℂ) * z) : ℂ))) := by
     filter_upwards [ae_restrict_mem measurableSet_Icc,
       ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
-    have htpos : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
-    have htz : (t : ℂ) * z ≠ 0 := mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz
+    have htpos  := lt_of_le_of_ne ht.1 (Ne.symm ht0)
+    have htz  := mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz
     have htz4 : ‖(t : ℂ) * z‖ ≤ 1 / 4 := by
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
       calc
@@ -78,11 +78,7 @@ theorem fusionLocalR2_scaled {Ω : Type*} [MeasurableSpace Ω]
     have he : γ ^ 2 / 2 - γ * α₁ + 2 = κ := by dsimp only [κ]; linarith only [hκ]
     rw [he] at hfac
     push_cast
-    calc
-      _ = (z * star z * (‖(t : ℂ) * z‖ ^ (γ ^ 2 / 2 - γ * α₁) : ℝ)) *
-          ((1 - (t : ℂ)) * (∫ y : ℂ, (planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y : ℝ) *
-            (fusionScaledFactor P M γ α₁ α₂ α₃ (-p - 1) y ((t : ℂ) * z) : ℂ))) := by ring
-      _ = _ := by rw [hfac]; ring
+    grind
   unfold fusionLocalR2
   rw [mul_assoc (((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ)) z (star z)]
   rw [mul_assoc, ← integral_const_mul, integral_congr_ae hpoint, integral_const_mul, ← mul_assoc]

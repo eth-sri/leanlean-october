@@ -54,7 +54,7 @@ theorem reflected_decoupled_field_covariance {Ω S : Type*} [MeasurableSpace Ω]
       if (x ∈ A ↔ y ∈ A) then gaussianCovariance P (fun ω => Φ ω x) (fun ω => Φ ω y)
         else 0 := by
   classical
-  let _ : IsProbabilityMeasure P := (hΦ.2 0 (fun i => Fin.elim0 i)).1
+  let _  := (hΦ.2 0 (fun i => Fin.elim0 i)).1
   have h := gaussianCovariance_prod_add P P
     (fun ω => A.indicator (Φ ω) x) (fun ω => A.indicator (Φ ω) y)
     (fun ω => Aᶜ.indicator (Φ ω) x) (fun ω => Aᶜ.indicator (Φ ω) y)

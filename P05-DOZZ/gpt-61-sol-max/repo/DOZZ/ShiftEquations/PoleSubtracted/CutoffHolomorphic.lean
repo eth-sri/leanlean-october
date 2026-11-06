@@ -6,6 +6,7 @@ module
 
 public import DOZZ.ShiftEquations.PoleSubtracted.CutoffGood
 public import DOZZ.ShiftEquations.PoleSubtracted.IntegralHolomorphy
+import Mathlib.Tactic
 
 /-!
 # Holomorphy of the cutoff family
@@ -34,25 +35,21 @@ theorem isOpen_cutoffHalfPlane (η δ : ℝ) : IsOpen (cutoffHalfPlane η δ) :=
 theorem isPreconnected_cutoffHalfPlane (η δ : ℝ) : IsPreconnected (cutoffHalfPlane η δ) :=
   (convex_halfSpace_re_gt (-2 * η - δ)).isPreconnected
 
-theorem aestronglyMeasurable_cutoffIntegrand (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (η : ℝ)
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
+include P X hX γ hγ hγ2 M hM Xc hXc in
+theorem aestronglyMeasurable_cutoffIntegrand  (η : ℝ)
     (m n : ℕ) (z : ℂ) : AEStronglyMeasurable (cutoffIntegrand Xc M γ η m n z) P := by
   have hB := aemeasurable_baseMassReal P X hX γ hγ hγ2 M hM η n
   have hL := aemeasurable_localMassReal P X hX γ hγ hγ2 M hM η
   have hXm : AEMeasurable (fun ω => Xc ω 0 m) P :=
     (measurable_circleAverage_origin hXc m).aemeasurable
-  have hBc : AEMeasurable (fun ω => (baseMassReal M γ η n ω : ℂ)) P :=
-    Complex.measurable_ofReal.comp_aemeasurable hB
-  have hLc : AEMeasurable (fun ω => (localMassReal M γ η ω : ℂ)) P :=
-    Complex.measurable_ofReal.comp_aemeasurable hL
-  have hXc' : AEMeasurable (fun ω => (Xc ω 0 m : ℂ)) P :=
-    Complex.measurable_ofReal.comp_aemeasurable hXm
+  
+  
+  
   have h : AEMeasurable (fun ω => cutoffIntegrand Xc M γ η m n z ω) P := by
     unfold cutoffIntegrand
-    exact (Complex.measurable_exp.comp_aemeasurable
-      ((hXc'.const_mul z).sub aemeasurable_const)).mul
-      ((hBc.pow_const _).sub (hLc.pow_const _))
+    fun_prop (disch := positivity)
   exact h.aestronglyMeasurable
 
 /-- Local data of a point of the half-plane: a disk, its real range and bounds. -/
@@ -62,30 +59,23 @@ theorem cutoff_disk_bounds {γ : ℝ} (hγ : 0 < γ) {z₀ ζ : ℂ} {r : ℝ}
       ‖1 - ζ / γ‖ ≤ 1 + (‖z₀‖ + r) / γ := by
   have hd : ‖ζ - z₀‖ ≤ r := by rwa [mem_closedBall, dist_eq_norm] at hζ
   have hre : |ζ.re - z₀.re| ≤ r := by
-    rw [← Complex.sub_re]
     exact (Complex.abs_re_le_norm _).trans hd
   have him : |ζ.im - z₀.im| ≤ r := by
-    rw [← Complex.sub_im]
     exact (Complex.abs_im_le_norm _).trans hd
   refine ⟨⟨by linarith [neg_abs_le (ζ.re - z₀.re)], by linarith [le_abs_self (ζ.re - z₀.re)]⟩,
     ?_, ?_⟩
-  · calc |ζ.im| = |z₀.im + (ζ.im - z₀.im)| := by ring_nf
-      _ ≤ |z₀.im| + |ζ.im - z₀.im| := abs_add_le _ _
-      _ ≤ |z₀.im| + r := by linarith
+  · grind
   · have hζn : ‖ζ‖ ≤ ‖z₀‖ + r := by
-      calc ‖ζ‖ = ‖z₀ + (ζ - z₀)‖ := by ring_nf
-        _ ≤ ‖z₀‖ + ‖ζ - z₀‖ := norm_add_le _ _
-        _ ≤ ‖z₀‖ + r := by linarith
+      exact norm_le_norm_add_const_of_dist_le hζ
     calc ‖1 - ζ / γ‖ ≤ ‖(1 : ℂ)‖ + ‖ζ / γ‖ := norm_sub_le _ _
       _ = 1 + ‖ζ‖ / γ := by
           rw [norm_one, norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hγ]
       _ ≤ 1 + (‖z₀‖ + r) / γ := by
           gcongr
 
+include P X hX γ hγ hγ2 M hM Xc hXc in
 /-- **Holomorphy of the cutoff family** on the half-plane, with integrable sections. -/
-theorem differentiableOn_cutoffFamily (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) {η δ : ℝ}
+theorem differentiableOn_cutoffFamily  {η δ : ℝ}
     (hW : TwoPoleWindow γ η δ) {m n : ℕ} (hnm : n ≤ m) :
     DifferentiableOn ℂ (cutoffFamily P Xc M γ η m n) (cutoffHalfPlane η δ) ∧
       ∀ z ∈ cutoffHalfPlane η δ, Integrable (cutoffIntegrand Xc M γ η m n z) P := by

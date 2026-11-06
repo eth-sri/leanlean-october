@@ -9,7 +9,7 @@ public import DOZZ.GMC.KahaneAffineMaxL1
 
 /-! Continuum covariance comparison for finite maxima of affine tests. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -36,8 +36,8 @@ theorem kahane_field_normalized_affine_max
       ∫ ω, affineMax a b (∫ x, fieldWickDensity PY Ψ h γ ω x
         ∂(ν.normalize : Measure S)) ∂PY := by
   classical
-  have : IsProbabilityMeasure PX := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
-  have : IsProbabilityMeasure PY := (hΨ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
+  have  := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
+  have  := (hΨ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
   let ρ : Measure S := ν.normalize
   let Q := Measure.infinitePi (fun _ : ℕ => ρ)
   let fX := fieldWickDensity PX Φ h γ
@@ -50,8 +50,8 @@ theorem kahane_field_normalized_affine_max
     fun n p => (n : ℝ)⁻¹ * ∑ i : Fin n, fY p.1 (p.2 i.val)
   have hfX := (fieldWickDensity_integrable_mean PX Φ hΦ ν h hh hhb γ).1
   have hfY := (fieldWickDensity_integrable_mean PY Ψ hΨ ν h hh hhb γ).1
-  have hmX : Integrable mX PX := hfX.integral_prod_left
-  have hmY : Integrable mY PY := hfY.integral_prod_left
+  have hmX  := hfX.integral_prod_left
+  have hmY  := hfY.integral_prod_left
   have havgX (n : ℕ) : Integrable (avgX n) (PX.prod Q) :=
     spatial_empirical_average_integrable PX ρ fX hfX n
   have havgY (n : ℕ) : Integrable (avgY n) (PY.prod Q) :=
@@ -64,17 +64,13 @@ theorem kahane_field_normalized_affine_max
         (fun i => (n : ℝ)⁻¹ * (h (u i.val) : ℝ)) γ ω = avgX n (ω, u) := by
     dsimp [DOZZ.finiteChaosMass, avgX, fX, fieldWickDensity]
     rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro i _
-    ring
+    ring_nf at *
   have hformulaY (n : ℕ) (ω : ΩY) (u : ℕ → S) :
       DOZZ.finiteChaosMass PY (fun ω (i : Fin n) => Ψ ω (u i.val))
         (fun i => (n : ℝ)⁻¹ * (h (u i.val) : ℝ)) γ ω = avgY n (ω, u) := by
     dsimp [DOZZ.finiteChaosMass, avgY, fY, fieldWickDensity]
     rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro i _
-    ring
+    ring_nf at *
   have horder (n : ℕ) : (∫ p, affineMax a b (avgX n p) ∂(PX.prod Q)) ≤
       ∫ p, affineMax a b (avgY n p) ∂(PY.prod Q) := by
     rw [integral_prod_symm _ (hIX n), integral_prod_symm _ (hIY n)]
@@ -100,11 +96,11 @@ theorem kahane_field_normalized_affine_max
   have hprodX : (∫ p : ΩX × (ℕ → S), affineMax a b (mX p.1) ∂(PX.prod Q)) =
       ∫ ω, affineMax a b (mX ω) ∂PX := by
     rw [integral_prod _ ((affineMax_comp_integrable PX mX hmX a b).comp_fst Q)]
-    simp only [integral_const, probReal_univ, one_smul]
+    norm_num
   have hprodY : (∫ p : ΩY × (ℕ → S), affineMax a b (mY p.1) ∂(PY.prod Q)) =
       ∫ ω, affineMax a b (mY ω) ∂PY := by
     rw [integral_prod _ ((affineMax_comp_integrable PY mY hmY a b).comp_fst Q)]
-    simp only [integral_const, probReal_univ, one_smul]
+    norm_num
   rwa [hprodX, hprodY] at hlimit
 
 end DOZZ.Proofs

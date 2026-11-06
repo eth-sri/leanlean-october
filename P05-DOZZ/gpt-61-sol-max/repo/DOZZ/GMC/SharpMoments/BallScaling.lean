@@ -7,6 +7,7 @@ module
 public import DOZZ.GMC.SharpMoments.ArbitraryCenter
 public import DOZZ.GMC.SharpMoments.MomentConvergence
 public import DOZZ.GMC.Annulus.BallCover
+import Mathlib.Tactic
 
 /-! # Location transfer of small-disk moments for limiting chaos
 
@@ -16,48 +17,42 @@ finite-cutoff location transfer therefore passes to every `IsGMCOf` limit: every
 of a small disk at one center is bounded by an explicit constant times the same moment at another
 center. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Cutoff masses of a bounded measurable set converge in probability along the integer
 cutoffs. -/
 theorem regularizedGMC_mass_toReal_tendstoInMeasure
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (A : Set ℂ) (hA : MeasurableSet A) (R : ℝ) (hAR : A ⊆ Metric.closedBall (0 : ℂ) R) :
     TendstoInMeasure P (fun (n : ℕ) ω => (regularizedGMC P Xc γ n ω A).toReal) atTop
       (fun ω => (M ω A).toReal) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   have hL1 := equatorGFF_GMC_bounded_mass_l1_of_uniform_L1 P X hX γ hγ hγ2 M hM Xc hXc A hA R hAR
   set f : ℕ → Ω → ℝ := fun n ω => (regularizedGMC P Xc γ n ω A).toReal with hf
   set g : Ω → ℝ := fun ω => (M ω A).toReal with hg
   have hfmeas : ∀ n, Measurable (f n) := fun n =>
     measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ n A hA
-  have hgmeas : AEMeasurable g P :=
+  have hgmeas  :=
     ENNReal.measurable_toReal.comp_aemeasurable
       (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM A hA)
-  have hL1nat : Tendsto (fun n : ℕ => ∫⁻ ω, ENNReal.ofReal |f n ω - g ω| ∂P) atTop (𝓝 0) :=
+  have hL1nat  :=
     hL1.comp tendsto_natCast_atTop_atTop
   intro ε hε
   by_cases hεtop : ε = ⊤
-  · have hzero : ∀ n, P {ω | ε ≤ edist (f n ω) (g ω)} = 0 := by
-      intro n
-      rw [hεtop]
-      have hset : {ω | (⊤ : ℝ≥0∞) ≤ edist (f n ω) (g ω)} = ∅ := by
-        ext ω
-        simp [edist_ne_top]
-      rw [hset, measure_empty]
-    simp [hzero]
+  · simp_all
   · have hmarkov : ∀ n, P {ω | ε ≤ edist (f n ω) (g ω)} ≤
         (∫⁻ ω, ENNReal.ofReal |f n ω - g ω| ∂P) / ε := by
       intro n
-      have hm : AEMeasurable (fun ω => ENNReal.ofReal |f n ω - g ω|) P :=
+      have hm  :=
         ENNReal.measurable_ofReal.comp_aemeasurable (continuous_abs.measurable.comp_aemeasurable
           ((hfmeas n).aemeasurable.sub hgmeas))
       refine le_trans (measure_mono ?_) (meas_ge_le_lintegral_div hm hε.ne' hεtop)
@@ -81,16 +76,15 @@ theorem ball_subset_closedBall_norm_add (z : ℂ) (ρ : ℝ) :
     _ ≤ ‖x - z‖ + ‖z‖ := norm_add_le _ _
     _ ≤ ‖z‖ + ρ := by linarith
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM
 /-- Moments of every subcritical order of a small disk converge along the integer cutoffs. -/
 theorem gmc_ball_moment_tendsto
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hρ8 : ρ ≤ 1 / 8) (p : ℝ) (hp : p < 4 / γ ^ 2) :
     Tendsto (fun n : ℕ => gmcMassMoment P (regularizedGMC P Xc γ n) (Metric.ball c ρ) p) atTop
       (𝓝 (gmcMassMoment P M (Metric.ball c ρ) p)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   have hball : MeasurableSet (Metric.ball c ρ) := Metric.isOpen_ball.measurableSet
   rcases lt_trichotomy p 0 with hpneg | hp0 | hppos
   · obtain ⟨K, hK, hKb⟩ := regularizedGMC_ball_moment_uniform_any_center P X hX Xc hXc γ hγ hγ2
@@ -133,11 +127,10 @@ theorem gmc_ball_moment_tendsto
         (ball_subset_closedBall_norm_add c ρ))
       p p' (Or.inl ⟨hppos, by rw [hp']; linarith⟩) K hK.ne (fun n => hKb n (Nat.cast_nonneg n))
 
+
 /-- The location transfer of every subcritical moment of a small disk, for `IsGMCOf` limits. -/
 theorem gmc_ball_moment_transfer
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (z z₀ : ℂ) (ρ R : ℝ) (hρ : 0 < ρ) (hρ8 : ρ ≤ 1 / 8) (hR : 0 ≤ R) (hzR : ‖z‖ + ρ ≤ R)
     (hz₀R : ‖z₀‖ + ρ ≤ R) (p : ℝ) (hp : p < 4 / γ ^ 2) :
     gmcMassMoment P M (Metric.ball z ρ) p ≤
@@ -165,12 +158,11 @@ theorem gmc_ball_moment_transfer
     (gmc_ball_moment_tendsto P X hX γ hγ hγ2 M hM Xc hXc z₀ ρ hρ hρ8 p hp) (Or.inr hTtop)
   exact le_of_tendsto_of_tendsto' h1 h2 hcut
 
+
 /-- Sharp upper bound for subcritical moments of small disks at a fixed center:
 `E M(B(z,ρ))^p ≤ C ρ^{ξ(p)}` for all `0 < ρ ≤ 1/8`. -/
 theorem gmc_ball_moment_sharp_upper_center
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (z : ℂ) (p : ℝ) (hp : p < 4 / γ ^ 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ ρ : ℝ, 0 < ρ → ρ ≤ 1 / 8 →
       gmcMassMoment P M (Metric.ball z ρ) p ≤
@@ -187,11 +179,10 @@ theorem gmc_ball_moment_sharp_upper_center
     (by norm_num) le_rfl p hp).ne
   set C : ℝ := T.toReal * m₀.toReal * 8 ^ ξ + 1 with hC
   have hC0 : 0 < C := by
-    have : 0 ≤ T.toReal * m₀.toReal * 8 ^ ξ := by positivity
-    linarith
+    positivity
   refine ⟨C, hC0, fun ρ hρ hρ8 => ?_⟩
   have htr := gmc_ball_moment_transfer P X hX γ hγ hγ2 M hM z 0 ρ R hρ hρ8 hR
-    (by rw [hRdef]; linarith) (by rw [norm_zero, zero_add, hRdef]; linarith [norm_nonneg z]) p hp
+    (by rw [hRdef]; linarith) (by bound) p hp
   have hscale := gmc_affine_openBall_moment_scale P X hX γ hγ hγ2 M hM (a := 0) (c := 8 * ρ)
     (R := 1 / 8) (by positivity) (by linarith) (by norm_num) (by norm_num) (by simp; linarith) p
   have hrad : 8 * ρ * (1 / 8) = ρ := by ring
@@ -207,9 +198,8 @@ theorem gmc_ball_moment_sharp_upper_center
         congr 1
         ring
     _ ≤ ENNReal.ofReal (C * ρ ^ ξ) := by
-        apply ENNReal.ofReal_le_ofReal
-        apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hρ.le _)
-        rw [hC]
-        linarith
+        bound
+omit Ω _inst1 P X hX γ hγ hγ2 M hM
+
 
 end DOZZ.Proofs

@@ -8,7 +8,7 @@ public import DOZZ.Brownian.WilliamsMaximumLaw
 
 /-! The critical exponential moment of the Williams maximum law. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 
@@ -36,7 +36,6 @@ theorem lastone_maximum_exp_moment (ν : ℝ) (hν : 0 < ν) :
         ← ENNReal.ofReal_mul (by norm_num)]
       congr 1
       rw [mul_assoc, ← Real.exp_add]
-      rw [show -2 * ν * m + ν * m = -2 * (ν / 2) * m by ring]
       ring
     · simp only [d, d', ite_eq_right hm, ENNReal.ofReal_zero, zero_mul, mul_zero]
   have hprob : IsProbabilityMeasure (brownianMaximumReferenceLaw (ν / 2)) :=

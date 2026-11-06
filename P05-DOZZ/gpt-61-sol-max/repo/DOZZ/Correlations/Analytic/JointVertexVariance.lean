@@ -9,7 +9,7 @@ import DOZZ.GMC.Assembly.AdmissibleGMC
 
 /-! Full covariance expansion of the real joint Wick polynomial. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs

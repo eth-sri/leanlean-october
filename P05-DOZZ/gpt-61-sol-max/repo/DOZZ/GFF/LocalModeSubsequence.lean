@@ -27,24 +27,29 @@ namespace DOZZ
 /-- A local mode is a radius together with a real cosine or sine frequency. -/
 abbrev GFFLocalModeIndex := ℕ × Sum (Fin 2 → ℤ) (Fin 2 → ℤ)
 
+variable (R : ℕ)
+
+include R in
 /-- The positive physical radius assigned to a natural-number local chart. -/
-def gffLocalModeRadius (R : ℕ) : ℝ := (R : ℝ) + 1
+def gffLocalModeRadius  : ℝ := (R : ℝ) + 1
 
+include R in
 /-- The physical side length of the torus box assigned to a local chart. -/
-def gffLocalModeBoxSide (R : ℕ) : ℝ := 2 * gffLocalModeRadius R + 4
+def gffLocalModeBoxSide  : ℝ := 2 * gffLocalModeRadius R + 4
 
-theorem gffLocalModeRadius_pos (R : ℕ) : 0 < gffLocalModeRadius R := by
+include R in
+theorem gffLocalModeRadius_pos  : 0 < gffLocalModeRadius R := by
   unfold gffLocalModeRadius
   positivity
 
+include R in
 /-- The normalized cosine coordinate of a local Fourier chart as a compactly supported test. -/
-noncomputable def gffLocalCosSobolevModeTest (R : ℕ) (k : Fin 2 → ℤ) : TestFn := by
-  exact (torusSobolevWeight k)⁻¹ • localTorusCosTest (gffLocalModeRadius R)
+noncomputable def gffLocalCosSobolevModeTest  (k : Fin 2 → ℤ) : TestFn := (torusSobolevWeight k)⁻¹ • localTorusCosTest (gffLocalModeRadius R)
     (gffLocalModeBoxSide R) (gffLocalModeRadius_pos R) k
 
+include R in
 /-- The normalized sine coordinate of a local Fourier chart as a compactly supported test. -/
-noncomputable def gffLocalSinSobolevModeTest (R : ℕ) (k : Fin 2 → ℤ) : TestFn := by
-  exact (torusSobolevWeight k)⁻¹ • localTorusSinTest (gffLocalModeRadius R)
+noncomputable def gffLocalSinSobolevModeTest  (k : Fin 2 → ℤ) : TestFn := (torusSobolevWeight k)⁻¹ • localTorusSinTest (gffLocalModeRadius R)
     (gffLocalModeBoxSide R) (gffLocalModeRadius_pos R) k
 
 /-- The H²-normalized compactly supported real trigonometric mode for an index. -/
@@ -77,7 +82,7 @@ theorem ae_summable_equatorWhiteNoiseSq_of_summable_energy {ι : Type*} [Countab
     convert henergy using 1
     ext i
     simp [eNN]
-  have hfiniteNN : (∑' i, (eNN i : ℝ≥0∞)) ≠ ∞ :=
+  have hfiniteNN  :=
     ENNReal.tsum_coe_ne_top_iff_summable_coe.mpr (NNReal.summable_coe.2 hNN)
   have hnorm (i : ι) : eLpNorm (W i) 2 μ = ENNReal.ofReal
       ‖equatorKernelLimitMap (t i)‖ := by
@@ -99,10 +104,11 @@ theorem ae_summable_equatorWhiteNoiseSq_of_summable_energy {ι : Type*} [Countab
     exact hfiniteNN
   have hae := ae_summable_sq_of_tsum_eLpNorm_sq_ne_top
     (fun i ω => W i ω) hfinite
-  simpa [W] using hae
+  exact hae
 
+include R in
 /-- The local cosine-mode white-noise coefficients are square summable almost everywhere. -/
-theorem ae_summable_gffLocalCosSobolevModeEvaluation (R : ℕ) :
+theorem ae_summable_gffLocalCosSobolevModeEvaluation  :
     ∀ᵐ ω ∂GaussianFields.scaleSpaceWhiteNoiseMeasure 2,
       Summable fun k : Fin 2 → ℤ =>
         (GaussianFields.scalarWhiteNoiseL2 3
@@ -111,11 +117,11 @@ theorem ae_summable_gffLocalCosSobolevModeEvaluation (R : ℕ) :
     (gffLocalCosSobolevModeTest R)
     (summable_localTorusCosHSEnergy (gffLocalModeRadius R)
       (gffLocalModeBoxSide R) (gffLocalModeRadius_pos R))
-  simpa [GaussianFields.scaleSpaceWhiteNoiseMeasure,
-    GaussianFields.scalarWhiteNoiseMeasure] using h
+  continuity
 
+include R in
 /-- The local sine-mode white-noise coefficients are square summable almost everywhere. -/
-theorem ae_summable_gffLocalSinSobolevModeEvaluation (R : ℕ) :
+theorem ae_summable_gffLocalSinSobolevModeEvaluation  :
     ∀ᵐ ω ∂GaussianFields.scaleSpaceWhiteNoiseMeasure 2,
       Summable fun k : Fin 2 → ℤ =>
         (GaussianFields.scalarWhiteNoiseL2 3
@@ -124,8 +130,7 @@ theorem ae_summable_gffLocalSinSobolevModeEvaluation (R : ℕ) :
     (gffLocalSinSobolevModeTest R)
     (summable_localTorusSinHSEnergy (gffLocalModeRadius R)
       (gffLocalModeBoxSide R) (gffLocalModeRadius_pos R))
-  simpa [GaussianFields.scaleSpaceWhiteNoiseMeasure,
-    GaussianFields.scalarWhiteNoiseMeasure] using h
+  continuity
 
 /-- The finite Haar truncations have a common almost-surely convergent subsequence on all local
 H² modes. The index is countable (`ℕ × Sum (ℤ²) (ℤ²)`), and each coordinate converges in measure by
@@ -154,8 +159,7 @@ theorem equatorHaarPartial_exists_common_localMode_subseq :
       (equatorKernelLimitMap (gffLocalSobolevModeTest (gffLocalModeIndexOfNat j))) ω
   have hF : ∀ j, TendstoInMeasure μ (fun n ω => F n j ω) atTop (g j) := by
     intro j
-    simpa [F, g, μ] using
-      equatorHaarPartialEvaluation_tendstoInMeasure
+    exact equatorHaarPartialEvaluation_tendstoInMeasure
         (gffLocalSobolevModeTest (gffLocalModeIndexOfNat j))
   obtain ⟨ns, hns, hae⟩ := exists_common_subseq_tendsto_ae μ F g hF
   refine ⟨ns, hns, ?_⟩

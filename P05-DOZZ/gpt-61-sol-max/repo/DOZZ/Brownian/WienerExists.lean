@@ -38,7 +38,7 @@ theorem exists_wienerPathMeasure :
     exists_continuous_circleAverage P equatorGFFDistribution Xc hX hc
   have hB := (circleAverage_origin_brownian P equatorGFFDistribution Y hX hY hYcont).1
   let B := fun (t : ℝ≥0) ω => Y ω 0 (t : ℝ)
-  have hBm : AEMeasurable (brownianContinuousPath B) P :=
+  have hBm  :=
     aemeasurable_brownianContinuousPath hB
   refine ⟨P.map (brownianContinuousPath B),
     (Measure.isProbabilityMeasure_map_iff hBm).mpr inferInstance, ?_⟩

@@ -6,7 +6,8 @@ module
 public import DOZZ.GMC.Moments.InversionExhaustion
 public import DOZZ.GMC.Moments.InversionAtomless
 public import Mathlib.MeasureTheory.Measure.GiryMonad
-@[expose] public section
+import Mathlib.Tactic
+public section
 open Filter MeasureTheory Set Metric
 open scoped Topology Distributions ENNReal
 namespace DOZZ.Proofs
@@ -16,15 +17,14 @@ theorem finiteMeasure_bcf_integral_measurable
     {Ω : Type*} [MeasurableSpace Ω] (M : Ω → Measure ℂ) (hM : Measurable M)
     (hfin : ∀ ω, IsFiniteMeasure (M ω)) (f : BoundedContinuousFunction ℂ ℝ) :
     Measurable (fun ω => ∫ x, f x ∂M ω) := by
-  let : ∀ ω, IsFiniteMeasure (M ω) := hfin
+  let  := hfin
   have hp := (Measure.measurable_lintegral
     (BoundedContinuousFunction.measurable_coe_ennreal_comp f.nnrealPart)).comp hM
   have hn := (Measure.measurable_lintegral
     (BoundedContinuousFunction.measurable_coe_ennreal_comp (-f).nnrealPart)).comp hM
   have h : Measurable (fun ω =>
       (∫⁻ x, (f.nnrealPart x : ℝ≥0∞) ∂M ω).toReal -
-      (∫⁻ x, ((-f).nnrealPart x : ℝ≥0∞) ∂M ω).toReal) := by
-    exact hp.ennreal_toReal.sub hn.ennreal_toReal
+      (∫⁻ x, ((-f).nnrealPart x : ℝ≥0∞) ∂M ω).toReal) := hp.ennreal_toReal.sub hn.ennreal_toReal
   simpa only [BoundedContinuousFunction.integral_eq_integral_nnrealPart_sub,
     BoundedContinuousFunction.toReal_lintegral_coe_eq_integral, Function.comp_def, Pi.sub_apply] using h
 
@@ -37,9 +37,9 @@ theorem gmc_inversion_test_vector_law
     (f : Fin k → BoundedContinuousFunction ℂ ℝ) :
     P.map (fun ω j => ∫ x, f j x ∂(M ω).map (fun z : ℂ => z⁻¹)) =
       P.map (fun ω j => ∫ x, f j x ∂M ω) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   let N := fun ω => (M ω).map (fun z : ℂ => z⁻¹)
-  have hNmeas : Measurable N := (Measure.measurable_map _ measurable_inv).comp hmeas
+  have hNmeas  := (Measure.measurable_map _ measurable_inv).comp hmeas
   have hNfin : ∀ ω, IsFiniteMeasure (N ω) := by
     intro ω
     let := hM.1 ω
@@ -52,7 +52,7 @@ theorem gmc_inversion_test_vector_law
     filter_upwards [hzero] with ω hω
     change (M ω).map (fun z : ℂ => z⁻¹) {0} = 0
     rw [Measure.map_apply measurable_inv (measurableSet_singleton 0)]
-    simpa only [preimage, mem_singleton_iff, inv_eq_zero, ofPred_eq_eq_singleton] using hω
+    simp_all
   apply gmc_limit_test_vector_law
     (fun n ω j => ∫ x, q n j x ∂N ω) (fun n ω j => ∫ x, q n j x ∂M ω)
     (fun ω j => ∫ x, f j x ∂N ω) (fun ω j => ∫ x, f j x ∂M ω)
@@ -81,7 +81,6 @@ theorem gmc_inversion_test_vector_law
   · intro j
     apply tendstoInMeasure_of_tendsto_ae (fun n => (hqn n j).aestronglyMeasurable)
     filter_upwards [hNzero] with ω hω
-    let := hNfin ω
     exact inversion_cutoff_integral_tendsto (N ω) hω (f j)
   · intro j
     apply tendstoInMeasure_of_tendsto_ae (fun n => (hqm n j).aestronglyMeasurable)

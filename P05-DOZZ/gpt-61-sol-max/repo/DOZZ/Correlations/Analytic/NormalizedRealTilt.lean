@@ -10,7 +10,7 @@ public import DOZZ.Correlations.Analytic.JointVertexVariance
 
 /-! Exact real values of the jointly normalized mixed-frame retained observable. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs

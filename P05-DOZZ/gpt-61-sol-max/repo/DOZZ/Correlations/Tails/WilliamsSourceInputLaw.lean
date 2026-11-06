@@ -10,19 +10,22 @@ public import DOZZ.Brownian.Lateral.LawUniqueness
 
 /-! The Williams reference law on the given source reflection witness. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω)
+
+include Ω _inst1 P in
 theorem conditioned_pair_reference_law
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+    
     (B : Ω → BrownianPath × BrownianPath) (ν : ℝ)
     (hB : IsTwoSidedConditionedBrownianProcess P B ν)
     (Qν : Measure BrownianPath) (hQν : IsNegativeConditionedBrownianLaw ν Qν) :
     P.map B = Qν.prod Qν := by
-  let : IsProbabilityMeasure P := isProbabilityMeasure_of_twoSidedConditioned hB
+  let  := isProbabilityMeasure_of_twoSidedConditioned hB
   have hm₁ := hB.1.1
   have hm₂ := hB.2.1.1
   have hl₁ := isNegativeConditionedBrownianLaw_eq ν hB.1.2 hQν
@@ -30,8 +33,9 @@ theorem conditioned_pair_reference_law
   have hl := (indepFun_iff_map_prod_eq_prod_map_map hm₁ hm₂).mp hB.2.2
   simpa only [Prod.eta,hl₁,hl₂] using hl
 
+include Ω _inst1 P in
 theorem lateral_law_locally_finite
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+    
     (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z) :
     ∀ᵐ μ ∂P.map Z, ∀ a b : ℝ, μ (Icc a b) < ⊤ := by
   have hn (n : ℕ) : ∀ᵐ μ ∂P.map Z, μ (Icc (-(n : ℝ)) n) < ⊤ := by
@@ -42,14 +46,11 @@ theorem lateral_law_locally_finite
   intro a b
   obtain ⟨n,hn⟩ := exists_nat_ge (max |a| |b|)
   apply lt_of_le_of_lt (measure_mono ?_) (hμ n)
-  intro t ht
-  have ha : |a| ≤ n := (le_max_left _ _).trans hn
-  have hb : |b| ≤ n := (le_max_right _ _).trans hn
-  exact ⟨by linarith only [ht.1,ha,neg_abs_le a],
-    by linarith only [ht.2,hb,le_abs_self b]⟩
+  grind
 
+include Ω _inst1 P in
 theorem williams_source_input_law
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+    
     (γ α : ℝ) (hα : α < Q γ)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hData : IsReflectionData P γ α B Z)
@@ -60,14 +61,14 @@ theorem williams_source_input_law
     ((brownianMaximumReferenceLaw (Q γ-α)).prod P).map
       (fun q => ENNReal.ofReal (Real.exp (γ*q.1))*
         twoSidedReflectionCutMass γ q.1 B Z q.2) := by
-  let : IsProbabilityMeasure P := hData.2.1.2.2.1
-  let : IsProbabilityMeasure Qν := hQν.2.1
+  let  := hData.2.1.2.2.1
+  let  := hQν.2.1
   have hZm := hData.2.1.2.2.2.1
-  let : IsProbabilityMeasure (P.map Z) := (Measure.isProbabilityMeasure_map_iff hZm).mpr inferInstance
+  let  := (Measure.isProbabilityMeasure_map_iff hZm).mpr inferInstance
   let μ := brownianMaximumReferenceLaw (Q γ-α)
-  let : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα)
+  let  := isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα)
   let pair := fun ω => (B ω,Z ω)
-  have hp : AEMeasurable pair P := (aemeasurable_of_twoSidedConditioned hData.1).prodMk hZm
+  have hp  := (aemeasurable_of_twoSidedConditioned hData.1).prodMk hZm
   have hJoint : P.map pair = (Qν.prod Qν).prod (P.map Z) := by
     rw [(indepFun_iff_map_prod_eq_prod_map_map
       (aemeasurable_of_twoSidedConditioned hData.1) hZm).mp hData.2.2,
@@ -75,8 +76,8 @@ theorem williams_source_input_law
   rw [williams_reference_input_law γ _ (sub_pos.mpr hα) Qν (P.map Z)
     (lateral_law_locally_finite P γ Z hData.2.1),← hJoint]
   let pm := hp.mk pair
-  have hpm : Measurable pm := hp.measurable_mk
-  have heq : pair =ᵐ[P] pm := hp.ae_eq_mk
+  have hpm  := hp.measurable_mk
+  have heq  := hp.ae_eq_mk
   have hInput : (μ.prod P).map (fun q : ℝ × Ω => (q.1,pair q.2)) = μ.prod (P.map pair) := by
     have heq' := (measurePreserving_snd (μ := μ) (ν := P)).quasiMeasurePreserving.ae heq
     have hlift : (fun q : ℝ × Ω => (q.1,pair q.2)) =ᵐ[μ.prod P]

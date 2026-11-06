@@ -40,7 +40,7 @@ theorem admissible_wick_pair_lintegral
       ENNReal.ofReal (Real.exp (g ^ 2 *
         gaussianCovariance P (fun ω => Y ω ε x) (fun ω => Y ω δ y))) := by
   let q : Fin 2 → ℝ × ℂ := fun i => if i = 0 then (ε, x) else (δ, y)
-  let V : Ω → Fin 2 → ℝ := fun ω i => Y ω (q i).1 (q i).2
+  let V  := fun ω i => Y ω (q i).1 (q i).2
   have hV : IsCenteredJointlyGaussian P V := by
     apply hY.gaussian 2 q
     intro i
@@ -48,7 +48,7 @@ theorem admissible_wick_pair_lintegral
     · exact ⟨hε, hεcut⟩
     · exact ⟨hδ, hδcut⟩
   have h := finite_gaussian_wick_pair_tilt P V hV 0 1 g (fun _ => (1 : ℝ≥0∞)) measurable_const
-  have hP : IsProbabilityMeasure P := hV.1
+  have hP  := hV.1
   simp only [mul_one, lintegral_const, measure_univ] at h
   have hV0 : (fun ω => V ω 0) = fun ω => Y ω ε x := by funext ω; simp [V, q]
   have hV1 : (fun ω => V ω 1) = fun ω => Y ω δ y := by funext ω; simp [V, q]
@@ -112,8 +112,7 @@ theorem growingPairKernel_le_one_scale
         (fun _ => (1 : ℝ≥0∞)) ω := by
     by_cases hmem : (ω, p.1) ∈ admissibleGrowingBarrierSet Y a k₀ r
     · have hk := hmem k hk₀ hkr
-      rw [Set.indicator_of_mem hmem, Set.indicator_of_mem (show ω ∈
-        {ω | Y ω (Real.exp (-(k : ℝ))) p.1 ≤ a * (k : ℝ)} from hk)]
+      simp_all
     · rw [Set.indicator_of_notMem hmem]
       exact zero_le
   have hone : Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
@@ -145,7 +144,7 @@ theorem near_power_prefactor_le (g gHi a η C : ℝ) (hg : 0 < g) (hgHi : g ≤ 
     calc (1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η)) ≤ (2 * gHi) ^ 2 / (2 * (1 + η)) :=
           div_le_div_of_nonneg_right hnum (by positivity)
       _ ≤ (2 * gHi) ^ 2 / 2 := div_le_div_of_nonneg_left (sq_nonneg _) (by norm_num) hden
-  have h3 : (2 * gHi) ^ 2 / 2 = 2 * gHi ^ 2 := by ring
+  
   linarith
 
 /-- Uniform integrable majorant of the growing-barrier two-root kernels. -/
@@ -171,7 +170,7 @@ theorem growingPairKernel_majorant
   obtain ⟨K₁', hK₁cut, hK₁C, hK₁η, hK₁off⟩ := exists_natural_scale_after_covariance_errors
     C gHi η (2 * gLo - a) ε₀ hC (lt_of_lt_of_le hgLo hgLoHi) hη (by linarith)
     hY.cutoffPositive
-  let K₁ : ℕ := max K₁' k₀
+  let K₁  := max K₁' k₀
   have hK₁ge' : (K₁' : ℝ) ≤ K₁ := by exact_mod_cast le_max_left K₁' k₀
   -- every scale `k ≥ K₁` satisfies all threshold conditions
   have hthr (k : ℕ) (hk : K₁ ≤ k) :
@@ -182,7 +181,7 @@ theorem growingPairKernel_majorant
       le_trans (le_max_right _ _) hk, lt_of_lt_of_le hK₁C hkK, ?_, ?_⟩
     · exact hK₁η.trans (mul_le_mul_of_nonneg_left hkK hη.le)
     · intro g hg
-      have hb : 0 < 2 * gLo - a := by linarith
+      
       calc 2 * g * C + 1 ≤ 2 * gHi * C + 1 := by linarith only [mul_le_mul_of_nonneg_right hg.2 hC]
         _ ≤ η * (2 * gLo - a) * (K₁' : ℝ) := hK₁off
         _ ≤ η * (2 * gLo - a) * (k : ℝ) :=
@@ -192,18 +191,18 @@ theorem growingPairKernel_majorant
             have : η * (2 * gLo - a) ≤ η * (2 * g - a) :=
               mul_le_mul_of_nonneg_left (by linarith [hg.1]) hη.le
             exact mul_le_mul_of_nonneg_right this hk0
-  let ρ₀ : ℝ := Real.exp (-((K₁ : ℝ) + 1))
+  let ρ₀  := Real.exp (-((K₁ : ℝ) + 1))
   have hρ₀ : 0 < ρ₀ := Real.exp_pos _
   have hρ₀1 : ρ₀ ≤ 1 := Real.exp_le_one_iff.mpr (by
     have : (0 : ℝ) ≤ K₁ := Nat.cast_nonneg _
     linarith)
-  let B₁ : ℝ := Real.exp (gHi ^ 2 * C + 2 * gHi ^ 2)
-  let B₂ : ℝ := Real.exp (gHi ^ 2 * max (Real.log (1 / ρ₀) + Cc) 0)
+  let B₁  := Real.exp (gHi ^ 2 * C + 2 * gHi ^ 2)
+  let B₂  := Real.exp (gHi ^ 2 * max (Real.log (1 / ρ₀) + Cc) 0)
   refine ⟨(K₁ : ℝ) + 1, B₁, B₂, (Real.exp_pos _).le, (Real.exp_pos _).le, ?_⟩
   intro r s hr hs g hg p hp hpos
   have hgpos : 0 < g := lt_of_lt_of_le hgLo hg.1
-  have hr₀ : Real.exp (-r) ≤ ρ₀ := Real.exp_le_exp.mpr (by linarith)
-  have hs₀ : Real.exp (-s) ≤ ρ₀ := Real.exp_le_exp.mpr (by linarith)
+  
+  
   have hrcut : Real.exp (-r) ≤ ε₀ := by
     have h := (hthr K₁ le_rfl).1
     exact le_trans (Real.exp_le_exp.mpr (by linarith)) h
@@ -216,7 +215,7 @@ theorem growingPairKernel_majorant
   have hρpos : 0 < ρ := lt_of_lt_of_le hpos (le_max_left _ _)
   by_cases hnearρ : ρ ≤ ρ₀
   · -- near the diagonal: barrier at the floor-log scale
-    have hρ1 : ρ ≤ 1 := hnearρ.trans hρ₀1
+    
     have hlog0 : 0 ≤ Real.log (1 / ρ) := Real.log_nonneg (by
       rw [le_div_iff₀ hρpos]; linarith)
     set k : ℕ := ⌊Real.log (1 / ρ)⌋₊ with hkdef
@@ -328,10 +327,10 @@ theorem ennDist_eq_ofReal_abs {x y : ℝ≥0∞} (hx : x ≠ ⊤) (hy : y ≠ �
     ennDist x y = ENNReal.ofReal |x.toReal - y.toReal| := by
   unfold ennDist
   rcases le_total x y with h | h
-  · have hle : x.toReal ≤ y.toReal := ENNReal.toReal_mono hy h
+  · have hle  := ENNReal.toReal_mono hy h
     rw [tsub_eq_zero_of_le h, zero_add, abs_of_nonpos (by linarith), neg_sub,
       ← ENNReal.toReal_sub_of_le h hy, ENNReal.ofReal_toReal (ne_top_of_le_ne_top hy tsub_le_self)]
-  · have hle : y.toReal ≤ x.toReal := ENNReal.toReal_mono hx h
+  · have hle  := ENNReal.toReal_mono hx h
     rw [tsub_eq_zero_of_le h, add_zero, abs_of_nonneg (by linarith),
       ← ENNReal.toReal_sub_of_le h hx, ENNReal.ofReal_toReal (ne_top_of_le_ne_top hx tsub_le_self)]
 
@@ -345,8 +344,6 @@ instance instSFiniteLogRegularizationReference (U : Set ℂ) (dens : ℂ → ℝ
 theorem logRegularizationReference_singleton (U : Set ℂ) (dens : ℂ → ℝ) (x : ℂ) :
     logRegularizationReference U dens {x} = 0 := by
   unfold logRegularizationReference
-  rw [withDensity_apply _ (measurableSet_singleton x)]
-  apply setLIntegral_measure_zero
   exact measure_singleton x
 
 /-- The chart pair measure is carried by `K × K` off the diagonal. -/
@@ -369,11 +366,7 @@ theorem chartPairMeasure_ae_offDiagonal (U : Set ℂ) (dens : ℂ → ℝ) (K : 
     simp [hzero]
   have hdiag : ∀ᵐ p ∂chartPairMeasure U dens K, p.1 ≠ p.2 := by
     rw [ae_iff]
-    have hset : {p : ℂ × ℂ | ¬ p.1 ≠ p.2} = Set.diagonal ℂ := by
-      ext p
-      simp [Set.mem_diagonal_iff]
-    rw [hset]
-    exact hdiag0
+    aesop
   filter_upwards [hcarry, hdiag] with p h1 h2 using ⟨h1, h2⟩
 
 /-- The chart pair measure is finite. -/
@@ -399,24 +392,18 @@ theorem growingPairKernel_measurable
   compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_measurable P U dens ε₀ ε₀ Y Y hY hY
     g a k₀ r s true true
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) [_inst3 : IsProbabilityMeasure P] (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U) (gLo gHi a η κ : ℝ) (hgLo : 0 < gLo) (hgLoHi : gLo ≤ gHi) (hga : gHi < a) (ha2 : a < 2 * gLo) (hη : 0 < η) (hη1 : η < 1) (hκ : 0 < κ) (hκ2 : κ < 2) (hκexp : ∀ g ∈ Icc gLo gHi, g ^ 2 - ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η))) ≤ κ) (k₀ : ℕ)
+
+include Ω _inst1 P _inst3 U dens ε₀ Y hY K hK hKU gLo gHi a η κ hgLo hgLoHi hga ha2 hη hη1 hκ hκ2 hκexp k₀ in
 /-- The growing-barrier kernels at sufficiently fine cutoffs share one majorant integrable for
 the chart pair measure. -/
 theorem growingPairKernel_ae_le_integrable_majorant
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U)
-    (gLo gHi a η κ : ℝ) (hgLo : 0 < gLo) (hgLoHi : gLo ≤ gHi) (hga : gHi < a)
-    (ha2 : a < 2 * gLo) (hη : 0 < η) (hη1 : η < 1) (hκ : 0 < κ) (hκ2 : κ < 2)
-    (hκexp : ∀ g ∈ Icc gLo gHi, g ^ 2 - ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η))) ≤ κ)
-    (k₀ : ℕ) :
+     :
     ∃ R₀ : ℝ, ∃ Maj : ℂ × ℂ → ℝ≥0∞, Measurable Maj ∧
       ∫⁻ p, Maj p ∂chartPairMeasure U dens K ≠ ⊤ ∧
       ∀ r s : ℝ, R₀ ≤ r → R₀ ≤ s → ∀ g ∈ Icc gLo gHi,
         ∀ᵐ p ∂chartPairMeasure U dens K, growingPairKernel P Y g a k₀ r s p ≤ Maj p := by
-  have hμfin : chartPairMeasure U dens K univ ≠ ⊤ :=
+  have hμfin  :=
     chartPairMeasure_univ_ne_top P U dens ε₀ Y hY K hK hKU
   have hcarry := chartPairMeasure_ae_offDiagonal U dens K hK.measurableSet
   have hapos : 0 ≤ a := le_trans hgLo.le (hgLoHi.trans hga.le)
@@ -424,9 +411,7 @@ theorem growingPairKernel_ae_le_integrable_majorant
     gLo gHi a η κ hgLo hgLoHi hapos ha2 hη hη1 hκ.le hκexp k₀
   let Maj : ℂ × ℂ → ℝ≥0∞ := fun p => ENNReal.ofReal (B₁ * ‖p.1 - p.2‖ ^ (-κ) + B₂)
   have hMajMeas : Measurable Maj := by
-    have h : Measurable (fun p : ℂ × ℂ => ‖p.1 - p.2‖) := by fun_prop
-    exact ENNReal.measurable_ofReal.comp
-      (((h.pow_const (-κ)).const_mul B₁).add_const B₂)
+    fun_prop
   have hMajInt : ∫⁻ p, Maj p ∂chartPairMeasure U dens K ≠ ⊤ := by
     have hpow := admissible_logRegularization_reference_pair_kernel_lintegrable P U dens ε₀ Y hY
       K hK hKU κ hκ hκ2
@@ -437,8 +422,7 @@ theorem growingPairKernel_ae_le_integrable_majorant
         (Real.rpow_nonneg (norm_nonneg _) _)) hB₂]
     refine ne_top_of_le_ne_top ?_ (lintegral_mono hle)
     have hmeasPow : Measurable (fun p : ℂ × ℂ => ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ))) := by
-      have h : Measurable (fun p : ℂ × ℂ => ‖p.1 - p.2‖) := by fun_prop
-      exact ENNReal.measurable_ofReal.comp (h.pow_const (-κ))
+      fun_prop
     rw [lintegral_add_right _ measurable_const, lintegral_const_mul _ hmeasPow,
       lintegral_const]
     exact ENNReal.add_ne_top.mpr ⟨ENNReal.mul_ne_top ENNReal.ofReal_ne_top hpow,
@@ -447,19 +431,11 @@ theorem growingPairKernel_ae_le_integrable_majorant
   filter_upwards [hcarry] with p hp
   exact hmaj r s hr hs g hg p hp.1 (norm_pos_iff.mpr (sub_ne_zero.mpr hp.2))
 
+include Ω _inst1 P _inst3 U dens ε₀ Y hY K hK hKU gLo gHi a η κ hgLo hgLoHi hga ha2 hη hη1 hκ hκ2 hκexp k₀ in
 /-- Growing-barrier kernels are Cauchy in `L¹` of the chart pair measure, uniformly for charges
 in a compact interval below the barrier slope with subcritical two-root exponent. -/
 theorem growingPairKernel_L1_uniform_cauchy
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U)
-    (gLo gHi a η κ : ℝ) (hgLo : 0 < gLo) (hgLoHi : gLo ≤ gHi) (hga : gHi < a)
-    (ha2 : a < 2 * gLo) (hη : 0 < η) (hη1 : η < 1) (hκ : 0 < κ) (hκ2 : κ < 2)
-    (hκexp : ∀ g ∈ Icc gLo gHi, g ^ 2 - ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η))) ≤ κ)
-    (k₀ : ℕ) (hk₀cut : Real.exp (-(k₀ : ℝ)) ≤ ε₀)
+     (hk₀cut : Real.exp (-(k₀ : ℝ)) ≤ ε₀)
     (hvar : ∀ k : ℕ, k₀ ≤ k → ∀ x ∈ K,
       1 ≤ gaussianVariance P (fun ω => Y ω (Real.exp (-(k : ℝ))) x))
     (ε : ℝ) (hε : 0 < ε) :
@@ -470,16 +446,14 @@ theorem growingPairKernel_L1_uniform_cauchy
   classical
   set μ := chartPairMeasure U dens K with hμdef
   have hμfin : μ univ ≠ ⊤ := chartPairMeasure_univ_ne_top P U dens ε₀ Y hY K hK hKU
-  have : IsFiniteMeasure μ := ⟨lt_top_iff_ne_top.mpr hμfin⟩
+  
   have hcarry := chartPairMeasure_ae_offDiagonal U dens K hK.measurableSet
   have hapos : 0 ≤ a := le_trans hgLo.le (hgLoHi.trans hga.le)
   obtain ⟨R₀, B₁, B₂, hB₁, hB₂, hmaj⟩ := growingPairKernel_majorant P U dens ε₀ Y hY K hK hKU
     gLo gHi a η κ hgLo hgLoHi hapos ha2 hη hη1 hκ.le hκexp k₀
   let Maj : ℂ × ℂ → ℝ≥0∞ := fun p => ENNReal.ofReal (B₁ * ‖p.1 - p.2‖ ^ (-κ) + B₂)
   have hMajMeas : Measurable Maj := by
-    have h : Measurable (fun p : ℂ × ℂ => ‖p.1 - p.2‖) := by fun_prop
-    exact ENNReal.measurable_ofReal.comp
-      (((h.pow_const (-κ)).const_mul B₁).add_const B₂)
+    fun_prop
   have hMajInt : ∫⁻ p, Maj p ∂μ ≠ ⊤ := by
     have hpow := admissible_logRegularization_reference_pair_kernel_lintegrable P U dens ε₀ Y hY
       K hK hKU κ hκ hκ2
@@ -490,8 +464,7 @@ theorem growingPairKernel_L1_uniform_cauchy
         (Real.rpow_nonneg (norm_nonneg _) _)) hB₂]
     refine ne_top_of_le_ne_top ?_ (lintegral_mono hle)
     have hmeasPow : Measurable (fun p : ℂ × ℂ => ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ))) := by
-      have h : Measurable (fun p : ℂ × ℂ => ‖p.1 - p.2‖) := by fun_prop
-      exact ENNReal.measurable_ofReal.comp (h.pow_const (-κ))
+      fun_prop
     rw [lintegral_add_right _ measurable_const, lintegral_const_mul _ hmeasPow,
       lintegral_const]
     exact ENNReal.add_ne_top.mpr ⟨ENNReal.mul_ne_top ENNReal.ofReal_ne_top hpow,
@@ -505,7 +478,7 @@ theorem growingPairKernel_L1_uniform_cauchy
     simp only [N, Set.mem_ofPred_eq] at hp ⊢
     have hnm' : (n : ℝ) + 1 ≤ (m : ℝ) + 1 := by exact_mod_cast Nat.add_le_add_right hnm 1
     exact lt_of_lt_of_le hp (one_div_le_one_div_of_le (by positivity) hnm')
-  let ν : Measure (ℂ × ℂ) := μ.withDensity (fun p => 2 * Maj p)
+  let ν  := μ.withDensity (fun p => 2 * Maj p)
   have hνN (n : ℕ) : ν (N n) = ∫⁻ p in N n, 2 * Maj p ∂μ := withDensity_apply _ (hNmeas n)
   have hνfin : ν (N 0) ≠ ⊤ := by
     rw [hνN]
@@ -535,7 +508,7 @@ theorem growingPairKernel_L1_uniform_cauchy
   set s₀ : ℝ := 1 / ((n : ℝ) + 1) with hs₀def
   have hs₀ : 0 < s₀ := by positivity
   set T : ℝ := (μ univ).toReal with hTdef
-  have hT : 0 ≤ T := ENNReal.toReal_nonneg
+  
   set η₀ : ℝ := ε / (2 * (T + 1)) with hη₀def
   have hη₀ : 0 < η₀ := by positivity
   obtain ⟨R₁, hR₁⟩ := growingPairKernel_offDiagonal_uniform_cauchy P U dens ε₀ Y hY K hK hKU

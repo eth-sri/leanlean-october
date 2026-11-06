@@ -15,18 +15,20 @@ in the closed negative half-line for all times. This argument does not assert th
 touch zero at an irrational time.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Set
 open scoped ENNReal NNReal Topology
 
 namespace DOZZ.Proofs
 
+variable {ν : ℝ} {P : Measure BrownianPath} (hP : IsNegativeConditionedBrownianLaw ν P)
+
+include ν P hP in
 /-- At a deterministic positive time, the one-time marginal of a negative conditioned path is
 strictly negative almost surely. -/
 theorem ae_negativeConditionedPath_eval_lt_zero
-    {ν : ℝ} {P : Measure BrownianPath}
-    (hP : IsNegativeConditionedBrownianLaw ν P)
+    
     (t : ℝ≥0) (ht : 0 < (t : ℝ)) :
     ∀ᵐ p ∂P, p t < 0 := by
   let times : Fin 1 → ℝ≥0 := fun _ => t
@@ -37,12 +39,10 @@ theorem ae_negativeConditionedPath_eval_lt_zero
   have htimes : ∀ i, 0 < (times i : ℝ) := fun _ => ht
   have hmono : StrictMono times := by
     intro i j hij
-    have hij' : i = j := Subsingleton.elim _ _
-    subst j
-    exact False.elim (lt_irrefl i hij)
+    omega
   have hfdd := hP.2.2.2 1 (by norm_num) times htimes hmono
   have hlaw : P.map X = (volume : Measure (Fin 1 → ℝ)).withDensity ρ := by
-    simpa [X, times, ρ, negativeConditionedFDDDensity] using hfdd
+    continuity
   have hA : MeasurableSet A := measurableSet_le measurable_const
     (measurable_pi_apply (0 : Fin 1))
   have hρzero : ∀ x ∈ A, ρ x = 0 := by
@@ -71,15 +71,14 @@ theorem ae_negativeConditionedPath_eval_lt_zero
       _ = (P.map X) A := (Measure.map_apply hX hA).symm
       _ = 0 := by rw [hlaw]; exact hRHS
   rw [measure_eq_zero_iff_ae_notMem] at hbad
-  filter_upwards [hbad] with p hp
-  exact lt_of_not_ge (by simpa using hp)
+  simp_all
 
+include ν P hP in
 /-- A negative conditioned path is nonpositive at every time, almost surely. The proof uses
 strict negativity at each positive rational time and continuity; it allows a possible zero touch at
 an irrational time. -/
 theorem ae_negativeConditionedPath_nonpos_all_times
-    {ν : ℝ} {P : Measure BrownianPath}
-    (hP : IsNegativeConditionedBrownianLaw ν P) :
+     :
     ∀ᵐ p ∂P, ∀ t : ℝ≥0, p t ≤ 0 := by
   let PosRat := {q : ℚ // 0 < (q : ℝ)}
   have hrat : ∀ᵐ p ∂P, ∀ q : PosRat,
@@ -103,8 +102,7 @@ theorem ae_negativeConditionedPath_nonpos_all_times
       (by
         intro q hq
         exact hpositive q hq)
-    have hval := hcont t htpos
-    exact neg_nonneg.mp hval
+    simp_all
 
 end DOZZ.Proofs
 

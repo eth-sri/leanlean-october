@@ -9,7 +9,7 @@ public import DOZZ.GMC.Moments.ReferenceFinite
 
 /-! Inversion invariance of arbitrary GMC test vectors on annular charts. -/
 
-@[expose] public section
+public section
 
 open Filter MeasureTheory Set
 open scoped Topology Distributions ENNReal
@@ -30,7 +30,7 @@ theorem gmc_inversion_annular_test_vector_law
     (hfU : ∀ j, tsupport (f j : ℂ → ℝ) ⊆ U) :
     P.map (fun ω j => ∫ x, f j x ∂(M ω).map (fun z : ℂ => z⁻¹)) =
       P.map (fun ω j => ∫ x, f j x ∂M ω) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   obtain ⟨Xc, hXc, _hconv⟩ := hM.2
   obtain ⟨g, hg, Z, N, hgap, hmem, hlim, hZ, hN, hNae⟩ :=
     isGMCOf_inversion_annular_version P X hX γ hγ hγ2 M hM Xc hXc U hUopen hm hR hU
@@ -48,8 +48,7 @@ theorem gmc_inversion_annular_test_vector_law
     infer_instance
   have hfdd ε (_hε : 0 < ε) (_hεb : ε ≤ min (min (m / 2) 1) 1) n (xs : Fin n → ℂ) :
       P.map (fun ω i => Z ω (xs i) (Real.log (1 / ε))) =
-      P.map (fun ω i => Xc ω (xs i) (Real.log (1 / ε))) := by
-    exact inversionCircle_fdd_law P X hX P X hX Xc hXc
+      P.map (fun ω i => Xc ω (xs i) (Real.log (1 / ε))) := inversionCircle_fdd_law P X hX P X hX Xc hXc
       (fun i => (xs i, Real.log (1 / ε)))
       (fun i ω => Z ω (xs i) (Real.log (1 / ε))) (fun i => hmem _ _)
       (fun i => g (xs i, Real.log (1 / ε))) (fun i => hg _)

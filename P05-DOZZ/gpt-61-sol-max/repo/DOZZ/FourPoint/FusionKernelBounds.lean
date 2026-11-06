@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.FusionGuardDisks
 
 /-! Deterministic kernel comparisons uniform on bounded charge intervals. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal

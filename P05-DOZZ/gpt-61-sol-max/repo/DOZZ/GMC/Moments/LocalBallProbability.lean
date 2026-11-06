@@ -31,17 +31,15 @@ theorem localBallProbability_isProbability {R : ℝ} (hR : 0 < R) :
       Complex.volume_closedBall]
   have hne : (volume : Measure S) Set.univ ≠ 0 := by
     rw [htotal]
-    have hR' : ENNReal.ofReal R ≠ 0 := ENNReal.ofReal_ne_zero_iff.mpr hR
+
     have hπ : (NNReal.pi : ℝ≥0∞) ≠ 0 := by
       rw [ENNReal.coe_ne_zero]
       exact ne_of_gt NNReal.pi_pos
-    exact ne_of_gt (ENNReal.mul_pos (pow_ne_zero 2 hR') hπ)
+    simp_all
   have htop : (volume : Measure S) Set.univ ≠ ∞ := by
     rw [htotal]
     exact ENNReal.mul_ne_top (by simp) (by simp)
   refine ⟨?_⟩
-  change (((volume : Measure S) Set.univ)⁻¹ • (volume : Measure S)) Set.univ = 1
-  rw [Measure.smul_apply]
   exact ENNReal.inv_mul_cancel hne htop
 
 end DOZZ.Proofs

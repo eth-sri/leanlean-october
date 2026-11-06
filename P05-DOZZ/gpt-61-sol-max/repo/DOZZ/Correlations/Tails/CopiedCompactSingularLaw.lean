@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Tails.SingularWeightedApproximation
 
 /-! Copying the Gaussian pin commutes with the full insertion singularity. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal
 
@@ -34,7 +34,7 @@ theorem copied_compact_singular_law
     (P.prod P).map (fun q => ENNReal.ofReal (Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖)) *
       ∫⁻ x, ENNReal.ofReal (g x) * (ENNReal.ofReal ‖x‖)^(-β) * ENNReal.ofReal
         (Real.exp (γ*localPinCoefficient z x*(Xc q.2 z 0-Xc q.1 z 0))) ∂N q.1) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   let : MetricSpace ℝ≥0∞ := TopologicalSpace.metrizableSpaceMetric ℝ≥0∞
   let gn := singularCompactTest g hgc β
   have hgn0 (n : ℕ) (x : ℂ) : 0 ≤ gn n x :=
@@ -74,7 +74,7 @@ theorem copied_compact_singular_law
   have hY' := isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst _ hY
   have hN' := isGMCOf_measurePreserving P (P.prod P) Prod.fst hfst _ hY γ _ hN
   have hBm (n : ℕ) : AEMeasurable (B n) (P.prod P) := by
-    have hk : Measurable (fun p : ℝ × ℂ => ENNReal.ofReal (gn n p.2) * v p) :=
+    have hk  :=
       (ENNReal.measurable_ofReal.comp ((gn n).continuous.measurable.comp measurable_snd)).mul hv
     exact hS.aemeasurable.mul (gmc_parameter_lintegral_aemeasurable
       (P.prod P) _ hY' γ hγ hγ2 (N ∘ Prod.fst) hN' θ hθ.aemeasurable _ hk)

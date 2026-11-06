@@ -10,7 +10,7 @@ public import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
 public import DOZZ.FourPoint.Reflected.MaximumParetoLaw
 
 /-! Deterministic restart and Williams' law for the actual source lateral projection. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

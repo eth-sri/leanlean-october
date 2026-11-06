@@ -7,10 +7,11 @@ module
 public import DOZZ.Brownian.LastExitShiftLaw
 public import DOZZ.Brownian.ConditionedPathSupport
 public import DOZZ.Brownian.Reflection.LastCut
+import Mathlib.Tactic
 
 /-! The last-cut ordering required by the lower Williams tail estimate. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -23,15 +24,14 @@ theorem last_exit_le_of_post_nonpos (p : BrownianPath) (c d : ℝ) (hcd : c ≤ 
   rcases lt_or_eq_of_le hcd with hlt | heq
   · have hhit (u : ℝ≥0) (hu : p u = -c) : u ≤ negativeLastExitTime p d := by
       by_contra hnot
-      have hu' : negativeLastExitTime p d < u := lt_of_not_ge hnot
+      have hu'  := lt_of_not_ge hnot
       have h := hp (u-negativeLastExitTime p d)
       change p (negativeLastExitTime p d+(u-negativeLastExitTime p d))+d ≤ 0 at h
       rw [add_tsub_cancel_of_le hu'.le, hu] at h
       linarith
     apply (negativeLastExitTime_le_iff_no_future_visit p c (negativeLastExitTime p d)
       ⟨negativeLastExitTime p d, hhit⟩).mpr
-    intro u hu huv
-    exact (not_lt_of_ge (hhit u huv)) hu
+    grind
   · rw [heq]
 
 /-- For each fixed pair of levels the conditioned last exits are ordered almost surely.
@@ -59,17 +59,12 @@ theorem reflection_cut_mass_le_of_last_exit_le
     (Z : Ω → Measure ℝ) (ω : Ω)
     (hcd : negativeLastExitTime (B ω).2 c ≤ negativeLastExitTime (B ω).2 d) :
     twoSidedReflectionCutMass γ c B Z ω ≤ twoSidedReflectionCutMass γ d B Z ω := by
-  have ht : (negativeLastExitTime (B ω).2 c : ℝ) ≤
-      (negativeLastExitTime (B ω).2 d : ℝ) := hcd
+  have ht  := hcd
   unfold twoSidedReflectionCutMass
   apply lintegral_mono
   intro s
   beta_reduce
-  split_ifs with hc hd
-  · exact le_rfl
-  · exact False.elim (hd (by linarith))
-  · exact zero_le
-  · exact le_rfl
+  bound
 
 
 end DOZZ.Proofs

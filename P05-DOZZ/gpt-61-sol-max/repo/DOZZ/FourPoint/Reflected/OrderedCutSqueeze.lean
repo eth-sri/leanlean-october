@@ -6,7 +6,7 @@ module
 public import Mathlib.Topology.Order.Basic
 public import Mathlib.Topology.Instances.Real.Lemmas
 /-! The cutoff is removed only after the spatial limit in the signed Williams squeeze. -/
-@[expose] public section
+public section
 open Filter Topology
 namespace DOZZ.Proofs
 

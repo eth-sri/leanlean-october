@@ -4,7 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.Correlations.Symmetry.ReflectionCircleCovariance
-@[expose] public section
+import Mathlib.Tactic
+public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
@@ -19,10 +20,7 @@ theorem symmetryReflection_circle_integral (f : ℂ → ℝ) (hf : Measurable f)
     Real.circleAverage (fun z => f (1 - z)) x (Real.exp (-r)) =
         Real.circleAverage (fun z => f (-Real.exp (-r) * z + (1 - x))) 0 1 := by
       rw [Real.circleAverage_eq_circleAverage_zero_one]
-      congr 1
-      funext z
-      congr 1
-      ring
+      ring_nf at * <;> aesop
     _ = Real.circleAverage f (1 - x) (-Real.exp (-r)) :=
       by simpa only [Complex.ofReal_neg] using
         (Real.circleAverage_eq_circleAverage_zero_one (f := f) (c := 1 - x)

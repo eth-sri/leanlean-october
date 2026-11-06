@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.TaylorMassInterpolation
 
 /-! The positive weighted Jensen step reducing the annular square to one root. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -23,22 +23,17 @@ theorem lintegral_square_le_mass (μ : Measure ℂ) (f : ℂ → ℝ≥0∞)
   have hh := pow_le_pow_left' h 2
   rw [mul_pow, ← ENNReal.rpow_two, ← ENNReal.rpow_two, ← ENNReal.rpow_mul,
     ← ENNReal.rpow_two, ← ENNReal.rpow_mul] at hh
-  norm_num only [show (1 / (2 : ℝ)) * 2 = 1 by norm_num, ENNReal.rpow_one] at hh
-  simpa only [ENNReal.rpow_two] using hh
+  simp_all
 
 /-- Jensen absorbs one inverse order without any hidden finiteness or nonvanishing assumption. -/
 theorem jensen_inverse_square_bound (A L J I : ℝ≥0∞) (p : ℝ)
     (hp : 0 ≤ p) (hA : A ^ 2 ≤ J * L) (hL : L ≤ I) :
     A ^ 2 * I ^ (-p - 2) ≤ J * I ^ (-p - 1) := by
   by_cases hI0 : I = 0
-  · have hL0 : L = 0 := le_zero_iff.mp (hI0 ▸ hL)
-    have hh := mul_le_mul' hA (le_refl (I ^ (-p - 2)))
-    simp only [hL0, mul_zero, zero_mul] at hh
-    exact hh.trans zero_le
+  · simp_all
   by_cases hItop : I = ⊤
   · have hneg2 : -p - 2 < 0 := by linarith only [hp]
-    simp only [hItop, ENNReal.top_rpow_of_neg hneg2, mul_zero]
-    exact zero_le
+    simp_all
   have hcombine : I * I ^ (-p - 2) = I ^ (-p - 1) := by
     nth_rw 1 [← ENNReal.rpow_one I]
     rw [← ENNReal.rpow_add 1 (-p - 2) hI0 hItop]

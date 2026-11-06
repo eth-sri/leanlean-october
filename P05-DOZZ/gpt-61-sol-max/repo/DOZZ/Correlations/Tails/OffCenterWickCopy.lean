@@ -22,10 +22,12 @@ noncomputable def copiedCircle {Ω : Type*} (Xc : Ω → ℂ → ℝ → ℝ)
   Xc q.2 z 0 + (Xc q.1 (z + p.val.1) p.val.2 - Xc q.1 z 0) +
     localPinCoefficient z p.val.1 * (Xc q.2 z 0 - Xc q.1 z 0)
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+
+include Ω _inst1 P X Xc hX hc in
 /-- The original translated circle law retains the pin-dependent variance. -/
 theorem offCenter_circle_hasLaw
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle) :
     HasLaw (fun ω => Xc ω (z + p.val.1) p.val.2)
       (gaussianReal 0 (p.val.2 + 2 * Real.log ‖z + p.val.1‖).toNNReal) P := by
@@ -51,9 +53,8 @@ theorem copied_circle_fdd_law
     apply measurable_pi_iff.mpr
     intro j
     cases j with
-    | none => exact hm.comp (measurable_id.prodMk (measurable_const (a := (z, (0 : ℝ)))))
-    | some p => exact hm.comp (measurable_id.prodMk
-        (measurable_const (a := (z + p.val.1, p.val.2))))
+    | none => measurability
+    | some p => measurability
   have hT : Measurable T := by
     apply measurable_pi_iff.mpr
     intro j
@@ -74,10 +75,10 @@ theorem copied_circle_fdd_law
   rw [Measure.map_map hE hS, Measure.map_map hE hT] at h
   exact h
 
+include Ω _inst1 P X Xc hX hc in
 /-- The copied circle has the original scalar Gaussian law. -/
 theorem copied_circle_hasLaw
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (hm : Measurable (fun q : Ω × (ℂ × ℝ) => Xc q.1 q.2.1 q.2.2))
     (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle) :
     HasLaw (fun q => copiedCircle Xc z q p)
@@ -90,12 +91,7 @@ theorem copied_circle_hasLaw
     apply measurable_pi_iff.mpr
     intro i
     unfold copiedCircle
-    have h1 (x : ℂ) (r : ℝ) : Measurable (fun q : Ω × Ω => Xc q.1 x r) :=
-      hm.comp (measurable_fst.prodMk (measurable_const (a := (x, r))))
-    have h2 (x : ℂ) (r : ℝ) : Measurable (fun q : Ω × Ω => Xc q.2 x r) :=
-      hm.comp (measurable_snd.prodMk (measurable_const (a := (x, r))))
-    exact ((h2 z 0).add ((h1 _ _).sub (h1 z 0))).add
-      (((h2 z 0).sub (h1 z 0)).const_mul _)
+    fun_prop (disch := positivity)
   have he' := congrArg (fun μ => μ.map (fun f : Unit → ℝ => f ())) he
   rw [Measure.map_map (measurable_pi_apply ()) hmS,
     Measure.map_map (measurable_pi_apply ()) hmT] at he'

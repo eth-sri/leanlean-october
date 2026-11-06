@@ -18,7 +18,7 @@ real insertion exponent. The same deterministic comparison must reverse when tak
 negative moment. The Gaussian scale exponent retains the actual moment order throughout.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal Distributions

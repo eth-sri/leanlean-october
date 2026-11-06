@@ -4,7 +4,7 @@ public import DOZZ.GMC.WeightedCutoff.CoarseMoment
 
 /-! # Uniform bounded-disk moments at coarse physical cutoffs -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -19,10 +19,7 @@ theorem regularizedGMC_bounded_ball_moment_coarse_uniform_gamma
       (∫⁻ ω, (regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball 0 B)) ^ q ∂P) ≤ D := by
   let V : ℝ := Real.log 8 + 2 * Real.log (1 + B + r₀)
   have hV : 0 ≤ V := by
-    have h1 := Real.log_nonneg (by norm_num : (1 : ℝ) ≤ 8)
-    have h2 := Real.log_nonneg (show 1 ≤ 1 + B + r₀ by linarith)
-    dsimp [V]
-    positivity
+    bound
   let D : ℝ≥0∞ := gmcReferenceMeasure (Metric.ball (0 : ℂ) B) ^ q *
     ENNReal.ofReal (Real.exp (4 * (q ^ 2 - q) / 2 * V))
   have htop : gmcReferenceMeasure (Metric.ball (0 : ℂ) B) ≠ ⊤ :=
@@ -44,7 +41,7 @@ theorem regularizedGMC_bounded_ball_moment_coarse_uniform_gamma
     field_simp
   have hvar : ∀ x ∈ Metric.ball (0 : ℂ) B, gaussianVariance P (fun ω => Xc ω x r) ≤ V := by
     intro x hx
-    have hx' : ‖x‖ ≤ B := le_of_lt (by simpa using hx)
+    have hx'  := le_of_lt (by simpa using hx)
     exact gmcCircle_variance_le_bounded_radius P X hX Xc hXc B r₀ (Real.log 8) r
       hB hr₀.le hrT (by rw [hcut]; exact hδr) x hx'
   have h := regularizedGMC_moment_upper_of_variance_bound P X hX Xc hXc γ r q V hq.le
@@ -54,7 +51,6 @@ theorem regularizedGMC_bounded_ball_moment_coarse_uniform_gamma
     have hcoef : 0 ≤ (q ^ 2 - q) / 2 * V := mul_nonneg (by nlinarith) hV
     nlinarith [mul_le_mul_of_nonneg_right hγsq hcoef]
   apply h.trans
-  apply mul_le_mul_right
-  exact ENNReal.ofReal_le_ofReal (Real.exp_le_exp.mpr hexp)
+  bound
 
 end DOZZ.Proofs

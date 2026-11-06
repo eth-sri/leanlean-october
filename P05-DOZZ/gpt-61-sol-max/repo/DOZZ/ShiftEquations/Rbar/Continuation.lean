@@ -43,16 +43,15 @@ theorem extendedSeiberg3_of_lt {γ α₁ α₂ α₃ : ℝ} (hγ : 0 < γ) (h₁
   refine lt_min ?_ (lt_min ?_ (lt_min ?_ ?_))
   · have h := div_lt_div_of_pos_right h0 hγ
     rwa [div_div, ← sq] at h
-  · have h := div_lt_div_of_pos_right hk₁ hγ
-    rwa [show 2 * (Q γ - α₁) / γ = 2 / γ * (Q γ - α₁) by ring] at h
-  · have h := div_lt_div_of_pos_right hk₂ hγ
-    rwa [show 2 * (Q γ - α₂) / γ = 2 / γ * (Q γ - α₂) by ring] at h
-  · have h := div_lt_div_of_pos_right hk₃ hγ
-    rwa [show 2 * (Q γ - α₃) / γ = 2 / γ * (Q γ - α₃) by ring] at h
+  · field_simp <;> nlinarith
+  · field_simp <;> nlinarith
+  field_simp <;> nlinarith
 
+variable {γ ε a : ℝ} (hγ : 0 < γ) (hε₁ : γ / 2 < ε) (hε₂ : ε < 2 / γ) (ha₁ : γ / 4 + ε / 2 < a) (ha₂ : a < Q γ)
+
+include γ ε a hγ hε₁ hε₂ ha₁ ha₂ in
 /-- The shifted triple `(a - γ/2, ε, a)` is in the extended domain for `γ/4 + ε/2 < a < Q`. -/
-theorem extendedSeiberg3_shift {γ ε a : ℝ} (hγ : 0 < γ) (hε₁ : γ / 2 < ε) (hε₂ : ε < 2 / γ)
-    (ha₁ : γ / 4 + ε / 2 < a) (ha₂ : a < Q γ) : ExtendedSeiberg3 γ (a - γ / 2) ε a := by
+theorem extendedSeiberg3_shift  : ExtendedSeiberg3 γ (a - γ / 2) ε a := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hQ2 : 2 * Q γ = 4 / γ + γ := by
     rw [hQ]
@@ -60,9 +59,9 @@ theorem extendedSeiberg3_shift {γ ε a : ℝ} (hγ : 0 < γ) (hε₁ : γ / 2 <
   refine extendedSeiberg3_of_lt hγ (by linarith) (by rw [hQ]; linarith) ha₂ ?_ ?_ ?_ ?_ <;>
     linarith
 
+include γ ε a hγ hε₁ hε₂ ha₁ ha₂ in
 /-- The raised triple `(a, ε + γ/2, a)` is in the extended domain for `γ/4 + ε/2 < a < Q`. -/
-theorem extendedSeiberg3_raise {γ ε a : ℝ} (hγ : 0 < γ) (hε₁ : γ / 2 < ε) (hε₂ : ε < 2 / γ)
-    (ha₁ : γ / 4 + ε / 2 < a) (ha₂ : a < Q γ) : ExtendedSeiberg3 γ a (ε + γ / 2) a := by
+theorem extendedSeiberg3_raise  : ExtendedSeiberg3 γ a (ε + γ / 2) a := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hQ2 : 2 * Q γ = 4 / γ + γ := by
     rw [hQ]
@@ -120,11 +119,11 @@ theorem unitVolume_crossing_diag_continued {Ω : Type*} [MeasurableSpace Ω]
     unitVolumeStructureConstant P M γ (a - γ / 2) ε a =
       crossingMultiplierReal γ ε a * unitVolumeStructureConstant P M γ a (ε + γ / 2) a := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have h2γ : 0 < 2 / γ := by positivity
+  
   set J : Set ℝ := Ioo (γ / 4 + ε / 2) (Q γ) with hJ
   -- the domain of both holomorphic sides
   set D : Set ℂ := reflectionStrip γ ∩ shiftTriple γ ε ⁻¹' V₃ ∩ raiseTriple γ ε ⁻¹' V₃ with hD
-  have hDo : IsOpen D := ((isOpen_reflectionStrip γ).inter
+  have hDo  := ((isOpen_reflectionStrip γ).inter
     (hV₃.preimage (differentiable_shiftTriple γ ε).continuous)).inter
       (hV₃.preimage (differentiable_raiseTriple γ ε).continuous)
   have hS : ∀ t ∈ J, f₃ (shiftTriple γ ε (t : ℂ)) =
@@ -139,8 +138,7 @@ theorem unitVolume_crossing_diag_continued {Ω : Type*} [MeasurableSpace Ω]
     refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
     · rw [Complex.ofReal_re]
       linarith [ht.1]
-    · rw [Complex.ofReal_re]
-      exact ht.2
+    · exact ht.2
     · change shiftTriple γ ε (t : ℂ) ∈ V₃
       rw [shiftTriple_ofReal]
       exact hV₃mem ![t - γ / 2, ε, t] (extendedSeiberg3_shift hγ hε₁ hε₂ ht.1 ht.2)
@@ -169,7 +167,7 @@ theorem unitVolume_crossing_diag_continued {Ω : Type*} [MeasurableSpace Ω]
   set U := connectedComponentIn D (a₀ : ℂ) with hU
   have hUo : IsOpen U := hDo.connectedComponentIn
   have hUD : U ⊆ D := connectedComponentIn_subset D _
-  have ha₀U : (a₀ : ℂ) ∈ U := mem_connectedComponentIn (hJD a₀ ha₀J)
+  have ha₀U  := mem_connectedComponentIn (hJD a₀ ha₀J)
   have hev : ∀ᶠ t : ℝ in 𝓝[≠] a₀, g₁ (t : ℂ) = g₂ (t : ℂ) :=
     eventually_nhdsWithin_of_eventually_nhds
       (eventually_of_mem (Ioo_mem_nhds (show Q γ - (ε - γ / 2) / 2 < a₀ by rw [ha₀]; linarith)
@@ -179,12 +177,12 @@ theorem unitVolume_crossing_diag_continued {Ω : Type*} [MeasurableSpace Ω]
       (Complex.continuous_ofReal.continuousAt.tendsto.mono_left nhdsWithin_le_nhds)
       (eventually_nhdsWithin_of_forall fun t ht => by
         simpa [Complex.ofReal_inj] using ht)
-  have hEq : EqOn g₁ g₂ U :=
+  have hEq  :=
     ((hg₁d.mono hUD).analyticOnNhd hUo).eqOn_of_preconnected_of_frequently_eq
       ((hg₂d.mono hUD).analyticOnNhd hUo) isPreconnected_connectedComponentIn ha₀U
       (htend.frequently hev.frequently)
   -- the real interval lies in that component
-  have hJU : (fun t : ℝ => (t : ℂ)) '' J ⊆ U :=
+  have hJU  :=
     (isPreconnected_Ioo.image _ Complex.continuous_ofReal.continuousOn).subset_connectedComponentIn
       ⟨a₀, ha₀J, rfl⟩ (image_subset_iff.mpr fun t ht => hJD t ht)
   have haJ : a ∈ J := ⟨ha₁, ha₂⟩

@@ -17,7 +17,7 @@ Actual test pairings are integrable, Fubini identifies the iterated covariance
 `DOZZ.diskGreenCovariance`, and a Hilbert–Schmidt bound controls it by the disk L² restrictions.
 -/
 
-@[expose] public section
+public section
 
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal
@@ -42,9 +42,7 @@ theorem diskGreen_numerator_ne (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
   have hi := diskGreen_norm_identity ρ (z-c) (w-c)
   intro hzero
   rw [hzero, norm_zero, zero_pow (by norm_num)] at hi
-  have hp := mul_pos hgapz hgapw
-  have hs : 0 ≤ ρ^2*‖(z-c)-(w-c)‖^2 := mul_nonneg (sq_nonneg _) (sq_nonneg _)
-  linarith
+  nlinarith
 
 /-- The disk Green ratio exceeds one off the diagonal inside the disk. -/
 theorem one_lt_diskGreen_ratio (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
@@ -54,14 +52,16 @@ theorem one_lt_diskGreen_ratio (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
   have hgap := mul_pos (poissonNumerator_pos c z ρ hρ hz) (poissonNumerator_pos c w ρ hρ hw)
   have he : (z-c)-(w-c) = z-w := by ring
   rw [he] at hi
-  have hn : 0 < ‖z-w‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hzw)
-  have hnum : ρ*‖z-w‖ < ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖ := by
-    exact lt_of_pow_lt_pow_left₀ 2 (norm_nonneg _) (by linarith only [hi, hgap])
+  have hn  := norm_pos_iff.mpr (sub_ne_zero.mpr hzw)
+  have hnum : ρ*‖z-w‖ < ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖ := lt_of_pow_lt_pow_left₀ 2 (norm_nonneg _) (by linarith only [hi, hgap])
   rw [norm_div, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hρ]
   exact (one_lt_div (mul_pos hρ hn)).mpr hnum
 
+variable (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
+
+include c ρ hρ in
 /-- The literal zero-extended disk Green kernel is nonnegative everywhere. -/
-theorem diskGreenKernel_nonneg (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (z w : ℂ) :
+theorem diskGreenKernel_nonneg  (z w : ℂ) :
     0 ≤ diskGreenKernel c ρ hρ z w := by
   unfold diskGreenKernel
   split_ifs with h
@@ -73,8 +73,8 @@ theorem diskGreenKernel_nonneg (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (z w : ℂ) :
 theorem diskGreen_numerator_norm_le (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
     (hz : z ∈ ball c ρ) (hw : w ∈ ball c ρ) :
     ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖ ≤ 2*ρ^2 := by
-  have hz' : ‖z-c‖ ≤ ρ := (mem_ball_iff_norm.mp hz).le
-  have hw' : ‖w-c‖ ≤ ρ := (mem_ball_iff_norm.mp hw).le
+  have hz'  := (mem_ball_iff_norm.mp hz).le
+  have hw'  := (mem_ball_iff_norm.mp hw).le
   calc
     _ ≤ ‖(ρ : ℂ)^2‖+‖(z-c)*star (w-c)‖ := norm_sub_le _ _
     _ = ρ^2+‖z-c‖*‖w-c‖ := by
@@ -85,7 +85,7 @@ theorem diskGreen_numerator_norm_le (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
 theorem diskGreen_ratio_le (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
     (hz : z ∈ ball c ρ) (hw : w ∈ ball c ρ) (hzw : z ≠ w) :
     ‖((ρ : ℂ)^2-(z-c)*star (w-c))/((ρ : ℂ)*(z-w))‖ ≤ 2*ρ/‖z-w‖ := by
-  have hd : 0 < ‖z-w‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hzw)
+  have hd  := norm_pos_iff.mpr (sub_ne_zero.mpr hzw)
   rw [norm_div, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hρ]
   calc
     _ ≤ (2*ρ^2)/(ρ*‖z-w‖) :=
@@ -104,39 +104,41 @@ theorem diskGreenKernel_le_log_sub (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
   rw [diskGreenKernel, ite_eq_left ⟨hz, hw, hzw⟩]
   exact hlog
 
+include c ρ hρ
 /-- The literal kernel has a global absolute-value majorant, also off the disk and diagonal. -/
-theorem abs_diskGreenKernel_le (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (z w : ℂ) :
+theorem abs_diskGreenKernel_le  (z w : ℂ) :
     |diskGreenKernel c ρ hρ z w| ≤ |Real.log (2*ρ)|+|Real.log ‖z-w‖| := by
   rw [abs_of_nonneg (diskGreenKernel_nonneg c ρ hρ z w)]
   by_cases h : z ∈ ball c ρ ∧ w ∈ ball c ρ ∧ z ≠ w
   · apply (diskGreenKernel_le_log_sub c z w ρ hρ h.1 h.2.1 h.2.2).trans
-    linarith [le_abs_self (Real.log (2*ρ)), neg_le_abs (Real.log ‖z-w‖)]
+    grind
   · simp only [diskGreenKernel, h, ↓reduceIte]
     positivity
 
+
 /-- The squared kernel admits a square-integrable diagonal logarithm majorant. -/
-theorem diskGreenKernel_sq_le (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (z w : ℂ) :
+theorem diskGreenKernel_sq_le  (z w : ℂ) :
     (diskGreenKernel c ρ hρ z w)^2 ≤ 2*(Real.log (2*ρ))^2 + 2*(Real.log ‖z-w‖)^2 := by
   have h := abs_diskGreenKernel_le c ρ hρ z w
   have hn := diskGreenKernel_nonneg c ρ hρ z w
   rw [abs_of_nonneg hn] at h
-  have ha := abs_nonneg (Real.log (2*ρ))
-  have hb := abs_nonneg (Real.log ‖z-w‖)
+  
+  
   have hsq := pow_le_pow_left₀ hn h 2
   linarith only [hsq, sq_nonneg (|Real.log (2*ρ)|-|Real.log ‖z-w‖|), sq_abs (Real.log (2*ρ)),
     sq_abs (Real.log ‖z-w‖)]
 
+
 /-- Joint measurability includes the zero extension and the chosen diagonal values. -/
-theorem measurable_diskGreenKernel (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) :
+theorem measurable_diskGreenKernel  :
     Measurable (fun p : ℂ × ℂ => diskGreenKernel c ρ hρ p.1 p.2) := by
   unfold diskGreenKernel
   refine Measurable.ite ?_ (by fun_prop) measurable_const
-  exact (isOpen_ball.measurableSet.preimage measurable_fst).inter
-    ((isOpen_ball.measurableSet.preimage measurable_snd).inter
-      (measurableSet_eq_fun measurable_fst measurable_snd).compl)
+  measurability
+
 
 /-- The Green kernel is square integrable on every bounded planar product. -/
-theorem integrable_diskGreenKernel_sq_on_pair_ball (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (R : ℝ) :
+theorem integrable_diskGreenKernel_sq_on_pair_ball  (R : ℝ) :
     IntegrableOn (fun p : ℂ × ℂ => (diskGreenKernel c ρ hρ p.1 p.2)^2)
       (ball (0 : ℂ) R ×ˢ ball (0 : ℂ) R) (volume.prod volume) := by
   let B := ball (0 : ℂ) R ×ˢ ball (0 : ℂ) R
@@ -144,10 +146,9 @@ theorem integrable_diskGreenKernel_sq_on_pair_ball (c : ℂ) (ρ : ℝ) (hρ : 0
   have hBfin : μ B ≠ ∞ := by
     change ((volume : Measure ℂ).prod volume) (ball (0 : ℂ) R ×ˢ ball (0 : ℂ) R) ≠ ∞
     rw [Measure.prod_prod]
-    have hb : volume (ball (0 : ℂ) R) ≠ ∞ := measure_ball_lt_top.ne
-    exact ENNReal.mul_ne_top hb hb
+    finiteness
   let _ := (isFiniteMeasure_restrict.mpr hBfin : IsFiniteMeasure (μ.restrict B))
-  have hlog : Integrable (fun p : ℂ × ℂ => (Real.log ‖p.1-p.2‖)^2) (μ.restrict B) :=
+  have hlog  :=
     DOZZ.integrable_log_norm_sub_sq_on_pair_ball R
   have hmajor : Integrable (fun p : ℂ × ℂ =>
       2*(Real.log (2*ρ))^2+2*(Real.log ‖p.1-p.2‖)^2) (μ.restrict B) :=
@@ -156,6 +157,8 @@ theorem integrable_diskGreenKernel_sq_on_pair_ball (c : ℂ) (ρ : ℝ) (hρ : 0
   exact ae_of_all _ (fun p => by
     rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
     exact diskGreenKernel_sq_le c ρ hρ p.1 p.2)
+omit c ρ hρ
+
 
 
 /-- The disk is contained in an explicit origin-centered ball. -/
@@ -168,16 +171,18 @@ theorem disk_subset_origin_ball (c : ℂ) (ρ : ℝ) :
   rw [dist_zero_right]
   linarith
 
+include c ρ hρ in
 /-- Square integrability holds on the actual disk product. -/
-theorem integrable_diskGreenKernel_sq_on_disk (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) :
+theorem integrable_diskGreenKernel_sq_on_disk  :
     Integrable (fun p : ℂ × ℂ => (diskGreenKernel c ρ hρ p.1 p.2)^2)
       ((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ))) := by
   rw [Measure.prod_restrict]
   exact (integrable_diskGreenKernel_sq_on_pair_ball c ρ hρ (‖c‖+ρ+1)).mono_set
     (Set.prod_mono (disk_subset_origin_ball c ρ) (disk_subset_origin_ball c ρ))
 
+include c ρ hρ in
 /-- The exact Green kernel belongs to the disk product L² space. -/
-theorem memLp_diskGreenKernel_two (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) :
+theorem memLp_diskGreenKernel_two  :
     MemLp (fun p : ℂ × ℂ => diskGreenKernel c ρ hρ p.1 p.2) 2
       ((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ))) := by
   apply DOZZ.memLp_two_of_integrable_norm_sq (measurable_diskGreenKernel c ρ hρ).aestronglyMeasurable
@@ -192,8 +197,9 @@ theorem memLp_testFnTensor_two_on_disk (c : ℂ) (ρ : ℝ) (f g : TestFn) :
   exact h.mono_measure (Measure.restrict_mono
     (Set.prod_mono (disk_subset_origin_ball c ρ) (disk_subset_origin_ball c ρ)) le_rfl)
 
+include c ρ hρ in
 /-- Weighted Green pairings of global tests are integrable on the disk product. -/
-theorem integrable_diskGreenTestPair (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g : TestFn) :
+theorem integrable_diskGreenTestPair  (f g : TestFn) :
     Integrable (fun p : ℂ × ℂ => f p.1*diskGreenKernel c ρ hρ p.1 p.2*g p.2)
       ((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ))) := by
   have h := (memLp_diskGreenKernel_two c ρ hρ).integrable_mul
@@ -203,9 +209,10 @@ theorem integrable_diskGreenTestPair (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g : 
   simp only [Pi.mul_apply]
   ring
 
+include c ρ hρ in
 /-- Fubini identifies the literal iterated Green covariance `DOZZ.diskGreenCovariance` with its
 product pairing. -/
-theorem diskGreenCovariance_eq_product (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g : TestFn) :
+theorem diskGreenCovariance_eq_product  (f g : TestFn) :
     diskGreenCovariance c ρ hρ f g =
       ∫ p : ℂ × ℂ, f p.1*diskGreenKernel c ρ hρ p.1 p.2*g p.2
         ∂((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ))) := by
@@ -226,8 +233,9 @@ theorem integral_sq_testFnTensor_on_disk (c : ℂ) (ρ : ℝ) (f g : TestFn) :
   simp_rw [norm_mul, mul_pow]
   exact integral_prod_mul (fun z : ℂ => ‖f z‖^2) (fun w : ℂ => ‖g w‖^2)
 
+include c ρ hρ in
 /-- The Hilbert–Schmidt bound is in the literal disk-restriction norms needed by Markov. -/
-theorem abs_diskGreenCovariance_le_diskL2 (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g : TestFn) :
+theorem abs_diskGreenCovariance_le_diskL2  (f g : TestFn) :
     |diskGreenCovariance c ρ hρ f g| ≤
       (∫ p : ℂ × ℂ, ‖diskGreenKernel c ρ hρ p.1 p.2‖^2
         ∂((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ)))) ^ (1/2 : ℝ) *
@@ -248,10 +256,10 @@ theorem abs_diskGreenCovariance_le_diskL2 (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f
 theorem diskGreen_numerator_ne_on_closedBall (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
     (hz : z ∈ closedBall c ρ) (hw : w ∈ ball c ρ) :
     (ρ : ℂ)^2-(z-c)*star (w-c) ≠ 0 := by
-  have hz' : ‖z-c‖ ≤ ρ := mem_closedBall_iff_norm.mp hz
-  have hw' : ‖w-c‖ < ρ := mem_ball_iff_norm.mp hw
+  have hz'  := mem_closedBall_iff_norm.mp hz
+  have hw'  := mem_ball_iff_norm.mp hw
   intro hzero
-  have he : (ρ : ℂ)^2 = (z-c)*star (w-c) := sub_eq_zero.mp hzero
+  have he  := sub_eq_zero.mp hzero
   have hn := congrArg norm he
   simp only [norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hρ,
     norm_mul, norm_star] at hn
@@ -302,23 +310,21 @@ theorem diskGreenKernel_eq_log_parts (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
 theorem diskGreen_ratio_eq_one_on_sphere (c z w : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
     (hz : z ∈ sphere c ρ) (hw : w ∈ ball c ρ) :
     ‖((ρ : ℂ)^2-(z-c)*star (w-c))/((ρ : ℂ)*(z-w))‖ = 1 := by
-  have hz' : ‖z-c‖ = ρ := mem_sphere_iff_norm.mp hz
-  have hw' : ‖w-c‖ < ρ := mem_ball_iff_norm.mp hw
+  have hz'  := mem_sphere_iff_norm.mp hz
+  have hw'  := mem_ball_iff_norm.mp hw
   have hzw : z ≠ w := by intro h; subst w; exact hw'.ne hz'
-  have hn : 0 < ‖z-w‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hzw)
+  have hn  := norm_pos_iff.mpr (sub_ne_zero.mpr hzw)
   have hi := diskGreen_norm_identity ρ (z-c) (w-c)
   rw [hz', sub_self, zero_mul, show (z-c)-(w-c) = z-w by ring] at hi
   have hnum : ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖ = ρ*‖z-w‖ := by
     apply (sq_eq_sq₀ (norm_nonneg _) (mul_pos hρ hn).le).mp
-    calc
-      _ = ρ^2*‖z-w‖^2 := sub_eq_zero.mp hi
-      _ = (ρ*‖z-w‖)^2 := by ring
-  rw [norm_div, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hρ,
-    hnum, div_self (mul_ne_zero hρ.ne' hn.ne')]
+    bound
+  aesop
 
 
+include c ρ hρ
 /-- A scalar Green covariance obeys the disk L² bound without a tensor square root. -/
-theorem abs_diskGreenCovariance_self_le_diskL2 (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f : TestFn) :
+theorem abs_diskGreenCovariance_self_le_diskL2  (f : TestFn) :
     |diskGreenCovariance c ρ hρ f f| ≤
       (∫ p : ℂ × ℂ, ‖diskGreenKernel c ρ hρ p.1 p.2‖^2
         ∂((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ)))) ^ (1/2 : ℝ) *
@@ -331,8 +337,9 @@ theorem abs_diskGreenCovariance_self_le_diskL2 (c : ℂ) (ρ : ℝ) (hρ : 0 < �
   rwa [he] at h
 
 
+
 /-- Outer Green-potential pairings of tests are integrable. -/
-theorem integrable_diskGreenPotential_test (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g : TestFn) :
+theorem integrable_diskGreenPotential_test  (f g : TestFn) :
     Integrable (fun z => f z*(∫ w in ball c ρ, diskGreenKernel c ρ hρ z w*g w))
       (volume.restrict (ball c ρ)) := by
   have h := (integrable_diskGreenTestPair c ρ hρ f g).integral_prod_left
@@ -343,22 +350,25 @@ theorem integrable_diskGreenPotential_test (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (
   funext w
   ring
 
+
 /-- The literal Green covariance is additive in its first test. -/
-theorem diskGreenCovariance_add_left (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g h : TestFn) :
+theorem diskGreenCovariance_add_left  (f g h : TestFn) :
     diskGreenCovariance c ρ hρ (f+g) h =
       diskGreenCovariance c ρ hρ f h+diskGreenCovariance c ρ hρ g h := by
   simp only [diskGreenCovariance, FunLike.coe_add, Pi.add_apply, add_mul]
   exact integral_add (integrable_diskGreenPotential_test c ρ hρ f h)
     (integrable_diskGreenPotential_test c ρ hρ g h)
 
+
 /-- The literal Green covariance is real-linear in its first test. -/
-theorem diskGreenCovariance_smul_left (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (a : ℝ) (f g : TestFn) :
+theorem diskGreenCovariance_smul_left  (a : ℝ) (f g : TestFn) :
     diskGreenCovariance c ρ hρ (a • f) g = a*diskGreenCovariance c ρ hρ f g := by
   simp only [diskGreenCovariance, FunLike.coe_smul, Pi.smul_apply, smul_eq_mul, mul_assoc]
   exact integral_const_mul _ _
 
+
 /-- Global tests vanishing on the disk have zero Green covariance. -/
-theorem diskGreenCovariance_eq_zero_of_eqOn_zero (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
+theorem diskGreenCovariance_eq_zero_of_eqOn_zero 
     (f g : TestFn) (hf : EqOn f 0 (ball c ρ)) : diskGreenCovariance c ρ hρ f g = 0 := by
   rw [diskGreenCovariance]
   apply setIntegral_eq_zero_of_forall_eq_zero
@@ -367,8 +377,9 @@ theorem diskGreenCovariance_eq_zero_of_eqOn_zero (c : ℂ) (ρ : ℝ) (hρ : 0 <
   exact zero_mul _
 
 
+
 /-- Symmetry holds for the literal zero-extended Green kernel. -/
-theorem diskGreenKernel_symm (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (z w : ℂ) :
+theorem diskGreenKernel_symm  (z w : ℂ) :
     diskGreenKernel c ρ hρ z w = diskGreenKernel c ρ hρ w z := by
   by_cases h : z ∈ ball c ρ ∧ w ∈ ball c ρ ∧ z ≠ w
   · have h' : w ∈ ball c ρ ∧ z ∈ ball c ρ ∧ w ≠ z := ⟨h.2.1, h.1, h.2.2.symm⟩
@@ -380,14 +391,14 @@ theorem diskGreenKernel_symm (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (z w : ℂ) :
       ring
     rw [he, norm_star]
   · have h' : ¬ (w ∈ ball c ρ ∧ z ∈ ball c ρ ∧ w ≠ z) := by
-      rintro ⟨hw, hz, hzw⟩
-      exact h ⟨hz, hw, hzw.symm⟩
+      simp_all
     simp only [diskGreenKernel, h, h', ↓reduceIte]
+
 
 
 /-- Fubini and kernel symmetry give symmetry of the literal covariance
 `DOZZ.diskGreenCovariance`. -/
-theorem diskGreenCovariance_symm (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g : TestFn) :
+theorem diskGreenCovariance_symm  (f g : TestFn) :
     diskGreenCovariance c ρ hρ f g = diskGreenCovariance c ρ hρ g f := by
   rw [diskGreenCovariance_eq_product, diskGreenCovariance_eq_product]
   calc
@@ -401,6 +412,8 @@ theorem diskGreenCovariance_symm (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g : Test
     _ = _ := integral_prod_swap (μ := volume.restrict (ball c ρ))
       (ν := volume.restrict (ball c ρ))
       (fun p : ℂ × ℂ => g p.1*diskGreenKernel c ρ hρ p.1 p.2*f p.2)
+omit c ρ hρ
+
 
 
 end DOZZ.Proofs

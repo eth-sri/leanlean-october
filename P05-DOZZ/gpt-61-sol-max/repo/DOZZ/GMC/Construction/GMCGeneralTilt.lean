@@ -42,7 +42,7 @@ private theorem testCircleFamily_with_L_isGaussianProcess
         match i with
         | none => L ω
         | some t => testCircleCoordinate X Xc r (coord t) ω) P := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   obtain ⟨hLmem, fL, hLapprox⟩ := hL
   let Z : ℕ → Option T → Ω → ℝ := fun n i ω =>
     match i with
@@ -69,7 +69,7 @@ private theorem testCircleFamily_with_L_isGaussianProcess
       convert hMapped using 1
       funext i ω
       cases i <;> rfl
-    simpa [Z] using hMapped'
+    exact hMapped'
   have hW : ∀ i, MemLp (W i) 2 P := by
     intro i
     cases i with
@@ -93,10 +93,7 @@ private theorem testCircleFamily_with_L_isGaussianProcess
           exact eLpNorm_sub_comm _ _ _ _
         simpa only [Z, W, hcomm] using hLapprox
     | some t =>
-        convert (tendsto_const_nhds :
-          Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0)) using 1
-        · funext n
-          simp [Z, W]
+        aesop
   exact isGaussianProcess_of_eLpNorm_sub Z W hZ hW hApprox
 
 /-- Finite-dimensional tilt for any selected collection of test and circle-average coordinates.
@@ -126,7 +123,7 @@ theorem equatorGFF_finite_test_circle_tilt
     | none => L ω
     | some j => testCircleCoordinate X Xc r (coord j) ω
   let a : Option T → ℝ := fun i => if i.isNone then t else 0
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   have hProc := testCircleFamily_with_L_isGaussianProcess P X hX Xc hXc r L hL coord
   have hMeanL : (∫ ω, L ω ∂P) = 0 := by
     obtain ⟨hLmem, fL, hLapprox⟩ := hL
@@ -145,16 +142,11 @@ theorem equatorGFF_finite_test_circle_tilt
     (∫ ω, testCircleCoordinate X Xc r (coord j) ω ∂P) = 0 := by
     cases hcoord : coord j with
     | inl x =>
-        change (∫ ω, Xc ω x r ∂P) = 0
         exact (circleAverage_isGaussianProcess P X Xc hX hXc).2 x r
     | inr f => exact equatorGFF_test_integral X hX f
   have hCentered : IsCenteredJointlyGaussian P Z := by
     apply centeredJointlyGaussian_of_isGaussianProcess P (fun i ω => Z ω i) ?_ ?_
-    · simpa [Z] using hProc
-    · intro i
-      cases i with
-      | none => exact hMeanL
-      | some j => exact hMeanCoord j
+    all_goals aesop
   have hTilt := finite_gaussian_tilt P Z hCentered a F hF
   have hExponent (ω : Ω) :
       (∑ i, a i * Z ω i) -
@@ -183,12 +175,7 @@ theorem equatorGFF_finite_test_circle_tilt
             (fun ω => Z ω j) * a j) / 2)) * F (Z ω) ∂P := by
           apply lintegral_congr_ae
           exact ae_of_all _ (fun ω => by
-            change ENNReal.ofReal (Real.exp (t * L ω - t ^ 2 / 2 * gaussianVariance P L)) *
-              F (Z ω) = ENNReal.ofReal (Real.exp
-                ((∑ i, a i * Z ω i) -
-                  (∑ i, ∑ j, a i * gaussianCovariance P (fun ω => Z ω i)
-                    (fun ω => Z ω j) * a j) / 2)) * F (Z ω)
-            rw [← hExponent ω])
+            grind)
     _ = ∫⁻ ω, F (fun i => Z ω i +
         ∑ j, gaussianCovariance P (fun ω => Z ω i)
           (fun ω => Z ω j) * a j) ∂P := hTilt
@@ -205,10 +192,6 @@ theorem equatorGFF_finite_test_circle_tilt
                     (fun ω => testCircleCoordinate X Xc r (coord j) ω) L)
             apply congrArg F
             funext i
-            change Z ω i + ∑ j, gaussianCovariance P (fun ω => Z ω i)
-              (fun ω => Z ω j) * a j = Z ω i + match i with
-                | none => t * gaussianVariance P L
-                | some j => t * gaussianCovariance P (fun ω => Z ω j) L
             exact hShift ω i)
 
 /-- Cameron--Martin transport of the full product-sigma process of test evaluations together with
@@ -225,13 +208,13 @@ theorem equatorGFF_tilted_test_circle_law
       Measure.map (fun ω c => testCircleCoordinate X Xc r c ω +
         t * gaussianCovariance P (fun ω => testCircleCoordinate X Xc r c ω) L) P := by
   classical
-  let eval : Ω → ℂ ⊕ TestFn → ℝ := fun ω c => testCircleCoordinate X Xc r c ω
-  let evalShift : Ω → ℂ ⊕ TestFn → ℝ := fun ω c => eval ω c +
+  let eval  := fun ω c => testCircleCoordinate X Xc r c ω
+  let evalShift  := fun ω c => eval ω c +
     t * gaussianCovariance P (fun ω => eval ω c) L
-  let density : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal (Real.exp
+  let density  := fun ω => ENNReal.ofReal (Real.exp
     (t * L ω - t ^ 2 / 2 * gaussianVariance P L))
-  let μ : Measure (ℂ ⊕ TestFn → ℝ) := Measure.map eval (P.withDensity density)
-  let ν : Measure (ℂ ⊕ TestFn → ℝ) := Measure.map evalShift P
+  let μ  := Measure.map eval (P.withDensity density)
+  let ν  := Measure.map evalShift P
   have hEval : Measurable eval := by
     rw [measurable_pi_iff]
     intro c
@@ -240,12 +223,9 @@ theorem equatorGFF_tilted_test_circle_law
         exact (hXc.1 r).comp (measurable_id.prodMk measurable_const)
     | inr f => exact (hX.2 f).1
   have hEvalShift : Measurable evalShift := by
-    rw [measurable_pi_iff]
-    intro c
-    exact (measurable_pi_iff.mp hEval c).add measurable_const
+    fun_prop (disch := positivity)
   have hDensity : AEMeasurable density P := by
-    have hlog : AEMeasurable (fun ω => t * L ω - t ^ 2 / 2 * gaussianVariance P L) P := by
-      exact (hL.1.aemeasurable.const_mul t).sub (measurable_const.aemeasurable)
+    have hlog : AEMeasurable (fun ω => t * L ω - t ^ 2 / 2 * gaussianVariance P L) P := (hL.1.aemeasurable.const_mul t).sub (measurable_const.aemeasurable)
     exact (Real.measurable_exp.comp_aemeasurable hlog).ennreal_ofReal
   have hCylinder (s : Finset (ℂ ⊕ TestFn)) (S : Set (∀ i : s, ℝ))
       (hS : MeasurableSet S) :
@@ -259,8 +239,7 @@ theorem equatorGFF_tilted_test_circle_law
     let F : (Option s → ℝ) → ℝ≥0∞ := S.indicator (fun _ => 1) ∘ project
     have hProject : Measurable project := by fun_prop
     have hF : Measurable F := by
-      dsimp [F]
-      exact (measurable_const.indicator hS).comp hProject
+      fun_prop (disch := positivity)
     have hTilt := equatorGFF_finite_test_circle_tilt P X hX Xc hXc r L hL
       coord t F hF
     have hFinite :
@@ -268,23 +247,10 @@ theorem equatorGFF_tilted_test_circle_law
           ∫⁻ ω, F (fun i => family ω i + match i with
             | none => t * gaussianVariance P L
             | some j => t * gaussianCovariance P (fun ω => eval ω (coord j)) L) ∂P := by
-      change (∫⁻ ω, ENNReal.ofReal (Real.exp
-          (t * L ω - t ^ 2 / 2 * gaussianVariance P L)) *
-          F (fun i => match i with
-            | none => L ω
-            | some j => testCircleCoordinate X Xc r (coord j) ω) ∂P) =
-        ∫⁻ ω, F (fun i =>
-          (match i with
-            | none => L ω
-            | some j => testCircleCoordinate X Xc r (coord j) ω) +
-          match i with
-            | none => t * gaussianVariance P L
-            | some j => t * gaussianCovariance P
-                (fun ω => testCircleCoordinate X Xc r (coord j) ω) L) ∂P
-      exact hTilt
-    have hPreEval : MeasurableSet (eval ⁻¹' MeasureTheory.cylinder s S) :=
+      aesop
+    have hPreEval  :=
       (hS.cylinder).preimage hEval
-    have hPreShift : MeasurableSet (evalShift ⁻¹' MeasureTheory.cylinder s S) :=
+    have hPreShift  :=
       (hS.cylinder).preimage hEvalShift
     have hLeft : μ (MeasureTheory.cylinder s S) =
         ∫⁻ ω, density ω * F (family ω) ∂P := by
@@ -294,12 +260,11 @@ theorem equatorGFF_tilted_test_circle_law
       apply lintegral_congr_ae
       exact ae_of_all _ (fun ω => by
         have hproject : project (family ω) = s.restrict (eval ω) := by
-          funext i
-          simp [project, family, coord, eval]
+          abel
         by_cases hx : eval ω ∈ MeasureTheory.cylinder s S
-        · have hxS : s.restrict (eval ω) ∈ S := by simpa using hx
+        · have hxS : s.restrict (eval ω) ∈ S := hx
           simp [F, hproject, hx, hxS]
-        · have hxS : s.restrict (eval ω) ∉ S := by simpa using hx
+        · have hxS : s.restrict (eval ω) ∉ S := hx
           simp [F, hproject, hx, hxS])
     have hRight : ν (MeasureTheory.cylinder s S) =
         ∫⁻ ω, F (fun i => family ω i + match i with
@@ -311,38 +276,20 @@ theorem equatorGFF_tilted_test_circle_law
         P (evalShift ⁻¹' MeasureTheory.cylinder s S) =
             ∫⁻ ω, (evalShift ⁻¹' MeasureTheory.cylinder s S).indicator
               (fun _ => (1 : ℝ≥0∞)) ω ∂P := by
-                symm
-                rw [lintegral_indicator_const hPreShift 1]
-                simp
+                simp_all
         _ = ∫⁻ ω, F (fun i => family ω i + match i with
             | none => t * gaussianVariance P L
             | some j => t * gaussianCovariance P (fun ω => eval ω (coord j)) L) ∂P := by
-              apply lintegral_congr_ae
-              exact ae_of_all _ (fun ω => by
-                have hcoord (i : s) :
-                    family ω (some i) + t * gaussianCovariance P
-                      (fun ω => eval ω (coord i)) L = evalShift ω (coord i) := by
-                  simp [family, evalShift, coord]
-                have hproject : project (fun i => family ω i + match i with
-                    | none => t * gaussianVariance P L
-                    | some j => t * gaussianCovariance P (fun ω => eval ω (coord j)) L) =
-                    s.restrict (evalShift ω) := by
-                  funext i
-                  exact hcoord i
-                by_cases hx : evalShift ω ∈ MeasureTheory.cylinder s S
-                · have hxS : s.restrict (evalShift ω) ∈ S := by simpa using hx
-                  simp [F, hproject, hx, hxS]
-                · have hxS : s.restrict (evalShift ω) ∉ S := by simpa using hx
-                  simp [F, hproject, hx, hxS])
+              abel
     exact hLeft.trans (hFinite.trans hRight.symm)
-  let C : Set (Set (ℂ ⊕ TestFn → ℝ)) :=
+  let C  :=
     MeasureTheory.measurableCylinders (fun _ : ℂ ⊕ TestFn => ℝ)
   have hCylinders : ∀ A ∈ C, μ A = ν A := by
     intro A hA
     obtain ⟨s, S, hS, rfl⟩ :=
       (MeasureTheory.mem_measurableCylinders (α := fun _ : ℂ ⊕ TestFn => ℝ) A).mp hA
     exact hCylinder s S hS
-  have hUnivC : Set.univ ∈ C :=
+  have hUnivC  :=
     MeasureTheory.univ_mem_measurableCylinders (fun _ : ℂ ⊕ TestFn => ℝ)
   have hνUniv : ν Set.univ = 1 := by
     rw [Measure.map_apply hEvalShift MeasurableSet.univ]
@@ -351,8 +298,7 @@ theorem equatorGFF_tilted_test_circle_law
   have hMeasuresUniv : μ Set.univ = ν Set.univ := by rw [hμUniv, hνUniv]
   have hFiniteμ : IsFiniteMeasure μ := ⟨by rw [hμUniv]; simp⟩
   exact @ext_of_generate_finite (ℂ ⊕ TestFn → ℝ) _ μ ν C
-    (by simpa [C] using
-      (MeasureTheory.generateFrom_measurableCylinders (α := fun _ : ℂ ⊕ TestFn => ℝ)).symm)
+    (Eq.symm generateFrom_measurableCylinders)
     MeasureTheory.isPiSystem_measurableCylinders hFiniteμ hCylinders hMeasuresUniv
 
 end DOZZ.Proofs

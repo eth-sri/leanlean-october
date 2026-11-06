@@ -7,6 +7,7 @@ module
 public import DOZZ.GMC.SharpMoments.LaplaceScaling
 public import DOZZ.GMC.SharpMoments.GaussianSplit
 public import DOZZ.GMC.GaussianTailBound
+import Mathlib.Tactic
 
 /-! # The two-branch small-deviation recursion at finite cutoff
 
@@ -57,11 +58,13 @@ theorem gaussianReal_scaled_lower_tail_toReal (v : ℝ≥0) (hv : 0 < v) (γ u :
   rw [heq] at h
   exact ENNReal.toReal_le_of_le_ofReal (Real.exp_pos _).le h
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
+
+include Ω _inst1 P X hX γ in
 /-- The subdisk Laplace transform is a Gaussian average of the reference transform at the
 coarser cutoff `r - log 4`. -/
 theorem cutoffLaplace_invSubdisk_scaling
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
+    
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (a : ℂ) (ha : ‖a‖ = 1 / 16) (r : ℝ) (hr : Real.log 4 + 1 ≤ r) (y : ℝ) :
     cutoffLaplace P Xc γ r (Metric.ball a (1 / 4 * (1 / 8))) y =
@@ -103,15 +106,13 @@ theorem cutoffLaplace_invSubdisk_scaling
   have h := cutoffLaplace_affine_ball_scaling P X hX γ Xc hXc (a := a) (c := 1 / 4)
     (R := 1 / 8) (r := r - Real.log 4) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
     (by rw [ha]; norm_num) hsource htarget y
-  have hcut : r - Real.log 4 - Real.log (1 / 4) = r := by rw [hlog]; ring
-  rw [hcut] at h
-  exact h
+  grind
 
+include Ω _inst1 P X hX γ in
 /-- The quadratic recursion step: the two-branch inequality at cutoff `r` bounds the reference
 Laplace transform by a Gaussian error and the square of the transform at cutoff `r - log 4`. -/
 theorem cutoffLaplace_recursion_step
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ)
+     (hγ : 0 < γ)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (C : ℝ≥0) (hC : 0 < C)
     (r : ℝ) (hr : Real.log 4 + 1 ≤ r)
     (h2B : ∀ x : ℝ, cutoffLaplace P Xc γ r (Metric.ball 0 (1 / 8)) x ≤
@@ -141,11 +142,7 @@ theorem cutoffLaplace_recursion_step
         ∫ w, L' (y + c₁ + γ * w) ∂gaussianReal 0 v₂ := by
     intro b hb y
     rw [cutoffLaplace_invSubdisk_scaling P X hX γ Xc hXc b hb r hr y]
-    apply integral_congr_ae
-    filter_upwards [] with w
-    congr 1
-    rw [hc₁]
-    ring
+    grind
   have hprod : ∀ ξ : ℝ,
       cutoffLaplace P Xc γ r (Metric.ball invSubCenterLeft (1 / 4 * (1 / 8)))
           (x + γ * ξ - γ ^ 2 * C / 2) *
@@ -161,8 +158,7 @@ theorem cutoffLaplace_recursion_step
         ∫ w, L' (x + a + γ * ξ + γ * w) ∂gaussianReal 0 v₂ :=
       integral_congr_ae (ae_of_all _ fun w => congrArg L' (harg w))
     rw [hsub _ norm_invSubCenterLeft, hsub _ norm_invSubCenterRight, hint, sq]
-  have hmain : cutoffLaplace P Xc γ r (Metric.ball 0 (1 / 8)) x ≤
-      ∫ ξ, (∫ w, L' (x + a + γ * ξ + γ * w) ∂gaussianReal 0 v₂) ^ 2 ∂gaussianReal 0 C :=
+  have hmain  :=
     (h2B x).trans_eq (integral_congr_ae (ae_of_all _ hprod))
   have hsplit := gaussianSplit_two_branch L' hanti hnn hle1 γ C v₂ x a (x / 8) ε hε
   have htail₁ := gaussianReal_scaled_lower_tail_toReal C hC γ (x / 8) hγ (by positivity)

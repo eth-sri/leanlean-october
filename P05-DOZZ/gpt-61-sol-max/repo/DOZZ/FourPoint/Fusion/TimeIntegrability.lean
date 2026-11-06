@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.TaylorTimeIntegration
 
 /-! # Integrability of signed Taylor time integrals -/
 
-@[expose] public section
+public section
 open MeasureTheory Set Filter
 namespace DOZZ.Proofs
 
@@ -27,7 +27,7 @@ theorem fusion_time_integrable_of_power_bound (F : ℂ → ℂ) (hFm : Measurabl
   filter_upwards [ae_restrict_mem measurableSet_Icc,
     ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
   have htz : ‖(t : ℂ) * z‖ = t * ‖z‖ := by
-    rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
+    simp_all
   have htr : ‖(t : ℂ) * z‖ ≤ r := by
     rw [htz]
     exact (mul_le_of_le_one_left (norm_nonneg _) ht.2).trans hzr

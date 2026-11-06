@@ -11,7 +11,7 @@ public import DOZZ.GMC.Construction.GMCUniqueAe
 
 /-! Chart-supported admissible versions obtained directly from arbitrary `IsGMCOf` limits. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
@@ -53,25 +53,18 @@ theorem isGMCOf_restrict_admissible_version
       Measure.restrict_apply (MeasurableSet.compl hU.measurableSet)]
     simp
   have hNccompact : ∀ ω K, IsCompact K → K ⊆ U → Nc ω K < ⊤ := by
-    intro ω K hK hKU
-    rw [show Nc ω = (N ω).restrict U by rfl,
-      Measure.restrict_apply hK.measurableSet,
-      Set.inter_eq_left.mpr hKU]
-    exact lt_of_le_of_lt (measure_mono (Set.subset_univ K))
-      (hNfinite ω).measure_univ_lt_top
+    simp_all
   have hNcfinite : ∀ ω, IsFiniteMeasure (Nc ω) := by
     intro ω
     apply isFiniteMeasure_restrict.mpr
-    exact ne_of_lt (lt_of_le_of_lt (measure_mono (Set.subset_univ U))
-      (hNfinite ω).measure_univ_lt_top)
+    simp_all
   have hcutoffs (f : BoundedContinuousFunction ℂ ℝ)
       (hfcompact : HasCompactSupport (f : ℂ → ℝ))
       (hfU : tsupport (f : ℂ → ℝ) ⊆ U) (r : ℝ) :
       (fun ω => regularizedLogChaosTestMass P U (fun x => normPlus x ^ (-4 : ℝ))
           Y γ r ω f) =ᵐ[P] fun ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω := by
     have hfzero := boundedContinuousFunction_eq_zero_off_tsupport_subset f U hfU
-    have hrestrict : logRegularizationReference U (fun x => normPlus x ^ (-4 : ℝ)) =
-        (logRegularizationReference Set.univ (fun x => normPlus x ^ (-4 : ℝ))).restrict U :=
+    have hrestrict  :=
       logRegularizationReference_restrict_of_subset Set.univ U
         (fun x => normPlus x ^ (-4 : ℝ)) hU.measurableSet (Set.subset_univ _)
     have hMass : ∀ ω,
@@ -121,8 +114,7 @@ theorem isGMCOf_restrict_admissible_version
     exact TendstoInMeasure.congr hseq htarget hMconv'
   refine ⟨Nc, ?_, hNcfinite, ?_⟩
   · refine ⟨hNcmeas, hNcsupport, hNccompact, ?_⟩
-    intro f hfcompact hfU
-    exact hconv f hfcompact hfU
+    assumption_mod_cast
   · filter_upwards [hMN] with ω hω
     rw [show Nc ω = (N ω).restrict U by rfl, hω]
 

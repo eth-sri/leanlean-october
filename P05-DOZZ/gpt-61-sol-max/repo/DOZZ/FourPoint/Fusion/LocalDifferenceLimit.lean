@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Fusion.LocalDifferenceRooting
 public import DOZZ.FourPoint.Fusion.InterpolatedTimeConvergence
 public import DOZZ.Statements.FourPoint.GammaHalfRootedCoefficient
 /-! # The signed local KRV coefficient limit -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- Spatial and time dominated convergence yields the normalized local mass difference. -/
@@ -23,13 +23,12 @@ theorem fusion_localDifference_normalized_tendsto {Ω : Type*} [MeasurableSpace 
       (nhds (gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p)) := by
   obtain ⟨hk, hβ, hβ2, _, _⟩ := fusion_difference_parameters γ α₁ hγ hlo hα₁
   let K := planarDifferenceKernel (γ ^ 2 / 2) (γ * α₁) 1
-  have hK : Integrable K volume := (planar_difference_integral _ _ hk hβ hβ2 1).1
+  have hK  := (planar_difference_integral _ _ hk hβ hβ2 1).1
   have hm : Measurable K := by
     unfold K planarDifferenceKernel
-    exact (((measurable_id.sub_const (1 : ℂ)).norm.pow_const _).sub
-      (measurable_id.norm.pow_const _)).div (measurable_id.norm.pow_const _)
+    fun_prop (disch := positivity)
   have hc := fusionInterpolatedTimeIntegral_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃
-    (by have := div_pos (show (0 : ℝ) < 1 by norm_num) hγ; linarith)
+    (by nlinarith)
     hα₁ hα₂ hα₃ (-p - 1) (by linarith) (fun y => (K y : ℂ))
     (Complex.measurable_ofReal.comp hm) (hK.ofReal)
   have hi : (∫ y : ℂ, (K y : ℂ)) = planarGaussConstant (γ ^ 2 / 2) (γ * α₁) := by
@@ -52,7 +51,7 @@ theorem fusion_localDifference_normalized_tendsto {Ω : Type*} [MeasurableSpace 
     (((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp : ‖(0 : ℂ)‖ < (1 / 4 : ℝ))).filter_mono
       nhdsWithin_le_nhds).mono fun _ h => h.le
   filter_upwards [hz4, self_mem_nhdsWithin] with z hz4 hz
-  have hz0 : z ≠ 0 := by simpa only [mem_compl_iff, mem_singleton_iff] using hz
+  have hz0 : z ≠ 0 := by simp_all
   have hi' : (∫ t in Icc (0 : ℝ) 1, ∫ ω,
       (fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ (-p - 1)).toReal *
         (∫ x in Metric.ball (0 : ℂ) (1 / 2), fusionDifferenceKernel γ α₁ α₂ α₃ z x ∂M ω) ∂P) =

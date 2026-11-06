@@ -8,7 +8,7 @@ public import DOZZ.Hypergeom.ODE.PathLiftCharts
 
 /-! Finite Picard chains along the same path have the same lift from a fixed initial value. -/
 
-@[expose] public section
+public section
 
 open Set
 

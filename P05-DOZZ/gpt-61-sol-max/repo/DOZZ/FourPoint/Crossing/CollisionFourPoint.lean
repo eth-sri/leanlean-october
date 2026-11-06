@@ -41,8 +41,7 @@ theorem gammaHalf_fourPoint_collision_limit {Ω : Type*} [MeasurableSpace Ω]
     ha hb hc (-fourPointSExp γ (-γ / 2) a b c) (neg_neg_of_pos hp)
   obtain ⟨C, hC, hbound⟩ := crossing_collision_inverse_uniform P X hX γ hγ hγ2 M hM
     a b c (-fourPointSExp γ (-γ / 2) a b c) (neg_nonpos.mpr hp.le)
-  have hfin : (∫⁻ ω, coulombMass γ (M ω) ![-γ / 2, a, b] ![0, 0, 1] c ^
-      (-fourPointSExp γ (-γ / 2) a b c) ∂P) ≠ ⊤ :=
+  have hfin  :=
     (lt_of_le_of_lt (hbound 0 (by simp)) hC).ne
   have hr := (ENNReal.continuousAt_toReal hfin).tendsto.comp ht
   unfold fourPointT

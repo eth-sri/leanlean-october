@@ -7,6 +7,8 @@ module
 public import DOZZ.ShiftEquations.Gluing.ReflectedAssembly
 public import DOZZ.FourPoint.Diagonal.Assembly
 public import DOZZ.FourPoint.ReflectedEnd.Formula
+public import DOZZ.ShiftEquations.Contracts
+public import DOZZ.ShiftEquations.ContinuationContracts
 
 /-!
 # The reflected shift and gluing from the two first shifts
@@ -18,7 +20,7 @@ the reflected diagonal formula `DOZZ.gammaHalf_reflected_formula` in
 remaining inputs.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -36,45 +38,9 @@ theorem structureConstant_reflected_shift_and_gluing_of_shifts
     (α₂ α₃ : ℝ)
     (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
     (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ)
-    (hFirstShift : ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-      IsSourceLateralProjection P X γ M Z ∧
-        (∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) ∧
-          ∃ h : ℝ, 0 < h ∧ ∃ R : ℂ → ℂ,
-            MeromorphicOn R {z | |z.im| < h} ∧
-            (∀ α : ℝ, γ / 2 < α → α < Q γ → R (α : ℂ) = (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-            ∀ᶠ z in codiscrete ℂ,
-              R (z - γ / 2) =
-                -(μ * Real.pi : ℂ) * R z /
-                  (lFun (-((γ : ℂ) ^ 2) / 4) *
-                    lFun ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4) *
-                    lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2)))
-    (hFirstStrip : ∃ h : ℝ, 0 < h ∧ ∃ C : ℂ → ℂ,
-      MeromorphicOn C {z | |z.im| < h} ∧
-      (∀ α : ℝ, 2 * η < α → α < Q γ → C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-      ∀ᶠ z in codiscrete ℂ,
-        C (z + γ / 2) =
-          -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) * C (z - γ / 2)) :
-    ∃ B : ℝ → Ω → BrownianPath ×
-        BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ →
-            IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) =
-                  (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) =
-                  (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2)) :=
+    (hFirstShift : Contract.firstShift P X M γ μ)
+    (hFirstStrip : Contract.singleChargeContinuation P M γ μ η α₂ α₃) :
+    Contract.fixedChargeShiftGluing P X M γ μ η α₂ α₃ :=
   structureConstant_reflected_shift_and_gluing_of_deps P X M γ μ η hγ hγ2 hμ hη α₂ α₃ hα₂ hα₃
     hFirstShift hFirstStrip
     (fun hH α₁ hα₁ hs => degenerateFourPoint_diagonal_classification hH P X M γ μ (γ / 2) α₁ α₂ α₃

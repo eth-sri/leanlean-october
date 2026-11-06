@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Tails.UnpinnedGMC
 
 /-! Source-space identification of the translated unpinned chaos, by unique cutoff limits. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -29,25 +29,22 @@ theorem compact_test_unit_margin (f : BoundedContinuousFunction ℂ ℝ)
     intro x hx
     exact False.elim (hne ⟨x, subset_tsupport _ (Function.mem_support.mpr hx)⟩)
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (z : ℂ) (hz : 2 ≤ ‖z‖) (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (N : Ω → Measure ℂ) (hN : IsAdmissibleGMCVersion P (Metric.ball 0 1) (fun x => normPlus x ^ (-4 : ℝ)) (fun ω ε x => Xc ω (z+x) (Real.log (1/ε)) - Xc ω z 0) γ N)
+
+include Ω _inst1 P X Xc hX hc z hz γ M hM N hN in
 /-- Pin removal identifies the constructed chaos with deterministic tests of the actual GMC.
 The two random quantities live on the same source space; independence is not assumed. -/
 theorem unpinned_source_test_identity
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (z : ℂ) (hz : 2 ≤ ‖z‖) (γ : ℝ)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (N : Ω → Measure ℂ)
-    (hN : IsAdmissibleGMCVersion P (Metric.ball 0 1) (fun x => normPlus x ^ (-4 : ℝ))
-      (fun ω ε x => Xc ω (z+x) (Real.log (1/ε)) - Xc ω z 0) γ N)
+    
     (ρ : ℝ) (hρ : ρ < 1) (f g : BoundedContinuousFunction ℂ ℝ)
     (hfc : HasCompactSupport (f : ℂ → ℝ)) (hfU : tsupport (f : ℂ → ℝ) ⊆ Metric.ball 0 1)
     (hf : ∀ x, f x ≠ 0 → ‖x‖ ≤ ρ)
     (hg : ∀ w, g w = f (w-z) * Real.exp ((γ ^ 2 + 4) * Real.log (normPlus w))) :
     (fun ω => ∫ x, f x ∂N ω) =ᵐ[P]
       fun ω => Real.exp (-γ * Xc ω z 0) * ∫ w, g w ∂M ω := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   have hT : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop := tendsto_natCast_atTop_atTop
-  have heps : Tendsto (fun n : ℕ => Real.exp (-(n : ℝ))) atTop (𝓝 (0 : ℝ)) :=
+  have heps  :=
     Real.tendsto_exp_neg_atTop_nhds_zero.comp hT
   obtain ⟨L, hL⟩ := eventually_atTop.mp
     (heps.eventually (gt_mem_nhds (show 0 < 1-ρ by linarith)))
@@ -63,29 +60,22 @@ theorem unpinned_source_test_identity
   have hA n : AEStronglyMeasurable (A n) P :=
     (DOZZ.Assembly.regularizedGMC_integral_measurable P X hX Xc hc γ (t n)
       g g.continuous.measurable).aestronglyMeasurable
-  have hW : AEStronglyMeasurable W P := by
-    exact (((hc.1 0).comp (measurable_id.prodMk measurable_const)).const_mul (-γ)).exp.aestronglyMeasurable
-  have hAlim : TendstoInMeasure P A atTop (fun ω => ∫ w, g w ∂M ω) :=
+  have hW : AEStronglyMeasurable W P := (((hc.1 0).comp (measurable_id.prodMk measurable_const)).const_mul (-γ)).exp.aestronglyMeasurable
+  have hAlim  :=
     (DOZZ.Assembly.isGMCOf_tendstoInMeasure P X hX Xc hc γ M hM g).comp ht
   have hScaled := tendstoInMeasure_mul_left A (fun ω => ∫ w, g w ∂M ω) W hA hW hAlim
   have hNlim := (hN.2.2.2 f hfc hfU).comp ht
   have hEq n : (fun ω => W ω * A n ω) =ᵐ[P]
       fun ω => regularizedLogChaosTestMass P (Metric.ball 0 1)
         (fun x => normPlus x ^ (-4 : ℝ))
-        (fun ω ε x => Xc ω (z+x) (Real.log (1/ε)) - Xc ω z 0) γ (t n) ω f := by
-    exact ae_of_all P fun ω =>
+        (fun ω ε x => Xc ω (z+x) (Real.log (1/ε)) - Xc ω z 0) γ (t n) ω f := ae_of_all P fun ω =>
       (unpinned_cutoff_test_identity P X Xc hX hc z hz γ (t n) ρ (hb n) f g hf hg ω).symm
   exact tendstoInMeasure_ae_unique hNlim (hScaled.congr_left hEq)
 
+include Ω _inst1 P X Xc hX hc z hz γ M hM N hN in
 /-- Every compact test in the unit chart has a genuine deterministic transferred GMC test. -/
 theorem unpinned_source_compact_test
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (z : ℂ) (hz : 2 ≤ ‖z‖) (γ : ℝ)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (N : Ω → Measure ℂ)
-    (hN : IsAdmissibleGMCVersion P (Metric.ball 0 1) (fun x => normPlus x ^ (-4 : ℝ))
-      (fun ω ε x => Xc ω (z+x) (Real.log (1/ε)) - Xc ω z 0) γ N)
+    
     (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ))
     (hfU : tsupport (f : ℂ → ℝ) ⊆ Metric.ball 0 1) :
     ∃ g : BoundedContinuousFunction ℂ ℝ, HasCompactSupport (g : ℂ → ℝ) ∧

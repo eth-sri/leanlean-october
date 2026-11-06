@@ -10,16 +10,19 @@ public import DOZZ.Statements.Complex.ComplexMomentTwoTailResidues
 /-! Real positive-moment residues from the Mellin tail statements
 `DOZZ.complexMoment_uniform_tail_bridge` and `DOZZ.complexMoment_two_tail_residues`. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) [_inst3 : IsProbabilityMeasure P]
+
+include Ω _inst1 P _inst3 in
 /-- The complex Abelian limit `DOZZ.complexMoment_uniform_tail_bridge` gives the real moment
 residue, with the same uniform family and coefficient. No limiting-variable-only tail assumption
 is substituted. -/
 theorem residue_real_uniform_tail_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+    
     (Y : ℝ → Ω → ℝ) (c : ℝ → ℝ) (c₀ β η γ d₀ C : ℝ)
     (hβ : 0 < β) (hη : 0 < η) (hγ : 0 < γ) (hd₀ : 0 < d₀) (hC : 0 ≤ C)
     (hY : ∀ d, 0 < d → d < d₀ → AEMeasurable (Y d) P)
@@ -44,9 +47,10 @@ theorem residue_real_uniform_tail_limit
   rw [integral_congr_ae heq, integral_complex_ofReal, ← Complex.ofReal_mul]
   rfl
 
+include Ω _inst1 P _inst3 in
 /-- A finite extended mass has exactly the same upper tail as its real value. -/
 theorem residue_realUpperTail_toReal
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+    
     (Y : Ω → ℝ≥0∞) (hY : AEMeasurable Y P) (hfinite : ∀ᵐ ω ∂P, Y ω ≠ ⊤)
     (t : ℝ) (ht : 0 ≤ t) :
     realUpperTail P (fun ω => (Y ω).toReal) (ENNReal.measurable_toReal.comp_aemeasurable hY) t =

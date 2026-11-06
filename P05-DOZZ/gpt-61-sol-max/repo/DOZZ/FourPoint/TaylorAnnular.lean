@@ -10,7 +10,7 @@ public import DOZZ.FourPoint.TaylorRadialTail
 
 /-! The supplied-GMC annular contribution with the literal κ-2 radial gain. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -43,8 +43,7 @@ theorem twoRooted_annular_bound
   intro ρ hρ hρ2 z hz
   let B : Set ℂ := Metric.ball 0 (1 / 2) \ Metric.ball 0 ρ
   have hB : MeasurableSet B := measurableSet_ball.diff measurableSet_ball
-  have hunit (x : ℂ) (hx : x ∈ B) : ‖x‖ ≤ 1 / 2 := by
-    exact (show ‖x‖ < 1 / 2 by simpa only [Metric.mem_ball, dist_zero_right] using hx.1).le
+  have hunit (x : ℂ) (hx : x ∈ B) : ‖x‖ ≤ 1 / 2 := (show ‖x‖ < 1 / 2 by simpa only [Metric.mem_ball, dist_zero_right] using hx.1).le
   have hz4 : ‖z‖ ≤ 1 / 4 := by linarith only [hz, hρ2]
   have hpoint (x : ℂ) (hx : x ∈ B) :
       ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2) ≤
@@ -67,9 +66,6 @@ theorem twoRooted_annular_bound
       mul_le_mul' le_rfl (mul_le_mul' le_rfl (htail ρ hρ))
     _ = _ := by
       rw [← ENNReal.ofReal_mul (by dsimp only [k]; positivity), ← ENNReal.ofReal_mul hC₀.le]
-      congr 1
-      dsimp only [C, a]
-      rw [show γ * (Q γ - α₁) - 4 + 2 = γ * (Q γ - α₁) - 2 by ring]
-      ring
+      grind
 
 end DOZZ.Proofs

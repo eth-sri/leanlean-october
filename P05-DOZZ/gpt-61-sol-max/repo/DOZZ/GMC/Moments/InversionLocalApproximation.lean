@@ -9,7 +9,7 @@ public import DOZZ.GFFStructure.AnnularCircleEnergy
 
 /-! Smooth circle-test approximation within the punctured inversion chart. -/
 
-@[expose] public section
+public section
 
 open Filter Topology Set Metric MeasureTheory
 open scoped Distributions
@@ -24,10 +24,8 @@ theorem exists_inversion_test_mask {g : ℂ → ℝ} (hcompact : HasCompactSuppo
       (∀ x, 0 ≤ a x ∧ a x ≤ 1) ∧
       (∀ x ∈ tsupport g, a x = 1) ∧ tsupport a ⊆ inversionChart := by
   have h0 : (0 : ℂ) ∉ tsupport g := by
-    intro h
-    have := hU h
-    simp [inversionChart] at this
-  have hnhds : (tsupport g)ᶜ ∈ 𝓝 (0 : ℂ) :=
+    continuity
+  have hnhds  :=
     hcompact.isClosed.isOpen_compl.mem_nhds h0
   obtain ⟨δ, hδ, hδK⟩ := Metric.mem_nhds_iff.mp hnhds
   let b : ContDiffBump (0 : ℂ) := ⟨δ / 4, δ / 2, by positivity, by linarith⟩
@@ -35,12 +33,11 @@ theorem exists_inversion_test_mask {g : ℂ → ℝ} (hcompact : HasCompactSuppo
   have ha : tsupport a ⊆ (ball (0 : ℂ) (δ / 4))ᶜ := by
     apply closure_minimal
     · intro x hx hxball
-      have hb : b x = 1 := b.one_of_mem_closedBall (ball_subset_closedBall hxball)
+      have hb  := b.one_of_mem_closedBall (ball_subset_closedBall hxball)
       exact hx (by simp [a, hb])
     · exact isOpen_ball.isClosed_compl
   refine ⟨a, contDiff_const.sub b.contDiff, ?_, ?_, ?_⟩
   · intro x
-    dsimp [a]
     exact ⟨sub_nonneg.mpr b.le_one, sub_le_self _ b.nonneg⟩
   · intro x hx
     have hout : x ∉ closedBall (0 : ℂ) (δ / 2) := by
@@ -48,7 +45,7 @@ theorem exists_inversion_test_mask {g : ℂ → ℝ} (hcompact : HasCompactSuppo
       have hxδ : x ∈ ball (0 : ℂ) δ :=
         closedBall_subset_ball (by linarith) hxball
       exact hδK hxδ hx
-    have hb : b x = 0 := image_eq_zero_of_notMem_tsupport (by
+    have hb  := image_eq_zero_of_notMem_tsupport (by
       rw [b.tsupport_eq]
       exact hout)
     simp [a, hb]
@@ -69,7 +66,7 @@ theorem tsupport_circleAnnularDensity_subset_centered (x : ℂ) (r : ℝ) (n : �
     exact hz (by simp only [circleAnnularDensity, hzero, mul_zero])
   have hb := DOZZ.annularProbabilityDensity_radius_bound n _ hρ
   have hn : 1 ≤ (n : ℝ) + 2 := by linarith only [Nat.cast_nonneg (α := ℝ) n]
-  have hi : 1 / ((n : ℝ) + 2) ≤ 1 :=
+  have hi  :=
     (one_div_le_one_div_of_le (by norm_num : (0 : ℝ) < 1) hn).trans_eq one_div_one
   have hscale : ‖(Real.exp (-r))⁻¹ • (z - x)‖ ≤ 2 := by
     linarith [(abs_lt.mp hb).2]

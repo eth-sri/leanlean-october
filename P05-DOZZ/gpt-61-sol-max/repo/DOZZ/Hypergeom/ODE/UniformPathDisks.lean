@@ -11,7 +11,7 @@ public import DOZZ.Hypergeom.ODE.FiniteDiskChain
 /-! A compact path in an open regular domain has a uniform family of coefficient disks with a
 uniform coefficient bound. -/
 
-@[expose] public section
+public section
 
 open Set
 
@@ -30,7 +30,6 @@ theorem exists_uniform_holomorphic_disks_along_path
           ∀ z ∈ Metric.ball (γ t) r, ‖H z‖ ≤ M := by
   let K : Set ℂ := γ '' Icc (0 : ℝ) 1
   have hK : IsCompact K := by
-    dsimp [K]
     exact isCompact_Icc.image_of_continuousOn hγ
   have hKU : K ⊆ U := by
     rintro z ⟨t, ht, rfl⟩
@@ -39,7 +38,7 @@ theorem exists_uniform_holomorphic_disks_along_path
     Metric.exists_isOpen_isBounded_image_of_isCompact_of_continuousOn
       hK hU hKU hH.continuousOn
   let W := V ∩ U
-  have hWopen : IsOpen W := hVopen.inter hU
+  have hWopen  := hVopen.inter hU
   have hKW : K ⊆ W := by
     intro z hz
     exact ⟨hKV hz, hKU hz⟩
@@ -54,9 +53,8 @@ theorem exists_uniform_holomorphic_disks_along_path
     intro z hz
     apply hδW
     apply Metric.mem_cthickening_of_dist_le z (γ t) δ K hγtK
-    have hdist : dist z (γ t) < r := Metric.mem_ball.mp hz
-    have hrδ : r ≤ δ := by dsimp [r]; linarith
-    exact hdist.le.trans hrδ
+    have hdist  := Metric.mem_ball.mp hz
+    grind
   have hballU : Metric.ball (γ t) r ⊆ U := fun _ hz => (hballW hz).2
   have hballV : Metric.ball (γ t) r ⊆ V := fun _ hz => (hballW hz).1
   refine ⟨hH.mono hballU, ?_⟩
@@ -98,10 +96,8 @@ theorem exists_holomorphic_path_continuation_chain
             (D i).solution z = (D (i + 1)).solution z := by
   obtain ⟨r, M, hr, hM, hlocal⟩ :=
     exists_uniform_holomorphic_disks_along_path hγ U hU H hH hpath
-  have hHpath : ∀ t ∈ Icc (0 : ℝ) 1,
-      DifferentiableOn ℂ H (Metric.ball (γ t) r) := fun t ht => (hlocal t ht).1
-  have hboundPath : ∀ t ∈ Icc (0 : ℝ) 1,
-      ∀ z ∈ Metric.ball (γ t) r, ‖H z‖ ≤ M := fun t ht => (hlocal t ht).2
+  have hHpath  := fun t ht => (hlocal t ht).1
+  have hboundPath  := fun t ht => (hlocal t ht).2
   obtain ⟨N, hN, D, hD0c, hD0i, hDcenters, hDinitials, hcover, hoverlap⟩ :=
     exists_path_holomorphic_disk_chain hγ r M hr hM H hHpath hboundPath y
   have hDNc : (D N).center = γ 1 := by

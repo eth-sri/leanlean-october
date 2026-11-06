@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Reflected.SpatialKernelApprox
 public import DOZZ.FourPoint.Reflected.OuterInverseGuard
 /-! The compact guard used in spatial cutoff removal has actual GMC inverse moments. -/
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -27,8 +27,7 @@ theorem reflected_spatial_guard_lower (γ α₁ α₂ α₃ : ℝ) (μ : Measure
     have hd' : ‖y-3‖ ≤ 1/8 := by simpa only [D, Metric.mem_closedBall, dist_eq_norm] using hd
     linarith
   have ha (y : ℂ) (hy : ‖y‖ ≤ 1) : (μ.restrict D) {y} = 0 := by
-    rw [Measure.restrict_apply (measurableSet_singleton y),
-      singleton_inter_of_notMem (hn y hy), measure_empty]
+    simp_all
   have he := gammaHalfMass_eq_coulombMass γ α₁ α₂ α₃ z (μ.restrict D)
     (ha z hz) (ha 0 (by simp)) (ha 1 (by simp))
   have hy : ∀ i : Fin 3, ‖(![z, 0, 1] : Fin 3 → ℂ) i‖ ≤ 1 := by
@@ -67,7 +66,7 @@ theorem reflected_spatial_guard_inverse_finite
         ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω)^(-q) ≤
         (ENNReal.ofReal w*M ω (Metric.ball (3 : ℂ) (1/8)))^(-q) := by
       rw [ENNReal.rpow_neg, ENNReal.rpow_neg]
-      exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hl hq)
+      gcongr
     have hfinite : M ω (Metric.ball (3 : ℂ) (1/8)) ≠ ⊤ := by
       let _ := hM.1 ω
       exact measure_ne_top _ _

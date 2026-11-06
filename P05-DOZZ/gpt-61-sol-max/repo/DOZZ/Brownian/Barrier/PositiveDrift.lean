@@ -37,27 +37,29 @@ infinite-horizon maximum calculation. All equalities here concern the actual
 path events and measures, rather than a separately specified kernel model.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
 
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β) (T : ℝ≥0)
+
+include P hB β hβ T
 /-- First-hit reflection preserves every measurable endpoint test on the event of a preterminal hit. -/
-theorem brownianPath_firstHit_endpoint_setIntegral_symmetry (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β) (T : ℝ≥0)
+theorem brownianPath_firstHit_endpoint_setIntegral_symmetry 
     (F : ℝ → ℝ) (hF : Measurable F) :
     (∫ p in {p | cappedBrownianFirstPassage β T p < T}, F (p T) ∂P) =
       ∫ p in {p | cappedBrownianFirstPassage β T p < T}, F (2*β-p T) ∂P := by
   let τ := cappedBrownianFirstPassage β T
   have hτ := cappedBrownianFirstPassage_isStoppingTime β T
   have hmτ := measurable_finite_brownian_stoppingTime _ τ hτ
-  have hmV : Measurable (fun p => brownianShiftPath (τ p) p) :=
+  have hmV  :=
     continuous_brownianShiftPath.measurable.comp (hmτ.prodMk measurable_id)
-  let H : Set BrownianPath := {p | τ p < T}
+  let H  := {p | τ p < T}
   have hH : MeasurableSet H := measurableSet_lt hmτ measurable_const
   let S : Set (ℝ≥0 × BrownianPath) := {z | z.1 < T}
   have hS : MeasurableSet S := measurableSet_lt measurable_fst measurable_const
-  let G : ℝ≥0 × BrownianPath → ℝ := S.indicator (fun z => F (β+z.2 (T-z.1)))
+  let G  := S.indicator (fun z => F (β+z.2 (T-z.1)))
   have hmG : Measurable G :=
     (hF.comp (measurable_const.add (measurable_brownianPath_evaluation.comp
       ((measurable_const.sub measurable_fst).prodMk measurable_snd)))).indicator hS
@@ -76,19 +78,19 @@ theorem brownianPath_firstHit_endpoint_setIntegral_symmetry (P : Measure Brownia
   have hup : (fun p => G (τ p,brownianShiftPath (τ p) p)) =ᵐ[P] H.indicator (fun p => F (p T)) := by
     filter_upwards [hB.eval_zero_ae_eq_zero] with p hp
     by_cases hτT : τ p < T
-    · have hp0 : p 0 < β := hp ▸ hβ
+    · have hp0  := hp ▸ hβ
       have hv := cappedBrownianFirstPassage_value β T p hp0 hτT
       simp only [G,S,H,Set.indicator_apply,mem_ofPred_eq,ite_eq_left hτT]
       change F (β+(p (τ p+(T-τ p))-p (τ p))) = F (p T)
       rw [add_tsub_cancel_of_le (cappedBrownianFirstPassage_le β T p),hv]
       congr 1
       ring_nf
-    · simp only [G,S,H,Set.indicator_apply,mem_ofPred_eq,ite_eq_right hτT]
+    continuity
   have hlo : (fun p => G (τ p,-brownianShiftPath (τ p) p)) =ᵐ[P]
       H.indicator (fun p => F (2*β-p T)) := by
     filter_upwards [hB.eval_zero_ae_eq_zero] with p hp
     by_cases hτT : τ p < T
-    · have hp0 : p 0 < β := hp ▸ hβ
+    · have hp0  := hp ▸ hβ
       have hv := cappedBrownianFirstPassage_value β T p hp0 hτT
       simp only [G,S,H,Set.indicator_apply,mem_ofPred_eq,ite_eq_left hτT]
       change F (β+-(p (τ p+(T-τ p))-p (τ p))) = F (2*β-p T)
@@ -97,13 +99,13 @@ theorem brownianPath_firstHit_endpoint_setIntegral_symmetry (P : Measure Brownia
       ring_nf
     · simp only [G,S,H,Set.indicator_apply,mem_ofPred_eq,ite_eq_right hτT]
   exact (integral_congr_ae hup).symm.trans (hi.trans (integral_congr_ae hlo))
+
 /-- Reflect the endpoint below the barrier onto the terminal Gaussian upper tail. -/
-theorem brownianPath_firstHit_endpoint_below_integral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β) (T : ℝ≥0)
+theorem brownianPath_firstHit_endpoint_below_integral 
     (F : ℝ → ℝ) (hF : Measurable F) :
     (∫ p in {p | cappedBrownianFirstPassage β T p < T} ∩ {p | p T < β}, F (p T) ∂P) =
       ∫ p in {p | β < p T}, F (2*β-p T) ∂P := by
-  let H : Set BrownianPath := {p | cappedBrownianFirstPassage β T p < T}
+  let H  := {p | cappedBrownianFirstPassage β T p < T}
   let L : Set BrownianPath := {p | p T < β}
   let U : Set BrownianPath := {p | β < p T}
   have hL : MeasurableSet L := measurableSet_lt (ContinuousMap.measurable_eval T) measurable_const
@@ -112,8 +114,7 @@ theorem brownianPath_firstHit_endpoint_below_integral (P : Measure BrownianPath)
   have hs := brownianPath_firstHit_endpoint_setIntegral_symmetry P hB β hβ T
     ((Iio β).indicator F) (hF.indicator hI)
   have hl : (fun p : BrownianPath => (Iio β).indicator F (p T)) = L.indicator (fun p => F (p T)) := by
-    funext p
-    simp only [L, Set.indicator_apply, mem_Iio, mem_ofPred_eq]
+    continuity
   have hu : (fun p : BrownianPath => (Iio β).indicator F (2*β-p T)) =
       U.indicator (fun p => F (2*β-p T)) := by
     funext p
@@ -128,36 +129,32 @@ theorem brownianPath_firstHit_endpoint_below_integral (P : Measure BrownianPath)
     · intro h
       exact ⟨cappedBrownianFirstPassage_lt_of_terminal β T p (hp ▸ hβ) h, h⟩
   exact hs.trans (setIntegral_congr_set he)
+
 /-- Up to Brownian null sets, survival is the lower endpoint event minus a first hit. -/
-theorem brownianPath_barrier_ae_endpoint_sdiff_firstHit (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β)
-    (T : ℝ≥0) (hT : T ≠ 0) :
+theorem brownianPath_barrier_ae_endpoint_sdiff_firstHit  (hT : T ≠ 0) :
     {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → p u ≤ β} =ᵐ[P]
       {p | p T < β} \ {p | cappedBrownianFirstPassage β T p < T} := by
   have hn : ∀ᵐ p ∂P, (⨆ u : Iic T, p u) ≠ β := by
     rw [ae_iff]
     simpa only [not_not] using brownianPath_runningMaximum_atom_zero P hB β hβ T hT
   filter_upwards [hn,brownianPath_crossing_ae_firstHit P hB β hβ T hT] with p hp hc
-  have hce : (∃ u ≤ T, β ≤ p u) ↔ cappedBrownianFirstPassage β T p < T :=
+  have hce  :=
     Iff.of_eq hc
   apply propext
   change (∀ u : ℝ≥0, u ≤ T → p u ≤ β) ↔ p T < β ∧ ¬cappedBrownianFirstPassage β T p < T
   constructor
   · intro h
-    have hmax : (⨆ u : Iic T, p u) < β :=
+    have hmax  :=
       lt_of_le_of_ne ((brownianPath_barrier_iff_runningMaximum p T β).mp h) hp
     refine ⟨(le_ciSup (brownianPath_Iic_bddAbove p T) ⟨T,le_rfl⟩).trans_lt hmax,?_⟩
     intro hh
     obtain ⟨u,hu,hβu⟩ := hce.mpr hh
     exact (hβu.trans (le_ciSup (brownianPath_Iic_bddAbove p T) ⟨u,hu⟩)).not_gt hmax
-  · rintro ⟨_,hh⟩ u hu
-    by_contra hb
-    exact hh (hce.mp ⟨u,hu,(lt_of_not_ge hb).le⟩)
+  grind
+
 
 /-- Weighted survival is the lower Gaussian endpoint integral minus its reflected upper tail. -/
-theorem brownianPath_barrier_endpoint_integral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β)
-    (T : ℝ≥0) (hT : T ≠ 0) (F : ℝ → ℝ) (hF : Measurable F)
+theorem brownianPath_barrier_endpoint_integral  (hT : T ≠ 0) (F : ℝ → ℝ) (hF : Measurable F)
     (hInt : Integrable (fun p => F (p T)) P) :
     (∫ p in {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → p u ≤ β}, F (p T) ∂P) =
       (∫ p in {p | p T < β}, F (p T) ∂P) - ∫ p in {p | β < p T}, F (2*β-p T) ∂P := by
@@ -166,12 +163,12 @@ theorem brownianPath_barrier_endpoint_integral (P : Measure BrownianPath)
   rw [setIntegral_congr_set (brownianPath_barrier_ae_endpoint_sdiff_firstHit P hB β hβ T hT)]
   have he : {p : BrownianPath | p T < β} \ {p | cappedBrownianFirstPassage β T p < T} =
       {p | p T < β} \ ({p | cappedBrownianFirstPassage β T p < T} ∩ {p | p T < β}) := by
-    ext p
-    simp only [Set.mem_sdiff,mem_inter_iff,mem_ofPred_eq]
-    tauto
+    simp_all
   rw [he,setIntegral_sdiff (hH.inter (measurableSet_lt (ContinuousMap.measurable_eval T) measurable_const))
     hInt.integrableOn inter_subset_right,
     brownianPath_firstHit_endpoint_below_integral P hB β hβ T F hF]
+omit P hB β hβ T
+
 /-- A continuous Brownian terminal test over an endpoint set is its Gaussian set integral. -/
 theorem brownianPath_endpoint_setIntegral (P : Measure BrownianPath)
     (hB : IsPreBrownianReal (fun t p => p t) P) (T : ℝ≥0)
@@ -187,7 +184,7 @@ theorem gaussianReal_setIntegral_pdf (T : ℝ≥0) (hT : T ≠ 0)
   rw [gaussianReal_of_var_ne_zero 0 hT,
     setIntegral_withDensity_eq_setIntegral_toReal_smul (measurable_gaussianPDF 0 T)
       (ae_of_all _ (fun x => gaussianPDF_lt_top (μ := 0) (v := T) (x := x))) F hS]
-  simp only [gaussianPDF, ENNReal.toReal_ofReal (gaussianPDFReal_nonneg _ _ _),smul_eq_mul]
+  simp_all
 
 /-- Gaussian integrability is precisely integrability against its scalar density. -/
 theorem gaussianReal_integrable_pdf (T : ℝ≥0) (hT : T ≠ 0) (F : ℝ → ℝ)
@@ -195,15 +192,13 @@ theorem gaussianReal_integrable_pdf (T : ℝ≥0) (hT : T ≠ 0) (F : ℝ → �
   rw [gaussianReal_of_var_ne_zero 0 hT] at hF
   have hi := (integrable_withDensity_iff_integrable_smul' (measurable_gaussianPDF 0 T)
     (ae_of_all _ (fun x => gaussianPDF_lt_top (μ := 0) (v := T) (x := x)))).mp hF
-  simpa only [gaussianPDF,ENNReal.toReal_ofReal (gaussianPDFReal_nonneg _ _ _),smul_eq_mul] using hi
+  simp_all
 
 /-- Reflection around a real level exchanges the two open endpoint half lines. -/
 theorem integral_reflection_Ioi (β : ℝ) (F : ℝ → ℝ) :
     (∫ x in Ioi β, F (2*β-x)) = ∫ x in Iio β, F x := by
   have hp : (fun x : ℝ => 2*β-x) ⁻¹' Iio β = Ioi β := by
-    ext x
-    simp only [mem_preimage,mem_Iio,mem_Ioi]
-    constructor <;> intro h <;> linarith
+    grind
   simpa only [hp] using (volume.measurePreserving_sub_left (2*β)).setIntegral_preimage_emb
     (Homeomorph.subLeft (2*β)).measurableEmbedding F (Iio β)
 
@@ -211,23 +206,20 @@ theorem integral_reflection_Ioi (β : ℝ) (F : ℝ → ℝ) :
 theorem integrableOn_reflection_Ioi_iff (β : ℝ) (F : ℝ → ℝ) :
     IntegrableOn (fun x => F (2*β-x)) (Ioi β) ↔ IntegrableOn F (Iio β) := by
   have hp : (fun x : ℝ => 2*β-x) ⁻¹' Iio β = Ioi β := by
-    ext x
-    simp only [mem_preimage,mem_Iio,mem_Ioi]
-    constructor <;> intro h <;> linarith
+    grind
   simpa only [hp,Function.comp_def] using
     (volume.measurePreserving_sub_left (2*β)).integrableOn_comp_preimage
       (Homeomorph.subLeft (2*β)).measurableEmbedding (f := F) (s := Iio β)
 
+include P hB β hβ T in
 /-- The killed Brownian endpoint integral retains the full reflected density difference. -/
-theorem brownianPath_barrier_killedDensity_integral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β)
-    (T : ℝ≥0) (hT : T ≠ 0) (F : ℝ → ℝ) (hF : Measurable F)
+theorem brownianPath_barrier_killedDensity_integral  (hT : T ≠ 0) (F : ℝ → ℝ) (hF : Measurable F)
     (hInt : Integrable F (gaussianReal 0 T))
     (hIntR : Integrable (fun x => F (2*β-x)) (gaussianReal 0 T)) :
     (∫ p in {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → p u ≤ β}, F (p T) ∂P) =
       ∫ x in Iio β, (gaussianPDFReal 0 T x-gaussianPDFReal 0 T (2*β-x))*F x := by
   have hIntP : Integrable (fun p => F (p T)) P := by
-    simpa only [Function.comp_def] using (hB.hasLaw_eval T).integrable_comp hInt
+    exact (hB.hasLaw_eval T).integrable_comp hInt
   rw [brownianPath_barrier_endpoint_integral P hB β hβ T hT F hF hIntP]
   change (∫ p in {p | p T ∈ Iio β}, F (p T) ∂P) -
     (∫ p in {p | p T ∈ Ioi β}, F (2*β-p T) ∂P) = _
@@ -238,18 +230,15 @@ theorem brownianPath_barrier_killedDensity_integral (P : Measure BrownianPath)
     gaussianReal_setIntegral_pdf T hT (Ioi β) measurableSet_Ioi (fun x => F (2*β-x))]
   have hr : (fun x => gaussianPDFReal 0 T x*F (2*β-x)) =
       (fun x => (gaussianPDFReal 0 T (2*β-x)*F x)) ∘ (fun x => 2*β-x) := by
-    funext x
-    have he : 2*β-(2*β-x) = x := by ring_nf
-    simp only [Function.comp_def,he]
+    continuity
   have hiR := (integrableOn_reflection_Ioi_iff β (fun x => gaussianPDFReal 0 T (2*β-x)*F x)).mp
     (by simpa only [Function.comp_def] using
       (show IntegrableOn ((fun x => gaussianPDFReal 0 T (2*β-x)*F x) ∘ (fun x => 2*β-x)) (Ioi β) from
         hr ▸ (gaussianReal_integrable_pdf T hT _ hIntR).integrableOn))
   rw [hr,show (∫ x in Ioi β, ((fun x => gaussianPDFReal 0 T (2*β-x)*F x) ∘ (fun x => 2*β-x)) x) =
-      ∫ x in Iio β, gaussianPDFReal 0 T (2*β-x)*F x by simpa only [Function.comp_def] using integral_reflection_Ioi β (fun x => gaussianPDFReal 0 T (2*β-x)*F x),
+      ∫ x in Iio β, gaussianPDFReal 0 T (2*β-x)*F x by exact integral_reflection_Ioi β (fun x => gaussianPDFReal 0 T (2*β-x)*F x),
     ← integral_sub (gaussianReal_integrable_pdf T hT F hInt).integrableOn hiR]
-  apply integral_congr_ae
-  exact ae_of_all _ (fun x => by dsimp; ring)
+  grind
 
 /-- The terminal likelihood is integrable under any scalar Gaussian law. -/
 theorem integrable_real_brownianGaussianLikelihood (a : ℝ) (T : ℝ≥0) :
@@ -269,10 +258,10 @@ theorem brownianPath_drift_barrier_endpoint_integral (P : Measure BrownianPath)
     P {p | ∀ u : ℝ≥0, u ≤ T → p u+a*(u : ℝ) ≤ β} =
       ENNReal.ofReal ((∫ x in Iio β, Real.exp (a*x-a^2*(T : ℝ)/2) ∂gaussianReal 0 T) -
         ∫ x in Ioi β, Real.exp (a*(2*β-x)-a^2*(T : ℝ)/2) ∂gaussianReal 0 T) := by
-  let F : ℝ → ℝ := fun x => Real.exp (a*x-a^2*(T : ℝ)/2)
+  let F  := fun x => Real.exp (a*x-a^2*(T : ℝ)/2)
   have hF : Measurable F := by dsimp [F]; fun_prop
   have hiP : Integrable (fun p => F (p T)) P := by
-    simpa only [Function.comp_def] using (hB.hasLaw_eval T).integrable_comp
+    exact (hB.hasLaw_eval T).integrable_comp
       (integrable_real_brownianGaussianLikelihood a T)
   rw [brownian_drift_barrier_probability_likelihood P hB.toIsPreBrownianReal a β T hT]
   change (∫⁻ p in {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → p u ≤ β}, ENNReal.ofReal (F (p T)) ∂P) = _

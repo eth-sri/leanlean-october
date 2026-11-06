@@ -17,7 +17,7 @@ integer cutoffs and Fatou in probability transfers the bound once `exp (-n) ≤ 
 vanishes, the softened weighted masses increase to the weighted local mass, and monotone
 convergence removes the softening. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
@@ -27,7 +27,7 @@ namespace DOZZ.Proofs
 /-- Along the integer cutoffs, `Real.exp (-n)` is eventually below any positive threshold. -/
 theorem limitWeightedFatou_exists_nat_exp_neg_le {s : ℝ} (hs : 0 < s) :
     ∃ n₀ : ℕ, ∀ n : ℕ, n₀ ≤ n → Real.exp (-(n : ℝ)) ≤ s := by
-  have h : Tendsto (fun n : ℕ => Real.exp (-(n : ℝ))) atTop (𝓝 0) :=
+  have h  :=
     Real.tendsto_exp_neg_atTop_nhds_zero.comp tendsto_natCast_atTop_atTop
   exact eventually_atTop.mp (h.eventually (ge_mem_nhds hs))
 
@@ -56,13 +56,13 @@ theorem limitWeightedFatou_ofReal_weight_measurable (z : ℂ) (e s : ℝ) :
     Measurable fun x : ℂ => ENNReal.ofReal ((‖x - z‖ + s) ^ e) :=
   ENNReal.measurable_ofReal.comp (((measurable_id.sub_const z).norm.add_const s).pow_const e)
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM Xc hXc in
 /-- Fatou in probability for boundedly weighted cutoff masses: a bound on the `t`th moments of
 the cutoff masses for all large integer cutoffs bounds the `t`th moment of the limit. -/
 theorem limitWeightedFatou_bounded_weight_moment_le
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+    
     (z : ℂ) (ρ : ℝ) (w : ℂ → ℝ≥0) (hw : Measurable w) (c : ℝ≥0) (hwc : ∀ y, w y ≤ c)
     (t : ℝ) (C : ℝ≥0∞) (n₀ : ℕ)
     (hbound : ∀ n : ℕ, n₀ ≤ n →
@@ -70,7 +70,7 @@ theorem limitWeightedFatou_bounded_weight_moment_le
         ≤ C) :
     ∫⁻ ω, (∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂M ω) ^ t ∂P ≤ C := by
   have hB : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
-  have hwm : Measurable fun x : ℂ => (w (x - z) : ℝ≥0∞) :=
+  have hwm  :=
     measurable_coe_nnreal_ennreal.comp (hw.comp (measurable_id.sub_const z))
   refine momentConv_lintegral_rpow_limit_le P
     (fun (n : ℕ) ω => ∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞)
@@ -94,13 +94,11 @@ theorem limitWeightedFatou_bounded_weight_moment_le
     exact ne_top_of_le_ne_top (ENNReal.mul_ne_top ENNReal.coe_ne_top (measure_ne_top _ _))
       (weightedSetLIntegral_le_const_mul _ z ρ w c hwc)
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM Xc hXc in
 /-- Fatou in probability for a fixed softening `s` of the distance weight: the cutoff weighted
 bounds at cutoffs `δ ≤ s` bound the `t`th moment of the softened weighted mass of the limit. -/
 theorem limitWeightedFatou_softened_moment_le
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+    
     (α : ℝ) (hα : 0 ≤ α) (z : ℂ) (ρ : ℝ) (t : ℝ) (ht : 0 ≤ t) (C : ℝ≥0∞)
     (s : ℝ) (hs : 0 < s) (hsρ : s ≤ ρ)
     (hC : ∀ δ : ℝ, 0 < δ → δ ≤ ρ →
@@ -114,9 +112,9 @@ theorem limitWeightedFatou_softened_moment_le
     ((s ^ (-γ * α)).toNNReal) (fun y => limitWeightedFatou_weight_le he hs y) t C n₀ ?_
   intro n hn
   have hδ : 0 < Real.exp (-(n : ℝ)) := Real.exp_pos _
-  have hδs : Real.exp (-(n : ℝ)) ≤ s := hn₀ n hn
+  have hδs  := hn₀ n hn
   have hlog : Real.log (1 / Real.exp (-(n : ℝ))) = (n : ℝ) := by
-    rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
+    simp_all
   refine le_trans (lintegral_mono fun ω => ENNReal.rpow_le_rpow ?_ ht) (hC _ hδ (hδs.trans hsρ))
   unfold cutoffWeightedGmcBallMass
   rw [hlog]
@@ -162,13 +160,11 @@ theorem limitWeightedFatou_mass_tendsto (μ : Measure ℂ) (γ α : ℝ) (hγ : 
   · exact limitWeightedFatou_ofReal_rpow_le (norm_nonneg _) (hε m') (hεanti hmm') he
   · exact limitWeightedFatou_weight_tendsto (norm_nonneg _) _ hε hε0
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM Xc hXc in
 /-- A uniform bound on the cutoff weighted moments at a nonnegative charge bounds the weighted
 local moment of the limiting chaos. -/
 theorem weightedGmcBallMoment_le_of_cutoff
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+    
     (α : ℝ) (hα : 0 ≤ α) (z : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (t : ℝ) (ht : 0 < t) (C : ℝ≥0∞)
     (hC : ∀ δ : ℝ, 0 < δ → δ ≤ ρ →
       ∫⁻ ω, ENNReal.rpow (cutoffWeightedGmcBallMass P Xc γ α z ρ δ ω) t ∂P ≤ C) :
@@ -178,10 +174,7 @@ theorem weightedGmcBallMoment_le_of_cutoff
   set ε : ℕ → ℝ := fun m => ρ * (1 / ((m : ℝ) + 1)) with hεdef
   have hεpos : ∀ m, 0 < ε m := fun m => mul_pos hρ (by positivity)
   have hεle : ∀ m, ε m ≤ ρ := fun m => by
-    have h : 1 / ((m : ℝ) + 1) ≤ 1 := by
-      rw [div_le_one (by positivity)]
-      linarith [(Nat.cast_nonneg m : (0 : ℝ) ≤ m)]
-    simpa only [hεdef, mul_one] using mul_le_mul_of_nonneg_left h hρ.le
+    bound
   have hεanti : Antitone ε := fun m m' hmm' => by
     have hcast : (m : ℝ) ≤ m' := Nat.cast_le.mpr hmm'
     have h : 1 / ((m' : ℝ) + 1) ≤ 1 / ((m : ℝ) + 1) :=
@@ -190,8 +183,7 @@ theorem weightedGmcBallMoment_le_of_cutoff
   have hε0 : Tendsto ε atTop (𝓝 0) := by
     simpa only [hεdef, mul_zero] using
       (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ)).const_mul ρ
-  have hFatou : ∀ m : ℕ, ∫⁻ ω, (∫⁻ x in Metric.ball z ρ,
-      ENNReal.ofReal ((‖x - z‖ + ε m) ^ (-γ * α)) ∂M ω) ^ t ∂P ≤ C := fun m =>
+  have hFatou  := fun m =>
     limitWeightedFatou_softened_moment_le P X hX γ hγ hγ2 M hM Xc hXc α hα z ρ t ht.le C (ε m)
       (hεpos m) (hεle m) hC
   have hlim : Tendsto (fun m : ℕ => ∫⁻ ω, (∫⁻ x in Metric.ball z ρ,

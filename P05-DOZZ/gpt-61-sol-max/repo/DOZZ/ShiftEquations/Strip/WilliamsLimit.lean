@@ -9,7 +9,7 @@ public import DOZZ.Statements.Brownian.LastoneBrownianSmallPowerLimit
 
 /-! The critical small-power limit of the exponential-maximum last-cut model. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
@@ -31,7 +31,7 @@ theorem lastone_williamsModel_smallPower_limit
           (B ν z.2).1), Z z.2) ^ (ν / γ)
             ∂(brownianMaximumReferenceLaw ν).prod P).toReal)
       (𝓝[>] 0) (𝓝 2) := by
-  let : IsProbabilityMeasure P := hZ.2.2.1
+  let  := hZ.2.2.1
   let I : ℝ → ℝ≥0∞ := fun ν => ∫⁻ ω, twoSidedReflectionMass γ (B ν) Z ω ^ (ν / γ) ∂P
   let J : ℝ → ℝ≥0∞ := fun ν => ∫⁻ ω, initialUnitBlockMass γ (B ν ω).1 (Z ω) ^ (ν / γ) ∂P
   let W : ℝ → ℝ≥0∞ := fun ν => ∫⁻ z : ℝ × Ω,
@@ -39,13 +39,13 @@ theorem lastone_williamsModel_smallPower_limit
       (((z.1, negativeConditionedLastExitSegment z.1 (B ν z.2).2),
         (B ν z.2).1), Z z.2) ^ (ν / γ)
           ∂(brownianMaximumReferenceLaw ν).prod P
-  have hI : Tendsto (fun ν => (I ν).toReal) (𝓝[>] 0) (𝓝 1) :=
+  have hI  :=
     DOZZ.lastone_brownian_smallPower_limit P γ hγ hγ2 Z B
       hB hZ hInd
   have he : Tendsto (fun ν : ℝ => ν / γ) (𝓝[>] 0) (𝓝 0) := by
     simpa using (tendsto_id.div_const γ :
       Tendsto (fun ν : ℝ => ν / γ) (𝓝 0) (𝓝 (0 / γ))).mono_left nhdsWithin_le_nhds
-  have hJ : Tendsto (fun ν => (J ν).toReal) (𝓝[>] 0) (𝓝 1) :=
+  have hJ  :=
     lastone_initialUnitBlock_smallPower_limit P γ 1 hγ one_pos Z B
       (fun ν hν _ => hB ν hν) hZ (fun ν hν _ => hInd ν hν)
       (fun ν => ν / γ) he (fun ν hν => div_pos hν hγ)
@@ -66,7 +66,7 @@ theorem lastone_williamsModel_smallPower_limit
             lintegral_mono fun ω => ennreal_rpow_le_one_add_rpow _
               (div_pos hν.1 hγ).le hν.2.2
           _ = 1 + ∫⁻ ω, twoSidedReflectionMass γ (B ν) Z ω ^ u ∂P := by
-            rw [lintegral_add_left measurable_const, lintegral_const, measure_univ, mul_one]
+            simp_all
           _ ≤ 1 + C := add_le_add le_rfl (hCbound ν hν.1 hν.2.1.le)
       exact lt_of_le_of_lt hb (ENNReal.add_lt_top.mpr ⟨by norm_num, hC⟩)
     have h2Ifin : (2 : ℝ≥0∞) * I ν ≠ ⊤ :=
@@ -77,7 +77,7 @@ theorem lastone_williamsModel_smallPower_limit
     have hWfin := ne_top_of_le_ne_top h2Ifin hb.2
     have hlow := ENNReal.toReal_mono hWfin hb.1
     have hupp := ENNReal.toReal_mono h2Ifin hb.2
-    simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofNat] using And.intro hlow hupp
+    simp_all
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le'
     (g := fun ν => 2 * (J ν).toReal) (h := fun ν => 2 * (I ν).toReal)
   · simpa using hJ.const_mul 2

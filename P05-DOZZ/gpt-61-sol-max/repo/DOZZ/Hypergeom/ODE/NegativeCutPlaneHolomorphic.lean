@@ -34,7 +34,7 @@ private theorem gaussNegativeCutPlaneScalarState_eq_picard_near
   obtain ⟨ε, hε, hεball⟩ := Metric.mem_nhds_iff.mp
     (gaussNegativeCutPlane_isOpen.mem_nhds z.property)
   let r := min δ ε
-  have hr : 0 < r := lt_min hδ hε
+  have hr  := lt_min hδ hε
   have hrδ : r ≤ δ := min_le_left _ _
   have hrε : r ≤ ε := min_le_right _ _
   have hball : Metric.ball (z : ℂ) r ⊆ gaussNegativeCutPlane := by
@@ -43,11 +43,10 @@ private theorem gaussNegativeCutPlaneScalarState_eq_picard_near
   refine ⟨R, r, hR, hr, le_trans hrδ hδR, D, hcenter, hball, ?_⟩
   intro w hw
   have hwcut := hball hw
-  have hwδ : dist w (z : ℂ) < δ := lt_of_lt_of_le (Metric.mem_ball.mp hw) hrδ
-  have hstate := hlocal ⟨w, hwcut⟩ hwδ
+  have hwδ  := lt_of_lt_of_le (Metric.mem_ball.mp hw) hrδ
+
   dsimp [gaussNegativeCutPlaneScalarState]
-  rw [dite_eq_left hwcut]
-  exact congrArg Prod.fst hstate
+  simp_all
 
 /-- The first component of the path-independent negative-cut endpoint is holomorphic in the endpoint.
 -/
@@ -61,8 +60,8 @@ theorem gaussNegativeCutPlaneScalarState_differentiableOn
   have hDmem : z ∈ Metric.ball D.center R := by
     rw [hcenter]
     exact Metric.mem_ball_self hR
-  have hDAt : DifferentiableAt ℂ D.solution z := (D.derivative z hDmem).differentiableAt
-  have hDat : DifferentiableAt ℂ (fun w => (D.solution w).1) z := hDAt.fst
+  have hDAt  := (D.derivative z hDmem).differentiableAt
+  have hDat  := hDAt.fst
   have hnear : gaussNegativeCutPlaneScalarState a b c =ᶠ[𝓝 z]
       (fun w => (D.solution w).1) := by
     filter_upwards [Metric.ball_mem_nhds z hr] with w hw

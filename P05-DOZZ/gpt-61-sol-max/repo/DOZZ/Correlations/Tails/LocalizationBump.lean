@@ -9,7 +9,7 @@ public import Mathlib.Topology.ContinuousMap.Bounded.Normed
 
 /-! A common compact localization, equal to one on a smaller insertion ball. -/
 
-@[expose] public section
+public section
 open Set Metric
 
 namespace DOZZ.Proofs

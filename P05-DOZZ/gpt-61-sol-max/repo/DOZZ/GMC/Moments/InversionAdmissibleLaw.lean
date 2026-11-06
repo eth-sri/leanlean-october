@@ -9,7 +9,7 @@ public import DOZZ.GMC.Moments.InversionAnnularUniqueness
 
 /-! Finite-cutoff law transport for admissible chaos test integrals. -/
 
-@[expose] public section
+public section
 
 open Filter MeasureTheory ProbabilityTheory Set
 open scoped Topology Distributions ENNReal
@@ -17,16 +17,13 @@ open DOZZ.Assembly
 
 namespace DOZZ.Proofs
 
+variable {Ω Ω' : Type*} [_inst1 : MeasurableSpace Ω] [_inst2 : MeasurableSpace Ω'] (P : Measure Ω) (P' : Measure Ω') [_inst5 : IsProbabilityMeasure P] [_inst6 : IsProbabilityMeasure P'] (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ) (Y : Ω → ℝ → ℂ → ℝ) (Z : Ω' → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (hZ : IsAdmissibleLogRegularization P' U dens ε₁ Z) [_inst14 : IsFiniteMeasure (logRegularizationReference U dens)]
+
+include Ω Ω' _inst1 _inst2 P P' _inst5 _inst6 U dens ε₀ ε₁ Y Z hY hZ _inst14 in
 /-- Equal field laws at the cutoff imply equal finite vectors of admissible chaos test masses.
 The normalization variances are equal by the same field-law hypothesis. -/
 theorem admissibleLogChaos_cutoff_vector_law_of_fdd
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') [IsProbabilityMeasure P] [IsProbabilityMeasure P']
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ) (Z : Ω' → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (hZ : IsAdmissibleLogRegularization P' U dens ε₁ Z)
-    [IsFiniteMeasure (logRegularizationReference U dens)]
+
     {m : ℕ} (f : Fin m → BoundedContinuousFunction ℂ ℝ)
     (hfc : ∀ j, HasCompactSupport (f j : ℂ → ℝ))
     (hfU : ∀ j, tsupport (f j : ℂ → ℝ) ⊆ U)
@@ -57,21 +54,17 @@ theorem admissibleLogChaos_cutoff_vector_law_of_fdd
   let z : Fin m → ℂ → ℝ → ℝ := fun j x t => f j x *
     Real.exp (γ * t - γ ^ 2 / 2 * variance x)
   have hz j : Measurable (fun p : ℂ × ℝ => z j p.1 p.2) := by
-    dsimp [z]
-    exact ((f j).continuous.measurable.comp measurable_fst).mul
-      ((measurable_const.mul measurable_snd).sub
-        (measurable_const.mul (hvariance.comp measurable_fst))).exp
-  have hiY j : ∀ᵐ ω ∂P, Integrable (fun x => z j x (Y ω ε x)) (ν : Measure ℂ) := by
-    exact admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY
+    fun_prop (disch := positivity)
+  have hiY j : ∀ᵐ ω ∂P, Integrable (fun x => z j x (Y ω ε x)) (ν : Measure ℂ) := admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY
       (tsupport (f j : ℂ → ℝ)) (hfc j) (hfU j) γ r hrY ‖f j‖ (f j)
       (f j).continuous.measurable
-      (fun x => by simpa only [← Real.norm_eq_abs] using (f j).norm_coe_le_norm x)
+      (fun x => (f j).norm_coe_le_norm x)
       (fun x hx => image_eq_zero_of_notMem_tsupport hx)
   have hiZ j : ∀ᵐ ω ∂P', Integrable (fun x => z j x (Z ω ε x)) (ν : Measure ℂ) := by
     have ht := admissibleCutoff_integrand_integrable_ae P' U dens ε₁ Z hZ
       (tsupport (f j : ℂ → ℝ)) (hfc j) (hfU j) γ r hrZ ‖f j‖ (f j)
       (f j).continuous.measurable
-      (fun x => by simpa only [← Real.norm_eq_abs] using (f j).norm_coe_le_norm x)
+      (fun x => (f j).norm_coe_le_norm x)
       (fun x hx => image_eq_zero_of_notMem_tsupport hx)
     simpa only [z, variance, hv, ε, ν, FiniteMeasure.toMeasure_mk] using ht
   have ht := spatialIntegral_vector_law_of_fdd_finite ν
@@ -79,16 +72,11 @@ theorem admissibleLogChaos_cutoff_vector_law_of_fdd
     (hY.measurableAtScale ε) (hZ.measurableAtScale ε) hz hiY hiZ hfdd
   simpa only [z, variance, ν, ε, FiniteMeasure.toMeasure_mk, regularizedLogChaosTestMass, hv] using ht
 
+include Ω Ω' _inst1 _inst2 P P' _inst5 _inst6 U dens ε₀ ε₁ Y Z hY hZ _inst14 in
 /-- Equal finite-dimensional laws of admissible fields pass to finite vectors of their
 limiting chaos test integrals. -/
 theorem admissibleLogChaos_limit_vector_law_of_fdd
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') [IsProbabilityMeasure P] [IsProbabilityMeasure P']
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ) (Z : Ω' → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (hZ : IsAdmissibleLogRegularization P' U dens ε₁ Z)
-    [IsFiniteMeasure (logRegularizationReference U dens)]
+
     (γ : ℝ) (M : Ω → Measure ℂ) (N : Ω' → Measure ℂ)
     (hM : IsAdmissibleGMCVersion P U dens Y γ M)
     (hN : IsAdmissibleGMCVersion P' U dens Z γ N)
@@ -99,9 +87,9 @@ theorem admissibleLogChaos_limit_vector_law_of_fdd
     (hfU : ∀ j, tsupport (f j : ℂ → ℝ) ⊆ U) :
     P.map (fun ω j => ∫ x, f j x ∂M ω) = P'.map (fun ω j => ∫ x, f j x ∂N ω) := by
   have hT : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop := tendsto_natCast_atTop_atTop
-  have heps : Tendsto (fun n : ℕ => Real.exp (-(n : ℝ))) atTop (𝓝 (0 : ℝ)) :=
+  have heps  :=
     Real.tendsto_exp_neg_atTop_nhds_zero.comp hT
-  have hmin : 0 < min ε₀ ε₁ := lt_min hY.cutoffPositive hZ.cutoffPositive
+  have hmin  := lt_min hY.cutoffPositive hZ.cutoffPositive
   obtain ⟨L, hL⟩ := eventually_atTop.mp (heps.eventually (gt_mem_nhds hmin))
   let t : ℕ → ℝ := fun n => ((L + n : ℕ) : ℝ)
   have ht : Tendsto t atTop atTop := by
@@ -115,10 +103,8 @@ theorem admissibleLogChaos_limit_vector_law_of_fdd
     (fun n ω j => regularizedLogChaosTestMass P U dens Y γ (t n) ω (f j))
     (fun n ω j => regularizedLogChaosTestMass P' U dens Z γ (t n) ω (f j))
     (fun ω j => ∫ x, f j x ∂M ω) (fun ω j => ∫ x, f j x ∂N ω)
-  · intro n
-    exact (measurable_pi_iff.mpr (fun j => hmY (t n) j)).aemeasurable
-  · intro n
-    exact (measurable_pi_iff.mpr (fun j => hmZ (t n) j)).aemeasurable
+  · fun_prop (disch := positivity)
+  · fun_prop (disch := positivity)
   · apply AEMeasurable.of_eval
     intro j
     exact ((hM.2.2.2 (f j) (hfc j) (hfU j)).aestronglyMeasurable

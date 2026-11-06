@@ -7,6 +7,7 @@ module
 public import DOZZ.ShiftEquations.Mobius.RepinPotential
 public import DOZZ.Statements.Defs.RegularizedGMC
 import DOZZ.ShiftEquations.Mobius.AffinePush
+import Mathlib.Tactic
 
 /-!
 # The chaos of the repinned field
@@ -53,8 +54,7 @@ theorem repinWeight_pos (a b : ℂ) (ha : a ≠ 0) (x : ℂ) : 0 < repinWeight a
   unfold repinWeight
   have := normPlus_pos' (affineInv a b x)
   have := normPlus_pos' x
-  have : 0 < ‖a‖ := norm_pos_iff.mpr ha
-  positivity
+  simp_all
 
 theorem continuous_repinWeight (a b : ℂ) (ha : a ≠ 0) : Continuous (repinWeight a b) := by
   unfold repinWeight
@@ -66,13 +66,12 @@ theorem continuous_repinWeight (a b : ℂ) (ha : a ≠ 0) : Continuous (repinWei
       continuous_const
   exact h1.div h2 fun x => by
     have := normPlus_pos' x
-    have : 0 < ‖a‖ := norm_pos_iff.mpr ha
-    positivity
+    continuity
 
 /-- The background ratio is bounded. -/
 theorem repinWeight_le (a b : ℂ) (ha : a ≠ 0) (x : ℂ) :
     repinWeight a b x ≤ (‖a‖ + ‖b‖ + 1) ^ (4 : ℝ) / ‖a‖ ^ 2 := by
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
+  have hapos  := norm_pos_iff.mpr ha
   have hy := normPlus_pos' (affineInv a b x)
   have hx := normPlus_pos' x
   have hcmp : normPlus x ≤ (‖a‖ + ‖b‖ + 1) * normPlus (affineInv a b x) := by
@@ -116,7 +115,7 @@ theorem integral_sub_sq_eq {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U
 theorem measurable_integral_sq_section {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     [SFinite P] (Y : Ω → ℂ → ℝ) (hY : Measurable fun p : Ω × ℂ => Y p.1 p.2) :
     Measurable fun x => ∫ ω, Y ω x ^ 2 ∂P := by
-  have hq : Measurable (fun p : ℂ × Ω => Y p.2 p.1 ^ 2) :=
+  have hq  :=
     (hY.comp measurable_swap).pow_const 2
   exact hq.stronglyMeasurable.integral_prod_right.measurable
 
@@ -129,7 +128,7 @@ theorem integral_regularizedGMC_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measur
         normPlus x ^ (-4 : ℝ) * f x := by
   have hsec : Measurable fun x => Xc ω x r := hmeas.comp (measurable_const.prodMk measurable_id)
   have hV := measurable_integral_sq_section P (fun ω x => Xc ω x r) hmeas
-  have hn : Measurable normPlus := continuous_normPlus'.measurable
+  have hn  := continuous_normPlus'.measurable
   unfold regularizedGMC
   rw [integral_withDensity_eq_integral_toReal_smul (by fun_prop)
     (ae_of_all _ fun _ => ENNReal.ofReal_lt_top)]
@@ -162,8 +161,7 @@ theorem integral_regularizedGMC_repinCircle {Ω : Type*} [MeasurableSpace Ω] (P
     integral_regularizedGMC_eq P Xc γ _ (hmeas _) ω]
   have hcv : ∀ G : ℂ → ℝ, ∫ x, G x = ‖a‖ ^ 2 * ∫ y, G (a * y + b) := fun G => by
     rw [affinePush_integral_comp a b ha G]
-    have : ‖a‖ ^ 2 ≠ 0 := by positivity
-    field_simp
+    simp_all
   conv_rhs => rw [hcv, ← mul_assoc, ← integral_const_mul]
   congr 1
   funext y
@@ -172,7 +170,7 @@ theorem integral_regularizedGMC_repinCircle {Ω : Type*} [MeasurableSpace Ω] (P
   unfold repinWeight
   rw [affineInv_affine a b ha y]
   have hp1 : 0 < normPlus (a * y + b) ^ (-4 : ℝ) := Real.rpow_pos_of_pos (normPlus_pos' _) _
-  have ha2 : 0 < ‖a‖ ^ 2 := by have := norm_pos_iff.mpr ha; positivity
+  
   set V := ∫ ω', Xc ω' (a * y + b) (r - Real.log ‖a‖) ^ 2 ∂P
   set C := ∫ ω', Xc ω' (a * y + b) (r - Real.log ‖a‖) * L ω' ∂P
   set VL := ∫ ω', L ω' ^ 2 ∂P
@@ -181,14 +179,18 @@ theorem integral_regularizedGMC_repinCircle {Ω : Type*} [MeasurableSpace Ω] (P
         γ ^ 2 * C by ring, Real.exp_add, Real.exp_add]
   field_simp
 
+variable {Ω : Type*} (M : Ω → Measure ℂ) (L : Ω → ℝ) (a b : ℂ)
+
+include Ω M L a b in
 /-- **The repinned chaos** `ψ⁻¹_*(M e^{-γ L - γ² V/2 + γ² c} w)`. -/
-noncomputable def repinChaos {Ω : Type*} (M : Ω → Measure ℂ) (L : Ω → ℝ) (a b : ℂ) (γ V : ℝ)
+noncomputable def repinChaos  (γ V : ℝ)
     (ω : Ω) : Measure ℂ :=
   ((M ω).withDensity fun x => ENNReal.ofReal (Real.exp (-γ * L ω - γ ^ 2 / 2 * V +
     γ ^ 2 * repinPotential a b x) * repinWeight a b x)).map (affineInv a b)
 
+include Ω M L a b in
 /-- Integrals against the repinned chaos. -/
-theorem integral_repinChaos {Ω : Type*} (M : Ω → Measure ℂ) (L : Ω → ℝ) (a b : ℂ)
+theorem integral_repinChaos 
     (ha : a ≠ 0) (γ V : ℝ) (ω : Ω) {f : ℂ → ℝ} (hf : Continuous f) :
     ∫ y, f y ∂repinChaos M L a b γ V ω =
       Real.exp (-γ * L ω - γ ^ 2 / 2 * V) *
@@ -206,8 +208,9 @@ theorem integral_repinChaos {Ω : Type*} (M : Ω → Measure ℂ) (L : Ω → �
     smul_eq_mul, Real.exp_add]
   ring
 
+include Ω M L a b in
 /-- The repinned chaos of a finite measure is finite. -/
-theorem isFiniteMeasure_repinChaos {Ω : Type*} (M : Ω → Measure ℂ) (L : Ω → ℝ) (a b : ℂ)
+theorem isFiniteMeasure_repinChaos 
     (ha : a ≠ 0) (γ V : ℝ) (ω : Ω) [IsFiniteMeasure (M ω)] :
     IsFiniteMeasure (repinChaos M L a b γ V ω) := by
   obtain ⟨C, hC⟩ := exists_abs_repinPotential_le a b ha
@@ -222,7 +225,7 @@ theorem isFiniteMeasure_repinChaos {Ω : Type*} (M : Ω → Measure ℂ) (L : Ω
     refine mul_le_mul (Real.exp_le_exp.mpr ?_) (repinWeight_le a b ha x)
       (repinWeight_pos a b ha x).le (Real.exp_pos _).le
     have h1 := le_abs_self (-γ * L ω - γ ^ 2 / 2 * V)
-    have h2 : γ ^ 2 * repinPotential a b x ≤ γ ^ 2 * C :=
+    have h2  :=
       mul_le_mul_of_nonneg_left ((le_abs_self _).trans (hC x)) (sq_nonneg γ)
     linarith
   infer_instance

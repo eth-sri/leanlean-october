@@ -16,7 +16,7 @@ gives `‖z‖/r = ‖z‖^ξ`, with `r = ‖z‖^(1-ξ)`. The inequalities `hfr
 rates little-o of `‖z‖^κ`. No estimate requires `ξ < 1/2`.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -51,11 +51,10 @@ theorem gammaHalf_reflected_outer_littleO {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨hr, hr₁, hz₁, hsep, hrε⟩ := hz
   have hdel := hdb (‖z‖ ^ (1 - ξ)) hr hrε
   have hmov := hmb z ξ hr hr₁ hz₁ hsep
-  have hnz : 0 < ‖z‖ := norm_pos_iff.mpr hz0
+  have hnz  := norm_pos_iff.mpr hz0
   have he : ‖z‖ / ‖z‖ ^ (1 - ξ) = ‖z‖ ^ ξ := by
     have hh := Real.rpow_sub hnz 1 (1 - ξ)
-    rw [Real.rpow_one, show (1 : ℝ) - (1 - ξ) = ξ by ring] at hh
-    exact hh.symm
+    simp_all
   rw [he] at hmov
   rw [Complex.norm_real, Real.norm_eq_abs]
   calc

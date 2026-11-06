@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import Mathlib.Probability.Distributions.Gaussian.Real
+import Mathlib.Tactic
 
 /-! # Splitting Gaussian averages of antitone functions
 
@@ -14,7 +15,7 @@ shift `γ w` is at least `-u`, and antitonicity compares `f (y + γ w)` with `f 
 this twice, together with the elementary bound `(s + t)^2 ≤ (1 + 1/ε) s^2 + (1 + ε) t^2`, controls
 two nested Gaussian averages of `f`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -45,16 +46,24 @@ theorem gaussianSplit_measurableSet_tail (γ u : ℝ) : MeasurableSet {w : ℝ |
 
 /-! ### The inner average -/
 
+variable (f : ℝ → ℝ) (hf : Antitone f) (hf0 : ∀ y, 0 ≤ f y) (hf1 : ∀ y, f y ≤ 1)
+
+variable (γ : ℝ) (v : ℝ≥0)
+
+include γ v in
+include γ v in
+include γ v in
+include γ v in
+include f hf hf0 hf1 in
 /-- The integrand of the inner Gaussian average is integrable. -/
-theorem gaussianSplit_integrable_shift (f : ℝ → ℝ) (hf : Antitone f) (hf0 : ∀ y, 0 ≤ f y)
-    (hf1 : ∀ y, f y ≤ 1) (γ : ℝ) (v : ℝ≥0) (y : ℝ) :
+theorem gaussianSplit_integrable_shift   (y : ℝ) :
     Integrable (fun w => f (y + γ * w)) (gaussianReal 0 v) :=
   gaussianSplit_integrable_of_bounds (hf.measurable.comp (by fun_prop)) (fun _ => hf0 _)
     (fun _ => hf1 _)
 
+include f hf hf0 hf1 in
 /-- Pointwise splitting: `f (y + γ w) ≤ 1_{γ w < -u} + f (y - u)`. -/
-theorem gaussianSplit_pointwise (f : ℝ → ℝ) (hf : Antitone f) (hf0 : ∀ y, 0 ≤ f y)
-    (hf1 : ∀ y, f y ≤ 1) (γ u y w : ℝ) :
+theorem gaussianSplit_pointwise  (γ u y w : ℝ) :
     f (y + γ * w) ≤ {w : ℝ | γ * w < -u}.indicator 1 w + f (y - u) := by
   by_cases hw : γ * w < -u
   · have hmem : w ∈ {w : ℝ | γ * w < -u} := hw
@@ -73,26 +82,26 @@ theorem gaussianSplit_inner_nonneg (f : ℝ → ℝ) (hf0 : ∀ y, 0 ≤ f y) (�
     (y : ℝ) : 0 ≤ ∫ w, f (y + γ * w) ∂gaussianReal 0 v :=
   integral_nonneg fun _ => hf0 _
 
+include f hf hf0 hf1
 /-- The inner Gaussian average is at most one. -/
-theorem gaussianSplit_inner_le_one (f : ℝ → ℝ) (hf : Antitone f) (hf0 : ∀ y, 0 ≤ f y)
-    (hf1 : ∀ y, f y ≤ 1) (γ : ℝ) (v : ℝ≥0) (y : ℝ) :
+theorem gaussianSplit_inner_le_one   (y : ℝ) :
     ∫ w, f (y + γ * w) ∂gaussianReal 0 v ≤ 1 := by
   calc ∫ w, f (y + γ * w) ∂gaussianReal 0 v ≤ ∫ _w, (1 : ℝ) ∂gaussianReal 0 v :=
         integral_mono (gaussianSplit_integrable_shift f hf hf0 hf1 γ v y) (integrable_const _)
           fun _ => hf1 _
     _ = 1 := by simp
 
+
 /-- The inner Gaussian average is antitone in the base point. -/
-theorem gaussianSplit_inner_antitone (f : ℝ → ℝ) (hf : Antitone f) (hf0 : ∀ y, 0 ≤ f y)
-    (hf1 : ∀ y, f y ≤ 1) (γ : ℝ) (v : ℝ≥0) :
+theorem gaussianSplit_inner_antitone   :
     Antitone fun y => ∫ w, f (y + γ * w) ∂gaussianReal 0 v := by
   intro y₁ y₂ h
   exact integral_mono (gaussianSplit_integrable_shift f hf hf0 hf1 γ v y₂)
     (gaussianSplit_integrable_shift f hf hf0 hf1 γ v y₁) fun w => hf (by linarith)
 
+
 /-- The inner Gaussian average is at most the lower-tail probability plus `f (y - u)`. -/
-theorem gaussianSplit_inner_le (f : ℝ → ℝ) (hf : Antitone f) (hf0 : ∀ y, 0 ≤ f y)
-    (hf1 : ∀ y, f y ≤ 1) (γ : ℝ) (v : ℝ≥0) (u y : ℝ) :
+theorem gaussianSplit_inner_le   (u y : ℝ) :
     ∫ w, f (y + γ * w) ∂gaussianReal 0 v ≤
       (gaussianReal 0 v {w | γ * w < -u}).toReal + f (y - u) := by
   have hB := gaussianSplit_measurableSet_tail γ u
@@ -105,6 +114,8 @@ theorem gaussianSplit_inner_le (f : ℝ → ℝ) (hf : Antitone f) (hf0 : ∀ y,
     _ = (gaussianReal 0 v {w | γ * w < -u}).toReal + f (y - u) := by
         rw [integral_add hind (integrable_const _), integral_indicator_one hB, integral_const]
         simp [Measure.real]
+omit f hf hf0 hf1
+
 
 /-! ### The outer average -/
 
@@ -130,9 +141,9 @@ theorem gaussianSplit_sq_pointwise (ψ : ℝ → ℝ) (hψa : Antitone ψ) (hψ0
       _ ≤ (1 + 1 / ε) * P ^ 2 + (1 + ε) * F ^ 2 := gaussianSplit_sq_add_le P F ε hε
       _ = (1 + ε) * F ^ 2 + (1 + 1 / ε) * P ^ 2 := by ring
 
+include f hf hf0 hf1 in
 /-- Pointwise bound for the squared inner average at the base point `x + a + γ ξ`. -/
-theorem gaussianSplit_outer_pointwise (f : ℝ → ℝ) (hf : Antitone f) (hf0 : ∀ y, 0 ≤ f y)
-    (hf1 : ∀ y, f y ≤ 1) (γ : ℝ) (v₂ : ℝ≥0) (x a u ε : ℝ) (hε : 0 < ε) (ξ : ℝ) :
+theorem gaussianSplit_outer_pointwise  (γ : ℝ) (v₂ : ℝ≥0) (x a u ε : ℝ) (hε : 0 < ε) (ξ : ℝ) :
     (∫ w, f (x + a + γ * ξ + γ * w) ∂gaussianReal 0 v₂) ^ 2 ≤
       {ξ : ℝ | γ * ξ < -u}.indicator 1 ξ +
         ((1 + ε) * f (x + a - 2 * u) ^ 2 +
@@ -140,25 +151,24 @@ theorem gaussianSplit_outer_pointwise (f : ℝ → ℝ) (hf : Antitone f) (hf0 :
   have hψ : ∫ w, f (x + a - u + γ * w) ∂gaussianReal 0 v₂ ≤
       (gaussianReal 0 v₂ {w | γ * w < -u}).toReal + f (x + a - 2 * u) := by
     have h := gaussianSplit_inner_le f hf hf0 hf1 γ v₂ u (x + a - u)
-    have h2 : x + a - u - u = x + a - 2 * u := by ring
-    rwa [h2] at h
+    grind
   exact gaussianSplit_sq_pointwise (fun y => ∫ w, f (y + γ * w) ∂gaussianReal 0 v₂)
     (gaussianSplit_inner_antitone f hf hf0 hf1 γ v₂)
     (gaussianSplit_inner_nonneg f hf0 γ v₂) (gaussianSplit_inner_le_one f hf hf0 hf1 γ v₂)
     γ (x + a) u ε _ _ hε hψ ξ
 
+include f hf hf0 hf1 in
 /-- Two nested Gaussian averages of an antitone function bounded by one: away from Gaussian
 lower-tail events of size `u` in each average, the shifts are at least `-u`. -/
 theorem gaussianSplit_two_branch
-    (f : ℝ → ℝ) (hf : Antitone f) (hf0 : ∀ y, 0 ≤ f y) (hf1 : ∀ y, f y ≤ 1)
+    
     (γ : ℝ) (v₁ v₂ : ℝ≥0) (x a u ε : ℝ) (hε : 0 < ε) :
     (∫ ξ, (∫ w, f (x + a + γ * ξ + γ * w) ∂gaussianReal 0 v₂) ^ 2 ∂gaussianReal 0 v₁) ≤
       (gaussianReal 0 v₁ {ξ | γ * ξ < -u}).toReal +
         (1 + ε) * f (x + a - 2 * u) ^ 2 +
         (1 + 1 / ε) * ((gaussianReal 0 v₂ {w | γ * w < -u}).toReal) ^ 2 := by
   have hB := gaussianSplit_measurableSet_tail γ u
-  have hmeas : Measurable fun ξ : ℝ =>
-      (∫ w, f (x + a + γ * ξ + γ * w) ∂gaussianReal 0 v₂) ^ 2 :=
+  have hmeas  :=
     ((gaussianSplit_inner_antitone f hf hf0 hf1 γ v₂).measurable.comp
       (by fun_prop : Measurable fun ξ : ℝ => x + a + γ * ξ)).pow_const 2
   have hint : Integrable (fun ξ : ℝ =>

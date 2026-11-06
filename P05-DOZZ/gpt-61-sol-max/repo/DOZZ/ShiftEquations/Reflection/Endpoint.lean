@@ -38,7 +38,7 @@ theorem reflectionBarR_tendsto_one_Q {Ω : Type*} [MeasurableSpace Ω] (P : Meas
   have hdata : ∀ ν : ℝ, 0 < ν → ν < Q γ - γ / 2 →
       IsReflectionData P γ (Q γ - ν) (B (Q γ - ν)) Z := fun ν hν hν₁ =>
     hData (Q γ - ν) (by linarith) (by linarith)
-  have hZ : IsLateralGMCOf P γ Z := (hdata _ (half_pos hν₁) (half_lt_self hν₁)).2.1
+  have hZ  := (hdata _ (half_pos hν₁) (half_lt_self hν₁)).2.1
   have he : Tendsto (fun ν : ℝ => 2 * ν / γ) (𝓝[>] 0) (𝓝 0) := by
     have hc : Continuous (fun ν : ℝ => 2 * ν / γ) := by fun_prop
     simpa using (hc.tendsto 0).mono_left (nhdsWithin_le_nhds (s := Ioi (0 : ℝ)))

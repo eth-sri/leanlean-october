@@ -9,7 +9,7 @@ public import DOZZ.Complex.Identity
 
 /-! Real charge margins persist on positive complex polydiscs. -/
 
-@[expose] public section
+public section
 open Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -17,8 +17,7 @@ namespace DOZZ.Proofs
 theorem complexMomentPower_continuous {N : ℕ} (γ : ℝ) :
     Continuous (complexMomentPower (N := N) γ) := by
   unfold complexMomentPower
-  exact (continuous_const.add (continuous_const.mul
-    (continuous_finsetSum _ (fun i _ => continuous_apply i)))).neg
+  fun_prop (disch := positivity)
 
 /-- Strict real scalar margins give a complex polydisc on which all uniform-envelope bounds
 hold simultaneously. -/
@@ -39,7 +38,7 @@ theorem complex_charge_budget_neighborhood {N : ℕ} (γ : ℝ) (α : Fin N → 
   have hre (i : Fin N) : Continuous (fun β : Fin N → ℂ => (β i).re) :=
     Complex.continuous_re.comp (continuous_apply i)
   have hp := complexMomentPower_continuous (N := N) γ
-  have hpr : Continuous (fun β : Fin N → ℂ => (complexMomentPower γ β).re) :=
+  have hpr  :=
     Complex.continuous_re.comp hp
   have hU : IsOpen U := by
     rw [isOpen_iff_mem_nhds]
@@ -48,7 +47,7 @@ theorem complex_charge_budget_neighborhood {N : ℕ} (γ : ℝ) (α : Fin N → 
       eventually_all.mpr (fun i => (hre i).abs.continuousAt.eventually_lt_const (hβ.1 i))
     have h2 : ∀ᶠ v in 𝓝 β, ∀ i, (v i).re < a :=
       eventually_all.mpr (fun i => (hre i).continuousAt.eventually_lt_const (hβ.2.1 i))
-    have h3 : ∀ᶠ v in 𝓝 β, lo < (complexMomentPower γ v).re - 1 :=
+    have h3  :=
       continuousAt_const.eventually_lt
         (show ContinuousAt (fun v => (complexMomentPower γ v).re - 1) β from
           by fun_prop) hβ.2.2.1
@@ -62,9 +61,7 @@ theorem complex_charge_budget_neighborhood {N : ℕ} (γ : ℝ) (α : Fin N → 
     exact ⟨hA, ha, hlo, hhi, hb⟩
   obtain ⟨R, hR, _, hsub⟩ := exists_closed_polydisc_subset_open U hU _ hc
   refine ⟨R, hR, fun β hβ => ?_⟩
-  have hv := hsub hβ
-  exact ⟨fun i => (hv.1 i).le, fun i => (hv.2.1 i).le,
-    hv.2.2.1.le, hv.2.2.2.1.le, hv.2.2.2.2.le⟩
+  grind
 
 /-- A real-centered polydisc contains a smaller positive polydisc with arbitrarily small
 squared imaginary-charge size. -/
@@ -81,6 +78,6 @@ theorem polydisc_thin_imaginary {N : ℕ} (α R : Fin N → ℝ)
   have hc : (fun i => (α i : ℂ)) ∈ U :=
     ⟨mem_complexPolydisc_center _ R hR, by simpa using hd⟩
   obtain ⟨S, hS, _, hsub⟩ := exists_closed_polydisc_subset_open U hU _ hc
-  exact ⟨S, hS, fun _ h => (hsub h).1, fun _ h => (hsub h).2.le⟩
+  grind
 
 end DOZZ.Proofs

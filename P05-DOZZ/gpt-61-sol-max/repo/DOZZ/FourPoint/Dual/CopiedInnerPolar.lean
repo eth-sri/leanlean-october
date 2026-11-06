@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Dual.InnerPolar
 public import DOZZ.FourPoint.Reflected.CopiedInnerPolar
 import Mathlib.Tactic
 /-! The actual dual inner kernel on the independent lateral plane carrier. -/
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -34,7 +34,7 @@ theorem dual_copied_inner_mass_squeeze
   have hW : Measurable W :=
     ((reflected_global_reinsertionWeight_measurable γ).comp
       (measurable_const.prodMk measurable_id)).ennreal_ofReal
-  have hk : Measurable (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x)) :=
+  have hk  :=
     (dual_kernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   have hU : MeasurableSet {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))} :=
     (measurableSet_lt measurable_const measurable_norm).inter
@@ -60,7 +60,6 @@ theorem dual_copied_inner_mass_squeeze
     rw [← mul_assoc, ← ENNReal.ofReal_mul' (by positivity : 0 ≤ Real.exp
       (γ * (A T - (Q γ - α₁) * T))), mul_assoc]
   simp only [Pi.mul_apply] at hb
-  rw [he, he] at hb
-  simpa only [W, mul_comm] using hb
+  grind
 
 end DOZZ.Proofs

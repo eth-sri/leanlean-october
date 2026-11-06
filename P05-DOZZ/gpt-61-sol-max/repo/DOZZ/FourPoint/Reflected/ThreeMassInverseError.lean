@@ -4,8 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.FourPoint.ReflectedOuter.InverseDifference
+import Mathlib.Tactic
 /-! Removing the intermediate buffer costs its first-order retained-mass moment. -/
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -22,18 +23,18 @@ theorem reflected_three_mass_inverse_error
       p*(∫⁻ ω, B ω*O ω^(-(p+1)) ∂P).toReal := by
   let S := fun ω => I ω+O ω
   let R := fun ω => ENNReal.ofReal p*(B ω*O ω^(-(p+1)))
-  have hS : AEMeasurable S P := hI.add hO
+  have hS  := hI.add hO
   have hFinv : (∫⁻ ω, F ω^(-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top hInv.ne
     (lintegral_mono_ae (heq.mono fun ω hω => by
       rw [hω]
       exact ennreal_rpow_antitone_of_nonpos
         ((le_add_left le_rfl : O ω ≤ I ω+O ω).trans le_self_add) (neg_nonpos.mpr hp.le)))
-  have hSinv : (∫⁻ ω, S ω^(-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top hInv.ne
+  have hSinv  := ne_top_of_le_ne_top hInv.ne
     (lintegral_mono fun ω => ennreal_rpow_antitone_of_nonpos
       (le_add_left le_rfl : O ω ≤ S ω) (neg_nonpos.mpr hp.le))
   have hR : (∫⁻ ω, R ω ∂P) = ENNReal.ofReal p*(∫⁻ ω, B ω*O ω^(-(p+1)) ∂P) :=
     lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
-  have hRfin : (∫⁻ ω, R ω ∂P) ≠ ⊤ := hR ▸ ENNReal.mul_ne_top ENNReal.ofReal_ne_top hBuffer.ne
+  have hRfin  := hR ▸ ENNReal.mul_ne_top ENNReal.ofReal_ne_top hBuffer.ne
   have hFG : ∀ᵐ ω ∂P, F ω^(-p) ≤ S ω^(-p)+R ω := by
     filter_upwards [heq] with ω hω
     rw [hω]
@@ -41,8 +42,8 @@ theorem reflected_three_mass_inverse_error
       le_self_add
   have hGF : ∀ᵐ ω ∂P, S ω^(-p) ≤ F ω^(-p)+R ω := by
     filter_upwards [heq,hOf,hFf] with ω he ho hf
-    have hsfin : S ω ≠ ⊤ := ne_top_of_le_ne_top hf (he ▸ le_self_add)
-    have hbfin : B ω ≠ ⊤ := ne_top_of_le_ne_top hf (he ▸ le_add_left le_rfl)
+    have hsfin  := ne_top_of_le_ne_top hf (he ▸ le_self_add)
+    have hbfin  := ne_top_of_le_ne_top hf (he ▸ le_add_left le_rfl)
     have hsz : S ω ≠ 0 := ne_zero_of_lt (ho.trans_le (le_add_left le_rfl))
     have hb := reflected_ennreal_inverse_add_bound p hp (S ω) (B ω) hsz hsfin hbfin
     rw [← he] at hb

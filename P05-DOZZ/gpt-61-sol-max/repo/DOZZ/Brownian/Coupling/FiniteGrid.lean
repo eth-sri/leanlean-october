@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Brownian.ConditionedEntranceFiniteChain
 public import DOZZ.Brownian.Coupling.RationalExtension
+import Mathlib.Tactic
 
 /-!
 # Joint entrance chains on a shared finite uniform grid
@@ -72,8 +73,7 @@ theorem coupling_measurable_scalarAppend (ν : ℝ) (hν : 0 ≤ ν)
   have hreal := measurable_conditionedTransitionQuantileOn ν (dt n) hν (hdt n)
   have hsampler : Measurable (conditionedPositiveTransitionQuantilePairOnSubtype
       ν (dt n) hν (hdt n)) := by
-    exact hreal.subtype_mk (h := fun z =>
-      conditionedPositiveTransitionQuantile_pos hν (hdt n) z.1.2 z.2.2.1 z.2.2.2)
+    exact measurable_comap_iff.mpr hreal
   have hstep : Measurable (fun z : ConditionedEntranceGridPath n × ConditionedUnitInput =>
       conditionedPositiveEntranceGridStep ν dt hν hdt n z.1 z.2) :=
     hsampler.comp (((measurable_pi_apply (Fin.last n)).comp measurable_fst).prodMk
@@ -95,8 +95,7 @@ theorem coupling_measurable_scalarAppend (ν : ℝ) (hν : 0 ≤ ν)
           (fun z => z.1 i) := by
         funext z
         exact conditionedPositiveEntranceGridAppend_castSucc ν dt hν hdt n z i
-      rw [heq]
-      exact (measurable_pi_apply i).comp measurable_fst
+      measurability
 
 theorem measurable_coupledEntranceGridAppend {J : Type*}
     (v : J → ℝ≥0) (dt : ℕ → ℝ) (hdt : ∀ n, 0 < dt n) (n : ℕ) :
@@ -125,7 +124,6 @@ theorem coupledEntranceGridMeasure_isProbabilityMeasure {J : Type*}
       exact (Measure.isProbabilityMeasure_map_iff
         (measurable_coupledEntranceGridInitial v t₀ ht₀).aemeasurable).mpr inferInstance
   | succ n ih =>
-      let _ := ih
       exact (Measure.isProbabilityMeasure_map_iff
         (measurable_coupledEntranceGridAppend v dt hdt n).aemeasurable).mpr inferInstance
 
@@ -144,7 +142,7 @@ theorem coupledEntranceGridMeasure_coordinate_map {J : Type*}
   | succ n ih =>
       let μ := coupledEntranceGridMeasure v t₀ dt ht₀ hdt n
       let U : Measure ConditionedUnitInput := volume
-      let _ : IsProbabilityMeasure μ :=
+      let _  :=
         coupledEntranceGridMeasure_isProbabilityMeasure v t₀ dt ht₀ hdt n
       have hm : Measurable (fun z : CoupledEntranceGridPath J n × ConditionedUnitInput =>
           (z.1 j, z.2)) := ((measurable_pi_apply j).comp measurable_fst).prodMk measurable_snd
@@ -165,10 +163,7 @@ theorem coupledEntranceGridMeasure_coordinate_map {J : Type*}
         (conditionedPositiveEntranceGridAppend (v j) dt (NNReal.coe_nonneg (v j)) hdt n ∘
           (fun z => (z.1 j, z.2))) = _
       rw [← Measure.map_map happend hm, hprod]
-      change ((coupledEntranceGridMeasure v t₀ dt ht₀ hdt n).map (fun x => x j) |>.prod U).map
-        (conditionedPositiveEntranceGridAppend (v j) dt (NNReal.coe_nonneg (v j)) hdt n) = _
-      rw [ih]
-      rfl
+      aesop
 
 /-- Elapsed time at a grid coordinate, including the first entrance sampling time. -/
 def coupledEntranceGridTime (t₀ : ℝ) (dt : ℕ → ℝ) (n : ℕ) : ℝ :=
@@ -210,7 +205,7 @@ theorem coupledEntranceGridInitial_mem_orderSet {J : Type*}
     (v : J → ℝ≥0) (t₀ : ℝ) (dt : ℕ → ℝ) (ht₀ : 0 < t₀) (u : ConditionedUnitInput) :
     coupledEntranceGridInitial v t₀ ht₀ u ∈ coupledEntranceGridOrderSet v t₀ dt 0 := by
   intro j k hjk i
-  have hij : (v j : ℝ) ≤ (v k : ℝ) := hjk
+  have hij  := hjk
   have hle := conditionedPositiveEntranceQuantile_drift_le (NNReal.coe_nonneg (v j)) hij ht₀ u.2.1 u.2.2
   have hadd := conditionedPositiveEntranceQuantile_drift_add (NNReal.coe_nonneg (v j)) hij ht₀ u.2.1 u.2.2
   change cdfGeneralizedQuantile (cdf (conditionedPositiveEntranceMeasure (v j) t₀)) u.1 ≤
@@ -260,9 +255,7 @@ theorem coupledEntranceGridAppend_mem_orderSet {J : Type*}
           conditionedTransitionQuantile (v j) (dt n) (x j (Fin.last n)).1 u.1 +
             ((v k : ℝ) - (v j : ℝ)) * coupledEntranceGridTime t₀ dt (n + 1)
       rw [coupledEntranceGridTime_succ]
-      refine ⟨hloDrift.trans hloStart, ?_⟩
-      simp only [Fin.val_last] at hprev
-      nlinarith [hprev.2]
+      grind
 
 /-- One common full-probability event carries every drift pair and every finite grid coordinate. -/
 theorem coupledEntranceGridMeasure_order_ae {J : Type*} [Countable J]

@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Analytic.RetainedRegions
 
 /-! A fixed exterior disk supplies all negative moments of retained Coulomb masses. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -30,7 +30,7 @@ theorem exterior_ball_subset_retainedRegion
   rw [hc] at hupper
   refine ⟨by linarith, fun i => ?_⟩
   have hi := norm_sub_norm_le x (z i)
-  have he : Real.exp (-r) ≤ 1 := Real.exp_le_one_iff.mpr (neg_nonpos.mpr hr)
+  have he  := Real.exp_le_one_iff.mpr (neg_nonpos.mpr hr)
   linarith [hz i]
 
 /-- The fixed-disk lower bound persists after restricting to a retained region containing that

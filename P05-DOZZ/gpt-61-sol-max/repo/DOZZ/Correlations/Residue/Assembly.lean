@@ -11,7 +11,7 @@ import DOZZ.Statements.Correlations.OneInsertionTailUniform
 ([KRV, Proposition 8.1]) and `DOZZ.unitVolumeStructureConstant_threeToTwo_residue_bridge`
 ([KRV, Remark 8.2]), on their full domain (erratum K30, see docs/ERRATA-AND-DEVIATIONS.md). -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -27,8 +27,7 @@ theorem unitVolumeStructureConstant_threeToTwo_residue_bridge
       Tendsto (fun ε : ℝ => ε * unitVolumeStructureConstant P M γ
           (α3 - α2 + ε) α2 α3) (𝓝[>] 0)
         (𝓝 (bridgeMultiplicity α2 α3 * reflectionExponent γ α3 *
-          reflectionBarR P γ α3 (B α3) Z)) := by
-  exact residue_unitVolume_bridge_of_oneInsertion_tail P X M γ α2 α3 hγ hγ2 hα hX hM
+          reflectionBarR P γ α3 (B α3) Z)) := residue_unitVolume_bridge_of_oneInsertion_tail P X M γ α2 α3 hγ hγ2 hα hX hM
     (DOZZ.oneInsertion_tail_uniform P X M γ hγ hγ2 hX hM)
 
 end DOZZ.Proofs

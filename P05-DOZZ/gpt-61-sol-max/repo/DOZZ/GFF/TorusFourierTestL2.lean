@@ -7,6 +7,7 @@ module
 public import DOZZ.GFF.TorusFourierTestPullback
 public import DOZZ.GFF.LocalEnergyBound
 import Mathlib.MeasureTheory.Function.L2Space
+import Mathlib.Tactic
 
 /-!
 # DOZZ.GFF.TorusFourierTestL2
@@ -53,11 +54,7 @@ theorem ae_torusRealFourierTerm_apply (L : ℝ) (f : TestFn) (k : Fin 2 → ℤ)
         Complex.reCLM ((c • UnitAddTorus.mFourierLp 2 k) t) := hreal
     _ = c.re * (UnitAddTorus.mFourier k t).re -
         c.im * (UnitAddTorus.mFourier k t).im := by
-      change Complex.re ((c • UnitAddTorus.mFourierLp 2 k) t) = _
-      rw [hsmul]
-      simp only [Pi.smul_apply, smul_eq_mul]
-      rw [hchar]
-      simp [c, Complex.mul_re]
+      simp_all
 
 /-- The finite real Fourier sum is represented by the corresponding finite sum of real characters. -/
 theorem ae_torusRealFourierPartialSum_apply (L : ℝ) (f : TestFn)
@@ -77,10 +74,8 @@ theorem ae_torusRealFourierPartialSum_apply (L : ℝ) (f : TestFn)
             (UnitAddTorus.mFourier k t).re -
           (UnitAddTorus.mFourierCoeff (torusPeriodizationLp L f) k).im *
             (UnitAddTorus.mFourier k t).im) := by
-    apply Finset.sum_congr rfl
-    intro k hk
-    exact hterm k
-  simpa [torusRealFourierPartialSum] using hsum.trans hterms
+    simp_all
+  exact hsum.trans hterms
 
 /-- The real part of the periodized test agrees with the original test on the representative
 physical box. -/
@@ -93,12 +88,13 @@ theorem ae_torusFourierRealPart_periodization (L : ℝ) (f : TestFn) :
     (memLp_torusPeriodizationFunction L f).coeFn_toLp] with t hreal hperiod
   change torusFourierRealPartCLM (torusPeriodizationLp L f) t = _ at hreal
   change torusPeriodizationLp L f t = torusPeriodizationFunction L f t at hperiod
-  rw [hreal, hperiod]
-  simp [torusPeriodizationFunction, Complex.reCLM_apply]
+  continuity
 
+variable (R L : ℝ) (hR : 0 < R) (hL : 0 < L)
+
+include R L hR hL in
 /-- The local cutoff Fourier test pulls back to the cutoff times the real Fourier partial sum. -/
-theorem equatorLocalFourierPartialTest_torusBoxPoint (R L : ℝ) (hR : 0 < R)
-    (hL : 0 < L) (f : TestFn) (s : Finset (Fin 2 → ℤ)) (t : GFFUnitTorus2) :
+theorem equatorLocalFourierPartialTest_torusBoxPoint  (f : TestFn) (s : Finset (Fin 2 → ℤ)) (t : GFFUnitTorus2) :
     equatorLocalFourierPartialTest R L hR f s (torusBoxPoint L t) =
       localTorusCutoff R hR (torusBoxPoint L t) *
         s.sum fun k =>
@@ -110,9 +106,7 @@ theorem equatorLocalFourierPartialTest_torusBoxPoint (R L : ℝ) (hR : 0 < R)
   simp_rw [localTorusCosTest_torusBoxPoint R L hR hL,
     localTorusSinTest_torusBoxPoint R L hR hL]
   rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro k hk
-  ring
+  field_simp
 
 /-- The local cutoff acts as the identity on a test supported in its inner ball. -/
 theorem localTorusCutoff_mul_eq_of_support (R : ℝ) (hR : 0 < R) (f : TestFn)
@@ -135,10 +129,7 @@ theorem integral_sq_eq_Lp_norm_sq {α : Type*} [MeasurableSpace α] {μ : Measur
     (∫ x, u x ^ 2 ∂μ) = ‖u‖ ^ 2 := by
   calc
     (∫ x, u x ^ 2 ∂μ) = ∫ x, ⟪u x, u x⟫_ℝ ∂μ := by
-      apply integral_congr_ae
-      filter_upwards [] with x
-      rw [inner_self_eq_norm_sq_to_K]
-      simp [Real.norm_eq_abs, sq_abs]
+      simp_all
     _ = ⟪u, u⟫_ℝ := (MeasureTheory.L2.inner_def u u).symm
     _ = ‖u‖ ^ 2 := by simp [inner_self_eq_norm_sq_to_K]
 
@@ -154,22 +145,21 @@ theorem equatorLocalFourierPartialTest_sub_support_subset (R L : ℝ)
     simpa [mem_ball] using hz
   have hcut : localTorusCutoff R hR z = 0 := by
     apply (localTorusCutoff R hR).zero_of_le_dist
-    simpa [localTorusCutoff] using hdist
+    exact hdist
   have hpartial : equatorLocalFourierPartialTest R L hR f s z = 0 := by
     rw [equatorLocalFourierPartialTest_apply]
-    simp [localTorusCosTest_apply, localTorusSinTest_apply, hcut]
+    simp_all
   have hinner : z ∉ ball (0 : ℂ) (R - 1) := by
     intro hin
     exact hz (ball_subset_ball (by linarith) hin)
   have hfz : f z = 0 := by
     by_contra hne
-    exact hinner (hsupp (Function.mem_support.mpr hne))
-  change equatorLocalFourierPartialTest R L hR f s z - f z = 0
-  simp [hpartial, hfz]
+    simp_all
+  simp_all
 
+include R L hR hL in
 /-- The `L²` error of the cutoff Fourier test is bounded by the torus Fourier error. -/
-theorem integral_sq_equatorLocalFourierPartialTest_sub_le (R L : ℝ)
-    (hR : 0 < R) (hL : 0 < L) (hbox : L / 2 = R + 2)
+theorem integral_sq_equatorLocalFourierPartialTest_sub_le  (hbox : L / 2 = R + 2)
     (f : TestFn) (s : Finset (Fin 2 → ℤ))
     (hsupp : Function.support f ⊆ ball (0 : ℂ) (R - 1)) :
     (∫ z : ℂ,
@@ -177,9 +167,8 @@ theorem integral_sq_equatorLocalFourierPartialTest_sub_le (R L : ℝ)
       L ^ 2 *
         ‖torusRealFourierPartialSum L f s -
           torusFourierRealPartCLM (torusPeriodizationLp L f)‖ ^ 2 := by
-  let g : TestFn := equatorLocalFourierPartialTest R L hR f s - f
-  have hgsupp : Function.support g ⊆ ball (0 : ℂ) (R + 2) := by
-    exact equatorLocalFourierPartialTest_sub_support_subset R L hR f s hsupp
+  let g  := equatorLocalFourierPartialTest R L hR f s - f
+  have hgsupp : Function.support g ⊆ ball (0 : ℂ) (R + 2) := equatorLocalFourierPartialTest_sub_support_subset R L hR f s hsupp
   have hgsuppBox : Function.support g ⊆ ball (0 : ℂ) (L / 2) := by
     simpa [hbox] using hgsupp
   have hplane := integral_sq_eq_torusBox L hL g hgsuppBox
@@ -203,7 +192,7 @@ theorem integral_sq_equatorLocalFourierPartialTest_sub_le (R L : ℝ)
     rw [hsub]
     simp only [Pi.sub_apply]
     ring_nf
-  have hleftMeas : Measurable (fun t : GFFUnitTorus2 => g (torusBoxPoint L t)) :=
+  have hleftMeas  :=
     g.continuous.measurable.comp (measurable_torusBoxPoint L)
   have hleftBound : ∀ t : GFFUnitTorus2,
       ‖g (torusBoxPoint L t)‖ ≤ ‖(g : ℂ →ᵇ ℝ)‖ := by
@@ -214,13 +203,10 @@ theorem integral_sq_equatorLocalFourierPartialTest_sub_le (R L : ℝ)
     MemLp.of_bound hleftMeas.aestronglyMeasurable ‖(g : ℂ →ᵇ ℝ)‖
       (ae_of_all _ hleftBound)
   have hleftInt : Integrable (fun t : GFFUnitTorus2 =>
-      g (torusBoxPoint L t) ^ 2) (volume : Measure GFFUnitTorus2) := by
-    simpa [Real.norm_eq_abs, sq_abs] using hleftMem.integrable_sq
-  have herrMem : MemLp (fun t : GFFUnitTorus2 => u t) 2
-      (volume : Measure GFFUnitTorus2) := Lp.memLp u
+      g (torusBoxPoint L t) ^ 2) (volume : Measure GFFUnitTorus2) := hleftMem.integrable_sq
+  have herrMem  := Lp.memLp u
   have herrInt : Integrable (fun t : GFFUnitTorus2 => u t ^ 2)
-      (volume : Measure GFFUnitTorus2) := by
-    simpa [Real.norm_eq_abs, sq_abs] using herrMem.integrable_sq
+      (volume : Measure GFFUnitTorus2) := herrMem.integrable_sq
   have hpoint : ∀ᵐ t ∂(volume : Measure GFFUnitTorus2),
       g (torusBoxPoint L t) ^ 2 ≤ u t ^ 2 := by
     filter_upwards [hpull] with t ht
@@ -236,10 +222,7 @@ theorem integral_sq_equatorLocalFourierPartialTest_sub_le (R L : ℝ)
         rw [ht]
         ring
       _ ≤ u t ^ 2 := by
-        calc
-          localTorusCutoff R hR (torusBoxPoint L t) ^ 2 * u t ^ 2 ≤
-              1 * u t ^ 2 := mul_le_mul_of_nonneg_right hχsq (sq_nonneg (u t))
-          _ = u t ^ 2 := by ring
+        nlinarith
   have htorus : (∫ t : GFFUnitTorus2,
       g (torusBoxPoint L t) ^ 2) ≤ ‖u‖ ^ 2 := by
     calc
@@ -248,16 +231,16 @@ theorem integral_sq_equatorLocalFourierPartialTest_sub_le (R L : ℝ)
       _ = ‖u‖ ^ 2 := integral_sq_eq_Lp_norm_sq u
   calc
     (∫ z : ℂ, (equatorLocalFourierPartialTest R L hR f s z - f z) ^ 2) =
-        ∫ z : ℂ, g z ^ 2 := by rfl
+        ∫ z : ℂ, g z ^ 2 := rfl
     _ = L ^ 2 * ∫ t : GFFUnitTorus2, g (torusBoxPoint L t) ^ 2 := hplane
     _ ≤ L ^ 2 * ‖u‖ ^ 2 := mul_le_mul_of_nonneg_left htorus (sq_nonneg L)
     _ = L ^ 2 * ‖torusRealFourierPartialSum L f s -
         torusFourierRealPartCLM (torusPeriodizationLp L f)‖ ^ 2 := rfl
 
+include R L hR hL in
 /-- Applying the G4 field to the cutoff Fourier tests converges in `L²` to its value on the
 original supported test. -/
-theorem tendsto_equatorFieldL2_localFourierPartialTest (R L : ℝ)
-    (hR : 0 < R) (hL : 0 < L) (hbox : L / 2 = R + 2)
+theorem tendsto_equatorFieldL2_localFourierPartialTest  (hbox : L / 2 = R + 2)
     (f : TestFn) (hsupp : Function.support f ⊆ ball (0 : ℂ) (R - 1)) :
     Tendsto
       (fun s : Finset (Fin 2 → ℤ) =>
@@ -266,8 +249,7 @@ theorem tendsto_equatorFieldL2_localFourierPartialTest (R L : ℝ)
   let target := torusFourierRealPartCLM (torusPeriodizationLp L f)
   let err : Finset (Fin 2 → ℤ) → Lp ℝ 2 (volume : Measure GFFUnitTorus2) :=
     fun s => torusRealFourierPartialSum L f s - target
-  let F : Finset (Fin 2 → ℤ) → Lp ℝ 2
-      (GaussianFields.scaleSpaceWhiteNoiseMeasure 2) :=
+  let F  :=
     fun s => equatorFieldL2 (equatorLocalFourierPartialTest R L hR f s) -
       equatorFieldL2 f
   have herr : Tendsto err atTop (𝓝 0) := by
@@ -278,23 +260,19 @@ theorem tendsto_equatorFieldL2_localFourierPartialTest (R L : ℝ)
       (volume : Measure GFFUnitTorus2))).comp herr using 1
     · rfl
     · simp
-  let Q : ℝ :=
+  let Q  :=
     (∫ p : ℂ × ℂ in ball (0 : ℂ) (R + 2) ×ˢ ball (0 : ℂ) (R + 2),
       ‖gffKernel p.1 p.2‖ ^ 2) ^ (1 / 2 : ℝ)
   have hQ : 0 ≤ Q := by positivity
-  let K : ℝ := Q * L ^ 2
+  let K  := Q * L ^ 2
   have hK : 0 ≤ K := by dsimp [K]; positivity
   have hnormWhite (g : TestFn) :
-      ‖equatorFieldL2 g‖ = ‖equatorKernelLimitMap g‖ := by
-    change ‖GaussianFields.scaleSpaceWhiteNoiseL2 2
-      (equatorKernelLimitMap g)‖ = ‖equatorKernelLimitMap g‖
-    exact (GaussianFields.scaleSpaceWhiteNoiseL2 2).norm_map _
+      ‖equatorFieldL2 g‖ = ‖equatorKernelLimitMap g‖ := (GaussianFields.scaleSpaceWhiteNoiseL2 2).norm_map _
   have hbound : ∀ s : Finset (Fin 2 → ℤ),
       ‖F s‖ ≤ Real.sqrt K * ‖err s‖ := by
     intro s
-    let g : TestFn := equatorLocalFourierPartialTest R L hR f s - f
-    have hgsupp : Function.support g ⊆ ball (0 : ℂ) (R + 2) := by
-      exact equatorLocalFourierPartialTest_sub_support_subset R L hR f s hsupp
+    let g  := equatorLocalFourierPartialTest R L hR f s - f
+    have hgsupp : Function.support g ⊆ ball (0 : ℂ) (R + 2) := equatorLocalFourierPartialTest_sub_support_subset R L hR f s hsupp
     have hfull : (∫ z : ℂ, g z ^ 2) = ∫ z in ball (0 : ℂ) (R + 2), g z ^ 2 := by
       calc
         (∫ z : ℂ, g z ^ 2) =
@@ -305,7 +283,7 @@ theorem tendsto_equatorFieldL2_localFourierPartialTest (R L : ℝ)
           · simp [hz]
           · have hzero : g z = 0 := by
               by_contra hne
-              exact hz (hgsupp (Function.mem_support.mpr hne))
+              bound
             simp [hz, hzero]
         _ = ∫ z in ball (0 : ℂ) (R + 2), g z ^ 2 :=
           integral_indicator measurableSet_ball
@@ -329,7 +307,7 @@ theorem tendsto_equatorFieldL2_localFourierPartialTest (R L : ℝ)
           have htestL2' : L ^ 2 * ∫ t : GFFUnitTorus2,
               g (torusBoxPoint L t) ^ 2 ≤ L ^ 2 * ‖err s‖ ^ 2 := by
             rw [← hplane]
-            simpa [g, err, target] using htestL2
+            exact htestL2
           exact mul_le_mul_of_nonneg_left htestL2' hQ
         _ = K * ‖err s‖ ^ 2 := by
           dsimp [K]
@@ -350,11 +328,11 @@ theorem tendsto_equatorFieldL2_localFourierPartialTest (R L : ℝ)
   have hupper : Tendsto (fun s => Real.sqrt K * ‖err s‖) atTop (𝓝 0) := by
     simpa using (tendsto_const_nhds : Tendsto (fun _ : Finset (Fin 2 → ℤ) => Real.sqrt K)
       atTop (𝓝 (Real.sqrt K))).mul herrNorm
-  have hFNorm : Tendsto (fun s => ‖F s‖) atTop (𝓝 0) :=
+  have hFNorm  :=
     tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hupper
       (fun s => norm_nonneg (F s)) hbound
   rw [tendsto_iff_norm_sub_tendsto_zero]
-  simpa [F] using hFNorm
+  exact hFNorm
 
 end DOZZ
 

@@ -16,7 +16,7 @@ through a compact set and a bounded radius interval preserves compactness. Posit
 moments use a finite-sum estimate, without independence of the covered masses.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal Distributions

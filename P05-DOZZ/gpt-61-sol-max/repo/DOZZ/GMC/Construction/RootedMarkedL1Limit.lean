@@ -8,7 +8,7 @@ public import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-! Bounded marks preserve the L1 limit of the root mass. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal
@@ -25,8 +25,7 @@ theorem integral_bounded_mul_tendsto_of_l1
     (hL1 : Tendsto (fun n => ∫⁻ ω, ENNReal.ofReal |F n ω - G ω| ∂P) atTop (𝓝 0)) :
     Tendsto (fun n => ∫ ω, φ ω * F n ω ∂P) atTop
       (𝓝 (∫ ω, φ ω * G ω ∂P)) := by
-  have hφnorm : ∀ᵐ ω ∂P, ‖φ ω‖ ≤ B := ae_of_all _ fun ω => by
-    simpa only [Real.norm_eq_abs] using hbound ω
+  have hφnorm : ∀ᵐ ω ∂P, ‖φ ω‖ ≤ B := ae_of_all _ fun ω => hbound ω
   have hFG : Tendsto (fun n => ∫⁻ ω, ‖φ ω * F n ω - φ ω * G ω‖ₑ ∂P)
       atTop (𝓝 0) := by
     have hscale : Tendsto (fun n => ENNReal.ofReal B *
@@ -60,22 +59,18 @@ theorem integrable_mass_toReal_of_finite_expectation
     exact ENNReal.ofReal_toReal hω
   exact (lintegral_congr_ae heq).trans_lt hmean
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (A : Set ℂ) (hA : MeasurableSet A) (R : ℝ) (hAR : A ⊆ Metric.closedBall (0 : ℂ) R) (φ : Ω → ℝ) (hφ : AEStronglyMeasurable φ P)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM Xc hXc A hA R hAR φ hφ in
 /-- Bounded observables of the sample, including any fixed field/chaos cylinder, can multiply
 the bounded-set cutoff mass while retaining convergence of its expected value. -/
 theorem regularizedGMC_bounded_mass_mark_integral_tendsto
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (A : Set ℂ) (hA : MeasurableSet A) (R : ℝ)
-    (hAR : A ⊆ Metric.closedBall (0 : ℂ) R)
-    (φ : Ω → ℝ) (hφ : AEStronglyMeasurable φ P)
+
     (B : ℝ) (hB : 0 ≤ B) (hbound : ∀ ω, |φ ω| ≤ B) :
     Tendsto (fun n : ℕ => ∫ ω, φ ω *
       (regularizedGMC P Xc γ (n : ℝ) ω A).toReal ∂P) atTop
       (𝓝 (∫ ω, φ ω * (M ω A).toReal ∂P)) := by
-  have href : gmcReferenceMeasure A < ⊤ :=
+  have href  :=
     lt_of_le_of_lt (measure_mono (Set.subset_univ A)) gmcReferenceMeasure_univ_ne_top.lt_top
   have hcut (n : ℕ) : Integrable (fun ω =>
       (regularizedGMC P Xc γ (n : ℝ) ω A).toReal) P := by
@@ -97,34 +92,27 @@ theorem regularizedGMC_bounded_mass_mark_integral_tendsto
       P X hX γ hγ hγ2 M hM Xc hXc A hA R hAR).comp
         (tendsto_natCast_atTop_atTop : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop))
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM Xc hXc A hA R hAR φ hφ in
 /-- A bounded nonnegative sample mark preserves convergence of extended expected set masses. -/
 theorem regularizedGMC_bounded_mass_mark_lintegral_tendsto
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (A : Set ℂ) (hA : MeasurableSet A) (R : ℝ)
-    (hAR : A ⊆ Metric.closedBall (0 : ℂ) R)
-    (φ : Ω → ℝ) (hφ : AEStronglyMeasurable φ P)
+
     (hφpos : ∀ ω, 0 ≤ φ ω) (B : ℝ) (hB : 0 ≤ B) (hbound : ∀ ω, |φ ω| ≤ B) :
     Tendsto (fun n : ℕ => ∫⁻ ω, ENNReal.ofReal (φ ω) *
       regularizedGMC P Xc γ (n : ℝ) ω A ∂P) atTop
       (𝓝 (∫⁻ ω, ENNReal.ofReal (φ ω) * M ω A ∂P)) := by
-  have href : gmcReferenceMeasure A < ⊤ :=
+  have href  :=
     lt_of_le_of_lt (measure_mono (Set.subset_univ A)) gmcReferenceMeasure_univ_ne_top.lt_top
   have hmark (a : Ω → ℝ≥0∞) (ha : AEMeasurable a P)
       (hafin : ∀ᵐ ω ∂P, a ω ≠ ⊤) (hmean : (∫⁻ ω, a ω ∂P) < ⊤) :
       ENNReal.ofReal (∫ ω, φ ω * (a ω).toReal ∂P) =
         ∫⁻ ω, ENNReal.ofReal (φ ω) * a ω ∂P := by
     have hi := integrable_mass_toReal_of_finite_expectation P a ha hafin hmean
-    have hprod := hi.bdd_mul hφ (ae_of_all _ fun ω => by
-      simpa only [Real.norm_eq_abs] using hbound ω)
+    have hprod := hi.bdd_mul hφ (ae_of_all _ fun ω => hbound ω)
     rw [ofReal_integral_eq_lintegral_ofReal hprod
       (ae_of_all _ fun ω => mul_nonneg (hφpos ω) ENNReal.toReal_nonneg)]
     apply lintegral_congr_ae
     filter_upwards [hafin] with ω hω
-    rw [ENNReal.ofReal_mul (hφpos ω), ENNReal.ofReal_toReal hω]
+    simp_all
   have hcut (n : ℕ) : ENNReal.ofReal (∫ ω, φ ω *
       (regularizedGMC P Xc γ (n : ℝ) ω A).toReal ∂P) =
       ∫⁻ ω, ENNReal.ofReal (φ ω) * regularizedGMC P Xc γ (n : ℝ) ω A ∂P := by

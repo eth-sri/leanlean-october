@@ -6,10 +6,11 @@ module
 
 public import DOZZ.ShiftEquations.Strip.CoulombBounds
 public import DOZZ.GMC.SharpMoments.WeightedUniformGrid
+import Mathlib.Tactic
 
 /-! Moment control for the critical origin mass, including uniform inverse moments. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -28,18 +29,18 @@ theorem lastone_origin_ball_le {Ω : Type*} (M : Ω → Measure ℂ) (γ a : ℝ
   have h := weightedGmcBallMass_mono_charge (M ω) hγ (0 : ℂ) (ρ := 1) le_rfl ha
   simpa only [weightedGmcBallMass, mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero, lintegral_one, Measure.restrict_apply_univ] using h
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hX : IsEquatorGFF P X)
+
+include Ω _inst1 P X M γ hγ hγ2 hX in
 /-- Every inverse moment of the critical mass is bounded by a fixed ball inverse moment. -/
 theorem lastone_origin_inverse_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) (v : ℝ) (hv : 0 < v) :
+     (hM : IsGMCOf P X γ M) (v : ℝ) (hv : 0 < v) :
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ a : ℝ, 0 ≤ a →
       ∫⁻ ω, localSingularMass M (fun _ => 1) 0 γ a ω ^ (-v) ∂P ≤ C := by
   let C := gmcMassMoment P M (Metric.ball 0 (1 / 8)) (-v)
-  have hC : C < ⊤ := gmc_ball_moment_lt_top_any_center P X hX γ hγ hγ2 M hM
+  have hC  := gmc_ball_moment_lt_top_any_center P X hX γ hγ hγ2 M hM
     0 (1 / 8) (by norm_num) le_rfl (-v) (by
-      have hbulk : 0 < 4 / γ ^ 2 := by positivity
-      linarith)
+      field_simp <;> nlinarith)
   refine ⟨C, hC, fun a ha => lintegral_mono fun ω => ?_⟩
   have hball : M ω (Metric.ball 0 (1 / 8)) ≤ M ω (Metric.ball 0 1) :=
     measure_mono (Metric.ball_subset_ball (by norm_num))
@@ -48,11 +49,10 @@ theorem lastone_origin_inverse_bound
   exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow
     (hball.trans (lastone_origin_ball_le M γ a hγ.le ha ω)) hv.le)
 
+include Ω _inst1 P X M γ hγ hγ2 hX in
 /-- The moment at the varying critical order is finite for all sufficiently small positive drifts. -/
 theorem lastone_origin_moment_finite
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
+     (hM : IsGMCOf P X γ M) :
     ∀ᶠ ν : ℝ in 𝓝[>] 0,
       ∫⁻ ω, localSingularMass M (fun _ => 1) 0 γ (Q γ - ν) ω ^ (ν / γ) ∂P < ⊤ := by
   have hbulk : 0 < 4 / γ ^ 2 := by positivity
@@ -62,9 +62,7 @@ theorem lastone_origin_moment_finite
   have hν0 : 0 < ν := hν
   have hfin := weightedGmcBallMoment_lt_top_of_sharp_range P X hX γ hγ hγ2 M hM
     (Q γ - ν) 0 1 (by norm_num) (ν / γ) (div_pos hν0 hγ) (lt_min hb (by
-      rw [sub_sub_cancel]
-      have : 0 < ν / γ := div_pos hν0 hγ
-      nlinarith [show 2 / γ * ν = 2 * (ν / γ) by ring]))
+      field_simp <;> nlinarith))
   simpa only [weightedGmcBallMoment, lastone_origin_weighted, ENNReal.rpow_eq_pow] using hfin
 
 /-- Multiplying by a fixed positive finite mass factor leaves a small-power limit unchanged. -/

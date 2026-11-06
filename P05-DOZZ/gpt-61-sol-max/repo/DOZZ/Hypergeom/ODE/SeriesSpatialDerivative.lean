@@ -6,10 +6,11 @@ module
 
 public import DOZZ.Hypergeom.ODE.SeriesEquation
 import Mathlib.Analysis.Calculus.FDeriv.Analytic
+import Mathlib.Tactic
 
 /-! Spatial differentiation of the ordinary Gauss series, with its parameter shift. -/
 
-@[expose] public section
+public section
 
 open Polynomial FormalMultilinearSeries
 
@@ -23,11 +24,8 @@ private theorem ordinaryHypergeometricCoefficient_derivative_shift (a b c : ℂ)
   have hcShift : ∀ k : ℕ, c + 1 ≠ -(k : ℂ) := by
     intro k h
     apply hc (k + 1)
-    have h' : c = -((k + 1 : ℕ) : ℂ) := by
-      push_cast at h ⊢
-      linear_combination h
-    exact h'
-  have hcp1 : (ascPochhammer ℂ n).eval (c + 1) ≠ 0 :=
+    grind
+  have hcp1  :=
     ordinaryHypergeometric_pochhammer_denominator_ne_zero n hcShift
   have hfact : ((n + 1).factorial : ℂ) = (n + 1 : ℂ) * (n.factorial : ℂ) := by
     exact_mod_cast Nat.factorial_succ n
@@ -36,10 +34,7 @@ private theorem ordinaryHypergeometricCoefficient_derivative_shift (a b c : ℂ)
       (ascPochhammer ℂ (n + 1)).eval x =
         x * (ascPochhammer ℂ n).eval (x + 1) := by
     rw [ascPochhammer_succ_left, Polynomial.eval_mul, Polynomial.eval_X]
-    have heval : ((ascPochhammer ℂ n).comp (X + 1)).eval x =
-        (ascPochhammer ℂ n).eval (x + 1) := by
-      simp
-    exact congrArg (fun y : ℂ => x * y) heval
+    simp_all
   simp only [ordinaryHypergeometricCoefficient]
   rw [hfact, hshift a, hshift b, hshift c]
   field_simp [hc0, hcp1, hfact0]
@@ -61,8 +56,7 @@ private theorem gaussFirstDerivativeSeries_coeff' (a b c : ℂ) (n : ℕ) :
     change ordinaryHypergeometricSeries ℂ a b c (n + 1) (fun _ => (1 : ℂ)) = _
     rw [ordinaryHypergeometricSeries_apply_eq]
     simp [ordinaryHypergeometricCoefficient]
-  rw [hcoeff]
-  simp only [nsmul_eq_mul, Nat.cast_succ]
+  simp_all
 
 private theorem formalSeries_coeff_smul' (x : ℂ) (p : FormalMultilinearSeries ℂ ℂ ℂ)
     (n : ℕ) : (x • p).coeff n = x • p.coeff n := rfl
@@ -92,11 +86,9 @@ theorem ordinaryHypergeometric_hasDerivAt_unitDisk (a b c z : ℂ)
   have hz' : z ∈ Metric.eball (0 : ℂ) 1 := by
     simpa [Metric.mem_eball, edist_eq_enorm_sub, enorm_eq_nnnorm, dist_zero_right] using
       (ENNReal.coe_lt_coe.mpr hznorm)
-  have hpos : 0 < S.radius := ordinaryHypergeometricSeries_radius_pos a b c hc
+  have hpos  := ordinaryHypergeometricSeries_radius_pos a b c hc
   have hle : (1 : ENNReal) ≤ S.radius := by exact_mod_cast hrad
   have hpower : HasFPowerSeriesOnBall (ordinaryHypergeometric a b c) S 0 1 := by
-    have hsum : ordinaryHypergeometric a b c = S.sum := rfl
-    rw [hsum]
     exact S.hasFPowerSeriesOnBall hpos |>.mono (by norm_num) hle
   have hdf := hpower.fderiv
   let evalOne : (ℂ →L[ℂ] ℂ) →L[ℂ] ℂ := ContinuousLinearMap.apply ℂ ℂ 1
@@ -111,7 +103,7 @@ theorem ordinaryHypergeometric_hasDerivAt_unitDisk (a b c z : ℂ)
   rw [hprimeEq] at hprimeFun
   have hprime : HasFPowerSeriesOnBall (deriv (ordinaryHypergeometric a b c))
       (gaussFirstDerivativeSeries a b c) 0 1 := by
-    simpa [gaussFirstDerivativeSeries, gaussSeriesAtZero, S] using hprimeFun
+    assumption_mod_cast
   have hseriesEq := ordinaryHypergeometricSeries_derivSeries_eq a b c hc
   have hderivValue : deriv (ordinaryHypergeometric a b c) z =
       a * b / c * ordinaryHypergeometric (a + 1) (b + 1) (c + 1) z := by
@@ -125,7 +117,7 @@ theorem ordinaryHypergeometric_hasDerivAt_unitDisk (a b c z : ℂ)
         rw [← FormalMultilinearSeries.const_smul_sum_apply]
         simp only [smul_eq_mul]
         rfl
-  have hAt : DifferentiableAt ℂ (ordinaryHypergeometric a b c) z :=
+  have hAt  :=
     hpower.analyticAt_of_mem hz' |>.differentiableAt
   have hresult := hAt.hasDerivAt
   rw [hderivValue] at hresult

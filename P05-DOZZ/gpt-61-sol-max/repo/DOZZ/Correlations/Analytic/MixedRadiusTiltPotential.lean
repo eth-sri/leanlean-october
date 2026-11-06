@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.MixedRadiusGaussianClosure
 
 /-! Uniform covariance potentials for mixed inward and outward circle vertices. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal BoundedContinuousFunction
 namespace DOZZ.Proofs
@@ -24,7 +24,7 @@ theorem gaussianCovariance_finset_sum_right
   simp_rw [Finset.mul_sum]
   rw [integral_finsetSum]
   intro i hi
-  simpa only [Pi.mul_def] using hY.integrable_mul (hL i hi)
+  exact hY.integrable_mul (hL i hi)
 
 /-- Mixed-radius vertices supply the global bounded continuous covariance potential required by
 GMC tilt, with the exact averaged Green kernel as its value. -/
@@ -57,9 +57,7 @@ theorem mixed_circle_covariance_uniform
   · rw [Metric.tendstoUniformly_iff]
     intro ε hε
     have hd : 0 < ε / (N + 1 : ℝ) := div_pos hε (by positivity)
-    have he : ∀ᶠ s : ℝ in atTop, ∀ i : Fin N, ∀ x : ℂ,
-        dist (c i x) (gaussianCovariance P (fun ω => Xc ω x s)
-          (fun ω => α i * Xc ω (z i) (r i))) < ε / (N + 1 : ℝ) :=
+    have he  :=
       eventually_all.mpr fun i => (Metric.tendstoUniformly_iff.mp (hconv i)) _ hd
     filter_upwards [he] with s hs x
     rw [hC, hcov, Real.dist_eq, ← Finset.sum_sub_distrib]
@@ -67,12 +65,10 @@ theorem mixed_circle_covariance_uniform
         (fun ω => α i * Xc ω (z i) (r i))|) ≤ N * (ε / (N + 1 : ℝ)) := by
       calc
         _ ≤ ∑ _ : Fin N, ε / (N + 1 : ℝ) :=
-          Finset.sum_le_sum fun i _ => by simpa only [Real.dist_eq] using (hs i x).le
+          Finset.sum_le_sum fun i _ => by exact (hs i x).le
         _ = _ := by simp [nsmul_eq_mul]
     have hN : N * (ε / (N + 1 : ℝ)) < ε := by
-      have hp : (0 : ℝ) < N + 1 := by positivity
-      rw [← mul_div_assoc, div_lt_iff₀ hp]
-      nlinarith
+      field_simp <;> nlinarith
     exact (Finset.abs_sum_le_sum_abs _ _).trans hb |>.trans_lt hN
 
 end DOZZ.Proofs

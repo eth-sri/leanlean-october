@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.RetainedVertexKernel
 
 /-! The exact outward vertex used in the canonical and mixed infinity frames. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 

@@ -77,7 +77,7 @@ theorem negativeConditionedFDDDensity_reflect
   | cons t ts =>
       cases values with
       | nil =>
-          simp [negativeConditionedFDDDensity, conditionedPositiveFDDDensity]
+          continuity
       | cons x xs =>
           simp only [negativeConditionedFDDDensity, conditionedPositiveFDDDensity,
             List.map_cons]
@@ -90,8 +90,7 @@ theorem conditionedPositiveFDDDensity_cons
     (ν t : ℝ) (x : ℝ) (times values : List ℝ) :
     conditionedPositiveFDDDensity ν (t :: times) (x :: values) =
       conditionedPositiveEntranceDensity ν t x *
-        conditionedPositiveTimeChainDensity ν t x times values := by
-  rfl
+        conditionedPositiveTimeChainDensity ν t x times values := rfl
 
 /-- The final observation time after appending a finite ordered history to a starting time. -/
 def conditionedPositiveLastTime (t₀ : ℝ) : List ℝ → ℝ
@@ -155,38 +154,24 @@ theorem continuous_path_ge_iff_rational_ge
       ∀ q : ℚ, ∀ hq : t < (q : ℝ),
         c ≤ p ⟨(q : ℝ), le_trans ht hq.le⟩ := by
   constructor
-  · intro h q hq
-    exact h ⟨(q : ℝ), le_trans ht hq.le⟩ hq
+  · continuity
   · intro h s hts
     by_contra hnot
-    have hbad : p s < c := lt_of_not_ge hnot
+    have hbad  := lt_of_not_ge hnot
     let F : ℝ → ℝ := fun x => p ⟨max x 0, le_max_right _ _⟩
     have hmax : Continuous (fun x : ℝ => max x 0) :=
       continuous_max.comp (continuous_id.prodMk continuous_const)
-    have hsub : Continuous (fun x : ℝ =>
-        (⟨max x 0, le_max_right _ _⟩ : ℝ≥0)) :=
+    have hsub  :=
       hmax.subtype_mk (fun x => le_max_right x 0)
-    have hF : Continuous F := p.continuous.comp hsub
-    have hsnonneg : (0 : ℝ) ≤ (s : ℝ) := by exact_mod_cast s.2
+    have hF  := p.continuous.comp hsub
+
     have hFs : F (s : ℝ) = p s := by
-      change p ⟨max (s : ℝ) 0, le_max_right _ _⟩ = p s
-      congr 1
-      exact Subtype.ext (max_eq_left hsnonneg)
+      continuity
     let U : Set ℝ := {x | t < x ∧ F x < c}
-    have hUopen : IsOpen U := by
-      exact isOpen_Ioi.inter (isOpen_Iio.preimage hF)
+    have hUopen : IsOpen U := isOpen_Ioi.inter (isOpen_Iio.preimage hF)
     have hUnonempty : U.Nonempty := ⟨s, hts, by simpa [hFs] using hbad⟩
     obtain ⟨q, hqU⟩ := Rat.denseRange_cast.exists_mem_open hUopen hUnonempty
-    have hqU' : t < (q : ℝ) ∧ F (q : ℝ) < c := hqU
-    have hq0 : (0 : ℝ) ≤ (q : ℝ) := le_trans ht (le_of_lt hqU'.1)
-    have hqF : F (q : ℝ) = p ⟨(q : ℝ), hq0⟩ := by
-      change p ⟨max (q : ℝ) 0, le_max_right _ _⟩ = p ⟨(q : ℝ), hq0⟩
-      congr 1
-      exact Subtype.ext (max_eq_left hq0)
-    have hqbound := h q hqU'.1
-    have hqbelow : p ⟨(q : ℝ), hq0⟩ < c := by
-      simpa only [hqF] using hqU'.2
-    exact (not_lt_of_ge hqbound) hqbelow
+    grind
 
 end DOZZ.Proofs
 

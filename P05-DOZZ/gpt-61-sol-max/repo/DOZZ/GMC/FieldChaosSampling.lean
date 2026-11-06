@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.GMC.KahaneSpatialL1
-public import DOZZ.GMC.FieldChaosFiniteness
+public import DOZZ.GMC.FieldChaosNegativePower
 
 /-! Integrability and sampling of finite-cutoff chaos fields. -/
 
@@ -26,8 +26,7 @@ theorem fieldWickDensity_measurable
     {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
     (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : DOZZ.IsCenteredGaussianField P Φ)
     (h : S → ℝ≥0) (hh : Measurable h) (γ : ℝ) :
-    Measurable (fun p : Ω × S => fieldWickDensity P Φ h γ p.1 p.2) := by
-  exact ((measurable_coe_nnreal_real.comp hh).comp measurable_snd).mul
+    Measurable (fun p : Ω × S => fieldWickDensity P Φ h γ p.1 p.2) := ((measurable_coe_nnreal_real.comp hh).comp measurable_snd).mul
     (Real.measurable_exp.comp ((measurable_const.mul hΦ.1).sub
       (measurable_const.mul
         ((centeredGaussianField_variance_measurable P Φ hΦ).comp measurable_snd))))
@@ -42,7 +41,7 @@ theorem fieldWickDensity_integrable_mean
       (P.prod (ν.normalize : Measure S)) ∧
     (∫ p : Ω × S, fieldWickDensity P Φ h γ p.1 p.2
       ∂(P.prod (ν.normalize : Measure S))) = ∫ x, (h x : ℝ) ∂(ν.normalize : Measure S) := by
-  have : IsProbabilityMeasure P := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
+  have  := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
   have hpoint (x : S) : Integrable (fun ω => fieldWickDensity P Φ h γ ω x) P ∧
       (∫ ω, fieldWickDensity P Φ h γ ω x ∂P) = (h x : ℝ) := by
     have hw := wick_exponential_integrable_expectation P

@@ -9,7 +9,7 @@ public import DOZZ.Statements.GMC.GaussianVariance
 /-! A pair of Wick weights is one finite-dimensional Gaussian tilt, with its cross covariance
 factored out. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
@@ -60,10 +60,7 @@ theorem finite_gaussian_wick_pair_tilt
           ∑ j, (if j = q then γ else 0) *
             DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) := by
               rw [← Finset.sum_add_distrib]
-              apply Finset.sum_congr rfl
-              intro j hj
-              simp only [a]
-              ring
+              field_simp <;> ring
       _ = _ := by
         rw [hselect, hselect]
   have hdouble : (∑ i, ∑ j, a i *
@@ -81,9 +78,7 @@ theorem finite_gaussian_wick_pair_tilt
             calc
               _ = ∑ j, a i * (DOZZ.gaussianCovariance P
                     (fun ω => Z ω i) (fun ω => Z ω j) * a j) := by
-                    apply Finset.sum_congr rfl
-                    intro j hj
-                    ring
+                    noncomm_ring
               _ = a i * ∑ j, DOZZ.gaussianCovariance P
                     (fun ω => Z ω i) (fun ω => Z ω j) * a j := by
                     rw [Finset.mul_sum]
@@ -92,9 +87,7 @@ theorem finite_gaussian_wick_pair_tilt
             (fun ω => Z ω i) (fun ω => Z ω p))) +
           (a i * (γ * DOZZ.gaussianCovariance P
             (fun ω => Z ω i) (fun ω => Z ω q)))) := by
-            apply Finset.sum_congr rfl
-            intro i hi
-            ring
+            noncomm_ring
       _ = (∑ i, a i * (γ * DOZZ.gaussianCovariance P
             (fun ω => Z ω i) (fun ω => Z ω p))) +
           ∑ i, a i * (γ * DOZZ.gaussianCovariance P
@@ -145,8 +138,7 @@ theorem finite_gaussian_wick_pair_tilt
           (∑ i, ∑ j, a i * DOZZ.gaussianCovariance P
             (fun ω => Z ω i) (fun ω => Z ω j) * a j) / 2)) *
           F (Z ω)) ∂P := by
-        apply lintegral_congr_ae
-        exact ae_of_all _ (fun ω => by ac_rfl)
+        noncomm_ring
     _ = c * (∫⁻ ω, ENNReal.ofReal (Real.exp ((∑ i, a i * Z ω i) -
           (∑ i, ∑ j, a i * DOZZ.gaussianCovariance P
             (fun ω => Z ω i) (fun ω => Z ω j) * a j) / 2)) *

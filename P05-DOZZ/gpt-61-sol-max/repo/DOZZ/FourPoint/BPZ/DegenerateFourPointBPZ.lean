@@ -28,17 +28,18 @@ the parameters `A`, `B`, `C` of [KRV, (defabcfirst)]. The proof combines
 
 The GMC measure is first replaced by a measurable version, which has the same reduced function. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ χ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
+
+include Ω _inst1 P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ in
 /-- The BPZ equation, for a measurable GMC measure. -/
-theorem bpz_gauss_of_measurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ χ α₁ α₂ α₃ : ℝ)
-    (hγ : 0 < γ) (hγ₂ : γ < 2)
+theorem bpz_gauss_of_measurable 
     (hχ : χ = γ / 2 ∨ χ = 2 / γ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (hs : 2 * Q γ + χ < α₁ + α₂ + α₃)
@@ -49,16 +50,11 @@ theorem bpz_gauss_of_measurable {Ω : Type*} [MeasurableSpace Ω]
       (gaussParameterC γ χ α₁)
       (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) := by
   have hχpos : 0 < χ := by
-    rcases hχ with rfl | rfl
-    · positivity
-    · positivity
+    continuity
   have ha1 : γ * χ / 2 ≤ 1 := by
     rcases hχ with rfl | rfl
-    · have h4 : γ * γ ≤ 4 := by nlinarith
-      linarith
-    · rw [show γ * (2 / γ) / 2 = 1 by field_simp]
+    all_goals field_simp <;> nlinarith
   have hspos : 0 < fourPointSExp γ (-χ) α₁ α₂ α₃ := by
-    unfold fourPointSExp
     exact div_pos (by linarith) hγ
   obtain ⟨hC2, hW⟩ := bpz_fourPointT_contDiff_wirtinger P X hX hγ hγ₂ M hM hMm hχpos ha1 hα₁
     hα₂ hα₃ hspos μ
@@ -70,15 +66,11 @@ theorem bpz_gauss_of_measurable {Ω : Type*} [MeasurableSpace Ω]
     hspos.le hz.1 hz.2
   have hL := bpz_wardLHS_combination P X hX hγ hγ₂ M hM hMm hχpos hα₁ hα₂ hα₃ hspos.le hz.1 hz.2
   have hR := bpz_wardRHS_combination P X hX hγ hγ₂ M hM hMm hχpos hα₁ hα₂ hα₃ hspos.le hz.1 hz.2
-  have hw : ∀ (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ),
-      bpzWardLHS P M γ χ α₁ α₂ α₃ (fourPointSExp γ (-χ) α₁ α₂ α₃) z ℓ v =
-        bpzWardRHS P M γ χ α₁ α₂ α₃ (fourPointSExp γ (-χ) α₁ α₂ α₃) z ℓ v := fun ℓ v =>
+  have hw  := fun ℓ v =>
     bpzWardLHS_eq_wardRHS P X hX hγ hγ₂ M hM hMm hχpos hα₁ hα₂ hα₃ hspos.le hz.1 hz.2 ℓ v
   simp only [hw] at hL
   have hward := hL.symm.trans hR
-  have hT : fourPointT P M γ μ (-χ) α₁ α₂ α₃ z =
-      2 * μ ^ (-fourPointSExp γ (-χ) α₁ α₂ α₃) / γ * Real.Gamma (fourPointSExp γ (-χ) α₁ α₂ α₃) *
-        bpzMomJ P M γ χ α₁ α₂ α₃ (fourPointSExp γ (-χ) α₁ α₂ α₃) z :=
+  have hT  :=
     bpz_fourPointT_eq_moment P X hX hγ hγ₂ M hM hMm hχpos hα₁ hα₂ hα₃ μ hz.1 hz.2
   refine bpz_gauss_of_ward hγ hχ hz.1 hz.2
     (2 * μ ^ (-fourPointSExp γ (-χ) α₁ α₂ α₃) / γ * Real.Gamma (fourPointSExp γ (-χ) α₁ α₂ α₃))
@@ -95,12 +87,11 @@ theorem bpz_gauss_of_measurable {Ω : Type*} [MeasurableSpace Ω]
     push_cast
     ring
 
+include Ω _inst1 P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ in
 /-- **The BPZ equation** (proof of `DOZZ.degenerateFourPoint_BPZ`): for either degenerate
 insertion, the reduced function `T` satisfies the Wirtinger form of the Gauss equation with the
 parameters of [KRV, (defabcfirst)]. -/
-theorem degenerateFourPoint_BPZ {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ χ α₁ α₂ α₃ : ℝ)
-    (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
+theorem degenerateFourPoint_BPZ  (hμ : 0 < μ)
     (hχ : χ = γ / 2 ∨ χ = 2 / γ)
     (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (hs : 2 * Q γ + χ < α₁ + α₂ + α₃)
@@ -112,7 +103,7 @@ theorem degenerateFourPoint_BPZ {Ω : Type*} [MeasurableSpace Ω]
       (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) := by
   let _ := hμ
   obtain ⟨N, hNm, hNfin, hMN⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ₂ M hM
-  have hN : IsGMCOf P X γ N := bpz_isGMCOf_congr hM hNfin hMN
+  have hN  := bpz_isGMCOf_congr hM hNfin hMN
   have hT : (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) =
       fun z => fourPointT P N γ μ (-χ) α₁ α₂ α₃ z :=
     funext fun z => bpz_fourPointT_congr P hMN μ (-χ) z

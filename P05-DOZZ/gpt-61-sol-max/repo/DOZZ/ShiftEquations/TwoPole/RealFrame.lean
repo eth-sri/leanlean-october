@@ -19,7 +19,7 @@ so the structure-constant moment is finite, and by the frame identity so is the 
 moment, which is `(γ/2) 2^{-4(1-x/γ)} C̄(x, α₂, α₃)`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -45,13 +45,7 @@ theorem extendedSeiberg3_pole {γ η δ x : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     nlinarith
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   refine ⟨?_, ?_, ?_, ?_⟩
-  · rw [hQ]
-    have : x < 2 / γ := by
-      have : 1 / γ < 2 / γ := by
-        rw [div_lt_div_iff_of_pos_right hγ]
-        norm_num
-      linarith
-    linarith
+  · grind
   · rw [hQ]
     linarith
   · rw [hQ]
@@ -64,21 +58,14 @@ theorem extendedSeiberg3_pole {γ η δ x : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
         rw [hQ]
         field_simp
         ring
-      rw [this]
-      have : x / γ < 4 / γ ^ 2 := by
-        have : 1 / γ ^ 2 < 4 / γ ^ 2 := by
-          rw [div_lt_div_iff_of_pos_right (by positivity)]
-          norm_num
-        linarith
-      linarith
+      grind
     · have : 2 / γ * (Q γ - (2 / γ + η)) = 1 - 2 * η / γ := by
         rw [hQ]
         field_simp
         ring
       rw [this]
       have : 2 * η / γ < x / γ := by
-        rw [div_lt_div_iff_of_pos_right hγ]
-        exact hx₁
+        bound
       linarith
     · have : 2 / γ * (Q γ - (2 / γ - η)) = 1 + 2 * η / γ := by
         rw [hQ]
@@ -88,11 +75,11 @@ theorem extendedSeiberg3_pole {γ η δ x : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
       have : 0 < 2 * η / γ := by positivity
       linarith
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ x : ℝ} (hW : TwoPoleWindow γ η δ) (hx₁ : 2 * η < x) (hx₂ : x < 1 / γ)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM η δ x hW hx₁ hx₂ in
 /-- The total moment at a real charge of the expansion is finite. -/
-theorem lintegral_totalMass_rpow_lt_top_pole {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ x : ℝ} (hW : TwoPoleWindow γ η δ)
-    (hx₁ : 2 * η < x) (hx₂ : x < 1 / γ) :
+theorem lintegral_totalMass_rpow_lt_top_pole  :
     ∫⁻ ω, poleTotalMass γ x (2 / γ + η) (2 / γ - η) (M ω) ^ (1 - x / γ) ∂P < ⊤ := by
   have hES := extendedSeiberg3_pole hγ hγ2 hW hx₁ hx₂
   have hrho := (equatorGFF_extendedSeiberg_rho_moment P X hX γ hγ hγ2 M hM x (2 / γ + η)
@@ -105,22 +92,17 @@ theorem lintegral_totalMass_rpow_lt_top_pole {Ω : Type*} [MeasurableSpace Ω] (
   rw [lintegral_totalMass_rpow_eq_rho P X hX γ hγ hγ2 M hM η x]
   exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top hrho
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM η δ x hW hx₁ hx₂ in
 /-- **The real identity**: the pole-subtracted observable plus the local moment is the total
 moment. -/
-theorem observable_add_localMoment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ x : ℝ} (hW : TwoPoleWindow γ η δ)
-    (hx₁ : 2 * η < x) (hx₂ : x < 1 / γ)
+theorem observable_add_localMoment 
     (hLint : Integrable (fun ω => localMassReal M γ η ω ^ (1 - x / γ)) P) :
     poleSubtractedObservable P M γ η x + ∫ ω, localMassReal M γ η ω ^ (1 - x / γ) ∂P =
       (∫⁻ ω, poleTotalMass γ x (2 / γ + η) (2 / γ - η) (M ω) ^ (1 - x / γ) ∂P).toReal := by
   have hxQ : x < Q γ := by
     have : 1 / γ < Q γ := by
       rw [Q]
-      have : 1 / γ < 2 / γ := by
-        rw [div_lt_div_iff_of_pos_right hγ]
-        norm_num
-      linarith [half_pos hγ]
+      field_simp <;> nlinarith
     linarith
   have hgood := ae_cutoffGood P X hX γ hγ hγ2 M hM hW
   have hfin := ae_totalMass_lt_top_of_lt P X hX γ hγ hγ2 M hM hW hxQ

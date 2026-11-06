@@ -43,16 +43,13 @@ theorem bpz_stronglyMeasurable_integral_measure {E : Type*} [NormedAddCommGroup 
       congr 1
       have h := ContinuousLinearMap.integral_comp_comm
         (LinearMap.toContinuousLinearMap (b.coord i)) hint
-      simp only [LinearMap.coe_toContinuousLinearMap'] at h
-      rw [h, Module.Basis.coord_apply]
+      simp_all
     · have hint : ¬ Integrable f m := fun h => hm h.2
       rw [integral_undef hint]
-      symm
-      refine Finset.sum_eq_zero fun i _ => ?_
-      rw [Set.indicator_of_notMem hm, zero_smul]
+      simp_all
   rw [key]
   refine Finset.stronglyMeasurable_fun_sum _ fun i _ => ?_
-  have hc : Measurable fun x => b.coord i (f x) :=
+  have hc  :=
     ((LinearMap.continuous_of_finiteDimensional (b.coord i)).comp_stronglyMeasurable hf).measurable
   exact (((measurable_integral_measure hc).indicator hAm).stronglyMeasurable).smul_const _
 
@@ -85,19 +82,22 @@ theorem bpz_stronglyMeasurable_softDeriv2 (a ε : ℝ) (z : ℂ) {w : ℂ → �
   exact hw.stronglyMeasurable.smul ((hc2.stronglyMeasurable.smul hS.stronglyMeasurable).add
     (hc1.stronglyMeasurable.smul stronglyMeasurable_const))
 
+variable (a ε : ℝ) {w : ℂ → ℝ} (hw : Measurable w) (z : ℂ)
+
+include a ε w hw z in
 /-- The softened mass is a measurable function of the measure. -/
-theorem bpz_measurable_softMassReal (a ε : ℝ) {w : ℂ → ℝ} (hw : Measurable w) (z : ℂ) :
+theorem bpz_measurable_softMassReal  :
     Measurable (fun m : Measure ℂ => bpzSoftMassReal a ε w m z) :=
   measurable_integral_measure ((bpzSoft_measurable_rpow a ε z).mul hw)
 
+include a ε w hw z in
 /-- The first derivative mass is a strongly measurable function of the measure. -/
-theorem bpz_stronglyMeasurable_softMassDeriv (a ε : ℝ) {w : ℂ → ℝ} (hw : Measurable w)
-    (z : ℂ) : StronglyMeasurable (fun m : Measure ℂ => bpzSoftMassDeriv a ε w m z) :=
+theorem bpz_stronglyMeasurable_softMassDeriv  : StronglyMeasurable (fun m : Measure ℂ => bpzSoftMassDeriv a ε w m z) :=
   bpz_stronglyMeasurable_integral_measure (bpz_stronglyMeasurable_softDeriv a ε z hw)
 
+include a ε w hw z in
 /-- The second derivative mass is a strongly measurable function of the measure. -/
-theorem bpz_stronglyMeasurable_softMassDeriv2 (a ε : ℝ) {w : ℂ → ℝ} (hw : Measurable w)
-    (z : ℂ) : StronglyMeasurable (fun m : Measure ℂ => bpzSoftMassDeriv2 a ε w m z) :=
+theorem bpz_stronglyMeasurable_softMassDeriv2  : StronglyMeasurable (fun m : Measure ℂ => bpzSoftMassDeriv2 a ε w m z) :=
   bpz_stronglyMeasurable_integral_measure (bpz_stronglyMeasurable_softDeriv2 a ε z hw)
 
 end DOZZ.Proofs

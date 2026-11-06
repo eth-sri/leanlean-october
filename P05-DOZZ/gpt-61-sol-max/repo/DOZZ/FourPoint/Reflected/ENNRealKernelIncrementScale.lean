@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Reflected.KernelIncrementScale
 public import DOZZ.FourPoint.Reflected.InverseMassExpectation
 /-! Kernel coefficient bounds remain valid for infinite added masses. -/
-@[expose] public section
+public section
 open scoped ENNReal
 namespace DOZZ.Proofs
 
@@ -17,7 +17,7 @@ theorem reflected_ennreal_inverse_increment_scaled (p c : ℝ) (A J : ℝ≥0∞
     ((A+ENNReal.ofReal c*J)^(-p)).toReal-(A^(-p)).toReal ≤
       min 1 c*(((A+J)^(-p)).toReal-(A^(-p)).toReal) := by
   by_cases hJ : J = ⊤
-  · have hcN : ENNReal.ofReal c ≠ 0 := (ENNReal.ofReal_pos.mpr hc).ne'
+  · have hcN  := (ENNReal.ofReal_pos.mpr hc).ne'
     simp only [hJ,ENNReal.mul_top hcN,add_top,ENNReal.top_rpow_of_neg (neg_neg_of_pos hp),
       ENNReal.toReal_zero,zero_sub]
     have hmax : 1 ≤ max 1 c := le_max_left _ _

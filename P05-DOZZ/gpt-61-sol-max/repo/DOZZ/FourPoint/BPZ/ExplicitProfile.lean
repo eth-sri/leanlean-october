@@ -17,7 +17,7 @@ derivatives on `(0, 1)`; the profile and its first derivative have limits at `0�
 derivative is integrable near `0`, and the Taylor remainder `φ(t) - φ(0) - φ'(0) t` is
 `o(t^κ)`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -27,12 +27,12 @@ namespace DOZZ.Proofs
 theorem bpzEP_hasDerivAt {φ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 φ (Ioo (-1) 1)) {u : ℝ}
     (hu : u ∈ Ioo (-1 : ℝ) 1) :
     HasDerivAt φ (deriv φ u) u ∧ HasDerivAt (deriv φ) (deriv (deriv φ) u) u := by
-  have hmem : Ioo (-1 : ℝ) 1 ∈ 𝓝 u := isOpen_Ioo.mem_nhds hu
-  have h1 : DifferentiableAt ℝ φ u :=
+  have hmem  := isOpen_Ioo.mem_nhds hu
+  have h1  :=
     (hφ.differentiableOn (by norm_num)).differentiableAt hmem
   have hd : ContDiffOn ℝ 1 (deriv φ) (Ioo (-1) 1) :=
     hφ.deriv_of_isOpen isOpen_Ioo (by norm_num)
-  have h2 : DifferentiableAt ℝ (deriv φ) u :=
+  have h2  :=
     (hd.differentiableOn (by norm_num)).differentiableAt hmem
   exact ⟨h1.hasDerivAt, h2.hasDerivAt⟩
 
@@ -46,9 +46,11 @@ theorem bpzEP_continuousOn {φ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 φ (Ioo (-
     hd.deriv_of_isOpen isOpen_Ioo (by norm_num)
   exact ⟨hφ.continuousOn, hd.continuousOn, hdd.continuousOn⟩
 
+variable {φ ψ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 φ (Ioo (-1) 1)) (hψ : ContDiffOn ℝ 2 ψ (Ioo (-1) 1))
+
+include φ ψ hφ hψ in
 /-- The first derivative of the profile. -/
-theorem bpzEP_hasDerivAt_profile {φ ψ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 φ (Ioo (-1) 1))
-    (hψ : ContDiffOn ℝ 2 ψ (Ioo (-1) 1)) (A₀ ρ κ : ℝ) {u : ℝ} (hu0 : 0 < u) (hu1 : u < 1) :
+theorem bpzEP_hasDerivAt_profile  (A₀ ρ κ : ℝ) {u : ℝ} (hu0 : 0 < u) (hu1 : u < 1) :
     HasDerivAt (fun v => A₀ * (φ v + ρ * (v ^ κ * ψ v)))
       (A₀ * (deriv φ u + ρ * (κ * u ^ (κ - 1) * ψ u + u ^ κ * deriv ψ u))) u := by
   have hu : u ∈ Ioo (-1 : ℝ) 1 := ⟨by linarith, hu1⟩
@@ -58,9 +60,9 @@ theorem bpzEP_hasDerivAt_profile {φ ψ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 �
     Real.hasDerivAt_rpow_const (Or.inl hu0.ne')
   exact ((h1.add ((hp.mul h2).const_mul ρ)).const_mul A₀)
 
+include φ ψ hφ hψ in
 /-- The second derivative of the profile. -/
-theorem bpzEP_hasDerivAt_profile' {φ ψ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 φ (Ioo (-1) 1))
-    (hψ : ContDiffOn ℝ 2 ψ (Ioo (-1) 1)) (A₀ ρ κ : ℝ) {u : ℝ} (hu0 : 0 < u) (hu1 : u < 1) :
+theorem bpzEP_hasDerivAt_profile'  (A₀ ρ κ : ℝ) {u : ℝ} (hu0 : 0 < u) (hu1 : u < 1) :
     HasDerivAt (fun v => A₀ * (deriv φ v + ρ * (κ * v ^ (κ - 1) * ψ v + v ^ κ * deriv ψ v)))
       (A₀ * (deriv (deriv φ) u + ρ * (κ * (κ - 1) * u ^ (κ - 2) * ψ u +
         2 * (κ * u ^ (κ - 1) * deriv ψ u) + u ^ κ * deriv (deriv ψ) u))) u := by
@@ -76,9 +78,9 @@ theorem bpzEP_hasDerivAt_profile' {φ ψ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 
   rw [show κ - 1 - 1 = κ - 2 by ring]
   ring
 
+include φ ψ hφ hψ in
 /-- The profile tends to `A₀ φ(0)` at `0⁺` (for `κ > 0`). -/
-theorem bpzEP_tendsto_profile {φ ψ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 φ (Ioo (-1) 1))
-    (hψ : ContDiffOn ℝ 2 ψ (Ioo (-1) 1)) (A₀ ρ : ℝ) {κ : ℝ} (hκ : 0 < κ) :
+theorem bpzEP_tendsto_profile  (A₀ ρ : ℝ) {κ : ℝ} (hκ : 0 < κ) :
     Tendsto (fun v => A₀ * (φ v + ρ * (v ^ κ * ψ v))) (𝓝[>] 0) (𝓝 (A₀ * φ 0)) := by
   have hmem : Ioo (-1 : ℝ) 1 ∈ 𝓝 (0 : ℝ) := Ioo_mem_nhds (by norm_num) (by norm_num)
   have hφc : Tendsto φ (𝓝[>] 0) (𝓝 (φ 0)) :=
@@ -90,9 +92,9 @@ theorem bpzEP_tendsto_profile {φ ψ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 φ (
   have h := ((hφc.add ((hpow.mul hψc).const_mul ρ)).const_mul A₀)
   simpa using h
 
+include φ ψ hφ hψ in
 /-- The first derivative of the profile tends to `A₀ φ'(0)` at `0⁺` (for `κ > 1`). -/
-theorem bpzEP_tendsto_profile' {φ ψ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 φ (Ioo (-1) 1))
-    (hψ : ContDiffOn ℝ 2 ψ (Ioo (-1) 1)) (A₀ ρ : ℝ) {κ : ℝ} (hκ : 1 < κ) :
+theorem bpzEP_tendsto_profile'  (A₀ ρ : ℝ) {κ : ℝ} (hκ : 1 < κ) :
     Tendsto (fun v => A₀ * (deriv φ v + ρ * (κ * v ^ (κ - 1) * ψ v + v ^ κ * deriv ψ v)))
       (𝓝[>] 0) (𝓝 (A₀ * deriv φ 0)) := by
   have hmem : Ioo (-1 : ℝ) 1 ∈ 𝓝 (0 : ℝ) := Ioo_mem_nhds (by norm_num) (by norm_num)
@@ -104,7 +106,7 @@ theorem bpzEP_tendsto_profile' {φ ψ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 φ 
     ((bpzEP_continuousOn hψ).2.1.continuousAt hmem).tendsto.mono_left nhdsWithin_le_nhds
   have hid : Tendsto (fun v : ℝ => v) (𝓝[>] (0 : ℝ)) (𝓝 0) := tendsto_id.mono_left
     nhdsWithin_le_nhds
-  have hpow : Tendsto (fun v : ℝ => v ^ κ) (𝓝[>] 0) (𝓝 0) :=
+  have hpow  :=
     hid.rpow_const_nhds_zero (by linarith)
   have hpow1 : Tendsto (fun v : ℝ => v ^ (κ - 1)) (𝓝[>] 0) (𝓝 0) :=
     hid.rpow_const_nhds_zero (by linarith)
@@ -112,9 +114,9 @@ theorem bpzEP_tendsto_profile' {φ ψ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 φ 
     A₀)
   simpa using h
 
+include φ ψ hφ hψ in
 /-- The second derivative of the profile is integrable on `(0, t]` (for `κ > 1`, `t < 1`). -/
-theorem bpzEP_integrableOn_profile'' {φ ψ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 φ (Ioo (-1) 1))
-    (hψ : ContDiffOn ℝ 2 ψ (Ioo (-1) 1)) (A₀ ρ : ℝ) {κ : ℝ} (hκ : 1 < κ) {t : ℝ} (ht0 : 0 < t)
+theorem bpzEP_integrableOn_profile''  (A₀ ρ : ℝ) {κ : ℝ} (hκ : 1 < κ) {t : ℝ} (ht0 : 0 < t)
     (ht1 : t < 1) :
     IntegrableOn (fun u => A₀ * (deriv (deriv φ) u + ρ * (κ * (κ - 1) * u ^ (κ - 2) * ψ u +
         2 * (κ * u ^ (κ - 1) * deriv ψ u) + u ^ κ * deriv (deriv ψ) u))) (Ioc 0 t) := by
@@ -157,7 +159,7 @@ theorem bpzEP_tendsto_taylor {φ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 φ (Ioo 
     ⟨by linarith [hx.1], by linarith [hx.2]⟩
   obtain ⟨-, hφ'c, hφ''c⟩ := bpzEP_continuousOn hφ
   obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn (hφ''c.mono hK)
-  have hC0 : 0 ≤ C := (norm_nonneg _).trans (hC 0 ⟨le_rfl, by norm_num⟩)
+  have hC0  := (norm_nonneg _).trans (hC 0 ⟨le_rfl, by norm_num⟩)
   -- `|φ'(s) - φ'(0)| ≤ C s` on `[0, 1/2]`
   have h1 : ∀ s ∈ Icc (0 : ℝ) (1 / 2), ‖deriv φ s - deriv φ 0‖ ≤ C * (s - 0) := by
     refine norm_image_sub_le_of_norm_deriv_le_segment' (f := deriv φ)
@@ -188,13 +190,12 @@ theorem bpzEP_tendsto_taylor {φ : ℝ → ℝ} (hφ : ContDiffOn ℝ 2 φ (Ioo 
     simpa using (hid.rpow_const_nhds_zero (by linarith)).const_mul C
   refine squeeze_zero_norm' ?_ hlim
   filter_upwards [Ioo_mem_nhdsGT (show (0 : ℝ) < 1 / 2 by norm_num)] with t ht
-  have htk : 0 < t ^ κ := Real.rpow_pos_of_pos ht.1 κ
+  have htk  := Real.rpow_pos_of_pos ht.1 κ
   rw [norm_div, Real.norm_of_nonneg htk.le, div_le_iff₀ htk]
   calc ‖φ t - φ 0 - deriv φ 0 * t‖ ≤ C * t * t := h2 t ⟨ht.1.le, ht.2.le⟩
     _ = C * t ^ (2 - κ) * t ^ κ := by
       have e : t ^ (2 - κ) * t ^ κ = t * t := by
         rw [← Real.rpow_add ht.1, sub_add_cancel, Real.rpow_two, sq]
-      rw [mul_assoc C (t ^ (2 - κ)) (t ^ κ), e]
-      ring
+      grind
 
 end DOZZ.Proofs

@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Reflected.CopiedTestLimit
 public import DOZZ.FourPoint.Reflected.LateralCompactComparison
 import Mathlib.Tactic
 /-! Actual limiting lateral-chaos comparison on separated compact tests. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -37,7 +37,7 @@ theorem reflected_lateral_compact_chaos_comparison
     (∫⁻ ω : Ω × Ω, ENNReal.ofReal
         ((∫ x, f₀ x ∂N ω.1) + ∫ x, f₁ x ∂N ω.2) ^ (-q) ∂P.prod P) ≤
       m * (∫⁻ ω, ENNReal.ofReal (∫ x, (f₀+f₁) x ∂N ω) ^ (-q) ∂P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let Y := originLateralCircleRegularization Xc ρ
   have hY := originLateralCircleRegularization_admissible P X Xc hX hc hm ρ hρ
   have hs : 0 < (1-R)*r := mul_pos (by linarith) hr
@@ -50,18 +50,15 @@ theorem reflected_lateral_compact_chaos_comparison
   have hR₀ρ : Real.exp (-R₀) ≤ min ρ 1 := hR₀ ▸ min_le_right _ _
   have hcut (a : ℝ) : Real.exp (-max a R₀) ≤ min d ρ := by
     apply (Real.exp_le_exp.mpr (neg_le_neg (le_max_right _ _))).trans
-    rw [hR₀]
-    exact le_min (min_le_left _ _) ((min_le_right _ _).trans (min_le_left _ _))
+    grind
   let Φ := fun a ω x => Y ω (Real.exp (-max a R₀)) x
   have hΦ (a : ℝ) : IsCenteredGaussianField P (Φ a) := by
     constructor
     · exact originLateralCircleRegularization_measurableAtScale Xc hm ρ hρ _
-    · intro n xs
-      exact originLateralCircleRegularization_gaussian P X Xc hX hc hm ρ hρ n
-        (fun i => (Real.exp (-max a R₀), xs i))
+    · exact fun n xs => originLateralCircleRegularization_gaussian P X Xc hX hc hm ρ hρ n fun i => (Real.exp (-max a R₀), xs i)
   let f := f₀+f₁
-  have hf : ∀ x, 0 ≤ f x := fun x => add_nonneg (hf₀ x) (hf₁ x)
-  have hfK : tsupport (f : ℂ → ℝ) ⊆ K :=
+  have hf  := fun x => add_nonneg (hf₀ x) (hf₁ x)
+  have hfK  :=
     (tsupport_add f₀ f₁).trans (union_subset hf₀K hf₁K)
   obtain ⟨hν, hXc⟩ := reflected_admissible_field_test_limit P _ _ _ Y hY γ N hN
     K hK hKU f hf hfK R₀ hR₀ρ
@@ -74,7 +71,7 @@ theorem reflected_lateral_compact_chaos_comparison
       |gaussianCovariance P (fun ω => Φ a ω x) (fun ω => Φ a ω y)| ≤ 2*R+η := by
     have hxo := houter x hxK hx
     have hyi := hinner y hyK hy
-    have hrel : ‖y‖ ≤ R*‖x‖ := hyi.trans (mul_le_mul_of_nonneg_left hxo hR0)
+    have hrel  := hyi.trans (mul_le_mul_of_nonneg_left hxo hR0)
     have hdist : (1-R)*r ≤ ‖x-y‖ := by
       have hh := norm_sub_norm_le x y
       linarith only [hxo, hyi, hh]
@@ -84,12 +81,12 @@ theorem reflected_lateral_compact_chaos_comparison
       |gaussianCovariance P (fun ω => Φ a ω xy.1) (fun ω => Φ a ω xy.2)| ≤
         (Real.sqrt (2*R+η))^2 := by
     have hk : ∀ᵐ x ∂ν, x ∈ K := ae_restrict_mem hK.measurableSet
-    have hk₁ : ∀ᵐ xy : ℂ × ℂ ∂ν.prod ν, xy.1 ∈ K := (Measure.quasiMeasurePreserving_fst (μ := ν) (ν := ν)).ae hk
-    have hk₂ : ∀ᵐ xy : ℂ × ℂ ∂ν.prod ν, xy.2 ∈ K := (Measure.quasiMeasurePreserving_snd (μ := ν) (ν := ν)).ae hk
+    have hk₁  := (Measure.quasiMeasurePreserving_fst (μ := ν) (ν := ν)).ae hk
+    have hk₂  := (Measure.quasiMeasurePreserving_snd (μ := ν) (ν := ν)).ae hk
     filter_upwards [hk₁, hk₂] with xy hxK hyK hne
     rw [Real.sq_sqrt hbill]
     by_cases hx : xy.1 ∈ A
-    · have hy : xy.2 ∉ A := fun hy => hne ⟨fun _ => hy, fun _ => hx⟩
+    · have hy  := fun hy => hne ⟨fun _ => hy, fun _ => hx⟩
       have he : gaussianCovariance P (fun ω => Φ a ω xy.1) (fun ω => Φ a ω xy.2) =
           gaussianCovariance P (fun ω => Φ a ω xy.2) (fun ω => Φ a ω xy.1) := by
         unfold gaussianCovariance
@@ -100,7 +97,7 @@ theorem reflected_lateral_compact_chaos_comparison
         by_contra hh
         exact hne ⟨fun h => False.elim (hx h), fun h => False.elim (hh h)⟩
       exact ho a xy.1 xy.2 hxK hyK hx hy
-  have hh : Measurable (fun x => (f x).toNNReal) := f.continuous.measurable.real_toNNReal
+  have hh  := f.continuous.measurable.real_toNNReal
   have hbound : ∃ b : ℝ≥0, ∀ x, (f x).toNNReal ≤ b :=
     ⟨‖f‖.toNNReal, fun x => Real.toNNReal_mono ((le_abs_self _).trans (f.norm_coe_le_norm x))⟩
   have hc' := reflected_kahane_decoupling_limit P Φ hΦ A hA ν (fun x => (f x).toNNReal)

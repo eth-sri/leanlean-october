@@ -31,7 +31,7 @@ crossing `gammaHalf_crossing`, the reductions below discharge all three from the
 So both `R_theor` statements depend only on the second dual seed.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology

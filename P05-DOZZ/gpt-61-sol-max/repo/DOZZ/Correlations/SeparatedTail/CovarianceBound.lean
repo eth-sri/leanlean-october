@@ -11,41 +11,39 @@ public import DOZZ.GMC.CirclePotential
 /-! The finite-circle equator/Dirichlet covariance discrepancy on the unit disks of the separated
 joint-tail estimate. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Metric Set
 
 namespace DOZZ.Proofs
 
 
+variable (c x y : ℂ) (hx : ‖x-c‖ ≤ 1) (hy : ‖y-c‖ ≤ 1)
+
+include c x y hx hy in
 /-- On a unit disk inside the disk of radius `5/4`, the regular Green numerator stays
 uniformly separated from zero, including at the coincident pair. -/
-theorem separatedTail_green_numerator_bounds (c x y : ℂ)
-    (hx : ‖x-c‖ ≤ 1) (hy : ‖y-c‖ ≤ 1) :
+theorem separatedTail_green_numerator_bounds  :
     (9/16 : ℝ) ≤ ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖ ∧
       ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖ ≤ 41/16 := by
   have hprod : ‖(x-c)*star (y-c)‖ ≤ 1 := by
     rw [norm_mul, norm_star]
     nlinarith [norm_nonneg (x-c), norm_nonneg (y-c)]
   have hs : ‖((5/4 : ℝ) : ℂ)^2‖ = (25/16 : ℝ) := by
-    rw [norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by norm_num)]
     norm_num
   have hupper := norm_sub_le (((5/4 : ℝ) : ℂ)^2) ((x-c)*star (y-c))
   have hlower := norm_sub_norm_le (((5/4 : ℝ) : ℂ)^2) ((x-c)*star (y-c))
-  rw [hs] at hupper hlower
-  constructor <;> linarith
+  grind
 
+include c x y hx hy in
 /-- The regular Green logarithm has an absolute bound independent of the disk center. -/
-theorem separatedTail_green_regular_log_abs_le (c x y : ℂ)
-    (hx : ‖x-c‖ ≤ 1) (hy : ‖y-c‖ ≤ 1) :
+theorem separatedTail_green_regular_log_abs_le  :
     |Real.log ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖| ≤ 3 := by
   obtain ⟨hl, hu⟩ := separatedTail_green_numerator_bounds c x y hx hy
   have h0 : 0 < ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖ := by linarith
   have hlogu := Real.log_le_sub_one_of_pos h0
   have hlogl := Real.one_sub_inv_le_log_of_pos h0
   have hinv : ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖⁻¹ ≤ (16/9 : ℝ) := by
-    calc
-      _ ≤ (9/16 : ℝ)⁻¹ := (inv_le_inv₀ h0 (by norm_num)).mpr hl
-      _ = _ := by norm_num
+    field_simp <;> nlinarith
   rw [abs_le]
   constructor <;> linarith
 
@@ -55,7 +53,7 @@ theorem separatedTail_circle_regular_bounds (c x : ℂ) (R r : ℝ)
     0 ≤ (∫ z, Real.log (normPlus z) ∂circleMeasure x r) ∧
       (∫ z, Real.log (normPlus z) ∂circleMeasure x r) ≤ R := by
   let _ := circleMeasure_isProbability x r
-  have hi : Integrable (fun z => Real.log (normPlus z)) (circleMeasure x r) :=
+  have hi  :=
     integrable_circleMeasure_of_circleIntegrable x r continuous_log_normPlus.measurable
       continuous_log_normPlus.continuousOn.circleIntegrable'
   refine ⟨integral_nonneg (fun z => Real.log_nonneg (le_max_left _ _)), ?_⟩

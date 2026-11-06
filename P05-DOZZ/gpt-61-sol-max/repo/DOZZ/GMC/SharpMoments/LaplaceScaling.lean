@@ -14,7 +14,7 @@ On the exact logarithmic chart, the cutoff mass of a subdisk `B(a, cR)` has the 
 Gaussian `w` of variance `log (1/c)`. For Laplace transforms in the logarithmic level this is a
 Gaussian average of shifted reference Laplace transforms. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -40,12 +40,12 @@ theorem cutoffLaplace_affine_ball_scaling
   classical
   let G : Measure ℝ := gaussianReal 0 ⟨-Real.log c,
     neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   have hG : IsProbabilityMeasure G := by
-    simpa [G] using (ProbabilityTheory.instIsProbabilityMeasureGaussianReal 0
+    exact (ProbabilityTheory.instIsProbabilityMeasureGaussianReal 0
       ⟨-Real.log c, neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩)
-  let _ : IsProbabilityMeasure G := hG
-  let _ : IsProbabilityMeasure (P.prod G) := inferInstance
+  let _  := hG
+  
   let scaleFactor : ℝ → ℝ := fun w =>
     c ^ 2 * Real.exp (γ * w - γ ^ 2 / 2 * (-Real.log c))
   have hscale : Measurable scaleFactor := by
@@ -92,7 +92,7 @@ theorem cutoffLaplace_affine_ball_scaling
           measurable_fst)).const_mul _)).aestronglyMeasurable
     · rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
       apply cutoffLaplace_integrand_le_one _ _ (Real.exp_pos y).le
-      exact mul_nonneg (by positivity) ENNReal.toReal_nonneg
+      bound
   have hswap := integral_prod_symm (μ := P) (ν := G) _ hint
   rw [hleft, hmid, hright, hswap]
   apply integral_congr_ae

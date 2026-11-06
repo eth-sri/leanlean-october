@@ -3,13 +3,14 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.FourPoint.TwoRegionLaw
 public import DOZZ.FourPoint.Reflected.SourceCopiedError
 public import DOZZ.FourPoint.Reflected.SourceWilliamsKernelSqueeze
 public import DOZZ.FourPoint.Reflected.SourceWilliamsLimit
 public import DOZZ.FourPoint.Reflected.OrderedKernelSqueeze
 public import DOZZ.FourPoint.Reflected.KernelCoefficientLimits
 /-! The literal source reflected increment follows by the ordered Williams/kernel squeeze. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -24,12 +25,7 @@ theorem reflected_source_inner_increment_tendsto
     (hi : IndepFun (originRadialPath Xc) N P)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))))
     (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
-    (hwhole : ∀ (f : ℂ → ℝ≥0∞), Measurable f →
-      ∀ G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞, Measurable G →
-      (∫⁻ ω, G (originRadialPath Xc ω, ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω) ∂P) =
-      ∫⁻ ω, G (originRadialPath Xc ω.1, ∫⁻ x in ({0} : Set ℂ)ᶜ,
-        f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ
-          (originRadialPath Xc ω.1) x) ∂N ω.2) ∂P.prod P)
+    (hwhole : Contract.radialPlaneLaw P (originRadialPath Xc) γ M N)
     (hNa : ∀ ρ : ℝ, 0 < ρ → IsAdmissibleGMCVersion P (originLateralChart ρ)
       originLateralPlaneDensity (originLateralCircleRegularization Xc ρ) γ
       (fun ω => (N ω).restrict (originLateralChart ρ)))
@@ -101,8 +97,7 @@ theorem reflected_source_inner_increment_tendsto
     filter_upwards [hb] with z hz
     have hlo := div_le_div_of_nonneg_right hz.1 (Real.rpow_nonneg (norm_nonneg z) κ)
     have hhi := div_le_div_of_nonneg_right hz.2 (Real.rpow_nonneg (norm_nonneg z) κ)
-    exact ⟨by simpa only [g,Chi,E,f,W,ν,add_div,mul_div_assoc] using hlo,
-      by simpa only [k,Clo,E,f,W,ν,add_div,mul_div_assoc] using hhi⟩
+    grind
   exact reflected_ordered_two_sided_squeeze (𝓝[≠] (0 : ℂ)) f g k L Llo Lhi hg hk hLlo hLhi hbound
 
 end DOZZ.Proofs

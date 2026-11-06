@@ -27,13 +27,10 @@ noncomputable def gffUnitBoxFunction (L : ℝ) (f : TestFn) : ℂ → ℝ :=
   fun z => f (L • z)
 
 theorem gffUnitBoxFunction_contDiff (L : ℝ) (f : TestFn) :
-    ContDiff ℝ (↑(⊤ : ENat)) (gffUnitBoxFunction L f) := by
-  unfold gffUnitBoxFunction
-  exact f.contDiff.comp (contDiff_const_smul L)
+    ContDiff ℝ (↑(⊤ : ENat)) (gffUnitBoxFunction L f) := f.contDiff.comp (contDiff_const_smul L)
 
 theorem gffUnitBoxFunction_hasCompactSupport (L : ℝ) (hL : L ≠ 0) (f : TestFn) :
-    HasCompactSupport (gffUnitBoxFunction L f) := by
-  exact f.hasCompactSupport.comp_smul hL
+    HasCompactSupport (gffUnitBoxFunction L f) := f.hasCompactSupport.comp_smul hL
 
 /-- The derivative of a smooth compactly supported complex function in a fixed direction is
 compactly supported and smooth. -/
@@ -56,15 +53,15 @@ theorem fourier_complexDirectionalDerivative {f : ℂ → ℂ}
     𝓕 (complexDirectionalDerivative f v) w =
       (2 * Real.pi * Complex.I * ((innerSL ℝ) w v : ℂ)) * 𝓕 f w := by
   let df : ℂ → ℂ →L[ℝ] ℂ := fun z => fderiv ℝ f z
-  have hfOn : ContDiffOn ℝ (↑(⊤ : ENat)) f Set.univ := contDiffOn_univ.mpr hf
+  have hfOn  := contDiffOn_univ.mpr hf
   have hdfOn : ContDiffOn ℝ (↑(⊤ : ENat)) (fderiv ℝ f) Set.univ :=
     hfOn.fderiv_of_isOpen isOpen_univ (by simp)
-  have hdf : ContDiff ℝ (↑(⊤ : ENat)) (fderiv ℝ f) := contDiffOn_univ.mp hdfOn
-  have hdfcont : Continuous df := hdf.continuous
-  have hdfcompact : HasCompactSupport df := hcompact.fderiv (𝕜 := ℝ)
+  have hdf  := contDiffOn_univ.mp hdfOn
+  have hdfcont  := hdf.continuous
+  have hdfcompact  := hcompact.fderiv (𝕜 := ℝ)
   have hdfint : Integrable df := hdfcont.integrable_of_hasCompactSupport hdfcompact
   have hfint : Integrable f := complexFourier_integrable hf hcompact
-  have hdiff : Differentiable ℝ f := hf.differentiable (by simp)
+  have hdiff  := hf.differentiable (by simp)
   have htransform := Real.fourier_fderiv (E := ℂ) hfint hdiff hdfint
   have happly := congrArg (fun T : ℂ →L[ℝ] ℂ => T v) (congrFun htransform w)
   rw [Real.fourier_continuousLinearMap_apply hdfint] at happly
@@ -98,9 +95,7 @@ noncomputable def gffUnitBoxComplexFunction (L : ℝ) (f : TestFn) : ℂ → ℂ
   fun z => (gffUnitBoxFunction L f z : ℂ)
 
 theorem gffUnitBoxComplexFunction_contDiff (L : ℝ) (f : TestFn) :
-    ContDiff ℝ (↑(⊤ : ENat)) (gffUnitBoxComplexFunction L f) := by
-  unfold gffUnitBoxComplexFunction
-  exact Complex.ofRealCLM.contDiff.comp (gffUnitBoxFunction_contDiff L f)
+    ContDiff ℝ (↑(⊤ : ENat)) (gffUnitBoxComplexFunction L f) := Complex.ofRealCLM.contDiff.comp (gffUnitBoxFunction_contDiff L f)
 
 theorem gffUnitBoxComplexFunction_hasCompactSupport (L : ℝ) (hL : L ≠ 0)
     (f : TestFn) : HasCompactSupport (gffUnitBoxComplexFunction L f) := by
@@ -135,11 +130,7 @@ theorem gffUnitBoxComplexFunction_directionalDerivative (L : ℝ) (hL : L ≠ 0)
     (L : ℂ)⁻¹ * (fderiv ℝ (gffUnitBoxComplexFunction L f) z) v
   rw [show fderiv ℝ (gffUnitBoxComplexFunction L f) z =
       fderiv ℝ (fun y : ℂ => ((f (L • y) : ℝ) : ℂ)) z by rfl, hderiv]
-  simp only [ContinuousLinearMap.comp_apply, smul_apply,
-    smul_eq_mul, Complex.real_smul, Complex.ofRealCLM_apply]
-  have hL' : (L : ℂ) ≠ 0 := by exact_mod_cast hL
-  field_simp [hL']
-  rw [← Complex.ofReal_mul]
+  simp_all
 
 /-- A physical derivative rescaled by the box side so that it becomes a unit-box derivative. -/
 noncomputable def unitBoxDirectionalDerivativeTest (L : ℝ) (f : TestFn) (v : ℂ) : TestFn :=
@@ -149,9 +140,7 @@ theorem support_unitBoxDirectionalDerivativeTest_subset (L R : ℝ) (f : TestFn)
     (v : ℂ) (hf : Function.support f ⊆ ball (0 : ℂ) R) :
     Function.support (unitBoxDirectionalDerivativeTest L f v) ⊆
       ball (0 : ℂ) (R + 1) := by
-  have htsupp : tsupport f ⊆ closedBall (0 : ℂ) R := by
-    change closure (Function.support f) ⊆ closedBall (0 : ℂ) R
-    exact (closure_mono hf).trans closure_ball_subset_closedBall
+  have htsupp : tsupport f ⊆ closedBall (0 : ℂ) R := (closure_mono hf).trans closure_ball_subset_closedBall
   have hderiv : Function.support (directionalDerivativeTest f v) ⊆ tsupport f := by
     calc
       Function.support (directionalDerivativeTest f v) ⊆
@@ -164,7 +153,7 @@ theorem support_unitBoxDirectionalDerivativeTest_subset (L R : ℝ) (f : TestFn)
       simpa [Function.mem_support] using hn
     apply hz
     simp [unitBoxDirectionalDerivativeTest, hzero]
-  have hzball : z ∈ closedBall (0 : ℂ) R := htsupp (hderiv hz')
+  have hzball  := htsupp (hderiv hz')
   exact closedBall_subset_ball (by linarith) hzball
 
 theorem gffUnitBoxComplexFunction_unitBoxDirectionalDerivativeTest
@@ -178,14 +167,15 @@ theorem gffUnitBoxComplexFunction_unitBoxDirectionalDerivativeTest
       simp [gffUnitBoxComplexFunction, gffUnitBoxFunction, Complex.real_smul]
     _ = complexDirectionalDerivative (gffUnitBoxComplexFunction L f) v z := by
       rw [gffUnitBoxComplexFunction_directionalDerivative L hL]
-      have hL' : (L : ℂ) ≠ 0 := by exact_mod_cast hL
-      field_simp [hL']
+      simp_all
 
+variable (L R : ℝ) (hL : 0 < L) (hRL : R < L / 2) (f : TestFn) (hf : Function.support f ⊆ ball (0 : ℂ) R)
+
+include L R hL hRL f hf in
 /-- If a physical test is supported in a ball strictly smaller than half the box width, its
 scaled representative is supported inside the centered fundamental square. -/
 theorem gffUnitBoxComplexFunction_support_subset_centeredBox
-    (L R : ℝ) (hL : 0 < L) (hRL : R < L / 2)
-    (f : TestFn) (hf : Function.support f ⊆ ball (0 : ℂ) R) :
+     :
     Function.support (gffUnitBoxComplexFunction L f) ⊆
       {z : ℂ | z.re ∈ Set.Ioc (-1 / 2 : ℝ) (1 / 2 : ℝ) ∧
         z.im ∈ Set.Ioc (-1 / 2 : ℝ) (1 / 2 : ℝ)} := by
@@ -195,27 +185,18 @@ theorem gffUnitBoxComplexFunction_support_subset_centeredBox
     apply hz
     simp [gffUnitBoxComplexFunction, hzero]
   have hscaled : L • z ∈ Function.support f := by
-    change f (L • z) ≠ 0
-    exact_mod_cast hval
-  have hzball : L • z ∈ ball (0 : ℂ) R := hf hscaled
+    continuity
+  have hzball  := hf hscaled
   have hnorm : ‖L • z‖ < R := by
-    simpa [Metric.mem_ball, dist_zero_right] using hzball
+    simp_all
   have hnormz : ‖z‖ < R / L := by
     rw [norm_smul, Real.norm_eq_abs, abs_of_pos hL] at hnorm
-    apply (lt_div_iff₀ hL).2
-    simpa [mul_comm] using hnorm
+    field_simp <;> nlinarith
   have hsmall : R / L < 1 / 2 := by
-    apply (div_lt_iff₀ hL).2
-    nlinarith [hRL]
-  have hre : |z.re| < 1 / 2 := by
-    exact (Complex.abs_re_le_norm z).trans_lt (hnormz.trans hsmall)
-  have him : |z.im| < 1 / 2 := by
-    exact (Complex.abs_im_le_norm z).trans_lt (hnormz.trans hsmall)
-  refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩⟩
-  · linarith [abs_lt.mp hre]
-  · linarith [abs_lt.mp hre]
-  · linarith [abs_lt.mp him]
-  · linarith [abs_lt.mp him]
+    field_simp <;> nlinarith
+  have hre  := (Complex.abs_re_le_norm z).trans_lt (hnormz.trans hsmall)
+  have him  := (Complex.abs_im_le_norm z).trans_lt (hnormz.trans hsmall)
+  grind
 
 private def centeredUnitBox : Set (Fin 2 → ℝ) :=
   {x | ∀ i, x i ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1)}
@@ -226,9 +207,7 @@ private theorem measurableSet_centeredUnitBox : MeasurableSet centeredUnitBox :=
     ext x
     simp [centeredUnitBox]
     norm_num
-  rw [hEq]
-  exact MeasurableSet.iInter fun i : Fin 2 =>
-    measurableSet_Ioc.preimage (measurable_pi_apply (X := fun _ : Fin 2 => ℝ) i)
+  measurability
 
 /-- A compactly supported function whose support lies in a measurable set has the same total
 integral as its integral over that set. -/
@@ -297,21 +276,13 @@ private theorem unitTorusFourierIntegrand_measurableEquivPi
   simp [Complex.measurableEquivPi_apply]
   ring_nf
 
+include L R hL hRL f hf in
 private theorem support_unitTorusFourierIntegrand_subset_box
-    (L R : ℝ) (hL : 0 < L) (hRL : R < L / 2) (f : TestFn)
-    (hf : Function.support f ⊆ ball (0 : ℂ) R) (k : Fin 2 → ℤ) :
+     (k : Fin 2 → ℤ) :
     Function.support (unitTorusFourierIntegrand L f k) ⊆ centeredUnitBox := by
   intro x hx
-  have hscaled : gffUnitBoxComplexFunction L f
-      (Complex.measurableEquivPi.symm x) ≠ 0 := by
-    intro hzero
-    apply hx
-    have hzero' : gffUnitBoxComplexFunction L f
-        (x 0 + x 1 * Complex.I) = 0 := by
-      simpa only [Complex.measurableEquivPi_symm_apply] using hzero
-    simp [unitTorusFourierIntegrand, hzero']
-  have hz : Complex.measurableEquivPi.symm x ∈
-      Function.support (gffUnitBoxComplexFunction L f) := hscaled
+  have hscaled  := right_ne_zero_of_mul hx
+  have hz  := hscaled
   rcases gffUnitBoxComplexFunction_support_subset_centeredBox L R hL hRL f hf hz with
     ⟨hre, him⟩
   change ∀ i : Fin 2, x i ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1)
@@ -319,37 +290,36 @@ private theorem support_unitTorusFourierIntegrand_subset_box
   fin_cases i
   · change x 0 ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1)
     constructor
-    · simpa [Complex.measurableEquivPi_symm_apply] using hre.1
+    · simp_all
     · have hupper : x 0 ≤ 1 / 2 := by
-        simpa [Complex.measurableEquivPi_symm_apply] using hre.2
+        simp_all
       norm_num at hupper ⊢
       linarith
   · change x 1 ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1)
     constructor
-    · simpa [Complex.measurableEquivPi_symm_apply] using him.1
+    · simp_all
     · have hupper : x 1 ≤ 1 / 2 := by
-        simpa [Complex.measurableEquivPi_symm_apply] using him.2
+        simp_all
       norm_num at hupper ⊢
       linarith
 
+include L R hL hRL f hf in
 /-- A torus Fourier coefficient of a test supported inside the fundamental box is the ordinary
 Fourier transform of its scaled compactly supported extension. -/
 theorem torusPeriodizationCoeff_eq_fourier
-    (L R : ℝ) (hL : 0 < L) (hRL : R < L / 2) (f : TestFn)
-    (hf : Function.support f ⊆ ball (0 : ℂ) R) (k : Fin 2 → ℤ) :
+     (k : Fin 2 → ℤ) :
     UnitAddTorus.mFourierCoeff (torusPeriodizationLp L f) k =
       𝓕 (gffUnitBoxComplexFunction L f) (unitTorusFourierFrequency k) := by
   let E := Complex.measurableEquivPi
   let H := unitTorusFourierIntegrand L f k
-  have hHsupport : Function.support H ⊆ centeredUnitBox :=
+  have hHsupport  :=
     support_unitTorusFourierIntegrand_subset_box L R hL hRL f hf k
   have hbox := torusPeriodizationCoeff_eq_boxIntegral L f k
   calc
     UnitAddTorus.mFourierCoeff (torusPeriodizationLp L f) k =
         ∫ x in centeredUnitBox,
           UnitAddTorus.mFourier (-k) (fun i => (x i : UnitAddCircle)) •
-            torusPeriodizationFunction L f (fun i => (x i : UnitAddCircle)) := by
-      simpa [centeredUnitBox] using hbox
+            torusPeriodizationFunction L f (fun i => (x i : UnitAddCircle)) := hbox
     _ = ∫ x in centeredUnitBox, H x := by
       apply integral_congr_ae
       filter_upwards [ae_restrict_mem measurableSet_centeredUnitBox] with x hx
@@ -357,19 +327,16 @@ theorem torusPeriodizationCoeff_eq_fourier
       rw [unitTorus_mFourier_neg_eq_exp_dot]
       congr 1
       have hx' : x ∈ {x : Fin 2 → ℝ |
-          ∀ i, x i ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1)} := by
-        simpa [centeredUnitBox] using hx
+          ∀ i, x i ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1)} := hx
       have hrep := torusPeriodizationFunction_rep L f ⟨x, hx'⟩
       have hrep' : torusPeriodizationFunction L f
           (fun i => (x i : UnitAddCircle)) =
-          ((f (Complex.equivRealProdCLM.symm (L * x 0, L * x 1)) : ℝ) : ℂ) := by
-        simpa using hrep
+          ((f (Complex.equivRealProdCLM.symm (L * x 0, L * x 1)) : ℝ) : ℂ) := hrep
       have hpoint : Complex.equivRealProdCLM.symm (L * x 0, L * x 1) =
           L • Complex.measurableEquivPi.symm x := by
         rw [Complex.equivRealProdCLM_symm_apply, Complex.measurableEquivPi_symm_apply]
         apply Complex.ext
-        · simp [Complex.real_smul]
-        · simp [Complex.real_smul]
+        all_goals norm_num
       rw [hrep', hpoint]
       rfl
     _ = ∫ x, H x := by
@@ -382,17 +349,11 @@ theorem torusPeriodizationCoeff_eq_fourier
         𝓕 (gffUnitBoxComplexFunction L f) (unitTorusFourierFrequency k) =
             ∫ z, Complex.exp
               (↑(-2 * Real.pi * ((innerSL ℝ) z (unitTorusFourierFrequency k))) *
-                Complex.I) * gffUnitBoxComplexFunction L f z := by
-          rw [Real.fourier_eq']
-          simp_rw [smul_eq_mul]
-          apply integral_congr_ae
-          filter_upwards [] with z
-          congr 1
+                Complex.I) * gffUnitBoxComplexFunction L f z := Real.fourier_eq' (gffUnitBoxComplexFunction L f) (unitTorusFourierFrequency k)
         _ = ∫ z, H (E z) := by
           apply integral_congr_ae
           filter_upwards [] with z
-          simpa [H, E] using
-            unitTorusFourierIntegrand_measurableEquivPi L f k z
+          exact unitTorusFourierIntegrand_measurableEquivPi L f k z
         _ = ∫ x, H x := (Complex.volume_preserving_equiv_pi).integral_comp' H
 
 /-- Differentiating a test in a physical coordinate multiplies its unit-torus Fourier

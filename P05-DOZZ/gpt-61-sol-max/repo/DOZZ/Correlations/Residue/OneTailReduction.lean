@@ -6,12 +6,13 @@ module
 
 public import DOZZ.Correlations.Residue.FullSourceTailReduction
 public import DOZZ.Correlations.SumTail.Reduction
+public import DOZZ.Correlations.TailContracts
 
 /-! The joint-tail inequality `DOZZ.separatedSingularMass_joint_tail` and the two-insertion tail
 `DOZZ.twoInsertion_tail_sum_uniform` supply the two-insertion hypothesis in both complete
 residue-bridge reductions. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -25,22 +26,7 @@ theorem residue_unitVolume_bridge_of_oneInsertion_tail
     (hγ : 0 < γ) (hγ2 : γ < 2)
     (hα : 0 < α2 ∧ α2 ≤ α3 ∧ γ / 2 < α3 ∧ α3 < Q γ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hone : ∀
-    (Kz : Set ℂ) (_hKz : IsCompact Kz) (_hz : ∀ z ∈ Kz, 2 ≤ ‖z‖)
-    (Kα : Set ℝ) (_hKα : IsCompact Kα)
-    (_hα : ∀ α ∈ Kα, γ / 2 < α ∧ α < Q γ)
-    (Family : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
-    (_hFamily : UniformPositiveC1Family Kz Family radius supBound derivBound lowerBound),
-    ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-      IsSourceLateralProjection P X γ M Z ∧
-        (∀ α ∈ Kα, IsReflectionData P γ α (B α) Z) ∧
-        ∀ η : ℝ, 0 < η → (∀ α ∈ Kα, η < oneInsertionErrorCeiling γ α) →
-          ∃ C : ℝ, 0 ≤ C ∧
-            ∀ z ∈ Kz, ∀ α ∈ Kα, ∀ F ∈ Family z, ∀ x : ℝ, 1 ≤ x →
-              |(P {ω | ENNReal.ofReal x < localSingularMass M F z γ α ω}).toReal -
-                oneInsertionTailCoefficient γ α z (F z) (reflectionBarR P γ α (B α) Z) *
-                  Real.rpow x (-reflectionExponent γ α)| ≤
-                C * Real.rpow x (-reflectionExponent γ α - η) ) :
+    (hone : Contract.uniformOneInsertionTail P X M γ ) :
     ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
       IsSourceLateralProjection P X γ M Z ∧ IsReflectionData P γ α3 (B α3) Z ∧
       Tendsto (fun ε : ℝ => ε * unitVolumeStructureConstant P M γ

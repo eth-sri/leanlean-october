@@ -14,18 +14,19 @@ positive deterministic time with the explicit entrance measure. This is the marg
 the large-time last-exit estimates.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped NNReal
 
 namespace DOZZ.Proofs
 
+variable {ν : ℝ} {P : Measure BrownianPath} (hP : IsNegativeConditionedBrownianLaw ν P) (t : ℝ≥0) (ht : 0 < (t : ℝ))
+
+include ν P hP t ht in
 /-- The positive-coordinate state at a deterministic positive time has the entrance law. -/
 theorem conditionedPositiveStateAt_map_eq_entranceMeasure
-    {ν : ℝ} {P : Measure BrownianPath}
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (t : ℝ≥0) (ht : 0 < (t : ℝ)) :
+     :
     P.map (fun p => -(p t)) = conditionedPositiveEntranceMeasure ν (t : ℝ) := by
   let X : BrownianPath → ℝ := fun p => -(p t)
   let Y : BrownianPath → ℝ := fun p => -(p (t + 1))
@@ -34,35 +35,32 @@ theorem conditionedPositiveStateAt_map_eq_entranceMeasure
   have hpair := negativeConditionedLaw_twoTime_compProd hP t 1 ht (by norm_num)
   have hpair' : P.map (fun p => (X p, Y p)) =
       conditionedPositiveEntranceMeasure ν (t : ℝ) ⊗ₘ
-        conditionedPositiveTransitionKernelOnReal ν (1 : ℝ) := by
-    simpa [X, Y, NNReal.coe_one] using hpair
-  have : IsProbabilityMeasure (conditionedPositiveEntranceMeasure ν (t : ℝ)) :=
+        conditionedPositiveTransitionKernelOnReal ν (1 : ℝ) := hpair
+  have  :=
     isProbabilityMeasure_conditionedPositiveEntranceMeasure ν (t : ℝ) hP.1 ht
-  have : IsMarkovKernel (conditionedPositiveTransitionKernelOnReal ν (1 : ℝ)) :=
+  have  :=
     isMarkovKernel_conditionedPositiveTransitionKernelOnReal ν 1 hP.1 (by norm_num)
   have hstate : P.map X = (P.map fun p => (X p, Y p)).fst := by
     rw [Measure.fst_map_prodMk hX hY]
   calc
-    P.map (fun p => -(p t)) = P.map X := by rfl
+    P.map (fun p => -(p t)) = P.map X := rfl
     _ = (P.map fun p => (X p, Y p)).fst := hstate
     _ = (conditionedPositiveEntranceMeasure ν (t : ℝ) ⊗ₘ
-        conditionedPositiveTransitionKernelOnReal ν (1 : ℝ)).fst := by
-          exact congrArg Measure.fst hpair'
+        conditionedPositiveTransitionKernelOnReal ν (1 : ℝ)).fst := congrArg Measure.fst hpair'
     _ = conditionedPositiveEntranceMeasure ν (t : ℝ) := Measure.fst_compProd _ _
 
 
+include ν P hP t ht in
 /-- The state event has the corresponding real probability measure, hence its mass is the
 entrance CDF. -/
 theorem conditionedPositiveStateAt_measureReal_Iic
-    {ν : ℝ} {P : Measure BrownianPath}
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (t : ℝ≥0) (ht : 0 < (t : ℝ)) (z : ℝ) :
+     (z : ℝ) :
     P.real {p | -(p t) ≤ z} =
       ProbabilityTheory.cdf (conditionedPositiveEntranceMeasure ν (t : ℝ)) z := by
   let X : BrownianPath → ℝ := fun p => -(p t)
   have hX : Measurable X := (ContinuousMap.measurable_eval t).neg
-  have : IsProbabilityMeasure P := hP.2.1
-  have : IsProbabilityMeasure (conditionedPositiveEntranceMeasure ν (t : ℝ)) :=
+
+  have  :=
     isProbabilityMeasure_conditionedPositiveEntranceMeasure ν (t : ℝ) hP.1 ht
   change P.real (X ⁻¹' Set.Iic z) = _
   rw [← map_measureReal_apply hX measurableSet_Iic,

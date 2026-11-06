@@ -8,7 +8,7 @@ public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 
 /-! Scalar pin removal in the cutoff-to-limit passage. No independence is needed. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

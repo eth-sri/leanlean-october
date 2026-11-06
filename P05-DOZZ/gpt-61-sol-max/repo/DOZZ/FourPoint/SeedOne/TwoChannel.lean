@@ -18,6 +18,7 @@ public import DOZZ.Statements.Hypergeom.GaussGMinus
 import DOZZ.ShiftEquations.Rbar.Multiplier
 import DOZZ.Hypergeom.ODE.SlitPlaneGluing
 import Mathlib.Tactic
+public import DOZZ.Hypergeom.RealConnectionCoefficients
 
 /-!
 # The two channels of the dual degenerate four-point function
@@ -33,7 +34,7 @@ coefficient `C(ε - 2/γ, α, α') ρ(ε, α, α')` ([KRV, Propositions 9.9 and 
 along the same lines as [KRV, Proposition 9.8]).
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -85,13 +86,7 @@ theorem dual_one_channel_of_classification {Ω : Type*} [MeasurableSpace Ω]
         (gaussParameterC γ (2 / γ) α : ℂ) := by
     exact_mod_cast hC
   unfold gaussFMinus gaussFPlus gaussGMinus gaussGPlus
-  rw [hCC]
-  have hpow (A B C : ℂ) : 1 - (1 + A + B - C) = C - A - B := by ring
-  have hplusA (A B C : ℂ) : A - (1 + A + B - C) + 1 = C - B := by ring
-  have hplusB (A B C : ℂ) : B - (1 + A + B - C) + 1 = C - A := by ring
-  have hplusC (A B C : ℂ) : 2 - (1 + A + B - C) = 1 + C - A - B := by ring
-  rw [hpow, hplusA, hplusB, hplusC]
-  ring
+  grind
 
 /-- **The first zero-channel coefficient from the second one-channel coefficient**:
 `C(α - 2/γ, ε, α') = dualCrossingMultiplier(α', α, ε) · C(ε - 2/γ, α, α') ρ(ε, α, α')`, on the whole
@@ -113,13 +108,10 @@ theorem dual_first_coefficient_of_classification {Ω : Type*} [MeasurableSpace �
   let c := gaussParameterC γ (2 / γ) α
   let d₀ := structureConstant P M γ μ (α - 2 / γ) ε α'
   let d₁ := d₀ * gaussCoefficientRatio a b c
-  let u := Real.Gamma c * Real.Gamma (c - a - b) *
-    (Real.Gamma (c - a))⁻¹ * (Real.Gamma (c - b))⁻¹
-  let v := Real.Gamma c * Real.Gamma (a + b - c) * (Real.Gamma a)⁻¹ * (Real.Gamma b)⁻¹
-  let w := Real.Gamma (2 - c) * Real.Gamma (c - a - b) *
-    (Real.Gamma (1 - a))⁻¹ * (Real.Gamma (1 - b))⁻¹
-  let x := Real.Gamma (2 - c) * Real.Gamma (a + b - c) *
-    (Real.Gamma (a - c + 1))⁻¹ * (Real.Gamma (b - c + 1))⁻¹
+  let u := realGaussConnection₀₀ a b c
+  let v := realGaussConnection₀₁ a b c
+  let w := realGaussConnection₁₀ a b c
+  let x := realGaussConnection₁₁ a b c
   let e₀ := structureConstant P M γ μ (ε - 2 / γ) α α'
   let e₁ := e₀ * gaussCoefficientRatio (gaussParameterA γ (2 / γ) ε α α')
     (gaussParameterB γ (2 / γ) ε α α') (gaussParameterC γ (2 / γ) ε)
@@ -162,16 +154,7 @@ theorem dual_first_coefficient_of_classification {Ω : Type*} [MeasurableSpace �
       (d₀ * u ^ 2 + d₁ * w ^ 2) * ‖gaussGMinus H a b c z‖ ^ 2 +
         (d₀ * v ^ 2 + d₁ * x ^ 2) * ‖gaussGPlus H a b c z‖ ^ 2 =
           e₀ * ‖gaussGMinus H a b c z‖ ^ 2 + e₁ * ‖gaussGPlus H a b c z‖ ^ 2 := by
-    intro z hz
-    calc
-      _ = d₀ * ‖gaussFMinus H a b c z‖ ^ 2 + d₁ * ‖gaussFPlus H a b c z‖ ^ 2 :=
-        (htransfer z hz).symm
-      _ = fourPointT P M γ μ (-(2 / γ)) α ε α' z := by
-        rw [h22 z hz]
-        dsimp [d₁, d₀, a, b, c]
-        ring
-      _ = _ := by
-        rw [hone z hz]
+    grind
   have hE := (crossing_one_channel_coefficients_unique hH a b c
     (d₀ * u ^ 2 + d₁ * w ^ 2) (d₀ * v ^ 2 + d₁ * x ^ 2) e₀ e₁ hδn he).2.symm
   have hex := crossing_diagonal_coefficient_extraction a b c d₀ d₁ e₁

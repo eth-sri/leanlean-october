@@ -14,13 +14,15 @@ dual-strip statement `DOZZ.structureConstant_dual_shift_strip` is not used, and 
 statement modules of `DOZZ.dozz_main` and `DOZZ.dozz_unitVolume` is imported.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs
 
-theorem dozz_unitVolume (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (α₁ α₂ α₃ : ℝ) (hα : ExtendedSeiberg3 γ α₁ α₂ α₃)
+variable (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) (α₁ α₂ α₃ : ℝ) (hα : ExtendedSeiberg3 γ α₁ α₂ α₃)
+
+include γ μ hγ hγ2 hμ α₁ α₂ α₃ hα in
+theorem dozz_unitVolume 
     (U : ℂ → ℂ) (hU : IsUpsilon γ U)
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
@@ -30,19 +32,17 @@ theorem dozz_unitVolume (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < 
           dozzFormula γ μ U a.1 a.2.1 a.2.2)
       (𝓝[{a | ExtendedSeiberg3 γ a.1 a.2.1 a.2.2 ∧
               ∀ n : ℕ, sExp γ a.1 a.2.1 a.2.2 ≠ -(n : ℝ)}] (α₁, α₂, α₃))
-      (𝓝 (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ)) := by
-  exact dozz_unitVolume_of_residual_factor γ μ hγ hγ2 hμ α₁ α₂ α₃ hα U hU P X M hX hM
+      (𝓝 (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ)) := dozz_unitVolume_of_residual_factor γ μ hγ hγ2 hμ α₁ α₂ α₃ hα U hU P X M hX hM
     DOZZ.Proofs.unitVolume_residual_factor_eq_one
 
 
-theorem dozz_main (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (α₁ α₂ α₃ : ℝ) (hα : ExtendedSeiberg3 γ α₁ α₂ α₃)
+include γ μ hγ hγ2 hμ α₁ α₂ α₃ hα in
+theorem dozz_main 
     (hs : ∀ n : ℕ, sExp γ α₁ α₂ α₃ ≠ -(n : ℝ))
     (U : ℂ → ℂ) (hU : IsUpsilon γ U)
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
-    (structureConstant P M γ μ α₁ α₂ α₃ : ℂ) = dozzFormula γ μ U α₁ α₂ α₃ := by
-  exact dozz_main_of_residual_factor γ μ hγ hγ2 hμ α₁ α₂ α₃ hα hs U hU P X M hX hM
+    (structureConstant P M γ μ α₁ α₂ α₃ : ℂ) = dozzFormula γ μ U α₁ α₂ α₃ := dozz_main_of_residual_factor γ μ hγ hγ2 hμ α₁ α₂ α₃ hα hs U hU P X M hX hM
     DOZZ.Proofs.unitVolume_residual_factor_eq_one
 
 

@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Analytic.OutwardVertexKernel
 
 /-! Exact retained Coulomb kernels for the mixed finite and infinity frame. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -25,7 +25,7 @@ theorem coulomb_weight_exp_log_infinity {N : ℕ} (γ : ℝ) (α : Fin N → ℝ
   have he : coulombWeight γ α z αinf x = coulombWeight γ α z 0 x *
       ENNReal.ofReal (normPlus x) ^ (γ * αinf) := by
     unfold coulombWeight
-    simp only [mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero, mul_one]
+    simp_all
   rw [he, coulomb_weight_exp_log γ α z x hx,
     ENNReal.ofReal_rpow_of_pos hn, Real.rpow_def_of_pos hn,
     ← ENNReal.ofReal_mul (Real.exp_nonneg _), ← Real.exp_add]

@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Dual.CutSqueezeLimit
 import Mathlib.Tactic
 /-! Remove the radial buffer after taking each fixed-buffer spatial limit. -/
-@[expose] public section
+public section
 open Filter Topology
 namespace DOZZ.Proofs
 
@@ -35,16 +35,12 @@ theorem dual_buffer_relative_squeeze_tendsto {A : Type*} (l : Filter A)
       (hLower.eventually (lt_mem_nhds ha))).exists
     have ht := (hg h hh).sub ((hd h hh).add ((he h hh).mul (hg h hh).neg))
     filter_upwards [ht.eventually (lt_mem_nhds hc), hb h hh] with x hx hbound
-    have hlow := (abs_le.mp hbound).1
-    have hf : g h x-(d h x+e h x*(-g h x)) ≤ f x := by linarith only [hlow]
-    exact hx.trans_le hf
+    grind
   · intro b hb'
     obtain ⟨h, hh, hc⟩ := ((eventually_gt_atTop (0 : ℝ)).and
       (hUpper.eventually (gt_mem_nhds hb'))).exists
     have ht := (hg h hh).add ((hd h hh).add ((he h hh).mul (hg h hh).neg))
     filter_upwards [ht.eventually (gt_mem_nhds hc), hb h hh] with x hx hbound
-    have hhigh := (abs_le.mp hbound).2
-    have hf : f x ≤ g h x+(d h x+e h x*(-g h x)) := by linarith only [hhigh]
-    exact hf.trans_lt hx
+    grind
 
 end DOZZ.Proofs

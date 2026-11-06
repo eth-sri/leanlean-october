@@ -10,7 +10,7 @@ import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! Domination of the actual GMC mass outside the critical insertion balls. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal Classical
 namespace DOZZ.Proofs
@@ -42,8 +42,6 @@ theorem residue_coulombWeight_two_split (γ a b c : ℝ) (z w x : ℂ) :
     coulombWeight γ ![a, b] ![z, w] c x =
       ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - z‖)) (γ * a) *
         coulombWeight γ ![b] ![w] c x := by
-  unfold coulombWeight
-  simp only [Fin.prod_univ_two, Fin.prod_univ_one, Matrix.cons_val_zero, Matrix.cons_val_one]
   exact mul_assoc _ _ _
 
 /-- The whole complement of the critical ball is dominated by the subcritical one-root
@@ -61,9 +59,12 @@ theorem residue_complement_mass_le (γ a b c : ℝ) (hγα : 0 ≤ γ * a)
   · rw [ite_eq_left hx, residue_coulombWeight_two_split]
     exact mul_le_mul_left (residue_coulomb_factor_le γ a hγα z x hx) _
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ)
+
+include Ω _inst1 P M in
 /-- Quantitative moment domination of the critical-ball complement. -/
 theorem residue_complement_moment_le
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ)
+    
     (γ a b c t : ℝ) (hγα : 0 ≤ γ * a) (ht : 0 ≤ t) (z w : ℂ) :
     (∫⁻ ω, ENNReal.rpow
       (∫⁻ x, if x ∉ Metric.ball z 1 then coulombWeight γ ![a, b] ![z, w] c x else 0 ∂M ω) t ∂P) ≤
@@ -101,9 +102,10 @@ theorem residue_all_complement_mass_le {N : ℕ} (γ c : ℝ)
   · rw [ite_eq_right hx]
     exact zero_le
 
+include Ω _inst1 P M in
 /-- Moment version of the all-critical-ball complement domination. -/
 theorem residue_all_complement_moment_le
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ)
+    
     {N : ℕ} (γ c t : ℝ) (α : Fin N → ℝ) (hα : ∀ k, 0 ≤ γ * α k)
     (z : Fin N → ℂ) (ht : 0 ≤ t) :
     (∫⁻ ω, ENNReal.rpow
@@ -114,7 +116,7 @@ theorem residue_all_complement_moment_le
   have hAtop : A ≠ ⊤ := (ENNReal.prod_lt_top (fun _ _ => ENNReal.ofReal_lt_top)).ne
   have hA0 : A ≠ 0 := Finset.prod_ne_zero_iff.mpr fun k _ =>
     (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by positivity) _)).ne'
-  have hAt : A ^ t ≠ ⊤ := (ENNReal.rpow_lt_top_of_nonneg ht hAtop).ne
+  have hAt  := (ENNReal.rpow_lt_top_of_nonneg ht hAtop).ne
   rw [← lintegral_const_mul' _ _ hAt]
   apply lintegral_mono
   intro ω

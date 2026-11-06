@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Residue.CompetitorPower
 /-! Adding the noncritical mass does not change the moment residue of the three-to-two residue
 bridge. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -26,7 +26,7 @@ theorem residue_integral_lower_power_le
     filter_upwards [hpos] with ω hω
     rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hω _)]
     exact residue_rpow_le_one_add (Y ω) q r hω hq hqr
-  have hi : Integrable (fun ω => Y ω ^ q) P :=
+  have hi  :=
     hb.mono' (hY.pow_const q).aestronglyMeasurable hdom
   refine ⟨hi, ?_⟩
   calc (∫ ω, Y ω ^ q ∂P) ≤ ∫ ω, 1 + Y ω ^ r ∂P :=
@@ -90,7 +90,7 @@ theorem residue_addition_preserves_limit
   constructor
   · intro a ha
     filter_upwards [hnear, hlim.eventually (Ioi_mem_nhds ha)] with d hd hh
-    exact hh.trans_le (hbounds d hd.1 hd.2 1 zero_lt_one).1
+    grind
   · intro b hb
     have hf : Tendsto (fun δ : ℝ => (1 + δ) ^ β * L) (𝓝[>] 0) (𝓝 L) := by
       have hh : ContinuousAt (fun δ : ℝ => (1 + δ) ^ β * L) 0 :=

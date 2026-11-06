@@ -7,7 +7,8 @@ public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
 public import DOZZ.GMC.Moments.InversionLaw
 public import DOZZ.GMC.Moments.InfinityChart
 public import DOZZ.GMC.Construction.RootedCircleMassLimit
-@[expose] public section
+import Mathlib.Tactic
+public section
 open MeasureTheory Set
 open scoped Distributions ENNReal
 namespace DOZZ.Proofs
@@ -19,8 +20,8 @@ theorem rho_inversion_density (γ α₁ α₂ α₃ : ℝ) (x : ℂ) (hx0 : x �
     normPlus x ^ (γ * (α₃ + α₂ + α₁)) /
       (‖x‖ ^ (γ * α₃) * ‖x - 1‖ ^ (γ * α₂)) := by
   have hn : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left 1 ‖x‖)
-  have h0 : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have h1 : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have h0  := norm_pos_iff.mpr hx0
+  have h1  := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
   have hd : ‖x⁻¹ - 1‖ = ‖x - 1‖ / ‖x‖ := by
     rw [inversion_distance hx0, one_mul, norm_sub_rev]
   rw [normPlus_inv_identity hx0, norm_inv, hd, Real.div_rpow hn.le h0.le,
@@ -45,9 +46,9 @@ theorem rho_map_inversion (γ α₁ α₂ α₃ : ℝ) (μ : Measure ℂ)
   unfold rho
   rw [lintegral_map hw measurable_inv]
   have ha0 : ∀ᵐ x ∂μ, x ≠ 0 := by
-    rw [ae_iff]; simpa only [not_not, ofPred_eq_eq_singleton] using h0
+    rw [ae_iff]; simp_all
   have ha1 : ∀ᵐ x ∂μ, x ≠ 1 := by
-    rw [ae_iff]; simpa only [not_not, ofPred_eq_eq_singleton] using h1
+    rw [ae_iff]; simp_all
   apply lintegral_congr_ae
   filter_upwards [ha0, ha1] with x hx0 hx1
   rw [rho_inversion_density γ α₁ α₂ α₃ x hx0 hx1]
@@ -70,8 +71,7 @@ theorem unitVolumeStructureConstant_swap13
   have hs : sExp γ α₃ α₂ α₁ = sExp γ α₁ α₂ α₃ := by unfold sExp; ring
   have hH : Measurable (fun μ : Measure ℂ =>
       ENNReal.rpow (rho γ μ α₁ α₂ α₃) (-sExp γ α₁ α₂ α₃)) := by
-    simpa only [ENNReal.rpow_eq_pow, Function.comp_def] using
-      ENNReal.continuous_rpow_const.measurable.comp (rho_measure_measurable γ α₁ α₂ α₃)
+    exact ENNReal.continuous_rpow_const.measurable.comp (rho_measure_measurable γ α₁ α₂ α₃)
   have hlaw := equatorGFF_GMC_inversion_law P X hX γ hγ hγ2 M hM
     (fun μ => ENNReal.rpow (rho γ μ α₁ α₂ α₃) (-sExp γ α₁ α₂ α₃)) hH
   have hmass := gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM
@@ -82,7 +82,5 @@ theorem unitVolumeStructureConstant_swap13
     filter_upwards [hmass 0, hmass 1] with ω h0 h1
     rw [rho_map_inversion γ α₁ α₂ α₃ (M ω) h0 h1]
   unfold unitVolumeStructureConstant
-  rw [hs]
-  congr 2
-  simpa only [ENNReal.rpow_eq_pow] using (he.symm.trans hlaw).symm
+  simp_all
 end DOZZ.Proofs

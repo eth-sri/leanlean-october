@@ -9,12 +9,14 @@ import DOZZ.Correlations.Analytic.ParameterDomain
 import DOZZ.ShiftEquations.Reflection.RbarContinuity
 import DOZZ.ShiftEquations.Rbar.Multiplier
 /-! # Gamma continuity of the explicit finite DOZZ expression -/
-@[expose] public section
+public section
 open Complex Set Filter Topology
 namespace DOZZ.Proofs
+variable (U : ℝ → ℂ → ℂ) (hU : ∀ g ∈ Ioo (0 : ℝ) 2, IsUpsilon g (U g))
+
+include U hU in
 /-- The entire characterized Upsilon family is continuous at every subcritical parameter and argument. -/
-theorem roots_upsilon_family_continuousAt (U : ℝ → ℂ → ℂ)
-    (hU : ∀ g ∈ Ioo (0 : ℝ) 2, IsUpsilon g (U g)) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (z : ℂ) :
+theorem roots_upsilon_family_continuousAt  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (z : ℂ) :
     ContinuousAt (Function.uncurry U) (γ, z) :=
   (IsUpsilon.continuousOn_uncurry hU).continuousAt
     ((isOpen_Ioo.prod isOpen_univ).mem_nhds ⟨⟨hγ, hγ2⟩, mem_univ z⟩)
@@ -26,27 +28,24 @@ theorem roots_continuousAt_dozzBase (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     have he : ((γ : ℂ) ^ 2 / 4) = ((γ ^ 2 / 4 : ℝ) : ℂ) := by push_cast; rfl
     rw [he, Complex.ofReal_re]
   have h1 : 0 < (((γ : ℂ) ^ 2 / 4)).re := by rw [hx]; exact hr.1
-  have h2 : 0 < (1 - (γ : ℂ) ^ 2 / 4).re := by rw [Complex.sub_re, Complex.one_re, hx]; linarith only [hr.2]
+  have h2 : 0 < (1 - (γ : ℂ) ^ 2 / 4).re := by simp_all
   have hm : ContinuousAt (fun g : ℝ => (g : ℂ) ^ 2 / 4) γ := by fun_prop
-  have hc : ContinuousAt (fun g : ℝ => lFun ((g : ℂ) ^ 2 / 4)) γ := by
-    simpa only [Function.comp_def] using
-      (continuousAt_lFun (ne_neg_nat_of_re_pos h1) (ne_neg_nat_of_re_pos h2)).comp (f := fun g : ℝ => (g : ℂ) ^ 2 / 4) hm
+  have hc : ContinuousAt (fun g : ℝ => lFun ((g : ℂ) ^ 2 / 4)) γ := (continuousAt_lFun (ne_neg_nat_of_re_pos h1) (ne_neg_nat_of_re_pos h2)).comp (f := fun g : ℝ => (g : ℂ) ^ 2 / 4) hm
   exact (continuousAt_const.mul continuousAt_const).mul (Complex.continuous_re.continuousAt.comp hc)
+include U hU in
 /-- The finite DOZZ formula is continuous in gamma for every characterized Upsilon family. -/
-theorem roots_dozzFormula_gamma_continuousAt (U : ℝ → ℂ → ℂ)
-    (hU : ∀ g ∈ Ioo (0 : ℝ) 2, IsUpsilon g (U g))
+theorem roots_dozzFormula_gamma_continuousAt
     (γ μ a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hα : ExtendedSeiberg3 γ a b c) (hs : ∀ n : ℕ, sExp γ a b c ≠ -(n : ℝ)) :
     ContinuousAt (fun g => dozzFormula g μ (U g) a b c) γ := by
   have hUg := hU γ ⟨hγ, hγ2⟩
   have hUc (w : ℝ → ℂ) (hw : ContinuousAt w γ) : ContinuousAt (fun g => U g (w g)) γ := by
-    have hm : ContinuousAt (fun g : ℝ => (g, w g)) γ := continuousAt_id.prodMk hw
-    simpa only [Function.comp_def, Function.uncurry_apply_pair] using
-      (roots_upsilon_family_continuousAt U hU γ hγ hγ2 (w γ)).comp (f := fun g : ℝ => (g, w g)) hm
+    have hm  := continuousAt_id.prodMk hw
+    exact (roots_upsilon_family_continuousAt U hU γ hγ hγ2 (w γ)).comp (f := fun g : ℝ => (g, w g)) hm
   have hder : ContinuousAt (fun g => deriv (U g) 0) γ := by
     have hval := hUc (fun g => ((g / 2 : ℝ) : ℂ)) (by fun_prop)
     apply hval.congr_of_eventuallyEq
-    have hn : ∀ᶠ g : ℝ in nhds γ, g ∈ Ioo (0 : ℝ) 2 := isOpen_Ioo.mem_nhds ⟨hγ, hγ2⟩
+    have hn  := isOpen_Ioo.mem_nhds ⟨hγ, hγ2⟩
     filter_upwards [hn] with g hg
     simpa only [Complex.ofReal_div, Complex.ofReal_ofNat] using IsUpsilon.deriv_zero hg.1 hg.2 (hU g hg)
   have hQ := continuousAt_Q hγ.ne'

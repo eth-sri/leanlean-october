@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Tails.OffCenterRegression
 /-! The first-order bound on the smooth off-center pin potential in the one-insertion tail
 estimate. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
@@ -18,8 +18,8 @@ theorem abs_log_sub_le {a b : ℝ} (ha : 1 ≤ a) (hb : 1 ≤ b) :
     |Real.log a - Real.log b| ≤ |a - b| := by
   have bound {u v : ℝ} (hu : 1 ≤ u) (hv : 1 ≤ v) :
       Real.log u - Real.log v ≤ |u - v| := by
-    have hup : 0 < u := lt_of_lt_of_le zero_lt_one hu
-    have hvp : 0 < v := lt_of_lt_of_le zero_lt_one hv
+    have hup  := lt_of_lt_of_le zero_lt_one hu
+    have hvp  := lt_of_lt_of_le zero_lt_one hv
     calc
       Real.log u - Real.log v = Real.log (u / v) :=
         (Real.log_div hup.ne' hvp.ne').symm
@@ -27,12 +27,7 @@ theorem abs_log_sub_le {a b : ℝ} (ha : 1 ≤ a) (hb : 1 ≤ b) :
       _ = (u - v) / v := by field_simp
       _ ≤ |u - v| / v := div_le_div_of_nonneg_right (le_abs_self _) hvp.le
       _ ≤ |u - v| := div_le_self (abs_nonneg _) hv
-  apply abs_le.mpr
-  constructor
-  · have h := bound hb ha
-    rw [abs_sub_comm b a] at h
-    linarith
-  · exact bound ha hb
+  grind
 
 /-- Uniform first-order pin correction on the unit insertion disk, including centers
 at norm two. This is the quantitative covariance correction in source `boundY`. -/

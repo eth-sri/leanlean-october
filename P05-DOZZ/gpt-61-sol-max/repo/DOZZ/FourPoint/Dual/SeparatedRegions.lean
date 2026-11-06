@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Reflected.SeparatedRegions
 public import DOZZ.FourPoint.Dual.SourceFullComparison
 import Mathlib.Tactic
 /-! Literal separated inner and outer regions for conditional lateral comparison. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -43,7 +43,6 @@ theorem dual_source_separated_regions_comparison
     α₁ α₂ α₃ z hz (reflected_innerRegion s) (reflected_outerRegion r)
     hU₀ hU₁ hroot₀ hroot₁ (Metric.ball 0 r) Metric.isOpen_ball.measurableSet hpart₀ hpart₁
     (s/r) r (s/r) (div_pos hs hr).le hsep hr (div_pos hs hr) hn₀ hn₁ hD q hq
-  have he : 2*(s/r)+s/r = 3*(s/r) := by ring
-  simpa only [he] using hb
+  grind
 
 end DOZZ.Proofs

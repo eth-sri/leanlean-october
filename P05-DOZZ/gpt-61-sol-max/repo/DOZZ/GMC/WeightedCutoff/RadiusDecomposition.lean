@@ -4,15 +4,16 @@ public import DOZZ.GMC.WeightedCutoff.CompactCoefficients
 
 /-! # Separating a bounded singular core from the outer part of a cutoff mass -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ) (γ α a r₀ W B R δ : ℝ) (z : ℂ)
+
+include Ω _inst1 P Xc γ α a r₀ W B R δ z in
 theorem cutoffWeightedGmcBallMass_le_inner_add_outer
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (γ α a r₀ W B R δ : ℝ) (z : ℂ)
+    
     (hR : a ≤ R) (hR₀ : R ≤ r₀) (hδ : 0 < δ) (hδR : δ ≤ R)
     (hz : ‖z‖ + R ≤ B)
     (hW : ∀ s ∈ Set.Icc a (2 * r₀), s ^ (-γ * α) ≤ W) (ω : Ω) :
@@ -37,25 +38,23 @@ theorem cutoffWeightedGmcBallMass_le_inner_add_outer
       apply setLIntegral_mono' Metric.isOpen_ball.measurableSet
       intro x hx
       by_cases hxa : x ∈ Metric.ball z a
-      · simp only [Set.indicator_of_mem hxa]
-        exact le_add_of_nonneg_right (by positivity)
+      · simp_all
       · have hx' : ‖x - z‖ < R := by simpa [Metric.mem_ball, dist_eq_norm] using hx
         have hxa' : a ≤ ‖x - z‖ := by simpa [Metric.mem_ball, dist_eq_norm] using hxa
         simp only [Set.indicator_of_notMem hxa, zero_add]
         exact ENNReal.ofReal_le_ofReal (hW (‖x - z‖ + δ) ⟨by linarith, by linarith⟩)
     _ = (∫⁻ x in Metric.ball z R, (Metric.ball z a).indicator w x ∂μ) +
         ENNReal.ofReal W * μ (Metric.ball z R) := by
-      rw [lintegral_add_left hi, lintegral_const, Measure.restrict_apply_univ]
+      simp_all
     _ ≤ (∫⁻ x, (Metric.ball z a).indicator w x ∂μ) +
         ENNReal.ofReal W * μ (Metric.ball 0 B) :=
       add_le_add (lintegral_mono' Measure.restrict_le_self le_rfl)
         (mul_le_mul_right (measure_mono hball) _)
     _ = _ := by rw [lintegral_indicator Metric.isOpen_ball.measurableSet]; rfl
 
+include Ω _inst1 P Xc γ α a r₀ W B R δ z in
 theorem cutoffWeightedGmcBallMass_le_coarse_weight
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (γ α a r₀ W B R δ : ℝ) (z : ℂ)
+    
     (hR₀ : R ≤ r₀) (hδa : a ≤ δ) (hδR : δ ≤ R) (hz : ‖z‖ + R ≤ B)
     (hW : ∀ s ∈ Set.Icc a (2 * r₀), s ^ (-γ * α) ≤ W) (ω : Ω) :
     cutoffWeightedGmcBallMass P Xc γ α z R δ ω ≤

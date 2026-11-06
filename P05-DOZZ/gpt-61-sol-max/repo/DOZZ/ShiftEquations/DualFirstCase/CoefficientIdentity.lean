@@ -8,7 +8,7 @@ import DOZZ.DOZZAlgebra.GenericLocus
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 import Mathlib.Tactic
 /-! # Cancellation of the two dual crossing coefficients -/
-@[expose] public section
+public section
 open Complex Filter Topology Set
 namespace DOZZ.Proofs
 /-- The algebraic cancellation retains the literal centered shift coefficient. -/
@@ -22,7 +22,7 @@ theorem dualFirstCase_coefficient_product (γ : ℝ) (a₂ a₃ z : ℂ) (hγ : 
     dualFirstCase_crossingProduct γ a₂ a₃ z * shiftCoeffA γ (2 / γ) z a₂ a₃ =
       lFun (-((4 / γ ^ 2 : ℝ) : ℂ)) * lFun (2 * z / γ) *
         lFun (2 + (4 / γ ^ 2 : ℝ) - 2 * z / γ) := by
-  have hg : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
+  have hg  := Complex.ofReal_ne_zero.mpr hγ
   let χ : ℂ := 2 / γ
   let D := χ / 2 * (z - a₂ + a₃ - χ)
   let E := χ / 2 * (-z + a₂ + a₃ - χ)
@@ -52,23 +52,13 @@ theorem dualFirstCase_coefficient_product (γ : ℝ) (a₂ a₃ z : ℂ) (hγ : 
   unfold dualFirstCase_crossingProduct
   dsimp only
   rw [hda, hdb, dualFirstCase_lFun_one_sub, hC, ← hn, ← hz]
-  change lFun D ≠ 0 at hD
-  change lFun E ≠ 0 at hE
-  field_simp [hA, hB, hc, hd, hD, hE]
+  grind
 /-- The dual seed and reflection/gluing equations give the centered shift without dividing
 by the structure constant or by the reflection coefficient. -/
 theorem dualFirstCase_scalar_shift (P A K D R B Cm Cp : ℂ) (hD : D ≠ 0) (hK : K ≠ 0)
     (hc : P * A = D) (hs : Cm = P * (-K * R / D) * B) (hg : Cp = R * B) :
     Cp = -(1 / K) * A * Cm := by
-  have hm : D * Cm = -K * P * Cp := by
-    rw [hg]
-    field_simp [hD] at hs
-    linear_combination hs
-  apply mul_left_cancel₀ hD
-  calc
-    D * Cp = -(1 / K) * A * (-K * P * Cp) := by rw [← hc]; field_simp [hK]
-    _ = -(1 / K) * A * (D * Cm) := by rw [hm]
-    _ = D * (-(1 / K) * A * Cm) := by ring
+  grind
 /-- Every nonconstant affine l-factor is nonzero away from a locally finite set. -/
 theorem dualFirstCase_affine_lFun (c d : ℂ) (hc : c ≠ 0) :
     ∀ᶠ z in codiscrete ℂ, lFun (c * z + d) ≠ 0 := eventually_affine_lFun_ne_zero hc
@@ -76,7 +66,7 @@ theorem dualFirstCase_affine_lFun (c d : ℂ) (hc : c ≠ 0) :
 theorem dualFirstCase_fixed_factor_ne_zero {γ a : ℝ} (hγ : 0 < γ)
     (hlo : Q γ - γ / 2 < a) (hhi : a < Q γ) :
     lFun (dualFirstCase_C γ (a : ℂ) - 1) ≠ 0 := by
-  have hg : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+  have hg  := Complex.ofReal_ne_zero.mpr hγ.ne'
   have he : dualFirstCase_C γ (a : ℂ) - 1 = ((-(2 / γ) * (Q γ - a) : ℝ) : ℂ) := by
     unfold dualFirstCase_C Q
     push_cast
@@ -84,16 +74,11 @@ theorem dualFirstCase_fixed_factor_ne_zero {γ a : ℝ} (hγ : 0 < γ)
   rw [he]
   apply lFun_ne_zero_of_forall_ne_int
   intro n hn
-  have hn' : -(2 / γ) * (Q γ - a) = (n : ℝ) := Complex.ofReal_inj.mp (by simpa only [Complex.ofReal_intCast] using hn)
+  have hn' : -(2 / γ) * (Q γ - a) = (n : ℝ) := Complex.ofReal_inj.mp (by exact hn)
   have hlt : -(2 / γ) * (Q γ - a) < 0 := by
-    have hpos := mul_pos (div_pos (by norm_num : (0 : ℝ) < 2) hγ) (sub_pos.mpr hhi)
-    linarith only [hpos]
+    field_simp <;> nlinarith
   have hgt : -1 < -(2 / γ) * (Q γ - a) := by
-    have ht : Q γ - a < γ / 2 := by linarith only [hlo]
-    have hm := mul_lt_mul_of_pos_left ht (div_pos (by norm_num : (0 : ℝ) < 2) hγ)
-    have hc : (2 / γ) * (γ / 2) = (1 : ℝ) := by field_simp
-    rw [hc] at hm
-    linarith only [hm]
+    field_simp <;> nlinarith
   rw [hn'] at hlt hgt
   have hnlo : (-1 : ℤ) < n := by exact_mod_cast hgt
   have hnhi : n < (0 : ℤ) := by exact_mod_cast hlt
@@ -105,7 +90,7 @@ theorem dualFirstCase_coefficient_product_codiscrete (γ : ℝ) (a₂ a₃ : ℂ
       dualFirstCase_crossingProduct γ a₂ a₃ z * shiftCoeffA γ (2 / γ) z a₂ a₃ =
         lFun (-((4 / γ ^ 2 : ℝ) : ℂ)) * lFun (2 * z / γ) *
           lFun (2 + (4 / γ ^ 2 : ℝ) - 2 * z / γ) := by
-  have hg : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
+  have hg  := Complex.ofReal_ne_zero.mpr hγ
   let χ : ℂ := 2 / γ
   have hχ : χ ≠ 0 := div_ne_zero (by norm_num) hg
   have hχh : χ / 2 ≠ 0 := div_ne_zero hχ (by norm_num)
@@ -124,13 +109,6 @@ theorem dualFirstCase_coefficient_product_codiscrete (γ : ℝ) (a₂ a₃ : ℂ
     unfold dualFirstCase_B χ
     congr 1
     ring
-  · simpa only [dualFirstCase_C, χ, sub_eq_add_neg] using hzc
-  · convert hzD using 1
-    dsimp only [χ]
-    congr 1
-    ring
-  · convert hzE using 1
-    dsimp only [χ]
-    congr 1
-    ring
+  · bound
+  all_goals grind
 end DOZZ.Proofs

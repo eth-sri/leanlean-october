@@ -6,88 +6,74 @@ module
 
 public import DOZZ.Hypergeom.BasisEquationTransforms
 public import DOZZ.Hypergeom.Germs
+import Mathlib.Tactic
+import Batteries.Tactic.Alias
 
 /-! Abel's identity and the endpoint normalization of the zero-basis Wronskian. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
 open Filter
 
-private theorem gaussSlitPlane_isOpen_for_wronskians : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z | z.re < 1})
-  exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
+private theorem gaussSlitPlane_isOpen_for_wronskians : IsOpen gaussSlitPlane := (isOpen_compl_singleton.preimage Complex.continuous_im).union
     (isOpen_Iio.preimage Complex.continuous_re)
 
-private theorem gaussCutPlane_isOpen_for_wronskians : IsOpen gaussCutPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z | 0 < z.re ∧ z.re < 1})
-  exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
-    (isOpen_Ioo.preimage Complex.continuous_re)
+private alias gaussCutPlane_isOpen_for_wronskians := DOZZ.Proofs.gaussCutPlane_isOpen
 
+variable {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H) (a b c : ℂ)
+
+include H hH a b c in
 /-- The zero-basis Wronskian has its explicit value on the principal cut plane. -/
 theorem gaussFPlus_wronskian_identity
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    (a b c : ℂ) (hc : ∀ n : ℤ, c ≠ (n : ℂ)) :
+     (hc : ∀ n : ℤ, c ≠ (n : ℂ)) :
     ∀ z ∈ gaussCutPlane,
       gaussFMinus H a b c z * deriv (gaussFPlus H a b c) z -
         deriv (gaussFMinus H a b c) z * gaussFPlus H a b c z =
           (1 - c) * z ^ (-c) * (1 - z) ^ (c - a - b - 1) := by
-  let A : ℂ := a - c + 1
-  let B : ℂ := b - c + 1
-  let C : ℂ := 2 - c
-  let e : ℂ := a + b - c + 1
-  let f : ℂ → ℂ := H a b c
-  let v : ℂ → ℂ := H A B C
+  let A  := a - c + 1
+  let B  := b - c + 1
+  let C  := 2 - c
+  let e  := a + b - c + 1
+  let f  := H a b c
+  let v  := H A B C
   let p : ℂ → ℂ := fun z => z ^ (1 - c)
   let q : ℂ → ℂ := fun z => (1 - z) ^ e
-  let g : ℂ → ℂ := gaussFPlus H a b c
-  let W : ℂ → ℂ := fun z => f z * deriv g z - deriv f z * g z
-  let T : ℂ → ℂ := fun z => z ^ c * q z
-  let S : ℂ → ℂ := fun z => T z * W z
+  let g  := gaussFPlus H a b c
+  let W  := fun z => f z * deriv g z - deriv f z * g z
+  let T  := fun z => z ^ c * q z
+  let S  := fun z => T z * W z
   have hcNat : ∀ n : ℕ, c ≠ -(n : ℂ) := by
     intro n heq
     apply hc (-(n : ℤ))
     exact heq.trans (by simp)
-  have hCfree : ∀ n : ℕ, C ≠ -(n : ℂ) := by
-    simpa [C] using two_sub_parameter_ne_nat_neg hc
+  have hCfree : ∀ n : ℕ, C ≠ -(n : ℂ) := two_sub_parameter_ne_nat_neg hc
   have hfchar := hH a b c hcNat
   have hvchar := hH A B C hCfree
-  have hFanalyticSlit : AnalyticOnNhd ℂ f gaussSlitPlane :=
+  have hFanalyticSlit  :=
     hfchar.1.analyticOnNhd gaussSlitPlane_isOpen_for_wronskians
-  have hVanalyticSlit : AnalyticOnNhd ℂ v gaussSlitPlane :=
+  have hVanalyticSlit  :=
     hvchar.1.analyticOnNhd gaussSlitPlane_isOpen_for_wronskians
-  have hFanalytic : AnalyticOnNhd ℂ f gaussCutPlane := by
-    exact hFanalyticSlit.mono gaussCutPlane_subset_gaussSlitPlane
-  have hVanalytic : AnalyticOnNhd ℂ v gaussCutPlane := by
-    exact hVanalyticSlit.mono gaussCutPlane_subset_gaussSlitPlane
-  have hPanalytic : AnalyticOnNhd ℂ p gaussCutPlane := by
-    change AnalyticOnNhd ℂ (fun z : ℂ => z ^ (1 - c)) gaussCutPlane
-    exact analyticOnNhd_id.cpow analyticOnNhd_const
+  have hFanalytic  := hFanalyticSlit.mono gaussCutPlane_subset_gaussSlitPlane
+  have hVanalytic  := hVanalyticSlit.mono gaussCutPlane_subset_gaussSlitPlane
+  have hPanalytic : AnalyticOnNhd ℂ p gaussCutPlane := analyticOnNhd_id.cpow analyticOnNhd_const
       (fun z hz => gaussCutPlane_subset_Complex_slitPlane hz)
-  have hGanalytic : AnalyticOnNhd ℂ g gaussCutPlane := by
-    change AnalyticOnNhd ℂ (fun z => p z * v z) gaussCutPlane
-    exact hPanalytic.mul hVanalytic
-  have hQanalytic : AnalyticOnNhd ℂ q gaussCutPlane := by
-    change AnalyticOnNhd ℂ (fun z => (1 - z) ^ e) gaussCutPlane
-    exact (analyticOnNhd_const.sub analyticOnNhd_id).cpow analyticOnNhd_const
+  have hGanalytic : AnalyticOnNhd ℂ g gaussCutPlane := hPanalytic.mul hVanalytic
+  have hQanalytic : AnalyticOnNhd ℂ q gaussCutPlane := (analyticOnNhd_const.sub analyticOnNhd_id).cpow analyticOnNhd_const
       (fun z hz => gaussCutPlane_subset_Complex_slitPlane
         (one_sub_gaussCutPlane_subset_gaussCutPlane hz))
-  have hZanalytic : AnalyticOnNhd ℂ (fun z : ℂ => z ^ c) gaussCutPlane := by
-    exact analyticOnNhd_id.cpow analyticOnNhd_const
+  have hZanalytic : AnalyticOnNhd ℂ (fun z : ℂ => z ^ c) gaussCutPlane := analyticOnNhd_id.cpow analyticOnNhd_const
       (fun z hz => gaussCutPlane_subset_Complex_slitPlane hz)
   have hTanalytic : AnalyticOnNhd ℂ T gaussCutPlane := by
-    change AnalyticOnNhd ℂ (fun z => z ^ c * q z) gaussCutPlane
-    exact hZanalytic.mul hQanalytic
-  have hFanalytic₁ : AnalyticOnNhd ℂ (deriv f) gaussCutPlane := hFanalytic.deriv
-  have hVanalytic₁ : AnalyticOnNhd ℂ (deriv v) gaussCutPlane := hVanalytic.deriv
-  have hGanalytic₁ : AnalyticOnNhd ℂ (deriv g) gaussCutPlane := hGanalytic.deriv
+    fun_prop (disch := positivity)
+  have hFanalytic₁  := hFanalytic.deriv
+
+  have hGanalytic₁  := hGanalytic.deriv
   have hWanalytic : AnalyticOnNhd ℂ W gaussCutPlane := by
-    change AnalyticOnNhd ℂ (fun z => f z * deriv g z - deriv f z * g z) gaussCutPlane
-    exact (hFanalytic.mul hGanalytic₁).sub (hFanalytic₁.mul hGanalytic)
+    fun_prop
   have hSanalytic : AnalyticOnNhd ℂ S gaussCutPlane := by
-    change AnalyticOnNhd ℂ (fun z => T z * W z) gaussCutPlane
-    exact hTanalytic.mul hWanalytic
+    fun_prop (disch := positivity)
   have hPderiv : gaussCutPlane.EqOn (deriv p)
       (fun z => (1 - c) * z ^ (-c)) := by
     intro z hz
@@ -96,10 +82,9 @@ theorem gaussFPlus_wronskian_identity
   have hQderiv : gaussCutPlane.EqOn (deriv q)
       (fun z => -e * (1 - z) ^ (e - 1)) := by
     intro z hz
-    have hw : 1 - z ∈ gaussCutPlane := one_sub_gaussCutPlane_subset_gaussCutPlane hz
+    have hw  := one_sub_gaussCutPlane_subset_gaussCutPlane hz
     have hws := gaussCutPlane_subset_Complex_slitPlane hw
-    have hmap : HasDerivAt (fun w : ℂ => 1 - w) (-1) z := by
-      simpa using (hasDerivAt_id z).const_sub (1 : ℂ)
+    have hmap : HasDerivAt (fun w : ℂ => 1 - w) (-1) z := (hasDerivAt_id z).const_sub (1 : ℂ)
     have hpow := Complex.deriv_cpow_const (c := e) hws
     have hcomp := (differentiableAt_id.cpow_const (c := e) hws).hasDerivAt.comp z hmap
     change deriv (fun w => (1 - w) ^ e) z = -e * (1 - z) ^ (e - 1)
@@ -144,11 +129,9 @@ theorem gaussFPlus_wronskian_identity
     rw [hmul.deriv, hZderiv, hQderiv hz]
     ring
   have hFop : ∀ z ∈ gaussCutPlane,
-      gaussHolomorphicOperator a b c f z = 0 := by
-    simpa [f] using gauss_family_holomorphicOperator_eq_zero hH a b c hcNat
+      gaussHolomorphicOperator a b c f z = 0 := gauss_family_holomorphicOperator_eq_zero hH a b c hcNat
   have hGop : ∀ z ∈ gaussCutPlane,
-      gaussHolomorphicOperator a b c g z = 0 := by
-    simpa [g] using gaussFPlus_holomorphicOperator_eq_zero hH a b c hc
+      gaussHolomorphicOperator a b c g z = 0 := gaussFPlus_holomorphicOperator_eq_zero hH a b c hc
   have hAbel : ∀ z ∈ gaussCutPlane,
       z * (1 - z) * deriv W z + (c - (a + b + 1) * z) * W z = 0 := by
     intro z hz
@@ -157,58 +140,29 @@ theorem gaussFPlus_wronskian_identity
     have hFeq := hFop z hz
     have hGeq := hGop z hz
     dsimp [gaussHolomorphicOperator] at hFeq hGeq
-    linear_combination (f z) * hGeq - (g z) * hFeq
+    grind
   have hTscaled : ∀ z ∈ gaussCutPlane,
       z * (1 - z) * deriv T z = (c - (a + b + 1) * z) * T z := by
     intro z hz
     have hz0 := (gaussCutPlane_subset_regularPlane hz).1
     have hz1 := (gaussCutPlane_subset_regularPlane hz).2
     have hw0 : 1 - z ≠ 0 := by
-      intro h
-      apply hz1
-      exact (sub_eq_zero.mp h).symm
+      positivity
     have hpowz : z ^ (c - 1) = z ^ c / z := by
       simpa using Complex.cpow_sub c 1 hz0
     have hpoww : (1 - z) ^ (e - 1) = (1 - z) ^ e / (1 - z) := by
       simpa using Complex.cpow_sub e 1 hw0
-    rw [hTderiv z hz, hpowz, hpoww]
-    field_simp [hz0, hw0]
-    dsimp [T, q, e]
-    ring
+    grind
   have hSderivZero : gaussCutPlane.EqOn (deriv S) (fun _ => 0) := by
     intro z hz
     have hTAt := (hTanalytic z hz).differentiableAt
     have hWAt := (hWanalytic z hz).differentiableAt
     have hmul := hTAt.hasDerivAt.mul hWAt.hasDerivAt
-    have hSderiv : deriv S z = deriv T z * W z + T z * deriv W z := by
-      change deriv (T * W) z = _
-      exact hmul.deriv
+    have hSderiv : deriv S z = deriv T z * W z + T z * deriv W z := hmul.deriv
     have hz0 := (gaussCutPlane_subset_regularPlane hz).1
     have hz1 := (gaussCutPlane_subset_regularPlane hz).2
-    have hw0 : 1 - z ≠ 0 := by
-      intro h
-      apply hz1
-      exact (sub_eq_zero.mp h).symm
-    have hden : z * (1 - z) ≠ 0 := mul_ne_zero hz0 hw0
-    have hWscaled : z * (1 - z) * deriv W z =
-        -(c - (a + b + 1) * z) * W z := by
-      calc
-        z * (1 - z) * deriv W z =
-            -((c - (a + b + 1) * z) * W z) := eq_neg_of_add_eq_zero_left (hAbel z hz)
-        _ = -(c - (a + b + 1) * z) * W z := by ring
-    have hmulzero : z * (1 - z) * deriv S z = 0 := by
-      rw [hSderiv]
-      calc
-        z * (1 - z) * (deriv T z * W z + T z * deriv W z) =
-            (z * (1 - z) * deriv T z) * W z +
-              T z * (z * (1 - z) * deriv W z) := by ring
-        _ = (c - (a + b + 1) * z) * T z * W z -
-              T z * ((c - (a + b + 1) * z) * W z) := by
-            rw [hTscaled z hz, hWscaled]
-            ring
-        _ = 0 := by ring
-    exact (mul_eq_zero.mp hmulzero).resolve_left hden
-  have hSdiff : DifferentiableOn ℂ S gaussCutPlane := hSanalytic.differentiableOn
+    grind
+  have hSdiff  := hSanalytic.differentiableOn
   have hcutPre : IsPreconnected gaussCutPlane := by
     rw [isPreconnected_iff_preconnectedSpace]
     infer_instance
@@ -224,15 +178,13 @@ theorem gaussFPlus_wronskian_identity
   have h0slit : (0 : ℂ) ∈ gaussSlitPlane := by
     change (0 : ℂ).im ≠ 0 ∨ (0 : ℂ).re < 1
     simp
-  have hfcont : ContinuousAt f 0 := (hFanalyticSlit 0 h0slit).continuousAt
-  have hvcont : ContinuousAt v 0 := (hVanalyticSlit 0 h0slit).continuousAt
-  have hf'cont : ContinuousAt (deriv f) 0 :=
+  have hfcont  := (hFanalyticSlit 0 h0slit).continuousAt
+  have hvcont  := (hVanalyticSlit 0 h0slit).continuousAt
+  have hf'cont  :=
     (hFanalyticSlit.deriv 0 h0slit).continuousAt
-  have hv'cont : ContinuousAt (deriv v) 0 :=
+  have hv'cont  :=
     (hVanalyticSlit.deriv 0 h0slit).continuousAt
-  have hqcont : ContinuousAt q 0 := by
-    change ContinuousAt (fun z : ℂ => (1 - z) ^ e) 0
-    exact (by fun_prop : ContinuousAt (fun z : ℂ => 1 - z) 0).cpow
+  have hqcont : ContinuousAt q 0 := (by fun_prop : ContinuousAt (fun z : ℂ => 1 - z) 0).cpow
       continuousAt_const (by simp [Complex.mem_slitPlane_iff])
   have hRcont : ContinuousAt
       (fun z => q z * ((1 - c) * f z * v z +
@@ -247,41 +199,22 @@ theorem gaussFPlus_wronskian_identity
       (nhdsWithin 0 gaussCutPlane) (nhds (1 - c)) := by
     have h := hRcont.tendsto.mono_left
       (nhdsWithin_le_nhds : nhdsWithin 0 gaussCutPlane ≤ nhds 0)
-    have hRval : q 0 * ((1 - c) * f 0 * v 0 +
-        0 * (f 0 * deriv v 0 - deriv f 0 * v 0)) = 1 - c := by
-      simpa using hRzero
-    rw [hRval] at h
-    exact h
+    simp_all
   have hscaled : ∀ z ∈ gaussCutPlane,
       S z = q z * ((1 - c) * f z * v z +
         z * (f z * deriv v z - deriv f z * v z)) := by
     intro z hz
     have hz0 := (gaussCutPlane_subset_regularPlane hz).1
     have hGderivAt : deriv g z =
-        (1 - c) * z ^ (-c) * v z + p z * deriv v z := by
-      simpa using hGderiv hz
+        (1 - c) * z ^ (-c) * v z + p z * deriv v z := hGderiv hz
     have hpow₀ : z ^ c * z ^ (-c) = 1 := by
       rw [← Complex.cpow_add c (-c) hz0]
       simp
     have hpow₁ : z ^ c * z ^ (1 - c) = z := by
       rw [← Complex.cpow_add c (1 - c) hz0]
-      have hexp : c + (1 - c) = 1 := by ring
-      rw [hexp]
-      simp
-    have hgval : g z = z ^ (1 - c) * v z := by
-      rfl
-    have hpval : p z = z ^ (1 - c) := by
-      rfl
-    change z ^ c * q z * (f z * deriv g z - deriv f z * g z) = _
-    rw [hGderivAt, hgval, hpval]
-    calc
-      _ = q z * ((1 - c) * (z ^ c * z ^ (-c)) * f z * v z +
-          (z ^ c * z ^ (1 - c)) *
-            (f z * deriv v z - deriv f z * v z)) := by ring
-      _ = q z * ((1 - c) * f z * v z +
-          z * (f z * deriv v z - deriv f z * v z)) := by
-        rw [hpow₀, hpow₁]
-        ring
+      simp_all
+    have hgval : g z = z ^ (1 - c) * v z := rfl
+    grind
   have hlimS : Tendsto S (nhdsWithin 0 gaussCutPlane) (nhds (1 - c)) := by
     have hEq : S =ᶠ[nhdsWithin 0 gaussCutPlane]
         (fun z => q z * ((1 - c) * f z * v z +
@@ -293,7 +226,7 @@ theorem gaussFPlus_wronskian_identity
     have hzeroClosure : (0 : ℂ) ∈ closure gaussCutPlane := by
       apply Metric.mem_closure_iff.2
       intro ε hε
-      let r : ℝ := min ε 1 / 2
+      let r  := min ε 1 / 2
       have hrpos : 0 < r := by
         dsimp [r]
         positivity
@@ -302,9 +235,7 @@ theorem gaussFPlus_wronskian_identity
         have hmin : min ε 1 ≤ ε := min_le_left _ _
         linarith
       have hrone : r < 1 := by
-        dsimp [r]
-        have hmin : min ε 1 ≤ 1 := min_le_right _ _
-        linarith
+        bound
       refine ⟨(r : ℂ), ?_, ?_⟩
       · change (r : ℂ).im ≠ 0 ∨ (0 < (r : ℂ).re ∧ (r : ℂ).re < 1)
         simp [hrpos, hrone]
@@ -323,9 +254,7 @@ theorem gaussFPlus_wronskian_identity
   have hz0 := (gaussCutPlane_subset_regularPlane hz).1
   have hz1 := (gaussCutPlane_subset_regularPlane hz).2
   have hw0 : 1 - z ≠ 0 := by
-    intro h
-    apply hz1
-    exact (sub_eq_zero.mp h).symm
+    positivity
   have hSval := hconst z hz
   rw [hSvalue] at hSval
   have hpowe : -(e) = c - a - b - 1 := by dsimp [e]; ring
@@ -338,10 +267,9 @@ theorem gaussFPlus_wronskian_identity
     (Complex.cpow_ne_zero_iff.mpr (Or.inl hz0))
   have hwPowNe : (1 - z) ^ e ≠ 0 :=
     (Complex.cpow_ne_zero_iff.mpr (Or.inl hw0))
-  have hprod : z ^ c * (1 - z) ^ e ≠ 0 := mul_ne_zero hzPowNe hwPowNe
+  have hprod  := mul_ne_zero hzPowNe hwPowNe
   have hratio : W z = (1 - c) / (z ^ c * (1 - z) ^ e) := by
-    apply (eq_div_iff hprod).2
-    simpa [mul_assoc, mul_left_comm, mul_comm] using hSval
+    grind
   calc
     W z = (1 - c) / (z ^ c * (1 - z) ^ e) := hratio
     _ = (1 - c) * (z ^ c)⁻¹ * ((1 - z) ^ e)⁻¹ := by
@@ -350,32 +278,25 @@ theorem gaussFPlus_wronskian_identity
     _ = (1 - c) * z ^ (-c) * (1 - z) ^ (c - a - b - 1) := by
       rw [hcpowz, hcpoww]
 
+include H hH a b c in
 /-- The one-basis Wronskian follows from the zero-basis identity by reflection. -/
 theorem gaussGPlus_wronskian_identity
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    (a b c : ℂ) (hδ : ∀ n : ℤ, c - a - b ≠ (n : ℂ)) :
+     (hδ : ∀ n : ℤ, c - a - b ≠ (n : ℂ)) :
     ∀ z ∈ gaussCutPlane,
       gaussGMinus H a b c z * deriv (gaussGPlus H a b c) z -
         deriv (gaussGMinus H a b c) z * gaussGPlus H a b c z =
           -(c - a - b) * z ^ (-c) * (1 - z) ^ (c - a - b - 1) := by
-  let c₀ : ℂ := 1 + a + b - c
-  let F : ℂ → ℂ := gaussFMinus H a b c₀
-  let G : ℂ → ℂ := gaussFPlus H a b c₀
-  let f : ℂ → ℂ := gaussGMinus H a b c
-  let g : ℂ → ℂ := gaussGPlus H a b c
+  let c₀  := 1 + a + b - c
+  let F  := gaussFMinus H a b c₀
+  let G  := gaussFPlus H a b c₀
+  let f  := gaussGMinus H a b c
+  let g  := gaussGPlus H a b c
   have hc₀ : ∀ n : ℤ, c₀ ≠ (n : ℂ) := by
     intro n heq
     apply hδ (1 - n)
-    have hshift : c - a - b = (1 - n : ℤ) := by
-      calc
-        c - a - b = 1 - c₀ := by dsimp [c₀]; ring
-        _ = 1 - (n : ℂ) := by rw [heq]
-        _ = ((1 - n : ℤ) : ℂ) := by push_cast; ring
-    exact hshift
-  have hFdiff : DifferentiableOn ℂ F gaussCutPlane := by
-    simpa [F] using gaussFMinus_differentiableOn_cutPlane hH a b c₀ hc₀
-  have hGdiff : DifferentiableOn ℂ G gaussCutPlane := by
-    simpa [G] using gaussFPlus_differentiableOn_cutPlane hH a b c₀ hc₀
+    grind
+  have hFdiff : DifferentiableOn ℂ F gaussCutPlane := gaussFMinus_differentiableOn_cutPlane hH a b c₀ hc₀
+  have hGdiff : DifferentiableOn ℂ G gaussCutPlane := gaussFPlus_differentiableOn_cutPlane hH a b c₀ hc₀
   have hFident : f = (fun z => F (1 - z)) := by
     funext z
     rfl
@@ -385,17 +306,12 @@ theorem gaussGPlus_wronskian_identity
         H (c - b) (c - a) (1 + c - a - b) (1 - z) =
       (1 - z) ^ (1 - c₀) *
         H (a - c₀ + 1) (b - c₀ + 1) (2 - c₀) (1 - z)
-    have hexp : c - a - b = 1 - c₀ := by dsimp [c₀]; ring
-    have ha : c - b = a - c₀ + 1 := by dsimp [c₀]; ring
-    have hb : c - a = b - c₀ + 1 := by dsimp [c₀]; ring
-    have hc' : 1 + c - a - b = 2 - c₀ := by dsimp [c₀]; ring
-    rw [hexp, ha, hb, hc']
-  have hmap (z : ℂ) : HasDerivAt (fun w : ℂ => 1 - w) (-1) z := by
-    simpa using (hasDerivAt_id z).const_sub (1 : ℂ)
+    grind
+  have hmap (z : ℂ) : HasDerivAt (fun w : ℂ => 1 - w) (-1) z := (hasDerivAt_id z).const_sub (1 : ℂ)
   have hFderiv : gaussCutPlane.EqOn (deriv f)
       (fun z => -deriv F (1 - z)) := by
     intro z hz
-    have hw : 1 - z ∈ gaussCutPlane := one_sub_gaussCutPlane_subset_gaussCutPlane hz
+    have hw  := one_sub_gaussCutPlane_subset_gaussCutPlane hz
     have hAt := (hFdiff (1 - z) hw).differentiableAt
       (gaussCutPlane_isOpen_for_wronskians.mem_nhds hw)
     have hcomp := hAt.hasDerivAt.comp z (hmap z)
@@ -406,7 +322,7 @@ theorem gaussGPlus_wronskian_identity
   have hGderiv : gaussCutPlane.EqOn (deriv g)
       (fun z => -deriv G (1 - z)) := by
     intro z hz
-    have hw : 1 - z ∈ gaussCutPlane := one_sub_gaussCutPlane_subset_gaussCutPlane hz
+    have hw  := one_sub_gaussCutPlane_subset_gaussCutPlane hz
     have hAt := (hGdiff (1 - z) hw).differentiableAt
       (gaussCutPlane_isOpen_for_wronskians.mem_nhds hw)
     have hcomp := hAt.hasDerivAt.comp z (hmap z)
@@ -415,32 +331,9 @@ theorem gaussGPlus_wronskian_identity
       _ = -deriv G (1 - z) := by
         simpa [Function.comp_def, mul_comm] using hcomp.deriv
   intro z hz
-  let w : ℂ := 1 - z
-  have hw : w ∈ gaussCutPlane := by
-    simpa [w] using one_sub_gaussCutPlane_subset_gaussCutPlane hz
+  let w  := 1 - z
+  have hw : w ∈ gaussCutPlane := one_sub_gaussCutPlane_subset_gaussCutPlane hz
   have hW := gaussFPlus_wronskian_identity hH a b c₀ hc₀ w hw
-  have hW' : F w * deriv G w - deriv F w * G w =
-      (1 - c₀) * w ^ (-c₀) * (1 - w) ^ (c₀ - a - b - 1) := by
-    simpa [F, G] using hW
-  have hfval : f z = F w := by simp [f, F, w, c₀, gaussGMinus, gaussFMinus]
-  have hgval : g z = G w := by
-    rw [hGident]
-  have hcoeff : 1 - c₀ = c - a - b := by dsimp [c₀]; ring
-  have hexpz : c₀ - a - b - 1 = -c := by dsimp [c₀]; ring
-  have hexpw : -c₀ = c - a - b - 1 := by dsimp [c₀]; ring
-  calc
-    f z * deriv g z - deriv f z * g z =
-        F w * (-deriv G w) - (-deriv F w) * G w := by
-          rw [hfval, hgval, hGderiv hz, hFderiv hz]
-    _ = -(F w * deriv G w - deriv F w * G w) := by ring
-    _ = -(1 - c₀) * w ^ (-c₀) * (1 - w) ^ (c₀ - a - b - 1) := by
-      rw [hW']
-      ring
-    _ = -(c - a - b) * z ^ (-c) * (1 - z) ^ (c - a - b - 1) := by
-      rw [hcoeff, hexpw, hexpz]
-      dsimp [w]
-      have hbase : 1 - (1 - z : ℂ) = z := by ring
-      rw [hbase]
-      ring
+  grind
 
 end DOZZ.Proofs

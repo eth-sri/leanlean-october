@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Reflected.OuterKernel
 public import DOZZ.GMC.SharpMoments.SeibergWeight
 import Mathlib.Tactic
 /-! The literal inner kernel is squeezed between the two radial Williams weights. -/
-@[expose] public section
+public section
 open Filter Topology
 namespace DOZZ.Proofs
 
@@ -36,10 +36,8 @@ theorem reflected_inner_kernel_squeeze (γ α₁ α₂ α₃ R η : ℝ) (z x : 
     have hh := norm_sub_le x (1 : ℂ)
     rw [norm_one] at hh
     apply hh.trans
-    rw [← one_div]
-    apply (le_div_iff₀ hηp).mpr
-    nlinarith [sq_nonneg η]
-  have hbase : 0 < ‖x - 1‖ := hηp.trans_le hd1
+    field_simp <;> nlinarith
+  have hbase  := hηp.trans_le hd1
   have hlo := coulombWeight_le_rpow hL (by simpa only [inv_inv] using hd1) hd2
     (-(γ * α₂))
   have hup := coulombWeight_rpow_le hL (by simpa only [inv_inv] using hd1) hd2
@@ -66,16 +64,10 @@ theorem reflected_inner_kernel_squeeze (γ α₁ α₂ α₃ R η : ℝ) (z x : 
   constructor
   · have hh := mul_le_mul_of_nonneg_right hpowlo (Real.rpow_nonneg hx.le (-(γ*α₁)))
     have hh' := mul_le_mul hh hlo (by positivity) (by positivity)
-    calc
-      _ = ((1-R) ^ (γ^2/2) * ‖z‖ ^ (γ^2/2) * ‖x‖ ^ (-(γ*α₁))) *
-        (1-η)⁻¹ ^ (-|γ*α₂|) := by ring
-      _ ≤ _ := hh'
+    grind
   · have hh := mul_le_mul_of_nonneg_right hpowhi (Real.rpow_nonneg hx.le (-(γ*α₁)))
     have hh' := mul_le_mul hh hup (by positivity) (by positivity)
-    calc
-      _ ≤ ((1+R) ^ (γ^2/2) * ‖z‖ ^ (γ^2/2) * ‖x‖ ^ (-(γ*α₁))) *
-        (1-η)⁻¹ ^ |γ*α₂| := hh'
-      _ = _ := by ring
+    grind
 
 /-- The extra factor from the root at one vanishes in the first, insertion-point limit. -/
 theorem reflected_inner_root_factor_limit (R e : ℝ) :

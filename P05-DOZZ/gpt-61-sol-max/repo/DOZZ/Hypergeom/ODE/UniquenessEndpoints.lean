@@ -8,7 +8,7 @@ public import DOZZ.Hypergeom.ODE.Uniqueness
 
 /-! Uniqueness from an arbitrary initial point in a disk, for overlap gluing. -/
 
-@[expose] public section
+public section
 
 open Set
 open scoped NNReal
@@ -33,14 +33,14 @@ theorem holomorphic_linear_system_solution_unique_of_eq_at
   let K : ℝ≥0 := ‖z - z₀‖₊ * M.toNNReal
   have hK : (K : ℝ) = ‖z - z₀‖ * M := by
     simp [K, hM, mul_comm]
-  have hr : 0 < r := lt_of_le_of_lt dist_nonneg (Metric.mem_ball.mp hz)
-  have hseg : MapsTo path (Icc (0 : ℝ) 1) (Metric.ball c r) :=
+
+  have hseg  :=
     (convex_ball c r).mapsTo_lineMap hz₀ hz
   have hv : ∀ t ∈ Ico (0 : ℝ) 1, LipschitzWith K (v t) := by
     intro t ht
     apply LipschitzWith.of_dist_le_mul
     intro x y
-    have hw : path t ∈ Metric.ball c r := hseg (Ico_subset_Icc_self ht)
+    have hw  := hseg (Ico_subset_Icc_self ht)
     have hHxy : ‖H (path t) x - H (path t) y‖ ≤ M * ‖x - y‖ := by
       calc
         ‖H (path t) x - H (path t) y‖ = ‖H (path t) (x - y)‖ := by rw [map_sub]
@@ -60,17 +60,17 @@ theorem holomorphic_linear_system_solution_unique_of_eq_at
     have hFt := hF (path t) (hseg ht)
     have hcomp := hFt.hasFDerivAt.restrictScalars ℝ |>.comp_hasDerivAt t
       (AffineMap.hasDerivAt_lineMap (a := z₀) (b := z))
-    simpa [fpath, v, path, Function.comp_def, AffineMap.lineMap_apply_module] using hcomp
+    continuity
   have hGpath : ∀ t ∈ Icc (0 : ℝ) 1,
       HasDerivAt gpath (v t (gpath t)) t := by
     intro t ht
     have hGt := hG (path t) (hseg ht)
     have hcomp := hGt.hasFDerivAt.restrictScalars ℝ |>.comp_hasDerivAt t
       (AffineMap.hasDerivAt_lineMap (a := z₀) (b := z))
-    simpa [gpath, v, path, Function.comp_def, AffineMap.lineMap_apply_module] using hcomp
-  have hFcont : ContinuousOn fpath (Icc (0 : ℝ) 1) :=
+    assumption_mod_cast
+  have hFcont  :=
     continuousOn_of_forall_continuousAt fun t ht => (hFpath t ht).continuousAt
-  have hGcont : ContinuousOn gpath (Icc (0 : ℝ) 1) :=
+  have hGcont  :=
     continuousOn_of_forall_continuousAt fun t ht => (hGpath t ht).continuousAt
   have hFwithin : ∀ t ∈ Ico (0 : ℝ) 1,
       HasDerivWithinAt fpath (v t (fpath t)) (Ici t) t :=

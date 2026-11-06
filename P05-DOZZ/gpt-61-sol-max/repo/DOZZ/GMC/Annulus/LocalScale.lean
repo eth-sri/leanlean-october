@@ -6,6 +6,7 @@ module
 
 public import DOZZ.GMC.Annulus.WeightedShell
 public import DOZZ.GMC.Moments.SubunitSet
+import Mathlib.Tactic
 
 /-!
 # Exact local ball scaling and its finite subunit bounds
@@ -16,19 +17,20 @@ replacing it by a finite constant. The proved subunit input already supplies sha
 bounds, with the true Gaussian exponent, uniformly in charge and moment order.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal Distributions
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM
 /-- Exact scaling expressed using the radius itself, with the Gaussian exponent
 `gmcScaleExponent`. -/
 theorem gmc_local_ball_moment_scale
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (z : ℂ) {r R : ℝ} (hr : 0 < r) (hR : 0 < R) (hrR : r ≤ R)
     (hR1 : R < 1) (hzr : ‖z‖ + r < 1) (p : ℝ) :
     gmcMassMoment P M (Metric.ball z r) p =
@@ -41,12 +43,11 @@ theorem gmc_local_ball_moment_scale
   rw [he, ← gmcScaleExponent_eq_polynomial γ p hγ.ne'] at h
   exact h
 
+
 /-- The ratio law keeps the true radius exponent and puts reference radius dependence in a
 strictly positive finite scalar. -/
 theorem gmc_local_ball_moment_radius_factor
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (z : ℂ) {r R : ℝ} (hr : 0 < r) (hR : 0 < R) (hrR : r ≤ R)
     (hR1 : R < 1) (hzr : ‖z‖ + r < 1) (p : ℝ) :
     gmcMassMoment P M (Metric.ball z r) p =
@@ -61,11 +62,10 @@ theorem gmc_local_ball_moment_radius_factor
     exact mul_comm _ _
   rw [hf, ENNReal.ofReal_mul (Real.rpow_nonneg hR.le _)]
 
+
 /-- Local scaling preserves infinite moments as well as finite ones. -/
 theorem gmc_local_ball_moment_finite_iff
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (z : ℂ) {r R : ℝ} (hr : 0 < r) (hR : 0 < R) (hrR : r ≤ R)
     (hR1 : R < 1) (hzr : ‖z‖ + r < 1) (p : ℝ) :
     gmcMassMoment P M (Metric.ball z r) p < ⊤ ↔
@@ -75,25 +75,23 @@ theorem gmc_local_ball_moment_finite_iff
     (a := z) (c := r / R) (R := R) (div_pos hr hR)
     ((div_le_one hR).mpr hrR) hR hR1 (by rw [he]; exact hzr) p
 
+
 /-- The exact local ball moment is independent of its center while its translated disk stays
 inside the unit logarithmic chart. This is equality of actual GMC moments at every real order. -/
 theorem gmc_local_ball_moment_center_eq
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (z w : ℂ) {r R : ℝ} (hr : 0 < r) (hR : 0 < R) (hrR : r ≤ R)
     (hR1 : R < 1) (hzr : ‖z‖ + r < 1) (hwr : ‖w‖ + r < 1) (p : ℝ) :
     gmcMassMoment P M (Metric.ball z r) p = gmcMassMoment P M (Metric.ball w r) p := by
   rw [gmc_local_ball_moment_scale P X hX γ hγ hγ2 M hM z hr hR hrR hR1 hzr p,
     gmc_local_ball_moment_scale P X hX γ hγ hγ2 M hM w hr hR hrR hR1 hwr p]
 
+
 /-- On the exact local chart, a positive finite reference moment is equivalent to the full
 two-sided scaling estimate at that order. Finiteness of the reference moment is one side of the
 equivalence, not an assumption, at every order including the inverse ones. -/
 theorem gmc_local_twoSided_ball_scaling_iff
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (R p : ℝ) (hR : 0 < R) (hR1 : R < 1) :
     (0 < gmcMassMoment P M (Metric.ball 0 R) p ∧
         gmcMassMoment P M (Metric.ball 0 R) p < ⊤) ↔
@@ -106,16 +104,14 @@ theorem gmc_local_twoSided_ball_scaling_iff
   let ξ := gmcScaleExponent γ p
   constructor
   · rintro ⟨hBp, hBf⟩
-    have hBreal : 0 < B.toReal := ENNReal.toReal_pos hBp.ne' hBf.ne
+    have hBreal  := ENNReal.toReal_pos hBp.ne' hBf.ne
     let D : ℝ := R ^ (-ξ) * B.toReal
     have hD : 0 < D := mul_pos (Real.rpow_pos_of_pos hR _) hBreal
     let C : ℝ := max D D⁻¹
     have hC : 0 < C := hD.trans_le (le_max_left _ _)
     have hDC : D ≤ C := le_max_left _ _
     have hCD : C⁻¹ ≤ D := by
-      have hi := (inv_le_inv₀ hC (inv_pos.mpr hD)).mpr
-        (show D⁻¹ ≤ C from le_max_right _ _)
-      simpa only [inv_inv] using hi
+      grind
     refine ⟨C, hC, ?_⟩
     intro z r hr hrR hzr
     have he : gmcMassMoment P M (Metric.ball z r) p = ENNReal.ofReal (D * r ^ ξ) := by
@@ -135,8 +131,10 @@ theorem gmc_local_twoSided_ball_scaling_iff
         (Real.rpow_nonneg hr.le ξ))⟩
   · rintro ⟨C, hC, hBound⟩
     have hb := hBound 0 R hR le_rfl (by simpa only [norm_zero, zero_add] using hR1)
-    have hpref : 0 < ENNReal.ofReal (C⁻¹ * R ^ ξ) :=
+    have hpref  :=
       ENNReal.ofReal_pos.mpr (mul_pos (inv_pos.mpr hC) (Real.rpow_pos_of_pos hR ξ))
     exact ⟨hpref.trans_le hb.1, hb.2.trans_lt ENNReal.ofReal_lt_top⟩
+omit Ω _inst1 P X hX γ hγ hγ2 M hM
+
 
 end DOZZ.Proofs

@@ -29,11 +29,12 @@ theorem subtypeLocalSegmentValue_dist (z w : ℂ) (t : unitInterval) :
     _ = (t : ℝ) * dist w z := by
       rw [Real.norm_eq_abs, abs_of_nonneg t.property.1, dist_eq_norm]
 
+variable {U : Set ℂ} {z w : U} (r : ℝ) (hr : 0 < r) (hball : Metric.ball (z : ℂ) r ⊆ U) (hw : dist (z : ℂ) w < r / 2)
+
+include U z w r hr hball hw in
 /-- A short segment lies inside the supplied open subtype disk. -/
 noncomputable def subtypeLocalSegmentPath
-    {U : Set ℂ} {z w : U} (r : ℝ) (hr : 0 < r)
-    (hball : Metric.ball (z : ℂ) r ⊆ U)
-    (hw : dist (z : ℂ) w < r / 2) : Path z w := by
+     : Path z w := by
   let g : unitInterval → ℂ := subtypeLocalSegmentValue (z : ℂ) w
   have hg : Continuous g := by fun_prop [subtypeLocalSegmentValue]
   have hgmem (t : unitInterval) : g t ∈ U := by
@@ -56,11 +57,10 @@ noncomputable def subtypeLocalSegmentPath
   · apply Subtype.ext
     simp [f, g, subtypeLocalSegmentValue]
 
+include U z w r hr hball hw in
 /-- Every point of a short subtype segment stays in the half-radius ball. -/
 theorem subtypeLocalSegmentPath_mem_halfBall
-    {U : Set ℂ} {z w : U} (r : ℝ) (hr : 0 < r)
-    (hball : Metric.ball (z : ℂ) r ⊆ U)
-    (hw : dist (z : ℂ) w < r / 2) (t : unitInterval) :
+     (t : unitInterval) :
     dist ((subtypeLocalSegmentPath r hr hball hw t : U) : ℂ) (z : ℂ) < r / 2 := by
   change dist (subtypeLocalSegmentValue (z : ℂ) w t) (z : ℂ) < r / 2
   have hmul : (t : ℝ) * dist (w : ℂ) (z : ℂ) ≤ dist (w : ℂ) (z : ℂ) := by
@@ -85,16 +85,7 @@ theorem subtypePathFunction_trans_left
   have hproj := Set.projIcc_of_mem zero_le_one hs
   change ((p.trans q) (Set.projIcc 0 1 zero_le_one (s / 2)) : ℂ) =
     (p (Set.projIcc 0 1 zero_le_one s) : ℂ)
-  rw [hproj2, hproj, Path.trans_apply]
-  have hbranch : ((⟨s / 2, hs2⟩ : unitInterval) : ℝ) ≤ 1 / 2 := by
-    change s / 2 ≤ 1 / 2
-    linarith [hs.2]
-  split_ifs with h
-  · apply congrArg (fun t : unitInterval => (p t : ℂ))
-    apply Subtype.ext
-    change 2 * (s / 2) = s
-    ring
-  · exact (h hbranch).elim
+  grind
 
 /-- The second half of a concatenated subtype path is its right path after linear
 reparameterization. -/
@@ -111,15 +102,6 @@ theorem subtypePathFunction_trans_right
   by_cases hs0 : s = 0
   · subst s
     simp [p.target, q.source]
-  · have hspos : 0 < s := lt_of_le_of_ne hs.1 (Ne.symm hs0)
-    have hbranch : ¬ ((⟨1 / 2 + s / 2, ht⟩ : unitInterval) : ℝ) ≤ 1 / 2 := by
-      change ¬ (1 / 2 + s / 2 ≤ 1 / 2)
-      linarith
-    split_ifs with h
-    · exact (hbranch h).elim
-    · apply congrArg (fun t : unitInterval => (q t : ℂ))
-      apply Subtype.ext
-      change 2 * (1 / 2 + s / 2) - 1 = s
-      ring
+  grind
 
 end DOZZ.Proofs

@@ -10,11 +10,13 @@ open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-theorem reflected_full_spatial_comparison
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (N : Ω → Measure ℂ) (hNm : Measurable N)
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
+
+include Ω _inst1 P X Xc hX hc hm in
+theorem weighted_full_spatial_comparison
+    
+    (γ : ℝ) (k : ℂ → ℝ) (hk : Measurable k) (hkn : ∀ x, 0 ≤ k x)
+    (hkc : ContinuousOn k ({0, 1} : Set ℂ)ᶜ) (N : Ω → Measure ℂ) (hNm : Measurable N)
     (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
     (hNa : ∀ ρ : ℝ, 0 < ρ → IsAdmissibleGMCVersion P (originLateralChart ρ)
       originLateralPlaneDensity (originLateralCircleRegularization Xc ρ) γ
@@ -27,10 +29,10 @@ theorem reflected_full_spatial_comparison
     (hn₀ : ∀ x ∈ U₀, ‖x‖ ≤ R*r) (hn₁ : ∀ x ∈ U₁, r ≤ ‖x‖)
     (hD : Metric.closedBall (3 : ℂ) (1/8) ⊆ U₁) (q : ℝ) (hq : 0 < q)
     (hguard : (∫⁻ a, ∫⁻ ω, (∫⁻ x in Metric.closedBall (3 : ℂ) (1/8),
-      ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)*
+      ENNReal.ofReal (k x)*
         ENNReal.ofReal (reflected_global_reinsertionWeight γ a x) ∂N ω)^(-q) ∂P ∂Q) ≠ ⊤) :
     let J := fun (U : Set ℂ) (p : TwoSidedPath × Ω) => ∫⁻ x in U,
-      ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)*
+      ENNReal.ofReal (k x)*
         ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 x) ∂N p.2
     let m := ENNReal.ofReal (Real.exp (γ^2*(2*R+η)/2*(q^2+q)))
     (∫⁻ p, (J U₀ p+J U₁ p)^(-q) ∂Q.prod P) ≤
@@ -39,28 +41,21 @@ theorem reflected_full_spatial_comparison
     (∫⁻ p : TwoSidedPath × (Ω × Ω),
         (J U₀ (p.1, p.2.1)+J U₁ (p.1, p.2.2))^(-q) ∂Q.prod (P.prod P)) ≤
       m*(∫⁻ p, (J U₀ p+J U₁ p)^(-q) ∂Q.prod P) := by
-  let _ : IsProbabilityMeasure P := hX.1
-  let k := gammaHalfKernel γ α₁ α₂ α₃ z
-  have hk : Measurable k := reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z
-  have hkn : ∀ x, 0 ≤ k x := gammaHalfKernel_nonneg γ α₁ α₂ α₃ z
+  let _  := hX.1
   let D := Metric.closedBall (3 : ℂ) (1/8)
   obtain ⟨g₀, _, hgc₀, hgU₀, hgn₀, hlim₀⟩ := reflected_open_weighted_mass_approximation
     U₀ hU₀ ∅ isCompact_empty (empty_subset _) k
-    ((reflected_spatial_kernel_continuousOn γ α₁ α₂ α₃ z).mono hroot₀) hk hkn
+    (hkc.mono hroot₀) hk hkn
   obtain ⟨g₁, hgD, hgc₁, hgU₁, hgn₁, hlim₁⟩ := reflected_open_weighted_mass_approximation
     U₁ hU₁ D (isCompact_closedBall _ _) hD k
-    ((reflected_spatial_kernel_continuousOn γ α₁ α₂ α₃ z).mono hroot₁) hk hkn
+    (hkc.mono hroot₁) hk hkn
   let W : TwoSidedPath × ℂ → ℝ≥0∞ := fun p =>
     ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 p.2)
   have hW : Measurable W := (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal
   have hU₀0 : U₀ ⊆ ({0} : Set ℂ)ᶜ := fun x hx => by
-    have hh := hroot₀ hx
-    simpa only [mem_compl_iff, mem_singleton_iff] using
-      (show x ≠ 0 from fun he => hh (by simp [he]))
+    grind
   have hU₁0 : U₁ ⊆ ({0} : Set ℂ)ᶜ := fun x hx => by
-    have hh := hroot₁ hx
-    simpa only [mem_compl_iff, mem_singleton_iff] using
-      (show x ≠ 0 from fun he => hh (by simp [he]))
+    grind
   let I₀ : ℕ → TwoSidedPath × Ω → ℝ≥0∞ := fun n p =>
     ∫⁻ x in U₀, ENNReal.ofReal (g₀ n x)*W (p.1, x) ∂N p.2
   let I₁ : ℕ → TwoSidedPath × Ω → ℝ≥0∞ := fun n p =>
@@ -138,12 +133,10 @@ theorem reflected_full_spatial_comparison
       A hA R r η hR0 hR hr hη hnK₀ hnK₁ (g₀ n) (g₁ n) (hgn₀ n) (hgn₁ n)
       hg₀K hg₁K ((hgU₀ n).trans hU₀A) ((hgU₁ n).trans hU₁A) q hq a
     have he₀ (a : TwoSidedPath) (ω : Ω) :
-        (∫⁻ x in K, ENNReal.ofReal (g₀ n x)*W (a, x) ∂N ω) = I₀ n (a, ω) := by
-      exact (reflected_supported_test_lintegral (N ω) K hK.measurableSet (g₀ n) hg₀K _).trans
+        (∫⁻ x in K, ENNReal.ofReal (g₀ n x)*W (a, x) ∂N ω) = I₀ n (a, ω) := (reflected_supported_test_lintegral (N ω) K hK.measurableSet (g₀ n) hg₀K _).trans
         (reflected_supported_test_lintegral (N ω) U₀ hU₀.measurableSet (g₀ n) (hgU₀ n) _).symm
     have he₁ (a : TwoSidedPath) (ω : Ω) :
-        (∫⁻ x in K, ENNReal.ofReal (g₁ n x)*W (a, x) ∂N ω) = I₁ n (a, ω) := by
-      exact (reflected_supported_test_lintegral (N ω) K hK.measurableSet (g₁ n) hg₁K _).trans
+        (∫⁻ x in K, ENNReal.ofReal (g₁ n x)*W (a, x) ∂N ω) = I₁ n (a, ω) := (reflected_supported_test_lintegral (N ω) K hK.measurableSet (g₁ n) hg₁K _).trans
         (reflected_supported_test_lintegral (N ω) U₁ hU₁.measurableSet (g₁ n) (hgU₁ n) _).symm
     dsimp only at hb
     dsimp only [W] at he₀ he₁
@@ -165,5 +158,15 @@ theorem reflected_full_spatial_comparison
         _ = _ := lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
   exact reflected_two_region_inverse_limit Q P I₀ I₁ L₀ L₁ G hi₀ hi₁ hG hl₀ hl₁ hgl
     q hq.le hguard m ENNReal.ofReal_ne_top hcmp
+
+
+include Ω _inst1 P X Xc hX hc hm in
+abbrev reflected_full_spatial_comparison
+    
+    (γ α₁ α₂ α₃ : ℝ) (z : ℂ) :=
+  weighted_full_spatial_comparison P X Xc hX hc hm γ (gammaHalfKernel γ α₁ α₂ α₃ z)
+    (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z)
+    (gammaHalfKernel_nonneg γ α₁ α₂ α₃ z)
+    (reflected_spatial_kernel_continuousOn γ α₁ α₂ α₃ z)
 
 end DOZZ.Proofs

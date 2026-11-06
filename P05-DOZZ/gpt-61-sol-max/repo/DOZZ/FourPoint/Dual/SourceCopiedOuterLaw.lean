@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Dual.CopiedOuterLaw
 public import DOZZ.FourPoint.Dual.SpatialBoundary
 import Mathlib.Tactic
 /-! Exact source joint law of the retained exterior and radial path. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -31,7 +31,7 @@ theorem dual_source_copied_outer_joint_law
               ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x)*
                 ENNReal.ofReal (reflected_global_reinsertionWeight γ (originRadialPath Xc ω.1) x)
                   ∂N ω.2)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   obtain ⟨N, hNm, hi, hfin, heq, _, hwhole⟩ := reflected_copied_radial_plane_observable
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM
   refine ⟨N, hNm, hi, hfin, heq, ?_⟩
@@ -43,9 +43,9 @@ theorem dual_source_copied_outer_joint_law
     (Set.Finite.measurableSet (by simp)).compl
   have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx hx0
-    have he : x = 0 := mem_singleton_iff.mp hx0
+    have he  := mem_singleton_iff.mp hx0
     exact hx.2 (by simp [he])
-  have hf : Measurable f := (dual_kernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal.indicator hU
+  have hf  := (dual_kernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal.indicator hU
   have hint (μ : Measure ℂ) : (∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂μ) = ∫⁻ x in U, k x ∂μ := by
     rw [setLIntegral_indicator hU, inter_eq_left.mpr hU0]
   have he : (fun ω => ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω) =ᵐ[P]

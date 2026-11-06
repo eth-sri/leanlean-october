@@ -21,7 +21,7 @@ gives, through the removable-periodic quotient
 `c`, and `C(t, α₂, α₃) = c D(t, α₂, α₃)` near every point of `(2η, Q)`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -55,7 +55,7 @@ theorem slice_constant_of_joint {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
   obtain ⟨h, hh, C, hCm, hCv, hfirst, hdual⟩ := hjoint
   obtain ⟨Ψ, hΨd, hΨD, hΨper⟩ := structureConstant_DOZZ_quotient_removable_periodic γ μ η U
     α₂ α₃ h hh hγ hγ2 hγirr hμ hη hα₂ hα₃ hU C hCm hfirst hdual
-  have hSo : IsOpen (horizontalStrip h) := isOpen_horizontalStrip h
+  have hSo  := isOpen_horizontalStrip h
   have hΨm : MeromorphicOn Ψ (horizontalStrip h) := fun z hz =>
     (hΨd.analyticAt (hSo.mem_nhds hz)).meromorphicAt
   have hp₁ : ∀ z ∈ horizontalStrip h, (fun w => Ψ (w + ((γ : ℝ) : ℂ))) =ᶠ[𝓝[≠] z] Ψ :=
@@ -64,12 +64,10 @@ theorem slice_constant_of_joint {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
   have hp₂ : ∀ z ∈ horizontalStrip h, (fun w => Ψ (w + ((4 / γ : ℝ) : ℂ))) =ᶠ[𝓝[≠] z] Ψ :=
     fun z hz => eventually_nhdsWithin_of_eventually_nhds
       (eventually_of_mem (hSo.mem_nhds hz) fun w hw => by
-        have := (hΨper w hw).2
-        push_cast
-        exact this)
+        simp_all)
   obtain ⟨c, hc, -⟩ := meromorphicOn_strip_constant_of_dense_periods h hh Ψ hΨm γ (4 / γ) hγ
     (by positivity) (periods_irrational hγ hγirr) hp₁ hp₂
-  have hΨc : ∀ z ∈ horizontalStrip h, Ψ z = c := fun z hz =>
+  have hΨc  := fun z hz =>
     tendsto_nhds_unique
       ((hΨd.differentiableAt (hSo.mem_nhds hz)).continuousAt.tendsto.mono_left
         nhdsWithin_le_nhds)

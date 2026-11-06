@@ -13,16 +13,13 @@ open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (α₁ α₂ α₃ ξ h : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ₁ : ξ < 1) (hα₁ : α₁ < Q γ) (hreflect : Q γ - α₁ < γ / 2) (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
+
+include Ω _inst1 P X hX γ hγ hγ₂ M hM Xc hXc α₁ α₂ α₃ ξ h hh hξ hξ₁ hα₁ hreflect hs in
 /-- The first-order radial likelihood times the actual outer inverse moment has the freezing
 power needed for the inner-limit comparison, on the full punctured complex filter. -/
 theorem reflected_first_order_radial_error_bound
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (α₁ α₂ α₃ ξ h : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ₁ : ξ < 1)
-    (hα₁ : α₁ < Q γ) (hreflect : Q γ - α₁ < γ / 2)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
+     :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ z : ℂ in nhdsWithin 0 {z : ℂ | z ≠ 0},
       (∫⁻ ω, ENNReal.ofReal (Real.exp
         (γ * Xc ω 0 (-Real.log ‖z‖ + h) - γ * (Q γ - α₁) * (-Real.log ‖z‖ + h) -
@@ -51,7 +48,7 @@ theorem reflected_first_order_radial_error_bound
     (ht (1 - ξ) (sub_pos.mpr hξ₁)).eventually (gt_mem_nhds hε₀),
     (ht ξ hξ).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
     self_mem_nhdsWithin] with z hz hzε hzξ hz0
-  have hp : 0 < ‖z‖ := norm_pos_iff.mpr hz0
+  have hp  := norm_pos_iff.mpr hz0
   have hrad : 0 < ‖z‖ ^ (1 - ξ) := Real.rpow_pos_of_pos hp _
   have hsep : ‖z‖ ≤ ‖z‖ ^ (1 - ξ) / 2 := by
     have he : ‖z‖ = ‖z‖ ^ (1 - ξ) * ‖z‖ ^ ξ := by
@@ -64,8 +61,7 @@ theorem reflected_first_order_radial_error_bound
     have hl := Real.log_nonpos hp.le hz.le
     linarith only [hl, hh]
   have hr : ‖z‖ ≤ ‖z‖ ^ (1 - ξ) := by
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_ge hp hz.le
-      (by linarith only [hξ] : 1 - ξ ≤ 1)
+    bound
   have hout : Real.exp (-(-Real.log ‖z‖ + h)) ≤ ‖z‖ ^ (1 - ξ) := by
     apply le_trans _ hr
     have he : -(-Real.log ‖z‖ + h) ≤ Real.log ‖z‖ := by linarith only [hh]
@@ -111,20 +107,12 @@ theorem reflected_first_order_radial_error_bound
     _ = _ := by
       rw [← ENNReal.ofReal_mul hscale, ← Real.rpow_mul hp.le]
       have hpow := Real.rpow_add hp κ ((1 - ξ) * δ)
-      rw [hpow]
-      congr 1
-      dsimp only [C]
-      ring
+      grind
 
+include Ω _inst1 P X hX γ hγ hγ₂ M hM Xc hXc α₁ α₂ α₃ ξ h hh hξ hξ₁ hα₁ hreflect hs in
 /-- The actual first-order expectation is negligible at the reflected leading scale. -/
 theorem reflected_first_order_radial_error_littleO
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (α₁ α₂ α₃ ξ h : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ₁ : ξ < 1)
-    (hα₁ : α₁ < Q γ) (hreflect : Q γ - α₁ < γ / 2)
-    (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
+     :
     IsComplexLittleOAtZero (γ * (Q γ - α₁)) (fun z =>
       (((∫⁻ ω, ENNReal.ofReal (Real.exp
         (γ * Xc ω 0 (-Real.log ‖z‖ + h) - γ * (Q γ - α₁) * (-Real.log ‖z‖ + h) -

@@ -10,7 +10,7 @@ public import Mathlib.LinearAlgebra.Complex.FiniteDimensional
 
 /-! The sharp planar tail power, obtained by Haar dilation. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -28,16 +28,11 @@ theorem planar_radial_tail_scale (a ρ : ℝ) (hρ : 0 < ρ) :
     have hn : ‖ρ • x‖ = ρ * ‖x‖ := by rw [norm_smul, Real.norm_eq_abs, abs_of_pos hρ]
     have hm : ρ • x ∈ (Metric.ball (0 : ℂ) ρ)ᶜ ↔ x ∈ (Metric.ball (0 : ℂ) 1)ᶜ := by
       simp only [mem_compl_iff, Metric.mem_ball, dist_zero_right, hn]
-      apply not_congr
-      constructor
-      · intro hh
-        nlinarith only [hh, hρ]
-      · intro hh
-        nlinarith only [hh, hρ]
+      simp_all
     by_cases hx : x ∈ (Metric.ball (0 : ℂ) 1)ᶜ
     · simp only [F, Set.indicator_of_mem (hm.mpr hx), Set.indicator_of_mem hx, hn]
       rw [Real.mul_rpow hρ.le (norm_nonneg _), ENNReal.ofReal_mul (Real.rpow_nonneg hρ.le _)]
-    · simp only [F, Set.indicator_of_notMem (hm.not.mpr hx), Set.indicator_of_notMem hx, mul_zero]
+    continuity
   have hmap := Measure.map_addHaar_smul (volume : Measure ℂ) hρ.ne'
   have hchange := lintegral_map (μ := (volume : Measure ℂ)) hf (measurable_const_smul ρ)
   rw [hmap, lintegral_smul_measure, Complex.finrank_real_complex, abs_of_pos (inv_pos.mpr (sq_pos_of_pos hρ))] at hchange

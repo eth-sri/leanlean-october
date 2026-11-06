@@ -17,6 +17,7 @@ public import Mathlib.MeasureTheory.Function.ContinuousMapDense
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
 public import Mathlib.Analysis.Complex.Basic
 public import Mathlib.MeasureTheory.Integral.IntegrableOn
+import Mathlib.Tactic
 
 /-! The circle cutoff chaos as an admissible cutoff integral, the intensity upper bound of every circle GMC version, and continuous `L¹` approximation of bounded Borel tests. -/
 
@@ -67,17 +68,17 @@ theorem integral_regularizedGMC_eq_admissibleCutoffIntegral
     ∫ x, f x ∂regularizedGMC P Xc γ r ω =
       admissibleCutoffIntegral P Set.univ circleDensity (circleRegularization Xc) γ r f ω := by
   classical
-  let V : ℂ → ℝ := fun x => ∫ ω', Xc ω' x r ^ 2 ∂P
+  let V  := fun x => ∫ ω', Xc ω' x r ^ 2 ∂P
   have hVmeas : Measurable V := by
     let _ := hX.1
-    have hq : Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) :=
+    have hq  :=
       ((hXc.1 r).comp measurable_swap).pow_const 2
     exact hq.stronglyMeasurable.integral_prod_right.measurable
   have hweightMeas : Measurable (fun x : ℂ => normPlus x ^ (-4 : ℝ)) := by
     unfold normPlus
     fun_prop
-  let d₀ : ℂ → ℝ := fun x => normPlus x ^ (-4 : ℝ)
-  let d₁ : ℂ → ℝ := fun x =>
+  let d₀  := fun x => normPlus x ^ (-4 : ℝ)
+  let d₁  := fun x =>
     Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) * normPlus x ^ (-4 : ℝ)
   have hd₁ : Measurable d₁ := by
     have hfield : Measurable (fun x : ℂ => Xc ω x r) :=
@@ -105,9 +106,7 @@ theorem integral_regularizedGMC_eq_admissibleCutoffIntegral
       ∫ x, (ENNReal.ofReal (d₁ x)).toReal * f x ∂volume := by
     rw [regularizedGMC, integral_withDensity_eq_integral_toReal_smul he₁
       (ae_of_all _ fun x => ENNReal.ofReal_lt_top)]
-    apply integral_congr_ae
-    filter_upwards [] with x
-    simp only [smul_eq_mul, d₁, V]
+    simp_all
   rw [hleft, hright]
   apply integral_congr_ae
   filter_upwards [] with x
@@ -128,9 +127,7 @@ theorem admissibleCutoffIntegral_measurable
   have hv' : Measurable (fun x => ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P) := by
     have heq : (fun x => ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P) =
         fun x => gaussianVariance P (fun ω => Y ω (Real.exp (-r)) x) := by
-      funext x
-      unfold gaussianVariance gaussianCovariance
-      simp only [pow_two]
+      noncomm_ring
     rw [heq]; exact hv
   have hfield : Measurable (fun q : Ω × ℂ => Y q.1 (Real.exp (-r)) q.2) :=
     hY.measurableAtScale _
@@ -138,7 +135,7 @@ theorem admissibleCutoffIntegral_measurable
       g ^ 2 / 2 * ∫ ω', Y ω' (Real.exp (-r)) q.2 ^ 2 ∂P)) := by
     have h2 : Measurable (fun q : Ω × ℂ => ∫ ω', Y ω' (Real.exp (-r)) q.2 ^ 2 ∂P) :=
       hv'.comp measurable_snd
-    have h3 : Measurable (fun q : Ω × ℂ => f q.2) := hf.comp measurable_snd
+    
     fun_prop
   exact hF.stronglyMeasurable.integral_prod_right.measurable
 
@@ -149,7 +146,7 @@ theorem regularizedGMC_integral_measurable
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ r : ℝ) (f : ℂ → ℝ) (hf : Measurable f) :
     Measurable (fun ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω) := by
-  have : IsProbabilityMeasure P := hX.1
+  have  := hX.1
   have heq : (fun ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω) =
       admissibleCutoffIntegral P Set.univ circleDensity (circleRegularization Xc) γ r f := by
     funext ω
@@ -170,7 +167,7 @@ theorem regularizedGMC_integral_L1_uniform_cauchy
       (∀ x, |f x| ≤ L) → (∀ x ∉ K, f x = 0) →
       ∫⁻ ω, ENNReal.ofReal |∫ x, f x ∂regularizedGMC P Xc γ r ω -
         ∫ x, f x ∂regularizedGMC P Xc γ s ω| ∂P < ENNReal.ofReal ε := by
-  have : IsProbabilityMeasure P := hX.1
+  have  := hX.1
   obtain ⟨R, hR⟩ := admissibleCutoffIntegral_L1_uniform_cauchy P Set.univ circleDensity 1 _
     (circleRegularization_admissible P X hX Xc hXc) K hK (Set.subset_univ K) I hI hI2 L ε hε
   refine ⟨R, fun r s hr hs γ hγ f hf hfL hfK => ?_⟩
@@ -247,13 +244,12 @@ theorem openRamp_apply (V : Set ℂ) (n : ℕ) (x : ℂ) :
     openRamp V n x = min 1 ((n : ℝ) * Metric.infDist x Vᶜ) := rfl
 
 theorem openRamp_nonneg (V : Set ℂ) (n : ℕ) (x : ℂ) : 0 ≤ openRamp V n x := by
-  rw [openRamp_apply]
   exact le_min zero_le_one (mul_nonneg (Nat.cast_nonneg _) Metric.infDist_nonneg)
 
 theorem openRamp_le_indicator (V : Set ℂ) (n : ℕ) (x : ℂ) : ENNReal.ofReal (openRamp V n x) ≤ V.indicator (fun _ => (1 : ℝ≥0∞)) x := by
   by_cases hx : x ∈ V
   · rw [Set.indicator_of_mem hx, openRamp_apply]
-    exact ENNReal.ofReal_le_one.mpr (min_le_left _ _)
+    simp_all
   · rw [Set.indicator_of_notMem hx, openRamp_apply,
       Metric.infDist_zero_of_mem (show x ∈ Vᶜ from hx)]
     simp
@@ -269,7 +265,7 @@ theorem openRamp_tendsto (V : Set ℂ) (hV : IsOpen V) (hVc : Vᶜ.Nonempty) (x 
       (𝓝 (V.indicator (fun _ => (1 : ℝ≥0∞)) x)) := by
   by_cases hx : x ∈ V
   · rw [Set.indicator_of_mem hx]
-    have hpos : 0 < Metric.infDist x Vᶜ :=
+    have hpos  :=
       (hV.isClosed_compl.notMem_iff_infDist_pos hVc).mp (fun h => h hx)
     obtain ⟨N, hN⟩ := exists_nat_gt (1 / Metric.infDist x Vᶜ)
     apply tendsto_const_nhds.congr'
@@ -400,34 +396,15 @@ theorem continuous_clampAbs (L : ℝ) : Continuous (clampAbs L) :=
 
 theorem abs_clampAbs_le (L t : ℝ) (hL : 0 ≤ L) : |clampAbs L t| ≤ L := by
   unfold clampAbs
-  rw [abs_le]
-  constructor
-  · exact le_max_left _ _
-  · exact max_le (by linarith) (min_le_left _ _)
+  grind
 
 theorem abs_clampAbs_le_abs (L t : ℝ) (hL : 0 ≤ L) : |clampAbs L t| ≤ |t| := by
   unfold clampAbs
-  rcases le_total t (-L) with h | h
-  · rw [min_eq_right (by linarith), max_eq_left h, abs_neg, abs_of_nonneg hL,
-      abs_of_nonpos (by linarith)]
-    linarith
-  · rcases le_total t L with h' | h'
-    · rw [min_eq_right h', max_eq_right h]
-    · rw [min_eq_left h', max_eq_right (by linarith), abs_of_nonneg hL, abs_of_nonneg (by linarith)]
-      exact h'
+  grind
 
 theorem abs_sub_clampAbs_le (L s t : ℝ) (hs : |s| ≤ L) : |s - clampAbs L t| ≤ |s - t| := by
   unfold clampAbs
-  have hs' := abs_le.mp hs
-  rcases le_total t (-L) with h | h
-  · rw [min_eq_right (by linarith), max_eq_left h]
-    rw [abs_of_nonneg (by linarith), abs_of_nonneg (by linarith)]
-    linarith
-  · rcases le_total t L with h' | h'
-    · rw [min_eq_right h', max_eq_right h]
-    · rw [min_eq_left h', max_eq_right (by linarith)]
-      rw [abs_of_nonpos (by linarith), abs_of_nonpos (by linarith)]
-      linarith
+  grind
 
 /-- The radial cutoff equal to one on the ball of radius `ρ` and vanishing off radius `ρ + 1`. -/
 noncomputable def ballCutoff (ρ : ℝ) (x : ℂ) : ℝ := max 0 (min 1 (ρ + 1 - ‖x‖))
@@ -443,11 +420,11 @@ theorem ballCutoff_le_one (ρ : ℝ) (x : ℂ) : ballCutoff ρ x ≤ 1 :=
 
 theorem ballCutoff_eq_one (ρ : ℝ) (x : ℂ) (hx : ‖x‖ ≤ ρ) : ballCutoff ρ x = 1 := by
   unfold ballCutoff
-  rw [min_eq_left (by linarith), max_eq_right zero_le_one]
+  grind
 
 theorem ballCutoff_eq_zero (ρ : ℝ) (x : ℂ) (hx : ρ + 1 < ‖x‖) : ballCutoff ρ x = 0 := by
   unfold ballCutoff
-  rw [max_eq_left (min_le_right _ _ |>.trans (by linarith))]
+  grind
 
 /-- Continuous `L¹` approximation of bounded Borel tests with bound and support control. -/
 theorem exists_continuous_L1_approx
@@ -455,10 +432,10 @@ theorem exists_continuous_L1_approx
     (hfL : ∀ x, |f x| ≤ L) (hfρ : ∀ x, ρ < ‖x‖ → f x = 0) (δ : ℝ≥0∞) (hδ : δ ≠ 0) :
     ∃ h : ℂ → ℝ, Continuous h ∧ (∀ x, |h x| ≤ L) ∧ (∀ x, ρ + 1 < ‖x‖ → h x = 0) ∧
       ∫⁻ x, ENNReal.ofReal |f x - h x| ∂ν ≤ δ := by
-  have hL : 0 ≤ L := (abs_nonneg _).trans (hfL 0)
+  have hL  := (abs_nonneg _).trans (hfL 0)
   have hfint : Integrable f ν :=
     Integrable.of_bound hf.aestronglyMeasurable L (ae_of_all _ fun x => by
-      rw [Real.norm_eq_abs]; exact hfL x)
+      exact hfL x)
   obtain ⟨g, -, hg, hgcont, -⟩ := hfint.exists_hasCompactSupport_lintegral_sub_le hδ
   refine ⟨fun x => ballCutoff ρ x * clampAbs L (g x),
     (continuous_ballCutoff ρ).mul ((continuous_clampAbs L).comp hgcont), ?_, ?_, ?_⟩
@@ -498,7 +475,7 @@ theorem ofReal_abs_integral_sub_le_lintegral {α : Type*} [MeasurableSpace α] (
         intro hsub
         apply hhi
         have h1 : Integrable (fun x => f x - (f x - h x)) μ := hfi.sub hsub
-        exact h1.congr (ae_of_all _ fun x => sub_sub_cancel (f x) (h x))
+        simp_all
       have htop : ∫⁻ x, ‖f x - h x‖ₑ ∂μ = ⊤ := by
         by_contra hne
         exact hnot ⟨(hf.sub hh).aestronglyMeasurable, lt_top_iff_ne_top.mpr hne⟩
@@ -510,7 +487,7 @@ theorem ofReal_abs_integral_sub_le_lintegral {α : Type*} [MeasurableSpace α] (
         intro hsub
         apply hfi
         have h1 : Integrable (fun x => (f x - h x) + h x) μ := hsub.add hhi
-        exact h1.congr (ae_of_all _ fun x => sub_add_cancel (f x) (h x))
+        simp_all
       have htop : ∫⁻ x, ‖f x - h x‖ₑ ∂μ = ⊤ := by
         by_contra hne
         exact hnot ⟨(hf.sub hh).aestronglyMeasurable, lt_top_iff_ne_top.mpr hne⟩

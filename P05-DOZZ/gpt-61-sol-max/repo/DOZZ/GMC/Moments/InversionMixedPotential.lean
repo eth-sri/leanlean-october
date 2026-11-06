@@ -9,7 +9,7 @@ public import DOZZ.GMC.CirclePotential
 
 /-! Exact mixed circle potentials for the inverted local field. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 open Set Metric Real
@@ -26,21 +26,24 @@ theorem inversion_logmax_mul_scale_bound {q t c : ℝ}
   · rw [hq0, max_eq_right (mul_pos ht hc).le, max_eq_right ht.le,
       Real.log_mul ht.ne' hc.ne']
     simp
-  · have hqpos : 0 < q := lt_of_le_of_ne hq (Ne.symm hq0)
+  · have hqpos  := lt_of_le_of_ne hq (Ne.symm hq0)
     have h := inversion_logmax_div_scale_bound ht.le hqpos (inv_pos.mpr hc)
     simpa only [div_inv_eq_mul, max_comm, Real.log_inv, abs_neg] using h
 
+variable {x y : ℂ} (hx : x ≠ 0) (hy : y ≠ 0) (s : ℝ)
+
+include x y hx hy s in
 /-- Averaging the source field over an ordinary source circle, then evaluating at an inverted
 point, gives a clipped target logarithm with scale `exp (-s) * ‖x‖ * ‖y‖`. The remainder is
 exactly the pinning potential averaged on the source circle. -/
-theorem inversion_innerPot_eq {x y : ℂ} (hx : x ≠ 0) (hy : y ≠ 0) (s : ℝ) :
+theorem inversion_innerPot_eq  :
     innerPot y⁻¹ s x⁻¹ =
       -Real.log (max ‖x - y‖ (Real.exp (-s) * (‖x‖ * ‖y‖))) +
         Real.log (normPlus x) + Real.log (normPlus y) +
           (regAvg y⁻¹ s - Real.log (normPlus y⁻¹)) := by
-  have hxN : 0 < ‖x‖ := norm_pos_iff.mpr hx
-  have hyN : 0 < ‖y‖ := norm_pos_iff.mpr hy
-  have hc : 0 < ‖x‖ * ‖y‖ := mul_pos hxN hyN
+  have hxN  := norm_pos_iff.mpr hx
+  have hyN  := norm_pos_iff.mpr hy
+  have hc  := mul_pos hxN hyN
   have hmax : max (‖x - y‖ / (‖x‖ * ‖y‖)) (Real.exp (-s)) =
       max ‖x - y‖ (Real.exp (-s) * (‖x‖ * ‖y‖)) / (‖x‖ * ‖y‖) := by
     rw [← max_div_div_right hc.le]
@@ -57,8 +60,9 @@ theorem inversion_innerPot_eq {x y : ℂ} (hx : x ≠ 0) (hy : y ≠ 0) (s : ℝ
     Real.log_div hxPlus.ne' hxN.ne', Real.log_div hyPlus.ne' hyN.ne']
   ring
 
+include x y hx hy s in
 /-- The source pinning remainder is at most the source circle radius, uniformly in its center. -/
-theorem inversion_innerPot_remainder_le {x y : ℂ} (hx : x ≠ 0) (hy : y ≠ 0) (s : ℝ) :
+theorem inversion_innerPot_remainder_le  :
     |innerPot y⁻¹ s x⁻¹ -
       (-Real.log (max ‖x - y‖ (Real.exp (-s) * (‖x‖ * ‖y‖))) +
         Real.log (normPlus x) + Real.log (normPlus y))| ≤ Real.exp (-s) := by
@@ -66,10 +70,10 @@ theorem inversion_innerPot_remainder_le {x y : ℂ} (hx : x ≠ 0) (hy : y ≠ 0
   simpa only [add_sub_cancel_left, regAvg] using
     abs_circleAverage_log_normPlus_sub_le y⁻¹ (Real.exp_pos (-s))
 
+include x y hx hy s in
 /-- The inverted mixed point/circle potential is comparable to the ordinary one at all
 distances, with an explicit logarithmic chart factor. -/
-theorem inversion_innerPot_sub_innerPot_le {x y : ℂ}
-    (hx : x ≠ 0) (hy : y ≠ 0) (s : ℝ) :
+theorem inversion_innerPot_sub_innerPot_le  :
     |innerPot y⁻¹ s x⁻¹ - innerPot y s x| ≤
       |Real.log (‖x‖ * ‖y‖)| + 2 * Real.exp (-s) := by
   have hclip := inversion_logmax_mul_scale_bound (norm_nonneg (x - y))
@@ -93,32 +97,24 @@ theorem inversion_innerPot_sub_innerPot_le {x y : ℂ}
         Real.log (max ‖x - y‖ (Real.exp (-s)))) +
         (regAvg y⁻¹ s - Real.log (normPlus y⁻¹))| +
         |regAvg y s - Real.log (normPlus y)| := by
-      simpa only [Real.norm_eq_abs] using norm_sub_le
-        (-(Real.log (max ‖x - y‖ (Real.exp (-s) * (‖x‖ * ‖y‖))) -
-          Real.log (max ‖x - y‖ (Real.exp (-s)))) +
-          (regAvg y⁻¹ s - Real.log (normPlus y⁻¹)))
-        (regAvg y s - Real.log (normPlus y))
+      grind
     _ ≤ |Real.log (max ‖x - y‖ (Real.exp (-s) * (‖x‖ * ‖y‖))) -
         Real.log (max ‖x - y‖ (Real.exp (-s)))| +
         |regAvg y⁻¹ s - Real.log (normPlus y⁻¹)| +
         |regAvg y s - Real.log (normPlus y)| := by
-      apply add_le_add _ le_rfl
-      simpa only [abs_neg] using abs_add_le
-        (-(Real.log (max ‖x - y‖ (Real.exp (-s) * (‖x‖ * ‖y‖))) -
-          Real.log (max ‖x - y‖ (Real.exp (-s)))))
-        (regAvg y⁻¹ s - Real.log (normPlus y⁻¹))
+      grind
     _ ≤ |Real.log (‖x‖ * ‖y‖)| + Real.exp (-s) + Real.exp (-s) :=
       add_le_add (add_le_add hclip hinv) hpin
     _ = _ := by ring
 
+include x y hx hy s in
 /-- Away from the diagonal, the mixed inverted point/circle covariance differs from the
 target equator kernel by at most the source circle radius. -/
-theorem inversion_innerPot_sub_gffKernel_le {x y : ℂ}
-    (hx : x ≠ 0) (hy : y ≠ 0) (s : ℝ)
+theorem inversion_innerPot_sub_gffKernel_le 
     (hsep : Real.exp (-s) * (‖x‖ * ‖y‖) ≤ ‖x - y‖) :
     |innerPot y⁻¹ s x⁻¹ - gffKernel x y| ≤ Real.exp (-s) := by
   have h := inversion_innerPot_remainder_le hx hy s
-  simpa only [max_eq_left hsep, gffKernel] using h
+  continuity
 
 
 /-- A uniform pointwise error on a circle bounds the difference of its two averages. -/
@@ -146,11 +142,8 @@ theorem inversion_circleAverage_mixed_offDiagonal_le {x y : ℂ} {ε : ℝ}
     intro u hu
     have hux : ‖u - x‖ = ε := by
       simpa only [mem_sphere_iff_norm, abs_of_pos hε] using hu
-    change u ≠ 0
-    intro hu0
-    have : ‖x‖ = ε := by simpa [hu0] using hux
-    linarith
-  have hf : CircleIntegrable (fun u => innerPot y⁻¹ s u⁻¹) x ε :=
+    continuity
+  have hf  :=
     ((continuous_innerPot y⁻¹ s).comp_continuousOn
       (continuousOn_inv₀.mono hU)).circleIntegrable'
   have hg : CircleIntegrable (fun u => gffKernel u y) x ε := by
@@ -160,7 +153,7 @@ theorem inversion_circleAverage_mixed_offDiagonal_le {x y : ℂ} {ε : ℝ}
       (circleIntegrable_const (Real.log (normPlus y)) x ε)
   apply abs_circleAverage_sub_circleAverage_le hf hg
   intro u hu
-  have hu0 : u ≠ 0 := hU hu
+  have hu0  := hU hu
   have hux : ‖u - x‖ = ε := by
     simpa only [mem_sphere_iff_norm, abs_of_pos hε] using hu
   have hunorm : ‖u‖ ≤ ‖x‖ + ε := by
@@ -191,8 +184,8 @@ theorem inversion_circleAverage_mixed_log_bound
       (2 * B + 2) + (Real.log 3 + 2 * Real.log (1 + R)) := by
   have hU : sphere x |Real.exp (-r)| ⊆ ({0} : Set ℂ)ᶜ := by
     intro u hu
-    exact (hcircle u (by simpa only [abs_of_pos (Real.exp_pos _)] using hu)).1
-  have hf : CircleIntegrable (fun u => innerPot y⁻¹ s u⁻¹) x (Real.exp (-r)) :=
+    simp_all
+  have hf  :=
     ((continuous_innerPot y⁻¹ s).comp_continuousOn
       (continuousOn_inv₀.mono hU)).circleIntegrable'
   have hcomp : |circleAverage (fun u => innerPot y⁻¹ s u⁻¹) x (Real.exp (-r)) -
@@ -201,7 +194,7 @@ theorem inversion_circleAverage_mixed_log_bound
       (continuous_innerPot y s).continuousOn.circleIntegrable'
     intro u hu
     obtain ⟨hu0, hulog⟩ := hcircle u (by
-      simpa only [abs_of_pos (Real.exp_pos _)] using hu)
+      simp_all)
     have hlog : |Real.log (‖u‖ * ‖y‖)| ≤ 2 * B := by
       rw [Real.log_mul (norm_ne_zero_iff.mpr hu0) (norm_ne_zero_iff.mpr hy)]
       exact (abs_add_le _ _).trans (by linarith)
@@ -209,10 +202,6 @@ theorem inversion_circleAverage_mixed_log_bound
     exact (inversion_innerPot_sub_innerPot_le hu0 hy s).trans (by linarith)
   have hstandard := abs_circleKernel_sub_log_le R hR x y hxR hyR r s hr hs
   rw [circleKernel_eq] at hstandard
-  have htri := abs_sub_le
-    (circleAverage (fun u => innerPot y⁻¹ s u⁻¹) x (Real.exp (-r)))
-    (circleAverage (innerPot y s) x (Real.exp (-r)))
-    (Real.log (1 / max ‖x - y‖ (max (Real.exp (-r)) (Real.exp (-s)))))
-  exact htri.trans (add_le_add hcomp hstandard)
+  grind
 
 end DOZZ.Proofs

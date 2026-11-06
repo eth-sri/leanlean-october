@@ -9,7 +9,7 @@ public import Mathlib.Analysis.Calculus.MeanValue
 
 /-! Endpoint Kahane comparison for smooth convex tests with bounded derivatives. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal
@@ -33,8 +33,8 @@ theorem kahane_finite_smooth_convex
     (∫ ω, F (DOZZ.finiteChaosMass PX X a γ ω) ∂PX) ≤
       ∫ ω, F (DOZZ.finiteChaosMass PY Y a γ ω) ∂PY := by
   classical
-  let : IsProbabilityMeasure PX := hX.1
-  let : IsProbabilityMeasure PY := hY.1
+  let  := hX.1
+  let  := hY.1
   let μ := PX.prod PY
   let vX : ι → ℝ := fun i => DOZZ.gaussianVariance PX (fun ω => X ω i)
   let vY : ι → ℝ := fun i => DOZZ.gaussianVariance PY (fun ω => Y ω i)
@@ -42,14 +42,12 @@ theorem kahane_finite_smooth_convex
   let T : ℝ → ΩX × ΩY → ℝ := fun t ω => F (M t ω)
   let D : ℝ → ΩX × ΩY → ℝ := kahaneInterpolatedTestDerivative X Y vX vY a γ F'
   let φ : ℝ → ℝ := fun t => ∫ ω, T t ω ∂μ
-  have hFcont : Continuous F := continuous_iff_continuousAt.mpr fun x => (hF x).continuousAt
-  have hF'cont : Continuous F' := continuous_iff_continuousAt.mpr fun x => (hF' x).continuousAt
-  have hB₁nonneg : 0 ≤ B₁ := (norm_nonneg (F' 0)).trans (hB₁ 0)
-  have hvX (i : ι) : 0 ≤ vX i := by
-    exact integral_nonneg fun ω => mul_self_nonneg (X ω i)
-  have hvY (i : ι) : 0 ≤ vY i := by
-    exact integral_nonneg fun ω => mul_self_nonneg (Y ω i)
-  have hV : AEMeasurable (fun ω : ΩX × ΩY => (X ω.1, Y ω.2)) μ :=
+  have hFcont  := continuous_iff_continuousAt.mpr fun x => (hF x).continuousAt
+  have hF'cont  := continuous_iff_continuousAt.mpr fun x => (hF' x).continuousAt
+  have hB₁nonneg  := (norm_nonneg (F' 0)).trans (hB₁ 0)
+  have hvX (i : ι) : 0 ≤ vX i := integral_nonneg fun ω => mul_self_nonneg (X ω i)
+  have hvY (i : ι) : 0 ≤ vY i := integral_nonneg fun ω => mul_self_nonneg (Y ω i)
+  have hV  :=
     (aemeasurable_pi_iff.mpr hX.2.1).comp_fst.prodMk
       (aemeasurable_pi_iff.mpr hY.2.1).comp_snd
   have hM (s : ℝ) : AEMeasurable (M s) μ := by
@@ -65,18 +63,13 @@ theorem kahane_finite_smooth_convex
         kahaneInterpolatedTestDerivative (fun x => x) (fun x => x) vX vY a γ F' s z) := by
       unfold kahaneInterpolatedTestDerivative kahaneInterpolatedMass
       fun_prop
-    change AEStronglyMeasurable (fun ω => D s ω) μ
-    simpa only [Function.comp_def, D, kahaneInterpolatedTestDerivative, kahaneInterpolatedMass] using
-      (h.comp_aemeasurable hV).aestronglyMeasurable
+    exact (h.comp_aemeasurable hV).aestronglyMeasurable
   have hFgrowth (x : ℝ) : ‖F x‖ ≤ ‖F 0‖ + B₁ * ‖x‖ := by
     have h := Convex.norm_image_sub_le_of_norm_hasDerivWithin_le
       (s := Set.univ) (fun y _ => (hF y).hasDerivWithinAt)
       (fun y _ => hB₁ y) convex_univ (mem_univ (0 : ℝ)) (mem_univ x)
     simp only [sub_zero] at h
-    calc
-      _ ≤ ‖F x - F 0‖ + ‖F 0‖ := by
-        simpa only [sub_add_cancel] using norm_add_le (F x - F 0) (F 0)
-      _ ≤ _ := by linarith
+    exact norm_le_norm_add_const_of_dist_le h
   let b : ΩX × ΩY → ℝ := fun ω => ‖F 0‖ + B₁ * (∑ i, a i) *
     Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|))
   have hb : Integrable b μ := (integrable_const _).add
@@ -102,7 +95,7 @@ theorem kahane_finite_smooth_convex
   have hderiv (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
       HasDerivAt φ (∫ ω, D t ω ∂μ) t ∧ (∫ ω, D t ω ∂μ) ≤ 0 := by
     let ε : ℝ := min t (1 - t) / 4
-    have htpos : 0 < t := ht.1
+    have htpos  := ht.1
     have htpos' : 0 < 1 - t := by linarith [ht.2]
     have hε : 0 < ε := by dsimp [ε]; positivity
     have hεt : 4 * ε ≤ t := by dsimp [ε]; linarith [min_le_left t (1 - t)]
@@ -115,7 +108,7 @@ theorem kahane_finite_smooth_convex
       PX PY X Y hX hY vX vY a γ ε B₁
     have hDbound : ∀ᵐ ω ∂μ, ∀ s ∈ Metric.ball t ε, ‖D s ω‖ ≤ db ω := by
       filter_upwards [] with ω s hs
-      have hsabs : |s - t| < ε := by simpa only [Metric.mem_ball, Real.dist_eq] using hs
+      have hsabs : |s - t| < ε := by bound
       have hsleft : ε ≤ s := by linarith [(abs_lt.mp hsabs).1]
       have hsright : ε ≤ 1 - s := by linarith [(abs_lt.mp hsabs).2]
       exact kahaneInterpolatedTestDerivative_norm_le_absExp X Y vX vY a hvX hvY ha

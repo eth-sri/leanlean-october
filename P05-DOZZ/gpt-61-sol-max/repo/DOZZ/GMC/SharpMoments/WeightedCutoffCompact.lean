@@ -39,7 +39,7 @@ theorem continuousAt_weightedCutoffSlack {p : ℝ × ℝ × ℝ} (hp : p.1 ≠ 0
 /-- Around each admissible triple there is a closed product box of admissible triples. -/
 theorem exists_admissible_box {p : ℝ × ℝ × ℝ} (hp : 0 < weightedCutoffSlack p) :
     ∃ ε : ℝ, 0 < ε ∧ ∀ q : ℝ × ℝ × ℝ, dist q p < 2 * ε → 0 < weightedCutoffSlack q := by
-  have hp1 : p.1 ≠ 0 := ((weightedCutoffSlack_pos_iff p).mp hp).1.ne'
+  have hp1  := ((weightedCutoffSlack_pos_iff p).mp hp).1.ne'
   have hev : ∀ᶠ q in 𝓝 p, 0 < weightedCutoffSlack q :=
     (continuousAt_weightedCutoffSlack hp1).eventually (lt_mem_nhds hp)
   obtain ⟨ε', hε', hball⟩ := Metric.eventually_nhds_iff.mp hev

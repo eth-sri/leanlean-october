@@ -34,7 +34,6 @@ theorem bpzNearWeight_nonneg (z₀ : ℂ) (r : ℝ) (x : ℂ) :
 
 theorem measurable_bpzNearWeight (z₀ : ℂ) (r : ℝ) :
     Measurable (bpzNearWeight γ χ α₁ α₂ α₃ z₀ r) := by
-  unfold bpzNearWeight
   exact Measurable.ite (measurableSet_lt (measurable_id.sub measurable_const).norm
     measurable_const) measurable_bpzBaseWeight measurable_const
 
@@ -89,9 +88,7 @@ theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
         rw [lintegral_indicator measurableSet_ball]
         congr 1
         rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
-        congr 1
-        funext x
-        rw [ENNReal.ofReal_mul hCB0]
+        simp_all
     _ ≤ ENNReal.ofReal Cn * (ENNReal.ofReal CB *
           ENNReal.ofReal (2 * Real.pi * (2 * r) ^ (β + 2) / (β + 2))) := by
         gcongr

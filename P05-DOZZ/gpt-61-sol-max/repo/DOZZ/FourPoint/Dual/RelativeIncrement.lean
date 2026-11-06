@@ -6,8 +6,9 @@ module
 public import DOZZ.FourPoint.Dual.IncrementIntegrability
 public import Mathlib.Analysis.Convex.Deriv
 import Mathlib.Tactic
+import Mathlib.Tactic
 /-! Relative control of the signed inverse increment under the kernel squeeze factors. -/
-@[expose] public section
+public section
 open Set
 namespace DOZZ.Proofs
 
@@ -20,11 +21,11 @@ theorem dual_inverse_increment_concave (p A : ℝ) (hp : 0 < p) (hA : 0 < A) :
     have hh := (Real.hasDerivAt_rpow_const (x := A+t) (p := -p)
       (Or.inl (by linarith only [hA, ht0]))).comp t ((hasDerivAt_id t).const_add A)
     have hh' := hh.const_sub (A^(-p))
-    convert hh' using 1 <;> simp only [g, Function.comp_def, mul_one, neg_mul, neg_neg]
+    continuity
   have hm : AntitoneOn (deriv g) (interior (Ici 0)) := by
     intro x hx y hy hxy
     have hx0 : 0 ≤ x := interior_subset hx
-    have hy0 : 0 ≤ y := interior_subset hy
+    have hy0  := interior_subset hy
     rw [(hd x hx0).deriv, (hd y hy0).deriv]
     apply mul_le_mul_of_nonneg_left _ hp.le
     exact Real.rpow_le_rpow_of_nonpos (by linarith only [hA, hx0])
@@ -40,7 +41,7 @@ theorem dual_inverse_increment_scale_lower (p A t θ : ℝ) (hp : 0 < p) (hA : 0
   have hh := (dual_inverse_increment_concave p A hp hA).2
     (show (0 : ℝ) ∈ Ici 0 from le_rfl) (show t ∈ Ici 0 from ht)
     (sub_nonneg.mpr hθ1) hθ (by ring : (1-θ)+θ = 1)
-  simpa only [smul_eq_mul, mul_zero, zero_add, add_zero, sub_self] using hh
+  simp_all
 
 /-- A relative kernel factor changes the signed inverse increment by at most the same
 relative factor times the unscaled loss. This avoids using the divergent inner first moment. -/
@@ -48,8 +49,7 @@ theorem dual_negative_increment_relative_scale (p A t θ : ℝ) (hp : 0 < p)
     (hA : 0 < A) (ht : 0 ≤ t) (hθ : 0 ≤ θ) :
     |((A+θ*t)^(-p)-A^(-p))-((A+t)^(-p)-A^(-p))| ≤
       |θ-1| *(A^(-p)-(A+t)^(-p)) := by
-  have hpos : 0 ≤ A^(-p)-(A+t)^(-p) := sub_nonneg.mpr
-    (Real.rpow_le_rpow_of_nonpos hA (by linarith only [ht]) (neg_nonpos.mpr hp.le))
+  
   by_cases hθ1 : θ ≤ 1
   · have hlow := dual_inverse_increment_scale_lower p A t θ hp hA ht hθ hθ1
     have hmono : (A+t)^(-p) ≤ (A+θ*t)^(-p) :=
@@ -57,7 +57,7 @@ theorem dual_negative_increment_relative_scale (p A t θ : ℝ) (hp : 0 < p)
         (add_le_add le_rfl (mul_le_of_le_one_left ht hθ1)) (neg_nonpos.mpr hp.le)
     rw [abs_of_nonneg (by linarith only [hmono]), abs_of_nonpos (by linarith only [hθ1])]
     nlinarith only [hlow]
-  · have hθpos : 0 < θ := lt_of_lt_of_le zero_lt_one (le_of_not_ge hθ1)
+  · have hθpos  := lt_of_lt_of_le zero_lt_one (le_of_not_ge hθ1)
     have hlow := dual_inverse_increment_scale_lower p A (θ*t) (1/θ) hp hA
       (mul_nonneg hθ ht) (by positivity) ((div_le_one hθpos).mpr (le_of_not_ge hθ1))
     have he : (1/θ)*(θ*t) = t := by field_simp
@@ -78,7 +78,7 @@ theorem dual_negative_increment_kernel_squeeze (p A t u θlo θhi : ℝ)
     (hu : θlo*t ≤ u) (hv : u ≤ θhi*t) :
     |((A+u)^(-p)-A^(-p))-((A+t)^(-p)-A^(-p))| ≤
       max |θlo-1| |θhi-1| * (A^(-p)-(A+t)^(-p)) := by
-  have hu0 : 0 ≤ u := (mul_nonneg hlo ht).trans hu
+  have hu0  := (mul_nonneg hlo ht).trans hu
   have hLoss : 0 ≤ A^(-p)-(A+t)^(-p) := sub_nonneg.mpr
     (Real.rpow_le_rpow_of_nonpos hA (by linarith only [ht]) (neg_nonpos.mpr hp.le))
   have hLower : (A+θhi*t)^(-p)-A^(-p) ≤ (A+u)^(-p)-A^(-p) := by
@@ -91,8 +91,6 @@ theorem dual_negative_increment_kernel_squeeze (p A t u θlo θhi : ℝ)
     (mul_le_mul_of_nonneg_right (le_max_left |θlo-1| |θhi-1|) hLoss)
   have hHi := (dual_negative_increment_relative_scale p A t θhi hp hA ht hhi).trans
     (mul_le_mul_of_nonneg_right (le_max_right |θlo-1| |θhi-1|) hLoss)
-  obtain ⟨hHil, _⟩ := abs_le.mp hHi
-  obtain ⟨_, hLou⟩ := abs_le.mp hLo
-  exact abs_le.mpr ⟨by linarith only [hLower, hHil], by linarith only [hUpper, hLou]⟩
+  grind
 
 end DOZZ.Proofs

@@ -6,23 +6,25 @@ module
 public import DOZZ.FourPoint.Reflected.GlobalMassIterated
 public import DOZZ.FourPoint.Reflected.SpatialCutoffs
 /-! Compact real tests equal the actual nonnegative global lateral masses. -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-theorem reflected_global_reinsertionWeight_nonneg (γ : ℝ) (a : TwoSidedPath) (x : ℂ) :
+variable (γ : ℝ) (a : TwoSidedPath)
+
+include γ a in
+theorem reflected_global_reinsertionWeight_nonneg  (x : ℂ) :
     0 ≤ reflected_global_reinsertionWeight γ a x := by
   unfold reflected_global_reinsertionWeight
-  split_ifs
-  · exact le_rfl
-  · exact (Real.exp_pos _).le
+  bound
 
-theorem reflected_global_reinsertionWeight_continuousOn (γ : ℝ) (a : TwoSidedPath) :
+include γ a in
+theorem reflected_global_reinsertionWeight_continuousOn  :
     ContinuousOn (reflected_global_reinsertionWeight γ a) ({0} : Set ℂ)ᶜ := by
   intro x hx
-  have hx0 : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr (by simpa using hx)
-  have hl : ContinuousAt (fun x : ℂ => Real.log ‖x‖) x :=
+  have hx0  := norm_ne_zero_iff.mpr (by exact hx)
+  have hl  :=
     continuous_norm.continuousAt.log hx0
   have hc : ContinuousAt (fun x : ℂ => Real.exp
       (γ*a (-Real.log ‖x‖)-γ*Q γ*|Real.log ‖x‖|)) x :=
@@ -30,12 +32,13 @@ theorem reflected_global_reinsertionWeight_continuousOn (γ : ℝ) (a : TwoSided
       (continuousAt_const.mul hl.abs)).rexp
   apply hc.continuousWithinAt.congr
   · intro y hy
-    have hy0 : ‖y‖ ≠ 0 := norm_ne_zero_iff.mpr (by simpa using hy)
+    have hy0  := norm_ne_zero_iff.mpr (by exact hy)
     simp only [reflected_global_reinsertionWeight, ite_eq_right hy0]
   · simp only [reflected_global_reinsertionWeight, ite_eq_right hx0]
 
+include γ a in
 /-- A nonnegative compact real radial test is exactly the extended-real lateral mass. -/
-theorem reflected_global_compact_test_ofReal (γ : ℝ) (a : TwoSidedPath)
+theorem reflected_global_compact_test_ofReal
     (μ : Measure ℂ) (K : Set ℂ) (hK : IsCompact K) (hK0 : K ⊆ ({0} : Set ℂ)ᶜ)
     (hμ : μ K < ⊤) (f : BoundedContinuousFunction ℂ ℝ) (hf : ∀ x, 0 ≤ f x)
     (hfK : tsupport (f : ℂ → ℝ) ⊆ K) :
@@ -51,7 +54,6 @@ theorem reflected_global_compact_test_ofReal (γ : ℝ) (a : TwoSidedPath)
     rw [hg x]
     exact mul_nonneg (hf x) (reflected_global_reinsertionWeight_nonneg γ a x)
   have he := reflected_compact_test_integral_ofReal μ K hK hμ g hgn (hgs.trans hfK)
-  simp_rw [hg] at he
-  exact he.trans (lintegral_congr fun x => ENNReal.ofReal_mul (hf x))
+  simp_all
 
 end DOZZ.Proofs

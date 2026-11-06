@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Dual.SpatialKernel
 public import DOZZ.FourPoint.Dual.OuterInverseGuard
 /-! The compact guard used in spatial cutoff removal has actual GMC inverse moments. -/
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -27,8 +27,7 @@ theorem dual_spatial_guard_lower (γ α₁ α₂ α₃ : ℝ) (μ : Measure ℂ)
     have hd' : ‖y-3‖ ≤ 1/8 := by simpa only [D, Metric.mem_closedBall, dist_eq_norm] using hd
     linarith
   have ha (y : ℂ) (hy : ‖y‖ ≤ 1) : (μ.restrict D) {y} = 0 := by
-    rw [Measure.restrict_apply (measurableSet_singleton y),
-      singleton_inter_of_notMem (hn y hy), measure_empty]
+    simp_all
   have he := dual_kernel_integral_eq_coulombMass γ α₁ α₂ α₃ hγ z (μ.restrict D)
     (ha z hz) (ha 0 (by simp)) (ha 1 (by simp))
   have hy : ∀ i : Fin 3, ‖(![z, 0, 1] : Fin 3 → ℂ) i‖ ≤ 1 := by
@@ -43,12 +42,13 @@ theorem dual_spatial_guard_lower (γ α₁ α₂ α₃ : ℝ) (μ : Measure ℂ)
     inter_eq_left.mpr Metric.ball_subset_closedBall, ← he] at hl
   exact hl
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ q : ℝ) (hq : 0 ≤ q)
+
+include Ω _inst1 P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ q hq in
 /-- The compact guard inverse moment is finite for every nonnegative order, uniformly for
 moving roots in the unit disk, directly from the ball moment bound. -/
 theorem dual_spatial_guard_inverse_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ q : ℝ) (hq : 0 ≤ q)
+
     : ∃ C : ℝ, 0 < C ∧ ∀ z : ℂ, ‖z‖ ≤ 1 →
     (∫⁻ ω, (∫⁻ x in Metric.closedBall (3 : ℂ) (1/8),
       ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂M ω)^(-q) ∂P) ≤ ENNReal.ofReal C := by
@@ -72,7 +72,7 @@ theorem dual_spatial_guard_inverse_uniform
         ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂M ω)^(-q) ≤
         (ENNReal.ofReal w*M ω (Metric.ball (3 : ℂ) (1/8)))^(-q) := by
       rw [ENNReal.rpow_neg, ENNReal.rpow_neg]
-      exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hl hq)
+      gcongr
     have hfinite : M ω (Metric.ball (3 : ℂ) (1/8)) ≠ ⊤ := by
       let _ := hM.1 ω
       exact measure_ne_top _ _
@@ -87,12 +87,11 @@ theorem dual_spatial_guard_inverse_uniform
       mul_le_mul' le_rfl hball
     _ = ENNReal.ofReal Cguard := (ENNReal.ofReal_mul (Real.rpow_pos_of_pos hw _).le).symm
 
+include Ω _inst1 P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ q hq in
 /-- The compact guard inverse moment is finite for every nonnegative order, uniformly for
 moving roots in the unit disk, directly from the ball moment bound. -/
 theorem dual_spatial_guard_inverse_finite
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ q : ℝ) (hq : 0 ≤ q)
+
     (z : ℂ) (hz : ‖z‖ ≤ 1) :
     (∫⁻ ω, (∫⁻ x in Metric.closedBall (3 : ℂ) (1/8),
       ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂M ω)^(-q) ∂P) < ⊤ := by

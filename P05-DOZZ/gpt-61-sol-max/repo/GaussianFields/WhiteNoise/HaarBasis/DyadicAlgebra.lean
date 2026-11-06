@@ -6,6 +6,7 @@ Authors: Scott Armstrong, Amélie Loher
 module
 
 public import GaussianFields.WhiteNoise.HaarBasis.Basic
+import Mathlib.Tactic
 
 /-!
 # GaussianFields Haar dyadic algebra
@@ -27,12 +28,12 @@ noncomputable def haarBoxScaleFactor (d : Nat) (j : ℤ) : ℝ :=
   ∏ _r : Fin d, haarScaleFactor j
 
 theorem haarBoxScaleFactor_ne_zero (d : Nat) (j : ℤ) :
-    haarBoxScaleFactor d j ≠ 0 := by
-  unfold haarBoxScaleFactor
-  exact Finset.prod_ne_zero_iff.2 fun _r _hr => ne_of_gt (haarScaleFactor_pos j)
+    haarBoxScaleFactor d j ≠ 0 := Finset.prod_ne_zero_iff.2 fun _r _hr => ne_of_gt (haarScaleFactor_pos j)
 
-theorem haarPacketLp_father_eq_smul_indicatorConstLp {d : Nat}
-    (j : ℤ) (cell : Fin d → ℤ) :
+variable {d : Nat} (j : ℤ)
+
+include d j in
+theorem haarPacketLp_father_eq_smul_indicatorConstLp  (cell : Fin d → ℤ) :
     haarPacketLp { scale := j, cell := cell, signature := fun _ => false } =
       haarBoxScaleFactor d j •
         indicatorConstLp 2 (measurableSet_dyadicBox j cell)
@@ -60,9 +61,6 @@ theorem haarPacketLp_father_eq_smul_indicatorConstLp {d : Nat}
     haarBoxScaleFactor d j * (indicatorConstLp 2 (measurableSet_dyadicBox j cell)
       (volume_dyadicBox_ne_top j cell) (1 : ℝ)) x
   rw [hind]
-  change haarPacket idx x =
-    haarBoxScaleFactor d j *
-      Set.indicator (dyadicBox j cell) (fun _ : Vec d => (1 : ℝ)) x
   exact haarPacket_father_eq_indicator_dyadicBox j cell x
 
 theorem indicatorConstLp_dyadicBox_mem_haarBasisSubmodule_of_nonnegative
@@ -78,7 +76,7 @@ theorem indicatorConstLp_dyadicBox_mem_haarBasisSubmodule_of_nonnegative
         haarBasisSubmodule d :=
     Submodule.smul_mem _ _ hpacket
   rw [heq, smul_smul] at hsmul
-  have hc : (haarBoxScaleFactor d j)⁻¹ * haarBoxScaleFactor d j = 1 :=
+  have hc  :=
     inv_mul_cancel₀ (haarBoxScaleFactor_ne_zero d j)
   simpa [hc] using hsmul
 
@@ -97,24 +95,17 @@ theorem measurableSet_of_mem_nonnegativeDyadicBoxFamily {d : Nat}
 theorem exists_nat_inv_dyadicPower_lt {ε : ℝ} (hε : 0 < ε) :
     ∃ n : ℕ, (dyadicPower (n : ℤ))⁻¹ < ε := by
   have hlim :
-      Tendsto (fun n : ℕ => ((1 / 2 : ℝ) ^ n)) atTop (𝓝 (0 : ℝ)) := by
-    exact tendsto_pow_atTop_nhds_zero_of_lt_one (by norm_num) (by norm_num)
-  have hev : ∀ᶠ n in atTop, ((1 / 2 : ℝ) ^ n) ∈ Set.Iio ε :=
+      Tendsto (fun n : ℕ => ((1 / 2 : ℝ) ^ n)) atTop (𝓝 (0 : ℝ)) := tendsto_pow_atTop_nhds_zero_of_lt_one (by norm_num) (by norm_num)
+  have hev  :=
     hlim.eventually (Iio_mem_nhds hε)
-  rcases eventually_atTop.1 hev with ⟨N, hN⟩
-  refine ⟨N, ?_⟩
-  have h := hN N le_rfl
-  simpa [dyadicPower, zpow_natCast, one_div, inv_pow] using h
+  aesop
 
 /-- The integer floor cell contains the point at any nonnegative dyadic scale. -/
 theorem mem_dyadicInterval_floor (n : ℕ) (x : ℝ) :
     x ∈ dyadicInterval (n : ℤ) ⌊dyadicPower (n : ℤ) * x⌋ := by
   rw [mem_dyadicInterval_iff]
   constructor
-  · have hfloor : ((⌊dyadicPower (n : ℤ) * x⌋ : ℤ) : ℝ) ≤
-        dyadicPower (n : ℤ) * x :=
-      Int.floor_le _
-    linarith
+  · simp_all
   · have hfloor : dyadicPower (n : ℤ) * x <
         ((⌊dyadicPower (n : ℤ) * x⌋ : ℤ) : ℝ) + 1 :=
       Int.lt_floor_add_one _
@@ -134,7 +125,7 @@ theorem dyadicInterval_eq_union_children (j k : ℤ) :
     dyadicInterval j k =
       dyadicInterval (j + 1) (2 * k) ∪ dyadicInterval (j + 1) (2 * k + 1) := by
   ext x
-  let y : ℝ := dyadicPower j * x - (k : ℝ)
+  let y  := dyadicPower j * x - (k : ℝ)
   have hleft :
       dyadicPower (j + 1) * x - ((2 * k : ℤ) : ℝ) = 2 * y := by
     simp [y, dyadicPower_add_one]
@@ -145,14 +136,14 @@ theorem dyadicInterval_eq_union_children (j k : ℤ) :
     ring
   constructor
   · intro hx
-    have hy : y ∈ Set.Ico (0 : ℝ) 1 := (mem_dyadicInterval_iff j k x).1 hx
+    have hy  := (mem_dyadicInterval_iff j k x).1 hx
     by_cases hyhalf : y < 1 / 2
     · left
       rw [mem_dyadicInterval_iff, hleft]
       constructor <;> nlinarith [hy.1, hyhalf]
     · right
       rw [mem_dyadicInterval_iff, hright]
-      constructor <;> nlinarith [hy.2, le_of_not_gt hyhalf]
+      grind
   · intro hx
     rw [mem_dyadicInterval_iff]
     rcases hx with hx | hx
@@ -160,12 +151,12 @@ theorem dyadicInterval_eq_union_children (j k : ℤ) :
         have hraw := (mem_dyadicInterval_iff (j + 1) (2 * k) x).1 hx
         rw [hleft] at hraw
         exact hraw
-      constructor <;> nlinarith [hchild.1, hchild.2]
+      grind
     · have hchild : 2 * y - 1 ∈ Set.Ico (0 : ℝ) 1 := by
         have hraw := (mem_dyadicInterval_iff (j + 1) (2 * k + 1) x).1 hx
         rw [hright] at hraw
         exact hraw
-      constructor <;> nlinarith [hchild.1, hchild.2]
+      grind
 
 /-- Distinct dyadic boxes at the same scale are disjoint. -/
 theorem disjoint_dyadicBox_same_scale {d : Nat} {j : ℤ}
@@ -175,42 +166,39 @@ theorem disjoint_dyadicBox_same_scale {d : Nat} {j : ℤ}
   rw [Set.disjoint_left]
   intro x hx₁ hx₂
   have hcoord : ∃ r : Fin d, cell₁ r ≠ cell₂ r := by
-    by_contra h
-    apply hcell
-    funext r
-    by_contra hr
-    exact h ⟨r, hr⟩
+    grind
   rcases hcoord with ⟨r, hr⟩
   have hdisj := disjoint_dyadicInterval_same_scale (j := j) hr
   rw [Set.disjoint_left] at hdisj
   exact hdisj (hx₁ r trivial) (hx₂ r trivial)
 
+include d j in
 /-- A dyadic box is the union of its `2^d` children at the next scale. -/
-theorem dyadicBox_eq_iUnion_children {d : Nat} (j : ℤ) (cell : Fin d → ℤ) :
+theorem dyadicBox_eq_iUnion_children  (cell : Fin d → ℤ) :
     dyadicBox j cell =
       ⋃ side : Fin d → Bool, dyadicBox (j + 1) (haarChildCell cell side) := by
   classical
   ext x
   constructor
   · intro hx
-    let side : Fin d → Bool := fun r =>
+    let side  := fun r =>
       if x r ∈ dyadicInterval (j + 1) (2 * cell r) then false else true
     refine Set.mem_iUnion.2 ⟨side, ?_⟩
     intro r _hr
-    have hxparent : x r ∈ dyadicInterval j (cell r) := hx r trivial
+    have hxparent  := hx r trivial
     have hxsplit :
         x r ∈ dyadicInterval (j + 1) (2 * cell r) ∪
           dyadicInterval (j + 1) (2 * cell r + 1) := by
       rwa [← dyadicInterval_eq_union_children j (cell r)]
     by_cases hleft : x r ∈ dyadicInterval (j + 1) (2 * cell r)
     · simp [side, haarChildCell, hleft]
-    · have hright : x r ∈ dyadicInterval (j + 1) (2 * cell r + 1) :=
+    · have hright  :=
         hxsplit.resolve_left hleft
       simpa [side, haarChildCell, hleft] using hright
   · intro hx
     rcases Set.mem_iUnion.1 hx with ⟨side, hxside⟩
     intro r _hr
-    have hchild : x r ∈ dyadicInterval (j + 1) (haarChildCell cell side r) :=
+    have hchild  :=
       hxside r trivial
     change x r ∈ dyadicInterval j (cell r)
     rw [dyadicInterval_eq_union_children j (cell r)]
@@ -231,14 +219,15 @@ theorem mem_dyadicChildCellFinset {d : Nat} {cell child : Fin d → ℤ} :
   classical
   simp [dyadicChildCellFinset]
 
+include d j in
 /-- A finite union of dyadic boxes at one common scale. -/
 @[expose]
-def dyadicBoxFinsetUnion {d : Nat} (j : ℤ) (s : Finset (Fin d → ℤ)) : Set (Vec d) :=
+def dyadicBoxFinsetUnion  (s : Finset (Fin d → ℤ)) : Set (Vec d) :=
   ⋃ cell ∈ s, dyadicBox j cell
 
+include d j in
 /-- A dyadic box is a finite union of its children at the next scale. -/
-theorem dyadicBox_eq_dyadicBoxFinsetUnion_children {d : Nat}
-    (j : ℤ) (cell : Fin d → ℤ) :
+theorem dyadicBox_eq_dyadicBoxFinsetUnion_children  (cell : Fin d → ℤ) :
     dyadicBox j cell =
       dyadicBoxFinsetUnion (d := d) (j + 1) (dyadicChildCellFinset cell) := by
   rw [dyadicBox_eq_iUnion_children]
@@ -256,31 +245,22 @@ theorem preimage_eval_Iio_eq_iUnion_dyadicBox {d : Nat} (r : Fin d) (a : ℝ) :
   constructor
   · intro hx
     obtain ⟨n, hn⟩ := exists_nat_inv_dyadicPower_lt (sub_pos.2 hx)
-    let cell : Fin d → ℤ := fun r => ⌊dyadicPower (n : ℤ) * x r⌋
+    let cell  := fun r => ⌊dyadicPower (n : ℤ) * x r⌋
     refine Set.mem_iUnion.2 ⟨(n, cell), ?_⟩
     refine Set.mem_iUnion.2 ⟨?_, ?_⟩
-    · let p : ℝ := dyadicPower (n : ℤ)
+    · let p  := dyadicPower (n : ℤ)
       have hp : 0 < p := dyadicPower_pos (n : ℤ)
       have hfloor : ((⌊p * x r⌋ : ℤ) : ℝ) ≤ p * x r :=
         Int.floor_le _
       have hupper_le : (((⌊p * x r⌋ : ℤ) : ℝ) + 1) / p ≤ x r + p⁻¹ := by
-        calc
-          (((⌊p * x r⌋ : ℤ) : ℝ) + 1) / p ≤ (p * x r + 1) / p := by
-            exact div_le_div_of_nonneg_right (by linarith) hp.le
-          _ = x r + p⁻¹ := by
-            field_simp [ne_of_gt hp]
-      have hlt : x r + p⁻¹ < a := by
-        have hn' : p⁻¹ < a - x r := by
-          simpa [p] using hn
-        linarith
-      simpa [cell, p] using lt_of_le_of_lt hupper_le hlt
+        field_simp <;> nlinarith
+      grind
     · intro s _hs
       exact mem_dyadicInterval_floor n (x s)
   · intro hx
     rcases Set.mem_iUnion.1 hx with ⟨p, hp⟩
     rcases Set.mem_iUnion.1 hp with ⟨hupper, hbox⟩
-    have hr : x r ∈ dyadicInterval (p.1 : ℤ) (p.2 r) := hbox r trivial
-    unfold dyadicInterval at hr
+    have hr  := hbox r trivial
     exact hr.2.trans hupper
 
 /-- Coordinate half-lines are measurable for the sigma-algebra generated by nonnegative dyadic
@@ -314,8 +294,6 @@ theorem generateFrom_nonnegativeDyadicBoxFamily_eq (d : Nat) :
         (Set.range (Set.Iio : ℝ → Set ℝ)) (fun x => x r) ?_
       intro t ht
       rcases ht with ⟨a, rfl⟩
-      change MeasurableSet[MeasurableSpace.generateFrom (nonnegativeDyadicBoxFamily d)]
-        {x : Vec d | x r < a}
       exact measurableSet_preimage_eval_Iio_generateFrom_nonnegativeDyadicBoxFamily r a
     exact hmeas.comap_le
 
@@ -325,12 +303,10 @@ def nonnegativeDyadicBoxAlgebra (d : Nat) : Set (Set (Vec d)) :=
   generateSetAlgebra (nonnegativeDyadicBoxFamily d)
 
 theorem isSetAlgebra_nonnegativeDyadicBoxAlgebra (d : Nat) :
-    IsSetAlgebra (nonnegativeDyadicBoxAlgebra d) := by
-  exact isSetAlgebra_generateSetAlgebra
+    IsSetAlgebra (nonnegativeDyadicBoxAlgebra d) := isSetAlgebra_generateSetAlgebra
 
 theorem nonnegativeDyadicBoxFamily_subset_algebra (d : Nat) :
-    nonnegativeDyadicBoxFamily d ⊆ nonnegativeDyadicBoxAlgebra d := by
-  exact self_subset_generateSetAlgebra
+    nonnegativeDyadicBoxFamily d ⊆ nonnegativeDyadicBoxAlgebra d := self_subset_generateSetAlgebra
 
 theorem measurableSpace_eq_generateFrom_nonnegativeDyadicBoxAlgebra (d : Nat) :
     (inferInstance : MeasurableSpace (Vec d)) =
@@ -338,11 +314,13 @@ theorem measurableSpace_eq_generateFrom_nonnegativeDyadicBoxAlgebra (d : Nat) :
   rw [nonnegativeDyadicBoxAlgebra, generateFrom_generateSetAlgebra_eq]
   exact (generateFrom_nonnegativeDyadicBoxFamily_eq d).symm
 
-theorem dyadicBoxFinsetUnion_empty {d : Nat} (j : ℤ) :
+include d j in
+theorem dyadicBoxFinsetUnion_empty  :
     dyadicBoxFinsetUnion (d := d) j ∅ = ∅ := by
   simp [dyadicBoxFinsetUnion]
 
-theorem dyadicBoxFinsetUnion_insert {d : Nat} (j : ℤ)
+include d j in
+theorem dyadicBoxFinsetUnion_insert
     {cell : Fin d → ℤ} {s : Finset (Fin d → ℤ)} :
     dyadicBoxFinsetUnion j (insert cell s) =
       dyadicBox j cell ∪ dyadicBoxFinsetUnion j s := by
@@ -354,19 +332,22 @@ theorem mem_dyadicBoxFinsetUnion {d : Nat} {j : ℤ} {s : Finset (Fin d → ℤ)
     x ∈ dyadicBoxFinsetUnion j s ↔ ∃ cell ∈ s, x ∈ dyadicBox j cell := by
   simp [dyadicBoxFinsetUnion]
 
-theorem dyadicBoxFinsetUnion_singleton {d : Nat} (j : ℤ) (cell : Fin d → ℤ) :
+include d j
+theorem dyadicBoxFinsetUnion_singleton  (cell : Fin d → ℤ) :
     dyadicBoxFinsetUnion j {cell} = dyadicBox j cell := by
   ext x
   simp [mem_dyadicBoxFinsetUnion]
 
-theorem dyadicBoxFinsetUnion_union {d : Nat} (j : ℤ)
+
+theorem dyadicBoxFinsetUnion_union
     (s t : Finset (Fin d → ℤ)) :
     dyadicBoxFinsetUnion j (s ∪ t) =
       dyadicBoxFinsetUnion j s ∪ dyadicBoxFinsetUnion j t := by
   ext x
   simp [mem_dyadicBoxFinsetUnion, or_and_right, exists_or]
 
-theorem dyadicBoxFinsetUnion_inter {d : Nat} (j : ℤ)
+
+theorem dyadicBoxFinsetUnion_inter
     (s t : Finset (Fin d → ℤ)) :
     dyadicBoxFinsetUnion j (s ∩ t) =
       dyadicBoxFinsetUnion j s ∩ dyadicBoxFinsetUnion j t := by
@@ -383,12 +364,12 @@ theorem dyadicBoxFinsetUnion_inter {d : Nat} (j : ℤ)
     have hcell_eq : cell₁ = cell₂ := by
       by_contra hne
       have hdisj := disjoint_dyadicBox_same_scale (j := j) hne
-      rw [Set.disjoint_left] at hdisj
-      exact hdisj hxcell₁ hxcell₂
+      grind
     subst cell₂
     exact mem_dyadicBoxFinsetUnion.2 ⟨cell₁, Finset.mem_inter.2 ⟨hcell₁, hcell₂⟩, hxcell₁⟩
 
-theorem dyadicBoxFinsetUnion_diff {d : Nat} (j : ℤ)
+
+theorem dyadicBoxFinsetUnion_diff
     (s t : Finset (Fin d → ℤ)) :
     dyadicBoxFinsetUnion j (s \ t) =
       dyadicBoxFinsetUnion j s \ dyadicBoxFinsetUnion j t := by
@@ -401,10 +382,9 @@ theorem dyadicBoxFinsetUnion_diff {d : Nat} (j : ℤ)
     intro hxt
     rcases (mem_dyadicBoxFinsetUnion.1 hxt) with ⟨cell', hcell', hxcell'⟩
     by_cases hEq : cell = cell'
-    · exact (Finset.mem_sdiff.1 hcell).2 (hEq ▸ hcell')
+    · simp_all
     · have hdisj := disjoint_dyadicBox_same_scale (j := j) hEq
-      rw [Set.disjoint_left] at hdisj
-      exact hdisj hxcell hxcell'
+      grind
   · intro hx
     rcases (mem_dyadicBoxFinsetUnion.1 hx.1) with ⟨cell, hcell, hxcell⟩
     have hcell_notMem : cell ∉ t := by
@@ -412,6 +392,8 @@ theorem dyadicBoxFinsetUnion_diff {d : Nat} (j : ℤ)
       exact hx.2 (mem_dyadicBoxFinsetUnion.2 ⟨cell, hcellt, hxcell⟩)
     exact mem_dyadicBoxFinsetUnion.2
       ⟨cell, Finset.mem_sdiff.2 ⟨hcell, hcell_notMem⟩, hxcell⟩
+omit d j
+
 
 /-- The finite set of descendants of a dyadic cell after `n` bisections in every coordinate. -/
 @[expose]
@@ -425,7 +407,8 @@ theorem dyadicDescendantCellFinset_zero {d : Nat} (cell : Fin d → ℤ) :
     dyadicDescendantCellFinset 0 cell = {cell} :=
   rfl
 
-theorem dyadicBoxFinsetUnion_refine_once {d : Nat} (j : ℤ)
+include d j in
+theorem dyadicBoxFinsetUnion_refine_once
     (s : Finset (Fin d → ℤ)) :
     dyadicBoxFinsetUnion j s =
       dyadicBoxFinsetUnion (j + 1) (s.biUnion dyadicChildCellFinset) := by
@@ -445,7 +428,8 @@ theorem dyadicBoxFinsetUnion_refine_once {d : Nat} (j : ℤ)
       rw [dyadicBox_eq_dyadicBoxFinsetUnion_children]
       exact mem_dyadicBoxFinsetUnion.2 ⟨child, hchildcell, hxchild⟩⟩
 
-theorem dyadicBoxFinsetUnion_refine_steps {d : Nat} (j : ℤ) (n : ℕ)
+include d j in
+theorem dyadicBoxFinsetUnion_refine_steps  (n : ℕ)
     (s : Finset (Fin d → ℤ)) :
     dyadicBoxFinsetUnion j s =
       dyadicBoxFinsetUnion (j + (n : ℤ))
@@ -470,8 +454,7 @@ theorem dyadicBoxFinsetUnion_refine_steps {d : Nat} (j : ℤ) (n : ℕ)
         · intro hcell
           rcases Finset.mem_biUnion.1 hcell with ⟨parent, hparent, hchildren⟩
           rcases Finset.mem_biUnion.1 hchildren with ⟨childParent, hdesc, hchild⟩
-          exact Finset.mem_biUnion.2
-            ⟨childParent, Finset.mem_biUnion.2 ⟨parent, hparent, hdesc⟩, hchild⟩
+          grind
 
 theorem dyadicBoxFinsetUnion_refine_nat {d : Nat} {n N : ℕ} (hnN : n ≤ N)
     (s : Finset (Fin d → ℤ)) :
@@ -483,18 +466,16 @@ theorem dyadicBoxFinsetUnion_refine_nat {d : Nat} {n N : ℕ} (hnN : n ≤ N)
   simpa [hscale] using
     dyadicBoxFinsetUnion_refine_steps (d := d) (j := (n : ℤ)) (n := N - n) s
 
-theorem measurableSet_dyadicBoxFinsetUnion {d : Nat} (j : ℤ)
+include d j in
+theorem measurableSet_dyadicBoxFinsetUnion
     (s : Finset (Fin d → ℤ)) :
-    MeasurableSet (dyadicBoxFinsetUnion j s) := by
-  unfold dyadicBoxFinsetUnion
-  exact MeasurableSet.biUnion s.countable_toSet fun cell _hcell =>
+    MeasurableSet (dyadicBoxFinsetUnion j s) := MeasurableSet.biUnion s.countable_toSet fun cell _hcell =>
     measurableSet_dyadicBox j cell
 
-theorem volume_dyadicBoxFinsetUnion_ne_top {d : Nat} (j : ℤ)
+include d j in
+theorem volume_dyadicBoxFinsetUnion_ne_top
     (s : Finset (Fin d → ℤ)) :
-    (volume : Measure (Vec d)) (dyadicBoxFinsetUnion j s) ≠ ∞ := by
-  unfold dyadicBoxFinsetUnion
-  exact (measure_biUnion_lt_top (μ := (volume : Measure (Vec d)))
+    (volume : Measure (Vec d)) (dyadicBoxFinsetUnion j s) ≠ ∞ := (measure_biUnion_lt_top (μ := (volume : Measure (Vec d)))
     (s := (s : Set (Fin d → ℤ))) (Finset.finite_toSet _) fun cell _hcell =>
       lt_top_iff_ne_top.2 (volume_dyadicBox_ne_top j cell)).ne
 
@@ -522,8 +503,7 @@ theorem disjoint_dyadicBox_dyadicBoxFinsetUnion_of_notMem {d : Nat} {j : ℤ}
     intro h
     exact hcell (h ▸ hmem)
   have hdisj := disjoint_dyadicBox_same_scale (j := j) hne
-  rw [Set.disjoint_left] at hdisj
-  exact hdisj hx hx'
+  grind
 
 theorem indicatorConstLp_dyadicBoxFinsetUnion_mem_haarBasisSubmodule_of_nonnegative
     {d : Nat} {j : ℤ} (hj : 0 ≤ j) (s : Finset (Fin d → ℤ)) :
@@ -535,9 +515,7 @@ theorem indicatorConstLp_dyadicBoxFinsetUnion_mem_haarBasisSubmodule_of_nonnegat
   | empty =>
       simp [dyadicBoxFinsetUnion_empty]
   | insert cell s hcell ih =>
-      have hbox :
-          indicatorConstLp 2 (measurableSet_dyadicBox j cell)
-            (volume_dyadicBox_ne_top j cell) (1 : ℝ) ∈ haarBasisSubmodule d :=
+      have hbox  :=
         indicatorConstLp_dyadicBox_mem_haarBasisSubmodule_of_nonnegative hj cell
       have hdisj :
           Disjoint (dyadicBox j cell) (dyadicBoxFinsetUnion j s) :=
@@ -584,8 +562,7 @@ theorem indicatorConstLp_dyadicBoxFinsetUnion_mem_haarBasisSubmodule_of_nonnegat
             Set.indicator (dyadicBoxFinsetUnion j s) (fun _ : Vec d => (1 : ℝ)) x
         rw [dyadicBoxFinsetUnion_insert j]
         exact congrFun (Set.indicator_union_of_disjoint hdisj (fun _ : Vec d => (1 : ℝ))) x
-      rw [hEq]
-      exact Submodule.add_mem _ hbox ih
+      continuity
 
 theorem indicatorConstLp_mem_haarBasisSubmodule_of_mem_nonnegativeDyadicBoxFinsetUnionFamily
     {d : Nat} {s : Set (Vec d)}
@@ -593,8 +570,7 @@ theorem indicatorConstLp_mem_haarBasisSubmodule_of_mem_nonnegativeDyadicBoxFinse
     (hsm : MeasurableSet s) (hμs : (volume : Measure (Vec d)) s ≠ ∞) :
     indicatorConstLp 2 hsm hμs (1 : ℝ) ∈ haarBasisSubmodule d := by
   rcases hs with ⟨p, rfl⟩
-  simpa using
-    indicatorConstLp_dyadicBoxFinsetUnion_mem_haarBasisSubmodule_of_nonnegative
+  exact indicatorConstLp_dyadicBoxFinsetUnion_mem_haarBasisSubmodule_of_nonnegative
       (d := d) (j := (p.1 : ℤ)) (by exact_mod_cast Nat.zero_le p.1) p.2
 
 end GaussianFields

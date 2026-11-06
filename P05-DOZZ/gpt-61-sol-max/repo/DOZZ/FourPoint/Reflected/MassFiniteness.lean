@@ -7,6 +7,7 @@ module
 public import DOZZ.GMC.SharpMoments.SeibergMoment
 public import DOZZ.GMC.Moments.RhoCoulomb
 import Mathlib.Tactic
+import Mathlib.Tactic
 
 /-! # Finiteness of the supplied limiting Coulomb mass
 
@@ -21,10 +22,11 @@ open scoped ENNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ₂ M hM in
 /-- Small positive GMC moments imply finiteness for every subcritical root configuration. -/
-theorem reflected_coulombMass_ae_finite {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem reflected_coulombMass_ae_finite
     {N : ℕ} (z : Fin N → ℂ) (hz : Function.Injective z) (α : Fin N → ℝ) (αinf : ℝ)
     (hα : ∀ k, α k < Q γ) (hαinf : αinf < Q γ) :
     ∀ᵐ ω ∂P, coulombMass γ (M ω) α z αinf < ⊤ := by
@@ -36,7 +38,7 @@ theorem reflected_coulombMass_ae_finite {Ω : Type*} [MeasurableSpace Ω]
   have e1 : ∀ᶠ t in nhdsWithin (0 : ℝ) (Ioi 0), t ∈ Ioo 0 (4 / γ ^ 2) := Ioo_mem_nhdsGT h4
   have e2 : ∀ᶠ t in nhdsWithin (0 : ℝ) (Ioi 0), t ∈ Ioo 0 (2 / γ * (Q γ - αinf)) :=
     Ioo_mem_nhdsGT hi
-  have e3 : ∀ᶠ t in nhdsWithin (0 : ℝ) (Ioi 0), ∀ k, t ∈ Ioo 0 (2 / γ * (Q γ - α k)) :=
+  have e3  :=
     eventually_all.mpr fun k => Ioo_mem_nhdsGT (hk k)
   obtain ⟨t, ht⟩ := (e1.and (e2.and e3)).exists
   have hmoment := coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ₂ M hM
@@ -47,20 +49,15 @@ theorem reflected_coulombMass_ae_finite {Ω : Type*} [MeasurableSpace Ω]
   rw [not_lt_top_iff.mp hn, ENNReal.top_rpow_of_pos ht.1.1] at hω
   exact lt_irrefl _ hω
 
+include Ω _inst1 P X hX γ hγ hγ₂ M hM in
 /-- The literal rho mass is almost surely finite whenever its three charges are below `Q`. -/
-theorem reflected_rho_ae_finite {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem reflected_rho_ae_finite
     (α₁ α₂ α₃ : ℝ) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) :
     ∀ᵐ ω ∂P, rho γ (M ω) α₁ α₂ α₃ < ⊤ := by
   have hz : Function.Injective (![0, 1] : Fin 2 → ℂ) := by
-    intro i j hij
-    fin_cases i <;> fin_cases j <;> simp_all
+    simp_all
   have hcharges : ∀ k : Fin 2, (![α₁, α₂] : Fin 2 → ℝ) k < Q γ := by
-    intro k
-    fin_cases k
-    · exact hα₁
-    · exact hα₂
+    simp_all
   filter_upwards [reflected_coulombMass_ae_finite P X hX γ hγ hγ₂ M hM
     ![0, 1] hz ![α₁, α₂] α₃ hcharges hα₃,
     gmc_rho_eq_coulombMass_ae P X hX γ hγ hγ₂ M hM α₁ α₂ α₃] with ω hf he

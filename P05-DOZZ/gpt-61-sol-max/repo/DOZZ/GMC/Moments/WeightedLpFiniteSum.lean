@@ -10,7 +10,7 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 
 /-! Finite-sum Minkowski inequality for extended nonnegative random variables. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 open scoped ENNReal
@@ -30,11 +30,11 @@ theorem ennreal_lintegral_rpow_finset_sum_root_le
   induction s using Finset.induction_on with
   | empty =>
       intro hf
-      have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
-      simp_all [lintegral_const, ENNReal.zero_rpow_of_pos]
+      have hp0  := lt_of_lt_of_le zero_lt_one hp
+      simp_all
   | @insert i s his ih =>
       intro hf
-      have hsum : AEMeasurable (fun ω => ∑ j ∈ s, f j ω) μ :=
+      have hsum  :=
         Finset.aemeasurable_fun_sum s (fun j hj => hf j (Finset.mem_insert_of_mem hj))
       have hadd := ENNReal.lintegral_Lp_add_le
         (hf i (Finset.mem_insert_self i s)) hsum hp
@@ -43,8 +43,7 @@ theorem ennreal_lintegral_rpow_finset_sum_root_le
         _ ≤ (∫⁻ ω, f i ω ^ p ∂μ) ^ (1 / p) +
             (∫⁻ ω, (∑ j ∈ s, f j ω) ^ p ∂μ) ^ (1 / p) := hadd
         _ ≤ (∫⁻ ω, f i ω ^ p ∂μ) ^ (1 / p) +
-            ∑ j ∈ s, (∫⁻ ω, f j ω ^ p ∂μ) ^ (1 / p) := by
-          exact add_le_add le_rfl
+            ∑ j ∈ s, (∫⁻ ω, f j ω ^ p ∂μ) ^ (1 / p) := add_le_add le_rfl
             (ih (fun j hj => hf j (Finset.mem_insert_of_mem hj)))
 
 /-- The finite-sum Minkowski bound extends to a countable nonnegative sum whenever the series of
@@ -56,23 +55,22 @@ theorem ennreal_lintegral_rpow_tsum_le_of_roots_summable
     ∫⁻ ω, (∑' n : ℕ, f n ω) ^ p ∂μ ≤
       (∑' n : ℕ, (∫⁻ ω, f n ω ^ p ∂μ) ^ (1 / p)) ^ p := by
   classical
-  have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
+  have hp0  := lt_of_lt_of_le zero_lt_one hp
   let partialSum (N : ℕ) (ω : Ω) : ℝ≥0∞ := ∑ n ∈ Finset.range N, f n ω
   let partialPow (N : ℕ) (ω : Ω) : ℝ≥0∞ := partialSum N ω ^ p
   let root (n : ℕ) : ℝ≥0∞ := (∫⁻ ω, f n ω ^ p ∂μ) ^ (1 / p)
   let roots : ℝ≥0∞ := ∑' n : ℕ, root n
   have hpartialMeas (N : ℕ) : AEMeasurable (partialSum N) μ := by
-    exact Finset.aemeasurable_fun_sum _ (fun n hn => hf n)
+    fun_prop (disch := positivity)
   have hpartialPowMeas (N : ℕ) : AEMeasurable (partialPow N) μ := by
-    exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable (hpartialMeas N)
+    fun_prop (disch := positivity)
   have hpartialMono : Monotone partialSum := by
     intro N M hNM ω
     dsimp [partialSum]
-    exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.range_mono hNM)
-      (fun _ _ _ => bot_le)
+    gcongr
   have hpowMono : Monotone (fun x : ℝ≥0∞ => x ^ p) := fun _ _ h =>
     ENNReal.rpow_le_rpow h hp0.le
-  have hpowZero : (0 : ℝ≥0∞) ^ p = 0 := ENNReal.zero_rpow_of_pos hp0
+  have hpowZero  := ENNReal.zero_rpow_of_pos hp0
   have hpowCont : Continuous (fun x : ℝ≥0∞ => x ^ p) :=
     ENNReal.continuous_rpow_const
   have hpoint (ω : Ω) : (∑' n : ℕ, f n ω) ^ p = ⨆ N, partialPow N ω := by
@@ -84,7 +82,7 @@ theorem ennreal_lintegral_rpow_tsum_le_of_roots_summable
       _ = _ := rfl
   have hmonoPow : Monotone partialPow := by
     intro N M hNM ω
-    exact ENNReal.rpow_le_rpow (hpartialMono hNM ω) hp0.le
+    bound
   have htotal : (∫⁻ ω, (∑' n : ℕ, f n ω) ^ p ∂μ) =
       ⨆ N, ∫⁻ ω, partialPow N ω ∂μ := by
     calc
@@ -98,11 +96,8 @@ theorem ennreal_lintegral_rpow_tsum_le_of_roots_summable
   intro N
   have hmink := ennreal_lintegral_rpow_finset_sum_root_le
     (Finset.range N) f p hp (fun n hn => hf n)
-  have hfiniteRoots : (∑ n ∈ Finset.range N, root n) ≤ roots := by
-    dsimp [roots, root]
-    exact ENNReal.sum_le_tsum _
-  have hrootBound : (∫⁻ ω, partialSum N ω ^ p ∂μ) ^ (1 / p) ≤ roots := by
-    exact hmink.trans hfiniteRoots
+  have hfiniteRoots : (∑ n ∈ Finset.range N, root n) ≤ roots := ENNReal.sum_le_tsum _
+  have hrootBound  := hmink.trans hfiniteRoots
   have hpowId : (∫⁻ ω, partialSum N ω ^ p ∂μ) =
       ((∫⁻ ω, partialSum N ω ^ p ∂μ) ^ (1 / p)) ^ p := by
     rw [← ENNReal.rpow_mul]

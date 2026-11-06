@@ -9,7 +9,7 @@ public import DOZZ.GMC.Construction.GMCGeneralTiltLimit
 
 /-! Real vertex tilting with mixed inward and outward circle radii. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs

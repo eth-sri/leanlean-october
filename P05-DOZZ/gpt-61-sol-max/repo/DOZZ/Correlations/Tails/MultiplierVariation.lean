@@ -11,7 +11,7 @@ public import Mathlib.Analysis.Calculus.MeanValue
 /-! Quantitative local variation of the multiplier on the domain of
 `DOZZ.UniformPositiveC1Family`. -/
 
-@[expose] public section
+public section
 
 open Set
 
@@ -34,11 +34,11 @@ theorem uniform_family_local_variation
     have hw' := Metric.closedBall_subset_ball (by linarith : radius < 2 * radius) hw
     exact hdiff.differentiableAt (Metric.isOpen_ball.mem_nhds hw')
   have hx' : z + x ∈ Metric.closedBall z radius := by
-    simpa only [Metric.mem_closedBall, dist_eq_norm, add_sub_cancel_left] using hx
+    simp_all
   have hz' : z ∈ Metric.closedBall z radius := Metric.mem_closedBall_self hr.le
   have hb := Convex.norm_image_sub_le_of_norm_fderiv_le hdiffAt hd
     (convex_closedBall z radius) hz' hx'
-  simpa only [Real.norm_eq_abs, add_sub_cancel_left] using hb
+  simp_all
 
 /-- Combining a linear multiplier bound with a first-order exponential correction retains
 linear decay. This deterministic estimate is applied before the Gaussian moment bound. -/
@@ -46,9 +46,9 @@ theorem multiplier_exponential_variation
     (f f0 t L S D d : ℝ) (hf : |f - f0| ≤ L * d) (hf0 : |f0| ≤ S)
     (ht : |t| ≤ D * d) (hL : 0 ≤ L) (hd : 0 ≤ d) (hd1 : d ≤ 1) (hD : 0 ≤ D) :
     |f * Real.exp t - f0| ≤ (L + S * D) * Real.exp D * d := by
-  have hS : 0 ≤ S := (abs_nonneg _).trans hf0
+  have hS  := (abs_nonneg _).trans hf0
   have htD := ht.trans (mul_le_of_le_one_right hD hd1)
-  have he : Real.exp t ≤ Real.exp D := Real.exp_le_exp.mpr ((le_abs_self t).trans htD)
+  have he  := Real.exp_le_exp.mpr ((le_abs_self t).trans htD)
   have hexp : |Real.exp t - 1| ≤ D * Real.exp D * d := by
     calc
       _ ≤ |t| * Real.exp |t| := exp_sub_one_bound t

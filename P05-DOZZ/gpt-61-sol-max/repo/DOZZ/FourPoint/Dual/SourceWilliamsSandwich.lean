@@ -4,9 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.FourPoint.Dual.MaximumExpectation
-public import DOZZ.FourPoint.Dual.SourceParetoWeights
+public import DOZZ.FourPoint.Dual.SourceRadialMoments
 /-! Integrated maximum sandwich on the actual source reflection witness. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -36,7 +36,7 @@ theorem dual_source_williams_expectation_sandwich
       (∫ v, E (fun q => (twoSidedReflectionCutMass γ c B Z q.2).toReal) v ∂P.prod R) +
       p*Real.exp (γ*c)*(∫ ω, b ω*(A ω)^(-p-1) ∂P)*
         (∫ ω, (twoSidedReflectionMass γ B Z ω).toReal ∂P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let _ := isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα₁)
   let A := fun ω => (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal
   let b := dual_radial_scale γ (Q γ-α₁) h Xc z
@@ -60,8 +60,7 @@ theorem dual_source_williams_expectation_sandwich
       (Q γ-α₁) h 0 α₁ α₂ α₃ ξ p hh hξ hξ1 hp.le z hz0 hz).1
     simpa only [Real.rpow_zero, one_mul] using hi
   have h4 : 1 < 4/γ^2 := by
-    rw [lt_div_iff₀ (sq_pos_of_pos hγ)]
-    nlinarith only [hγ, hγ₂]
+    field_simp <;> nlinarith
   have hJ₀ := reflected_reflection_real_moment P γ α₁ 1 B Z hα₁ hData h4
   have hJ : Integrable (fun ω => (twoSidedReflectionMass γ B Z ω).toReal) P := by
     simpa only [Real.rpow_one] using hJ₀.1

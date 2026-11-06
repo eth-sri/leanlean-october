@@ -37,21 +37,11 @@ theorem hasDerivAt_conditionedKernelScore_state
     convert hcosh using 1
     · funext z
       rfl
-  have hnum : HasDerivAt (fun z : ℝ => a * Real.cosh (a * z))
-      (a * (Real.sinh (a * y) * a)) y := by
-    exact hcosh'.const_mul a
-  have hsinh_pos : 0 < Real.sinh (a * y) :=
+  have hnum  := hcosh'.const_mul a
+  have hsinh_pos  :=
     Real.sinh_pos_iff.mpr (mul_pos ha hy)
   have hquot := hnum.div hsinh hsinh_pos.ne'
-  have hquot' : HasDerivAt (fun z : ℝ =>
-      a * Real.cosh (a * z) / Real.sinh (a * z))
-      ((a * (Real.sinh (a * y) * a) * Real.sinh (a * y) -
-          a * Real.cosh (a * y) * (Real.cosh (a * y) * a)) /
-        Real.sinh (a * y) ^ 2) y := by
-    convert hquot using 1
-    · funext z
-      rfl
-    · rfl
+
   have htrig : Real.sinh (a * y) ^ 2 - Real.cosh (a * y) ^ 2 = -1 := by
     nlinarith [Real.cosh_sq_sub_sinh_sq (a * y)]
   have hderiv :
@@ -59,18 +49,8 @@ theorem hasDerivAt_conditionedKernelScore_state
           a * Real.cosh (a * y) * (Real.cosh (a * y) * a)) /
         Real.sinh (a * y) ^ 2 =
       -a ^ 2 / Real.sinh (a * y) ^ 2 := by
-    calc
-      (a * (Real.sinh (a * y) * a) * Real.sinh (a * y) -
-          a * Real.cosh (a * y) * (Real.cosh (a * y) * a)) /
-        Real.sinh (a * y) ^ 2 =
-          a ^ 2 * (Real.sinh (a * y) ^ 2 - Real.cosh (a * y) ^ 2) /
-            Real.sinh (a * y) ^ 2 := by ring
-      _ = -a ^ 2 / Real.sinh (a * y) ^ 2 := by rw [htrig]; ring
-  change HasDerivAt (fun z : ℝ =>
-    a * Real.cosh (a * z) / Real.sinh (a * z))
-      (-a ^ 2 / Real.sinh (a * y) ^ 2) y
-  convert hquot' using 1
-  exact hderiv.symm
+    field_simp <;> nlinarith
+  continuity
 
 /-- For a positive kernel parameter, its hyperbolic score strictly decreases with the state. -/
 theorem conditionedKernelScore_strictAntiOn_state {a : ℝ} (ha : 0 < a) :
@@ -81,12 +61,11 @@ theorem conditionedKernelScore_strictAntiOn_state {a : ℝ} (ha : 0 < a) :
     have hden : Continuous (fun y : ℝ => Real.sinh (a * y)) := by
       fun_prop
     apply hnum.continuousOn.div hden.continuousOn
-    intro y hy
-    exact (Real.sinh_pos_iff.mpr (mul_pos ha hy)).ne'
+    continuity
   · intro y hy
     have hy' : 0 < y := by simpa using hy
     rw [(hasDerivAt_conditionedKernelScore_state ha hy').deriv]
-    have hden : 0 < Real.sinh (a * y) :=
+    have hden  :=
       Real.sinh_pos_iff.mpr (mul_pos ha hy')
     exact div_neg_of_neg_of_pos (neg_neg_of_pos (sq_pos_of_pos ha))
       (sq_pos_of_pos hden)

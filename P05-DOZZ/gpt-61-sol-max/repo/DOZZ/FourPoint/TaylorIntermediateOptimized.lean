@@ -9,7 +9,7 @@ public import DOZZ.FourPoint.TaylorMomentBudget
 
 /-! The source optimized intermediate-region exponent with its actual supplied-GMC estimate. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -37,9 +37,7 @@ theorem twoRooted_intermediate_optimized_bound
       (γ / 2 + Q γ - α₁) ^ 2 / (2 * q) := by
     calc
       _ = γ * (Q γ - α₁ + γ / 2) * s - γ ^ 2 * q * s ^ 2 / 2 := by
-        have hq0 : q ≠ 0 := (zero_lt_one.trans hq).ne'
-        field_simp
-        ring
+        field_simp <;> ring
       _ = _ := hopt
   rw [heq] at hbound
   exact ⟨C, hC, hbound⟩

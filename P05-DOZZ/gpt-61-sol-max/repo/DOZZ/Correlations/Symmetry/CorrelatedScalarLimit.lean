@@ -6,7 +6,7 @@ module
 public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 public import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
 public import Mathlib.MeasureTheory.Measure.Prod
-@[expose] public section
+public section
 open MeasureTheory Filter Set
 open scoped Topology ENNReal
 namespace DOZZ.Proofs
@@ -27,7 +27,6 @@ theorem tendstoInMeasure_mul_same_space
   have hTanti : Antitone T := by
     intro n m hnm ω hω
     change (m : ℝ) < |W ω| at hω
-    change (n : ℝ) < |W ω|
     exact lt_of_le_of_lt (by exact_mod_cast hnm) hω
   have hTinter : (⋂ n, T n) = ∅ := by
     ext ω
@@ -38,7 +37,7 @@ theorem tendstoInMeasure_mul_same_space
   have htail : Tendsto (fun n => P (T n)) atTop (𝓝 0) := by
     have h := tendsto_measure_iInter_atTop (μ := P) (s := T)
       (fun n => (hTmeas n).nullMeasurableSet) hTanti ⟨0, measure_ne_top P _⟩
-    simpa only [hTinter, measure_empty, Function.comp_def] using h
+    continuity
   obtain ⟨N, hN⟩ := (ENNReal.tendsto_atTop_zero.mp htail) (δ / 2)
     (ENNReal.div_pos_iff.mpr ⟨hδ.ne', by simp⟩)
   let K : ℝ := (N : ℝ) + 1
@@ -76,7 +75,7 @@ theorem tendstoInMeasure_sub_same_space
     TendstoInMeasure P (fun i ω => f i ω - g i ω) l (fun ω => F ω - G ω) := by
   rw [tendstoInMeasure_iff_norm] at hf hg ⊢
   intro ε hε
-  have hhalf : 0 < ε / 2 := half_pos hε
+  have hhalf  := half_pos hε
   have ht : Tendsto (fun i => P {ω | ε / 2 ≤ ‖f i ω - F ω‖} +
       P {ω | ε / 2 ≤ ‖g i ω - G ω‖}) l (𝓝 0) := by
     simpa only [zero_add] using (hf (ε / 2) hhalf).add (hg (ε / 2) hhalf)
@@ -94,8 +93,6 @@ theorem tendstoInMeasure_sub_same_space
       have heq : (f i ω - g i ω) - (F ω - G ω) =
           (f i ω - F ω) - (g i ω - G ω) := by ring
       have hb := norm_sub_le (f i ω - F ω) (g i ω - G ω)
-      change ε ≤ ‖(f i ω - g i ω) - (F ω - G ω)‖ at hω
-      rw [heq] at hω
-      exact (not_le_of_gt (lt_of_le_of_lt hb (by linarith only [h1, h2]))) hω
+      grind
     _ ≤ _ := measure_union_le _ _
 end DOZZ.Proofs

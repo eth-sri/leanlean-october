@@ -63,12 +63,7 @@ theorem covariance_abkLogCorrelatedFieldL2Canonical_eq_scale_selfConvolution_int
         (fun p : ℝ × Vec d =>
           abkLogKernelProd (abkNormalization ζ) ζ ψ p *
             abkLogKernelProd (abkNormalization ζ) ζ φ p)
-        (volume : Measure (ℝ × Vec d)) := by
-    change Integrable
-      (abkLogKernelProd (abkNormalization ζ) ζ ψ *
-        abkLogKernelProd (abkNormalization ζ) ζ φ)
-      (volume : Measure (ℝ × Vec d))
-    exact hψ.integrable_mul hφ
+        (volume : Measure (ℝ × Vec d)) := hψ.integrable_mul hφ
   rw [Measure.volume_eq_prod] at hprod_int ⊢
   rw [integral_prod _ hprod_int]
   refine integral_congr_ae ?_

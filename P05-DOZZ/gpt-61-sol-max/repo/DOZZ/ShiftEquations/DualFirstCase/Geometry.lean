@@ -24,12 +24,7 @@ theorem dualFirstCase_shrink (γ η a₂ a₃ : ℝ) (hη : 0 < η ∧ γ < Q γ
   refine ⟨(d + η) / 2, by linarith only [hd, hη.1], by linarith only [hdη],
     by linarith only [hdη, hsmall], by linarith only [hdη, hη.2],
     ⟨?_, h₂.2⟩, ⟨?_, h₃.2⟩⟩
-  · have := le_max_left (Q γ - a₂) (Q γ - a₃)
-    change Q γ - a₂ ≤ d at this
-    linarith only [this, hdη]
-  · have := le_max_right (Q γ - a₂) (Q γ - a₃)
-    change Q γ - a₃ ≤ d at this
-    linarith only [this, hdη]
+  all_goals grind
 /-- A nonempty interval near Q simultaneously supports the dual fusion and both physical
 shifted charges. -/
 theorem dualFirstCase_seed_interval (γ e a₂ a₃ : ℝ) (hγ : 0 < γ) (he : e < γ / 4)
@@ -45,28 +40,16 @@ theorem dualFirstCase_seed_interval (γ e a₂ a₃ : ℝ) (hγ : 0 < γ) (he : 
         linarith only [h₂, h₃, he]
       · unfold Q
         linarith only [he]
-    · have : 0 < 2 / γ := div_pos (by norm_num) hγ
-      linarith only [this]
-  · intro x hx hxQ
-    have hsum := lt_of_le_of_lt (le_trans (le_max_left _ _) (le_max_left _ _)) hx
-    have hlo := lt_of_le_of_lt (le_trans (le_max_right _ _) (le_max_left _ _)) hx
-    have href := lt_of_le_of_lt (le_max_right _ _) hx
-    refine ⟨by linarith only [hsum], ⟨by linarith only [hlo], ?_⟩,
-      ⟨?_, by linarith only [href]⟩⟩
-    · have : 0 < 2 / γ := by positivity
-      linarith only [hxQ, this]
-    · unfold Q at *
-      linarith only [hxQ, he]
+    simp_all
+  grind
 /-- Reflection Gamma poles do not occur in the near-Q seed interval. -/
 theorem dualFirstCase_poleFree {γ a : ℝ} (hγ : 0 < γ)
     (hlo : Q γ - γ / 2 < a) : ReflectionPoleFree γ a := by
   intro n hn
   have hp : reflectionExponent γ a < 1 := by
     unfold reflectionExponent
-    apply (div_lt_iff₀ hγ).mpr
-    linarith only [hlo]
-  have hn1 : (1 : ℝ) ≤ ((n + 1 : ℕ) : ℝ) := by exact_mod_cast (Nat.succ_le_succ (Nat.zero_le n))
-  exact (not_lt_of_ge hn1) (hn ▸ hp)
+    bound
+  grind
 /-- The full structure constant inherits the permutation symmetry of the unit-volume structure
 constant (`unitVolumeStructureConstant_swap12`). -/
 theorem dualFirstCase_structure_swap12 {Ω : Type*} [MeasurableSpace Ω]

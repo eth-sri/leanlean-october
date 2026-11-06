@@ -26,9 +26,11 @@ noncomputable def localPicardTransfer
     (D : LocalHolomorphicODEData r M H c) (y : E) (z : ℂ) : E :=
   holomorphicPicardSolution c r H D.differentiable y z
 
+variable (r M : ℝ) (hr : 0 < r) (hM : 0 ≤ M) (H : ℂ → E →L[ℂ] E)
+
+include r M hr hM H in
 theorem localPicardTransfer_comp_eq
-    (r M : ℝ) (hr : 0 < r) (hM : 0 ≤ M)
-    (H : ℂ → E →L[ℂ] E) {c d e : ℂ}
+     {c d e : ℂ}
     (Dc : LocalHolomorphicODEData r M H c)
     (Dd : LocalHolomorphicODEData r M H d)
     (hdc : dist d c < r / 4) (hec : dist e c < r / 4) (y : E) :
@@ -36,7 +38,7 @@ theorem localPicardTransfer_comp_eq
         (localPicardTransfer r M H Dc y d) e =
       localPicardTransfer r M H Dc y e := by
   have hde : dist e d < r / 2 := by
-    have htri : dist e d ≤ dist e c + dist c d := dist_triangle e c d
+    have htri  := dist_triangle e c d
     rw [dist_comm c d] at htri
     linarith
   have hballSubset : Metric.ball d (r / 2) ⊆ Metric.ball c r := by
@@ -60,15 +62,15 @@ theorem localPicardTransfer_comp_eq
       Dd.bounded (z := z) (Metric.ball_subset_ball (by linarith) hz)
   have hstart : F d = G d := by
     simp [F, G, localPicardTransfer, holomorphicPicardSolution_apply_center]
-  have he : e ∈ Metric.ball d (r / 2) := Metric.mem_ball.mpr hde
+  have he  := Metric.mem_ball.mpr hde
   have hEq := holomorphic_linear_system_solution_unique_of_eq_at
     d (r / 2) M H hM hboundHalf hF hG
     (Metric.mem_ball_self (by linarith)) he hstart
-  simpa [F, G] using hEq.symm
+  exact hEq.symm
 
+include r M hr hM H in
 theorem localPicardTransfer_square_commutes
-    (r M : ℝ) (hr : 0 < r) (hM : 0 ≤ M)
-    (H : ℂ → E →L[ℂ] E) {c cRight cUp cDiag : ℂ}
+     {c cRight cUp cDiag : ℂ}
     (Dc : LocalHolomorphicODEData r M H c)
     (DRight : LocalHolomorphicODEData r M H cRight)
     (DUp : LocalHolomorphicODEData r M H cUp)
@@ -79,13 +81,6 @@ theorem localPicardTransfer_square_commutes
         (localPicardTransfer r M H Dc y cRight) cDiag =
       localPicardTransfer r M H DUp
         (localPicardTransfer r M H Dc y cUp) cDiag := by
-  calc
-    localPicardTransfer r M H DRight
-        (localPicardTransfer r M H Dc y cRight) cDiag =
-        localPicardTransfer r M H Dc y cDiag :=
-          localPicardTransfer_comp_eq r M hr hM H Dc DRight hRight hDiag y
-    _ = localPicardTransfer r M H DUp
-        (localPicardTransfer r M H Dc y cUp) cDiag :=
-          (localPicardTransfer_comp_eq r M hr hM H Dc DUp hUp hDiag y).symm
+  exact Trans.trans (localPicardTransfer_comp_eq r M hr hM H Dc DRight hRight hDiag y) (Eq.symm (localPicardTransfer_comp_eq r M hr hM H Dc DUp hUp hDiag y))
 
 end DOZZ.Proofs

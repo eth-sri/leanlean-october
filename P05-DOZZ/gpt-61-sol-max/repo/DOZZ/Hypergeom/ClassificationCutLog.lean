@@ -8,7 +8,7 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Complex
 
 /-! Explicit principal-log transitions across the negative real cut. -/
 
-@[expose] public section
+public section
 
 open scoped ComplexConjugate
 

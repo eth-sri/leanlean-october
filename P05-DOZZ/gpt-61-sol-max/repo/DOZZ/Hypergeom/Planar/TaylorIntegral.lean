@@ -12,17 +12,19 @@ public import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
 /-! The positive Riesz convolution and scaling determine the corrected Taylor integral. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter
 open scoped Topology
 
 namespace DOZZ.Proofs
 
+variable (k β : ℝ) (hk : 0 < k) (hβ : k < β) (hβ₂ : β < 2) (hβlin : β < k + 1)
+
+include k β hk hβ hβ₂ hβlin in
 /-- The coefficient of the corrected Taylor parent, recovered from its dominated discrete
 Laplacian. -/
-theorem planarTaylor_constant_from_discrete_laplacian (k β : ℝ)
-    (hk : 0 < k) (hβ : k < β) (hβ₂ : β < 2) (hβlin : β < k + 1) :
+theorem planarTaylor_constant_from_discrete_laplacian  :
     ((∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u : ℝ) : ℂ) =
       DOZZ.planarGaussConstant k β := by
   let α : ℝ := 2 + k - β
@@ -37,8 +39,7 @@ theorem planarTaylor_constant_from_discrete_laplacian (k β : ℝ)
   have hα : 0 < α := by dsimp [α]; linarith
   have hscale (z : ℂ) :
       (∫ u : ℂ, DOZZ.planarTaylorRemainder k β z u) = ‖z‖ ^ α * A := by
-    simpa [α, A] using
-      planarTaylorRemainder_integral_scale_norm k β hk hβ hβ₂ z
+    exact planarTaylorRemainder_integral_scale_norm k β hk hβ hβ₂ z
   have hParentEq : P =ᶠ[l]
       fun t => A * normPowerDiscreteLaplacian α t 1 := by
     filter_upwards [] with t
@@ -64,8 +65,7 @@ theorem planarTaylor_constant_from_discrete_laplacian (k β : ℝ)
   have hDct := planarTaylorDiscreteQuotient_integral_tendsto k β hk hβ hβ₂ hβlin
   have hQEq : (fun t : ℝ => ∫ u : ℂ, planarTaylorDiscreteQuotient k β t u) =ᶠ[l] P := by
     filter_upwards [] with t
-    simpa [P, A] using
-      integral_planarTaylorDiscreteQuotient k β hk hβ hβ₂ hβlin t
+    exact integral_planarTaylorDiscreteQuotient k β hk hβ hβ₂ hβlin t
   have hDctP := hDct.congr' hQEq
   have hDctP' : Tendsto P l
       (𝓝 (k ^ 2 * (∫ u : ℂ, ‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2)))) := by
@@ -79,27 +79,17 @@ theorem planarTaylor_constant_from_discrete_laplacian (k β : ℝ)
   have hRieszVal :
       (∫ u : ℂ, ‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2)) = G := by
     simpa [G, norm_one, Real.one_rpow] using hRiesz
-  have hRealCoeff : k ^ 2 * G = α ^ 2 * A := by
-    simpa [hRieszVal] using hCoeff
-  have hαsq : α ^ 2 ≠ 0 := pow_ne_zero 2 hα.ne'
-  have hA : A = (k ^ 2 / α ^ 2) * G := by
-    calc
-      A = α ^ 2 * A / α ^ 2 := by field_simp [hαsq]
-      _ = k ^ 2 * G / α ^ 2 := by rw [hRealCoeff]
-      _ = (k ^ 2 / α ^ 2) * G := by ring
+  
+  have hαsq  := pow_ne_zero 2 hα.ne'
+  
   have hratio : k ^ 2 / α ^ 2 = (k / 2) ^ 2 / (α / 2) ^ 2 := by
     field_simp [hαsq]
   have hconst := positive_riesz_coefficient_eq_planarGaussConstant k β hk hβ hβ₂
-  calc
-    (A : ℂ) = (((k ^ 2 / α ^ 2) * G : ℝ) : ℂ) := by exact congrArg Complex.ofReal hA
-    _ = ((((k / 2) ^ 2 / (α / 2) ^ 2) * G : ℝ) : ℂ) := by rw [hratio]
-    _ = DOZZ.planarGaussConstant k β := by
-      dsimp [G, α]
-      simpa [mul_assoc, mul_left_comm, mul_comm] using hconst
+  grind
 
+include k β hk hβ hβ₂ hβlin in
 /-- Proof of the corrected Taylor integral statement `DOZZ.planar_taylor_integral`. -/
-theorem planar_taylor_integral (k β : ℝ) (hk : 0 < k)
-    (hβ : k < β) (hβ₂ : β < 2) (hβlin : β < k + 1) :
+theorem planar_taylor_integral  :
     ∀ z : ℂ, Integrable (DOZZ.planarTaylorRemainder k β z) volume ∧
       ((∫ u : ℂ, DOZZ.planarTaylorRemainder k β z u) : ℂ) =
         (‖z‖ ^ (2 + k - β) : ℝ) * DOZZ.planarGaussConstant k β := by
@@ -108,8 +98,7 @@ theorem planar_taylor_integral (k β : ℝ) (hk : 0 < k)
   have hscale := planarTaylorRemainder_integral_scale_norm k β hk hβ hβ₂
   intro z
   refine ⟨hInt z, ?_⟩
-  have hval : (∫ u : ℂ, DOZZ.planarTaylorRemainder k β z u) =
-      ‖z‖ ^ (2 + k - β) * (∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u) := hscale z
+  have hval  := hscale z
   rw [integral_complex_ofReal]
   calc
     ((∫ u : ℂ, DOZZ.planarTaylorRemainder k β z u : ℝ) : ℂ) =

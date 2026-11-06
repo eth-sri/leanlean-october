@@ -24,32 +24,33 @@ on the real axis near `0`.
   real points, the former with the real power `u ^ (2 * (1 - c))` for `u > 0`.
 * `bpzHG_norm_sq_eq_normSq`: the `‖·‖ ^ 2` form of `Complex.normSq`, as used in the statements. -/
 
-@[expose] public section
+public section
 
 open Filter Topology
 
 namespace DOZZ.Proofs
 
+variable {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H) {a b c : ℂ} (hc : ∀ n : ℕ, c ≠ -(n : ℂ))
+
+include H hH a b c hc in
 /-- The hypergeometric function is `1` at the origin. -/
-theorem bpzHG_eq_one_at_zero {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    {a b c : ℂ} (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) : H a b c 0 = 1 := by
+theorem bpzHG_eq_one_at_zero  : H a b c 0 = 1 := by
   rw [(hH a b c hc).2 0 (by simp)]
   exact ordinaryHypergeometric_zero a b c
 
 /-- The slit plane `ℂ \ [1, ∞)` is open. -/
 theorem bpzHG_isOpen_gaussSlitPlane : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z : ℂ | z.re < 1})
   exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
     (isOpen_Iio.preimage Complex.continuous_re)
 
 /-- The real interval `(-1, 1)` lies in the slit plane. -/
 theorem bpzHG_mapsTo_ofReal_gaussSlitPlane :
     Set.MapsTo (fun u : ℝ => (u : ℂ)) (Set.Ioo (-1) 1) gaussSlitPlane := fun u hu =>
-  Or.inr (by simpa using hu.2)
+  Or.inr (by exact hu.2)
 
+include H hH a b c hc in
 /-- On the real interval `(-1, 1)`, `u ↦ ‖H a b c u‖²` is smooth. -/
-theorem bpzHG_contDiffOn_normSq {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
-    {a b c : ℂ} (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+theorem bpzHG_contDiffOn_normSq  :
     ContDiffOn ℝ 2 (fun u : ℝ => Complex.normSq (H a b c (u : ℂ))) (Set.Ioo (-1) 1) := by
   have hC : ContDiffOn ℂ 2 (H a b c) gaussSlitPlane :=
     (hH a b c hc).1.contDiffOn bpzHG_isOpen_gaussSlitPlane

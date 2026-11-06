@@ -6,10 +6,11 @@ module
 
 public import DOZZ.Correlations.Residue.ComplementMass
 public import DOZZ.ShiftEquations.Strip.OriginLimit
+import Mathlib.Tactic
 
 /-! Deterministic comparison of the critical Coulomb mass and the origin singular mass. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal Classical
 
@@ -34,7 +35,7 @@ theorem lastone_coulombWeight_lower (γ a b c : ℝ) (hγb : 0 ≤ γ * b)
         coulombWeight γ ![a, b] ![0, 1] c x := by
   have hnp : normPlus x = 1 := max_eq_left hx.le
   have hx1 : x ≠ 1 := by intro he; simp [he] at hx
-  have hs : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have hs  := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
   have hs2 : ‖x - 1‖ ≤ 2 := by
     have h := norm_sub_le x 1
     norm_num at h
@@ -51,9 +52,11 @@ theorem lastone_coulombWeight_lower (γ a b c : ℝ) (hγb : 0 ≤ γ * b)
   simpa only [hnp, ENNReal.rpow_eq_pow, mul_comm] using mul_le_mul_left hfac
     (ENNReal.rpow (ENNReal.ofReal ‖x‖) (-γ * a))
 
+variable (γ a b c : ℝ) (hγa : 0 < γ * a) (hγb : 0 ≤ γ * b)
+
+include γ a b c hγa hγb in
 /-- On the half disk the second finite insertion gives a fixed upper bound. -/
-theorem lastone_coulombWeight_local_upper (γ a b c : ℝ) (hγa : 0 < γ * a)
-    (hγb : 0 ≤ γ * b) (x : ℂ) (hx : ‖x‖ < 1 / 2) :
+theorem lastone_coulombWeight_local_upper  (x : ℂ) (hx : ‖x‖ < 1 / 2) :
     coulombWeight γ ![a, b] ![0, 1] c x ≤
       (2 : ℝ≥0∞) ^ (γ * b) * ENNReal.rpow (ENNReal.ofReal ‖x‖) (-γ * a) := by
   by_cases hx0 : x = 0
@@ -99,10 +102,10 @@ theorem lastone_coulombWeight_exterior_upper (γ a b c : ℝ)
   rw [residue_coulombWeight_two_split]
   exact mul_le_mul' hfac' le_rfl
 
+include γ a b c hγa hγb in
 /-- The Coulomb mass lies between a multiple of the origin mass and that mass plus a
 fixed one-root subcritical mass. Only the origin's zero atom is required. -/
-theorem lastone_coulombMass_bounds (γ a b c : ℝ) (hγa : 0 < γ * a)
-    (hγb : 0 ≤ γ * b) (haQ : γ * a ≤ γ * Q γ) (M : Measure ℂ) (hM0 : M {0} = 0) :
+theorem lastone_coulombMass_bounds  (haQ : γ * a ≤ γ * Q γ) (M : Measure ℂ) (hM0 : M {0} = 0) :
     ENNReal.ofReal (1 / 2 : ℝ) ^ (γ * b) *
         localSingularMass (fun _ : Unit => M) (fun _ => 1) 0 γ a () ≤
       coulombMass γ M ![a, b] ![0, 1] c ∧

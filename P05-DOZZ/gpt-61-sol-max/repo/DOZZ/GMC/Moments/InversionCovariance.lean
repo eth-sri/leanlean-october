@@ -11,7 +11,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 
 /-! Inversion invariance of the covariance of local distribution tests. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 open scoped Distributions ENNReal NNReal
@@ -54,22 +54,19 @@ theorem volume_gffKernel_pairing_eq_reference (f g : ℂ → ℝ) :
   apply integral_congr_ae
   filter_upwards [] with x
   rw [integral_volume_eq_integral_gmcReferenceMeasure, ← integral_const_mul]
-  apply integral_congr_ae
-  filter_upwards [] with y
-  ring
+  field_simp
 
 /-- The Jacobian-adjusted test, normalized by the reference density, is the inverted original
 test normalized by that density. -/
 theorem inversionTestFunction_reference_weight (f : ℂ → ℝ) {x : ℂ} (hx : x ≠ 0) :
     inversionTestFunction f x * (normPlus x ^ (-4 : ℝ))⁻¹ =
       f x⁻¹ * (normPlus x⁻¹ ^ (-4 : ℝ))⁻¹ := by
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
+  have hn  := norm_pos_iff.mpr hx
   have hJ : (‖x‖ ^ 2)⁻¹ ^ 2 = ‖x‖ ^ (-4 : ℝ) := by
-    rw [Real.rpow_neg hn.le]
-    norm_num [Real.rpow_natCast, ← inv_pow, ← pow_mul]
+    ring_nf at * <;> aesop
   have hid := normPlus_inv_mul_jacobian hx
-  have hp := (referenceDensity_pos x).ne'
-  have hpi := (referenceDensity_pos x⁻¹).ne'
+
+
   have hj := (Real.rpow_pos_of_pos hn (-4 : ℝ)).ne'
   dsimp [inversionTestFunction]
   rw [hJ]

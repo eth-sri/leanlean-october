@@ -34,9 +34,11 @@ open scoped ENNReal NNReal Topology
 
 namespace DOZZ.Proofs
 
+variable {x d : ℝ≥0∞} (hx0 : 0 < x) (hx : x < ⊤) (hd : d < ⊤) {p : ℝ}
+
+include x d hx0 hx hd p in
 /-- Concavity increment for subunit powers: `(x + d)^p ≤ x^p + p d x^{p-1}`. -/
-theorem ennreal_rpow_add_le_of_le_one {x d : ℝ≥0∞} (hx0 : 0 < x) (hx : x < ⊤) (hd : d < ⊤)
-    {p : ℝ} (hp : 0 < p) (hp1 : p ≤ 1) :
+theorem ennreal_rpow_add_le_of_le_one  (hp : 0 < p) (hp1 : p ≤ 1) :
     (x + d) ^ p ≤ x ^ p + ENNReal.ofReal p * d * x ^ (p - 1) := by
   obtain ⟨a, ha, rfl⟩ : ∃ a : ℝ, 0 < a ∧ x = ENNReal.ofReal a :=
     ⟨x.toReal, ENNReal.toReal_pos hx0.ne' hx.ne, (ENNReal.ofReal_toReal hx.ne).symm⟩
@@ -56,13 +58,13 @@ theorem ennreal_rpow_add_le_of_le_one {x d : ℝ≥0∞} (hx0 : 0 < x) (hx : x <
   apply ENNReal.ofReal_le_ofReal
   linarith [real_rpow_add_increment_le_subunit a e p ha he hp hp1]
 
+include x d hx0 hx hd p in
 /-- Convexity increment for superunit powers: `(x + d)^p ≤ x^p + p d (x + d)^{p-1}`. -/
-theorem ennreal_rpow_add_le_of_one_le {x d : ℝ≥0∞} (hx0 : 0 < x) (hx : x < ⊤) (hd : d < ⊤)
-    {p : ℝ} (hp1 : 1 ≤ p) :
+theorem ennreal_rpow_add_le_of_one_le  (hp1 : 1 ≤ p) :
     (x + d) ^ p ≤ x ^ p + ENNReal.ofReal p * d * (x + d) ^ (p - 1) := by
   obtain ⟨a, ha', rfl⟩ : ∃ a : ℝ, 0 < a ∧ x = ENNReal.ofReal a :=
     ⟨x.toReal, ENNReal.toReal_pos hx0.ne' hx.ne, (ENNReal.ofReal_toReal hx.ne).symm⟩
-  have ha : 0 ≤ a := ha'.le
+  have ha  := ha'.le
   obtain ⟨e, he, rfl⟩ : ∃ e : ℝ, 0 ≤ e ∧ d = ENNReal.ofReal e :=
     ⟨d.toReal, ENNReal.toReal_nonneg, (ENNReal.ofReal_toReal hd.ne).symm⟩
   have hp0 : 0 ≤ p := by linarith only [hp1]
@@ -83,20 +85,18 @@ theorem ennreal_rpow_add_le_of_one_le {x d : ℝ≥0∞} (hx0 : 0 < x) (hx : x <
   apply ENNReal.ofReal_le_ofReal
   linarith [real_rpow_add_increment_le_superunit a e p ha' he hp1]
 
+variable {Ω : Type*} (γ c : ℝ) (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ) (ω : Ω)
+
+include Ω γ c B Z ω in
 /-- The retained cut mass never exceeds the full mass. -/
-theorem twoSidedReflectionCutMass_le_mass {Ω : Type*} (γ c : ℝ)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ) (ω : Ω) :
+theorem twoSidedReflectionCutMass_le_mass  :
     twoSidedReflectionCutMass γ c B Z ω ≤ twoSidedReflectionMass γ B Z ω := by
   unfold twoSidedReflectionCutMass twoSidedReflectionMass
-  refine lintegral_mono fun s => ?_
-  beta_reduce
-  split_ifs
-  · exact le_rfl
-  · exact zero_le
+  gcongr <;> aesop
 
+include Ω γ c B Z ω in
 /-- The retained cut mass contains the initial positive unit block. -/
-theorem initialUnitBlockMass_le_cutMass {Ω : Type*} (γ c : ℝ)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ) (ω : Ω) :
+theorem initialUnitBlockMass_le_cutMass  :
     initialUnitBlockMass γ (B ω).1 (Z ω) ≤ twoSidedReflectionCutMass γ c B Z ω := by
   unfold initialUnitBlockMass twoSidedReflectionCutMass
   refine lintegral_mono fun t => ?_
@@ -120,13 +120,9 @@ theorem measurable_uncurry_reflectionPairValue :
   let neg : (BrownianPath × BrownianPath) × ℝ → ℝ := fun z =>
     z.1.2 ⟨max (-z.2) 0, le_max_right _ _⟩
   have hpos : Measurable pos := by
-    dsimp [pos]
-    exact heval.comp ((by fun_prop : Measurable fun z : (BrownianPath × BrownianPath) × ℝ =>
-      ((⟨max z.2 0, le_max_right _ _⟩ : ℝ≥0), z.1.1)))
+    fun_prop
   have hneg : Measurable neg := by
-    dsimp [neg]
-    exact heval.comp ((by fun_prop : Measurable fun z : (BrownianPath × BrownianPath) × ℝ =>
-      ((⟨max (-z.2) 0, le_max_right _ _⟩ : ℝ≥0), z.1.2)))
+    fun_prop
   have hm : Measurable (fun z : (BrownianPath × BrownianPath) × ℝ =>
       if 0 ≤ z.2 then pos z else neg z) :=
     Measurable.ite (measurableSet_le measurable_const measurable_snd) hpos hneg
@@ -134,10 +130,7 @@ theorem measurable_uncurry_reflectionPairValue :
   funext z
   change (if hs : 0 ≤ z.2 then z.1.1 ⟨z.2, hs⟩ else z.1.2 ⟨-z.2, by linarith⟩) =
     (if 0 ≤ z.2 then pos z else neg z)
-  by_cases hs : 0 ≤ z.2
-  · simp [hs, pos]
-  · have hneg : 0 ≤ -z.2 := by linarith
-    simp [hs, neg, max_eq_left hneg]
+  grind
 
 /-- The cut integrand: the exponential of the joined value, kept only to the right of `-L`, where
 `L` is the last exit time of the negative-side path from `-c`. -/
@@ -153,8 +146,7 @@ theorem measurable_reflectionCutIntegrand (γ c : ℝ) :
       negativeLastExitTime z.1.2 c) :=
     measurable_negativeLastExitTime_joint.comp
       (measurable_const.prodMk (measurable_snd.comp measurable_fst))
-  have hval : Measurable (fun z : (BrownianPath × BrownianPath) × ℝ =>
-      reflectionPairValue z.1 z.2) := measurable_uncurry_reflectionPairValue
+  have hval  := measurable_uncurry_reflectionPairValue
   exact Measurable.ite (measurableSet_le hexit.coe_nnreal_real.neg measurable_snd)
     (ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp (measurable_const.mul hval)))
     measurable_const
@@ -174,8 +166,7 @@ theorem measurable_reflectionCutShell (γ c : ℝ) (n : ℕ) :
       finiteRestrictionOnSet (translationShell n) z.2) :=
     (measurable_finiteRestrictionOnSet _ (measurableSet_translationShell n)).comp
       measurable_snd
-  have hpair : Measurable (fun z : (BrownianPath × BrownianPath) × Measure ℝ =>
-      (z.1, finiteRestrictionOnSet (translationShell n) z.2)) :=
+  have hpair  :=
     measurable_fst.prodMk hrest
   exact hInt.comp hpair
 
@@ -206,7 +197,7 @@ theorem twoSidedReflectionCutMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
     (hB : AEMeasurable B P) (hZ : AEMeasurable Z P)
     (hfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Icc a b) < ⊤) :
     AEMeasurable (fun ω => twoSidedReflectionCutMass γ c B Z ω) P := by
-  have hpair : AEMeasurable (fun ω => (B ω, Z ω)) P := hB.prodMk hZ
+  have hpair  := hB.prodMk hZ
   have hsum : AEMeasurable
       (fun ω => ∑' n : ℕ, reflectionCutShell γ c n (B ω, Z ω)) P :=
     AEMeasurable.tsum fun n =>
@@ -224,13 +215,10 @@ theorem measure_Ioc_lt_top_of_locallyFinite {μ : Measure ℝ}
   obtain ⟨n, hn⟩ := exists_nat_ge (max |a| |b|)
   refine lt_of_le_of_lt (measure_mono ?_) (h n)
   intro x hx
-  have ha : |a| ≤ n := (le_max_left _ _).trans hn
-  have hb : |b| ≤ n := (le_max_right _ _).trans hn
+  have ha  := (le_max_left _ _).trans hn
+  have hb  := (le_max_right _ _).trans hn
   constructor
-  · have := neg_abs_le a
-    linarith [hx.1]
-  · have := le_abs_self b
-    linarith [hx.2]
+  all_goals grind
 
 /-- The discarded post-last-exit half-line mass has the moments of the entrance half-line mass of
 the negative-side path. -/
@@ -243,13 +231,13 @@ theorem postLastExit_entranceMass_rpow_lintegral_eq
         (lastExitReflectedMeasure c B Z ω)) ^ q ∂P) =
       ∫⁻ ω, (positiveLateralMass γ (B ω).2 (Z ω)) ^ q ∂P := by
   have hlaw := postLastExit_reflectedJointLaw_eq P ν γ c B Z hB hν hc hZ hInd
-  let pair₁ : Ω → BrownianPath × Measure ℝ := fun ω =>
+  let pair₁  := fun ω =>
     (negativeConditionedPostLastExitPath c (B ω).2, lastExitReflectedMeasure c B Z ω)
-  let pair₂ : Ω → BrownianPath × Measure ℝ := fun ω => ((B ω).2, Z ω)
+  let pair₂  := fun ω => ((B ω).2, Z ω)
   let F : BrownianPath × Measure ℝ → ℝ≥0∞ := fun z => (positiveLateralMass γ z.1 z.2) ^ q
-  have hpair₂ : AEMeasurable pair₂ P := hB.1.prodMk hZ.2.2.2.1
-  have hIndDZ : IndepFun (fun ω => (B ω).2) Z P := hInd.comp measurable_snd measurable_id
-  have hpair₁ : AEMeasurable pair₁ P :=
+  have hpair₂  := hB.1.prodMk hZ.2.2.2.1
+  have hIndDZ  := hInd.comp measurable_snd measurable_id
+  have hpair₁  :=
     ((measurable_negativeConditionedPostLastExitPath c).comp_aemeasurable hB.1).prodMk
       (lastExitReflectedMeasure_law_independent P γ c B Z hB.1 hZ hIndDZ).1
   have hset : MeasurableSet {z : BrownianPath × Measure ℝ |
@@ -267,30 +255,25 @@ theorem postLastExit_entranceMass_rpow_lintegral_eq
       (positiveLateralMass_aemeasurable_of_finite (P.map pair₂) γ Prod.fst Prod.snd
         measurable_fst.aemeasurable measurable_snd.aemeasurable hfin)
   have hF' : AEMeasurable F (P.map pair₁) := by
-    change AEMeasurable F (P.map (fun ω =>
-      (negativeConditionedPostLastExitPath c (B ω).2, lastExitReflectedMeasure c B Z ω)))
-    rw [hlaw]
-    exact hF
+    aesop
   calc (∫⁻ ω, (positiveLateralMass γ (negativeConditionedPostLastExitPath c (B ω).2)
         (lastExitReflectedMeasure c B Z ω)) ^ q ∂P)
       = ∫⁻ ω, F (pair₁ ω) ∂P := rfl
     _ = ∫⁻ z, F z ∂P.map pair₁ := (lintegral_map' hF' hpair₁).symm
     _ = ∫⁻ z, F z ∂P.map pair₂ := by
-        change (∫⁻ z, F z ∂P.map (fun ω =>
-          (negativeConditionedPostLastExitPath c (B ω).2, lastExitReflectedMeasure c B Z ω))) = _
-        rw [hlaw]
+        aesop
     _ = ∫⁻ ω, F (pair₂ ω) ∂P := lintegral_map' hF hpair₂
     _ = _ := rfl
 
+include Ω γ c B Z ω in
 /-- The discarded post-last-exit mass, as a function of the sample. -/
-noncomputable def lastCutDiscardMass {Ω : Type*} (γ c : ℝ) (B : Ω → BrownianPath × BrownianPath)
-    (Z : Ω → Measure ℝ) (ω : Ω) : ℝ≥0∞ :=
+noncomputable def lastCutDiscardMass  : ℝ≥0∞ :=
   positiveLateralMass γ (negativeConditionedPostLastExitPath c (B ω).2)
     (lastExitReflectedMeasure c B Z ω)
 
+include Ω γ c B Z ω in
 /-- The full mass is the retained cut mass plus `exp(-γ c)` times the discarded mass. -/
-theorem twoSidedReflectionMass_eq_cut_add_discard {Ω : Type*} (γ c : ℝ)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ) (ω : Ω) :
+theorem twoSidedReflectionMass_eq_cut_add_discard  :
     twoSidedReflectionMass γ B Z ω = twoSidedReflectionCutMass γ c B Z ω +
       ENNReal.ofReal (Real.exp (-γ * c)) * lastCutDiscardMass γ c B Z ω := by
   rw [twoSidedReflectionMass_eq_cut_add_tail γ c B Z ω,
@@ -307,9 +290,7 @@ theorem lastExitReflectedMeasure_Ioc_lt_top {Ω : Type*} (c : ℝ)
   rw [Measure.map_apply hg measurableSet_Ioc]
   refine lt_of_le_of_lt (measure_mono ?_) (hZ (-b - (negativeLastExitTime (B ω).2 c : ℝ))
     (-a - (negativeLastExitTime (B ω).2 c : ℝ)))
-  intro s hs
-  simp only [mem_preimage, mem_Ioc] at hs
-  constructor <;> linarith [hs.1, hs.2]
+  grind
 
 /-- The discarded mass is almost everywhere measurable for conditioned reflection inputs. -/
 theorem lastCutDiscardMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
@@ -317,7 +298,7 @@ theorem lastCutDiscardMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω] (P : M
     (hB : AEMeasurable (fun ω => (B ω).2) P) (hZ : IsLateralGMCOf P γ Z)
     (hInd : IndepFun (fun ω => (B ω).2) Z P) :
     AEMeasurable (fun ω => lastCutDiscardMass γ c B Z ω) P := by
-  have hpost : AEMeasurable (fun ω => negativeConditionedPostLastExitPath c (B ω).2) P :=
+  have hpost  :=
     (measurable_negativeConditionedPostLastExitPath c).comp_aemeasurable hB
   have hrefl := (lastExitReflectedMeasure_law_independent P γ c B Z hB hZ hInd).1
   have hfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, lastExitReflectedMeasure c B Z ω (Ioc a b) < ⊤ := by
@@ -333,7 +314,7 @@ theorem lintegral_mul_rpow_le_holder {Ω : Type*} [MeasurableSpace Ω] (P : Meas
     (∫⁻ ω, D ω * X ω ^ e ∂P) ≤
       (∫⁻ ω, D ω ^ r ∂P) ^ (1 / r) *
         (∫⁻ ω, X ω ^ (e * (r / (r - 1))) ∂P) ^ (1 / (r / (r - 1))) := by
-  have hconj : r.HolderConjugate (r / (r - 1)) :=
+  have hconj  :=
     (Real.holderConjugate_iff_eq_conjExponent hr).mpr rfl
   have h := ENNReal.lintegral_mul_le_Lp_mul_Lq P hconj hD (hX.pow_const e)
   have heq : (∫⁻ ω, (X ω ^ e) ^ (r / (r - 1)) ∂P) = ∫⁻ ω, X ω ^ (e * (r / (r - 1))) ∂P := by
@@ -357,13 +338,11 @@ theorem lastCut_moment_le_add
           (1 / (r / (r - 1)))) := by
   set G : Ω → ℝ≥0∞ := fun ω => if p ≤ 1 then Jc ω else J ω with hG
   have hGm : AEMeasurable G P := by
-    by_cases hp1 : p ≤ 1
-    · simpa [hG, hp1] using hJc
-    · simpa [hG, hp1] using hJ
+    continuity
   have hpoint : ∀ᵐ ω ∂P, J ω ^ p ≤ Jc ω ^ p + ENNReal.ofReal p * k * (D ω * G ω ^ (p - 1)) := by
     filter_upwards [hsplit, hJcpos, hJfin, hDfin] with ω hs hpos hfin hdfin
     have hJcfin : Jc ω < ⊤ := lt_of_le_of_lt (by rw [hs]; exact le_self_add) hfin
-    have hkd : k * D ω < ⊤ := ENNReal.mul_lt_top hk hdfin
+    have hkd  := ENNReal.mul_lt_top hk hdfin
     by_cases hp1 : p ≤ 1
     · have h := ennreal_rpow_add_le_of_le_one hpos hJcfin hkd hp hp1
       have hGJ : G ω = Jc ω := by simp only [hG, hp1, ite_true]
@@ -411,9 +390,7 @@ theorem ae_lt_top_of_lintegral_rpow_lt_top {Ω : Type*} [MeasurableSpace Ω] {P 
     {X : Ω → ℝ≥0∞} (hX : AEMeasurable X P) {q : ℝ} (hq : 0 < q)
     (h : (∫⁻ ω, X ω ^ q ∂P) < ⊤) : ∀ᵐ ω ∂P, X ω < ⊤ := by
   filter_upwards [ae_lt_top' (hX.pow_const _) h.ne] with ω hω
-  exact lt_top_iff_ne_top.mpr fun htop => by
-    rw [htop, ENNReal.top_rpow_of_pos hq] at hω
-    exact lt_irrefl _ hω
+  exact (ENNReal.rpow_lt_top_iff_of_pos hq).mp hω
 
 /-- The last-cut bound `DOZZ.reflectionMass_lastCut_bound`, from the lateral inverse unit
 moments. -/
@@ -440,42 +417,29 @@ theorem reflectionMass_lastCut_bound_of_inverse
   · exact ⟨0, le_rfl, fun ν hν => by simp [hKν0] at hν⟩
   rcases Kp.eq_empty_or_nonempty with hKp0 | hKp0
   · exact ⟨0, le_rfl, fun _ _ p hpK => by simp [hKp0] at hpK⟩
-  have hP : IsProbabilityMeasure P := hZ.2.2.1
+  have hP  := hZ.2.2.1
   -- the compact parameter ranges
   set ν₁ := sInf Kν with hν₁def
   set ν₂ := sSup Kν with hν₂def
   set p₁ := sInf Kp with hp₁def
   set p₂ := sSup Kp with hp₂def
-  have hν₁ : 0 < ν₁ := (hB ν₁ (hKν.sInf_mem hKν0)).1
+  have hν₁  := (hB ν₁ (hKν.sInf_mem hKν0)).1
   have hνb : ∀ ν ∈ Kν, ν₁ ≤ ν ∧ ν ≤ ν₂ := fun ν hν =>
     ⟨csInf_le hKν.bddBelow hν, le_csSup hKν.bddAbove hν⟩
   have hpb : ∀ p ∈ Kp, p₁ ≤ p ∧ p ≤ p₂ := fun p hpK =>
     ⟨csInf_le hKp.bddBelow hpK, le_csSup hKp.bddAbove hpK⟩
-  have hp₁ : 0 < p₁ := (hp p₁ (hKp.sInf_mem hKp0)).1
+  have hp₁  := (hp p₁ (hKp.sInf_mem hKp0)).1
   set M : ℝ := 4 / γ ^ 2 with hMdef
-  have hp₂M : p₂ < M := (hp p₂ (hKp.sSup_mem hKp0)).2
+  have hp₂M  := (hp p₂ (hKp.sSup_mem hKp0)).2
   have hγsq : γ ^ 2 < 4 := by
-    have := pow_lt_pow_left₀ hγ2 hγ.le two_ne_zero
-    linarith only [this]
+    nlinarith
   have hM1 : 1 < M := by
-    rw [hMdef, lt_div_iff₀ (by positivity)]
-    linarith
-  have hp₁₂ : p₁ ≤ p₂ := (hpb p₁ (hKp.sInf_mem hKp0)).2
+    bound
+  have hp₁₂  := (hpb p₁ (hKp.sInf_mem hKp0)).2
   -- the Hölder exponent and its conjugate
   have hden : 0 < M - p₂ + 1 := by linarith
   have hfrac : M / (M - p₂ + 1) < M := by
-    rcases le_or_gt p₂ 1 with h | h
-    · have : M / (M - p₂ + 1) ≤ M := div_le_self (by linarith) (by linarith)
-      have hlt : M / (M - p₂ + 1) ≤ M / 1 := div_le_div_of_nonneg_left (by linarith) one_pos
-        (by linarith)
-      rcases eq_or_lt_of_le h with h1 | h1
-      · rw [h1] at hden ⊢
-        rw [show M - 1 + 1 = M by ring, div_self (by linarith)]
-        exact hM1
-      · rw [div_lt_iff₀ hden]
-        linarith only [mul_pos (by linarith only [hM1] : (0 : ℝ) < M) (sub_pos.mpr hp₂M)]
-    · rw [div_lt_iff₀ hden]
-      linarith only [mul_pos (by linarith only [hM1] : (0 : ℝ) < M) (sub_pos.mpr hp₂M)]
+    bound
   set r : ℝ := max ((1 + M) / 2) ((M / (M - p₂ + 1) + M) / 2) with hrdef
   have hr1 : 1 < r := lt_of_lt_of_le (by linarith) (le_max_left _ _)
   have hrM : r < M := max_lt (by linarith) (by linarith)
@@ -500,7 +464,7 @@ theorem reflectionMass_lastCut_bound_of_inverse
   have hZfinIoc : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Ioc a b) < ⊤ := by
     filter_upwards [hZ.2.2.2.2.1] with ω hω a b
     exact lt_of_le_of_lt (measure_mono Ioc_subset_Icc_self) (hω a b)
-  have hLr : (∫⁻ ω, (Z ω (Ioc 0 1)) ^ r ∂P) < ⊤ :=
+  have hLr  :=
     lateralGMC_interval_nonnegative_moment_finite P γ Z hZ 0 1 r (by linarith) hrM
   have hLrb : ∀ n : ℕ, (∫⁻ ω, (Z ω (Ioc (n : ℝ) ((n : ℝ) + 1))) ^ r ∂P) ≤
       ∫⁻ ω, (Z ω (Ioc 0 1)) ^ r ∂P := by
@@ -514,7 +478,7 @@ theorem reflectionMass_lastCut_bound_of_inverse
   obtain ⟨C0, hC0, hC0b⟩ := initialUnitBlockMass_inverse_moment_le P γ ν₂ wTop hγ hwTop0 Z
     hZ.2.2.2.1 hZ.2.2.2.2.1
   set CI : ℝ≥0∞ := 1 + C0 * ∫⁻ ω, (Z ω (Icc 0 1)) ^ (-wTop) ∂P with hCIdef
-  have hCI : CI < ⊤ := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top,
+  have hCI  := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top,
     ENNReal.mul_lt_top hC0 (hinv wTop hwTop0)⟩
   set A : ℝ≥0∞ := ENNReal.ofReal p₂ * (CD ^ (1 / r) * (max CI CJ) ^ (1 / r')) with hAdef
   have hA : A < ⊤ := ENNReal.mul_lt_top ENNReal.ofReal_lt_top (ENNReal.mul_lt_top
@@ -525,20 +489,20 @@ theorem reflectionMass_lastCut_bound_of_inverse
   obtain ⟨hν0, hBν⟩ := hB ν hν
   have hνr := hνb ν hν
   have hpr := hpb p hpK
-  have hp0 : 0 < p := (hp p hpK).1
+  have hp0  := (hp p hpK).1
   set J : Ω → ℝ≥0∞ := fun ω => twoSidedReflectionMass γ (B ν) Z ω with hJdef
   set Jc : Ω → ℝ≥0∞ := fun ω => twoSidedReflectionCutMass γ c (B ν) Z ω with hJcdef
-  have hJm : AEMeasurable J P := twoSidedReflectionMass_aemeasurable_of_lateral P γ (B ν) Z
+  have hJm  := twoSidedReflectionMass_aemeasurable_of_lateral P γ (B ν) Z
     (aemeasurable_of_twoSidedConditioned hBν) hZ
-  have hJcm : AEMeasurable Jc P := twoSidedReflectionCutMass_aemeasurable P γ c (B ν) Z
+  have hJcm  := twoSidedReflectionCutMass_aemeasurable P γ c (B ν) Z
     (aemeasurable_of_twoSidedConditioned hBν) hZ.2.2.2.1 hZ.2.2.2.2.1
-  have hJpCJ : (∫⁻ ω, J ω ^ p ∂P) ≤ CJ :=
+  have hJpCJ  :=
     hCJb ν hνr.1 hνr.2 p hp0.le (hpr.2.trans (le_max_left _ _)) (B ν) hBν (hInd ν hν)
-  have hJp : (∫⁻ ω, J ω ^ p ∂P) < ⊤ := lt_of_le_of_lt hJpCJ hCJ
+  have hJp  := lt_of_le_of_lt hJpCJ hCJ
   have hJcle : (∫⁻ ω, Jc ω ^ p ∂P) ≤ ∫⁻ ω, J ω ^ p ∂P :=
     lintegral_mono fun ω => ENNReal.rpow_le_rpow
       (twoSidedReflectionCutMass_le_mass γ c (B ν) Z ω) hp0.le
-  have hJcp : (∫⁻ ω, Jc ω ^ p ∂P) < ⊤ := lt_of_le_of_lt hJcle hJp
+  have hJcp  := lt_of_le_of_lt hJcle hJp
   refine ⟨sub_nonneg.mpr (ENNReal.toReal_mono hJp.ne hJcle), ?_⟩
   rcases eq_or_lt_of_le hc with hc0 | hcpos
   · -- no cut: the difference is at most the full moment
@@ -551,8 +515,8 @@ theorem reflectionMass_lastCut_bound_of_inverse
   · -- a genuine cut
     set k : ℝ≥0∞ := ENNReal.ofReal (Real.exp (-γ * c)) with hkdef
     set D : Ω → ℝ≥0∞ := fun ω => lastCutDiscardMass γ c (B ν) Z ω with hDdef
-    have hIndDZ : IndepFun (fun ω => (B ν ω).2) Z P := (hInd ν hν).comp measurable_snd measurable_id
-    have hDm : AEMeasurable D P :=
+    have hIndDZ  := (hInd ν hν).comp measurable_snd measurable_id
+    have hDm  :=
       lastCutDiscardMass_aemeasurable P γ c (B ν) Z hBν.2.1.1 hZ hIndDZ
     have hDr : (∫⁻ ω, D ω ^ r ∂P) ≤ CD := by
       have he := postLastExit_entranceMass_rpow_lintegral_eq P ν γ c r (B ν) Z hBν.2.1 hν0
@@ -564,9 +528,9 @@ theorem reflectionMass_lastCut_bound_of_inverse
     -- inverse moments of the retained mass through the initial block
     have hblock := hC0b ν hνr.2 (fun ω => (B ν ω).1) hBν.1
       ((hInd ν hν).comp measurable_fst measurable_id)
-    have hblockm : AEMeasurable (fun ω => initialUnitBlockMass γ (B ν ω).1 (Z ω)) P :=
+    have hblockm  :=
       initialUnitBlockMass_aemeasurable P γ _ Z hBν.1.1 hZ.2.2.2.1 hZ.2.2.2.2.1
-    have hblockfin : (∫⁻ ω, (initialUnitBlockMass γ (B ν ω).1 (Z ω)) ^ (-wTop) ∂P) < ⊤ :=
+    have hblockfin  :=
       lt_of_le_of_lt hblock (ENNReal.mul_lt_top hC0 (hinv wTop hwTop0))
     have hJcpos : ∀ᵐ ω ∂P, 0 < Jc ω := by
       filter_upwards [ae_pos_of_lintegral_rpow_neg_lt_top hblockm hwTop0 hblockfin] with ω hω
@@ -580,8 +544,7 @@ theorem reflectionMass_lastCut_bound_of_inverse
         _ ≤ ∫⁻ ω, 1 + (initialUnitBlockMass γ (B ν ω).1 (Z ω)) ^ (-wTop) ∂P :=
             lintegral_mono fun ω => ennreal_rpow_neg_le_one_add _ hw hwle
         _ = 1 + ∫⁻ ω, (initialUnitBlockMass γ (B ν ω).1 (Z ω)) ^ (-wTop) ∂P := by
-            rw [lintegral_add_left measurable_const]
-            simp
+            norm_num
         _ ≤ CI := add_le_add le_rfl hblock
     have hsplit : ∀ᵐ ω ∂P, J ω = Jc ω + k * D ω := ae_of_all _ fun ω =>
       twoSidedReflectionMass_eq_cut_add_discard γ c (B ν) Z ω
@@ -610,7 +573,7 @@ theorem reflectionMass_lastCut_bound_of_inverse
       refine mul_le_mul_right ?_ k
       refine mul_le_mul' (ENNReal.ofReal_le_ofReal hpr.2) (mul_le_mul'
         (ENNReal.rpow_le_rpow hDr (by positivity)) (ENNReal.rpow_le_rpow hG (by positivity)))
-    have hfinal : (∫⁻ ω, J ω ^ p ∂P) ≤ (∫⁻ ω, Jc ω ^ p ∂P) + k * A :=
+    have hfinal  :=
       hstep.trans (add_le_add le_rfl hbracket)
     have hkA : k * A < ⊤ := ENNReal.mul_lt_top ENNReal.ofReal_lt_top hA
     have hreal := ENNReal.toReal_mono (ENNReal.add_lt_top.mpr ⟨hJcp, hkA⟩).ne hfinal
@@ -620,7 +583,7 @@ theorem reflectionMass_lastCut_bound_of_inverse
         ≤ Real.exp (-γ * c) * A.toReal := by linarith
       _ ≤ max CJ.toReal A.toReal * Real.exp (-γ * c) := by
           rw [mul_comm]
-          exact mul_le_mul_of_nonneg_right (le_max_right _ _) (Real.exp_pos _).le
+          bound
 
 end DOZZ.Proofs
 

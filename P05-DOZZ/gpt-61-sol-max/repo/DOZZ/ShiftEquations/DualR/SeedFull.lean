@@ -15,6 +15,7 @@ import DOZZ.Brownian.Reflection.WitnessIndependence
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
 import DOZZ.ShiftEquations.Rbar.Continuation
+public import DOZZ.ShiftEquations.Contracts
 
 /-!
 # The second dual crossing seed on its whole two-triple extended domain
@@ -30,7 +31,7 @@ all factors are analytic: the source's first continuation step in the proof of t
 equation ([KRV, §10.5]).
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -42,13 +43,7 @@ strip-meromorphic function with the physical reflection values. -/
 theorem seed_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hSeed : ∀ α ε α' : ℝ, α < Q γ → ε < Q γ → α' < Q γ → 2 * Q γ + 2 / γ < α + ε + α' →
-      ∃ Bε Bα : Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧ IsReflectionData P γ ε Bε Z ∧
-          IsReflectionData P γ α Bα Z ∧
-          reflectionR P γ μ ε Bε Z * structureConstant P M γ μ (2 * Q γ - ε - 2 / γ) α α' =
-            dualCrossingL γ ε α α' * reflectionR P γ μ α Bα Z *
-              structureConstant P M γ μ ε (2 * Q γ - α - 2 / γ) α')
+    (hSeed : Contract.dualSecondSeed P X M γ μ)
     {hR : ℝ} (hhR : 0 < hR) {R : ℂ → ℂ} (hRm : MeromorphicOn R (horizontalStrip hR))
     {BR : ℝ → Ω → BrownianPath × BrownianPath} {ZR : Ω → Measure ℝ}
     (hBR : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (BR α) ZR)
@@ -68,8 +63,7 @@ theorem seed_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω →
     unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
+    gcongr
   have h2γ : 0 < 2 / γ := by positivity
   have h42 : 4 / γ = 2 * (2 / γ) := by ring
   -- the seed point
@@ -113,10 +107,7 @@ theorem seed_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω →
     set αt : ℝ := e₀ + t * (α - e₀) with hαt'
     set α't : ℝ := e₀ + t * (α' - e₀) with hα't'
     have hsum' : 2 * Q γ + 2 / γ < αt + εt + α't := by
-      have e : e₀ + e₀ + e₀ + t * (ε + α + α' - (e₀ + e₀ + e₀)) = αt + εt + α't := by
-        rw [hεt', hαt', hα't']
-        ring
-      linarith
+      bound
     have hE₁ := extendedSeiberg3_segment hγ hq₀₁ h₁ ht.1.le ht.2.le
     have hE₂ := extendedSeiberg3_segment hγ hq₀₂ h₂ ht.1.le ht.2.le
     obtain ⟨Bε, Bα, Z, -, hBε, hBα, hseed⟩ := hSeed αt εt α't hαt hεt hα't hsum'

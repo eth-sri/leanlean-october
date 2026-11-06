@@ -48,9 +48,7 @@ theorem tsum_couplingCompactBudget (ε : ℝ≥0∞) :
 /-- Failure to lie in the product compact set is a union of coordinate failures. -/
 theorem countable_compact_product_compl {E : ℕ → Type*} (K : ∀ j, Set (E j)) :
     (Set.pi univ K)ᶜ = ⋃ j, (fun x : ∀ j, E j => x j) ⁻¹' (K j)ᶜ := by
-  ext x
-  simp only [mem_compl_iff, Set.mem_pi, mem_univ, forall_const, mem_iUnion, mem_preimage]
-  exact not_forall
+  continuity
 
 /-- The countable union bound in the product carrier, requiring no independence. -/
 theorem measure_countable_compact_product_compl_le
@@ -95,7 +93,7 @@ theorem isTightMeasureSet_countable_product_of_marginals
     obtain ⟨K, hK, htail⟩ :=
       isTightMeasureSet_iff_exists_isCompact_measure_compl_le.mp (hmarginal j)
         (couplingCompactBudget ε j) (couplingCompactBudget_pos hε j)
-    exact ⟨K, hK, fun μ hμ => htail _ ⟨μ, hμ, rfl⟩⟩
+    grind
   choose K hK htail using hchoice
   refine ⟨Set.pi univ K, ?_, ?_⟩
   · have heq : Set.pi univ K = {x | ∀ j, x j ∈ K j} := by
@@ -117,14 +115,7 @@ theorem coupling_subsequence_of_tight
   let _ := upgradeIsCompletelyMetrizable E
   have hcompact : IsCompact (closure (range μ)) := by
     apply isCompact_closure_of_isTightMeasureSet
-    convert htight using 1
-    ext Q
-    simp only [mem_ofPred_eq, mem_range]
-    constructor
-    · rintro ⟨R, ⟨n, rfl⟩, rfl⟩
-      exact ⟨n, rfl⟩
-    · rintro ⟨n, rfl⟩
-      exact ⟨μ n, ⟨n, rfl⟩, rfl⟩
+    grind
   obtain ⟨Q, _, φ, hφ, hQ⟩ := hcompact.tendsto_subseq
     (fun n => subset_closure (mem_range_self n))
   exact ⟨Q, φ, hφ, hQ⟩
@@ -143,9 +134,9 @@ theorem coupling_ae_closed_of_tendsto
     simpa using this
   have hlimsup := ProbabilityMeasure.limsup_measure_closed_le_of_tendsto hμQ hS
   have hone : (1 : ℝ≥0∞) ≤ (Q : Measure E) S := by
-    simpa only [hmass, limsup_const] using hlimsup
+    simp_all
   apply (ae_mem_iff_measure_eq hS.measurableSet.nullMeasurableSet).mpr
-  exact le_antisymm (measure_mono (subset_univ S)) (by simpa using hone)
+  simp_all
 
 /-- Continuous coordinate evaluation transports weak convergence of the joint path law. -/
 theorem coupling_coordinate_tendsto
@@ -165,7 +156,6 @@ theorem coupling_coordinate_eq_of_tendsto
     (hμQ : Tendsto μ atTop (𝓝 Q)) (j : J) (R : ProbabilityMeasure E)
     (hmarginal : Tendsto (fun n => (μ n).map (fun x => x j)) atTop (𝓝 R)) :
     Q.map (fun x => x j) = R := by
-  let _ := upgradeIsCompletelyMetrizable E
   exact tendsto_nhds_unique (coupling_coordinate_tendsto hμQ j) hmarginal
 
 /-- A weakly convergent sequence of probabilities has a tight range. This gives marginal
@@ -176,25 +166,19 @@ theorem coupling_isTightMeasureSet_of_tendsto
     (hμQ : Tendsto μ atTop (𝓝 Q)) :
     IsTightMeasureSet {R : Measure E | ∃ n, R = (μ n : Measure E)} := by
   let _ := upgradeIsCompletelyMetrizable E
-  have hcompact : IsCompact (closure (range μ)) :=
+  have hcompact  :=
     hμQ.isCompact_insert_range.of_isClosed_subset isClosed_closure
       (hμQ.isCompact_insert_range.isClosed.closure_subset_iff.mpr (subset_insert Q (range μ)))
   have htight := isTightMeasureSet_of_isCompact_closure hcompact
-  convert htight using 1
-  ext R
-  simp only [mem_ofPred_eq, mem_range]
-  constructor
-  · rintro ⟨n, rfl⟩
-    exact ⟨μ n, ⟨n, rfl⟩, rfl⟩
-  · rintro ⟨R, ⟨n, rfl⟩, rfl⟩
-    exact ⟨n, rfl⟩
+  grind
 
+variable {E : Type*} [_inst1 : TopologicalSpace E] [_inst2 : PolishSpace E] [_inst3 : MeasurableSpace E] [_inst4 : BorelSpace E] (μ : ℕ → ProbabilityMeasure (ℕ → E)) (R : ℕ → ProbabilityMeasure E) (hmarginal : ∀ j, Tendsto (fun n => (μ n).map (fun x => x j)) atTop (𝓝 (R j)))
+
+include E _inst1 _inst2 _inst3 _inst4 μ R hmarginal in
 /-- Coordinate weak convergence yields a single joint convergent subsequence for countably many
 coordinates. There is no consistency requirement between successive grid couplings. -/
 theorem coupling_joint_subsequence_of_coordinate_tendsto
-    {E : Type*} [TopologicalSpace E] [PolishSpace E] [MeasurableSpace E] [BorelSpace E]
-    (μ : ℕ → ProbabilityMeasure (ℕ → E)) (R : ℕ → ProbabilityMeasure E)
-    (hmarginal : ∀ j, Tendsto (fun n => (μ n).map (fun x => x j)) atTop (𝓝 (R j))) :
+     :
     ∃ Q : ProbabilityMeasure (ℕ → E), ∃ φ : ℕ → ℕ,
       StrictMono φ ∧ Tendsto (μ ∘ φ) atTop (𝓝 Q) ∧
         ∀ j, Q.map (fun x => x j) = R j := by
@@ -208,21 +192,18 @@ theorem coupling_joint_subsequence_of_coordinate_tendsto
     ext Q
     simp only [mem_image, mem_ofPred_eq]
     constructor
-    · rintro ⟨Q, ⟨n, rfl⟩, rfl⟩
-      exact ⟨n, rfl⟩
-    · rintro ⟨n, rfl⟩
-      exact ⟨(μ n : Measure (ℕ → E)), ⟨n, rfl⟩, rfl⟩
+    · continuity
+    simp_all
   obtain ⟨Q, φ, hφ, hQ⟩ := coupling_subsequence_of_tight μ htight
   refine ⟨Q, φ, hφ, hQ, ?_⟩
   intro j
   exact coupling_coordinate_eq_of_tendsto hQ j (R j)
     ((hmarginal j).comp hφ.tendsto_atTop)
 
+include E _inst1 _inst2 _inst3 _inst4 μ R hmarginal in
 /-- The same extraction retains support in any closed subset of the product path carrier. -/
 theorem coupling_joint_limit_with_closed_support
-    {E : Type*} [TopologicalSpace E] [PolishSpace E] [MeasurableSpace E] [BorelSpace E]
-    (μ : ℕ → ProbabilityMeasure (ℕ → E)) (R : ℕ → ProbabilityMeasure E)
-    (hmarginal : ∀ j, Tendsto (fun n => (μ n).map (fun x => x j)) atTop (𝓝 (R j)))
+    
     (S : Set (ℕ → E)) (hS : IsClosed S)
     (hμS : ∀ n, ∀ᵐ x ∂(μ n : Measure (ℕ → E)), x ∈ S) :
     ∃ Q : ProbabilityMeasure (ℕ → E), ∃ φ : ℕ → ℕ,

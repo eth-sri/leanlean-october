@@ -6,11 +6,12 @@ module
 
 public import DOZZ.GFFStructure.HarmonicMoments
 public import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
+import Mathlib.Tactic
 
 /-! Measurability of the compact harmonic envelope of the separated joint-tail estimate and its
 correlated product bound. -/
 
-@[expose] public section
+public section
 open MeasureTheory Metric Set Filter
 open scoped ENNReal
 
@@ -27,19 +28,15 @@ theorem separatedTail_harmonic_envelope_aemeasurable
   classical
   obtain ⟨N, hNsub, hNm, hN0⟩ := exists_measurable_superset_of_null (mem_ae_iff.mp hcont)
   let S := Nᶜ
-  have hSm : MeasurableSet S := hNm.compl
+  have hSm  := hNm.compl
   have hS : ∀ᵐ ω ∂P, ω ∈ S := compl_mem_ae_iff.mpr hN0
   have hgood : ∀ ω ∈ S, ContinuousOn (H ω) (closedBall c 1) := by
-    intro ω hω
-    by_contra hbad
-    exact hω (hNsub hbad)
+    grind
   let f : closedBall c 1 → Ω → ℝ≥0∞ := fun z ω =>
     if ω ∈ S then ENNReal.ofReal (Real.exp (l*|H ω z|)) else 0
   have hf (z : closedBall c 1) : Measurable (f z) := by
     apply Measurable.ite hSm
-    · exact measurable_ofReal_exp_mul_abs (fun ω => H ω z)
-        (hH.comp (measurable_id.prodMk measurable_const)) l
-    · exact measurable_const
+    all_goals fun_prop (disch := positivity)
   have hc (ω : Ω) : Continuous (fun z : closedBall c 1 => f z ω) := by
     by_cases hω : ω ∈ S
     · have ht : Continuous (fun z : closedBall c 1 => H ω z) :=

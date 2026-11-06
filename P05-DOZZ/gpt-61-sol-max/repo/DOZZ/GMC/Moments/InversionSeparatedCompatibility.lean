@@ -8,7 +8,7 @@ public import DOZZ.GMC.Moments.InversionAnnularKernelBounds
 
 /-! Separated mixed and ordinary kernel comparisons for inversion compatibility. -/
 
-@[expose] public section
+public section
 
 open Set Metric Real
 open DOZZ.Proofs.CirclePotential
@@ -33,16 +33,7 @@ theorem inversion_mixed_kernel_difference_le
   have hsrc := abs_circleKernel_sub_gffKernel_le x⁻¹ y⁻¹ r s hsource
   rw [gffKernel_inv hx hy hxy] at hsrc
   have htgt := abs_circleKernel_sub_gffKernel_le x y r s htarget
-  constructor
-  · have htri := abs_sub_le
-      (circleAverage (fun u => innerPot y⁻¹ s u⁻¹) x (Real.exp (-r)))
-      (gffKernel x y) (circleKernel x⁻¹ r y⁻¹ s)
-    rw [abs_sub_comm (gffKernel x y)] at htri
-    linarith only [htri, hmix, hsrc]
-  · have htri := abs_sub_le (circleKernel x r y s) (gffKernel x y)
-      (circleKernel x⁻¹ r y⁻¹ s)
-    rw [abs_sub_comm (gffKernel x y)] at htri
-    linarith only [htri, htgt, hsrc]
+  grind
 
 /-- Both separated kernel differences converge uniformly on every bounded annulus. -/
 theorem inversion_separated_kernel_uniform {m R d η : ℝ}
@@ -54,7 +45,7 @@ theorem inversion_separated_kernel_uniform {m R d η : ℝ}
         circleKernel x⁻¹ r y⁻¹ s| < η ∧
       |circleKernel x r y s - circleKernel x⁻¹ r y⁻¹ s| < η := by
   let A := (R + 1) ^ 2 + 1
-  have hA : 0 < A := by dsimp [A]; positivity
+  
   have hA1 : 1 ≤ A := by dsimp [A]; linarith only [sq_nonneg (R + 1)]
   let δ := min (m / 2) (min 1 (min (d / (2 * A)) (η / 8)))
   have hδ : 0 < δ := by dsimp [δ]; positivity
@@ -66,8 +57,8 @@ theorem inversion_separated_kernel_uniform {m R d η : ℝ}
     (min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _))
   have hδη : δ ≤ η / 8 :=
     (min_le_right _ _).trans ((min_le_right _ _).trans (min_le_right _ _))
-  have hx : x ≠ 0 := norm_pos_iff.mp (by linarith only [hxlo, hm])
-  have hy : y ≠ 0 := norm_pos_iff.mp (by linarith only [hylo, hm])
+  have hx  := norm_pos_iff.mp (by linarith only [hxlo, hm])
+  have hy  := norm_pos_iff.mp (by linarith only [hylo, hm])
   have hxy : x ≠ y := by
     intro h
     have hz : ‖x - y‖ = 0 := by simp only [h, sub_self, norm_zero]
@@ -96,12 +87,9 @@ theorem inversion_separated_kernel_uniform {m R d η : ℝ}
   have hmixed : Real.exp (-s) * ((‖x‖ + Real.exp (-r)) * ‖y‖) ≤
       ‖x - y‖ - Real.exp (-r) := by
     have hp := mul_le_mul hs hproduct (by positivity) hδ.le
-    have hbig : δ * A ≤ d := by nlinarith only [hδA, hA, hδ]
-    nlinarith only [hp, hbig, hr, hdist]
+    grind
   have ht := inversion_mixed_kernel_difference_le hx hy hxy
     (by linarith only [hr, hδm, hxlo, hm]) hmixed htarget hsource
-  have hsum : 2 * (Real.exp (-r) + Real.exp (-s)) < η := by
-    linarith only [hr, hs, hδη, hη]
-  exact ⟨ht.1.trans_lt hsum, ht.2.trans_lt hsum⟩
+  grind
 
 end DOZZ.Proofs

@@ -9,7 +9,7 @@ public import DOZZ.ShiftEquations.Strip.Remainder
 
 /-! Integrating the critical-mass comparison with a subcritical remainder. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

@@ -5,13 +5,13 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.FourPoint.Fusion.RootOnlyPieces
-public import DOZZ.FourPoint.Fusion.ProbabilitySplit
+public import DOZZ.GMC.SharpMoments.CutoffUIConvergenceAux
 public import DOZZ.FourPoint.Fusion.MovingMassPieces
 import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 
 /-! # Convergence in probability of the moving rooted mass -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -26,7 +26,7 @@ theorem fusionRootOnlyMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω
     (y : ℂ) (hy : y ≠ 0) (z : ℕ → ℂ) (hz : Tendsto z atTop (nhds 0)) :
     TendstoInMeasure P (fun n ω => (fusionRootOnlyMass γ α₁ α₂ α₃ y (z n) (M ω)).toReal)
       atTop (fun ω => (fusionRootOnlyMass γ α₁ α₂ α₃ y 0 (M ω)).toReal) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let ξ := γ * (Q γ - (α₁ + γ / 2)) * p - γ ^ 2 * p ^ 2 / 2
   obtain ⟨hξ, Cy, hCy, hmy⟩ := fusion_rootOnlyKernel_smallBall_moment
     P X hX γ hγ hγ2 M hM α₁ α₂ α₃ p hα hp hp1 hpRange y hy
@@ -49,7 +49,7 @@ theorem fusionRootOnlyMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω
     have hr : Tendsto (fun δ : ℝ => δ ^ ξ) (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
       have h : Tendsto (fun δ : ℝ => δ ^ ξ) (nhdsWithin 0 (Set.Ioi 0)) (nhds ((0 : ℝ) ^ ξ)) :=
         (Real.continuousAt_rpow_const 0 ξ (Or.inr hξ.le)).tendsto.mono_left nhdsWithin_le_nhds
-      have hzpow : (0 : ℝ) ^ ξ = 0 := Real.zero_rpow (show ξ ≠ 0 from hξ.ne')
+      have hzpow  := Real.zero_rpow (show ξ ≠ 0 from hξ.ne')
       rw [hzpow] at h
       exact h
     have h := ENNReal.continuous_ofReal.continuousAt.tendsto.comp hr
@@ -110,12 +110,12 @@ theorem fusionRootOnlyMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω
       hynδ.le hyn1.le (M ω)) (ENNReal.mul_lt_top ENNReal.ofReal_lt_top hω.lt_top)).ne
   have hBnm := fusionRootOnlyBadMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y (z n) δ
   have hB0m := fusionRootOnlyBadMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y 0 δ
-  have hsplit := fusion_probability_split_bound P
+  have hsplit := prob_edist_le_of_split_events P
     (fun ω => fusionRootOnlyMass γ α₁ α₂ α₃ y (z n) (M ω))
     (fun ω => fusionRootOnlyMass γ α₁ α₂ α₃ y 0 (M ω)) (B (z n)) (B 0) (G (z n)) (G 0)
     (Eventually.of_forall fun ω => fusionRootOnlyMass_split _ _ _ _ _ _ _ _)
     (Eventually.of_forall fun ω => fusionRootOnlyMass_split _ _ _ _ _ _ _ _)
-    hBnfin hB0fin hGnfin hG0fin he hεe
+    hBnfin hB0fin hGnfin hG0fin hεe
   have hpn := (meas_ge_le_lintegral_rpow_div hBnm ha0 hat hp).trans
     (ENNReal.div_le_div_right hBn _)
   have hp0 := (meas_ge_le_lintegral_rpow_div hB0m ha0 hat hp).trans

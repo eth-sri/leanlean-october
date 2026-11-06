@@ -28,27 +28,27 @@ noncomputable def kahaneSumVectorScore {ι : Type*} [Fintype ι]
     (z : Sum ι ι → ℝ) (i : ι) : ℝ :=
   finiteChaosVectorTestScore a v γ F' (kahaneSumVectorField t z) i
 
+variable {ι : Type*} [_inst1 : Fintype ι] [_inst2 : DecidableEq ι] (a v : ι → ℝ) (γ t : ℝ) (F' F'' : ℝ → ℝ)
+
+include ι _inst1 _inst2 a v γ t F' F'' in
 /-- The field-coordinate derivative of the score in the interpolated vector. -/
-noncomputable def kahaneSumVectorFieldScoreDerivative {ι : Type*}
-    [Fintype ι] [DecidableEq ι]
-    (a v : ι → ℝ) (γ t : ℝ) (F' F'' : ℝ → ℝ)
+noncomputable def kahaneSumVectorFieldScoreDerivative 
     (z : Sum ι ι → ℝ) (i j : ι) : ℝ :=
   finiteChaosVectorTestScoreDerivative a v γ F' F''
     (kahaneSumVectorField t z) i j
 
+include ι _inst1 _inst2 a v γ t F' F'' in
 /-- The score derivative with respect to one coordinate of the concatenated Gaussian vector. -/
-noncomputable def kahaneSumVectorScoreDerivative {ι : Type*}
-    [Fintype ι] [DecidableEq ι]
-    (a v : ι → ℝ) (γ t : ℝ) (F' F'' : ℝ → ℝ)
+noncomputable def kahaneSumVectorScoreDerivative 
     (z : Sum ι ι → ℝ) (i : ι) (k : Sum ι ι) : ℝ :=
   match k with
   | Sum.inl j => Real.sqrt t * kahaneSumVectorFieldScoreDerivative a v γ t F' F'' z i j
   | Sum.inr j => Real.sqrt (1 - t) * kahaneSumVectorFieldScoreDerivative a v γ t F' F'' z i j
 
+include ι _inst1 _inst2 a v γ t F' F'' in
 /-- Directional differentiation of a smooth Wick score along the concatenated Gaussian blocks. -/
 theorem kahaneSumVectorScore_directional_hasDerivAt
-    {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (a v : ι → ℝ) (γ t : ℝ) (F' F'' : ℝ → ℝ)
+    
     (hF' : ∀ x, HasDerivAt F' (F'' x) x)
     (z d : Sum ι ι → ℝ) (i : ι) (s : ℝ) :
     HasDerivAt (fun r => kahaneSumVectorScore a v γ t F'
@@ -65,8 +65,7 @@ theorem kahaneSumVectorScore_directional_hasDerivAt
     simp [x, d', kahaneSumVectorField]
     ring
   have hpath_at (r : ℝ) : kahaneSumVectorField t (fun k => z k + r * d k) =
-      fun j => x j + r * d' j := by
-    exact congrFun hpath r
+      fun j => x j + r * d' j := congrFun hpath r
   have hbase := finiteChaosVectorTestWeight_directional_hasDerivAt
     a v γ F' F'' hF' x d' i s
   have hsum : (∑ k, d k * kahaneSumVectorScoreDerivative a v γ t F' F''
@@ -88,29 +87,20 @@ theorem kahaneSumVectorScore_directional_hasDerivAt
             finiteChaosVectorTestScoreDerivative a v γ F' F''
               (kahaneSumVectorField t (fun k => z k + s * d k)) i j := by
         rw [← Finset.sum_add_distrib]
-        apply Finset.sum_congr rfl
-        intro j hj
-        ring
+        grind
       _ = _ := rfl
   have hbase' : HasDerivAt
       (fun r => finiteChaosVectorTestScore a v γ F'
         (fun j => x j + r * d' j) i)
       (∑ j, d' j * finiteChaosVectorTestScoreDerivative a v γ F' F''
         (fun j => x j + s * d' j) i j) s := by
-    simpa [finiteChaosVectorTestScore, finiteChaosVectorTestScoreDerivative] using hbase
+    assumption_mod_cast
   convert hbase' using 1
   · funext r
     change finiteChaosVectorTestScore a v γ F'
       (kahaneSumVectorField t (fun k => z k + r * d k)) i =
       finiteChaosVectorTestScore a v γ F' (fun j => x j + r * d' j) i
-    exact congrArg (fun y => finiteChaosVectorTestScore a v γ F' y i) (hpath_at r)
-  · calc
-      _ = ∑ j, d' j * finiteChaosVectorTestScoreDerivative a v γ F' F''
-          (kahaneSumVectorField t (fun k => z k + s * d k)) i j := hsum
-      _ = _ := by
-          apply Finset.sum_congr rfl
-          intro j hj
-          congr 2
-          exact hpath_at s
+    simp_all
+  simp_all
 
 end DOZZ.Proofs

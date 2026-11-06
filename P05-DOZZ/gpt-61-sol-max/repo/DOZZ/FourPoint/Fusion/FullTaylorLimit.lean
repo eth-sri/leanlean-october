@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Fusion.FullTimeSplit
 public import DOZZ.FourPoint.Fusion.ExteriorTimeError
 public import DOZZ.FourPoint.Fusion.LocalTaylorSum
 /-! # The full signed one-rooted Taylor limit -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- Adding the quadratic exterior errors preserves the exact local coefficient. -/
@@ -26,7 +26,7 @@ theorem fusionFullOneRooted_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
     (∫ t in Icc (0 : ℝ) 1, (1 - t : ℝ) * E1 ((t : ℂ) * z))
   let R2 := fun z : ℂ => ((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) * z * star z *
     (∫ t in Icc (0 : ℝ) 1, (1 - t : ℝ) * E2 ((t : ℂ) * z))
-  have hκ : κ < 2 := (fusion_taylor_parameters γ α₁ hγ hlo hsq hα₁).2.2.2.2.2
+  have hκ  := (fusion_taylor_parameters γ α₁ hγ hlo hsq hα₁).2.2.2.2.2
   obtain ⟨C1, hC1, hb1⟩ := fusion_exteriorR1_expectation_bound P X hX γ hγ hγ2 M hM
     α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp
   obtain ⟨C2, hC2, hb2⟩ := fusion_exteriorR2_expectation_bound P X hX γ hγ hγ2 M hM
@@ -47,7 +47,7 @@ theorem fusionFullOneRooted_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
       (continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)
     exact (h.filter_mono nhdsWithin_le_nhds).mono fun _ h => h.le
   filter_upwards [hz4, self_mem_nhdsWithin] with z hz4 hz
-  have hz0 : z ≠ 0 := by simpa only [mem_compl_iff, mem_singleton_iff] using hz
+  have hz0 : z ≠ 0 := by bound
   have hs1 := fusionRootedR1_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp z hz0 hz4
   have hs2 := fusionRootedR2_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp z hz0 hz4
   change gammaHalfRootedR1 P M γ α₁ α₂ α₃ p z = fusionLocalR1 P M γ α₁ α₂ α₃ p z + R1 z at hs1

@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.Fusion.LocalSecondKernel
 
 /-! # The exterior second derivative kernel has a bounded denominator -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -34,6 +34,27 @@ theorem fusion_exteriorSecondKernel_bound (γ α₁ α₂ α₃ : ℝ) (z x : �
       le_mul_of_one_le_right hk hs
     _ = _ := by ring
 
+/-- The exterior absolute integral is bounded by sixteen times the full kernel mass. -/
+theorem fusion_exteriorSecondKernel_lintegral_le (γ α₁ α₂ α₃ : ℝ) (z : ℂ)
+    (hz : ‖z‖ ≤ 1 / 4) (μ : Measure ℂ) :
+    (∫⁻ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ,
+      ENNReal.ofReal ‖(gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (x - z) ^ 2‖ ∂μ) ≤
+      ENNReal.ofReal 16 * ∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
+  calc
+    _ ≤ ∫⁻ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ,
+        ENNReal.ofReal (16 * gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
+      apply lintegral_mono_ae
+      filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet.compl] with x hx
+      have hx' : 1 / 2 ≤ ‖x‖ := by
+        simp_all
+      exact ENNReal.ofReal_le_ofReal (fusion_exteriorSecondKernel_bound γ α₁ α₂ α₃ z x hz hx')
+    _ = ENNReal.ofReal 16 * ∫⁻ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ,
+        ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
+      simp only [ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 16)]
+      exact lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
+    _ ≤ ENNReal.ofReal 16 * ∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ :=
+      mul_le_mul' le_rfl (setLIntegral_le_lintegral _ _)
+
 /-- Finiteness of the mass makes the exterior absolute integral finite, sample by sample. -/
 theorem fusion_exteriorSecondKernel_integrable (γ α₁ α₂ α₃ : ℝ) (z : ℂ)
     (hz : ‖z‖ ≤ 1 / 4) (μ : Measure ℂ)
@@ -45,20 +66,7 @@ theorem fusion_exteriorSecondKernel_integrable (γ α₁ α₂ α₃ : ℝ) (z :
       (measurable_const.prodMk measurable_id))).div ((measurable_id.sub_const z).pow_const 2)
   refine ⟨hf.aestronglyMeasurable, ?_⟩
   rw [hasFiniteIntegral_iff_norm]
-  calc
-    _ ≤ ∫⁻ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ,
-        ENNReal.ofReal (16 * gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
-      apply lintegral_mono_ae
-      filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet.compl] with x hx
-      have hx' : 1 / 2 ≤ ‖x‖ := by
-        simpa only [Set.mem_compl_iff, Metric.mem_ball, dist_zero_right, not_lt] using hx
-      exact ENNReal.ofReal_le_ofReal (fusion_exteriorSecondKernel_bound γ α₁ α₂ α₃ z x hz hx')
-    _ = ENNReal.ofReal 16 * ∫⁻ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ,
-        ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
-      simp only [ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 16)]
-      exact lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
-    _ ≤ ENNReal.ofReal 16 * ∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ :=
-      mul_le_mul' le_rfl (setLIntegral_le_lintegral _ _)
-    _ < ⊤ := ENNReal.mul_lt_top ENNReal.ofReal_lt_top hkernel
+  exact lt_of_le_of_lt (fusion_exteriorSecondKernel_lintegral_le γ α₁ α₂ α₃ z hz μ)
+    (ENNReal.mul_lt_top ENNReal.ofReal_lt_top hkernel)
 
 end DOZZ.Proofs

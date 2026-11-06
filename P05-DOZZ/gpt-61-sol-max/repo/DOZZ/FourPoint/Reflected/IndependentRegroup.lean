@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import Mathlib.Probability.Independence.Basic
 /-! Regrouping the independent past and lateral inputs in the reflected comparison. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 
@@ -19,7 +19,7 @@ theorem reflected_independence_regroup
     (hF : AEMeasurable F P) (hH : AEMeasurable H P) (hN : AEMeasurable N P)
     (hFH : IndepFun F H P) (hpair : IndepFun (fun ω => (F ω, H ω)) N P) :
     IndepFun F (fun ω => (H ω, N ω)) P := by
-  have hHN : IndepFun H N P := hpair.comp measurable_snd measurable_id
+  have hHN  := hpair.comp measurable_snd measurable_id
   have hFHlaw := (indepFun_iff_map_prod_eq_prod_map_map hF hH).mp hFH
   have hHNlaw := (indepFun_iff_map_prod_eq_prod_map_map hH hN).mp hHN
   have hpairlaw := (indepFun_iff_map_prod_eq_prod_map_map (hF.prodMk hH) hN).mp hpair

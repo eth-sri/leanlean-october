@@ -11,7 +11,7 @@ public import DOZZ.GMC.AdmissibleGMCRestriction
 /-! Regularization uniqueness (`DOZZ.admissibleLogRegularization_GMC_unique_ae`) identifies the
 inverted chaos on annular charts. -/
 
-@[expose] public section
+public section
 
 open Filter MeasureTheory Set
 open scoped Topology Distributions ENNReal
@@ -46,7 +46,6 @@ theorem isGMCOf_inversion_annular_version
   obtain ⟨A, hA, hAeq⟩ := isGMCOf_inversion_chart_transport P X hX γ hγ hγ2 M hM Xc hXc
   have hUsub : U ⊆ inversionChart := by
     intro x hx
-    change x ≠ 0
     exact norm_pos_iff.mp (by linarith only [hm, (hU x hx).1])
   have hAU := admissibleGMCVersion_restrict_of_subset P inversionChart U
     (fun x => normPlus x ^ (-4 : ℝ))

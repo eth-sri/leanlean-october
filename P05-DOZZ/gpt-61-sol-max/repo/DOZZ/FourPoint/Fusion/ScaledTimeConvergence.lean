@@ -9,7 +9,7 @@ public import DOZZ.FourPoint.TaylorTimeIntegration
 
 /-! # Dominated time integration of the scaled rooted spatial observable -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -24,14 +24,12 @@ theorem fusion_time_weight_integral (e : ℝ) (he : -1 < e) :
       (fun t => (1 - t) * t ^ e) := by
     filter_upwards [ae_restrict_mem measurableSet_Icc,
       ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
-    have htpos : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
+    have htpos  := lt_of_le_of_ne ht.1 (Ne.symm ht0)
     rw [Real.rpow_add htpos, Real.rpow_one]
     ring
   refine ⟨(h1.sub h2).congr heq, ?_⟩
   rw [← integral_congr_ae heq, integral_sub h1 h2, hv1, hv2]
-  field_simp [show e + 1 ≠ 0 by linarith, show e + 1 + 1 ≠ 0 by linarith,
-    show e + 2 ≠ 0 by linarith]
-  ring
+  grind
 
 /-- The spatial domination is uniform in time, leaving the integrable weight `t^e`. -/
 theorem fusionScaledTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
@@ -48,7 +46,7 @@ theorem fusionScaledTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
           ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal : ℂ)))) := by
   obtain ⟨B, hB, hb⟩ := fusionScaledFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s hs.le
   let D := (∫ y : ℂ, ‖K y‖) * B
-  have hD : 0 ≤ D := mul_nonneg (integral_nonneg fun _ => norm_nonneg _) hB
+  
   have hspacebound : ∀ w : ℂ, ‖w‖ ≤ 1 →
       ‖∫ y : ℂ, K y * (fusionScaledFactor P M γ α₁ α₂ α₃ s y w : ℂ)‖ ≤ D := by
     intro w hw
@@ -56,7 +54,7 @@ theorem fusionScaledTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
       _ ≤ ∫ y : ℂ, ‖K y‖ * B := norm_integral_le_of_norm_le (hK.norm.mul_const B)
         (ae_of_all _ fun y => by
           rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-          exact mul_le_mul_of_nonneg_left (hb y w hw) (norm_nonneg _))
+          bound)
       _ = D := integral_mul_const _ _
   have hsm := fusionScaledIntegral_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s K hKm
   have hsl := fusionScaledIntegral_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃
@@ -85,8 +83,7 @@ theorem fusionScaledTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
         _ ≤ 1 := by simpa only [one_mul] using hz
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
       abs_of_nonneg (mul_nonneg (sub_nonneg.mpr ht.2) (Real.rpow_nonneg ht.1 _))]
-    have hweight : (1 - t) * t ^ e ≤ t ^ e := by
-      exact mul_le_of_le_one_left (Real.rpow_nonneg ht.1 _) (by linarith only [ht.1])
+    have hweight : (1 - t) * t ^ e ≤ t ^ e := mul_le_of_le_one_left (Real.rpow_nonneg ht.1 _) (by linarith only [ht.1])
     exact mul_le_mul hweight (hspacebound _ htz) (norm_nonneg _) (Real.rpow_nonneg ht.1 _)
   have hlim : ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1), Tendsto
       (fun z : ℂ => ((1 - t) * t ^ e : ℝ) *

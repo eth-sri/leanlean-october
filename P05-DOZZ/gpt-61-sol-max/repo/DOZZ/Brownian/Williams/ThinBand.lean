@@ -6,6 +6,7 @@ module
 public import DOZZ.Brownian.Williams.MaximumGeometry
 public import DOZZ.Brownian.Barrier.FirstHitDensity
 public import DOZZ.Statements.Brownian.ConditionedH
+import Mathlib.Tactic
 /-!
 # The exact Williams thin-band identity on actual Brownian paths
 
@@ -40,8 +41,7 @@ theorem measurable_stopBrownianPath_stopped (τ : BrownianPath → ℝ≥0)
   have hc (p : BrownianPath) : Continuous (fun t => stopBrownianPath p t) :=
     continuous_stopBrownianPath.comp (continuous_id.prodMk continuous_const)
   have hm := measurable_stoppedValue (ha.isStronglyProgressive_of_continuous hc) hτ
-  change Measurable[hτ.measurableSpace] (fun p => stopBrownianPath p ((τ p : WithTop ℝ≥0).untopA)) at hm
-  simpa only [WithTop.untopA,WithTop.untopD_coe] using hm
+  aesop
 
 /-- A raw stopped lifetime and its entire stopped path are jointly measurable. -/
 theorem measurable_brownianStoppedMark_stopped (τ : BrownianPath → ℝ≥0)
@@ -50,9 +50,11 @@ theorem measurable_brownianStoppedMark_stopped (τ : BrownianPath → ℝ≥0)
     Measurable[hτ.measurableSpace] (fun p => (τ p,stopBrownianPath p (τ p))) :=
   (measurable_finite_stoppingTime_stopped _ τ hτ).prodMk (measurable_stopBrownianPath_stopped τ hτ)
 
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
+
+include P hB in
 /-- The whole lifetime-marked stopped prefix can select the remaining Gaussian likelihood. -/
-theorem brownianPath_bounded_restart_remainingLikelihood_marked (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (τ : BrownianPath → ℝ≥0)
+theorem brownianPath_bounded_restart_remainingLikelihood_marked  (τ : BrownianPath → ℝ≥0)
     (hτ : IsStoppingTime (brownianRawFiltration (fun t (p : BrownianPath) => p t)
       (fun t => ContinuousMap.measurable_eval t)) (fun p => (τ p : WithTop ℝ≥0)))
     (T : ℝ≥0) (hτT : ∀ p, τ p ≤ T) (a : ℝ)
@@ -63,13 +65,13 @@ theorem brownianPath_bounded_restart_remainingLikelihood_marked (P : Measure Bro
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   let X : BrownianPath → StoppedBrownianPath := fun p => (τ p,stopBrownianPath p (τ p))
   have hX := measurable_brownianStoppedMark_stopped τ hτ
-  have hmX : Measurable X := hX.mono hτ.measurableSpace_le le_rfl
+  have hmX  := hX.mono hτ.measurableSpace_le le_rfl
   have hmτ := measurable_finite_brownian_stoppingTime _ τ hτ
-  have hmV : Measurable (fun p => brownianShiftPath (τ p) p) :=
+  have hmV  :=
     continuous_brownianShiftPath.measurable.comp (hmτ.prodMk measurable_id)
   let G : StoppedBrownianPath × BrownianPath → ℝ≥0∞ :=
     fun z => F z.1*brownianGaussianLikelihood a (T-z.1.1) (z.2 (T-z.1.1))
-  have hG : Measurable G :=
+  have hG  :=
     (hF.comp (f := fun z : StoppedBrownianPath × BrownianPath => z.1) measurable_fst).mul
       ((measurable_brownian_remainingLikelihood a T).comp
         (f := fun z : StoppedBrownianPath × BrownianPath => (z.1.1, z.2))
@@ -104,7 +106,7 @@ theorem cappedBrownianFirstPassage_drift_isStoppingTime (a c : ℝ) (T : ℝ≥0
   have hcross : MeasurableSet[brownianRawFiltration (fun t (p : BrownianPath) => p t)
       (fun t => ContinuousMap.measurable_eval t) s]
       {p : BrownianPath | ∃ u ≤ s, c ≤ driftedBrownianPath a p u} := by
-    have hglobal : MeasurableSet {p : BrownianPath | ∃ u ≤ s, c ≤ p u} :=
+    have hglobal  :=
       ((brownianRawFiltration _ _).le s) _ (measurableSet_brownianPath_crossing s c)
     have hh := hglobal.preimage hm
     convert hh using 1
@@ -123,15 +125,8 @@ theorem cappedBrownianFirstPassage_drift_isStoppingTime (a c : ℝ) (T : ℝ≥0
       if T ≤ s then univ else {p | ∃ u ≤ s, c ≤ driftedBrownianPath a p u} := by
     ext p
     simp only [WithTop.coe_le_coe,cappedBrownianFirstPassage_le_iff]
-    by_cases hTs : T ≤ s
-    · simp [hTs]
-    · simp only [hTs,mem_ofPred_eq,false_or]
-      exact ⟨fun ⟨u,hus,_,hcu⟩ => ⟨u,hus,hcu⟩,
-        fun ⟨u,hus,hcu⟩ => ⟨u,hus,hus.trans (lt_of_not_ge hTs).le,hcu⟩⟩
-  rw [he]
-  split_ifs
-  · exact MeasurableSet.univ
-  · exact hcross
+    grind
+  continuity
 
 /-- Adding drift to a stopped mark clips that drift at the literal marked lifetime. -/
 noncomputable def brownianDriftStoppedMark (a : ℝ) (u : StoppedBrownianPath) : StoppedBrownianPath :=
@@ -189,10 +184,7 @@ theorem brownianPath_oppositeDrift_likelihood_factor (ν m : ℝ) (T : ℝ≥0) 
     _ = _ := by
       congr 1
       unfold brownianGaussianLikelihood
-      congr 2
-      calc
-        _ = (-2*ν)*(p τ+ν*(τ : ℝ)) := by ring
-        _ = _ := by rw [hv]
+      grind
 
 /-- Capping the Brownian input at the terminal time preserves drifted capped first passage. -/
 theorem cappedBrownianFirstPassage_drift_stop (a c : ℝ) (T : ℝ≥0) (p : BrownianPath) :
@@ -203,9 +195,7 @@ theorem cappedBrownianFirstPassage_drift_stop (a c : ℝ) (T : ℝ≥0) (p : Bro
   congr 1
   ext u
   change (u ≤ T ∧ c ≤ p (min u T)+a*(u : ℝ)) ↔ (u ≤ T ∧ c ≤ p u+a*(u : ℝ))
-  by_cases hu : u ≤ T
-  · rw [min_eq_left hu]
-  · simp only [hu,false_and]
+  simp_all
 
 /-- Stopping a drifted prefix no later than the cap ignores all later changes to the Brownian input. -/
 theorem stopBrownianPath_drift_stop (a : ℝ) (τ T : ℝ≥0) (p : BrownianPath) (hτ : τ ≤ T) :
@@ -214,7 +204,7 @@ theorem stopBrownianPath_drift_stop (a : ℝ) (τ T : ℝ≥0) (p : BrownianPath
   apply ContinuousMap.ext
   intro t
   change p (min (min t τ) T)+a*((min t τ : ℝ≥0) : ℝ) = p (min t τ)+a*((min t τ : ℝ≥0) : ℝ)
-  rw [min_eq_left ((min_le_right _ _).trans hτ)]
+  simp_all
 
 /-- Successive literal drift translations add their parameters. -/
 theorem driftedBrownianPath_add (a b : ℝ) (p : BrownianPath) :
@@ -224,9 +214,9 @@ theorem driftedBrownianPath_add (a b : ℝ) (p : BrownianPath) :
   change (p t+b*(t : ℝ))+a*(t : ℝ) = p t+(a+b)*(t : ℝ)
   ring
 
+include P hB
 /-- Finite first-hit prefixes change from positive to negative drift by the exact constant likelihood. -/
-theorem brownianPath_oppositeDrift_firstHit_marked_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν m : ℝ) (hm : 0 < m) (T : ℝ≥0)
+theorem brownianPath_oppositeDrift_firstHit_marked_lintegral  (ν m : ℝ) (hm : 0 < m) (T : ℝ≥0)
     (F : StoppedBrownianPath → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p in {p | cappedBrownianFirstPassage m T (driftedBrownianPath (-ν) p) < T},
       F (cappedBrownianFirstPassage m T (driftedBrownianPath (-ν) p),
@@ -238,16 +228,16 @@ theorem brownianPath_oppositeDrift_firstHit_marked_lintegral (P : Measure Browni
             stopBrownianPath (driftedBrownianPath ν p)
               (cappedBrownianFirstPassage m T (driftedBrownianPath ν p))) ∂P := by
   classical
-  let τ : BrownianPath → ℝ≥0 := fun p => cappedBrownianFirstPassage m T (driftedBrownianPath ν p)
+  let τ  := fun p => cappedBrownianFirstPassage m T (driftedBrownianPath ν p)
   have hτ := cappedBrownianFirstPassage_drift_isStoppingTime ν m T
   have hmτ := measurable_finite_brownian_stoppingTime _ τ hτ
-  let H : Set BrownianPath := {p | τ p < T}
+  let H  := {p | τ p < T}
   have hH : MeasurableSet H := measurableSet_lt hmτ measurable_const
   let A : BrownianPath → StoppedBrownianPath :=
     fun p => (τ p,stopBrownianPath (driftedBrownianPath ν p) (τ p))
-  have hmA : Measurable A := (measurable_brownianDriftStoppedMark_stopped ν τ hτ).mono
+  have hmA  := (measurable_brownianDriftStoppedMark_stopped ν τ hτ).mono
     hτ.measurableSpace_le le_rfl
-  let J : BrownianPath → ℝ≥0∞ := H.indicator (fun p => F (A p))
+  let J  := H.indicator (fun p => F (A p))
   have hJ : Measurable J := (hF.comp hmA).indicator hH
   have hJstop (p : BrownianPath) : J (stopBrownianPath p T) = J p := by
     have htime : τ (stopBrownianPath p T) = τ p := cappedBrownianFirstPassage_drift_stop ν m T p
@@ -268,7 +258,7 @@ theorem brownianPath_oppositeDrift_firstHit_marked_lintegral (P : Measure Browni
     funext p
     rw [hJstop]
     simp only [J,H,A,τ,hds,Set.indicator_apply,mem_ofPred_eq]
-  let L : ℝ≥0∞ := ENNReal.ofReal (Real.exp (-2*ν*m))
+  let L  := ENNReal.ofReal (Real.exp (-2*ν*m))
   let F' : StoppedBrownianPath → ℝ≥0∞ :=
     (Prod.fst ⁻¹' Iio T).indicator (fun u => L*F (brownianDriftStoppedMark ν u))
   have hF' : Measurable F' := (measurable_const.mul
@@ -308,9 +298,9 @@ theorem brownianPath_oppositeDrift_firstHit_marked_lintegral (P : Measure Browni
       simp only [J,lintegral_indicator hH]
       rfl
 
+
 /-- Restart factors every marked stopped prefix and every full drifted future test. -/
-theorem brownianPath_bounded_restart_marked_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (τ : BrownianPath → ℝ≥0)
+theorem brownianPath_bounded_restart_marked_lintegral  (τ : BrownianPath → ℝ≥0)
     (hτ : IsStoppingTime (brownianRawFiltration (fun t (p : BrownianPath) => p t)
       (fun t => ContinuousMap.measurable_eval t)) (fun p => (τ p : WithTop ℝ≥0)))
     (T : ℝ≥0) (hτT : ∀ p, τ p ≤ T) (a : ℝ)
@@ -324,26 +314,25 @@ theorem brownianPath_bounded_restart_marked_lintegral (P : Measure BrownianPath)
   let X : BrownianPath → StoppedBrownianPath :=
     fun p => (τ p,stopBrownianPath (driftedBrownianPath a p) (τ p))
   have hX := measurable_brownianDriftStoppedMark_stopped a τ hτ
-  have hmX : Measurable X := hX.mono hτ.measurableSpace_le le_rfl
+  have hmX  := hX.mono hτ.measurableSpace_le le_rfl
   have hmτ := measurable_finite_brownian_stoppingTime _ τ hτ
-  have hmV : Measurable (fun p => brownianShiftPath (τ p) p) :=
+  have hmV  :=
     continuous_brownianShiftPath.measurable.comp (hmτ.prodMk measurable_id)
   have hmD : Measurable (driftedBrownianPath a) :=
     continuous_driftedBrownianPath.measurable.comp (measurable_const.prodMk measurable_id)
   let J : StoppedBrownianPath × BrownianPath → ℝ≥0∞ := fun z => F z.1*G (driftedBrownianPath a z.2)
-  have hJ : Measurable J := (hF.comp measurable_fst).mul (hG.comp (hmD.comp measurable_snd))
+  have hJ  := (hF.comp measurable_fst).mul (hG.comp (hmD.comp measurable_snd))
   calc
     _ = ∫⁻ z, J z ∂P.map (fun p => (X p,brownianShiftPath (τ p) p)) :=
       (lintegral_map hJ (hmX.prodMk hmV)).symm
     _ = ∫⁻ z, J z ∂(P.map X).prod P := by
       rw [brownianPath_bounded_restart_joint_map P hB τ hτ T hτT X hX]
-    _ = (∫⁻ u, F u ∂P.map X)*∫⁻ q, G (driftedBrownianPath a q) ∂P := by
-      exact lintegral_prod_mul (hF.aemeasurable) (hG.comp hmD).aemeasurable
+    _ = (∫⁻ u, F u ∂P.map X)*∫⁻ q, G (driftedBrownianPath a q) ∂P := lintegral_prod_mul (hF.aemeasurable) (hG.comp hmD).aemeasurable
     _ = _ := by rw [lintegral_map hF hmX]
 
+
 /-- Finite first-hit band tests factor at the genuine negative-drift stopping time. -/
-theorem brownianPath_oppositeDrift_firstHit_marked_future_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν m : ℝ) (hm : 0 < m) (T : ℝ≥0)
+theorem brownianPath_oppositeDrift_firstHit_marked_future_lintegral  (ν m : ℝ) (hm : 0 < m) (T : ℝ≥0)
     (F : StoppedBrownianPath → ℝ≥0∞) (hF : Measurable F)
     (G : BrownianPath → ℝ≥0∞) (hG : Measurable G) :
     (∫⁻ p in {p | cappedBrownianFirstPassage m T (driftedBrownianPath (-ν) p) < T},
@@ -359,10 +348,10 @@ theorem brownianPath_oppositeDrift_firstHit_marked_future_lintegral (P : Measure
               (cappedBrownianFirstPassage m T (driftedBrownianPath ν p))) ∂P)*
         ∫⁻ q, G (driftedBrownianPath (-ν) q) ∂P := by
   classical
-  let τ : BrownianPath → ℝ≥0 := fun p => cappedBrownianFirstPassage m T (driftedBrownianPath (-ν) p)
+  let τ  := fun p => cappedBrownianFirstPassage m T (driftedBrownianPath (-ν) p)
   have hτ := cappedBrownianFirstPassage_drift_isStoppingTime (-ν) m T
   have hmτ := measurable_finite_brownian_stoppingTime _ τ hτ
-  let H : Set BrownianPath := {p | τ p < T}
+  let H  := {p | τ p < T}
   have hH : MeasurableSet H := measurableSet_lt hmτ measurable_const
   let F' : StoppedBrownianPath → ℝ≥0∞ := (Prod.fst ⁻¹' Iio T).indicator F
   have hF' : Measurable F' := hF.indicator (measurableSet_Iio.preimage measurable_fst)
@@ -377,10 +366,11 @@ theorem brownianPath_oppositeDrift_firstHit_marked_future_lintegral (P : Measure
     split_ifs <;> simp only [zero_mul]
   have hr : (fun p => F' (τ p,stopBrownianPath (driftedBrownianPath (-ν) p) (τ p))) =
       H.indicator (fun p => F (τ p,stopBrownianPath (driftedBrownianPath (-ν) p) (τ p))) := by
-    funext p
-    simp only [F',H,Set.indicator_apply,mem_ofPred_eq,mem_preimage,mem_Iio]
+    abel
   rw [hl,hr,lintegral_indicator hH,lintegral_indicator hH] at he
   exact he.trans (by rw [brownianPath_oppositeDrift_firstHit_marked_lintegral P hB ν m hm T F hF])
+omit P hB
+
 
 /-- The preterminal capped-hit event excludes the no-hit value zero. -/
 theorem cappedBrownianFirstPassage_lt_iff_hit (p : BrownianPath) (m : ℝ) (T : ℝ≥0) :
@@ -424,13 +414,11 @@ theorem brownianPath_capped_hit_setLIntegral_eq (P : Measure BrownianPath)
   intro p hp
   have hh := firstPassageTime_eq_capped_of_hit (driftedBrownianPath a p) m T
     ⟨_,hp.2.le,firstPassageTime_mem _ m hp.1⟩
-  change F (cappedBrownianFirstPassage m T (driftedBrownianPath a p),p) =
-    F (firstPassageTime (driftedBrownianPath a p) m,p)
-  rw [hh]
+  simp_all
 
+include P hB in
 /-- Infinite-horizon restart and opposite-drift likelihood hold for the entire actual first-hit prefix. -/
-theorem brownianPath_oppositeDrift_firstHit_full_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν m : ℝ) (hν : 0 < ν) (hm : 0 < m)
+theorem brownianPath_oppositeDrift_firstHit_full_lintegral  (ν m : ℝ) (hν : 0 < ν) (hm : 0 < m)
     (F : StoppedBrownianPath → ℝ≥0∞) (hF : Measurable F)
     (G : BrownianPath → ℝ≥0∞) (hG : Measurable G) :
     (∫⁻ p in {p | ∃ u : ℝ≥0, m ≤ driftedBrownianPath (-ν) p u},
@@ -440,7 +428,7 @@ theorem brownianPath_oppositeDrift_firstHit_full_lintegral (P : Measure Brownian
       ENNReal.ofReal (Real.exp (-2*ν*m))*
         (∫⁻ p, F (positiveDriftFirstHitSegment ν m p) ∂P)*
         ∫⁻ q, G (driftedBrownianPath (-ν) q) ∂P := by
-  let E : ℝ → Set BrownianPath := fun a => {p | ∃ u : ℝ≥0, m ≤ driftedBrownianPath a p u}
+  let E  := fun a => {p | ∃ u : ℝ≥0, m ≤ driftedBrownianPath a p u}
   let S : ℝ → ℕ → Set BrownianPath := fun a n =>
     {p | (∃ u : ℝ≥0, m ≤ driftedBrownianPath a p u) ∧
       firstPassageTime (driftedBrownianPath a p) m < (n : ℝ≥0)+1}
@@ -458,11 +446,11 @@ theorem brownianPath_oppositeDrift_firstHit_full_lintegral (P : Measure Brownian
       obtain ⟨n,hn⟩ := exists_nat_gt (firstPassageTime (driftedBrownianPath a p) m : ℝ)
       have hn' : firstPassageTime (driftedBrownianPath a p) m < (n : ℝ≥0) := by exact_mod_cast hn
       exact ⟨n,hh,hn'.trans (lt_add_one _)⟩
-  let J : BrownianPath → ℝ≥0∞ := fun p => F (positiveDriftFirstHitSegment (-ν) m p)*
+  let J  := fun p => F (positiveDriftFirstHitSegment (-ν) m p)*
     G (driftedBrownianPath (-ν) (brownianShiftPath (firstPassageTime (driftedBrownianPath (-ν) p) m) p))
-  let K : BrownianPath → ℝ≥0∞ := fun p => F (positiveDriftFirstHitSegment ν m p)
-  let L : ℝ≥0∞ := ENNReal.ofReal (Real.exp (-2*ν*m))
-  let C : ℝ≥0∞ := ∫⁻ q, G (driftedBrownianPath (-ν) q) ∂P
+  let K  := fun p => F (positiveDriftFirstHitSegment ν m p)
+  let L  := ENNReal.ofReal (Real.exp (-2*ν*m))
+  let C  := ∫⁻ q, G (driftedBrownianPath (-ν) q) ∂P
   have he (n : ℕ) : (∫⁻ p in S (-ν) n, J p ∂P) = L*(∫⁻ p in S ν n, K p ∂P)*C := by
     have hh := brownianPath_oppositeDrift_firstHit_marked_future_lintegral P hB ν m hm
       ((n : ℝ≥0)+1) F hF G hG
@@ -491,8 +479,7 @@ theorem measurableSet_brownianPath_below (ε : ℝ) :
   have hh := measurableSet_brownianPath_joint_hit.preimage
     (measurable_const.prodMk measurable_id : Measurable (fun p : BrownianPath => (ε,p)))
   convert hh.compl using 1
-  ext p
-  simp only [mem_compl_iff,mem_preimage,mem_ofPred_eq,not_exists,not_le]
+  continuity
 
 /-- Every point no later than an actual first hit lies at or below its level. -/
 theorem brownianPath_le_before_firstPassage (p : BrownianPath) (m : ℝ)
@@ -526,7 +513,7 @@ theorem brownianPath_maximum_band_iff (ν m ε : ℝ) (p : BrownianPath)
       obtain ⟨σ,hσ⟩ := hat
       refine ⟨σ,?_⟩
       change m ≤ p σ+(-ν)*(σ : ℝ)
-      simpa only [neg_mul,← sub_eq_add_neg] using hσ ▸ hlo
+      bound
     refine ⟨hh,fun t => ?_⟩
     have hv := firstPassageTime_value_of_hit X m hX0 hh
     change p τ+(-ν)*(τ : ℝ) = m at hv
@@ -545,19 +532,17 @@ theorem brownianPath_maximum_band_iff (ν m ε : ℝ) (p : BrownianPath)
     by_cases hστ : σ ≤ τ
     · have hl := brownianPath_le_before_firstPassage X m hX0 hh σ hστ
       change p σ+(-ν)*(σ : ℝ) ≤ m at hl
-      have hh' : p σ-ν*(σ : ℝ) ≤ m := by simpa only [neg_mul,← sub_eq_add_neg] using hl
-      rw [hσ] at hh'
-      exact hh'.trans_lt (lt_add_of_pos_right m hε)
-    · have hτσ : τ ≤ σ := (lt_of_not_ge hστ).le
+      grind
+    · have hτσ  := (lt_of_not_ge hστ).le
       have ht := hfuture (σ-τ)
       change (p (τ+(σ-τ))-p τ)+(-ν)*((σ-τ : ℝ≥0) : ℝ) < ε at ht
       rw [add_tsub_cancel_of_le hτσ,NNReal.coe_sub hτσ] at ht
       change p τ+(-ν)*(τ : ℝ) = m at hv
       linarith only [ht,hv,hσ]
 
+include P hB in
 /-- The exact thin-band identity on actual paths, with its full stopped prefix and future. -/
-theorem brownianPath_maximum_band_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν m ε : ℝ)
+theorem brownianPath_maximum_band_lintegral  (ν m ε : ℝ)
     (hν : 0 < ν) (hm : 0 < m) (hε : 0 < ε)
     (F : StoppedBrownianPath → ℝ≥0∞) (hF : Measurable F)
     (G : BrownianPath → ℝ≥0∞) (hG : Measurable G) :
@@ -570,18 +555,18 @@ theorem brownianPath_maximum_band_lintegral (P : Measure BrownianPath)
           G (driftedBrownianPath (-ν) q) ∂P := by
   classical
   let E : Set BrownianPath := {q | ∀ t : ℝ≥0, q t < ε}
-  have hE : MeasurableSet E := measurableSet_brownianPath_below ε
-  let G' : BrownianPath → ℝ≥0∞ := E.indicator G
-  have hG' : Measurable G' := hG.indicator hE
+  have hE  := measurableSet_brownianPath_below ε
+  let G'  := E.indicator G
+  have hG'  := hG.indicator hE
   have he := brownianPath_oppositeDrift_firstHit_full_lintegral P hB ν m hν hm F hF G' hG'
-  let H : Set BrownianPath := {p | ∃ u : ℝ≥0, m ≤ driftedBrownianPath (-ν) p u}
+  let H  := {p | ∃ u : ℝ≥0, m ≤ driftedBrownianPath (-ν) p u}
   have hmD : Measurable (driftedBrownianPath (-ν)) :=
     continuous_driftedBrownianPath.measurable.comp (measurable_const.prodMk measurable_id)
   have hH : MeasurableSet H := measurableSet_brownianPath_joint_hit.preimage (measurable_const.prodMk hmD)
-  let B : Set BrownianPath := {p | m ≤ driftedBrownianMaximum ν p ∧ driftedBrownianMaximum ν p < m+ε}
+  let B  := {p | m ≤ driftedBrownianMaximum ν p ∧ driftedBrownianMaximum ν p < m+ε}
   have hM := aemeasurable_driftedBrownianMaximum P hB ν hν
   have hBset : NullMeasurableSet B P := hM.nullMeasurableSet_preimage measurableSet_Ico
-  let V : BrownianPath → BrownianPath := fun p => driftedBrownianPath (-ν)
+  let V  := fun p => driftedBrownianPath (-ν)
     (brownianShiftPath (firstPassageTime (driftedBrownianPath (-ν) p) m) p)
   have hl : H.indicator (fun p => F (positiveDriftFirstHitSegment (-ν) m p)*G' (V p)) =ᵐ[P]
       B.indicator (fun p => F (positiveDriftFirstHitSegment (-ν) m p)*G (V p)) := by
@@ -594,21 +579,20 @@ theorem brownianPath_maximum_band_lintegral (P : Measure BrownianPath)
       · simp only [Set.indicator_apply,ite_eq_left hhit,ite_eq_left hav,G',ite_eq_left (hb.mpr ⟨hhit,hav⟩)]
       · simp only [Set.indicator_apply,ite_eq_left hhit,ite_eq_right hav,G',mul_zero,
           ite_eq_right (fun h => hav (hb.mp h).2)]
-    · simp only [Set.indicator_apply,ite_eq_right hhit,ite_eq_right (fun h => hhit (hb.mp h).1)]
+    simp_all
   have hr : (fun q => G' (driftedBrownianPath (-ν) q)) =
       {q : BrownianPath | ∀ t : ℝ≥0, driftedBrownianPath (-ν) q t < ε}.indicator
         (fun q => G (driftedBrownianPath (-ν) q)) := by
-    funext q
-    simp only [G',E,Set.indicator_apply,mem_ofPred_eq]
+    abel
   have hbelow : MeasurableSet {q : BrownianPath | ∀ t : ℝ≥0, driftedBrownianPath (-ν) q t < ε} := hE.preimage hmD
   rw [hr,lintegral_indicator hbelow] at he
   rw [← lintegral_indicator hH] at he
   rw [lintegral_congr_ae hl,lintegral_indicator₀ hBset] at he
   exact he
 
+include P hB in
 /-- Whole-path upper avoidance has exactly the harmonic survival probability. -/
-theorem brownianPath_below_measure (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν ε : ℝ) (hν : 0 < ν) (hε : 0 < ε) :
+theorem brownianPath_below_measure  (ν ε : ℝ) (hν : 0 < ν) (hε : 0 < ε) :
     P {p | ∀ t : ℝ≥0, driftedBrownianPath (-ν) p t < ε} =
       ENNReal.ofReal (conditionedH ν ε) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
@@ -623,7 +607,7 @@ theorem brownianPath_below_measure (P : Measure BrownianPath)
       P.map (driftedBrownianMaximum ν) (Ioi ε) := by
     apply measure_congr
     filter_upwards [hne] with x hx
-    exact propext (le_iff_lt_or_eq.trans (or_iff_left hx.symm))
+    grind
   have he : {p : BrownianPath | ∀ t : ℝ≥0, driftedBrownianPath (-ν) p t < ε} =ᵐ[P]
       driftedBrownianMaximum ν ⁻¹' Iio ε := by
     filter_upwards [brownianPath_negativeDrift_maximum_attained_ae P hB ν hν] with p hp
@@ -633,15 +617,14 @@ theorem brownianPath_below_measure (P : Measure BrownianPath)
       obtain ⟨σ,hσ⟩ := hp.2
       have hs := hh σ
       change p σ+(-ν)*(σ : ℝ) < ε at hs
-      change driftedBrownianMaximum ν p < ε
-      simpa only [neg_mul,← sub_eq_add_neg,hσ] using hs
+      grind
     · intro hh t
       have ht := le_csSup hp.1 (mem_range_self t)
       change driftedBrownianMaximum ν p < ε at hh
       change driftedBrownianPath (-ν) p t < ε
       change p t+(-ν)*(t : ℝ) < ε
-      have hh' : p t-ν*(t : ℝ) < ε := ht.trans_lt hh
-      simpa only [neg_mul,← sub_eq_add_neg] using hh'
+      have hh'  := ht.trans_lt hh
+      grind
   rw [measure_congr he,← Measure.map_apply_of_aemeasurable hM measurableSet_Iio,
     ← compl_Ici,prob_compl_eq_one_sub measurableSet_Ici,hi,
     brownianPath_globalMaximum_Ioi P hB ν ε hν hε.le]
@@ -653,15 +636,14 @@ noncomputable def brownianBelowConditionedLaw (P : Measure BrownianPath) (ν ε 
   (ENNReal.ofReal (conditionedH ν ε))⁻¹ •
     (P.restrict {p | ∀ t : ℝ≥0, driftedBrownianPath (-ν) p t < ε}).map (driftedBrownianPath (-ν))
 
+include P hB in
 /-- The actual upper-conditioned future law is normalized, without an entrance-law assumption. -/
-theorem isProbabilityMeasure_brownianBelowConditionedLaw (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν ε : ℝ) (hν : 0 < ν) (hε : 0 < ε) :
+theorem isProbabilityMeasure_brownianBelowConditionedLaw  (ν ε : ℝ) (hν : 0 < ν) (hε : 0 < ε) :
     IsProbabilityMeasure (brownianBelowConditionedLaw P ν ε) := by
   have hh : 0 < conditionedH ν ε := by
     rw [conditionedH,ite_eq_right hν.ne']
-    apply sub_pos.mpr
-    exact Real.exp_lt_one_iff.mpr (by nlinarith only [hν,hε])
-  have hn : ENNReal.ofReal (conditionedH ν ε) ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hh)
+    simp_all
+  have hn  := ne_of_gt (ENNReal.ofReal_pos.mpr hh)
   have hmD : Measurable (driftedBrownianPath (-ν)) :=
     continuous_driftedBrownianPath.measurable.comp (measurable_const.prodMk measurable_id)
   refine ⟨?_⟩
@@ -689,13 +671,13 @@ theorem brownianPath_below_lintegral_eq_conditioned (P : Measure BrownianPath)
       ENNReal.ofReal (conditionedH ν ε)*∫⁻ q, G q ∂brownianBelowConditionedLaw P ν ε := by
   have hh : 0 < conditionedH ν ε := by
     rw [conditionedH,ite_eq_right hν.ne']
-    exact sub_pos.mpr (Real.exp_lt_one_iff.mpr (by nlinarith only [hν,hε]))
+    simp_all
   rw [lintegral_brownianBelowConditionedLaw P ν ε G hG,← mul_assoc,
     ENNReal.mul_inv_cancel (ne_of_gt (ENNReal.ofReal_pos.mpr hh)) ENNReal.ofReal_ne_top,one_mul]
 
+include P hB in
 /-- The exact source thin-band identity, including its normalized future law and both scalar factors. -/
-theorem brownianPath_williams_thinBand_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν m ε : ℝ)
+theorem brownianPath_williams_thinBand_lintegral  (ν m ε : ℝ)
     (hν : 0 < ν) (hm : 0 < m) (hε : 0 < ε)
     (F : StoppedBrownianPath → ℝ≥0∞) (hF : Measurable F)
     (G : BrownianPath → ℝ≥0∞) (hG : Measurable G) :

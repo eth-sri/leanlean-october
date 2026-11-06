@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.RetainedUniformLower
 
 /-! Every negative order is available for the common fixed-disk lower mass. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs

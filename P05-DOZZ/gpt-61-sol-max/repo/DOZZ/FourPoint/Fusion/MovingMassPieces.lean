@@ -11,23 +11,21 @@ import DOZZ.GMC.SharpMoments.SeibergPieces
 
 /-! # Measurability and finiteness of the moving-mass pieces -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
-theorem fusionMovingBadMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ) :
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y z δ in
+theorem fusionMovingBadMass_aemeasurable  :
     AEMeasurable (fun ω => fusionMovingBadMass γ α₁ α₂ α₃ y z δ (M ω)) P :=
   gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
     (fusionMovingKernel_measurable _ _ _ _ _ _) _ Metric.isOpen_ball.measurableSet
 
-theorem fusionMovingGoodMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ) :
+include Ω _inst1 P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y z δ in
+theorem fusionMovingGoodMass_aemeasurable  :
     AEMeasurable (fun ω => fusionMovingGoodMass γ α₁ α₂ α₃ y z δ (M ω)) P :=
   gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
     (fusionMovingKernel_measurable _ _ _ _ _ _) _
@@ -43,7 +41,7 @@ theorem fusionMovingGoodMass_le (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : �
   rw [← lintegral_const_mul _ (fusionMovingKernel_measurable γ α₁ α₂ α₃ y 0)]
   apply lintegral_mono_ae
   filter_upwards [ae_restrict_mem (measurableSet_le measurable_const measurable_norm)] with x hx
-  have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
+  have hx0  := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
   have h := ENNReal.ofReal_le_ofReal
     (fusion_rootedKernel_exterior_bound γ α₁ α₂ α₃ z (y * z) x hx0 (hz.trans hx)
       (by linarith) hu1)
@@ -55,8 +53,6 @@ theorem fusion_mass_finite_of_moment {Ω : Type*} [MeasurableSpace Ω]
     {P : Measure Ω} {f : Ω → ℝ≥0∞} (hf : AEMeasurable f P) {p : ℝ} (hp : 0 < p)
     (hfin : (∫⁻ ω, f ω ^ p ∂P) < ⊤) : ∀ᵐ ω ∂P, f ω ≠ ⊤ := by
   filter_upwards [ae_lt_top' (hf.pow_const p) hfin.ne] with ω hω
-  intro he
-  rw [he, ENNReal.top_rpow_of_pos hp] at hω
-  exact lt_irrefl _ hω
+  continuity
 
 end DOZZ.Proofs

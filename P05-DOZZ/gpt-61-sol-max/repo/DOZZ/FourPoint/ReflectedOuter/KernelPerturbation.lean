@@ -11,7 +11,7 @@ import Mathlib.Tactic
 
 /-! # Relative kernel perturbation on the retained region -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -38,7 +38,7 @@ theorem reflected_rpow_near_one (b t : ℝ) (hb : 0 ≤ b) (hb₂ : b ≤ 2)
   have hm := Convex.norm_image_sub_le_of_norm_deriv_le
     (fun s hs => (hd s hs).differentiableAt) hh (convex_Icc (1 / 2 : ℝ) 2)
     (show (1 : ℝ) ∈ Icc (1 / 2) 2 by norm_num) (show t ∈ Icc (1 / 2) 2 from ⟨ht, ht₂⟩)
-  simpa only [Real.one_rpow, Real.norm_eq_abs] using hm
+  simp_all
 
 /-- The perturbed kernel factors through the ratio of its two distances. -/
 theorem reflected_kernel_distance_ratio (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (hx : 0 < ‖x‖) :
@@ -49,9 +49,11 @@ theorem reflected_kernel_distance_ratio (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
   rw [sub_zero, Real.div_rpow (norm_nonneg _) hx.le]
   field_simp
 
+variable (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (z x : ℂ) (hx : 0 < ‖x‖) (hz : ‖z‖ ≤ ‖x‖ / 2)
+
+include γ α₁ α₂ α₃ hγ hγ₂ z x hx hz in
 /-- On a separated retained region, moving the root gives a relative first-order error. -/
-theorem reflected_kernel_relative_difference (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ)
-    (hγ₂ : γ < 2) (z x : ℂ) (hx : 0 < ‖x‖) (hz : ‖z‖ ≤ ‖x‖ / 2) :
+theorem reflected_kernel_relative_difference  :
     |gammaHalfKernel γ α₁ α₂ α₃ z x - gammaHalfKernel γ α₁ α₂ α₃ 0 x| ≤
       (4 * (‖z‖ / ‖x‖)) * gammaHalfKernel γ α₁ α₂ α₃ 0 x := by
   let b : ℝ := γ ^ 2 / 2
@@ -81,9 +83,9 @@ theorem reflected_kernel_relative_difference (γ α₁ α₂ α₃ : ℝ) (hγ :
   exact mul_le_mul_of_nonneg_right
     ((reflected_rpow_near_one b t hb hb₂ ht ht₂).trans (mul_le_mul_of_nonneg_left htd (by norm_num))) hK
 
+include γ α₁ α₂ α₃ hγ hγ₂ z x hx hz in
 /-- The moving retained kernel stays above one quarter of the zero kernel. -/
-theorem reflected_kernel_relative_lower (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ)
-    (hγ₂ : γ < 2) (z x : ℂ) (hx : 0 < ‖x‖) (hz : ‖z‖ ≤ ‖x‖ / 2) :
+theorem reflected_kernel_relative_lower  :
     gammaHalfKernel γ α₁ α₂ α₃ 0 x / 4 ≤ gammaHalfKernel γ α₁ α₂ α₃ z x := by
   have hb : 0 ≤ γ ^ 2 / 2 := by positivity
   have hb₂ : γ ^ 2 / 2 ≤ 2 := by nlinarith only [hγ, hγ₂]

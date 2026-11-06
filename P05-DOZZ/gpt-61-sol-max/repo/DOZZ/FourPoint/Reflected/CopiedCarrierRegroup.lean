@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Reflected.IndependentRegroup
 public import Mathlib.MeasureTheory.Integral.Prod
 /-! Regrouping a common radial path and two independent lateral carriers. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 namespace DOZZ.Proofs

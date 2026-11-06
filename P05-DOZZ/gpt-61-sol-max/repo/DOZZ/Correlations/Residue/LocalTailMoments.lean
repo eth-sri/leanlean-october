@@ -12,15 +12,17 @@ public import DOZZ.Correlations.Tails.SingularMassMeasurability
 /-! Source-specific local moment reductions for the unequal and equal branches of the
 three-to-two residue bridge. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
+
+include Ω _inst1 P X M in
 /-- The exact one-insertion tail estimate gives the critical local moment residue. -/
 theorem residue_oneInsertion_local_moment
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ α2 α3 Rbar η d₀ C : ℝ)
+     (γ α2 α3 Rbar η d₀ C : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hα3 : γ / 2 < α3) (hα3Q : α3 < Q γ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hη : 0 < η) (hd₀ : 0 < d₀) (hC : 0 ≤ C)
@@ -34,7 +36,7 @@ theorem residue_oneInsertion_local_moment
         (reflectionExponent γ α3 - ε / γ) ∂P) (𝓝[>] 0)
       (𝓝 (γ * reflectionExponent γ α3 * (4 : ℝ) ^
         (-(γ * α2 * reflectionExponent γ α3)) * Rbar)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   have hcoef := residue_chart_tail_coefficient_limit γ α3 α2 Rbar hγ.ne' 3 7
     (by norm_num) (by norm_num) (by norm_num)
   have hn : ‖(3 : ℂ) - 7‖ = 4 := by norm_num
@@ -52,11 +54,11 @@ theorem residue_oneInsertion_local_moment
   congr 1
   ring
 
+include Ω _inst1 P X M in
 /-- The equal-charge two-insertion estimate is coalesced before taking the moment limit.
 The strict tail ceiling supplies a positive error; the leading coefficient is the sum. -/
 theorem residue_twoInsertion_equal_local_moment
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ α Rbar d₀ : ℝ)
+     (γ α Rbar d₀ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hα : γ / 2 < α) (hαQ : α < Q γ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) (hd₀ : 0 < d₀)
     (htail : ∀ θ : ℝ, 0 < θ → ∃ C : ℝ, 0 ≤ C ∧
@@ -73,7 +75,7 @@ theorem residue_twoInsertion_equal_local_moment
          (reflectionExponent γ α - ε / γ) ∂P) (𝓝[>] 0)
       (𝓝 (2 * γ * reflectionExponent γ α * (4 : ℝ) ^
         (-(γ * α * reflectionExponent γ α)) * Rbar)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let p := reflectionExponent γ α
   let θ := (twoInsertionTailCeiling γ α α - p) / 2
   have hθ : 0 < θ := div_pos (sub_pos.mpr (residue_equal_twoInsertionTailCeiling_gt γ α hγ hα hαQ)) (by norm_num)
@@ -98,13 +100,7 @@ theorem residue_twoInsertion_equal_local_moment
       (localSingularMass_aemeasurable P X hX γ hγ hγ2 M hM _
         (by unfold residueLocalWeight; fun_prop) _ _))
     (hc1.add hc2) (by
-      intro ε hε hεd t ht
-      have hh := hCb ε hε hεd t ht
-      rw [hexp, ← add_mul] at hh
-      exact hh)
-  convert hh using 1
-  congr 1
-  dsimp only [p]
-  ring
+      grind)
+  grind
 
 end DOZZ.Proofs

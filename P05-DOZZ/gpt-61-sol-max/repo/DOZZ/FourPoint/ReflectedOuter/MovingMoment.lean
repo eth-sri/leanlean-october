@@ -12,7 +12,7 @@ import Mathlib.Tactic
 
 /-! # The moving inverse-moment error at the relative cutoff scale -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -45,12 +45,12 @@ theorem reflected_outer_moving_moment_bound {Ω : Type*} [MeasurableSpace Ω]
   let R : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal (A * d) * S ω ^ (-p)
   have hd : 0 ≤ d := by dsimp only [d]; positivity
   have hm := gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ₂ M hM
-  have hSm : AEMeasurable S P :=
+  have hSm  :=
     (reflected_retainedZero_measure_measurable γ α₁ α₂ α₃ r).comp_aemeasurable hm
-  have hTm : AEMeasurable T P :=
+  have hTm  :=
     (reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable hm
-  have hSt : (∫⁻ ω, S ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hsb r hr₁)
-  have hTt : (∫⁻ ω, T ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (htb z ξ hz₁ hr₁)
+  have hSt  := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hsb r hr₁)
+  have hTt  := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (htb z ξ hz₁ hr₁)
   have hRb : (∫⁻ ω, R ω ∂P) ≤ ENNReal.ofReal ((A * 4 * Cs) * (‖z‖ / r)) := by
     dsimp only [R]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
@@ -64,7 +64,7 @@ theorem reflected_outer_moving_moment_bound {Ω : Type*} [MeasurableSpace Ω]
       α₁ α₂ α₃ r hr₁ hα₁ hα₂ hα₃,
       gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
       gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 1] with ω hpf h0 h1
-    have hsfin : S ω ≠ ⊤ := ne_top_of_le_ne_top hpf.2.ne
+    have hsfin  := ne_top_of_le_ne_top hpf.2.ne
       (reflected_retainedZero_le_full γ α₁ α₂ α₃ r (M ω))
     obtain ⟨hl, hu, hv⟩ := reflected_outerMass_relative_comparison
       γ α₁ α₂ α₃ ξ hγ hγ₂ z (M ω) hr hz h0 h1

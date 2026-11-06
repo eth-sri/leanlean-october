@@ -6,6 +6,7 @@ module
 
 public import DOZZ.ShiftEquations.FirstStrip.Strip
 public import DOZZ.FourPoint.BPZ.GammaHalfFullUnreflectedFormula
+public import DOZZ.ShiftEquations.ContinuationContracts
 
 /-!
 # The first structure shift on a strip from the unreflected formula
@@ -16,7 +17,7 @@ public import DOZZ.FourPoint.BPZ.GammaHalfFullUnreflectedFormula
 statement of `DOZZ.structureConstant_first_shift_strip`, not its proof.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -33,14 +34,7 @@ theorem structureConstant_first_shift_strip_unconditional
     (α₂ α₃ : ℝ)
     (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
     (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ) :
-    ∃ h : ℝ, 0 < h ∧ ∃ C : ℂ → ℂ,
-      MeromorphicOn C {z | |z.im| < h} ∧
-      (∀ α : ℝ, 2 * η < α → α < Q γ →
-        C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-      ∀ᶠ z in codiscrete ℂ,
-        C (z + γ / 2) =
-          -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-            C (z - γ / 2) :=
+    Contract.singleChargeContinuation P M γ μ η α₂ α₃ :=
   structureConstant_first_shift_strip_of_unreflected P X M γ μ η hγ hγ2 hμ hη hX hM α₂ α₃ hα₂ hα₃
     (fun hH α₁ a₂ a₃ h1 h2 h3 h4 hs =>
       gammaHalf_full_unreflected_formula hH P X M γ μ α₁ a₂ a₃ hγ hγ2 hμ h1 h2 h3 h4 hs hX hM)

@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Residue.ExtendedMoment
 
 /-! Uniform higher moments justify the complete extended-real addition step. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -29,10 +29,10 @@ theorem residue_extended_addition_preserves_limit
       (𝓝[>] 0) (𝓝 L)) :
     Tendsto (fun d => d * (∫⁻ ω, ENNReal.rpow (A d ω + R d ω) (β - d / γ) ∂P).toReal)
       (𝓝[>] 0) (𝓝 L) := by
-  have hr : 0 < r := hβ.trans hβr
+  have hr  := hβ.trans hβr
   have hq (d : ℝ) (hd : 0 < d) (hd' : d < d₀) : 0 < β - d / γ ∧ β - d / γ < β := by
     have hh : d / γ < β := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hd'.trans_le hdβ)
-    exact ⟨sub_pos.mpr hh, sub_lt_self _ (div_pos hd hγ)⟩
+    simp_all
   have hRp (d : ℝ) (hd : 0 < d) (hd' : d < d₀) :=
     residue_real_moment_of_extended_bound P (R d) (hR d hd hd') r hr
       ((hRbound d hd hd').trans_lt hK).ne
@@ -62,7 +62,7 @@ theorem residue_extended_addition_preserves_limit
   apply hadd.congr'
   filter_upwards [hnear] with d hd
   congr 1
-  have hfin : ∀ᵐ ω ∂P, A d ω + R d ω ≠ ⊤ :=
+  have hfin  :=
     (hAfin d hd.1 hd.2).and (hRp d hd.1 hd.2).1 |>.mono (fun _ hh => ENNReal.add_ne_top.mpr hh)
   rw [← residue_integral_toReal_rpow P (fun ω => A d ω + R d ω)
     ((hA d hd.1 hd.2).add (hR d hd.1 hd.2)) hfin (β - d / γ) (hq d hd.1 hd.2).1.le]

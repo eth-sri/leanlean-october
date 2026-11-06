@@ -52,37 +52,45 @@ def abkUnitBall (d : Nat) : Set (Vec d) :=
 noncomputable def abkUnitBallVolume (d : Nat) : ℝ :=
   ((volume : Measure (Vec d)) (abkUnitBall d)).toReal
 
+variable {d : Nat} (ζ : ABKCutoff d)
+
+include d ζ
 /-- The unscaled self-convolution `(ζ * ζ)(x)`. -/
 @[expose]
-noncomputable def abkCutoffSelfConvolution {d : Nat} (ζ : ABKCutoff d)
+noncomputable def abkCutoffSelfConvolution
     (x : Vec d) : ℝ :=
   ∫ y : Vec d, ζ y * ζ (x - y)
 
+
 /-- The ABK constant `M_0 = ∫ |ζ|^2`.  Since `ζ` is nonnegative, this is `∫ ζ^2`. -/
 @[expose]
-noncomputable def abkM0 {d : Nat} (ζ : ABKCutoff d) : ℝ :=
+noncomputable def abkM0  : ℝ :=
   ∫ x : Vec d, (ζ x) ^ (2 : Nat)
+
 
 /-- The reciprocal constant `M_α^{-1}` in the ABK power decomposition. -/
 @[expose]
-noncomputable def abkMAlphaInv {d : Nat} (ζ : ABKCutoff d) (α : ℝ) : ℝ :=
+noncomputable def abkMAlphaInv  (α : ℝ) : ℝ :=
   ∫ r in Set.Ioi (0 : ℝ),
     r ^ (-(1 + α)) * abkCutoffSelfConvolution ζ (abkRadialPoint d r⁻¹)
 
+
 /-- The ABK constant `M_α`. -/
 @[expose]
-noncomputable def abkMAlpha {d : Nat} (ζ : ABKCutoff d) (α : ℝ) : ℝ :=
+noncomputable def abkMAlpha  (α : ℝ) : ℝ :=
   (abkMAlphaInv ζ α)⁻¹
+
 
 /-- The radicand in the canonical ABK normalization. -/
 @[expose]
-noncomputable def abkNormalizationRadicand {d : Nat} (ζ : ABKCutoff d) : ℝ :=
+noncomputable def abkNormalizationRadicand  : ℝ :=
   (d : ℝ) * abkUnitBallVolume d / (abkM0 ζ * (2 * Real.pi) ^ d)
+
 
 /-- The canonical ABK normalization
 `(d |B_1| / (M_0 (2π)^d))^{1/2}`. -/
 @[expose]
-noncomputable def abkNormalization {d : Nat} (ζ : ABKCutoff d) : ℝ :=
+noncomputable def abkNormalization  : ℝ :=
   Real.sqrt (abkNormalizationRadicand ζ)
 
 /-- The covariance prefactor `d |B_1| / (2π)^d`. -/
@@ -90,47 +98,41 @@ noncomputable def abkNormalization {d : Nat} (ζ : ABKCutoff d) : ℝ :=
 noncomputable def abkLGFCovarianceConstant (d : Nat) : ℝ :=
   (d : ℝ) * abkUnitBallVolume d / (2 * Real.pi) ^ d
 
-/-- The ABK Appendix A non-degeneracy constant
-`((d-1)/d) * (d |B_1|/(2π)^d) * log 3`. -/
-@[expose]
-noncomputable def abkCStar (d : Nat) : ℝ :=
-  ((d : ℝ) - 1) / (d : ℝ) * abkLGFCovarianceConstant d * Real.log 3
 
-/-- The Gamma-function expression for `c_*` appearing in Appendix A. -/
-@[expose]
-noncomputable def abkCStarGammaFormula (d : Nat) : ℝ :=
-  ((d : ℝ) - 1) * 2 ^ (1 - (d : ℝ)) * Real.pi ^ (-(d : ℝ) / 2) *
-    Real.log 3 / ((d : ℝ) * Real.Gamma ((d : ℝ) / 2))
+
+
+
 
 @[simp]
-theorem abkMAlpha_inv {d : Nat} (ζ : ABKCutoff d) (α : ℝ) :
+theorem abkMAlpha_inv  (α : ℝ) :
     (abkMAlpha ζ α)⁻¹ = abkMAlphaInv ζ α := by
   simp only [abkMAlpha, inv_inv]
 
+
 /-- The canonical normalization squared is its radicand whenever the radicand is nonnegative. -/
-theorem abkNormalization_sq {d : Nat} (ζ : ABKCutoff d)
+theorem abkNormalization_sq
     (h : 0 ≤ abkNormalizationRadicand ζ) :
-    abkNormalization ζ ^ (2 : Nat) = abkNormalizationRadicand ζ := by
-  simpa [abkNormalization, pow_two] using Real.sq_sqrt h
+    abkNormalization ζ ^ (2 : Nat) = abkNormalizationRadicand ζ := Real.sq_sqrt h
+
 
 /-- At the origin, the cutoff self-convolution is `M_0`. -/
-theorem abkCutoffSelfConvolution_zero {d : Nat} (ζ : ABKCutoff d) :
+theorem abkCutoffSelfConvolution_zero  :
     abkCutoffSelfConvolution ζ 0 = abkM0 ζ := by
   unfold abkCutoffSelfConvolution abkM0
   refine integral_congr_ae ?_
   filter_upwards with y
-  have hneg : ζ (-y) = ζ y := ζ.radial _ _ (euclideanNorm_neg y)
+  have hneg  := ζ.radial _ _ (euclideanNorm_neg y)
   simp only [zero_sub]
   rw [hneg]
   ring
 
+
 /-- The cutoff square mass `M_0` is strictly positive. -/
-theorem abkM0_pos {d : Nat} (ζ : ABKCutoff d) : 0 < abkM0 ζ := by
+theorem abkM0_pos  : 0 < abkM0 ζ := by
   unfold abkM0
   let f : Vec d → ℝ := fun x => (ζ x) ^ (2 : Nat)
-  have hf_cont : Continuous f := ζ.continuous.pow 2
-  have hf_int : Integrable f (volume : Measure (Vec d)) := by
-    simpa [f] using ζ.memLp_two.integrable_sq
+  have hf_cont  := ζ.continuous.pow 2
+  have hf_int : Integrable f (volume : Measure (Vec d)) := ζ.memLp_two.integrable_sq
   have hf_nonneg : 0 ≤ f := by
     intro x
     exact sq_nonneg (ζ x)
@@ -142,19 +144,23 @@ theorem abkM0_pos {d : Nat} (ζ : ABKCutoff d) : 0 < abkM0 ζ := by
     norm_num
   exact integral_pos_of_integrable_nonneg_nonzero hf_cont hf_int hf_nonneg hf_zero
 
+
 /-- The cutoff square mass `M_0` is nonzero. -/
-theorem abkM0_ne_zero {d : Nat} (ζ : ABKCutoff d) : abkM0 ζ ≠ 0 :=
+theorem abkM0_ne_zero  : abkM0 ζ ≠ 0 :=
   (abkM0_pos ζ).ne'
+
 
 /-- Multiplying the canonical normalization radicand by `M_0` leaves the ABK covariance
 prefactor. -/
-theorem abkNormalizationRadicand_mul_abkM0 {d : Nat} (ζ : ABKCutoff d) :
+theorem abkNormalizationRadicand_mul_abkM0  :
     abkNormalizationRadicand ζ * abkM0 ζ = abkLGFCovarianceConstant d := by
-  have hM0 : abkM0 ζ ≠ 0 := abkM0_ne_zero ζ
-  have htwopi : (2 * Real.pi) ^ d ≠ 0 :=
+  have hM0  := abkM0_ne_zero ζ
+  have htwopi  :=
     pow_ne_zero d (mul_ne_zero (by norm_num : (2 : ℝ) ≠ 0) Real.pi_ne_zero)
   unfold abkNormalizationRadicand abkLGFCovarianceConstant
   field_simp [hM0, htwopi]
+omit d ζ
+
 
 end GaussianFields
 

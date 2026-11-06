@@ -9,7 +9,7 @@ public import DOZZ.GMC.FieldChaosMultiNegativePower
 
 /-! Exact common Gaussian factors for products of retained masses. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal Distributions
@@ -35,7 +35,7 @@ theorem lintegral_gaussian_exp (a b : ℝ) :
   have hm : (∫ z : ℝ, Real.exp (a * z) ∂gaussianReal 0 1) = Real.exp (a ^ 2 / 2) := by
     change mgf id (gaussianReal 0 1) a = _
     rw [mgf_id_gaussianReal]
-    simp only [zero_mul, NNReal.coe_one, one_mul, zero_add]
+    simp_all
   rw [hm, ← Real.exp_add]
   congr 2
   ring
@@ -54,9 +54,7 @@ theorem wick_scalar_product {κ : Type*} [Fintype κ]
   calc
     (∑ k, (γ * c k * z - γ ^ 2 * c k ^ 2 / 2) * p k) =
         ∑ k, ((γ * z) * (p k * c k) - (γ ^ 2 / 2) * (p k * c k ^ 2)) := by
-      apply Finset.sum_congr rfl
-      intro k _
-      ring
+      grind
     _ = _ := by
       rw [Finset.sum_sub_distrib, ← Finset.mul_sum, ← Finset.mul_sum]
       ring
@@ -79,7 +77,7 @@ theorem retained_masses_common_scalar_factor
   let W : ℝ → ℝ≥0∞ := fun z => ENNReal.ofReal (Real.exp
     (γ * (∑ k, p k * c k) * z - γ ^ 2 / 2 * ∑ k, p k * c k ^ 2))
   have hA : AEMeasurable A P := by
-    exact Finset.aemeasurable_fun_prod Finset.univ (fun k _ => (hF k).pow_const (p k))
+    fun_prop (disch := positivity)
   have hW : Measurable W := by dsimp [W]; fun_prop
   have he : ∀ᵐ w ∂P.prod (gaussianReal 0 1),
       (∏ k, (ENNReal.ofReal (Real.exp (γ * c k * w.2 - γ ^ 2 * c k ^ 2 / 2)) *

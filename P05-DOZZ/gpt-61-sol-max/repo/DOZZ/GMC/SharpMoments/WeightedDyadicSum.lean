@@ -15,7 +15,7 @@ weighted local moment at `z` finite. The proof sums the dyadic shell estimate fo
 weight: each shell has `p`th moment bounded by a geometric sequence, and the series is controlled
 by subadditivity of `x ↦ x ^ p` for `p ≤ 1` and by Minkowski's inequality for `p > 1`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -24,11 +24,13 @@ namespace DOZZ.Proofs
 
 /-! ### Summation of terms with geometrically decaying moments -/
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] {P : Measure Ω} (f : ℕ → Ω → ℝ≥0∞) (hf : ∀ n, AEMeasurable (f n) P) {p : ℝ}
+
+include Ω _inst1 P f hf p in
 /-- For `0 < p ≤ 1`, a series of nonnegative terms whose `p`th moments are dominated by a finite
 geometric sequence has a finite `p`th moment. -/
 theorem weightedDyadicSum_lintegral_tsum_rpow_lt_top_of_le_one
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (f : ℕ → Ω → ℝ≥0∞) (hf : ∀ n, AEMeasurable (f n) P) {p : ℝ} (hp : 0 < p) (hp1 : p ≤ 1)
+     (hp : 0 < p) (hp1 : p ≤ 1)
     {K q : ℝ≥0∞} (hK : K ≠ ⊤) (hq : q < 1)
     (hbound : ∀ n, ∫⁻ ω, f n ω ^ p ∂P ≤ K * q ^ n) :
     ∫⁻ ω, (∑' n, f n ω) ^ p ∂P < ⊤ := by
@@ -53,18 +55,18 @@ theorem weightedDyadicSum_pow_rpow_comm (q : ℝ≥0∞) (r : ℝ) (n : ℕ) :
     _ = (q ^ r) ^ (n : ℝ) := ENNReal.rpow_mul _ _ _
     _ = (q ^ r) ^ n := ENNReal.rpow_natCast _ _
 
+include Ω _inst1 P f hf p in
 /-- For `p > 1`, a series of nonnegative terms whose `p`th moments are dominated by a finite
 geometric sequence has a finite `p`th moment. The proof applies Minkowski's inequality for
 series. -/
 theorem weightedDyadicSum_lintegral_tsum_rpow_lt_top_of_one_lt
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (f : ℕ → Ω → ℝ≥0∞) (hf : ∀ n, AEMeasurable (f n) P) {p : ℝ} (hp : 1 < p)
+     (hp : 1 < p)
     {K q : ℝ≥0∞} (hK : K ≠ ⊤) (hq : q < 1)
     (hbound : ∀ n, ∫⁻ ω, f n ω ^ p ∂P ≤ K * q ^ n) :
     ∫⁻ ω, (∑' n, f n ω) ^ p ∂P < ⊤ := by
-  have hp0 : 0 < p := zero_lt_one.trans hp
-  have hinv : 0 < 1 / p := one_div_pos.2 hp0
-  have hqroot : q ^ (1 / p) < 1 := ENNReal.rpow_lt_one hq hinv
+  have hp0  := zero_lt_one.trans hp
+  have hinv  := one_div_pos.2 hp0
+  have hqroot  := ENNReal.rpow_lt_one hq hinv
   have hroot (n : ℕ) :
       (∫⁻ ω, f n ω ^ p ∂P) ^ (1 / p) ≤ K ^ (1 / p) * (q ^ (1 / p)) ^ n :=
     calc
@@ -72,8 +74,8 @@ theorem weightedDyadicSum_lintegral_tsum_rpow_lt_top_of_one_lt
         ENNReal.rpow_le_rpow (hbound n) hinv.le
       _ = K ^ (1 / p) * (q ^ n) ^ (1 / p) := ENNReal.mul_rpow_of_nonneg _ _ hinv.le
       _ = K ^ (1 / p) * (q ^ (1 / p)) ^ n := by rw [weightedDyadicSum_pow_rpow_comm]
-  have hrootK : K ^ (1 / p) ≠ ⊤ := (ENNReal.rpow_lt_top_of_nonneg hinv.le hK).ne
-  have hgeom : (1 - q ^ (1 / p))⁻¹ < ⊤ := ENNReal.inv_lt_top.2 (tsub_pos_of_lt hqroot)
+  have hrootK  := (ENNReal.rpow_lt_top_of_nonneg hinv.le hK).ne
+  have hgeom  := ENNReal.inv_lt_top.2 (tsub_pos_of_lt hqroot)
   calc
     ∫⁻ ω, (∑' n, f n ω) ^ p ∂P ≤ (∑' n, (∫⁻ ω, f n ω ^ p ∂P) ^ (1 / p)) ^ p :=
       ennreal_lintegral_rpow_tsum_le_of_roots_summable f p hp.le hf
@@ -83,11 +85,11 @@ theorem weightedDyadicSum_lintegral_tsum_rpow_lt_top_of_one_lt
       rw [ENNReal.tsum_mul_left, ENNReal.tsum_geometric]
     _ < ⊤ := ENNReal.rpow_lt_top_of_nonneg hp0.le (ENNReal.mul_lt_top hrootK.lt_top hgeom).ne
 
+include Ω _inst1 P f hf p in
 /-- A series of nonnegative terms whose `p`th moments, for `p > 0`, are dominated by a finite
 geometric sequence has a finite `p`th moment. -/
 theorem weightedDyadicSum_lintegral_tsum_rpow_lt_top
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (f : ℕ → Ω → ℝ≥0∞) (hf : ∀ n, AEMeasurable (f n) P) {p : ℝ} (hp : 0 < p)
+     (hp : 0 < p)
     {K q : ℝ≥0∞} (hK : K ≠ ⊤) (hq : q < 1)
     (hbound : ∀ n, ∫⁻ ω, f n ω ^ p ∂P ≤ K * q ^ n) :
     ∫⁻ ω, (∑' n, f n ω) ^ p ∂P < ⊤ := by
@@ -155,10 +157,7 @@ theorem weightedDyadicSum_real_term (γ α p ξ C R : ℝ) (hR : 0 < R) (n : ℕ
     congr 1
     ring
   rw [h1, h2, Real.mul_rpow (by positivity) hpos.le, Real.mul_rpow hR.le hpos.le]
-  calc
-    _ = C * (R / 2) ^ (-γ * α * p) * R ^ ξ *
-          (((1 / 2 : ℝ) ^ n) ^ (-γ * α * p) * ((1 / 2 : ℝ) ^ n) ^ ξ) := by ring
-    _ = _ := by rw [hmerge]
+  grind
 
 /-! ### Main theorem -/
 
@@ -186,7 +185,7 @@ theorem weightedGmcBallMoment_lt_top_of_ball_upper
     refine (weightedDyadicSum_shell_moment_le P M hM γ α p ξ C R z hp hR n hball).trans ?_
     rw [weightedDyadicSum_real_term γ α p ξ C R hR n, ENNReal.ofReal_mul' (pow_nonneg hqNonneg n),
       ENNReal.ofReal_pow hqNonneg]
-  have hsum : ∫⁻ ω, (∑' n, shell n ω) ^ p ∂P < ⊤ :=
+  have hsum  :=
     weightedDyadicSum_lintegral_tsum_rpow_lt_top shell hshellMeas hp ENNReal.ofReal_ne_top
       (ENNReal.ofReal_lt_one.2 hqLt) hshellBound
   calc

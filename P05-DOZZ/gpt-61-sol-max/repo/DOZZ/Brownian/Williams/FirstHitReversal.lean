@@ -6,6 +6,7 @@ module
 public import DOZZ.Brownian.Williams.FirstHitSelector
 public import Mathlib.MeasureTheory.Integral.RieszMarkovKakutani.NNReal
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import Mathlib.Tactic
 
 /-!
 # Actual lifetime-indexed first-hit reversal density
@@ -48,10 +49,10 @@ private theorem killed_eq_positiveParts (a : ℝ) (T : ℝ≥0) (x y : ℝ) :
   by_cases hx : 0 < x
   · by_cases hy : 0 < y
     · simp only [brownianKilledTransitionPDF,ite_eq_left (show 0 < x ∧ 0 < y from ⟨hx,hy⟩),max_eq_left hx.le,max_eq_left hy.le]
-    · have hy0 : y ≤ 0 := not_lt.mp hy
+    · have hy0  := not_lt.mp hy
       simp only [brownianKilledTransitionPDF,ite_eq_right (show ¬ (0 < x ∧ 0 < y) from fun h => hy h.2),max_eq_right hy0,
         zero_sub,zero_add,gaussianPDFReal,sub_zero,neg_sq,sub_self,mul_zero]
-  · have hx0 : x ≤ 0 := not_lt.mp hx
+  · have hx0  := not_lt.mp hx
     simp only [brownianKilledTransitionPDF,ite_eq_right (show ¬ (0 < x ∧ 0 < y) from fun h => hx h.1),max_eq_right hx0,
       sub_zero,add_zero,sub_self,mul_zero]
 
@@ -70,8 +71,7 @@ private theorem killed_continuousAt (a : ℝ) (T : ℝ≥0) (x y : ℝ) (hT : T 
       (f := fun z : ℝ≥0 × (ℝ × ℝ) => (z.1, max z.2.2 0+max z.2.1 0))
       (continuous_fst.prodMk ((continuous_snd.snd.max continuous_const).add
         (continuous_snd.fst.max continuous_const))).continuousAt rfl
-  have he : Continuous (fun z : ℝ≥0 × (ℝ × ℝ) => Real.exp (a*(z.2.2-z.2.1)-a^2*(z.1 : ℝ)/2)) := by fun_prop
-  exact he.continuousAt.mul (h1.sub h2)
+  fun_prop
 
 private theorem finiteDensity_continuousAt (a : ℝ) (n : ℕ) (ds : Fin n → ℝ≥0)
     (c : ℝ) (xs : Fin n → ℝ) (t : ℝ) (hds : ∀ i, 0 < ds i)
@@ -80,22 +80,15 @@ private theorem finiteDensity_continuousAt (a : ℝ) (n : ℕ) (ds : Fin n → �
       (brownianFirstHitFinitePDF a n z.1 z.2.1 z.2.2.1 z.2.2.2).toReal) (ds,(c,(xs,t))) := by
   induction n generalizing c t with
   | zero =>
-    change ContinuousAt (fun z : (Fin 0 → ℝ≥0) × (ℝ × ((Fin 0 → ℝ) × ℝ)) =>
-      (ENNReal.ofReal (brownianFirstHitDensity a z.2.1 z.2.2.2)).toReal) _
-    simp_rw [ENNReal.toReal_ofReal']
     exact ((continuousAt_brownianFirstHitDensity_joint a c t ht).comp_of_eq
       (continuous_snd.fst.prodMk continuous_snd.snd.snd).continuousAt rfl).max continuousAt_const
   | succ n ih =>
     have hd : Continuous (fun z : (Fin (n+1) → ℝ≥0) × (ℝ × ((Fin (n+1) → ℝ) × ℝ)) => z.1 0) := by fun_prop
     have hx : Continuous (fun z : (Fin (n+1) → ℝ≥0) × (ℝ × ((Fin (n+1) → ℝ) × ℝ)) => z.2.2.1 0) := by fun_prop
     have htaild : Continuous (Fin.tail : (Fin (n+1) → ℝ≥0) → Fin n → ℝ≥0) := by
-      apply continuous_pi
-      intro i
-      exact continuous_apply i.succ
+      fun_prop (disch := positivity)
     have htailx : Continuous (Fin.tail : (Fin (n+1) → ℝ) → Fin n → ℝ) := by
-      apply continuous_pi
-      intro i
-      exact continuous_apply i.succ
+      fun_prop (disch := positivity)
     have ht' : (brownianFirstHitHorizon n (Fin.tail ds) : ℝ) < t-(ds 0 : ℝ) := by
       change ((ds 0+brownianFirstHitHorizon n (Fin.tail ds) : ℝ≥0) : ℝ) < t at ht
       rw [NNReal.coe_add] at ht
@@ -111,15 +104,11 @@ private theorem finiteDensity_continuousAt (a : ℝ) (n : ℕ) (ds : Fin n → �
 
 /-- Tailing a finite tuple of nonnegative elapsed times is continuous. -/
 private theorem continuous_fin_tail_nnreal (n : ℕ) : Continuous (Fin.tail : (Fin (n+1) → ℝ≥0) → Fin n → ℝ≥0) := by
-  apply continuous_pi
-  intro i
-  exact continuous_apply i.succ
+  fun_prop (disch := positivity)
 
 /-- Tailing a finite tuple of sampled real states is continuous. -/
 private theorem continuous_fin_tail_real (n : ℕ) : Continuous (Fin.tail : (Fin (n+1) → ℝ) → Fin n → ℝ) := by
-  apply continuous_pi
-  intro i
-  exact continuous_apply i.succ
+  fun_prop (disch := positivity)
 
 /-- The complete finite density is jointly measurable in every elapsed time, starting level, state and absolute lifetime. -/
 private theorem measurable_brownianFirstHitFinitePDF_all (a : ℝ) (n : ℕ) :
@@ -139,7 +128,7 @@ private theorem measurable_brownianFirstHitFinitePDF_all (a : ℝ) (n : ℕ) :
         (continuous_fin_tail_nnreal n).measurable.comp measurable_fst
       have hxTail : Measurable (fun z : (Fin (n+1) → ℝ≥0) × (ℝ × ((Fin (n+1) → ℝ) × ℝ)) => Fin.tail z.2.2.1) :=
         (continuous_fin_tail_real n).measurable.comp (measurable_fst.comp (measurable_snd.comp measurable_snd))
-      have ht : Measurable (fun z : (Fin (n+1) → ℝ≥0) × (ℝ × ((Fin (n+1) → ℝ) × ℝ)) => z.2.2.2-(z.1 0 : ℝ)) :=
+      have ht  :=
         (measurable_snd.comp (measurable_snd.comp measurable_snd)).sub (NNReal.continuous_coe.measurable.comp hd)
       exact ((measurable_brownianKilledTransitionPDF_time (-a)).comp
         (hd.prodMk ((measurable_fst.comp measurable_snd).prodMk hx))).ennreal_ofReal.mul
@@ -149,15 +138,12 @@ private theorem elapsed_continuous (n : ℕ) :
     Continuous (brownianFirstHitElapsed n) := by
   cases n with
   | zero =>
-    apply continuous_pi
-    intro i
-    exact Fin.elim0 i
+    fun_prop (disch := positivity)
   | succ n =>
     apply continuous_pi
     intro i
     refine Fin.cases ?_ (fun j => ?_) i
-    · exact continuous_apply 0
-    · exact (continuous_apply j.succ).sub (continuous_apply j.castSucc)
+    all_goals continuity
 
 private theorem reversal_times_pos (n : ℕ) (ss : Fin (n+1) → ℝ≥0)
     (hss : StrictMono ss) (v : ℝ≥0) (hv : ss (Fin.last n) < v) (i : Fin (n+1)) :
@@ -181,9 +167,7 @@ theorem measurable_brownianFirstHitReversedPDF (a c : ℝ) (n : ℕ) (ss : Fin (
     Measurable (brownianFirstHitReversedPDF a c n ss) := by
   have htimes : Measurable (fun z : (Fin (n+1) → ℝ) × ℝ => fun i : Fin (n+1) =>
       Real.toNNReal z.2-ss i.rev) := by
-    apply measurable_pi_iff.mpr
-    intro i
-    exact (measurable_real_toNNReal.comp measurable_snd).sub measurable_const
+    fun_prop (disch := positivity)
   exact (measurable_brownianFirstHitFinitePDF_all a (n+1)).comp
     (f := fun z : (Fin (n+1) → ℝ) × ℝ =>
       (brownianFirstHitElapsed (n+1) (fun i => Real.toNNReal z.2-ss i.rev), (c, z)))
@@ -200,18 +184,16 @@ private theorem tendsto_gridPDF (a c : ℝ) (n : ℕ) (ss : Fin (n+1) → ℝ≥
   have ht : ss (Fin.last n) < Real.toNNReal z.2 := by
     apply hb.trans
     apply NNReal.coe_lt_coe.mp
-    rwa [Real.coe_toNNReal z.2 ((NNReal.coe_nonneg b).trans hz.le)]
-  have hts : StrictMono ts := reversal_times_strictMono n ss hss _ ht
+    simp_all
+  have hts  := reversal_times_strictMono n ss hss _ ht
   have hd := brownianFirstHitElapsed_pos (n+1) ts (reversal_times_pos n ss hss _ ht) hts
   have hh : (brownianFirstHitHorizon (n+1) (brownianFirstHitElapsed (n+1) ts) : ℝ) < z.2 := by
     rw [brownianFirstHitHorizon_elapsed n ts hts.monotone]
     change ((Real.toNNReal z.2-ss (Fin.last n).rev : ℝ≥0) : ℝ) < z.2
     rw [Fin.rev_last,NNReal.coe_sub ((hss.monotone (Fin.zero_le _)).trans ht.le),
       Real.coe_toNNReal z.2 ((NNReal.coe_nonneg b).trans hz.le)]
-    have hs : 0 < (ss 0 : ℝ) := NNReal.coe_pos.mpr hs0
-    linarith
-  have hgrid : Tendsto (fun m => brownianReversalGridTimes n ss b m (brownianLifetimeCellIndex m z.2))
-      atTop (𝓝 ts) :=
+    simp_all
+  have hgrid  :=
     tendsto_pi_nhds.mpr (fun i => tendsto_brownianReversalGridTimes_selected n ss b z.2 hz i)
   have hparam : Tendsto (fun m => (brownianFirstHitElapsed (n+1)
       (brownianReversalGridTimes n ss b m (brownianLifetimeCellIndex m z.2)),(c,(z.1,z.2))))
@@ -229,24 +211,24 @@ private theorem offsetPDF_continuousAt (a c : ℝ) (n : ℕ) (ss : Fin (n+1) →
       (brownianFirstHitFinitePDF a (n+1)
         (brownianFirstHitElapsed (n+1) (fun i => (Real.toNNReal w.2.2+w.1)-ss i.rev))
         c w.2.1 w.2.2).toReal) (r,z) := by
-  let v : ℝ≥0 := Real.toNNReal z.2+r
+  let v  := Real.toNNReal z.2+r
   let ts : Fin (n+1) → ℝ≥0 := fun i => v-ss i.rev
-  have hz0 : 0 ≤ z.2 := (NNReal.coe_nonneg b).trans hz
+  have hz0  := (NNReal.coe_nonneg b).trans hz
   have ht : ss (Fin.last n) < v := by
     apply hb.trans_le
     have hb' : b ≤ Real.toNNReal z.2 := by
       apply NNReal.coe_le_coe.mp
       rwa [Real.coe_toNNReal z.2 hz0]
     exact hb'.trans (show Real.toNNReal z.2 ≤ Real.toNNReal z.2+r from le_self_add)
-  have hts : StrictMono ts := reversal_times_strictMono n ss hss v ht
+  have hts  := reversal_times_strictMono n ss hss v ht
   have hd := brownianFirstHitElapsed_pos (n+1) ts (reversal_times_pos n ss hss v ht) hts
   have hh : (brownianFirstHitHorizon (n+1) (brownianFirstHitElapsed (n+1) ts) : ℝ) < z.2 := by
     rw [brownianFirstHitHorizon_elapsed n ts hts.monotone]
     change ((v-ss (Fin.last n).rev : ℝ≥0) : ℝ) < z.2
     rw [Fin.rev_last,NNReal.coe_sub ((hss.monotone (Fin.zero_le _)).trans ht.le)]
     have hv : (v : ℝ) = z.2+(r : ℝ) := by
-      simp only [v,NNReal.coe_add,Real.coe_toNNReal z.2 hz0]
-    have hrr := NNReal.coe_lt_coe.mpr hr
+      continuity
+    
     linarith
   have hm : Continuous (fun w : ℝ≥0 × ((Fin (n+1) → ℝ) × ℝ) =>
       (brownianFirstHitElapsed (n+1) (fun i => (Real.toNNReal w.2.2+w.1)-ss i.rev),
@@ -272,13 +254,10 @@ private theorem gridPDF_compact_bound (a c : ℝ) (n : ℕ) (ss : Fin (n+1) → 
       (brownianFirstHitFinitePDF a (n+1)
         (brownianFirstHitElapsed (n+1)
           (brownianReversalGridTimes n ss b m (brownianLifetimeCellIndex m z.2))) c z.1 z.2).toReal ≤ C := by
-  let ε : ℝ≥0 := ss 0/2
+  let ε  := ss 0/2
   have hε : 0 < ε := by dsimp [ε]; positivity
   have hεs : ε < ss 0 := by
-    apply NNReal.coe_lt_coe.mp
-    change (ss 0 : ℝ)/2 < (ss 0 : ℝ)
-    have h := NNReal.coe_pos.mpr hs0
-    linarith
+    continuity
   let L : Set ((Fin (n+1) → ℝ) × ℝ) := K ∩ {z | (b : ℝ) ≤ z.2}
   have hL : IsCompact L := hK.inter_right (isClosed_le continuous_const continuous_snd)
   let D : Set (ℝ≥0 × ((Fin (n+1) → ℝ) × ℝ)) := Icc 0 ε ×ˢ L
@@ -293,12 +272,12 @@ private theorem gridPDF_compact_bound (a c : ℝ) (n : ℕ) (ss : Fin (n+1) → 
   refine ⟨max C 0,le_max_right _ _,?_⟩
   filter_upwards [tendsto_brownianLifetimeMesh_zero.eventually (gt_mem_nhds hε)] with m hm
   intro z hz hzt
-  let r : ℝ≥0 := brownianLifetimeCeiling m z.2-Real.toNNReal z.2
+  let r  := brownianLifetimeCeiling m z.2-Real.toNNReal z.2
   have hr : r ≤ ε := by
     apply (tsub_le_iff_right).mpr
-    exact (brownianLifetimeCeiling_upper m z.2).trans (by simpa only [add_comm] using add_le_add_left hm.le (Real.toNNReal z.2))
+    exact (brownianLifetimeCeiling_upper m z.2).trans (by linarith)
   have hw : (r,z) ∈ D := ⟨⟨zero_le,hr⟩,hz,hzt.le⟩
-  have he : Real.toNNReal z.2+r = brownianLifetimeCeiling m z.2 :=
+  have he  :=
     add_tsub_cancel_of_le (brownianLifetimeCeiling_lower m z.2)
   have hf : F (r,z) = (brownianFirstHitFinitePDF a (n+1)
       (brownianFirstHitElapsed (n+1)
@@ -311,9 +290,10 @@ private theorem gridPDF_compact_bound (a c : ℝ) (n : ℕ) (ss : Fin (n+1) → 
   rw [← hf]
   exact (hC (mem_image_of_mem F hw)).trans (le_max_left _ _)
 
-private theorem reversedPDF_mass_le_one (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a) (hc : 0 < c)
-    (n : ℕ) (ss : Fin (n+1) → ℝ≥0) (hss : StrictMono ss) (hs0 : 0 < ss 0)
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a) (hc : 0 < c) (n : ℕ) (ss : Fin (n+1) → ℝ≥0) (hss : StrictMono ss) (hs0 : 0 < ss 0)
+
+include P hB a c ha hc n ss hss hs0 in
+private theorem reversedPDF_mass_le_one 
     (b : ℝ≥0) (hb : ss (Fin.last n) < b) :
     (∫⁻ z : (Fin (n+1) → ℝ) × ℝ in {z | (b : ℝ) < z.2},
       brownianFirstHitReversedPDF a c n ss z ∂volume.prod volume) ≤ 1 := by
@@ -338,7 +318,7 @@ private theorem reversedPDF_mass_le_one (P : Measure BrownianPath)
     filter_upwards [tendsto_brownianLifetimeMesh_zero.eventually (gt_mem_nhds hs0)] with m hm
     have he := brownianPath_firstHit_reversal_grid_lintegral P hB a c ha hc n ss hss b hb m hm
       (fun _ => 1) measurable_const
-    simpa only [mul_one,lintegral_one,Measure.restrict_apply MeasurableSet.univ,univ_inter] using he
+    continuity
   calc
     _ = ∫⁻ z, liminf (fun m => F m z) atTop ∂μ :=
       lintegral_congr_ae (hconv.mono (fun _ h => h.liminf_eq.symm))
@@ -367,9 +347,8 @@ private theorem measurable_reversedObservation (a c : ℝ) (n : ℕ) (ss : Fin (
       (measurable_const.mul (NNReal.continuous_coe.measurable.comp ht)))
   exact hs.prodMk (NNReal.continuous_coe.measurable.comp hτ)
 
-private theorem reversed_observation_compactTest (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a) (hc : 0 < c)
-    (n : ℕ) (ss : Fin (n+1) → ℝ≥0) (hss : StrictMono ss) (hs0 : 0 < ss 0)
+include P hB a c ha hc n ss hss hs0
+private theorem reversed_observation_compactTest 
     (b : ℝ≥0) (hb : ss (Fin.last n) < b) (f : C_c(((Fin (n+1) → ℝ) × ℝ), ℝ≥0)) :
     (∫⁻ p in {p : BrownianPath | (b : ℝ) < (firstPassageTime (driftedBrownianPath a p) c : ℝ)},
       (f (brownianFirstHitReversedObservation a c n ss p) : ℝ≥0∞) ∂P) =
@@ -377,7 +356,7 @@ private theorem reversed_observation_compactTest (P : Measure BrownianPath)
         brownianFirstHitReversedPDF a c n ss z*(f z : ℝ≥0∞) ∂volume.prod volume := by
   classical
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
-  let A : Set BrownianPath := {p | (b : ℝ) < (firstPassageTime (driftedBrownianPath a p) c : ℝ)}
+  let A  := {p | (b : ℝ) < (firstPassageTime (driftedBrownianPath a p) c : ℝ)}
   let μ : Measure ((Fin (n+1) → ℝ) × ℝ) :=
     (volume.prod volume).restrict {z | (b : ℝ) < z.2}
   let G : ℕ → BrownianPath → (Fin (n+1) → ℝ) × ℝ := fun m =>
@@ -390,7 +369,7 @@ private theorem reversed_observation_compactTest (P : Measure BrownianPath)
     (brownianLifetimeCellIndex m) (measurable_brownianLifetimeCellIndex m) (brownianReversalGridTimes n ss b m)
   have hF (m : ℕ) : Measurable (F m) := measurable_brownianSelectedFirstHitPDF a c (n+1)
     (brownianLifetimeCellIndex m) (measurable_brownianLifetimeCellIndex m) (brownianReversalGridTimes n ss b m)
-  have hH : Continuous (fun z => (f z : ℝ≥0∞)) := ENNReal.continuous_coe.comp f.continuous
+  have hH  := ENNReal.continuous_coe.comp f.continuous
   obtain ⟨M,hM⟩ := (f.hasCompactSupport.isCompact_range f.continuous).bddAbove
   have hMz (z) : f z ≤ M := hM (mem_range_self z)
   have hAm : MeasurableSet A := measurableSet_lt measurable_const
@@ -404,7 +383,7 @@ private theorem reversed_observation_compactTest (P : Measure BrownianPath)
     · intro m
       exact ae_of_all _ (fun p => ENNReal.coe_le_coe.mpr (hMz (G m p)))
     · rw [lintegral_const]
-      exact ENNReal.mul_ne_top ENNReal.coe_ne_top (measure_ne_top _ _)
+      finiteness
     · filter_upwards [ae_restrict_mem hAm] with p hp
       exact (hH.tendsto _).comp (tendsto_brownianSelectedFirstHitObservation_grid a c n ss b p hp)
   obtain ⟨C,hC,hbound⟩ := gridPDF_compact_bound a c n ss hss hs0 b hb (tsupport f) f.hasCompactSupport
@@ -440,10 +419,9 @@ private theorem reversed_observation_compactTest (P : Measure BrownianPath)
   exact (brownianPath_firstHit_reversal_grid_lintegral P hB a c ha hc n ss hss b hb m hm
     (fun z => (f z : ℝ≥0∞)) hH.measurable).symm
 
+
 /-- Actual random-lifetime reversed samples have the killed/hitting density obtained from the source ceiling-cell calculation. -/
-theorem brownianPath_firstHit_reversed_observation_density_map_localized (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a) (hc : 0 < c)
-    (n : ℕ) (ss : Fin (n+1) → ℝ≥0) (hss : StrictMono ss) (hs0 : 0 < ss 0)
+theorem brownianPath_firstHit_reversed_observation_density_map_localized 
     (b : ℝ≥0) (hb : ss (Fin.last n) < b) :
     (P.restrict {p : BrownianPath | (b : ℝ) < (firstPassageTime (driftedBrownianPath a p) c : ℝ)}).map
       (brownianFirstHitReversedObservation a c n ss) =
@@ -477,15 +455,14 @@ theorem brownianPath_firstHit_reversed_observation_density_map_localized (P : Me
   exact (ENNReal.ofReal_eq_ofReal_iff
     (integral_nonneg (fun z => (f z).coe_nonneg)) (integral_nonneg (fun z => (f z).coe_nonneg))).mp he
 
+
 /-- Exhausting the lifetime cutoffs gives the exact reversed observation/lifetime density on its full source domain. -/
-theorem brownianPath_firstHit_reversed_observation_density_map (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a) (hc : 0 < c)
-    (n : ℕ) (ss : Fin (n+1) → ℝ≥0) (hss : StrictMono ss) (hs0 : 0 < ss 0) :
+theorem brownianPath_firstHit_reversed_observation_density_map  :
     (P.restrict {p : BrownianPath | ss (Fin.last n) < firstPassageTime (driftedBrownianPath a p) c}).map
       (brownianFirstHitReversedObservation a c n ss) =
       ((volume.prod volume).restrict {z : (Fin (n+1) → ℝ) × ℝ | (ss (Fin.last n) : ℝ) < z.2}).withDensity
         (brownianFirstHitReversedPDF a c n ss) := by
-  let b : ℕ → ℝ≥0 := fun m => ss (Fin.last n)+(brownianDyadicMesh m)⁻¹
+  let b  := fun m => ss (Fin.last n)+(brownianDyadicMesh m)⁻¹
   let A : ℝ≥0 → Set ((Fin (n+1) → ℝ) × ℝ) := fun u => {z | (u : ℝ) < z.2}
   have hA (u : ℝ≥0) : MeasurableSet (A u) := measurableSet_lt measurable_const measurable_snd
   have hb (m : ℕ) : ss (Fin.last n) < b m := by
@@ -514,11 +491,8 @@ theorem brownianPath_firstHit_reversed_observation_density_map (P : Measure Brow
     rw [Measure.restrict_map hobs (hA (b m)),restrict_withDensity (hA (b m))]
     exact brownianPath_firstHit_reversed_observation_density_map_localized P hB a c ha hc n ss hss hs0 (b m) (hb m)
   rw [Measure.restrict_map hobs (hA (ss (Fin.last n))),restrict_withDensity (hA (ss (Fin.last n)))] at he
-  have hpre : {p : BrownianPath | ss (Fin.last n) < firstPassageTime (driftedBrownianPath a p) c} =
-      brownianFirstHitReversedObservation a c n ss ⁻¹' A (ss (Fin.last n)) := by
-    ext p
-    exact NNReal.coe_lt_coe.symm
-  rw [hpre]
-  exact he
+  aesop
+omit P hB a c ha hc n ss hss hs0
+
 
 end DOZZ.Proofs

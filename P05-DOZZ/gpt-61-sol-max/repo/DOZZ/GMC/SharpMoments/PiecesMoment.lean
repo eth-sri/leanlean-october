@@ -12,7 +12,7 @@ A positive moment of a random variable bounded almost surely by a combination of
 root pieces, a bulk piece and an exterior piece is bounded by the same combination of the moments
 of the pieces, with factors `2 ^ t` and `N ^ t`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -50,7 +50,7 @@ theorem lintegral_rpow_le_of_le_pieces
   have hXk : ∀ k ∈ (Finset.univ : Finset (Fin N)),
       AEMeasurable (fun ω => a k ^ t * Xr k ω ^ t) P := fun k _ =>
     aemeasurable_const.mul ((hXr k).pow_const t)
-  have hS : AEMeasurable (fun ω => ∑ k, a k ^ t * Xr k ω ^ t) P :=
+  have hS  :=
     Finset.aemeasurable_fun_sum _ hXk
   have hA : AEMeasurable (fun ω => (N : ℝ≥0∞) ^ t * ∑ k, a k ^ t * Xr k ω ^ t) P :=
     aemeasurable_const.mul hS

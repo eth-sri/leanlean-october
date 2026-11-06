@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.FourPoint.BPZ.WardLimit
+import Mathlib.Tactic
 
 /-! # The Ward identity without the auxiliary cutoff
 
@@ -16,7 +17,7 @@ the cutoff function `ρ`:
 
 with `I = ∫ k dM`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -29,15 +30,18 @@ variable {P : Measure Ω} {X : Ω → Distr} {M : Ω → Measure ℂ} {Xc : Ω �
 
 namespace BPZLimitData
 
+variable (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
+
+include hd in
 /-- The difference-quotient kernel is bounded by `Lip(φ)|v|/2` times the weights. -/
-theorem abs_diffKer_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {Lφ : ℝ≥0} (hLφ : LipschitzWith Lφ φ)
+theorem abs_diffKer_le  {Lφ : ℝ≥0} (hLφ : LipschitzWith Lφ φ)
     (v x y : ℂ) :
     |(φ x - φ y) * (k₂ x * k₂ y) * bpzKern v (x - y) / 2| ≤
       (Lφ : ℝ) * ‖v‖ / 2 * (k₂ x * k₂ y) := by
-  have hk : 0 ≤ k₂ x * k₂ y := mul_nonneg (hd.k₂_nonneg x) (hd.k₂_nonneg y)
+  have hk  := mul_nonneg (hd.k₂_nonneg x) (hd.k₂_nonneg y)
   rcases eq_or_ne x y with rfl | hxy
   · simp only [sub_self, zero_mul, zero_div, abs_zero]; positivity
-  have hxy' : 0 < ‖x - y‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxy)
+  have hxy'  := norm_pos_iff.mpr (sub_ne_zero.mpr hxy)
   have hlip : |φ x - φ y| ≤ Lφ * ‖x - y‖ := by
     rw [← Real.dist_eq, ← dist_eq_norm]; exact hLφ.dist_le_mul x y
   rw [abs_div, abs_two, abs_mul, abs_mul, abs_of_nonneg hk]
@@ -47,8 +51,9 @@ theorem abs_diffKer_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {Lφ : ℝ≥
         exact abs_bpzKern_le v _
     _ = (Lφ : ℝ) * ‖v‖ / 2 * (k₂ x * k₂ y) := by field_simp
 
+include hd in
 /-- Pathwise: the two antisymmetrized limit terms combine into the difference-quotient kernel. -/
-theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m : Measure ℂ}
+theorem sym_add_mix_eq  (v : ℂ) {m : Measure ℂ}
     [IsFiniteMeasure m] (hk₂ : Integrable k₂ m) :
     (∫ x, ∫ y, bpzSymKer φ ρ k₂ (bpzKern v) x y ∂m ∂m) +
         ∫ x, bpzMixTest φ ρ k₂ k₂ (bpzKern v) m x ∂m =
@@ -60,12 +65,12 @@ theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m 
   have hk₂m := hd.k₂_meas
   have hφm := hd.phi_cont.measurable
   have hKm := measurable_bpzKern v
-  have hρk : ∀ x, ρ x * |k₂ x| ≤ K := fun x => (hd.rho_abs_cutWeight_le hK hK0 0 x).2
+  have hρk  := fun x => (hd.rho_abs_cutWeight_le hK hK0 0 x).2
   -- the three kernels as functions on the product
   set S : ℂ → ℂ → ℝ := bpzSymKer φ ρ k₂ (bpzKern v) with hSdef
   set F : ℂ → ℂ → ℝ := fun x y => (1 - ρ y) * k₂ y * (φ x * k₂ x * bpzKern v (x - y)) with hF
   set G : ℂ → ℂ → ℝ := fun x y => (φ x - φ y) * (k₂ x * k₂ y) * bpzKern v (x - y) / 2 with hG
-  have hSm : Measurable (Function.uncurry S) :=
+  have hSm  :=
     measurable_bpzSymKer hφm hd.ρ_meas hk₂m hKm
   have hFm : Measurable (Function.uncurry F) :=
     (((measurable_const.sub (hd.ρ_meas.comp measurable_snd)).mul (hk₂m.comp measurable_snd)).mul
@@ -75,7 +80,7 @@ theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m 
     (((((hφm.comp measurable_fst).sub (hφm.comp measurable_snd)).mul
       ((hk₂m.comp measurable_fst).mul (hk₂m.comp measurable_snd))).mul
         (hKm.comp (measurable_fst.sub measurable_snd))).div_const _)
-  have hprod : Integrable (fun p : ℂ × ℂ => k₂ p.1 * k₂ p.2) (m.prod m) := hk₂.mul_prod hk₂
+  have hprod  := hk₂.mul_prod hk₂
   -- integrability on the product
   have hSi : Integrable (fun p : ℂ × ℂ => S p.1 p.2) (m.prod m) := by
     have hb : ∀ x y, |S x y| ≤ 2 * ‖v‖ * ((Lφ : ℝ) + B / δ) * (K * K) := by
@@ -98,10 +103,10 @@ theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m 
         ≤ 1 * ‖v‖ / (2 * δ) * B * K * k₂ p.2 :=
           mul_le_mul_of_nonneg_left hw (by positivity)
       _ = 1 * ‖v‖ / (2 * δ) * B * K * (1 * k₂ p.2) := by ring
-  have hGi : Integrable (fun p : ℂ × ℂ => G p.1 p.2) (m.prod m) :=
+  have hGi  :=
     (hprod.const_mul ((Lφ : ℝ) * ‖v‖ / 2)).mono' hGm.aestronglyMeasurable
       (Eventually.of_forall fun p => by
-        rw [Real.norm_eq_abs]; exact hd.abs_diffKer_le hLφ v p.1 p.2)
+        exact hd.abs_diffKer_le hLφ v p.1 p.2)
   -- the mixed term as a double integral and its antisymmetrization
   have hmix : ∫ x, bpzMixTest φ ρ k₂ k₂ (bpzKern v) m x ∂m = ∫ x, ∫ y, F x y ∂m ∂m := rfl
   rw [hmix, bpz_integral_integral_symm (F := F) hFi]
@@ -116,8 +121,9 @@ theorem sym_add_mix_eq (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) {m 
   rw [show p.2 - p.1 = -(p.1 - p.2) by ring, bpzKern_neg]
   ring
 
+include hd in
 /-- **The Ward identity in the limit, without the auxiliary cutoff.** -/
-theorem ward_limit_clean (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
+theorem ward_limit_clean 
     (hp : BPZWardProb P X γ M Xc ρ k₂ D) (v : ℂ) :
     ∫ ω, (∫ x, k₂ x ∂M ω) ^ (-q) *
         ∫ x, fderiv ℝ (fun x => φ x * kt x) x v * normPlus x ^ (4 + γ ^ 2 * q) ∂M ω ∂P =

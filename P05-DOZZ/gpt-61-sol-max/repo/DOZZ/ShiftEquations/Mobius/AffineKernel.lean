@@ -7,6 +7,7 @@ module
 public import DOZZ.Statements.Defs.GffKernel
 public import DOZZ.Statements.Defs.CircleMeasure
 import DOZZ.GFFStructure.CirclePotential
+import Mathlib.Tactic
 
 /-!
 # The affine metric defect of the equator kernel
@@ -29,12 +30,15 @@ namespace DOZZ.Proofs
 noncomputable def affineDefect (a b : ℂ) (y : ℂ) : ℝ :=
   Real.log (normPlus (a * y + b)) - Real.log (normPlus y) - Real.log ‖a‖ / 2
 
+variable (a b : ℂ) (ha : a ≠ 0)
+
+include a b ha in
 /-- The equator kernel changes by the defect at both points under an affine map. -/
-theorem gffKernel_affine (a b : ℂ) (ha : a ≠ 0) {y y' : ℂ} (hyy : y ≠ y') :
+theorem gffKernel_affine  {y y' : ℂ} (hyy : y ≠ y') :
     gffKernel (a * y + b) (a * y' + b) =
       gffKernel y y' + affineDefect a b y + affineDefect a b y' := by
-  have hna : ‖a‖ ≠ 0 := norm_ne_zero_iff.mpr ha
-  have hny : ‖y - y'‖ ≠ 0 := norm_ne_zero_iff.mpr (sub_ne_zero.mpr hyy)
+  have hna  := norm_ne_zero_iff.mpr ha
+  have hny  := norm_ne_zero_iff.mpr (sub_ne_zero.mpr hyy)
   have hsub : (a * y + b) - (a * y' + b) = a * (y - y') := by ring
   unfold gffKernel affineDefect
   rw [hsub, norm_mul, Real.log_mul hna hny]
@@ -42,7 +46,6 @@ theorem gffKernel_affine (a b : ℂ) (ha : a ≠ 0) {y y' : ℂ} (hyy : y ≠ y'
 
 /-- The affine metric defect is continuous. -/
 theorem continuous_affineDefect (a b : ℂ) : Continuous (affineDefect a b) := by
-  unfold affineDefect
   exact ((continuous_log_normPlus.comp (by fun_prop :
     Continuous fun y : ℂ => a * y + b)).sub continuous_log_normPlus).sub continuous_const
 
@@ -76,16 +79,16 @@ theorem log_affine_const_nonneg (c d : ℂ) : 0 ≤ Real.log (‖c‖ + ‖d‖ 
 
 end AffineKernel
 
+include a b ha in
 /-- The defect is bounded on the whole plane. -/
-theorem exists_abs_affineDefect_le (a b : ℂ) (ha : a ≠ 0) :
+theorem exists_abs_affineDefect_le  :
     ∃ C : ℝ, ∀ y : ℂ, |affineDefect a b y| ≤ C := by
   refine ⟨Real.log (‖a‖ + ‖b‖ + 1) + Real.log (‖a⁻¹‖ + ‖-(a⁻¹ * b)‖ + 1) +
     |Real.log ‖a‖| / 2, fun y => ?_⟩
   have h1 := AffineKernel.log_normPlus_affine_le a b y
   have h2 := AffineKernel.log_normPlus_affine_le a⁻¹ (-(a⁻¹ * b)) (a * y + b)
   have hy : a⁻¹ * (a * y + b) + -(a⁻¹ * b) = y := by
-    rw [mul_add, ← mul_assoc, inv_mul_cancel₀ ha, one_mul]
-    ring
+    field_simp <;> ring
   rw [hy] at h2
   have h3 := AffineKernel.log_affine_const_nonneg a b
   have h4 := AffineKernel.log_affine_const_nonneg a⁻¹ (-(a⁻¹ * b))
@@ -98,8 +101,7 @@ theorem exists_abs_affineDefect_le (a b : ℂ) (ha : a ≠ 0) :
 /-- The equator kernel has vanishing average over the unit circle (radius `e^0 = 1`). -/
 theorem integral_gffKernel_circleMeasure_unit (y : ℂ) :
     ∫ u, gffKernel y u ∂circleMeasure 0 0 = 0 := by
-  rw [integral_gffKernel_circleMeasure, integral_log_normPlus_circleMeasure_origin_eq_max]
-  simp [normPlus]
+  exact DOZZ.integral_gffKernel_circleMeasure y
 
 namespace AffineKernel
 
@@ -110,19 +112,19 @@ theorem affine_circleMap (a b y : ℂ) (R θ : ℝ) :
   simp only [circleMap]
   push_cast
   rw [add_mul, Complex.exp_add]
-  linear_combination (-(R * Complex.exp (θ * Complex.I))) * h
+  grind
 
 /-- Rotating the parameter of a `2π`-periodic map preserves the pushforward of arclength. -/
 theorem map_restrict_Ioc_add_periodic {β : Type*} [MeasurableSpace β] {g : ℝ → β}
     (hg : Measurable g) (hper : Function.Periodic g (2 * Real.pi)) (φ : ℝ) :
     (volume.restrict (Ioc 0 (2 * Real.pi))).map (fun θ => g (θ + φ)) =
       (volume.restrict (Ioc 0 (2 * Real.pi))).map g := by
-  have hT : 0 < 2 * Real.pi := Real.two_pi_pos
+  have hT  := Real.two_pi_pos
   have hgφ : Measurable (fun θ => g (θ + φ)) := hg.comp (measurable_add_const φ)
   refine Measure.ext fun s hs => ?_
   rw [Measure.map_apply hgφ hs, Measure.map_apply hg hs, Measure.restrict_apply (hgφ hs),
     Measure.restrict_apply (hg hs)]
-  have hA : MeasurableSet (g ⁻¹' s) := hg hs
+  have hA  := hg hs
   have hinv : ∀ k : AddSubgroup.zmultiples (2 * Real.pi),
       (fun x => k +ᵥ x) ⁻¹' (g ⁻¹' s) = g ⁻¹' s := by
     intro k
@@ -132,9 +134,7 @@ theorem map_restrict_Ioc_add_periodic {β : Type*} [MeasurableSpace β] {g : ℝ
     ⟨fun c s _ => measure_preimage_add _ _ _⟩
   have hset : (fun θ => g (θ + φ)) ⁻¹' s ∩ Ioc 0 (2 * Real.pi) =
       (fun θ => θ + φ) ⁻¹' (g ⁻¹' s ∩ Ioc φ (φ + 2 * Real.pi)) := by
-    ext θ
-    simp only [mem_inter_iff, mem_preimage, mem_Ioc]
-    constructor <;> rintro ⟨h1, h2, h3⟩ <;> exact ⟨h1, by linarith, by linarith⟩
+    continuity
   rw [hset, measure_preimage_add_right]
   have h := (isAddFundamentalDomain_Ioc hT φ).measure_set_eq
     (isAddFundamentalDomain_Ioc hT 0) hA hinv
@@ -143,11 +143,12 @@ theorem map_restrict_Ioc_add_periodic {β : Type*} [MeasurableSpace β] {g : ℝ
 
 end AffineKernel
 
+include a b ha in
 /-- Affine images of circle measures are circle measures. -/
-theorem circleMeasure_map_affine (a b : ℂ) (ha : a ≠ 0) (y : ℂ) (r : ℝ) :
+theorem circleMeasure_map_affine  (y : ℂ) (r : ℝ) :
     (circleMeasure y r).map (fun u => a * u + b) =
       circleMeasure (a * y + b) (r - Real.log ‖a‖) := by
-  have hna : 0 < ‖a‖ := norm_pos_iff.mpr ha
+  have hna  := norm_pos_iff.mpr ha
   have hR : Real.exp (-(r - Real.log ‖a‖)) = ‖a‖ * Real.exp (-r) := by
     rw [neg_sub, sub_eq_add_neg, Real.exp_add, Real.exp_log hna]
   have hmeas : Measurable (fun u : ℂ => a * u + b) := by fun_prop

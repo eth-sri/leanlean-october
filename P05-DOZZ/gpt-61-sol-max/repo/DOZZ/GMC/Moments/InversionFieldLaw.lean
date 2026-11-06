@@ -9,7 +9,7 @@ public import DOZZ.GMC.GaussianInputs
 
 /-! Gaussian law of the equator field transported through the punctured inversion chart. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions

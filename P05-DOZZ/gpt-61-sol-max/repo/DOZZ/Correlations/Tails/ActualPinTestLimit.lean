@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Tails.CompactPinMoment
 
 /-! The copied-pin compact-test limit on the actual product probability space. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal
 
@@ -54,7 +54,7 @@ theorem actual_copied_pin_test_limit
       (fun (n : ℕ) q => ∫ x, f x * Real.exp (c x * (Xc q.2 z 0-Xc q.1 z 0))
         ∂regularizedGMC P Yc γ n q.1)
       atTop (fun q => ∫ x, f x * Real.exp (c x * (Xc q.2 z 0-Xc q.1 z 0)) ∂N q.1) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   have hfst : MeasurePreserving (Prod.fst : Ω × Ω → Ω) (P.prod P) P := measurePreserving_fst
   have hY' := isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst Y hY
   have hYc' := isCircleAverage_measurePreserving P (P.prod P) Prod.fst hfst Y Yc hY hYc
@@ -81,7 +81,7 @@ theorem actual_copied_pin_test_limit
       (fun l => pin_difference_exp_abs_moment (P.prod P) _ _
         h2.hasGaussianLaw h1.hasGaussianLaw hmean2 hmean1 l)
   simp only [regularizedGMC_measurePreserving P (P.prod P) Prod.fst hfst Y Yc hYc] at h
-  simpa only [Function.comp_def] using h
+  exact h
 
 
 end DOZZ.Proofs

@@ -4,12 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 
-public import DOZZ.Correlations.Residue.AffineMoment
+public import DOZZ.ShiftEquations.Mobius.AffineMomentInf
 public import DOZZ.Correlations.Symmetry.InversionSwap
 
 /-! The literal canonical rho is the two-finite-root Coulomb mass in the residue chart. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -49,10 +49,10 @@ theorem residue_rho_eq_coulombMass (γ a b c : ℝ) (μ : Measure ℂ)
   exact residue_rho_coulombWeight γ a b c x hx0 hx1
 
 /-- The canonical three-point exponent includes the infinity charge. -/
-theorem residueTotalSExp_two (γ a b c : ℝ) :
-    residueTotalSExp γ ![a, b] c = sExp γ a b c := by
-  unfold residueTotalSExp sExp
-  simp only [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one]
+theorem infSExp_two (γ a b c : ℝ) :
+    infSExp γ ![a, b] c = sExp γ a b c := by
+  unfold infSExp sExp
+  simp_all
 
 /-- Move the two finite insertions from 0,1 to 3,7. Both are outside the equator and their
 separation is four, so the exact local-tail domains hold. -/
@@ -65,14 +65,14 @@ theorem residue_unitVolume_finite_chart
         (∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) ![a, b] ![3, 7] c)
           (-sExp γ a b c) ∂P).toReal := by
   have ha : (4 : ℂ) ≠ 0 := by norm_num
-  have hchart := residue_coulombMass_affine_moment P X hX γ hγ hγ2 M hM
+  have hchart := coulombMass_affine_moment_inf P X hX γ hγ hγ2 M hM
     ![a, b] ![0, 1] c 4 3 ha
   have hroots : (fun k : Fin 2 => (4 : ℂ) * (![0, 1] k) + 3) = ![3, 7] := by
     ext k; fin_cases k <;> norm_num
-  rw [hroots, residueTotalSExp_two] at hchart
+  rw [hroots, infSExp_two] at hchart
   simp only [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one] at hchart
   norm_num only [Complex.norm_ofNat] at hchart
-  have hatoms : ∀ᵐ ω ∂P, M ω {0} = 0 ∧ M ω {1} = 0 :=
+  have hatoms  :=
     (gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 0).and
       (gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 1)
   have hrho : (∫⁻ ω, ENNReal.rpow (rho γ (M ω) a b c) (-sExp γ a b c) ∂P) =

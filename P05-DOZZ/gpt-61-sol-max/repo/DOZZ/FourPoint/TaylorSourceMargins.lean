@@ -9,7 +9,7 @@ public import DOZZ.FourPoint.TaylorPairIntegrability
 
 /-! Source-level parameter choice and convergent near-diagonal kernels in the strict domain. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set Metric
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.GFFStructure.PoissonContracts
 public import DOZZ.GFFStructure.DirichletCompletion
 /-!
 # Global Dirichlet covariance and independence
@@ -13,7 +14,7 @@ so its global complement and all exterior test evaluations are orthogonal.
 The jointly Gaussian Hilbert span turns these identities into independence.
 -/
 
-@[expose] public section
+public section
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal
 namespace DOZZ.Proofs
@@ -46,7 +47,7 @@ theorem abs_diskGreenCovariance_le_restriction_norms (c : ℂ) (ρ : ℝ) (hρ :
       (∫ p : ℂ × ℂ, ‖diskGreenKernel c ρ hρ p.1 p.2‖^2
         ∂((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ))))^(1/2 : ℝ) := by
     apply Real.sq_sqrt
-    exact Real.rpow_nonneg (integral_nonneg (fun _ => sq_nonneg _)) _
+    positivity
   rw [hK,mul_assoc]
   exact h
 
@@ -100,20 +101,12 @@ theorem completed_disk_map_covariance {Ω : Type*} [MeasurableSpace Ω]
   exact completed_disk_map_test_covariance P c ρ hρ T (T (diskTestRestrictionL2 c ρ f)) f
     (fun a ha => by rw [covariance_comm,diskGreenCovariance_symm]; exact hfirst f a ha) g
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P) (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0) (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ)) (hcov : Contract.poissonCovariance P c R ρ V)
+
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov in
 /-- The actual completed field has the exact Green covariance with every global pinned test. -/
-theorem dirichletCompletedL2Map_test_covariance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletCompletedL2Map_test_covariance 
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (f g : TestFn) : covariance (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU (diskTestRestrictionL2 c ρ f))
       (exteriorPinnedTestL2 P X Xc hX hc R (by linarith) g) P = diskGreenCovariance c ρ hρ f g := by
   let _ := hX.1
@@ -122,21 +115,11 @@ theorem dirichletCompletedL2Map_test_covariance {Ω : Type*} [MeasurableSpace Ω
   rw [dirichletCompletedL2Map_apply_interior P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim a ha]
   exact dirichletResidualL2_test_covariance P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hlim a g ha
 
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov in
 /-- The actual globally restricted Dirichlet family has the literal Green covariance
 `DOZZ.diskGreenCovariance`. -/
-theorem dirichletCompletedL2Map_covariance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletCompletedL2Map_covariance 
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (f g : TestFn) : covariance (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU (diskTestRestrictionL2 c ρ f))
       (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU (diskTestRestrictionL2 c ρ g)) P = diskGreenCovariance c ρ hρ f g := by
   let _ := hX.1
@@ -146,20 +129,10 @@ theorem dirichletCompletedL2Map_covariance {Ω : Type*} [MeasurableSpace Ω]
     dirichletCompletedL2Map_apply_interior P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim b hb]
   exact dirichletResidualL2_covariance P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim a b ha hb
 
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov in
 /-- Every actual completed disk variable is centered. -/
-theorem dirichletCompletedL2Map_integral_zero {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletCompletedL2Map_integral_zero 
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (u : Lp ℝ 2 (volume.restrict (ball c ρ))) :
     (∫ ω, dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU u ω ∂P) = 0 := by
   let _ := hX.1
@@ -178,20 +151,10 @@ theorem diskGreenCovariance_eq_zero_of_exterior (c : ℂ) (ρ : ℝ) (hρ : 0 < 
   by_contra hne
   exact hg (subset_closure hne) (ball_subset_closedBall hz)
 
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov in
 /-- Every completed Dirichlet test is orthogonal to every exterior pinned test. -/
-theorem dirichletCompletedL2Map_exterior_covariance_zero {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletCompletedL2Map_exterior_covariance_zero 
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (f g : TestFn) (hg : tsupport g ⊆ (closedBall c ρ)ᶜ) :
     covariance (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU (diskTestRestrictionL2 c ρ f)) (exteriorPinnedTestL2 P X Xc hX hc R (by linarith) g) P = 0 := by
   rw [dirichletCompletedL2Map_test_covariance P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim]

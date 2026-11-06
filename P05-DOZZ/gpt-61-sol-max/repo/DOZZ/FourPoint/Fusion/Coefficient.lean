@@ -13,16 +13,16 @@ public import DOZZ.FourPoint.Fusion.Parameters
 
 /-! # Normalization of the rooted fusion coefficient -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- The coefficient in the one-rooted formula is the shifted rho moment. -/
-theorem fusion_rootedCoefficient_moment {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ p : ℝ) :
+theorem fusion_rootedCoefficient_moment  (α₁ α₂ α₃ p : ℝ) :
     gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p =
       (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re *
         (∫⁻ ω, rho γ (M ω) (α₁ + γ / 2) α₂ α₃ ^ (-p - 1) ∂P).toReal := by
@@ -53,17 +53,12 @@ theorem fusion_shifted_normalization (γ μ p A E : ℝ) (hμ : 0 < μ) (hp : p 
     rw [← Real.rpow_add hμ]
     congr 1
     ring
-  calc
-    _ = -A * (2 / γ * Real.Gamma p * p * E) * μ ^ (-p) := by ring
-    _ = -A * (2 / γ * Real.Gamma p * p * E) * (μ * μ ^ (-(p + 1))) := by rw [hm]
-    _ = _ := by ring
+  grind
 
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- The normalization in the four-point moment gives exactly the shifted structure constant. -/
-theorem fusion_normalized_rootedCoefficient {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (μ α₁ α₂ α₃ : ℝ) (hμ : 0 < μ)
+theorem fusion_normalized_rootedCoefficient  (μ α₁ α₂ α₃ : ℝ) (hμ : 0 < μ)
     (hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃) :
     let p := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
     (2 * μ ^ (-p) / γ * Real.Gamma p) *

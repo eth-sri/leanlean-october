@@ -63,10 +63,10 @@ theorem fusion_difference_local_integrable (γ α₁ α₂ α₃ : ℝ)
     exact ae_of_all _ fun x => by
       by_cases hx : x ∈ B
       · rw [Set.indicator_of_mem hx, fusion_difference_kernel_local γ α₁ α₂ α₃ z x
-          (by simpa only [B, Metric.mem_ball, dist_zero_right] using hx), norm_mul,
+          (by continuity), norm_mul,
           Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _)]
         have h := fusion_oneRoot_factor_bound x (by
-          have hx' : ‖x‖ < 1 / 2 := by simpa only [B, Metric.mem_ball, dist_zero_right] using hx
+          have hx' : ‖x‖ < 1 / 2 := by continuity
           exact hx'.le) (γ * α₂)
         rw [← Real.rpow_neg (norm_nonneg _), ← neg_mul] at h
         exact (mul_le_mul_of_nonneg_left h (norm_nonneg _)).trans_eq (mul_comm _ _)
@@ -76,7 +76,7 @@ theorem fusion_difference_local_integrable (γ α₁ α₂ α₃ : ℝ)
   change Integrable _ (gmcReferenceMeasure.restrict B)
   rw [gmcReferenceMeasure_restrict_unit_chart B Metric.isOpen_ball.measurableSet
     (fun x hx => by
-      have hx' : ‖x‖ < 1 / 2 := by simpa only [B, Metric.mem_ball, dist_zero_right] using hx
+      have hx' : ‖x‖ < 1 / 2 := by continuity
       linarith)]
   exact (integrable_indicator_iff Metric.isOpen_ball.measurableSet).mp hv
 end DOZZ.Proofs

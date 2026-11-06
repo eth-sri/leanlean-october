@@ -13,6 +13,7 @@ public import DOZZ.Statements.ShiftEquations.RbarCoefficient
 import DOZZ.Brownian.Reflection.WitnessIndependence
 import DOZZ.Brownian.Reflection.PositiveFinite
 import DOZZ.Brownian.Reflection.RtheorAnalytic
+public import DOZZ.ShiftEquations.Contracts
 
 /-!
 # The reflection coefficient at `α = γ`
@@ -25,7 +26,7 @@ irrational); a meromorphic function with continuous real restriction is analytic
 at `γ` with value `R(γ)`. Moreover `R(γ) ≠ 0` since `R̄(γ) > 0`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -48,20 +49,12 @@ theorem reflectionExponent_gamma_ne {γ : ℝ} (hγ : 0 < γ) (hγirr : Irration
   field_simp at h4 ⊢
   linarith
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) (hγirr : Irrational (γ ^ 2)) (hBarRRepresentation : Contract.rbarRepresentation P X M γ)
+
+include Ω _inst1 P X M γ μ hγ hγ2 hμ hγirr hBarRRepresentation in
 /-- **The physical reflection coefficient is continuous at `α = γ`** (from
 `DOZZ.reflectionBarR_holomorphic_representation`). -/
-theorem tendsto_reflectionR_gamma {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hγirr : Irrational (γ ^ 2))
-    (hBarRRepresentation : ∀ I : Set ℝ, IsCompact I → (∀ α ∈ I, γ / 2 < α ∧ α < Q γ) →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧ (∀ α ∈ I, IsReflectionData P γ α (B α) Z) ∧
-          ∃ V : Set ℂ, IsOpen V ∧ (∀ α ∈ I, (α : ℂ) ∈ V) ∧
-            ∃ f : ℂ → ℂ, DifferentiableOn ℂ f V ∧
-              (∀ α ∈ I, f (α : ℂ) = (unitVolumeStructureConstant P M γ α γ α : ℂ)) ∧
-              DifferentiableOn ℂ (fun z => rbarCoefficient γ z * f z) V ∧
-              (∀ α ∈ I, rbarCoefficient γ (α : ℂ) * f (α : ℂ) =
-                (reflectionBarR P γ α (B α) Z : ℂ)))
+theorem tendsto_reflectionR_gamma 
     {BR : ℝ → Ω → BrownianPath × BrownianPath} {ZR : Ω → Measure ℝ}
     (hBR : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (BR α) ZR) :
     Tendsto (fun α : ℝ => reflectionR P γ μ α (BR α) ZR) (𝓝 γ)
@@ -109,19 +102,9 @@ theorem tendsto_reflectionR_gamma {Ω : Type*} [MeasurableSpace Ω] (P : Measure
   unfold reflectionR
   exact ((hμp.continuousAt.tendsto.mul hΓ.tendsto).mul hp.continuousAt.tendsto).mul hRbar
 
+include Ω _inst1 P X M γ μ hγ hγ2 hμ hγirr hBarRRepresentation in
 /-- **The meromorphic representative is analytic at `γ`.** -/
-theorem analyticAt_reflection_gamma {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hγirr : Irrational (γ ^ 2))
-    (hBarRRepresentation : ∀ I : Set ℝ, IsCompact I → (∀ α ∈ I, γ / 2 < α ∧ α < Q γ) →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧ (∀ α ∈ I, IsReflectionData P γ α (B α) Z) ∧
-          ∃ V : Set ℂ, IsOpen V ∧ (∀ α ∈ I, (α : ℂ) ∈ V) ∧
-            ∃ f : ℂ → ℂ, DifferentiableOn ℂ f V ∧
-              (∀ α ∈ I, f (α : ℂ) = (unitVolumeStructureConstant P M γ α γ α : ℂ)) ∧
-              DifferentiableOn ℂ (fun z => rbarCoefficient γ z * f z) V ∧
-              (∀ α ∈ I, rbarCoefficient γ (α : ℂ) * f (α : ℂ) =
-                (reflectionBarR P γ α (B α) Z : ℂ)))
+theorem analyticAt_reflection_gamma 
     {hR : ℝ} (hhR : 0 < hR) {R : ℂ → ℂ} (hRm : MeromorphicOn R (horizontalStrip hR))
     {BR : ℝ → Ω → BrownianPath × BrownianPath} {ZR : Ω → Measure ℝ}
     (hBR : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (BR α) ZR)

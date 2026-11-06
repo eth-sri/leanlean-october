@@ -29,10 +29,11 @@ namespace DOZZ.Proofs
 noncomputable def densityEnergy (f g : ℂ → ℝ) : ℝ :=
   ∫ p : ℂ × ℂ, f p.1 * gffKernel p.1 p.2 * g p.2
 
+variable {f g : ℂ → ℝ} (hf : Continuous f) (hg : Continuous g) (hsf : HasCompactSupport f) (hsg : HasCompactSupport g)
+
+include f g hf hg hsf hsg in
 /-- Continuous compactly supported densities have an integrable pinned pairing. -/
-theorem integrable_densityEnergy {f g : ℂ → ℝ}
-    (hf : Continuous f) (hg : Continuous g)
-    (hsf : HasCompactSupport f) (hsg : HasCompactSupport g) :
+theorem integrable_densityEnergy  :
     Integrable (fun p : ℂ × ℂ => f p.1 * gffKernel p.1 p.2 * g p.2)
       (volume : Measure (ℂ × ℂ)) := by
   have hraw := (DOZZ.integral_complexLogKernelPair_eq_vec f g hf hg hsf hsg).1
@@ -121,8 +122,11 @@ theorem tendsto_densityEnergy_of_common_support
     (fun p => (hl p.1).mul (hl p.2))
   convert ht using 1 <;> simp only [densityEnergy, mul_comm, mul_left_comm]
 
+variable (x : ℂ)
+
+include x
 /-- The potential of a nondegenerate circle is continuous, including at points of the circle. -/
-theorem continuous_circleKernelPotential (x : ℂ) (r : ℝ) :
+theorem continuous_circleKernelPotential  (r : ℝ) :
     Continuous (fun z => ∫ w, gffKernel z w ∂circleMeasure x r) := by
   simp_rw [integral_gffKernel_circleMeasure]
   have hlog : Continuous (fun z : ℂ => Real.log (max (Real.exp (-r)) ‖x - z‖)) :=
@@ -130,21 +134,24 @@ theorem continuous_circleKernelPotential (x : ℂ) (r : ℝ) :
       (fun z => ne_of_gt ((Real.exp_pos _).trans_le (le_max_left _ _)))
   exact (hlog.neg.add continuous_log_normPlus).add continuous_const
 
+
 /-- The energy gap extended to continuous compactly supported planar densities. -/
-noncomputable def densityCircleGap (x : ℂ) (r : ℝ) (f : ℂ → ℝ) : ℝ :=
+noncomputable def densityCircleGap  (r : ℝ) (f : ℂ → ℝ) : ℝ :=
   densityEnergy f f - 2 * (∫ z, f z * ∫ w, gffKernel z w ∂circleMeasure x r) +
     circleSelfEnergy x r
 
+
 /-- The extension agrees with the energy gap `DOZZ.circleEnergyGap` on tests. -/
-theorem densityCircleGap_testFn (x : ℂ) (r : ℝ) (f : TestFn) :
+theorem densityCircleGap_testFn  (r : ℝ) (f : TestFn) :
     densityCircleGap x r f = circleEnergyGap x r f := by
   rw [densityCircleGap, densityEnergy_testFn]
   rfl
 
+
 /-- Common-support convergence also controls the mixed circle energy, whose integrated
 potential is continuous even though the original logarithmic kernel is singular. -/
 theorem tendsto_densityCircleGap_of_common_support
-    (x : ℂ) (r : ℝ) (f : ℕ → ℂ → ℝ) (g : ℂ → ℝ)
+     (r : ℝ) (f : ℕ → ℂ → ℝ) (g : ℂ → ℝ)
     {R M : ℝ} (hR : 0 < R) (hM : 0 ≤ M)
     (hf : ∀ n, Measurable (f n))
     (hs : ∀ n, Function.support (f n) ⊆ closedBall (0 : ℂ) R)
@@ -162,9 +169,10 @@ theorem tendsto_densityCircleGap_of_common_support
   exact ((tendsto_densityEnergy_of_common_support f g hR hM hf hs hb hl).sub
     (hcross.const_mul 2)).add_const (circleSelfEnergy x r)
 
+
 /-- Every continuous compactly supported density can be approximated by smooth tests in
 circle energy. The support is enlarged once and then remains fixed throughout the limit. -/
-theorem exists_testFn_tendsto_densityCircleGap (x : ℂ) (r : ℝ)
+theorem exists_testFn_tendsto_densityCircleGap  (r : ℝ)
     (g : ℂ → ℝ) (hg : Continuous g) {R : ℝ} (hR : 0 < R)
     (hs : tsupport g ⊆ closedBall (0 : ℂ) R) :
     ∃ f : ℕ → TestFn,
@@ -178,7 +186,7 @@ theorem exists_testFn_tendsto_densityCircleGap (x : ℂ) (r : ℝ)
   have hcompact : HasCompactSupport g :=
     (isCompact_closedBall (0 : ℂ) R).of_isClosed_subset isClosed_closure hs
   obtain ⟨M, hM⟩ := hcompact.exists_bound_of_continuous hg
-  have hM0 : 0 ≤ M := (norm_nonneg (g 0)).trans (hM 0)
+  have hM0  := (norm_nonneg (g 0)).trans (hM 0)
   have hεlim : Tendsto ε atTop (𝓝 0) := by
     convert (tendsto_const_div_atTop_nhds_zero_nat (1 : ℝ)).comp
       (tendsto_add_atTop_nat 2) using 1
@@ -191,7 +199,7 @@ theorem exists_testFn_tendsto_densityCircleGap (x : ℂ) (r : ℝ)
       apply (div_le_one (by positivity)).mpr
       linarith only [Nat.cast_nonneg (α := ℝ) n]
     have htri := abs_add_le (f n z - g z) (g z)
-    have hgM : |g z| ≤ M := by simpa only [Real.norm_eq_abs] using hM z
+    have hgM : |g z| ≤ M := hM z
     have hab : |f n z| ≤ |f n z - g z| + |g z| := by
       simpa only [sub_add_cancel] using htri
     linarith
@@ -210,17 +218,18 @@ theorem exists_testFn_tendsto_densityCircleGap (x : ℂ) (r : ℝ)
   exact tendsto_densityCircleGap_of_common_support x r (fun n => f n) g (R := R + 1) (M := M + 1)
     (by linarith) (by linarith) (fun n => (f n).continuous.measurable)
     (fun n => (subset_tsupport _).trans (hf n).1) hbound hl
+omit x
+
 
 
 /-- Raw logarithmic energy, before the equator pinning potentials are added. -/
 noncomputable def rawDensityEnergy (f g : ℂ → ℝ) : ℝ :=
   ∫ p : ℂ × ℂ, f p.1 * g p.2 * (-Real.log ‖p.1 - p.2‖)
 
+include f g hf hg hsf hsg in
 /-- The extended pinned pairing expands bilinearly into the raw logarithmic energy and the two
 pinning terms. -/
-theorem densityEnergy_eq_raw {f g : ℂ → ℝ}
-    (hf : Continuous f) (hg : Continuous g)
-    (hsf : HasCompactSupport f) (hsg : HasCompactSupport g) :
+theorem densityEnergy_eq_raw  :
     densityEnergy f g = rawDensityEnergy f g +
       (∫ z, f z * Real.log (normPlus z)) * (∫ z, g z) +
       (∫ z, f z) * (∫ z, g z * Real.log (normPlus z)) := by
@@ -246,12 +255,13 @@ theorem densityEnergy_eq_raw {f g : ℂ → ℝ}
     integral_prod_mul (fun z => f z * Real.log (normPlus z)) g,
     integral_prod_mul f (fun z => g z * Real.log (normPlus z))]
 
+include x
 /-- Integration of a transported annular density is integration against the original annulus. -/
-theorem integral_circleAnnularDensity_mul (x : ℂ) (r : ℝ) (n : ℕ) (h : ℂ → ℝ) :
+theorem integral_circleAnnularDensity_mul  (r : ℝ) (n : ℕ) (h : ℂ → ℝ) :
     (∫ z, circleAnnularDensity x r n z * h z) =
       ∫ u, DOZZ.annularProbabilityDensity n u * h (Real.exp (-r) • u + x) := by
   let R := Real.exp (-r)
-  let H : ℂ → ℝ := fun u => DOZZ.annularProbabilityDensity n u * h (R • u + x)
+  let H  := fun u => DOZZ.annularProbabilityDensity n u * h (R • u + x)
   have hR : R ≠ 0 := Real.exp_ne_zero _
   have heq (z : ℂ) : circleAnnularDensity x r n z * h z =
       R⁻¹ ^ 2 * H (R⁻¹ • (z - x)) := by
@@ -266,22 +276,21 @@ theorem integral_circleAnnularDensity_mul (x : ℂ) (r : ℝ) (n : ℕ) (h : ℂ
   change R⁻¹ ^ 2 * (R ^ 2 * ∫ u, H u) = ∫ u, H u
   field_simp
 
+
 /-- The corresponding change of variables for the bilinear density on the product plane. -/
-theorem integral_circleAnnularDensity_pair (x : ℂ) (r : ℝ) (n k : ℕ)
+theorem integral_circleAnnularDensity_pair  (r : ℝ) (n k : ℕ)
     (h : ℂ × ℂ → ℝ) :
     (∫ p : ℂ × ℂ, circleAnnularDensity x r n p.1 *
       circleAnnularDensity x r k p.2 * h p) =
       ∫ p : ℂ × ℂ, DOZZ.annularProbabilityDensity n p.1 *
         DOZZ.annularProbabilityDensity k p.2 *
           h (Real.exp (-r) • p + (x, x)) := by
-  let _ : (volume : Measure (ℂ × ℂ)).IsAddHaarMeasure := by
-    rw [Measure.volume_eq_prod]
-    exact Measure.prod.instIsAddHaarMeasure _ _
+  let _ : (volume : Measure (ℂ × ℂ)).IsAddHaarMeasure := Measure.prod.instIsAddHaarMeasure _ _
   let _ : (volume : Measure (ℂ × ℂ)).IsAddRightInvariant := by
     rw [Measure.volume_eq_prod]
     infer_instance
   let R := Real.exp (-r)
-  let H : ℂ × ℂ → ℝ := fun p => DOZZ.annularProbabilityDensity n p.1 *
+  let H  := fun p => DOZZ.annularProbabilityDensity n p.1 *
     DOZZ.annularProbabilityDensity k p.2 * h (R • p + (x, x))
   have hR : R ≠ 0 := Real.exp_ne_zero _
   have heq (p : ℂ × ℂ) : circleAnnularDensity x r n p.1 *
@@ -298,9 +307,10 @@ theorem integral_circleAnnularDensity_pair (x : ℂ) (r : ℝ) (n k : ℕ)
   change R⁻¹ ^ 4 * (R ^ 4 * ∫ p, H p) = ∫ p, H p
   field_simp
 
+
 /-- A dilation adds only the total-mass logarithm to the unit-annulus mixed raw energy
 `DOZZ.annularMixedEnergy`. -/
-theorem rawDensityEnergy_circleAnnular (x : ℂ) (r : ℝ) (n k : ℕ) :
+theorem rawDensityEnergy_circleAnnular  (r : ℝ) (n k : ℕ) :
     rawDensityEnergy (circleAnnularDensity x r n) (circleAnnularDensity x r k) =
       r + DOZZ.annularMixedEnergy n k := by
   unfold rawDensityEnergy
@@ -332,8 +342,9 @@ theorem rawDensityEnergy_circleAnnular (x : ℂ) (r : ℝ) (n k : ℕ) :
     DOZZ.integral_annularProbabilityDensity]
   simp only [mul_one, DOZZ.annularMixedEnergy]
 
+
 /-- The self-energy of any circle is its raw self-energy plus twice its pinning potential. -/
-theorem circleSelfEnergy_eq (x : ℂ) (r : ℝ) :
+theorem circleSelfEnergy_eq  (r : ℝ) :
     circleSelfEnergy x r = r + 2 * (∫ z, Real.log (normPlus z) ∂circleMeasure x r) := by
   let _ := circleMeasure_isProbability x r
   unfold circleSelfEnergy
@@ -353,8 +364,9 @@ theorem circleSelfEnergy_eq (x : ℂ) (r : ℝ) :
   rw [hsecond, hfirst, integral_const, integral_const, probReal_univ, one_smul, one_smul]
   ring
 
+
 /-- Transport of the bounded circle potential to the unit annulus. -/
-theorem integral_circleAnnular_logmax (x : ℂ) (r : ℝ) (n : ℕ) :
+theorem integral_circleAnnular_logmax  (r : ℝ) (n : ℕ) :
     (∫ z, circleAnnularDensity x r n z *
       Real.log (max (Real.exp (-r)) ‖x - z‖)) =
       -r + ∫ u, DOZZ.annularProbabilityDensity n u * Real.log (normPlus u) := by
@@ -375,8 +387,9 @@ theorem integral_circleAnnular_logmax (x : ℂ) (r : ℝ) (n : ℕ) :
   rw [integral_add ((DOZZ.integrable_annularProbabilityDensity n).mul_const (-r)) hpin,
     integral_mul_const, DOZZ.integral_annularProbabilityDensity, one_mul]
 
+
 /-- The pinning terms cancel exactly in a unit-mass density's circle-energy gap. -/
-theorem densityCircleGap_circleAnnular_eq (x : ℂ) (r : ℝ) (n : ℕ) :
+theorem densityCircleGap_circleAnnular_eq  (r : ℝ) (n : ℕ) :
     densityCircleGap x r (circleAnnularDensity x r n) =
       DOZZ.annularMixedEnergy n n +
         2 * (∫ u, DOZZ.annularProbabilityDensity n u * Real.log (normPlus u)) := by
@@ -415,6 +428,8 @@ theorem densityCircleGap_circleAnnular_eq (x : ℂ) (r : ℝ) (n : ℕ) :
     rawDensityEnergy_circleAnnular, hcross, circleSelfEnergy_eq]
   dsimp [J, ρ]
   ring
+omit x
+
 
 /-- The pinning integral of the unit-annulus density is at most `1/(n+2)` in absolute value. -/
 theorem abs_annular_pin_integral_le (n : ℕ) :
@@ -438,21 +453,19 @@ theorem abs_annular_pin_integral_le (n : ℕ) :
           (mul_comm _ _)
     _ = δ := by rw [integral_const_mul, DOZZ.integral_annularProbabilityDensity, mul_one]
 
+include x
 /-- The unit-annulus mixed-energy estimate gives an all-center, all-radius gap estimate; its
 constant is independent of the center and radius because the mass-one potentials cancel. -/
-theorem abs_densityCircleGap_circleAnnular_le (x : ℂ) (r : ℝ) (n : ℕ) :
+theorem abs_densityCircleGap_circleAnnular_le  (r : ℝ) (n : ℕ) :
     |densityCircleGap x r (circleAnnularDensity x r n)| ≤ 5 / ((n : ℝ) + 2) := by
   rw [densityCircleGap_circleAnnular_eq]
   have hraw := DOZZ.abs_annularMixedEnergy_le n n
   have hpin := abs_annular_pin_integral_le n
-  have htri := abs_add_le (DOZZ.annularMixedEnergy n n)
-    (2 * ∫ u, DOZZ.annularProbabilityDensity n u * Real.log (normPlus u))
-  rw [abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 2)] at htri
-  simp only [div_eq_mul_inv] at hraw hpin ⊢
-  linarith
+  grind
+
 
 /-- The continuous annular densities converge in the exact circle-energy gap. -/
-theorem tendsto_densityCircleGap_circleAnnular (x : ℂ) (r : ℝ) :
+theorem tendsto_densityCircleGap_circleAnnular  (r : ℝ) :
     Tendsto (fun n => densityCircleGap x r (circleAnnularDensity x r n)) atTop (𝓝 0) := by
   have hb : Tendsto (fun n : ℕ => 5 / ((n : ℝ) + 2)) atTop (𝓝 (0 : ℝ)) := by
     convert (tendsto_const_div_atTop_nhds_zero_nat (5 : ℝ)).comp
@@ -465,11 +478,12 @@ theorem tendsto_densityCircleGap_circleAnnular (x : ℂ) (r : ℝ) :
   · intro n
     exact (abs_le.mp (abs_densityCircleGap_circleAnnular_le x r n)).2
 
+
 /-- Actual smooth tests approximate every circle in its logarithmic energy gap.
 The construction first uses the annular estimate `abs_densityCircleGap_circleAnnular_le`, then
 selects a sufficiently accurate smooth approximation for each annular width using common-support
 continuity. -/
-theorem exists_testFn_circleEnergyGap_tendsto_zero (x : ℂ) (r : ℝ) :
+theorem exists_testFn_circleEnergyGap_tendsto_zero  (r : ℝ) :
     ∃ f : ℕ → TestFn,
       (∀ n, tsupport (f n) ⊆ closedBall (0 : ℂ) (‖x‖ + 2 * Real.exp (-r) + 1)) ∧
       (∀ n z, |f n z - circleAnnularDensity x r n z| < 1 / ((n : ℝ) + 2)) ∧
@@ -487,24 +501,18 @@ theorem exists_testFn_circleEnergyGap_tendsto_zero (x : ℂ) (r : ℝ) :
     have he := (Metric.tendsto_atTop.mp (hF n).2.2) _ hp
     obtain ⟨N, hN⟩ := he
     refine ⟨max N n, le_max_right _ _, ?_⟩
-    simpa only [Real.dist_eq] using hN (max N n) (le_max_left _ _)
+    exact hN (max N n) (le_max_left _ _)
   choose m hm using hchoose
-  let f : ℕ → TestFn := fun n => F n (m n)
+  let f  := fun n => F n (m n)
   have hεlim : Tendsto (fun n : ℕ => 6 / ((n : ℝ) + 2)) atTop (𝓝 (0 : ℝ)) := by
     convert (tendsto_const_div_atTop_nhds_zero_nat (6 : ℝ)).comp
       (tendsto_add_atTop_nat 2) using 1
     ext n
     simp [Nat.cast_add]
   have hbound n : |circleEnergyGap x r (f n)| ≤ 6 / ((n : ℝ) + 2) := by
-    have he := (hm n).2.le
+
     have hb := abs_densityCircleGap_circleAnnular_le x r n
-    have htri := abs_add_le
-      (circleEnergyGap x r (f n) - densityCircleGap x r (circleAnnularDensity x r n))
-      (densityCircleGap x r (circleAnnularDensity x r n))
-    rw [sub_add_cancel] at htri
-    dsimp [f] at *
-    simp only [div_eq_mul_inv] at he hb ⊢
-    linarith
+    grind
   refine ⟨f, fun n => (hF n).1 (m n), ?_, ?_⟩
   · intro n z
     exact lt_of_lt_of_le ((hF n).2.1 (m n) z)
@@ -515,6 +523,8 @@ theorem exists_testFn_circleEnergyGap_tendsto_zero (x : ℂ) (r : ℝ) :
       exact (abs_le.mp (hbound n)).1
     · intro n
       exact (abs_le.mp (hbound n)).2
+omit x
+
 
 /-- A weighted supremum estimate turns kernel integrability into a quantitative pairing bound. -/
 theorem abs_integral_weighted_le {α : Type*} [MeasurableSpace α]
@@ -627,7 +637,7 @@ theorem abs_densityCircleGap_sub_le {f g : ℂ → ℝ} {R M ε : ℝ}
         |(⟨R, R + 1, hR, lt_add_one R⟩ : ContDiffBump (0 : ℂ)) z *
           (∫ w, gffKernel z w ∂circleMeasure x r)|) := by
   let b : ContDiffBump (0 : ℂ) := ⟨R, R + 1, hR, lt_add_one R⟩
-  let k : ℂ → ℝ := fun z => ∫ w, gffKernel z w ∂circleMeasure x r
+  let k  := fun z => ∫ w, gffKernel z w ∂circleMeasure x r
   have hk := continuous_circleKernelPotential x r
   have hes : Function.support (fun z => f z - g z) ⊆ closedBall (0 : ℂ) R := by
     intro z hz
@@ -676,14 +686,14 @@ theorem abs_densityCircleGap_sub_le {f g : ℂ → ℝ} {R M ε : ℝ}
 This coarse bound suffices to absorb the originally prescribed cubic smoothing errors. -/
 theorem annularProfileMass_lower (n : ℕ) :
     Real.pi / (8 * ((n : ℝ) + 2) ^ 2) ≤ DOZZ.annularProfileMass n := by
-  let δ : ℝ := 1 / (2 * ((n : ℝ) + 2))
+  let δ  := 1 / (2 * ((n : ℝ) + 2))
   have hδ : 0 < δ := by dsimp [δ]; positivity
   have hb : ∀ z ∈ ball (1 : ℂ) δ, (1 / 2 : ℝ) ≤ DOZZ.annularProfileOnPlane n z := by
     intro z hz
     have hd : ‖z - 1‖ < δ := by simpa only [mem_ball, dist_eq_norm] using hz
     have hn := abs_norm_sub_norm_le z (1 : ℂ)
     rw [norm_one] at hn
-    have hd' : |‖z‖ - 1| ≤ δ := (hn.trans hd.le)
+    have hd'  := (hn.trans hd.le)
     have hmul : ((n : ℝ) + 2) * δ = 1 / 2 := by dsimp [δ]; field_simp
     have hnear := mul_le_mul_of_nonneg_left hd' (by positivity : 0 ≤ (n : ℝ) + 2)
     rw [hmul] at hnear
@@ -733,28 +743,30 @@ theorem annularProbabilityDensity_le_quadratic (n : ℕ) (z : ℂ) :
         (by positivity : 0 < Real.pi / (8 * ((n : ℝ) + 2) ^ 2)) hm)
     _ = _ := by field_simp
 
+include x in
 /-- The same coarse density bound survives translation and dilation. -/
-theorem circleAnnularDensity_le_quadratic (x : ℂ) (r : ℝ) (n : ℕ) (z : ℂ) :
+theorem circleAnnularDensity_le_quadratic  (r : ℝ) (n : ℕ) (z : ℂ) :
     |circleAnnularDensity x r n z| ≤
       ((Real.exp (-r))⁻¹ ^ 2 * (8 / Real.pi)) * ((n : ℝ) + 2) ^ 2 := by
   rw [circleAnnularDensity, abs_mul, abs_of_nonneg (sq_nonneg _)]
   exact (mul_le_mul_of_nonneg_left (annularProbabilityDensity_le_quadratic n _)
     (sq_nonneg _)).trans_eq (mul_assoc _ _ _).symm
 
+include x in
 /-- The originally attempted energy-gap lemma, now proved for every common-support test
 sequence with the prescribed cubic uniform error. -/
-theorem tendsto_circleEnergyGap_of_cubic_approx (x : ℂ) (r : ℝ) (f : ℕ → TestFn)
+theorem tendsto_circleEnergyGap_of_cubic_approx  (r : ℝ) (f : ℕ → TestFn)
     (hs : ∀ n, tsupport (f n) ⊆ closedBall (0 : ℂ) (‖x‖ + 2 * Real.exp (-r) + 1))
     (he : ∀ n z, |f n z - circleAnnularDensity x r n z| < 1 / ((n : ℝ) + 2) ^ 3) :
     Tendsto (fun n => circleEnergyGap x r (f n)) atTop (𝓝 0) := by
   let R := ‖x‖ + 2 * Real.exp (-r) + 1
   have hR : 0 < R := by dsimp [R]; positivity
   let b : ContDiffBump (0 : ℂ) := ⟨R, R + 1, hR, lt_add_one R⟩
-  let A : ℝ := ∫ p : ℂ × ℂ, |b p.1 * gffKernel p.1 p.2 * b p.2|
-  let B : ℝ := ∫ z, |b z * (∫ w, gffKernel z w ∂circleMeasure x r)|
+  let A  := ∫ p : ℂ × ℂ, |b p.1 * gffKernel p.1 p.2 * b p.2|
+  let B  := ∫ z, |b z * (∫ w, gffKernel z w ∂circleMeasure x r)|
   let C := (Real.exp (-r))⁻¹ ^ 2 * (8 / Real.pi)
   let δ : ℕ → ℝ := fun n => 1 / ((n : ℝ) + 2)
-  let bound : ℕ → ℝ := fun n =>
+  let bound  := fun n =>
     5 * δ n + (2 * C * δ n + (δ n) ^ 6) * A + 2 * (δ n) ^ 3 * B
   have hC : 0 ≤ C := by dsimp [C]; positivity
   have hδ : Tendsto δ atTop (𝓝 0) := by
@@ -767,7 +779,7 @@ theorem tendsto_circleEnergyGap_of_cubic_approx (x : ℂ) (r : ℝ) (f : ℕ →
       (((hδ.const_mul (2 * C)).add (hδ.pow 6)).mul_const A) |>.add
         (((hδ.pow 3).const_mul 2).mul_const B)
   have hbound n : |circleEnergyGap x r (f n)| ≤ bound n := by
-    have hρsupport : Function.support (circleAnnularDensity x r n) ⊆ closedBall (0 : ℂ) R :=
+    have hρsupport  :=
       (support_circleAnnularDensity_subset x r n).trans
         (closedBall_subset_closedBall (le_add_of_nonneg_right zero_le_one))
     have herror z : |f n z - circleAnnularDensity x r n z| ≤ (δ n) ^ 3 := by

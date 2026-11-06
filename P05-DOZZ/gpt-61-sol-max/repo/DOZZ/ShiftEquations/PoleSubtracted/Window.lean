@@ -16,7 +16,7 @@ produced by a negative charge at the origin. The double-tail ceiling clause of t
 moments, with the full window and no shrinking of `η, δ`.
 -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
@@ -34,12 +34,13 @@ theorem window_delta_pos {γ η δ : ℝ} (hW : TwoPoleWindow γ η δ) : 0 < δ
 theorem window_eta_lt_quarter {γ η δ : ℝ} (hW : TwoPoleWindow γ η δ) : η < γ / 4 :=
   lt_of_lt_of_le hW.2.1 ((min_le_right _ _).trans (min_le_left _ _))
 
-theorem window_eta_le_two_div {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hW : TwoPoleWindow γ η δ) : η ≤ 2 / γ := by
+variable {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hW : TwoPoleWindow γ η δ)
+
+include γ η δ hγ hγ2 hW in
+theorem window_eta_le_two_div  : η ≤ 2 / γ := by
   have h := window_eta_lt_quarter hW
   have : γ / 4 ≤ 2 / γ := by
-    rw [div_le_div_iff₀ (by norm_num) hγ]
-    nlinarith
+    bound
   linarith
 
 /-- The pole threshold `p = 1 - 2η/γ` is positive on the window. -/
@@ -51,15 +52,15 @@ theorem window_threshold_pos {γ η δ : ℝ} (hγ : 0 < γ) (hW : TwoPoleWindow
     linarith
   linarith
 
+include γ η δ hγ hγ2 hW in
 /-- **The window leaves Hölder room**: `(2η + δ)/γ < (1 - 2η/γ)(1 - γ²/4)`. -/
-theorem window_holder_room {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hW : TwoPoleWindow γ η δ) :
+theorem window_holder_room  :
     (2 * η + δ) / γ < (1 - 2 * η / γ) * (1 - γ ^ 2 / 4) := by
   have hp0 := window_threshold_pos hγ hW
   have hceil := hW.2.2.2.2.2
   set p : ℝ := 1 - 2 * η / γ with hp
   set a : ℝ := 4 / γ ^ 2 with ha
-  have hrefl : reflectionExponent γ (2 / γ + η) = p := reflectionExponent_pole hγ η
+  have hrefl  := reflectionExponent_pole hγ η
   have hp1 : p ≤ 1 := by
     have : 0 ≤ 2 * η / γ := div_nonneg (by linarith [window_eta_pos hW]) hγ.le
     linarith
@@ -67,7 +68,6 @@ theorem window_holder_room {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     rw [ha, lt_div_iff₀ (by positivity)]
     nlinarith
   have hMc : oneInsertionMomentCeiling γ (2 / γ + η) ≤ a := by
-    rw [oneInsertionMomentCeiling]
     exact min_le_right _ _
   have hMc0 : 0 ≤ oneInsertionMomentCeiling γ (2 / γ + η) := by
     rw [oneInsertionMomentCeiling, hrefl]
@@ -80,9 +80,7 @@ theorem window_holder_room {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     rw [twoInsertionTailCeiling]
     refine (min_le_left _ _).trans ?_
     rw [hrefl, twoInsertionPointLoss]
-    have := min_le_left (oneInsertionErrorCeiling γ (2 / γ + η))
-      (min ((Q γ - (Q γ - η - γ / 2)) / γ) (1 / 2 : ℝ))
-    linarith
+    simp_all
   have hid : p + (a - p) / (1 + a) - 1 = (p * a - 1) / (1 + a) := by
     field_simp
     ring

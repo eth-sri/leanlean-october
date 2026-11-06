@@ -3,12 +3,13 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.FourPoint.TwoRegionLaw
 public import DOZZ.FourPoint.Reflected.DecorrelationError
 public import DOZZ.FourPoint.Reflected.Remainder
 public import DOZZ.FourPoint.ReflectedOuter.Rates
 import Mathlib.Tactic
 /-! The actual signed decorrelation error is negligible at the reflected fusion power. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -21,9 +22,7 @@ theorem reflected_comparison_exponential_error_bound (t : ℝ) (ht : 0 ≤ t) (h
       (show |t| ≤ 1 by rwa [abs_of_nonneg ht]))
   have hh := mul_le_mul hs (Real.exp_monotone ht1)
     (Real.exp_nonneg t) (mul_nonneg (by norm_num) ht)
-  calc
-    _ ≤ (2*t)*Real.exp 1 := hh
-    _ = _ := by ring
+  grind
 
 /-- The signed error between the source and copied moments has rate `|z|^ξ`, uniformly over
 nonnegative buffer depths, for one specified actual global carrier. Copied and original moments
@@ -37,12 +36,7 @@ theorem reflected_source_decorrelation_error_on_carrier
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N)
     (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
-    (hwhole : ∀ (f : ℂ → ℝ≥0∞), Measurable f →
-      ∀ G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞, Measurable G →
-      (∫⁻ ω, G (originRadialPath Xc ω, ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω) ∂P) =
-      ∫⁻ ω, G (originRadialPath Xc ω.1, ∫⁻ x in ({0} : Set ℂ)ᶜ,
-        f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ
-          (originRadialPath Xc ω.1) x) ∂N ω.2) ∂P.prod P)
+    (hwhole : Contract.radialPlaneLaw P (originRadialPath Xc) γ M N)
     (hNa : ∀ ρ : ℝ, 0 < ρ → IsAdmissibleGMCVersion P (originLateralChart ρ)
       originLateralPlaneDensity (originLateralCircleRegularization Xc ρ) γ
       (fun ω => (N ω).restrict (originLateralChart ρ)))

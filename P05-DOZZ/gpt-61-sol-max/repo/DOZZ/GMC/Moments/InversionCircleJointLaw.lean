@@ -8,7 +8,7 @@ public import DOZZ.GMC.Moments.InversionCircleAdmissible
 
 /-! Joint Gaussianity and ordinary finite-dimensional laws of coupled inversion circles. -/
 
-@[expose] public section
+public section
 
 open Filter MeasureTheory ProbabilityTheory
 open scoped Topology Distributions
@@ -29,7 +29,7 @@ theorem inversionCircle_source_jointly_gaussian
       X ω (inversionTest (f i n) (hf i n)) - Z i ω) 2 P) atTop (𝓝 0)) :
     IsCenteredJointlyGaussian P (fun ω i =>
       if (q i).1 then Xc ω (q i).2.1 (q i).2.2 else Z i ω) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   have hex i := exists_testFn_circleEnergyGap_tendsto_zero (q i).2.1 (q i).2.2
   choose g _hgs _hga hgap using hex
   let F : Fin m → ℕ → TestFn := fun i n =>
@@ -75,8 +75,8 @@ theorem inversionCircle_fdd_law
     (hlim : ∀ i, Tendsto (fun n => eLpNorm (fun ω =>
       X ω (inversionTest (f i n) (hf i n)) - Z i ω) 2 P) atTop (𝓝 0)) :
     P.map (fun ω i => Z i ω) = P'.map (fun ω i => Xc' ω (q i).1 (q i).2) := by
-  let : IsProbabilityMeasure P := hX.1
-  let : IsProbabilityMeasure P' := hX'.1
+  let  := hX.1
+  let  := hX'.1
   apply gmc_limit_test_vector_law
     (fun n ω i => X ω (inversionTest (f i n) (hf i n)))
     (fun n ω i => X' ω (f i n)) (fun ω i => Z i ω)
@@ -87,9 +87,7 @@ theorem inversionCircle_fdd_law
     exact (measurable_pi_iff.mpr fun i => (hX'.2 _).1).aemeasurable
   · exact AEMeasurable.of_eval (fun i => (hmem i).aemeasurable)
   · exact AEMeasurable.of_eval (fun i => (hXc'.2.1 _ _).aemeasurable)
-  · intro n
-    exact equatorGFF_inversion_local_test_fdd_law P X hX P' X' hX'
-      (fun i => f i n) (fun i => hf i n)
+  · exact fun n => equatorGFF_inversion_local_test_fdd_law P X hX P' X' hX' (fun i => f i n) fun i => hf i n
   · intro i
     exact tendstoInMeasure_of_tendsto_eLpNorm (by norm_num) (hlim i)
   · intro i

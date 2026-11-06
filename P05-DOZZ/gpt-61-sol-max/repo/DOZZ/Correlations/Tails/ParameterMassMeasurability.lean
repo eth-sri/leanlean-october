@@ -8,20 +8,19 @@ public import DOZZ.Correlations.Tails.SingularMassMeasurability
 
 /-! Jointly measurable random weights against actual GMC versions. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω V : Type*} [_inst1 : MeasurableSpace Ω] [_inst2 : MeasurableSpace V] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (θ : Ω → V) (hθ : AEMeasurable θ P)
+
+include Ω V _inst1 _inst2 P X hX γ hγ hγ2 M hM θ hθ in
 /-- Random parameters may depend on the field. Extended-real integrals need no
 integrability assumption, including at an insertion singularity. -/
 theorem gmc_parameter_lintegral_aemeasurable
-    {Ω V : Type*} [MeasurableSpace Ω] [MeasurableSpace V]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (θ : Ω → V) (hθ : AEMeasurable θ P)
+    
     (F : V × ℂ → ℝ≥0∞) (hF : Measurable F) :
     AEMeasurable (fun ω => ∫⁻ x, F (θ ω, x) ∂M ω) P := by
   obtain ⟨N, hNm, hNf, hMN⟩ :=
@@ -35,14 +34,11 @@ theorem gmc_parameter_lintegral_aemeasurable
   filter_upwards [hMN] with ω hω
   rw [hω]
 
+include Ω V _inst1 _inst2 P X hX γ hγ hγ2 M hM θ hθ in
 /-- The real integral of a nonnegative integrable random test is measurable on the
 actual GMC version, even when its parameter is correlated with the field. -/
 theorem gmc_parameter_integral_aemeasurable
-    {Ω V : Type*} [MeasurableSpace Ω] [MeasurableSpace V]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (θ : Ω → V) (hθ : AEMeasurable θ P)
+    
     (F : V × ℂ → ℝ) (hF : Measurable F) (hF0 : ∀ v x, 0 ≤ F (v,x))
     (hFi : ∀ ω, Integrable (fun x => F (θ ω,x)) (M ω)) :
     AEMeasurable (fun ω => ∫ x, F (θ ω,x) ∂M ω) P := by

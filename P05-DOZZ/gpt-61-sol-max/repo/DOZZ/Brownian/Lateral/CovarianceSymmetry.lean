@@ -17,11 +17,12 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+
+include Ω _inst1 P X Xc hX hc in
 /-- The radial circle covariance is the double integral of its scalar kernel. -/
 theorem originCircleRadialL2_double_covariance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ σ : ℝ) (hρ : 0 < ρ) (hσ : 0 < σ) (x y : ℂ) (r s : ℝ)
     (hx : ρ ≤ ‖x‖ - Real.exp (-r)) (hy : σ ≤ ‖y‖ - Real.exp (-s)) :
     covariance (originCircleRadialL2 hc ρ x r) (originCircleRadialL2 hc σ y s) P =
@@ -43,7 +44,7 @@ theorem originCircleRadialL2_double_covariance
 theorem originRadialCovariance_circle_integrable (σ : ℝ) (hσ : 0 < σ)
     (y : ℂ) (s t : ℝ) (hy : σ ≤ ‖y‖ - Real.exp (-s)) :
     Integrable (fun v => originRadialCovariance t v) (circleMeasure y s) := by
-  let f : ℂ → ℝ := fun v => min t (clampedLogRadius σ v) + max 0 (-t) +
+  let f  := fun v => min t (clampedLogRadius σ v) + max 0 (-t) +
     max 0 (-clampedLogRadius σ v)
   have hf : Continuous f := by
     exact ((continuous_const.min (continuous_clampedLogRadius σ hσ)).add
@@ -53,16 +54,15 @@ theorem originRadialCovariance_circle_integrable (σ : ℝ) (hσ : 0 < σ)
   dsimp [f, originRadialCovariance]
   rw [clampedLogRadius_eq σ v hv, neg_neg]
 
+include Ω _inst1 P X Xc hX hc in
 /-- Averaging the radial kernel is integrable on the other valid circle. -/
 theorem originRadialCovariance_double_circle_integrable
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ σ : ℝ) (hρ : 0 < ρ) (hσ : 0 < σ) (x y : ℂ) (r s : ℝ)
     (hx : ρ ≤ ‖x‖ - Real.exp (-r)) (hy : σ ≤ ‖y‖ - Real.exp (-s)) :
     Integrable (fun w => ∫ v, originRadialCovariance (-Real.log ‖w‖) v
       ∂circleMeasure y s) (circleMeasure x r) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   let V := originCircleRadialL2 hc σ y s
   have hi := (innerSL ℝ V).integrable_comp
     (integrable_clampedRadialCircleL2 P X Xc hX hc ρ hρ x r)
@@ -82,11 +82,10 @@ theorem originRadialCovariance_double_circle_integrable
   dsimp only
   rw [origin_circle_radial_covariance X Xc hX hc]
 
+include Ω _inst1 P X Xc hX hc in
 /-- Exact circle covariance after the radial pin terms have been removed. -/
 theorem originCircleLateralL2_covariance_kernel
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ σ : ℝ) (hρ : 0 < ρ) (hσ : 0 < σ) (x y : ℂ) (r s : ℝ)
     (hx : ρ ≤ ‖x‖ - Real.exp (-r)) (hy : σ ≤ ‖y‖ - Real.exp (-s)) :
     covariance (originCircleLateralL2 hc ρ x r) (originCircleLateralL2 hc σ y s) P =
@@ -127,11 +126,10 @@ noncomputable def originCircleCutoff_dilation (c : ℝ) (hc : 0 < c)
     mul_pos hc p.property.1,
     originCircleCutoff_dilation_lower c hc _ _ _ p.property.2⟩
 
+include Ω _inst1 P X Xc hX hc
 /-- Actual lateral circle covariances are invariant under every positive common dilation. -/
 theorem originCircleLateralL2_covariance_dilation
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (c : ℝ) (hpos : 0 < c) (p q : OriginCircleCutoff) :
     covariance
       (originCircleLateralL2 hc (c * p.val.1) (c * p.val.2.1) (p.val.2.2 - Real.log c))
@@ -139,7 +137,7 @@ theorem originCircleLateralL2_covariance_dilation
     covariance (originCircleLateralL2 hc p.val.1 p.val.2.1 p.val.2.2)
       (originCircleLateralL2 hc q.val.1 q.val.2.1 q.val.2.2) P := by
   let : IsProbabilityMeasure (circleMeasure q.val.2.1 q.val.2.2) := circleMeasure_isProbability _ _
-  let F : ℂ → ℂ → ℝ := fun w v => gffKernel w v -
+  let F  := fun w v => gffKernel w v -
     originRadialCovariance (-Real.log ‖w‖) v
   have hF : Measurable (fun z : ℂ × ℂ => F z.1 z.2) := by
     dsimp [F, gffKernel, originRadialCovariance, normPlus]
@@ -153,7 +151,7 @@ theorem originCircleLateralL2_covariance_dilation
       ((hF.comp (measurable_const.prodMk measurable_id)).stronglyMeasurable.aestronglyMeasurable)
   have ho : Measurable (fun w => ∫ v, F w (c * v)
       ∂circleMeasure q.val.2.1 q.val.2.2) := by
-    have hf : Measurable (fun z : ℂ × ℂ => F z.1 (c * z.2)) :=
+    have hf  :=
       hF.comp (f := fun z : ℂ × ℂ => (z.1, (c : ℂ) * z.2))
         (measurable_fst.prodMk (hscale.comp measurable_snd))
     exact hf.stronglyMeasurable.integral_prod_right'.measurable
@@ -169,7 +167,7 @@ theorem originCircleLateralL2_covariance_dilation
   rw [circleMeasure_scale hpos, integral_map hscale.aemeasurable ho.aestronglyMeasurable]
   apply integral_congr_ae
   filter_upwards [circle_norm_lower_ae _ _ _ p.property.2] with w hw
-  have hw0 : w ≠ 0 := norm_pos_iff.mp (p.property.1.trans_le hw)
+  have hw0  := norm_pos_iff.mp (p.property.1.trans_le hw)
   apply integral_congr_ae
   let : NullSingletonClass (circleMeasure q.val.2.1 q.val.2.2) := circleMeasure_noAtoms _ _
   filter_upwards [circle_norm_lower_ae _ _ _ q.property.2,
@@ -177,11 +175,10 @@ theorem originCircleLateralL2_covariance_dilation
   exact origin_lateralKernel_dilation (c : ℂ) w v (by exact_mod_cast hpos.ne') hw0
     (norm_pos_iff.mp (q.property.1.trans_le hv)) hsep.symm
 
+
 /-- The same covariance identity in the literal centered second-moment normalization. -/
 theorem originCircleLateralL2_dilation_gaussianCovariance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (c : ℝ) (hpos : 0 < c) (p q : OriginCircleCutoff) :
     gaussianCovariance P
       (originCircleLateralL2 hc (c * p.val.1) (c * p.val.2.1) (p.val.2.2 - Real.log c))
@@ -193,11 +190,10 @@ theorem originCircleLateralL2_dilation_gaussianCovariance
     mul_pos hpos p.property.1, mul_pos hpos q.property.1, p.property.1, q.property.1,
     sub_zero] using he
 
+
 /-- Every finite vector of actual orthogonal circle cutoffs has the dilation-invariant law. -/
 theorem originCircleLateralL2_dilation_fdd_law
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (c : ℝ) (hpos : 0 < c) (n : ℕ) (p : Fin n → OriginCircleCutoff) :
     P.map (fun ω i => originCircleLateralL2 hc (c * (p i).val.1)
       (c * (p i).val.2.1) ((p i).val.2.2 - Real.log c) ω) =
@@ -210,11 +206,10 @@ theorem originCircleLateralL2_dilation_fdd_law
   · intro i j
     exact originCircleLateralL2_dilation_gaussianCovariance P X Xc hX hc c hpos (p i) (p j)
 
+
 /-- Dilation invariance for the actual measurable regularizer on a valid spatial chart. -/
 theorem originLateralCircleRegularization_dilation_fdd_law
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (ρ c ε : ℝ) (hρ : 0 < ρ) (hcpos : 0 < c) (hε : 0 < ε) (hερ : ε ≤ ρ)
     (n : ℕ) (xs : Fin n → ℂ) (hxs : ∀ i, xs i ∈ originLateralChart ρ) :
@@ -244,11 +239,10 @@ theorem originLateralCircleRegularization_dilation_fdd_law
         P X Xc hX hc hm ρ hρ (xs i) (Real.log (1 / ε))] with ω hω
       exact funext hω
 
+
 /-- The finite Wick normalization is preserved by the same chart dilation. -/
 theorem originLateralCircleRegularization_dilation_variance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (ρ c ε : ℝ) (hρ : 0 < ρ) (hcpos : 0 < c) (hε : 0 < ε) (hερ : ε ≤ ρ)
     (x : ℂ) (hx : x ∈ originLateralChart ρ) :
@@ -271,6 +265,8 @@ theorem originLateralCircleRegularization_dilation_variance
   rw [integral_map hml.aemeasurable ((measurable_pi_apply 0).pow_const 2).aestronglyMeasurable,
     integral_map hmr.aemeasurable ((measurable_pi_apply 0).pow_const 2).aestronglyMeasurable] at hs
   simpa only [gaussianVariance, gaussianCovariance, pow_two] using hs
+omit Ω _inst1 P X Xc hX hc
+
 
 /-- Radial projection commutes with inversion as reflection of the cylinder. -/
 theorem logRadiusProjection_inversion (F : Measure ℂ) :
@@ -279,9 +275,7 @@ theorem logRadiusProjection_inversion (F : Measure ℂ) :
   have hm : Measurable (fun z : ℂ => -Real.log ‖z‖) := by fun_prop
   rw [Measure.map_map hm measurable_inv,
     Measure.map_map measurable_neg hm]
-  congr 1
-  funext z
-  simp only [Function.comp_apply, norm_inv, Real.log_inv]
+  continuity
 
 /-- Radial projection commutes with nonzero dilation as translation of the cylinder;
 the zero atom is excluded explicitly because logarithmic radius is defined as zero there. -/
@@ -296,7 +290,7 @@ theorem logRadiusProjection_dilation (F : Measure ℂ) (hF : F {0} = 0)
   apply Measure.map_congr
   have hzero : ∀ᵐ z ∂F, z ≠ 0 := by
     rw [ae_iff]
-    simpa only [not_not, ofPred_eq_eq_singleton] using hF
+    simp_all
   filter_upwards [hzero] with z hz
   dsimp only [Function.comp_apply]
   rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hc,

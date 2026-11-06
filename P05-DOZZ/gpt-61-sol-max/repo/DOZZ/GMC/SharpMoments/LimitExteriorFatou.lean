@@ -44,16 +44,14 @@ theorem limitExteriorFatou_trunc_le (R : ℝ) {β : ℝ} (hβ : 0 ≤ β) (m : �
   unfold limitExteriorFatou_trunc
   by_cases hx : x ∈ {x : ℂ | R ≤ ‖x‖ ∧ ‖x‖ ≤ R + m}
   · rw [Set.indicator_of_mem hx]
-    exact Real.toNNReal_le_toNNReal (Real.rpow_le_rpow (norm_nonneg x) hx.2 hβ)
-  · rw [Set.indicator_of_notMem hx]
-    exact zero_le
+    gcongr <;> aesop
+  simp_all
 
 /-- The truncated weight vanishes outside the closed disk of radius `R + m`. -/
 theorem limitExteriorFatou_trunc_eq_zero (R β : ℝ) (m : ℕ) {x : ℂ}
     (hx : x ∉ closedBall (0 : ℂ) (R + m)) : limitExteriorFatou_trunc R β m x = 0 := by
   unfold limitExteriorFatou_trunc
-  refine Set.indicator_of_notMem (fun h => hx ?_) _
-  simpa [mem_closedBall_zero_iff] using h.2
+  simp_all
 
 /-- The truncated weight, viewed in `[0, ∞]`, is the indicator of the annulus times the weight. -/
 theorem limitExteriorFatou_trunc_coe (R β : ℝ) (m : ℕ) (x : ℂ) :
@@ -78,10 +76,7 @@ theorem limitExteriorFatou_trunc_mono (R β : ℝ) (x : ℂ) :
     Monotone fun m : ℕ => (limitExteriorFatou_trunc R β m x : ℝ≥0∞) := by
   intro m n hmn
   simp only [limitExteriorFatou_trunc_coe]
-  have hle : (m : ℝ) ≤ n := Nat.cast_le.mpr hmn
-  have hsub : {x : ℂ | R ≤ ‖x‖ ∧ ‖x‖ ≤ R + m} ⊆ {x : ℂ | R ≤ ‖x‖ ∧ ‖x‖ ≤ R + n} :=
-    fun y hy => ⟨hy.1, hy.2.trans (by linarith)⟩
-  exact Set.indicator_le_indicator_of_subset hsub (fun _ => zero_le) x
+  gcongr
 
 /-- The truncated weights increase to the exterior weight. -/
 theorem limitExteriorFatou_trunc_tendsto (R β : ℝ) (x : ℂ) :
@@ -121,18 +116,18 @@ theorem limitExteriorFatou_lintegral_lt_top (μ : Measure ℂ) [IsFiniteMeasure 
     _ = b * μ Set.univ := lintegral_const _
     _ < ⊤ := ENNReal.mul_lt_top ENNReal.coe_lt_top (measure_lt_top μ Set.univ)
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM Xc hXc in
 /-- Fatou in probability for a fixed truncation: the cutoff bound passes to the limiting chaos. -/
 theorem limitExteriorFatou_trunc_moment_le
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
     (R : ℝ) {β : ℝ} (hβ : 0 ≤ β) {t : ℝ} (ht : 0 < t) (C : ℝ≥0∞)
     (hC : ∀ r : ℝ, 0 ≤ r → ∫⁻ ω, (∫⁻ x in {x : ℂ | R ≤ ‖x‖}, ENNReal.ofReal (‖x‖ ^ β)
       ∂regularizedGMC P Xc γ r ω) ^ t ∂P ≤ C) (m : ℕ) :
     ∫⁻ ω, (∫⁻ x, (limitExteriorFatou_trunc R β m x : ℝ≥0∞) ∂M ω) ^ t ∂P ≤ C := by
   have hfm := limitExteriorFatou_trunc_measurable R β m
-  have hfm' : Measurable fun x => (limitExteriorFatou_trunc R β m x : ℝ≥0∞) :=
+  have hfm'  :=
     measurable_coe_nnreal_ennreal.comp hfm
   have hb := limitExteriorFatou_trunc_le R hβ m
   have hconv := regularizedGMC_lintegral_tendstoInMeasure P X hX γ hγ hγ2 M hM Xc hXc _ hfm _ hb
@@ -150,13 +145,11 @@ theorem limitExteriorFatou_trunc_moment_le
   · exact le_trans (lintegral_mono fun ω => ENNReal.rpow_le_rpow
       (limitExteriorFatou_lintegral_trunc_le R β m _) ht.le) (hC n (Nat.cast_nonneg n))
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM Xc hXc in
 /-- A cutoff-uniform bound on exterior power moments bounds the exterior power moment of the
 limiting chaos. -/
 theorem gmc_exterior_power_moment_le_of_cutoff
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
     {R : ℝ} {β : ℝ} (hβ : 0 ≤ β) {t : ℝ} (ht : 0 < t) (C : ℝ≥0∞)
     (hC : ∀ r : ℝ, 0 ≤ r → ∫⁻ ω, (∫⁻ x in {x : ℂ | R ≤ ‖x‖}, ENNReal.ofReal (‖x‖ ^ β)
       ∂regularizedGMC P Xc γ r ω) ^ t ∂P ≤ C) :

@@ -13,18 +13,20 @@ public import DOZZ.Statements.Defs.IsCircleAverage
 
 /-! Actual random L² limits of circle tests transported through inversion. -/
 
-@[expose] public section
+public section
 
 open Filter MeasureTheory ProbabilityTheory Metric
 open scoped Topology Distributions ENNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] {P : Measure Ω} [_inst3 : IsProbabilityMeasure P] (X : Ω → Distr) (hX : IsEquatorGFF P X)
+
+include Ω _inst1 P _inst3 X hX in
 /-- Jacobian transport preserves the random L² distance of compact tests in the punctured chart.
 -/
 theorem equatorGFF_inversion_testL2_dist
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (f g : TestFn)
+     (f g : TestFn)
     (hf : tsupport (f : ℂ → ℝ) ⊆ inversionChart)
     (hg : tsupport (g : ℂ → ℝ) ⊆ inversionChart) :
     dist ((equatorGFF_test_memLp X hX (inversionTest f hf)).toLp
@@ -60,7 +62,7 @@ theorem exists_equatorGFF_inversion_circle_test_L2_limit_all
         Tendsto (fun n => (equatorGFF_test_memLp X hX
           (inversionTest (f n) (hf n))).toLp
             (fun ω => X ω (inversionTest (f n) (hf n)))) atTop (𝓝 W) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   obtain ⟨f, hf, hgap⟩ := exists_testFn_circleEnergyGap_punctured x r
   let U : ℕ → Lp ℝ 2 P := fun n =>
     (equatorGFF_test_memLp X hX (inversionTest (f n) (hf n))).toLp
@@ -80,10 +82,10 @@ theorem exists_equatorGFF_inversion_circle_test_L2_limit_all
   exact ⟨f, hf, W, hgap, hW⟩
 
 
+include Ω _inst1 P _inst3 X hX in
 /-- The coupled inverted circle limit is independent of its chart-supported approximants. -/
 theorem equatorGFF_inversion_testL2_tendsto_to_circle_limit
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (x : ℂ) (r : ℝ)
+     (x : ℂ) (r : ℝ)
     (f₀ : ℕ → TestFn) (hgap₀ : Tendsto (fun n => circleEnergyGap x r (f₀ n)) atTop (𝓝 0))
     (hf₀ : ∀ n, tsupport (f₀ n : ℂ → ℝ) ⊆ inversionChart)
     (W : Lp ℝ 2 P)
@@ -100,12 +102,11 @@ theorem equatorGFF_inversion_testL2_tendsto_to_circle_limit
   let η := ε / 4
   have hη : 0 < η := by dsimp [η]; positivity
   have hδ : 0 < η ^ 2 / 8 := by positivity
-  have hq0 : ∀ᶠ m in atTop, circleEnergyGap x r (f₀ m) < η ^ 2 / 8 :=
+  have hq0  :=
     hgap₀.eventually (gt_mem_nhds hδ)
-  have hnear : ∀ᶠ m in atTop, dist (V m) W < ε / 2 := by
-    exact hW.eventually (Metric.ball_mem_nhds W (by positivity))
+  have hnear : ∀ᶠ m in atTop, dist (V m) W < ε / 2 := hW.eventually (Metric.ball_mem_nhds W (by positivity))
   obtain ⟨m, hm⟩ := (hq0.and hnear).exists
-  have hq : ∀ᶠ n in atTop, circleEnergyGap x r (f n) < η ^ 2 / 8 :=
+  have hq  :=
     hgap.eventually (gt_mem_nhds hδ)
   filter_upwards [hq] with n hqn
   have hnorm : dist (U n) (V m) < η := by
@@ -113,18 +114,16 @@ theorem equatorGFF_inversion_testL2_tendsto_to_circle_limit
     rw [equatorGFF_inversion_testL2_dist X hX, dist_eq_norm]
     have heq := equatorGFF_testL2_sub_norm_sq X hX (f n) (f₀ m)
     have hbound := gffCov_sub_le_circleEnergyGaps x r (f n) (f₀ m)
-    have hqm := hm.1
-    have hnon := circleEnergyGap_nonneg x r (f n)
-    have hnon0 := circleEnergyGap_nonneg x r (f₀ m)
+    
+    
+    
     have hn0 := norm_nonneg
       ((equatorGFF_test_memLp X hX (f n)).toLp (fun ω => X ω (f n)) -
         (equatorGFF_test_memLp X hX (f₀ m)).toLp (fun ω => X ω (f₀ m)))
     nlinarith
   have htriangle : dist (U n) W ≤ dist (U n) (V m) + dist (V m) W :=
     dist_triangle _ _ _
-  calc
-    dist (U n) W ≤ dist (U n) (V m) + dist (V m) W := htriangle
-    _ < ε := by dsimp [η] at hnorm; linarith [hnorm, hm.2]
+  grind
 
 
 end DOZZ.Proofs

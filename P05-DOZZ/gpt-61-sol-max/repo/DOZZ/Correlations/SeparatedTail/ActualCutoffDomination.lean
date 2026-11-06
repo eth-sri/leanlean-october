@@ -10,7 +10,7 @@ public import DOZZ.Correlations.SeparatedTail.WickDomination
 /-! The domination step of `DOZZ.separatedSingularMass_joint_tail` applied to the literal equator
 weighted cutoff mass. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Metric Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -35,7 +35,7 @@ theorem separatedTail_actual_cutoff_mass_le
       ENNReal.ofReal (Real.exp (γ^2*(4+2*R)/2))*separatedTail_harmonicEnvelope c H L γ ω *
         fieldChaosMass P (fun ω x => Dc ω (separatedTail_diskPoint c x))
           (gmcReferenceMeasure.restrict (ball c 1)) (separatedTail_softWeight γ α δ c) γ ω := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let _ : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   let ν := gmcReferenceMeasure.restrict (ball c 1)
   have hscale : Real.exp (-Real.log (1/δ)) = δ := by
@@ -48,7 +48,7 @@ theorem separatedTail_actual_cutoff_mass_le
   have hv : ∀ᵐ x ∂ν, |(∫ ω, Xc ω x (Real.log (1/δ))^2 ∂P)-
       (∫ ω, Dc ω (separatedTail_diskPoint c x)^2 ∂P)| ≤ 4+2*R := by
     filter_upwards [ae_restrict_mem isOpen_ball.measurableSet] with x hx
-    have hn : ‖x-c‖ ≤ 1 := (mem_ball_iff_norm.mp hx).le
+    have hn  := (mem_ball_iff_norm.mp hx).le
     have hh := separatedTail_circle_covariance_discrepancy P X hX Xc hc
       (fun ω x _ => Dc ω x) c R (Real.log (1/δ)) hR hpin
       (by simpa only [hscale] using hDc) x x hn hn (by simpa only [hscale] using hδ4)

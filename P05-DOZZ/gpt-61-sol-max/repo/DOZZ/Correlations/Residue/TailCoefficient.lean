@@ -9,7 +9,7 @@ public import DOZZ.Statements.Correlations.OneInsertionTailCoefficient
 
 /-! Exact cancellation of the insertion-position factor in the residue chart. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -21,8 +21,8 @@ theorem residue_chart_tail_coefficient (γ α β ε Rbar : ℝ) (hγ : γ ≠ 0)
       (residueLocalWeight γ (2 * α + ε) β w z) Rbar =
       ‖z‖ ^ (γ * ε * reflectionExponent γ α) *
         ‖z - w‖ ^ (-(γ * β * reflectionExponent γ α)) * Rbar := by
-  have hn : 0 < ‖z‖ := lt_of_lt_of_le (by norm_num : (0:ℝ) < 2) hz
-  have hd : 0 < ‖z - w‖ := lt_of_lt_of_le (by norm_num : (0:ℝ) < 3) hzw
+  have hn  := lt_of_lt_of_le (by norm_num : (0:ℝ) < 2) hz
+  have hd  := lt_of_lt_of_le (by norm_num : (0:ℝ) < 3) hzw
   rw [residue_localWeight_eq γ (2 * α + ε) β z w z hz hz8 hzw
     (Metric.mem_ball_self (by norm_num))]
   unfold oneInsertionTailCoefficient

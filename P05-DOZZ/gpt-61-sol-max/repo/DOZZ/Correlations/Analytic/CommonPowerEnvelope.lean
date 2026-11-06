@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.ComplexMassIncrement
 
 /-! Common lower- and upper-mass envelopes for varying complex powers. -/
 
-@[expose] public section
+public section
 namespace DOZZ.Proofs
 
 /-- On a positive mass interval, every exponent between a nonpositive lower endpoint and a
@@ -17,14 +17,14 @@ theorem rpow_between_mass_envelope (L x U lo p hi : ℝ)
     (hL : 0 < L) (hLx : L ≤ x) (hxU : x ≤ U)
     (hlo : lo ≤ 0) (hhi : 0 ≤ hi) (hlop : lo ≤ p) (hphi : p ≤ hi) :
     x ^ p ≤ L ^ lo + U ^ hi := by
-  have hx : 0 < x := hL.trans_le hLx
-  have hU : 0 < U := hx.trans_le hxU
+  have hx  := hL.trans_le hLx
+  have hU  := hx.trans_le hxU
   rcases le_total x 1 with hx1 | hx1
-  · have hp : x ^ p ≤ x ^ lo := Real.rpow_le_rpow_of_exponent_ge hx hx1 hlop
-    have hm : x ^ lo ≤ L ^ lo := Real.rpow_le_rpow_of_nonpos hL hLx hlo
+  · have hp  := Real.rpow_le_rpow_of_exponent_ge hx hx1 hlop
+    have hm  := Real.rpow_le_rpow_of_nonpos hL hLx hlo
     exact (hp.trans hm).trans (le_add_of_nonneg_right (Real.rpow_nonneg hU.le _))
-  · have hp : x ^ p ≤ x ^ hi := Real.rpow_le_rpow_of_exponent_le hx1 hphi
-    have hm : x ^ hi ≤ U ^ hi := Real.rpow_le_rpow hx.le hxU hhi
+  · have hp  := Real.rpow_le_rpow_of_exponent_le hx1 hphi
+    have hm  := Real.rpow_le_rpow hx.le hxU hhi
     exact (hp.trans hm).trans (le_add_of_nonneg_left (Real.rpow_nonneg hL.le _))
 
 /-- A single mass envelope controls both the derivative and the absolute value bounds of a
@@ -35,10 +35,10 @@ theorem cpow_common_envelope (L Z Y U lo hi : ℝ) (p : ℂ)
     ‖((Z + Y : ℝ) : ℂ) ^ p - (Z : ℂ) ^ p‖ ≤
       (2 * ‖p‖ * (L ^ lo + U ^ hi)) * Y ∧
     ‖((Z + Y : ℝ) : ℂ) ^ p - (Z : ℂ) ^ p‖ ≤ 2 * (L ^ lo + U ^ hi) := by
-  have hZ : 0 < Z := hL.trans_le hLZ
-  have hZY : 0 < Z + Y := add_pos_of_pos_of_nonneg hZ hY
-  have hZU' : Z ≤ U := (le_add_of_nonneg_right hY).trans hZU
-  have hLZY : L ≤ Z + Y := hLZ.trans (le_add_of_nonneg_right hY)
+  have hZ  := hL.trans_le hLZ
+  have hZY  := add_pos_of_pos_of_nonneg hZ hY
+  have hZU'  := (le_add_of_nonneg_right hY).trans hZU
+  have hLZY  := hLZ.trans (le_add_of_nonneg_right hY)
   have hzder := rpow_between_mass_envelope L Z U lo (p.re - 1) hi
     hL hLZ hZU' hlo hhi hlop (by linarith)
   have hzyder := rpow_between_mass_envelope L (Z + Y) U lo (p.re - 1) hi

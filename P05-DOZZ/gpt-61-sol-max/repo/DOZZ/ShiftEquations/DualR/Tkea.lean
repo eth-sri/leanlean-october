@@ -9,6 +9,7 @@ public import DOZZ.ShiftEquations.DualR.ReflectedShiftFull
 import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
 import DOZZ.ShiftEquations.Rbar.Continuation
 import DOZZ.Brownian.Reflection.RtheorAnalytic
+public import DOZZ.ShiftEquations.Contracts
 
 /-!
 # The crossed second dual seed near `(γ/2, γ/2, Q - γ/2)`
@@ -22,7 +23,7 @@ Seiberg domain. At `P` the reflected shift (`reflectedShift_full`) turns the shi
 `R(ε) R(2Q - ε - 2/γ) C(ε + 2/γ, γ/2 + η, Q - ε) = L R(γ/2 + η) C(ε, Q - η, Q - ε)`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -43,10 +44,11 @@ section Arith
 
 variable {γ : ℝ}
 
+variable {σ es as : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hσ₁ : σ ≤ γ / 12) (hσ₂ : σ ≤ (4 / γ - γ) / 16) (hes₁ : γ / 2 + σ / 2 < es) (hes₂ : es < γ / 2 + σ) (has₁ : γ / 2 + 3 * σ < as) (has₂ : as < γ / 2 + 4 * σ)
+
+include σ es as hγ hγ2 hσ₁ hσ₂ hes₁ hes₂ has₁ has₂ in
 /-- Extended Seiberg bounds at the start point `(γ/2 + σ₁, γ/2 + σ₃, 2/γ + σ)`. -/
-theorem tkea_start_seiberg {σ es as : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hσ₁ : σ ≤ γ / 12) (hσ₂ : σ ≤ (4 / γ - γ) / 16) (hes₁ : γ / 2 + σ / 2 < es)
-    (hes₂ : es < γ / 2 + σ) (has₁ : γ / 2 + 3 * σ < as) (has₂ : as < γ / 2 + 4 * σ) :
+theorem tkea_start_seiberg  :
     ExtendedSeiberg3 γ (2 * Q γ - es - 2 / γ) as (2 / γ + σ) ∧
       ExtendedSeiberg3 γ es (2 * Q γ - as - 2 / γ) (2 / γ + σ) ∧
       ExtendedSeiberg3 γ (2 * Q γ - es - 2 / γ - γ) as (2 / γ + σ) := by
@@ -76,10 +78,9 @@ theorem tkea_start_seiberg {σ es as : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
   · exact extendedSeiberg3_of_lt hγ (by linarith) (by linarith) (by linarith)
       (by rw [h42]; linarith) (by linarith) (by linarith) (by linarith)
 
+include σ es as hγ hγ2 hσ₁ hσ₂ hes₁ hes₂ has₁ has₂ in
 /-- `Γ`- and shift-coefficient conditions at the start point. -/
-theorem tkea_start_gamma {σ es as : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hσ₁ : σ ≤ γ / 12) (hσ₂ : σ ≤ (4 / γ - γ) / 16) (hes₁ : γ / 2 + σ / 2 < es)
-    (hes₂ : es < γ / 2 + σ) (has₁ : γ / 2 + 3 * σ < as) (has₂ : as < γ / 2 + 4 * σ) :
+theorem tkea_start_gamma  :
     AnalyticAt ℂ Complex.Gamma (sExp γ (2 * Q γ - es - 2 / γ) as (2 / γ + σ) : ℂ) ∧
       AnalyticAt ℂ Complex.Gamma (sExp γ es (2 * Q γ - as - 2 / γ) (2 / γ + σ) : ℂ) ∧
       AnalyticAt ℂ Complex.Gamma (sExp γ (2 * Q γ - es - 2 / γ - γ) as (2 / γ + σ) : ℂ) ∧
@@ -261,7 +262,7 @@ theorem exists_tkea_start {γ σ : ℝ} (hγ : 0 < γ) (hσ₀ : 0 < σ) {hR : �
   obtain ⟨e₁, he₁, hRe₁, hge₁⟩ : ∃ e₁ : ℝ, e₁ ∈ Ioo (γ / 2 + σ / 2) (γ / 2 + σ) ∧
       AnalyticAt ℂ R (e₁ : ℂ) ∧ AnalyticAt ℂ Complex.Gamma (dualArg₁ γ (e₁ : ℂ)) := by
     set z₀ : ℝ := γ / 2 + 3 * σ / 4 with hz₀
-    have hm1 : MeromorphicAt R (z₀ : ℂ) := hRm _ (ofReal_mem_horizontalStrip hhR z₀)
+    have hm1  := hRm _ (ofReal_mem_horizontalStrip hhR z₀)
     have hm2 : MeromorphicAt Complex.Gamma (dualArg₁ γ (z₀ : ℂ)) := Meromorphic.Gamma _
     have ev1 := eventually_analyticAt_affine hm1 (a := 1) one_ne_zero
     have ev2 := eventually_analyticAt_affine hm2 (a := 2 / (γ : ℂ))
@@ -288,30 +289,8 @@ theorem exists_tkea_start {γ σ : ℝ} (hγ : 0 < γ) (hσ₀ : 0 < σ) {hR : �
 theorem tkea {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hSeed : ∀ α ε α' : ℝ, α < Q γ → ε < Q γ → α' < Q γ → 2 * Q γ + 2 / γ < α + ε + α' →
-      ∃ Bε Bα : Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧ IsReflectionData P γ ε Bε Z ∧
-          IsReflectionData P γ α Bα Z ∧
-          reflectionR P γ μ ε Bε Z * structureConstant P M γ μ (2 * Q γ - ε - 2 / γ) α α' =
-            dualCrossingL γ ε α α' * reflectionR P γ μ α Bα Z *
-              structureConstant P M γ μ ε (2 * Q γ - α - 2 / γ) α')
-    (hShiftGluing : ∀ η : ℝ, (0 < η ∧ Q γ - 2 * η > γ) → ∀ α₂ α₃ : ℝ,
-      (Q γ - η < α₂ ∧ α₂ < Q γ) → (Q γ - η < α₃ ∧ α₃ < Q γ) →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) = (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ, C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2)))
+    (hSeed : Contract.dualSecondSeed P X M γ μ)
+    (hShiftGluing : Contract.shiftGluing P X M γ μ)
     {hR : ℝ} (hhR : 0 < hR) {R : ℂ → ℂ} (hRm : MeromorphicOn R (horizontalStrip hR))
     {BR : ℝ → Ω → BrownianPath × BrownianPath} {ZR : Ω → Measure ℝ}
     (hBR : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (BR α) ZR)
@@ -347,13 +326,7 @@ theorem tkea {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Dist
     (by exact_mod_cast hAS) hP1 hP2 hRe hRa hsP1 hsP2 hg₁ hgP2 hgP3 hgP4 hAP
   have hrefl := reflectedShift_full P X M hγ hγ2 hμ hX hM hShiftGluing hhR hRm hBR hRv
     (x := 2 * Q γ - (γ / 2 - θ) - 2 / γ) hP3 hP1 (by rw [hxf]; exact hRx) hsP3 hsP1 hAP
-  rw [← hrefl] at key
-  rw [show 2 * Q γ - (2 * Q γ - (γ / 2 - θ) - 2 / γ) = Q γ - θ by
-      rw [show Q γ = 2 / γ + γ / 2 from rfl]; ring,
-    show 2 * Q γ - (γ / 2 + η) - 2 / γ = Q γ - η by rw [show Q γ = 2 / γ + γ / 2 from rfl]; ring,
-    hxf] at key
-  rw [← key]
-  ring
+  grind
 
 end DOZZ.Proofs
 

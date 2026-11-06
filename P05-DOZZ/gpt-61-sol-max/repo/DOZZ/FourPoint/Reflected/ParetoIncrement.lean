@@ -8,6 +8,7 @@ public import DOZZ.FourPoint.Reflected.ParetoCoefficient
 import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 import Mathlib.Tactic
+import Mathlib.Tactic
 /-! # Integrating the actual maximum law in the signed reflected increment -/
 public section
 open MeasureTheory ProbabilityTheory Set
@@ -43,27 +44,22 @@ theorem reflected_pareto_increment_integral (p a A b : ℝ) (ha : 0 < a)
   have hpoint (v : ℝ) (hv : v ∈ Ioi (1 : ℝ)) :
       a * v ^ (-a - 1) * ((A + b * v) ^ (-p) - A ^ (-p)) =
         (a * A ^ (-p) * x ^ (a + 1)) * g (x * v) := by
-    have hvp : 0 < v := zero_lt_one.trans hv
+    have hvp  := zero_lt_one.trans hv
     have hsum : A + b * v = A * (1 + x * v) := by
       dsimp only [x]
       field_simp
     have hpw : x ^ (a + 1) * (x * v) ^ (-a - 1) = v ^ (-a - 1) := by
       rw [Real.mul_rpow hx.le hvp.le, ← mul_assoc, ← Real.rpow_add hx]
-      have he : (a + 1) + (-a - 1) = 0 := by ring
-      rw [he, Real.rpow_zero, one_mul]
+      simp_all
     dsimp only [g]
     rw [hsum, Real.mul_rpow hA.le (by positivity : 0 ≤ 1 + x * v)]
-    calc
-      _ = (a * A ^ (-p)) * v ^ (-a - 1) * ((1 + x * v) ^ (-p) - 1) := by ring
-      _ = _ := by rw [← hpw]; ring
+    grind
   rw [setIntegral_congr_fun measurableSet_Ioi hpoint, integral_const_mul,
     integral_comp_mul_left_Ioi g 1 hx, mul_one, smul_eq_mul]
   have hc : a * A ^ (-p) * x ^ (a + 1) * x⁻¹ = a * A ^ (-p) * x ^ a := by
     rw [Real.rpow_add hx, Real.rpow_one]
     field_simp
-  calc
-    _ = (a * A ^ (-p) * x ^ (a + 1) * x⁻¹) * ∫ w in Ioi x, g w := by ring
-    _ = _ := by rw [hc]
+  grind
 
 /-- The actual Pareto increment differs from its Gamma coefficient by an explicit first-order term. -/
 theorem reflected_pareto_increment_error (p a A b : ℝ) (hp : 0 < p) (ha : 0 < a)

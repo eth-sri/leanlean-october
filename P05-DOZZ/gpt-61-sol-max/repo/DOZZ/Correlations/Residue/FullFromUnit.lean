@@ -10,7 +10,7 @@ public import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
 /-! Pole-free multiplication turning the unit-volume residue into the full three-to-two
 residue. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

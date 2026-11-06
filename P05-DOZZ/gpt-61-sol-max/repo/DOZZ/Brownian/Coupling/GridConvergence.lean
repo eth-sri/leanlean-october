@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Brownian.Coupling.Interpolation
 public import Mathlib.Topology.UniformSpace.HeineCantor
+import Mathlib.Tactic
 
 /-!
 # Compact-time convergence of sampled entrance-path interpolants
@@ -53,9 +54,7 @@ theorem couplingGridInterpolant_error {δ ε : ℝ} (hδ : 0 < δ)
   | zero =>
       have ht' : (t : ℝ) ≤ δ := by simpa using ht
       have hzero := hmodulus 0 (by
-        change |(0 : ℝ) - (t : ℝ)| ≤ δ
-        rw [abs_le]
-        constructor <;> linarith [NNReal.coe_nonneg t])
+        simp_all)
       have hfirst := hmodulus (couplingGridSampleTime δ hδ 0) (by
         rw [couplingGridSampleTime_coe]
         norm_num only [Nat.cast_zero, zero_add, one_mul]
@@ -68,25 +67,18 @@ theorem couplingGridInterpolant_error {δ ε : ℝ} (hδ : 0 < δ)
       have h := coupling_convex_error (couplingRamp_nonneg 0 δ (t : ℝ))
         (couplingRamp_le_one 0 δ (t : ℝ)) hzero hfirst
       change |(x 0).1 * couplingRamp 0 δ (t : ℝ) - p t| ≤ ε
-      have heq : (x 0).1 * couplingRamp 0 δ (t : ℝ) =
-          (1 - couplingRamp 0 δ (t : ℝ)) * 0 + couplingRamp 0 δ (t : ℝ) * (x 0).1 := by ring
-      rw [heq]
-      exact h
+      grind
   | succ n ih =>
       by_cases hbefore : (t : ℝ) ≤ ((n : ℝ) + 1) * δ
       · rw [couplingGridInterpolant_before_append hδ n x t hbefore]
-        exact ih (Fin.init x) (fun i => hsample i.castSucc) hbefore
-      · have hafter : ((n : ℝ) + 1) * δ ≤ (t : ℝ) := le_of_not_ge hbefore
+        bound
+      · have hafter  := le_of_not_ge hbefore
         have hold : |p (couplingGridSampleTime δ hδ n) - p t| ≤ ε := hmodulus _ (by
           rw [couplingGridSampleTime_coe]
-          rw [abs_le]
-          push_cast at ht
-          constructor <;> nlinarith)
+          grind)
         have hnew : |p (couplingGridSampleTime δ hδ (n + 1)) - p t| ≤ ε := hmodulus _ (by
           rw [couplingGridSampleTime_coe]
-          rw [abs_le]
-          push_cast at ht ⊢
-          constructor <;> nlinarith)
+          grind)
         have hsampleOld := hsample (Fin.last n).castSucc
         have hsampleNew := hsample (Fin.last (n + 1))
         simp only [Fin.val_castSucc, Fin.val_last] at hsampleOld hsampleNew
@@ -116,7 +108,7 @@ theorem couplingGridInterpolant_tendstoUniformlyOn
   obtain ⟨η, hηpos, hη⟩ := Metric.uniformContinuousOn_iff_le.mp huniform (ε / 2) (by positivity)
   have hsmall := hmesh.eventually (gt_mem_nhds hηpos)
   have hsmallOne := hmesh.eventually (gt_mem_nhds (show (0 : ℝ) < 1 by norm_num))
-  have hlarge : ∀ᶠ m in atTop, T ≤ ((N m : ℝ) + 1) * δ m :=
+  have hlarge  :=
     (tendsto_atTop.1 hhorizon) T
   filter_upwards [hsmall, hsmallOne, hlarge] with m hm hm1 hmT
   intro t ht
@@ -131,9 +123,8 @@ theorem couplingGridInterpolant_tendstoUniformlyOn
         have hbound := (abs_le.mp hs).2
         linarith
       have hdist : dist s t ≤ η := by
-        change |(s : ℝ) - (t : ℝ)| ≤ η
         exact hs.trans hm.le
-      simpa only [Real.dist_eq] using hη s hsB t htB hdist)
+      exact hη s hsB t htB hdist)
   rw [Real.dist_eq, abs_sub_comm]
   exact herror.trans_lt (half_lt_self hε)
 
@@ -173,10 +164,7 @@ theorem measurable_couplingPositivePathSamples {δ : ℝ} (hδ : 0 < δ) (n : �
   have hf : Measurable f := (ContinuousMap.measurable_eval _).ite
     (measurableSet_lt measurable_const (ContinuousMap.measurable_eval _)) measurable_const
   have hpos (p : BrownianPath) : 0 < f p := by
-    dsimp [f]
-    split_ifs with hp
-    · exact hp
-    · norm_num
+    continuity
   have hms : Measurable (fun p => (⟨f p, hpos p⟩ : ConditionedPositiveState)) := hf.subtype_mk
   have heq : (fun p : BrownianPath => couplingPositivePathSamples δ hδ n p i) =
       (fun p => (⟨f p, hpos p⟩ : ConditionedPositiveState)) := by
@@ -266,7 +254,6 @@ theorem rogersPitmanWienerProbability_samples_positive_ae
   apply ae_all_iff.mpr
   intro i
   apply rogersPitmanWienerProbability_eval_positive_ae
-  change (0 : ℝ) < ((i.val : ℝ) + 1) * δ m
   exact mul_pos (by positivity) (hδ m)
 
 /-- The positive candidate has the singular zero start on the path probability carrier. -/
@@ -285,13 +272,10 @@ theorem rogersPitmanWienerProbability_map_neg (a : ℝ) :
   rfl
 
 /-- The unconditional radial candidate's sampled grids converge to its whole path law. -/
-theorem rogersPitman_sampledInterpolant_probability_tendsto
+def rogersPitman_sampledInterpolant_probability_tendsto
     (a : ℝ) (δ : ℕ → ℝ) (hδ : ∀ m, 0 < δ m) (N : ℕ → ℕ)
     (hmesh : Tendsto δ atTop (𝓝 0))
-    (hhorizon : Tendsto (fun m => ((N m : ℝ) + 1) * δ m) atTop atTop) :
-    Tendsto (fun m => (rogersPitmanWienerProbability a).map (fun p =>
-      couplingGridInterpolant (δ m) (N m) (couplingPositivePathSamples (δ m) (hδ m) (N m) p)))
-      atTop (𝓝 (rogersPitmanWienerProbability a)) :=
+    (hhorizon : Tendsto (fun m => ((N m : ℝ) + 1) * δ m) atTop atTop)  :=
   couplingSampledInterpolant_probability_tendsto _ δ hδ N hmesh hhorizon
     (rogersPitmanWienerProbability_zero_ae a)
     (rogersPitmanWienerProbability_samples_positive_ae a δ hδ N)
@@ -317,17 +301,13 @@ theorem negativeRogersPitman_sampledInterpolant_probability_tendsto
   simp_rw [hcomp] at hlim
   exact hlim
 
+variable (v : ℕ → ℝ≥0) (δ : ℕ → ℝ) (hδ : ∀ m, 0 < δ m) (N : ℕ → ℕ) (hmesh : Tendsto δ atTop (𝓝 0)) (hhorizon : Tendsto (fun m => ((N m : ℝ) + 1) * δ m) atTop atTop) (hsampled : ∀ m j, conditionedPositiveEntranceGridMeasure (v j) (δ m) (fun _ => δ m) (NNReal.coe_nonneg (v j)) (hδ m) (fun _ => hδ m) (N m) = (rogersPitmanWienerProbability (v j) : Measure BrownianPath).map (couplingPositivePathSamples (δ m) (hδ m) (N m)))
+
+include v δ hδ N hmesh hhorizon hsampled in
 /-- Once the norm path's sampled finite law is identified, the actual coupled grid marginal
 converges to the unconditional radial path law. -/
 theorem couplingInterpolatedGridProbability_marginal_tendsto_of_sample_law
-    (v : ℕ → ℝ≥0) (δ : ℕ → ℝ) (hδ : ∀ m, 0 < δ m) (N : ℕ → ℕ)
-    (hmesh : Tendsto δ atTop (𝓝 0))
-    (hhorizon : Tendsto (fun m => ((N m : ℝ) + 1) * δ m) atTop atTop)
-    (hsampled : ∀ m j,
-      conditionedPositiveEntranceGridMeasure (v j) (δ m) (fun _ => δ m)
-        (NNReal.coe_nonneg (v j)) (hδ m) (fun _ => hδ m) (N m) =
-      (rogersPitmanWienerProbability (v j) : Measure BrownianPath).map
-        (couplingPositivePathSamples (δ m) (hδ m) (N m)))
+    
     (j : ℕ) :
     Tendsto (fun m => (couplingInterpolatedGridProbability v (δ m) (hδ m) (N m)).map
       (fun F => F j)) atTop (𝓝 (negativeRogersPitmanWienerProbability (v j))) := by
@@ -347,28 +327,11 @@ theorem couplingInterpolatedGridProbability_marginal_tendsto_of_sample_law
   simp_rw [heq]
   exact negativeRogersPitman_sampledInterpolant_probability_tendsto (v j) δ hδ N hmesh hhorizon
 
+include v δ hδ N hmesh hhorizon hsampled in
 /-- The actual common-quantile interpolants have an ordered joint subsequential limit with the
 prescribed unconditional radial marginals, conditional only on the finite sampled-law identity. -/
-theorem exists_ordered_radial_countable_family_of_sample_law
-    (v : ℕ → ℝ≥0) (δ : ℕ → ℝ) (hδ : ∀ m, 0 < δ m) (N : ℕ → ℕ)
-    (hmesh : Tendsto δ atTop (𝓝 0))
-    (hhorizon : Tendsto (fun m => ((N m : ℝ) + 1) * δ m) atTop atTop)
-    (hsampled : ∀ m j,
-      conditionedPositiveEntranceGridMeasure (v j) (δ m) (fun _ => δ m)
-        (NNReal.coe_nonneg (v j)) (hδ m) (fun _ => hδ m) (N m) =
-      (rogersPitmanWienerProbability (v j) : Measure BrownianPath).map
-        (couplingPositivePathSamples (δ m) (hδ m) (N m))) :
-    ∃ Q : ProbabilityMeasure (ℕ → BrownianPath),
-      (∀ j, Q.map (fun F => F j) = negativeRogersPitmanWienerProbability (v j)) ∧
-      ∀ᵐ F ∂(Q : Measure (ℕ → BrownianPath)),
-        F ∈ negativeEntranceOrderSet (fun j => (v j : ℝ)) := by
-  apply conditioned_countable_ordered_path_limit (fun j => (v j : ℝ))
-    (fun m => couplingInterpolatedGridProbability v (δ m) (hδ m) (N m))
-    (fun j => negativeRogersPitmanWienerProbability (v j))
-  · exact couplingInterpolatedGridProbability_marginal_tendsto_of_sample_law
-      v δ hδ N hmesh hhorizon hsampled
-  · intro m
-    exact couplingInterpolatedGridMeasure_order_ae v (δ m) (hδ m) (N m)
+def exists_ordered_radial_countable_family_of_sample_law
+      := conditioned_countable_ordered_path_limit (fun j => ↑(v j)) (fun m => couplingInterpolatedGridProbability v (δ m) (hδ m) (N m)) (fun j => negativeRogersPitmanWienerProbability ↑(v j)) (couplingInterpolatedGridProbability_marginal_tendsto_of_sample_law v δ hδ N hmesh hhorizon hsampled) fun m => couplingInterpolatedGridMeasure_order_ae v (δ m) (hδ m) (N m)
 
 
 /-- The dyadic mesh `(1/2)^m`. -/
@@ -389,17 +352,11 @@ theorem couplingDyadicHorizon (m : ℕ) :
     ((couplingDyadicLastIndex m : ℝ) + 1) * couplingDyadicMesh m = (m : ℝ) + 1 := by
   have hcount : couplingDyadicLastIndex m + 1 = (m + 1) * 2 ^ m := by
     apply Nat.sub_add_cancel
-    have hpos : 0 < (m + 1) * 2 ^ m := by positivity
-    exact hpos
+    bound
   have hcast : (couplingDyadicLastIndex m : ℝ) + 1 = ((m : ℝ) + 1) * (2 : ℝ) ^ m := by
     exact_mod_cast hcount
   rw [hcast, couplingDyadicMesh]
-  have hcancel : (2 : ℝ) ^ m * (1 / 2 : ℝ) ^ m = 1 := by
-    rw [← mul_pow]
-    norm_num
-  calc
-    _ = ((m : ℝ) + 1) * ((2 : ℝ) ^ m * (1 / 2 : ℝ) ^ m) := by ring
-    _ = _ := by rw [hcancel, mul_one]
+  simp_all
 
 theorem couplingDyadicHorizon_tendsto :
     Tendsto (fun m => ((couplingDyadicLastIndex m : ℝ) + 1) * couplingDyadicMesh m)

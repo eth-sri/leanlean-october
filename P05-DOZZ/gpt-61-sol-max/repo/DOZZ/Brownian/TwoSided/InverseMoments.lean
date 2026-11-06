@@ -8,7 +8,7 @@ public import DOZZ.Brownian.Reflection.Moments
 
 /-! Initial-block inverse bounds with a common radial constant for all subcritical charges. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
@@ -49,7 +49,7 @@ theorem twosided_inverse_moment_uniform_from_lateral
   intro γ hγ ν hν
   obtain ⟨hB, hZ, hi⟩ := hData γ hγ ν hν
   let X : Ω → BrownianPath := fun ω => (B ν ω).1
-  have hX : IsNegativeConditionedBrownianProcess P X ν := hB.1
+  have hX  := hB.1
   let f : BrownianPath → ℝ≥0∞ := fun p =>
     ENNReal.ofReal (Real.exp (θ * brownianUnitNorm (brownianShiftPath 0 p)))
   let g : Measure ℝ → ℝ≥0∞ := fun μ => (μ (Icc 0 1)) ^ p
@@ -59,12 +59,12 @@ theorem twosided_inverse_moment_uniform_from_lateral
     (measurable_const.mul (continuous_brownianUnitNorm.comp hshift).measurable))
   have hg : Measurable g := ENNReal.continuous_rpow_const.measurable.comp
     (Measure.measurable_coe measurableSet_Icc)
-  have hiX : IndepFun X (Z γ) P := hi.comp measurable_fst measurable_id
+  have hiX  := hi.comp measurable_fst measurable_id
   have hprod := lintegral_mul_eq_lintegral_mul_lintegral_of_indepFun''
     (hf.comp_aemeasurable hX.1) (hg.comp_aemeasurable hZ.2.2.2.1) (hiX.comp hf hg)
   change (∫⁻ ω, f (X ω) * g (Z γ ω) ∂P) =
     (∫⁻ ω, f (X ω) ∂P) * (∫⁻ ω, g (Z γ ω) ∂P) at hprod
-  have hzero : ∀ᵐ ω ∂P, X ω 0 = 0 := ae_of_ae_map hX.1 hX.2.2.2.1
+  have hzero  := ae_of_ae_map hX.1 hX.2.2.2.1
   have hfX : (∫⁻ ω, f (X ω) ∂P) ≤ C := by
     rw [← lintegral_map' hf.aemeasurable hX.1]
     exact hOsc ν (hνN ν hν) _ hX.2 0

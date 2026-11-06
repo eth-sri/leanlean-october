@@ -14,7 +14,7 @@ The samplewise distribution constructed from the concrete torus-box Fourier char
 the equator-GFF specification `DOZZ.IsEquatorGFF`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions

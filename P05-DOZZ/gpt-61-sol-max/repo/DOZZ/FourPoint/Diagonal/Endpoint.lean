@@ -9,7 +9,7 @@ import DOZZ.GMC.SharpMoments.SeibergMoment
 
 /-! The physical reduced four-point function is continuous at zero. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -58,14 +58,14 @@ theorem fourPointT_continuousAt_zero
     apply tendsto_lintegral_filter_of_dominated_convergence' bound
     · exact Eventually.of_forall fun z => (hm z).pow_const (-s)
     · filter_upwards [Metric.ball_mem_nhds (0 : ℂ) zero_lt_one] with z hz
-      have hz' : ‖z‖ ≤ 1 := (show ‖z‖ < 1 by
-        simpa only [Metric.mem_ball, dist_zero_right] using hz).le
+      have hz'  := (show ‖z‖ < 1 by
+        simp_all).le
       exact ae_of_all P fun ω => hbnd z hz' ω
     · exact hboundfin.ne
     · filter_upwards [hmass] with ω hω
       exact (show Continuous (fun r : ℝ≥0∞ => ENNReal.rpow r (-s)) from
         ENNReal.continuous_rpow_const).continuousAt.tendsto.comp hω.tendsto
-  have hzeroFin : (∫⁻ ω, ENNReal.rpow (bpzMass γ χ a b c 0 (M ω) 0) (-s) ∂P) < ⊤ :=
+  have hzeroFin  :=
     lt_of_le_of_lt (lintegral_mono (hbnd 0 (by simp))) hboundfin
   have hreal := (ENNReal.tendsto_toReal hzeroFin.ne).comp hmoment
   have ht : ContinuousAt (fun z : ℂ =>

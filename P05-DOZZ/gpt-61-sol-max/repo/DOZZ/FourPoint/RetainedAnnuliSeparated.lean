@@ -21,11 +21,12 @@ noncomputable def independent_piece_field {Ω S : Type*}
     (Φ : Ω → S → ℝ) (A : Set S) (w : Ω × Ω) (x : S) : ℝ :=
   A.indicator (Φ w.1) x + Aᶜ.indicator (Φ w.2) x
 
+variable {Ω S : Type*} [_inst1 : MeasurableSpace Ω] [_inst2 : MeasurableSpace S] (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : IsCenteredGaussianField P Φ) (A : Set S)
+
+include Ω S _inst1 _inst2 P Φ hΦ A
 /-- Independent copies on the two pieces preserve the centered Gaussian field predicate. -/
 theorem independent_piece_field_gaussian
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : IsCenteredGaussianField P Φ)
-    (A : Set S) (hA : MeasurableSet A) :
+     (hA : MeasurableSet A) :
     IsCenteredGaussianField (P.prod P) (independent_piece_field Φ A) := by
   refine ⟨?_, ?_⟩
   · have h1 : Measurable (fun w : (Ω × Ω) × S => Φ w.1.1 w.2) :=
@@ -48,41 +49,35 @@ theorem independent_piece_field_gaussian
     rw [he]
     exact h
 
+
 /-- The within-piece covariance is unchanged and the cross-piece covariance is zero. -/
 theorem independent_piece_field_covariance
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : IsCenteredGaussianField P Φ)
-    (A : Set S) (x y : S) :
+     (x y : S) :
     (∫ w, independent_piece_field Φ A w x * independent_piece_field Φ A w y
       ∂P.prod P) =
       (∫ ω, A.indicator (Φ ω) x * A.indicator (Φ ω) y ∂P) +
         (∫ ω, Aᶜ.indicator (Φ ω) x * Aᶜ.indicator (Φ ω) y ∂P) := by
-  have : IsProbabilityMeasure P := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
+  have  := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
   exact gaussianCovariance_prod_add P P _ _ _ _
     (gluedField_memLp_indicator hΦ A x) (gluedField_memLp_indicator hΦ A y)
     (gluedField_memLp_indicator hΦ Aᶜ x) (gluedField_memLp_indicator hΦ Aᶜ y)
     (gluedField_integral_indicator hΦ A x) (gluedField_integral_indicator hΦ A y)
 
+
 /-- Splitting copies across a partition keeps every diagonal variance. -/
 theorem independent_piece_field_variance
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : IsCenteredGaussianField P Φ)
-    (A : Set S) (x : S) :
+     (x : S) :
     (∫ w, independent_piece_field Φ A w x ^ 2 ∂P.prod P) =
       ∫ ω, Φ ω x ^ 2 ∂P := by
   simp only [pow_two]
   rw [independent_piece_field_covariance P Φ hΦ A x x]
   by_cases hx : x ∈ A
-  · simp only [Set.indicator_of_mem hx,
-      Set.indicator_of_notMem (show x ∉ Aᶜ from fun h => h hx), zero_mul, integral_zero, add_zero]
-  · simp only [Set.indicator_of_notMem hx,
-      Set.indicator_of_mem (show x ∈ Aᶜ from hx), zero_mul, integral_zero, zero_add]
+  all_goals simp_all
+
 
 /-- A retained weight supported in the first piece uses precisely the first independent copy. -/
 theorem piece_field_mass_first
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : IsCenteredGaussianField P Φ)
-    (A : Set S) (ν : Measure S) (h : S → ℝ≥0) (hs : ∀ x, x ∉ A → h x = 0)
+     (ν : Measure S) (h : S → ℝ≥0) (hs : ∀ x, x ∉ A → h x = 0)
     (γ : ℝ) (w : Ω × Ω) :
     fieldChaosMass (P.prod P) (independent_piece_field Φ A) ν h γ w =
       fieldChaosMass P Φ ν h γ w.1 := by
@@ -93,13 +88,12 @@ theorem piece_field_mass_first
   by_cases hx : x ∈ A
   · simp only [independent_piece_field, Set.indicator_of_mem hx,
       Set.indicator_of_notMem (show x ∉ Aᶜ from fun h => h hx), add_zero]
-  · simp only [hs x hx, ENNReal.coe_zero, zero_mul]
+  simp_all
+
 
 /-- A retained weight supported in the second piece uses precisely the second independent copy. -/
 theorem piece_field_mass_second
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : IsCenteredGaussianField P Φ)
-    (A : Set S) (ν : Measure S) (h : S → ℝ≥0) (hs : ∀ x, x ∈ A → h x = 0)
+     (ν : Measure S) (h : S → ℝ≥0) (hs : ∀ x, x ∈ A → h x = 0)
     (γ : ℝ) (w : Ω × Ω) :
     fieldChaosMass (P.prod P) (independent_piece_field Φ A) ν h γ w =
       fieldChaosMass P Φ ν h γ w.2 := by
@@ -108,16 +102,15 @@ theorem piece_field_mass_second
   intro x
   rw [independent_piece_field_variance P Φ hΦ A x]
   by_cases hx : x ∈ A
-  · simp only [hs x hx, ENNReal.coe_zero, zero_mul]
+  · simp_all
   · simp only [independent_piece_field, Set.indicator_of_notMem hx,
       Set.indicator_of_mem (show x ∈ Aᶜ from hx), zero_add]
+
 
 /-- A bounded cross-piece covariance gives an upper product bound by independent masses.
 The within-piece laws and the common scalar factor appear explicitly. -/
 theorem two_retained_blocks_inverse_compare
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : IsCenteredGaussianField P Φ)
-    (A : Set S) (hA : MeasurableSet A) (ν : Measure S) [IsFiniteMeasure ν]
+     (hA : MeasurableSet A) (ν : Measure S) [IsFiniteMeasure ν]
     (h₀ h₁ : S → ℝ≥0) (hm₀ : Measurable h₀) (hm₁ : Measurable h₁)
     (hb₀ : ∃ c : ℝ≥0, ∀ x, h₀ x ≤ c) (hb₁ : ∃ c : ℝ≥0, ∀ x, h₁ x ≤ c)
     (hs₀ : ∀ x, x ∉ A → h₀ x = 0) (hs₁ : ∀ x, x ∈ A → h₁ x = 0)
@@ -130,7 +123,7 @@ theorem two_retained_blocks_inverse_compare
         (∫⁻ ω, (fieldChaosMass P Φ ν h₀ γ ω) ^ (-a) ∂P) *
           (∫⁻ ω, (fieldChaosMass P Φ ν h₁ γ ω) ^ (-b) ∂P) := by
   classical
-  have : IsProbabilityMeasure P := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
+  have  := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
   let Ψ := independent_piece_field Φ A
   have hΨ := independent_piece_field_gaussian P Φ hΦ A hA
   have hcov : ∀ᵐ xy ∂ν.prod ν,
@@ -139,21 +132,8 @@ theorem two_retained_blocks_inverse_compare
     filter_upwards [hcross] with xy hxy
     rw [independent_piece_field_covariance P Φ hΦ A xy.1 xy.2]
     by_cases hx : xy.1 ∈ A <;> by_cases hy : xy.2 ∈ A
-    · simp only [Set.indicator_of_mem hx, Set.indicator_of_mem hy,
-        Set.indicator_of_notMem (show xy.1 ∉ Aᶜ from fun h => h hx),
-        Set.indicator_of_notMem (show xy.2 ∉ Aᶜ from fun h => h hy), zero_mul, integral_zero,
-        add_zero]
-      exact le_add_of_nonneg_right hC
-    · simpa only [Set.indicator_of_mem hx, Set.indicator_of_notMem hy,
-        Set.indicator_of_notMem (show xy.1 ∉ Aᶜ from fun h => h hx),
-        mul_zero, zero_mul, integral_zero, zero_add] using hxy ⟨fun _ => hy, fun _ => hx⟩
-    · simpa only [Set.indicator_of_notMem hx, Set.indicator_of_mem hy,
-        Set.indicator_of_notMem (show xy.2 ∉ Aᶜ from fun h => h hy),
-        zero_mul, mul_zero, integral_zero, zero_add] using hxy ⟨fun h => False.elim (hx h), fun h => False.elim (h hy)⟩
-    · simp only [Set.indicator_of_notMem hx, Set.indicator_of_notMem hy,
-        Set.indicator_of_mem (show xy.1 ∈ Aᶜ from hx),
-        Set.indicator_of_mem (show xy.2 ∈ Aᶜ from hy), zero_mul, integral_zero, zero_add]
-      exact le_add_of_nonneg_right hC
+    · simp_all
+    all_goals simp_all
   have hdiag : ∀ᵐ x ∂ν, (∫ ω, Φ ω x ^ 2 ∂P) ≤ (∫ w, Ψ w x ^ 2 ∂P.prod P) + C := by
     filter_upwards [] with x
     rw [independent_piece_field_variance P Φ hΦ A x]
@@ -178,5 +158,7 @@ theorem two_retained_blocks_inverse_compare
     exact lintegral_prod_mul hm0 hm1
   rw [hrhs] at hk
   simpa only [mul_assoc, add_assoc] using hk
+omit Ω S _inst1 _inst2 P Φ hΦ A
+
 
 end DOZZ.Proofs

@@ -18,6 +18,7 @@ public import Mathlib.Analysis.Meromorphic.Basic
 public import DOZZ.Statements.Brownian.ReflectionR
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
+import Mathlib.Tactic
 
 /-!
 # Analytic inputs for the identification `R = R^DOZZ`
@@ -63,7 +64,7 @@ theorem tendsto_ofReal_nhdsNE (x : ℝ) :
   apply tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within
   · exact (Complex.continuous_ofReal.tendsto x).mono_left nhdsWithin_le_nhds
   · filter_upwards [self_mem_nhdsWithin] with y hy
-    exact fun h => hy (Complex.ofReal_injective h)
+    simp_all
 
 /-- Real translations map punctured neighborhoods into punctured neighborhoods. -/
 theorem tendsto_add_const_nhdsNE (z : ℂ) (t : ℂ) :
@@ -89,9 +90,9 @@ theorem analyticAt_and_eq_of_eventually_eq_real {g : ℂ → ℂ} {x : ℝ}
     have hreal := hcob.comp (tendsto_ofReal_nhdsNE x)
     rw [← tendsto_norm_atTop_iff_cobounded] at hreal
     exact not_tendsto_atTop_of_tendsto_nhds hEt.norm hreal
-  have han : AnalyticAt ℂ g (x : ℂ) := hg.meromorphicOrderAt_nonneg_iff_analyticAt.1 horder
+  have han  := hg.meromorphicOrderAt_nonneg_iff_analyticAt.1 horder
   refine ⟨han, ?_⟩
-  have hcont : Tendsto (fun y : ℝ => g (y : ℂ)) (𝓝[≠] x) (𝓝 (g (x : ℂ))) :=
+  have hcont  :=
     han.continuousAt.tendsto.comp ((tendsto_ofReal_nhdsNE x).mono_right nhdsWithin_le_nhds)
   exact tendsto_nhds_unique hcont hEt
 
@@ -109,17 +110,17 @@ theorem toMeromorphicNFOn_add_eq {h : ℝ} {f : ℂ → ℂ} (hf : MeromorphicOn
       c * toMeromorphicNFOn f (horizontalStrip h) (z + T) := by
   set S := horizontalStrip h
   set g := toMeromorphicNFOn f S
-  have hzT : z + (T : ℂ) ∈ S := add_ofReal_mem_horizontalStrip hz T
+  have hzT  := add_ofReal_mem_horizontalStrip hz T
   have hNF : MeromorphicNFOn g S := meromorphicNFOn_toMeromorphicNFOn f S
   have hgz : g =ᶠ[𝓝[≠] z] f := hf.toMeromorphicNFOn_eq_self_on_nhdsNE hz
   have hgzT : g =ᶠ[𝓝[≠] (z + T)] f := hf.toMeromorphicNFOn_eq_self_on_nhdsNE hzT
-  have hshift : (fun w => g (w + T)) =ᶠ[𝓝[≠] z] fun w => f (w + T) :=
+  have hshift  :=
     (tendsto_add_const_nhdsNE z T).eventually hgzT
   have hgerm : g =ᶠ[𝓝[≠] z] fun w => c * g (w + T) := by
     filter_upwards [hgz, hper, hshift] with w h1 h2 h3
     rw [h1, h2, h3]
   have hNFshift : MeromorphicNFAt (fun w => c * g (w + T)) z := by
-    have h0 : MeromorphicNFAt (fun w => g (w + T)) z :=
+    have h0  :=
       meromorphicNFAt_fun_comp_add_const_iff_meromorphicNFAt.2 (hNF hzT)
     exact (meromorphicNFAt_const_smul_iff_meromorphicNFAt hc).2 h0
   exact eq_of_meromorphicNFAt_of_eventuallyEq_nhdsNE (hNF hz) hNFshift hgerm
@@ -141,13 +142,11 @@ theorem eq_add_int_mul_of_periodic {h : ℝ} {g : ℂ → ℂ} {T : ℝ}
       push_cast
       ring
   rcases Int.eq_nat_or_neg n with ⟨m, rfl | rfl⟩
-  · simpa using hnat m z hz
+  · exact hnat m z hz
   · have hmem : z + ((-(m : ℤ) : ℤ) : ℂ) * T ∈ horizontalStrip h := by
       simpa using add_ofReal_mem_horizontalStrip hz (-((m : ℝ) * T))
     have h1 := hnat m _ hmem
-    have h2 : z + ((-(m : ℤ) : ℤ) : ℂ) * T + (m : ℂ) * T = z := by push_cast; ring
-    rw [h2] at h1
-    exact h1.symm
+    simp_all
 
 /-- A quasi-period multiplier of a periodic meromorphic function on a strip that is continuous
 and positive on a real interval longer than the period equals one. -/
@@ -163,11 +162,11 @@ theorem quasiPeriod_multiplier_eq_one {h : ℝ} (hh : 0 < h) {f : ℂ → ℂ}
   set S := horizontalStrip h with hSdef
   set g := toMeromorphicNFOn f S with hgdef
   have hNF : MeromorphicNFOn g S := meromorphicNFOn_toMeromorphicNFOn f S
-  have hmemR : ∀ x : ℝ, (x : ℂ) ∈ S := ofReal_mem_horizontalStrip hh
+  have hmemR  := ofReal_mem_horizontalStrip hh
   -- the normal form is analytic and equal to `E` on the interval
   have hgE : ∀ x ∈ Ioo a b, g (x : ℂ) = (E x : ℂ) := by
     intro x hx
-    have hcont : ContinuousAt E x := hE.continuousAt (Ioo_mem_nhds hx.1 hx.2)
+    have hcont  := hE.continuousAt (Ioo_mem_nhds hx.1 hx.2)
     have hgf : ∀ᶠ y : ℝ in 𝓝[≠] x, g (y : ℂ) = f (y : ℂ) :=
       (tendsto_ofReal_nhdsNE x).eventually (hf.toMeromorphicNFOn_eq_self_on_nhdsNE (hmemR x))
     have hgE' : ∀ᶠ y : ℝ in 𝓝[≠] x, g (y : ℂ) = (E y : ℂ) := by
@@ -187,11 +186,9 @@ theorem quasiPeriod_multiplier_eq_one {h : ℝ} (hh : 0 < h) {f : ℂ → ℂ}
     obtain ⟨y, hy⟩ := (hzero.and ((hfE x₀ hx₀).and hin)).exists
     obtain ⟨hy1, hy2, hy3⟩ := hy
     have := hEpos y hy3
-    rw [hy1] at hy2
-    have hE0 : E y = 0 := by exact_mod_cast hy2.symm
-    linarith
+    simp_all
   -- periodicity and quasi-periodicity of the normal form
-  have hper : ∀ z ∈ S, g z = g (z + T₁) := fun z hz => by
+  have hper  := fun z hz => by
     have := toMeromorphicNFOn_add_eq hf hz T₁ 1 one_ne_zero (by simpa using hp₁ z hz)
     simpa using this
   have hquasi : ∀ z ∈ S, g z = κ * g (z + T₂) := fun z hz =>
@@ -199,8 +196,8 @@ theorem quasiPeriod_multiplier_eq_one {h : ℝ} (hh : 0 < h) {f : ℂ → ℂ}
   -- every real value of the normal form is a value of `E` on one fundamental interval
   set c₀ : ℝ := (a + b - T₁) / 2 with hc₀def
   have hK : Icc c₀ (c₀ + T₁) ⊆ Ioo a b := fun y hy =>
-    ⟨by have := hy.1; simp only [hc₀def] at this; linarith,
-     by have := hy.2; simp only [hc₀def] at this; linarith⟩
+    ⟨by grind,
+     by grind⟩
   have hreal : ∀ x : ℝ, ∃ y ∈ Icc c₀ (c₀ + T₁), g (x : ℂ) = (E y : ℂ) := by
     intro x
     set n : ℤ := ⌊(x - c₀) / T₁⌋ with hndef
@@ -220,9 +217,7 @@ theorem quasiPeriod_multiplier_eq_one {h : ℝ} (hh : 0 < h) {f : ℂ → ℂ}
     refine ⟨y, hy, ?_⟩
     have hit := eq_add_int_mul_of_periodic hper (y : ℂ) (hmemR y) n
     have hxy : (y : ℂ) + (n : ℂ) * T₁ = (x : ℂ) := by simp only [hydef]; push_cast; ring
-    rw [hxy] at hit
-    rw [hit]
-    exact hgE y (hK hy)
+    grind
   -- bounds of `E` on the fundamental interval
   have hKc : IsCompact (Icc c₀ (c₀ + T₁)) := isCompact_Icc
   have hKne : (Icc c₀ (c₀ + T₁)).Nonempty := nonempty_Icc.mpr (by linarith)
@@ -282,14 +277,16 @@ theorem quasiPeriod_multiplier_eq_one {h : ℝ} (hh : 0 < h) {f : ℂ → ℂ}
       exact absurd (hpow n).2 (not_le.mpr hn)
   rw [hκreal, hr1, Complex.ofReal_one]
 
+variable {P : ℂ → Prop} (h : ∀ᶠ w in Filter.codiscrete ℂ, P w)
+
+include P h in
 /-- A codiscrete property holds on a punctured neighborhood of every point. -/
-theorem eventually_nhdsNE_of_eventually_codiscrete {P : ℂ → Prop}
-    (h : ∀ᶠ w in Filter.codiscrete ℂ, P w) (z : ℂ) : ∀ᶠ w in 𝓝[≠] z, P w :=
+theorem eventually_nhdsNE_of_eventually_codiscrete  (z : ℂ) : ∀ᶠ w in 𝓝[≠] z, P w :=
   eventually_codiscrete_iff_forall_eventually_nhdsNE.1 h z
 
+include P h in
 /-- Codiscrete properties are invariant under translation. -/
-theorem eventually_codiscrete_comp_add {P : ℂ → Prop}
-    (h : ∀ᶠ w in Filter.codiscrete ℂ, P w) (T : ℂ) :
+theorem eventually_codiscrete_comp_add  (T : ℂ) :
     ∀ᶠ w in Filter.codiscrete ℂ, P (w + T) :=
   eventually_codiscrete_iff_forall_eventually_nhdsNE.2 fun x =>
     (tendsto_add_const_nhdsNE x T).eventually (eventually_nhdsNE_of_eventually_codiscrete h (x + T))
@@ -304,7 +301,7 @@ theorem eventuallyEq_nhdsNE_of_isPreconnected {U : Set ℂ} (hU : IsPreconnected
     rw [meromorphicOrderAt_eq_top_iff]
     filter_upwards [h] with w hw
     simp [hw]
-  have hz0 : meromorphicOrderAt (f - g) z = ⊤ :=
+  have hz0  :=
     (hf.sub hg).meromorphicOrderAt_eq_top_of_isPreconnected hU hx₀ hz h0
   filter_upwards [meromorphicOrderAt_eq_top_iff.1 hz0] with w hw
   simpa [sub_eq_zero] using hw
@@ -329,10 +326,7 @@ theorem div_comp_sub_eq_of_shift {R RD D : ℂ → ℂ} {K T : ℂ} (hK : K ≠ 
     (hD : ∀ᶠ w in Filter.codiscrete ℂ, D w ≠ 0) :
     ∀ᶠ w in Filter.codiscrete ℂ, R (w - T) / RD (w - T) = R w / RD w := by
   filter_upwards [hR, hRD, hD] with w h1 h2 h3
-  rw [h1, h2]
-  by_cases h4 : RD w = 0
-  · simp [h4]
-  · field_simp
+  grind
 
 /-- The quotient of two functions obeying dual shift laws with multipliers `c₁`, `c₂` is
 quasi-periodic with multiplier `c₁ / c₂`. -/
@@ -342,10 +336,7 @@ theorem div_eq_mul_div_comp_add_of_shift {R RD D : ℂ → ℂ} {c₁ c₂ T : �
     (hD : ∀ᶠ w in Filter.codiscrete ℂ, D w ≠ 0) :
     ∀ᶠ w in Filter.codiscrete ℂ, R w / RD w = c₁ / c₂ * (R (w + T) / RD (w + T)) := by
   filter_upwards [hR, hRD, hD] with w h1 h2 h3
-  rw [h1, h2]
-  by_cases h4 : RD (w + T) = 0
-  · simp [h4]
-  · field_simp
+  grind
 
 /-- `lFun` does not vanish off the integers. -/
 theorem lFun_ne_zero_of_forall_ne_int {x : ℂ} (hx : ∀ n : ℤ, x ≠ n) : lFun x ≠ 0 := by
@@ -360,29 +351,30 @@ theorem lFun_ne_zero_of_forall_ne_int {x : ℂ} (hx : ∀ n : ℤ, x ≠ n) : lF
 
 /-- The complex Gamma function is meromorphic at every point. -/
 theorem meromorphicAt_complexGamma (z : ℂ) : MeromorphicAt Complex.Gamma z := by
-  have hinv : MeromorphicAt (fun s : ℂ => (Complex.Gamma s)⁻¹) z :=
+  have hinv  :=
     (Complex.differentiable_one_div_Gamma.analyticAt z).meromorphicAt
   have h := hinv.inv
   simpa [Pi.inv_def] using h
 
+variable (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
+
+include γ μ hγ hγ2 hμ in
 /-- The DOZZ reflection coefficient is meromorphic on the whole plane. -/
-theorem meromorphicOn_reflectionDOZZ (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) :
+theorem meromorphicOn_reflectionDOZZ  :
     MeromorphicOn (reflectionDOZZ γ μ) Set.univ := by
   intro z _
-  have hb : (((dozzBase γ μ : ℝ) : ℂ)) ∈ Complex.slitPlane :=
+  have hb  :=
     Complex.ofReal_mem_slitPlane.2 (dozzBase_pos hγ hγ2 hμ)
   have h1 : AnalyticAt ℂ (fun α : ℂ => (γ : ℂ) * ((Q γ : ℂ) - α) / 2) z := by fun_prop
   have h2 : AnalyticAt ℂ (fun α : ℂ => 2 * ((Q γ : ℂ) - α) / (γ : ℂ)) z := by fun_prop
   have h3 : AnalyticAt ℂ (fun α : ℂ => -((γ : ℂ) * ((Q γ : ℂ) - α) / 2)) z := by fun_prop
   have h4 : AnalyticAt ℂ (fun α : ℂ => -(2 * ((Q γ : ℂ) - α) / (γ : ℂ))) z := by fun_prop
-  have hpow : MeromorphicAt
-      (fun α : ℂ => ((dozzBase γ μ : ℝ) : ℂ) ^ (2 * ((Q γ : ℂ) - α) / (γ : ℂ))) z :=
+  have hpow  :=
     (analyticAt_const.cpow h2 hb).meromorphicAt
   have hG : ∀ w : ℂ → ℂ, AnalyticAt ℂ w z → MeromorphicAt (fun α => Complex.Gamma (w α)) z :=
     fun w hw => (meromorphicAt_complexGamma (w z)).comp_analyticAt hw
   unfold reflectionDOZZ
-  exact ((hpow.fun_neg).fun_mul ((hG _ h3).fun_div (hG _ h1))).fun_mul
-    ((hG _ h4).fun_div (hG _ h2))
+  fun_prop (disch := positivity)
 
 /-- The explicit ratio `R(α)/R^DOZZ(α)`, with the unit-volume moment `Rbar`. -/
 noncomputable def reflectionDOZZRatio (γ μ α Rbar : ℝ) : ℝ :=
@@ -396,7 +388,7 @@ theorem reflectionDOZZ_ofReal (γ μ α : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (h
       ((-(dozzBase γ μ ^ reflectionExponent γ α) *
         (Real.Gamma (-(γ * (Q γ - α) / 2)) / Real.Gamma (γ * (Q γ - α) / 2)) *
         (Real.Gamma (-reflectionExponent γ α) / Real.Gamma (reflectionExponent γ α)) : ℝ) : ℂ) := by
-  have hb : 0 ≤ dozzBase γ μ := (dozzBase_pos hγ hγ2 hμ).le
+  have hb  := (dozzBase_pos hγ hγ2 hμ).le
   have hp : (2 * (((Q γ : ℝ) : ℂ) - (α : ℂ)) / (γ : ℂ)) =
       ((reflectionExponent γ α : ℝ) : ℂ) := by
     simp [reflectionExponent]
@@ -407,24 +399,23 @@ theorem reflectionDOZZ_ofReal (γ μ α : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (h
   rw [hp, ht, ← Complex.ofReal_neg, ← Complex.ofReal_neg, Complex.Gamma_ofReal,
     Complex.Gamma_ofReal, Complex.Gamma_ofReal, Complex.Gamma_ofReal,
     ← Complex.ofReal_cpow hb]
-  simp only [Complex.ofReal_mul, Complex.ofReal_div, Complex.ofReal_neg]
+  simp_all
 
 /-- On the physical charge interval the Gamma argument `γ (Q - α) / 2` lies in `(0, 1)`. -/
 theorem reflectionGammaArg_mem_Ioo {γ α : ℝ} (hγ : 0 < γ) (hα : γ / 2 < α ∧ α < Q γ) :
     0 < γ * (Q γ - α) / 2 ∧ γ * (Q γ - α) / 2 < 1 := by
-  have hν : 0 < Q γ - α := sub_pos.mpr hα.2
+  have hν  := sub_pos.mpr hα.2
   have hsub : Q γ - α < 2 / γ := by
     dsimp [Q]
     linarith [hα.1]
   refine ⟨by positivity, ?_⟩
-  have hmul : γ * (Q γ - α) < γ * (2 / γ) := mul_lt_mul_of_pos_left hsub hγ
-  rw [mul_div_cancel₀ _ hγ.ne'] at hmul
-  linarith
+  have hmul  := mul_lt_mul_of_pos_left hsub hγ
+  grind
 
 /-- `Γ(-t) < 0` for `0 < t < 1`, from the recursion `Γ(1 - t) = (-t) Γ(-t)`. -/
 theorem realGamma_neg_neg_of_pos_lt_one {t : ℝ} (h0 : 0 < t) (h1 : t < 1) :
     Real.Gamma (-t) < 0 := by
-  have hrec : Real.Gamma (-t + 1) = -t * Real.Gamma (-t) :=
+  have hrec  :=
     Real.Gamma_add_one (neg_ne_zero.mpr h0.ne')
   have hpos : 0 < Real.Gamma (-t + 1) := Real.Gamma_pos_of_pos (by linarith)
   rw [hrec] at hpos
@@ -438,9 +429,7 @@ theorem realGamma_neg_reflectionExponent_ne_zero {γ α : ℝ}
   intro m hm
   have hpm : reflectionExponent γ α = m := by linarith
   rcases m with _ | n
-  · simp only [Nat.cast_zero] at hpm
-    linarith
-  · exact hPole n hpm
+  all_goals continuity
 
 /-- On the physical interval off the Gamma poles the DOZZ coefficient does not vanish. -/
 theorem reflectionDOZZ_ofReal_ne_zero (γ μ α : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
@@ -491,7 +480,6 @@ theorem reflectionDOZZRatio_pos (γ μ α Rbar : ℝ) (hγ : 0 < γ) (hγ2 : γ 
   have hGp := Real.Gamma_pos_of_pos hp
   have hGt := Real.Gamma_pos_of_pos ht0
   have hGn := realGamma_neg_neg_of_pos_lt_one ht0 ht1
-  unfold reflectionDOZZRatio
   exact div_pos_of_neg_of_neg
     (mul_neg_of_neg_of_pos (mul_neg_of_neg_of_pos (mul_neg_of_neg_of_pos
       (mul_neg_of_neg_of_pos (neg_neg_of_pos hmu) hp) hR) hGp) hGt)
@@ -504,8 +492,9 @@ theorem continuousOn_realGamma_comp {S : Set ℝ} {g : ℝ → ℝ} (hg : Contin
     ContinuousOn (fun α => Real.Gamma (g α)) S := fun α hα =>
   (Real.differentiableAt_Gamma (hpole α hα)).continuousAt.comp_continuousWithinAt (hg α hα)
 
+include γ μ hγ hγ2 hμ in
 /-- The explicit ratio is continuous along a continuous moment on the physical interval. -/
-theorem continuousOn_reflectionDOZZRatio (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
+theorem continuousOn_reflectionDOZZRatio 
     (f : ℝ → ℝ) (hf : ContinuousOn f (Set.Ioo (γ / 2) (Q γ))) :
     ContinuousOn (fun α => reflectionDOZZRatio γ μ α (f α)) (Set.Ioo (γ / 2) (Q γ)) := by
   have hb := dozzBase_pos hγ hγ2 hμ
@@ -522,14 +511,12 @@ theorem continuousOn_reflectionDOZZRatio (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ
       (Set.Ioo (γ / 2) (Q γ)) := by
     refine continuousOn_realGamma_comp hp.continuousOn fun α hα m => ?_
     have hpos := (reflectionExponent_in_subcritical_range γ α hγ hα).2.1
-    have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
+    
     linarith
   have hGt : ContinuousOn (fun α : ℝ => Real.Gamma (γ * (Q γ - α) / 2))
       (Set.Ioo (γ / 2) (Q γ)) := by
     refine continuousOn_realGamma_comp ht.continuousOn fun α hα m => ?_
-    have hpos := (hmem α hα).1
-    have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-    linarith
+    grind
   have hGn : ContinuousOn (fun α : ℝ => Real.Gamma (-(γ * (Q γ - α) / 2)))
       (Set.Ioo (γ / 2) (Q γ)) := by
     refine continuousOn_realGamma_comp ht.neg.continuousOn fun α hα m hm => ?_
@@ -538,7 +525,7 @@ theorem continuousOn_reflectionDOZZRatio (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ
     exact (realGamma_neg_neg_of_pos_lt_one (hmem α hα).1 (hmem α hα).2).ne hzero
   unfold reflectionDOZZRatio
   refine ContinuousOn.div ?_ ?_ ?_
-  · exact ((((((hrpow μ hμ).neg).continuousOn.mul hp.continuousOn).mul hf).mul hGp).mul hGt)
+  · fun_prop (disch := positivity)
   · exact ((hrpow _ hb).continuousOn).mul hGn
   · intro α hα
     exact mul_ne_zero (Real.rpow_pos_of_pos hb _).ne'
@@ -563,8 +550,7 @@ theorem reflectionPoleFree_eventually_nhdsNE {γ : ℝ} (hγ : 0 < γ) (x : ℝ)
     apply eventually_nhdsWithin_of_eventually_nhds
     have h := (hcont.tendsto x).eventually
       (Metric.ball_mem_nhds (reflectionExponent γ x) (by norm_num : (0 : ℝ) < 1 / 2))
-    filter_upwards [h] with y hy
-    simpa [Real.dist_eq] using hy
+    continuity
   by_cases hbad : ∃ y₀ : ℝ, y₀ ≠ x ∧
       |reflectionExponent γ y₀ - reflectionExponent γ x| < 1 / 2 ∧ ¬ ReflectionPoleFree γ y₀
   · obtain ⟨y₀, hy₀x, hy₀near, hy₀pole⟩ := hbad
@@ -576,25 +562,12 @@ theorem reflectionPoleFree_eventually_nhdsNE {γ : ℝ} (hγ : 0 < γ) (x : ℝ)
     push Not at hy₀pole
     obtain ⟨n₀, hn₀⟩ := hy₀pole
     have hclose : |((n + 1 : ℕ) : ℝ) - ((n₀ + 1 : ℕ) : ℝ)| < 1 := by
-      rw [← hn, ← hn₀]
-      calc |reflectionExponent γ y - reflectionExponent γ y₀|
-          ≤ |reflectionExponent γ y - reflectionExponent γ x| +
-              |reflectionExponent γ y₀ - reflectionExponent γ x| := by
-            have := abs_sub_le (reflectionExponent γ y) (reflectionExponent γ x)
-              (reflectionExponent γ y₀)
-            rw [abs_sub_comm (reflectionExponent γ x)] at this
-            exact this
-        _ < 1 / 2 + 1 / 2 := add_lt_add hy hy₀near
-        _ = 1 := by norm_num
+      grind
     have hnn : n = n₀ := by
       have h' : |((n : ℤ) : ℝ) - ((n₀ : ℤ) : ℝ)| < 1 := by
-        push_cast at hclose ⊢
-        simpa using hclose
+        simp_all
       have h'' : |n - (n₀ : ℤ)| < 1 := by exact_mod_cast h'
-      have : (n : ℤ) = n₀ := by
-        rw [abs_lt] at h''
-        omega
-      exact_mod_cast this
+      grind
     subst hnn
     exact hyy₀ (reflectionExponent_injective hγ (hn.trans hn₀.symm))
   · push Not at hbad
@@ -617,24 +590,18 @@ theorem continuousAt_reflectionR_formula {γ μ α : ℝ} (hγ : 0 < γ) (hμ : 
       intro m hm
       have hpm : reflectionExponent γ α = m := by linarith
       rcases Nat.eq_zero_or_pos m with h0 | hm0
-      · rw [h0, Nat.cast_zero] at hpm
-        linarith
+      · simp_all
       · obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_lt hm0
         exact hPole k (by rw [hpm]; push_cast; ring)
-    have hneg : ContinuousAt (fun y : ℝ => -(reflectionExponent γ y)) α := hp.neg
+    have hneg  := hp.neg
     exact ContinuousAt.comp (g := Real.Gamma) (Real.differentiableAt_Gamma hs).continuousAt hneg
-  have hpow : ContinuousAt (fun y : ℝ => μ ^ (reflectionExponent γ y)) α :=
-    (Real.continuousAt_const_rpow hμ.ne').comp hp
-  exact ((hpow.mul hGamma).mul hp).mul hrb
+  fun_prop (disch := positivity)
 
 /-- Off the poles, the DOZZ coefficient is continuous along real charges. -/
 theorem continuousAt_reflectionDOZZ_ofReal {γ μ α : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hμ : 0 < μ) (hα : γ / 2 < α ∧ α < Q γ) (hPole : ReflectionPoleFree γ α) :
     ContinuousAt (fun y : ℝ => reflectionDOZZ γ μ (y : ℂ)) α := by
-  have heq : (fun y : ℝ => reflectionDOZZ γ μ (y : ℂ)) = fun y : ℝ =>
-      ((-(dozzBase γ μ ^ reflectionExponent γ y) *
-        (Real.Gamma (-(γ * (Q γ - y) / 2)) / Real.Gamma (γ * (Q γ - y) / 2)) *
-        (Real.Gamma (-reflectionExponent γ y) / Real.Gamma (reflectionExponent γ y)) : ℝ) : ℂ) :=
+  have heq  :=
     funext fun y => reflectionDOZZ_ofReal γ μ y hγ hγ2 hμ
   rw [heq]
   apply Complex.continuous_ofReal.continuousAt.comp
@@ -644,22 +611,17 @@ theorem continuousAt_reflectionDOZZ_ofReal {γ μ α : ℝ} (hγ : 0 < γ) (hγ2
   have ht : ContinuousAt (fun y : ℝ => γ * (Q γ - y) / 2) α := by fun_prop
   have hpos := (reflectionExponent_in_subcritical_range γ α hγ hα).2.1
   have htα := reflectionGammaArg_mem_Ioo hγ hα
-  have hbase : 0 < dozzBase γ μ := dozzBase_pos hγ hγ2 hμ
+  have hbase  := dozzBase_pos hγ hγ2 hμ
   have hG1 : ContinuousAt (fun y : ℝ => Real.Gamma (-(γ * (Q γ - y) / 2))) α := by
     have hs : ∀ m : ℕ, -(γ * (Q γ - α) / 2) ≠ -m := by
       intro m hm
       have hm' : γ * (Q γ - α) / 2 = m := by linarith
-      rcases Nat.eq_zero_or_pos m with h0 | hm0
-      · rw [h0, Nat.cast_zero] at hm'; linarith [htα.1]
-      · have : (1 : ℝ) ≤ m := by exact_mod_cast hm0
-        linarith [htα.2]
-    have hneg : ContinuousAt (fun y : ℝ => -(γ * (Q γ - y) / 2)) α := ht.neg
+      aesop
+    have hneg  := ht.neg
     exact ContinuousAt.comp (g := Real.Gamma) (Real.differentiableAt_Gamma hs).continuousAt hneg
   have hG2 : ContinuousAt (fun y : ℝ => Real.Gamma (γ * (Q γ - y) / 2)) α := by
     have hs : ∀ m : ℕ, γ * (Q γ - α) / 2 ≠ -m := by
-      intro m hm
-      have : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-      linarith [htα.1]
+      grind
     exact ContinuousAt.comp (g := Real.Gamma) (Real.differentiableAt_Gamma hs).continuousAt ht
   have hG3 : ContinuousAt (fun y : ℝ => Real.Gamma (-reflectionExponent γ y)) α := by
     have hs : ∀ m : ℕ, -(reflectionExponent γ α) ≠ -m := by
@@ -669,19 +631,16 @@ theorem continuousAt_reflectionDOZZ_ofReal {γ μ α : ℝ} (hγ : 0 < γ) (hγ2
       · rw [h0, Nat.cast_zero] at hpm; linarith
       · obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_lt hm0
         exact hPole k (by rw [hpm]; push_cast; ring)
-    have hneg : ContinuousAt (fun y : ℝ => -(reflectionExponent γ y)) α := hp.neg
+    have hneg  := hp.neg
     exact ContinuousAt.comp (g := Real.Gamma) (Real.differentiableAt_Gamma hs).continuousAt hneg
   have hG4 : ContinuousAt (fun y : ℝ => Real.Gamma (reflectionExponent γ y)) α := by
     have hs : ∀ m : ℕ, reflectionExponent γ α ≠ -m := by
-      intro m hm
-      have : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-      linarith
+      grind
     exact ContinuousAt.comp (g := Real.Gamma) (Real.differentiableAt_Gamma hs).continuousAt hp
-  have hpowb : ContinuousAt (fun y : ℝ => dozzBase γ μ ^ reflectionExponent γ y) α :=
+  have hpowb  :=
     (Real.continuousAt_const_rpow hbase.ne').comp hp
-  have hne2 : Real.Gamma (γ * (Q γ - α) / 2) ≠ 0 := (Real.Gamma_pos_of_pos htα.1).ne'
-  have hne4 : Real.Gamma (reflectionExponent γ α) ≠ 0 := (Real.Gamma_pos_of_pos hpos).ne'
-  exact (hpowb.neg.mul (hG1.div hG2 hne2)).mul (hG3.div hG4 hne4)
+  have hne2  := (Real.Gamma_pos_of_pos htα.1).ne'
+  fun_prop (disch := positivity)
 
 end DOZZ.Proofs
 

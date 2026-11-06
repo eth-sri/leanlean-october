@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.OrderedCutSqueeze
 /-! Both kernel coefficient bounds are removed after the spatial limit. -/
-@[expose] public section
+public section
 open Filter Topology
 namespace DOZZ.Proofs
 

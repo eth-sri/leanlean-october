@@ -10,7 +10,7 @@ public import DOZZ.Correlations.Tails.GaussianRegression
 correlated equator pin. The residual lateral family is independent of the pin. The radial Brownian
 motion is independent of their entire joint block. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
@@ -21,6 +21,6 @@ namespace DOZZ.Proofs
 one-insertion tail estimate. -/
 theorem offCenter_pin_variance_pos (z : ℂ) (hz : 2 ≤ ‖z‖) :
     0 < 2 * Real.log ‖z‖ := by
-  exact mul_pos (by norm_num) (Real.log_pos (by linarith))
+  bound
 
 end DOZZ.Proofs

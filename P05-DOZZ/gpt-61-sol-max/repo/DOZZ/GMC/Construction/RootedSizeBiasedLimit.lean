@@ -12,7 +12,7 @@ public import Mathlib.MeasureTheory.Measure.WithDensity
 
 /-! Fixed integrable changes of measure preserve convergence in measure. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal
@@ -32,14 +32,8 @@ theorem tendstoInMeasure_withDensity_of_lintegral_lt_top
   intro ε hε
   have hbase := hconv ε hε
   have hset (i : ι) : MeasurableSet {x | ε ≤ edist (f i x) (g x)} := by
-    exact measurableSet_Ici.preimage
-      (measurable_edist.comp ((hf i).prodMk hg))
+    measurability
   have hweighted := tendsto_setLIntegral_zero (ne_of_lt hρ) hbase
-  have hEq : (fun i => (μ.withDensity ρ) {x | ε ≤ edist (f i x) (g x)}) =
-      fun i => ∫⁻ x in {x | ε ≤ edist (f i x) (g x)}, ρ x ∂μ := by
-    funext i
-    exact withDensity_apply ρ (hset i)
-  rw [hEq]
-  exact hweighted
+  simp_all
 
 end DOZZ.Proofs

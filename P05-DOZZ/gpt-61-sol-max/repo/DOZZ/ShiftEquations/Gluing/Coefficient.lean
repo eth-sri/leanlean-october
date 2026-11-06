@@ -21,7 +21,7 @@ coefficient `K` hold on the cut plane, uniqueness of diagonal Gauss representati
 `K = C(α₁ - χ, α₂, α₃) ρ(a, b, c)`, with `ρ` the Gauss coefficient ratio.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 

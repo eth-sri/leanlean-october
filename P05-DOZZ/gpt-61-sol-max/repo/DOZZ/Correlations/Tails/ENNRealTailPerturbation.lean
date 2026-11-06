@@ -10,7 +10,7 @@ public import Mathlib.Tactic.Linarith
 
 /-! Tail comparison by a positive extended-real remainder. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 

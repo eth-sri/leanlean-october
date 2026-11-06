@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.Brownian.Lateral.WickReinsertion
 /-! Identifying nonnegative compact real tests with their extended-real masses. -/
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs

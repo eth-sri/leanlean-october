@@ -7,10 +7,11 @@ module
 public import DOZZ.Correlations.Tails.RandomParameterLimit
 public import DOZZ.Brownian.Lateral.WickReinsertion
 public import DOZZ.GMC.Assembly.CircleIntensity
+import Mathlib.Tactic
 
 /-! Spatial cutoff limits for compact tests depending on a correlated real parameter. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 
@@ -27,9 +28,7 @@ theorem parameter_integral_grid_error
       ENNReal.ofReal (1 / ((k : ℝ) + 1)) * (ENNReal.ofReal (Lcoef t) * μ K) := by
   have hgrid := parameter_grid_error k t
   have hstep : 1 / ((k : ℝ) + 1) ≤ 1 := by
-    apply (div_le_one (by positivity : 0 < (k : ℝ) + 1)).mpr
-    have hk : 0 ≤ (k : ℝ) := Nat.cast_nonneg k
-    linarith
+    bound
   have hpoint (x : ℂ) : ENNReal.ofReal |F t x - F (parameterGrid k t) x| ≤
       K.indicator (fun _ => ENNReal.ofReal (Lcoef t * (1 / ((k : ℝ) + 1)))) x := by
     by_cases hx : x ∈ K
@@ -40,10 +39,10 @@ theorem parameter_integral_grid_error
       have h1 := image_eq_zero_of_notMem_tsupport (fun h => hx (hFK t h))
       have h2 := image_eq_zero_of_notMem_tsupport
         (fun h => hx (hFK (parameterGrid k t) h))
-      simp only [h1, h2, sub_self, abs_zero, ENNReal.ofReal_zero, le_refl]
+      simp_all
   calc
     _ ≤ ∫⁻ x, ENNReal.ofReal |F t x - F (parameterGrid k t) x| ∂μ := by
-      simpa only [Real.norm_eq_abs] using DOZZ.Assembly.ofReal_abs_integral_sub_le_lintegral μ
+      exact DOZZ.Assembly.ofReal_abs_integral_sub_le_lintegral μ
         (F t) (F (parameterGrid k t)) (F t).continuous.measurable
           (F (parameterGrid k t)).continuous.measurable
     _ ≤ ∫⁻ x, K.indicator (fun _ =>
@@ -77,7 +76,7 @@ theorem tendstoInMeasure_parameter_integral
       atTop (fun ω => ∫ x, F (θ ω) x ∂M ω) := by
   have hleft n : Measurable (fun p : ℝ × Ω => ∫ x, F p.1 x ∂N n p.2) :=
     measurable_compact_parameter_integral F hF K hK hFK (N n) (hN n) (hNfin n)
-  have hright : Measurable (fun p : ℝ × Ω => ∫ x, F p.1 x ∂M p.2) :=
+  have hright  :=
     measurable_compact_parameter_integral F hF K hK hFK M hM hMfin
   have hgrid k : Measurable (fun ω => parameterGrid k (θ ω)) :=
     ((measurable_of_countable (fun i : ℤ => (i : ℝ))).comp

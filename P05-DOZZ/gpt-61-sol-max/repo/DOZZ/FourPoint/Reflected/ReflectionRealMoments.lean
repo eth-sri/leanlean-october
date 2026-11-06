@@ -3,9 +3,10 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.GMC.RealMoment
 public import DOZZ.FourPoint.Reflected.ReflectionMomentInput
 /-! Signed real expectations of the actual supplied reflection mass. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -22,10 +23,6 @@ theorem reflected_reflection_real_moment
   have hm := twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z
     (conditionedPair_aemeasurable P B (Q γ-α) hData.1) hData.2.1
   have hf := reflected_reflection_mass_moment_lt_top P γ α q B Z hα hData hq
-  constructor
-  · simpa only [ENNReal.toReal_rpow] using
-      integrable_toReal_of_lintegral_ne_top (hm.pow_const q) hf.ne
-  · simpa only [ENNReal.toReal_rpow] using
-      integral_toReal (hm.pow_const q) (ae_lt_top' (hm.pow_const q) hf.ne)
+  simpa only [ENNReal.toReal_rpow] using real_moment_of_finite (hm.pow_const q) hf.ne
 
 end DOZZ.Proofs

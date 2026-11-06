@@ -40,27 +40,31 @@ noncomputable def scaleSpaceMeasurableEquiv (d : Nat) :
 
 /-- The split into scale and spatial coordinates preserves Lebesgue volume. -/
 theorem scaleSpaceMeasurePreserving (d : Nat) :
-    MeasurePreserving (scaleSpaceMeasurableEquiv d) := by
-  simpa [ScaleSpace, scaleSpaceMeasurableEquiv] using
-    (volume_preserving_piFinSuccAbove (fun _ : Fin (d + 1) => ℝ) 0)
+    MeasurePreserving (scaleSpaceMeasurableEquiv d) := (volume_preserving_piFinSuccAbove (fun _ : Fin (d + 1) => ℝ) 0)
 
+variable {d : Nat} (z : ScaleSpace d)
+
+include d z in
 /-- The scale coordinate in `R^{1+d}`. -/
 @[expose]
-def scaleCoord {d : Nat} (z : ScaleSpace d) : ℝ :=
+def scaleCoord  : ℝ :=
   z 0
 
+include d z in
 /-- The spatial coordinates in `R^{1+d}`. -/
 @[expose]
-def spaceCoord {d : Nat} (z : ScaleSpace d) : Vec d :=
+def spaceCoord  : Vec d :=
   fun i => z (Fin.succ i)
 
+include d z in
 @[simp]
-theorem scaleSpaceMeasurableEquiv_fst {d : Nat} (z : ScaleSpace d) :
+theorem scaleSpaceMeasurableEquiv_fst  :
     (scaleSpaceMeasurableEquiv d z).1 = scaleCoord z :=
   rfl
 
+include d z in
 @[simp]
-theorem scaleSpaceMeasurableEquiv_snd {d : Nat} (z : ScaleSpace d) :
+theorem scaleSpaceMeasurableEquiv_snd  :
     (scaleSpaceMeasurableEquiv d z).2 = spaceCoord z :=
   rfl
 
@@ -98,8 +102,7 @@ theorem covariance_scaleSpaceWhiteNoiseL2 {d : Nat}
     (f g : ScaleSpaceWhiteNoiseHilbert d) :
     cov[scaleSpaceWhiteNoiseL2 d f, scaleSpaceWhiteNoiseL2 d g;
         scaleSpaceWhiteNoiseMeasure d] =
-      ⟪f, g⟫_ℝ := by
-  exact covariance_scalarWhiteNoiseL2 f g
+      ⟪f, g⟫_ℝ := covariance_scalarWhiteNoiseL2 f g
 
 /-! ## Deterministic ABK test data -/
 

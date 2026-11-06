@@ -6,12 +6,14 @@ module
 public import DOZZ.FourPoint.Fusion.DifferenceKernel
 public import DOZZ.FourPoint.TwoRootedDomination
 /-! # Finite masses as signed real spatial integrals -/
-@[expose] public section
+public section
 open MeasureTheory
 namespace DOZZ.Proofs
+variable (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (μ : Measure ℂ) (hz : μ {z} = 0) (h0 : μ {0} = 0) (h1 : μ {1} = 0)
+
+include γ α₁ α₂ α₃ z μ hz h0 h1 in
 /-- Finite Coulomb masses give integrability and the real integral of the displayed kernel. -/
-theorem fusion_gammaHalfKernel_integral (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (μ : Measure ℂ)
-    (hz : μ {z} = 0) (h0 : μ {0} = 0) (h1 : μ {1} = 0)
+theorem fusion_gammaHalfKernel_integral 
     (hf : coulombMass γ μ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ≠ ⊤) :
     Integrable (gammaHalfKernel γ α₁ α₂ α₃ z) μ ∧
       (∫ x, gammaHalfKernel γ α₁ α₂ α₃ z x ∂μ) =
@@ -29,9 +31,9 @@ theorem fusion_gammaHalfKernel_integral (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (
   · simpa only [he] using integrable_toReal_of_lintegral_ne_top hm.aemeasurable hf
   · simpa only [he] using integral_toReal hm.aemeasurable
       (ae_of_all μ fun _ => ENNReal.ofReal_lt_top)
+include γ α₁ α₂ α₃ z μ hz h0 h1 in
 /-- The signed kernel difference integrates to the difference of the two finite masses. -/
-theorem fusion_difference_mass_integral (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (μ : Measure ℂ)
-    (hz : μ {z} = 0) (h0 : μ {0} = 0) (h1 : μ {1} = 0)
+theorem fusion_difference_mass_integral 
     (hfz : coulombMass γ μ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ≠ ⊤)
     (hf0 : coulombMass γ μ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ ≠ ⊤) :
     Integrable (fusionDifferenceKernel γ α₁ α₂ α₃ z) μ ∧

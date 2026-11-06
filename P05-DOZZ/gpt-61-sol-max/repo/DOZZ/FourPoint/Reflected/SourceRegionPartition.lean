@@ -5,8 +5,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.DecorrelationError
 public import DOZZ.FourPoint.TaylorKernelMass
+import Mathlib.Tactic
 /-! The literal full mass splits into inner, intermediate annulus and exterior masses. -/
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -29,24 +30,24 @@ theorem reflected_three_region_kernel_partition (μ : Measure ℂ) (s r : ℝ)
   have he : K =ᵐ[μ] (fun x => U.indicator K x+V.indicator K x+W.indicator K x) := by
     filter_upwards [measure_eq_zero_iff_ae_notMem.mp h0,measure_eq_zero_iff_ae_notMem.mp h1,
       measure_eq_zero_iff_ae_notMem.mp hr] with x hx0 hx1 hxr
-    have hn : 0 < ‖x‖ := norm_pos_iff.mpr (by simpa only [mem_singleton_iff] using hx0)
-    have hxne : ‖x‖ ≠ r := by simpa only [Metric.mem_sphere,dist_zero_right] using hxr
-    have hx1' : x ≠ 1 := by simpa only [mem_singleton_iff] using hx1
-    have hx0' : x ≠ 0 := norm_pos_iff.mp hn
+    have hn  := norm_pos_iff.mpr (by exact hx0)
+    have hxne : ‖x‖ ≠ r := by simp_all
+    have hx1' : x ≠ 1 := by exact hx1
+    have hx0'  := norm_pos_iff.mp hn
     by_cases hxs : ‖x‖ < s
     · have hUx : x ∈ U := ⟨hn,hxs⟩
       have hVx : x ∉ V := fun hx => (not_le.mpr hxs) hx.1
       have hWx : x ∉ W := fun hx => (not_lt.mpr (hxs.le.trans hsr)) hx.1
-      simp only [indicator_of_mem hUx,indicator_of_notMem hVx,indicator_of_notMem hWx,add_zero]
+      simp_all
     · have hUx : x ∉ U := fun hx => hxs hx.2
       by_cases hxr' : ‖x‖ < r
       · have hVx : x ∈ V := ⟨le_of_not_gt hxs,hxr'⟩
         have hWx : x ∉ W := fun hx => (not_lt.mpr hxr'.le) hx.1
-        simp only [indicator_of_notMem hUx,indicator_of_mem hVx,indicator_of_notMem hWx,zero_add,add_zero]
-      · have hrx : r < ‖x‖ := lt_of_le_of_ne (le_of_not_gt hxr') hxne.symm
+        simp_all
+      · have hrx  := lt_of_le_of_ne (le_of_not_gt hxr') hxne.symm
         have hVx : x ∉ V := fun hx => hxr' hx.2
         have hWx : x ∈ W := ⟨hrx,by simp [hx0',hx1']⟩
-        simp only [indicator_of_notMem hUx,indicator_of_notMem hVx,indicator_of_mem hWx,zero_add]
+        simp_all
   have hab : Measurable (fun x => U.indicator K x+V.indicator K x) :=
     (hK.indicator hU).add (hK.indicator hV)
   rw [lintegral_congr_ae he,lintegral_add_left hab,

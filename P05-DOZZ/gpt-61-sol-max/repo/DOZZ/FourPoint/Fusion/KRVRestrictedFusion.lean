@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Fusion.FullDifferenceLimit
 public import DOZZ.FourPoint.Fusion.Coefficient
 public import DOZZ.FourPoint.FourPointTZeroEqStructureConstant
 /-! # The restricted gamma-half KRV fusion asymptotic -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -47,7 +47,7 @@ theorem gammaHalf_KRV_restricted_fusion {Ω : Type*} [MeasurableSpace Ω]
       hγ hγ2 hμ (by unfold Q; linarith) hα₂ hα₃ (by linarith) hX hM
   have hnorm := (tendsto_const_nhds (x := B)).mul
     (fusion_massDifference_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hαlo hαhi hα₂ hα₃ p hp)
-  have hcoef : B * (-p * gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p) = C :=
+  have hcoef  :=
     fusion_normalized_rootedCoefficient P X hX γ hγ hγ2 M hM μ α₁ α₂ α₃ hμ hs
   rw [hcoef] at hnorm
   have hlim : Tendsto (fun z : ℂ => (F z - C₀) / ‖z‖ ^ κ)
@@ -57,18 +57,15 @@ theorem gammaHalf_KRV_restricted_fusion {Ω : Type*} [MeasurableSpace Ω]
     intro z
     rw [← hzero]
     simp only [F, fourPointT, hse, ENNReal.rpow_eq_pow]
-    change B * (_ / ‖z‖ ^ κ) = (B * _ - B * _) / ‖z‖ ^ κ
     ring
   refine ⟨fun z => F z - C₀ - C * ‖z‖ ^ κ, ?_, ?_⟩
-  · intro z
-    change F z = C₀ + C * ‖z‖ ^ κ + (F z - C₀ - C * ‖z‖ ^ κ)
-    ring
+  · grind
   · have h := hlim.sub (tendsto_const_nhds (x := C))
     simp only [sub_self] at h
     have hsfilter : {z : ℂ | z ≠ 0} = {0}ᶜ := by ext z; simp
     rw [hsfilter]
     apply h.congr'
     filter_upwards [self_mem_nhdsWithin] with z hz
-    have hz0 : z ≠ 0 := by simpa only [mem_compl_iff, mem_singleton_iff] using hz
+    have hz0 : z ≠ 0 := by simp_all
     simp only [sub_div, mul_div_cancel_right₀ _ (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _).ne']
 end DOZZ.Proofs

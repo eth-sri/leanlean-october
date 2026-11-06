@@ -8,7 +8,7 @@ public import Mathlib.Analysis.Complex.Basic
 
 /-! Algebraic change of basis for real diagonal Hermitian forms. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
@@ -31,9 +31,7 @@ theorem real_diagonal_normSq_connection_change
       ((u : ℂ) * f * star ((v : ℂ) * g)).re =
           (((u * v : ℝ) : ℂ) * (f * star g)).re := by
             rw [hv]
-            apply congrArg Complex.re
-            push_cast
-            ring
+            push_cast <;> ring
       _ = (u * v) * (f * star g).re := Complex.re_ofReal_mul _ _
   have hcrossWX :
       ((w : ℂ) * f * star ((x : ℂ) * g)).re =
@@ -44,16 +42,13 @@ theorem real_diagonal_normSq_connection_change
       ((w : ℂ) * f * star ((x : ℂ) * g)).re =
           (((w * x : ℝ) : ℂ) * (f * star g)).re := by
             rw [hx]
-            apply congrArg Complex.re
-            push_cast
-            ring
+            push_cast <;> ring
       _ = (w * x) * (f * star g).re := Complex.re_ofReal_mul _ _
   rw [Complex.normSq_add, Complex.normSq_add]
   rw [Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul]
   rw [Complex.normSq_ofReal, Complex.normSq_ofReal,
     Complex.normSq_ofReal, Complex.normSq_ofReal]
   simp only [Complex.star_def] at hcrossUV hcrossWX
-  rw [hcrossUV, hcrossWX]
-  linear_combination 2 * (f * (starRingEnd ℂ) g).re * hcross
+  grind
 
 end DOZZ.Proofs

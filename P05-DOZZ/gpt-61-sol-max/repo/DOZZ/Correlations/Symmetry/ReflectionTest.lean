@@ -34,9 +34,7 @@ theorem norm_iteratedFDeriv_symmetryReflection (f : ℂ → ℝ) (i : ℕ) (x : 
     simp only [← iteratedFDerivWithin_univ]
     simpa only [vadd_eq_add, image_add_left, add_univ, vadd_set_univ, sub_eq_add_neg] using
       iteratedFDerivWithin_comp_add_left (𝕜 := ℝ) (f := f) (s := univ) i (1 : ℂ) (-x)
-  simp only [LinearIsometryEquiv.coe_neg] at hn
-  rw [ht] at hn
-  simpa only [Function.comp_def, LinearIsometryEquiv.coe_neg, sub_eq_add_neg] using hn
+  continuity
 
 /-- Pullback on a fixed compact support, with its derivative seminorm bounds. -/
 noncomputable def symmetryReflectionSupportedCLM (K : Compacts ℂ) :
@@ -69,6 +67,5 @@ noncomputable def symmetryReflectionTestCLM : TestFn →L[ℝ] TestFn := by
       ext x
       rfl
     rw [he]
-    exact (TestFunction.continuous_ofSupportedIn (subset_univ _)).comp
-      (symmetryReflectionSupportedCLM K).continuous
+    fun_prop (disch := positivity)
 end DOZZ.Proofs

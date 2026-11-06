@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Fusion.ScaledSpatialConvergence
 /-! # Uniform absolute bounds on scaled spatial integrals -/
-@[expose] public section
+public section
 open MeasureTheory
 namespace DOZZ.Proofs
 /-- The uniform rooted factor bounds every absolutely integrable signed planar kernel. -/
@@ -23,6 +23,6 @@ theorem fusionScaledIntegral_bound {Ω : Type*} [MeasurableSpace Ω]
       apply norm_integral_le_of_norm_le (hK.norm.mul_const B)
       exact ae_of_all _ fun y => by
         rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-        exact mul_le_mul_of_nonneg_left (hb y z hz) (norm_nonneg _)
+        bound
     _ = _ := integral_mul_const _ _
 end DOZZ.Proofs

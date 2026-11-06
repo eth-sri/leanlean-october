@@ -11,14 +11,16 @@ import Mathlib.Tactic
 
 /-! # Positivity, finiteness, and the literal deleted-disk splitting -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+variable (γ α₁ α₂ α₃ r : ℝ) (hγ : γ ≠ 0) (μ : Measure ℂ) (h0 : μ {0} = 0) (h1 : μ {1} = 0)
+
+include γ α₁ α₂ α₃ r hγ μ h0 h1 in
 /-- The retained zero mass equals its real-kernel integral when the fixed roots have no atoms. -/
-theorem dual_retainedZero_kernel_integral (γ α₁ α₂ α₃ r : ℝ) (hγ : γ ≠ 0) (μ : Measure ℂ)
-    (h0 : μ {0} = 0) (h1 : μ {1} = 0) :
+theorem dual_retainedZero_kernel_integral  :
     dualRetainedZeroMass γ α₁ α₂ α₃ r μ =
       ∫⁻ x in {x : ℂ | r ≤ ‖x‖}, ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x) ∂μ := by
   let D : Set ℂ := {x | r ≤ ‖x‖}
@@ -38,17 +40,16 @@ theorem dual_retainedZero_le_full (γ α₁ α₂ α₃ r : ℝ) (μ : Measure �
       coulombMass γ μ ![-2 / γ, α₁, α₂] ![0, 0, 1] α₃ :=
   lintegral_mono' Measure.restrict_le_self (fun _ => le_rfl)
 
+include γ α₁ α₂ α₃ r hγ μ h0 h1 in
 /-- The full zero mass splits into the retained mass and exactly the deleted open disk. -/
-theorem dual_retainedZero_split (γ α₁ α₂ α₃ r : ℝ) (hγ : γ ≠ 0) (μ : Measure ℂ)
-    (h0 : μ {0} = 0) (h1 : μ {1} = 0) :
+theorem dual_retainedZero_split  :
     coulombMass γ μ ![-2 / γ, α₁, α₂] ![0, 0, 1] α₃ =
       dualRetainedZeroMass γ α₁ α₂ α₃ r μ +
         ∫⁻ x in Metric.ball (0 : ℂ) r, ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x) ∂μ := by
   rw [← dual_kernel_integral_eq_coulombMass γ α₁ α₂ α₃ hγ 0 μ h0 h0 h1,
     dual_retainedZero_kernel_integral γ α₁ α₂ α₃ r hγ μ h0 h1]
   have hc : ({x : ℂ | r ≤ ‖x‖} : Set ℂ)ᶜ = Metric.ball (0 : ℂ) r := by
-    ext x
-    simp only [mem_compl_iff, mem_ofPred_eq, not_le, Metric.mem_ball, dist_zero_right]
+    continuity
   exact (lintegral_add_compl _ (isClosed_le continuous_const continuous_norm).measurableSet).symm.trans (by rw [hc])
 
 /-- The retained zero mass of a supplied GMC is almost surely strictly positive and finite. -/

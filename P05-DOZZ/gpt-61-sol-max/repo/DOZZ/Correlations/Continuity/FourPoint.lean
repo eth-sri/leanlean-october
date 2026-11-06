@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.Correlations.Continuity.MomentLimit
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -42,16 +42,12 @@ theorem fourPointMoment_jointly_continuous_parameters
     refine ⟨hγ, hγ2, hz', ?_, hα 3, ?_, ?_, ?_⟩
     · intro k
       fin_cases k
-      · exact hα 0
-      · exact hα 1
-      · exact hα 2
+      all_goals bound
     · simpa only [hp, J] using hbulk
     · intro k
       rw [hp]
       fin_cases k
-      · exact hroot 0
-      · exact hroot 1
-      · exact hroot 2
+      all_goals bound
     · simpa only [hp, J] using hroot 3
   have hm := (continuity_coulomb_moment_on_compact P X hX Xc hXc Mfam hMf
     (J '' K) (hK.image hJ) hadm).comp hJ.continuousOn (mapsTo_image J K)

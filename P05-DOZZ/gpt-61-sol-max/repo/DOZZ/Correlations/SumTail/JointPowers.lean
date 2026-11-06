@@ -8,7 +8,7 @@ public import DOZZ.Correlations.SumTail.PowerShift
 
 /-! The joint exceedance powers preserve the exact ceiling `DOZZ.twoInsertionTailCeiling`. -/
 
-@[expose] public section
+public section
 namespace DOZZ.Proofs
 
 /-- One large and one square-root threshold gives the sharp joint remainder order. -/

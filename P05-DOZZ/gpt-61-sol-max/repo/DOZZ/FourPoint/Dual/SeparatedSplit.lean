@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Dual.SpatialBoundary
 public import DOZZ.FourPoint.Reflected.SeparatedRegions
 import Mathlib.Tactic
 /-! The exact actual mass decomposition into inner, intermediate and exterior regions. -/
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -37,28 +37,24 @@ theorem dual_kernel_separated_split (γ α₁ α₂ α₃ s r : ℝ) (_hs : 0 < 
       ((reflected_innerRegion s).indicator k x+(reflected_outerRegion r).indicator k x)+D.indicator k x := by
     filter_upwards [measure_eq_zero_iff_ae_notMem.mp h0,
       measure_eq_zero_iff_ae_notMem.mp h1, measure_eq_zero_iff_ae_notMem.mp hc] with x hx0 hx1 hxc
-    have hx0' : x ≠ 0 := by simpa only [mem_singleton_iff] using hx0
-    have hx1' : x ≠ 1 := by simpa only [mem_singleton_iff] using hx1
-    have hxp : 0 < ‖x‖ := norm_pos_iff.mpr hx0'
-    have hxr : ‖x‖ ≠ r := by simpa only [Metric.mem_sphere, dist_zero_right] using hxc
+    have hx0' : x ≠ 0 := by exact hx0
+    have hx1' : x ≠ 1 := by exact hx1
+    have hxp  := norm_pos_iff.mpr hx0'
+    have hxr : ‖x‖ ≠ r := by simp_all
     by_cases hxs : ‖x‖ < s
-    · have hxxr : ‖x‖ < r := hxs.trans_le hsr
+    · have hxxr  := hxs.trans_le hsr
       have hix : x ∈ reflected_innerRegion s := ⟨hxp,hxs⟩
       have hox : x ∉ reflected_outerRegion r := fun hh => (not_lt_of_ge hxxr.le) hh.1
-      have hdx : x ∉ D := fun hh => (not_le_of_gt hxs) hh.1
-      simp only [indicator_of_mem hix, indicator_of_notMem hox, indicator_of_notMem hdx, add_zero]
-    · have hsx : s ≤ ‖x‖ := le_of_not_gt hxs
+      continuity
+    · have hsx  := le_of_not_gt hxs
       have hix : x ∉ reflected_innerRegion s := fun hh => hxs hh.2
       by_cases hxxr : ‖x‖ < r
       · have hdx : x ∈ D := ⟨hsx,hxxr⟩
         have hox : x ∉ reflected_outerRegion r := fun hh => (not_lt_of_ge hxxr.le) hh.1
-        simp only [indicator_of_notMem hix, indicator_of_notMem hox, indicator_of_mem hdx,
-          zero_add, add_zero]
-      · have hrx : r < ‖x‖ := lt_of_le_of_ne (le_of_not_gt hxxr) hxr.symm
+        simp_all
+      · have hrx  := lt_of_le_of_ne (le_of_not_gt hxxr) hxr.symm
         have hox : x ∈ reflected_outerRegion r := ⟨hrx, by simp [hx0',hx1']⟩
-        have hdx : x ∉ D := fun hh => hxxr hh.2
-        simp only [indicator_of_notMem hix, indicator_of_mem hox, indicator_of_notMem hdx,
-          zero_add, add_zero]
+        continuity
   rw [lintegral_congr_ae he, lintegral_add_left]
   · rw [lintegral_add_left, lintegral_indicator hI, lintegral_indicator hO, lintegral_indicator hD]
     exact ((dual_kernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal.indicator hI)

@@ -18,7 +18,7 @@ theorem reflected_global_reinsertionWeight_measurable (γ : ℝ) :
     Measurable (fun p : TwoSidedPath × ℂ => reflected_global_reinsertionWeight γ p.1 p.2) := by
   have hl : Measurable (fun p : TwoSidedPath × ℂ => Real.log ‖p.2‖) :=
     Real.measurable_log.comp (measurable_norm.comp measurable_snd)
-  have he : Measurable (fun p : TwoSidedPath × ℂ => p.1 (-Real.log ‖p.2‖)) :=
+  have he  :=
     continuous_eval.measurable.comp (measurable_fst.prodMk hl.neg)
   exact Measurable.ite (measurableSet_eq_fun (measurable_norm.comp measurable_snd) measurable_const)
     measurable_const (Real.measurable_exp.comp ((measurable_const.mul he).sub
@@ -27,7 +27,7 @@ theorem reflected_global_reinsertionWeight_measurable (γ : ℝ) :
 theorem reflected_global_reinsertionWeight_chart (ρ γ : ℝ) (hρ : 0 < ρ)
     (A : TwoSidedPath) (x : ℂ) (hx : x ∈ originLateralChart ρ) :
     reflected_global_reinsertionWeight γ A x = originRadialReinsertionWeight ρ γ A x := by
-  have hx0 : ‖x‖ ≠ 0 := ne_of_gt (lt_trans (by linarith : 0 < 2*ρ) hx)
+  have hx0  := ne_of_gt (lt_trans (by linarith : 0 < 2*ρ) hx)
   rw [reflected_global_reinsertionWeight, ite_eq_right hx0,
     originRadialReinsertionWeight_chart_eq ρ γ hρ A x hx]
 
@@ -50,12 +50,10 @@ theorem reflected_global_reinsertion_measure (γ : ℝ) (A : TwoSidedPath) (μ :
     funext x
     by_cases hx : x = 0
     · simp [hx, lateralRadialWeight, reflected_global_reinsertionWeight]
-    · have hn : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx
+    · have hn  := norm_ne_zero_iff.mpr hx
       rw [lateralRadialWeight, reflected_global_reinsertionWeight, ite_eq_right hn,
         ite_eq_right hn, ← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
-      have ha : -γ*A (-Real.log ‖x‖)+γ*Q γ*|Real.log ‖x‖| +
-          (γ*A (-Real.log ‖x‖)-γ*Q γ*|Real.log ‖x‖|) = 0 := by ring
-      rw [ha, Real.exp_zero, ENNReal.ofReal_one, indicator_of_mem (by simpa using hx)]
+      simp_all
   change μ.withDensity (fun x => lateralRadialWeight γ A x *
     ENNReal.ofReal (reflected_global_reinsertionWeight γ A x)) = _
   rw [he]

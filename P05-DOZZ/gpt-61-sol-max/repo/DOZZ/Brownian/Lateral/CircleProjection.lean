@@ -7,6 +7,7 @@ module
 public import DOZZ.Brownian.Lateral.Field
 public import DOZZ.GMC.Assembly.AdmissibleGMC
 public import DOZZ.GMC.GaussianInputs
+import Mathlib.Tactic
 
 /-!
 # Orthogonal radial projection of circle cutoffs
@@ -45,8 +46,7 @@ noncomputable def clampedLogRadius (ρ : ℝ) (z : ℂ) : ℝ :=
 
 /-- The clamped radius is continuous on the whole plane. -/
 theorem continuous_clampedLogRadius (ρ : ℝ) (hρ : 0 < ρ) :
-    Continuous (clampedLogRadius ρ) := by
-  exact ((continuous_const.max continuous_norm).log
+    Continuous (clampedLogRadius ρ) := ((continuous_const.max continuous_norm).log
     (fun z => (hρ.trans_le (le_max_left ρ ‖z‖)).ne')).neg
 
 /-- Above the clamping radius, the coordinate is the genuine logarithmic radius. -/
@@ -63,13 +63,13 @@ theorem circle_norm_lower_ae (x : ℂ) (r ρ : ℝ) (hρ : ρ ≤ ‖x‖ - Real
   rw [norm_sub_rev x z, hz] at h
   linarith
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+
+include Ω _inst1 P X Xc hX hc
 /-- The radial coordinate map is continuous in the original Gaussian L² carrier. -/
 theorem continuous_clampedRadialCircleL2
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (ρ : ℝ) (hρ : 0 < ρ) :
-    Continuous (fun z : ℂ => circleAverageL2 hc (0, clampedLogRadius ρ z)) := by
-  exact (continuous_circleAverageL2 P X Xc hX hc).comp
+     (ρ : ℝ) (hρ : 0 < ρ) :
+    Continuous (fun z : ℂ => circleAverageL2 hc (0, clampedLogRadius ρ z)) := (continuous_circleAverageL2 P X Xc hX hc).comp
     (continuous_const.prodMk (continuous_clampedLogRadius ρ hρ))
 
 /-- The actual circle average of radial variables in L². The clamp is inactive whenever
@@ -80,22 +80,20 @@ noncomputable def originCircleRadialL2
     (hc : IsCircleAverage P X Xc) (ρ : ℝ) (x : ℂ) (r : ℝ) : Lp ℝ 2 P :=
   ∫ z : ℂ, circleAverageL2 hc (0, clampedLogRadius ρ z) ∂circleMeasure x r
 
+
 /-- Integrability is proved in the Hilbert carrier before choosing scalar representatives. -/
 theorem integrable_clampedRadialCircleL2
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ) :
     Integrable (fun z : ℂ => circleAverageL2 hc (0, clampedLogRadius ρ z))
       (circleMeasure x r) :=
   integrable_continuous_circleMeasure x r _
     (continuous_clampedRadialCircleL2 P X Xc hX hc ρ hρ)
 
+
 /-- The circle radial average belongs to the same closed Gaussian space as the field. -/
 theorem originCircleRadialL2_mem_gaussianHilbertSpan
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ) :
     originCircleRadialL2 hc ρ x r ∈ gaussianHilbertSpan (gffStructureL2Family X Xc hX hc) := by
   let _ := hX.1
@@ -104,11 +102,10 @@ theorem originCircleRadialL2_mem_gaussianHilbertSpan
     (integrable_clampedRadialCircleL2 P X Xc hX hc ρ hρ x r)
     (ae_of_all _ fun z => mem_gaussianHilbertSpan _ (Sum.inl (0, clampedLogRadius ρ z)))
 
+
 /-- Averaging the centered radial variables keeps zero mean. -/
 theorem originCircleRadialL2_integral_eq_zero
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ) :
     (∫ ω, originCircleRadialL2 hc ρ x r ω ∂P) = 0 := by
   let _ := hX.1
@@ -117,11 +114,10 @@ theorem originCircleRadialL2_integral_eq_zero
   simp_rw [circleAverageL2_integral_eq_zero P X Xc hX hc]
   simp only [integral_zero]
 
+
 /-- Covariance of the circle radial average is the average of the radial covariances. -/
 theorem originCircleRadialL2_covariance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ) (V : Lp ℝ 2 P) :
     covariance (originCircleRadialL2 hc ρ x r) V P =
       ∫ z : ℂ, covariance (circleAverageL2 hc (0, clampedLogRadius ρ z)) V P
@@ -131,11 +127,10 @@ theorem originCircleRadialL2_covariance
     (integrable_clampedRadialCircleL2 P X Xc hX hc ρ hρ x r) V
     (fun z => circleAverageL2_integral_eq_zero P X Xc hX hc _)
 
+
 /-- The Hilbert average agrees with the literal jointly measurable radial circle integral. -/
 theorem originCircleRadialL2_ae_eq
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ) :
     (⇑(originCircleRadialL2 hc ρ x r)) =ᵐ[P]
@@ -149,11 +144,10 @@ theorem originCircleRadialL2_ae_eq
   · intro z
     exact circleAverageL2_ae_eq hc _
 
+
 /-- The clamp does not change the literal integral on any circle above its radius. -/
 theorem originCircleRadialL2_ae_eq_unclamped
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ)
     (hbound : ρ ≤ ‖x‖ - Real.exp (-r)) :
@@ -165,11 +159,10 @@ theorem originCircleRadialL2_ae_eq_unclamped
   filter_upwards [circle_norm_lower_ae x r ρ hbound] with z hz
   rw [clampedLogRadius_eq ρ z hz]
 
+
 /-- A circle cutoff pairs with every origin circle through the radial potential. -/
 theorem offCenterCircle_origin_covariance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r s : ℝ)
     (hbound : ρ ≤ ‖x‖ - Real.exp (-r)) :
     covariance (fun ω => Xc ω x r) (fun ω => Xc ω 0 s) P =
@@ -179,12 +172,11 @@ theorem offCenterCircle_origin_covariance
   filter_upwards [circle_norm_lower_ae x r ρ hbound] with z hz
   exact origin_circleKernelPotential_eq s z (norm_pos_iff.mp (hρ.trans_le hz))
 
+
 /-- The averaged radial part has exactly the same covariance with the full radial family.
 This is the cancellation needed for a finite-cutoff independence statement. -/
 theorem originCircleRadialL2_origin_covariance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r s : ℝ)
     (hbound : ρ ≤ ‖x‖ - Real.exp (-r)) :
     covariance (originCircleRadialL2 hc ρ x r) (circleAverageL2 hc (0, s)) P =
@@ -203,22 +195,19 @@ noncomputable def originCircleLateralL2
     (hc : IsCircleAverage P X Xc) (ρ : ℝ) (x : ℂ) (r : ℝ) : Lp ℝ 2 P :=
   circleAverageL2 hc (x, r) - originCircleRadialL2 hc ρ x r
 
+
 /-- Subtracting the radial average keeps the cutoff inside the same Gaussian linear space. -/
 theorem originCircleLateralL2_mem_gaussianHilbertSpan
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ) :
     originCircleLateralL2 hc ρ x r ∈ gaussianHilbertSpan (gffStructureL2Family X Xc hX hc) := by
-  let _ := hX.1
   exact Submodule.sub_mem _ (mem_gaussianHilbertSpan _ (Sum.inl (x, r)))
     (originCircleRadialL2_mem_gaussianHilbertSpan P X Xc hX hc ρ hρ x r)
 
+
 /-- The orthogonal cutoff is centered. -/
 theorem originCircleLateralL2_integral_eq_zero
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ) :
     (∫ ω, originCircleLateralL2 hc ρ x r ω ∂P) = 0 := by
   let _ := hX.1
@@ -229,11 +218,10 @@ theorem originCircleLateralL2_integral_eq_zero
     circleAverageL2_integral_eq_zero P X Xc hX hc,
     originCircleRadialL2_integral_eq_zero P X Xc hX hc ρ hρ x r, sub_self]
 
+
 /-- Orthogonal circle cutoffs have zero covariance with every radial time. -/
 theorem originCircleLateralL2_origin_covariance_zero
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r s : ℝ)
     (hbound : ρ ≤ ‖x‖ - Real.exp (-r)) :
     covariance (originCircleLateralL2 hc ρ x r) (circleAverageL2 hc (0, s)) P = 0 := by
@@ -257,11 +245,10 @@ noncomputable def originRadialLateralCircleL2Family
   Sum.elim (fun s => circleAverageL2 hc (0, s))
     (fun p => originCircleLateralL2 hc p.val.1 p.val.2.1 p.val.2.2)
 
+
 /-- Every member of the packed family lies in the original closed Gaussian space. -/
 theorem originRadialLateralCircleL2Family_mem_gaussianHilbertSpan
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (j : ℝ ⊕ OriginCircleCutoff) :
     originRadialLateralCircleL2Family hc j ∈
       gaussianHilbertSpan (gffStructureL2Family X Xc hX hc) := by
@@ -272,22 +259,20 @@ theorem originRadialLateralCircleL2Family_mem_gaussianHilbertSpan
     exact originCircleLateralL2_mem_gaussianHilbertSpan
       P X Xc hX hc p.val.1 p.property.1 p.val.2.1 p.val.2.2
 
+
 /-- The complete radial/circle-cutoff family is jointly Gaussian. -/
 theorem originRadialLateralCircleL2Family_isGaussianProcess
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) :
+     :
     IsGaussianProcess (fun j => ⇑(originRadialLateralCircleL2Family hc j)) P := by
   let _ := hX.1
   exact isGaussianProcess_of_mem_gaussianHilbertSpan
     (gffStructureL2Family_isGaussianProcess X Xc hX hc) _
     (originRadialLateralCircleL2Family_mem_gaussianHilbertSpan P X Xc hX hc)
 
+
 /-- Orthogonal circle cutoffs form a centered Gaussian family at every finite collection. -/
 theorem originCircleLateralL2_centeredJointlyGaussian
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (n : ℕ) (p : Fin n → OriginCircleCutoff) :
     IsCenteredJointlyGaussian P
       (fun ω i => originCircleLateralL2 hc (p i).val.1 (p i).val.2.1 (p i).val.2.2 ω) := by
@@ -297,11 +282,10 @@ theorem originCircleLateralL2_centeredJointlyGaussian
     (fun i => originCircleLateralL2_integral_eq_zero P X Xc hX hc
       (p i).val.1 (p i).property.1 (p i).val.2.1 (p i).val.2.2)
 
+
 /-- Scalar representatives of the cutoff have the exact samplewise subtraction formula. -/
 theorem originCircleLateralL2_ae_eq
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ)
     (hbound : ρ ≤ ‖x‖ - Real.exp (-r)) :
@@ -311,15 +295,12 @@ theorem originCircleLateralL2_ae_eq
     circleAverageL2_ae_eq hc (x, r),
     originCircleRadialL2_ae_eq_unclamped P X Xc hX hc hm ρ hρ x r hbound]
     with ω hsub hcircle hrad
-  rw [originCircleLateralL2, hsub]
-  change circleAverageL2 hc (x, r) ω - originCircleRadialL2 hc ρ x r ω = _
-  rw [hcircle, hrad]
+  aesop
+
 
 /-- Orthogonality to all radial times extends to every averaged radial circle. -/
 theorem originCircleLateralL2_radialCircle_covariance_zero
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ σ : ℝ) (hρ : 0 < ρ) (hσ : 0 < σ) (x y : ℂ) (r t : ℝ)
     (hx : ρ ≤ ‖x‖ - Real.exp (-r)) :
     covariance (originCircleLateralL2 hc ρ x r) (originCircleRadialL2 hc σ y t) P = 0 := by
@@ -331,12 +312,11 @@ theorem originCircleLateralL2_radialCircle_covariance_zero
       originCircleLateralL2_origin_covariance_zero P X Xc hX hc ρ hρ x r _ hx]
   rw [hz, integral_zero]
 
+
 /-- Subtracting the exact radial projection removes its mixed covariance from two circle
 cutoffs. This identity is valid before taking any regularization limit. -/
 theorem originCircleLateralL2_covariance_expansion
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ σ : ℝ) (hρ : 0 < ρ) (hσ : 0 < σ) (x y : ℂ) (r t : ℝ)
     (hx : ρ ≤ ‖x‖ - Real.exp (-r)) (hy : σ ≤ ‖y‖ - Real.exp (-t)) :
     covariance (originCircleLateralL2 hc ρ x r) (originCircleLateralL2 hc σ y t) P =
@@ -363,11 +343,10 @@ theorem originCircleLateralL2_covariance_expansion
     covariance_sub_sub (Lp.memLp Cx) (Lp.memLp Rx) (Lp.memLp Cy) (Lp.memLp Ry)]
   linarith only [h1, h2]
 
+
 /-- The second-moment variance splits into radial and lateral variances exactly. -/
 theorem originCircleLateralL2_variance_split
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ)
     (hx : ρ ≤ ‖x‖ - Real.exp (-r)) :
     gaussianVariance P (circleAverageL2 hc (x, r)) =
@@ -383,12 +362,11 @@ theorem originCircleLateralL2_variance_split
   unfold gaussianVariance gaussianCovariance
   linarith only [h]
 
+
 /-- The Wick exponential of a circle cutoff factors into its independent lateral and
 radial Wick exponentials. There is no covariance error at finite cutoff. -/
 theorem originCircleLateralL2_wick_factorization
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r γ : ℝ)
     (hx : ρ ≤ ‖x‖ - Real.exp (-r)) :
     ∀ᵐ ω ∂P,
@@ -414,11 +392,10 @@ noncomputable def originCircleLateralCutoff
   Xc ω p.val.2.1 p.val.2.2 -
     ∫ z : ℂ, Xc ω 0 (-Real.log ‖z‖) ∂circleMeasure p.val.2.1 p.val.2.2
 
+
 /-- The scalar cutoff is an almost-everywhere representative of its Hilbert projection. -/
 theorem originCircleLateralCutoff_ae_eq
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (p : OriginCircleCutoff) :
     (⇑(originCircleLateralL2 hc p.val.1 p.val.2.1 p.val.2.2)) =ᵐ[P]
@@ -426,12 +403,11 @@ theorem originCircleLateralCutoff_ae_eq
   originCircleLateralL2_ae_eq P X Xc hX hc hm p.val.1 p.property.1
     p.val.2.1 p.val.2.2 p.property.2
 
+
 /-- All actual radial coordinates and all actual orthogonal cutoffs are jointly Gaussian
 on the supplied raw space. Only coordinatewise modification is used here. -/
 theorem originRadialLateralCutoff_isGaussianProcess
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2)) :
     IsGaussianProcess (Sum.elim (fun s ω => Xc ω 0 s)
       (originCircleLateralCutoff Xc)) P := by
@@ -441,12 +417,11 @@ theorem originRadialLateralCutoff_isGaussianProcess
   | inl s => exact circleAverageL2_ae_eq hc (0, s)
   | inr p => exact originCircleLateralCutoff_ae_eq P X Xc hX hc hm p
 
+
 /-- The literal cutoff family is independent of the entire raw radial family. No common
 null event over uncountably many Hilbert representatives is asserted. -/
 theorem originCircleLateralCutoff_radial_indepFun
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2)) :
     IndepFun (fun ω => fun s : ℝ => Xc ω 0 s)
       (fun ω => fun p : OriginCircleCutoff => originCircleLateralCutoff Xc p ω) P := by
@@ -462,12 +437,11 @@ theorem originCircleLateralCutoff_radial_indepFun
     exact originCircleLateralL2_origin_covariance_zero P X Xc hX hc
       p.val.1 p.property.1 p.val.2.1 p.val.2.2 s p.property.2
 
+
 /-- The same independence holds with the actual continuous two-sided radial path as the
 left carrier, using its evaluation-generated Borel sigma algebra. -/
 theorem originRadialPath_circleLateralCutoff_indepFun
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) :
     IndepFun (originRadialPath Xc)
@@ -507,11 +481,10 @@ noncomputable def clampedCircleLateralSample
     {Ω : Type*} (Xc : Ω → ℂ → ℝ → ℝ) (ρ : ℝ) (ω : Ω) (x : ℂ) (r : ℝ) : ℝ :=
   Xc ω x r - clampedCircleRadialSample Xc ρ ω x r
 
+
 /-- The globally defined scalar regularizer represents its exact L² projection. -/
 theorem clampedCircleLateralSample_ae_eq
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ) :
     (⇑(originCircleLateralL2 hc ρ x r)) =ᵐ[P]
@@ -520,35 +493,33 @@ theorem clampedCircleLateralSample_ae_eq
     circleAverageL2_ae_eq hc (x, r),
     originCircleRadialL2_ae_eq P X Xc hX hc hm ρ hρ x r]
     with ω hsub hcircle hrad
-  rw [originCircleLateralL2, hsub]
-  change circleAverageL2 hc (x, r) ω - originCircleRadialL2 hc ρ x r ω = _
-  rw [hcircle, hrad]
-  rfl
+  aesop
+
 
 /-- The global scalar regularizer is a centered jointly Gaussian family at arbitrary
 finitely many centers and cutoffs, including centers outside the eventual local chart. -/
 theorem clampedCircleLateralSample_centeredJointlyGaussian
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (ρ : ℝ) (hρ : 0 < ρ) (n : ℕ) (p : Fin n → ℂ × ℝ) :
     IsCenteredJointlyGaussian P
       (fun ω i => clampedCircleLateralSample Xc ρ ω (p i).1 (p i).2) := by
   let _ := hX.1
-  let L : Fin n → Lp ℝ 2 P := fun i => originCircleLateralL2 hc ρ (p i).1 (p i).2
-  have hL : IsGaussianProcess (fun i => ⇑(L i)) P :=
+  let L  := fun i => originCircleLateralL2 hc ρ (p i).1 (p i).2
+  have hL  :=
     isGaussianProcess_of_mem_gaussianHilbertSpan
       (gffStructureL2Family_isGaussianProcess X Xc hX hc) L
       (fun i => originCircleLateralL2_mem_gaussianHilbertSpan P X Xc hX hc ρ hρ
         (p i).1 (p i).2)
-  have hs : IsGaussianProcess (fun i ω => clampedCircleLateralSample Xc ρ ω (p i).1 (p i).2) P :=
+  have hs  :=
     hL.congr (fun i => clampedCircleLateralSample_ae_eq P X Xc hX hc hm ρ hρ (p i).1 (p i).2)
   apply centeredJointlyGaussian_of_isGaussianProcess P _ hs
   intro i
   rw [← integral_congr_ae (clampedCircleLateralSample_ae_eq P X Xc hX hc hm ρ hρ
     (p i).1 (p i).2)]
   exact originCircleLateralL2_integral_eq_zero P X Xc hX hc ρ hρ (p i).1 (p i).2
+omit Ω _inst1 P X Xc hX hc
+
 
 /-- Joint measurability of the radial circle integral follows by using the same angular
 measure for all centers and radii. -/
@@ -644,7 +615,7 @@ theorem integral_circleMeasure_uniform_approx
   have hxS : ‖x‖ ≤ max S 0 := (hS (mem_image_of_mem _ hx)).trans (le_max_left _ _)
   have hxR : x ∈ Metric.closedBall 0 R := by
     rw [Metric.mem_closedBall, dist_zero_right]
-    exact hxS.trans (le_add_of_nonneg_right zero_le_one)
+    bound
   have hb : ∀ᵐ z ∂circleMeasure x r, ‖F z - F x‖ ≤ η / 2 := by
     filter_upwards [ae_norm_sub_center_circleMeasure x r] with z hz
     have hzR : z ∈ Metric.closedBall 0 R := by
@@ -656,7 +627,7 @@ theorem integral_circleMeasure_uniform_approx
     rw [← dist_eq_norm]
     apply (hclose z hzR x hxR ?_).le
     rw [dist_eq_norm, hz]
-    exact (hr.trans (min_le_left _ _)).trans_lt (half_lt_self hδ)
+    grind
   have hnorm := norm_integral_le_of_norm_le_const hb
   rw [probReal_univ, mul_one] at hnorm
   have heq : (∫ z, F z ∂circleMeasure x r) - F x =
@@ -664,7 +635,6 @@ theorem integral_circleMeasure_uniform_approx
     rw [integral_sub (integrable_continuous_circleMeasure x r F hF) (integrable_const (F x)),
       integral_const]
     simp only [probReal_univ, one_smul]
-  rw [heq]
-  exact hnorm.trans_lt (half_lt_self hη)
+  grind
 
 end DOZZ.Proofs

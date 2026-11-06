@@ -8,11 +8,6 @@ public import DOZZ.Correlations.Analytic.RetainedNegativeMoments
 
 /-! Uniform negative moments on all retained regions containing one fixed exterior disk. -/
 
-@[expose] public section
-open MeasureTheory
-open scoped ENNReal
-namespace DOZZ.Proofs
 
 
 
-end DOZZ.Proofs

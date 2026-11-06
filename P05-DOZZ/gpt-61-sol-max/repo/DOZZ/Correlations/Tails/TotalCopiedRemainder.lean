@@ -11,7 +11,7 @@ public import DOZZ.GMC.WeightedCutoff.RadiusDecomposition
 
 /-! The actual copied multiplier and localization remainders have one uniform moment bound. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -41,7 +41,7 @@ theorem total_copied_remainder_uniform
           (∫⁻ x in Metric.ball (0 : ℂ) 1 \ Metric.ball (0 : ℂ) (ρ/4),
             (ENNReal.ofReal ‖x‖)^(-γ*α) ∂N q.1)
       AEMeasurable E (P.prod P) ∧ (∫⁻ q, E q^r ∂P.prod P) ≤ C := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   obtain ⟨D,hD,hError⟩ := actual_copied_multiplier_error_uniform P X Xc hX hc
     γ hγ hγ2 M hM K hK hz Family radius supBound derivBound lowerBound hFamily
     ρ hρ hρR Amax g (R*pH) hg (mul_pos hR hpq.pos) pH qH hpq
@@ -73,9 +73,9 @@ theorem total_copied_remainder_uniform
   change AEMeasurable E₂ (P.prod P) at hE₂
   change AEMeasurable (fun q => E₁ q+E₂ q) (P.prod P) ∧ _
   refine ⟨hE₁.add hE₂,?_⟩
-  have h₁ : (∫⁻ q, E₁ q^r ∂P.prod P) ≤ D := hError z hzk F hF N hN α r hαmax hr hbulk hins
+  have h₁  := hError z hzk F hF N hN α r hαmax hr hbulk hins
     (mul_le_mul_of_nonneg_right hrR hpq.pos.le)
-  have h₂ : (∫⁻ q, E₂ q^r ∂P.prod P) ≤ L := hAnn z hzk (F z) hFz.1 hFz.2 N hN α r hα hαA hr hrR
+  have h₂  := hAnn z hzk (F z) hFz.1 hFz.2 N hN α r hα hαA hr hrR
   calc _ ≤ ∫⁻ q, (2 : ℝ≥0∞)^R*(E₁ q^r+E₂ q^r) ∂P.prod P :=
         lintegral_mono fun q => ennreal_rpow_add_le_uniform_order_cap _ _ r R hr.le hrR
     _ = (2 : ℝ≥0∞)^R*((∫⁻ q, E₁ q^r ∂P.prod P)+(∫⁻ q, E₂ q^r ∂P.prod P)) := by

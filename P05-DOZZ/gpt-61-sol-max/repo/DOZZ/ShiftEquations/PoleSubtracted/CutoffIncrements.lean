@@ -17,7 +17,7 @@ Hölder with `r₂` close to `1` beats `e^{γ a₂ n}` because `γ a₂ < 1`. Bo
 uniformly on a compact range `a ∈ [a₁, a₂]`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -41,9 +41,9 @@ theorem ofReal_add_exp_le {C₁ C₂ κ₁ κ₂ : ℝ} (hC₁ : 0 ≤ C₁) (hC
   apply ENNReal.ofReal_le_ofReal
   have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
   have h1 : Real.exp (-κ₁ * n) ≤ Real.exp (-min κ₁ κ₂ * n) :=
-    Real.exp_le_exp.2 (by linarith only [mul_le_mul_of_nonneg_right (min_le_left κ₁ κ₂) hn])
+    Real.exp_le_exp.2 (by bound)
   have h2 : Real.exp (-κ₂ * n) ≤ Real.exp (-min κ₁ κ₂ * n) :=
-    Real.exp_le_exp.2 (by linarith only [mul_le_mul_of_nonneg_right (min_le_right κ₁ κ₂) hn])
+    Real.exp_le_exp.2 (by bound)
   linarith only [mul_le_mul_of_nonneg_left h1 hC₁, mul_le_mul_of_nonneg_left h2 hC₂]
 
 /-- **Pointwise control of the increment** on a charge range `[a₁, a₂]`. -/
@@ -78,9 +78,7 @@ theorem cutoffIncrement_le {γ η a a₁ a₂ : ℝ} (hγ : 0 < γ) (hη : 0 ≤
       (ENNReal.rpow_le_rpow (cutoffTiltedMass_le_totalMass_zero hγ ha0 n μ) hs0).trans
         (ennrpow_le_one_add_rpow hs0 hsc)
     have hann' : T' - T ≤ B := by
-      have := hann
-      rwa [max_eq_right ha0, mul_zero, zero_mul, Real.exp_zero, ENNReal.ofReal_one,
-        one_mul] at this
+      simp_all
     calc (T' - T) * (T' ^ (-a / γ) + T ^ (-a / γ))
         ≤ B * ((1 + T0 ^ max (-a₁ / γ) 0) + (1 + T0 ^ max (-a₁ / γ) 0)) :=
           mul_le_mul' hann' (add_le_add hT'0 hT0)
@@ -92,11 +90,11 @@ theorem cutoffIncrement_le {γ η a a₁ a₂ : ℝ} (hγ : 0 < γ) (hη : 0 ≤
     have hsc : -(max a₂ 0 / γ) ≤ -a / γ := by
       rw [neg_div, neg_le_neg_iff]
       exact div_le_div_of_nonneg_right (le_max_of_le_left ha.2) hγ.le
-    have hLT' : L ≤ T' := localMass_le_cutoffTiltedMass γ η a (n + 1) μ
-    have hLT : L ≤ T := localMass_le_cutoffTiltedMass γ η a n μ
-    have hT'0 : T' ^ (-a / γ) ≤ 1 + L ^ (-(max a₂ 0 / γ)) :=
+    have hLT'  := localMass_le_cutoffTiltedMass γ η a (n + 1) μ
+    have hLT  := localMass_le_cutoffTiltedMass γ η a n μ
+    have hT'0  :=
       (ennrpow_le_of_le_of_nonpos hLT' hs0).trans (ennrpow_le_one_add_rpow_neg hs0 hsc)
-    have hT0 : T ^ (-a / γ) ≤ 1 + L ^ (-(max a₂ 0 / γ)) :=
+    have hT0  :=
       (ennrpow_le_of_le_of_nonpos hLT hs0).trans (ennrpow_le_one_add_rpow_neg hs0 hsc)
     have hexp : ENNReal.ofReal (Real.exp (γ * max a 0 * (n + 1))) ≤
         ENNReal.ofReal (Real.exp (γ * max a₂ 0 * (n + 1))) := by
@@ -147,8 +145,7 @@ theorem exists_lintegral_cutoffIncrement_le {Ω : Type*} [MeasurableSpace Ω] (P
   have hp := window_threshold_pos hγ hW
   have hroom := window_holder_room hγ hγ2 hW
   have hκ4 : 1 < 4 / γ ^ 2 := by
-    rw [lt_div_iff₀ (by positivity)]
-    linarith only [mul_lt_mul'' hγ2 hγ2 hγ.le hγ.le]
+    field_simp <;> nlinarith
   have hγQ := gamma_mul_Q hγ
   set c₁ : ℝ := max (-a₁ / γ) 0 with hc₁
   set b₂ : ℝ := max a₂ 0 with hb₂
@@ -156,14 +153,11 @@ theorem exists_lintegral_cutoffIncrement_le {Ω : Type*} [MeasurableSpace Ω] (P
   have hb₂0 : 0 ≤ b₂ := le_max_right _ _
   have hγb₂ : γ * b₂ < 1 := by
     rcases le_or_gt a₂ 0 with h | h
-    · rw [hb₂, max_eq_right h, mul_zero]
-      norm_num
+    · simp_all
     · rw [hb₂, max_eq_left h.le, mul_comm]
       exact (lt_div_iff₀ hγ).1 ha₂
   have hroom' : 0 < (1 - 2 * η / γ) * (1 - 1 / (4 / γ ^ 2)) := by
-    apply mul_pos hp
-    have : 1 / (4 / γ ^ 2) < 1 := by rw [div_lt_one (by linarith)]; exact hκ4
-    linarith
+    bound
   have hc₁p : c₁ < (1 - 2 * η / γ) * (1 - 1 / (4 / γ ^ 2)) := by
     have hγ4 : 1 / (4 / γ ^ 2) = γ ^ 2 / 4 := by field_simp
     rcases le_or_gt (-a₁ / γ) 0 with h | h
@@ -171,14 +165,14 @@ theorem exists_lintegral_cutoffIncrement_le {Ω : Type*} [MeasurableSpace Ω] (P
       exact hroom'
     · rw [hc₁, max_eq_left h.le, hγ4]
       refine lt_of_le_of_lt ?_ hroom
-      exact div_le_div_of_nonneg_right (by linarith) hγ.le
+      bound
   -- the measurable pieces
   have hB : ∀ n : ℕ, AEMeasurable (fun ω => M ω (Metric.ball 0 (Real.exp (-(n : ℝ))))) P :=
     fun n => aemeasurable_measure_functional P X hX γ hγ hγ2 M hM
       (Measure.measurable_coe Metric.isOpen_ball.measurableSet)
-  have hT0 : AEMeasurable (fun ω => poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω)) P :=
+  have hT0  :=
     aemeasurable_measure_functional P X hX γ hγ hγ2 M hM (measurable_poleTotalMass γ η 0)
-  have hL : AEMeasurable (fun ω => poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω)) P :=
+  have hL  :=
     aemeasurable_measure_functional P X hX γ hγ hγ2 M hM (measurable_poleLocalMass γ η)
   have hV1 : AEMeasurable (fun ω =>
       1 + poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ c₁) P :=
@@ -216,7 +210,7 @@ theorem exists_lintegral_cutoffIncrement_le {Ω : Type*} [MeasurableSpace Ω] (P
   have hV2r : ∫⁻ ω, (1 + poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ (-(b₂ / γ))) ^
       (r₂ / (r₂ - 1)) ∂P < ⊤ := by
     refine lintegral_one_add_rpow_lt_top hq₂ ?_
-    have hs : 0 ≤ b₂ / γ := div_nonneg hb₂0 hγ.le
+    have hs  := div_nonneg hb₂0 hγ.le
     rcases eq_or_lt_of_le hs with h0 | h0
     · rw [← h0, neg_zero, zero_mul]
       simp
@@ -242,14 +236,7 @@ theorem exists_lintegral_cutoffIncrement_le {Ω : Type*} [MeasurableSpace Ω] (P
     linarith only [h2, hγb₂]
   refine ⟨2 * K₁ + 2 * K₂ * Real.exp (γ * b₂), min κ₁ κ₂, by positivity, lt_min hκ₁0 hκ₂0,
     fun a ha n => ?_⟩
-  have hpt : ∀ ω, (cutoffTiltedMass γ η a (n + 1) (M ω) - cutoffTiltedMass γ η a n (M ω)) *
-        (cutoffTiltedMass γ η a (n + 1) (M ω) ^ (-a / γ) +
-          cutoffTiltedMass γ η a n (M ω) ^ (-a / γ)) ≤
-      2 * (M ω (Metric.ball 0 (Real.exp (-(n : ℝ)))) *
-          (1 + poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ c₁)) +
-        2 * ENNReal.ofReal (Real.exp (γ * b₂ * (n + 1))) *
-          (M ω (Metric.ball 0 (Real.exp (-(n : ℝ)))) *
-            (1 + poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ (-(b₂ / γ)))) :=
+  have hpt  :=
     fun ω => cutoffIncrement_le hγ hη hηγ ha n (M ω)
   have hA : AEMeasurable (fun ω => 2 * (M ω (Metric.ball 0 (Real.exp (-(n : ℝ)))) *
       (1 + poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ c₁))) P :=

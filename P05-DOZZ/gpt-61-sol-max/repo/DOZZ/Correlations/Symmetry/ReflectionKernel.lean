@@ -6,6 +6,7 @@ module
 public import DOZZ.Statements.Defs.GffKernel
 public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 public import Mathlib.Topology.ContinuousMap.Bounded.Normed
+import Mathlib.Tactic
 @[expose] public section
 namespace DOZZ.Proofs
 
@@ -23,8 +24,7 @@ theorem symmetryReflection_involutive : Function.Involutive (fun x : ℂ => 1 - 
 theorem symmetryReflectionPotential_reflect (x : ℂ) :
     symmetryReflectionPotential (1 - x) = -symmetryReflectionPotential x := by
   unfold symmetryReflectionPotential
-  rw [show (1 : ℂ) - (1 - x) = x by ring]
-  ring
+  ring_nf at * <;> aesop
 /-- The two compactifying norms are comparable under reflection. -/
 theorem normPlus_reflection_le (x : ℂ) : normPlus (1 - x) ≤ 2 * normPlus x := by
   have h1 : 1 ≤ normPlus x := le_max_left _ _
@@ -64,5 +64,5 @@ theorem symmetryReflectionPotential_bound (x : ℂ) :
 noncomputable def symmetryReflectionPotentialBCF : BoundedContinuousFunction ℂ ℝ :=
   BoundedContinuousFunction.ofNormedAddCommGroup symmetryReflectionPotential
     symmetryReflectionPotential_continuous (Real.log 2) (fun x => by
-      simpa only [Real.norm_eq_abs] using symmetryReflectionPotential_bound x)
+      exact symmetryReflectionPotential_bound x)
 end DOZZ.Proofs

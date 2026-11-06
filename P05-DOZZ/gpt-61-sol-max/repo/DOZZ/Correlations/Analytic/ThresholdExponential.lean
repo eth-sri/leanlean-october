@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.ComplementExponential
 
 /-! Choosing the shrinking threshold and absorbing the imaginary Gaussian growth. -/
 
-@[expose] public section
+public section
 namespace DOZZ.Proofs
 
 /-- The Markov/Hölder term has the precise residual exponential rate. -/
@@ -32,14 +32,10 @@ theorem threshold_exponential_bound (D B C rate τ m h r : ℝ)
       (D + B * C ^ h) * Real.exp (-(min τ ((rate - τ * m) * h)) * r) := by
   rw [threshold_ratio_power C rate τ m h r hC]
   have h1 : Real.exp (-τ * r) ≤ Real.exp (-(min τ ((rate - τ * m) * h)) * r) := by
-    apply Real.exp_le_exp.mpr
-    have := mul_le_mul_of_nonneg_right (min_le_left τ ((rate - τ * m) * h)) hr
-    linarith
+    bound
   have h2 : Real.exp (-((rate - τ * m) * h) * r) ≤
       Real.exp (-(min τ ((rate - τ * m) * h)) * r) := by
-    apply Real.exp_le_exp.mpr
-    have := mul_le_mul_of_nonneg_right (min_le_right τ ((rate - τ * m) * h)) hr
-    linarith
+    bound
   calc
     _ ≤ Real.exp (-(min τ ((rate - τ * m) * h)) * r) * D +
         B * (C ^ h * Real.exp (-(min τ ((rate - τ * m) * h)) * r)) :=
@@ -55,7 +51,6 @@ theorem imaginary_decay_absorption (K E d κ r : ℝ)
     Real.exp (E * (r + 2) * d) * (K * Real.exp (-κ * r)) ≤
       (K * Real.exp κ) * Real.exp (-(κ / 2) * r) := by
   have he : E * (r + 2) * d - κ * r ≤ κ - κ / 2 * r := by
-    have := mul_le_mul_of_nonneg_right hthin (show 0 ≤ r + 2 by linarith)
     nlinarith
   calc
     _ = K * Real.exp (E * (r + 2) * d - κ * r) := by

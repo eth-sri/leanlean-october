@@ -11,16 +11,17 @@ public import DOZZ.GMC.Annulus.PositiveRoot
 
 /-! The annular Jensen observable under the one-root identity `equatorGFF_rooted_GMC_identity`. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- The weighted one-root identity, with a measurable functional of the supplied measure. -/
 theorem rooted_weight_identity
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (f : ℂ → ℝ≥0∞) (hf : Measurable f) (hft : ∀ x, f x ≠ ⊤)
     (G : Measure ℂ → ℝ≥0∞) (hG : Measurable G) :
     (∫⁻ ω, (∫⁻ x, f x ∂M ω) * G (M ω) ∂P) =
@@ -39,11 +40,10 @@ theorem rooted_weight_identity
       intro x
       exact lintegral_const_mul' _ _ (hft x)
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Every measurable half-unit region obeys the one-root annular upper bound. -/
 theorem twoRooted_annular_spatial_bound
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (α₁ α₂ α₃ p : ℝ) (hp : 0 ≤ p) :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℂ, ‖z‖ ≤ 1 / 4 →
       ∀ B : Set ℂ, MeasurableSet B → (∀ x ∈ B, ‖x‖ ≤ 1 / 2) →
@@ -67,10 +67,7 @@ theorem twoRooted_annular_spatial_bound
     fin_cases i
     · change ‖z‖ ≤ 1
       linarith only [hz]
-    · change ‖(0 : ℂ)‖ ≤ 1
-      simp
-    · change ‖(1 : ℂ)‖ ≤ 1
-      simp
+    all_goals norm_num
   calc
     _ ≤ ∫⁻ ω, (∫⁻ x in B, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2) ∂M ω) * G (M ω) ∂P :=
       gammaHalf_region_jensen_reduction P X hX γ hγ hγ2 M hM α₁ α₂ α₃ p hp z B
@@ -79,10 +76,8 @@ theorem twoRooted_annular_spatial_bound
       exact rooted_weight_identity P X hX γ hγ hγ2 M hM f hf (fun x => by
         dsimp only [f]
         by_cases hx : x ∈ B
-        · rw [Set.indicator_of_mem hx]
-          exact ENNReal.ofReal_ne_top
-        · rw [Set.indicator_of_notMem hx]
-          exact ENNReal.zero_ne_top) G hG
+        · simp_all
+        simp_all) G hG
     _ ≤ ∫⁻ x, f x * ENNReal.ofReal C ∂gmcReferenceMeasure := by
       apply lintegral_mono
       intro x

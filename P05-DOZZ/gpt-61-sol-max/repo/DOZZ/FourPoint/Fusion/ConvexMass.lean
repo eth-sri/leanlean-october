@@ -4,8 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.FourPoint.Fusion.RootOnlyInverseMoments
+import Mathlib.Tactic
 /-! # Positive segments of extended masses -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -20,12 +21,12 @@ theorem fusion_convexMass_inverse_bound (a b : ℝ≥0∞) (t s : ℝ)
   · have h : a ≤ ENNReal.ofReal t * a + ENNReal.ofReal (1 - t) * b := by
       calc
         a = (ENNReal.ofReal t + ENNReal.ofReal (1 - t)) * a := by rw [hsum, one_mul]
-        _ ≤ _ := by rw [add_mul]; exact add_le_add le_rfl (mul_le_mul' le_rfl hab)
+        _ ≤ _ := by rw [add_mul]; gcongr
     exact (ennreal_rpow_antitone_of_nonpos h hs).trans le_self_add
   · have h : b ≤ ENNReal.ofReal t * a + ENNReal.ofReal (1 - t) * b := by
       calc
         b = (ENNReal.ofReal t + ENNReal.ofReal (1 - t)) * b := by rw [hsum, one_mul]
-        _ ≤ _ := by rw [add_mul]; exact add_le_add (mul_le_mul' le_rfl hba) le_rfl
+        _ ≤ _ := by rw [add_mul]; gcongr
     exact (ennreal_rpow_antitone_of_nonpos h hs).trans le_add_self
 
 /-- Positive finite endpoints give a positive finite segment, including its endpoints. -/
@@ -36,7 +37,7 @@ theorem fusion_convexMass_pos_finite (a b : ℝ≥0∞) (t : ℝ) (ht : t ∈ Ic
   refine ⟨?_, ENNReal.add_ne_top.mpr ⟨ENNReal.mul_ne_top ENNReal.ofReal_ne_top hat,
     ENNReal.mul_ne_top ENNReal.ofReal_ne_top hbt⟩⟩
   by_cases ht0 : t = 0
-  · simpa only [ht0, ENNReal.ofReal_zero, zero_mul, sub_zero, ENNReal.ofReal_one, one_mul, zero_add] using hb0
+  · simp_all
   · exact ne_of_gt ((ENNReal.mul_pos (ENNReal.ofReal_pos.mpr
       (lt_of_le_of_ne ht.1 (Ne.symm ht0))).ne' ha0).trans_le le_self_add)
 
@@ -53,9 +54,9 @@ theorem fusion_convexMass_tendstoInMeasure {Ω : Type*} [MeasurableSpace Ω]
       (ENNReal.ofReal t * a n ω + ENNReal.ofReal (1 - t) * b n ω).toReal)
       atTop (fun ω => (g ω).toReal) := by
   let f := fun n ω => t * (a n ω).toReal + (1 - t) * (b n ω).toReal
-  have ham : ∀ n, AEStronglyMeasurable (fun ω => (a n ω).toReal) P :=
+  have ham  :=
     fun n => (ha n).ennreal_toReal.aestronglyMeasurable
-  have hbm : ∀ n, AEStronglyMeasurable (fun ω => (b n ω).toReal) P :=
+  have hbm  :=
     fun n => (hb n).ennreal_toReal.aestronglyMeasurable
   have hfm : ∀ n, AEStronglyMeasurable (f n) P := fun n =>
     ((ham n).const_mul t).add ((hbm n).const_mul (1 - t))
@@ -67,9 +68,7 @@ theorem fusion_convexMass_tendstoInMeasure {Ω : Type*} [MeasurableSpace Ω]
     refine ⟨u ∘ v, hu.comp hv, ?_⟩
     filter_upwards [hua, hvb] with ω hωa hωb
     have h := ((hωa.comp hv.tendsto_atTop).const_mul t).add (hωb.const_mul (1 - t))
-    have he : t * (g ω).toReal + (1 - t) * (g ω).toReal = (g ω).toReal := by ring
-    rw [he] at h
-    exact h
+    grind
   apply TendstoInMeasure.congr_left _ hc
   intro n
   filter_upwards [haf n, hbf n] with ω hωa hωb

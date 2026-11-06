@@ -7,6 +7,7 @@ module
 public import DOZZ.FourPoint.Dual.BasisAsymptotic
 public import DOZZ.FourPoint.Dual.Parameters
 import Mathlib.Tactic
+public import DOZZ.FourPoint.GaussContracts
 
 /-! # Coefficient extraction from a diagonal Gauss conclusion
 
@@ -32,23 +33,21 @@ theorem dual_diagonal_ray_limit {H : ℂ → ℂ → ℂ → ℂ → ℂ}
     intro n h
     have he := congrArg Complex.re h
     simp only [Complex.ofReal_re, Complex.neg_re, Complex.natCast_re] at he
-    have : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
-    linarith only [_hc, he, this]
+    grind
   have hn₂ : ∀ n : ℕ, (2 - (c : ℂ)) ≠ -(n : ℂ) := by
     intro n h
     have he := congrArg Complex.re h
     simp only [Complex.sub_re, Complex.ofReal_re, Complex.neg_re,
       Complex.natCast_re] at he
     norm_num at he
-    have : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
-    linarith
+    grind
   have hcast : Tendsto (fun t : ℝ => (t : ℂ))
       (nhdsWithin 0 (Ioi 0)) (nhdsWithin 0 {z : ℂ | z ≠ 0}) := by
     apply tendsto_nhdsWithin_iff.mpr
     refine ⟨Complex.continuous_ofReal.continuousAt.tendsto.comp
       (tendsto_id.mono_left nhdsWithin_le_nhds), ?_⟩
     filter_upwards [self_mem_nhdsWithin] with t ht
-    simpa only [Complex.ofReal_ne_zero] using ne_of_gt ht
+    continuity
   have hm := (dual_gauss_norm_sq_littleO hH a b c hn (2 * (1 - c)) hκ).comp hcast
   have hp := dual_gauss_plus_norm_sq_ratio hH a b c hn₂
   have hsum := (hm.const_mul C).add (hp.const_mul (C * d))
@@ -97,14 +96,7 @@ theorem dual_physical_classification_reduction {Ω : Type*} [MeasurableSpace Ω]
     (hs : 2 * Q γ + 2 / γ < α₁ + α₂ + α₃)
     (hκ : (4 / γ) * (Q γ - α₁) < 1)
     (hclassification :
-      let a := gaussParameterA γ (2 / γ) α₁ α₂ α₃
-      let b := gaussParameterB γ (2 / γ) α₁ α₂ α₃
-      let c := gaussParameterC γ (2 / γ) α₁
-      ∀ z ∈ gaussCutPlane,
-        fourPointT P M γ μ (-(2 / γ)) α₁ α₂ α₃ z =
-          structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃ *
-            (‖gaussFMinus H a b c z‖ ^ 2 +
-              gaussCoefficientRatio a b c * ‖gaussFPlus H a b c z‖ ^ 2))
+      Contract.gaussDiagonal P M γ μ α₁ α₂ α₃ H (2 / γ))
     (hfusion : Tendsto (fun t : ℝ =>
       (fourPointT P M γ μ (-(2 / γ)) α₁ α₂ α₃ (t : ℂ) -
         structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃) /
@@ -132,9 +124,6 @@ theorem dual_physical_classification_reduction {Ω : Type*} [MeasurableSpace Ω]
       (gaussParameterB γ (2 / γ) α₁ α₂ α₃) (gaussParameterC γ (2 / γ) α₁)) D
     hc hC (he ▸ hκ) (fourPointT P M γ μ (-(2 / γ)) α₁ α₂ α₃)
     hclassification (by simpa only [he] using hfusion)
-  refine ⟨hid, ?_⟩
-  intro z hz
-  rw [hclassification z hz, hid]
-  ring
+  grind
 
 end DOZZ.Proofs

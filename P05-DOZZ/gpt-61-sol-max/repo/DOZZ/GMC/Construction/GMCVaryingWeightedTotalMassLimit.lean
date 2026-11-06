@@ -9,7 +9,7 @@ public import DOZZ.GMC.Construction.GMCWeightedTotalMass
 
 /-! Convergence of total cutoff masses under uniformly varying weights. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -27,13 +27,13 @@ private theorem tendstoInMeasure_add_of_sub
   have hδ : 0 < δ := by dsimp [δ]; linarith
   have hfg' : Tendsto (fun i => P {ω | δ ≤ ‖f i ω - g i ω‖}) l (𝓝 0) := by
     simpa [δ, sub_zero] using hfg δ hδ
-  have hgy' : Tendsto (fun i => P {ω | δ ≤ ‖g i ω - y ω‖}) l (𝓝 0) := hgy δ hδ
+  have hgy'  := hgy δ hδ
   have hadd : Tendsto (fun i =>
       P {ω | δ ≤ ‖f i ω - g i ω‖} + P {ω | δ ≤ ‖g i ω - y ω‖}) l (𝓝 0) := by
     simpa using hfg'.add hgy'
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le'
     (tendsto_const_nhds : Tendsto (fun _ : ι => (0 : ℝ≥0∞)) l (𝓝 0)) hadd
-  · exact Filter.Eventually.of_forall (fun _ => bot_le)
+  · simp_all
   · filter_upwards [] with i
     calc
       P {ω | ε ≤ ‖f i ω - y ω‖} ≤
@@ -42,8 +42,7 @@ private theorem tendstoInMeasure_add_of_sub
             intro ω hω
             by_contra hnot
             have hnot' : ¬ (ω ∈ {ω | δ ≤ ‖f i ω - g i ω‖} ∨
-                ω ∈ {ω | δ ≤ ‖g i ω - y ω‖}) := by
-              simpa only [Set.mem_union] using hnot
+                ω ∈ {ω | δ ≤ ‖g i ω - y ω‖}) := hnot
             rcases not_or.mp hnot' with ⟨h1, h2⟩
             have h1' : ‖f i ω - g i ω‖ < δ := lt_of_not_ge h1
             have h2' : ‖g i ω - y ω‖ < δ := lt_of_not_ge h2
@@ -78,15 +77,11 @@ theorem regularizedGMC_varyingWithDensity_univ_mass_tendstoInMeasure
     (fun z => ENNReal.ofReal (v z))) Set.univ).toReal
   let y : Ω → ℝ := fun ω => ((M ω).withDensity
     (fun z => ENNReal.ofReal (v z)) Set.univ).toReal
-  have hdiff : TendstoInMeasure P (fun r ω => f r ω - g r ω) atTop (fun _ => 0) := by
-    simpa [f, g] using
-      regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure
+  have hdiff : TendstoInMeasure P (fun r ω => f r ω - g r ω) atTop (fun _ => 0) := regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure
         P X hX Xc hXc γ u hu v hv hconv
-  have hfixed : TendstoInMeasure P g atTop y := by
-    simpa [g, y] using
-      regularizedGMC_withDensity_univ_mass_tendstoInMeasure
+  have hfixed : TendstoInMeasure P g atTop y := regularizedGMC_withDensity_univ_mass_tendstoInMeasure
         P X hX Xc hXc γ M hM v hv
-  simpa [f, y] using tendstoInMeasure_add_of_sub P f g y hdiff hfixed
+  exact tendstoInMeasure_add_of_sub P f g y hdiff hfixed
 
 
 end DOZZ.Proofs

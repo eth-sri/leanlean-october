@@ -16,6 +16,4 @@ public import GaussianFields.LogCorrelated.ABK.TestFunctionAlgebra
 The public facade for the ported Gaussian white-noise and ABK covariance construction.
 -/
 
-public section
 
-end

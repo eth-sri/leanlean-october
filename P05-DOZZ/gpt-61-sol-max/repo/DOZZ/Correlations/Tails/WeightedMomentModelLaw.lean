@@ -9,7 +9,7 @@ public import DOZZ.GMC.SharpMoments.WeightedUniformGrid
 
 /-! One fixed equator GMC model supplies uniform moments for translated models. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 

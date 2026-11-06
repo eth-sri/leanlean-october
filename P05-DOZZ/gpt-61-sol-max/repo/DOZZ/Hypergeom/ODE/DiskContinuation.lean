@@ -31,24 +31,25 @@ noncomputable def holomorphicDiskSolutionOfBound
     (hH : DifferentiableOn ℂ H (Metric.ball c r)) (y : E)
     (hM : 0 ≤ M) (hbound : ∀ z ∈ Metric.ball c r, ‖H z‖ ≤ M) :
     HolomorphicDiskSolution H r :=
-  ⟨c, y, holomorphicPicardSolution c r H hH y, by
-      exact holomorphicPicardSolution_apply_center c r H hH y,
+  ⟨c, y, holomorphicPicardSolution c r H hH y, holomorphicPicardSolution_apply_center c r H hH y,
     fun z hz => holomorphicPicardSolution_hasDerivAt c r M H hH y hM hbound hz⟩
 
+variable (r M : ℝ) (H : ℂ → E →L[ℂ] E) (hM : 0 ≤ M) (D : HolomorphicDiskSolution H r) (d : ℂ)
+
+include r M H hM D d in
 /-- Extend a disk solution to a nearby disk of the same radius. The two solutions agree on the
 concentric half-radius disk around the new center, which is the overlap fact used in a finite
 continuation chain. -/
 noncomputable def extendHolomorphicDiskSolution
-    (r M : ℝ) (H : ℂ → E →L[ℂ] E) (hM : 0 ≤ M)
-    (D : HolomorphicDiskSolution H r) (d : ℂ)
+    
     (hH : DifferentiableOn ℂ H (Metric.ball d r))
     (hbound : ∀ z ∈ Metric.ball d r, ‖H z‖ ≤ M) : HolomorphicDiskSolution H r :=
   holomorphicDiskSolutionOfBound d r M H hH (D.solution d)
     hM hbound
 
+include r M H hM D d in
 theorem extendHolomorphicDiskSolution_agrees
-    (r M : ℝ) (H : ℂ → E →L[ℂ] E) (hM : 0 ≤ M)
-    (D : HolomorphicDiskSolution H r) (d : ℂ)
+    
     (hd : dist d D.center < r / 2)
     (hH : DifferentiableOn ℂ H (Metric.ball d r))
     (hbound : ∀ z ∈ Metric.ball d r, ‖H z‖ ≤ M) :

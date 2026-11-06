@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Correlations.Tails.WilliamsSplitValue
 public import DOZZ.Statements.Brownian.TwoSidedReflectionCutMass
+import Mathlib.Tactic
 
 /-! Exact maximum splitting of the inward Brownian polar exponential integral. -/
 
@@ -39,10 +40,9 @@ theorem stopped_reflection_mass_lastExit
     by_cases hs : 0 ≤ s
     · rw [twoSidedConditionedValue, dite_eq_left hs,
         twoSidedConditionedValue, dite_eq_left hs]
-    · have hnn : 0 ≤ -s := neg_nonneg.mpr (le_of_not_ge hs)
+    · have hnn  := neg_nonneg.mpr (le_of_not_ge hs)
       have hle : NNReal.mk (-s) hnn ≤ negativeLastExitTime qminus c := by
-        rw [← NNReal.coe_le_coe, NNReal.coe_mk]
-        linarith only [hcut]
+        bound
       rw [twoSidedConditionedValue, dite_eq_right hs,
         twoSidedConditionedValue, dite_eq_right hs]
       change γ * qminus (min (NNReal.mk (-s) hnn) (negativeLastExitTime qminus c)) =
@@ -79,7 +79,7 @@ theorem williams_polar_split (γ ν : ℝ) (p : BrownianPath)
   apply lintegral_congr_ae
   have hne : ∀ᵐ t ∂Z, t ≠ 0 := by
     rw [ae_iff]
-    simpa only [not_not, Set.ofPred_eq_eq_singleton] using hZ0
+    simp_all
   filter_upwards [hne] with t ht0
   by_cases ht : 0 < t
   · have hcut : -(σ : ℝ) ≤ t - (σ : ℝ) := by linarith only [ht]
@@ -91,9 +91,7 @@ theorem williams_polar_split (γ ν : ℝ) (p : BrownianPath)
     rw [hvalue, ← ENNReal.ofReal_mul (Real.exp_nonneg _), ← Real.exp_add]
     congr 2
     ring
-  · have htneg : t < 0 := lt_of_le_of_ne (le_of_not_gt ht) ht0
-    have hcut : ¬ -(σ : ℝ) ≤ t - (σ : ℝ) := by linarith only [htneg]
-    simp only [ite_eq_right ht, ite_eq_right hcut, mul_zero]
+  grind
 
 
 end DOZZ.Proofs

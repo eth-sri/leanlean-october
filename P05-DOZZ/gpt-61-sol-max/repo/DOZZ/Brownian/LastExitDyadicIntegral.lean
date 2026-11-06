@@ -19,7 +19,7 @@ bounded continuous tests and expectation. The probabilistic last-exit cell ident
 input to the last-exit decomposition.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter
 open Topology

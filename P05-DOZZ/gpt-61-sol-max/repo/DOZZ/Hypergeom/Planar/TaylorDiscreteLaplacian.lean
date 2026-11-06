@@ -40,143 +40,37 @@ noncomputable def normPowerDiscreteLaplacian (k : ℝ) (t : ℝ) (x : ℂ) : ℝ
     ‖x + (t : ℂ) * Complex.I‖ ^ k + ‖x - (t : ℂ) * Complex.I‖ ^ k -
     4 * ‖x‖ ^ k) / t ^ 2
 
-private theorem planarTaylorLinearCounterterm_add (u z w : ℂ) :
-    planarTaylorLinearCounterterm u (z + w) =
-      planarTaylorLinearCounterterm u z + planarTaylorLinearCounterterm u w := by
-  simp only [planarTaylorLinearCounterterm, add_div, star_add, Complex.add_re]
-  ring
-
 private theorem planarTaylorLinearCounterterm_four_shifts (u : ℂ) (t : ℝ) :
     planarTaylorLinearCounterterm u (1 + (t : ℂ)) +
         planarTaylorLinearCounterterm u (1 - (t : ℂ)) +
         planarTaylorLinearCounterterm u (1 + (t : ℂ) * Complex.I) +
         planarTaylorLinearCounterterm u (1 - (t : ℂ) * Complex.I) -
         4 * planarTaylorLinearCounterterm u 1 = 0 := by
-  have hreal : (1 : ℂ) + (t : ℂ) + (1 - (t : ℂ)) = 2 := by ring
-  have himag : (1 : ℂ) + (t : ℂ) * Complex.I +
-      (1 - (t : ℂ) * Complex.I) = 2 := by ring
-  have htwo : (2 : ℂ) = 1 + 1 := by norm_num
-  calc
-    _ = (planarTaylorLinearCounterterm u (1 + (t : ℂ)) +
-          planarTaylorLinearCounterterm u (1 - (t : ℂ))) +
-        (planarTaylorLinearCounterterm u (1 + (t : ℂ) * Complex.I) +
-          planarTaylorLinearCounterterm u (1 - (t : ℂ) * Complex.I)) -
-        4 * planarTaylorLinearCounterterm u 1 := by ring
-    _ = planarTaylorLinearCounterterm u
-          ((1 : ℂ) + (t : ℂ) + (1 - (t : ℂ))) +
-        planarTaylorLinearCounterterm u
-          ((1 : ℂ) + (t : ℂ) * Complex.I + (1 - (t : ℂ) * Complex.I)) -
-        4 * planarTaylorLinearCounterterm u 1 := by
-          rw [← planarTaylorLinearCounterterm_add, ← planarTaylorLinearCounterterm_add]
-    _ = planarTaylorLinearCounterterm u 2 + planarTaylorLinearCounterterm u 2 -
-        4 * planarTaylorLinearCounterterm u 1 := by rw [hreal, himag]
-    _ = 0 := by
-      rw [htwo, planarTaylorLinearCounterterm_add]
-      ring
+  simp [planarTaylorLinearCounterterm, add_div, sub_div] <;> ring_nf <;> simp
 
-private theorem integrable_planarTaylorDiscreteNumerator (k β : ℝ) (hk : 0 < k)
-    (hβ : k < β) (hβ₂ : β < 2) (hβlin : β < k + 1) (t : ℝ) :
-    Integrable (fun u : ℂ =>
-      DOZZ.planarTaylorRemainder k β (1 + (t : ℂ)) u +
-        DOZZ.planarTaylorRemainder k β (1 - (t : ℂ)) u +
-        DOZZ.planarTaylorRemainder k β (1 + (t : ℂ) * Complex.I) u +
-        DOZZ.planarTaylorRemainder k β (1 - (t : ℂ) * Complex.I) u -
-        4 * DOZZ.planarTaylorRemainder k β 1 u) volume := by
-  have h₁ := integrable_planarTaylorRemainder k β hk hβ hβ₂ hβlin
-    (1 + (t : ℂ))
-  have h₂ := integrable_planarTaylorRemainder k β hk hβ hβ₂ hβlin
-    (1 - (t : ℂ))
-  have h₃ := integrable_planarTaylorRemainder k β hk hβ hβ₂ hβlin
-    (1 + (t : ℂ) * Complex.I)
-  have h₄ := integrable_planarTaylorRemainder k β hk hβ hβ₂ hβlin
-    (1 - (t : ℂ) * Complex.I)
-  have h₀ := integrable_planarTaylorRemainder k β hk hβ hβ₂ hβlin 1
-  exact (((h₁.add h₂).add h₃).add h₄).sub (h₀.const_mul 4)
+variable (k β : ℝ) (hk : 0 < k) (hβ : k < β) (hβ₂ : β < 2) (hβlin : β < k + 1)
 
+
+include k β hk hβ hβ₂ hβlin in
 /-- The discrete quotient is integrable for every step. -/
-theorem integrable_planarTaylorDiscreteQuotient (k β : ℝ) (hk : 0 < k)
-    (hβ : k < β) (hβ₂ : β < 2) (hβlin : β < k + 1) (t : ℝ) :
+theorem integrable_planarTaylorDiscreteQuotient  (t : ℝ) :
     Integrable (planarTaylorDiscreteQuotient k β t) volume := by
-  have hN := integrable_planarTaylorDiscreteNumerator k β hk hβ hβ₂ hβlin t
-  change Integrable (fun u : ℂ =>
-    (DOZZ.planarTaylorRemainder k β (1 + (t : ℂ)) u +
-      DOZZ.planarTaylorRemainder k β (1 - (t : ℂ)) u +
-      DOZZ.planarTaylorRemainder k β (1 + (t : ℂ) * Complex.I) u +
-      DOZZ.planarTaylorRemainder k β (1 - (t : ℂ) * Complex.I) u -
-      4 * DOZZ.planarTaylorRemainder k β 1 u) / t ^ 2)
-  exact hN.div_const (t ^ 2)
+  have hi := integrable_planarTaylorRemainder k β hk hβ hβ₂ hβlin
+  unfold planarTaylorDiscreteQuotient
+  fun_prop
 
+include k β hk hβ hβ₂ hβlin in
 /-- Integrating the discrete quotient gives the same quotient of parent integrals. -/
-theorem integral_planarTaylorDiscreteQuotient (k β : ℝ) (hk : 0 < k)
-    (hβ : k < β) (hβ₂ : β < 2) (hβlin : β < k + 1) (t : ℝ) :
+theorem integral_planarTaylorDiscreteQuotient  (t : ℝ) :
     (∫ u : ℂ, planarTaylorDiscreteQuotient k β t u) =
       ((∫ u : ℂ, DOZZ.planarTaylorRemainder k β (1 + (t : ℂ)) u) +
         (∫ u : ℂ, DOZZ.planarTaylorRemainder k β (1 - (t : ℂ)) u) +
         (∫ u : ℂ, DOZZ.planarTaylorRemainder k β (1 + (t : ℂ) * Complex.I) u) +
         (∫ u : ℂ, DOZZ.planarTaylorRemainder k β (1 - (t : ℂ) * Complex.I) u) -
         4 * (∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u)) / t ^ 2 := by
-  have h₁ := integrable_planarTaylorRemainder k β hk hβ hβ₂ hβlin (1 + (t : ℂ))
-  have h₂ := integrable_planarTaylorRemainder k β hk hβ hβ₂ hβlin (1 - (t : ℂ))
-  have h₃ := integrable_planarTaylorRemainder k β hk hβ hβ₂ hβlin
-    (1 + (t : ℂ) * Complex.I)
-  have h₄ := integrable_planarTaylorRemainder k β hk hβ hβ₂ hβlin
-    (1 - (t : ℂ) * Complex.I)
-  have h₀ := integrable_planarTaylorRemainder k β hk hβ hβ₂ hβlin 1
-  let N : ℂ → ℝ := fun u =>
-    DOZZ.planarTaylorRemainder k β (1 + (t : ℂ)) u +
-      DOZZ.planarTaylorRemainder k β (1 - (t : ℂ)) u +
-      DOZZ.planarTaylorRemainder k β (1 + (t : ℂ) * Complex.I) u +
-      DOZZ.planarTaylorRemainder k β (1 - (t : ℂ) * Complex.I) u -
-      4 * DOZZ.planarTaylorRemainder k β 1 u
-  let f₁ : ℂ → ℝ := DOZZ.planarTaylorRemainder k β (1 + (t : ℂ))
-  let f₂ : ℂ → ℝ := DOZZ.planarTaylorRemainder k β (1 - (t : ℂ))
-  let f₃ : ℂ → ℝ := DOZZ.planarTaylorRemainder k β (1 + (t : ℂ) * Complex.I)
-  let f₄ : ℂ → ℝ := DOZZ.planarTaylorRemainder k β (1 - (t : ℂ) * Complex.I)
-  let f₀ : ℂ → ℝ := DOZZ.planarTaylorRemainder k β 1
-  have hf₁ : Integrable f₁ volume := by simpa [f₁] using h₁
-  have hf₂ : Integrable f₂ volume := by simpa [f₂] using h₂
-  have hf₃ : Integrable f₃ volume := by simpa [f₃] using h₃
-  have hf₄ : Integrable f₄ volume := by simpa [f₄] using h₄
-  have hf₀ : Integrable f₀ volume := by simpa [f₀] using h₀
-  have hN : Integrable N volume := integrable_planarTaylorDiscreteNumerator
-    k β hk hβ hβ₂ hβlin t
-  have h₁₂ : (∫ u : ℂ, f₁ u + f₂ u) = (∫ u : ℂ, f₁ u) + (∫ u : ℂ, f₂ u) :=
-    integral_add hf₁ hf₂
-  have h₁₂₃ : (∫ u : ℂ, (f₁ u + f₂ u) + f₃ u) =
-      ((∫ u : ℂ, f₁ u) + (∫ u : ℂ, f₂ u)) + (∫ u : ℂ, f₃ u) := by
-    calc
-      _ = (∫ u : ℂ, f₁ u + f₂ u) + (∫ u : ℂ, f₃ u) := by
-        simpa only [Pi.add_apply] using integral_add (hf₁.add hf₂) hf₃
-      _ = _ := by rw [h₁₂]
-  have h₁₂₃₄ : (∫ u : ℂ, ((f₁ u + f₂ u) + f₃ u) + f₄ u) =
-      (((∫ u : ℂ, f₁ u) + (∫ u : ℂ, f₂ u)) + (∫ u : ℂ, f₃ u)) +
-        (∫ u : ℂ, f₄ u) := by
-    calc
-      _ = (∫ u : ℂ, (f₁ u + f₂ u) + f₃ u) + (∫ u : ℂ, f₄ u) := by
-        simpa only [Pi.add_apply] using integral_add ((hf₁.add hf₂).add hf₃) hf₄
-      _ = _ := by rw [h₁₂₃]
-  have hsum : (∫ u : ℂ, N u) =
-      (∫ u : ℂ, DOZZ.planarTaylorRemainder k β (1 + (t : ℂ)) u) +
-        (∫ u : ℂ, DOZZ.planarTaylorRemainder k β (1 - (t : ℂ)) u) +
-        (∫ u : ℂ, DOZZ.planarTaylorRemainder k β (1 + (t : ℂ) * Complex.I) u) +
-        (∫ u : ℂ, DOZZ.planarTaylorRemainder k β (1 - (t : ℂ) * Complex.I) u) -
-        4 * (∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u) := by
-    have hNfun : N = fun u => ((f₁ u + f₂ u) + f₃ u) + f₄ u - 4 * f₀ u := by
-      funext u
-      dsimp [N, f₁, f₂, f₃, f₄, f₀]
-    calc
-      (∫ u : ℂ, N u) =
-          (∫ u : ℂ, ((f₁ u + f₂ u) + f₃ u) + f₄ u - 4 * f₀ u) := by rw [hNfun]
-      _ = (∫ u : ℂ, ((f₁ u + f₂ u) + f₃ u) + f₄ u) -
-          (∫ u : ℂ, 4 * f₀ u) := integral_sub
-            (((hf₁.add hf₂).add hf₃).add hf₄) (hf₀.const_mul 4)
-      _ = _ := by rw [h₁₂₃₄, integral_const_mul]
-  have hQ : (fun u : ℂ => planarTaylorDiscreteQuotient k β t u) =
-      fun u => (t ^ 2)⁻¹ * N u := by
-    funext u
-    exact div_eq_inv_mul _ _
-  rw [hQ, integral_const_mul, hsum]
-  simp [div_eq_mul_inv, mul_comm]
+  have hi := integrable_planarTaylorRemainder k β hk hβ hβ₂ hβlin
+  simp (disch := fun_prop) only [planarTaylorDiscreteQuotient,
+    integral_div, integral_sub, integral_add, integral_const_mul]
 
 /-- Away from the fixed denominator singularity, the Taylor counterterms cancel from the
 discrete Laplacian and leave the positive radial kernel. -/
@@ -228,7 +122,7 @@ theorem planarTaylorDiscreteQuotient_tendsto (k β : ℝ) (u : ℂ) (hu : u ≠ 
       (𝓝[≠] (0 : ℝ))
       (𝓝 (k ^ 2 * (‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2)))) := by
   have hx : u - 1 ≠ 0 := sub_ne_zero.mpr hu
-  let w : ℝ := ‖u‖ ^ (-β)
+  let w  := ‖u‖ ^ (-β)
   have hLap := norm_rpow_discrete_laplacian_tendsto k (u - 1) hx
   have hmul : Tendsto (fun t : ℝ => w * normPowerDiscreteLaplacian k t (u - 1))
       (𝓝[≠] (0 : ℝ)) (𝓝 (w * (k ^ 2 * ‖u - 1‖ ^ (k - 2)))) :=
@@ -249,7 +143,7 @@ theorem planarTaylorDiscreteQuotient_norm_le (k β : ℝ) (hk : 0 < k)
         (1 / 4 : ℝ) ^ (k / 2 - 2)))) +
         2 * (3 ^ k + 2 ^ k) * 2 ^ (2 - k))) *
         (‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2)) := by
-  let C : ℝ := 2 * (2 * (k * (1 + (15 / 4) * ((1 - k / 2) *
+  let C  := 2 * (2 * (k * (1 + (15 / 4) * ((1 - k / 2) *
     (1 / 4 : ℝ) ^ (k / 2 - 2)))) +
     2 * (3 ^ k + 2 ^ k) * 2 ^ (2 - k))
   have hx : u - 1 ≠ 0 := sub_ne_zero.mpr hu
@@ -265,14 +159,14 @@ theorem planarTaylorDiscreteQuotient_norm_le (k β : ℝ) (hk : 0 < k)
       mul_le_mul_of_nonneg_left (by simpa [C, normPowerDiscreteLaplacian] using hLap) hw
     _ = C * (‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2)) := by ring
 
+include k β hk hβ hβ₂ hβlin in
 /-- Dominated convergence identifies the limiting integral of the Taylor discrete quotient with
 the positive Riesz convolution multiplied by `k^2`. -/
-theorem planarTaylorDiscreteQuotient_integral_tendsto (k β : ℝ) (hk : 0 < k)
-    (hβ : k < β) (hβ₂ : β < 2) (hβlin : β < k + 1) :
+theorem planarTaylorDiscreteQuotient_integral_tendsto  :
     Tendsto (fun t : ℝ => ∫ u : ℂ, planarTaylorDiscreteQuotient k β t u)
       (𝓝[≠] (0 : ℝ))
       (𝓝 (∫ u : ℂ, k ^ 2 * (‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2)))) := by
-  let K : ℝ := 2 * (2 * (k * (1 + (15 / 4) * ((1 - k / 2) *
+  let K  := 2 * (2 * (k * (1 + (15 / 4) * ((1 - k / 2) *
     (1 / 4 : ℝ) ^ (k / 2 - 2)))) + 2 * (3 ^ k + 2 ^ k) * 2 ^ (2 - k))
   let bound : ℂ → ℝ := fun u => K * (‖u‖ ^ (-β) * ‖u - 1‖ ^ (k - 2))
   have hK : 0 ≤ K := by

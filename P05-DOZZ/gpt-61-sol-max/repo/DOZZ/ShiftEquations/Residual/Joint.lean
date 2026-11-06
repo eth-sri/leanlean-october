@@ -14,6 +14,7 @@ import DOZZ.ShiftEquations.Shift.ShiftGluing
 import DOZZ.ShiftEquations.Shift.Reflection
 import DOZZ.ShiftEquations.Gluing.Meromorphy
 import DOZZ.Complex.Basic
+public import DOZZ.ShiftEquations.ContinuationContracts
 
 /-!
 # One representative with both shifts
@@ -90,10 +91,7 @@ the structure constant on `(2η, Q)`, one function meromorphic on a strip with b
 codiscrete filter of `ℂ`. -/
 theorem exists_joint_representative {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (M : Ω → Measure ℂ) {γ μ η α₂ α₃ : ℝ} (hηQ : 2 * η < Q γ)
-    (h51 : ∃ h : ℝ, 0 < h ∧ ∃ C : ℂ → ℂ, MeromorphicOn C {z | |z.im| < h} ∧
-      (∀ α : ℝ, 2 * η < α → α < Q γ → C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-      ∀ᶠ z in codiscrete ℂ, C (z + γ / 2) =
-        -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) * C (z - γ / 2))
+    (h51 : Contract.singleChargeContinuation P M γ μ η α₂ α₃)
     (hDualStripFirstCase : ∃ h : ℝ, 0 < h ∧ ∃ C : ℂ → ℂ, MeromorphicOn C {z | |z.im| < h} ∧
       (∀ α : ℝ, 2 * η < α → α < Q γ → C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
       ∀ᶠ z in codiscrete ℂ, C (z + 2 / γ) =

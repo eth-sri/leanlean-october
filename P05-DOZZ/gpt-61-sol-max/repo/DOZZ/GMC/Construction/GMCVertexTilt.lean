@@ -10,7 +10,7 @@ public import DOZZ.GMC.Construction.GMCVertexTiltReduction
 /-! Proof of `DOZZ.equatorGFF_GMC_vertex_tilt` (exact vertex-insertion tilt) from the general GMC
 tilt theorem. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal

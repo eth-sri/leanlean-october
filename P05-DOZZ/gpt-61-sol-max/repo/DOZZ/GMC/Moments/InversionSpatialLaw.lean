@@ -5,10 +5,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.GMC.Moments.ChaosLawFDD
+import Mathlib.Tactic
 
 /-! Finite-reference spatial integral laws for the inversion regularization. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter
 open scoped ENNReal NNReal Topology
@@ -39,18 +40,18 @@ theorem spatialIntegral_vector_law_of_fdd_finite
     congrArg (fun μ : FiniteMeasure S => (μ : Measure S)) ν.self_eq_mass_smul_normalize
   have hiX j : ∀ᵐ ω ∂P, Integrable (fun x => z' j x (X ω x)) (ν.normalize : Measure S) := by
     by_cases hm : ν.mass = 0
-    · exact ae_of_all _ fun ω => by simp only [z', hm, NNReal.coe_zero, zero_mul]; exact integrable_zero _ _ _
+    · continuity
     · filter_upwards [hintX j] with ω hω
       rw [hmeasure] at hω
-      have ht : Integrable (fun x => z j x (X ω x)) (ν.normalize : Measure S) :=
+      have ht  :=
         (integrable_smul_measure (ENNReal.coe_ne_zero.mpr hm) (by finiteness)).mp hω
       exact ht.const_mul _
   have hiY j : ∀ᵐ ω ∂P', Integrable (fun x => z' j x (Y ω x)) (ν.normalize : Measure S) := by
     by_cases hm : ν.mass = 0
-    · exact ae_of_all _ fun ω => by simp only [z', hm, NNReal.coe_zero, zero_mul]; exact integrable_zero _ _ _
+    · continuity
     · filter_upwards [hintY j] with ω hω
       rw [hmeasure] at hω
-      have ht : Integrable (fun x => z j x (Y ω x)) (ν.normalize : Measure S) :=
+      have ht  :=
         (integrable_smul_measure (ENNReal.coe_ne_zero.mpr hm) (by finiteness)).mp hω
       exact ht.const_mul _
   have hfdd : ∀ n (xs : Fin n → S),

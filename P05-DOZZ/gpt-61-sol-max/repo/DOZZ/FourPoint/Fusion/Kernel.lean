@@ -10,7 +10,7 @@ import DOZZ.GMC.SharpMoments.SeibergPieces
 
 /-! # The real fusion kernel and the Coulomb mass -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -21,9 +21,9 @@ theorem fusion_gammaHalfKernel_weight (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
     ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) =
       coulombWeight γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ x := by
   have hp : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have h0 : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have h1 : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
-  have hz : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+  have h0  := norm_pos_iff.mpr hx0
+  have h1  := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have hz  := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
   simp only [coulombWeight, Fin.prod_univ_succ, Matrix.cons_val_zero,
     Matrix.cons_val_succ, Fin.prod_univ_zero, mul_one, sub_zero]
   rw [coulombWeight_rpow_ofReal (div_pos hp hz),
@@ -71,24 +71,10 @@ theorem fusion_rootedKernel_tendsto (γ α₁ α₂ α₃ : ℝ) (y x : ℂ) (hx
       (nhds (gammaHalfKernel γ α₁ α₂ α₃ 0 x * Real.exp (γ ^ 2 * gffKernel 0 x))) := by
   have hk : ContinuousAt (fun z : ℂ => gammaHalfKernel γ α₁ α₂ α₃ z x) 0 := by
     unfold gammaHalfKernel
-    apply ContinuousAt.div_const
-    apply ContinuousAt.mul_const
-    apply ContinuousAt.rpow_const
-    · fun_prop
-    · left
-      simpa only [sub_zero] using norm_ne_zero_iff.mpr hx
+    fun_prop (disch := positivity)
   have hg : ContinuousAt (fun z : ℂ => gffKernel (y * z) x) 0 := by
     unfold gffKernel normPlus
-    apply ContinuousAt.add
-    · apply ContinuousAt.add
-      · apply ContinuousAt.neg
-        apply ContinuousAt.log
-        · fun_prop
-        · simpa only [mul_zero, zero_sub, norm_neg] using norm_ne_zero_iff.mpr hx
-      · apply ContinuousAt.log
-        · fun_prop
-        · simp
-    · exact continuousAt_const
+    fun_prop (disch := aesop)
   have hc : ContinuousAt (fun z : ℂ => Real.exp (γ ^ 2 * gffKernel (y * z) x)) 0 :=
     Real.continuous_exp.continuousAt.comp
       ((continuousAt_const : ContinuousAt (fun _ : ℂ => γ ^ 2) 0).mul hg)

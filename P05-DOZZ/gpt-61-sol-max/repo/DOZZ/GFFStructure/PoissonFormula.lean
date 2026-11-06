@@ -17,7 +17,7 @@ Circle-integrable boundary data admit smooth harmonic Poisson extensions. Identi
 of those extensions, and the Dirichlet distribution assembly, remain separate steps.
 -/
 
-@[expose] public section
+public section
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal
 namespace DOZZ.Proofs
@@ -27,8 +27,7 @@ theorem integral_unitPoissonWeight_mul_eq_circleAverage (c z : ℂ) (ρ : ℝ) (
     (f : ℂ → ℝ) (hf : Measurable f) :
     (∫ u, unitPoissonWeight c ρ z u*f (c+ρ • u) ∂circleMeasure 0 0) =
       Real.circleAverage (poissonKernel c z*f) c ρ := by
-  have hm : Measurable (fun u : ℂ => unitPoissonWeight c ρ z u*f (c+ρ • u)) := by
-    exact (measurable_unitPoissonWeight c z ρ).mul (hf.comp (by fun_prop))
+  have hm : Measurable (fun u : ℂ => unitPoissonWeight c ρ z u*f (c+ρ • u)) := (measurable_unitPoissonWeight c z ρ).mul (hf.comp (by fun_prop))
   rw [integral_circleMeasure_eq_circleAverage 0 0 _ hm]
   simp only [neg_zero, Real.exp_zero]
   rw [Real.circleAverage_def, Real.circleAverage_def]
@@ -55,8 +54,7 @@ theorem integral_unitPoissonWeight_boundary_log (c z v : ℂ) (ρ : ℝ) (hρ : 
     funext u
     congr 2
     abel
-  have he' : (fun u : ℂ => unitPoissonWeight c ρ z u*Real.log ‖ρ • u-ρ • v‖) =
-      (fun u : ℂ => unitPoissonWeight c ρ z u*Real.log ‖(c+ρ • u)-(c+ρ • v)‖) :=
+  have he'  :=
     congrArg (fun f : ℂ → ℝ => fun u => unitPoissonWeight c ρ z u*f u) he
   rw [he', integral_unitPoissonWeight_mul_eq_circleAverage c z ρ hρ
     (fun u => Real.log ‖u-(c+ρ • v)‖) (by fun_prop)]
@@ -73,7 +71,7 @@ theorem integral_unitPoissonWeight_interior_log (c z w : ℂ) (ρ : ℝ) (hρ : 
         unitPoissonWeight c ρ z u*
           (Real.log ‖(ρ : ℂ)^2-((c+ρ • u)-c)*star (w-c)‖-Real.log ρ) := by
     filter_upwards [ae_norm_sub_center_circleMeasure 0 0] with u hu
-    have hu' : ‖u‖ = 1 := by simpa only [sub_zero, neg_zero, Real.exp_zero] using hu
+    have hu' : ‖u‖ = 1 := by simp_all
     have hs : c+ρ • u ∈ sphere c ρ := by
       rw [mem_sphere_iff_norm, add_sub_cancel_left, norm_smul, Real.norm_eq_abs,
         abs_of_pos hρ, hu', mul_one]
@@ -97,7 +95,7 @@ theorem integral_unitPoissonWeight_interior_log (c z w : ℂ) (ρ : ℝ) (hρ : 
     apply (integrable_const (K*M)).mono'
       ((measurable_unitPoissonWeight c z ρ).mul (by fun_prop)).aestronglyMeasurable
     filter_upwards [ae_norm_sub_center_circleMeasure 0 0] with u hu
-    have hu' : ‖u‖ = 1 := by simpa only [sub_zero, neg_zero, Real.exp_zero] using hu
+    have hu' : ‖u‖ = 1 := by simp_all
     have hball : c+ρ • u ∈ closedBall c ρ := by
       rw [mem_closedBall_iff_norm, add_sub_cancel_left, norm_smul, Real.norm_eq_abs,
         abs_of_pos hρ, hu', mul_one]
@@ -125,8 +123,8 @@ theorem integral_unitPoissonWeight_pair_log (c z w : ℂ) (ρ : ℝ) (hρ : 0 < 
     have hzw := max_lt (mem_ball_iff_norm.mp hz) (mem_ball_iff_norm.mp hw)
     dsimp only [a]
     linarith
-  have hza : ‖z-c‖ ≤ a := by dsimp only [a]; linarith [le_max_left ‖z-c‖ ‖w-c‖, mem_ball_iff_norm.mp hz]
-  have hwa : ‖w-c‖ ≤ a := by dsimp only [a]; linarith [le_max_right ‖z-c‖ ‖w-c‖, mem_ball_iff_norm.mp hw]
+  have hza : ‖z-c‖ ≤ a := by grind
+  have hwa : ‖w-c‖ ≤ a := by grind
   have hi := integrable_poisson_radial_circleLog c z w ρ a ρ ρ ρ hρ haρ hza hwa
     le_rfl le_rfl le_rfl le_rfl
   rw [integral_prod_symm _ hi]
@@ -135,7 +133,7 @@ theorem integral_unitPoissonWeight_pair_log (c z w : ℂ) (ρ : ℝ) (hρ : 0 < 
         Real.log ‖ρ • u-ρ • v‖ ∂circleMeasure 0 0) =
           unitPoissonWeight c ρ w v*Real.log ‖c+ρ • v-z‖ := by
     filter_upwards [ae_norm_sub_center_circleMeasure 0 0] with v hv
-    have hv' : ‖v‖ = 1 := by simpa only [sub_zero, neg_zero, Real.exp_zero] using hv
+    have hv' : ‖v‖ = 1 := by simp_all
     calc
       _ = unitPoissonWeight c ρ w v*(∫ u, unitPoissonWeight c ρ z u*
           Real.log ‖ρ • u-ρ • v‖ ∂circleMeasure 0 0) := by
@@ -154,10 +152,13 @@ theorem integral_unitPoissonWeight_pair_log (c z w : ℂ) (ρ : ℝ) (hρ : 0 < 
       ring
     _ = _ := norm_star _
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω)
+
+include Ω _inst1 P in
 /-- The Poisson collar covariance agrees with the harmonic covariance formula of
 `DOZZ.exists_exteriorPinned_markov_uniform`. -/
 theorem exteriorPinned_poisson_rawLimit_covariance_closed
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c z w : ℂ) (R ρ ε δ : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε)
     (hεδ : ε < δ) (hpin : ‖c‖+ρ+δ ≤ R) (hz : z ∈ ball c ρ) (hw : w ∈ ball c ρ)
@@ -189,9 +190,9 @@ theorem norm_diskGreen_numerator_sq (c z w : ℂ) (ρ : ℝ) :
   rw [show (z-c)-(w-c) = z-w by ring] at hi
   linarith
 
+include Ω _inst1 P
 /-- The exact harmonic covariance gives a logarithmic formula for its increment variance. -/
-theorem poisson_gaussian_increment_variance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (c : ℂ) (R ρ : ℝ) (hρ : 0 < ρ)
+theorem poisson_gaussian_increment_variance  [IsProbabilityMeasure P] (c : ℂ) (R ρ : ℝ) (hρ : 0 < ρ)
     (H : {z : ℂ // z ∈ ball c ρ} → Ω → ℝ)
     (hmem : ∀ z, MemLp (H z) 2 P)
     (hcov : ∀ z w, covariance (H z) (H w) P = Real.log R+Real.log ρ-
@@ -220,9 +221,9 @@ theorem poisson_gaussian_increment_variance {Ω : Type*} [MeasurableSpace Ω]
     Real.log_pow, Real.log_mul hz.ne' hw.ne']
   ring
 
+
 /-- Compact-disk harmonic increments have a quadratic distance bound with explicit geometry. -/
-theorem poisson_gaussian_increment_variance_le {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (c : ℂ) (R ρ a : ℝ)
+theorem poisson_gaussian_increment_variance_le  [IsProbabilityMeasure P] (c : ℂ) (R ρ a : ℝ)
     (hρ : 0 < ρ) (ha : 0 ≤ a) (haρ : a < ρ)
     (H : {z : ℂ // z ∈ ball c ρ} → Ω → ℝ)
     (hmem : ∀ z, MemLp (H z) 2 P)
@@ -235,7 +236,7 @@ theorem poisson_gaussian_increment_variance_le {Ω : Type*} [MeasurableSpace Ω]
   have hzg : ρ^2-a^2 ≤ ρ^2-‖z.1-c‖^2 := by nlinarith [norm_nonneg (z.1-c)]
   have hwg : ρ^2-a^2 ≤ ρ^2-‖w.1-c‖^2 := by nlinarith [norm_nonneg (w.1-c)]
   have hprod : (ρ^2-a^2)^2 ≤ (ρ^2-‖z.1-c‖^2)*(ρ^2-‖w.1-c‖^2) := by
-    simpa only [pow_two] using mul_le_mul hzg hwg hgap.le (hgap.le.trans hzg)
+    nlinarith
   have hzgpos := hgap.trans_le hzg
   have hwgpos := hgap.trans_le hwg
   have hq : 0 ≤ ρ^2*‖z.1-w.1‖^2/((ρ^2-‖z.1-c‖^2)*(ρ^2-‖w.1-c‖^2)) := by positivity
@@ -243,15 +244,13 @@ theorem poisson_gaussian_increment_variance_le {Ω : Type*} [MeasurableSpace Ω]
     0 < 1+ρ^2*‖z.1-w.1‖^2/((ρ^2-‖z.1-c‖^2)*(ρ^2-‖w.1-c‖^2)))
   have hd := div_le_div_of_nonneg_left (mul_nonneg (sq_nonneg ρ) (sq_nonneg ‖z.1-w.1‖))
     (sq_pos_of_pos hgap) hprod
-  have he : ρ^2*‖z.1-w.1‖^2/(ρ^2-a^2)^2 =
-      ρ^2/(ρ^2-a^2)^2*‖z.1-w.1‖^2 := by ring
-  rw [he] at hd
-  linarith
+  grind
+
 
 /-- Actual collar limits with centered measurable Gaussian coordinates and the harmonic covariance
 formula of `DOZZ.exists_exteriorPinned_markov_uniform`. -/
 theorem exists_exteriorPinned_poisson_gaussian_family_closed
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε δ : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε)
     (hεδ : ε < δ) (hpin : ‖c‖+ρ+δ ≤ R) :
@@ -266,6 +265,8 @@ theorem exists_exteriorPinned_poisson_gaussian_family_closed
   refine ⟨H,hG,hH,fun z w => ?_⟩
   exact exteriorPinned_poisson_rawLimit_covariance_closed P X Xc hX hc c z.1 w.1 R ρ ε δ
     hR hρ hε hεδ hpin z.2 w.2 (H z) (H w) (hH z).2.1 (hH w).2.1 (hH z).2.2.2 (hH w).2.2.2
+omit Ω _inst1 P
+
 
 /-- Covering exponents pull back exactly along an isometric embedding. -/
 theorem hasBoundedCoveringNumber_of_isometry {T U : Type*}
@@ -278,9 +279,10 @@ theorem hasBoundedCoveringNumber_of_isometry {T U : Type*}
     have hε' : (ε : ℝ≥0∞) ≤ ediam (f '' A) := by rwa [hf.ediam_image]
     simpa only [hf.coveringNumber_image] using hA.coveringNumber_le ε hε'
 
+include Ω _inst1 P in
 /-- Gaussian harmonic coordinates restricted to a compact inner disk meet Kolmogorov's condition. -/
 theorem poisson_gaussian_isKolmogorovProcess_on_closedBall
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+     [IsProbabilityMeasure P]
     (c : ℂ) (R ρ a : ℝ) (hρ : 0 < ρ) (ha : 0 ≤ a) (haρ : a < ρ)
     (H : {z : ℂ // z ∈ ball c ρ} → Ω → ℝ) (hG : IsGaussianProcess H P)
     (hmeas : ∀ z, Measurable (H z)) (hmem : ∀ z, MemLp (H z) 2 P)
@@ -301,8 +303,8 @@ theorem poisson_gaussian_isKolmogorovProcess_on_closedBall
   refine ⟨M,IsKolmogorovProcess.mk_of_secondCountableTopology
     (fun z => hmeas (ι z)) ?_ (by norm_num) (by norm_num)⟩
   intro z w
-  let U : Ω → ℝ := fun ω => H (ι z) ω-H (ι w) ω
-  have hU : HasGaussianLaw U P := hG.hasGaussianLaw_fun_sub (s := ι z) (t := ι w)
+  let U  := fun ω => H (ι z) ω-H (ι w) ω
+  have hU  := hG.hasGaussianLaw_fun_sub (s := ι z) (t := ι w)
   have hzero : (∫ ω, U ω ∂P) = 0 := by
     rw [integral_sub ((hmem (ι z)).integrable (by norm_num))
       ((hmem (ι w)).integrable (by norm_num)), hmean, hmean, sub_self]
@@ -312,11 +314,8 @@ theorem poisson_gaussian_isKolmogorovProcess_on_closedBall
         (mem_closedBall_iff_norm.mp z.2) (mem_closedBall_iff_norm.mp w.2)
   have hm : (∫ ω, |U ω|^8 ∂P) ≤ (C^4*A)*dist z w^8 := by
     have hh := hasGaussianLaw_integral_abs_pow_le U hU hzero 4 hv
-    change _ ≤ (C*dist z w^2)^4*A at hh
-    exact hh.trans_eq (by ring)
-  have hi : Integrable (fun ω => |U ω|^8) P := by
-    simpa only [Real.norm_eq_abs] using
-      (hU.memLp (p := (8 : ℝ≥0∞)) (by norm_num)).integrable_norm_pow'
+    grind
+  have hi : Integrable (fun ω => |U ω|^8) P := (hU.memLp (p := (8 : ℝ≥0∞)) (by norm_num)).integrable_norm_pow'
   have hlin := ofReal_integral_eq_lintegral_ofReal hi
     (Eventually.of_forall (fun ω => pow_nonneg (abs_nonneg (U ω)) 8))
   have he : (∫⁻ ω, edist (H (ι z) ω) (H (ι w) ω)^(8 : ℝ) ∂P) =
@@ -334,10 +333,11 @@ theorem poisson_gaussian_isKolmogorovProcess_on_closedBall
   rw [edist_dist, ENNReal.rpow_ofNat, ← ENNReal.ofReal_coe_nnreal (p := M)]
   exact hb
 
+include Ω _inst1 P in
 /-- On every compact inner disk the actual Gaussian Poisson family has a measurable
 continuous modification, constructed from its original coordinates. -/
 theorem exists_continuous_poisson_gaussian_on_closedBall
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+     [IsProbabilityMeasure P]
     (c : ℂ) (R ρ a : ℝ) (hρ : 0 < ρ) (ha : 0 < a) (haρ : a < ρ)
     (H : {z : ℂ // z ∈ ball c ρ} → Ω → ℝ) (hG : IsGaussianProcess H P)
     (hmeas : ∀ z, Measurable (H z)) (hmem : ∀ z, MemLp (H z) 2 P)

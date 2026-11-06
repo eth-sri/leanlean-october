@@ -10,32 +10,34 @@ public import Mathlib.Analysis.Analytic.Basic
 import Mathlib.Analysis.Complex.Conformal
 import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Analysis.Calculus.FDeriv.Star
+import Mathlib.Tactic
 
 /-! First-order calculus rules for the Wirtinger derivative. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
 open Filter
 open scoped Topology
 
+variable {f g : ℂ → ℂ} {z : ℂ} (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z)
+
+include f g z hf hg in
 /-- The Wirtinger derivative obeys the ordinary product rule for real-differentiable
 complex-valued functions. -/
-theorem wirtingerZ_mul {f g : ℂ → ℂ} {z : ℂ}
-    (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z) :
+theorem wirtingerZ_mul  :
     wirtingerZ (fun w => f w * g w) z =
       f z * wirtingerZ g z + g z * wirtingerZ f z := by
   rw [wirtingerZ, wirtingerZ, wirtingerZ, fderiv_fun_mul hf hg]
   simp only [add_apply, smul_apply]
   ring
 
+include f g z hf hg in
 /-- The Wirtinger derivative is additive on functions differentiable at the point. -/
-theorem wirtingerZ_add {f g : ℂ → ℂ} {z : ℂ}
-    (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z) :
+theorem wirtingerZ_add  :
     wirtingerZ (fun w => f w + g w) z = wirtingerZ f z + wirtingerZ g z := by
-  have hfd : fderiv ℝ (fun w => f w + g w) z = fderiv ℝ f z + fderiv ℝ g z := by
-    exact fderiv_add hf hg
+  have hfd : fderiv ℝ (fun w => f w + g w) z = fderiv ℝ f z + fderiv ℝ g z := fderiv_add hf hg
   rw [wirtingerZ, wirtingerZ, wirtingerZ, hfd]
   simp only [add_apply]
   ring
@@ -45,10 +47,9 @@ derivative. -/
 theorem wirtingerZ_eq_deriv_of_differentiableAt {f : ℂ → ℂ} {z : ℂ}
     (hf : DifferentiableAt ℂ f z) :
     wirtingerZ f z = deriv f z := by
-  have hfR : DifferentiableAt ℝ f z := hf.restrictScalars ℝ
+  have hfR  := hf.restrictScalars ℝ
   have hCR := (differentiableAt_complex_iff_differentiableAt_real.mp hf).2
-  have hI : fderiv ℝ f z Complex.I = Complex.I * fderiv ℝ f z 1 := by
-    simpa only [smul_eq_mul] using hCR
+  have hI : fderiv ℝ f z Complex.I = Complex.I * fderiv ℝ f z 1 := hCR
   rw [wirtingerZ, hI, complexOfReal_deriv hfR hCR]
   rw [← mul_assoc, Complex.I_mul_I]
   ring
@@ -57,10 +58,9 @@ theorem wirtingerZ_eq_deriv_of_differentiableAt {f : ℂ → ℂ} {z : ℂ}
 theorem wirtingerZ_star_eq_zero_of_differentiableAt {f : ℂ → ℂ} {z : ℂ}
     (hf : DifferentiableAt ℂ f z) :
     wirtingerZ (fun w => star (f w)) z = 0 := by
-  have hfR : DifferentiableAt ℝ f z := hf.restrictScalars ℝ
+
   have hCR := (differentiableAt_complex_iff_differentiableAt_real.mp hf).2
-  have hI : fderiv ℝ f z Complex.I = Complex.I * fderiv ℝ f z 1 := by
-    simpa only [smul_eq_mul] using hCR
+  have hI : fderiv ℝ f z Complex.I = Complex.I * fderiv ℝ f z 1 := hCR
   rw [wirtingerZ, fderiv_star]
   simp only [ContinuousLinearMap.comp_apply]
   change (star (fderiv ℝ f z 1) -
@@ -82,15 +82,12 @@ theorem wirtingerZ_mul_star_of_differentiableAt {f g : ℂ → ℂ} {z : ℂ}
     wirtingerZ_eq_deriv_of_differentiableAt hf]
   simp
 
+include f g z hf hg in
 /-- The Wirtinger derivative is unchanged when two functions agree near the evaluation point. -/
-theorem wirtingerZ_congr_of_eventuallyEq {f g : ℂ → ℂ} {z : ℂ}
-    (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z)
+theorem wirtingerZ_congr_of_eventuallyEq
     (hfg : f =ᶠ[𝓝 z] g) :
     wirtingerZ f z = wirtingerZ g z := by
-  have hfd : fderiv ℝ f z = fderiv ℝ g z := by
-    have hF : HasFDerivAt f (fderiv ℝ f z) z := hf.hasFDerivAt
-    have hG : HasFDerivAt g (fderiv ℝ f z) z := hfg.hasFDerivAt_iff.mp hF
-    exact hG.unique hg.hasFDerivAt
+  have hfd : fderiv ℝ f z = fderiv ℝ g z := EventuallyEq.fderiv_eq hfg
   rw [wirtingerZ, wirtingerZ, hfd]
 
 end DOZZ.Proofs

@@ -10,7 +10,7 @@ public import DOZZ.Correlations.Analytic.SeparatedGeometry
 
 /-! Strict real admissibility produces the actual local holomorphic Cauchy family. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 namespace DOZZ.Proofs
 
@@ -56,7 +56,7 @@ theorem real_center_cutoff_estimates
   filter_upwards [hdec, retained_cutoff_geometry_eventually z δ R hδ] with n hn hgeo
   have hr : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg _
   have hball := exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) hr hgeo.2.2.2
-  have hne : (retainedRegion z (n : ℝ)).Nonempty :=
+  have hne  :=
     (Metric.nonempty_ball.mpr (by norm_num : (0 : ℝ) < 1 / 8)).mono hball
   constructor
   · apply (normalized_vertex_moment_holomorphic P X hX γ hγ hγ2 M hM Xc hc
@@ -67,7 +67,6 @@ theorem real_center_cutoff_estimates
     have he := (hbox β (hsub hβ)).2.2.2.1
     have hhiq : hi ≤ hi * q := by nlinarith
     linarith
-  · intro β hβ
-    exact hn β (hsub hβ) (hthin β hβ)
+  grind
 
 end DOZZ.Proofs

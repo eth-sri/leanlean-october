@@ -9,7 +9,7 @@ public import DOZZ.FourPoint.RetainedAnnuliSeparated
 
 /-! Fatou passage for a product of retained masses, without assuming independence. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions
@@ -31,7 +31,7 @@ theorem two_mass_fatou
   obtain ⟨s, hs, hsub₀⟩ := hf₀.exists_seq_tendsto_ae
   obtain ⟨t, ht, hsub₁⟩ := (hf₁.comp hs.tendsto_atTop).exists_seq_tendsto_ae
   let ns : ℕ → ℕ := fun n => s (t n)
-  have hns : Tendsto ns atTop atTop := hs.tendsto_atTop.comp ht.tendsto_atTop
+  have hns  := hs.tendsto_atTop.comp ht.tendsto_atTop
   let F : ℕ → Ω → ℝ≥0∞ := fun n ω =>
     (ENNReal.ofReal (f₀ (ns n) ω)) ^ p * (ENNReal.ofReal (f₁ (ns n) ω)) ^ q
   have hlim : ∀ᵐ ω ∂P, liminf (fun n => F n ω) atTop =
@@ -71,8 +71,7 @@ theorem fieldChaosMass_indicator
         (Real.exp (γ * Φ ω x - γ ^ 2 / 2 * ∫ ω', Φ ω' x ^ 2 ∂P))) := by
     funext x
     by_cases hx : x ∈ A
-    · simp only [Set.indicator_of_mem hx, ENNReal.coe_one, one_mul]
-    · simp only [Set.indicator_of_notMem hx, ENNReal.coe_zero, zero_mul]
+    all_goals simp_all
   rw [he, lintegral_indicator hA, Measure.restrict_restrict hA,
     inter_eq_left.mpr hAU]
   simp only [ENNReal.coe_one, one_mul]

@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Fusion.DifferenceScaling
 public import DOZZ.FourPoint.Fusion.Parameters
 /-! # Rooting and scaling the literal local mass difference -/
-@[expose] public section
+public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 /-- The local signed mass difference has exactly the rescaled rooted segment integral. -/
@@ -36,8 +36,7 @@ theorem fusion_localDifference_rooting_scaled {Ω : Type*} [MeasurableSpace Ω]
         (∫⁻ ω, fusionUnrootedSegment γ α₁ α₂ α₃ t z (gmcRootedMeasure γ u (M ω)) ^ (-p - 1) ∂P).toReal) := by
     funext u
     by_cases hu : u ∈ B
-    · simp only [Set.indicator_of_mem hu]
-    · simp only [Set.indicator_of_notMem hu, zero_mul]
+    all_goals simp_all
   rw [he, integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] at h
   rw [gmcReferenceMeasure_restrict_unit_chart B Metric.isOpen_ball.measurableSet
     (fun x hx => by

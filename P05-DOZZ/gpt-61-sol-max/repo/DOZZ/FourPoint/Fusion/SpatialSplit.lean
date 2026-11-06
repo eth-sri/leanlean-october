@@ -9,7 +9,7 @@ public import DOZZ.FourPoint.Fusion.RootedCoulombComplex
 
 /-! # Splitting the literal signed spatial expectation -/
 
-@[expose] public section
+public section
 open MeasureTheory Set Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -49,18 +49,18 @@ theorem fusion_pureSpatial_expectation_split {Ω : Type*} [MeasurableSpace Ω]
   have hiL : Integrable (fun ω => I ω * (∫ x in B, f x ∂M ω)) P := by
     simpa only [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] using hiLocal
   obtain ⟨C, _, hb⟩ := fusion_exteriorR1_expectation_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp
-  have hiR : Integrable (fun ω => I ω * (∫ x in Bᶜ, f x ∂M ω)) P := (hb z hz hz4).1
+  have hiR  := (hb z hz hz4).1
   have heq : (fun ω => I ω * (∫ x, f x ∂M ω)) =ᵐ[P]
       (fun ω => I ω * (∫ x in B, f x ∂M ω) + I ω * (∫ x in Bᶜ, f x ∂M ω)) := by
     filter_upwards [hfLocal, hm,
       gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z,
       gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
       gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hωL hω hωz hω0 hω1
-    have hL : IntegrableOn f B (M ω) := (integrable_indicator_iff Metric.isOpen_ball.measurableSet).mp hωL
+    have hL  := (integrable_indicator_iff Metric.isOpen_ball.measurableSet).mp hωL
     have hk : (∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω) < ⊤ := by
       rw [← fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ z (M ω) hωz hω0 hω1]
       exact hω.2.lt_top
-    have hR : IntegrableOn f Bᶜ (M ω) := fusion_exteriorSecondKernel_integrable γ α₁ α₂ α₃ z hz4 (M ω) hk
+    have hR  := fusion_exteriorSecondKernel_integrable γ α₁ α₂ α₃ z hz4 (M ω) hk
     have hfull : Integrable f (M ω) := by
       have h := hL.union hR
       simpa only [Set.union_compl_self, integrableOn_univ] using h

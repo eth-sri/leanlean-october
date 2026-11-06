@@ -9,7 +9,7 @@ public import DOZZ.Hypergeom.ODE.PathSubdivision
 
 /-! Iteration of the one-step disk extension along finitely many nearby centers. -/
 
-@[expose] public section
+public section
 
 open Set
 
@@ -46,9 +46,7 @@ theorem exists_finite_holomorphic_disk_chain
     induction i with
     | zero => simp [D, Dzero, holomorphicDiskSolutionOfBound]
     | succ i ih =>
-        have hi' : i < N := by omega
-        have hi_le : i ≤ N := by omega
-        simp [D, hi', extendHolomorphicDiskSolution, holomorphicDiskSolutionOfBound]
+        continuity
   refine ⟨D, hcenter 0 (by omega), ?_, ?_, ?_⟩
   · simp [D, Dzero, holomorphicDiskSolutionOfBound]
   · exact hcenter
@@ -93,7 +91,7 @@ theorem exists_path_holomorphic_disk_chain
         (D i).solution z = (D (i + 1)).solution z := by
   obtain ⟨N, hN, hpartition⟩ :=
     exists_path_subdivision hγ (by linarith : 0 < r / 2)
-  have hclose := fun i hi => (hpartition i hi).1
+  
   have hcover := fun i hi t ht => (hpartition i hi).2 t ht
   let centers : ℕ → ℂ := fun i => γ ((i : ℝ) / (N : ℝ))
   have htime (i : ℕ) (hi : i ≤ N) : (i : ℝ) / (N : ℝ) ∈ Icc (0 : ℝ) 1 := by
@@ -103,30 +101,26 @@ theorem exists_path_holomorphic_disk_chain
     · apply (div_le_one hNreal).2
       exact_mod_cast hi
   have hHcenters : ∀ i ≤ N, DifferentiableOn ℂ H (Metric.ball (centers i) r) := by
-    intro i hi
-    simpa [centers] using hH _ (htime i hi)
+    grind
   have hboundCenters : ∀ i ≤ N, ∀ z ∈ Metric.ball (centers i) r, ‖H z‖ ≤ M := by
-    intro i hi
-    simpa [centers] using hbound _ (htime i hi)
+    grind
   have hcloseCenters : ∀ i < N, dist (centers (i + 1)) (centers i) < r / 2 := by
-    intro i hi
-    simpa [centers, dist_comm] using (hclose i hi)
+    grind
   obtain ⟨D, hD0c, hD0i, hDcenters, hDstep⟩ :=
     exists_finite_holomorphic_disk_chain N centers r M H hM hHcenters
       hboundCenters hcloseCenters y
   refine ⟨N, hN, D, ?_, hD0i, ?_, ?_, ?_, ?_⟩
   · simpa [centers] using hD0c
-  · intro i hi
-    simpa [centers] using hDcenters i hi
+  · assumption_mod_cast
   · intro i hi
     have hstep := hDstep i hi
-    simpa [centers] using hstep.2.1
+    exact hstep.2.1
   · intro i hi t ht
     have hcenter := hDcenters i (Nat.le_of_lt hi)
     rw [hcenter]
-    exact Metric.mem_ball.mpr (by simpa [centers] using hcover i hi t ht)
+    exact Metric.mem_ball.mpr (by exact hcover i hi t ht)
   · intro i hi z hz
     have hstep := hDstep i hi
-    simpa [centers] using hstep.2.2 z hz
+    exact hstep.2.2 z hz
 
 end DOZZ.Proofs

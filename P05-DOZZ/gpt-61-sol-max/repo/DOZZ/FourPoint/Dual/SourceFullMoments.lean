@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Dual.SourceOuterMoments
 import Mathlib.Tactic
 /-! Finiteness of the literal full dual kernel on the supplied ordinary chaos. -/
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -29,9 +29,7 @@ theorem dual_full_kernel_finite_ae
     · change -2/γ < Q γ
       rw [neg_div]
       unfold Q
-      have hinv : 0 < 2/γ := div_pos (by norm_num) hγ
-      have hhalf : 0 < γ/2 := half_pos hγ
-      linarith only [hinv,hhalf]
+      field_simp <;> nlinarith
     · exact hα₁
     · exact hα₂
   have hfull := reflected_coulombMass_ae_finite P X hX γ hγ hγ₂ M hM

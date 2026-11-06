@@ -9,7 +9,7 @@ public import Mathlib.MeasureTheory.Integral.Lebesgue.Add
 
 /-! Pointwise localization comparisons retain infinite singular masses. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 
@@ -35,7 +35,7 @@ theorem localized_mass_comparison
     by_cases hx : x ∈ Metric.ball z 1
     · rw [indicator_of_mem hx]
       exact mul_le_of_le_one_left' (ENNReal.ofReal_le_one.mpr (hχ x).2)
-    · rw [indicator_of_notMem hx,hχzero x hx,ENNReal.ofReal_zero,zero_mul]
+    simp_all
   · rw [← lintegral_indicator hball,← lintegral_indicator hdiff]
     rw [← lintegral_add_right _ (hw.indicator hdiff)]
     apply lintegral_mono
@@ -44,9 +44,7 @@ theorem localized_mass_comparison
     by_cases hx : x ∈ Metric.ball z 1
     · rw [indicator_of_mem hx]
       by_cases hxδ : x ∈ Metric.ball z δ
-      · rw [hχone x hxδ,ENNReal.ofReal_one,one_mul]
-        exact le_self_add
-      · exact le_add_of_le_right (by rw [indicator_of_mem (show x ∈ Metric.ball z 1 \ Metric.ball z δ from ⟨hx,hxδ⟩)])
+      all_goals simp_all
     · rw [indicator_of_notMem hx]
       exact zero_le
 
@@ -75,8 +73,7 @@ theorem copied_mass_comparison
     by_cases hx : x ∈ Metric.ball (0 : ℂ) ρ
     · rw [indicator_of_mem hx,indicator_of_mem (hsub hx)]
       exact (mul_le_of_le_one_left' (ENNReal.ofReal_le_one.mpr (hχ x).2)).trans (huv x hx).1
-    · rw [hχzero x hx,ENNReal.ofReal_zero,zero_mul]
-      exact zero_le
+    simp_all
   · rw [← lintegral_indicator hb,← lintegral_indicator hρm,← lintegral_indicator hd,
       ← lintegral_add_right _ (he.indicator hρm),← lintegral_add_right _ (hv.indicator hd)]
     apply lintegral_mono
@@ -86,9 +83,8 @@ theorem copied_mass_comparison
     · rw [indicator_of_mem hx]
       by_cases hxδ : x ∈ Metric.ball (0 : ℂ) δ
       · have hxρ := Metric.ball_subset_ball hδρ hxδ
-        rw [hχone x hxδ,ENNReal.ofReal_one,one_mul,indicator_of_mem hxρ]
-        exact (huv x hxρ).2.trans le_self_add
-      · exact le_add_of_le_right (by rw [indicator_of_mem (show x ∈ Metric.ball (0 : ℂ) 1 \ Metric.ball 0 δ from ⟨hx,hxδ⟩)])
+        simp_all
+      simp_all
     · rw [indicator_of_notMem hx]
       exact zero_le
 

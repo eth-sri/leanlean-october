@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.CoulombInsertionDecay
 
 /-! The insertion at infinity has the same small-moment decay after inversion. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -34,7 +34,7 @@ theorem coulomb_exterior_moment_decay
   refine ⟨B ^ m * C, ENNReal.mul_lt_top
     (ENNReal.rpow_lt_top_of_nonneg hm.le ENNReal.ofReal_ne_top) hC, ?_⟩
   intro α αinf hα hi R hR hz
-  have hR0 : 0 < R := lt_of_lt_of_le zero_lt_one hR
+  have hR0  := lt_of_lt_of_le zero_lt_one hR
   have hb : ENNReal.ofReal ((2 : ℝ) ^ (∑ j, |γ * α j|)) ≤ B := by
     apply ENNReal.ofReal_le_ofReal
     apply Real.rpow_le_rpow_of_exponent_le (by norm_num)
@@ -50,7 +50,7 @@ theorem coulomb_exterior_moment_decay
       (ENNReal.measurable_ofReal.comp measurable_norm)
   have hE : MeasurableSet {x : ℂ | R < ‖x‖} :=
     measurableSet_lt measurable_const measurable_norm
-  have hw : AEMeasurable W P :=
+  have hw  :=
     gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _ hg _ hE
   have hpt (ω : Ω) :
       (∫⁻ x in {x : ℂ | R < ‖x‖}, coulombWeight γ α z αinf x ∂M ω) ≤ B * W ω := by
@@ -68,9 +68,7 @@ theorem coulomb_exterior_moment_decay
     _ ≤ B ^ m * weightedGmcBallMoment P M γ αinf 0 (1 / R) m :=
       mul_le_mul_right (gmc_exterior_moment_le_weighted P X hX γ hγ hγ2 M hM αinf hR0 m hm.le) _
     _ ≤ B ^ m * (ENNReal.ofReal ((1 / R) ^ (γ * gap * m)) * C) := by
-      apply mul_le_mul_right
-      apply hdec αinf hi (1 / R) (one_div_pos.mpr hR0)
-      simpa only [min_self, div_one] using (one_div_le_one_div_of_le zero_lt_one hR)
+      bound
     _ = _ := by ring
 
 end DOZZ.Proofs

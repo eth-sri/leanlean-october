@@ -6,6 +6,7 @@ module
 
 public import DOZZ.GMC.KahaneConvexAffineApproximation
 public import DOZZ.GMC.KahaneFiniteAffineMax
+import Mathlib.Tactic
 
 /-! Closure of affine-maximum comparison under arbitrary integrable convex tests. -/
 
@@ -16,11 +17,15 @@ open scoped ENNReal
 
 namespace DOZZ.Proofs
 
+variable (a b : ℕ → ℝ)
+
+include a b in
 /-- The maximum of the first `n+1` supporting affine functions. -/
-noncomputable def initialAffineMax (a b : ℕ → ℝ) (n : ℕ) (x : ℝ) : ℝ :=
+noncomputable def initialAffineMax  (n : ℕ) (x : ℝ) : ℝ :=
   affineMax (fun i : Fin (n + 1) => a i.val) (fun i : Fin (n + 1) => b i.val) x
 
-theorem initialAffineMax_mono (a b : ℕ → ℝ) (x : ℝ) :
+include a b in
+theorem initialAffineMax_mono  (x : ℝ) :
     Monotone (fun n => initialAffineMax a b n x) := by
   classical
   intro n m hnm
@@ -31,19 +36,21 @@ theorem initialAffineMax_mono (a b : ℕ → ℝ) (x : ℝ) :
   exact affineMax_le (fun i : Fin (m + 1) => a i.val)
     (fun i : Fin (m + 1) => b i.val) x j
 
-theorem initialAffineMax_zero_le (a b : ℕ → ℝ) (n : ℕ) (x : ℝ) :
+include a b in
+theorem initialAffineMax_zero_le  (n : ℕ) (x : ℝ) :
     a 0 * x + b 0 ≤ initialAffineMax a b n x :=
   affineMax_le (fun i : Fin (n + 1) => a i.val)
     (fun i : Fin (n + 1) => b i.val) x 0
 
+include a b in
 theorem initialAffineMax_tendsto
-    (a b : ℕ → ℝ) (x z : ℝ) (hle : ∀ n, a n * x + b n ≤ z)
+     (x z : ℝ) (hle : ∀ n, a n * x + b n ≤ z)
     (hsup : (⨆ n, a n * x + b n) = z) :
     Tendsto (fun n => initialAffineMax a b n x) atTop (𝓝 z) := by
   classical
   have hHle (n : ℕ) : initialAffineMax a b n x ≤ z := by
     unfold initialAffineMax affineMax
-    exact Finset.sup'_le Finset.univ_nonempty _ (fun i _ => hle i.val)
+    simp_all
   have hbdd : BddAbove (range (fun n => initialAffineMax a b n x)) :=
     ⟨z, fun y ⟨n, hn⟩ => hn ▸ hHle n⟩
   have hHeq : (⨆ n, initialAffineMax a b n x) = z := by
@@ -51,7 +58,7 @@ theorem initialAffineMax_tendsto
     rw [← hsup]
     apply ciSup_le
     intro n
-    have hn : a n * x + b n ≤ initialAffineMax a b n x :=
+    have hn  :=
       affineMax_le (fun i : Fin (n + 1) => a i.val)
         (fun i : Fin (n + 1) => b i.val) x ⟨n, by omega⟩
     exact hn.trans (le_ciSup hbdd n)
@@ -128,7 +135,7 @@ theorem convex_comparison_of_affine_max_order
         apply ENNReal.ofReal_le_ofReal
         apply sub_le_sub_right
         unfold initialAffineMax affineMax
-        exact Finset.sup'_le Finset.univ_nonempty _ (fun i _ => hle i.val (MY ω) hω)
+        simp_all
   have hGXtend : ∀ᵐ ω ∂PX,
       Tendsto (fun n => ENNReal.ofReal (GX n ω)) atTop (𝓝 (ENNReal.ofReal (GXlim ω))) := by
     filter_upwards [hMXpos] with ω hω
@@ -139,8 +146,7 @@ theorem convex_comparison_of_affine_max_order
     exact ENNReal.ofReal_le_ofReal (sub_le_sub_right (initialAffineMax_mono a b (MX ω) hnm) _)
   have hlimit := lintegral_tendsto_of_tendsto_of_monotone
     (fun n => (hGXint n).aemeasurable.ennreal_ofReal) hGXmono hGXtend
-  have hL : (∫⁻ ω, ENNReal.ofReal (GXlim ω) ∂PX) ≤
-      ∫⁻ ω, ENNReal.ofReal (GYlim ω) ∂PY :=
+  have hL  :=
     le_of_tendsto hlimit (Filter.Eventually.of_forall hGXlinorder)
   have hGXlimint : Integrable GXlim PX := by
     refine ⟨((hF.comp_aemeasurable hMX.aemeasurable).sub hLX.aemeasurable).aestronglyMeasurable, ?_⟩

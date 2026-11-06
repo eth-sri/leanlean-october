@@ -35,7 +35,7 @@ one. No assertion of Markov restart at a last exit is used here. Multi-time
 killed paths and the reversed lifetime-marked limit remain to be assembled.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
@@ -55,11 +55,11 @@ theorem brownianPath_past_event_restart_lintegral {E : Type*} [MeasurableSpace E
   classical
   let I : BrownianPath → ℝ≥0∞ := A.indicator (fun _ => 1)
   let J : (E × ℝ≥0∞) × BrownianPath → ℝ≥0∞ := fun z => z.1.2*F (z.1.1,z.2)
-  have hJ : Measurable J := (measurable_snd.comp measurable_fst).mul
+  have hJ  := (measurable_snd.comp measurable_fst).mul
     (hF.comp ((measurable_fst.comp measurable_fst).prodMk measurable_snd))
   have hh := brownianPath_deterministic_restart_lintegral P hB s (fun p => (X p,I p))
     (hX.prodMk (measurable_const.indicator hA)) J hJ
-  have hAg : MeasurableSet A := (brownianRawFiltration _ _).le s A hA
+  have hAg  := (brownianRawFiltration _ _).le s A hA
   have he (p : BrownianPath) (q : BrownianPath) : J ((X p,I p),q) = A.indicator (fun p => F (X p,q)) p := by
     by_cases hp : p ∈ A <;> simp only [J,I,Set.indicator_apply,hp,ite_true,ite_false,one_mul,zero_mul]
   have hl : (fun p => J ((X p,I p),brownianShiftPath s p)) = A.indicator
@@ -70,10 +70,8 @@ theorem brownianPath_past_event_restart_lintegral {E : Type*} [MeasurableSpace E
       (fun p => ∫⁻ q, F (X p,q) ∂P) := by
     funext p
     by_cases hp : p ∈ A
-    · simp only [he,Set.indicator_apply,ite_eq_left hp]
-    · simp only [he,Set.indicator_apply,ite_eq_right hp,lintegral_zero]
-  rw [hl,hr,lintegral_indicator hAg,lintegral_indicator hAg] at hh
-  exact hh
+    all_goals simp_all
+  simp_all
 
 /-- A drifted upper barrier is measurable in the raw past of its finite horizon. -/
 theorem measurableSet_brownianPath_drift_barrier_raw (a c : ℝ) (s : ℝ≥0) :
@@ -98,17 +96,13 @@ theorem firstPassageTime_gt_iff_strict_barrier (p : BrownianPath) (c : ℝ) (s :
     (hh : ∃ u : ℝ≥0, c ≤ p u) :
     s < firstPassageTime p c ↔ ∀ u : ℝ≥0, u ≤ s → p u < c := by
   rw [← not_le,firstPassageTime_le_iff]
-  constructor
-  · intro hn u hu
-    exact not_le.mp (fun h => hn (Or.inr ⟨u,hu,h⟩))
-  · intro hb hn
-    rcases hn with hn | ⟨u,hu,hcu⟩
-    · exact hn hh
-    · exact not_le.mpr (hb u hu) hcu
+  simp_all
 
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ)
+
+include P hB a c in
 /-- The literal actual pre-hit event agrees almost surely with the closed finite-horizon upper barrier. -/
-theorem brownianPath_positiveDrift_firstHit_event_ae (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a) (hc : 0 < c)
+theorem brownianPath_positiveDrift_firstHit_event_ae  (ha : 0 < a) (hc : 0 < c)
     (s : ℝ≥0) (hs : s ≠ 0) :
     {p : BrownianPath | s < firstPassageTime (driftedBrownianPath a p) c} =ᵐ[P]
       {p : BrownianPath | ∀ u : ℝ≥0, u ≤ s → p u+a*(u : ℝ) ≤ c} := by
@@ -118,9 +112,9 @@ theorem brownianPath_positiveDrift_firstHit_event_ae (P : Measure BrownianPath)
     exact propext (firstPassageTime_gt_iff_strict_barrier (driftedBrownianPath a p) c s hp)
   exact he.trans (brownianPath_drift_barrier_ae_strict P hB a c hc s hs).symm
 
+include P hB a c in
 /-- The actual pre-hit remaining level has the negative-drift killed endpoint density. -/
-theorem brownianPath_upperKilled_remaining_map (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (hc : 0 < c)
+theorem brownianPath_upperKilled_remaining_map  (hc : 0 < c)
     (s : ℝ≥0) (hs : s ≠ 0) :
     (P.restrict {p : BrownianPath | ∀ u : ℝ≥0, u ≤ s → p u+a*(u : ℝ) ≤ c}).map
       (fun p => c-(p s+a*(s : ℝ))) =
@@ -134,9 +128,9 @@ theorem brownianPath_upperKilled_remaining_map (P : Measure BrownianPath)
   rw [← he]
   exact brownianPath_lowerKilled_endpoint_map P hB (-a) c hc s hs
 
+include P hB a c in
 /-- Every nonnegative remaining-level test before the upper barrier integrates against the actual killed kernel. -/
-theorem brownianPath_upperKilled_remaining_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (hc : 0 < c)
+theorem brownianPath_upperKilled_remaining_lintegral  (hc : 0 < c)
     (s : ℝ≥0) (hs : s ≠ 0) (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p in {p : BrownianPath | ∀ u : ℝ≥0, u ≤ s → p u+a*(u : ℝ) ≤ c},
       F (c-(p s+a*(s : ℝ))) ∂P) =

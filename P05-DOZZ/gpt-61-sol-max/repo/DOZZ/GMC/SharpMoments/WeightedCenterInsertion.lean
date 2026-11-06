@@ -17,7 +17,7 @@ infinite: a small disk inside the annulus `{R / 2 < |x| < R}` has almost surely 
 the weight there is bounded below, so the weighted mass of the full disk almost surely exceeds
 that of the half-radius disk. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -63,8 +63,7 @@ theorem centerInsertion_mass_add_le (μ : Measure ℂ) (γ α : ℝ) (hγα : 0 
     rw [Metric.mem_ball, dist_zero_right]
     exact (centerInsertion_annulus_norm_bounds hR hx).2
   have hs : -γ * α ≤ 0 := by
-    rw [neg_mul]
-    exact neg_nonpos.mpr hγα.le
+    field_simp at * <;> nlinarith
   unfold weightedGmcBallMass
   calc ∫⁻ x in Metric.ball (0 : ℂ) ((1 / 2) * R),
           ENNReal.rpow (ENNReal.ofReal ‖x - 0‖) (-γ * α) ∂μ +
@@ -102,9 +101,9 @@ theorem weightedGmcBallMoment_center_eq_top_of_insertion
     (he : (2 - γ * α) * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 ≤ 0)
     (R : ℝ) (hR : 0 < R) (hR1 : R < 1) :
     weightedGmcBallMoment P M γ α 0 R p = ⊤ := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   by_contra hne
-  have hI : weightedGmcBallMoment P M γ α 0 R p < ⊤ := lt_top_iff_ne_top.mpr hne
+  have hI  := lt_top_iff_ne_top.mpr hne
   -- scaling by `1 / 2` with a nonpositive exponent can only increase the moment
   have hscale := gmc_weighted_ball_moment_scale P X hX γ M hM α (c := 1 / 2) (R := R)
     (by norm_num) (by norm_num) hR hR1 p
@@ -122,16 +121,13 @@ theorem weightedGmcBallMoment_center_eq_top_of_insertion
       weightedGmcBallMoment P M γ α 0 R p :=
     lintegral_mono fun ω => ENNReal.rpow_le_rpow
       (centerInsertion_mass_mono (M ω) γ α (by linarith)) hp.le
-  have hIhalf : weightedGmcBallMoment P M γ α 0 ((1 / 2) * R) p < ⊤ := lt_of_le_of_lt hle hI
+  have hIhalf  := lt_of_le_of_lt hle hI
   -- the half-radius mass is almost surely finite
   have hWhalf := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM α 0 ((1 / 2) * R)
   have hWfull := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM α 0 R
   have hfin : ∀ᵐ ω ∂P, weightedGmcBallMass γ (M ω) α 0 ((1 / 2) * R) < ⊤ := by
     filter_upwards [ae_lt_top' (hWhalf.pow_const p) hIhalf.ne] with ω hω
-    by_contra hcon
-    have htop : weightedGmcBallMass γ (M ω) α 0 ((1 / 2) * R) = ⊤ := not_lt_top_iff.mp hcon
-    rw [htop, ENNReal.top_rpow_of_pos hp] at hω
-    exact lt_irrefl _ hω
+    exact (ENNReal.rpow_lt_top_iff_of_pos hp).mp hω
   -- the annulus ball has almost surely positive mass
   have hpos := gmc_ball_mass_pos_ae P X hX γ hγ hγ2 M hM (((3 * R / 4 : ℝ)) : ℂ) (R / 4)
     (by positivity)
@@ -143,8 +139,7 @@ theorem weightedGmcBallMoment_center_eq_top_of_insertion
     exact ENNReal.rpow_lt_rpow (lt_of_lt_of_le
       (ENNReal.lt_add_right hω1.ne (mul_ne_zero hc0.ne' hω2.ne'))
       (centerInsertion_mass_add_le (M ω) γ α (mul_pos hγ hα) hR)) hp
-  have hstrict : weightedGmcBallMoment P M γ α 0 ((1 / 2) * R) p <
-      weightedGmcBallMoment P M γ α 0 R p :=
+  have hstrict  :=
     lintegral_strict_mono (NeZero.ne P) (hWfull.pow_const p) hIhalf.ne hlt
   exact absurd hge (not_le.mpr hstrict)
 

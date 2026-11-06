@@ -11,7 +11,7 @@ public import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 
 /-! Rotation and scaling of the first-order-subtracted difference integral. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 open scoped Topology
@@ -31,7 +31,7 @@ theorem planarDifferenceKernel_real_scale (k β : ℝ) (hk : 0 < k) (hβ : k < �
       r ^ (k - β) * DOZZ.planarDifferenceKernel k β 1 v := by
   by_cases hv : v = 0
   · subst v
-    have hβpos : 0 < β := lt_trans hk hβ
+    have hβpos  := lt_trans hk hβ
     simp [DOZZ.planarDifferenceKernel, Real.zero_rpow, ne_of_gt hk, ne_of_gt hβpos]
   · have hnormv : ‖r • v‖ = r * ‖v‖ := by
       rw [norm_smul, Real.norm_eq_abs, abs_of_pos hr]
@@ -39,7 +39,7 @@ theorem planarDifferenceKernel_real_scale (k β : ℝ) (hk : 0 < k) (hβ : k < �
       change (r : ℂ) * v - (r : ℂ) = (r : ℂ) * (v - 1)
       ring
     have hnormshift : ‖r • v - (r : ℂ)‖ = r * ‖v - 1‖ := by
-      rw [hshift, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hr]
+      simp_all
     have hpowerV : (r * ‖v‖) ^ k = r ^ k * ‖v‖ ^ k :=
       Real.mul_rpow hr.le (norm_nonneg v)
     have hpowerShift : (r * ‖v - 1‖) ^ k = r ^ k * ‖v - 1‖ ^ k :=
@@ -48,21 +48,21 @@ theorem planarDifferenceKernel_real_scale (k β : ℝ) (hk : 0 < k) (hβ : k < �
       Real.mul_rpow hr.le (norm_nonneg v)
     have hnum : ‖r • v - (r : ℂ)‖ ^ k - ‖r • v‖ ^ k =
         r ^ k * (‖v - 1‖ ^ k - ‖v‖ ^ k) := by
-      rw [hnormshift, hnormv, hpowerShift, hpowerV]
-      ring
+      grind
     change (‖r • v - (r : ℂ)‖ ^ k - ‖r • v‖ ^ k) / ‖r • v‖ ^ β =
       r ^ (k - β) * ((‖v - 1‖ ^ k - ‖v‖ ^ k) / ‖v‖ ^ β)
     rw [hnum, hnormv, hpowerDen]
-    have hrβ : 0 < r ^ β := Real.rpow_pos_of_pos hr β
-    have hvβ : 0 < ‖v‖ ^ β := Real.rpow_pos_of_pos (norm_pos_iff.mpr hv) β
+    have hrβ  := Real.rpow_pos_of_pos hr β
+    have hvβ  := Real.rpow_pos_of_pos (norm_pos_iff.mpr hv) β
     calc
       _ = (r ^ k / r ^ β) * ((‖v - 1‖ ^ k - ‖v‖ ^ k) / ‖v‖ ^ β) := by
         field_simp [hrβ.ne', hvβ.ne']
       _ = _ := by rw [← Real.rpow_sub hr k β]
 
-theorem planarDifferenceKernel_rotated_scale (k β : ℝ) (hk : 0 < k) (hβ : k < β)
-    (ξ : ℂ) (hξ : ‖ξ‖ = 1) (r : ℝ) (hr : 0 < r) (z : ℂ)
-    (hz : ξ * (r : ℂ) = z) (v : ℂ) :
+variable (k β : ℝ) (hk : 0 < k) (hβ : k < β) (ξ : ℂ) (hξ : ‖ξ‖ = 1) (r : ℝ) (hr : 0 < r) (z : ℂ) (hz : ξ * (r : ℂ) = z)
+
+include k β hk hβ ξ hξ r hr z hz in
+theorem planarDifferenceKernel_rotated_scale  (v : ℂ) :
     DOZZ.planarDifferenceKernel k β z (ξ * (r • v)) =
       r ^ (k - β) * DOZZ.planarDifferenceKernel k β 1 v := by
   calc
@@ -73,9 +73,8 @@ theorem planarDifferenceKernel_rotated_scale (k β : ℝ) (hk : 0 < k) (hβ : k 
     _ = r ^ (k - β) * DOZZ.planarDifferenceKernel k β 1 v :=
       planarDifferenceKernel_real_scale k β hk hβ r hr v
 
-theorem planarDifferenceKernel_integral_scale (k β : ℝ) (hk : 0 < k) (hβ : k < β)
-    (ξ : ℂ) (hξ : ‖ξ‖ = 1) (r : ℝ) (hr : 0 < r) (z : ℂ)
-    (hz : ξ * (r : ℂ) = z) :
+include k β hk hβ ξ hξ r hr z hz in
+theorem planarDifferenceKernel_integral_scale  :
     (∫ u : ℂ, DOZZ.planarDifferenceKernel k β z u) =
       r ^ (2 + k - β) *
         (∫ u : ℂ, DOZZ.planarDifferenceKernel k β 1 u) := by
@@ -84,14 +83,13 @@ theorem planarDifferenceKernel_integral_scale (k β : ℝ) (hk : 0 < k) (hβ : k
       (∫ u : ℂ, DOZZ.planarDifferenceKernel k β z u) := by
     change (∫ u : ℂ, DOZZ.planarDifferenceKernel k β z (ξ * u)) = _
     let c : Circle := ⟨ξ, by simpa [Submonoid.unitSphere] using hξ⟩
-    simpa only [rotation_apply] using
-      (LinearIsometryEquiv.measurePreserving (rotation c)).integral_comp
+    exact (LinearIsometryEquiv.measurePreserving (rotation c)).integral_comp
         ((rotation c).toContinuousLinearEquiv.toHomeomorph).measurableEmbedding
         (fun u : ℂ => DOZZ.planarDifferenceKernel k β z u)
   have hscaling :
       (∫ u : ℂ, g (r • u)) = (r ^ 2)⁻¹ * (∫ u : ℂ, g u) := by
     have h := Measure.integral_comp_smul_of_nonneg volume g r (hR := hr.le)
-    simpa only [Complex.finrank_real_complex, smul_eq_mul] using h
+    simp_all
   have hpoint : (fun u : ℂ => g (r • u)) = fun u =>
       r ^ (k - β) * DOZZ.planarDifferenceKernel k β 1 u := by
     funext u
@@ -106,24 +104,12 @@ theorem planarDifferenceKernel_integral_scale (k β : ℝ) (hk : 0 < k) (hβ : k
     have hp : r ^ 2 * r ^ (k - β) = r ^ (2 + (k - β)) := by
       rw [← Real.rpow_natCast r 2]
       exact (Real.rpow_add hr 2 (k - β)).symm
-    calc
-      _ = (r ^ 2 * r ^ (k - β)) *
-          (∫ u : ℂ, DOZZ.planarDifferenceKernel k β 1 u) := by ring
-      _ = r ^ (2 + (k - β)) *
-          (∫ u : ℂ, DOZZ.planarDifferenceKernel k β 1 u) := by rw [hp]
-      _ = _ := by congr 1; congr 1; ring
+    grind
   have hright : r ^ 2 * ((r ^ 2)⁻¹ *
       (∫ u : ℂ, DOZZ.planarDifferenceKernel k β z u)) =
       (∫ u : ℂ, DOZZ.planarDifferenceKernel k β z u) := by
-    have hr2 : r ^ 2 ≠ 0 := pow_ne_zero 2 hr.ne'
-    field_simp [hr2]
-  calc
-    (∫ u : ℂ, DOZZ.planarDifferenceKernel k β z u) =
-        r ^ 2 * ((r ^ 2)⁻¹ *
-          (∫ u : ℂ, DOZZ.planarDifferenceKernel k β z u)) := by rw [hright]
-    _ = r ^ 2 * (r ^ (k - β) *
-        (∫ u : ℂ, DOZZ.planarDifferenceKernel k β 1 u)) := hmul.symm
-    _ = _ := hleft
+    field_simp
+  simp_all
 
 theorem planarDifferenceKernel_integral_scale_norm (k β : ℝ)
     (hk : 0 < k) (hβ : k < β) (hβ₂ : β < 2) :
@@ -142,17 +128,14 @@ theorem planarDifferenceKernel_integral_scale_norm (k β : ℝ)
     simp [Real.zero_rpow, hα.ne']
   · let r : ℝ := ‖z‖
     let ξ : ℂ := z / (r : ℂ)
-    have hr : 0 < r := by dsimp [r]; exact norm_pos_iff.mpr hz
+    have hr : 0 < r := by exact norm_pos_iff.mpr hz
     have hrC : (r : ℂ) ≠ 0 := by exact_mod_cast hr.ne'
     have hξ : ‖ξ‖ = 1 := by
-      dsimp [ξ]
-      rw [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hr]
-      dsimp [r]
-      exact div_self (norm_ne_zero_iff.mpr hz)
+      continuity
     have hξr : ξ * (r : ℂ) = z := by
       dsimp [ξ]
       field_simp [hrC]
     have hscale := planarDifferenceKernel_integral_scale k β hk hβ ξ hξ r hr z hξr
-    simpa [r] using hscale
+    exact hscale
 
 end DOZZ.Proofs

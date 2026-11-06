@@ -11,7 +11,7 @@ public import Mathlib.Analysis.Complex.Basic
 /-! A continuous homotopy on the unit square admits a fine equal grid so each cell image lies
 near its lower-left vertex. -/
 
-@[expose] public section
+public section
 
 open Set
 
@@ -33,9 +33,9 @@ theorem exists_square_grid_subdivision {Γ : ℝ × ℝ → ℂ}
   obtain ⟨δ, hδ, hclose⟩ := hu ε hε
   obtain ⟨n, hn⟩ := exists_nat_one_div_lt hδ
   let N := n + 1
-  have hNnat : 0 < N := Nat.succ_pos n
+  have hNnat  := Nat.succ_pos n
   have hN : (0 : ℝ) < (N : ℝ) := by exact_mod_cast hNnat
-  have hgap : 1 / (N : ℝ) < δ := by simpa [N] using hn
+
   have hcoord (i : ℕ) (hi : i ≤ N) : (i : ℝ) / (N : ℝ) ∈ Icc (0 : ℝ) 1 := by
     constructor
     · positivity
@@ -43,8 +43,8 @@ theorem exists_square_grid_subdivision {Γ : ℝ × ℝ → ℂ}
       exact_mod_cast hi
   refine ⟨N, hNnat, ?_⟩
   intro i hi j hj s hs t ht
-  have hiNext : i + 1 ≤ N := Nat.succ_le_iff.mpr hi
-  have hjNext : j + 1 ≤ N := Nat.succ_le_iff.mpr hj
+  have hiNext  := Nat.succ_le_iff.mpr hi
+  have hjNext  := Nat.succ_le_iff.mpr hj
   have hleft := hcoord i (Nat.le_of_lt hi)
   have hright := hcoord (i + 1) hiNext
   have hbottom := hcoord j (Nat.le_of_lt hj)
@@ -64,9 +64,7 @@ theorem exists_square_grid_subdivision {Γ : ℝ × ℝ → ℂ}
   have hprod : dist (s, t)
       ((i : ℝ) / (N : ℝ), (j : ℝ) / (N : ℝ)) < δ := by
     rw [Prod.dist_eq]
-    exact max_lt (hsDist.trans_lt hgap) (htDist.trans_lt hgap)
-  have hbase := hclose (s, t) ⟨hs01, ht01⟩
-    ((i : ℝ) / (N : ℝ), (j : ℝ) / (N : ℝ)) ⟨hleft, hbottom⟩ hprod
-  exact hbase
+    grind
+  grind
 
 end DOZZ.Proofs

@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Dual.JointLawExpectation
 public import DOZZ.FourPoint.Dual.WilliamsCutBounds
 /-! Finiteness transfers through the joint Williams law, with the source witness retained. -/
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs

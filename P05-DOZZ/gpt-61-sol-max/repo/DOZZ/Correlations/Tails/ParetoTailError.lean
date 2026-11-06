@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Tails.WilliamsParetoProduct
 
 /-! The exact Pareto identity gives a remainder controlled by a higher moment. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 
 namespace DOZZ.Proofs
@@ -17,7 +17,7 @@ theorem pareto_scalar_error_le (a x p r : ℝ) (ha : 0 ≤ a)
     (hx : 0 < x) (hp : 0 < p) (hpr : p ≤ r) :
     |(if a ≤ 0 then 0 else if a ≤ x then (a/x)^p else 1)-(a/x)^p| ≤ (a/x)^r := by
   by_cases ha0 : a ≤ 0
-  · have ha' : a = 0 := le_antisymm ha0 ha
+  · have ha'  := le_antisymm ha0 ha
     simp only [ha', zero_div, Real.zero_rpow hp.ne', ite_eq_left le_rfl,
       sub_zero, abs_zero]
     exact Real.rpow_nonneg (by positivity) _
@@ -26,8 +26,8 @@ theorem pareto_scalar_error_le (a x p r : ℝ) (ha : 0 ≤ a)
     · rw [ite_eq_left hax, sub_self, abs_zero]
       exact Real.rpow_nonneg (div_nonneg ha hx.le) _
     · rw [ite_eq_right hax]
-      have hu : 1 ≤ a/x := (one_le_div hx).mpr (le_of_not_ge hax)
-      have hv : 1 ≤ (a/x)^p := Real.one_le_rpow hu hp.le
+      have hu  := (one_le_div hx).mpr (le_of_not_ge hax)
+      have hv  := Real.one_le_rpow hu hp.le
       rw [abs_of_nonpos (by linarith)]
       linarith [Real.rpow_le_rpow_of_exponent_le hu hpr]
 

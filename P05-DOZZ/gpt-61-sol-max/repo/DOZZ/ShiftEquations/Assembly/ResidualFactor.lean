@@ -10,6 +10,7 @@ public import DOZZ.FourPoint.Dual.FullFusion
 public import DOZZ.FourPoint.SeedOne.Assembly
 public import DOZZ.ShiftEquations.Shifts.Seeds.SeedTwo
 public import DOZZ.ShiftEquations.Shifts.Rtheor
+public import DOZZ.ShiftEquations.ContinuationContracts
 
 /-! Proof of `DOZZ.unitVolume_residual_factor_eq_one` (the single input of the main theorems
 `DOZZ.dozz_main` and `DOZZ.dozz_unitVolume`): a reduction to the γ/2 crossing
@@ -18,7 +19,7 @@ coefficient off its poles. Seed one is `DOZZ.dual_crossing_seed_one`; seed two a
 identification come from the dual fusion statement `DOZZ.dual_full_fusion_and_asymptotic` through
 the reductions `dual_crossing_seed_two_of_fusion` and `reflection_Rtheor_off_poles_of_seedTwo`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -32,21 +33,7 @@ theorem unitVolume_residual_factor_eq_one
     (hη : 0 < η ∧ Q γ - 2 * η > γ ∧ 3 * η < Q γ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hU : IsUpsilon γ U) :
-    ∃ B : ℝ → Ω → BrownianPath ×
-        BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α, γ / 2 < α → α < Q γ →
-            IsReflectionData P γ α (B α) Z) ∧
-            ∃ cγ : ℂ, cγ = 1 ∧
-              ∀ α₁ α₂ α₃ : ℝ,
-                Q γ - η < α₁ → α₁ < Q γ →
-                Q γ - η < α₂ → α₂ < Q γ →
-                Q γ - η < α₃ → α₃ < Q γ →
-                  (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ) =
-                    cγ * ((μ : ℂ) ^ ((sExp γ α₁ α₂ α₃ : ℂ)) /
-                      Complex.Gamma (sExp γ α₁ α₂ α₃ : ℂ) *
-                        dozzFormula γ μ U (α₁ : ℂ) (α₂ : ℂ) (α₃ : ℂ)) := by
+    Contract.residualUnitVolume P X M γ μ η U := by
   exact unitVolume_residual_factor_eq_one_of_crossing_seeds P X M γ μ η U hγ hγ2 hγirr hμ hη hX hM hU
     (fun P X M γ μ α' ε α hγ hγ₂ hμ h1 h2 h3 h4 h5 hX hM =>
       gammaHalf_crossing P X M γ μ α' ε α hγ hγ₂ hμ h1 h2 h3 h4 h5 hX hM)

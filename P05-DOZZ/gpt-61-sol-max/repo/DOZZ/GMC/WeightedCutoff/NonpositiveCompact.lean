@@ -5,7 +5,7 @@ public import DOZZ.GMC.Moments.WeightedCutoffSubunit
 
 /-! # Uniform weighted cutoff estimates at nonpositive charges -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -32,7 +32,7 @@ theorem cutoffWeightedGmcBallMoment_nonpos_compact_gamma_chart
   obtain ⟨A, hA, hroot⟩ := regularizedGMC_openBall_root_bound_compact_gamma_chart
     P X hX Xc hXc Γ hΓ hΓpos q hq hcrit
   let B : ℝ≥0∞ := max 1 A
-  have hB : B < ⊤ := max_lt_iff.mpr ⟨ENNReal.one_lt_top, hA⟩
+  have hB  := max_lt_iff.mpr ⟨ENNReal.one_lt_top, hA⟩
   have hBone : 1 ≤ B := le_max_left _ _
   let beta : ℝ × (ℝ × ℝ) → ℝ := fun u =>
     2 * u.2.2 + u.1 ^ 2 * u.2.2 / 2 - u.1 ^ 2 * u.2.2 ^ 2 / 2
@@ -47,8 +47,8 @@ theorem cutoffWeightedGmcBallMoment_nonpos_compact_gamma_chart
     (lt_top_iff_ne_top.mpr (ENNReal.rpow_ne_top_of_nonneg (by linarith) hB.ne))
   refine ⟨C, hC, ?_⟩
   intro γ hγ t ht hα z R hR hRhalf hchart δ hδ hδR
-  have hp : 1 ≤ t.2 := horders t ht
-  have hp0 : 0 < t.2 := lt_of_lt_of_le zero_lt_one hp
+  have hp  := horders t ht
+  have hp0  := lt_of_lt_of_le zero_lt_one hp
   have hγpos := hΓpos γ hγ
   have hmoment : (∫⁻ ω, (regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z R)) ^ t.2 ∂P) ≤
       B ^ q * ENNReal.ofReal ((R / (1 / 8 : ℝ)) ^ beta (γ, t)) := by
@@ -57,7 +57,7 @@ theorem cutoffWeightedGmcBallMoment_nonpos_compact_gamma_chart
         (A * ENNReal.ofReal ((R / (1 / 8 : ℝ)) ^ (beta (γ, t) / t.2))) ^ t.2 := by
       apply (ENNReal.rpow_inv_le_iff hp0).mp
       simpa only [one_div, beta] using hr
-    have hAp : A ^ t.2 ≤ B ^ q := (ENNReal.rpow_le_rpow (le_max_right 1 A) hp0.le).trans
+    have hAp  := (ENNReal.rpow_le_rpow (le_max_right 1 A) hp0.le).trans
       (ENNReal.rpow_le_rpow_of_exponent_le hBone (hordersBound t ht))
     have hratio : 0 < R / (1 / 8 : ℝ) := by positivity
     have hpower : (((R / (1 / 8 : ℝ)) ^ (beta (γ, t) / t.2)) ^ t.2) =

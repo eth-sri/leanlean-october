@@ -5,10 +5,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.Correlations.Residue.MassDecomposition
+import Mathlib.Tactic
 
 /-! Both equal critical insertion balls and their full noncritical complement. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal Classical
 namespace DOZZ.Proofs
@@ -31,7 +32,7 @@ theorem residue_equal_mass_decomposition {Ω : Type*} (M : Ω → Measure ℂ) (
       ((ENNReal.measurable_ofReal.comp hF).mul
         (ENNReal.continuous_rpow_const.measurable.comp (ENNReal.measurable_ofReal.comp (by fun_prop))))
       measurable_const
-  have hdisj : Disjoint (Metric.ball (3 : ℂ) 1) (Metric.ball (7 : ℂ) 1) :=
+  have hdisj  :=
     Metric.ball_disjoint_ball (by norm_num [dist_eq_norm] : (1 : ℝ) + 1 ≤ dist (3 : ℂ) 7)
   have hS : α + α + ε = 2 * α + ε := by ring
   unfold localSingularMass

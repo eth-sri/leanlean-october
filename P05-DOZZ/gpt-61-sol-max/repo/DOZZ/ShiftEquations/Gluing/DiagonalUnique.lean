@@ -30,7 +30,7 @@ midpoint `1/2`, where the explicit Wronskian of the zero basis does not vanish.
   determined by the function they represent.
 -/
 
-@[expose] public section
+public section
 
 open Filter Topology Set
 
@@ -66,12 +66,10 @@ theorem diagUnique_wronskian_ne_zero {H : ℂ → ℂ → ℂ → ℂ → ℂ}
   have h1c : (1 : ℂ) - c ≠ 0 := by
     intro he
     apply hc 1
-    rw [Int.cast_one]
-    exact (sub_eq_zero.mp he).symm
-  have hmid0 : (1 / 2 : ℂ) ≠ 0 := by norm_num
+    grind
+  
   have hmid1 : (1 : ℂ) - 1 / 2 ≠ 0 := by norm_num
-  exact mul_ne_zero (mul_ne_zero h1c (Complex.cpow_ne_zero_iff.mpr (Or.inl hmid0)))
-    (Complex.cpow_ne_zero_iff.mpr (Or.inl hmid1))
+  simp_all
 
 /-- **Uniqueness of diagonal Gauss representations.** If a real function on the cut plane has two
 representations `A |F₋|² + D |F₊|²` in the Gauss basis at zero with `c ∉ ℤ`, the coefficients
@@ -84,10 +82,10 @@ theorem diagonal_gauss_coefficients_unique {H : ℂ → ℂ → ℂ → ℂ → 
     (h₂ : ∀ z ∈ gaussCutPlane, T z =
       A₂ * ‖gaussFMinus H a b c z‖ ^ 2 + D₂ * ‖gaussFPlus H a b c z‖ ^ 2) :
     A₁ = A₂ ∧ D₁ = D₂ := by
-  have hF : AnalyticOnNhd ℂ (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)) gaussCutPlane :=
+  have hF  :=
     (gaussFMinus_differentiableOn_cutPlane hH (a : ℂ) (b : ℂ) (c : ℂ) hc).analyticOnNhd
       gaussCutPlane_isOpen
-  have hG : AnalyticOnNhd ℂ (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) gaussCutPlane :=
+  have hG  :=
     (gaussFPlus_differentiableOn_cutPlane hH (a : ℂ) (b : ℂ) (c : ℂ) hc).analyticOnNhd
       gaussCutPlane_isOpen
   have hmid : (1 / 2 : ℂ) ∈ gaussCutPlane := by norm_num [gaussCutPlane]
@@ -101,7 +99,7 @@ theorem diagonal_gauss_coefficients_unique {H : ℂ → ℂ → ℂ → ℂ → 
   have hcoeff := hermitianTensor_coefficients_eq_of_eqOn gaussCutPlane_isOpen hF hG
     (A₁ : ℂ) 0 0 (D₁ : ℂ) (A₂ : ℂ) 0 0 (D₂ : ℂ) hmid
     (diagUnique_wronskian_ne_zero hH (a : ℂ) (b : ℂ) (c : ℂ) hc) hEq
-  exact ⟨Complex.ofReal_injective hcoeff.1, Complex.ofReal_injective hcoeff.2.2.2⟩
+  simp_all
 
 end DOZZ.Proofs
 

@@ -7,6 +7,7 @@ module
 public import DOZZ.ShiftEquations.Shift.Multiplier3
 public import DOZZ.ShiftEquations.Rbar.Continuation
 import Mathlib.Analysis.Complex.CauchyIntegral
+public import DOZZ.ShiftEquations.Contracts
 
 /-!
 # The γ/2 crossing on the two-pole slice
@@ -34,7 +35,7 @@ theorem eq_of_real_interval {D : Set ℂ} (hD : IsOpen D) {g₁ g₂ : ℂ → �
     (heq : ∀ t : ℝ, c < t → t < d → g₁ t = g₂ t) {t : ℝ} (ht₁ : a < t) (ht₂ : t < b) :
     g₁ t = g₂ t := by
   set x₀ : ℝ := (c + d) / 2 with hx₀
-  have hx₀D : (x₀ : ℂ) ∈ D := hJD x₀ (by rw [hx₀]; linarith) (by rw [hx₀]; linarith)
+  have hx₀D  := hJD x₀ (by rw [hx₀]; linarith) (by rw [hx₀]; linarith)
   set U := connectedComponentIn D (x₀ : ℂ) with hU
   have hUo : IsOpen U := hD.connectedComponentIn
   have hUD : U ⊆ D := connectedComponentIn_subset D _
@@ -47,7 +48,7 @@ theorem eq_of_real_interval {D : Set ℂ} (hD : IsOpen D) {g₁ g₂ : ℂ → �
       (Complex.continuous_ofReal.continuousAt.tendsto.mono_left nhdsWithin_le_nhds)
       (eventually_nhdsWithin_of_forall fun s hs => by
         simpa [Complex.ofReal_inj] using hs)
-  have hEq : EqOn g₁ g₂ U :=
+  have hEq  :=
     ((hg₁.mono hUD).analyticOnNhd hUo).eqOn_of_preconnected_of_frequently_eq
       ((hg₂.mono hUD).analyticOnNhd hUo) isPreconnected_connectedComponentIn
       (mem_connectedComponentIn hx₀D) (htend.frequently hev.frequently)
@@ -149,22 +150,12 @@ theorem extendedSeiberg3_sliceB_right {γ η x : ℝ} (hγ : 0 < γ) (hγ2 : γ 
 theorem quarter_mul_lt {γ u v : ℝ} (hγ : 0 < γ) (h : u < v) : γ / 4 * u < γ / 4 * v :=
   mul_lt_mul_of_pos_left h (by positivity)
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : MeasureTheory.Measure Ω) (M : Ω → MeasureTheory.Measure ℂ) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hCross : Contract.unitCrossing P M γ) {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃) (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V₃) {f₃ : (Fin 3 → ℂ) → ℂ} (hf₃ : DifferentiableOn ℂ f₃ V₃) (hf₃eq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → f₃ (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
+
+include Ω _inst1 P M γ hγ hγ2 hCross V₃ hV₃ hV₃mem f₃ hf₃ hf₃eq in
 /-- **Step A**: the crossing at `(Q - η, ε, t)` for `γ/2 + η < ε < 2/γ` and `2/γ < t < Q`,
 continued from the crossing region in the third charge. -/
-theorem unitVolume_crossing_sliceA {Ω : Type*} [MeasurableSpace Ω]
-    (P : MeasureTheory.Measure Ω) (M : Ω → MeasureTheory.Measure ℂ) {γ : ℝ} (hγ : 0 < γ)
-    (hγ2 : γ < 2)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
-    {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
-    (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-      complexifyNCharges α ∈ V₃)
-    {f₃ : (Fin 3 → ℂ) → ℂ} (hf₃ : DifferentiableOn ℂ f₃ V₃)
-    (hf₃eq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-      f₃ (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
+theorem unitVolume_crossing_sliceA 
     {η ε : ℝ} (hη : 0 < η) (hε₁ : γ / 2 + η < ε) (hε₂ : ε < 2 / γ)
     {t : ℝ} (ht₁ : 2 / γ < t) (ht₂ : t < Q γ) :
     unitVolumeStructureConstant P M γ (Q γ - η - γ / 2) ε t =
@@ -246,22 +237,10 @@ theorem unitVolume_crossing_sliceA {Ω : Type*} [MeasurableSpace Ω]
   rw [hL t ht₁ ht₂, hR t ht₁ ht₂, hu₂, crossingMultiplier3_ofReal hγ] at h
   exact_mod_cast h
 
+include Ω _inst1 P M γ hγ hγ2 hCross V₃ hV₃ hV₃mem f₃ hf₃ hf₃eq in
 /-- **Step B**: the crossing on the two-pole slice, `C̄(Q - η - γ/2, x, 2/γ + η) =
 T(Q - η, x, 2/γ + η) C̄(Q - η, x + γ/2, 2/γ + η)` for `2η < x < 2/γ`. -/
-theorem unitVolume_crossing_slice {Ω : Type*} [MeasurableSpace Ω]
-    (P : MeasureTheory.Measure Ω) (M : Ω → MeasureTheory.Measure ℂ) {γ : ℝ} (hγ : 0 < γ)
-    (hγ2 : γ < 2)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
-    {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
-    (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-      complexifyNCharges α ∈ V₃)
-    {f₃ : (Fin 3 → ℂ) → ℂ} (hf₃ : DifferentiableOn ℂ f₃ V₃)
-    (hf₃eq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-      f₃ (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
+theorem unitVolume_crossing_slice 
     {η : ℝ} (hη : 0 < η) (hη4 : η < γ / 4) (hηγ : η < 2 / γ - γ / 2)
     {x : ℝ} (hx₁ : 2 * η < x) (hx₂ : x < 2 / γ) :
     unitVolumeStructureConstant P M γ (Q γ - η - γ / 2) x (2 / γ + η) =

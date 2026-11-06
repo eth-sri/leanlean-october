@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Reflected.CutoffTestLimit
 public import DOZZ.FourPoint.Reflected.DecouplingLimit
 import Mathlib.Tactic
 /-! Actual compact test convergence for the independently copied lateral chaos. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -57,17 +57,14 @@ theorem reflected_admissible_copied_test_limit
       intro x
       dsimp only
       by_cases hx : x ∈ A
-      · rw [indicator_of_mem hx, h1 x hx, add_zero]
-      · rw [indicator_of_notMem hx, h0 x hx, Real.toNNReal_zero, ENNReal.coe_zero, zero_mul]
+      all_goals simp_all
     · unfold fieldChaosMass
       rw [← lintegral_indicator hA.compl]
       apply lintegral_congr
       intro x
       dsimp only
       by_cases hx : x ∈ A
-      · rw [indicator_of_notMem (show x ∉ Aᶜ from fun hh => hh hx), h1 x hx,
-          Real.toNNReal_zero, ENNReal.coe_zero, zero_mul]
-      · rw [indicator_of_mem (show x ∈ Aᶜ from hx), h0 x hx, zero_add]
+      all_goals simp_all
   have hm₀ := tendstoInMeasure_measurePreserving P (P.prod P) Prod.fst
     measurePreserving_fst _ _ atTop hc₀
   have hm₁ := tendstoInMeasure_measurePreserving P (P.prod P) Prod.snd
@@ -83,7 +80,7 @@ theorem reflected_admissible_copied_test_limit
     centeredGaussianField_fieldChaosMass_ne_top_ae P (Φ r) (hΦ r) ⟨ν, inferInstance⟩
       (fun x => (f x).toNNReal) f.continuous.measurable.real_toNNReal
       ⟨‖f‖.toNNReal, fun x => Real.toNNReal_mono (by
-        simpa only [Real.norm_eq_abs] using (le_abs_self (f x)).trans (f.norm_coe_le_norm x))⟩ γ
+        exact (le_abs_self (f x)).trans (f.norm_coe_le_norm x))⟩ γ
   have hfin₀ : ∀ᵐ ω : Ω × Ω ∂P.prod P,
       fieldChaosMass P (Φ r) ν (fun x => (f₀ x).toNNReal) γ ω.1 ≠ ⊤ :=
     measurePreserving_fst.quasiMeasurePreserving.ae (hfinite f₀)

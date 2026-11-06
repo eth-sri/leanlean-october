@@ -9,7 +9,7 @@ public import DOZZ.GMC.SharpMoments.LocationTransfer
 
 /-! The real-limit passage for increasing retained regions. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -36,9 +36,7 @@ theorem retained_mass_moment_limit
     split_ifs with hp
     · exact ENNReal.rpow_le_rpow (hω n).2 hp
     · exact ennreal_rpow_antitone_of_nonpos (hω n).1 (lt_of_not_ge hp).le
-  · by_cases hp : 0 ≤ p
-    · simpa only [bound, ite_eq_left hp] using (hpos hp).ne
-    · simpa only [bound, ite_eq_right hp] using (hneg (lt_of_not_ge hp)).ne
+  · grind
   · filter_upwards [hlim] with ω hω
     exact ENNReal.continuous_rpow_const.continuousAt.tendsto.comp hω
 

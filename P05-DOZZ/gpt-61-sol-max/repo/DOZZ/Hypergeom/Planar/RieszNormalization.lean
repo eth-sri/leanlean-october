@@ -11,7 +11,7 @@ public import DOZZ.Hypergeom.Planar.RieszConvolution
 
 /-! Normalize the Riesz convolution constant to the planar constant `DOZZ.planarGaussConstant`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 open scoped Topology
@@ -26,10 +26,12 @@ private theorem lFun_real_argument (x : ℝ) :
     norm_cast
   rw [harg, Complex.Gamma_ofReal, Complex.Gamma_ofReal, ← Complex.ofReal_div]
 
+variable (k β : ℝ) (hk : 0 < k) (hβ : k < β) (hβ₂ : β < 2)
+
+include k β hk hβ hβ₂ in
 /-- The Riesz convolution coefficient, after the mixed derivative, is the constant
 `planarGaussConstant` (erratum K8, see docs/ERRATA-AND-DEVIATIONS.md). -/
-theorem positive_riesz_coefficient_eq_planarGaussConstant (k β : ℝ)
-    (hk : 0 < k) (hβ : k < β) (hβ₂ : β < 2) :
+theorem positive_riesz_coefficient_eq_planarGaussConstant  :
     ((
       ((k / 2) ^ 2 / ((2 + k - β) / 2) ^ 2) * Real.pi *
         (Real.Gamma (1 - β / 2) * Real.Gamma (k / 2) *
@@ -58,10 +60,7 @@ theorem positive_riesz_coefficient_eq_planarGaussConstant (k β : ℝ)
     ring_nf
   have hgNegB' : Real.Gamma (-k / 2) =
       Real.Gamma (1 - k / 2) / (-k / 2) := by
-    calc
-      Real.Gamma (-k / 2) = ((-k / 2) * Real.Gamma (-k / 2)) / (-k / 2) := by
-        field_simp [ne_of_gt hb]
-      _ = Real.Gamma (1 - k / 2) / (-k / 2) := by rw [← hgNegB]
+    grind
   have hgQ : Real.Gamma (1 + (2 + k - β) / 2) =
       ((2 + k - β) / 2) * Real.Gamma ((2 + k - β) / 2) := by
     rw [show 1 + (2 + k - β) / 2 = (2 + k - β) / 2 + 1 by ring]
@@ -73,12 +72,7 @@ theorem positive_riesz_coefficient_eq_planarGaussConstant (k β : ℝ)
     ring_nf
   have hgNegQ' : Real.Gamma (-((2 + k - β) / 2)) =
       Real.Gamma ((β - k) / 2) / (-((2 + k - β) / 2)) := by
-    calc
-      Real.Gamma (-((2 + k - β) / 2)) =
-          ((-((2 + k - β) / 2)) * Real.Gamma (-((2 + k - β) / 2))) /
-            (-((2 + k - β) / 2)) := by
-        field_simp [ne_of_gt (show 0 < 2 + k - β by linarith)]
-      _ = Real.Gamma ((β - k) / 2) / (-((2 + k - β) / 2)) := by rw [← hgNegQ]
+    grind
   rw [show 1 - (2 - β / 2 + k / 2) = -((2 + k - β) / 2) by ring,
     show 1 + (k - β) / 2 = (2 + k - β) / 2 by ring,
     show 2 - β / 2 + k / 2 = 1 + (2 + k - β) / 2 by ring,
@@ -92,10 +86,10 @@ theorem positive_riesz_coefficient_eq_planarGaussConstant (k β : ℝ)
     ne_of_gt (Real.Gamma_pos_of_pos hd),
     ne_of_gt (Real.Gamma_pos_of_pos hq)]
 
+include k β hk hβ hβ₂ in
 /-- The mixed-kernel integral is the positive Riesz convolution, with its constant normalized to the
 coefficient `planarGaussConstant` (erratum K8, see docs/ERRATA-AND-DEVIATIONS.md). -/
-theorem planar_mixed_integral (k β : ℝ) (hk : 0 < k)
-    (hβ : k < β) (hβ₂ : β < 2) :
+theorem planar_mixed_integral  :
     ∀ z : ℂ, z ≠ 0 → Integrable (DOZZ.planarMixedKernel k β z) volume ∧
       (((k / 2) ^ 2 * (∫ u : ℂ, DOZZ.planarMixedKernel k β z u)) : ℝ) =
         (((2 + k - β) / 2) ^ 2 * ‖z‖ ^ (k - β) : ℝ) *
@@ -134,9 +128,7 @@ theorem planar_mixed_integral (k β : ℝ) (hk : 0 < k)
             Real.Gamma ((β - k) / 2) /
               (Real.Gamma (β / 2) * Real.Gamma (1 - k / 2) *
                 Real.Gamma (1 + (k - β) / 2))) : ℝ) : ℂ) := by
-            apply congrArg Complex.ofReal
-            dsimp [q, C]
-            ring
+            grind
       _ = DOZZ.planarGaussConstant k β :=
             positive_riesz_coefficient_eq_planarGaussConstant k β hk hβ hβ₂
   have halg : (k / 2) ^ 2 * C * N = (q ^ 2 * N) * ((k / 2) ^ 2 / q ^ 2 * C) := by
@@ -146,11 +138,9 @@ theorem planar_mixed_integral (k β : ℝ) (hk : 0 < k)
     Complex.ofReal (q ^ 2 * N) * DOZZ.planarGaussConstant k β
   calc
     _ = Complex.ofReal ((k / 2) ^ 2 * C * N) := by
-      rw [hconv]
-      exact congrArg Complex.ofReal (by dsimp [C, N]; ring)
+      grind
     _ = ((q ^ 2 * N : ℝ) : ℂ) * ((k / 2) ^ 2 / q ^ 2 * C : ℝ) := by
-      rw [← Complex.ofReal_mul]
-      exact congrArg Complex.ofReal halg
+      simp_all
     _ = _ := by rw [hC]
 
 end DOZZ.Proofs

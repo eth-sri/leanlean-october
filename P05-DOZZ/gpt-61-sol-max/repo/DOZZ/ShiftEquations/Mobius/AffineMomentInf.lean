@@ -8,6 +8,7 @@ public import DOZZ.ShiftEquations.Mobius.AffineMoment
 import DOZZ.GMC.EquatorGFFChaosTransportLaw
 import DOZZ.GMC.Construction.GMCGeneralTiltLimit
 import DOZZ.ShiftEquations.Mobius.InversionMoment
+import Mathlib.Tactic
 
 /-!
 # Coulomb moments under affine maps, with a charge at infinity
@@ -27,17 +28,21 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {N : ℕ} (γ : ℝ) (α : Fin N → ℝ)
+
+include N γ α in
 /-- The zero-mode exponent `(∑αₖ + αinf - 2Q)/γ` with a charge at infinity. -/
-noncomputable def infSExp {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (αinf : ℝ) : ℝ :=
+noncomputable def infSExp  (αinf : ℝ) : ℝ :=
   ((∑ k, α k) + αinf - 2 * Q γ) / γ
 
+include N γ α in
 /-- The charge at infinity contributes the extra factor `|x|_+^{γ αinf}`. -/
-private theorem coulombWeight_inf_eq {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
+private theorem coulombWeight_inf_eq  (z : Fin N → ℂ)
     (αinf : ℝ) (x : ℂ) :
     coulombWeight γ α z αinf x =
       coulombWeight γ α z 0 x * ENNReal.rpow (ENNReal.ofReal (normPlus x)) (γ * αinf) := by
   unfold coulombWeight
-  simp only [ENNReal.rpow_eq_pow, mul_zero, ENNReal.rpow_zero, mul_one]
+  simp_all
 
 /-- A power of the background weight through the affine map picks up the defect. -/
 private theorem rpow_normPlus_affine (a b : ℂ) (y : ℂ) (e : ℝ) :
@@ -60,8 +65,9 @@ private theorem rpow_normPlus_affine (a b : ℂ) (y : ℂ) (e : ℝ) :
     ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top,
     ENNReal.ofReal_rpow_of_pos (Real.exp_pos _), ← Real.exp_mul, mul_comm e]
 
+include N γ α in
 /-- **The Coulomb weight with a charge at infinity through an affine map**, off the roots. -/
-theorem coulombWeight_affine_inf {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ)
+theorem coulombWeight_affine_inf  (z : Fin N → ℂ) (αinf : ℝ)
     (a b : ℂ) (ha : a ≠ 0) {y : ℂ} (hyz : ∀ k, y ≠ z k) :
     coulombWeight γ α (fun k => a * z k + b) αinf (a * y + b) =
       ENNReal.ofReal (Real.exp (γ * ((∑ k, α k) + αinf) * affineDefect a b y -
@@ -112,8 +118,8 @@ theorem coulombWeight_repin_identity_inf {N : ℕ} (γ : ℝ) (hγ : 0 < γ) (α
   set y := affineInv a b x with hydef
   have hxy : x = a * y + b := (affine_affineInv a b ha x).symm
   have hyz : ∀ k, y ≠ z k := fun k h => hx k (by rw [hxy, h])
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
-  have hγne : γ ≠ 0 := hγ.ne'
+  have hapos  := norm_pos_iff.mpr ha
+  have hγne  := hγ.ne'
   have hexp : γ ^ 2 * (1 + infSExp γ α αinf) + 4 = γ * ((∑ k, α k) + αinf) := by
     unfold infSExp Q
     field_simp
@@ -123,8 +129,7 @@ theorem coulombWeight_repin_identity_inf {N : ℕ} (γ : ℝ) (hγ : 0 < γ) (α
     mul_comm (ENNReal.ofReal _) (coulombWeight _ _ _ _ _)]
   congr 2
   rw [Real.rpow_def_of_pos hapos, ← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
-  congr 1
-  linear_combination (affineDefect a b y) * hexp
+  grind
 
 /-- **Coulomb moments with a charge at infinity under affine maps**:
 `E[I_{ψz}^{-s}] = |a|^{γ (∑αₖ - αinf) s/2} E[I_z^{-s}]`, `s = (∑αₖ + αinf - 2Q)/γ`. -/
@@ -143,9 +148,8 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
   set L : Ω → ℝ := fun ω => Xc ω b (-Real.log ‖a‖) with hLdef
   set VL : ℝ := ∫ ω, L ω ^ 2 ∂P with hVLdef
   set κ := repinKappa a b with hκ
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
-  have hLmeas : Measurable L :=
-    (hXc.1 (-Real.log ‖a‖)).comp (measurable_id.prodMk measurable_const)
+  have hapos  := norm_pos_iff.mpr ha
+  
   have hVL : VL = 2 * κ := by
     have h := isCircleAverage_covariance P X hX Xc hXc b b (-Real.log ‖a‖) (-Real.log ‖a‖)
     rw [repin_selfEnergy a b ha] at h
@@ -154,7 +158,7 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
     rfl
   set J : Measure ℂ → ℝ≥0∞ := fun μ => ∫⁻ x, coulombWeight γ α z αinf (affineInv a b x) *
     ENNReal.ofReal (Real.exp (γ ^ 2 * repinPotential a b x) * repinWeight a b x) ∂μ with hJ
-  have hcw : Measurable fun x => coulombWeight γ α z αinf (affineInv a b x) :=
+  have hcw  :=
     (measurable_coulombWeight γ α z αinf).comp (continuous_affineInv a b).measurable
   have hc := continuous_repinPotential a b ha
   have hw := continuous_repinWeight a b ha
@@ -183,7 +187,7 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
     ring
   -- Step 3: the Cameron–Martin tilt by `γ s L`
   set L2 : Ω → ℝ := fun ω => γ * s * L ω with hL2def
-  have hL2 : IsGaussianL2Limit P X L2 :=
+  have hL2  :=
     IsGaussianL2Limit.const_mul (isCircleAverage_isGaussianL2Limit P X hX Xc hXc b
       (-Real.log ‖a‖)) (γ * s)
   have hVar2 : gaussianVariance P L2 = (γ * s) ^ 2 * VL := by
@@ -197,7 +201,7 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
     (fun x => γ * s * repinPotential a b x) (continuous_const.mul hc) (|γ * s| * B)
     (fun x => by
       rw [Real.norm_eq_abs, abs_mul]
-      exact mul_le_mul_of_nonneg_left (hB x) (abs_nonneg _)) with hc2def
+      bound) with hc2def
   have hc2x : ∀ x, c2 x = γ * s * repinPotential a b x := fun x => rfl
   have hK : ∀ r x, gaussianCovariance P (fun ω => Xc ω x r) L2 =
       γ * s * repinPotentialAvg a b r x := by
@@ -229,7 +233,7 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
           nlinarith [abs_nonneg (γ * s)]
   have hH : Measurable fun q : (TestFn → ℝ) × Measure ℂ => ENNReal.rpow (J q.2) (-s) := by
     simp only [ENNReal.rpow_eq_pow]
-    exact (hJmeas.comp measurable_snd).pow_const _
+    fun_prop (disch := positivity)
   have htilt := equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L2 hL2 c2 hc2
     (fun _ μ => ENNReal.rpow (J μ) (-s)) hH
   -- Step 4: the tilted reweighted mass is a constant multiple of the Coulomb mass at `ψ z`
@@ -250,9 +254,9 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
     rw [lintegral_withDensity_eq_lintegral_mul _ hD hI,
       coulombMass_eq_lintegral_coulombWeight, ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     apply lintegral_congr_ae
-    have hnull : M ω (⋃ k, {a * z k + b}) = 0 := measure_iUnion_null hω
+    have hnull  := measure_iUnion_null hω
     filter_upwards [measure_eq_zero_iff_ae_notMem.1 hnull] with x hx
-    have hxk : ∀ k, x ≠ a * z k + b := fun k h => hx (Set.mem_iUnion.2 ⟨k, h⟩)
+    have hxk  := fun k h => hx (Set.mem_iUnion.2 ⟨k, h⟩)
     rw [hKdef, ← coulombWeight_repin_identity_inf γ hγ α z αinf a b ha hxk]
     simp only [Pi.mul_apply, hc2x]
     rw [mul_left_comm, ← ENNReal.ofReal_mul (Real.exp_pos _).le, ← mul_assoc, ← Real.exp_add]
@@ -291,8 +295,7 @@ theorem coulombMass_affine_moment_inf {Ω : Type*} [MeasurableSpace Ω] (P : Mea
           congr 2
           have hne : (ENNReal.ofReal K).rpow (-s) ≠ ⊤ := by
             rw [ENNReal.rpow_eq_pow]
-            exact ENNReal.rpow_ne_top_of_ne_zero (ENNReal.ofReal_pos.mpr hKpos).ne'
-              ENNReal.ofReal_ne_top
+            finiteness
           rw [← lintegral_const_mul' _ _ hne]
           apply lintegral_congr_ae
           filter_upwards [h4] with ω hω

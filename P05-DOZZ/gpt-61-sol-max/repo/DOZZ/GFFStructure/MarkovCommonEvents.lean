@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.GFFStructure.PoissonContracts
 public import DOZZ.GFFStructure.DirichletDistribution
 public import Mathlib.Topology.ContinuousMap.SecondCountableSpace
 public import Mathlib.LinearAlgebra.Multilinear.FiniteDimensional
@@ -49,7 +50,7 @@ theorem isometry_compactSupportedBCF_restriction (F : Type*) [NormedAddCommGroup
 theorem secondCountable_compactSupportedBCF (F : Type*) [NormedAddCommGroup F]
     [SecondCountableTopology F] (K : Compacts ℂ) : SecondCountableTopology (compactSupportedBCF F K) := by
   let _ : CompactSpace K := inferInstance
-  let _ : SecondCountableTopology ((K : Set ℂ) →ᵇ F) :=
+  let _  :=
     (ContinuousMap.isometryEquivBoundedOfCompact K F).symm.isometry.isEmbedding.secondCountableTopology
   exact (isometry_compactSupportedBCF_restriction F K).isEmbedding.secondCountableTopology
 
@@ -111,7 +112,7 @@ theorem separableSpace_interiorDiskTest (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) :
     closedBall_subset_ball ((hdb j).2.1.trans (hdb j).2.2)
   let e j : 𝓓_{K j}(ℂ,ℝ) →L[ℝ] InteriorDiskTest c ρ := TestFunction.ofSupportedInCLM ℝ (hK j)
   have hsep j : IsSeparable (Set.range (e j)) := by
-    let _ : SecondCountableTopology 𝓓_{K j}(ℂ,ℝ) := secondCountable_compactTestSpace (K j)
+    let _  := secondCountable_compactTestSpace (K j)
     simpa only [Set.image_univ] using (IsSeparable.of_separableSpace Set.univ).image (e j).continuous
   have huniv : (⋃ j, Set.range (e j)) = Set.univ := by
     apply eq_univ_of_forall
@@ -132,13 +133,12 @@ noncomputable def interiorDiskTestToGlobalCLM (c : ℂ) (ρ : ℝ) : InteriorDis
 theorem interiorDiskTestToGlobalCLM_apply (c : ℂ) (ρ : ℝ) (f : InteriorDiskTest c ρ) (z : ℂ) :
     interiorDiskTestToGlobalCLM c ρ f z = f z := by
   change ((TestFunction.monoCLM ℝ f : TestFn) : ℂ → ℝ) z = f z
-  rw [TestFunction.monoCLM_apply]
-  simp only [le_rfl,le_top,and_self,ite_true]
+  simp_all
 
 /-- The global inclusion retains strict interior support. -/
 theorem interiorDiskTestToGlobalCLM_tsupport (c : ℂ) (ρ : ℝ) (f : InteriorDiskTest c ρ) :
     tsupport (interiorDiskTestToGlobalCLM c ρ f) ⊆ ball c ρ := by
-  have he : (interiorDiskTestToGlobalCLM c ρ f : ℂ → ℝ) = f := funext (interiorDiskTestToGlobalCLM_apply c ρ f)
+  have he  := funext (interiorDiskTestToGlobalCLM_apply c ρ f)
   rw [he]
   exact f.tsupport_subset
 
@@ -159,7 +159,7 @@ noncomputable def testAreaIntegralCLM : TestFn →L[ℝ] ℝ :=
 theorem testAreaIntegralCLM_apply (f : TestFn) : testAreaIntegralCLM f = ∫ z : ℂ, f z := by
   rw [testAreaIntegralCLM,TestFunction.integralAgainstBilinCLM_eq_integral
     (continuous_const.continuousOn.locallyIntegrableOn MeasurableSet.univ)]
-  simp only [ContinuousLinearMap.lsmul_apply,smul_eq_mul,mul_one]
+  simp_all
 
 /-- View a distribution as its continuous linear test functional. -/
 noncomputable def distributionToTestCLM (D : Distr) : TestFn →L[ℝ] ℝ :=
@@ -226,7 +226,7 @@ theorem ae_all_interior_harmonic_test_agreement {Ω : Type*} [MeasurableSpace Ω
     (hagree : ∀ f : TestFn, tsupport f ⊆ ball c ρ →
       (fun ω => Y ω f-D ω f) =ᵐ[P] fun ω => ∫ z : ℂ, f z*V ω z) :
     ∀ᵐ ω ∂P, ∀ f : TestFn, tsupport f ⊆ ball c ρ → Y ω f-D ω f = ∫ z : ℂ, f z*V ω z := by
-  let _ : SeparableSpace (InteriorDiskTest c ρ) := separableSpace_interiorDiskTest c ρ hρ
+  let _  := separableSpace_interiorDiskTest c ρ hρ
   have hzero : ∀ f : InteriorDiskTest c ρ,
       (fun ω => interiorMarkovResidualCLM c ρ Y D V ω f) =ᵐ[P] 0 := by
     intro f
@@ -244,20 +244,12 @@ theorem ae_all_interior_harmonic_test_agreement {Ω : Type*} [MeasurableSpace Ω
   exact sub_eq_zero.mp hh
 
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P) (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0) (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ)) (hcov : Contract.poissonCovariance P c R ρ V)
+
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov in
 /-- The supported distribution retains the literal residual formula on every interior test. -/
-theorem dirichletDistribution_interior_apply_ae_eq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletDistribution_interior_apply_ae_eq 
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (hm : Measurable (fun p : Ω × ℂ => V p.1 p.2))
     (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
     (fun ω => dirichletDistribution P X Xc hX hc c R ρ (by linarith) V hV hU ω f) =ᵐ[P]
@@ -266,20 +258,10 @@ theorem dirichletDistribution_interior_apply_ae_eq {Ω : Type*} [MeasurableSpace
   rw [dirichletCompletedL2Map_apply_interior P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim f hf] at h
   exact h.trans (dirichletResidualL2_ae_eq P X Xc hX hc c R ρ (by linarith) V hm hV hU f hf)
 
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov in
 /-- The actual pinned complement agrees with its harmonic family for every interior test on one event. -/
-theorem ae_dirichletDistribution_interior_harmonic_agreement {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem ae_dirichletDistribution_interior_harmonic_agreement 
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (hm : Measurable (fun p : Ω × ℂ => V p.1 p.2))
     (hVc : ∀ᵐ ω ∂P, ContinuousOn (V ω) (ball c ρ)) :
     ∀ᵐ ω ∂P, ∀ f : TestFn, tsupport f ⊆ ball c ρ →
@@ -367,7 +349,7 @@ theorem finiteMarkovComplement_apply_integral_zero {Ω : Type*} [MeasurableSpace
     ((memLp_finsetSum Finset.univ (fun i _ => hD i f)).integrable (by norm_num)),
     exteriorPinnedEvaluation_integral_zero P X Xc hX hc R hR,
     integral_finsetSum Finset.univ (fun i _ => (hD i f).integrable (by norm_num))]
-  simp only [hmean,Finset.sum_const_zero,sub_zero]
+  simp_all
 
 /-- Local harmonic agreements and exterior supports assemble into one finite-family event. -/
 theorem ae_finiteMarkovComplement_harmonic_agreement {Ω : Type*} [MeasurableSpace Ω] {n : ℕ}
@@ -382,8 +364,7 @@ theorem ae_finiteMarkovComplement_harmonic_agreement {Ω : Type*} [MeasurableSpa
   classical
   filter_upwards [ae_all_iff.mpr hlocal,ae_all_iff.mpr hexterior] with ω hlocalω hexteriorω
   intro i f hf
-  have hsum : (∑ j, D j ω f) = D i ω f := by
-    exact Finset.sum_eq_single i (fun j _ hji => hexteriorω j f (hsep i j hji f hf))
+  have hsum  := Finset.sum_eq_single i (fun j _ hji => hexteriorω j f (hsep i j hji f hf))
       (fun hi => (hi (Finset.mem_univ i)).elim)
   rw [finiteMarkovComplement_apply,hsum]
   exact hlocalω i f hf

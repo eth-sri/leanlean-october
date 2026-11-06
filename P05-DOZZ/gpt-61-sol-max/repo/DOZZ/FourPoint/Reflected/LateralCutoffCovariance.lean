@@ -36,13 +36,12 @@ theorem reflected_clamped_point_covariance_eq
     covariance_congr_ae (circleAverageL2_ae_eq hc _) (circleAverageL2_ae_eq hc _)]
   exact origin_circle_radial_covariance X Xc hX hc _ y
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2)) (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ originLateralChart ρ)
+
+include Ω _inst1 P X Xc hX hc hm ρ hρ K hK hKU in
 /-- Actual finite cutoff covariances tend uniformly to the lateral plane kernel off diagonal. -/
 theorem reflected_lateral_cutoff_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)
-    (hKU : K ⊆ originLateralChart ρ) (s η : ℝ) (hs : 0 < s) (hη : 0 < η) :
+     (s η : ℝ) (hs : 0 < s) (hη : 0 < η) :
     ∃ d : ℝ, 0 < d ∧ ∀ ε ε', 0 < ε → ε ≤ min d ρ →
       0 < ε' → ε' ≤ min d ρ → ∀ x ∈ K, ∀ y ∈ K, s ≤ ‖x - y‖ →
       |gaussianCovariance P (fun ω => originLateralCircleRegularization Xc ρ ω ε x)
@@ -57,14 +56,14 @@ theorem reflected_lateral_cutoff_uniform
   have hdδ : d ≤ δ := min_le_left _ _
   have hds : d ≤ s / 4 := (min_le_right _ _).trans (min_le_left _ _)
   have hdη : d ≤ η / 4 := (min_le_right _ _).trans (min_le_right _ _)
-  have hεδ : ε ≤ min δ ρ := le_min
+  have hεδ  := le_min
     ((hεd.trans (min_le_left _ _)).trans hdδ) (hεd.trans (min_le_right _ _))
-  have hε'δ : ε' ≤ min δ ρ := le_min
+  have hε'δ  := le_min
     ((hε'd.trans (min_le_left _ _)).trans hdδ) (hε'd.trans (min_le_right _ _))
-  have hεs : ε ≤ s / 4 := (hεd.trans (min_le_left _ _)).trans hds
-  have hε's : ε' ≤ s / 4 := (hε'd.trans (min_le_left _ _)).trans hds
-  have hεη : ε ≤ η / 4 := (hεd.trans (min_le_left _ _)).trans hdη
-  have hε'η : ε' ≤ η / 4 := (hε'd.trans (min_le_left _ _)).trans hdη
+  have hεs  := (hεd.trans (min_le_left _ _)).trans hds
+  have hε's  := (hε'd.trans (min_le_left _ _)).trans hds
+  have hεη  := (hεd.trans (min_le_left _ _)).trans hdη
+  have hε'η  := (hε'd.trans (min_le_left _ _)).trans hdη
   have hrad := hR ε ε' hε hεδ hε' hε'δ x hx y hy
   have hcircle := abs_circleKernel_sub_gffKernel_le x y (Real.log (1 / ε)) (Real.log (1 / ε')) (by
     rw [exp_neg_log_one_div hε, exp_neg_log_one_div hε']
@@ -88,13 +87,10 @@ theorem reflected_lateral_cutoff_uniform
   exact (habs.trans_lt (add_lt_add_of_le_of_lt hcircle hrad)).trans_le
     (by linarith only [hεη, hε'η])
 
+include Ω _inst1 P X Xc hX hc hm ρ hρ K hK hKU in
 /-- The actual cutoff cross-covariance bound is the radius ratio plus an arbitrary cutoff error. -/
 theorem reflected_lateral_cutoff_cross_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)
-    (hKU : K ⊆ originLateralChart ρ) (R s η : ℝ) (hR : R ≤ 1 / 2)
+     (R s η : ℝ) (hR : R ≤ 1 / 2)
     (hs : 0 < s) (hη : 0 < η) :
     ∃ d : ℝ, 0 < d ∧ ∀ ε ε', 0 < ε → ε ≤ min d ρ →
       0 < ε' → ε' ≤ min d ρ → ∀ x ∈ K, ∀ y ∈ K,
@@ -112,8 +108,6 @@ theorem reflected_lateral_cutoff_cross_bound
     (gaussianCovariance P (fun ω => originLateralCircleRegularization Xc ρ ω ε x)
       (fun ω => originLateralCircleRegularization Xc ρ ω ε' y))
     (gffKernel x y - originRadialCovariance (-Real.log ‖x‖) y) 0
-  simp only [sub_zero] at htri
-  simpa only [add_comm] using
-    (htri.trans (add_le_add hlimit.le hkernel))
+  grind
 
 end DOZZ.Proofs

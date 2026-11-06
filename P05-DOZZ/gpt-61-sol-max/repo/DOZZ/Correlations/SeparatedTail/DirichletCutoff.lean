@@ -45,9 +45,8 @@ theorem separatedTail_dirichletCircle_isCenteredGaussianField
     IsCenteredGaussianField P (fun ω x => Dc ω (separatedTail_diskPoint c x) r) := by
   have hinside (x : ℂ) : ‖separatedTail_diskPoint c x-c‖+Real.exp (-r) < 5/4 := by
     linarith [separatedTail_diskPoint_norm_le c x]
-  have hm' : Measurable (fun q : Ω × (ℂ × ℝ) => Dc q.1 q.2.1 q.2.2) :=
-    hm.mono (by
-      exact sup_le_sup (MeasurableSpace.comap_mono (measurable_iff_comap_le.mp hmD)) le_rfl) le_rfl
+  have hm'  :=
+    hm.mono (sup_le_sup (MeasurableSpace.comap_mono (measurable_iff_comap_le.mp hmD)) le_rfl) le_rfl
   refine ⟨hm'.comp (measurable_fst.prodMk
     ((separatedTail_diskPoint_measurable c).comp measurable_snd |>.prodMk measurable_const)), ?_⟩
   intro n x
@@ -94,7 +93,6 @@ theorem separatedTail_indepFun_of_comap_measurable
     (hD : IndepFun D2 D3 P)
     (hW2 : Measurable[MeasurableSpace.comap D2 inferInstance] W2)
     (hW3 : Measurable[MeasurableSpace.comap D3 inferInstance] W3) :
-    IndepFun W2 W3 P := by
-  exact indep_of_indep_of_le hD (measurable_iff_comap_le.mp hW2) (measurable_iff_comap_le.mp hW3)
+    IndepFun W2 W3 P := indep_of_indep_of_le hD (measurable_iff_comap_le.mp hW2) (measurable_iff_comap_le.mp hW3)
 
 end DOZZ.Proofs

@@ -23,6 +23,8 @@ import DOZZ.Hypergeom.ODE.SlitPlaneGluing
 import DOZZ.Hypergeom.PhysicalRange
 import DOZZ.FourPoint.Diagonal.Assembly
 import DOZZ.FourPoint.Dual.Parameters
+public import DOZZ.FourPoint.Contracts
+public import DOZZ.Hypergeom.RealConnectionCoefficients
 
 /-!
 # The two dual channels and the second dual crossing seed
@@ -58,20 +60,19 @@ namespace DOZZ.Proofs
 
 /-- Connection entry `u`: the coefficient of `G₋` in `F₋`. -/
 noncomputable def dualConnU (a b c : ℝ) : ℝ :=
-  Real.Gamma c * Real.Gamma (c - a - b) * (Real.Gamma (c - a))⁻¹ * (Real.Gamma (c - b))⁻¹
+  realGaussConnection₀₀ a b c
 
 /-- Connection entry `v`: the coefficient of `G₊` in `F₋`. -/
 noncomputable def dualConnV (a b c : ℝ) : ℝ :=
-  Real.Gamma c * Real.Gamma (a + b - c) * (Real.Gamma a)⁻¹ * (Real.Gamma b)⁻¹
+  realGaussConnection₀₁ a b c
 
 /-- Connection entry `w`: the coefficient of `G₋` in `F₊`. -/
 noncomputable def dualConnW (a b c : ℝ) : ℝ :=
-  Real.Gamma (2 - c) * Real.Gamma (c - a - b) * (Real.Gamma (1 - a))⁻¹ * (Real.Gamma (1 - b))⁻¹
+  realGaussConnection₁₀ a b c
 
 /-- Connection entry `x`: the coefficient of `G₊` in `F₊`. -/
 noncomputable def dualConnX (a b c : ℝ) : ℝ :=
-  Real.Gamma (2 - c) * Real.Gamma (a + b - c) *
-    (Real.Gamma (a - c + 1))⁻¹ * (Real.Gamma (b - c + 1))⁻¹
+  realGaussConnection₁₁ a b c
 
 /-! ### Structure-constant symmetry and the channel basis -/
 
@@ -114,27 +115,19 @@ theorem dual_channel_basis (H : ℂ → ℂ → ℂ → ℂ → ℂ) {γ : ℝ} 
     push_cast
     ring
   unfold gaussFMinus gaussFPlus gaussGMinus gaussGPlus
-  rw [hA, hB, hCC]
-  have hpow (A B C : ℂ) : 1 - (1 + A + B - C) = C - A - B := by ring
-  have hplusA (A B C : ℂ) : A - (1 + A + B - C) + 1 = C - B := by ring
-  have hplusB (A B C : ℂ) : B - (1 + A + B - C) + 1 = C - A := by ring
-  have hplusC (A B C : ℂ) : 2 - (1 + A + B - C) = 1 + C - A - B := by ring
-  rw [hpow, hplusA, hplusB, hplusC]
-  exact ⟨rfl, rfl⟩
+  grind
 
 /-! ### The two-channel extraction -/
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α ε α' : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) (hα : α < Q γ) (hε : ε < Q γ) (hα' : α' < Q γ) (hs : 2 * Q γ + 2 / γ < α + ε + α') (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X M γ μ α ε α' hγ hγ2 hμ hα hε hα' hs hX hM in
 /-- **The two dual channels** (shared by both seeds). At a point of the seed domain, with `a, b, c`
 the dual Gauss parameters of `(α, ε, α')`, `d₀ = C(α - 2/γ, ε, α')`, `d₁ = d₀ r(a, b, c)`,
 `e₀ = C(ε - 2/γ, α, α')` and `e₁ = e₀ r'` (`r'` the ratio of [KRV, (Fundrelation)] for
 `(ε, α, α')`): the mixed term of the transformed diagonal form vanishes and its two diagonal entries
 are `e₀` and `e₁`. -/
-theorem dual_two_channel_extraction {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α ε α' : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hα : α < Q γ) (hε : ε < Q γ) (hα' : α' < Q γ)
-    (hs : 2 * Q γ + 2 / γ < α + ε + α')
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
+theorem dual_two_channel_extraction  :
     let a := gaussParameterA γ (2 / γ) α ε α'
     let b := gaussParameterB γ (2 / γ) α ε α'
     let c := gaussParameterC γ (2 / γ) α
@@ -213,43 +206,7 @@ theorem dual_reflection_identity_of_fusion
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hB : IsReflectionData P γ α₁ B Z)
-    (hFusion : ∀ {Ω : Type u} [MeasurableSpace Ω]
-      {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-      (_hH : IsGaussHypergeometricFamily H)
-      (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
-      (γ μ α₁ α₂ α₃ η ξ : ℝ)
-      (_hγ : 0 < γ) (_hγ₂ : γ < 2) (_hμ : 0 < μ)
-      (_hη : 0 < η) (_hη₂ : η < γ / 2) (_hξ : 0 < ξ) (_hξ₂ : ξ < 1)
-      (_hαlo : Q γ - η < α₁) (_hαhi : α₁ < Q γ)
-      (_hα₂ : α₂ < Q γ) (_hα₃ : α₃ < Q γ)
-      (_hs : 2 * Q γ + 2 / γ < α₁ + α₂ + α₃)
-      (_hslack₁ : (4 / γ) * (Q γ - α₁) < ξ)
-      (_hslack₂ : (4 / γ) * (Q γ - α₁) <
-        (1 - ξ) * (4 - γ * α₁ - 2 * γ * η))
-      (_hX : IsEquatorGFF P X) (_hM : IsGMCOf P X γ M),
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath,
-        ∃ Z : Ω → Measure ℝ,
-          IsSourceLateralProjection P X γ M Z ∧
-          IsReflectionData P γ α₁ (B α₁) Z ∧
-          let a := gaussParameterA γ (2 / γ) α₁ α₂ α₃
-          let b := gaussParameterB γ (2 / γ) α₁ α₂ α₃
-          let c := gaussParameterC γ (2 / γ) α₁
-          let κ := (4 / γ) * (Q γ - α₁)
-          (∃ r : ℂ → ℝ,
-            (∀ z, fourPointT P M γ μ (-2 / γ) α₁ α₂ α₃ z =
-              structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃ +
-                reflectionR P γ μ α₁ (B α₁) Z *
-                  structureConstant P M γ μ (2 * Q γ - α₁ - 2 / γ) α₂ α₃ *
-                    (‖z‖ ^ κ : ℝ) + r z) ∧
-              Tendsto (fun z => r z / ‖z‖ ^ κ)
-                (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0)) ∧
-            (∀ z ∈ gaussCutPlane,
-              fourPointT P M γ μ (-2 / γ) α₁ α₂ α₃ z =
-                structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃ *
-                    ‖gaussFMinus H a b c z‖ ^ 2 +
-                  reflectionR P γ μ α₁ (B α₁) Z *
-                    structureConstant P M γ μ (2 * Q γ - α₁ - 2 / γ) α₂ α₃ *
-                      ‖gaussFPlus H a b c z‖ ^ 2)) :
+    (hFusion : Contract.dualFullFusion.{u}) :
     structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃ *
         gaussCoefficientRatio (gaussParameterA γ (2 / γ) α₁ α₂ α₃)
           (gaussParameterB γ (2 / γ) α₁ α₂ α₃) (gaussParameterC γ (2 / γ) α₁) =
@@ -284,7 +241,7 @@ theorem dual_seed_two_multiplier (γ α ε α' : ℝ) (hγ : 0 < γ) (hγ2 : γ 
   have hdet : dualConnU a b c * dualConnX a b c - dualConnV a b c * dualConnW a b c =
       (c - 1) / (c - a - b) := crossing_connection_det_real a b c hcn hδn
   -- the Gamma values in `u` and `x`
-  have hGc : Real.Gamma c ≠ 0 := (Real.Gamma_pos_of_pos hc).ne'
+  have hGc  := (Real.Gamma_pos_of_pos hc).ne'
   have hGδ : Real.Gamma (c - a - b) ≠ 0 := (Real.Gamma_pos_of_pos hδ).ne'
   have hGca : Real.Gamma (c - a) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
   have hGcb : Real.Gamma (c - b) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
@@ -299,29 +256,18 @@ theorem dual_seed_two_multiplier (γ α ε α' : ℝ) (hγ : 0 < γ) (hγ2 : γ 
       ((c - 1) / (c - a - b)) * (Real.Gamma (2 - c) / Real.Gamma c) *
         (Real.Gamma (-(c - a - b)) / Real.Gamma (c - a - b)) * lR (c - a) * lR (c - b) := by
     unfold dualConnX dualConnU lR
-    rw [show 1 - (c - a) = a - c + 1 by ring, show 1 - (c - b) = b - c + 1 by ring,
-      show -(c - a - b) = a + b - c by ring]
-    field_simp
+    grind
   rw [hdet, hxu, dual_connection_second_multiplier a b c (c - a - b) hc hc1 hδ hδ1]
   -- `dualCrossingL`, with `C₁ = 1 + a + b - c`
   have hC := dual_seed_channel_parameter γ α ε α' hγ.ne'
   unfold dualCrossingL
   simp only [lFun_ofReal_re_eq_lR]
-  rw [hC]
-  have e1 : 1 - (c - a - b) - 1 = -(c - a - b) := by ring
-  have e2 : 1 - (c - a - b) - a - b + 1 = 2 - c := by ring
-  have e3 : 1 - (c - a - b) - a = 1 - c + b := by ring
-  have e4 : 1 - (c - a - b) - b = 1 - c + a := by ring
-  rw [e1, e2, e3, e4]
+  grind
 
+include Ω _inst1 P X M γ μ α ε α' hγ hγ2 hμ hα hε hα' hs hX hM in
 /-- **The second dual crossing identity on the whole seed domain**, given the dual reflection
 identity at the first charges `α` and `ε`. -/
-theorem dual_seed_two_identity {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α ε α' : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hα : α < Q γ) (hε : ε < Q γ) (hα' : α' < Q γ)
-    (hs : 2 * Q γ + 2 / γ < α + ε + α')
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+theorem dual_seed_two_identity 
     (Bε Bα : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hRIα : structureConstant P M γ μ (α - 2 / γ) ε α' *
         gaussCoefficientRatio (gaussParameterA γ (2 / γ) α ε α')

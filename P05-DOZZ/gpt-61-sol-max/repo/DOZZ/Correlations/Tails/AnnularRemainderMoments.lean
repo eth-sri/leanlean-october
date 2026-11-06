@@ -10,7 +10,7 @@ public import DOZZ.GMC.WeightedCutoff.ReferenceUniform
 
 /-! Uniform moments of insertion weights away from their singular center. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -25,7 +25,7 @@ theorem annular_kernel_le (γ α A ρ : ℝ) (hγ : 0 < γ)
   calc ‖x-z‖^(-γ*α) ≤ ρ^(-γ*α) :=
       Real.rpow_le_rpow_of_nonpos hρ hx (mul_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr hγ.le) hα)
     _ ≤ ρ^(-γ*A) := Real.rpow_le_rpow_of_exponent_ge hρ (hρ1)
-      (by simpa only [neg_mul] using neg_le_neg (mul_le_mul_of_nonneg_left hαA hγ.le))
+      (by simp_all)
 
 theorem annular_remainder_moment_uniform
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -39,14 +39,13 @@ theorem annular_remainder_moment_uniform
       ∀ F : ℂ → ℝ, (∀ x, 0 ≤ F x ∧ F x ≤ b) →
       (∫⁻ ω, (∫⁻ x in Metric.ball z 1 \ Metric.ball z ρ,
         ENNReal.ofReal (F x)*(ENNReal.ofReal ‖x-z‖)^(-γ*α) ∂M ω)^r ∂P) ≤ C := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   obtain ⟨D,_,hbound⟩ := equatorGFF_GMC_ball_moment_bound P X hX γ hγ hγ2
     M hM R hRbulk K hK
   let k := ENNReal.ofReal (1+b*ρ^(-γ*A))
   have hkfin : k ≠ ⊤ := ENNReal.ofReal_ne_top
   have hk1 : 1 ≤ k := ENNReal.one_le_ofReal.mpr (by
-    have hw : 0 ≤ b*ρ^(-γ*A) := mul_nonneg hb (Real.rpow_nonneg hρ.le _)
-    linarith only [hw])
+    bound)
   refine ⟨k^R*(1+ENNReal.ofReal D),ENNReal.mul_lt_top
     (ENNReal.rpow_lt_top_of_nonneg hR.le hkfin) (by simp),?_⟩
   intro z hzk α r hα hαA hr hrR F hF
@@ -64,7 +63,7 @@ theorem annular_remainder_moment_uniform
                   (annular_kernel_le γ α A ρ hγ hα hαA hρ hρ1 x z hxρ)
             _ ≤ k := by
               rw [← ENNReal.ofReal_mul hb]
-              exact ENNReal.ofReal_le_ofReal (le_add_of_nonneg_left zero_le_one)
+              bound
       _ ≤ k*M ω (Metric.ball z 1) := by
           rw [lintegral_const,Measure.restrict_apply_univ]
           exact mul_le_mul' le_rfl (measure_mono sdiff_subset)
@@ -74,7 +73,7 @@ theorem annular_remainder_moment_uniform
   have hmass : (∫⁻ ω, (M ω (Metric.ball z 1))^r ∂P) ≤ 1+ENNReal.ofReal D := by
     have hbig := (hbound z hzk 1 zero_lt_one le_rfl).2
     simp only [Real.rpow_eq_pow,Real.one_rpow,mul_one,gmcMassMoment,ENNReal.rpow_eq_pow] at hbig
-    exact hsmall.trans (by simpa only [measure_univ,ENNReal.rpow_eq_pow] using add_le_add le_rfl hbig)
+    exact hsmall.trans (by bound)
   calc _ ≤ ∫⁻ ω, (k*M ω (Metric.ball z 1))^r ∂P :=
         lintegral_mono fun ω => ENNReal.rpow_le_rpow (hpoint ω) hr.le
     _ = k^r*(∫⁻ ω, (M ω (Metric.ball z 1))^r ∂P) := by

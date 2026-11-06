@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.FusionAllocationAlgebra
 
 /-! Strict exponent margins for the corrected two-rooted Taylor domain. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -24,10 +24,7 @@ theorem twoRooted_time_exponent (γ α : ℝ) (hγ : 0 < γ) (hγsq : 2 < γ ^ 2
     field_simp
   have hm1 : γ * α < 2 := by simpa only [mul_comm] using (lt_div_iff₀ hγ).mp hα2
   have hm2 := mul_lt_mul_of_pos_left hα hγ
-  rw [he]
-  constructor
-  · ring
-  · constructor <;> nlinarith only [hγsq, hm1, hm2]
+  grind
 
 /-- The near-cluster exponent has a strictly positive extra power. -/
 theorem twoRooted_near_gain (γ α : ℝ) (hγ : 0 < γ) (hα2 : α < 2 / γ) :

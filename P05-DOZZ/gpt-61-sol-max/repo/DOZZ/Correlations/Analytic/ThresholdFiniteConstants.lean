@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.ThresholdENNReal
 
 /-! A concrete shrinking threshold yields a positive geometric rate. -/
 
-@[expose] public section
+public section
 open scoped ENNReal
 namespace DOZZ.Proofs
 

@@ -32,14 +32,12 @@ noncomputable def gffComplexLpOfSummableNormSquares {ι : Type*} (f : ι → ℂ
     simpa using h
   exact ⟨f, hmem⟩
 
+variable (R : ℕ) (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2) (hcos : Summable fun k : Fin 2 → ℤ => (equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω) ^ 2) (hsin : Summable fun k : Fin 2 → ℤ => (equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω) ^ 2)
+
+include R ω hcos hsin in
 /-- The complex local random mode vector. Its coordinates are the normalized cosine evaluation
 minus `i` times the normalized sine evaluation. -/
-noncomputable def equatorHaarCommonComplexEvalLp (R : ℕ)
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
-    (hcos : Summable fun k : Fin 2 → ℤ =>
-      (equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω) ^ 2)
-    (hsin : Summable fun k : Fin 2 → ℤ =>
-      (equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω) ^ 2) :
+noncomputable def equatorHaarCommonComplexEvalLp  :
     lp (fun _ : Fin 2 → ℤ => ℂ) (2 : ℝ≥0∞) := by
   let b : (Fin 2 → ℤ) → ℂ := fun k =>
     (equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω : ℂ) -
@@ -55,49 +53,33 @@ noncomputable def equatorHaarCommonComplexEvalLp (R : ℕ)
     rw [hpoint]
   exact gffComplexLpOfSummableNormSquares b hb
 
+include R ω hcos hsin in
 @[simp]
-theorem equatorHaarCommonComplexEvalLp_apply (R : ℕ)
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
-    (hcos : Summable fun k : Fin 2 → ℤ =>
-      (equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω) ^ 2)
-    (hsin : Summable fun k : Fin 2 → ℤ =>
-      (equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω) ^ 2)
+theorem equatorHaarCommonComplexEvalLp_apply
     (k : Fin 2 → ℤ) :
     equatorHaarCommonComplexEvalLp R ω hcos hsin k =
       (equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω : ℂ) -
         Complex.I * (equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω : ℂ) := rfl
 
+include R ω hcos hsin in
 /-- Pair a local complex Fourier coefficient vector with the sample's complex mode vector and
 take the real component. -/
-noncomputable def equatorLocalFourierPairingCLM (R : ℕ)
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
-    (hcos : Summable fun k : Fin 2 → ℤ =>
-      (equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω) ^ 2)
-    (hsin : Summable fun k : Fin 2 → ℤ =>
-      (equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω) ^ 2) :
+noncomputable def equatorLocalFourierPairingCLM  :
     lp (fun _ : Fin 2 → ℤ => ℂ) (2 : ℝ≥0∞) →L[ℝ] ℝ :=
   Complex.reCLM.comp (ContinuousLinearMap.restrictScalars ℝ
     (innerSL ℂ (equatorHaarCommonComplexEvalLp R ω hcos hsin)))
 
+include R ω hcos hsin in
 @[simp]
-theorem equatorLocalFourierPairingCLM_apply (R : ℕ)
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
-    (hcos : Summable fun k : Fin 2 → ℤ =>
-      (equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω) ^ 2)
-    (hsin : Summable fun k : Fin 2 → ℤ =>
-      (equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω) ^ 2)
+theorem equatorLocalFourierPairingCLM_apply
     (c : lp (fun _ : Fin 2 → ℤ => ℂ) (2 : ℝ≥0∞)) :
     equatorLocalFourierPairingCLM R ω hcos hsin c =
       (⟪equatorHaarCommonComplexEvalLp R ω hcos hsin, c⟫_ℂ).re := rfl
 
+include R ω hcos hsin in
 /-- The local chart distribution obtained by pairing the sample mode vector with the weighted
 Fourier coefficient map. -/
-noncomputable def equatorLocalFourierDistributionCLM (R : ℕ)
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
-    (hcos : Summable fun k : Fin 2 → ℤ =>
-      (equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω) ^ 2)
-    (hsin : Summable fun k : Fin 2 → ℤ =>
-      (equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω) ^ 2) :
+noncomputable def equatorLocalFourierDistributionCLM  :
     TestFn →L[ℝ] ℝ :=
   (equatorLocalFourierPairingCLM R ω hcos hsin).comp
     (torusH2WeightedFourierCoeffCLM (gffLocalModeBoxSide R))
@@ -140,8 +122,7 @@ theorem measurable_equatorLocalFourierPartialEval (R : ℕ) (f : TestFn)
           (torusH2WeightedFourierCoeffCLM (gffLocalModeBoxSide R) f k).re *
               equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω -
             (torusH2WeightedFourierCoeffCLM (gffLocalModeBoxSide R) f k).im *
-            equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω) := by
-        exact (measurable_const.mul
+            equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω) := (measurable_const.mul
           (measurable_equatorHaarCommonEval _)).sub
           (measurable_const.mul (measurable_equatorHaarCommonEval _))
       have heq : equatorLocalFourierPartialEval R f (insert k s) = fun ω =>
@@ -157,8 +138,7 @@ theorem measurable_equatorLocalFourierPartialEval (R : ℕ) (f : TestFn)
 
 theorem measurable_equatorLocalFourierEval (R : ℕ) (f : TestFn) :
     Measurable (equatorLocalFourierEval R f) := by
-  have hstrong : ∀ s : Finset (Fin 2 → ℤ),
-      StronglyMeasurable (equatorLocalFourierPartialEval R f s) :=
+  have hstrong  :=
     fun s => (measurable_equatorLocalFourierPartialEval R f s).stronglyMeasurable
   exact (StronglyMeasurable.limUnder (l := atTop) hstrong).measurable
 
@@ -181,27 +161,7 @@ theorem hasSum_equatorLocalFourierPartialEval (R : ℕ) (f : TestFn)
   have hinner : HasSum (fun k : Fin 2 → ℤ => ⟪b k, c k⟫_ℂ) ⟪b, c⟫_ℂ :=
     lp.hasSum_inner b c
   have hreal := hinner.mapL Complex.reCLM
-  have hterms (k : Fin 2 → ℤ) : (⟪b k, c k⟫_ℂ).re =
-      (torusH2WeightedFourierCoeffCLM (gffLocalModeBoxSide R) f k).re *
-          equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω -
-    (torusH2WeightedFourierCoeffCLM (gffLocalModeBoxSide R) f k).im *
-          equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω := by
-    rw [RCLike.inner_apply]
-    change (c k * star
-      ((equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω : ℂ) -
-        Complex.I * (equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω : ℂ))).re = _
-    simp [Complex.mul_re, Complex.mul_im]
-    ring
-  have hsum : HasSum (fun k : Fin 2 → ℤ =>
-      (torusH2WeightedFourierCoeffCLM (gffLocalModeBoxSide R) f k).re *
-          equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω -
-        (torusH2WeightedFourierCoeffCLM (gffLocalModeBoxSide R) f k).im *
-          equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω)
-      (Complex.re ⟪b, c⟫_ℂ) := by
-    change HasSum (fun k : Fin 2 → ℤ => (⟪b k, c k⟫_ℂ).re)
-      ((⟪b, c⟫_ℂ).re) at hreal
-    simpa only [hterms] using hreal
-  simpa [b, c, equatorLocalFourierPairingCLM_apply] using hsum
+  aesop
 
 /-- On the square-summability event, the measurable local scalar limit equals the continuous
 Fourier-pairing functional. -/
@@ -216,8 +176,7 @@ theorem equatorLocalFourierEval_eq_distributionCLM_apply (R : ℕ) (f : TestFn)
   have hsum := hasSum_equatorLocalFourierPartialEval R f ω hcos hsin
   have hlim : Tendsto (fun s => equatorLocalFourierPartialEval R f s ω) atTop
       (𝓝 ((equatorLocalFourierPairingCLM R ω hcos hsin)
-        (torusH2WeightedFourierCoeffCLM (gffLocalModeBoxSide R) f))) := by
-    exact hsum
+        (torusH2WeightedFourierCoeffCLM (gffLocalModeBoxSide R) f))) := hsum
   change limUnder atTop (equatorLocalFourierPartialEval R f · ω) = _
   rw [hlim.limUnder_eq]
   rfl
@@ -273,28 +232,20 @@ theorem equatorHaarCommonCosEnergyTsum_ne_top_of_summable (R : ℕ)
     (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
     (h : Summable fun k : Fin 2 → ℤ =>
       (equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω) ^ 2) :
-    equatorHaarCommonCosEnergyTsum R ω ≠ ∞ := by
-  unfold equatorHaarCommonCosEnergyTsum
-  exact h.tsum_ofReal_ne_top
+    equatorHaarCommonCosEnergyTsum R ω ≠ ∞ := h.tsum_ofReal_ne_top
 
 theorem equatorHaarCommonSinEnergyTsum_ne_top_of_summable (R : ℕ)
     (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
     (h : Summable fun k : Fin 2 → ℤ =>
       (equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω) ^ 2) :
-    equatorHaarCommonSinEnergyTsum R ω ≠ ∞ := by
-  unfold equatorHaarCommonSinEnergyTsum
-  exact h.tsum_ofReal_ne_top
+    equatorHaarCommonSinEnergyTsum R ω ≠ ∞ := h.tsum_ofReal_ne_top
 
 theorem ae_equatorHaarCommonGood :
     ∀ᵐ ω ∂GaussianFields.scaleSpaceWhiteNoiseMeasure 2,
       equatorHaarCommonGood ω := by
-  have hcos : ∀ᵐ ω ∂GaussianFields.scaleSpaceWhiteNoiseMeasure 2,
-      ∀ R : ℕ, Summable fun k : Fin 2 → ℤ =>
-        (equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω) ^ 2 :=
+  have hcos  :=
     ae_all_iff.mpr ae_summable_equatorHaarCommonCosEval
-  have hsin : ∀ᵐ ω ∂GaussianFields.scaleSpaceWhiteNoiseMeasure 2,
-      ∀ R : ℕ, Summable fun k : Fin 2 → ℤ =>
-        (equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω) ^ 2 :=
+  have hsin  :=
     ae_all_iff.mpr ae_summable_equatorHaarCommonSinEval
   filter_upwards [hcos, hsin] with ω hcos hsin
   change ∀ R : ℕ,

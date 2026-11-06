@@ -15,7 +15,7 @@ module identifies its density with Mathlib's exponential distribution and record
 normalization.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal

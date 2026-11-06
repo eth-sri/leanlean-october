@@ -7,6 +7,7 @@ module
 public import DOZZ.GMC.SharpMoments.WeightedTransfer
 public import DOZZ.GMC.SharpMoments.ExteriorMoment
 public import DOZZ.GMC.SharpMoments.SeibergMoment
+import Mathlib.Tactic
 
 /-! # Convergence of bounded cutoff integrals and far exterior cutoff moments
 
@@ -15,25 +16,27 @@ the integer cutoffs, by the uniform `L¹` convergence. Exact exterior scaling mo
 annulus of the exterior dyadic bound out to any radius, so the cutoff moments of a power weight
 outside a large disk decay like a negative power of the radius. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+
+include Ω _inst1 P X hX in
 /-- Cutoff integrals of a bounded Borel function with bounded support converge in probability
 along the integer cutoffs. -/
 theorem regularizedGMC_lintegral_tendstoInMeasure
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (f : ℂ → ℝ≥0) (hf : Measurable f) (b : ℝ≥0) (hfb : ∀ x, f x ≤ b) (R : ℝ)
     (hfR : ∀ x ∉ closedBall (0 : ℂ) R, f x = 0) :
     TendstoInMeasure P (fun (n : ℕ) ω => (∫⁻ x, (f x : ℝ≥0∞) ∂regularizedGMC P Xc γ n ω).toReal)
       atTop (fun ω => (∫⁻ x, (f x : ℝ≥0∞) ∂M ω).toReal) := by
-  have hfr : Measurable fun x => (f x : ℝ) := measurable_coe_nnreal_real.comp hf
+  have hfr  := measurable_coe_nnreal_real.comp hf
   have hfm : Measurable fun x => (f x : ℝ≥0∞) := measurable_coe_nnreal_ennreal.comp hf
   have hid : ∀ μ : Measure ℂ, (∫⁻ x, (f x : ℝ≥0∞) ∂μ).toReal = ∫ x, (f x : ℝ) ∂μ := by
     intro μ
@@ -48,18 +51,18 @@ theorem regularizedGMC_lintegral_tendstoInMeasure
       ∂regularizedGMC P Xc γ n ω).toReal) P := fun n =>
     (ENNReal.measurable_toReal.comp ((Measure.measurable_lintegral hfm).comp
       (regularizedGMC_measurable P X hX Xc hXc γ n))).aestronglyMeasurable
-  have hG : AEStronglyMeasurable (fun ω => (∫⁻ x, (f x : ℝ≥0∞) ∂M ω).toReal) P :=
+  have hG  :=
     (ENNReal.measurable_toReal.comp_aemeasurable
       (gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _ hfm)).aestronglyMeasurable
   refine DOZZ.Assembly.tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P _ _ hF hG ?_
   refine (hL1.comp tendsto_natCast_atTop_atTop).congr fun n => ?_
   simp only [Function.comp_apply, hid]
 
+include Ω _inst1 P X hX in
 /-- The base annulus of the exterior dyadic bound can be moved out to any radius by exact
 exterior scaling. -/
 theorem exteriorAnnulus_moment_le_far
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ) {R0 R : ℝ} (hR0 : 2 ≤ R0)
     (hR : R0 ≤ R) {t : ℝ} {K0 : ℝ≥0∞}
     (hK0 : ∀ r' : ℝ, 0 ≤ r' →
@@ -69,7 +72,7 @@ theorem exteriorAnnulus_moment_le_far
       ENNReal.ofReal ((R / R0) ^ (-(2 * t + γ ^ 2 * t / 2 - γ ^ 2 * t ^ 2 / 2))) * K0 := by
   have hR0pos : 0 < R0 := by linarith
   set c : ℝ := R / R0 with hcdef
-  have hc : 1 ≤ c := (one_le_div hR0pos).mpr hR
+  have hc  := (one_le_div hR0pos).mpr hR
   have hc0 : 0 < c := by linarith
   have hA2 : ∀ x ∈ exteriorAnnulus R0 0, 2 ≤ ‖x‖ := fun x hx => by
     have := hx.1
@@ -88,8 +91,7 @@ theorem exteriorAnnulus_moment_le_far
       (2 ^ 0 * R ≤ ‖y‖ ∧ ‖y‖ < 2 ^ (0 + 1) * R)
     rw [hnorm, pow_zero, one_mul, one_mul, zero_add, pow_one, le_div_iff₀ hc0, div_lt_iff₀ hc0]
     have h1 : R0 * c = R := by rw [hcdef]; field_simp
-    have h2 : 2 * R0 * c = 2 * R := by rw [mul_assoc, h1]
-    rw [h1, h2]
+    grind
   rw [hset] at hscale
   rw [hscale]
   have hcoef : c ^ (-2 * t) * Real.exp (γ ^ 2 * Real.log c / 2 * (t ^ 2 - t)) =
@@ -100,6 +102,6 @@ theorem exteriorAnnulus_moment_le_far
     ring
   rw [hcoef]
   gcongr
-  exact hK0 _ (by have := Real.log_nonneg hc; linarith)
+  bound
 
 end DOZZ.Proofs

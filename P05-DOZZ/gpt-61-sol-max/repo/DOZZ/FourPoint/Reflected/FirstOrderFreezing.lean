@@ -26,7 +26,7 @@ theorem reflected_shifted_outer_freezing_bound
         (-((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1)) ∂P) ≤
       ENNReal.ofReal (C * (‖z‖ ^ (1 - ξ)) ^ ((α₁ + γ / 2 - Q γ) ^ 2 / 2)) := by
   let q := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1
-  have hq : 0 < q := (reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs).2.1
+  have hq  := (reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs).2.1
   obtain ⟨C₀, ε₀, hC₀, hε₀, hb⟩ := reflected_freezing_local_input P X M γ α₁ α₂ α₃
     hγ hγ₂ hα₁ hreflect hs hX hM
   let c : ℝ := (1 / 2 : ℝ) ^ (γ ^ 2 / 2) * (2 : ℝ) ^ (-|γ * α₂|)
@@ -45,9 +45,9 @@ theorem reflected_shifted_outer_freezing_bound
         (ENNReal.ofReal c *
           freezingAnnulusMassLocal γ (α₁ + γ / 2) (M ω) 0 (‖z‖ ^ (1 - ξ)) (1 / 2)) ^ (-q) := by
       rw [ENNReal.rpow_neg, ENNReal.rpow_neg]
-      exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hl hq.le)
+      gcongr
     rw [ENNReal.mul_rpow_eq_ite] at hh
-    have hn : ENNReal.ofReal c ≠ 0 := ENNReal.ofReal_ne_zero_iff.mpr hc
+    have hn  := ENNReal.ofReal_ne_zero_iff.mpr hc
     simp only [hn, ENNReal.ofReal_ne_top, false_and, false_or, ite_false,
       ENNReal.ofReal_rpow_of_pos hc] at hh
     exact hh

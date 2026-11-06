@@ -11,7 +11,7 @@ public import Mathlib.MeasureTheory.Measure.Prod
 /-! The exact finite-cutoff Wick-density ratio of the separated joint-tail estimate, with the
 variance discrepancy retained. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -27,7 +27,7 @@ theorem separatedTail_circle_split_ae_sample
     (hH : Measurable (fun q : Ω × S => H q.1 q.2)) (hL : Measurable L)
     (hsplit : ∀ᵐ x ∂ν, (fun ω => Ψ ω x) =ᵐ[P] fun ω => Φ ω x+H ω x-L ω) :
     ∀ᵐ ω ∂P, ∀ᵐ x ∂ν, Ψ ω x = Φ ω x+H ω x-L ω := by
-  have hm' : MeasurableSet {q : S × Ω | Ψ q.2 q.1 = Φ q.2 q.1+H q.2 q.1-L q.2} :=
+  have hm'  :=
     measurableSet_eq_fun (hΨ.comp measurable_swap)
       (((hΦ.comp measurable_swap).add (hH.comp measurable_swap)).sub (hL.comp measurable_snd))
   exact (Measure.ae_ae_comm hm').mp hsplit

@@ -78,7 +78,7 @@ lemma edist_limUnder_const {T E : Type*} [PseudoEMetricSpace E] [Nonempty E]
     edist (limUnder l fun _ ↦ c) c = 0 := by
   rw [← EMetric.inseparable_iff]
   refine tendsto_nhds_unique_inseparable (f := fun t ↦ c) (l := l) ?_ ?_
-  · exact tendsto_nhds_limUnder (⟨c, tendsto_const_nhds⟩ : ∃ c, Tendsto _ _ _)
+  · exact tendsto_nhds_limUnder (Exists.intro c tendsto_const_nhds)
   · exact tendsto_const_nhds
 
 lemma edist_limUnder_prod_eq_zero {α β E : Type*} [PseudoEMetricSpace E] [Nonempty E]
@@ -142,13 +142,8 @@ lemma measurable_pair_indicatorProcess {T₁ T₂ : Type*}
   rw [h_eq]
   refine Measurable.ite hA₁ ?_ ?_
   · refine Measurable.ite hA₂ (hX₁₂ s t) ?_
-    change Measurable ((fun x : E ↦ (x, hE.some)) ∘ X₁ s)
-    refine Measurable.comp ?_ (hX₁ _)
-    fun_prop
+    fun_prop (disch := positivity)
   · refine Measurable.ite hA₂ ?_ measurable_const
-    change Measurable ((fun x : E ↦ (hE.some, x)) ∘ X₂ t)
-    refine Measurable.comp ?_ (hX₂ _)
-    clear hX₁₂
     fun_prop
 
 
@@ -183,7 +178,7 @@ lemma IsLimitOfIndicator.measurable [MeasurableSpace E] [BorelSpace E] {Y X : T 
       · simp only [indicatorProcess, hω, ↓reduceIte]
         exact ⟨hE.some, tendsto_const_nhds⟩
     · exact Measurable.ite hA (hX t') measurable_const
-  · exact Measurable.of_edist_eq_zero (X := fun _ ↦ hE.some) measurable_const (hYUc t htU)
+  · exact Measurable.of_edist_eq_zero measurable_const (hYUc t htU)
 
 lemma measurable_pair_limUnder_comap {T : Type*} [PseudoEMetricSpace T]
     {X₁ X₂ : T → Ω → E} {T' : Set T} (hT'_dense : Dense T')
@@ -273,9 +268,7 @@ lemma IsLimitOfIndicator.measurable_pair
       simpa [Prod.edist_eq] using ⟨hYU ω, hZU ω⟩
     borelize (E × E)
     refine Measurable.of_edist_eq_zero ?_ h_eq
-    simp only [Dense.extend, IsDenseInducing.extend]
-    exact measurable_pair_limUnder_indicatorProcess hX hX' hX_pair hA₁ hA₂ s t (hY_tendsto s hsU₁)
-      (hZ_tendsto t htU₂)
+    exact measurable_pair_limUnder_indicatorProcess hX hX' hX_pair hA₁ hA₂ s t (hY_tendsto s hsU₁) (hZ_tendsto t htU₂)
   · specialize hYU s hsU₁
     specialize hZUc t htU₂
     have h_eq ω : edist (Y s ω, Z t ω)
@@ -346,11 +339,10 @@ lemma IsLimitOfIndicator.indicatorProcess {Y X : T → Ω → E}
   classical
   refine ⟨A ∩ A', MeasurableSet.inter hA_meas hA', ?_, fun t htU ω hω ↦ ?_, fun t htU ω ↦ ?_,
     fun t htUc ω ↦ ?_⟩
-  · filter_upwards [hA_ae, hA'_ae] with ω hω₁ hω₂ using ⟨hω₁, hω₂⟩
+  · simp_all
   · exact hY_tendsto t htU ω hω.2
   · by_cases hω : ω ∈ A
-    · specialize hYU t htU ω
-      simpa [indicatorProcess_apply, hω] using hYU
+    · simp_all
     · simp only [indicatorProcess_apply, hω, ↓reduceIte, Dense.extend, IsDenseInducing.extend,
         Set.mem_inter_iff, false_and]
       rw [edist_comm]
@@ -358,7 +350,7 @@ lemma IsLimitOfIndicator.indicatorProcess {Y X : T → Ω → E}
         apply IsDenseInducing.comap_nhds_neBot (Dense.isDenseInducing_val dense_denseCountable)
       exact edist_limUnder_const
   · by_cases hω : ω ∈ A
-    · simpa [indicatorProcess_apply, hω] using hYUc t htUc ω
+    · simp_all
     · simp [indicatorProcess_apply, hω]
 
 

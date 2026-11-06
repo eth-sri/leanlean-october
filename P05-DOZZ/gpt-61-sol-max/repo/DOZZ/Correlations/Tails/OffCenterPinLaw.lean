@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Tails.OffCenterRegression
 
 /-! The literal Gaussian pin law used by copied-multiplier moment bounds. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 
 namespace DOZZ.Proofs

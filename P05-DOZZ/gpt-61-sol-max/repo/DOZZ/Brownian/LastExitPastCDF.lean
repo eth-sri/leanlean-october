@@ -8,6 +8,7 @@ public import DOZZ.Brownian.LastExitCDF
 public import DOZZ.Brownian.LastExitKernelCDF
 public import DOZZ.Brownian.ConditionedPastState
 public import DOZZ.Brownian.LastExitDyadicMixture
+import Mathlib.Tactic
 
 /-!
 # Last-exit CDF with finite past observations
@@ -16,7 +17,7 @@ The full-history avoidance identity retains every finite past cylinder. The expl
 factorization integrates its final state against the Gaussian last-exit primitive.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
@@ -49,11 +50,11 @@ theorem conditionedPastStateKernel_integral_avoidance (ν c dt : ℝ) (k : ℕ)
 /-- The explicit last-exit primitive is measurable in its starting state. -/
 theorem measurable_lastExitGaussianKernelCDF_state (ν c dt : ℝ) :
     Measurable (fun x => lastExitGaussianKernelCDF ν c x dt) := by
-  have hstandard : Continuous brownianStandardHeatTail :=
+  have hstandard  :=
     continuous_iff_continuousAt.mpr fun x => (hasDerivAt_brownianStandardHeatTail x).continuousAt
-  have htail : Measurable (brownianHeatTail dt) :=
+  have htail  :=
     (hstandard.comp (continuous_id.div_const (Real.sqrt dt))).measurable
-  have hH : Measurable (conditionedH ν) := measurable_conditionedH_ref ν
+  have hH  := measurable_conditionedH_ref ν
   unfold lastExitGaussianKernelCDF
   have h1 : Measurable (fun x : ℝ => brownianHeatTail dt (c-x-ν*dt)) :=
     htail.comp ((measurable_const.sub measurable_id).sub measurable_const)
@@ -106,14 +107,14 @@ theorem negativeConditionedLaw_finitePast_lastExit_CDF
         ((u : ℝ)-(ss (Fin.last k) : ℝ))
         ∂(volume : Measure (Fin (k+1) → ℝ)).withDensity
           (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ))) := by
-  let : IsProbabilityMeasure P := hP.2.1
+  let  := hP.2.1
   let evalPast : BrownianPath → (Fin (k+1) → ℝ) := fun p i => -(p (ss i))
   let evalPair : BrownianPath → (Fin (k+1) → ℝ) × ℝ := fun p => (evalPast p, -(p u))
   let μ : Measure (Fin (k+1) → ℝ) := volume.withDensity
     (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ)))
   let κ := conditionedPastStateKernel ν ((u : ℝ)-(ss (Fin.last k) : ℝ)) k
-  let U : Set BrownianPath := evalPast ⁻¹' A
-  let E : Set BrownianPath := {p | negativeLastExitTime p (c : ℝ) ≤ u}
+  let U  := evalPast ⁻¹' A
+  let E  := {p | negativeLastExitTime p (c : ℝ) ≤ u}
   let F : (Fin (k+1) → ℝ) × ℝ → ℝ :=
     (Prod.fst ⁻¹' A).indicator (fun z => lastExitAvoidanceFactor ν (c : ℝ) z.2)
   have hmPast : Measurable evalPast :=
@@ -122,17 +123,17 @@ theorem negativeConditionedLaw_finitePast_lastExit_CDF
   have hmF : Measurable F :=
     ((measurable_lastExitAvoidanceFactor ν (c : ℝ)).comp measurable_snd).indicator
       (hA.preimage measurable_fst)
-  have hu0 : 0 < (u : ℝ) := (hs (Fin.last k)).trans (NNReal.coe_lt_coe.mpr hu)
-  have hdt : 0 < (u : ℝ)-(ss (Fin.last k) : ℝ) := sub_pos.mpr (NNReal.coe_lt_coe.mpr hu)
+  have hu0  := (hs (Fin.last k)).trans (NNReal.coe_lt_coe.mpr hu)
+  have hdt  := sub_pos.mpr (NNReal.coe_lt_coe.mpr hu)
   have hU : MeasurableSet[conditionedPositiveNaturalFiltration u] U := by
-    let : MeasurableSpace BrownianPath := conditionedPositiveNaturalFiltration u
+    let  := conditionedPositiveNaturalFiltration u
     have hmeval : Measurable evalPast := by
       apply measurable_pi_iff.mpr
       intro i
       change Measurable[conditionedPositiveNaturalFiltration u]
         (conditionedPositiveProcessValue (ss i))
       apply Measurable.of_comap_le
-      have hsu : ss i ≤ u := (hmono.monotone (Fin.le_last i)).trans hu.le
+      have hsu  := (hmono.monotone (Fin.le_last i)).trans hu.le
       exact le_iSup_of_le (ss i) (le_iSup_of_le hsu le_rfl)
     exact hA.preimage hmeval
   have hE : MeasurableSet E := measurableSet_le
@@ -143,7 +144,7 @@ theorem negativeConditionedLaw_finitePast_lastExit_CDF
       P.real {p : BrownianPath | evalPast p ∈ A ∧ negativeLastExitTime p (c : ℝ) ≤ u} := by
     rw [setIntegral_indicator hE, setIntegral_const, smul_eq_mul, mul_one]
     rfl
-  have hj : P.map evalPair = μ ⊗ₘ κ :=
+  have hj  :=
     negativeConditionedLaw_finitePast_state_compProd hP k ss hs hmono u hu
   have hFint : Integrable F (P.map evalPair) := by
     apply Integrable.mono' (integrable_const (1 : ℝ)) hmF.aestronglyMeasurable
@@ -160,8 +161,7 @@ theorem negativeConditionedLaw_finitePast_lastExit_CDF
       ∫ z, F z ∂(μ ⊗ₘ κ) := by
     rw [← hj, integral_map hmPair.aemeasurable hmF.aestronglyMeasurable,
       ← integral_indicator (hA.preimage hmPast)]
-    apply integral_congr_ae
-    exact ae_of_all _ fun _ => rfl
+    abel
   have hpastLaw : P.map evalPast = μ :=
     negativeConditionedLaw_positiveFDD hP (k+1) (by omega) ss hs hmono
   have hxpos : ∀ᵐ x ∂μ, 0 < x (Fin.last k) := by

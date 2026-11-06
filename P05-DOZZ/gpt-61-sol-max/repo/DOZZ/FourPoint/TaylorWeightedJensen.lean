@@ -9,7 +9,7 @@ public import DOZZ.FourPoint.TaylorExterior
 
 /-! Weighted Jensen reduces each annular positive Taylor square to a one-root expectation. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -20,7 +20,7 @@ theorem weighted_jensen_square (μ : Measure ℂ) (k f : ℂ → ℝ≥0∞)
     (∫⁻ x, k x * f x ∂μ) ^ 2 ≤
       (∫⁻ x, k x * f x ^ 2 ∂μ) * ∫⁻ x, k x ∂μ := by
   have h := lintegral_square_le_mass (μ.withDensity k) f hf
-  have hsq : Measurable (fun x : ℂ => f x ^ 2) := hf.pow_const 2
+  have hsq  := hf.pow_const 2
   rw [lintegral_withDensity_eq_lintegral_mul μ hk hf,
     lintegral_withDensity_eq_lintegral_mul μ hk hsq,
     withDensity_apply _ MeasurableSet.univ, setLIntegral_univ] at h
@@ -30,7 +30,7 @@ theorem weighted_jensen_square (μ : Measure ℂ) (k f : ℂ → ℝ≥0∞)
 theorem gammaHalfKernel_measurable (γ α₁ α₂ α₃ : ℝ) (z : ℂ) :
     Measurable (gammaHalfKernel γ α₁ α₂ α₃ z) := by
   have hn : Measurable (normPlus : ℂ → ℝ) := measurable_const.max measurable_norm
-  have hxz : Measurable (fun x : ℂ => ‖x - z‖) := (measurable_id.sub_const z).norm
+  have hxz  := (measurable_id.sub_const z).norm
   have hx1 : Measurable (fun x : ℂ => ‖x - 1‖) := (measurable_id.sub_const 1).norm
   exact ((hxz.pow_const _).mul (hn.pow_const _)).div
     ((measurable_norm.pow_const _).mul (hx1.pow_const _))
@@ -43,8 +43,8 @@ theorem gammaHalf_annular_jensen_bound (γ α₁ α₂ α₃ : ℝ) (z : ℂ)
         ∫⁻ x in B, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
   let k : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)
   let f : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (‖x - z‖⁻¹)
-  have hk : Measurable k := ENNReal.measurable_ofReal.comp (gammaHalfKernel_measurable γ α₁ α₂ α₃ z)
-  have hf : Measurable f := ENNReal.measurable_ofReal.comp ((measurable_id.sub_const z).norm.inv)
+  have hk  := ENNReal.measurable_ofReal.comp (gammaHalfKernel_measurable γ α₁ α₂ α₃ z)
+  have hf  := ENNReal.measurable_ofReal.comp ((measurable_id.sub_const z).norm.inv)
   have hprod (x : ℂ) : k x * f x = ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖) := by
     rw [← ENNReal.ofReal_mul (gammaHalfKernel_nonneg γ α₁ α₂ α₃ z x)]
     congr 1
@@ -52,8 +52,7 @@ theorem gammaHalf_annular_jensen_bound (γ α₁ α₂ α₃ : ℝ) (z : ℂ)
       ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2) := by
     rw [← ENNReal.ofReal_pow (inv_nonneg.mpr (norm_nonneg _)),
       ← ENNReal.ofReal_mul (gammaHalfKernel_nonneg γ α₁ α₂ α₃ z x)]
-    congr 1
-    simp only [inv_pow, div_eq_mul_inv]
+    field_simp at *
   have h := weighted_jensen_square (μ.restrict B) k f hk hf
   simp_rw [hprod, hprod₂] at h
   exact h

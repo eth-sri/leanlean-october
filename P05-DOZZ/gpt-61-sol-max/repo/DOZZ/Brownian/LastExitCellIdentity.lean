@@ -32,12 +32,10 @@ theorem measurableSet_negativeConditionedLastExitTimeCell
     (a b c : ℝ≥0) :
     MeasurableSet (negativeConditionedLastExitTimeCell a b c) := by
   let τ : BrownianPath → ℝ≥0 := fun p => negativeLastExitTime p (c : ℝ)
-  have hτ : Measurable τ :=
+  have hτ  :=
     measurable_negativeLastExitTime_joint.comp
       ((measurable_const (a := (c : ℝ))).prodMk measurable_id)
-  have hI : MeasurableSet (Set.Ico a b) := measurableSet_Ico
-  change MeasurableSet (τ ⁻¹' Set.Ico a b)
-  exact hI.preimage hτ
+  continuity
 
 /-- Almost surely, a last-exit cell is exactly a deterministic-time history hit followed by
 strict rational avoidance of the future. -/
@@ -57,8 +55,7 @@ theorem negativeConditionedLastExitTimeCell_ae_eq_historyAvoidance
   have hneq := ae_conditionedPositiveStateAt_ne hP b hb (c : ℝ)
   have htouch := conditionedPositiveFutureAvoidanceTouchEvent_measure_zero
     hP hB hν b hb c hc
-  have hnotouch : ∀ᵐ p ∂P,
-      p ∉ conditionedPositiveFutureAvoidanceTouchEvent b c :=
+  have hnotouch  :=
     measure_eq_zero_iff_ae_notMem.mp htouch
   filter_upwards [hgood, habove, hneq, hnotouch] with p hp hafter hpneq hpnotouch
   rcases hp with ⟨hnonempty, hbounded⟩
@@ -71,7 +68,7 @@ theorem negativeConditionedLastExitTimeCell_ae_eq_historyAvoidance
     intro hcell
     have hvisit := hcelliff.mp hcell
     rcases hvisit with ⟨⟨u, hau, hpu⟩, hnohit⟩
-    have hub : u < b := lt_of_not_ge (fun hbu => hnohit u hbu hpu)
+    have hub  := lt_of_not_ge (fun hbu => hnohit u hbu hpu)
     have hhistory : p ∈ conditionedPositiveHistoryHitsOnInterval a b c := by
       refine ⟨u, hau, hub.le, ?_⟩
       simpa [conditionedPositiveStateAt] using congrArg Neg.neg hpu
@@ -84,12 +81,9 @@ theorem negativeConditionedLastExitTimeCell_ae_eq_historyAvoidance
         let qTime : ℝ≥0 := ⟨(q : ℝ), hq.le⟩
         let t : ℝ≥0 := b + qTime
         have hLt : negativeLastExitTime p (c : ℝ) < t := by
-          have hLb : negativeLastExitTime p (c : ℝ) < b := hcell.2
-          have hqpos : 0 < qTime := by
-            change (0 : ℝ) < (q : ℝ)
-            exact hq
-          have hbt : b < t := lt_add_of_pos_right b hqpos
-          exact hLb.trans hbt
+          have hLb  := hcell.2
+          have hqpos : 0 < qTime := id hq
+          grind
         have hstate := hafter t hLt
         have heval : conditionedPositiveFutureRationalEvals b p q =
             conditionedPositiveStateAt t p := by
@@ -97,7 +91,7 @@ theorem negativeConditionedLastExitTimeCell_ae_eq_historyAvoidance
             conditionedPositiveStateAt, t, qTime,
             max_eq_left hq.le]
         rw [heval]
-        simpa [conditionedPositiveStateAt] using hstate
+        exact hstate
       · simp [conditionedPositiveFutureAvoidanceCoordinate, hq]
     exact ⟨hhistory, havoid⟩
   have hhitAvoidToCell :
@@ -112,8 +106,8 @@ theorem negativeConditionedLastExitTimeCell_ae_eq_historyAvoidance
         have hstate : conditionedPositiveStateAt b p = (c : ℝ) := by
           simpa [conditionedPositiveStateAt] using congrArg Neg.neg hpu
         exact hpneq hstate
-      · have hbu : b < u := lt_of_le_of_ne hub (fun hbu => hEq hbu.symm)
-        have hHit : p ∈ conditionedPositiveFutureAvoidanceTouchEvent b c :=
+      · have hbu  := lt_of_le_of_ne hub (fun hbu => hEq hbu.symm)
+        have hHit  :=
           conditionedPositiveFutureAvoidance_hit_implies_touch b c p havoid
             ⟨u, hbu, hpu⟩
         exact hpnotouch hHit
@@ -123,10 +117,7 @@ theorem negativeConditionedLastExitTimeCell_ae_eq_historyAvoidance
       simpa [conditionedPositiveStateAt] using h
     have hlastiff := hcelliff.mpr ⟨⟨u, hau, hpu⟩, hnohit⟩
     exact hlastiff
-  apply propext
-  constructor
-  · exact hcellToHitAvoid
-  · exact hhitAvoidToCell
+  grind
 
 /-- The deterministic-time avoidance identity on a last-exit cell. Its right endpoint is the
 deterministic time at which the past/future factorization is applied. -/
@@ -150,11 +141,7 @@ theorem negativeConditionedLastExitCell_avoidance_shift_setIntegral
     (conditionedPositiveFutureRationalEvals b p)
   have hcell := negativeConditionedLastExitTimeCell_ae_eq_historyAvoidance
     hP hB hν a b c hb hc
-  have hE : MeasurableSet E := by
-    change MeasurableSet (⋂ q : ℚ,
-      conditionedPositiveFutureAvoidanceCoordinate b c q)
-    exact MeasurableSet.iInter fun q =>
-      measurableSet_conditionedPositiveFutureAvoidanceCoordinate b c q
+  have hE : MeasurableSet E := id (MeasurableSet.iInter fun q => measurableSet_conditionedPositiveFutureAvoidanceCoordinate b c q)
   calc
     (∫ p in negativeConditionedLastExitTimeCell a b c, T p ∂P) =
         (∫ p in H ∩ E, T p ∂P) := setIntegral_congr_set hcell

@@ -15,7 +15,7 @@ A weighted local mass dominates a fixed multiple of the mass of an off-center su
 inherits the divergence of unweighted moments at and above `4/γ²`. For nonpositive charges the
 weight is bounded on the disk and the unweighted moment range gives finiteness below `4/γ²`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -74,25 +74,20 @@ theorem weightedGmcBallMass_ge_offcenter (μ : Measure ℂ) (γ α : ℝ) (z : �
     _ ≤ ∫⁻ x in Metric.ball z r, ENNReal.rpow (ENNReal.ofReal ‖x - z‖) (-γ * α) ∂μ :=
         lintegral_mono_set (offcenter_ball_subset z hr)
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α : ℝ)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM α in
 /-- At and above `4/γ²` every positive-order weighted local moment diverges. -/
 theorem weightedGmcBallMoment_eq_top_of_bulk
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α : ℝ) (z : ℂ) (r : ℝ) (hr : 0 < r) (p : ℝ) (hp : 4 / γ ^ 2 ≤ p) :
+     (z : ℂ) (r : ℝ) (hr : 0 < r) (p : ℝ) (hp : 4 / γ ^ 2 ≤ p) :
     weightedGmcBallMoment P M γ α z r p = ⊤ := by
-  have hp0 : 0 < p := lt_of_lt_of_le (by positivity) hp
+  have hp0  := lt_of_lt_of_le (by positivity) hp
   set c : ℝ≥0∞ := min (ENNReal.rpow (ENNReal.ofReal (r / 4)) (-γ * α))
     (ENNReal.rpow (ENNReal.ofReal (3 * r / 4)) (-γ * α)) with hc
   have hc0 : c ≠ 0 := by
-    rw [hc]
-    refine (lt_min ?_ ?_).ne'
-    · exact ENNReal.rpow_pos (ENNReal.ofReal_pos.mpr (by positivity)) ENNReal.ofReal_ne_top
-    · exact ENNReal.rpow_pos (ENNReal.ofReal_pos.mpr (by positivity)) ENNReal.ofReal_ne_top
+    simp_all
   have hctop : c ≠ ⊤ := by
-    rw [hc]
-    exact ne_top_of_le_ne_top (ENNReal.rpow_ne_top_of_ne_zero
-      (ENNReal.ofReal_pos.mpr (by positivity)).ne' ENNReal.ofReal_ne_top) (min_le_left _ _)
+    simp_all
   have htop := gmc_ball_moment_eq_top_of_critical_le P X hX γ hγ hγ2 M hM
     (z + ((r / 2 : ℝ) : ℂ)) (r / 4) (by positivity) p hp
   have hmeas : AEMeasurable (fun ω => M ω (Metric.ball (z + ((r / 2 : ℝ) : ℂ)) (r / 4)) ^ p) P :=
@@ -111,12 +106,10 @@ theorem weightedGmcBallMoment_eq_top_of_bulk
         intro ω
         exact ENNReal.rpow_le_rpow (weightedGmcBallMass_ge_offcenter (M ω) γ α z hr) hp0.le
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM α in
 /-- For nonpositive charges the weighted local moment is finite below `4/γ²`. -/
 theorem weightedGmcBallMoment_lt_top_of_nonpos_charge
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α : ℝ) (hα : α ≤ 0) (z : ℂ) (r : ℝ) (p : ℝ) (hp0 : 0 < p)
+     (hα : α ≤ 0) (z : ℂ) (r : ℝ) (p : ℝ) (hp0 : 0 < p)
     (hp : p < 4 / γ ^ 2) :
     weightedGmcBallMoment P M γ α z r p < ⊤ := by
   have hs : 0 ≤ -γ * α := by nlinarith

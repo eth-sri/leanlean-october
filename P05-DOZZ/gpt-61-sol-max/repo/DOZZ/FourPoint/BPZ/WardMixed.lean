@@ -42,7 +42,7 @@ theorem bpzPin_eq_interval (r : ℝ) (x : ℂ) :
     bpzPin r x = (2 * Real.pi)⁻¹ *
       ∫ θ in (0 : ℝ)..2 * Real.pi,
         Real.log (normPlus (x + Real.exp (-r) * Complex.exp (θ * Complex.I))) := by
-  have hm : Measurable fun a : ℂ => Real.log (normPlus a) :=
+  have hm  :=
     Real.measurable_log.comp bpz_measurable_normPlus
   rw [bpzPin, bpz_integral_circleMeasure_eq x r (fun a => Real.log (normPlus a)) hm]
   rfl
@@ -70,9 +70,7 @@ theorem abs_bpzPin_sub_le' (r : ℝ) (x x' : ℂ) : |bpzPin r x - bpzPin r x'| �
     ring
   have hint := intervalIntegral.norm_integral_le_of_norm_le_const hb
   rw [Real.norm_eq_abs, sub_zero, abs_of_pos hpi] at hint
-  calc (2 * Real.pi)⁻¹ * |∫ θ in (0 : ℝ)..2 * Real.pi, _|
-      ≤ (2 * Real.pi)⁻¹ * (‖x - x'‖ * (2 * Real.pi)) := by gcongr
-    _ = ‖x - x'‖ := by field_simp
+  exact (inv_mul_le_iff₀' hpi).mpr hint
 
 theorem continuous_bpzPin (r : ℝ) : Continuous (bpzPin r) := by
   refine (LipschitzWith.of_dist_le_mul fun w w' => ?_).continuous (K := 1)

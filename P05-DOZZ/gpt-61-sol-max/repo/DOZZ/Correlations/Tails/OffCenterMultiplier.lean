@@ -31,18 +31,7 @@ theorem copied_multiplier_exponent_bound (z x : ℂ) (γ N Nbar : ℝ)
       (pinCorrectionEnvelope z γ N Nbar + 4) * ‖x‖ := by
   have hp := offCenter_pin_potential_bound z x hz hx
   have ht := pin_correction_exponent_bound z x γ N Nbar hz hx
-  calc
-    _ = |(γ * localPinCoefficient z x * (Nbar - N) -
-        γ ^ 2 * (Real.log ‖z+x‖ - Real.log ‖z‖)) -
-          4 * (Real.log ‖z+x‖ - Real.log ‖z‖)| := by congr 1; ring
-    _ ≤ |γ * localPinCoefficient z x * (Nbar - N) -
-        γ ^ 2 * (Real.log ‖z+x‖ - Real.log ‖z‖)| +
-          4 * |Real.log ‖z+x‖ - Real.log ‖z‖| := by
-      simpa only [abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 4)] using abs_sub
-        (γ * localPinCoefficient z x * (Nbar-N) -
-          γ ^ 2 * (Real.log ‖z+x‖ - Real.log ‖z‖))
-        (4 * (Real.log ‖z+x‖ - Real.log ‖z‖))
-    _ ≤ _ := by linarith
+  grind
 
 /-- A `DOZZ.UniformPositiveC1Family` controls the complete copied multiplier by a Gaussian
  envelope times the distance, with the norm-two endpoint included. -/
@@ -60,9 +49,7 @@ theorem copied_multiplier_local_bound
   have hF0 := ((hFamily.2.2.2.2 z hzK F hF).2.1 z).2
   have hD : 0 ≤ pinCorrectionEnvelope z γ N Nbar + 4 := by
     unfold pinCorrectionEnvelope
-    exact add_nonneg (add_nonneg
-      (mul_nonneg (div_nonneg (abs_nonneg γ) (offCenter_pin_variance_pos z hz).le)
-        (abs_nonneg _)) (sq_nonneg γ)) (by norm_num)
+    bound
   have hb := multiplier_exponential_variation (F (z+x)) (F z)
     (γ * localPinCoefficient z x * (Nbar-N) -
       (γ ^ 2 + 4) * (Real.log ‖z+x‖ - Real.log ‖z‖))

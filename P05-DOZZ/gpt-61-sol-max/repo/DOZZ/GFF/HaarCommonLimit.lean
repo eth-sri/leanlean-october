@@ -52,12 +52,11 @@ noncomputable def equatorHaarCommonEval (f : TestFn)
   limUnder atTop (fun n => equatorHaarCommonPartialEval f n ω)
 
 theorem measurable_equatorHaarCommonPartialEval (f : TestFn) (n : ℕ) :
-    Measurable (equatorHaarCommonPartialEval f n) := by
-  exact measurable_equatorHaarPartialDistribution_apply _ f
+    Measurable (equatorHaarCommonPartialEval f n) := measurable_equatorHaarPartialDistribution_apply _ f
 
 theorem measurable_equatorHaarCommonEval (f : TestFn) :
     Measurable (equatorHaarCommonEval f) := by
-  have hstrong : ∀ n, StronglyMeasurable (equatorHaarCommonPartialEval f n) :=
+  have hstrong  :=
     fun n => (measurable_equatorHaarCommonPartialEval f n).stronglyMeasurable
   exact (StronglyMeasurable.limUnder (l := atTop) hstrong).measurable
 
@@ -87,8 +86,7 @@ theorem ae_summable_equatorHaarCommonCosEval (R : ℕ) :
   have heq' (k : Fin 2 → ℤ) :
       equatorHaarCommonEval (gffLocalCosSobolevModeTest R k) ω =
         GaussianFields.scalarWhiteNoiseL2 3
-          (equatorKernelLimitMap (gffLocalCosSobolevModeTest R k)) ω := by
-    simpa [gffLocalSobolevModeTest] using heq k
+          (equatorKernelLimitMap (gffLocalCosSobolevModeTest R k)) ω := heq k
   apply hω.congr
   intro k
   rw [← heq' k]
@@ -105,8 +103,7 @@ theorem ae_summable_equatorHaarCommonSinEval (R : ℕ) :
   have heq' (k : Fin 2 → ℤ) :
       equatorHaarCommonEval (gffLocalSinSobolevModeTest R k) ω =
         GaussianFields.scalarWhiteNoiseL2 3
-          (equatorKernelLimitMap (gffLocalSinSobolevModeTest R k)) ω := by
-    simpa [gffLocalSobolevModeTest] using heq k
+          (equatorKernelLimitMap (gffLocalSinSobolevModeTest R k)) ω := heq k
   apply hω.congr
   intro k
   rw [← heq' k]

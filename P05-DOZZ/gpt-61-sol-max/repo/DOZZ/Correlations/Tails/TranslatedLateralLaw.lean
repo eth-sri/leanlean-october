@@ -9,7 +9,7 @@ public import DOZZ.Brownian.Lateral.ReflectionJointLaw
 
 /-! The complete lateral GMC carrier for the actual translated source projection. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 

@@ -4,7 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.Correlations.Symmetry.ReflectionChaosMeasure
-@[expose] public section
+import Mathlib.Tactic
+public section
 open MeasureTheory Filter
 open scoped Distributions Topology ENNReal
 namespace DOZZ.Proofs
@@ -14,7 +15,7 @@ theorem symmetry_integral_shift_cancel (μ : Measure ℂ) [IsFiniteMeasure μ]
     (g w : BoundedContinuousFunction ℂ ℝ) (c : ℝ) :
     (∫ x, (g x + c) * w x ∂μ) - (∫ x, c * w x ∂μ) = ∫ x, g x * w x ∂μ := by
   have hi : Integrable (fun x => g x * w x) μ := (g * w).integrable μ
-  have hc : Integrable (fun x => c * w x) μ := (w.integrable μ).const_mul c
+  have hc  := (w.integrable μ).const_mul c
   have he : (fun x => (g x + c) * w x) = fun x => g x * w x + c * w x := by
     funext x
     ring
@@ -28,7 +29,7 @@ theorem isGMCOf_symmetryRepinnedChaos
     (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     IsGMCOf P (symmetryRepinnedField X (fun ω => Xc ω 1 0)) γ
       (symmetryRepinnedChaos γ M (fun ω => Xc ω 1 0)) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   refine ⟨symmetryRepinnedChaos_finite γ M _ hM.1,
     (fun ω x r => Xc ω (1 - x) r - Xc ω 1 0),
     isCircleAverage_symmetryRepinned P X hX Xc hXc, ?_⟩
@@ -40,12 +41,8 @@ theorem isGMCOf_symmetryRepinnedChaos
     (symmetryReflectionCutoffWeight γ r).compContinuous φ
   let v := (symmetryReflectionLimitWeight γ).compContinuous φ
   have hw (r : ℝ) (x : ℂ) : 0 ≤ w r x := by
-    change 0 ≤ symmetryReflectionCutoffWeight γ r (1 - x)
-    rw [symmetryReflectionCutoffWeight_apply]
     exact (Real.exp_pos _).le
   have hv (x : ℂ) : 0 ≤ v x := by
-    change 0 ≤ symmetryReflectionLimitWeight γ (1 - x)
-    rw [symmetryReflectionLimitWeight_apply]
     exact (Real.exp_pos _).le
   have hg (x : ℂ) : 0 ≤ (g + C) x := by
     change 0 ≤ f (1 - x) + ‖f‖
@@ -57,10 +54,8 @@ theorem isGMCOf_symmetryRepinnedChaos
       ((symmetryReflectionCutoffWeight_uniform γ).comp (fun x : ℂ => 1 - x))
   have hA := regularizedGMC_varying_bcf_integral P X hX Xc hXc γ M hM
     (fun r => (g + C) * w r) (fun r x => by
-      change 0 ≤ (g + C) x * w r x
       exact mul_nonneg (hg x) (hw r x))
     ((g + C) * v) (fun x => by
-      change 0 ≤ (g + C) x * v x
       exact mul_nonneg (hg x) (hv x))
     (BoundedContinuousFunction.tendsto_iff_tendstoUniformly.mp
       (tendsto_const_nhds.mul hwconv))
@@ -81,7 +76,6 @@ theorem isGMCOf_symmetryRepinnedChaos
     apply TendstoInMeasure.congr _ _ hsub
     · intro r
       filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ r] with ω hω
-      let := hω
       exact symmetry_integral_shift_cancel _ g (w r) ‖f‖
     · exact ae_of_all _ (fun ω => by
         let := hM.1 ω

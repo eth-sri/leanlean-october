@@ -76,12 +76,12 @@ theorem measurable_incrementFunctional (γ η s : ℝ) (n : ℕ) :
   exact ENNReal.measurable_ofReal.comp
     ((hT'.sub hT).mul ((hT'.pow_const s).add (hT.pow_const s)))
 
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) {η δ : ℝ} (hW : TwoPoleWindow γ η δ) {a₁ a₂ : ℝ} (ha₁ : -2 * η - δ < a₁) (ha₂ : a₂ < 1 / γ)
+
+include P X hX γ hγ hγ2 M hM Xc hXc η δ hW a₁ a₂ ha₁ ha₂ in
 /-- **The tilted increment bound**: uniformly for `a` in a compact range,
 `E[e^{a X_{n+1} - (n+1) a²/2}(B_{n+1} - B_n)(B_{n+1}^{-a/γ} + B_n^{-a/γ})] ≤ C e^{-κ n}`. -/
-theorem exists_integral_cutoffIncrement_le (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) {η δ : ℝ}
-    (hW : TwoPoleWindow γ η δ) {a₁ a₂ : ℝ} (ha₁ : -2 * η - δ < a₁) (ha₂ : a₂ < 1 / γ) :
+theorem exists_integral_cutoffIncrement_le  :
     ∃ C κ : ℝ, 0 ≤ C ∧ 0 < κ ∧ ∀ a ∈ Icc a₁ a₂, ∀ n : ℕ,
       Integrable (fun ω => Real.exp (a * Xc ω 0 ((n + 1 : ℕ) : ℝ) -
         ((n + 1 : ℕ) : ℝ) * a ^ 2 / 2) *
@@ -150,13 +150,11 @@ theorem exists_integral_cutoffIncrement_le (P : Measure Ω) (X : Ω → Distr)
   rw [integral_eq_lintegral_of_nonneg_ae hnonneg hmeas]
   exact ENNReal.toReal_le_of_le_ofReal (by positivity) hlin
 
+include P X hX γ hγ hγ2 M hM Xc hXc η δ hW a₁ a₂ ha₁ ha₂ in
 /-- **The Cauchy estimate of the cutoff family** (`estF1`): uniformly for `Re z` in a compact
 subinterval of `(-2η - δ, 1/γ)`,
 `|F_{n+1}(z) - F_n(z)| ≤ e^{(n+1) (Im z)²/2} |1 - z/γ| C e^{-κ n}`. -/
-theorem exists_cutoff_cauchy_bound (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) {η δ : ℝ}
-    (hW : TwoPoleWindow γ η δ) {a₁ a₂ : ℝ} (ha₁ : -2 * η - δ < a₁) (ha₂ : a₂ < 1 / γ) :
+theorem exists_cutoff_cauchy_bound  :
     ∃ C κ : ℝ, 0 ≤ C ∧ 0 < κ ∧ ∀ z : ℂ, z.re ∈ Icc a₁ a₂ → ∀ n : ℕ,
       ‖poleSubtractedCutoff P Xc M γ η (n + 1) z -
           poleSubtractedCutoff P Xc M γ η n z‖ ≤
@@ -164,7 +162,7 @@ theorem exists_cutoff_cauchy_bound (P : Measure Ω) (X : Ω → Distr) (hX : IsE
   obtain ⟨C, κ, hC, hκ, hint⟩ :=
     exists_integral_cutoffIncrement_le P X hX γ hγ hγ2 M hM Xc hXc hW ha₁ ha₂
   refine ⟨C, κ, hC, hκ, fun z hz n => ?_⟩
-  have hzH : z ∈ cutoffHalfPlane η δ := lt_of_lt_of_le ha₁ hz.1
+  have hzH  := lt_of_lt_of_le ha₁ hz.1
   have hgood := ae_cutoffGood P X hX γ hγ hγ2 M hM hW
   rw [poleSubtractedCutoff_eq_cutoffFamily, poleSubtractedCutoff_eq_cutoffFamily,
     ← cutoffFamily_succ_eqOn P X hX γ hγ hγ2 M hM Xc hXc hW n hzH]

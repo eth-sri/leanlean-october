@@ -9,6 +9,7 @@ public import DOZZ.ShiftEquations.DualFirstCase.Continuation
 public import DOZZ.Statements.ShiftEquations.TwoPoleWindow
 import DOZZ.Brownian.Reflection.RtheorIdentification
 import DOZZ.DOZZAlgebra.ReflectionShifts
+public import DOZZ.ShiftEquations.ContinuationContracts
 /-! # The first-case dual structure shift, independent of the DOZZ roots
 
 The four explicit external inputs are the two dual crossing seeds (`DOZZ.dual_crossing_seed_one`,
@@ -16,88 +17,16 @@ The four explicit external inputs are the two dual crossing seeds (`DOZZ.dual_cr
 `DOZZ.structureConstant_reflected_shift_and_gluing`, and the identification of the reflection
 coefficient off its Gamma poles. Their complete statements are reproduced as conditional inputs.
 -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 universe u
 namespace DOZZ.Proofs
+variable {Ω : Type u} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ η : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hγirr : Irrational (γ ^ 2)) (hμ : 0 < μ) (hη : 0 < η ∧ Q γ - 2 * η > γ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) (α₂ α₃ : ℝ) (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ) (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ) (hsmall : η ≤ γ / 4) (hseedOne : ∀ {Ω : Type u} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr) (γ μ α ε α' : ℝ) (_hγ : 0 < γ) (_hγ₂ : γ < 2) (_hμ : 0 < μ) (_hα : α < Q γ) (_hε : ε < Q γ) (_hα' : α' < Q γ) (_hs : 2 * Q γ + 2 / γ < α + ε + α') (_hX : IsEquatorGFF P X) (_hM : IsGMCOf P X γ M), ∃ Bε : Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ, IsSourceLateralProjection P X γ M Z ∧ IsReflectionData P γ ε Bε Z ∧ structureConstant P M γ μ (α - 2 / γ) ε α' = dualCrossingMultiplier γ α' α ε * reflectionR P γ μ ε Bε Z * structureConstant P M γ μ α (2 * Q γ - ε - 2 / γ) α') (hseedTwo : ∀ {Ω : Type u} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr) (γ μ α ε α' : ℝ) (_hγ : 0 < γ) (_hγ₂ : γ < 2) (_hμ : 0 < μ) (_hα : α < Q γ) (_hε : ε < Q γ) (_hα' : α' < Q γ) (_hs : 2 * Q γ + 2 / γ < α + ε + α') (_hX : IsEquatorGFF P X) (_hM : IsGMCOf P X γ M), ∃ Bε Bα : Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ, IsSourceLateralProjection P X γ M Z ∧ IsReflectionData P γ ε Bε Z ∧ IsReflectionData P γ α Bα Z ∧ reflectionR P γ μ ε Bε Z * structureConstant P M γ μ (2 * Q γ - ε - 2 / γ) α α' = dualCrossingL γ ε α α' * reflectionR P γ μ α Bα Z * structureConstant P M γ μ ε (2 * Q γ - α - 2 / γ) α') (hG8 : ∀ {Ω : Type u} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ η : ℝ) (_hγ : 0 < γ) (_hγ2 : γ < 2) (_hμ : 0 < μ) (_hη : 0 < η ∧ Q γ - 2 * η > γ) (_hX : IsEquatorGFF P X) (_hM : IsGMCOf P X γ M) (α₂ α₃ : ℝ) (_hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ) (_hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ), Contract.fixedChargeShiftGluing P X M γ μ η α₂ α₃) (hOff : ∀ {Ω : Type u} [MeasurableSpace Ω] (P : Measure Ω) (γ μ α : ℝ) (_hγ : 0 < γ) (_hγ2 : γ < 2) (_hμ : 0 < μ) (_hα : γ / 2 < α ∧ α < Q γ) (_hPole : ReflectionPoleFree γ α) (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ) (_hData : IsReflectionData P γ α B Z), (reflectionR P γ μ α B Z : ℂ) = reflectionDOZZ γ μ (α : ℂ))
+
+include Ω _inst1 P X M γ μ η hγ hγ2 hγirr hμ hη hX hM α₂ α₃ hα₂ hα₃ hsmall hseedOne hseedTwo hG8 hOff in
 theorem structureConstant_dual_shift_strip_first_case_joint
-    {Ω : Type u} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ μ η : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (hγirr : Irrational (γ ^ 2)) (hμ : 0 < μ)
-    (hη : 0 < η ∧ Q γ - 2 * η > γ)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (α₂ α₃ : ℝ)
-    (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
-    (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ)
-    (hsmall : η ≤ γ / 4)
-    (hseedOne : ∀ {Ω : Type u} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
-    (γ μ α ε α' : ℝ)
-    (_hγ : 0 < γ) (_hγ₂ : γ < 2) (_hμ : 0 < μ)
-    (_hα : α < Q γ) (_hε : ε < Q γ) (_hα' : α' < Q γ)
-    (_hs : 2 * Q γ + 2 / γ < α + ε + α')
-    (_hX : IsEquatorGFF P X) (_hM : IsGMCOf P X γ M),
-    ∃ Bε : Ω → BrownianPath × BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-        IsReflectionData P γ ε Bε Z ∧
-        structureConstant P M γ μ (α - 2 / γ) ε α' =
-          dualCrossingMultiplier γ α' α ε *
-            reflectionR P γ μ ε Bε Z *
-              structureConstant P M γ μ α (2 * Q γ - ε - 2 / γ) α')
-    (hseedTwo : ∀ {Ω : Type u} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
-    (γ μ α ε α' : ℝ)
-    (_hγ : 0 < γ) (_hγ₂ : γ < 2) (_hμ : 0 < μ)
-    (_hα : α < Q γ) (_hε : ε < Q γ) (_hα' : α' < Q γ)
-    (_hs : 2 * Q γ + 2 / γ < α + ε + α')
-    (_hX : IsEquatorGFF P X) (_hM : IsGMCOf P X γ M),
-    ∃ Bε Bα : Ω → BrownianPath × BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-        IsReflectionData P γ ε Bε Z ∧
-        IsReflectionData P γ α Bα Z ∧
-        reflectionR P γ μ ε Bε Z *
-            structureConstant P M γ μ (2 * Q γ - ε - 2 / γ) α α' =
-          dualCrossingL γ ε α α' *
-            reflectionR P γ μ α Bα Z *
-              structureConstant P M γ μ ε (2 * Q γ - α - 2 / γ) α')
-    (hG8 : ∀ {Ω : Type u} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ μ η : ℝ)
-    (_hγ : 0 < γ) (_hγ2 : γ < 2) (_hμ : 0 < μ)
-    (_hη : 0 < η ∧ Q γ - 2 * η > γ)
-    (_hX : IsEquatorGFF P X) (_hM : IsGMCOf P X γ M)
-    (α₂ α₃ : ℝ)
-    (_hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
-    (_hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ),
-    ∃ B : ℝ → Ω → BrownianPath ×
-        BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ →
-            IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) =
-                  (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) =
-                  (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2)))
-    (hOff : ∀ {Ω : Type u} [MeasurableSpace Ω] (P : Measure Ω) (γ μ α : ℝ)
-    (_hγ : 0 < γ) (_hγ2 : γ < 2) (_hμ : 0 < μ)
-    (_hα : γ / 2 < α ∧ α < Q γ) (_hPole : ReflectionPoleFree γ α)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
-    (_hData : IsReflectionData P γ α B Z),
-    (reflectionR P γ μ α B Z : ℂ) = reflectionDOZZ γ μ (α : ℂ)) :
+     :
     ∃ B : ℝ → Ω → BrownianPath ×
         BrownianPath,
       ∃ Z : Ω → Measure ℝ,
@@ -258,85 +187,11 @@ theorem structureConstant_dual_shift_strip_first_case_joint
       (H / 2) (γ / 2) hCF hCzero hfirstF'
     simpa only [Complex.ofReal_div, Complex.ofReal_ofNat] using ht
 
+include Ω _inst1 P X M γ μ η hγ hγ2 hγirr hμ hη hX hM α₂ α₃ hα₂ hα₃ hsmall hseedOne hseedTwo hG8 hOff in
 /-- The dual structure shift on the first-case box, with the full physical and common-reflection
 clauses. Only the four inputs displayed below remain conditional. -/
 theorem structureConstant_dual_shift_strip_first_case
-    {Ω : Type u} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ μ η : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (hγirr : Irrational (γ ^ 2)) (hμ : 0 < μ)
-    (hη : 0 < η ∧ Q γ - 2 * η > γ)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (α₂ α₃ : ℝ)
-    (hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
-    (hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ)
-    (hsmall : η ≤ γ / 4)
-    (hseedOne : ∀ {Ω : Type u} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
-    (γ μ α ε α' : ℝ)
-    (_hγ : 0 < γ) (_hγ₂ : γ < 2) (_hμ : 0 < μ)
-    (_hα : α < Q γ) (_hε : ε < Q γ) (_hα' : α' < Q γ)
-    (_hs : 2 * Q γ + 2 / γ < α + ε + α')
-    (_hX : IsEquatorGFF P X) (_hM : IsGMCOf P X γ M),
-    ∃ Bε : Ω → BrownianPath × BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-        IsReflectionData P γ ε Bε Z ∧
-        structureConstant P M γ μ (α - 2 / γ) ε α' =
-          dualCrossingMultiplier γ α' α ε *
-            reflectionR P γ μ ε Bε Z *
-              structureConstant P M γ μ α (2 * Q γ - ε - 2 / γ) α')
-    (hseedTwo : ∀ {Ω : Type u} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (X : Ω → Distr)
-    (γ μ α ε α' : ℝ)
-    (_hγ : 0 < γ) (_hγ₂ : γ < 2) (_hμ : 0 < μ)
-    (_hα : α < Q γ) (_hε : ε < Q γ) (_hα' : α' < Q γ)
-    (_hs : 2 * Q γ + 2 / γ < α + ε + α')
-    (_hX : IsEquatorGFF P X) (_hM : IsGMCOf P X γ M),
-    ∃ Bε Bα : Ω → BrownianPath × BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-        IsReflectionData P γ ε Bε Z ∧
-        IsReflectionData P γ α Bα Z ∧
-        reflectionR P γ μ ε Bε Z *
-            structureConstant P M γ μ (2 * Q γ - ε - 2 / γ) α α' =
-          dualCrossingL γ ε α α' *
-            reflectionR P γ μ α Bα Z *
-              structureConstant P M γ μ ε (2 * Q γ - α - 2 / γ) α')
-    (hG8 : ∀ {Ω : Type u} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ μ η : ℝ)
-    (_hγ : 0 < γ) (_hγ2 : γ < 2) (_hμ : 0 < μ)
-    (_hη : 0 < η ∧ Q γ - 2 * η > γ)
-    (_hX : IsEquatorGFF P X) (_hM : IsGMCOf P X γ M)
-    (α₂ α₃ : ℝ)
-    (_hα₂ : Q γ - η < α₂ ∧ α₂ < Q γ)
-    (_hα₃ : Q γ - η < α₃ ∧ α₃ < Q γ),
-    ∃ B : ℝ → Ω → BrownianPath ×
-        BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ →
-            IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) =
-                  (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) =
-                  (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2)))
-    (hOff : ∀ {Ω : Type u} [MeasurableSpace Ω] (P : Measure Ω) (γ μ α : ℝ)
-    (_hγ : 0 < γ) (_hγ2 : γ < 2) (_hμ : 0 < μ)
-    (_hα : γ / 2 < α ∧ α < Q γ) (_hPole : ReflectionPoleFree γ α)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
-    (_hData : IsReflectionData P γ α B Z),
-    (reflectionR P γ μ α B Z : ℂ) = reflectionDOZZ γ μ (α : ℂ)) :
+     :
     ∃ B : ℝ → Ω → BrownianPath ×
         BrownianPath,
       ∃ Z : Ω → Measure ℝ,

@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Residue.FullFromUnit
 
 /-! Return from the separated finite-root chart to the exact unit-volume residue. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -55,21 +55,9 @@ theorem residue_unit_limit_from_chart_limit
   · ext ε
     rw [unitVolumeStructureConstant_swap13 P X M γ (α3 - α2 + ε) α2 α3 hγ hγ2 hX hM,
       residue_unitVolume_finite_chart P X M γ α3 α2 (α3 - α2 + ε) hγ hγ2 hX hM, hexp ε]
-    rw [hs]
-    have hq : -(-p + ε / γ) = p - ε / γ := by ring
-    rw [hq]
-    dsimp only [Function.comp_def, p]
-    ring
+    grind
   · have hpowers : (4 : ℝ) ^ (γ * α2 * p) * 4 ^ (-(γ * α2 * p)) = 1 := by
       rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 4), add_neg_cancel, Real.rpow_zero]
-    dsimp only [p] at hpowers
-    congr 1
-    symm
-    dsimp only [p]
-    calc _ = (2 * m * reflectionExponent γ α3 * Rbar) *
-        ((4 : ℝ) ^ (γ * α2 * reflectionExponent γ α3) *
-          (4 : ℝ) ^ (-(γ * α2 * reflectionExponent γ α3))) := by
-            field_simp [hγ.ne']
-      _ = _ := by rw [hpowers, mul_one]
+    grind
 
 end DOZZ.Proofs

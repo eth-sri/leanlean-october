@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Hypergeom.ConnectionDet
 import Mathlib.Tactic
+public import DOZZ.Hypergeom.RealConnectionCoefficients
 
 /-! # The real connection determinant used in coefficient extraction -/
 
@@ -16,14 +17,10 @@ namespace DOZZ.Proofs
 theorem crossing_connection_det_real (a b c : ℝ)
     (hc : ∀ n : ℤ, c ≠ (n : ℝ))
     (hδ : ∀ n : ℤ, c - a - b ≠ (n : ℝ)) :
-    (Real.Gamma c * Real.Gamma (c - a - b) *
-        (Real.Gamma (c - a))⁻¹ * (Real.Gamma (c - b))⁻¹) *
-      (Real.Gamma (2 - c) * Real.Gamma (a + b - c) *
-        (Real.Gamma (a - c + 1))⁻¹ * (Real.Gamma (b - c + 1))⁻¹) -
-      (Real.Gamma c * Real.Gamma (a + b - c) *
-        (Real.Gamma a)⁻¹ * (Real.Gamma b)⁻¹) *
-      (Real.Gamma (2 - c) * Real.Gamma (c - a - b) *
-        (Real.Gamma (1 - a))⁻¹ * (Real.Gamma (1 - b))⁻¹) =
+    (realGaussConnection₀₀ a b c) *
+      (realGaussConnection₁₁ a b c) -
+      (realGaussConnection₀₁ a b c) *
+      (realGaussConnection₁₀ a b c) =
     (c - 1) / (c - a - b) := by
   have hcC : ∀ n : ℤ, (c : ℂ) ≠ (n : ℂ) := by
     intro n hn

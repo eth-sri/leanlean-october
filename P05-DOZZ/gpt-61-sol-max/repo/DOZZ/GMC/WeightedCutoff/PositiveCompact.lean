@@ -2,10 +2,12 @@ module
 
 public import DOZZ.GMC.WeightedCutoff.RootUniform
 public import DOZZ.GMC.WeightedCutoff.AnnularRoot
+import Mathlib.Tactic
+import Mathlib.Tactic
 
 /-! # Uniform positive-charge weighted cutoff estimates -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -27,11 +29,11 @@ theorem cutoffWeightedGmcBallMoment_positive_compact_gamma_chart
       ∀ δ : ℝ, 0 < δ → δ ≤ R →
       (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω ^ t.2 ∂P) ≤
         C * ENNReal.ofReal (R ^ weightedCutoffMomentScaleExponent γ t.1 t.2) := by
-  have hq0 : 0 < q := lt_trans zero_lt_one hq
+  have hq0  := lt_trans zero_lt_one hq
   obtain ⟨Aroot, hAroot, hballRoot⟩ := regularizedGMC_openBall_root_bound_compact_gamma_chart
     P X hX Xc hXc Γ hΓ (fun γ hγ => (hΓ2 hγ).1) q hq hcrit
   let U : Set (ℝ × (ℝ × ℝ)) := Γ ×ˢ T
-  have hU : IsCompact U := hΓ.prod hT
+  have hU  := hΓ.prod hT
   have hQcont : ContinuousOn (fun γ : ℝ => Q γ) Γ := by
     dsimp [Q]
     apply ContinuousOn.add
@@ -50,49 +52,40 @@ theorem cutoffWeightedGmcBallMoment_positive_compact_gamma_chart
       (lt_of_lt_of_le zero_lt_one hadm.1) hadm.2
   obtain ⟨ε₀, hε₀, hε₀lower⟩ := hU.exists_forall_le' hetaCont hetaPos
   let ε : ℝ := ε₀ / q
-  have hε : 0 < ε := by dsimp [ε]; exact div_pos hε₀ hq0
+  have hε : 0 < ε := by exact div_pos hε₀ hq0
   let halfRatio : ℝ≥0∞ := ENNReal.ofReal ((1 / 2 : ℝ) ^ ε)
   have hhalfReal : (1 / 2 : ℝ) ^ ε < 1 :=
     Real.rpow_lt_one (by norm_num) (by norm_num) hε
   have hhalfRatio : halfRatio < 1 :=
-    ENNReal.ofReal_lt_one.mpr (by simpa [halfRatio] using hhalfReal)
+    ENNReal.ofReal_lt_one.mpr (by exact hhalfReal)
   have hden : 1 - halfRatio ≠ 0 := by
     intro h
     exact (not_le_of_gt hhalfRatio) (tsub_eq_zero_iff_le.mp h)
-  have hgeomTop : (1 - halfRatio)⁻¹ < ⊤ :=
-    lt_top_iff_ne_top.mpr (ENNReal.inv_ne_top.mpr hden)
+
   let D : ℝ≥0∞ := ENNReal.ofReal ((8 : ℝ) ^ (4 : ℝ)) +
     ENNReal.ofReal ((16 : ℝ) ^ (4 : ℝ)) * halfRatio * (1 - halfRatio)⁻¹
   have hD : D < ⊤ := by
     dsimp [D]
-    exact ENNReal.add_lt_top.mpr ⟨ENNReal.ofReal_lt_top,
-      ENNReal.mul_lt_top (ENNReal.mul_lt_top ENNReal.ofReal_lt_top ENNReal.ofReal_lt_top)
-        hgeomTop⟩
+    finiteness
   let B : ℝ≥0∞ := max 1 (Aroot * D)
   have hB : B < ⊤ := by
     dsimp [B]
-    exact max_lt_iff.mpr ⟨ENNReal.one_lt_top, ENNReal.mul_lt_top hAroot hD⟩
-  have hBone : 1 ≤ B := by dsimp [B]; exact le_max_left _ _
+    finiteness
+  have hBone : 1 ≤ B := by exact le_max_left _ _
   let C : ℝ≥0∞ := B ^ q
   have hC : C < ⊤ := by
-    dsimp [C]
     exact lt_top_iff_ne_top.mpr (ENNReal.rpow_ne_top_of_nonneg hq0.le hB.ne)
   refine ⟨C, hC, ?_⟩
   intro γ hγmem t ht hα z R hR hRhi hchart δ hδ hδR
-  have hγ : 0 < γ := (hΓ2 hγmem).1
+  have hγ  := (hΓ2 hγmem).1
   have hadm := hTadm γ hγmem t ht
-  have hp0 : 0 < t.2 := lt_of_lt_of_le zero_lt_one hadm.1
-  have hpq' : t.2 ≤ q := hordersBound t ht
+  have hp0  := lt_of_lt_of_le zero_lt_one hadm.1
+  have hpq'  := hordersBound t ht
   have hetaLower : ε₀ ≤ weightedCutoffMomentScaleExponent γ t.1 t.2 := by
-    simpa [eta, weightedCutoffMomentScaleExponent] using hε₀lower (γ, t) ⟨hγmem, ht⟩
+    exact hε₀lower (γ, t) ⟨hγmem, ht⟩
   have hmargin : ε ≤ weightedCutoffMomentScaleExponent γ t.1 t.2 / t.2 := by
-    have hfirst : ε₀ / q ≤ ε₀ / t.2 := by
-      apply (div_le_div_iff₀ hq0 hp0).2
-      exact mul_le_mul_of_nonneg_left hpq' hε₀.le
-    have hsecond := div_le_div_of_nonneg_right hetaLower hp0.le
-    dsimp [ε]
-    exact hfirst.trans hsecond
-  have hpbulk : t.2 < 4 / γ ^ 2 := lt_of_lt_of_le hadm.2 (min_le_left _ _)
+    bound
+  have hpbulk  := lt_of_lt_of_le hadm.2 (min_le_left _ _)
   have hβeq :
       (2 * t.2 + γ ^ 2 * t.2 / 2 - γ ^ 2 * t.2 ^ 2 / 2) / t.2 =
         2 + γ ^ 2 / 2 - γ ^ 2 * t.2 / 2 := by
@@ -102,10 +95,7 @@ theorem cutoffWeightedGmcBallMoment_positive_compact_gamma_chart
     nlinarith [h]
   have hγsq : γ ^ 2 < 4 := by
     have hle : γ ^ 2 ≤ γ ^ 2 * t.2 := by
-      calc
-        γ ^ 2 = γ ^ 2 * 1 := by ring
-        _ ≤ γ ^ 2 * t.2 :=
-          mul_le_mul_of_nonneg_left hadm.1 (sq_nonneg γ)
+      bound
     linarith
   have hβupper :
       (2 * t.2 + γ ^ 2 * t.2 / 2 - γ ^ 2 * t.2 ^ 2 / 2) / t.2 ≤ 4 := by
@@ -131,14 +121,12 @@ theorem cutoffWeightedGmcBallMoment_positive_compact_gamma_chart
         ((2 * t.2 + γ ^ 2 * t.2 / 2 - γ ^ 2 * t.2 ^ 2 / 2) / t.2)) * halfRatio *
         (1 - halfRatio)⁻¹ ≤ D := by
     dsimp [D]
-    apply add_le_add hcore
-    exact mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_right hshell (by positivity)) (by positivity)
+    gcongr
   have hK : cutoffWeightedPositiveScaleRootBoundConstant Aroot γ t.2 ε ≤ B := by
     calc
       _ ≤ Aroot * D := by
         unfold cutoffWeightedPositiveScaleRootBoundConstant
-        exact mul_le_mul_of_nonneg_left hDterm (by positivity)
+        bound
       _ ≤ B := le_max_right _ _
   have hmain := cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
     P X hX Xc hXc γ t.1 t.2 hγ hα hadm.1 hadm.2

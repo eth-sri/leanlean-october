@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Tails.ParameterMassMeasurability
 
 /-! The copied compact-chaos law in the extended-real integral representation. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -32,7 +32,7 @@ theorem copied_compact_ennreal_law
       (P.prod P).map (fun q => ENNReal.ofReal (Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖)) *
         ∫⁻ x, ENNReal.ofReal (g x) * ENNReal.ofReal
           (Real.exp (γ*localPinCoefficient z x*(Xc q.2 z 0-Xc q.1 z 0))) ∂N q.1) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   obtain ⟨G, hGc, hG, hlaw⟩ := copied_compact_chaos_law
     P X Xc hX hc hm z hz γ hγ hγ2 M hM N hN g hgc hg0 hgs
   refine ⟨G, hGc, hG, ?_⟩
@@ -40,7 +40,7 @@ theorem copied_compact_ennreal_law
     rw [hG]
     exact mul_nonneg (hg0 _) (Real.exp_nonneg _)
   have hGi (ω : Ω) : Integrable (fun y => G y) (M ω) := by
-    let : IsFiniteMeasure (M ω) := hM.1 ω
+    let  := hM.1 ω
     exact G.integrable (μ := M ω)
   have hAm := gmc_parameter_integral_aemeasurable P X hX γ hγ hγ2 M hM
     (fun _ => ()) aemeasurable_const (fun p : Unit × ℂ => G p.2)
@@ -54,7 +54,7 @@ theorem copied_compact_ennreal_law
   have hcoef : Measurable (localPinCoefficient z) := by
     unfold localPinCoefficient
     fun_prop
-  have hF : Measurable F := (g.continuous.measurable.comp measurable_snd).mul
+  have hF  := (g.continuous.measurable.comp measurable_snd).mul
     ((((hcoef.comp measurable_snd).const_mul γ).mul measurable_fst).exp)
   have hF0 (t : ℝ) (x : ℂ) : 0 ≤ F (t,x) := mul_nonneg (hg0 x) (Real.exp_nonneg _)
   have hFeq (t : ℝ) (x : ℂ) : F (t,x) =
@@ -63,12 +63,11 @@ theorem copied_compact_ennreal_law
     · change g x * _ = g x * _
       simp only [hx, zero_mul]
     · have hs := hgs (subset_tsupport (g : ℂ → ℝ) (Function.mem_support.mpr hx))
-      have hb := bounded_pin_coefficient_eq z x hz (by
-        exact (show ‖x‖ < 1 from by simpa only [Metric.mem_ball, dist_zero_right] using hs).le)
+      have hb := bounded_pin_coefficient_eq z x hz ((show ‖x‖ < 1 from by simpa only [Metric.mem_ball, dist_zero_right] using hs).le)
       change g x * _ = g x * Real.exp ((γ * boundedPinCoefficient z x)*t)
       rw [hb]
   have hFi (q : Ω × Ω) : Integrable (fun x => F (θ q,x)) (N q.1) := by
-    let : IsFiniteMeasure (N q.1) := hN.1 q.1
+    let  := hN.1 q.1
     simpa only [hFeq] using
       (exponentialParameterTest g (γ • boundedPinCoefficient z) (θ q)).integrable (μ := N q.1)
   have hY := translated_field_isEquatorGFF P X Xc hX hc z

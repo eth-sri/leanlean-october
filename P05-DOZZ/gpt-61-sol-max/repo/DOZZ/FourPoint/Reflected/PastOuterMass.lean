@@ -40,8 +40,8 @@ theorem reflected_pastOuterMassCode_eq (γ α₁ α₂ α₃ r : ℝ) (z : ℂ) 
     (measurableSet_lt measurable_const measurable_norm).inter (measurableSet_insert.mpr (measurableSet_singleton (1 : ℂ)) : MeasurableSet ({0,1} : Set ℂ)).compl
   have hU0 : reflected_outerRegion r ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
-    have hn : 0 < ‖x‖ := hr.trans hx.1
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hn
+    have hn  := hr.trans hx.1
+    simp_all
   rw [reflectedPastOuterMassCode,reflected_puncturedMassCode_eq _ _ _ hfin]
   dsimp only [Prod.fst,Prod.snd]
   rw [setLIntegral_indicator hU,inter_eq_left.mpr hU0]

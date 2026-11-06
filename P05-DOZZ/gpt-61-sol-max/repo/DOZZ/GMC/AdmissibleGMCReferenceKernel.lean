@@ -11,7 +11,7 @@ import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
 
 /-! Compact Riesz-kernel integrability for the reference measure of an admissible chart. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Set
 open scoped ENNReal
@@ -47,7 +47,7 @@ theorem admissible_logRegularization_reference_pair_kernel_lintegrable
     have hbdd := (hK.bddAbove_image (hY.densityContinuous.mono hKU)).choose_spec
     have hle : dens x ≤ max
         ((hK.bddAbove_image (hY.densityContinuous.mono hKU)).choose) 0 := by
-      exact le_trans (hbdd (Set.mem_image_of_mem dens hx)) (le_max_left _ _)
+      continuity
     exact ENNReal.ofReal_le_ofReal hle
   have hνle : ν ≤ c • volK := by
     rw [hν, ← withDensity_const]
@@ -71,45 +71,31 @@ theorem admissible_logRegularization_reference_pair_kernel_lintegrable
       ∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volK.prod volK) ≠ ∞ := by
     have hrewrite : volK.prod volK =
-        (volume.prod volume).restrict (K ×ˢ K) := by
-      exact Measure.prod_restrict K K
-    rw [hrewrite]
-    change (∫⁻ p in K ×ˢ K,
-      ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volume.prod volume)) ≠ ∞
-    exact ne_top_of_le_ne_top hB hpair
+        (volume.prod volume).restrict (K ×ˢ K) := Measure.prod_restrict K K
+    aesop
   have hlin :
       ∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(ν.prod ν) ≤
       ∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂((c * c) • (volK.prod volK)) :=
     lintegral_mono' hprod (fun _ => le_rfl)
-  have hcctop : c * c ≠ ∞ := by
-    exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top
+  have hcctop : c * c ≠ ∞ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top
   have hlin' :
       ∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂((c * c) • (volK.prod volK)) =
       c * c * ∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volK.prod volK) := by
-    rw [lintegral_smul_measure]
-    simp only [smul_eq_mul]
+    simp_all
   have hbaseLeB :
       (∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volK.prod volK)) ≤ B := by
     rw [show volK.prod volK = (volume.prod volume).restrict (K ×ˢ K) by
       exact Measure.prod_restrict K K]
-    change (∫⁻ p in K ×ˢ K,
-      ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volume.prod volume)) ≤ B
-    exact hpair
+    simp_all
   have hscaled : c * c *
       (∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volK.prod volK)) ≤ c * c * B := by
-    calc
-      c * c * (∫⁻ p : ℂ × ℂ,
-          ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volK.prod volK)) =
-          (∫⁻ p : ℂ × ℂ,
-            ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volK.prod volK)) * (c * c) := by ac_rfl
-      _ ≤ B * (c * c) := mul_le_mul_left hbaseLeB (c * c)
-      _ = c * c * B := by ac_rfl
+    bound
   apply ne_top_of_le_ne_top (ENNReal.mul_ne_top hcctop hB)
   exact hlin.trans (hlin'.le.trans hscaled)
 

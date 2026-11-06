@@ -9,7 +9,7 @@ public import DOZZ.GMC.Moments.InversionMixedPotential
 
 /-! Exact mixed covariances of source circles and inverted local tests. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped Distributions

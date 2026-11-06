@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Dual.SourceCopiedOuterLaw
 import Mathlib.Tactic
 /-! The stopped-past exterior observable is the actual retained source mass. -/
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

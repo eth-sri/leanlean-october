@@ -6,10 +6,11 @@ module
 
 public import DOZZ.GMC.Moments.InversionCircleL2
 public import DOZZ.GMC.Construction.CircleAverageJointVersion
+import Mathlib.Tactic
 
 /-! Coupled Gaussian circle limits for the inverted local field. -/
 
-@[expose] public section
+public section
 
 open Filter MeasureTheory ProbabilityTheory
 open scoped Topology Distributions
@@ -33,7 +34,7 @@ theorem exists_equatorGFF_inversion_circle_family
       (∀ p, (∫ ω, Y p ω ∂P) = 0) ∧
       (∀ p q, covariance (Y p) (Y q) P =
         ∫ z, ∫ w, gffKernel z w ∂circleMeasure p.1 p.2 ∂circleMeasure q.1 q.2) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   have hex (p : ℂ × ℝ) :=
     exists_equatorGFF_inversion_circle_test_L2_limit_all X hX p.1 p.2
   choose f hf W hgap hW using hex
@@ -43,9 +44,7 @@ theorem exists_equatorGFF_inversion_circle_family
   have hproc : IsGaussianProcess Y P := by
     apply isGaussianProcess_of_eLpNorm_sub
       (fun n p ω => X ω (inversionTest (f p n) (hf p n))) Y
-    · intro n
-      exact equatorGFF_test_family_isGaussianProcess X hX
-        (fun p => inversionTest (f p n) (hf p n))
+    · exact fun n => equatorGFF_test_family_isGaussianProcess X hX fun t => inversionTest (f t n) (hf t n)
     · exact hYmem
     · exact hYlim
   have hmean p : (∫ ω, Y p ω ∂P) = 0 :=
@@ -99,7 +98,7 @@ theorem exists_equatorGFF_inversion_circle_joint_version
       (∀ p q : ℂ × ℝ, covariance (fun ω => Z ω p.1 p.2)
         (fun ω => Z ω q.1 q.2) P =
         ∫ z, ∫ w, gffKernel z w ∂circleMeasure p.1 p.2 ∂circleMeasure q.1 q.2) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   obtain ⟨f, hf, Y, hgap, hY, hproc, hmean, hcov⟩ :=
     exists_equatorGFF_inversion_circle_family X hX
   have hmod r := exists_continuous_circleL2_modification_at_radius
@@ -111,13 +110,13 @@ theorem exists_equatorGFF_inversion_circle_joint_version
     (fun x => ⟨Y (x, r), (hY (x, r)).1, (hVeq r x).symm⟩)
   choose G hGj hGae using hjoint
   let Z : Ω → ℂ → ℝ → ℝ := fun ω x r => G r ω x
-  have hmap : Measurable[mΩ] (fun ω => fun g : TestFn => X ω g) :=
+  have hmap  :=
     measurable_pi_iff.mpr (fun g => (hX.2 g).1)
   have hm0 : equatorGFFRawDistributionSigma X ≤ mΩ := hmap.comap_le
   have hprod : (equatorGFFRawDistributionSigma X).prod (borel ℂ) ≤
       mΩ.prod (borel ℂ) := by
     rw [MeasurableSpace.prod, MeasurableSpace.prod]
-    exact sup_le_sup (MeasurableSpace.comap_mono hm0) le_rfl
+    gcongr
   have hZae (p : ℂ × ℝ) : (fun ω => Z ω p.1 p.2) =ᵐ[P] Y p := by
     filter_upwards [hGae p.2, hVeq p.2 p.1] with ω hG hV
     exact (hG p.1).trans hV

@@ -11,7 +11,7 @@ public import DOZZ.Statements.GMC.EquatorGFFGMCWeightedCutoffBound
 /-! The compact geometry and charge sets select one mixed-cutoff moment constant for the
 separated joint-tail estimate. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Metric Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -36,20 +36,18 @@ theorem separatedTail_cutoff_mixed_moment_uniform
         (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ α2 z2 1 δ ω ^ (reflectionExponent γ α2-ε) *
           cutoffWeightedGmcBallMass P Xc γ α3 z3 1 δ ω ^ (reflectionExponent γ α3-ε) ∂P) ≤ B := by
   classical
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   obtain ⟨q,hq,hqs⟩ := separatedTail_exists_uniform_holder_slack hγ hε
   let p := Real.conjExponent q
-  have hpq : p.HolderConjugate q := (Real.HolderConjugate.conjExponent hq).symm
+  have hpq  := (Real.HolderConjugate.conjExponent hq).symm
   let T : ℝ := 4/γ^2
   have hT : 0 < T := by dsimp [T]; positivity
   have hadm (α : ℝ) (hα : α ∈ A2 ∪ A3) :
       γ/2 < α ∧ α < Q γ ∧ ε < reflectionExponent γ α := by
-    rcases hα with h | h
-    · exact ⟨(hα2 α h).1,(hα2 α h).2,hε2 α h⟩
-    · exact ⟨(hα3 α h).1,(hα3 α h).2,hε3 α h⟩
+    grind
   let params : ℝ → ℝ × ℝ := fun α => (α, q*(reflectionExponent γ α-ε))
   have hparams : Continuous params := by unfold params reflectionExponent; fun_prop
-  have hpc : IsCompact (params '' (A2 ∪ A3)) := (hA2.union hA3).image hparams
+  have hpc  := (hA2.union hA3).image hparams
   obtain ⟨C0,hC0,hC0b⟩ := DOZZ.equatorGFF_GMC_weighted_cutoff_bound P X hX γ hγ hγ2 Xc hc
     (params '' (A2 ∪ A3)) hpc (by
       rintro _ ⟨α,hα,rfl⟩
@@ -95,10 +93,7 @@ theorem separatedTail_cutoff_mixed_moment_uniform
     · exact Or.inl hα2mem
     · exact Or.inr hα3mem
   have hpin : ∀ i, ‖c i‖+5/4+1/4 ≤ R := by
-    intro i
-    have hn := hnorm (c i) (hcK i)
-    dsimp [R]
-    linarith
+    grind
   have hsep' : ∀ i j, i ≠ j → 3 ≤ ‖c i-c j‖ := by
     intro i j hij
     fin_cases i <;> fin_cases j

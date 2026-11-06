@@ -7,10 +7,11 @@ module
 public import DOZZ.Correlations.Tails.OneInsertionEstimate
 public import DOZZ.Correlations.Tails.ReflectionWitness
 public import DOZZ.Statements.GFFStructure.ExistsContinuousCircleAverage
+public import DOZZ.Correlations.TailContracts
 
 /-! The uniform one-insertion tail with one source reflection witness chosen before the error exponent. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 
@@ -25,16 +26,7 @@ theorem oneInsertion_tail_uniform
     (hα : ∀ α ∈ Kα, γ / 2 < α ∧ α < Q γ)
     (Family : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
     (hFamily : UniformPositiveC1Family Kz Family radius supBound derivBound lowerBound) :
-    ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-      IsSourceLateralProjection P X γ M Z ∧
-        (∀ α ∈ Kα, IsReflectionData P γ α (B α) Z) ∧
-        ∀ η : ℝ, 0 < η → (∀ α ∈ Kα, η < oneInsertionErrorCeiling γ α) →
-          ∃ C : ℝ, 0 ≤ C ∧
-            ∀ z ∈ Kz, ∀ α ∈ Kα, ∀ F ∈ Family z, ∀ x : ℝ, 1 ≤ x →
-              |(P {ω | ENNReal.ofReal x < localSingularMass M F z γ α ω}).toReal -
-                oneInsertionTailCoefficient γ α z (F z) (reflectionBarR P γ α (B α) Z) *
-                  Real.rpow x (-reflectionExponent γ α)| ≤
-                C * Real.rpow x (-reflectionExponent γ α - η) := by
+    Contract.oneInsertionTail P X M γ Kz Kα Family := by
   obtain ⟨B,Z,hsource,hData⟩ := exists_source_reflection_witness P X M γ hγ hγ2 hX hM
   have hhalf : γ/2 < Q γ := by
     unfold Q

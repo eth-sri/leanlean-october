@@ -13,6 +13,8 @@ public import DOZZ.Statements.Correlations.UnitVolumeStructureConstantSymmetricE
 public import DOZZ.Hypergeom.ClassificationDiagonalConnection
 public import DOZZ.Hypergeom.ConnectionDiagonalCoefficients
 import Mathlib.Tactic
+public import DOZZ.FourPoint.GaussContracts
+public import DOZZ.Hypergeom.RealConnectionCoefficients
 
 /-! # Crossing coefficient assembly with both analytic inputs visible
 
@@ -45,13 +47,7 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
           (‖gaussFMinus H a b c z‖ ^ 2 + gaussCoefficientRatio a b c *
             ‖gaussFPlus H a b c z‖ ^ 2))
     (hformula :
-      let a := gaussParameterA γ (γ / 2) ε α' α
-      let b := gaussParameterB γ (γ / 2) ε α' α
-      let c := gaussParameterC γ (γ / 2) ε
-      ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-γ / 2) ε α' α z =
-        structureConstant P M γ μ (ε - γ / 2) α' α * ‖gaussFMinus H a b c z‖ ^ 2 +
-        (-μ * (planarGaussConstant (γ ^ 2 / 2) (γ * ε)).re) *
-          structureConstant P M γ μ (ε + γ / 2) α' α * ‖gaussFPlus H a b c z‖ ^ 2) :
+      Contract.gammaHalfUnreflected P M γ μ ε α' α H) :
     structureConstant P M γ μ (α' - γ / 2) ε α =
       gammaHalfCrossingMultiplier γ μ α' ε α *
         structureConstant P M γ μ α' (ε + γ / 2) α ∧
@@ -63,13 +59,10 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
   let c := gaussParameterC γ (γ / 2) α'
   let d₀ := structureConstant P M γ μ (α' - γ / 2) ε α
   let d₁ := d₀ * gaussCoefficientRatio a b c
-  let u := Real.Gamma c * Real.Gamma (c - a - b) *
-    (Real.Gamma (c - a))⁻¹ * (Real.Gamma (c - b))⁻¹
-  let v := Real.Gamma c * Real.Gamma (a + b - c) * (Real.Gamma a)⁻¹ * (Real.Gamma b)⁻¹
-  let w := Real.Gamma (2 - c) * Real.Gamma (c - a - b) *
-    (Real.Gamma (1 - a))⁻¹ * (Real.Gamma (1 - b))⁻¹
-  let x := Real.Gamma (2 - c) * Real.Gamma (a + b - c) *
-    (Real.Gamma (a - c + 1))⁻¹ * (Real.Gamma (b - c + 1))⁻¹
+  let u := realGaussConnection₀₀ a b c
+  let v := realGaussConnection₀₁ a b c
+  let w := realGaussConnection₁₀ a b c
+  let x := realGaussConnection₁₁ a b c
   let e₀ := structureConstant P M γ μ (ε - γ / 2) α' α
   let Bε := -μ * (planarGaussConstant (γ ^ 2 / 2) (γ * ε)).re
   let e₁ := Bε * structureConstant P M γ μ (ε + γ / 2) α' α
@@ -100,15 +93,7 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
       (d₀ * u ^ 2 + d₁ * w ^ 2) * ‖gaussGMinus H a b c z‖ ^ 2 +
         (d₀ * v ^ 2 + d₁ * x ^ 2) * ‖gaussGPlus H a b c z‖ ^ 2 =
           e₀ * ‖gaussGMinus H a b c z‖ ^ 2 + e₁ * ‖gaussGPlus H a b c z‖ ^ 2 := by
-    intro z hz
-    calc
-      _ = d₀ * ‖gaussFMinus H a b c z‖ ^ 2 + d₁ * ‖gaussFPlus H a b c z‖ ^ 2 :=
-        (htransfer z hz).symm
-      _ = fourPointT P M γ μ (-γ / 2) α' ε α z := by
-        rw [hdiagonal z hz]
-        dsimp [d₁, d₀, a, b, c]
-        ring
-      _ = _ := hone z hz
+    grind
   have hE := (crossing_one_channel_coefficients_unique hH a b c
     (d₀ * u ^ 2 + d₁ * w ^ 2) (d₀ * v ^ 2 + d₁ * x ^ 2) e₀ e₁ hδn he).2.symm
   have hex := crossing_diagonal_coefficient_extraction a b c d₀ d₁ e₁
@@ -128,13 +113,7 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
     have hdom : ExtendedSeiberg3 γ (ε + γ / 2) α' α := by
       refine ⟨hpQ, hα', hα, ?_⟩
       apply lt_trans (neg_neg_of_pos hpS)
-      apply lt_min
-      · positivity
-      · apply lt_min
-        · exact mul_pos (div_pos (by norm_num) hγ) (sub_pos.mpr hpQ)
-        · apply lt_min
-          · exact mul_pos (div_pos (by norm_num) hγ) (sub_pos.mpr hα')
-          · exact mul_pos (div_pos (by norm_num) hγ) (sub_pos.mpr hα)
+      positivity
     have hsym := DOZZ.unitVolumeStructureConstant_symmetric_extended
       P X M γ (ε + γ / 2) α' α hγ hγ2 hX hM hdom
     rw [heS, hsym.1]

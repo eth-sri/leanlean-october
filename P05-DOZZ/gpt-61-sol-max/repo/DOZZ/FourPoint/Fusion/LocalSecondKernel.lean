@@ -10,7 +10,7 @@ public import DOZZ.GMC.Annulus.ReferenceIntensity
 
 /-! # Absolute integrability of the local second derivative kernel -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -20,7 +20,6 @@ theorem fusion_secondKernel_norm (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) :
     ‖(gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (x - z) ^ 2‖ =
       gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2 := by
   have hk : 0 ≤ gammaHalfKernel γ α₁ α₂ α₃ z x := by
-    unfold gammaHalfKernel
     exact div_nonneg (mul_nonneg (Real.rpow_nonneg (norm_nonneg _) _)
       (Real.rpow_nonneg (by unfold normPlus; positivity) _))
       (mul_nonneg (Real.rpow_nonneg (norm_nonneg _) _) (Real.rpow_nonneg (norm_nonneg _) _))
@@ -32,8 +31,8 @@ theorem fusion_localSecondKernel_bound (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
     gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2 ≤
       (2 : ℝ) ^ |γ * α₂| * planarMixedKernel (γ ^ 2 / 2) (γ * α₁) z x := by
   have hn : normPlus x = 1 := max_eq_left (by linarith)
-  have h0 : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have hd : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+  have h0  := norm_pos_iff.mpr hx0
+  have hd  := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
   have hlo : (1 / 2 : ℝ) ≤ ‖x - 1‖ := by
     have h := norm_sub_norm_le (1 : ℂ) x
     rw [norm_one, norm_sub_rev] at h
@@ -42,7 +41,7 @@ theorem fusion_localSecondKernel_bound (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
     have h := norm_sub_le x (1 : ℂ)
     rw [norm_one] at h
     linarith
-  have h1 : 0 < ‖x - 1‖ := (by norm_num : (0 : ℝ) < 1 / 2).trans_le hlo
+  have h1  := (by norm_num : (0 : ℝ) < 1 / 2).trans_le hlo
   have ht : ‖x - 1‖ ^ (-γ * α₂) ≤ (2 : ℝ) ^ |γ * α₂| := by
     simpa only [neg_mul, abs_neg] using coulombWeight_rpow_le (L := 2) (y := ‖x - 1‖)
       (by norm_num) (by norm_num; exact hlo) hhi (-γ * α₂)
@@ -75,7 +74,7 @@ theorem fusion_localSecondKernel_integrable (γ α₁ α₂ α₃ : ℝ)
     by_cases hx : x ∈ B
     · rw [Set.indicator_of_mem hx, fusion_secondKernel_norm]
       exact fusion_localSecondKernel_bound γ α₁ α₂ α₃ z x
-        (by simpa only [B, Metric.mem_ball, dist_zero_right] using hx) hx0 hxz
+        (by continuity) hx0 hxz
     · rw [Set.indicator_of_notMem hx, norm_zero]
       unfold planarMixedKernel
       positivity
@@ -83,7 +82,7 @@ theorem fusion_localSecondKernel_integrable (γ α₁ α₂ α₃ : ℝ)
   change Integrable f (gmcReferenceMeasure.restrict B)
   rw [gmcReferenceMeasure_restrict_unit_chart B Metric.isOpen_ball.measurableSet
     (fun x hx => by
-      have h : ‖x‖ < 1 / 2 := by simpa only [B, Metric.mem_ball, dist_zero_right] using hx
+      have h : ‖x‖ < 1 / 2 := by continuity
       linarith)]
   exact (integrable_indicator_iff Metric.isOpen_ball.measurableSet).mp hfvol
 

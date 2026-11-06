@@ -7,7 +7,7 @@ public import DOZZ.GMC.Moments.WeightedCutoffCompactPositive
 
 /-! # The compact finite-chart weighted cutoff bound for all positive orders -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -39,12 +39,10 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_chart
   have hTp : IsCompact Tp := hT.inter_right (isClosed_Ici.preimage continuous_snd)
   have hsadm : ∀ γ ∈ Γ, ∀ t ∈ Ts, 0 < t.2 ∧ t.2 ≤ 1 ∧
       t.2 < min (4 / γ ^ 2) (2 / γ * (Q γ - t.1)) := by
-    intro γ hγ t ht
-    exact ⟨(hTadm γ hγ t ht.1).1, ht.2, (hTadm γ hγ t ht.1).2⟩
+    grind
   have hpadm : ∀ γ ∈ Γ, ∀ t ∈ Tp, 1 ≤ t.2 ∧
       t.2 < min (4 / γ ^ 2) (2 / γ * (Q γ - t.1)) := by
-    intro γ hγ t ht
-    exact ⟨ht.2, (hTadm γ hγ t ht.1).2⟩
+    grind
   obtain ⟨Cs, hCs, hs⟩ := cutoffWeightedGmcBallMoment_subunit_compact_gamma_parameters_chart
     P X hX Γ hΓ hΓ2 Xc hXc Ts hTs hsadm
   obtain ⟨Cp, hCp, hpos⟩ := cutoffWeightedGmcBallMoment_positive_compact_gamma_chart
@@ -53,7 +51,7 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_chart
     P X hX Xc hXc Γ hΓ (fun γ hγ => (hΓ2 hγ).1) Tp hTp (fun t ht => ht.2)
     q hq hqcrit (fun t ht => hqorders t ht.1)
   let C : ℝ≥0∞ := max Cs (max Cp Cn)
-  have hC : C < ⊤ := max_lt_iff.mpr ⟨hCs, max_lt_iff.mpr ⟨hCp, hCn⟩⟩
+  have hC  := max_lt_iff.mpr ⟨hCs, max_lt_iff.mpr ⟨hCp, hCn⟩⟩
   have hsC : Cs ≤ C := le_max_left _ _
   have hpC : Cp ≤ C := (le_max_left _ _).trans (le_max_right _ _)
   have hnC : Cn ≤ C := (le_max_right _ _).trans (le_max_right _ _)

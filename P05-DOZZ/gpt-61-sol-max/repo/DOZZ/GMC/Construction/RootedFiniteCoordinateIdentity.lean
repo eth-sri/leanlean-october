@@ -9,7 +9,7 @@ public import DOZZ.GMC.Construction.RootedMarkedL1Limit
 
 /-! The rooted identity for bounded continuous marks of finitely many determining coordinates. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions ENNReal BoundedContinuousFunction
@@ -39,13 +39,12 @@ theorem rooted_finite_coordinate_identity
   let _ : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   let mark : Ω → ℝ := fun ω => φ (gmcTiltFiniteCoordinatePath s (fun f => X ω f) (M ω))
   have hmark : Measurable mark := by
-    have hx : Measurable (fun ω f => X ω f) := measurable_pi_iff.mpr fun f => (hX.2 f).1
+    have hx  := measurable_pi_iff.mpr fun f => (hX.2 f).1
     exact φ.continuous.measurable.comp
       ((measurable_gmcTiltFiniteCoordinatePath s).comp (hx.prodMk hMmeas))
   let H : ℂ → (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := fun u q μ =>
     A.indicator (fun _ => ENNReal.ofReal (φ (gmcTiltFiniteCoordinatePath s q μ))) u
-  have hH : Measurable (fun q : ℂ × ((TestFn → ℝ) × Measure ℂ) => H q.1 q.2.1 q.2.2) := by
-    exact (ENNReal.measurable_ofReal.comp (φ.continuous.measurable.comp
+  have hH  := (ENNReal.measurable_ofReal.comp (φ.continuous.measurable.comp
       ((measurable_gmcTiltFiniteCoordinatePath s).comp measurable_snd))).indicator
         (hA.preimage measurable_fst)
   have heq (n : ℕ) :

@@ -13,4 +13,3 @@ public import DOZZ.GMC.Construction.BarrierCauchyFinitePair
 
 /-! Reusable growing-barrier estimates and the mixed-cutoff Cauchy theorem. -/
 
-@[expose] public section

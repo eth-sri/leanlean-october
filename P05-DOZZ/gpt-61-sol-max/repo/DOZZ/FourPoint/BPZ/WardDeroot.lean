@@ -6,6 +6,7 @@ module
 
 public import DOZZ.FourPoint.BPZ.WardMixed
 public import Mathlib.Probability.Kernel.MeasurableIntegral
+import Mathlib.Tactic
 
 /-! # Signed cutoff rooting
 
@@ -13,7 +14,7 @@ The cutoff rooting identity for real functionals: if the functional is absolutel
 against the cutoff chaos, its expectation equals the reference-measure integral of the rooted
 expectation. The proof applies the nonnegative identity to the positive and negative parts. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -22,29 +23,26 @@ namespace DOZZ.Proofs
 
 variable {Ω : Type*} [MeasurableSpace Ω]
 
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include P X hX γ hγ hγ2 M hM in
 /-- The pointwise rooted expectation of a nonnegative functional, written through the cutoff
 density: it is measurable in the root. -/
-theorem bpz_cutoff_root_lintegral_eq (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+def bpz_cutoff_root_lintegral_eq 
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (r : ℝ)
     (H : ℂ → Measure ℂ → Measure ℂ → ℝ≥0∞)
-    (hHx : ∀ x, Measurable (fun q : Measure ℂ × Measure ℂ => H x q.1 q.2)) (x : ℂ) :
-    ∫⁻ ω, H x ((regularizedGMC P Xc γ r ω).withDensity (bpzCutRootDensity γ r x))
-        ((M ω).withDensity (bpzLimRootDensity γ r x)) ∂P =
-      ∫⁻ ω, ENNReal.ofReal (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P)) *
-        H x (regularizedGMC P Xc γ r ω) (M ω) ∂P :=
+    (hHx : ∀ x, Measurable (fun q : Measure ℂ × Measure ℂ => H x q.1 q.2)) (x : ℂ)  :=
   (bpz_cutoff_root_tilt P X hX hγ hγ2 M hM Xc hXc r x (H x) (hHx x)).symm
 
+include P X hX γ hγ hγ2 M hM in
 /-- The rooted expectation of a nonnegative functional is measurable in the root. -/
-theorem measurable_bpz_cutoff_root_lintegral (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (r : ℝ)
+theorem measurable_bpz_cutoff_root_lintegral  (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (r : ℝ)
     (H : ℂ → Measure ℂ → Measure ℂ → ℝ≥0∞)
     (hHm : Measurable (fun p : Ω × ℂ => H p.2 (regularizedGMC P Xc γ r p.1) (M p.1)))
     (hHx : ∀ x, Measurable (fun q : Measure ℂ × Measure ℂ => H x q.1 q.2)) :
     Measurable (fun x => ∫⁻ ω, H x ((regularizedGMC P Xc γ r ω).withDensity
       (bpzCutRootDensity γ r x)) ((M ω).withDensity (bpzLimRootDensity γ r x)) ∂P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   simp_rw [bpz_cutoff_root_lintegral_eq P X hX hγ hγ2 M hM Xc hXc r H hHx]
   have hVm := measurable_bpz_circle_variance P Xc hXc.1 r
   have hdens : Measurable (fun p : Ω × ℂ => ENNReal.ofReal (Real.exp (γ * Xc p.1 p.2 r -
@@ -58,7 +56,7 @@ theorem measurable_lintegral_regularizedGMC (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
     (G : Ω × ℂ → ℝ≥0∞) (hG : Measurable G) :
     Measurable (fun ω => ∫⁻ x, G (ω, x) ∂regularizedGMC P Xc γ r ω) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   have hVm := measurable_bpz_circle_variance P Xc hXc.1 r
   set dens : Ω × ℂ → ℝ≥0∞ := fun p => ENNReal.ofReal
     (Real.exp (γ * Xc p.1 p.2 r - γ ^ 2 / 2 * ∫ ω', Xc ω' p.2 r ^ 2 ∂P) *
@@ -78,9 +76,9 @@ theorem measurable_lintegral_regularizedGMC (P : Measure Ω) (X : Ω → Distr)
   simp_rw [heq]
   exact (hdm.mul hG).lintegral_prod_right'
 
+include P X hX γ hγ hγ2 M hM in
 /-- The signed cutoff rooting identity. -/
-theorem bpz_cutoff_deroot_real (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem bpz_cutoff_deroot_real 
     (hMm : Measurable M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (r : ℝ)
     (F : ℂ → Measure ℂ → Measure ℂ → ℝ)
     (hFm : Measurable (fun p : Ω × ℂ => F p.2 (regularizedGMC P Xc γ r p.1) (M p.1)))
@@ -91,19 +89,19 @@ theorem bpz_cutoff_deroot_real (P : Measure Ω) (X : Ω → Distr) (hX : IsEquat
       ∫ x, normPlus x ^ (-4 : ℝ) *
         ∫ ω, F x ((regularizedGMC P Xc γ r ω).withDensity (bpzCutRootDensity γ r x))
           ((M ω).withDensity (bpzLimRootDensity γ r x)) ∂P := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   set Mr : Ω → Measure ℂ := fun ω => regularizedGMC P Xc γ r ω with hMr
   set T₁ : ℂ → Ω → Measure ℂ := fun x ω => (Mr ω).withDensity (bpzCutRootDensity γ r x)
   set T₂ : ℂ → Ω → Measure ℂ := fun x ω => (M ω).withDensity (bpzLimRootDensity γ r x)
   set Hp : ℂ → Measure ℂ → Measure ℂ → ℝ≥0∞ := fun x m₁ m₂ => ENNReal.ofReal (F x m₁ m₂)
   set Hn : ℂ → Measure ℂ → Measure ℂ → ℝ≥0∞ := fun x m₁ m₂ => ENNReal.ofReal (-F x m₁ m₂)
-  have hHpm : Measurable (fun p : Ω × ℂ => Hp p.2 (Mr p.1) (M p.1)) :=
+  have hHpm  :=
     ENNReal.measurable_ofReal.comp hFm
-  have hHnm : Measurable (fun p : Ω × ℂ => Hn p.2 (Mr p.1) (M p.1)) :=
+  have hHnm  :=
     ENNReal.measurable_ofReal.comp hFm.neg
-  have hHpx : ∀ x, Measurable (fun q : Measure ℂ × Measure ℂ => Hp x q.1 q.2) :=
+  have hHpx  :=
     fun x => ENNReal.measurable_ofReal.comp (hFx x)
-  have hHnx : ∀ x, Measurable (fun q : Measure ℂ × Measure ℂ => Hn x q.1 q.2) :=
+  have hHnx  :=
     fun x => ENNReal.measurable_ofReal.comp (hFx x).neg
   have hp := bpz_cutoff_deroot P X hX hγ hγ2 M hM Xc hXc r Hp hHpm hHpx
   have hn := bpz_cutoff_deroot P X hX hγ hγ2 M hM Xc hXc r Hn hHnm hHnx
@@ -115,10 +113,10 @@ theorem bpz_cutoff_deroot_real (P : Measure Ω) (X : Ω → Distr) (hX : IsEquat
     · rw [abs_of_nonneg h, ENNReal.ofReal_of_nonpos (neg_nonpos.mpr h), add_zero]
     · rw [abs_of_nonpos h, ENNReal.ofReal_of_nonpos h, zero_add]
   -- finiteness of the two parts
-  have hApm : Measurable (fun ω => ∫⁻ x, Hp x (Mr ω) (M ω) ∂Mr ω) :=
+  have hApm  :=
     measurable_lintegral_regularizedGMC P X hX Xc hXc γ r (fun p => Hp p.2 (Mr p.1) (M p.1))
       hHpm
-  have hAnm : Measurable (fun ω => ∫⁻ x, Hn x (Mr ω) (M ω) ∂Mr ω) :=
+  have hAnm  :=
     measurable_lintegral_regularizedGMC P X hX Xc hXc γ r (fun p => Hn p.2 (Mr p.1) (M p.1))
       hHnm
   have hAp : ∫⁻ ω, ∫⁻ x, Hp x (Mr ω) (M ω) ∂Mr ω ∂P < ⊤ := by
@@ -129,7 +127,7 @@ theorem bpz_cutoff_deroot_real (P : Measure Ω) (X : Ω → Distr) (hX : IsEquat
     rw [habs]; exact le_add_self
   -- the left side
   have hfinω : ∀ᵐ ω ∂P, ∫⁻ x, ENNReal.ofReal |F x (Mr ω) (M ω)| ∂Mr ω < ⊤ := by
-    have hm : Measurable (fun ω => ∫⁻ x, ENNReal.ofReal |F x (Mr ω) (M ω)| ∂Mr ω) :=
+    have hm  :=
       measurable_lintegral_regularizedGMC P X hX Xc hXc γ r
         (fun p => ENNReal.ofReal |F p.2 (Mr p.1) (M p.1)|)
         (ENNReal.measurable_ofReal.comp (continuous_abs.measurable.comp hFm))
@@ -146,7 +144,7 @@ theorem bpz_cutoff_deroot_real (P : Measure Ω) (X : Ω → Distr) (hX : IsEquat
       have hI : Integrable (fun x => F x (Mr ω) (M ω)) (Mr ω) := by
         refine ⟨hmeas.aestronglyMeasurable, ?_⟩
         rw [hasFiniteIntegral_iff_norm]
-        simpa only [Real.norm_eq_abs] using hω
+        exact hω
       exact integral_eq_lintegral_pos_part_sub_lintegral_neg_part hI
     have e1 := integral_toReal hApm.aemeasurable (ae_lt_top hApm hAp.ne)
     have e2 := integral_toReal hAnm.aemeasurable (ae_lt_top hAnm hAn.ne)
@@ -195,7 +193,7 @@ theorem bpz_cutoff_deroot_real (P : Measure Ω) (X : Ω → Distr) (hX : IsEquat
         fun x => (c x * ∫⁻ ω, Hp x (T₁ x ω) (T₂ x ω) ∂P).toReal -
           (c x * ∫⁻ ω, Hn x (T₁ x ω) (T₂ x ω) ∂P).toReal := by
       filter_upwards [hfinp, hfinn] with x hxp hxn
-      have hc0 : c x ≠ 0 := hcoef_pos x
+      have hc0  := hcoef_pos x
       have hp' : ∫⁻ ω, Hp x (T₁ x ω) (T₂ x ω) ∂P < ⊤ := by
         rcases ENNReal.mul_lt_top_iff.mp hxp with h | h | h
         · exact h.2
@@ -206,7 +204,7 @@ theorem bpz_cutoff_deroot_real (P : Measure Ω) (X : Ω → Distr) (hX : IsEquat
         · exact h.2
         · exact absurd h hc0
         · rw [h]; exact ENNReal.zero_lt_top
-      have hmeasω : Measurable fun ω => F x (T₁ x ω) (T₂ x ω) :=
+      have hmeasω  :=
         (hFx x).comp ((hT₁ x).prodMk (hT₂ x))
       have hIω : Integrable (fun ω => F x (T₁ x ω) (T₂ x ω)) P := by
         refine ⟨hmeasω.aestronglyMeasurable, ?_⟩
@@ -233,8 +231,6 @@ theorem bpz_cutoff_deroot_real (P : Measure Ω) (X : Ω → Distr) (hX : IsEquat
     rw [integral_congr_ae hcongr, integral_sub
       (integrable_toReal_of_lintegral_ne_top hBpm'.aemeasurable hBp.ne)
       (integrable_toReal_of_lintegral_ne_top hBnm'.aemeasurable hBn.ne), e1, e2]
-  change ∫ ω, ∫ x, F x (Mr ω) (M ω) ∂Mr ω ∂P =
-    ∫ x, normPlus x ^ (-4 : ℝ) * ∫ ω, F x (T₁ x ω) (T₂ x ω) ∂P
-  rw [hLHS, hRHS, hp, hn]
+  grind
 
 end DOZZ.Proofs

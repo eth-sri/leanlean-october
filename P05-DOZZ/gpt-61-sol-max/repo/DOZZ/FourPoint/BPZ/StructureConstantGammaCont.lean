@@ -23,7 +23,7 @@ is the four-point Coulomb moment at the parameters `(γ, (0, α₁(γ), α₂, �
 The moment is therefore continuous on `K₀` by the joint continuity of the four-point moment in
 `(γ, α)`. The prefactor `2 μ^{-s} γ⁻¹ Γ(s)` is continuous at `γ₀` since `s > 0` there. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -43,10 +43,12 @@ theorem bpzSG_nPointSExp_zero_first (γ a b c : ℝ) :
     nPointSExp γ ![0, a, b, c] = sExp γ a b c := by
   simp [nPointSExp, sExp, Fin.sum_univ_four]
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+
+include Ω _inst1 P X hX in
 /-- For `γ ∈ (0, 2)`, the moment of `rho` is the four-point Coulomb moment with a vanishing
 charge at the root `z`. -/
-theorem bpzSG_moment_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (M : Ω → Measure ℂ) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem bpzSG_moment_eq  (M : Ω → Measure ℂ) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hM : IsGMCOf P X γ M) (z : ℂ) (a b c : ℝ) :
     (∫⁻ ω, rho γ (M ω) a b c ^ (-sExp γ a b c) ∂P) =
       ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) ![0, a, b] ![z, 0, 1] c)
@@ -61,10 +63,9 @@ theorem bpzSG_continuousAt_sExp {f : ℝ → ℝ} (hf : Continuous f) (α₂ α�
     (hγ₀ : γ₀ ≠ 0) : ContinuousAt (fun γ => sExp γ (f γ) α₂ α₃) γ₀ := by
   have hQ : ContinuousAt Q γ₀ := by
     unfold Q
-    exact (continuousAt_const.div continuousAt_id hγ₀).add (continuousAt_id.div_const 2)
+    fun_prop (disch := positivity)
   unfold sExp
-  exact (((hf.continuousAt.add continuousAt_const).add continuousAt_const).sub
-    (continuousAt_const.mul hQ)).div continuousAt_id hγ₀
+  fun_prop (disch := positivity)
 
 /-- The admissibility conditions at `γ₀` hold on a neighbourhood of `γ₀`. -/
 theorem bpzSG_domain_nhds {f : ℝ → ℝ} (hf : Continuous f) (α₂ α₃ : ℝ) {γ₀ : ℝ}
@@ -74,7 +75,7 @@ theorem bpzSG_domain_nhds {f : ℝ → ℝ} (hf : Continuous f) (α₂ α₃ : �
       0 < sExp γ (f γ) α₂ α₃ := by
   have hQ : ContinuousAt Q γ₀ := by
     unfold Q
-    exact (continuousAt_const.div continuousAt_id hγ₀.1.ne').add (continuousAt_id.div_const 2)
+    fun_prop (disch := aesop)
   filter_upwards [Ioo_mem_nhds hγ₀.1 hγ₀.2, hf.continuousAt.eventually_lt hQ h1,
     continuousAt_const.eventually_lt hQ h2, continuousAt_const.eventually_lt hQ h3,
     continuousAt_const.eventually_lt (bpzSG_continuousAt_sExp hf α₂ α₃ hγ₀.1.ne') hs] with
@@ -91,15 +92,12 @@ theorem bpzSG_extendedSeiberg {γ a b c : ℝ} (hγ : 0 < γ) (ha : a < Q γ) (h
   have hlt : ∀ i, (![0, a, b, c] : Fin 4 → ℝ) i < Q γ := by
     intro i
     fin_cases i
-    · exact hQ
-    · exact ha
-    · exact hb
-    · exact hc
+    all_goals simp_all
   have hns : -nPointSExp γ ![0, a, b, c] < 0 := by
     rw [bpzSG_nPointSExp_zero_first]
     linarith
   refine ⟨hlt, hns.trans (by positivity), fun i => hns.trans ?_⟩
-  exact mul_pos (div_pos two_pos hγ) (sub_pos.mpr (hlt i))
+  simp_all
 
 /-- The prefactor `2 μ^{-s} γ⁻¹ Γ(s)` is continuous at `γ₀` where `s > 0`. -/
 theorem bpzSG_continuousAt_prefactor {μ : ℝ} (hμ : 0 < μ) {f : ℝ → ℝ} (hf : Continuous f)
@@ -107,17 +105,16 @@ theorem bpzSG_continuousAt_prefactor {μ : ℝ} (hμ : 0 < μ) {f : ℝ → ℝ}
     ContinuousAt (fun γ => 2 * μ ^ (-sExp γ (f γ) α₂ α₃) / γ *
       Real.Gamma (sExp γ (f γ) α₂ α₃)) γ₀ := by
   have hsc := bpzSG_continuousAt_sExp hf α₂ α₃ hγ₀
-  have hpow : ContinuousAt (fun γ => μ ^ (-sExp γ (f γ) α₂ α₃)) γ₀ :=
+  have hpow  :=
     ContinuousAt.rpow continuousAt_const hsc.neg (Or.inl hμ.ne')
-  have hG : ContinuousAt Real.Gamma (sExp γ₀ (f γ₀) α₂ α₃) :=
+  have hG  :=
     (Real.differentiableOn_Gamma_Ioi.differentiableAt (Ioi_mem_nhds hs)).continuousAt
-  exact ((continuousAt_const.mul hpow).div continuousAt_id hγ₀).mul
-    (ContinuousAt.comp (f := fun γ => sExp γ (f γ) α₂ α₃) hG hsc)
+  fun_prop (disch := positivity)
 
+include Ω _inst1 P X hX in
 /-- Along a family of GMC measures, the structure constant with a continuously varying first
 charge is continuous in `γ`. -/
-theorem bpz_continuousAt_structureConstant_gamma {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Mfam : ℝ → Ω → Measure ℂ)
+theorem bpz_continuousAt_structureConstant_gamma  (Mfam : ℝ → Ω → Measure ℂ)
     (hMfam : ∀ γ' ∈ Ioo (0 : ℝ) 2, IsGMCOf P X γ' (Mfam γ')) (μ : ℝ) (hμ : 0 < μ)
     {f : ℝ → ℝ} (hf : Continuous f) (α₂ α₃ : ℝ) {γ₀ : ℝ} (hγ₀ : γ₀ ∈ Ioo (0 : ℝ) 2)
     (h1 : f γ₀ < Q γ₀) (h2 : α₂ < Q γ₀) (h3 : α₃ < Q γ₀) (hs : 0 < sExp γ₀ (f γ₀) α₂ α₃) :
@@ -133,8 +130,7 @@ theorem bpz_continuousAt_structureConstant_gamma {Ω : Type*} [MeasurableSpace �
     obtain ⟨hγ', hf', h2', h3', hs'⟩ := hK₀sub hγ
     exact ⟨hγ'.1, hγ'.2, bpzSG_extendedSeiberg hγ'.1 hf' h2' h3' hs'⟩
   have hM : ∀ q ∈ J '' K₀, IsGMCOf P X q.1 (Mfam q.1) := by
-    rintro _ ⟨γ, hγ, rfl⟩
-    exact hMfam γ (hK₀sub hγ).1
+    simp_all
   have hcont := fourPointMoment_jointly_continuous_parameters P X Mfam 2
     ⟨two_ne_zero, by norm_num⟩ (J '' K₀) (hK₀cpt.image hJ) hKdom hX hM
   have hat := (hcont.comp hJ.continuousOn (mapsTo_image J K₀)).continuousAt hK₀nhds

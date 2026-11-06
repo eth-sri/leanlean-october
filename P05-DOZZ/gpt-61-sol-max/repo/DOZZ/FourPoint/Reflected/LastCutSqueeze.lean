@@ -8,7 +8,7 @@ public import DOZZ.Brownian.Reflection.LastCut
 import Mathlib.Topology.Order.IntermediateValue
 import Mathlib.Tactic
 /-! The retained reflection mass increases with the Williams maximum cutoff. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -34,7 +34,7 @@ theorem reflected_conditioned_lastExit_mono_ae
     (hB : IsBrownianReal (fun t p => p t) B) (hν : 0 < ν)
     (H m : ℝ≥0) (hH : 0 < (H : ℝ)) (hHm : H ≤ m) :
     ∀ᵐ p ∂Qν, negativeLastExitTime p H ≤ negativeLastExitTime p m := by
-  have hm : 0 < (m : ℝ) := lt_of_lt_of_le hH (by exact_mod_cast hHm)
+  have hm  := lt_of_lt_of_le hH (by exact_mod_cast hHm)
   filter_upwards [ae_negativeConditionedLevelHitSet_nonempty_bddAbove hQν hB hν H hH,
     ae_negativeConditionedLevelHitSet_nonempty_bddAbove hQν hB hν m hm,
     ae_negativeConditionedPath_above_after_lastExit hQν hB hν m hm] with p hpH hpm hpafter
@@ -61,8 +61,7 @@ theorem reflected_cutMass_mono_of_lastExit {Ω : Type*} (γ H m : ℝ)
   beta_reduce
   split_ifs with hHs hms
   · exact le_rfl
-  · exfalso
-    exact hms (by linarith only [hHs, hcoe])
+  · grind
   · exact zero_le
   · exact le_rfl
 
@@ -76,19 +75,15 @@ theorem reflected_conditioned_random_lastExit_squeeze
     (H : ℝ≥0) (hH : 0 < (H : ℝ)) :
     ∀ᵐ z : ℝ≥0 × BrownianPath ∂μ.prod Qν, H ≤ z.1 →
       negativeLastExitTime z.2 H ≤ negativeLastExitTime z.2 z.1 := by
-  let _ : IsProbabilityMeasure Qν := hQν.2.1
+  let _  := hQν.2.1
   have hleft : Measurable (fun z : ℝ≥0 × BrownianPath => negativeLastExitTime z.2 H) :=
     measurable_negativeLastExitTime_joint.comp (measurable_const.prodMk measurable_snd)
-  have hright : Measurable (fun z : ℝ≥0 × BrownianPath => negativeLastExitTime z.2 z.1) :=
+  have hright  :=
     measurable_negativeLastExitTime_joint.comp
       ((NNReal.continuous_coe.measurable.comp measurable_fst).prodMk measurable_snd)
   have hs : MeasurableSet {z : ℝ≥0 × BrownianPath | H ≤ z.1 →
       negativeLastExitTime z.2 H ≤ negativeLastExitTime z.2 z.1} := by
-    have hh := (measurableSet_le (measurable_const (a := H)) (measurable_fst : Measurable
-      (fun z : ℝ≥0 × BrownianPath => z.1))).compl.union (measurableSet_le hleft hright)
-    convert hh using 1
-    ext z
-    simp only [mem_union, mem_compl_iff, mem_ofPred_eq, imp_iff_not_or]
+    measurability
   rw [Measure.ae_prod_iff_ae_ae hs]
   apply ae_of_all μ
   intro m

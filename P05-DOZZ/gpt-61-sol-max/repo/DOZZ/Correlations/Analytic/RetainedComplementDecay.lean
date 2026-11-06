@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.RetainedComplement
 
 /-! Uniform decay of the full omitted Coulomb mass. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs

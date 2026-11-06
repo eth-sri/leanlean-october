@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.GlobalCompactComparison
 /-! Full punctured-plane moments conditioned on the actual radial-path law. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -25,7 +25,7 @@ theorem reflected_global_mass_iterated
   let F : TwoSidedPath × Ω → ℝ≥0∞ := fun p =>
     (∫⁻ x in ({0} : Set ℂ)ᶜ,
       f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 x) ∂N p.2)^q
-  have hF : Measurable F :=
+  have hF  :=
     (reflected_chart_parameter_mass_measurable ({0} : Set ℂ)ᶜ
       (isClosed_singleton (x := (0 : ℂ))).isOpen_compl N hN hfin
       (fun p => f p.2*ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 p.2))

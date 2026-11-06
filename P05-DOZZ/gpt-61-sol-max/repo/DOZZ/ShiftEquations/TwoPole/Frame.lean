@@ -10,6 +10,7 @@ public import DOZZ.ShiftEquations.Mobius.InversionZero
 public import DOZZ.Statements.Defs.UnitVolumeStructureConstant
 import DOZZ.GMC.Moments.RhoCoulomb
 import DOZZ.Correlations.Symmetry.SymmetricExtended
+import Mathlib.Tactic
 
 /-!
 # The frame of the two-pole expansion
@@ -22,7 +23,7 @@ the frame `(0, 2, -2)` of [KRV, (defgepsi)]. The Möbius map `ψ(y) = 2y/(y+2)` 
 `C̄(x, α₂, α₃) = (2/γ) 2^{4(1-x/γ)} E[Z_ℂ(x)^{1-x/γ}]`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -36,8 +37,7 @@ theorem coulombWeight_cons_zero {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z₀ 
       coulombWeight γ α z αinf x := by
   unfold coulombWeight
   rw [Fin.prod_univ_succ]
-  simp only [Fin.cons_zero, Fin.cons_succ, mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero,
-    one_mul]
+  simp_all
 
 theorem coulombMass_cons_zero {N : ℕ} (γ : ℝ) (μ : Measure ℂ) (α : Fin N → ℝ) (z₀ : ℂ)
     (z : Fin N → ℂ) (αinf : ℝ) :
@@ -53,8 +53,7 @@ theorem coulombMass_swap (γ : ℝ) (μ : Measure ℂ) (a₁ a₂ : ℝ) (z₁ z
   refine lintegral_congr fun x => ?_
   unfold coulombWeight
   rw [Fin.prod_univ_two, Fin.prod_univ_two]
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_one]
-  ring
+  push_cast <;> ring
 
 /-- Without atoms at the roots, the total mass at charge `x` is the three-root Coulomb mass. -/
 theorem totalMass_eq_coulombMass (γ η x : ℝ) (μ : Measure ℂ) (h0 : μ {0} = 0)
@@ -75,7 +74,7 @@ theorem totalMass_eq_coulombMass (γ η x : ℝ) (μ : Measure ℂ) (h0 : μ {0}
   refine lintegral_congr_ae ?_
   filter_upwards [e0, e1, e2] with y hy0 hy1 hy2
   have hw := poleWeight_eq_coulombWeight γ η hy1 hy2
-  have hn : 0 < ‖y‖ := norm_pos_iff.mpr hy0
+  have hn  := norm_pos_iff.mpr hy0
   unfold coulombWeight at hw ⊢
   rw [Fin.prod_univ_succ, hw]
   simp only [Fin.cons_zero, Fin.cons_succ, sub_zero, zeroTilt, ENNReal.ofReal_div_of_pos hn,
@@ -116,10 +115,11 @@ theorem frame_infSExp {γ : ℝ} (hγ : 0 < γ) (η x : ℝ) :
   field_simp
   ring
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- **The frame identity** `E[Z_ℂ(x)^w] = 2^{-4w} E[ρ(x, α₂, α₃)^w]`, `w = 1 - x/γ`. -/
-theorem lintegral_totalMass_rpow_eq_rho {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (η x : ℝ) :
+theorem lintegral_totalMass_rpow_eq_rho  (η x : ℝ) :
     ∫⁻ ω, poleTotalMass γ x (2 / γ + η) (2 / γ - η) (M ω) ^ (1 - x / γ) ∂P =
       ENNReal.ofReal (2 ^ (-(4 * (1 - x / γ)))) *
         ∫⁻ ω, rho γ (M ω) x (2 / γ + η) (2 / γ - η) ^ (1 - x / γ) ∂P := by
@@ -177,11 +177,10 @@ theorem lintegral_totalMass_rpow_eq_rho {Ω : Type*} [MeasurableSpace Ω] (P : M
     rfl
   rw [h0, h1, ← h2, h3, ← h4]
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- **The structure constant in the pole frame**:
 `C̄(x, α₂, α₃) = (2/γ) (2^{4(1-x/γ)} E[Z_ℂ(x)^{1-x/γ}])`. -/
-theorem unitVolumeStructureConstant_eq_frame {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (η x : ℝ) :
+theorem unitVolumeStructureConstant_eq_frame  (η x : ℝ) :
     unitVolumeStructureConstant P M γ x (2 / γ + η) (2 / γ - η) =
       2 / γ * (ENNReal.ofReal (2 ^ (4 * (1 - x / γ))) *
         ∫⁻ ω, poleTotalMass γ x (2 / γ + η) (2 / γ - η) (M ω) ^ (1 - x / γ) ∂P).toReal := by
@@ -201,8 +200,7 @@ theorem extendedSeiberg3_swap12 {γ a b c : ℝ} (h : ExtendedSeiberg3 γ a b c)
   have hsym : sExp γ b a c = sExp γ a b c := by
     unfold sExp
     ring_nf
-  rw [hsym, min_left_comm (2 / γ * (Q γ - b))]
-  exact hs
+  grind
 
 theorem extendedSeiberg3_swap23 {γ a b c : ℝ} (h : ExtendedSeiberg3 γ a b c) :
     ExtendedSeiberg3 γ a c b := by
@@ -211,13 +209,11 @@ theorem extendedSeiberg3_swap23 {γ a b c : ℝ} (h : ExtendedSeiberg3 γ a b c)
   have hsym : sExp γ a c b = sExp γ a b c := by
     unfold sExp
     ring_nf
-  rw [hsym, min_comm (2 / γ * (Q γ - c))]
-  exact hs
+  grind
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- The structure constant of the two-pole expansion in the order of the pole frame. -/
-theorem unitVolumeStructureConstant_pole_order {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η x : ℝ}
+theorem unitVolumeStructureConstant_pole_order  {η x : ℝ}
     (hα : ExtendedSeiberg3 γ x (2 / γ + η) (2 / γ - η)) :
     unitVolumeStructureConstant P M γ (Q γ - η - γ / 2) x (2 / γ + η) =
       unitVolumeStructureConstant P M γ x (2 / γ + η) (2 / γ - η) := by

@@ -12,7 +12,7 @@ import DOZZ.Brownian.Reflection.RtheorAnalytic
 literal gluing equation in `DOZZ.structureConstant_reflected_shift_and_gluing`, hence needs no
 independent dual seed. -/
 
-@[expose] public section
+public section
 open Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -50,8 +50,6 @@ theorem inversion_of_gluing
     inf_le_left
   filter_upwards [hglue.filter_mono hle,
     (codiscrete_reflect hglue q).filter_mono hle, hne] with z hz hzr hzn
-  rw [sub_sub_cancel] at hzr
-  apply mul_right_cancel₀ hzn
-  rw [one_mul, mul_assoc, ← hzr, ← hz]
+  grind
 
 end DOZZ.Proofs

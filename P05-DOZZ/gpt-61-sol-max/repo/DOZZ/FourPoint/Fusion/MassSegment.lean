@@ -22,16 +22,16 @@ theorem fusionUnrootedSegment_measurable (γ α₁ α₂ α₃ t s : ℝ) (z : �
     Measurable (fun μ : Measure ℂ => fusionUnrootedSegment γ α₁ α₂ α₃ t z μ ^ s) :=
   (((fusion_measurable_coulombMass γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃).const_mul _).add
     ((fusion_measurable_coulombMass γ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃).const_mul _)).pow_const s
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- The coincident zero-insertion mass is positive and finite almost surely. -/
-theorem fusion_zeroMass_pos_finite_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_zeroMass_pos_finite_ae 
     (α₁ α₂ α₃ : ℝ) (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) :
     ∀ᵐ ω ∂P, coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ ≠ 0 ∧
       coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ ≠ ⊤ := by
   have hi : Function.Injective (![0, 1] : Fin 2 → ℂ) := by
-    intro i j hij
-    fin_cases i <;> fin_cases j <;> simp_all
+    simp_all
   have ha : ∀ j : Fin 2, (![α₁ - γ / 2, α₂] : Fin 2 → ℝ) j < Q γ := by
     intro j
     fin_cases j
@@ -44,13 +44,10 @@ theorem fusion_zeroMass_pos_finite_ae {Ω : Type*} [MeasurableSpace Ω]
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hω he h0 h1
   have hmass := coulombMass_at_zero_eq_rho γ (γ / 2) α₁ α₂ α₃ (M ω) h0 h1
-  simp only [← neg_div] at hmass
-  rw [hmass, he]
-  exact hω
+  grind
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- All nonpositive segment moments are uniformly bounded over the time interval and unit roots. -/
-theorem fusionUnrootedSegment_inverse_uniform {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusionUnrootedSegment_inverse_uniform 
     (α₁ α₂ α₃ p : ℝ) (hp : 0 ≤ p) :
     ∃ C : ℝ, 0 < C ∧ ∀ t ∈ Icc (0 : ℝ) 1, ∀ z : ℂ, ‖z‖ ≤ 1 →
       (∫⁻ ω, fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ (-p) ∂P) ≤ ENNReal.ofReal C := by

@@ -7,6 +7,7 @@ module
 public import DOZZ.FourPoint.Crossing.Assembly
 public import DOZZ.FourPoint.Crossing.ZeroChannel
 import Mathlib.Tactic
+public import DOZZ.FourPoint.GaussContracts
 
 /-! # A crossing reduction with the two BPZ inputs explicit
 
@@ -34,13 +35,7 @@ theorem gammaHalf_crossing_of_BPZ_and_unreflected {Ω : Type*} [MeasurableSpace 
       (gaussParameterC γ (γ / 2) α')
       (fun z => fourPointT P M γ μ (-γ / 2) α' ε α z))
     (hformula :
-      let a := gaussParameterA γ (γ / 2) ε α' α
-      let b := gaussParameterB γ (γ / 2) ε α' α
-      let c := gaussParameterC γ (γ / 2) ε
-      ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-γ / 2) ε α' α z =
-        structureConstant P M γ μ (ε - γ / 2) α' α * ‖gaussFMinus H a b c z‖ ^ 2 +
-        (-μ * (planarGaussConstant (γ ^ 2 / 2) (γ * ε)).re) *
-          structureConstant P M γ μ (ε + γ / 2) α' α * ‖gaussFPlus H a b c z‖ ^ 2) :
+      Contract.gammaHalfUnreflected P M γ μ ε α' α H) :
     structureConstant P M γ μ (α' - γ / 2) ε α =
       gammaHalfCrossingMultiplier γ μ α' ε α *
         structureConstant P M γ μ α' (ε + γ / 2) α ∧

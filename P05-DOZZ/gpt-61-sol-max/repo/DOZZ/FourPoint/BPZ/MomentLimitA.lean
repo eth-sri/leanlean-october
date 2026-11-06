@@ -110,15 +110,15 @@ theorem bpz_integrable_far_smul_softDeriv {a ε : ℝ} (ha : 0 < a) {w : ℂ →
   have e : 2 * a / (r / 2) = 4 * a / r := by field_simp; ring
   rwa [e] at h
 
+variable {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z z₀ : ℂ} {r : ℝ} (hr : 0 < r) (hz : ‖z - z₀‖ ≤ r / 2)
+
+include a ε ha ha1 w hw hw0 m z z₀ r hr hz in
 /-- Integrability of the far part of the second derivative integrand. -/
-theorem bpz_integrable_far_smul_softDeriv2 {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z z₀ : ℂ} {r : ℝ} (hr : 0 < r)
-    (hz : ‖z - z₀‖ ≤ r / 2)
+theorem bpz_integrable_far_smul_softDeriv2 
     (hintz : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) m) :
     Integrable (fun x => (if r ≤ ‖x - z₀‖ then w x else 0) • bpzSoftDeriv2 a ε x z) m := by
   have hc : 0 ≤ 4 * (4 * a * (1 - a) + 2 * a) / r ^ 2 := by
-    have : 0 ≤ 1 - a := sub_nonneg.mpr ha1
-    positivity
+    bound
   refine Integrable.mono' (hintz.const_mul (4 * (4 * a * (1 - a) + 2 * a) / r ^ 2))
     (bpz_stronglyMeasurable_softDeriv2 a ε z
       (bpz_measurable_farPart hw z₀ r)).aestronglyMeasurable
@@ -133,10 +133,9 @@ theorem bpz_integrable_far_smul_softDeriv2 {a ε : ℝ} (ha : 0 < a) (ha1 : a �
 
 /-! ### The decomposition -/
 
+include a ε ha ha1 w hw hw0 m z z₀ r hr hz in
 /-- The first derivative mass is the sum of its near and far parts. -/
-theorem bpzSoftMassDeriv_eq_near_add_far {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z z₀ : ℂ} {r : ℝ} (hr : 0 < r)
-    (hz : ‖z - z₀‖ ≤ r / 2) (hzm : m {z} = 0)
+theorem bpzSoftMassDeriv_eq_near_add_far  (hzm : m {z} = 0)
     (hintz : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) m)
     (hn : Integrable (fun x => (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a - 1)) m) :
     bpzSoftMassDeriv a ε w m z =
@@ -150,15 +149,11 @@ theorem bpzSoftMassDeriv_eq_near_add_far {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 
   congr 1
   funext x
   rw [← add_smul]
-  congr 1
-  by_cases hx : ‖x - z₀‖ < r
-  · rw [ite_eq_left hx, ite_eq_right (not_le.mpr hx), add_zero]
-  · rw [ite_eq_right hx, ite_eq_left (not_lt.mp hx), zero_add]
+  grind
 
+include a ε ha ha1 w hw hw0 m z z₀ r hr hz in
 /-- The second derivative mass is the sum of its near and far parts. -/
-theorem bpzSoftMassDeriv2_eq_near_add_far {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z z₀ : ℂ} {r : ℝ} (hr : 0 < r)
-    (hz : ‖z - z₀‖ ≤ r / 2) (hzm : m {z} = 0)
+theorem bpzSoftMassDeriv2_eq_near_add_far  (hzm : m {z} = 0)
     (hintz : Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ a * w x) m)
     (hn : Integrable (fun x => (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a - 2)) m) :
     bpzSoftMassDeriv2 a ε w m z =
@@ -173,9 +168,7 @@ theorem bpzSoftMassDeriv2_eq_near_add_far {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤
   funext x
   rw [← add_smul]
   congr 1
-  by_cases hx : ‖x - z₀‖ < r
-  · rw [ite_eq_left hx, ite_eq_right (not_le.mpr hx), add_zero]
-  · rw [ite_eq_right hx, ite_eq_left (not_lt.mp hx), zero_add]
+  bound
 
 /-- The near integral of `|x − z|^{2a}` is at most the softened mass. -/
 theorem bpz_integral_near_le_softMass {a ε : ℝ} (ha : 0 ≤ a) {w : ℂ → ℝ} (hw : Measurable w)
@@ -191,9 +184,7 @@ theorem bpz_integral_near_le_softMass {a ε : ℝ} (ha : 0 ≤ a) {w : ℂ → �
       rw [Real.rpow_mul (norm_nonneg _), Real.rpow_two]
       exact Real.rpow_le_rpow (sq_nonneg _) (bpzSoft_norm_sq_le_base ε x z) ha
     have h2 : (if ‖x - z₀‖ < r then w x else 0) ≤ w x := by
-      split_ifs
-      · exact le_rfl
-      · exact hw0 x
+      continuity
     calc (if ‖x - z₀‖ < r then w x else 0) * ‖x - z‖ ^ (2 * a)
         ≤ w x * (Complex.normSq (x - z) + ε ^ 2) ^ a :=
           mul_le_mul h2 h1 (Real.rpow_nonneg (norm_nonneg _) _) (hw0 x)
@@ -233,7 +224,7 @@ theorem bpz_norm_smulRight_sub_le (L L' : ℂ →L[ℝ] ℝ) :
   calc ‖(L - L').smulRight L + L'.smulRight (L - L')‖
       ≤ ‖(L - L').smulRight L‖ + ‖L'.smulRight (L - L')‖ := norm_add_le _ _
     _ = ‖L - L'‖ * ‖L‖ + ‖L'‖ * ‖L - L'‖ := by
-        rw [ContinuousLinearMap.norm_smulRight_apply, ContinuousLinearMap.norm_smulRight_apply]
+        simp_all
     _ = ‖L - L'‖ * (‖L‖ + ‖L'‖) := by ring
 
 /-- The second moment field differs from its far part by terms controlled by the near part. -/
@@ -245,12 +236,11 @@ theorem bpz_mom2_sub_le {s J u t v A : ℝ} (hs : 0 ≤ s) (hJ : 0 < J)
       ((s * (s + 1) * J ^ (-s - 2)) • Lf.smulRight Lf + (-s * J ^ (-s - 1)) • Bf)‖ ≤
       s * (s + 1) * (J ^ (-s - 1) * t) + 2 * s * (s + 1) * A * (J ^ (-s - 1) * u) +
         s * (J ^ (-s - 1) * v) := by
-  have hu0 : 0 ≤ u := (norm_nonneg _).trans hu
+  have hu0  := (norm_nonneg _).trans hu
   have hJ2 : 0 ≤ J ^ (-s - 2) := Real.rpow_nonneg hJ.le _
   have hJ1 : 0 ≤ J ^ (-s - 1) := Real.rpow_nonneg hJ.le _
   have hc2 : 0 ≤ s * (s + 1) * J ^ (-s - 2) := by
-    have : 0 ≤ s + 1 := by linarith
-    positivity
+    bound
   have hJJ : J ^ (-s - 2) * J = J ^ (-s - 1) := by
     rw [show -s - 2 = (-s - 1) - 1 by ring]
     exact bpzRpow_pred_mul hJ _

@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.GMC.Moments.RhoCoulomb
 public import DOZZ.GMC.SharpMoments.SeibergMoment
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs

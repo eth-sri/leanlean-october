@@ -7,6 +7,7 @@ public import DOZZ.FourPoint.Dual.Kernel
 public import DOZZ.FourPoint.TaylorRadialBall
 import DOZZ.GMC.SharpMoments.SeibergWeight
 import Mathlib.Tactic
+import Mathlib.Tactic
 /-! # The deterministic deleted-disk estimate for the dual outer correction -/
 public section
 open MeasureTheory Set Filter Topology
@@ -20,7 +21,7 @@ theorem dual_zero_kernel_local_bound (γ α₁ α₂ α₃ : ℝ) (x : ℂ) (hx 
   · subst x
     simp [dualFusionKernel]
     positivity
-  have hp : 0 < ‖x‖ := norm_pos_iff.mpr hx0
+  have hp  := norm_pos_iff.mpr hx0
   have hdlo : (1 / 2 : ℝ) ≤ ‖x - 1‖ := by
     have h := norm_sub_norm_le (1 : ℂ) x
     rw [norm_one, norm_sub_rev] at h
@@ -63,7 +64,7 @@ theorem dual_deleted_disk_spatial_bound (γ α₁ α₂ α₃ : ℝ) (hβ : γ *
         ENNReal.ofReal ((2 : ℝ) ^ |γ * α₂|) * ENNReal.ofReal (‖x‖ ^ (2 - γ * α₁)) := by
       apply lintegral_mono_ae
       filter_upwards [ae_restrict_mem measurableSet_ball] with x hx
-      have hn : ‖x‖ < 1 / 2 := (by simpa only [Metric.mem_ball, dist_zero_right] using hx : ‖x‖ < r).trans_le hr₁
+      have hn  := (by simp_all : ‖x‖ < r).trans_le hr₁
       have hplus : normPlus x = 1 := max_eq_left (by linarith : ‖x‖ ≤ 1)
       simp only [Pi.mul_apply, hplus, Real.one_rpow, ENNReal.ofReal_one, one_mul]
       rw [← ENNReal.ofReal_mul (by positivity)]
@@ -75,8 +76,6 @@ theorem dual_deleted_disk_spatial_bound (γ α₁ α₂ α₃ : ℝ) (hβ : γ *
       mul_le_mul' le_rfl (by simpa only [sub_zero] using hb 0 r hr)
     _ = _ := by
       rw [← ENNReal.ofReal_mul (by positivity)]
-      congr 1
-      rw [show (2 - γ * α₁) + 2 = 4 - γ * α₁ by ring]
       ring
 
 end DOZZ.Proofs

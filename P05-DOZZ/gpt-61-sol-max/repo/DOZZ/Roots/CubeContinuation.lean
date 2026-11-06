@@ -11,7 +11,7 @@ public import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
 import DOZZ.Complex.Identity
 import Mathlib.Topology.Connected.LocallyConnected
 /-! # Continuing the calibrated cube identity to the finite extended domain -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- A calibrated near-Q cube determines the unit-volume moment at every pole-free extended triple. -/
@@ -40,9 +40,7 @@ theorem roots_unitVolume_of_cube {Ω : Type*} [MeasurableSpace Ω]
   have hqsp : ∀ n : ℕ, sExp γ q q q ≠ -(n : ℝ) := fun n hn =>
     (not_lt_of_ge (neg_nonpos.mpr (Nat.cast_nonneg n))) (hn ▸ hqs)
   have hA : Differentiable ℂ A := by
-    apply differentiable_pi.mpr
-    intro i
-    exact (differentiable_const _).add (differentiable_id.mul_const _)
+    fun_prop (disch := positivity)
   have hAr (t : ℝ) : A (t : ℂ) = complexifyNCharges (fun i => q + t * (α i - q)) := by
     ext i
     simp only [A, complexifyNCharges]
@@ -50,7 +48,7 @@ theorem roots_unitVolume_of_cube {Ω : Type*} [MeasurableSpace Ω]
     ring
   obtain ⟨V, hVo, hVα, f, hfd, hfv⟩ := unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   let W := A ⁻¹' V
-  have hWo : IsOpen W := hVo.preimage hA.continuous
+  have hWo  := hVo.preimage hA.continuous
   have hWpath : ∀ t ∈ Icc (0 : ℝ) 1, (t : ℂ) ∈ W := by
     intro t ht
     change A (t : ℂ) ∈ V
@@ -58,25 +56,25 @@ theorem roots_unitVolume_of_cube {Ω : Type*} [MeasurableSpace Ω]
     apply hVα
     have hd := roots_extendedSeiberg3_segment hγ hα hqα t ht
     convert hd using 1 <;> simp only [α, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons] <;> ring
-  have hW0 : (0 : ℂ) ∈ W := by simpa only [Complex.ofReal_zero] using hWpath 0 ⟨le_rfl, zero_le_one⟩
-  have hW1 : (1 : ℂ) ∈ W := by simpa only [Complex.ofReal_one] using hWpath 1 ⟨zero_le_one, le_rfl⟩
+  have hW0 : (0 : ℂ) ∈ W := hWpath 0 ⟨le_rfl, zero_le_one⟩
+  have hW1 : (1 : ℂ) ∈ W := hWpath 1 ⟨zero_le_one, le_rfl⟩
   let T := connectedComponentIn W (0 : ℂ)
-  have hT0 : (0 : ℂ) ∈ T := mem_connectedComponentIn hW0
+  have hT0  := mem_connectedComponentIn hW0
   have hT1 : (1 : ℂ) ∈ T := by
     have hpre := (show IsPreconnected (Icc (0 : ℝ) 1) from isPreconnected_Icc).image (fun t : ℝ => (t : ℂ)) Complex.continuous_ofReal.continuousOn
     have him : Complex.ofReal '' Icc (0 : ℝ) 1 ⊆ W := by rintro _ ⟨t, ht, rfl⟩; exact hWpath t ht
     have hsub := hpre.subset_connectedComponentIn (mem_image_of_mem Complex.ofReal ⟨le_rfl, zero_le_one⟩) him
     exact hsub (mem_image_of_mem Complex.ofReal ⟨zero_le_one, le_rfl⟩)
-  have hFdiff : DifferentiableOn ℂ (fun z => f (A z)) W :=
+  have hFdiff  :=
     hfd.comp hA.differentiableOn (fun _ hz => hz)
   have hFm : MeromorphicOn (fun z => f (A z)) T := by
     intro z hz
     exact (hFdiff.analyticAt (hWo.mem_nhds (connectedComponentIn_subset W 0 hz))).meromorphicAt
-  have hGm : MeromorphicOn G T :=
+  have hGm  :=
     (roots_formula_line_meromorphic hγ hγ2 hμ hU (fun i z => A z i)
       (fun i => (differentiable_const _).add (differentiable_id.mul_const _))).mono_set (subset_univ T)
-  have hF0 : AnalyticAt ℂ (fun z => f (A z)) 0 := hFdiff.analyticAt (hWo.mem_nhds hW0)
-  have hG0 : AnalyticAt ℂ G 0 := roots_formula_line_analyticAt hγ hγ2 hμ hU (fun i z => A z i) 0
+  have hF0  := hFdiff.analyticAt (hWo.mem_nhds hW0)
+  have hG0  := roots_formula_line_analyticAt hγ hγ2 hμ hU (fun i z => A z i) 0
     (fun i => ((differentiable_const _).add (differentiable_id.mul_const _)).analyticAt 0)
     q q q (by simp only [A, zero_mul, add_zero]) (by simp only [A, zero_mul, add_zero])
     (by simp only [A, zero_mul, add_zero]) hqα hqsp
@@ -102,8 +100,8 @@ theorem roots_unitVolume_of_cube {Ω : Type*} [MeasurableSpace Ω]
     rfl
   obtain ⟨R, hR, hball⟩ := Metric.mem_nhds_iff.mp hreal
   have hfreq := frequently_eq_of_real_interval 0 R hR (fun z => f (A z)) G
-    (fun t ht => hball (by simpa only [Metric.mem_ball, Real.dist_eq] using ht))
-  have heq : (fun z => f (A z)) =ᶠ[nhds 0] G :=
+    (fun t ht => hball (by simp_all))
+  have heq  :=
     (hF0.frequently_eq_iff_eventually_eq hG0).mp hfreq
   have hG1 : AnalyticAt ℂ G 1 := roots_formula_line_analyticAt hγ hγ2 hμ hU (fun i z => A z i) 1
     (fun i => ((differentiable_const _).add (differentiable_id.mul_const _)).analyticAt 1)

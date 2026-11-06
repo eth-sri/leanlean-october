@@ -61,7 +61,7 @@ theorem separatedTail_exists_markov_data (R : ℝ) (hR : 1 < R) :
   obtain ⟨C,hC,h⟩ := DOZZ.exists_exteriorPinned_markov_uniform 2 R (5/4) 1 (1/4) hR
     (by norm_num) (by norm_num) (by norm_num)
   refine ⟨C,hC,fun Ω _ P X Xc hX hc c hpin hsep => ?_⟩
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   have hsep' : ∀ i j, i ≠ j → 2*(5/4 : ℝ)+1/4 ≤ dist (c i) (c j) := by
     intro i j hij
     rw [dist_eq_norm]

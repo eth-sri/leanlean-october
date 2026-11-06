@@ -6,7 +6,7 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 
 /-! Fatou passage for moments of finite-cutoff test integrals. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter
 open scoped ENNReal
@@ -28,8 +28,7 @@ theorem lintegral_ennreal_rpow_le_of_tendstoInMeasure
     ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (g ω)) p ∂P ≤ C := by
   obtain ⟨ns, hns, hsub⟩ := hfg.exists_seq_tendsto_ae
   let ψ : ℝ → ℝ≥0∞ := fun x => ENNReal.rpow (ENNReal.ofReal (max x 0)) p
-  have hψ : Continuous ψ := by
-    exact ENNReal.continuous_rpow_const.comp
+  have hψ : Continuous ψ := ENNReal.continuous_rpow_const.comp
       (ENNReal.continuous_ofReal.comp
         (continuous_max.comp (continuous_id.prodMk continuous_const)))
   have hlim : ∀ᵐ ω ∂P,
@@ -45,8 +44,7 @@ theorem lintegral_ennreal_rpow_le_of_tendstoInMeasure
     exact (hlimω.trans htargetω).symm
   calc
     ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (g ω)) p ∂P
-        = ∫⁻ ω, Filter.liminf (fun i => ψ (f (ns i) ω)) atTop ∂P := by
-            exact lintegral_congr_ae hEq
+        = ∫⁻ ω, Filter.liminf (fun i => ψ (f (ns i) ω)) atTop ∂P := lintegral_congr_ae hEq
     _ ≤ Filter.liminf (fun i => ∫⁻ ω, ψ (f (ns i) ω) ∂P) atTop :=
       lintegral_liminf_le' (fun i => hfmeas (ns i))
     _ ≤ Filter.limsup (fun i => ∫⁻ ω, ψ (f (ns i) ω) ∂P) atTop :=

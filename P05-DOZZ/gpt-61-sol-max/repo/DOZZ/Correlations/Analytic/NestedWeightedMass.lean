@@ -8,23 +8,25 @@ public import DOZZ.Correlations.Analytic.RetainedComplement
 
 /-! Exact additive mass increments on nested measurable retained sets. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+variable (μ : Measure ℂ) (w : ℂ → ℝ≥0∞) (O₀ O₁ : Set ℂ) (h₀ : MeasurableSet O₀) (h₁ : MeasurableSet O₁) (hsub : O₀ ⊆ O₁)
+
+include μ w O₀ O₁ h₀ h₁ hsub in
 /-- The mass added between nested sets is their weighted set-difference mass. -/
-theorem nested_weighted_mass_add (μ : Measure ℂ) (w : ℂ → ℝ≥0∞)
-    (O₀ O₁ : Set ℂ) (h₀ : MeasurableSet O₀) (h₁ : MeasurableSet O₁) (hsub : O₀ ⊆ O₁) :
+theorem nested_weighted_mass_add  :
     (∫⁻ x in O₀, w x ∂μ) + (∫⁻ x in O₁ \ O₀, w x ∂μ) = ∫⁻ x in O₁, w x ∂μ := by
   have he := measure_inter_add_sdiff (μ := μ.withDensity w) O₁ h₀
   rw [Set.inter_eq_right.mpr hsub,
     withDensity_apply _ h₀, withDensity_apply _ (h₁.diff h₀), withDensity_apply _ h₁] at he
   exact he
 
+include μ w O₀ O₁ h₀ h₁ hsub in
 /-- Finite full mass makes the nested mass decomposition valid after taking real values. -/
-theorem nested_weighted_mass_real (μ : Measure ℂ) (w : ℂ → ℝ≥0∞)
-    (O₀ O₁ : Set ℂ) (h₀ : MeasurableSet O₀) (h₁ : MeasurableSet O₁) (hsub : O₀ ⊆ O₁)
+theorem nested_weighted_mass_real 
     (hfin : (∫⁻ x, w x ∂μ) ≠ ⊤) :
     (∫⁻ x in O₀, w x ∂μ).toReal + (∫⁻ x in O₁ \ O₀, w x ∂μ).toReal =
         (∫⁻ x in O₁, w x ∂μ).toReal ∧

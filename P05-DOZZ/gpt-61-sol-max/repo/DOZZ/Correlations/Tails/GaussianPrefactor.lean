@@ -11,7 +11,7 @@ public import DOZZ.Statements.Correlations.OneInsertionTailCoefficient
 /-! Exact lognormal prefactor moments for the one-insertion tail. The exponent after the
 off-center Gaussian integration is the position exponent of `DOZZ.oneInsertionTailCoefficient`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -61,7 +61,7 @@ theorem offCenter_prefactor_moment
       Real.exp (γ * N ω - γ ^ 2 * variance N P / 2)) ^
         (reflectionExponent γ α) ∂P) =
       ‖z‖ ^ (-4 * α * (Q γ - α)) * Fz ^ (reflectionExponent γ α) := by
-  have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  have hn  := norm_pos_iff.mpr hz
   have hK : 0 < Fz * ‖z‖ ^ (-4 : ℝ) :=
     mul_pos hFz (Real.rpow_pos_of_pos hn _)
   let p := reflectionExponent γ α

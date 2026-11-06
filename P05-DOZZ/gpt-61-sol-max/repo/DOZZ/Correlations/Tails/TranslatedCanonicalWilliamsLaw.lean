@@ -10,7 +10,7 @@ public import DOZZ.Correlations.Tails.WilliamsPolarMassLaw
 
 /-! The canonical translated singular mass has the exponential-maximum last-cut law. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 
@@ -42,13 +42,13 @@ theorem translated_canonical_williams_mass_law
   have hcU := translated_field_circleAverage P X Xc hX hc z
   have hcontU := translated_circle_continuous P Xc hcont z
   have hA := originRadialPath_aemeasurable P _ Uc hcU hcontU
-  have hD : AEMeasurable D P := continuous_radialPositiveHalf.measurable.comp_aemeasurable hA
+  have hD  := continuous_radialPositiveHalf.measurable.comp_aemeasurable hA
   have hBp := (originRadialPath_isBrownian P _ Uc hU hcU hcontU).1
   have hDB := radialPositiveHalf_map_isBrownian P A hA hBp
   have hZ := translated_lateral_isLateralGMCOf P X Xc hX hc hm hcont z γ hγ hγ2 N hN
   have hAZ := lateralProjectedGMC_indep P _ Uc hU hcU
     (translated_circle_jointMeasurable Xc hm z) hcontU γ hγ hγ2 N hN
-  have hDZ : IndepFun D Z P := hAZ.comp continuous_radialPositiveHalf.measurable measurable_id
+  have hDZ  := hAZ.comp continuous_radialPositiveHalf.measurable measurable_id
   have hmass : (localSingularMass N (fun _ => 1) 0 γ α) =ᵐ[P]
       (fun ω => ∫⁻ t, (if 0 < t then ENNReal.ofReal
         (Real.exp (γ * (D ω (Real.toNNReal t) - (Q γ - α) * t))) else 0) ∂Z ω) := by

@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Analytic.NormalizedIncrementTilt
 
 /-! The analytic observable increment is controlled by the actual retained mass increment. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs

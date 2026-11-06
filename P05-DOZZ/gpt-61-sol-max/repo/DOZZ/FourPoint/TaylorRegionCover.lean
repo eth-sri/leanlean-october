@@ -9,7 +9,7 @@ public import DOZZ.GMC.Annulus.BallCover
 
 /-! Combining a finite spatial cover of the actual positive Taylor square. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -27,19 +27,19 @@ theorem twoRooted_region_cover
   let f : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖)
   let A : Fin 4 → Ω → ℝ≥0∞ := fun i ω => ∫⁻ x in B i, f x ∂M ω
   let I : Ω → ℝ≥0∞ := fun ω => (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃) ^ (-p - 2)
-  have hf : Measurable f := gammaHalf_absolute_kernel_measurable γ α₁ α₂ α₃ z
+  have hf  := gammaHalf_absolute_kernel_measurable γ α₁ α₂ α₃ z
   have hMm := gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM
   have hA (i : Fin 4) : AEMeasurable (A i) P := by
     have hm := Measure.measurable_lintegral (hf.indicator (hB i))
     have hh := hm.comp_aemeasurable hMm
-    simpa only [lintegral_indicator (hB i), Function.comp_def, A] using hh
+    continuity
   have hI : AEMeasurable I P :=
     ((coulombMass_measure_measurable γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃).comp_aemeasurable hMm).pow_const _
   have hpoint (ω : Ω) : I ω * (∫⁻ x, f x ∂M ω) ^ 2 ≤
       16 * ∑ i : Fin 4, (A i ω) ^ 2 * I ω := by
     have hmass : (∫⁻ x, f x ∂M ω) ≤ ∑ i : Fin 4, A i ω := by
       have hh := lintegral_iUnion_le (μ := M ω) B f
-      simpa only [hcover, setLIntegral_univ, tsum_fintype] using hh
+      continuity
     have hpow := ennreal_finset_sum_rpow_le_card_rpow_sum Finset.univ
       (Finset.univ_nonempty : (Finset.univ : Finset (Fin 4)).Nonempty) (fun i => A i ω) 2 (by norm_num)
     simp only [ENNReal.rpow_two, Finset.card_univ, Fintype.card_fin, Nat.cast_ofNat] at hpow

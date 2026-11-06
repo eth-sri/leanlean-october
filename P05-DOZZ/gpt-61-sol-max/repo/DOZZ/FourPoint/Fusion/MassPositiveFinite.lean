@@ -9,7 +9,7 @@ public import DOZZ.FourPoint.Fusion.Kernel
 
 /-! # Positive finite unrooted masses in the punctured fusion chart -/
 
-@[expose] public section
+public section
 open MeasureTheory
 namespace DOZZ.Proofs
 

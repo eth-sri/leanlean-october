@@ -9,7 +9,7 @@ At larger radii a fixed singular core is combined with a bounded outer weight. G
 Jensen controls coarse physical cutoffs, including cutoffs larger than one.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -30,8 +30,7 @@ theorem equatorGFF_GMC_weighted_cutoff_bound_uniform_gamma
         (cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω) t.2 ∂P) ≤
         ENNReal.ofReal (C * Real.rpow R
           (γ * (Q γ - t.1) * t.2 - γ ^ 2 * t.2 ^ 2 / 2)) := by
-  have hadm : ∀ γ ∈ Γ, ∀ t ∈ T, 0 < t.2 ∧
-      t.2 < min (4 / γ ^ 2) (2 / γ * (Q γ - t.1)) :=
+  have hadm  :=
     fun γ hγ t ht => (hTadm γ hγ t ht).2
   obtain ⟨Cs, hCs, hsmall⟩ := cutoffWeightedGmcBallMoment_compact_gamma_small_bound
     P X hX Xc hXc Γ hΓ hΓ2 T hT hadm K hK
@@ -45,13 +44,12 @@ theorem equatorGFF_GMC_weighted_cutoff_bound_uniform_gamma
   have hC : 0 < C := hCs.trans_le (le_max_left _ _)
   refine ⟨C, hC, ?_⟩
   intro γ hγ t ht z hz δ R hδ hδR hR₀
-  have hR : 0 < R := hδ.trans_le hδR
+  have hR  := hδ.trans_le hδR
   change (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω ^ t.2 ∂P) ≤
     ENNReal.ofReal (C * R ^ weightedCutoffMomentScaleExponent γ t.1 t.2)
   by_cases hRsmall : R ≤ 1 / 2
   · apply (hsmall γ hγ t ht z hz R δ hR hRsmall hδ hδR).trans
-    exact ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_right
-      (le_max_left Cs Cl) (Real.rpow_nonneg hR.le _))
+    bound
   have hRa : 1 / 8 ≤ R := by linarith
   have hscale := hlower γ hγ t ht R ⟨hRa, hR₀⟩
   have hEscale : E ≤ ENNReal.ofReal (Cl * R ^ weightedCutoffMomentScaleExponent γ t.1 t.2) := by

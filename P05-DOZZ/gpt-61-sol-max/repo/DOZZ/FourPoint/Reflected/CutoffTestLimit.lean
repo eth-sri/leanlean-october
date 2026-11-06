@@ -8,7 +8,7 @@ public import DOZZ.GMC.AdmissibleGMCRestriction
 public import DOZZ.Statements.GMC.FieldChaosMass
 import Mathlib.Tactic
 /-! Actual compact admissible chaos tests in the field-mass limit Kahane interface. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -42,7 +42,7 @@ theorem reflected_admissible_field_test_limit
     (Real.exp_le_exp.mpr (neg_le_neg (le_max_right _ _))).trans hR₀
   have hi (r : ℝ) := admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY K hK hKU
     γ (max r R₀) (hr r) ‖f‖ f f.continuous.measurable
-    (fun x => by simpa only [Real.norm_eq_abs] using f.norm_coe_le_norm x) hf0
+    (fun x => by exact f.norm_coe_le_norm x) hf0
   have he (r : ℝ) : (fun ω => regularizedLogChaosTestMass P U dens Y γ (max r R₀) ω f) =ᵐ[P]
       (fun ω => (fieldChaosMass P (fun ω x => Y ω (Real.exp (-max r R₀)) x)
         ((logRegularizationReference U dens).restrict K)
@@ -64,7 +64,7 @@ theorem reflected_admissible_field_test_limit
     rw [hid, ← hm, ENNReal.toReal_ofReal (integral_nonneg_of_ae hnon)]
     exact (integral_restrict_eq_integral_of_zero_on_compl _ K hK.measurableSet _
       (fun x hx => by rw [hf0 x hx, zero_mul])).symm
-  have ht : Tendsto (fun r : ℝ => max r R₀) atTop atTop :=
+  have ht  :=
     tendsto_atTop_mono (fun r => le_max_left r R₀) tendsto_id
   exact TendstoInMeasure.congr he (Filter.EventuallyEq.refl _ _)
     ((hN.2.2.2 f (hK.of_isClosed_subset (isClosed_tsupport _) hfK) (hfK.trans hKU)).comp ht)

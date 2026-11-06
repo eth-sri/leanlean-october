@@ -17,7 +17,7 @@ The scalar annular transport extends to Banach observables by separating duals;
 radial concentration and uniform smoothing give norm convergence of circle averages.
 -/
 
-@[expose] public section
+public section
 open Filter MeasureTheory ProbabilityTheory Set Metric TopologicalSpace
 open scoped Topology ENNReal NNReal
 namespace DOZZ.Proofs
@@ -33,14 +33,14 @@ theorem exists_raw_joint_continuous_modification {Ω T : Type*} [MeasurableSpace
   let s : ℕ → SimpleFunc T T := stronglyMeasurable_id.approx
   let U (n : ℕ) (p : Ω × T) : ℝ := g (s n p.2) p.1
   have hUm (n : ℕ) : Measurable[m0.prod inferInstance] (U n) := by
-    let : MeasurableSpace Ω := m0
+    let  := m0
     have hfin : Measurable (fun p : Ω × (s n).range => g p.2.1 p.1) :=
       measurable_from_prod_countable_left (fun t => hgm t.1)
     have hm : Measurable (fun p : Ω × T =>
         (⟨s n p.2,SimpleFunc.mem_range_self _ _⟩ : (s n).range)) :=
       ((s n).measurable.comp measurable_snd).subtype_mk
     exact hfin.comp (measurable_fst.prodMk hm)
-  let G : Ω → T → ℝ := fun ω t => limUnder atTop (fun n => U n (ω,t))
+  let G  := fun ω t => limUnder atTop (fun n => U n (ω,t))
   refine ⟨G,?_,?_⟩
   · exact (StronglyMeasurable.limUnder (fun n => (hUm n).stronglyMeasurable)).measurable
   · have hmatch : ∀ᵐ ω ∂P, ∀ j : (n : ℕ) × (s n).range, g j.2.1 ω = F ω j.2.1 :=
@@ -53,26 +53,27 @@ theorem exists_raw_joint_continuous_modification {Ω T : Type*} [MeasurableSpace
       exact hm ⟨n,⟨s n t,SimpleFunc.mem_range_self _ _⟩⟩
     rw [he]
     exact (hc.tendsto t).comp (stronglyMeasurable_id.tendsto_approx t)
+variable {Ω : Type*} [mΩ : MeasurableSpace Ω] (P : Measure Ω) (m0 : MeasurableSpace Ω)
+
+include Ω mΩ P m0 in
 /-- A literal random L² limit of raw-sigma-measurable variables has a raw measurable coordinate version. -/
-theorem exists_raw_measurable_version_of_L2_limit {Ω : Type*} [mΩ : MeasurableSpace Ω]
-    (P : Measure Ω) (m0 : MeasurableSpace Ω) (U : ℕ → Ω → ℝ) (V : Ω → ℝ)
+theorem exists_raw_measurable_version_of_L2_limit  (U : ℕ → Ω → ℝ) (V : Ω → ℝ)
     (hUm : ∀ n, Measurable[m0] (U n)) (hU : ∀ n, MemLp (U n) 2 P) (hV : MemLp V 2 P)
     (hlim : Tendsto (fun n => eLpNorm (fun ω => U n ω-V ω) 2 P) atTop (𝓝 0)) :
     ∃ g : Ω → ℝ, Measurable[m0] g ∧ g =ᵐ[P] V := by
-  let : MeasurableSpace Ω := mΩ
+  let  := mΩ
   have ht := tendsto_toLp_of_eLpNorm_sub hU hV hlim
   obtain ⟨s,_hs,hAE⟩ := (tendstoInMeasure_of_tendsto_Lp ht).exists_seq_tendsto_ae'
-  let g : Ω → ℝ := fun ω => limUnder atTop (fun n => U (s n) ω)
+  let g  := fun ω => limUnder atTop (fun n => U (s n) ω)
   have hgm : Measurable[m0] g := by
-    let : MeasurableSpace Ω := m0
+    let  := m0
     exact (StronglyMeasurable.limUnder (fun n => (hUm (s n)).stronglyMeasurable)).measurable
   refine ⟨g,hgm,?_⟩
-  have hcoords : ∀ᵐ ω ∂P, ∀ n, (hU (s n)).toLp (U (s n)) ω = U (s n) ω :=
+  have hcoords  :=
     ae_all_iff.mpr (fun n => (hU (s n)).coeFn_toLp)
   filter_upwards [hAE,hcoords,hV.coeFn_toLp] with ω htω hu hv
   apply Tendsto.limUnder_eq
-  rw [hv] at htω
-  exact htω.congr (fun n => hu n)
+  simp_all
 
 /-- Every distribution test evaluation is measurable for its literal raw evaluation sigma algebra. -/
 theorem measurable_raw_distribution_eval {Ω : Type*} (D : Ω → Distr) (f : TestFn) :
@@ -101,10 +102,10 @@ theorem circleAnnularDensity_radius_le (x : ℂ) (r : ℝ) (n : ℕ) (z : ℂ)
   have hnear := DOZZ.annularProbabilityDensity_radius_bound n _ hne
   rw [norm_smul,Real.norm_eq_abs,abs_of_pos (inv_pos.mpr (Real.exp_pos _))] at hnear
   have hup : (Real.exp (-r))⁻¹*‖z-x‖ ≤ 1+1/((n : ℝ)+2) := by
-    linarith only [le_abs_self ((Real.exp (-r))⁻¹*‖z-x‖-1),hnear]
+    grind
   have hm := mul_le_mul_of_nonneg_left hup (Real.exp_pos (-r)).le
   rw [← mul_assoc,mul_inv_cancel₀ (Real.exp_ne_zero _),one_mul] at hm
-  simpa only [mul_add,mul_one,mul_one_div] using hm
+  grind
 
 /-- The closed support of each annular density obeys the shrinking radius bound. -/
 theorem tsupport_circleAnnularDensity_radius_subset (x : ℂ) (r : ℝ) (n : ℕ) :
@@ -122,8 +123,7 @@ theorem eventually_circleAnnularDensity_support_inner (c x : ℂ) (r b : ℝ)
   have ht : Tendsto (fun n : ℕ => Real.exp (-r)/((n : ℝ)+2)) atTop (𝓝 0) := by
     convert (tendsto_const_div_atTop_nhds_zero_nat (Real.exp (-r))).comp
       (tendsto_add_atTop_nat 2) using 1
-    ext n
-    simp only [Function.comp_def,Nat.cast_add,Nat.cast_ofNat]
+    continuity
   filter_upwards [ht.eventually_lt_const (by linarith : 0 < b-(‖x-c‖+Real.exp (-r)))] with n hn
   intro z hz
   have hz' := mem_closedBall_iff_norm.mp (tsupport_circleAnnularDensity_radius_subset x r n hz)
@@ -140,24 +140,19 @@ theorem exists_circleAnnular_testFn_eventually_interior (c x : ℂ) (ρ r : ℝ)
   classical
   obtain ⟨b,hxb,hbρ⟩ := exists_between hx
   obtain ⟨d,hbd,hdρ⟩ := exists_between hbρ
-  have hb : 0 < b := (add_pos_of_nonneg_of_pos (norm_nonneg _) (Real.exp_pos _)).trans hxb
+  have hb  := (add_pos_of_nonneg_of_pos (norm_nonneg _) (Real.exp_pos _)).trans hxb
   let φ : ContDiffBump c := ⟨b,d,hb,hbd⟩
   obtain ⟨g,hg⟩ := exists_testFn_circleAnnular_approx x r (fun n => 1/((n : ℝ)+2)^3)
     (fun n => by positivity)
   let A : TestFn →L[ℝ] TestFn := TestFunction.bilinLeftCLM (ContinuousLinearMap.lsmul ℝ ℝ) φ.contDiff
   let f (n : ℕ) : TestFn := if tsupport (circleAnnularDensity x r n) ⊆ closedBall c b then A (g n) else g n
-  have hsupport n : tsupport (A (g n)) ⊆ tsupport (g n) := by
-    change tsupport (fun z => g n z*φ z) ⊆ tsupport (g n)
-    exact tsupport_mul_subset_left
-  have hcut n : tsupport (A (g n)) ⊆ ball c ρ := by
-    change tsupport (fun z => g n z*φ z) ⊆ ball c ρ
-    exact tsupport_mul_subset_right.trans (φ.tsupport_eq.subset.trans (closedBall_subset_ball hdρ))
+  have hsupport n : tsupport (A (g n)) ⊆ tsupport (g n) := tsupport_mul_subset_left
+  have hcut n : tsupport (A (g n)) ⊆ ball c ρ := tsupport_mul_subset_right.trans (φ.tsupport_eq.subset.trans (closedBall_subset_ball hdρ))
   refine ⟨f,fun n => ?_,fun n z => ?_,?_⟩
   · by_cases hn : tsupport (circleAnnularDensity x r n) ⊆ closedBall c b
     · simp only [f,ite_eq_left hn]
       exact (hsupport n).trans (hg n).1
-    · simp only [f,ite_eq_right hn]
-      exact (hg n).1
+    continuity
   · by_cases hn : tsupport (circleAnnularDensity x r n) ⊆ closedBall c b
     · simp only [f,ite_eq_left hn]
       have hφ : circleAnnularDensity x r n z*φ z = circleAnnularDensity x r n z := by
@@ -167,8 +162,7 @@ theorem exists_circleAnnular_testFn_eventually_interior (c x : ℂ) (ρ r : ℝ)
       change |g n z*φ z-circleAnnularDensity x r n z| < _
       rw [← hφ,← sub_mul,abs_mul,abs_of_nonneg φ.nonneg]
       exact (mul_le_of_le_one_right (abs_nonneg _) φ.le_one).trans_lt ((hg n).2 z)
-    · simp only [f,ite_eq_right hn]
-      exact (hg n).2 z
+    continuity
   · filter_upwards [eventually_circleAnnularDensity_support_inner c x r b hxb] with n hn
     simp only [f,ite_eq_left hn]
     exact hcut n
@@ -182,18 +176,14 @@ theorem measurable_extend_interior_circle_field {Ω : Type*} [MeasurableSpace Ω
       if hp : ‖p.2.1-c‖+Real.exp (-p.2.2) < ρ then G p.1 ⟨p.2,hp⟩ else 0) := by
   classical
   let S : Set (Ω × (ℂ × ℝ)) := {p | ‖p.2.1-c‖+Real.exp (-p.2.2) < ρ}
-  have hS : MeasurableSet S := by
-    exact measurableSet_lt (by fun_prop) measurable_const
+  have hS : MeasurableSet S := measurableSet_lt (by fun_prop) measurable_const
   have hbranch : Measurable (fun p : S => G p.1.1 ⟨p.1.2,p.2⟩) := by
-    have hm : Measurable (fun p : S =>
-        (⟨p.1.2,p.2⟩ : {p : ℂ × ℝ // ‖p.1-c‖+Real.exp (-p.2) < ρ})) :=
-      (measurable_snd.comp measurable_subtype_coe).subtype_mk
-    exact hG.comp ((measurable_fst.comp measurable_subtype_coe).prodMk hm)
+    fun_prop
   exact Measurable.dite hbranch measurable_const hS
 
+include Ω mΩ P m0 in
 /-- Coordinate raw-sigma versions and a continuous candidate yield a literal raw joint circle version. -/
-theorem exists_raw_joint_circle_modification {Ω : Type*} [mΩ : MeasurableSpace Ω]
-    (P : Measure Ω) (m0 : MeasurableSpace Ω) (c : ℂ) (ρ : ℝ) (F : Ω → ℂ → ℝ → ℝ)
+theorem exists_raw_joint_circle_modification  (c : ℂ) (ρ : ℝ) (F : Ω → ℂ → ℝ → ℝ)
     (hF : ∀ᵐ ω ∂P, Continuous (fun p : {p : ℂ × ℝ // ‖p.1-c‖+Real.exp (-p.2) < ρ} => F ω p.1.1 p.1.2))
     (hcoord : ∀ p : {p : ℂ × ℝ // ‖p.1-c‖+Real.exp (-p.2) < ρ},
       ∃ g : Ω → ℝ, Measurable[m0] g ∧ g =ᵐ[P] fun ω => F ω p.1.1 p.1.2) :
@@ -201,17 +191,13 @@ theorem exists_raw_joint_circle_modification {Ω : Type*} [mΩ : MeasurableSpace
       (fun p : Ω × (ℂ × ℝ) => Dc p.1 p.2.1 p.2.2) ∧
       (∀ᵐ ω ∂P, ∀ x r, ‖x-c‖+Real.exp (-r) < ρ → Dc ω x r = F ω x r) := by
   classical
-  let : MeasurableSpace Ω := mΩ
+  let  := mΩ
   obtain ⟨G,hG,hGe⟩ := exists_raw_joint_continuous_modification P m0
     (fun ω (p : {p : ℂ × ℝ // ‖p.1-c‖+Real.exp (-p.2) < ρ}) => F ω p.1.1 p.1.2) hF hcoord
   let Dc (ω : Ω) (x : ℂ) (r : ℝ) := if h : ‖x-c‖+Real.exp (-r) < ρ then G ω ⟨(x,r),h⟩ else 0
   refine ⟨Dc,?_,?_⟩
-  · let : MeasurableSpace Ω := m0
-    exact measurable_extend_interior_circle_field c ρ G hG
-  · filter_upwards [hGe] with ω hω
-    intro x r hx
-    simp only [Dc,dite_eq_left hx]
-    exact hω ⟨(x,r),hx⟩
+  · exact   let this := m0;   measurable_extend_interior_circle_field c ρ G hG
+  grind
 
 section Vector
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
@@ -219,23 +205,7 @@ omit [CompleteSpace E] in
 /-- Bounded continuous Banach observables have circle averages continuous in radius. -/
 theorem continuous_circleAverage_radius_vector (h : ℂ → E) (hh : Continuous h)
     {M : ℝ} (hb : ∀ z, ‖h z‖ ≤ M) : Continuous (fun t : ℝ => Real.circleAverage h 0 t) := by
-  let μ : Measure ℝ := volume.restrict (Ioc 0 (2*Real.pi))
-  have hμ : IsFiniteMeasure μ := by
-    dsimp [μ]
-    exact isFiniteMeasure_restrict.mpr (by simp only [Real.volume_Ioc]; finiteness)
-  let _ := hμ
-  have hc : Continuous (fun t : ℝ => ∫ θ, h (circleMap 0 t θ) ∂μ) := by
-    apply continuous_of_dominated
-      (fun t => (hh.stronglyMeasurable.comp_measurable (measurable_circleMap 0 t)).aestronglyMeasurable)
-      (fun t => Eventually.of_forall (fun θ => hb (circleMap 0 t θ))) (integrable_const M)
-    filter_upwards with θ
-    apply hh.comp
-    simp only [circleMap]
-    fun_prop
-  have he t : Real.circleAverage h 0 t = (2*Real.pi)⁻¹ • (∫ θ, h (circleMap 0 t θ) ∂μ) := by
-    rw [Real.circleAverage_def,intervalIntegral.integral_of_le Real.two_pi_pos.le]
-  simp_rw [he]
-  exact hc.const_smul _
+  fun_prop
 
 /-- Banach annular averages have the same literal radial mixture as scalar averages. -/
 theorem integral_annular_smul_eq_radial_average (n : ℕ) (h : ℂ → E) (hh : Continuous h)
@@ -254,8 +224,7 @@ theorem integral_annular_smul_eq_radial_average (n : ℕ) (h : ℂ → E) (hh : 
   intro L
   rw [← L.integral_comp_comm hi,← L.integral_comp_comm hj]
   simp only [map_smul,smul_eq_mul]
-  have hc t : L (Real.circleAverage h 0 t) = Real.circleAverage (L ∘ h) 0 t := by
-    exact (L.circleAverage_comp_comm hh.continuousOn.circleIntegrable').symm
+  have hc t : L (Real.circleAverage h 0 t) = Real.circleAverage (L ∘ h) 0 t := (L.circleAverage_comp_comm hh.continuousOn.circleIntegrable').symm
   simp_rw [hc]
   exact integral_annular_mul_eq_radial_average n (L ∘ h) (L.continuous.comp hh)
 
@@ -320,14 +289,7 @@ theorem integral_circleAnnularDensity_smul (x : ℂ) (r : ℝ) (n : ℕ)
 omit [CompleteSpace E] in
 /-- Affine transport of a unit-circle Banach average gives the literal translated circle average. -/
 theorem circleAverage_affine_unit_vector (x : ℂ) (r : ℝ) (h : ℂ → E) :
-    Real.circleAverage (fun z => h (Real.exp (-r) • z+x)) 0 1 = Real.circleAverage h x (Real.exp (-r)) := by
-  unfold Real.circleAverage
-  congr 1
-  apply intervalIntegral.integral_congr
-  intro θ _
-  simp only [circleMap,zero_add,Complex.ofReal_one,one_mul,Complex.real_smul]
-  congr 1
-  ring
+    Real.circleAverage (fun z => h (Real.exp (-r) • z+x)) 0 1 = Real.circleAverage h x (Real.exp (-r)) := Eq.symm Real.circleAverage_eq_circleAverage_zero_one
 
 /-- Translated annuli converge in Banach norm for bounded continuous observables. -/
 theorem tendsto_integral_circleAnnular_smul (x : ℂ) (r : ℝ)
@@ -358,7 +320,7 @@ theorem tendsto_integral_testFn_smul_of_circleAnnular_approx
     ((continuous_circleAnnularDensity x r n).smul hh).integrable_of_hasCompactSupport
       (hasCompactSupport_circleAnnularDensity x r n).smul_right
   have hbound n : ‖(∫ z, f n z • h z)-(∫ z, circleAnnularDensity x r n z • h z)‖ ≤ ε n*B := by
-    let e : ℂ → ℝ := fun z => f n z-circleAnnularDensity x r n z
+    let e  := fun z => f n z-circleAnnularDensity x r n z
     have hes : Function.support e ⊆ closedBall (0 : ℂ) R := by
       intro z hz
       by_contra hnot
@@ -368,12 +330,12 @@ theorem tendsto_integral_testFn_smul_of_circleAnnular_approx
       have hρ0 : circleAnnularDensity x r n z = 0 := by
         by_contra hne
         exact hnot (hρs n hne)
-      exact hz (by change f n z-circleAnnularDensity x r n z = 0; rw [hf0,hρ0,sub_self])
+      continuity
     have hsub : (∫ z, f n z • h z)-(∫ z, circleAnnularDensity x r n z • h z) = ∫ z, e z • h z := by
       rw [← integral_sub (hi n) (hj n)]
       congr 1
       funext z
-      exact (sub_smul (f n z) (circleAnnularDensity x r n z) (h z)).symm
+      module
     have hei : Integrable (fun z => e z • h z) := by
       convert (hi n).sub (hj n) using 1
       funext z

@@ -14,6 +14,7 @@ import DOZZ.ShiftEquations.Gluing.BandNear
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
 import DOZZ.ShiftEquations.Rbar.Continuation
+public import DOZZ.ShiftEquations.Contracts
 
 /-!
 # The first γ/2 structure shift on the whole two-triple extended domain
@@ -28,7 +29,7 @@ box along a segment gives the shift at every real point of that set where `Γ` i
 the spectators of the gluing lemma ([KRV, Lemma 10.5], first half).
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -80,7 +81,7 @@ theorem firstShift_of_box {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M 
     simp only [hF, hG]
     rw [segH_ofReal P M hμ hf₃eq hE₁, segH_ofReal P M hμ hf₃eq hE₂, segC_ofReal, segC_ofReal,
       segC_ofReal, show x₀ - γ + t * (x - γ - (x₀ - γ)) = x₀ + t * (x - x₀) - γ by ring]
-    exact hbox _ _ _ hxt.1 hxt.2 hbt.1 hbt.2 hct.1 hct.2
+    grind
   have hF1 : AnalyticAt ℂ F 1 := segH_analyticAt_one hV₃ hf₃ hμ (hV₃mem ![x, b, c] h₁) hs₁
   have hG1 : AnalyticAt ℂ G 1 := by
     refine (analyticAt_const.mul (analyticAt_shiftCoeffA_comp
@@ -95,27 +96,13 @@ theorem firstShift_of_box {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M 
   rw [segH_one P M hμ hf₃eq h₁, segH_one P M hμ hf₃eq h₂, segC_one, segC_one, segC_one] at key
   exact key
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X M γ μ hγ hγ2 hμ hX hM in
 /-- **The first structure shift near `Q` from `DOZZ.structureConstant_reflected_shift_and_gluing`**,
 at every real point of the near-`Q` box. -/
-theorem firstShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) {η : ℝ} (hη : 0 < η ∧ Q γ - 2 * η > γ)
-    (hShiftGluing : ∀ α₂ α₃ : ℝ, (Q γ - η < α₂ ∧ α₂ < Q γ) → (Q γ - η < α₃ ∧ α₃ < Q γ) →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) = (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ, C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2)))
+theorem firstShift_nearQ_of_reflected_shift_and_gluing  {η : ℝ} (hη : 0 < η ∧ Q γ - 2 * η > γ)
+    (hShiftGluing : Contract.fixedShiftGluing P X M γ μ η)
     (y b c : ℝ) (hy₁ : 2 * η + γ < y) (hy₂ : y < Q γ) (hb₁ : Q γ - η < b) (hb₂ : b < Q γ)
     (hc₁ : Q γ - η < c) (hc₂ : c < Q γ) :
     (structureConstant P M γ μ y b c : ℂ) = -(1 / (Real.pi * μ)) *
@@ -127,12 +114,10 @@ theorem firstShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [MeasurableS
   have hCs : ∀ᶠ z in codiscrete ℂ, C (z + γ / 2) =
       -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (b : ℂ) (c : ℂ) * C (z - γ / 2) := by
     filter_upwards [eventually_codiscrete_comp_add hglue ((γ : ℂ) / 2), hrefl] with z h1 h2
-    rw [h1, show 2 * (Q γ : ℂ) - (z + γ / 2) = 2 * Q γ - z - γ / 2 by ring, h2]
+    grind
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
-  have h2γ : 0 < 2 / γ := by positivity
+  
+  
   have h42 : 4 / γ = 2 * (2 / γ) := by ring
   have hgood : ShiftCoeffGood γ ((y : ℂ) - γ / 2) b c :=
     shiftCoeffGood_of_lt hγ (by linarith [hη.1]) (by linarith [hη.2])
@@ -143,30 +128,13 @@ theorem firstShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [MeasurableS
   exact firstShift_exact_of_strip P M hγ hγ2 hμ hη ⟨hb₁, hb₂⟩ ⟨hc₁, hc₂⟩ hV₃ hV₃mem hf₃ hf₃eq hh
     hCm hCv hCs hy₁ hy₂ hAy
 
+include Ω _inst1 P X M γ μ hγ hγ2 hμ hX hM in
 /-- **The first structure shift on the two-triple extended domain**, from
 `DOZZ.structureConstant_reflected_shift_and_gluing`: at every real `(x, b, c)` with `(x, b, c)` and
 `(x - γ, b, c)` in the extended Seiberg domain, `Γ` analytic at both `s`-parameters and the shift
 coefficient analytic. -/
-theorem firstShift_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hShiftGluing : ∀ η : ℝ, (0 < η ∧ Q γ - 2 * η > γ) → ∀ α₂ α₃ : ℝ,
-      (Q γ - η < α₂ ∧ α₂ < Q γ) → (Q γ - η < α₃ ∧ α₃ < Q γ) →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) = (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ, C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2)))
+theorem firstShift_full 
+    (hShiftGluing : Contract.shiftGluing P X M γ μ)
     {x b c : ℝ} (h₁ : ExtendedSeiberg3 γ x b c) (h₂ : ExtendedSeiberg3 γ (x - γ) b c)
     (hs₁ : AnalyticAt ℂ Complex.Gamma (sExp γ x b c : ℂ))
     (hs₂ : AnalyticAt ℂ Complex.Gamma (sExp γ (x - γ) b c : ℂ))
@@ -179,7 +147,7 @@ theorem firstShift_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : 
   have hγh : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ (by norm_num) hγ]
     nlinarith
-  have h2γ : 0 < 2 / γ := by positivity
+  
   have h42 : 4 / γ = 2 * (2 / γ) := by ring
   set η₀ : ℝ := (Q γ - γ) / 4 with hη₀
   have hη : 0 < η₀ ∧ Q γ - 2 * η₀ > γ := ⟨by rw [hη₀]; linarith, by rw [hη₀]; linarith⟩

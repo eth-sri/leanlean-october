@@ -17,7 +17,7 @@ dual shift `R(ε) = -c_γ R(ε + 2/γ)/(l(-4/γ²) l(2ε/γ) l(2 + 4/γ² - 2ε/
 `c_γ = (γ²/4) μπ R(γ)` ([KRV, §10.5], last display).
 -/
 
-@[expose] public section
+public section
 
 open Filter Topology Set
 
@@ -27,8 +27,7 @@ namespace DOZZ.Proofs
 theorem lFun_mul_lFun_one_sub_eq_one {x : ℂ} (h₁ : Complex.Gamma x ≠ 0)
     (h₂ : Complex.Gamma (1 - x) ≠ 0) : lFun x * lFun (1 - x) = 1 := by
   unfold lFun
-  rw [show (1 : ℂ) - (1 - x) = x by ring]
-  field_simp
+  simp_all
 
 /-- `4/γ²` is not an integer when `γ²` is irrational. -/
 theorem four_div_sq_ne_nat {γ : ℝ} (hγ : 0 < γ) (hγirr : Irrational (γ ^ 2)) (n : ℕ) :
@@ -38,7 +37,7 @@ theorem four_div_sq_ne_nat {γ : ℝ} (hγ : 0 < γ) (hγirr : Irrational (γ ^ 
     push_cast
     linear_combination -hn
   have hr' : 4 / γ ^ 2 = (n : ℝ) := by exact_mod_cast hr
-  have hγ2 : 0 < γ ^ 2 := by positivity
+  
   have hn0 : (n : ℝ) ≠ 0 := by
     rw [← hr']
     positivity
@@ -62,7 +61,7 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
       -((γ : ℂ) ^ 2 / 4 * (μ * Real.pi : ℂ) * R γ) * R (((γ / 2 - θ : ℝ) : ℂ) + 2 / γ) /
         (lFun (-4 / (γ : ℂ) ^ 2) * lFun (2 * ((γ / 2 - θ : ℝ) : ℂ) / γ) *
           lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * ((γ / 2 - θ : ℝ) : ℂ) / γ)) := by
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+  have hγc  := Complex.ofReal_ne_zero.mpr hγ.ne'
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   set ε : ℂ := ((γ / 2 - θ : ℝ) : ℂ) with hε
   -- the shifted point
@@ -81,11 +80,11 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
           have := (analyticAt_Gamma_ofReal_pos (show (0 : ℝ) < 1 + 4 / γ ^ 2 by positivity))
           intro hn
           have hr : (1 + 4 / γ ^ 2 : ℝ) = -(n : ℝ) := by exact_mod_cast hn
-          have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+          
           have : (0 : ℝ) < 1 + 4 / γ ^ 2 := by positivity
           linarith))
-    rwa [show (1 : ℂ) - -4 / (γ : ℂ) ^ 2 = 1 + 4 / (γ : ℂ) ^ 2 by ring] at h
-  have hX0 : X ≠ 0 := left_ne_zero_of_mul_eq_one hXA
+    grind
+  have hX0  := left_ne_zero_of_mul_eq_one hXA
   -- `l(2(ε - Q)/γ) l(2 + 4/γ² - 2ε/γ) = 1`
   set Y : ℂ := lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * ε / γ) with hY
   have hY1 : 1 - dualArg₁ γ ε = 2 + 4 / (γ : ℂ) ^ 2 - 2 * ε / γ := by
@@ -102,10 +101,9 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
           rw [hε]; push_cast; field_simp; ring]
         refine Complex.Gamma_ne_zero fun n hn => ?_
         have hr : (1 + 4 / γ ^ 2 + 2 * θ / γ : ℝ) = -(n : ℝ) := by exact_mod_cast hn
-        have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-        linarith)
+        grind)
     rwa [hY1] at h
-  have hY0 : Y ≠ 0 := right_ne_zero_of_mul_eq_one hl₁Y
+  have hY0  := right_ne_zero_of_mul_eq_one hl₁Y
   -- `l(γ²/4) l(-γ²/4) = -16/γ⁴`
   have hPQ : lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) ^ 2 / 4) = -16 / (γ : ℂ) ^ 4 := by
     have hq : ((γ : ℂ) ^ 2 / 4) ≠ 0 := div_ne_zero (pow_ne_zero 2 hγc) (by norm_num)
@@ -113,18 +111,15 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
       rw [show (γ : ℂ) ^ 2 / 4 = ((γ ^ 2 / 4 : ℝ) : ℂ) by push_cast; ring]
       refine Complex.Gamma_ne_zero fun n hn => ?_
       have hr : (γ ^ 2 / 4 : ℝ) = -(n : ℝ) := by exact_mod_cast hn
-      have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+      
       have : (0 : ℝ) < γ ^ 2 / 4 := by positivity
       linarith
     have hΓ2 : Complex.Gamma (-((γ : ℂ) ^ 2 / 4)) ≠ 0 := by
       rw [show -((γ : ℂ) ^ 2 / 4) = ((-(γ ^ 2 / 4) : ℝ) : ℂ) by push_cast; ring]
       exact Complex.Gamma_ne_zero (ofReal_ne_neg_nat_of_mem (Or.inl ⟨by nlinarith, by
-        have : (0 : ℝ) < γ ^ 2 / 4 := by positivity
-        linarith⟩))
+        nlinarith⟩))
     have h := lFun_mul_neg hq hΓ1 hΓ2
-    rw [show -((γ : ℂ) ^ 2) / 4 = -((γ : ℂ) ^ 2 / 4) by ring, mul_comm, h]
-    field_simp
-    ring
+    grind
   -- `l(1 - 2θ/γ) = l(2ε/γ) ≠ 0`
   have hB : lFun (1 - 2 * θ / γ) = lFun (2 * ε / γ) := by
     congr 1
@@ -146,8 +141,8 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
     rw [mul_assoc, hinv, mul_one]
   rw [hR, show R ε * R ((Q γ + θ : ℝ) : ℂ) = (R ε * R ((Q γ + θ : ℝ) : ℂ) * 2) / 2 by ring, hprod,
     hshift, ← hB]
-  have hA : lFun (1 + 4 / (γ : ℂ) ^ 2) = X⁻¹ := eq_inv_of_mul_eq_one_right hXA
-  have hl₁ : lFun (dualArg₁ γ ε) = Y⁻¹ := eq_inv_of_mul_eq_one_left hl₁Y
+  have hA  := eq_inv_of_mul_eq_one_right hXA
+  have hl₁  := eq_inv_of_mul_eq_one_left hl₁Y
   rw [hA, hl₁, hPQ, hB]
   field_simp
   ring

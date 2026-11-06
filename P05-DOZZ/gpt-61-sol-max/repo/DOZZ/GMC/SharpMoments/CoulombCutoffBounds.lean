@@ -17,7 +17,7 @@ subinterval of `(0, ∞)`, uniformly in the parameters, except the softened root
 upper bounds in the three regions and a lower bound on a fixed exterior disk, with constants
 depending only on the size of the parameters. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
@@ -45,12 +45,10 @@ theorem coulombCutoffBound_weight_le (partition : GMCChartPartition) {N : ℕ} (
   unfold coulombCutoffWeight
   refine add_le_add ?_ ?_
   · by_cases h0 : partition.finiteWeight x = 0
-    · rw [h0, ENNReal.coe_zero, zero_mul]
-      exact zero_le
+    · simp_all
     · exact (mul_le_mul' h1 (hf h0)).trans_eq (one_mul _)
   · by_cases h0 : partition.infinityWeight x⁻¹ = 0
-    · rw [h0, ENNReal.coe_zero, zero_mul]
-      exact zero_le
+    · simp_all
     · exact (mul_le_mul' h2 (hi h0)).trans_eq (one_mul _)
 
 /-- A common lower bound for both chart weights is a lower bound for the single-chart weight. -/
@@ -72,7 +70,7 @@ theorem coulombCutoffBound_le_weight (partition : GMCChartPartition) {N : ℕ} (
 /-- The inverted-chart root base in the original variable. -/
 theorem coulombCutoffBound_inv_root_base {x z : ℂ} {δ : ℝ} (hx : x ≠ 0) :
     normPlus x⁻¹ / (‖1 - z * x⁻¹‖ + δ) = normPlus x / (‖x - z‖ + δ * ‖x‖) := by
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
+  have hn  := norm_pos_iff.mpr hx
   have h1 : ‖1 - z * x⁻¹‖ = ‖x - z‖ / ‖x‖ := by
     rw [← norm_div]
     congr 1
@@ -82,7 +80,7 @@ theorem coulombCutoffBound_inv_root_base {x z : ℂ} {δ : ℝ} (hx : x ≠ 0) :
 /-- The inverted-chart base at infinity in the original variable. -/
 theorem coulombCutoffBound_inv_infty_base {x : ℂ} {δ : ℝ} (hx : x ≠ 0) :
     normPlus x⁻¹ / (‖x⁻¹‖ + δ) = normPlus x / (1 + δ * ‖x‖) := by
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
+  have hn  := norm_pos_iff.mpr hx
   have h1 : ‖x⁻¹‖ + δ = (1 + δ * ‖x‖) / ‖x‖ := by
     rw [norm_inv]
     field_simp
@@ -147,7 +145,7 @@ theorem coulombCutoffBound_form_le {N : ℕ} (a e : Fin N → ℝ) (g eg : ℝ) 
     (he : ∀ j, |e j| ≤ E) (heg : |eg| ≤ E) :
     (∏ j, ENNReal.rpow (ENNReal.ofReal (a j)) (e j)) * ENNReal.rpow (ENNReal.ofReal g) eg ≤
       ENNReal.ofReal (L ^ ((N : ℝ) * E + E)) := by
-  have hLpos : 0 < L := lt_of_lt_of_le one_pos hL
+  have hLpos  := lt_of_lt_of_le one_pos hL
   calc _ ≤ ENNReal.ofReal (L ^ ((N : ℝ) * E)) * ENNReal.ofReal (L ^ E) :=
         mul_le_mul' (coulombCutoffBound_prod_le Finset.univ a e hL hE (fun j _ => ha j)
           fun j _ => he j) (coulombCutoffBound_rpow_le hL hg.1 hg.2 heg)
@@ -159,7 +157,7 @@ theorem coulombCutoffBound_form_ge {N : ℕ} (a e : Fin N → ℝ) (g eg : ℝ) 
     (he : ∀ j, |e j| ≤ E) (heg : |eg| ≤ E) :
     ENNReal.ofReal (L ^ (-((N : ℝ) * E + E))) ≤
       (∏ j, ENNReal.rpow (ENNReal.ofReal (a j)) (e j)) * ENNReal.rpow (ENNReal.ofReal g) eg := by
-  have hLpos : 0 < L := lt_of_lt_of_le one_pos hL
+  have hLpos  := lt_of_lt_of_le one_pos hL
   calc ENNReal.ofReal (L ^ (-((N : ℝ) * E + E)))
       = ENNReal.ofReal (L ^ (-((N : ℝ) * E))) * ENNReal.ofReal (L ^ (-E)) := by
         rw [coulombWeight_ofReal_rpow_mul hLpos, neg_add]
@@ -174,8 +172,8 @@ theorem coulombCutoffBound_rootForm_le {N : ℕ} (a e : Fin N → ℝ) (c D g eg
     (ha : ∀ j, j ≠ k → L⁻¹ ≤ a j ∧ a j ≤ L) (he : ∀ j, |e j| ≤ E) (heg : |eg| ≤ E) :
     (∏ j, ENNReal.rpow (ENNReal.ofReal (a j)) (e j)) * ENNReal.rpow (ENNReal.ofReal g) eg ≤
       ENNReal.ofReal (L ^ ((N : ℝ) * E + E + E)) * ENNReal.rpow (ENNReal.ofReal D) (-e k) := by
-  have hLpos : 0 < L := lt_of_lt_of_le one_pos hL
-  have hcpos : 0 < c := lt_of_lt_of_le (inv_pos.mpr hLpos) hc.1
+  have hLpos  := lt_of_lt_of_le one_pos hL
+  have hcpos  := lt_of_lt_of_le (inv_pos.mpr hLpos) hc.1
   have hP : ∏ j ∈ Finset.univ.erase k, ENNReal.rpow (ENNReal.ofReal (a j)) (e j) ≤
       ENNReal.ofReal (L ^ ((N : ℝ) * E)) :=
     coulombCutoffBound_prod_le _ a e hL hE
@@ -216,7 +214,7 @@ theorem coulombCutoffBound_root_dist {Zs ρs : ℝ} {x zj zk : ℂ} (hzj : ‖zj
   rw [norm_sub_rev zj x] at h1
   have h2 := norm_sub_le x zj
   have h3 := norm_sub_norm_le x zk
-  constructor <;> linarith only [h1, h2, h3, hsep, hd, hzj, hzk, hρs1]
+  grind
 
 /-- The root factor: the power of the softened distance is the singular power. -/
 theorem coulombCutoffBound_root_rpow {D : ℝ} (hD : 0 < D) (γ a : ℝ) :
@@ -236,14 +234,14 @@ theorem coulombCutoffBound_mem_mono {L L' y : ℝ} (hL : 0 < L) (hLL' : L ≤ L'
 /-- The base at infinity of the inverted chart lies between `1/2` and `normPlus`. -/
 theorem coulombCutoffBound_infty_base_mem {t m δ : ℝ} (hm1 : 1 ≤ m) (htm : t ≤ m) (ht0 : 0 ≤ t)
     (hδ : 0 < δ) (hδ1 : δ ≤ 1) : (2 : ℝ)⁻¹ ≤ m / (1 + δ * t) ∧ m / (1 + δ * t) ≤ m := by
-  have hδt : δ * t ≤ t := mul_le_of_le_one_left ht0 hδ1
-  have hδt0 : 0 ≤ δ * t := mul_nonneg hδ.le ht0
+  have hδt  := mul_le_of_le_one_left ht0 hδ1
+  have hδt0  := mul_nonneg hδ.le ht0
   have hpos : 0 < 1 + δ * t := by linarith only [hδt0]
   constructor
   · rw [le_div_iff₀ hpos]
     linarith only [hδt, htm, hm1]
   · rw [div_le_iff₀ hpos]
-    linarith only [mul_nonneg (by linarith only [hm1] : 0 ≤ m) hδt0]
+    bound
 
 /-- Rewriting a quotient with a free common factor. -/
 theorem coulombCutoffBound_div_eq {m a b : ℝ} (hb : b ≠ 0) : m / a = m * b / a / b := by
@@ -253,19 +251,17 @@ theorem coulombCutoffBound_div_eq {m a b : ℝ} (hb : b ≠ 0) : m / a = m * b /
 theorem coulombCutoffBound_root_numer {m t d δ M Ri : ℝ} (hm1 : 1 ≤ m) (htm : t ≤ m)
     (hmM : m ≤ M) (hd : 0 ≤ d) (hδ : 0 < δ) (hRi : 1 ≤ Ri) (ht : Ri⁻¹ ≤ t) :
     1 ≤ m * (d + δ) / (d + δ * t) ∧ m * (d + δ) / (d + δ * t) ≤ M * Ri := by
-  have hRipos : 0 < Ri := lt_of_lt_of_le one_pos hRi
-  have ht0 : 0 < t := lt_of_lt_of_le (inv_pos.mpr hRipos) ht
+  have hRipos  := lt_of_lt_of_le one_pos hRi
+  have ht0  := lt_of_lt_of_le (inv_pos.mpr hRipos) ht
   have hpos : 0 < d + δ * t := by linarith only [hd, mul_pos hδ ht0]
-  have hRit : 1 ≤ Ri * t := by
-    calc (1 : ℝ) = Ri * Ri⁻¹ := (mul_inv_cancel₀ hRipos.ne').symm
-      _ ≤ Ri * t := mul_le_mul_of_nonneg_left ht hRipos.le
+  have hRit  := (inv_le_iff_one_le_mul₀' hRipos).mp ht
   have hM0 : 0 ≤ M := by linarith only [hm1, hmM]
   constructor
   · rw [le_div_iff₀ hpos]
-    linarith only [mul_nonneg hd (sub_nonneg.2 hm1), mul_nonneg hδ.le (sub_nonneg.2 htm)]
+    nlinarith
   · rw [div_le_iff₀ hpos]
     have h1 : d + δ ≤ Ri * (d + δ * t) := by
-      linarith only [mul_nonneg hd (sub_nonneg.2 hRi), mul_nonneg hδ.le (sub_nonneg.2 hRit)]
+      nlinarith
     calc m * (d + δ) ≤ M * (d + δ) := mul_le_mul_of_nonneg_right hmM (by linarith only [hd, hδ])
       _ ≤ M * (Ri * (d + δ * t)) := mul_le_mul_of_nonneg_left h1 hM0
       _ = M * Ri * (d + δ * t) := by ring
@@ -286,12 +282,12 @@ theorem coulombCutoffBound_exterior_last {t δ e E : ℝ} (ht : 1 ≤ t) (hδ : 
     (he : |e| ≤ E) :
     ENNReal.rpow (ENNReal.ofReal (t / (1 + δ * t))) e ≤
       ENNReal.ofReal (2 ^ E) * ENNReal.ofReal (t ^ max e 0) := by
-  have ht0 : 0 < t := lt_of_lt_of_le one_pos ht
+  have ht0  := lt_of_lt_of_le one_pos ht
   obtain ⟨hy1, hy2⟩ := coulombCutoffBound_infty_base_mem (m := t) ht le_rfl ht0.le hδ hδ1
-  have hy0 : 0 < t / (1 + δ * t) :=
+  have hy0  :=
     lt_of_lt_of_le (inv_pos.mpr two_pos) hy1
-  have hE0 : 0 ≤ E := (abs_nonneg e).trans he
-  have h2E : 1 ≤ (2 : ℝ) ^ E := Real.one_le_rpow one_le_two hE0
+  have hE0  := (abs_nonneg e).trans he
+  have h2E  := Real.one_le_rpow one_le_two hE0
   rw [coulombWeight_rpow_ofReal hy0, ← ENNReal.ofReal_mul (Real.rpow_nonneg zero_le_two E)]
   refine ENNReal.ofReal_le_ofReal ?_
   rcases le_total 0 e with he0 | he0
@@ -314,14 +310,11 @@ theorem coulombCutoffBound_root_const {Zs ρs Ri : ℝ} (hZs : 0 ≤ Zs) (hρs :
     ∃ L : ℝ, Zs + 1 ≤ L * ρs ∧ 3 * Zs + 3 ≤ L ∧ (Zs + 1) * Ri ≤ L := by
   refine ⟨(3 * Zs + 3) * Ri / ρs, ?_, ?_, ?_⟩
   · rw [div_mul_cancel₀ _ hρs.ne']
-    linarith only [mul_nonneg hZs (sub_nonneg.2 hRi), hZs, hRi]
+    nlinarith
   · rw [le_div_iff₀ hρs]
-    linarith only [mul_nonneg (by linarith only [hZs] : 0 ≤ 3 * Zs + 3) (sub_nonneg.2 hRi),
-      mul_nonneg (by linarith only [hZs] : 0 ≤ 3 * Zs + 3) (sub_nonneg.2 hρs1)]
+    nlinarith
   · rw [le_div_iff₀ hρs]
-    have hZ1 : 0 ≤ Zs + 1 := by linarith only [hZs]
-    have hRi0 : 0 ≤ Ri := by linarith only [hRi]
-    linarith only [mul_nonneg hZ1 hRi0, mul_nonneg (mul_nonneg hZ1 hRi0) (sub_nonneg.2 hρs1)]
+    field_simp <;> nlinarith
 
 /-- The finite-chart weight near a root. -/
 theorem coulombCutoffBound_finite_root {N : ℕ} {Zs E ρs L : ℝ} (hZs : 0 ≤ Zs) (hE : 0 ≤ E)
@@ -348,7 +341,7 @@ theorem coulombCutoffBound_finite_root {N : ℕ} {Zs E ρs L : ℝ} (hZs : 0 ≤
     obtain ⟨h1, h3⟩ := coulombCutoffBound_root_dist (hzj j) (hsep j hj) hd (hzj k) hρs1
     exact coulombWeight_quot_bounds hρs hρs1 hm1 hmM (by linarith only [h1, hδ])
       (by linarith only [h3, hδ1]) hLρ hL2
-  have hc : L⁻¹ ≤ normPlus x ∧ normPlus x ≤ L :=
+  have hc  :=
     coulombCutoffBound_mem_of_one_le hL1 hm1 (by linarith only [hmM, hL2, hZs])
   have hRk := coulombCutoffBound_root_rpow hDk γ (α k)
   unfold coulombCutoffFiniteWeight
@@ -368,9 +361,9 @@ theorem coulombCutoffBound_infinity_root {N : ℕ} {Zs E ρs Ri L : ℝ} (hZs : 
     coulombCutoffInfinityWeight γ α z αinf r x⁻¹ ≤
       ENNReal.ofReal (L ^ ((N : ℝ) * E + E + E)) *
         ENNReal.ofReal ((‖x - z k‖ + Real.exp (-r)) ^ (-γ * α k)) := by
-  have hRipos : 0 < Ri := lt_of_lt_of_le one_pos hRi
-  have ht0 : 0 < ‖x‖ := lt_of_lt_of_le (inv_pos.mpr hRipos) hxRi
-  have hx0 : x ≠ 0 := norm_pos_iff.mp ht0
+  have hRipos  := lt_of_lt_of_le one_pos hRi
+  have ht0  := lt_of_lt_of_le (inv_pos.mpr hRipos) hxRi
+  have hx0  := norm_pos_iff.mp ht0
   have hzj := coulombCutoffBound_norm_le hz
   have hd : ‖x - z k‖ < ρs := by rwa [Metric.mem_ball, dist_eq_norm] at hx
   have ht : ‖x‖ ≤ Zs + 1 := by
@@ -380,8 +373,8 @@ theorem coulombCutoffBound_infinity_root {N : ℕ} {Zs E ρs Ri L : ℝ} (hZs : 
   have htm : ‖x‖ ≤ normPlus x := le_max_right _ _
   have hmM : normPlus x ≤ Zs + 1 := max_le (by linarith only [hZs]) ht
   obtain ⟨hδ, hδ1⟩ := coulombCutoffBound_exp_neg_mem hr
-  have hδt : Real.exp (-r) * ‖x‖ ≤ ‖x‖ := mul_le_of_le_one_left ht0.le hδ1
-  have hδt0 : 0 < Real.exp (-r) * ‖x‖ := mul_pos hδ ht0
+  have hδt  := mul_le_of_le_one_left ht0.le hδ1
+  have hδt0  := mul_pos hδ ht0
   have hL1 : 1 ≤ L := by linarith only [hL3, hZs]
   have hL2 : 2 ≤ L := by linarith only [hL3, hZs]
   have hDk : 0 < ‖x - z k‖ + Real.exp (-r) := by positivity
@@ -393,9 +386,7 @@ theorem coulombCutoffBound_infinity_root {N : ℕ} {Zs E ρs Ri L : ℝ} (hZs : 
       (by linarith only [h3, hδt, ht]) hLρ hL3
   obtain ⟨hc1, hc2⟩ := coulombCutoffBound_root_numer (d := ‖x - z k‖) (δ := Real.exp (-r))
     hm1 htm hmM (norm_nonneg _) hδ hRi hxRi
-  have hc : L⁻¹ ≤ normPlus x * (‖x - z k‖ + Real.exp (-r)) /
-      (‖x - z k‖ + Real.exp (-r) * ‖x‖) ∧ normPlus x * (‖x - z k‖ + Real.exp (-r)) /
-      (‖x - z k‖ + Real.exp (-r) * ‖x‖) ≤ L :=
+  have hc  :=
     coulombCutoffBound_mem_of_one_le hL1 hc1 (hc2.trans hLRi)
   obtain ⟨hg1, hg2⟩ := coulombCutoffBound_infty_base_mem (m := normPlus x) (t := ‖x‖)
     (δ := Real.exp (-r)) hm1 htm ht0.le hδ hδ1
@@ -419,8 +410,7 @@ theorem coulombCutoffBound_bulk_const {Zs R0 ρs : ℝ} (hZs : 0 ≤ Zs) (hR0 : 
   · rw [div_mul_cancel₀ _ hρs.ne']
     linarith only [hR0, hZs]
   · rw [le_div_iff₀ hρs]
-    linarith only [mul_nonneg (by linarith only [hR0, hZs] : 0 ≤ 2 * R0 + Zs + 2)
-      (sub_nonneg.2 hρs1)]
+    bound
 
 /-- The finite-chart weight is bounded in the bulk. -/
 theorem coulombCutoffBound_finite_bulk {N : ℕ} {Zs E ρs R0 L : ℝ} (hZs : 0 ≤ Zs) (hE : 0 ≤ E)
@@ -443,10 +433,9 @@ theorem coulombCutoffBound_finite_bulk {N : ℕ} {Zs E ρs R0 L : ℝ} (hZs : 0 
       linarith only [this, hxR, hzj j]
     exact coulombWeight_quot_bounds hρs hρs1 hm1 hmM (by linarith only [hxz j, hδ])
       (by linarith only [h3, hδ1, hR0]) hLρ hLB
-  have hLρL : L * ρs ≤ L := mul_le_of_le_one_right hLpos.le hρs1
-  have hg : L⁻¹ ≤ normPlus x ∧ normPlus x ≤ L :=
+  have hLρL  := mul_le_of_le_one_right hLpos.le hρs1
+  have hg  :=
     coulombCutoffBound_mem_of_one_le hL1 hm1 (hmM.trans (hLρ.trans hLρL))
-  unfold coulombCutoffFiniteWeight
   exact coulombCutoffBound_form_le (fun j => normPlus x / (‖x - z j‖ + Real.exp (-r)))
     (fun j => γ * α j) (normPlus x) (γ * αinf) hL1 hE ha hg hα hαinf
 
@@ -458,13 +447,13 @@ theorem coulombCutoffBound_infinity_bulk {N : ℕ} {Zs E ρs R0 L : ℝ} (hZs : 
     (hxR : ‖x‖ ≤ R0) (hxz : ∀ k, ρs ≤ ‖x - z k‖) (hx0 : x ≠ 0) :
     coulombCutoffInfinityWeight γ α z αinf r x⁻¹ ≤ ENNReal.ofReal (L ^ ((N : ℝ) * E + E)) := by
   have hzj := coulombCutoffBound_norm_le hz
-  have ht0 : 0 < ‖x‖ := norm_pos_iff.mpr hx0
+  have ht0  := norm_pos_iff.mpr hx0
   have hm1 : 1 ≤ normPlus x := le_max_left _ _
   have htm : ‖x‖ ≤ normPlus x := le_max_right _ _
   have hmM : normPlus x ≤ 1 + R0 := max_le (by linarith only [hxR, ht0]) (by linarith only [hxR])
   obtain ⟨hδ, hδ1⟩ := coulombCutoffBound_exp_neg_mem hr
-  have hδt : Real.exp (-r) * ‖x‖ ≤ ‖x‖ := mul_le_of_le_one_left ht0.le hδ1
-  have hδt0 : 0 < Real.exp (-r) * ‖x‖ := mul_pos hδ ht0
+  have hδt  := mul_le_of_le_one_left ht0.le hδ1
+  have hδt0  := mul_pos hδ ht0
   have hL1 : 1 ≤ L := by linarith only [hLB, hZs, hxR, ht0]
   have hL2 : 2 ≤ L := by linarith only [hLB, hZs, hxR, ht0]
   have hLpos : 0 < L := by linarith only [hLB, hZs, hxR, ht0]
@@ -478,7 +467,7 @@ theorem coulombCutoffBound_infinity_bulk {N : ℕ} {Zs E ρs R0 L : ℝ} (hZs : 
       (by linarith only [h3, hδt, hxR]) hLρ hLB
   obtain ⟨hg1, hg2⟩ := coulombCutoffBound_infty_base_mem (m := normPlus x) (t := ‖x‖)
     (δ := Real.exp (-r)) hm1 htm ht0.le hδ hδ1
-  have hLρL : L * ρs ≤ L := mul_le_of_le_one_right hLpos.le hρs1
+  have hLρL  := mul_le_of_le_one_right hLpos.le hρs1
   have hg : L⁻¹ ≤ normPlus x / (1 + Real.exp (-r) * ‖x‖) ∧
       normPlus x / (1 + Real.exp (-r) * ‖x‖) ≤ L :=
     ⟨(inv_anti₀ two_pos hL2).trans hg1, hg2.trans (hmM.trans (hLρ.trans hLρL))⟩
@@ -499,11 +488,11 @@ theorem coulombCutoffBound_infinity_exterior {N : ℕ} {Zs E R0 : ℝ} (hZs : 0 
         (ENNReal.ofReal (2 ^ E) * ENNReal.ofReal (‖x‖ ^ max (γ * αinf) 0)) := by
   have hzj := coulombCutoffBound_norm_le hz
   have ht0 : 0 < ‖x‖ := by linarith only [hxR, hR0, hZs]
-  have hx0 : x ≠ 0 := norm_pos_iff.mp ht0
+  have hx0  := norm_pos_iff.mp ht0
   have hnp : normPlus x = ‖x‖ := max_eq_right (by linarith only [hxR, hR0, hZs])
   obtain ⟨hδ, hδ1⟩ := coulombCutoffBound_exp_neg_mem hr
-  have hδt : Real.exp (-r) * ‖x‖ ≤ ‖x‖ := mul_le_of_le_one_left ht0.le hδ1
-  have hδt0 : 0 < Real.exp (-r) * ‖x‖ := mul_pos hδ ht0
+  have hδt  := mul_le_of_le_one_left ht0.le hδ1
+  have hδt0  := mul_pos hδ ht0
   have ha : ∀ j, ((5 / 2 : ℝ))⁻¹ ≤ ‖x‖ / (‖x - z j‖ + Real.exp (-r) * ‖x‖) ∧
       ‖x‖ / (‖x - z j‖ + Real.exp (-r) * ‖x‖) ≤ 5 / 2 := by
     intro j
@@ -530,13 +519,13 @@ theorem coulombCutoffBound_ball_norm {R0 : ℝ} (hR0 : 0 ≤ R0) {x : ℂ}
   have h3 : ‖(((R0 + 1 : ℝ)) : ℂ)‖ = R0 + 1 := by
     rw [Complex.norm_real, Real.norm_of_nonneg (by linarith only [hR0])]
   rw [norm_sub_rev] at h2
-  constructor <;> linarith only [h1, h2, h3, hx]
+  grind
 
+variable {N : ℕ} {Zs E R0 : ℝ} (hZs : 0 ≤ Zs) (hR0 : 2 * Zs + 2 ≤ R0) {γ : ℝ} {α : Fin N → ℝ} {z : Fin N → ℂ} {αinf r : ℝ} {x : ℂ} (hr : 0 ≤ r) (hz : ∑ j, ‖z j‖ ≤ Zs) (hα : ∀ j, |γ * α j| ≤ E) (hαinf : |γ * αinf| ≤ E) (hx : x ∈ Metric.ball (((R0 + 1 : ℝ)) : ℂ) (1 / 8))
+
+include N Zs E R0 hZs hR0 γ α z αinf r x hr hz hα hαinf hx in
 /-- The finite-chart weight on the fixed exterior disk is bounded below. -/
-theorem coulombCutoffBound_finite_ball {N : ℕ} {Zs E R0 : ℝ} (hZs : 0 ≤ Zs)
-    (hR0 : 2 * Zs + 2 ≤ R0) {γ : ℝ} {α : Fin N → ℝ} {z : Fin N → ℂ} {αinf r : ℝ} {x : ℂ}
-    (hr : 0 ≤ r) (hz : ∑ j, ‖z j‖ ≤ Zs) (hα : ∀ j, |γ * α j| ≤ E) (hαinf : |γ * αinf| ≤ E)
-    (hx : x ∈ Metric.ball (((R0 + 1 : ℝ)) : ℂ) (1 / 8)) :
+theorem coulombCutoffBound_finite_ball  :
     ENNReal.ofReal ((R0 + 2) ^ (-((N : ℝ) * E + E))) ≤
       coulombCutoffFiniteWeight γ α z αinf r x := by
   have hzj := coulombCutoffBound_norm_le hz
@@ -562,21 +551,19 @@ theorem coulombCutoffBound_finite_ball {N : ℕ} {Zs E R0 : ℝ} (hZs : 0 ≤ Zs
   exact coulombCutoffBound_form_ge (fun j => ‖x‖ / (‖x - z j‖ + Real.exp (-r)))
     (fun j => γ * α j) ‖x‖ (γ * αinf) hL ha hg hα hαinf
 
+include N Zs E R0 hZs hR0 γ α z αinf r x hr hz hα hαinf hx in
 /-- The inverted-chart weight on the fixed exterior disk is bounded below. -/
-theorem coulombCutoffBound_infinity_ball {N : ℕ} {Zs E R0 : ℝ} (hZs : 0 ≤ Zs)
-    (hR0 : 2 * Zs + 2 ≤ R0) {γ : ℝ} {α : Fin N → ℝ} {z : Fin N → ℂ} {αinf r : ℝ} {x : ℂ}
-    (hr : 0 ≤ r) (hz : ∑ j, ‖z j‖ ≤ Zs) (hα : ∀ j, |γ * α j| ≤ E) (hαinf : |γ * αinf| ≤ E)
-    (hx : x ∈ Metric.ball (((R0 + 1 : ℝ)) : ℂ) (1 / 8)) :
+theorem coulombCutoffBound_infinity_ball  :
     ENNReal.ofReal ((R0 + 2) ^ (-((N : ℝ) * E + E))) ≤
       coulombCutoffInfinityWeight γ α z αinf r x⁻¹ := by
   have hzj := coulombCutoffBound_norm_le hz
   obtain ⟨ht1, ht2⟩ := coulombCutoffBound_ball_norm (by linarith only [hR0, hZs]) hx
   have ht0 : 0 < ‖x‖ := by linarith only [ht1, hR0, hZs]
-  have hx0 : x ≠ 0 := norm_pos_iff.mp ht0
+  have hx0  := norm_pos_iff.mp ht0
   have hnp : normPlus x = ‖x‖ := max_eq_right (by linarith only [ht1, hR0, hZs])
   obtain ⟨hδ, hδ1⟩ := coulombCutoffBound_exp_neg_mem hr
-  have hδt : Real.exp (-r) * ‖x‖ ≤ ‖x‖ := mul_le_of_le_one_left ht0.le hδ1
-  have hδt0 : 0 < Real.exp (-r) * ‖x‖ := mul_pos hδ ht0
+  have hδt  := mul_le_of_le_one_left ht0.le hδ1
+  have hδt0  := mul_pos hδ ht0
   have hL : 1 ≤ R0 + 2 := by linarith only [hR0, hZs]
   have ha : ∀ j, (R0 + 2)⁻¹ ≤ ‖x‖ / (‖x - z j‖ + Real.exp (-r) * ‖x‖) ∧
       ‖x‖ / (‖x - z j‖ + Real.exp (-r) * ‖x‖) ≤ R0 + 2 := by
@@ -604,7 +591,7 @@ theorem coulombCutoffBound_infinity_ball {N : ℕ} {Zs E R0 : ℝ} (hZs : 0 ≤ 
 theorem coulombCutoffBound_le_norm_of_inv {x : ℂ} {Ri : ℝ} (hRi : 0 < Ri) (hx : x ≠ 0)
     (h : ‖x⁻¹‖ ≤ Ri) : Ri⁻¹ ≤ ‖x‖ := by
   rw [norm_inv] at h
-  exact (inv_le_comm₀ (norm_pos_iff.mpr hx) hRi).1 h
+  field_simp at * <;> nlinarith
 
 /-- Near a finite root the single-chart weight is the softened root singularity times a bounded
 factor, uniformly over bounded parameters. -/
@@ -618,7 +605,7 @@ theorem coulombCutoffWeight_le_root (partition : GMCChartPartition) (N : ℕ)
         ENNReal.ofReal C * ENNReal.ofReal ((‖x - z k‖ + Real.exp (-r)) ^ (-γ * α k)) := by
   obtain ⟨L, hLρ, hL3, hLRi⟩ := coulombCutoffBound_root_const hZs hρs hρs1 hRi
   have hLpos : 0 < L := by linarith only [hL3, hZs]
-  have hRipos : 0 < Ri := lt_of_lt_of_le one_pos hRi
+  have hRipos  := lt_of_lt_of_le one_pos hRi
   refine ⟨L ^ ((N : ℝ) * E + E + E) + L ^ ((N : ℝ) * E + E + E), by positivity, ?_⟩
   intro γ α z αinf r k x hr hz hα hαinf hsep hx hx0
   have key := coulombCutoffBound_weight_le partition γ α z αinf r hx0
@@ -663,7 +650,7 @@ theorem coulombCutoffWeight_le_exterior (partition : GMCChartPartition) (N : ℕ
         ENNReal.ofReal C * ENNReal.ofReal (‖x‖ ^ max (γ * αinf) 0) := by
   refine ⟨(5 / 2 : ℝ) ^ ((N : ℝ) * E) * 2 ^ E, by positivity, ?_⟩
   intro γ α z αinf r x hr hz hα hαinf hxR
-  have hx0 : x ≠ 0 := norm_pos_iff.mp (by linarith only [hxR, hR0, hZs])
+  have hx0  := norm_pos_iff.mp (by linarith only [hxR, hR0, hZs])
   have key := coulombCutoffBound_weight_le partition γ α z αinf r hx0 (A := 0)
     (B := ENNReal.ofReal ((5 / 2 : ℝ) ^ ((N : ℝ) * E)) *
       (ENNReal.ofReal (2 ^ E) * ENNReal.ofReal (‖x‖ ^ max (γ * αinf) 0)))
@@ -682,7 +669,7 @@ theorem coulombCutoffWeight_ge_ball (partition : GMCChartPartition) (N : ℕ)
   refine ⟨(R0 + 2) ^ (-((N : ℝ) * E + E)), Real.rpow_pos_of_pos (by linarith only [hR0, hZs]) _, ?_⟩
   intro γ α z αinf r x hr hz hα hαinf hx
   obtain ⟨ht1, -⟩ := coulombCutoffBound_ball_norm (by linarith only [hR0, hZs]) hx
-  have hx0 : x ≠ 0 := norm_pos_iff.mp (by linarith only [ht1, hR0, hZs])
+  have hx0  := norm_pos_iff.mp (by linarith only [ht1, hR0, hZs])
   exact coulombCutoffBound_le_weight partition γ α z αinf r hx0
     (coulombCutoffBound_finite_ball hZs hR0 hr hz hα hαinf hx)
     (coulombCutoffBound_infinity_ball hZs hR0 hr hz hα hαinf hx)

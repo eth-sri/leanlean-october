@@ -9,7 +9,7 @@ public import DOZZ.GMC.SharpMoments.SeibergDecomp
 
 /-! Fixed separated insertion geometry for the local analytic construction. -/
 
-@[expose] public section
+public section
 open Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -22,7 +22,7 @@ theorem separated_geometry {N : ℕ} (z : Fin N → ℂ) (hz : Function.Injectiv
     apply eventually_all.mpr
     intro k
     by_cases h : j = k
-    · exact Filter.Eventually.of_forall (fun _ hne => (hne h).elim)
+    · simp_all
     · have hn : 0 < ‖z j - z k‖ := norm_pos_iff.mpr
         (sub_ne_zero.mpr (fun he => h (hz he)))
       filter_upwards [Ioo_mem_nhdsGT (half_pos hn)] with δ hδ

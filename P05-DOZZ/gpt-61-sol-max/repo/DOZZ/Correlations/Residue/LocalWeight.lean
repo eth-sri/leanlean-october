@@ -40,7 +40,7 @@ theorem residue_localWeight_eq (γ S α : ℝ) (z w x : ℂ)
   have hx10 : ‖x‖ ≤ 10 := by linarith only [hz8, hd, hxx]
   have hxw1 : 1 ≤ ‖x - w‖ := by linarith only [hzw, hd, hsep]
   unfold residueLocalWeight
-  rw [max_eq_right hx1, min_eq_left hx10, max_eq_right hxw1]
+  simp_all
 
 /-- A local weight is positive, including its globally truncated values. -/
 theorem residue_localWeight_pos (γ S α : ℝ) (w x : ℂ) :

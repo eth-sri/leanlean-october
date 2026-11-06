@@ -11,7 +11,7 @@ public import DOZZ.FourPoint.Reflected.RestartedWilliams
 public import DOZZ.FourPoint.Dual.RadialFirstOrder
 import Mathlib.Tactic
 /-! The Williams reference-maximum expectation has its normalized source limit. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -42,8 +42,8 @@ theorem dual_source_full_maximum_increment_tendsto
       (𝓝 ((a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃ ^(-(p+a)) ∂P).toReal*
         (∫⁻ ω, twoSidedReflectionMass γ B Z ω ^a ∂P).toReal)) := by
-  let _ : IsProbabilityMeasure P := hX.1
-  let ν := Q γ-α₁
+  let _  := hX.1
+
   let p := (α₁+α₂+α₃-2/γ-2*Q γ)/γ
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   obtain ⟨A, _, hA, _, hB, _, _, _, _, _⟩ :=
@@ -51,7 +51,7 @@ theorem dual_source_full_maximum_increment_tendsto
   let W := P.map (fun ω => radialPositiveHalf (A ω))
   have hW : IsBrownianReal (fun t p => p t) W :=
     radialPositiveHalf_map_isBrownian P A hA hB
-  have hSm : AEMeasurable (fun ω => (twoSidedReflectionMass γ B Z ω).toReal) P :=
+  have hSm  :=
     (twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z
       (aemeasurable_of_twoSidedConditioned hData.1) hData.2.1).ennreal_toReal
   have ht := dual_source_pareto_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc

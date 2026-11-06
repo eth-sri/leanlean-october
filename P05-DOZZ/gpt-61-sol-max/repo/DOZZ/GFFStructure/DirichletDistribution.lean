@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.GFFStructure.PoissonContracts
 public import DOZZ.GFFStructure.DiskFourierDistribution
 public import Mathlib.Topology.ContinuousMap.SecondCountableSpace
 /-!
@@ -154,7 +155,7 @@ theorem ae_forall_continuous_eq_zero {Ω E : Type*} [MeasurableSpace Ω]
   have hz : ∀ᵐ ω ∂P, ∀ x : s, F ω x.1 = 0 := ae_all_iff.mpr (fun x => hzero x.1)
   filter_upwards [hz] with ω hω
   have he : EqOn (F ω) 0 s := fun x hx => hω ⟨x,hx⟩
-  have hc : EqOn (F ω) 0 (closure s) := he.closure (hF ω) continuous_const
+  have hc  := he.closure (hF ω) continuous_const
   intro x
   exact hc (hd x)
 
@@ -232,58 +233,30 @@ theorem dirichletDistribution_apply_ae_eq {Ω : Type*} [MeasurableSpace Ω]
     (f : TestFn) : (fun ω => dirichletDistribution P X Xc hX hc c R ρ hR V hV hU ω f) =ᵐ[P] ⇑(dirichletCompletedL2Map P X Xc hX hc c R ρ hR V hV hU (diskTestRestrictionL2 c ρ f)) :=
   completedDiskDistribution_apply_ae_eq P c ρ (dirichletCompletedL2Map P X Xc hX hc c R ρ hR V hV hU) f
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P) (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0) (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ)) (hcov : Contract.poissonCovariance P c R ρ V)
+
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov in
 /-- Every global Dirichlet distribution evaluation is centered. -/
-theorem dirichletDistribution_apply_integral_zero {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletDistribution_apply_integral_zero 
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (f : TestFn) : (∫ ω, dirichletDistribution P X Xc hX hc c R ρ (by linarith) V hV hU ω f ∂P) = 0 :=
   completedDiskDistribution_apply_integral_zero P c ρ (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU)
     (fun f => dirichletCompletedL2Map_integral_zero P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim _) f
 
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov in
 /-- The actual supported Dirichlet distribution has exactly the Green covariance
 `DOZZ.diskGreenCovariance`. -/
-theorem dirichletDistribution_covariance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletDistribution_covariance 
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (f g : TestFn) : covariance (fun ω => dirichletDistribution P X Xc hX hc c R ρ (by linarith) V hV hU ω f) (fun ω => dirichletDistribution P X Xc hX hc c R ρ (by linarith) V hV hU ω g) P =
       diskGreenCovariance c ρ hρ f g := by
   rw [dirichletDistribution,completedDiskDistribution_covariance_eq P c ρ (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU)]
   exact dirichletCompletedL2Map_covariance P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim f g
 
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov in
 /-- The supported Dirichlet distribution has jointly Gaussian global test evaluations. -/
-theorem dirichletDistribution_isGaussianProcess {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletDistribution_isGaussianProcess 
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     : IsGaussianProcess (fun f : TestFn => fun ω => dirichletDistribution P X Xc hX hc c R ρ (by linarith) V hV hU ω f) P := by
   have hG := dirichletCompletedL2Map_isGaussianProcess P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim
   exact completedDiskDistribution_isGaussianProcess P c ρ (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU)

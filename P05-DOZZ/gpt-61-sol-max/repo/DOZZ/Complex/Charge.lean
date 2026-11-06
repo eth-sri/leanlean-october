@@ -9,6 +9,7 @@ public import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Basic
 public import Mathlib.Probability.Distributions.Gaussian.Fernique
 public import Mathlib.Analysis.MeanInequalities
 public import DOZZ.Complex.Weierstrass
+import Mathlib.Tactic
 
 /-!
 # Holomorphic Gaussian charge moments
@@ -38,13 +39,10 @@ theorem integrable_mass_power {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 /-- The strict threshold leaves room for a Hölder exponent larger than one. -/
 theorem exists_holder_mass_exponent (t pstar : ℝ) (ht : t < pstar) :
     ∃ p : ℝ, 1 < p ∧ p * t < pstar := by
-  have hn : {p : ℝ | p * t < pstar} ∈ 𝓝 1 :=
+  have hn  :=
     (continuous_id.mul continuous_const).continuousAt.preimage_mem_nhds
       (isOpen_Iio.mem_nhds (show (1 : ℝ) * t ∈ Iio pstar by simpa only [Set.mem_Iio, one_mul] using ht))
-  obtain ⟨ε, hε, hb⟩ := Metric.mem_nhds_iff.mp hn
-  refine ⟨1 + ε / 2, by linarith, hb ?_⟩
-  rw [Metric.mem_ball, Real.dist_eq, add_sub_cancel_left, abs_of_pos (half_pos hε)]
-  exact half_lt_self hε
+  exact Eventually.exists_gt hn
 
 /-- A Gaussian random variable has all linear exponential norm moments. -/
 theorem integrable_gaussian_exp_norm {Ω E : Type*} [MeasurableSpace Ω]
@@ -77,8 +75,8 @@ theorem aemeasurable_gaussian_coordinate_sum {Ω : Type*} [MeasurableSpace Ω]
     intro i
     have hi : AEMeasurable (fun ω => L ω i) P :=
       (measurable_pi_apply i).comp_aemeasurable hL.aemeasurable
-    simpa only [Real.norm_eq_abs] using hi.norm
-  exact Finset.aemeasurable_fun_sum Finset.univ (fun i _ => hcoord i)
+    exact hi.norm
+  fun_prop (disch := positivity)
 
 /-- All linear exponential moments of the sum of Gaussian coordinate absolute values exist. -/
 theorem integrable_gaussian_exp_coordinate_sum {Ω : Type*} [MeasurableSpace Ω]
@@ -91,18 +89,15 @@ theorem integrable_gaussian_exp_coordinate_sum {Ω : Type*} [MeasurableSpace Ω]
     apply Real.exp_le_exp.mpr
     have hs : ∑ i, |L ω i| ≤ (N : ℝ) * ‖L ω‖ := by
       calc
-        _ ≤ ∑ i : Fin N, ‖L ω‖ := Finset.sum_le_sum fun i _ => by
-          simpa only [Real.norm_eq_abs] using norm_le_pi_norm (L ω) i
+        _ ≤ ∑ i : Fin N, ‖L ω‖ := Finset.sum_le_sum fun i _ => norm_le_pi_norm (L ω) i
         _ = _ := by simp
     simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hs hK
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] {N : ℕ} (P : Measure Ω) (L : Ω → Fin N → ℝ) (hL : HasGaussianLaw L P) (A : Ω → ℝ) (hA : AEMeasurable A P) (hpos : ∀ᵐ ω ∂P, 0 < A ω) (pstar : ℝ) (hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => A ω ^ (-q)) P) (hmom : ∀ p : ℝ, 0 ≤ p → p < pstar → Integrable (fun ω => A ω ^ p) P)
+
+include Ω _inst1 N P L hL A hA hpos pstar hinv hmom in
 /-- Young's inequality proves correlated Gaussian/mass integrability below the threshold. -/
-theorem integrable_gaussian_exp_mass_power {Ω : Type*} [MeasurableSpace Ω]
-    {N : ℕ} (P : Measure Ω) (L : Ω → Fin N → ℝ) (hL : HasGaussianLaw L P)
-    (A : Ω → ℝ) (hA : AEMeasurable A P) (hpos : ∀ᵐ ω ∂P, 0 < A ω)
-    (pstar : ℝ)
-    (hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => A ω ^ (-q)) P)
-    (hmom : ∀ p : ℝ, 0 ≤ p → p < pstar → Integrable (fun ω => A ω ^ p) P)
+theorem integrable_gaussian_exp_mass_power 
     (K : ℝ) (hK : 0 ≤ K) (t : ℝ) (ht : t < pstar) :
     Integrable (fun ω => Real.exp (K * ∑ i, |L ω i|) * A ω ^ t) P := by
   obtain ⟨p, hp, hpt⟩ := exists_holder_mass_exponent t pstar ht
@@ -124,7 +119,7 @@ theorem integrable_gaussian_exp_mass_power {Ω : Type*} [MeasurableSpace Ω]
   have heq : (K * ∑ i, |L ω i|) * Real.conjExponent p =
       K * Real.conjExponent p * ∑ i, |L ω i| := by ring
   rw [heq, mul_comm t p] at h
-  simpa only [mul_comm (A ω ^ t) (Real.exp _)] using h
+  grind
 
 /-- A logarithm is absorbed by arbitrarily small positive and negative powers. -/
 theorem abs_log_le_power_sum (x δ : ℝ) (hx : 0 < x) (hδ : 0 < δ) :
@@ -135,7 +130,7 @@ theorem abs_log_le_power_sum (x δ : ℝ) (hx : 0 < x) (hδ : 0 < δ) :
     rw [Real.rpow_def_of_pos hx, Real.rpow_def_of_pos hx]
     by_cases hlog : 0 ≤ Real.log x
     · rw [abs_of_nonneg hlog, mul_comm δ]
-      exact le_add_of_nonneg_right (Real.exp_pos _).le
+      bound
     · rw [abs_of_neg (lt_of_not_ge hlog)]
       have heq : δ * -Real.log x = Real.log x * -δ := by ring
       rw [heq]
@@ -143,13 +138,9 @@ theorem abs_log_le_power_sum (x δ : ℝ) (hx : 0 < x) (hδ : 0 < δ) :
   have h := mul_le_mul_of_nonneg_left (hexp.trans hb) (inv_nonneg.mpr hδ.le)
   simpa only [← mul_assoc, inv_mul_cancel₀ hδ.ne', one_mul] using h
 
+include Ω _inst1 N P L hL A hA hpos pstar hinv hmom
 /-- A Gaussian exponential times a mass power and its logarithm is integrable. -/
-theorem integrable_gaussian_exp_mass_power_log {Ω : Type*} [MeasurableSpace Ω]
-    {N : ℕ} (P : Measure Ω) (L : Ω → Fin N → ℝ) (hL : HasGaussianLaw L P)
-    (A : Ω → ℝ) (hA : AEMeasurable A P) (hpos : ∀ᵐ ω ∂P, 0 < A ω)
-    (pstar : ℝ)
-    (hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => A ω ^ (-q)) P)
-    (hmom : ∀ p : ℝ, 0 ≤ p → p < pstar → Integrable (fun ω => A ω ^ p) P)
+theorem integrable_gaussian_exp_mass_power_log 
     (K : ℝ) (hK : 0 ≤ K) (t : ℝ) (ht : t < pstar) :
     Integrable (fun ω => Real.exp (K * ∑ i, |L ω i|) * A ω ^ t * |Real.log (A ω)|) P := by
   let δ := (pstar - t) / 2
@@ -163,7 +154,7 @@ theorem integrable_gaussian_exp_mass_power_log {Ω : Type*} [MeasurableSpace Ω]
   apply hint.mono' ?_ ?_
   · exact ((((aemeasurable_gaussian_coordinate_sum P L hL).const_mul K).exp.mul
       (hA.pow_const t)).mul (show AEMeasurable (fun ω => |Real.log (A ω)|) P from by
-        simpa only [Real.norm_eq_abs] using hA.log.norm)).aestronglyMeasurable
+        fun_prop (disch := positivity))).aestronglyMeasurable
   · filter_upwards [hpos] with ω hω
     change ‖Real.exp (K * ∑ i, |L ω i|) * A ω ^ t * |Real.log (A ω)|‖ ≤
       δ⁻¹ * (Real.exp (K * ∑ i, |L ω i|) * A ω ^ (t + δ) +
@@ -175,13 +166,9 @@ theorem integrable_gaussian_exp_mass_power_log {Ω : Type*} [MeasurableSpace Ω]
     convert h using 1
     ring
 
+
 /-- A Gaussian exponential absorbs the sum of absolute Gaussian coordinates. -/
-theorem integrable_gaussian_exp_mass_power_sum {Ω : Type*} [MeasurableSpace Ω]
-    {N : ℕ} (P : Measure Ω) (L : Ω → Fin N → ℝ) (hL : HasGaussianLaw L P)
-    (A : Ω → ℝ) (hA : AEMeasurable A P) (hpos : ∀ᵐ ω ∂P, 0 < A ω)
-    (pstar : ℝ)
-    (hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => A ω ^ (-q)) P)
-    (hmom : ∀ p : ℝ, 0 ≤ p → p < pstar → Integrable (fun ω => A ω ^ p) P)
+theorem integrable_gaussian_exp_mass_power_sum 
     (K : ℝ) (hK : 0 ≤ K) (t : ℝ) (ht : t < pstar) :
     Integrable (fun ω => Real.exp (K * ∑ i, |L ω i|) * A ω ^ t * (∑ i, |L ω i|)) P := by
   apply (integrable_gaussian_exp_mass_power P L hL A hA hpos pstar hinv hmom
@@ -198,13 +185,9 @@ theorem integrable_gaussian_exp_mass_power_sum {Ω : Type*} [MeasurableSpace Ω]
       (mul_nonneg (Real.exp_pos (K * ∑ i, |L ω i|)).le (Real.rpow_pos_of_pos hω t).le) using 1
     ring
 
+
 /-- The full first-derivative envelope for a single mass power. -/
-theorem integrable_gaussian_mass_envelope_power {Ω : Type*} [MeasurableSpace Ω]
-    {N : ℕ} (P : Measure Ω) (L : Ω → Fin N → ℝ) (hL : HasGaussianLaw L P)
-    (A : Ω → ℝ) (hA : AEMeasurable A P) (hpos : ∀ᵐ ω ∂P, 0 < A ω)
-    (pstar : ℝ)
-    (hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => A ω ^ (-q)) P)
-    (hmom : ∀ p : ℝ, 0 ≤ p → p < pstar → Integrable (fun ω => A ω ^ p) P)
+theorem integrable_gaussian_mass_envelope_power 
     (K : ℝ) (hK : 0 ≤ K) (t : ℝ) (ht : t < pstar) :
     Integrable (fun ω => Real.exp (K * ∑ i, |L ω i|) * A ω ^ t *
       (1 + ∑ i, |L ω i| + |Real.log (A ω)|)) P := by
@@ -216,14 +199,10 @@ theorem integrable_gaussian_mass_envelope_power {Ω : Type*} [MeasurableSpace Ω
   simp only [Pi.add_apply]
   ring
 
+
 /-- The correlated Gaussian/mass/logarithm envelope that dominates the random exponential and
 its first derivative. -/
-theorem integrable_gaussian_mass_envelope {Ω : Type*} [MeasurableSpace Ω]
-    {N : ℕ} (P : Measure Ω) (L : Ω → Fin N → ℝ) (hL : HasGaussianLaw L P)
-    (A : Ω → ℝ) (hA : AEMeasurable A P) (hpos : ∀ᵐ ω ∂P, 0 < A ω)
-    (pstar : ℝ)
-    (hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => A ω ^ (-q)) P)
-    (hmom : ∀ p : ℝ, 0 ≤ p → p < pstar → Integrable (fun ω => A ω ^ p) P)
+theorem integrable_gaussian_mass_envelope 
     (K : ℝ) (hK : 0 ≤ K) (u v : ℝ) (huv : u ≤ v) (hv : v < pstar) :
     Integrable (fun ω => Real.exp (K * ∑ i, |L ω i|) * (A ω ^ u + A ω ^ v) *
       (1 + ∑ i, |L ω i| + |Real.log (A ω)|)) P := by
@@ -234,6 +213,8 @@ theorem integrable_gaussian_mass_envelope {Ω : Type*} [MeasurableSpace Ω]
   ext ω
   simp only [Pi.add_apply]
   ring
+omit Ω _inst1 N P L hL A hA hpos pstar hinv hmom
+
 
 /-- The random linear form in the charge exponential. -/
 noncomputable def chargeLinear {N : ℕ} (l : Fin N → ℝ) (a : ℝ)
@@ -246,9 +227,7 @@ theorem chargeLinear_apply {N : ℕ} (l : Fin N → ℝ) (a : ℝ)
     chargeLinear l a sL z = (∑ i, z i * (l i : ℂ)) - sL z * (a : ℂ) := by
   simp only [chargeLinear, sub_apply, sum_apply,
     smul_apply, ContinuousLinearMap.proj_apply, smul_eq_mul]
-  congr 1
-  · exact Finset.sum_congr rfl (fun i _ => mul_comm _ _)
-  · exact mul_comm _ _
+  grind
 
 /-- The operator norm of the charge form is bounded by Gaussian coordinates and a logarithm. -/
 theorem norm_chargeLinear_le {N : ℕ} (l : Fin N → ℝ) (a : ℝ)
@@ -280,17 +259,14 @@ theorem hasFDerivAt_chargeKernel {N : ℕ} (s₀ : ℂ) (sL : (Fin N → ℂ) �
     (l : Fin N → ℝ) (A : ℝ) (hA : 0 < A) (z : Fin N → ℂ) :
     HasFDerivAt (chargeKernel s₀ sL l A)
       (chargeKernel s₀ sL l A z • chargeLinear l (Real.log A) sL) z := by
-  have heq : chargeKernel s₀ sL l A = fun w =>
-      exp (chargeLinear l (Real.log A) sL w - s₀ * (Real.log A : ℂ)) :=
+  have heq  :=
     funext (chargeKernel_eq_exp s₀ sL l A hA)
   rw [heq]
   exact ((chargeLinear l (Real.log A) sL).hasFDerivAt.sub_const _).cexp
 
 /-- The norm of a positive real base to a complex power is its real power. -/
 theorem norm_cpow_positive (A : ℝ) (hA : 0 < A) (s : ℂ) :
-    ‖(A : ℂ) ^ s‖ = A ^ s.re := by
-  rw [cpow_def_of_ne_zero (ofReal_ne_zero.mpr hA.ne'), norm_exp, ← ofReal_log hA.le,
-    mul_re, ofReal_re, ofReal_im, zero_mul, sub_zero, Real.rpow_def_of_pos hA]
+    ‖(A : ℂ) ^ s‖ = A ^ s.re := norm_cpow_eq_rpow_re_of_pos hA s
 
 /-- Intermediate real powers are bounded by the sum of the endpoint powers. -/
 theorem rpow_le_endpoint_sum (A : ℝ) (hA : 0 < A) (u t v : ℝ) (hu : u ≤ t) (hv : t ≤ v) :
@@ -330,12 +306,12 @@ theorem aestronglyMeasurable_chargeKernel {Ω : Type*} [MeasurableSpace Ω]
     (A : Ω → ℝ) (hA : AEMeasurable A P) (hpos : ∀ᵐ ω ∂P, 0 < A ω)
     (s₀ : ℂ) (sL : (Fin N → ℂ) →L[ℂ] ℂ) (z : Fin N → ℂ) :
     AEStronglyMeasurable (fun ω => chargeKernel s₀ sL (L ω) (A ω) z) P := by
-  have hcoord : ∀ i, AEMeasurable (fun ω => (L ω i : ℂ)) P := fun i =>
+  have hcoord  := fun i =>
     Complex.continuous_ofReal.measurable.comp_aemeasurable
       ((measurable_pi_apply i).comp_aemeasurable hL.aemeasurable)
-  have hs : AEMeasurable (fun ω => ∑ i, z i * (L ω i : ℂ)) P :=
+  have hs  :=
     Finset.aemeasurable_fun_sum Finset.univ (fun i _ => (hcoord i).const_mul (z i))
-  have hlog : AEMeasurable (fun ω => (Real.log (A ω) : ℂ)) P :=
+  have hlog  :=
     Complex.continuous_ofReal.measurable.comp_aemeasurable hA.log
   have he := Complex.continuous_exp.measurable.comp_aemeasurable
     (hs.sub (hlog.const_mul (s₀ + sL z)))
@@ -351,10 +327,10 @@ theorem aestronglyMeasurable_chargeLinear {Ω : Type*} [MeasurableSpace Ω]
     {N : ℕ} (P : Measure Ω) (L : Ω → Fin N → ℝ) (hL : HasGaussianLaw L P)
     (A : Ω → ℝ) (hA : AEMeasurable A P) (sL : (Fin N → ℂ) →L[ℂ] ℂ) :
     AEStronglyMeasurable (fun ω => chargeLinear (L ω) (Real.log (A ω)) sL) P := by
-  have hcoord : ∀ i, AEStronglyMeasurable (fun ω => (L ω i : ℂ)) P := fun i =>
+  have hcoord  := fun i =>
     (Complex.continuous_ofReal.measurable.comp_aemeasurable
       ((measurable_pi_apply i).comp_aemeasurable hL.aemeasurable)).aestronglyMeasurable
-  have hlog : AEStronglyMeasurable (fun ω => (Real.log (A ω) : ℂ)) P :=
+  have hlog  :=
     (Complex.continuous_ofReal.measurable.comp_aemeasurable hA.log).aestronglyMeasurable
   exact (Finset.aestronglyMeasurable_fun_sum Finset.univ
     (fun i _ => (hcoord i).smul aestronglyMeasurable_const)).sub
@@ -378,13 +354,9 @@ theorem norm_chargeKernel_deriv_le {N : ℕ} (s₀ : ℂ) (sL : (Fin N → ℂ) 
   convert h using 1
   ring
 
+include Ω _inst1 N P L hL A hA hpos pstar hinv hmom in
 /-- Pointwise charge integrability follows from the strict moment margin. -/
-theorem integrable_chargeKernel {Ω : Type*} [MeasurableSpace Ω]
-    {N : ℕ} (P : Measure Ω) (L : Ω → Fin N → ℝ) (hL : HasGaussianLaw L P)
-    (A : Ω → ℝ) (hA : AEMeasurable A P) (hpos : ∀ᵐ ω ∂P, 0 < A ω)
-    (pstar : ℝ)
-    (hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => A ω ^ (-q)) P)
-    (hmom : ∀ p : ℝ, 0 ≤ p → p < pstar → Integrable (fun ω => A ω ^ p) P)
+theorem integrable_chargeKernel 
     (s₀ : ℂ) (sL : (Fin N → ℂ) →L[ℂ] ℂ) (z : Fin N → ℂ)
     (hz : -(s₀ + sL z).re < pstar) :
     Integrable (fun ω => chargeKernel s₀ sL (L ω) (A ω) z) P := by
@@ -397,13 +369,9 @@ theorem integrable_chargeKernel {Ω : Type*} [MeasurableSpace Ω]
   convert hb using 1
   ring
 
+include Ω _inst1 N P L hL A hA hpos pstar hinv hmom in
 /-- Dominated differentiation on a polydisc inside a fixed interval of mass exponents. -/
-theorem differentiableOn_chargeIntegral_polydisc {Ω : Type*} [MeasurableSpace Ω]
-    {N : ℕ} (P : Measure Ω) (L : Ω → Fin N → ℝ) (hL : HasGaussianLaw L P)
-    (A : Ω → ℝ) (hA : AEMeasurable A P) (hpos : ∀ᵐ ω ∂P, 0 < A ω)
-    (pstar : ℝ)
-    (hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => A ω ^ (-q)) P)
-    (hmom : ∀ p : ℝ, 0 ≤ p → p < pstar → Integrable (fun ω => A ω ^ p) P)
+theorem differentiableOn_chargeIntegral_polydisc 
     (s₀ : ℂ) (sL : (Fin N → ℂ) →L[ℂ] ℂ)
     (a : Fin N → ℂ) (R : Fin N → ℝ) (hR : ∀ i, 0 < R i)
     (K u v : ℝ) (hK : 0 ≤ K) (huv : u ≤ v) (hv : v < pstar)
@@ -418,11 +386,11 @@ theorem differentiableOn_chargeIntegral_polydisc {Ω : Type*} [MeasurableSpace �
   have ha := mem_complexPolydisc_center a R hR
   have hb : Integrable bound P :=
     (integrable_gaussian_mass_envelope P L hL A hA hpos pstar hinv hmom K hK u v huv hv).const_mul _
-  have hmeas : ∀ z, AEStronglyMeasurable (F z) P :=
+  have hmeas  :=
     aestronglyMeasurable_chargeKernel P L hL A hA hpos s₀ sL
-  have hmeas' : ∀ z, AEStronglyMeasurable (F' z) P := fun z =>
+  have hmeas'  := fun z =>
     (hmeas z).smul (aestronglyMeasurable_chargeLinear P L hL A hA sL)
-  have hbase : Integrable (F a) P := integrable_chargeKernel P L hL A hA hpos
+  have hbase  := integrable_chargeKernel P L hL A hA hpos
     pstar hinv hmom s₀ sL a ((hparam a ha).2.2.trans_lt hv)
   exact (differentiableOn_integral_polydisc P a R hR F F' bound
     (fun z _ => hmeas z) (fun z _ => hmeas' z) hbase hb
@@ -440,13 +408,9 @@ theorem differentiableOn_chargeIntegral_polydisc {Ω : Type*} [MeasurableSpace �
 theorem continuous_charge_exponent {N : ℕ} (s₀ : ℂ) (sL : (Fin N → ℂ) →L[ℂ] ℂ) :
     Continuous (fun z => -(s₀ + sL z).re) := by fun_prop
 
+include Ω _inst1 N P L hL A hA hpos pstar hinv hmom in
 /-- Local polydisc domination gives holomorphy on the whole strict moment domain. -/
-theorem differentiableOn_chargeIntegral {Ω : Type*} [MeasurableSpace Ω]
-    {N : ℕ} (P : Measure Ω) (L : Ω → Fin N → ℝ) (hL : HasGaussianLaw L P)
-    (A : Ω → ℝ) (hA : AEMeasurable A P) (hpos : ∀ᵐ ω ∂P, 0 < A ω)
-    (pstar : ℝ)
-    (hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => A ω ^ (-q)) P)
-    (hmom : ∀ p : ℝ, 0 ≤ p → p < pstar → Integrable (fun ω => A ω ^ p) P)
+theorem differentiableOn_chargeIntegral 
     (U : Set (Fin N → ℂ)) (hU : IsOpen U)
     (s₀ : ℂ) (sL : (Fin N → ℂ) →L[ℂ] ℂ) :
     DifferentiableOn ℂ (fun z => ∫ ω, chargeKernel s₀ sL (L ω) (A ω) z ∂P)
@@ -459,12 +423,12 @@ theorem differentiableOn_chargeIntegral {Ω : Type*} [MeasurableSpace Ω]
   let K := ‖a‖ + 1
   have hδ : 0 < δ := half_pos (sub_pos.mpr ha.2)
   have huv : u ≤ v := by dsimp [u, v]; linarith
-  have ht : t < pstar := ha.2
+  have ht  := ha.2
   have hv : v < pstar := by dsimp [v, δ]; linarith
   let W := U ∩ (fun z => -(s₀ + sL z).re) ⁻¹' Ioo u v ∩ (fun z => ‖z‖) ⁻¹' Iio K
   have hW : IsOpen W := (hU.inter (isOpen_Ioo.preimage (continuous_charge_exponent s₀ sL))).inter
     (isOpen_Iio.preimage continuous_norm)
-  have haW : a ∈ W := ⟨⟨ha.1, by change u < t ∧ t < v; dsimp [u, v]; constructor <;> linarith⟩,
+  have haW : a ∈ W := ⟨⟨ha.1, by grind⟩,
     by change ‖a‖ < K; dsimp [K]; linarith⟩
   obtain ⟨R, hR, _, hsub⟩ := exists_closed_polydisc_subset_open W hW a haW
   have hd := differentiableOn_chargeIntegral_polydisc P L hL A hA hpos pstar hinv hmom s₀ sL
@@ -505,7 +469,7 @@ theorem differentiableOn_gaussian_charge_moment {Ω : Type*} [MeasurableSpace Ω
       (fun z => ∫ ω, Complex.exp (c z + ∑ i, z i * (L ω i : ℂ)) *
         (A ω : ℂ) ^ (-(s₀ + sL z)) ∂P)
       {z ∈ U | -(s₀ + sL z).re < pstar} := by
-  have hzero := hmom 0 le_rfl hpstar
+  
   have hcharge := differentiableOn_chargeIntegral P L hL A hA hpos pstar hinv hmom U hU s₀ sL
   constructor
   · intro z hz
@@ -514,9 +478,7 @@ theorem differentiableOn_gaussian_charge_moment {Ω : Type*} [MeasurableSpace Ω
     convert h using 1
     ext ω
     rw [chargeKernel, exp_add, mul_assoc]
-  · have heq : (fun z => ∫ ω, exp (c z + ∑ i, z i * (L ω i : ℂ)) *
-        (A ω : ℂ) ^ (-(s₀ + sL z)) ∂P) =
-        (fun z => exp (c z) * ∫ ω, chargeKernel s₀ sL (L ω) (A ω) z ∂P) :=
+  · have heq  :=
       funext (integral_gaussian_charge_factor P L A c s₀ sL)
     rw [heq]
     exact (hc.mono (fun _ hz => hz.1)).cexp.mul hcharge

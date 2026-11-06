@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.SpatialComparisonLimit
 /-! The spatial exhaustion applies samplewise to the true random radial weights. -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -21,8 +21,8 @@ theorem reflected_supported_test_lintegral (μ : Measure ℂ) (U : Set ℂ) (hU 
   intro x
   by_cases hx : x ∈ U
   · rw [indicator_of_mem hx]
-  · have hf : f x = 0 := image_eq_zero_of_notMem_tsupport (fun hs => hx (hfU hs))
-    simp only [indicator_of_notMem hx, hf, ENNReal.ofReal_zero, zero_mul]
+  · have hf  := image_eq_zero_of_notMem_tsupport (fun hs => hx (hfU hs))
+    simp_all
 
 /-- The constructed unweighted spatial convergence transfers to each actual radial path
 and lateral sample by changing the measure. No finiteness assumption on the full mass is needed. -/

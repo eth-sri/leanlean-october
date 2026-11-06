@@ -13,13 +13,8 @@ public import Mathlib.MeasureTheory.Function.L1Space.Integrable
 
 /-! Finiteness of the equator GMC reference measure. -/
 
-@[expose] public section
-
-open MeasureTheory Set
-open scoped ENNReal
-
-namespace DOZZ.Proofs
 
 
 
-end DOZZ.Proofs
+
+

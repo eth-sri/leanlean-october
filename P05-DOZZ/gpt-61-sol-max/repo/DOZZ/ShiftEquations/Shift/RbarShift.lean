@@ -11,6 +11,8 @@ public import DOZZ.ShiftEquations.Rbar.Residue
 public import Mathlib.Analysis.Meromorphic.Complex
 import DOZZ.Brownian.Reflection.WitnessIndependence
 import DOZZ.ShiftEquations.Quotient.Divisors
+public import DOZZ.ShiftEquations.Contracts
+public import DOZZ.Correlations.TailContracts
 
 /-!
 # The unit-volume γ/2 shift near `Q`
@@ -160,7 +162,7 @@ theorem slice_multiplier_eq {γ η : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hη : 
   generalize lR (-(γ * η)) = LB at hLB ⊢
   generalize lR (1 - γ * η / 2) = LC at hLC ⊢
   generalize lR (-(γ ^ 2) / 4) = Lm at hLm ⊢
-  have hηγ2 : η + γ / 2 ≠ 0 := by positivity
+  
   field_simp
   ring
 
@@ -171,40 +173,9 @@ estimate `twoInsertion_tail_sum_uniform` (through the two-pole expansion). -/
 theorem reflectionBarR_shift_of_window {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (M : Ω → Measure ℂ) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
-    (hBridge : ∀ α2 α3 : ℝ, 0 < α2 ∧ α2 ≤ α3 ∧ γ / 2 < α3 ∧ α3 < Q γ →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧ IsReflectionData P γ α3 (B α3) Z ∧
-        Tendsto (fun ε : ℝ => ε * unitVolumeStructureConstant P M γ
-            (α3 - α2 + ε) α2 α3) (𝓝[>] 0)
-          (𝓝 (bridgeMultiplicity α2 α3 * reflectionExponent γ α3 *
-            reflectionBarR P γ α3 (B α3) Z)))
-    (hTail : ∀ (K2 K3 : Set ℂ) (_ : IsCompact K2) (_ : IsCompact K3)
-      (_ : ∀ z ∈ K2, 2 ≤ ‖z‖) (_ : ∀ z ∈ K3, 2 ≤ ‖z‖)
-      (_ : ∀ z2 ∈ K2, ∀ z3 ∈ K3, 3 ≤ ‖z2 - z3‖)
-      (A2 A3 : Set ℝ) (_ : IsCompact A2) (_ : IsCompact A3)
-      (_ : ∀ α ∈ A2, γ / 2 < α ∧ α < Q γ)
-      (_ : ∀ α ∈ A3, γ / 2 < α ∧ α < Q γ)
-      (F2s F3s : ℂ → Set (ℂ → ℝ)) (radius supBound derivBound lowerBound : ℝ)
-      (_ : UniformPositiveC1Family K2 F2s radius supBound derivBound lowerBound)
-      (_ : UniformPositiveC1Family K3 F3s radius supBound derivBound lowerBound),
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α, (α ∈ A2 ∨ α ∈ A3) → IsReflectionData P γ α (B α) Z) ∧
-          ∀ θ : ℝ, 0 < θ → ∃ C : ℝ, 0 ≤ C ∧
-            ∀ z2 ∈ K2, ∀ z3 ∈ K3, ∀ α2 ∈ A2, ∀ α3 ∈ A3,
-              ∀ F2 ∈ F2s z2, ∀ F3 ∈ F3s z3, ∀ x : ℝ, 1 ≤ x →
-                |(P {ω | ENNReal.ofReal x <
-                    localSingularMass M F2 z2 γ α2 ω + localSingularMass M F3 z3 γ α3 ω}).toReal -
-                  (oneInsertionTailCoefficient γ α2 z2 (F2 z2) (reflectionBarR P γ α2 (B α2) Z) *
-                      Real.rpow x (-reflectionExponent γ α2) +
-                    oneInsertionTailCoefficient γ α3 z3 (F3 z3) (reflectionBarR P γ α3 (B α3) Z) *
-                      Real.rpow x (-reflectionExponent γ α3))| ≤
-                  C * Real.rpow x (-(twoInsertionTailCeiling γ α2 α3 - θ)))
+    (hCross : Contract.unitCrossing P M γ)
+    (hBridge : Contract.residueBridge P X M γ)
+    (hTail : Contract.uniformTwoInsertionTail P X M γ)
     {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
     (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
       complexifyNCharges α ∈ V₃)
@@ -236,7 +207,7 @@ theorem reflectionBarR_shift_of_window {Ω : Type*} [MeasurableSpace Ω] (P : Me
   have hne : (4 / γ * (η + γ / 2)) ≠ 0 := by positivity
   apply mul_left_cancel₀ hne
   rw [hres']
-  have hηγ2 : η + γ / 2 ≠ 0 := by positivity
+  
   field_simp
 
 end DOZZ.Proofs

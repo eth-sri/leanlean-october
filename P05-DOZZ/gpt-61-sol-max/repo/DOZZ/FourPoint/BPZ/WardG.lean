@@ -7,6 +7,7 @@ module
 public import DOZZ.FourPoint.BPZ.FourPointWardExt
 public import DOZZ.FourPoint.BPZ.GCutoff
 public import DOZZ.FourPoint.BPZ.WirtingerG
+import Mathlib.Tactic
 
 /-! # The four-point Ward identity for the rational function `g(x) = x (x − 1)/(z − x)`
 
@@ -21,7 +22,7 @@ theorem `bpz_fourPoint_ward_extend` to the test function `φ = ℓ ∘ g`, which
 
 The truncations satisfy the same two bounds with a constant independent of `n`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -87,7 +88,7 @@ theorem bpzWardG_abs_fderiv_le {z x : ℂ} (hx : x ∈ bpzRegular z) (ℓ : ℂ 
         bpzTildeWeight γ χ α₁ α₂ z x := by
   obtain ⟨L, hL, -, hLn⟩ :=
     bpz_tildeWeight_hasFDerivAt (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) hx
-  have hℓF : HasFDerivAt (fun y => ℓ (F y)) (ℓ.comp (fderiv ℝ F x)) x :=
+  have hℓF  :=
     ℓ.hasFDerivAt.comp x hF.hasFDerivAt
   have hprod : HasFDerivAt (fun y => ℓ (F y) * bpzTildeWeight γ χ α₁ α₂ z y)
       (ℓ (F x) • L + bpzTildeWeight γ χ α₁ α₂ z x • ℓ.comp (fderiv ℝ F x)) x := hℓF.mul hL
@@ -125,9 +126,8 @@ theorem bpzWardG_abs_fderiv_le {z x : ℂ} (hx : x ∈ bpzRegular z) (ℓ : ℂ 
   have hℓ2 : |ℓ (fderiv ℝ F x v)| ≤ ‖ℓ‖ * (‖fderiv ℝ F x‖ * ‖v‖) := by
     have h1 := ℓ.le_opNorm (fderiv ℝ F x v)
     have h2 := (fderiv ℝ F x).le_opNorm v
-    rw [Real.norm_eq_abs] at h1
     exact h1.trans (mul_le_mul_of_nonneg_left h2 (norm_nonneg _))
-  have hLt : ‖L‖ ≤ t * S := hLn
+  
   calc |ℓ (F x) * L v + t * ℓ (fderiv ℝ F x v)|
       ≤ |ℓ (F x) * L v| + |t * ℓ (fderiv ℝ F x v)| := abs_add_le _ _
     _ = |ℓ (F x)| * |L v| + t * |ℓ (fderiv ℝ F x v)| := by
@@ -140,9 +140,12 @@ theorem bpzWardG_abs_fderiv_le {z x : ℂ} (hx : x ∈ bpzRegular z) (ℓ : ℂ 
     _ ≤ ‖ℓ‖ * ‖v‖ * t * (C * B₁) + ‖ℓ‖ * ‖v‖ * t * B₂ := by gcongr
     _ = ‖ℓ‖ * ‖v‖ * (C * B₁ + B₂) * t := by ring
 
+variable {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ)
+
+include z hz0 hz1 ℓ v
 /-- A uniform gradient bound for a family `F i` dominated by `g`, with gradients bounded by the
 singular weight. -/
-theorem bpzWardG_exists_fderiv_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ)
+theorem bpzWardG_exists_fderiv_bound 
     {ι : Type*} (F : ι → ℂ → ℂ) {A₁ : ℝ} (hA₁ : 0 ≤ A₁)
     (hdiff : ∀ i, ∀ x ∈ bpzRegular z, DifferentiableAt ℝ (F i) x)
     (hdom : ∀ i x, ‖F i x‖ ≤ ‖bpzG z x‖)
@@ -161,8 +164,9 @@ theorem bpzWardG_exists_fderiv_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (
   refine hb.trans (le_of_eq ?_)
   ring
 
+
 /-- The truncations `ℓ (g χₙ)` satisfy the gradient bound uniformly in `n`. -/
-theorem bpzWardG_fderiv_bound_trunc {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
+theorem bpzWardG_fderiv_bound_trunc  :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ n : ℕ, ∀ x ∈ bpzRegular z,
       |fderiv ℝ (fun x => ℓ (bpzG z x * (bpzCutoffSeq z n x : ℂ)) *
           bpzTildeWeight γ χ α₁ α₂ z x) x v| ≤
@@ -176,8 +180,9 @@ theorem bpzWardG_fderiv_bound_trunc {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (�
       exact mul_le_of_le_one_right (norm_nonneg _) (bpzCutoffSeq_le_one z n x))
     (fun n x hx => hA₁ n x hx.2.2)
 
+
 /-- Gradient bound for the Ward test function `ℓ ∘ g` against `k̃`. -/
-theorem bpz_g_fderiv_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
+theorem bpz_g_fderiv_bound  :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ x ∈ bpzRegular z,
       |fderiv ℝ (fun x => ℓ (bpzG z x) * bpzTildeWeight γ χ α₁ α₂ z x) x v| ≤
         A * (1 + ‖x - z‖ ^ (-2 : ℝ)) * bpzTildeWeight γ χ α₁ α₂ z x := by
@@ -192,6 +197,8 @@ theorem bpz_g_fderiv_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ 
     rw [hy]
   rw [← hev.fderiv_eq]
   exact hA n x hx
+omit z hz0 hz1 ℓ v
+
 
 /-! ### The kernel bound -/
 
@@ -203,7 +210,7 @@ theorem bpzWardG_abs_sub_mul_kern_le (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) {a b x 
   rcases eq_or_ne x y with rfl | hxy
   · rw [sub_self, bpzKern_zero, mul_zero, abs_zero]
     exact hnn
-  · have hd : 0 < ‖x - y‖ := norm_pos_iff.2 (sub_ne_zero.2 hxy)
+  · have hd  := norm_pos_iff.2 (sub_ne_zero.2 hxy)
     have h1 : |ℓ a - ℓ b| ≤ ‖ℓ‖ * (B * ‖x - y‖) := by
       rw [← map_sub]
       calc |ℓ (a - b)| = ‖ℓ (a - b)‖ := (Real.norm_eq_abs _).symm
@@ -215,24 +222,26 @@ theorem bpzWardG_abs_sub_mul_kern_le (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) {a b x 
           mul_le_mul h1 h2 (abs_nonneg _) (by positivity)
       _ = ‖ℓ‖ * ‖v‖ * B := by field_simp
 
+include z hz0 hz1 ℓ v in
 /-- The truncations `ℓ (g χₙ)` satisfy the kernel bound uniformly in `n`. -/
-theorem bpzWardG_kern_bound_trunc {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
+theorem bpzWardG_kern_bound_trunc  :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ n : ℕ, ∀ x ∈ bpzRegular z, ∀ y ∈ bpzRegular z,
       |(ℓ (bpzG z x * (bpzCutoffSeq z n x : ℂ)) - ℓ (bpzG z y * (bpzCutoffSeq z n y : ℂ))) *
           bpzKern v (x - y)| ≤
         A * (1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ)) := by
   obtain ⟨A, hA0, hA⟩ := norm_bpzG_mul_cutoff_sub_le hz0 hz1
   refine ⟨‖ℓ‖ * ‖v‖ * A, by positivity, fun n x hx y hy => ?_⟩
-  have hs : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
-  have ht : 0 ≤ ‖y - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
+  
+  
   have h := bpzWardG_abs_sub_mul_kern_le ℓ v (x := x) (y := y)
     (B := A * (1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ)))
     (by positivity) (hA n x y hx.2.2 hy.2.2)
   refine h.trans (le_of_eq ?_)
   ring
 
+include z hz0 hz1 ℓ v in
 /-- Kernel bound for the Ward test function `ℓ ∘ g`. -/
-theorem bpz_g_kern_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
+theorem bpz_g_kern_bound  :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ x ∈ bpzRegular z, ∀ y ∈ bpzRegular z,
       |(ℓ (bpzG z x) - ℓ (bpzG z y)) * bpzKern v (x - y)| ≤
         A * (1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ)) := by
@@ -274,7 +283,6 @@ theorem bpz_fourPoint_ward_g {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (by linarith) h1) h2
   · intro n x hx y hy
     refine (hA₂ n x hx y hy).trans ?_
-    have h1 : 0 ≤ 1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ) := by positivity
-    exact mul_le_mul_of_nonneg_right (by linarith) h1
+    bound
 
 end DOZZ.Proofs

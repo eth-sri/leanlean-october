@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Analytic.NormalizedRealTilt
 
 /-! Real restriction of the complex joint Wick and equator normalization. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 namespace DOZZ.Proofs
 
@@ -20,10 +20,12 @@ theorem complexMomentPower_ofReal {N : ℕ} (γ : ℝ) (β : Fin N → ℝ) :
   push_cast
   ring
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] {N : ℕ} (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
+
+include Ω _inst1 N P Xc in
 /-- On real charges the joint Wick polynomial is minus half the actual joint variance. -/
 theorem jointVertexPolynomial_ofReal
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
+    
     (z : Fin N → ℂ) (r : Fin N → ℝ)
     (hm : ∀ i, MemLp (fun ω => Xc ω (z i) (r i)) 2 P) (β : Fin N → ℝ) :
     jointVertexPolynomial P Xc z r (fun i => (β i : ℂ)) =
@@ -33,11 +35,11 @@ theorem jointVertexPolynomial_ofReal
   push_cast
   rfl
 
+include Ω _inst1 N P Xc in
 /-- The full complex normalization restricts to the real jointly Wick-normalized tilt density
 with the exact deterministic pin cancellation. -/
 theorem normalizedVertexPolynomial_ofReal
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
+    
     (hmem : ∀ z r, MemLp (fun ω => Xc ω z r) 2 P)
     (γ : ℝ) (z : Fin N → ℂ) (r : ℝ) (β : Fin (N + 1) → ℝ) :
     normalizedVertexPolynomial P Xc γ z r (fun i => (β i : ℂ)) =

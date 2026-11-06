@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.GFFStructure.PoissonContracts
 public import DOZZ.GFFStructure.PoissonMixed
 /-!
 # Interior Dirichlet residuals
@@ -28,7 +29,7 @@ theorem continuous_testFn_smul_on_disk {E : Type*} [NormedAddCommGroup E] [Norme
   intro z
   by_cases hz : z ∈ ball c ρ
   · exact f.continuous.continuousAt.smul (hU.continuousAt (isOpen_ball.mem_nhds hz))
-  · have hzs : z ∉ tsupport f := fun h => hz (hf h)
+  · have hzs  := fun h => hz (hf h)
     apply (show ContinuousAt (fun _ : ℂ => (0 : E)) z from continuousAt_const).congr_of_eventuallyEq
     filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hzs] with w hw
     change f w = 0 at hw
@@ -167,17 +168,12 @@ theorem covariance_L2_sub_left {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω
   rw [covariance_congr_ae (Lp.coeFn_sub U V) (ae_eq_refl _)]
   exact covariance_sub_left (Lp.memLp U) (Lp.memLp V) (Lp.memLp W)
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P) (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0) (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
+
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU in
 /-- Every compact interior harmonic test average has the exact global mixed Green correction. -/
-theorem poissonTestIntegralL2_test_covariance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem poissonTestIntegralL2_test_covariance 
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (f g : TestFn) (hf : tsupport f ⊆ ball c ρ) :
     covariance (poissonTestIntegralL2 P c ρ V hV f)
       (exteriorPinnedTestL2 P X Xc hX hc R (by linarith) g) P =
@@ -216,17 +212,10 @@ noncomputable def dirichletResidualL2 {Ω : Type*} [MeasurableSpace Ω]
     (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P) (f : TestFn) : Lp ℝ 2 P :=
     exteriorPinnedTestL2 P X Xc hX hc R hR f-poissonTestIntegralL2 P c ρ V hV f
 
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU in
 /-- Interior residuals have the exact Green covariance with every global original test. -/
-theorem dirichletResidualL2_test_covariance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletResidualL2_test_covariance 
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (f g : TestFn) (hf : tsupport f ⊆ ball c ρ) :
     covariance (dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV f)
       (exteriorPinnedTestL2 P X Xc hX hc R (by linarith) g) P = diskGreenCovariance c ρ hρ f g := by
@@ -258,12 +247,8 @@ theorem poissonFamilyL2_covariance_test_eq_integral {Ω : Type*} [MeasurableSpac
     (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+    (hcov : Contract.poissonCovariance P c R ρ V)
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (hz : z ∈ ball c ρ) (g : TestFn) (hg : tsupport g ⊆ ball c ρ) :
     covariance (poissonFamilyL2 P c ρ V hV z) (poissonTestIntegralL2 P c ρ V hV g) P =
       covariance (poissonFamilyL2 P c ρ V hV z)
@@ -288,20 +273,11 @@ theorem poissonFamilyL2_covariance_test_eq_integral {Ω : Type*} [MeasurableSpac
     _ = _ := integral_sub (integrable_exteriorPinned_testKernel_section R (by linarith) g z)
       (integrable_diskGreen_test_section c z R ρ (by linarith) hρ hpin hz g)
 
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU in
 /-- Harmonic test integrals pair equally with original interior tests and their harmonic parts. -/
-theorem poissonTestIntegralL2_covariance_integral_eq_test {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem poissonTestIntegralL2_covariance_integral_eq_test 
+    (hcov : Contract.poissonCovariance P c R ρ V)
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (f g : TestFn) (hf : tsupport f ⊆ ball c ρ) (hg : tsupport g ⊆ ball c ρ) :
     covariance (poissonTestIntegralL2 P c ρ V hV f) (poissonTestIntegralL2 P c ρ V hV g) P =
       covariance (poissonTestIntegralL2 P c ρ V hV f)
@@ -340,22 +316,13 @@ theorem dirichletResidualL2_ae_eq {Ω : Type*} [MeasurableSpace Ω]
   filter_upwards [Lp.coeFn_sub (exteriorPinnedTestL2 P X Xc hX hc R hR f)
     (poissonTestIntegralL2 P c ρ V hV f),exteriorPinnedTestL2_ae_eq P X Xc hX hc R hR f,
     poissonTestIntegralL2_ae_eq P c ρ V hm hV hU f hf] with ω hs hy hh
-  rw [dirichletResidualL2,hs,Pi.sub_apply,hy,hh]
+  continuity
 
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU in
 /-- Interior residuals are orthogonal to all interior harmonic test averages. -/
-theorem dirichletResidualL2_harmonic_covariance_zero {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletResidualL2_harmonic_covariance_zero 
+    (hcov : Contract.poissonCovariance P c R ρ V)
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (f g : TestFn) (hf : tsupport f ⊆ ball c ρ) (hg : tsupport g ⊆ ball c ρ) :
     covariance (dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV f)
       (poissonTestIntegralL2 P c ρ V hV g) P = 0 := by
@@ -366,21 +333,12 @@ theorem dirichletResidualL2_harmonic_covariance_zero {Ω : Type*} [MeasurableSpa
     poissonTestIntegralL2_covariance_integral_eq_test P X Xc hX hc c R ρ ε hR hρ hε hpin
       V hV hmean hU hcov hlim g f hg hf,sub_self]
 
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU in
 /-- The literal interior residual has exactly the disk Green test covariance
 `DOZZ.diskGreenCovariance`. -/
-theorem dirichletResidualL2_covariance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletResidualL2_covariance 
+    (hcov : Contract.poissonCovariance P c R ρ V)
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (f g : TestFn) (hf : tsupport f ⊆ ball c ρ) (hg : tsupport g ⊆ ball c ρ) :
     covariance (dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV f)
       (dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV g) P = diskGreenCovariance c ρ hρ f g := by
@@ -424,9 +382,7 @@ theorem poissonTestFamilyL2_isGaussianProcess {Ω : Type*} [MeasurableSpace Ω]
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 0 < R) (hρ : 0 < ρ) (hε : 0 < ε)
     (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R hR ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0)) :
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε hR hρ hε V) :
     IsGaussianProcess (fun t => ⇑(poissonTestFamilyL2 P X Xc hX hc c R ρ hR V hV t)) P := by
   apply (exteriorPinned_poisson_tests_isGaussianProcess P X Xc hX hc c R ρ ε hR hρ hε V hV hlim).congr
   intro t
@@ -464,25 +420,15 @@ theorem dirichletResidualL2_mem_gaussianHilbertSpan {Ω : Type*} [MeasurableSpac
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
     (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
     dirichletResidualL2 P X Xc hX hc c R ρ hR V hV f ∈ gaussianHilbertSpan
-      (poissonTestFamilyL2 P X Xc hX hc c R ρ hR V hV) := by
-  exact Submodule.sub_mem _ (mem_gaussianHilbertSpan _ (Sum.inr f))
+      (poissonTestFamilyL2 P X Xc hX hc c R ρ hR V hV) := Submodule.sub_mem _ (mem_gaussianHilbertSpan _ (Sum.inr f))
     (poissonTestIntegralL2_mem_gaussianHilbertSpan P X Xc hX hc c R ρ hR V hV hU f hf)
 
 
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU in
 /-- The actual centered residual has the Green norm squared. -/
-theorem dirichletResidualL2_norm_sq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletResidualL2_norm_sq 
+    (hcov : Contract.poissonCovariance P c R ρ V)
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
     ‖dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV f‖^2 = diskGreenCovariance c ρ hρ f f := by
   let _ := hX.1
@@ -491,20 +437,11 @@ theorem dirichletResidualL2_norm_sq {Ω : Type*} [MeasurableSpace Ω]
     zero_mul,sub_zero,real_inner_self_eq_norm_sq] at h
   exact h
 
+include Ω _inst1 P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU in
 /-- The interior residual has the actual bounded Green L² estimate required for completion. -/
-theorem dirichletResidualL2_norm_sq_le {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+theorem dirichletResidualL2_norm_sq_le 
+    (hcov : Contract.poissonCovariance P c R ρ V)
+    (hlim : Contract.poissonCollarLimit P X Xc c R ρ ε (by linarith) hρ hε V)
     (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
     ‖dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV f‖^2 ≤
       (∫ p : ℂ × ℂ, ‖diskGreenKernel c ρ hρ p.1 p.2‖^2

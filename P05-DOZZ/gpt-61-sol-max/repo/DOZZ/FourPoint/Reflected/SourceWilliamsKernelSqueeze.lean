@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.Reflected.SourceKernelExpectation
 public import DOZZ.Statements.FourPoint.GammaHalfOuterMoment
 public import DOZZ.FourPoint.ReflectedOuter.Rates
 /-! The actual source Williams expectation squeezes the literal full inverse-moment difference. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -46,16 +46,16 @@ theorem reflected_source_williams_kernel_squeeze
         min 1 ((1-Real.exp (-h))^(γ^2/2)*(1-Real.exp (-h)*‖z‖)⁻¹^(-|γ*α₂|))*W z+E z := by
   let R := Real.exp (-h)
   have hR : 0 < R := Real.exp_pos _
-  have hR1 : R < 1 := Real.exp_lt_one_iff.mpr (neg_neg_of_pos hh)
+  have hR1  := Real.exp_lt_one_iff.mpr (neg_neg_of_pos hh)
   filter_upwards [reflected_outer_cutoff_geometry ξ 1 hξ hξ1 zero_lt_one,self_mem_nhdsWithin]
     with z hz hz0
-  have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz0
-  have hr1 : ‖z‖^(1-ξ) ≤ 1 := hz.2.2.2.2.le
+  have hn  := norm_pos_iff.mpr hz0
+  have hr1  := hz.2.2.2.2.le
   have hzr : ‖z‖ < ‖z‖^(1-ξ) := by linarith only [hz.1,hz.2.2.2.1]
-  have hzn : ‖z‖ < 1 := hzr.trans_le hr1
+  have hzn  := hzr.trans_le hr1
   have hz1 : z ≠ 1 := by intro he; simp [he] at hzn
   let T := Real.toNNReal (-Real.log ‖z‖+h)
-  have hcoord : (T : ℝ) = -Real.log ‖z‖+h := Real.coe_toNNReal _
+  have hcoord  := Real.coe_toNNReal _
     (add_nonneg (neg_nonneg.mpr (Real.log_nonpos hn.le hzn.le)) hh.le)
   have hη : Real.exp (-(T : ℝ)) = R*‖z‖ := by
     rw [hcoord,neg_add,neg_neg,Real.exp_add,Real.exp_log hn,mul_comm]
@@ -85,8 +85,6 @@ theorem reflected_source_williams_kernel_squeeze
   let F := gammaHalfMoment P M γ α₁ α₂ α₃ p z
   change max 1 ((1+Real.exp (-h))^(γ^2/2)*(1-Real.exp (-h)*‖z‖)⁻¹^|γ*α₂|)*_+(F-C) ≤ F-O ∧
     F-O ≤ min 1 ((1-Real.exp (-h))^(γ^2/2)*(1-Real.exp (-h)*‖z‖)⁻¹^(-|γ*α₂|))*_+(F-C)
-  change max 1 ((1+Real.exp (-h))^(γ^2/2)*(1-Real.exp (-h)*‖z‖)⁻¹^|γ*α₂|)*_ ≤ C-O ∧
-    C-O ≤ min 1 ((1-Real.exp (-h))^(γ^2/2)*(1-Real.exp (-h)*‖z‖)⁻¹^(-|γ*α₂|))*_ at hk
-  constructor <;> linarith only [hk.1,hk.2]
+  grind
 
 end DOZZ.Proofs

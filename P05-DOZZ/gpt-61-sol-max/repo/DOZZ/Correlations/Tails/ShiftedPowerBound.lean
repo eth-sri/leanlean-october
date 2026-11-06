@@ -10,7 +10,7 @@ public import Mathlib.Tactic.Linarith
 
 /-! Uniform power-tail variation under a small relative threshold shift. -/
 
-@[expose] public section
+public section
 open Set
 
 namespace DOZZ.Proofs

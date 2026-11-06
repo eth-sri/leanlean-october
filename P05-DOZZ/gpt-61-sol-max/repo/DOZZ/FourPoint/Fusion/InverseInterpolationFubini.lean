@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Fusion.InverseInterpolation
 import Mathlib.MeasureTheory.Integral.Prod
 /-! # Fubini for signed inverse-mass interpolation -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter
 namespace DOZZ.Proofs
 /-- Both the interpolation derivative and its absolute value have finite time integrals. -/

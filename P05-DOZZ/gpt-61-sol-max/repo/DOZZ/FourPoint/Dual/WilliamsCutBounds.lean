@@ -7,14 +7,17 @@ public import DOZZ.FourPoint.Dual.ReflectionCutMoments
 public import DOZZ.Correlations.Tails.CanonicalSourceWilliamsLaw
 public import DOZZ.Correlations.Tails.SourceCutOrdering
 /-! Ordering and measurability of the actual dual Williams last-cut mass. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) [_inst3 : IsProbabilityMeasure P]
+
+include Ω _inst1 P _inst3 in
 /-- The random last-cut reflection mass is a measurable real observable. -/
 theorem dual_williams_cut_real_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+    
     (γ α : ℝ) (hα : α < Q γ) (B : Ω → BrownianPath × BrownianPath)
     (Z : Ω → Measure ℝ) (hData : IsReflectionData P γ α B Z) :
     AEMeasurable (fun q : ℝ × Ω =>
@@ -25,11 +28,12 @@ theorem dual_williams_cut_real_aemeasurable
     (aemeasurable_of_twoSidedConditioned hData.1) hData.2.1.2.2.2.1
       hData.2.1.2.2.2.2.1).ennreal_toReal
 
+include Ω _inst1 P _inst3 in
 /-- Above a fixed maximum cutoff the random cut lies between the fixed cut and the full
 reflection mass, on the original reflection witness. All real conversions are justified
 by the finite first moment of the full mass. -/
 theorem dual_williams_cut_real_bounds
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+    
     (γ α c : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (hα : α < Q γ)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hData : IsReflectionData P γ α B Z) :
@@ -41,8 +45,7 @@ theorem dual_williams_cut_real_bounds
         (twoSidedReflectionCutMass γ q.1 B Z q.2).toReal) := by
   let _ := isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα)
   have h4 : 1 < 4/γ^2 := by
-    rw [lt_div_iff₀ (sq_pos_of_pos hγ)]
-    nlinarith only [hγ, hγ₂]
+    field_simp <;> nlinarith
   have hJm := twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z
     (aemeasurable_of_twoSidedConditioned hData.1) hData.2.1
   have hmoment := reflected_reflection_mass_moment_lt_top P γ α 1 B Z hα hData h4
@@ -52,7 +55,7 @@ theorem dual_williams_cut_real_bounds
     (sub_pos.mpr hα) (fun ω => (B ω).2) hData.1.2.1
   filter_upwards [horder, measurePreserving_snd.quasiMeasurePreserving.ae hJfin] with q hq hf
   have hcut := twoSidedReflectionCutMass_le_mass γ q.1 B Z q.2
-  have hcutfin : twoSidedReflectionCutMass γ q.1 B Z q.2 ≠ ⊤ :=
+  have hcutfin  :=
     (hcut.trans_lt hf).ne
   refine ⟨ENNReal.toReal_nonneg, ENNReal.toReal_mono hf.ne hcut, ?_⟩
   intro hc

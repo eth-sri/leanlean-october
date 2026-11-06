@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.FourPoint.BPZ.WeakConvDouble
+import Mathlib.Tactic
 
 /-! # Random test functions under weak convergence in probability
 
@@ -14,7 +15,7 @@ by a finite random variable `V`, and converging uniformly in the same scale. Thi
 integrands that depend on the sample through another random measure, such as
 `x ↦ ∫ A(x, y) dν(y)`. The proof compares with grid sums `∑ μ(Q_i) g₀(c_i)`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -35,23 +36,19 @@ theorem bpz_single_grid_error (m : Measure ℂ) [IsFiniteMeasure m] (G G₀ : �
   rw [← integral_bpzGrid_step h S (fun i => G₀ (bpzGridCorner h i))]
   set st : ℂ → ℝ := fun x =>
     if bpzGridIdx h x ∈ S then G₀ (bpzGridCorner h (bpzGridIdx h x)) else 0 with hst
-  have hstm : Measurable st := measurable_bpzGrid_step h S (fun i => G₀ (bpzGridCorner h i))
+  have hstm  := measurable_bpzGrid_step h S (fun i => G₀ (bpzGridCorner h i))
   have hstb : ∀ x, |st x| ≤ V := by
-    intro x
-    simp only [hst]
-    split_ifs
-    · exact hG₀b _
-    · simpa using hV
+    grind
   set B₂ : Set ℂ := Metric.closedBall 0 (2 * R + 1)
   have hpt : ∀ x, |G x - st x| ≤ 2 * ε₁ * V * B₂.indicator 1 x := by
     intro x
     by_cases hxS : bpzGridIdx h x ∈ S
-    · have hx2 : ‖x‖ ≤ 2 * R + 1 :=
+    · have hx2  :=
         (norm_le_of_bpzGridIdx_mem_box hh hxS).trans (bpzGrid_box_radius hR hh hh1)
       have hi : B₂.indicator (1 : ℂ → ℝ) x = 1 := Set.indicator_of_mem (by simpa [B₂] using hx2) _
       have hst' : st x = G₀ (bpzGridCorner h (bpzGridIdx h x)) := by
-        simp only [hst]; exact ite_eq_left hxS
-      have hxc : ‖x - bpzGridCorner h (bpzGridIdx h x)‖ ≤ δ :=
+        exact ite_eq_left hxS
+      have hxc  :=
         (norm_sub_bpzGridCorner_le hh x).trans hhδ
       rw [hi, hst', mul_one]
       calc |G x - G₀ (bpzGridCorner h (bpzGridIdx h x))|
@@ -62,7 +59,7 @@ theorem bpz_single_grid_error (m : Measure ℂ) [IsFiniteMeasure m] (G G₀ : �
         by_contra hcon
         push Not at hcon
         exact hxS (bpzGridIdx_mem_box hh hcon)
-      have hst' : st x = 0 := by simp only [hst]; exact ite_eq_right hxS
+      have hst' : st x = 0 := by exact ite_eq_right hxS
       rw [hGs x hx, hst', sub_zero, abs_zero]
       exact mul_nonneg (by positivity) (Set.indicator_nonneg (fun _ _ => zero_le_one) x)
   have hIG : Integrable G m := integrable_of_bdd_finite hGm hGb
@@ -72,7 +69,6 @@ theorem bpz_single_grid_error (m : Measure ℂ) [IsFiniteMeasure m] (G G₀ : �
         refine norm_integral_le_of_norm_le
           ((((integrable_const (1 : ℝ)).indicator measurableSet_closedBall).const_mul
             (2 * ε₁ * V))) (Eventually.of_forall fun x => ?_)
-        rw [Real.norm_eq_abs]
         exact hpt x
     _ = 2 * ε₁ * V * m.real B₂ := by
         rw [integral_const_mul, integral_indicator_one measurableSet_closedBall]
@@ -122,7 +118,7 @@ theorem tendstoInMeasure_random_test [IsProbabilityMeasure P] (hμ : BPZWeakConv
   set h : ℝ := min (1 / 4) (δ / 2) with hhdef
   have hh0 : 0 < h := by positivity
   have hh1 : h ≤ 1 / 4 := min_le_left _ _
-  have hhδ : 2 * h ≤ δ := by have := min_le_right (1 / 4 : ℝ) (δ / 2); linarith
+  have hhδ : 2 * h ≤ δ := by grind
   set S := bpzGridBox ⌈R / h⌉₊ with hS
   set c := bpzGridCorner h with hc
   set cell : ℤ × ℤ → Set ℂ := fun i => bpzGridIdx h ⁻¹' {i} with hcell
@@ -174,8 +170,7 @@ theorem tendstoInMeasure_random_test [IsProbabilityMeasure P] (hμ : BPZWeakConv
     have hEB : ∀ n, ∀ᵐ ω ∂P, |E n ω| ≤ Bn n ω := by
       intro n
       have hBn0 : ∀ ω, 0 ≤ Bn n ω := fun ω => by
-        simp only [hBn]
-        exact mul_nonneg (mul_nonneg (by positivity) (hV0 ω)) measureReal_nonneg
+        bound
       by_cases hn : n₀ ≤ n
       · filter_upwards [hgb n, hg₀b, hcδ, hn₀ n hn] with ω h1 h2 h3 h4
         have := hμ.fin n ω
@@ -184,8 +179,7 @@ theorem tendstoInMeasure_random_test [IsProbabilityMeasure P] (hμ : BPZWeakConv
           ((hgm n).comp (measurable_const.prodMk measurable_id)) hR hh0 hh1 hhδ hε₁0.le
           (hV0 ω) h1 h2 (hsupp n ω) h4 h3
       · refine Eventually.of_forall fun ω => ?_
-        simp only [hE, ite_eq_right hn, abs_zero]
-        exact hBn0 ω
+        grind
     have hfin := bpz_eventually_measure_le_of_le_tendstoInMeasure hBconv hEB hε
       (lt_of_le_of_lt hP₀ ((ENNReal.ofReal_lt_ofReal_iff hε).2 (by linarith)))
     filter_upwards [hfin, eventually_ge_atTop n₀] with n hn hn'
@@ -198,11 +192,10 @@ theorem tendstoInMeasure_random_test [IsProbabilityMeasure P] (hμ : BPZWeakConv
         (hg₀m.comp (measurable_const.prodMk measurable_id)) hR hh0 hh1 hhδ hε₁0.le (hV0 ω)
         h2 h2 (hsupp₀ ω)
         (fun x => by rw [sub_self, abs_zero]; exact mul_nonneg hε₁0.le (hV0 ω)) h3
-      simpa [hB₀] using this
+      exact this
     calc P {ω | ε ≤ |(∫ x, g₀ ω x ∂μ₀ ω) - A₀ ω|}
         ≤ P {ω | ε / 2 ≤ B₀ ω} := measure_mono_ae (hle.mono fun ω hω hεω => by
-          simp only [Set.mem_ofPred_eq] at hεω ⊢
-          linarith)
+          grind)
       _ ≤ ENNReal.ofReal (ε / 2) := hP₀
       _ ≤ ENNReal.ofReal ε := ENNReal.ofReal_le_ofReal (by linarith)
 

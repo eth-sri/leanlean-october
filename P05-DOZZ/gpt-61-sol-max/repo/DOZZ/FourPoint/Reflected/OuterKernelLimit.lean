@@ -39,7 +39,7 @@ theorem reflected_outer_kernel_integral_tendsto (γ α₁ α₂ α₃ ξ : ℝ) 
   let G : ℂ → ℝ≥0∞ := fun x => C * ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x)
   have hnorm : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) := by
     simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have hsmall : ∀ᶠ z in l, ‖z‖ < 1 := hnorm.eventually (gt_mem_nhds zero_lt_one)
+  have hsmall  := hnorm.eventually (gt_mem_nhds zero_lt_one)
   have hmeas : ∀ z, Measurable (F z) := by
     intro z
     exact (ENNReal.measurable_ofReal.comp (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z)).indicator
@@ -57,28 +57,26 @@ theorem reflected_outer_kernel_integral_tendsto (γ α₁ α₂ α₃ ξ : ℝ) 
       rw [Set.indicator_of_mem (show x ∈ {u : ℂ | ‖z‖ ^ (1 - ξ) ≤ ‖u‖} from hx)]
       rw [← ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) _)]
       exact ENNReal.ofReal_le_ofReal (reflected_outer_kernel_bound γ α₁ α₂ α₃ z x (hr.trans hx))
-    · dsimp only [F]
-      rw [Set.indicator_of_notMem (show x ∉ {u : ℂ | ‖z‖ ^ (1 - ξ) ≤ ‖u‖} from hx)]
-      exact bot_le
+    continuity
   have hfinite : (∫⁻ x, G x ∂μ) ≠ ⊤ := by
     dsimp only [G]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
-    exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top hfin
+    finiteness
   have hx0 : ∀ᵐ x ∂μ, x ≠ 0 := by
     rw [ae_iff]
-    simpa only [not_not, Set.ofPred_eq_eq_singleton] using h0
+    simp_all
   have hradius : Tendsto (fun z : ℂ => ‖z‖ ^ (1 - ξ)) l (nhds 0) := by
-    have he : 0 < 1 - ξ := sub_pos.mpr hξ₁
+    have he  := sub_pos.mpr hξ₁
     have ht := (Real.continuous_rpow_const he.le).tendsto (0 : ℝ)
     simpa only [Function.comp_def, Real.zero_rpow he.ne'] using ht.comp hnorm
   have hlimit : ∀ᵐ x ∂μ, Tendsto (fun z => F z x) l
       (nhds (ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x))) := by
     filter_upwards [hx0] with x hx
-    have hevent : ∀ᶠ z in l, ‖z‖ ^ (1 - ξ) < ‖x‖ :=
+    have hevent  :=
       hradius.eventually (gt_mem_nhds (norm_pos_iff.mpr hx))
     have ht : Tendsto (fun z : ℂ => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)) l
         (nhds (ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x))) := by
-      simpa only [Function.comp_def] using ((ENNReal.continuous_ofReal.comp
+      exact ((ENNReal.continuous_ofReal.comp
         (reflected_outer_kernel_continuous γ α₁ α₂ α₃ x)).tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
     apply ht.congr'
     filter_upwards [hevent] with z hz
@@ -88,8 +86,7 @@ theorem reflected_outer_kernel_integral_tendsto (γ α₁ α₂ α₃ ξ : ℝ) 
     (Filter.Eventually.of_forall hmeas) hbound hfinite hlimit
   have hident (z : ℂ) : (∫⁻ x, F z x ∂μ) =
       ∫⁻ x in {x : ℂ | ‖z‖ ^ (1 - ξ) ≤ ‖x‖},
-        ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
-    exact lintegral_indicator (isClosed_le continuous_const continuous_norm).measurableSet _
+        ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := lintegral_indicator (isClosed_le continuous_const continuous_norm).measurableSet _
   simpa only [hident] using ht
 
 end DOZZ.Proofs

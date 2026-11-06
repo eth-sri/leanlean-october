@@ -11,7 +11,7 @@ public import DOZZ.Brownian.TwoSided.InverseMoments
 /-! Proof of `DOZZ.twoSidedReflectionMass_moment_range`, with all compact-parameter moment inputs
 discharged. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
@@ -39,14 +39,14 @@ theorem twoSidedReflectionMass_moment_range
   by_cases hγne : Kγ.Nonempty
   · by_cases hνne : Kν.Nonempty
     · obtain ⟨νstar, hνstar⟩ := hνne
-      have hZ : ∀ γ ∈ Kγ, IsLateralGMCOf P γ (Z γ) :=
+      have hZ  :=
         fun γ hγ => (hData γ hγ νstar hνstar).2.1
       obtain ⟨γ₀, hγ₀mem, hmin⟩ := hKγ.exists_isMinOn hγne continuous_id.continuousOn
-      have hγ₀ : 0 < γ₀ := (hZ γ₀ hγ₀mem).1
+      have hγ₀  := (hZ γ₀ hγ₀mem).1
       let g : ℝ := sSup Kγ
-      have hgm : g ∈ Kγ := hKγ.sSup_mem hγne
-      have hg : 0 < g := (hZ g hgm).1
-      have hg2 : g < 2 := (hZ g hgm).2.1
+      have hgm  := hKγ.sSup_mem hγne
+      have hg  := (hZ g hgm).1
+      have hg2  := (hZ g hgm).2.1
       have hγbound : ∀ γ ∈ Kγ, γ₀ ≤ γ ∧ γ ≤ g :=
         fun γ hγ => ⟨hmin hγ, le_csSup hKγ.bddAbove hγ⟩
       obtain ⟨ν₀, N, hν₀, hνbound⟩ :=

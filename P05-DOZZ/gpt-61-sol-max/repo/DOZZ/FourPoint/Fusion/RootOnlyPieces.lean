@@ -11,23 +11,21 @@ import DOZZ.GMC.SharpMoments.SeibergPieces
 
 /-! # Measurability and finiteness of the moving-mass pieces -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
-theorem fusionRootOnlyBadMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ) :
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y z δ in
+theorem fusionRootOnlyBadMass_aemeasurable  :
     AEMeasurable (fun ω => fusionRootOnlyBadMass γ α₁ α₂ α₃ y z δ (M ω)) P :=
   gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
     (fusionRootOnlyKernel_measurable _ _ _ _ _ _) _ Metric.isOpen_ball.measurableSet
 
-theorem fusionRootOnlyGoodMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ) :
+include Ω _inst1 P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y z δ in
+theorem fusionRootOnlyGoodMass_aemeasurable  :
     AEMeasurable (fun ω => fusionRootOnlyGoodMass γ α₁ α₂ α₃ y z δ (M ω)) P :=
   gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
     (fusionRootOnlyKernel_measurable _ _ _ _ _ _) _
@@ -43,7 +41,7 @@ theorem fusionRootOnlyGoodMass_le (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ :
   rw [← lintegral_const_mul _ (fusionRootOnlyKernel_measurable γ α₁ α₂ α₃ y 0)]
   apply lintegral_mono_ae
   filter_upwards [ae_restrict_mem (measurableSet_le measurable_const measurable_norm)] with x hx
-  have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
+  have hx0  := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
   have h := ENNReal.ofReal_le_ofReal
     (fusion_rootedKernel_exterior_bound γ α₁ α₂ α₃ 0 (y * z) x hx0 (by simp)
       (by linarith) hu1)

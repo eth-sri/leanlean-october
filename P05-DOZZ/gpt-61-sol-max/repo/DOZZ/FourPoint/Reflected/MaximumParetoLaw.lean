@@ -15,7 +15,7 @@ namespace DOZZ.Proofs
 /-- The scale-one Pareto measure has the literal power tail above its lower endpoint. -/
 theorem reflected_pareto_tail (a v : ℝ) (ha : 0 < a) (hv : 1 ≤ v) :
     paretoMeasure 1 a (Ioi v) = ENNReal.ofReal (v ^ (-a)) := by
-  have hp : 0 < v := zero_lt_one.trans_le hv
+  have hp  := zero_lt_one.trans_le hv
   rw [paretoMeasure, withDensity_apply _ measurableSet_Ioi]
   have hid : (∫⁻ y in Ioi v, paretoPDF 1 a y) =
       ∫⁻ y in Ioi v, ENNReal.ofReal (a * y ^ (-(a + 1))) := by
@@ -29,10 +29,7 @@ theorem reflected_pareto_tail (a v : ℝ) (ha : 0 < a) (hv : 1 ≤ v) :
     exact mul_nonneg ha.le (Real.rpow_nonneg (hp.trans hy).le _)
   rw [hid, ← ofReal_integral_eq_lintegral_ofReal hi hb, integral_const_mul,
     integral_Ioi_rpow_of_lt (by linarith only [ha] : -(a + 1) < -1) hp]
-  congr 1
-  have he : -(a + 1) + 1 = -a := by ring
-  rw [he]
-  field_simp
+  grind
 
 /-- The Pareto variable is at least one almost surely. -/
 theorem reflected_pareto_ge_one_ae (a : ℝ) : ∀ᵐ v ∂paretoMeasure 1 a, 1 ≤ v := by
@@ -48,19 +45,19 @@ theorem reflected_brownian_maximum_pareto_law
     (γ ν : ℝ) (hγ : 0 < γ) (hν : 0 < ν) :
     P.map (fun p => Real.exp (γ * driftedBrownianMaximum ν p)) =
       paretoMeasure 1 (2 * ν / γ) := by
-  let _ : IsProbabilityMeasure P := (hB.hasLaw_eval 0).isProbabilityMeasure
+  let _  := (hB.hasLaw_eval 0).isProbabilityMeasure
   have ha : 0 < 2 * ν / γ := div_pos (mul_pos (by norm_num) hν) hγ
   let _ := isProbabilityMeasure_paretoMeasure zero_lt_one ha
   have hmax := aemeasurable_driftedBrownianMaximum P hB ν hν
-  have hm : AEMeasurable (fun p => Real.exp (γ * driftedBrownianMaximum ν p)) P :=
+  have hm  :=
     (hmax.const_mul γ).exp
-  let _ : IsProbabilityMeasure (P.map (fun p => Real.exp (γ * driftedBrownianMaximum ν p))) :=
+  let _  :=
     (Measure.isProbabilityMeasure_map_iff hm).mpr inferInstance
   have htail (v : ℝ) : P.map (fun p => Real.exp (γ * driftedBrownianMaximum ν p)) (Ioi v) =
       paretoMeasure 1 (2 * ν / γ) (Ioi v) := by
     rw [Measure.map_apply_of_aemeasurable hm measurableSet_Ioi]
     by_cases hv : 1 ≤ v
-    · have hp : 0 < v := zero_lt_one.trans_le hv
+    · have hp  := zero_lt_one.trans_le hv
       have he : (fun p => Real.exp (γ * driftedBrownianMaximum ν p)) ⁻¹' Ioi v =
           (driftedBrownianMaximum ν) ⁻¹' Ioi (Real.log v / γ) := by
         ext p
@@ -73,16 +70,16 @@ theorem reflected_brownian_maximum_pareto_law
       rw [Real.rpow_def_of_pos hp]
       congr 1
       ring
-    · have hv' : v < 1 := lt_of_not_ge hv
+    · have hv'  := lt_of_not_ge hv
       have he : ∀ᵐ p ∂P, Real.exp (γ * driftedBrownianMaximum ν p) ∈ Ioi v := by
         filter_upwards [brownianPath_globalMaximum_nonneg_ae P hB ν hν] with p hp
         exact hv'.trans_le (Real.one_le_exp_iff.mpr (mul_nonneg hγ.le hp))
       have hy : ∀ᵐ y ∂paretoMeasure 1 (2 * ν / γ), y ∈ Ioi v :=
         (reflected_pareto_ge_one_ae _).mono fun y hy => hv'.trans_le hy
-      have hl : P ((fun p => Real.exp (γ * driftedBrownianMaximum ν p)) ⁻¹' Ioi v) = 1 :=
+      have hl  :=
         (measure_congr (he.mono fun p hp => propext ⟨fun _ => mem_univ p, fun _ => hp⟩)).trans
           (measure_univ)
-      have hr : paretoMeasure 1 (2 * ν / γ) (Ioi v) = 1 :=
+      have hr  :=
         (measure_congr (hy.mono fun y hy => propext ⟨fun _ => mem_univ y, fun _ => hy⟩)).trans
           (measure_univ)
       exact hl.trans hr.symm

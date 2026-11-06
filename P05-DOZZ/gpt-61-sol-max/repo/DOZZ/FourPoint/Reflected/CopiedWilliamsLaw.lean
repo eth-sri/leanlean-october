@@ -61,11 +61,11 @@ theorem reflected_copied_williams_joint_law
         ((((((brownianMaximumReferenceLaw ν).prod Qν).map
           (fun v => (v.1, negativeConditionedLastExitSegment v.1 v.2))).prod Qν).prod
             (P.map Z)).map (williamsMassFunctional γ)) := by
-  let _ : IsProbabilityMeasure P := hZ.2.2.1
-  have hZm : AEMeasurable Z P := hZ.2.2.2.1
+  let _  := hZ.2.2.1
+  have hZm  := hZ.2.2.2.1
   let F := reflectedInwardPolarMassCode γ ν
-  have hF : Measurable F := reflected_measurable_inwardPolarMassCode γ ν
-  have hpair : AEMeasurable (fun ω : Ω × Ω => (Y ω.1,(D ω.1,Z ω.2))) (P.prod P) :=
+  have hF  := reflected_measurable_inwardPolarMassCode γ ν
+  have hpair  :=
     (hY.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving).prodMk
       ((hD.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving).prodMk
         (hZm.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving))
@@ -86,8 +86,7 @@ theorem reflected_copied_williams_joint_law
     Measure.map_id]
   have hj := (indepFun_iff_map_prod_eq_prod_map_map hD hZm).mp hDZ
   rw [← hj, AEMeasurable.map_map_of_aemeasurable hF.aemeasurable (hD.prodMk hZm)]
-  have he' : (fun ω => F (D ω,Z ω)) =ᵐ[P] fun ω => ∫⁻ t,
-      (if 0 < t then ENNReal.ofReal (Real.exp (γ * (D ω (Real.toNNReal t)-ν*t))) else 0) ∂Z ω :=
+  have he'  :=
     hZ.2.2.2.2.1.mono fun ω hω => reflected_inwardPolarMassCode_eq γ ν (D ω) (Z ω) hω
   simp only [Function.comp_def]
   rw [Measure.map_congr he']

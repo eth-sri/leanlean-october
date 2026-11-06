@@ -9,6 +9,7 @@ public import DOZZ.GMC.SharpMoments.CoulombCutoffLimit
 public import DOZZ.GMC.SharpMoments.GoodPart
 public import DOZZ.GMC.SharpMoments.CutoffUIConvergenceAux
 public import DOZZ.GMC.SharpMoments.CutoffUIMoment
+public import DOZZ.GMC.SharpMoments.CompactBounds
 
 /-! # Convergence in probability of regularized Coulomb masses, uniformly on compact sets
 
@@ -19,7 +20,7 @@ weight converges uniformly to the Coulomb weight, and the bounded Coulomb weight
 against the cutoff chaos converges in `L¹`, uniformly in the parameters, by the uniform `L¹`
 convergence of cutoff chaos over compact couplings. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
@@ -39,7 +40,7 @@ theorem cutoffUI_uniform_order
       (∀ c ∈ S, 0 < weightedCutoffSlack (c.1, max c.2.2.2 0, tst)) ∧
       ∃ ρs : ℝ, 0 < ρs ∧ ρs ≤ 1 ∧ ∀ c ∈ S, ∀ j k, j ≠ k → 2 * ρs ≤ ‖c.2.1 j - c.2.1 k‖ := by
   classical
-  have hne : ∀ c ∈ S, c.1 ≠ 0 := fun c hc => (hadm c hc).1.ne'
+  have hne  := fun c hc => (hadm c hc).1.ne'
   have hconton : ∀ f : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) → ℝ,
       (∀ c ∈ S, ContinuousAt f c) → ContinuousOn f S := fun f hf c hc =>
     (hf c hc).continuousWithinAt
@@ -122,7 +123,7 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
         (coulombMass c.1 (Mfam c.1 ω) c.2.2.1 c.2.1 c.2.2.2).toReal})
       atTop (𝓝 0) := by
   classical
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   intro ε hε
   -- uniform parameters
   obtain ⟨tst, htst, hroot, hrootp, hinf, ρs, hρs, hρs1, hsep⟩ := cutoffUI_uniform_order S hS hadm
@@ -130,31 +131,7 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
     partition N S hS htst hroot hinf hρs hρs1 hsep
   obtain ⟨ρ2, hρ2, A2, hA2, κ2, hκ2, hbad2⟩ := cutoffUI_bad_limit_moment_le P X hX Xc hXc Mfam
     hMfam N S hS htst hrootp hinf hρs hρs1 hsep
-  obtain ⟨Zs0, hZs0⟩ := hS.exists_bound_of_continuousOn
-    (f := fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) => ∑ j, ‖c.2.1 j‖) (by fun_prop)
-  obtain ⟨E0, hE0⟩ := hS.exists_bound_of_continuousOn
-    (f := fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) =>
-      ∑ j, |c.1 * c.2.2.1 j| + |c.1 * c.2.2.2|) (by fun_prop)
-  set Zs : ℝ := max Zs0 0 with hZsdef
-  set E : ℝ := max E0 0 with hEdef
-  have hZs : 0 ≤ Zs := le_max_right _ _
-  have hE : 0 ≤ E := le_max_right _ _
-  have hZc : ∀ c ∈ S, ∑ j, ‖c.2.1 j‖ ≤ Zs := fun c hc => by
-    have h := hZs0 c hc
-    rw [Real.norm_eq_abs, abs_of_nonneg (Finset.sum_nonneg fun j _ => norm_nonneg _)] at h
-    exact h.trans (le_max_left _ _)
-  have hEsum : ∀ c ∈ S, ∑ j, |c.1 * c.2.2.1 j| + |c.1 * c.2.2.2| ≤ E := fun c hc => by
-    have h := hE0 c hc
-    rw [Real.norm_eq_abs, abs_of_nonneg (add_nonneg (Finset.sum_nonneg fun j _ =>
-      abs_nonneg _) (abs_nonneg _))] at h
-    exact h.trans (le_max_left _ _)
-  have hEα : ∀ c ∈ S, ∀ j, |c.1 * c.2.2.1 j| ≤ E := fun c hc j => by
-    have := Finset.single_le_sum (f := fun j => |c.1 * c.2.2.1 j|) (fun j _ => abs_nonneg _)
-      (Finset.mem_univ j)
-    linarith [hEsum c hc, abs_nonneg (c.1 * c.2.2.2)]
-  have hEinf : ∀ c ∈ S, |c.1 * c.2.2.2| ≤ E := fun c hc => by
-    have := Finset.sum_nonneg (fun j (_ : j ∈ Finset.univ) => abs_nonneg (c.1 * c.2.2.1 j))
-    linarith [hEsum c hc]
+  obtain ⟨Zs, E, hZs, hE, hZc, hEsum, hEα, hEinf⟩ := compact_coulomb_parameter_bounds hS
   set Γ : Set ℝ := (fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) => c.1) '' S with hΓdef
   have hΓ : IsCompact Γ := hS.image continuous_fst
   have hΓ2 : Γ ⊆ Set.Ioo 0 2 := by
@@ -171,7 +148,7 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
   have ha0 : a ≠ 0 := (ENNReal.ofReal_pos.mpr (by positivity)).ne'
   have hat : a ≠ ⊤ := ENNReal.ofReal_ne_top
   have hat0 : a ^ tst ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.mpr ha0) hat).ne'
-  have hatt : a ^ tst ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg htst.le hat
+  
   refine ENNReal.tendsto_atTop_zero.mpr fun θ hθ => ?_
   -- choose the radius of the bad region
   have hT : ∀ (A : ℝ≥0∞) (κ : ℝ), A ≠ ⊤ → 0 < κ →
@@ -202,7 +179,7 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
       (_ : ∀ x, |f x| ≤ L2) (_ : ∀ x ∉ closedBall (0 : ℂ) (1 / ρ), f x = 0),
       ∫⁻ ω, ENNReal.ofReal |∫ x, f x ∂regularizedGMC P Xc γ r ω - ∫ x, f x ∂Mfam γ ω| ∂P
     with hSρ
-  have hrefFin : gmcReferenceMeasure Set.univ ≠ ⊤ := gmcReferenceMeasure_univ_ne_top
+  have hrefFin  := gmcReferenceMeasure_univ_ne_top
   have hT3 : Tendsto (fun r : ℝ => ENNReal.ofReal (L * Real.exp (-r)) *
       gmcReferenceMeasure Set.univ + Sρ r) atTop (𝓝 0) := by
     have h1 : Tendsto (fun r : ℝ => L * Real.exp (-r)) atTop (𝓝 0) := by
@@ -258,9 +235,9 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
     filter_upwards [ae_lt_top' (hf.pow_const tst) hint.ne] with ω hω htop
     rw [htop, ENNReal.top_rpow_of_pos htst] at hω
     exact lt_irrefl _ hω
-  have hbr : ∀ᵐ ω ∂P, badr ω ≠ ⊤ := hfin_of_moment badr hbadrm
+  have hbr  := hfin_of_moment badr hbadrm
     (lt_of_le_of_lt hB1 (ENNReal.mul_lt_top hA1 ENNReal.ofReal_lt_top))
-  have hbl : ∀ᵐ ω ∂P, badl ω ≠ ⊤ := hfin_of_moment badl hbadlm
+  have hbl  := hfin_of_moment badl hbadlm
     (lt_of_le_of_lt hB2 (ENNReal.mul_lt_top hA2 ENNReal.ofReal_lt_top))
   -- bounds on the good region
   have hgoodbd : ∀ x ∈ Badᶜ, x ≠ 0 → G x ≤ ENNReal.ofReal L ∧ F x ≤ ENNReal.ofReal L ∧
@@ -282,7 +259,7 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
         have := Finset.sum_nonneg (fun j (_ : j ∈ Finset.univ) => abs_nonneg (c.1 * c.2.2.1 j))
         calc ∑ j, |c.1 * c.2.2.1 j| ≤ ∑ _j : Fin N, E := Finset.sum_le_sum fun j _ => hEα c hc j
           _ = N * E := by simp : ∑ j, |c.1 * c.2.2.1 j| ≤ N * E), hEinf c hc]
-  have hfinr : ∀ᵐ ω ∂P, IsFiniteMeasure (regularizedGMC P Xc c.1 r ω) :=
+  have hfinr  :=
     regularizedGMC_finite_ae P X hX Xc hXc c.1 r
   have hgr : ∀ᵐ ω ∂P, goodr ω ≠ ⊤ := by
     filter_upwards [hfinr] with ω hω
@@ -340,7 +317,7 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
       rintro ⟨h1, -⟩
       exact hx (by rw [mem_closedBall, dist_zero_right]; exact h1)
     rw [hh, Set.indicator_of_notMem hxB]
-  have hatom0 : ∀ᵐ ω ∂P, M ω {0} = 0 := gmc_singleton_mass_eq_zero_ae P X hX c.1 hγ0 hγ2 M hM 0
+  have hatom0  := gmc_singleton_mass_eq_zero_ae P X hX c.1 hγ0 hγ2 M hM 0
   have hgoodL1 : ∫⁻ ω, ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal| ∂P ≤
       ENNReal.ofReal (L * Real.exp (-r)) * gmcReferenceMeasure Set.univ + Sρ r := by
     have hpt : ∀ᵐ ω ∂P, ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal| ≤

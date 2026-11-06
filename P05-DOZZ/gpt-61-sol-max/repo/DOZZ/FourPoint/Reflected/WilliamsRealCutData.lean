@@ -4,10 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.FourPoint.Reflected.RandomCutSqueeze
-public import DOZZ.FourPoint.Reflected.ReflectionCutRealMoments
+public import DOZZ.FourPoint.Reflected.ReflectionRealMoments
+public import DOZZ.Brownian.Reflection.LastCut
 public import DOZZ.Correlations.Tails.WilliamsInputCode
 /-! Measurability and signed cut comparisons for the actual reflection witness. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

@@ -43,10 +43,12 @@ theorem hasCompactSupport_originRadialWeightedTest
     HasCompactSupport (fun x => f x * originRadialReinsertionWeight ρ γ A x) :=
   hfc.mul_right
 
+variable (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ))
+
+include ρ γ hρ A f hfc in
 /-- A compact test multiplied by a radial path is a bounded continuous test. -/
 noncomputable def originRadialWeightedTest
-    (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (f : BoundedContinuousFunction ℂ ℝ)
-    (hfc : HasCompactSupport (f : ℂ → ℝ)) : BoundedContinuousFunction ℂ ℝ := by
+     : BoundedContinuousFunction ℂ ℝ := by
   let F : ℂ → ℝ := fun x => f x * originRadialReinsertionWeight ρ γ A x
   have hc : Continuous F := f.continuous.mul
     ((continuous_originRadialReinsertionWeight ρ γ hρ).comp
@@ -55,17 +57,17 @@ noncomputable def originRadialWeightedTest
     (hasCompactSupport_originRadialWeightedTest ρ γ A f hfc)
   exact BoundedContinuousFunction.ofNormedAddCommGroup F hc hb.choose hb.choose_spec
 
+include ρ γ hρ A f hfc in
 /-- The underlying weighted test is the literal product, independently of its chosen bound. -/
 theorem originRadialWeightedTest_apply
-    (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (f : BoundedContinuousFunction ℂ ℝ)
-    (hfc : HasCompactSupport (f : ℂ → ℝ)) (x : ℂ) :
+     (x : ℂ) :
     originRadialWeightedTest ρ γ hρ A f hfc x =
       f x * originRadialReinsertionWeight ρ γ A x := rfl
 
+include ρ γ hρ A f hfc in
 /-- Weighted tests have no new support points. -/
 theorem tsupport_originRadialWeightedTest_subset
-    (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (f : BoundedContinuousFunction ℂ ℝ)
-    (hfc : HasCompactSupport (f : ℂ → ℝ)) :
+     :
     tsupport (originRadialWeightedTest ρ γ hρ A f hfc : ℂ → ℝ) ⊆ tsupport (f : ℂ → ℝ) :=
   tsupport_mul_subset_left
 
@@ -95,14 +97,13 @@ theorem measurable_compact_parameter_integral
     (N : E → Measure ℂ) (hN : Measurable N) (hNfin : ∀ ξ, N ξ K < ⊤) :
     Measurable (fun p : V × E => ∫ x, F p.1 x ∂N p.2) := by
   let T : E → FiniteMeasure ℂ := fun ξ =>
-    ⟨(N ξ).restrict K, ⟨by simpa only [Measure.restrict_apply_univ] using hNfin ξ⟩⟩
+    ⟨(N ξ).restrict K, ⟨by simp_all⟩⟩
   have hT : Measurable T := by
     apply Measurable.subtype_mk
     apply Measure.measurable_of_measurable_coe
     intro s hs
     have h := (Measure.measurable_coe (hs.inter hK.measurableSet)).comp hN
-    change Measurable (fun ξ => N ξ (s ∩ K)) at h
-    simpa only [Measure.restrict_apply hs] using h
+    continuity
   have hi := measurable_integral_finiteMeasure_parameter
     (fun v x => F v x) hF (fun v μ => (F v).integrable (μ := (μ : Measure ℂ)))
   have hm := hi.comp (measurable_fst.prodMk (hT.comp measurable_snd))
@@ -110,8 +111,7 @@ theorem measurable_compact_parameter_integral
     apply setIntegral_eq_integral_of_forall_compl_eq_zero
     intro x hx
     exact image_eq_zero_of_notMem_tsupport (fun h => hx (hFK v h))
-  change Measurable (fun p : V × E => ∫ x, F p.1 x ∂(T p.2 : Measure ℂ)) at hm
-  simpa only [heq] using hm
+  continuity
 
 /-- The limiting chaos integral with the radial weighted test is jointly measurable. -/
 theorem originRadialWeightedTest_integral_measurable
@@ -206,11 +206,9 @@ theorem originRadialReinsertionWeight_removal_mul
         Real.exp (-γ * A (-Real.log ‖x‖) + γ * Q γ * |Real.log ‖x‖|)) = 1 := by
   have hx0 : ‖x‖ ≠ 0 := by
     have h : 2 * ρ < ‖x‖ := hx
-    exact ne_of_gt (lt_trans (by linarith only [hρ] : 0 < 2 * ρ) h)
+    grind
   rw [ite_eq_right hx0, originRadialReinsertionWeight_chart_eq ρ γ hρ A x hx,
     ← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
-  have he : γ * A (-Real.log ‖x‖) - γ * Q γ * |Real.log ‖x‖| +
-      (-γ * A (-Real.log ‖x‖) + γ * Q γ * |Real.log ‖x‖|) = 0 := by ring
-  rw [he, Real.exp_zero, ENNReal.ofReal_one]
+  simp_all
 
 end DOZZ.Proofs

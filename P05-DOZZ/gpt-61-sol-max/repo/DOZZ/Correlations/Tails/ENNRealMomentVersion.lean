@@ -9,7 +9,7 @@ public import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic
 
 /-! Nonnegative measurable representatives preserve finite extended-real moments. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 

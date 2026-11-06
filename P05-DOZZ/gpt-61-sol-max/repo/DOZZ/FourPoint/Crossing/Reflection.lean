@@ -28,7 +28,7 @@ theorem crossing_mass_swap_last (γ a b c : ℝ) (ν : Measure ℂ) (w : ℂ) :
   intro x
   simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
     Fin.prod_univ_zero, mul_one]
-  rw [mul_comm (ENNReal.rpow _ (γ * a)) (ENNReal.rpow _ (γ * b))]
+  ring
 
 /-- The half-charge reduced four-point function is symmetric under exchange
 of zero and one, throughout its whole carrier. -/
@@ -50,10 +50,7 @@ theorem gammaHalf_fourPoint_reflection {Ω : Type*} [MeasurableSpace Ω]
       ![1 - z, 1, 0] := by
     funext k
     fin_cases k
-    · change (-1 : ℂ) * z + 1 = 1 - z
-      ring
-    · simp
-    · simp
+    all_goals push_cast <;> ring
   rw [hz, he] at hm
   simp only [norm_neg, norm_one, Real.one_rpow, ENNReal.ofReal_one, one_mul] at hm
   simp_rw [crossing_mass_swap_last] at hm
@@ -62,8 +59,6 @@ theorem gammaHalf_fourPoint_reflection {Ω : Type*} [MeasurableSpace Ω]
     congr 1
     ring
   unfold fourPointT
-  rw [hs]
-  congr 2
-  simpa only [ENNReal.rpow_eq_pow] using hm.symm
+  simp_all
 
 end DOZZ.Proofs

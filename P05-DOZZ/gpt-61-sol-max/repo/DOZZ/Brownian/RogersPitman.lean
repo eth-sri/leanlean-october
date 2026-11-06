@@ -35,14 +35,18 @@ instance isProbabilityMeasure_brownianTripleMeasure (W : Measure BrownianPath)
   unfold brownianTripleMeasure
   infer_instance
 
+variable (μ : ℝ) (V : BrownianTriple)
+
+include μ V in
 /-- The drifted vector at time `t`, with drift in the first coordinate. -/
-def rogersPitmanVectorAt (μ : ℝ) (V : BrownianTriple) (t : ℝ≥0) :
+def rogersPitmanVectorAt  (t : ℝ≥0) :
     EuclideanSpace ℝ (Fin 3) :=
   WithLp.toLp 2 (fun i : Fin 3 =>
     V i t + (if i = 0 then μ * (t : ℝ) else 0))
 
+include μ V in
 /-- The continuous Rogers--Pitman radial path `t ↦ |V_t + μ t e₁|`. -/
-noncomputable def rogersPitmanPath (μ : ℝ) (V : BrownianTriple) : BrownianPath :=
+noncomputable def rogersPitmanPath  : BrownianPath :=
   ⟨fun t => ‖rogersPitmanVectorAt μ V t‖, by
     apply Continuous.norm
     apply (PiLp.continuous_toLp 2 _).comp
@@ -63,12 +67,14 @@ theorem measurable_rogersPitmanPath (μ : ℝ) :
     (ContinuousMap.measurable_eval t).comp (measurable_pi_apply i)
   split_ifs <;> exact h_eval.add_const _
 
-theorem rogersPitmanPath_nonneg (μ : ℝ) (V : BrownianTriple) (t : ℝ≥0) :
+include μ V in
+theorem rogersPitmanPath_nonneg  (t : ℝ≥0) :
     0 ≤ rogersPitmanPath μ V t := by
   change 0 ≤ ‖rogersPitmanVectorAt μ V t‖
   exact norm_nonneg _
 
-theorem rogersPitmanPath_zero (μ : ℝ) (V : BrownianTriple)
+include μ V in
+theorem rogersPitmanPath_zero 
     (hV : ∀ i, V i 0 = 0) :
     rogersPitmanPath μ V 0 = 0 := by
   change ‖rogersPitmanVectorAt μ V 0‖ = 0
@@ -89,13 +95,13 @@ instance isProbabilityMeasure_rogersPitmanEntranceMeasure (μ : ℝ)
   unfold rogersPitmanEntranceMeasure
   infer_instance
 
+include μ V in
 /-- The negative conditioned path is the negative of the positive radial entrance path. -/
-noncomputable def negativeRogersPitmanPath (μ : ℝ) (V : BrownianTriple) : BrownianPath :=
+noncomputable def negativeRogersPitmanPath  : BrownianPath :=
   -(rogersPitmanPath μ V)
 
 theorem measurable_negativeRogersPitmanPath (μ : ℝ) :
-    Measurable (fun V : BrownianTriple => negativeRogersPitmanPath μ V) := by
-  exact (measurable_rogersPitmanPath μ).neg
+    Measurable (fun V : BrownianTriple => negativeRogersPitmanPath μ V) := (measurable_rogersPitmanPath μ).neg
 
 /-- The negative entrance candidate is the pushforward under `-R`. -/
 noncomputable def negativeRogersPitmanEntranceMeasure (μ : ℝ) (W : Measure BrownianPath) :
@@ -108,7 +114,8 @@ instance isProbabilityMeasure_negativeRogersPitmanEntranceMeasure (μ : ℝ)
   unfold negativeRogersPitmanEntranceMeasure
   infer_instance
 
-theorem negativeRogersPitmanPath_zero (μ : ℝ) (V : BrownianTriple)
+include μ V in
+theorem negativeRogersPitmanPath_zero 
     (hV : ∀ i, V i 0 = 0) :
     negativeRogersPitmanPath μ V 0 = 0 := by
   simp [negativeRogersPitmanPath, rogersPitmanPath_zero μ V hV]

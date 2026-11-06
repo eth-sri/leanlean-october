@@ -9,7 +9,7 @@ public import Mathlib.MeasureTheory.Measure.Continuity
 
 /-! Countably many deterministic test limits permit an outcome-dependent test choice. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 
@@ -39,12 +39,11 @@ theorem tendstoInMeasure_countable_selection
     exact lt_of_le_of_lt hij hω
   have hempty : (⋂ k, S k) = ∅ := by
     apply eq_empty_iff_forall_notMem.mpr
-    intro ω hω
-    exact (lt_irrefl (choice ω)) ((mem_iInter.mp hω) (choice ω))
+    continuity
   have he : Tendsto (fun k => P (S k)) atTop (𝓝 0) := by
     have h := tendsto_measure_iInter_atTop (fun k => (hS k).nullMeasurableSet)
       hanti ⟨0, measure_ne_top P _⟩
-    simpa only [Function.comp_def, hempty, measure_empty] using h
+    continuity
   apply tendstoInMeasure_uniform_approximation P _ _ a b hab
   intro ε hε
   refine ⟨fun k => P (S k), he, ?_, ?_⟩

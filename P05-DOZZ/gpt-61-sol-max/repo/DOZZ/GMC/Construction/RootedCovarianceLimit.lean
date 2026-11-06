@@ -10,7 +10,7 @@ public import DOZZ.GMC.CirclePotential
 
 /-! Point-root covariance is the small-radius limit of the circle-root covariance. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 open scoped Distributions
@@ -28,19 +28,14 @@ theorem circleCross_tendsto_gffRootCovariance
   have hcross (r : ℝ) : circleCross u r f =
       ∫ z, k z ∂circleMeasure u r := by
     rw [circleCross_eq_integral_testKernel]
-    apply integral_congr_ae
-    filter_upwards with z
-    rfl
+    continuity
   have haverage (r : ℝ) : (∫ z, k z ∂circleMeasure u r) =
-      Real.circleAverage k u (Real.exp (-r)) := by
-    exact CirclePotential.integral_circleMeasure_eq_circleAverage hk.measurable u r
+      Real.circleAverage k u (Real.exp (-r)) := CirclePotential.integral_circleMeasure_eq_circleAverage hk.measurable u r
   have hexp : Tendsto (fun r : ℝ => Real.exp (-r)) atTop (𝓝 0) := by
     simpa using Real.tendsto_exp_neg_atTop_nhds_zero
   have havg : Tendsto (fun r : ℝ => Real.circleAverage k u (Real.exp (-r))) atTop
-      (𝓝 (Real.circleAverage k u 0)) := by
-    exact (Real.Continuous.circleAverage hk).continuousAt.tendsto.comp hexp
-  have hzero : Real.circleAverage k u 0 = k u := by simp [k]
-  simpa [k, hcross, haverage, hzero] using havg
+      (𝓝 (Real.circleAverage k u 0)) := (Real.Continuous.circleAverage hk).continuousAt.tendsto.comp hexp
+  continuity
 
 
 end DOZZ.Proofs

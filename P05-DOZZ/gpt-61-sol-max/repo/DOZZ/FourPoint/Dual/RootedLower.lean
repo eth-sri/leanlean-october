@@ -29,7 +29,6 @@ theorem dual_rooted_outerMass_lower (γ α₁ α₂ α₃ ξ : ℝ) (μ : Measur
   let D : Set ℂ := {x | ‖z‖ ^ (1 - ξ) ≤ ‖x‖}
   have hD : MeasurableSet D := (isClosed_le continuous_const continuous_norm).measurableSet
   have he : (gmcRootedMeasure γ u μ).restrict D = gmcRootedMeasure γ u (μ.restrict D) := by
-    unfold gmcRootedMeasure
     exact restrict_withDensity hD _
   unfold dualOuterMass
   rw [he]

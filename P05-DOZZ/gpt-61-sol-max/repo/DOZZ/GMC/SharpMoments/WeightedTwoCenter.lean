@@ -12,7 +12,7 @@ The truncated-weight argument of `weightedGmcBallMoment_center_le_transfer` work
 centers of small disks inside a common disk about the origin: the weighted local moment at one
 center is bounded by the explicit transfer constant times the weighted local moment at the other. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -51,8 +51,7 @@ theorem weightedGmcBallMoment_le_transfer
     rw [coe_insertionTruncWeight]
     exact insertionTruncWeightE_le_weight γ α N (x - z₂)
   -- monotone convergence in the truncation height
-  have hmeas : ∀ N : ℕ, AEMeasurable (fun ω => (∫⁻ x in Metric.ball z₁ ρ,
-      (insertionTruncWeight γ α N (x - z₁) : ℝ≥0∞) ∂M ω) ^ p) P := fun N =>
+  have hmeas  := fun N =>
     (gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
       (measurable_coe_nnreal_ennreal.comp ((measurable_insertionTruncWeight γ α N).comp
         (measurable_id.sub_const z₁))) _ hB).pow_const p

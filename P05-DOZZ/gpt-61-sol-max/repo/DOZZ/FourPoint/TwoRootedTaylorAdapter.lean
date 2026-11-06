@@ -8,15 +8,17 @@ public import DOZZ.FourPoint.TaylorTimeIntegration
 
 /-! The exact Taylor observable follows from the positive square estimate `fundest`. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ)
+
+include Ω _inst1 P M in
 /-- Integrate the actual three Taylor contributions against a positive source majorant.
 This adapter keeps the analytic square estimate as an explicit input. -/
-theorem twoRooted_term_power_bound {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ p C e r : ℝ)
+theorem twoRooted_term_power_bound  (γ α₁ α₂ α₃ p C e r : ℝ)
     (hC : 0 ≤ C) (he : -1 < e) (hr : 0 < r)
     (hI : ∀ w : ℂ, w ≠ 0 → ‖w‖ ≤ r →
       gammaHalfTwoRootedMajorant P M γ α₁ α₂ α₃ p w ≤ ENNReal.ofReal (C * ‖w‖ ^ e)) :
@@ -40,7 +42,7 @@ theorem twoRooted_term_power_bound {Ω : Type*} [MeasurableSpace Ω]
     rw [ofReal_norm]
     exact (twoRooted_mixed_expectation_enorm_le P M γ α₁ α₂ α₃ p w).trans (hI w hw hwr)
   intro z hz hzr
-  have hnz : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  have hnz  := norm_pos_iff.mpr hz
   have htime₁ := time_integral_bound F₁ C e r hC he hr hF₁ z hz hzr
   have htime₂ := time_integral_bound F₂ C e r hC he hr hF₂ z hz hzr
   let c : ℝ := p * (p + 1) * (γ ^ 2 / 4) ^ 2
@@ -48,7 +50,7 @@ theorem twoRooted_term_power_bound {Ω : Type*} [MeasurableSpace Ω]
       ‖c‖ * ‖z‖ ^ 2 * (C * ‖z‖ ^ e / (e + 1)) := by
     change ‖(c : ℂ) * z ^ 2 * (∫ t in Icc (0 : ℝ) 1, (1 - t : ℝ) * F₁ ((t : ℂ) * z))‖ ≤ _
     rw [norm_mul, norm_mul, norm_pow, Complex.norm_real]
-    exact mul_le_mul_of_nonneg_left htime₁ (mul_nonneg (norm_nonneg _) (sq_nonneg _))
+    bound
   have hP₂ : ‖gammaHalfTwoRootedP2 P M γ α₁ α₂ α₃ p z‖ ≤
       2 * ‖c‖ * ‖z‖ ^ 2 * (C * ‖z‖ ^ e / (e + 1)) := by
     have hc2 : 2 * p * (p + 1) * (γ ^ 2 / 4) ^ 2 = 2 * c := by dsimp only [c]; ring
@@ -75,10 +77,10 @@ theorem twoRooted_term_power_bound {Ω : Type*} [MeasurableSpace Ω]
     ring
   exact hsum.trans_eq heq
 
+include Ω _inst1 P M in
 /-- A strict positive gain in [KRV, (fundest)] closes the little-o definition of the Taylor
 remainder. -/
-theorem twoRooted_littleO_of_majorant {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ p κ η C r : ℝ)
+theorem twoRooted_littleO_of_majorant  (γ α₁ α₂ α₃ p κ η C r : ℝ)
     (hκ : 1 < κ) (hη : 0 < η) (hC : 0 ≤ C) (hr : 0 < r)
     (hI : ∀ w : ℂ, w ≠ 0 → ‖w‖ ≤ r →
       gammaHalfTwoRootedMajorant P M γ α₁ α₂ α₃ p w ≤
@@ -88,6 +90,6 @@ theorem twoRooted_littleO_of_majorant {Ω : Type*} [MeasurableSpace Ω]
     (4 * ‖p * (p + 1) * (γ ^ 2 / 4) ^ 2‖ * C / (κ - 2 + η + 1)) r hη hr
   have he : -1 < κ - 2 + η := by linarith only [hκ, hη]
   have h := twoRooted_term_power_bound P M γ α₁ α₂ α₃ p C (κ - 2 + η) r hC he hr hI
-  simpa only [show κ - 2 + η + 2 = κ + η by ring] using h
+  grind
 
 end DOZZ.Proofs

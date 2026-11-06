@@ -14,35 +14,38 @@ coordinate paths. The radial Rogers--Pitman map itself is defined in `RogersPitm
 module verifies the probabilistic input without using an extension theorem.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable (W : Measure BrownianPath) [_inst1 : IsProbabilityMeasure W]
+
+include W _inst1 in
 /-- The `i`th coordinate path under the three-fold product law has the original Brownian path
 law. -/
 theorem brownianTriple_coordinatePath_hasLaw
-    (W : Measure BrownianPath) [IsProbabilityMeasure W] (i : Fin 3) :
+     (i : Fin 3) :
     HasLaw (fun V : BrownianTriple => V i) W (brownianTripleMeasure W) := by
   refine ⟨(measurable_pi_apply i).aemeasurable, ?_⟩
   rw [brownianTripleMeasure, Measure.pi_map_eval]
   simp
 
+include W _inst1 in
 /-- The coordinate paths in the three-fold product are mutually independent. -/
 theorem brownianTriple_coordinatePaths_independent
-    (W : Measure BrownianPath) [IsProbabilityMeasure W] :
+     :
     iIndepFun (fun i : Fin 3 => fun V : BrownianTriple => V i)
-      (brownianTripleMeasure W) := by
-  rw [brownianTripleMeasure]
-  exact iIndepFun_pi (fun _ => (measurable_id : Measurable (id : BrownianPath → BrownianPath)).aemeasurable)
+      (brownianTripleMeasure W) := iIndepFun_pi (fun _ => (measurable_id : Measurable (id : BrownianPath → BrownianPath)).aemeasurable)
 
+include W _inst1 in
 /-- Each coordinate process in the product construction is a Brownian motion with continuous
 paths. Its finite-dimensional laws follow by transporting Mathlib's Brownian law along the
 coordinate projection, while path continuity is part of the `BrownianPath` carrier. -/
 theorem brownianTriple_coordinate_isBrownian
-    (W : Measure BrownianPath) [IsProbabilityMeasure W]
+
     (hW : IsBrownianReal (fun (t : ℝ≥0) (p : BrownianPath) => p t) W) (i : Fin 3) :
     IsBrownianReal (fun (t : ℝ≥0) (V : BrownianTriple) => (V i) t) (brownianTripleMeasure W) := by
   refine { toIsPreBrownianReal := ?_, cont := ?_ }

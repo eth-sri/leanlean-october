@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Tails.SingularCompactApproximation
 
 /-! Increasing singular cutoffs with a finite spatial multiplier and translated center. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 

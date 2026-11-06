@@ -42,8 +42,8 @@ theorem reflected_zero_kernel_weight (γ α₁ α₂ α₃ : ℝ) (x : ℂ)
     gammaHalfKernel γ α₁ α₂ α₃ 0 x =
       normPlus x ^ (γ * ((α₁ - γ / 2) + α₂ + α₃)) /
         (‖x‖ ^ (γ * (α₁ - γ / 2)) * ‖x - 1‖ ^ (γ * α₂)) := by
-  have hxpos : 0 < ‖x‖ := norm_pos_iff.mpr hx
-  have hx1pos : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have hxpos  := norm_pos_iff.mpr hx
+
   have he : γ ^ 2 / 2 + γ * (α₁ - γ / 2) = γ * α₁ := by ring
   have hprod := Real.rpow_add hxpos (γ ^ 2 / 2) (γ * (α₁ - γ / 2))
   rw [he] at hprod
@@ -51,9 +51,7 @@ theorem reflected_zero_kernel_weight (γ α₁ α₂ α₃ : ℝ) (x : ℂ)
   rw [sub_zero, hprod,
     show α₁ + α₂ + α₃ - γ / 2 = (α₁ - γ / 2) + α₂ + α₃ by ring]
   have h0 := (Real.rpow_pos_of_pos hxpos (γ ^ 2 / 2)).ne'
-  have h1 := (Real.rpow_pos_of_pos hxpos (γ * (α₁ - γ / 2))).ne'
-  have h2 := (Real.rpow_pos_of_pos hx1pos (γ * α₂)).ne'
-  field_simp
+  grind
 
 /-- The kernel is continuous in the moving insertion for every fixed integration point. -/
 theorem reflected_outer_kernel_continuous (γ α₁ α₂ α₃ : ℝ) (x : ℂ) :

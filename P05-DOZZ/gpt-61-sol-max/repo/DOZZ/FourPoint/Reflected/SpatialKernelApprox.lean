@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Reflected.SpatialCutoffs
 public import DOZZ.FourPoint.Reflected.OuterKernelLimit
 public import DOZZ.FourPoint.TwoRootedDomination
 /-! Compact spatial tests for the literal reflected kernel. -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 

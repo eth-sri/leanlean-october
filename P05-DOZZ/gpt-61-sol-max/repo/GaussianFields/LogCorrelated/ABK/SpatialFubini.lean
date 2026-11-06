@@ -20,10 +20,12 @@ open scoped ENNReal Topology
 
 namespace GaussianFields
 
+variable {d : Nat} (ζ : ABKCutoff d)
+
+include d ζ in
 /-- Compact support for the two-variable integrand used to pair an ABK spatial convolution
 against a compactly supported test function. -/
-theorem hasCompactSupport_abkSpatialConvolution_pair_integrand {d : Nat}
-    (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) (r : ℝ)
+theorem hasCompactSupport_abkSpatialConvolution_pair_integrand  (ψ : MeanZeroTestFunction d) (r : ℝ)
     {F : Vec d → ℝ} (hF_cs : HasCompactSupport F) :
     HasCompactSupport
       (Function.uncurry
@@ -33,17 +35,15 @@ theorem hasCompactSupport_abkSpatialConvolution_pair_integrand {d : Nat}
     (hF_cs.isCompact.prod ψ.hasCompactSupport.isCompact) ?_
   intro p hp
   have hF_ne : F p.1 ≠ 0 := by
-    intro hzero
-    exact hp (by simp [Function.uncurry, hzero])
+    continuity
   have hψ_ne : ψ p.2 ≠ 0 := by
-    intro hzero
-    exact hp (by simp [Function.uncurry, hzero])
+    continuity
   exact ⟨subset_tsupport F hF_ne, subset_tsupport ψ hψ_ne⟩
 
+include d ζ in
 /-- Pairing a fixed-scale ABK spatial convolution against a compactly supported continuous
 function allows the convolution integral to be swapped by Fubini. -/
-theorem integral_abkSpatialConvolution_mul_eq_integral_integral {d : Nat}
-    (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) (r : ℝ)
+theorem integral_abkSpatialConvolution_mul_eq_integral_integral  (ψ : MeanZeroTestFunction d) (r : ℝ)
     {F : Vec d → ℝ} (hF_cont : Continuous F) (hF_cs : HasCompactSupport F) :
     (∫ y : Vec d, abkSpatialConvolution ζ ψ r y * F y
         ∂(volume : Measure (Vec d))) =
@@ -60,14 +60,11 @@ theorem integral_abkSpatialConvolution_mul_eq_integral_integral {d : Nat}
         (abkScaledCutoff ζ r (p.1 - p.2) * ψ p.2) * F p.1)
     have hsub : Continuous (fun p : Vec d × Vec d => p.1 - p.2) :=
       continuous_fst.sub continuous_snd
-    have hscaled : Continuous (fun p : Vec d × Vec d => r⁻¹ • (p.1 - p.2)) :=
+    have hscaled  :=
       (continuous_const_smul (r⁻¹)).comp hsub
-    have hcut : Continuous (fun p : Vec d × Vec d => abkScaledCutoff ζ r (p.1 - p.2)) := by
-      exact ζ.continuous.comp hscaled
+    have hcut  := ζ.continuous.comp hscaled
     exact (hcut.mul (ψ.continuous.comp continuous_snd)).mul (hF_cont.comp continuous_fst)
-  have hG_cs : HasCompactSupport (Function.uncurry G) := by
-    simpa [G] using
-      hasCompactSupport_abkSpatialConvolution_pair_integrand ζ ψ r hF_cs
+  have hG_cs : HasCompactSupport (Function.uncurry G) := hasCompactSupport_abkSpatialConvolution_pair_integrand ζ ψ r hF_cs
   calc
     (∫ y : Vec d, abkSpatialConvolution ζ ψ r y * F y
         ∂(volume : Measure (Vec d)))
@@ -78,8 +75,7 @@ theorem integral_abkSpatialConvolution_mul_eq_integral_integral {d : Nat}
           unfold abkSpatialConvolution
           rw [integral_mul_const]
     _ = ∫ x : Vec d, ∫ y : Vec d, G y x ∂(volume : Measure (Vec d))
-          ∂(volume : Measure (Vec d)) := by
-          exact MeasureTheory.integral_integral_swap_of_hasCompactSupport hG_cont hG_cs
+          ∂(volume : Measure (Vec d)) := MeasureTheory.integral_integral_swap_of_hasCompactSupport hG_cont hG_cs
     _ = ∫ x : Vec d,
         ψ x *
           (∫ y : Vec d, abkScaledCutoff ζ r (y - x) * F y
@@ -93,10 +89,11 @@ theorem integral_abkSpatialConvolution_mul_eq_integral_integral {d : Nat}
           dsimp [G]
           ring
 
+include d ζ in
 /-- Pairing a translated scaled cutoff against a fixed-scale ABK spatial convolution collapses to
 the scaled cutoff self-convolution. -/
 theorem integral_abkScaledCutoff_mul_abkSpatialConvolution_eq_selfConvolution_integral
-    {d : Nat} (ζ : ABKCutoff d) (φ : MeanZeroTestFunction d) {r : ℝ}
+     (φ : MeanZeroTestFunction d) {r : ℝ}
     (hr : r ≠ 0) (x : Vec d) :
     (∫ y : Vec d,
         abkScaledCutoff ζ r (y - x) * abkSpatialConvolution ζ φ r y
@@ -105,13 +102,11 @@ theorem integral_abkScaledCutoff_mul_abkSpatialConvolution_eq_selfConvolution_in
         φ z * abkScaledCutoffSelfConvolution ζ r (x - z)
         ∂(volume : Measure (Vec d)) := by
   let F : Vec d → ℝ := fun y => abkScaledCutoff ζ r (y - x)
-  have hF_cont : Continuous F := by
-    dsimp [F]
-    exact (continuous_abkScaledCutoff ζ r).comp (continuous_id.sub continuous_const)
+  have hF_cont : Continuous F := (continuous_abkScaledCutoff ζ r).comp (continuous_id.sub continuous_const)
   have hF_cs : HasCompactSupport F := by
-    have hbase : HasCompactSupport (abkScaledCutoff ζ r) :=
+    have hbase  :=
       hasCompactSupport_abkScaledCutoff ζ hr
-    simpa [F, Function.comp_def] using hbase.comp_homeomorph (Homeomorph.subRight x)
+    exact hbase.comp_homeomorph (Homeomorph.subRight x)
   have hswap :=
     integral_abkSpatialConvolution_mul_eq_integral_integral
       (ζ := ζ) (ψ := φ) (r := r) hF_cont hF_cs
@@ -147,23 +142,19 @@ theorem integral_abkScaledCutoff_mul_abkSpatialConvolution_eq_selfConvolution_in
                   refine integral_congr_ae ?_
                   filter_upwards with y
                   have hyz : y - z = -(z - y) := by
-                    ext i
-                    simp only [Pi.sub_apply, Pi.neg_apply]
-                    ring
+                    simp_all
                   have hyx : y - x = -(x - y) := by
-                    ext i
-                    simp only [Pi.sub_apply, Pi.neg_apply]
-                    ring
+                    simp_all
                   rw [hyz, hyx, abkScaledCutoff_neg, abkScaledCutoff_neg]
                   ring
-            _ = abkScaledCutoffSelfConvolution ζ r (x - z) := by
-                  exact integral_abkScaledCutoff_mul_abkScaledCutoff_sub_eq_selfConvolution
+            _ = abkScaledCutoffSelfConvolution ζ r (x - z) := integral_abkScaledCutoff_mul_abkScaledCutoff_sub_eq_selfConvolution
                     ζ r x z
 
+include d ζ in
 /-- Fixed-scale spatial covariance identity: the `L²` inner product of two ABK spatial
 convolutions is the double integral against the scaled cutoff self-convolution. -/
 theorem integral_abkSpatialConvolution_mul_abkSpatialConvolution_eq_selfConvolution_integral
-    {d : Nat} (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) {r : ℝ}
+     (ψ φ : MeanZeroTestFunction d) {r : ℝ}
     (hr : 0 < r) :
     (∫ y : Vec d,
         abkSpatialConvolution ζ ψ r y * abkSpatialConvolution ζ φ r y
@@ -174,9 +165,9 @@ theorem integral_abkSpatialConvolution_mul_abkSpatialConvolution_eq_selfConvolut
             φ z * abkScaledCutoffSelfConvolution ζ r (x - z)
             ∂(volume : Measure (Vec d)))
         ∂(volume : Measure (Vec d)) := by
-  have hF_cont : Continuous (fun y : Vec d => abkSpatialConvolution ζ φ r y) :=
+  have hF_cont  :=
     continuous_abkSpatialConvolution ζ φ hr.ne'
-  have hF_cs : HasCompactSupport (fun y : Vec d => abkSpatialConvolution ζ φ r y) :=
+  have hF_cs  :=
     hasCompactSupport_abkSpatialConvolution ζ φ hr
   have hswap :=
     integral_abkSpatialConvolution_mul_eq_integral_integral

@@ -10,7 +10,7 @@ public import DOZZ.Correlations.SeparatedTail.MixedMoment
 /-! A common subsequence carries out the passage from cutoff mixed moments to limiting masses in
 the separated joint-tail estimate. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 
@@ -34,8 +34,8 @@ theorem separatedTail_mixed_moment_le_of_tendstoInMeasure
     (∫⁻ ω, g2 ω ^ a2 * g3 ω ^ a3 ∂P) ≤ C := by
   obtain ⟨ns, hns, h2⟩ := hconv2.exists_seq_tendsto_ae
   obtain ⟨ms, _hms, h3⟩ := (hconv3.comp hns.tendsto_atTop).exists_seq_tendsto_ae
-  have hfinite2 : ∀ᵐ ω ∂P, ∀ n, f2 n ω ≠ ⊤ := ae_all_iff.mpr hfin2
-  have hfinite3 : ∀ᵐ ω ∂P, ∀ n, f3 n ω ≠ ⊤ := ae_all_iff.mpr hfin3
+  have hfinite2  := ae_all_iff.mpr hfin2
+  have hfinite3  := ae_all_iff.mpr hfin3
   have hlim : ∀ᵐ ω ∂P, Tendsto
       (fun n => f2 (ns (ms n)) ω ^ a2 * f3 (ns (ms n)) ω ^ a3) atTop
       (𝓝 (g2 ω ^ a2 * g3 ω ^ a3)) := by
@@ -51,8 +51,7 @@ theorem separatedTail_mixed_moment_le_of_tendstoInMeasure
       rw [ENNReal.toReal_rpow, ENNReal.toReal_rpow,
         ENNReal.ofReal_toReal (ENNReal.rpow_ne_top_of_nonneg ha2 hx),
         ENNReal.ofReal_toReal (ENNReal.rpow_ne_top_of_nonneg ha3 hy)]
-    simpa only [Function.comp_def, heq _ _ (hf2ω _) (hf3ω _),
-      heq _ _ hg2ω hg3ω] using hreal
+    simp_all
   calc
     _ = ∫⁻ ω, liminf (fun n => f2 (ns (ms n)) ω ^ a2 * f3 (ns (ms n)) ω ^ a3) atTop ∂P :=
       lintegral_congr_ae (hlim.mono fun ω hω => hω.liminf_eq.symm)

@@ -6,6 +6,7 @@ module
 
 public import DOZZ.GMC.SharpMoments.SeibergDecomp
 public import DOZZ.GMC.SharpMoments.SeibergPieces
+import Mathlib.Tactic
 
 /-! # Positive moments of the Coulomb mass
 
@@ -14,30 +15,29 @@ Coulomb mass has a finite moment of every positive order: the root pieces are we
 masses, the bulk piece is the mass of a bounded disk, and the exterior piece is a weighted local
 mass of the inverted measure, which has the law of the original one. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Integrals against an `IsGMCOf` version of a fixed measurable function are a.e. measurable. -/
 theorem gmc_lintegral_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (f : ℂ → ℝ≥0∞) (hf : Measurable f) :
     AEMeasurable (fun ω => ∫⁻ x, f x ∂M ω) P := by
   simpa using gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM f hf Set.univ MeasurableSet.univ
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Coulomb masses of an `IsGMCOf` version are a.e. measurable. -/
 theorem gmc_coulombMass_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     {N : ℕ} (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ) :
     AEMeasurable (fun ω => coulombMass γ (M ω) α z αinf) P := by
-  simp only [coulombMass_eq_lintegral_coulombWeight]
   exact gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _ (measurable_coulombWeight γ α z αinf)
 
 /-- A constant multiple of a positive power of an a.e. measurable function with finite
@@ -48,19 +48,18 @@ theorem lintegral_const_mul_rpow_lt_top {Ω : Type*} [MeasurableSpace Ω] {P : M
     ∫⁻ ω, (c * f ω) ^ t ∂P < ⊤ := by
   rw [lintegral_congr fun ω => ENNReal.mul_rpow_of_nonneg c (f ω) ht.le,
     lintegral_const_mul'' _ (hf.pow_const t)]
-  exact ENNReal.mul_lt_top (ENNReal.rpow_lt_top_of_nonneg ht.le hc) hfin
+  finiteness
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Below the bulk threshold and every insertion threshold, the Coulomb mass has a finite moment
 of every positive order. -/
 theorem coulombMass_moment_lt_top_of_pos
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     {N : ℕ} (z : Fin N → ℂ) (hz : Function.Injective z) (α : Fin N → ℝ) (αinf : ℝ)
     (t : ℝ) (ht : 0 < t) (htb : t < 4 / γ ^ 2) (hti : ∀ k, t < 2 / γ * (Q γ - α k))
     (htinf : t < 2 / γ * (Q γ - αinf)) :
     ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α z αinf) t ∂P < ⊤ := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   obtain ⟨δ, hδ, hδ8, hsep⟩ := exists_root_separation z hz
   have hδ1 : δ ≤ 1 := hδ8.trans (by norm_num)
   set Rr : ℝ := 1 + 2 * ∑ j, ‖z j‖ with hRr
@@ -79,7 +78,7 @@ theorem coulombMass_moment_lt_top_of_pos
   have hLtop : L ≠ ⊤ := (ENNReal.LpAddConst_lt_top _).ne
   set n : ℝ≥0∞ := ((Finset.univ : Finset (Fin N)).card : ℝ≥0∞) with hn
   -- measurability of the pieces
-  have hWm : ∀ k, AEMeasurable (W k) P := fun k =>
+  have hWm  := fun k =>
     gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM (α k) (z k) δ
   have hMBm : AEMeasurable MB P :=
     gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
@@ -104,7 +103,7 @@ theorem coulombMass_moment_lt_top_of_pos
         (weightedGmcBallMoment_lt_top_of_sharp_range P X hX γ hγ hγ2 M hM αinf 0 (1 / Rr)
           (by positivity) t ht (lt_min htb htinf)))
   -- the pointwise bound
-  have hatoms : ∀ᵐ ω ∂P, ∀ k, M ω {z k} = 0 :=
+  have hatoms  :=
     ae_all_iff.mpr fun k => gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM (z k)
   have hpt : ∀ᵐ ω ∂P, ENNReal.rpow (coulombMass γ (M ω) α z αinf) t ≤
       L * (L * (n ^ t * ∑ k, (cR * W k ω) ^ t + (cB * MB ω) ^ t) +
@@ -127,7 +126,7 @@ theorem coulombMass_moment_lt_top_of_pos
   have hsumfin : ∫⁻ ω, ∑ k, (cR * W k ω) ^ t ∂P < ⊤ := by
     rw [lintegral_finsetSum' _ hsumm]
     exact ENNReal.sum_lt_top.mpr fun k _ => hWfin k
-  have hS : AEMeasurable (fun ω => ∑ k, (cR * W k ω) ^ t) P :=
+  have hS  :=
     Finset.aemeasurable_fun_sum _ hsumm
   have hA : AEMeasurable (fun ω => n ^ t * ∑ k, (cR * W k ω) ^ t) P :=
     aemeasurable_const.mul hS
@@ -138,7 +137,7 @@ theorem coulombMass_moment_lt_top_of_pos
   have hABfin : ∫⁻ ω, (n ^ t * ∑ k, (cR * W k ω) ^ t +
       (cB * MB ω) ^ t) ∂P < ⊤ := by
     rw [lintegral_add_left' hA]
-    exact ENNReal.add_lt_top.mpr ⟨hAfin, hMBfin⟩
+    finiteness
   have hAB : AEMeasurable (fun ω => n ^ t * ∑ k, (cR * W k ω) ^ t +
       (cB * MB ω) ^ t) P := hA.add ((aemeasurable_const.mul hMBm).pow_const t)
   have hLAB : AEMeasurable (fun ω => L * (n ^ t *
@@ -166,12 +165,10 @@ theorem lintegral_pos_of_ae_pos {Ω : Type*} [MeasurableSpace Ω] {P : Measure �
   obtain ⟨ω, hω1, hω2⟩ := (h.and hz).exists
   exact (ne_of_gt hω1) hω2
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- The global extended moment on `U_N`. -/
 theorem equatorGFF_extendedSeiberg_moment
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) {N : ℕ} (z : Fin N → ℂ) (hz : Function.Injective z)
+     {N : ℕ} (z : Fin N → ℂ) (hz : Function.Injective z)
     (α : Fin N → ℝ) (αinf : ℝ) (hαQ : ∀ k, α k < Q γ) (hαinf : αinf < Q γ)
     (hbulk : (2 * Q γ - (∑ k, α k + αinf)) / γ < 4 / γ ^ 2)
     (hins : ∀ k, (2 * Q γ - (∑ k, α k + αinf)) / γ < 2 / γ * (Q γ - α k))
@@ -180,7 +177,7 @@ theorem equatorGFF_extendedSeiberg_moment
         ((2 * Q γ - (∑ k, α k + αinf)) / γ) ∂P ∧
       ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α z αinf)
         ((2 * Q γ - (∑ k, α k + αinf)) / γ) ∂P < ⊤ := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   set s : ℝ := (2 * Q γ - (∑ k, α k + αinf)) / γ with hs
   set Z : Ω → ℝ≥0∞ := fun ω => coulombMass γ (M ω) α z αinf with hZ
   have hZm : AEMeasurable Z P := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM α z αinf
@@ -189,17 +186,14 @@ theorem equatorGFF_extendedSeiberg_moment
     ENNReal.ofReal ((1 + 2 * ∑ j, ‖z j‖ + 2) ^ (-|γ * αinf|)) with hc
   set B : Set ℂ := Metric.ball (((1 + 2 * ∑ j, ‖z j‖ + 1 : ℝ)) : ℂ) (1 / 8) with hB
   have hc0 : c ≠ 0 := by
-    have hsum : 0 ≤ ∑ j, ‖z j‖ := Finset.sum_nonneg fun j _ => norm_nonneg _
-    refine mul_ne_zero ?_ ?_
-    · exact (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
-    · exact (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by linarith) _)).ne'
+    positivity
   have hctop : c ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top
   obtain ⟨hRr1, hzRr⟩ := coulomb_exterior_radius_bounds z
-  have hlow : ∀ ω, c * M ω B ≤ Z ω := fun ω =>
+  have hlow  := fun ω =>
     coulombMass_ge_exterior_ball (M ω) γ α z αinf hRr1 hzRr
   have hBpos := gmc_ball_mass_pos_ae P X hX γ hγ hγ2 M hM
     (((1 + 2 * ∑ j, ‖z j‖ + 1 : ℝ)) : ℂ) (1 / 8) (by norm_num)
-  have hBm : AEMeasurable (fun ω => M ω B) P :=
+  have hBm  :=
     gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM B Metric.isOpen_ball.measurableSet
   -- almost surely the Coulomb mass is positive and finite
   have h4 : (0 : ℝ) < 4 / γ ^ 2 := by positivity
@@ -207,7 +201,7 @@ theorem equatorGFF_extendedSeiberg_moment
   have hk0 : ∀ k, 0 < 2 / γ * (Q γ - α k) := fun k => mul_pos (by positivity) (sub_pos.mpr (hαQ k))
   have e1 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Set.Ioo 0 (4 / γ ^ 2) := Ioo_mem_nhdsGT h4
   have e2 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Set.Ioo 0 (2 / γ * (Q γ - αinf)) := Ioo_mem_nhdsGT hinf0
-  have e3 : ∀ᶠ t in 𝓝[>] (0 : ℝ), ∀ k, t ∈ Set.Ioo 0 (2 / γ * (Q γ - α k)) :=
+  have e3  :=
     eventually_all.mpr fun k => Ioo_mem_nhdsGT (hk0 k)
   obtain ⟨t, ht⟩ := (e1.and (e2.and e3)).exists
   have htfin := coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ2 M hM z hz α αinf t ht.1.1
@@ -240,8 +234,6 @@ theorem equatorGFF_extendedSeiberg_moment
       exact ENNReal.rpow_zero
     simp only [h1, lintegral_const, measure_univ, mul_one]
     exact ENNReal.one_lt_top
-  · -- positive Seiberg exponent
-    exact coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ2 M hM z hz α αinf s hpos hbulk hins
-      hinsinf
+  exact coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ2 M hM z hz α αinf s hpos hbulk hins hinsinf
 
 end DOZZ.Proofs

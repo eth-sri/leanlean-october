@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Dual.CopiedInnerPolar
 public import DOZZ.FourPoint.Dual.PathLikelihood
 import Mathlib.Tactic
 /-! Literal copied inner-kernel comparison on the same removed source plane carrier. -/
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

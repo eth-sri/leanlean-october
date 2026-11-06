@@ -5,10 +5,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.GMC.Construction.GMCWeightedTotalMass
+import Mathlib.Tactic
 
 /-! Uniformly varying weights give close cutoff total masses. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
@@ -21,7 +22,7 @@ private theorem weightedTotal_eq_integral_local
     ((μ.withDensity (fun z => ENNReal.ofReal (w z))) Set.univ).toReal =
       ∫ z, w z ∂μ := by
   let W : ℂ → ℝ≥0∞ := fun z => ENNReal.ofReal (w z)
-  have hW : Measurable W := ENNReal.measurable_ofReal.comp w.continuous.measurable
+  have hW  := ENNReal.measurable_ofReal.comp w.continuous.measurable
   have hWbound : ∀ z, W z ≤ ENNReal.ofReal ‖w‖ := by
     intro z
     apply ENNReal.ofReal_le_ofReal
@@ -35,27 +36,17 @@ private theorem weightedTotal_eq_integral_local
       ∫⁻ z, W z ∂μ ≤ ∫⁻ z, ENNReal.ofReal ‖w‖ ∂μ := lintegral_mono hWbound
       _ < ∞ := by
         rw [lintegral_const]
-        exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top
-          (lt_top_iff_ne_top.mpr (@measure_ne_top ℂ _ μ hμ Set.univ))
-  have hWfinite : IsFiniteMeasure (μ.withDensity W) := isFiniteMeasure_withDensity hWint
+        finiteness
+  have hWfinite  := isFiniteMeasure_withDensity hWint
   have hconst : ∫ z, (1 : BoundedContinuousFunction ℂ ℝ) z ∂μ.withDensity W =
       ((μ.withDensity W) Set.univ).toReal := by
-    let _ : IsFiniteMeasure (μ.withDensity W) := hWfinite
+    let _  := hWfinite
     rw [← Measure.real_def]
     simp [integral_const]
   have hWlt : ∀ᵐ z ∂μ, W z < ∞ := ae_of_all _ (fun z => ENNReal.ofReal_lt_top)
   have hInt := integral_withDensity_eq_integral_toReal_smul hW hWlt
     (1 : BoundedContinuousFunction ℂ ℝ)
-  have hInt' : ∫ z, (1 : BoundedContinuousFunction ℂ ℝ) z ∂μ.withDensity W =
-      ∫ z, w z ∂μ := by
-    rw [hInt]
-    apply integral_congr_ae
-    filter_upwards [] with z
-    simp [W, ENNReal.toReal_ofReal (hw z), smul_eq_mul]
-  calc
-    ((μ.withDensity W) Set.univ).toReal =
-        ∫ z, (1 : BoundedContinuousFunction ℂ ℝ) z ∂μ.withDensity W := hconst.symm
-    _ = ∫ z, w z ∂μ := hInt'
+  continuity
 
 /-- The total masses obtained from a uniformly convergent family of nonnegative BCF weights
 become close in probability at the same GMC cutoff. -/
@@ -80,8 +71,7 @@ theorem regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure
   let refMass : ℝ≥0∞ := gmcReferenceMeasure Set.univ
   have hμMeas (r : ℝ) : Measurable (μ r) :=
     regularizedGMC_measurable P X hX Xc hXc γ r
-  have hdiffMeas (r : ℝ) : Measurable (fun z : ℂ => ENNReal.ofReal (diff r z)) := by
-    exact ENNReal.measurable_ofReal.comp
+  have hdiffMeas (r : ℝ) : Measurable (fun z : ℂ => ENNReal.ofReal (diff r z)) := ENNReal.measurable_ofReal.comp
       (continuous_abs.measurable.comp ((u r).continuous.measurable.sub v.continuous.measurable))
   have hgapMeas (r : ℝ) : Measurable (gap r) :=
     (Measure.measurable_lintegral (hdiffMeas r)).comp (hμMeas r)
@@ -104,12 +94,10 @@ theorem regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure
         simpa [Real.dist_eq, abs_sub_comm] using hz
       exact le_of_lt hz'
     have hstrict : ε / 2 < ε := by linarith
-    have hle' : ‖u r - v‖ < ε := lt_of_le_of_lt hle hstrict
-    simpa [Real.dist_eq, abs_of_nonneg (norm_nonneg _)] using hle'
+    have hle'  := lt_of_le_of_lt hle hstrict
+    simp_all
   have hgapExpectation (r : ℝ) :
-      ∫⁻ ω, gap r ω ∂P = ∫⁻ z, ENNReal.ofReal (diff r z) ∂gmcReferenceMeasure := by
-    dsimp [gap, diff, μ]
-    exact regularizedGMC_lintegral_test_eq_reference P X hX Xc hXc γ r
+      ∫⁻ ω, gap r ω ∂P = ∫⁻ z, ENNReal.ofReal (diff r z) ∂gmcReferenceMeasure := regularizedGMC_lintegral_test_eq_reference P X hX Xc hXc γ r
       (fun z => ENNReal.ofReal |u r z - v z|) (hdiffMeas r)
   have hgapBound (r : ℝ) :
       ∫⁻ z, ENNReal.ofReal (diff r z) ∂gmcReferenceMeasure ≤
@@ -124,13 +112,12 @@ theorem regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure
   rw [tendstoInMeasure_iff_norm]
   intro ε hε
   let den : ℝ≥0∞ := ENNReal.ofReal ε
-  have hden0 : den ≠ 0 := (ENNReal.ofReal_pos.mpr hε).ne'
+  have hden0  := (ENNReal.ofReal_pos.mpr hε).ne'
   have hdenTop : den ≠ ∞ := ENNReal.ofReal_ne_top
-  have hrefTop : refMass ≠ ∞ := by simpa [refMass] using gmcReferenceMeasure_univ_ne_top
+  have hrefTop : refMass ≠ ∞ := id gmcReferenceMeasure_univ_ne_top
   have hprobT : Tendsto (fun r : ℝ =>
       (ENNReal.ofReal ‖u r - v‖ * refMass) / den) atTop (𝓝 0) := by
-    have hOf : Tendsto (fun r : ℝ => ENNReal.ofReal ‖u r - v‖) atTop
-        (𝓝 (ENNReal.ofReal 0)) := (ENNReal.continuous_ofReal.tendsto 0).comp hnorm
+    have hOf  := (ENNReal.continuous_ofReal.tendsto 0).comp hnorm
     have hmul' := ((ENNReal.continuous_mul_const hrefTop).tendsto
       (ENNReal.ofReal 0)).comp hOf
     change Tendsto (fun r : ℝ => ENNReal.ofReal ‖u r - v‖ * refMass) atTop
@@ -153,7 +140,7 @@ theorem regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure
           (fun _ : ℂ => (1 : ℝ≥0∞)) measurable_const
       have htotalMeas : Measurable (fun ω => (μ r ω) Set.univ) :=
         (Measure.measurable_coe MeasurableSet.univ).comp (hμMeas r)
-      have href : gmcReferenceMeasure Set.univ ≠ ∞ := gmcReferenceMeasure_univ_ne_top
+      have href  := gmcReferenceMeasure_univ_ne_top
       filter_upwards [ae_lt_top htotalMeas (by rw [hmass]; exact href)] with ω hω
       exact ⟨hω⟩
     have hsub : ∀ᵐ ω ∂P,
@@ -163,11 +150,11 @@ theorem regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure
       filter_upwards [hfinite] with ω hμfin hω
       have hmassU := weightedTotal_eq_integral_local (μ r ω) hμfin (u r) (hu r)
       have hmassV := weightedTotal_eq_integral_local (μ r ω) hμfin v hv
-      have hmemU : MemLp (u r) 1 (μ r ω) :=
+      have hmemU  :=
         @MemLp.of_bound ℂ ℝ _ 1 (μ r ω) _ hμfin (u r)
           (u r).continuous.measurable.aestronglyMeasurable ‖u r‖
           (ae_of_all _ fun z => (u r).norm_coe_le_norm z)
-      have hmemV : MemLp v 1 (μ r ω) :=
+      have hmemV  :=
         @MemLp.of_bound ℂ ℝ _ 1 (μ r ω) _ hμfin v
           v.continuous.measurable.aestronglyMeasurable ‖v‖
           (ae_of_all _ fun z => v.norm_coe_le_norm z)
@@ -192,23 +179,16 @@ theorem regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure
             exact ENNReal.ofReal_le_ofReal (hdiffBound r z)
           _ < ∞ := by
             rw [lintegral_const]
-            exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top
-              (lt_top_iff_ne_top.mpr (@measure_ne_top ℂ _ (μ r ω) hμfin Set.univ))
+            finiteness
       have hdist2 : dist (∫ z, u r z ∂μ r ω) (∫ z, v z ∂μ r ω) ≤
           (gap r ω).toReal := by
-        calc
-          dist (∫ z, u r z ∂μ r ω) (∫ z, v z ∂μ r ω) ≤
-              (∫⁻ z, edist (u r z) (v z) ∂μ r ω).toReal := hdist
-          _ = (gap r ω).toReal := by rw [hgapEdist]
+        grind
       have hdist' : |(∫ z, u r z ∂μ r ω) - ∫ z, v z ∂μ r ω| ≤
-          (gap r ω).toReal := by simpa [Real.dist_eq] using hdist2
-      have hεgap : ε ≤ (gap r ω).toReal := hω.trans hdist'
+          (gap r ω).toReal := hdist2
+      have hεgap  := hω.trans hdist'
       exact (ENNReal.ofReal_le_iff_le_toReal hgapTop).2 hεgap
     have hmarkov : P {ω | ENNReal.ofReal ε ≤ gap r ω} ≤
-        (∫⁻ ω, gap r ω ∂P) / den := by
-      apply meas_ge_le_lintegral_div (hgapMeas r).aemeasurable
-      · exact hden0
-      · exact hdenTop
+        (∫⁻ ω, gap r ω ∂P) / den := meas_ge_le_lintegral_div (Measurable.aemeasurable (hgapMeas r)) hden0 hdenTop
     calc
       P {ω | ε ≤ |(
           (((μ r ω).withDensity (fun z => ENNReal.ofReal (u r z))) Set.univ).toReal -
@@ -217,15 +197,14 @@ theorem regularizedGMC_varyingWithDensity_univ_mass_diff_tendstoInMeasure
       _ ≤ (∫⁻ ω, gap r ω ∂P) / den := hmarkov
       _ = (∫⁻ z, ENNReal.ofReal (diff r z) ∂gmcReferenceMeasure) / den := by
           rw [hgapExpectation]
-      _ ≤ (ENNReal.ofReal ‖u r - v‖ * refMass) / den := by
-          exact ENNReal.div_le_div_right (hgapBound r) den
+      _ ≤ (ENNReal.ofReal ‖u r - v‖ * refMass) / den := ENNReal.div_le_div_right (hgapBound r) den
   have hprob : Tendsto (fun r : ℝ => P {ω | ε ≤ |(
       (((μ r ω).withDensity (fun z => ENNReal.ofReal (u r z))) Set.univ).toReal -
       (((μ r ω).withDensity (fun z => ENNReal.ofReal (v z))) Set.univ).toReal)|})
       atTop (𝓝 0) := by
     apply tendsto_of_tendsto_of_tendsto_of_le_of_le'
       (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0 : ℝ≥0∞)) atTop (𝓝 0)) hprobT
-    · exact Filter.Eventually.of_forall (fun r => bot_le)
+    · simp_all
     · exact Filter.Eventually.of_forall hεevent
   simpa [μ, Real.norm_eq_abs] using hprob
 

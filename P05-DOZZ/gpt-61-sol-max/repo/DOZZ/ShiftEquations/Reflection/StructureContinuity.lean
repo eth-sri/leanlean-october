@@ -17,7 +17,7 @@ of the strict extended domain (`unitVolumeNPoint_jointly_continuous_parameters`)
 conjunct of `DOZZ.reflection_endpoint_and_gamma_continuity`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -38,16 +38,13 @@ theorem extendedSeibergN_of_extendedSeiberg3 {γ α₁ α₂ α₃ : ℝ}
     · exact h1
     · exact h2
     · exact h3
-  · rw [hsN]
-    exact lt_of_lt_of_le hs (min_le_left _ _)
+  · simp_all
   · intro i
     rw [hsN]
     fin_cases i
-    · exact lt_of_lt_of_le hs ((min_le_right _ _).trans (min_le_left _ _))
-    · exact lt_of_lt_of_le hs ((min_le_right _ _).trans ((min_le_right _ _).trans
-        (min_le_left _ _)))
-    · exact lt_of_lt_of_le hs ((min_le_right _ _).trans ((min_le_right _ _).trans
-        (min_le_right _ _)))
+    · simp_all
+    · simp_all
+    simp_all
 
 theorem distinct_pole_frame : ∀ i j : Fin 3, i ≠ j →
     (![0, 2, -2] : Fin 3 → ℂ) i ≠ (![0, 2, -2] : Fin 3 → ℂ) j := by
@@ -69,7 +66,7 @@ theorem continuous_nPointCoulombPrefactor_pole_frame :
   unfold nPointCoulombPrefactor
   refine continuous_finsetProd _ fun i _ => continuous_finsetProd _ fun j _ => ?_
   split_ifs with hij
-  · have hpos : 0 < ‖(![0, 2, -2] : Fin 3 → ℂ) i - (![0, 2, -2] : Fin 3 → ℂ) j‖ :=
+  · have hpos  :=
       norm_pos_iff.mpr (sub_ne_zero.mpr (distinct_pole_frame i j (ne_of_lt hij)))
     exact continuous_const.rpow ((continuous_apply i).mul (continuous_apply j)).neg
       fun _ => Or.inl hpos.ne'
@@ -93,24 +90,20 @@ theorem continuousOn_unitVolumeStructureConstant {Ω : Type*} [MeasurableSpace �
       rw [← vec_three_eta q.2]
       exact extendedSeibergN_of_extendedSeiberg3 (hKdom q hq).2.2⟩) hX
     (fun q hq => hM q.1 (hKdom q hq).1 (hKdom q hq).2.1)
-  have hγne : ∀ q ∈ K, q.1 ≠ 0 := fun q hq => (hKdom q hq).1.ne'
+  have hγne  := fun q hq => (hKdom q hq).1.ne'
   have hfst : ContinuousOn (fun q : ℝ × (Fin 3 → ℝ) => q.1) K := continuous_fst.continuousOn
   have hQc : ContinuousOn (fun q : ℝ × (Fin 3 → ℝ) => Q q.1) K := by
     unfold Q
-    exact (continuousOn_const.div hfst hγne).add (hfst.div_const _)
+    fun_prop (disch := positivity)
   have hsum : Continuous fun q : ℝ × (Fin 3 → ℝ) => q.2 0 + q.2 1 + q.2 2 := by fun_prop
   have hnum : ContinuousOn (fun q : ℝ × (Fin 3 → ℝ) => q.2 0 + q.2 1 + q.2 2 - 2 * Q q.1) K :=
     hsum.continuousOn.sub (continuousOn_const.mul hQc)
   have hsc : ContinuousOn (fun q : ℝ × (Fin 3 → ℝ) => sExp q.1 (q.2 0) (q.2 1) (q.2 2)) K := by
-    unfold sExp
     exact hnum.div hfst hγne
   have hpre : Continuous fun q : ℝ × (Fin 3 → ℝ) => q.1 * (q.2 1 + q.2 2) := by fun_prop
-  have hexp : ContinuousOn (fun q : ℝ × (Fin 3 → ℝ) =>
-      q.1 * (q.2 1 + q.2 2) * (-sExp q.1 (q.2 0) (q.2 1) (q.2 2))) K :=
+  have hexp  :=
     hpre.continuousOn.mul hsc.neg
-  have hfac : ContinuousOn (fun q : ℝ × (Fin 3 → ℝ) =>
-      (2 : ℝ) ^ (q.1 * (q.2 1 + q.2 2) * (-sExp q.1 (q.2 0) (q.2 1) (q.2 2))) /
-        nPointCoulombPrefactor q.2 ![0, 2, -2]) K :=
+  have hfac  :=
     (continuousOn_const.rpow hexp fun _ _ => Or.inl two_ne_zero).div
       (continuous_nPointCoulombPrefactor_pole_frame.comp continuous_snd).continuousOn
       fun q _ => (nPointCoulombPrefactor_pole_frame_pos q.2).ne'

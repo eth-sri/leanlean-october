@@ -16,7 +16,7 @@ no independence between its two half-lines is required. The radial exponential-s
 estimate and the lateral inverse-moment estimate remain explicit analytic inputs.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal Topology
@@ -36,7 +36,7 @@ theorem twoSidedReflectionMass_aemeasurable_of_lateral
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hB : AEMeasurable B P) (hZ : IsLateralGMCOf P γ Z) :
     AEMeasurable (fun ω => twoSidedReflectionMass γ B Z ω) P := by
-  have hp : AEMeasurable (fun ω => (B ω, Z ω)) P := hB.prodMk hZ.2.2.2.1
+  have hp  := hB.prodMk hZ.2.2.2.1
   have hl : ∀ᵐ ω ∂P, LocallyFiniteOnTranslationWindows (Z ω) := by
     filter_upwards [hZ.2.2.2.2.1] with ω hω
     intro n
@@ -45,44 +45,38 @@ theorem twoSidedReflectionMass_aemeasurable_of_lateral
     (fun ω => (B ω, Z ω)) hp hl
   exact hm.comp_aemeasurable hp
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (γ q : ℝ) (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ) (hB : AEMeasurable B P) (hZ : IsLateralGMCOf P γ Z)
+
+include Ω _inst1 P γ q B Z hB hZ in
 /-- Every real moment integrand of the actual reflection mass is AE measurable. -/
 theorem twoSidedReflectionMass_rpow_aemeasurable_of_lateral
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ q : ℝ)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
-    (hB : AEMeasurable B P) (hZ : IsLateralGMCOf P γ Z) :
-    AEMeasurable (fun ω => (twoSidedReflectionMass γ B Z ω) ^ q) P := by
-  exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
+     :
+    AEMeasurable (fun ω => (twoSidedReflectionMass γ B Z ω) ^ q) P := ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
     (twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z hB hZ)
 
+include Ω _inst1 P γ q B Z hB hZ in
 /-- A finite strictly negative moment implies almost sure positive reflection mass. -/
 theorem twoSidedReflectionMass_pos_ae_of_negative_moment
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ q : ℝ)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
-    (hB : AEMeasurable B P) (hZ : IsLateralGMCOf P γ Z) (hq : q < 0)
+     (hq : q < 0)
     (hm : (∫⁻ ω, (twoSidedReflectionMass γ B Z ω) ^ q ∂P) < ⊤) :
     ∀ᵐ ω ∂P, 0 < twoSidedReflectionMass γ B Z ω := by
   have hf := ae_lt_top' (twoSidedReflectionMass_rpow_aemeasurable_of_lateral
     P γ q B Z hB hZ) hm.ne
   filter_upwards [hf] with ω hω
   apply pos_iff_ne_zero.mpr
-  intro hz
-  rw [hz, ENNReal.zero_rpow_of_neg hq] at hω
-  exact (lt_irrefl _ hω)
+  continuity
 
+include Ω _inst1 P γ q B Z hB hZ in
 /-- A finite strictly positive moment implies almost sure finite reflection mass. -/
 theorem twoSidedReflectionMass_finite_ae_of_positive_moment
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ q : ℝ)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
-    (hB : AEMeasurable B P) (hZ : IsLateralGMCOf P γ Z) (hq : 0 < q)
+     (hq : 0 < q)
     (hm : (∫⁻ ω, (twoSidedReflectionMass γ B Z ω) ^ q ∂P) < ⊤) :
     ∀ᵐ ω ∂P, twoSidedReflectionMass γ B Z ω < ⊤ := by
   have hf := ae_lt_top' (twoSidedReflectionMass_rpow_aemeasurable_of_lateral
     P γ q B Z hB hZ) hm.ne
   filter_upwards [hf] with ω hω
   apply lt_top_iff_ne_top.mpr
-  intro hz
-  rw [hz, ENNReal.top_rpow_of_pos hq] at hω
-  exact lt_irrefl _ hω
+  continuity
 
 /-- Two enclosing moment bounds control every intervening reflection moment. -/
 theorem twoSidedReflectionMass_moment_le_endpoints
@@ -92,8 +86,7 @@ theorem twoSidedReflectionMass_moment_le_endpoints
     (hl : l ≤ q) (hu : q ≤ u) :
     (∫⁻ ω, (twoSidedReflectionMass γ B Z ω) ^ q ∂P) ≤
       (∫⁻ ω, (twoSidedReflectionMass γ B Z ω) ^ l ∂P) +
-        (∫⁻ ω, (twoSidedReflectionMass γ B Z ω) ^ u ∂P) := by
-  exact lintegral_rpow_le_endpoint_sum P _
+        (∫⁻ ω, (twoSidedReflectionMass γ B Z ω) ^ u ∂P) := lintegral_rpow_le_endpoint_sum P _
     (twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z hB hZ) hl hu
 
 /-- The two conditioned-process clauses already imply AE measurability of the whole path pair. -/

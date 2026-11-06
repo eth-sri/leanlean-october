@@ -12,7 +12,7 @@ import Mathlib.Tactic
 
 /-! # Rooting inside the deleted disk retains a supercritical freezing annulus -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -25,9 +25,7 @@ theorem reflected_rootDensity_charge_lower (γ : ℝ) (u x : ℂ) (hx : 0 < ‖x
       ENNReal.ofReal ((normPlus x / ‖x‖) ^ (γ * γ)) ≤
         ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel u x)) := by
   have hd : 0 < ‖u - x‖ := norm_pos_iff.mpr (sub_ne_zero.mpr (by
-    intro he
-    rw [he] at hu
-    exact (lt_irrefl _ hu)))
+    continuity))
   have hp : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
   have hn : ‖u - x‖ ≤ 2 * ‖x‖ := (norm_sub_le u x).trans (by linarith only [hu])
   have hl := Real.log_le_log hd hn
@@ -40,8 +38,7 @@ theorem reflected_rootDensity_charge_lower (γ : ℝ) (u x : ℂ) (hx : 0 < ‖x
   apply ENNReal.ofReal_le_ofReal
   rw [Real.rpow_def_of_pos (div_pos hp hx), Real.log_div hp.ne' hx.ne', ← Real.exp_add]
   apply Real.exp_le_exp.mpr
-  have hh := mul_le_mul_of_nonneg_left hg (sq_nonneg γ)
-  nlinarith only [hh]
+  nlinarith
 
 /-- The retained rooted zero mass bounds the local annular mass at charge `α₁+γ/2`. -/
 theorem reflected_retainedZero_rooted_freezing_lower (γ α₁ α₂ α₃ r : ℝ)
@@ -64,8 +61,8 @@ theorem reflected_retainedZero_rooted_freezing_lower (γ α₁ α₂ α₃ r : �
   have hpoint (x : ℂ) (hx : x ∈ E) :
       ENNReal.ofReal c * ENNReal.ofReal (‖x‖ ^ (-(γ * (α₁ + γ / 2)))) ≤
         d x * coulombWeight γ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ x := by
-    have hn : 0 < ‖x‖ := hr.trans hx.1
-    have hx0 : x ≠ 0 := norm_pos_iff.mp hn
+    have hn  := hr.trans hx.1
+    have hx0  := norm_pos_iff.mp hn
     have hx1 : x ≠ 1 := by
       intro he
       have hh := hx.2

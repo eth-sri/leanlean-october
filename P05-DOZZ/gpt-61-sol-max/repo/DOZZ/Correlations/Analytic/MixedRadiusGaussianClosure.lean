@@ -8,7 +8,7 @@ public import DOZZ.GMC.Construction.GMCVertexTiltInputs
 
 /-! Gaussian closure for inward and outward vertices at different circle radii. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -20,7 +20,7 @@ theorem gaussianL2Limit_add {Ω : Type*} [MeasurableSpace Ω]
     IsGaussianL2Limit P X (fun ω => L ω + K ω) := by
   obtain ⟨hmL, f, hf⟩ := hL
   obtain ⟨hmK, g, hg⟩ := hK
-  refine ⟨by simpa only [Pi.add_def] using hmL.add hmK, (fun n => f n + g n), ?_⟩
+  refine ⟨by exact hmL.add hmK, (fun n => f n + g n), ?_⟩
   have he n : (fun ω => L ω + K ω - X ω (f n + g n)) =
       (fun ω => L ω - X ω (f n)) + (fun ω => K ω - X ω (g n)) := by
     funext ω
@@ -34,9 +34,7 @@ theorem gaussianL2Limit_add {Ω : Type*} [MeasurableSpace Ω]
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds ht
     (fun _ => zero_le)
   intro n
-  change eLpNorm (fun ω => L ω + K ω - X ω (f n + g n)) 2 P ≤ _
-  rw [he]
-  exact hb n
+  simp_all
 
 /-- Any finite sum of Gaussian closure variables remains in that closure. -/
 theorem isGaussianL2Limit_finset_sum {Ω I : Type*} [MeasurableSpace Ω]
@@ -47,12 +45,7 @@ theorem isGaussianL2Limit_finset_sum {Ω I : Type*} [MeasurableSpace Ω]
   induction S using Finset.induction_on with
   | empty =>
     refine ⟨by simp, (fun _ => 0), ?_⟩
-    have he : (fun ω => (∑ i ∈ (∅ : Finset I), L i ω) - X ω (0 : TestFn)) =
-        (0 : Ω → ℝ) := by
-      funext ω
-      simp
-    simp only [he, eLpNorm_zero]
-    exact tendsto_const_nhds
+    simp_all
   | @insert i S hi ih =>
     have hiL := hL i (Finset.mem_insert_self _ _)
     have hSL := ih (fun j hj => hL j (Finset.mem_insert_of_mem hj))

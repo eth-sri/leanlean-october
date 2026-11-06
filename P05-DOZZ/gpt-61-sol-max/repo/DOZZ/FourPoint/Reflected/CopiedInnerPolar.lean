@@ -6,8 +6,9 @@ module
 public import DOZZ.FourPoint.Reflected.InnerPolar
 public import DOZZ.FourPoint.Reflected.GlobalReinsertion
 import Mathlib.Tactic
+import Mathlib.Tactic
 /-! The copied spatial inner mass has the actual unweighted lateral polar projection. -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -31,10 +32,7 @@ theorem reflected_reinserted_lateral_projection (γ : ℝ) (A : TwoSidedPath)
       (N.withDensity (lateralRadialWeight γ A)).withDensity
         (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ A x)) := by
     rw [← withDensity_mul N hW hL, ← withDensity_mul N hL hW]
-    congr 1
-    funext x
-    exact mul_comm (ENNReal.ofReal (reflected_global_reinsertionWeight γ A x))
-      (lateralRadialWeight γ A x)
+    ring
   change ((N.withDensity (fun x => ENNReal.ofReal
     (reflected_global_reinsertionWeight γ A x))).withDensity
       (lateralRadialWeight γ A)).map _ = _
@@ -75,14 +73,7 @@ theorem reflected_removed_carrier_projection
   filter_upwards [heq] with ω hω
   rw [hω]
   constructor
-  · rw [withDensity_apply _ (measurableSet_singleton (0 : ℂ))]
-    calc
-      (∫⁻ x in ({0} : Set ℂ), lateralRadialWeight γ (A ω) x ∂M ω) =
-          ∫⁻ x in ({0} : Set ℂ), (0 : ℝ≥0∞) ∂M ω := by
-        apply setLIntegral_congr_fun (measurableSet_singleton (0 : ℂ))
-        intro x hx
-        rw [mem_singleton_iff.mp hx, lateralRadialWeight_zero]
-      _ = 0 := lintegral_zero
+  · exact originRadialRemovedGMC_origin γ (A ω) (M ω)
   · rfl
 
 /-- Independently reinserted inner masses restart against the translated actual source lateral

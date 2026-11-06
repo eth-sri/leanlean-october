@@ -9,7 +9,7 @@ public import DOZZ.GMC.CirclePotential
 
 /-! Exponential decay and exact charge degree of the equator correction. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 

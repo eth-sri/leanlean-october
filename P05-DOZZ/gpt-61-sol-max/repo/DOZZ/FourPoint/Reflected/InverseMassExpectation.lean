@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Reflected.DecorrelationError
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
 /-! Signed expectations of extended-real inverse-mass increments. -/
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs

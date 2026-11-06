@@ -36,10 +36,11 @@ theorem dual_normalized_norm_sq_littleO (F : ℂ → ℂ)
   exact (isComplexLittleOAtZero_ofReal_iff κ (fun z => ‖F z‖ ^ 2 - 1)).mp
     (isComplexLittleOAtZero_of_norm_le_power hκ hb)
 
+variable {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H) (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ))
+
+include H hH a b c hc in
 /-- The characterized principal Gauss continuation is differentiable and normalized at zero. -/
-theorem dual_gauss_regular_origin {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-    (hH : IsGaussHypergeometricFamily H) (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+theorem dual_gauss_regular_origin  :
     DifferentiableAt ℂ (H a b c) 0 ∧ H a b c 0 = 1 := by
   have hchar := hH a b c hc
   have hopen : IsOpen {z : ℂ | z.re < 1} := isOpen_lt Complex.continuous_re continuous_const
@@ -50,10 +51,9 @@ theorem dual_gauss_regular_origin {H : ℂ → ℂ → ℂ → ℂ → ℂ}
   refine ⟨hchar.1.differentiableAt hmem, ?_⟩
   simpa only [ordinaryHypergeometric_zero] using hchar.2 0 (by norm_num)
 
+include H hH a b c hc in
 /-- The actual first Gauss basis has its required sublinear squared-norm remainder. -/
-theorem dual_gauss_norm_sq_littleO {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-    (hH : IsGaussHypergeometricFamily H) (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) (κ : ℝ) (hκ : κ < 1) :
+theorem dual_gauss_norm_sq_littleO  (κ : ℝ) (hκ : κ < 1) :
     Tendsto (fun z : ℂ => (‖gaussFMinus H a b c z‖ ^ 2 - 1) / ‖z‖ ^ κ)
       (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) := by
   obtain ⟨hd, hz⟩ := dual_gauss_regular_origin hH a b c hc
@@ -73,7 +73,7 @@ theorem dual_gauss_plus_norm_sq_ratio {H : ℂ → ℂ → ℂ → ℂ → ℂ}
   have hnorm := hseed.norm.pow 2
   have ht : Tendsto (fun t : ℝ => ‖H (a - c + 1) (b - c + 1) (2 - c) (t : ℂ)‖ ^ 2)
       (nhdsWithin 0 (Ioi 0)) (nhds 1) := by
-    simpa only [Function.comp_def, norm_one, one_pow] using hnorm
+    simp_all
   apply ht.congr'
   filter_upwards [self_mem_nhdsWithin] with t ht0
   unfold gaussFPlus

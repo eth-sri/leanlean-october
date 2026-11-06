@@ -8,7 +8,7 @@ public import DOZZ.Statements.Defs.Q
 
 /-! Algebra behind the weighted local-moment threshold and annular summability exponent. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 

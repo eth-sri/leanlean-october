@@ -9,7 +9,7 @@ public import Mathlib.MeasureTheory.Measure.Continuity
 
 /-! Compact cutoffs exhaust the finite equator GMC reference measure. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Set
 open scoped Topology ENNReal
@@ -22,15 +22,14 @@ theorem gmcReferenceMeasure_compl_closedBall_tendsto_zero :
       atTop (𝓝 0) := by
   let S : ℕ → Set ℂ := fun n => (Metric.closedBall (0 : ℂ) n)ᶜ
   have hmeas (n : ℕ) : NullMeasurableSet (S n) gmcReferenceMeasure := by
-    exact ((Metric.isClosed_closedBall (x := (0 : ℂ)) (ε := (n : ℝ))).measurableSet.compl).nullMeasurableSet
+    measurability
   have hanti : Antitone S := by
     intro n m hnm x hx
-    have hx' : x ∉ Metric.closedBall (0 : ℂ) m := hx
+    have hx'  := hx
     intro hxclosed
     apply hx'
     apply Metric.mem_closedBall.mpr
-    have hdist : dist x (0 : ℂ) ≤ (n : ℝ) := by
-      simpa [Metric.mem_closedBall] using hxclosed
+    have hdist : dist x (0 : ℂ) ≤ (n : ℝ) := hxclosed
     exact hdist.trans (by exact_mod_cast hnm)
   have hempty : (⋂ n, S n) = ∅ := by
     ext x
@@ -41,8 +40,7 @@ theorem gmcReferenceMeasure_compl_closedBall_tendsto_zero :
         apply Metric.mem_closedBall.mpr
         simpa [dist_zero_right] using hn.le
       exact False.elim ((Set.mem_iInter.mp hx n) hball)
-    · intro hx
-      exact False.elim (Set.notMem_empty x hx)
+    simp_all
   have hfinite : ∃ n, gmcReferenceMeasure (S n) ≠ ∞ := by
     refine ⟨0, ?_⟩
     apply ne_of_lt

@@ -14,7 +14,7 @@ and log-Lipschitz in `x` uniformly in `y`. The limit-region kernel
 kept at distance `δ` from the limit region it is differentiable and Lipschitz in `x` with a
 constant independent of `y`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
@@ -47,9 +47,7 @@ theorem bpzLam_le (r : ℝ) (w : ℂ) : bpzLam r w ≤ r := by
     intervalIntegral.integral_mono_on hpi.le (hcont.intervalIntegrable _ _)
       intervalIntegrable_const fun θ _ => bpzTruncLog_le r _
   rw [intervalIntegral.integral_const, smul_eq_mul, sub_zero] at hle
-  calc (2 * Real.pi)⁻¹ * ∫ θ in (0 : ℝ)..2 * Real.pi, _ ≤ (2 * Real.pi)⁻¹ * (2 * Real.pi * r) :=
-        mul_le_mul_of_nonneg_left hle (by positivity)
-    _ = r := by field_simp
+  exact (inv_mul_le_iff₀ hpi).mpr hle
 
 theorem bpz_abs_exp_sub_exp_le (a b : ℝ) :
     |Real.exp a - Real.exp b| ≤ Real.exp (max a b) * |a - b| := by
@@ -65,31 +63,32 @@ theorem bpz_abs_exp_sub_exp_le (a b : ℝ) :
   have hb := Real.exp_pos b
   nlinarith
 
+variable (γ r : ℝ)
+
+include γ r in
 /-- The cutoff-region kernel is differentiable off the diagonal. -/
-theorem hasFDerivAt_bpzCutRootKernel (γ r : ℝ) {x y : ℂ} (hxy : x ≠ y) :
+theorem hasFDerivAt_bpzCutRootKernel  {x y : ℂ} (hxy : x ≠ y) :
     HasFDerivAt (fun x' => bpzCutRootKernel γ r x' y)
       ((bpzCutRootKernel γ r x y * γ ^ 2) • bpzLamDeriv r (x - y)) x := by
   have hΛ : HasFDerivAt (fun x' => bpzLam r (x' - y)) (bpzLamDeriv r (x - y)) x := by
     have h1 := hasFDerivAt_bpzLam r (sub_ne_zero.mpr hxy)
-    have h2 : HasFDerivAt (fun x' : ℂ => x' - y) (ContinuousLinearMap.id ℝ ℂ) x :=
-      (hasFDerivAt_id x).sub_const y
-    simpa [Function.comp_def] using h1.comp x h2
+    exact (hasFDerivAt_comp_sub y).mpr h1
   have hin : HasFDerivAt (fun x' => γ ^ 2 * (bpzLam r (x' - y) + bpzPin r y))
       (γ ^ 2 • bpzLamDeriv r (x - y)) x := by
-    have := (hΛ.add_const (bpzPin r y)).const_mul (γ ^ 2)
-    simpa using this
+    fun_prop (disch := positivity)
   have hexp := hin.exp
   unfold bpzCutRootKernel
   convert hexp using 1
   rw [smul_smul]
 
 
+include γ r in
 /-- The Lipschitz bound of the cutoff-region kernel in the root. -/
-theorem abs_bpzCutRootKernel_sub_le (γ r : ℝ) (x x' y : ℂ) :
+theorem abs_bpzCutRootKernel_sub_le  (x x' y : ℂ) :
     |bpzCutRootKernel γ r x y - bpzCutRootKernel γ r x' y| ≤
       γ ^ 2 * Real.exp (γ ^ 2 * r) * Real.exp (γ ^ 2 * bpzPin r y) * Real.exp r * ‖x - x'‖ := by
   unfold bpzCutRootKernel
-  have hγ : 0 ≤ γ ^ 2 := sq_nonneg γ
+  have hγ  := sq_nonneg γ
   set a := γ ^ 2 * (bpzLam r (x - y) + bpzPin r y)
   set b := γ ^ 2 * (bpzLam r (x' - y) + bpzPin r y)
   have hmax : max a b ≤ γ ^ 2 * r + γ ^ 2 * bpzPin r y := by
@@ -112,56 +111,53 @@ theorem bpzTruncLog_eq_of_le (r : ℝ) {w : ℂ} (hw : Real.exp (-r) ≤ ‖w‖
     bpzTruncLog r w = -Real.log ‖w‖ := by
   simp only [bpzTruncLog, max_eq_right hw]
 
+include γ r
 /-- Away from the truncation radius the limit-region kernel is an explicit power. -/
-theorem bpzLimRootKernel_eq (γ r : ℝ) {x y : ℂ} (hxy : Real.exp (-r) ≤ ‖x - y‖) :
+theorem bpzLimRootKernel_eq  {x y : ℂ} (hxy : Real.exp (-r) ≤ ‖x - y‖) :
     bpzLimRootKernel γ r x y = (normPlus y / ‖x - y‖) ^ (γ ^ 2) := by
-  have hpos : 0 < ‖x - y‖ := lt_of_lt_of_le (Real.exp_pos _) hxy
+  have hpos  := lt_of_lt_of_le (Real.exp_pos _) hxy
   unfold bpzLimRootKernel
   rw [bpzTruncLog_eq_of_le r hxy, Real.rpow_def_of_pos (div_pos (bpz_normPlus_pos y) hpos),
     Real.log_div (bpz_normPlus_pos y).ne' hpos.ne']
   congr 1
   ring
 
+
 /-- The limit-region kernel is differentiable off the truncation circle. -/
-theorem hasFDerivAt_bpzLimRootKernel (γ r : ℝ) {x y : ℂ} (hxy : ‖x - y‖ ≠ Real.exp (-r)) :
+theorem hasFDerivAt_bpzLimRootKernel  {x y : ℂ} (hxy : ‖x - y‖ ≠ Real.exp (-r)) :
     HasFDerivAt (fun x' => bpzLimRootKernel γ r x' y)
       ((bpzLimRootKernel γ r x y * γ ^ 2) • bpzTruncLogDeriv r (x - y)) x := by
   have hT : HasFDerivAt (fun x' => bpzTruncLog r (x' - y)) (bpzTruncLogDeriv r (x - y)) x := by
     have h1 := hasFDerivAt_bpzTruncLog r hxy
-    have h2 : HasFDerivAt (fun x' : ℂ => x' - y) (ContinuousLinearMap.id ℝ ℂ) x :=
-      (hasFDerivAt_id x).sub_const y
-    simpa [Function.comp_def] using h1.comp x h2
+    exact (hasFDerivAt_comp_sub y).mpr h1
   have hin : HasFDerivAt (fun x' => γ ^ 2 * (bpzTruncLog r (x' - y) + Real.log (normPlus y)))
       (γ ^ 2 • bpzTruncLogDeriv r (x - y)) x := by
-    have := (hT.add_const (Real.log (normPlus y))).const_mul (γ ^ 2)
-    simpa using this
+    fun_prop (disch := positivity)
   have hexp := hin.exp
   unfold bpzLimRootKernel
   convert hexp using 1
   rw [smul_smul]
 
+
 /-- Upper bound of the limit-region kernel on a separated bounded region. -/
-theorem bpzLimRootKernel_le (γ r : ℝ) {δ R : ℝ} (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ)
+theorem bpzLimRootKernel_le  {δ R : ℝ} (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ)
     {x y : ℂ} (hx : ‖x‖ ≤ R) (hxy : δ ≤ ‖x - y‖) :
     bpzLimRootKernel γ r x y ≤ (1 + (1 + R) / δ) ^ (γ ^ 2) := by
-  have hpos : 0 < ‖x - y‖ := lt_of_lt_of_le hδ hxy
+  have hpos  := lt_of_lt_of_le hδ hxy
   rw [bpzLimRootKernel_eq γ r (le_trans hδr hxy)]
-  have hR : 0 ≤ R := le_trans (norm_nonneg x) hx
+  have hR  := le_trans (norm_nonneg x) hx
   have hny : normPlus y ≤ 1 + R + ‖x - y‖ := by
     unfold normPlus
     have := norm_le_norm_add_norm_sub' y x
     rw [norm_sub_rev] at this
-    apply max_le <;> linarith [norm_nonneg (x - y)]
+    grind
   have hratio : normPlus y / ‖x - y‖ ≤ 1 + (1 + R) / δ := by
-    rw [div_le_iff₀ hpos]
-    have h1 : (1 + R) ≤ (1 + R) / δ * ‖x - y‖ := by
-      rw [div_mul_eq_mul_div, le_div_iff₀ hδ]
-      exact mul_le_mul_of_nonneg_left hxy (by linarith)
-    nlinarith
+    field_simp <;> nlinarith
   exact Real.rpow_le_rpow (div_nonneg (bpz_normPlus_pos y).le hpos.le) hratio (sq_nonneg γ)
 
+
 /-- Lipschitz bound of the limit-region kernel in the root on a separated bounded region. -/
-theorem abs_bpzLimRootKernel_sub_le (γ r : ℝ) {δ R : ℝ} (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ)
+theorem abs_bpzLimRootKernel_sub_le  {δ R : ℝ} (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ)
     {x x' y : ℂ} (hx : ‖x‖ ≤ R) (hx' : ‖x'‖ ≤ R) (hxy : δ ≤ ‖x - y‖) (hxy' : δ ≤ ‖x' - y‖) :
     |bpzLimRootKernel γ r x y - bpzLimRootKernel γ r x' y| ≤
       (1 + (1 + R) / δ) ^ (γ ^ 2) * (γ ^ 2 / δ) * ‖x - x'‖ := by
@@ -177,7 +173,7 @@ theorem abs_bpzLimRootKernel_sub_le (γ r : ℝ) {δ R : ℝ} (hδ : 0 < δ) (h�
     have hl := CirclePotential.abs_log_sub_log_le hδ hxy hxy'
     have hd : |‖x - y‖ - ‖x' - y‖| ≤ ‖x - x'‖ := by
       have := abs_norm_sub_norm_le (x - y) (x' - y)
-      rwa [show x - y - (x' - y) = x - x' by ring] at this
+      simp_all
     have : a - b = γ ^ 2 * (Real.log ‖x' - y‖ - Real.log ‖x - y‖) := by
       simp only [a, b, bpzTruncLog_eq_of_le r (le_trans hδr hxy),
         bpzTruncLog_eq_of_le r (le_trans hδr hxy')]
@@ -192,21 +188,24 @@ theorem abs_bpzLimRootKernel_sub_le (γ r : ℝ) {δ R : ℝ} (hδ : 0 < δ) (h�
     _ ≤ Real.exp (max a b) * |a - b| := bpz_abs_exp_sub_exp_le a b
     _ ≤ (1 + (1 + R) / δ) ^ (γ ^ 2) * (γ ^ 2 / δ * ‖x - x'‖) :=
         mul_le_mul hmax hab (abs_nonneg _) (Real.rpow_nonneg (by
-          have hR : 0 ≤ R := le_trans (norm_nonneg x) hx
+          have hR  := le_trans (norm_nonneg x) hx
           positivity) _)
     _ = _ := by ring
 
 
 
 
-theorem bpzCutRootKernel_pos (γ r : ℝ) (x y : ℂ) : 0 < bpzCutRootKernel γ r x y :=
+
+theorem bpzCutRootKernel_pos  (x y : ℂ) : 0 < bpzCutRootKernel γ r x y :=
   Real.exp_pos _
 
-theorem bpzLimRootKernel_pos (γ r : ℝ) (x y : ℂ) : 0 < bpzLimRootKernel γ r x y :=
+
+theorem bpzLimRootKernel_pos  (x y : ℂ) : 0 < bpzLimRootKernel γ r x y :=
   Real.exp_pos _
+
 
 /-- The cutoff-region kernel is log-Lipschitz in the root. -/
-theorem abs_log_bpzCutRootKernel_sub_le (γ r : ℝ) (y x x' : ℂ) :
+theorem abs_log_bpzCutRootKernel_sub_le  (y x x' : ℂ) :
     |Real.log (bpzCutRootKernel γ r x y) - Real.log (bpzCutRootKernel γ r x' y)| ≤
       γ ^ 2 * Real.exp r * ‖x - x'‖ := by
   unfold bpzCutRootKernel
@@ -218,8 +217,9 @@ theorem abs_log_bpzCutRootKernel_sub_le (γ r : ℝ) (y x x' : ℂ) :
     abs_of_nonneg (sq_nonneg γ), mul_assoc]
   exact mul_le_mul_of_nonneg_left h (sq_nonneg γ)
 
+
 /-- The limit-region kernel is log-Lipschitz in the root on a separated region. -/
-theorem abs_log_bpzLimRootKernel_sub_le (γ r : ℝ) {δ : ℝ} (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ)
+theorem abs_log_bpzLimRootKernel_sub_le  {δ : ℝ} (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ)
     {x x' y : ℂ} (hxy : δ ≤ ‖x - y‖) (hxy' : δ ≤ ‖x' - y‖) :
     |Real.log (bpzLimRootKernel γ r x y) - Real.log (bpzLimRootKernel γ r x' y)| ≤
       γ ^ 2 / δ * ‖x - x'‖ := by
@@ -229,7 +229,7 @@ theorem abs_log_bpzLimRootKernel_sub_le (γ r : ℝ) {δ : ℝ} (hδ : 0 < δ) (
   have hl := CirclePotential.abs_log_sub_log_le hδ hxy hxy'
   have hd : |‖x - y‖ - ‖x' - y‖| ≤ ‖x - x'‖ := by
     have := abs_norm_sub_norm_le (x - y) (x' - y)
-    rwa [show x - y - (x' - y) = x - x' by ring] at this
+    simp_all
   rw [show γ ^ 2 * (-Real.log ‖x - y‖ + Real.log (normPlus y)) -
       γ ^ 2 * (-Real.log ‖x' - y‖ + Real.log (normPlus y)) =
       -(γ ^ 2 * (Real.log ‖x - y‖ - Real.log ‖x' - y‖)) by ring, abs_neg, abs_mul,
@@ -238,5 +238,7 @@ theorem abs_log_bpzLimRootKernel_sub_le (γ r : ℝ) {δ : ℝ} (hδ : 0 < δ) (
         gcongr
         exact hl.trans (div_le_div_of_nonneg_right hd hδ.le)
     _ = γ ^ 2 / δ * ‖x - x'‖ := by ring
+omit γ r
+
 
 end DOZZ.Proofs

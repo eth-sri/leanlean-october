@@ -31,19 +31,22 @@ noncomputable def radialSkeletonLastSplit (n : ℕ) :
 theorem radialSkeletonLastSplit_measurePreserving (n : ℕ) :
     MeasurePreserving (radialSkeletonLastSplit n) := by
   have hswap : MeasurePreserving (Prod.swap : ℝ × (Fin n → ℝ) → (Fin n → ℝ) × ℝ) := by
-    simpa only [Measure.volume_eq_prod] using
-      (Measure.measurePreserving_swap (μ := (volume : Measure ℝ)) (ν := (volume : Measure (Fin n → ℝ))))
+    exact (Measure.measurePreserving_swap (μ := (volume : Measure ℝ)) (ν := (volume : Measure (Fin n → ℝ))))
   exact hswap.comp (volume_preserving_piFinSuccAbove (fun _ : Fin (n + 1) => ℝ) (Fin.last n))
 
+variable (n : ℕ) (x : Fin (n + 1) → ℝ)
+
+include n x in
 /-- Its initial block is the actual `Fin.init`, without reordering observations. -/
-theorem radialSkeletonLastSplit_fst (n : ℕ) (x : Fin (n + 1) → ℝ) :
+theorem radialSkeletonLastSplit_fst  :
     (radialSkeletonLastSplit n x).1 = Fin.init x := by
   funext i
   simp [radialSkeletonLastSplit]
   rfl
 
+include n x in
 /-- Its final coordinate is the actual last observation. -/
-theorem radialSkeletonLastSplit_snd (n : ℕ) (x : Fin (n + 1) → ℝ) :
+theorem radialSkeletonLastSplit_snd  :
     (radialSkeletonLastSplit n x).2 = x (Fin.last n) := rfl
 
 /-- The literal finite-dimensional density measure in positive coordinates. -/
@@ -67,8 +70,11 @@ theorem conditionedPositiveFDDDensity_last_split (a : ℝ) (n : ℕ)
   simp only [conditionedPositiveTimeChainDensity, mul_one]
   rfl
 
+variable (a : ℝ) (ha : 0 ≤ a)
+
+include a ha in
 /-- Last-coordinate factorization retains the `max 0` convention exactly. -/
-theorem conditionedPositiveFDDVectorDensity_last_split (a : ℝ) (ha : 0 ≤ a) (n : ℕ)
+theorem conditionedPositiveFDDVectorDensity_last_split  (n : ℕ)
     (times x : Fin (n + 2) → ℝ) :
     conditionedPositiveFDDVectorDensity a times x =
       conditionedPositiveFDDVectorDensity a (Fin.init times) (Fin.init x) *
@@ -114,8 +120,9 @@ theorem radialSkeletonTransitionDensityKernel_lintegral (a dt x : ℝ) (F : ℝ 
   intro y
   exact mul_comm _ _
 
+include a ha in
 /-- Transporting a literal FDD through the last split gives the explicit product-density measure. -/
-theorem radialSkeletonDensityMeasure_last_split (a : ℝ) (ha : 0 ≤ a) (n : ℕ)
+theorem radialSkeletonDensityMeasure_last_split  (n : ℕ)
     (times : Fin (n + 2) → ℝ) :
     (radialSkeletonDensityMeasure a times).map (radialSkeletonLastSplit (n + 1)) =
       (volume : Measure ((Fin (n + 1) → ℝ) × ℝ)).withDensity (fun p =>
@@ -135,8 +142,9 @@ theorem radialSkeletonDensityMeasure_last_split (a : ℝ) (ha : 0 ≤ a) (n : �
   change p.1 (Fin.last n) = (radialSkeletonLastSplit (n + 1)).symm p ((Fin.last n).castSucc) at hv
   rw [← hf, ← hs, ← hv]
 
+include a ha in
 /-- The final FDD factor is an actual composition-product with the literal transition-density kernel. -/
-theorem radialSkeletonDensityMeasure_last_compProd (a : ℝ) (ha : 0 ≤ a) (n : ℕ)
+theorem radialSkeletonDensityMeasure_last_compProd  (n : ℕ)
     (times : Fin (n + 2) → ℝ) :
     (radialSkeletonDensityMeasure a times).map (radialSkeletonLastSplit (n + 1)) =
       (radialSkeletonDensityMeasure a (Fin.init times)) ⊗ₘ
@@ -197,8 +205,9 @@ theorem wienerRadial_samples_next_density_joint_map {n : ℕ} (times : Fin (n + 
       hF.comp (measurable_const.prodMk measurable_id))]
   simp only [wienerRadialSamples, hlast]
 
+include a ha in
 /-- A one-coordinate FDD is exactly the literal entrance measure. -/
-theorem radialSkeletonDensityMeasure_one_map (a : ℝ) (ha : 0 ≤ a) (times : Fin 1 → ℝ)
+theorem radialSkeletonDensityMeasure_one_map  (times : Fin 1 → ℝ)
     (ht : 0 < times 0) :
     (radialSkeletonDensityMeasure a times).map (MeasurableEquiv.funUnique (Fin 1) ℝ) =
       conditionedPositiveEntranceMeasure a (times 0) := by
@@ -212,8 +221,7 @@ theorem radialSkeletonDensityMeasure_one_map (a : ℝ) (ha : 0 ≤ a) (times : F
     (List.ofFn ((MeasurableEquiv.funUnique (Fin 1) ℝ).symm y)))) = _
   simp only [List.ofFn_succ, List.ofFn_zero, conditionedPositiveFDDDensity,
     conditionedPositiveTimeChainDensity, mul_one]
-  change ENNReal.ofReal (max 0 (conditionedPositiveEntranceDensity a (times 0) y)) = _
-  rw [max_eq_right hn]
+  simp_all
 
 /-- The actual Wiener radial skeleton has the full exact zero-drift FDD density. -/
 theorem wienerRadialSamples_zeroDrift_fdd : ∀ (n : ℕ) (times : Fin (n + 1) → ℝ≥0),
@@ -235,11 +243,11 @@ theorem wienerRadialSamples_zeroDrift_fdd : ∀ (n : ℕ) (times : Fin (n + 1) �
     let s := times ((Fin.last n).castSucc)
     let dt := times (Fin.last (n + 1)) - s
     have hlastlt : s < times (Fin.last (n + 1)) := hmono (Fin.castSucc_lt_last _)
-    have hdt : 0 < dt := tsub_pos_iff_lt.mpr hlastlt
+    have hdt  := tsub_pos_iff_lt.mpr hlastlt
     have hs : 0 < s := hpos _
-    have hsum : s + dt = times (Fin.last (n + 1)) := add_tsub_cancel_of_le hlastlt.le
-    have hpast : ∀ i, past i ≤ s := fun i => hmono.monotone (Fin.strictMono_castSucc.monotone (Fin.le_last i))
-    have hmonoPast : StrictMono past := hmono.comp Fin.strictMono_castSucc
+    have hsum  := add_tsub_cancel_of_le hlastlt.le
+    have hpast  := fun i => hmono.monotone (Fin.strictMono_castSucc.monotone (Fin.le_last i))
+    have hmonoPast  := hmono.comp Fin.strictMono_castSucc
     have hprev := ih past (fun i => hpos i.castSucc) hmonoPast
     let e := radialSkeletonLastSplit (n + 1)
     apply e.measurableEmbedding.map_injective
@@ -250,12 +258,11 @@ theorem wienerRadialSamples_zeroDrift_fdd : ∀ (n : ℕ) (times : Fin (n + 1) �
       apply Prod.ext
       · rw [radialSkeletonLastSplit_fst]
         rfl
-      · rw [radialSkeletonLastSplit_snd, hsum]
-        rfl
+      continuity
     change wienerTripleMeasure.map (fun V => e (wienerRadialSamples times V)) = _
     rw [heval, wienerRadial_samples_next_density_joint_map past s hs hpast rfl dt hdt, hprev,
       radialSkeletonDensityMeasure_last_compProd 0 (le_refl 0) n]
-    have hcoe : (dt : ℝ) = (times (Fin.last (n + 1)) : ℝ) - (s : ℝ) :=
+    have hcoe  :=
       NNReal.coe_sub hlastlt.le
     rw [hcoe]
     rfl
@@ -275,8 +282,7 @@ theorem radialSkeletonDensityMeasure_map_neg (a : ℝ) {n : ℕ} (times : Fin n 
   change ENNReal.ofReal (max 0 (conditionedPositiveFDDDensity a (List.ofFn times)
     (List.ofFn fun i => -x i))) = _
   have h := negativeConditionedFDDDensity_reflect a (List.ofFn times) (List.ofFn fun i => -x i)
-  simp only [List.map_ofFn, Function.comp_def, neg_neg] at h
-  rw [← h]
+  continuity
 
 /-- Actual nonnegative tests of every zero-drift Wiener radial skeleton use the density
 `conditionedPositiveFDDVectorDensity`. -/

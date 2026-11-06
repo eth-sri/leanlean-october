@@ -24,8 +24,7 @@ noncomputable def boundedPinCoefficient (z : ℂ) : BoundedContinuousFunction �
         (fun _ => by positivity)).sub continuous_const |>.div_const v))) b (fun x => by
       rw [Real.norm_eq_abs]
       apply abs_le.mpr
-      have hb : 0 ≤ b := by dsimp [b]; positivity
-      exact ⟨le_max_left _ _, max_le (by linarith) (min_le_left _ _)⟩)
+      continuity)
 
 /-- On the full closed unit disk this is exactly the local regression coefficient. -/
 theorem bounded_pin_coefficient_eq (z x : ℂ) (hz : 2 ≤ ‖z‖) (hx : ‖x‖ ≤ 1) :
@@ -36,7 +35,7 @@ theorem bounded_pin_coefficient_eq (z x : ℂ) (hz : 2 ≤ ‖z‖) (hx : ‖x�
     simp only [sub_add_cancel_left, norm_neg] at h
     linarith
   have hc := local_pin_coefficient_bound z x hz hx
-  have hcb : |localPinCoefficient z x| ≤ 1 / (2 * Real.log ‖z‖) :=
+  have hcb  :=
     hc.trans (div_le_div_of_nonneg_right hx hv.le)
   have hleft := (abs_le.mp hcb).1
   have hright := (abs_le.mp hcb).2
@@ -44,7 +43,7 @@ theorem bounded_pin_coefficient_eq (z x : ℂ) (hz : 2 ≤ ‖z‖) (hx : ‖x�
     (min (1 / |2 * Real.log ‖z‖|)
       ((Real.log (normPlus (z+x))-Real.log ‖z‖)/(2 * Real.log ‖z‖))) = _
   rw [abs_of_pos hv, show normPlus (z+x) = ‖z+x‖ by
-    unfold normPlus; exact max_eq_right hnorm]
+    exact max_eq_right hnorm]
   change max (-(1 / (2 * Real.log ‖z‖)))
     (min (1 / (2 * Real.log ‖z‖)) (localPinCoefficient z x)) = _
   rw [min_eq_right hright, max_eq_right hleft]

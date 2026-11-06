@@ -5,7 +5,7 @@ public import DOZZ.GMC.Moments.WeightedCutoffAllOrders
 
 /-! # Exact small-ball scale bounds uniform in the coupling and moment order -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
@@ -33,12 +33,12 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
   let R₀ : ℝ := 1 / 8
   let Csmall : ℝ≥0∞ := 1 + Cref
   let A : ℝ≥0∞ := Csmall
-  have hCsmall : Csmall < ⊤ := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hCref⟩
+  have hCsmall  := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hCref⟩
   have hCsmallOne : 1 ≤ Csmall := le_add_of_nonneg_right (by positivity)
-  have hCsmallA : Csmall ≤ A := le_rfl
+  
   refine ⟨A, hCsmall, ?_⟩
   intro γ hγ p hp hpq z R δ hR hRsmall hδ hδR hchart
-  have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
+  have hp0  := lt_of_lt_of_le zero_lt_one hp
   let beta : ℝ := (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p
   let t : ℝ := Real.log (1 / δ)
   have hR₀pos : 0 < R₀ := by norm_num [R₀]
@@ -48,27 +48,17 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
     rw [Real.exp_neg, Real.exp_log (by positivity)]
     field_simp
   have hratio : δ * (R₀ / R) ≤ R₀ := by
-    have hmul := mul_le_mul_of_nonneg_right hδR (div_nonneg (le_of_lt hR₀pos) hR.le)
-    calc
-      δ * (R₀ / R) ≤ R * (R₀ / R) := hmul
-      _ = R₀ := by field_simp [ne_of_gt hR]
+    field_simp <;> nlinarith
   have hbase : R₀ + Real.exp (-t) * (R₀ / R) ≤ 1 := by
-    rw [hδeq]
-    calc
-      R₀ + δ * (R₀ / R) ≤ R₀ + R₀ := by
-        simpa [add_comm] using add_le_add_left hratio R₀
-      _ ≤ 1 := by norm_num [R₀]
+    nlinarith
   have htarget : ‖z‖ + R + Real.exp (-t) ≤ 1 := by
     rw [hδeq]
     linarith [hchart, hδR]
   have htbase : 0 ≤ t + Real.log (R / R₀) := by
     have hquot : 1 ≤ R / (δ * R₀) := by
       apply (le_div_iff₀ (mul_pos hδ hR₀pos)).2
-      have hδR₀ : δ * R₀ ≤ R * R₀ :=
-        mul_le_mul_of_nonneg_right hδR (le_of_lt hR₀pos)
-      have hR₀le : R * R₀ ≤ R := by nlinarith [hRsmall]
-      simpa using hδR₀.trans hR₀le
-    have hlog : 0 ≤ Real.log (R / (δ * R₀)) := Real.log_nonneg hquot
+      grind
+    have hlog  := Real.log_nonneg hquot
     have hlogmul : Real.log (R / (δ * R₀)) = t + Real.log (R / R₀) := by
       have hmul : (1 / δ) * (R / R₀) = R / (δ * R₀) := by
         field_simp [ne_of_gt hδ, ne_of_gt hR₀pos]
@@ -77,8 +67,7 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
     exact hlog
   let massQ : Ω → ℝ≥0∞ := fun ω =>
     regularizedGMC P Xc γ (t + Real.log (R / R₀)) ω (Metric.ball 0 R₀)
-  have hmassQ : AEMeasurable massQ P := by
-    exact regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
+  have hmassQ  := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
       (t + Real.log (R / R₀)) (Metric.ball 0 R₀) Metric.isOpen_ball.measurableSet
   have hqbound := hRef γ hγ (t + Real.log (R / R₀)) htbase
   have hRefp : (∫⁻ ω, ENNReal.rpow (massQ ω) p ∂P) ≤ Csmall := by
@@ -94,11 +83,10 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
           (Metric.ball 0 R₀) q = _
         rw [hX.1.measure_univ]
       _ ≤ Csmall := by
-        dsimp [Csmall]
-        simpa [add_comm, gmcMassMoment, R₀] using add_le_add_left hqbound 1
+        bound
   have hRefpMass : gmcMassMoment P
       (regularizedGMC P Xc γ (t + Real.log (R / R₀))) (Metric.ball 0 R₀) p ≤ Csmall := by
-    simpa [gmcMassMoment, massQ] using hRefp
+    exact hRefp
   have hscale := regularizedGMC_local_ball_moment_scale P X hX γ Xc hXc z
     (s := R) (R := R₀) (t := t) hR hRsmall hR₀pos hR₀one
     (by linarith [hchart]) hbase htarget p
@@ -139,10 +127,6 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_small_chart
       _ ≤ Csmall * ENNReal.ofReal ((R / R₀) ^ beta) :=
         mul_le_mul_of_nonneg_right hCroot (by positivity)
   refine ⟨?_, hmomentTop⟩
-  calc
-    _ ≤ Csmall * ENNReal.ofReal ((R / R₀) ^ beta) := hroot
-    _ ≤ A * ENNReal.ofReal ((R / R₀) ^ beta) :=
-      mul_le_mul_of_nonneg_right hCsmallA (by positivity)
-    _ = _ := by rfl
+  assumption_mod_cast
 
 end DOZZ.Proofs

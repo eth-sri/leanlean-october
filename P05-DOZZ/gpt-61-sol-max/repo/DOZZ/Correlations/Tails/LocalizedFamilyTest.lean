@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Tails.OffCenterMultiplier
 
 /-! Compact copied tests built from the literal locally C1 multiplier family. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 
 namespace DOZZ.Proofs
@@ -36,16 +36,16 @@ theorem localized_translated_test
   have hsu : tsupport G ⊆ Metric.ball 0 (2*radius) := by
     intro x hx
     have h := hχs (hs hx)
-    have hn : ‖x‖ < min radius 1 := by simpa only [Metric.mem_ball, dist_zero_right] using h
+    have hn : ‖x‖ < min radius 1 := by simp_all
     have hr := hFamily.1
     simp only [Metric.mem_ball, dist_zero_right]
-    exact hn.trans_le ((min_le_left _ _).trans (by linarith))
+    grind
   have hFc : ContinuousOn (fun x => F (z+x)) (Metric.ball 0 (2*radius)) := by
     have hcont := (hFamily.2.2.2.2 z hzk F hF).2.2.2.1.continuousOn
     exact hcont.comp (continuous_const.add continuous_id).continuousOn (by
       intro x hx
-      simpa only [Metric.mem_ball, dist_eq_norm, add_sub_cancel_left, sub_zero] using hx)
-  have hGc : Continuous G :=
+      simp_all)
+  have hGc  :=
     (χ.continuous.continuousOn.mul (hFc.mul hV.continuousOn)).continuous_of_tsupport_subset
       Metric.isOpen_ball hsu
   have hGs : HasCompactSupport G := hχc.mul_right
@@ -56,7 +56,6 @@ theorem localized_translated_test
     change χ x * (F (z+x)*V x) = _
     rw [mul_assoc]
   · intro x
-    change 0 ≤ χ x * (F (z+x)*V x)
     exact mul_nonneg (hχ0 x) (mul_nonneg
       ((hFamily.2.2.2.2 z hzk F hF).2.1 (z+x)).1 (Real.exp_nonneg _))
   · exact hs.trans (hχs.trans (Metric.ball_subset_ball (min_le_right _ _)))

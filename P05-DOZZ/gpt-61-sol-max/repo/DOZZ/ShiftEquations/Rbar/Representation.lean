@@ -15,6 +15,7 @@ public import DOZZ.Statements.Defs.IsGMCOf
 import DOZZ.Correlations.Symmetry.ReflectionMomentSwap
 import DOZZ.Brownian.Reflection.WitnessIndependence
 import DOZZ.ShiftEquations.Reflection.Witness
+public import DOZZ.ShiftEquations.Contracts
 
 /-!
 # The `R̄` representation from the γ/2 crossing, the residue bridge and the holomorphic extension
@@ -63,10 +64,12 @@ theorem reflectionTriple_ofReal (γ t : ℝ) :
   funext i
   fin_cases i <;> simp [reflectionTriple, complexifyNCharges]
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
+
+include Ω _inst1 P X M in
 /-- **`R̄ = coefficient · C̄(a, γ, a)`** from the diagonal crossing, the holomorphic extension of
 `C̄`, and a residue-bridge limit with value `R`. -/
-theorem eq_rbarCoefficientReal_mul_of_bridge {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (M : Ω → Measure ℂ) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem eq_rbarCoefficientReal_mul_of_bridge  {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hCross : ∀ ε a : ℝ, γ / 2 < ε → ε < 2 / γ → a < Q γ → 2 * Q γ < a + a + ε - γ / 2 →
       unitVolumeStructureConstant P M γ (a - γ / 2) ε a =
@@ -155,26 +158,16 @@ theorem eq_rbarCoefficientReal_mul_of_bridge {Ω : Type*} [MeasurableSpace Ω] (
   rw [huniq]
   ring
 
+include Ω _inst1 P X M in
 /-- **`DOZZ.reflectionBarR_holomorphic_representation` from its inputs.** The hypotheses are, at the
 given field and chaos, the unit-volume conjunct of `gammaHalf_crossing`, the conclusion of
 `unitVolumeStructureConstant_threeToTwo_residue_bridge`, and the conclusion of
 `unitVolumeStructureConstant_holomorphic_near_extended_domain`. -/
 theorem reflectionBarR_holomorphic_representation_of_deps
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
-    (hBridge : ∀ α2 α3 : ℝ, 0 < α2 ∧ α2 ≤ α3 ∧ γ / 2 < α3 ∧ α3 < Q γ →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧ IsReflectionData P γ α3 (B α3) Z ∧
-        Tendsto (fun ε : ℝ => ε * unitVolumeStructureConstant P M γ
-            (α3 - α2 + ε) α2 α3) (𝓝[>] 0)
-          (𝓝 (bridgeMultiplicity α2 α3 * reflectionExponent γ α3 *
-            reflectionBarR P γ α3 (B α3) Z)))
+    (hCross : Contract.unitCrossing P M γ)
+    (hBridge : Contract.residueBridge P X M γ)
     (hHolo : ∃ V : Set (Fin 3 → ℂ), IsOpen V ∧
       (∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V) ∧
       ∃ f : (Fin 3 → ℂ) → ℂ, DifferentiableOn ℂ f V ∧
@@ -211,11 +204,7 @@ theorem reflectionBarR_holomorphic_representation_of_deps
       by rw [ha₀, hQ]; linarith⟩
   obtain ⟨B, hB⟩ := exists_reflectionData_family_of_isReflectionData P X γ a₀ M Z (B₀ a₀)
     hSLP hRD₀
-  have hCrossDiag : ∀ ε a : ℝ, γ / 2 < ε → ε < 2 / γ → a < Q γ →
-      2 * Q γ < a + a + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (a - γ / 2) ε a =
-        gammaHalfUnitCrossingMultiplier γ 1 a ε a *
-          unitVolumeStructureConstant P M γ a (ε + γ / 2) a :=
+  have hCrossDiag  :=
     fun ε a h1 h2 h3 h4 => hCross 1 a ε a one_pos h1 h2 h3 h3 h4
   -- the representation
   have hf : ∀ α : ℝ, γ / 2 < α → α < Q γ →

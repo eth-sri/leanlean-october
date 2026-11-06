@@ -77,7 +77,7 @@ theorem tendsto_lintegral_abs_sub_realizationMeasure (f : ℂ → ℝ) (hf : Con
     Tendsto (fun r => ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Y γ r f ω -
       ∫ x, f x ∂realizationMeasure P U hU dens ε₀ Y hY T γ R e he c ω| ∂P) atTop (𝓝 0) := by
   obtain ⟨Lf, hLf⟩ := hf.bounded_above_of_compact_support hfc
-  have hfL : ∀ x, |f x| ≤ Lf := fun x => by rw [← Real.norm_eq_abs]; exact hLf x
+  have hfL : ∀ x, |f x| ≤ Lf := fun x => by exact hLf x
   have hfK : ∀ x ∉ tsupport f, f x = 0 := fun x hx => image_eq_zero_of_notMem_tsupport hx
   have hgood := ae_mem_realizationGoodSet P U dens ε₀ Y hY T γ R hR e c hc hcut
   have hFm (r : ℝ) : Measurable (admissibleCutoffIntegral P U dens Y γ r f) :=
@@ -86,7 +86,7 @@ theorem tendsto_lintegral_abs_sub_realizationMeasure (f : ℂ → ℝ) (hf : Con
   intro ε hε
   by_cases hεtop : ε = ⊤
   · exact Eventually.of_forall fun _ => hεtop ▸ le_top
-  have hεr : 0 < ε.toReal := ENNReal.toReal_pos hε.ne' hεtop
+  have hεr  := ENNReal.toReal_pos hε.ne' hεtop
   obtain ⟨R₀, hR₀⟩ := admissibleCutoffIntegral_L1_uniform_cauchy P U dens ε₀ Y hY (tsupport f) hfc
     hfU {γ} isCompact_singleton (Set.singleton_subset_iff.mpr ⟨hγ, hγ2⟩) Lf ε.toReal hεr
   filter_upwards [eventually_ge_atTop R₀] with r hr
@@ -160,7 +160,7 @@ theorem admissibleLogRegularization_GMC_exists
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) :
     ∃ M : Ω → Measure ℂ, IsAdmissibleGMCVersion P U dens Y γ M := by
-  have : IsProbabilityMeasure P := admissibleLogRegularization_isProbabilityMeasure P U dens ε₀ Y hY
+  have  := admissibleLogRegularization_isProbabilityMeasure P U dens ε₀ Y hY
   have hU : IsOpen U := hY.openChart
   obtain ⟨T⟩ := exists_chartTestSystem U hU
   obtain ⟨R, hR⟩ := exists_test_cauchy_thresholds P U dens ε₀ Y hY T γ hγ hγ2
@@ -477,7 +477,7 @@ theorem admissibleGMCVersion_lintegral_abs_sub_le
     (hM.2.2.2 f hfc hfU) r R ε
   intro s hs
   exact (hR r s hr hs γ rfl f f.continuous.measurable
-    (fun x => by rw [← Real.norm_eq_abs]; exact f.norm_coe_le_norm x)
+    (fun x => by exact f.norm_coe_le_norm x)
     (fun x hx => image_eq_zero_of_notMem_tsupport hx)).le
 
 end DOZZ.Assembly
@@ -498,7 +498,7 @@ theorem admissibleLogRegularization_GMC_unique_ae
     (hM : IsAdmissibleGMCVersion P U dens Y γ M)
     (hN : IsAdmissibleGMCVersion P U dens Z γ N) :
     ∀ᵐ ω ∂P, M ω = N ω := by
-  have : IsProbabilityMeasure P := admissibleLogRegularization_isProbabilityMeasure P U dens ε₀ Y hY
+  have  := admissibleLogRegularization_isProbabilityMeasure P U dens ε₀ Y hY
   have hU : IsOpen U := hY.openChart
   have hW := interleavedRegularization_admissible P U dens ε₀ ε₁ Y Z hY hZ hYZ
   -- equality of the two limits on every compact test
@@ -507,7 +507,7 @@ theorem admissibleLogRegularization_GMC_unique_ae
       (fun ω => ∫ x, f x ∂M ω) =ᵐ[P] fun ω => ∫ x, f x ∂N ω := by
     intro f hfc hfU
     have hfL : ∀ x, |f x| ≤ ‖f‖ := fun x => by
-      rw [← Real.norm_eq_abs]; exact f.norm_coe_le_norm x
+      exact f.norm_coe_le_norm x
     have hfK : ∀ x ∉ tsupport (f : ℂ → ℝ), f x = 0 := fun x hx =>
       image_eq_zero_of_notMem_tsupport hx
     have hMf : AEStronglyMeasurable (fun ω => ∫ x, f x ∂M ω) P :=
@@ -556,8 +556,7 @@ theorem admissibleLogRegularization_GMC_unique_ae
         simp only [hrdef, admissibleCutoffIntegral_interleaved_nat, hsdef,
           admissibleCutoffIntegral_interleaved_odd_half] at h
         exact h
-      have hend : ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Z γ s f ω -
-          ∫ x, f x ∂N ω| ∂P ≤ ENNReal.ofReal ε := hRZ s hRZs
+      have hend  := hRZ s hRZs
       have hstart : ∫⁻ ω, ENNReal.ofReal |∫ x, f x ∂M ω -
           admissibleCutoffIntegral P U dens Y γ r f ω| ∂P ≤ ENNReal.ofReal ε := by
         have h := hRY r hRYr

@@ -17,6 +17,4 @@ functions on `R^d`.  The stochastic coefficients for these packets are construct
 `GaussianFields.WhiteNoise.Construction`.
 -/
 
-public section
 
-end

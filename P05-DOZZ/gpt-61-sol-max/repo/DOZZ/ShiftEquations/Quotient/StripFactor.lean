@@ -10,6 +10,7 @@ public import Mathlib.Topology.DiscreteSubset
 import DOZZ.ShiftEquations.Quotient.Walk
 import DOZZ.Complex.Basic
 import DOZZ.Brownian.Reflection.RtheorAnalytic
+import Mathlib.Tactic
 
 /-!
 # Whole-plane factorization from two incommensurable shift laws
@@ -66,11 +67,11 @@ theorem discrepancy_ne_zero_along_walk {C D K₁ K₂ : ℂ → ℂ} {b b' ρ : 
       have ih' := ih hkl.le
       set s := (l.take k).sum with hs
       set u : ℂ := x₀ + (s : ℂ) with hu
-      have hsum : (l.take (k + 1)).sum = s + l[k] := List.sum_take_succ l k hkl
-      have hmem : l[k] ∈ l := List.getElem_mem hkl
+      have hsum  := List.sum_take_succ l k hkl
+      have hmem  := List.getElem_mem hkl
       have hbk := hbound k hkl.le
-      have hbmax : b ≤ max b b' := le_max_left b b'
-      have hbmax' : b' ≤ max b b' := le_max_right b b'
+      have hbmax  := le_max_left b b'
+      have hbmax'  := le_max_right b b'
       have him : ∀ t : ℝ, (u + (t : ℂ)).im = x₀.im := fun t => by simp [hu]
       have hre : ∀ t : ℝ, (u + (t : ℂ)).re - x₀.re = s + t := fun t => by simp [hu]; ring
       rw [hsum, Complex.ofReal_add, ← add_assoc, ← hu]
@@ -138,7 +139,7 @@ theorem eventually_nhds_boundary_discrepancy {C D K₁ K₂ : ℂ → ℂ} {h b 
     exact fun hzS => hzS hz
   set L : ℝ := 3 * (b + b') + 1 with hL
   set R : ℝ := L + 2 with hR
-  have hF : (S ∩ closedBall w₀ R).Finite :=
+  have hF  :=
     ((isCompact_closedBall w₀ R).inter_left hS.1).finite (hS.2.mono inter_subset_left)
   -- the imaginary parts of the finitely many exceptional points near `w₀`
   set I : Set ℝ := (fun z : ℂ => z.im) '' (S ∩ closedBall w₀ R) with hIdef
@@ -146,14 +147,12 @@ theorem eventually_nhds_boundary_discrepancy {C D K₁ K₂ : ℂ → ℂ} {h b 
     have hcl : IsClosed (I \ {w₀.im}) := ((hF.image _).sdiff).isClosed
     have hnot : w₀.im ∉ I \ {w₀.im} := fun h => h.2 rfl
     filter_upwards [hcl.isOpen_compl.mem_nhds hnot] with y hy
-    by_cases hyt : y = w₀.im
-    · exact Or.inl hyt
-    · exact Or.inr fun hmem => hy ⟨hmem, hyt⟩
+    grind
   obtain ⟨ε, hε, hεI⟩ := Metric.eventually_nhds_iff.1 hI
   refine Metric.eventually_nhds_iff.2 ⟨min ε 1, lt_min hε one_pos, fun x hx hxS => ?_⟩
   by_contra hne
-  have hΔ : C x - c * D x ≠ 0 := sub_ne_zero.mpr hne
-  have hdist : dist x w₀ < min ε 1 := hx
+  have hΔ  := sub_ne_zero.mpr hne
+  have hdist  := hx
   have hxim : |x.im - w₀.im| < min ε 1 :=
     lt_of_le_of_lt (by simpa [Complex.dist_eq, ← Complex.sub_im] using
       Complex.abs_im_le_norm (x - w₀)) hdist
@@ -162,11 +161,9 @@ theorem eventually_nhds_boundary_discrepancy {C D K₁ K₂ : ℂ → ℂ} {h b 
       Complex.abs_re_le_norm (x - w₀)) hdist
   have hxS' : |x.im| < h := hxS
   have hyne : x.im ≠ w₀.im := by
-    intro he
-    rw [he, hw₀] at hxS'
-    exact lt_irrefl _ hxS'
-  have hy_not : x.im ∉ I := (hεI (show dist x.im w₀.im < ε by
-    rw [Real.dist_eq]; exact lt_of_lt_of_le hxim (min_le_left _ _))).resolve_left hyne
+    grind
+  have hy_not  := (hεI (show dist x.im w₀.im < ε by
+    exact lt_of_lt_of_le hxim (min_le_left _ _))).resolve_left hyne
   -- the horizontal segment through `x` is free of exceptional points
   have hline : ∀ m : ℂ, m.im = x.im → |m.re - x.re| ≤ L →
       (C (m + b) = K₁ m * C (m - b) ∧ D (m + b) = K₁ m * D (m - b) ∧ K₁ m ≠ 0) ∧
@@ -206,7 +203,7 @@ theorem eventually_nhds_boundary_discrepancy {C D K₁ K₂ : ℂ → ℂ} {h b 
     by_contra hinf
     obtain ⟨p, hpℓ, hp⟩ :=
       Set.Infinite.exists_accPt_of_subset_isCompact hinf hℓc (fun z hz => hz.1)
-    have hp0 : ∀ᶠ w in 𝓝 p, w ≠ p → C w = c * D w :=
+    have hp0  :=
       eventually_nhdsWithin_iff.1 (hin p (hℓS hpℓ))
     rw [accPt_iff_frequently] at hp
     obtain ⟨w, ⟨hwp, -, hw⟩, hw'⟩ := (hp.and_eventually hp0).exists
@@ -246,8 +243,7 @@ theorem eventually_div_add_two_mul_eq {C D K : ℂ → ℂ} {T : ℝ}
   filter_upwards [eventually_codiscrete_comp_add hlaw (T : ℂ), hD0] with w hw hDw
   obtain ⟨h1, h2, hK⟩ := hw
   have e : w + ((2 * T : ℝ) : ℂ) = w + T + T := by push_cast; ring
-  rw [e, h1, h2, add_sub_cancel_right]
-  rw [mul_div_mul_left _ _ hK]
+  grind
 
 /-- **Whole-plane factorization.** Two total functions meromorphic on a strip that obey the same two
 shift laws with incommensurable half-steps `b, b'` off a codiscrete subset of the plane are

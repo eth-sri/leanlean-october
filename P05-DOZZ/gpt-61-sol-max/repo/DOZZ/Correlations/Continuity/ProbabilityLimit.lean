@@ -5,7 +5,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.Correlations.Continuity.CutoffContinuity
 public import DOZZ.GMC.SharpMoments.MomentConvergence
-@[expose] public section
+import Mathlib.Tactic
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -40,10 +41,7 @@ theorem uniform_approximation_in_measure_continuous
             (dist (F r q ω) (F r q₀ ω) + dist (F r q₀ ω) (G q₀ ω)) :=
           add_le_add le_rfl (dist_triangle _ _ _)
         _ = _ := by rw [dist_comm (G q ω) (F r q ω), add_assoc]
-    rcases le_of_three_le_sum hω htri with h | h | h
-    · exact Or.inl (Or.inl h)
-    · exact Or.inl (Or.inr h)
-    · exact Or.inr h
+    grind
   calc P {ω | ε ≤ dist (G q ω) (G q₀ ω)} ≤ _ := measure_mono hset
     _ ≤ (P {ω | ε / 3 ≤ dist (F r q ω) (G q ω)} +
         P {ω | ε / 3 ≤ dist (F r q ω) (F r q₀ ω)}) +
@@ -53,12 +51,14 @@ theorem uniform_approximation_in_measure_continuous
       (add_le_add ((le_iSup _ q).trans hr.le) hq.le) ((le_iSup _ q₀).trans hr.le)
     _ = δ := ENNReal.add_thirds δ
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] {N : ℕ} (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+
+include Ω _inst1 N P X hX in
 /-- The actual singular Coulomb masses vary continuously in probability; the uniform cutoff limit
 (`regularizedCoulombMass_tendstoInProbability_uniform`) is taken on the entire compact
 parameter set. -/
 theorem coulombMass_continuous_in_measure_on_compact
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (M : ℝ → Ω → Measure ℂ)
     (hM : ∀ γ ∈ Ioo (0 : ℝ) 2, IsGMCOf P X γ (M γ))
@@ -105,9 +105,9 @@ theorem continuity_tendstoInMeasure_varying_rpow
       (fun ω => (g ω).toReal)) (hp : Tendsto p atTop (𝓝 p₀)) :
     TendstoInMeasure P (fun n ω => (f n ω ^ p n).toReal) atTop
       (fun ω => (g ω ^ p₀).toReal) := by
-  have hreal : ∀ n, AEStronglyMeasurable (fun ω => (f n ω).toReal) P :=
+  have hreal  :=
     fun n => (hf n).ennreal_toReal.aestronglyMeasurable
-  have hpow : ∀ n, AEStronglyMeasurable (fun ω => (f n ω ^ p n).toReal) P :=
+  have hpow  :=
     fun n => ((hf n).pow_const (p n)).ennreal_toReal.aestronglyMeasurable
   rw [exists_seq_tendstoInMeasure_atTop_iff hpow]
   intro ns hns
@@ -119,21 +119,21 @@ theorem continuity_tendstoInMeasure_varying_rpow
     (Or.inl (ENNReal.toReal_pos hpos hfin).ne')).tendsto.comp (hω.prodMk_nhds hp')
   simpa only [Function.comp_def, ← ENNReal.toReal_rpow] using h
 
+include Ω _inst1 N P X hX in
 /-- Subcritical root charges give a strictly positive finite actual Coulomb mass
 on one probability-one event, independently of the chosen moment power. -/
 theorem continuity_coulombMass_positive_finite_ae
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (z : Fin N → ℂ) (hz : Function.Injective z) (α : Fin N → ℝ) (αinf : ℝ)
     (hα : ∀ k, α k < Q γ) (hinf : αinf < Q γ) :
     ∀ᵐ ω ∂P, 0 < coulombMass γ (M ω) α z αinf ∧ coulombMass γ (M ω) α z αinf ≠ ⊤ := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   have hm := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM α z αinf
   have e1 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 (4 / γ ^ 2) := Ioo_mem_nhdsGT (by positivity)
   have e2 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 (2 / γ * (Q γ - αinf)) :=
     Ioo_mem_nhdsGT (mul_pos (div_pos two_pos hγ) (sub_pos.mpr hinf))
-  have e3 : ∀ᶠ t in 𝓝[>] (0 : ℝ), ∀ k, t ∈ Ioo 0 (2 / γ * (Q γ - α k)) :=
+  have e3  :=
     eventually_all.mpr fun k => Ioo_mem_nhdsGT
       (mul_pos (div_pos two_pos hγ) (sub_pos.mpr (hα k)))
   obtain ⟨t, ht⟩ := (e1.and (e2.and e3)).exists
@@ -144,7 +144,7 @@ theorem continuity_coulombMass_positive_finite_ae
     rw [htop, ENNReal.top_rpow_of_pos ht.1.1] at hω
     exact lt_irrefl _ hω
   obtain ⟨hR, hzR⟩ := coulomb_exterior_radius_bounds z
-  have hsum : 0 ≤ ∑ j, ‖z j‖ := Finset.sum_nonneg fun _ _ => norm_nonneg _
+  
   have hc : 0 < ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
       ENNReal.ofReal ((1 + 2 * ∑ j, ‖z j‖ + 2) ^ (-|γ * αinf|)) :=
     ENNReal.mul_pos (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'

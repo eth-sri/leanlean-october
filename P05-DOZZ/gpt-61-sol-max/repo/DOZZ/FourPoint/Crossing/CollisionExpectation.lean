@@ -15,7 +15,7 @@ A larger inverse order is uniformly bounded by the fixed-disk estimate
 convergence, for every first charge below Q, including charges above 2/γ.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -35,26 +35,16 @@ theorem crossing_collision_inverse_uniform {Ω : Type*} [MeasurableSpace Ω]
   apply hbound ![z, 0, 1] ![-γ / 2, a, b] c s
   · intro j
     fin_cases j
-    · change 2 * ‖z‖ ≤ 2
-      linarith only [hz]
-    · norm_num
-    · norm_num
+    all_goals bound
   · intro j
     fin_cases j
     · change |-γ / 2| ≤ A
-      rw [neg_div, abs_neg]
-      dsimp [A]
-      linarith only [abs_nonneg a, abs_nonneg b, abs_nonneg c]
+      grind
     · change |a| ≤ A
-      dsimp [A]
-      linarith only [abs_nonneg (γ / 2), abs_nonneg b, abs_nonneg c]
+      grind
     · change |b| ≤ A
-      dsimp [A]
-      linarith only [abs_nonneg (γ / 2), abs_nonneg a, abs_nonneg c]
-  · dsimp [A]
-    linarith only [abs_nonneg (γ / 2), abs_nonneg a, abs_nonneg b]
-  · exact le_rfl
-  · exact hs
+      grind
+  all_goals bound
 
 /-- Inverse moments converge at the collision along every sequence in the unit disk. -/
 theorem crossing_collision_inverse_expectation_seq {Ω : Type*} [MeasurableSpace Ω]
@@ -65,15 +55,15 @@ theorem crossing_collision_inverse_expectation_seq {Ω : Type*} [MeasurableSpace
     (s : ℝ) (hs : s < 0) :
     Tendsto (fun n => ∫⁻ ω, coulombMass γ (M ω) ![-γ / 2, a, b] ![z n, 0, 1] c ^ s ∂P)
       atTop (𝓝 (∫⁻ ω, coulombMass γ (M ω) ![-γ / 2, a, b] ![0, 0, 1] c ^ s ∂P)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let f : ℕ → Ω → ℝ≥0∞ := fun n ω => coulombMass γ (M ω) ![-γ / 2, a, b] ![z n, 0, 1] c
   let g : Ω → ℝ≥0∞ := fun ω => coulombMass γ (M ω) ![-γ / 2, a, b] ![0, 0, 1] c
   have hf : ∀ n, AEMeasurable (f n) P := fun n =>
     gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _
   have hg : AEMeasurable g P := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _
-  have hgfin : ∀ᵐ ω ∂P, g ω ≠ ⊤ :=
+  have hgfin  :=
     crossing_collision_mass_finite_ae P X hX γ hγ hγ2 M hM a b c ha hb hc 0 (by simp)
-  have hfin : ∀ n, ∀ᵐ ω ∂P, f n ω ≠ ⊤ := fun n =>
+  have hfin  := fun n =>
     crossing_collision_mass_finite_ae P X hX γ hγ hγ2 M hM a b c ha hb hc (z n) (hz1 n)
   have hlim := crossing_collision_mass_ae P X hX γ hγ hγ2 M hM a b c ha hb hc z hz hz1
   have hreal : ∀ᵐ ω ∂P, Tendsto (fun n => (f n ω).toReal) atTop (𝓝 ((g ω).toReal)) := by

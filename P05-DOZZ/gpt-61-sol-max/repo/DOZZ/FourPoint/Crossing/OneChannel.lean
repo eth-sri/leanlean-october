@@ -61,11 +61,6 @@ theorem gammaHalf_one_channel_of_full_unreflected {Ω : Type*} [MeasurableSpace 
   rw [gammaHalf_fourPoint_reflection P X M γ μ a ε c hγ hγ2 hX hM z,
     hformula (1 - z) (one_sub_gaussCutPlane_subset_gaussCutPlane hz), hA, hB]
   unfold gaussFMinus gaussFPlus gaussGMinus gaussGPlus
-  rw [hCC]
-  have hpow (A B C : ℂ) : 1 - (1 + A + B - C) = C - A - B := by ring
-  have hplusA (A B C : ℂ) : A - (1 + A + B - C) + 1 = C - B := by ring
-  have hplusB (A B C : ℂ) : B - (1 + A + B - C) + 1 = C - A := by ring
-  have hplusC (A B C : ℂ) : 2 - (1 + A + B - C) = 1 + C - A - B := by ring
-  rw [hpow, hplusA, hplusB, hplusC]
+  grind
 
 end DOZZ.Proofs

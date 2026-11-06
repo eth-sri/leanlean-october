@@ -5,8 +5,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.SourceBufferExpectation
 public import DOZZ.FourPoint.Reflected.BufferFinite
+import Mathlib.Tactic
 /-! The literal full source and separated inverse moments differ by a proved little-o. -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -37,12 +38,12 @@ theorem reflected_source_buffer_inverse_littleO {Ω : Type*} [MeasurableSpace Ω
     filter_upwards [reflected_outer_cutoff_geometry ξ 1 hξ hξ₁ zero_lt_one,hEf,self_mem_nhdsWithin]
       with z hz hfin hz0
     have hr := hz.1
-    have hr1 : ‖z‖^(1-ξ) ≤ 1 := hz.2.2.2.2.le
+    have hr1  := hz.2.2.2.2.le
     have hzr : ‖z‖ < ‖z‖^(1-ξ) := by linarith only [hr,hz.2.2.2.1]
-    have hzn : ‖z‖ < 1 := hzr.trans_le hr1
+    have hzn  := hzr.trans_le hr1
     have hz1 : z ≠ 1 := by intro he; simp [he] at hzn
     have hss : 0 < Real.exp (-h)*‖z‖ := mul_pos (Real.exp_pos _) (norm_pos_iff.mpr hz0)
-    have hsr : Real.exp (-h)*‖z‖ ≤ ‖z‖^(1-ξ) :=
+    have hsr  :=
       (mul_le_of_le_one_left (norm_nonneg z) (Real.exp_le_one_iff.mpr (neg_nonpos.mpr hh))).trans hzr.le
     exact reflected_source_buffer_inverse_error P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ ξ
       (Real.exp (-h)*‖z‖) p hp hα₁ hα₂ hα₃ z hz0 hz1 hzn.le hr1 hzr hss hsr hfin

@@ -8,28 +8,30 @@ public import DOZZ.Statements.Correlations.ExtendedSeibergN
 
 /-! Strict parameter neighborhoods for the finite-insertion extended Seiberg domain. -/
 
-@[expose] public section
+public section
 open Filter Topology Set
 namespace DOZZ.Proofs
 
 /-- The background charge varies continuously away from zero. -/
 theorem continuousAt_Q {γ : ℝ} (hγ : γ ≠ 0) : ContinuousAt Q γ := by
   unfold Q
-  exact ((continuousAt_const.div continuousAt_id hγ).add
-    (continuousAt_id.div_const 2))
+  fun_prop (disch := positivity)
 
+variable {N : ℕ} (q : ℝ × (Fin N → ℝ))
+
+include N q in
 /-- The finite-insertion zero-mode exponent varies jointly continuously away from zero. -/
-theorem continuousAt_nPointSExp {N : ℕ} (q : ℝ × (Fin N → ℝ)) (hq : q.1 ≠ 0) :
+theorem continuousAt_nPointSExp  (hq : q.1 ≠ 0) :
     ContinuousAt (fun p : ℝ × (Fin N → ℝ) => nPointSExp p.1 p.2) q := by
   unfold nPointSExp
   have hs : ContinuousAt (fun p : ℝ × (Fin N → ℝ) => ∑ i, p.2 i) q := by
-    exact (continuous_finsetSum _ (fun i _ => (continuous_apply i).comp
-      continuous_snd)).continuousAt
+    fun_prop (disch := positivity)
   exact (hs.sub (continuousAt_const.mul
     ((continuousAt_Q hq).comp continuousAt_fst))).div continuousAt_fst hq
 
+include N q in
 /-- All strict admissibility inequalities persist on a joint parameter neighborhood. -/
-theorem extendedSeibergN_mem_nhds {N : ℕ} (q : ℝ × (Fin N → ℝ))
+theorem extendedSeibergN_mem_nhds 
     (hq : 0 < q.1) (hq2 : q.1 < 2) (ha : ExtendedSeibergN q.1 q.2) :
     {p : ℝ × (Fin N → ℝ) | 0 < p.1 ∧ p.1 < 2 ∧ ExtendedSeibergN p.1 p.2} ∈ 𝓝 q := by
   have hQ := (continuousAt_Q hq.ne').comp continuousAt_fst

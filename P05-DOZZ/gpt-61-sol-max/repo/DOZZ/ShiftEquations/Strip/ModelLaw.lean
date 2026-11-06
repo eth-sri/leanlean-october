@@ -7,10 +7,11 @@ module
 public import DOZZ.ShiftEquations.Strip.WilliamsLimit
 public import DOZZ.Brownian.ReflectionJointInputLaw
 import Mathlib.Dynamics.Ergodic.MeasurePreserving
+import Mathlib.Tactic
 
 /-! Product-law identification for the Williams model. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 
@@ -28,7 +29,7 @@ theorem lastone_williamsInput_model_map
         (z.1, negativeConditionedLastExitSegment z.1 z.2))).prod Q).prod L) := by
   let T : ℝ × BrownianPath → ℝ × StoppedBrownianPath := fun z =>
     (z.1, negativeConditionedLastExitSegment z.1 z.2)
-  have hT : Measurable T := measurable_fst.prodMk measurable_lastExitSegment_joint
+  have hT  := measurable_fst.prodMk measurable_lastExitSegment_joint
   have hswap := (MeasurePreserving.id μ).prod
     ((Measure.measurePreserving_swap (μ := Q) (ν := Q)).prod (MeasurePreserving.id L))
   have houter := MeasurePreserving.symm MeasurableEquiv.prodAssoc
@@ -38,8 +39,7 @@ theorem lastone_williamsInput_model_map
   let R : ℝ × ((BrownianPath × BrownianPath) × Measure ℝ) →
       ((ℝ × BrownianPath) × BrownianPath) × Measure ℝ := fun z =>
     (((z.1, z.2.1.2), z.2.1.1), z.2.2)
-  have hR : MeasurePreserving R (μ.prod ((Q.prod Q).prod L)) (((μ.prod Q).prod Q).prod L) := by
-    exact hinner.comp (houter.comp hswap)
+  have hR : MeasurePreserving R (μ.prod ((Q.prod Q).prod L)) (((μ.prod Q).prod Q).prod L) := hinner.comp (houter.comp hswap)
   let F : ((ℝ × BrownianPath) × BrownianPath) × Measure ℝ →
       ((ℝ × StoppedBrownianPath) × BrownianPath) × Measure ℝ :=
     Prod.map (Prod.map T id) id
@@ -49,8 +49,7 @@ theorem lastone_williamsInput_model_map
     have h1 := Measure.map_prod_map (μ.prod Q) Q hT measurable_id
     have h2 := Measure.map_prod_map ((μ.prod Q).prod Q) L
       (hT.prodMap measurable_id) measurable_id
-    simp only [Measure.map_id] at h1 h2
-    exact h2.symm.trans (congrArg (fun N => N.prod L) h1.symm)
+    continuity
   change (μ.prod ((Q.prod Q).prod L)).map (F ∘ R) = _
   rw [← Measure.map_map hF hR.measurable, hR.map_eq]
   exact hn
@@ -68,11 +67,11 @@ theorem lastone_williamsInput_law_on_given_space
       (((z.1, negativeConditionedLastExitSegment z.1 (B z.2).2), (B z.2).1), Z z.2)) =
       ((((μ.prod Q).map (fun z =>
         (z.1, negativeConditionedLastExitSegment z.1 z.2))).prod Q).prod (P.map Z)) := by
-  let : IsProbabilityMeasure Q := hQ.2.1
-  let : IsProbabilityMeasure (P.map Z) := (Measure.isProbabilityMeasure_map_iff hZm).2 inferInstance
+  let  := hQ.2.1
+  
   have hBm := aemeasurable_of_twoSidedConditioned hB
   let pair : Ω → (BrownianPath × BrownianPath) × Measure ℝ := fun ω => (B ω, Z ω)
-  have hp : AEMeasurable pair P := hBm.prodMk hZm
+  have hp  := hBm.prodMk hZm
   have hBlaw : P.map B = Q.prod Q := by
     have h := (indepFun_iff_map_prod_eq_prod_map_map hB.1.1 hB.2.1.1).mp hB.2.2
     have h1 := isNegativeConditionedBrownianLaw_eq ν hB.1.2 hQ

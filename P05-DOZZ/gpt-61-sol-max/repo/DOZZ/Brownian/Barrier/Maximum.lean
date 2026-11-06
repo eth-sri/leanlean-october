@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.Brownian.Barrier.PositiveDrift
+import Mathlib.Tactic
 
 /-!
 # Drifted maxima and positive first-hit lifetimes
@@ -41,7 +42,7 @@ This module supplies their actual hitting and lifetime inputs; it makes no Marko
 assertion at a last-exit time.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped NNReal ENNReal Topology
 namespace DOZZ.Proofs
@@ -55,7 +56,6 @@ theorem gaussianReal_likelihood_setIntegral (a : ℝ) (T : ℝ≥0) (hT : T ≠ 
       ENNReal.ofReal (∫ x in S, Real.exp (a*x-a^2*(T : ℝ)/2) ∂gaussianReal 0 T) := by
     rw [← gaussianReal_withDensity_brownianGaussianLikelihood a T hT,
       withDensity_apply _ hS]
-    change (∫⁻ x in S, ENNReal.ofReal (Real.exp (a*x-a^2*(T : ℝ)/2)) ∂gaussianReal 0 T) = _
     exact (ofReal_integral_eq_lintegral_ofReal
       (integrable_real_brownianGaussianLikelihood a T).integrableOn
       (ae_of_all _ (fun x => (Real.exp_pos _).le))).symm
@@ -74,16 +74,18 @@ theorem gaussianReal_reflected_likelihood_setIntegral (a β : ℝ) (T : ℝ≥0)
     ring_nf
   rw [he,integral_const_mul,gaussianReal_likelihood_setIntegral (-a) T hT S hS]
 
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
+
+include P hB in
 /-- The exact signed Gaussian endpoint difference for survival is nonnegative. -/
-theorem brownianPath_drift_barrier_endpoint_difference_nonneg (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a β : ℝ) (hβ : 0 < β)
+theorem brownianPath_drift_barrier_endpoint_difference_nonneg  (a β : ℝ) (hβ : 0 < β)
     (T : ℝ≥0) (hT : T ≠ 0) :
     0 ≤ (gaussianReal (a*(T : ℝ)) T).real (Iio β) -
       Real.exp (2*a*β)*(gaussianReal ((-a)*(T : ℝ)) T).real (Ioi β) := by
-  let F : ℝ → ℝ := fun x => Real.exp (a*x-a^2*(T : ℝ)/2)
+  let F  := fun x => Real.exp (a*x-a^2*(T : ℝ)/2)
   have hmF : Measurable F := by dsimp [F]; fun_prop
   have hi : Integrable (fun p => F (p T)) P := by
-    simpa only [Function.comp_def] using (hB.hasLaw_eval T).integrable_comp
+    exact (hB.hasLaw_eval T).integrable_comp
       (integrable_real_brownianGaussianLikelihood a T)
   have hn : 0 ≤ ∫ p in {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → p u ≤ β}, F (p T) ∂P :=
     integral_nonneg (fun p => (Real.exp_pos _).le)
@@ -96,9 +98,9 @@ theorem brownianPath_drift_barrier_endpoint_difference_nonneg (P : Measure Brown
   simpa only [F,gaussianReal_likelihood_setIntegral a T hT (Iio β) measurableSet_Iio,
     gaussianReal_reflected_likelihood_setIntegral a β T hT (Ioi β) measurableSet_Ioi] using hn
 
+include P hB in
 /-- The exact real probability of a finite-horizon drifted maximum exceeding a positive level. -/
-theorem brownianPath_drift_finiteMaximum_real (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a β : ℝ) (hβ : 0 < β)
+theorem brownianPath_drift_finiteMaximum_real  (a β : ℝ) (hβ : 0 < β)
     (T : ℝ≥0) (hT : T ≠ 0) :
     P.real {p | ∃ u ≤ T, β < p u+a*(u : ℝ)} =
       1-(gaussianReal (a*(T : ℝ)) T).real (Iio β) +
@@ -110,8 +112,7 @@ theorem brownianPath_drift_finiteMaximum_real (P : Measure BrownianPath)
   have hA : MeasurableSet A := ((brownianRawFiltration _ (fun t => ContinuousMap.measurable_eval t)).le T _
     (measurableSet_brownianPath_barrier T β)).preimage hmDrift
   have hc : {p : BrownianPath | ∃ u ≤ T, β < p u+a*(u : ℝ)} = Aᶜ := by
-    ext p
-    simp only [A,mem_compl_iff,mem_ofPred_eq,not_forall,not_le,exists_prop]
+    continuity
   rw [hc,measureReal_compl hA,probReal_univ]
   have he := brownianPath_drift_barrier_endpoint_integral P hB a β hβ T hT
   rw [gaussianReal_likelihood_setIntegral a T hT (Iio β) measurableSet_Iio,
@@ -143,9 +144,9 @@ theorem brownian_gaussian_positiveDrift_lowerTail_le (P : Measure BrownianPath)
   congr 2
   ring_nf
 
+include P hB in
 /-- The reflected Gaussian term gives a quantitative matching lower bound for finite maxima. -/
-theorem brownianPath_negativeDrift_finiteMaximum_real_ge (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν β : ℝ) (hν : 0 ≤ ν) (hβ : 0 < β)
+theorem brownianPath_negativeDrift_finiteMaximum_real_ge  (ν β : ℝ) (hν : 0 ≤ ν) (hβ : 0 < β)
     (T : ℝ≥0) (hT : T ≠ 0) :
     Real.exp (-2*ν*β)*(1-Real.exp (ν*β-ν^2*(T : ℝ)/2)) ≤
       P.real {p | ∃ u ≤ T, β < p u-ν*(u : ℝ)} := by
@@ -181,9 +182,9 @@ theorem tendsto_brownian_negativeDrift_tail_error (ν β : ℝ) (hν : 0 < ν) :
   rw [he]
   simpa only [mul_zero] using hh.const_mul (Real.exp (ν*β-ν^2/2))
 
+include P hB
 /-- The all-time negative-drift maximum has the sharp exponential tail at positive levels. -/
-theorem brownianPath_negativeDrift_maximum_tail_pos (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν x : ℝ) (hν : 0 < ν) (hx : 0 < x) :
+theorem brownianPath_negativeDrift_maximum_tail_pos  (ν x : ℝ) (hν : 0 < ν) (hx : 0 < x) :
     P {p | ∃ t : ℝ≥0, x < p t-ν*(t : ℝ)} = ENNReal.ofReal (Real.exp (-2*ν*x)) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   apply le_antisymm (brownianPath_negativeDrift_maximum_le P hB ν x hx)
@@ -195,7 +196,7 @@ theorem brownianPath_negativeDrift_maximum_tail_pos (P : Measure BrownianPath)
         (Real.exp (-2*ν*x))
   apply le_of_tendsto' hh
   intro n
-  let T : ℝ≥0 := (n : ℝ≥0)+1
+  let T  := (n : ℝ≥0)+1
   have hT : T ≠ 0 := by dsimp [T]; positivity
   have hfinite := brownianPath_negativeDrift_finiteMaximum_real_ge P hB ν x hν.le hx T hT
   have hsub : {p : BrownianPath | ∃ u ≤ T, x < p u-ν*(u : ℝ)} ⊆ {p | ∃ u : ℝ≥0, x < p u-ν*(u : ℝ)} := by
@@ -203,12 +204,12 @@ theorem brownianPath_negativeDrift_maximum_tail_pos (P : Measure BrownianPath)
     exact ⟨u,hu⟩
   have hf : Real.exp (-2*ν*x)*(1-Real.exp (ν*x-ν^2*((n : ℝ)+1)/2)) ≤
       P.real {p : BrownianPath | ∃ u ≤ T, x < p u-ν*(u : ℝ)} := by
-    simpa only [T,NNReal.coe_add,NNReal.coe_natCast,NNReal.coe_one] using hfinite
+    bound
   exact hf.trans (measureReal_mono hsub (measure_ne_top _ _))
 
+
 /-- The all-time maximum is strictly positive almost surely, even with a negative drift. -/
-theorem brownianPath_negativeDrift_maximum_tail_zero (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ) (hν : 0 < ν) :
+theorem brownianPath_negativeDrift_maximum_tail_zero  (ν : ℝ) (hν : 0 < ν) :
     P {p | ∃ t : ℝ≥0, 0 < p t-ν*(t : ℝ)} = 1 := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   apply le_antisymm prob_le_one
@@ -226,17 +227,18 @@ theorem brownianPath_negativeDrift_maximum_tail_zero (P : Measure BrownianPath)
     rw [Measure.real,he,ENNReal.toReal_ofReal (Real.exp_pos _).le]
   rw [← hm]
   apply measureReal_mono (μ := P) _ (measure_ne_top _ _)
-  rintro p ⟨t,ht⟩
-  exact ⟨t,hx.trans ht⟩
+  gcongr
+
 
 /-- The exact negative-drift maximum tail on the actual canonical continuous-path carrier. -/
-theorem brownianPath_negativeDrift_maximum_tail (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν x : ℝ) (hν : 0 < ν) (hx : 0 ≤ x) :
+theorem brownianPath_negativeDrift_maximum_tail  (ν x : ℝ) (hν : 0 < ν) (hx : 0 ≤ x) :
     P {p | ∃ t : ℝ≥0, x < p t-ν*(t : ℝ)} = ENNReal.ofReal (Real.exp (-2*ν*x)) := by
   rcases eq_or_lt_of_le hx with h | h
   · rw [← h,brownianPath_negativeDrift_maximum_tail_zero P hB ν hν]
-    simp only [mul_zero,Real.exp_zero,ENNReal.ofReal_one]
+    norm_num
   · exact brownianPath_negativeDrift_maximum_tail_pos P hB ν x hν h
+omit P hB
+
 
 /-- Proof of `DOZZ.negativeDriftBrownian_maximum_tail`. -/
 theorem negativeDriftBrownian_maximum_tail
@@ -245,7 +247,7 @@ theorem negativeDriftBrownian_maximum_tail
     (hν : 0 < ν) (hx : 0 ≤ x) :
     P {ω | ∃ t : ℝ≥0, x < B t ω - ν * t} = ENNReal.ofReal (Real.exp (-2 * ν * x)) := by
   let X := brownianContinuousPath B
-  have hm : AEMeasurable X P := aemeasurable_brownianContinuousPath hB
+  have hm  := aemeasurable_brownianContinuousPath hB
   have hS : MeasurableSet {p : BrownianPath | ∃ t : ℝ≥0, x < p t-ν*(t : ℝ)} := by
     simpa only [sub_eq_add_neg,neg_mul] using measurableSet_brownianPath_drift_crossing (-ν) x
   have he : P {ω | ∃ t : ℝ≥0, x < B t ω-ν*(t : ℝ)} =
@@ -253,22 +255,20 @@ theorem negativeDriftBrownian_maximum_tail
     rw [Measure.map_apply_of_aemeasurable hm hS]
     apply measure_congr
     filter_upwards [brownianContinuousPath_eval_ae hB] with ω hω
-    apply propext
-    simp only [mem_preimage,mem_ofPred_eq,X,hω]
+    continuity
   rw [he]
   exact brownianPath_negativeDrift_maximum_tail _ (brownianContinuousPath_isBrownian hB) ν x hν hx
+include P hB in
 /-- A positive-drift Brownian path reaches every fixed real upper level almost surely. -/
-theorem brownianPath_positiveDrift_hits_ae (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν c : ℝ) (hν : 0 < ν) :
+theorem brownianPath_positiveDrift_hits_ae  (ν c : ℝ) (hν : 0 < ν) :
     ∀ᵐ p ∂P, ∃ u : ℝ≥0, c ≤ driftedBrownianPath ν p u := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
-  let E : Set BrownianPath := {p | ¬∃ u : ℝ≥0, c ≤ driftedBrownianPath ν p u}
+  let E  := {p | ¬∃ u : ℝ≥0, c ≤ driftedBrownianPath ν p u}
   have hle (n : ℕ) : P E ≤ ENNReal.ofReal (Real.exp (ν*c-ν^2*((n : ℝ)+1)/2)) := by
-    let T : ℝ≥0 := (n : ℝ≥0)+1
+    let T  := (n : ℝ≥0)+1
     have hl := brownian_gaussian_positiveDrift_lowerTail_le P hB.toIsPreBrownianReal ν c hν.le T
     have hsub : E ⊆ {p : BrownianPath | p T+ν*(T : ℝ) ≤ c} := by
       intro p hp
-      change ¬∃ u : ℝ≥0, c ≤ p u+ν*(u : ℝ) at hp
       exact (not_le.mp (fun h => hp ⟨T,h⟩)).le
     have hlaw := gaussianReal_add_const (hB.hasLaw_eval T) (ν*(T : ℝ))
     have he : gaussianReal (ν*(T : ℝ)) T (Iic c) = P {p : BrownianPath | p T+ν*(T : ℝ) ≤ c} := by
@@ -279,21 +279,19 @@ theorem brownianPath_positiveDrift_hits_ae (P : Measure BrownianPath)
           (ContinuousMap.measurable_eval T).add measurable_const) measurableSet_Iic]
       rfl
     rw [he] at hl
-    simpa only [T,NNReal.coe_add,NNReal.coe_natCast,NNReal.coe_one] using (measure_mono hsub).trans hl
-  have hr : (P E).toReal ≤ 0 := ge_of_tendsto' (tendsto_brownian_negativeDrift_tail_error ν c hν)
+    exact (measure_mono hsub).trans hl
+  have hr  := ge_of_tendsto' (tendsto_brownian_negativeDrift_tail_error ν c hν)
     (fun n => ENNReal.toReal_le_of_le_ofReal (Real.exp_pos _).le (hle n))
-  have hz : P E = 0 := by
-    exact ((ENNReal.toReal_eq_zero_iff (P E)).mp (le_antisymm hr ENNReal.toReal_nonneg)).resolve_right
+  have hz  := ((ENNReal.toReal_eq_zero_iff (P E)).mp (le_antisymm hr ENNReal.toReal_nonneg)).resolve_right
       (measure_ne_top _ _)
-  rw [ae_iff]
   exact hz
 
 /-- For a continuous path which starts below a level, a nonempty hitting set has no overshoot. -/
 theorem firstPassageTime_value_of_hit (p : BrownianPath) (c : ℝ) (hp0 : p 0 < c)
     (hh : ∃ u : ℝ≥0, c ≤ p u) : p (firstPassageTime p c) = c := by
   obtain ⟨u,hcu⟩ := hh
-  let T : ℝ≥0 := u+1
-  have huT : u < T := by dsimp [T]; exact lt_add_one u
+  let T  := u+1
+  have huT : u < T := by exact lt_add_one u
   have ht : firstPassageTime p c ≤ u := csInf_le (s := {u : ℝ≥0 | c ≤ p u}) (OrderBot.bddBelow _) hcu
   have he := firstPassageTime_eq_capped_of_hit p c T ⟨u,huT.le,hcu⟩
   rw [he] at ht ⊢
@@ -308,15 +306,15 @@ theorem firstPassageTime_pos_of_hit (p : BrownianPath) (c : ℝ) (hp0 : p 0 < c)
   rw [he] at hv
   exact hp0.ne hv
 
+include P hB in
 /-- Positive-drift first hits have positive lifetime and hit their level exactly, almost surely. -/
-theorem brownianPath_positiveDrift_firstHit_ae (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν c : ℝ) (hν : 0 < ν) (hc : 0 < c) :
+theorem brownianPath_positiveDrift_firstHit_ae  (ν c : ℝ) (hν : 0 < ν) (hc : 0 < c) :
     ∀ᵐ p ∂P, 0 < firstPassageTime (driftedBrownianPath ν p) c ∧
       driftedBrownianPath ν p (firstPassageTime (driftedBrownianPath ν p) c) = c := by
   filter_upwards [hB.eval_zero_ae_eq_zero,brownianPath_positiveDrift_hits_ae P hB ν c hν] with p hp hh
   have hp0 : driftedBrownianPath ν p 0 < c := by
     change p 0+ν*(0 : ℝ≥0) < c
-    simpa only [NNReal.coe_zero,mul_zero,add_zero,hp] using hc
+    simp_all
   exact ⟨firstPassageTime_pos_of_hit _ c hp0 hh,firstPassageTime_value_of_hit _ c hp0 hh⟩
 /-- Stopping at the terminal horizon preserves the entire compact running maximum. -/
 theorem brownianPath_runningMaximum_stop (p : BrownianPath) (T : ℝ≥0) :
@@ -326,13 +324,13 @@ theorem brownianPath_runningMaximum_stop (p : BrownianPath) (T : ℝ≥0) :
   change p (min u.1 T) = p u.1
   rw [min_eq_left (α := ℝ≥0) u.2]
 
+include P hB in
 /-- Every finite-horizon drifted running maximum has no atom at a positive level. -/
-theorem brownianPath_drift_runningMaximum_atom_zero (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a β : ℝ) (hβ : 0 < β)
+theorem brownianPath_drift_runningMaximum_atom_zero  (a β : ℝ) (hβ : 0 < β)
     (T : ℝ≥0) (hT : T ≠ 0) :
     P {p | (⨆ u : Iic T, driftedBrownianPath a p u) = β} = 0 := by
   let E : Set BrownianPath := {p | (⨆ u : Iic T, p u) = β}
-  have hmM : Measurable (fun p : BrownianPath => ⨆ u : Iic T, p u) :=
+  have hmM  :=
     (measurable_brownianPath_runningMaximum T).mono
       ((brownianRawFiltration _ (fun t => ContinuousMap.measurable_eval t)).le T) le_rfl
   have hE : MeasurableSet E := measurableSet_eq_fun hmM measurable_const

@@ -66,7 +66,7 @@ theorem positiveLateralBlock_le_envelope (γ : ℝ) (hγ : 0 ≤ γ) (n : ℝ≥
   have ht : t ∈ Icc 0 (1 : ℝ≥0) := ⟨bot_le, by exact_mod_cast (by
     change s - (n : ℝ) ≤ 1
     linarith [hs.2])⟩
-  have hspos : 0 ≤ s := n.coe_nonneg.trans hs.1.le
+  have hspos  := n.coe_nonneg.trans hs.1.le
   have he : Real.toNNReal s = n + t := by
     apply NNReal.eq_iff.mpr
     rw [Real.coe_toNNReal s hspos, NNReal.coe_add]
@@ -75,13 +75,10 @@ theorem positiveLateralBlock_le_envelope (γ : ℝ) (hγ : 0 ≤ γ) (n : ℝ≥
   have hn := ((brownianShiftPath n p).restrict (Icc 0 (1 : ℝ≥0))).norm_coe_le_norm ⟨t, ht⟩
   change |p (n + t) - p n| ≤ brownianUnitNorm (brownianShiftPath n p) at hn
   have hex : p (Real.toNNReal s) ≤ p n + brownianUnitNorm (brownianShiftPath n p) := by
-    rw [he]
-    have hle := (le_abs_self (p (n + t) - p n)).trans hn
-    linarith
+    grind
   apply ENNReal.ofReal_le_ofReal
   apply Real.exp_le_exp.mpr
   rw [abs_of_nonneg hγ]
-  have h := mul_le_mul_of_nonneg_left hex hγ
   nlinarith
 
 /-- Independent radial and lateral inputs factor the arbitrary given-chaos block estimate. -/
@@ -93,7 +90,7 @@ theorem positiveLateralBlock_moment_le_independent_envelope
     (∫⁻ ω, (positiveLateralBlock γ n (B ω) (Z ω)) ^ q ∂P) ≤
       (∫⁻ ω, positiveBlockEnvelope (q * γ) n (B ω) ∂P) *
         (∫⁻ ω, (Z ω (Ioc (n : ℝ) ((n : ℝ) + 1))) ^ q ∂P) := by
-  let f : BrownianPath → ℝ≥0∞ := positiveBlockEnvelope (q * γ) n
+  let f  := positiveBlockEnvelope (q * γ) n
   let g : Measure ℝ → ℝ≥0∞ := fun μ => (μ (Ioc (n : ℝ) ((n : ℝ) + 1))) ^ q
   have hf : Measurable f := measurable_positiveBlockEnvelope _ _
   have hg : Measurable g := ENNReal.continuous_rpow_const.measurable.comp
@@ -120,9 +117,9 @@ theorem positive_unit_intervals_union :
     obtain ⟨n, hn⟩ := mem_iUnion.mp hs
     exact lt_of_le_of_lt (Nat.cast_nonneg _) hn.1
   · intro hs
-    have hceil : 1 ≤ Nat.ceil s := Nat.one_le_ceil_iff.mpr hs
-    let n : ℕ := Nat.ceil s - 1
-    have hn : n + 1 = Nat.ceil s := Nat.sub_add_cancel hceil
+    have hceil  := Nat.one_le_ceil_iff.mpr hs
+    let n  := Nat.ceil s - 1
+    have hn  := Nat.sub_add_cancel hceil
     have he : (n : ℝ) + 1 = (Nat.ceil s : ℝ) := by exact_mod_cast hn
     apply mem_iUnion.mpr
     refine ⟨n, ?_, ?_⟩
@@ -156,9 +153,11 @@ theorem positiveLateralMass_eq_tsum_blocks (γ : ℝ) (p : BrownianPath) (μ : M
   exact lintegral_iUnion (fun _ => measurableSet_Ioc)
     positive_unit_intervals_pairwise_disjoint _
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (F : ℕ → Ω → ℝ≥0∞) (hF : ∀ n, AEMeasurable (F n) P) (q : ℝ) (hq : 1 ≤ q)
+
+include Ω _inst1 P F hF q hq in
 private theorem lintegral_finset_rpow_root_le_sum
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (F : ℕ → Ω → ℝ≥0∞)
-    (hF : ∀ n, AEMeasurable (F n) P) (q : ℝ) (hq : 1 ≤ q) (S : Finset ℕ) :
+     (S : Finset ℕ) :
     (∫⁻ ω, (∑ n ∈ S, F n ω) ^ q ∂P) ^ (1 / q) ≤
       ∑ n ∈ S, (∫⁻ ω, (F n ω) ^ q ∂P) ^ (1 / q) := by
   classical
@@ -171,9 +170,7 @@ private theorem lintegral_finset_rpow_root_le_sum
   | @insert n S hn ih =>
     have hs : AEMeasurable (fun ω => ∑ i ∈ S, F i ω) P :=
       by
-        convert Finset.aemeasurable_sum S (fun i _ => hF i) using 1
-        funext ω
-        exact (Finset.sum_apply ω S F).symm
+        fun_prop (disch := positivity)
     have hb := ENNReal.lintegral_Lp_add_le (hF n) hs hq
     change (∫⁻ ω, (F n ω + ∑ i ∈ S, F i ω) ^ q ∂P) ^ (1 / q) ≤
       (∫⁻ ω, (F n ω) ^ q ∂P) ^ (1 / q) +
@@ -181,14 +178,14 @@ private theorem lintegral_finset_rpow_root_le_sum
     simp only [Finset.sum_insert hn]
     exact hb.trans (add_le_add le_rfl ih)
 
+include Ω _inst1 P F hF q hq in
 /-- Infinite Minkowski assembly for nonnegative block masses, using their actual root moments. -/
 theorem lintegral_tsum_rpow_le_root_moments_power
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (F : ℕ → Ω → ℝ≥0∞)
-    (hF : ∀ n, AEMeasurable (F n) P) (q : ℝ) (hq : 1 ≤ q)
+
     : (∫⁻ ω, (∑' n, F n ω) ^ q ∂P) ≤
       (∑' n, (∫⁻ ω, (F n ω) ^ q ∂P) ^ (1 / q)) ^ q := by
-  have hqp : 0 < q := lt_of_lt_of_le zero_lt_one hq
-  let C : ℝ≥0∞ := ∑' n, (∫⁻ ω, (F n ω) ^ q ∂P) ^ (1 / q)
+  have hqp  := lt_of_lt_of_le zero_lt_one hq
+  let C  := ∑' n, (∫⁻ ω, (F n ω) ^ q ∂P) ^ (1 / q)
   have hb : ∀ N : ℕ, (∫⁻ ω, (∑ n ∈ Finset.range N, F n ω) ^ q ∂P) ≤ C ^ q := by
     intro N
     have h := (lintegral_finset_rpow_root_le_sum P F hF q hq (Finset.range N)).trans
@@ -200,14 +197,11 @@ theorem lintegral_tsum_rpow_le_root_moments_power
       (fun ω => (∑ n ∈ Finset.range N, F n ω) ^ q) P := fun N =>
     ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
       (by
-        classical
-        convert Finset.aemeasurable_sum (Finset.range N) (fun n _ => hF n) using 1
-        funext ω
-        exact (Finset.sum_apply ω (Finset.range N) F).symm)
+        fun_prop (disch := positivity))
   have hmono : ∀ ω : Ω, Monotone (fun N : ℕ => (∑ n ∈ Finset.range N, F n ω) ^ q) := by
     intro ω N M hNM
     apply ENNReal.rpow_le_rpow _ hqp.le
-    exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.range_mono hNM) (fun _ _ _ => bot_le)
+    gcongr
   have hlim : ∀ ω : Ω, Tendsto
       (fun N : ℕ => (∑ n ∈ Finset.range N, F n ω) ^ q) atTop (𝓝 ((∑' n, F n ω) ^ q)) :=
     fun ω => ENNReal.continuous_rpow_const.continuousAt.tendsto.comp

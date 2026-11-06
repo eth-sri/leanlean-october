@@ -7,6 +7,7 @@ module
 public import DOZZ.ShiftEquations.Residual.Assembly
 public import DOZZ.ShiftEquations.DualFirstCase.Assembly
 public import DOZZ.ShiftEquations.Gluing.ReflectedClosed
+public import DOZZ.ShiftEquations.ContinuationContracts
 
 /-!
 # The residual factor from the γ/2 crossing, the two dual seeds and the off-pole identification
@@ -27,7 +28,7 @@ The four inputs are the statements of `gammaHalf_crossing`, `dual_crossing_seed_
 `dual_crossing_seed_two` and `reflection_Rtheor_off_poles`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -95,21 +96,7 @@ theorem unitVolume_residual_factor_eq_one_of_crossing_seeds
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (_hData : IsReflectionData P γ α B Z),
     (reflectionR P γ μ α B Z : ℂ) = reflectionDOZZ γ μ (α : ℂ)) :
-    ∃ B : ℝ → Ω → BrownianPath ×
-        BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α, γ / 2 < α → α < Q γ →
-            IsReflectionData P γ α (B α) Z) ∧
-            ∃ cγ : ℂ, cγ = 1 ∧
-              ∀ α₁ α₂ α₃ : ℝ,
-                Q γ - η < α₁ → α₁ < Q γ →
-                Q γ - η < α₂ → α₂ < Q γ →
-                Q γ - η < α₃ → α₃ < Q γ →
-                  (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ) =
-                    cγ * ((μ : ℂ) ^ ((sExp γ α₁ α₂ α₃ : ℂ)) /
-                      Complex.Gamma (sExp γ α₁ α₂ α₃ : ℂ) *
-                        dozzFormula γ μ U (α₁ : ℂ) (α₂ : ℂ) (α₃ : ℂ)) := by
+    Contract.residualUnitVolume P X M γ μ η U := by
   refine unitVolume_residual_factor_eq_one_of_shifts P X M γ μ η U hγ hγ2 hγirr hμ hη hX hM hU
     (fun η' hη' α₂ α₃ hα₂ hα₃ =>
       structureConstant_first_shift_strip_unconditional P X M γ μ η' hγ hγ2 hμ hη' hX hM α₂ α₃ hα₂ hα₃)

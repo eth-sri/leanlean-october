@@ -8,7 +8,7 @@ public import DOZZ.GMC.FiniteChaosSmoothConvex
 
 /-! Uniform pointwise envelopes for finite-chaos interpolation. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Set
 open scoped Topology
@@ -22,15 +22,13 @@ theorem kahaneInterpolatedField_abs_le
   have hs : Real.sqrt t ≤ 1 := by
     simpa using (Real.sqrt_le_sqrt ht.2)
   have hs' : Real.sqrt (1 - t) ≤ 1 := by
-    have h := Real.sqrt_le_sqrt (show 1 - t ≤ 1 by linarith [ht.1])
-    simpa using h
+    simp_all
   calc
     _ ≤ |Real.sqrt t * x| + |Real.sqrt (1 - t) * y| := abs_add_le _ _
     _ = Real.sqrt t * |x| + Real.sqrt (1 - t) * |y| := by
       rw [abs_mul, abs_mul, abs_of_nonneg (Real.sqrt_nonneg _),
         abs_of_nonneg (Real.sqrt_nonneg _)]
-    _ ≤ |x| + |y| := by
-      exact add_le_add
+    _ ≤ |x| + |y| := add_le_add
         (by simpa using mul_le_mul_of_nonneg_right hs (abs_nonneg x))
         (by simpa using mul_le_mul_of_nonneg_right hs' (abs_nonneg y))
 
@@ -45,7 +43,7 @@ theorem kahaneInterpolatedWick_le_absExp
   classical
   have hv : 0 ≤ t * vX i + (1 - t) * vY i :=
     add_nonneg (mul_nonneg ht.1 (hvX i)) (mul_nonneg (by linarith [ht.2]) (hvY i))
-  have hcoord : |x i| + |y i| ≤ ∑ j, (|x j| + |y j|) :=
+  have hcoord  :=
     Finset.single_le_sum (f := fun j => |x j| + |y j|)
       (fun j _ => add_nonneg (abs_nonneg _) (abs_nonneg _))
       (Finset.mem_univ i)
@@ -98,35 +96,27 @@ theorem kahaneInterpolatedScore_abs_le
     (Real.sqrt_pos.mpr (hε.trans_le ht'))
   have hx : |x i / (2 * Real.sqrt t)| ≤ |x i| / (2 * Real.sqrt ε) := by
     rw [abs_div, abs_of_pos hst]
-    exact div_le_div_of_nonneg_left (abs_nonneg _) hsε
-      (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt ht) (by norm_num))
+    bound
   have hy : |y i / (2 * Real.sqrt (1 - t))| ≤ |y i| / (2 * Real.sqrt ε) := by
     rw [abs_div, abs_of_pos hst']
-    exact div_le_div_of_nonneg_left (abs_nonneg _) hsε
-      (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt ht') (by norm_num))
-  have hcoord : |x i| + |y i| ≤ ∑ j, (|x j| + |y j|) :=
+    bound
+  have hcoord  :=
     Finset.single_le_sum (f := fun j => |x j| + |y j|)
       (fun j _ => add_nonneg (abs_nonneg _) (abs_nonneg _))
       (Finset.mem_univ i)
-  have hv : |vX i - vY i| ≤ ∑ j, |vX j - vY j| :=
+  have hv  :=
     Finset.single_le_sum (f := fun j => |vX j - vY j|) (fun j _ => abs_nonneg _) (Finset.mem_univ i)
   calc
     _ ≤ |γ * (x i / (2 * Real.sqrt t) - y i / (2 * Real.sqrt (1 - t)))| +
-        |γ ^ 2 / 2 * (vX i - vY i)| := by
-      simpa only [Real.norm_eq_abs] using norm_sub_le
-        (γ * (x i / (2 * Real.sqrt t) - y i / (2 * Real.sqrt (1 - t))))
-        (γ ^ 2 / 2 * (vX i - vY i))
+        |γ ^ 2 / 2 * (vX i - vY i)| := abs_sub (γ * (x i / (2 * √t) - y i / (2 * √(1 - t)))) (γ ^ 2 / 2 * (vX i - vY i))
     _ = |γ| * |x i / (2 * Real.sqrt t) - y i / (2 * Real.sqrt (1 - t))| +
         γ ^ 2 / 2 * |vX i - vY i| := by
-      rw [abs_mul, abs_mul, abs_of_nonneg (by positivity : 0 ≤ γ ^ 2 / 2)]
+      grind
     _ ≤ |γ| * (|x i| / (2 * Real.sqrt ε) + |y i| / (2 * Real.sqrt ε)) +
         γ ^ 2 / 2 * |vX i - vY i| := by
       apply add_le_add _ le_rfl
       apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
-      have hsub : |x i / (2 * Real.sqrt t) - y i / (2 * Real.sqrt (1 - t))| ≤
-          |x i / (2 * Real.sqrt t)| + |y i / (2 * Real.sqrt (1 - t))| := by
-        simpa only [Real.norm_eq_abs] using norm_sub_le
-          (x i / (2 * Real.sqrt t)) (y i / (2 * Real.sqrt (1 - t)))
+      have hsub  := abs_sub (x i / (2 * √t)) (y i / (2 * √(1 - t)))
       exact hsub.trans (add_le_add hx hy)
     _ = |γ| / (2 * Real.sqrt ε) * (|x i| + |y i|) +
         γ ^ 2 / 2 * |vX i - vY i| := by ring
@@ -168,12 +158,12 @@ theorem kahaneInterpolatedTestDerivative_norm_le_absExp
         (abs_nonneg _) (mul_nonneg (ha i) (Real.exp_nonneg _))
     _ = _ := by rw [← Finset.sum_mul, ← Finset.sum_mul]; ring
 
+variable {ΩX ΩY ι : Type*} [_inst1 : MeasurableSpace ΩX] [_inst2 : MeasurableSpace ΩY] [_inst3 : Fintype ι] (PX : Measure ΩX) (PY : Measure ΩY) (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ) (hX : DOZZ.IsCenteredJointlyGaussian PX X) (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
+
+include ΩX ΩY ι _inst1 _inst2 _inst3 PX PY X Y hX hY in
 /-- The common endpoint envelope is integrable for arbitrary, possibly singular Gaussian laws. -/
 theorem kahaneEndpointAbsExp_integrable
-    {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [Fintype ι]
-    (PX : Measure ΩX) (PY : Measure ΩY)
-    (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (hX : DOZZ.IsCenteredJointlyGaussian PX X) (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
+    
     (γ : ℝ) :
     Integrable (fun ω : ΩX × ΩY =>
       Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|))) (PX.prod PY) := by
@@ -186,12 +176,10 @@ theorem kahaneEndpointAbsExp_integrable
     (fun _ => |γ|)
   simpa [Z, Fintype.sum_sum_type, Finset.sum_add_distrib, Finset.mul_sum, mul_add] using h
 
+include ΩX ΩY ι _inst1 _inst2 _inst3 PX PY X Y hX hY in
 /-- An absolute coordinate factor times the endpoint envelope remains integrable. -/
 theorem kahaneEndpointCoordinateAbsExp_integrable
-    {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [Fintype ι]
-    (PX : Measure ΩX) (PY : Measure ΩY)
-    (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (hX : DOZZ.IsCenteredJointlyGaussian PX X) (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
+    
     (γ : ℝ) (i : ι) :
     Integrable (fun ω : ΩX × ΩY =>
       (|X ω.1 i| + |Y ω.2 i|) *
@@ -210,12 +198,10 @@ theorem kahaneEndpointCoordinateAbsExp_integrable
     Finset.sum_add_distrib, Finset.mul_sum, add_mul, mul_add, Pi.add_apply]
 
 
+include ΩX ΩY ι _inst1 _inst2 _inst3 PX PY X Y hX hY in
 /-- The locally uniform test-derivative envelope is integrable. -/
 theorem kahaneInterpolatedDerivativeEnvelope_integrable
-    {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [Fintype ι]
-    (PX : Measure ΩX) (PY : Measure ΩY)
-    (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (hX : DOZZ.IsCenteredJointlyGaussian PX X) (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
+    
     (vX vY a : ι → ℝ) (γ ε B : ℝ) :
     Integrable (fun ω : ΩX × ΩY =>
       B * (∑ i, a i) * Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|)) *

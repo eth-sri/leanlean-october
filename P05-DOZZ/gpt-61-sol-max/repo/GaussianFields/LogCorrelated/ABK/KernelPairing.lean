@@ -22,18 +22,21 @@ open scoped ENNReal Topology
 namespace GaussianFields
 
 
+variable {d : Nat} (ψ φ : MeanZeroTestFunction d)
+
+include d ψ φ
 /-- Product-measure kernel pairing against two ABK test functions. -/
 @[expose]
-noncomputable def abkKernelPairing {d : Nat} (ψ φ : MeanZeroTestFunction d)
+noncomputable def abkKernelPairing
     (K : Vec d → Vec d → ℝ) : ℝ :=
   ∫ p : Vec d × Vec d,
     ψ p.1 * φ p.2 * K p.1 p.2
     ∂((volume : Measure (Vec d)).prod (volume : Measure (Vec d)))
 
+
 /-- Product-measure kernel pairings can be written as iterated integrals once the product
 integrand is integrable. -/
-theorem abkKernelPairing_eq_integral_integral {d : Nat}
-    (ψ φ : MeanZeroTestFunction d) (K : Vec d → Vec d → ℝ)
+theorem abkKernelPairing_eq_integral_integral  (K : Vec d → Vec d → ℝ)
     (hint :
       Integrable
         (fun p : Vec d × Vec d => ψ p.1 * φ p.2 * K p.1 p.2)
@@ -46,9 +49,9 @@ theorem abkKernelPairing_eq_integral_integral {d : Nat}
   unfold abkKernelPairing
   rw [integral_prod _ hint]
 
+
 /-- Mean-zero test functions annihilate the constant kernel in product-measure pairing form. -/
-theorem abkKernelPairing_const_one_eq_zero {d : Nat}
-    (ψ φ : MeanZeroTestFunction d) :
+theorem abkKernelPairing_const_one_eq_zero  :
     abkKernelPairing ψ φ (fun _ _ => 1) = 0 := by
   unfold abkKernelPairing
   calc
@@ -58,31 +61,31 @@ theorem abkKernelPairing_const_one_eq_zero {d : Nat}
         = ∫ p : Vec d × Vec d,
             ψ p.1 * φ p.2
             ∂((volume : Measure (Vec d)).prod (volume : Measure (Vec d))) := by
-          refine integral_congr_ae ?_
-          filter_upwards with p
-          ring
+          simp_all
     _ = (∫ x : Vec d, ψ x ∂(volume : Measure (Vec d))) *
         ∫ y : Vec d, φ y ∂(volume : Measure (Vec d)) := by
           rw [integral_prod_mul]
     _ = 0 := by rw [ψ.integral_eq_zero, zero_mul]
 
+
 /-- The constant-kernel product integrand is integrable for compact mean-zero test functions. -/
-theorem integrable_abkKernelPairing_const_one {d : Nat}
-    (ψ φ : MeanZeroTestFunction d) :
+theorem integrable_abkKernelPairing_const_one  :
     Integrable
       (fun p : Vec d × Vec d => ψ p.1 * φ p.2 * (1 : ℝ))
       ((volume : Measure (Vec d)).prod (volume : Measure (Vec d))) := by
   simpa only [mul_one] using ψ.integrable.mul_prod φ.integrable
+omit d ψ φ
+
 
 /-- The Riesz kernel `|x-y|^{-α}` used in Appendix A's Abel regularization. -/
 @[expose]
 noncomputable def abkRieszKernel {d : Nat} (α : ℝ) (x y : Vec d) : ℝ :=
   (euclideanNorm (x - y)) ^ (-α)
 
+include d ψ φ in
 /-- Product-measure pairing with the Riesz kernel. -/
 @[expose]
-noncomputable def abkRieszPairing {d : Nat}
-    (ψ φ : MeanZeroTestFunction d) (α : ℝ) : ℝ :=
+noncomputable def abkRieszPairing  (α : ℝ) : ℝ :=
   abkKernelPairing ψ φ (abkRieszKernel α)
 
 /-- The centered Riesz slope `( |x-y|^{-α} - 1 ) / α`. -/
@@ -95,27 +98,27 @@ noncomputable def abkCenteredRieszSlopeKernel {d : Nat} (α : ℝ) (x y : Vec d)
 noncomputable def abkCenteredRieszDifferenceKernel {d : Nat} (α : ℝ) (x y : Vec d) : ℝ :=
   (euclideanNorm (x - y)) ^ (-α) - 1
 
+include d ψ φ
 /-- Product-measure pairing with the centered Riesz slope kernel. -/
 @[expose]
-noncomputable def abkCenteredRieszSlopePairing {d : Nat}
-    (ψ φ : MeanZeroTestFunction d) (α : ℝ) : ℝ :=
+noncomputable def abkCenteredRieszSlopePairing  (α : ℝ) : ℝ :=
   abkKernelPairing ψ φ (abkCenteredRieszSlopeKernel α)
+
 
 /-- Product-measure pairing with the centered Riesz difference kernel. -/
 @[expose]
-noncomputable def abkCenteredRieszDifferencePairing {d : Nat}
-    (ψ φ : MeanZeroTestFunction d) (α : ℝ) : ℝ :=
+noncomputable def abkCenteredRieszDifferencePairing  (α : ℝ) : ℝ :=
   abkKernelPairing ψ φ (abkCenteredRieszDifferenceKernel α)
+
 
 /-- Product-measure pairing with the logarithmic covariance kernel. -/
 @[expose]
-noncomputable def abkLogCovariancePairing {d : Nat}
-    (ψ φ : MeanZeroTestFunction d) : ℝ :=
+noncomputable def abkLogCovariancePairing  : ℝ :=
   abkKernelPairing ψ φ abkLogCovarianceKernel
 
+
 /-- Mean-zero cancellation identifies the Riesz pairing with its centered-difference version. -/
-theorem abkCenteredRieszDifferencePairing_eq_rieszPairing {d : Nat}
-    (ψ φ : MeanZeroTestFunction d) (α : ℝ)
+theorem abkCenteredRieszDifferencePairing_eq_rieszPairing  (α : ℝ)
     (hR :
       Integrable
         (fun p : Vec d × Vec d => ψ p.1 * φ p.2 * abkRieszKernel α p.1 p.2)
@@ -123,13 +126,10 @@ theorem abkCenteredRieszDifferencePairing_eq_rieszPairing {d : Nat}
     abkCenteredRieszDifferencePairing ψ φ α = abkRieszPairing ψ φ α := by
   let μ : Measure (Vec d × Vec d) :=
     (volume : Measure (Vec d)).prod (volume : Measure (Vec d))
-  have hconst :
-      Integrable
-        (fun p : Vec d × Vec d => ψ p.1 * φ p.2 * (1 : ℝ)) μ :=
+  have hconst  :=
     integrable_abkKernelPairing_const_one ψ φ
   have hzero :
-      (∫ p : Vec d × Vec d, ψ p.1 * φ p.2 * (1 : ℝ) ∂μ) = 0 := by
-    simpa [abkKernelPairing, μ] using abkKernelPairing_const_one_eq_zero ψ φ
+      (∫ p : Vec d × Vec d, ψ p.1 * φ p.2 * (1 : ℝ) ∂μ) = 0 := abkKernelPairing_const_one_eq_zero ψ φ
   unfold abkCenteredRieszDifferencePairing abkRieszPairing abkKernelPairing
   calc
     (∫ p : Vec d × Vec d,
@@ -148,20 +148,22 @@ theorem abkCenteredRieszDifferencePairing_eq_rieszPairing {d : Nat}
     _ = ∫ p : Vec d × Vec d,
           ψ p.1 * φ p.2 * abkRieszKernel α p.1 p.2 ∂μ := by
           rw [hzero, sub_zero]
+omit d ψ φ
+
 
 /-- The diagonal is null for product Lebesgue measure in positive dimension. -/
 theorem ae_fst_ne_snd_volume_prod {d : Nat} (hd : 0 < d) :
     ∀ᵐ p : Vec d × Vec d
       ∂((volume : Measure (Vec d)).prod (volume : Measure (Vec d))),
       p.1 ≠ p.2 := by
-  have : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
+  have  := Fin.pos_iff_nonempty.mp hd
   let μ : Measure (Vec d) := volume
   have hmeas : MeasurableSet {p : Vec d × Vec d | p.1 ≠ p.2} := by
-    exact (isClosed_eq continuous_fst continuous_snd).measurableSet.compl
+    measurability
   rw [Measure.ae_prod_iff_ae_ae hmeas]
   refine Filter.Eventually.of_forall ?_
   intro x
-  have hnull : μ {x} = 0 := measure_singleton (μ := μ) x
+  have hnull  := measure_singleton (μ := μ) x
   filter_upwards [compl_mem_ae_iff.mpr hnull] with y hy
   exact fun hxy => hy hxy.symm
 
@@ -178,8 +180,7 @@ theorem ae_tendsto_abkCenteredRieszSlopeKernel_integrand {d : Nat} (hd : 0 < d)
   filter_upwards [ae_fst_ne_snd_volume_prod hd] with p hp_ne
   have hlim := tendsto_euclideanNorm_rpow_neg_sub_one_div_nhdsGT_zero
     (d := d) (x := p.1) (y := p.2) hp_ne
-  simpa [abkCenteredRieszSlopeKernel, mul_assoc] using
-    hlim.const_mul (ψ p.1 * φ p.2)
+  exact hlim.const_mul (ψ p.1 * φ p.2)
 
 /-- Dominated convergence for the ABK centered Riesz slope pairings.  The concrete majorant is
 the remaining local-integrability estimate near the diagonal. -/
@@ -199,15 +200,13 @@ theorem tendsto_abkCenteredRieszSlopePairing_of_dominated {d : Nat} (hd : 0 < d)
     (hbound_int :
       Integrable bound ((volume : Measure (Vec d)).prod (volume : Measure (Vec d)))) :
     Tendsto (fun α : ℝ => abkCenteredRieszSlopePairing ψ φ α)
-      (𝓝[>] (0 : ℝ)) (𝓝 (abkLogCovariancePairing ψ φ)) := by
-  unfold abkCenteredRieszSlopePairing abkLogCovariancePairing abkKernelPairing
-  exact tendsto_integral_filter_of_dominated_convergence
+      (𝓝[>] (0 : ℝ)) (𝓝 (abkLogCovariancePairing ψ φ)) := tendsto_integral_filter_of_dominated_convergence
     bound hmeas hbound hbound_int
     (ae_tendsto_abkCenteredRieszSlopeKernel_integrand hd ψ φ)
 
+include d ψ φ in
 /-- The centered difference pairing is `α` times the centered slope pairing. -/
-theorem abkCenteredRieszDifferencePairing_eq_mul_slope {d : Nat}
-    (ψ φ : MeanZeroTestFunction d) (α : ℝ) :
+theorem abkCenteredRieszDifferencePairing_eq_mul_slope  (α : ℝ) :
     abkCenteredRieszDifferencePairing ψ φ α =
       α * abkCenteredRieszSlopePairing ψ φ α := by
   unfold abkCenteredRieszDifferencePairing abkCenteredRieszSlopePairing

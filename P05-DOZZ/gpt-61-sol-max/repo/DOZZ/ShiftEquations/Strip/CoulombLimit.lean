@@ -11,36 +11,35 @@ public import DOZZ.Correlations.Symmetry.ReflectionMomentSwap
 
 /-! The lastone Coulomb small-power limit on the supplied equator-GMC probability space. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal Classical
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ ε : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hε : 0 < ε ∧ ε < Q γ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X M γ ε hγ hγ2 hε hX hM in
 /-- The critical two-root Coulomb moment tends to two. A fixed subcritical one-root mass
 controls the error outside the critical half disk. -/
 theorem lastone_coulomb_smallPower_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ ε : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hε : 0 < ε ∧ ε < Q γ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
+     :
     Tendsto (fun ν : ℝ =>
       (∫⁻ ω, coulombMass γ (M ω) ![Q γ - ν, ε] ![0, 1] (Q γ - ε) ^ (ν / γ) ∂P).toReal)
       (𝓝[>] 0) (𝓝 2) := by
-  let : IsProbabilityMeasure P := hX.1
-  have hQ : 0 < Q γ := hε.1.trans hε.2
-  have hb : 0 < Q γ - ε := sub_pos.mpr hε.2
+  let  := hX.1
+  have hQ  := hε.1.trans hε.2
+  have hb  := sub_pos.mpr hε.2
   have hbulk : 0 < 4 / γ ^ 2 := by positivity
   have hins : 0 < 2 / γ * ε := mul_pos (by positivity) hε.1
   have hinf : 0 < 2 / γ * (Q γ - ε) := mul_pos (by positivity) hb
   let t : ℝ := min 1 (min (4 / γ ^ 2) (min (2 / γ * ε) (2 / γ * (Q γ - ε))))
-  have ht : 0 < t := lt_min zero_lt_one (lt_min hbulk (lt_min hins hinf))
+  have ht  := lt_min zero_lt_one (lt_min hbulk (lt_min hins hinf))
   obtain ⟨q, hq, hqt⟩ := exists_between ht
   -- A strict subcritical order leaves slack in every threshold.
   let q₀ := q / 2
   have hq₀ : 0 < q₀ := div_pos hq (by norm_num)
   have hq₀1 : q₀ ≤ 1 := by
-    have ht1 : t ≤ 1 := min_le_left _ _
-    dsimp [q₀]
-    linarith
+    grind
   have hUp : ∫⁻ ω, coulombMass γ (M ω) ![ε] ![1] (Q γ - ε) ^ (2 * q₀) ∂P < ⊤ := by
     have horder : 2 * q₀ < t := by dsimp [q₀]; linarith
     have htb : t ≤ 4 / γ ^ 2 := (min_le_right _ _).trans (min_le_left _ _)
@@ -52,10 +51,9 @@ theorem lastone_coulomb_smallPower_limit
       (![1] : Fin 1 → ℂ) (fun _ _ _ => Subsingleton.elim _ _) ![ε] (Q γ - ε) (2 * q₀)
       (by positivity) (horder.trans_le htb) (fun k => by
         fin_cases k
-        change 2 * q₀ < 2 / γ * (Q γ - ε)
         exact horder.trans_le htinf) (by
-          simpa only [sub_sub_cancel] using horder.trans_le hti)
-    simpa only [ENNReal.rpow_eq_pow] using hf
+          bound)
+    exact hf
   let R : ℝ → Ω → ℝ≥0∞ := fun ν => localSingularMass M (fun _ => 1) 0 γ (Q γ - ν)
   let C : ℝ → Ω → ℝ≥0∞ := fun ν ω => coulombMass γ (M ω) ![Q γ - ν, ε] ![0, 1] (Q γ - ε)
   let U : Ω → ℝ≥0∞ := fun ω => coulombMass γ (M ω) ![ε] ![1] (Q γ - ε)
@@ -81,14 +79,10 @@ theorem lastone_coulomb_smallPower_limit
   let k₂ : ℝ≥0∞ := 2 ^ (γ * ε)
   let k₃ : ℝ≥0∞ := 2 ^ (γ * Q γ)
   have hk₁0 : k₁ ≠ 0 := by
-    dsimp [k₁]
-    simp only [ENNReal.rpow_eq_zero_iff]
-    norm_num
+    positivity
   have hk₁T : k₁ ≠ ⊤ := ENNReal.rpow_ne_top_of_ne_zero (by norm_num) ENNReal.ofReal_ne_top
   have hk₂0 : k₂ ≠ 0 := by
-    dsimp [k₂]
-    simp only [ENNReal.rpow_eq_zero_iff]
-    norm_num
+    positivity
   have hk₂T : k₂ ≠ ⊤ := ENNReal.rpow_ne_top_of_ne_zero (by norm_num) (by norm_num)
   have hk₃T : k₃ ≠ ⊤ := ENNReal.rpow_ne_top_of_ne_zero (by norm_num) (by norm_num)
   have hbounds : ∀ᶠ ν in 𝓝[>] 0, ∀ᵐ ω ∂P,
@@ -103,11 +97,10 @@ theorem lastone_coulomb_smallPower_limit
     (lastone_origin_moment_finite P X M γ hγ hγ2 hX hM) hbounds
     (lastone_origin_smallPower_limit P X M γ hγ hγ2 hX hM)
 
+include Ω _inst1 P X M γ ε hγ hγ2 hε hX hM in
 /-- Swapping the finite roots transports the critical Coulomb limit to the rho frame. -/
 theorem lastone_rho_smallPower_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ ε : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hε : 0 < ε ∧ ε < Q γ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
+     :
     Tendsto (fun ν : ℝ =>
       (∫⁻ ω, rho γ (M ω) ε (Q γ - ν) (Q γ - ε) ^ (ν / γ) ∂P).toReal)
       (𝓝[>] 0) (𝓝 2) := by

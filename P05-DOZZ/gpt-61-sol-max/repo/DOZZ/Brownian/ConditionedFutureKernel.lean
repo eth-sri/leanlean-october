@@ -59,9 +59,7 @@ theorem measure_eq_of_cylinder_rectangles
     ext z
     simp [and_assoc, and_left_comm]
   apply MeasureTheory.ext_of_generate_finite C hgen hpi ?_ huniv
-  intro u hu
-  rcases hu with ⟨s, hs, t, ht, rfl⟩
-  exact hrect s hs t ht
+  grind
 
 /-- The positive-coordinate state of a negative conditioned path at time `t`. -/
 def conditionedPositiveStateAt (t : ℝ≥0) (p : BrownianPath) : ℝ := -(p t)
@@ -129,33 +127,33 @@ theorem measurable_conditionedPositiveFutureRationalEvals (t : ℝ≥0) :
     Measurable (conditionedPositiveFutureRationalEvals t) := by
   apply measurable_pi_iff.mpr
   intro q
-  change Measurable (fun p : BrownianPath =>
-    conditionedPositiveFuturePath t p ⟨max (q : ℝ) 0, le_max_right _ _⟩)
   exact (ContinuousMap.measurable_eval _).comp
     (by
       apply ContinuousMap.measurable_iff_eval.mpr
       intro s
       exact (ContinuousMap.measurable_eval (t + s)).neg)
 
+variable (t : ℝ≥0) (P : Measure BrownianPath) [_inst2 : IsFiniteMeasure P]
+
+include t P _inst2
 /-- The conditional law of the rational future evaluation sequence given the current radial
 state. -/
-noncomputable def conditionedPositiveFutureKernel (t : ℝ≥0)
-    (P : Measure BrownianPath) [IsFiniteMeasure P] : Kernel ℝ (ℚ → ℝ) :=
+noncomputable def conditionedPositiveFutureKernel  : Kernel ℝ (ℚ → ℝ) :=
   condDistrib (conditionedPositiveFutureRationalEvals t)
     (conditionedPositiveStateAt t) P
 
+
 /-- The regular conditional law of the rational future sequence given the complete path history
 up to deterministic time `t`. -/
-noncomputable def conditionedPositiveFutureHistoryKernel (t : ℝ≥0)
-    (P : Measure BrownianPath) [IsFiniteMeasure P] :
+noncomputable def conditionedPositiveFutureHistoryKernel  :
     Kernel (Set.Iic t → ℝ) (ℚ → ℝ) :=
   condDistrib (conditionedPositiveFutureRationalEvals t)
     (conditionedPositiveHistory t) P
 
+
 /-- The candidate Markov kernel that first reads the endpoint of a stopped history and then uses
 the state-conditioned future kernel. -/
-noncomputable def conditionedPositiveEndpointFutureKernel (t : ℝ≥0)
-    (P : Measure BrownianPath) [IsFiniteMeasure P] :
+noncomputable def conditionedPositiveEndpointFutureKernel  :
     Kernel (Set.Iic t → ℝ) (ℚ → ℝ) :=
   conditionedPositiveFutureKernel t P ∘ₖ
     Kernel.deterministic (fun h : Set.Iic t → ℝ => h ⟨t, le_rfl⟩) (by fun_prop)
@@ -178,39 +176,38 @@ instance isMarkovKernel_conditionedPositiveEndpointFutureKernel (t : ℝ≥0)
   dsimp [conditionedPositiveEndpointFutureKernel]
   infer_instance
 
+
 /-- The state/future-coordinate law is the composition product of the state marginal and its
 regular conditional future kernel. -/
-theorem conditionedPositiveFutureKernel_compProd (t : ℝ≥0)
-    (P : Measure BrownianPath) [IsFiniteMeasure P] :
+theorem conditionedPositiveFutureKernel_compProd  :
     (P.map (conditionedPositiveStateAt t)) ⊗ₘ conditionedPositiveFutureKernel t P =
       P.map (fun p =>
-        (conditionedPositiveStateAt t p, conditionedPositiveFutureRationalEvals t p)) := by
-  exact compProd_map_condDistrib
+        (conditionedPositiveStateAt t p, conditionedPositiveFutureRationalEvals t p)) := compProd_map_condDistrib
     (measurable_conditionedPositiveStateAt t).aemeasurable
     (measurable_conditionedPositiveFutureRationalEvals t).aemeasurable
+
 
 /-- The full-history kernel is the endpoint kernel exactly when the joint history/future law
 factorizes through that endpoint kernel. This is the measure identity to prove from the FDD split. -/
 theorem conditionedPositiveFutureHistoryKernel_eq_endpoint_iff_compProd
-    (t : ℝ≥0) (P : Measure BrownianPath) [IsFiniteMeasure P] :
+     :
     conditionedPositiveFutureHistoryKernel t P =ᵐ[P.map (conditionedPositiveHistory t)]
         conditionedPositiveEndpointFutureKernel t P ↔
       P.map (fun p =>
         (conditionedPositiveHistory t p, conditionedPositiveFutureRationalEvals t p)) =
         (P.map (conditionedPositiveHistory t)) ⊗ₘ
-          conditionedPositiveEndpointFutureKernel t P := by
-  simpa [conditionedPositiveFutureHistoryKernel] using
-    (condDistrib_ae_eq_iff_measure_eq_compProd
+          conditionedPositiveEndpointFutureKernel t P := (condDistrib_ae_eq_iff_measure_eq_compProd
       (μ := P)
       (hX := (measurable_conditionedPositiveHistory t).aemeasurable)
       (hY := (measurable_conditionedPositiveFutureRationalEvals t).aemeasurable)
       (κ := conditionedPositiveEndpointFutureKernel t P))
 
+
 /-- It is enough to check the full-history/future composition-product identity on rectangles
 whose history and future factors are finite-coordinate cylinders. The preceding general π-system
 lemma extends that finite-coordinate check to the complete product sigma algebra. -/
 theorem conditionedPositiveFutureHistoryKernel_ae_eq_endpoint_of_cylinder_rectangles
-    (t : ℝ≥0) (P : Measure BrownianPath) [IsFiniteMeasure P]
+
     (hrect : ∀ s ∈ MeasureTheory.measurableCylinders
         (fun _ : Set.Iic t => ℝ),
       ∀ u ∈ MeasureTheory.measurableCylinders (fun _ : ℚ => ℝ),
@@ -234,55 +231,46 @@ theorem conditionedPositiveFutureHistoryKernel_ae_eq_endpoint_of_cylinder_rectan
     · simpa using huniv
   exact (conditionedPositiveFutureHistoryKernel_eq_endpoint_iff_compProd t P).mpr hcomp
 
+
 /-- A finite rational-time vector of the future, conditioned on the current state, is the
 corresponding projection of the rational-sequence conditional kernel. -/
-theorem conditionedPositiveFutureKernel_finite_projection (t : ℝ≥0)
-    (P : Measure BrownianPath) [IsFiniteMeasure P] {n : ℕ}
+theorem conditionedPositiveFutureKernel_finite_projection  {n : ℕ}
     (times : Fin n → ℚ) :
     condDistrib (fun p i => conditionedPositiveFutureRationalEvals t p (times i))
         (conditionedPositiveStateAt t) P =ᵐ[P.map (conditionedPositiveStateAt t)]
       (conditionedPositiveFutureKernel t P).map (fun x i => x (times i)) := by
   let project : (ℚ → ℝ) → (Fin n → ℝ) := fun x i => x (times i)
   have hproject : Measurable project := by
-    apply measurable_pi_iff.mpr
-    intro i
-    exact measurable_pi_apply (times i)
+    fun_prop (disch := positivity)
   have h := condDistrib_comp (μ := P)
     (hX := (measurable_conditionedPositiveStateAt t).aemeasurable)
     (hY := (measurable_conditionedPositiveFutureRationalEvals t).aemeasurable)
     (f := project) hproject
-  have hfun : (fun p i => conditionedPositiveFutureRationalEvals t p (times i)) =
-      project ∘ conditionedPositiveFutureRationalEvals t := by
-    funext p
-    funext i
-    rfl
-  rw [hfun]
-  simpa [conditionedPositiveFutureKernel, project] using h
+  aesop
+
 
 /-- Every integrable measurable functional of the entire rational future sequence has conditional
 expectation given the complete deterministic-time history equal to its integral under the history
 kernel. -/
-theorem conditionedPositiveFutureHistoryKernel_condExp (t : ℝ≥0)
-    (P : Measure BrownianPath) [IsFiniteMeasure P]
+theorem conditionedPositiveFutureHistoryKernel_condExp
     (G : (ℚ → ℝ) → ℝ) (hG : StronglyMeasurable G)
     (hGint : Integrable (fun p => G (conditionedPositiveFutureRationalEvals t p)) P) :
     P[fun p => G (conditionedPositiveFutureRationalEvals t p) |
         (inferInstance : MeasurableSpace (Set.Iic t → ℝ)).comap
           (conditionedPositiveHistory t)] =ᵐ[P]
       fun p => ∫ x, G x ∂conditionedPositiveFutureHistoryKernel t P
-        (conditionedPositiveHistory t p) := by
-  simpa [conditionedPositiveFutureHistoryKernel] using
-    (condExp_ae_eq_integral_condDistrib
+        (conditionedPositiveHistory t p) := (condExp_ae_eq_integral_condDistrib
       (μ := P)
       (hX := measurable_conditionedPositiveHistory t)
       (hY := (measurable_conditionedPositiveFutureRationalEvals t).aemeasurable)
       (f := G) hG hGint)
 
+
 /-- Once the history and endpoint conditional kernels are identified from the FDDs, the
 full-filtration conditional expectation is the endpoint-kernel integral for every integrable
 future functional. -/
 theorem conditionedPositiveFutureHistoryKernel_condExp_of_ae_eq_endpoint
-    (t : ℝ≥0) (P : Measure BrownianPath) [IsFiniteMeasure P]
+
     (G : (ℚ → ℝ) → ℝ) (hG : StronglyMeasurable G)
     (hGint : Integrable (fun p => G (conditionedPositiveFutureRationalEvals t p)) P)
     (hkernel : ∀ᵐ p ∂P,
@@ -295,14 +283,9 @@ theorem conditionedPositiveFutureHistoryKernel_condExp_of_ae_eq_endpoint
   rw [← conditionedPositiveHistory_sigma_eq t]
   have hHistory := conditionedPositiveFutureHistoryKernel_condExp t P G hG hGint
   filter_upwards [hHistory, hkernel] with p hp hk
-  calc
-    P[fun p => G (conditionedPositiveFutureRationalEvals t p) |
-        (inferInstance : MeasurableSpace (Set.Iic t → ℝ)).comap
-          (conditionedPositiveHistory t)] p =
-      ∫ x, G x ∂conditionedPositiveFutureHistoryKernel t P
-        (conditionedPositiveHistory t p) := hp
-    _ = ∫ x, G x ∂conditionedPositiveFutureKernel t P
-        (conditionedPositiveStateAt t p) := by rw [hk]
+  simp_all
+omit t P _inst2
+
 
 end DOZZ.Proofs
 

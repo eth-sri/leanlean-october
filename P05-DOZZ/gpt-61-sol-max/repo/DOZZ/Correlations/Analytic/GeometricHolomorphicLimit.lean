@@ -9,7 +9,7 @@ public import Mathlib.Topology.MetricSpace.Cauchy
 
 /-! A common canonical limit for an eventually holomorphic geometric Cauchy family. -/
 
-@[expose] public section
+public section
 open Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -25,9 +25,9 @@ theorem holomorphic_limit_of_eventual_geometric {N : ℕ}
   obtain ⟨n₀, hn₀⟩ := eventually_atTop.mp hF
   let G (n : ℕ) := F (n + n₀)
   let r := Real.exp (-κ)
-  have hr : r < 1 := Real.exp_lt_one_iff.mpr (neg_lt_zero.mpr hκ)
+  have hr  := Real.exp_lt_one_iff.mpr (neg_lt_zero.mpr hκ)
   have hr0 : 0 ≤ r := (Real.exp_pos _).le
-  have hG : ∀ n, DifferentiableOn ℂ (G n) U :=
+  have hG  :=
     fun n => (hn₀ (n + n₀) (Nat.le_add_left n₀ n)).1
   have hstep : ∀ x ∈ U, ∀ n : ℕ, dist (G n x) (G (n + 1) x) ≤ K * r ^ n := by
     intro x hx n
@@ -48,11 +48,11 @@ theorem holomorphic_limit_of_eventual_geometric {N : ℕ}
       (cauchySeq_of_le_geometric _ _ hr (hstep x hx))
     exact ⟨L, (tendsto_add_atTop_iff_nat n₀).mp hL⟩
   let f := fun x => limUnder atTop (fun n => F n x)
-  have hlim : ∀ x ∈ U, Tendsto (fun n => F n x) atTop (𝓝 (f x)) :=
+  have hlim  :=
     fun x hx => tendsto_nhds_limUnder (hconv x hx)
-  have hlimG : ∀ x ∈ U, Tendsto (fun n => G n x) atTop (𝓝 (f x)) :=
+  have hlimG  :=
     fun x hx => (tendsto_add_atTop_iff_nat n₀).mpr (hlim x hx)
-  have hdist : ∀ x ∈ U, ∀ n, dist (G n x) (f x) ≤ K * r ^ n / (1 - r) :=
+  have hdist  :=
     fun x hx n => dist_le_of_le_geometric_of_tendsto _ _ hr (hstep x hx) (hlimG x hx) n
   have hbound : Tendsto (fun n : ℕ => K * r ^ n / (1 - r)) atTop (𝓝 0) := by
     simpa only [mul_zero, zero_div] using
@@ -68,10 +68,9 @@ theorem holomorphic_limit_of_eventual_geometric {N : ℕ}
     intro ε hε
     obtain ⟨k, hk⟩ := eventually_atTop.mp (Metric.tendstoUniformlyOn_iff.mp hUG ε hε)
     filter_upwards [eventually_ge_atTop (k + n₀)] with n hn x hx
-    have hn₀ : n₀ ≤ n := (Nat.le_add_left n₀ k).trans hn
-    have hnk : k ≤ n - n₀ := (Nat.le_sub_iff_add_le hn₀).mpr hn
-    have he := hk (n - n₀) hnk x hx
-    simpa only [G, Nat.sub_add_cancel hn₀] using he
+    have hn₀  := (Nat.le_add_left n₀ k).trans hn
+    have hnk  := (Nat.le_sub_iff_add_le hn₀).mpr hn
+    grind
   exact ⟨(differentiableOn_of_tendstoLocallyUniformlyOn_fin U hU G f hG
     hUG.tendstoLocallyUniformlyOn).1, hUF⟩
 

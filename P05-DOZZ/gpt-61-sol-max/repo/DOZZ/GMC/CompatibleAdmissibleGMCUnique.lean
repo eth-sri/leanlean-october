@@ -10,7 +10,7 @@ import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
 
 /-! Uniqueness transfer once mixed cutoff test integrals are Cauchy in measure. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology ProbabilityTheory
 open scoped CompactlySupported
@@ -31,17 +31,14 @@ theorem tendstoInMeasure_sub
   have hδ : 0 < δ := by dsimp [δ]; linarith
   have hFnorm := (tendstoInMeasure_iff_norm).mp hF
   have hGnorm := (tendstoInMeasure_iff_norm).mp hG
-  have hFzero : Tendsto
-      (fun i => P {ω | δ ≤ ‖F i ω - Flim ω‖}) l (𝓝 0) := hFnorm δ hδ
-  have hGzero : Tendsto
-      (fun i => P {ω | δ ≤ ‖G i ω - Glim ω‖}) l (𝓝 0) := hGnorm δ hδ
+  have hFzero  := hFnorm δ hδ
+  have hGzero  := hGnorm δ hδ
   have hsum : Tendsto
       (fun i => P {ω | δ ≤ ‖F i ω - Flim ω‖} +
         P {ω | δ ≤ ‖G i ω - Glim ω‖}) l (𝓝 0) := by
     simpa using hFzero.add hGzero
   refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hsum ?_ ?_
-  · intro i
-    exact bot_le
+  · exact bot_le
   · intro i
     let A : Set Ω := {ω | δ ≤ ‖F i ω - Flim ω‖}
     let B : Set Ω := {ω | δ ≤ ‖G i ω - Glim ω‖}
@@ -55,22 +52,7 @@ theorem tendstoInMeasure_sub
         calc
           _ = ‖(F i ω - Flim ω) - (G i ω - Glim ω)‖ := by congr 1; ring
           _ ≤ _ := norm_sub_le _ _
-      by_contra hnot
-      have hFlt : ‖F i ω - Flim ω‖ < δ := lt_of_not_ge (by
-        intro h
-        exact hnot (Or.inl h))
-      have hGlt : ‖G i ω - Glim ω‖ < δ := lt_of_not_ge (by
-        intro h
-        exact hnot (Or.inr h))
-      have hFltNorm : ‖F i ω - Flim ω‖ < δ := by
-        simpa only [Real.norm_eq_abs] using hFlt
-      have hGltNorm : ‖G i ω - Glim ω‖ < δ := by
-        simpa only [Real.norm_eq_abs] using hGlt
-      have hsumlt : ‖F i ω - Flim ω‖ + ‖G i ω - Glim ω‖ < ε := by
-        calc
-          _ < δ + δ := add_lt_add hFltNorm hGltNorm
-          _ = ε := by dsimp [δ]; ring
-      exact (not_le_of_gt (lt_of_le_of_lt htriangle hsumlt)) hω
+      grind
     change P E ≤ P A + P B
     calc
       P E ≤ P (A ∪ B) := measure_mono hsubset

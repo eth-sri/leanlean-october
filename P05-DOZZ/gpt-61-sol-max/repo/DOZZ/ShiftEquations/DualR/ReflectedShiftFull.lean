@@ -10,6 +10,7 @@ import DOZZ.Brownian.Reflection.RtheorAnalytic
 import DOZZ.Brownian.Reflection.WitnessIndependence
 import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
 import DOZZ.ShiftEquations.Rbar.Continuation
+public import DOZZ.ShiftEquations.Contracts
 
 /-!
 # The reflected γ/2 shift on the whole two-triple extended domain
@@ -24,7 +25,7 @@ every real point of that set where `R`, `Γ` at both `s`-parameters and the shif
 analytic: the second half of the gluing lemma ([KRV, Lemma 10.5]).
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -106,28 +107,14 @@ theorem reflectedShift_of_box {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
   rw [segH_one P M hμ hf₃eq h₁, segH_one P M hμ hf₃eq h₂, segC_one, segC_one, segC_one] at key
   exact key
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X M γ μ hγ hγ2 hμ hX hM in
 /-- **The reflected shift near `Q` from `DOZZ.structureConstant_reflected_shift_and_gluing`**, for a
 strip-meromorphic `R` with the physical reflection values, at every real point of the near-`Q` box
 where `R` is analytic. -/
-theorem reflectedShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) {η : ℝ} (hη : 0 < η ∧ Q γ - 2 * η > γ)
-    (hShiftGluing : ∀ α₂ α₃ : ℝ, (Q γ - η < α₂ ∧ α₂ < Q γ) → (Q γ - η < α₃ ∧ α₃ < Q γ) →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) = (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ, C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2)))
+theorem reflectedShift_nearQ_of_reflected_shift_and_gluing  {η : ℝ} (hη : 0 < η ∧ Q γ - 2 * η > γ)
+    (hShiftGluing : Contract.fixedShiftGluing P X M γ μ η)
     {hR : ℝ} (hhR : 0 < hR) {R : ℂ → ℂ} (hRm : MeromorphicOn R (horizontalStrip hR))
     {BR : ℝ → Ω → BrownianPath × BrownianPath} {ZR : Ω → Measure ℝ}
     (hBR : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (BR α) ZR)
@@ -165,31 +152,14 @@ theorem reflectedShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [Measura
     hf₃eq hh'pos (hCm.mono_set hsub₁) (hRsm.mono_set hsub₁) (hRm.mono_set hsub₂) hCv hRsR hrefl
     hy₁ hy₂ hRy hAy
 
+include Ω _inst1 P X M γ μ hγ hγ2 hμ hX hM in
 /-- **The reflected shift on the two-triple extended domain**, from
 `DOZZ.structureConstant_reflected_shift_and_gluing`: for a strip-meromorphic `R` with the physical
 reflection values, at every real `(x, b, c)` with `(2Q - x, b, c)` and `(x - γ, b, c)` in the
 extended Seiberg domain, `R` analytic at `x`, `Γ` analytic at both `s`-parameters and the shift
 coefficient analytic. -/
-theorem reflectedShift_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hShiftGluing : ∀ η : ℝ, (0 < η ∧ Q γ - 2 * η > γ) → ∀ α₂ α₃ : ℝ,
-      (Q γ - η < α₂ ∧ α₂ < Q γ) → (Q γ - η < α₃ ∧ α₃ < Q γ) →
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (B α) Z) ∧
-            ∃ h : ℝ, 0 < h ∧ ∃ C R : ℂ → ℂ,
-              MeromorphicOn C {z | |z.im| < h} ∧
-              MeromorphicOn R {z | |z.im| < h} ∧
-              (∀ α : ℝ, 2 * η < α → α < Q γ →
-                C (α : ℂ) = (structureConstant P M γ μ α α₂ α₃ : ℂ)) ∧
-              (∀ α : ℝ, γ / 2 < α → α < Q γ →
-                R (α : ℂ) = (reflectionR P γ μ α (B α) Z : ℂ)) ∧
-              (∀ᶠ z in codiscrete ℂ, C z = R z * C (2 * Q γ - z)) ∧
-              (∀ᶠ z in codiscrete ℂ,
-                R (z + γ / 2) * C (2 * Q γ - z - γ / 2) =
-                  -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
-                    C (z - γ / 2)))
+theorem reflectedShift_full 
+    (hShiftGluing : Contract.shiftGluing P X M γ μ)
     {hR : ℝ} (hhR : 0 < hR) {R : ℂ → ℂ} (hRm : MeromorphicOn R (horizontalStrip hR))
     {BR : ℝ → Ω → BrownianPath × BrownianPath} {ZR : Ω → Measure ℝ}
     (hBR : ∀ α : ℝ, γ / 2 < α → α < Q γ → IsReflectionData P γ α (BR α) ZR)
@@ -216,7 +186,7 @@ theorem reflectedShift_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (
   set x₁ : ℝ := Q γ + γ / 2 with hx₁
   obtain ⟨u, hu, hRu⟩ : ∃ u : ℝ, u ∈ Ioo (-(γ / 4)) (γ / 4) ∧
       AnalyticAt ℂ R ((x₁ + u : ℝ) : ℂ) := by
-    have hmer : MeromorphicAt R (x₁ : ℂ) := hRm _ (ofReal_mem_horizontalStrip hhR x₁)
+    have hmer  := hRm _ (ofReal_mem_horizontalStrip hhR x₁)
     have hev := eventually_analyticAt_affine hmer (a := 1) one_ne_zero
     have hI : Ioo (-(γ / 4)) (γ / 4) ∈ 𝓝 (0 : ℝ) := Ioo_mem_nhds (by linarith) (by linarith)
     obtain ⟨u, hu1, hu2⟩ := (hev.and (nhdsWithin_le_nhds hI)).exists

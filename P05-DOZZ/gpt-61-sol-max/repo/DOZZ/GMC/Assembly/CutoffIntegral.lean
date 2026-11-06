@@ -34,9 +34,9 @@ theorem exists_local_barrier_parameters (γ₀ : ℝ) (hγ₀ : 0 < γ₀) (hγ�
   obtain ⟨a, κ, η, hγa, ha2, hκ, hκ2, hη, hη1, hexp⟩ :=
     exists_fixed_charge_robust_barrier_parameters γ₀ hγ₀ hγ₀2
   set κ' : ℝ := (κ + 2) / 2 with hκ'def
-  let φ : ℝ → ℝ := fun g => g ^ 2 - ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η)))
+  let φ  := fun g => g ^ 2 - ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η)))
   have hφ : Continuous φ := by fun_prop
-  let V : Set ℝ := {g | 0 < g} ∩ {g | g < a} ∩ {g | a < 2 * g} ∩ {g | φ g < κ'}
+  let V  := {g | 0 < g} ∩ {g | g < a} ∩ {g | a < 2 * g} ∩ {g | φ g < κ'}
   have hV : IsOpen V :=
     (((isOpen_lt continuous_const continuous_id).inter
       (isOpen_lt continuous_id continuous_const)).inter
@@ -75,11 +75,7 @@ theorem chartMass_L1_uniform_cauchy
         g ^ 2 - ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η))) ≤ κ :=
     fun γ₀ => exists_local_barrier_parameters γ₀ (hI2 γ₀.2).1 (hI2 γ₀.2).2
   choose δ hδ a η κ hlo hhi ha2 hη hη1 hκ hκ2 hexp using hloc
-  have hR : ∀ γ₀ : I, ∃ R : ℝ, ∀ r s : ℝ, R ≤ r → R ≤ s →
-      ∀ g ∈ Icc ((γ₀ : ℝ) - δ γ₀) ((γ₀ : ℝ) + δ γ₀), ∀ f : ℂ → ℝ, Measurable f →
-      (∀ x, 0 ≤ f x) → (∀ x, f x ≤ L) →
-      ∫⁻ ω, ennDist (chartMass P U dens K Y g r f ω) (chartMass P U dens K Y g s f ω) ∂P <
-        ENNReal.ofReal ε := fun γ₀ =>
+  have hR  := fun γ₀ =>
     chartMass_L1_uniform_cauchy_interval P U dens ε₀ Y hY K hK hKU _ _ (a γ₀) (η γ₀) (κ γ₀)
       (hlo γ₀) (by linarith [hδ γ₀]) (hhi γ₀) (ha2 γ₀) (hη γ₀) (hη1 γ₀) (hκ γ₀) (hκ2 γ₀)
       (hexp γ₀) L hL ε hε
@@ -91,7 +87,7 @@ theorem chartMass_L1_uniform_cauchy
   refine ⟨∑ i ∈ t, |R i|, ?_⟩
   intro r s hr hs g hg f hf hf0 hfL
   obtain ⟨i, hi, hgi⟩ := Set.mem_iUnion₂.mp (ht hg)
-  have hRi : R i ≤ ∑ j ∈ t, |R j| :=
+  have hRi  :=
     (le_abs_self _).trans (Finset.single_le_sum (fun j _ => abs_nonneg (R j)) hi)
   exact hR i r s (hRi.trans hr) (hRi.trans hs) g ⟨hgi.1.le, hgi.2.le⟩ f hf hf0 hfL
 
@@ -142,9 +138,7 @@ theorem admissibleCutoff_integrand_measurable
   have hv' : Measurable (fun x => ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P) := by
     have heq : (fun x => ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P) =
         fun x => gaussianVariance P (fun ω => Y ω (Real.exp (-r)) x) := by
-      funext x
-      unfold gaussianVariance gaussianCovariance
-      simp only [pow_two]
+      noncomm_ring
     rw [heq]; exact hv
   have hfield : Measurable (fun x : ℂ => Y ω (Real.exp (-r)) x) :=
     (hY.measurableAtScale (Real.exp (-r))).comp (measurable_const.prodMk measurable_id)
@@ -196,7 +190,7 @@ theorem lintegral_admissibleLogWickWeight
     ∫⁻ ω, admissibleLogWickWeight P Y g ε x ω ∂P = 1 := by
   have h := compatibleAdmissibleSelectedWickWeight_lintegral_eq_one P U dens ε₀ ε₀ Y Y hY hY
     true ε hε (by rw [min_self]; exact hεcut) x g
-  simpa only [ite_self] using h
+  exact h
 
 /-- The expected chart mass of a test with values in `[0, L]` is at most `L` times the reference
 mass of the chart. -/
@@ -226,7 +220,7 @@ theorem lintegral_chartMass_le
     _ ≤ ∫⁻ _, ENNReal.ofReal L ∂(logRegularizationReference U dens).restrict K :=
         lintegral_mono fun x => ENNReal.ofReal_le_ofReal (hfL x)
     _ = ENNReal.ofReal L * logRegularizationReference U dens K := by
-        rw [lintegral_const, Measure.restrict_apply_univ]
+        simp_all
 
 /-- The real distance of two real parts is at most the symmetric extended difference. -/
 theorem ofReal_abs_toReal_sub_le_ennDist (x y : ℝ≥0∞) :
@@ -253,7 +247,7 @@ theorem admissibleCutoff_integrand_integrable_ae
     ∀ᵐ ω ∂P, Integrable (fun x => f x * Real.exp (g * Y ω (Real.exp (-r)) x - g ^ 2 / 2 *
       ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)) (logRegularizationReference U dens) := by
   have hσK := admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY K hK hKU
-  have habs : Measurable (fun x => |f x|) := continuous_abs.measurable.comp hf
+  have habs  := continuous_abs.measurable.comp hf
   have hmass := lintegral_chartMass_le P U dens ε₀ Y hY K g r hr L (fun x => |f x|) habs hfL
   have hmeas : Measurable (chartMass P U dens K Y g r (fun x => |f x|)) :=
     wickEventMass_measurable P U dens ε₀ Y hY _ g r Set.univ MeasurableSet.univ _ habs
@@ -294,11 +288,11 @@ theorem admissibleCutoffIntegral_L1_uniform_cauchy
   refine ⟨max R₁ (-Real.log ε₀), ?_⟩
   intro r s hr hs g hg f hf hfL hfK
   have hcut (t : ℝ) (ht : max R₁ (-Real.log ε₀) ≤ t) : Real.exp (-t) ≤ ε₀ := by
-    have h1 : -Real.log ε₀ ≤ t := le_trans (le_max_right _ _) ht
+    have h1  := le_trans (le_max_right _ _) ht
     calc Real.exp (-t) ≤ Real.exp (Real.log ε₀) := Real.exp_le_exp.mpr (by linarith)
       _ = ε₀ := Real.exp_log hY.cutoffPositive
-  let fp : ℂ → ℝ := fun x => max (f x) 0
-  let fm : ℂ → ℝ := fun x => max (-f x) 0
+  let fp  := fun x => max (f x) 0
+  let fm  := fun x => max (-f x) 0
   have hfp : Measurable fp := hf.max measurable_const
   have hfm : Measurable fm := hf.neg.max measurable_const
   have hfp0 : ∀ x, 0 ≤ fp x := fun x => le_max_right _ _
@@ -310,10 +304,7 @@ theorem admissibleCutoffIntegral_L1_uniform_cauchy
   have hfpK : ∀ x ∉ K, fp x = 0 := fun x hx => by simp [fp, hfK x hx]
   have hfmK : ∀ x ∉ K, fm x = 0 := fun x hx => by simp [fm, hfK x hx]
   have hsplit (x : ℂ) : f x = fp x - fm x := by
-    simp only [fp, fm]
-    rcases le_total 0 (f x) with h | h
-    · rw [max_eq_left h, max_eq_right (by linarith)]; ring
-    · rw [max_eq_right h, max_eq_left (by linarith)]; ring
+    grind
   have hdecomp (t : ℝ) (ht : max R₁ (-Real.log ε₀) ≤ t) : ∀ᵐ ω ∂P,
       admissibleCutoffIntegral P U dens Y g t f ω =
         (chartMass P U dens K Y g t fp ω).toReal - (chartMass P U dens K Y g t fm ω).toReal := by
@@ -322,16 +313,13 @@ theorem admissibleCutoffIntegral_L1_uniform_cauchy
       L' fp hfp (fun x => by rw [abs_of_nonneg (hfp0 x)]; exact hfpL x) hfpK
     have hmInt := admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY K hK hKU g t (hcut t ht)
       L' fm hfm (fun x => by rw [abs_of_nonneg (hfm0 x)]; exact hfmL x) hfmK
-    have _ := hfabs
+    
     filter_upwards [hpInt, hmInt] with ω hp hm
     rw [← admissibleCutoffIntegral_eq_toReal_chartMass P U dens ε₀ Y hY K g t fp hfp hfp0 hfpK ω,
       ← admissibleCutoffIntegral_eq_toReal_chartMass P U dens ε₀ Y hY K g t fm hfm hfm0 hfmK ω]
     unfold admissibleCutoffIntegral
     rw [← integral_sub hp hm]
-    apply integral_congr_ae
-    filter_upwards [] with x
-    rw [hsplit x]
-    ring
+    grind
   have hptwise : ∀ᵐ ω ∂P, ENNReal.ofReal |admissibleCutoffIntegral P U dens Y g r f ω -
       admissibleCutoffIntegral P U dens Y g s f ω| ≤
       ennDist (chartMass P U dens K Y g r fp ω) (chartMass P U dens K Y g s fp ω) +
@@ -350,8 +338,8 @@ theorem admissibleCutoffIntegral_L1_uniform_cauchy
           ENNReal.ofReal_add (abs_nonneg _) (abs_nonneg _)
       _ ≤ _ := add_le_add (ofReal_abs_toReal_sub_le_ennDist _ _)
           (ofReal_abs_toReal_sub_le_ennDist _ _)
-  have hR₁r : R₁ ≤ r := le_trans (le_max_left _ _) hr
-  have hR₁s : R₁ ≤ s := le_trans (le_max_left _ _) hs
+  have hR₁r  := le_trans (le_max_left _ _) hr
+  have hR₁s  := le_trans (le_max_left _ _) hs
   have hmp (t : ℝ) : Measurable (chartMass P U dens K Y g t fp) :=
     wickEventMass_measurable P U dens ε₀ Y hY _ g t Set.univ MeasurableSet.univ fp hfp
   calc _ ≤ ∫⁻ ω, ennDist (chartMass P U dens K Y g r fp ω) (chartMass P U dens K Y g s fp ω) +
@@ -408,7 +396,7 @@ theorem cutoffIntegrand_integrable
   refine ⟨(admissibleCutoff_integrand_measurable P U dens ε₀ Y hY g r f hf ω).aestronglyMeasurable,
     ?_⟩
   unfold HasFiniteIntegral
-  have hL : 0 ≤ L := (abs_nonneg _).trans (hfL 0)
+  
   have hnorm : (fun x => ‖cutoffIntegrand P Y g r f ω x‖ₑ) = fun x => ENNReal.ofReal (|f x| *
       Real.exp (g * Y ω (Real.exp (-r)) x - g ^ 2 / 2 *
         ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P)) := by
@@ -424,7 +412,7 @@ theorem cutoffIntegrand_integrable
     intro x
     beta_reduce
     rw [ENNReal.ofReal_one, one_mul, ← mul_assoc]
-    exact mul_le_mul_left (mul_le_mul_left (ENNReal.ofReal_le_ofReal (hfL x)) _) _
+    bound
   exact lt_of_le_of_lt hle (ENNReal.mul_lt_top ENNReal.ofReal_lt_top (lt_top_iff_ne_top.mpr hω))
 
 /-- Additivity of the cutoff integral in the test. -/
@@ -476,7 +464,7 @@ theorem admissibleCutoffIntegral_mono
   apply integral_mono (cutoffIntegrand_integrable P U dens ε₀ Y hY K g r ω hω L₁ f₁ hf₁ hf₁L hf₁K)
     (cutoffIntegrand_integrable P U dens ε₀ Y hY K g r ω hω L₂ f₂ hf₂ hf₂L hf₂K)
   intro x
-  exact mul_le_mul_of_nonneg_right (hle x) (Real.exp_pos _).le
+  bound
 
 /-- Unit chart masses are finite almost surely at every admissible cutoff. -/
 theorem chartUnitMass_ne_top_ae

@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Reflected.BufferWeight
 public import DOZZ.FourPoint.ReflectedOuter.Rates
 import Mathlib.Tactic
 /-! The literal intermediate spatial buffer has a negligible first-order expectation. -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -40,7 +40,7 @@ theorem reflected_spatial_buffer_first_order_littleO {Ω : Type*} [MeasurableSpa
     simpa only [Metric.mem_ball,dist_zero_right] using hx.2
   have hsep : ∀ x ∈ U, 0 < ‖x‖ ∧ ‖z‖ ≤ Real.exp h*‖x‖ := by
     intro x hx
-    have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz0
+    have hn  := norm_pos_iff.mpr hz0
     refine ⟨(mul_pos (Real.exp_pos _) hn).trans_le hx.1, ?_⟩
     have hh := mul_le_mul_of_nonneg_left hx.1 (Real.exp_pos h).le
     have he : Real.exp h*Real.exp (-h) = 1 := by rw [← Real.exp_add,add_neg_cancel,Real.exp_zero]

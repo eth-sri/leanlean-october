@@ -37,8 +37,6 @@ theorem measurable_brownianUpperConditionedPositiveRationalEvals :
       brownianUpperConditionedPositiveRationalEvals z.1 z.2) := by
   apply measurable_pi_iff.mpr
   intro r
-  change Measurable (fun z : ℝ × BrownianPath =>
-    z.1 - z.2 ⟨max (r : ℝ) 0, le_max_right _ _⟩)
   exact measurable_fst.sub
     ((ContinuousMap.measurable_eval _).comp measurable_snd)
 
@@ -66,15 +64,13 @@ theorem measurable_brownianUpperConditionedRawDensity (ν : ℝ) :
     Measurable (Function.uncurry (brownianUpperConditionedRawDensity ν)) := by
   let D : ℝ × BrownianPath → ℝ × BrownianPath := fun z =>
     (z.1, driftedBrownianPath (-ν) z.2)
-  have hD : Measurable D := by
-    exact measurable_fst.prodMk
+  have hD : Measurable D := measurable_fst.prodMk
       (continuous_driftedBrownianPath.measurable.comp
         ((measurable_const (a := -ν)).prodMk measurable_snd))
   have hsurv : MeasurableSet {z : ℝ × BrownianPath |
       ∀ s : ℝ≥0, driftedBrownianPath (-ν) z.2 s < z.1} := by
     let H : Set (ℝ × BrownianPath) := {z | ∃ s : ℝ≥0, z.1 ≤ z.2 s}
-    have hh : MeasurableSet (D ⁻¹' H) := by
-      exact measurableSet_brownianPath_joint_hit.preimage hD
+    have hh  := measurableSet_brownianPath_joint_hit.preimage hD
     have heq : {z : ℝ × BrownianPath |
         ∀ s : ℝ≥0, driftedBrownianPath (-ν) z.2 s < z.1} =
         (D ⁻¹' H)ᶜ := by
@@ -108,14 +104,7 @@ theorem measurable_brownianUpperConditionedRawDensity (ν : ℝ) :
             (fun _ => (1 : ℝ≥0∞)) z.2) =
           S.indicator (fun _ => (1 : ℝ≥0∞)) z := by
         by_cases hq : ∀ s : ℝ≥0, driftedBrownianPath (-ν) z.2 s < z.1
-        · have hqPath : z.2 ∈ {q : BrownianPath | ∀ s : ℝ≥0,
-              driftedBrownianPath (-ν) q s < z.1} := hq
-          have hqPair : z ∈ S := by simpa [S] using hq
-          simp [Set.indicator_of_mem hqPath, Set.indicator_of_mem hqPair]
-        · have hqPath : z.2 ∉ {q : BrownianPath | ∀ s : ℝ≥0,
-              driftedBrownianPath (-ν) q s < z.1} := fun h => hq h
-          have hqPair : z ∉ S := by simpa [S] using hq
-          simp [Set.indicator_of_notMem hqPath, Set.indicator_of_notMem hqPair]
+        all_goals aesop
       simp only [dite_eq_left hx]
       rw [hI]
       simp [w, S, hx]
@@ -140,9 +129,8 @@ instance isSFiniteKernel_brownianUpperConditionedRawKernel
   unfold brownianUpperConditionedRawDensity
   split_ifs with hx
   · have hH := conditionedH_pos_ref hν hx
-    have hzero : ENNReal.ofReal (conditionedH ν x) ≠ 0 :=
-      ne_of_gt (ENNReal.ofReal_pos.mpr hH)
-    have hweight : (ENNReal.ofReal (conditionedH ν x))⁻¹ < ⊤ :=
+
+    have hweight  :=
       ENNReal.inv_lt_top.mpr (ENNReal.ofReal_pos.mpr hH)
     have hindicator : ({q : BrownianPath | ∀ s : ℝ≥0,
         driftedBrownianPath (-ν) q s < x}.indicator (fun _ => (1 : ℝ≥0∞)) q) ≤ 1 := by
@@ -192,8 +180,7 @@ theorem brownianUpperConditionedRawPairKernel_apply
 theorem measurable_brownianUpperConditionedReferenceFutureMap (ν : ℝ) :
     Measurable (fun z : ℝ × BrownianPath =>
       brownianUpperConditionedPositiveRationalEvals z.1
-        (driftedBrownianPath (-ν) z.2)) := by
-  exact measurable_brownianUpperConditionedPositiveRationalEvals.comp
+        (driftedBrownianPath (-ν) z.2)) := measurable_brownianUpperConditionedPositiveRationalEvals.comp
     (measurable_fst.prodMk
       (continuous_driftedBrownianPath.measurable.comp
         ((measurable_const (a := -ν)).prodMk measurable_snd)))
@@ -237,9 +224,9 @@ theorem brownianUpperConditionedRawKernel_map_drifted
     (ν x : ℝ) (hν : 0 < ν) (hx : 0 < x) :
     (brownianUpperConditionedRawKernel B ν hν x).map
         (driftedBrownianPath (-ν)) = brownianBelowConditionedLaw B ν x := by
-  let E : Set BrownianPath := {q | ∀ s : ℝ≥0, driftedBrownianPath (-ν) q s < x}
+  let E  := {q | ∀ s : ℝ≥0, driftedBrownianPath (-ν) q s < x}
   have hE : MeasurableSet E := by
-    have hmD : Measurable (driftedBrownianPath (-ν)) :=
+    have hmD  :=
       continuous_driftedBrownianPath.measurable.comp
         ((measurable_const (a := -ν)).prodMk measurable_id)
     exact (measurableSet_brownianPath_below x).preimage hmD
@@ -288,7 +275,7 @@ theorem isFiniteKernel_brownianUpperConditionedReferenceFutureKernel
     IsFiniteKernel (brownianUpperConditionedReferenceFutureKernel B ν hν) := by
   refine ⟨1, ENNReal.one_lt_top, fun x => ?_⟩
   by_cases hx : 0 < x
-  · let : IsProbabilityMeasure (brownianBelowConditionedLaw B ν x) :=
+  · let  :=
       isProbabilityMeasure_brownianBelowConditionedLaw B hB ν x hν hx
     have hprob : IsProbabilityMeasure
         (brownianUpperConditionedReferenceFutureKernel B ν hν x) := by
@@ -322,32 +309,7 @@ theorem conditionedPositiveTimeChainDensity_translate
   | zero => simp [conditionedPositiveTimeChainDensity]
   | succ n ih =>
       simp only [List.ofFn_succ, conditionedPositiveTimeChainDensity]
-      rw [show (d + offsets 0) - (d + s) = offsets 0 - s by ring]
-      have htail :
-          conditionedPositiveTimeChainDensity ν (d + offsets 0) (values 0)
-            (List.ofFn fun i : Fin n => (d + offsets 0) +
-              (offsets i.succ - offsets 0))
-            (List.ofFn fun i : Fin n => values i.succ) =
-          conditionedPositiveTimeChainDensity ν (offsets 0) (values 0)
-            (List.ofFn fun i : Fin n => offsets 0 +
-              (offsets i.succ - offsets 0))
-            (List.ofFn fun i : Fin n => values i.succ) := by
-        simpa only [← add_assoc] using
-          (ih (offsets 0) (values 0)
-            (fun i => offsets 0 + (offsets i.succ - offsets 0))
-            (fun i => values i.succ))
-      have htimesL :
-          (fun i : Fin n => (d + offsets 0) + (offsets i.succ - offsets 0)) =
-            (fun i => d + offsets i.succ) := by
-        funext i
-        ring
-      have htimesR :
-          (fun i : Fin n => offsets 0 + (offsets i.succ - offsets 0)) =
-            (fun i => offsets i.succ) := by
-        funext i
-        ring
-      rw [htimesL, htimesR] at htail
-      rw [htail]
+      simp_all
 
 private theorem conditionedPositiveTransitionDensity_nonneg_ref
     {ν t x : ℝ} (hν : 0 ≤ ν) (ht : 0 < t) (y : ℝ) :
@@ -400,17 +362,14 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection
           (fun _ : Fin 1 => t) (fun i => t + (offsets i : ℝ))
           (fun _ => z) y)) x A := by
   have _ := ht
-  let ts : Fin n → ℝ≥0 := fun i => Real.toNNReal (offsets i : ℝ)
+  let ts  := fun i => Real.toNNReal (offsets i : ℝ)
   have hts0 : ∀ i, 0 < ts i := by
     intro i
     exact Real.toNNReal_pos.mpr (hoff i)
   have htsmono : StrictMono ts := by
     intro i j hij
-    rw [← NNReal.coe_lt_coe,
-      Real.coe_toNNReal _ (hoff i).le,
-      Real.coe_toNNReal _ (hoff j).le]
-    exact_mod_cast hmono hij
-  let ds : Fin n → ℝ≥0 := brownianFirstHitElapsed n ts
+    aesop
+  let ds  := brownianFirstHitElapsed n ts
   have hds : ∀ i, 0 < ds i := by
     intro i
     exact brownianFirstHitElapsed_pos n ts hts0 htsmono i
@@ -419,11 +378,9 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection
     | zero => funext i; exact Fin.elim0 i
     | succ m => exact brownianFirstHitTimes_elapsed m ts htsmono.monotone
   have hEval : Measurable (fun q : BrownianPath =>
-      brownianUpperConditionedPositiveRationalEvals x q) := by
-    exact measurable_brownianUpperConditionedPositiveRationalEvals.comp
+      brownianUpperConditionedPositiveRationalEvals x q) := measurable_brownianUpperConditionedPositiveRationalEvals.comp
       (measurable_const.prodMk measurable_id)
-  have hproject : Measurable (fun y : ℚ → ℝ => fun i => y (offsets i)) := by
-    exact measurable_pi_iff.mpr (fun i => measurable_pi_apply (offsets i))
+  have hproject : Measurable (fun y : ℚ → ℝ => fun i => y (offsets i)) := measurable_pi_iff.mpr (fun i => measurable_pi_apply (offsets i))
   have htimesMap : (fun q : BrownianPath => fun i => x - q (ts i)) =
       (fun q => fun i => x - q (brownianFirstHitTimes n ds i)) := by
     funext q i
@@ -433,14 +390,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection
   have hcompose : (fun y : ℚ → ℝ => fun i => y (offsets i)) ∘
       (fun q : BrownianPath => brownianUpperConditionedPositiveRationalEvals x q) =
         (fun q i => x - q (ts i)) := by
-    funext q i
-    have htime :
-        (⟨max (offsets i : ℝ) 0, le_max_right _ _⟩ : ℝ≥0) = ts i := by
-      apply Subtype.ext
-      simp [ts, max_eq_left (hoff i).le,
-        Real.coe_toNNReal (offsets i : ℝ) (hoff i).le]
-    simp [brownianUpperConditionedPositiveRationalEvals,
-      brownianUpperConditionedPositivePath, htime]
+    aesop
   have href :
       ((brownianUpperConditionedReferenceFutureKernel B ν hν x).map
           (fun y i => y (offsets i))) =
@@ -477,24 +427,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection
     change brownianDoobFinitePDF ν n ds x y =
       ENNReal.ofReal (max 0 (conditionedPositiveTimeChainDensity ν t x
         (List.ofFn fun i : Fin n => t + (offsets i : ℝ)) (List.ofFn y)))
-    have htimeList : (List.ofFn fun i : Fin n =>
-        (brownianFirstHitTimes n ds i : ℝ)) = List.ofFn (fun i => (offsets i : ℝ)) := by
-      apply congrArg List.ofFn
-      exact htimesReal
-    have htranslate' :
-        conditionedPositiveTimeChainDensity ν t x
-          (List.ofFn fun i : Fin n => t + (offsets i : ℝ)) (List.ofFn y) =
-        conditionedPositiveTimeChainDensity ν 0 x
-          (List.ofFn fun i : Fin n => (offsets i : ℝ)) (List.ofFn y) := by
-      simpa using htranslate
-    calc
-      brownianDoobFinitePDF ν n ds x y =
-        ENNReal.ofReal (conditionedPositiveTimeChainDensity ν 0 x
-          (List.ofFn fun i : Fin n => (offsets i : ℝ)) (List.ofFn y)) := hchain.symm
-      _ = ENNReal.ofReal (max 0 (conditionedPositiveTimeChainDensity ν t x
-          (List.ofFn fun i : Fin n => t + (offsets i : ℝ)) (List.ofFn y))) := by
-        rw [← htranslate']
-        simp
+    simp_all
   have hinput : Measurable (fun z : ℝ × (Fin n → ℝ) =>
       ((fun _ : Fin 1 => z.1), z.2)) := by
     apply Measurable.prodMk
@@ -503,8 +436,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection
   have hmeasDensity : Measurable (fun z : ℝ × (Fin n → ℝ) =>
       conditionedPositiveFutureVectorDensity ν
         (fun _ : Fin 1 => t) (fun i => t + (offsets i : ℝ))
-        (fun _ => z.1) z.2) := by
-    exact (measurable_conditionedPositiveFutureVectorDensity ν
+        (fun _ => z.1) z.2) := (measurable_conditionedPositiveFutureVectorDensity ν
       (fun _ : Fin 1 => t) (fun i => t + (offsets i : ℝ))).comp hinput
   have hmeasureEq : volume.withDensity (brownianDoobFinitePDF ν n ds x) =
       volume.withDensity (fun y => conditionedPositiveFutureVectorDensity ν
@@ -532,11 +464,9 @@ theorem conditionedPositiveStateAt_pos_ae
     times htimes hmono
   let f : (Fin 1 → ℝ) → ℝ≥0∞ := fun z => ENNReal.ofReal (max 0
     (conditionedPositiveFDDDensity ν [t] [z 0]))
-  have hf : Measurable f := by
-    exact measurable_conditionedPositiveFDDVectorDensity ν (fun _ => (t : ℝ))
+  have hf : Measurable f := measurable_conditionedPositiveFDDVectorDensity ν (fun _ => (t : ℝ))
   have hfd' : P.map (fun p : BrownianPath => fun _ : Fin 1 => -(p t)) =
-      (volume : Measure (Fin 1 → ℝ)).withDensity f := by
-    simpa [f, times] using hfd
+      (volume : Measure (Fin 1 → ℝ)).withDensity f := hfd
   have heval : Measurable (fun z : Fin 1 → ℝ => z 0) := measurable_pi_apply 0
   have hvec : Measurable (fun p : BrownianPath => fun _ : Fin 1 => -(p t)) := by
     apply measurable_pi_iff.mpr
@@ -577,15 +507,14 @@ theorem conditionedPositiveStateAt_pos_ae
     (p := fun x : ℝ => 0 < x)
     (measurableSet_lt measurable_const measurable_id)).1 hAE
 
+variable {ν : ℝ} {P : Measure BrownianPath} [_inst2 : IsFiniteMeasure P] (hP : IsNegativeConditionedBrownianLaw ν P) (B : Measure BrownianPath) [_inst5 : SFinite B] (hB : IsBrownianReal (fun t p => p t) B) (t : ℝ≥0) (ht : 0 < (t : ℝ)) (hν : 0 < ν)
+
+include ν P _inst2 hP B _inst5 hB t ht hν in
 /-- The joint endpoint/future law built from the abstract conditional kernel and from the actual
 Brownian upper-conditioned reference kernel agree after every finite strictly ordered positive
 rational projection. -/
 theorem conditionedPositiveFutureKernel_reference_finite_compProd
-    {ν : ℝ} {P : Measure BrownianPath} [IsFiniteMeasure P]
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (B : Measure BrownianPath) [SFinite B]
-    (hB : IsBrownianReal (fun t p => p t) B)
-    (t : ℝ≥0) (ht : 0 < (t : ℝ)) (hν : 0 < ν)
+
     (n : ℕ) (offsets : Fin n → ℚ)
     (hoff : ∀ i, 0 < (offsets i : ℝ)) (hmono : StrictMono offsets)
     (hMonoEndpoint : StrictMono (Fin.append (fun _ : Fin 1 => t)
@@ -601,9 +530,9 @@ theorem conditionedPositiveFutureKernel_reference_finite_compProd
   let project : (ℚ → ℝ) → Fin n → ℝ := fun y i => y (offsets i)
   let pairProject : (ℝ × (ℚ → ℝ)) → (ℝ × (Fin n → ℝ)) :=
     fun z => (z.1, project z.2)
-  let μx : Measure ℝ := P.map (conditionedPositiveStateAt t)
-  let κA : Kernel ℝ (ℚ → ℝ) := conditionedPositiveFutureKernel t P
-  let κR : Kernel ℝ (ℚ → ℝ) := brownianUpperConditionedReferenceFutureKernel B ν hν
+  let μx  := P.map (conditionedPositiveStateAt t)
+  let κA  := conditionedPositiveFutureKernel t P
+  let κR  := brownianUpperConditionedReferenceFutureKernel B ν hν
   have : IsSFiniteKernel κA := by dsimp [κA]; infer_instance
   have : IsSFiniteKernel κR := by dsimp [κR]; infer_instance
   let κD : Kernel ℝ (Fin n → ℝ) :=
@@ -611,11 +540,10 @@ theorem conditionedPositiveFutureKernel_reference_finite_compProd
       (fun x y => conditionedPositiveFutureVectorDensity ν
         (fun _ : Fin 1 => (t : ℝ)) (fun i => (t : ℝ) + (offsets i : ℝ))
         (fun _ => x) y)
-  have hproject : Measurable project := by
-    exact measurable_pi_iff.mpr (fun i => measurable_pi_apply (offsets i))
+  have hproject : Measurable project := measurable_pi_iff.mpr (fun i => measurable_pi_apply (offsets i))
   have hpairProject : Measurable pairProject :=
     measurable_fst.prodMk (hproject.comp measurable_snd)
-  have hstatePos : ∀ᵐ x ∂μx, 0 < x :=
+  have hstatePos  :=
     (ae_map_iff (μ := P) (f := conditionedPositiveStateAt t)
       (measurable_conditionedPositiveStateAt t).aemeasurable
       (p := fun x : ℝ => 0 < x)
@@ -652,36 +580,32 @@ theorem conditionedPositiveFutureKernel_reference_finite_compProd
         κR.map project x C =
             Measure.map project (brownianUpperConditionedReferenceFutureKernel B ν hν x) C := by
               rw [Kernel.map_apply _ hproject x]
-        _ = κD x C := by
-          simpa [κD, project] using
-            (brownianUpperConditionedReferenceFutureKernel_finite_projection
+        _ = κD x C := (brownianUpperConditionedReferenceFutureKernel_finite_projection
           B hB ν t x hν ht hx n offsets hoff hmono C hC)
     have hkernelAE : ∀ᵐ x ∂μx, κA.map project x C = κR.map project x C := by
       filter_upwards [hActual, hstatePos] with x hA hx
       rw [hA, hReference x hx]
     exact hleft.trans ((setLIntegral_congr_fun_ae hD
       (hkernelAE.mono fun _ h _ => h)).trans hright.symm)
-  have hfinite : ((μx ⊗ₘ κA).map pairProject) Set.univ < ∞ := by
-    exact measure_lt_top _ _
+  have hfinite : ((μx ⊗ₘ κA).map pairProject) Set.univ < ∞ := measure_lt_top _ _
   have huniv : ((μx ⊗ₘ κA).map pairProject) Set.univ =
       ((μx ⊗ₘ κR).map pairProject) Set.univ := by
     simpa using hrect Set.univ MeasurableSet.univ Set.univ MeasurableSet.univ
   have heq := measure_eq_of_prod_rectangles
     ((μx ⊗ₘ κA).map pairProject) ((μx ⊗ₘ κR).map pairProject) hfinite hrect huniv
-  simpa [μx, κA, κR, project, pairProject] using heq
+  exact heq
 
 theorem brownianBelowConditionedLaw_eval_zero_ae
     (B : Measure BrownianPath) [SFinite B]
     (hB : IsBrownianReal (fun t p => p t) B)
     (ν x : ℝ) (hν : 0 < ν) (hx : 0 < x) :
     ∀ᵐ q ∂brownianBelowConditionedLaw B ν x, q 0 = 0 := by
-  let drift : BrownianPath → BrownianPath := driftedBrownianPath (-ν)
-  let S : Set BrownianPath := {p | ∀ t : ℝ≥0, drift p t < x}
+  let drift  := driftedBrownianPath (-ν)
+  let S  := {p | ∀ t : ℝ≥0, drift p t < x}
   have hdrift : Measurable drift :=
     continuous_driftedBrownianPath.measurable.comp
       ((measurable_const (a := -ν)).prodMk measurable_id)
-  have hS : MeasurableSet S := by
-    exact (measurableSet_brownianPath_below x).preimage hdrift
+  have hS  := (measurableSet_brownianPath_below x).preimage hdrift
   have hzeroRestrict : ∀ᵐ p ∂B.restrict S, p 0 = 0 := by
     apply (ae_restrict_iff' hS).2
     filter_upwards [hB.eval_zero_ae_eq_zero] with p hp
@@ -693,13 +617,12 @@ theorem brownianBelowConditionedLaw_eval_zero_ae
     filter_upwards [hzeroRestrict] with p hp
     change drift p 0 = 0
     simp [drift, driftedBrownianPath, hp]
-  have hH : 0 < conditionedH ν x := conditionedH_pos_ref hν hx
-  have hden : ENNReal.ofReal (conditionedH ν x) ≠ 0 :=
-    ne_of_gt (ENNReal.ofReal_pos.mpr hH)
+
+
   have hcoef : (ENNReal.ofReal (conditionedH ν x))⁻¹ ≠ 0 := by
     simp
   rw [brownianBelowConditionedLaw, MeasureTheory.Measure.ae_ennreal_smul_measure_iff hcoef]
-  simpa [drift, S] using hzeroMap
+  exact hzeroMap
 
 /-- The deterministic-time reference future starts at its prescribed positive state. -/
 theorem brownianUpperConditionedReferenceFutureKernel_eval_zero_ae
@@ -719,32 +642,22 @@ theorem brownianUpperConditionedReferenceFutureKernel_eval_zero_ae
     with q hq
   simp only [brownianUpperConditionedPositiveRationalEvals,
     brownianUpperConditionedPositivePath]
-  have hz : (⟨max ((0 : ℚ) : ℝ) 0,
-      le_max_right ((0 : ℚ) : ℝ) 0⟩ : ℝ≥0) = 0 := by
-    apply Subtype.ext
-    norm_num
-  rw [hz]
-  change x - q 0 = x
-  rw [hq]
-  ring
+  aesop
 
+include ν P _inst2 hP B _inst5 hB t ht hν in
 /-- The reference and abstract conditioned futures have the same full endpoint/future law.
 Finite positive-time projections agree by the explicit density calculation; the rational
 cylinder pi-system then gives equality on the entire future sequence. Nonpositive coordinates are
 read from the endpoint, as both path constructions require. -/
 theorem conditionedPositiveFutureKernel_reference_compProd
-    {ν : ℝ} {P : Measure BrownianPath} [IsFiniteMeasure P]
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (B : Measure BrownianPath) [SFinite B]
-    (hB : IsBrownianReal (fun t p => p t) B)
-    (t : ℝ≥0) (ht : 0 < (t : ℝ)) (hν : 0 < ν) :
+     :
     (P.map (conditionedPositiveStateAt t)) ⊗ₘ conditionedPositiveFutureKernel t P =
       (P.map (conditionedPositiveStateAt t)) ⊗ₘ
         brownianUpperConditionedReferenceFutureKernel B ν hν := by
   classical
-  let μA : Measure (ℝ × (ℚ → ℝ)) :=
+  let μA  :=
     (P.map (conditionedPositiveStateAt t)) ⊗ₘ conditionedPositiveFutureKernel t P
-  let μR : Measure (ℝ × (ℚ → ℝ)) :=
+  let μR  :=
     (P.map (conditionedPositiveStateAt t)) ⊗ₘ
       brownianUpperConditionedReferenceFutureKernel B ν hν
   have hdiagSet : MeasurableSet {z : ℝ × (ℚ → ℝ) |
@@ -760,17 +673,7 @@ theorem conditionedPositiveFutureKernel_reference_compProd
         ⋂ q : ℚ, {z : ℝ × (ℚ → ℝ) | (q : ℝ) > 0 ∨ z.2 q = z.1} := by
       ext z
       simp only [Set.mem_ofPred_eq, Set.mem_iInter]
-      change (∀ q : ℚ, (q : ℝ) ≤ 0 → z.2 q = z.1) ↔
-        (∀ q : ℚ, (q : ℝ) > 0 ∨ z.2 q = z.1)
-      constructor
-      · intro hz q
-        by_cases hq : (q : ℝ) ≤ 0
-        · exact Or.inr (hz q hq)
-        · exact Or.inl (lt_of_not_ge hq)
-      · intro hz q hq
-        rcases hz q with hq' | heq
-        · exact False.elim (not_lt_of_ge hq hq')
-        · exact heq
+      grind
     rw [hset]
     exact MeasurableSet.iInter hcoord
   have hdiagA : ∀ᵐ z ∂μA, ∀ q : ℚ, (q : ℝ) ≤ 0 → z.2 q = z.1 := by
@@ -788,7 +691,7 @@ theorem conditionedPositiveFutureKernel_reference_compProd
       simp [s, max_eq_right hq]
     simp [conditionedPositiveFutureRationalEvals, conditionedPositiveFuturePath,
       conditionedPositiveStateAt, s, hs]
-  have hstatePos : ∀ᵐ x ∂P.map (conditionedPositiveStateAt t), 0 < x :=
+  have hstatePos  :=
     (ae_map_iff (μ := P) (f := conditionedPositiveStateAt t)
       (measurable_conditionedPositiveStateAt t).aemeasurable
       (p := fun x : ℝ => 0 < x)
@@ -813,15 +716,7 @@ theorem conditionedPositiveFutureKernel_reference_compProd
             ⋂ q : ℚ, {y : ℚ → ℝ | (q : ℝ) > 0 ∨ y q = x} := by
           ext y
           simp only [Set.mem_ofPred_eq, Set.mem_iInter]
-          constructor
-          · intro hy q
-            by_cases hq : (q : ℝ) ≤ 0
-            · exact Or.inr (hy q hq)
-            · exact Or.inl (lt_of_not_ge hq)
-          · intro hy q hq
-            rcases hy q with hp | heq
-            · exact False.elim (not_lt_of_ge hq hp)
-            · exact heq
+          grind
         rw [hset]
         exact MeasurableSet.iInter hcoord
       apply (ae_map_iff
@@ -843,8 +738,8 @@ theorem conditionedPositiveFutureKernel_reference_compProd
     fun z => (fun _ => z.1, z.2)
   have hpack : Measurable pack := by
     apply (measurable_pi_iff.mpr fun _ => measurable_fst).prodMk measurable_snd
-  let μAp : Measure ((Fin 1 → ℝ) × (ℚ → ℝ)) := μA.map pack
-  let μRp : Measure ((Fin 1 → ℝ) × (ℚ → ℝ)) := μR.map pack
+  let μAp  := μA.map pack
+  let μRp  := μR.map pack
   have hrect : ∀ s ∈ MeasureTheory.measurableCylinders (fun _ : Fin 1 => ℝ),
       ∀ u ∈ MeasureTheory.measurableCylinders (fun _ : ℚ => ℝ),
         μAp (s ×ˢ u) = μRp (s ×ˢ u) := by
@@ -859,31 +754,28 @@ theorem conditionedPositiveFutureKernel_reference_compProd
       exact (Finset.mem_filter.mp (positiveGrid.orderIsoOfFin rfl i).2).2
     have hOffsetsMono : StrictMono offsets := by
       intro i j hij
-      simpa [offsets] using (positiveGrid.orderIsoOfFin rfl).strictMono hij
-    let futureTimes : Fin n → ℝ≥0 := fun i => t + (offsets i : ℝ).toNNReal
+      exact (positiveGrid.orderIsoOfFin rfl).strictMono hij
+    let futureTimes  := fun i => t + (offsets i : ℝ).toNNReal
     have hFutureMono : StrictMono futureTimes := by
       intro i j hij
       have hq := hOffsetsMono hij
-      have hqReal : (offsets i : ℝ) < (offsets j : ℝ) := by exact_mod_cast hq
+
       have hqNN : (offsets i : ℝ).toNNReal < (offsets j : ℝ).toNNReal := by
-        apply NNReal.coe_lt_coe.mp
-        rw [Real.coe_toNNReal _ (hOffsetsPos i).le,
-          Real.coe_toNNReal _ (hOffsetsPos j).le]
-        exact hqReal
+        simp_all
       simpa [futureTimes] using add_lt_add_left hqNN t
     have hOneMono : StrictMono (fun _ : Fin 1 => t) := by
       intro i j hij
       fin_cases i
       fin_cases j
       omega
-    have hMonoEndpoint : StrictMono (Fin.append (fun _ : Fin 1 => t) futureTimes) :=
+    have hMonoEndpoint  :=
       strictMono_finAppend_of_cross (fun _ : Fin 1 => t) futureTimes hOneMono hFutureMono
         (fun _ j => by
           have hq : 0 < (offsets j : ℝ).toNNReal := by
             apply NNReal.coe_pos.mp
             rw [Real.coe_toNNReal _ (hOffsetsPos j).le]
             exact hOffsetsPos j
-          simpa [futureTimes] using lt_add_of_pos_right t hq)
+          exact lt_add_of_pos_right t hq)
     let futureProject : (ℚ → ℝ) → Fin n → ℝ := fun y i => y (offsets i)
     let pairProject : ℝ × (ℚ → ℝ) → ℝ × (Fin n → ℝ) :=
       fun z => (z.1, futureProject z.2)
@@ -972,18 +864,13 @@ theorem conditionedPositiveFutureKernel_reference_compProd
       apply measure_congr
       filter_upwards [hReadR] with z hz
       simp [MeasureTheory.cylinder, pack, hz]
-    have hfiniteProj : μA.map pairProject = μR.map pairProject := by
-      simpa [μA, μR, pairProject, futureProject] using
-        (conditionedPositiveFutureKernel_reference_finite_compProd
+    have hfiniteProj : μA.map pairProject = μR.map pairProject := (conditionedPositiveFutureKernel_reference_finite_compProd
           (hP := hP) B hB t ht hν n offsets hOffsetsPos hOffsetsMono hMonoEndpoint)
     rw [hmapEventA, hmapEventR, hfiniteProj]
   have htotal := hrect Set.univ
     (MeasureTheory.univ_mem_measurableCylinders (fun _ : Fin 1 => ℝ)) Set.univ
     (MeasureTheory.univ_mem_measurableCylinders (fun _ : ℚ => ℝ))
-  have hfinite : μAp Set.univ < ∞ := by
-    change (μA.map pack) Set.univ < ∞
-    rw [Measure.map_apply hpack MeasurableSet.univ]
-    exact measure_lt_top _ _
+  have hfinite : μAp Set.univ < ∞ := measure_lt_top _ _
   let : IsFiniteMeasure μAp := ⟨hfinite⟩
   have hpacked := measure_eq_of_cylinder_rectangles μAp μRp hrect (by simpa using htotal)
   let unpack : (Fin 1 → ℝ) × (ℚ → ℝ) → ℝ × (ℚ → ℝ) :=
@@ -1004,49 +891,29 @@ theorem conditionedPositiveFutureKernel_reference_compProd
   change μA = μR
   rw [hleft, hright, hpacked]
 
+include ν P _inst2 hP B _inst5 hB t ht hν in
 /-- The actual conditional future kernel is the Brownian reference kernel at almost every state
 of the entrance process. The joint-law identity above and uniqueness of disintegrations upgrade
 the cylinder calculation to equality of the complete rational-path kernels. -/
 theorem conditionedPositiveFutureKernel_eq_reference_ae
-    {ν : ℝ} {P : Measure BrownianPath} [IsFiniteMeasure P]
-    (hP : IsNegativeConditionedBrownianLaw ν P)
-    (B : Measure BrownianPath) [SFinite B]
-    (hB : IsBrownianReal (fun t p => p t) B)
-    (t : ℝ≥0) (ht : 0 < (t : ℝ)) (hν : 0 < ν) :
+     :
     ∀ᵐ x ∂P.map (conditionedPositiveStateAt t),
       conditionedPositiveFutureKernel t P x =
         brownianUpperConditionedReferenceFutureKernel B ν hν x := by
   classical
-  let μx : Measure ℝ := P.map (conditionedPositiveStateAt t)
-  let κA : Kernel ℝ (ℚ → ℝ) := conditionedPositiveFutureKernel t P
-  let κR : Kernel ℝ (ℚ → ℝ) :=
+  let μx  := P.map (conditionedPositiveStateAt t)
+  let κA  := conditionedPositiveFutureKernel t P
+  let κR  :=
     brownianUpperConditionedReferenceFutureKernel B ν hν
-  let ρ : Measure (ℝ × (ℚ → ℝ)) := μx ⊗ₘ κA
-  have hμxTop : μx Set.univ < ∞ := by
-    change (P.map (conditionedPositiveStateAt t)) Set.univ < ∞
-    rw [Measure.map_apply (measurable_conditionedPositiveStateAt t)
-      MeasurableSet.univ]
-    simp only [Set.preimage_univ]
-    exact measure_lt_top _ _
-  have hfst : ρ.fst = μx := by
-    change (μx ⊗ₘ κA).fst = μx
-    exact Measure.fst_compProd μx κA
+  let ρ  := μx ⊗ₘ κA
+
+  have hfst : ρ.fst = μx := Measure.fst_compProd μx κA
   have hρTop : ρ Set.univ < ∞ := by
-    have htotal : ρ Set.univ = μx Set.univ := by
-      have hh := congrArg (fun m : Measure ℝ => m Set.univ) hfst
-      calc
-        ρ Set.univ = (Measure.map Prod.fst ρ) Set.univ := by
-          rw [Measure.map_apply measurable_fst MeasurableSet.univ]
-          simp
-        _ = μx Set.univ := hh
-    rw [htotal]
-    exact hμxTop
+    simp_all
   let : IsFiniteMeasure ρ := ⟨hρTop⟩
   let : IsFiniteKernel κR :=
     isFiniteKernel_brownianUpperConditionedReferenceFutureKernel B hB ν hν
-  have hcomp : ρ = μx ⊗ₘ κR := by
-    simpa [ρ, μx, κA, κR] using
-      (conditionedPositiveFutureKernel_reference_compProd
+  have hcomp : ρ = μx ⊗ₘ κR := (conditionedPositiveFutureKernel_reference_compProd
         (hP := hP) B hB t ht hν)
   have hA : ρ = ρ.fst ⊗ₘ κA := by
     rw [hfst]

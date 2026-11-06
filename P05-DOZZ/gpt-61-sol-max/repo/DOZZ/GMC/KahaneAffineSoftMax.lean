@@ -16,39 +16,43 @@ open scoped BigOperators
 
 namespace DOZZ.Proofs
 
+variable {ι : Type*} [_inst1 : Fintype ι] (a b : ι → ℝ) (β x : ℝ)
+
+include ι _inst1 a b β x
 /-- The exponential sum of a finite family of affine functions. -/
-noncomputable def affineSoftMaxSum {ι : Type*} [Fintype ι]
-    (a b : ι → ℝ) (β x : ℝ) : ℝ := ∑ i, Real.exp (β * (a i * x + b i))
+noncomputable def affineSoftMaxSum  : ℝ := ∑ i, Real.exp (β * (a i * x + b i))
+
 
 /-- The first weighted affine-slope sum. -/
-noncomputable def affineSoftMaxSlopeSum {ι : Type*} [Fintype ι]
-    (a b : ι → ℝ) (β x : ℝ) : ℝ := ∑ i, a i * Real.exp (β * (a i * x + b i))
+noncomputable def affineSoftMaxSlopeSum  : ℝ := ∑ i, a i * Real.exp (β * (a i * x + b i))
+
 
 /-- The second weighted affine-slope sum. -/
-noncomputable def affineSoftMaxSlopeSquareSum {ι : Type*} [Fintype ι]
-    (a b : ι → ℝ) (β x : ℝ) : ℝ := ∑ i, a i ^ 2 * Real.exp (β * (a i * x + b i))
+noncomputable def affineSoftMaxSlopeSquareSum  : ℝ := ∑ i, a i ^ 2 * Real.exp (β * (a i * x + b i))
+
 
 /-- A smooth maximum of finitely many affine functions. -/
-noncomputable def affineSoftMax {ι : Type*} [Fintype ι]
-    (a b : ι → ℝ) (β x : ℝ) : ℝ := Real.log (affineSoftMaxSum a b β x) / β
+noncomputable def affineSoftMax  : ℝ := Real.log (affineSoftMaxSum a b β x) / β
+
 
 /-- The derivative of the smooth affine maximum is the weighted mean slope. -/
-noncomputable def affineSoftMaxDeriv {ι : Type*} [Fintype ι]
-    (a b : ι → ℝ) (β x : ℝ) : ℝ := affineSoftMaxSlopeSum a b β x / affineSoftMaxSum a b β x
+noncomputable def affineSoftMaxDeriv  : ℝ := affineSoftMaxSlopeSum a b β x / affineSoftMaxSum a b β x
+
 
 /-- The second derivative is the weighted variance of the affine slopes. -/
-noncomputable def affineSoftMaxSecondDeriv {ι : Type*} [Fintype ι]
-    (a b : ι → ℝ) (β x : ℝ) : ℝ := β *
+noncomputable def affineSoftMaxSecondDeriv  : ℝ := β *
       ((affineSoftMaxSlopeSquareSum a b β x) * affineSoftMaxSum a b β x -
         (affineSoftMaxSlopeSum a b β x) ^ 2) / (affineSoftMaxSum a b β x) ^ 2
+omit ι _inst1 a b β x
+
 
 theorem affineSoftMaxSum_pos {ι : Type*} [Fintype ι] [Nonempty ι]
     (a b : ι → ℝ) (β x : ℝ) : 0 < affineSoftMaxSum a b β x := by
   classical
   exact Finset.sum_pos (fun i _ => Real.exp_pos _) Finset.univ_nonempty
 
-theorem affineSoftMaxSum_hasDerivAt {ι : Type*} [Fintype ι]
-    (a b : ι → ℝ) (β x : ℝ) :
+include ι _inst1 a b β x in
+theorem affineSoftMaxSum_hasDerivAt  :
     HasDerivAt (affineSoftMaxSum a b β) (β * affineSoftMaxSlopeSum a b β x) x := by
   classical
   have h := HasDerivAt.fun_sum (u := Finset.univ) (fun i _ =>
@@ -62,8 +66,8 @@ theorem affineSoftMaxSum_hasDerivAt {ι : Type*} [Fintype ι]
     intro i hi
     ring
 
-theorem affineSoftMaxSlopeSum_hasDerivAt {ι : Type*} [Fintype ι]
-    (a b : ι → ℝ) (β x : ℝ) :
+include ι _inst1 a b β x in
+theorem affineSoftMaxSlopeSum_hasDerivAt  :
     HasDerivAt (affineSoftMaxSlopeSum a b β)
       (β * affineSoftMaxSlopeSquareSum a b β x) x := by
   classical

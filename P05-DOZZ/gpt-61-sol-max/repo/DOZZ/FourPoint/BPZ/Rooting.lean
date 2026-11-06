@@ -14,7 +14,7 @@ The equator Green kernel satisfies `G(u,x) ≥ -log 2` for all points, so the ro
 `E[I^{-q} ∫ f dM]` by `2^{γ²q} E[I^{-q}] ∫ f dσ` for every nonnegative `f`, where `σ` is the
 reference measure. No fusion estimate is needed: rooting only increases the mass. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -28,15 +28,15 @@ theorem gffKernel_ge_neg_log_two (u x : ℂ) : -Real.log 2 ≤ gffKernel u x := 
   unfold gffKernel
   have hu := bpz_one_le_normPlus u
   have hx := bpz_one_le_normPlus x
-  have hu0 : 0 < normPlus u := bpz_normPlus_pos u
-  have hx0 : 0 < normPlus x := bpz_normPlus_pos x
+  have hu0  := bpz_normPlus_pos u
+  have hx0  := bpz_normPlus_pos x
   rcases eq_or_ne u x with h | h
   · subst h
     simp only [sub_self, norm_zero, Real.log_zero, neg_zero, zero_add]
     have h1 := Real.log_nonneg hu
     have h2 := Real.log_pos (by norm_num : (1 : ℝ) < 2)
     linarith
-  · have hpos : 0 < ‖u - x‖ := norm_pos_iff.mpr (sub_ne_zero.mpr h)
+  · have hpos  := norm_pos_iff.mpr (sub_ne_zero.mpr h)
     have hle : ‖u - x‖ ≤ 2 * (normPlus u * normPlus x) := by
       have h1 : ‖u‖ ≤ normPlus u := le_max_right _ _
       have h2 : ‖x‖ ≤ normPlus x := le_max_right _ _
@@ -51,10 +51,7 @@ theorem measurable_gmcRootedDensity (u : ℂ) :
     Measurable fun x : ℂ => ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel u x)) := by
   refine ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp ?_)
   refine Measurable.const_mul ?_ _
-  unfold gffKernel
-  exact (((measurable_const.sub measurable_id).norm.log.neg).add
-    (measurable_const : Measurable fun _ : ℂ => Real.log (normPlus u))).add
-    (Real.measurable_log.comp bpz_measurable_normPlus)
+  exact CirclePotential.measurable_gffKernel u
 
 /-- The rooted measure dominates `2^{-γ²}` times the measure. -/
 theorem lintegral_le_lintegral_gmcRootedMeasure (u : ℂ) (m : Measure ℂ) (g : ℂ → ℝ≥0∞)
@@ -70,7 +67,7 @@ theorem lintegral_le_lintegral_gmcRootedMeasure (u : ℂ) (m : Measure ℂ) (g :
   rw [Real.rpow_def_of_pos (by norm_num : (0 : ℝ) < 2)]
   apply Real.exp_le_exp.mpr
   have := gffKernel_ge_neg_log_two u x
-  have hγ2 : 0 ≤ γ ^ 2 := sq_nonneg γ
+  
   nlinarith [Real.log_pos (by norm_num : (1 : ℝ) < 2)]
 
 /-- A lower bound by a positive multiple transfers to nonpositive powers, including the case of
@@ -80,13 +77,7 @@ theorem bpz_rpow_neg_le_of_le' {a b : ℝ≥0∞} {c : ℝ} (hc : 0 < c)
     a ^ (-q) ≤ ENNReal.ofReal (c ^ (-q)) * b ^ (-q) := by
   rcases eq_or_ne b ⊤ with hb | hb
   · rcases hq.eq_or_lt with hq0 | hq0
-    · subst hq0
-      simp
-    · have ha : a = ⊤ := by
-        rw [hb, ENNReal.mul_top (ENNReal.ofReal_pos.mpr hc).ne'] at hab
-        exact top_le_iff.mp hab
-      rw [ha, ENNReal.top_rpow_of_neg (by linarith)]
-      exact zero_le
+    all_goals continuity
   · exact bpz_rpow_neg_le_of_le hc hb hab q hq
 
 /-- The rooted mass dominates `2^{-γ²}` times the mass. -/

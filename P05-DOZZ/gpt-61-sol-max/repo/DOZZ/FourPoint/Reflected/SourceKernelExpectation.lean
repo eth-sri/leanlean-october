@@ -7,8 +7,9 @@ public import DOZZ.FourPoint.Reflected.KernelInverseExpectation
 public import DOZZ.FourPoint.Reflected.ReinsertedInnerSqueeze
 public import DOZZ.FourPoint.Reflected.CopiedSourceMoment
 public import DOZZ.FourPoint.Reflected.SourceOuterMoments
+import Mathlib.Tactic
 /-! The actual copied spatial kernel has the integrated radial Williams squeeze. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -38,7 +39,7 @@ theorem reflected_source_copied_kernel_inverse_squeeze
     let E := (reflected_copied_separatedMoment P Xc N γ α₁ α₂ α₃ z η (‖z‖^(1-ξ)) p).toReal-
       (∫⁻ ω, gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ^(-p) ∂P).toReal
     max 1 cHi*D ≤ E ∧ E ≤ min 1 cLo*D := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let η := Real.exp (-(T : ℝ))
   let U := reflected_innerRegion η
   let A := fun ω => gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ
@@ -54,20 +55,20 @@ theorem reflected_source_copied_kernel_inverse_squeeze
     (Real.rpow_pos_of_pos (inv_pos.mpr (sub_pos.mpr hT)) _)
   have hcHi : 0 < cHi := mul_pos (Real.rpow_pos_of_pos (by linarith only [hR] : 0 < 1+R) _)
     (Real.rpow_pos_of_pos (inv_pos.mpr (sub_pos.mpr hT)) _)
-  have hA : AEMeasurable A P :=
+  have hA  :=
     (reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)
   have hU : MeasurableSet U := (measurableSet_lt measurable_const measurable_norm).inter
     (measurableSet_lt measurable_norm measurable_const)
   have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hx.1
+    exact norm_pos_iff.mp hx.1
   have hAr := originRadialPath_aemeasurable P X Xc hc hcont
-  have hI : AEMeasurable I (P.prod P) := reflected_copied_region_mass_aemeasurable
+  have hI  := reflected_copied_region_mass_aemeasurable
     P (originRadialPath Xc) N hAr hN hfin γ U hU hU0 _
       (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   have hKr : Measurable (fun x : ℂ => ENNReal.ofReal (‖x‖^(-(γ*α₁)))) := by fun_prop
-  have hJ : AEMeasurable J (P.prod P) :=
+  have hJ  :=
     (measurable_const : Measurable (fun _ : Ω × Ω => ENNReal.ofReal (‖z‖^(γ^2/2)))).aemeasurable.mul
       (reflected_copied_region_mass_aemeasurable P (originRadialPath Xc) N hAr hN hfin γ U hU hU0 _ hKr)
   have hbase : (∫⁻ ω : Ω × Ω, A ω.1^(-p) ∂P.prod P) = ∫⁻ ω, A ω^(-p) ∂P := by
@@ -85,7 +86,7 @@ theorem reflected_source_copied_kernel_inverse_squeeze
   have hAfs : ∀ᵐ ω ∂P, 0 < A ω ∧ A ω ≠ ⊤ :=
     (reflected_source_outerMass_positive_finite_ae P X hX γ hγ hγ₂ M hM
       α₁ α₂ α₃ ξ hα₁ hα₂ hα₃ z hz0 hz1 hzn hr1).mono fun _ hω => ⟨hω.1,hω.2.ne⟩
-  have hAf : ∀ᵐ ω : Ω × Ω ∂P.prod P, 0 < A ω.1 ∧ A ω.1 ≠ ⊤ :=
+  have hAf  :=
     (measurePreserving_fst (μ := P) (ν := P)).quasiMeasurePreserving.ae hAfs
   have hsand : ∀ᵐ ω : Ω × Ω ∂P.prod P,
       ENNReal.ofReal cLo*J ω ≤ I ω ∧ I ω ≤ ENNReal.ofReal cHi*J ω :=

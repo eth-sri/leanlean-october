@@ -10,7 +10,7 @@ public import DOZZ.FourPoint.Dual.SourceDecouplingLimit
 public import DOZZ.FourPoint.ReflectedOuter.InverseDifference
 import Mathlib.Tactic
 /-! Removing the actual intermediate annulus from the full inverse expectation. -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -88,7 +88,7 @@ theorem dual_full_separated_inverse_littleO
     exact le_add_left le_rfl
   have hmM := gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ₂ M hM
   have hk := (dual_kernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
-  have hFm : AEMeasurable (F z) P := (Measure.measurable_lintegral hk).comp_aemeasurable hmM
+  have hFm  := (Measure.measurable_lintegral hk).comp_aemeasurable hmM
   have hSm : AEMeasurable (S z) P := by
     have hi : MeasurableSet (reflected_innerRegion (s z)) :=
       (isOpen_lt continuous_const continuous_norm).measurableSet.inter
@@ -106,7 +106,7 @@ theorem dual_full_separated_inverse_littleO
     apply le_trans (lintegral_mono_ae (hsource.mono fun ω hh =>
       ennreal_rpow_antitone_of_nonpos hh.2.2.2 (neg_nonpos.mpr hp.le)))
     exact hbi z ξ hz.le (by linarith only [hcut])
-  have hFt : (∫⁻ ω, F z ω^(-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top hSt
+  have hFt  := ne_top_of_le_ne_top hSt
     (lintegral_mono_ae (hsource.mono fun ω hh => ennreal_rpow_antitone_of_nonpos
       (le_self_add.trans_eq hh.2.2.1.symm) (neg_nonpos.mpr hp.le)))
   have hIB : (∫⁻ ω, I z ω*B z ω^(-(p+1)) ∂P) ≠ ⊤ := by
@@ -128,13 +128,13 @@ theorem dual_full_separated_inverse_littleO
   have hRt : (∫⁻ ω, R z ω ∂P) ≠ ⊤ := by
     dsimp only [R]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
-    exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top hIB
+    finiteness
   have hSF : ∀ᵐ ω ∂P, S z ω^(-p) ≤ F z ω^(-p)+R z ω := by
     filter_upwards [hsource] with ω hh
-    have hS0 : S z ω ≠ 0 := (hh.1.trans_le hh.2.2.2).ne'
-    have hSt0 : S z ω ≠ ⊤ := ne_top_of_le_ne_top hh.2.1.ne
+    have hS0  := (hh.1.trans_le hh.2.2.2).ne'
+    have hSt0  := ne_top_of_le_ne_top hh.2.1.ne
       (le_self_add.trans_eq hh.2.2.1.symm)
-    have hIt : I z ω ≠ ⊤ := ne_top_of_le_ne_top hh.2.1.ne
+    have hIt  := ne_top_of_le_ne_top hh.2.1.ne
       (le_add_self.trans_eq hh.2.2.1.symm)
     have hb := reflected_ennreal_inverse_add_bound p hp (S z ω) (I z ω) hS0 hSt0 hIt
     rw [← hh.2.2.1] at hb

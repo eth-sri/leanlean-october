@@ -18,10 +18,12 @@ open scoped NNReal ENNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+
+include Ω _inst1 P X Xc hX hc in
 /-- The local circle/pin covariance consists of the pin variance and its smooth correction. -/
 theorem offCenter_circle_pin_covariance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle) :
     covariance (fun ω => Xc ω (z + p.val.1) p.val.2) (fun ω => Xc ω z 0) P =
       Real.log ‖z + p.val.1‖ + Real.log ‖z‖ := by
@@ -34,14 +36,12 @@ theorem offCenter_circle_pin_covariance
     simpa only [Real.log_one] using circleLogPotential_of_add_le (d := ‖p.val.1‖₊)
       ⟨Real.exp (-p.val.2), Real.exp_pos _⟩ ⟨1, by norm_num⟩ p.property
   rw [circleAverage_covariance P X Xc hX hc]
-  simp only [add_sub_cancel_left, neg_zero, Real.exp_zero] at hzpin ⊢
-  rw [hp0, hp, hzpin]
-  ring
+  simp_all
 
+include Ω _inst1 P X Xc hX hc in
 /-- The unshifted local circle variance retains the exact exterior normalization. -/
 theorem offCenter_circle_self_covariance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle) :
     covariance (fun ω => Xc ω (z + p.val.1) p.val.2)
       (fun ω => Xc ω (z + p.val.1) p.val.2) P =
@@ -66,11 +66,11 @@ theorem local_pin_coefficient_bound (z x : ℂ)
   exact div_le_div_of_nonneg_right (offCenter_pin_potential_bound z x hz hx)
     (offCenter_pin_variance_pos z hz).le
 
+include Ω _inst1 P X Xc hX hc in
 /-- Original translated circles and their pin have the same whole law after replacing
 that pin by a copy and retaining the explicit small spatial correction. -/
 theorem offCenter_circle_pin_copy_law
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+    
     (hm : Measurable (fun q : Ω × (ℂ × ℝ) => Xc q.1 q.2.1 q.2.2))
     (z : ℂ) (hz : 2 ≤ ‖z‖) :
     P.map (fun ω (j : Option localCircle) => j.elim (Xc ω z 0)
@@ -81,12 +81,10 @@ theorem offCenter_circle_pin_copy_law
   let k : Option localCircle → ℂ × ℝ := fun j =>
     j.elim (z, 0) (fun p => (z + p.val.1, p.val.2))
   let Z : Option localCircle → Ω → ℝ := fun j ω => Xc ω (k j).1 (k j).2
-  have hZ : IsGaussianProcess Z P := (circleAverage_isGaussianProcess P X Xc hX hc).1.comp_right k
+  have hZ  := (circleAverage_isGaussianProcess P X Xc hX hc).1.comp_right k
   have hZm : Measurable (fun ω j => Z j ω) := by
-    apply measurable_pi_iff.mpr
-    intro j
-    exact hm.comp (measurable_id.prodMk measurable_const)
-  have hvar : covariance (Z none) (Z none) P = 2 * Real.log ‖z‖ :=
+    fun_prop (disch := positivity)
+  have hvar  :=
     offCenter_origin_variance X Xc hX hc z hz
   have he := gaussian_pin_copy_law P Z hZ hZm (2 * Real.log ‖z‖)
     (offCenter_pin_variance_pos z hz).ne' hvar

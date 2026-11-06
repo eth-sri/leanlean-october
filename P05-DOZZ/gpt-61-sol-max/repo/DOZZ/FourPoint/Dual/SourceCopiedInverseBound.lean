@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.Probability.RealMeasureTranslate
 public import DOZZ.FourPoint.Dual.SourceCopiedPolarFinite
 public import DOZZ.FourPoint.Dual.SourceCopiedKernelSqueeze
 public import DOZZ.FourPoint.Dual.KernelInverseExpectation
@@ -11,7 +12,7 @@ public import DOZZ.FourPoint.Dual.OuterInverseTransport
 public import DOZZ.FourPoint.Dual.SourceRadialMoments
 import Mathlib.Tactic
 /-! The actual copied kernel inverse expectation is controlled by the same-source polar loss. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -60,7 +61,7 @@ theorem dual_source_copied_kernel_inverse_bound
     |(dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ p z η (‖z‖^(1-ξ))).toReal-
       (∫⁻ ω, dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ^(-p) ∂P).toReal-D| ≤
       max |θlo-1| |θhi-1| * (-D) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let A := originRadialPath Xc
   let η := Real.exp (-(T : ℝ))
   let R := Real.exp (-h)
@@ -90,16 +91,11 @@ theorem dual_source_copied_kernel_inverse_bound
   have hi : Measurable (fun v : TwoSidedPath × Ω => J (reflected_innerRegion η) v.1 v.2) := by
     apply hmRegion _ ((isOpen_lt continuous_const continuous_norm).inter
       (isOpen_lt continuous_norm continuous_const))
-    intro x hx hx0
-    have he : x = 0 := mem_singleton_iff.mp hx0
-    have hxpos : 0 < ‖x‖ := hx.1
-    simp only [he, norm_zero, lt_self_iff_false] at hxpos
+    simp_all
   have ho : Measurable (fun v : TwoSidedPath × Ω => J (reflected_outerRegion (‖z‖^(1-ξ))) v.1 v.2) := by
     apply hmRegion _ ((isOpen_lt continuous_const continuous_norm).inter
       (Set.toFinite ({0,1} : Set ℂ)).isClosed.isOpen_compl)
-    intro x hx hx0
-    have he : x = 0 := mem_singleton_iff.mp hx0
-    exact hx.2 (by simp [he])
+    simp_all
   have hOm : AEMeasurable O (P.prod P) :=
     ho.comp_aemeasurable (hA.comp_fst.prodMk measurable_snd.aemeasurable)
   have hIm : AEMeasurable I QP := hi.comp_aemeasurable
@@ -137,15 +133,8 @@ theorem dual_source_copied_kernel_inverse_bound
     exact hInv₀
   let ZT := fun ω => (Z ω).map (fun s : ℝ => s-(T : ℝ))
   have hZT : AEMeasurable ZT P := (Measure.measurable_map _ (measurable_id.sub_const _)).comp_aemeasurable hZ.2.2.2.1
-  have hZTfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, ZT ω (Icc a b) < ⊤ := by
-    filter_upwards [hZ.2.2.2.2.1] with ω hω a b
-    have he : (fun s : ℝ => s-(T : ℝ)) ⁻¹' Icc a b = Icc (a+T) (b+T) := by
-      ext s
-      simp only [mem_preimage, mem_Icc, le_sub_iff_add_le, sub_le_iff_le_add]
-    change (Z ω).map (fun s : ℝ => s-(T : ℝ)) (Icc a b) < ⊤
-    rw [Measure.map_apply (show Measurable (fun s : ℝ => s-(T : ℝ)) from measurable_id.sub_const _)
-      measurableSet_Icc, he]
-    exact hω _ _
+  have hZTfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, ZT ω (Icc a b) < ⊤ :=
+    hZ.2.2.2.2.1.mono (fun ω hω => realMeasure_map_sub_Icc_lt_top hω T)
   have hDm : Measurable (fun a : TwoSidedPath => brownianShiftPath T (radialPositiveHalf a)) :=
     continuous_brownianShiftPath.measurable.comp
       (measurable_const.prodMk continuous_radialPositiveHalf.measurable)
@@ -198,8 +187,7 @@ theorem dual_source_copied_kernel_inverse_bound
       -(∫ v : (Ω × Ω) × Ω, ((O v.1).toReal+β v*(V v).toReal)^(-p)-
         (O v.1).toReal^(-p) ∂QP) := by
     rw [← integral_neg]
-    apply integral_congr_ae
-    exact ae_of_all _ (fun v => by ring)
+    norm_num
   rw [hLoss] at hb
   exact hb
 

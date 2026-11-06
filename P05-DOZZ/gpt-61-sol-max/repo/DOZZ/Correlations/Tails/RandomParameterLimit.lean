@@ -27,7 +27,7 @@ theorem parameter_grid_error (k : ℕ) (t : ℝ) :
   have hhi := Int.lt_floor_add_one (((k : ℝ) + 1) * t)
   have hle : parameterGrid k t ≤ t := by
     dsimp [parameterGrid]
-    exact (div_le_iff₀ hd).mpr (by simpa only [mul_comm] using hlo)
+    field_simp <;> nlinarith
   rw [abs_of_nonneg (sub_nonneg.mpr hle)]
   dsimp [parameterGrid]
   have heq : t - (Int.floor (((k : ℝ) + 1) * t) : ℝ) / ((k : ℝ) + 1) =

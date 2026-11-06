@@ -6,24 +6,27 @@ module
 public import DOZZ.Correlations.Symmetry.RepinnedCovariance
 public import DOZZ.Correlations.Symmetry.ReflectionTestCovariance
 public import DOZZ.GMC.GaussianInputs
-@[expose] public section
+import Mathlib.Tactic
+public section
 open MeasureTheory ProbabilityTheory
 open scoped Distributions
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
+include Ω _inst1 P X hX Xc hXc in
 /-- The reflected and re-pinned test variable has precisely the original covariance diagonal. -/
 theorem reflection_repinned_variance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+    
     (f : TestFn) :
     variance (fun ω => symmetryRepinnedField X (fun ω' => Xc ω' 1 0) ω f) P = gffCov f f := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   let L := fun ω => Xc ω 1 0
   let A := fun ω => X ω (symmetryReflectionTest f)
   let m := testMass f
-  have hA : MemLp A 2 P := equatorGFF_test_memLp X hX (symmetryReflectionTest f)
-  have hL : MemLp L 2 P := hXc.2.1 1 0
-  have hm : MemLp (fun ω => m * L ω) 2 P := hL.const_mul m
+  have hA  := equatorGFF_test_memLp X hX (symmetryReflectionTest f)
+  have hL  := hXc.2.1 1 0
+  have hm  := hL.const_mul m
   have hAmean : ∫ ω, A ω ∂P = 0 := equatorGFF_test_integral X hX (symmetryReflectionTest f)
   have hLmean : ∫ ω, L ω ∂P = 0 := (circleAverage_isGaussianProcess P X Xc hX hXc).2 1 0
   have hvarL : variance L P = 2 * symmetryReflectionKappa := by
@@ -60,12 +63,12 @@ theorem reflection_repinned_variance
   dsimp [m]
   ring
 
+include Ω _inst1 P X hX Xc hXc in
 /-- Correlated affine re-pinning produces a genuine equator GFF on the same probability space. -/
 theorem isEquatorGFF_symmetryRepinnedField
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) :
+     :
     IsEquatorGFF P (symmetryRepinnedField X (fun ω => Xc ω 1 0)) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   have hLm : Measurable (fun ω => Xc ω 1 0) :=
     (hXc.1 0).comp (measurable_id.prodMk measurable_const)
   refine ⟨hX.1, fun f => ?_⟩

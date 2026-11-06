@@ -9,7 +9,7 @@ public import DOZZ.GMC.BallAnnulus.RadiusExtension
 /-! The two-sided ball estimate `DOZZ.equatorGFF_GMC_ball_moment_bound`, including every negative
 moment order. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs
@@ -26,7 +26,6 @@ theorem gmc_finite_measure_nonpositive_moment_pos
   have he := (lintegral_eq_zero_iff' (hmeas.pow_const p)).mp hz
   have hfalse : ∀ᵐ ω ∂P, False := by
     filter_upwards [he] with ω hω
-    let _ := hfin ω
     exact gmc_finite_mass_nonpositive_power_ne_zero (M ω) A hp hω
   obtain ⟨ω, hω⟩ := hfalse.exists
   exact hω
@@ -49,11 +48,9 @@ theorem equatorGFF_GMC_ball_moment_bound
   obtain ⟨B, hB, hnorm⟩ := hK.isBounded.exists_pos_norm_le
   let O := Metric.closedBall (0 : ℂ) (B+1)
   have hO : MeasurableSet O := Metric.isClosed_closedBall.measurableSet
-  have hsubset (z : K) (r : ℝ) (hr1 : r ≤ 1) : Metric.ball z.val r ⊆ O := by
-    exact (ball_subset_closedBall_norm_add z.val r).trans
+  have hsubset (z : K) (r : ℝ) (hr1 : r ≤ 1) : Metric.ball z.val r ⊆ O := (ball_subset_closedBall_norm_add z.val r).trans
       (Metric.closedBall_subset_closedBall (by linarith [hnorm z.val z.property]))
-  have hinner : Metric.ball (0 : ℂ) (1/8) ⊆ O := by
-    exact (Metric.ball_subset_closedBall).trans
+  have hinner : Metric.ball (0 : ℂ) (1/8) ⊆ O := (Metric.ball_subset_closedBall).trans
       (Metric.closedBall_subset_closedBall (by linarith))
   have hmono {A D : Set ℂ} (hAD : A ⊆ D) (hp0 : 0 ≤ p) :
       gmcMassMoment P M A p ≤ gmcMassMoment P M D p :=
@@ -80,8 +77,8 @@ theorem equatorGFF_GMC_ball_moment_bound
       exact ⟨(hsmall z.val z.property (1/8) (by norm_num) le_rfl).1.trans
         (hmono (Metric.ball_subset_ball hr) hp0),
         (hmono (hsubset z r hr1) hp0).trans_eq (ENNReal.ofReal_toReal hOt.ne).symm⟩
-    · have hp0' : p ≤ 0 := (lt_of_not_ge hp0).le
-      have hOt : gmcMassMoment P M O p < ⊤ :=
+    · have hp0'  := (lt_of_not_ge hp0).le
+      have hOt  :=
         (hanti hinner hp0').trans_lt (gmc_ball_moment_lt_top_any_center
           P X hX γ hγ hγ2 M hM 0 (1/8) (by norm_num) le_rfl p hp)
       have hOp := gmc_finite_measure_nonpositive_moment_pos P M hM.1 O

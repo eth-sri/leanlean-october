@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Tails.WeightedMomentModelLaw
 
 /-! Uniform improved-charge moments, retaining the actual correlated multiplier. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 
@@ -33,7 +33,7 @@ theorem uniform_correlated_improved_charge_moment
   obtain ⟨D,hD,hmodels⟩ := weighted_moment_uniform_models
     P X hX γ hγ hγ2 M hM ρ hρ hρ1 A g hg
   let C := L^(1/p)*D^(1/q)
-  have hC : C < ⊤ := ENNReal.mul_lt_top
+  have hC  := ENNReal.mul_lt_top
     (ENNReal.rpow_lt_top_of_nonneg (div_nonneg zero_le_one hpq.pos.le) hL.ne)
     (ENNReal.rpow_lt_top_of_nonneg (div_nonneg zero_le_one hpq.symm.pos.le) hD.ne)
   refine ⟨C,hC,?_⟩

@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Analytic.CommonPowerEnvelope
 
 /-! The threshold estimate with one common envelope for both signs of the mass power. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -37,10 +37,10 @@ theorem cpow_common_threshold
   have hs : ∀ᵐ ω ∂P, ENNReal.ofReal (Y ω) < ENNReal.ofReal u →
       F ω ≤ ENNReal.ofReal u * (ENNReal.ofReal (2 * ‖p‖) * H ω) := by
     filter_upwards [hL, hLZ, hYpos, hZU] with ω hL hLZ hY hZU hsmall
-    have hyu : Y ω < u := (ENNReal.ofReal_lt_ofReal_iff hu).mp hsmall
+    have hyu  := (ENNReal.ofReal_lt_ofReal_iff hu).mp hsmall
     have he := (cpow_common_envelope (L ω) (Z ω) (Y ω) (U ω) lo hi p
       hL hLZ hY hZU hlo hhi hlop hphi).1
-    have hU : 0 < U ω := (hL.trans_le hLZ).trans_le
+    have hU  := (hL.trans_le hLZ).trans_le
       ((le_add_of_nonneg_right hY).trans hZU)
     have hE : 0 ≤ L ω ^ lo + U ω ^ hi :=
       add_nonneg (Real.rpow_nonneg hL.le _) (Real.rpow_nonneg hU.le _)

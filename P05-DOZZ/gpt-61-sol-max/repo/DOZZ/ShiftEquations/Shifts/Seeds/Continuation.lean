@@ -50,7 +50,7 @@ noncomputable def gaussCoefficientRatioC (a b c : ℂ) : ℂ :=
 
 theorem gaussCoefficientRatioC_ofReal (a b c : ℝ) :
     gaussCoefficientRatioC (a : ℂ) (b : ℂ) (c : ℂ) = (gaussCoefficientRatio a b c : ℂ) := by
-  have h : ∀ x : ℝ, (Real.Gamma x : ℂ) = Complex.Gamma (x : ℂ) := fun x =>
+  have h  := fun x =>
     (Complex.Gamma_ofReal x).symm
   unfold gaussCoefficientRatioC gaussCoefficientRatio
   push_cast [h]
@@ -62,21 +62,20 @@ theorem meromorphicAt_gaussCoefficientRatioC_comp {fa fb fc : ℂ → ℂ} {t : 
     MeromorphicAt (fun t => gaussCoefficientRatioC (fa t) (fb t) (fc t)) t := by
   have hG : ∀ g : ℂ → ℂ, AnalyticAt ℂ g t → MeromorphicAt (fun t => Complex.Gamma (g t)) t :=
     fun g hg => (meromorphicAt_complexGamma (g t)).comp_analyticAt hg
-  have hone : AnalyticAt ℂ (fun _ : ℂ => (1 : ℂ)) t := analyticAt_const
-  have htwo : AnalyticAt ℂ (fun _ : ℂ => (2 : ℂ)) t := analyticAt_const
-  have h1 := hG fc hc
-  have h2 := hG (fun t => 1 - fa t) (hone.sub ha)
-  have h3 := hG (fun t => 1 - fb t) (hone.sub hb)
-  have h4 := hG (fun t => fa t - fc t + 1) ((ha.sub hc).add hone)
-  have h5 := hG (fun t => fb t - fc t + 1) ((hb.sub hc).add hone)
-  have h6 := hG (fun t => 2 - fc t) (htwo.sub hc)
-  have h7 := hG (fun t => fc t - fa t) (hc.sub ha)
-  have h8 := hG (fun t => fc t - fb t) (hc.sub hb)
-  have h9 := hG fa ha
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   have h10 := hG fb hb
   unfold gaussCoefficientRatioC
-  exact (((((h1.fun_pow 2).fun_mul h2).fun_mul h3).fun_mul h4).fun_mul h5).fun_neg.fun_div
-    (((((h6.fun_pow 2).fun_mul h7).fun_mul h8).fun_mul h9).fun_mul h10)
+  fun_prop
 
 /-- The complex ratio `gaussCoefficientRatioC` is analytic at a parameter point
 `0 < a < b < c < 1`. -/
@@ -91,7 +90,7 @@ theorem analyticAt_gaussCoefficientRatioC_comp {fa fb fc : ℂ → ℂ} {t : ℂ
   have hΓne : ∀ (g : ℂ → ℂ) (r : ℝ), g t = (r : ℂ) → 0 < r → Complex.Gamma (g t) ≠ 0 :=
     fun g r hgr hr => by
       rw [hgr]
-      exact Complex.Gamma_ne_zero_of_re_pos (by rw [Complex.ofReal_re]; exact hr)
+      exact Complex.Gamma_ne_zero_of_re_pos (by exact hr)
   have e2 : (fun t => 1 - fa t) t = ((1 - a : ℝ) : ℂ) := by simp [ha]
   have e3 : (fun t => 1 - fb t) t = ((1 - b : ℝ) : ℂ) := by simp [hb]
   have e4 : (fun t => fa t - fc t + 1) t = ((a - c + 1 : ℝ) : ℂ) := by simp [ha, hc]
@@ -108,17 +107,17 @@ theorem analyticAt_gaussCoefficientRatioC_comp {fa fb fc : ℂ → ℂ} {t : ℂ
   have p8 : (0 : ℝ) < c - b := by linarith
   have hb0 : 0 < b := by linarith
   have hc0 : 0 < c := by linarith
-  have hone : AnalyticAt ℂ (fun _ : ℂ => (1 : ℂ)) t := analyticAt_const
-  have htwo : AnalyticAt ℂ (fun _ : ℂ => (2 : ℂ)) t := analyticAt_const
-  have a1 := hΓ fc c hfc hc hc0
-  have a2 := hΓ (fun t => 1 - fa t) _ (hone.sub hfa) e2 p2
-  have a3 := hΓ (fun t => 1 - fb t) _ (hone.sub hfb) e3 p3
-  have a4 := hΓ (fun t => fa t - fc t + 1) _ ((hfa.sub hfc).add hone) e4 p4
-  have a5 := hΓ (fun t => fb t - fc t + 1) _ ((hfb.sub hfc).add hone) e5 p5
-  have a6 := hΓ (fun t => 2 - fc t) _ (htwo.sub hfc) e6 p6
-  have a7 := hΓ (fun t => fc t - fa t) _ (hfc.sub hfa) e7 p7
-  have a8 := hΓ (fun t => fc t - fb t) _ (hfc.sub hfb) e8 p8
-  have a9 := hΓ fa a hfa ha ha0
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   have a10 := hΓ fb b hfb hb hb0
   have hden : Complex.Gamma (2 - fc t) ^ 2 * Complex.Gamma (fc t - fa t) *
       Complex.Gamma (fc t - fb t) * Complex.Gamma (fa t) * Complex.Gamma (fb t) ≠ 0 :=
@@ -127,8 +126,7 @@ theorem analyticAt_gaussCoefficientRatioC_comp {fa fb fc : ℂ → ℂ} {t : ℂ
       (hΓne (fun t => fc t - fa t) _ e7 p7)) (hΓne (fun t => fc t - fb t) _ e8 p8))
       (hΓne fa a ha ha0)) (hΓne fb b hb hb0)
   unfold gaussCoefficientRatioC
-  exact (((((a1.fun_pow 2).fun_mul a2).fun_mul a3).fun_mul a4).fun_mul a5).fun_neg.fun_div
-    (((((a6.fun_pow 2).fun_mul a7).fun_mul a8).fun_mul a9).fun_mul a10) hden
+  fun_prop
 
 /-! ### The dual Gauss parameters and the two charge lines -/
 
@@ -146,7 +144,7 @@ noncomputable def dualParamC (γ : ℝ) (z : ℂ) : ℂ :=
 
 theorem dualParamA_ofReal {γ : ℝ} (hγ : γ ≠ 0) (α₁ α₂ α₃ : ℝ) :
     dualParamA γ α₂ α₃ (α₁ : ℂ) = (gaussParameterA γ (2 / γ) α₁ α₂ α₃ : ℂ) := by
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
+  have hγc  := Complex.ofReal_ne_zero.mpr hγ
   unfold dualParamA gaussParameterA
   push_cast
   field_simp
@@ -154,7 +152,7 @@ theorem dualParamA_ofReal {γ : ℝ} (hγ : γ ≠ 0) (α₁ α₂ α₃ : ℝ) 
 
 theorem dualParamB_ofReal {γ : ℝ} (hγ : γ ≠ 0) (α₁ α₂ α₃ : ℝ) :
     dualParamB γ α₂ α₃ (α₁ : ℂ) = (gaussParameterB γ (2 / γ) α₁ α₂ α₃ : ℂ) := by
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
+  have hγc  := Complex.ofReal_ne_zero.mpr hγ
   unfold dualParamB gaussParameterB
   push_cast
   field_simp
@@ -162,7 +160,7 @@ theorem dualParamB_ofReal {γ : ℝ} (hγ : γ ≠ 0) (α₁ α₂ α₃ : ℝ) 
 
 theorem dualParamC_ofReal {γ : ℝ} (hγ : γ ≠ 0) (α₁ : ℝ) :
     dualParamC γ (α₁ : ℂ) = (gaussParameterC γ (2 / γ) α₁ : ℂ) := by
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
+  have hγc  := Complex.ofReal_ne_zero.mpr hγ
   unfold dualParamC gaussParameterC
   push_cast
   field_simp
@@ -252,7 +250,6 @@ theorem seeds_shifted_triple {γ α α₂ α₃ : ℝ} (hγ : 0 < γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (hα : α < Q γ) (hs : 2 * Q γ + 2 / γ < α + α₂ + α₃) :
     0 < sExp γ (α - 2 / γ) α₂ α₃ ∧ ExtendedSeiberg3 γ (α - 2 / γ) α₂ α₃ := by
   have hpos : 0 < sExp γ (α - 2 / γ) α₂ α₃ := by
-    unfold sExp
     exact div_pos (by linarith) hγ
   have h2γ : 0 < 2 / γ := div_pos two_pos hγ
   exact ⟨hpos, seeds_extendedSeiberg3_of_sExp_pos hγ (by linarith) hα₂ hα₃ hpos⟩
@@ -261,7 +258,7 @@ theorem seeds_shifted_triple {γ α α₂ α₃ : ℝ} (hγ : 0 < γ)
 theorem seeds_reflected_triple {γ α α₂ α₃ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (hα : α < Q γ) (hs : 2 * Q γ + 2 / γ < α + α₂ + α₃) :
     0 < sExp γ (2 * Q γ - α - 2 / γ) α₂ α₃ ∧ ExtendedSeiberg3 γ (2 * Q γ - α - 2 / γ) α₂ α₃ := by
-  have hlow := (dual_seed_charge_lower γ α α₂ α₃ hα hα₂ hα₃ hs).1
+  
   have hhalf : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ two_pos hγ]
     nlinarith
@@ -271,8 +268,11 @@ theorem seeds_reflected_triple {γ α α₂ α₃ : ℝ} (hγ : 0 < γ) (hγ2 : 
     exact div_pos (by linarith) hγ
   exact ⟨hpos, seeds_extendedSeiberg3_of_sExp_pos hγ (by linarith) hα₂ hα₃ hpos⟩
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω)
+
+include Ω _inst1 P in
 /-- The left side at a real charge of the interval. -/
-theorem dualReflLeft_ofReal {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ)
+theorem dualReflLeft_ofReal  (M : Ω → Measure ℂ)
     {f : (Fin 3 → ℂ) → ℂ} {γ μ α₂ α₃ : ℝ} (hγ : 0 < γ) (hμ : 0 < μ)
     (hfeq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
       f (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
@@ -289,8 +289,9 @@ theorem dualReflLeft_ofReal {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (
     gaussCoefficientRatioC_ofReal, Complex.ofReal_mul]
   rfl
 
+include Ω _inst1 P in
 /-- The right side at a real charge of the interval, for the witness of `G`. -/
-theorem dualReflRight_ofReal {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem dualReflRight_ofReal 
     (M : Ω → Measure ℂ) {f : (Fin 3 → ℂ) → ℂ} {G : ℂ → ℂ} {γ μ α₂ α₃ : ℝ}
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hfeq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
@@ -318,13 +319,11 @@ theorem analyticAt_reflectionRFromBar {γ μ : ℝ} (hμ : 0 < μ) {G : ℂ → 
   have hp : AnalyticAt ℂ (reflectionExponentC γ) z := by
     unfold reflectionExponentC
     fun_prop
-  have hμs : (μ : ℂ) ∈ Complex.slitPlane := Complex.ofReal_mem_slitPlane.mpr hμ
+  have hμs  := Complex.ofReal_mem_slitPlane.mpr hμ
   have hpow : AnalyticAt ℂ (fun w => (μ : ℂ) ^ reflectionExponentC γ w) z :=
     analyticAt_const.cpow hp hμs
   have hΓc : AnalyticAt ℂ (fun w => Complex.Gamma (-reflectionExponentC γ w)) z :=
     AnalyticAt.comp_of_eq hΓ hp.neg rfl
-  show AnalyticAt ℂ (fun w => (μ : ℂ) ^ reflectionExponentC γ w *
-    Complex.Gamma (-reflectionExponentC γ w) * reflectionExponentC γ w * G w) z
   exact ((hpow.mul hΓc).mul hp).mul hG
 
 /-- A positive zero mode is not a pole of `Γ`. -/
@@ -335,19 +334,20 @@ theorem seeds_sExpC_ne_neg_nat {γ a b c : ℝ} (hs : 0 < sExp γ a b c) (n : �
   have hn' : sExp γ a b c = -(n : ℝ) := by
     simpa only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two,
       Matrix.head_cons, Matrix.tail_cons] using (by exact_mod_cast hn : _ = -(n : ℝ))
-  have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+  
   linarith
 
+variable {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 → ℂ)} (hVo : IsOpen V) (hf : DifferentiableOn ℂ f V)
+
+include f V hVo hf in
 /-- The left side is analytic at every real charge of the interval. -/
-theorem analyticAt_dualReflLeft {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 → ℂ)} (hVo : IsOpen V)
-    (hf : DifferentiableOn ℂ f V) {γ μ α₂ α₃ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
+theorem analyticAt_dualReflLeft  {γ μ α₂ α₃ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hVmem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V)
     {α : ℝ} (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (hα : α < Q γ)
     (hs : 2 * Q γ + 2 / γ < α + α₂ + α₃) :
     AnalyticAt ℂ (dualReflLeft f γ μ α₂ α₃) (α : ℂ) := by
   obtain ⟨hspos, hES⟩ := seeds_shifted_triple hγ hα₂ hα₃ hα hs
-  have h1 : AnalyticAt ℂ (fun z => structureConstantH f γ μ (dualShiftedLine γ α₂ α₃ z))
-      (α : ℂ) :=
+  have h1  :=
     analyticAt_structureConstantH_comp hVo hf hμ (differentiable_dualShiftedLine γ α₂ α₃)
       (by rw [dualShiftedLine_ofReal]; exact hVmem _ hES)
       (by rw [dualShiftedLine_ofReal]; exact seeds_sExpC_ne_neg_nat hspos)
@@ -359,22 +359,19 @@ theorem analyticAt_dualReflLeft {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 �
     ((differentiable_dualParamC γ).analyticAt (α : ℂ))
     (dualParamA_ofReal hγ.ne' α α₂ α₃) (dualParamB_ofReal hγ.ne' α α₂ α₃)
     (dualParamC_ofReal hγ.ne' α) ha0 hab hbc hc1
-  show AnalyticAt ℂ (fun z => structureConstantH f γ μ (dualShiftedLine γ α₂ α₃ z) *
-    gaussCoefficientRatioC (dualParamA γ α₂ α₃ z) (dualParamB γ α₂ α₃ z) (dualParamC γ z)) _
   exact h1.mul h2
 
+include f V hVo hf in
 /-- The right side is analytic at every real charge of the interval where `G` is analytic. -/
-theorem analyticAt_dualReflRight {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 → ℂ)} (hVo : IsOpen V)
-    (hf : DifferentiableOn ℂ f V) {G : ℂ → ℂ} {γ μ α₂ α₃ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem analyticAt_dualReflRight  {G : ℂ → ℂ} {γ μ α₂ α₃ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hμ : 0 < μ)
     (hVmem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V)
     {α : ℝ} (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (hα : α < Q γ)
     (hs : 2 * Q γ + 2 / γ < α + α₂ + α₃) (hG : AnalyticAt ℂ G (α : ℂ)) :
     AnalyticAt ℂ (dualReflRight f G γ μ α₂ α₃) (α : ℂ) := by
   obtain ⟨hspos, hES⟩ := seeds_reflected_triple hγ hγ2 hα₂ hα₃ hα hs
-  have hlow := (dual_seed_charge_lower γ α α₂ α₃ hα hα₂ hα₃ hs).1
+  
   have hp0 : 0 < reflectionExponent γ α := by
-    unfold reflectionExponent
     exact div_pos (by linarith) hγ
   have hp1 : reflectionExponent γ α < 1 := by
     unfold reflectionExponent
@@ -385,18 +382,15 @@ theorem analyticAt_dualReflRight {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 �
     rw [reflectionExponentC_ofReal, ← Complex.ofReal_neg]
     exact analyticAt_Gamma_ofReal_neg_one_lt (by linarith) (by linarith)
   have h1 := analyticAt_reflectionRFromBar hμ hG hΓ
-  have h2 : AnalyticAt ℂ (fun z => structureConstantH f γ μ (dualReflectedLine γ α₂ α₃ z))
-      (α : ℂ) :=
+  have h2  :=
     analyticAt_structureConstantH_comp hVo hf hμ (differentiable_dualReflectedLine γ α₂ α₃)
       (by rw [dualReflectedLine_ofReal]; exact hVmem _ hES)
       (by rw [dualReflectedLine_ofReal]; exact seeds_sExpC_ne_neg_nat hspos)
-  show AnalyticAt ℂ (fun z => reflectionRFromBar γ μ G z *
-    structureConstantH f γ μ (dualReflectedLine γ α₂ α₃ z)) _
   exact h1.mul h2
 
+include f V hVo hf in
 /-- The left side is meromorphic on the preimage of the holomorphy domain of `f`. -/
-theorem meromorphicOn_dualReflLeft {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 → ℂ)}
-    (hVo : IsOpen V) (hf : DifferentiableOn ℂ f V) {γ μ α₂ α₃ : ℝ} (hμ : 0 < μ) :
+theorem meromorphicOn_dualReflLeft  {γ μ α₂ α₃ : ℝ} (hμ : 0 < μ) :
     MeromorphicOn (dualReflLeft f γ μ α₂ α₃) (dualShiftedLine γ α₂ α₃ ⁻¹' V) := by
   intro z hz
   have h1 := meromorphicOn_structureConstantH_comp (γ := γ) hVo hf hμ
@@ -405,30 +399,27 @@ theorem meromorphicOn_dualReflLeft {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3
     ((differentiable_dualParamA γ α₂ α₃).analyticAt z)
     ((differentiable_dualParamB γ α₂ α₃).analyticAt z)
     ((differentiable_dualParamC γ).analyticAt z)
-  show MeromorphicAt (fun z => structureConstantH f γ μ (dualShiftedLine γ α₂ α₃ z) *
-    gaussCoefficientRatioC (dualParamA γ α₂ α₃ z) (dualParamB γ α₂ α₃ z) (dualParamC γ z)) z
   exact h1.fun_mul h2
 
+include f V hVo hf in
 /-- The right side is meromorphic where `G` is and on the preimage of the holomorphy domain. -/
-theorem meromorphicOn_dualReflRight {f : (Fin 3 → ℂ) → ℂ} {V : Set (Fin 3 → ℂ)}
-    (hVo : IsOpen V) (hf : DifferentiableOn ℂ f V) {G : ℂ → ℂ} {W : Set ℂ}
+theorem meromorphicOn_dualReflRight  {G : ℂ → ℂ} {W : Set ℂ}
     (hG : MeromorphicOn G W) {γ μ α₂ α₃ : ℝ} (hμ : 0 < μ) :
     MeromorphicOn (dualReflRight f G γ μ α₂ α₃) (dualReflectedLine γ α₂ α₃ ⁻¹' V ∩ W) := by
   intro z hz
   have h1 := meromorphicOn_reflectionRFromBar (γ := γ) hμ hG z hz.2
   have h2 := meromorphicOn_structureConstantH_comp (γ := γ) hVo hf hμ
     (differentiable_dualReflectedLine γ α₂ α₃) z hz.1
-  show MeromorphicAt (fun z => reflectionRFromBar γ μ G z *
-    structureConstantH f γ μ (dualReflectedLine γ α₂ α₃ z)) z
   exact h1.fun_mul h2
 
 /-! ### The continuation -/
 
+include Ω _inst1 P in
 /-- **Continuation of the dual reflection identity in the first charge.** For fixed spectators below
 `Q`, the identity `C(α₁ - 2/γ, α₂, α₃) r(α₁) = R(α₁) C(2Q - α₁ - 2/γ, α₂, α₃)` near `Q` (`hnear`)
 extends to every `α₁ < Q` with `α₁ + α₂ + α₃ > 2Q + 2/γ`, for every witness of `R(α₁)`. -/
 theorem dual_reflection_identity_continuation
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
+     (X : Ω → Distr) (M : Ω → Measure ℂ)
     (γ μ α₂ α₃ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)

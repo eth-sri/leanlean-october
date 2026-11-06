@@ -30,14 +30,7 @@ noncomputable def unitBoxSecondDerivativeCLM (L : ℝ) (v : ℂ) :
   let D : TestFn →L[ℝ] TestFn := TestFunction.lineDerivCLM ℝ v
   exact L ^ 2 • (D.comp D)
 
-theorem lineDerivCLM_eq_directionalDerivativeTest (f : TestFn) (v : ℂ) :
-    TestFunction.lineDerivCLM ℝ v f = directionalDerivativeTest f v := by
-  ext z
-  rw [TestFunction.lineDerivCLM_apply_of_le (by simp : (⊤ : ENat) + 1 ≤ ⊤)]
-  rw [directionalDerivativeTest_apply]
-  have hd : DifferentiableAt ℝ (f : ℂ → ℝ) z :=
-    (f.contDiff.differentiable (by simp)).differentiableAt
-  exact hd.lineDeriv_eq_fderiv
+
 
 theorem unitBoxSecondDerivativeCLM_apply (L : ℝ) (v : ℂ) (f : TestFn) :
     unitBoxSecondDerivativeCLM L v f =
@@ -45,7 +38,7 @@ theorem unitBoxSecondDerivativeCLM_apply (L : ℝ) (v : ℂ) (f : TestFn) :
         (unitBoxDirectionalDerivativeTest L f v) v := by
   let D : TestFn →L[ℝ] TestFn := TestFunction.lineDerivCLM ℝ v
   have hunit (g : TestFn) : unitBoxDirectionalDerivativeTest L g v = L • D g := by
-    rw [unitBoxDirectionalDerivativeTest, ← lineDerivCLM_eq_directionalDerivativeTest]
+    continuity
   change L ^ 2 • (D (D f)) = _
   calc
     L ^ 2 • (D (D f)) = L • (L • D (D f)) := by

@@ -7,6 +7,7 @@ module
 public import DOZZ.GMC.SharpMoments.WeightedLocalBasic
 public import DOZZ.GMC.SharpMoments.WeightedDyadicSum
 public import DOZZ.GMC.SharpMoments.BallScaling
+import Mathlib.Tactic
 
 /-! # Finiteness of weighted local moments in the sharp range
 
@@ -15,19 +16,20 @@ moment is finite at every center and radius. For small radii the dyadic shell su
 the sharp ball upper bound at the center; larger radii add a bounded weight times the mass of a
 bounded disk. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Integrals of a fixed measurable function over a fixed measurable set against an `IsGMCOf`
 version are a.e. measurable. -/
 theorem gmc_setLIntegral_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (f : ℂ → ℝ≥0∞) (hf : Measurable f) (s : Set ℂ) (hs : MeasurableSet s) :
     AEMeasurable (fun ω => ∫⁻ x in s, f x ∂M ω) P := by
   obtain ⟨N, hN, _, hMN⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
@@ -37,11 +39,10 @@ theorem gmc_setLIntegral_aemeasurable
   filter_upwards [hMN] with ω hω
   rw [lintegral_indicator hs, hω]
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Weighted local masses of an `IsGMCOf` version are a.e. measurable. -/
 theorem gmc_weighted_mass_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (α : ℝ) (z : ℂ) (r : ℝ) :
     AEMeasurable (fun ω => weightedGmcBallMass γ (M ω) α z r) P :=
   gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM
@@ -58,16 +59,15 @@ theorem sharpBallExponent_sub_insertion (γ α p : ℝ) (hγ : 0 < γ) :
   field_simp
   ring
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Weighted local moments with a positive charge are finite in the sharp range on disks of
 radius at most `1/8`. -/
 theorem weightedGmcBallMoment_lt_top_of_pos_charge_small
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (α : ℝ) (hα : 0 < α) (z : ℂ) (r : ℝ) (hr : 0 < r) (hr8 : r ≤ 1 / 8) (p : ℝ) (hp : 0 < p)
     (hpRange : p < min (4 / γ ^ 2) (2 / γ * (Q γ - α))) :
     weightedGmcBallMoment P M γ α z r p < ⊤ := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   obtain ⟨C, -, hC⟩ := gmc_ball_moment_sharp_upper_center P X hX γ hγ hγ2 M hM z p
     (lt_min_iff.mp hpRange).1
   have he : 0 < 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 - γ * α * p := by
@@ -78,16 +78,15 @@ theorem weightedGmcBallMoment_lt_top_of_pos_charge_small
     γ α p _ C r z hγ hα hp hr (hr8.trans (by norm_num)) he
     (fun ρ hρ hρr => hC ρ hρ (hρr.trans hr8))
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Weighted local moments are finite in the sharp range at every center and radius. -/
 theorem weightedGmcBallMoment_lt_top_of_sharp_range
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+    
     (α : ℝ) (z : ℂ) (r : ℝ) (hr : 0 < r) (p : ℝ) (hp : 0 < p)
     (hpRange : p < min (4 / γ ^ 2) (2 / γ * (Q γ - α))) :
     weightedGmcBallMoment P M γ α z r p < ⊤ := by
-  let _ : IsProbabilityMeasure P := hX.1
-  have hpBulk : p < 4 / γ ^ 2 := (lt_min_iff.mp hpRange).1
+  let _  := hX.1
+  have hpBulk  := (lt_min_iff.mp hpRange).1
   rcases le_or_gt α 0 with hα | hα
   · exact weightedGmcBallMoment_lt_top_of_nonpos_charge P X hX γ hγ hγ2 M hM α hα z r p hp
       hpBulk

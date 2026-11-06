@@ -8,7 +8,7 @@ public import DOZZ.GMC.WeightedCutoff.Bound
 
 /-! Uniform compact-support cutoff moments used in the correlated pin-weight limit. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 
@@ -31,18 +31,16 @@ theorem regularized_compact_mass_moment_uniform
     ring
   have hadm : ∀ t ∈ ({(0,q)} : Set (ℝ × ℝ)), t.1 < Q γ ∧ 0 < t.2 ∧
       t.2 < min (4 / γ^2) (2 / γ * (Q γ - t.1)) := by
-    intro t ht
-    obtain rfl := Set.mem_singleton_iff.mp ht
-    exact ⟨hQ, hq, lt_min hqc (by rw [heq]; linarith)⟩
+    simp_all
   obtain ⟨C, hC, hbound⟩ := equatorGFF_GMC_weighted_cutoff_bound P X hX γ hγ hγ2 Xc hc
     {(0,q)} isCompact_singleton hadm {0} isCompact_singleton (R+1) (by linarith)
   refine ⟨ENNReal.ofReal (C * (R+1) ^ (γ*Q γ*q - γ^2*q^2/2)),
     ENNReal.ofReal_lt_top, fun n => ?_⟩
   have hd : Real.exp (-(n : ℝ)) ≤ R+1 := by
-    have he : Real.exp (-(n : ℝ)) ≤ 1 := Real.exp_le_one_iff.mpr (by have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n; linarith)
+    have he : Real.exp (-(n : ℝ)) ≤ 1 := Real.exp_le_one_iff.mpr (by bound)
     linarith
   have ht : Real.log (1 / Real.exp (-(n : ℝ))) = (n : ℝ) := by
-    rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
+    norm_num
   have hb := hbound (0,q) (Set.mem_singleton _) 0 (Set.mem_singleton _)
     (Real.exp (-(n : ℝ))) (R+1) (Real.exp_pos _) hd le_rfl
   have hmass (ω : Ω) : cutoffWeightedGmcBallMass P Xc γ 0 0 (R+1)

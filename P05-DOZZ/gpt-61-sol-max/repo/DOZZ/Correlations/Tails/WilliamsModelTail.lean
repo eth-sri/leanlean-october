@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Tails.LogarithmicCutRate
 
 /-! The scalar Williams model tail, with its moment and last-cut inputs explicit. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 
 namespace DOZZ.Proofs
@@ -37,10 +37,10 @@ theorem williams_model_tail_bound
       |(((brownianMaximumReferenceLaw ν).prod P) {q | x < A q*Real.exp (γ*q.1)}).toReal-
         x^(-(2*ν/γ))*(∫ ω, J ω^(2*ν/γ) ∂P)| ≤ (D+3*K)*x^(-(2*ν/γ)-η) := by
   intro x hx
-  have hx0 : 0 < x := zero_lt_one.trans_le hx
-  have ha0 : 0 < a := hη.trans ha
+  have hx0  := zero_lt_one.trans_le hx
+  have ha0  := hη.trans ha
   let c := a*Real.log x/γ
-  have hc : 0 ≤ c := div_nonneg (mul_nonneg ha0.le (Real.log_nonneg hx)) hγ.le
+  have hc  := div_nonneg (mul_nonneg ha0.le (Real.log_nonneg hx)) hγ.le
   have hpr' : 2*ν/γ ≤ r := by nlinarith only [hpr,ha0,hr,hη]
   have ht := truncated_williams_tail_error P A J (Jc c) hJ (hJcm c hc)
     hJ0 (hJc0 c hc) ν γ x c r D hν hγ hx0 hD hpr' hJp (hJcp c hc) hJr (hJcr c hc)
@@ -55,12 +55,8 @@ theorem williams_model_tail_bound
         (x*Real.exp (-γ*c))^(-r)*(∫ ω, Jc c ω^r ∂P) ≤
       x^(-(2*ν/γ))*(D*Real.exp (-γ*c)) + x^(-r)*(K+K) +
         (x*Real.exp (-γ*c))^(-r)*K := by
-    have h1 := mul_le_mul_of_nonneg_left (add_le_add hJrK hjc) hXr
-    have h2 := mul_le_mul_of_nonneg_left hjc hXc
-    linarith only [h1,h2]
-  have heq : D+K+2*K = D+3*K := by ring
-  rw [heq] at hrate
-  exact ht.trans (hb.trans hrate)
+    bound
+  grind
 
 
 end DOZZ.Proofs

@@ -48,21 +48,22 @@ noncomputable def torusRealFourierPartialSum (L : ℝ) (f : TestFn)
 /-- The real Fourier partial sums converge in `L²` to the real part of the periodized test. -/
 theorem torusRealFourierPartialSum_tendsto (L : ℝ) (f : TestFn) :
     Tendsto (torusRealFourierPartialSum L f) atTop
-      (𝓝 (torusFourierRealPartCLM (torusPeriodizationLp L f))) := by
-  exact hasSum_torusPeriodization_realFourier L f
+      (𝓝 (torusFourierRealPartCLM (torusPeriodizationLp L f))) := hasSum_torusPeriodization_realFourier L f
 
+variable (R L : ℝ) (hR : 0 < R) (f : TestFn) (s : Finset (Fin 2 → ℤ))
+
+include R L hR f s in
 /-- The compactly supported test obtained by multiplying the finite real Fourier sum by the
 chosen smooth cutoff. -/
-noncomputable def equatorLocalFourierPartialTest (R L : ℝ) (hR : 0 < R)
-    (f : TestFn) (s : Finset (Fin 2 → ℤ)) : TestFn :=
+noncomputable def equatorLocalFourierPartialTest  : TestFn :=
   s.sum fun k =>
     (UnitAddTorus.mFourierCoeff (torusPeriodizationLp L f) k).re •
         localTorusCosTest R L hR k -
       (UnitAddTorus.mFourierCoeff (torusPeriodizationLp L f) k).im •
         localTorusSinTest R L hR k
 
-theorem equatorLocalFourierPartialTest_apply (R L : ℝ) (hR : 0 < R)
-    (f : TestFn) (s : Finset (Fin 2 → ℤ)) (z : ℂ) :
+include R L hR f s in
+theorem equatorLocalFourierPartialTest_apply  (z : ℂ) :
     equatorLocalFourierPartialTest R L hR f s z =
       s.sum fun k =>
         ((UnitAddTorus.mFourierCoeff (torusPeriodizationLp L f) k).re *
@@ -94,8 +95,8 @@ theorem ae_equatorHaarCommonEval_cosScale (r : ℕ) (k : Fin 2 → ℤ) :
     filter_upwards [Lp.coeFn_smul (torusSobolevWeight k)⁻¹
       (equatorFieldL2 (localTorusCosTest (gffLocalModeRadius r)
         (gffLocalModeBoxSide r) (gffLocalModeRadius_pos r) k))] with ω hω
-    simpa only [Function.comp_apply, Pi.smul_apply, smul_eq_mul] using hω
-  simpa only [gffLocalSobolevModeTest] using hmode.trans hcoe
+    simp_all
+  exact hmode.trans hcoe
 
 /-- The sine version of `ae_equatorHaarCommonEval_cosScale`. -/
 theorem ae_equatorHaarCommonEval_sinScale (r : ℕ) (k : Fin 2 → ℤ) :
@@ -119,8 +120,8 @@ theorem ae_equatorHaarCommonEval_sinScale (r : ℕ) (k : Fin 2 → ℤ) :
     filter_upwards [Lp.coeFn_smul (torusSobolevWeight k)⁻¹
       (equatorFieldL2 (localTorusSinTest (gffLocalModeRadius r)
         (gffLocalModeBoxSide r) (gffLocalModeRadius_pos r) k))] with ω hω
-    simpa only [Function.comp_apply, Pi.smul_apply, smul_eq_mul] using hω
-  simpa only [gffLocalSobolevModeTest] using hmode.trans hcoe
+    simp_all
+  exact hmode.trans hcoe
 
 /-- A finite local Fourier evaluation is almost everywhere the G4 evaluation of the corresponding
 cutoff Fourier test. -/
@@ -157,22 +158,18 @@ theorem ae_equatorLocalFourierPartialEval_eq_equatorFieldL2
       ae_equatorHaarCommonEval_cosScale r k),
       ae_all_iff.mpr (fun k =>
       ae_equatorHaarCommonEval_sinScale r k)] with ω hcos hsin
-    intro k
-    constructor
-    · exact hcos k
-    · exact hsin k
-  let term : (Fin 2 → ℤ) → TestFn := fun k =>
+    simp_all
+  let term  := fun k =>
     (UnitAddTorus.mFourierCoeff (torusPeriodizationLp L f) k).re •
         localTorusCosTest R L (gffLocalModeRadius_pos r) k -
       (UnitAddTorus.mFourierCoeff (torusPeriodizationLp L f) k).im •
         localTorusSinTest R L (gffLocalModeRadius_pos r) k
-  have hsumLp : equatorFieldL2 (s.sum term) = s.sum (fun k => equatorFieldL2 (term k)) := by
-    simp only [map_sum]
+  
   have hsumAE : (fun ω => equatorFieldL2 (s.sum term) ω) =ᵐ[
       GaussianFields.scaleSpaceWhiteNoiseMeasure 2]
       (fun ω => s.sum fun k => equatorFieldL2 (term k) ω) := by
     filter_upwards [Lp.coeFn_finsetSum s (fun k => equatorFieldL2 (term k))] with ω hω
-    simpa only [hsumLp, Finset.sum_apply] using hω
+    simp_all
   have htermAE (k : Fin 2 → ℤ) :
       (fun ω => equatorFieldL2 (term k) ω) =ᵐ[
         GaussianFields.scaleSpaceWhiteNoiseMeasure 2]
@@ -194,8 +191,7 @@ theorem ae_equatorLocalFourierPartialEval_eq_equatorFieldL2
         (equatorFieldL2 (localTorusCosTest R L (gffLocalModeRadius_pos r) k)),
       Lp.coeFn_smul b
         (equatorFieldL2 (localTorusSinTest R L (gffLocalModeRadius_pos r) k))] with ω hsub hcos hsin
-    simpa only [Function.comp_apply, Pi.smul_apply, smul_eq_mul] using
-      hsub.trans (congrArg₂ (fun x y : ℝ => x - y) hcos hsin)
+    exact hsub.trans (congrArg₂ (fun x y : ℝ => x - y) hcos hsin)
   filter_upwards [hcoords, hsumAE,
     ae_all_iff.mpr fun k => htermAE k] with ω hω hsum hterm
   change s.sum (fun k =>
@@ -215,16 +211,8 @@ theorem ae_equatorLocalFourierPartialEval_eq_equatorFieldL2
   rw [hcoeff]
   have hcos := hω k |>.1
   have hsin := hω k |>.2
-  have hcosScale : equatorHaarCommonEval
-      (gffLocalCosSobolevModeTest r k) ω =
-        (torusSobolevWeight k)⁻¹ *
-          equatorFieldL2 (localTorusCosTest R L (gffLocalModeRadius_pos r) k) ω := by
-    exact hcos
-  have hsinScale : equatorHaarCommonEval
-      (gffLocalSinSobolevModeTest r k) ω =
-        (torusSobolevWeight k)⁻¹ *
-          equatorFieldL2 (localTorusSinTest R L (gffLocalModeRadius_pos r) k) ω := by
-    exact hsin
+  have hcosScale  := hcos
+  have hsinScale  := hsin
   rw [hcosScale, hsinScale]
   rw [hterm k]
   rw [Complex.real_smul]

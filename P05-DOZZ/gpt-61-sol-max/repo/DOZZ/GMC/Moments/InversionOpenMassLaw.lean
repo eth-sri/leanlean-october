@@ -5,7 +5,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.GMC.Moments.InversionGlobalTestLaw
 public import DOZZ.GMC.EquatorGFFChaosTransport
-@[expose] public section
+import Mathlib.Tactic
+public section
 open Filter MeasureTheory Set
 open scoped Topology Distributions ENNReal
 namespace DOZZ.Proofs
@@ -20,10 +21,10 @@ theorem gmc_inversion_open_mass_fintype_law
     P.map (fun ω j => (M ω).map (fun z : ℂ => z⁻¹) (U j)) =
       P.map (fun ω j => M ω (U j)) := by
   classical
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   let e : Fin (Fintype.card ι) ≃ ι := (Fintype.equivFin ι).symm
   let N := fun ω => (M ω).map (fun z : ℂ => z⁻¹)
-  have hNmeas : Measurable N := (Measure.measurable_map _ measurable_inv).comp hmeas
+  have hNmeas  := (Measure.measurable_map _ measurable_inv).comp hmeas
   have hNfin : ∀ ω, IsFiniteMeasure (N ω) := by
     intro ω
     let := hM.1 ω
@@ -48,9 +49,7 @@ theorem gmc_inversion_open_mass_fintype_law
       exact gmc_inversion_test_vector_law P X hX γ hγ hγ2 M hM hmeas (q n)
     · intro j
       apply tendstoInMeasure_of_tendsto_ae (fun n => (hqn n j).aestronglyMeasurable)
-      exact Filter.Eventually.of_forall fun ω => by
-        let := hNfin ω
-        exact gmcOpenApprox_integral_tendsto (N ω) (U (e j)) (hU (e j))
+      exact Filter.Eventually.of_forall fun ω => gmcOpenApprox_integral_tendsto (N ω) (U (e j)) (hU (e j))
     · intro j
       apply tendstoInMeasure_of_tendsto_ae (fun n => (hqm n j).aestronglyMeasurable)
       exact Filter.Eventually.of_forall fun ω => by
@@ -62,8 +61,7 @@ theorem gmc_inversion_open_mass_fintype_law
   have heA : post ∘ A = fun ω j => N ω (U j) := by
     funext ω j
     simp only [post, A, Function.comp_apply, Equiv.apply_symm_apply]
-    let := hNfin ω
-    exact ENNReal.ofReal_toReal (measure_ne_top _ _)
+    norm_num
   have heB : post ∘ B = fun ω j => M ω (U j) := by
     funext ω j
     simp only [post, B, Function.comp_apply, Equiv.apply_symm_apply]

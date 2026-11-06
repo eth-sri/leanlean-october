@@ -8,7 +8,7 @@ public import DOZZ.Brownian.LateralUnitBlock.LateralMoment
 
 /-! Fixed-charge inverse moments of the lateral unit interval. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

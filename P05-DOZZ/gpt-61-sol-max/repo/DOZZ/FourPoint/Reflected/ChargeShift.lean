@@ -5,8 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.CircleTilt
 public import DOZZ.FourPoint.Reflected.OuterInverseLimit
-public import DOZZ.FourPoint.RootedPairMoments
-public import DOZZ.GMC.SharpMoments.SeibergWeight
+public import DOZZ.FourPoint.RetainedMass
 import Mathlib.Tactic
 /-! # The literal retained-region charge shift under a circle tilt -/
 @[expose] public section
@@ -14,78 +13,11 @@ open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-/-- Outside the tilting circle, its exponential density is the exact zero-root ratio power. -/
-theorem reflected_circle_density_outside (γ a m : ℝ) (x : ℂ)
-    (hx : 0 < ‖x‖) (hm : Real.exp (-m) ≤ ‖x‖) :
-    Real.exp (γ * a * (Real.log (normPlus x) - Real.log (max (Real.exp (-m)) ‖x‖))) =
-      (normPlus x / ‖x‖) ^ (γ * a) := by
-  have hp : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  rw [max_eq_right hm, Real.rpow_def_of_pos (div_pos hp hx), Real.log_div hp.ne' hx.ne']
-  congr 1
-  ring
+/-- Multiplying by the circle density shifts the ordinary charge. -/
+abbrev reflected_coulombWeight_charge_shift (γ : ℝ) :=
+  retained_coulombWeight_charge_shift γ (-γ / 2)
 
-/-- The density changes the first ordinary charge and retains the moving degenerate root. -/
-theorem reflected_coulombWeight_charge_shift (γ a α₁ α₂ α₃ : ℝ) (z x : ℂ)
-    (hx : x ≠ 0) :
-    ENNReal.ofReal ((normPlus x / ‖x‖) ^ (γ * a)) *
-      coulombWeight γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ x =
-        coulombWeight γ ![-γ / 2, α₁ + a, α₂] ![z, 0, 1] α₃ x := by
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
-  have hp : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hd : 0 < normPlus x / ‖x‖ := div_pos hp hn
-  simp only [coulombWeight, Fin.prod_univ_succ, Matrix.cons_val_zero,
-    Matrix.cons_val_succ, Fin.prod_univ_zero, mul_one, sub_zero]
-  rw [coulombWeight_rpow_ofReal hd, coulombWeight_rpow_ofReal hd]
-  have he : γ * (α₁ + a) = γ * a + γ * α₁ := by ring
-  rw [he, Real.rpow_add hd, ENNReal.ofReal_mul (Real.rpow_pos_of_pos hd _).le]
-  ring
-
-/-- Circle tilting of the literal retained mass is exactly the charge shift whenever the
-retained region lies outside that circle. No atom assumptions on the underlying measure enter. -/
-theorem reflected_outerMass_circle_density_shift (γ a m α₁ α₂ α₃ ξ : ℝ)
-    (μ : Measure ℂ) (z : ℂ) (hr : 0 < ‖z‖ ^ (1 - ξ))
-    (hm : Real.exp (-m) ≤ ‖z‖ ^ (1 - ξ)) :
-    gammaHalfOuterMass γ α₁ α₂ α₃
-      (μ.withDensity (fun x : ℂ => ENNReal.ofReal
-        (Real.exp (γ * a * (Real.log (normPlus x) -
-          Real.log (max (Real.exp (-m)) ‖x‖)))))) z ξ =
-      gammaHalfOuterMass γ (α₁ + a) α₂ α₃ μ z ξ := by
-  let D : Set ℂ := {x | ‖z‖ ^ (1 - ξ) ≤ ‖x‖}
-  have hD : MeasurableSet D := (isClosed_le continuous_const continuous_norm).measurableSet
-  have hd : Measurable (fun x : ℂ => ENNReal.ofReal
-      (Real.exp (γ * a * (Real.log (normPlus x) -
-        Real.log (max (Real.exp (-m)) ‖x‖))))) := by
-    unfold normPlus
-    fun_prop
-  unfold gammaHalfOuterMass
-  rw [restrict_withDensity hD,
-    coulombMass_eq_lintegral_coulombWeight,
-    lintegral_withDensity_eq_lintegral_mul _ hd (measurable_coulombWeight _ _ _ _),
-    coulombMass_eq_lintegral_coulombWeight]
-  apply lintegral_congr_ae
-  filter_upwards [ae_restrict_mem hD] with x hx
-  have hn : 0 < ‖x‖ := hr.trans_le hx
-  dsimp only [Pi.mul_apply]
-  rw [reflected_circle_density_outside γ a m x hn (hm.trans hx)]
-  exact reflected_coulombWeight_charge_shift γ a α₁ α₂ α₃ z x
-    (norm_pos_iff.mp hn)
-
-/-- The retained mass is a measurable functional of the measure, with no spatial clipping. -/
-theorem reflected_outerMass_measure_measurable (γ α₁ α₂ α₃ ξ : ℝ) (z : ℂ) :
-    Measurable (fun μ : Measure ℂ => gammaHalfOuterMass γ α₁ α₂ α₃ μ z ξ) := by
-  let D : Set ℂ := {x | ‖z‖ ^ (1 - ξ) ≤ ‖x‖}
-  have hD : MeasurableSet D := (isClosed_le continuous_const continuous_norm).measurableSet
-  have hh := Measure.measurable_lintegral
-    ((measurable_coulombWeight γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃).indicator hD)
-  have he : (fun μ : Measure ℂ => ∫⁻ x,
-      D.indicator (coulombWeight γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃) x ∂μ) =
-      fun μ => gammaHalfOuterMass γ α₁ α₂ α₃ μ z ξ := by
-    funext μ
-    rw [lintegral_indicator hD]
-    rfl
-  rwa [he] at hh
-
-/-- Exact Cameron-Martin identification of the inverse outer moment at arbitrary real circle time. -/
+/-- The common charge-shift identity at the reflected degenerate charge. -/
 theorem reflected_outerMass_circle_tilt {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
@@ -95,12 +27,9 @@ theorem reflected_outerMass_circle_tilt {Ω : Type*} [MeasurableSpace Ω]
     (∫⁻ ω, ENNReal.ofReal (Real.exp (a * Xc ω 0 m - m * a ^ 2 / 2)) *
       gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^ (-q) ∂P) =
       ∫⁻ ω, gammaHalfOuterMass γ (α₁ + a) α₂ α₃ (M ω) z ξ ^ (-q) ∂P := by
-  rw [reflected_lintegral_circleTilt P X hX γ hγ hγ₂ M hM Xc hXc a m hm
-    (fun μ => gammaHalfOuterMass γ α₁ α₂ α₃ μ z ξ ^ (-q))
-    ((reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).pow_const (-q))]
-  apply lintegral_congr
-  intro ω
-  rw [reflected_outerMass_circle_density_shift γ a m α₁ α₂ α₃ ξ (M ω) z hr houtside]
+  simpa only [retainedCoulombMass, gammaHalfOuterMass] using
+    retained_coulombMass_circle_tilt P X hX γ hγ hγ₂ M hM Xc hXc (-γ / 2)
+      a m α₁ α₂ α₃ ξ q hm z hr houtside
 
 /-- The tilted retained moment converges to the rho with shifted charge, in the full complex
 punctured limit. Choosing `a = 2*(Q-alpha1)` gives the reflected leading coefficient. -/

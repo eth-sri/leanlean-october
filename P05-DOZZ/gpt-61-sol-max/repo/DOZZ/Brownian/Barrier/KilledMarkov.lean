@@ -41,8 +41,7 @@ namespace DOZZ.Proofs
 /-- A raw-history evaluation is measurable at every later deterministic horizon. -/
 theorem measurable_brownianPath_eval_raw (s t : ℝ≥0) (ht : t ≤ s) :
     Measurable[brownianRawFiltration (fun u (p : BrownianPath) => p u)
-      (fun u => ContinuousMap.measurable_eval u) s] (fun p : BrownianPath => p t) := by
-  exact Measurable.of_comap_le (le_iSup_of_le t (le_iSup_of_le ht le_rfl))
+      (fun u => ContinuousMap.measurable_eval u) s] (fun p : BrownianPath => p t) := Measurable.of_comap_le (le_iSup_of_le t (le_iSup_of_le ht le_rfl))
 
 /-- The entire path stopped at a deterministic time is measurable in the raw past. -/
 theorem measurable_stopBrownianPath_raw (s : ℝ≥0) :
@@ -53,12 +52,11 @@ theorem measurable_stopBrownianPath_raw (s : ℝ≥0) :
   intro t
   exact measurable_brownianPath_eval_raw s (min t s) (min_le_right _ _)
 
+variable {E : Type*} [_inst1 : MeasurableSpace E] (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (s : ℝ≥0) (X : BrownianPath → E) (hX : Measurable[brownianRawFiltration (fun u (p : BrownianPath) => p u) (fun u => ContinuousMap.measurable_eval u) s] X)
+
+include E _inst1 P hB s X hX in
 /-- A deterministic raw-past observable and the actual full future path have product law. -/
-theorem brownianPath_deterministic_restart_joint_map {E : Type*} [MeasurableSpace E]
-    (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
-    (s : ℝ≥0) (X : BrownianPath → E)
-    (hX : Measurable[brownianRawFiltration (fun u (p : BrownianPath) => p u)
-      (fun u => ContinuousMap.measurable_eval u) s] X) :
+theorem brownianPath_deterministic_restart_joint_map  :
     P.map (fun p => (X p,brownianShiftPath s p)) = (P.map X).prod P := by
   apply brownianPath_bounded_restart_joint_map P hB (fun _ => s)
     (isStoppingTime_const _ s) s (fun _ => le_rfl) X
@@ -67,17 +65,14 @@ theorem brownianPath_deterministic_restart_joint_map {E : Type*} [MeasurableSpac
   rw [IsStoppingTime.measurableSpace_const]
   exact hX
 
+include E _inst1 P hB s X hX in
 /-- Every jointly measurable past/future test integrates against the actual independent future law. -/
-theorem brownianPath_deterministic_restart_lintegral {E : Type*} [MeasurableSpace E]
-    (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
-    (s : ℝ≥0) (X : BrownianPath → E)
-    (hX : Measurable[brownianRawFiltration (fun u (p : BrownianPath) => p u)
-      (fun u => ContinuousMap.measurable_eval u) s] X)
+theorem brownianPath_deterministic_restart_lintegral 
     (F : E × BrownianPath → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p, F (X p,brownianShiftPath s p) ∂P) =
       ∫⁻ p, ∫⁻ q, F (X p,q) ∂P ∂P := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
-  have hmX : Measurable X := hX.mono ((brownianRawFiltration _ _).le s) le_rfl
+  have hmX  := hX.mono ((brownianRawFiltration _ _).le s) le_rfl
   have hmV : Measurable (fun p : BrownianPath => brownianShiftPath s p) :=
     continuous_brownianShiftPath.measurable.comp (measurable_const.prodMk measurable_id)
   calc
@@ -120,7 +115,7 @@ theorem measurableSet_brownianLowerSurvival (a x : ℝ) (T : ℝ≥0) :
 /-- Survival is jointly measurable in the initial state and the actual future path. -/
 theorem measurableSet_brownianLowerSurvival_joint (a : ℝ) (T : ℝ≥0) :
     MeasurableSet {z : ℝ × BrownianPath | z.2 ∈ brownianLowerSurvival a z.1 T} := by
-  have hmM : Measurable (fun p : BrownianPath => ⨆ u : Iic T, p u) :=
+  have hmM  :=
     (measurable_brownianPath_runningMaximum T).mono ((brownianRawFiltration _ _).le T) le_rfl
   have hmN : Measurable (fun z : ℝ × BrownianPath => brownianDriftPath (-a) (-z.2)) :=
     continuous_brownianDriftPath.measurable.comp (measurable_const.prodMk measurable_snd.neg)
@@ -182,7 +177,7 @@ theorem firstPassageTime_eq_add_shift (p : BrownianPath) (c : ℝ) (s : ℝ≥0)
     firstPassageTime p c = s+firstPassageTime (brownianShiftPath s p) (c-p s) := by
   let τ := firstPassageTime p c
   let σ := firstPassageTime (brownianShiftPath s p) (c-p s)
-  have hsτ : s ≤ τ := hs.le
+  have hsτ  := hs.le
   have hf : ∃ u : ℝ≥0, c-p s ≤ brownianShiftPath s p u := by
     refine ⟨τ-s,?_⟩
     change c-p s ≤ p (s+(τ-s))-p s
@@ -200,7 +195,7 @@ theorem firstPassageTime_eq_add_shift (p : BrownianPath) (c : ℝ) (s : ℝ≥0)
     change c-p s ≤ p (s+σ)-p s at hm
     linarith
   apply le_antisymm hτ
-  have hl : s+σ ≤ s+(τ-s) := by simpa only [add_comm] using add_le_add_right hσ s
+  have hl : s+σ ≤ s+(τ-s) := by bound
   rwa [add_tsub_cancel_of_le hsτ] at hl
 
 /-- Shifting a drifted path adds the same deterministic drift to its shifted Brownian increments. -/
@@ -222,8 +217,6 @@ theorem brownianPath_positiveDrift_firstHit_shift_ae (P : Measure BrownianPath)
   filter_upwards [brownianPath_positiveDrift_hits_ae P hB a c ha] with p hp hs
   have he := firstPassageTime_eq_add_shift (driftedBrownianPath a p) c s hp hs
   rw [brownianShiftPath_drift] at he
-  change firstPassageTime (driftedBrownianPath a p) c =
-    s+firstPassageTime (driftedBrownianPath a (brownianShiftPath s p)) (c-(p s+a*(s : ℝ))) at he
-  exact he
+  continuity
 
 end DOZZ.Proofs

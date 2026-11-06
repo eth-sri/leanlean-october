@@ -8,10 +8,11 @@ public import DOZZ.FourPoint.Fusion.MixedKernelBound
 public import DOZZ.FourPoint.Fusion.Kernel
 import DOZZ.GMC.SharpMoments.SeibergWeight
 public import DOZZ.Statements.GMC.WeightedGmcBallMass
+import Mathlib.Tactic
 
 /-! # Fused-charge domination of the local rooted kernel -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -33,9 +34,11 @@ theorem fusion_oneRoot_factor_bound (x : ℂ) (hx : ‖x‖ ≤ 1 / 2) (e : ℝ)
     (y := ‖x - 1‖) (by norm_num; exact hd) hu (-e)
   simpa only [abs_neg] using h
 
+variable (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ) (hα : γ / 2 ≤ α₁)
+
+include γ α₁ α₂ α₃ hγ hα in
 /-- The local rooted kernel is bounded by the sum of the two fused-charge weights. -/
-theorem fusion_rootedKernel_local_bound (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ)
-    (hα : γ / 2 ≤ α₁) (y z x : ℂ) (hy : y ≠ 0)
+theorem fusion_rootedKernel_local_bound  (y z x : ℂ) (hy : y ≠ 0)
     (hx : x ≠ 0) (hxu : x ≠ y * z) (hsmall : ‖x‖ ≤ 1 / 2)
     (hu : ‖y * z‖ ≤ 1) :
     gammaHalfKernel γ α₁ α₂ α₃ z x * Real.exp (γ ^ 2 * gffKernel (y * z) x) ≤
@@ -43,7 +46,7 @@ theorem fusion_rootedKernel_local_bound (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < 
         (‖x‖ ^ (-γ * (α₁ + γ / 2)) + ‖x - y * z‖ ^ (-γ * (α₁ + γ / 2))) := by
   have hpx : normPlus x = 1 := max_eq_left (by linarith)
   have hpu : normPlus (y * z) = 1 := max_eq_left hu
-  have hd : 0 < ‖x - y * z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxu)
+  have hd  := norm_pos_iff.mpr (sub_ne_zero.mpr hxu)
   have he : Real.exp (γ ^ 2 * gffKernel (y * z) x) = ‖x - y * z‖ ^ (-γ ^ 2) := by
     rw [gffKernel, hpx, hpu, Real.log_one, add_zero, add_zero,
       norm_sub_rev, Real.rpow_def_of_pos hd]
@@ -67,9 +70,9 @@ theorem fusion_rootedKernel_local_bound (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < 
           (2 : ℝ) ^ |γ * α₂| := mul_le_mul_of_nonneg_right hmix (by positivity)
     _ = _ := by ring
 
+include γ α₁ α₂ α₃ hγ hα in
 /-- The small-disk contribution is bounded by local masses with the fused charge. -/
-theorem fusion_rootedKernel_smallBall_le (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ)
-    (hα : γ / 2 ≤ α₁) (y z : ℂ) (hy : y ≠ 0) (μ : Measure ℂ)
+theorem fusion_rootedKernel_smallBall_le  (y z : ℂ) (hy : y ≠ 0) (μ : Measure ℂ)
     (h0 : μ {0} = 0) (hu0 : μ {y * z} = 0)
     (δ : ℝ) (hδ : 0 < δ) (hδhalf : δ ≤ 1 / 2) (huδ : ‖y * z‖ ≤ δ) :
     (∫⁻ x in Metric.ball (0 : ℂ) δ,
@@ -82,11 +85,9 @@ theorem fusion_rootedKernel_smallBall_le (γ α₁ α₂ α₃ : ℝ) (hγ : 0 <
   let w : ℂ → ℝ≥0∞ := fun x => ENNReal.rpow (ENNReal.ofReal ‖x‖) (-γ * (α₁ + γ / 2))
   let v : ℂ → ℝ≥0∞ := fun x => ENNReal.rpow (ENNReal.ofReal ‖x - y * z‖) (-γ * (α₁ + γ / 2))
   have hw : Measurable w := by
-    exact (ENNReal.continuous_rpow_const (y := -γ * (α₁ + γ / 2))).measurable.comp
-      (ENNReal.measurable_ofReal.comp (measurable_norm : Measurable (fun x : ℂ => ‖x‖)))
+    measurability
   have hv : Measurable v := by
-    exact (ENNReal.continuous_rpow_const (y := -γ * (α₁ + γ / 2))).measurable.comp
-      (ENNReal.measurable_ofReal.comp (measurable_id.sub_const (y * z)).norm)
+    measurability
   have ha0 : ∀ᵐ x ∂μ.restrict (Metric.ball (0 : ℂ) δ), x ≠ 0 := by
     apply ae_restrict_of_ae
     rw [ae_iff]
@@ -124,15 +125,10 @@ theorem fusion_rootedKernel_smallBall_le (γ α₁ α₂ α₃ : ℝ) (hγ : 0 <
     _ = ENNReal.ofReal C * ((∫⁻ x in Metric.ball (0 : ℂ) δ, w x ∂μ) +
         ∫⁻ x in Metric.ball (0 : ℂ) δ, v x ∂μ) := by
       have hsum : Measurable (fun x => w x + v x) := hw.add hv
-      rw [lintegral_const_mul _ hsum, lintegral_add_left hw]
+      simp_all
     _ ≤ _ := by
       apply mul_le_mul' le_rfl
       simp only [weightedGmcBallMass, sub_zero]
-      change (∫⁻ x in Metric.ball (0 : ℂ) δ, w x ∂μ) +
-          (∫⁻ x in Metric.ball (0 : ℂ) δ, v x ∂μ) ≤
-        (∫⁻ x in Metric.ball (0 : ℂ) δ, w x ∂μ) +
-          (∫⁻ x in Metric.ball (y * z) (2 * δ), v x ∂μ)
-      apply add_le_add le_rfl
-      exact lintegral_mono' (Measure.restrict_mono hsub le_rfl) le_rfl
+      gcongr
 
 end DOZZ.Proofs

@@ -9,7 +9,7 @@ public import DOZZ.FourPoint.TwoRootedExponents
 
 /-! The annular absolute Jensen kernel with the corrected radial exponent. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -29,7 +29,7 @@ theorem gammaHalf_annular_kernel_bound
   have hhigh : ‖x - z‖ ≤ 2 * ‖x‖ := by
     have hh := norm_sub_le x z
     linarith only [hh, hz, hxpos]
-  have hxz : 0 < ‖x - z‖ := (by positivity : 0 < ‖x‖ / 2).trans_le hlow
+  have hxz  := (by positivity : 0 < ‖x‖ / 2).trans_le hlow
   have hlow1 : 1 / 2 ≤ ‖x - 1‖ := by
     have hh := norm_sub_norm_le (1 : ℂ) x
     rw [norm_one, norm_sub_rev] at hh

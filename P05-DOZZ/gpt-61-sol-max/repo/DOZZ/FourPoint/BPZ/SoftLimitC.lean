@@ -23,9 +23,11 @@ namespace DOZZ.Proofs
 attribute [local instance low] bpzNormedAddCommGroupBilin bpzNormedSpaceBilin
 
 
+variable {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ} (hw0 : ∀ x, 0 ≤ w x)
+
+include a ε ha ha1 w hw0 in
 /-- The near part of the first derivative mass, bounded pathwise. -/
-theorem norm_bpzSoftMassDeriv_le_near {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+theorem norm_bpzSoftMassDeriv_le_near  {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
     (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 1)) m) :
     ‖bpzSoftMassDeriv a ε w m z‖ ≤ 2 * a * ∫ x, w x * ‖x - z‖ ^ (2 * a - 1) ∂m := by
   unfold bpzSoftMassDeriv
@@ -38,9 +40,9 @@ theorem norm_bpzSoftMassDeriv_le_near {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) 
         mul_le_mul_of_nonneg_left (norm_bpzSoftDeriv_le_uniform ha ha1 hx) (hw0 x)
     _ = 2 * a * (w x * ‖x - z‖ ^ (2 * a - 1)) := by ring
 
+include a ε ha ha1 w hw0 in
 /-- The near part of the second derivative mass, bounded pathwise. -/
-theorem norm_bpzSoftMassDeriv2_le_near {a ε : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+theorem norm_bpzSoftMassDeriv2_le_near  {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
     (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 2)) m) :
     ‖bpzSoftMassDeriv2 a ε w m z‖ ≤
       (4 * a * (1 - a) + 2 * a) * ∫ x, w x * ‖x - z‖ ^ (2 * a - 2) ∂m := by
@@ -66,7 +68,7 @@ theorem bpz_near_cauchySchwarz {a : ℝ} {w : ℂ → ℝ} (hw : Measurable w) (
   have hae : ∀ᵐ x ∂m, x ≠ z := by rw [ae_iff]; simpa using hz
   have hfg : (fun x => w x * ‖x - z‖ ^ (2 * a - 1)) =ᵐ[m] fun x => f x * g x := by
     filter_upwards [hae] with x hx
-    have hxz : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
+    have hxz  := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
     simp only [hf, hg]
     rw [← Real.sqrt_mul (mul_nonneg (hw0 x) (Real.rpow_nonneg hxz.le _))]
     rw [show w x * ‖x - z‖ ^ (2 * a) * (w x * ‖x - z‖ ^ (2 * a - 2)) =
@@ -87,15 +89,11 @@ theorem bpz_near_cauchySchwarz {a : ℝ} {w : ℂ → ℝ} (hw : Measurable w) (
   have hfL : MemLp f (ENNReal.ofReal 2) m := by
     rw [show ENNReal.ofReal 2 = 2 by norm_num]
     refine (memLp_two_iff_integrable_sq hfm.aestronglyMeasurable).mpr ?_
-    have : (fun x => f x ^ 2) = fun x => w x * ‖x - z‖ ^ (2 * a) := by
-      funext x; rw [← hf2 x, Real.rpow_two]
-    rw [this]; exact h0
+    simp_all
   have hgL : MemLp g (ENNReal.ofReal 2) m := by
     rw [show ENNReal.ofReal 2 = 2 by norm_num]
     refine (memLp_two_iff_integrable_sq hgm.aestronglyMeasurable).mpr ?_
-    have : (fun x => g x ^ 2) = fun x => w x * ‖x - z‖ ^ (2 * a - 2) := by
-      funext x; rw [← hg2 x, Real.rpow_two]
-    rw [this]; exact h2
+    simp_all
   have hH := integral_mul_le_Lp_mul_Lq_of_nonneg (f := f) (g := g) Real.HolderConjugate.two_two
     (Eventually.of_forall fun x => Real.sqrt_nonneg _)
     (Eventually.of_forall fun x => Real.sqrt_nonneg _) hfL hgL
@@ -105,8 +103,7 @@ theorem bpz_near_cauchySchwarz {a : ℝ} {w : ℂ → ℝ} (hw : Measurable w) (
     integral_nonneg fun x => mul_nonneg (hw0 x) (Real.rpow_nonneg (norm_nonneg _) _)
   have hB : 0 ≤ ∫ x, w x * ‖x - z‖ ^ (2 * a - 2) ∂m :=
     integral_nonneg fun x => mul_nonneg (hw0 x) (Real.rpow_nonneg (norm_nonneg _) _)
-  have hfg0 : 0 ≤ ∫ x, f x * g x ∂m :=
-    integral_nonneg fun x => mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+  
   calc (∫ x, f x * g x ∂m) ^ 2
       ≤ ((∫ x, w x * ‖x - z‖ ^ (2 * a) ∂m) ^ (1 / 2 : ℝ) *
           (∫ x, w x * ‖x - z‖ ^ (2 * a - 2) ∂m) ^ (1 / 2 : ℝ)) ^ 2 := by gcongr

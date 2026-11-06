@@ -8,7 +8,7 @@ public import DOZZ.Correlations.Tails.TwoMassTailSandwich
 
 /-! Keep one threshold of order x in the two-insertion remainder event. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 
 namespace DOZZ.Proofs
@@ -31,7 +31,7 @@ theorem two_mass_tail_half_threshold
     by_cases hb : x-h < B ω
     · exact Or.inl (Or.inr hb)
     by_cases hx : x/2 < A ω
-    · exact Or.inr (Or.inl ⟨hx,by dsimp at *; linarith⟩)
+    · grind
     · exact Or.inr (Or.inr ⟨by dsimp at *; linarith,by dsimp at *; linarith⟩)
   have hm := measureReal_mono hi (μ := P)
   have h1 := measureReal_union_le (μ := P) (E₁ ∪ E₂) (J₁ ∪ J₂)

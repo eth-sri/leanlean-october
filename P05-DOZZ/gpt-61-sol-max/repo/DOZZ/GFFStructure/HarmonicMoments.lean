@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.GFFStructure.PoissonContracts
 public import DOZZ.GFFStructure.FiniteGaussian
 public import Mathlib.Analysis.Convex.Integral
 public import Mathlib.Analysis.Convex.SpecificFunctions.Basic
@@ -25,24 +26,27 @@ theorem exp_mul_abs_le_exp_add (l x : ℝ) :
     Real.exp (l*|x|) ≤ Real.exp (l*x)+Real.exp (-l*x) := by
   by_cases hx : 0 ≤ x
   · rw [abs_of_nonneg hx]
-    exact le_add_of_nonneg_right (Real.exp_pos _).le
+    bound
   · rw [abs_of_neg (lt_of_not_ge hx)]
     have he : l*(-x) = -l*x := by ring
     rw [he]
     exact le_add_of_nonneg_left (Real.exp_pos _).le
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω)
+
+include Ω _inst1 P in
 /-- Centered scalar Gaussian exponential moments with their actual variance. -/
-theorem gaussian_centered_mgf {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem gaussian_centered_mgf 
     (U : Ω → ℝ) (hU : HasGaussianLaw U P) (hmean : (∫ ω, U ω ∂P) = 0) (l : ℝ) :
     (∫ ω, Real.exp (l*U ω) ∂P) = Real.exp (variance U P*l^2/2) := by
   have hl : HasLaw U (gaussianReal (∫ ω, U ω ∂P) (variance U P).toNNReal) P :=
     ⟨hU.aemeasurable,hU.map_eq_gaussianReal⟩
   have hm := mgf_gaussianReal hl l
-  rw [hmean,zero_mul,zero_add,Real.coe_toNNReal _ (variance_nonneg U P)] at hm
-  exact hm
+  continuity
 
+include Ω _inst1 P in
 /-- Both signed scalar Gaussian exponential moments are integrable. -/
-theorem gaussian_integrable_exp_mul {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem gaussian_integrable_exp_mul 
     (U : Ω → ℝ) (hU : HasGaussianLaw U P) (l : ℝ) :
     Integrable (fun ω => Real.exp (l*U ω)) P := by
   let _ := hU.isProbabilityMeasure
@@ -51,8 +55,9 @@ theorem gaussian_integrable_exp_mul {Ω : Type*} [MeasurableSpace Ω] (P : Measu
     HasLaw U (gaussianReal (∫ ω, U ω ∂P) (variance U P).toNNReal) P)]
   exact Real.exp_pos _
 
+include Ω _inst1 P in
 /-- Exponential absolute Gaussian moments have an explicit finite bound. -/
-theorem gaussian_lintegral_exp_abs_le {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem gaussian_lintegral_exp_abs_le 
     (U : Ω → ℝ) (hU : HasGaussianLaw U P) (hmean : (∫ ω, U ω ∂P) = 0) (l : ℝ) :
     (∫⁻ ω, ENNReal.ofReal (Real.exp (l*|U ω|)) ∂P) ≤
       ENNReal.ofReal (2*Real.exp (variance U P*l^2/2)) := by
@@ -84,9 +89,7 @@ theorem continuousOn_innerCircle_pullback (c : ℂ) (ρ b : ℝ) (hb : 0 < b) (h
   apply hf.comp (by fun_prop)
   intro u hu
   rw [mem_ball_iff_norm,add_sub_cancel_left,norm_smul,Real.norm_eq_abs,abs_of_pos hb]
-  have hn : ‖u‖ = 1 := by simpa only [mem_sphere_iff_norm,sub_zero] using hu
-  rw [hn,mul_one]
-  exact hbρ
+  simp_all
 
 /-- Every measurable observable continuous near the smaller circle is integrable for its Poisson law. -/
 theorem integrable_innerCircle_unitPoissonMeasure (c z : ℂ) (ρ b : ℝ)
@@ -98,7 +101,7 @@ theorem integrable_innerCircle_unitPoissonMeasure (c z : ℂ) (ρ b : ℝ)
     (isCompact_sphere 0 1) _ (hfm.comp (by fun_prop))
     (continuousOn_innerCircle_pullback c ρ b hb hbρ f hfc)
   filter_upwards [ae_norm_unitPoissonMeasure c z b] with u hu
-  simpa only [mem_sphere_iff_norm,sub_zero] using hu
+  simp_all
 
 /-- Jensen's inequality for a literal inner-circle Poisson law. -/
 theorem exp_mul_poisson_average_le (c z : ℂ) (ρ b : ℝ)
@@ -137,7 +140,7 @@ theorem integrable_innerCircle_circleMeasure (c : ℂ) (ρ b : ℝ) (hb : 0 < b)
     (isCompact_sphere 0 1) _ (hfm.comp (by fun_prop))
     (continuousOn_innerCircle_pullback c ρ b hb hbρ f hfc)
   filter_upwards [ae_norm_sub_center_circleMeasure 0 0] with u hu
-  simpa only [mem_sphere_iff_norm,sub_zero,neg_zero,Real.exp_zero] using hu
+  simp_all
 
 /-- A signed exponential on the boundary is bounded by the absolute exponential times the uniform weight. -/
 theorem integral_unitPoisson_exp_le_uniform (c z : ℂ) (ρ b a : ℝ)
@@ -147,7 +150,7 @@ theorem integral_unitPoisson_exp_le_uniform (c z : ℂ) (ρ b a : ℝ)
     (∫ u, Real.exp (t*f (c+b • u)) ∂unitPoissonMeasure c b z) ≤
       b^2/(b-a)^2*(∫ u, Real.exp (l*|f (c+b • u)|) ∂circleMeasure 0 0) := by
   let _ := circleMeasure_isProbability (0 : ℂ) 0
-  have hz' : z ∈ ball c b := closedBall_subset_ball hab hz
+  have hz'  := closedBall_subset_ball hab hz
   rw [integral_unitPoissonMeasure c z b hb hz',← integral_const_mul]
   apply integral_mono_ae
   · have hi := integrable_innerCircle_unitPoissonMeasure c z ρ b hb hbρ hz'
@@ -158,8 +161,8 @@ theorem integral_unitPoisson_exp_le_uniform (c z : ℂ) (ρ b a : ℝ)
   · exact (integrable_innerCircle_circleMeasure c ρ b hb hbρ
       (fun v => Real.exp (l*|f v|)) (by fun_prop) (by fun_prop)).const_mul _
   · filter_upwards [ae_norm_sub_center_circleMeasure 0 0] with u hu
-    have hu' : ‖u‖ = 1 := by simpa only [sub_zero,neg_zero,Real.exp_zero] using hu
-    have he : t*f (c+b • u) ≤ l*|f (c+b • u)| := calc
+    have hu' : ‖u‖ = 1 := by simp_all
+    have he  := calc
       _ ≤ |t*f (c+b • u)| := le_abs_self _
       _ = |t| * |f (c+b • u)| := abs_mul _ _
       _ ≤ _ := mul_le_mul_of_nonneg_right ht (abs_nonneg _)
@@ -174,7 +177,7 @@ theorem exp_abs_harmonic_le_innerCircle (c z : ℂ) (ρ b a : ℝ)
     (l : ℝ) (hl : 0 ≤ l) :
     Real.exp (l*|f z|) ≤ 2*(b^2/(b-a)^2)*
       (∫ u, Real.exp (l*|f (c+b • u)|) ∂circleMeasure 0 0) := by
-  have hz' : z ∈ ball c b := closedBall_subset_ball hab hz
+  have hz'  := closedBall_subset_ball hab hz
   have hj t := exp_mul_poisson_average_le c z ρ b hb hbρ hz' f hfm hfc t
   rw [integral_innerCircle_harmonic_eq c z ρ b hb hbρ hz' f hfm hfh] at hj
   have hp := integral_unitPoisson_exp_le_uniform c z ρ b a hb hbρ hab hz f hfm hfc l l (by rw [abs_of_nonneg hl])
@@ -184,16 +187,13 @@ theorem exp_abs_harmonic_le_innerCircle (c z : ℂ) (ρ b a : ℝ)
     _ ≤ _ := ht
     _ = _ := by ring
 
+include Ω _inst1 P in
 /-- A deterministic variance upper bound gives a realization-independent absolute moment bound. -/
-theorem gaussian_lintegral_exp_abs_le_of_variance_le {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U : Ω → ℝ) (hU : HasGaussianLaw U P)
+theorem gaussian_lintegral_exp_abs_le_of_variance_le  (U : Ω → ℝ) (hU : HasGaussianLaw U P)
     (hmean : (∫ ω, U ω ∂P) = 0) (v : ℝ) (hv : variance U P ≤ v) (l : ℝ) :
     (∫⁻ ω, ENNReal.ofReal (Real.exp (l*|U ω|)) ∂P) ≤ ENNReal.ofReal (2*Real.exp (v*l^2/2)) := by
   apply (gaussian_lintegral_exp_abs_le P U hU hmean l).trans
-  apply ENNReal.ofReal_le_ofReal
-  apply mul_le_mul_of_nonneg_left _ (by norm_num : (0 : ℝ) ≤ 2)
-  apply Real.exp_le_exp.mpr
-  exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hv (sq_nonneg l)) (by norm_num)
+  bound
 
 /-- A quadratic estimate controls correlated positive exponential factors. -/
 theorem exp_mul_exp_le_doubled_add (x y : ℝ) :
@@ -204,9 +204,9 @@ theorem exp_mul_exp_le_doubled_add (x y : ℝ) :
   rw [he,he]
   nlinarith only [h,sq_nonneg (Real.exp x),sq_nonneg (Real.exp y)]
 
+include Ω _inst1 P in
 /-- Two centered Gaussian marginal laws suffice to bound their correlated absolute exponential product. -/
-theorem gaussian_product_lintegral_exp_abs_le {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U V : Ω → ℝ) (hU : HasGaussianLaw U P) (hV : HasGaussianLaw V P)
+theorem gaussian_product_lintegral_exp_abs_le  (U V : Ω → ℝ) (hU : HasGaussianLaw U P) (hV : HasGaussianLaw V P)
     (hmeanU : (∫ ω, U ω ∂P) = 0) (hmeanV : (∫ ω, V ω ∂P) = 0)
     (u v : ℝ) (hu : variance U P ≤ u) (hv : variance V P ≤ v) (l : ℝ) :
     (∫⁻ ω, ENNReal.ofReal (Real.exp (l*|U ω|))*ENNReal.ofReal (Real.exp (l*|V ω|)) ∂P) ≤
@@ -234,18 +234,9 @@ theorem gaussian_product_lintegral_exp_abs_le {Ω : Type*} [MeasurableSpace Ω]
 theorem measurable_ofReal_exp_mul_abs {E : Type*} [MeasurableSpace E]
     (U : E → ℝ) (hU : Measurable U) (l : ℝ) :
     Measurable (fun x => ENNReal.ofReal (Real.exp (l*|U x|))) := by
-  have ha : Measurable (fun x => |U x|) := continuous_abs.measurable.comp hU
-  have hm : Measurable (fun x => l*|U x|) := measurable_const.mul ha
-  have he : Measurable (fun x => Real.exp (l*|U x|)) := Real.continuous_exp.measurable.comp hm
-  exact he.ennreal_ofReal
+  fun_prop
 
-/-- Restriction of a jointly measurable field to translated circle parameters is jointly measurable. -/
-theorem measurable_innerCircle_field {Ω : Type*} [MeasurableSpace Ω]
-    (c : ℂ) (b : ℝ) (V : Ω → ℂ → ℝ)
-    (hV : Measurable (fun p : Ω × ℂ => V p.1 p.2)) :
-    Measurable (fun p : Ω × ℂ => V p.1 (c+b • p.2)) := by
-  have hm : Measurable (fun p : Ω × ℂ => c+b • p.2) := by fun_prop
-  exact hV.comp (measurable_fst.prodMk hm)
+
 
 /-- Explicit compact harmonic moment constant from two marginal variances. -/
 noncomputable def harmonicMomentBound (b a u v l : ℝ) : ℝ :=
@@ -255,12 +246,11 @@ noncomputable def harmonicMomentBound (b a u v l : ℝ) : ℝ :=
 theorem harmonicMomentBound_pos (b a u v l : ℝ) (hb : 0 < b) (hab : a < b) :
     0 < harmonicMomentBound b a u v l := by
   unfold harmonicMomentBound
-  exact mul_pos (mul_pos (by norm_num) (div_pos (sq_pos_of_pos hb) (sq_pos_of_pos (sub_pos.mpr hab))))
-    (add_pos (Real.exp_pos _) (Real.exp_pos _))
+  positivity
 
+include Ω _inst1 P in
 /-- Uniform exponential compact supremum moments need only centered Gaussian marginal boundary laws. -/
-theorem harmonic_lintegral_exp_sup_le {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (c : ℂ) (ρ b a : ℝ)
+theorem harmonic_lintegral_exp_sup_le  [IsProbabilityMeasure P] (c : ℂ) (ρ b a : ℝ)
     (hb : 0 < b) (hbρ : b < ρ) (hab : a < b)
     (U : Ω → ℝ) (hUm : Measurable U) (hUg : HasGaussianLaw U P)
     (hUmean : (∫ ω, U ω ∂P) = 0) (u : ℝ) (hUvar : variance U P ≤ u)
@@ -276,14 +266,10 @@ theorem harmonic_lintegral_exp_sup_le {Ω : Type*} [MeasurableSpace Ω]
   let _ := circleMeasure_isProbability (0 : ℂ) 0
   let K := 2*(b^2/(b-a)^2)
   have hK : 0 ≤ K := mul_nonneg (by norm_num) (div_nonneg (sq_nonneg _) (sq_nonneg _))
-  let F : Ω → ℂ → ℝ≥0∞ := fun ω w =>
+  let F  := fun ω w =>
     ENNReal.ofReal (Real.exp (l*|U ω|))*ENNReal.ofReal (Real.exp (l*|V ω (c+b • w)|))
   have hFm : Measurable (Function.uncurry F) := by
-    have hleft := measurable_ofReal_exp_mul_abs (fun p : Ω × ℂ => U p.1)
-      (hUm.comp measurable_fst) l
-    have hright := measurable_ofReal_exp_mul_abs (fun p : Ω × ℂ => V p.1 (c+b • p.2))
-      (measurable_innerCircle_field c b V hVm) l
-    exact hleft.mul hright
+    fun_prop
   have hsup : ∀ᵐ ω ∂P, (⨆ z ∈ closedBall c a, ENNReal.ofReal (Real.exp (l*|V ω z|))) ≤
       ENNReal.ofReal K*(∫⁻ w, ENNReal.ofReal (Real.exp (l*|V ω (c+b • w)|)) ∂circleMeasure 0 0) := by
     filter_upwards [hVh] with ω hω
@@ -304,7 +290,7 @@ theorem harmonic_lintegral_exp_sup_le {Ω : Type*} [MeasurableSpace Ω]
       _ ≤ ∫⁻ _w, ENNReal.ofReal (2*(Real.exp (u*(2*l)^2/2)+Real.exp (v*(2*l)^2/2))) ∂circleMeasure 0 0 := by
         apply lintegral_mono_ae
         filter_upwards [ae_norm_sub_center_circleMeasure 0 0] with w hw
-        have hw' : ‖w‖ = 1 := by simpa only [sub_zero,neg_zero,Real.exp_zero] using hw
+        have hw' : ‖w‖ = 1 := by simp_all
         obtain ⟨hg,hm,hvar⟩ := hVboundary w hw'
         exact gaussian_product_lintegral_exp_abs_le P U (fun ω => V ω (c+b • w))
           hUg hg hUmean hm u v hUvar hvar l
@@ -325,9 +311,9 @@ theorem harmonic_lintegral_exp_sup_le {Ω : Type*} [MeasurableSpace Ω]
       unfold K harmonicMomentBound
       ring
 
+include Ω _inst1 P in
 /-- The actual restoration scalar is centered Gaussian with exterior pin variance. -/
-theorem equatorRestorationScalar_gaussian_mean_variance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+theorem equatorRestorationScalar_gaussian_mean_variance  (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (R : ℝ) (hR : 1 < R) :
     HasGaussianLaw (equatorRestorationScalar Xc R (by linarith)) P ∧
     (∫ ω, equatorRestorationScalar Xc R (by linarith) ω ∂P) = 0 ∧
@@ -340,18 +326,16 @@ theorem equatorRestorationScalar_gaussian_mean_variance {Ω : Type*} [Measurable
   · rw [variance_congr hae,variance_fun_neg,← covariance_self (hc.2.1 0 (-Real.log R)).aemeasurable,
       circleAverage_covariance_self X Xc hX hc,circleSelfEnergy_exterior_origin R hR]
 
+include Ω _inst1 P in
 /-- The exact closed harmonic covariance gives one variance on every concentric boundary circle. -/
-theorem poisson_harmonic_boundary_variance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (c : ℂ) (R ρ b : ℝ) (hρ : 0 < ρ) (hb : 0 < b) (hbρ : b < ρ)
+theorem poisson_harmonic_boundary_variance  (c : ℂ) (R ρ b : ℝ) (hρ : 0 < ρ) (hb : 0 < b) (hbρ : b < ρ)
     (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : Contract.poissonCovariance P c R ρ V)
     (w : ℂ) (hw : ‖w‖ = 1) :
     variance (fun ω => V ω (c+b • w)) P = Real.log R+Real.log ρ-Real.log (ρ^2-b^2) := by
   have hn : ‖c+b • w-c‖ = b := by
     rw [add_sub_cancel_left,norm_smul,Real.norm_eq_abs,abs_of_pos hb,hw,mul_one]
-  have hz : c+b • w ∈ ball c ρ := mem_ball_iff_norm.mpr (hn.trans_lt hbρ)
+  have hz  := mem_ball_iff_norm.mpr (hn.trans_lt hbρ)
   rw [← covariance_self (hV _ hz).aemeasurable,hcov _ _ hz hz,
     norm_diskGreen_numerator_self c _ ρ hρ hz,hn]
 
@@ -361,13 +345,11 @@ noncomputable def harmonicMomentRadius (ρ a : ℝ) : ℝ := (max a 0+ρ)/2
 /-- The chosen inner radius is positive and lies strictly between the target and the disk boundary. -/
 theorem harmonicMomentRadius_bounds (ρ a : ℝ) (hρ : 0 < ρ) (haρ : a < ρ) :
     0 < harmonicMomentRadius ρ a ∧ a < harmonicMomentRadius ρ a ∧ harmonicMomentRadius ρ a < ρ := by
-  have hm : max a 0 < ρ := max_lt haρ hρ
+  have hm  := max_lt haρ hρ
   have hma : a ≤ max a 0 := le_max_left _ _
   have hm0 : 0 ≤ max a 0 := le_max_right _ _
   unfold harmonicMomentRadius
-  constructor
-  · linarith only [hρ,hm0]
-  constructor <;> linarith only [hm,hma]
+  grind
 
 /-- A moment bound preceding all realizations and disk-center choices. -/
 noncomputable def exteriorPinnedHarmonicMomentBound (R ρ a l : ℝ) : ℝ :=
@@ -380,10 +362,10 @@ theorem exteriorPinnedHarmonicMomentBound_pos (R ρ a l : ℝ) (hρ : 0 < ρ) (h
   harmonicMomentBound_pos _ _ _ _ _ (harmonicMomentRadius_bounds ρ a hρ haρ).1
     (harmonicMomentRadius_bounds ρ a hρ haρ).2.1
 
+include Ω _inst1 P in
 /-- The actual harmonic Poisson family has the all-order uniform moment bound required by
 `DOZZ.exists_exteriorPinned_markov_uniform`. -/
-theorem exteriorPinned_harmonic_uniform_moments {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+theorem exteriorPinned_harmonic_uniform_moments  (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ a : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (haρ : a < ρ)
     (V : Ω → ℂ → ℝ) (hVm : Measurable (fun p : Ω × ℂ => V p.1 p.2))
@@ -391,9 +373,7 @@ theorem exteriorPinned_harmonic_uniform_moments {Ω : Type*} [MeasurableSpace Ω
     (hG : IsGaussianProcess (fun z : {z : ℂ // z ∈ ball c ρ} => fun ω => V ω z.1) P)
     (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
+    (hcov : Contract.poissonCovariance P c R ρ V)
     (l : ℝ) (hl : 0 < l) :
     (∫⁻ ω, ENNReal.ofReal (Real.exp (l*|equatorRestorationScalar Xc R (by linarith) ω|))*
       ⨆ z ∈ closedBall c a, ENNReal.ofReal (Real.exp (l*|V ω z|)) ∂P) ≤
@@ -410,7 +390,7 @@ theorem exteriorPinned_harmonic_uniform_moments {Ω : Type*} [MeasurableSpace Ω
   · intro w hw
     have hn : ‖c+harmonicMomentRadius ρ a • w-c‖ = harmonicMomentRadius ρ a := by
       rw [add_sub_cancel_left,norm_smul,Real.norm_eq_abs,abs_of_pos hb,hw,mul_one]
-    have hz : c+harmonicMomentRadius ρ a • w ∈ ball c ρ := mem_ball_iff_norm.mpr (hn.trans_lt hbρ)
+    have hz  := mem_ball_iff_norm.mpr (hn.trans_lt hbρ)
     exact ⟨hG.hasGaussianLaw_eval ⟨_,hz⟩,hmean _ hz,
       (poisson_harmonic_boundary_variance P c R ρ _ hρ hb hbρ V hV hcov w hw).le⟩
 

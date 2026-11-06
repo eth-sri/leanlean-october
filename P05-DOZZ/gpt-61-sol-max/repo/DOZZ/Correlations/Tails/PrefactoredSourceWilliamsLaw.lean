@@ -10,7 +10,7 @@ public import DOZZ.Correlations.Tails.SingularMassMeasurability
 
 /-! The canonical leading mass has the prefactored Williams law on the source witness. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 
@@ -28,8 +28,7 @@ theorem prefactored_source_williams_mass_aemeasurable
         ENNReal.ofReal (Real.exp (γ*q.1))) (μ.prod (P.prod P)) := by
   have hProj := (measurePreserving_fst (μ := P) (ν := P)).comp
     (measurePreserving_snd (μ := μ) (ν := P.prod P))
-  have hInp : AEMeasurable (fun q : ℝ × (Ω × Ω) => (q.1,(B q.2.1,Z q.2.1)))
-      (μ.prod (P.prod P)) := measurable_fst.aemeasurable.prodMk
+  have hInp  := measurable_fst.aemeasurable.prodMk
     ((hB.prodMk hZ).comp_quasiMeasurePreserving hProj.quasiMeasurePreserving)
   have hCut : AEMeasurable (fun q : ℝ × (Ω × Ω) =>
       twoSidedReflectionCutMass γ q.1 B Z q.2.1) (μ.prod (P.prod P)) := by
@@ -37,10 +36,7 @@ theorem prefactored_source_williams_mass_aemeasurable
     apply h.congr
     filter_upwards [hProj.quasiMeasurePreserving.ae hfin] with q hq
     exact williamsCutMassCode_eq γ q.1 (B q.2.1) (Z q.2.1) hq
-  have hPin := hS.comp_quasiMeasurePreserving
-    ((measurePreserving_snd (μ := P) (ν := P)).comp
-      (measurePreserving_snd (μ := μ) (ν := P.prod P))).quasiMeasurePreserving
-  exact (hPin.mul hCut).mul ((measurable_fst.const_mul γ).exp.ennreal_ofReal).aemeasurable
+  fun_prop (disch := positivity)
 
 theorem prefactored_canonical_source_williams_law
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -56,19 +52,19 @@ theorem prefactored_canonical_source_williams_law
       ((brownianMaximumReferenceLaw (Q γ-α)).prod (P.prod P)).map
         (fun q => (S q.2.2*twoSidedReflectionCutMass γ q.1 B Z q.2.1)*
           ENNReal.ofReal (Real.exp (γ*q.1))) := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   let μ := brownianMaximumReferenceLaw (Q γ-α)
-  let : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα)
+  let  := isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα)
   let mass := localSingularMass N (fun _ => 1) 0 γ α
   let g := fun q : ℝ × Ω => ENNReal.ofReal (Real.exp (γ*q.1))*
     twoSidedReflectionCutMass γ q.1 B Z q.2
   have hB := aemeasurable_of_twoSidedConditioned hData.1
   have hZ := hData.2.1.2.2.2.1
   have hfin := hData.2.1.2.2.2.2.1
-  have hg : AEMeasurable g (μ.prod P) :=
+  have hg  :=
     ((measurable_fst.const_mul γ).exp.ennreal_ofReal).aemeasurable.mul
       (actual_cut_mass_joint_aemeasurable P μ γ B Z hB hZ hfin)
-  have hmass : AEMeasurable mass P := localSingularMass_aemeasurable P
+  have hmass  := localSingularMass_aemeasurable P
     (translatedField X Xc z) (translated_field_isEquatorGFF P X Xc hX hc z)
     γ hγ hγ2 N hN (fun _ => 1) measurable_const 0 α
   have hl := translated_canonical_source_williams_law P X Xc hX hc hm hcont
@@ -78,8 +74,7 @@ theorem prefactored_canonical_source_williams_law
     ENNReal.ofReal (Real.exp (γ*q.1))
   have hProj := (measurePreserving_fst (μ := P) (ν := P)).comp
     (measurePreserving_snd (μ := μ) (ν := P.prod P))
-  have hInp : AEMeasurable (fun q : ℝ × (Ω × Ω) => (q.1,(B q.2.1,Z q.2.1)))
-      (μ.prod (P.prod P)) := measurable_fst.aemeasurable.prodMk
+  have hInp  := measurable_fst.aemeasurable.prodMk
     ((hB.prodMk hZ).comp_quasiMeasurePreserving hProj.quasiMeasurePreserving)
   have hCut : AEMeasurable (fun q : ℝ × (Ω × Ω) =>
       twoSidedReflectionCutMass γ q.1 B Z q.2.1) (μ.prod (P.prod P)) := by
@@ -90,7 +85,7 @@ theorem prefactored_canonical_source_williams_law
   have hPin := hS.comp_quasiMeasurePreserving
     ((measurePreserving_snd (μ := P) (ν := P)).comp
       (measurePreserving_snd (μ := μ) (ν := P.prod P))).quasiMeasurePreserving
-  have hF : AEMeasurable F (μ.prod (P.prod P)) :=
+  have hF  :=
     (hPin.mul hCut).mul ((measurable_fst.const_mul γ).exp.ennreal_ofReal).aemeasurable
   have hT := measurePreserving_prodAssoc μ P P
   have hF' : AEMeasurable F (((μ.prod P).prod P).map MeasurableEquiv.prodAssoc) := by

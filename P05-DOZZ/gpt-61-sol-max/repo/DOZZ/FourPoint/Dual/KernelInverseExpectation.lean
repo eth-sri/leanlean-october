@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Dual.KernelRealSqueeze
 public import DOZZ.FourPoint.Dual.KernelIncrementExpectation
 import Mathlib.Tactic
 /-! Compare the extended-valued copied inverse expectation with the real signed polar loss. -/
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -35,7 +35,7 @@ theorem dual_ennreal_kernel_inverse_expectation_error
   have hOfin : ∀ᵐ ω ∂P, O ω ≠ ⊤ := by
     filter_upwards [hpos] with ω hω
     intro he
-    simp only [he, ENNReal.toReal_top, lt_self_iff_false] at hω
+    simp_all
   have hreal : (fun ω => ((O ω+I ω)^(-p)).toReal) =ᵐ[P]
       (fun ω => ((O ω).toReal+(I ω).toReal)^(-p)) := by
     filter_upwards [hOfin, hIfin] with ω hOω hIω

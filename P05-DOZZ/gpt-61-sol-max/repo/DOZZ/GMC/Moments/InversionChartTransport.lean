@@ -11,7 +11,7 @@ public import DOZZ.GMC.Moments.InversionCoordinate
 
 /-! Transport of arbitrary limiting GMC versions through the punctured inversion chart. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
@@ -34,7 +34,7 @@ theorem isGMCOf_inversion_chart_transport
           (Real.log (1 / ε))) γ N ∧
       ∀ᵐ ω ∂P, (M ω).map complexInvOpenPartialHomeomorph = N ω := by
   classical
-  have hP : IsProbabilityMeasure P := hX.1
+  have hP  := hX.1
   let U : Set ℂ := inversionChart
   let dens : ℂ → ℝ := fun x => normPlus x ^ (-4 : ℝ)
   let Y : Ω → ℝ → ℂ → ℝ := fun ω ε x => Xc ω x (Real.log (1 / ε))
@@ -42,12 +42,10 @@ theorem isGMCOf_inversion_chart_transport
   have hφ : Measurable φ := by
     change Measurable (fun x : ℂ => x⁻¹)
     fun_prop
-  have hY : IsAdmissibleLogRegularization P U dens 1 Y :=
+  have hY  :=
     isCircleAverage_admissible P X hX Xc hXc U isOpen_compl_singleton
   have hYinv : IsAdmissibleLogRegularization P U dens 1
-      (fun ω ε x => Y ω ε (φ x)) := by
-    simpa [Y, φ, U, dens, complexInvOpenPartialHomeomorph] using
-      isAdmissibleLogRegularization_complexInv P dens 1 Y hY
+      (fun ω ε x => Y ω ε (φ x)) := isAdmissibleLogRegularization_complexInv P dens 1 Y hY
   obtain ⟨Mchart, hMchart, hMchartFinite, hMrestrict⟩ :=
     isGMCOf_restrict_admissible_version P X hX γ hγ hγ2 M hM Xc hXc U
       isOpen_compl_singleton
@@ -66,18 +64,14 @@ theorem isGMCOf_inversion_chart_transport
   have hNsupport : ∀ ω, N ω Uᶜ = 0 := by
     intro ω
     have hUcomp : MeasurableSet (Uᶜ) := by
-      have hUmeas : MeasurableSet U := by
-        change MeasurableSet (({0} : Set ℂ)ᶜ)
-        exact (isOpen_compl_singleton : IsOpen (({0} : Set ℂ)ᶜ)).measurableSet
+      have hUmeas : MeasurableSet U := (isOpen_compl_singleton : IsOpen (({0} : Set ℂ)ᶜ)).measurableSet
       exact hUmeas.compl
     have hpre : φ ⁻¹' Uᶜ ⊆ Uᶜ := by
       intro x hx
       by_contra hxU
       have hx0 : x ≠ 0 := by simpa [U, inversionChart] using hxU
-      have hφx : φ x ≠ 0 := by
-        change x⁻¹ ≠ 0
-        exact inv_ne_zero hx0
-      exact hx (by simpa [U, inversionChart] using hφx)
+      have hφx : φ x ≠ 0 := inv_ne_zero hx0
+      exact hx (hφx)
     apply le_antisymm
     · calc
         N ω Uᶜ = (Mchart ω) (φ ⁻¹' Uᶜ) := by
@@ -103,13 +97,9 @@ theorem isGMCOf_inversion_chart_transport
     have hMlim := hMchart.2.2.2 g hgcompact hgU
     have hMapTest (ω : Ω) :
         ∫ x, f x ∂N ω = ∫ x, g x ∂Mchart ω := by
-      have hUae : ∀ᵐ x ∂Mchart ω, x ∈ U := by
-        rw [ae_iff]
-        exact hMchart.2.1 ω
+      have hUae : ∀ᵐ x ∂Mchart ω, x ∈ U := hMchart.2.1 ω
       calc
-        ∫ x, f x ∂N ω = ∫ x, f (φ x) ∂Mchart ω := by
-          dsimp [N]
-          exact integral_map hφ.aemeasurable f.continuous.aestronglyMeasurable
+        ∫ x, f x ∂N ω = ∫ x, f (φ x) ∂Mchart ω := integral_map hφ.aemeasurable f.continuous.aestronglyMeasurable
         _ = ∫ x, g x ∂Mchart ω := by
           apply integral_congr_ae
           filter_upwards [hUae] with x hx
@@ -131,17 +121,16 @@ theorem isGMCOf_inversion_chart_transport
     have hUae : ∀ᵐ x ∂M ω, x ∈ U := by
       rw [ae_iff]
       simpa [U, inversionChart] using hωAtom
-    have hMself : (M ω).restrict U = M ω :=
+    have hMself  :=
       Measure.restrict_eq_self_of_ae_mem hUae
     calc
       (M ω).map (fun x : ℂ => x⁻¹) = ((M ω).restrict U).map (fun x : ℂ => x⁻¹) :=
         congrArg (fun μ : Measure ℂ => μ.map (fun x : ℂ => x⁻¹)) hMself.symm
-      _ = ((M ω).restrict U).map φ := by
-        rfl
+      _ = ((M ω).restrict U).map φ := rfl
       _ = N ω := congrArg (fun μ : Measure ℂ => μ.map φ) hωrestrict
   refine ⟨N, ?_, ?_⟩
-  · simpa [Y, φ, U, dens] using hN
+  · exact hN
   · filter_upwards [hfull] with ω hω
-    simpa [φ, complexInvOpenPartialHomeomorph] using hω
+    exact hω
 
 end DOZZ.Proofs

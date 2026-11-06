@@ -6,6 +6,7 @@ module
 
 public import DOZZ.ShiftEquations.PoleSubtracted.Masses
 public import DOZZ.GMC.SharpMoments.SeibergWeight
+import Mathlib.Tactic
 
 /-!
 # Pointwise bounds on the pole-subtracted masses
@@ -16,7 +17,7 @@ zero tilt is at most `e^{γ a⁺ n}` on `C_n`; the regular part and the annular 
 tilted mass are controlled by the total mass and by the mass of `B(0, e^{-n})`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -87,9 +88,9 @@ theorem poleWeight_le_one_of_norm_le_one {γ η : ℝ} (hγ : 0 < γ) (hη : 0 �
     ofReal_div_le_one_aux (by linarith) (by rw [hnp]; exact h1)
   have hr2 : ENNReal.ofReal (normPlus x) / ENNReal.ofReal ‖x + 2‖ ≤ 1 :=
     ofReal_div_le_one_aux (by linarith) (by rw [hnp]; exact h2)
-  have he1 : 0 ≤ γ * (2 / γ + η) :=
+  have he1  :=
     mul_nonneg hγ.le (add_nonneg (div_nonneg two_pos.le hγ.le) hη)
-  have he2 : 0 ≤ γ * (2 / γ - η) := mul_nonneg hγ.le (sub_nonneg.mpr hηγ)
+  have he2  := mul_nonneg hγ.le (sub_nonneg.mpr hηγ)
   unfold poleWeight
   calc _ ≤ (1 : ℝ≥0∞) * 1 :=
         mul_le_mul' (ENNReal.rpow_le_one hr1 he1) (ENNReal.rpow_le_one hr2 he2)
@@ -108,8 +109,8 @@ theorem zeroTilt_le_exp_max {γ a : ℝ} (hγ : 0 < γ) {n : ℕ} {x : ℂ}
 /-- Off the poles the pole weight is the two-point Coulomb weight. -/
 theorem poleWeight_eq_coulombWeight (γ η : ℝ) {x : ℂ} (hx2 : x ≠ 2) (hx2' : x ≠ -2) :
     poleWeight γ η x = coulombWeight γ ![2 / γ + η, 2 / γ - η] ![2, -2] 0 x := by
-  have h1 : 0 < ‖x - 2‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx2)
-  have h2 : 0 < ‖x + 2‖ := norm_pos_iff.mpr fun h => hx2' (add_eq_zero_iff_eq_neg.mp h)
+  have h1  := norm_pos_iff.mpr (sub_ne_zero.mpr hx2)
+  have h2  := norm_pos_iff.mpr fun h => hx2' (add_eq_zero_iff_eq_neg.mp h)
   unfold poleWeight coulombWeight
   rw [Fin.prod_univ_two]
   simp only [Matrix.cons_val_zero, Matrix.cons_val_one, sub_neg_eq_add, mul_zero,
@@ -179,9 +180,11 @@ theorem cutoffTiltedMass_le_exp_mul_totalMass_zero {γ η : ℝ} (a : ℝ) (hγ 
         poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) μ :=
   cutoffTiltedMass_le_mul_total_aux n μ fun _ hx => zeroTilt_le_exp_max hγ hx
 
+variable {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 0 ≤ η) (hηγ : η ≤ 2 / γ) (n : ℕ) (μ : Measure ℂ)
+
+include γ η a hγ hη hηγ n μ in
 /-- The regular part of the cutoff tilted mass is at most `81 e^{γ a⁺ n} μ(ℂ)`. -/
-theorem regularMass_le {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 0 ≤ η) (hηγ : η ≤ 2 / γ) (n : ℕ)
-    (μ : Measure ℂ) :
+theorem regularMass_le  :
     ∫⁻ x in cutoffRegion n \ poleBalls, zeroTilt γ a x * poleWeight γ η x ∂μ ≤
       81 * ENNReal.ofReal (Real.exp (γ * max a 0 * n)) * μ univ := by
   have h := setLIntegral_mul_le_aux μ
@@ -192,9 +195,9 @@ theorem regularMass_le {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 0 ≤ η) (
   rw [mul_comm (ENNReal.ofReal _) 81]
   exact mul_le_mul' le_rfl (measure_mono (Set.subset_univ _))
 
+include γ η a hγ hη hηγ n μ in
 /-- The annular increment is at most `e^{γ a⁺ (n+1)} μ(B(0, e^{-n}))`. -/
-theorem annulusMass_le {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 0 ≤ η) (hηγ : η ≤ 2 / γ) (n : ℕ)
-    (μ : Measure ℂ) :
+theorem annulusMass_le  :
     ∫⁻ x in cutoffRegion (n + 1) \ cutoffRegion n, zeroTilt γ a x * poleWeight γ η x ∂μ ≤
       ENNReal.ofReal (Real.exp (γ * max a 0 * (n + 1))) *
         μ (Metric.ball 0 (Real.exp (-(n : ℝ)))) := by
@@ -206,7 +209,7 @@ theorem annulusMass_le {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 0 ≤ η) (
     exact h
   have hg : ∀ x ∈ cutoffRegion (n + 1) \ cutoffRegion n, poleWeight γ η x ≤ 1 := by
     intro x hx
-    have hx2 : ¬ Real.exp (-(n : ℝ)) ≤ ‖x‖ := hx.2
+    have hx2  := hx.2
     exact poleWeight_le_one_of_norm_le_one hγ hη hηγ
       ((not_le.mp hx2).le.trans (exp_neg_natCast_le_one_aux n))
   have h := setLIntegral_mul_le_aux μ
@@ -215,8 +218,7 @@ theorem annulusMass_le {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 0 ≤ η) (
   rw [mul_one]
   refine mul_le_mul' le_rfl (measure_mono fun x hx => ?_)
   have hx2 : ¬ Real.exp (-(n : ℝ)) ≤ ‖x‖ := hx.2
-  rw [Metric.mem_ball, dist_zero_right]
-  exact not_le.mp hx2
+  simp_all
 
 end DOZZ.Proofs
 

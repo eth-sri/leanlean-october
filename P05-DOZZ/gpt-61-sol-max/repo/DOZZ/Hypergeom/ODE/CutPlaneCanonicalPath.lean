@@ -29,7 +29,6 @@ noncomputable def gaussCutPlaneCanonicalPath (z : gaussCutPlane) :
     fun_prop
   have hgmem : ∀ t, g t ∈ gaussCutPlane := by
     intro t
-    change (1 - (t : ℝ)) • (1 / 2 : ℂ) + (t : ℝ) • (z : ℂ) ∈ gaussCutPlane
     exact gaussCutPlane_starConvex z.property
       (a := 1 - (t : ℝ)) (b := (t : ℝ))
       (by linarith [t.property.2]) t.property.1 (by ring)
@@ -44,8 +43,7 @@ noncomputable def gaussCutPlaneCanonicalPath (z : gaussCutPlane) :
 /-- The canonical path function is continuous on its real parameter interval. -/
 theorem gaussCutPlaneCanonicalPath_continuousOn (z : gaussCutPlane) :
     ContinuousOn (gaussCutPlanePathFunction (gaussCutPlaneCanonicalPath z))
-      (Icc (0 : ℝ) 1) := by
-  exact (gaussCutPlanePathFunction_continuous _).continuousOn
+      (Icc (0 : ℝ) 1) := (gaussCutPlanePathFunction_continuous _).continuousOn
 
 /-- The canonical path stays in the cut plane. -/
 theorem gaussCutPlaneCanonicalPath_mem (z : gaussCutPlane) (t : ℝ) :

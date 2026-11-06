@@ -44,7 +44,7 @@ theorem dual_retainedZero_deleted_weight_bound {Ω : Type*} [MeasurableSpace Ω]
       intro u
       dsimp only
       rw [lintegral_const_mul' _ _ (by by_cases hu : u ∈ Metric.ball (0 : ℂ) r <;> simp [f, hu])]
-      exact mul_le_mul' le_rfl (hb u r (by linarith only [hr₁]))
+      bound
     _ = (∫⁻ u, f u ∂gmcReferenceMeasure) * ENNReal.ofReal C₁ := lintegral_mul_const _ hf
     _ ≤ ENNReal.ofReal (C₂ * r ^ (4 - γ * α₁)) * ENNReal.ofReal C₁ :=
       mul_le_mul' (by rw [he]; exact hs r hr hr₁) le_rfl

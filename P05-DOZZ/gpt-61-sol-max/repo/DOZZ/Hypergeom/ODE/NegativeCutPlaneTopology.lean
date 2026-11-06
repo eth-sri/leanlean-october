@@ -22,7 +22,6 @@ def gaussNegativeCutPlane : Set ℂ := {z | z.im ≠ 0 ∨ z.re < 0}
 
 /-- The negative cut plane is open. -/
 theorem gaussNegativeCutPlane_isOpen : IsOpen gaussNegativeCutPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z | z.re < 0})
   exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
     (isOpen_Iio.preimage Complex.continuous_re)
 
@@ -33,19 +32,9 @@ theorem gaussNegativeCutPlane_subset_regularPlane :
   change z ≠ 0 ∧ z ≠ 1
   change z.im ≠ 0 ∨ z.re < 0 at hz
   rcases hz with him | hnegative
+  · continuity
   · constructor
-    · intro h
-      apply him
-      rw [h]
-      simp
-    · intro h
-      apply him
-      rw [h]
-      simp
-  · constructor
-    · intro h
-      have hre : z.re = 0 := by rw [h]; simp
-      linarith
+    · continuity
     · intro h
       have hre : z.re = 1 := by rw [h]; simp
       linarith
@@ -63,31 +52,18 @@ theorem gaussNegativeCutPlane_starConvex :
       have hs1 : s = 1 := by linarith
       rw [ht0, hs1]
       norm_num
-    · left
-      have himag : (s • (-1 / 2 : ℂ) + t • z).im = t * z.im := by
-        simp [Complex.add_im]
-      rw [himag]
-      have htpos : 0 < t := by
-        by_contra hnot
-        have htneg : t ≤ 0 := le_of_not_gt hnot
-        exact ht0 (le_antisymm htneg ht)
-      exact mul_ne_zero htpos.ne' him
+    simp_all
   · right
     have hrealpart : (s • (-1 / 2 : ℂ) + t • z).re = -(s / 2) + t * z.re := by
       simp [Complex.add_re]
       ring
     rw [hrealpart]
     by_cases ht0 : t = 0
-    · have hs1 : s = 1 := by linarith
-      rw [ht0, hs1]
-      norm_num
+    · simp_all
     · have htpos : 0 < t := by
-        by_contra hnot
-        have htneg : t ≤ 0 := le_of_not_gt hnot
-        exact ht0 (le_antisymm htneg ht)
-      have hsecond : t * z.re < 0 := mul_neg_of_pos_of_neg htpos hreal
-      have hfirst : -(s / 2) ≤ 0 := neg_nonpos.mpr (div_nonneg hs (by norm_num))
-      linarith
+        positivity
+      have hsecond  := mul_neg_of_pos_of_neg htpos hreal
+      grind
 
 /-- Contractibility of the negative cut plane. -/
 instance gaussNegativeCutPlane_contractible : ContractibleSpace gaussNegativeCutPlane := by

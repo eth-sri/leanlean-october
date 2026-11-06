@@ -9,7 +9,7 @@ public import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 
 /-! Algebraic bounds for the derivatives of finite affine soft maxima. -/
 
-@[expose] public section
+public section
 
 open scoped BigOperators
 
@@ -30,8 +30,7 @@ theorem weighted_variance_bounds
       _ ≤ ∑ i, |a i * w i| := Finset.abs_sum_le_sum_abs _ _
       _ = ∑ i, |a i| * w i := by
         apply Finset.sum_congr rfl
-        intro i hi
-        rw [abs_mul, abs_of_nonneg (hw i)]
+        simp_all
       _ ≤ ∑ i, B * w i := Finset.sum_le_sum fun i _ =>
         mul_le_mul_of_nonneg_right (ha i) (hw i)
       _ = _ := by rw [Finset.mul_sum]
@@ -48,13 +47,11 @@ theorem weighted_variance_bounds
       (∑ i, a i ^ 2 * w i) * ∑ i, w i := by
     apply Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul Finset.univ
       (fun i _ => mul_nonneg (sq_nonneg _) (hw i)) (fun i _ => hw i)
-    intro i hi
-    nlinarith only [sq_nonneg (a i * w i)]
+    grind
   refine ⟨?_, div_nonneg (sub_nonneg.mpr hCS) (sq_nonneg _), ?_⟩
   · rw [abs_div, abs_of_pos hW]
     exact (div_le_iff₀ hW).mpr hfirst
   · apply (div_le_iff₀ (sq_pos_of_pos hW)).mpr
-    have h := mul_le_mul_of_nonneg_right hsecond hW.le
-    nlinarith only [h, sq_nonneg (∑ i, a i * w i)]
+    nlinarith
 
 end DOZZ.Proofs

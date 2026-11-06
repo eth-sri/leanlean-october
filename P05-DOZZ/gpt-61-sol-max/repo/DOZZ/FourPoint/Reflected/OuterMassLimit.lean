@@ -6,6 +6,7 @@ module
 
 public import DOZZ.FourPoint.Reflected.OuterKernelLimit
 public import DOZZ.FourPoint.Reflected.MassFiniteness
+public import DOZZ.FourPoint.RootedPairMoments
 public import DOZZ.FourPoint.TaylorKernelMass
 public import DOZZ.Statements.FourPoint.GammaHalfOuterMass
 import Mathlib.Tactic
@@ -19,15 +20,25 @@ open scoped ENNReal
 
 namespace DOZZ.Proofs
 
+/-- The retained mass is a measurable functional of the measure, with no spatial clipping. -/
+theorem reflected_outerMass_measure_measurable (γ α₁ α₂ α₃ ξ : ℝ) (z : ℂ) :
+    Measurable (fun μ : Measure ℂ => gammaHalfOuterMass γ α₁ α₂ α₃ μ z ξ) := by
+  let D : Set ℂ := {x | ‖z‖ ^ (1 - ξ) ≤ ‖x‖}
+  have hD : MeasurableSet D := (isClosed_le continuous_const continuous_norm).measurableSet
+  have hh := Measure.measurable_lintegral
+    ((measurable_coulombWeight γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃).indicator hD)
+  continuity
+
+
 /-- The zero-kernel integral is the literal rho with effective charge `α₁-γ/2`. -/
 theorem reflected_zero_kernel_integral_eq_rho (γ α₁ α₂ α₃ : ℝ) (μ : Measure ℂ)
     (h0 : μ {0} = 0) (h1 : μ {1} = 0) :
     (∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x) ∂μ) =
       rho γ μ (α₁ - γ / 2) α₂ α₃ := by
   have ha0 : ∀ᵐ x ∂μ, x ≠ 0 := by
-    rw [ae_iff]; simpa only [not_not, Set.ofPred_eq_eq_singleton] using h0
+    rw [ae_iff]; simp_all
   have ha1 : ∀ᵐ x ∂μ, x ≠ 1 := by
-    rw [ae_iff]; simpa only [not_not, Set.ofPred_eq_eq_singleton] using h1
+    rw [ae_iff]; simp_all
   unfold rho
   apply lintegral_congr_ae
   filter_upwards [ha0, ha1] with x hx0 hx1
@@ -43,8 +54,7 @@ theorem reflected_outerMass_eq_kernel_integral (γ α₁ α₂ α₃ ξ : ℝ) (
   let D : Set ℂ := {x | ‖z‖ ^ (1 - ξ) ≤ ‖x‖}
   have hzD : z ∉ D := not_le.mpr hz
   have hzr : (μ.restrict D) {z} = 0 := by
-    rw [Measure.restrict_apply (measurableSet_singleton z),
-      singleton_inter_of_notMem hzD, measure_empty]
+    simp_all
   have h0r : (μ.restrict D) {0} = 0 := by
     apply le_zero_iff.mp
     rw [Measure.restrict_apply (measurableSet_singleton 0)]

@@ -10,7 +10,7 @@ import Mathlib.MeasureTheory.Measure.GiryMonad
 
 /-! # Rooting Coulomb inverse moments -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

@@ -7,7 +7,7 @@ public import DOZZ.GMC.Construction.GMCFiniteCoordinateTilt
 
 /-! Factoring root-dependent observables through determining real coordinates. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory MeasurableSpace
 open scoped Distributions ENNReal
@@ -47,8 +47,7 @@ theorem rooted_observable_factors_through_coordinates
     rw [MeasurableSpace.comap_prodMap, MeasurableSpace.comap_id, hJoint]
     rfl
   have hPull : Measurable (fun p : ℂ × (Q × FiniteMeasure ℂ) =>
-      H p.1 p.2.1 (p.2.2 : Measure ℂ)) := by
-    exact hH.comp (measurable_fst.prodMk (measurable_fst.comp measurable_snd |>.prodMk
+      H p.1 p.2.1 (p.2.2 : Measure ℂ)) := hH.comp (measurable_fst.prodMk (measurable_fst.comp measurable_snd |>.prodMk
       (measurable_subtype_coe.comp (measurable_snd.comp measurable_snd))))
   have hPull' : @Measurable (ℂ × (Q × FiniteMeasure ℂ)) ℝ≥0∞
       (MeasurableSpace.comap lift inferInstance) inferInstance
@@ -59,10 +58,7 @@ theorem rooted_observable_factors_through_coordinates
   let decode : (gmcTiltCoordinateIndex → ℝ) → Q × E := fun v =>
     (fun f => v (.inl f), fun j => ENNReal.ofReal (v (.inr j)))
   have hd : Measurable decode := by
-    apply Measurable.prodMk
-    · exact measurable_pi_iff.mpr fun f => measurable_pi_apply (Sum.inl f)
-    · exact measurable_pi_iff.mpr fun j => ENNReal.measurable_ofReal.comp
-        (measurable_pi_apply (Sum.inr j))
+    fun_prop (disch := positivity)
   refine ⟨fun p => G (p.1, decode p.2),
     hG.comp (measurable_fst.prodMk (hd.comp measurable_snd)), ?_⟩
   intro u q μ hμ
@@ -73,12 +69,8 @@ theorem rooted_observable_factors_through_coordinates
     · funext j
       change ENNReal.ofReal (μ (gmcTiltCoordinateSet j)).toReal =
         gmcFiniteMeasureEval ⟨μ, hμ⟩ j
-      rw [ENNReal.ofReal_toReal (@measure_ne_top ℂ _ μ hμ _)]
-      cases j <;> rfl
+      continuity
   have hf := congrFun hGfactor (u, (q, ⟨μ, hμ⟩))
-  change H u q μ = G (u, gmcJointFiniteEval (q, ⟨μ, hμ⟩)) at hf
-  change H u q μ = G (u, decode (gmcTiltCoordinatePath q μ))
-  rw [heq]
-  exact hf
+  continuity
 
 end DOZZ.Proofs

@@ -25,7 +25,7 @@ has turned the base mass `B_n` into the tilted mass `T_{a,n}`:
   increment is at most `e^{γ a⁺ (n+1)} M(B(0, e^{-n}))` and `E[M(B(0,e^{-n}))^r] = O(e^{-n ζ(r)})`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -75,7 +75,7 @@ theorem holder_decay {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U : ℕ
       ∫⁻ ω, U n ω * V ω ∂P ≤ ENNReal.ofReal (K * Real.exp (-(ζ / r) * n)) := by
   set q : ℝ := r / (r - 1) with hqdef
   have hr0 : 0 < r := by linarith
-  have hq0 : 0 < q := div_pos hr0 (by linarith)
+  
   set I : ℝ := (∫⁻ ω, V ω ^ q ∂P).toReal with hI
   refine ⟨max C 0 ^ (1 / r) * I ^ (1 / q), by positivity, fun n => ?_⟩
   have hH := lintegral_mul_le_holder (hU n) hV hr
@@ -84,7 +84,7 @@ theorem holder_decay {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U : ℕ
       ENNReal.ofReal ((max C 0 * Real.exp (-(n : ℝ) * ζ)) ^ (1 / r)) := by
     rw [← ENNReal.ofReal_rpow_of_nonneg (by positivity) (by positivity)]
     refine ENNReal.rpow_le_rpow ((hUr n).trans (ENNReal.ofReal_le_ofReal ?_)) (by positivity)
-    exact mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.exp_pos _).le
+    bound
   have h2 : (∫⁻ ω, V ω ^ q ∂P) ^ (1 / q) = ENNReal.ofReal (I ^ (1 / q)) := by
     rw [← ENNReal.ofReal_rpow_of_nonneg ENNReal.toReal_nonneg (by positivity),
       ENNReal.ofReal_toReal hVr.ne]
@@ -96,8 +96,6 @@ theorem holder_decay {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U : ℕ
         rw [← ENNReal.ofReal_mul (by positivity)]
         congr 1
         rw [Real.mul_rpow (le_max_right _ _) (Real.exp_pos _).le, ← Real.exp_mul]
-        have : -(n : ℝ) * ζ * (1 / r) = -(ζ / r) * n := by ring
-        rw [this]
         ring
 
 /-! ### Fixed-cutoff domination -/
@@ -114,12 +112,11 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
   have _ := hX.1
   have hη := (window_eta_pos hW).le
   have hηγ := window_eta_le_two_div hγ hγ2 hW
-  have hp := window_threshold_pos hγ hW
+  
   have hroom := window_holder_room hγ hγ2 hW
   have hκ : 1 < 4 / γ ^ 2 := by
-    rw [lt_div_iff₀ (by positivity)]
-    nlinarith
-  have hUmeas : AEMeasurable (fun ω => M ω univ) P :=
+    field_simp <;> nlinarith
+  have hUmeas  :=
     aemeasurable_measure_functional P X hX γ hγ hγ2 M hM (Measure.measurable_coe MeasurableSet.univ)
   have hreg : ∀ ω, cutoffTiltedMass γ η a n (M ω) -
       poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ≤
@@ -135,8 +132,7 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
       have : 1 / (4 / γ ^ 2) = γ ^ 2 / 4 := by field_simp
       rw [this]
       refine lt_of_le_of_lt ?_ hroom
-      rw [hs, div_le_div_iff_of_pos_right hγ]
-      linarith
+      bound
     obtain ⟨r, hr1, hr4, hrs⟩ := exists_holder_exponent hs0 hκ hsp
     have hpt : ∀ ω, (cutoffTiltedMass γ η a n (M ω) -
           poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω)) *
@@ -144,12 +140,11 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
           poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s) ≤
         162 * (M ω univ * poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s) := by
       intro ω
-      have hmax : max a 0 = 0 := max_eq_right ha0
+      have hmax  := max_eq_right ha0
       have h1 : cutoffTiltedMass γ η a n (M ω) ^ s ≤
           poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s :=
         ENNReal.rpow_le_rpow (cutoffTiltedMass_le_totalMass_zero hγ ha0 n (M ω)) hs0
-      have h2 : poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s ≤
-          poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s :=
+      have h2  :=
         ENNReal.rpow_le_rpow (localMass_le_totalMass γ η (M ω)) hs0
       have h3 := hreg ω
       rw [hmax, mul_zero, zero_mul, Real.exp_zero, ENNReal.ofReal_one, mul_one] at h3
@@ -187,8 +182,7 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
         (162 * ENNReal.ofReal (Real.exp (γ * max a 0 * n))) *
           (M ω univ * poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s) := by
       intro ω
-      have h1 : cutoffTiltedMass γ η a n (M ω) ^ s ≤
-          poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s :=
+      have h1  :=
         ennrpow_le_of_le_of_nonpos (localMass_le_cutoffTiltedMass γ η a n (M ω)) hs0.le
       calc _ ≤ (81 * ENNReal.ofReal (Real.exp (γ * max a 0 * n)) * M ω univ) *
             (poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s +

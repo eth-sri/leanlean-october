@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Tails.CopiedErrorMassBound
 
 /-! The copied multiplier differs from its constant leading weight by a controlled error. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 
@@ -47,13 +47,13 @@ theorem actual_copied_localization_comparison
   have hc : 0 ≤ c := mul_nonneg (hF z) (Real.exp_nonneg _)
   have hU (x : ℂ) : 0 ≤ U x := by
     unfold U copiedMultiplier
-    exact mul_nonneg (mul_nonneg (hF _) (Real.exp_nonneg _)) (Real.exp_nonneg _)
+    bound
   have hUm : Measurable U := by
     unfold U copiedMultiplier localPinCoefficient
     fun_prop
   have hk : Measurable k := by unfold k; fun_prop
   have hv : Measurable v := measurable_const.mul hk
-  have he : Measurable e := (continuous_abs.measurable.comp (hUm.sub_const c)).ennreal_ofReal.mul hk
+  have he  := (continuous_abs.measurable.comp (hUm.sub_const c)).ennreal_ofReal.mul hk
   have hpoint (x : ℂ) (_ : x ∈ Metric.ball (0 : ℂ) ρ) : u x ≤ v x+e x ∧ v x ≤ u x+e x := by
     constructor
     · calc u x ≤ ENNReal.ofReal (c+|U x-c|)*k x := mul_le_mul'

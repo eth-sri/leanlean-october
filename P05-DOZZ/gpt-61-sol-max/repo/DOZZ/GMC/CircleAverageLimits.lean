@@ -13,18 +13,19 @@ public import DOZZ.GMC.CircleAverage
 
 /-! Direct closure consequences for circle-average witnesses. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (x : ℂ) (r : ℝ)
+
+include Ω _inst1 P X hX Xc hXc x r in
 /-- Every circle-average variable is the Gaussian `L²` limit of test evaluations. -/
 theorem isCircleAverage_isGaussianL2Limit
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hXc : IsCircleAverage P X Xc) (x : ℂ) (r : ℝ) :
+     :
     IsGaussianL2Limit P X (fun ω => Xc ω x r) := by
   let _ := hX
   obtain ⟨f, _, _, hf⟩ := exists_testFn_circleEnergyGap_tendsto_zero x r
@@ -34,11 +35,10 @@ theorem isCircleAverage_isGaussianL2Limit
     eLpNorm_sub_comm _ _ _ _
   exact ⟨hXc.2.1 x r, ⟨f, by simpa only [hcomm] using hXc.2.2 x r f hf⟩⟩
 
+include Ω _inst1 P X hX Xc hXc x r in
 /-- Cross covariance between a test evaluation and a circle average. -/
 theorem isCircleAverage_cross_covariance
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hXc : IsCircleAverage P X Xc) (x : ℂ) (r : ℝ) (f : TestFn) :
+     (f : TestFn) :
     gaussianCovariance P (fun ω => X ω f) (fun ω => Xc ω x r) = circleCross x r f := by
   obtain ⟨_, hMean⟩ := circleAverage_isGaussianProcess P X Xc hX hXc
   have hCovariance :

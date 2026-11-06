@@ -25,17 +25,22 @@ variable {γ χ α₁ α₂ α₃ : ℝ}
 noncomputable def bpzSoftI (γ χ α₁ α₂ α₃ ε : ℝ) (m : Measure ℂ) (z : ℂ) : ℝ :=
   bpzSoftMassReal (γ * χ / 2) ε (bpzBaseWeight γ χ α₁ α₂ α₃) m z
 
-theorem bpzSoftI_eq_integral (ε : ℝ) (m : Measure ℂ) (z : ℂ) :
+variable (ε : ℝ) (m : Measure ℂ) (z : ℂ)
+
+include ε m z in
+theorem bpzSoftI_eq_integral  :
     bpzSoftI γ χ α₁ α₂ α₃ ε m z = ∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ ε z x ∂m := rfl
 
-theorem bpzSoftI_eq_toReal (ε : ℝ) (m : Measure ℂ) (z : ℂ) :
+include ε m z in
+theorem bpzSoftI_eq_toReal  :
     bpzSoftI γ χ α₁ α₂ α₃ ε m z = (bpzMass γ χ α₁ α₂ α₃ ε m z).toReal := by
   rw [bpzSoftI_eq_integral, integral_eq_lintegral_of_nonneg_ae
     (Eventually.of_forall fun x => bpzSoftWeight_nonneg ε z x)
     (measurable_bpzSoftWeight ε z).aestronglyMeasurable]
   rfl
 
-theorem bpzSoftI_nonneg (ε : ℝ) (m : Measure ℂ) (z : ℂ) : 0 ≤ bpzSoftI γ χ α₁ α₂ α₃ ε m z := by
+include ε m z in
+theorem bpzSoftI_nonneg  : 0 ≤ bpzSoftI γ χ α₁ α₂ α₃ ε m z := by
   rw [bpzSoftI_eq_toReal]; exact ENNReal.toReal_nonneg
 
 /-- A lintegral bound on `E[bpzMass^{-p} ∫⁻ f dM]` gives the real bound. -/
@@ -51,7 +56,7 @@ theorem bpz_real_bound_of_lintegral {Ω : Type*} [MeasurableSpace Ω] (P : Measu
       ∀ᵐ ω ∂P, Integrable f (M ω) := by
   have hIm : Measurable fun ω => bpzSoftI γ χ α₁ α₂ α₃ ε (M ω) z :=
     (measurable_integral_measure (measurable_bpzSoftWeight ε z)).comp hMm
-  have hJm : Measurable fun ω => ∫ x, f x ∂M ω := (measurable_integral_measure hf).comp hMm
+  have hJm  := (measurable_integral_measure hf).comp hMm
   have hmeasL : AEMeasurable (fun ω => bpzMass γ χ α₁ α₂ α₃ ε (M ω) z ^ (-p) *
       ∫⁻ x, ENNReal.ofReal (f x) ∂M ω) P :=
     ((gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _
@@ -66,9 +71,7 @@ theorem bpz_real_bound_of_lintegral {Ω : Type*} [MeasurableSpace Ω] (P : Measu
     have hpow : bpzMass γ χ α₁ α₂ α₃ ε (M ω) z ^ (-p) ≠ 0 := (ENNReal.rpow_pos h2 h3.ne).ne'
     have hJfin : ∫⁻ x, ENNReal.ofReal (f x) ∂M ω < ⊤ := by
       by_contra hinf
-      rw [not_lt, top_le_iff] at hinf
-      rw [hinf, ENNReal.mul_top hpow] at h1
-      exact lt_irrefl _ h1
+      simp_all
     have hfi : Integrable f (M ω) := ⟨hf.aestronglyMeasurable, by
       rw [hasFiniteIntegral_iff_ofReal (Eventually.of_forall hf0)]; exact hJfin⟩
     refine ⟨hfi, ?_⟩

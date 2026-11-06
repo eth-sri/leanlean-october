@@ -11,18 +11,19 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-! # Signed observables under the rooted identity -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Rooted expectations of measurable functionals are measurable in the insertion point. -/
-theorem fusion_rooted_expectation_measurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_rooted_expectation_measurable 
     (G : Measure ℂ → ℝ≥0∞) (hG : Measurable G) :
     Measurable (fun u => ∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   obtain ⟨N, hN, hf, he⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
   have hmeas : Measurable (fun u => ∫⁻ ω, G (gmcRootedMeasure γ u (N ω)) ∂P) :=
     (hG.comp (measurable_gmcRootedMeasure_family N hN hf γ)).lintegral_prod_right'
@@ -33,11 +34,10 @@ theorem fusion_rooted_expectation_measurable {Ω : Type*} [MeasurableSpace Ω]
   rw [heq]
   exact hmeas
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Finite absolute rooted integrals allow the nonnegative identity to be read as a real identity.
 Both sides are integrable; no first moment of the Coulomb mass is required. -/
-theorem fusion_rooted_nonnegative_integral {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_rooted_nonnegative_integral 
     (f : ℂ → ℝ) (hf : Measurable f) (hf0 : ∀ u, 0 ≤ f u)
     (G : Measure ℂ → ℝ≥0∞) (hG : Measurable G)
     (hb : (∫⁻ u, ENNReal.ofReal (f u) *
@@ -53,9 +53,8 @@ theorem fusion_rooted_nonnegative_integral {Ω : Type*} [MeasurableSpace Ω]
     (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P)
   have hL : AEMeasurable L P := by
     have hM' := gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM
-    exact ((Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp hf)).comp_aemeasurable hM').mul
-      (hG.comp_aemeasurable hM')
-  have hR : Measurable R := (ENNReal.measurable_ofReal.comp hf).mul
+    fun_prop (disch := positivity)
+  have hR  := (ENNReal.measurable_ofReal.comp hf).mul
     (fusion_rooted_expectation_measurable P X hX γ hγ hγ2 M hM G hG)
   have hid : (∫⁻ ω, L ω ∂P) = ∫⁻ u, R u ∂gmcReferenceMeasure := by
     have h := DOZZ.equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM
@@ -72,7 +71,7 @@ theorem fusion_rooted_nonnegative_integral {Ω : Type*} [MeasurableSpace Ω]
         apply lintegral_congr
         intro u
         exact lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
-  have hLb : (∫⁻ ω, L ω ∂P) < ⊤ := hid ▸ hb
+  have hLb  := hid ▸ hb
   have heL : ∀ ω, (L ω).toReal = (G (M ω)).toReal * (∫ u, f u ∂M ω) := by
     intro ω
     dsimp only [L]
@@ -80,9 +79,7 @@ theorem fusion_rooted_nonnegative_integral {Ω : Type*} [MeasurableSpace Ω]
       ← integral_eq_lintegral_of_nonneg_ae (ae_of_all _ hf0) hf.aestronglyMeasurable]
   have heR : ∀ u, (R u).toReal = f u *
       (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P).toReal := by
-    intro u
-    dsimp only [R]
-    rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (hf0 u)]
+    continuity
   have hLi := integrable_toReal_of_lintegral_ne_top hL hLb.ne
   have hRi := integrable_toReal_of_lintegral_ne_top hR.aemeasurable hb.ne
   refine ⟨hLi.congr (ae_of_all _ heL), hRi.congr (ae_of_all _ heR), ?_⟩
@@ -94,11 +91,10 @@ theorem fusion_rooted_nonnegative_integral {Ω : Type*} [MeasurableSpace Ω]
       (integral_toReal hR.aemeasurable (ae_lt_top hR hb.ne)).symm
     _ = _ := integral_congr_ae (ae_of_all _ heR)
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- The signed rooted formula follows by separately integrating the positive and negative parts.
 The sole analytic condition is the finite absolute rooted integral. -/
-theorem fusion_rooted_real_integral {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_rooted_real_integral 
     (f : ℂ → ℝ) (hf : Measurable f)
     (hfi : ∀ᵐ ω ∂P, Integrable f (M ω))
     (G : Measure ℂ → ℝ≥0∞) (hG : Measurable G)
@@ -118,7 +114,7 @@ theorem fusion_rooted_real_integral {Ω : Type*} [MeasurableSpace Ω]
       (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) ∂gmcReferenceMeasure) < ⊤ := by
     apply lt_of_le_of_lt (lintegral_mono ?_) hb
     intro u
-    exact mul_le_mul' (ENNReal.ofReal_le_ofReal (max_le (le_abs_self _) (abs_nonneg _))) le_rfl
+    bound
   have hbn : (∫⁻ u, ENNReal.ofReal (fn u) *
       (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) ∂gmcReferenceMeasure) < ⊤ := by
     apply lt_of_le_of_lt (lintegral_mono ?_) hb
@@ -129,20 +125,13 @@ theorem fusion_rooted_real_integral {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨hLn, hRn, hen⟩ := fusion_rooted_nonnegative_integral P X hX γ hγ hγ2 M hM
     fn hfn (fun _ => le_max_right _ _) G hG hbn
   have hsplit : ∀ u, f u = fp u - fn u := by
-    intro u
-    dsimp only [fp, fn]
-    by_cases h : 0 ≤ f u
-    · rw [max_eq_left h, max_eq_right (neg_nonpos.mpr h), sub_zero]
-    · have h' : f u ≤ 0 := le_of_not_ge h
-      rw [max_eq_right h', max_eq_left (neg_nonneg.mpr h')]
-      ring
+    grind
   have heL : (fun ω => (G (M ω)).toReal * (∫ u, fp u ∂M ω) -
       (G (M ω)).toReal * (∫ u, fn u ∂M ω)) =ᵐ[P]
       (fun ω => (G (M ω)).toReal * (∫ u, f u ∂M ω)) := by
     filter_upwards [hfi] with ω hω
     rw [← mul_sub, ← integral_sub hω.pos_part hω.neg_part]
-    congr 1
-    exact integral_congr_ae (ae_of_all _ fun u => (hsplit u).symm)
+    norm_num
   have heR : (fun u => fp u * (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P).toReal -
       fn u * (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P).toReal) =
       (fun u => f u * (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P).toReal) := by

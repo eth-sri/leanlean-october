@@ -14,6 +14,7 @@ import DOZZ.ShiftEquations.Residual.Calibration
 import DOZZ.ShiftEquations.Rbar.Continuation
 import DOZZ.ShiftEquations.Shift.Reflection
 import DOZZ.Correlations.Analytic.StructureConstantHolomorphic
+public import DOZZ.ShiftEquations.Contracts
 
 /-!
 # The limits in the proof of the `2/γ` shift equation
@@ -32,7 +33,7 @@ Also: a function meromorphic at a real point whose real restriction is continuou
 there.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 
@@ -48,11 +49,11 @@ theorem analyticAt_of_meromorphicAt_of_tendsto_ofReal {f : ℂ → ℂ} {x₀ : 
     have hcob := (tendsto_cobounded_of_meromorphicOrderAt_neg (not_le.mp hneg)).comp hreal
     exact not_tendsto_atTop_of_tendsto_nhds h.norm (tendsto_norm_atTop_iff_cobounded.mpr hcob)
   obtain ⟨g, hg, hfg⟩ := hf.meromorphicOrderAt_nonneg_iff.mp hord
-  have hfg' : ∀ᶠ x : ℝ in 𝓝[≠] x₀, f x = g x := hreal.eventually hfg
+  have hfg'  := hreal.eventually hfg
   have hglim : Tendsto (fun x : ℝ => g (x : ℂ)) (𝓝[≠] x₀) (𝓝 (g x₀)) :=
     ((hg.continuousAt.tendsto.comp Complex.continuous_ofReal.continuousAt.tendsto).mono_left
       nhdsWithin_le_nhds)
-  have heq : f x₀ = g x₀ := tendsto_nhds_unique (h.congr' hfg') hglim
+  have heq  := tendsto_nhds_unique (h.congr' hfg') hglim
   exact hg.congr (eventuallyEq_nhds_of_eventuallyEq_nhdsNE hfg.symm heq.symm)
 
 /-- **The zero-mode limit**: `η C(a, b + η, c) → 2` when `a + b + c = 2Q` and all charges are
@@ -62,11 +63,11 @@ theorem tendsto_mul_structureConstant_chargeZero {Ω : Type*} [MeasurableSpace �
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) {a b c : ℝ} (hsum : a + b + c = 2 * Q γ)
     (ha : a < Q γ) (hb : b < Q γ) (hc : c < Q γ) :
     Tendsto (fun η : ℝ => η * structureConstant P M γ μ a (b + η) c) (𝓝[>] 0) (𝓝 2) := by
-  have : IsProbabilityMeasure P := hX.1
+  have  := hX.1
   obtain ⟨V₃, hV₃, hV₃mem, f₃, hf₃, hf₃eq⟩ :=
     unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   have h4 : 0 < 4 / γ := by positivity
-  have hES0 : ExtendedSeiberg3 γ a b c :=
+  have hES0  :=
     extendedSeiberg3_of_lt hγ ha hb hc (by linarith) (by linarith) (by linarith) (by linarith)
   have hs : ∀ η : ℝ, sExp γ a (b + η) c = η / γ := fun η => by
     unfold sExp
@@ -75,7 +76,7 @@ theorem tendsto_mul_structureConstant_chargeZero {Ω : Type*} [MeasurableSpace �
   have hγ0 : sExp γ a b c = 0 := by
     have := hs 0
     rwa [add_zero, zero_div] at this
-  have hval : unitVolumeStructureConstant P M γ a b c = 2 / γ :=
+  have hval  :=
     unitVolumeStructureConstant_zeroMode P M hγ0
   have hcurve : Continuous fun η : ℝ => complexifyNCharges ![a, b + η, c] := by
     unfold complexifyNCharges
@@ -137,14 +138,11 @@ theorem complex_Gamma_two : Complex.Gamma 2 = 1 := by
 (`DOZZ.reflectionR_first_shift_meromorphic`): `η R(γ/2 + η) → 2μπ R(γ)/(γ l(-γ²/4) l(γ²/4))`. -/
 theorem tendsto_mul_reflection_pole {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) {R : ℂ → ℂ}
     (hRγ : AnalyticAt ℂ R (γ : ℂ))
-    (hshift : ∀ᶠ z in codiscrete ℂ,
-      R (z - γ / 2) = -(μ * Real.pi : ℂ) * R z /
-        (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4) *
-          lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2))) :
+    (hshift : Contract.reflectionShift γ μ R) :
     Tendsto (fun η : ℝ => (η : ℂ) * R ((γ / 2 + η : ℝ) : ℂ)) (𝓝[>] 0)
       (𝓝 (2 * (μ * Real.pi : ℂ) * R γ /
         ((γ : ℂ) * (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) ^ 2 / 4))))) := by
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+  have hγc  := Complex.ofReal_ne_zero.mpr hγ.ne'
   -- the shift at `z = γ + η`
   have hev : ∀ᶠ η : ℝ in 𝓝[≠] 0, R (((γ + η : ℝ) : ℂ) - γ / 2) = -(μ * Real.pi : ℂ) *
       R ((γ + η : ℝ) : ℂ) / (lFun (-((γ : ℂ) ^ 2) / 4) *
@@ -204,11 +202,7 @@ theorem tendsto_mul_reflection_pole {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
         have : v = 1 := sub_eq_zero.mp h
         rw [hv] at this
         exact_mod_cast this
-      have : γ * η / 2 < 1 := by
-        have h2 := hη2.2
-        rw [lt_div_iff₀ hγ] at h2
-        linarith
-      linarith
+      grind
     -- `Γ(v + 1) = v (v - 1) Γ(v - 1)`
     have hrec : Complex.Gamma (v + 1) = v * ((v - 1) * Complex.Gamma (v - 1)) := by
       rw [Complex.Gamma_add_one v hv0, show v = (v - 1) + 1 by ring, Complex.Gamma_add_one _ hv1]
@@ -216,16 +210,7 @@ theorem tendsto_mul_reflection_pole {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     have hl : (lFun (2 - v))⁻¹ = Complex.Gamma (v - 1) / Complex.Gamma (2 - v) := by
       unfold lFun
       rw [inv_div, show 1 - (2 - v) = v - 1 by ring]
-    rw [hl]
-    have hG : Complex.Gamma (v - 1) = Complex.Gamma (v + 1) / (v * (v - 1)) := by
-      rw [hrec]
-      field_simp
-    rw [hG]
-    have hη' : (η : ℂ) = 2 / (γ : ℂ) * v := by
-      rw [hv]
-      field_simp
-    rw [hη']
-    field_simp
+    grind
   -- the remaining factors
   have hR : Tendsto (fun η : ℝ => R ((γ + η : ℝ) : ℂ)) (𝓝 0) (𝓝 (R γ)) := by
     have hc : Continuous fun η : ℝ => ((γ + η : ℝ) : ℂ) := by fun_prop
@@ -275,7 +260,7 @@ theorem tendsto_dualLC_div {γ θ : ℝ} (hγ : 0 < γ) (hθ₁ : 0 < θ) :
         dualLC γ ((γ / 2 - θ : ℝ) : ℂ) ((γ / 2 + η : ℝ) : ℂ) ((2 / γ + θ : ℝ) : ℂ) / η) (𝓝[>] 0)
       (𝓝 (-(1 / (γ : ℂ)) * lFun (dualArg₁ γ ((γ / 2 - θ : ℝ) : ℂ)) * lFun (1 + 4 / (γ : ℂ) ^ 2) *
         (lFun (1 - 2 * θ / γ))⁻¹)) := by
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+  have hγc  := Complex.ofReal_ne_zero.mpr hγ.ne'
   have hG1 : ContinuousAt Complex.Gamma 1 := by
     have h := (analyticAt_Gamma_ofReal_pos (by norm_num : (0 : ℝ) < 1)).continuousAt
     rwa [Complex.ofReal_one] at h
@@ -357,11 +342,7 @@ theorem tendsto_dualLC_div {γ θ : ℝ} (hγ : 0 < γ) (hθ₁ : 0 < θ) :
     rw [show (1 : ℂ) - u = -u + 1 by ring, Complex.Gamma_add_one _ (neg_ne_zero.mpr hu0), mul_inv,
       ← mul_assoc, mul_inv_cancel₀ (neg_ne_zero.mpr hu0), one_mul]
   unfold dualLC
-  rw [h₂, h₃, h₄]
-  simp only [div_eq_mul_inv, mul_inv]
-  rw [hl₄, hΓu, hu]
-  have hηc : (η : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hη.ne'
-  field_simp
+  grind
 
 end DOZZ.Proofs
 

@@ -10,9 +10,12 @@ open MeasureTheory Filter
 open scoped Distributions Topology ENNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω)
+
+include Ω _inst1 P in
 /-- Scalar multiplication preserves the Gaussian closure on the same field. -/
 theorem IsGaussianL2Limit_const_mul_symmetry
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+     (X : Ω → Distr)
     (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L) (t : ℝ) :
     IsGaussianL2Limit P X (fun ω => t * L ω) := by
   obtain ⟨hmem, f, hf⟩ := hL
@@ -29,16 +32,18 @@ theorem IsGaussianL2Limit_const_mul_symmetry
   simp only [hnorm]
   simpa only [mul_zero] using ENNReal.Tendsto.const_mul hf (Or.inr enorm_ne_top)
 
+include Ω _inst1 P in
 theorem symmetry_gaussianCovariance_mul_right
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (A L : Ω → ℝ) (t : ℝ) :
+     (A L : Ω → ℝ) (t : ℝ) :
     gaussianCovariance P A (fun ω => t * L ω) = t * gaussianCovariance P A L := by
   unfold gaussianCovariance
   have he : (fun ω => A ω * (t * L ω)) = fun ω => t * (A ω * L ω) := by
     funext ω; ring
   rw [he, integral_const_mul]
 
+include Ω _inst1 P in
 theorem symmetry_gaussianVariance_mul
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (L : Ω → ℝ) (t : ℝ) :
+     (L : Ω → ℝ) (t : ℝ) :
     gaussianVariance P (fun ω => t * L ω) = t ^ 2 * gaussianVariance P L := by
   unfold gaussianVariance gaussianCovariance
   have he : (fun ω => (t * L ω) * (t * L ω)) = fun ω => t ^ 2 * (L ω * L ω) := by
@@ -52,9 +57,10 @@ noncomputable def symmetryTiltPotential (t : ℝ) : BoundedContinuousFunction �
 theorem symmetryTiltPotential_apply (t : ℝ) (x : ℂ) :
     symmetryTiltPotential t x = t * (symmetryReflectionPotential x - symmetryReflectionKappa) := rfl
 
+include Ω _inst1 P in
 /-- All scaled correlated normalizations supply the literal uniform covariance premise of tilt. -/
 theorem symmetryTiltPotential_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+     (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (t : ℝ) :
     TendstoUniformly (fun r x => gaussianCovariance P
       (fun ω => Xc ω (1 - x) r - Xc ω 1 0) (fun ω => t * Xc ω 1 0))

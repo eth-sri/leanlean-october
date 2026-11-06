@@ -5,7 +5,7 @@ public import DOZZ.GFFStructure.AnnularCircleEnergy
 
 /-! # Coarse cutoff control without a sign restriction on the cutoff time -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -29,7 +29,6 @@ theorem gmcCircle_variance_le_bounded_radius
         _ ≤ ‖z - x‖ + ‖x‖ := norm_add_le _ _
         _ ≤ U + B := by rw [hz]; exact add_le_add hrU hx
     apply Real.log_le_log (by dsimp [normPlus]; positivity)
-    dsimp [normPlus]
     exact max_le (by linarith) (by linarith)
   have hpinUpper : (∫ z, Real.log (normPlus z) ∂circleMeasure x r) ≤ Real.log (1 + B + U) := by
     have h := integral_mono_ae hpin (integrable_const (Real.log (1 + B + U))) hpoint

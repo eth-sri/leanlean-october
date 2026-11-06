@@ -9,7 +9,7 @@ public import DOZZ.Brownian.Lateral.CutoffLaw
 
 /-! Actual compatible admissible pairs for inversion on bounded annular charts. -/
 
-@[expose] public section
+public section
 
 open Filter MeasureTheory ProbabilityTheory Set
 open scoped Topology Distributions ENNReal
@@ -77,7 +77,6 @@ theorem exists_equatorGFF_inversion_admissible_pair
     (isCircleAverage_admissible P X hX Xc hXc inversionChart isOpen_compl_singleton)
   have hUsub : U ⊆ inversionChart := by
     intro x hx
-    change x ≠ 0
     exact norm_pos_iff.mp (by linarith only [hm, (hU x hx).1])
   refine ⟨f, hf, Z, hgap, hmem, hlim,
     isAdmissibleLogRegularization_on_subchart hYinv hUopen hUsub,

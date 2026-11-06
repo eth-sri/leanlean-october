@@ -8,12 +8,13 @@ public import DOZZ.Statements.FourPoint.ThreePointFiniteCorrelation
 public import DOZZ.FourPoint.Diagonal.Endpoint
 import DOZZ.FourPoint.FourPointTZeroEqStructureConstant
 import DOZZ.Hypergeom.ClassificationPhysicalNormalization
+public import DOZZ.FourPoint.GaussContracts
 
 /-! Exact reduction of `DOZZ.degenerateFourPoint_diagonal_classification` to the BPZ conclusion.
 Continuity at the puncture and the coincident-root value are proved physical inputs, rather
 than extra hypotheses on the abstract Gauss PDE solution. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -36,15 +37,7 @@ theorem degenerateFourPoint_diagonal_classification_of_BPZ {Ω : Type*} [Measura
       (gaussParameterB γ χ α₁ α₂ α₃)
       (gaussParameterC γ χ α₁)
       (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z)) :
-    let a := gaussParameterA γ χ α₁ α₂ α₃
-    let b := gaussParameterB γ χ α₁ α₂ α₃
-    let c := gaussParameterC γ χ α₁
-    ∀ z ∈ gaussCutPlane,
-      fourPointT P M γ μ (-χ) α₁ α₂ α₃ z =
-        structureConstant P M γ μ (α₁ - χ) α₂ α₃ *
-          (‖gaussFMinus H a b c z‖ ^ 2 +
-            gaussCoefficientRatio a b c *
-              ‖gaussFPlus H a b c z‖ ^ 2) := by
+    Contract.gaussDiagonal P M γ μ α₁ α₂ α₃ H χ := by
   have hχpos : 0 < χ := by
     rcases hχ with rfl | rfl
     · exact div_pos hγ (by norm_num)

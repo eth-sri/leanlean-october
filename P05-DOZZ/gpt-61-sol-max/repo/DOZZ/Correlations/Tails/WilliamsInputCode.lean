@@ -14,14 +14,15 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-noncomputable def williamsCutMassCode (γ : ℝ)
-    (p : ℝ × ((BrownianPath × BrownianPath) × Measure ℝ)) : ℝ≥0∞ :=
+variable (γ : ℝ) (p : ℝ × ((BrownianPath × BrownianPath) × Measure ℝ))
+
+include γ p in
+noncomputable def williamsCutMassCode  : ℝ≥0∞ :=
   stoppedReflectionMassCode γ
     ((negativeLastExitTime p.2.1.2 p.1,p.2.1),p.2.2)
 
 theorem measurable_williamsCutMassCode (γ : ℝ) :
-    Measurable (williamsCutMassCode γ) := by
-  exact (measurable_stoppedReflectionMassCode γ).comp
+    Measurable (williamsCutMassCode γ) := (measurable_stoppedReflectionMassCode γ).comp
     (((measurable_negativeLastExitTime_joint.comp
       (measurable_fst.prodMk measurable_snd.fst.snd)).prodMk measurable_snd.fst).prodMk
       measurable_snd.snd)
@@ -30,11 +31,10 @@ theorem williamsCutMassCode_eq (γ m : ℝ)
     (B : BrownianPath × BrownianPath) (Z : Measure ℝ)
     (hfin : ∀ a b : ℝ, Z (Icc a b) < ⊤) :
     williamsCutMassCode γ (m,(B,Z)) =
-      twoSidedReflectionCutMass γ m (fun _ : Unit => B) (fun _ : Unit => Z) () := by
-  exact stoppedReflectionMassCode_eq γ (negativeLastExitTime B.2 m) B Z hfin
+      twoSidedReflectionCutMass γ m (fun _ : Unit => B) (fun _ : Unit => Z) () := stoppedReflectionMassCode_eq γ (negativeLastExitTime B.2 m) B Z hfin
 
-noncomputable def williamsInputMassCode (γ : ℝ)
-    (p : ℝ × ((BrownianPath × BrownianPath) × Measure ℝ)) : ℝ≥0∞ :=
+include γ p in
+noncomputable def williamsInputMassCode  : ℝ≥0∞ :=
   ENNReal.ofReal (Real.exp (γ*p.1))*williamsCutMassCode γ p
 
 theorem measurable_williamsInputMassCode (γ : ℝ) :

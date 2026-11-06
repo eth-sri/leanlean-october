@@ -6,33 +6,32 @@ module
 public import DOZZ.FourPoint.Fusion.MassSegment
 public import DOZZ.FourPoint.Fusion.MeasurableIntegralFamily
 /-! # Measurability of signed spatial segment integrands -/
-@[expose] public section
+public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Signed spatial integrals times segment inverse powers are measurable almost surely. -/
-theorem fusion_segment_spatial_aestronglyMeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_segment_spatial_aestronglyMeasurable
     (α₁ α₂ α₃ t s : ℝ) (z : ℂ) (f : ℂ → ℝ) (hf : Measurable f) :
     AEStronglyMeasurable (fun ω => (fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ s).toReal *
       ∫ x, f x ∂M ω) P := by
   obtain ⟨N, hN, hfN, he⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
-  have hI : Measurable (fun ω => ∫ x, f x ∂N ω) :=
+  have hI  :=
     fusion_measurable_real_integral_finite_family N hN hfN _ (hf.comp measurable_snd)
   have hm := ((fusionUnrootedSegment_measurable γ α₁ α₂ α₃ t s z).comp hN).ennreal_toReal.mul hI
   exact hm.aestronglyMeasurable.congr (he.mono fun ω h => by
-    change (fusionUnrootedSegment γ α₁ α₂ α₃ t z (N ω) ^ s).toReal * (∫ x, f x ∂N ω) = _
-    simp only [h])
+    simp_all)
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Spatial segment expectations are measurable in interpolation time. -/
-theorem fusion_segment_time_expectation_measurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_segment_time_expectation_measurable
     (α₁ α₂ α₃ s : ℝ) (z : ℂ) (f : ℂ → ℝ) (hf : Measurable f) :
     Measurable (fun t : ℝ => ∫ ω, (fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ s).toReal *
       (∫ x, f x ∂M ω) ∂P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   obtain ⟨N, hN, hfN, he⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
-  have hI : Measurable (fun ω => ∫ x, f x ∂N ω) :=
+  have hI  :=
     fusion_measurable_real_integral_finite_family N hN hfN _ (hf.comp measurable_snd)
   have hzN := (fusion_measurable_coulombMass γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃).comp hN
   have h0N := (fusion_measurable_coulombMass γ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃).comp hN

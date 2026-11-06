@@ -66,7 +66,7 @@ theorem gaussParameters_three {γ α' ε α : ℝ} (hγ : 0 < γ) :
       gaussParameterA γ (γ / 2) α' ε α + gaussParameterB γ (γ / 2) α' ε α -
           gaussParameterC γ (γ / 2) α' = γ * ε / 2 - γ ^ 2 / 4 - 1 := by
   unfold gaussParameterA gaussParameterB gaussParameterC Q
-  refine ⟨by field_simp; ring, by ring, by ring, by field_simp; ring⟩
+  grind
 
 /-- **The unit crossing multiplier on the crossing region, in closed form.** -/
 theorem gammaHalfUnitCrossingMultiplier_real {γ μ α' ε α : ℝ} (hγ : 0 < γ) (hμ : 0 < μ)
@@ -97,7 +97,7 @@ theorem gammaHalfUnitCrossingMultiplier_real {γ μ α' ε α : ℝ} (hγ : 0 < 
 theorem crossA3_ofReal {γ : ℝ} (hγ : 0 < γ) (α' ε α : ℝ) :
     crossA3 γ α' ε α = ((γ ^ 2 / 4 * ((α + α' + ε - γ / 2 - 2 * Q γ) / γ) : ℝ) : ℂ) := by
   unfold crossA3
-  have hγ0 : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+  have hγ0  := Complex.ofReal_ne_zero.mpr hγ.ne'
   rw [Q]
   push_cast
   field_simp
@@ -182,11 +182,12 @@ theorem differentiableAt_inv_Gamma_comp {φ : ℂ → ℂ} {z : ℂ} (hφ : Diff
     DifferentiableAt ℂ (fun w => (Complex.Gamma (φ w))⁻¹) z :=
   (Complex.differentiable_one_div_Gamma _).comp z hφ
 
+variable {γ : ℝ} {φ₁ φ₂ φ₃ : ℂ → ℂ} {z : ℂ} (h₁ : DifferentiableAt ℂ φ₁ z) (h₂ : DifferentiableAt ℂ φ₂ z) (h₃ : DifferentiableAt ℂ φ₃ z) (hA : 0 < (crossA3 γ (φ₁ z) (φ₂ z) (φ₃ z) + 1).re)
+
+include γ φ₁ φ₂ φ₃ z h₁ h₂ h₃ hA in
 /-- **The analytic multiplier is holomorphic along holomorphic charge curves** where
 `Re(A+1)`, `Re B`, `Re(1-C)` and `Re(1-γε/2)` are positive. -/
-theorem differentiableAt_crossingMultiplier3 {γ : ℝ} {φ₁ φ₂ φ₃ : ℂ → ℂ} {z : ℂ}
-    (h₁ : DifferentiableAt ℂ φ₁ z) (h₂ : DifferentiableAt ℂ φ₂ z) (h₃ : DifferentiableAt ℂ φ₃ z)
-    (hA : 0 < (crossA3 γ (φ₁ z) (φ₂ z) (φ₃ z) + 1).re)
+theorem differentiableAt_crossingMultiplier3 
     (hB : 0 < (crossB3 γ (φ₁ z) (φ₂ z) (φ₃ z)).re)
     (hC : 0 < (1 - crossC3 γ (φ₁ z)).re)
     (hE : 0 < (1 - (γ : ℂ) * φ₂ z / 2).re) :
@@ -213,11 +214,10 @@ theorem differentiableAt_crossingMultiplier3 {γ : ℝ} {φ₁ φ₂ φ₃ : ℂ
       ((differentiableAt_Gamma_comp ((differentiableAt_const 1).sub hEd) hE).mul
         (differentiableAt_inv_Gamma_comp hEd))))
 
+include γ φ₁ φ₂ φ₃ z h₁ h₂ h₃ hA in
 /-- **The regularized multiplier is holomorphic along holomorphic charge curves** where
 `Re(A+1)`, `Re(B+1)`, `Re(1-C)` and `Re(1-γε/2)` are positive. -/
-theorem differentiableAt_crossingMultiplier3Reg {γ : ℝ} {φ₁ φ₂ φ₃ : ℂ → ℂ} {z : ℂ}
-    (h₁ : DifferentiableAt ℂ φ₁ z) (h₂ : DifferentiableAt ℂ φ₂ z) (h₃ : DifferentiableAt ℂ φ₃ z)
-    (hA : 0 < (crossA3 γ (φ₁ z) (φ₂ z) (φ₃ z) + 1).re)
+theorem differentiableAt_crossingMultiplier3Reg 
     (hB : 0 < (crossB3 γ (φ₁ z) (φ₂ z) (φ₃ z) + 1).re)
     (hC : 0 < (1 - crossC3 γ (φ₁ z)).re)
     (hE : 0 < (1 - (γ : ℂ) * φ₂ z / 2).re) :

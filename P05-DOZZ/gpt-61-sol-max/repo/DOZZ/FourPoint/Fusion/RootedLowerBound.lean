@@ -17,7 +17,7 @@ The covariance kernel is bounded below globally. Thus rooting preserves every fi
 lower bound for the mass, uniformly in the location of the root.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -26,13 +26,13 @@ namespace DOZZ.Proofs
 theorem fusion_gffKernel_lower (u x : ℂ) : -Real.log 2 ≤ gffKernel u x := by
   have hu : 1 ≤ normPlus u := le_max_left _ _
   have hx : 1 ≤ normPlus x := le_max_left _ _
-  have hu0 : 0 < normPlus u := lt_of_lt_of_le zero_lt_one hu
-  have hx0 : 0 < normPlus x := lt_of_lt_of_le zero_lt_one hx
+  have hu0  := lt_of_lt_of_le zero_lt_one hu
+  have hx0  := lt_of_lt_of_le zero_lt_one hx
   have hud : ‖u‖ ≤ normPlus u := le_max_right _ _
   have hxd : ‖x‖ ≤ normPlus x := le_max_right _ _
   have hb : ‖u - x‖ ≤ 2 * (normPlus u * normPlus x) := by
-    have h1 : normPlus u ≤ normPlus u * normPlus x := le_mul_of_one_le_right hu0.le hx
-    have h2 : normPlus x ≤ normPlus u * normPlus x := le_mul_of_one_le_left hx0.le hu
+    have h1  := le_mul_of_one_le_right hu0.le hx
+    have h2  := le_mul_of_one_le_left hx0.le hu
     have hn := norm_sub_le u x
     linarith
   by_cases hdiag : u = x
@@ -41,7 +41,7 @@ theorem fusion_gffKernel_lower (u x : ℂ) : -Real.log 2 ≤ gffKernel u x := by
     have hlog := Real.log_nonneg hu
     have htwo : 0 ≤ Real.log 2 := Real.log_nonneg (by norm_num)
     linarith
-  · have hd : 0 < ‖u - x‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hdiag)
+  · have hd  := norm_pos_iff.mpr (sub_ne_zero.mpr hdiag)
     have hlog := Real.log_le_log hd hb
     rw [Real.log_mul (by norm_num) (mul_pos hu0 hx0).ne',
       Real.log_mul hu0.ne' hx0.ne'] at hlog
@@ -57,14 +57,15 @@ theorem fusion_rootDensity_lower (γ : ℝ) (u x : ℂ) :
   have h := mul_le_mul_of_nonneg_left (fusion_gffKernel_lower u x) (sq_nonneg γ)
   nlinarith only [h]
 
+variable {N : ℕ} (γ : ℝ) (u : ℂ) (μ : Measure ℂ) (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ)
+
+include N γ u μ α z αinf in
 /-- Rooting uniformly preserves a lower bound for any Coulomb mass. -/
-theorem fusion_rootedCoulombMass_lower {N : ℕ} (γ : ℝ) (u : ℂ) (μ : Measure ℂ)
-    (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ) :
+theorem fusion_rootedCoulombMass_lower  :
     ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2)) * coulombMass γ μ α z αinf ≤
       coulombMass γ (gmcRootedMeasure γ u μ) α z αinf := by
   have hd : Measurable (fun x : ℂ =>
-      ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel u x))) := by
-    exact ENNReal.measurable_ofReal.comp
+      ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel u x))) := ENNReal.measurable_ofReal.comp
       ((measurable_const.mul (measurable_pointRootPotential.comp
         (measurable_const.prodMk measurable_id))).exp)
   rw [coulombMass_eq_lintegral_coulombWeight, coulombMass_eq_lintegral_coulombWeight,
@@ -73,9 +74,9 @@ theorem fusion_rootedCoulombMass_lower {N : ℕ} (γ : ℝ) (u : ℂ) (μ : Meas
     ← lintegral_const_mul _ (measurable_coulombWeight _ _ _ _)]
   exact lintegral_mono fun x => mul_le_mul' (fusion_rootDensity_lower γ u x) le_rfl
 
+include N γ u μ α z αinf in
 /-- A fixed disk lower bound is uniform in all roots in the unit disk and in the rooting point. -/
-theorem fusion_rootedMass_disk_lower {N : ℕ} (γ : ℝ) (u : ℂ) (μ : Measure ℂ)
-    (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ) (hz : ∀ j, ‖z j‖ ≤ 1) :
+theorem fusion_rootedMass_disk_lower  (hz : ∀ j, ‖z j‖ ≤ 1) :
     (ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2)) *
       (ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
         ENNReal.ofReal ((4 : ℝ) ^ (-|γ * αinf|)))) *
@@ -89,9 +90,9 @@ theorem fusion_rootedMass_disk_lower {N : ℕ} (γ : ℝ) (u : ℂ) (μ : Measur
     show (((2 : ℝ) + 1 : ℝ) : ℂ) = 3 by norm_num, mul_assoc] using
     mul_le_mul' (le_refl (ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2)))) hmass
 
+include N γ u μ α z αinf in
 /-- Every nonpositive power of the rooted mass is dominated by a fixed-disk inverse power. -/
-theorem fusion_rootedMass_inverse_domination {N : ℕ} (γ : ℝ) (u : ℂ) (μ : Measure ℂ)
-    (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ) (hz : ∀ j, ‖z j‖ ≤ 1)
+theorem fusion_rootedMass_inverse_domination  (hz : ∀ j, ‖z j‖ ≤ 1)
     (s : ℝ) (hs : s ≤ 0) :
     ENNReal.rpow (coulombMass γ (gmcRootedMeasure γ u μ) α z αinf) s ≤
       ENNReal.rpow
@@ -102,13 +103,10 @@ theorem fusion_rootedMass_inverse_domination {N : ℕ} (γ : ℝ) (u : ℂ) (μ 
   have hc0 : (ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2)) *
       (ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
         ENNReal.ofReal ((4 : ℝ) ^ (-|γ * αinf|)))) ≠ 0 := by
-    apply mul_ne_zero
-    · exact (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'
-    · apply mul_ne_zero <;> exact (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
+    positivity
   have hct : (ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2)) *
       (ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
-        ENNReal.ofReal ((4 : ℝ) ^ (-|γ * αinf|)))) ≠ ⊤ := by
-    exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top
+        ENNReal.ofReal ((4 : ℝ) ^ (-|γ * αinf|)))) ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top
       (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top)
   have h := ennreal_rpow_antitone_of_nonpos
     (fusion_rootedMass_disk_lower γ u μ α z αinf hz) hs
@@ -125,10 +123,7 @@ theorem fusion_rootedMass_inverse_moment_uniform {Ω : Type*} [MeasurableSpace �
     (ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
       ENNReal.ofReal ((4 : ℝ) ^ (-|γ * αinf|)))
   have hc0 : c ≠ 0 := by
-    dsimp [c]
-    apply mul_ne_zero
-    · exact (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'
-    · apply mul_ne_zero <;> exact (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
+    positivity
   have hct : c ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top
     (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top)
   have hBm : AEMeasurable (fun ω => M ω (Metric.ball (3 : ℂ) (1 / 8))) P :=

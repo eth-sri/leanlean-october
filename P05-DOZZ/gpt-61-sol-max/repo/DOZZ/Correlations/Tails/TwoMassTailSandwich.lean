@@ -10,7 +10,7 @@ public import Mathlib.Tactic.Linarith
 
 /-! Event bounds for the sum of two possibly dependent positive masses. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 
 namespace DOZZ.Proofs
@@ -27,9 +27,7 @@ theorem two_mass_tail_sandwich
   constructor
   · have hi : {ω | x < A ω} ∪ {ω | x < B ω} ⊆ {ω | x < A ω+B ω} := by
       intro ω hω
-      rcases hω with hω | hω
-      · exact lt_of_lt_of_le hω (le_add_of_nonneg_right (hB0 ω))
-      · exact lt_of_lt_of_le hω (le_add_of_nonneg_left (hA0 ω))
+      grind
     have hm := measureReal_mono hi (μ := P)
     have hu := measureReal_union_add_inter₀ (μ := P)
       (s := {ω | x < A ω}) (nullMeasurableSet_lt aemeasurable_const hB)

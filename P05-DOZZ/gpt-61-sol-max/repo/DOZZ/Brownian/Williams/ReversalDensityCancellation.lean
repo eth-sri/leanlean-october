@@ -15,7 +15,7 @@ Transposing each killed transition and telescoping the Doob harmonic factors giv
 exactly the conditioned entrance density with its final last-exit boundary factor.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
@@ -23,11 +23,13 @@ namespace DOZZ.Proofs
 private theorem harmonic_pos {ν x : ℝ} (hν : 0 < ν) (hx : 0 < x) :
     0 < conditionedH ν x := by
   rw [conditionedH, ite_eq_right hν.ne']
-  exact sub_pos.mpr (Real.exp_lt_one_iff.mpr (by nlinarith only [hν, hx]))
+  simp_all
 
+variable (ν : ℝ) (n : ℕ) (ts xs : Fin (n+1) → ℝ)
+
+include ν n ts xs in
 /-- Appending an observation multiplies an entrance FDD by the final transition. -/
-theorem conditionedPositiveFDDDensity_ofFn_snoc (ν : ℝ) (n : ℕ)
-    (ts xs : Fin (n+1) → ℝ) (t x : ℝ) :
+theorem conditionedPositiveFDDDensity_ofFn_snoc  (t x : ℝ) :
     conditionedPositiveFDDDensity ν ((List.ofFn ts) ++ [t]) ((List.ofFn xs) ++ [x]) =
       conditionedPositiveFDDDensity ν (List.ofFn ts) (List.ofFn xs) *
         conditionedPositiveTransitionDensity ν (t-ts (Fin.last n)) (xs (Fin.last n)) x := by
@@ -106,9 +108,10 @@ theorem brownianFirstHitFinitePDF_reverse_cancel
     have hC := (harmonic_pos hν hc).ne'
     field_simp
 
+include ν n ts xs in
 /-- An entrance FDD has no mass density at a nonpositive observation coordinate. -/
 theorem conditionedPositiveFDDDensity_ofFn_of_state_le_zero
-    (ν : ℝ) (n : ℕ) (ts xs : Fin (n+1) → ℝ) (i : Fin (n+1)) (hi : xs i ≤ 0) :
+     (i : Fin (n+1)) (hi : xs i ≤ 0) :
     conditionedPositiveFDDDensity ν (List.ofFn ts) (List.ofFn xs) = 0 := by
   induction n with
   | zero =>
@@ -139,7 +142,7 @@ theorem brownianFirstHitReversedPDF_eq_lastExitDensity
           (z.1 0) c * ν / conditionedH ν c) := by
   classical
   let ts : Fin (n+1) → ℝ≥0 := fun i => Real.toNNReal z.2-ss i.rev
-  have hz0 : 0 ≤ z.2 := (NNReal.coe_nonneg _).trans hz.le
+  have hz0  := (NNReal.coe_nonneg _).trans hz.le
   have hv : ss (Fin.last n) < Real.toNNReal z.2 := by
     apply NNReal.coe_lt_coe.mp
     rwa [Real.coe_toNNReal _ hz0]
@@ -153,24 +156,20 @@ theorem brownianFirstHitReversedPDF_eq_lastExitDensity
   have hd := brownianFirstHitElapsed_pos (n+1) ts hts0 hts
   have ht : (brownianFirstHitHorizon (n+1) (brownianFirstHitElapsed (n+1) ts) : ℝ) < z.2 := by
     rw [brownianFirstHitHorizon_elapsed n ts hts.monotone]
-    simp only [ts, Fin.rev_last, NNReal.coe_sub (hle 0), Real.coe_toNNReal _ hz0]
-    have hs : 0 < (ss 0 : ℝ) := hs0
-    linarith
+    continuity
   by_cases hpos : ∀ i, 0 < z.1 i
   · rw [brownianFirstHitReversedPDF,
       brownianFirstHitFinitePDF_reverse_cancel ν c hν hc n _ hd _ hpos _ ht,
       brownianFirstHitTimes_elapsed n ts hts.monotone]
     have htup : (fun i : Fin (n+1) => z.2-(ts i.rev : ℝ)) = fun i => (ss i : ℝ) := by
-      funext i
-      simp only [ts, Fin.rev_rev, NNReal.coe_sub (hle i), Real.coe_toNNReal _ hz0]
-      ring
+      continuity
     rw [htup]
     have hd0 : (brownianFirstHitElapsed (n+1) ts 0 : ℝ) = z.2-(ss (Fin.last n) : ℝ) := by
       simp only [brownianFirstHitElapsed, Fin.cons_zero, ts, Fin.rev_zero,
         NNReal.coe_sub (hle (Fin.last n)), Real.coe_toNNReal _ hz0]
     rw [hd0]
   · obtain ⟨i, hi⟩ := not_forall.mp hpos
-    have hi' : z.1 i ≤ 0 := not_lt.mp hi
+    have hi'  := not_lt.mp hi
     rw [brownianFirstHitReversedPDF,
       brownianFirstHitFinitePDF_of_state_le_zero ν c (n+1) _ z.1 z.2 i hi',
       conditionedPositiveFDDDensity_ofFn_of_state_le_zero ν n _ _ i.rev (by simpa using hi')]

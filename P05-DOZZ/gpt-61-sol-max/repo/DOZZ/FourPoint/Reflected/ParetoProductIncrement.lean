@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Reflected.ParetoIncrement
 public import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Tactic
 /-! Integrating the signed Pareto coefficient against independent outer and reflection masses. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter
 namespace DOZZ.Proofs
 
@@ -19,7 +19,7 @@ theorem reflected_pareto_increment_aestronglyMeasurable
     (hA : AEMeasurable A P) (hb : AEMeasurable b P) (hS : AEMeasurable S R) :
     AEStronglyMeasurable (fun v : Ω × Λ => ∫ w,
       ((A v.1+b v.1*S v.2*w)^(-p)-(A v.1)^(-p)) ∂paretoMeasure 1 a) (P.prod R) := by
-  let _ : IsProbabilityMeasure (paretoMeasure 1 a) := isProbabilityMeasure_paretoMeasure zero_lt_one ha
+  let _  := isProbabilityMeasure_paretoMeasure zero_lt_one ha
   have hAp : AEMeasurable (fun v : Ω × Λ => A v.1) (P.prod R) :=
     hA.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving
   have hbp : AEMeasurable (fun v : Ω × Λ => b v.1) (P.prod R) :=
@@ -56,14 +56,13 @@ theorem reflected_pareto_parameter_weights (p a A b : ℝ) (hA : 0 < A) (hb : 0 
   · rw [Real.rpow_sub_one hA.ne']
     ring
 
-/-- The full Pareto increment factors its leading term and keeps the explicit first-order
-error after integration over the actual independent outer and reflection carriers. -/
-theorem reflected_pareto_product_increment_error
+/-- The signed product estimate also applies to a possibly zero retained reflection mass. -/
+theorem reflected_pareto_product_increment_error_nonneg
     {Ω Λ : Type*} [MeasurableSpace Ω] [MeasurableSpace Λ]
     (P : Measure Ω) (R : Measure Λ) [IsProbabilityMeasure P] [IsProbabilityMeasure R]
     (p a : ℝ) (hp : 0 < p) (ha : 0 < a) (ha1 : a < 1)
     (A b : Ω → ℝ) (S : Λ → ℝ)
-    (hA : ∀ᵐ ω ∂P, 0 < A ω) (hb : ∀ᵐ ω ∂P, 0 < b ω) (hS : ∀ᵐ v ∂R, 0 < S v)
+    (hA : ∀ᵐ ω ∂P, 0 < A ω) (hb : ∀ᵐ ω ∂P, 0 < b ω) (hS : ∀ᵐ v ∂R, 0 ≤ S v)
     (hF0 : Integrable (fun ω => (A ω)^(-p)*(b ω/A ω)^a) P)
     (hF1 : Integrable (fun ω => (A ω)^(-p)*(b ω/A ω)) P)
     (hSa : Integrable (fun v => (S v)^a) R) (hS1 : Integrable S R)
@@ -90,10 +89,14 @@ theorem reflected_pareto_product_increment_error
     filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae hA,
       measurePreserving_fst.quasiMeasurePreserving.ae hb,
       measurePreserving_snd.quasiMeasurePreserving.ae hS] with v hAv hbv hSv
+    by_cases hzero : S v.2 = 0
+    · simp only [E,L,hzero,mul_zero,add_zero,sub_self,integral_zero,
+        Real.zero_rpow ha.ne',zero_mul,norm_zero,le_refl]
+    have hSpos : 0 < S v.2 := lt_of_le_of_ne hSv (Ne.symm hzero)
     have hi := reflected_pareto_increment_error p a (A v.1) (b v.1*S v.2)
-      hp ha ha1 hAv (mul_pos hbv hSv)
+      hp ha ha1 hAv (mul_pos hbv hSpos)
     have hr : (b v.1*S v.2)/A v.1 = (b v.1/A v.1)*S v.2 := by ring
-    rw [hr, Real.mul_rpow (div_pos hbv hAv).le hSv.le] at hi
+    rw [hr, Real.mul_rpow (div_pos hbv hAv).le hSv] at hi
     change |E v-L v| ≤ _
     change |E v-c*(A v.1)^(-p)*((b v.1/A v.1)^a*(S v.2)^a)| ≤
       C*(A v.1)^(-p)*((b v.1/A v.1)*S v.2) at hi
@@ -119,5 +122,8 @@ theorem reflected_pareto_product_increment_error
       integral_const_mul, integral_prod_mul F0 (fun v => (S v)^a), mul_assoc]
   rw [hlead, integral_const_mul, integral_prod_mul] at hi
   simpa only [Real.norm_eq_abs,E,F0,F1,c,C,mul_assoc] using hi
+
+
+
 
 end DOZZ.Proofs

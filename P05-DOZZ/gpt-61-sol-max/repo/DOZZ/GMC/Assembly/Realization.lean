@@ -12,6 +12,7 @@ public import DOZZ.GMC.Construction.GMCPathwiseSummableIncrements
 public import Mathlib.Analysis.SpecificLimits.Basic
 public import DOZZ.GMC.Assembly.CircleIntensity
 public import Mathlib.MeasureTheory.Constructions.Polish.StronglyMeasurable
+import Mathlib.Tactic
 
 /-! Chart test systems and almost sure limits of admissible cutoff integrals along a fast cutoff sequence, for every continuous test with compact support in the chart. -/
 
@@ -141,7 +142,6 @@ theorem allTest_eq_zero (T : ChartTestSystem U) (i : Index) (x : ℂ) (hx : x �
 
 theorem abs_allTest_le (T : ChartTestSystem U) (i : Index) (x : ℂ) :
     |T.allTest i x| ≤ ‖T.allTest i‖ := by
-  rw [← Real.norm_eq_abs]
   exact (T.allTest i).norm_coe_le_norm x
 
 theorem K_subset_tsupport_mass (T : ChartTestSystem U) (n : ℕ) :
@@ -184,15 +184,14 @@ theorem le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ) (e : ℕ → C
     (c : ℝ) (hc : 0 ≤ c) (i k j : ℕ) (hik : i ≤ k) (hkj : k ≤ j) :
     R (e i) k ≤ fastCutoff R e c j := by
   unfold fastCutoff
-  have hinner : |R (e i) k| ≤ ∑ i' ∈ Finset.range (k + 1), |R (e i') k| :=
+  have hinner  :=
     Finset.single_le_sum (f := fun i' => |R (e i') k|) (fun _ _ => abs_nonneg _)
       (Finset.mem_range.mpr (show i < k + 1 by omega))
-  have houter : ∑ i' ∈ Finset.range (k + 1), |R (e i') k| ≤
-      ∑ k' ∈ Finset.range (j + 1), ∑ i' ∈ Finset.range (k' + 1), |R (e i') k'| :=
+  have houter  :=
     Finset.single_le_sum (f := fun k' => ∑ i' ∈ Finset.range (k' + 1), |R (e i') k'|)
       (fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _)
       (Finset.mem_range.mpr (show k < j + 1 by omega))
-  have hj : (0 : ℝ) ≤ j := Nat.cast_nonneg j
+  
   linarith [le_abs_self (R (e i) k)]
 
 theorem const_le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
@@ -200,7 +199,7 @@ theorem const_le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
   unfold fastCutoff
   have h1 : (0 : ℝ) ≤ ∑ k ∈ Finset.range (j + 1), ∑ i ∈ Finset.range (k + 1), |R (e i) k| :=
     Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _
-  have hj : (0 : ℝ) ≤ j := Nat.cast_nonneg j
+  
   linarith
 
 theorem nat_le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
@@ -330,7 +329,7 @@ theorem ae_tendsto_allTest_fastCutoff
     exact ENNReal.sum_ne_top.mpr fun j _ => by
       by_cases hj : j < i
       · rw [Set.indicator_of_mem (show j ∈ {j : ℕ | j < i} from hj)]; exact hBfin
-      · rw [Set.indicator_of_notMem (show j ∉ {j : ℕ | j < i} from hj)]; exact ENNReal.zero_ne_top
+      grind
 
 /-- Samples along which every test converges on the fast sequence and every unit chart mass is
 finite. -/
@@ -435,10 +434,10 @@ theorem abs_admissibleCutoffIntegral_sub_le_mass
     |admissibleCutoffIntegral P U dens Y γ r g ω - admissibleCutoffIntegral P U dens Y γ r h ω| ≤
       δ * admissibleCutoffIntegral P U dens Y γ r (T.mass n) ω := by
   set S := T.chart (.inr n)
-  have hKS : T.K n ⊆ S := T.K_subset_tsupport_mass n
+  have hKS  := T.K_subset_tsupport_mass n
   have hgS : ∀ x ∉ S, g x = 0 := fun x hx => hgK x (fun h' => hx (hKS h'))
   have hhS : ∀ x ∉ S, h x = 0 := fun x hx => hhK x (fun h' => hx (hKS h'))
-  have hχm : Measurable (T.mass n : ℂ → ℝ) := (T.mass n).continuous.measurable
+  have hχm  := (T.mass n).continuous.measurable
   have hχS : ∀ x ∉ S, (T.mass n : ℂ → ℝ) x = 0 := T.allTest_eq_zero (.inr n)
   have hχL : ∀ x, |(T.mass n : ℂ → ℝ) x| ≤ 1 := fun x => by
     rw [abs_le]; constructor <;> linarith [T.mass_nonneg n x, T.mass_le_one n x]
@@ -459,13 +458,12 @@ theorem abs_admissibleCutoffIntegral_sub_le_mass
     · rw [T.mass_eq_one n x hx, mul_one]; exact hclose x
     · rw [hgK x hx, hhK x hx, sub_zero, abs_zero]
       exact mul_nonneg hδ (T.mass_nonneg n x)
-  have hδχm : Measurable (fun x => δ * (T.mass n : ℂ → ℝ) x) := hχm.const_mul δ
+  have hδχm  := hχm.const_mul δ
   have hδχL : ∀ x, |δ * (T.mass n : ℂ → ℝ) x| ≤ δ := fun x => by
     rw [abs_mul, abs_of_nonneg hδ]
-    calc δ * |(T.mass n : ℂ → ℝ) x| ≤ δ * 1 := mul_le_mul_of_nonneg_left (hχL x) hδ
-      _ = δ := mul_one δ
+    bound
   have hδχS : ∀ x ∉ S, δ * (T.mass n : ℂ → ℝ) x = 0 := fun x hx => by rw [hχS x hx, mul_zero]
-  have hnegm : Measurable (fun x => -δ * (T.mass n : ℂ → ℝ) x) := hχm.const_mul (-δ)
+  have hnegm  := hχm.const_mul (-δ)
   have hnegL : ∀ x, |-δ * (T.mass n : ℂ → ℝ) x| ≤ δ := fun x => by
     rw [neg_mul, abs_neg]; exact hδχL x
   have hnegS : ∀ x ∉ S, -δ * (T.mass n : ℂ → ℝ) x = 0 := fun x hx => by rw [hχS x hx, mul_zero]
@@ -473,11 +471,9 @@ theorem abs_admissibleCutoffIntegral_sub_le_mass
     hδχm hdiffL hδχL hdiffS hδχS (fun x => (le_abs_self _).trans (hband x))
   have hlow := admissibleCutoffIntegral_mono P U dens ε₀ Y hY S γ r ω hω δ (Lg + Lh) _ _ hnegm
     hdiffm hnegL hdiffL hnegS hdiffS (fun x => by
-      have := (neg_abs_le (g x - h x)).trans' (neg_le_neg (hband x))
-      linarith)
+      grind)
   rw [admissibleCutoffIntegral_smul] at hup hlow
-  rw [hsplit, add_sub_cancel_right, abs_le]
-  constructor <;> linarith
+  grind
 
 /-- On the good set, every continuous test with compact support in the chart converges along the
 fast cutoff sequence. -/
@@ -497,7 +493,7 @@ theorem exists_tendsto_fastCutoff_of_mem_goodSet
   have hgK : ∀ x ∉ T.K n, g x = 0 := fun x hx => image_eq_zero_of_notMem_tsupport
     (fun h => hx (hn h))
   obtain ⟨Lg, hLg⟩ := hg.bounded_above_of_compact_support hgc
-  have hgL : ∀ x, |g x| ≤ Lg := fun x => by rw [← Real.norm_eq_abs]; exact hLg x
+  have hgL : ∀ x, |g x| ≤ Lg := fun x => by exact hLg x
   -- convergence of the mass-control cutoff
   obtain ⟨i₀, hi₀⟩ := he (.inr n)
   obtain ⟨Lχ, hLχ⟩ := hω.1 i₀
@@ -506,8 +502,8 @@ theorem exists_tendsto_fastCutoff_of_mem_goodSet
       (T.mass n) ω) atTop (𝓝 Lχ) := hLχ
   obtain ⟨B, hB⟩ := (Metric.isBounded_range_of_tendsto _ hχconv).exists_norm_le
   have hBj (j : ℕ) : admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j) (T.mass n) ω ≤
-      B := (le_abs_self _).trans (by rw [← Real.norm_eq_abs]; exact hB _ ⟨j, rfl⟩)
-  have hB0 : 0 ≤ B := (norm_nonneg _).trans (hB _ ⟨0, rfl⟩)
+      B := (le_abs_self _).trans (by simp_all)
+  have hB0  := (norm_nonneg _).trans (hB _ ⟨0, rfl⟩)
   apply cauchySeq_tendsto_of_complete
   rw [Metric.cauchySeq_iff]
   intro ε hε
@@ -524,7 +520,7 @@ theorem exists_tendsto_fastCutoff_of_mem_goodSet
   refine ⟨N, fun a ha b hb => ?_⟩
   have hhK : ∀ x ∉ T.K n, (h : ℂ → ℝ) x = 0 := fun x hx => image_eq_zero_of_notMem_tsupport
     (fun h' => hx (T.test_support (n, m) h'))
-  have hclose : ∀ x, |g x - h x| ≤ δ := fun x => by
+  have hclose  := fun x => by
     have := hm x
     rw [Real.norm_eq_abs, abs_sub_comm] at this
     exact this.le
@@ -533,35 +529,12 @@ theorem exists_tendsto_fastCutoff_of_mem_goodSet
     refine (abs_admissibleCutoffIntegral_sub_le_mass P U dens ε₀ Y hY T γ _ ω n (hω.2 j (.inr n))
       g h hg.measurable h.continuous.measurable Lg ‖h‖ hgL (T.abs_allTest_le (.inl (n, m)))
       hgK hhK δ hδ.le hclose).trans ?_
-    exact mul_le_mul_of_nonneg_left (hBj j) hδ.le
+    simp_all
   have hδB : δ * B < ε / 4 := by
     rw [hδdef]
-    have h4 : 0 < 4 * (B + 1) := by positivity
-    rw [div_mul_eq_mul_div, div_lt_div_iff₀ h4 (by norm_num)]
-    nlinarith
+    field_simp <;> nlinarith
   have hvab := hN a ha b hb
   rw [Real.dist_eq] at hvab ⊢
-  have h1 := happrox a
-  have h2 := happrox b
-  calc |admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c a) g ω -
-        admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c b) g ω|
-      ≤ |admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c a) g ω -
-          admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c a) h ω| +
-        |admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c a) h ω -
-          admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c b) h ω| +
-        |admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c b) h ω -
-          admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c b) g ω| := by
-        calc _ = |(admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c a) g ω -
-                admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c a) h ω) +
-              (admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c a) h ω -
-                admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c b) h ω) +
-              (admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c b) h ω -
-                admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c b) g ω)| := by ring_nf
-          _ ≤ _ := abs_add_three _ _ _
-    _ < ε / 4 + ε / 2 + ε / 4 := by
-        rw [abs_sub_comm (admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c b) h ω)]
-        have := hvab
-        linarith
-    _ = ε := by ring
+  grind
 
 end DOZZ.Assembly

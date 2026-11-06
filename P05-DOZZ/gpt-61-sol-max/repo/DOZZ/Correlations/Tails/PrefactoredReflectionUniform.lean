@@ -9,7 +9,7 @@ public import DOZZ.Brownian.Reflection.Moments
 
 /-! Uniform moments of the actual independent pin times reflection mass. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -29,7 +29,7 @@ theorem prefactored_reflection_moment_uniform
         (∫⁻ q : Ω × Ω, (ENNReal.ofReal (f*‖z‖^(-4 : ℝ)*
           Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖))*twoSidedReflectionMass γ B Z q.1)^r
           ∂P.prod P) ≤ C := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   obtain ⟨L,hL,hPin⟩ := actual_prefactor_moment_uniform P X Xc hX hc K hK hz γ b R hb hR
   obtain ⟨D,hD,hRef⟩ := twoSidedReflectionMass_rpow_lintegral_le_compact P γ ν₁ ν₂ R
     hγ hν₁ hR hRbulk Z hZ
@@ -40,7 +40,7 @@ theorem prefactored_reflection_moment_uniform
   have hSm : Measurable S := by
     have hp : Measurable (fun ω => Xc ω z 0) :=
       (hc.1 0).comp (measurable_id.prodMk measurable_const)
-    exact (((hp.const_mul γ).sub_const _).exp.const_mul _).ennreal_ofReal
+    fun_prop (disch := positivity)
   have hJm := twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z
     (aemeasurable_of_twoSidedConditioned hB) hZ
   have hJbound := hRef ν hνlo hνhi r hr.le hrR B hB hInd

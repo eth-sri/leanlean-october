@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Analytic.RetainedRegions
 
 /-! Open-set bounds for the mass excluded by the retained cutoff. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -33,7 +33,7 @@ theorem retained_complement_cover {N : ℕ} (z : Fin N → ℂ) (r : ℝ) :
     linarith [Real.exp_pos (-r)]
   · apply Or.inr
     have he := Real.exp_pos r
-    exact lt_of_lt_of_le (by linarith : Real.exp r / 2 < Real.exp r) (le_of_not_gt hout)
+    grind
 
 /-- The excluded Coulomb mass is dominated by finitely many open insertion disks and one
 open exterior region. -/

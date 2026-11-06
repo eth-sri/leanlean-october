@@ -10,7 +10,7 @@ public import Mathlib.MeasureTheory.Integral.Lebesgue.Markov
 /-! The extended-real Markov step for the literal joint-tail event of
 `DOZZ.separatedSingularMass_joint_tail`. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 
@@ -33,7 +33,7 @@ theorem separatedTail_joint_tail_le_of_mixed_moment
       {ω | T ≤ W2 ω ^ a2 * W3 ω ^ a3} := fun ω hω =>
     mul_le_mul' (ENNReal.rpow_le_rpow hω.1.le ha2) (ENNReal.rpow_le_rpow hω.2.le ha3)
   have hmarkov := mul_meas_ge_le_lintegral₀ ((hW2.pow_const a2).mul (hW3.pow_const a3)) T
-  have hle : T * P {ω | ENNReal.ofReal u < W2 ω ∧ ENNReal.ofReal v < W3 ω} ≤ B :=
+  have hle  :=
     (mul_le_mul_right (measure_mono hsub) T).trans (hmarkov.trans hbound)
   have hreal := ENNReal.toReal_mono hB hle
   rw [ENNReal.toReal_mul] at hreal

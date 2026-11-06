@@ -43,15 +43,13 @@ theorem eq_at_one_of_segment {F G : ℂ → ℂ} {U : Set ℂ}
     (hF : MeromorphicOn F U) (hG : MeromorphicOn G U)
     (hstart : ∀ᶠ t : ℝ in 𝓝[>] 0, F t = G t)
     (hF1 : AnalyticAt ℂ F 1) (hG1 : AnalyticAt ℂ G 1) : F 1 = G 1 := by
-  have h0U : ((0 : ℝ) : ℂ) ∈ U := hseg 0 le_rfl zero_le_one
+  have h0U  := hseg 0 le_rfl zero_le_one
   have hWU : connectedComponentIn U ((0 : ℝ) : ℂ) ⊆ U := connectedComponentIn_subset U _
   have hsegW : (fun s : ℝ => (s : ℂ)) '' Icc 0 1 ⊆ connectedComponentIn U ((0 : ℝ) : ℂ) :=
     (isPreconnected_Icc.image _ Complex.continuous_ofReal.continuousOn).subset_connectedComponentIn
       ⟨0, ⟨le_rfl, zero_le_one⟩, rfl⟩ (image_subset_iff.mpr fun s hs => hseg s hs.1 hs.2)
   have h1W : (1 : ℂ) ∈ connectedComponentIn U ((0 : ℝ) : ℂ) := by
-    have h : ((1 : ℝ) : ℂ) ∈ connectedComponentIn U ((0 : ℝ) : ℂ) :=
-      hsegW ⟨1, ⟨zero_le_one, le_rfl⟩, rfl⟩
-    rwa [Complex.ofReal_one] at h
+    aesop
   have hfreq : ∃ᶠ z in 𝓝[≠] ((0 : ℝ) : ℂ), F z = G z := by
     have h1 : ∃ᶠ t : ℝ in 𝓝[≠] (0 : ℝ), F t = G t :=
       hstart.frequently.filter_mono (nhdsWithin_mono _ fun x (hx : (0 : ℝ) < x) => hx.ne')
@@ -131,28 +129,13 @@ theorem extendedSeiberg3_segment {γ a₁ a₂ a₃ b₁ b₂ b₃ t : ℝ} (hγ
   refine extendedSeiberg3_of_lt hγ (add_mul_sub_lt_of_lt a1 b1 ht0 ht1)
     (add_mul_sub_lt_of_lt a2 b2 ht0 ht1) (add_mul_sub_lt_of_lt a3 b3 ht0 ht1) ?_ ?_ ?_ ?_
   · have h := add_mul_sub_lt_of_lt (sub_neg.mpr a4) (sub_neg.mpr b4) ht0 ht1
-    have e : 2 * Q γ - (a₁ + t * (b₁ - a₁) + (a₂ + t * (b₂ - a₂)) + (a₃ + t * (b₃ - a₃))) -
-        4 / γ = 2 * Q γ - (a₁ + a₂ + a₃) - 4 / γ + t * (2 * Q γ - (b₁ + b₂ + b₃) - 4 / γ -
-          (2 * Q γ - (a₁ + a₂ + a₃) - 4 / γ)) := by ring
-    linarith
+    grind
   · have h := add_mul_sub_lt_of_lt (sub_neg.mpr a5) (sub_neg.mpr b5) ht0 ht1
-    have e : 2 * Q γ - (a₁ + t * (b₁ - a₁) + (a₂ + t * (b₂ - a₂)) + (a₃ + t * (b₃ - a₃))) -
-        2 * (Q γ - (a₁ + t * (b₁ - a₁))) = 2 * Q γ - (a₁ + a₂ + a₃) - 2 * (Q γ - a₁) +
-          t * (2 * Q γ - (b₁ + b₂ + b₃) - 2 * (Q γ - b₁) -
-            (2 * Q γ - (a₁ + a₂ + a₃) - 2 * (Q γ - a₁))) := by ring
-    linarith
+    grind
   · have h := add_mul_sub_lt_of_lt (sub_neg.mpr a6) (sub_neg.mpr b6) ht0 ht1
-    have e : 2 * Q γ - (a₁ + t * (b₁ - a₁) + (a₂ + t * (b₂ - a₂)) + (a₃ + t * (b₃ - a₃))) -
-        2 * (Q γ - (a₂ + t * (b₂ - a₂))) = 2 * Q γ - (a₁ + a₂ + a₃) - 2 * (Q γ - a₂) +
-          t * (2 * Q γ - (b₁ + b₂ + b₃) - 2 * (Q γ - b₂) -
-            (2 * Q γ - (a₁ + a₂ + a₃) - 2 * (Q γ - a₂))) := by ring
-    linarith
+    grind
   · have h := add_mul_sub_lt_of_lt (sub_neg.mpr a7) (sub_neg.mpr b7) ht0 ht1
-    have e : 2 * Q γ - (a₁ + t * (b₁ - a₁) + (a₂ + t * (b₂ - a₂)) + (a₃ + t * (b₃ - a₃))) -
-        2 * (Q γ - (a₃ + t * (b₃ - a₃))) = 2 * Q γ - (a₁ + a₂ + a₃) - 2 * (Q γ - a₃) +
-          t * (2 * Q γ - (b₁ + b₂ + b₃) - 2 * (Q γ - b₃) -
-            (2 * Q γ - (a₁ + a₂ + a₃) - 2 * (Q γ - a₃))) := by ring
-    linarith
+    grind
 
 /-! ### Analyticity of `Γ`, `l` and `1/l` -/
 
@@ -171,7 +154,7 @@ theorem analyticAt_Gamma_of_ne {s : ℂ} (hs : ∀ n : ℕ, s ≠ -(n : ℂ)) :
 theorem analyticAt_Gamma_ofReal_pos {r : ℝ} (hr : 0 < r) : AnalyticAt ℂ Complex.Gamma (r : ℂ) := by
   refine analyticAt_Gamma_of_ne fun n hn => ?_
   have h : r = -(n : ℝ) := by exact_mod_cast hn
-  have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+  
   linarith
 
 /-- `Γ` is analytic on `(-1, 0)`. -/
@@ -179,30 +162,24 @@ theorem analyticAt_Gamma_ofReal_neg_one_lt {r : ℝ} (h1 : -1 < r) (h2 : r < 0) 
     AnalyticAt ℂ Complex.Gamma (r : ℂ) := by
   refine analyticAt_Gamma_of_ne fun n hn => ?_
   have h : r = -(n : ℝ) := by exact_mod_cast hn
-  rcases Nat.lt_or_ge n 1 with hn1 | hn1
-  · interval_cases n
-    simp only [Nat.cast_zero, neg_zero] at h
-    linarith
-  · have : (1 : ℝ) ≤ n := by exact_mod_cast hn1
-    linarith
+  simp_all
 
+variable {f : ℂ → ℂ} {t : ℂ} (hf : AnalyticAt ℂ f t)
+
+include f t hf in
 /-- `l ∘ f` is analytic where `f` is and `Γ` is analytic at the value. -/
-theorem analyticAt_lFun_comp {f : ℂ → ℂ} {t : ℂ} (hf : AnalyticAt ℂ f t)
+theorem analyticAt_lFun_comp 
     (hΓ : AnalyticAt ℂ Complex.Gamma (f t)) : AnalyticAt ℂ (fun s => lFun (f s)) t := by
   have h1 : AnalyticAt ℂ (fun s => Complex.Gamma (f s)) t :=
     AnalyticAt.comp_of_eq (g := Complex.Gamma) (f := f) hΓ hf rfl
   have h2 : AnalyticAt ℂ (fun s => (Complex.Gamma (1 - f s))⁻¹) t :=
     AnalyticAt.comp_of_eq (g := fun u => (Complex.Gamma u)⁻¹) (f := fun s => 1 - f s)
       (Complex.differentiable_one_div_Gamma.analyticAt _) (analyticAt_const.sub hf) rfl
-  have hfun : (fun s => lFun (f s)) = fun s => Complex.Gamma (f s) * (Complex.Gamma (1 - f s))⁻¹ := by
-    funext s
-    unfold lFun
-    rw [div_eq_mul_inv]
-  rw [hfun]
   exact h1.mul h2
 
+include f t hf in
 /-- `1/(l ∘ f)` is analytic where `f` is and `Γ` is analytic at `1 - f`. -/
-theorem analyticAt_inv_lFun_comp {f : ℂ → ℂ} {t : ℂ} (hf : AnalyticAt ℂ f t)
+theorem analyticAt_inv_lFun_comp 
     (hΓ : AnalyticAt ℂ Complex.Gamma (1 - f t)) :
     AnalyticAt ℂ (fun s => (lFun (f s))⁻¹) t := by
   have h1 : AnalyticAt ℂ (fun s => Complex.Gamma (1 - f s)) t :=
@@ -219,14 +196,14 @@ theorem analyticAt_inv_lFun_comp {f : ℂ → ℂ} {t : ℂ} (hf : AnalyticAt �
   rw [hfun]
   exact h1.mul h2
 
+include f t hf in
 /-- `l ∘ f` is meromorphic where `f` is analytic. -/
-theorem meromorphicAt_lFun_comp' {f : ℂ → ℂ} {t : ℂ} (hf : AnalyticAt ℂ f t) :
+theorem meromorphicAt_lFun_comp'  :
     MeromorphicAt (fun s => lFun (f s)) t := by
   have h1 : MeromorphicAt (fun s => Complex.Gamma (f s)) t :=
     (Meromorphic.Gamma _).comp_analyticAt (g := f) hf
   have h2 : MeromorphicAt (fun s => Complex.Gamma (1 - f s)) t :=
     (Meromorphic.Gamma _).comp_analyticAt (g := fun s => 1 - f s) (analyticAt_const.sub hf)
-  unfold lFun
   exact h1.fun_div h2
 
 /-! ### The continued structure constant along lines, with the `Γ` condition in analytic form -/
@@ -238,7 +215,7 @@ theorem analyticAt_structureConstantH_comp' {f : (Fin 3 → ℂ) → ℂ} {V : S
     {ℓ : ℂ → Fin 3 → ℂ} (hℓ : Differentiable ℂ ℓ) {t : ℂ} (ht : ℓ t ∈ V)
     (hs : AnalyticAt ℂ Complex.Gamma (sExpC γ (ℓ t))) :
     AnalyticAt ℂ (fun t => structureConstantH f γ μ (ℓ t)) t := by
-  have hUo : IsOpen (ℓ ⁻¹' V) := hV.preimage hℓ.continuous
+  have hUo  := hV.preimage hℓ.continuous
   have hfℓ : DifferentiableOn ℂ (fun t => f (ℓ t)) (ℓ ⁻¹' V) :=
     hf.comp hℓ.differentiableOn fun _ hx => hx
   have hfa : AnalyticAt ℂ (fun t => f (ℓ t)) t := hfℓ.analyticAt (hUo.mem_nhds ht)
@@ -251,7 +228,7 @@ theorem analyticAt_structureConstantH_comp' {f : (Fin 3 → ℂ) → ℂ} {V : S
     have h2 : AnalyticAt ℂ (fun t => ℓ t 2) t :=
       ((differentiable_pi.mp hℓ) 2).analyticAt t
     exact (((h0.add h1).add h2).sub analyticAt_const).div_const
-  have hμs : (μ : ℂ) ∈ Complex.slitPlane := Complex.ofReal_mem_slitPlane.mpr hμ
+  have hμs  := Complex.ofReal_mem_slitPlane.mpr hμ
   have hpow : AnalyticAt ℂ (fun t => (μ : ℂ) ^ (-sExpC γ (ℓ t))) t :=
     analyticAt_const.cpow hsa.neg hμs
   have hΓ : AnalyticAt ℂ (fun t => Complex.Gamma (sExpC γ (ℓ t))) t :=
@@ -271,9 +248,7 @@ theorem eventually_analyticAt_affine {φ : ℂ → ℂ} {z₀ a : ℂ} (hφ : Me
       simp only [Complex.ofReal_zero, zero_mul, add_zero] at h0
       exact h0.mono_left nhdsWithin_le_nhds
     · refine eventually_nhdsWithin_of_forall fun u hu => ?_
-      simp only [mem_compl_iff, mem_singleton_iff, add_eq_left, mul_eq_zero,
-        Complex.ofReal_eq_zero, not_or]
-      exact ⟨hu, ha⟩
+      simp_all
   exact ht.eventually hφ.eventually_analyticAt
 
 /-! ### Openness along curves -/
@@ -290,7 +265,6 @@ theorem eventually_extendedSeiberg3 {γ : ℝ} {f₁ f₂ f₃ : ℝ → ℝ} {t
     ∀ᶠ t in 𝓝 t₀, ExtendedSeiberg3 γ (f₁ t) (f₂ t) (f₃ t) := by
   obtain ⟨k₁, k₂, k₃, k₄⟩ := h
   have hs : ContinuousAt (fun t => -sExp γ (f₁ t) (f₂ t) (f₃ t)) t₀ := by
-    unfold sExp
     exact ((((h₁.add h₂).add h₃).sub continuousAt_const).div_const _).neg
   have hm : ContinuousAt (fun t => min (4 / γ ^ 2) (min (2 / γ * (Q γ - f₁ t))
       (min (2 / γ * (Q γ - f₂ t)) (2 / γ * (Q γ - f₃ t))))) t₀ :=
@@ -310,18 +284,13 @@ theorem tendsto_affine_nhdsNE {z₀ a : ℂ} (ha : a ≠ 0) :
     simp only [Complex.ofReal_zero, zero_mul, add_zero] at h0
     exact h0.mono_left nhdsWithin_le_nhds
   · refine eventually_nhdsWithin_of_forall fun u hu => ?_
-    simp only [mem_compl_iff, mem_singleton_iff, add_eq_left, mul_eq_zero,
-      Complex.ofReal_eq_zero, not_or]
-    exact ⟨hu, ha⟩
+    simp_all
 
 /-- A punctured-germ property at a real point pulls back along `u ↦ x₀ + s u`, `s ≠ 0`. -/
 theorem eventually_ofReal_affine {p : ℂ → Prop} {x₀ s : ℝ} (hs : s ≠ 0)
     (h : ∀ᶠ z in 𝓝[≠] ((x₀ : ℝ) : ℂ), p z) : ∀ᶠ u : ℝ in 𝓝[≠] 0, p ((x₀ + u * s : ℝ) : ℂ) := by
   have ht := tendsto_affine_nhdsNE (z₀ := (x₀ : ℂ)) (a := (s : ℂ)) (Complex.ofReal_ne_zero.mpr hs)
-  filter_upwards [ht.eventually h] with u hu
-  have e : ((x₀ + u * s : ℝ) : ℂ) = (x₀ : ℂ) + (u : ℂ) * (s : ℂ) := by push_cast; ring
-  rw [e]
-  exact hu
+  aesop
 
 end DOZZ.Proofs
 

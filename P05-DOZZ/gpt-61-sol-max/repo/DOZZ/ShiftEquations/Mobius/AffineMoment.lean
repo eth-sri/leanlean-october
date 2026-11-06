@@ -11,6 +11,7 @@ public import DOZZ.GMC.SharpMoments.SeibergWeight
 import DOZZ.GMC.EquatorGFFChaosTransportLaw
 import DOZZ.GMC.Construction.GMCGeneralTiltLimit
 import DOZZ.ShiftEquations.Mobius.InversionMoment
+import Mathlib.Tactic
 
 /-!
 # Coulomb moments under affine maps
@@ -25,7 +26,7 @@ Cameron–Martin tilt by `γ s L` removes the random factor, and the determinist
 into the Coulomb mass at the roots `ψ z`, up to the constant `|a|^{γS/2} e^{γ²(1+s)κ}`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -37,7 +38,7 @@ theorem repinWeight_affine (a b : ℂ) (ha : a ≠ 0) (y : ℂ) :
     repinWeight a b (a * y + b) = Real.exp (4 * affineDefect a b y) := by
   have hy := normPlus_pos' y
   have hψ := normPlus_pos' (a * y + b)
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
+  
   unfold repinWeight affineDefect
   rw [affineInv_affine a b ha y,
     show 4 * (Real.log (normPlus (a * y + b)) - Real.log (normPlus y) - Real.log ‖a‖ / 2) =
@@ -58,12 +59,12 @@ theorem coulombWeight_affine {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin 
         coulombWeight γ α z 0 y := by
   have hy := normPlus_pos' y
   have hψ := normPlus_pos' (a * y + b)
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
+  have hapos  := norm_pos_iff.mpr ha
   set t : ℝ := normPlus (a * y + b) / (‖a‖ * normPlus y) with htdef
   have ht : 0 < t := by positivity
   have hfac : ∀ k, normPlus (a * y + b) / ‖a * y + b - (a * z k + b)‖ =
       t * (normPlus y / ‖y - z k‖) := fun k => by
-    have hk : 0 < ‖y - z k‖ := norm_pos_iff.mpr (sub_ne_zero.mpr (hyz k))
+    have hk  := norm_pos_iff.mpr (sub_ne_zero.mpr (hyz k))
     rw [show a * y + b - (a * z k + b) = a * (y - z k) by ring, norm_mul, htdef]
     field_simp
   have hlogt : Real.log t = affineDefect a b y - Real.log ‖a‖ / 2 := by

@@ -7,6 +7,7 @@ module
 public import DOZZ.FourPoint.ReflectedEnd.FusionReduction
 public import DOZZ.FourPoint.Dual.DiagonalReduction
 import Mathlib.Tactic
+public import DOZZ.FourPoint.GaussContracts
 
 /-! # Reflected formula from the fusion and classification conclusions
 
@@ -14,7 +15,7 @@ The coefficient is identified on the positive real ray using the existing Gauss 
 lemmas.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -46,29 +47,12 @@ theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [M
             Tendsto (fun z => r z / ‖z‖ ^ κ)
               (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0))
     (hclassification :
-    let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
-    let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃
-    let c := gaussParameterC γ (γ / 2) α₁
-    ∀ z ∈ gaussCutPlane,
-      fourPointT P M γ μ (-(γ / 2)) α₁ α₂ α₃ z =
-        structureConstant P M γ μ (α₁ - (γ / 2)) α₂ α₃ *
-          (‖gaussFMinus H a b c z‖ ^ 2 +
-            gaussCoefficientRatio a b c *
-              ‖gaussFPlus H a b c z‖ ^ 2)) :
+    Contract.gaussDiagonal P M γ μ α₁ α₂ α₃ H (γ / 2)) :
     ∃ B : ℝ → Ω → BrownianPath × BrownianPath,
       ∃ Z : Ω → Measure ℝ,
         IsSourceLateralProjection P X γ M Z ∧
         IsReflectionData P γ α₁ (B α₁) Z ∧
-        let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
-        let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃
-        let c := gaussParameterC γ (γ / 2) α₁
-        ∀ z ∈ gaussCutPlane,
-          fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z =
-            structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-                ‖gaussFMinus H a b c z‖ ^ 2 +
-              reflectionR P γ μ α₁ (B α₁) Z *
-                structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ *
-                  ‖gaussFPlus H a b c z‖ ^ 2 := by
+        Contract.gammaHalfReflected P M γ μ α₁ α₂ α₃ H (B α₁) Z := by
   obtain ⟨B, Z, hZ, hB, r, hr, hlim⟩ := hfusion
   obtain ⟨ξ, _, hξ₂, hslack, _⟩ := hnear
   let κ : ℝ := γ * (Q γ - α₁)
@@ -103,7 +87,7 @@ theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [M
     have hn : t ^ κ ≠ 0 := (Real.rpow_pos_of_pos ht _).ne'
     field_simp
     ring
-  dsimp only at hclassification ⊢
+  dsimp only [Contract.gaussDiagonal, Contract.gammaHalfReflected] at hclassification ⊢
   obtain ⟨hA, hAB, hBC, hC, _, _, _, _⟩ := DOZZ.gauss_physical_parameter_range
     γ (γ / 2) α₁ α₂ α₃ hγ hγ₂ (Or.inl rfl) hs hα₁ hα₂ hα₃
   have hc : 0 < gaussParameterC γ (γ / 2) α₁ := hA.trans (hAB.trans hBC)
@@ -120,11 +104,6 @@ theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [M
     hc hC (he ▸ hκ) (fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃)
     (by simpa only [neg_div] using hclassification) (by simpa only [he] using hray)
   refine ⟨B, Z, hZ, hB, ?_⟩
-  intro z hz
-  rw [show fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z = _ from
-    by simpa only [neg_div] using hclassification z hz]
-  change C₀ * (_ + _ * _) = C₀ * _ + D * _
-  rw [hid]
-  ring
+  grind
 
 end DOZZ.Proofs

@@ -9,10 +9,11 @@ public import DOZZ.FourPoint.Fusion.RootedMass
 public import DOZZ.FourPoint.Fusion.MovingRootFiniteness
 import DOZZ.GMC.Construction.RootedMeasureKernel
 import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
+import Mathlib.Tactic
 
 /-! # Domination away from the colliding roots -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -36,8 +37,7 @@ theorem fusion_rootOnlyKernel_exterior_tendsto (γ α₁ α₂ α₃ : ℝ) (y :
     intro z
     apply ENNReal.measurable_ofReal.comp
     apply Measurable.mul
-    · exact (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp
-        (f := fun x : ℂ => ((0 : ℂ), x)) (measurable_const.prodMk measurable_id)
+    · exact Measurable.comp (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃) (Measurable.prodMk measurable_const measurable_id)
     · exact (measurable_const.mul (measurable_pointRootPotential.comp
         (measurable_const.prodMk measurable_id))).exp
   have hzlim : Tendsto (fun z : ℂ => ‖z‖) (nhds 0) (nhds 0) := by
@@ -45,14 +45,14 @@ theorem fusion_rootOnlyKernel_exterior_tendsto (γ α₁ α₂ α₃ : ℝ) (y :
   have hulim : Tendsto (fun z : ℂ => ‖y * z‖) (nhds 0) (nhds 0) := by
     have hc : Continuous (fun z : ℂ => ‖y * z‖) := by fun_prop
     simpa only [mul_zero, norm_zero] using (hc.continuousAt (x := (0 : ℂ))).tendsto
-  have hev : ∀ᶠ z : ℂ in nhds 0, ‖z‖ < δ ∧ ‖y * z‖ < δ / 2 ∧ ‖y * z‖ < 1 :=
+  have hev  :=
     (hzlim.eventually_lt_const hδ).and
       ((hulim.eventually_lt_const (half_pos hδ)).and (hulim.eventually_lt_const zero_lt_one))
   apply tendsto_lintegral_filter_of_dominated_convergence (fun x => C * F 0 x)
   · exact Eventually.of_forall hm
   · filter_upwards [hev] with z hz
     filter_upwards [ae_restrict_mem (measurableSet_le measurable_const measurable_norm)] with x hx
-    have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
+    have hx0  := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
     have h := ENNReal.ofReal_le_ofReal (fusion_rootedKernel_exterior_bound γ α₁ α₂ α₃ 0 (y * z) x
       hx0 (by simp) (by linarith [hz.2.1]) hz.2.2.le)
     rw [ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)] at h
@@ -63,25 +63,15 @@ theorem fusion_rootOnlyKernel_exterior_tendsto (γ α₁ α₂ α₃ : ℝ) (y :
     exact (ENNReal.mul_lt_top ENNReal.ofReal_lt_top
       (lt_of_le_of_lt (setLIntegral_le_lintegral _ _) hfin)).ne
   · filter_upwards [ae_restrict_mem (measurableSet_le measurable_const measurable_norm)] with x hx
-    have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
+    have hx0  := norm_ne_zero_iff.mp (ne_of_gt (lt_of_lt_of_le hδ hx))
     have hg : ContinuousAt (fun z : ℂ => gffKernel (y * z) x) 0 := by
       unfold gffKernel normPlus
-      apply ContinuousAt.add
-      · apply ContinuousAt.add
-        · apply ContinuousAt.neg
-          apply ContinuousAt.log
-          · fun_prop
-          · simpa only [mul_zero, zero_sub, norm_neg] using norm_ne_zero_iff.mpr hx0
-        · apply ContinuousAt.log
-          · fun_prop
-          · simp
-      · exact continuousAt_const
+      fun_prop (disch := aesop)
     have hc : Tendsto (fun z : ℂ => gammaHalfKernel γ α₁ α₂ α₃ 0 x *
         Real.exp (γ ^ 2 * gffKernel (y * z) x)) (nhds 0)
         (nhds (gammaHalfKernel γ α₁ α₂ α₃ 0 x * Real.exp (γ ^ 2 * gffKernel (y * 0) x))) :=
       tendsto_const_nhds.mul (Real.continuous_exp.continuousAt.tendsto.comp
-        (by simpa only [Pi.mul_apply] using
-          (show ContinuousAt (fun z : ℂ => γ ^ 2 * gffKernel (y * z) x) 0 from
+        (by exact (show ContinuousAt (fun z : ℂ => γ ^ 2 * gffKernel (y * z) x) 0 from
             continuousAt_const.mul hg).tendsto))
     exact ENNReal.continuous_ofReal.continuousAt.tendsto.comp
       (by simpa only [mul_zero] using hc)

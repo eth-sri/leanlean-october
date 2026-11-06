@@ -8,6 +8,7 @@ public import DOZZ.ShiftEquations.PoleSubtracted.CutoffCauchy
 public import DOZZ.Statements.GMC.WeightedGmcBallMass
 import DOZZ.GMC.SharpMoments.WeightedLocalRange
 import DOZZ.GMC.SharpMoments.WeightedLocalSufficiency
+import Mathlib.Tactic
 
 /-!
 # The real limit of the cutoff family is the pole-subtracted observable
@@ -19,7 +20,7 @@ weighted mass of the unit disk plus `Z_ℂ(0)`), so the integrands converge mono
 `E[Z_ℂ(x)^{1-x/γ} - R₁^{1-x/γ}]` and proves its integrability ([KRV, §10.2]).
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -38,13 +39,13 @@ theorem integrable_integral_eq_of_monotone {Ω : Type*} [MeasurableSpace Ω] {P 
     Integrable f P ∧ ∫ ω, f ω ∂P = e := by
   set ψ : ℕ → Ω → ℝ := fun n ω => φ n ω - φ 0 ω with hψ
   have hψint : ∀ n, Integrable (ψ n) P := fun n => (hint n).sub (hint 0)
-  have hψnn : ∀ n, 0 ≤ᵐ[P] ψ n := fun n => by
+  have hψnn  := fun n => by
     filter_upwards [hmono] with ω hω
     exact sub_nonneg.2 (hω (Nat.zero_le n))
   have hglim : ∀ᵐ ω ∂P, Tendsto (fun n => ψ n ω) atTop (𝓝 (f ω - φ 0 ω)) := by
     filter_upwards [hlim] with ω hω
     exact hω.sub_const _
-  have hgmeas : AEStronglyMeasurable (fun ω => f ω - φ 0 ω) P :=
+  have hgmeas  :=
     aestronglyMeasurable_of_tendsto_ae atTop (fun n => (hψint n).aestronglyMeasurable) hglim
   have hgnn : 0 ≤ᵐ[P] fun ω => f ω - φ 0 ω := by
     filter_upwards [hglim, hmono] with ω hω hm
@@ -92,7 +93,7 @@ theorem integrable_integral_eq_of_antitone {Ω : Type*} [MeasurableSpace Ω] {P 
   have h := integrable_integral_eq_of_monotone (φ := fun n ω => -φ n ω) (f := fun ω => -f ω)
     (e := -e) (fun n => (hint n).neg)
     (by filter_upwards [hanti] with ω hω; exact fun i j hij => neg_le_neg (hω hij))
-    (by filter_upwards [hlim] with ω hω; exact hω.neg)
+    (by simp_all)
     (by simpa only [integral_neg] using hE.neg)
   refine ⟨by simpa using h.1.neg, ?_⟩
   have := h.2
@@ -119,10 +120,11 @@ theorem totalMass_le_weighted_add {γ η : ℝ} (a : ℝ) (hγ : 0 < γ) (hη : 
     · have hy1 : 1 ≤ ‖y‖ := by simpa using hy
       rw [zeroTilt_of_one_le_norm γ a hy1, zeroTilt_zero]
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- The total mass at a charge `a < Q` is almost surely finite. -/
-theorem ae_totalMass_lt_top_of_lt {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
+theorem ae_totalMass_lt_top_of_lt  {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
     {a : ℝ} (ha : a < Q γ) :
     ∀ᵐ ω ∂P, poleTotalMass γ a (2 / γ + η) (2 / γ - η) (M ω) < ⊤ := by
   have hη := (window_eta_pos hW).le
@@ -130,10 +132,7 @@ theorem ae_totalMass_lt_top_of_lt {Ω : Type*} [MeasurableSpace Ω] (P : Measure
   have hη2 : η < γ / 2 := by linarith [window_eta_lt_quarter hW]
   set p : ℝ := min (4 / γ ^ 2) (2 / γ * (Q γ - a)) / 2 with hp
   have hp0 : 0 < p := by
-    rw [hp]
-    have : 0 < 2 / γ * (Q γ - a) := mul_pos (by positivity) (by linarith)
-    have : 0 < min (4 / γ ^ 2) (2 / γ * (Q γ - a)) := lt_min (by positivity) this
-    linarith
+    simp_all
   have hplt : p < min (4 / γ ^ 2) (2 / γ * (Q γ - a)) := by
     rw [hp]
     linarith
@@ -143,21 +142,17 @@ theorem ae_totalMass_lt_top_of_lt {Ω : Type*} [MeasurableSpace Ω] (P : Measure
     (gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM a 0 1).pow_const _
   have hwfin : ∀ᵐ ω ∂P, weightedGmcBallMass γ (M ω) a 0 1 < ⊤ := by
     have hint : ∫⁻ ω, weightedGmcBallMass γ (M ω) a 0 1 ^ p ∂P ≠ ⊤ := by
-      simpa only [weightedGmcBallMoment, ENNReal.rpow_eq_pow] using hmom.ne
+      finiteness
     filter_upwards [ae_lt_top' hmeas hint] with ω hω
-    rw [lt_top_iff_ne_top]
-    intro htop
-    rw [htop, ENNReal.top_rpow_of_pos hp0] at hω
-    exact lt_irrefl _ hω
+    exact (ENNReal.rpow_lt_top_iff_of_pos hp0).mp hω
   filter_upwards [hwfin, ae_totalMass_lt_top P X hX γ hγ hγ2 M hM hη hη2] with ω h1 h2
   exact (totalMass_le_weighted_add a hγ hη hηγ (M ω)).trans_lt (ENNReal.add_lt_top.2 ⟨h1, h2⟩)
 
 /-! ### Identification of the real limit -/
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- **The real limit of the cutoff family is the pole-subtracted observable.** -/
-theorem cutoff_real_limit_eq_observable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ)
+theorem cutoff_real_limit_eq_observable  (Xc : Ω → ℂ → ℝ → ℝ)
     (hXc : IsCircleAverage P X Xc) {η δ : ℝ} (hW : TwoPoleWindow γ η δ) {x : ℝ}
     (hx₁ : -2 * η - δ < x) (hx₂ : x < 1 / γ) {e : ℂ}
     (hlim : Tendsto (fun n : ℕ => poleSubtractedCutoff P Xc M γ η n (x : ℂ)) atTop (𝓝 e)) :
@@ -171,18 +166,14 @@ theorem cutoff_real_limit_eq_observable {Ω : Type*} [MeasurableSpace Ω] (P : M
   simp_rw [hF] at hlim
   have hE : Tendsto E atTop (𝓝 e.re) := by
     have h := (Complex.continuous_re.tendsto e).comp hlim
-    simpa [Function.comp_def] using h
+    exact h
   have him : e.im = 0 := by
     have h := (Complex.continuous_im.tendsto e).comp hlim
-    simp only [Function.comp_def, Complex.ofReal_im] at h
-    exact (tendsto_nhds_unique tendsto_const_nhds h).symm
+    continuity
   have hxQ : x < Q γ := by
     have : 1 / γ < Q γ := by
       rw [Q]
-      have : 1 / γ < 2 / γ := by
-        rw [div_lt_div_iff_of_pos_right hγ]
-        norm_num
-      linarith [half_pos hγ]
+      field_simp <;> nlinarith
     linarith
   have hgood := ae_cutoffGood P X hX γ hγ hγ2 M hM hW
   have hfin := ae_totalMass_lt_top_of_lt P X hX γ hγ hγ2 M hM hW hxQ
@@ -193,15 +184,13 @@ theorem cutoff_real_limit_eq_observable {Ω : Type*} [MeasurableSpace Ω] (P : M
     filter_upwards [hgood, hfin] with ω hω hT
     have h1 := tendsto_cutoffTiltedMass γ η x (M ω) hω.2.2
     have h2 := (ENNReal.tendsto_toReal hT.ne).comp h1
-    have hLT : poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ≤
-        poleTotalMass γ x (2 / γ + η) (2 / γ - η) (M ω) :=
+    have hLT  :=
       (localMass_le_cutoffTiltedMass γ η x 0 (M ω)).trans
         (cutoffTiltedMass_le_totalMass γ η x 0 (M ω))
-    have hpos : 0 < (poleTotalMass γ x (2 / γ + η) (2 / γ - η) (M ω)).toReal :=
+    have hpos  :=
       ENNReal.toReal_pos (hω.1.trans_le hLT).ne' hT.ne
     exact (h2.rpow_const (Or.inl hpos.ne')).sub_const _
-  have hint : ∀ n, Integrable (fun ω => (cutoffTiltedMass γ η x n (M ω)).toReal ^ w -
-      (poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω)).toReal ^ w) P :=
+  have hint  :=
     fun n => integrable_tiltedCutoff P X hX γ hγ hγ2 M hM Xc hXc hW n hx₁
   have hmonoT : ∀ᵐ ω ∂P, ∀ i j : ℕ, i ≤ j →
       0 < (cutoffTiltedMass γ η x i (M ω)).toReal ∧
@@ -221,9 +210,7 @@ theorem cutoff_real_limit_eq_observable {Ω : Type*} [MeasurableSpace Ω] (P : M
       filter_upwards [hmonoT] with ω hω i j hij
       exact sub_le_sub_right (Real.rpow_le_rpow_of_nonpos (hω i j hij).1 (hω i j hij).2
         hw0.le) _
-  apply Complex.ext
-  · rw [Complex.ofReal_re, poleSubtractedObservable, ← hval]
-  · rw [Complex.ofReal_im, him]
+  exact Complex.ext (id (Eq.symm hval)) him
 
 end DOZZ.Proofs
 

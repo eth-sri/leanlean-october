@@ -9,7 +9,7 @@ public import DOZZ.GMC.Construction.RootedCircleMassLimit
 
 /-! Combining coincident insertions at zero, with atoms of the GMC at both roots ruled out. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology Distributions
@@ -34,10 +34,10 @@ theorem coulombMass_at_zero_eq_rho (γ χ α₁ α₂ α₃ : ℝ) (M : Measure 
   apply lintegral_congr_ae
   filter_upwards [hn0, hn1] with x hx0 hx1
   have hn : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have ha : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have hb : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
-  have hbase : 0 < normPlus x / ‖x‖ := div_pos hn ha
-  have hbase1 : 0 < normPlus x / ‖x - 1‖ := div_pos hn hb
+  have ha  := norm_pos_iff.mpr hx0
+  have hb  := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have hbase  := div_pos hn ha
+  have hbase1  := div_pos hn hb
   simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
     Fin.prod_univ_zero, mul_one, sub_zero]
   change ((ENNReal.ofReal (normPlus x / ‖x‖)) ^ (γ * -χ) *
@@ -69,8 +69,7 @@ theorem fourPointT_zero_eq_structureConstant {Ω : Type*} [MeasurableSpace Ω]
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
     fourPointT P M γ μ (-χ) α₁ α₂ α₃ 0 =
       structureConstant P M γ μ (α₁ - χ) α₂ α₃ := by
-  have _hDomain : 0 < μ ∧ α₁ - χ < Q γ ∧ α₂ < Q γ ∧ α₃ < Q γ ∧
-      2 * Q γ < α₁ + α₂ + α₃ - χ := ⟨hμ, hα₁, hα₂, hα₃, hs⟩
+
   have hsExp : fourPointSExp γ (-χ) α₁ α₂ α₃ = sExp γ (α₁ - χ) α₂ α₃ := by
     unfold fourPointSExp sExp
     congr 1
@@ -86,6 +85,6 @@ theorem fourPointT_zero_eq_structureConstant {Ω : Type*} [MeasurableSpace Ω]
   congr 2
   apply lintegral_congr_ae
   filter_upwards [hmass] with ω hω
-  exact congrArg (fun m : ℝ≥0∞ => ENNReal.rpow m (-sExp γ (α₁ - χ) α₂ α₃)) hω
+  simp_all
 
 end DOZZ.Proofs

@@ -14,7 +14,7 @@ The G4 map is bounded in local `L²` by the square-integrable covariance kernel.
 continuity estimate used when comparing Fourier approximations to a test function.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Set Metric
 open scoped InnerProductSpace Topology
@@ -33,8 +33,7 @@ theorem norm_sq_equatorKernelLimitMap_le_localL2 (R : ℝ) (f : TestFn)
     calc
       ‖equatorKernelLimitMap f‖ ^ 2 =
           ⟪equatorKernelLimitMap f, equatorKernelLimitMap f⟫_ℝ := by
-            symm
-            exact inner_self_eq_norm_sq_to_K _
+            simp_all
       _ = gffCov f f := inner_equatorKernelLimitMap_eq_gffCov f f
   rw [hnorm]
   exact (le_abs_self _).trans (abs_gffCov_self_le_localL2 R f hsupp)

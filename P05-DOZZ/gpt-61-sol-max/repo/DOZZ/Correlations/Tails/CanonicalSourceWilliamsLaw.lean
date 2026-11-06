@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Tails.WilliamsSourceInputLaw
 
 /-! The translated canonical mass expressed using the original reflection witness. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 
@@ -29,7 +29,7 @@ theorem translated_canonical_source_williams_law
         (fun q => ENNReal.ofReal (Real.exp (γ*q.1))*
           twoSidedReflectionCutMass γ q.1 B Z q.2) := by
   let Qν := P.map (fun ω => (B ω).1)
-  have hQν : IsNegativeConditionedBrownianLaw (Q γ-α) Qν := hData.1.1.2
+  have hQν  := hData.1.1.2
   have hl := translated_canonical_williams_mass_law P X Xc hX hc hm hcont
     z γ α hγ hγ2 hα N hN Qν hQν
   dsimp only at hl

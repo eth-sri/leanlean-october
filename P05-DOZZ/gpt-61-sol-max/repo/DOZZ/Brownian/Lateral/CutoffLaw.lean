@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.Brownian.Lateral.CircleRegularization
+import Mathlib.Tactic
 
 /-!
 # Transporting the local lateral cutoff law
@@ -48,7 +49,7 @@ theorem centeredJointlyGaussian_map_of_ae_eq
   let _ := hZ.1
   refine ⟨(Measure.isProbabilityMeasure_map_iff hπ.aemeasurable).2 inferInstance, fun i => (hW i).aemeasurable, ?_⟩
   intro a
-  have hm : Measurable (fun ξ => ∑ i, a i * W ξ i) :=
+  have hm  :=
     Finset.measurable_sum Finset.univ (fun i _ => (hW i).const_mul (a i))
   have hsum : (fun ω => ∑ i, a i * Z ω i) =ᵐ[P] fun ω => ∑ i, a i * W (π ω) i := by
     filter_upwards [ae_all_iff.2 heq] with ω hω
@@ -83,13 +84,13 @@ theorem isAdmissibleLogRegularization_smaller_cutoff
     exact hY.gaussian n q (fun i => ⟨(hq i).1, (hq i).2.trans hε⟩)
   · intro K hK hKU
     obtain ⟨C, hC, hb⟩ := hY.covarianceBound K hK hKU
-    exact ⟨C, hC, fun ε δ hεp hεb hδp hδb => hb ε δ hεp (hεb.trans hε) hδp (hδb.trans hε)⟩
+    grind
   · intro K hK hKU
     obtain ⟨C, hC, hb⟩ := hY.coarseVarianceBound K hK hKU
-    exact ⟨C, hC, fun k hk => hb k (hk.trans hε)⟩
+    grind
   · intro K hK hKU
     obtain ⟨C, hC, hb⟩ := hY.coarseMixedBound K hK hKU
-    exact ⟨C, hC, fun k hk => hb k (hk.trans hε)⟩
+    grind
   · obtain ⟨H, hH, hb⟩ := hY.offDiagonalLimit
     refine ⟨H, hH, fun K hK hKU s hs η hη => ?_⟩
     obtain ⟨δ, hδ, hδb⟩ := hb K hK hKU s hs η hη
@@ -100,10 +101,12 @@ theorem isAdmissibleLogRegularization_smaller_cutoff
     obtain ⟨δ, hδ, hδb⟩ := hb K hK hKU k (hk.trans hε) η hη
     exact ⟨δ, hδ, fun ε hεp hεb => hδb ε hεp (hεb.trans (min_le_min_left δ hε))⟩
 
+variable {Ω E : Type*} [_inst1 : MeasurableSpace Ω] [_inst2 : MeasurableSpace E] (P : Measure Ω) (π : Ω → E) (hπ : Measurable π)
+
+include Ω E _inst1 _inst2 P π hπ in
 /-- Local mixed second moments are unchanged by reading the field through its image law. -/
 theorem gaussianCovariance_map_of_ae_eq
-    {Ω E : Type*} [MeasurableSpace Ω] [MeasurableSpace E]
-    (P : Measure Ω) (π : Ω → E) (hπ : Measurable π)
+    
     (Y Z : Ω → ℝ) (F G : E → ℝ) (hF : Measurable F) (hG : Measurable G)
     (hY : Y =ᵐ[P] F ∘ π) (hZ : Z =ᵐ[P] G ∘ π) :
     gaussianCovariance (P.map π) F G = gaussianCovariance P Y Z := by
@@ -115,11 +118,11 @@ theorem gaussianCovariance_map_of_ae_eq
   rw [hy, hz]
   rfl
 
+include Ω E _inst1 _inst2 P π hπ in
 /-- Admissibility passes to an image law when the image field agrees with the original
 field on the local chart and is extended by zero off that chart. -/
 theorem isAdmissibleLogRegularization_map_of_chart_ae_eq
-    {Ω E : Type*} [MeasurableSpace Ω] [MeasurableSpace E]
-    (P : Measure Ω) (π : Ω → E) (hπ : Measurable π)
+    
     (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
     (Y : Ω → ℝ → ℂ → ℝ) (F : E → ℝ → ℂ → ℝ)
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
@@ -156,15 +159,11 @@ theorem isAdmissibleLogRegularization_map_of_chart_ae_eq
       (fun ξ i => F ξ (q i).1 (q i).2) (fun i => hm (q i).1 (q i).2)
     intro i
     by_cases hi : (q i).2 ∈ U
-    · simpa only [b, hi, ite_true, one_mul] using heq (q i).1 (hq i).1 (hq i).2 (q i).2 hi
-    · exact ae_of_all P fun ω => by
-        simp only [b, hi, ite_false, zero_mul, hzero _ _ _ hi]
+    · continuity
+    continuity
   · intro K hK hKU
     obtain ⟨C, hC, hb⟩ := hY.covarianceBound K hK hKU
-    refine ⟨C, hC, ?_⟩
-    intro ε δ hεp hεb hδp hδb x hx y hy
-    rw [hcov ε δ hεp hεb hδp hδb x y (hKU hx) (hKU hy)]
-    exact hb ε δ hεp hεb hδp hδb x hx y hy
+    grind
   · intro K hK hKU
     obtain ⟨C, hC, hb⟩ := hY.coarseVarianceBound K hK hKU
     refine ⟨C, hC, ?_⟩
@@ -173,10 +172,7 @@ theorem isAdmissibleLogRegularization_map_of_chart_ae_eq
     exact hb k hk x hx
   · intro K hK hKU
     obtain ⟨C, hC, hb⟩ := hY.coarseMixedBound K hK hKU
-    refine ⟨C, hC, ?_⟩
-    intro k hk ε hεp hεb x hx
-    rw [hcov _ ε (Real.exp_pos _) hk hεp (hεb.trans hk) x x (hKU hx) (hKU hx)]
-    exact hb k hk ε hεp hεb x hx
+    grind
   · obtain ⟨H, hH, hb⟩ := hY.offDiagonalLimit
     refine ⟨H, hH, fun K hK hKU s hs η hη => ?_⟩
     obtain ⟨δ, hδ, hδb⟩ := hb K hK hKU s hs η hη
@@ -184,7 +180,7 @@ theorem isAdmissibleLogRegularization_map_of_chart_ae_eq
     intro ε ε' hεp hεb hε'p hε'b x hx y hy hxy
     rw [hcov ε ε' hεp (hεb.trans (min_le_right _ _)) hε'p
       (hε'b.trans (min_le_right _ _)) x y (hKU hx) (hKU hy)]
-    exact hδb ε ε' hεp hεb hε'p hε'b x hx y hy hxy
+    bound
   · obtain ⟨C, hb⟩ := hY.fixedCoarseLimit
     refine ⟨C, fun K hK hKU k hk η hη => ?_⟩
     obtain ⟨δ, hδ, hδb⟩ := hb K hK hKU k hk η hη
@@ -318,16 +314,15 @@ theorem tendstoInMeasure_map_comp
     TendstoInMeasure P (fun i ω => f i (π ω)) l (fun ω => g (π ω)) := by
   intro ε hε
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds (hfg ε hε)
-  · intro i
-    exact zero_le
+  · exact zero_le
   · intro i
     exact Measure.le_map_apply hπ.aemeasurable {ξ | ε ≤ edist (f i ξ) (g ξ)}
 
+include Ω E _inst1 _inst2 P π hπ in
 /-- A local admissible chaos on an image probability space pulls back to an admissible
 chaos for the original field when all sufficiently fine chart cutoffs agree on one event. -/
 theorem isAdmissibleGMCVersion_map_pullback
-    {Ω E : Type*} [MeasurableSpace Ω] [MeasurableSpace E]
-    (P : Measure Ω) (π : Ω → E) (hπ : Measurable π)
+    
     (U : Set ℂ) (hU : IsOpen U) (dens : ℂ → ℝ) (ε₀ : ℝ) (hε₀ : 0 < ε₀)
     (Y : Ω → ℝ → ℂ → ℝ) (F : E → ℝ → ℂ → ℝ)
     (hF : ∀ ε, Measurable (fun q : E × ℂ => F q.1 ε q.2))
@@ -380,12 +375,11 @@ theorem tendstoInMeasure_prod_of_sections
   let B : ℝ → Set (A × E) := fun r => {p | ε ≤ edist (f r p.1 p.2) (g p.1 p.2)}
   have hB (r : ℝ) : MeasurableSet (B r) :=
     measurableSet_le measurable_const ((hf r).edist hg)
-  let H : ℝ → A → ℝ≥0∞ := fun r a => ν (Prod.mk a ⁻¹' B r)
+  let H  := fun r a => ν (Prod.mk a ⁻¹' B r)
   have hHm (r : ℝ) : Measurable (H r) := measurable_measure_prodMk_left (hB r)
-  have hlim : ∀ᵐ a ∂μ, Tendsto (fun r => H r a) atTop (𝓝 0) :=
+  have hlim  :=
     ae_of_all μ (fun a => hconv a ε hε)
-  have hbound : ∀ᶠ r : ℝ in atTop, ∀ᵐ a ∂μ, H r a ≤ 1 := by
-    exact Eventually.of_forall (fun r => ae_of_all μ (fun a =>
+  have hbound : ∀ᶠ r : ℝ in atTop, ∀ᵐ a ∂μ, H r a ≤ 1 := Eventually.of_forall (fun r => ae_of_all μ (fun a =>
       (measure_mono (Set.subset_univ _)).trans_eq (measure_univ : ν univ = 1)))
   have ht := tendsto_lintegral_filter_of_dominated_convergence (fun _ : A => (1 : ℝ≥0∞))
     (Eventually.of_forall hHm) hbound (by simp) hlim
@@ -393,8 +387,7 @@ theorem tendstoInMeasure_prod_of_sections
     funext r
     exact Measure.prod_apply (hB r)
   change Tendsto (fun r => (μ.prod ν) (B r)) atTop (𝓝 0)
-  rw [heq]
-  simpa only [lintegral_zero] using ht
+  simp_all
 
 /-- Independent random parameters can be inserted into the preceding product-space
 limit. The whole independent lateral carrier is retained in this statement. -/

@@ -10,7 +10,7 @@ import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 
 /-! Factorial bounds for the local holomorphic Picard summands. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Set
 open scoped Interval
@@ -38,10 +38,10 @@ theorem holomorphicPicardIterates_norm_le (c : ℂ) (r M : ℝ)
       intro z hz
       have hd : ‖z - c‖ < r := by simpa [dist_eq_norm] using (Metric.mem_ball.mp hz)
       have hc : c ∈ Metric.ball c r := Metric.mem_ball_self (lt_of_le_of_lt (norm_nonneg _) hd)
-      have hseg : MapsTo (AffineMap.lineMap c z) (Icc (0 : ℝ) 1) (Metric.ball c r) :=
+      have hseg  :=
         (convex_ball c r).mapsTo_lineMap hc hz
       let integrand : ℂ → E := fun w => H w ((holomorphicPicardIterates c r H hH y n).1 w)
-      have hintegrand : DifferentiableOn ℂ integrand (Metric.ball c r) :=
+      have hintegrand  :=
         hH.clm_apply (holomorphicPicardIterates c r H hH y n).2
       have hterm : (holomorphicPicardIterates c r H hH y (n + 1)).1 z =
           ∫ t in (0 : ℝ)..1,
@@ -55,21 +55,21 @@ theorem holomorphicPicardIterates_norm_le (c : ℂ) (r M : ℝ)
           ‖(z - c) • integrand (AffineMap.lineMap c z t)‖ ≤ C * t ^ n := by
         intro t ht
         let w : ℂ := AffineMap.lineMap c z t
-        have hw : w ∈ Metric.ball c r := hseg ht
+        have hw  := hseg ht
         have hdelta : w - c = t • (z - c) := by
           dsimp [w]
           rw [AffineMap.lineMap_apply_module']
           abel
         have hnormDelta : ‖w - c‖ = t * d := by
-          rw [hdelta, norm_smul, Real.norm_eq_abs, abs_of_nonneg ht.1]
+          continuity
         have hprev := ih w hw
         have hprev' : ‖(holomorphicPicardIterates c r H hH y n).1 w‖ ≤
             ‖y‖ * (M * (t * d)) ^ n / (n.factorial : ℝ) := by
           simpa [hnormDelta] using hprev
         have hOp := (H w).le_opNorm ((holomorphicPicardIterates c r H hH y n).1 w)
-        have hHnorm : ‖H w‖ ≤ M := hHbound w hw
+        have hHnorm  := hHbound w hw
         have hpow : (M * (t * d)) ^ n = t ^ n * (M * d) ^ n := by
-          rw [show M * (t * d) = t * (M * d) by ring, mul_pow]
+          ring
         dsimp [integrand, C, d]
         rw [norm_smul]
         calc
@@ -84,8 +84,7 @@ theorem holomorphicPicardIterates_norm_le (c : ℂ) (r M : ℝ)
             rw [hpow]
             ring
       have hsourceCont : ContinuousOn
-          (fun t : ℝ => (z - c) • integrand (AffineMap.lineMap c z t)) (Icc 0 1) := by
-        exact continuousOn_const.smul
+          (fun t : ℝ => (z - c) • integrand (AffineMap.lineMap c z t)) (Icc 0 1) := continuousOn_const.smul
           (hintegrand.continuousOn.comp AffineMap.lineMap_continuous.continuousOn hseg)
       have hnormInt : IntervalIntegrable
           (fun t : ℝ => ‖(z - c) • integrand (AffineMap.lineMap c z t)‖) volume 0 1 :=

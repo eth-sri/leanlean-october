@@ -10,7 +10,7 @@ import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
 
 /-! The Gamma-pole normalization in the lastone structure-constant limit. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 
@@ -37,9 +37,7 @@ theorem lastone_zeroMode_limit (γ μ : ℝ) (hγ : 0 < γ) (hμ : 0 < μ) :
       Real.continuous_exp.continuousAt.tendsto.comp (hd.const_mul (Real.log μ))
   have hΓcont : ContinuousAt Real.Gamma (1 : ℝ) := by
     apply (Real.differentiableAt_Gamma _).continuousAt
-    intro n
-    have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
-    linarith
+    grind
   have hΓ : Tendsto (fun δ : ℝ => Real.Gamma (-δ / γ + 1)) (𝓝[>] 0) (𝓝 1) := by
     have ha : Tendsto (fun δ : ℝ => -δ / γ + 1) (𝓝[>] 0) (𝓝 1) := by
       simpa only [neg_zero, zero_add, neg_div] using hd.neg.add_const 1
@@ -49,7 +47,7 @@ theorem lastone_zeroMode_limit (γ μ : ℝ) (hγ : 0 < γ) (hμ : 0 < μ) :
     simpa using (hμpow.const_mul (-2)).mul hΓ
   apply hlim.congr'
   filter_upwards [self_mem_nhdsWithin] with δ hδ
-  have hδpos : 0 < δ := hδ
+  have hδpos  := hδ
   have hrec := Real.Gamma_add_one (neg_ne_zero.mpr (div_pos hδpos hγ).ne')
   rw [← neg_div] at hrec
   rw [hrec]

@@ -11,7 +11,7 @@ public import Mathlib.MeasureTheory.Integral.MeanInequalities
 
 /-! Integrable products of correlated pin envelopes and compact cutoff masses. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
@@ -31,8 +31,8 @@ theorem regularized_mass_envelope_uniform
     ∃ C : ℝ≥0∞, C < ⊤ ∧
       (∀ n : ℕ, ∫⁻ ω, E ω * regularizedGMC P Xc γ n ω (Metric.closedBall 0 R) ∂P ≤ C) ∧
       (∫⁻ ω, E ω * M ω (Metric.closedBall 0 R) ∂P ≤ C) := by
-  have hp : 0 < p := hpq.pos
-  have hq : 0 < q := hpq.symm.pos
+  have hp  := hpq.pos
+  have hq  := hpq.symm.pos
   obtain ⟨B, hB, hb⟩ := regularized_compact_mass_moment_uniform
     P X hX Xc hc γ q R hγ hγ2 hpq.symm.pos hqc hR
   have hLm := gmc_bounded_moment_lt_top P X hX γ hγ hγ2 M hM
@@ -51,13 +51,11 @@ theorem regularized_mass_envelope_uniform
       ((Measure.measurable_coe Metric.isClosed_closedBall.measurableSet).comp
         (regularizedGMC_measurable P X hX Xc hc γ n)).aemeasurable
     have h := ENNReal.lintegral_mul_le_Lp_mul_Lq P hpq hE hmass
-    change (∫⁻ ω, E ω * regularizedGMC P Xc γ n ω (Metric.closedBall 0 R) ∂P) ≤ _ at h
     exact (h.trans (mul_le_mul' le_rfl (ENNReal.rpow_le_rpow (hb n)
       (by positivity)))).trans (le_add_right le_rfl)
   · have hmass := gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM
       (Metric.closedBall 0 R) Metric.isClosed_closedBall.measurableSet
     have h := ENNReal.lintegral_mul_le_Lp_mul_Lq P hpq hE hmass
-    change (∫⁻ ω, E ω * M ω (Metric.closedBall 0 R) ∂P) ≤ A * D ^ (1/q) at h
     exact h.trans (le_add_left le_rfl)
 
 

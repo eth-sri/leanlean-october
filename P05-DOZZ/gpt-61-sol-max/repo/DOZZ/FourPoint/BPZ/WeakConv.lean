@@ -42,7 +42,7 @@ theorem bpz_measurable_double_integral {μ ν : Ω → Measure ℂ} (hμ : Measu
     (hνfin : ∀ ω, IsFiniteMeasure (ν ω)) (g : ℂ → ℂ → ℝ)
     (hg : Measurable (Function.uncurry g)) :
     Measurable (fun ω => ∫ x, ∫ y, g x y ∂ν ω ∂μ ω) := by
-  have hin : Measurable (fun p : Ω × ℂ => ∫ y, g p.2 y ∂ν p.1) :=
+  have hin  :=
     measurable_integral_finite_family ν hν hνfin g hg
   have hout := measurable_integral_finite_family μ hμ hμfin
     (fun ω' x => ∫ y, g x y ∂ν ω') hin
@@ -71,9 +71,7 @@ theorem bpzNearKernel_le_one (ρ t : ℝ) (x y : ℂ) : bpzNearKernel ρ t x y �
 theorem bpzNearKernel_mono {ρ ρ' t t' : ℝ} (hρ : ρ ≤ ρ') (ht : t ≤ t') (x y : ℂ) :
     bpzNearKernel ρ t x y ≤ bpzNearKernel ρ' t' x y := by
   unfold bpzNearKernel
-  by_cases h : ‖x‖ ≤ ρ ∧ dist y x < t
-  · rw [ite_eq_left h, ite_eq_left ⟨h.1.trans hρ, h.2.trans_le ht⟩]
-  · rw [ite_eq_right h]; exact bpzNearKernel_nonneg ρ' t' x y
+  grind
 
 /-- The inner integral of the near-diagonal kernel is the mass of a ball. -/
 theorem integral_bpzNearKernel (μ : Measure ℂ) [IsFiniteMeasure μ] (ρ t : ℝ) (x : ℂ) :
@@ -96,7 +94,7 @@ theorem bpzNearDiag_nonneg (ρ t : ℝ) (μ : Measure ℂ) : 0 ≤ bpzNearDiag �
 theorem integrable_of_bdd_finite {μ : Measure ℂ} [IsFiniteMeasure μ] {f : ℂ → ℝ}
     (hf : Measurable f) {C : ℝ} (hC : ∀ x, |f x| ≤ C) : Integrable f μ :=
   Integrable.of_bound hf.aestronglyMeasurable C (Eventually.of_forall fun x => by
-    rw [Real.norm_eq_abs]; exact hC x)
+    exact hC x)
 
 /-- Inner integrals of a bounded kernel are bounded and measurable. -/
 theorem bpz_inner_integral_bdd {μ : Measure ℂ} [IsFiniteMeasure μ] {g : ℂ → ℂ → ℝ}
@@ -104,12 +102,12 @@ theorem bpz_inner_integral_bdd {μ : Measure ℂ} [IsFiniteMeasure μ] {g : ℂ 
     |∫ y, g x y ∂μ| ≤ C * μ.real Set.univ := by
   rw [← Real.norm_eq_abs]
   have := norm_integral_le_of_norm_le_const (μ := μ) (f := fun y => g x y) (C := C)
-    (Eventually.of_forall fun y => by rw [Real.norm_eq_abs]; exact hC x y)
+    (Eventually.of_forall fun y => by exact hC x y)
   exact this
 
 theorem bpzNearDiag_mono {ρ ρ' t t' : ℝ} (hρ : ρ ≤ ρ') (ht : t ≤ t') (μ : Measure ℂ)
     [IsFiniteMeasure μ] : bpzNearDiag ρ t μ ≤ bpzNearDiag ρ' t' μ := by
-  have hmeas : ∀ ρ t, Measurable fun x => ∫ y, bpzNearKernel ρ t x y ∂μ := fun ρ t =>
+  have hmeas  := fun ρ t =>
     ((measurable_bpzNearKernel ρ t).stronglyMeasurable.integral_prod_right' (ν := μ)).measurable
   refine integral_mono (integrable_of_bdd_finite (hmeas ρ t) (C := μ.real Set.univ) ?_)
     (integrable_of_bdd_finite (hmeas ρ' t') (C := μ.real Set.univ) ?_) fun x => ?_

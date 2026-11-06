@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.CopiedRadialChart
 /-! Joint measurability of full chart masses, including unbounded radial weights. -/
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -18,7 +18,7 @@ theorem reflected_chart_parameter_mass_measurable
     (hfin : ∀ ω K, IsCompact K → K ⊆ U → N ω K < ⊤)
     (F : A × ℂ → ℝ≥0∞) (hF : Measurable F) :
     Measurable (fun p : A × Ω => ∫⁻ x in U, F (p.1, x) ∂N p.2) := by
-  let _ : LocallyCompactSpace U := hU.locallyCompactSpace
+  let _  := hU.locallyCompactSpace
   let E := CompactExhaustion.choice U
   let K : ℕ → Set ℂ := fun n => Subtype.val '' E n
   have hK (n : ℕ) : IsCompact (K n) := (E.isCompact n).image continuous_subtype_val
@@ -35,8 +35,7 @@ theorem reflected_chart_parameter_mass_measurable
       obtain ⟨n, hn⟩ := E.exists_mem ⟨x, hx⟩
       exact mem_iUnion.mpr ⟨n, ⟨⟨x, hx⟩, hn, rfl⟩⟩
   let NF : Ω → ℕ → FiniteMeasure ℂ := fun ω n =>
-    ⟨(N ω).restrict (K n), ⟨by simpa only [Measure.restrict_apply_univ] using
-      (hfin ω (K n) (hK n) (hKU n))⟩⟩
+    ⟨(N ω).restrict (K n), ⟨by simp_all⟩⟩
   have hNF (n : ℕ) : Measurable (fun ω => NF ω n) := Measurable.subtype_mk
     ((measurable_measure_restrict (K n) (hK n).measurableSet).comp hN)
   have hi (p : A × Ω) : (∫⁻ x in U, F (p.1, x) ∂N p.2) =

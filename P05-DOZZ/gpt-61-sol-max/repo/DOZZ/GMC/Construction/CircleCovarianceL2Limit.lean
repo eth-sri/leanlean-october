@@ -12,19 +12,21 @@ public import DOZZ.GFFStructure.CircleVersion
 
 /-! Continuity of the circle covariance potential for every Gaussian L² limit. -/
 
-@[expose] public section
+public section
 
 open Filter MeasureTheory ProbabilityTheory
 open scoped Distributions Topology
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+
+include Ω _inst1 P X hX in
 private theorem gaussianL2Limit_mean_zero
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    
     (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L) :
     (∫ ω, L ω ∂P) = 0 := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   obtain ⟨hLmem, f, hLapprox⟩ := hL
   have hcomm : ∀ n,
       eLpNorm (fun ω => X ω (f n) - L ω) 2 P =
@@ -38,17 +40,17 @@ private theorem gaussianL2Limit_mean_zero
     (fun n => equatorGFF_test_memLp X hX (f n)) hLmem
     (fun n => equatorGFF_test_integral X hX (f n)) happrox
 
+include Ω _inst1 P X hX in
 /-- For each fixed circle radius, covariance against any Gaussian `L²` limit is a continuous
 function of the center. -/
 theorem continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L) (r : ℝ) :
     Continuous (fun x => gaussianCovariance P (fun ω => Xc ω x r) L) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let W : Lp ℝ 2 P := hL.1.toLp L
-  have hmeanL : (∫ ω, L ω ∂P) = 0 := gaussianL2Limit_mean_zero P X hX L hL
+  have hmeanL  := gaussianL2Limit_mean_zero P X hX L hL
   have hmeanCircle (x : ℂ) : (∫ ω, Xc ω x r ∂P) = 0 :=
     (circleAverage_isGaussianProcess P X Xc hX hXc).2 x r
   have hpair (x : ℂ) :
@@ -67,8 +69,7 @@ theorem continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
     have hmeanW : (∫ ω, W ω ∂P) = 0 := by
       rw [← hmeanL]
       exact integral_congr_ae (MemLp.coeFn_toLp hL.1)
-    rw [circleAverageL2_integral_eq_zero P X Xc hX hXc (x, r), hmeanW]
-    simp [W]
+    continuity
   have hparam : Continuous (fun x : ℂ => (x, r)) :=
     continuous_id.prodMk continuous_const
   have hcircle : Continuous (fun x : ℂ => circleAverageL2 hXc (x, r)) :=

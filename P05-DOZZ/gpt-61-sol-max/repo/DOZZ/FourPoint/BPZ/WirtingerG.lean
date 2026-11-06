@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.FourPoint.BPZ.FourPointWard
+import Mathlib.Tactic
 
 /-! # Wirtinger derivatives of the Ward-identity weights
 
@@ -26,11 +27,14 @@ namespace DOZZ.Proofs
 /-- The rational function of the Ward identity (same as in GCutoff, defined here independently). -/
 noncomputable def bpzGfun (z x : ℂ) : ℂ := x * (x - 1) / (z - x)
 
+variable (c : ℂ) (p : ℝ) {x : ℂ} (hx : x ≠ c)
+
+include c p x hx in
 /-- Real derivative of `x ↦ ‖x − c‖ ^ p` away from `c`. -/
-theorem bpz_hasFDerivAt_norm_sub_rpow (c : ℂ) (p : ℝ) {x : ℂ} (hx : x ≠ c) :
+theorem bpz_hasFDerivAt_norm_sub_rpow  :
     HasFDerivAt (fun y => ‖y - c‖ ^ p)
       ((p * ‖x - c‖ ^ (p - 2)) • innerSL ℝ (x - c)) x := by
-  have hn : 0 < ‖x - c‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
+  have hn  := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
   have h1 : HasFDerivAt (fun y : ℂ => y - c) (ContinuousLinearMap.id ℝ ℂ) x :=
     (hasFDerivAt_id x).sub_const c
   have h2 : HasFDerivAt (fun y : ℂ => ‖y - c‖ ^ 2) (2 • innerSL ℝ (x - c)) x := by
@@ -51,9 +55,7 @@ theorem bpz_hasFDerivAt_norm_sub_rpow (c : ℂ) (p : ℝ) {x : ℂ} (hx : x ≠ 
   rw [e]
   refine h3.congr_fderiv ?_
   rw [e2]
-  ext h
-  simp only [smul_apply, smul_eq_mul, nsmul_eq_mul]
-  ring
+  module
 
 /-- `(Re u − i Im u) · u = ‖u‖²`, i.e. `conj u · u = ‖u‖²`. -/
 theorem bpz_conj_mul_self (u : ℂ) :
@@ -64,14 +66,15 @@ theorem bpz_conj_mul_self (u : ℂ) :
   · simp
     ring
 
+include c p x hx in
 /-- The Wirtinger combination of the derivative of `x ↦ ‖x − c‖ ^ p` is
 `(p / 2) ‖x − c‖ ^ p / (x − c)`. -/
-theorem bpz_wirtinger_norm_sub_rpow (c : ℂ) (p : ℝ) {x : ℂ} (hx : x ≠ c) :
+theorem bpz_wirtinger_norm_sub_rpow  :
     ((((p * ‖x - c‖ ^ (p - 2)) • innerSL ℝ (x - c)) 1 : ℝ) - Complex.I *
       (((p * ‖x - c‖ ^ (p - 2)) • innerSL ℝ (x - c)) Complex.I : ℝ)) / 2 =
       ((p / 2 * ‖x - c‖ ^ p : ℝ) : ℂ) / (x - c) := by
-  have hu : x - c ≠ 0 := sub_ne_zero.mpr hx
-  have hn : 0 < ‖x - c‖ := norm_pos_iff.mpr hu
+  have hu  := sub_ne_zero.mpr hx
+  have hn  := norm_pos_iff.mpr hu
   have hpow : ‖x - c‖ ^ p = ‖x - c‖ ^ (p - 2) * ‖x - c‖ ^ 2 := by
     rw [← Real.rpow_natCast, ← Real.rpow_add hn]
     congr 1
@@ -82,7 +85,7 @@ theorem bpz_wirtinger_norm_sub_rpow (c : ℂ) (p : ℝ) {x : ℂ} (hx : x ≠ c)
   rw [hpow, eq_div_iff hu]
   have key := bpz_conj_mul_self (x - c)
   push_cast at key ⊢
-  linear_combination ((p : ℂ) * ((‖x - c‖ ^ (p - 2) : ℝ) : ℂ) / 2) * key
+  grind
 
 /-- The Wirtinger combination `(L 1 − i L i) / 2` of a real-linear functional on `ℂ`. -/
 noncomputable def bpzWirt (L : ℂ →L[ℝ] ℝ) : ℂ := ((L 1 : ℂ) - Complex.I * (L Complex.I : ℂ)) / 2
@@ -101,10 +104,11 @@ theorem bpzWirt_smul (a : ℝ) (L : ℂ →L[ℝ] ℝ) : bpzWirt (a • L) = (a 
   push_cast
   ring
 
+include c p x hx in
 /-- The operator norm of the derivative of `y ↦ ‖y − c‖ ^ p`. -/
-theorem bpz_norm_normSubRpowDeriv (c : ℂ) (p : ℝ) {x : ℂ} (hx : x ≠ c) :
+theorem bpz_norm_normSubRpowDeriv  :
     ‖(p * ‖x - c‖ ^ (p - 2)) • innerSL ℝ (x - c)‖ = |p| * ‖x - c‖ ^ p / ‖x - c‖ := by
-  have hn : 0 < ‖x - c‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
+  have hn  := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
   rw [norm_smul, innerSL_apply_norm, Real.norm_eq_abs, abs_mul,
     abs_of_pos (Real.rpow_pos_of_pos hn _), Real.rpow_sub hn, Real.rpow_two]
   field_simp
@@ -150,9 +154,9 @@ theorem bpz_tildeWeight_hasFDerivAt {γ χ α₁ α₂ : ℝ} {z x : ℂ} (hx : 
   have nC := bpz_norm_normSubRpowDeriv 1 (-(γ * α₂)) h1
   simp only [sub_zero, abs_neg] at nB
   simp only [abs_neg] at nC
-  have hnA : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hz)
-  have hnB : 0 < ‖x‖ := norm_pos_iff.mpr h0
-  have hnC : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr h1)
+  have hnA  := norm_pos_iff.mpr (sub_ne_zero.mpr hz)
+  have hnB  := norm_pos_iff.mpr h0
+  have hnC  := norm_pos_iff.mpr (sub_ne_zero.mpr h1)
   have pA : 0 < ‖x - z‖ ^ (γ * χ) := Real.rpow_pos_of_pos hnA _
   have pB : 0 < ‖x‖ ^ (-(γ * α₁)) := Real.rpow_pos_of_pos hnB _
   have pC : 0 < ‖x - 1‖ ^ (-(γ * α₂)) := Real.rpow_pos_of_pos hnC _
@@ -178,7 +182,7 @@ theorem bpz_tildeWeight_hasFDerivAt {γ χ α₁ α₂ : ℝ} {z x : ℂ} (hx : 
 /-- Complex derivative of `g` and its algebraic form. -/
 theorem bpz_hasDerivAt_bpzGfun {z x : ℂ} (hx : x ≠ z) :
     HasDerivAt (bpzGfun z) (-1 + z * (z - 1) / (z - x) ^ 2) x := by
-  have hzx : z - x ≠ 0 := sub_ne_zero.mpr hx.symm
+  have hzx  := sub_ne_zero.mpr hx.symm
   have hN : HasDerivAt (fun y : ℂ => y * (y - 1)) (1 * (x - 1) + x * 1) x :=
     (hasDerivAt_id x).mul ((hasDerivAt_id x).sub_const 1)
   have hD : HasDerivAt (fun y : ℂ => z - y) (-1) x := (hasDerivAt_id x).const_sub z
@@ -211,13 +215,9 @@ theorem bpz_wirtinger_g_tildeWeight {γ χ α₁ α₂ : ℝ} {z x : ℂ} (hx : 
   obtain ⟨L, hL, hW, -⟩ := bpz_tildeWeight_hasFDerivAt (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) hx
   have hg := bpz_hasDerivAt_bpzGfun hx.2.2
   have hg' := hg.hasFDerivAt.restrictScalars ℝ
-  have hre : HasFDerivAt (fun y => (bpzGfun z y).re)
-      (Complex.reCLM.comp (ContinuousLinearMap.restrictScalars ℝ
-        (ContinuousLinearMap.toSpanSingleton ℂ (-1 + z * (z - 1) / (z - x) ^ 2)))) x :=
+  have hre  :=
     Complex.reCLM.hasFDerivAt.comp x hg'
-  have him : HasFDerivAt (fun y => (bpzGfun z y).im)
-      (Complex.imCLM.comp (ContinuousLinearMap.restrictScalars ℝ
-        (ContinuousLinearMap.toSpanSingleton ℂ (-1 + z * (z - 1) / (z - x) ^ 2)))) x :=
+  have him  :=
     Complex.imCLM.hasFDerivAt.comp x hg'
   have hF : HasFDerivAt (fun y => (bpzGfun z y).re * bpzTildeWeight γ χ α₁ α₂ z y)
       ((bpzGfun z x).re • L + bpzTildeWeight γ χ α₁ α₂ z x •
@@ -270,8 +270,7 @@ theorem bpz_kern_wirtinger {w : ℂ} (hw : w ≠ 0) :
   unfold bpzKern
   simp only [Complex.one_re, Complex.one_im, Complex.I_re, Complex.I_im]
   push_cast at key ⊢
-  field_simp
-  linear_combination (-1 : ℂ) * key
+  grind
 
 /-- The combination of the four real products `Re D · k₁`, `Im D · k₁`, `Re D · k₂`, `Im D · k₂`
 is `D (k₁ − i k₂) / 2`. -/
@@ -295,9 +294,9 @@ theorem bpz_g_kern_combination {z x y : ℂ} (hxy : x ≠ y) :
 /-- The difference quotient of `g`. -/
 theorem bpz_g_diff_quot {z x y : ℂ} (hxy : x ≠ y) (hx : x ≠ z) (hy : y ≠ z) :
     (bpzGfun z x - bpzGfun z y) / (x - y) = -1 + z * (z - 1) / ((z - x) * (z - y)) := by
-  have h1 : x - y ≠ 0 := sub_ne_zero.mpr hxy
-  have h2 : z - x ≠ 0 := sub_ne_zero.mpr hx.symm
-  have h3 : z - y ≠ 0 := sub_ne_zero.mpr hy.symm
+  have h1  := sub_ne_zero.mpr hxy
+  have h2  := sub_ne_zero.mpr hx.symm
+  have h3  := sub_ne_zero.mpr hy.symm
   unfold bpzGfun
   field_simp
   ring

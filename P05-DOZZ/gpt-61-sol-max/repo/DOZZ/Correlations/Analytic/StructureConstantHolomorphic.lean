@@ -12,7 +12,7 @@ public import DOZZ.GMC.Moments.RhoCoulomb
 /-! Proof of `DOZZ.unitVolumeStructureConstant_holomorphic_near_extended_domain` in the
 canonical three-point frame. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 namespace DOZZ.Proofs
@@ -54,8 +54,7 @@ theorem unitVolumeStructureConstant_holomorphic_near_extended_domain
             (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ) := by
   obtain ⟨Xc, hc⟩ := exists_equatorGFF_circle_average_witness X hX
   have hz : Function.Injective (![0, 1] : Fin 2 → ℂ) := by
-    intro i j he
-    fin_cases i <;> fin_cases j <;> simp_all
+    simp_all
   obtain ⟨V, hV, hmem, f, hf, hreal⟩ := mixed_coulomb_holomorphic
     P X hX γ hγ hγ2 M hM Xc hc (![0, 1] : Fin 2 → ℂ) hz
   refine ⟨V, hV, ?_, (fun β => (2 / γ : ℂ) * f β), ?_, ?_⟩
@@ -79,6 +78,6 @@ theorem unitVolumeStructureConstant_holomorphic_near_extended_domain
     push_cast
     congr 1
     congr 1
-    simpa only [ENNReal.rpow_eq_pow] using congrArg ENNReal.toReal hm.symm
+    exact congrArg ENNReal.toReal hm.symm
 
 end DOZZ.Proofs

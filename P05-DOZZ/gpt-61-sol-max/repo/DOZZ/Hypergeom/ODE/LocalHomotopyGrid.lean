@@ -10,7 +10,7 @@ public import DOZZ.Hypergeom.ODE.LocalTransfer
 /-! A grid of local Picard transfers is homotopy invariant when each cell lies near its lower-left
 vertex and the two vertical boundary paths are constant. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
@@ -50,15 +50,15 @@ theorem localPicard_homotopy_grid_endpoint_eq
   have hsquare : ∀ i < N, ∀ j < N, ∀ v,
       up (i + 1) j (right i j v) = right i (j + 1) (up i j v) := by
     intro i hi j hj v
-    have hiN : i + 1 ≤ N := Nat.succ_le_iff.mpr hi
-    have hjN : j + 1 ≤ N := Nat.succ_le_iff.mpr hj
+    have hiN  := Nat.succ_le_iff.mpr hi
+    have hjN  := Nat.succ_le_iff.mpr hj
     have h := localPicardTransfer_square_commutes r M hr hM H
       (data i (by omega) j (by omega))
       (data (i + 1) hiN j (by omega))
       (data i (by omega) (j + 1) hjN)
       (hcell i hi j hj).1 (hcell i hi j hj).2.1
       (hcell i hi j hj).2.2 v
-    simpa [right, up, hi, hiN, hj, hjN, Nat.le_of_lt hi, Nat.le_of_lt hj] using h
+    grind
   have hleftId : ∀ j < N, ∀ v, up 0 j v = v := by
     intro j hj v
     have h0 := hleft j (Nat.le_of_lt hj)
@@ -73,6 +73,6 @@ theorem localPicard_homotopy_grid_endpoint_eq
       holomorphicPicardSolution_apply_center]
   have hresult := finiteGrid_boundary_transfer_eq_of_bounded_squares
     N right up hsquare hleftId hrightId y
-  simpa [right] using hresult
+  exact hresult
 
 end DOZZ.Proofs

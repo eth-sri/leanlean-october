@@ -6,4 +6,3 @@ module
 
 public import DOZZ.Upsilon.StripShiftsProof
 
-@[expose] public section

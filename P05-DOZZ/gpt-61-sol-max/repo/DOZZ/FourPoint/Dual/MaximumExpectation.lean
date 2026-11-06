@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Dual.IncrementIntegrability
 import Mathlib.Tactic
 /-! Integrated signed maximum sandwich with its explicit first-order error. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 
@@ -60,11 +60,8 @@ theorem dual_williams_increment_expectation_sandwich
       split_ifs
       · ring_nf
         exact le_rfl
-      · have hJv : 0 ≤ J v.2 := hv.1.trans hv.2.1
-        positivity
-    dsimp only [E]
-    simp only [mul_assoc] at hs hg
-    exact ⟨hs.1, hs.2.trans (add_le_add le_rfl hg)⟩
+      bound
+    grind
   have he : (∫ v, G v ∂P.prod R) =
       p*Real.exp (γ*c)*(∫ ω, b ω*(A ω)^(-p-1) ∂P)*(∫ v, J v ∂R) := by
     dsimp only [G]

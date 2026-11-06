@@ -21,8 +21,7 @@ noncomputable def reverseMarkedSegment (z : ℝ × StoppedBrownianPath) :
     ℝ × StoppedBrownianPath :=
   (z.1, z.2.1, ⟨fun t => z.2.2 (z.2.1 - min t z.2.1) - z.1, by fun_prop⟩)
 
-theorem measurable_reverseMarkedSegment : Measurable reverseMarkedSegment := by
-  exact measurable_fst.prodMk (measurable_snd.fst.prodMk
+theorem measurable_reverseMarkedSegment : Measurable reverseMarkedSegment := measurable_fst.prodMk (measurable_snd.fst.prodMk
     (continuous_brownianPath_reverse_recenter.measurable.comp
       ((measurable_snd.fst.prodMk measurable_fst).prodMk measurable_snd.snd)))
 
@@ -40,8 +39,7 @@ theorem reverse_firstHitSegment (ν m : ℝ) (p : BrownianPath) :
   rfl
 
 theorem measurable_lastExitSegment_joint :
-    Measurable (fun z : ℝ × BrownianPath => negativeConditionedLastExitSegment z.1 z.2) := by
-  exact measurable_negativeLastExitTime_joint.prodMk
+    Measurable (fun z : ℝ × BrownianPath => negativeConditionedLastExitSegment z.1 z.2) := measurable_negativeLastExitTime_joint.prodMk
     (continuous_stopBrownianPath.measurable.comp
       (measurable_negativeLastExitTime_joint.prodMk measurable_snd))
 
@@ -55,23 +53,22 @@ theorem maximumReference_positive_ae (ν : ℝ) :
         (measurableSet_lt measurable_const measurable_id) measurable_const)
   rw [ae_withDensity_iff hd]
   filter_upwards [] with m hm
-  by_contra hn
-  exact hm (by rw [ite_eq_right_iff.mpr (fun h => (hn h).elim), ENNReal.ofReal_zero])
+  continuity
 
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ) (hν : 0 < ν) (Q : Measure BrownianPath) (hQ : IsNegativeConditionedBrownianLaw ν Q)
+
+include P hB ν hν Q hQ in
 /-- Integrating the first-hit reversal law `DOZZ.brownian_firstHit_reversal_law` over the
 independent exponential maximum identifies the entire marked Williams prefix with a last-exit
 stopped conditioned copy. -/
 theorem reversed_williams_prefix_law
-    (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν) (Q : Measure BrownianPath)
-    (hQ : IsNegativeConditionedBrownianLaw ν Q) :
+     :
     (brownianWilliamsPrefixLaw P ν).map reverseMarkedSegment =
       ((brownianMaximumReferenceLaw ν).prod Q).map
         (fun z => (z.1, negativeConditionedLastExitSegment z.1 z.2)) := by
-  let : IsProbabilityMeasure P := (hB.hasLaw_eval 0).isProbabilityMeasure
-  let : IsProbabilityMeasure Q := hQ.2.1
-  let : IsProbabilityMeasure (brownianMaximumReferenceLaw ν) :=
-    isProbabilityMeasure_brownianMaximumReferenceLaw hν
+  let  := (hB.hasLaw_eval 0).isProbabilityMeasure
+  let  := hQ.2.1
+  
   apply Measure.ext_of_lintegral
   intro F hF
   rw [lintegral_map hF measurable_reverseMarkedSegment]
@@ -92,25 +89,22 @@ theorem reversed_williams_prefix_law
   rw [← lintegral_map ht (measurable_reversedPositiveFirstHitSegment ν m),
     hlaw, lintegral_map ht (measurable_negativeConditionedLastExitSegment m)]
 
+include P hB ν hν Q hQ in
 /-- The maximum split has an independent conditioned future and a conditioned past cut at
 the last exit from the independently sampled maximum level. -/
 theorem williams_reversed_joint_law
-    (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν) (Q : Measure BrownianPath)
-    (hQ : IsNegativeConditionedBrownianLaw ν Q) :
+     :
     P.map (fun p =>
       (reverseMarkedSegment
         (driftedBrownianMaximum ν p, brownianPreMaximumSegment ν p),
         brownianPostMaximumPath ν p)) =
       (((brownianMaximumReferenceLaw ν).prod Q).map
         (fun z => (z.1, negativeConditionedLastExitSegment z.1 z.2))).prod Q := by
-  let : IsProbabilityMeasure P := (hB.hasLaw_eval 0).isProbabilityMeasure
-  let : IsProbabilityMeasure Q := hQ.2.1
-  let : IsProbabilityMeasure (brownianWilliamsPrefixLaw P ν) :=
+  let  := (hB.hasLaw_eval 0).isProbabilityMeasure
+  let  := hQ.2.1
+  let  :=
     isProbabilityMeasure_brownianWilliamsPrefixLaw P hB ν hν
-  have hm : AEMeasurable (fun p =>
-      ((driftedBrownianMaximum ν p, brownianPreMaximumSegment ν p),
-        brownianPostMaximumPath ν p)) P :=
+  have hm  :=
     ((aemeasurable_driftedBrownianMaximum P hB ν hν).prodMk
       (aemeasurable_brownianPreMaximumSegment P hB ν hν)).prodMk
         (aemeasurable_brownianPostMaximumPath P hB ν hν)

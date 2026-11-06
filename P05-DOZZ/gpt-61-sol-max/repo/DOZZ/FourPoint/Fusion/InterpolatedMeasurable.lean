@@ -7,23 +7,23 @@ public import DOZZ.FourPoint.Fusion.InterpolatedInverseMoments
 public import DOZZ.FourPoint.Fusion.MovingExpectationMeasurable
 public import DOZZ.FourPoint.Fusion.RootOnlyKernelMeasurable
 /-! # Joint measurability of the interpolated inverse expectation -/
-@[expose] public section
+public section
 open MeasureTheory
 namespace DOZZ.Proofs
+variable {U : Type*} [_inst1 : MeasurableSpace U] (γ α₁ α₂ α₃ : ℝ) (μ : U → Measure ℂ) (hμ : Measurable μ) (hfin : ∀ u, IsFiniteMeasure (μ u)) (y z : U → ℂ) (hy : Measurable y) (hz : Measurable z)
+
+include U _inst1 γ α₁ α₂ α₃ μ hμ hfin y z hy hz in
 /-- Measurability of a rooted mass in an arbitrary finite measurable family. -/
-theorem fusionMovingMass_family_measurable {U : Type*} [MeasurableSpace U]
-    (γ α₁ α₂ α₃ : ℝ) (μ : U → Measure ℂ) (hμ : Measurable μ) (hfin : ∀ u, IsFiniteMeasure (μ u))
-    (y z : U → ℂ) (hy : Measurable y) (hz : Measurable z) :
+theorem fusionMovingMass_family_measurable  :
     Measurable (fun u => fusionMovingMass γ α₁ α₂ α₃ (y u) (z u) (μ u)) := by
   apply measurable_lintegral_finite_family μ hμ hfin
     (fun q : U × ℂ => fusionMovingKernel γ α₁ α₂ α₃ (y q.1) (z q.1) q.2)
   have hp : Measurable (fun q : U × ℂ => ((y q.1, z q.1), q.2)) :=
     ((hy.comp measurable_fst).prodMk (hz.comp measurable_fst)).prodMk measurable_snd
   simpa only [Function.comp_def] using (fusionMovingKernel_joint_measurable γ α₁ α₂ α₃).comp hp
+include U _inst1 γ α₁ α₂ α₃ μ hμ hfin y z hy hz in
 /-- Measurability of a rooted mass in an arbitrary finite measurable family. -/
-theorem fusionRootOnlyMass_family_measurable {U : Type*} [MeasurableSpace U]
-    (γ α₁ α₂ α₃ : ℝ) (μ : U → Measure ℂ) (hμ : Measurable μ) (hfin : ∀ u, IsFiniteMeasure (μ u))
-    (y z : U → ℂ) (hy : Measurable y) (hz : Measurable z) :
+theorem fusionRootOnlyMass_family_measurable  :
     Measurable (fun u => fusionRootOnlyMass γ α₁ α₂ α₃ (y u) (z u) (μ u)) := by
   apply measurable_lintegral_finite_family μ hμ hfin
     (fun q : U × ℂ => fusionRootOnlyKernel γ α₁ α₂ α₃ (y q.1) (z q.1) q.2)
@@ -37,7 +37,7 @@ theorem fusionInterpolatedMass_expectation_measurable {Ω : Type*} [MeasurableSp
     (α₁ α₂ α₃ s : ℝ) :
     Measurable (fun q : ℝ × (ℂ × ℂ) => ∫⁻ ω,
       fusionInterpolatedMass γ α₁ α₂ α₃ q.1 q.2.1 q.2.2 (M ω) ^ s ∂P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   obtain ⟨N, hN, hf, he⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
   have hy : Measurable (fun q : (ℝ × (ℂ × ℂ)) × Ω => q.1.2.1) :=
     measurable_fst.comp (measurable_snd.comp measurable_fst)

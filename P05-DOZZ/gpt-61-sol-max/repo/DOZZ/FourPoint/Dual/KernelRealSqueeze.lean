@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Dual.CopiedInnerPolar
 public import DOZZ.FourPoint.Dual.RelativeIncrement
 import Mathlib.Tactic
 /-! The literal extended-valued copied kernel squeeze gives a real signed increment bound. -/
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

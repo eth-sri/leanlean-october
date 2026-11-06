@@ -14,7 +14,7 @@ integrand is a multiple of `k`, giving `E[I^{1-q}] < ∞`. Near `z` the weight i
 `|x − z|^{γχ − 2}` times a bounded factor, and the rooted bound reduces the expectation to the
 Lebesgue integral of `|x − z|^{γχ − 2}` over a disk, which is finite since `γχ > 0`. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
@@ -28,8 +28,8 @@ theorem continuousOn_bpzBaseWeight :
   intro x hx
   apply ContinuousAt.continuousWithinAt
   unfold bpzBaseWeight
-  have h0 : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx.1
-  have h1 : ‖x - 1‖ ≠ 0 := norm_ne_zero_iff.mpr (sub_ne_zero.mpr hx.2)
+  have h0  := norm_ne_zero_iff.mpr hx.1
+  have h1  := norm_ne_zero_iff.mpr (sub_ne_zero.mpr hx.2)
   exact ((continuous_norm.continuousAt.rpow_const (Or.inl h0)).mul
     ((continuous_norm.comp (continuous_id.sub continuous_const)).continuousAt.rpow_const
       (Or.inl h1))).mul
@@ -40,8 +40,8 @@ theorem bpz_base_bdd_near {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     ∃ r : ℝ, 0 < r ∧ ∃ C : ℝ, 0 ≤ C ∧
       ∀ x ∈ Metric.closedBall z r, bpzBaseWeight γ χ α₁ α₂ α₃ x ≤ C := by
   set r : ℝ := min ‖z‖ ‖z - 1‖ / 2 with hr
-  have hz0' : 0 < ‖z‖ := norm_pos_iff.mpr hz0
-  have hz1' : 0 < ‖z - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hz1)
+  
+  have hz1'  := norm_pos_iff.mpr (sub_ne_zero.mpr hz1)
   have hr0 : 0 < r := by positivity
   have hsub : Metric.closedBall z r ⊆ {x | x ≠ 0 ∧ x ≠ 1} := by
     intro x hx
@@ -55,17 +55,11 @@ theorem bpz_base_bdd_near {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     (continuousOn_bpzBaseWeight.mono hsub)
   refine ⟨r, hr0, max C 0, le_max_right _ _, fun x hx => ?_⟩
   have := hC x hx
-  rw [Real.norm_eq_abs] at this
   exact (le_abs_self _).trans (this.trans (le_max_left _ _))
 
 theorem bpzSoftWeight_zero_norm (z x : ℂ) :
     bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x = ‖x - z‖ ^ (γ * χ) * bpzBaseWeight γ χ α₁ α₂ α₃ x := by
-  unfold bpzSoftWeight
-  rw [show ((0 : ℝ) ^ 2) = 0 by norm_num, add_zero, Complex.normSq_eq_norm_sq,
-    ← Real.rpow_natCast, ← Real.rpow_mul (norm_nonneg _)]
-  congr 2
-  push_cast
-  ring
+  exact bpzSoftWeight_zero z x
 
 theorem bpz_rpow_neg_mul_le_rpow_sub (x : ℝ≥0∞) {q : ℝ} (hq : 1 ≤ q) :
     x ^ (-q) * x ≤ x ^ (-(q - 1)) := by
@@ -105,14 +99,14 @@ theorem bpz_singular_moment_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measur
     · have : k x = 0 := by
         rw [hk, bpzSoftWeight_zero_norm, sub_self, norm_zero,
           Real.zero_rpow (by positivity), zero_mul]
-      rw [this, mul_zero, ENNReal.ofReal_zero]; exact zero_le
-    have hxz' : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+      simp_all
+    have hxz'  := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
     by_cases hxB : x ∈ B
     · have hfx : f x = ENNReal.ofReal (CB * ‖x - z‖ ^ (γ * χ - 2)) := Set.indicator_of_mem hxB _
       have hsing : ‖x - z‖ ^ (-2 : ℝ) * k x ≤ CB * ‖x - z‖ ^ (γ * χ - 2) := by
         rw [hk, bpzSoftWeight_zero_norm, ← mul_assoc, ← Real.rpow_add hxz']
         rw [show (-2 : ℝ) + γ * χ = γ * χ - 2 by ring, mul_comm]
-        exact mul_le_mul_of_nonneg_right (hCB x hxB) (Real.rpow_nonneg hxz'.le _)
+        bound
       rw [hfx, ← ENNReal.ofReal_mul (by positivity), ← ENNReal.ofReal_add
         (mul_nonneg (by positivity) (hk0 x)) (mul_nonneg hCB0 (Real.rpow_nonneg (norm_nonneg _) _))]
       apply ENNReal.ofReal_le_ofReal

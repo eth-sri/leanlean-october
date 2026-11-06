@@ -6,7 +6,7 @@ module
 public import DOZZ.FourPoint.Reflected.PastOuterMass
 public import DOZZ.FourPoint.Reflected.SpatialBoundary
 /-! The actual retained GMC mass is a stopped-past observable, shown by radial reinsertion. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -33,8 +33,8 @@ theorem reflected_source_outerMass_pastCode_ae
   have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
     have hn := hr.trans hx.1
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hn
-  have hF : Measurable F := (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
+    simp_all
+  have hF  := (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   filter_upwards [heq,reflected_source_outerMass_eq_comparison_region P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ ξ z hz] with ω hω ho
   rw [reflected_pastOuterMassCode_eq γ α₁ α₂ α₃ (‖z‖^(1-ξ)) z (A ω) T (N ω) hr hT (hfin ω)]

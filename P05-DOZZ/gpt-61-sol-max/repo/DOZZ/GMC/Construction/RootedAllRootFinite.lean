@@ -6,11 +6,11 @@ module
 
 public import DOZZ.GMC.Construction.GMCRootedMeasureFinite
 public import DOZZ.GMC.SharpMoments.BallScaling
-public import DOZZ.GMC.Construction.RootedSmallBallMoment
+public import DOZZ.GMC.SharpMoments.WeightedDyadicSum
 
 /-! All-root finiteness from sharp small-ball bounds, including the unit-circle boundary. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs
@@ -72,36 +72,26 @@ private theorem rooted_density_le_local_weighted_bound
       unfold normPlus
       apply max_le
       · linarith [norm_nonneg u, norm_nonneg (x - u)]
-      · linarith [norm_nonneg u, norm_nonneg (x - u), hnormX]
-    have hratioOne : 1 ≤ ‖x - u‖ / r := (one_le_div hr).2 hdist
+      bound
+    
     have hfactor : 1 + ‖u‖ ≤ (‖x - u‖ / r) * (1 + ‖u‖) := by
-      calc
-        1 + ‖u‖ = 1 * (1 + ‖u‖) := by ring
-        _ ≤ (‖x - u‖ / r) * (1 + ‖u‖) :=
-          mul_le_mul_of_nonneg_right hratioOne (by positivity)
+      field_simp <;> nlinarith
     have hplusBound : normPlus x ≤ ‖x - u‖ * (1 + (1 + ‖u‖) / r) := by
-      calc
-        normPlus x ≤ 1 + ‖u‖ + ‖x - u‖ := hplusX
-        _ ≤ ‖x - u‖ + (‖x - u‖ / r) * (1 + ‖u‖) := by linarith
-        _ = ‖x - u‖ * (1 + (1 + ‖u‖) / r) := by ring
+      grind
     have hratio : normPlus u * normPlus x / ‖x - u‖ ≤ K := by
       have hdistPos : 0 < ‖x - u‖ := lt_of_lt_of_le hr hdist
       apply (div_le_iff₀ hdistPos).2
-      calc
-        normPlus u * normPlus x ≤
-            normPlus u * (‖x - u‖ * (1 + (1 + ‖u‖) / r)) :=
-          mul_le_mul_of_nonneg_left hplusBound huPlus.le
-        _ = K * ‖x - u‖ := by dsimp [K]; ring
+      nlinarith
     have hdistPos : 0 < ‖x - u‖ := lt_of_lt_of_le hr hdist
     have hratioPos : 0 < normPlus u * normPlus x / ‖x - u‖ :=
       div_pos (mul_pos huPlus (by unfold normPlus; positivity)) hdistPos
     have hkernel : gffKernel u x =
         Real.log (normPlus u * normPlus x / ‖x - u‖) := by
-      have hu0 : normPlus u ≠ 0 := huPlus.ne'
+      have hu0  := huPlus.ne'
       have hx0 : normPlus x ≠ 0 := by
         unfold normPlus
         positivity
-      have hd0 : ‖x - u‖ ≠ 0 := hdistPos.ne'
+      have hd0  := hdistPos.ne'
       rw [gffKernel, show ‖u - x‖ = ‖x - u‖ by simp [norm_sub_rev]]
       calc
         -Real.log ‖x - u‖ + Real.log (normPlus u) + Real.log (normPlus x) =
@@ -110,7 +100,7 @@ private theorem rooted_density_le_local_weighted_bound
           rw [← Real.log_mul hu0 hx0]
         _ = Real.log (normPlus u * normPlus x / ‖x - u‖) :=
           (Real.log_div (mul_ne_zero hu0 hx0) hd0).symm
-    have hlog : Real.log (normPlus u * normPlus x / ‖x - u‖) ≤ Real.log K :=
+    have hlog  :=
       Real.log_le_log hratioPos hratio
     have hkernelBound : gffKernel u x ≤ Real.log K := by rw [hkernel]; exact hlog
     have hexpBound : Real.exp (γ ^ 2 * gffKernel u x) ≤ K ^ (γ ^ 2) := by
@@ -129,8 +119,7 @@ theorem isFiniteMeasure_rooted_of_local_mass_any_root
     (μ : Measure ℂ) (hμ : IsFiniteMeasure μ)
     (hlocal : weightedGmcBallMass γ μ γ u r < ⊤) :
     IsFiniteMeasure (gmcRootedMeasure γ u μ) := by
-  have hinsertionBase : Measurable (fun x : ℂ => ENNReal.ofReal ‖x - u‖) := by
-    exact ENNReal.measurable_ofReal.comp (by fun_prop)
+  have hinsertionBase : Measurable (fun x : ℂ => ENNReal.ofReal ‖x - u‖) := ENNReal.measurable_ofReal.comp (by fun_prop)
   have hinsertion : Measurable (fun x : ℂ =>
       ENNReal.rpow (ENNReal.ofReal ‖x - u‖) (-γ ^ 2)) :=
     ENNReal.continuous_rpow_const.measurable.comp hinsertionBase
@@ -155,10 +144,7 @@ theorem isFiniteMeasure_rooted_of_local_mass_any_root
             measurable_const.mul hinsertionLocal),
           lintegral_const_mul _ hinsertionLocal, lintegral_indicator
           Metric.isOpen_ball.measurableSet, lintegral_const, weightedGmcBallMass]
-        congr 2
-        apply lintegral_congr
-        intro x
-        rw [show -γ ^ 2 = -γ * γ by ring]
+        noncomm_ring
   have hconstant : C * μ Set.univ < ⊤ := by
     dsimp [C]
     exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top hμ.measure_univ_lt_top
@@ -176,7 +162,7 @@ theorem ae_weighted_mass_finite_at_every_root
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (u : ℂ) :
     ∀ᵐ ω ∂P, weightedGmcBallMass γ (M ω) γ u (1 / 8) < ⊤ := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   obtain ⟨p, hp, hp1, hpRange⟩ := exists_subunit_order_below_gamma_insertion hγ hγ2
   let ξ : ℝ := 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2
   have he : 0 < ξ - γ * γ * p := by
@@ -188,9 +174,9 @@ theorem ae_weighted_mass_finite_at_every_root
     rwa [hid] at hs
   obtain ⟨C, hC, hball⟩ := gmc_ball_moment_sharp_upper_center P X hX γ hγ hγ2 M hM u p
     (lt_of_lt_of_le hpRange (min_le_left _ _))
-  have hmoment := rooted_local_moment_of_ball_upper P M
+  have hmoment := weightedGmcBallMoment_lt_top_of_ball_upper P M
     (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM)
-    γ γ p ξ C (1 / 8) u hγ hγ hp (by norm_num) hp1 (by norm_num) he hball
+    γ γ p ξ C (1 / 8) u hγ hγ hp (by norm_num) (by norm_num) he hball
   let f : ℂ → ℝ≥0∞ := (Metric.ball u (1 / 8)).indicator
     (fun x => ENNReal.rpow (ENNReal.ofReal ‖x - u‖) (-γ * γ))
   have hf : Measurable f := by
@@ -208,10 +194,9 @@ theorem ae_weighted_mass_finite_at_every_root
     hmoment.ne
   filter_upwards [hae] with ω hω
   by_contra hn
-  have ht : weightedGmcBallMass γ (M ω) γ u (1 / 8) = ⊤ := top_unique (not_lt.mp hn)
+  
   change weightedGmcBallMass γ (M ω) γ u (1 / 8) ^ p < ⊤ at hω
-  rw [ht, ENNReal.top_rpow_of_pos hp] at hω
-  exact (lt_self_iff_false _).mp hω
+  simp_all
 
 /-- The inserted chaos measure is almost surely finite for every deterministic root. -/
 theorem equatorGFF_rooted_measure_finite

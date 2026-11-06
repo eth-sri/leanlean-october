@@ -9,7 +9,7 @@ public import DOZZ.Correlations.Tails.OffCenterPinLaw
 
 /-! The exact critical moment of the actual independent pin prefactor. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 
@@ -43,11 +43,10 @@ theorem actual_prefactor_critical_moment
   rw [← integral_toReal (he.aemeasurable.pow_const _) (ae_of_all _ hfinite)]
   simp_rw [← ENNReal.toReal_rpow,ENNReal.toReal_ofReal (mul_nonneg
     (mul_nonneg hf.le (Real.rpow_nonneg (norm_nonneg _) _)) (Real.exp_nonneg _))]
-  have hzn : z ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (by linarith only [hz] : 0 < ‖z‖))
+  have hzn  := norm_ne_zero_iff.mp (ne_of_gt (by linarith only [hz] : 0 < ‖z‖))
   have hmoment := offCenter_prefactor_moment P (fun ω => Xc ω z 0)
     hN.hasGaussianLaw hm γ α f hγ hf z hzn hv
-  have hvarterm : γ^2*variance (fun ω => Xc ω z 0) P/2 = γ^2*Real.log ‖z‖ := by rw [hv]; ring
-  simpa only [hvarterm] using hmoment
+  grind
 
 
 end DOZZ.Proofs

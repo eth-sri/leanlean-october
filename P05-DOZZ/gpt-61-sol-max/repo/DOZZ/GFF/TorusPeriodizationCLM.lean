@@ -27,17 +27,20 @@ local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
   inferInstanceAs (IsProbabilityMeasure AddCircle.haarAddCircle)
 local instance : IsProbabilityMeasure (volume : Measure GFFUnitTorus2) := by infer_instance
 
+variable (L : ℝ) (f : ℂ →ᵇ ℝ)
+
+include L f in
 /-- Pull a bounded real function back along the measurable representative of the torus box. -/
-noncomputable def torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) : GFFUnitTorus2 → ℂ :=
+noncomputable def torusBCFFunction  : GFFUnitTorus2 → ℂ :=
   fun x => (f (torusBoxPoint L x) : ℂ)
 
-theorem measurable_torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) :
-    Measurable (torusBCFFunction L f) := by
-  unfold torusBCFFunction
-  exact (Complex.measurable_ofReal.comp f.continuous.measurable).comp
+include L f in
+theorem measurable_torusBCFFunction  :
+    Measurable (torusBCFFunction L f) := (Complex.measurable_ofReal.comp f.continuous.measurable).comp
     (measurable_torusBoxPoint L)
 
-theorem memLp_torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) :
+include L f in
+theorem memLp_torusBCFFunction  :
     MemLp (torusBCFFunction L f) 2 (volume : Measure GFFUnitTorus2) := by
   have hbound (x : GFFUnitTorus2) : ‖torusBCFFunction L f x‖ ≤ ‖f‖ := by
     simp only [torusBCFFunction, Complex.norm_real]
@@ -71,8 +74,7 @@ noncomputable def torusBCFToLp (L : ℝ) :
           ((memLp_torusBCFFunction L g).toLp (torusBCFFunction L g)) x := by
         rw [← hf, ← hg]
       _ = ((memLp_torusBCFFunction L f).toLp (torusBCFFunction L f) +
-          (memLp_torusBCFFunction L g).toLp (torusBCFFunction L g)) x := by
-        exact hadd.symm
+          (memLp_torusBCFFunction L g).toLp (torusBCFFunction L g)) x := hadd.symm
   map_smul' c f := by
     apply Lp.ext
     have hsmulLp :
@@ -89,10 +91,10 @@ noncomputable def torusBCFToLp (L : ℝ) :
         simp [torusBCFFunction]
       _ = c • ((memLp_torusBCFFunction L f).toLp (torusBCFFunction L f)) x := by
         rw [← hf]
-      _ = (c • (memLp_torusBCFFunction L f).toLp (torusBCFFunction L f)) x := by
-        exact hsmulLp.symm
+      _ = (c • (memLp_torusBCFFunction L f).toLp (torusBCFFunction L f)) x := hsmulLp.symm
 
-theorem norm_torusBCFToLp_le (L : ℝ) (f : ℂ →ᵇ ℝ) :
+include L f in
+theorem norm_torusBCFToLp_le  :
     ‖torusBCFToLp L f‖ ≤ ‖f‖ := by
   change ‖(memLp_torusBCFFunction L f).toLp (torusBCFFunction L f)‖ ≤ ‖f‖
   rw [Lp.norm_toLp]
@@ -129,20 +131,7 @@ noncomputable def torusPeriodizationLpCLM (L : ℝ) :
 @[simp]
 theorem torusPeriodizationLpCLM_apply (L : ℝ) (f : TestFn) :
     torusPeriodizationLpCLM L f = torusPeriodizationLp L f := by
-  change (memLp_torusBCFFunction L (f : ℂ →ᵇ ℝ)).toLp
-      (torusBCFFunction L (f : ℂ →ᵇ ℝ)) =
-    (memLp_torusPeriodizationFunction L f).toLp
-      (torusPeriodizationFunction L f)
-  apply Lp.ext
-  filter_upwards [(memLp_torusPeriodizationFunction L f).coeFn_toLp,
-    (memLp_torusBCFFunction L (f : ℂ →ᵇ ℝ)).coeFn_toLp] with x h₁ h₂
-  calc
-    (memLp_torusBCFFunction L (f : ℂ →ᵇ ℝ)).toLp
-        (torusBCFFunction L (f : ℂ →ᵇ ℝ)) x =
-        torusBCFFunction L (f : ℂ →ᵇ ℝ) x := h₂
-    _ = torusPeriodizationFunction L f x := rfl
-    _ = (memLp_torusPeriodizationFunction L f).toLp
-        (torusPeriodizationFunction L f) x := h₁.symm
+  continuity
 
 end DOZZ
 

@@ -15,7 +15,7 @@ location stays in the unit disk. The dominating mass retains the original positi
 charge at zero; it is almost surely finite throughout the strict Seiberg domain.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -26,7 +26,7 @@ theorem crossing_negative_factor_le (γ : ℝ) (z x : ℂ)
     ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - z‖)) (γ * (-γ / 2)) ≤
       ENNReal.ofReal ((1 / 2 : ℝ) ^ (γ * (-γ / 2))) := by
   have hn : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hd : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+  have hd  := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
   have hb : 1 / 2 ≤ normPlus x / ‖x - z‖ := by
     rw [le_div_iff₀ hd]
     have hh := norm_sub_le x z
@@ -77,7 +77,7 @@ theorem crossing_coulombMass_tendsto_seq (ν : Measure ℂ) (γ a b c : ℝ)
     have ha : ∀ᵐ x ∂ν, x ≠ z n := by rw [ae_iff]; simpa using hn n
     exact ha.mono fun x hx => crossing_coulombWeight_le γ a b c (z n) x (hb n) hx
   · rw [lintegral_const_mul C (measurable_coulombWeight _ _ _ _)]
-    exact (ENNReal.mul_lt_top ENNReal.ofReal_lt_top hfin.lt_top).ne
+    finiteness
   · have ha : ∀ᵐ x ∂ν, x ≠ (0 : ℂ) := by rw [ae_iff]; simpa using h0
     have ha1 : ∀ᵐ x ∂ν, x ≠ (1 : ℂ) := by rw [ae_iff]; simpa using h1
     filter_upwards [ha, ha1] with x hx hx1
@@ -87,22 +87,19 @@ theorem crossing_coulombMass_tendsto_seq (ν : Measure ℂ) (γ a b c : ℝ)
         (ENNReal.ofReal (normPlus x / ‖x - w‖)) ^ (γ * (-γ / 2))) 0
       apply ENNReal.continuous_rpow_const.continuousAt.comp
       apply ENNReal.continuous_ofReal.continuousAt.comp
-      apply ContinuousAt.div continuousAt_const
-      · fun_prop
-      · simpa only [sub_zero] using norm_ne_zero_iff.mpr hx
+      fun_prop (disch := aesop)
     have ht := hf.tendsto.comp hz
     simp only [coulombWeight, Fin.prod_univ_succ, Matrix.cons_val_zero,
       Matrix.cons_val_succ, Fin.prod_univ_zero, mul_one]
     have hp : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
     have hx0p : 0 < ‖x - 0‖ := by simpa only [sub_zero] using norm_pos_iff.mpr hx
-    have hx1p : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+    have hx1p  := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
     have hr : ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - 0‖)) (γ * a) *
         ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - 1‖)) (γ * b) *
         ENNReal.rpow (ENNReal.ofReal (normPlus x)) (γ * c) ≠ ⊤ := by
       rw [coulombWeight_rpow_ofReal (div_pos hp hx0p),
         coulombWeight_rpow_ofReal (div_pos hp hx1p), coulombWeight_rpow_ofReal hp]
-      exact ENNReal.mul_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top
-        ENNReal.ofReal_ne_top) ENNReal.ofReal_ne_top
+      finiteness
     simp only [mul_assoc] at hr ⊢
     exact ENNReal.Tendsto.mul_const ht (Or.inr hr)
 

@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.Brownian.LastExitReferenceAvoidance
+import Mathlib.Tactic
 
 /-!
 # Recentered reference-kernel avoidance
@@ -30,8 +31,7 @@ theorem measurableSet_brownianRationalFutureAbove (c : ℝ) :
   apply MeasurableSet.iInter
   intro r
   by_cases hr : 0 < (r : ℝ)
-  · simp only [dite_eq_left hr]
-    exact measurableSet_lt measurable_const (measurable_pi_apply r)
+  · measurability
   · simp [hr]
 
 private noncomputable def brownianReferenceRationalEvalMap (x : ℝ) :
@@ -99,24 +99,18 @@ theorem brownianUpperConditionedReferenceFutureKernel_avoidance_shift_lintegral
   let R : Set BrownianPath := E ⁻¹' A
   let S : Set BrownianPath := brownianPathStrictlyBelow (x - c)
   have hEval : Measurable E := measurable_brownianReferenceRationalEvalMap x
-  have hA : MeasurableSet A := measurableSet_brownianRationalFutureAbove c
-  have hR : MeasurableSet R := hA.preimage hEval
+  have hA  := measurableSet_brownianRationalFutureAbove c
+  
   have hS : MeasurableSet S := measurableSet_brownianPath_below (x - c)
   have hH : Measurable H := by
-    apply hG.comp
-    apply measurable_pi_iff.mpr
-    intro r
-    exact (measurable_pi_apply r).sub measurable_const
-  have hIntegrand : Measurable (A.indicator H) := hH.indicator hA
+    fun_prop (disch := positivity)
+  have hIntegrand  := hH.indicator hA
   have hAvoid : ∀ᵐ q ∂brownianBelowConditionedLaw B ν x, q ∈ R ↔ q ∈ S := by
     have hbase := brownianBelowConditionedLaw_rational_below_ae
       B hB ν (x - c) x hν (sub_pos.mpr hcx) (by linarith)
     filter_upwards [hbase] with q hq
-    have hiff : E q ∈ A ↔ q ∈ brownianPositiveRationalBelow (x - c) := by
-      simpa [E, A, brownianReferenceRationalEvalMap] using
-        brownianReferenceRationalAvoidance_iff_below x c q
-    change (E q ∈ A ↔ q ∈ brownianPathStrictlyBelow (x - c))
-    exact hiff.trans hq
+    have hiff  := id (brownianReferenceRationalAvoidance_iff_below x c q)
+    continuity
   have hMapX := brownianUpperConditionedReferenceFutureKernel_apply_conditioned
     B ν x hν (by linarith : 0 < x)
   have hMapXc := brownianUpperConditionedReferenceFutureKernel_apply_conditioned
@@ -126,8 +120,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_avoidance_shift_lintegral
     measurable_brownianUpperConditionedPositiveRationalEvals.comp
       ((measurable_const (a := x - c)).prodMk measurable_id)
   let F : BrownianPath → ℝ≥0∞ := fun q => G (brownianPathRationalEvals q)
-  have hF : Measurable F := by
-    exact hG.comp measurable_brownianPathRationalEvals
+  have hF  := hG.comp measurable_brownianPathRationalEvals
   calc
     (∫⁻ y, A.indicator H y ∂
         brownianUpperConditionedReferenceFutureKernel B ν hν x) =
@@ -135,9 +128,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_avoidance_shift_lintegral
         rw [hMapX, lintegral_map hIntegrand hEval]
     _ = ∫⁻ q, R.indicator (fun q => G (fun r => E q r - c)) q ∂
         brownianBelowConditionedLaw B ν x := by
-        apply lintegral_congr
-        intro q
-        simp [A, H, R, Set.indicator_apply]
+        abel
     _ = ∫⁻ q, S.indicator (fun q => G (fun r => E q r - c)) q ∂
         brownianBelowConditionedLaw B ν x := by
         apply lintegral_congr_ae
@@ -155,8 +146,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_avoidance_shift_lintegral
        ; ring
     _ = ENNReal.ofReal (lastExitAvoidanceFactor ν c x) *
         ∫⁻ q, F (brownianUpperConditionedPositivePath (x - c) q) ∂
-            brownianBelowConditionedLaw B ν (x - c) := by
-        exact brownianBelowConditionedLaw_avoidance_shift_integral B hB ν c x
+            brownianBelowConditionedLaw B ν (x - c) := brownianBelowConditionedLaw_avoidance_shift_integral B hB ν c x
           hν hc hcx _ hF
     _ = ENNReal.ofReal (lastExitAvoidanceFactor ν c x) *
       ∫⁻ y, G y ∂brownianUpperConditionedReferenceFutureKernel B ν hν (x - c) := by

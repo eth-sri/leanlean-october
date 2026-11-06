@@ -17,7 +17,7 @@ zero-mode and reflection normalizations give the full complex asymptotic with th
 witness, and its positive-ray specialization is fed to the diagonal classification.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -116,11 +116,7 @@ let κ := (4 / γ) * (Q γ - α₁)
       (𝓝[≠] (0 : ℂ)) (𝓝 D) := by
     change Tendsto (fun z : ℂ => (E z-E₀)/‖z‖^κ) _ (𝓝 L) at hLimit
     have ht := hLimit.const_mul N
-    rw [hcoeff] at ht
-    apply ht.congr'
-    filter_upwards [] with z
-    rw [hT, ← hzero]
-    ring
+    grind
   let r : ℂ → ℝ := fun z => fourPointT P M γ μ (-2/γ) α₁ α₂ α₃ z-C₀-D*‖z‖^κ
   dsimp only
   constructor
@@ -133,9 +129,7 @@ let κ := (4 / γ) * (Q γ - α₁)
       apply ht.congr'
       filter_upwards [self_mem_nhdsWithin] with z hz
       have hn : ‖z‖^κ ≠ 0 := (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) _).ne'
-      change (fourPointT P M γ μ (-2/γ) α₁ α₂ α₃ z-C₀)/‖z‖^κ-D =
-        ((fourPointT P M γ μ (-2/γ) α₁ α₂ α₃ z-C₀)-D*‖z‖^κ)/‖z‖^κ
-      simp only [sub_div, mul_div_cancel_right₀ _ hn]
+      grind
   · have hcast : Tendsto (fun t : ℝ => (t : ℂ))
         (𝓝[>] (0 : ℝ)) (𝓝[≠] (0 : ℂ)) := by
       apply tendsto_nhdsWithin_iff.mpr

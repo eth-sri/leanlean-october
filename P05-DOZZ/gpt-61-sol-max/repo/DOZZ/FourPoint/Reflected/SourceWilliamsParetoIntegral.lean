@@ -5,11 +5,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Reflected.WilliamsParetoIntegral
 public import DOZZ.FourPoint.Reflected.WilliamsRealCutData
-public import DOZZ.FourPoint.Reflected.SourceParetoWeights
+public import DOZZ.FourPoint.Reflected.SourceRadialMoments
 public import DOZZ.FourPoint.Reflected.ReferenceParetoLaw
 import Mathlib.Tactic
 /-! Signed Williams expectation bounds on the supplied source and reflection carriers. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -40,8 +40,11 @@ theorem reflected_source_williams_pareto_integral
   let _ : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα₁)
   let A := fun ω => (gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal
   let b := reflected_radial_scale γ ν h Xc z
-  obtain ⟨hAp,-,-⟩ := reflected_source_pareto_weights_integrable P X hX γ hγ hγ₂ M hM
-    Xc hc ν h p α₁ α₂ α₃ ξ (sub_pos.mpr hα₁) hh hp hξ hξ₁ hα₁ hα₂ hα₃ z hz0 hz1 hz
+  have hr : ‖z‖^(1-ξ) ≤ 1 := by
+    simpa only [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz (sub_nonneg.mpr hξ₁.le)
+  have hAp := (reflected_source_outerMass_positive_finite_ae P X hX γ hγ hγ₂ M hM
+    α₁ α₂ α₃ ξ hα₁ hα₂ hα₃ z hz0 hz1 hz hr).mono
+      fun ω hω => ENNReal.toReal_pos hω.1.ne' hω.2.ne
   have hInv := (reflected_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
     ν h 0 α₁ α₂ α₃ ξ p hh hξ hξ₁ hp.le z hz0 hz).1
   simp only [Real.rpow_zero,one_mul] at hInv

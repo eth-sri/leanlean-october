@@ -4,8 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
 public import DOZZ.Roots.MainConditional
+public import DOZZ.ShiftEquations.ContinuationContracts
 /-! # Conditional assembly of the unit-volume DOZZ root -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 universe u
@@ -22,21 +23,7 @@ theorem dozz_unitVolume_of_residual_factor (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : 
     (_hη : 0 < η ∧ Q γ - 2 * η > γ ∧ 3 * η < Q γ)
     (_hX : IsEquatorGFF P X) (_hM : IsGMCOf P X γ M)
     (_hU : IsUpsilon γ U),
-    ∃ B : ℝ → Ω → BrownianPath ×
-        BrownianPath,
-      ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ M Z ∧
-          (∀ α, γ / 2 < α → α < Q γ →
-            IsReflectionData P γ α (B α) Z) ∧
-            ∃ cγ : ℂ, cγ = 1 ∧
-              ∀ α₁ α₂ α₃ : ℝ,
-                Q γ - η < α₁ → α₁ < Q γ →
-                Q γ - η < α₂ → α₂ < Q γ →
-                Q γ - η < α₃ → α₃ < Q γ →
-                  (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ) =
-                    cγ * ((μ : ℂ) ^ ((sExp γ α₁ α₂ α₃ : ℂ)) /
-                      Complex.Gamma (sExp γ α₁ α₂ α₃ : ℂ) *
-                        dozzFormula γ μ U (α₁ : ℂ) (α₂ : ℂ) (α₃ : ℂ))) :
+    Contract.residualUnitVolume P X M γ μ η U) :
     Tendsto
       (fun a : ℝ × ℝ × ℝ =>
         ((μ : ℂ) ^ (sExp γ a.1 a.2.1 a.2.2 : ℂ) / Complex.Gamma (sExp γ a.1 a.2.1 a.2.2)) *

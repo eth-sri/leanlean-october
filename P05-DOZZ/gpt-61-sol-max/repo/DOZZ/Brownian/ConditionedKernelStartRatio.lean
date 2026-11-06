@@ -14,7 +14,7 @@ hyperbolic ratio `sinh((x/t)y)/sinh((x'/t)y)`. This is the start-order density c
 the explicit-kernel coupling argument.
 -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
@@ -24,7 +24,7 @@ private theorem conditionedH_pos_of_nonneg
   · simp [conditionedH, hzero, hx]
   · simp only [conditionedH, ite_eq_right hzero]
     apply sub_pos.mpr
-    have hνpos : 0 < ν := lt_of_le_of_ne hν (Ne.symm hzero)
+    have hνpos  := lt_of_le_of_ne hν (Ne.symm hzero)
     apply (Real.exp_lt_one_iff).2
     nlinarith
 
@@ -57,13 +57,13 @@ theorem conditionedPositiveTransitionDensity_eq_start_ratio_mul
         conditionedH ν x' / conditionedH ν x) *
         conditionedKernelParameterRatio (x' / t) (x / t) y *
           conditionedPositiveTransitionDensity ν t x' y := by
-  have hx : 0 < x := lt_of_lt_of_le hx' hxx'
+  have hx  := lt_of_lt_of_le hx' hxx'
   have hHx := conditionedH_pos_of_nonneg hν hx
   have hHx' := conditionedH_pos_of_nonneg hν hx'
   have hHy := conditionedH_pos_of_nonneg hν hy
-  have hsa : 0 < Real.sinh (x' * y / t) :=
+  have hsa  :=
     Real.sinh_pos_iff.mpr (div_pos (mul_pos hx' hy) ht)
-  have hsb : 0 < Real.sinh (x * y / t) :=
+  have hsb  :=
     Real.sinh_pos_iff.mpr (div_pos (mul_pos hx hy) ht)
   have hheatx := brownianHeatDensity_sub_factor ht (x := x) (y := y)
   have hheatx' := brownianHeatDensity_sub_factor ht (x := x') (y := y)
@@ -73,9 +73,7 @@ theorem conditionedPositiveTransitionDensity_eq_start_ratio_mul
   simp only [conditionedKernelParameterRatio]
   field_simp [hHx.ne', hHx'.ne', hHy.ne', hsa.ne', hsb.ne', ht.ne']
   simp_rw [← Real.exp_add]
-  apply congrArg Real.exp
-  field_simp [ht.ne']
-  ring_nf
+  field_simp <;> ring
 
 private theorem conditionedPositiveTransitionDensity_pos_of_nonneg
     {ν t x y : ℝ} (hν : 0 ≤ ν) (ht : 0 < t) (hx : 0 < x) (hy : 0 < y) :
@@ -84,8 +82,6 @@ private theorem conditionedPositiveTransitionDensity_pos_of_nonneg
   have hHᵧ := conditionedH_pos_of_nonneg hν hy
   have hheat : 0 < brownianHeatDensity t (y - x) - brownianHeatDensity t (y + x) := by
     rw [brownianHeatDensity_sub_factor ht]
-    have hsin : 0 < Real.sinh (x * y / t) :=
-      Real.sinh_pos_iff.mpr (div_pos (mul_pos hx hy) ht)
     positivity
   simp only [conditionedPositiveTransitionDensity, hν, ht, hx, hy,
     and_self, ite_true]
@@ -100,12 +96,11 @@ theorem conditionedPositiveTransitionDensity_start_ratio_monotoneOn_state
     MonotoneOn
       (fun y => conditionedPositiveTransitionDensity ν t x y /
         conditionedPositiveTransitionDensity ν t x' y) (Set.Ioi 0) := by
-  have hx : 0 < x := lt_of_lt_of_le hx' hxx'
+  have hx  := lt_of_lt_of_le hx' hxx'
   have hratio := conditionedKernelParameterRatio_monotoneOn_state
     (div_pos hx' ht) ((div_le_div_iff_of_pos_right ht).2 hxx')
   have hconst : 0 < Real.exp (-ν * (x - x') - (x ^ 2 - x' ^ 2) / (2 * t)) *
-      conditionedH ν x' / conditionedH ν x := by
-    exact div_pos (mul_pos (Real.exp_pos _) (conditionedH_pos_of_nonneg hν hx'))
+      conditionedH ν x' / conditionedH ν x := div_pos (mul_pos (Real.exp_pos _) (conditionedH_pos_of_nonneg hν hx'))
       (conditionedH_pos_of_nonneg hν hx)
   have hfactor (y : ℝ) (hy : 0 < y) :
       conditionedPositiveTransitionDensity ν t x y /
@@ -117,14 +112,14 @@ theorem conditionedPositiveTransitionDensity_start_ratio_monotoneOn_state
     have hden := conditionedPositiveTransitionDensity_pos_of_nonneg hν ht hx' hy
     field_simp [hden.ne']
   intro y₁ hy₁ y₂ hy₂ hyy
-  have hy₁' : 0 < y₁ := by simpa using hy₁
-  have hy₂' : 0 < y₂ := by simpa using hy₂
+  have hy₁' : 0 < y₁ := hy₁
+  have hy₂' : 0 < y₂ := hy₂
   change conditionedPositiveTransitionDensity ν t x y₁ /
       conditionedPositiveTransitionDensity ν t x' y₁ ≤
     conditionedPositiveTransitionDensity ν t x y₂ /
       conditionedPositiveTransitionDensity ν t x' y₂
   rw [hfactor y₁ hy₁', hfactor y₂ hy₂']
-  exact mul_le_mul_of_nonneg_left (hratio hy₁' hy₂' hyy) (le_of_lt hconst)
+  bound
 
 end DOZZ.Proofs
 

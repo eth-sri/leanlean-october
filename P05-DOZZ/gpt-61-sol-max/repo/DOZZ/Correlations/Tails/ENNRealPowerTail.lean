@@ -11,7 +11,7 @@ public import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic
 
 /-! Moment bounds for the literal extended-real remainder events. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 
@@ -28,7 +28,7 @@ theorem ennreal_power_tail_le_moment
     intro ω hω
     rw [← ENNReal.ofReal_rpow_of_pos hh]
     exact ENNReal.rpow_le_rpow hω.le hr.le
-  have hp : ENNReal.ofReal (h^r) ≠ 0 :=
+  have hp  :=
     (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos hh r)).ne'
   have hb0 := meas_ge_le_lintegral_div (hE.pow_const r) hp ENNReal.ofReal_ne_top
   change P {ω | ENNReal.ofReal (h^r) ≤ E ω^r} ≤ (∫⁻ ω, E ω^r ∂P)/ENNReal.ofReal (h^r) at hb0

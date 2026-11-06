@@ -72,7 +72,7 @@ theorem symmetryCorrectedRho_repinned {Ω : Type*} (γ a b c : ℝ) (hγ : γ �
         γ * (a + b + c) * symmetryReflectionPotential (1 - x) := by
       rw [← add_mul, add_comm (γ ^ 2 + 4), symmetry_reflection_total_exponent γ a b c hγ]
     rw [he, ← rho_reflection_density γ a b c (1 - x)]
-    rw [show (1 : ℂ) - (1 - x) = x from symmetryReflection_involutive x])
+    simp_all)
 
 /-- Spatial Cameron--Martin cancellation leaves only the scalar normalization. -/
 theorem symmetryCorrectedRho_tilt (γ a b c : ℝ) (μ : Measure ℂ) :

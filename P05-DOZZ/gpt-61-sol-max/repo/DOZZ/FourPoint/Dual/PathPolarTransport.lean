@@ -8,23 +8,18 @@ public import DOZZ.FourPoint.Dual.PathLikelihood
 public import DOZZ.FourPoint.Reflected.CopiedPolarTransport
 import Mathlib.Tactic
 /-! The full radial-path/exterior law transports the actual independent restarted polar mass. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω Λ Ξ : Type*} [_inst1 : MeasurableSpace Ω] [_inst2 : MeasurableSpace Λ] [_inst3 : MeasurableSpace Ξ] (P : Measure Ω) (R : Measure Λ) (S : Measure Ξ) [_inst7 : IsProbabilityMeasure P] [_inst8 : IsProbabilityMeasure R] [_inst9 : IsProbabilityMeasure S] (A : Ω → TwoSidedPath) (A' : Λ → TwoSidedPath) (O : Ω → ℝ≥0∞) (O' : Λ → ℝ≥0∞) (Z : Ξ → Measure ℝ) (hA : AEMeasurable A P) (hA' : AEMeasurable A' R) (hO : AEMeasurable O P) (hO' : AEMeasurable O' R) (hZ : AEMeasurable Z S) (hfin : ∀ᵐ ω ∂S, ∀ a b : ℝ, Z ω (Icc a b) < ⊤) (hlaw : P.map (fun ω => (A ω,O ω)) = R.map (fun ω => (A' ω,O' ω)))
+
+include Ω Λ Ξ _inst1 _inst2 _inst3 P R S _inst7 _inst8 _inst9 A A' O O' Z hA hA' hO hO' hZ hfin hlaw in
 /-- Transport a restarted polar increment with its full radial path and exterior mass.
 Local finiteness discharges the measurable polar-code identification on both source spaces. -/
 theorem dual_path_outer_polar_integral_transport
-    {Ω Λ Ξ : Type*} [MeasurableSpace Ω] [MeasurableSpace Λ] [MeasurableSpace Ξ]
-    (P : Measure Ω) (R : Measure Λ) (S : Measure Ξ)
-    [IsProbabilityMeasure P] [IsProbabilityMeasure R] [IsProbabilityMeasure S]
-    (A : Ω → TwoSidedPath) (A' : Λ → TwoSidedPath)
-    (O : Ω → ℝ≥0∞) (O' : Λ → ℝ≥0∞) (Z : Ξ → Measure ℝ)
-    (hA : AEMeasurable A P) (hA' : AEMeasurable A' R)
-    (hO : AEMeasurable O P) (hO' : AEMeasurable O' R)
-    (hZ : AEMeasurable Z S) (hfin : ∀ᵐ ω ∂S, ∀ a b : ℝ, Z ω (Icc a b) < ⊤)
-    (hlaw : P.map (fun ω => (A ω,O ω)) = R.map (fun ω => (A' ω,O' ω)))
+    
     (γ ν h p : ℝ) (z : ℂ) (T : ℝ≥0) :
     (∫ ω : Ω × Ξ,
       ((O ω.1).toReal + dualPathRadialScale γ ν h z (A ω.1)*
@@ -49,9 +44,7 @@ theorem dual_path_outer_polar_integral_transport
     have hb : Measurable (fun v : (TwoSidedPath × ℝ≥0∞) × Measure ℝ =>
         dualPathRadialScale γ ν h z v.1.1) := (dual_path_radial_scale_measurable γ ν h z).comp
       (measurable_fst.comp measurable_fst)
-    exact (((measurable_snd.comp measurable_fst).ennreal_toReal.add
-      (hb.mul hm.ennreal_toReal)).pow_const (-p)).sub
-        ((measurable_snd.comp measurable_fst).ennreal_toReal.pow_const (-p))
+    fun_prop (disch := positivity)
   have he := dual_joint_law_independent_inner_integral P R S
     (fun ω => (A ω,O ω)) (fun ω => (A' ω,O' ω)) Z
     (hA.prodMk hO) (hA'.prodMk hO') hZ hlaw H hHm
@@ -78,18 +71,11 @@ theorem dual_path_outer_polar_integral_transport
   rw [hidP, hidR] at he
   exact he
 
+include Ω Λ Ξ _inst1 _inst2 _inst3 P R S _inst7 _inst8 _inst9 A A' O O' Z hA hA' hO hO' hZ hfin hlaw in
 /-- Finiteness of the actual polar mass transfers under the full-path/exterior law,
 using the locally finite measurable polar code before taking real values. -/
 theorem dual_path_outer_polar_finite_transport
-    {Ω Λ Ξ : Type*} [MeasurableSpace Ω] [MeasurableSpace Λ] [MeasurableSpace Ξ]
-    (P : Measure Ω) (R : Measure Λ) (S : Measure Ξ)
-    [IsProbabilityMeasure P] [IsProbabilityMeasure R] [IsProbabilityMeasure S]
-    (A : Ω → TwoSidedPath) (A' : Λ → TwoSidedPath)
-    (O : Ω → ℝ≥0∞) (O' : Λ → ℝ≥0∞) (Z : Ξ → Measure ℝ)
-    (hA : AEMeasurable A P) (hA' : AEMeasurable A' R)
-    (hO : AEMeasurable O P) (hO' : AEMeasurable O' R)
-    (hZ : AEMeasurable Z S) (hfin : ∀ᵐ ω ∂S, ∀ a b : ℝ, Z ω (Icc a b) < ⊤)
-    (hlaw : P.map (fun ω => (A ω,O ω)) = R.map (fun ω => (A' ω,O' ω)))
+    
     (γ ν : ℝ) (T : ℝ≥0) :
     (∀ᵐ ω : Ω × Ξ ∂P.prod S, (∫⁻ t,
       (if 0 < t then ENNReal.ofReal (Real.exp (γ*

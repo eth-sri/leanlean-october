@@ -10,6 +10,7 @@ public import Mathlib.Probability.Distributions.Gaussian.Multivariate
 public import Mathlib.Probability.Distributions.Gaussian.Fernique
 public import Mathlib.MeasureTheory.Integral.Pi
 public import Mathlib.LinearAlgebra.Matrix.BilinearForm
+import Mathlib.Tactic
 
 /-! Finite-dimensional Gaussian translation from the standard Gaussian density. -/
 
@@ -53,11 +54,8 @@ lemma lintegral_pi_prod_fin : ∀ n (α : Type*) [MeasurableSpace α]
       let F : α × (Fin n → α) → ENNReal :=
         fun y => f 0 y.1 * ∏ j, f j.succ (y.2 j)
       have htail : Measurable (fun y : Fin n → α => ∏ j, f j.succ (y j)) := by
-        apply Finset.measurable_prod
-        intro j hj
-        exact (hf j.succ).comp (measurable_pi_apply j)
-      have hF : Measurable F := by
-        exact (hf 0).comp measurable_fst |>.mul (htail.comp measurable_snd)
+        fun_prop (disch := positivity)
+
       calc
         ∫⁻ x, ∏ i, f i (x i) ∂Measure.pi (fun _ : Fin (n + 1) => μ)
             = ∫⁻ y, F y ∂μ.prod (Measure.pi (fun _ : Fin n => μ)) := by
@@ -87,7 +85,7 @@ lemma ennreal_exp_fin_sum {n : ℕ} (b : Fin n → ℝ) :
         simp only [Finset.sum_insert his, Finset.prod_insert his, Real.exp_add]
         rw [ENNReal.ofReal_mul (by positivity)]
         rw [ih]
-  simpa using h Finset.univ
+  exact h Finset.univ
 
 lemma pi_gaussian_tilt {n : ℕ} (c : Fin n → ℝ) :
     (Measure.pi (fun _ : Fin n => gaussianReal 0 1)).withDensity
@@ -95,7 +93,7 @@ lemma pi_gaussian_tilt {n : ℕ} (c : Fin n → ℝ) :
       Measure.pi (fun i => gaussianReal (c i) 1) := by
   classical
   let base : Fin n → Measure ℝ := fun _ => gaussianReal 0 1
-  let tilt : Fin n → ℝ → ENNReal := fun i x => ENNReal.ofReal (Real.exp (c i * x - c i ^ 2 / 2))
+  let tilt  := fun i x => ENNReal.ofReal (Real.exp (c i * x - c i ^ 2 / 2))
   let density : (Fin n → ℝ) → ENNReal := fun x => ENNReal.ofReal (Real.exp ((∑ i, c i * x i) - (∑ i, c i ^ 2) / 2))
   have hdensity (x : Fin n → ℝ) : density x = ∏ i, tilt i (x i) := by
     dsimp [density, tilt]
@@ -112,19 +110,16 @@ lemma pi_gaussian_tilt {n : ℕ} (c : Fin n → ℝ) :
         ∏ i, (gaussianReal (c i) 1) (s i) := by
     intro s hs
     rw [withDensity_apply density (MeasurableSet.univ_pi hs)]
-    let f : (i : Fin n) → ℝ → ENNReal := fun i x => (s i).indicator (tilt i) x
+    let f  := fun i x => (s i).indicator (tilt i) x
     have hf : ∀ i, Measurable (f i) := by
-      intro i
-      exact (htilt_meas i).indicator (hs i)
+      fun_prop (disch := aesop)
     have hpoint (x : Fin n → ℝ) :
         (Set.univ.pi s).indicator (fun x => ∏ i, tilt i (x i)) x = ∏ i, f i (x i) := by
       by_cases hx : ∀ i, x i ∈ s i
-      · have hr : x ∈ Set.univ.pi s := Set.mem_univ_pi.mpr hx
-        simp [f, hr, hx]
+      · continuity
       · obtain ⟨i, hi⟩ := not_forall.mp hx
         have hr : x ∉ Set.univ.pi s := by
-          intro h
-          exact hi ((Set.mem_univ_pi.mp h) i)
+          simp_all
         have hz : ∏ j, f j (x j) = 0 :=
           Finset.prod_eq_zero (Finset.mem_univ i) (by simp [f, hi])
         simp [f, hr, hz]
@@ -132,12 +127,10 @@ lemma pi_gaussian_tilt {n : ℕ} (c : Fin n → ℝ) :
       _ = ∫⁻ x, (Set.univ.pi s).indicator (fun x => ∏ i, tilt i (x i)) x ∂Measure.pi base := by
             rw [← lintegral_indicator (MeasurableSet.univ_pi hs)]
             apply lintegral_congr_ae
-            have hd : density = fun x => ∏ i, tilt i (x i) := funext hdensity
-            exact ae_of_all _ (fun x => congrArg (fun g => (Set.univ.pi s).indicator g x) hd)
+            have hd  := funext hdensity
+            simp_all
       _ = ∫⁻ x, ∏ i, f i (x i) ∂Measure.pi base := by
-            congr 1
-            funext x
-            exact hpoint x
+            simp_all
       _ = ∏ i, ∫⁻ x, f i x ∂gaussianReal 0 1 := lintegral_pi_prod_fin n ℝ (gaussianReal 0 1) f hf
       _ = ∏ i, gaussianReal (c i) 1 (s i) := by
             apply Finset.prod_congr rfl
@@ -161,9 +154,7 @@ lemma stdGaussian_tilt {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ
   let shift : (Fin (Module.finrank ℝ E) → ℝ) → (Fin (Module.finrank ℝ E) → ℝ) :=
     fun x i => x i + c i
   have hB : Measurable B := by fun_prop
-  have hc (i : Fin (Module.finrank ℝ E)) : c i = ⟪b i, v⟫ := by
-    dsimp [c]
-    exact real_inner_comm _ _
+  have hc (i : Fin (Module.finrank ℝ E)) : c i = ⟪b i, v⟫ := real_inner_comm _ _
   have hnorm : ‖v‖ ^ 2 = ∑ i, c i ^ 2 := by
     calc
       ‖v‖ ^ 2 = ‖b.repr v‖ ^ 2 := by rw [← b.repr.norm_map v]
@@ -187,8 +178,7 @@ lemma stdGaussian_tilt {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ
             rw [add_smul]
           _ = (∑ i, x i • b i) + ∑ i, c i • b i := by rw [Finset.sum_add_distrib]
       _ = B x + v := by rw [hrepr]
-  have htilt : (Measure.pi base).withDensity density = Measure.pi (fun i => gaussianReal (c i) 1) := by
-    simpa [base, density] using pi_gaussian_tilt c
+  have htilt : (Measure.pi base).withDensity density = Measure.pi (fun i => gaussianReal (c i) 1) := pi_gaussian_tilt c
   have hshift_meas : Measurable shift := by fun_prop
   have hshift : (Measure.pi base).map shift = Measure.pi (fun i => gaussianReal (c i) 1) := by
     rw [Measure.pi_map_pi (f := fun i x => x + c i) (fun i => by fun_prop)]
@@ -197,25 +187,17 @@ lemma stdGaussian_tilt {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ
   calc
     ∫⁻ z, ENNReal.ofReal (Real.exp (⟪v, z⟫ - ‖v‖ ^ 2 / 2)) * F z ∂(stdGaussian E)
         = ∫⁻ x, ENNReal.ofReal (Real.exp (⟪v, B x⟫ - ‖v‖ ^ 2 / 2)) * F (B x)
-            ∂Measure.pi base := by
-              rw [stdGaussian_eq_map_pi_orthonormalBasis b]
-              exact lintegral_map (by fun_prop) hB
+            ∂Measure.pi base := lintegral_map (by fun_prop) hB
     _ = ∫⁻ x, F (B x) ∂(Measure.pi base).withDensity density := by
           rw [lintegral_withDensity_eq_lintegral_mul (Measure.pi base) (by fun_prop) (by fun_prop)]
-          apply lintegral_congr_ae
-          exact ae_of_all _ (fun x => by
-            change ENNReal.ofReal (Real.exp (⟪v, B x⟫ - ‖v‖ ^ 2 / 2)) * F (B x) = density x * F (B x)
-            rw [hweight x])
+          simp_all
     _ = ∫⁻ x, F (B x) ∂Measure.pi (fun i => gaussianReal (c i) 1) := by rw [htilt]
     _ = ∫⁻ x, F (B (shift x)) ∂Measure.pi base := by
           rw [← hshift]
           exact lintegral_map (hF.comp hB) hshift_meas
     _ = ∫⁻ x, F (B x + v) ∂Measure.pi base := by
-          apply lintegral_congr_ae
-          exact ae_of_all _ (fun x => congrArg F (hBshift x))
-    _ = ∫⁻ z, F (z + v) ∂(stdGaussian E) := by
-          rw [stdGaussian_eq_map_pi_orthonormalBasis b]
-          exact (lintegral_map (hF.comp (measurable_id.add_const v)) hB).symm
+          simp_all
+    _ = ∫⁻ z, F (z + v) ∂(stdGaussian E) := (lintegral_map (hF.comp (measurable_id.add_const v)) hB).symm
 
 lemma multivariateGaussian_tilt {ι : Type*} [Fintype ι] [DecidableEq ι]
     (S : Matrix ι ι ℝ) (hS : S.PosSemidef) (a : EuclideanSpace ℝ ι)
@@ -227,9 +209,8 @@ lemma multivariateGaussian_tilt {ι : Type*} [Fintype ι] [DecidableEq ι]
   let A : EuclideanSpace ℝ ι →L[ℝ] EuclideanSpace ℝ ι :=
     toEuclideanCLM (𝕜 := ℝ) (CFC.sqrt S)
   let sh : EuclideanSpace ℝ ι := WithLp.toLp 2 (Matrix.mulVec S a.ofLp)
-  have hsqrt : IsSelfAdjoint (CFC.sqrt S) := (CFC.sqrt_nonneg S).isSelfAdjoint
-  have hAself : IsSelfAdjoint A := by
-    exact hsqrt.map (toEuclideanCLM (𝕜 := ℝ))
+  have hsqrt  := (CFC.sqrt_nonneg S).isSelfAdjoint
+  have hAself : IsSelfAdjoint A := hsqrt.map (toEuclideanCLM (𝕜 := ℝ))
   have hAinner (x z : EuclideanSpace ℝ ι) : ⟪x, A z⟫ = ⟪A x, z⟫ := by
     calc
       ⟪x, A z⟫ = ⟪A.adjoint x, z⟫ := (ContinuousLinearMap.adjoint_inner_left A z x).symm
@@ -243,8 +224,7 @@ lemma multivariateGaussian_tilt {ι : Type*} [Fintype ι] [DecidableEq ι]
       ‖A a‖ ^ 2 = ⟪A a, A a⟫ := (real_inner_self_eq_norm_sq (A a)).symm
       _ = ⟪a, A (A a)⟫ := (hAinner a (A a)).symm
       _ = ⟪a, sh⟫ := by rw [hA2]
-  have hshift (z : EuclideanSpace ℝ ι) : A (z + A a) = A z + sh := by
-    rw [map_add, hA2]
+
   have hstd := stdGaussian_tilt (A a) (fun z => F (A z)) (hF.comp A.continuous.measurable)
   calc
     ∫⁻ y, ENNReal.ofReal (Real.exp (⟪a, y⟫ - ⟪a, sh⟫ / 2)) * F y ∂multivariateGaussian 0 S
@@ -255,15 +235,10 @@ lemma multivariateGaussian_tilt {ι : Type*} [Fintype ι] [DecidableEq ι]
               exact lintegral_map (by fun_prop) A.continuous.measurable
     _ = ∫⁻ z, ENNReal.ofReal (Real.exp (⟪A a, z⟫ - ‖A a‖ ^ 2 / 2)) * F (A z)
             ∂stdGaussian (EuclideanSpace ℝ ι) := by
-              apply lintegral_congr_ae
-              exact ae_of_all _ (fun z => by
-                change ENNReal.ofReal (Real.exp (⟪a, A z⟫ - ⟪a, sh⟫ / 2)) * F (A z) =
-                  ENNReal.ofReal (Real.exp (⟪A a, z⟫ - ‖A a‖ ^ 2 / 2)) * F (A z)
-                rw [hAinner a z, hnorm])
+              simp_all
     _ = ∫⁻ z, F (A (z + A a)) ∂stdGaussian (EuclideanSpace ℝ ι) := hstd
     _ = ∫⁻ z, F (A z + sh) ∂stdGaussian (EuclideanSpace ℝ ι) := by
-          apply lintegral_congr_ae
-          exact ae_of_all _ (fun z => congrArg F (hshift z))
+          simp_all
     _ = ∫⁻ y, F (y + sh) ∂multivariateGaussian 0 S := by
           rw [multivariateGaussian]
           simp only [zero_add]
@@ -271,8 +246,10 @@ lemma multivariateGaussian_tilt {ι : Type*} [Fintype ι] [DecidableEq ι]
             (hF.comp (measurable_id.add_const sh)) A.continuous.measurable).symm
 
 
-lemma coord_mean {Ω : Type*} [MeasurableSpace Ω] {ι : Type*} [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : DOZZ.IsCenteredJointlyGaussian P Z)
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] {ι : Type*} [_inst3 : Fintype ι] (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : DOZZ.IsCenteredJointlyGaussian P Z)
+
+include Ω _inst1 ι _inst3 P Z hZ in
+lemma coord_mean
     (i : ι) [DecidableEq ι] : ∫ ω, Z ω i ∂P = 0 := by
   let a : ι → ℝ := fun j => if j = i then 1 else 0
   obtain ⟨hmem, ⟨v, hmap⟩⟩ := hZ.2.2 a
@@ -291,15 +268,12 @@ lemma coord_mean {Ω : Type*} [MeasurableSpace Ω] {ι : Type*} [Fintype ι]
     _ = ∫ x, x ∂gaussianReal 0 v := by rw [hmap']
     _ = 0 := by simp
 
-lemma coord_memLp {Ω : Type*} [MeasurableSpace Ω] {ι : Type*} [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : DOZZ.IsCenteredJointlyGaussian P Z)
+include Ω _inst1 ι _inst3 P Z hZ in
+lemma coord_memLp
     (i : ι) [DecidableEq ι] : MemLp (fun ω => Z ω i) 2 P := by
   let a : ι → ℝ := fun j => if j = i then 1 else 0
   have hm := (hZ.2.2 a).1
-  have heq : (fun ω => ∑ j, a j * Z ω j) = (fun ω => Z ω i) := by
-    funext ω
-    simp [a]
-  simpa [heq] using hm
+  continuity
 
 theorem represent {Ω : Type*} [MeasurableSpace Ω] {ι : Type*} [Fintype ι] [DecidableEq ι]
     (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : DOZZ.IsCenteredJointlyGaussian P Z) :
@@ -307,18 +281,17 @@ theorem represent {Ω : Type*} [MeasurableSpace Ω] {ι : Type*} [Fintype ι] [D
       P.map (fun ω => WithLp.toLp 2 (Z ω)) = multivariateGaussian 0 S ∧
       ∀ i j, S i j = DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) := by
   classical
-  let : IsProbabilityMeasure P := hZ.1
+  let  := hZ.1
   let Y : Ω → EuclideanSpace ℝ ι := fun ω => WithLp.toLp 2 (Z ω)
   have hZae : AEMeasurable Z P := by
     apply AEMeasurable.of_eval
     intro i
     exact hZ.2.1 i
-  have hYmeas : AEMeasurable Y P := by
-    exact (WithLp.measurable_toLp 2 (ι → ℝ)).aemeasurable.comp_aemeasurable hZae
+  have hYmeas : AEMeasurable Y P := (WithLp.measurable_toLp 2 (ι → ℝ)).aemeasurable.comp_aemeasurable hZae
   have hYgauss : IsGaussian (P.map Y) := by
     refine isGaussian_of_map_eq_gaussianReal ?_
     intro L
-    let a : ι → ℝ := fun i => L (EuclideanSpace.basisFun ι ℝ i)
+    let a  := fun i => L (EuclideanSpace.basisFun ι ℝ i)
     have hlin : (fun ω => L (Y ω)) = fun ω => ∑ i, a i * Z ω i := by
       funext ω
       rw [← (EuclideanSpace.basisFun ι ℝ).sum_repr (Y ω)]
@@ -334,8 +307,8 @@ theorem represent {Ω : Type*} [MeasurableSpace Ω] {ι : Type*} [Fintype ι] [D
       _ = gaussianReal 0 v := hmap
   let μ := P.map Y
   let b := EuclideanSpace.basisFun ι ℝ
-  let S : Matrix ι ι ℝ := LinearMap.BilinForm.toMatrix b.toBasis (covarianceBilin μ).toBilinForm
-  have hIntCoords : ∀ i, MemLp (fun ω => Z ω i) 2 P := fun i => coord_memLp P Z hZ i
+  let S  := LinearMap.BilinForm.toMatrix b.toBasis (covarianceBilin μ).toBilinForm
+  have hIntCoords  := fun i => coord_memLp P Z hZ i
   have hentry (i j : ι) : S i j = DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) := by
     have hbase := covarianceBilin_apply_basisFun hIntCoords i j
     have hcentered := covariance_eq_sub (hIntCoords i) (hIntCoords j)
@@ -345,8 +318,7 @@ theorem represent {Ω : Type*} [MeasurableSpace Ω] {ι : Type*} [Fintype ι] [D
         simp [S, LinearMap.BilinForm.toMatrix_apply]
       _ = cov[fun ω => Z ω i, fun ω => Z ω j; P] := hbase
       _ = DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) := by
-        rw [hcentered]
-        simp [DOZZ.gaussianCovariance]
+        aesop
   have hS : S.PosSemidef := by
     rw [Matrix.posSemidef_iff_dotProduct_mulVec]
     constructor
@@ -361,49 +333,43 @@ theorem represent {Ω : Type*} [MeasurableSpace Ω] {ι : Type*} [Fintype ι] [D
       rw [heq]
       exact hp
   have hmean : ∫ x, x ∂μ = 0 := by
-    have hIdInt : Integrable (id : EuclideanSpace ℝ ι → EuclideanSpace ℝ ι) μ := by
-      let : IsGaussian μ := hYgauss
-      exact ProbabilityTheory.IsGaussian.integrable_id
+    have hIdInt : Integrable (id : EuclideanSpace ℝ ι → EuclideanSpace ℝ ι) μ := ProbabilityTheory.IsGaussian.integrable_id
     change ∫ x, (id x) ∂P.map Y = 0
     rw [integral_map hYmeas hIdInt.aestronglyMeasurable]
     have hIntY : Integrable Y P := by
       apply Integrable.of_eval_piLp
       intro i
-      simpa [Y] using (hIntCoords i).integrable (by norm_num)
+      exact (hIntCoords i).integrable (by norm_num)
     ext i
     have hp := (EuclideanSpace.proj i).integral_comp_comm hIntY
     simp only [PiLp.proj_apply] at hp
     change (∫ ω, Y ω ∂P).ofLp i = 0
     rw [← hp]
-    simpa [Y] using coord_mean P Z hZ i
+    exact coord_mean P Z hZ i
   have hcov : covarianceBilin μ = covarianceBilin (multivariateGaussian 0 S) := by
     ext x y
     rw [covarianceBilin_multivariateGaussian hS]
     have hx : (b.toBasis.repr x : ι → ℝ) = x.ofLp := by
-      funext i
-      rw [OrthonormalBasis.coe_toBasis_repr_apply, EuclideanSpace.basisFun_repr]
+      abel
     have hy : (b.toBasis.repr y : ι → ℝ) = y.ofLp := by
-      funext i
-      rw [OrthonormalBasis.coe_toBasis_repr_apply, EuclideanSpace.basisFun_repr]
+      abel
     calc
-      covarianceBilin μ x y = (b.toBasis.repr x) ⬝ᵥ S *ᵥ (b.toBasis.repr y) := by
-        simpa [S] using (LinearMap.BilinForm.apply_eq_dotProduct_toMatrix_mulVec
+      covarianceBilin μ x y = (b.toBasis.repr x) ⬝ᵥ S *ᵥ (b.toBasis.repr y) := (LinearMap.BilinForm.apply_eq_dotProduct_toMatrix_mulVec
           b.toBasis (covarianceBilin μ).toBilinForm x y)
       _ = x.ofLp ⬝ᵥ S *ᵥ y.ofLp := by rw [hx, hy]
   refine ⟨S, hS, ?_, hentry⟩
   change μ = multivariateGaussian 0 S
-  let : IsGaussian μ := hYgauss
+  let  := hYgauss
   have hmean' : ∫ x, x ∂μ = ∫ x, x ∂multivariateGaussian 0 S := by
     rw [hmean]
     simp
   exact IsGaussian.ext hmean' hcov
 
+include Ω _inst1 ι _inst3 P Z hZ in
 /-- Finite Cameron--Martin tilt, proved through the covariance square root and the standard
 Gaussian density identity. This proof also covers singular covariance matrices. -/
 theorem finite_gaussian_tilt
-    {Ω : Type*} [MeasurableSpace Ω] {ι : Type*} [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ)
-    (hZ : DOZZ.IsCenteredJointlyGaussian P Z) (a : ι → ℝ)
+     (a : ι → ℝ)
     (F : (ι → ℝ) → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ ω,
       ENNReal.ofReal (Real.exp
@@ -418,9 +384,9 @@ theorem finite_gaussian_tilt
   let aE : EuclideanSpace ℝ ι := WithLp.toLp 2 a
   let sh : EuclideanSpace ℝ ι := WithLp.toLp 2 (S *ᵥ a)
   let F' : EuclideanSpace ℝ ι → ℝ≥0∞ := fun y => F y.ofLp
-  let weight : EuclideanSpace ℝ ι → ℝ≥0∞ := fun y =>
+  let weight  := fun y =>
     ENNReal.ofReal (Real.exp (⟪aE, y⟫ - ⟪aE, sh⟫ / 2)) * F' y
-  have hF' : Measurable F' := hF.comp (WithLp.measurable_ofLp 2 (ι → ℝ))
+  have hF'  := hF.comp (WithLp.measurable_ofLp 2 (ι → ℝ))
   have hweight : Measurable weight := by
     dsimp [weight]
     fun_prop
@@ -429,7 +395,7 @@ theorem finite_gaussian_tilt
       apply AEMeasurable.of_eval
       intro i
       exact hZ.2.1 i
-    exact (WithLp.measurable_toLp 2 (ι → ℝ)).aemeasurable.comp_aemeasurable hZae
+    fun_prop (disch := positivity)
   have hlin (ω : Ω) : ⟪aE, Y ω⟫ = ∑ i, a i * Z ω i := by
     rw [EuclideanSpace.inner_eq_star_dotProduct]
     simp [aE, Y, dotProduct, star_trivial, mul_comm]
@@ -439,9 +405,7 @@ theorem finite_gaussian_tilt
     apply Finset.sum_congr rfl
     intro i hi
     rw [Finset.sum_mul]
-    apply Finset.sum_congr rfl
-    intro j hj
-    ring
+    grind
   have hvariance :
       ⟪aE, sh⟫ = ∑ i, ∑ j, a i * DOZZ.gaussianCovariance P
         (fun ω => Z ω i) (fun ω => Z ω j) * a j := by
@@ -456,24 +420,16 @@ theorem finite_gaussian_tilt
     simp [sh, Matrix.mulVec, hEntry, dotProduct, mul_comm]
   calc
     _ = ∫⁻ ω, weight (Y ω) ∂P := by
-      apply lintegral_congr_ae
-      exact ae_of_all _ (fun ω => by
-        simp only [weight, F', Y]
-        rw [hlin, hvariance])
+      grind
     _ = ∫⁻ y, weight y ∂P.map Y := (lintegral_map' hweight.aemeasurable hY).symm
     _ = ∫⁻ y, weight y ∂multivariateGaussian 0 S := by rw [hLaw]
-    _ = ∫⁻ y, F' (y + sh) ∂multivariateGaussian 0 S := by
-      dsimp [weight, F', aE, sh]
-      exact multivariateGaussian_tilt S hS (WithLp.toLp 2 a)
-        (fun y => F y.ofLp) (hF.comp (WithLp.measurable_ofLp 2 (ι → ℝ)))
+    _ = ∫⁻ y, F' (y + sh) ∂multivariateGaussian 0 S := multivariateGaussian_tilt S hS aE F' hF'
     _ = ∫⁻ y, F' (y + sh) ∂P.map Y := by rw [hLaw]
     _ = ∫⁻ ω, F' (Y ω + sh) ∂P :=
       lintegral_map' (hF'.comp (measurable_id.add_const sh)).aemeasurable hY
     _ = ∫⁻ ω, F (fun i => Z ω i +
         ∑ j, DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * a j) ∂P := by
-      apply lintegral_congr_ae
-      exact ae_of_all _ (fun ω => by
-        simpa [Y] using hshift (Y ω))
+      grind
 
 
 end DOZZ.Proofs

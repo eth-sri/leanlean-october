@@ -8,7 +8,7 @@ public import DOZZ.Statements.Defs.ExtendedSeiberg3
 
 /-! # Parameter windows for the two fusion limits -/
 
-@[expose] public section
+public section
 namespace DOZZ.Proofs
 
 /-- The fusion exponent is the scaling degree of the planar integral. -/
@@ -28,7 +28,7 @@ theorem fusion_taylor_parameters (γ α₁ : ℝ) (hγ : 0 < γ)
     nlinarith
   have hlo' := mul_lt_mul_of_pos_left hlo hγ
   rw [fusion_exponent_eq γ α₁ hγ.ne']
-  refine ⟨by positivity, by nlinarith, hβ, by linarith, by nlinarith, by nlinarith⟩
+  grind
 
 /-- The restricted KRV domain supplies the unsubtracted difference window and `κ < 1`. -/
 theorem fusion_difference_parameters (γ α₁ : ℝ) (hγ : 0 < γ)

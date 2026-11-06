@@ -3,6 +3,7 @@ Copyright (c) 2026 Scott Armstrong and Amélie Loher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 module
+public import DOZZ.FourPoint.TwoRegionLaw
 public import DOZZ.FourPoint.Reflected.DecorrelationCarrier
 public import DOZZ.FourPoint.Reflected.ComparisonError
 public import DOZZ.FourPoint.Reflected.OuterInverseGuard
@@ -13,17 +14,19 @@ open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω)
+
+include Ω _inst1 P in
 /-- Inverse moment of the sum of the literal inner and exterior source masses. -/
-noncomputable def reflected_source_separatedMoment {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (s r q : ℝ) : ℝ≥0∞ :=
+noncomputable def reflected_source_separatedMoment  (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (s r q : ℝ) : ℝ≥0∞ :=
   ∫⁻ ω, ((∫⁻ x in reflected_innerRegion s,
     ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω)+
     (∫⁻ x in reflected_outerRegion r,
     ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω))^(-q) ∂P
 
+include Ω _inst1 P in
 /-- The same moment with two independent lateral copies and one common radial path. -/
-noncomputable def reflected_copied_separatedMoment {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ) (N : Ω → Measure ℂ)
+noncomputable def reflected_copied_separatedMoment  (Xc : Ω → ℂ → ℝ → ℝ) (N : Ω → Measure ℂ)
     (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (s r q : ℝ) : ℝ≥0∞ :=
   let J := fun (U : Set ℂ) (p : TwoSidedPath × Ω) => ∫⁻ x in U,
     ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)*
@@ -33,22 +36,18 @@ noncomputable def reflected_copied_separatedMoment {Ω : Type*} [MeasurableSpace
      J (reflected_outerRegion r) (p.1,p.2.2))^(-q)
     ∂(P.map (originRadialPath Xc)).prod (P.prod P)
 
+include Ω _inst1 P in
 /-- A specified actual source carrier gives a uniform finite error bound. No copied moment
 bound is assumed: the copied moment's finiteness follows from the source comparison. -/
 theorem reflected_source_separated_moment_error
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+     (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
     (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : Ω → Measure ℂ) (hN : Measurable N)
     (hfin : ∀ ω K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → N ω K < ⊤)
-    (hwhole : ∀ (f : ℂ → ℝ≥0∞), Measurable f →
-      ∀ G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞, Measurable G →
-      (∫⁻ ω, G (originRadialPath Xc ω, ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω) ∂P) =
-      ∫⁻ ω, G (originRadialPath Xc ω.1, ∫⁻ x in ({0} : Set ℂ)ᶜ,
-        f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ
-          (originRadialPath Xc ω.1) x) ∂N ω.2) ∂P.prod P)
+    (hwhole : Contract.radialPlaneLaw P (originRadialPath Xc) γ M N)
     (hNa : ∀ ρ : ℝ, 0 < ρ → IsAdmissibleGMCVersion P (originLateralChart ρ)
       originLateralPlaneDensity (originLateralCircleRegularization Xc ρ) γ
       (fun ω => (N ω).restrict (originLateralChart ρ)))
@@ -92,13 +91,11 @@ theorem reflected_source_separated_moment_error
       _ ≤ _ := hCbound z ξ hz hr1
   have hoFin : original ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top ho
   have hm1 : 1 ≤ m := Real.one_le_exp (by
-    exact mul_nonneg (div_nonneg (mul_nonneg (sq_nonneg γ)
-      (mul_nonneg (by norm_num) (div_pos hs hr).le)) (by norm_num))
-      (add_nonneg (sq_nonneg q) hq.le))
+    bound)
   obtain ⟨hcFin,herr⟩ := reflected_moment_comparison_error original copied m hm1 hoFin hb.1 hb.2
   have hoReal : original.toReal ≤ C := by
     simpa only [ENNReal.toReal_ofReal hC.le] using ENNReal.toReal_mono ENNReal.ofReal_ne_top ho
   refine ⟨hoFin,hcFin,herr.trans ?_⟩
-  exact mul_le_mul_of_nonneg_left hoReal (mul_nonneg (sub_nonneg.mpr hm1) (zero_le_one.trans hm1))
+  bound
 
 end DOZZ.Proofs

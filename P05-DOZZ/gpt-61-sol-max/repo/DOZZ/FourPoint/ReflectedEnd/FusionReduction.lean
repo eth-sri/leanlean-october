@@ -16,7 +16,7 @@ The conditional reduction takes the literal inner-limit conclusion as an explici
 input.
 -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -104,9 +104,7 @@ theorem gammaHalf_reflected_fusion_asymptotic_of_inner_limit {Ω : Type*} [Measu
     have hh := congrArg Complex.re (hI z)
     simp only [Complex.ofReal_re, Complex.add_re, Complex.mul_re,
       Complex.ofReal_im, mul_zero, sub_zero] at hh
-    dsimp only [r]
-    rw [hT z, ← hzero]
-    linear_combination N * hh + (‖z‖ ^ κ) * hcancel
+    grind
   refine ⟨B, Z, hZ, hB, r, ?_, ?_⟩
   · intro z
     dsimp only [r, C₀, D]

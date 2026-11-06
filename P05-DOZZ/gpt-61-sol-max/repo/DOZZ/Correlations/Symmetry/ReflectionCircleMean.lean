@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.Correlations.Symmetry.RepinnedCircleCovariance
 public import Mathlib.Topology.UniformSpace.UniformConvergenceTopology
+import Mathlib.Tactic
 @[expose] public section
 open MeasureTheory Filter Set
 open scoped Topology
@@ -38,14 +39,13 @@ noncomputable def symmetryCirclePotentialMean (r : ℝ) : BoundedContinuousFunct
     · exact .of_forall (fun y =>
         (symmetryReflectionPotential_continuous.comp (continuous_id.add continuous_const)).aestronglyMeasurable)
     · exact .of_forall (fun y => ae_of_all _ (fun z => by
-        rw [Real.norm_eq_abs]
         exact symmetryReflectionPotential_bound (z + y)))
     · exact integrable_const _
     · exact ae_of_all _ (fun z =>
         (symmetryReflectionPotential_continuous.comp (continuous_const.add continuous_id)).continuousAt)
   have hbound (x : ℂ) : |F x| ≤ Real.log 2 := by
     let := circleMeasure_isProbability x r
-    have hi : Integrable (fun z => symmetryReflectionPotential z) (circleMeasure x r) :=
+    have hi  :=
       integrable_circleMeasure_of_circleIntegrable x r symmetryReflectionPotential_continuous.measurable
         symmetryReflectionPotential_continuous.continuousOn.circleIntegrable'
     calc
@@ -56,7 +56,7 @@ noncomputable def symmetryCirclePotentialMean (r : ℝ) : BoundedContinuousFunct
   exact BoundedContinuousFunction.mkOfBound ⟨F, hF⟩ (2 * Real.log 2) (fun x y => by
     change dist (F x) (F y) ≤ _
     rw [Real.dist_eq]
-    exact (abs_sub _ _).trans (by linarith only [hbound x, hbound y]))
+    grind)
 
 theorem symmetryCirclePotentialMean_apply (r : ℝ) (x : ℂ) :
     symmetryCirclePotentialMean r x = ∫ z, symmetryReflectionPotential z ∂circleMeasure x r := rfl
@@ -65,7 +65,7 @@ theorem symmetryCirclePotentialMean_bound (r : ℝ) (x : ℂ) :
     |symmetryCirclePotentialMean r x| ≤ Real.log 2 := by
   let := circleMeasure_isProbability x r
   rw [symmetryCirclePotentialMean_apply]
-  have hi : Integrable (fun z => symmetryReflectionPotential z) (circleMeasure x r) :=
+  have hi  :=
     integrable_circleMeasure_of_circleIntegrable x r symmetryReflectionPotential_continuous.measurable
       symmetryReflectionPotential_continuous.continuousOn.circleIntegrable'
   calc

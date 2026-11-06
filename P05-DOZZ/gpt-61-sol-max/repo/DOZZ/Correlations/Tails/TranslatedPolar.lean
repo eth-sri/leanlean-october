@@ -20,10 +20,12 @@ namespace DOZZ.Proofs
 /-- Logarithmic distance from an insertion; its value at the root is unused. -/
 noncomputable def translatedLogRadius (z x : ℂ) : ℝ := -Real.log ‖x - z‖
 
+variable (γ N : ℝ) (A : TwoSidedPath) (M : Measure ℂ) (F : ℂ → ℝ)
+
+include γ N A M F in
 /-- Remove the inward radial Wick factor, including the off-center Gaussian origin.
 The multiplier is retained on the plane before pushing to the radial coordinate. -/
-noncomputable def translatedPolarMeasure (γ N : ℝ) (A : TwoSidedPath)
-    (M : Measure ℂ) (F : ℂ → ℝ) (z : ℂ) : Measure ℝ :=
+noncomputable def translatedPolarMeasure  (z : ℂ) : Measure ℝ :=
   (M.withDensity (fun x => ENNReal.ofReal (F x) *
     (if x = z then 0 else ENNReal.ofReal
       (Real.exp (-γ * (N + A (translatedLogRadius z x)) +
@@ -52,9 +54,9 @@ theorem measurable_translatedPolarDensity (γ N : ℝ) (A : TwoSidedPath)
         ((continuous_abs.measurable.comp
           (measurable_translatedLogRadius z)).const_mul (γ * Q γ))))
 
+include γ N A M F in
 /-- Any measurable radial test integrates by the literal weighted pushforward formula. -/
-theorem translatedPolar_lintegral (γ N : ℝ) (A : TwoSidedPath)
-    (M : Measure ℂ) (F : ℂ → ℝ) (hF : Measurable F) (z : ℂ)
+theorem translatedPolar_lintegral  (hF : Measurable F) (z : ℂ)
     (f : ℝ → ℝ≥0∞) (hf : Measurable f) :
     ∫⁻ t, f t ∂translatedPolarMeasure γ N A M F z =
       ∫⁻ x, (ENNReal.ofReal (F x) *
@@ -84,10 +86,7 @@ theorem localSingularMass_translatedPolar
     ENNReal.ofReal (Real.exp (γ * (A t - (Q γ - α) * t))) else 0
   have hf : Measurable f := by
     apply Measurable.ite measurableSet_Ioi
-    · exact ENNReal.measurable_ofReal.comp
-        (Real.measurable_exp.comp
-          ((A.continuous.measurable.sub (measurable_id.const_mul (Q γ - α))).const_mul γ))
-    · exact measurable_const
+    all_goals fun_prop (disch := positivity)
   change (∫⁻ x, (if x ∈ Metric.ball z 1 then ENNReal.ofReal (F x) *
     ENNReal.rpow (ENNReal.ofReal ‖x - z‖) (-γ * α) else 0) ∂M) =
       ENNReal.ofReal (Real.exp (γ * N)) *
@@ -102,9 +101,9 @@ theorem localSingularMass_translatedPolar
   apply lintegral_congr_ae
   have hne : ∀ᵐ x ∂M, x ≠ z := by
     rw [ae_iff]
-    simpa only [not_not, Set.ofPred_eq_eq_singleton] using hMz
+    simp_all
   filter_upwards [hne] with x hx
-  have hd : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
+  have hd  := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
   have ht : 0 < translatedLogRadius z x ↔ x ∈ Metric.ball z 1 := by
     rw [translatedLogRadius, neg_pos, Real.log_neg_iff hd]
     simp only [Metric.mem_ball, dist_eq_norm]
@@ -133,7 +132,6 @@ theorem localSingularMass_translatedPolar
         congr 1
         unfold translatedLogRadius
         ring
-  · have htp : ¬0 < translatedLogRadius z x := mt ht.mp hb
-    simp only [hb, ite_false, f, htp, mul_zero]
+  grind
 
 end DOZZ.Proofs

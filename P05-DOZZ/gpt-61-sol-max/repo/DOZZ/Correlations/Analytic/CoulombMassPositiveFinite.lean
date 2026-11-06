@@ -5,10 +5,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.GMC.SharpMoments.SeibergMoment
+import Mathlib.Tactic
 
 /-! Almost sure positivity and finiteness needed for varying real exponents. -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -30,7 +31,7 @@ theorem coulomb_mass_pos_finite_ae
     fun k => mul_pos (by positivity) (sub_pos.mpr (ha k))
   have e1 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 (4 / γ ^ 2) := Ioo_mem_nhdsGT h4
   have e2 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 (2 / γ * (Q γ - αinf)) := Ioo_mem_nhdsGT hi0
-  have e3 : ∀ᶠ t in 𝓝[>] (0 : ℝ), ∀ k, t ∈ Ioo 0 (2 / γ * (Q γ - α k)) :=
+  have e3  :=
     eventually_all.mpr fun k => Ioo_mem_nhdsGT (hk0 k)
   obtain ⟨t, ht⟩ := (e1.and (e2.and e3)).exists
   have hm := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM α z αinf
@@ -40,10 +41,7 @@ theorem coulomb_mass_pos_finite_ae
   let c : ℝ≥0∞ := ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
     ENNReal.ofReal ((1 + 2 * ∑ j, ‖z j‖ + 2) ^ (-|γ * αinf|))
   have hc : c ≠ 0 := by
-    have hs : 0 ≤ ∑ j, ‖z j‖ := Finset.sum_nonneg fun j _ => norm_nonneg _
-    exact mul_ne_zero
-      (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
-      (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by linarith) _)).ne'
+    positivity
   have hpos := gmc_ball_mass_pos_ae P X hX γ hγ hγ2 M hM
     (((1 + 2 * ∑ j, ‖z j‖ + 1 : ℝ)) : ℂ) (1 / 8) (by norm_num)
   filter_upwards [ae_lt_top' (hm.pow_const t) hfin.ne, hpos] with ω hf hp

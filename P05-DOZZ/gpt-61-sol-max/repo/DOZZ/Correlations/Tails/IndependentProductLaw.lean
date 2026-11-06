@@ -10,7 +10,7 @@ public import Mathlib.MeasureTheory.Function.SpecialFunctions.Basic
 
 /-! Attach an independent pin multiplier to equal mass laws. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 

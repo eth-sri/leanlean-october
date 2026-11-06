@@ -12,7 +12,7 @@ public import DOZZ.GMC.SharpMoments.SeibergUniform
 
 /-! Uniform higher moments of the common envelope in the complex increment estimate. -/
 
-@[expose] public section
+public section
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
@@ -38,10 +38,10 @@ theorem coulomb_envelope_uniform_moment
       hi * q + g ≤ 2 / γ * (Q γ - αinf) →
       (∫⁻ ω, ENNReal.ofReal ((c * M ω (Metric.ball center (1 / 8))).toReal ^ lo +
         (coulombMass γ (M ω) α z αinf).toReal ^ hi) ^ q ∂P) ≤ K := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   let L (ω : Ω) := c * M ω (Metric.ball center (1 / 8))
   have hLm : AEMeasurable L P := by
-    simpa only [L, Pi.mul_def] using aemeasurable_const.mul
+    exact aemeasurable_const.mul
       (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
         Metric.isOpen_ball.measurableSet)
   have hLp : ∀ᵐ ω ∂P, L ω ≠ 0 ∧ L ω ≠ ⊤ := by
@@ -51,7 +51,7 @@ theorem coulomb_envelope_uniform_moment
     filter_upwards [hb] with ω hω
     exact ⟨mul_ne_zero hc hω.1, ENNReal.mul_ne_top hc' hω.2⟩
   let KL := ∫⁻ ω, L ω ^ (lo * q) ∂P
-  have hKL : KL < ⊤ := scaled_disk_negative_moment
+  have hKL  := scaled_disk_negative_moment
     P X hX γ hγ hγ2 M hM center (1 / 8) (by norm_num) le_rfl c hc hc'
       (lo * q) (mul_nonpos_of_nonpos_of_nonneg hlo (by linarith))
   obtain ⟨KU, hKU, hUbound⟩ : ∃ KU : ℝ≥0∞, KU < ⊤ ∧
@@ -62,8 +62,7 @@ theorem coulomb_envelope_uniform_moment
         (∫⁻ ω, coulombMass γ (M ω) α z αinf ^ (hi * q) ∂P) ≤ KU := by
     by_cases hzero : hi = 0
     · refine ⟨1, ENNReal.one_lt_top, fun α αinf _ _ _ _ _ => ?_⟩
-      simp only [hzero, zero_mul, ENNReal.rpow_zero, lintegral_const, measure_univ, mul_one]
-      exact le_rfl
+      bound
     · obtain ⟨KU, hKU, hb⟩ := coulombMass_moment_uniform_pos
         P X hX γ hγ hγ2 M hM N hδ hδ8 hR (A := A) hZs hg
       refine ⟨KU, hKU, fun α αinf hα hinf hbulk hroot hinfty => ?_⟩

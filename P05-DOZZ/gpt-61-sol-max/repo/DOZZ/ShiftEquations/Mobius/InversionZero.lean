@@ -18,7 +18,7 @@ and a charge `βinf` at infinity equal those with the two charges exchanged and 
 inverted, times `∏ₖ |zₖ|^{-γ αₖ q}`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
@@ -28,23 +28,23 @@ namespace DOZZ.Proofs
 /-- The background `|y|_+` under inversion, away from the origin. -/
 private theorem inversionZero_normPlus_inv {y : ℂ} (hy : y ≠ 0) :
     normPlus y⁻¹ = normPlus y / ‖y‖ := by
-  have hyn : 0 < ‖y‖ := norm_pos_iff.mpr hy
+  have hyn  := norm_pos_iff.mpr hy
   unfold normPlus
   rw [norm_inv, ← max_div_div_right hyn.le, div_self hyn.ne', one_div, max_comm]
 
 /-- The ratio at the root `0` becomes the background `|y|_+`. -/
 private theorem inversionZero_origin_ratio {y : ℂ} (hy : y ≠ 0) :
     normPlus y⁻¹ / ‖y⁻¹ - 0‖ = normPlus y := by
-  have hyn : 0 < ‖y‖ := norm_pos_iff.mpr hy
+  
   rw [inversionZero_normPlus_inv hy, sub_zero, norm_inv]
   field_simp
 
 /-- The ratio at a nonzero root `w` becomes the ratio at the root `w⁻¹`, divided by `|w|`. -/
 private theorem inversionZero_root_ratio {y w : ℂ} (hy : y ≠ 0) (hw : w ≠ 0) (hyw : y ≠ w⁻¹) :
     normPlus y⁻¹ / ‖y⁻¹ - w‖ = normPlus y / (‖w‖ * ‖y - w⁻¹‖) := by
-  have hyn : 0 < ‖y‖ := norm_pos_iff.mpr hy
-  have hwn : 0 < ‖w‖ := norm_pos_iff.mpr hw
-  have hd : 0 < ‖y - w⁻¹‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hyw)
+  
+  
+  
   have hsub : ‖y⁻¹ - w‖ = ‖w‖ * ‖y - w⁻¹‖ / ‖y‖ := by
     rw [show y⁻¹ - w = -w * (y - w⁻¹) / y by field_simp; ring, norm_div, norm_mul, norm_neg]
   rw [inversionZero_normPlus_inv hy, hsub]
@@ -84,18 +84,18 @@ theorem coulombWeight_inv_cons {N : ℕ} (γ β₀ βinf : ℝ) (α : Fin N → 
   rw [hprod, inversionZero_origin_ratio hy, inversionZero_normPlus_inv hy, sub_zero]
   ring
 
+variable {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ) (hz : ∀ k, z k ≠ 0)
+
+include N γ α z hz in
 /-- The constant of the inversion identity is nonzero. -/
-private theorem inversionZero_const_ne_zero {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
-    (hz : ∀ k, z k ≠ 0) :
+private theorem inversionZero_const_ne_zero  :
     (∏ k, ENNReal.rpow (ENNReal.ofReal ‖z k‖) (-(γ * α k))) ≠ 0 := by
   rw [Finset.prod_ne_zero_iff]
-  intro k _
-  exact (ENNReal.rpow_pos (ENNReal.ofReal_pos.mpr (norm_pos_iff.mpr (hz k)))
-    ENNReal.ofReal_ne_top).ne'
+  simp_all
 
+include N γ α z hz in
 /-- The constant of the inversion identity is finite. -/
-private theorem inversionZero_const_ne_top {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
-    (hz : ∀ k, z k ≠ 0) :
+private theorem inversionZero_const_ne_top  :
     (∏ k, ENNReal.rpow (ENNReal.ofReal ‖z k‖) (-(γ * α k))) ≠ ⊤ :=
   ENNReal.prod_ne_top fun k _ => ENNReal.rpow_ne_top_of_ne_zero
     (ENNReal.ofReal_pos.mpr (norm_pos_iff.mpr (hz k))).ne' ENNReal.ofReal_ne_top
@@ -114,7 +114,7 @@ private theorem inversionZero_map_lintegral {N : ℕ} (γ β₀ βinf : ℝ) (α
     coulombMass_eq_lintegral_coulombWeight,
     ← lintegral_const_mul' _ _ (inversionZero_const_ne_top γ α z hz)]
   apply lintegral_congr_ae
-  have hnull : μ ({0} ∪ ⋃ k, {(z k)⁻¹}) = 0 :=
+  have hnull  :=
     measure_union_null h0 (measure_iUnion_null hk)
   filter_upwards [measure_eq_zero_iff_ae_notMem.1 hnull] with y hy
   simp only [Set.mem_union, Set.mem_singleton_iff, Set.mem_iUnion, not_or, not_exists] at hy
@@ -140,7 +140,7 @@ theorem coulombMass_inv_moment_cons {Ω : Type*} [MeasurableSpace Ω] (P : Measu
   -- almost surely no atom at the origin or at any inverted root
   have hatoms : ∀ᵐ ω ∂P, M ω {0} = 0 ∧ ∀ k, M ω {(z k)⁻¹} = 0 := by
     have h0 := gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 0
-    have hk : ∀ᵐ ω ∂P, ∀ k, M ω {(z k)⁻¹} = 0 :=
+    have hk  :=
       ae_all_iff.2 fun k => gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM (z k)⁻¹
     filter_upwards [h0, hk] with ω h1 h2 using ⟨h1, h2⟩
   calc

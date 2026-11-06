@@ -7,7 +7,7 @@ public import DOZZ.GMC.WeightedCutoff.LowerOrder
 
 /-! # Uniform weighted moments at radii bounded away from zero -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -52,9 +52,9 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_large_uniform
     (ENNReal.rpow_ne_top_of_nonneg (by linarith) ENNReal.ofReal_ne_top)
   let Ef : ℝ≥0∞ := 1 + c ^ q * Dfine
   let Ec : ℝ≥0∞ := 1 + c ^ q * Dcoarse
-  have hEf : Ef < ⊤ := ENNReal.add_lt_top.mpr
+  have hEf  := ENNReal.add_lt_top.mpr
     ⟨ENNReal.one_lt_top, ENNReal.mul_lt_top hcq hDfine⟩
-  have hEc : Ec < ⊤ := ENNReal.add_lt_top.mpr
+  have hEc  := ENNReal.add_lt_top.mpr
     ⟨ENNReal.one_lt_top, ENNReal.mul_lt_top hcq hDcoarse⟩
   let Ei : ℝ≥0∞ := ENNReal.ofReal (Cs * U)
   let Efg : ℝ≥0∞ := (2 : ℝ≥0∞) ^ q * (Ei + Ef)
@@ -71,7 +71,7 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_large_uniform
     dsimp [B]
     linarith
   let f : Ω → ℝ≥0∞ := fun ω => regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball 0 B)
-  have hf : AEMeasurable f P := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
+  have hf  := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
     (Real.log (1 / δ)) (Metric.ball 0 B) Metric.isOpen_ball.measurableSet
   by_cases hδfine : δ ≤ 1 / 8
   · let a : Ω → ℝ≥0∞ := fun ω => cutoffWeightedGmcBallMass P Xc γ t.1 z (1 / 8) δ ω
@@ -82,11 +82,11 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_large_uniform
     have hinner : (∫⁻ ω, a ω ^ t.2 ∂P) ≤ Ei := by
       have h := hsmall γ hγ t ht z hz (1 / 8) δ (by norm_num) (by norm_num) hδ hδfine
       apply h.trans
-      exact ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left (hupper γ hγ t ht) hCs.le)
-    have houter : (∫⁻ ω, b ω ^ t.2 ∂P) ≤ Ef :=
+      bound
+    have houter  :=
       lintegral_lower_rpow_const_mul_le P f hf c Dfine t.2 q hp0.le hpq
         (hfine γ hγ δ hδ hδfine)
-    have hmass : ∀ ω, cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω ≤ a ω + b ω :=
+    have hmass  :=
       cutoffWeightedGmcBallMass_le_inner_add_outer P Xc γ t.1 (1 / 8) r₀ W B R δ z
         hRa hR₀ hδ hδR hzB (hweight γ hγ t ht)
     have hmain : (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω ^ t.2 ∂P) ≤ Efg := by
@@ -100,11 +100,11 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_large_uniform
           rw [lintegral_const_mul' _ _ htwo.ne, lintegral_add_left' ha]
         _ ≤ Efg := mul_le_mul_right (add_le_add hinner houter) _
     exact hmain.trans (le_add_of_nonneg_right (by positivity))
-  · have hδa : 1 / 8 ≤ δ := le_of_not_ge hδfine
-    have houter : (∫⁻ ω, (c * f ω) ^ t.2 ∂P) ≤ Ec :=
+  · have hδa  := le_of_not_ge hδfine
+    have houter  :=
       lintegral_lower_rpow_const_mul_le P f hf c Dcoarse t.2 q hp0.le hpq
         (hcoarse γ (hΓ2 hγ).1 (hΓ2 hγ).2 δ hδa (hδR.trans hR₀))
-    have hmass : ∀ ω, cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω ≤ c * f ω :=
+    have hmass  :=
       cutoffWeightedGmcBallMass_le_coarse_weight P Xc γ t.1 (1 / 8) r₀ W B R δ z
         hR₀ hδa hδR hzB (hweight γ hγ t ht)
     have hmain := (lintegral_mono (fun ω => ENNReal.rpow_le_rpow (hmass ω) hp0.le)).trans houter

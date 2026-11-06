@@ -25,26 +25,26 @@ at the two reflection exponents and residues `-β c` (the theorem
 moments of all orders.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM η δ hW in
 /-- The local mass is almost surely positive and finite. -/
-theorem ae_localMassReal_pos {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ) :
+theorem ae_localMassReal_pos  :
     ∀ᵐ ω ∂P, 0 < localMassReal M γ η ω ∧
       poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) < ⊤ := by
   filter_upwards [ae_cutoffGood P X hX γ hγ hγ2 M hM hW] with ω hω
   exact ⟨hω.localMassReal_pos, hω.localMass_lt_top⟩
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM η δ hW in
 /-- The local mass has negative real moments of all orders. -/
-theorem integrable_localMassReal_rpow_neg {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
+theorem integrable_localMassReal_rpow_neg 
     {q : ℝ} (hq : 0 < q) : Integrable (fun ω => localMassReal M γ η ω ^ (-q)) P := by
   have hη := (window_eta_pos hW).le
   have hηγ := window_eta_le_two_div hγ hγ2 hW
@@ -68,10 +68,9 @@ theorem oneInsertionTailCoefficient_pos {γ α R F : ℝ} {z : ℂ} (hz : z ≠ 
   have h2 : 0 < Real.rpow F (reflectionExponent γ α) := Real.rpow_pos_of_pos hF _
   positivity
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM η δ hW in
 /-- **The Mellin transform of the local mass**, from its two-insertion tail expansion. -/
-theorem exists_localMass_mellin {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
+theorem exists_localMass_mellin 
     {R₂ R₃ θ C : ℝ} (hR₂ : 0 < R₂) (hR₃ : 0 < R₃)
     (htail : ∀ x : ℝ, 1 ≤ x →
       |(P {ω | ENNReal.ofReal x <
@@ -98,7 +97,7 @@ theorem exists_localMass_mellin {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
   have hηγ := window_eta_le_two_div hγ hγ2 hW
   have hp := window_threshold_pos hγ hW
   set Lr : Ω → ℝ := localMassReal M γ η with hLr
-  have hY : AEMeasurable Lr P := aemeasurable_localMassReal P X hX γ hγ hγ2 M hM η
+  have hY  := aemeasurable_localMassReal P X hX γ hγ hγ2 M hM η
   have hgood := ae_localMassReal_pos P X hX γ hγ hγ2 M hM hW
   have hpos : ∀ᵐ ω ∂P, 0 < Lr ω := by
     filter_upwards [hgood] with ω hω

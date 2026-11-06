@@ -9,7 +9,7 @@ public import Mathlib.Topology.ContinuousMap.CompactlySupported
 
 /-! Deterministic compact tests for identifying the translated unpinned GMC. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Set
 open scoped CompactlySupported
@@ -34,8 +34,7 @@ theorem transferred_compact_test (z : ℂ) (γ : ℝ)
       exact h.ne'
   have hs : HasCompactSupport (fun w => f (w-z)) := by
     have h := hf.comp_homeomorph (Homeomorph.addRight (-z))
-    change HasCompactSupport (fun w => f (w + -z)) at h
-    simpa only [sub_eq_add_neg] using h
+    measurability
   have hg : HasCompactSupport g := hs.mul_right
   let gc : C_c(ℂ, ℝ) := ⟨⟨g, hc⟩, hg⟩
   exact ⟨gc.toBoundedContinuousFunction, gc.hasCompactSupport, fun w => rfl⟩

@@ -29,7 +29,6 @@ theorem dual_rooted_retainedZero_lower (γ α₁ α₂ α₃ r : ℝ) (μ : Meas
   let D : Set ℂ := {x | r ≤ ‖x‖}
   have hD : MeasurableSet D := (isClosed_le continuous_const continuous_norm).measurableSet
   have he : (gmcRootedMeasure γ u μ).restrict D = gmcRootedMeasure γ u (μ.restrict D) := by
-    unfold gmcRootedMeasure
     exact restrict_withDensity hD _
   unfold dualRetainedZeroMass
   rw [he]

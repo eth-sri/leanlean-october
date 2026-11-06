@@ -43,10 +43,7 @@ theorem integral_log_normPlus_circle_origin (m : ℕ) :
     filter_upwards [ae_norm_sub_center_circleMeasure 0 m] with w hw
     rw [sub_zero] at hw
     have hle : ‖w‖ ≤ 1 := by
-      rw [hw]
-      exact Real.exp_le_one_iff.mpr (by
-        have := Nat.cast_nonneg (α := ℝ) m
-        linarith)
+      simp_all
     rw [normPlus, max_eq_left hle, Real.log_one]
   rw [integral_congr_ae hae, integral_zero]
 
@@ -66,9 +63,11 @@ theorem repinPotential_origin (m : ℕ) (x : ℂ) :
   rw [hc]
   ring
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+
+include Ω _inst1 P X hX in
 /-- The circle average at the origin at radius `e^{-m}` has variance `m`. -/
-theorem gaussianVariance_circleAverage_origin {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ)
+theorem gaussianVariance_circleAverage_origin  (Xc : Ω → ℂ → ℝ → ℝ)
     (hXc : IsCircleAverage P X Xc) (m : ℕ) :
     gaussianVariance P (fun ω => Xc ω 0 m) = m := by
   have _ := circleMeasure_isProbability 0 (m : ℝ)
@@ -83,19 +82,16 @@ theorem gaussianVariance_circleAverage_origin {Ω : Type*} [MeasurableSpace Ω] 
     filter_upwards [ae_norm_sub_center_circleMeasure 0 m] with u hu
     rw [sub_zero] at hu
     have hle : ‖u‖ ≤ 1 := by
-      rw [hu]
-      exact Real.exp_le_one_iff.mpr (by
-        have := Nat.cast_nonneg (α := ℝ) m
-        linarith)
+      simp_all
     rw [normPlus, max_eq_left hle, Real.log_one, hu, max_self, Real.log_exp]
     ring
   rw [integral_congr_ae hae, integral_const, probReal_univ, one_smul]
 
+include Ω _inst1 P X hX in
 /-- **Cameron–Martin tilt by the circle average at the origin.** For real `a`, `m ∈ ℕ` and every
 measurable functional `H` of the chaos,
 `E[e^{a X_m(0) - m a²/2} H(M)] = E[H(e^{γ a Cov(X(·), X_m(0))} M)]`. -/
-theorem lintegral_circleTilt {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem lintegral_circleTilt  (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ)
     (hXc : IsCircleAverage P X Xc) (a : ℝ) (m : ℕ) (H : Measure ℂ → ℝ≥0∞)
     (hH : Measurable H) :
@@ -104,7 +100,7 @@ theorem lintegral_circleTilt {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
   set a' : ℂ := ((Real.exp (-(m : ℝ)) : ℝ) : ℂ) with ha'def
   have ha' : a' ≠ 0 := Complex.ofReal_ne_zero.mpr (Real.exp_pos _).ne'
   set L : Ω → ℝ := fun ω => a * Xc ω 0 m with hLdef
-  have hL : IsGaussianL2Limit P X L :=
+  have hL  :=
     IsGaussianL2Limit.const_mul (isCircleAverage_isGaussianL2Limit P X hX Xc hXc 0 m) a
   have hVar : gaussianVariance P L = a ^ 2 * m := by
     have h := gaussianVariance_circleAverage_origin P X hX Xc hXc m
@@ -119,7 +115,7 @@ theorem lintegral_circleTilt {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (fun x => a * repinPotential a' 0 x) (continuous_const.mul (continuous_repinPotential a' 0 ha'))
     (|a| * B) (fun x => by
       rw [Real.norm_eq_abs, abs_mul]
-      exact mul_le_mul_of_nonneg_left (hB x) (abs_nonneg _)) with hcdef
+      bound) with hcdef
   have hcx : ∀ x, c x = a * repinPotential a' 0 x := fun x => rfl
   have hK : ∀ r x, gaussianCovariance P (fun ω => Xc ω x r) L =
       a * repinPotentialAvg a' 0 r x := by
@@ -148,8 +144,7 @@ theorem lintegral_circleTilt {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     calc |a| * |repinPotential a' 0 x - repinPotentialAvg a' 0 r x|
         ≤ |a| * (ε / (|a| + 1)) := mul_le_mul_of_nonneg_left h1.le (abs_nonneg _)
       _ < ε := by
-          rw [mul_div_assoc', div_lt_iff₀ hpos]
-          nlinarith [abs_nonneg a]
+          field_simp <;> nlinarith
   have htilt := equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L hL c hc
     (fun _ μ => H μ) (hH.comp measurable_snd)
   have hdens : (fun x => ENNReal.ofReal (Real.exp (γ * c x))) = circleTiltDensity γ a m := by

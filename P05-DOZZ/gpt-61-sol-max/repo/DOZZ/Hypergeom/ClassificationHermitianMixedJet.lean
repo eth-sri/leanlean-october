@@ -5,10 +5,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.Hypergeom.ClassificationHermitianJets
+import Mathlib.Tactic
 
 /-! The mixed Wirtinger jet of a constant Hermitian tensor. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
@@ -24,14 +25,15 @@ private theorem wirtingerBar_star_at {g : ℂ → ℂ} {z : ℂ}
     simp
   rw [hfun, wirtingerZ_eq_deriv_of_differentiableAt hg]
 
+variable {f g : ℂ → ℂ} {U : Set ℂ} (hf : AnalyticOnNhd ℂ f U) (hg : AnalyticOnNhd ℂ g U) (k : ℂ) {z : ℂ} (hz : z ∈ U)
+
+include f g U hf hg k z hz in
 private theorem wirtingerBar_deriv_term
-    {f g : ℂ → ℂ}
-    {U : Set ℂ} (hf : AnalyticOnNhd ℂ f U) (hg : AnalyticOnNhd ℂ g U)
-    (k : ℂ) {z : ℂ} (hz : z ∈ U) :
+     :
     wirtingerBar (fun w => k * deriv f w * star (g w)) z =
       k * deriv f z * star (deriv g z) := by
-  have hf' : DifferentiableAt ℂ (deriv f) z := (hf.deriv z hz).differentiableAt
-  have hgAt : DifferentiableAt ℂ g z := (hg z hz).differentiableAt
+  have hf'  := (hf.deriv z hz).differentiableAt
+  have hgAt  := (hg z hz).differentiableAt
   have hp : DifferentiableAt ℂ (fun w => k * deriv f w) z :=
     (differentiableAt_const k).mul hf'
   have hgStar : DifferentiableAt ℝ (fun w => star (g w)) z :=
@@ -42,12 +44,10 @@ private theorem wirtingerBar_deriv_term
     wirtingerBar_star_at hgAt]
   ring
 
+include f g U hf hg k z hz in
 private theorem hermitianTensorZ_termDiffAt
-    {f g : ℂ → ℂ}
-    {U : Set ℂ} (hf : AnalyticOnNhd ℂ f U) (hg : AnalyticOnNhd ℂ g U)
-    (k : ℂ) {z : ℂ} (hz : z ∈ U) :
-    DifferentiableAt ℝ (fun w => k * deriv f w * star (g w)) z := by
-  exact (((differentiableAt_const k).mul
+     :
+    DifferentiableAt ℝ (fun w => k * deriv f w * star (g w)) z := (((differentiableAt_const k).mul
       (hf.deriv z hz).differentiableAt).restrictScalars ℝ).mul
     ((Complex.differentiable_conj.differentiableAt (x := g z)).comp z
       ((hg z hz).differentiableAt.restrictScalars ℝ))
@@ -61,17 +61,17 @@ theorem hermitianQuadraticTensor_mixed
     wirtingerBar (fun w => wirtingerZ (hermitianQuadraticTensor f g A B C D) w) z =
       A * deriv f z * star (deriv f z) + B * deriv f z * star (deriv g z) +
         C * deriv g z * star (deriv f z) + D * deriv g z * star (deriv g z) := by
-  let t₁ : ℂ → ℂ := fun w => A * deriv f w * star (f w)
-  let t₂ : ℂ → ℂ := fun w => B * deriv f w * star (g w)
-  let t₃ : ℂ → ℂ := fun w => C * deriv g w * star (f w)
-  let t₄ : ℂ → ℂ := fun w => D * deriv g w * star (g w)
+  let t₁  := fun w => A * deriv f w * star (f w)
+  let t₂  := fun w => B * deriv f w * star (g w)
+  let t₃  := fun w => C * deriv g w * star (f w)
+  let t₄  := fun w => D * deriv g w * star (g w)
   have hqAt := hermitianQuadraticTensor_contDiffAt_two hf hg A B C D hz
   have hZdiff := differentiableAt_wirtingerZ_of_contDiffAt_two hqAt
   have hfirstNear : (fun w => wirtingerZ (hermitianQuadraticTensor f g A B C D) w) =ᶠ[𝓝 z]
       hermitianQuadraticTensorZ f g A B C D := by
     filter_upwards [hU.mem_nhds hz] with w hw
     exact hermitianQuadraticTensor_wirtingerZ hf hg A B C D hw
-  have hZtensorDiff : DifferentiableAt ℝ (hermitianQuadraticTensorZ f g A B C D) z :=
+  have hZtensorDiff  :=
     hZdiff.congr_of_eventuallyEq hfirstNear.symm
   have hbar := wirtingerBar_congr_of_eventuallyEq hZdiff hZtensorDiff hfirstNear
   have hterm₁ := wirtingerBar_deriv_term hf hf A hz
@@ -95,22 +95,7 @@ theorem hermitianQuadraticTensor_mixed
     funext w
     simp [hermitianQuadraticTensorZ, t₁, t₂, t₃, t₄]
     ring
-  have hcalc : wirtingerBar (hermitianQuadraticTensorZ f g A B C D) z =
-      A * deriv f z * star (deriv f z) + B * deriv f z * star (deriv g z) +
-        C * deriv g z * star (deriv f z) + D * deriv g z * star (deriv g z) := by
-    calc
-      _ = wirtingerBar ((t₁ + t₂) + (t₃ + t₄)) z := by rw [hfun]
-      _ = wirtingerBar (t₁ + t₂) z + wirtingerBar (t₃ + t₄) z := hsum
-      _ = wirtingerBar t₁ z + wirtingerBar t₂ z +
-          (wirtingerBar t₃ z + wirtingerBar t₄ z) := by rw [hsum₁, hsum₂]
-      _ = _ := by
-        rw [show t₁ = fun w => A * deriv f w * star (f w) from rfl,
-          show t₂ = fun w => B * deriv f w * star (g w) from rfl,
-          show t₃ = fun w => C * deriv g w * star (f w) from rfl,
-          show t₄ = fun w => D * deriv g w * star (g w) from rfl,
-          hterm₁, hterm₂, hterm₃, hterm₄]
-        ring
-  rw [hbar, hcalc]
+  grind
 
 /-- Equality of Hermitian tensors on an open set determines all four coefficients whenever the
 analytic basis has nonzero Wronskian. The value, both first Wirtinger derivatives, and the mixed
@@ -131,9 +116,9 @@ theorem hermitianTensor_coefficients_eq_of_eqOn
   have hnear : Q₁ =ᶠ[𝓝 z] Q₂ := by
     filter_upwards [hU.mem_nhds hz] with w hw
     exact hEq w hw
-  have hvalue : Q₁ z = Q₂ z := hEq z hz
-  have hQ₁diff : DifferentiableAt ℝ Q₁ z := hQ₁At.differentiableAt (by norm_num)
-  have hQ₂diff : DifferentiableAt ℝ Q₂ z := hQ₂At.differentiableAt (by norm_num)
+  have hvalue  := hEq z hz
+  have hQ₁diff  := hQ₁At.differentiableAt (by norm_num)
+  have hQ₂diff  := hQ₂At.differentiableAt (by norm_num)
   have hZeq := wirtingerZ_congr_of_eventuallyEq hQ₁diff hQ₂diff hnear
   have hbareq := wirtingerBar_congr_of_eventuallyEq hQ₁diff hQ₂diff hnear
   have hZ₁diff := differentiableAt_wirtingerZ_of_contDiffAt_two hQ₁At
@@ -158,8 +143,7 @@ theorem hermitianTensor_coefficients_eq_of_eqOn
       _ = 0 := sub_eq_zero.mpr hvalue
   have hZeq' :
       wirtingerZ (hermitianQuadraticTensor f g A B C D) z =
-        wirtingerZ (hermitianQuadraticTensor f g A' B' C' D') z := by
-    simpa [Q₁, Q₂] using hZeq
+        wirtingerZ (hermitianQuadraticTensor f g A' B' C' D') z := hZeq
   have h₁₀raw := hZeq'
   rw [hermitianQuadraticTensor_wirtingerZ hf hg A B C D hz,
     hermitianQuadraticTensor_wirtingerZ hf hg A' B' C' D' hz] at h₁₀raw
@@ -174,20 +158,14 @@ theorem hermitianTensor_coefficients_eq_of_eqOn
       _ = 0 := sub_eq_zero.mpr h₁₀raw
   have hbareq' :
       wirtingerBar (hermitianQuadraticTensor f g A B C D) z =
-        wirtingerBar (hermitianQuadraticTensor f g A' B' C' D') z := by
-    simpa [Q₁, Q₂] using hbareq
+        wirtingerBar (hermitianQuadraticTensor f g A' B' C' D') z := hbareq
   have h₀₁raw := hbareq'
   rw [hermitianQuadraticTensor_wirtingerBar hf hg A B C D hz,
     hermitianQuadraticTensor_wirtingerBar hf hg A' B' C' D' hz] at h₀₁raw
   have h₀₁ :
       (A - A') * f z * star (deriv f z) + (B - B') * f z * star (deriv g z) +
         (C - C') * g z * star (deriv f z) + (D - D') * g z * star (deriv g z) = 0 := by
-    calc
-      _ = (A * f z * star (deriv f z) + B * f z * star (deriv g z) +
-          C * g z * star (deriv f z) + D * g z * star (deriv g z)) -
-        (A' * f z * star (deriv f z) + B' * f z * star (deriv g z) +
-          C' * g z * star (deriv f z) + D' * g z * star (deriv g z)) := by ring
-      _ = 0 := sub_eq_zero.mpr h₀₁raw
+    grind
   have h₁₁raw := hmixeq
   rw [hermitianQuadraticTensor_mixed hU hf hg A B C D hz,
     hermitianQuadraticTensor_mixed hU hf hg A' B' C' D' hz] at h₁₁raw
@@ -196,17 +174,10 @@ theorem hermitianTensor_coefficients_eq_of_eqOn
         (B - B') * deriv f z * star (deriv g z) +
         (C - C') * deriv g z * star (deriv f z) +
         (D - D') * deriv g z * star (deriv g z) = 0 := by
-    calc
-      _ = (A * deriv f z * star (deriv f z) + B * deriv f z * star (deriv g z) +
-          C * deriv g z * star (deriv f z) + D * deriv g z * star (deriv g z)) -
-        (A' * deriv f z * star (deriv f z) + B' * deriv f z * star (deriv g z) +
-          C' * deriv g z * star (deriv f z) + D' * deriv g z * star (deriv g z)) := by ring
-      _ = 0 := sub_eq_zero.mpr h₁₁raw
+    grind
   have hcoeff := hermitianTensor_coefficients_eq_of_wirtinger_jet
     (f z) (g z) (deriv f z) (deriv g z)
     (A - A') (B - B') (C - C') (D - D') hW h₀₀ h₁₀ h₀₁ h₁₁
-  rcases hcoeff with ⟨hA, hB, hC, hD⟩
-  exact ⟨sub_eq_zero.mp hA, sub_eq_zero.mp hB,
-    sub_eq_zero.mp hC, sub_eq_zero.mp hD⟩
+  grind
 
 end DOZZ.Proofs

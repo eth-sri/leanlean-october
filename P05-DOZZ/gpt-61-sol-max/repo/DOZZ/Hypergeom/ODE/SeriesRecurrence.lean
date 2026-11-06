@@ -9,7 +9,7 @@ import Mathlib.Analysis.SpecialFunctions.OrdinaryHypergeometric
 
 /-! The ordinary Gauss series coefficient recurrence, needed to seed the Gauss system at zero. -/
 
-@[expose] public section
+public section
 
 open Polynomial
 
@@ -29,10 +29,8 @@ theorem ordinaryHypergeometricCoefficient_gauss_recurrence (a b c : ℂ) (n : �
     ((n + 1 : ℂ) * ((n : ℂ) + c)) * ordinaryHypergeometricCoefficient a b c (n + 1) =
       ((n : ℂ) + a) * ((n : ℂ) + b) * ordinaryHypergeometricCoefficient a b c n := by
   have hcn : c + (n : ℂ) ≠ 0 := by
-    intro h
-    have h' : c = -(n : ℂ) := by linear_combination h
-    exact hc n h'
-  have hcpn : Polynomial.eval c (ascPochhammer ℂ n) ≠ 0 :=
+    grind
+  have hcpn  :=
     ordinaryHypergeometric_pochhammer_denominator_ne_zero n hc
   have hfact : ((n + 1).factorial : ℂ) = (n + 1 : ℂ) * (n.factorial : ℂ) := by
     exact_mod_cast Nat.factorial_succ n

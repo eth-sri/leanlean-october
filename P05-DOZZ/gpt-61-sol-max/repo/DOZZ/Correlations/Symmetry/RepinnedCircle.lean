@@ -7,7 +7,7 @@ public import DOZZ.Correlations.Symmetry.RepinnedGaussianClosure
 public import DOZZ.Correlations.Symmetry.ReflectionCircleEnergy
 public import DOZZ.GMC.Construction.CircleAverageJointVersion
 public import DOZZ.GFFStructure.CircleVersion
-@[expose] public section
+public section
 open MeasureTheory Filter
 open scoped Distributions Topology ENNReal
 namespace DOZZ.Proofs
@@ -22,10 +22,10 @@ theorem isCircleAverage_symmetryRepinned
   let L := fun ω => Xc ω 1 0
   let Y := symmetryRepinnedField X L
   let Z := fun ω x r => Xc ω (1 - x) r - L ω
-  have hY : IsEquatorGFF P Y := isEquatorGFF_symmetryRepinnedField P X hX Xc hXc
+  have hY  := isEquatorGFF_symmetryRepinnedField P X hX Xc hXc
   obtain ⟨Yc, hYc⟩ := exists_equatorGFF_circle_average_witness Y hY
   have hLmeas : Measurable L := (hXc.1 0).comp (measurable_id.prodMk measurable_const)
-  have hL : MemLp L 2 P := hXc.2.1 1 0
+  have hL  := hXc.2.1 1 0
   apply isCircleAverage_of_ae_eq P Y Yc Z hYc
   · intro r
     exact ((hXc.1 r).comp (measurable_fst.prodMk
@@ -36,13 +36,13 @@ theorem isCircleAverage_symmetryRepinned
   have hm : Tendsto (fun n => testMass (f n)) atTop (𝓝 1) := by
     let := circleMeasure_isProbability x r
     simpa [testMass] using hint (fun _ => (1 : ℝ)) continuous_const
-  have hd : Tendsto (fun n => ∫ z, f n z * symmetryReflectionPotential z) atTop (𝓝 D) :=
+  have hd  :=
     hint _ symmetryReflectionPotential_continuous
   have hg : Tendsto (fun n => circleEnergyGap (1 - x) r (symmetryReflectionTest (f n)))
       atTop (𝓝 0) := by
     simp_rw [reflection_circle_energy_gap]
     have h := hgap.add (((hm.sub_const 1).const_mul 2).mul (hd.sub_const D))
-    simpa only [sub_self, mul_zero, zero_mul, add_zero] using h
+    continuity
   have ha := hXc.2.2 (1 - x) r (fun n => symmetryReflectionTest (f n)) hg
   have hc : Tendsto (fun n => ‖1 - testMass (f n)‖ₑ) atTop (𝓝 (0 : ℝ≥0∞)) := by
     have h : Tendsto (fun n => 1 - testMass (f n)) atTop (𝓝 (0 : ℝ)) := by
@@ -56,8 +56,7 @@ theorem isCircleAverage_symmetryRepinned
     simp only [zero_mul] at h
     have he n : eLpNorm (fun ω => (1 - testMass (f n)) * L ω) 2 P =
         ‖1 - testMass (f n)‖ₑ * eLpNorm L 2 P := by
-      simpa only [Pi.smul_def, smul_eq_mul] using
-        eLpNorm_const_smul (1 - testMass (f n)) L 2 P
+      exact eLpNorm_const_smul (1 - testMass (f n)) L 2 P
     simpa only [he] using h
   have he n : (fun ω => Y ω (f n) - Z ω x r) =
       (fun ω => X ω (symmetryReflectionTest (f n)) - Xc ω (1 - x) r) +
@@ -77,11 +76,11 @@ theorem isCircleAverage_symmetryRepinned
     rw [he]
     exact eLpNorm_add_le (by norm_num)
   have hcanon := hYc.2.2 x r f hgap
-  have hzm : TendstoInMeasure P (fun n ω => Y ω (f n)) atTop (fun ω => Z ω x r) :=
+  have hzm  :=
     tendstoInMeasure_of_tendsto_eLpNorm (by norm_num : (2 : ℝ≥0∞) ≠ 0)
-      (by simpa only [Pi.sub_def] using hz)
-  have hym : TendstoInMeasure P (fun n ω => Y ω (f n)) atTop (fun ω => Yc ω x r) :=
+      (by exact hz)
+  have hym  :=
     tendstoInMeasure_of_tendsto_eLpNorm (by norm_num : (2 : ℝ≥0∞) ≠ 0)
-      (by simpa only [Pi.sub_def] using hcanon)
+      (by exact hcanon)
   exact tendstoInMeasure_ae_unique hzm hym
 end DOZZ.Proofs

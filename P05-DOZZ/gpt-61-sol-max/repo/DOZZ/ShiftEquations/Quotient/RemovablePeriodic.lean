@@ -12,6 +12,7 @@ import DOZZ.DOZZAlgebra.FormulaShiftBinv
 import DOZZ.DOZZAlgebra.GenericLocus
 import DOZZ.Brownian.Reflection.RtheorAnalytic
 import DOZZ.Brownian.Reflection.RtheorIdentification
+import Mathlib.Tactic
 
 /-!
 # The DOZZ quotient is a removable doubly periodic factor
@@ -67,14 +68,14 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
       rw [hbdef, hb'def]; push_cast; field_simp; ring
     rw [e]
     exact hγirr.div_natCast (by norm_num)
-  have hγk : ∀ n : ℤ, 4 / γ ^ 2 ≠ n := four_div_sq_ne_int_of_irrational hγirr
+  have hγk  := four_div_sq_ne_int_of_irrational hγirr
   have hγk' : ∀ k : ℕ, 4 / γ ^ 2 ≠ (k : ℝ) := fun k hk => hγk k (by exact_mod_cast hk)
-  have hQη : 0 < Q γ - η := by linarith [hη.1, hη.2]
+  
   -- the DOZZ formula and its divisor
   have hU₂ : U (α₂ : ℂ) ≠ 0 := IsUpsilon.ne_zero_of_re hU (by simp; linarith [hα₂.1])
-    (by simpa using hα₂.2)
+    (by exact hα₂.2)
   have hU₃ : U (α₃ : ℂ) ≠ 0 := IsUpsilon.ne_zero_of_re hU (by simp; linarith [hα₃.1])
-    (by simpa using hα₃.2)
+    (by exact hα₃.2)
   have hD := (meromorphicOn_dozzFormula hγ hγ2 hμ hU (α₂ : ℂ) (α₃ : ℂ)).mono_set
     (Set.subset_univ (horizontalStrip h))
   have hD0 := eventually_dozzFormula_ne_zero hγ hγ2 hμ hU hU₂ hU₃
@@ -90,8 +91,8 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
       Complex.cpow_ne_zero_iff.mpr (Or.inl (by exact_mod_cast (dozzBase_pos hγ hγ2 hμ).ne'))
     have hμ' : dualMu γ μ ≠ 0 := by
       unfold dualMu
-      exact div_ne_zero hbase (mul_ne_zero (by exact_mod_cast Real.pi_ne_zero) hl)
-    exact neg_ne_zero.mpr (one_div_ne_zero (mul_ne_zero (by exact_mod_cast Real.pi_ne_zero) hμ'))
+      simp_all
+    simp_all
   have hA₁ := eventually_shiftCoeffA_ne_zero γ (α₂ : ℂ) (α₃ : ℂ)
     (χ := (γ : ℂ) / 2) (div_ne_zero hγ0 two_ne_zero)
     (lFun_ne_zero_of_forall_ne_int fun n hn => by
@@ -132,8 +133,7 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
     filter_upwards [hfirst, hdual, dozzFormula_shift_b hγ hγ2 hμ hU (α₂ : ℂ) (α₃ : ℂ),
       dozzFormula_shift_binv hγ hγ2 hγk' hμ hU (α₂ : ℂ) (α₃ : ℂ), hA₁, hA₂]
       with z h1 h2 h3 h4 h5 h6
-    rw [hbc, hb'c]
-    exact ⟨⟨h1, h3, mul_ne_zero hπμ h5⟩, ⟨h2, h4, mul_ne_zero hdual0 h6⟩⟩
+    grind
   obtain ⟨c, hc⟩ := exists_eventually_eq_const_mul_of_shifts hh hb hb' hirr hC hD hD0 hgood
   classical
   -- the factor: the constant on the strip, the quotient off it
@@ -141,21 +141,15 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
     else C z / dozzFormula γ μ U z (α₂ : ℂ) (α₃ : ℂ), ?_, ?_, ?_⟩
   · exact (differentiableOn_const c).congr fun z hz => ite_eq_left hz
   · filter_upwards [hc, hD0] with z hz hDz
-    by_cases hzS : z ∈ horizontalStrip h
-    · rw [ite_eq_left hzS, hz hzS]
-    · rw [ite_eq_right hzS, div_mul_cancel₀ _ hDz]
+    grind
   · intro z hz
     have hz' : |z.im| < h := hz
     have h1 : z + (γ : ℂ) ∈ horizontalStrip h := by
       change |(z + (γ : ℂ)).im| < h
       simpa using hz'
     have h2 : z + 4 / (γ : ℂ) ∈ horizontalStrip h := by
-      change |(z + 4 / (γ : ℂ)).im| < h
-      rw [show (4 / (γ : ℂ)) = ((4 / γ : ℝ) : ℂ) by push_cast; ring, Complex.add_im,
-        Complex.ofReal_im, add_zero]
-      exact hz'
-    exact ⟨(ite_eq_left h1).trans (ite_eq_left hz).symm,
-      (ite_eq_left h2).trans (ite_eq_left hz).symm⟩
+      assumption_mod_cast
+    grind
 
 end DOZZ.Proofs
 

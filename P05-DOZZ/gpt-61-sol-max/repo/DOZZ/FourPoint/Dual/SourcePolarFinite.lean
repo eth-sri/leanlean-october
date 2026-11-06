@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Dual.SourceRestartWilliams
 public import DOZZ.FourPoint.Dual.PolarFinitenessTransport
 import Mathlib.Tactic
 /-! The actual source restarted polar integral is finite by its proved Williams joint law. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -32,7 +32,7 @@ theorem dual_source_restarted_polar_finite_ae
         (brownianShiftPath T (radialPositiveHalf (originRadialPath Xc ω.1))
           (Real.toNNReal t)-(Q γ-α₁)*t))) else 0)
         ∂(Z ω.2).map (fun s => s-(T : ℝ))) ≠ ⊤ := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   let ν := Q γ-α₁
   let A := originRadialPath Xc
   have hA := originRadialPath_aemeasurable P X Xc hc hcont
@@ -42,20 +42,20 @@ theorem dual_source_restarted_polar_finite_ae
   have hs : Measurable (fun a => brownianShiftPath T (radialPositiveHalf a)) :=
     continuous_brownianShiftPath.measurable.comp
       (measurable_const.prodMk continuous_radialPositiveHalf.measurable)
-  have hDm : AEMeasurable D P := hs.comp_aemeasurable hA
-  have hDZ : IndepFun D Z P := hiZ.comp₀ hA hZ.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable
+  have hDm  := hs.comp_aemeasurable hA
+  have hDZ  := hiZ.comp₀ hA hZ.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable
   let Y := fun ω => (dual_radial_scale γ ν h Xc z ω,
     (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal)
   have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hβ : AEMeasurable (dual_radial_scale γ ν h Xc z) P :=
     ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
-  have hYm : AEMeasurable Y P := hβ.prodMk
+  have hYm  := hβ.prodMk
     (((dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal)
   let V := fun ω : Ω × Ω => ∫⁻ t,
     (if 0 < t then ENNReal.ofReal (Real.exp (γ*(D ω.1 (Real.toNNReal t)-ν*t))) else 0)
       ∂(Z ω.2).map (fun s => s-(T : ℝ))
-  have hVm : AEMeasurable V (P.prod P) :=
+  have hVm  :=
     dual_translated_polar_mass_aemeasurable P D hDm γ ν Z hZ hDZ T
   let J := fun q : ℝ × Ω => ENNReal.ofReal (Real.exp (γ*q.1))*twoSidedReflectionCutMass γ q.1 B Z₀ q.2
   have hJm : AEMeasurable J R :=

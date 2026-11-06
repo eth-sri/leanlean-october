@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.Fusion.LocalR1Limit
 
 /-! # Exact normalization of the local pure derivative coefficient -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -27,23 +27,23 @@ theorem fusion_pure_coefficient (p e q E : ℝ) (he : -1 < e) (W A : ℂ)
         (((q : ℂ) * (q - 1 : ℝ) * W) * (E : ℂ)) := by push_cast; ring
     _ = _ := by rw [hW]; push_cast; field_simp [h1, h2]; ring
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- The limiting moving inverse expectation is exactly the moment in
 `gammaHalfRootedCoefficient`. -/
-theorem fusion_local_inverse_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_local_inverse_coefficient_eq 
     (α₁ α₂ α₃ s : ℝ) :
     (∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P) =
       ∫⁻ ω, gammaHalfRootedMass γ α₁ α₂ α₃ M ω ^ s ∂P := by
   apply lintegral_congr_ae
   filter_upwards [fusionMovingMass_eq_rooted_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ 1 0] with ω hω
-  simpa only [mul_zero, gammaHalfRootedMass] using congrArg (fun a : ℝ≥0∞ => a ^ s) hω
+  continuity
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- The local `r₁` coefficient is the exact rooted coefficient `gammaHalfRootedCoefficient`
 times the planar ratio. -/
-theorem fusionLocalR1_coefficient_tendsto {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusionLocalR1_coefficient_tendsto 
     (α₁ α₂ α₃ : ℝ) (hlo : γ / 2 < α₁) (hsq : 2 < γ ^ 2) (hα₁ : α₁ < 2 / γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (p : ℝ) (hp : 0 ≤ p) :
     Filter.Tendsto (fun z : ℂ => fusionLocalR1 P M γ α₁ α₂ α₃ p z /
@@ -64,6 +64,6 @@ theorem fusionLocalR1_coefficient_tendsto {Ω : Type*} [MeasurableSpace Ω]
     (by linarith) _ _ hW
   rw [hc, fusion_planarGauss_real _ _ hk hβ hβ2 hβlin,
     fusion_local_inverse_coefficient_eq P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1)] at h
-  simpa only [gammaHalfRootedCoefficient, ENNReal.rpow_eq_pow, Complex.ofReal_mul, mul_assoc] using h
+  assumption_mod_cast
 
 end DOZZ.Proofs

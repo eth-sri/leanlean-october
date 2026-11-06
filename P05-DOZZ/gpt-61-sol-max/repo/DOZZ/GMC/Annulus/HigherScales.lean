@@ -23,12 +23,13 @@ open scoped ENNReal NNReal Distributions
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
+include Ω _inst1 P X hX Xc hXc in
 /-- A preceding cutoff-uniform reference estimate transfers to every active local ball.
 The rescaled reference cutoff is nonnegative because its circle radius is at most R. -/
 theorem regularizedGMC_local_ball_moment_upper_of_reference
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
     (γ q : ℝ) {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1 / 8) (C : ℝ≥0∞)
     (hRef : ∀ r : ℝ, 0 ≤ r → gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball 0 R) q ≤ C)
     {s t : ℝ} (hs : 0 < s) (hsR : s ≤ R) (hcut : Real.exp (-t) ≤ s)
@@ -39,9 +40,7 @@ theorem regularizedGMC_local_ball_moment_upper_of_reference
     rw [neg_add, Real.exp_add, Real.exp_neg (Real.log (s / R)),
       Real.exp_log (div_pos hs hR), inv_div]
   have hm : Real.exp (-t) * (R / s) ≤ R := by
-    have h := mul_le_mul_of_nonneg_right hcut (div_nonneg hR.le hs.le)
-    have he : s * (R / s) = R := by field_simp
-    exact h.trans_eq he
+    field_simp <;> nlinarith
   have hr : 0 ≤ t + Real.log (s / R) := by
     have he : Real.exp (-(t + Real.log (s / R))) ≤ 1 := by rw [hscaleCircle]; linarith
     exact neg_nonpos.mp (Real.exp_le_one_iff.mp he)
@@ -51,12 +50,11 @@ theorem regularizedGMC_local_ball_moment_upper_of_reference
     (by linarith) hbase htarget q]
   exact mul_le_mul' le_rfl (hRef _ hr)
 
+include Ω _inst1 P X hX Xc hXc in
 /-- The actual active dyadic pieces carry the sharp geometric moment factor at arbitrary
 positive order. The preceding reference bound is the only induction input. -/
 theorem regularizedGMC_clipped_dyadic_moment_bound_of_reference
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
     (γ q : ℝ) (hq : 0 < q) {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1 / 8) (C : ℝ≥0∞)
     (hRef : ∀ r : ℝ, 0 ≤ r → gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball 0 R) q ≤ C)
     (t : ℝ) (u : ℂ) (hu : ‖u‖ ≤ R) (n : ℕ) :
@@ -68,10 +66,7 @@ theorem regularizedGMC_clipped_dyadic_moment_bound_of_reference
   · have hn : 0 < gmcDyadicRadius R n := by unfold gmcDyadicRadius; positivity
     have hnR : gmcDyadicRadius R n ≤ R := by
       unfold gmcDyadicRadius
-      apply (div_le_iff₀ (by positivity)).mpr
-      calc
-        R = R * 1 := (mul_one R).symm
-        _ ≤ R * (2 : ℝ) ^ n := mul_le_mul_of_nonneg_left (one_le_pow₀ (by norm_num)) hR.le
+      bound
     have hn1 : 0 < gmcDyadicRadius R (n + 1) := by unfold gmcDyadicRadius; positivity
     have hc : 0 < (gmcDyadicRadius R (n + 1)) ^ (-γ ^ 2) := Real.rpow_pos_of_pos hn1 _
     have he : (∫⁻ ω, (gmcClippedDyadicTerm (regularizedGMC P Xc γ t ω)
@@ -98,10 +93,12 @@ noncomputable def gmcRootHigherDyadicConstant (γ q R : ℝ) (C : ℝ≥0∞) : 
   (ENNReal.ofReal (R ^ (-γ ^ 2 * q) * (2 : ℝ) ^ (γ ^ 2 * q)) ^ (1 / q) *
     (1 - ENNReal.ofReal ((2 : ℝ) ^ (-gmcRootAnnularExponent γ q)) ^ (1 / q))⁻¹ * C ^ (1 / q)) ^ q
 
+variable (γ q R : ℝ) (hγ : 0 < γ) (hq : 0 < q) (hcrit : q + 1 < 4 / γ ^ 2) (C : ℝ≥0∞) (hC : C < ∞)
+
+include γ q R hγ hq hcrit C hC in
 /-- The higher-order geometric constant is finite at the strict subcritical next order. -/
 theorem gmcRootHigherDyadicConstant_lt_top
-    (γ q R : ℝ) (hγ : 0 < γ) (hq : 0 < q) (hcrit : q + 1 < 4 / γ ^ 2)
-    (C : ℝ≥0∞) (hC : C < ∞) : gmcRootHigherDyadicConstant γ q R C < ∞ := by
+     : gmcRootHigherDyadicConstant γ q R C < ∞ := by
   have ha := ENNReal.rpow_lt_one (gmc_clipped_dyadic_ratio_lt_one γ q hγ hq hcrit) (one_div_pos.mpr hq)
   have hd : 1 - ENNReal.ofReal ((2 : ℝ) ^ (-gmcRootAnnularExponent γ q)) ^ (1 / q) ≠ 0 := by
     intro h
@@ -109,25 +106,22 @@ theorem gmcRootHigherDyadicConstant_lt_top
   unfold gmcRootHigherDyadicConstant
   apply lt_top_iff_ne_top.mpr
   apply ENNReal.rpow_ne_top_of_nonneg hq.le
-  exact ENNReal.mul_ne_top (ENNReal.mul_ne_top
-    (ENNReal.rpow_ne_top_of_nonneg (one_div_pos.mpr hq).le ENNReal.ofReal_ne_top)
-    (ENNReal.inv_ne_top.mpr hd)) (ENNReal.rpow_ne_top_of_nonneg (one_div_pos.mpr hq).le hC.ne)
+  finiteness
 
+include Ω _inst1 P X hX Xc hXc in
 /-- Actual Minkowski assembly of the active clipped dyadic pieces at higher orders. -/
 theorem regularizedGMC_root_dyadic_higher_moment_uniform
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
     (γ q : ℝ) (hq : 1 ≤ q) {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1 / 8) (C : ℝ≥0∞)
     (hRef : ∀ r : ℝ, 0 ≤ r → gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball 0 R) q ≤ C)
     (t : ℝ) (u : ℂ) (hu : ‖u‖ ≤ R) :
     (∫⁻ ω, (∑' n : ℕ, gmcClippedDyadicTerm (regularizedGMC P Xc γ t ω)
       γ R (Real.exp (-t)) u n) ^ q ∂P) ≤ gmcRootHigherDyadicConstant γ q R C := by
-  have hq0 : 0 < q := lt_of_lt_of_le zero_lt_one hq
-  let F : ℕ → Ω → ℝ≥0∞ := fun n ω =>
+  have hq0  := lt_of_lt_of_le zero_lt_one hq
+  let F  := fun n ω =>
     gmcClippedDyadicTerm (regularizedGMC P Xc γ t ω) γ R (Real.exp (-t)) u n
-  let a : ℝ≥0∞ := ENNReal.ofReal ((2 : ℝ) ^ (-gmcRootAnnularExponent γ q))
-  let D : ℝ≥0∞ := ENNReal.ofReal (R ^ (-γ ^ 2 * q) * (2 : ℝ) ^ (γ ^ 2 * q))
+  let a  := ENNReal.ofReal ((2 : ℝ) ^ (-gmcRootAnnularExponent γ q))
+  let D  := ENNReal.ofReal (R ^ (-γ ^ 2 * q) * (2 : ℝ) ^ (γ ^ 2 * q))
   have hF (n : ℕ) : AEMeasurable (F n) P :=
     (measurable_regularizedGMC_clipped_dyadic_term P X hX Xc hXc γ R t u n).aemeasurable
   have hb (n : ℕ) : (∫⁻ ω, (F n ω) ^ q ∂P) ^ (1 / q) ≤
@@ -150,11 +144,10 @@ theorem regularizedGMC_root_dyadic_higher_moment_uniform
   exact (lintegral_tsum_rpow_le_root_moments_power P F hF q hq).trans
     (ENNReal.rpow_le_rpow hs hq0.le)
 
+include Ω _inst1 P X hX Xc hXc in
 /-- The inner cutoff disk also consumes exactly the preceding uniform reference bound. -/
 theorem regularizedGMC_root_inner_moment_uniform_of_reference
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
     (γ q : ℝ) (hγ : 0 < γ) (hq : 0 < q) (hcrit : q + 1 < 4 / γ ^ 2)
     {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1 / 8) (C : ℝ≥0∞)
     (hRef : ∀ r : ℝ, 0 ≤ r → gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball 0 R) q ≤ C)
@@ -184,7 +177,7 @@ theorem regularizedGMC_root_inner_moment_uniform_of_reference
       div_eq_mul_inv, ← Real.rpow_neg hR.le, sub_eq_add_neg, Real.rpow_add hδ]
     ring_nf
   rw [← mul_assoc, ← ENNReal.ofReal_mul (Real.rpow_nonneg hδ.le _), hecoef] at h
-  have hp : δ ^ (ξ - γ ^ 2 * q) ≤ 1 := Real.rpow_le_one hδ.le (by dsimp [δ]; linarith)
+  have hp  := Real.rpow_le_one hδ.le (by dsimp [δ]; linarith)
     (gmcRootAnnularExponent_pos γ q hγ hq hcrit).le
   have hcoef : (2 : ℝ) ^ ξ * R ^ (-ξ) * δ ^ (ξ - γ ^ 2 * q) ≤ (2 : ℝ) ^ ξ * R ^ (-ξ) :=
     (mul_le_mul_of_nonneg_left hp (mul_nonneg (Real.rpow_nonneg (by norm_num) _)
@@ -204,22 +197,19 @@ noncomputable def gmcRootHigherClippedConstant (γ q R : ℝ) (C : ℝ≥0∞) :
   (3 : ℝ≥0∞) ^ q * (gmcRootInnerConstant γ q R * C +
     ENNReal.ofReal (R ^ (-γ ^ 2 * q)) * C + gmcRootHigherDyadicConstant γ q R C)
 
+include γ q R hγ hq hcrit C hC in
 /-- The higher-order clipped-root constant is finite from the preceding finite reference bound. -/
 theorem gmcRootHigherClippedConstant_lt_top
-    (γ q R : ℝ) (hγ : 0 < γ) (hq : 0 < q) (hcrit : q + 1 < 4 / γ ^ 2)
-    (C : ℝ≥0∞) (hC : C < ∞) : gmcRootHigherClippedConstant γ q R C < ∞ := by
-  unfold gmcRootHigherClippedConstant
-  exact ENNReal.mul_lt_top (lt_top_iff_ne_top.mpr (ENNReal.rpow_ne_top_of_nonneg hq.le (by simp)))
+     : gmcRootHigherClippedConstant γ q R C < ∞ := ENNReal.mul_lt_top (lt_top_iff_ne_top.mpr (ENNReal.rpow_ne_top_of_nonneg hq.le (by simp)))
     (ENNReal.add_lt_top.mpr ⟨ENNReal.add_lt_top.mpr
       ⟨ENNReal.mul_lt_top ENNReal.ofReal_lt_top hC, ENNReal.mul_lt_top ENNReal.ofReal_lt_top hC⟩,
         gmcRootHigherDyadicConstant_lt_top γ q R hγ hq hcrit C hC⟩)
 
+include Ω _inst1 P X hX Xc hXc
 /-- Complete higher-order clipped-mass assembly. No independence between its spatial pieces
 is assumed: a finite-sum bound handles three pieces, and Minkowski handles the dyadic sum. -/
 theorem regularizedGMC_root_clipped_higher_moment_uniform
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
     (γ q : ℝ) (hγ : 0 < γ) (hq : 1 ≤ q) (hcrit : q + 1 < 4 / γ ^ 2)
     {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1 / 8) (C : ℝ≥0∞)
     (hRef : ∀ r : ℝ, 0 ≤ r → gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball 0 R) q ≤ C)
@@ -227,12 +217,12 @@ theorem regularizedGMC_root_clipped_higher_moment_uniform
     (∫⁻ ω, (∫⁻ x in Metric.ball (0 : ℂ) R,
       ENNReal.ofReal ((max ‖x - u‖ (Real.exp (-t))) ^ (-γ ^ 2))
         ∂regularizedGMC P Xc γ t ω) ^ q ∂P) ≤ gmcRootHigherClippedConstant γ q R C := by
-  have hq0 : 0 < q := lt_of_lt_of_le zero_lt_one hq
-  let I : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal ((Real.exp (-t)) ^ (-γ ^ 2)) *
+  have hq0  := lt_of_lt_of_le zero_lt_one hq
+  let I  := fun ω => ENNReal.ofReal ((Real.exp (-t)) ^ (-γ ^ 2)) *
     regularizedGMC P Xc γ t ω (Metric.ball u (2 * Real.exp (-t)))
-  let O : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal (R ^ (-γ ^ 2)) *
+  let O  := fun ω => ENNReal.ofReal (R ^ (-γ ^ 2)) *
     regularizedGMC P Xc γ t ω (Metric.ball 0 R)
-  let S : Ω → ℝ≥0∞ := fun ω => ∑' n : ℕ,
+  let S  := fun ω => ∑' n : ℕ,
     gmcClippedDyadicTerm (regularizedGMC P Xc γ t ω) γ R (Real.exp (-t)) u n
   have hI : Measurable (fun ω => (I ω) ^ q) :=
     ENNReal.continuous_rpow_const.measurable.comp (measurable_const.mul
@@ -265,12 +255,11 @@ theorem regularizedGMC_root_clipped_higher_moment_uniform
         hR hRsmall C hRef t hcut u hu) hb)
           (regularizedGMC_root_dyadic_higher_moment_uniform P X hX Xc hXc γ q hq hR hRsmall C hRef t u hu))
 
+
 /-- The higher-order root step preserves cutoff uniformity. Its sole moment input is the
 proved preceding order `p-1`, on the actual same source field and reference disk. -/
 theorem regularizedGMC_reference_moment_uniform_of_preceding_order
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
     (γ p : ℝ) (hγ : 0 < γ) (hp : 2 ≤ p) (hcrit : p < 4 / γ ^ 2)
     {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1 / 8) (C : ℝ≥0∞) (hC : C < ∞)
     (hRef : ∀ r : ℝ, 0 ≤ r →
@@ -281,10 +270,10 @@ theorem regularizedGMC_reference_moment_uniform_of_preceding_order
   have hq : 1 ≤ p - 1 := by linarith
   have hq0 : 0 < p - 1 := by linarith
   have hcritq : (p - 1) + 1 < 4 / γ ^ 2 := by simpa only [sub_add_cancel] using hcrit
-  let T : ℝ := Real.log (2 / R)
-  let F : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ ^ 2 * gmcCircleChartRemainder R * (p - 1))) *
+  let T  := Real.log (2 / R)
+  let F  := ENNReal.ofReal (Real.exp (γ ^ 2 * gmcCircleChartRemainder R * (p - 1))) *
     (gmcRootHigherClippedConstant γ (p - 1) R C * gmcReferenceMeasure (Metric.ball 0 R))
-  let B : ℝ≥0∞ := (gmcReferenceMeasure (Metric.ball (0 : ℂ) R)) ^ p *
+  let B  := (gmcReferenceMeasure (Metric.ball (0 : ℂ) R)) ^ p *
     ENNReal.ofReal (Real.exp (γ ^ 2 * (p ^ 2 - p) / 2 * (T + gmcCircleChartRemainder R)))
   have hF : F < ∞ := ENNReal.mul_lt_top ENNReal.ofReal_lt_top
     (ENNReal.mul_lt_top (gmcRootHigherClippedConstant_lt_top γ (p - 1) R hγ hq0 hcritq C hC)
@@ -294,7 +283,7 @@ theorem regularizedGMC_reference_moment_uniform_of_preceding_order
     ENNReal.ofReal_lt_top
   have hchart : ∀ x ∈ Metric.ball (0 : ℂ) R, ‖x‖ ≤ R := by
     intro x hx
-    exact (show ‖x‖ < R by simpa only [Metric.mem_ball, dist_zero_right] using hx).le
+    exact (show ‖x‖ < R by simp_all).le
   refine ⟨F + B, ENNReal.add_lt_top.mpr ⟨hF, hB⟩, ?_⟩
   intro t ht
   by_cases hcut : 2 * Real.exp (-t) ≤ R
@@ -312,7 +301,7 @@ theorem regularizedGMC_reference_moment_uniform_of_preceding_order
           intro u hu
           exact regularizedGMC_root_clipped_higher_moment_uniform P X hX Xc hXc γ (p - 1)
             hγ hq hcritq hR hRsmall C hRef t ht hcut u (hchart u hu)
-        _ = _ := by rw [lintegral_const, Measure.restrict_apply_univ]
+        _ = _ := by simp_all
     exact (h.trans (mul_le_mul' le_rfl hb)).trans (le_add_of_nonneg_right zero_le)
   · have htT : t ≤ T := by
       have he : Real.exp (-T) = R / 2 := by
@@ -324,12 +313,11 @@ theorem regularizedGMC_reference_moment_uniform_of_preceding_order
       (Metric.ball 0 R) Metric.isOpen_ball.measurableSet hchart t ht htT).trans
         (le_add_of_nonneg_left zero_le)
 
+
 /-- Integer-interval induction closes every strictly subcritical positive reference moment
 above one, uniformly in the actual circle cutoff. -/
 theorem regularizedGMC_reference_positive_moment_uniform
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
     (γ p : ℝ) (hγ : 0 < γ) (hp : 1 < p) (hcrit : p < 4 / γ ^ 2)
     {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1 / 8) :
     ∃ C : ℝ≥0∞, C < ∞ ∧ ∀ t : ℝ, 0 ≤ t →
@@ -342,29 +330,27 @@ theorem regularizedGMC_reference_positive_moment_uniform
     | zero =>
       intro p hp hp2 hcrit
       exact regularizedGMC_reference_positive_moment_uniform_upto_two P X hX Xc hXc γ p hγ hp
-        (by simpa only [Nat.cast_zero, zero_add] using hp2) hcrit hR hRsmall
+        (by simp_all) hcrit hR hRsmall
     | succ n ih =>
       intro p hp hpn hcrit
       by_cases hsmall : p ≤ (n : ℝ) + 2
       · exact ih p hp hsmall hcrit
-      · have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
+      ·
         have hq : 1 < p - 1 := by linarith
         have hqn : p - 1 ≤ (n : ℝ) + 2 := by
-          simp only [Nat.cast_add, Nat.cast_one] at hpn
-          linarith
+          grind
         have hqcrit : p - 1 < 4 / γ ^ 2 := by linarith
         obtain ⟨C, hC, hRef⟩ := ih (p - 1) hq hqn hqcrit
         exact regularizedGMC_reference_moment_uniform_of_preceding_order P X hX Xc hXc γ p hγ
           (by linarith) hcrit hR hRsmall C hC hRef
   obtain ⟨n, hn⟩ := exists_nat_gt p
-  exact hstep n p hp (by linarith [show (0 : ℝ) ≤ (n : ℝ) from Nat.cast_nonneg n]) hcrit
+  exact hstep n p hp (by bound) hcrit
+
 
 /-- The starting subunit range and higher-order induction together cover every positive
 order in the literal sharp range, uniformly over all nonnegative cutoff parameters. -/
 theorem regularizedGMC_reference_moment_uniform_nonnegative
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
     (γ p : ℝ) (hγ : 0 < γ) (hp : 0 ≤ p) (hcrit : p < 4 / γ ^ 2)
     {R : ℝ} (hR : 0 < R) (hRsmall : R ≤ 1 / 8) :
     ∃ C : ℝ≥0∞, C < ∞ ∧ ∀ t : ℝ, 0 ≤ t →
@@ -376,6 +362,8 @@ theorem regularizedGMC_reference_moment_uniform_nonnegative
       (Metric.ball 0 R) Metric.isOpen_ball.measurableSet
   · exact regularizedGMC_reference_positive_moment_uniform P X hX Xc hXc γ p hγ
       (lt_of_not_ge hp1) hcrit hR hRsmall
+omit Ω _inst1 P X hX Xc hXc
+
 
 /-- The complete sharp positive-moment induction passes to every GMC version. Two Fatou passages use
 only the literal weak test-integral convergence in `IsGMCOf`. -/
@@ -391,15 +379,15 @@ theorem gmc_reference_positive_moment_finite
   obtain ⟨C, hC, hbound⟩ := regularizedGMC_reference_positive_moment_uniform
     P X hX Xc hXc γ p hγ hp hcrit hR hRsmall
   let f : ℕ → BoundedContinuousFunction ℂ ℝ := fun k => openBallApprox 0 R k
-  let F : ℕ → Ω → ℝ := fun k ω => ∫ x, f k x ∂M ω
+  let F  := fun k ω => ∫ x, f k x ∂M ω
   have hcut (k n : ℕ) : AEMeasurable
       (fun ω => ∫ x, f k x ∂regularizedGMC P Xc γ n ω) P := by
-    have hzero : ∀ x, x ∉ Metric.closedBall (0 : ℂ) R → f k x = 0 :=
+    have hzero  :=
       boundedContinuousFunction_eq_zero_off_tsupport_subset (f k) (Metric.closedBall 0 R)
         (openBallApprox_tsupport_subset 0 R k)
     have hunit : ∀ x ∈ Metric.closedBall (0 : ℂ) R, ‖x‖ ≤ 1 := by
       intro x hx
-      have hxR : ‖x‖ ≤ R := by simpa only [Metric.mem_closedBall, dist_zero_right] using hx
+      have hxR : ‖x‖ ≤ R := by simp_all
       linarith
     exact regularizedGMC_test_integral_aemeasurable P X hX Xc hXc γ n
       (Metric.closedBall 0 R) Metric.isClosed_closedBall.measurableSet hunit
@@ -413,8 +401,7 @@ theorem gmc_reference_positive_moment_finite
   have hfirst (k : ℕ) : (∫⁻ ω, ENNReal.ofReal (F k ω) ^ p ∂P) ≤ C := by
     have hmeas (n : ℕ) : AEMeasurable (fun ω => ENNReal.ofReal
         (max (∫ x, f k x ∂regularizedGMC P Xc γ n ω) 0) ^ p) P := by
-      exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
-        (ENNReal.measurable_ofReal.comp_aemeasurable ((hcut k n).max aemeasurable_const))
+      fun_prop
     have hb (n : ℕ) : (∫⁻ ω, ENNReal.ofReal
         (max (∫ x, f k x ∂regularizedGMC P Xc γ n ω) 0) ^ p ∂P) ≤ C := by
       have hn : (∫⁻ ω, ENNReal.ofReal
@@ -431,32 +418,24 @@ theorem gmc_reference_positive_moment_finite
       exact hn.trans (hbound n (Nat.cast_nonneg n))
     exact lintegral_ennreal_rpow_le_of_tendstoInMeasure P _ (F k) p C (hconv k) hmeas
       (ae_of_all P (hFn k)) hb
-  let G : Ω → ℝ := fun ω => (M ω (Metric.ball 0 R)).toReal
+  let G  := fun ω => (M ω (Metric.ball 0 R)).toReal
   have hseq : TendstoInMeasure P F atTop G := by
     apply tendstoInMeasure_of_tendsto_ae (fun k => (hF k).aestronglyMeasurable)
     filter_upwards with ω
     let _ := hM.1 ω
-    simpa only [F, f, G, measureReal_def] using openBallApprox_integral_tendsto 0 R (M ω)
+    exact openBallApprox_integral_tendsto 0 R (M ω)
   have hpow (k : ℕ) : AEMeasurable (fun ω => ENNReal.ofReal (max (F k ω) 0) ^ p) P :=
     ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
       (ENNReal.measurable_ofReal.comp_aemeasurable ((hF k).max aemeasurable_const))
   have hb (k : ℕ) : (∫⁻ ω, ENNReal.ofReal (max (F k ω) 0) ^ p ∂P) ≤ C := by
-    have he : (fun ω => ENNReal.ofReal (max (F k ω) 0) ^ p) =
-        (fun ω => ENNReal.ofReal (F k ω) ^ p) := by
-      funext ω
-      rw [max_eq_left (hFn k ω)]
-    rw [he]
-    exact hfirst k
+    simp_all
   have hf := lintegral_ennreal_rpow_le_of_tendstoInMeasure P F G p C hseq hpow
     (ae_of_all P (fun ω => ENNReal.toReal_nonneg)) hb
   have he : (∫⁻ ω, ENNReal.ofReal (G ω) ^ p ∂P) = gmcMassMoment P M (Metric.ball 0 R) p := by
     apply lintegral_congr
     intro ω
     let _ := hM.1 ω
-    change ENNReal.ofReal ((M ω (Metric.ball 0 R)).toReal) ^ p =
-      ENNReal.rpow (M ω (Metric.ball 0 R)) p
-    rw [ENNReal.ofReal_toReal (measure_ne_top _ _)]
-    rfl
+    aesop
   change (∫⁻ ω, ENNReal.ofReal (G ω) ^ p ∂P) ≤ C at hf
   rw [he] at hf
   exact hf.trans_lt hC

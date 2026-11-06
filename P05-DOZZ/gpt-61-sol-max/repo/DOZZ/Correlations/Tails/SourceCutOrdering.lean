@@ -9,7 +9,7 @@ public import Mathlib.Probability.HasLaw
 
 /-! Random-maximum last-cut ordering on an actual conditioned source process. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 

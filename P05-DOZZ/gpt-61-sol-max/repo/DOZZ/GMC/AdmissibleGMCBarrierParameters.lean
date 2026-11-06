@@ -8,7 +8,7 @@ public import DOZZ.GMC.GaussianTailBound
 
 /-! Robust subcritical barrier parameters for the admissible mixed-root estimate. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
@@ -31,8 +31,7 @@ theorem exists_fixed_charge_robust_barrier_parameters
   have hgap : 0 < gap := by dsimp [gap]; linarith
   let η : ℝ := min (1 / 2) (gap / (3 * b ^ 2))
   have hηpos : 0 < η := by
-    dsimp [η]
-    exact lt_min (by norm_num) (div_pos hgap (by positivity))
+    continuity
   have hηhalf : η ≤ 1 / 2 := min_le_left _ _
   have hηgap : η ≤ gap / (3 * b ^ 2) := min_le_right _ _
   have hηlt : η < 1 := lt_of_le_of_lt hηhalf (by norm_num)
@@ -44,26 +43,20 @@ theorem exists_fixed_charge_robust_barrier_parameters
       η * (3 * b ^ 2 / 2) ≤ (gap / (3 * b ^ 2)) * (3 * b ^ 2 / 2) :=
         mul_le_mul_of_nonneg_right hηgap (by positivity)
       _ = gap / 2 := by
-        have hb2 : b ^ 2 ≠ 0 := ne_of_gt (sq_pos_of_pos hb)
         field_simp
   have hidentity : γ ^ 2 -
       ((1 - η) ^ 2 * b ^ 2 / (2 * (1 + η))) =
         κ₀ + b ^ 2 * ((3 * η - η ^ 2) / (2 * (1 + η))) := by
-    have hden : 1 + η ≠ 0 := ne_of_gt (by positivity)
-    rw [hκeq]
-    dsimp [b]
-    field_simp
-    ring
+    grind
   refine ⟨a, κ, η, hγa, ha2, hκpos, hκlt, hηpos, hηlt, ?_⟩
   rw [show (2 * γ - a) ^ 2 = b ^ 2 by rfl]
   rw [hidentity]
   calc
     κ₀ + b ^ 2 * ((3 * η - η ^ 2) / (2 * (1 + η))) ≤
         κ₀ + b ^ 2 * (3 * η / 2) := by
-          simpa [add_comm] using add_le_add_left
-            (mul_le_mul_of_nonneg_left hfrac (sq_nonneg b)) κ₀
+          simp_all
     _ = κ₀ + η * (3 * b ^ 2 / 2) := by ring
-    _ ≤ κ₀ + gap / 2 := by simpa [add_comm] using add_le_add_left hηerr κ₀
+    _ ≤ κ₀ + gap / 2 := by simp_all
     _ ≤ κ := by dsimp [gap]; linarith
 
 /-- Beyond one natural scale, all linear error conditions for a fixed two-root barrier hold and
@@ -81,15 +74,14 @@ theorem exists_natural_scale_after_covariance_errors
   obtain ⟨k₀, hk₀⟩ := exists_nat_gt T
   have hT₂ : T₂ ≤ T := le_max_left _ _
   have hT₃ : T₃ ≤ T := le_max_right _ _
-  have hCplus : C + 1 ≤ T := le_trans (le_max_left _ _) hT₂
-  have hCrate : C / η + 1 ≤ T := le_trans (le_max_right _ _) hT₂
-  have hoffset : (2 * γ * C + 1) / (η * b) + 1 ≤ T :=
+  have hCplus  := le_trans (le_max_left _ _) hT₂
+  have hCrate  := le_trans (le_max_right _ _) hT₂
+  have hoffset  :=
     le_trans (le_max_left _ _) hT₃
-  have hlog : Real.log (1 / cutoff) ≤ T :=
+  have hlog  :=
     le_trans (le_max_right _ _) (le_trans (le_max_right _ _) hT₃)
-  have hTnonneg : 0 ≤ T := by
-    exact le_trans (le_max_left _ _) (le_trans (le_max_right _ _) hT₃)
-  have hkreal : T < (k₀ : ℝ) := hk₀
+
+
   have hkC : C < (k₀ : ℝ) := by linarith
   have hkCrate : C / η < (k₀ : ℝ) := by linarith
   have hkoffset : (2 * γ * C + 1) / (η * b) < (k₀ : ℝ) := by linarith
@@ -98,8 +90,8 @@ theorem exists_natural_scale_after_covariance_errors
     · have hdiv : 1 < 1 / cutoff := by
         rw [one_lt_div₀ hcutoff]
         exact hcutoff1
-      have hlogpos : 0 < Real.log (1 / cutoff) := Real.log_pos hdiv
-      have hklog : Real.log (1 / cutoff) < (k₀ : ℝ) := lt_of_le_of_lt hlog hkreal
+
+
       have hexp : Real.exp (-Real.log (1 / cutoff)) = cutoff := by
         rw [Real.exp_neg, Real.exp_log (by positivity : 0 < (1 / cutoff : ℝ))]
         field_simp
@@ -107,22 +99,17 @@ theorem exists_natural_scale_after_covariance_errors
         Real.exp (-(k₀ : ℝ)) < Real.exp (-Real.log (1 / cutoff)) :=
           Real.exp_lt_exp.mpr (by linarith)
         _ = cutoff := hexp
-    · have hcutoffge : 1 ≤ cutoff := le_of_not_gt hcutoff1
+    · have hcutoffge  := le_of_not_gt hcutoff1
       exact (Real.exp_le_one_iff.mpr
         (neg_nonpos.mpr (Nat.cast_nonneg k₀))).trans hcutoffge
   refine ⟨k₀, hkcut, hkC, ?_, ?_⟩
-  · have hmul : η * (C / η) < η * (k₀ : ℝ) := mul_lt_mul_of_pos_left hkCrate hη
+  · have hmul  := mul_lt_mul_of_pos_left hkCrate hη
     have hcancel : η * (C / η) = C := by field_simp
     linarith
   · have hmul := mul_lt_mul_of_pos_left hkoffset (mul_pos hη hb)
     have hcancel : (η * b) * ((2 * γ * C + 1) / (η * b)) = 2 * γ * C + 1 := by
       field_simp
-    have hstrict : 2 * γ * C + 1 < η * b * (k₀ : ℝ) := by
-      calc
-        2 * γ * C + 1 = (η * b) * ((2 * γ * C + 1) / (η * b)) := hcancel.symm
-        _ < (η * b) * (k₀ : ℝ) := hmul
-        _ = η * b * (k₀ : ℝ) := by ring
-    exact le_of_lt hstrict
+    grind
 
 
 end DOZZ.Proofs

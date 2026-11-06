@@ -12,7 +12,7 @@ import DOZZ.GMC.SharpMoments.SeibergPieces
 
 /-! # Jointly measurable unrooted spatial expectations -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -27,7 +27,7 @@ theorem fusion_gammaHalf_spatial_expectation_measurable {Ω : Type*} [Measurable
     Measurable (fun z : ℂ => ∫ ω,
       ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ s).toReal : ℂ) *
         (∫ x, H (z, x) ∂M ω) ∂P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _  := hX.1
   obtain ⟨N, hN, hfN, he⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
   let I := fun q : ℂ × Ω => ∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ q.1 x) ∂N q.2
   have hIm : Measurable I := by
@@ -42,9 +42,7 @@ theorem fusion_gammaHalf_spatial_expectation_measurable {Ω : Type*} [Measurable
     apply fusion_measurable_integral_finite_family (fun q : ℂ × Ω => N q.2)
       (hN.comp measurable_snd) (fun q => hfN q.2)
       (fun q : (ℂ × Ω) × ℂ => H (q.1.1, q.2))
-    have hp : Measurable (fun q : (ℂ × Ω) × ℂ => (q.1.1, q.2)) :=
-      (measurable_fst.comp measurable_fst).prodMk measurable_snd
-    simpa only [Function.comp_def] using hH.comp hp
+    fun_prop (disch := positivity)
   have hFn : Measurable (fun z : ℂ => ∫ ω, ((I (z, ω) ^ s).toReal : ℂ) *
       (∫ x, H (z, x) ∂N ω) ∂P) :=
     (((Complex.measurable_ofReal.comp (hIm.pow_const s).ennreal_toReal).mul hHm).stronglyMeasurable.integral_prod_right').measurable

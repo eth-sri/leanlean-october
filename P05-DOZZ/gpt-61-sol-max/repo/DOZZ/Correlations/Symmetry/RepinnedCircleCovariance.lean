@@ -5,7 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.Correlations.Symmetry.RepinnedCircle
 public import DOZZ.GMC.CirclePotential
-@[expose] public section
+public section
 open MeasureTheory Filter
 open scoped Distributions Topology
 namespace DOZZ.Proofs
@@ -20,13 +20,7 @@ theorem symmetryReflection_circle_potential_error (x : ℂ) (r : ℝ) :
       Real.log (normPlus z)| ≤ Real.exp (-r) := by
     rw [integral_circleMeasure_eq_circleAverage z r _ continuous_log_normPlus.measurable]
     exact CirclePotential.abs_circleAverage_log_normPlus_sub_le z (Real.exp_pos _)
-  calc
-    _ = |((∫ w, Real.log (normPlus w) ∂circleMeasure (1 - x) r) -
-        Real.log (normPlus (1 - x))) -
-      ((∫ w, Real.log (normPlus w) ∂circleMeasure x r) - Real.log (normPlus x))| := by
-        congr 1; ring
-    _ ≤ _ := abs_sub _ _
-    _ ≤ _ := by linarith only [h (1 - x), h x]
+  grind
 
 /-- The normalization retains its precise correlation with every re-pinned circle. -/
 theorem repinned_circle_normalization_covariance
@@ -36,12 +30,12 @@ theorem repinned_circle_normalization_covariance
     gaussianCovariance P (fun ω => Xc ω (1 - x) r - Xc ω 1 0)
       (fun ω => Xc ω 1 0) =
       (∫ z, symmetryReflectionPotential z ∂circleMeasure x r) - symmetryReflectionKappa := by
-  let : IsProbabilityMeasure P := hX.1
+  let  := hX.1
   let := circleMeasure_isProbability (1 - x) r
   let L := fun ω => Xc ω 1 0
-  have hAL : Integrable (fun ω => Xc ω (1 - x) r * L ω) P :=
+  have hAL  :=
     (hXc.2.1 (1 - x) r).integrable_mul (hXc.2.1 1 0)
-  have hLL : Integrable (fun ω => L ω * L ω) P :=
+  have hLL  :=
     (hXc.2.1 1 0).integrable_mul (hXc.2.1 1 0)
   have hsub : gaussianCovariance P (fun ω => Xc ω (1 - x) r - L ω) L =
       gaussianCovariance P (fun ω => Xc ω (1 - x) r) L - gaussianVariance P L := by

@@ -9,17 +9,18 @@ public import DOZZ.GMC.KahaneScheffe
 
 /-! Spatial sampling of nonnegative integrable random fields converges in mean. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory ProbabilityTheory Filter Topology
 
 namespace DOZZ.Proofs
 
+variable {Ω S : Type*} [_inst1 : MeasurableSpace Ω] [_inst2 : MeasurableSpace S] (P : Measure Ω) [_inst4 : IsProbabilityMeasure P] (ν : Measure S) [_inst6 : IsProbabilityMeasure ν] (f : Ω → S → ℝ)
+
+include Ω S _inst1 _inst2 P _inst4 ν _inst6 f in
 /-- Sampling one spatial coordinate preserves joint integrability. -/
 theorem spatial_sample_integrable
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (ν : Measure S) [IsProbabilityMeasure ν] (f : Ω → S → ℝ)
+
     (hf : Integrable (fun p : Ω × S => f p.1 p.2) (P.prod ν)) (i : ℕ) :
     Integrable (fun p : Ω × (ℕ → S) => f p.1 (p.2 i))
       (P.prod (Measure.infinitePi (fun _ : ℕ => ν))) := by
@@ -28,11 +29,10 @@ theorem spatial_sample_integrable
     ⟨measurable_pi_apply i, Measure.infinitePi_map_eval (fun _ : ℕ => ν) i⟩
   exact ((MeasurePreserving.id P).prod heval).integrable_comp_of_integrable hf
 
+include Ω S _inst1 _inst2 P _inst4 ν _inst6 f in
 /-- Every finite spatial sample average is integrable. -/
 theorem spatial_empirical_average_integrable
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (ν : Measure S) [IsProbabilityMeasure ν] (f : Ω → S → ℝ)
+
     (hf : Integrable (fun p : Ω × S => f p.1 p.2) (P.prod ν)) (n : ℕ) :
     Integrable (fun p : Ω × (ℕ → S) =>
       (n : ℝ)⁻¹ * ∑ i : Fin n, f p.1 (p.2 i.val))
@@ -40,12 +40,11 @@ theorem spatial_empirical_average_integrable
   (integrable_finsetSum Finset.univ (fun i _ =>
     spatial_sample_integrable P ν f hf i.val)).const_mul _
 
+include Ω S _inst1 _inst2 P _inst4 ν _inst6 f in
 /-- Joint integrability upgrades the spatial strong law to convergence in mean on the product
 of the field probability space and the independent spatial sampling space. -/
 theorem spatial_empirical_average_L1
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (ν : Measure S) [IsProbabilityMeasure ν] (f : Ω → S → ℝ)
+
     (hjoint : Measurable (fun p : Ω × S => f p.1 p.2))
     (hf : Integrable (fun p : Ω × S => f p.1 p.2) (P.prod ν))
     (hnonneg : ∀ ω x, 0 ≤ f ω x) :
@@ -72,9 +71,7 @@ theorem spatial_empirical_average_L1
     exact (integral_map (hmap i).measurable.aemeasurable hf.aestronglyMeasurable).symm
   have havg (n : ℕ) : Integrable (avg n) μ :=
     (integrable_finsetSum Finset.univ (fun i _ => hterm i.val)).const_mul _
-  have hg : Integrable g μ := by
-    change Integrable (fun p : Ω × (ℕ → S) => (∫ x, f p.1 x ∂ν)) (P.prod Q)
-    exact hf.integral_prod_left.comp_fst Q
+  have hg : Integrable g μ := hf.integral_prod_left.comp_fst Q
   have hgmean : (∫ p, g p ∂μ) = ∫ p : Ω × S, f p.1 p.2 ∂(P.prod ν) := by
     change (∫ p, g p ∂(P.prod Q)) = _
     rw [integral_prod g hg]
@@ -87,15 +84,12 @@ theorem spatial_empirical_average_L1
     rw [integral_const_mul, integral_finsetSum _ (fun i _ => hterm i.val)]
     simp_rw [htermMean]
     rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-    rw [← mul_assoc, inv_mul_cancel₀ (by exact_mod_cast hn.ne'), one_mul, hgmean]
+    field_simp <;> nlinarith
   have hlim : ∀ᵐ p ∂μ, Tendsto (fun n => avg n p) atTop (𝓝 (g p)) := by
     apply (Measure.ae_prod_iff_ae_ae ?_).2
     · exact ae_empirical_average_tendsto P ν f hjoint hf.prod_right_ae
     · apply measurableSet_tendsto_fun (l := atTop)
-      · intro n
-        exact measurable_const.mul (Finset.measurable_sum _ fun i _ =>
-          hjoint.comp (measurable_fst.prodMk
-            ((measurable_pi_apply i.val).comp measurable_snd)))
+      · fun_prop (disch := positivity)
       · exact hjoint.stronglyMeasurable.integral_prod_right'.measurable.comp measurable_fst
   exact nonneg_integral_abs_sub_tendsto_zero μ avg g havg hg
     (fun n => ae_of_all _ fun p => mul_nonneg (inv_nonneg.mpr (Nat.cast_nonneg n))

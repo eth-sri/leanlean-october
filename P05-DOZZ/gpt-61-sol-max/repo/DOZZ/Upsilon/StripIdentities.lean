@@ -13,7 +13,7 @@ These lemmas concern the literal integral definition on the strip. They do not
 use or assert an entire continuation.
 -/
 
-@[expose] public section
+public section
 
 open Complex MeasureTheory Set
 
@@ -31,11 +31,9 @@ theorem IsUpsilon.center {γ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) (hU : IsUps
     unfold Q
     positivity
   have hleft : 0 < (Q γ / 2 : ℂ).re := by
-    simp only [Complex.div_ofNat_re, Complex.ofReal_re]
-    positivity
+    simp_all
   have hright : (Q γ / 2 : ℂ).re < Q γ := by
-    simp only [Complex.div_ofNat_re, Complex.ofReal_re]
-    linarith
+    simp_all
   rw [hU.2 _ hleft hright, upsilonLog_center, Complex.exp_zero]
 
 /-- Literal reflection of the logarithmic integral across the strip midpoint. -/

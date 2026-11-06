@@ -20,19 +20,20 @@ identities in `γ`, `χ`, `α₁`, `α₂`, `α₃`: the relation `χ Q = χ² +
 `A + B + 1` in closed form, the vanishing of `(χ² - γ χ / 2) (1 - γ χ / 2)`, and the
 `J`-coefficient identity. -/
 
-@[expose] public section
+public section
 
 namespace DOZZ.Proofs
 
 /-- Clearing the common denominator in a three-term combination. -/
 theorem bpz_gauss_div_combo {d W2 X W1 Y T : ℂ} (hd : d ≠ 0)
     (h : d * W2 + X * W1 - Y * T = 0) : W2 + X / d * W1 - Y / d * T = 0 := by
-  have e : W2 + X / d * W1 - Y / d * T = (d * W2 + X * W1 - Y * T) / d := by
-    field_simp
-  rw [e, h, zero_div]
+  grind
 
+variable {γ χ : ℝ} (hγ : γ ≠ 0) (hχ : χ = γ / 2 ∨ χ = 2 / γ)
+
+include γ χ hγ hχ in
 /-- The quadratic relation `χ Q = χ² + 1` for both degenerate values of `χ`. -/
-theorem bpz_gauss_chi_relation {γ χ : ℝ} (hγ : γ ≠ 0) (hχ : χ = γ / 2 ∨ χ = 2 / γ) :
+theorem bpz_gauss_chi_relation  :
     χ * Q γ = χ ^ 2 + 1 := by
   rcases hχ with rfl | rfl
   · unfold Q
@@ -54,13 +55,11 @@ theorem bpz_gauss_sum_eq {γ χ α₁ α₂ α₃ : ℝ} (hQ : χ * Q γ = χ ^ 
   unfold gaussParameterA gaussParameterB
   linear_combination (-1 : ℝ) * hQ
 
+include γ χ hγ hχ in
 /-- The factor identity that kills the `D₁` residual: either `χ = γ / 2` or `γ χ / 2 = 1`. -/
-theorem bpz_gauss_factor {γ χ : ℝ} (hγ : γ ≠ 0) (hχ : χ = γ / 2 ∨ χ = 2 / γ) :
+theorem bpz_gauss_factor  :
     (χ ^ 2 - γ * χ / 2) * (1 - γ * χ / 2) = 0 := by
-  rcases hχ with rfl | rfl
-  · ring
-  · field_simp
-    ring
+  grind
 
 /-- The `J`-coefficient identity `-s χ² ((s + 1) γ² / 4 - c₀) - A B = 0`, where
 `s = fourPointSExp γ (-χ) α₁ α₂ α₃` and `c₀ = -1 - γ χ / 2 + γ (α₁ + α₂) / 2`. -/
@@ -94,8 +93,8 @@ theorem bpz_gauss_of_ward {γ χ α₁ α₂ α₃ : ℝ} (hγ : 0 < γ) (hχ : 
         ((gaussParameterB γ χ α₁ α₂ α₃ : ℝ) : ℂ) + 1)) / (z * (1 - z)) * W1 -
       ((gaussParameterA γ χ α₁ α₂ α₃ : ℝ) : ℂ) * ((gaussParameterB γ χ α₁ α₂ α₃ : ℝ) : ℂ) /
         (z * (1 - z)) * (T : ℂ) = 0 := by
-  have hγ0 : γ ≠ 0 := hγ.ne'
-  have hd : z * (1 - z) ≠ 0 := mul_ne_zero hz0 (sub_ne_zero.mpr (Ne.symm hz1))
+  have hγ0  := hγ.ne'
+  have hd  := mul_ne_zero hz0 (sub_ne_zero.mpr (Ne.symm hz1))
   have hQ := bpz_gauss_chi_relation hγ0 hχ
   have hC := congrArg (fun x : ℝ => (x : ℂ)) (bpz_gauss_C_eq (α₁ := α₁) hQ)
   have hAB := congrArg (fun x : ℝ => (x : ℂ)) (bpz_gauss_sum_eq (α₁ := α₁) (α₂ := α₂)

@@ -41,11 +41,10 @@ def dyadicPositiveLastExitRationalEvent
 
 theorem measurable_dyadicLastExitPathApproximation (n : ℕ) (c : ℝ) :
     Measurable (dyadicLastExitPathApproximation n c) := by
-  have hτ : Measurable (fun p : BrownianPath => negativeLastExitTime p c) :=
+  have hτ  :=
     measurable_negativeLastExitTime_joint.comp
       ((measurable_const (a := c)).prodMk measurable_id)
-  have hceil : Measurable (fun p : BrownianPath =>
-      dyadicLastExitCeilingTime n (negativeLastExitTime p c)) :=
+  have hceil  :=
     (measurable_dyadicLastExitCeilingTime n).comp hτ
   exact (continuous_shiftPathAddConstant c).measurable.comp
     (hceil.prodMk measurable_id)
@@ -53,8 +52,7 @@ theorem measurable_dyadicLastExitPathApproximation (n : ℕ) (c : ℝ) :
 theorem measurable_dyadicPositiveLastExitRationalEvals (n : ℕ) (c : ℝ) :
     Measurable (dyadicPositiveLastExitRationalEvals n c) := by
   have hpath := measurable_dyadicLastExitPathApproximation n c
-  have heval : Measurable (fun p : BrownianPath =>
-      brownianPathRationalEvals (dyadicLastExitPathApproximation n c p)) :=
+  have heval  :=
     measurable_brownianPathRationalEvals.comp hpath
   apply measurable_pi_iff.mpr
   intro r
@@ -87,7 +85,7 @@ theorem dyadicLastExitCellFutureEvent_iff_selected
       (dyadicLastExitCellStartTime n k) (dyadicLastExitCellEndTime n k) c) :
     p ∈ dyadicLastExitCellFutureEvent n k c C ↔
       p ∈ dyadicPositiveLastExitRationalEvent n (c : ℝ) C := by
-  have hL : negativeLastExitTime p (c : ℝ) ∈ dyadicLastExitCell n k :=
+  have hL  :=
     (negativeConditionedLastExitTimeCell_iff_dyadicLastExitCell n k c p).mp hcell
   have hceil : dyadicLastExitCeilingTime n (negativeLastExitTime p (c : ℝ)) =
       dyadicLastExitCellEndTime n k := by
@@ -105,17 +103,21 @@ theorem dyadicLastExitCellFutureEvent_iff_selected
   change lastExitRationalShift (c : ℝ)
       (conditionedPositiveFutureRationalEvals (dyadicLastExitCellEndTime n k) p) ∈ C ↔ _
   change _ ↔ dyadicPositiveLastExitRationalEvals n (c : ℝ) p ∈ C
-  exact Iff.of_eq (congrArg (fun y : ℚ → ℝ => y ∈ C) hseq).symm
+  simp_all
 
-def dyadicLastExitCellEvent (n : ℕ) (c : ℝ≥0) (C : Set (ℚ → ℝ))
+variable (n : ℕ) (c : ℝ≥0) (C : Set (ℚ → ℝ))
+
+include n c C in
+def dyadicLastExitCellEvent 
     (k : ℕ) : Set BrownianPath :=
   negativeConditionedLastExitTimeCell
       (dyadicLastExitCellStartTime n k) (dyadicLastExitCellEndTime n k) c ∩
     dyadicLastExitCellFutureEvent n k c C
 
+include n c C in
 /-- The selected-endpoint test event is the disjoint union of its dyadic last-exit cell events. -/
 theorem iUnion_dyadicLastExitCellEvent
-    (n : ℕ) (c : ℝ≥0) (C : Set (ℚ → ℝ)) :
+     :
     (⋃ k, dyadicLastExitCellEvent n c C k) =
       dyadicPositiveLastExitRationalEvent n (c : ℝ) C := by
   ext p
@@ -130,15 +132,15 @@ theorem iUnion_dyadicLastExitCellEvent
     refine ⟨k, ?_⟩
     have hL : L ∈ dyadicLastExitCell n k := by
       simp [L, k, dyadicLastExitCell]
-    have hcell : p ∈ negativeConditionedLastExitTimeCell
-        (dyadicLastExitCellStartTime n k) (dyadicLastExitCellEndTime n k) c :=
+    have hcell  :=
       (negativeConditionedLastExitTimeCell_iff_dyadicLastExitCell n k c p).mpr hL
     exact ⟨hcell,
       (dyadicLastExitCellFutureEvent_iff_selected n k c C p hcell).mpr hp⟩
 
+include n c C in
 /-- The dyadic last-exit cell events are pairwise disjoint. -/
 theorem pairwiseDisjoint_dyadicLastExitCellEvent
-    (n : ℕ) (c : ℝ≥0) (C : Set (ℚ → ℝ)) :
+     :
     Pairwise (Disjoint on dyadicLastExitCellEvent n c C) := by
   intro k j hne
   change Disjoint (dyadicLastExitCellEvent n c C k)
@@ -149,12 +151,11 @@ theorem pairwiseDisjoint_dyadicLastExitCellEvent
     n k c p).mp hp.1
   have hj := (negativeConditionedLastExitTimeCell_iff_dyadicLastExitCell
     n j c p).mp hp'.1
-  change Nat.floor ((negativeLastExitTime p (c : ℝ) : ℝ) * (2 : ℝ) ^ n) = k at hk
-  change Nat.floor ((negativeLastExitTime p (c : ℝ) : ℝ) * (2 : ℝ) ^ n) = j at hj
   exact hne (hk.symm.trans hj)
 
+include n c C in
 theorem measurableSet_dyadicLastExitCellEvent
-    (n : ℕ) (c : ℝ≥0) (C : Set (ℚ → ℝ)) (hC : MeasurableSet C)
+     (hC : MeasurableSet C)
     (k : ℕ) : MeasurableSet (dyadicLastExitCellEvent n c C k) := by
   apply (measurableSet_negativeConditionedLastExitTimeCell
     (dyadicLastExitCellStartTime n k) (dyadicLastExitCellEndTime n k) c).inter
@@ -176,11 +177,11 @@ theorem negativeConditionedDyadicLastExitEvent_measure_eq_tsum
           (brownianUpperConditionedReferenceFutureKernel B ν hν
             (conditionedPositiveStateAt (dyadicLastExitCellEndTime n k) p - c)).real C
           ∂P := by
-  let E : ℕ → Set BrownianPath := dyadicLastExitCellEvent n c C
-  have hdisj : Pairwise (Disjoint on E) := pairwiseDisjoint_dyadicLastExitCellEvent n c C
-  have hmeas : ∀ k, MeasurableSet (E k) :=
+  let E  := dyadicLastExitCellEvent n c C
+  have hdisj  := pairwiseDisjoint_dyadicLastExitCellEvent n c C
+  have hmeas  :=
     fun k => measurableSet_dyadicLastExitCellEvent n c C hC k
-  have hunion : (⋃ k, E k) = dyadicPositiveLastExitRationalEvent n (c : ℝ) C :=
+  have hunion  :=
     iUnion_dyadicLastExitCellEvent n c C
   calc
     P.real (dyadicPositiveLastExitRationalEvent n (c : ℝ) C) =

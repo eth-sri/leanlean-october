@@ -11,7 +11,7 @@ public import DOZZ.Correlations.Tails.TranslatedField
 
 /-! Equality in law of actual cutoff GMC tests after the pin copy. -/
 
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
@@ -57,20 +57,16 @@ theorem copied_test_cutoff_law
       have hnorm : 1 ≤ ‖z+x‖ := by linarith
       change g x * Real.exp (boundedPinCoefficient z x * _) = _
       rw [bounded_pin_coefficient_eq z x hz hn,
-        show normPlus (z+x) = ‖z+x‖ by unfold normPlus; exact max_eq_right hnorm]
+        show normPlus (z+x) = ‖z+x‖ by exact max_eq_right hnorm]
       congr 2
       unfold localPinCoefficient
       have hl : Real.log ‖z‖ ≠ 0 := ne_of_gt (by
-        have hv := offCenter_pin_variance_pos z hz
-        linarith)
+        bound)
       field_simp [hl]
   have hw0 (x : ℂ) : 0 ≤ w x := by
-    rw [hw]
     exact mul_nonneg (hg0 x) (Real.exp_nonneg _)
   have hws (x : ℂ) (hx : w x ≠ 0) : ‖x‖ ≤ ρ := by
-    apply hgs x
-    intro hzero
-    exact hx (by rw [hw, hzero, zero_mul])
+    simp_all
   have hlaw := copied_cutoff_volume_law P X Xc hX hc hm z hz γ r ρ hρ hr w hw0 hws
   have hY := translated_field_isEquatorGFF P X Xc hX hc z
   have hYc := translated_field_circleAverage P X Xc hX hc z
@@ -79,7 +75,6 @@ theorem copied_test_cutoff_law
     have hn : ‖x‖ ≤ 1 := by linarith [hgs x hx, Real.exp_pos (-r)]
     have hh := norm_sub_norm_le z (z+x)
     simp only [sub_add_cancel_left, norm_neg] at hh
-    unfold normPlus
     exact max_eq_right (by linarith : 1 ≤ ‖z+x‖)
   have hsrc (ω : Ω) : Real.exp (-γ^2*Real.log ‖z‖) * ∫ y, G y ∂regularizedGMC P Xc γ r ω =
       ∫ x, w x * Real.exp (γ*Xc ω (z+x) r-γ^2/2*(r+2*Real.log ‖z+x‖)) ∂volume := by
@@ -118,7 +113,7 @@ theorem copied_test_cutoff_law
         obtain ⟨_, hU⟩ := local_circle_second_moments P X Xc hX hc z hz p
         change (∫ ω', (Xc ω' (z+x) r-Xc ω' z 0) ^ 2 ∂P) = r at hU
         rw [hU, hnorm x hx, show normPlus x = 1 by
-          unfold normPlus; exact max_eq_left (by linarith [hgs x hx, Real.exp_pos (-r)])]
+          exact max_eq_left (by linarith [hgs x hx, Real.exp_pos (-r)])]
         simp only [Real.one_rpow, mul_one]
         simpa only [mul_assoc] using (copied_wick_weight_factor (g x) γ (Real.log ‖z‖)
           (Real.log ‖z+x‖) r (Xc q.1 z 0) (Xc q.2 z 0)

@@ -13,10 +13,11 @@ public import DOZZ.Statements.GMC.WeightedGmcBallMass
 public import DOZZ.GMC.Moments.ExactScaleBallMoment
 public import DOZZ.GMC.Moments.SubunitSet
 public import DOZZ.GMC.Moments.WeightedExponent
+public import DOZZ.GMC.RealPower
 
 /-! Countable subadditivity for nonnegative powers at orders at most one. -/
 
-@[expose] public section
+public section
 
 open Filter
 open MeasureTheory
@@ -28,24 +29,21 @@ namespace DOZZ.Proofs
 theorem exists_dyadic_shell_index {R d : ℝ}
     (hd : 0 < d) (hdR : d < R) :
     ∃ n : ℕ, R / (2 : ℝ) ^ (n + 1) ≤ d ∧ d < R / (2 : ℝ) ^ n := by
-  let q : ℝ := R / d
+  let q  := R / d
   have hq : 1 < q := by
     dsimp [q]
     exact (one_lt_div hd).2 hdR
   have hpow : Tendsto (fun n : ℕ => (2 : ℝ) ^ n) atTop atTop := by
     have h := (tendsto_rpow_atTop_of_base_gt_one 2 (by norm_num)).comp
       (tendsto_natCast_atTop_atTop : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop)
-    exact h.congr' (Eventually.of_forall fun n => Real.rpow_natCast 2 n)
+    continuity
   have hexists : ∃ n : ℕ, q ≤ (2 : ℝ) ^ n := by
     obtain ⟨n, hn⟩ := (tendsto_atTop_atTop.mp hpow) q
     exact ⟨n, hn n le_rfl⟩
-  let n : ℕ := Nat.find hexists
-  have hqpow : q ≤ (2 : ℝ) ^ n := Nat.find_spec hexists
+  let n  := Nat.find hexists
+  have hqpow  := Nat.find_spec hexists
   have hnpos : 0 < n := by
-    by_contra hn
-    have hn0 : n = 0 := Nat.eq_zero_of_not_pos hn
-    rw [hn0, pow_zero] at hqpow
-    linarith
+    continuity
   have hprev : (2 : ℝ) ^ (n - 1) < q := by
     apply lt_of_not_ge
     intro h
@@ -60,30 +58,14 @@ theorem exists_dyadic_shell_index {R d : ℝ}
       congr 1
       omega
     have hbound : R / (2 : ℝ) ^ n ≤ d := (div_le_iff₀ (by positivity)).2 (by
-      rw [htwopow] at hqmul ⊢
-      linarith only [hqmul])
-    have hindex : (n - 1) + 1 = n := by omega
-    simpa [hindex] using hbound
+      bound)
+    grind
   · have hprev' : (2 : ℝ) ^ (n - 1) * d < R := by
       dsimp [q] at hprev
       exact (lt_div_iff₀ hd).mp hprev
     have hbound : d < R / (2 : ℝ) ^ (n - 1) :=
       (lt_div_iff₀ (by positivity)).2 (by linarith only [hprev'])
     simpa using hbound
-
-private theorem ennreal_ofReal_rpow_of_pos {x p : ℝ} (hx : 0 < x) :
-    ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
-  have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
-  have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
-    ENNReal.rpow_ne_top_of_ne_zero hx0 ENNReal.ofReal_ne_top
-  have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
-  apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
-  calc
-    (ENNReal.rpow (ENNReal.ofReal x) p).toReal =
-        (ENNReal.ofReal x).toReal ^ p := (ENNReal.toReal_rpow _ _).symm
-    _ = x ^ p := by rw [ENNReal.toReal_ofReal hx.le]
-    _ = (ENNReal.ofReal (x ^ p)).toReal := by
-        rw [ENNReal.toReal_ofReal (Real.rpow_nonneg hx.le p)]
 
 private theorem ennreal_rpow_finset_sum_le_tsum_rpow
     {ι : Type*} (s : Finset ι) (a : ι → ℝ≥0∞) {p : ℝ}
@@ -107,7 +89,7 @@ theorem ennreal_rpow_tsum_le_tsum_rpow
   rw [ENNReal.tsum_eq_iSup_sum, ENNReal.tsum_eq_iSup_sum]
   have hmono : Monotone (fun x : ℝ≥0∞ => x ^ p) := fun _ _ h =>
     ENNReal.rpow_le_rpow h hp.le
-  have hzero : (0 : ℝ≥0∞) ^ p = 0 := ENNReal.zero_rpow_of_pos hp
+  have hzero  := ENNReal.zero_rpow_of_pos hp
   have hcontinuous : Continuous (fun x : ℝ≥0∞ => x ^ p) :=
     ENNReal.continuous_rpow_const
   rw [hmono.map_iSup_of_continuousAt
@@ -125,32 +107,28 @@ theorem exists_subunit_order_below_gamma_insertion {γ : ℝ}
       p < min (4 / γ ^ 2) (2 / γ * (Q γ - γ)) := by
   have hQ : 0 < Q γ - γ := by
     dsimp [Q]
-    have hγsq : γ ^ 2 < 4 := by linarith only [mul_lt_mul'' hγ2 hγ2 hγ.le hγ.le]
-    field_simp [ne_of_gt hγ]
-    linarith only [hγsq]
-  let s : ℝ := 2 / γ * (Q γ - γ)
+    field_simp <;> nlinarith
+  let s  := 2 / γ * (Q γ - γ)
   have hs : 0 < s := by positivity
-  let b : ℝ := min 1 s
-  have hb : 0 < b := by positivity
+  let b  := min 1 s
+  
   have hb1 : b ≤ 1 := min_le_left _ _
   have hbs : b ≤ s := min_le_right _ _
-  let p : ℝ := b / 2
+  let p  := b / 2
   have hp : 0 < p := by positivity
   have hp1 : p ≤ 1 := by dsimp [p]; linarith
   have hpin : p < s := by dsimp [p]; linarith
   have hbulk : 1 < 4 / γ ^ 2 := by
-    have hγsq : γ ^ 2 < 4 := by linarith only [mul_lt_mul'' hγ2 hγ2 hγ.le hγ.le]
-    rw [one_lt_div (sq_pos_of_pos hγ)]
-    linarith only [hγsq]
-  have hpbulk : p < 4 / γ ^ 2 := lt_of_le_of_lt hp1 hbulk
-  refine ⟨p, hp, hp1, ?_⟩
-  rw [lt_min_iff]
-  exact ⟨hpbulk, by simpa [s] using hpin⟩
+    field_simp <;> nlinarith
+  grind
 
+variable (μ : Measure ℂ) (γ α R : ℝ)
+
+include μ γ α R in
 /-- A dyadic shell bound for a positive insertion charge. The coefficient is evaluated at the
 inner edge of the shell, where the negative radial power is largest. -/
 theorem weightedGmcBallMass_root_le_dyadic_charge
-    (μ : Measure ℂ) (γ α R : ℝ) (hγ : 0 < γ) (hα : 0 < α)
+     (hγ : 0 < γ) (hα : 0 < α)
     (hR : 0 < R) (hR1 : R ≤ 1) :
     weightedGmcBallMass γ μ α 0 R ≤
       ∑' n : ℕ,
@@ -162,26 +140,22 @@ theorem weightedGmcBallMass_root_le_dyadic_charge
   let coverTerm : ℕ → ℂ → ℝ≥0∞ := fun n x =>
     (Metric.ball 0 (R / (2 : ℝ) ^ n)).indicator (fun _ =>
       ENNReal.rpow (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α)) x
-  have hpowerNeg : -γ * α < 0 := mul_neg_of_neg_of_pos (neg_neg_of_pos hγ) hα
+  have hpowerNeg  := mul_neg_of_neg_of_pos (neg_neg_of_pos hγ) hα
   have hpoint (x : ℂ) : B.indicator density x ≤ ∑' n : ℕ, coverTerm n x := by
     by_cases hx : x ∈ B
     · have hxR : ‖x‖ < R := by
-        simpa [B, Metric.mem_ball, dist_zero_right] using hx
+        continuity
       by_cases hzero : x = 0
       · subst x
         have hcoef (n : ℕ) : 1 ≤ ENNReal.rpow
             (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α) := by
-          have hradpos : 0 < R / (2 : ℝ) ^ (n + 1) := by positivity
+          
           have hradle : R / (2 : ℝ) ^ (n + 1) ≤ 1 := by
             calc
               R / (2 : ℝ) ^ (n + 1) ≤ R := by
-                apply (div_le_iff₀ (by positivity)).2
-                calc
-                  R = R * 1 := by ring
-                  _ ≤ R * (2 : ℝ) ^ (n + 1) :=
-                    mul_le_mul_of_nonneg_left (one_le_pow₀ (by norm_num)) hR.le
+                bound
               _ ≤ 1 := hR1
-          have hbase : ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1)) ≤ 1 :=
+          have hbase  :=
             ENNReal.ofReal_le_one.mpr hradle
           calc
             1 = (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) ^ 0 := by simp
@@ -189,21 +163,9 @@ theorem weightedGmcBallMass_root_le_dyadic_charge
               ENNReal.rpow_le_rpow_of_exponent_ge hbase (by linarith)
         have hsumLower : (∑' _n : ℕ, (1 : ℝ≥0∞)) ≤
             ∑' n : ℕ, coverTerm n 0 := ENNReal.tsum_le_tsum fun n => by
-          have hball : (0 : ℂ) ∈ Metric.ball 0 (R / (2 : ℝ) ^ n) := by
-            simp only [Metric.mem_ball, dist_self]
-            positivity
-          simpa [coverTerm, hball] using hcoef n
-        have hsum : ∑' n : ℕ, coverTerm n 0 = ⊤ := by
-          have hsumConst : (⊤ : ℝ≥0∞) = ∑' _n : ℕ, (1 : ℝ≥0∞) :=
-            (ENNReal.tsum_const_eq_top_of_ne_zero (α := ℕ) one_ne_zero).symm
-          exact top_unique (hsumConst.symm ▸ hsumLower)
-        have hleft : B.indicator density 0 = ⊤ := by
-          have hball : (0 : ℂ) ∈ B := by simpa [B, Metric.mem_ball] using hR
-          rw [Set.indicator_of_mem hball]
-          change ENNReal.rpow (ENNReal.ofReal ‖(0 : ℂ)‖) (-γ * α) = ⊤
-          simpa using (ENNReal.zero_rpow_of_neg hpowerNeg)
-        rw [hleft, hsum]
-      · have hnorm : 0 < ‖x‖ := norm_pos_iff.mpr hzero
+          continuity
+        simp_all
+      · have hnorm  := norm_pos_iff.mpr hzero
         obtain ⟨n, hlo, hhi⟩ := exists_dyadic_shell_index hnorm hxR
         have hlowpos : 0 < R / (2 : ℝ) ^ (n + 1) := by positivity
         have hpow : ‖x‖ ^ (-γ * α) ≤
@@ -212,11 +174,11 @@ theorem weightedGmcBallMass_root_le_dyadic_charge
         have hden : density x ≤ ENNReal.rpow
             (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α) := by
           change ENNReal.rpow (ENNReal.ofReal ‖x‖) (-γ * α) ≤ _
-          rw [ennreal_ofReal_rpow_of_pos hnorm, ennreal_ofReal_rpow_of_pos hlowpos]
+          rw [ennreal_rpow_ofReal_pos hnorm, ennreal_rpow_ofReal_pos hlowpos]
           exact ENNReal.ofReal_le_ofReal hpow
-        have hball : x ∈ B := hx
+        have hball  := hx
         have hballn : x ∈ Metric.ball 0 (R / (2 : ℝ) ^ n) := by
-          simpa [Metric.mem_ball, dist_zero_right] using hhi
+          simp_all
         have hcover : coverTerm n x = ENNReal.rpow
             (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α) := by
           simp [coverTerm, hballn]
@@ -244,26 +206,26 @@ theorem weightedGmcBallMass_root_le_dyadic_charge
         (fun _ => ENNReal.rpow (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α)) by rfl]
       rw [lintegral_indicator_const (Metric.isOpen_ball.measurableSet)]
 
+include μ γ α R in
 /-- Translation of the weighted ball integral to a centered ball for the pushforward measure. -/
 theorem weightedGmcBallMass_translate
-    (μ : Measure ℂ) (γ α R : ℝ) (z : ℂ) :
+     (z : ℂ) :
     weightedGmcBallMass γ μ α z R =
       weightedGmcBallMass γ (Measure.map (fun x : ℂ => x - z) μ) α 0 R := by
   classical
-  let f : ℂ → ℝ≥0∞ := fun x =>
+  let f  := fun x =>
     ENNReal.rpow (ENNReal.ofReal ‖x - (0 : ℂ)‖) (-γ * α)
   have hf : Measurable f := by
     dsimp [f]
     fun_prop
-  have htranslate : Measurable (fun x : ℂ => x - z) := measurable_sub_const z
+  have htranslate  := measurable_sub_const z
   rw [weightedGmcBallMass, weightedGmcBallMass,
     ← lintegral_indicator Metric.isOpen_ball.measurableSet,
     ← lintegral_indicator Metric.isOpen_ball.measurableSet]
   change (∫⁻ x, (Metric.ball z R).indicator
       (fun y => ENNReal.rpow (ENNReal.ofReal ‖y - z‖) (-γ * α)) x ∂μ) =
     ∫⁻ x, (Metric.ball 0 R).indicator f x ∂Measure.map (fun x : ℂ => x - z) μ
-  rw [lintegral_map' (by
-    exact (hf.indicator Metric.isOpen_ball.measurableSet).aemeasurable)
+  rw [lintegral_map' ((hf.indicator Metric.isOpen_ball.measurableSet).aemeasurable)
     htranslate.aemeasurable]
   apply lintegral_congr
   intro x
@@ -281,15 +243,16 @@ theorem weightedGmcBallMass_translate
 theorem measure_sub_pushforward_ball
     (μ : Measure ℂ) (z : ℂ) (R : ℝ) :
     Measure.map (fun x : ℂ => x - z) μ (Metric.ball 0 R) = μ (Metric.ball z R) := by
-  have hf : Measurable (fun x : ℂ => x - z) := measurable_sub_const z
+  have hf  := measurable_sub_const z
   rw [Measure.map_apply hf Metric.isOpen_ball.measurableSet]
   congr 1
   ext x
   simp [Metric.mem_ball, dist_eq_norm]
 
+include μ γ α R in
 /-- Dyadic upper bound for a negative-power insertion about an arbitrary center. -/
 theorem weightedGmcBallMass_le_dyadic_charge_center
-    (μ : Measure ℂ) (γ α R : ℝ) (z : ℂ) (hγ : 0 < γ) (hα : 0 < α)
+     (z : ℂ) (hγ : 0 < γ) (hα : 0 < α)
     (hR : 0 < R) (hR1 : R ≤ 1) :
     weightedGmcBallMass γ μ α z R ≤
       ∑' n : ℕ,

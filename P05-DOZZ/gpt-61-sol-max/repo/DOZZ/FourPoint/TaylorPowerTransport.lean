@@ -8,7 +8,7 @@ public import DOZZ.FourPoint.TaylorScales
 
 /-! Transporting the three actual regional radius powers to one Taylor power. -/
 
-@[expose] public section
+public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
 
@@ -43,8 +43,6 @@ theorem taylor_regional_powers (γ α δ ε η W q r : ℝ)
     rw [heq]
     exact hmono _ _ hmid
   · rw [← Real.rpow_mul hr.le, ← Real.rpow_add hr]
-    apply hmono
-    rw [hκ]
-    nlinarith only [hηnear]
+    grind
 
 end DOZZ.Proofs

@@ -13,6 +13,7 @@ public import DOZZ.Statements.Brownian.IsLateralGMCOf
 public import DOZZ.Brownian.Lateral.UpperConditionedBlocks
 public import DOZZ.GMC.MomentPositivity
 public import DOZZ.GMC.Construction.GMCIntensityAdapter
+import Mathlib.Tactic
 
 /-!
 # Reflection-mass carriers, coupling transfer and block envelopes
@@ -63,29 +64,25 @@ theorem reflectionInput_law_eq_prod_carrier
   have := isProbabilityMeasure_of_twoSidedConditioned hBc
   have hBm := aemeasurable_of_twoSidedConditioned hB
   have hBcm := aemeasurable_of_twoSidedConditioned hBc
-  have hBlaw : P.map B = Pc.map Bc := twoSidedConditionedPathPair_law_eq P Pc B Bc ν hB hBc
+  have hBlaw  := twoSidedConditionedPathPair_law_eq P Pc B Bc ν hB hBc
   have hBcfst : AEMeasurable (fun ω : Ωc × Ω => Bc ω.1) (Pc.prod P) :=
     hBcm.comp_quasiMeasurePreserving (measurePreserving_fst.quasiMeasurePreserving)
   have hZsnd : AEMeasurable (fun ω : Ωc × Ω => Z ω.2) (Pc.prod P) :=
     hZ.comp_quasiMeasurePreserving (measurePreserving_snd.quasiMeasurePreserving)
-  have hLeft : P.map (fun ω => (B ω, Z ω)) = (P.map B).prod (P.map Z) :=
+  have hLeft  :=
     (indepFun_iff_map_prod_eq_prod_map_map hBm hZ).1 hInd
-  have hRight : (Pc.prod P).map (fun ω => (Bc ω.1, Z ω.2)) =
-      ((Pc.prod P).map (fun ω : Ωc × Ω => Bc ω.1)).prod
-        ((Pc.prod P).map (fun ω : Ωc × Ω => Z ω.2)) :=
+  have hRight  :=
     (indepFun_iff_map_prod_eq_prod_map_map hBcfst hZsnd).1 (indepFun_prod₀ hBcm hZ)
   have hfst : (Pc.prod P).map (fun ω : Ωc × Ω => Bc ω.1) = Pc.map Bc := by
     have h := AEMeasurable.map_map_of_aemeasurable
       (by rw [measurePreserving_fst.map_eq]; exact hBcm) measurable_fst.aemeasurable
       (μ := Pc.prod P) (g := Bc) (f := Prod.fst)
-    rw [measurePreserving_fst.map_eq] at h
-    exact h.symm
+    continuity
   have hsnd : (Pc.prod P).map (fun ω : Ωc × Ω => Z ω.2) = P.map Z := by
     have h := AEMeasurable.map_map_of_aemeasurable
       (by rw [measurePreserving_snd.map_eq]; exact hZ) measurable_snd.aemeasurable
       (μ := Pc.prod P) (g := Z) (f := Prod.snd)
-    rw [measurePreserving_snd.map_eq] at h
-    exact h.symm
+    continuity
   rw [hLeft, hRight, hfst, hsnd, hBlaw]
 
 /-- Equal joint input laws give equal expectations of every a.e.-measurable input functional. -/
@@ -99,7 +96,7 @@ theorem lintegral_reflectionInput_eq_of_law
     (F : (BrownianPath × BrownianPath) × Measure ℝ → ℝ≥0∞)
     (hF : AEMeasurable F (P.map pair)) :
     (∫⁻ ω, F (pair ω) ∂P) = ∫⁻ ω, F (pair' ω) ∂P' := by
-  have hF' : AEMeasurable F (P'.map pair') := hLaw ▸ hF
+  have hF'  := hLaw ▸ hF
   rw [← lintegral_map' hF hpair, ← lintegral_map' hF' hpair', hLaw]
 
 /-- Every real power of the reflection mass has the same expectation on a transplanted carrier of
@@ -116,23 +113,22 @@ theorem twoSidedReflectionMass_rpow_lintegral_eq_prod_carrier
         (fun ω => Z ω.2) ω) p ∂(Pc.prod P) := by
   have := isProbabilityMeasure_of_twoSidedConditioned hB
   have := isProbabilityMeasure_of_twoSidedConditioned hBc
-  have hZm : AEMeasurable Z P := hZ.2.2.2.1
+  have hZm  := hZ.2.2.2.1
   have hBm := aemeasurable_of_twoSidedConditioned hB
   have hBcm := aemeasurable_of_twoSidedConditioned hBc
-  let pair : Ω → (BrownianPath × BrownianPath) × Measure ℝ := fun ω => (B ω, Z ω)
+  let pair  := fun ω => (B ω, Z ω)
   let pair' : Ωc × Ω → (BrownianPath × BrownianPath) × Measure ℝ :=
     fun ω => (Bc ω.1, Z ω.2)
-  have hpair : AEMeasurable pair P := hBm.prodMk hZm
-  have hpair' : AEMeasurable pair' (Pc.prod P) :=
+  have hpair  := hBm.prodMk hZm
+  have hpair'  :=
     (hBcm.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving).prodMk
       (hZm.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving)
-  have hLaw : P.map pair = (Pc.prod P).map pair' :=
+  have hLaw  :=
     reflectionInput_law_eq_prod_carrier P Pc ν B Z Bc hB hZm hInd hBc
   have hLocal : ∀ᵐ ω ∂P, LocallyFiniteOnTranslationWindows (pair ω).2 := by
     filter_upwards [hZ.2.2.2.2.1] with ω hω
     intro n
-    simpa [LocallyFiniteOnTranslationWindows, translationWindow] using
-      hω (-(n : ℝ)) (n : ℝ)
+    exact hω (-(n : ℝ)) (n : ℝ)
   have hMass := aemeasurable_reflectionMassInput_map_of_locallyFinite P γ pair hpair hLocal
   have hpow : Measurable (fun x : ℝ≥0∞ => ENNReal.rpow x p) :=
     ENNReal.continuous_rpow_const.measurable
@@ -144,9 +140,9 @@ theorem twoSidedReflectionMass_rpow_lintegral_eq_prod_carrier
 theorem measurable_twoSidedConditionedValue {Ω : Type*}
     (B : Ω → BrownianPath × BrownianPath) (ω : Ω) :
     Measurable (twoSidedConditionedValue B ω) := by
-  have h1 : Continuous (fun s : ℝ => (B ω).1 (Real.toNNReal s)) :=
+  have h1  :=
     (B ω).1.continuous.comp continuous_real_toNNReal
-  have h2 : Continuous (fun s : ℝ => (B ω).2 (Real.toNNReal (-s))) :=
+  have h2  :=
     (B ω).2.continuous.comp (continuous_real_toNNReal.comp continuous_neg)
   have he : twoSidedConditionedValue B ω = fun s =>
       if 0 ≤ s then (B ω).1 (Real.toNNReal s) else (B ω).2 (Real.toNNReal (-s)) := by
@@ -179,8 +175,7 @@ theorem twoSidedReflectionMass_pos_of_ne_zero {Ω : Type*} (γ : ℝ)
       (fun s => ENNReal.ofReal (Real.exp (γ * twoSidedConditionedValue B ω s))) = univ := by
     ext s
     simp [Real.exp_pos]
-  rw [hsupp]
-  exact Measure.measure_univ_pos.mpr hZ
+  simp_all
 
 /-- Pathwise lower paths give a smaller reflection mass. -/
 theorem twoSidedReflectionMass_le_of_le {Ω : Type*} (γ : ℝ) (hγ : 0 ≤ γ)
@@ -194,11 +189,7 @@ theorem twoSidedReflectionMass_le_of_le {Ω : Type*} (γ : ℝ) (hγ : 0 ≤ γ)
   apply Real.exp_le_exp.mpr
   apply mul_le_mul_of_nonneg_left _ hγ
   unfold twoSidedConditionedValue
-  by_cases hs : 0 ≤ s
-  · simp only [hs, dite_true]
-    exact h₁ _
-  · simp only [hs, dite_false]
-    exact h₂ _
+  continuity
 
 /-- A power of order `t ≤ u` is controlled by `1 + x ^ u`. -/
 theorem ennreal_rpow_le_one_add_rpow (x : ℝ≥0∞) {t u : ℝ} (ht : 0 ≤ t) (htu : t ≤ u) :
@@ -211,12 +202,12 @@ theorem ennreal_rpow_le_one_add_rpow (x : ℝ≥0∞) {t u : ℝ} (ht : 0 ≤ t)
 theorem tendsto_ennreal_rpow_nhds_one {ι : Type*} {l : Filter ι} {a : ℝ≥0∞}
     (ha : 0 < a) (ha' : a < ⊤) {e : ι → ℝ} (he : Tendsto e l (𝓝 0)) :
     Tendsto (fun i => a ^ e i) l (𝓝 1) := by
-  have hreal : 0 < a.toReal := ENNReal.toReal_pos ha.ne' ha'.ne
+  have hreal  := ENNReal.toReal_pos ha.ne' ha'.ne
   have heq : (fun i => a ^ e i) = fun i => ENNReal.ofReal (a.toReal ^ e i) := by
     funext i
     rw [← ENNReal.ofReal_rpow_of_pos hreal, ENNReal.ofReal_toReal ha'.ne]
   rw [heq]
-  have hc : Tendsto (fun i => a.toReal ^ e i) l (𝓝 (a.toReal ^ (0 : ℝ))) :=
+  have hc  :=
     (Real.continuousAt_const_rpow hreal.ne').tendsto.comp he
   rw [Real.rpow_zero] at hc
   have h := (ENNReal.continuous_ofReal.tendsto 1).comp hc
@@ -229,12 +220,12 @@ theorem tendsto_ennreal_rpow_of_squeeze {ι : Type*} {l : Filter ι} {a b : ℝ�
     (ha : 0 < a) (hb : b < ⊤) {f : ι → ℝ≥0∞} {e : ι → ℝ} (he : Tendsto e l (𝓝 0))
     (he0 : ∀ᶠ i in l, 0 ≤ e i) (hf : ∀ᶠ i in l, a ≤ f i ∧ f i ≤ b) :
     Tendsto (fun i => f i ^ e i) l (𝓝 1) := by
-  have hab : ∀ᶠ i in l, a ≤ b := hf.mono fun i hi => hi.1.trans hi.2
+  have hab  := hf.mono fun i hi => hi.1.trans hi.2
   rcases l.eq_or_neBot with hl | hl
   · rw [hl]
     exact tendsto_bot
   obtain ⟨i, hi⟩ := hab.exists
-  have hb0 : 0 < b := ha.trans_le hi
+  have hb0  := ha.trans_le hi
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le'
     (tendsto_ennreal_rpow_nhds_one ha (lt_of_le_of_lt hi hb) he)
     (tendsto_ennreal_rpow_nhds_one hb0 hb he)
@@ -259,8 +250,8 @@ theorem coupling_zeroDrift_rpow_tendsto_one
     Tendsto (fun ν => ∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ
       (fun ω : Ωc × Ω => Bc ν ω.1) (fun ω => Z ω.2) ω) (e ν) ∂(Pc.prod P))
       (𝓝[>] 0) (𝓝 1) := by
-  have hP : IsProbabilityMeasure P := hZ.2.2.1
-  let J : ℝ → Ωc × Ω → ℝ≥0∞ := fun ν ω =>
+  have hP  := hZ.2.2.1
+  let J  := fun ν ω =>
     twoSidedReflectionMass γ (fun ω : Ωc × Ω => Bc ν ω.1) (fun ω => Z ω.2) ω
   have hfst := (measurePreserving_fst (μ := Pc) (ν := P)).quasiMeasurePreserving
   have hsnd := (measurePreserving_snd (μ := Pc) (ν := P)).quasiMeasurePreserving
@@ -275,13 +266,12 @@ theorem coupling_zeroDrift_rpow_tendsto_one
     have h : ∀ᵐ ω ∂P, LocallyFiniteOnTranslationWindows (Z ω) := by
       filter_upwards [hZ.2.2.2.2.1] with ω hω
       intro n
-      simpa [LocallyFiniteOnTranslationWindows, translationWindow] using
-        hω (-(n : ℝ)) (n : ℝ)
+      exact hω (-(n : ℝ)) (n : ℝ)
     exact hsnd.ae (p := fun x => LocallyFiniteOnTranslationWindows (Z x)) h
   have hJm : ∀ ν : ℝ, 0 ≤ ν → AEMeasurable (J ν) (Pc.prod P) := by
     intro ν hν
     have hBc := aemeasurable_of_twoSidedConditioned (hcoup.1 ν hν)
-    have hpair : AEMeasurable (fun ω : Ωc × Ω => (Bc ν ω.1, Z ω.2)) (Pc.prod P) :=
+    have hpair  :=
       (hBc.comp_quasiMeasurePreserving hfst).prodMk
         (hZ.2.2.2.1.comp_quasiMeasurePreserving hsnd)
     exact (aemeasurable_reflectionMassInput_map_of_locallyFinite (Pc.prod P) γ
@@ -292,8 +282,7 @@ theorem coupling_zeroDrift_rpow_tendsto_one
       (ENNReal.continuous_rpow_const.measurable).comp_aemeasurable (hJm 0 le_rfl)
     filter_upwards [ae_lt_top' hpow hmom.ne] with ω hω
     exact lt_top_iff_ne_top.mpr fun htop => by
-      rw [htop, ENNReal.top_rpow_of_pos hu] at hω
-      exact lt_irrefl _ hω
+      simp_all
   have hpos : ∀ᵐ ω ∂(Pc.prod P), 0 < J 1 ω := by
     filter_upwards [hsnd.ae hZpos] with ω hω
     exact twoSidedReflectionMass_pos_of_ne_zero γ (fun ω : Ωc × Ω => Bc 1 ω.1)
@@ -326,8 +315,11 @@ theorem coupling_zeroDrift_rpow_tendsto_one
   rw [lintegral_const, measure_univ, mul_one] at hlim
   exact hlim
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω)
+
+include Ω _inst1 P in
 /-- The equator chaos has no atom at the origin, almost surely. -/
-theorem equatorGFF_GMC_origin_null_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem equatorGFF_GMC_origin_null_ae 
     (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) : ∀ᵐ ω ∂P, M ω {0} = 0 := by
   have hm : AEMeasurable (fun ω => M ω {0}) P :=
@@ -346,14 +338,7 @@ theorem measurable_measure_map_neg :
 theorem measure_map_neg_Ioc (μ : Measure ℝ) (a b : ℝ) :
     (μ.map (fun s : ℝ => -s)) (Ioc a b) = μ (Ico (-b) (-a)) := by
   rw [Measure.map_apply measurable_neg measurableSet_Ioc]
-  congr 1
-  ext x
-  simp only [mem_preimage, mem_Ioc, mem_Ico]
-  constructor
-  · rintro ⟨h1, h2⟩
-    exact ⟨by linarith, by linarith⟩
-  · rintro ⟨h1, h2⟩
-    exact ⟨by linarith, by linarith⟩
+  simp_all
 
 /-- The reflected measure inherits finiteness on bounded intervals. -/
 theorem map_neg_Ioc_lt_top_of_Icc {μ : Measure ℝ} (hμ : ∀ a b : ℝ, μ (Icc a b) < ⊤) (a b : ℝ) :
@@ -365,7 +350,7 @@ theorem map_neg_Ioc_lt_top_of_Icc {μ : Measure ℝ} (hμ : ∀ a b : ℝ, μ (I
 theorem twoSidedConditionedValue_of_pos {Ω : Type*} (B : Ω → BrownianPath × BrownianPath)
     (ω : Ω) {s : ℝ} (hs : 0 < s) :
     twoSidedConditionedValue B ω s = (B ω).1 (Real.toNNReal s) := by
-  have h : 0 ≤ s := hs.le
+  have h  := hs.le
   simp only [twoSidedConditionedValue, h, dite_true, Real.toNNReal_of_nonneg h]
   rfl
 
@@ -373,7 +358,7 @@ theorem twoSidedConditionedValue_of_pos {Ω : Type*} (B : Ω → BrownianPath ×
 theorem twoSidedConditionedValue_of_neg {Ω : Type*} (B : Ω → BrownianPath × BrownianPath)
     (ω : Ω) {s : ℝ} (hs : s < 0) :
     twoSidedConditionedValue B ω s = (B ω).2 (Real.toNNReal (-s)) := by
-  have h : ¬ 0 ≤ s := not_le.mpr hs
+  have h  := not_le.mpr hs
   have h' : 0 ≤ -s := by linarith
   simp only [twoSidedConditionedValue, h, dite_false, Real.toNNReal_of_nonneg h']
   rfl
@@ -399,27 +384,13 @@ theorem twoSidedReflectionMass_eq_halves {Ω : Type*} (γ : ℝ)
       ENNReal.ofReal (Real.exp (γ * (B ω).1 0)) * Z ω {0} +
         positiveLateralMass γ (B ω).1 (Z ω) +
           positiveLateralMass γ (B ω).2 ((Z ω).map (fun s : ℝ => -s)) := by
-  let f : ℝ → ℝ≥0∞ := fun s => ENNReal.ofReal (Real.exp (γ * twoSidedConditionedValue B ω s))
+  let f  := fun s => ENNReal.ofReal (Real.exp (γ * twoSidedConditionedValue B ω s))
   have hsplit : (univ : Set ℝ) = Iio 0 ∪ ({0} ∪ Ioi 0) := by
-    ext x
-    simp only [mem_univ, mem_union, mem_Iio, mem_singleton_iff, mem_Ioi, true_iff]
-    rcases lt_trichotomy x 0 with h | h | h
-    · exact Or.inl h
-    · exact Or.inr (Or.inl h)
-    · exact Or.inr (Or.inr h)
+    simp_all
   have hd1 : Disjoint (Iio (0 : ℝ)) ({0} ∪ Ioi 0) := by
-    refine disjoint_left.mpr (fun x hx hx' => ?_)
-    have hx0 : x < 0 := hx
-    rcases hx' with h | h
-    · have h0 : x = 0 := h
-      linarith
-    · have h0 : 0 < x := h
-      linarith
+    simp_all
   have hd2 : Disjoint ({0} : Set ℝ) (Ioi 0) := by
-    refine disjoint_left.mpr (fun x hx hx' => ?_)
-    have h0 : x = 0 := hx
-    have h1 : 0 < x := hx'
-    linarith
+    simp_all
   have hneg : ∫⁻ s in Iio 0, f s ∂(Z ω) =
       positiveLateralMass γ (B ω).2 ((Z ω).map (fun s : ℝ => -s)) := by
     unfold positiveLateralMass
@@ -452,25 +423,23 @@ theorem twoSidedReflectionMass_eq_halves {Ω : Type*} (γ : ℝ)
         rw [hneg, hzero, hpos]
         ac_rfl
 
+include Ω _inst1 P in
 /-- A half-line block is almost everywhere measurable as soon as the path and measure are, and the
 measure is almost surely finite on bounded intervals. -/
-theorem positiveLateralBlock_aemeasurable_of_finite {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (γ : ℝ) (n : ℝ≥0) (B : Ω → BrownianPath) (Z : Ω → Measure ℝ)
+theorem positiveLateralBlock_aemeasurable_of_finite  (γ : ℝ) (n : ℝ≥0) (B : Ω → BrownianPath) (Z : Ω → Measure ℝ)
     (hB : AEMeasurable B P) (hZ : AEMeasurable Z P)
     (hfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Ioc a b) < ⊤) :
     AEMeasurable (fun ω => positiveLateralBlock γ n (B ω) (Z ω)) P := by
-  let I : Set ℝ := Ioc (n : ℝ) ((n : ℝ) + 1)
+  let I  := Ioc (n : ℝ) ((n : ℝ) + 1)
   let f : BrownianPath × ℝ → ℝ≥0∞ := fun z =>
     ENNReal.ofReal (Real.exp (γ * z.1 (Real.toNNReal z.2)))
   have hf : Measurable f := by
-    exact ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp (measurable_const.mul
-      (continuous_eval.comp (continuous_fst.prodMk
-        (continuous_real_toNNReal.comp continuous_snd))).measurable))
+    fun_prop
   have hk := measurable_lintegral_finiteMeasure_parameter hf
-  have hr : Measurable (fun μ : Measure ℝ => finiteRestrictionOnSet I μ) :=
+  have hr  :=
     measurable_finiteRestrictionOnSet I measurableSet_Ioc
   have hrest := hr.comp_aemeasurable hZ
-  have hp : AEMeasurable (fun ω => (B ω, finiteRestrictionOnSet I (Z ω))) P :=
+  have hp  :=
     hB.prodMk hrest
   have hext := hk.comp_aemeasurable hp
   apply hext.congr
@@ -482,9 +451,9 @@ theorem positiveLateralBlock_aemeasurable_of_finite {Ω : Type*} [MeasurableSpac
   rw [he]
   rfl
 
+include Ω _inst1 P in
 /-- The same for the whole half-line mass. -/
-theorem positiveLateralMass_aemeasurable_of_finite {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (γ : ℝ) (B : Ω → BrownianPath) (Z : Ω → Measure ℝ)
+theorem positiveLateralMass_aemeasurable_of_finite  (γ : ℝ) (B : Ω → BrownianPath) (Z : Ω → Measure ℝ)
     (hB : AEMeasurable B P) (hZ : AEMeasurable Z P)
     (hfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Ioc a b) < ⊤) :
     AEMeasurable (fun ω => positiveLateralMass γ (B ω) (Z ω)) P := by
@@ -496,13 +465,7 @@ theorem positiveLateralMass_aemeasurable_of_finite {Ω : Type*} [MeasurableSpace
 /-- Finite subadditivity of `x ↦ x ^ q` for `0 < q ≤ 1`. -/
 theorem ennreal_finset_sum_rpow_le {ι : Type*} (s : Finset ι) (a : ι → ℝ≥0∞) {q : ℝ}
     (hq0 : 0 < q) (hq1 : q ≤ 1) :
-    (∑ i ∈ s, a i) ^ q ≤ ∑ i ∈ s, a i ^ q := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simp [ENNReal.zero_rpow_of_pos hq0]
-  | @insert i s hi ih =>
-    rw [Finset.sum_insert hi, Finset.sum_insert hi]
-    exact (ENNReal.rpow_add_le_add_rpow _ _ hq0.le hq1).trans (add_le_add le_rfl ih)
+    (∑ i ∈ s, a i) ^ q ≤ ∑ i ∈ s, a i ^ q := ENNReal.rpow_finsetSum_le_finsetSum_rpow hq0 hq1
 
 /-- Countable subadditivity of `x ↦ x ^ q` for `0 < q ≤ 1`. -/
 theorem ennreal_tsum_rpow_le {ι : Type*} (a : ι → ℝ≥0∞) {q : ℝ} (hq0 : 0 < q) (hq1 : q ≤ 1) :
@@ -518,7 +481,7 @@ theorem ennreal_tsum_rpow_le {ι : Type*} (a : ι → ℝ≥0∞) {q : ℝ} (hq0
           ENNReal.rpow_le_rpow (hs.trans hle) (one_div_nonneg.mpr hq0.le)
   calc (∑' i, a i) ^ q ≤ ((∑' i, a i ^ q) ^ (1 / q)) ^ q := ENNReal.rpow_le_rpow hroot hq0.le
     _ = ∑' i, a i ^ q := by
-      rw [← ENNReal.rpow_mul, one_div_mul_cancel hq0.ne', ENNReal.rpow_one]
+      continuity
 
 /-- A sum of three terms raised to a nonnegative power. -/
 theorem ennreal_add3_rpow_le (a b c : ℝ≥0∞) {q : ℝ} (hq : 0 ≤ q) :
@@ -533,9 +496,7 @@ theorem ennreal_add3_rpow_le (a b c : ℝ≥0∞) {q : ℝ} (hq : 0 ≤ q) :
   have hm : m ^ q ≤ a ^ q + b ^ q + c ^ q := by
     rcases le_total b c with hbc | hbc
     · rcases le_total a c with hac | hac
-      · have : m = c := by simp [m, hbc, hac]
-        rw [this]
-        exact le_add_self
+      · continuity
       · have : m = a := by simp [m, hbc, hac]
         rw [this, add_assoc]
         exact le_self_add
@@ -550,9 +511,10 @@ theorem ennreal_add3_rpow_le (a b c : ℝ≥0∞) {q : ℝ} (hq : 0 ≤ q) :
     _ = 3 ^ q * m ^ q := ENNReal.mul_rpow_of_nonneg _ _ hq
     _ ≤ 3 ^ q * (a ^ q + b ^ q + c ^ q) := mul_le_mul_right hm _
 
+include Ω _inst1 P in
 /-- Positive half-line moments of order at most one from independent block envelopes. -/
 theorem positiveLateralMass_rpow_lintegral_le_of_envelope
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ q : ℝ) (hγ : 0 ≤ γ)
+     (γ q : ℝ) (hγ : 0 ≤ γ)
     (hq0 : 0 < q) (hq1 : q ≤ 1) (B : Ω → BrownianPath) (Z : Ω → Measure ℝ)
     (hB : AEMeasurable B P) (hZ : AEMeasurable Z P)
     (hfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Ioc a b) < ⊤) (hi : IndepFun B Z P)
@@ -575,13 +537,14 @@ theorem positiveLateralMass_rpow_lintegral_le_of_envelope
         have h := positiveLateralBlock_moment_le_independent_envelope P γ q hγ hq0.le n
           B Z hB hZ hi
         refine h.trans (mul_le_mul' (hg n) ?_)
-        simpa only [NNReal.coe_natCast] using hL n
+        exact hL n
     _ = L * ∑' n, g n := by rw [ENNReal.tsum_mul_right, mul_comm]
 
+include Ω _inst1 P in
 /-- Positive half-line moments of order at least one from independent block envelopes, by
 infinite Minkowski. -/
 theorem positiveLateralMass_rpow_lintegral_le_of_envelope_of_one_le
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ q : ℝ) (hγ : 0 ≤ γ)
+     (γ q : ℝ) (hγ : 0 ≤ γ)
     (hq1 : 1 ≤ q) (B : Ω → BrownianPath) (Z : Ω → Measure ℝ)
     (hB : AEMeasurable B P) (hZ : AEMeasurable Z P)
     (hfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Ioc a b) < ⊤) (hi : IndepFun B Z P)
@@ -589,7 +552,7 @@ theorem positiveLateralMass_rpow_lintegral_le_of_envelope_of_one_le
     (g : ℕ → ℝ≥0∞) (hg : ∀ n : ℕ, (∫⁻ ω, positiveBlockEnvelope (q * γ) n (B ω) ∂P) ≤ g n) :
     (∫⁻ ω, (positiveLateralMass γ (B ω) (Z ω)) ^ q ∂P) ≤
       (∑' n, (g n * L) ^ (1 / q)) ^ q := by
-  have hq0 : 0 < q := lt_of_lt_of_le zero_lt_one hq1
+  have hq0  := lt_of_lt_of_le zero_lt_one hq1
   have hmass := lintegral_tsum_rpow_le_root_moments_power P
     (fun n : ℕ => fun ω => positiveLateralBlock γ n (B ω) (Z ω))
     (fun n => positiveLateralBlock_aemeasurable_of_finite P γ n B Z hB hZ hfin) q hq1
@@ -598,10 +561,8 @@ theorem positiveLateralMass_rpow_lintegral_le_of_envelope_of_one_le
     have h := positiveLateralBlock_moment_le_independent_envelope P γ q hγ hq0.le n
       B Z hB hZ hi
     refine h.trans (mul_le_mul' (hg n) ?_)
-    simpa only [NNReal.coe_natCast] using hL n
-  have hroot : (∑' n : ℕ,
-      (∫⁻ ω, (positiveLateralBlock γ n (B ω) (Z ω)) ^ q ∂P) ^ (1 / q)) ≤
-        ∑' n, (g n * L) ^ (1 / q) :=
+    exact hL n
+  have hroot  :=
     ENNReal.tsum_le_tsum fun n => ENNReal.rpow_le_rpow (hblock n) (one_div_nonneg.mpr hq0.le)
   calc (∫⁻ ω, (positiveLateralMass γ (B ω) (Z ω)) ^ q ∂P)
       = ∫⁻ ω, (∑' n : ℕ, positiveLateralBlock γ n (B ω) (Z ω)) ^ q ∂P := by
@@ -617,8 +578,8 @@ theorem positiveBlockEnvelope_lintegral_le (Q : Measure BrownianPath) (θ r : �
       (∫⁻ p, ENNReal.ofReal (Real.exp (r * θ * p n)) ∂Q) ^ (1 / r) *
         (∫⁻ p, ENNReal.ofReal (Real.exp (r / (r - 1) * θ *
           brownianUnitNorm (brownianShiftPath n p))) ∂Q) ^ ((r - 1) / r) := by
-  have hr0 : 0 < r := lt_trans zero_lt_one hr
-  have hr1 : 0 < r - 1 := sub_pos.mpr hr
+  have hr0  := lt_trans zero_lt_one hr
+  have hr1  := sub_pos.mpr hr
   have hshift : Continuous (fun p : BrownianPath => brownianShiftPath n p) :=
     continuous_brownianShiftPath.comp (continuous_const.prodMk continuous_id)
   have hF : AEMeasurable (fun p : BrownianPath =>
@@ -654,9 +615,10 @@ by infinite Minkowski for `q > 1`. -/
 noncomputable def halfLineBlockBound (q : ℝ) (L : ℝ≥0∞) (g : ℕ → ℝ≥0∞) : ℝ≥0∞ :=
   if q ≤ 1 then L * ∑' n, g n else (∑' n, (g n * L) ^ (1 / q)) ^ q
 
+include Ω _inst1 P in
 /-- Half-line moments from block envelopes, for every positive order. -/
 theorem positiveLateralMass_rpow_lintegral_le_blockBound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ q : ℝ) (hγ : 0 ≤ γ) (hq0 : 0 < q)
+     (γ q : ℝ) (hγ : 0 ≤ γ) (hq0 : 0 < q)
     (B : Ω → BrownianPath) (Z : Ω → Measure ℝ)
     (hB : AEMeasurable B P) (hZ : AEMeasurable Z P)
     (hfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Ioc a b) < ⊤) (hi : IndepFun B Z P)
@@ -685,9 +647,10 @@ theorem halfLineBlockBound_lt_top {q : ℝ} (hq0 : 0 < q) {L : ℝ≥0∞} (hL :
     exact (ENNReal.mul_lt_top (hgroot (lt_of_not_ge hq1))
       (ENNReal.rpow_lt_top_of_nonneg (one_div_nonneg.mpr hq0.le) hL.ne)).ne
 
+include Ω _inst1 P in
 /-- Two-sided reflection moments from half-line envelopes of the two paths. -/
 theorem twoSidedReflectionMass_rpow_lintegral_le_blockBound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ q : ℝ) (hγ : 0 ≤ γ) (hq0 : 0 < q)
+     (γ q : ℝ) (hγ : 0 ≤ γ) (hq0 : 0 < q)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hB : AEMeasurable B P) (hZm : AEMeasurable Z P)
     (hZfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Icc a b) < ⊤) (hZ0 : ∀ᵐ ω ∂P, Z ω {0} = 0)
@@ -698,18 +661,18 @@ theorem twoSidedReflectionMass_rpow_lintegral_le_blockBound
     (hg₂ : ∀ n : ℕ, (∫⁻ ω, positiveBlockEnvelope (q * γ) n (B ω).2 ∂P) ≤ g n) :
     (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ B Z ω) q ∂P) ≤
       3 ^ q * (halfLineBlockBound q L g + halfLineBlockBound q L g) := by
-  let Z' : Ω → Measure ℝ := fun ω => (Z ω).map (fun s : ℝ => -s)
-  have hB₁ : AEMeasurable (fun ω => (B ω).1) P := measurable_fst.comp_aemeasurable hB
-  have hB₂ : AEMeasurable (fun ω => (B ω).2) P := measurable_snd.comp_aemeasurable hB
-  have hZ'm : AEMeasurable Z' P := measurable_measure_map_neg.comp_aemeasurable hZm
+  let Z'  := fun ω => (Z ω).map (fun s : ℝ => -s)
+  have hB₁  := measurable_fst.comp_aemeasurable hB
+  have hB₂  := measurable_snd.comp_aemeasurable hB
+  have hZ'm  := measurable_measure_map_neg.comp_aemeasurable hZm
   have hfin₁ : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Ioc a b) < ⊤ := by
     filter_upwards [hZfin] with ω hω a b
     exact lt_of_le_of_lt (measure_mono Ioc_subset_Icc_self) (hω a b)
   have hfin₂ : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z' ω (Ioc a b) < ⊤ := by
     filter_upwards [hZfin] with ω hω a b
     exact map_neg_Ioc_lt_top_of_Icc hω a b
-  have hi₁ : IndepFun (fun ω => (B ω).1) Z P := hInd.comp measurable_fst measurable_id
-  have hi₂ : IndepFun (fun ω => (B ω).2) Z' P :=
+  have hi₁  := hInd.comp measurable_fst measurable_id
+  have hi₂  :=
     hInd.comp measurable_snd measurable_measure_map_neg
   have hL₁ : ∀ n : ℕ, (∫⁻ ω, (Z ω (Ioc (n : ℝ) ((n : ℝ) + 1))) ^ q ∂P) ≤ L := by
     intro n
@@ -721,16 +684,14 @@ theorem twoSidedReflectionMass_rpow_lintegral_le_blockBound
     simp only [Z']
     rw [measure_map_neg_Ioc]
     refine ENNReal.rpow_le_rpow (measure_mono ?_) hq0.le
-    intro x hx
-    exact ⟨hx.1, by linarith [hx.2]⟩
+    grind
   have hH₁ := positiveLateralMass_rpow_lintegral_le_blockBound P γ q hγ hq0
     (fun ω => (B ω).1) Z hB₁ hZm hfin₁ hi₁ L hL₁ g hg₁
   have hH₂ := positiveLateralMass_rpow_lintegral_le_blockBound P γ q hγ hq0
     (fun ω => (B ω).2) Z' hB₂ hZ'm hfin₂ hi₂ L hL₂ g hg₂
-  have hH₁m : AEMeasurable (fun ω => positiveLateralMass γ (B ω).1 (Z ω)) P :=
+  have hH₁m  :=
     positiveLateralMass_aemeasurable_of_finite P γ _ Z hB₁ hZm hfin₁
-  have hH₂m : AEMeasurable (fun ω => positiveLateralMass γ (B ω).2 (Z' ω)) P :=
-    positiveLateralMass_aemeasurable_of_finite P γ _ Z' hB₂ hZ'm hfin₂
+  
   calc (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ B Z ω) q ∂P)
       ≤ ∫⁻ ω, 3 ^ q * ((positiveLateralMass γ (B ω).1 (Z ω)) ^ q +
           (positiveLateralMass γ (B ω).2 (Z' ω)) ^ q) ∂P := by

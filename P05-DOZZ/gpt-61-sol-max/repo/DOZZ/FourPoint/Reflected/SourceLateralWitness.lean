@@ -7,17 +7,18 @@ public import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
 public import DOZZ.Brownian.Lateral.ReflectionJointLaw
 public import DOZZ.ShiftEquations.Reflection.Witness
 /-! A regular circle witness usable by both conditional spatial comparison and Williams' law. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ₂ M hM in
 /-- The supplied field and chaos have one regular circle witness whose literal origin path
 and literal projection provide the full lateral GMC interface. -/
 theorem reflected_source_lateral_witness
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
+     :
     ∃ Xc : Ω → ℂ → ℝ → ℝ,
       IsCircleAverage P X Xc ∧
       Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2) ∧
@@ -35,12 +36,11 @@ theorem reflected_source_lateral_witness
   · exact lateralProjectedGMC_reflection_law P X Xc hX hc hcont γ hγ hγ₂ M hM
   · exact fun a b _ => lateralProjectedGMC_interval_intensity P X Xc hX hc hm hcont γ hγ hγ₂ M hM a b
 
+include Ω _inst1 P X hX γ hγ hγ₂ M hM in
 /-- One regular source circle witness and its literal lateral measure support the entire
 reflection family on the supplied probability space, before choosing the fusion parameter. -/
 theorem reflected_regular_source_reflection_family
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
+     :
     ∃ Xc : Ω → ℂ → ℝ → ℝ, ∃ B : ℝ → Ω → BrownianPath × BrownianPath,
       IsCircleAverage P X Xc ∧
       Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2) ∧

@@ -7,7 +7,7 @@ public import DOZZ.GMC.FieldGaussianCommonScalar
 public import DOZZ.Correlations.Tails.ProbabilityPullback
 public import DOZZ.Correlations.Symmetry.CorrelatedScalarLimit
 /-! Preserving the exact common-Gaussian comparison factor at the chaos limit. -/
-@[expose] public section
+public section
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
@@ -49,11 +49,10 @@ theorem reflected_common_scalar_moment
       exact ENNReal.ofReal_rpow_of_pos (Real.exp_pos _)]
     rw [← ofReal_integral_eq_lintegral_ofReal hGi
       (ae_of_all _ fun z => Real.rpow_nonneg (Real.exp_pos _).le p), hGmean]
-  have hF : AEMeasurable (fun ω => ENNReal.ofReal (Z ω) ^ p) P :=
+  have hF  :=
     hZ.ennreal_ofReal.pow_const p
   have hGm : AEMeasurable (fun z => ENNReal.ofReal (G z) ^ p) Q := by
-    have hm : Measurable G := by dsimp only [G]; fun_prop
-    exact hm.ennreal_ofReal.aemeasurable.pow_const p
+    fun_prop (disch := positivity)
   have he (u : Ω × ℝ) : ENNReal.ofReal (G u.2 * Z u.1) ^ p =
       ENNReal.ofReal (Z u.1) ^ p * ENNReal.ofReal (G u.2) ^ p := by
     rw [ENNReal.ofReal_mul (Real.exp_pos _).le,

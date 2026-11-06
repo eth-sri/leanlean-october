@@ -11,7 +11,7 @@ public import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 
 /-! Rotation and scaling identities for the corrected planar Taylor kernel. -/
 
-@[expose] public section
+public section
 
 noncomputable section
 
@@ -26,7 +26,7 @@ theorem planarTaylorRemainder_rotate (k β : ℝ) (hk : 0 < k) (hβ : k < β)
       DOZZ.planarTaylorRemainder k β z v := by
   by_cases hv : v = 0
   · subst v
-    have hβpos : 0 < β := lt_trans hk hβ
+    have hβpos  := lt_trans hk hβ
     simp [DOZZ.planarTaylorRemainder, Real.zero_rpow, ne_of_gt hk, ne_of_gt hβpos]
   · have hξ0 : ξ ≠ 0 := by
       intro h
@@ -49,7 +49,7 @@ theorem planarTaylorRemainder_real_scale (k β : ℝ) (hk : 0 < k) (hβ : k < β
       r ^ (k - β) * DOZZ.planarTaylorRemainder k β 1 v := by
   by_cases hv : v = 0
   · subst v
-    have hβpos : 0 < β := lt_trans hk hβ
+    have hβpos  := lt_trans hk hβ
     simp [DOZZ.planarTaylorRemainder, Real.zero_rpow, ne_of_gt hk, ne_of_gt hβpos]
   · have hnormv : ‖r • v‖ = r * ‖v‖ := by
       rw [norm_smul, Real.norm_eq_abs, abs_of_pos hr]
@@ -57,11 +57,10 @@ theorem planarTaylorRemainder_real_scale (k β : ℝ) (hk : 0 < k) (hβ : k < β
       change (r : ℂ) * v - (r : ℂ) = (r : ℂ) * (v - 1)
       ring
     have hnormshift : ‖r • v - (r : ℂ)‖ = r * ‖v - 1‖ := by
-      rw [hshift, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hr]
+      simp_all
     have hrC : (r : ℂ) ≠ 0 := by exact_mod_cast hr.ne'
     have hquot : (r : ℂ) / (r • v) = 1 / v := by
-      change (r : ℂ) / ((r : ℂ) * v) = 1 / v
-      field_simp [hrC, hv]
+      grind
     have hstarquot : star (r : ℂ) / star (r • v) = star 1 / star v := by
       have h := congrArg star hquot
       simpa only [star_div₀, star_one] using h
@@ -77,8 +76,7 @@ theorem planarTaylorRemainder_real_scale (k β : ℝ) (hk : 0 < k) (hβ : k < β
               ((r : ℂ) / (r • v) + star (r : ℂ) / star (r • v)).re =
           r ^ k * (‖v - 1‖ ^ k - ‖v‖ ^ k +
             (k / 2) * ‖v‖ ^ k * (1 / v + star 1 / star v).re) := by
-      rw [hnormshift, hnormv, hquot, hstarquot, hpowerShift, hpowerV]
-      ring
+      grind
     change (‖r • v - (r : ℂ)‖ ^ k - ‖r • v‖ ^ k +
         (k / 2) * ‖r • v‖ ^ k *
           ((r : ℂ) / (r • v) + star (r : ℂ) / star (r • v)).re) /
@@ -87,8 +85,8 @@ theorem planarTaylorRemainder_real_scale (k β : ℝ) (hk : 0 < k) (hβ : k < β
         ((‖v - 1‖ ^ k - ‖v‖ ^ k + (k / 2) * ‖v‖ ^ k *
           (1 / v + star 1 / star v).re) / ‖v‖ ^ β)
     rw [hnum, hnormv, hpowerDen]
-    have hrβ : 0 < r ^ β := Real.rpow_pos_of_pos hr β
-    have hvβ : 0 < ‖v‖ ^ β := Real.rpow_pos_of_pos (norm_pos_iff.mpr hv) β
+    have hrβ  := Real.rpow_pos_of_pos hr β
+    have hvβ  := Real.rpow_pos_of_pos (norm_pos_iff.mpr hv) β
     calc
       _ = (r ^ k / r ^ β) *
           ((‖v - 1‖ ^ k - ‖v‖ ^ k + (k / 2) * ‖v‖ ^ k *
@@ -96,9 +94,10 @@ theorem planarTaylorRemainder_real_scale (k β : ℝ) (hk : 0 < k) (hβ : k < β
               field_simp [hrβ.ne', hvβ.ne']
       _ = _ := by rw [← Real.rpow_sub hr k β]
 
-theorem planarTaylorRemainder_rotated_scale (k β : ℝ) (hk : 0 < k) (hβ : k < β)
-    (ξ : ℂ) (hξ : ‖ξ‖ = 1) (r : ℝ) (hr : 0 < r) (z : ℂ)
-    (hz : ξ * (r : ℂ) = z) (v : ℂ) :
+variable (k β : ℝ) (hk : 0 < k) (hβ : k < β) (ξ : ℂ) (hξ : ‖ξ‖ = 1) (r : ℝ) (hr : 0 < r) (z : ℂ) (hz : ξ * (r : ℂ) = z)
+
+include k β hk hβ ξ hξ r hr z hz in
+theorem planarTaylorRemainder_rotated_scale  (v : ℂ) :
     DOZZ.planarTaylorRemainder k β z (ξ * (r • v)) =
       r ^ (k - β) * DOZZ.planarTaylorRemainder k β 1 v := by
   calc
@@ -109,26 +108,24 @@ theorem planarTaylorRemainder_rotated_scale (k β : ℝ) (hk : 0 < k) (hβ : k <
     _ = r ^ (k - β) * DOZZ.planarTaylorRemainder k β 1 v :=
       planarTaylorRemainder_real_scale k β hk hβ r hr v
 
-theorem planarTaylorRemainder_integral_scale (k β : ℝ) (hk : 0 < k) (hβ : k < β)
-    (ξ : ℂ) (hξ : ‖ξ‖ = 1) (r : ℝ) (hr : 0 < r) (z : ℂ)
-    (hz : ξ * (r : ℂ) = z) :
+include k β hk hβ ξ hξ r hr z hz in
+theorem planarTaylorRemainder_integral_scale  :
     (∫ u : ℂ, DOZZ.planarTaylorRemainder k β z u) =
       r ^ (2 + k - β) *
         (∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u) := by
   let g : ℂ → ℝ := fun u => DOZZ.planarTaylorRemainder k β z (ξ * u)
-  have hc : ‖ξ‖ = 1 := hξ
+
   have hrotation : (∫ u : ℂ, g u) =
       (∫ u : ℂ, DOZZ.planarTaylorRemainder k β z u) := by
     change (∫ u : ℂ, DOZZ.planarTaylorRemainder k β z (ξ * u)) = _
     let c : Circle := ⟨ξ, by simpa [Submonoid.unitSphere] using hξ⟩
-    simpa only [rotation_apply] using
-      (LinearIsometryEquiv.measurePreserving (rotation c)).integral_comp
+    exact (LinearIsometryEquiv.measurePreserving (rotation c)).integral_comp
         ((rotation c).toContinuousLinearEquiv.toHomeomorph).measurableEmbedding
         (fun u : ℂ => DOZZ.planarTaylorRemainder k β z u)
   have hscaling :
       (∫ u : ℂ, g (r • u)) = (r ^ 2)⁻¹ * (∫ u : ℂ, g u) := by
     have h := Measure.integral_comp_smul_of_nonneg volume g r (hR := hr.le)
-    simpa only [Complex.finrank_real_complex, smul_eq_mul] using h
+    simp_all
   have hpoint : (fun u : ℂ => g (r • u)) = fun u =>
       r ^ (k - β) * DOZZ.planarTaylorRemainder k β 1 u := by
     funext u
@@ -143,23 +140,11 @@ theorem planarTaylorRemainder_integral_scale (k β : ℝ) (hk : 0 < k) (hβ : k 
     have hp : r ^ 2 * r ^ (k - β) = r ^ (2 + (k - β)) := by
       rw [← Real.rpow_natCast r 2]
       exact (Real.rpow_add hr 2 (k - β)).symm
-    calc
-      _ = (r ^ 2 * r ^ (k - β)) *
-          (∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u) := by ring
-      _ = r ^ (2 + (k - β)) *
-          (∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u) := by rw [hp]
-      _ = _ := by congr 1; congr 1; ring
+    grind
   have hright : r ^ 2 * ((r ^ 2)⁻¹ *
       (∫ u : ℂ, DOZZ.planarTaylorRemainder k β z u)) =
       (∫ u : ℂ, DOZZ.planarTaylorRemainder k β z u) := by
-    have hr2 : r ^ 2 ≠ 0 := pow_ne_zero 2 hr.ne'
-    field_simp [hr2]
-  calc
-    (∫ u : ℂ, DOZZ.planarTaylorRemainder k β z u) =
-        r ^ 2 * ((r ^ 2)⁻¹ *
-          (∫ u : ℂ, DOZZ.planarTaylorRemainder k β z u)) := by rw [hright]
-    _ = r ^ 2 * (r ^ (k - β) *
-        (∫ u : ℂ, DOZZ.planarTaylorRemainder k β 1 u)) := hmul.symm
-    _ = _ := hleft
+    field_simp
+  simp_all
 
 end DOZZ.Proofs

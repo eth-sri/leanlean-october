@@ -83,13 +83,13 @@ theorem continuous_brownianBridgePath (T : ℝ≥0) : Continuous (brownianBridge
   apply ContinuousMap.continuous_of_continuous_uncurry
   change Continuous (fun z : BrownianPath × ℝ≥0 => z.1 (min z.2 T)-
     ((min z.2 T : ℝ≥0) : ℝ)/(T : ℝ)*z.1 T)
-  exact (continuous_eval.comp (continuous_fst.prodMk (continuous_snd.min continuous_const))).sub
-    (((NNReal.continuous_coe.comp (continuous_snd.min continuous_const)).div_const _).mul
-      ((continuous_eval_const T).comp continuous_fst))
+  fun_prop
 
+variable (P : Measure BrownianPath) (hB : IsPreBrownianReal (fun t p => p t) P)
+
+include P hB
 /-- The capped bridge and terminal value form one Gaussian process. -/
-theorem brownianBridge_joint_isGaussian (P : Measure BrownianPath)
-    (hB : IsPreBrownianReal (fun t p => p t) P) (T : ℝ≥0) :
+theorem brownianBridge_joint_isGaussian  (T : ℝ≥0) :
     IsGaussianProcess (Sum.elim (fun t (p : BrownianPath) => brownianBridgePath T p t)
       (fun (_ : Unit) (p : BrownianPath) => p T)) P := by
   classical
@@ -104,9 +104,9 @@ theorem brownianBridge_joint_isGaussian (P : Measure BrownianPath)
         map_add' x y := by simp
         map_smul' c x := by simp },by simp⟩
 
+
 /-- The Brownian bridge is uncorrelated with its chosen terminal value at every time. -/
-theorem brownianBridge_covariance_terminal_zero (P : Measure BrownianPath)
-    (hB : IsPreBrownianReal (fun t p => p t) P) (T t : ℝ≥0) :
+theorem brownianBridge_covariance_terminal_zero  (T t : ℝ≥0) :
     cov[fun p => brownianBridgePath T p t,fun p => p T; P] = 0 := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   change cov[fun p => p (min t T)-((min t T : ℝ≥0) : ℝ)/(T : ℝ)*p T,fun p => p T; P] = 0
@@ -117,14 +117,11 @@ theorem brownianBridge_covariance_terminal_zero (P : Measure BrownianPath)
     covariance_const_mul_left,hB.covariance_eval,hB.covariance_eval,min_self,
     min_eq_left (by exact_mod_cast min_le_right t T)]
   by_cases hT : T = 0
-  · simp only [hT,min_zero,NNReal.coe_zero,zero_div,zero_mul,sub_zero]
-  · have hTR : (T : ℝ) ≠ 0 := by exact_mod_cast hT
-    field_simp
-    ring
+  all_goals simp_all
+
 
 /-- Gaussian orthogonality makes the entire capped bridge process independent of its terminal value. -/
-theorem brownianBridge_process_indep_terminal (P : Measure BrownianPath)
-    (hB : IsPreBrownianReal (fun t p => p t) P) (T : ℝ≥0) :
+theorem brownianBridge_process_indep_terminal  (T : ℝ≥0) :
     IndepFun (fun p t => brownianBridgePath T p t) (fun p => p T) P := by
   have hi := IsGaussianProcess.indepFun_of_covariance_eq_zero (brownianBridge_joint_isGaussian P hB T)
     (fun t => ((ContinuousMap.measurable_eval t).comp (continuous_brownianBridgePath T).measurable).aemeasurable)
@@ -132,27 +129,29 @@ theorem brownianBridge_process_indep_terminal (P : Measure BrownianPath)
     (fun t (_ : Unit) => brownianBridge_covariance_terminal_zero P hB T t)
   simpa only [Function.comp_def,id_eq] using hi.comp measurable_id (measurable_pi_apply ())
 
+
 /-- Independence holds for the actual continuous bridge path, rather than only its finite projections. -/
-theorem brownianBridgePath_indep_terminal (P : Measure BrownianPath)
-    (hB : IsPreBrownianReal (fun t p => p t) P) (T : ℝ≥0) :
+theorem brownianBridgePath_indep_terminal  (T : ℝ≥0) :
     IndepFun (brownianBridgePath T) (fun p => p T) P := by
   change Indep (MeasurableSpace.comap (brownianBridgePath T) (inferInstance : MeasurableSpace BrownianPath))
     (MeasurableSpace.comap (fun p : BrownianPath => p T) inferInstance) P
   rw [brownianPath_measurableSpace_eq_comap,MeasurableSpace.comap_comp]
   exact brownianBridge_process_indep_terminal P hB T
+omit P hB
+
 /-- The actual finite-horizon Brownian exponential tilt on continuous paths. -/
 noncomputable def brownianFiniteTilt (P : Measure BrownianPath)
     (a : ℝ) (T : ℝ≥0) : Measure BrownianPath :=
   P.withDensity (fun p => brownianGaussianLikelihood a T (p T))
 
+include P hB in
 /-- Tilting only the terminal normal preserves the independent continuous bridge law. -/
-theorem brownianFiniteTilt_bridge_terminal_map (P : Measure BrownianPath)
-    (hB : IsPreBrownianReal (fun t p => p t) P) (a : ℝ) (T : ℝ≥0) (hT : T ≠ 0) :
+theorem brownianFiniteTilt_bridge_terminal_map  (a : ℝ) (T : ℝ≥0) (hT : T ≠ 0) :
     (brownianFiniteTilt P a T).map (fun p => (brownianBridgePath T p,p T)) =
       (P.map (brownianBridgePath T)).prod (gaussianReal (a*(T : ℝ)) T) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
-  let J : BrownianPath → BrownianPath × ℝ := fun p => (brownianBridgePath T p,p T)
-  have hmJ : Measurable J :=
+  let J  := fun p => (brownianBridgePath T p,p T)
+  have hmJ  :=
     (continuous_brownianBridgePath T).measurable.prodMk (ContinuousMap.measurable_eval T)
   have he := brownian_map_withDensity_comp P J hmJ
     (fun z => brownianGaussianLikelihood a T z.2)
@@ -174,8 +173,7 @@ theorem continuous_brownianBridgeReconstruct (T : ℝ≥0) : Continuous (brownia
   apply ContinuousMap.continuous_of_continuous_uncurry
   change Continuous (fun z : (BrownianPath × ℝ) × ℝ≥0 => z.1.1 z.2+
     ((min z.2 T : ℝ≥0) : ℝ)/(T : ℝ)*z.1.2)
-  exact (continuous_eval.comp (continuous_fst.fst.prodMk continuous_snd)).add
-    (((NNReal.continuous_coe.comp (continuous_snd.min continuous_const)).div_const _).mul continuous_fst.snd)
+  fun_prop
 
 /-- The bridge plus its original terminal value reconstructs the literal stopped path. -/
 theorem brownianBridgeReconstruct_original (T : ℝ≥0) (p : BrownianPath) :
@@ -194,13 +192,11 @@ theorem brownianBridgeReconstruct_shift (a : ℝ) (T : ℝ≥0) (hT : T ≠ 0) (
   intro t
   change (p (min t T)-((min t T : ℝ≥0) : ℝ)/(T : ℝ)*p T)+
     ((min t T : ℝ≥0) : ℝ)/(T : ℝ)*(p T+a*(T : ℝ)) = p (min t T)+a*((min t T : ℝ≥0) : ℝ)
-  have hTR : (T : ℝ) ≠ 0 := by exact_mod_cast hT
-  field_simp
-  ring
+  field_simp <;> ring
 
+include P hB in
 /-- The finite-horizon Gaussian change of drift on the actual stopped continuous-path carrier. -/
-theorem brownianFiniteTilt_stoppedPath_map (P : Measure BrownianPath)
-    (hB : IsPreBrownianReal (fun t p => p t) P) (a : ℝ) (T : ℝ≥0) (hT : T ≠ 0) :
+theorem brownianFiniteTilt_stoppedPath_map  (a : ℝ) (T : ℝ≥0) (hT : T ≠ 0) :
     (brownianFiniteTilt P a T).map (fun p => stopBrownianPath p T) =
       P.map (fun p => stopBrownianPath (driftedBrownianPath a p) T) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
@@ -220,9 +216,9 @@ theorem brownianFiniteTilt_stoppedPath_map (P : Measure BrownianPath)
     Measure.map_map (continuous_brownianBridgeReconstruct T).measurable hmJ'] at hout
   simpa only [Function.comp_def,brownianBridgeReconstruct_original,
     brownianBridgeReconstruct_shift a T hT] using hout
+include P hB in
 /-- Nonnegative stopped-path tests satisfy the finite-horizon Gaussian likelihood identity. -/
-theorem brownianFiniteTilt_stoppedPath_lintegral (P : Measure BrownianPath)
-    (hB : IsPreBrownianReal (fun t p => p t) P) (a : ℝ) (T : ℝ≥0) (hT : T ≠ 0)
+theorem brownianFiniteTilt_stoppedPath_lintegral  (a : ℝ) (T : ℝ≥0) (hT : T ≠ 0)
     (F : BrownianPath → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p, F (stopBrownianPath (driftedBrownianPath a p) T) ∂P) =
       ∫⁻ p, brownianGaussianLikelihood a T (p T)*F (stopBrownianPath p T) ∂P := by
@@ -247,17 +243,15 @@ theorem stopBrownianPath_barrier_iff (p : BrownianPath) (T : ℝ≥0) (β : ℝ)
   constructor <;> intro h u hu
   · have he := h u hu
     simpa only [stopBrownianPath,ContinuousMap.coe_mk,min_eq_left hu] using he
-  · change p (min u T) ≤ β
-    rw [min_eq_left hu]
-    exact h u hu
+  continuity
 
+include P hB in
 /-- The tilted probability of a barrier equals the original probability for the drifted path. -/
-theorem brownianFiniteTilt_barrier_probability (P : Measure BrownianPath)
-    (hB : IsPreBrownianReal (fun t p => p t) P) (a β : ℝ) (T : ℝ≥0) (hT : T ≠ 0) :
+theorem brownianFiniteTilt_barrier_probability  (a β : ℝ) (T : ℝ≥0) (hT : T ≠ 0) :
     (brownianFiniteTilt P a T) {p | ∀ u : ℝ≥0, u ≤ T → p u ≤ β} =
       P {p | ∀ u : ℝ≥0, u ≤ T → p u+a*(u : ℝ) ≤ β} := by
   let A : Set BrownianPath := {p | ∀ u : ℝ≥0, u ≤ T → p u ≤ β}
-  have hA : MeasurableSet A :=
+  have hA  :=
     (brownianRawFiltration _ (fun t => ContinuousMap.measurable_eval t)).le T _
       (measurableSet_brownianPath_barrier T β)
   have hmStop : Measurable (fun p : BrownianPath => stopBrownianPath p T) :=
@@ -278,9 +272,9 @@ theorem brownianFiniteTilt_barrier_probability (P : Measure BrownianPath)
   rw [hleft,hright] at he
   exact he
 
+include P hB in
 /-- The source's drifted barrier probability is the actual terminal-likelihood weighted integral over the zero-drift barrier. -/
-theorem brownian_drift_barrier_probability_likelihood (P : Measure BrownianPath)
-    (hB : IsPreBrownianReal (fun t p => p t) P) (a β : ℝ) (T : ℝ≥0) (hT : T ≠ 0) :
+theorem brownian_drift_barrier_probability_likelihood  (a β : ℝ) (T : ℝ≥0) (hT : T ≠ 0) :
     P {p | ∀ u : ℝ≥0, u ≤ T → p u+a*(u : ℝ) ≤ β} =
       ∫⁻ p in {p : BrownianPath | ∀ u : ℝ≥0, u ≤ T → p u ≤ β},
         brownianGaussianLikelihood a T (p T) ∂P := by
@@ -293,18 +287,18 @@ theorem brownian_drift_barrier_probability_likelihood (P : Measure BrownianPath)
 theorem brownianFiniteTilt_absolutelyContinuous (P : Measure BrownianPath) (a : ℝ) (T : ℝ≥0) :
     brownianFiniteTilt P a T ≪ P := withDensity_absolutelyContinuous _ _
 
+include P hB in
 /-- At time zero the Brownian likelihood equals one on the one common initial-value event. -/
-theorem brownianFiniteTilt_zero_time (P : Measure BrownianPath)
-    (hB : IsPreBrownianReal (fun t p => p t) P) (a : ℝ) : brownianFiniteTilt P a 0 = P := by
+theorem brownianFiniteTilt_zero_time  (a : ℝ) : brownianFiniteTilt P a 0 = P := by
   have he : (fun p : BrownianPath => brownianGaussianLikelihood a 0 (p 0)) =ᵐ[P] 1 := by
     filter_upwards [hB.eval_zero_ae_eq_zero] with p hp
     simp only [brownianGaussianLikelihood,hp,NNReal.coe_zero,mul_zero,zero_div,sub_zero,
       Real.exp_zero,ENNReal.ofReal_one,Pi.one_apply]
   rw [brownianFiniteTilt,withDensity_congr_ae he,withDensity_one]
 
+include P hB in
 /-- The finite-horizon path-law tilt also includes the degenerate terminal horizon. -/
-theorem brownianFiniteTilt_stoppedPath_map_all (P : Measure BrownianPath)
-    (hB : IsPreBrownianReal (fun t p => p t) P) (a : ℝ) (T : ℝ≥0) :
+theorem brownianFiniteTilt_stoppedPath_map_all  (a : ℝ) (T : ℝ≥0) :
     (brownianFiniteTilt P a T).map (fun p => stopBrownianPath p T) =
       P.map (fun p => stopBrownianPath (driftedBrownianPath a p) T) := by
   by_cases hT : T = 0
@@ -314,16 +308,16 @@ theorem brownianFiniteTilt_stoppedPath_map_all (P : Measure BrownianPath)
     apply ContinuousMap.ext
     intro t
     change p (min t 0) = p (min t 0)+a*((min t 0 : ℝ≥0) : ℝ)
-    simp only [min_zero,NNReal.coe_zero,mul_zero,add_zero]
+    simp_all
   · exact brownianFiniteTilt_stoppedPath_map P hB a T hT
 
 /-- A stopped-path test is measurable as a function of its original continuous path. -/
 theorem measurable_stopBrownianPath_fixed (T : ℝ≥0) : Measurable (fun p : BrownianPath => stopBrownianPath p T) :=
   continuous_stopBrownianPath.measurable.comp (measurable_const.prodMk measurable_id)
 
+include P hB in
 /-- The finite-horizon likelihood identity for arbitrary nonnegative stopped-path tests, including time zero. -/
-theorem brownianFiniteTilt_stoppedPath_lintegral_all (P : Measure BrownianPath)
-    (hB : IsPreBrownianReal (fun t p => p t) P) (a : ℝ) (T : ℝ≥0)
+theorem brownianFiniteTilt_stoppedPath_lintegral_all  (a : ℝ) (T : ℝ≥0)
     (F : BrownianPath → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p, F (stopBrownianPath (driftedBrownianPath a p) T) ∂P) =
       ∫⁻ p, brownianGaussianLikelihood a T (p T)*F (stopBrownianPath p T) ∂P := by

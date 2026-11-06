@@ -9,7 +9,7 @@ public import DOZZ.FourPoint.Fusion.NormalizedLittleO
 
 /-! # Summing the three local Taylor contributions -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

@@ -36,18 +36,14 @@ theorem couplingGridRealCoords_measurableEmbedding (n : ℕ) :
   let e := (MeasurableEquiv.subtypePiEquivPi
     (p := fun (_ : Fin (n + 1)) (r : ℝ) => 0 < r)).symm
   have hS : MeasurableSet {x : Fin (n + 1) → ℝ | ∀ i, 0 < x i} := by
-    have hs : ∀ i : Fin (n + 1), MeasurableSet {x : Fin (n + 1) → ℝ | 0 < x i} :=
-      fun i => measurableSet_lt measurable_const (measurable_pi_apply i)
-    have heq : {x : Fin (n + 1) → ℝ | ∀ i, 0 < x i} =
-        ⋂ i : Fin (n + 1), {x : Fin (n + 1) → ℝ | 0 < x i} := by
-      ext x
-      simp only [mem_iInter, mem_ofPred_eq]
-    rw [heq]
-    exact MeasurableSet.iInter hs
+    measurability
   exact (MeasurableEmbedding.subtype_coe hS).comp e.measurableEmbedding
 
+variable (a : ℝ) (ha : 0 ≤ a) (δ : ℝ) (hδ : 0 < δ)
+
+include a ha δ hδ in
 /-- The scalar entrance quantile chain is an actual probability law. -/
-theorem coupling_scalarGrid_isProbability (a : ℝ) (ha : 0 ≤ a) (δ : ℝ) (hδ : 0 < δ) (n : ℕ) :
+theorem coupling_scalarGrid_isProbability  (n : ℕ) :
     IsProbabilityMeasure (conditionedPositiveEntranceGridMeasure a δ (fun _ => δ) ha hδ
       (fun _ => hδ) n) := by
   let v : Unit → ℝ≥0 := fun _ => ⟨a, ha⟩
@@ -58,8 +54,9 @@ theorem coupling_scalarGrid_isProbability (a : ℝ) (ha : 0 ≤ a) (δ : ℝ) (h
   rw [← h]
   exact (Measure.isProbabilityMeasure_map_iff (measurable_pi_apply ()).aemeasurable).mpr inferInstance
 
+include a ha δ hδ in
 /-- The full real-coordinate past and next quantile state have the literal density kernel. -/
-theorem coupling_scalarGrid_next_joint (a : ℝ) (ha : 0 ≤ a) (δ : ℝ) (hδ : 0 < δ) (n : ℕ) :
+theorem coupling_scalarGrid_next_joint  (n : ℕ) :
     (conditionedPositiveEntranceGridMeasure a δ (fun _ => δ) ha hδ (fun _ => hδ) (n + 1)).map
       (fun x => (couplingGridRealCoords n (Fin.init x), (x (Fin.last (n + 1))).1)) =
       ((conditionedPositiveEntranceGridMeasure a δ (fun _ => δ) ha hδ (fun _ => hδ) n).map
@@ -80,7 +77,7 @@ theorem coupling_scalarGrid_next_joint (a : ℝ) (ha : 0 ≤ a) (δ : ℝ) (hδ 
   intro A B hA hB
   let A' := couplingGridRealCoords n ⁻¹' A
   let B' := (Subtype.val : ConditionedPositiveState → ℝ) ⁻¹' B
-  have hA' : MeasurableSet A' := hA.preimage (measurable_couplingGridRealCoords n)
+  have hA'  := hA.preimage (measurable_couplingGridRealCoords n)
   have hB' : MeasurableSet B' := hB.preimage measurable_subtype_coe
   have hrect := conditionedPositiveEntranceGridMeasure_markov_rect a δ (fun _ => δ)
     ha hδ (fun _ => hδ) n A' B' hA' hB'
@@ -109,7 +106,6 @@ theorem coupling_scalarGrid_next_joint (a : ℝ) (ha : 0 ≤ a) (δ : ℝ) (hδ 
 /-- The actual arithmetic observation times are positive. -/
 theorem couplingGridSampleTimes_pos (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (i : Fin (n + 1)) :
     0 < couplingGridSampleTime δ hδ i.val := by
-  change 0 < ((i.val : ℝ) + 1) * δ
   exact mul_pos (by positivity) hδ
 
 /-- Arithmetic observation times are strictly increasing in their literal finite index. -/
@@ -117,12 +113,11 @@ theorem couplingGridSampleTimes_strictMono (δ : ℝ) (hδ : 0 < δ) (n : ℕ) :
     StrictMono (fun i : Fin (n + 1) => couplingGridSampleTime δ hδ i.val) := by
   intro i j hij
   change ((i.val : ℝ) + 1) * δ < ((j.val : ℝ) + 1) * δ
-  have hcast : (i.val : ℝ) < (j.val : ℝ) := by exact_mod_cast hij
-  apply mul_lt_mul_of_pos_right _ hδ
-  simpa only [add_comm] using add_lt_add_right hcast 1
+  simp_all
 
+include a ha δ hδ in
 /-- The full real-coordinate quantile grid law has the literal skeleton density. -/
-theorem coupling_scalarGrid_real_density (a : ℝ) (ha : 0 ≤ a) (δ : ℝ) (hδ : 0 < δ) : ∀ n : ℕ,
+theorem coupling_scalarGrid_real_density  : ∀ n : ℕ,
     (conditionedPositiveEntranceGridMeasure a δ (fun _ => δ) ha hδ (fun _ => hδ) n).map
       (couplingGridRealCoords n) = radialSkeletonDensityMeasure a
         (fun i : Fin (n + 1) => ((i.val : ℝ) + 1) * δ) := by
@@ -156,9 +151,9 @@ theorem coupling_scalarGrid_real_density (a : ℝ) (ha : 0 ≤ a) (δ : ℝ) (h�
     rw [hdiff]
     rfl
 
+include a ha δ hδ in
 /-- Actual positive path samples have the same full real-coordinate skeleton density. -/
-theorem rogersPitman_positive_samples_real_density (a : ℝ) (ha : 0 ≤ a)
-    (δ : ℝ) (hδ : 0 < δ) (n : ℕ) :
+theorem rogersPitman_positive_samples_real_density  (n : ℕ) :
     ((rogersPitmanWienerProbability a : Measure BrownianPath).map
       (couplingPositivePathSamples δ hδ n)).map (couplingGridRealCoords n) =
       radialSkeletonDensityMeasure a (fun i : Fin (n + 1) => ((i.val : ℝ) + 1) * δ) := by
@@ -176,13 +171,11 @@ theorem rogersPitman_positive_samples_real_density (a : ℝ) (ha : 0 ≤ a)
   have h := rogersPitmanWienerMeasure_fdd n a ha
     (fun i => couplingGridSampleTime δ hδ i.val) (couplingGridSampleTimes_pos δ hδ n)
       (couplingGridSampleTimes_strictMono δ hδ n)
-  change (wienerTripleMeasure.map (rogersPitmanPath a)).map
-    (fun p => fun i : Fin (n + 1) => p (couplingGridSampleTime δ hδ i.val)) = _
-  simpa only [couplingGridSampleTime_coe, rogersPitmanWienerMeasure, rogersPitmanEntranceMeasure, wienerTripleMeasure] using h
+  aesop
 
+include a ha δ hδ in
 /-- The common-quantile scalar grid is exactly the sampled unconditional Rogers--Pitman path law. -/
-theorem conditionedPositiveEntranceGridMeasure_eq_radial_samples (a : ℝ) (ha : 0 ≤ a)
-    (δ : ℝ) (hδ : 0 < δ) (n : ℕ) :
+theorem conditionedPositiveEntranceGridMeasure_eq_radial_samples  (n : ℕ) :
     conditionedPositiveEntranceGridMeasure a δ (fun _ => δ) ha hδ (fun _ => hδ) n =
       (rogersPitmanWienerProbability a : Measure BrownianPath).map (couplingPositivePathSamples δ hδ n) := by
   apply (couplingGridRealCoords_measurableEmbedding n).map_injective
@@ -193,9 +186,7 @@ theorem conditionedPositiveEntranceGridMeasure_eq_radial_samples (a : ℝ) (ha :
 `DOZZ.IsNegativeConditionedBrownianLaw` is proved. -/
 theorem negativeRogersPitmanWienerProbability_isConditioned (a : ℝ) (ha : 0 ≤ a) :
     IsNegativeConditionedBrownianLaw a (negativeRogersPitmanWienerProbability a : Measure BrownianPath) := by
-  change IsNegativeConditionedBrownianLaw a
-    (wienerTripleMeasure.map (negativeRogersPitmanPath a))
-  exact negativeRogersPitmanWienerMeasure_isConditioned a ha
+  exact id (negativeRogersPitmanWienerMeasure_isConditioned a ha)
 
 /-- Actual common dyadic grids supply an unconditional countable ordered radial family. -/
 theorem exists_ordered_countable_radial_family (v : ℕ → ℝ≥0) :
@@ -230,7 +221,7 @@ theorem exists_ordered_rational_radial_family :
       have hqR : 0 ≤ (q : ℝ) := by exact_mod_cast hq
       change couplingEnumeratedDrift (couplingRationalEnumeration q) = (q : ℝ)
       simp only [couplingEnumeratedDrift, Equiv.symm_apply_apply, max_eq_left hqR]
-    exact congrArg (fun a : ℝ => (negativeRogersPitmanWienerProbability a : Measure BrownianPath)) hdrift
+    simp_all
   · change ∀ᵐ F ∂((Q : Measure (ℕ → BrownianPath)).map couplingRationalReindex),
       F ∈ negativeEntranceOrderSet ((↑) : ℚ → ℝ)
     apply (ae_map_iff measurable_couplingRationalReindex.aemeasurable
@@ -284,8 +275,7 @@ sigma algebra. The negative-path bounds reverse the source's positive-path inequ
 theorem twoSidedConditionedBrownian_orderedCoupling_exists :
     ∃ (Ω : Type) (_ : MeasurableSpace Ω) (P : Measure Ω)
       (B : ℝ → Ω → BrownianPath × BrownianPath),
-      IsProbabilityMeasure P ∧ IsOrderedTwoSidedConditionedCoupling P B := by
-  exact ⟨(ℚ → BrownianPath) × (ℚ → BrownianPath), inferInstance, orderedWienerCouplingMeasure,
+      IsProbabilityMeasure P ∧ IsOrderedTwoSidedConditionedCoupling P B := ⟨(ℚ → BrownianPath) × (ℚ → BrownianPath), inferInstance, orderedWienerCouplingMeasure,
     realDriftCouplingOfRationalPaths, inferInstance, orderedWienerCouplingMeasure_isOrdered⟩
 
 end DOZZ.Proofs

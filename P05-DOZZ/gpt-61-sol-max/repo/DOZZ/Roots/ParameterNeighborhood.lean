@@ -7,7 +7,7 @@ public import DOZZ.ShiftEquations.Reflection.StructureContinuity
 public import DOZZ.Correlations.Analytic.ParameterDomain
 import DOZZ.ShiftEquations.Reflection.RbarContinuity
 /-! # Strict parameter neighborhoods for the root continuity argument -/
-@[expose] public section
+public section
 open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 /-- The three-coordinate finite-insertion bounds recover the canonical extended triple. -/
@@ -46,12 +46,12 @@ theorem roots_unitVolume_gamma_continuousAt {Ω : Type*} [MeasurableSpace Ω]
     intro g hg
     apply hball
     rw [Metric.mem_ball, Real.dist_eq, abs_lt]
-    exact ⟨by linarith only [hg.1, hR], by linarith only [hg.2, hR]⟩
+    grind
   have hKdom : ∀ q ∈ K, 0 < q.1 ∧ q.1 < 2 ∧ ExtendedSeiberg3 q.1 (q.2 0) (q.2 1) (q.2 2) := by
     rintro q ⟨g, hg, rfl⟩
     exact hJdom g hg
   have hc := continuousOn_unitVolumeStructureConstant P X M hX hM K hK hKdom
-  have hcomp : ContinuousOn (fun g => unitVolumeStructureConstant P (M g) g a b c) J :=
+  have hcomp  :=
     hc.comp hAc.continuousOn (fun g hg => mem_image_of_mem A hg)
   exact hcomp.continuousAt (Icc_mem_nhds (by linarith only [hR])
     (by linarith only [hR]))

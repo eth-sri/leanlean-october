@@ -7,7 +7,7 @@ public import DOZZ.FourPoint.Reflected.InnerKernelSqueeze
 public import DOZZ.FourPoint.Reflected.GlobalReinsertion
 import Mathlib.Tactic
 /-! The inner kernel squeeze before taking expectations on the copied carrier. -/
-@[expose] public section
+public section
 open MeasureTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs

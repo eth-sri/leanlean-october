@@ -9,6 +9,7 @@ public import DOZZ.Statements.Hypergeom.GaussHypergeometricExists
 public import DOZZ.Statements.FourPoint.DegenerateFourPointBPZ
 public import DOZZ.Statements.FourPoint.GammaHalfFullUnreflectedFormula
 import Mathlib.Tactic
+public import DOZZ.FourPoint.GaussContracts
 
 /-! # The half-charge crossing reduction
 
@@ -54,16 +55,7 @@ theorem gammaHalf_crossing_of_unreflected {Ω : Type*} [MeasurableSpace Ω]
       (_hα₂ : α₂ < Q γ) (_hα₃ : α₃ < Q γ)
       (_hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃)
       (_hX : IsEquatorGFF P X) (_hM : IsGMCOf P X γ M),
-      let a := gaussParameterA γ (γ / 2) α₁ α₂ α₃
-      let b := gaussParameterB γ (γ / 2) α₁ α₂ α₃
-      let c := gaussParameterC γ (γ / 2) α₁
-      ∀ z ∈ gaussCutPlane,
-        fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z =
-          structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ *
-              ‖gaussFMinus H a b c z‖ ^ 2 +
-            (-μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re) *
-              structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ *
-                ‖gaussFPlus H a b c z‖ ^ 2) :
+      Contract.gammaHalfUnreflected P M γ μ α₁ α₂ α₃ H) :
     structureConstant P M γ μ (α' - γ / 2) ε α =
         gammaHalfCrossingMultiplier γ μ α' ε α *
           structureConstant P M γ μ α' (ε + γ / 2) α ∧
@@ -94,8 +86,7 @@ theorem gammaHalf_crossing {Ω : Type*} [MeasurableSpace Ω]
           structureConstant P M γ μ α' (ε + γ / 2) α ∧
       unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
         gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α := by
-  exact gammaHalf_crossing_of_unreflected P X M γ μ α' ε α
+          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α := gammaHalf_crossing_of_unreflected P X M γ μ α' ε α
     hγ hγ₂ hμ hεlo hεhi hα hα' hs hX hM
     DOZZ.degenerateFourPoint_BPZ DOZZ.gammaHalf_full_unreflected_formula
 

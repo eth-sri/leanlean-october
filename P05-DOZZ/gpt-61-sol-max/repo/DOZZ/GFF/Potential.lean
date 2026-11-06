@@ -35,7 +35,7 @@ theorem circleMeasure_zero_isProbability : IsProbabilityMeasure (circleMeasure 0
     ENNReal.ofReal ((2 * Real.pi)⁻¹) * ENNReal.ofReal (2 * Real.pi) =
         ENNReal.ofReal ((2 * Real.pi)⁻¹ * (2 * Real.pi)) := by
       rw [← ENNReal.ofReal_mul (by positivity)]
-    _ = 1 := by rw [inv_mul_cancel₀ (by positivity)]; norm_num
+    _ = 1 := by ring_nf at * <;> aesop
 
 attribute [instance] circleMeasure_zero_isProbability
 
@@ -46,8 +46,7 @@ theorem integral_circleMeasure_zero_eq_circleAverage (f : ℂ → ℝ) (hf : Mea
   simp only [neg_zero, Real.exp_zero]
   rw [integral_map (measurable_circleMap 0 1).aemeasurable hf.aestronglyMeasurable]
   rw [← intervalIntegral.integral_of_le Real.two_pi_pos.le]
-  have hcoeff : ENNReal.toReal (ENNReal.ofReal ((2 * Real.pi)⁻¹)) = (2 * Real.pi)⁻¹ := by
-    exact ENNReal.toReal_ofReal (by positivity)
+  have hcoeff : ENNReal.toReal (ENNReal.ofReal ((2 * Real.pi)⁻¹)) = (2 * Real.pi)⁻¹ := ENNReal.toReal_ofReal (by positivity)
   rw [hcoeff, Real.circleAverage_def]
 
 /-- A circle-integrable measurable function is integrable against `circleMeasure 0 0`. -/
@@ -87,9 +86,7 @@ theorem integral_log_norm_sub_circleMeasure (x : ℂ) :
       funext y
       rw [norm_sub_rev]
     _ = Real.posLog ‖x‖ := circleAverage_log_norm_sub_const_eq_posLog
-    _ = Real.log (normPlus x) := by
-      rw [normPlus]
-      exact (Real.posLog_eq_log_max_one (norm_nonneg x))
+    _ = Real.log (normPlus x) := (Real.posLog_eq_log_max_one (norm_nonneg x))
 
 /-- The logarithm of `normPlus` is circle-integrable on the unit circle. -/
 theorem circleIntegrable_log_normPlus :
@@ -98,18 +95,13 @@ theorem circleIntegrable_log_normPlus :
     (f₁ := fun z : ℂ => Real.log (normPlus z)) (f₂ := fun _ : ℂ => 0) ?_).2 ?_
   · intro z hz
     have hz_norm : ‖z‖ = 1 := by
-      simpa only [abs_one, mem_sphere_iff_norm, sub_zero] using hz
+      simp_all
     simp [normPlus, hz_norm]
   · exact circleIntegrable_const 0 0 1
 
 /-- The pinning potential is integrable on the unit circle. -/
 theorem integrable_log_normPlus_circleMeasure :
-    Integrable (fun z : ℂ => Real.log (normPlus z)) (circleMeasure 0 0) := by
-  have hm : Measurable (fun z : ℂ => normPlus z) := by
-    change Measurable (fun z : ℂ => max 1 ‖z‖)
-    exact measurable_const.max continuous_norm.measurable
-  exact integrable_circleMeasure_of_circleIntegrable (Real.measurable_log.comp hm)
-    circleIntegrable_log_normPlus
+    Integrable (fun z : ℂ => Real.log (normPlus z)) (circleMeasure 0 0) := have hm := id (Measurable.const_sup (Measurable.norm measurable_id') 1);   integrable_circleMeasure_of_circleIntegrable (Measurable.comp Real.measurable_log hm) circleIntegrable_log_normPlus
 
 /-- The unit-circle average of the pinned covariance kernel vanishes at every pole. -/
 theorem integral_gffKernel_circleMeasure (x : ℂ) :
@@ -121,14 +113,12 @@ theorem integral_gffKernel_circleMeasure (x : ℂ) :
   have hprob := circleMeasure_zero_isProbability
   have hconstInt :
       ∫ z : ℂ, Real.log (normPlus x) ∂circleMeasure 0 0 = Real.log (normPlus x) := by
-    rw [integral_const]
-    simp [Measure.real, circleMeasure_zero_isProbability.measure_univ]
+    simp_all
   have hplusInt :
       ∫ z : ℂ, Real.log (normPlus z) ∂circleMeasure 0 0 = 0 := by
     have hm : Measurable (fun z : ℂ => Real.log (normPlus z)) := by
       change Measurable (fun z : ℂ => Real.log (max 1 ‖z‖))
-      exact Real.measurable_log.comp
-        (measurable_const.max continuous_norm.measurable)
+      fun_prop (disch := positivity)
     rw [integral_circleMeasure_zero_eq_circleAverage _ hm]
     calc
       Real.circleAverage (fun z : ℂ => Real.log (normPlus z)) 0 1 =
@@ -136,7 +126,7 @@ theorem integral_gffKernel_circleMeasure (x : ℂ) :
         apply Real.circleAverage_congr_sphere
         intro z hz
         have hz_norm : ‖z‖ = 1 := by
-          simpa only [abs_one, mem_sphere_iff_norm, sub_zero] using hz
+          simp_all
         simp [normPlus, hz_norm]
       _ = 0 := Real.circleAverage_const 0 0 1
   have hgroup : (fun z : ℂ => gffKernel x z) =
@@ -160,9 +150,7 @@ theorem integral_gffKernel_circleMeasure (x : ℂ) :
     ∫ z : ℂ, gffKernel x z ∂circleMeasure 0 0 =
         ∫ z : ℂ, -Real.log ‖x - z‖ +
           (Real.log (normPlus x) + Real.log (normPlus z)) ∂circleMeasure 0 0 := by
-      apply integral_congr_ae
-      filter_upwards with z
-      exact congrFun hgroup z
+      simp_all
     _ = _ := hsplit
     _ = 0 := by
       rw [integral_neg, (integral_log_norm_sub_circleMeasure x).2,

@@ -23,11 +23,9 @@ noncomputable def complexInvMeasurableEquiv : ℂ ≃ᵐ ℂ where
   left_inv := inv_inv
   right_inv := inv_inv
   measurable_toFun := by
-    change Measurable (fun x : ℂ => x⁻¹)
-    fun_prop
+    measurability
   measurable_invFun := by
-    change Measurable (fun x : ℂ => x⁻¹)
-    fun_prop
+    measurability
 
 /-- The compactifying reference measure is preserved by the measurable inversion equivalence. -/
 theorem complexInvMeasurableEquiv_measurePreserving :

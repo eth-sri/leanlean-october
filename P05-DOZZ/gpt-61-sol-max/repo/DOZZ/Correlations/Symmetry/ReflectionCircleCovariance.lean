@@ -43,26 +43,26 @@ theorem reflection_test_circle_cross (f : TestFn) :
         (1 - y) := by
     funext y
     have hp := reflection_source_circle_potential (1 - y)
-    rw [show (1 : ℂ) - (1 - y) = y by ring] at hp
-    rw [hp]
-    rfl
+    continuity
   rw [he]
   exact symmetryReflection_integral (fun x => f x * (symmetryReflectionPotential x + symmetryReflectionKappa))
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
+include Ω _inst1 P X hX Xc hXc in
 /-- The scalar's correlation with source test coordinates, without an independence assumption. -/
 theorem reflection_test_normalization_covariance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+    
     (f : TestFn) :
     gaussianCovariance P (fun ω => X ω (symmetryReflectionTest f))
       (fun ω => Xc ω 1 0) =
       ∫ x, f x * (symmetryReflectionPotential x + symmetryReflectionKappa) := by
   rw [isCircleAverage_cross_covariance P X hX Xc hXc,
     reflection_test_circle_cross]
+include Ω _inst1 P X hX Xc hXc in
 /-- The normalization circle has variance twice the pinning constant. -/
 theorem reflection_normalization_variance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) :
+     :
     gaussianVariance P (fun ω => Xc ω 1 0) = 2 * symmetryReflectionKappa := by
   unfold gaussianVariance
   rw [isCircleAverage_covariance P X hX Xc hXc]
@@ -70,10 +70,10 @@ theorem reflection_normalization_variance
   rw [circleSelfEnergy_eq]
   simp only [zero_add, symmetryReflectionKappa]
 
+include Ω _inst1 P X hX Xc hXc in
 /-- The correlated normalization is in the actual source field's Gaussian closure. -/
 theorem reflection_normalization_gaussianL2
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) :
+     :
     IsGaussianL2Limit P X (fun ω => Xc ω 1 0) :=
   isCircleAverage_isGaussianL2Limit P X hX Xc hXc 1 0
 end DOZZ.Proofs

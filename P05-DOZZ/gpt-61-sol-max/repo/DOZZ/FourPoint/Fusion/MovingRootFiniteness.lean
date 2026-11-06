@@ -8,18 +8,20 @@ public import DOZZ.FourPoint.Fusion.RootedMass
 import DOZZ.GMC.SharpMoments.SeibergMoment
 public import DOZZ.FourPoint.Fusion.Kernel
 import DOZZ.GMC.Construction.RootedMeasureKernel
+import Mathlib.Tactic
 
 /-! # Finiteness of the limiting rooted mass -/
 
-@[expose] public section
+public section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [_inst1 : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- Subcritical Coulomb insertions have almost surely finite mass. -/
-theorem fusion_coulombMass_finite_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_coulombMass_finite_ae 
     {N : ℕ} (α : Fin N → ℝ) (z : Fin N → ℂ) (hz : Function.Injective z)
     (αinf : ℝ) (hα : ∀ j, α j < Q γ) (hαinf : αinf < Q γ) :
     ∀ᵐ ω ∂P, coulombMass γ (M ω) α z αinf < ⊤ := by
@@ -31,7 +33,7 @@ theorem fusion_coulombMass_finite_ae {Ω : Type*} [MeasurableSpace Ω]
     Ioo_mem_nhdsGT h4
   have e2 : ∀ᶠ t in nhdsWithin (0 : ℝ) (Set.Ioi 0), t ∈ Set.Ioo 0 (2 / γ * (Q γ - αinf)) :=
     Ioo_mem_nhdsGT hi
-  have e3 : ∀ᶠ t in nhdsWithin (0 : ℝ) (Set.Ioi 0), ∀ j, t ∈ Set.Ioo 0 (2 / γ * (Q γ - α j)) :=
+  have e3  :=
     eventually_all.mpr fun j => Ioo_mem_nhdsGT (hj j)
   obtain ⟨t, ht⟩ := (e1.and (e2.and e3)).exists
   have hfin := coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ2 M hM z hz α αinf t ht.1.1
@@ -42,15 +44,13 @@ theorem fusion_coulombMass_finite_ae {Ω : Type*} [MeasurableSpace Ω]
   rw [not_lt_top_iff.mp h, ENNReal.top_rpow_of_pos ht.1.1] at hω
   exact lt_irrefl _ hω
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- The limiting rooted mass in either fusion regime is almost surely finite. -/
-theorem fusion_rootedMass_finite_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_rootedMass_finite_ae 
     (α₁ α₂ α₃ : ℝ) (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) :
     ∀ᵐ ω ∂P, gammaHalfRootedMass γ α₁ α₂ α₃ M ω < ⊤ := by
   have hz : Function.Injective (![0, 1] : Fin 2 → ℂ) := by
-    intro i j hij
-    fin_cases i <;> fin_cases j <;> simp_all
+    simp_all
   have ha : ∀ j : Fin 2, (![α₁ + γ / 2, α₂] : Fin 2 → ℝ) j < Q γ := by
     intro j
     fin_cases j
@@ -64,10 +64,9 @@ theorem fusion_rootedMass_finite_ae {Ω : Type*} [MeasurableSpace Ω]
   rw [he]
   exact hf
 
+include Ω _inst1 P X hX γ hγ hγ2 M hM in
 /-- The real limiting rooted kernel is integrable almost surely, as required by exterior DCT. -/
-theorem fusion_limitingRootedKernel_finite_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_limitingRootedKernel_finite_ae 
     (α₁ α₂ α₃ : ℝ) (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) :
     ∀ᵐ ω ∂P, (∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x *
       Real.exp (γ ^ 2 * gffKernel 0 x)) ∂M ω) < ⊤ := by

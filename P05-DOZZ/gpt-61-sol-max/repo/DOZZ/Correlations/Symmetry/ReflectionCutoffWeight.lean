@@ -23,10 +23,9 @@ noncomputable def symmetryExponentialBCF (f : BoundedContinuousFunction ℂ ℝ)
       have hy : |Real.exp (f y)| ≤ Real.exp ‖f‖ := by
         rw [abs_of_pos (Real.exp_pos _)]
         exact Real.exp_le_exp.mpr ((le_abs_self _).trans (f.norm_coe_le_norm y))
-      exact (abs_sub _ _).trans (by linarith only [hx, hy]))
+      grind)
 
-theorem symmetryExponentialBCF_apply (f : BoundedContinuousFunction ℂ ℝ) (x : ℂ) :
-    symmetryExponentialBCF f x = Real.exp (f x) := rfl
+
 
 /-- The deterministic finite-cutoff density after reflection and re-pinning. -/
 noncomputable def symmetryReflectionCutoffWeight (γ r : ℝ) : BoundedContinuousFunction ℂ ℝ :=
@@ -39,9 +38,7 @@ noncomputable def symmetryReflectionLimitWeight (γ : ℝ) : BoundedContinuousFu
 theorem symmetryReflectionCutoffWeight_apply (γ r : ℝ) (x : ℂ) :
     symmetryReflectionCutoffWeight γ r x = Real.exp (γ ^ 2 * symmetryCirclePotentialMean r x +
       4 * symmetryReflectionPotential x) := by
-  simp only [symmetryReflectionCutoffWeight, symmetryExponentialBCF_apply,
-    BoundedContinuousFunction.add_apply, BoundedContinuousFunction.smul_apply, smul_eq_mul]
-  rfl
+  continuity
 
 theorem symmetryReflectionLimitWeight_apply (γ : ℝ) (x : ℂ) :
     symmetryReflectionLimitWeight γ x = Real.exp ((γ ^ 2 + 4) * symmetryReflectionPotential x) := rfl
@@ -85,8 +82,5 @@ theorem symmetryReflectionCutoffWeight_uniform (γ : ℝ) :
   have he := UniformContinuousOn.comp_tendstoUniformly (s := Icc (-B) B) (g := Real.exp)
     (fun r x => abs_le.mp (hb r x)) (fun x => abs_le.mp (hv x))
     (isCompact_Icc.uniformContinuousOn_of_continuous Real.continuous_exp.continuousOn) h
-  change TendstoUniformly (fun r x => Real.exp (γ ^ 2 * symmetryCirclePotentialMean r x +
-    4 * symmetryReflectionPotential x))
-    (fun x => Real.exp ((γ ^ 2 + 4) * symmetryReflectionPotential x)) atTop
-  exact he
+  continuity
 end DOZZ.Proofs

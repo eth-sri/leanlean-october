@@ -9,7 +9,7 @@ import Mathlib.Tactic
 
 /-! # Punctured cutoff geometry and the two reflected outer rates -/
 
-@[expose] public section
+public section
 open Filter Topology Set
 namespace DOZZ.Proofs
 
@@ -31,7 +31,7 @@ theorem reflected_outer_cutoff_geometry (ξ ε : ℝ) (hξ : 0 < ξ) (hξ₁ : �
   filter_upwards [hr.eventually (gt_mem_nhds hε), hr.eventually (gt_mem_nhds zero_lt_one),
     hn.eventually (gt_mem_nhds zero_lt_one), hs.eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
     self_mem_nhdsWithin] with z hzε hzr hz₁ hzsep hz0
-  have hz : 0 < ‖z‖ := norm_pos_iff.mpr hz0
+  have hz  := norm_pos_iff.mpr hz0
   have he : ‖z‖ ^ (1 - ξ) * ‖z‖ ^ ξ = ‖z‖ := by
     rw [← Real.rpow_add hz, sub_add_cancel, Real.rpow_one]
   refine ⟨Real.rpow_pos_of_pos hz _, hzr.le, hz₁.le, ?_, hzε⟩
@@ -59,7 +59,7 @@ theorem reflected_outer_rate_littleO (κ ξ e C₁ C₂ : ℝ) (f : ℂ → ℂ)
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hlimit
     (Filter.Eventually.of_forall (fun z => div_nonneg (norm_nonneg _) (Real.rpow_nonneg (norm_nonneg _) _)))
   filter_upwards [hb, self_mem_nhdsWithin] with z hz hz0
-  have hnz : 0 < ‖z‖ := norm_pos_iff.mpr hz0
+  have hnz  := norm_pos_iff.mpr hz0
   calc
     _ ≤ (C₁ * ‖z‖ ^ ξ + C₂ * (‖z‖ ^ (1 - ξ)) ^ e) / ‖z‖ ^ κ :=
       div_le_div_of_nonneg_right hz (Real.rpow_nonneg hnz.le _)
