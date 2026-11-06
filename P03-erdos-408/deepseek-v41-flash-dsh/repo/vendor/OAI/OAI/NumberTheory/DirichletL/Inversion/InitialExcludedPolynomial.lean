@@ -11,8 +11,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialExcludedPolynomial
-open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge
-open InverseInitialExcludedSource IdealMobiusDivisorSum UniqueFactorizationMonoid
+open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge InverseInitialExcludedSource IdealMobiusDivisorSum UniqueFactorizationMonoid
 local notation "O"=>HeckeFamily.O
 
 theorem prime_product_squarefree (S:Finset (Ideal O))(hS:∀P∈S,Prime P):

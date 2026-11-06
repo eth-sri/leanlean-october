@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorSaturation
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+
 open Filter
 namespace SevenEighths.HeckeDetectorDyadicGeometry
 open HeckeDyadic

@@ -9,75 +9,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open Filter Real Asymptotics ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Filter Asymptotics
+open scoped ContDiff FourierTransform SchwartzMap BigOperators Classical
+open MeasureTheory Set ActualEisensteinCubic UniqueFactorizationMonoid
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical
 
 namespace CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
@@ -414,7 +357,6 @@ end
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
-local instance ramifiedCoordinateUnitsFintype : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 def ramifiedCoordMul (x y:ℤ×ℤ) :ℤ×ℤ := (x.1*y.1-x.2*y.2,x.1*y.2+x.2*y.1-x.2*y.2)
 def ramifiedCoordPow (x:ℤ×ℤ) :ℕ→ℤ×ℤ
@@ -541,9 +483,6 @@ lemma lowRamifiedSupport_of_ne_zero (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5)
   exact ⟨hn,by simpa only [ramifiedCongruence,ShortDraftLatticeCount.coords_eval] using hz⟩
 
 end CubicEisenstein
-
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
 
 namespace CubicEisenstein
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal

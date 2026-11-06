@@ -186,7 +186,7 @@ public import Mathlib.Algebra.Order.Star.Real
 
 namespace OAI
 
-open scoped BigOperators
+
 
 namespace ShortDraft
 

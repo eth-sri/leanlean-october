@@ -42,7 +42,7 @@ theorem full_density_mode_fubini (g : ι → 𝓢(ℝ,ℂ)) (b₁ b₂ b₃ : �
     pureProfileMode a₁ a₂ ak y p.1 p.2
   have hf : Integrable f (volume.prod volume) := by
     simpa only [Measure.volume_eq_prod] using full_density_mode_integrable g b₁ b₂ b₃ a₁ a₂ ak y
-  change (∫ p, f p) = _
+
   rw [Measure.volume_eq_prod, integral_prod _ hf]
   have ht : Integrable (fun t : Frequency => ∫ u, f (t,u)) (volume.prod volume) := by
     simpa only [Measure.volume_eq_prod] using hf.integral_prod_left

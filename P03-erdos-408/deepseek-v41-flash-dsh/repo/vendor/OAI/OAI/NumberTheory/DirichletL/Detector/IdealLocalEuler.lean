@@ -9,10 +9,9 @@ public import OAI.NumberTheory.DirichletL.IdealEuler
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
 local notation "O" => ActualEisensteinCubic.O
 
 lemma primaryGenerator_prime_power (p : O) (hp : p≠0) (hprimary : goodLambda^2∣p-1) (e : ℕ) :

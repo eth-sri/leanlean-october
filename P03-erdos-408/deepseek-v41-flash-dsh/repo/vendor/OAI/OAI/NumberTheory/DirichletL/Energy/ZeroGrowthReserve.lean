@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceScalarBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthReserve
-open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource
-open CenteredMomentEnergyReferenceScalarBounds
+open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource CenteredMomentEnergyReferenceScalarBounds
 
 theorem ledger_bound (Mcap Bmask bΦ L d loss defect xi saving ε:ℝ)
     (_hM:0≤Mcap)(_hB:0≤Bmask)(hL:0≤L)(hd:0<d)

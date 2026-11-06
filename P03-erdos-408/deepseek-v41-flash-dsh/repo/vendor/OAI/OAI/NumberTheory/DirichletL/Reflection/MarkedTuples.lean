@@ -86,7 +86,7 @@ theorem actual_marked_tuple_reflection
         · rw [dite_eq_left hg]
         · rw [dite_eq_right hg,hzrow p hg,mul_zero]
       _ = _ := (sum_subtype_dite_decidable good (fun p _ => w p*row p)).symm
-  change (∑ p : α,w p*row p)=_
+
   rw [hrestrict]
   have he (p : {p // good p}) := actual_marked_selected_reflection D R I F Q hR hI hF hm hf hz hbad hcop hpow hmask
     (Sp p.val) (hS p.val) (hSodd p.val) p.property Ψ hΨnorm hQ hΨperiod hmLam hm2 c hc hcQ G N hN

@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
 local notation "O" => HeckeFamily.O

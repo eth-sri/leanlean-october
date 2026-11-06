@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectionTails
 namespace OAI
 
 noncomputable section
-open scoped Classical
-open Filter
+
+
 namespace SevenEighths.CenteredMomentComparisonReflection
 
 lemma reflected_scale_bound (Z M n xi C Q R d h s : ℝ)

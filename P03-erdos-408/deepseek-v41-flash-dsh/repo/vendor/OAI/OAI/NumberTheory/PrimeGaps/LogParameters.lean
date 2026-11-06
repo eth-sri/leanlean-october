@@ -14,23 +14,21 @@ open Filter
 
 open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
+
 
 open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
-open scoped Classical
 
-open scoped ContDiff
+
+
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
 
-open scoped ComplexConjugate
+
+
 
 open Filter Topology
 

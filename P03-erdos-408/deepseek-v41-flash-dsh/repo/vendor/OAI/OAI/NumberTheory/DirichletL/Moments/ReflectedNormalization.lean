@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedAnnuli
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+
 namespace SevenEighths.CenteredMomentReflectedNormalization
-open HeckeFamily CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization EisensteinSchwartzPoisson
 
 lemma actual_log_window :
     CenteredMomentReflectedProfileMeasure.logWindow CenteredMomentReflectedAnnuli.logWindow=

@@ -16,11 +16,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform InverseMomentFirstLabelCell
-open InverseMomentFirstSecondHeightCost
-open InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O"=>ActualEisensteinCubic.O
 
@@ -121,7 +117,7 @@ theorem original_two_pass_energy
       heta heta1 htau1 hwin hpi hpieta hemcost hedcost hQ hn hΨ hslots hcard hweights hA hechild hsave hloss k hk (hl k hk) z
     rw [columnScale_physical Z r (by linarith)] at he
     apply he.trans
-    change (Cl*(1+A)*Z^(r+3*ell+V+loss))*_ ≤ Be*_
+
     have hwgt:0≤tripleHeight (firstDegree degree) z.1*coordinateHeight (firstDegree degree) z.2 := le_trans zero_le_one (first_weight_one_le _ z)
     dsimp[Be]
     gcongr
@@ -142,7 +138,7 @@ theorem original_two_pass_energy
       heta heta1 htau1 hwin hpi hpieta hemcost hedcost hQ hn hΨ hslots hcard hweights hA hechild hsave hloss k hk (hr' k hk) z
     rw [columnScale_physical Z r (by linarith)] at he
     apply he.trans
-    change (Cr*(1+A)*Z^(r+3*ell+V+loss))*_ ≤ Be*_
+
     have hwgt:0≤tripleHeight (firstDegree degree) z.1*coordinateHeight (firstDegree degree) z.2 := le_trans zero_le_one (first_weight_one_le _ z)
     dsimp[Be]
     gcongr

@@ -7,11 +7,9 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesChildren
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.InverseMomentGlobalRetainedGates
-open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
+open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}

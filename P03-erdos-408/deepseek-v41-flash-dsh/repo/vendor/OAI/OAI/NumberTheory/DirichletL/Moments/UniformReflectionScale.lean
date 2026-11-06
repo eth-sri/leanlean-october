@@ -10,10 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 namespace SevenEighths.CenteredMomentUniformReflectionScale
-open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson
-open CenteredMomentSectorLocalization CenteredMomentScaleSupremum
-open CenteredMomentOneReflectionScaleEnergy CenteredMomentUniformReflectionProfile
-open CenteredMomentReflectedNormalization
+open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson CenteredMomentSectorLocalization CenteredMomentScaleSupremum CenteredMomentOneReflectionScaleEnergy CenteredMomentUniformReflectionProfile CenteredMomentReflectedNormalization
 
 theorem actual_rowwise_scales (A J : ℕ) :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀{ι : Type}[Fintype ι],

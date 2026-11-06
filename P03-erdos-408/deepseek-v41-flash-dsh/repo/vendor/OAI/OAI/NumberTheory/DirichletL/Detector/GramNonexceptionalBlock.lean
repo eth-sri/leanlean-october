@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.GramPeriodicPoisson
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcretePrimeRowBridge UniqueFactorizationMonoid
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcretePrimeRowBridge UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 local notation "Joint" => ProbeGramPeriodicPoisson.Joint

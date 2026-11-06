@@ -8,20 +8,14 @@ public import OAI.NumberTheory.DirichletL.Energy.StageMonotonicity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedSuccessorPacking
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity
-open CenteredMomentEnergyStageMonotonicity CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyPositiveHighSourceBound CenteredMomentNaturalFixedRaySource
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyStageMonotonicity CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyPositiveHighSourceBound CenteredMomentNaturalFixedRaySource
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem certified_from_stages

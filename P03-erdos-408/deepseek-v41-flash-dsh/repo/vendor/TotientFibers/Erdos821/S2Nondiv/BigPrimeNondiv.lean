@@ -7,13 +7,11 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
 noncomputable section
 
-open Filter
-open Asymptotics
+open Filter Asymptotics
 
 namespace Erdos821.S2Nondiv
 
-open Erdos821.S2
-open Erdos821.S2Core
+open Erdos821.S2 Erdos821.S2Core
 
 /-- A fixed logarithmic power is eventually smaller than an exponential of a
 positive power of the logarithm. -/
@@ -37,7 +35,7 @@ theorem log_power_lt_exp_power_eventually (c C : ℝ) (hc : 0 < c) :
   refine ⟨Real.exp T, ?_⟩
   intro x hx
   have hTx : T ≤ L x := by
-    change T ≤ Real.log x
+
     calc
       T = Real.log (Real.exp T) := by simp
       _ ≤ Real.log x := Real.log_le_log (Real.exp_pos T) hx

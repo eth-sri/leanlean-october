@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.CentralExponent
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
 
@@ -26,7 +26,7 @@ lemma dyadic_weighted_rows_card (α r C U B : ℝ) (hC : 0≤C) (hU : 0<U)
       intro u hu
       have hN : 0<rowNorm u := hU.trans_le (hR u hu).1
       rw [frequencyWeight_ideal_norm,hz]
-      change rowNorm u^(-r)*F u≤_
+
       calc
         _ ≤ rowNorm u^(-r)*(C*rowNorm u^α) :=
           mul_le_mul_of_nonneg_left (hF u hu) (Real.rpow_nonneg hN.le _)

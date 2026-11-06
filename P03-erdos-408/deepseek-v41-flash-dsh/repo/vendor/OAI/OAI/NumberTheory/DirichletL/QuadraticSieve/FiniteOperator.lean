@@ -8,33 +8,33 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
+
 open MulChar AddChar
-open scoped BigOperators
+
 open Filter Asymptotics MeasureTheory
-open scoped Topology
+
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+
 open Finset Complex
-open scoped Classical
-open scoped Classical
+
+
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
+
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
 open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+
 open Filter
 open MulChar AddChar
 open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+
 open Filter Asymptotics MeasureTheory
-open scoped Topology
+
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,37 +43,37 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
+
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
+
 open Filter Asymptotics MeasureTheory
-open scoped Topology
+
 open Filter Asymptotics MeasureTheory
-open scoped Topology
+
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+
+
+
 open ActualEisensteinCubic UniqueFactorizationMonoid
 
-open scoped BigOperators
+
 namespace FiniteSieveOperator
 
 variable {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
@@ -189,7 +189,7 @@ theorem energy_bound (A : Matrix m n ℂ) (u : n → ℂ) :
 end FiniteSieveOperator
 
 section
-open scoped BigOperators Classical
+
 namespace QuadraticInitialBound
 open ActualEisensteinCubic ConcreteTraceCRT RayFourExpansion
 
@@ -267,7 +267,7 @@ theorem quadraticSieveNorm_reverse_le
 
 end QuadraticInitialBound
 
-open scoped BigOperators Classical
+
 open Filter IdealMobiusDivisorSum UniqueFactorizationMonoid
 
 namespace IdealDivisorBound
@@ -406,7 +406,7 @@ end IdealDivisorBound
 end
 
 namespace SecondPassFiber
-open scoped BigOperators Classical
+
 open IdealMobiusDivisorSum ConcretePrimeRowBridge
 
 abbrev O := ActualEisensteinCubic.O
@@ -435,7 +435,7 @@ def newRow (x : OldTuple) : O :=
 
 end SecondPassFiber
 
-open scoped BigOperators Classical
+
 namespace FirstPassCubeLabels
 open ActualEisensteinCubic
 
@@ -577,7 +577,7 @@ theorem cubePairRow_conductor_selection {κ : Type*}
   congr 1
   exact (Finset.prod_coe_sort (s := cubeConductorSupport B v₁ v₂ ε₁ ε₂) (f := f)).symm
 
-open scoped SchwartzMap ContDiff
+
 open ConcreteTraceCRT
 open EisensteinSchwartzPoisson (paperRadialFourier)
 

@@ -5,7 +5,7 @@ public import Erdos821.P4Probe.Probability
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
+
 
 namespace Erdos821.P4Probe
 

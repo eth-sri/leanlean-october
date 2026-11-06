@@ -9,10 +9,10 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical Topology
-open Filter
+
+
 namespace SevenEighths.InverseInitialExcludedGeometry
-open HeckeFamily InverseInitialExcludedPolynomial IdealMobiusDivisorSum
+
 local notation "O"=>HeckeFamily.O
 
 end SevenEighths.InverseInitialExcludedGeometry

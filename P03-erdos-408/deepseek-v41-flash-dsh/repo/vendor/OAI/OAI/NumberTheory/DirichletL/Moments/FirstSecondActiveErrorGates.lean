@@ -8,17 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAnnularActiveInput
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSecondActiveErrorGates
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentSourceLiveColumn
-open CenteredMomentFirstSecondInputGates CenteredMomentFirstAnnularInput
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSectorLocalization
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentFirstSecondInputGates CenteredMomentFirstAnnularInput CenteredMomentOriginalCommonHarmonic CenteredMomentSectorLocalization
 local notation "O" => HeckeFamily.O
-local instance {α : Type*} : DecidableEq α := Classical.decEq _
 variable {ι : Type*} [Fintype ι]
 
 def errorInput (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)

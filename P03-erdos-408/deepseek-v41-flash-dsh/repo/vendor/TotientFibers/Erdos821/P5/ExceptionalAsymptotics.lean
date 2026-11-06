@@ -5,11 +5,11 @@ public import Erdos821.P5.ExceptionalCount
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
-open Filter
+
+
 
 namespace Erdos821.P5Core
-open Blueprint.Analytic
+
 
 /-- Floor choice of the growing moment, with all estimates made explicit. -/
 theorem moment_power_choice (L Y P a b : ℝ)

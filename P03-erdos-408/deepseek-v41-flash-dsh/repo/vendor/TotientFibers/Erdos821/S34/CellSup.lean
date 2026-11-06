@@ -9,7 +9,7 @@ public import Mathlib.Analysis.CStarAlgebra.Classes
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+
 
 namespace Erdos821.S34Core
 

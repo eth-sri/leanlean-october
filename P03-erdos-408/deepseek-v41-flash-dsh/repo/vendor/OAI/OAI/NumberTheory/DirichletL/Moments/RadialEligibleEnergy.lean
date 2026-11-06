@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentRadialEligibleEnergy
-open CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentDivisorRetained CenteredMomentPositiveSummability
+open CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentPositiveSummability
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 

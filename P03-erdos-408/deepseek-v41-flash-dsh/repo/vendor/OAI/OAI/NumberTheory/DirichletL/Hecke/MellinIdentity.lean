@@ -8,8 +8,8 @@ public import Mathlib.NumberTheory.LSeries.AbstractFuncEq
 namespace OAI
 
 noncomputable section
-open Set Filter
-open scoped Topology
+
+
 namespace SevenEighths.HeckeMellinIdentity
 
 def regularized (P : WeakFEPair ℂ) (s : ℂ) : ℂ :=

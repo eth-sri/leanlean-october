@@ -10,13 +10,10 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers
+
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ:Type} [DecidableEq ι] [DecidableEq σ]
 

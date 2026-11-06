@@ -270,7 +270,6 @@ lemma fourierInv_decay {g : ℝ → ℂ} (hg : ContDiff ℝ ⊤ g)
     exact le_mul_of_one_le_left hu.le hπ
   nlinarith [mul_le_mul_of_nonneg_right hpow (norm_nonneg (𝓕 g (-u)))]
 
-open Complex Real Set MeasureTheory Filter Topology
 
 lemma mellinInv_const_mul (σ : ℝ) (f : ℂ → ℂ) (a : ℂ) (x : ℝ) :
     mellinInv σ (fun s => a*f s) x=a*mellinInv σ f x := by
@@ -380,7 +379,6 @@ lemma rieszSum_mellinInv {σ x : ℝ} (hσ : 1≤σ) (hx : 0<x)
     mellinInv σ (fun s => LSeries a s/(s*(s+1))) (1/x)=rieszSum a x := by
   rw [mellinInv_LSeries_riesz hσ (one_div_pos.mpr hx) a ha,rieszKernel_tsum_eq hx]
 
-open Complex Real Set MeasureTheory Filter Topology
 
 noncomputable def poleRieszKernel (y : ℝ) : ℂ :=
   (1/2:ℂ)*((y:ℂ)^(-1:ℂ)*rieszKernel y-rieszKernel y)
@@ -480,9 +478,7 @@ lemma mellinInv_add_of_verticalIntegrable {σ y : ℝ} (hy : 0<y) {f g : ℂ →
   simp only [mellinInv,smul_eq_mul,Complex.real_smul,mul_add]
   rw [integral_add (mellinInv_integrable hy hf) (mellinInv_integrable hy hg),mul_add]
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open scoped FourierTransform
 
 end LargePrimeGaps
 

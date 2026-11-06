@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseSecondSourceBlocks
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseSecondSourceBlocks
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]

@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Descent.InitializationEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.InverseInitialArithmetic
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open MixedCrossSeparation (columnCoefficient)
-open SevenEighths.InverseMoment SevenEighths.InverseInitialFibers
-open CompletedGauss
+open SevenEighths.InverseMoment SevenEighths.InverseInitialFibers CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -125,7 +124,7 @@ theorem sourceTuple_valid (hpr : ∀ i,λ₀^2∣p i-1) {J : ℕ}
     rw [sourceIdeal_gen p hp hpr E]
     exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
   · intro i
-    change (sourcePrime p (assigned i)).val∣sourceIdeal p G*sourceIdeal p V
+
     rcases Finset.mem_union.mp (ha i) with hi|hi
     · exact dvd_mul_of_dvd_left (source_prime_dvd p G (assigned i) hi) _
     · exact dvd_mul_of_dvd_right (source_prime_dvd p V (assigned i) hi) _

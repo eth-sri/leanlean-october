@@ -11,7 +11,7 @@ public import Mathlib.Tactic.Ring
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.ProbeCompensation
 
 def tupleOperation {α : Type*} [CommMonoid α] {K : ℕ}

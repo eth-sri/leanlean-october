@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.UniformDivisorShell
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentEligibleEnergy
-open HeckeFamily CenteredMomentActiveDivisorShell CenteredMomentActiveAllocation
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained
-open CenteredMomentDivisorRowEnergy
+open HeckeFamily CenteredMomentActiveDivisorShell CenteredMomentActiveAllocation CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentDivisorRowEnergy
 local notation "O" => ActualEisensteinCubic.O
 
 structure Data (ι:Type*) [Fintype ι] extends Source ι where
@@ -75,7 +73,7 @@ theorem actual_source_from_children (N:ℕ) (hslots:Fintype.card ι≤N) (ε:ℝ
     (fun i=>zero_le_one.trans (s.M_ge_one i)) s.P_pos s.coefficient_bound D hD s.W₁ s.W₂
     s.b₁ s.b₂ s.X₁ s.X₂ s.Y₁ s.Y₂ (s.X₁*s.X₂) s.support₁ s.support₂
     s.X₁_pos s.X₂_pos s.Y₁_pos s.Y₂_pos rfl s.same_product s.rows s.weight s.weight_nonneg
-  change s.energy D≤_ at hh
+
   apply hh.trans
   calc
     _≤C*(Ideal.absNorm D:ℝ)^ε*∑a∈s.toSource.active D,

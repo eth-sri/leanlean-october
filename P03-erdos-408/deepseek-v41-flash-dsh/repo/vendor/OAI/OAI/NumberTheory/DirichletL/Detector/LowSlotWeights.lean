@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LowSlotPolynomial
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open ProbeRow FourierBridge
 local notation "O" => ActualEisensteinCubic.O

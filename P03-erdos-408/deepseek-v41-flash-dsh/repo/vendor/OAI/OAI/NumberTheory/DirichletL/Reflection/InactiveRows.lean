@@ -54,7 +54,7 @@ theorem original_inactive_restricted_energy
     exact hf b
   have hm : (∑ b,‖wt b‖)≤∏ i : {i // i∉T},256*(columnDyadicLength (H i.val)+1:ℝ) := by
     apply (Finset.sum_le_sum (fun b hb => ?_)).trans (inactive_choices_mass_bound L T H hzero hH)
-    change ‖_*_‖≤_
+
     rw [norm_mul]
     apply mul_le_of_le_one_right (norm_nonneg _)
     exact slot_coefficient_norm (fun i : {i // i∉T} => L i.val) (fun i => w i.val) (fun i => hw i.val) b

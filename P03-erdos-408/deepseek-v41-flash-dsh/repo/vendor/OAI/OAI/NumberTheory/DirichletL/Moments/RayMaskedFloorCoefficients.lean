@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorSlots
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff
+
 namespace SevenEighths.CenteredMomentRayMaskedFloor
 open HeckeFamily HeckeDyadic HeckePrimeAnnular CenteredMomentCommonMaskEnergy
 local notation "O" => HeckeFamily.O

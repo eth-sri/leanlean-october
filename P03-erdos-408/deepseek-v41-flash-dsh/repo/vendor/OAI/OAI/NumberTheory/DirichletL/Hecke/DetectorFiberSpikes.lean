@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorPhysicalSelection
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 open Set
 namespace SevenEighths.HeckeDetectorFiberSpikes
 open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles

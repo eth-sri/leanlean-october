@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseMomentFirstChildWindows
-open InverseMoment InverseMomentFirstProfileUniform
-open InverseSecondChildWindows
+open InverseMoment InverseMomentFirstProfileUniform InverseSecondChildWindows
 
 theorem fresh_three_window (g : 𝓢(ℝ,ℂ)) (m bcap : ℝ)
     (lo hi : Fin 3→ℝ) (hm : 0≤m)

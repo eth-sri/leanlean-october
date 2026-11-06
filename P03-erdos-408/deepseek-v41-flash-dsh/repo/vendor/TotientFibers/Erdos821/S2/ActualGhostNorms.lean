@@ -10,7 +10,7 @@ public import Erdos821.P3Rows.GhostRows
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 
 namespace Erdos821.S2Core
 

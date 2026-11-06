@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.LargeDyad
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
+
 namespace SevenEighths.ProbeHighRowFamily
 
 lemma large_geometric_scale (Z ζ δ r : ℝ) (hZ : 0<Z) (n : ℕ) :

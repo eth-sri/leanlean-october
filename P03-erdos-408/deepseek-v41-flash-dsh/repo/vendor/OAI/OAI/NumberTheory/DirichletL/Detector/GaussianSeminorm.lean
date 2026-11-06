@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 open scoped Classical ContDiff Topology SchwartzMap
-open Filter Set
+
 namespace SevenEighths.ProbePhysical
 
 def gaussianFixedWindow (y : ℝ) : ℂ := gaussianAnnulus y/(Real.sqrt y:ℂ)
@@ -19,7 +19,7 @@ lemma gaussianFixedWindow_large (y : ℝ) (hy : 2≤y) : gaussianFixedWindow y=0
 lemma gaussianFixedWindow_compact : HasCompactSupport gaussianFixedWindow := by
   apply HasCompactSupport.of_support_subset_isCompact (isCompact_Icc (a:=(1/2:ℝ)) (b:=2))
   intro y hy
-  change gaussianFixedWindow y≠0 at hy
+
   constructor
   · by_contra h; exact hy (gaussianFixedWindow_small y (le_of_lt (lt_of_not_ge h)))
   · by_contra h; exact hy (gaussianFixedWindow_large y (le_of_lt (lt_of_not_ge h)))

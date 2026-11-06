@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.CharacterTransport
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+
 namespace SevenEighths.HeckePresentation
 open HeckeFamily
 

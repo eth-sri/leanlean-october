@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.Poisson
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped BigOperators Classical
+
 open LocalReflectionBrackets
 noncomputable section
 

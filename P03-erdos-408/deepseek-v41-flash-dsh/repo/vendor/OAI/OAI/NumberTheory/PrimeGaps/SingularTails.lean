@@ -9,11 +9,11 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-open Filter
 
-open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
+
+
+
 
 def boxTuple {s h : ℕ} (a : Fin s → ℤ) (n : Fin s → Fin h) : Fin s → ℤ :=
   fun i => a i + (n i:ℕ)

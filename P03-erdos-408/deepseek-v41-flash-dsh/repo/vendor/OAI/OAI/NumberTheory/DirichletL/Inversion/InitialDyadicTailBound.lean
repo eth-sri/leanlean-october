@@ -10,10 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialDyadicTailBound
-open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerSource InverseInitialDyadicAssembly InverseInitialProfile
-open InverseInitialRetainedSupport InverseInitialHighFrequencyTail
+open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerSource InverseInitialDyadicAssembly InverseInitialProfile InverseInitialRetainedSupport InverseInitialHighFrequencyTail
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_high_mass_tail (Lcap saving τ : ℝ) (hτ : 0<τ) :
@@ -83,7 +80,7 @@ theorem actual_high_mass_tail (Lcap saving τ : ℝ) (hτ : 0<τ) :
     exact he
   have hfilter := physicalBlock_filter_of_live p hp hcop hg (pointSource pool S) live wt Ψ j
     (primeMark slots lists weights) W₁ W₂ Φ Z D m (fun x hx ρ hn=>⟨ρ,hn⟩)
-  change ‖physicalBlock p hp hcop hg (pointSource pool S) wt Ψ j _ W₁ W₂ Φ Z D m‖≤_
+
   rw [hfilter]
   have hr := hrapid p hp hcop hg hinj hc Ψ hΨ j slots lists weights hdis hwgt W₁ W₂ Φ
     Z D m (max 1 (bW*Z^D)) Γ B₁ B₂ hZ.le (le_max_left _ _) hcap

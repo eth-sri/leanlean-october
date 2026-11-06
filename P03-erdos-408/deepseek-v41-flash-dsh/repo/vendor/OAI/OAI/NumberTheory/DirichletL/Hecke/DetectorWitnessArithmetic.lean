@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.Euler
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.HeckeDetectorWitnessArithmetic
 open HeckeFamily UniqueFactorizationMonoid CompletedGauss
 local notation "O" => HeckeFamily.O

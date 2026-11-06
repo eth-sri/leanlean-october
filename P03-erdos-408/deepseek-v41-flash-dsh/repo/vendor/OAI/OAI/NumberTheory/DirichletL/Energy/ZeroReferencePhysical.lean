@@ -9,21 +9,12 @@ public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferencePhysical
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyZeroReferenceLive CenteredMomentEnergyOriginalSource
-open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyZeroReferenceLive CenteredMomentEnergyOriginalSource CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry CenteredMomentCommonRadialData CenteredMomentSourceRow CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
 local notation "O"=>HeckeFamily.O
-local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
 
 def balancedInput {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(p:Profiles a b)
     (ha:0<a)(t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂):Input (Fin 0):=

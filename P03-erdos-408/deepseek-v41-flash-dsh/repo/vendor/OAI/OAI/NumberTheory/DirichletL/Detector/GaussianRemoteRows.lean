@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianTailBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+
 open MeasureTheory CompletedGauss FourierBridge
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted

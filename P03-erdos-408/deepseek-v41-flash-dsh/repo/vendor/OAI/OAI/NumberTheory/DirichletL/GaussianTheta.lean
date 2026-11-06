@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical FourierTransform
+
 
 namespace SevenEighths.GaussianTheta
 

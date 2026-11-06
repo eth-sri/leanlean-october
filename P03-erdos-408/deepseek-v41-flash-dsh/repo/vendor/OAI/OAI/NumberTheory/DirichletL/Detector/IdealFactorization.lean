@@ -8,7 +8,7 @@ public import Mathlib.RingTheory.UniqueFactorizationDomain.Finsupp
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O

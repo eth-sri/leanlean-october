@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerFixedWindows
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open InverseSecondChildWindows InverseSecondProfileUniform
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns InverseSecondChildWindows InverseSecondProfileUniform
 local notation "Eis"=>ActualEisensteinCubic.O
 
 theorem log_source_support (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
@@ -23,7 +20,7 @@ theorem log_source_support (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
       Set.Icc (-(|Real.log a|+|Real.log b|)) (|Real.log a|+|Real.log b|) := by
   intro x hx
   have hh := hs hx
-  change a≤Real.exp x ∧ Real.exp x≤b at hh
+
   have hl := Real.log_le_log ha hh.1
   have hu := Real.log_le_log (Real.exp_pos x) hh.2
   rw [Real.log_exp] at hl hu

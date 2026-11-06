@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorPlainFiberCount
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open Set
 namespace SevenEighths.HeckeDetectorNoSlotPlainCount
-open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles
-open HeckeDetectorRowwisePolynomial
+open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles HeckeDetectorRowwisePolynomial
 
 theorem no_slot_plain_count {Row Label : Type*}
     (rows : Finset Row) (χ : Row→Label→Character)

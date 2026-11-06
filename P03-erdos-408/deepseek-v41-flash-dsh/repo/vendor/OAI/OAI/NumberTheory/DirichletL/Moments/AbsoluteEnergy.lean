@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentAbsoluteEnergy
-open ActualEisensteinCubic HeckeFamily CanonicalRowCompletion
-open CenteredMomentHeckeExpansion CenteredMomentSourceRow CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open ConcreteTraceCRT EisensteinSchwartzPoisson QuadraticInitialBound
+open ActualEisensteinCubic HeckeFamily CanonicalRowCompletion CenteredMomentHeckeExpansion CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform ConcreteTraceCRT EisensteinSchwartzPoisson QuadraticInitialBound
 local notation "O" => ActualEisensteinCubic.O
 
 theorem rowWeight_norm_le_one_all (η : Character) (m A z : O) (t : ℝ)

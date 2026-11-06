@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorSourceCount
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeDetectorBatch HeckeDetectorRawFiber
 local notation "O" => HeckeFamily.O

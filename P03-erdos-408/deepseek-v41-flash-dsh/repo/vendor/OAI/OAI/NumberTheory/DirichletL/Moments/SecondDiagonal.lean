@@ -11,8 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondDiagonal
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
 theorem full_zero_off_diagonal (u v : O)

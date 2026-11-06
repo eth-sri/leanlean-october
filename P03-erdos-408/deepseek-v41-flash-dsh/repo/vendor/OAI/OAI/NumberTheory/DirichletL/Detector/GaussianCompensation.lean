@@ -8,10 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalNorms
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
-open MeasureTheory FourierBridge CompletedGauss
+
+
 namespace SevenEighths.ProbePhysical
-open ProbeCompleted ProbeRow
+
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 

@@ -14,12 +14,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentSourceInputTailUniform
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass
-open CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization
-open CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomentSupportedZeroEnergy CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -66,7 +61,7 @@ theorem input_mass (hi:ι→ℝ)(whi:ℝ)(hhi:∀i,0≤hi i)(hwhi:0≤whi)
     (profileCoefficient R s.ν s.W s.P W₁ W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1 seed)
   unfold coefficient
   rw [he₁,he₂]
-  change (∑I∈_,‖finiteColumnCoefficient _ _ I‖)≤_
+
   apply (hc.trans hm).trans_eq
   simp only [map_one,Nat.cast_one,one_mul,div_one,plainControl,volume]
   ring

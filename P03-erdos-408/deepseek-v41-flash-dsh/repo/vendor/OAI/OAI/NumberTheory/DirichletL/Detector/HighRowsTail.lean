@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsFamilies
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O

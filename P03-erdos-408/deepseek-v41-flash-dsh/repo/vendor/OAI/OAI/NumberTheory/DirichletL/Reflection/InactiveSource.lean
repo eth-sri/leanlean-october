@@ -28,7 +28,7 @@ lemma supported_inactive_sum_eq (rows : Finset (Ideal Eis))
   let wt := fun b : ∀ i : {i // i∉T},L i.val =>
     (∏ i : {i // i∉T},(Ideal.absNorm (b i).val:ℂ)⁻¹)*(∏ i : {i // i∉T},w i.val (b i))
   have he := sum_subtype_dite_decidable ok (fun b hb => wt b*f ⟨b,hb⟩)
-  change (∑ b : supportedSlotChoices (fun i : {i // i∉T} => L i.val) F K.val,wt b.val*f b)=_
+
   calc
     _ = ∑ b,if hb:ok b then wt b*f ⟨b,hb⟩ else 0 := he
     _ = _ := by

@@ -11,7 +11,7 @@ public import Mathlib.RingTheory.Ideal.Norm.AbsNorm
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
+
 namespace SevenEighths.HeckeFamily
 
 abbrev K := CyclotomicField 3 ℚ

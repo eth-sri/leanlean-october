@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.IdealLogDerivative
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+
 namespace SevenEighths.HeckeLogDerivative
 open HeckeFamily
 

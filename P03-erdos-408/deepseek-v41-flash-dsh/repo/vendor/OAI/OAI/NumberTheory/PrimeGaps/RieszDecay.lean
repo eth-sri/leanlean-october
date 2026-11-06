@@ -16,13 +16,9 @@ open Complex Filter Topology MeasureTheory
 
 open scoped FourierTransform
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open scoped FourierTransform
 
 noncomputable def logRieszVertical {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
     (σ t : ℝ) : ℂ := logRiesz (poleRemovedL χ) (σ+2*π*t*I)
@@ -118,7 +114,6 @@ lemma logRiesz_mellinInv_bound (n : ℕ) :
       gcongr
     _ = _ := by ring
 
-open Complex Real Set MeasureTheory Filter Topology
 
 noncomputable def primeCoefficients {q : ℕ} (χ : DirichletCharacter ℂ q) (n : ℕ) : ℂ :=
   χ (n:ZMod q)*(ArithmeticFunction.vonMangoldt n:ℂ)
@@ -216,7 +211,6 @@ lemma primeRiesz_error_bound (n : ℕ) :
     constructor <;> linarith
   exact (mul_le_mul (characterMain_norm_le χ) ht (abs_nonneg _) (by norm_num)).trans_eq (one_mul _)
 
-open Complex Real Set MeasureTheory Filter Topology
 
 noncomputable def weightedPrefix (a : ℕ → ℂ) (x : ℝ) : ℂ :=
   ∑ n∈Finset.Ioc 0 ⌊x⌋₊, ((x-(n:ℝ):ℝ):ℂ)*a n
@@ -311,7 +305,6 @@ lemma prefix_unsmoothing {x h L : ℝ} (hx : 0≤x) (hh : 0<h) (hL : 0≤L)
   rw [mul_comm _ h, mul_comm _ h, hd]
   exact hn
 
-open Complex Real Set MeasureTheory Filter Topology
 
 lemma weightedPrefix_eq_mul_rieszSum (a : ℕ → ℂ) {x : ℝ} (hx : 0<x) :
     weightedPrefix a x=(x:ℂ)*rieszSum a x := by

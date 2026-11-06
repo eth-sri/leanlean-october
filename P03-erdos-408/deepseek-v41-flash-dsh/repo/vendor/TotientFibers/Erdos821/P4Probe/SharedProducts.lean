@@ -5,7 +5,7 @@ public import Erdos821.P4Probe.GraphSharedPairing
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -14,9 +14,6 @@ open Blueprint.Graph
 noncomputable section
 
 variable {P : PrimeGroups} {J ell m : ℕ}
-
-local instance sharedProductSiteDecidableEq (P : PrimeGroups) (M : ℕ) :
-    DecidableEq (BigSite P M) := Classical.decEq _
 
 lemma shared_slot_iff (ν : Pattern P J ell m) (g : P.Group) (i : Fin J) :
     ν.shared g (ν.slot i) ↔ i ∉ ν.changed g := by

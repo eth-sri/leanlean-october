@@ -9,16 +9,10 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentFirstActiveRadicalBudget
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentActive
-open CenteredMomentRankinRadical CenteredMomentFirstInactiveRadicalMass
-open CenteredMomentSupportedCorrelation
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondRetainedAggregate
-open CenteredMomentActiveSource CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentOriginalCommonHarmonic CenteredMomentCommonRadialData
+
 local notation "O"=>ActualEisensteinCubic.O
 
 end SevenEighths.CenteredMomentFirstActiveRadicalBudget

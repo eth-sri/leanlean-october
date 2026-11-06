@@ -6,8 +6,7 @@ public import Mathlib.Tactic.NormNum.RealSqrt
 
 @[expose] public section
 
-open Filter
-open Erdos821.Blueprint.Graph
+open Filter Erdos821.Blueprint.Graph
 
 noncomputable section
 

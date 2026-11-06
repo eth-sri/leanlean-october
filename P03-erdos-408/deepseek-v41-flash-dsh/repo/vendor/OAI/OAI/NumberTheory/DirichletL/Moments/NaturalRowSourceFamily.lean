@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.NonprincipalGate
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentNaturalRowSource
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentSecondHeightFamily CenteredMomentFixedRowMask CenteredExceptionalProfile
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentSecondHeightFamily CenteredMomentFixedRowMask CenteredExceptionalProfile
 local notation "O" => HeckeFamily.O
 
 structure NaturalRow (η : Character) (z : O) where

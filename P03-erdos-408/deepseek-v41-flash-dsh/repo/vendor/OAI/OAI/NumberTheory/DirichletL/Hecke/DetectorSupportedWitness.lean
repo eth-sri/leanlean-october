@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorWitnessRows
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.HeckeDetectorSupportedWitness
 open HeckeFamily HeckeDetectorWitnessRows
 

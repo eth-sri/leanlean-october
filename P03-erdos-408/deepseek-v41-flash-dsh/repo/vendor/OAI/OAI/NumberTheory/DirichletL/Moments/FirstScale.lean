@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Scale
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentFirstScale
 open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CanonicalQuadraticSieve

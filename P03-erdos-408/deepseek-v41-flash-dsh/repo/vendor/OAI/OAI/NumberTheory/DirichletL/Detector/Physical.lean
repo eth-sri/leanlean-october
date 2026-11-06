@@ -13,8 +13,7 @@ noncomputable section
 open scoped BigOperators Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open CubicEisenstein ProbeCompleted ProbeRow
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein ProbeCompleted ProbeRow
 
 local notation "O" => ActualEisensteinCubic.O
 

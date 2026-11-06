@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.BranchCount
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

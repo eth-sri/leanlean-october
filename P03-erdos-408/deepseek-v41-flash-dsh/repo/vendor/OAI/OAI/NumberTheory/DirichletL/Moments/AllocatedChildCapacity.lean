@@ -10,13 +10,10 @@ public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentAllocatedChildCapacity
-open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
-open CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentEligibleEnergy
-open CenteredMomentCommonRadialData
+open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentEligibleEnergy CenteredMomentCommonRadialData
 local notation "O" => HeckeFamily.O
 
 def clippingLoss (Z U₁ U₂ : ℝ) : ℝ :=

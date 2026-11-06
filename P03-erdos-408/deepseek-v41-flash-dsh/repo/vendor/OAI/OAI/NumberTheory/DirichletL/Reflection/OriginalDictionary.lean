@@ -38,11 +38,11 @@ lemma original_active_family_ideal (S : PrimeFamily σ)
     (((poolPrimeFamily R (Ideal.span {m}*F) Q₀).restrict B).reflected K hK (S.restrict T)).ideal x := by
   cases x with
   | inl b =>
-    change (E (Sum.inr b.val)).val.val=b.val.val
+
     exact D.primeFiberEquiv_val R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inr b.val)
   | inr x => cases x with
     | inl a =>
-      change (E (Sum.inl a)).val.val=a.val
+
       exact D.primeFiberEquiv_val R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inl a)
     | inr t => rfl
 

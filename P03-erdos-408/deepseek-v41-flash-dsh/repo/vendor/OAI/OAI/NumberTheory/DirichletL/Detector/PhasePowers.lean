@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.PrimePhase
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.ProbePhase
 open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay QuadraticAllOddCRT
 local notation "O" => ActualEisensteinCubic.O

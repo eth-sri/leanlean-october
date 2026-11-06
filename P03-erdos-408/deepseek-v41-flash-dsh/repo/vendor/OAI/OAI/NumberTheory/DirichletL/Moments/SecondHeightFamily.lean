@@ -7,13 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondChildProfile
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentSecondHeightFamily
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentHeckeExpansion
-open CenteredMomentSecondChildProfile CenteredMomentChildRows CenteredMomentChildAssembly
-open CenteredMomentSecondScaled RayFourExpansion ConcretePrimeRowBridge ActualEisensteinCubic
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentHeckeExpansion CenteredMomentSecondChildProfile CenteredMomentChildRows CenteredMomentChildAssembly CenteredMomentSecondScaled RayFourExpansion ConcretePrimeRowBridge ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
 
 def fixedBadMask : O := goodLambda*2

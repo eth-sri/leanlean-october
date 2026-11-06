@@ -11,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstWholeKernel
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve EisensteinSchwartzPoisson
-open CenteredMomentFirstFrequency CenteredMomentFirstColumns CenteredMomentGaussEnergy CenteredMomentFirstAssembly
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentPrimitive CenteredMomentScale CenteredMomentSmooth CenteredMomentFirstReduced
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve EisensteinSchwartzPoisson CenteredMomentFirstFrequency CenteredMomentFirstColumns CenteredMomentGaussEnergy CenteredMomentFirstAssembly CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentPrimitive CenteredMomentScale CenteredMomentSmooth CenteredMomentFirstReduced
 local notation "O" => ActualEisensteinCubic.O
 
 def windows (V : Fin 4 → ℝ → ℂ) (K H A B K₀ H₀ A₀ B₀ : ℝ) : ℂ :=

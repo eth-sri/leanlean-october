@@ -9,13 +9,10 @@ public import OAI.NumberTheory.DirichletL.Moments.Primitive
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentFirstCanonicalFamily
-open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT
-open CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstFamily
-open CenteredMomentFirstColumns CenteredMomentPrimitive CenteredMomentCommonSupport RayFourExpansion
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstFamily CenteredMomentFirstColumns CenteredMomentPrimitive CenteredMomentCommonSupport RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem supported_of_dvd (A B : Ideal O) (hB : Supported B) (hd : A∣B) : Supported A := by

@@ -9,73 +9,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open Filter Real Asymptotics ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Filter Asymptotics
+open scoped ContDiff FourierTransform SchwartzMap BigOperators Classical
+open MeasureTheory Set ActualEisensteinCubic UniqueFactorizationMonoid
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
 
 open scoped Classical BigOperators
 
@@ -129,8 +74,6 @@ theorem finiteCrossNumerator_fraction (a c l:Eis) (p h:ι→Eis)
   field_simp [hcC,hRC]
 
 end ShortDraftCRT
-
-open scoped BigOperators Classical
 
 namespace IdealGaussCRT
 open CubicEisenstein
@@ -216,10 +159,6 @@ end FixedRayActiveSet
 namespace LocalReflectionBrackets
 open ActualEisensteinCubic CubicEisenstein CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
-noncomputable local instance stratumField (P : Ideal Eis) [P.IsMaximal] :
-    Field (Eis⧸P) := Ideal.Quotient.field P
-noncomputable local instance stratumFintype (P : Ideal Eis) [P.IsMaximal] :
-    Fintype (Eis⧸P) := Fintype.ofFinite _
 
 end LocalReflectionBrackets
 
@@ -300,8 +239,7 @@ end CubicEisenstein
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve QuadraticAllOddCRT
-open ConcreteTraceCRT UniqueFactorizationMonoid
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve QuadraticAllOddCRT ConcreteTraceCRT UniqueFactorizationMonoid
 local notation "Eis" => ActualEisensteinCubic.O
 
 def cubicTwoSupplement : Eis→*ℂ where
@@ -413,8 +351,7 @@ theorem idealRowHom_two_formula (n:Eis) (hn:lambda^2∣n-1)
 end
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open UniqueFactorizationMonoid
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
 local notation "Eis" => ActualEisensteinCubic.O
 
 def supportedIdealRow (a:Eis) : Eis→*ℂ where

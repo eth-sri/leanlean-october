@@ -11,8 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
 
 lemma sum_amplitudeRows {Slot : Type*} (rows : Finset FreeRow) (slots : Finset Slot)
     (U cap mesh : ℝ) (hm : 0<mesh) (widths : Slot→ℝ) (Q : FreeRow→Slot→ℂ)

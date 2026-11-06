@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRelativePrime
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.HeckeDetectorPhysicalSelection
 open HeckeFamily HeckePrimeAmplitudeBins
 variable (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)

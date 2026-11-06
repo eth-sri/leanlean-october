@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondDiagonal
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.CenteredMomentRankinRadical
 open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentDivisorAllocation
 local notation "O" => ActualEisensteinCubic.O

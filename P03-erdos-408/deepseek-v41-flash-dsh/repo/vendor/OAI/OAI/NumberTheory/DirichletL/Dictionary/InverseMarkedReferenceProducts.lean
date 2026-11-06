@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge InverseInitialOverlap
 local notation "O"=>HeckeFamily.O

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorPrimeFamily
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.HeckeDetectorRelativePrime
 open HeckeFamily HeckeDetectorPrimeFamily
 
@@ -29,7 +29,6 @@ theorem idealCoeff_inverse (ν : Character) (J : Ideal O) :
     idealCoeff_span ν hg,HeckeFamily.elementCoeff_inverse]
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 end SevenEighths.HeckeDetectorRelativePrime

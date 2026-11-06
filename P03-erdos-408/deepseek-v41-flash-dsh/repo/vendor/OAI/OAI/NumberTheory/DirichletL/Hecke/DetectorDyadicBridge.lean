@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+
 open Set Complex
 namespace SevenEighths.HeckeDetectorDyadicBridge
 open HeckeFamily HeckeDyadic HeckeDetectorFourier
@@ -57,7 +57,7 @@ lemma polynomial_eq_finite (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
     dsimp only [f]
     rw [coefficient_zero, zero_mul, zero_mul]
   have he := tsum_subtype_eq_of_support_subset hf
-  change (∑' J : {J : Ideal O // J≠0}, f J.val)=_
+
   apply he.trans
   apply tsum_eq_sum
   intro J hJ

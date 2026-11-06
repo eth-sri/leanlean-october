@@ -11,16 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalActiveDictionary
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentHeckeExpansion
-open CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
-open CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel
-open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
-open CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
-open CenteredMomentFirstPhysicalSource CenteredMomentActiveSource
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentHeckeExpansion CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum CenteredMomentFirstPhysicalSource CenteredMomentActiveSource
 local notation "O" => HeckeFamily.O
 
 theorem columns_active (C D : Ideal O) (hD : D≠0) (S : Finset (Ideal O))
@@ -145,9 +136,7 @@ theorem block_active (η : Character) (m A : O) (t : ℝ)
 
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
-open CenteredMomentCommonRadialData CenteredMomentFirstRetainedNorm
-open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale
-open CenteredMomentSectorLocalization CenteredMomentLogDyadic
+open CenteredMomentCommonRadialData CenteredMomentFirstRetainedNorm CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentLogDyadic
 
 theorem original_sectorMass_active (s : Input ι) (R seed : Ideal O)
     (m A : O) (t : ℝ) (S : Finset (Ideal O)) (C D : Ideal O)

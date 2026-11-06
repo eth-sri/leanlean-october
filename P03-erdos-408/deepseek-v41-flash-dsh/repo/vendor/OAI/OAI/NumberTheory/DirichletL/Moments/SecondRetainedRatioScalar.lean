@@ -10,14 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondRetainedRatioScalar
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondWholeKernel
-open CenteredMomentSectorLocalization CenteredMomentSecondExceptionalFamily
-open CenteredMomentSecondRadicalBudget CenteredMomentSourceBlockWindows
-open CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization CenteredMomentSecondExceptionalFamily CenteredMomentSecondRadicalBudget CenteredMomentSourceBlockWindows CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
 local notation "O" => HeckeFamily.O
 
 open CenteredMomentSecondNonexceptionalScalar
@@ -78,7 +71,7 @@ theorem actual_envelope_scalar_ratio (η:Character)(t:ℝ)(S:Finset (Ideal O))(�
     exact mul_le_mul_of_nonneg_right
       (div_le_div_of_nonneg_right hrat (by positivity)) (Real.rpow_nonneg (by positivity) _)
   rw [outerScalar,normalizer,actual_partitionNormalizer C D hC]
-  change _≤(fixedFactor:ℝ)*η.modulus.absNorm*Real.sqrt (dyadicScale (n 2)*dyadicScale (n 3))
+
   rw [childEnvelope,scalar_cancel _ _ _ _ _ _ _ _ _ r _ hc hd
     (dyadicScale_pos _) (dyadicScale_pos _) hu hr.le]
   rw [←he]

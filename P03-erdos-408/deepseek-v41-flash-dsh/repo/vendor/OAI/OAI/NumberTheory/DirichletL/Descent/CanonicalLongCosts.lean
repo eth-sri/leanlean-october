@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+
 namespace SevenEighths.InverseMoment
 
 theorem actual_long_coefficient_cost (Z ell L epsilon Ccoef:ℝ)

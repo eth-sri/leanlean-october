@@ -11,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification
-open HeckeDetectorCoefficientTransfer HeckeDetectorRawFiber HeckeDetectorRowwisePolynomial
-open HeckeDetectorDyadicProfiles CenteredMomentRetainedEnergy
-open CenteredMomentPrimeSlot ProbeHighRowFamily
+open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification HeckeDetectorCoefficientTransfer HeckeDetectorRawFiber HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles CenteredMomentRetainedEnergy CenteredMomentPrimeSlot ProbeHighRowFamily
 local notation "O" => HeckeFamily.O
 variable {M : Ideal O} {H : Subgroup (O⧸M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.ParametersHighDataFine
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 open Filter
 
 namespace SevenEighths.ProbeFinalAssembly

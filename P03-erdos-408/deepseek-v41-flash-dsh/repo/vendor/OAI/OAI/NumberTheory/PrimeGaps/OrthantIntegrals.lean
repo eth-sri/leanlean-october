@@ -9,11 +9,11 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-open Filter
 
-open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
+
+
+
 
 def divisorMultiplicity (k n : ℕ) : ℕ := (ArithmeticFunction.zeta ^ k) n
 

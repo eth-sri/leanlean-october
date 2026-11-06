@@ -8,12 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeExceptionalEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily CenteredExceptionalProfile CenteredExceptionalCount
-open HeckeRowClosure CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentNaturalRowSource UniqueFactorizationMonoid
+open HeckeFamily CenteredExceptionalProfile CenteredExceptionalCount HeckeRowClosure CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentNaturalRowSource UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 
 def internalQ (Q : Ideal O) (η₀ : Character) : Ideal O := Q⊓η₀.modulus
@@ -26,7 +24,6 @@ lemma internalQ_ne_top (Q : Ideal O) (hQ : Q≠⊤) (η₀ : Character) : intern
   exact hQ (top_le_iff.mp (h ▸ (inf_le_left : internalQ Q η₀≤Q)))
 
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 end SevenEighths.CenteredMomentNaturalFixedRaySource

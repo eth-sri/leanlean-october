@@ -10,14 +10,11 @@ public import OAI.NumberTheory.DirichletL.Energy.StageMargins
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstSourceParameters
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyFirstStageLossBudget CenteredMomentEnergyFirstActualFrequencyBudget
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentSectorLocalization
+open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyFirstStageLossBudget CenteredMomentEnergyFirstActualFrequencyBudget CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentEnergyFirstLiveAdmission CenteredMomentSectorLocalization
 
 def sourceEpsilon (M A B ε:ℝ):ℝ:=reserve M B ε/(4*((A+1)+A+1))
 def maskEpsilon (M B ε:ℝ):ℝ:=reserve M B ε/(B+B+1)

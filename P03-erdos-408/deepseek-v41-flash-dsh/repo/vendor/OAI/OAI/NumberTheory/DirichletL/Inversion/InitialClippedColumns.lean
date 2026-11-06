@@ -10,10 +10,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open SevenEighths.InverseMoment
+
+open MeasureTheory FourierBridge JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss SevenEighths.InverseMoment
 namespace SevenEighths.InverseInitialClippedColumns
 local notation "Eis" => ActualEisensteinCubic.O
 

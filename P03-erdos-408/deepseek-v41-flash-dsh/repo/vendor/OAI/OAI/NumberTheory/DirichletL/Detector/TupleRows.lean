@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.TupleProducts
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open HeckeInverseAmplification
 local notation "O" => ActualEisensteinCubic.O
@@ -79,7 +79,7 @@ theorem tupleSourceSeries_eq_rows {K : ℕ} (η : HeckeFamily.Character) (S : Fi
     (f:=f) (fun J _=>hf J)
   unfold sourceRowSeries
   simp only [←tsum_mul_left]
-  change (∑J∈(Finset.univ:Finset (Fin K)).powerset,∑'u,f J u)=_
+
   rw [←hsum]
   apply tsum_congr
   intro u

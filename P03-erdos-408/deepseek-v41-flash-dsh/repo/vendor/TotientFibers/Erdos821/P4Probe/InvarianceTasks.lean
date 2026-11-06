@@ -6,14 +6,12 @@ public import Erdos821.P4Probe.CountingTasks
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
 
 noncomputable section
-
-local instance invariantSiteDecidableEq (s M : ℕ) : DecidableEq (RowSite s M) := Classical.decEq _
 
 /-- The remaining analytic-free row-symmetry fact: ANOVA component energy is
 invariant under independent row permutations when the original vector is

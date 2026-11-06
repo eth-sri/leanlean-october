@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.GramCommonActual
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbeGramCommon
-open CenteredMomentCorrelation CenteredMomentSupportedCorrelation CenteredMomentCommonSupport
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
+open CenteredMomentCorrelation CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 lemma supported_bezout_inverse (n m a b : O) (hn : Supported (Ideal.span {n}))

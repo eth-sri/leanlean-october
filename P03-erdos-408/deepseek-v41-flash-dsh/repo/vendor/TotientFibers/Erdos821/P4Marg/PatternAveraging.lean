@@ -7,7 +7,7 @@ public import Erdos821.P4Probe.BigDuality
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Marg
@@ -287,19 +287,19 @@ theorem PatternAveragingTask_proof : P4Probe.PatternAveragingTask := by
     A.idealRaw θ
   let fA := bigCoordinateAverage P (J + F.ell) S₀ f
   let gB := bigCoordinateAverage P (J + F.ell) S₁ g
-  change idealFullPair K f g = idealFullPair K fA gB
+
   have hK : K = fun a b => (P.idealMass b : ℂ) * H a b := by
     funext a b
     exact onePattern_idealRaw_eq_density F ν hV θ ζ a b
   have hS₀ : ∀ v g i, (A.pattern v).shared g.val i → i ∉ S₀ g := by
     intro v g i hi
-    change ν.shared g.val i at hi
-    change i ∉ patternSideCoordinates ν block false g
+
+
     exact shared_not_mem_patternSideCoordinates ν block false g i hi
   have hS₁ : ∀ v g i, (A.pattern v).shared g.val i → i ∉ S₁ g := by
     intro v g i hi
-    change ν.shared g.val i at hi
-    change i ∉ patternSideCoordinates ν block true g
+
+
     exact shared_not_mem_patternSideCoordinates ν block true g i hi
   have hKfixed : ∀ b,
       bigCoordinateAverage P (J + F.ell) S₀ (fun a => K a b) = fun a => K a b := by
@@ -311,12 +311,12 @@ theorem PatternAveragingTask_proof : P4Probe.PatternAveragingTask := by
         (A.pattern v).coefficient (replaceBigLabels S₀ a y) b u =
           (A.pattern v).coefficient a b u := by
       intro v u
-      change ν.coefficient (replaceBigLabels S₀ a y) b u = ν.coefficient a b u
+
       exact signedPattern_coefficient_source_mix (ell := F.ell) hj block Q h ξ c a y b u
     have hDBig : ∀ v u,
         (A.pattern v).DBig (replaceBigLabels S₀ a y) u = (A.pattern v).DBig a u := by
       intro v u
-      change ν.DBig (replaceBigLabels S₀ a y) u = ν.DBig a u
+
       exact DBig_replace_side_eq ν block false a y u
     have hdensity := modelDensity_replace_left A S₀ hS₀ θ ζ a y b hcoef hDBig
     calc
@@ -335,7 +335,7 @@ theorem PatternAveragingTask_proof : P4Probe.PatternAveragingTask := by
         (A.pattern v).coefficient a (replaceBigLabels S₁ b y) u =
           (A.pattern v).coefficient a b u := by
       intro v u
-      change ν.coefficient a (replaceBigLabels S₁ b y) u = ν.coefficient a b u
+
       exact signedPattern_coefficient_target_mix (ell := F.ell) hj block Q h ξ c a b y u
     exact modelDensity_replace_right A S₁ hS₁ θ ζ a b y hcoef
   have hsource := idealFullPair_source_average

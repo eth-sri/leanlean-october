@@ -9,12 +9,11 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryProfiles
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open ProbePhysical CenteredMomentPrimeSlot
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CenteredMomentPrimeSlot
 local notation "O" => HeckeFamily.O
 
 lemma source_product_le_rowMask (S : Finset (Ideal O))

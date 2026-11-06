@@ -8,22 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstExceptionalChildPaid
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentFirstMixedChild
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstChildLower CenteredMomentFirstExceptionalChildPaid
-open CenteredMomentFirstMixedAllowance CenteredMomentFirstMixedCommonRadius
-open CenteredMomentCommonRadiusSaving CenteredMomentFirstAmplificationChoice
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization
-open CenteredMomentDescentLedger CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
-open CenteredMomentPrimeElements CenteredMomentPrimePool ConcreteTraceCRT
-open CenteredMomentRankinRadical ActualEisensteinCubic
+
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι]
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 end SevenEighths.CenteredMomentFirstMixedChild
 

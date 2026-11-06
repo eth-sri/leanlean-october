@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianPartition
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
+
 open Filter
 namespace SevenEighths.ProbePhysical
 open CompletedGauss

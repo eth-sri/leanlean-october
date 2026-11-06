@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondDyadicPartition
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentSecondSectorRetained CenteredMomentSecondPhysicalWindow
-open CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSmooth CenteredMomentLogDyadic CenteredMomentDyadicCount
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentSecondSectorRetained CenteredMomentSecondPhysicalWindow CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel CenteredMomentSectorLocalization CenteredMomentSmooth CenteredMomentLogDyadic CenteredMomentDyadicCount
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev Blocks (a b : Fin 4→ℝ) := ∀ i : Fin 4,↥(indices (a i) (b i))
@@ -22,7 +19,7 @@ abbrev Blocks (a b : Fin 4→ℝ) := ∀ i : Fin 4,↥(indices (a i) (b i))
 theorem dyadic_product_partition (a b q : Fin 4→ℝ)
     (ha : ∀i,0<a i) (hq : ∀i,q i∈Set.Icc (a i) (b i)) :
     (∑ n : Blocks a b,∏ i : Fin 4,dyadicWeight (n i) (q i))=1 := by
-  change (∑ n : (∀ i : Fin 4,↥(indices (a i) (b i))),∏ i : Fin 4,dyadicWeight (n i) (q i))=1
+
   rw [←Fintype.prod_sum (fun (i : Fin 4) (n : indices (a i) (b i))=>dyadicWeight n (q i))]
   have he (i : Fin 4) : (∑ n : indices (a i) (b i),dyadicWeight n (q i))=1 := by
     rw [Finset.sum_coe_sort (indices (a i) (b i)) (fun n : ℤ=>dyadicWeight n (q i))]

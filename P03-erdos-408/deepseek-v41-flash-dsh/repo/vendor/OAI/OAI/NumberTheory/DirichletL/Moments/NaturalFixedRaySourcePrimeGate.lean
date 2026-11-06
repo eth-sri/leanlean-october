@@ -10,14 +10,11 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
-open Filter
+
+
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily HeckePrimeRay
-open CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource
-open CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
-open CenteredMomentFixedRowMask CenteredMomentFixedRayInducingTransport
+
 local notation "O" => HeckeFamily.O
 
 variable {Δ : ℝ} {D : Parameters.HighData Δ}

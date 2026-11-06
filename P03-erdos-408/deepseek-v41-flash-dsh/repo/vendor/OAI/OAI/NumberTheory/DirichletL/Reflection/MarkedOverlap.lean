@@ -15,7 +15,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 lemma freePrimeRow_zero_at_prime (I Q : Ideal Eis) (hI : Supported I)
     (P : FreePrimeIndex I Q) (n : Eis) (hn : n∈P.val.val) : freePrimeRow I hI Q n=0 := by
   unfold freePrimeRow
-  change (∏ p : FreePrimeIndex I Q, _)=0
+
   apply Finset.prod_eq_zero (Finset.mem_univ P)
   rw [Ideal.Quotient.eq_zero_iff_mem.mpr hn,MulChar.map_zero]
 

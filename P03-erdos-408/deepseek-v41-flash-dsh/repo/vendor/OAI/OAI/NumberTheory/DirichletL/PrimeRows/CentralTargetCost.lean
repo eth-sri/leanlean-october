@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralRowCost
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeReciprocalGrowth HeckeDeletionBounds
-open ProbeRowRadicalConductor
+open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeReciprocalGrowth HeckeDeletionBounds ProbeRowRadicalConductor
 local notation "O" => HeckeFamily.O
 
 lemma presentationComplexity_norm_bound (χ : Character) (H : ℝ) :

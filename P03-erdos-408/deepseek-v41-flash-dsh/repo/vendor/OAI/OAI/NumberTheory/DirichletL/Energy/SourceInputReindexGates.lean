@@ -11,7 +11,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstChildProfileControl
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentEnergySourceInputReindexGates
 open HeckeFamily CanonicalQuadraticSieve

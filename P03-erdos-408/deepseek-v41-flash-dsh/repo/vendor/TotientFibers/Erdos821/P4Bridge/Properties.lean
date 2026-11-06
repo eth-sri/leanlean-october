@@ -5,7 +5,7 @@ public import Erdos821.P4Bridge.Structure
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 namespace Erdos821.P4Bridge
 open Blueprint.Graph P4Probe

@@ -7,7 +7,7 @@ public import Erdos821.P3Clean.FourierLifting
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 
 namespace Erdos821.P3Clean
 

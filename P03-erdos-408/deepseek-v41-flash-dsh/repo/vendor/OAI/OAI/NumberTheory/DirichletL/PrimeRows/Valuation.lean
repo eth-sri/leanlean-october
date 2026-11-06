@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRows
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification UniqueFactorizationMonoid
 local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.SourceTriple
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 
 lemma sourceMellinWeight_subset (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z Q R : ℝ)

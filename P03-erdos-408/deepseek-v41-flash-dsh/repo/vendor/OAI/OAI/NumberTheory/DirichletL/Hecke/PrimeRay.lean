@@ -15,7 +15,6 @@ namespace SevenEighths.HeckePrimeRay
 open HeckeFamily HeckePrimeAnnular
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 def twistedFamily (η : Character) (θ : RayQuotient.Characters M H) : Character :=

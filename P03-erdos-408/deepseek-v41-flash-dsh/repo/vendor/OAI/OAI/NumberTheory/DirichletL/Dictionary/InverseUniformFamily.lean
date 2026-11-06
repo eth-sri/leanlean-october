@@ -62,7 +62,7 @@ theorem inverseSchwartz_operator_uniform (reverse : Bool) (n : ℕ) (V W : ℝ�
     rw [norm_div,Real.norm_of_nonneg (by positivity : 0≤2*Real.pi)]
     exact div_le_self (norm_nonneg _) (by linarith [Real.pi_gt_three])
   have hh := hcontrol (frequencyTwist (inverseLogSchwartz reverse n V W a b ha hV hW hs (σ,R)) (t/(2*Real.pi)))
-  change S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (op (inverseSchwartz reverse n V W a b ha hV hW hs R σ t))≤_ at hh
+
   apply hh.trans
   have hb : T.sup (schwartzSeminormFamily ℝ ℝ ℂ)
       (frequencyTwist (inverseLogSchwartz reverse n V W a b ha hV hW hs (σ,R)) (t/(2*Real.pi)))≤B*(1+‖t‖)^J :=

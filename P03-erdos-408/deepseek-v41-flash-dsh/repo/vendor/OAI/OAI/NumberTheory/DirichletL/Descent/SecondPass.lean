@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section

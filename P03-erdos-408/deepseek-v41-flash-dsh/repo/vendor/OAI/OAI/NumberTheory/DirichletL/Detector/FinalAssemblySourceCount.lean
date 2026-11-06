@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff
 open Set Filter
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
-open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff
-open ProbeHighRowFamily
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff ProbeHighRowFamily
 
 theorem balanced_source_count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)

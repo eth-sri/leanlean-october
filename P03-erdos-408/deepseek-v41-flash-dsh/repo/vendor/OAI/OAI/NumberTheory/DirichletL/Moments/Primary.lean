@@ -8,8 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Lattice
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
-open scoped ContDiff
+
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentPrimary
 open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss

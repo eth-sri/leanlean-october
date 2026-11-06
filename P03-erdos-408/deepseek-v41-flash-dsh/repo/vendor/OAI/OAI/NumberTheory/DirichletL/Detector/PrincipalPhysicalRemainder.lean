@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.PrincipalRemainderBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open Complex MeasureTheory
 namespace SevenEighths.ProbePrincipalPhysical
-open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds
-open PrincipalMellinResidues PrincipalSignalComparison ProbeMellinBoundary ProbePrincipalContours
+open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds PrincipalMellinResidues PrincipalSignalComparison ProbeMellinBoundary ProbePrincipalContours
 local notation "Id" => Ideal HeckeFamily.O
 
 theorem physical_principal_residue_remainder {K : ℕ}
@@ -61,7 +60,7 @@ theorem physical_principal_residue_remainder {K : ℕ}
   unfold sourceResidueIntegral windowMultiplier
   rw [hres,add_sub_cancel_right]
   have hn := (norm_add_le _ _).trans (add_le_add hb.1 hb.2)
-  change _≤(2*C)/e*Z^(HeckeZeroSupremum.beta-11/16-17/48000)
+
   apply hn.trans
   have hCe : C≤C/e := (le_div_iff₀ he).mpr (by nlinarith)
   have hzpow : 0≤Z^(HeckeZeroSupremum.beta-11/16-17/48000) := Real.rpow_nonneg hZ0.le _

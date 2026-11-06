@@ -8,13 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.Extraction
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentAmplificationShortening
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentUnequal
-open CenteredMomentAmplification CenteredMomentAmplificationLocal CenteredMomentAmplificationGlobal
-open ProbePhysical
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentAmplification CenteredMomentAmplificationLocal CenteredMomentAmplificationGlobal ProbePhysical
 local notation "O" => ActualEisensteinCubic.O
 
 def residualCharacter (p : O) (k : ℕ) (u : O) : ℂ :=

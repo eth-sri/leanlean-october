@@ -15,7 +15,7 @@ namespace OAI
 namespace TwoPointCorrelations
 
 open Finset
-open scoped BigOperators
+
 
 lemma mrt_log_gap {x y N : ℝ} (hx : 0 < x) (hxy : x ≤ y) (hyN : y ≤ N) :
     (y - x) / N ≤ Real.log y - Real.log x := by

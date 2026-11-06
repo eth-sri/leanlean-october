@@ -9,7 +9,7 @@ public import Mathlib.Data.Int.Star
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 
 namespace Erdos821.P5Core
 open Blueprint.Analytic

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.CenteredExceptionalCount
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open CenteredExceptionalCount IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O

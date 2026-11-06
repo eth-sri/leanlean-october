@@ -8,7 +8,7 @@ public import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 namespace OAI
 
 noncomputable section
-open MeasureTheory
+
 namespace SevenEighths.ProbePhysical
 
 def gaussianMellinProfile (y : ℝ) : ℂ :=

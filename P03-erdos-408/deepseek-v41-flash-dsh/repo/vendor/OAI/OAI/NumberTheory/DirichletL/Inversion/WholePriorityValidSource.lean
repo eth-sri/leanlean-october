@@ -7,13 +7,10 @@ public import OAI.NumberTheory.DirichletL.Descent.WholeRetainedSource
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+
 
 namespace SevenEighths.InverseWholePriorityValidSource
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource
-open InverseMomentWholePriorityParents InverseMomentWholePriorityPhysical
-open RayFourExpansion InversePrincipalEnergy InverseSecondPrincipalCaller
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource InverseMomentWholePriorityParents InverseMomentWholePriorityPhysical RayFourExpansion InversePrincipalEnergy InverseSecondPrincipalCaller
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
 variable {Jo : ℕ}
@@ -52,7 +49,7 @@ theorem parentPoisson_fixed_whole (hinj : Function.Injective (fun i=>Ideal.span 
     funext i
     unfold residualLists
     rw [quotientSupport_parent p hinj]
-    change (lists i\extra)\(((if negative then b.rightDivisor else b.leftDivisor)∪C)∪D)=_
+
     ext k
     simp only [Finset.mem_sdiff,Finset.mem_union]
     tauto

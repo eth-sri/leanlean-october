@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.InactiveEnergy
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+
 noncomputable section
 
 lemma norm_sq_le_retained (f g : ℂ) (E : ℝ) (_hE : 0≤E) (hf : ‖f-g‖≤E) :

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.MarkedSource
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators MatrixGroups
+
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CubicJacobiGlobal FiniteGaussPhase ShortDraftCRT
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

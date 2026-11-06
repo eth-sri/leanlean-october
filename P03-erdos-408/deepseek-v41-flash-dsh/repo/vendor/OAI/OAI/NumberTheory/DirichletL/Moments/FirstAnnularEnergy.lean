@@ -8,11 +8,9 @@ public import OAI.NumberTheory.DirichletL.Moments.GaussNormalization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 namespace SevenEighths.CenteredMomentFirstAnnularEnergy
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy
-open CenteredMomentFirstAnnularMajorant CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst CenteredMomentSmoothedWindowEnergy
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentFirstAnnularMajorant CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentSmoothedWindowEnergy
 local notation "O"=>HeckeFamily.O
 
 variable {α:Type*}

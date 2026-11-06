@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsZero
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
@@ -104,7 +104,7 @@ theorem sourceRowSeries_eq_closed (eta a rho x w z : ℂ) (hρ : rho^6=1)
   unfold sourceRowSeries
   simp only [Fin.sum_univ_two,Fin.val_zero,Fin.val_one,he0,he1]
   rw [hs.tsum_add (hasSum_ite_eq 0 Z0).summable,tsum_ite_eq]
-  change _=Z0+rowClosedMarked p hp hg eta a X W V rho j
+
   rw [←hc']
   ring
 

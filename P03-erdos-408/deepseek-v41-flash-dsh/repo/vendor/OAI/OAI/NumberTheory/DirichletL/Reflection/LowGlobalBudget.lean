@@ -107,7 +107,7 @@ theorem original_low_global_full_budget
         (fun K hK => hr K (Finset.mem_filter.mp hK).1)
         (fun P hP => haw P (Finset.mem_filter.mp hP).1))
   apply hs.trans
-  change q^3*(C*(1+‖θ‖)^degree*Z^((5/6-2*d)+200*η+π+κ+ρ*Lpool-O₀/2))≤_
+
   have hp : 0≤(1+‖θ‖)^degree*Z^((5/6-2*d)+200*η+π+κ+ρ*Lpool-O₀/2) := by positivity
   nlinarith
 end

@@ -9,10 +9,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+
 namespace SevenEighths.InverseInitialResidualPool
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
-open InverseInitialExcludedPool InverseInitialCommonTuples InverseInitialEnergyCallerWindow
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion InverseInitialExcludedPool InverseInitialCommonTuples InverseInitialEnergyCallerWindow
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem exists_original_complete_pool {κ:Type*}

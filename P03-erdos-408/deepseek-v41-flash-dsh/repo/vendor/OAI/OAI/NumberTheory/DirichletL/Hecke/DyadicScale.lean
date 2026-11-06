@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedPointwise
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeDeletionBounds HeckeReciprocalGrowth HeckeLogarithmic
 

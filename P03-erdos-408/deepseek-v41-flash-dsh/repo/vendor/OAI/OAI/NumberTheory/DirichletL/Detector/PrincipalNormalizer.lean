@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Detector.RadialMellin
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePrincipalNormalizer
 open HeckeFamily PrincipalMellinResidues PrincipalSignalComparison
 local notation "O" => HeckeFamily.O

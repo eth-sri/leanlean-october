@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.GramGlobalExtension
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbeGramCommon
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CenteredMomentCorrelation CenteredMomentCanonical
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentCorrelation CenteredMomentCanonical
 local notation "O" => ActualEisensteinCubic.O
 
 lemma actualSextic_power_nonprincipal (P : Ideal O) [P.IsMaximal]

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.SlotProducts
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+
 open MeasureTheory CanonicalQuadraticSieve CompletedGauss
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

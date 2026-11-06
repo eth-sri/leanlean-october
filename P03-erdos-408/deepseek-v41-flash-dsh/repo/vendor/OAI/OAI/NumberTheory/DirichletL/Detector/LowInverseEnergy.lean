@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LowPrimeFamily
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open RayFourExpansion CompletedGauss
 local notation "O" => ActualEisensteinCubic.O

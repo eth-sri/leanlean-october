@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorWitness
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentDivisorActualBoundary
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows
-open CenteredMomentDivisorRaw CenteredMomentDivisorWitness CenteredMomentSlotRatios HeckeFamily
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentDivisorWitness CenteredMomentSlotRatios HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 

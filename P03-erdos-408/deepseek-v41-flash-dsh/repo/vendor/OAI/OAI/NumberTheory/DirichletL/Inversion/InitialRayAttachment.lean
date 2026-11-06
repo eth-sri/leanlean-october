@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseInitialRayAttachment
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT EisensteinSchwartzPoisson
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialArithmetic InverseInitialProfile
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT EisensteinSchwartzPoisson InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialArithmetic InverseInitialProfile
 local notation "O" => ActualEisensteinCubic.O
 
 def elementCharacter (η : Ideal O →* ℂ) : O →* ℂ where

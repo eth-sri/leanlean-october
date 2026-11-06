@@ -7,12 +7,9 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLabelCellStepData
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.InverseMomentFirstLabelCell
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
-open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
-open InverseSecondUniformCutoff InversePrioritySecondSource
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks InverseSecondUniformCutoff InversePrioritySecondSource
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]

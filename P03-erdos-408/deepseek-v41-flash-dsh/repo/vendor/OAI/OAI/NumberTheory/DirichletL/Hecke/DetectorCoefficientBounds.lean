@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorTail
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.HeckeDetectorCoefficientBounds
-open HeckeFamily HeckeDetectorFourier HeckeDetectorTail
-open ConcretePrimeRowBridge
+open HeckeFamily HeckeDetectorFourier HeckeDetectorTail ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 lemma annular_norm_le_two (V : ℝ → ℂ) (hV : ∀ x, ‖V x‖ ≤ 1) (x : ℝ) :

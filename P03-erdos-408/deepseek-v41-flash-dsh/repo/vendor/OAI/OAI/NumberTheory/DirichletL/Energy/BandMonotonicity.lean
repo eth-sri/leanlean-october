@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Energy.Bands
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentEnergyBandMonotonicity
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 def widenState {Z B b B' b':ℝ}(s:NaturalState Z B b)(hB:B≤B')(hb:b≤b'):
@@ -56,7 +55,6 @@ theorem zeroAt_transport (Q:Ideal O)(a b radial mask L Mcap eps Z:ℝ)
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 omit [Fintype α] [DecidableEq α] in

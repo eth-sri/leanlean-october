@@ -8,7 +8,7 @@ public import Mathlib.Tactic.Positivity
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators
+
 noncomputable section
 
 variable {a b n : Type*} [Fintype a] [Fintype b] [Fintype n]

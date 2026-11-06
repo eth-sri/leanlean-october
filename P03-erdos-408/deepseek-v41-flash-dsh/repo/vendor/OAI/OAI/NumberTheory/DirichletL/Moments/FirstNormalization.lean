@@ -9,13 +9,10 @@ public import OAI.NumberTheory.DirichletL.Moments.Primitive
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentFirstNormalization
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalQuadraticSieve CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentSupportedCorrelation CenteredMomentFirstReduced CenteredMomentFirstActiveFourier
-open CenteredMomentGaussEnergy CenteredMomentPrimitive CenteredMomentFirstPoisson
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CanonicalQuadraticSieve CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation CenteredMomentFirstReduced CenteredMomentFirstActiveFourier CenteredMomentGaussEnergy CenteredMomentPrimitive CenteredMomentFirstPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 theorem residueGauss_eq_norm_mul_gaussRow (a : O) (ha : Supported (Ideal.span {a})) (h : O) :

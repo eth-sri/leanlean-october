@@ -17,7 +17,7 @@ local notation "Id" => Ideal O
 lemma lowSelectedIdeal_eq_product {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K))
     (b : LowSelectedTuple slots J) :
     lowSelectedIdeal slots J b=∏i : SelectedSlot J,Ideal.span {(b i).val} := by
-  change CanonicalRowCompletion.principalIdealHom (∏i : SelectedSlot J,(b i).val)=_
+
   exact map_prod CanonicalRowCompletion.principalIdealHom _ _
 
 lemma lowSelectedIdeal_dvd_iff {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K))

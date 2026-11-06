@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentPrimeSlotShift
-open HeckeFamily HeckeRowClosure HeckePrimeRay HeckePrimeAnnular HeckeDyadic
-open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentTwist
-open CenteredMomentPrimeSlot
+open HeckeFamily HeckeRowClosure HeckePrimeRay HeckePrimeAnnular HeckeDyadic CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentTwist CenteredMomentPrimeSlot
 local notation "O" => HeckeFamily.O
 
 lemma norm_height_split (N D σ t v:ℝ) (hN:0<N) (hD:0<D) :

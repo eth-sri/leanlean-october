@@ -10,7 +10,7 @@ namespace OAI
 noncomputable section
 
 namespace SevenEighths.CenteredMomentSuccessorPaidParameters
-open CenteredMomentFirstSecondLossParameters
+
 
 def edge (epsChild epsRemove delta epsilon delta1 delta2 theta kappa mesh : ℝ) : ℝ :=
   epsChild+epsRemove+2*delta+epsilon+delta2+delta1/6+kappa*mesh+7*theta/3

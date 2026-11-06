@@ -8,12 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceRow
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentFirstTailAggregate
-open ActualEisensteinCubic HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentFirstDiscardedEnergy CenteredMomentFirstScale CenteredMomentSectorLocalization
-open CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentTwist
+open ActualEisensteinCubic HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentFirstDiscardedEnergy CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentTwist
 local notation "O" => ActualEisensteinCubic.O
 
 theorem rowWeight_norm_le_one (η : Character) (m A z : O) (t : ℝ)

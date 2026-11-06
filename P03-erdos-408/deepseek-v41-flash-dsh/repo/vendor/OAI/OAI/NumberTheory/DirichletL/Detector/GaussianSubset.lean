@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianCompensation
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow

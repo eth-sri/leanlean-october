@@ -8,9 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve
+
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 
 theorem markedShortCompletedSum_eq (Ψ : O →* ℂ) (W : ℝ → ℂ) (X H₀ : ℝ) (mark : Ideal O→ℂ) :

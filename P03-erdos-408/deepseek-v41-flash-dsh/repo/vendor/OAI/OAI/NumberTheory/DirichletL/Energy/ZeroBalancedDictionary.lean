@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAnnularInput
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentEnergyZeroBalancedDictionary
 open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound

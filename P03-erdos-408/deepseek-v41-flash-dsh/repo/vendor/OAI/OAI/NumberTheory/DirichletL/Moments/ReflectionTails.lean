@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+
 namespace SevenEighths.CenteredMomentComparisonReflection
 open HeckeFamily EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O

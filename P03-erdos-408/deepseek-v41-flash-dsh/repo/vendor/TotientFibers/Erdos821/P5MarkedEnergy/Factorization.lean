@@ -14,7 +14,7 @@ four-fold Dirichlet convolution. -/
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 open Classical
 
 namespace Erdos821.P5Marked

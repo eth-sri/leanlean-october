@@ -12,15 +12,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow ConcretePrimeRowBridge
-open CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentCommonAllocationSum
-open CenteredMomentSourceLiveColumn CenteredMomentOriginalChildEnergy
-open CenteredMomentSmoothedWindowEnergy CenteredMomentGaussEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentAddedZeroUniform
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow ConcretePrimeRowBridge CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentOriginalChildEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow CenteredMomentAddedZeroUniform
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
-local instance firstAllocatedInputDecidableEq {κ : Type*} : DecidableEq κ := Classical.decEq _
 
 lemma commonEnergy_real (D : OriginalData ι) (C : Ideal O) (hC : Supported C)
     (τ : Character) (t : ℝ) (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :

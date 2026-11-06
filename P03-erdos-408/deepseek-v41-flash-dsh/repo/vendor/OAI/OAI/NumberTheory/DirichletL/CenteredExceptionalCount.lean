@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Foundation
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.CenteredExceptionalCount
 open UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O

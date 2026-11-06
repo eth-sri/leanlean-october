@@ -8,10 +8,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
-open SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialRayAttachment
-open SevenEighths.InverseInitialPhysicalMeasure
+
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialRayAttachment SevenEighths.InverseInitialPhysicalMeasure
 namespace SevenEighths.InverseInitialEnergyCallerWeights
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]

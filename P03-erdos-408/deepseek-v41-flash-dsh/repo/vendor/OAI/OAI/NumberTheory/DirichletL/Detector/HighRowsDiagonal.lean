@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LocalSummation
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
+
 namespace SevenEighths.ProbeEuler
 
 theorem diagonal_recurrence_eq (f : ℕ→ℕ→ℂ) (R : ℂ)

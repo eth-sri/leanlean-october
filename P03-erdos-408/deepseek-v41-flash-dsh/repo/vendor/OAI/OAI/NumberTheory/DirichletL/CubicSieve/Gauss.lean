@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.Gcd
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O

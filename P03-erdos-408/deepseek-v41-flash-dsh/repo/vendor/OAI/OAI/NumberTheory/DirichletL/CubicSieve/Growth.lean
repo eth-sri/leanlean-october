@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.ExtractionOptimization
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+
 noncomputable section
 
 def HasCubicExponent (ξ : ℝ) : Prop :=

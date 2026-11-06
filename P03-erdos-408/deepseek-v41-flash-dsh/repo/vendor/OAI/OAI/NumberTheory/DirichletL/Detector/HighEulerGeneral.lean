@@ -7,9 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.HighEuler
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic
+
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -20,7 +20,7 @@ lemma highArray_val_prod (F : HighIdeal→ℂ) (h1 : F 1=1)
     F (highIdeals v)=v.prod (fun P b=>F ((P.val^b.1.1,P.val^b.1.2),(P.val^b.2.1,P.val^b.2.2))) := by
   have hzero (P : PrimeIdeal) : F ((P.val^0,P.val^0),(P.val^0,P.val^0))=1 := by
     simp only [pow_zero]
-    change F (1 : HighIdeal)=1
+
     exact h1
   induction v using Finsupp.induction with
   | zero => simp only [highIdeals_zero,h1,Finsupp.prod_zero_index]
@@ -48,7 +48,7 @@ theorem highArray_hasProd (F : HighIdeal→ℂ) (h1 : F 1=1)
   simp only [Function.comp_def,hp] at hv
   have hlocal (P : PrimeIdeal) : F ((P.val^0,P.val^0),(P.val^0,P.val^0))=1 := by
     simp only [pow_zero]
-    change F (1 : HighIdeal)=1
+
     exact h1
   have he := ProbeEulerFinsupp.hasProd_of_summable
     (fun (P : PrimeIdeal) (b : HighValuation)=>F ((P.val^b.1.1,P.val^b.1.2),(P.val^b.2.1,P.val^b.2.2))) hlocal hv

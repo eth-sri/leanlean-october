@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalDyadicAssembly
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicCount
 open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentDyadicCount

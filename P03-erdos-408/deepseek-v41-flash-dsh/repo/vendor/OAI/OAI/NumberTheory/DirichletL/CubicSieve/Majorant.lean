@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.FrequencyDyads
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+
 noncomputable section
 
 def frequencyMajorant (M N : ℝ) (j : ℕ) : ℝ :=

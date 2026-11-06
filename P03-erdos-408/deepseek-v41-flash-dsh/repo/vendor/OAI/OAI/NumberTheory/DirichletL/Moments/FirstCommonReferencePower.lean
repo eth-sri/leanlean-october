@@ -11,13 +11,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstCommonReferencePower
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum
-open CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget
-open CenteredMomentFirstCommonSourcePowerBudget
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget CenteredMomentFirstCommonSourcePowerBudget
 local notation "O"=>HeckeFamily.O
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 def normalizedPower (b V C q Z allowance ε E:ℝ)(N:ℕ)(α:ℝ):ℝ:=
   C^ε*(b^N)^α*E/q*(V/C)^(α-1)*Z^(-allowance)

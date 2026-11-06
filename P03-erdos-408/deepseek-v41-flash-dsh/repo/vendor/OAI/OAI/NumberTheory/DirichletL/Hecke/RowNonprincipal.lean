@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.ExceptionalRows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.HeckeRowNonprincipal
 open HeckeFamily CanonicalRowCompletion CenteredMomentCanonical
 open ConcretePrimeRowBridge hiding O

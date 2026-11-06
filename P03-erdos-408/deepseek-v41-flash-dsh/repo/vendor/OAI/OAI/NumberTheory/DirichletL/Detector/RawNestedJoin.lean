@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.OuterIndex
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve ProbeRow CubicEisenstein

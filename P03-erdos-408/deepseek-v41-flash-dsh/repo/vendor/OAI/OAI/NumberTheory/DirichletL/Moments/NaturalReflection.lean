@@ -11,8 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentNaturalReflection
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentNaturalPrimitive
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentNaturalPrimitive EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 
@@ -44,7 +43,7 @@ theorem primitive_character_deleted (ψ : Character)
           reflectedTerm ψ ψ.inverse S hS (paperRadialFourier W) X (ψ.modulus.absNorm:ℝ) D H := by
   rcases ψ with ⟨M,hM,χ,hu,p,hp0,hpm⟩
   obtain ⟨c,hc⟩ := Submodule.IsPrincipal.principal M
-  change M=Ideal.span {c} at hc
+
   subst M
   have hc0 : c≠0 := by simpa only [ne_eq,Ideal.span_singleton_eq_bot] using hM
   let : NeZero c := ⟨hc0⟩

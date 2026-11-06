@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerWindowGeometry
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialEnergyCallerGeometry
-open InverseInitialProfile InverseInitialKernelBridge ConcreteTraceCRT
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialEnergyCallerGeometry InverseInitialProfile InverseInitialKernelBridge ConcreteTraceCRT
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
 
@@ -38,10 +35,10 @@ theorem retained_source_windows
   have h1 := hh 1
   have h2 := hh 2
   have h3 := hh 3
-  change ((sourceIdeal p x.common).absNorm:ℝ)/Z^B∈Set.Icc (lo 0) (hi 0) at h0
-  change ((sourceIdeal p x.divisor).absNorm:ℝ)/Z^θ∈Set.Icc (lo 1) (hi 1) at h1
-  change ((sourceIdeal p x.overlap).absNorm:ℝ)/Z^v∈Set.Icc (lo 2) (hi 2) at h2
-  change ‖eisEmbedding x.frequency‖^2/Z^H∈Set.Icc (lo 3) (hi 3) at h3
+
+
+
+
   exact ⟨(div_le_iff₀ (Real.rpow_pos_of_pos hZ _)).mp h0.2,
     (le_div_iff₀ (Real.rpow_pos_of_pos hZ _)).mp h1.1,
     (div_le_iff₀ (Real.rpow_pos_of_pos hZ _)).mp h1.2,

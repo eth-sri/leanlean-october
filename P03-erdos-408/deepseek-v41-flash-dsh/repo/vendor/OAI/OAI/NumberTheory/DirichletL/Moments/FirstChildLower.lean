@@ -8,16 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalGates
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentFirstChildLower
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCommonExceptionalGates CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentCommonExceptionalGates CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι]
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 theorem child_lower (s:Input ι)(C R:Ideal O)(hC:C≠0)
     (B:actualAllocations s.pools C)(τ:Character)(t Z r:ℝ)(hZ:1<Z)

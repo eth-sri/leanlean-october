@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianTuple
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow CompletedGauss CubicEisenstein FourierBridge
 local notation "O" => ActualEisensteinCubic.O

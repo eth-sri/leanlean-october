@@ -8,10 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+
 namespace SevenEighths.InverseInitialInputReindex
-open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic InverseMoment
-open InverseInitialArithmetic
+open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic InverseMoment InverseInitialArithmetic
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem input_puncture_span {ι:Type*}[DecidableEq ι](p:ι→O)

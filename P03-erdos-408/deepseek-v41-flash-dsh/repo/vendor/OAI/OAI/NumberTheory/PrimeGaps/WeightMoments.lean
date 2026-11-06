@@ -13,7 +13,7 @@ open Filter
 
 open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
+
 
 open Asymptotics
 
@@ -21,13 +21,13 @@ open Asymptotics
 
 open Asymptotics
 
-open scoped Classical
 
-open scoped ContDiff
+
+
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+
 
 @[simp] theorem weightedBlock_zero (X h a m : ℕ)
     (F : (Fin 0 → ℝ) → ℝ) (k : Setoid (Fin 0) → ℝ) :

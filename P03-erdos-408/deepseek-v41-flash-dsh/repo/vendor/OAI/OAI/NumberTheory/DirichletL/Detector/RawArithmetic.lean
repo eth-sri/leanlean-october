@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.RawIndexGrouping
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open ProbeRow ProbeCompleted CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
@@ -39,7 +39,7 @@ lemma rawArithmeticSeries_eq_sourceRaw (S : Finset (Ideal O)) (D : Ideal O) (η 
       ∑'i : SourceRawIndex S,fullHighCoefficient S D η (fun H=>star (C.residueMonoid H.val))
         x w z (sourceRawEmbedding S i) := by
   unfold rawArithmeticSeries sourceRawEmbedding
-  change _ = ∑'i : {p : RawHighIndex // Supported p.2.2 ∧ ∀P∈S,¬P∣p.2.2}, _
+
   symm
   apply tsum_subtype_eq_of_support_subset (f:=fun p : RawHighIndex=>
     fullHighCoefficient S D η (fun H=>star (C.residueMonoid H.val)) x w z (rawHighEmbedding p))

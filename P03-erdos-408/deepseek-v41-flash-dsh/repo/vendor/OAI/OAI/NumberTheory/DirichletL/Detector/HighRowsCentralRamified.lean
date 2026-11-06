@@ -44,7 +44,7 @@ theorem ramifiedSelected_central_regular (eta a rho x w z : ℂ) (alpha eps : �
   have h1V : ‖1-coordV Q z‖≤3/2 := by
     have h := norm_sub_le (1:ℂ) (coordV Q z)
     rw [norm_one] at h
-    change ‖coordV Q z‖≤1/2 at hV
+
     linarith
   have hphase : ‖star eta*(Ideal.absNorm (Ideal.span {p}):ℂ)^x‖≤Q^x.re := by
     rw [norm_mul,norm_star,←Complex.ofReal_natCast,Complex.norm_cpow_eq_rpow_re_of_pos hQ0]

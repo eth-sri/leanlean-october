@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralTargetCost
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeCentralPrimeSum
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-open CanonicalQuadraticSieve ProbeCentralAllSlots
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CanonicalQuadraticSieve ProbeCentralAllSlots
 local notation "O" => HeckeFamily.O
 
 theorem actual_central_prime_sum (N : ℕ) (e eps c d B : ℝ)

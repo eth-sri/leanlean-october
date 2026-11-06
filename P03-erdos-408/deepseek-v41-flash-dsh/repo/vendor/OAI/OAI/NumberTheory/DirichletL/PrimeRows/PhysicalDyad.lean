@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SmallDyad
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
@@ -86,7 +86,7 @@ theorem finitePhysicalRows_eq_integral :
   have hi : Integrable (fun t=>∑u∈R,∑P:(∀i,T i),f u P t) heightMeasure :=
     integrable_finsetSum _ hiu
   refine ⟨hi,?_⟩
-  change finitePhysicalRows S hmax η R T W Yp W0 W1 X Y Z=_*(∫t,∑u∈R,∑P:(∀i,T i),f u P t ∂heightMeasure)
+
   rw [integral_finsetSum R hiu]
   unfold finitePhysicalRows
   rw [Finset.mul_sum]

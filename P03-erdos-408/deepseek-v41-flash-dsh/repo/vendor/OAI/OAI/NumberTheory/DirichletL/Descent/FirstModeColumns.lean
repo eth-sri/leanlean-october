@@ -8,9 +8,8 @@ public import OAI.NumberTheory.DirichletL.Descent.ProfileIntegral
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FourierBridge JointLogSeparation
-open MeasureTheory
+
+open ActualEisensteinCubic FirstPassCubeLabels FourierBridge JointLogSeparation MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 

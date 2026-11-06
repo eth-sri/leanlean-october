@@ -9,7 +9,7 @@ public import Mathlib.Analysis.MellinInversion
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+
 open MeasureTheory Set Filter Complex
 namespace SevenEighths.GammaDetectorExpansion
 open GammaZeroDetector HeckeFamily

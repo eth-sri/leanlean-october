@@ -8,7 +8,7 @@ public import Erdos821.S2.MemoryIndices
 
 set_option autoImplicit false
 
-open scoped BigOperators
+
 
 noncomputable section
 

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeHeight
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+
 namespace SevenEighths.CenteredMomentHeckeSlots
 open HeckeFamily CenteredMomentHeckeHeight CenteredMomentCounting CenteredMomentTwist
 local notation "O" => ActualEisensteinCubic.O

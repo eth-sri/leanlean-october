@@ -8,7 +8,7 @@ public import Mathlib.Algebra.BigOperators.Group.Finset.Preimage
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 

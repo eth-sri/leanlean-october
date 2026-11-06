@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.PeriodicThetaRegularity
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
+
 namespace SevenEighths.HeckePrimitive
 open HeckeFamily
 

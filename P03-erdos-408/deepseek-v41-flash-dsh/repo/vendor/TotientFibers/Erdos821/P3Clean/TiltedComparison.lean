@@ -11,7 +11,7 @@ public import Erdos821.P3Clean.TiltedIdealKernel
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean

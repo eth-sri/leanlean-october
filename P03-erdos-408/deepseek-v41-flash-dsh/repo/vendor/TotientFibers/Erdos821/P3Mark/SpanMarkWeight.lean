@@ -8,13 +8,12 @@ the prime's single reciprocal baseline charge. -/
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Mark
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 theorem tiltedMu_eq_Vinv_mul_charge (F : FixedData) (P : PrimeGroups) (n : ℕ)
     (g : P.Group) (p : P.Prime g) :

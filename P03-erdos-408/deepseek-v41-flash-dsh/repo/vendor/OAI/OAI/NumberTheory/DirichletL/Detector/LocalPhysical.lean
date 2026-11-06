@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.ScalarTable
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion
-open CubicEisenstein GaussianShiftedPartition ProbePrimePower ConcreteTraceCRT
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion CubicEisenstein GaussianShiftedPartition ProbePrimePower ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 lemma outerQuotient_prime_power (p : O) [(Ideal.span {p}:Ideal O).IsMaximal]

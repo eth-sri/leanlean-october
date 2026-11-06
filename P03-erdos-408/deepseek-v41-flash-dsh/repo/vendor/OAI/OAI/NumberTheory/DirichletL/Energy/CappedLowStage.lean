@@ -12,17 +12,10 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedLowStage
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins
-open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyCappedRequests CenteredMomentEnergySourceCapSchedule
-open CenteredMomentNaturalFixedRaySource
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyCappedRequests CenteredMomentEnergySourceCapSchedule CenteredMomentNaturalFixedRaySource
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_capped_low

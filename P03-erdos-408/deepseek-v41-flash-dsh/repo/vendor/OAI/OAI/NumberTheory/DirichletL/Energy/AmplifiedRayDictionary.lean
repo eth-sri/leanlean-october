@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildSourceCaps
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentEnergyAmplifiedRayDictionary
 open HeckeFamily CenteredMomentSecondHeightFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum

@@ -8,13 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.WholeDivisorShell
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentCommonHarmonicMass
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
-open CenteredMomentRankinRadical CenteredMomentRankinLabels
-open CenteredMomentDivisorAllocation CenteredMomentWholeDivisorShell
-open CenteredMomentDyadicCount CenteredMomentSectorLocalization
+open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentRankinRadical CenteredMomentRankinLabels CenteredMomentDivisorAllocation CenteredMomentWholeDivisorShell CenteredMomentDyadicCount CenteredMomentSectorLocalization
 local notation "O" => ActualEisensteinCubic.O
 abbrev Label := (Ideal O × Ideal O) × Finset (Ideal O)
 

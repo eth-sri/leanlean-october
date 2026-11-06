@@ -16,17 +16,11 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthHighBound
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyZeroReferencePhysical (balancedInput)
 open CenteredMomentEnergyOriginalHighReflectionSymmetric (balanced_four_scale_gates)
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyOriginalProfileControl
+open CenteredMomentCommonRadialData CenteredMomentSourceRow CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyOriginalProfileControl
 local notation "O"=>HeckeFamily.O
-local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
 
 lemma low_restrict (Q:Ideal O)(a b bΦ Bmask L L' Mcap e Z:ℝ)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(K:ℝ)(hZ:1≤Z)(hL:L'≤L)

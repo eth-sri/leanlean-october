@@ -11,8 +11,7 @@ noncomputable section
 open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open InverseTerminalWidths InverseReflectedPhase CompletedHeight
+
 local notation "Eis"=>ActualEisensteinCubic.O
 universe v
 

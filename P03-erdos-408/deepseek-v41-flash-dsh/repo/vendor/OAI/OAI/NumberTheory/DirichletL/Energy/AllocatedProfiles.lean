@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.Profiles
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 namespace SevenEighths.CenteredMomentEnergyAllocatedProfiles
 open CenteredMomentFiniteProfileExceptional
 
@@ -27,7 +27,7 @@ theorem retained_pair_control (a b:ℝ)(ha:0<a)(S:Finset (ℕ×ℕ)):
   have h₀:=hbound (p.profile 0) (p.support 0) (U 0) (hU 0) t
   have h₁:=hbound (p.profile 1) (p.support 1) (U 1) (hU 1) t
   have hp₀:=sourceControl_nonneg T (p.profile 0)
-  change sourceControl S _*sourceControl S _≤_
+
   apply (mul_le_mul h₀ h₁ (sourceControl_nonneg _ _) (by positivity)).trans_eq
   simp only [Profiles.control,show 2*n=n+n by omega,pow_add]
   ring

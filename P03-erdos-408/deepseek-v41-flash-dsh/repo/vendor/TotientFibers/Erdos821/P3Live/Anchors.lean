@@ -10,7 +10,7 @@ public import Erdos821.P3Live.Conservation
 
 set_option autoImplicit false
 
-open scoped BigOperators
+
 
 noncomputable section
 

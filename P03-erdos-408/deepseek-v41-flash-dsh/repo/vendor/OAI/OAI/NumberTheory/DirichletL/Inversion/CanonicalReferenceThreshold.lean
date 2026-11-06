@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators SchwartzMap ContDiff
+
 
 namespace SevenEighths.InverseMoment
 

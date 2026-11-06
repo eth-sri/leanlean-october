@@ -75,7 +75,7 @@ theorem scaled_direct_bound (e κ : ℝ) (he : 0<e) (he' : e<1/1000)
     unfold presentationComplexity HeckeLogarithmic.complexity
     positivity) _
   apply (hb.trans (mul_le_of_le_one_left (by positivity) hfac)).trans
-  change _ ≤ _ at hc hj ht
+
   have hcC : 2*Cb*Real.pi≤C := by dsimp [C]; nlinarith [mul_nonneg hE Real.pi_pos.le]
   have heC : 8*Cb+E*Real.pi≤C := by dsimp [C]; nlinarith [Real.pi_pos]
   calc

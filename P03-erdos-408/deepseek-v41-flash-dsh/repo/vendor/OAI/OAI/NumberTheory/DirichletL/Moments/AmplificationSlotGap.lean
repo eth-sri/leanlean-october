@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationEligibility
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 open Filter
 namespace SevenEighths.CenteredMomentAmplificationSlotGap
 local notation "O" => ActualEisensteinCubic.O

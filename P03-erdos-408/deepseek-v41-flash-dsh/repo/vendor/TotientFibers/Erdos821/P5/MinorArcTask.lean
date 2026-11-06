@@ -5,7 +5,7 @@ public import Erdos821.Blueprint.Analytic
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 open Filter
 
 namespace Erdos821.P5Core

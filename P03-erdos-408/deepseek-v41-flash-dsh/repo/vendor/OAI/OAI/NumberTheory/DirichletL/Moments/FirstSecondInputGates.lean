@@ -12,14 +12,8 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSecondInputGates
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCommonAllocationSum CenteredMomentOriginalCommonHarmonic
-open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn
-open CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy
-open CenteredMomentSectorLocalization
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentCommonAllocationSum CenteredMomentOriginalCommonHarmonic CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
-local instance {α:Type*}:DecidableEq α:=Classical.decEq _
 
 def exponent (A D P q ε ξ:ℝ):ℝ:=
   max (A+ε) (max (2*A+D+ε+ξ/2) (max (A+P+ε) q))

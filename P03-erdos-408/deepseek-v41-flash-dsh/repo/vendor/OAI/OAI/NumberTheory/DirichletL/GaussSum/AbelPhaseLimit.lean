@@ -9,20 +9,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open Filter Real Asymptotics ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 
 namespace ActualEisensteinCubic
 
@@ -463,8 +456,6 @@ theorem two_coordinate_norm_four :
 
 end ActualEisensteinCubic
 
-open Filter
-open scoped Topology
 
 theorem abel_transfer (P V W : ℝ → ℂ) (p w : ℂ)
     (hP : Tendsto P (𝓝[>] (0 : ℝ)) (𝓝 p))

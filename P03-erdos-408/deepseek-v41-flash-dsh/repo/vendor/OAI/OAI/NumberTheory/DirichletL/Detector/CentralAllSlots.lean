@@ -9,11 +9,9 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralSlotSum
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeCentralAllSlots
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-open CanonicalQuadraticSieve CanonicalRowCompletion ProbeCentralRepeatedProduct
-open ProbeCentralRepeatedSubset ProbeCentralBranchProduct
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion ProbeCentralRepeatedProduct ProbeCentralRepeatedSubset ProbeCentralBranchProduct
 local notation "O" => HeckeFamily.O
 
 def phaseSlot (u : FreeRow) (T : Finset PrimeIdeal) (W : ℝ→ℂ) (Y : ℝ) (z : ℂ) : ℂ :=

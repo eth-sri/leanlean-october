@@ -8,76 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
 
-open scoped BigOperators Classical ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory
+
+open MeasureTheory Real
+
+open Finset Complex
+
+open Filter Real Asymptotics ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
+
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Filter Asymptotics
+
+open MeasureTheory Set ActualEisensteinCubic UniqueFactorizationMonoid
+
+
+
 
 namespace CompletedGauss
 open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic LocalReflectionBrackets
@@ -105,8 +50,6 @@ open ActualEisensteinCubic CompletedGauss CompletedGauss.FreeReflection Canonica
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CubicEisenstein.FixedFourierGeometry
-
-open scoped BigOperators Classical
 
 namespace CompletedGauss.FreeReflection
 open ActualEisensteinCubic
@@ -156,12 +99,6 @@ end CubicEisenstein
 namespace CompletedGauss.FreeReflection
 open ActualEisensteinCubic CubicEisenstein LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
-local instance inactivePoolMaximal (I Q Q0:Ideal Eis) (P:pool I Q Q0) : P.val.IsMaximal:=
-  pool_maximal I Q Q0 P
-noncomputable local instance inactivePoolField (I Q Q0:Ideal Eis) (P:pool I Q Q0) : Field (Eis⧸P.val):=
-  Ideal.Quotient.field P.val
-noncomputable local instance inactivePoolFintype (I Q Q0:Ideal Eis) (P:pool I Q Q0) : Fintype (Eis⧸P.val):=
-  Fintype.ofFinite _
 
 end CompletedGauss.FreeReflection
 
@@ -181,14 +118,9 @@ include R I F Q0 hR hI hF hm hf hz hbad hcop hA hT
 end GoodMaskRowData
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
-
 namespace CubicEisenstein
 open ActualEisensteinCubic
 local notation "Eis" => ActualEisensteinCubic.O
-noncomputable local instance rayUnitsFintype : Fintype Eisˣ := by
-  letI : Finite Eisˣ:=PrimaryIdealUnitReindex.finite_units
-  exact Fintype.ofFinite _
 
 end CubicEisenstein
 

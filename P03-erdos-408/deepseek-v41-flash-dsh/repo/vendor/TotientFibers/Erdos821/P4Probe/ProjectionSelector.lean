@@ -6,7 +6,7 @@ public import Mathlib.Analysis.CStarAlgebra.Classes
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe

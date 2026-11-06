@@ -424,7 +424,7 @@ theorem ghost_summand_eq_prod (hB : (bandPrimes x d).card ≤ B) (N t : ℕ)
       have h₁ : pendingHits x d s.1.1 s.2.2.1 = ∑ xp, hitPart (HitsAt x d s.1.1) s.2.2.1 xp := rfl
       have h₂ : pendingHits x d s.1.1 (ghostMem s.2.2.1 g) =
           ∑ xp, (hitPart (HitsAt x d s.1.1) s.2.2.1 xp - g.1 xp + g.2 xp) := by
-        change ∑ xp, hitPart (HitsAt x d s.1.1) (ghostMem s.2.2.1 g) xp = _
+
         exact sum_congr rfl fun xp _ => hitPart_ghostMem (hok xp)
       rw [h₁, h₂, ← prod_pow_eq_pow_sum, ← prod_pow_eq_pow_sum, ghostProd, ← prod_mul_distrib,
         ← prod_mul_distrib]

@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianPhysicalMass
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O

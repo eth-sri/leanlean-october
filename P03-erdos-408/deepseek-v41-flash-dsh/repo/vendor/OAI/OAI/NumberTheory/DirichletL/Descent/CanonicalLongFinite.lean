@@ -8,11 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers IdealMobiusDivisorSum
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers IdealMobiusDivisorSum
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_complete_finite_split (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :

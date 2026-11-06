@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Support
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentExtraction
 open CenteredMomentRectangle CenteredMomentPrimary CenteredMomentTwist

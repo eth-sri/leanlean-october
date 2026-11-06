@@ -11,7 +11,7 @@ ghost/edge choices, the analytic ghost parameters, and the empty boundary mass. 
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators
+
 open Filter
 attribute [local instance] Classical.propDecidable
 

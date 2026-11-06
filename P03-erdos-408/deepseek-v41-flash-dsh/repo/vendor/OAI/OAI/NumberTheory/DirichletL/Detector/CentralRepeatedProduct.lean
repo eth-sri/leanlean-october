@@ -8,11 +8,9 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralSplit
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeCentralRepeatedProduct
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-open CanonicalQuadraticSieve CompletedGauss ProbeRowReflectedAllocation
-open HeckeDeletionBounds HeckeReciprocalGrowth
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CanonicalQuadraticSieve CompletedGauss ProbeRowReflectedAllocation HeckeDeletionBounds HeckeReciprocalGrowth
 local notation "O" => HeckeFamily.O
 
 def rowCost (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (u : FreeRow)

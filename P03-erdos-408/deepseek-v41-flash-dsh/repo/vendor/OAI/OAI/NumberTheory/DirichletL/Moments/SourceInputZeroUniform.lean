@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSourceInputZeroUniform
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceProfileMass CenteredMomentSourceInputTailUniform
-open CenteredMomentFirstLocalization EisensteinSchwartzPoisson
-open CenteredMomentExceptionalAmplitudePair CenteredMomentAddedZeroUniform
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy CenteredMomentSourceProfileMass CenteredMomentSourceInputTailUniform CenteredMomentFirstLocalization EisensteinSchwartzPoisson CenteredMomentExceptionalAmplitudePair CenteredMomentAddedZeroUniform
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -64,7 +59,7 @@ theorem first_input_zero_bound (hi:ι→ℝ)(wlo whi ε:ℝ)
       (fun x hx=>(hs₁ hx).2) (fun x hx=>(hs₂ hx).2) v hv
     refine ⟨hp.1,hp.2.trans ?_⟩
     simp only [map_one,Nat.cast_one,one_mul,div_one]
-    change (∏i,hi i)*whi*whi*(s.X₁*s.X₂)*(∏i,s.P i)≤_
+
     have hh:0≤V:=hV.le
     dsimp [L,V,volume] at *
     nlinarith
@@ -82,7 +77,7 @@ theorem first_input_zero_bound (hi:ι→ℝ)(wlo whi ε:ℝ)
   have hp:(L*V)^(1+ε)/V=L^(1+ε)*V^ε:=by
     rw [Real.mul_rpow hL.le hV.le,Real.rpow_add hV,Real.rpow_one]
     field_simp
-  change C₀*K*(2*plainControl s W₁ W₂)^2*‖paperRadialFourier Φ 0‖*(L*V)^(1+ε)/V=_
+
   calc
     _=4*C₀*(plainControl s W₁ W₂)^2*K*‖paperRadialFourier Φ 0‖*((L*V)^(1+ε)/V):=by ring
     _=_:=by rw [hp];ring

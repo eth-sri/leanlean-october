@@ -8,7 +8,7 @@ public import Mathlib.Analysis.InnerProductSpace.Calculus
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 open MeasureTheory Set
 namespace SevenEighths.HeckeDetectorRowwise
 

@@ -8,7 +8,7 @@ public import Mathlib.Tactic.Positivity.Finset
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 
 namespace Erdos821.S2Empty
 
@@ -156,7 +156,7 @@ theorem local_small_group_mass_le_one (P : PrimeGroups) (g : P.Group) (M : ℕ)
         intro a _
         by_cases ha : Function.Injective a <;> simp [ha]
   have hVeq : (∑ p : P.Prime g, (p.val : ℝ)⁻¹) = P.V g := by
-    change (∑ p : P.primes g, (p : ℝ)⁻¹) = ∑ p ∈ P.primes g, (p : ℝ)⁻¹
+
     exact Finset.sum_coe_sort (P.primes g) (fun p : ℕ => (p : ℝ)⁻¹)
   have hlabels :
       (∑ a : Fin M → P.Prime g,

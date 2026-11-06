@@ -9,13 +9,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstExtractedLedger
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstPhysicalLedger
-open CenteredMomentFirstScale CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
-open CenteredMomentSectorLocalization CenteredMomentFirstExtractedLedger CenteredMomentDescentLedger
-open CanonicalQuadraticSieve CenteredMomentRankinRadical
+open CenteredMomentFirstScale CenteredMomentCompleteCommon CenteredMomentCanonicalFirst CenteredMomentSectorLocalization CenteredMomentFirstExtractedLedger CenteredMomentDescentLedger CanonicalQuadraticSieve CenteredMomentRankinRadical
 local notation "O" => ActualEisensteinCubic.O
 
 theorem nominal_log (I J E : Ideal O) (hE : E≠0)

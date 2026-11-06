@@ -13,8 +13,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 namespace SevenEighths.CenteredMomentDetectorPlainSlotProfile
-open HeckeFamily HeckeInverseAmplification HeckeDyadic CenteredMomentDetectorDictionary
-open CenteredMomentRetainedEnergy
+
 local notation "O"=>HeckeFamily.O
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
 

@@ -9,7 +9,7 @@ public import Mathlib.Tactic.FieldSimp
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
+
 open MeasureTheory
 namespace SevenEighths.EisensteinTheta
 open ThetaProduct

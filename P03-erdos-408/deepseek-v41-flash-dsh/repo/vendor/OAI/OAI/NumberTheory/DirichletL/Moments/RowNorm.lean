@@ -10,10 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentRowNorm
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentCorrelation CenteredMomentFourier CenteredMomentSupportedCorrelation
-open CenteredMomentCommonSupport
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentFourier CenteredMomentSupportedCorrelation CenteredMomentCommonSupport
 local notation "O" => ActualEisensteinCubic.O
 
 def pairResidue (a b : O) (ha : Supported (Ideal.span {a}))

@@ -12,10 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondActiveDyadic
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondSectorRetained CenteredMomentSecondSectorColumns CenteredMomentSectorLocalization
-open CenteredMomentSecondDyadicPartition CenteredMomentSecondWholeKernel CenteredMomentLogDyadic CenteredMomentSmooth
-open CenteredMomentActiveSource CenteredMomentSourceRow CenteredMomentSecondRetainedRows
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondSectorRetained CenteredMomentSecondSectorColumns CenteredMomentSectorLocalization CenteredMomentSecondDyadicPartition CenteredMomentSecondWholeKernel CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentActiveSource CenteredMomentSourceRow CenteredMomentSecondRetainedRows
 local notation "O" => ActualEisensteinCubic.O
 
 def sourceLower (C D : Ideal O) (A : O) (K : ℝ) : Fin 4→ℝ :=

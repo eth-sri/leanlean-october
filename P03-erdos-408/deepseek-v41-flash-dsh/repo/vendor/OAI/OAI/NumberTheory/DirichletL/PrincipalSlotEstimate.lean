@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.EulerRegion
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open Complex
 
 namespace SevenEighths.PrincipalSlotEstimate
@@ -179,7 +179,7 @@ theorem principal_marked_error_bounds {Q : ℝ} {A η s : ℂ}
   have hE := unramified_marked_error_bound (coordR Q A s (1 / 6))
     (coordV Q (1 / 6)) (Q : ℂ)⁻¹ (coordK Q η s 1) (coordW Q 1 1)
     (coordD Q η 1 s) hRhalf hVhalf hq hDhalf
-  change ‖principalMarked Q A η s + coordD Q η 1 s‖ ≤ _ at hE
+
   have hRT : ‖coordR Q A s (1 / 6)‖ ≤ Q ^ (-(7 / 8 : ℝ)) :=
     hR.trans (hpow _ _ (by linarith))
   have hKV : ‖coordK Q η s 1‖ * ‖coordV Q (1 / 6)‖ ≤ Q ^ (-(7 / 8 : ℝ)) := by
@@ -480,7 +480,7 @@ theorem region_marked_error_bounds {Q : ℝ} {A η s w z : ℂ}
   have hE := unramified_marked_error_bound (coordR Q A s z) (coordV Q z)
     (Q : ℂ)⁻¹ (coordK Q η s w) (coordW Q 1 w) (coordD Q η 1 s)
     hRhalf hg.1 hq hg.2.2
-  change ‖regionMarked Q A η s w z + coordD Q η 1 s‖ ≤ _ at hE
+
   have hRT : ‖coordR Q A s z‖ ≤ Q ^ (-(7 / 8 : ℝ)) := hR.trans (hpow _ _ (by linarith))
   have hKV : ‖coordK Q η s w‖ * ‖coordV Q z‖ ≤ Q ^ (-(7 / 8 : ℝ)) := by
     calc

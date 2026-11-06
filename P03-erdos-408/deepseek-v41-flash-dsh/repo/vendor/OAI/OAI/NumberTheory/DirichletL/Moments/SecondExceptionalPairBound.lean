@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalWindowHeight
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+
 open Filter MeasureTheory
 
 namespace SevenEighths.CenteredMomentSecondExceptionalPairBound

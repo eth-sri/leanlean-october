@@ -25,7 +25,7 @@ theorem divisor_congruence (v t k : A) (hv : v ≠ 0)
   obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
   obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective y
   rw [scaledResidue_congruence, scaledResidue_mk, ← map_add, Ideal.Quotient.eq, Ideal.mem_span_singleton]
-  change (v * t) * v ∣ v * x - (v * t) * y - v * k ↔ v * t ∣ x - (t * y + k)
+
   rw [show (v * t) * v = v * (v * t) by ring,
     show v * x - (v * t) * y - v * k = v * (x - (t * y + k)) by ring]
   exact mul_dvd_mul_iff_left hv
@@ -94,8 +94,7 @@ theorem fullCorrelation_divisor_eq_zero (p v t k : A) (hv : v ≠ 0)
 
 end Domain
 section Eisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss
 open ConcretePrimeRowBridge hiding O
 local notation "O" => ActualEisensteinCubic.O
 

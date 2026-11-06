@@ -11,16 +11,9 @@ public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorSlots
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 namespace SevenEighths.CenteredMomentEnergyAllocatedChildren
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial
-open CenteredMomentDetectorDictionary CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion
-open CenteredMomentSecondHeightFamily CenteredMomentHeckeHeight
-open CenteredMomentOriginalRadialComparison CenteredMomentInductionEnergy
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentDetectorDictionary CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentSecondHeightFamily CenteredMomentHeckeHeight CenteredMomentOriginalRadialComparison CenteredMomentInductionEnergy CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
 open CenteredMomentRadialEligibleEnergy (Radial)
 local notation "O"=>HeckeFamily.O
 
@@ -87,8 +80,7 @@ lemma natural_subset_radial_eq_energy (η:Character)(r:Radial)(hz:∀z,r.keep z�
   simp_rw [hp] at hh
   exact hh
 
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained
-open CenteredMomentRetainedProfile CenteredMomentCommonAllocationSum
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentRetainedProfile CenteredMomentCommonAllocationSum
 
 def allocatedEnergy (η:Character)(r:Radial)(D:Ideal O)
     (a:Allocation D (Finset.univ:Finset (α⊕Fin 2))) (V₁ V₂:Plain)

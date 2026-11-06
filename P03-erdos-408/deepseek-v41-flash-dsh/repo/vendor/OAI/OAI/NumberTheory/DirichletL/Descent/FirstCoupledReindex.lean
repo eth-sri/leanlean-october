@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstActualEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic CoprimeMobiusExtension
-open RayFourExpansion MixedCrossSeparation
+
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic CoprimeMobiusExtension RayFourExpansion MixedCrossSeparation
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -30,7 +29,7 @@ theorem first_coprime_coupled_reindex {ι : Type*} [DecidableEq ι]
   apply Finset.sum_congr rfl
   intro D hD
   rw [← prime_product_moebius P hprime hinj D]
-  change supportMobius P D * _ = _
+
   rw [mul_assoc]
   congr 1
   simp only [Finset.mul_sum]

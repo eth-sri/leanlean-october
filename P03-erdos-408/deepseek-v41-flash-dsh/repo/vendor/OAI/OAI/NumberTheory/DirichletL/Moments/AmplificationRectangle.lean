@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationShortening
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.CenteredMomentAmplificationRectangle
 open CenteredMomentRectangle CenteredMomentExtraction CenteredMomentAmplificationShortening
 local notation "O" => ActualEisensteinCubic.O

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicContour
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
+
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily

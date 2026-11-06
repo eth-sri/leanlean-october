@@ -7,9 +7,9 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorSlots
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.CenteredMomentDivisorBoundary
-open IdealMobiusDivisorSum CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction
+
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 

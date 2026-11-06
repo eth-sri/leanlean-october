@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAllocationShell
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentExceptionalAmplitudePair
 open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw

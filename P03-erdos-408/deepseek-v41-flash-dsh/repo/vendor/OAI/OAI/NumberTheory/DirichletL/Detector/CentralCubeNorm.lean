@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.ProfileIntegral
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
@@ -66,7 +66,7 @@ theorem actual_common_cube_aggregate_norm (W0 W1 : SchwartzMap ℝ ℂ)
     (hp.1.const_mul scale).mul_const mass
   have hf := cube_common_profile_integral e a B H i he he' ha ha' hB hH S hS hmax hfirst η R hR
     T hT ψ hbin W Yp W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
-  change Integrable F heightMeasure ∧ _ at hf
+
   have hb' (t : HeightSpace) : ‖F t‖≤scale*‖onLines W0 W1 (a+16*e) (17/50) (1-a-6*e) t‖*mass := by
     by_cases ht : t∈E
     · dsimp only [F]

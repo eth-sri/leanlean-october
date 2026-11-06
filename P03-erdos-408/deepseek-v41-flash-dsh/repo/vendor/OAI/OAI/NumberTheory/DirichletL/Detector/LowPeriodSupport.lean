@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.RowClosure
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
 local notation "O" => ActualEisensteinCubic.O

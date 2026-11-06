@@ -12,10 +12,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyWidthFloor
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyWidthSchedule CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
-open QuadraticInitialBound
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyWidthSchedule CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 private lemma control_mono {a b:ℝ}(p:Profiles a b){S T:Finset (ℕ×ℕ)}(h:S⊆T):
@@ -27,7 +24,6 @@ private lemma control_mono {a b:ℝ}(p:Profiles a b){S T:Finset (ℕ×ℕ)}(h:S�
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_joint_floor (Mcap B κ ε:ℝ)(hMcap:0≤Mcap)(hB:0≤B)

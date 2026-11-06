@@ -13,9 +13,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialPhysicalSlots
-open HeckeDetectorBatch HeckeDetectorRawFiber HeckeDetectorFiberPartition
+open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialPhysicalSlots HeckeDetectorBatch HeckeDetectorRawFiber HeckeDetectorFiberPartition
 local notation "O" => HeckeFamily.O
 
 theorem sourceMoment_physical_scale (Z d ell : ℝ) (hZ : 0≤Z) (hd : d≠0) :

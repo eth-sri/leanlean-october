@@ -14,7 +14,7 @@ values multiplies the constrained mass by the total value mass. -/
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators
+
 
 namespace Erdos821.P3High
 

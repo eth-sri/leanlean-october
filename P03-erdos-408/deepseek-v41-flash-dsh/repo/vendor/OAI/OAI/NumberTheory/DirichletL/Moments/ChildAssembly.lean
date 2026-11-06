@@ -12,8 +12,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentChildAssembly
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentFixedRay CenteredMomentMobiusRegroup CenteredMomentRowNorm RayFourExpansion
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFixedRay CenteredMomentMobiusRegroup CenteredMomentRowNorm RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 def divisorCoefficient {α : Type*} (L : Ideal O) (a : α → O) (c : α → ℂ)

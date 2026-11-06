@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion FirstCauchyArithmetic
-open InverseSecondPrincipalCaller InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseMomentGlobalPrincipalMass
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion FirstCauchyArithmetic InverseSecondPrincipalCaller InverseFirstPriorityParents InverseMomentWholePriorityParents InverseMomentGlobalPrincipalMass
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem global_priority_zero_physical (ε:ℝ)(hε:0<ε)(Jmax:ℕ)(dsmall:ℝ)(hdsmall:0<dsmall):

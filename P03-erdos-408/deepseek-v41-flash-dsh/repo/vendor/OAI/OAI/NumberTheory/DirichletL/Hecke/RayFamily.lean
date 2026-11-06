@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.LogDerivative
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.HeckeRayFamily
 open HeckeFamily
 
@@ -24,7 +24,7 @@ theorem idealCoeff_character (χ : RayOrthogonality.rayCharacters M) (I : Ideal 
 
 theorem principal_iff (χ : RayOrthogonality.rayCharacters M) :
     (character M χ).residue = 1 ↔ χ = 1 := by
-  change χ.val = 1 ↔ χ = 1
+
   exact ⟨fun h => Subtype.ext h, fun h => congrArg Subtype.val h⟩
 
 theorem character_entire (χ : RayOrthogonality.rayCharacters M) (hχ : χ ≠ 1) :

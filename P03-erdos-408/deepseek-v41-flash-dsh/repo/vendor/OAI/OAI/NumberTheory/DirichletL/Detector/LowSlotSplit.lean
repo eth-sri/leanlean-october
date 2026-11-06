@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LowSelectedSum
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 local notation "O" => ActualEisensteinCubic.O
 

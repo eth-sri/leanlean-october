@@ -13,23 +13,21 @@ open Filter
 
 open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
+
 
 open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
-open scoped Classical
 
-open scoped ContDiff
+
+
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
 
-open scoped ComplexConjugate
+
+
 
 theorem conductor_doubling_error_le (Q X T k D : ℕ) (hD : 1 ≤ D)
     (hQ : 2*D ≤ Q) (hk : X+1 ≤ 2^k) :

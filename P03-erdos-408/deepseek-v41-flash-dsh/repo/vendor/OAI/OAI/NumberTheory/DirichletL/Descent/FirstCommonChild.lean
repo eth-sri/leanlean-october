@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstCommonColumns
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open SecondPassArithmetic FourierBridge
+
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion SecondPassArithmetic FourierBridge
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]

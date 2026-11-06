@@ -15,7 +15,6 @@ namespace SevenEighths.HeckeRayPrimes
 open HeckeFamily
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 
 theorem analytic_family : PNT.RayAsymptotic.AnalyticFamily M
     (fun χ => LFunction (HeckeRayFamily.character M χ))

@@ -51,12 +51,6 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDim
 /-- Borel σ-algebra on the model space `E`. -/
 local instance instMeasurableSpaceEL2CompactnessCompactness : MeasurableSpace E := borel E
 local instance instBorelSpaceEL2CompactnessCompactness : BorelSpace E := ⟨rfl⟩
-local instance instOpensMeasurableSpaceEL2CompactnessCompactness : OpensMeasurableSpace E := by
-  infer_instance
-local instance instMeasurableAddEL2CompactnessCompactness : MeasurableAdd E := by
-  infer_instance
-local instance instMeasurableNegEL2CompactnessCompactness : MeasurableNeg E := by
-  infer_instance
 
 variable {K : Set E}
 variable {ψ : E → ℝ}

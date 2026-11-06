@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawFourier
-open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge InverseInitialRawDictionary
-open InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier FourierBridge JointLogSeparation
+open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge InverseInitialRawDictionary InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier FourierBridge JointLogSeparation
 
 private theorem child_cover (Wref : ℝ→ℂ) (b D : ℝ) (hD : 0<D)
     (hWref : ∀x,Wref x≠0 → x≤b) (s : ℝ) :

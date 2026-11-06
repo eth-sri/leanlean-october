@@ -8,25 +8,25 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-open Filter
 
-open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
-open scoped Classical
 
-open scoped ContDiff
 
-open Topology
 
-open scoped Convolution ContDiff Pointwise
+
+
+
+
+
+
+
+
+
+
 
 noncomputable def extendPerm {n : ℕ} (e : Equiv.Perm (Fin n)) (d : ℕ) : Equiv.Perm (Fin (n+d)) :=
   finSumFinEquiv.symm.trans ((Equiv.sumCongr e (Equiv.refl (Fin d))).trans finSumFinEquiv)

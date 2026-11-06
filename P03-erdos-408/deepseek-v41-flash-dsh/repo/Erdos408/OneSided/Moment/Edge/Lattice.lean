@@ -20,7 +20,7 @@ reduced basis of determinant one puts all relevant vectors into the box `|m₁| 
 * `exists_lattice_box`: there are integers `h₁, l₁, h₂, l₂` with `h₁ l₂ - l₁ h₂ = 1` and box
   sides `A', B'` with `A' B' ≤ 6 c² Y` and `A', B' ≤ Y^{0.9}` such that every relevant
   `(h, l)` has new coordinates `m₁ = h l₂ - l h₂`, `m₂ = h₁ l - l₁ h` in the box. Since the
-  change of basis has determinant one, `h l' - l h' = m₁ m₂' - m₂ m₁'`.
+
 -/
 
 @[expose] public section

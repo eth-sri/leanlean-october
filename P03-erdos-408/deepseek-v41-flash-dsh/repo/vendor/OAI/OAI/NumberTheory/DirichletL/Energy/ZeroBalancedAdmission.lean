@@ -8,15 +8,10 @@ public import OAI.NumberTheory.DirichletL.Energy.NaturalSourceAdmission
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentEnergyZeroBalancedAdmission
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
-open CenteredMomentEnergyReferenceState CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentSourceInputTailUniform
-open CenteredMomentEnergyOriginalProfileControl CenteredMomentFirstReferenceEnergy
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentEnergyReferenceState CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentSourceInputTailUniform CenteredMomentEnergyOriginalProfileControl CenteredMomentFirstReferenceEnergy CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
 variable {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(p:Profiles a b)(ha:0<a)
 variable (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)
 local notation "inp"=>CenteredMomentEnergyZeroReferencePhysical.balancedInput s p ha t X₁ X₂ hX₁ hX₂

@@ -8,13 +8,12 @@ public import Erdos821.S2.PhysicalCompatibility
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Phys
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 

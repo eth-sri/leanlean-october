@@ -21,7 +21,7 @@ theorem theta_nonneg (n : ℕ) : 0 ≤ theta n := by
     exact (log_pos_of_two_le hn.two_le).le
   · simp [theta, hn]
 
-open Filter
+
 
 end LargePrimeGaps
 

@@ -27,7 +27,7 @@ theorem tail_scale_bounds : ∀ᶠ x : ℝ in atTop,
   have hlogNonneg : 0 ≤ Real.log (L x) := Real.log_nonneg hx
   have hpowNonneg : 0 ≤ (L x) ^ ((1 : ℝ) / 10) := Real.rpow_nonneg hLnonneg _
   have hTle : T x ≤ (L x) ^ ((1 : ℝ) / 10) := by
-    change ‖Real.log (L x)‖ ≤ 1 * ‖(L x) ^ ((1 : ℝ) / 10)‖ at hsmallx
+
     have habs : |Real.log (L x)| ≤ 1 * |(L x) ^ ((1 : ℝ) / 10)| := by
       simpa only [Real.norm_eq_abs] using hsmallx
     rw [abs_of_nonneg hlogNonneg, abs_of_nonneg hpowNonneg] at habs

@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition ConcreteTraceCRT
-open EisensteinSchwartzPoisson
+open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition ConcreteTraceCRT EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 lemma sexticGauss_frequency_congr (s : O) (hs : s≠0) (h k : O)

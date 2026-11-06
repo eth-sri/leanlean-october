@@ -11,13 +11,10 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+
 
 namespace SevenEighths.CenteredMomentSourceSupportedTailUniform
-open ActualEisensteinCubic HeckeFamily CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentFirstTailAggregate CenteredMomentFirstScale
-open CenteredMomentSupportedTailAggregate CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceRow CenteredMomentFirstDiscardedEnergy CenteredMomentSectorLocalization
+
 local notation "O" => ActualEisensteinCubic.O
 
 end SevenEighths.CenteredMomentSourceSupportedTailUniform

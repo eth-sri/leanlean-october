@@ -9,7 +9,7 @@ public import Erdos821.P3Adj.Weight
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 
 namespace Erdos821.S2Core
 

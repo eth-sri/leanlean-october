@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramMean
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbeGramCommon
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O

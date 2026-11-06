@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LowCentralGeometry
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O

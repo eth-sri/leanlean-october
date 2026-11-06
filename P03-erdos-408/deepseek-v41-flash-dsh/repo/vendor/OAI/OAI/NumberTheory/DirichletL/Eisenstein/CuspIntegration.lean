@@ -135,7 +135,7 @@ theorem middleTruncation_eq_ideal_divisors (G : Ideal O) (hG : Squarefree G)
         ∑ h ∈ rowNormDisk ⌊lengthScale⌋₊,
           paperRadialFourier W ((X / (Ideal.absNorm d : ℝ)) * ‖eisEmbedding h‖ ^ 2)
     else 0
-  change middleTruncation _ _ W X Y Z lengthScale = (X : ℂ) * ∑ d ∈ idealDivisors G, f d
+
   rw [← primePool_subset_sum_eq_divisors G hG f]
   unfold middleTruncation middleDivisors smallDivisors
   simp only [Finset.sum_filter]

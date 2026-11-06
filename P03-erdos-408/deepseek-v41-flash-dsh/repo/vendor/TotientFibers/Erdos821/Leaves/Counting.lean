@@ -9,8 +9,8 @@ public import Mathlib.GroupTheory.Nilpotent
 
 @[expose] public section
 
-open scoped BigOperators
-open Filter
+
+
 
 attribute [local instance] Classical.propDecidable
 

@@ -9,11 +9,10 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentPairedEligibleEnergy
-open CenteredMomentEligibleEnergy CenteredMomentActiveDivisorShell
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
+
 local notation "O" => ActualEisensteinCubic.O
 
 end SevenEighths.CenteredMomentPairedEligibleEnergy

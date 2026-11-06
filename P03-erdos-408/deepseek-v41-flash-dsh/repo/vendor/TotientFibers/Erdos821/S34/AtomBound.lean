@@ -7,7 +7,7 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+
 
 namespace Erdos821.S34Core
 

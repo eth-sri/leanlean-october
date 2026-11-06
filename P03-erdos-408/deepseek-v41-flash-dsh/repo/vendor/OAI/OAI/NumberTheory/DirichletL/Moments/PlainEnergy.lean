@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentPlainEnergy
-open CanonicalQuadraticSieve CenteredMomentRowNorm ConcreteTraceCRT
-open CanonicalRowCompletion
+open CanonicalQuadraticSieve CenteredMomentRowNorm ConcreteTraceCRT CanonicalRowCompletion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem rowEnergy_summable {α : Type*} (S : Finset α) (a : α → O)

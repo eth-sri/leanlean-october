@@ -12,15 +12,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalOriginalMask
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstMaskedFamily CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentCommonSupport
-open CenteredMomentFirstRetainedNorm CenteredMomentFirstSourceReduction
-open CenteredMomentCanonicalFirst CenteredMomentFirstSectors
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource CenteredMomentFirstMaskedFamily CenteredMomentSecondHeightFamily CenteredMomentOriginalCommonHarmonic CenteredMomentCommonSupport CenteredMomentFirstRetainedNorm CenteredMomentFirstSourceReduction CenteredMomentCanonicalFirst CenteredMomentFirstSectors
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 omit [DecidableEq ι] in
 lemma original_coefficient (s : Input ι) (R seed C I : Ideal O)

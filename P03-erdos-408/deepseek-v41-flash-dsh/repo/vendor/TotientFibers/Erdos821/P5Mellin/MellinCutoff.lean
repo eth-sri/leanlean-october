@@ -35,7 +35,7 @@ theorem mellinCutoffTask_proof : Erdos821.P5Core.MellinCutoffTask := by
     apply Filter.eventually_atTop.2
     refine ⟨Real.exp 1, ?_⟩
     intro x hx
-    change 1 ≤ Real.log x
+
     rw [← Real.log_exp (1 : ℝ)]
     exact Real.log_le_log (Real.exp_pos 1) hx
   filter_upwards [hEvent, hLlarge] with x hx hL
@@ -69,7 +69,7 @@ theorem mellinCutoffTask_proof : Erdos821.P5Core.MellinCutoffTask := by
       intro i
       have hi0 : i = 0 := Subsingleton.elim i 0
       subst i
-      change |y 0| ≤ R
+
       exact habs
     apply Metric.mem_closedBall.mpr
     rw [dist_zero_right]
@@ -77,7 +77,7 @@ theorem mellinCutoffTask_proof : Erdos821.P5Core.MellinCutoffTask := by
   have hFderiv : ∀ j y,
       ‖iteratedFDeriv ℝ j F y‖ ≤ bounds₁ j * L x ^ (C * ((j : ℝ) + 1)) := by
     intro j y
-    change ‖iteratedFDeriv ℝ j ((Ψ ∘ Real.exp) ∘ coordinateEval) y‖ ≤ _
+
     exact pi_exp_comp_iteratedFDeriv_bound x C lo hi bounds Ψ hC hbounds hcut hL j y
   obtain ⟨a, ha, hMass, hRepresentation, hTail⟩ :=
     hx  F hFsmooth hFsupport hFderiv

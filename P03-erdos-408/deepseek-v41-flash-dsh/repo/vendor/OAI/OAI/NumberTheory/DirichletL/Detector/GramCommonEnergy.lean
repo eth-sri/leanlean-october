@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT RayFourExpansion
-open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson CenteredMomentGaussEnergy
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT RayFourExpansion CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson CenteredMomentGaussEnergy
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 

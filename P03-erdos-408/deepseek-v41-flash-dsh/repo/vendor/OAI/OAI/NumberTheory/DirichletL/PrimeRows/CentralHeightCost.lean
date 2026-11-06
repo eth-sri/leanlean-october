@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeScale
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical

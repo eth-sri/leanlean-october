@@ -10,12 +10,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+
 open Complex Set MeasureTheory Filter
 namespace SevenEighths.ProbePrincipalContours
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
-open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
-open PrincipalMellinGrowth ProbeMellinBoundary
+open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues PrincipalMellinGrowth ProbeMellinBoundary
 local notation "Id" => Ideal ActualEisensteinCubic.O
 local instance : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 local instance : Countable Id := ConcretePrimeRowBridge.idealGenerator_injective.countable

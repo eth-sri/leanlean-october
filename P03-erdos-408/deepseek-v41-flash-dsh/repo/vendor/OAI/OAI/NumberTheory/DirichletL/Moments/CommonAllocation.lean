@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeExpansion
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentCommonAllocation
-open CenteredMomentSupport CenteredMomentCommonSectors CenteredMomentExtraction
-open CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily IdealMobiusDivisorSum
+open CenteredMomentSupport CenteredMomentCommonSectors CenteredMomentExtraction CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 
 theorem extract_coprime_product (C a : Ideal O) (hC : C≠0) (ha : a≠0)

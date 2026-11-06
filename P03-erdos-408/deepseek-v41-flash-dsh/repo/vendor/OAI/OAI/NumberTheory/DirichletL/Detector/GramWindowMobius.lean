@@ -11,8 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -63,7 +62,7 @@ theorem original_window_mobius_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaxima
     intro I J h
     dsimp [f]
     rw [shell_window_support W hW N hN U v T I J h,mul_zero]
-  change (∑I∈F,∑J∈F,if IsCoprime I.val J.val then f I J else 0)=_
+
   rw [finite_pair_mobius_dilation F F f hf]
   apply Finset.sum_congr rfl
   intro D hD

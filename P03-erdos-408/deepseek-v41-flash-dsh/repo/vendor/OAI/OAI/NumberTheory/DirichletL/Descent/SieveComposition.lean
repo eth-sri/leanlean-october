@@ -9,7 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 
-open scoped BigOperators
+
 noncomputable section
 
 theorem bounded_finset_coefficient_sum_sq {C : Type*} (s : Finset C)

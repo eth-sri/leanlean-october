@@ -109,7 +109,7 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     congr 1
     ring
   rw [← Finset.sum_coe_sort] at he'
-  change (∑ z : elementRange M, ‖∑ j : idealRange N, cubicRow j.val z.val*a j‖^2) ≤ _
+
   apply he'.trans_eq
   calc
     _ = (64*K*D)*(N^θ*N^(6*θ))*S*∑ j, ‖a j‖^2 := by dsimp [D]; ring

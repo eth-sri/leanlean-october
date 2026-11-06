@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRadialData
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentCommonRadialCost
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentAllocationCost

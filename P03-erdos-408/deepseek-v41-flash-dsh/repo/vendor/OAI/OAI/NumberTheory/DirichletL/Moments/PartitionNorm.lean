@@ -8,7 +8,7 @@ public import Mathlib.Analysis.SpecialFunctions.Log.Base
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.CenteredMomentPartitionNorm
 open CenteredMomentPartition CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O

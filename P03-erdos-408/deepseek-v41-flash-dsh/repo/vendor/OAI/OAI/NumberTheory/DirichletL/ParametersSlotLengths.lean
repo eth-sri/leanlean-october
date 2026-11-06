@@ -9,7 +9,7 @@ public import Mathlib.Algebra.BigOperators.Field
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
+
 namespace SevenEighths.Parameters
 
 theorem exists_distinct_slot_lengths (L : ℝ) (hL : 0<L) :

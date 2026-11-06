@@ -11,15 +11,9 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondLiveEnergy
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondSectorEnergy CenteredMomentSecondSectorColumns
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRestrictedSource
-open CenteredMomentRestrictedEnergy CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass
-open CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
-open CenteredMomentAmplificationLiveMask CenteredMomentFirstSectors RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSectorEnergy CenteredMomentSecondSectorColumns CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentAmplificationLiveMask CenteredMomentFirstSectors RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem live_divisor_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (B : Tuple ι) (hB : ∀ i,B i≠0) (C R L : Ideal O)

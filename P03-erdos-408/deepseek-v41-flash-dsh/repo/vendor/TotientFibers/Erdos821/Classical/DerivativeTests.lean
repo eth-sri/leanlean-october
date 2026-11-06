@@ -20,7 +20,7 @@ translate their natural-indexed sums to the integer interval in the contract.
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.Classical.Deriv

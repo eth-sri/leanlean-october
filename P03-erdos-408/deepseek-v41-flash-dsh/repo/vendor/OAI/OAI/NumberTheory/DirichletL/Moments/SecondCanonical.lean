@@ -9,13 +9,10 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondSectorColumns
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentSecondCanonical
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily
-open CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentSupportedCorrelation
-open CenteredMomentSourceRow UniqueFactorizationMonoid CenteredMomentSupport CenteredMomentUnequal
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentSupportedCorrelation CenteredMomentSourceRow UniqueFactorizationMonoid CenteredMomentSupport CenteredMomentUnequal
 local notation "O" => ActualEisensteinCubic.O
 
 def commonPrime (C D : Ideal O) (P : CommonIndex C D) : O := primaryGenerator P.val

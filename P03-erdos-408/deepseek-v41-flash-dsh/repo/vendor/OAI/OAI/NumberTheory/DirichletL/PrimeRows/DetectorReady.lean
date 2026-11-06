@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.TargetPrincipal
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical

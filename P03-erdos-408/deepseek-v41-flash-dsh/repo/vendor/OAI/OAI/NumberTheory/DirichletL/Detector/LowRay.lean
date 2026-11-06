@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ProbeCompleted ProbeRow CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion
-open RayFourExpansion CanonicalCoefficientClass
+open ProbeCompleted ProbeRow CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion RayFourExpansion CanonicalCoefficientClass
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -22,7 +21,7 @@ def physicalRayRepresentative (σ : RayRing) : PhysicalRayElement :=
   if h : ∃s : PhysicalRayElement,physicalRay s.val=σ then Classical.choose h
   else ⟨1,by
     simp [Supported,Ideal.span_singleton_one,←Ideal.one_eq_top]
-    change (1:Id)≠0
+
     exact one_ne_zero⟩
 
 lemma physicalRayRepresentative_spec (s : PhysicalRayElement) :

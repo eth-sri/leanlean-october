@@ -8,7 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation
+
 noncomputable section
 
 theorem inverseNormWindow_contDiff (V : ℝ → ℂ) (hV : ContDiff ℝ ∞ V) :

@@ -10,8 +10,7 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalQuadraticSieve
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
+open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalQuadraticSieve SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 namespace SevenEighths.InverseInitialQuotientGeometry
 
 local notation "Eis" => ActualEisensteinCubic.O
@@ -48,7 +47,7 @@ theorem quotientSet_eq_initial {J : ℕ} (S : Finset (Source (ι:=ι) J))
   rw [initialQuotientSet, Finset.image_image]
   apply Finset.image_congr
   intro x hx
-  change idealQuotient (sourceIdeal p x.divisor) (sourceIdeal p x.common) = _
+
   exact source_quotient p hp x.common x.divisor (hdiv x hx)
 
 include hp in

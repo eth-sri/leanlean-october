@@ -10,12 +10,11 @@ set_option linter.privateModule false
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+
+
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
-open InverseMomentFirstProfileUniform InverseAmbientProfileTower
+
 variable {ι : Type*} [DecidableEq ι]
 
 end

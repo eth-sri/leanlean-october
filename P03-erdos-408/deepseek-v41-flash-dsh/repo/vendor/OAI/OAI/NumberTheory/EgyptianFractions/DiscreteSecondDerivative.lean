@@ -8,7 +8,7 @@ public import OAI.NumberTheory.EgyptianFractions.SecondDerivativeBudget
 @[expose] public section
 
 namespace OAI
-open scoped BigOperators
+
 
 namespace Problem337
 

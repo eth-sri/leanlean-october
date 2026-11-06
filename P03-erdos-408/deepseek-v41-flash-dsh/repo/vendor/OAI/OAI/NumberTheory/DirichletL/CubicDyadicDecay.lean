@@ -14,7 +14,7 @@ public import Mathlib.Tactic.Positivity
 namespace OAI
 
 namespace SevenEighths.CubicDyadicDecay
-open scoped BigOperators
+
 noncomputable section
 
 def decayConstant (α : ℝ) : ℝ :=

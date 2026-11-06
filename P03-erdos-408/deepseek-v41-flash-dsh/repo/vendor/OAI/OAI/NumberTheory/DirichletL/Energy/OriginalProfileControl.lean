@@ -10,13 +10,10 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputTailUniform
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentEnergyOriginalProfileControl
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentFiniteProfileExceptional
-open CenteredMomentSourceInputTailUniform CenteredMomentFirstReferenceEnergy
-open CenteredMomentEnergyZeroComparison CenteredMomentEnergyNaturalInputMatches
-open CenteredMomentEnergyState CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentFiniteProfileExceptional CenteredMomentSourceInputTailUniform CenteredMomentFirstReferenceEnergy CenteredMomentEnergyZeroComparison CenteredMomentEnergyNaturalInputMatches CenteredMomentEnergyState CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 omit [DecidableEq ι] in
@@ -61,7 +58,6 @@ local notation "O"=>HeckeFamily.O
 section Input
 variable {ι : Type*} [Fintype ι]
 variable (Q : Ideal O) [NeZero Q]
-local instance : Finite (O ⧸ Q) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne Q)
 variable (H : Subgroup (O ⧸ Q)ˣ) (hH : RayOrthogonality.globalUnits Q ≤ H)
 variable (η₀ : Character) (θ : ι → RayQuotient.Characters Q H)
 variable (W : ℝ → ℂ) (hW : Continuous W)

@@ -6,7 +6,7 @@ public import Erdos821.Blueprint.Classical
 
 @[expose] public section
 
-open scoped BigOperators
+
 open Filter MeasureTheory
 
 namespace Erdos821.DivisorHarmonic
@@ -430,8 +430,7 @@ end Erdos821.DivisorHarmonic
 
 namespace Erdos821.Blueprint
 
-open Analytic
-open OAI.LargePrimeGaps
+open Analytic OAI.LargePrimeGaps
 
 set_option maxHeartbeats 1000000 in
 /-- The harmonic character estimate follows from the theta-character prefix bound by Abel

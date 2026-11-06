@@ -11,9 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentCommonMaskEnergy
-open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentNaturalRowSource
-open CenteredMomentHeckeTwist CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentLattice
-open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
+open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentNaturalRowSource CenteredMomentHeckeTwist CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentLattice CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
 local notation "O" => HeckeFamily.O
 
 theorem finite_shared_energy {ι κ : Type*} [Fintype ι] [Fintype κ]

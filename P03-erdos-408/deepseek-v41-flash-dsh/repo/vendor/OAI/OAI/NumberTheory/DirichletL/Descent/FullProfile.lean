@@ -8,7 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge EisensteinSchwartzPoisson JointLogSeparation
+
 noncomputable section
 
 def rootSchwartz {ι : Type*} (U : ι → ℝ → ℂ)

@@ -11,9 +11,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentExceptionalIndexedWindow
-open CenteredMomentExceptionalWindowPair CenteredMomentPlainWindowEnergy
-open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentHeckeColumnWindow
-open CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
+open CenteredMomentExceptionalWindowPair CenteredMomentPlainWindowEnergy CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem indexed_plain_window_pair {κ α β:Type*}

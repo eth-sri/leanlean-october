@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter
 namespace SevenEighths.ProbeRaySlots
-open HeckeFamily ProbePhysical PNT.AnnularPrimeMass
-open PrincipalSignalComparison ProbePrincipalResidueActual
+open HeckeFamily ProbePhysical PNT.AnnularPrimeMass PrincipalSignalComparison ProbePrincipalResidueActual
 local notation "Id" => Ideal HeckeFamily.O
 
 def pool (C : Set Id) (S : Finset Id) (a b x : ℝ) : Finset PrimeIdeal :=
@@ -53,7 +52,6 @@ theorem pool_mass_eq_deleted (C : Set Id) (S : Finset Id) (W : ℝ→ℝ)
   norm_num
 
 variable (M : Id) [NeZero M]
-local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 include hH

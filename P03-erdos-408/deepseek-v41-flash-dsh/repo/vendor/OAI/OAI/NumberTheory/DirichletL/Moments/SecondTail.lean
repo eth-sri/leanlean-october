@@ -11,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondTail
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentSectorLocalization
-open CenteredMomentSupportedCorrelation CenteredMomentSecondWholeKernel
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentSectorLocalization CenteredMomentSupportedCorrelation CenteredMomentSecondWholeKernel
 local notation "O" => ActualEisensteinCubic.O
 
 theorem actual_second_kernel_reference (I J : Ideal O) (hI : I≠0) (hJ : J≠0)

@@ -9,12 +9,10 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedFourCoefficients
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentEnergyFirstStageLossBudget
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentSuccessorPaidParameters
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
+open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentSuccessorPaidParameters CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
 
 def sourcePaid (Bcap emask ell er delta reserveAmp thetaSource thetaClip κ mesh:ℝ):ℝ:=
   (Bcap+Bcap)*emask+ell+er+(delta+reserveAmp+thetaSource)/6+thetaClip/3+κ*mesh

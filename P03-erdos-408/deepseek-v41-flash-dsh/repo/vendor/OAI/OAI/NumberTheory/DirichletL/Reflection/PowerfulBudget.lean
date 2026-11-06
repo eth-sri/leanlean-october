@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.Dyadic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.InverseReflectedPhasePowerfulBudget
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve

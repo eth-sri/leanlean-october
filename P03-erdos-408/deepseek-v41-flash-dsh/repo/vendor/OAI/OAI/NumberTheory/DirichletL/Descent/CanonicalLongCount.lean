@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+
 namespace SevenEighths.InverseMoment
 open CanonicalRowCompletion SecondPassArithmetic
 

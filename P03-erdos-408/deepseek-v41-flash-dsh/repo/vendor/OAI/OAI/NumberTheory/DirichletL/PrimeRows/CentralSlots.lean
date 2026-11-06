@@ -9,10 +9,9 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolGood
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeLocal
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeLocal CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 lemma row_phase_norm_one_of_not_dvd (u : FreeRow) (P : PrimeIdeal)

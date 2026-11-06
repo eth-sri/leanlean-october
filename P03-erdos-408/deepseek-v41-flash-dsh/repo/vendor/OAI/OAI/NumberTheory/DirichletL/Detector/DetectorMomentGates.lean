@@ -11,12 +11,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open CanonicalCoefficientClass InverseInitialExcludedPeriod CanonicalQuadraticSieve
-open InverseInitialRayAttachment CanonicalRowCompletion
+open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource CanonicalCoefficientClass InverseInitialExcludedPeriod CanonicalQuadraticSieve InverseInitialRayAttachment CanonicalRowCompletion
 local notation "O"=>HeckeFamily.O
 variable (M:Ideal O)[NeZero M]
 local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

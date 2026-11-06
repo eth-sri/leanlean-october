@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.Continuation
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 def continuedMarkedLocal (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)

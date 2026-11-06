@@ -9,7 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open CompletedGauss
+
 noncomputable section
 variable {φ : Type*} [Fintype φ]
 

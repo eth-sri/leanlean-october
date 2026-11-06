@@ -70,7 +70,7 @@ theorem reflected_polynomial_bound (e ε : ℝ)
       ‖series (χ j) false (((1-a-6*e-σ : ℝ) : ℂ)+t*I+shift σ freq)‖≤Kr := by
     have him : |t-freq|≤H := (abs_sub _ _).trans (by
       have ht' := abs_le.mpr ht
-      change |t|+|freq|≤H
+
       linarith)
     apply hreflect χ hχ T a i hT ha ha' hmax j
     · simp only [add_re,ofReal_re,mul_re,ofReal_im,I_re,mul_zero,I_im,zero_mul,

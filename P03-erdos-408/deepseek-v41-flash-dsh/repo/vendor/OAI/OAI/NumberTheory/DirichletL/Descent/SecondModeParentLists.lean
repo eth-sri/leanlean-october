@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondModeCanonical
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseInitialArithmetic CompletedGauss InverseSecondFibers JointLogSeparation
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseInitialArithmetic CompletedGauss InverseSecondFibers JointLogSeparation
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]

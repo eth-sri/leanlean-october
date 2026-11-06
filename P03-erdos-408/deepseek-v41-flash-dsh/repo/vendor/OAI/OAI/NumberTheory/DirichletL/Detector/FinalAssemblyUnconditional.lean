@@ -12,9 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 
 namespace SevenEighths.ProbeFinalAssemblyUnconditional
-open ProbeFinalAssembly ProbeFinalAssemblyCertifiedBands
-open CenteredMomentEnergyCertifiedExistence CenteredMomentDetectorPlainMomentParameters
-open CenteredMomentDetectorPlainSlotProfile
+open ProbeFinalAssembly ProbeFinalAssemblyCertifiedBands CenteredMomentEnergyCertifiedExistence CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainSlotProfile
 
 theorem detector_certified_bands:DetectorCertifiedBands:=by
   intro hβ D _hfine F bΦ hbΦ

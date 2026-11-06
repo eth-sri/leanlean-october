@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralDefect
 namespace OAI
 
 noncomputable section
-open scoped Topology
+
 open Filter
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower

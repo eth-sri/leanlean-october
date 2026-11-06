@@ -9,7 +9,7 @@ public import Erdos821.P3Clean.PhysicalConditioning
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance 10000] Classical.propDecidable
 
 namespace Erdos821.P3Clean

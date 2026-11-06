@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFiniteError
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
@@ -94,7 +94,7 @@ theorem finiteCentralCubeRows_eq_integral {K : ℕ}
   have hiu (u : FreeRow) (hu : u∈R) : Integrable (fun t=>∑P:(∀i,T i),f u P t) heightMeasure :=
     integrable_finsetSum _ (fun P _=>hi u hu P)
   refine ⟨integrable_finsetSum _ hiu,?_⟩
-  change finiteCentralCubeRows S hS hmax η R T hT W Yp W0 W1 X Y Z e a H=_*(∫t,∑u∈R,∑P:(∀i,T i),f u P t ∂heightMeasure)
+
   rw [integral_finsetSum R hiu,Finset.mul_sum]
   unfold finiteCentralCubeRows
   apply Finset.sum_congr rfl

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountCrossing
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.HeckeDetectorSlotSelection
 
 theorem whole_slots {α : Type*} (s : Finset α) (w g : α→ℝ) (G mesh : ℝ)

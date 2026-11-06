@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Descent.DivisorSum
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+
 open CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

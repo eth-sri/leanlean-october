@@ -10,7 +10,7 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-open Filter
+
 
 noncomputable def logCoordinates {ι : Type*} (X : ℕ) (d : ι → ℕ) : ι → ℝ :=
   fun i => Real.log (d i : ℝ) / Real.log (X : ℝ)

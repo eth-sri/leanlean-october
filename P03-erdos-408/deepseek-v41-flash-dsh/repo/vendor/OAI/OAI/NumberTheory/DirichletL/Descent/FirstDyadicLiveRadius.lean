@@ -8,12 +8,10 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLivePartit
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows InverseMomentFirstOriginalProfile
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]

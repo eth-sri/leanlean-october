@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.ContourShear
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
-open ProbeCompleted ProbeRow CompletedGauss CanonicalQuadraticSieve CubicEisenstein
-open EisensteinSchwartzPoisson
+open ProbeCompleted ProbeRow CompletedGauss CanonicalQuadraticSieve CubicEisenstein EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 def rawPhysicalMellinTerm (η : HeckeFamily.Character) (C : CalibrationData)

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.FirstBoundary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily ProbePhysical
 local notation "O" => HeckeFamily.O

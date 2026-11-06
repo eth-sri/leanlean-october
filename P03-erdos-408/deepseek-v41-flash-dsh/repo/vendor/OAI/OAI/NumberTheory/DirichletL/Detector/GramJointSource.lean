@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.GramJoint
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open CenteredMomentSupportedCorrelation CenteredMomentCorrelation
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion CenteredMomentSupportedCorrelation CenteredMomentCorrelation
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda

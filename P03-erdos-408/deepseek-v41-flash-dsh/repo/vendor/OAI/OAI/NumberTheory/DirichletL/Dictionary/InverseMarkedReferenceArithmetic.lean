@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily CanonicalQuadraticSieve InverseInitialCommonRatios InverseInitialExcludedPool
 local notation "O"=>HeckeFamily.O

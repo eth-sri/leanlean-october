@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Energy.Bands
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentEnergyInputParentCapacity
-open CenteredMomentEnergyBands CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput
+open CenteredMomentEnergyBands CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
 variable {ι:Type*} [Fintype ι]
 
 lemma raw_log_le_length (Z X:ℝ)(hZ:1<Z)(hX:0<X):

@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalPoisson
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion
-open CenteredMomentCommonSupport CenteredMomentFourier
+open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion CenteredMomentCommonSupport CenteredMomentFourier
 local notation "O" => ActualEisensteinCubic.O
 
 def elementFourier (c : O) (hc : c≠0) (f : O → ℂ) (H : O) : ℂ :=

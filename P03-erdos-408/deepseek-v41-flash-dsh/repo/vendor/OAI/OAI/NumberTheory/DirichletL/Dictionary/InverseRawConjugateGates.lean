@@ -9,13 +9,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+
 namespace SevenEighths.DetectorDictionaryInverseRawConjugateGates
-open CanonicalRowCompletion
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialConjugateEnergy
-open InverseInitialRayAttachment InverseInitialExcludedPeriod CanonicalCoefficientClass
-open DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPool
-open InverseInitialExcludedOverlap InverseMoment InverseInitialProfile
+open CanonicalRowCompletion HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialConjugateEnergy InverseInitialRayAttachment InverseInitialExcludedPeriod CanonicalCoefficientClass DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPool InverseInitialExcludedOverlap InverseMoment InverseInitialProfile
 local notation "O"=>HeckeFamily.O
 
 theorem conjugate_element_apply (η:Ideal O→*ℂ)(x:O):

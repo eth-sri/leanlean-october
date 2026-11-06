@@ -10,7 +10,7 @@ namespace OAI
 
 noncomputable section
 open Filter Asymptotics Set MeasureTheory
-open scoped Topology BigOperators
+
 namespace SevenEighths.HeckeTheta
 open EisensteinTheta
 

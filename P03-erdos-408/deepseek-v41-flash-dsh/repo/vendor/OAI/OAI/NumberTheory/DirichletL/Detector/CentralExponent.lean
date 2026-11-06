@@ -9,7 +9,7 @@ public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
+
 namespace SevenEighths.ProbeCentralExponent
 
 def sourceExponent (a d R q : ℝ) : ℝ :=

@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialZeroMode
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment
-open InverseInitialRayAttachment FirstCauchyArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment InverseInitialRayAttachment FirstCauchyArithmetic
 local notation "O"=>ActualEisensteinCubic.O
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)

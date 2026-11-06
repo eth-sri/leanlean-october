@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.InitialScales
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
+
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open ProbePhysical ProbeMellinBoundary

@@ -7,13 +7,12 @@ public import Erdos821.P3Edge.ColumnBound
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 theorem memoryEdgeAbsoluteTask_holds (F : FixedData) (r : MemoryParameters F) :
     MemoryEdgeAbsoluteTask F r := by

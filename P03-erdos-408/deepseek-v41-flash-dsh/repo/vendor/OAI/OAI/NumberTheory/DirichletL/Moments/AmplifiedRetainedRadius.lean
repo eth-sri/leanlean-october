@@ -8,15 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SmoothedWindowEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 open Filter
 
 namespace SevenEighths.CenteredMomentAmplifiedRetainedRadius
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT
-open CenteredMomentFirstAmplificationChoice CenteredMomentGaussEnergy
-open CenteredMomentSmoothedWindowEnergy CenteredMomentOriginalChildEnergy
-open CenteredMomentAmplificationErrorEnergy CenteredMomentSectorLocalization
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT CenteredMomentFirstAmplificationChoice CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentOriginalChildEnergy CenteredMomentAmplificationErrorEnergy CenteredMomentSectorLocalization CenteredMomentSourceRow CenteredMomentGaussNormalization
 local notation "O" => ActualEisensteinCubic.O
 
 theorem ballProfile_support_upper (x : ℝ) (hx : 0≤x) (h : ballProfile x≠0) : x<2 := by
@@ -152,8 +148,7 @@ theorem retained_nominal_upper (I J E : Ideal O) (hE : E≠0)
     (firstNominalScale_pos I J E hE K X hK hX)]
   exact hsec
 
-open CenteredMomentPrimePool CenteredMomentPrimeElements
-open CenteredMomentAmplificationOriginalErrors CenteredMomentAmplificationGlobal
+open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationOriginalErrors CenteredMomentAmplificationGlobal
 
 end SevenEighths.CenteredMomentAmplifiedRetainedRadius
 

@@ -6,23 +6,20 @@ public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 
 namespace OAI
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-noncomputable section
-open Finset Complex
 
-open scoped Classical
+
+
+
+
+noncomputable section
+
+
+
 
 namespace GaussCRT
 
 end GaussCRT
 
-open scoped Classical
 
 namespace IdealGaussCRT
 

@@ -14,7 +14,7 @@ vanishes unless `λμ ≤ κx + 1`, in which case `mn ≤ 4(κx + 1)`.
 
 namespace Erdos408.TypeII
 
-open Finset Real
+
 
 /-- A cutoff in the class is Lipschitz with constant `M₁ T^{C_Φ}`. -/
 theorem abs_sub_le_of_isCutoff {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → ℝ}

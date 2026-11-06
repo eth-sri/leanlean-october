@@ -9,24 +9,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open Filter Real Asymptotics ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 
 open Filter Asymptotics
 
@@ -41,7 +30,6 @@ open AddChar MulChar
 end ActualEisensteinCubic
 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
 
 namespace ShortDraftHeckeBridge
 
@@ -227,7 +215,6 @@ theorem first_poisson_prime_sign_pairing
 
 end ActualEisensteinCubic
 
-open MulChar AddChar
 
 namespace ShortDraftLocal
 

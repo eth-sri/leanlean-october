@@ -9,10 +9,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+
 namespace SevenEighths.InverseInitialDyadicAssembly
-open InverseInitialProfile CenteredMomentSectorLocalization CenteredMomentDyadicCount
-open Filter
+open InverseInitialProfile CenteredMomentSectorLocalization CenteredMomentDyadicCount Filter
 
 def retainedWindows (a b:Fin 4→ℝ)(Z D m L:ℝ) : Finset (Windows a b) :=
   Finset.univ.filter (fun k=>radialCenter m (exponent Z (k 3).val)

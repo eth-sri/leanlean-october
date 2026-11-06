@@ -12,7 +12,7 @@ public import OAI.NumberTheory.DirichletL.Detector.Basic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+
 open MeasureTheory Set Filter Asymptotics Complex
 namespace SevenEighths.PrincipalSignalComparison
 open HeckeFamily PrincipalSlotEstimate ProbeEuler ProbeLocal Continuation HeckeSignal

@@ -8,9 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem norm_tsum_of_finite_bound {α : Type*} (f : α→ℂ) (hf : Summable f) (B : ℝ)

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceDivisors
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentEnergyReferenceScalarBounds
 open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource

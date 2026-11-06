@@ -8,12 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.Basic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
-open scoped ContDiff
+open scoped BigOperators Classical ContDiff
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentMask
-open ActualEisensteinCubic IdealMobiusDivisorSum
-open UniqueFactorizationMonoid
+open ActualEisensteinCubic IdealMobiusDivisorSum UniqueFactorizationMonoid
 
 theorem ideal_coprime_mobius (I R : Ideal O) (hR : R ≠ 0) :
     (if IsCoprime I R then (1 : ℂ) else 0) =

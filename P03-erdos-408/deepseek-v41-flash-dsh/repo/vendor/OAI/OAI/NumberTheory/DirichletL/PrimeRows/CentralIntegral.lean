@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.OriginalHeightTail
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary

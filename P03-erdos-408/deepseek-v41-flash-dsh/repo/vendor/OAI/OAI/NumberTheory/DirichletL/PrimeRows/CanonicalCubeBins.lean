@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CanonicalCubeReduction
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+
 open MeasureTheory Set Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary

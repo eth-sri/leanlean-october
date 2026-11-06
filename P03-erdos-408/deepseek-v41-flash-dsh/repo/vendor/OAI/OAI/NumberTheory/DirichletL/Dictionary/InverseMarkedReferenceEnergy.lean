@@ -8,10 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge
-open UniqueFactorizationMonoid CanonicalRowCompletion CanonicalQuadraticSieve
+open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge UniqueFactorizationMonoid CanonicalRowCompletion CanonicalQuadraticSieve
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 

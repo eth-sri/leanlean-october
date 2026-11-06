@@ -8,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped BigOperators Classical
-open ActualEisensteinCubic CubicEisenstein CompletedGauss ConcreteTraceCRT
-open LocalReflectionBrackets FiniteGaussPhase
+open ActualEisensteinCubic CubicEisenstein CompletedGauss ConcreteTraceCRT LocalReflectionBrackets FiniteGaussPhase
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -43,7 +42,7 @@ theorem controlled_marked_phase [∀ i, (Ideal.span {p i}).IsMaximal]
       (D.epsilon i : Eis ⧸ Ideal.span {p i}) = -1 := by
     simpa only [map_mul] using D.epsilon_value i
   rw [marked_local_phase _ _ _ _ _ _ he]
-  change _ = _
+
   simp only [markedPrimeScalar, cofactor, map_prod, Finset.prod_pow,
     MixedCrossSeparation.crossSymbol]
 

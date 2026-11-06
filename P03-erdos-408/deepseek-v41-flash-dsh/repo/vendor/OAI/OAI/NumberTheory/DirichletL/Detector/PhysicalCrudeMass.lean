@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LowActualEnergies
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion ConcreteTraceCRT CubicEisenstein

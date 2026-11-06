@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwiseChain
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 open Set Complex
 namespace SevenEighths.HeckeDetectorRowwiseMarked
 open HeckeFamily HeckeDyadic HeckeDetectorRowwise HeckeDetectorRowwisePolynomial

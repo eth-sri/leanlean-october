@@ -8,25 +8,25 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-open Filter
 
-open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
-open scoped Classical
 
-open scoped ContDiff
 
-open Topology
 
-open scoped Convolution ContDiff Pointwise
+
+
+
+
+
+
+
+
+
+
 
 theorem divisorSum_fin_zero (X M : ℕ) (F : (Fin 0 → ℝ) → ℝ) (b : Fin 0 → ℕ) :
     divisorSum X F M b=F 0 := by

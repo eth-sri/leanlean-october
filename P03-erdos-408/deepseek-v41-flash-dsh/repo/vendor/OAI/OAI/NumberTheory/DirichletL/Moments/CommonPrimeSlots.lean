@@ -9,11 +9,10 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentCommonPrimeSlots
-open CenteredMomentCommonAllocationSum CenteredMomentCommonAllocationBox
-open CenteredMomentSupport IdealMobiusDivisorSum
+
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 

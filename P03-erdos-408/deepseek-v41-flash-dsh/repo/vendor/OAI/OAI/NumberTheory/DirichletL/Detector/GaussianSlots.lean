@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianCoupled
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology SchwartzMap FourierTransform
+
 open MeasureTheory Filter Set FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 

@@ -8,7 +8,7 @@ public import Mathlib.Analysis.Fourier.FiniteAbelian.PontryaginDuality
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean

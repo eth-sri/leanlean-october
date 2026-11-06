@@ -12,12 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedSector
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSourceRow CenteredMomentFirstSectorLocalization CenteredMomentFirstCommonFourierTransport
-open CenteredMomentHeckeExpansion CenteredMomentCommonSectors
-open CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentSecondSectorColumns
-open CenteredMomentHeckeColumnWindow
-open CenteredMomentSupport CenteredMomentSectorLocalization
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSourceRow CenteredMomentFirstSectorLocalization CenteredMomentFirstCommonFourierTransport CenteredMomentHeckeExpansion CenteredMomentCommonSectors CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentSecondSectorColumns CenteredMomentHeckeColumnWindow CenteredMomentSupport CenteredMomentSectorLocalization
 local notation "O" => ActualEisensteinCubic.O
 
 def retainedKernel (I J : Ideal O) (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) : ℂ :=

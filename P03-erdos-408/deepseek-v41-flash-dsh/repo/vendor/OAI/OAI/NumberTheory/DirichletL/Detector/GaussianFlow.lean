@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianSummation
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology
-open Filter Set Metric
+
+
 namespace SevenEighths.ProbePhysical
 
 def gaussianFlow (R : ℝ) (z : ℂ) : ℂ :=

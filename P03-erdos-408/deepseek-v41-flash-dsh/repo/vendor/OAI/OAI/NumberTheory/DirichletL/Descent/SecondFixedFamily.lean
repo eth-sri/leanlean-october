@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSourceEncoding
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -53,7 +53,7 @@ theorem actual_first_divisor_dvd_child
   have hd := poisson_mask_generator_dvd p D (C∪B) hD
   rw [Finset.prod_union hCB] at hd
   have hb := cubeRadical_dvd_jLabel_b0 p B v ε₁ ε₂ hv
-  change (∏ i ∈ B,p i) ∣ jLabel p B v ε₁ ε₂*b0Label p B v ε₁ ε₂ at hb
+
   apply (hd.trans (mul_dvd_mul_left (∏ i ∈ C,p i) hb)).trans
   refine ⟨m*r*e*∏ i ∈ V,p i,?_⟩
   ring
@@ -86,7 +86,7 @@ theorem actual_second_extracted_support_killed
     ring
   intro i hi
   apply Ideal.mem_span_singleton.mpr
-  change p i ∣ T
+
   rcases Finset.mem_union.mp (hA hi) with hi|hi
   · rcases Finset.mem_union.mp hi with hi|hi
     · exact (Finset.dvd_prod_of_mem p hi).trans hb

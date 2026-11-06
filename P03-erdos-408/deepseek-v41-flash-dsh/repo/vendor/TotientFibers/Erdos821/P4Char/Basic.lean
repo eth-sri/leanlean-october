@@ -9,7 +9,7 @@ public import Mathlib.RingTheory.RootsOfUnity.AlgebraicallyClosed
 
 set_option autoImplicit false
 
-open scoped BigOperators
+
 
 namespace Erdos821.P4Char
 

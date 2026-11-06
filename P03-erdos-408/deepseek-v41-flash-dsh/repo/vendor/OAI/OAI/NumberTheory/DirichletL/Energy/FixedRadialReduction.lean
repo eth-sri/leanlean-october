@@ -12,16 +12,9 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFixedRadialReduction
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentCommonRadialData CenteredMomentSourceMass
-open CenteredMomentOriginalCommonHarmonic CenteredMomentAmplificationChildInput
-open CenteredMomentEnergyOriginalSource CenteredMomentEnergyFixedRadialEntry
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputFirstRemainder
-open CenteredMomentSourceInputTailUniform
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentRadialEligibleEnergy
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentOriginalCommonHarmonic CenteredMomentAmplificationChildInput CenteredMomentEnergyOriginalSource CenteredMomentEnergyFixedRadialEntry CenteredMomentFirstSourceReduction CenteredMomentSourceInputFirstRemainder CenteredMomentSourceInputTailUniform CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentRadialEligibleEnergy
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
 
 theorem actual_original_reduction (bΦ:ℝ)(hbΦ:0<bΦ)
     (hi:ι→ℝ)(wlo whi B ε ξ saving:ℝ)

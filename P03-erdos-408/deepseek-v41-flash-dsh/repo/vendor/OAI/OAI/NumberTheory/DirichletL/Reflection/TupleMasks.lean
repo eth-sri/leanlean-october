@@ -8,8 +8,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.OriginalMask
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
+
+
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ φ : Type*} [Fintype σ] [DecidableEq σ]

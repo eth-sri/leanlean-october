@@ -110,7 +110,7 @@ theorem allocation_card_bound (D : Ideal O) (s : Finset ι) :
   have hc : (nonemptySelections s).card ≤ 2^s.card := by
     simpa only [nonemptySelections,Finset.card_powerset] using
       (Finset.card_erase_le (s := s.powerset) (a := (∅:Finset ι)))
-  change Fintype.card (primeSupport D → nonemptySelections s) ≤ _
+
   simp only [Fintype.card_fun,Fintype.card_coe]
   calc
     _ ≤ (2^s.card)^(primeSupport D).card := Nat.pow_le_pow_left hc _

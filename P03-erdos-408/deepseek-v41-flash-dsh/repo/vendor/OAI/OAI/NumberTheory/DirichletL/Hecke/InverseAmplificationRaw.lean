@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationPowers
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open Set
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic

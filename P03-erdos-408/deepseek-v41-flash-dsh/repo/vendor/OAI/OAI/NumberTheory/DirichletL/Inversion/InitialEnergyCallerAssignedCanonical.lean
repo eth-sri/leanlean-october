@@ -8,12 +8,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+
 open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerAssignedCanonical
-open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry
-open InverseInitialEnergyCallerAssigned InverseInitialEnergyCallerOpposite
-open InverseInitialEnergyCallerCanonical InverseInitialClippedColumns
+open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialEnergyCallerAssigned InverseInitialEnergyCallerOpposite InverseInitialEnergyCallerCanonical InverseInitialClippedColumns
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]

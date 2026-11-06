@@ -9,7 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve
+
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 

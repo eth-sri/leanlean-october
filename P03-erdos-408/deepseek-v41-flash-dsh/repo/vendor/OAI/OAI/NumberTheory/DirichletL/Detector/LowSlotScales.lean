@@ -9,7 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CompletedGauss
+
 local notation "O" => ActualEisensteinCubic.O
 
 lemma elementNorm_finset_prod {ι : Type*} (F : Finset ι) (p : ι→O) :

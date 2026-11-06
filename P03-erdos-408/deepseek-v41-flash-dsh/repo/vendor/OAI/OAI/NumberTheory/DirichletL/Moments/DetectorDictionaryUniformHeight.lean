@@ -31,7 +31,7 @@ open HeckeInverseAmplification HeckeDyadic JointLogSeparation
     rw [norm_div,Real.norm_of_nonneg (by positivity : 0≤2*Real.pi)]
     exact div_le_self (norm_nonneg _) (by linarith [Real.pi_gt_three])
   have hh := hcontrol (frequencyTwist (realInterpolatedLogSchwartz W a b ha hs hW (σ,0)) (t/(2*Real.pi)))
-  change S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (interpolatedProfile W a b ha hs hW σ t)≤_ at hh
+
   apply hh.trans
   have hb : T.sup (schwartzSeminormFamily ℝ ℝ ℂ)
       (frequencyTwist (realInterpolatedLogSchwartz W a b ha hs hW (σ,0)) (t/(2*Real.pi)))≤B*(1+‖t‖)^n :=

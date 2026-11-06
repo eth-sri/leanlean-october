@@ -9,8 +9,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ProbeCompleted ProbeRow CubicEisenstein
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeCompleted ProbeRow CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 lemma completedIndex_norm (I J : Ideal O) (hI : Supported I) (hJ : Supported J) :

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondWholeTail
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+
 open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section

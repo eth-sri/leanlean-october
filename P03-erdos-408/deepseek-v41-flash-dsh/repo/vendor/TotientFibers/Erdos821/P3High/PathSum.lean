@@ -13,7 +13,7 @@ public import Mathlib.Tactic.Ring.RingNF
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators
+
 
 namespace Erdos821.P3High
 

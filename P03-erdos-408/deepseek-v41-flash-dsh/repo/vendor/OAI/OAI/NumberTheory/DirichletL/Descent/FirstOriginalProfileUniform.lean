@@ -9,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 open InverseMomentFirstProfileUniform InverseAmbientProfileTower

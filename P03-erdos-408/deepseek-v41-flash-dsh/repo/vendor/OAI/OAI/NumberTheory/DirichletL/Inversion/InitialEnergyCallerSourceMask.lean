@@ -11,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerSourceMask
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerGeometry InverseInitialProfile ConcreteTraceCRT
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerGeometry InverseInitialProfile ConcreteTraceCRT
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
   (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
@@ -63,7 +61,7 @@ theorem retained_child_squarefree
     {x:Source (ι:=ι) 0}(hx:x∈coprimeSource p S)(u:Eisˣ) :
     Squarefree (initialChild (toTuple p (sectorSource u x))).2.1 := by
   obtain ⟨hxs,hcoprime⟩ := Finset.mem_filter.mp hx
-  change Squarefree (sourceIdeal p x.divisor*sourceIdeal p x.overlap)
+
   have hc := hcoprime.symm.of_isCoprime_of_dvd_left (sourceIdeal_dvd p _ _ (hdiv x hxs))
   exact squarefree_mul_iff.mpr ⟨hc.isRelPrime,sourceIdeal_squarefree p hcop _,
     sourceIdeal_squarefree p hcop _⟩

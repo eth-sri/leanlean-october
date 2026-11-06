@@ -159,7 +159,7 @@ theorem initial_weight_eq (hq : 0 < q)
       simp only [prod_const, card_univ, Fintype.card_fin, stateMass, Data.bandMass,
         prod_pow, prod_inv_distrib]
     rw [chainMeasure, chainOfFree, hmw, mul_one]
-    change ∏ i, ∏ h, primeWeight q x d N (a.1.2 i h) = _
+
     rw [h₁, h₂, prod_slots_eq hdisj hact]
   -- step: the lifespan values at the first visit
   have hlife : ∀ p ∈ bandPrimes x d,

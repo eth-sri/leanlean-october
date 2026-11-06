@@ -8,7 +8,7 @@ public import Mathlib.Data.Nat.Squarefree
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 namespace Erdos821.Blueprint
 

@@ -9,7 +9,7 @@ public import Erdos821.P4Count.ProbeCounting
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Proj

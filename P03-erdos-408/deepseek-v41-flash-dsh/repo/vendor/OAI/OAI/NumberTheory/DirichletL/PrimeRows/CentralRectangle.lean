@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralWTail
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
@@ -52,7 +52,7 @@ theorem central_row_w_cutoff_error (K : ℕ)
     (a+16*e) (17/50) le_rfl (by linarith) le_rfl
   have hdiff : E\T=R := by
     ext t
-    change (|t.1.1|≤H ∧ ¬(|t.1.1|≤H ∧ |t.2|≤H)) ↔ (|t.1.1|≤H ∧ H < |t.2|)
+
     constructor
     · rintro ⟨hx,hw⟩
       exact ⟨hx,lt_of_not_ge (fun h=>hw ⟨hx,h⟩)⟩

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.ParametersHighData
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
+
 
 namespace SevenEighths.Parameters
 
@@ -73,7 +73,7 @@ theorem exists_high_data_fine (Δ:ℝ)(hΔ:0<Δ)(mesh:ℝ→ℝ)
       by nlinarith only [hτJ, hprod, htau],by nlinarith only [hτJ, hprod, htau],
       by nlinarith only [hτJ, hprod, hprodeps, htau]⟩
   · intro j
-    change ell j≤mesh t/200
+
     calc
       ell j≤(1/200:ℝ)*min t (mesh t):=(hbounds j).2.2.1
       _≤(1/200:ℝ)*mesh t:=mul_le_mul_of_nonneg_left (min_le_right _ _) (by norm_num)

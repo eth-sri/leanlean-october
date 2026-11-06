@@ -10,18 +10,10 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRawScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentCanonicalRetainedSource
-open CanonicalQuadraticSieve CenteredMomentFirstSectors
-open HeckeFamily ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
-open CenteredMomentSourceRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentDivisorRetained
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRaw
-open CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
-open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum
-open CenteredMomentAmplificationLiveMask CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
-open CenteredMomentCommonRawScale CenteredMomentRestrictedSourceNormalization
+open CanonicalQuadraticSieve CenteredMomentFirstSectors HeckeFamily ConcretePrimeRowBridge CenteredMomentSecondHeightFamily CenteredMomentSourceRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentDivisorRetained CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRaw CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentAmplificationLiveMask CenteredMomentCommonProfile CenteredMomentAddedZeroUniform CenteredMomentCommonRawScale CenteredMomentRestrictedSourceNormalization
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -41,8 +33,6 @@ theorem liveBox_original_pools (S : (ι⊕Fin 2)→Finset (Ideal O)) (B : Tuple 
       (residualPool (B (Sum.inr 1)) (hB _) (S (Sum.inr 1))) := by
   rw [liveBox_eq_tuplePool]
   simp_rw [live_residual_pool]
-
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 end SevenEighths.CenteredMomentCanonicalRetainedSource
 

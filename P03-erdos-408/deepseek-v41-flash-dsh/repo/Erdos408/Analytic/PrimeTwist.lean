@@ -146,7 +146,7 @@ theorem integral_perron_f_of_one_lt {y : ℝ} (hy : 1 < y) :
   have h := Perron.formulaGtOne (σ := 2) hy (by norm_num)
   rw [VerticalIntegral', VerticalIntegral, smul_eq_mul, smul_eq_mul] at h
   have hπ : (2 * Real.pi : ℂ) ≠ 0 := by simp [Real.pi_ne_zero]
-  change 1 / (2 * Real.pi * I) * (I * ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I)) = _ at h
+
   generalize ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I) = J at h ⊢
   rw [← h]
   field_simp

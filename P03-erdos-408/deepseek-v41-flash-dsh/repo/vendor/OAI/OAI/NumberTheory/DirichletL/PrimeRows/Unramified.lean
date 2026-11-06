@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsRegion
 namespace OAI
 
 noncomputable section
-open scoped Classical ComplexConjugate
+
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 theorem localCorrection_coordinates (η : Character) (u : FreeRow) (p : O) (hp : Prime p)

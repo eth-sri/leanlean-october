@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Energy.State
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 namespace SevenEighths.CenteredMomentEnergyState
-open HeckeFamily CenteredMomentNaturalMaskedFloor
-open CenteredMomentFiniteProfileExceptional QuadraticInitialBound
+open HeckeFamily CenteredMomentNaturalMaskedFloor CenteredMomentFiniteProfileExceptional QuadraticInitialBound
 
 theorem exists_zero_floor (a b bΦ Bmask ε:ℝ)(ha:0<a)(hb:0≤b)
     (hbΦ:0<bΦ)(hmask:0≤Bmask)(hε:0<ε):

@@ -8,8 +8,8 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorSlotSelection
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
-open Set
+
+
 namespace SevenEighths.HeckePrimeAmplitudeBins
 
 def amplitude (P cap mesh : ℝ) (Q : ℂ) : ℝ :=

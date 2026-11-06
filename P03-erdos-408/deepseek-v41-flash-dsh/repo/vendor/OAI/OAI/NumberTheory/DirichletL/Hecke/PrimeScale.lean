@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 open Filter
-open scoped Topology
+
 namespace SevenEighths.HeckePrimeScale
 open HeckeFamily
 

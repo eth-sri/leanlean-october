@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 open Filter Set
-open scoped Topology ContDiff
+
 namespace SevenEighths.HeckeDetectorPhysicalBins
 open HeckeFamily HeckeDetectorPrimeFamily HeckePrimeAmplitudeBins
 variable (M : Ideal O) [NeZero M]

@@ -6,7 +6,7 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 open Filter Topology
 attribute [local instance] Classical.propDecidable
 

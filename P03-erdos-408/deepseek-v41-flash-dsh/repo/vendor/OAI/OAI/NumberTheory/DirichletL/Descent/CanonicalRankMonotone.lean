@@ -10,7 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CanonicalQuadraticSieve InverseInitialClippedColumns
+
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
 variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]

@@ -7,18 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedPaidAdmission
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedPaidReserve
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacitySource
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondCanonicalScalar CenteredMomentFirstScale
-open CenteredMomentSecondRadicalBudget
-open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacitySource CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentFirstPhysicalSource CenteredMomentSecondCanonicalScalar CenteredMomentFirstScale CenteredMomentSecondRadicalBudget CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
 local notation "O"=>HeckeFamily.O
-local instance {ι:Type*}:DecidableEq ι:=Classical.decEq _
 
 def fixedNumerator (N:ℕ)(lower upper cost0 a0:ℝ):ℝ :=
   (N:ℝ)*|Real.log (min 1 lower)|+(N:ℝ)*|Real.log (max 1 upper)|+

@@ -12,15 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSourceRow CenteredMomentRowNorm
-open CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
-open CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel
-open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
-open CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
 local notation "O"=>ActualEisensteinCubic.O
 
 def columns (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O)):Finset (Ideal O):=
@@ -144,7 +136,7 @@ theorem block_eq_whole (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal 
       (element_coprime_active C D D hC.1 hD.1 hD.1 hCD S b)
       _ hk h (hrows h hh) W V K₀ H₀ A₀ B₀ hK₀ hH₀ hA₀ hB₀
     dsimp only at hh
-    change inactiveWeight C D E * (_*_*_*_)=_
+
     calc
       _=inactiveWeight C D E*(coefficient η m A t c C a*star (coefficient η m A t c D b))*
         (dilatedFrequency (activePrime C D) (activeCoprime C D) (activeGood C D hC)

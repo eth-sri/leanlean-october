@@ -12,14 +12,9 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSourceRow CenteredMomentFirstAmplificationChoice CenteredMomentFirstSectors
-open CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentHeckeColumnWindow
-open CenteredMomentHeckeWindowEnergy CenteredMomentSmoothedWindowEnergy
-open CenteredMomentSecondSectorColumns CenteredMomentConjugateWindow IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentFirstAmplificationChoice CenteredMomentFirstSectors CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentSecondSectorColumns CenteredMomentConjugateWindow IdealMobiusDivisorSum
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι]
-local instance firstWindowEnergyDecidableEq : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 def commonEnergy (s:OriginalData ι)(C:Ideal O)(hC:Supported C)(τ:Character)
     (t:ℝ)(L:Ideal O)(U:𝓢(ℝ,ℂ))(K:ℝ):ℂ:=

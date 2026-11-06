@@ -9,11 +9,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers InverseInitialClippedColumns IdealMobiusDivisorSum
+
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem second_label_weight_uniform (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :

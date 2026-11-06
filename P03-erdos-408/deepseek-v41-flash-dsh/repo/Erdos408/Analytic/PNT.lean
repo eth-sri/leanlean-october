@@ -140,7 +140,7 @@ theorem integral_perron_f_of_one_lt {y : ℝ} (hy : 1 < y) :
   have h := Perron.formulaGtOne (σ := 2) hy (by norm_num)
   rw [VerticalIntegral', VerticalIntegral, smul_eq_mul, smul_eq_mul] at h
   have hπ : (2 * Real.pi : ℂ) ≠ 0 := by simp [Real.pi_ne_zero]
-  change 1 / (2 * Real.pi * I) * (I * ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I)) = _ at h
+
   generalize ∫ t : ℝ, Perron.f y ((2 : ℝ) + t * I) = J at h ⊢
   rw [← h]
   field_simp
@@ -768,7 +768,7 @@ theorem rectangleIntegral_perronIntegrand {k : ℕ} [NeZero k] (χ : DirichletCh
       have hsub : s - 1 ≠ 0 := sub_ne_zero.mpr hs₁'
       simp only [Pi.sub_apply, perronIntegrand, H, logDeriv_LFunction_one_eq hs₁' hL,
         dslope_of_ne _ hs₁', slope_def_field]
-      change -(deriv g s / g s - 1 / (s - 1)) * K s - K 1 / (s - 1) = _
+
       field_simp
       ring
     have h := ResidueTheoremOnRectangleWithSimplePole hre him hnhds hH hpart

@@ -7,7 +7,7 @@ public import Erdos821.P3Clean.CleanCoefficients
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -91,7 +91,7 @@ theorem rawClean_summand_split (A : Model F P J m) (n : ℕ) (theta : ℝ) (forw
 theorem sum_aux_split (f : P.Aux J → ℂ) :
     (∑ u : P.Aux J, f u) = ∑ v : SmallLabels P J, ∑ u : P.BigAux J, f (joinLabels v u) := by
   have h := Equiv.sum_comp (splitLabels P J).symm f
-  change (∑ w : SmallLabels P J × P.BigAux J, f (joinLabels w.1 w.2)) = ∑ u : P.Aux J, f u at h
+
   rw [Fintype.sum_prod_type] at h
   exact h.symm
 

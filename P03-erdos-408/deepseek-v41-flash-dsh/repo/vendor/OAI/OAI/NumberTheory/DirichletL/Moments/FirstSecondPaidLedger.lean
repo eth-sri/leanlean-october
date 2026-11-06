@@ -12,16 +12,10 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentFirstSecondPaidLedger
-open CenteredMomentFirstSecondCapacityLedger CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstPhysicalLedger CenteredMomentFirstScale
-open CenteredMomentSectorLocalization CenteredMomentDescentLedger
-open CenteredMomentSecondCanonical CenteredMomentSecondLedger CenteredMomentCanonicalFirst
-open CenteredMomentCompleteCommon CenteredMomentSupportedCorrelation
-open CenteredMomentSupport CenteredMomentRankinRadical
-open CanonicalQuadraticSieve
+
 local notation "O"=>ActualEisensteinCubic.O
 
 end SevenEighths.CenteredMomentFirstSecondPaidLedger

@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.RowPartition
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbeCentralRepeatedProduct
-open ProbeRowReflectedAllocation ProbeRowRadicalConductor HeckeReciprocalGrowth HeckeDeletionBounds
+open HeckeFamily HeckeInverseAmplification ProbeCentralRepeatedProduct ProbeRowReflectedAllocation ProbeRowRadicalConductor HeckeReciprocalGrowth HeckeDeletionBounds
 local notation "O" => HeckeFamily.O
 
 private lemma cost_power_identity (N L A R eps : ℝ) (hN : 0<N) (hL : 0<L) :

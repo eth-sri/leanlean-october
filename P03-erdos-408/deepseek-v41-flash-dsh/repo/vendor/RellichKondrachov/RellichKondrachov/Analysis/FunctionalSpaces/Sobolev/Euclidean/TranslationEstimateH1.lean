@@ -28,7 +28,7 @@ namespace FunctionalSpaces
 namespace Sobolev
 namespace Euclidean
 
-open scoped ENNReal MeasureTheory Topology
+
 open MeasureTheory Set
 
 noncomputable section
@@ -40,13 +40,6 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteS
 /-- Borel σ-algebra on the model space `E`. -/
 local instance instMeasurableSpaceTranslationEstimateH1 :
     MeasurableSpace E := borel E
-local instance instBorelSpaceTranslationEstimateH1 :
-    BorelSpace E := ⟨rfl⟩
-local instance instOpensMeasurableSpaceTranslationEstimateH1 :
-    OpensMeasurableSpace E := by
-  infer_instance
-local instance instMeasurableAddTranslationEstimateH1 : MeasurableAdd E := by
-  infer_instance
 
 variable (μ : Measure E) [μ.IsAddRightInvariant] [IsFiniteMeasureOnCompacts μ] [SFinite μ]
 

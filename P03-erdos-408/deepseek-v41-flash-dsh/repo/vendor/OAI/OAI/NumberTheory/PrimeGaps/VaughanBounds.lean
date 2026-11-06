@@ -8,27 +8,25 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-open Filter
 
-open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
-open scoped Classical
 
-open scoped ContDiff
 
-open Topology
 
-open scoped Convolution ContDiff Pointwise
 
-open scoped ComplexConjugate
+
+
+
+
+
+
+
+
+
 
 theorem sequenceSize_le_of_norm_le {N : ℕ} (a : Fin N→ℂ) {A : ℝ}
     (hA : 0 ≤ A) (ha : ∀ n,‖a n‖ ≤ A) : sequenceSize a ≤ Real.sqrt N*A := by

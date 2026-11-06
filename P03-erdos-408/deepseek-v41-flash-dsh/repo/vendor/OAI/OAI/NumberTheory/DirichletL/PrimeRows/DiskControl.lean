@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical Topology
 open Set Metric
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
-open HeckeDeletionBounds HeckeReciprocalGrowth
+open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion HeckeDeletionBounds HeckeReciprocalGrowth
 
 lemma poleRemoved_eq_regularizedL (χ : Character) {s : ℂ} (hs : 0<s.re) :
     HeckeOrigin.poleRemoved χ s=HeckeReciprocal.regularizedL χ s := by

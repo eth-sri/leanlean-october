@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.CenteredExceptionalProfile
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentChildRows
-open CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily HeckeRowClosure
-open CenteredMomentFixedRay RayFourExpansion
+open CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily HeckeRowClosure CenteredMomentFixedRay RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 

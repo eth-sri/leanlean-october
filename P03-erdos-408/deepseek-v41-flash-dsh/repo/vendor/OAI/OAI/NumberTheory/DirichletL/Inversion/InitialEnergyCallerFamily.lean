@@ -8,9 +8,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
+
+open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerFamily
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]

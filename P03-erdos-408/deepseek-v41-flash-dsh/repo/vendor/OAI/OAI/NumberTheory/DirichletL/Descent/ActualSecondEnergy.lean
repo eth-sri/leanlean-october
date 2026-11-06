@@ -9,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers IdealMobiusDivisorSum
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers IdealMobiusDivisorSum
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_ne_zero)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -36,7 +35,7 @@ theorem actualSecondChild_nonzero (hp : ∀ i, p i ≠ 0)
   have hb : Ideal.span {(b0Label p x.cube.support
       (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)} ≠ (0 : Ideal Eis) :=
     Ideal.span_singleton_eq_bot.not.mpr (primeProduct_ne_zero p hp _ _)
-  change _ ≠ 0 ∧ _ ≠ 0 ∧ x.quotient ≠ 0 ∧ _ ≠ 0
+
   refine ⟨?_,hb,ht,sourceIdeal_ne_zero p hp _⟩
   exact mul_ne_zero (mul_ne_zero (mul_ne_zero hj (sourceIdeal_ne_zero p hp _))
     (sourceIdeal_ne_zero p hp _)) (sourceIdeal_ne_zero p hp _)

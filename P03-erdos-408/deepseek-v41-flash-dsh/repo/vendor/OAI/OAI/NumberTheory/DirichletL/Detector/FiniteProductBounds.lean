@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.PrincipalSlotEstimate
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+
 open Complex Set MeasureTheory
 namespace SevenEighths.ProbeFiniteProductBounds
 open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal

@@ -146,7 +146,7 @@ theorem ray_prime_all_height_large (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     (by change _≤Real.log (U^r);rw [hPr];exact hlarge) hQ
     (by norm_num only [Nat.mul_zero,Nat.zero_add,Nat.cast_ofNat,Real.rpow_one];dsimp [T] at hTzt;linarith)
     (by simpa only [Nat.mul_zero,Nat.zero_add,Nat.cast_ofNat,Real.rpow_one] using hheight)
-  change ‖rayPrimePolynomial M H χ W B (U^r) σ freq‖^2≤C*U^(κ*r+2*eps) at hb
+
   rw [hPr] at hb
   apply hb.trans_eq
   dsimp only [U,Zt,r,eps,T]

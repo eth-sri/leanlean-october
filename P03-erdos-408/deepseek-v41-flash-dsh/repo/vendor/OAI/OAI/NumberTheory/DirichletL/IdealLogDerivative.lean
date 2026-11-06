@@ -10,7 +10,7 @@ namespace SevenEighths.IdealLogDerivative
 
 open ActualEisensteinCubic UniqueFactorizationMonoid IdealEuler
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
-open scoped BigOperators Classical Topology
+
 
 noncomputable section
 

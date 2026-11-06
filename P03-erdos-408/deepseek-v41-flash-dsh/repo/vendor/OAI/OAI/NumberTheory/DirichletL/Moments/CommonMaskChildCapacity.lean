@@ -10,10 +10,10 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
-open Filter
+
+
 namespace SevenEighths.CenteredMomentCommonMaskChildCapacity
-open HeckeFamily HeckeDyadic CenteredMomentComparisonReflection
+
 local notation "O" => HeckeFamily.O
 
 end SevenEighths.CenteredMomentCommonMaskChildCapacity

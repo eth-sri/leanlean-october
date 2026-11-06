@@ -114,7 +114,7 @@ theorem original_low_sector_full_energy
       (Real.rpow_pos_of_pos hzpos _) hQK hQP (hKr K.val K.property).2
       (fun P hP => (hPr P hP).2.2) (hr K.val K.property) haw
     apply hh.trans
-    change _ ≤ Et
+
     dsimp only [Et,Ctail,Cshape]
     have he : (6*‖fixedRadialCoefficientScalar‖*‖s.stratumShapeFactor c₀‖)*Pset.card*
         (Ct*(1+‖θ‖)^degreeTail*((Ideal.absNorm (∏ b,G.ideal b):ℝ)*QK*QP)*(Z^δ)^(-(Adecay:ℝ))*(familyRawScale G s X QK QP^2)⁻¹)=

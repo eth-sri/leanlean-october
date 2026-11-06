@@ -8,7 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation
+
 noncomputable section
 
 def secondRelativeNorm (q : Fin 6 → ℝ) (G E V K X : ℝ) : Fin 6 → ℝ :=

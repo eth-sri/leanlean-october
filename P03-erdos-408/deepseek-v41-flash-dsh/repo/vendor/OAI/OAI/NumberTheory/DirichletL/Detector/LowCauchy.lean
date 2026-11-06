@@ -8,10 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.Cauchy
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff
-open MeasureTheory CompletedGauss
+
+
 namespace SevenEighths.ProbePhysical
-open RayFourExpansion
+
 local notation "O" => ActualEisensteinCubic.O
 
 def lowNumeratorWeight (C : CalibrationData) (Ω : ℝ→ℂ) (X Y : ℝ) (m : O) (v : ℝ) : ℂ :=

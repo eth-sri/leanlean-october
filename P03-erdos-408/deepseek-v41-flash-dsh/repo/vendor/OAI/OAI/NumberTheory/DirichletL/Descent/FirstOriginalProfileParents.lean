@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalCaps
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment InverseMomentFirstChildWindows ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O

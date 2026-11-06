@@ -13,17 +13,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstReferenceSource
-open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentFirstPhysicalDyadicCount CenteredMomentFirstRetainedNorm
-open CenteredMomentFirstNonexceptionalWeightSum CenteredMomentFirstNonexceptionalLocalWeightSum
-open CenteredMomentFirstPhysicalActiveDictionary CenteredMomentFirstSourceReduction
-open CenteredMomentFirstInactiveRadicalMass CenteredMomentFirstDiscardedEnergy
-open CenteredMomentSecondRetainedAggregate CenteredMomentActiveSource CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentCanonicalFirst CenteredMomentFirstSectors
-open CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization CenteredMomentLogDyadic
-open CenteredMomentExceptionalAmplitudePair CenteredMomentRankinRadical
+open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstPhysicalDyadicCount CenteredMomentFirstRetainedNorm CenteredMomentFirstNonexceptionalWeightSum CenteredMomentFirstNonexceptionalLocalWeightSum CenteredMomentFirstPhysicalActiveDictionary CenteredMomentFirstSourceReduction CenteredMomentFirstInactiveRadicalMass CenteredMomentFirstDiscardedEnergy CenteredMomentSecondRetainedAggregate CenteredMomentActiveSource CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentCanonicalFirst CenteredMomentFirstSectors CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentExceptionalAmplitudePair CenteredMomentRankinRadical
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -93,7 +83,7 @@ theorem original_block_sum (hi:ι→ℝ)(b₁ b₂ B ξ ε:ℝ)
     have hp:=commonLabels_supported (activeSource (finiteColumns (Fintype.piFinset s.pools))
       (CenteredMomentOriginalCommonHarmonic.coefficient s R seed)) _ _ p.property
     have hcard:=hd s hhi hb₁ hb₂ hH p.val.1 p.val.2 hp.1.1 hp.2.1 E K hK hV hKi
-    change (Fintype.card (SourceBlocks s R seed K Z ξ p E):ℝ)≤Cd*Z^(ε/2) at hcard
+
     calc
       _≤∑_n:SourceBlocks s R seed K Z ξ p E,A*radicalWeight s R seed p E:=
         Finset.sum_le_sum (fun n _=>hblock p E hE n)

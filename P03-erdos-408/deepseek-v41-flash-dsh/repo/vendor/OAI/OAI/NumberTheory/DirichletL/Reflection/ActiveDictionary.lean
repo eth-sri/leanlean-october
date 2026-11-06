@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.MarkedActiveSets
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+
 open CanonicalRowCompletion
 noncomputable section
 variable {α β γ σ : Type*} [Fintype α] [Fintype β] [Fintype σ]

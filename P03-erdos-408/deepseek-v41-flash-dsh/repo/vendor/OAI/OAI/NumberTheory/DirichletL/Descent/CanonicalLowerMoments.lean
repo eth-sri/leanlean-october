@@ -10,12 +10,10 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve
-open InverseInitialClippedColumns InverseSecondFibers InverseSecondSourceBlocks
-open CanonicalCoefficientClass InverseMomentFirstLabelCell InverseMomentFirstChildWindows InverseFirstGlobalCaps
+
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
 variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]

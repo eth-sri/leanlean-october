@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGramExceptional
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.ProbeGramFrequencySummation
 local notation "O" => ActualEisensteinCubic.O

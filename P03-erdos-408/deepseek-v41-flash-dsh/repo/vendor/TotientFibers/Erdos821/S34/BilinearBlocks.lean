@@ -7,7 +7,7 @@ public import Erdos821.S34.IntegerLargeSieve
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+
 open OAI.LargePrimeGaps
 
 namespace Erdos821.S34.Proofs

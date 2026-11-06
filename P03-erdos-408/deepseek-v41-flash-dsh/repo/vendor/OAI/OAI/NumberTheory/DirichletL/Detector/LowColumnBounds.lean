@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGaussEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion

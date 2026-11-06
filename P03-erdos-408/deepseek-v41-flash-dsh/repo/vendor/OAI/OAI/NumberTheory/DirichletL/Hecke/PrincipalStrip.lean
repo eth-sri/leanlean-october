@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.Origin
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+
 open Set MeasureTheory
 namespace SevenEighths.HeckePrincipalStrip
 open HeckeFamily HeckeTheta

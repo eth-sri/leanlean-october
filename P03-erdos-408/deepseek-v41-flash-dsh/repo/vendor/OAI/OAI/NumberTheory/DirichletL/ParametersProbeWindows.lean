@@ -31,7 +31,7 @@ theorem exists_probe_window : ∃ (w : ℝ→ℝ) (W : SchwartzMap ℝ ℂ),
     apply hne
     funext x
     have h := congrArg (fun F : SchwartzMap ℝ ℂ => (F x).re) hz
-    change w x=0 at h
+
     exact h
   · intro x hx
     have hwx : w x≠0 := by intro h;apply hx;change (w x:ℂ)=0;rw [h];rfl

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.UpperThreshold
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+
 open CompletedDyadic CompletedGauss ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -62,7 +62,7 @@ theorem actual_retained_width_uniform
     rw [←Real.logb_mul (by norm_num : (16:ℝ)≠0) hCf.ne']
     exact hlog Z hZ
   have hoff : 0≤4*Real.logb Z 3 := mul_nonneg (by norm_num) (Real.logb_nonneg hz (by norm_num))
-  change _ = _+Real.logb Z Cf at he
+
   linarith
 end
 end SevenEighths.InverseReflectedPhase

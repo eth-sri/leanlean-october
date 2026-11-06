@@ -10,7 +10,7 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic EisensteinSchwartzPoisson

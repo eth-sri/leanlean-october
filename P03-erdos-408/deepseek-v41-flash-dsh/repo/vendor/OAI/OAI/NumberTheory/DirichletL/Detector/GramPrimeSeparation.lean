@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramJointPeriod
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbeGramCommon
 open UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O

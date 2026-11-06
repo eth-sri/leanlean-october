@@ -12,8 +12,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseSecondUniformCutoff
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMoment InverseSecondSourceBlocks InverseSecondFibers CompletedGauss
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMoment InverseSecondSourceBlocks InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 

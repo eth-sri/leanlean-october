@@ -10,7 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
-open InverseSecondFibers
+
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 

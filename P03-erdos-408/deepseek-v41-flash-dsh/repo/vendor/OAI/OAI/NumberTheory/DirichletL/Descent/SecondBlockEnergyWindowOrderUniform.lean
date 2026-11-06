@@ -12,9 +12,7 @@ noncomputable section
 open scoped BigOperators Classical ContDiff SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory InverseInitialClippedColumns
-open InverseSecondProfileUniform InverseAmbientProfileTower
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory InverseInitialClippedColumns InverseSecondProfileUniform InverseAmbientProfileTower
 local notation "Eis" => ActualEisensteinCubic.O
 theorem actual_second_fixed_block_recursive_window_order_uniform_types
     (g₁ g₂ Φ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)

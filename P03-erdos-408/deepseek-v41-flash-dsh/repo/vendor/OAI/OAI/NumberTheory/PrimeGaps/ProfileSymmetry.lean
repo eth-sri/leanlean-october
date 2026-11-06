@@ -8,25 +8,25 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-open Filter
 
-open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
-open scoped Classical
 
-open scoped ContDiff
 
-open Topology
 
-open scoped Convolution ContDiff Pointwise
+
+
+
+
+
+
+
+
+
+
 
 noncomputable def subsetEnumeration {h n : ℕ}
     (S : {S : Finset (Fin h) // S.card=n}) : Fin n ↪ Fin h :=

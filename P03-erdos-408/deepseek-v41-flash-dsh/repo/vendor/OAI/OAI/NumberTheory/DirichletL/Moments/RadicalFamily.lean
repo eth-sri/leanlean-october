@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRadicalFamily
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentFirstFamily CenteredMomentSupportedCorrelation
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentFirstFamily CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 

@@ -6,7 +6,7 @@ public import OAI.NumberTheory.PrimeGaps.AdditiveSieve
 
 set_option autoImplicit false
 
-open scoped BigOperators
+
 
 namespace Erdos821.S34.Proofs
 

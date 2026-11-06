@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondActiveDyadic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentSourceDyadicShell
 open CenteredMomentSectorLocalization CenteredMomentSourceLowerSupport

@@ -7,7 +7,7 @@ public import Mathlib.Analysis.Calculus.Deriv.MeanValue
 
 namespace OAI
 noncomputable section
-open scoped BigOperators
+
 open Classical
 namespace Problem337
 

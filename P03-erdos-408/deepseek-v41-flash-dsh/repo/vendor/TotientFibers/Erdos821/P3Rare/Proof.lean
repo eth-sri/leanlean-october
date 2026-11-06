@@ -9,13 +9,12 @@ set_option autoImplicit false
 /-! The exact rare-transfer task `Erdos821.S2Core.MemoryRareTask`. -/
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Rare
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 theorem memoryRareTask_holds (F : FixedData) (r : MemoryParameters F) :
     MemoryRareTask F r := by

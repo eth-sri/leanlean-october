@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.FiniteDeletion
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.HeckeDeletionBounds
 open HeckeFamily
 

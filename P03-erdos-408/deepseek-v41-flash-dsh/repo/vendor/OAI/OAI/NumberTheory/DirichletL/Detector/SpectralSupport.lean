@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.RadialSpectral
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open ProbeCompleted ProbeRow SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ProbeCompleted ProbeRow SecondPassArithmetic
 local notation "O" => ActualEisensteinCubic.O
 
 lemma supported_of_source_exclusions (S : Finset (Ideal O))

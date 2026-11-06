@@ -11,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceAbsoluteEnvelope
-open HeckeFamily CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
-open CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentSourceRectangleEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentHeckeHeight CenteredMomentPositiveSummability
-open CenteredMomentAbsoluteEnergy QuadraticInitialBound ConcreteTraceCRT
+open HeckeFamily CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentSourceRectangleEnergy CenteredMomentHeckeColumnWindow CenteredMomentHeckeHeight CenteredMomentPositiveSummability CenteredMomentAbsoluteEnergy QuadraticInitialBound ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
  theorem actual_source_absolute (Q:Finset (Ideal O)) (c:Ideal O→ℂ) (η:Character) (t:ℝ)

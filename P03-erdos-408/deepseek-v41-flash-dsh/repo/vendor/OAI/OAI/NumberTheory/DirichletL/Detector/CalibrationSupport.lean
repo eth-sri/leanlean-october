@@ -8,9 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalAnalytic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeRow
+
 local notation "O" => ActualEisensteinCubic.O
 
 theorem calibrationForSet_coprime_iff (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal)

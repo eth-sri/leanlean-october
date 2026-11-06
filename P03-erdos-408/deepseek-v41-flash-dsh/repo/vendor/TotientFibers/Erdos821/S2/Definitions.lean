@@ -9,8 +9,8 @@ public import Mathlib.Data.Fintype.Perm
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
-open Filter
+
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2

@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstPhysicalNormalization
-open HeckeFamily CenteredMomentCommonRadialData
-open CenteredMomentFirstReferenceEnergy CenteredMomentSecondWindowBudget
-open CenteredMomentFirstPhysicalSource
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentFirstReferenceEnergy CenteredMomentSecondWindowBudget CenteredMomentFirstPhysicalSource
 
 lemma window_pair_le (J₁ J₂ : ℕ) (t L R H : ℝ) (hH : 0 ≤ H)
     (hL : L ≤ H) (hR : R ≤ H) :
@@ -184,10 +182,7 @@ theorem sourceFactor_pairedBudget_polynomial (lowerProduct : ℝ) (hlower : 0 < 
           (by positivity)) hm₁) hm₂
     _ = _ := by unfold polynomialConstant; ring
 
-open Filter CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSourceReduction
-open CenteredMomentFirstReferenceSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentSourceMass CenteredMomentFirstNonexceptionalWeightSum
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
+open Filter CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSourceReduction CenteredMomentFirstReferenceSource CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentSourceMass CenteredMomentFirstNonexceptionalWeightSum
 
 theorem actual_physical_mass_of_columnBounds (W : 𝓢(ℝ, ℂ)) (J₁ J₂ : ℕ)
     (hi : ι → ℝ) (b₁ b₂ B ξ ε lowerProduct : ℝ)

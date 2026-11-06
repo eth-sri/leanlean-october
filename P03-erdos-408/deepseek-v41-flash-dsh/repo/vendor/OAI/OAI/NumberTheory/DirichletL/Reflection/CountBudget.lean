@@ -8,8 +8,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.TruncatedSource
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve
+
+
 noncomputable section
 
 lemma retained_count_le_box (scale B : ℝ) :

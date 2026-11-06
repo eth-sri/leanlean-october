@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstTailAbsorption
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section

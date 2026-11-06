@@ -9,8 +9,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ProbeRow CubicEisenstein CanonicalQuadraticSieve
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ProbeRow CubicEisenstein CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 
 theorem CalibrationData.residueMonoid_norm_le_one (C : CalibrationData) (a : O) :

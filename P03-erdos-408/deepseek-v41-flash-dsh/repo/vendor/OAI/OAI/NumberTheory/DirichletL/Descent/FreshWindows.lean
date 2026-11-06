@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondPass
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

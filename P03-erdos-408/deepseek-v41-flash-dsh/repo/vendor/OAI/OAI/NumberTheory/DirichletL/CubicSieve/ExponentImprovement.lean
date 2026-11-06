@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.HeathBrownIteration
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+
 noncomputable section
 
 def enlargementExponent (ξ : ℝ) : ℝ := (6*ξ-5)/(3*ξ-1)
@@ -75,7 +75,7 @@ theorem enlarged_improved_shape (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N)
         mul_le_mul_of_nonneg_right hp (Real.rpow_nonneg hN0.le _)
       _ = N^β := by
         rw [← Real.rpow_mul hN0.le, ← Real.rpow_add hN0, enlargement_secondary_identity ξ hξ]
-  change T+(T*N)^(2/3 : ℝ)+T^(1-ξ)*N^(2*ξ-1) ≤ 3*(M+N^β+(M*N)^(2/3 : ℝ))
+
   linarith
 
 theorem HasCubicExponent.improve {ξ : ℝ} (h : HasCubicExponent ξ)

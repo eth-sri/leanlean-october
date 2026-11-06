@@ -9,8 +9,8 @@ set_option linter.privateModule false
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
+
+
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 

@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamilyUniform
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondExceptionalSourceCaps
-open HeckeFamily CenteredMomentSecondExceptionalFamily
-open CenteredMomentSecondExceptionalFamilyUniform
+open HeckeFamily CenteredMomentSecondExceptionalFamily CenteredMomentSecondExceptionalFamilyUniform
 local notation "O" => HeckeFamily.O
 
 theorem eventually_source_caps :

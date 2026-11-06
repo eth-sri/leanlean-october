@@ -11,8 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcretePrimeRowBridge UniqueFactorizationMonoid ConcreteTraceCRT
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcretePrimeRowBridge UniqueFactorizationMonoid ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -24,7 +23,7 @@ lemma jointProfile_physicalPoint (W : ℝ→ℂ) (U : SchwartzMap ℝ ℂ)
       shellProfile W v U T (‖eisEmbedding m.1‖^2/N) (‖eisEmbedding m.2‖^2/N) := by
   rw [ProbeGramJointConstruction.jointProfile_apply]
   unfold ProbeGramJointConstruction.rawProfile ProbeGramJointConstruction.q1 ProbeGramJointConstruction.q2
-  change lowGramProfile W v _ * star (lowGramProfile W v _) * _ = _
+
   have h₁ : ‖WithLp.fst (ProbeGramLatticeDecay.physicalPoint N m)‖^2=‖eisEmbedding m.1‖^2/N := physicalPoint_first_norm N hN m
   have h₂ : ‖WithLp.snd (ProbeGramLatticeDecay.physicalPoint N m)‖^2=‖eisEmbedding m.2‖^2/N := physicalPoint_second_norm N hN m
   rw [h₁,h₂]

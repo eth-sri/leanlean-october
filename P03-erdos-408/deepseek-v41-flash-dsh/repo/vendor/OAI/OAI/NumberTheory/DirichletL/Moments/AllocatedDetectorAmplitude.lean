@@ -8,13 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.EligibleEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentAllocatedDetectorAmplitude
-open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentDivisorRawEnergy CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction
-open CenteredMomentAllocatedDetectorCapped CenteredMomentDetectorDictionary
-open ConcretePrimeRowBridge CenteredMomentDivisorRows
+open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction CenteredMomentAllocatedDetectorCapped CenteredMomentDetectorDictionary ConcretePrimeRowBridge CenteredMomentDivisorRows
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 

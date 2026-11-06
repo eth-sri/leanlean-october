@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialZeroMode
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment
-open InverseInitialRayAttachment
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment InverseInitialRayAttachment
 local notation "O"=>ActualEisensteinCubic.O
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 
@@ -45,7 +43,7 @@ theorem physical_marked_zero_bound (loss L b B:ℝ)(hloss:0<loss)(hL:0≤L)
   have hb':=hbound p hp hcop hg hinj pool Ψ hΨ j 1 1 slots lists a hdis ha
     W hW hs (Z^D) (Z^m) (Real.rpow_pos_of_pos hZ0 _) (Real.rpow_pos_of_pos hZ0 _)
     (fun _ _=>{0}) (by intros; simp)
-  change ‖_‖≤C*Z^(m+loss)
+
   apply hb'.trans
   rw [←Real.rpow_mul hZ0.le, mul_assoc,←Real.rpow_add hZ0]
   apply mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ ?_) hC.le

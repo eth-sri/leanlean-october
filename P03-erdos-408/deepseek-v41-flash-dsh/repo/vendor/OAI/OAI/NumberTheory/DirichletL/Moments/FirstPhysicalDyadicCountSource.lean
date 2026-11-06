@@ -9,12 +9,10 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicCount
-open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale
-open CenteredMomentCanonicalFirst CenteredMomentSectorLocalization
-open CenteredMomentSourceInputFirstTailUniform
+open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentSectorLocalization CenteredMomentSourceInputFirstTailUniform
 local notation "O"=>ActualEisensteinCubic.O
 
 lemma local_frequency_radius_cap (I J:Ideal O)(E:Finset (CommonIndex I J))
@@ -53,8 +51,7 @@ theorem original_local_blocks_subpower (B Hcap ξ ε:ℝ)
     (by simpa only [one_mul] using (local_frequency_radius_cap C D E K V Z B ξ
       hK hV hZ hVcap hKcap)) hHbound
 
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentExceptionalAmplitudePair
+open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair
 
 lemma input_radius_cap {ι:Type*}[Fintype ι][DecidableEq ι]
     (hi:ι→ℝ)(b₁ b₂ B Z:ℝ)(s:Input ι)

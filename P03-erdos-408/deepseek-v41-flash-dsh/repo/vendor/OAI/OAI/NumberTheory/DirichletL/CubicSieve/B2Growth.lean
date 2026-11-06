@@ -8,7 +8,7 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -70,7 +70,7 @@ theorem elementSieveNorm_two_power_log (ξ ε A M N : ℝ)
       (CanonicalQuadraticSieve.columnDyadicLength M + 1 : ℝ)^2*B by positivity)) hE
   have he' := he.trans hh
   rw [← Finset.sum_coe_sort] at he'
-  change (∑ z : elementRange M, ‖∑ j : idealRange N, cubicRow j.val z.val * a j‖^2) ≤ _
+
   apply he'.trans
   convert hbnd using 1 <;> dsimp only [B] <;> ring
 

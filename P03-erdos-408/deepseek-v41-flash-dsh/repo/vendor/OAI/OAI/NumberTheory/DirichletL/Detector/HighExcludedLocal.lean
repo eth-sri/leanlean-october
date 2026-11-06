@@ -10,7 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic
+
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 

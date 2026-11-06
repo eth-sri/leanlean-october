@@ -12,8 +12,7 @@ noncomputable section
 open scoped BigOperators Classical
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentCanonical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CenteredMomentCorrelation
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentCorrelation
 
 theorem actualSextic_order_six (P : Ideal O) [P.IsMaximal]
     (hg : goodLambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2) :

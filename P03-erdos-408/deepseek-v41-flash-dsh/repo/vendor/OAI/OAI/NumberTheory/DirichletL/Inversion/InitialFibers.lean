@@ -11,7 +11,7 @@ namespace SevenEighths.InverseInitialFibers
 open ActualEisensteinCubic
 open CompletedGauss (primaryGenerator primaryGenerator_mul)
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
-open scoped BigOperators Classical
+
 noncomputable section
 
 @[ext] structure InitialTuple (J : ℕ) where

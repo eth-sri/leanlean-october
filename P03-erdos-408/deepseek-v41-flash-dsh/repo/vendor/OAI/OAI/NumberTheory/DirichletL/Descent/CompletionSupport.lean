@@ -8,9 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge
+
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem marked_large_cube_sum_comm (Ψ : O →* ℂ) (W : ℝ → ℂ)

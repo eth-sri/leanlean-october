@@ -11,7 +11,7 @@ public import Mathlib.Algebra.Ring.IsFormallyReal
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 open Filter
 
 namespace Erdos821.P5Minor

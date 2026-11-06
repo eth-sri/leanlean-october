@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+
 open Complex Set
 namespace SevenEighths.PrincipalMellinGrowth
 open HeckeFamily PrincipalMellinResidues ProbeMellinBoundary

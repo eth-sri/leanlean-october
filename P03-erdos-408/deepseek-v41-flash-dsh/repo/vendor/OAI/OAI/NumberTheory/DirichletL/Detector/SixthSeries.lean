@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.SixthArray
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve HeckeInverseAmplification ProbeCompleted
 local notation "O" => ActualEisensteinCubic.O

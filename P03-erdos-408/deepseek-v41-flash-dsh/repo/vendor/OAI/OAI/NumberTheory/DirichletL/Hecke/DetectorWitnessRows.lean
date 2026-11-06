@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorSimultaneous
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.HeckeDetectorWitnessRows
 open HeckeFamily HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles
 

@@ -8,7 +8,7 @@ public import Mathlib.Analysis.Normed.Order.Lattice
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 
 namespace Erdos821.P3Tail
 
@@ -125,7 +125,7 @@ theorem path_bound {α : Type*} (w : α → ℝ) (hw : ∀ t, 0 ≤ w t) (CG CE 
             apply Finset.sum_congr rfl
             intro z hz
             rw [(Finset.mem_filter.1 hz).2]
-          change ∑ z ∈ St, _ ≤ _
+
           rw [hrw2]
           have h2 := fiber_step w (E 0 t) CE (CG ^ (n + 1) * CE ^ n) (w t) (hE 0 t) hw hK
             (hEr 0 t).1 (hEr 0 t).2 St (fun z : Fin (n + 2) → α × α => (z 1).1)
@@ -140,7 +140,7 @@ theorem path_bound {α : Type*} (w : α → ℝ) (hw : ∀ t, 0 ≤ w t) (CG CE 
                 rw [← Fin.cons_self_tail a, ← Fin.cons_self_tail b]
                 simp only at hab
                 rw [h0, hab]
-              change ∑ z ∈ Su, _ ≤ _
+
               rw [← Finset.sum_image (f := pathWeight w n G' E') hinj]
               apply IH
               intro y hy

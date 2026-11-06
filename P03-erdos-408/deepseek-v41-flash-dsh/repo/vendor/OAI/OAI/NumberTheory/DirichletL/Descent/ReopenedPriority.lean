@@ -9,8 +9,8 @@ set_option linter.privateModule false
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+
+
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]

@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalRadialComparison
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap BigOperators
+
 namespace SevenEighths.CenteredMomentPlainPositiveEnergy
-open HeckeFamily HeckeDyadic CenteredMomentPlainPositiveScale CenteredMomentPlainGlobalEnergy
-open CenteredMomentOriginalRadialComparison
+open HeckeFamily HeckeDyadic CenteredMomentPlainPositiveScale CenteredMomentPlainGlobalEnergy CenteredMomentOriginalRadialComparison
 open CenteredMomentRadialEligibleEnergy (Radial)
 open QuadraticInitialBound ConcreteTraceCRT
 local notation "O"=>HeckeFamily.O

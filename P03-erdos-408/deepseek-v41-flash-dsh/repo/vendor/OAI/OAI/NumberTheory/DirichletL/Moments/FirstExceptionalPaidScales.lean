@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstSecondLossParameters
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentFirstExceptionalPaidScales
 open CanonicalQuadraticSieve CenteredMomentFirstScale CenteredMomentCanonicalFirst

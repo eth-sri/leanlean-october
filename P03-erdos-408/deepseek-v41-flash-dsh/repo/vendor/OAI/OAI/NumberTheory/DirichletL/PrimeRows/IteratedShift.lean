@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.PrincipalSplit
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary

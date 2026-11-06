@@ -7,17 +7,12 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRadialPointwise
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentCommonHeightEnvelope
-open HeckeFamily CenteredMomentCommonRadialSource CenteredMomentCommonRadialData
-open CenteredMomentCommonRadialPointwise CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentRestrictedSource
-open CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors
-open CenteredMomentCommonAllocationSum CanonicalQuadraticSieve
+open HeckeFamily CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentRestrictedSource CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentCommonAllocationSum CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
  def withHeight (s:Input ι) (η:Character) (t:ℝ) : Input ι := {s with η:=η,t:=t}
 

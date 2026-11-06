@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.LogarithmicActual
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.HeckeReciprocalGrowth
 open HeckeFamily HeckeLogarithmic HeckeDeletionBounds
 
@@ -52,7 +52,7 @@ theorem polynomial_reciprocal_bound (χ : Character) (a : ℝ)
   have he' : e<1/1000 := lt_of_le_of_lt (min_le_left _ _) (by norm_num)
   have hmargin : HeckeZeroSupremum.beta+8*e ≤ a := by
     have hh := min_le_right (1/2000 : ℝ) ((a-HeckeZeroSupremum.beta)/16)
-    change e ≤ (a-HeckeZeroSupremum.beta)/16 at hh
+
     linarith
   obtain ⟨C,hC,hbound⟩ := reciprocal_subpower e 1 he he' (by norm_num)
   let K : ℝ := C*((radical χ.modulus).absNorm : ℝ)*(2*(χ.modulus.absNorm : ℝ))

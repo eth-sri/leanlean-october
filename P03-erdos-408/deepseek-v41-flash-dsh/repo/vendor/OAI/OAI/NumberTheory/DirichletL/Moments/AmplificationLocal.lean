@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.Amplification
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentAmplificationLocal
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysical
-open CenteredMomentUnequal CenteredMomentAmplification CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysical CenteredMomentUnequal CenteredMomentAmplification CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 def centralLocal (p : O) (hp : p ≠ 0) (n : ℕ) (h : O) : ℂ :=

@@ -10,7 +10,7 @@ public import Mathlib.RingTheory.Ideal.Quotient.Nilpotent
 
 namespace OAI
 
-open scoped BigOperators Classical
+
 open NumberField
 namespace SevenEighths.CenteredMomentCorrelation
 noncomputable section
@@ -45,7 +45,7 @@ def primePowerCharacter (P : Ideal (𝓞 K)) {c : ℕ} (hc : 1 ≤ c)
   map_nonunit' := by
     intro x hx
     obtain ⟨a, rfl⟩ := Ideal.Quotient.mk_surjective x
-    change χ (Ideal.Quotient.mk P a) = 0
+
     apply χ.map_nonunit
     intro ha
     exact hx ((Ideal.Quotient.isUnit_mk_pow_iff_isUnit_mk P (by omega)).mpr ha)

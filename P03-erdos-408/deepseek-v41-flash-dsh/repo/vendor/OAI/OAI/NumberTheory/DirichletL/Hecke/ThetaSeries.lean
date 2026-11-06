@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 open MeasureTheory Set
-open scoped BigOperators
+
 namespace SevenEighths.HeckeTheta
 open EisensteinTheta LatticeSummability
 

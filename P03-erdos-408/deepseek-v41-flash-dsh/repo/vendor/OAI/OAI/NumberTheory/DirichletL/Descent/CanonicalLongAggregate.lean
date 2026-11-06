@@ -8,10 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_large_bins_aggregate

@@ -7,11 +7,9 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeTwist
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+
 namespace SevenEighths.CenteredMomentHeckeHeight
-open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentHeckeTwist
-open CenteredMomentLattice CenteredMomentMask CenteredMomentTwist CenteredMomentHeight
-open QuadraticInitialBound EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentHeckeTwist CenteredMomentLattice CenteredMomentMask CenteredMomentTwist CenteredMomentHeight QuadraticInitialBound EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 def rowTwistedSum (η : Character) (m A₀ z : O) (W : ℝ → ℂ) (t X : ℝ) : ℂ :=

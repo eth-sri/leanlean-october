@@ -8,7 +8,7 @@ public import Mathlib.Analysis.Complex.Basic
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 
 namespace Erdos821.P3Lowrank
 
@@ -157,7 +157,7 @@ theorem tailVec_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (CG : ℝ) 
       have h2 := applyK_bound mass hm (G (Fin.succ 0)) CG hCG (hG _) w
       have h3 := applyK_bound mass hm (E 0) (c 0) (hc 0) (hE 0) (applyK (G (Fin.succ 0)) w)
       have hprod : 0 ≤ ∏ i : Fin n, c i.succ := Finset.prod_nonneg fun i _ => hc i.succ
-      change wnorm mass (applyK (E 0) (applyK (G (Fin.succ 0)) w)) ≤ _
+
       rw [Fin.prod_univ_succ]
       calc wnorm mass (applyK (E 0) (applyK (G (Fin.succ 0)) w))
           ≤ c 0 * wnorm mass (applyK (G (Fin.succ 0)) w) := h3

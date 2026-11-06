@@ -11,11 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow
-open CenteredMomentSecondSectorColumns CenteredMomentFirstSectorTransform IdealMobiusDivisorSum
-open CenteredMomentFirstAmplificationChoice CenteredMomentFirstSectors CenteredMomentLiveDomain
-open CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
-open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentChildAssembly
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentSecondSectorColumns CenteredMomentFirstSectorTransform IdealMobiusDivisorSum CenteredMomentFirstAmplificationChoice CenteredMomentFirstSectors CenteredMomentLiveDomain CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentChildAssembly
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem columns_gauss_polynomial_filter (Q C:Ideal O)(hC:Supported C)(S:Finset (Ideal O))
@@ -40,7 +36,6 @@ theorem columns_gauss_polynomial_filter (Q C:Ideal O)(hC:Supported C)(S:Finset (
   split_ifs <;> simp
 
 variable {ι:Type*}[Fintype ι]
-local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 end SevenEighths.CenteredMomentFirstPhysicalSource
 

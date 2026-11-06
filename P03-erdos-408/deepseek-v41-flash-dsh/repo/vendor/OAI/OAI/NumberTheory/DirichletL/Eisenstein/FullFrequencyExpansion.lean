@@ -94,7 +94,7 @@ theorem thetaFullFrequency_tsum (c w : Eis→ℂ)
   have hinj : Function.Injective phi := by
     intro p q hpq
     exact thetaFullFrequency_injective (congrArg Subtype.val hpq)
-  change (∑'h:{h:Eis // h≠0},f h)=∑'p:ThetaFullIndex,f (phi p)
+
   apply tsum_eq_tsum_of_ne_zero_bij
     (fun p:Function.support (fun p:ThetaFullIndex=>f (phi p))=>phi p.val)
   · exact hinj.comp Subtype.val_injective
@@ -202,7 +202,7 @@ lemma coefficient_weighted_summable_of_polynomial (F:Eis→ℂ) (C:ℝ) (hC:0≤
         mul_le_mul_of_nonneg_right (hF h hh) (Real.rpow_nonneg (norm_nonneg _) _)
       _=(C/D^(-4:ℝ))*(‖eisEmbedding h‖^(1/3:ℝ)*‖eisEmbedding h‖^(-4:ℝ)):=by
         rw [cuspFrequency,norm_div,Real.div_rpow (norm_nonneg _) (norm_nonneg _)]
-        change (C*‖eisEmbedding h‖^(1/3:ℝ))*(‖eisEmbedding h‖^(-4:ℝ)/D^(-4:ℝ))=_
+
         ring
       _=_:=by rw [he]
 

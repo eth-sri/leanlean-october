@@ -9,7 +9,7 @@ public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 open MeasureTheory
 namespace SevenEighths.ProbeRow
 open ActualEisensteinCubic CompletedGauss CubicEisenstein

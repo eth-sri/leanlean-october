@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeRay
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentRayNonprincipal
 open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion HeckePrimeRay

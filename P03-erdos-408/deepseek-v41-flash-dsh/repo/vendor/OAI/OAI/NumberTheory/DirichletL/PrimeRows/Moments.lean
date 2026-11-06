@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion
-open ProbePhysical
+open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion ProbePhysical
 
 def momentData (η : Character) : RowData where
   η := η

@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectionDeletion
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.CenteredMomentReflectionMass
-open CenteredMomentReflectionDeletion HeckeFamily UniqueFactorizationMonoid
-open IdealMobiusDivisorSum
+open CenteredMomentReflectionDeletion HeckeFamily UniqueFactorizationMonoid IdealMobiusDivisorSum
 local notation "O" => HeckeFamily.O
 
 def weight (I : Ideal O) : ℝ := (Real.sqrt (I.absNorm : ℝ))⁻¹

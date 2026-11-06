@@ -7,14 +7,12 @@ public import Erdos821.S2.SpanGhostWeightTask
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Gw
 
-open Erdos821.S2Core
-open Erdos821.S2Core.ResiduePath
-open Erdos821.Blueprint.Graph
+open Erdos821.S2Core Erdos821.S2Core.ResiduePath Erdos821.Blueprint.Graph
 
 variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
 variable {A : Model F P J m}

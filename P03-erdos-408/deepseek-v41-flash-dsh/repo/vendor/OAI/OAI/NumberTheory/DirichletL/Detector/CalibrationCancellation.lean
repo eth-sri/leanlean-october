@@ -57,7 +57,7 @@ theorem calibration_coefficient_cancel (S : Finset (Ideal O)) (hS : ∀ P∈S, P
     (supportedElement_ne_zero A hA) hs hcop H
   dsimp only at he
   rw [he, Xi_apply, map_mul]
-  change _ = bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) H
+
   dsimp only [C] at hηA hκA hηs hκs hηHstar hτ hroot
   field_simp
 

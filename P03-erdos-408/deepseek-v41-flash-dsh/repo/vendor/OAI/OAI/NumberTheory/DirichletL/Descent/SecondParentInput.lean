@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondPrincipalCaller
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers RayFourExpansion
 open InverseInitialArithmetic (sourceIdeal)
 noncomputable section

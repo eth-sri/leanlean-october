@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsLocal
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
@@ -34,8 +34,7 @@ theorem sourceRowTerm_pos (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMax
 
 end SevenEighths.ProbeEuler
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
 local notation "O" => ActualEisensteinCubic.O
 
 theorem bareSourceCoefficient_unit_frequency (η : HeckeFamily.Character)

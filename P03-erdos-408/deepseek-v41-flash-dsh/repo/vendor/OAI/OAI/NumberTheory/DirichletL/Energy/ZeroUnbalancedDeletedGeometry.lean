@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceGeometry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedDeletedGeometry
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyZeroReferenceGeometry
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyZeroReferenceGeometry
 local notation "O" => HeckeFamily.O
 
 theorem actual_deleted_gates {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask bΦ)

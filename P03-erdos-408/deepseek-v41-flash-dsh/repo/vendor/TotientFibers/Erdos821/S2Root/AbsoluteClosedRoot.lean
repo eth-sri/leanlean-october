@@ -8,13 +8,12 @@ public import Erdos821.P3Tail.MemoryTail
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Root
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 theorem visitQ_nonneg (F : FixedData) (n : ℕ) (i : Fin (n + 1)) :
     0 ≤ visitQ F.q n i := by

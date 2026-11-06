@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic
 

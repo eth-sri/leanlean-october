@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LiftedFourier
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition
 local notation "O" => ActualEisensteinCubic.O

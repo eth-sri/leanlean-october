@@ -8,7 +8,7 @@ public import Mathlib.GroupTheory.Perm.Cycle.Type
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 
 namespace Erdos821.S2
 

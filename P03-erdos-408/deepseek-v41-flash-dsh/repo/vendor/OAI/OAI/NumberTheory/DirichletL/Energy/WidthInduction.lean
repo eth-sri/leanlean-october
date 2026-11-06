@@ -10,15 +10,11 @@ public import OAI.NumberTheory.DirichletL.Energy.BandMonotonicity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyWidthInduction
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity
-open CenteredMomentEnergyWidthFloor CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyWidthFloor CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource
 local notation "O"=>HeckeFamily.O
 
 def remaining (M ε:ℝ)(k:ℕ):ℕ:=count M ε-k
@@ -40,7 +36,6 @@ lemma child_length (M B L ε:ℝ)(k:ℕ)(hk:k<count M ε):
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 end SevenEighths.CenteredMomentEnergyWidthInduction

@@ -11,7 +11,7 @@ public import Mathlib.Topology.Algebra.Module.ModuleTopology
 @[expose] public section
 
 namespace OAI
-open Set
+
 
 namespace Problem337
 

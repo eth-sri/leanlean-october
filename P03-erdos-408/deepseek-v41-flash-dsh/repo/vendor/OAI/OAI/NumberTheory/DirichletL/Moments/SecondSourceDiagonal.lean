@@ -10,14 +10,10 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPair
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+
 
 namespace SevenEighths.CenteredMomentSecondSourceDiagonal
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSourceSecondZeroEnergy CenteredMomentCommonRadialData
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentExceptionalAmplitudePair CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFiniteProfileExceptional
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceSecondZeroEnergy CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair CenteredMomentOriginalCommonHarmonic CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondSourceBlocks
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 namespace SevenEighths.InverseMomentFirstChildWindows
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels
 open InverseSecondSourceBlocks (dyadIndex dyadScale dyadScale_pos dyadIndex_bounds)

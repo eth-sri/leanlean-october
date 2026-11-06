@@ -5,7 +5,7 @@ public import Mathlib.Analysis.CStarAlgebra.Classes
 @[expose] public section
 
 namespace OAI
-open scoped BigOperators
+
 
 namespace Problem337
 
@@ -25,7 +25,7 @@ theorem monotone_filter_range_eq_Ico {α : Type*} [LinearOrder α]
     have hab : a ≤ b := Finset.min'_le _ _ hb
     have hbN : b < N := Finset.mem_range.mp (Finset.mem_filter.mp hb).1
     refine ⟨a, b + 1, by omega, by omega, ?_⟩
-    change s = Finset.Ico a (b + 1)
+
     ext j
     constructor
     · intro hj
@@ -101,7 +101,7 @@ theorem norm_sum_le_bad_card_add_good_blocks
     intro k hk l hl hkl
     exact phaseGoodBlock_pairwise_disjoint d N β hβ hkl
   have hgood : ‖∑ j ∈ G, z j‖ ≤ (K.card : ℝ) * C := by
-    change ‖∑ j ∈ K.biUnion (phaseGoodBlock d N β), z j‖ ≤ _
+
     rw [Finset.sum_biUnion hdisj]
     calc
       _ ≤ ∑ k ∈ K, ‖∑ j ∈ phaseGoodBlock d N β k, z j‖ := norm_sum_le _ _

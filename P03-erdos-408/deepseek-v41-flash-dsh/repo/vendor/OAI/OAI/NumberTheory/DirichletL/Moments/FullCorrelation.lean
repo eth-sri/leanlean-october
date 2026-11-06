@@ -8,7 +8,7 @@ public import Mathlib.RingTheory.Ideal.Quotient.Operations
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.CenteredMomentCorrelation
 variable {A : Type*} [CommRing A]
 
@@ -97,7 +97,7 @@ theorem scaledResidue_injective (d a m : A) (hm : m = d * a) (ha : a ≠ 0) :
   apply Ideal.Quotient.eq.mpr
   apply Ideal.mem_span_singleton.mpr
   have hd := Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp hrs)
-  change m ∣ a * r - a * s at hd
+
   rw [hm, ← mul_sub, mul_comm d a] at hd
   exact (mul_dvd_mul_iff_left ha).mp hd
 

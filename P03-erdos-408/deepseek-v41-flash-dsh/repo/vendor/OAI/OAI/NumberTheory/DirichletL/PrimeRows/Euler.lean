@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.Character
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalRowCompletion
 local notation "O" => HeckeFamily.O

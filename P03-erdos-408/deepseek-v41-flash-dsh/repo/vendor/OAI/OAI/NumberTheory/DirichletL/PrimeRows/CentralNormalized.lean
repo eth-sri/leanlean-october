@@ -9,8 +9,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeLocal
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeLocal CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 
 theorem actual_central_unramified_normalized (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hn : ¬P.val∣Ideal.span {u.val}) (hη : IsCoprime P.val η.modulus)

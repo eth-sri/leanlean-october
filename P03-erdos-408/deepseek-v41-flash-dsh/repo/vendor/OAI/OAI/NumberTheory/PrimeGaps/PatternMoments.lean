@@ -8,25 +8,25 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-open Filter
 
-open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
-open scoped Classical
 
-open scoped ContDiff
 
-open Topology
 
-open scoped Convolution ContDiff Pointwise
+
+
+
+
+
+
+
+
+
+
 
 def permutedLabels {n : ℕ} (e : Equiv.Perm (Fin n)) : Fin (n+n) → Fin n := Fin.append id e
 

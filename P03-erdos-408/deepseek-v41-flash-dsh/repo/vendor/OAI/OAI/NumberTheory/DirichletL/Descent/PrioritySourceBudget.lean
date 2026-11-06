@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.PriorityCellBudget
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks

@@ -10,12 +10,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorBranchBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff ComplexConjugate
+
 open Set
 namespace SevenEighths.HeckeDetectorRawFiber
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorWitnessRows
-open HeckeDetectorSupportedWitness HeckeDetectorCoefficientTransfer HeckeDetectorInverseFiberCount
-open HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorWitnessRows HeckeDetectorSupportedWitness HeckeDetectorCoefficientTransfer HeckeDetectorInverseFiberCount HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
 
 structure Fiber (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) (Label Slot : Type*)
     (U a ε tstar T allowance : ℝ) (i : ℕ) where

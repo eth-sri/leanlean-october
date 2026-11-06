@@ -9,10 +9,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+
 namespace SevenEighths.InverseInitialMarkedAssignedGeometry
-open HeckeFamily ConcretePrimeRowBridge
-open DetectorDictionaryInverseMarkedReference InverseInitialQuotientGeometry
+open HeckeFamily ConcretePrimeRowBridge DetectorDictionaryInverseMarkedReference InverseInitialQuotientGeometry
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 

@@ -8,7 +8,7 @@ integral into a medium time range and a weighted tail. -/
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 open MeasureTheory
 
 namespace Erdos821.P5Marked

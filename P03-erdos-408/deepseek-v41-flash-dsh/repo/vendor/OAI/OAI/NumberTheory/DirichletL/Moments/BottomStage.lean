@@ -11,11 +11,10 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentBottomStage
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentInductionEnergy CenteredMomentAbsoluteEnergy QuadraticInitialBound
+
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι]
 

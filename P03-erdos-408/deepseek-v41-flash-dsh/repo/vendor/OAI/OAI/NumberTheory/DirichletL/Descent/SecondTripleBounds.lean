@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondPunctureBudget
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+
 open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section

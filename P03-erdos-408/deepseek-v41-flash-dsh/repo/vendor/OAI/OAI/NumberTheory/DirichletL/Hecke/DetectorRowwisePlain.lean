@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwiseMarked
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 open Set Complex
 namespace SevenEighths.HeckeDetectorRowwisePlain
 open HeckeFamily HeckeDyadic HeckeDetectorRowwise HeckeDetectorRowwisePolynomial
@@ -54,10 +54,10 @@ theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Charact
     have c0 := cq 0 i (by norm_num)
     have c1 := cq 1 i (by norm_num)
     have c2 := cq 2 i (by norm_num)
-    change Continuous (fun p : ℝ×ℝ => M n i p.1 p.2)
-    change Continuous (fun p : ℝ×ℝ => Q 0 i p.1 p.2) at c0
-    change Continuous (fun p : ℝ×ℝ => Q 1 i p.1 p.2) at c1
-    change Continuous (fun p : ℝ×ℝ => Q 2 i p.1 p.2) at c2
+
+
+
+
     interval_cases n <;> dsimp [M] <;> fun_prop
   have dx (n : ℕ) (i : ι) (x y : ℝ) (hn : n≤1) :
       HasDerivAt (fun u => M n i u y) (-M (n+1) i x y) x := by
@@ -83,10 +83,10 @@ theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Charact
     have e01 := henergy 0 1 (by norm_num) x hx y hy
     have e11 := henergy 1 1 (by norm_num) x hx y hy
     have e02 := henergy 0 2 (by norm_num) x hx y hy
-    change ∑ i∈rows, ‖Q 0 i x y*Q 0 i x y*P i‖^2≤E at e00
-    change ∑ i∈rows, ‖Q 0 i x y*Q 1 i x y*P i‖^2≤E at e01
-    change ∑ i∈rows, ‖Q 1 i x y*Q 1 i x y*P i‖^2≤E at e11
-    change ∑ i∈rows, ‖Q 0 i x y*Q 2 i x y*P i‖^2≤E at e02
+
+
+
+
     interval_cases n
     · simpa only [M,ite_true] using e00.trans (show E≤16*E by linarith)
     · have heq : (∑ i∈rows, ‖M 1 i x y‖^2)=4*∑ i∈rows, ‖Q 0 i x y*Q 1 i x y*P i‖^2 := by

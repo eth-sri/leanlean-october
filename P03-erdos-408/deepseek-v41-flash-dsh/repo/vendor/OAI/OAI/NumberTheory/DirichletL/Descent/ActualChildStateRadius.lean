@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Descent.ActualChildStateSupport
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
-open InverseSecondFibers CompletedGauss
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 

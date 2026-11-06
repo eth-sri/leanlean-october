@@ -48,10 +48,6 @@ local instance instMeasurableSpaceEL2CompactnessTransfer : MeasurableSpace E := 
 local instance instBorelSpaceEL2CompactnessTransfer : BorelSpace E := ⟨rfl⟩
 local instance instOpensMeasurableSpaceEL2CompactnessTransfer : OpensMeasurableSpace E := by
   infer_instance
-local instance instMeasurableAddEL2CompactnessTransfer : MeasurableAdd E := by
-  infer_instance
-local instance instMeasurableNegEL2CompactnessTransfer : MeasurableNeg E := by
-  infer_instance
 
 variable {K : Set E} {ψ : E → ℝ}
 

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramShell
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbeGramCommon
 open ActualEisensteinCubic ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O

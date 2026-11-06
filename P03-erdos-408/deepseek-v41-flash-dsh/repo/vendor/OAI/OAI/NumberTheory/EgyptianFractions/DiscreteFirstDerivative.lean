@@ -8,7 +8,7 @@ public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
 @[expose] public section
 
 namespace OAI
-open scoped BigOperators
+
 
 namespace Problem337.ExponentialSum
 
@@ -181,8 +181,8 @@ theorem first_derivative_sum_bound (f : ℕ → ℝ) (N : ℕ) (β : ℝ) (hβ :
     rw [hvariation]
     have h0 := (abs_le.mp hc0).2
     have hN := (abs_le.mp hcN).1
-    change Real.cot (Real.pi * d 0) ≤ _ at h0
-    change _ ≤ Real.cot (Real.pi * d N) at hN
+
+
     linarith
   have hw0 := phaseWeight_norm_le hβ (hlo 0 (Nat.zero_le N)) (hhi 0 (Nat.zero_le N))
   have hwN := phaseWeight_norm_le hβ (hlo N le_rfl) (hhi N le_rfl)
@@ -238,8 +238,8 @@ theorem first_derivative_sum_bound_succ (f : ℕ → ℝ) (N : ℕ) (β : ℝ) (
     rw [hvariation]
     have h0 := (abs_le.mp hc0).2
     have hN := (abs_le.mp hcN).1
-    change Real.cot (Real.pi * d 0) ≤ _ at h0
-    change _ ≤ Real.cot (Real.pi * d N) at hN
+
+
     linarith
   have hw0 := phaseWeight_norm_le hβ (hlo 0 (Nat.zero_le N)) (hhi 0 (Nat.zero_le N))
   have hwN := phaseWeight_norm_le hβ (hlo N le_rfl) (hhi N le_rfl)

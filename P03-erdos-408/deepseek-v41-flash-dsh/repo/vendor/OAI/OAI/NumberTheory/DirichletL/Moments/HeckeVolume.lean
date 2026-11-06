@@ -13,9 +13,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentHeckeVolume
-open HeckeFamily CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentPrimary CanonicalQuadraticSieve QuadraticInitialBound
-open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMask
+open HeckeFamily CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentPrimary CanonicalQuadraticSieve QuadraticInitialBound IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMask
 open PrimaryIdealUnitReindex (GoodIdeal)
 open CubicEisenstein (PrimaryLower primaryLowerIdealEquiv)
 local notation "O" => ActualEisensteinCubic.O

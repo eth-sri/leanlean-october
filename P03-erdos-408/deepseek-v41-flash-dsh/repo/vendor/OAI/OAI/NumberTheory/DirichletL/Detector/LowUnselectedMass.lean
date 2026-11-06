@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramIdealSummation
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O

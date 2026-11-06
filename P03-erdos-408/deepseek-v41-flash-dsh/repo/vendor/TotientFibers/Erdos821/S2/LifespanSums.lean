@@ -7,7 +7,7 @@ public import Erdos821.S2.SpanSumTask
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -37,7 +37,7 @@ theorem spanWeight_zero_of_invalid (g : P.BigGroup) (p : P.Prime g.val)
 
 theorem spanProduct_zero_of_invalid (S : LifespanAssignment P n)
     (hn : ¬ Q.lifespanValid S) : Q.spanProduct S = 0 := by
-  change ¬ ∀ g p, Q.spanValid g p (S g p) at hn
+
   obtain ⟨g, hg⟩ := not_forall.mp hn
   obtain ⟨p, hp⟩ := not_forall.mp hg
   apply Finset.prod_eq_zero (Finset.mem_univ g)

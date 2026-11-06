@@ -13,7 +13,7 @@ finite bounded state type, which the finite operator-norm composition controls. 
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Lowrank

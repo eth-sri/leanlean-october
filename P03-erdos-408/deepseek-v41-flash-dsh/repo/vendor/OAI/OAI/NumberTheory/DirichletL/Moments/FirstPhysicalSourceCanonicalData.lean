@@ -7,18 +7,12 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceOriginalCol
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentFirstAmplificationChoice CenteredMomentSourceRow
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCommonSupport
-open CenteredMomentGaussEnergy CenteredMomentFirstColumns CenteredMomentChildAssembly
-open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentSecondHeightFamily
-open RayFourExpansion IdealMobiusDivisorSum ActualEisensteinCubic CenteredMomentHeckeExpansion
+
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι]
-local instance firstCanonicalDataDecidableEq : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 end SevenEighths.CenteredMomentFirstPhysicalSource
 

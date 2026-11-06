@@ -9,73 +9,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open Filter Real Asymptotics ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Filter Asymptotics
+open scoped ContDiff FourierTransform SchwartzMap BigOperators Classical
+open MeasureTheory Set ActualEisensteinCubic UniqueFactorizationMonoid
 open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
 
 namespace ShortDraftCusp
 open scoped BigOperators Classical MatrixGroups Matrix
@@ -107,8 +52,6 @@ lemma A4BadPhase_eq (c0:Eis) (hc0:c0≠0) (d U x:Eis) :
 
 noncomputable local instance A4phaseField (P : Ideal Eis) [P.IsMaximal] :
     Field (Eis⧸P) := Ideal.Quotient.field P
-noncomputable local instance A4phaseFintype (P : Ideal Eis) [P.IsMaximal] :
-    Fintype (Eis⧸P) := Fintype.ofFinite _
 
 theorem A4_phase_product {ι : Type*} [Fintype ι] (p : ι→Eis)
     [∀i,(Ideal.span {p i}).IsMaximal] (hp : ∀i,p i≠0)
@@ -161,13 +104,10 @@ theorem A4_phase_product {ι : Type*} [Fintype ι] (p : ι→Eis)
 
 end
 
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase
-open CompletedGauss LocalReflectionBrackets
+open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase CompletedGauss LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 noncomputable local instance A4frequencyField (P : Ideal Eis) [P.IsMaximal] :
     Field (Eis⧸P) := Ideal.Quotient.field P
-noncomputable local instance A4frequencyFintype (P : Ideal Eis) [P.IsMaximal] :
-    Fintype (Eis⧸P) := Fintype.ofFinite _
 
 theorem A3_A4_frequency_product {ι : Type*} [Fintype ι] (p : ι→Eis)
     [∀i,(Ideal.span {p i}).IsMaximal] (hp : ∀i,p i≠0)
@@ -219,8 +159,6 @@ lemma A4BadPhase_norm (c0:Eis) (hc0:c0≠0) (d U x:Eis) :
 
 end ShortDraftCusp
 
-open scoped BigOperators Classical
-
 namespace IdealGaussCRT
 open CubicEisenstein
 
@@ -229,10 +167,6 @@ end IdealGaussCRT
 namespace LocalReflectionBrackets
 open ActualEisensteinCubic CubicEisenstein IdealGaussCRT CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
-noncomputable local instance canonicalShiftField (P : Ideal Eis) [P.IsMaximal] :
-    Field (Eis⧸P) := Ideal.Quotient.field P
-noncomputable local instance canonicalShiftFintype (P : Ideal Eis) [P.IsMaximal] :
-    Fintype (Eis⧸P) := Fintype.ofFinite _
 
 end LocalReflectionBrackets
 
@@ -288,10 +222,6 @@ end FiniteGaussPhase
 namespace LocalReflectionBrackets
 open ActualEisensteinCubic CubicEisenstein IdealGaussCRT CompletedGauss FiniteGaussPhase
 local notation "Eis" => ActualEisensteinCubic.O
-noncomputable local instance productReflectionField (P : Ideal Eis) [P.IsMaximal] :
-    Field (Eis⧸P) := Ideal.Quotient.field P
-noncomputable local instance productReflectionFintype (P : Ideal Eis) [P.IsMaximal] :
-    Fintype (Eis⧸P) := Fintype.ofFinite _
 
 end LocalReflectionBrackets
 
@@ -342,8 +272,6 @@ namespace CubicEisenstein
 open ActualEisensteinCubic
 local notation "Eis" => ActualEisensteinCubic.O
 end CubicEisenstein
-
-open scoped Classical BigOperators
 
 namespace ShortDraftCRT
 open ActualEisensteinCubic FiniteGaussPhase ConcreteTraceCRT

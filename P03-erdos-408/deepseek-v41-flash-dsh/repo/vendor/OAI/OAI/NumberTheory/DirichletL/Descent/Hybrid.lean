@@ -13,7 +13,7 @@ namespace SevenEighths.InverseMoment
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid IdealMobiusDivisorSum
+
 
 local notation "Eis" => ActualEisensteinCubic.O
 

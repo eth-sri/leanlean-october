@@ -8,8 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhase
-open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay ConcreteTraceCRT
-open QuadraticAllOddCRT
+open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay ConcreteTraceCRT QuadraticAllOddCRT
 local notation "O" => ActualEisensteinCubic.O
 
 def G (a : O) : ℂ := fixedGQuotientValue (Ideal.Quotient.mk (Ideal.span {(4 : O)}) a)

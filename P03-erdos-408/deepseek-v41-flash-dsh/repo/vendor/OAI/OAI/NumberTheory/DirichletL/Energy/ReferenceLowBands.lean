@@ -8,13 +8,10 @@ public import OAI.NumberTheory.DirichletL.Energy.Bands
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowBands
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
-open CenteredMomentPrimeSlot QuadraticInitialBound
-open CenteredMomentFiniteProfileExceptional
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentPrimeSlot QuadraticInitialBound CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 
 def ZeroLowAt (Q:Ideal O)(a b bΦ Bmask L M ε Z:ℝ)

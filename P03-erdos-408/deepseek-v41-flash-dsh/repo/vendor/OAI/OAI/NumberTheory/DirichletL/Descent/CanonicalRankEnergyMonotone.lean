@@ -10,7 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CanonicalQuadraticSieve InverseInitialClippedColumns
+
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem canonical_rank_loss_le {ι σ:Type}[DecidableEq ι][DecidableEq σ]

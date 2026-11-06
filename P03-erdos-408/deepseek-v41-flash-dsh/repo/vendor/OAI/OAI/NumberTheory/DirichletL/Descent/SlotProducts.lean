@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.HybridBound
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

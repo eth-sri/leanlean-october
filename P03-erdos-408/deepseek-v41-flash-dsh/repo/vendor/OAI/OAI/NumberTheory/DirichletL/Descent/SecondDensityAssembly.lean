@@ -10,8 +10,8 @@ set_option linter.privateModule false
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open MeasureTheory FourierBridge JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+
+
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 

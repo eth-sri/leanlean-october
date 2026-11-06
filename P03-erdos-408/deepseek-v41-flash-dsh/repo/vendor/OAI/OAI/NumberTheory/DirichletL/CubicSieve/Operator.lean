@@ -8,7 +8,7 @@ public import Mathlib.Tactic.Ring
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators
+
 noncomputable section
 
 variable {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]

@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsHolomorphic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalQuadraticSieve CompletedGauss
 local notation "O" => HeckeFamily.O
 
 lemma actualACube_norm_le (η : Character) (p : O) : ‖actualACube η p‖≤1 := by

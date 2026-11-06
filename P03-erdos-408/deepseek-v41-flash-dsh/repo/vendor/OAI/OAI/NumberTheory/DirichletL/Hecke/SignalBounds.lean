@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.ReciprocalGrowth
 namespace OAI
 
 noncomputable section
-open scoped Topology
+
 open MeasureTheory Set Filter Asymptotics
 namespace SevenEighths.HeckeSignalBounds
 open HeckeFamily HeckeSignal Continuation

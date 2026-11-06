@@ -12,7 +12,7 @@ public import Mathlib.NumberTheory.MulChar.Lemmas
 
 namespace OAI
 
-open scoped BigOperators
+
 
 namespace SevenEighths.FiniteFourier
 

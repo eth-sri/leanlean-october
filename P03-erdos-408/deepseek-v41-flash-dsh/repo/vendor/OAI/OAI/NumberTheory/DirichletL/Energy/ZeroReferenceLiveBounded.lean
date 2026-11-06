@@ -8,14 +8,11 @@ public import OAI.NumberTheory.DirichletL.Energy.LiveClippingDefect
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceLiveBounded
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyZeroReferenceBounded CenteredMomentFiniteProfileExceptional
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyZeroReferenceBounded CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 
 theorem balanced_reference_live (a b bΦ rho ε Mcap Bmask:ℝ)

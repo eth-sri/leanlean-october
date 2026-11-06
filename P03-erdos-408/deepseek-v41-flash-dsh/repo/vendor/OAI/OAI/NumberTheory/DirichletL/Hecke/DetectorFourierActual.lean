@@ -9,7 +9,7 @@ namespace OAI
 
 namespace SevenEighths.HeckeDetectorFourier
 open MeasureTheory
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+
 open HeckeFamily HeckeDetectorProfiles
 noncomputable section
 

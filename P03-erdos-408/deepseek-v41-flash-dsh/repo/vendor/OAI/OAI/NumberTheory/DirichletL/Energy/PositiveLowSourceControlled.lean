@@ -14,16 +14,10 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveLowSourceControlled
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentFiniteProfileExceptional
-open CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyNaturalLowSourceBound CenteredMomentFiniteProfileExceptional CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 open CenteredMomentEnergyPositiveLowBandSource (PhysicalLowAt)

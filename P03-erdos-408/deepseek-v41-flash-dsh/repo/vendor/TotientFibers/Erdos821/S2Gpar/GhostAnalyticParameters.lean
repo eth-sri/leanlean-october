@@ -7,7 +7,7 @@ public import Erdos821.S34.ScaleGrowth
 
 noncomputable section
 open Filter
-open scoped BigOperators
+
 
 namespace Erdos821.S2Gpar
 

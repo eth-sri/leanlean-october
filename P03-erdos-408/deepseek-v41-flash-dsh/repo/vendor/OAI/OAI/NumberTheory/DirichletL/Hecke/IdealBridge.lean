@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.IdealCharacter
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.HeckeFamily
 
 private instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstPass
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section

@@ -9,19 +9,13 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondLocalization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 open Filter
 
 namespace SevenEighths.CenteredMomentAmplificationChildSourceCaps
-open ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentFirstAmplificationChoice CenteredMomentHeckeColumnWindow
-open CenteredMomentCommonAllocationSum CenteredMomentCommonRawScale
-open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform
-open CenteredMomentAmplificationChildInput CenteredMomentOriginalCommonHarmonic
-open CenteredMomentSourceMass CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization
+open ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentFirstAmplificationChoice CenteredMomentHeckeColumnWindow CenteredMomentCommonAllocationSum CenteredMomentCommonRawScale CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform CenteredMomentAmplificationChildInput CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
-local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
 
 def geometry (N : ℕ) (b b₁ b₂ : ℝ) : ℝ := b^(2*N)*b₁*b₂
 

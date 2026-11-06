@@ -16,7 +16,7 @@ so that `|Comp_j - Prox_j| ≤ (C₄ + C₅)(x/L) L^{-1/20}`.
 
 namespace Erdos408.TypeII
 
-open Finset Real Filter
+
 
 /-- The E4 bound against the fudge factor `u`. -/
 theorem bound4_le {q : ℝ} {K : ℕ} {CN c E₂ κ CΦ C₂ : ℝ} {M : ℕ → ℝ} {x γ : ℝ} {A r : ℕ}

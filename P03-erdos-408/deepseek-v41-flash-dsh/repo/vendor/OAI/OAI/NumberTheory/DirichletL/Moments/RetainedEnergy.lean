@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Moments.RetainedProfile
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.CenteredMomentRetainedEnergy
-open CenteredMomentHeckeSlots CenteredMomentHeckeHeight CenteredMomentRetainedProfile
-open CenteredMomentDivisorRawEnergy HeckeFamily
+open CenteredMomentHeckeSlots CenteredMomentHeckeHeight CenteredMomentRetainedProfile CenteredMomentDivisorRawEnergy HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 

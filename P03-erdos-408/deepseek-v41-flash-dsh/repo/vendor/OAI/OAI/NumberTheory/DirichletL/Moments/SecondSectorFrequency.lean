@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSectorFrequency
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondSectorColumns CenteredMomentSecondSectorChildren CenteredMomentSupport
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondLedger CenteredMomentCanonicalFirst
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondSectorColumns CenteredMomentSecondSectorChildren CenteredMomentSupport CenteredMomentHeckeColumnWindow CenteredMomentSecondLedger CenteredMomentCanonicalFirst
 local notation "O" => ActualEisensteinCubic.O
 
 def sectorFrequency (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β : Ideal O→ℂ)

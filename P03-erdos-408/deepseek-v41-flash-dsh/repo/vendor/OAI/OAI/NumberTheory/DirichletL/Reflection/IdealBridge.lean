@@ -8,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets
-open CanonicalQuadraticSieve CanonicalRowCompletion
+open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets CanonicalQuadraticSieve CanonicalRowCompletion
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -100,7 +99,7 @@ theorem full_branch_sum_hybrid {ι : Type*} [Fintype ι]
     simp only [v,hSj i hi]
   have hv : (∏ i, v i) = (∏ i ∈ R, v i)*(∏ i ∈ S, v i)*(∏ i ∈ F, v i) := by
     rw [← Finset.prod_union hRS,← Finset.prod_union hF,hu]
-  change (∏ i, v i) = _
+
   rw [hv,hr,hs]
   ring
 

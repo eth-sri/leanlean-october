@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondCanonicalFrequency
-open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondLedger
-open CenteredMomentPartition CenteredMomentSupport CenteredMomentSupportedCorrelation
-open CenteredMomentCorrelation CenteredMomentUnequal
+open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentSupport CenteredMomentSupportedCorrelation CenteredMomentCorrelation CenteredMomentUnequal
 local notation "O" => ActualEisensteinCubic.O
 
 theorem commonFrequencyGenerator_ne_zero (C D : Ideal O) (hC : Supported C) :

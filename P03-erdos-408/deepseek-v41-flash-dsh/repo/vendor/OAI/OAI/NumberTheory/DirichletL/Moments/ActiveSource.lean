@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentActiveSource
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentGaussEnergy
-open CenteredMomentLiveDomain CenteredMomentOriginalChildEnergy CenteredMomentSecondLocalization
-open CenteredMomentFirstSectors CenteredMomentCompleteCommon
+open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentGaussEnergy CenteredMomentLiveDomain CenteredMomentOriginalChildEnergy CenteredMomentSecondLocalization CenteredMomentFirstSectors CenteredMomentCompleteCommon
 local notation "O" => ActualEisensteinCubic.O
 
 def activeSource (S : Finset (Ideal O)) (β : Ideal O → ℂ) : Finset (Ideal O) :=

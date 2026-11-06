@@ -11,11 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeInverseAmplification HeckeDyadic HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer InverseMoment InverseInitialProfile
-open ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion
-open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseMarkedPhysicalRows
-open InverseInitialPhysicalSlots IdealMobiusDivisorSum
+open HeckeFamily HeckeInverseAmplification HeckeDyadic HeckeDetectorRawFiber HeckeDetectorCoefficientTransfer InverseMoment InverseInitialProfile ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseMarkedPhysicalRows InverseInitialPhysicalSlots IdealMobiusDivisorSum
 local notation "O"=>HeckeFamily.O
 
 theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
@@ -117,7 +113,7 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
     apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg (by linarith) _)
     exact Finset.single_le_sum (fun b _=>(hC b).le) (Finset.mem_univ F.reverse)
   refine hphys.trans ?_
-  change (Tbad.card:ℝ)*(∑j∈Tbad,_)≤_
+
   calc
     _≤(Tbad.card:ℝ)*(∑j∈Tbad,(∑b:Bool,C b)*U^(1+εm)*
         ((1+‖v‖)^(∑b:Bool,J b))^2):=

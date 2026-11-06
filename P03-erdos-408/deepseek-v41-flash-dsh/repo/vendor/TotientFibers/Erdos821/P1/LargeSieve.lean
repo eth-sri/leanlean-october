@@ -5,7 +5,7 @@ public import OAI.NumberTheory.PrimeGaps.Main
 
 @[expose] public section
 
-open scoped BigOperators
+
 
 namespace Erdos821.P1
 

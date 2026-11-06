@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.SlotChoices
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+
 open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

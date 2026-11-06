@@ -8,11 +8,11 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-open Filter
 
-open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
+
+
+
 
 theorem theta_le_vonMangoldt (n : ℕ) : theta n ≤ ArithmeticFunction.vonMangoldt n := by
   by_cases hn : Nat.Prime n

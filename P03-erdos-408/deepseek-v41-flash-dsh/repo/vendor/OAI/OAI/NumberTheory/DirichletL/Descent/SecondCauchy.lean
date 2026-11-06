@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.Canonical
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+
 open SevenEighths.InverseSecondFibers IdealMobiusDivisorSum CompletedGauss
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

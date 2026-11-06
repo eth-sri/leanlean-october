@@ -9,11 +9,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.RowClosure
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentFixedRay
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open RayFourExpansion CenteredMomentPrimary HeckeFamily HeckeRowClosure
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation RayFourExpansion CenteredMomentPrimary HeckeFamily HeckeRowClosure
 local notation "O" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 

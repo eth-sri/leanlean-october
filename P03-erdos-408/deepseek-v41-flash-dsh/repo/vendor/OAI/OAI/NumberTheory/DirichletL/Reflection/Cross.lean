@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.Frozen
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped BigOperators Classical
+
 noncomputable section
 
 theorem ordered_cross_partition_on {ι : Type*} [Fintype ι] [DecidableEq ι]

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.TuplePrime
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve ProbeEuler ProbeLocal
 local notation "O" => ActualEisensteinCubic.O

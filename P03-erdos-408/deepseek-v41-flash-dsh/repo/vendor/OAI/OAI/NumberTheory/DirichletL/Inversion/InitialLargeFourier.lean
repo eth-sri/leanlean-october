@@ -10,19 +10,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
+
+
 namespace SevenEighths.InverseInitialLargeFourier
-open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonProfile
-open InverseInitialCommonCutoff InverseInitialCommonTuples InverseInitialOverlapFourier
-open InverseInitialOverlapInputFourier InverseInitialRayAttachment InverseInitialArithmetic
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialEnergyCallerWindow
+
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {σ:Type*} [DecidableEq σ]
 
-open InverseInitialCommonTransform InverseInitialLargePool
+
 
 end SevenEighths.InverseInitialLargeFourier
 

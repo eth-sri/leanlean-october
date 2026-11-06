@@ -9,10 +9,9 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLiveCountBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 namespace SevenEighths.InverseMomentFirstSecondHeightCost
-open InverseMoment InverseAmbientProfileTower JointLogSeparation FourierBridge
-open InverseMomentFirstOriginalProfile
+open InverseMoment InverseAmbientProfileTower JointLogSeparation FourierBridge InverseMomentFirstOriginalProfile
 
 def firstDegree (degree : ℕ) : ℕ := 2*InverseClippingProfiles.momentOrder (2*degree)
 

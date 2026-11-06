@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Detector.CalibrationSupport
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve
 local notation "O" => HeckeFamily.O

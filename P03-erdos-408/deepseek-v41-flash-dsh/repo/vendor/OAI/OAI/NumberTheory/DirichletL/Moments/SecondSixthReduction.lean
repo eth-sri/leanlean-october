@@ -8,13 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.FixedRowMask
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentSecondSixthReduction
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst CenteredMomentSecondMovingSupport CenteredMomentFixedRowMask
-open CenteredExceptionalProfile CenteredMomentSupportedCorrelation
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst CenteredMomentSecondMovingSupport CenteredMomentFixedRowMask CenteredExceptionalProfile CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 def reducedNumerator (C D : Ideal O) (U : Finset (CommonIndex C D)) : O :=

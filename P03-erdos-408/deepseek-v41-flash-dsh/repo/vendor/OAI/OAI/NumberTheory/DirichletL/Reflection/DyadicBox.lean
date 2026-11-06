@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.DyadicTail
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+
 open CompletedGauss CompletedDyadic CanonicalQuadraticSieve
 noncomputable section
 

@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentGaussEnergy EisensteinSchwartzPoisson
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentGaussEnergy EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -89,7 +88,7 @@ theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
         gcongr
         have hratio : 0≤P^2/Y := by positivity
         linarith
-  change ‖E‖≤_
+
   calc
     _≤A₀*(Q/Y)+A₁*((1+|v|)^J*(Q/Y)*(P^2/Y)*Y^δ)+A₂*((Q/Y)*P^(1/6:ℝ)) := by convert henergy using 1 ; ring
     _≤A₀*B+A₁*B+A₂*B := add_le_add (add_le_add (mul_le_mul_of_nonneg_left hb₀ hA₀)

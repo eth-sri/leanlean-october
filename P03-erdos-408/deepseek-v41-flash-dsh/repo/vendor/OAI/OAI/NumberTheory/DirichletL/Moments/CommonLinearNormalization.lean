@@ -8,14 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRawCost
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentCommonLinearNormalization
-open HeckeFamily CenteredMomentCommonLinearSource CenteredMomentCommonRadialData
-open CenteredMomentCommonRawScale CenteredMomentCommonRawCost CenteredMomentEligibleEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
-open CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair
-open CanonicalQuadraticSieve
+open HeckeFamily CenteredMomentCommonLinearSource CenteredMomentCommonRadialData CenteredMomentCommonRawScale CenteredMomentCommonRawCost CenteredMomentEligibleEnergy CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair CanonicalQuadraticSieve
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 

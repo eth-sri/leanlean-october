@@ -9,19 +9,19 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-open Filter
 
-open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
-open scoped Classical
+
+
+
+
+
+
+
 
 noncomputable def choiceSubset {ι : Type*} {A : ℕ → Finset (Finset ι)}
     (c : EulerChoices (fun p : Nat.Primes => {S // S∈A p})) (p : Nat.Primes) : Finset ι := by
@@ -46,7 +46,7 @@ noncomputable def tuplePrimeSubset {ι : Type*} [Fintype ι]
   classical
   simp [tuplePrimeSubset]
 
-open scoped ContDiff
+
 
 end LargePrimeGaps
 

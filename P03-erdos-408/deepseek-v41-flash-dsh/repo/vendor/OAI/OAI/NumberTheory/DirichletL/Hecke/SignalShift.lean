@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 open MeasureTheory Set Filter Asymptotics Complex
-open scoped Topology
+
 namespace SevenEighths.HeckeSignalShift
 open HeckeFamily HeckeSignal Continuation
 

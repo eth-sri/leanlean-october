@@ -8,13 +8,11 @@ public import OAI.NumberTheory.DirichletL.Detector.RawArithmetic
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
-local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
-local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 local instance (S : Finset (Ideal O)) : MeasurableSpace (SourceRawIndex S) := ⊤
 local instance (S : Finset (Ideal O)) : MeasurableSingletonClass (SourceRawIndex S) := ⟨fun _=>trivial⟩
 

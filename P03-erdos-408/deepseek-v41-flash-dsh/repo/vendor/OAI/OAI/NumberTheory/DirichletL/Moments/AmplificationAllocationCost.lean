@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationLiveMask
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentAmplificationAllocationCost
 open CenteredMomentCommonAllocationSum CenteredMomentSupport IdealMobiusDivisorSum

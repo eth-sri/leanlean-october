@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentEnergyProfiles
-open CenteredMomentFiniteProfileExceptional CenteredMomentAllocatedNaturalSource
-open CenteredMomentScaleSupremum
+open CenteredMomentFiniteProfileExceptional CenteredMomentAllocatedNaturalSource CenteredMomentScaleSupremum
 
 structure Test (a b:ℝ) where
   profile : 𝓢(ℝ,ℂ)

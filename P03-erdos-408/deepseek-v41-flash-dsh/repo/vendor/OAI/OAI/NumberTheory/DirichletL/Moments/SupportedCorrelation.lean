@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.Mask
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentSupportedCorrelation
-open CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentCorrelation CenteredMomentCommonSupport
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport
 
 def supportedModulusCharacter (d : O) (hd : Supported (Ideal.span {d})) :
     MulChar (Residue d) ℂ where

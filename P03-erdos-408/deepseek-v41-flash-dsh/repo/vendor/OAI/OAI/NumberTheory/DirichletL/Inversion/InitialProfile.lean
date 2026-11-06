@@ -10,8 +10,7 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson
-open SevenEighths.InverseMoment
+open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson SevenEighths.InverseMoment
 
 namespace SevenEighths.InverseInitialProfile
 

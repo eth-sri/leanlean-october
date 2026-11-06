@@ -39,7 +39,7 @@ iterations of Euler's function* (Plasma AI, 2026), §6.
 
 namespace Erdos408
 
-open Real
+
 
 noncomputable section
 

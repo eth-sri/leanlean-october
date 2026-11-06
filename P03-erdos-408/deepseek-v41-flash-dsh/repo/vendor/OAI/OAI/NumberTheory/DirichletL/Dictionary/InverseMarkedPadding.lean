@@ -11,10 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.DetectorDictionaryInverseMarkedPadding
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer InverseInitialPhysicalSlots
-open InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialConjugateEnergy
-open HeckeDetectorPhysicalSelection ConcreteTraceCRT CanonicalQuadraticSieve ActualEisensteinCubic
+
 local notation "O" => HeckeFamily.O
 
 def radialMajorant : 𝓢(ℝ,ℂ) :=

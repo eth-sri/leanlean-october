@@ -8,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.ResidueCharacter
 
-open SevenEighths.FiniteFourier SevenEighths.FiniteConductor
-open SevenEighths.ConductorPresentation
+
 open scoped Classical
 
 noncomputable section

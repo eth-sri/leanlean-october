@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorBoundary
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.CenteredMomentSlotRatios
 local notation "O" => ActualEisensteinCubic.O
 

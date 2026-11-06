@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighLFactorization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalQuadraticSieve UniqueFactorizationMonoid ProbeEuler
 local notation "O" => ActualEisensteinCubic.O

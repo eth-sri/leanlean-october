@@ -9,13 +9,10 @@ public import OAI.NumberTheory.DirichletL.Moments.RadialPointwiseUniform
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentCommonRadialPointwise
-open CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMomentCommonRadialCost
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
-open CanonicalQuadraticSieve
+open CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMomentCommonRadialCost CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 

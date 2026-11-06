@@ -8,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff MatrixGroups
-open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota CompletedDyadic
-open CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
+open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota CompletedDyadic CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda

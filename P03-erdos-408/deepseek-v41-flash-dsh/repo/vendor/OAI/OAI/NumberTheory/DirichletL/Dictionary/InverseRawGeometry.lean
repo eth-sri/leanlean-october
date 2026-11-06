@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.DetectorDictionaryInverseRawGeometry
-open InverseMoment InverseInitialCanonicalState
+
 
 def capacityGap (c : ℝ) : ℝ:=c/(1+c)
 

@@ -37,7 +37,7 @@ lemma logWindow_support (v : ℝ → ℂ) (M B L ρ : ℝ)
     Function.support (logWindow v L ρ) ⊆ Set.Icc (-(M+B)*L) ((M+B)*L) := by
   intro y hy
   have hy' := hv hy
-  change -M ≤ (y+ρ)/L ∧ (y+ρ)/L ≤ M at hy'
+
   have hl := (le_div_iff₀ hL).mp hy'.1
   have hu := (div_le_iff₀ hL).mp hy'.2
   have hr := abs_le.mp hρ
@@ -157,7 +157,7 @@ theorem fourier_translate (f : ℝ → ℂ) (ρ t : ℝ) :
   have h := congrFun
     (VectorFourier.fourierIntegral_comp_add_right Real.fourierChar
       (volume : Measure ℝ) (innerₗ ℝ) f ρ) t
-  change _ = Real.fourierChar (inner ℝ ρ t) • (𝓕 f) t at h
+
   have h' : (𝓕 (fun y => f (y+ρ))) t = Real.fourierChar (inner ℝ ρ t) • (𝓕 f) t := by
     simpa only [Real.fourier_eq, VectorFourier.fourierIntegral, Function.comp_def, innerₗ_apply_apply] using h
   rw [h']

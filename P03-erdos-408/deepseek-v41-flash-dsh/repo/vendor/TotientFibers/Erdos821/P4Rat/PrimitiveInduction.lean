@@ -6,7 +6,7 @@ public import Erdos821.Blueprint.Analytic
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+
 
 namespace Erdos821.P4Rat
 

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.IdealMasks
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+
 open CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

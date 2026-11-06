@@ -12,11 +12,9 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
-open ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
@@ -129,7 +127,7 @@ theorem actual_nonfloor_probe_transport (K : ℕ) (e δ a b B ζ saving τ ellMi
     (fun u hu=>(hlabels u).2.1) hfloorbin).2
   have hsplit := finiteCentralCubeRows_supported_split S hS hmax η rows T hT WC Yp W0 W1
     (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z e grid (fun u=>(3*idx u+1:ℕ)*Z^τ)
-  change _≤Ct*Z^(HeckeZeroSupremum.beta-11/16-sigma) at herror
+
   rw [hsplit] at herror
   have hh := normalized_nonfloor_error _ _ _ _ _ _ _ herror hb
   apply hh.trans

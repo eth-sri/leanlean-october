@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianTuple
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 

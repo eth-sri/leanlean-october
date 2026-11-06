@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralTerms
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
@@ -50,7 +50,7 @@ lemma rowBaseFinite_central_remainder (eta a rho x w z : ℂ) (alpha eps : ℝ)
       dsimp only [T]
       norm_num only [Fin.val_zero,Fin.val_one]
       ring
-    change ‖rowBaseFinite p hp hg eta a ((Q:ℂ)^(-x)) ((Q:ℂ)^(-w)) (coordV Q z) rho j e l-T 1 0‖≤_
+
     rw [hid]
     have h00 := ht 0 0 (by omega) (by omega)
     have h01 := ht 0 1 (by omega) (by omega)

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.RankinSubset
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.CenteredMomentRankinLabels
 open IdealMobiusDivisorSum CenteredMomentRankinRadical CenteredMomentRankinSubset
 local notation "O" => ActualEisensteinCubic.O

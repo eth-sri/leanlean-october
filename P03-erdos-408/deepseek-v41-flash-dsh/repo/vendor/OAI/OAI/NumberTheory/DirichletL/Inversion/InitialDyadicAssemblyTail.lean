@@ -12,10 +12,7 @@ open scoped Classical BigOperators SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialDyadicAssembly
 local notation "Eis"=>ActualEisensteinCubic.O
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open CenteredMomentSectorLocalization CenteredMomentDyadicCount
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns CenteredMomentSectorLocalization CenteredMomentDyadicCount
 
 def windowMass {a b:Fin 4→ℝ}(F:Finset (Windows a b))(q:Fin 4→ℝ) : ℝ :=
   ∑k∈F,∏i:Fin 4,dyadicWeight (k i).val (q i)

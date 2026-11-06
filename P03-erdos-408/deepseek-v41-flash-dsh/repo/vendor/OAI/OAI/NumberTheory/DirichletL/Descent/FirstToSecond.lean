@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstFreshEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

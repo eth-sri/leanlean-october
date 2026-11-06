@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.CenteredExceptionalCount
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentAmplificationCount
 open UniqueFactorizationMonoid CenteredExceptionalCount

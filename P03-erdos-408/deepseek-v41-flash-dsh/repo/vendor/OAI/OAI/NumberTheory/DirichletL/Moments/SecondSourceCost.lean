@@ -8,19 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.RestrictedSourceNormalization
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentSecondSourceCost
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondSectorEnergy CenteredMomentSecondSectorColumns
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRestrictedSource
-open CenteredMomentRestrictedEnergy CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass
-open CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
-open CenteredMomentAmplificationLiveMask CenteredMomentFirstSectors RayFourExpansion
-open CenteredMomentSecondLiveEnergy CenteredMomentRestrictedSourceNormalization
+
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 end SevenEighths.CenteredMomentSecondSourceCost
 

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.SumMeasure
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+
 open MeasureTheory ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -77,7 +77,7 @@ theorem bounded_column_hybrid_energy_extracted_type_uniform (ε : ℝ) (hε : 0 
     have h0 := norm_nonneg (extractedRowFactor D1 D2 K)
     nlinarith
   simp only [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hp,mul_pow]
-  change (frozenBranchScale F jF e)^2*‖extractedRowFactor D1 D2 K‖^2* _ ≤ _
+
   calc
     _ ≤ ((frozenBranchScale F jF e)^2*1)*_ := by gcongr
     _ = _ := by rw [mul_one]

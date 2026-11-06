@@ -9,11 +9,10 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentExceptionalSourceShell
-open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentAllocatedDetectorAmplitude
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalAllocationShell
+
 local notation "O" => HeckeFamily.O
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]

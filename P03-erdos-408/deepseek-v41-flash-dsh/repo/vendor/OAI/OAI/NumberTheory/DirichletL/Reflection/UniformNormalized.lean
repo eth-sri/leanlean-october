@@ -9,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
+open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -72,7 +71,7 @@ theorem actual_physical_shape_uniform_type_uniform
     (Real.logb Z (kP*QP)) (Real.logb Z U) (Real.logb Z B)
     (InverseTerminalWidths.terminalDualWidth Z (Real.logb Z (kK*QK)) (Real.logb Z (kP*QP))
       (Real.logb Z T) F.ideal jF e)
-  change Real.logb Z U+3*Real.logb Z B+3*Real.logb Z r-Real.logb Z R = _ at hthreshold
+
   rw [hthreshold]
   linarith
 

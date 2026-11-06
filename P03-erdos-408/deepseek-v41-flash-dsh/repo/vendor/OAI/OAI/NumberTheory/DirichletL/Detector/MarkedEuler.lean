@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.MarkedValuations
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ProbeEulerFinsupp
 local notation "O" => ActualEisensteinCubic.O

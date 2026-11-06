@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicJoins
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+
 open Set Metric Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeLogarithmic HeckeReciprocalGrowth

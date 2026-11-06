@@ -13,17 +13,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentCommonLiveFrozen
-open CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMomentCommonRadialCost
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
-open CanonicalQuadraticSieve
-open CenteredMomentCommonRadialPointwise CenteredMomentCommonRawScale CenteredMomentCommonRawCost
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentFirstSectors CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
-open CenteredMomentRestrictedSourceNormalization CenteredMomentSecondLiveEnergy
+open CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMomentCommonRadialCost CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform CanonicalQuadraticSieve CenteredMomentCommonRadialPointwise CenteredMomentCommonRawScale CenteredMomentCommonRawCost CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentFirstSectors CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentRestrictedSourceNormalization CenteredMomentSecondLiveEnergy
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
 lemma source_mask_energy (keep:O→Prop) (Q:Finset (Ideal O)) (C L:Ideal O)
     (c f:Ideal O→ℂ) (W:𝓢(ℝ,ℂ)) (K:ℝ):

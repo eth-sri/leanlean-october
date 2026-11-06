@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianDensityBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
-open MeasureTheory
+
+
 namespace SevenEighths.ProbePhysical
 
 def gaussianWeightedMoment (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
@@ -26,7 +26,7 @@ lemma gaussianWeightedMoment_power_bound (V : SchwartzMap ℝ ℂ) (hV : HasComp
   refine ⟨C,hC,?_⟩
   intro R hR
   have hh := mul_le_mul_of_nonneg_left (hb R hR) (Real.rpow_nonneg hR.le k)
-  change R^k*gaussianJointMoment V hV J R≤_
+
   calc
     _ ≤ R^k*(C*R^(-(A+k))) := hh
     _ = C*R^(-A) := by
@@ -136,7 +136,7 @@ theorem gaussianRemoteMoment_summed (V : SchwartzMap ℝ ℂ)
             rw [Real.rpow_natCast]
             exact pow_le_pow_left₀ hAp.le hhi N
           exact hi.trans (le_add_of_nonneg_left (Real.rpow_nonneg hR.le _))
-      change ((2:ℝ)^j)^s*gaussianJointMoment V hV J R≤_
+
       dsimp only [U]
       apply (le_div_iff₀ hAN).mpr
       calc

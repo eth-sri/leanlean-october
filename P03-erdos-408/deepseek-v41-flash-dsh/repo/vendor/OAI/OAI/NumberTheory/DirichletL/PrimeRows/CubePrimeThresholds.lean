@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralLower
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily ProbeRaySlots

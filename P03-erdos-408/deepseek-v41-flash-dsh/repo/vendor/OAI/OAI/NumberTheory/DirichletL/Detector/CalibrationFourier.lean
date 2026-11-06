@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.Calibration
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O

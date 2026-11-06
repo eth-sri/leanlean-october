@@ -10,12 +10,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeRowClosure ConcretePrimeRowBridge CanonicalRowCompletion
-open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily
-open CenteredMomentFixedRayInducingTransport CenteredMomentFixedRowMask CenteredExceptionalProfile
+open HeckeFamily HeckeRowClosure ConcretePrimeRowBridge CanonicalRowCompletion CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily CenteredMomentFixedRayInducingTransport CenteredMomentFixedRowMask CenteredExceptionalProfile
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

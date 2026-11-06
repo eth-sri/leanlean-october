@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerRanges
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask
-open InverseInitialProfile ConcreteTraceCRT CanonicalQuadraticSieve
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask InverseInitialProfile ConcreteTraceCRT CanonicalQuadraticSieve
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
   (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
@@ -57,7 +54,7 @@ theorem childLabels_subset_range
   obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hf
   apply mem_idealRange.mpr
   refine ⟨retained_label_admissible p hp hcop hg hc S hdiv hx 1,?_⟩
-  change ((sourceIdeal p x.divisor*sourceIdeal p x.overlap).absNorm:ℝ)≤_
+
   rw [map_mul,Nat.cast_mul]
   apply (mul_le_mul (hd x hx) (hv x hx) (by positivity) (by positivity)).trans_eq
   rw [←Real.rpow_add hZ]

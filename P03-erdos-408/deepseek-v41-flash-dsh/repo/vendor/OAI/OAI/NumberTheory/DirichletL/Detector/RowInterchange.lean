@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.RowAnalytic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 open MeasureTheory
 namespace SevenEighths.ProbeRow
 open ActualEisensteinCubic CompletedGauss CubicEisenstein

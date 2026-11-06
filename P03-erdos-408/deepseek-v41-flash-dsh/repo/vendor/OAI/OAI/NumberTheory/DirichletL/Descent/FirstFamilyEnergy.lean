@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstBlockEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι κ : Type*} [DecidableEq ι]

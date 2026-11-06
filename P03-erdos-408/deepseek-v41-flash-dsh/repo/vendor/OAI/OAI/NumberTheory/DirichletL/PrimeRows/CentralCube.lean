@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralZTail
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
@@ -55,7 +55,7 @@ theorem central_rectangle_z_cutoff_error (K : ℕ)
   have hi : IntegrableOn f E heightMeasure := hi0.mono_set (fun t ht=>ht.1)
   have hdiff : E\T=R := by
     ext t
-    change ((|t.1.1|≤H ∧ |t.2|≤H) ∧ ¬((|t.1.1|≤H ∧ |t.2|≤H) ∧ |t.1.2|≤H)) ↔ ((|t.1.1|≤H ∧ |t.2|≤H) ∧ H < |t.1.2|)
+
     constructor
     · rintro ⟨hx,hw⟩
       exact ⟨hx,lt_of_not_ge (fun h=>hw ⟨hx,h⟩)⟩

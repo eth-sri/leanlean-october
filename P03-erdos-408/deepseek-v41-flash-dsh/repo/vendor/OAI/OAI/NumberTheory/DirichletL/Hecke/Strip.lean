@@ -8,7 +8,7 @@ public import Mathlib.Analysis.Complex.PhragmenLindelof
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+
 open Filter Asymptotics Set MeasureTheory
 
 namespace SevenEighths.HeckeStrip
@@ -45,7 +45,7 @@ theorem gamma_ratio_left_bound (t : ℝ) :
   have hf' : ‖∏ k ∈ Finset.range 2, (s + k)‖ ≤ (3 + |t|) ^ 2 := by
     have hs2 : ‖s‖ + (2 : ℝ) ≤ 3 + |t| := by linarith
     exact hf.trans (pow_le_pow_left₀ (by positivity) hs2 2)
-  change ‖Complex.Gamma (1 - s) / Complex.Gamma s‖ ≤ _
+
   rw [heq, norm_mul]
   exact (mul_le_mul hf' hb (norm_nonneg _) (sq_nonneg _)).trans_eq (mul_comm _ _)
 

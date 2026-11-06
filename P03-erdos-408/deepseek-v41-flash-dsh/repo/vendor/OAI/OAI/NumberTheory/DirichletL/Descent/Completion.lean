@@ -11,7 +11,7 @@ namespace SevenEighths.InverseMoment
 
 noncomputable section
 
-open scoped BigOperators Classical
+
 open ActualEisensteinCubic CompletedGauss
 
 local notation "Eis" => ActualEisensteinCubic.O

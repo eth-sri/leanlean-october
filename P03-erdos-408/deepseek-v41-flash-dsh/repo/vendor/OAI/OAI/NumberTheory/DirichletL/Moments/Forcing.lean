@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.PartitionNorm
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentForcing
 open UniqueFactorizationMonoid CenteredExceptionalCount CanonicalQuadraticSieve

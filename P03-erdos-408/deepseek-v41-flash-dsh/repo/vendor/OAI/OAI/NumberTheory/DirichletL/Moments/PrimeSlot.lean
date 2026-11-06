@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentPrimeSlot
-open HeckeFamily HeckeRowClosure HeckePrimeRay HeckePrimeAnnular HeckeDyadic
-open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentTwist
+open HeckeFamily HeckeRowClosure HeckePrimeRay HeckePrimeAnnular HeckeDyadic CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentTwist
 local notation "O" => HeckeFamily.O
 
 def primePool (M:Ideal O) (H:Subgroup (O⧸M)ˣ) (b D:ℝ) : Finset (Ideal O) :=

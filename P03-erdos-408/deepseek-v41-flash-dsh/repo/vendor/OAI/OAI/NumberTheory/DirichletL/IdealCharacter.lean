@@ -9,9 +9,7 @@ namespace OAI
 
 namespace SevenEighths.IdealCharacter
 
-open SevenEighths.FiniteFourier SevenEighths.FiniteConductor
-open SevenEighths.ConductorPresentation
-open Submodule.IsPrincipal
+open SevenEighths.FiniteFourier SevenEighths.FiniteConductor SevenEighths.ConductorPresentation Submodule.IsPrincipal
 open scoped Classical
 
 noncomputable section

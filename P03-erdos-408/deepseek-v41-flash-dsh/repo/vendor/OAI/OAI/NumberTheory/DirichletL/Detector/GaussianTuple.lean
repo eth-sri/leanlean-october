@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LowCompletion
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology SchwartzMap
+
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow CanonicalQuadraticSieve RayFourExpansion

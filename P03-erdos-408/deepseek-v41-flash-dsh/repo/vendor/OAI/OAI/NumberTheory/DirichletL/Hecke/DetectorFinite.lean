@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorPartition
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.HeckeDetectorFinite
-open HeckeFamily HeckeDetectorWitnessArithmetic HeckeDetectorTail HeckeDetectorPartition
-open CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeDetectorWitnessArithmetic HeckeDetectorTail HeckeDetectorPartition CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 def pairSet (U : ℝ) : Finset (Ideal O × Ideal O) :=

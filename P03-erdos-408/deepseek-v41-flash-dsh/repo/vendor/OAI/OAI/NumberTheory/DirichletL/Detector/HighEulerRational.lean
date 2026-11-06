@@ -9,8 +9,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open ProbeEuler ProbeRow ConcretePrimeRowBridge
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ProbeEuler ProbeRow ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 lemma supported_primeGenerator_prime (P : PrimeIdeal) (hs : Supported P.val) :

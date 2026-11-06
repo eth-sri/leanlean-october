@@ -56,7 +56,7 @@ theorem first_variable_zero_common_bound
       rw [canonicalCubeDualZero_eq_density p hp hcop hg hinj]
       split_ifs <;> simp [hz]
     rw [hz',mul_zero]
-  change ‖∑C∈(pool\b.support).powerset,∑I∈labels,a C I*z C I‖≤_
+
   rw [heq]
   by_cases hb : cubeActiveSupport b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit=∅
   · rw [ite_eq_left hb]

@@ -5,7 +5,7 @@ public import Erdos821.Blueprint.Classical
 
 @[expose] public section
 
-open scoped BigOperators
+
 
 namespace Erdos821.Classical
 
@@ -213,7 +213,7 @@ end Erdos821.Classical
 
 namespace Erdos821.DivisorHarmonic
 
-open Erdos821.Classical
+
 
 end Erdos821.DivisorHarmonic
 

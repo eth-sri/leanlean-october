@@ -7,9 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.GramJointMean
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AllocationCost
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentCommonRawScale
 open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform

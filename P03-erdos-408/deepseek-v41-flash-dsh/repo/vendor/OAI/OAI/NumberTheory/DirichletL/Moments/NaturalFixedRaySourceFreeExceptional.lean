@@ -8,13 +8,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.ExceptionalRows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+
 open Filter
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily UniqueFactorizationMonoid
-open CenteredMomentDetectorDictionary CenteredExceptionalProfile CenteredExceptionalCount
-open ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily UniqueFactorizationMonoid CenteredMomentDetectorDictionary CenteredExceptionalProfile CenteredExceptionalCount ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
 local notation "O" => HeckeFamily.O
 
 theorem fixed_inducing_free_support (η : Character) (Q : Ideal O)

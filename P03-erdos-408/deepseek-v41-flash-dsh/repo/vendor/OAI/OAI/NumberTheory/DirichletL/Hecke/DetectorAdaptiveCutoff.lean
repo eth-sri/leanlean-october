@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.HeckeDetectorAdaptiveCutoff
 open HeckeFamily HeckeDetectorSupportedWitness HeckeDetectorRowCount
 

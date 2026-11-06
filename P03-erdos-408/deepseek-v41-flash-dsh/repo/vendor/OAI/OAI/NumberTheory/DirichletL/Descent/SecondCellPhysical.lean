@@ -8,12 +8,10 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondSourceBlocks
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight SecondPassIntegration
 local notation "O" => ActualEisensteinCubic.O
 
 def secondCellColumnExponent (Z X:ℝ) (d:BlockIndex):ℝ :=

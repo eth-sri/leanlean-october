@@ -12,7 +12,7 @@ open Filter
 
 open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
+
 
 open Asymptotics
 
@@ -20,13 +20,13 @@ open Asymptotics
 
 open Asymptotics
 
-open scoped Classical
 
-open scoped ContDiff
+
+
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
+
 
 noncomputable def fixLastPerm {n : ℕ} (e : Equiv.Perm (Fin n)) : Equiv.Perm (Fin (n+1)) :=
   finSumFinEquiv.symm.trans ((Equiv.sumCongr e (Equiv.refl (Fin 1))).trans finSumFinEquiv)

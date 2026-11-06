@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.WGrowth
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary

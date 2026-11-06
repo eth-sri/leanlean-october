@@ -7,13 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondCanonicalLedger
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentSecondMovingSupport
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentPartitionNorm
-open CenteredMomentSupport CenteredMomentSupportedCorrelation CenteredMomentUnequal
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentPartitionNorm CenteredMomentSupport CenteredMomentSupportedCorrelation CenteredMomentUnequal
 local notation "O" => ActualEisensteinCubic.O
 
 theorem actual_unequal_min_six (C D : Ideal O) (hC : Supported C) (hD : Supported D)

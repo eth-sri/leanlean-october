@@ -8,7 +8,7 @@ public import Mathlib.Data.Fintype.EquivFin
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+
 noncomputable section
 variable {σ ι : Type*} [DecidableEq σ] [DecidableEq ι]
 

@@ -44,7 +44,7 @@ theorem bilinear_scale_sqrt_bound (U V r H : ℝ)
       ← Real.sqrt_mul (by positivity : 0 ≤ (2 * H / U) * (2 * H / V))]
     have ha : (2 * H / U) * (2 * H / V) * F = (2 * H) ^ 2 * (F / (U * V)) := by ring
     rw [ha, Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq_eq_abs, abs_of_nonneg (by positivity : 0 ≤ 2 * H)]
-  change Real.sqrt (2 * H / U) * Real.sqrt (2 * H / V) * Real.sqrt F ≤ _
+
   rw [heq]
   calc
     _ ≤ 2 * H * Real.sqrt (4 * bilinearDecay U V r) :=

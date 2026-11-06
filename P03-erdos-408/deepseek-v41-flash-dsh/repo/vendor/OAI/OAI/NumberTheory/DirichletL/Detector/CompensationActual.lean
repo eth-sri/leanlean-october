@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.SpectralCompensation
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ProbeEuler ProbeLocal
 local notation "O" => ActualEisensteinCubic.O

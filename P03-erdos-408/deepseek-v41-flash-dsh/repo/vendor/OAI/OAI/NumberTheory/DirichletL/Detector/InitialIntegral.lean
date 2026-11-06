@@ -8,13 +8,11 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary
 local notation "O" => ActualEisensteinCubic.O
-local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
-local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 
 def initialHighOnLines (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
     (mask : NonzeroFrequency→ℂ) (σ υ ξ : ℝ) (i : FullHighIndex) (p : HeightSpace) : ℂ :=

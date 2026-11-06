@@ -10,12 +10,10 @@ public import OAI.NumberTheory.DirichletL.Moments.Unequal
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentAmplification
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysical
-open CenteredMomentUnequal
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysical CenteredMomentUnequal
 local notation "O" => ActualEisensteinCubic.O
 
 theorem gauss_prime_power_one (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]

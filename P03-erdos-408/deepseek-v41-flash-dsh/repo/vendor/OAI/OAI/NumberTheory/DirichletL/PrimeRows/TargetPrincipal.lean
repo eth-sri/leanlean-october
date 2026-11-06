@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CanonicalRayCube
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+
 open Filter UniqueFactorizationMonoid
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion

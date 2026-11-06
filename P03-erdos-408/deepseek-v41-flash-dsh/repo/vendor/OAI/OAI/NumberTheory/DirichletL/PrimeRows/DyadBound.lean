@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.RowCount
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
 local notation "O" => HeckeFamily.O
@@ -57,7 +57,7 @@ theorem calibrated_physical_row_dyad (K : ℕ) (e δ a b r B : ℝ)
     simp only [norm_mul,Finset.mul_sum,F]
   simp_rw [heq]
   apply (dyadic_weighted_rows (3/5+δ) r D U hD hU R (fun u hu=>(hR u hu).2) F hF z hz).trans_eq
-  change 256*D*A*U^(1+(3/5+δ)-r)=_
+
   rw [show (1:ℝ)+(3/5+δ)-r=8/5+δ-r by ring]
   dsimp [D]
   ring

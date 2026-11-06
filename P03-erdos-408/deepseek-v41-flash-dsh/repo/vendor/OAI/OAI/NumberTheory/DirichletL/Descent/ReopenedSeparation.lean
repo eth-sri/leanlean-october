@@ -9,8 +9,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open CanonicalCubeSeparation JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalCubeSeparation JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]

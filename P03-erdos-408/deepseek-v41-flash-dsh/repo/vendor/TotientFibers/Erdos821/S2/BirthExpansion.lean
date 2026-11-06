@@ -8,7 +8,7 @@ public import Erdos821.S2.PerformedSigns
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2
@@ -59,7 +59,7 @@ theorem distinct_birth_expansion (a : ℕ) (performed : Finset (Fin a)) (value :
   have hfiber (π : Finset (Finset (Fin a))) (hπ : π ∈ C) :
       (∑ σ ∈ Finset.univ.filter (fun σ : Equiv.Perm (Fin a) => cycleBirthBlocks σ = π), term σ) =
         if birthEvent performed value π then birthMobius π else 0 := by
-    change (∑ σ ∈ permutationsWithBlocks π, term σ) = _
+
     have hp : BirthCollection π := (Finset.mem_filter.mp hπ).2
     calc
       _ = ∑ σ ∈ permutationsWithBlocks π,

@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.ReciprocalBound
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology BigOperators
+
 open Set MeasureTheory
 namespace SevenEighths.HeckeStripActual
 open HeckeFamily HeckePrimitive

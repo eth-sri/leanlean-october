@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowBranchGeometry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowWindow
-open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceLowBranchGeometry
+open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBranchGeometry
 local notation "O"=>HeckeFamily.O
 
 lemma reflection_window_length (Z R x:ℝ)(hZ:1<Z)(hR:0≤R)

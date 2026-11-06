@@ -8,17 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedCommonRadius
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedCapacityRadius
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
-open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor
-open CenteredMomentFirstCanonicalFamily CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst CenteredMomentFirstScale ConcreteTraceCRT
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAmplificationChoice
-open CenteredMomentCommonRadiusSaving
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic CenteredMomentSecondHeightFamily CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstPhysicalSource CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor CenteredMomentFirstCanonicalFamily CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentFirstScale ConcreteTraceCRT CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadiusSaving
 local notation "O"=>HeckeFamily.O
 
 lemma enlarged_gain_extraction (c d w wo sigma branch delta reserve:ℝ)
@@ -80,7 +73,7 @@ theorem actual_main_reference_shift (η τ:Character)(C D:Ideal O)
     (Real.logb Z (D.absNorm:ℝ)) 0 0 sigma 2 delta reserve (by norm_num) (by norm_num)
   dsimp only at hh ⊢
   simp only [Real.rpow_zero,mul_one,one_mul,Real.logb_one,add_zero,sub_zero] at hh hg
-  change _≤_
+
   rw [mainCommonRadius]
   simp only [Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] at hh ⊢
   norm_num at hg

@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+
 namespace SevenEighths.InverseInitialHighFrequencyTail
 open InverseInitialPhysicalMeasure
 

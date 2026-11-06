@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPolynomial
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.InverseInitialExcludedEnergy
-open HeckeFamily HeckeDyadic InverseInitialExcludedPolynomial
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
+open HeckeFamily HeckeDyadic InverseInitialExcludedPolynomial IdealMobiusDivisorSum UniqueFactorizationMonoid
 local notation "O"=>HeckeFamily.O
 
 def deletionWeight (χ:Character)(j:Ideal O):ℂ:=
@@ -48,7 +47,7 @@ theorem marked_pointwise (χ:Character)(S:Finset (Ideal O))(hS:∀P∈S,Prime P)
         ‖polynomial (χ.excludePrimes S hS) true W (X/(j.absNorm:ℝ)) σ t*mark‖:=by
     refine (norm_sum_le _ _).trans (Finset.sum_le_sum ?_)
     intro j hj
-    change ‖deletionWeight χ j*polynomial _ _ _ _ _ _*mark‖≤_
+
     rw [mul_assoc,norm_mul]
     apply mul_le_of_le_one_left (norm_nonneg _)
     apply deletionWeight_norm_le_one χ

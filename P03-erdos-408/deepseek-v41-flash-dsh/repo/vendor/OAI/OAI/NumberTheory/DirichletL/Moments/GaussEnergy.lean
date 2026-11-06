@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentGaussEnergy
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open CanonicalQuadraticSieve CenteredMomentFourier CenteredMomentPoisson
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CanonicalQuadraticSieve CenteredMomentFourier CenteredMomentPoisson CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 def gaussRow (a : O) (ha : Supported (Ideal.span {a})) (z : O) : ℂ :=
@@ -97,7 +95,7 @@ theorem finite_energy_le_gaussEnergy {α : Type*} (S : Finset α) (a : α → O)
     (∑ z ∈ rows, ‖gaussPolynomial S a ha c z‖ ^ 2) ≤
       (gaussEnergy S a ha c W K).re := by
   have hs := Complex.hasSum_re (gaussEnergy_summable S a ha c W K hK).hasSum
-  change HasSum _ (gaussEnergy S a ha c W K).re at hs
+
   simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero] at hs
   calc
     _ ≤ ∑ z ∈ rows, ‖gaussPolynomial S a ha c z‖ ^ 2 *

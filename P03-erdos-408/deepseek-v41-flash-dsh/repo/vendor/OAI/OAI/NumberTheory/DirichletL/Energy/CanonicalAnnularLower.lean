@@ -7,19 +7,12 @@ public import OAI.NumberTheory.DirichletL.Energy.CanonicalAnnularPower
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalAnnularLower
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst
-open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstAmplificationChoice
-open CenteredMomentPrimeElements CenteredMomentSectorLocalization
-open CenteredMomentEnergyFirstRawScaleAdmission CenteredMomentEnergyAmplifiedChildWidth
-open CenteredMomentAmplificationChildInput CenteredMomentCommonRadialData
-open CenteredMomentCommonAllocationSum CenteredMomentFirstChildProfileControl
-open CenteredMomentSecondChildPowerBudget
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstAmplificationChoice CenteredMomentPrimeElements CenteredMomentSectorLocalization CenteredMomentEnergyFirstRawScaleAdmission CenteredMomentEnergyAmplifiedChildWidth CenteredMomentAmplificationChildInput CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentFirstChildProfileControl CenteredMomentSecondChildPowerBudget
 local notation "O"=>HeckeFamily.O
 local notation "Ray"=>RayFourExpansion.RayCharacter
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 lemma parent_lower_ge {ι:Type*}[Fintype ι](s:Input ι)(Z r:ℝ)(hZ:1<Z)
     (hX₁:Z^r≤s.X₁)(hX₂:Z^r≤s.X₂)(hY₁:Z^r≤s.Y₁)(hY₂:Z^r≤s.Y₂):

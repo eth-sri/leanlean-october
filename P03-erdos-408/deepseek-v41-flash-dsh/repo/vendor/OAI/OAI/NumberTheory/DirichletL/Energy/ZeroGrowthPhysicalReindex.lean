@@ -11,14 +11,9 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthPhysicalReindex
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentSourceInputReindex
-open CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSourceReduction
-open CenteredMomentFirstRetainedNorm CenteredMomentAmplificationChildInput
-open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentSourceInputReindex CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSourceReduction CenteredMomentFirstRetainedNorm CenteredMomentAmplificationChildInput CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 variable {α β:Type*}[Fintype α][Fintype β]
-local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
-local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 local instance : DecidableEq (β⊕Fin 2):=Classical.decEq _
 
 lemma physical_mass_map (e:α≃β)(s:Input α)(R seed:Ideal O)(m A:O)

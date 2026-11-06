@@ -7,9 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.LowOriginalPools
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve ProbeRaySlots
+
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 

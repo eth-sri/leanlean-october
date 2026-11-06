@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondLedger
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.CenteredMomentCommonAllowance
 open CenteredMomentActive CenteredMomentSecondLedger CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O

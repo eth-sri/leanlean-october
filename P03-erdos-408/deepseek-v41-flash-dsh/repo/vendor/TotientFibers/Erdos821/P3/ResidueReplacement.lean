@@ -11,9 +11,8 @@ public import Mathlib.Data.ZMod.QuotientRing
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
-open Filter
-open Erdos821.Blueprint.Graph
+
+open Filter Erdos821.Blueprint.Graph
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Core

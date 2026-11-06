@@ -10,8 +10,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 local notation "O" => ActualEisensteinCubic.O
 
 def indexedIdealMark {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]

@@ -9,12 +9,10 @@ public import Mathlib.Analysis.Normed.Ring.Finite
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
-open scoped ContDiff
+open scoped BigOperators Classical SchwartzMap ContDiff
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentLattice
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open QuadraticInitialBound
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson QuadraticInitialBound
 
 theorem radial_zero_mode_error (W : 𝓢(ℝ, ℂ)) (t : ℝ) (ht : 0 < t)
     (A : O → ℂ) (B : ℝ) (hB : 0 ≤ B) (hA : ∀ h, ‖A h‖ ≤ B) :
@@ -51,7 +49,7 @@ theorem radial_zero_mode_error (W : 𝓢(ℝ, ℂ)) (t : ℝ) (ht : 0 < t)
           ‖paperRadialFourier W (t * ‖eisEmbedding h.val‖ ^ 2)‖ :=
         (hFs.subtype _).tsum_le_tsum (fun h => hF h) ((hs.subtype _).mul_left B)
       _ = _ := tsum_mul_left
-  change ‖t • (∑' h : O, F h) - t • (A 0 * paperRadialFourier W 0)‖ ≤ _
+
   rw [← hzero, ← smul_sub, heq, norm_smul, Real.norm_eq_abs, abs_of_pos ht]
   calc
     _ ≤ t * (B * ∑' h : {h : O // h ≠ 0},

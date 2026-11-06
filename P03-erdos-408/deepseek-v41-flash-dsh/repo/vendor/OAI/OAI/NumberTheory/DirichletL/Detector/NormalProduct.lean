@@ -10,7 +10,7 @@ public import Mathlib.Analysis.SpecialFunctions.Exp
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
+
 namespace SevenEighths.ProbeEuler
 
 lemma factor_ne_zero_of_defect (a : ℂ) (ha : ‖a-1‖ ≤ 1/2) : a ≠ 0 := by

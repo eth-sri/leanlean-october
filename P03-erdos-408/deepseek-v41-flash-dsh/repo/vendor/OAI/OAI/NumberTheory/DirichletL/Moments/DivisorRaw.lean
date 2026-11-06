@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorRaw
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorSlots
-open CenteredMomentDivisorRectangle CenteredMomentDivisorRows CenteredMomentHeckeExpansion
-open CenteredMomentHeckeSlots CenteredMomentHeckeHeight HeckeFamily
+open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorSlots CenteredMomentDivisorRectangle CenteredMomentDivisorRows CenteredMomentHeckeExpansion CenteredMomentHeckeSlots CenteredMomentHeckeHeight HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 

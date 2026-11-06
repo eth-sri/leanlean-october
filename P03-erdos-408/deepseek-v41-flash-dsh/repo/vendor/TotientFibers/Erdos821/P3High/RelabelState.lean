@@ -10,7 +10,7 @@ public import Erdos821.P3High.Relabel
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High

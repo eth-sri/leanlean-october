@@ -8,19 +8,15 @@ public import Erdos821.P3Clean.SplitGroups
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance 10000] Classical.propDecidable
 
 namespace Erdos821.P3Clean
-
 
 open Erdos821.Blueprint.Graph
 
 local instance (priority := 11000) boolEqDecidable (b c : Bool) : Decidable (b = c) :=
   instDecidableEqBool b c
-
-local instance smallLabelsDecidableEq (P : PrimeGroups) (M : ℕ) :
-    DecidableEq (SmallLabels P M) := Classical.decEq _
 
 theorem conditioning_pi_normSq_bound {I : Type*} [Fintype I] [DecidableEq I]
     {α β : I → Type*} [∀ i, Fintype (β i)]
@@ -114,7 +110,6 @@ theorem small_array_conditioning_uniform (F : FixedData) :
   ext p
   simp
 
-
 theorem small_array_conditioning_log_gain (F : FixedData) :
     ∃ Cs : ℝ, ∀ (x : ℝ) (P : PrimeGroups), P.Admissible F x → 0 < L x →
       ∀ (J : ℕ) (y : P.SmallResidues) (f : SmallLabels P (J + F.ell) → ℂ),
@@ -134,6 +129,5 @@ theorem small_array_conditioning_log_gain (F : FixedData) :
   exact (hbound P J y hV f).trans (mul_le_mul_of_nonneg_right
     (hpow.trans hg)
     (Finset.sum_nonneg (fun _ _ => sq_nonneg _)))
-
 
 end Erdos821.P3Clean

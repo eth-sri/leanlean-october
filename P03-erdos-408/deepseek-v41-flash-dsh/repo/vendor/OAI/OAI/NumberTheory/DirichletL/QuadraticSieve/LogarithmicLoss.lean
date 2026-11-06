@@ -8,73 +8,19 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
-open scoped BigOperators Classical
+
+
+
+
+
+
+
+
+
+
+
+
 namespace CanonicalQuadraticSieve
 
 theorem lifting_annular_scale_bounds (j : Fin 7) : 1≤(2:ℝ)^j.val ∧ (2:ℝ)^j.val≤64 := by
@@ -133,7 +79,7 @@ theorem HasSieveExponent.lifted_annular_selected {α : ℝ} (hexp : HasSieveExpo
           (r*M)*(N/q) ≤ (64*M)*N := by gcongr; exact hr.2
           _ = _ := by ring
       _ = _ := Real.mul_rpow (by norm_num) (by positivity)
-  change annularHighEnergy (r*M) N _ a≤_
+
   apply hh.trans
   calc
     _ ≤ C*(64^(260*η)*(M*N)^(260*η))*(64*M)*∑J,‖a J‖^2 := by
@@ -228,7 +174,6 @@ theorem HasSieveExponent.low_threshold {α : ℝ} (hexp : HasSieveExponent α)
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
 theorem normLogBin_le_log_upper (x Y : ℝ) (hx : 0<x) (hxy : x≤Y) (hY : 1≤Y) :
@@ -331,7 +276,7 @@ theorem HasSieveExponent.improve {α : ℝ} (hexp : HasSieveExponent α)
   apply hasSieveExponent_of_shell_threshold (2-1/α) (by linarith) (by linarith)
   exact hexp.shell_threshold hα1 hα2
 
-open ActualEisensteinCubic CompletedGauss
+
 
 theorem hasSieveExponent_one : HasSieveExponent 1 :=
   hasSieveExponent_one_of_improvement (fun _α hα hα2 h => h.improve hα.le hα2)

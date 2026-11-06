@@ -8,7 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 local notation "O" => ActualEisensteinCubic.O
 

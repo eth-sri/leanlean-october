@@ -12,10 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerWindows
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask
-open InverseInitialProfile InverseInitialClippedColumns InverseInitialKernelBridge
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask InverseInitialProfile InverseInitialClippedColumns InverseInitialKernelBridge
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
 
@@ -43,7 +40,7 @@ theorem windowSource_four_nonzero
   obtain ⟨s,hs,hx⟩ := Finset.mem_biUnion.mp hx
   obtain ⟨⟨N,M⟩,hNM,rfl⟩ := Finset.mem_image.mp hx
   have ho := (Finset.mem_filter.mp hs).2
-  change outerCutoff ψ (sourceRelative p s Z D B v θ H)≠0 at ho
+
   rw [sourceRelative_four]
   have h := mul_ne_zero_iff.mp ho
   have h' := mul_ne_zero_iff.mp h.1

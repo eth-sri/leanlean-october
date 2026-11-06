@@ -8,7 +8,7 @@ public import Mathlib.Analysis.Complex.ExponentialBounds
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators ContDiff
+
 open MeasureTheory
 
 namespace Erdos821.P5Energy

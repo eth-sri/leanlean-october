@@ -9,16 +9,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+
 namespace SevenEighths.ProbeDetectorInverseFields
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
-open ProbeHighRowFamily ProbeFinalAssembly Filter
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer ProbeHighRowFamily ProbeFinalAssembly Filter
 local notation "O"=>HeckeFamily.O
 variable (M:Ideal O)[NeZero M]
 local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
-local instance:Fintype (Sum Bool (RayQuotient.Characters M H)):=Fintype.ofFinite _
 
 private lemma raw_mono (data:RowData)(W:ℝ→ℂ)(c κ A B:ℝ)
     (hAB:A≤B)(h:RawMoment data W c κ A):RawMoment data W c κ B:=by

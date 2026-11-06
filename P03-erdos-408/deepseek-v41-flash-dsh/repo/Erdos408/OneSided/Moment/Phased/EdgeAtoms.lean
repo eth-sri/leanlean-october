@@ -41,7 +41,7 @@ theorem memSize_chainEdgeOut_le (s : ChainState x d Y d₀ u v r B)
   unfold chainEdgeOut
   split_ifs with hv
   · -- removals only decrease the size, and the stored particles number at most `|S| ≤ K`
-    change memSize (edgeMem s c) ≤ _
+
     have hstored : ∑ xp : Particle x d, (c.2.1.filter fun i => edgeStored s c i = xp.1).card ≤
         K := by
       simp only [card_filter]

@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.CubicDyadicDecay
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+
 open SecondPassArithmetic EisensteinSchwartzPoisson SevenEighths.CubicDyadicDecay
 noncomputable section
 

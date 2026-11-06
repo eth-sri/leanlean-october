@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalContour
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
@@ -109,7 +109,7 @@ theorem buffered_x_rectangle {K : ℕ}
       I*(∫t : ℝ in -T..T,F ((r:ℂ)+t*I))-I*(∫t : ℝ in -T..T,F ((l:ℂ)+t*I))=0 := by
     simpa [smul_eq_mul] using hb
   have hd := congrArg (fun z : ℂ=>-I*z) hc
-  change (∫t : ℝ in -T..T,F ((r:ℂ)+t*I))=_
+
   ring_nf at hd ⊢
   simp only [I_sq] at hd
   linear_combination hd

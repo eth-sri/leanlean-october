@@ -12,12 +12,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialTotalEnergy
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
 local notation "O"=>ActualEisensteinCubic.O
 
 open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
@@ -124,7 +119,7 @@ theorem original_input_bound
       _≤Cz*Z^(m+15*η+π+eps+loss):=mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow_of_exponent_le hZp.le (by linarith)) hCz.le
       _≤_:=le_mul_of_one_le_right (by positivity) hh
-  change ‖physicalFrequency _ _ _ _ _ _ _ _ _ _ _ _ _ 0‖+_≤_
+
   exact (add_le_add (hz0.trans hz1) hn).trans_eq (by ring)
 
 end SevenEighths.InverseInitialTotalEnergy

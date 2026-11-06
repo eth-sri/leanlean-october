@@ -10,8 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialInputRadial
-open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT
-open InverseInitialConjugateEnergy
+open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT InverseInitialConjugateEnergy
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal]
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})

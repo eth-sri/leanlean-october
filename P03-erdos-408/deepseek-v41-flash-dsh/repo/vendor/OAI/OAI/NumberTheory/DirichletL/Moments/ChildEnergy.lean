@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Moments.Cauchy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+
 namespace SevenEighths.CenteredMomentChildEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentCauchy
-open CenteredMomentSmooth
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentCauchy CenteredMomentSmooth
 local notation "O" => ActualEisensteinCubic.O
 
 theorem leftColumn_eq_gaussPolynomial {α : Type*} (S : Finset α) (a : α → O)

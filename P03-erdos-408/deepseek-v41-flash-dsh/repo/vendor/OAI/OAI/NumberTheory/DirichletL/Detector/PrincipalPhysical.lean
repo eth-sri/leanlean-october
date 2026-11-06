@@ -9,11 +9,10 @@ public import OAI.NumberTheory.DirichletL.Detector.CanonicalPhysicalRows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open Complex MeasureTheory
 namespace SevenEighths.ProbePrincipalPhysical
-open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds CanonicalQuadraticSieve
-open PrincipalMellinResidues ProbeMellinBoundary ProbePrincipalContours
+open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds CanonicalQuadraticSieve PrincipalMellinResidues ProbeMellinBoundary ProbePrincipalContours
 local notation "Id" => Ideal HeckeFamily.O
 
 lemma slotMultiplier_as_tuples {K : ℕ} (η : Character) (T : Fin K→Finset PrimeIdeal)

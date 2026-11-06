@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.CompensationActual
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve ProbeRow
 local notation "O" => ActualEisensteinCubic.O

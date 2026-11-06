@@ -5,7 +5,7 @@ public import Erdos821.P5.Basic
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators Classical
+
 open MeasureTheory
 
 namespace Erdos821.P5Core

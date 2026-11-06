@@ -8,7 +8,7 @@ public import Erdos821.P3Tail.MemoryTail
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -27,7 +27,7 @@ theorem distinct_history_guard_hasFiniteSupport {β : Type*} [Zero β]
       (MemoryHistory.valid_distinct_finite A n)
   apply hf.subset
   intro H hH
-  change (if H.Valid ∧ H.DistinctBirths ∧ guard H then f H else 0) ≠ 0 at hH
+
   by_contra hn
   exact hH (ite_eq_right (fun hp => hn ⟨hp.1, hp.2.1⟩))
 

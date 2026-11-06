@@ -6,7 +6,7 @@ public import Erdos821.P4Probe.ProjectionTasks
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+
 
 namespace Erdos821.P4Probe
 open Blueprint.Graph

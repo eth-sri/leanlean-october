@@ -7,13 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstSecondCapacityShift
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentFirstSecondCapacityLedger
-open CenteredMomentAllocatedChildCapacity CenteredMomentDivisorRaw
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRetained
-open CenteredMomentEligibleEnergy CenteredMomentLiveCapacity
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 

@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LowReflectedLength
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.CalibrationSupport
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic EisensteinSchwartzPoisson

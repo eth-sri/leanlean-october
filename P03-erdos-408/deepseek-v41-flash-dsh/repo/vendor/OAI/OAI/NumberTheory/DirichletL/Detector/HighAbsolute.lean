@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighDeletion
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CubicEisenstein ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
@@ -70,7 +70,7 @@ theorem fullHighSummand_summable (S : Finset Id) (D : Id) (η : HeckeFamily.Char
   have hcoeff := (markedIdealHighSummand_norm_le S D η p.1.val x w z
     p.2.1.1 p.2.1.2 p.2.2.1 p.2.2.2).trans
     (bareIdealHighSummand_norm_le η p.1.val x w z p.2.1.1 p.2.1.2 p.2.2.1 p.2.2.2)
-  change _≤‖frequencyWeight z p.1‖*highAbsoluteMajorant x w z p.2
+
   calc
     _ ≤ (1*‖frequencyWeight z p.1‖)*highAbsoluteMajorant x w z p.2 := by
       apply mul_le_mul

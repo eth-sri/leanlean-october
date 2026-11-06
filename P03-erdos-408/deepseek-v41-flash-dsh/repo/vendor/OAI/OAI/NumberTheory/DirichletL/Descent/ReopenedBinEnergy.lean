@@ -9,9 +9,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-open CanonicalCubeSeparation JointLogSeparation
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels CanonicalCubeSeparation JointLogSeparation
 local notation "O" => ActualEisensteinCubic.O
 
 theorem markedReopenedCubeBin_energy

@@ -9,12 +9,10 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondSourceMask
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentSecondActiveCount
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentActiveSource
-open CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentRankinScale
-open CenteredMomentRankinRadical
+open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentActiveSource CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentRankinScale CenteredMomentRankinRadical
 local notation "O" => ActualEisensteinCubic.O
 
 def commonShell (S : Finset (Ideal O)) (β : Ideal O→ℂ) (Y : ℝ) : Finset (Ideal O×Ideal O) :=

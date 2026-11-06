@@ -7,7 +7,7 @@ public import Erdos821.P3Clean.SmallNormalization
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance 10000] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -16,9 +16,6 @@ open Erdos821.Blueprint.Graph
 
 local instance (priority := 11000) physicalBoolEqDecidable (b c : Bool) : Decidable (b = c) :=
   instDecidableEqBool b c
-
-local instance physicalLabelsDecidableEq (P : PrimeGroups) (M : ℕ) :
-    DecidableEq (SmallLabels P M) := Classical.decEq _
 
 theorem physicalSmallCoefficient_norm_sq (F : FixedData) (P : PrimeGroups) (J : ℕ)
     (y : P.SmallResidues) (z : ℂ) (hV : ∀ g : P.SmallGroup, 0 ≤ P.V g.val) :
@@ -52,6 +49,5 @@ theorem physical_conditioning_log_gain (F : FixedData) :
     _ ≤ smallMarkMass P (J + F.ell) *
         ((L x) ^ Cs * ∑ a ∈ smallArrayStates P (J + F.ell) y, ‖f a‖ ^ 2) := h
     _ = _ := by ring
-
 
 end Erdos821.P3Clean

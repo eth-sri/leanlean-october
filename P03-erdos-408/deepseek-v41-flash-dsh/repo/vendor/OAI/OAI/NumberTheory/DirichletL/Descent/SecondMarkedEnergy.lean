@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondAssignedSum
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open InverseSecondFibers
+
+
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]

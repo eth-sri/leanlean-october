@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.LowNominalGeometry
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 
 lemma lowUnselectedProduct_norm_upper_nominal {K : ℕ} (ell : Fin K→ℝ)

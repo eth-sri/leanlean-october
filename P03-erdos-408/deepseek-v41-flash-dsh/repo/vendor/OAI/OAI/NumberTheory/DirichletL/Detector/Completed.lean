@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbeCompleted
-open ActualEisensteinCubic CompletedGauss
-open RayFourExpansion QuadraticGaussRay SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss RayFourExpansion QuadraticGaussRay SecondPassArithmetic
 
 local notation "O" => ActualEisensteinCubic.O
 

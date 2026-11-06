@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.Euler
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.HeckeDirichlet
 open HeckeFamily
 

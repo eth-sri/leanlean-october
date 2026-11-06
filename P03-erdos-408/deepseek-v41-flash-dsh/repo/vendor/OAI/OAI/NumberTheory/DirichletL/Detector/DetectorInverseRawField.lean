@@ -11,12 +11,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeDetectorInverseRawField
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
-open HeckeDetectorInverseFiberCount DetectorDictionaryInverseClippedUniform
-open ProbeHighRowFamily ProbeFinalAssembly
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer HeckeDetectorInverseFiberCount DetectorDictionaryInverseClippedUniform ProbeHighRowFamily ProbeFinalAssembly
 
 private theorem raw_mono (data:RowData)(W:ℝ→ℂ)(c κ A B:ℝ)
     (hAB:A≤B)(h:RawMoment data W c κ A):RawMoment data W c κ B:=by

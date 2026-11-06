@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+
 open ActualEisensteinCubic CompletedGauss
 namespace SevenEighths.InverseInitialEnergyCallerClipping
 open InverseMoment InverseInitialClippedColumns InverseInitialProfile

@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.FirstContinuation
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeReciprocalGrowth
 local notation "O" => HeckeFamily.O

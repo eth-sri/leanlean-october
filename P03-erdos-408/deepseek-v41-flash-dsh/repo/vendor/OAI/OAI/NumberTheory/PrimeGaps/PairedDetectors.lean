@@ -8,25 +8,25 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-open Filter
 
-open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
-open scoped Classical
 
-open scoped ContDiff
 
-open Topology
 
-open scoped Convolution ContDiff Pointwise
+
+
+
+
+
+
+
+
+
+
 
 noncomputable def extendLabels {n : ℕ} {α : Type*} (a : Fin n → α) (d : ℕ) :
     Fin (n+d) → α ⊕ Fin d := Fin.append (Sum.inl ∘ a) Sum.inr

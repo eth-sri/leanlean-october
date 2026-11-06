@@ -8,7 +8,7 @@ public import Mathlib.Logic.Equiv.Fintype
 
 set_option autoImplicit false
 
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Count

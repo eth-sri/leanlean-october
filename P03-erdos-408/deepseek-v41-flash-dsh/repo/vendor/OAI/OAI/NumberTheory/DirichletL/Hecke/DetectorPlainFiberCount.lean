@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorInverseFiberCount
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open Set
 namespace SevenEighths.HeckeDetectorPlainFiberCount
-open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles
-open HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial
+open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial
 variable (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ)
 
 theorem plain_fiber_count {Row Label Slot : Type*}

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.PrimeGaps.MultiplicativeSieve
 set_option autoImplicit false
 set_option maxHeartbeats 1000000
 
-open scoped BigOperators Classical ComplexConjugate
+
 
 namespace Erdos821.P4Rat
 

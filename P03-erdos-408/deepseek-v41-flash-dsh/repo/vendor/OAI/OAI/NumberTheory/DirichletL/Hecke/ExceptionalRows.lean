@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.RowClosure
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.HeckeExceptionalRows
 open HeckeFamily UniqueFactorizationMonoid
 

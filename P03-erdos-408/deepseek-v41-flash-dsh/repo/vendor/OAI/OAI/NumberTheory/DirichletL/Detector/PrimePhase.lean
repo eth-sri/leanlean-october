@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.Sextic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.ProbePhase
-open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss
-open ConcreteTraceCRT ConcretePrimeRowBridge QuadraticGaussRay FiniteGaussPhase CubicEisenstein
+open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge QuadraticGaussRay FiniteGaussPhase CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 theorem normalizedTraceGauss_eq_normalizedGauss (p : O) (hp : p ≠ 0)

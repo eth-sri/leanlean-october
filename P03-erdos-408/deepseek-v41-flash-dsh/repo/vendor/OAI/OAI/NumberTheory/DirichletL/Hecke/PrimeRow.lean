@@ -14,8 +14,6 @@ namespace SevenEighths.HeckePrimeRow
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in

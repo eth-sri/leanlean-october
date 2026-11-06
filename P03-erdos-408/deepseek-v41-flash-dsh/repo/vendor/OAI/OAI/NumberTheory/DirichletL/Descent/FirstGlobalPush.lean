@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstActualSecondEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion

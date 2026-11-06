@@ -8,7 +8,7 @@ public import Erdos821.P3Clean.RawNormAssembly
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -77,7 +77,7 @@ theorem cutoffConditionedKernel_cycle (A : Model F P J m) (n B : ℕ)
       (cycleDisplacement A B (A.pattern v) forward d a.1 u) a.2 = b.2 ↔
       b.2.val = translatePending (bigStep A (A.pattern v) forward d a.1 u) a.2.val := by
     rw [cycleDisplacement_act]
-    change pendingTranslationEquiv B (bigStep A (A.pattern v) forward d a.1 u) a.2 = b.2 ↔ _
+
     rw [Subtype.ext_iff]
     exact eq_comm
   by_cases h : (A.pattern v).matchesBig a.1 b.1 ∧ bigBan (A.pattern v) a.1 b.1 u

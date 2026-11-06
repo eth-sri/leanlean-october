@@ -14,23 +14,21 @@ open Filter
 
 open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
+
 
 open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
-open scoped Classical
 
-open scoped ContDiff
+
+
 
 open Topology
 
-open scoped Convolution ContDiff Pointwise
 
-open scoped ComplexConjugate
+
+
 
 open Filter Topology
 
@@ -137,7 +135,7 @@ lemma char_sum_range_zero {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q}
   | zero => exact (NeZero.ne 0 rfl).elim
   | succ q =>
     have hz := he.trans (MulChar.sum_eq_zero_of_ne_one hχ)
-    change (∑ i : Fin (q+1), χ i) = 0 at hz
+
     calc
       _ = ∑ i : Fin (q+1), χ (i : Fin (q+1)) := by
         apply Finset.sum_congr rfl
@@ -447,7 +445,7 @@ lemma regularSeries_norm_small_power {ε : ℝ} (hε : 0 < ε) (hε1 : ε ≤ 1/
   have hN : 1 ≤ N := by exact_mod_cast (hB.trans hBN)
   have hN2 : (N:ℝ) ≤ 2*B := by
     have := Nat.ceil_lt_add_one (zero_lt_one.trans_le hB).le
-    change (N:ℝ) < B+1 at this
+
     linarith
   have hcut := regularSeries_norm_cutoff hf0 hf hc hD hb hε hε1 hN hs
     (show D*(1+‖s‖) ≤ (N:ℝ) from (by dsimp [B] at hBN; nlinarith [norm_nonneg s]))

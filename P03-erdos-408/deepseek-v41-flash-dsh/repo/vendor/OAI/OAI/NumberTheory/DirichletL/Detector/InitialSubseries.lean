@@ -7,9 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.InitialFubini
 namespace OAI
 
 noncomputable section
-open MeasureTheory
+
 namespace SevenEighths.ProbePhysical
-open ProbeMellinBoundary
+
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev RawHighIndex := NonzeroFrequency×((Ideal O×Ideal O)×Ideal O)

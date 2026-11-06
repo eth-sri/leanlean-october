@@ -8,10 +8,8 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.ColumnShells
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson
-open SevenEighths.CubicDyadicDecay
+
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson SevenEighths.CubicDyadicDecay
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -75,7 +73,7 @@ theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     have hx : 3*θ+θ = 4*θ := by ring
     rw [hx] at hb
     apply (hd.trans hb).trans
-    change (2*Z+H*(P+Q))*N^(4*θ)*S ≤ V*N^(4*θ)*S
+
     exact mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right (by dsimp [V]; linarith) (Real.rpow_nonneg hN0.le _)) hS
   have henergy := (hcf θ hθ M N hM0 cols hinj hc hcols a R hR).trans

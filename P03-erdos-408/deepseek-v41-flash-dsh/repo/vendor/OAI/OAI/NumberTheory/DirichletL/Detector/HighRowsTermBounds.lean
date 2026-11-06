@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
+
 local notation "O" => ActualEisensteinCubic.O
 
 lemma sourceWeightedScalar_norm_le (Q : ℝ) (hQ : 0<Q)

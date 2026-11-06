@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.PhysicalBranchMeasure
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+
 open MeasureTheory FourierBridge
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

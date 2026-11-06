@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.DetectorZeros
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+
 open Set Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily

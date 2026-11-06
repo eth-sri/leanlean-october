@@ -10,10 +10,9 @@ public import OAI.NumberTheory.DirichletL.UnitSexticWitness
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalRowCompletion
-open CanonicalQuadraticSieve UniqueFactorizationMonoid
+open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalRowCompletion CanonicalQuadraticSieve UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 

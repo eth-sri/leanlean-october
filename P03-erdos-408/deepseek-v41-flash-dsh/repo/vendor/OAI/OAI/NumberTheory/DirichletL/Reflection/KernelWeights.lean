@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.KernelSeparation
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform
+
+
 noncomputable section
 
 def reciprocalWindow (w : ℝ→ℂ) (α M : ℝ) (y : ℝ) : ℂ :=

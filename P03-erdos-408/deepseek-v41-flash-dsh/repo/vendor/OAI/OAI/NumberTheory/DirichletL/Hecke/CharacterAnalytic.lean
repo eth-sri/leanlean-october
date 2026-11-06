@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.Coordinates
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
+
 namespace SevenEighths.HeckeCharacterAnalytic
 
 def additiveFiberEquiv {A B : Type*} [AddCommGroup A] [AddCommGroup B]

@@ -10,13 +10,10 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentAllocatedDetectorCapped
-open HeckeFamily CenteredMomentDetectorDictionary CenteredMomentNaturalFixedRaySource
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy
-open CenteredMomentDivisorRectangle CenteredMomentAllocatedCenteredCapped
-open ConcretePrimeRowBridge CenteredMomentExceptionalCappedAmplitude
+
 local notation "O" => HeckeFamily.O
 
 end SevenEighths.CenteredMomentAllocatedDetectorCapped

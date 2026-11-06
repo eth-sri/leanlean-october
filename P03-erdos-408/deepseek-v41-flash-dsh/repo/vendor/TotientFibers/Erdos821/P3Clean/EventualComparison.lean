@@ -8,7 +8,7 @@ public import Erdos821.P3Clean.UniformComparison
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 open Filter
 
 namespace Erdos821.P3Clean

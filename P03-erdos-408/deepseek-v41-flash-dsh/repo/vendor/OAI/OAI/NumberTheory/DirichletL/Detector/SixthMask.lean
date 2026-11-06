@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CubicEisenstein
-open HeckeInverseAmplification
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CubicEisenstein HeckeInverseAmplification
 local notation "O" => ActualEisensteinCubic.O
 
 lemma calibration_sixth_ideal_mask (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)

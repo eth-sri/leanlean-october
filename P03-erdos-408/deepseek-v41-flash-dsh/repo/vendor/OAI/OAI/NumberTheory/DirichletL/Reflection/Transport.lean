@@ -13,7 +13,6 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι κ : Type*} [Fintype ι] [Fintype κ] {p : ι → Eis}
-noncomputable local instance transportFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 omit [Fintype ι] [Fintype κ] in
 theorem residualWithFrozen_transport [∀ i, (Ideal.span {p i}).IsMaximal]

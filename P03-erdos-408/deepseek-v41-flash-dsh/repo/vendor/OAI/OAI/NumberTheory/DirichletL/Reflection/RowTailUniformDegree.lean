@@ -78,7 +78,7 @@ theorem original_family_row_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A : 
     rw [norm_mul]
     exact (mul_le_mul hr (haw P.val.val P.val.property) (norm_nonneg _) zero_le_one).trans_eq (one_mul 1)
   have hh := finite_weighted_truncation_norm block (fun P : L => r K*aw P.val.val) J _ hs hw he
-  change ‖(∑' i,∑ P : L,r K*aw P.val.val*block P i)-∑ i∈J,∑ P : L,r K*aw P.val.val*block P i‖≤_
+
   apply hh.trans
   apply mul_le_mul_of_nonneg_right
   · exact_mod_cast (Fintype.card_subtype_le (fun P : Pset => IsCoprime K P.val)).trans_eq (Fintype.card_coe Pset)

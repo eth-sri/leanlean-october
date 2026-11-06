@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.CompleteCommon
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentSourceCommonMask
-open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentSourceMass CenteredMomentCompleteCommon
+open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentCompleteCommon
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 

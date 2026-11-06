@@ -8,12 +8,10 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassPrefactor
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource
-open InverseSecondPrincipalCaller InversePrincipalEnergy FirstCauchyArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource InverseSecondPrincipalCaller InversePrincipalEnergy FirstCauchyArithmetic
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):

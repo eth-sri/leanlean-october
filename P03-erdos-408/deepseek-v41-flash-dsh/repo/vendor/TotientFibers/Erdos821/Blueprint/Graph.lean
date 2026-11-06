@@ -10,8 +10,8 @@ Most theorem proofs are deferred; integrated proofs are audited in Audit.lean. -
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
-open Filter
+
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.Blueprint.Graph

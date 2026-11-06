@@ -14,14 +14,8 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentReflectedSource
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CanonicalUnitEuler
-open CenteredMomentHeckeColumnWindow CenteredMomentRowNorm
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonLinearSource CenteredMomentCommonPairedSource
-open CenteredMomentFirstSectors CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSecondHeightFamily CenteredMomentSourceRow
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CanonicalUnitEuler CenteredMomentHeckeColumnWindow CenteredMomentRowNorm CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonLinearSource CenteredMomentCommonPairedSource CenteredMomentFirstSectors CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSecondHeightFamily CenteredMomentSourceRow
 local notation "O" => HeckeFamily.O
-local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
 def reflected (η:Character):Character:=η.product (HeckeUnitRows.character (-1:Oˣ))
 

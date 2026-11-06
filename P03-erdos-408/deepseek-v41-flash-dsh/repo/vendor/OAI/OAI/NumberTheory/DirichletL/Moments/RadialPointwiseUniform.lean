@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.RadialPointwiseEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentRadialPointwiseUniform
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentRadialPointwiseEnergy CenteredMomentUniformDivisorShell
-open CenteredMomentSlotRatios
+open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentRadialPointwiseEnergy CenteredMomentUniformDivisorShell CenteredMomentSlotRatios
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 

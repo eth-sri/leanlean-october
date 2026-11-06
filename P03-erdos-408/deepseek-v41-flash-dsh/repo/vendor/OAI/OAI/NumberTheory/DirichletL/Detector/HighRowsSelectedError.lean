@@ -58,7 +58,7 @@ lemma unramifiedMarked_selected_error (Q : ℝ) (A eta v x w z : ℂ)
       _=_ := by rw [←Real.rpow_add hQ0];congr 1;ring
   have hBKV : ‖B‖*(‖K‖*‖V‖)≤1 := hprod _ _ _ _ (norm_nonneg _) (by positivity) hB hKV' (by linarith)
   have hE := unramified_marked_error_bound R V (Q:ℂ)⁻¹ K W D hRh hVh hqi hDh
-  change ‖unramifiedMarked Q A eta v x w z+D‖≤_ at hE
+
   have hE' : ‖unramifiedMarked Q A eta v x w z+D‖≤24*‖R‖+4*(‖K‖*‖V‖) := by
     apply hE.trans
     nlinarith [mul_le_mul_of_nonneg_left hW (norm_nonneg R)]
@@ -66,7 +66,7 @@ lemma unramifiedMarked_selected_error (Q : ℝ) (A eta v x w z : ℂ)
   · change ‖unramifiedMarked Q A eta v x w z+D‖≤28
     linarith
   · have hh := mul_le_mul_of_nonneg_left hE' (norm_nonneg B)
-    change ‖B‖*‖unramifiedMarked Q A eta v x w z+D‖≤28
+
     nlinarith
 
 end SevenEighths.ProbeEuler

@@ -11,8 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentComparisonReflection
-open HeckeFamily HeckePrimitive ActualEisensteinCubic ConcreteTraceCRT
-open EisensteinSchwartzPoisson ConcretePrimeRowBridge GaussGeneratorTransport
+open HeckeFamily HeckePrimitive ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson ConcretePrimeRowBridge GaussGeneratorTransport
 local notation "O" => HeckeFamily.O
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 

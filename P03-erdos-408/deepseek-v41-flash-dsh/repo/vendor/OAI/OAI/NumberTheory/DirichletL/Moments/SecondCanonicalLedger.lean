@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondCanonicalLedger
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentPartitionNorm
-open CenteredMomentSupport CenteredMomentForcing
+open CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentPartitionNorm CenteredMomentSupport CenteredMomentForcing
 local notation "O" => ActualEisensteinCubic.O
 
 theorem span_finset_product {ι : Type*} (S : Finset ι) (p : ι→O) :
@@ -61,7 +58,7 @@ theorem actual_second_ledger_lower (C D : Ideal O) (hC : Supported C) (hD : Supp
   rw [secondSaving_eq_norm_ledger _ (commonPrime_supported C D hC)] at hh
   rw [left_ideal_product C D hC hCD,right_ideal_product C D hC hD hCD,
     ←commonFrequencyGenerator_span C D hC] at hh
-  change actualUnitSet (commonPrime C D) (leftExponent C D) (rightExponent C D) w=U at hpart
+
   rw [hpart,←nonunitPartitionSet_eq_actual C D U w hpart,
     ←nonunitFrequencyGenerator_span C D U] at hh
   simpa only [unitIdeal,commonPrime_span C D hC,forcingIdeal] using hh

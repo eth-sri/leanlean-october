@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.LogarithmicInput
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+
 open Set Metric
 namespace SevenEighths.HeckeLogarithmic
 open HeckeFamily HeckeLogarithmicInput

@@ -5,7 +5,7 @@ public import Erdos821.P5.ExceptionalAsymptotics
 @[expose] public section
 
 noncomputable section
-open Filter
+
 
 namespace Erdos821.P5Core
 
@@ -35,10 +35,10 @@ theorem moment_numerical_bound (L Y P a b A C : ℝ)
   have hlogLpos : 0 ≤ Real.log L := by linarith
   obtain ⟨hm1, _, hmlength, hresid, hlogm⟩ :=
     moment_power_choice L Y P a b hL1 ha hab hb hY hYlo hYhi hP hPlo hPhi hsub
-  change 1 ≤ m at hm1
-  change (m : ℝ) ≤ 2 * L ^ (1 - a) at hmlength
-  change Real.log Y - m * Real.log P ≤ Real.log 2 + L ^ b + m * Real.log 2 at hresid
-  change Real.log (m : ℝ) ≤ Real.log 2 + Real.log L at hlogm
+
+
+
+
   have hmpos : (0 : ℝ) < m := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hm1)
   have hfactpos : (0 : ℝ) < Nat.factorial m := by exact_mod_cast Nat.factorial_pos m
   have hlogYpos : 0 < Real.log Y := by linarith

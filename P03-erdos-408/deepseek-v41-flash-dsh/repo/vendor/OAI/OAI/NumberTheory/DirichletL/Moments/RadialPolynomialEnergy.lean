@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentRadialPolynomialEnergy
-open HeckeFamily HeckeDyadic CenteredMomentFrequencyScaleSupremum
-open CenteredMomentPositiveSummability ConcreteTraceCRT
-open HeckeInverseAmplification
+open HeckeFamily HeckeDyadic CenteredMomentFrequencyScaleSupremum CenteredMomentPositiveSummability ConcreteTraceCRT HeckeInverseAmplification
 local notation "O" => HeckeFamily.O
 
 lemma polynomial_bounded (W : ℝ→ℂ) (a b X : ℝ) (hb : 0≤b) (hX : 0<X)

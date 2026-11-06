@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ActualLiveSlotRemoval
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.CenteredMomentLiveCapacity
 
  def excess {ι:Type*} (J:Finset ι) (w:ι→ℝ) (n₁ n₂ M κ:ℝ) : ℝ :=
@@ -22,7 +22,7 @@ namespace SevenEighths.CenteredMomentLiveCapacity
   · right
     have hs:=Finset.sum_sdiff hR (f:=w)
     have hm:=le_max_left (n₁+n₂+6*κ*(∑i∈J,w i)-M) (0:ℝ)
-    change max _ _≤_ at h
+
     have hh:=hm.trans h
     rw [←hs] at hh
     nlinarith

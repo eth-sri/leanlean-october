@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.GramPrimeSeparation
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcretePrimeRowBridge UniqueFactorizationMonoid
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcretePrimeRowBridge UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 variable {ι : Type*} [Fintype ι]

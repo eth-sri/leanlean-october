@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceProfileMass
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff SchwartzMap
+
 
 namespace SevenEighths.CenteredMomentSourceProfileMassUniform
-open ActualEisensteinCubic CenteredMomentAddedZeroUniform CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass
+open ActualEisensteinCubic CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentSourceProfileMass
 local notation "O" => ActualEisensteinCubic.O
 
 theorem profile_mass_explicit {ι : Type*} [Fintype ι]

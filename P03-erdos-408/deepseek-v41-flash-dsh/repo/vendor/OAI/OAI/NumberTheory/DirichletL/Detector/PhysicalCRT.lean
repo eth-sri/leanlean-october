@@ -7,11 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.CalibrationRemoval
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalRowCompletion GaussianShiftedPartition
-open CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport
-open CenteredMomentFourier CenteredMomentFirstPoisson CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalRowCompletion GaussianShiftedPartition CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstPoisson CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 theorem coprime_function_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)

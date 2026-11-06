@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.HeckeDetectorLower
-open HeckeFamily HeckeDetectorTail HeckeDetectorFinite HeckeDetectorPartition
-open GammaZeroDetector
+open HeckeFamily HeckeDetectorTail HeckeDetectorFinite HeckeDetectorPartition GammaZeroDetector
 local notation "O" => HeckeFamily.O
 
 lemma unit_term_lower (U : ℝ) (hU : 2 ≤ U) :

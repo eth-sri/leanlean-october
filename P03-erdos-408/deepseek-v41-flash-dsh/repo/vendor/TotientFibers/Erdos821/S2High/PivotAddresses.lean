@@ -5,11 +5,11 @@ public import Erdos821.S2High.AddressHelpers
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 
 namespace Erdos821.S2High
 
-open Erdos821.Blueprint.Graph
+
 
 def birthBlockPivot {a : ℕ} (B : Finset (Fin a)) (hB : B.Nonempty) : Fin a :=
   Classical.choose hB

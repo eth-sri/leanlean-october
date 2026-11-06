@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorFamilyInclusion
 namespace OAI
 
 noncomputable section
-open scoped Classical ComplexConjugate BigOperators
+
 namespace SevenEighths.HeckeDetectorPrimeFamily
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda

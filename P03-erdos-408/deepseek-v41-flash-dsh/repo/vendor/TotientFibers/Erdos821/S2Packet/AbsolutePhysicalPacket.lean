@@ -6,7 +6,7 @@ public import Erdos821.P3.PhysicalSchur
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Packet
@@ -139,11 +139,11 @@ lemma possiblePhysicalTargets_subset_neighbors {F : FixedData} {P : PrimeGroups}
     Erdos821.P3Core.possiblePhysicalTargets A n ⊆ A.neighbors n := by
   classical
   intro z hz
-  change z ∈ Erdos821.P3Core.possiblePhysicalPositions A n ×ˢ Finset.univ at hz
+
   rcases Finset.mem_product.mp hz with ⟨hzpos, _⟩
   rcases Finset.mem_image.mp hzpos with ⟨w, hw, htime⟩
   rcases w with ⟨v, a, u⟩
-  change n + A.k * ((A.pattern v).D a u : ℤ) = z.1 at htime
+
   have hD := pattern_D_le_sup_pow (A.pattern v) a u
   have hn : Int.natAbs (A.k * ((A.pattern v).D a u : ℤ)) ≤
       A.k.natAbs * (P.allPrimes.sup id) ^ (J * P.count) := by
@@ -233,7 +233,7 @@ lemma physicalKernel_true_column_neighbor_norm_eq_tsum_re
 
 theorem AbsolutePhysicalPacketTask_proof :
     Erdos821.S2Core.AbsolutePhysicalPacketTask := by
-  change Erdos821.Blueprint.Graph.AbsolutePhysicalBounds
+
   intro F m C₁
   obtain ⟨Cabs, hSchur⟩ := Erdos821.P3Core.physical_schur_proof F m C₁
   refine ⟨Cabs, ?_⟩

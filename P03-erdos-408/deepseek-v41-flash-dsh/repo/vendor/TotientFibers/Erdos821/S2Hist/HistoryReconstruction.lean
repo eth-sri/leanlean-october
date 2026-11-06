@@ -8,8 +8,7 @@ noncomputable section
 
 namespace Erdos821.S2Hist
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
 variable {A : Model F P J m} (H : MemoryHistory A n)

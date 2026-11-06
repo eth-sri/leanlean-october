@@ -10,8 +10,8 @@ public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology
-open Filter Set Metric
+
+
 namespace SevenEighths.ProbePhysical
 
 def gaussianLog (z : ℂ) : ℂ :=

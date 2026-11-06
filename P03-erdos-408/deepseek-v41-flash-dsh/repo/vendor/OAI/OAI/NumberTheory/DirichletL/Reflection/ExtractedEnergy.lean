@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.ExtractedRow
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
+
+
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {φ ι : Type*} [Fintype φ] [Fintype ι] {N a c : Eis} {mode : Bool}

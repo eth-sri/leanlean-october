@@ -6,7 +6,7 @@ public import Erdos821.Leaves.OrphanExp
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 
 namespace Erdos821.P3Sum
 

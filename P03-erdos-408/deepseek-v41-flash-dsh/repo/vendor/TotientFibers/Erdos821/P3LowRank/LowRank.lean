@@ -14,7 +14,7 @@ support keep the unmodified signed kernel; at most `2 * rank` edges are affected
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Lowrank

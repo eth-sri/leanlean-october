@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentHeckeCancellation
-open HeckeFamily CenteredMomentHeckeVolume ConcreteTraceCRT EisensteinSchwartzPoisson
-open IdealMobiusDivisorSum QuadraticInitialBound
+open HeckeFamily CenteredMomentHeckeVolume ConcreteTraceCRT EisensteinSchwartzPoisson IdealMobiusDivisorSum QuadraticInitialBound
 local notation "O" => ActualEisensteinCubic.O
 
 def idealSum (χ : Character) (W : ℝ → ℂ) (X : ℝ) : ℂ :=

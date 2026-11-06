@@ -10,9 +10,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open MeasureTheory
+
 namespace SevenEighths.ProbePhysical
-open ProbeMellinBoundary
+
 local notation "O" => ActualEisensteinCubic.O
 
 end SevenEighths.ProbePhysical

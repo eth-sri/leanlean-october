@@ -8,18 +8,12 @@ public import OAI.NumberTheory.DirichletL.Energy.AmplifiedRayDictionary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentEnergyFirstRawScaleAdmission
-open HeckeFamily ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentFirstAnnularInput
-open CenteredMomentFirstChildLower CenteredMomentFirstAmplificationChoice
-open CenteredMomentSectorLocalization
+open HeckeFamily ConcretePrimeRowBridge CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentFirstAnnularInput CenteredMomentFirstChildLower CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α]
-local instance {ι:Type*}:DecidableEq ι:=Classical.decEq _
 
 def parentLower (s:Input α)(Z:ℝ):ℝ:=
   min (min (Real.logb Z s.X₁) (Real.logb Z s.X₂))

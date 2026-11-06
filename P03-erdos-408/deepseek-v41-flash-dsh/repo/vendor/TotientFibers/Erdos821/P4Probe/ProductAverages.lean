@@ -5,7 +5,7 @@ public import Mathlib.Analysis.Complex.Basic
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -51,7 +51,7 @@ lemma productWeight_swap (w : ∀ i, α i → ℝ) (S : Finset ι)
 
 lemma productWeight_total (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a = 1) :
     ∑ x : ProductSample α, productWeight w x = 1 := by
-  change (∑ x : ProductSample α, ∏ i, w i (x i)) = 1
+
   trans ∏ i, ∑ a : α i, w i a
   · exact (Fintype.prod_sum w).symm
   · simp only [hsum, Finset.prod_const_one]

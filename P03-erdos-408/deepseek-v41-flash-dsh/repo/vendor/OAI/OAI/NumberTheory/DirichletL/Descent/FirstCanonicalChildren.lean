@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Descent.ActualDepthBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.InverseMomentFirstLabelCell
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstGlobalCaps InverseSecondSourceBlocks
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseFirstGlobalCaps InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ:Type*}[DecidableEq ι][DecidableEq σ]

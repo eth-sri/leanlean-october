@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalCost
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentSourceLowerSupport
-open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform
-open CenteredMomentRectangle
+open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentRectangle
 local notation "O" => ActualEisensteinCubic.O
 
 lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstTwoPassEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.InverseMoment
 

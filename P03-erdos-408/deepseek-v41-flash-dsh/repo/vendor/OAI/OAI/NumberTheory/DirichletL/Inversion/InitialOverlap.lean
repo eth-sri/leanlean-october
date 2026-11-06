@@ -9,8 +9,7 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic CanonicalQuadraticSieve IdealMobiusDivisorSum
-open UniqueFactorizationMonoid
+open ActualEisensteinCubic CanonicalQuadraticSieve IdealMobiusDivisorSum UniqueFactorizationMonoid
 
 namespace SevenEighths.InverseInitialOverlap
 
@@ -159,7 +158,7 @@ theorem coefficient_identity (ψ : Ideal O →* ℂ) {P j n : Ideal O}
     (hH.mono (dvd_refl _) (idealQuotient_dvd hj)).isRelPrime
     (residual_squarefree hP hj)
   rw [idealQuotient_mul hjn, idealQuotient_mul hj] at h
-  change (moebius n : ℂ) * ψ n * ψ P = _
+
   rw [h]
   unfold column residual
   ring

@@ -54,7 +54,7 @@ theorem differentiable_deletedProduct {ι : Type*} (S : Finset ι) (N : ι → �
   classical
   induction S using Finset.induction_on with
   | empty =>
-    change Differentiable ℂ (fun _ : ℂ => (1 : ℂ))
+
     exact differentiable_const _
   | @insert p S hp ih =>
     have hpN := hN p (Finset.mem_insert_self p S)

@@ -13,12 +13,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseFirstPriorityParents InversePrioritySecondSource InverseMomentGlobalPriorityTail
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource InverseMomentGlobalPriorityTail InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
 local notation "Eis"=>ActualEisensteinCubic.O
 theorem global_priority_fixed_child_step_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
@@ -174,7 +169,7 @@ theorem global_priority_fixed_child_step_uniform_types
           (A*Z^(max 0 (secondCellColumnExponent Z X d)+Vlabel d+εchild)) d false u hZ hX
           (hgeomcell.trans (mul_le_mul_of_nonneg_right hbcap' hX.le)) (mul_nonneg hA (Real.rpow_nonneg (zero_lt_one.trans hZ).le _))
           (fun s=>hleft z d hd s J₁ hJ₁ γ hγ)
-        change _≤(Cmax*A)*Z^(_)*_
+
         apply hh.trans
         have hH:0≤tripleHeight (2*J) u.1*coordinateHeight (2*J) u.2:=by
           unfold tripleHeight coordinateHeight
@@ -191,7 +186,7 @@ theorem global_priority_fixed_child_step_uniform_types
           (A*Z^(max 0 (secondCellColumnExponent Z X d)+Vlabel d+εchild)) d true u hZ hX
           (hgeomcell.trans (mul_le_mul_of_nonneg_right hbcap' hX.le)) (mul_nonneg hA (Real.rpow_nonneg (zero_lt_one.trans hZ).le _))
           (fun s=>hright z d hd s J₂ hJ₂ γ hγ)
-        change _≤(Cmax*A)*Z^(_)*_
+
         apply hh.trans
         have hH:0≤tripleHeight (2*J) u.1*coordinateHeight (2*J) u.2:=by
           unfold tripleHeight coordinateHeight

@@ -12,7 +12,7 @@ public import Mathlib.Order.CompletePartialOrder
 
 @[expose] public section
 
-open scoped BigOperators
+
 open MeasureTheory
 
 namespace Erdos821.Classical

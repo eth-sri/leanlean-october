@@ -8,15 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionarySource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure
-open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily
-open CenteredMomentDetectorDictionary CenteredMomentRetainedEnergy CenteredMomentHeckeSlots
-open CenteredMomentHeckeHeight CenteredMomentPrimeSlot HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open ProbeHighRowFamily ConcretePrimeRowBridge
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily CenteredMomentDetectorDictionary CenteredMomentRetainedEnergy CenteredMomentHeckeSlots CenteredMomentHeckeHeight CenteredMomentPrimeSlot HeckeDetectorRawFiber HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles ProbeHighRowFamily ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 lemma rowMaskElement_eq_fixed : rowMaskElement=fixedBadMask := by
@@ -40,7 +35,6 @@ lemma natural_unit_mask_positive {ι : Type*} [Fintype ι] [DecidableEq ι]
   simp only [positiveSlotRow,rowTwistedSum,rowSlot,one_mul,natural_unit_mask_coefficient F]
 
 variable {M : Ideal O} [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable {H : Subgroup (O⧸M)ˣ} (hH : RayOrthogonality.globalUnits M≤H)
 variable {Label Slot : Type*} {U a ε tstar T allowance : ℝ} {i : ℕ}
 

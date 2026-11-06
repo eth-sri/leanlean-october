@@ -89,7 +89,7 @@ theorem scaled_direct_bound (e κ η : ℝ) (he : 0<e) (he' : e<1/1000)
     linarith [Real.pi_gt_three]
   have hcomp : 0≤binCost B (χ j) H := binCost_nonneg hB _ _
   apply (hb.trans (mul_le_of_le_one_left (by positivity) hfac)).trans
-  change _ ≤ _ at hc hj ht
+
   have hcC : Cb*Real.pi≤C := by dsimp [C]; nlinarith only [hCb, mul_nonneg hE Real.pi_pos.le]
   have heC : 4*Cb+E*Real.pi≤C := by dsimp [C]; nlinarith only [mul_nonneg hCb.le Real.pi_pos.le]
   calc

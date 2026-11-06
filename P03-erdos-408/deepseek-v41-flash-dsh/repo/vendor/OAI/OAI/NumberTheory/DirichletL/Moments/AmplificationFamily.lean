@@ -9,14 +9,10 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstTailAggregate
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentAmplificationFamily
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentAmplificationShortening CenteredMomentFixedRay
-open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow
-open CenteredMomentSecondChildProfile CenteredMomentSourceRow CenteredMomentChildRows
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss RayFourExpansion CenteredMomentAmplificationShortening CenteredMomentFixedRay CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentSecondChildProfile CenteredMomentSourceRow CenteredMomentChildRows
 local notation "O" => ActualEisensteinCubic.O
 
 def amplificationPhase (p : O) (k : ℕ) (r : RayRing) : ℂ :=

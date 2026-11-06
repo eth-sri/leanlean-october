@@ -11,12 +11,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 namespace SevenEighths.CenteredMomentSlotClassTransport
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentAllocatedNaturalSource CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRetained
-open CenteredMomentRetainedEnergy
+
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 

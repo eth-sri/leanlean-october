@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Detector.HighAbsolute
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion ActualEisensteinCubic HeckeInverseAmplification CenteredExceptionalCount ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O

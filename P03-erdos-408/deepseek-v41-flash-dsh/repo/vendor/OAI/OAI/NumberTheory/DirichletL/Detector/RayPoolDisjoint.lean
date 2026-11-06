@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.RayNormalization
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+
 open Filter
 namespace SevenEighths.ProbeRaySlots
 open HeckeFamily ProbePhysical

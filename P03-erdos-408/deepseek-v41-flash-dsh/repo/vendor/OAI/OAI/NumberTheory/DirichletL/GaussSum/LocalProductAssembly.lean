@@ -10,19 +10,19 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
+
 open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+
 open scoped Topology
-open MeasureTheory Real
+
 open scoped FourierTransform SchwartzMap
-open Finset Complex
+
 open scoped Classical
 open scoped Classical
 
 namespace ActualEisensteinCubic
 
-open ConcreteTraceCRT
+
 open scoped ComplexConjugate
 
 theorem canonicalSextic_inverse_eq_conj_on_units (P : Ideal O)
@@ -73,7 +73,7 @@ namespace ActualEisensteinCubic
 
 section
 
-open AddChar MulChar
+
 
 @[instance_reducible] noncomputable def crtIntersectionFintype
     {ι : Type*} [Fintype ι]

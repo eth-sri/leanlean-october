@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.RawArithmetic
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ProbeCompleted
-open HeckeInverseAmplification ConcretePrimeRowBridge CubicEisenstein
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ProbeCompleted HeckeInverseAmplification ConcretePrimeRowBridge CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 lemma bareIdealHighCoefficient_sixth (η : HeckeFamily.Character)

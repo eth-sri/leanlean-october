@@ -6,7 +6,7 @@ public import Erdos821.S2.AnalyticParametersTasks
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 open Filter
 attribute [local instance] Classical.propDecidable
 

@@ -42,14 +42,6 @@ section
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
 
-/-- Borel σ-algebra on the model space `E`. -/
-local instance instMeasurableSpaceSmoothing : MeasurableSpace E := borel E
-local instance instBorelSpaceSmoothing : BorelSpace E := ⟨rfl⟩
-local instance instOpensMeasurableSpaceSmoothing : OpensMeasurableSpace E := by
-  infer_instance
-local instance instMeasurableAddSmoothing : MeasurableAdd E := by
-  infer_instance
-
 omit [InnerProductSpace ℝ E] [CompleteSpace E] in
 private lemma tsupport_indicator_subset_closure (s : Set E) (f : E → ℝ) :
     tsupport (s.indicator f) ⊆ closure s := by
@@ -77,8 +69,6 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDim
 local instance instMeasurableSpaceSmoothing1 : MeasurableSpace E := borel E
 local instance instBorelSpaceSmoothing1 : BorelSpace E := ⟨rfl⟩
 local instance instOpensMeasurableSpaceSmoothing1 : OpensMeasurableSpace E := by
-  infer_instance
-local instance instMeasurableAddSmoothing1 : MeasurableAdd E := by
   infer_instance
 
 variable {K : Set E}

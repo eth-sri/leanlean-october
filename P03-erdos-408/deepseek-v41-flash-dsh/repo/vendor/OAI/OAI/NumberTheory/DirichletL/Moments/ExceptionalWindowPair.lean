@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalKernel
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentExceptionalWindowPair
-open CenteredMomentPlainWindowEnergy CenteredMomentRowNorm CenteredMomentSmooth
-open CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
+open CenteredMomentPlainWindowEnergy CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem paired_integrals {κ:Type*}(rows:Finset κ)(f g:κ→ℝ→ℂ)

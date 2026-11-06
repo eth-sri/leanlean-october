@@ -5,13 +5,12 @@ public import Erdos821.S2.MemoryEdge
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 -- Small physical states have at least M zeros per small group.
 lemma small_zeros_ge (P : PrimeGroups) {M : ℕ} (y : P.SmallResidues) (a : P.Labels M)

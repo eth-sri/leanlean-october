@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLivePartit
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels InverseMomentFirstChildWindows InverseSecondSourceBlocks
 local notation "O" => ActualEisensteinCubic.O

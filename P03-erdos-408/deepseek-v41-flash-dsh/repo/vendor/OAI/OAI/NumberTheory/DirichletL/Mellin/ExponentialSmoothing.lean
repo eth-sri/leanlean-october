@@ -6,10 +6,10 @@ public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 
 namespace OAI
 
-open scoped BigOperators
-open MulChar AddChar
 
-open scoped BigOperators
+
+
+
 
 namespace AnalyticBridge
 
@@ -32,8 +32,8 @@ structure CRTChoice where
 
 end AnalyticBridge
 
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+
+
 
 namespace ExpBound
 

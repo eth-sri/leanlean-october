@@ -7,18 +7,12 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedActiveCapacitySo
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedActiveAffine
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentCommonRawScale
-open CenteredMomentFirstAnnularInput CenteredMomentFirstSecondActiveErrorGates
-open CenteredMomentFirstAmplifiedActiveCapacitySource CenteredMomentAllocatedChildCapacity
-open CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentCommonRawScale CenteredMomentFirstAnnularInput CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAmplifiedActiveCapacitySource CenteredMomentAllocatedChildCapacity CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
-local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
 
 theorem active_error_slot_logs_le (s : Input ι) (C R : Ideal O)
     (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)

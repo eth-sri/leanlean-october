@@ -9,11 +9,9 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalCoefficient
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentFirstPoisson
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 theorem coprime_mixed_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)

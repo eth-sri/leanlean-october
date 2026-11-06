@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 open Filter
-open scoped Topology
+
 namespace SevenEighths.HeckePrimeAmplitudeBins
 
 theorem upper_allowance_eventually (C dmin rmin ε mesh : ℝ)

@@ -9,16 +9,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSourceConductorCaps
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily
-open CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
-open CenteredMomentAmplificationRadicalFamily CenteredMomentChildRows
-open CenteredMomentSecondHeightFamily
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentAmplificationRadicalFamily CenteredMomentChildRows CenteredMomentSecondHeightFamily
 local notation "O"=>ActualEisensteinCubic.O
 
 lemma divisor_norm_le (I C : Ideal O) (hC : C≠0) (h : I∣C) :

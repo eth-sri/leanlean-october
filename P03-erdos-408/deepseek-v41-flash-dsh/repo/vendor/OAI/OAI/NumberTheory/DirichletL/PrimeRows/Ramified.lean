@@ -9,10 +9,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 def ramifiedCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)

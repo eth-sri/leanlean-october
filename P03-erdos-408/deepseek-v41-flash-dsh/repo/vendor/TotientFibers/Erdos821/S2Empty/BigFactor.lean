@@ -6,7 +6,7 @@ public import Mathlib.Algebra.Order.Star.Real
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Empty
@@ -29,7 +29,7 @@ theorem big_label_sum_eq_prod (F : FixedData) (P : PrimeGroups) (n M : ℕ) :
   calc
     _ = ∏ g : P.BigGroup, ∑ a : Fin M → P.Prime g.val,
         ∏ j : Fin M, tiltedMu F P n g.val (a j) := by
-      change (∑ a : (g : P.BigGroup) → β g, ∏ g, f g (a g)) = _
+
       exact sum_pi_prod (ι := P.BigGroup) (β := β) f
     _ = ∏ g : P.BigGroup,
         (∑ p : P.Prime g.val, tiltedMu F P n g.val p) ^ M := by

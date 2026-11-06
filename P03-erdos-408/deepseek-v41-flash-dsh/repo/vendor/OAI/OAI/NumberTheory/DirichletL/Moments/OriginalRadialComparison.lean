@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentOriginalRadialComparison
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-open CenteredMomentRadialPolynomialEnergy
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentScaleSupremum CenteredMomentSectorLocalization CenteredMomentRadialPolynomialEnergy
 local notation "O" => HeckeFamily.O
 
 def radialEnergy (F : O→ℂ) (keep : O→Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=

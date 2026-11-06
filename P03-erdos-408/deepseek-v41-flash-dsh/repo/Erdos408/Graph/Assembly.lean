@@ -20,7 +20,7 @@ namespace Erdos408.Graph
 
 open Erdos821.Blueprint.Graph
 open Erdos821.Blueprint.Analytic (cell charValue primitiveCharacters CharacterIndex)
-open scoped Classical
+
 
 variable {G : PrimeGroups} {J m : ℕ}
   {q₀ c₀ C₀ vlo vhi : ℝ} {hq₀ : 0 < q₀} {hq₁ : q₀ < 1} {hc₀ : 0 < c₀} {hvlo : 0 < vlo}

@@ -10,13 +10,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationProfiles
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff ComplexConjugate
+
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification
-open CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentHeckeSlots
-open CenteredMomentRetainedEnergy CenteredMomentWholeSlotDeletion
-open CenteredMomentPrimeSlot CenteredMomentSlotNormalization
+open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot CenteredMomentSlotNormalization
 local notation "O" => HeckeFamily.O
 
 lemma plain_zero_height (χ : Character) (W : ℝ→ℂ) (X : ℝ) (hX : 0<X) :

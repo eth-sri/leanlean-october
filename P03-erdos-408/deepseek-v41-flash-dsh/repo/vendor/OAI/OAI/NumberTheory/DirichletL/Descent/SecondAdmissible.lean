@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.Basic
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+
 open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen)
 open ConcreteTraceCRT (eisEmbedding)

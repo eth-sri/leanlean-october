@@ -15,8 +15,7 @@ namespace SevenEighths.TraceCharacter
 
 abbrev O := ActualEisensteinCubic.O
 
-open ActualEisensteinCubic EisensteinEmbedding ConcreteTraceCRT
-open EisensteinSchwartzPoisson FiniteFourier
+open ActualEisensteinCubic EisensteinEmbedding ConcreteTraceCRT EisensteinSchwartzPoisson FiniteFourier
 
 def traceCharacter (c : O) (hc : c ≠ 0) : AddChar (O ⧸ Ideal.span {c}) ℂ :=
   eisTraceModChar ShortDraftTrace.breveE

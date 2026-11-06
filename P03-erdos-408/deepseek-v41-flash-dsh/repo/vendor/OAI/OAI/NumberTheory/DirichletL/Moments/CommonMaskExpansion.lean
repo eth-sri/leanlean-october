@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentCommonMaskExpansion
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open UniqueFactorizationMonoid
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 
 def naturalSlot (χ : Character) (pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) : ℂ :=

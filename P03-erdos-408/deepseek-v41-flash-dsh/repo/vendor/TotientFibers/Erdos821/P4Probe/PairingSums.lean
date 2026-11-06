@@ -5,7 +5,7 @@ public import Erdos821.P4Probe.RawAssembly
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -22,7 +22,7 @@ lemma idealFullPair_sum_source {P : PrimeGroups} {M : ℕ} {ι : Type*}
   simp only [star_sum, star_mul, Finset.mul_sum, Finset.sum_mul]
   let term := fun (a b : P.BigLabels M) (i : ι) =>
     (P.idealMass a : ℂ) * (star (f i a) * star (c i)) * K a b * g b
-  change (∑ a, ∑ b, ∑ i ∈ V, term a b i) = _
+
   calc
     _ = ∑ a, ∑ i ∈ V, ∑ b, term a b i := by
       apply Finset.sum_congr rfl
@@ -48,7 +48,7 @@ lemma idealFullPair_sum_target {P : PrimeGroups} {M : ℕ} {ι : Type*}
   simp only [Finset.mul_sum]
   let term := fun (a b : P.BigLabels M) (i : ι) =>
     (P.idealMass a : ℂ) * star (f a) * K a b * (c i * g i b)
-  change (∑ a, ∑ b, ∑ i ∈ V, term a b i) = _
+
   calc
     _ = ∑ a, ∑ i ∈ V, ∑ b, term a b i := by
       apply Finset.sum_congr rfl

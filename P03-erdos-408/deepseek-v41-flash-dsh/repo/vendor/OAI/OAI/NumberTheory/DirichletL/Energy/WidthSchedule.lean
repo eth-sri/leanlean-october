@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentEnergyWidthSchedule
 open CenteredMomentSuccessorPaidParameters CenteredMomentFirstSecondLossParameters

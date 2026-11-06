@@ -35,7 +35,7 @@ lemma sum_tuple_filter_zero {ι α : Type*} [Fintype ι] [DecidableEq α]
     exact hp (Finset.mem_image.mpr ⟨q,Finset.mem_univ _,rfl⟩)
   have he := Finset.sum_subset (Finset.subset_univ (Finset.univ.image forget))
     (fun p hp hnot=>hz p hnot)
-  change (∑p,H p)=_
+
   rw [←he,Finset.sum_image (fun p _ q _ h=>hinj h)]
 
 def lowPeriodIdeal (η : HeckeFamily.Character) (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) : Id :=
@@ -81,7 +81,7 @@ theorem low_canonical_polynomial_period_filter {ι : Type*} [Fintype ι]
   intro i P hP hnot
   apply lowSingleSlotWeight_zero_of_period η S hS hbad (W i) (Y i) t _
     (canonical_prime_calibration_coprime S hS P (hT i P hP) (hout i P hP))
-  change ¬IsCoprime (Ideal.span {CompletedGauss.primaryGenerator P.val}) (lowPeriodIdeal η S hS)
+
   rwa [span_primaryGenerator_of_supported P.val (hT i P hP)]
 
 end SevenEighths.ProbePhysical

@@ -7,7 +7,7 @@ public import Erdos821.S2.SpanLifecycle
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -28,7 +28,7 @@ theorem spanLiveAt_none (g : P.BigGroup) (p : P.Prime g.val)
     (hs : Q.spanValid g p none) (i : Fin (n + 1)) :
     ¬ Q.spanLiveAt g p none i := by
   simp only [spanLiveAt, pendingBefore, pendingAfter, or_false]
-  change Q.activeVisits g p = ∅ at hs
+
   rw [hs]
   simp
 

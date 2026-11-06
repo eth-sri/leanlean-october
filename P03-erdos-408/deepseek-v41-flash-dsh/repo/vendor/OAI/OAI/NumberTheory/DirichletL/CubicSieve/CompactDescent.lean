@@ -9,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 

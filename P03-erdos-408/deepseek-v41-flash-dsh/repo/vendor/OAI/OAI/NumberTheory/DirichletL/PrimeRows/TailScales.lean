@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.DyadIntegral
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
+
 namespace SevenEighths.ProbeHighRowFamily
 
 lemma selected_scale_power {K : ℕ} (Z : ℝ) (hZ : 0<Z) (length : Fin K→ℝ) (r : ℝ) :

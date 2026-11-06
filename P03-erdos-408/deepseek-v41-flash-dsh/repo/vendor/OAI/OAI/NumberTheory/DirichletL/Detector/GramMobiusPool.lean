@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum UniqueFactorizationMonoid
-open CenteredMomentMobiusRegroup
+open CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMobiusRegroup
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -26,7 +25,7 @@ def poolDivisor (G : Finset SupportedIdeal) (D : Id) : SupportedIdeal :=
     constructor
     · exact one_ne_zero
     · intro P hP
-      change P∈normalizedFactors (1:Id) at hP
+
       rw [normalizedFactors_one] at hP
       simp at hP⟩
 

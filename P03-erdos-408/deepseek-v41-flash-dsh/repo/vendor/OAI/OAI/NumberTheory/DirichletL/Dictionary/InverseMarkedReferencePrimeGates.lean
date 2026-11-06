@@ -9,12 +9,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialPhysicalSlots
-open DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod
-open InverseInitialExcludedPool InverseInitialExcludedOverlap Filter CanonicalQuadraticSieve CanonicalRowCompletion
+open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialPhysicalSlots DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod InverseInitialExcludedPool InverseInitialExcludedOverlap Filter CanonicalQuadraticSieve CanonicalRowCompletion
 local notation "O"=>HeckeFamily.O
 
 theorem deleted_large_eventually {Label Slot:Type*}[Fintype Label][Fintype Slot]

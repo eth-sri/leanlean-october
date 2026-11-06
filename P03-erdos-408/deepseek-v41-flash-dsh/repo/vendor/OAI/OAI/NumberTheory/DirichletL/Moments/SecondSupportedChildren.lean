@@ -11,20 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSecondSupportedChildren
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
-open CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-open CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget
-open CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource
-open CenteredMomentSecondIdealBlockBound CenteredMomentSecondDivisorSupport CenteredMomentSourceRow
-open Filter
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise
-open CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentSecondOriginalChildren
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource CenteredMomentSecondIdealBlockBound CenteredMomentSecondDivisorSupport CenteredMomentSourceRow Filter CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentSecondOriginalChildren
 local notation "O" => ActualEisensteinCubic.O
 
 theorem right_source_energy_zero
@@ -138,7 +125,7 @@ theorem actual_block_from_supported_envelopes (W : 𝓢(ℝ,ℂ)) (decay J₁ J�
   have hmass':(∑L∈Ds.filter live,‖(UniqueFactorizationMonoid.moebius L:ℂ)‖/(L.absNorm:ℝ))≤Cm*Z^δ:=
     hZ.2 (Ds.filter live) (fun L hL _=>(Finset.mem_filter.mp hL).2.trans hn)
   apply hk.trans
-  change K*(∑L∈Ds,_)≤_
+
   rw [he]
   calc
     _≤K*(Cm*Z^δ*(windowBudget J₁ t E₁*windowBudget J₂ t E₂)):=
@@ -151,7 +138,6 @@ theorem actual_block_from_supported_envelopes (W : 𝓢(ℝ,ℂ)) (decay J₁ J�
     _=_:=by ring
 
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
 end SevenEighths.CenteredMomentSecondSupportedChildren
 

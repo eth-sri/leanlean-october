@@ -5,7 +5,7 @@ public import Erdos821.Blueprint.Analytic
 
 @[expose] public section
 
-open scoped BigOperators
+
 open Filter Topology
 
 attribute [local instance] Classical.propDecidable

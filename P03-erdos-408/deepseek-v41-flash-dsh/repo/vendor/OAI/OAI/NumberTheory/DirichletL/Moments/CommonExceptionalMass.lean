@@ -7,13 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalCost
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentCommonExceptionalMass
-open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData
-open CenteredMomentCommonExceptionalCost CenteredMomentCommonAllocationSum
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
-open CenteredMomentAllocatedDetectorAmplitude
+open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData CenteredMomentCommonExceptionalCost CenteredMomentCommonAllocationSum CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell CenteredMomentAllocatedDetectorAmplitude
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 

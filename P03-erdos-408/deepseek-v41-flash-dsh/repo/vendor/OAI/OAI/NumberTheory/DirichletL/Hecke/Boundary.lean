@@ -9,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.HeckeBoundary
 
-open ActualEisensteinCubic Complex
-open SevenEighths.IdealEuler SevenEighths.IdealCharacter
+open ActualEisensteinCubic Complex SevenEighths.IdealEuler SevenEighths.IdealCharacter
 open SmoothMobiusCorrection (PrimeIdeal)
 open Asymptotics Filter
 open scoped BigOperators Classical Topology

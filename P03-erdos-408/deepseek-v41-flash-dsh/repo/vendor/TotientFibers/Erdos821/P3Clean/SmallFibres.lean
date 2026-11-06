@@ -8,7 +8,7 @@ public import Mathlib.Data.Fintype.CardEmbedding
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean

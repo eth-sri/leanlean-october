@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FullCorrelation
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbeGramCommon
 open CenteredMomentCorrelation
 variable {A : Type*} [CommRing A] [IsDomain A]

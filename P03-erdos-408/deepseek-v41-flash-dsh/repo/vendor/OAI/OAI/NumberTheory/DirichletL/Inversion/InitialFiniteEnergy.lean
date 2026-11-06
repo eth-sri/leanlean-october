@@ -12,12 +12,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialFiniteEnergy
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem finite_physical_bound
@@ -138,7 +133,7 @@ theorem finite_physical_bound
   have hpow:Z^(-1:ℝ)≤Z^(m+15*η+π+eps+loss):=
     Real.rpow_le_rpow_of_exponent_le hZp.le (by linarith)
   apply (add_le_add hret ht).trans
-  change Cr*Z^(m+15*η+π+eps+loss)*_+(Ct*1*B₀*B₀*ss.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ*Z^(-1:ℝ))≤_
+
   have hh:tailC*Z^(-1:ℝ)≤tailC*Z^(m+15*η+π+eps+loss)*
       ((1+‖θ₁‖)^InverseClippingProfiles.momentOrder (4*J)*
         (1+‖θ₂‖)^InverseClippingProfiles.momentOrder (4*J)):=by

@@ -39,7 +39,7 @@ noncomputable section
 namespace Erdos408.OneSided
 
 open Finset Real
-open scoped Matrix
+
 
 variable {K : ℕ}
 

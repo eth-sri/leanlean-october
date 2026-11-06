@@ -10,7 +10,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 
-open scoped BigOperators
+
 
 noncomputable section
 

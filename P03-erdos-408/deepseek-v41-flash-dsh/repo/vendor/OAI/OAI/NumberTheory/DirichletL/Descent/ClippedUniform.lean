@@ -41,7 +41,7 @@ theorem canonical_clipped_uniform
     W lo hi hlo hs hW wFresh c θ X Z F E J (zero_lt_one.trans_le hc1) hX hE
     (hagree c hc1 hcb) he
   apply hh.trans
-  change E*(1+‖θ‖)^(2*J)*M≤(M+1)*E*(1+‖θ‖)^(2*J)
+
   have hn:0≤E*(1+‖θ‖)^(2*J):=by positivity
   nlinarith
 

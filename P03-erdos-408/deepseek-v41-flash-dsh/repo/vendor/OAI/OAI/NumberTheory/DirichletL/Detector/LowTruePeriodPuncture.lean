@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.PunctureAbsorption
 namespace OAI
 
 noncomputable section
-open scoped Classical
+
 namespace SevenEighths.ProbePhysical
 open CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss RayFourExpansion SecondPassArithmetic
 local notation "O" => ActualEisensteinCubic.O

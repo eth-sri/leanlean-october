@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.PunctureAbsorption
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

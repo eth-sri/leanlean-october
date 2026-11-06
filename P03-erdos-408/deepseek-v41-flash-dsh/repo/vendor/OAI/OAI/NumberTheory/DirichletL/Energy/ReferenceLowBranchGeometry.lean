@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionClipped
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowBranchGeometry
-open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceDeletionBudget CenteredMomentEnergyReferenceDeletionCapacity
+open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDeletionBudget CenteredMomentEnergyReferenceDeletionCapacity
 local notation "O"=>HeckeFamily.O
 
 lemma length_eq_max_log (Z X:ℝ)(hZ:1<Z)(hX:0<X):

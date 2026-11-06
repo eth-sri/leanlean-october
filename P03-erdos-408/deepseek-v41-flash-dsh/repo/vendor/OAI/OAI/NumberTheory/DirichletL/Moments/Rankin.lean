@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 open Filter
 namespace SevenEighths.CenteredMomentRankin
 open IdealMobiusDivisorSum

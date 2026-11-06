@@ -5,11 +5,11 @@ public import Erdos821.S34.KernelTransport
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+
 
 namespace Erdos821.S34Core
 noncomputable section
-open Blueprint.Analytic
+
 
 theorem sum_quad_reorder {α β γ δ M : Type*} [Fintype α] [Fintype β]
     [Fintype γ] [Fintype δ] [AddCommMonoid M] (F : α → β → γ → δ → M) :

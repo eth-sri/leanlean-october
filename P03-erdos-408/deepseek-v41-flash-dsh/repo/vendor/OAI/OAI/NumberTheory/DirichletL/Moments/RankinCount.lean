@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Rankin
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 namespace SevenEighths.CenteredMomentRankinCount
 open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentRankin
 local notation "O" => ActualEisensteinCubic.O
@@ -29,7 +29,7 @@ theorem powerCode_reconstruct (R : Finset (Ideal O)) (I : Ideal O) (hI : I ≠ 0
     _=∏ P ∈ (normalizedFactors I).toFinset,P^(normalizedFactors I).count P := Finset.prod_multiset_count _
     _=∏ P : R,(P:Ideal O)^(normalizedFactors I).count (P:Ideal O) := by
       rw [Finset.prod_coe_sort R (fun P : Ideal O => P^(normalizedFactors I).count P)]
-      change _=∏ P ∈ R,P^(normalizedFactors I).count P
+
       rw [← hR]
       rfl
 

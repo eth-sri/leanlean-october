@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceSmoothedAllocation
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy
-open CenteredMomentSourceAllocationEnergy CenteredMomentSourceLiveColumn
-open CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentSourceAllocationEnergy CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
 local notation "O" => ActualEisensteinCubic.O
 
 theorem smoothed_allocation_energy {α γ : Type*} [Fintype γ]
@@ -50,7 +47,6 @@ theorem smoothed_allocation_energy {α γ : Type*} [Fintype γ]
         (finite_weighted_le_gaussEnergy S a ha (d B) W K hK hW rows) (sq_nonneg _)
 
 variable {ι : Type*} [Fintype ι]
-local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 end SevenEighths.CenteredMomentSourceSmoothedAllocation
 

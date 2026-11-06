@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationCount
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentAmplificationGlobal CenteredMomentAmplificationCount
 local notation "O" => ActualEisensteinCubic.O
 
 def eligiblePairs (rows P : Finset O) (allow : O → O → Prop) : Finset (O × O) :=

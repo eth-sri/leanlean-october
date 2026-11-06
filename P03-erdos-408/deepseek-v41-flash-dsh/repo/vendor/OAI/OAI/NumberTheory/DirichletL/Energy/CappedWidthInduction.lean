@@ -14,11 +14,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedWidthInduction
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity
-open CenteredMomentEnergyWidthFloor CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyWidthFloor CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource
 local notation "O"=>HeckeFamily.O
 
 open CenteredMomentEnergyWidthInduction (remaining lowerAt lengthAt lowerAt_pos child_support child_length)
@@ -47,7 +43,6 @@ lemma actual_child_band (M B ε parent child:ℝ)(hε:0<ε)(k:ℕ)
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 def CertifiedBand (W:ℝ→ℂ)(bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)(k:ℕ):Prop:=
@@ -121,7 +116,7 @@ theorem certified_terminal (W:ℝ→ℂ)(bslot a b radial Bmask L lo hi Mcap κ 
   have hp:=hZ.2.2
   simp only [lowerAt,lengthAt,remaining,Nat.sub_self,CenteredMomentEnergyProfiles.lower,range] at hz hp
   have hterminal:=bandWidth_terminal Mcap Bs ε hMcap hBs hε
-  change bandWidth Mcap (finalSourceCap Mcap Bmask L ε) ε (count Mcap ε)=Mcap at hterminal
+
   rw [hterminal] at hz hp
   refine ⟨hZ.1,?_,?_⟩
   · exact zeroAt_transport (internalQ Q η₀) _ _ _ _ _ _ _ Z _ _ _ _ _ _ _

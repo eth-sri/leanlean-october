@@ -8,7 +8,7 @@ public import Mathlib.Analysis.MeanInequalities
 
 set_option autoImplicit false
 
-open scoped BigOperators
+
 
 namespace Erdos821.S34.Proofs
 
@@ -153,11 +153,11 @@ theorem beta_power_bound (m ell : ℕ) (hm : 1 ≤ m) (he : 1 ≤ ell)
     (Real.geom_mean_le_arith_mean2_weighted hwmpos.le hwepos.le hp₁ hp₂ hw).trans_eq harith
   have hexpm : wm * ((m + ell : ℕ) : ℝ) = m := by
     simp only [Nat.cast_add]
-    change ((m : ℝ) / S) * S = m
+
     exact div_mul_cancel₀ _ (ne_of_gt hSpos)
   have hexpe : we * ((m + ell : ℕ) : ℝ) = ell := by
     simp only [Nat.cast_add]
-    change ((ell : ℝ) / S) * S = ell
+
     exact div_mul_cancel₀ _ (ne_of_gt hSpos)
   have hpow := pow_le_pow_left₀
     (mul_nonneg (Real.rpow_nonneg hp₁ wm) (Real.rpow_nonneg hp₂ we)) ham (m + ell)

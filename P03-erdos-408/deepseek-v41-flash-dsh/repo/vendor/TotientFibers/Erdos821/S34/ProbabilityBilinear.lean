@@ -6,7 +6,7 @@ public import Erdos821.S34.FrameBridge
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -78,7 +78,7 @@ theorem weighted_bilinear_reduction {α β : Type} [Fintype α] [Fintype β]
         rw [← Finset.mul_sum]
         have ht := sum_product_fibers R (fun y => (v y : ℂ) * g y)
           (fun t => e (θ * n * t))
-        change a n * (∑ t ∈ Finset.univ.image R, b t * e (θ * n * t)) = _
+
         rw [show (∑ t ∈ Finset.univ.image R, b t * e (θ * n * t)) =
           ∑ y, (v y : ℂ) * g y * e (θ * n * R y) from ht]
         simp only [Finset.mul_sum, mul_assoc]

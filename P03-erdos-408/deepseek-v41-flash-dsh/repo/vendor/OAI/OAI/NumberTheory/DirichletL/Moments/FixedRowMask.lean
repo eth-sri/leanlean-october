@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFixedRowMask
-open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge
+open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 theorem row_mask_mul (η : Character) (m r A z n : O)

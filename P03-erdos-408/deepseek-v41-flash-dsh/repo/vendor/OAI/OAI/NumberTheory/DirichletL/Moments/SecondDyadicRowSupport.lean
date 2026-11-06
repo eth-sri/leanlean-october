@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondDyadicRowSupport
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSectorLocalization CenteredMomentCanonicalFirst
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSectorLocalization CenteredMomentCanonicalFirst
 local notation "O"=>HeckeFamily.O
 
  def dyadicRows (rows:Finset O) (n:Fin 4→ℤ):Finset O:=

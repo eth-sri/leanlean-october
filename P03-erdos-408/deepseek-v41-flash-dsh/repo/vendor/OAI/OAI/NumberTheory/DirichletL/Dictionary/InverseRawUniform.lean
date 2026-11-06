@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawUniform
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform
-open DetectorDictionaryInverseRawFourier
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform DetectorDictionaryInverseRawFourier
 
 private theorem rawMoment_mono (data : RowData) (W : ℝ→ℂ) (c κ A B : ℝ)
     (hAB : A≤B) (h : RawMoment data W c κ A) : RawMoment data W c κ B := by
@@ -47,7 +45,7 @@ theorem raw_family_uniform (J : ℕ) :
     have hb:=hmass scaled reverse n hn U hU tstar r σ hσ t 1
     simpa only [familyDensity_norm,logSource_eq_logSchwartz,g,W,hs] using hb
   apply rawMoment_mono data W c κ _ _ _ hh
-  change A*(∫v:ℝ,(1+‖v‖)^J*‖(𝓕 g) v‖)^2≤_
+
   calc
     _≤A*(B*(1+‖t‖)^K)^2:=mul_le_mul_of_nonneg_left
       (pow_le_pow_left₀ (integral_nonneg (fun _=>by positivity)) hm 2) hA

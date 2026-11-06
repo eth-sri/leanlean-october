@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.CompleteCommon
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 
 namespace SevenEighths.CenteredMomentCommonSectors
 open CenteredMomentCompleteCommon CenteredMomentSupport IdealMobiusDivisorSum UniqueFactorizationMonoid

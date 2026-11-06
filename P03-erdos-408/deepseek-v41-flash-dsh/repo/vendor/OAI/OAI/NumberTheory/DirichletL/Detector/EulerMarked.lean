@@ -84,7 +84,7 @@ theorem marked_hasProd (T : Finset α) (m f : α→β→ℂ) (h0 : ∀a,f a 0=1)
       split_ifs
       · exact markedArray_norm_le T m f hm v
       · simpa only [norm_zero] using norm_nonneg (v.prod f)
-  change Tendsto (fun S : Finset α=>∏a∈S,∑'b,markedLocal T m f a b) atTop _
+
   apply ht.congr'
   filter_upwards [eventually_ge_atTop T] with S hTS
   rw [←marked_finiteEuler T S hTS m f h0 hf hm]

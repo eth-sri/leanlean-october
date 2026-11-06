@@ -11,7 +11,7 @@ from the proved mean-square input on unit-scale intervals. -/
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
+
 open MeasureTheory
 
 namespace Erdos821.P5Marked

@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+
 open ActualEisensteinCubic CanonicalQuadraticSieve
 namespace SevenEighths.InverseInitialCommonRatios
 open InverseInitialOverlap InverseInitialKernelBridge

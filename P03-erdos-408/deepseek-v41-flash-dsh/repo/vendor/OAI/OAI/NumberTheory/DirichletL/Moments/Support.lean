@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SupportedCorrelation
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentSupport
 open UniqueFactorizationMonoid IdealMobiusDivisorSum CanonicalQuadraticSieve

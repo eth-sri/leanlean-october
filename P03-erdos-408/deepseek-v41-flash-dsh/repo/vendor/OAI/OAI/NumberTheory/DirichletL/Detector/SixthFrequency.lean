@@ -7,11 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.SourceCoefficient
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
-open CompletedGauss ConcreteTraceCRT GaussianShiftedPartition CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation ConcretePrimeRowBridge
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein CompletedGauss ConcreteTraceCRT GaussianShiftedPartition CenteredMomentCommonSupport CenteredMomentSupportedCorrelation ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 lemma finite_fourier_invariant_unit {R : Type*} [CommRing R] [Fintype R]

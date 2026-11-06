@@ -14,21 +14,14 @@ open Complex Filter Topology
 
 open Complex Filter Topology MeasureTheory
 
-open scoped FourierTransform
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open scoped FourierTransform
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
+
 
 lemma primeCharacterError_log_bound (A B : ℝ) (hA : 0<A) (hB : 0<B) :
     ∃ M : ℝ, 0<M ∧ ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q), χ.IsPrimitive →
@@ -96,7 +89,7 @@ lemma primeCharacterError_log_bound (A B : ℝ) (hA : 0<A) (hB : 0<B) :
   rw [heq]
   have hu := prefix_unsmoothing hx0.le hh0 (show 0≤2*L by positivity)
     (primeCoefficients χ) (characterMain χ) hcoeff
-  change _≤(E (x+h)+E x)/h+(h+1)*(2*L)+‖characterMain χ‖*h/2 at hu
+
   have hδ : ‖characterMain χ‖*h/2≤h := by
     have := mul_le_mul_of_nonneg_right (characterMain_norm_le χ) hh0.le
     linarith

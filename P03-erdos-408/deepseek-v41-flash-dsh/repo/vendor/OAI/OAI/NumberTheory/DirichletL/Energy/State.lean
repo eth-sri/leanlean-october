@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPair
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 namespace SevenEighths.CenteredMomentEnergyState
 open HeckeFamily CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
-open CenteredMomentFiniteProfileExceptional
-open CenteredMomentInductionEnergy QuadraticInitialBound
+open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 structure NaturalState (Z Bmask bΦ:ℝ) where

@@ -7,17 +7,12 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstSecondInputGates
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSecondInputGates
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCommonAllocationSum CenteredMomentOriginalCommonHarmonic
-open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn
-open CenteredMomentSectorLocalization
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentCommonAllocationSum CenteredMomentOriginalCommonHarmonic CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
-local instance {α:Type*}:DecidableEq α:=Classical.decEq _
 
 def commonExponent (A D P C q ε ξ:ℝ):ℝ:=
   max (A+ε) (max (2*A+D+ε+ξ/2) (max (P+C) q))

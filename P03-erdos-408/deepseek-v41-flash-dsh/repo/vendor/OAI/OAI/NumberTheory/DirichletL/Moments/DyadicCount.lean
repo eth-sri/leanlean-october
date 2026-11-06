@@ -9,7 +9,7 @@ public import Mathlib.Data.Int.Interval
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 open Set
 namespace SevenEighths.CenteredMomentDyadicCount
 open CenteredMomentSectorLocalization

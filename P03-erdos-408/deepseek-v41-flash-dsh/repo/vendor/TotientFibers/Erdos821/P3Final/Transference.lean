@@ -20,8 +20,7 @@ set_option autoImplicit false
 
 namespace Erdos821.P3Final
 
-open Erdos821.S2Core
-open Erdos821.Blueprint.Graph
+open Erdos821.S2Core Erdos821.Blueprint.Graph
 
 /-- Every completed P3 input, leaving only `MemoryRareTask`. -/
 theorem remaining_of_rare

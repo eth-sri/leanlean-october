@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawFourier
-open HeckeFamily HeckeDyadic InverseMoment InverseInitialClippedColumns
-open InverseInitialOverlapFourier FourierBridge HeckeInverseAmplification
+open HeckeFamily HeckeDyadic InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier FourierBridge HeckeInverseAmplification
 
 theorem polynomial_clipped_energy {ι : Type*} (rows : Finset ι)
     (χ : ι→Character) (inv : Bool) (A : ι→ℂ)

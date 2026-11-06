@@ -63,12 +63,6 @@ variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDim
 /-- Borel σ-algebra on the model space `E`. -/
 local instance instMeasurableSpaceRellich : MeasurableSpace E := borel E
 local instance instBorelSpaceRellich : BorelSpace E := ⟨rfl⟩
-local instance instOpensMeasurableSpaceRellich : OpensMeasurableSpace E := by
-  infer_instance
-local instance instMeasurableAddRellich : MeasurableAdd E := by
-  infer_instance
-local instance instMeasurableNegRellich : MeasurableNeg E := by
-  infer_instance
 local instance instFactOneLeTwoSobolevEuclideanRellich : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
 
 /-! ### Supported `H¹` subspace -/

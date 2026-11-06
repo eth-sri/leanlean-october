@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Inversion.WholePriorityRetainedSource
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ] {Jo:ℕ}
 variable (p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal]

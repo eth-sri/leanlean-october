@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.PhysicalDyad
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve HeckeInverseAmplification
 local notation "O" => ActualEisensteinCubic.O

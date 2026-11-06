@@ -36,7 +36,6 @@ theorem annular_weighted_card_bound (C : Set (Ideal O)) (S : Finset (Ideal O))
 
 section FixedRay
 variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M ≤ H)
 
 include hH
@@ -56,8 +55,8 @@ theorem eventually_primePool_card (S : Finset (Ideal O)) (W : ℝ → ℝ)
   have hx0 : 0 < x := zero_lt_one.trans hx
   have hu := annular_weighted_card_bound (RayQuotient.identityClass M H) S W a b B x
     ha hab hB.le hsupp hbound hx0
-  change weightedPrimeSumDeleted _ S W x ≤ (primePool M H S a b x).card * D * x^(-5/6 : ℝ) at hu
-  change c*x^(1/6 : ℝ)/Real.log x ≤ weightedPrimeSumDeleted _ S W x at hlow
+
+
   have hpower : x*x^(-5/6 : ℝ) = x^(1/6 : ℝ) := by
     calc
       _ = x^(1 : ℝ)*x^(-5/6 : ℝ) := by rw [Real.rpow_one]

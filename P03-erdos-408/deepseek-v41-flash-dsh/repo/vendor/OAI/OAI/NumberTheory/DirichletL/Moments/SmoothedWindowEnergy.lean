@@ -11,8 +11,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentSmoothedWindowEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow
-open CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem gaussEnergy_hasSum_re {α : Type*} (S : Finset α) (a : α → O)

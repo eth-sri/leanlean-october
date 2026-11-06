@@ -12,16 +12,8 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondNonexceptionalAggregate
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSectorLocalization CenteredMomentActiveSource
-open CenteredMomentSecondBlockHarmonicMass
-open CenteredMomentFirstSectors CenteredMomentSourceRow RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock CenteredMomentSecondBlockAggregate CenteredMomentSecondRetainedAggregate CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit CenteredMomentSectorLocalization CenteredMomentActiveSource CenteredMomentSecondBlockHarmonicMass CenteredMomentFirstSectors CenteredMomentSourceRow RayFourExpansion
 local notation "O"=>HeckeFamily.O
-local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 lemma live_harmonic_sum_le (η:Character)(S:Finset (Ideal O))(β:Ideal O→ℂ)(K R H:ℝ):
     (∑p∈liveLabels η S β,∑U:Finset (CommonIndex p.val.1 p.val.2),

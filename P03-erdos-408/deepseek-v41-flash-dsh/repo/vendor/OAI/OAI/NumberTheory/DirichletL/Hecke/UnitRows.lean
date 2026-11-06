@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.HeckeUnitRows
-open HeckeFamily CanonicalUnitEuler CanonicalRowCompletion
-open ActualEisensteinCubic CubicRamified ConcreteTraceCRT
-open CanonicalQuadraticSieve
+open HeckeFamily CanonicalUnitEuler CanonicalRowCompletion ActualEisensteinCubic CubicRamified ConcreteTraceCRT CanonicalQuadraticSieve
 local notation "O" => HeckeFamily.O
 local notation "ω" => HeckeFamily.omega
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda

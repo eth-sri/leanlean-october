@@ -6,7 +6,7 @@ public import Erdos821.P4Probe.ConditionalBounds
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
+
 attribute [local instance] Classical.propDecidable
 namespace Erdos821.P4Bridge
 open P4Probe

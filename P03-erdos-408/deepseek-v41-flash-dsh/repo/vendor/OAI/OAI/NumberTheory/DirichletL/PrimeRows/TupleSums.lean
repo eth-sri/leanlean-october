@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SlotSums
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 theorem continued_selected_tuple_bound (K : ℕ) (eps a b r B : ℝ) (heps : 0<eps)
@@ -47,7 +46,7 @@ theorem continued_selected_tuple_bound (K : ℕ) (eps a b r B : ℝ) (heps : 0<e
     W i ((P.val.val.absNorm:ℝ)/Y i)*(P.val.val.absNorm:ℂ)^(z-1)*
       continuedCompensatedLocal η u P.val (hT i P.val P.property).1 x w z
         (star (idealCoeff η P.val.val)*(P.val.val.absNorm:ℂ)^x) ((P.val.val.absNorm:ℂ)^(-w))
-  change (∑P:(∀i,T i),‖∏i,F i (P i)‖)≤C^K*N^eps*∏i,(Y i)^r
+
   simp_rw [norm_prod]
   rw [←Fintype.prod_sum (fun i P=>‖F i P‖)]
   calc

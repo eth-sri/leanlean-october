@@ -14,14 +14,13 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators
+
 open Filter
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Rare
 
-open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
+open Erdos821.Blueprint.Graph Erdos821.S2Core
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 

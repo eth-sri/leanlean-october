@@ -9,11 +9,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorZeros
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+
 open Set Metric
 namespace SevenEighths.HeckeDyadicControl
-open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
-open HeckeDeletionBounds HeckeReciprocalGrowth
+open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion HeckeDeletionBounds HeckeReciprocalGrowth
 
 theorem original_disk_control (e ε : ℝ)
     (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :

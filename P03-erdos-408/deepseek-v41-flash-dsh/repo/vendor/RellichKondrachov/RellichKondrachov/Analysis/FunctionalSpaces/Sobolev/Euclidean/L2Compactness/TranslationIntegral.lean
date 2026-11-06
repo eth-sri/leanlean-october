@@ -33,7 +33,7 @@ namespace Sobolev
 namespace Euclidean
 namespace L2Compactness
 
-open scoped ENNReal MeasureTheory Topology
+
 open MeasureTheory Set
 
 noncomputable section
@@ -47,10 +47,6 @@ local instance instMeasurableSpaceEL2CompactnessTranslationIntegral : Measurable
 local instance instBorelSpaceEL2CompactnessTranslationIntegral : BorelSpace E := ⟨rfl⟩
 local instance instOpensMeasurableSpaceEL2CompactnessTranslationIntegral :
     OpensMeasurableSpace E := by infer_instance
-local instance instMeasurableAddEL2CompactnessTranslationIntegral : MeasurableAdd E := by
-  infer_instance
-local instance instMeasurableNegEL2CompactnessTranslationIntegral : MeasurableNeg E := by
-  infer_instance
 
 variable {ψ : E → ℝ}
 

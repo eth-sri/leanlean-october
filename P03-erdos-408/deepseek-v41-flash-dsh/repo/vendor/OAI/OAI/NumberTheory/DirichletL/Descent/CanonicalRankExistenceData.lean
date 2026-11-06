@@ -12,8 +12,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseInitialClippedColumns InverseReflectedPhase
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion InverseInitialClippedColumns InverseReflectedPhase
 local notation "O"=>ActualEisensteinCubic.O
 
 def CompletePoolRankMoments (q D:ℕ) {σ:Type}[DecidableEq σ]

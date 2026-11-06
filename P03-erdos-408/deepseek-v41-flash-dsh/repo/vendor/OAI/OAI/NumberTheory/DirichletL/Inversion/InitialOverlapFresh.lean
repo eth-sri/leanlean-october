@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+
 namespace SevenEighths.InverseInitialOverlapFresh
 variable {σ : Type*} [DecidableEq σ]
 

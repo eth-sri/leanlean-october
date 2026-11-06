@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 open scoped Classical ContDiff Topology SchwartzMap FourierTransform
-open Filter Set MeasureTheory
+
 namespace SevenEighths.ProbePhysical
 
 lemma gaussianFlow_real_smooth (R : ℝ) : ContDiff ℝ ∞ (fun s : ℝ=>gaussianFlow R (s:ℂ)) := by

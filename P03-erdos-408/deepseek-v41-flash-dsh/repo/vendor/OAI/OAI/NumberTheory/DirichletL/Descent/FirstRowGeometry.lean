@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.ChildCutoff
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
@@ -63,7 +63,7 @@ theorem first_ratio_actual_row {ι : Type*} [DecidableEq ι]
     rw [primeProductNorm_union p (N∪Q) active (Finset.disjoint_union_left.mpr
       ⟨hNS.mono_right hactive,hQS.mono_right hactive⟩),
       primeProductNorm_union p _ _ hNQ]
-  change (K/(primeProductNorm p divisor*primeProductNorm p ((N∪Q)∪active)))*‖eisEmbedding h‖^2≤P at hratio
+
   rw [hnorm] at hratio
   have hpos (v : ι→ℕ) : 0<‖eisEmbedding (primeProduct p S v)‖^2 :=
     SecondPassIntegration.elementNorm_pos _ (primeProduct_ne_zero p hp _ _)

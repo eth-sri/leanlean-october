@@ -12,9 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainUnmarkedState
-open HeckeFamily HeckeDetectorRawFiber CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainStateDictionary
-open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainFiberSource
+open HeckeFamily HeckeDetectorRawFiber CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainStateDictionary CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainFiberSource
 local notation "O"=>HeckeFamily.O
 
 def allowance (δ m:ℝ):ℝ:=δ+max 0 (2*m-1)

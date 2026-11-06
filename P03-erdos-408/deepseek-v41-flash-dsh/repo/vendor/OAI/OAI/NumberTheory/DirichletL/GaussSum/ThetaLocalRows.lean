@@ -9,22 +9,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+open Filter Real Asymptotics ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 
 namespace ActualEisensteinCubic
 
@@ -77,7 +68,6 @@ theorem actual_fixed_kernel_eq_dualFixedTerm
   rw [hreal, hphase]
   rfl
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
 open scoped Topology
 open Filter
 
@@ -400,7 +390,6 @@ theorem theta_counter_lambda_eq : ActualEisensteinCubic.lambda =
 
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
 
-open MulChar AddChar
 
 namespace ShortDraftLocal
 

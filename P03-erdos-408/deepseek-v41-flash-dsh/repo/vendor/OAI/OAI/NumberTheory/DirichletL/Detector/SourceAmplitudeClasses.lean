@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorAmplitudeFirst
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeDetectorBatch ProbePhysical

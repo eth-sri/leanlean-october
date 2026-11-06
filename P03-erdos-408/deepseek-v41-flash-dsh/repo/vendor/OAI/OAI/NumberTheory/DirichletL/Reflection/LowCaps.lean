@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.ActualSizeCaps
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

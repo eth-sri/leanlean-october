@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentReflectionDeletion
-open HeckeFamily CenteredMomentComparisonReflection UniqueFactorizationMonoid
-open IdealMobiusDivisorSum EisensteinSchwartzPoisson ConcreteTraceCRT
+open HeckeFamily CenteredMomentComparisonReflection UniqueFactorizationMonoid IdealMobiusDivisorSum EisensteinSchwartzPoisson ConcreteTraceCRT
 local notation "O" => HeckeFamily.O
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 

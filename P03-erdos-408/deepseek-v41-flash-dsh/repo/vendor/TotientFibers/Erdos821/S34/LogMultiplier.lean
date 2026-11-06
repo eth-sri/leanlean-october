@@ -5,11 +5,11 @@ public import Erdos821.S34.CellCosts
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+
 
 namespace Erdos821.S34Core
 noncomputable section
-open Blueprint.Analytic
+
 
 def unitPhase (t : ℝ) : ℂ := Complex.exp (Complex.I * t)
 

@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonHarmonicMass
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+
 
 namespace SevenEighths.CenteredMomentCommonRadicalHarmonicMass
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
-open CenteredMomentRankinRadical CenteredMomentRankinLabels
-open CenteredMomentWholeDivisorShell CenteredMomentDyadicCount CenteredMomentSectorLocalization
+open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentRankinRadical CenteredMomentRankinLabels CenteredMomentWholeDivisorShell CenteredMomentDyadicCount CenteredMomentSectorLocalization
 open CenteredMomentCommonHarmonicMass (Label Valid commonRadical_norm_le norm_scale_bounds log_square_subpower)
 local notation "O" => ActualEisensteinCubic.O
 
