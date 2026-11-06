@@ -9,7 +9,7 @@ Companion paper, Lemma `lem:ratios`, equation (11). The cyclic permutation is
 `finRotate`: it sends the last index to zero and each other index to its successor.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex
 

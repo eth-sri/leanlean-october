@@ -10,7 +10,7 @@ presence of a handle by two conserved flows with nonzero cyclic-order intersecti
 The comparison of this criterion with the torus winding determinant is separate.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Torus
 

@@ -10,7 +10,7 @@ The positivity of the real part of `S` makes all scattering factors nonzero for 
 The Bethe equations and distinctness of the roots are not needed for these identities.
 -/
 
-@[expose] public section
+public section
 
 open Complex
 

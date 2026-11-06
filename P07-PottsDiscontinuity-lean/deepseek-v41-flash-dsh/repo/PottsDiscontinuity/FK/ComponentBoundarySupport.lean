@@ -5,7 +5,7 @@ module
 
 public import PottsDiscontinuity.FK.Wiring
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

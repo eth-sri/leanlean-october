@@ -11,7 +11,7 @@ infinity. No discrete Bethe equation and no rate of density convergence are
 assumed.
 -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory
 open scoped Topology BigOperators

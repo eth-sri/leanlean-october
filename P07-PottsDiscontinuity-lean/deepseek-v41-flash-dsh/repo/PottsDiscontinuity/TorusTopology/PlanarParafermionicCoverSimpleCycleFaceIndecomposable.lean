@@ -8,7 +8,7 @@ public import PottsDiscontinuity.TorusTopology.PlanarFiniteFaceSubfamilyBoundary
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceSetBoundary
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSimpleCycleFilling
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

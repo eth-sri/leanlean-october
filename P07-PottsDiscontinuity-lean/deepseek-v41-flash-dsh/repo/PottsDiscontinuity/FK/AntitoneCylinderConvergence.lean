@@ -4,7 +4,7 @@ module
 
 public import PottsDiscontinuity.FK.CylinderConvergence
 
-@[expose] public section
+public section
 
 open Set MeasureTheory Filter Topology
 

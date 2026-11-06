@@ -13,7 +13,7 @@ The two weighted `O(1/N)` assumptions use one eventual nonnegative constant;
 separate constants can always be replaced by their maximum.
 -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory
 open scoped Topology BigOperators

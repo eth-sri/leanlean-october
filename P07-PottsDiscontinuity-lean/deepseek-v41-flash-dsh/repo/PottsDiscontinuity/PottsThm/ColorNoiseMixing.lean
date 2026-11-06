@@ -19,16 +19,6 @@ noncomputable section
 def DependsOnIndices {I C : Type*} (F : Finset I) (A : Set (I → C)) : Prop :=
   ∀ u v, (∀ i ∈ F, u i = v i) → (u ∈ A ↔ v ∈ A)
 
-theorem DependsOnIndices.mono {I C : Type*} {F G : Finset I} {A : Set (I → C)}
-    (h : DependsOnIndices F A) (hFG : F ⊆ G) : DependsOnIndices G A := by
-  intro u v huv
-  exact h u v (fun i hi => huv i (hFG hi))
-
-theorem DependsOnIndices.compl {I C : Type*} {F : Finset I} {A : Set (I → C)}
-    (h : DependsOnIndices F A) : DependsOnIndices F Aᶜ := by
-  intro u v huv
-  exact not_congr (h u v huv)
-
 theorem DependsOnIndices.union {I C : Type*} [DecidableEq I] {F G : Finset I}
     {A B : Set (I → C)} (hA : DependsOnIndices F A) (hB : DependsOnIndices G B) :
     DependsOnIndices (F ∪ G) (A ∪ B) := by

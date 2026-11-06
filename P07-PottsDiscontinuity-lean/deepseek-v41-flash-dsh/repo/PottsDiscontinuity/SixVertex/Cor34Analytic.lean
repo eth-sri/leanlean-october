@@ -11,7 +11,7 @@ top root, the positive-vector pairing criterion, and the real-analytic identity 
 interval.
 -/
 
-@[expose] public section
+public section
 
 open Filter Matrix Set
 open scoped Topology

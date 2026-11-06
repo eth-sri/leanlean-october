@@ -51,8 +51,6 @@ theorem noConsecutiveUp_of_interlaced_disjoint {x y : Finset (Fin N)}
   rw [hp] at h2
   simp only [hix, hnix, hyi, hyni, decide_true, decide_false, toInt,
     Bool.false_eq_true, ↓reduceIte] at h1 h2
-  have h0 := toInt_bounds (h (prv i))
-  have h3 := toInt_bounds (h (nxt i))
   omega
 
 /-- Every nonzero matrix entry joins two states with no consecutive up arrows. -/

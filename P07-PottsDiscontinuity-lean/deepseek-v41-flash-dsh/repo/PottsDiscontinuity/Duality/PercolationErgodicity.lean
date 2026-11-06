@@ -7,7 +7,7 @@ public import PottsDiscontinuity.RCInfinite.PercolationZeroOne
 (`RCInfinite/PercolationZeroOne.lean`), on the exact cluster events of the planar-duality
 library (`Duality/`). -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 open FK MeasureTheory

@@ -11,7 +11,7 @@ printed `eq:ArbitrarySetCalc`, the formula below includes adjacent collisions:
 the corresponding local factor is zero, since every gap has positive length.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Classical
 

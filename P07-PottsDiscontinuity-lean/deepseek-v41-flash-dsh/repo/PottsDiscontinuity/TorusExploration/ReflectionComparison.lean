@@ -10,7 +10,7 @@ public import PottsDiscontinuity.Duality.ConnectionSymmetry
 /-! A reflection bound uniform in the horizontal coordinate of an unrolled
 crossing. Its diagonal rate has exactly the normalization required by (3.16). -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusExploration
 open FK MeasureTheory

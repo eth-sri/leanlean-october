@@ -9,7 +9,7 @@ public import PottsDiscontinuity.TorusExploration.Eq316
 /-! Direct consumption check against the unchanged equation (3.16) contract
 `RCMProof.contract_eq316` of the Theorem 1.2 assembly. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusExploration
 

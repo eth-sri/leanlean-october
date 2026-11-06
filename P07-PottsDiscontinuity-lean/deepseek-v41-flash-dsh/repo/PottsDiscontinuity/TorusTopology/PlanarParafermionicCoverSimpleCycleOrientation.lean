@@ -6,7 +6,7 @@ public import PottsDiscontinuity.TorusTopology.PlanarFiniteCycleSupportedFlow
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceBoundaryDivergence
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSimpleCycleFilling
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

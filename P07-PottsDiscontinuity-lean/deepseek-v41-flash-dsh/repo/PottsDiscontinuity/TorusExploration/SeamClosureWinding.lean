@@ -5,7 +5,7 @@ public import PottsDiscontinuity.TorusRC.CylinderEvents
 
 /-! The closure of a bottom-to-top cylinder path winds once vertically. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusExploration
 open Torus TorusTopology Finset

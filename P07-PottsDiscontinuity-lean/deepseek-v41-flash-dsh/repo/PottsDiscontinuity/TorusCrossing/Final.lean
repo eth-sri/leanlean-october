@@ -14,7 +14,7 @@ with `3n ≤ min(N, M)`, the torus random-cluster measure at `p_c(q)` gives prob
 `c` to a vertical open crossing of the rectangle `[0,3n] × [0,n]`.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusCrossing
 

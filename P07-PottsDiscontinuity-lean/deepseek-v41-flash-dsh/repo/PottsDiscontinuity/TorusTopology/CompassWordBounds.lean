@@ -5,7 +5,7 @@ public import PottsDiscontinuity.TorusTopology.CompassWordTurning
 
 /-! Uniform turn bounds for a return consisting of three straight segments. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology
 open Planar.Medial

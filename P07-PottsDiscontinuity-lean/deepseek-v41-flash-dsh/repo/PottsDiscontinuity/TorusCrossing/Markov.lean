@@ -12,7 +12,7 @@ We express this as an identity of probabilities of events, and combine it with b
 comparison.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusCrossing
 

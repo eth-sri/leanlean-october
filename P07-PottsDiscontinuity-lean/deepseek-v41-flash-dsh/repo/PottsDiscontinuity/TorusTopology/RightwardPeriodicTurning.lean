@@ -8,7 +8,7 @@ public import PottsDiscontinuity.TorusTopology.CompassWordBounds
 turn over a period. Thirty-two periods close by a return whose turn changes the
 cyclic sum by at most eighteen; the planar Umlaufsatz then forces zero. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology
 open SimpleGraph Finset Planar.Medial

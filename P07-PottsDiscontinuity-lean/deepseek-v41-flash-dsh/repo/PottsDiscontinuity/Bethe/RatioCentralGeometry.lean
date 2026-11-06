@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticGeometry
 
 /-! # Central symmetry and separation of the positive roots -/
 
-@[expose] public section
+public section
 
 open Set
 

@@ -7,7 +7,7 @@ public import PottsDiscontinuity.FK.ComponentBoundarySupport
 public import PottsDiscontinuity.FK.IsolatedBoundaryComponents
 public import PottsDiscontinuity.FK.SubgraphComparison
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

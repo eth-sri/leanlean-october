@@ -96,8 +96,6 @@ theorem sum_gap_geometric (c p : ℝ) {a b : ℤ} (hab : a < b) (hp : z p ≠ 1)
     rw [← hb]
     exact hphase
   rw [hb', pow_succ]
-  have hd : z p - 1 ≠ 0 := sub_ne_zero.mpr hp
-  have hd' : 1 - z p ≠ 0 := sub_ne_zero.mpr hp.symm
   unfold L M
   field_simp
   ring

@@ -5,7 +5,7 @@ public import PottsDiscontinuity.TorusExploration.PlanarLift
 
 /-! Horizontal seam potentials give genuine nearest-neighbour lifts. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusExploration
 open Torus CorrLength

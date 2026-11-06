@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticMeanTaylor
 
 /-! # The discrete offset equation with a uniform Taylor error -/
 
-@[expose] public section
+public section
 
 open Set
 open scoped BigOperators
@@ -33,7 +33,6 @@ theorem offset_bethe_taylor {Δ : ℝ} (hΔ : Δ < -1) :
   obtain ⟨K, hK, ht⟩ := theta_sum_mean_remainder hΔ
   refine ⟨K, hK, ?_⟩
   intro N r h4 hr hN p q hp hq hpBE hqBE B hB hnear j
-  have hNp : (0 : ℝ) < N := Nat.cast_pos.mpr hN
   have hmem (k : Fin (N / 2)) : p k ∈ Icc (-Real.pi) Real.pi := ⟨(hp.1 k).1.le, (hp.1 k).2.le⟩
   have hqmem (k : Fin (N / 2 - r)) : q k ∈ Icc (-Real.pi) Real.pi := ⟨(hq.1 k).1.le, (hq.1 k).2.le⟩
   have heps (k : Fin (N / 2 - r)) :

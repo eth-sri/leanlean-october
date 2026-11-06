@@ -5,7 +5,7 @@ public import PottsDiscontinuity.TorusTopology.LatticeQuarterRotation
 
 /-! Every actual simple periodic lattice curve has zero turn over a period. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology
 open Finset Planar.Medial

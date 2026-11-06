@@ -53,7 +53,6 @@ theorem normSq_M_kMap_eq_ratio {lam c α : ℝ} (hlam : 0 < lam)
   let w : ℂ := Complex.exp (I * (α : ℂ))
   have hEreal : 1 < Real.exp lam := by simpa using hlam
   have hwNorm : ‖w‖ = 1 := by simp [w]
-  have hwNe : w ≠ 0 := Complex.exp_ne_zero _
   have hEw : E - w ≠ 0 := by
     apply Bethe.ofReal_sub_ne_zero hEreal
     simpa [E] using hwNorm
@@ -94,15 +93,9 @@ theorem normSq_M_kMap_eq_ratio {lam c α : ℝ} (hlam : 0 < lam)
     field_simp [hEw, h1w, hEc]
     ring
   rw [hM]
-  have hwSq : Complex.normSq w = 1 := by
-    rw [Complex.normSq_eq_norm_sq, hwNorm]
-    norm_num
   have hESq : Complex.normSq E = Real.exp lam ^ 2 := by
     change Complex.normSq (Real.exp lam : ℂ) = _
     rw [Complex.normSq_ofReal]
-    ring
-  have hE2Sq : Complex.normSq (E ^ 2) = Real.exp lam ^ 4 := by
-    rw [show E ^ 2 = E * E by rw [pow_two], Complex.normSq_mul, hESq]
     ring
   have hwform : w = (Real.cos α : ℂ) + (Real.sin α : ℂ) * I := by
     simpa [w] using Bethe.exp_I_mul_ofReal α
@@ -162,20 +155,10 @@ theorem fourierP_eq_log_norm {lam c α : ℝ} (hlam : 0 < lam)
     subst α
     rw [Real.cos_zero] at hcos
     norm_num at hcos
-  have htop : 0 < Real.cosh (2 * lam) - Real.cos α := by
-    have h := Real.one_le_cosh (2 * lam)
-    linarith
-  have hbottom : 0 < 1 - Real.cos α := by linarith
-  have hratio : 0 <
-      (Real.cosh (2 * lam) - Real.cos α) / (1 - Real.cos α) :=
-    div_pos htop hbottom
   have hnormSq : ‖z‖ ^ 2 =
       (Real.cosh (2 * lam) - Real.cos α) / (1 - Real.cos α) := by
     rw [← Complex.normSq_eq_norm_sq]
     exact normSq_M_kMap_eq_ratio hlam hc hcos
-  have hnorm : 0 < ‖z‖ := by
-    have hnonneg := norm_nonneg z
-    nlinarith
   unfold fourierP
   rw [ite_eq_right hα]
   change (1 / 2 : ℝ) * Real.log
@@ -223,7 +206,6 @@ theorem fourierP_hasDerivAt {lam α : ℝ} (hlam : 0 < lam)
   have hαcc : α ∈ Icc (-π) π := Ioo_subset_Icc_self hα
   have hcosLower := fourier_one_sub_cos_lower hαcc
   have hden : 0 < 1 - Real.cos α := by
-    have hαsq : 0 < α ^ 2 := sq_pos_of_ne_zero hα0
     have hbound : 0 < 2 * α ^ 2 / π ^ 2 := by positivity
     exact lt_of_lt_of_le hbound hcosLower
   have hcosh : 1 < Real.cosh (2 * lam) :=
@@ -238,7 +220,6 @@ theorem fourierP_hasDerivAt {lam α : ℝ} (hlam : 0 < lam)
   have hv : HasDerivAt v (Real.sin α) α := by
     dsimp [v]
     simpa using (Real.hasDerivAt_cos α).const_sub (1 : ℝ)
-  have hratio : 0 < u α / v α := div_pos hnum hden
   have hraw := (hu.div hv hden.ne').log (div_ne_zero hnum.ne' hden.ne')
   have hraw' := hraw.const_mul (1 / 2 : ℝ)
   have hderiv :
@@ -286,7 +267,6 @@ private theorem fourierCotSin_succ_ae (n : ℕ) :
     simpa [uIoc_of_le (neg_le_self Real.pi_nonneg)] using hα
   have hαcc : α ∈ Icc (-π) π := Ioc_subset_Icc_self hαio
   have hdenLower := fourier_one_sub_cos_lower hαcc
-  have hαsq : 0 < α ^ 2 := sq_pos_of_ne_zero hα0
   have hden : 0 < 1 - Real.cos α := by
     have hpos : 0 < 2 * α ^ 2 / π ^ 2 := by positivity
     exact lt_of_lt_of_le hpos hdenLower
@@ -313,7 +293,6 @@ private theorem fourierCotSin_integrable_integral (n : ℕ) :
           simpa [uIoc_of_le (neg_le_self Real.pi_nonneg)] using hα
         have hαcc : α ∈ Icc (-π) π := Ioc_subset_Icc_self hαio
         have hdenLower := fourier_one_sub_cos_lower hαcc
-        have hαsq : 0 < α ^ 2 := sq_pos_of_ne_zero hα0
         have hpos : 0 < 2 * α ^ 2 / π ^ 2 := by positivity
         have hden : 0 < 1 - Real.cos α := lt_of_lt_of_le hpos hdenLower
         simp [fourierCotSin, hα0]
@@ -402,7 +381,6 @@ private theorem fourier_sin_kernel_integral {μ : ℝ} (hμ : 0 < μ) (n : ℕ) 
         (Real.cosh μ - Real.cos α) =
       2 * π * Real.exp (-μ) ^ (n + 1) := by
   let r : ℝ := Real.exp (-μ)
-  have hr : 0 < r := Real.exp_pos _
   have hcosCoeff0 := fourierXi_cosCoeff hμ n
   have hcosCoeff2 := fourierXi_cosCoeff hμ (n + 2)
   have hcos0 :
@@ -530,14 +508,6 @@ theorem fourierP_prime_sine_integral {lam : ℝ} (hlam : 0 < lam)
     filter_upwards [ae_restrict_of_ae (Measure.ae_ne volume 0)] with α hα0
     simp [fourierPPrime, fourierCotSin, μ, hα0]
     ring
-  have hprimeInt : IntervalIntegrable
-      (fun α => fourierPPrime lam α * Real.sin (((n + 1 : ℕ) : ℝ) * α))
-      volume (-π) π := by
-    have hrhs : IntervalIntegrable (fun α => (1 / 2 : ℝ) *
-        (Real.sin α * Real.sin (((n + 1 : ℕ) : ℝ) * α) /
-            (Real.cosh μ - Real.cos α) - fourierCotSin n α)) volume (-π) π := by
-      exact ((hratioInt.sub hcot.1).const_mul (1 / 2 : ℝ))
-    exact hrhs.congr_ae hEq.symm
   have hprimeIntegral :
       ∫ α in (-π)..π, fourierPPrime lam α *
           Real.sin (((n + 1 : ℕ) : ℝ) * α) =
@@ -650,10 +620,6 @@ private theorem logCoshExpTarget_eq_integral {lam : ℝ} (hlam : 0 < lam) :
     ∫ x in logCoshExpRatio lam..1, (1 + x)⁻¹ =
       Real.log 2 - Real.log (1 + logCoshExpRatio lam) := by
   have hratio : 0 < logCoshExpRatio lam := Real.exp_pos _
-  have hratio_lt_one : logCoshExpRatio lam < 1 := by
-    unfold logCoshExpRatio
-    rw [Real.exp_lt_one_iff]
-    linarith
   calc
     ∫ x in logCoshExpRatio lam..1, (1 + x)⁻¹ =
         ∫ x in logCoshExpRatio lam..1, (x + 1)⁻¹ := by congr 1; funext x; ring
@@ -757,10 +723,6 @@ private theorem logCoshExpTarget_eq_lambda_sub_log_cosh {lam : ℝ} (hlam : 0 < 
     Real.log 2 - Real.log (1 + logCoshExpRatio lam) =
       lam - Real.log (Real.cosh lam) := by
   have hq : 0 < logCoshExpRatio lam := Real.exp_pos _
-  have hq1 : logCoshExpRatio lam < 1 := by
-    unfold logCoshExpRatio
-    rw [Real.exp_lt_one_iff]
-    linarith
   have hfactor : Real.cosh lam = Real.exp lam * ((1 + logCoshExpRatio lam) / 2) := by
     rw [Real.cosh_eq]
     have hExp : Real.exp (-lam) = Real.exp lam * logCoshExpRatio lam := by

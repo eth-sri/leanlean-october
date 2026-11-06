@@ -6,7 +6,7 @@ public import Mathlib.Tactic
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceAdjacency
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSelectedFaceIncidence
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

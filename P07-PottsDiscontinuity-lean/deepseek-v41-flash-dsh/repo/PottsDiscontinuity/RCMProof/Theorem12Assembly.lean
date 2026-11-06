@@ -5,7 +5,7 @@ public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
 public import PottsDiscontinuity.RCMProof.Item3
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Real
 

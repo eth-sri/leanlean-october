@@ -4,7 +4,7 @@ public import PottsDiscontinuity.SixVertex.InfinityWeightComparison
 
 /-! # The finite sine-product eigenvector equation -/
 
-@[expose] public section
+public section
 
 open Finset Matrix
 

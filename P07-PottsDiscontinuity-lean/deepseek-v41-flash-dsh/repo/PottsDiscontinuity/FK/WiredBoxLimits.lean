@@ -8,7 +8,7 @@ public import PottsDiscontinuity.FK.BoxExhaustion
 
 /-! A common weak limit of wired FK laws along every nested exhaustive box sequence. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

@@ -10,7 +10,7 @@ public import PottsDiscontinuity.TorusExploration.UpperRateLimits
 /-! Equation (3.16) with the exact positive-even periods, frozen free limit,
 and frozen diagonalSite rate used by RCMProof.contract_eq316. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusExploration
 open Torus TorusRC FK CorrLength MeasureTheory Filter Topology

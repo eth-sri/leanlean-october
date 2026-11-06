@@ -10,7 +10,7 @@ be changed to `M` without a transposition: its singular factor is omitted from
 the regularized product, and its plane-wave factor is one.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Classical
 

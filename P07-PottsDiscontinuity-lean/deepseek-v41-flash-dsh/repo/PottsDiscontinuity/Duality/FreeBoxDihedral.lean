@@ -5,7 +5,7 @@ module
 public import PottsDiscontinuity.FK.FreeBoxLimitV1
 public import PottsDiscontinuity.Duality.BoxDihedral
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

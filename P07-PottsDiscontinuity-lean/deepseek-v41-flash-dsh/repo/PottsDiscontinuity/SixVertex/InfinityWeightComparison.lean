@@ -5,7 +5,7 @@ public import PottsDiscontinuity.SixVertex.InfinitySorting
 
 /-! # The finite canonical weight equals the labelled lifted weight -/
 
-@[expose] public section
+public section
 
 open Finset
 

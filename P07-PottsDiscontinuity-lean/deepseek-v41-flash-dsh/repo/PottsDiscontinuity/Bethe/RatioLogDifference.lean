@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.RatioProfile
 
 /-! # Mean-value control of the singular logarithmic differences -/
 
-@[expose] public section
+public section
 
 open Set Finset
 open scoped BigOperators

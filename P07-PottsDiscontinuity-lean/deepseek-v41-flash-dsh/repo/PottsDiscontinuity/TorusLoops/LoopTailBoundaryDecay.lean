@@ -9,7 +9,7 @@ The exploration estimate loses one unit in the rotated square radius. This
 module transfers the stated free-boundary connection decay to that sequence.
 -/
 
-@[expose] public section
+public section
 
 open Filter Topology
 

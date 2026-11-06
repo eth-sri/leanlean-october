@@ -9,7 +9,7 @@ The only pole in a paired ML-edge contribution is the moved-root factor `L(e^{it
 This module records its residue with the complex phase convention used in the source.
 -/
 
-@[expose] public section
+public section
 
 open Complex Filter Topology
 
@@ -43,8 +43,6 @@ theorem tendsto_id_div_one_sub_z_zero :
   rw [hI] at h
   apply h.congr'
   filter_upwards [eventually_z_ne_one_zero, self_mem_nhdsWithin] with t ht ht0
-  have htC : (t : ℂ) ≠ 0 := by exact_mod_cast ht0
-  have hden : 1 - z t ≠ 0 := sub_ne_zero.mpr ht.symm
   field_simp
 
 /-- The principal pole residue of `L(e^{it})`. -/
@@ -73,7 +71,6 @@ theorem tendsto_t_mul_L_z_zero (c : ℝ) :
   have heq : (fun t : ℝ => (t : ℂ) * L c (z t)) =ᶠ[𝓝[≠] (0 : ℝ)]
       fun t => (t : ℂ) + (c : ℂ) ^ 2 * (z t * ((t : ℂ) / (1 - z t))) := by
     filter_upwards [eventually_z_ne_one_zero] with t ht
-    have hden : 1 - z t ≠ 0 := sub_ne_zero.mpr ht.symm
     unfold L
     field_simp
   apply hregular.congr'

@@ -217,11 +217,6 @@ private theorem coverUnionFace_localReach {n : ℕ}
     exact ⟨i, hi,
       (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).mem_edgeSet.mp
         (by simpa [b1, b2] using coverUnionFace_edge12 i)⟩
-  have h23 : H.Adj ⟨b2, hb2c⟩ ⟨b3, hb3c⟩ := by
-    change (parafermionicCoverFiniteFaceUnionGraph S).Adj b2 b3
-    exact ⟨i, hi,
-      (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).mem_edgeSet.mp
-        (by simpa [b2, b3] using coverUnionFace_edge23 i)⟩
   have h30 : H.Adj ⟨b3, hb3c⟩ ⟨b0, hb0c⟩ := by
     change (parafermionicCoverFiniteFaceUnionGraph S).Adj b3 b0
     exact ⟨i, hi,
@@ -304,7 +299,6 @@ theorem parafermionicCoverSimpleCycleFaceUnionCarrier_connected
   let S := parafermionicCoverSimpleCycleFillingSet hn p hp
   let F := parafermionicCoverFiniteFaceAdjacencyGraph n
   let H := F.induce (↑S : Set (ParafermionicCoverFiniteFaceTopIndex n))
-  let U := parafermionicCoverFiniteFaceUnionGraph S
   let C := parafermionicCoverFiniteFaceUnionCarrier S
   have hfaces : H.Connected := by
     exact parafermionicCoverSimpleCycleFillingSet_induce_faceAdjacency_connected hn p hp

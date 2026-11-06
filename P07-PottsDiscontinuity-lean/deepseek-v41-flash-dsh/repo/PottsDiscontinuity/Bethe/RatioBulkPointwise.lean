@@ -12,7 +12,7 @@ Theorems 2.6/2.9 and the geometric estimates, not new assumptions on the
 eigenvalue ratio.
 -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology

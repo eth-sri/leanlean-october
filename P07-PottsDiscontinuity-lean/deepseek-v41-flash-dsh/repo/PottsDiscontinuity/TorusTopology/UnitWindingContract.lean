@@ -5,7 +5,7 @@ public import PottsDiscontinuity.TorusTopology.UnitWindingHomology
 /-! The corrected complete U=1 loop-homology structure for the torus correspondence
 (Corollary 3.13). -/
 
-@[expose] public section
+public section
 
 open PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.TorusTopology

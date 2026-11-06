@@ -5,7 +5,7 @@ module
 
 public import PottsDiscontinuity.FK.PositiveAssociation
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

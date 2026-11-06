@@ -9,7 +9,7 @@ Incidence pairing is discrete integration by parts. Reindexing corner sums by th
 boundary permutation then proves that every capped ribbon face has zero divergence.
 -/
 
-@[expose] public section
+public section
 
 open Finset Matrix PottsDiscontinuity.SixVertex
 

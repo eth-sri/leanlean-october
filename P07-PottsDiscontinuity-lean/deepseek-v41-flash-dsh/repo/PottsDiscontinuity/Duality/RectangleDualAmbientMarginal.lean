@@ -5,7 +5,7 @@ module
 public import PottsDiscontinuity.Duality.RectangleDualAmbient
 public import PottsDiscontinuity.FK.SubgraphComparison
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 
@@ -19,9 +19,6 @@ theorem rectangleDualAmbient_law_restrict_to_dual
       (subgraphConfigurationRestriction (rectangleDualGraph_le_ambient a w h)) =
     law (rectangleDualGraph a w h) q (rectangleDualBoundaryCondition a w h) := by
   classical
-  have hfiniteSet : (rectangleDualExpanded a w h : Set LatticeVertex).Finite :=
-    Finset.finite_toSet _
-  let rectangleDualAmbientVertexFinite : Finite (RectangleDualVertex a w h) := hfiniteSet
   let H := rectangleDualAmbientGraph a w h
   let G := rectangleDualGraph a w h
   let hGH : G ≤ H := rectangleDualGraph_le_ambient a w h

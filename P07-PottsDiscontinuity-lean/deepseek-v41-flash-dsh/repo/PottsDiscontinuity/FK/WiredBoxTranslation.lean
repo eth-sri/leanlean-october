@@ -6,7 +6,7 @@ public import PottsDiscontinuity.FK.WiredBoxLaw
 public import PottsDiscontinuity.FK.BoxTranslation
 public import PottsDiscontinuity.FK.BoundaryPartitionLaw
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

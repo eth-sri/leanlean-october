@@ -10,7 +10,7 @@ by one potential per primal vertex. Its intersection coefficient is therefore a
 vertex coboundary and pairs to zero with every conserved flow.
 -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 

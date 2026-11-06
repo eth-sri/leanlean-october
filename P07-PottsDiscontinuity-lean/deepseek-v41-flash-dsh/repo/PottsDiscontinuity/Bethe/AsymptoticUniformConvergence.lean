@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticSubsequenceLimit
 
 /-! # Compactness and uniqueness imply convergence of the whole family -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory
 open scoped Topology BigOperators UniformConvergence

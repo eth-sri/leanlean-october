@@ -53,7 +53,6 @@ lemma rcCriticalParameter_mem_Ioo (q : Set.Ici (1 : ℝ)) :
 theorem dualParameter_rcCriticalParameter (q : Set.Ici (1 : ℝ)) :
     dualParameter q (rcCriticalParameter q) = rcCriticalParameter q := by
   have hq : 0 < (q : ℝ) := lt_of_lt_of_le zero_lt_one q.property
-  have hs := Real.sqrt_pos.2 hq
   have hs2 := Real.sq_sqrt hq.le
   have hsub : 1 - Real.sqrt (q : ℝ) / (1 + Real.sqrt (q : ℝ)) =
       1 / (1 + Real.sqrt (q : ℝ)) := by

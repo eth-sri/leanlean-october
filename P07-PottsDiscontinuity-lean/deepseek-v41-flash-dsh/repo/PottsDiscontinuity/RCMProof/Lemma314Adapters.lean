@@ -7,7 +7,7 @@ public import PottsDiscontinuity.Duality.Decay
 public import PottsDiscontinuity.RCMProof.Contracts
 public import PottsDiscontinuity.TorusLoops.Lemma314Corrected
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.RCMProof
 

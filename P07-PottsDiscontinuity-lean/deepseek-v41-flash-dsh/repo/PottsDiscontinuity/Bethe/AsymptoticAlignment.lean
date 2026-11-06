@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticOffset
 
 /-! # Alignment estimates before the offset Taylor expansion -/
 
-@[expose] public section
+public section
 
 open Set
 

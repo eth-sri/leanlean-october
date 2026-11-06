@@ -10,7 +10,7 @@ A transposition splits one cyclic orbit if its ends lie on that orbit, and joins
 two orbits otherwise. The proof uses invariant-function dimensions and sign parity.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Torus
 

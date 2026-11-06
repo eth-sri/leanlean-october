@@ -2,7 +2,7 @@ module
 
 public import PottsDiscontinuity.PottsThm.ColoringFactor
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.PottsThm
 

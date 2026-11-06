@@ -10,7 +10,7 @@ The finite product argument explicitly isolates the single pair whose order is r
 by an adjacent transposition.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex
 

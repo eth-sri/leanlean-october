@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Potts.MonotoneEventLimits
 
 /-! Convergence of wired connection data with every infinite cluster merged. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 

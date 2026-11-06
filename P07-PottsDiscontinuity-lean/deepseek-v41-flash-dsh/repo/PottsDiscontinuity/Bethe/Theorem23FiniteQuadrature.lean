@@ -4,7 +4,7 @@ public import Mathlib
 
 /-! # A finite left Riemann estimate from a derivative modulus -/
 
-@[expose] public section
+public section
 
 open Set
 open scoped BigOperators

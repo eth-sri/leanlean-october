@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.Prop21Tau
 
 /-! # Identification of the limiting offset equation -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory
 open scoped Topology BigOperators

@@ -11,7 +11,7 @@ and white-face boundary count. Monotonicity bounds every open subgraph by it.
 The winding-based characterization of that handle remains a separate theorem.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Torus
 

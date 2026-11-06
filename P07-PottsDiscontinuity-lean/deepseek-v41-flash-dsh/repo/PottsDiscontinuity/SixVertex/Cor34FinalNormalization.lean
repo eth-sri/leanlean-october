@@ -6,7 +6,7 @@ public import PottsDiscontinuity.SixVertex.Cor34FinalEigen
 
 /-! # Corollary 3.4: normalize Theorem 3.1 for the infinite-anisotropy branch -/
 
-@[expose] public section
+public section
 
 open Matrix
 open scoped BigOperators

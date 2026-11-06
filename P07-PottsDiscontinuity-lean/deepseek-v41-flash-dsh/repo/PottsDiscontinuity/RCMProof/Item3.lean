@@ -9,7 +9,7 @@ public import PottsDiscontinuity.RCMProof.Cor313Adapters
 public import PottsDiscontinuity.RCMProof.TorusRCAdapters
 public import PottsDiscontinuity.TorusExploration.Contract
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

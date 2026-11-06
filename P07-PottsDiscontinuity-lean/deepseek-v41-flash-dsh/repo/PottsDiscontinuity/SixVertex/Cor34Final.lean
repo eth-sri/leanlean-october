@@ -6,7 +6,7 @@ public import PottsDiscontinuity.SixVertex.Cor34FinalFamily
 
 /-! # Corollary 3.4: identify the Theorem 2.3 family with the Perron root -/
 
-@[expose] public section
+public section
 
 open Filter Topology Set
 open PottsDiscontinuity.PerronFrobenius
@@ -20,7 +20,6 @@ private theorem cor34_final_even_extension_eq_source {n : ℕ}
         cor34_normalizedRegularEigenvalue (1 / d) (p d)) =
       BetheAnsatz.eigenvalueRegular (Real.sqrt (2 - 2 * d)) (p d) := by
   have hdneg : d < 0 := lt_trans hd (lt_trans hd₁ (by norm_num))
-  have hrecip : 1 / (1 / d) = d := by field_simp [ne_of_lt hdneg]
   have hrecip2 : 2 / (1 / d) = 2 * d := by
     field_simp [ne_of_lt hdneg]
   have hε : 1 / d < 0 := one_div_neg.mpr hdneg
@@ -162,7 +161,6 @@ theorem cor34_final_even_all_parameters {N n r : ℕ}
     calc
       f d = (BetheAnsatz.eigenvalueRegular (Real.sqrt (2 - 2 * d)) (p d)).re := hrawRe.symm
       _ = (G d).re := hGRe.symm
-  have hdTaild₂ : dTail < d₂ := lt_of_le_of_lt (min_le_left _ _) hd₀d₂
   have hiden := cor34_identity_theorem_extension hf hg isPreconnected_Iio isOpen_Iio
     nonempty_Iio hVsub hEqV
   intro d hd
@@ -178,7 +176,6 @@ theorem cor34_final_even_all_parameters {N n r : ℕ}
       _ = (BetheAnsatz.eigenvalueRegular (Real.sqrt (2 - 2 * d)) (p d)).re :=
         congrArg Complex.re hGsource
   have hc : 2 < Real.sqrt (2 - 2 * d) := by
-    have hdneg : d < -1 := lt_of_le_of_lt hd hd₀
     have hsquare : 4 < 2 - 2 * d := by linarith
     rw [Real.lt_sqrt (by norm_num : (0 : ℝ) ≤ 2)]
     nlinarith [hsquare]
@@ -278,7 +275,6 @@ theorem cor34_final_odd_all_parameters {N n q r : ℕ}
     calc
       f d = (BetheAnsatz.eigenvalueZero N (Real.sqrt (2 - 2 * d)) (p d) l).re := hrawRe.symm
       _ = (G d).re := hGRe.symm
-  have hdTaild₂ : dTail < d₂ := lt_of_le_of_lt (min_le_left _ _) hd₀d₂
   have hiden := cor34_identity_theorem_extension hf hg isPreconnected_Iio isOpen_Iio
     nonempty_Iio hVsub hEqV
   intro d hd
@@ -294,7 +290,6 @@ theorem cor34_final_odd_all_parameters {N n q r : ℕ}
       _ = (BetheAnsatz.eigenvalueZero N (Real.sqrt (2 - 2 * d)) (p d) l).re :=
         congrArg Complex.re hGsource
   have hc : 2 < Real.sqrt (2 - 2 * d) := by
-    have hdneg : d < -1 := lt_of_le_of_lt hd hd₀
     have hsquare : 4 < 2 - 2 * d := by linarith
     rw [Real.lt_sqrt (by norm_num : (0 : ℝ) ≤ 2)]
     nlinarith [hsquare]

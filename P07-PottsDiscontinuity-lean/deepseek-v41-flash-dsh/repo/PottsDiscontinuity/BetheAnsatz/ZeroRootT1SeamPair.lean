@@ -12,7 +12,7 @@ The seam pair has the same ordinary scattering increment, together with the
 additional `N t` phase produced by the wrapped coordinate.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Classical
 

@@ -2,7 +2,7 @@ module
 
 public import PottsDiscontinuity.Potts.ObservedPartitionLimits
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 

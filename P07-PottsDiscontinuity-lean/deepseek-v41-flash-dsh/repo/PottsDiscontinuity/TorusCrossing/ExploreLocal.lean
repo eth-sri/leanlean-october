@@ -12,7 +12,7 @@ on the row `p₂` is a boundary edge as soon as it is explored; and a primal cel
 explored and an unexplored edge sees a boundary edge.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusCrossing
 

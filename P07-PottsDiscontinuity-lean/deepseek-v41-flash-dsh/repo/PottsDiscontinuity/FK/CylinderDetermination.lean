@@ -73,8 +73,6 @@ theorem probabilityMeasure_eq_of_allOpen {μ ν : ProbabilityMeasure LatticeConf
     (h : ∀ F : Finset squareLattice.edgeSet,
       μ (allOpen F) = ν (allOpen F)) : μ = ν := by
   apply Subtype.ext
-  let cylinderDeterminationProbabilityInstance :
-    IsProbabilityMeasure (μ : Measure LatticeConfiguration) := μ.property
   have hfin : IsFiniteMeasure (μ : Measure LatticeConfiguration) := inferInstance
   exact @ext_of_generate_finite LatticeConfiguration (MeasurableSpace.pi)
     (μ : Measure LatticeConfiguration) (ν : Measure LatticeConfiguration)

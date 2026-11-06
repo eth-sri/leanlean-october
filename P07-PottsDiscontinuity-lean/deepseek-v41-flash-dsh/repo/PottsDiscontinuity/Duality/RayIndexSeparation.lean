@@ -8,7 +8,7 @@ public import PottsDiscontinuity.FK.BoxExhaustion
 
 /-! Finiteness of the nonzero-index region and the jump across a simple circuit. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 open FK FK.Medial Filter

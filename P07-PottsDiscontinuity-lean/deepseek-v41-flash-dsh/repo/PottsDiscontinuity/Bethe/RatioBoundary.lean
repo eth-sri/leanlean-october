@@ -9,7 +9,7 @@ Fixed-rank roots converge to `-π`. The spectral factor there is `Δ`,
 so each missing boundary root contributes `|Δ|` to the denominator.
 -/
 
-@[expose] public section
+public section
 
 open Set Filter Finset Complex
 open scoped Topology BigOperators

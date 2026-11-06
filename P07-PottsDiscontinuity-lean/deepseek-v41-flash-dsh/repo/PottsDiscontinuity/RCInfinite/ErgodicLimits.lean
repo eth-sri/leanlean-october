@@ -2,7 +2,7 @@ module
 
 public import PottsDiscontinuity.RCInfinite.GeneratorMixing
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Set
 open scoped ENNReal

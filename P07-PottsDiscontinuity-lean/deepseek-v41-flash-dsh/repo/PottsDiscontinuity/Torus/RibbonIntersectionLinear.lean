@@ -9,7 +9,7 @@ The normalized primitive is given by explicit linear combinations of corner flow
 Consequently the induced edge coefficient and the intersection pairing are linear.
 -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 

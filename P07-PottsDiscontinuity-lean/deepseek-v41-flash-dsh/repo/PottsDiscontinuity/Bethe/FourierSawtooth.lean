@@ -13,7 +13,7 @@ theorem (`Real.tendsto_tsum_powerSeries_nhdsWithin_lt`) combined with the closed
 This is what gives the series of (2.1) for `τ` a meaning as the limit of its partial sums.
 -/
 
-@[expose] public section
+public section
 
 open Complex Real MeasureTheory Filter Topology Set intervalIntegral
 

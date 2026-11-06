@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticEndpoint
 
 /-! # Limit of the finite missing-root contribution -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology BigOperators

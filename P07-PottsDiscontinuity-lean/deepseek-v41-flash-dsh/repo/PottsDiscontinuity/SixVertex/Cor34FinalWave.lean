@@ -5,7 +5,7 @@ public import PottsDiscontinuity.SixVertex.Cor34BethePF
 
 /-! # Corollary 3.4: nonvanishing of the normalized block wave -/
 
-@[expose] public section
+public section
 
 open Filter Topology
 
@@ -46,8 +46,6 @@ theorem cor34_final_eventually_normalizedBlockWave_ne_zero {N n : ℕ}
         Complex.exp (Complex.I * ((∑ j, p ε j : ℝ) : ℂ)) *
           cor34_normalizedBlockWave (N := N) ε (p ε) (cor34_evenCoordinateState hn) := by
     simpa [cor34_normalizedBlockWave] using hcoordinate
-  have hphase : Complex.exp (Complex.I * ((∑ j, p ε j : ℝ) : ℂ)) ≠ 0 :=
-    BetheAnsatz.coordinate_shift_phase_ne_zero (p ε)
   have hvalue :
       cor34_normalizedBlockWave (N := N) ε (p ε) (cor34_evenCoordinateState hn) ≠ 0 := by
     intro hz

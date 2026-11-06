@@ -5,7 +5,7 @@ module
 public import PottsDiscontinuity.FK.WiredBoxLimits
 public import PottsDiscontinuity.FK.WiredBoxTranslation
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

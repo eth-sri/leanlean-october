@@ -6,7 +6,7 @@ public import PottsDiscontinuity.FK.FreeBoxLimit
 public import PottsDiscontinuity.FK.WiredBoxLimits
 public import PottsDiscontinuity.FK.BoundaryPartitionLaw
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

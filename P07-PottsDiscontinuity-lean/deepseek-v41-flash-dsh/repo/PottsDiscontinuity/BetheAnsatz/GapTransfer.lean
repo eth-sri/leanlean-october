@@ -12,7 +12,7 @@ Companion paper, Corollary `cor:expressionRsi`. Both ordinary orientations are
 reindexed with their actual weights; modulo-N distinctness is part of the finite sum.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Matrix Classical
 

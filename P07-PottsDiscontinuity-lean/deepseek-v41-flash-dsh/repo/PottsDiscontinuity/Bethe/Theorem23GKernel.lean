@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.DiscreteJacobian
 
 /-! # Uniform bounds for the kernel in the Jacobian row sums -/
 
-@[expose] public section
+public section
 
 open Set
 

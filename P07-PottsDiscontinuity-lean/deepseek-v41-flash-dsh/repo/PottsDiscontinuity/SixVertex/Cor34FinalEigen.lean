@@ -6,7 +6,7 @@ public import PottsDiscontinuity.SixVertex.Cor34FinalEquations
 
 /-! # Corollary 3.4: apply the coordinate Bethe Ansatz on the block -/
 
-@[expose] public section
+public section
 
 open Matrix
 

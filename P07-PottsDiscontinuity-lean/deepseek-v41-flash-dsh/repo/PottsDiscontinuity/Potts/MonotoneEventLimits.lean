@@ -4,7 +4,7 @@ public import Mathlib.MeasureTheory.Measure.Portmanteau
 
 /-! Diagonal limits of increasing and decreasing connection approximations. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 

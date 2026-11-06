@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Infra.CylinderUniqueness
 
 /-! Wired limits along finite domains squeezed between consecutive square boxes. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 

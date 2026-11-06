@@ -12,7 +12,7 @@ canonical RC statistic U with the winding count in every compatible arrow orient
 and proves the sector inclusion needed for Corollary 3.13(iii).
 -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 

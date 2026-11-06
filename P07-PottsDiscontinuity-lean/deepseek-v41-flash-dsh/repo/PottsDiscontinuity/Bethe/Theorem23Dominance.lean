@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.Theorem23Rows
 
 /-! # Actual diagonal dominance from a uniform mesh -/
 
-@[expose] public section
+public section
 
 open Set
 open scoped BigOperators

@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.RatioOddLimit
 
 /-! # Section 4 Fourier composition for the even eigenvalue-ratio limit -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory
 open scoped Topology BigOperators
@@ -50,7 +50,6 @@ theorem ratio_even_eigenvalue_limit_fourier (heven : r % 2 = 0)
       Tendsto (fun i => eigenvalueRegular c (q i) / eigenvalueRegular c (p i)) atTop
         (𝓝 ((Real.exp (-(r : ℝ) * (lamOf Δ + 2 * S)) : ℝ) : ℂ)) := by
   have hlam : 0 < lamOf Δ := lamOf_pos hΔ
-  have hrnat : 0 < r := by omega
   obtain ⟨S, hS, hW15⟩ := PottsDiscontinuity.fourierRatioExponent
     (lam := lamOf Δ) (r := (r : ℝ)) hlam
   have hparam : -Real.cosh (lamOf Δ) = Δ := by rw [cosh_lamOf hΔ]; ring

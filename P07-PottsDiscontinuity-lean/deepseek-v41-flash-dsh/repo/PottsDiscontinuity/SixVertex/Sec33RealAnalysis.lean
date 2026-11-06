@@ -10,7 +10,7 @@ bounds for the two logarithmic growth rates are a reusable formulation of the co
 limsup hypotheses.  To apply it along even heights, replace each sequence `F M` by `F (2*M)`.
 -/
 
-@[expose] public section
+public section
 
 open Filter Topology
 
@@ -31,7 +31,6 @@ theorem log_growth_le_of_eventually_factorized
       (1 / (M : ℝ)) * Real.log (Z M) ≤ Real.log Λmax + b + ε) :
     Real.log Λ ≤ Real.log Λmax + a + b := by
   by_contra hnot
-  have hgap : Real.log Λmax + a + b < Real.log Λ := lt_of_not_ge hnot
   let ε : ℝ := (Real.log Λ - (Real.log Λmax + a + b)) / 4
   have hε : 0 < ε := by dsimp [ε]; linarith
   have hinv : Tendsto (fun M : ℕ => 1 / (M : ℝ)) atTop (𝓝 0) :=
@@ -46,7 +45,6 @@ theorem log_growth_le_of_eventually_factorized
     have heq : (fun M : ℕ => (1 / (M : ℝ)) * Real.log (C * Λ ^ M)) =ᶠ[atTop]
         (fun M : ℕ => Real.log Λ + (1 / (M : ℝ)) * Real.log C) := by
       filter_upwards [eventually_gt_atTop 0] with M hM
-      have hMne : (M : ℝ) ≠ 0 := by exact_mod_cast hM.ne'
       have hpow : Λ ^ M ≠ 0 := pow_ne_zero _ hΛ.ne'
       rw [Real.log_mul hC.ne' hpow]
       simp only [Real.log_pow]
@@ -75,14 +73,6 @@ theorem log_growth_le_of_eventually_factorized
       hlog₁.trans hlog₂
     have hscaled := mul_le_mul_of_nonneg_left hlog (by positivity :
       0 ≤ (1 / (M : ℝ)))
-    have htarget : (1 / (M : ℝ)) * Real.log (C * Λ ^ M) ≤
-        Real.log Λmax + a + b + 2 * ε := by
-      calc
-        (1 / (M : ℝ)) * Real.log (C * Λ ^ M) ≤
-            (1 / (M : ℝ)) * Real.log (Y M) +
-              (1 / (M : ℝ)) * Real.log (Z M) := by
-                simpa [mul_add] using hscaled
-        _ ≤ Real.log Λmax + a + b + 2 * ε := by linarith
     linarith
   rcases hfalse.exists with ⟨M, hM⟩
   exact hM

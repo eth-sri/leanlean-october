@@ -11,7 +11,7 @@ gap estimate used in the source's regularity consequences without assuming
 that the discrete and continuous densities have matching total mass.
 -/
 
-@[expose] public section
+public section
 
 open Set
 

@@ -9,7 +9,7 @@ public import PottsDiscontinuity.Duality.DiagonalRate
 /-! FKG and the actual free-limit symmetries compare every direction with the
 exact frozen diagonal sequence. The fourth power accounts for two reflections. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

@@ -6,7 +6,7 @@ public import PottsDiscontinuity.BetheAnsatz.Defs
 
 /-! # Corollary 3.4: transfer the discrete Bethe data to Theorem 3.1 -/
 
-@[expose] public section
+public section
 
 open Complex
 

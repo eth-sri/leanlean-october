@@ -9,7 +9,7 @@ boundary correction in the printed proof of Theorem 2.6 and does not require
 periodic boundary values of a continuous test function.
 -/
 
-@[expose] public section
+public section
 
 open Set MeasureTheory intervalIntegral
 open scoped BigOperators

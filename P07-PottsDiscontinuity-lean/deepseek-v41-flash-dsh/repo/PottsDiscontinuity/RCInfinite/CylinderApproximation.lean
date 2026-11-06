@@ -97,7 +97,6 @@ theorem exists_supportedCylinder_approx (μ : Measure LatticeConfiguration) [IsF
       D ⊆ {C | SupportedCylinder E C} ∧ (μ.trim (edgeSigma_le E)) (⋃₀ D)ᶜ = 0 := by
     refine ⟨{univ}, Set.countable_singleton _, ?_, by simp⟩
     intro C hC
-    have hC' : C = univ := Set.mem_singleton_iff.mp hC
     subst C
     exact (supportedCylinder_isSetAlgebra E).univ_mem
   obtain ⟨C, hC, hCA⟩ := @exists_measure_symmDiff_lt_of_generateFrom_isSetRing

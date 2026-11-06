@@ -32,7 +32,6 @@ noncomputable def defectGroundWeight (x : Finset (Fin N)) : ℝ :=
 theorem defectCoordinate_strictMono (x : Finset (Fin N)) : StrictMono (defectCoordinate x) := by
   intro a b hab
   have hp := (defects x).orderEmbOfFin rfl |>.strictMono hab
-  have ha : a.val < b.val := hab
   change ((defects x).orderEmbOfFin rfl a).val <
     ((defects x).orderEmbOfFin rfl b).val at hp
   unfold defectCoordinate
@@ -40,8 +39,6 @@ theorem defectCoordinate_strictMono (x : Finset (Fin N)) : StrictMono (defectCoo
 
 theorem defectCoordinate_lt (x : Finset (Fin N)) (j : Fin (defects x).card) :
     defectCoordinate x j < N + (defects x).card := by
-  have h1 := ((defects x).orderEmbOfFin rfl j).isLt
-  have h2 := j.isLt
   unfold defectCoordinate
   omega
 
@@ -55,7 +52,6 @@ theorem defectGroundWeight_pos (hN : 0 < N) (x : Finset (Fin N)) :
   have hab : a < b := mem_Ioi.mp hb
   have hp := defectCoordinate_strictMono x hab
   have hl := defectCoordinate_lt x b
-  have ha := Nat.zero_le (defectCoordinate x a)
   have hden : (0 : ℝ) < N + (defects x).card := by positivity
   have hdiff : (0 : ℝ) < (defectCoordinate x b : ℝ) - defectCoordinate x a := by
     exact sub_pos.mpr (Nat.cast_lt.mpr hp)

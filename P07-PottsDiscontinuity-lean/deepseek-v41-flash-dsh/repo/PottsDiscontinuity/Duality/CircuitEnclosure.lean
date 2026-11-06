@@ -10,7 +10,7 @@ public import PottsDiscontinuity.Duality.RayIndexSeparation
 Separation is stated using the full primal lattice after only circuit-crossing
 edges are removed, independently of the original open cluster. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 open FK FK.Medial

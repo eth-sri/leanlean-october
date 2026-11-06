@@ -9,7 +9,7 @@ public import PottsDiscontinuity.TorusLoops.LoopTailSeamBound
 These inequalities are the finite-sum form of the truncation step in (3.18).
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusLoops
 

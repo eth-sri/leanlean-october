@@ -7,7 +7,7 @@ public import PottsDiscontinuity.Bethe.Theorem23HalfPartition
 
 /-! # Uniform approximation of the off-diagonal row sums -/
 
-@[expose] public section
+public section
 
 open Set
 open scoped BigOperators

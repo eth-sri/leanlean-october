@@ -5,7 +5,7 @@ public import PottsDiscontinuity.AnalyticTools.Implicit
 
 /-! # Local sections in an admissible state region -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology

@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticBoundary
 
 /-! # From mean alignment to alignment of both shifted roots -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Bethe
 

@@ -18,7 +18,7 @@ on the two-element event `{A, insert e A}`. Its denominator is strictly positive
 It is not a claim that an arbitrary edge has open conditional probability `p`.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

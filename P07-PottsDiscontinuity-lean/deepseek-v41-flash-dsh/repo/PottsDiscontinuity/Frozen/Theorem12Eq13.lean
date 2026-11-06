@@ -10,7 +10,7 @@ This declaration is reproduced verbatim in `Challenge.lean`; Comparator checks t
 agree. Its proof is the assembled result from `PottsDiscontinuity/Provider/`.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Real
 open scoped ENNReal

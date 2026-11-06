@@ -9,7 +9,7 @@ public import PottsDiscontinuity.Bethe.RatioTruncation
 
 /-! # The source bulk log-product limit under the exact Theorem 2.9 premises -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory
 open scoped Topology BigOperators

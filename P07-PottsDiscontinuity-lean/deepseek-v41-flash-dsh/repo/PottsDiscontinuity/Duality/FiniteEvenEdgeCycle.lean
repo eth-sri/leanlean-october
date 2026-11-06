@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Duality.FiniteGraphBoundaryParity
 public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

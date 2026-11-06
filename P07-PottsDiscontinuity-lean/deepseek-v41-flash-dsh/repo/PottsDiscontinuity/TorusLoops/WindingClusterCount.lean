@@ -12,7 +12,7 @@ be chosen with exactly their joint support. The finite support-degree theorem
 then gives the factor two in the loop-to-cluster count.
 -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 

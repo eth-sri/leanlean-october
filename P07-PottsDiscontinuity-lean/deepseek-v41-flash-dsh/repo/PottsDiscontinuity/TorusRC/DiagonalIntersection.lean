@@ -6,7 +6,7 @@ public import PottsDiscontinuity.TorusRC.LiftedInterpolation
 
 /-! # Intersections of opposite-colour unit diagonal segments -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusRC
 

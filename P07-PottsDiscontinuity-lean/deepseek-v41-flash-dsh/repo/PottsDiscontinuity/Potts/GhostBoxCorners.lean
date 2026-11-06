@@ -48,7 +48,6 @@ def cornerCutEdge (n : ℕ) (b : Bool × Bool) : OuterBoxEdge n :=
 theorem cornerPoint_injective (n : ℕ) (hn : 0 < n) : Function.Injective (cornerPoint n) := by
   rintro ⟨a, b⟩ ⟨c, d⟩ h
   have h1 := congrArg Prod.fst h
-  have h2 := congrArg Prod.snd h
   cases a <;> cases b <;> cases c <;> cases d <;>
     simp_all [cornerPoint]
 

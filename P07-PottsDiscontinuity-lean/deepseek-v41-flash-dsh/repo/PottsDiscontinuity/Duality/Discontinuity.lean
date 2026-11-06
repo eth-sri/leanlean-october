@@ -10,7 +10,7 @@ public import PottsDiscontinuity.Duality.WiredPercolation
 exact parameter/event form consumed by Theorem 1.2 items 1–2. Neither the
 theorem-statement modules (`Frozen/`) nor the provider modules (`Provider/`) are imported. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 open FK MeasureTheory Filter Topology

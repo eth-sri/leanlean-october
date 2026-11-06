@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Potts.GraphCoupling
 
 /-! One-point pinned and two-point free colouring kernels, with the corrected factors. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 

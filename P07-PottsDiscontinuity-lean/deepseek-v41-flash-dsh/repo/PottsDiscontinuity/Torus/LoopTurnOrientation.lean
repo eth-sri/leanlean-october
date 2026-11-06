@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Torus.LoopHomology
 
 /-! # Discrete loop turning under reversal of orientation -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 

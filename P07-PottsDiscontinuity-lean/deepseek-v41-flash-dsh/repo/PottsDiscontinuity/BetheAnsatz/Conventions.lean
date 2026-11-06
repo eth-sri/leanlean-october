@@ -12,7 +12,7 @@ The block-extension identity below is linear algebra for arbitrary vectors; it d
 assert the Bethe Ansatz for an unproved particle sector.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Matrix
 
@@ -54,10 +54,6 @@ theorem coordinateWave_add_one {n : ℕ} (Δ : ℝ) (p : Fin n → ℝ)
   exact Finset.sum_congr rfl fun σ _ => by ring
 
 /-- The change in position convention is multiplication by a nonzero scalar. -/
-theorem coordinate_shift_phase_ne_zero {n : ℕ} (p : Fin n → ℝ) :
-    Complex.exp (I * ((∑ j, p j : ℝ) : ℂ)) ≠ 0 := Complex.exp_ne_zero _
-
-/-- Evaluation of the full matrix on a zero-extended vector agrees with the block action. -/
 theorem mulVec_extendByZero_apply {N n : ℕ} (c : ℝ) (v : State N n → ℂ)
     (x : State N n) :
     ((transferMatrix N c).map (algebraMap ℝ ℂ) *ᵥ extendByZero v) x.1 =

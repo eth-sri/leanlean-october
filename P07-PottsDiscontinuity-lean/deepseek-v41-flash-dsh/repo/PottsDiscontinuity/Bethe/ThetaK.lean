@@ -21,7 +21,7 @@ equivalently `∂₁Θ(k(α),k(β)) = -Ξ_{2λ}(α-β)/k'(α)` and `∂₂Θ(k(�
 (`k' = Ξ_λ`).  All statements hold for every real `α, β` (in particular on `[-π, π]`).
 -/
 
-@[expose] public section
+public section
 
 open Complex Filter Topology Set
 

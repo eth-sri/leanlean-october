@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusTopology.PhaseFlux
 /-! Each nonzero modular phase flux forces a genuine bottom-to-top cylinder
 component. Distinct phases cannot belong to the same seam-closed cluster. -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.TorusTopology

@@ -10,7 +10,7 @@ public import PottsDiscontinuity.Frozen.Defs.RCInfiniteOpenGraph
 
 /-! The copied whole-plane geometry uses the exact frozen open graph. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 

@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticNorm
 
 /-! # Cyclic root cells and their gap estimates -/
 
-@[expose] public section
+public section
 
 open Set
 open scoped BigOperators

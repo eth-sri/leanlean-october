@@ -13,7 +13,7 @@ the canonical free and wired limits to every measure satisfying that
 characterization. The endpoint measures are invariant Dirac measures.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

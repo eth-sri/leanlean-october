@@ -8,7 +8,7 @@ public import PottsDiscontinuity.Duality.PlanarConnectionAlternative
 
 /-! Quantitative bounds on long connections with finitely many possible endpoints. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 

@@ -14,7 +14,7 @@ to be identified. The corresponding diminishing component loss is summed along
 finite edge additions to obtain the FK lattice condition's counting input.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

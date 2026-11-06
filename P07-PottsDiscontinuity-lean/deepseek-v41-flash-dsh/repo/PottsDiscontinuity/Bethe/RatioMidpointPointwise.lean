@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Bethe.RatioWallis
 
 /-! # Half-integer root scales give the logarithmic Wallis factors -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology

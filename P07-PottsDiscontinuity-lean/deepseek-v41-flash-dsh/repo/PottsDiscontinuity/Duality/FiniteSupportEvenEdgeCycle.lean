@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Duality.FiniteEvenEdgeCycle
 public import Mathlib.Combinatorics.SimpleGraph.Finite
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

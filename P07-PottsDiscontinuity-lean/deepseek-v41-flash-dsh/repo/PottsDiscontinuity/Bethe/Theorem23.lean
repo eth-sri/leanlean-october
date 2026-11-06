@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.Theorem23Family
 
 /-! # Theorem 2.3 in the even-size formulation of the source -/
 
-@[expose] public section
+public section
 
 open Set
 
@@ -30,7 +30,6 @@ theorem theorem23 (r : ℕ) {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1) :
   refine ⟨K, hK, max M₀ (2 * (r + 1)), lt_of_lt_of_le hM₀ (le_max_left _ _),
     Δ₁, hΔ₀₁, hΔ₁, fun N hlarge heven => ?_⟩
   have hMlarge : M₀ ≤ N := (le_max_left _ _).trans hlarge
-  have hrlarge : 2 * (r + 1) ≤ N := (le_max_right _ _).trans hlarge
   obtain ⟨m, hm⟩ := heven
   have hn : 0 < N / 2 - r := by omega
   obtain ⟨k, hk⟩ := Nat.exists_eq_succ_of_ne_zero hn.ne'

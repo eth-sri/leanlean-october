@@ -17,7 +17,7 @@ public import Mathlib.Data.Finset.Max
 public import Mathlib.Data.Finset.SymmDiff
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFiniteFaces
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

@@ -10,7 +10,7 @@ This module isolates the analytic step used once the finite-distance
 connection probabilities are known to be positive and supermultiplicative.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.CorrLength
 
@@ -71,11 +71,6 @@ theorem tendsto_rate_of_even_odd_subsequence (a b : ℕ → ℝ) (L : ℝ)
     (heven : ∀ m, b (2 * m) = a m)
     (hodd : ∀ m, b (2 * m + 1) = a m) :
     Tendsto (fun n : ℕ => b n / (n : ℝ)) atTop (𝓝 (L / 2)) := by
-  have hdouble : Tendsto (fun m : ℕ => 2 * m) atTop atTop := by
-    apply Filter.tendsto_atTop.2
-    intro k
-    filter_upwards [eventually_ge_atTop k] with m hm
-    omega
   have hevenLim : Tendsto (fun m : ℕ => b (2 * m) / ((2 * m : ℕ) : ℝ)) atTop
       (𝓝 (L / 2)) := by
     have h' : Tendsto (fun m : ℕ => (a m / (m : ℝ)) / 2) atTop (𝓝 (L / 2)) :=

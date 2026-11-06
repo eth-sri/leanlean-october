@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusExploration.CylinderIntersectionZero
 /-! A bottom-to-top cluster cuts every horizontal winding cycle of its
 cylinder complement. No assertion about disjointness of the seam return is used. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusExploration
 open Torus TorusTopology Finset

@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Potts.GhostBoxConditional
 
 /-! The literal ghost edge law converges to the wired FK box limit. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 

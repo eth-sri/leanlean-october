@@ -27,7 +27,7 @@ correlation length and the repaired dominance step), whose only premise, equatio
 every `q ≥ 1` (`RCMProof.contract_h319`), is the crossing estimate `TorusCrossing.h319_proved`.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Provider
 

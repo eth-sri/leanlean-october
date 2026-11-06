@@ -67,8 +67,6 @@ theorem centeredCosineProduct_source (n r : ℕ) :
   apply prod_congr rfl
   intro j hj
   congr 2
-  have hr : 0 < r := (Nat.zero_le j).trans_lt (mem_range.mp hj)
-  have hD : (n : ℝ) + 2 * r ≠ 0 := by positivity
   field_simp
 
 end PottsDiscontinuity.SixVertex

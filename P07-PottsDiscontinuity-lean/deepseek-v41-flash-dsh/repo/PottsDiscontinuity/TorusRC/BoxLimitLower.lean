@@ -5,7 +5,7 @@ public import PottsDiscontinuity.TorusRC.FiniteEventMeasure
 
 /-! # Cofinal native squares recover the exact rotated free connection probability -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

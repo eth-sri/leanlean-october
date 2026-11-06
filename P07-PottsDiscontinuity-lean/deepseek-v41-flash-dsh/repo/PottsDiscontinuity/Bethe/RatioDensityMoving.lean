@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.Asymptotic26Cast
 
 /-! # Moving-point density limits and central root gaps -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology

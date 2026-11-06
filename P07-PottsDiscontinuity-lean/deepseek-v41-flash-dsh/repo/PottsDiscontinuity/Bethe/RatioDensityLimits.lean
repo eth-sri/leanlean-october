@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticNorm
 
 /-! # Density consequences used in the source-family specialization -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology

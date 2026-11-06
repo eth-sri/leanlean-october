@@ -9,7 +9,7 @@ Only density norm convergence and a vanishing mesh are needed for the
 fixed-rank limits. Uniform-in-rank lower bounds are proved separately.
 -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology

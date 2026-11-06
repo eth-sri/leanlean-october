@@ -8,7 +8,7 @@ public import PottsDiscontinuity.SixVertex.Cor34FinalEquations
 
 /-! # Corollary 3.4: analytic Bethe branches near the endpoint -/
 
-@[expose] public section
+public section
 
 open Filter Topology Set
 

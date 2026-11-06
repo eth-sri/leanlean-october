@@ -19,7 +19,7 @@ inputs are the spectral theorem for symmetric matrices (via `SymmetricSpectral`)
 * Under primitivity: `|μ| < ρ` for all other eigenvalues (`abs_lt_pfRoot_of_primitive`).
 -/
 
-@[expose] public section
+public section
 
 open Matrix
 

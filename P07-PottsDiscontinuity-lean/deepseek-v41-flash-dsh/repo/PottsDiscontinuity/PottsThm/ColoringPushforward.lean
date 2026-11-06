@@ -9,7 +9,7 @@ public import PottsDiscontinuity.Potts.ESCylinderLaw
 public import PottsDiscontinuity.Potts.InfinitePartitionMeasurability
 public import PottsDiscontinuity.PottsThm.ColoringCylinderLaw
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.PottsThm
 

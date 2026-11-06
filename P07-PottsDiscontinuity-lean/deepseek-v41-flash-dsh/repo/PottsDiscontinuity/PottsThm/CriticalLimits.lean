@@ -4,7 +4,7 @@ public import PottsDiscontinuity.PottsThm.CriticalParameters
 public import PottsDiscontinuity.Potts.FreePottsLimit
 public import PottsDiscontinuity.Potts.WiredPottsLimit
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.PottsThm
 

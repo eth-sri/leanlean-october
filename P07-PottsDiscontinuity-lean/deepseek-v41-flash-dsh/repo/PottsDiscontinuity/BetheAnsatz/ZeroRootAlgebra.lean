@@ -9,7 +9,7 @@ The zero-root Bethe equation and equation (19) imply equality of the products
 of L and M over the remaining roots. This is the cancellation in the T₀ terms.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Classical
 

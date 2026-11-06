@@ -7,7 +7,7 @@ public import Mathlib.Combinatorics.SimpleGraph.Matching
 public import Mathlib.Data.Finset.SymmDiff
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

@@ -30,7 +30,7 @@ estimate (3.19), is `TorusCrossing.h319_proved`), together with the positivity `
 `identity44` (the analytic part of Theorem 1.2).
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Provider
 

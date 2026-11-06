@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceSetVe
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSimpleCycleBoundaryCount
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSimpleCycleFillingEuler
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

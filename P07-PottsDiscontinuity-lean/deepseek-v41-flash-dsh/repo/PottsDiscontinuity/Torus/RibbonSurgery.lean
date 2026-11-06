@@ -12,7 +12,7 @@ Every boundary lies within a single ribbon component, so joining two components
 necessarily joins two distinct boundary cycles.
 -/
 
-@[expose] public section
+public section
 
 open PottsDiscontinuity.SixVertex
 

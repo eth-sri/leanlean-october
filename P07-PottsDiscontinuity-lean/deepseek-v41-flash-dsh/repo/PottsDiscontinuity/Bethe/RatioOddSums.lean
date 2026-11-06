@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Bethe.RatioProfile
 
 /-! # Finite reflection and telescoping identities for the odd quotient -/
 
-@[expose] public section
+public section
 
 open Finset
 open scoped BigOperators

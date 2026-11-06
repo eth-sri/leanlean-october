@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFacePivot
 public import PottsDiscontinuity.TorusTopology.PlanarFiniteEvenTriangularElimination
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
@@ -79,9 +79,6 @@ theorem parafermionicCoverFiniteFaceChainDecomposition {n : ℕ} (hn : 1 ≤ n)
     have he := parafermionicCoverFiniteFaceBoundaryGraph_even_degree i.1 i.2 v
     simpa only [F, parafermionicCoverFiniteFaceBoundaryDegree,
       SimpleGraph.ncard_neighborSet] using he
-  have hpG : ∀ i, p i ∈ (parafermionicCoverBoxGraph n).edgeSet := by
-    intro i
-    exact parafermionicCoverFiniteFaceTopPivot_mem_edgeSet n i
   have hpF : ∀ i, p i ∈ (F i).edgeSet := by
     intro i
     have hmem := parafermionicCoverFiniteFaceTopEdgeBox_mem_boundaryGraph i.1 i.2
@@ -89,8 +86,6 @@ theorem parafermionicCoverFiniteFaceChainDecomposition {n : ℕ} (hn : 1 ≤ n)
       simp [p, parafermionicCoverFiniteFaceTopPivot,
         parafermionicCoverFiniteFaceTopEdgeBox]
     simpa [F, heq] using hmem
-  have hpInj : Function.Injective p := by
-    exact parafermionicCoverFiniteFaceTopPivot_injective n
   have htri : ∀ i j, p j ∈ (F i).edgeSet → j = i ∨ rank j < rank i := by
     intro i j h
     exact coverFiniteFacePivot_boundary_classification i j (by simpa [F, p] using h)

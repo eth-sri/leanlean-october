@@ -6,7 +6,7 @@ public import PottsDiscontinuity.SixVertex.Cor34FinalWave
 
 /-! # Corollary 3.4: discharge the conditional Bethe branch premise -/
 
-@[expose] public section
+public section
 
 open Filter Topology
 open Matrix

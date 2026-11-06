@@ -133,7 +133,6 @@ theorem torusCPrime_mul_barrier_lower_bound (hN : Even N) (hM : Even M)
       torusRCProbability hN hM q (torusRCBarrier hNp hMp n) ≤
       torusRCProbability hN hM q (torusRCBarrier hNp hMp n ∩
         torusCPrime hNp hMp hNdiv hM n) := by
-  have hmod : N % 8 = 0 := Nat.mod_eq_zero_of_dvd hNdiv
   have hleft : (N / 2 : ℤ) ≤ sourceRightColumn N - N / 4 := by
     dsimp [sourceRightColumn]
     omega

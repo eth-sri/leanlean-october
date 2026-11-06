@@ -5,7 +5,7 @@ public import PottsDiscontinuity.FK.Expectation
 
 /-! A joint event is bounded by its genuine conditional probability. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusExploration
 open FK.FiniteProbability

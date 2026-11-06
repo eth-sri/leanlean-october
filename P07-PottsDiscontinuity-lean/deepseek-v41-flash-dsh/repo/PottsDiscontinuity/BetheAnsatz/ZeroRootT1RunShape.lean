@@ -71,7 +71,6 @@ theorem t1ShiftedWord_no_ordinaryML {n : ℕ} {l : Fin (n + 1)}
     ¬ (t1ShiftedWord i k.castSucc = false ∧
       t1ShiftedWord i k.succ = true) := by
   rintro ⟨hfalse, htrue⟩
-  have hrot := finRotate_of_lt k.isLt
   have hsucc : finRotate (n + 1) k.castSucc = k.succ := by
     simp
   have hnext : i.w (finRotate (n + 1) (t1RunShift i k.castSucc)) = true := by

@@ -14,7 +14,7 @@ inequality between the probabilities of two events of `G` valid for *every* boun
 therefore transfers to the ambient measure.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusCrossing
 

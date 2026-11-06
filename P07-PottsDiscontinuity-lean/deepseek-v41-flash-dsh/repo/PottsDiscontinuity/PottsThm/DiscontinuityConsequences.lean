@@ -6,7 +6,7 @@ public import Mathlib.Topology.Homotopy.Path
 public import PottsDiscontinuity.Duality.Discontinuity
 public import PottsDiscontinuity.PottsThm.CriticalParameters
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 
@@ -58,7 +58,6 @@ theorem rc_discontinuity_of_positive_rate (q : ℕ) (hq : 4 < q)
   let qR : Set.Ici (1 : ℝ) := ⟨(q : ℝ), by
     change (1 : ℝ) ≤ (q : ℝ)
     exact_mod_cast (show 1 ≤ q by omega)⟩
-  have hparams := fkCritical_toP_toQ q hq
   have hφ₀' : IsRCInfiniteVolumeLimit (FK.criticalParameters qR).toP
       (FK.criticalParameters qR).toQ 0 φ₀.toMeasure := by
     have hh := hφ₀

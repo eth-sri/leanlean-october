@@ -9,7 +9,7 @@ Extend any order of the old open edges by the newly open edges. Handle events
 cannot be lost. Order independence transfers this to the coordinate-defined count.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Torus
 
@@ -56,7 +56,6 @@ theorem ribbonHandleCount_mono (hN : Even N) (hM : Even M) (A B : RCConfig N M)
     (openEdgeList_nodup E).append (openEdgeList_nodup A) hdis
   have hcfg : configOfList (L ++ K) = B := by
     funext v
-    have hv := hAB v
     change decide (v ∈ openEdgeList E ++ openEdgeList A) = B v
     simp only [List.mem_append, mem_openEdgeList_iff]
     change decide ((B v && Bool.not (A v)) = true ∨ A v = true) = B v

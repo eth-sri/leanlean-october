@@ -7,7 +7,7 @@ public import Mathlib.Tactic
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceSetEdgeCount
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceUnionConnectivity
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

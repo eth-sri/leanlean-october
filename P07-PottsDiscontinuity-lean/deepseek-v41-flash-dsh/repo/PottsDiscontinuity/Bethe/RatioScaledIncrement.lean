@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.RatioProfile
 
 /-! # Moving pairs of roots and scaled logarithmic increments -/
 
-@[expose] public section
+public section
 
 open Set Filter Asymptotics
 open scoped Topology

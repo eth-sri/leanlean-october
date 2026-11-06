@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusTopology.LiftedEdgeCover
 (under `Torus.stepPerm`) at every step. In particular its displacement is geometric,
 rather than merely an abstract sum of two cocycles. -/
 
-@[expose] public section
+public section
 
 open PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.TorusTopology

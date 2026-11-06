@@ -6,7 +6,7 @@ public import Mathlib.Topology.Instances.EReal.Lemmas
 
 /-! # The polynomial crossing prefactor has vanishing block rate -/
 
-@[expose] public section
+public section
 
 open Filter Topology
 
@@ -23,7 +23,6 @@ theorem tendsto_block_log_rate_zero (c : ℝ) (hc : 0 < c) :
   simp only [mul_zero,sub_zero] at h
   apply h.congr'
   filter_upwards [eventually_ge_atTop 1] with n hn
-  have hnR : (0:ℝ)<n := by exact_mod_cast (show 0<n by omega)
   rw [Real.log_div hc.ne' (by positivity),
     Real.log_mul (by norm_num) (by positivity),Real.log_pow]
   ring

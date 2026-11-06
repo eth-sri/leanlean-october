@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.Theorem23Counting
 
 /-! # Exact counting increments and cell mean values for Bethe solutions -/
 
-@[expose] public section
+public section
 
 open Set
 open scoped BigOperators

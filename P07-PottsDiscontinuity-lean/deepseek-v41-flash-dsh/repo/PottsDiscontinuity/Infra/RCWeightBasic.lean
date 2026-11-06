@@ -13,7 +13,7 @@ Provenance: proofs first written by an independent statement reviewer in a trans
 (2026-10-18) and moved here unchanged apart from layout.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity
 

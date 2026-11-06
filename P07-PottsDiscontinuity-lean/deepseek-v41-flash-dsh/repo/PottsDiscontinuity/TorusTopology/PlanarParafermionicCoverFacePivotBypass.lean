@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFacePivot
 public import Mathlib.Combinatorics.SimpleGraph.DeleteEdges
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

@@ -11,7 +11,7 @@ The premises that B ∩ C′ forces `U = 1` and that `U ≥ r` forces `r` distin
 clusters after the seam row is closed are discharged by `TorusTopology.hBCU_proved` and
 `TorusTopology.hUr_proved`. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusRC
 

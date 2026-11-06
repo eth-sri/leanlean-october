@@ -8,7 +8,7 @@ public import PottsDiscontinuity.TorusRC.WindingPeriods
 
 /-! # A genuine dual vertical winding blocks primal strip crossings -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusRC
 
@@ -108,12 +108,6 @@ theorem winding_blocks_dual_strip_crossing (hM : Even M)
     calc
       (Q 1).2 = (g (periodColumnSite hM x hx (L:ℤ))).2 := congrArg Prod.snd Q.target'
       _ = b.2 := rfl
-  have hheight : a.2 ≤ b.2 := by
-    change ((-(M:ℤ)*L:ℤ):ℝ) ≤ (((M:ℤ)*L:ℤ):ℝ)
-    have h : (0:ℤ) ≤ (M:ℤ)*L := by positivity
-    have hh : -((M:ℤ)*L) ≤ (M:ℤ)*L := neg_le_self h
-    rw [← neg_mul] at hh
-    exact_mod_cast hh
   obtain ⟨s,t,hst⟩ := FK.Curves.pathRectangle_crossing_intersection P Q hPbox hQbox
     hPleft hPright hQbottom hQtop
   exact Set.disjoint_left.mp (opposite_open_walks_disjoint hNp hMp A 0 ((3*n:ℕ):ℤ) 0 K p q)

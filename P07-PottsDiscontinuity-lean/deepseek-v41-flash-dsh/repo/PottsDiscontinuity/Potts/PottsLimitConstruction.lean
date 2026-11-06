@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Potts.PottsBoxLaws
 
 /-! Assemble actual frozen Potts limits from proved real cylinder limits. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 

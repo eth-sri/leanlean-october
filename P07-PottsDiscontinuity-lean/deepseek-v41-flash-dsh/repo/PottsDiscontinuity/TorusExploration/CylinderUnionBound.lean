@@ -39,8 +39,6 @@ lemma card_topVertex_le : Fintype.card (TopVertex N M) ≤ N := by
   apply Subtype.ext
   apply Prod.ext h
   apply Fin.ext
-  have hu := u.property
-  have hv := v.property
   omega
 
 /-- Periodic continuation of a finite list, with no distinguished default vertex. -/

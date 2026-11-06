@@ -5,7 +5,7 @@ module
 public import PottsDiscontinuity.Duality.LatticeCellBoundary
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

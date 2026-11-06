@@ -3,7 +3,7 @@ module
 public import PottsDiscontinuity.FK.WiredBoxLaw
 public import PottsDiscontinuity.FK.IncreasingEvents
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

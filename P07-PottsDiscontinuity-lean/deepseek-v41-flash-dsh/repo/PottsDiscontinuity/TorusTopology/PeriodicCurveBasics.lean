@@ -4,7 +4,7 @@ public import PottsDiscontinuity.TorusTopology.PeriodicMidpointLift
 
 /-! Simplicity of the complete periodic lift, rather than only its first period. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology
 open Torus TorusLoops TorusRC

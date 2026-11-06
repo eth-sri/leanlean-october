@@ -5,7 +5,7 @@ module
 public import PottsDiscontinuity.FK.EmbeddedBoundaryUpper
 public import PottsDiscontinuity.FK.EmbeddedClosedInteriorOuterBoundary
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

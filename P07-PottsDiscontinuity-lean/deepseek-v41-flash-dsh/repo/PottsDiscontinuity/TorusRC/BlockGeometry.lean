@@ -4,7 +4,7 @@ public import PottsDiscontinuity.TorusRC.ReflectedPairs
 
 /-! # Actual lifted connections supplied by the reflected blocks -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusRC
 

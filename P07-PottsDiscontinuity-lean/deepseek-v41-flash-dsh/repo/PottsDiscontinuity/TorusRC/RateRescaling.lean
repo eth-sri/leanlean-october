@@ -5,7 +5,7 @@ public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 
 /-! # Absorbing a one-unit strip margin into a uniform crossing constant -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusRC
 

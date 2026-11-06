@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.RatioFourierLimit
 
 /-! # Sign-invariant formulation for the parameter `c` -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory Finset
 open scoped Topology BigOperators

@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusRC.RateRescaling
 
 /-! # The source barrier lower bound from crossing, surgery, and duality -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusRC
 
@@ -67,7 +67,6 @@ theorem barrier_source_lower_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
   have hd : 0 < d := by dsimp [d]; positivity
   have hd1 : d ≤ 1 := by
     have he : 1 ≤ Real.exp (2:ℝ) := Real.one_le_exp (by norm_num)
-    have hc2 : c^2 ≤ 1 := pow_le_one₀ hc.le hc1
     apply (div_le_one (by positivity)).mpr
     nlinarith
   refine ⟨d,hd,hd1,?_⟩

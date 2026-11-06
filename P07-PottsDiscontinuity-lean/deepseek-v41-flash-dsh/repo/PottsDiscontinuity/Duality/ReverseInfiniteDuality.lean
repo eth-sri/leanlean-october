@@ -9,7 +9,7 @@ public import PottsDiscontinuity.Duality.InfiniteDuality
 /-! Applying the planar dual transform twice translates face-base coordinates.
 Translation invariance therefore also gives wired-to-free infinite-volume duality. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 open FK FK.Medial MeasureTheory

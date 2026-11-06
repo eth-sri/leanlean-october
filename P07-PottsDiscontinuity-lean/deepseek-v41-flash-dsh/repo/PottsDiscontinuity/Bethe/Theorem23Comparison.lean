@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.Theorem23StabilityEstimate
 
 /-! # Comparing the step density with the derivative of the counting function -/
 
-@[expose] public section
+public section
 
 open Set
 open scoped BigOperators

@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Potts.WiredConnectionLimit
 
 /-! Merged connection-data limits survive the literal corner correction. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 

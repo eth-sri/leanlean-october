@@ -9,7 +9,7 @@ The Vandermonde factor occurring in the cyclotomic calculation is nonzero whenev
 primitive root has order strictly greater than the number of rows.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.SixVertex
 

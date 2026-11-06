@@ -11,7 +11,7 @@ product of the L/M weights with the zero-root slot omitted. This is the precise
 bridge between the analytic pair limit and the zipper invariant.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Classical
 

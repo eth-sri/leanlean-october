@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.RatioOddSums
 
 /-! # Exact logarithmic bookkeeping for the odd aligned-root quotient -/
 
-@[expose] public section
+public section
 
 open Finset
 open scoped BigOperators
@@ -25,7 +25,6 @@ theorem ratio_odd_log_correction (c : ℝ) (s N : ℕ) (h4 : 4 ∣ N)
   have hNcount : 2 * m = N / 2 := by dsimp [m]; obtain ⟨z, hz⟩ := h4; omega
   have hmt : t + 1 + s = m := by dsimp [m, t]; obtain ⟨z, hz⟩ := h4; omega
   have hqcount : 2 * t + 1 = N / 2 - (2 * s + 1) := by omega
-  have hm : 0 < m := by omega
   have href (j : Fin (N / 2)) : ratioEll c (p (Fin.rev j)) = ratioEll c (p j) := by
     rw [show p (Fin.rev j) = -p j from hp.2.2 j, ratio_ell_neg]
   let f : Fin m → ℝ := fun j => ratioEll c (ratioPositiveRoot N h4 p j)

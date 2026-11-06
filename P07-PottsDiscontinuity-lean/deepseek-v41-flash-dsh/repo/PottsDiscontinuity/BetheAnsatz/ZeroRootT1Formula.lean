@@ -177,8 +177,6 @@ theorem t0_t1_pairLimits_eq_eigenvalueZero {N n : ℕ} {c : ℝ}
       ∑ i : T1PairIndex n l, t1PairLimit (N := N) c x p l i =
         eigenvalueZero N c p l * coordinateWave (anisotropy c) p x := by
   classical
-  let P : ℂ :=
-    ∏ j ∈ (univ : Finset (Fin (n + 1))).erase l, M c (z (p j))
   let D : ℂ := t1RootDerivativeSum (N := N) (anisotropy c) p l
   have hseam (σ : Equiv.Perm (Fin (n + 1))) :
       (σ.symm l = Fin.last n) ↔ (σ (Fin.last n) = l) := by

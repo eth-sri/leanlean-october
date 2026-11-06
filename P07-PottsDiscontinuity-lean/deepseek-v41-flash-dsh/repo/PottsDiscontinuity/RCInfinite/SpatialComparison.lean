@@ -212,7 +212,6 @@ theorem free_box_joint_ge (θ : Parameters) (hbox : latticeBox c r ⊆ latticeBo
     (isCylinder_allOpen F).measurableSet hB (allOpen_dependsOn_box F hF) hout
     (box_allOpen_upper 0 F hF)
   intro K x y hxy
-  have hxy' : x = y := hxy
   subst y
   exact (isolatedExtensionPullbackBoundary (boxVertexEmbedding hbox)
     (frozenBoundary (boxBoundary 0 d s) K.val)).partition.iseqv.refl x

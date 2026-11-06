@@ -2,7 +2,7 @@ module
 
 public import Mathlib.MeasureTheory.Measure.Real
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 

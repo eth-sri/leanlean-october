@@ -5,7 +5,7 @@ public import PottsDiscontinuity.TorusTopology.LoopPhaseCrossings
 /-! U at least r gives r distinct bottom-to-top clusters in the exact
 seam-closed cylinder (`hUr_proved`). Positive loop phases retain every winding multiplicity. -/
 
-@[expose] public section
+public section
 
 open PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.TorusTopology

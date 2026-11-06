@@ -10,7 +10,7 @@ root-incident, and canceling fibers. This file first proves that finite identity
 the next step is to pass to its T₀/T₁ limit and identify the transfer action.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Classical Filter Topology
 

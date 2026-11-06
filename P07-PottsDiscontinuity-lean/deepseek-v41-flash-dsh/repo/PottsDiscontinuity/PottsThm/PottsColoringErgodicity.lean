@@ -4,7 +4,7 @@ public import Mathlib.Probability.UniformOn
 public import PottsDiscontinuity.PottsThm.ColoringErgodicity
 public import PottsDiscontinuity.RCInfinite.Mixing
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.PottsThm
 

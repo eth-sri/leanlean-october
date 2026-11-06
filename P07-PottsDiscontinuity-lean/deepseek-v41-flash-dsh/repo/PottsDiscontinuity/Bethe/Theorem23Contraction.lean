@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.Prop21Positivity
 
 /-! # Poisson contraction with an explicit mass defect -/
 
-@[expose] public section
+public section
 
 open Set MeasureTheory intervalIntegral
 
@@ -92,7 +92,6 @@ theorem exists_uniform_double_Xi_lower {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1) :
     dsimp [m]
     exact (div_lt_one (by linarith)).2 (by linarith)
   refine ⟨m, hm, hm1, fun Δ hΔ t => ?_⟩
-  have hlam : 0 < lamOf Δ := lamOf_pos (lt_of_le_of_lt hΔ hΔ₀)
   have hmono : lam0 ≤ 2 * lamOf Δ := by
     have hi := lamOf_mono hΔ₀ hΔ
     dsimp [lam0]

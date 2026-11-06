@@ -9,7 +9,7 @@ Combining the seam-closing estimate with the root-set exploration estimate
 gives an explicit probability bound for a large homological loop count.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusLoops
 

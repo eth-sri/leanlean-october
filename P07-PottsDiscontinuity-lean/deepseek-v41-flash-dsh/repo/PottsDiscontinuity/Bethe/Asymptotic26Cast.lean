@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.Asymptotic26
 
 /-! # Theorem 2.6 with an arbitrary positive root count -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory
 open scoped Topology BigOperators

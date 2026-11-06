@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusTopology.ClusterIntegralWinding
 Conservation and the proved incidence-degree bound suffice; no assertion that
 these values are ±1 is made. -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.TorusTopology

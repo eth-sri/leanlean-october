@@ -24,7 +24,7 @@ Here `pfRoot A = sSup (spectrum ℝ A)` is the largest eigenvalue.
   nonnegative vectors / the sum of all entries.
 -/
 
-@[expose] public section
+public section
 
 open Matrix Filter Topology
 

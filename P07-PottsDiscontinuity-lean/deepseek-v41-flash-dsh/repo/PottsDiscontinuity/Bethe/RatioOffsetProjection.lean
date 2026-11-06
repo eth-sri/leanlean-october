@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.RatioPredecessor
 
 /-! # The canonical root projection recovers the source offset function -/
 
-@[expose] public section
+public section
 
 open Set Finset
 

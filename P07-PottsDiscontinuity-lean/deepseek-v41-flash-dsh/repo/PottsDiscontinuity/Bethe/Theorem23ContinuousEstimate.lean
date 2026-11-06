@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Bethe.Theorem23Mass
 
 /-! # Continuous contraction applied to the discrete density -/
 
-@[expose] public section
+public section
 
 open Set MeasureTheory intervalIntegral
 

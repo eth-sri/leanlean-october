@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusTopology.PlanarFiniteCompassFan
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSelectedCornerCoefficient
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSelectedCornerNeighbors
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

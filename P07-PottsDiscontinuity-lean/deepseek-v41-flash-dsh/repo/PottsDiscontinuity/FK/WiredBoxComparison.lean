@@ -9,7 +9,7 @@ public import PottsDiscontinuity.FK.EmbeddedClosedInteriorOuterComparison
 
 /-! Wired box laws decrease on increasing cylinder events as the domain grows. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

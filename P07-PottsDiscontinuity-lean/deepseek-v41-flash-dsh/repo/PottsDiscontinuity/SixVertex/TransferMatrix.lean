@@ -11,7 +11,7 @@ public import PottsDiscontinuity.SixVertex.Interlace
 * each block `V^{[n]}` is symmetric and nonnegative, with diagonal entries `2`.
 -/
 
-@[expose] public section
+public section
 
 open Finset Matrix
 

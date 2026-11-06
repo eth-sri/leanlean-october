@@ -7,7 +7,7 @@ public import PottsDiscontinuity.Potts.InfinitePartitionMeasurability
 
 /-! Corrected consequence 2: the boundary-colour probability and wired percolation. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 

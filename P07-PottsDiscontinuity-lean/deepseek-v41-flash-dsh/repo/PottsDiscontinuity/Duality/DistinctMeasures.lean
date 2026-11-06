@@ -11,7 +11,7 @@ public import PottsDiscontinuity.Duality.LongConnectionBound
 This route uses the planar crossing alternative directly, without assuming
 positive wired percolation or a surrounding-circuit theorem. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 

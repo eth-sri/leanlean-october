@@ -62,7 +62,6 @@ private theorem lowerLoopFactor_ge_qsq_inv {N M : ℕ} (hN : Even N) (hM : Even 
     4 / q.val ^ 2 ≤ lowerLoopFactor hN hM q hNp hMp A := by
   have hqpos : 0 < q.val := by linarith
   have hqone : 1 ≤ q.val := le_trans (by norm_num) q.property
-  have hsqrt : 0 < Real.sqrt q.val := Real.sqrt_pos.2 hqpos
   have hcount := TorusTopology.windingLoopCount_eq_two_of_U_eq_one
     hN hM ⟨0, hNp⟩ ⟨0, hMp⟩ A hU
   have hnet : Torus.rcNetIndicator hN hM A ≤ 1 := by
@@ -308,7 +307,6 @@ private theorem lowerExactOneRate_liminf_le_lambda_gap
           (M : ℝ) ≤
         (1 / (M : ℝ)) * Real.log (SixVertex.Z6Vr c N M 1 / SixVertex.Z6V c N M) +
           Real.log (q.val ^ 2) / (M : ℝ) := by
-      have hMposR : 0 < (M : ℝ) := by exact_mod_cast hMpos
       calc
         _ ≤ (Real.log (q.val ^ 2) +
             Real.log (SixVertex.Z6Vr c N M 1 / SixVertex.Z6V c N M)) / (M : ℝ) :=
@@ -398,12 +396,6 @@ theorem xi_inverse_ge_critical_rate
     filter_upwards [Filter.eventually_ge_atTop K] with j hj
     dsimp [idx]
     omega
-  have hnSeqAtTop : Filter.Tendsto nSeq Filter.atTop Filter.atTop := by
-    apply Filter.tendsto_atTop.2
-    intro K
-    filter_upwards [Filter.eventually_ge_atTop K] with j hj
-    dsimp [nSeq, idx]
-    omega
   have hrootSeq : Filter.Tendsto
       (fun j : ℕ => SixVertex.Lambda c (4 * (idx j + B)) 1 /
         SixVertex.Lambda c (4 * (idx j + B)) 0)
@@ -469,7 +461,6 @@ theorem xi_inverse_ge_critical_rate
       have h := hwidthLarge j
       rw [hk] at h
       exact h
-    have hkpos : 0 < k := by omega
     have hdiv : (k + k) / 2 = k := by omega
     rw [hdiv]
     rw [Nat.sub_add_cancel (by omega : 1 ≤ k)]

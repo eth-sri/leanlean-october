@@ -3,7 +3,7 @@ module
 public import PottsDiscontinuity.RCInfinite.ClusterEvents
 public import PottsDiscontinuity.RCInfinite.ErgodicLimits
 
-@[expose] public section
+public section
 
 open MeasureTheory Set
 

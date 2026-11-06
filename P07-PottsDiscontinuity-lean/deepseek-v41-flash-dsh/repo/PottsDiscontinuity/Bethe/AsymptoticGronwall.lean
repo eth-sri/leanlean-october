@@ -4,7 +4,7 @@ public import Mathlib
 
 /-! # A centered discrete Gronwall estimate -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Bethe
 

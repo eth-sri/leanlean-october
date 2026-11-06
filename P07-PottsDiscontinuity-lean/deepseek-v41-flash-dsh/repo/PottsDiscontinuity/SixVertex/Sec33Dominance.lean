@@ -12,7 +12,7 @@ module proves its finite spectral assembly conditionally on the stated exponenti
 `r ≥ 2` and the strict `r = 1` comparison; it does not prove those analytic hypotheses.
 -/
 
-@[expose] public section
+public section
 
 open Finset Matrix Filter Topology PottsDiscontinuity.PerronFrobenius
 

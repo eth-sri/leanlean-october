@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.Theorem23CompactIFT
 
 /-! # The analytic family of Bethe roots -/
 
-@[expose] public section
+public section
 
 open Set
 

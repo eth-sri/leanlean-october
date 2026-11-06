@@ -11,7 +11,7 @@ region, no two vertices embedded in its complement become identified by the
 induced frozen boundary partition.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusLoops
 
@@ -43,7 +43,6 @@ theorem isolatedExtensionPullbackFrozenFree_of_openEdges_inside
     induction hab with
     | refl => rfl
     | @tail z w hpath hadj ih =>
-      have haz : a = z := ih
       subst z
       rcases hK hadj with ⟨hau, _⟩
       exact (ha hau).elim

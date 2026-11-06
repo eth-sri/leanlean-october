@@ -9,7 +9,7 @@ Each gap coordinate agrees with a row particle modulo N exactly at a gap endpoin
 This proves the extended-weight formula, including the endpoint across the seam.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Classical
 

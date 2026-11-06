@@ -18,7 +18,7 @@ the type of the stated theorem, so that the proof body in the statement file is 
 `by exact PottsDiscontinuity.Provider.rc_theorem_1_2_positivity_eq_1_3`.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Provider
 

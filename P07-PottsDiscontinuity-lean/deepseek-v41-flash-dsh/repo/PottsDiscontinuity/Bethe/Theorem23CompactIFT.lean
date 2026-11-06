@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.Theorem23LocalSection
 
 /-! # Compact continuation of analytic implicit roots -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology

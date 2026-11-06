@@ -5,7 +5,7 @@ module
 public import Mathlib.Combinatorics.SimpleGraph.DegreeSum
 public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

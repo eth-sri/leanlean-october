@@ -6,7 +6,7 @@ public import PottsDiscontinuity.FK.BoxComparison
 public import PottsDiscontinuity.FK.CylinderConvergence
 public import PottsDiscontinuity.FK.BoxExhaustion
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

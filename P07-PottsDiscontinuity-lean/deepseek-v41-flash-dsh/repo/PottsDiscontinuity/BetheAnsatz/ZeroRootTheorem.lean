@@ -10,7 +10,7 @@ gap-sum representation on the particle block and support of the zero-extended
 vector away from that block.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Matrix Classical
 

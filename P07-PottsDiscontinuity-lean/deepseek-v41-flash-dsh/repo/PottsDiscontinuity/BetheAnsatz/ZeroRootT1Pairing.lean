@@ -10,7 +10,7 @@ first order. This lemma isolates the analytic multiplication step from the
 permutation and word combinatorics.
 -/
 
-@[expose] public section
+public section
 
 open Complex Filter Topology
 

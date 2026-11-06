@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticOffsetControl
 
 /-! # Linear control and asymptotic equicontinuity of the step offsets -/
 
-@[expose] public section
+public section
 
 open Set
 

@@ -11,7 +11,7 @@ The full transfer action is the finite gap sum. Its word encoding and pairwise
 cancellation leave the two constant words, giving the regular eigenvalue.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Matrix Classical
 

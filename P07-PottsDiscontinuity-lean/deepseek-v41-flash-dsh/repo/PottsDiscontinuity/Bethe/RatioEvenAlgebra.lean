@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.RatioProducts
 
 /-! # The exact finite even-ratio factorization (3.7) -/
 
-@[expose] public section
+public section
 
 open Finset
 open scoped BigOperators

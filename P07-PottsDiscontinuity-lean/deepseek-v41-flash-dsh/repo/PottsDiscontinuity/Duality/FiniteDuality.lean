@@ -114,7 +114,6 @@ private lemma dual_weight_algebra {q p : ℝ} (hq : 0 < q) (hp : 0 < p) (hp1 : p
         (dualParameter q p ^ b * (1 - dualParameter q p) ^ a * q ^ l) := by
   let D := p + q * (1 - p)
   have hD : D ≠ 0 := (dualParameter_den_pos hq hp hp1).ne'
-  have hqne : q ≠ 0 := hq.ne'
   have hqexp : V + b + l = N + 1 + k := by omega
   rw [one_sub_dualParameter hq hp hp1, dualParameter]
   change _ = (D ^ N * q ^ V / q ^ (N + 1)) *

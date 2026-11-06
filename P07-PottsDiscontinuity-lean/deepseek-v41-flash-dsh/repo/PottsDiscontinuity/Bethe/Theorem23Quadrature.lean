@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticQuadrature
 
 /-! # Quantitative quadrature against the root step density -/
 
-@[expose] public section
+public section
 
 open Set MeasureTheory intervalIntegral
 open scoped BigOperators

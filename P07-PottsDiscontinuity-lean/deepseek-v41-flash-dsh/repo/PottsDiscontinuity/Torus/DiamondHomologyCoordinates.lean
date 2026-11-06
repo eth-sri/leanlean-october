@@ -84,7 +84,6 @@ def fullHomologyDisplacementMap (hN : Even N) (hM : Even M) :
 
 theorem fullHomologyDisplacementMap_surjective (hN : Even N) (hM : Even M)
     (hNp : 0 < N) (hMp : 0 < M) : Function.Surjective (fullHomologyDisplacementMap hN hM) := by
-  have hn : (N * M : ℚ) ≠ 0 := by positivity
   rintro ⟨x, y⟩
   refine ⟨(ribbonBoundarySpace hN hM (openRCConfig N M)).mkQ
     ((-y / (N * M : ℚ)) • verticalDiamondCycle hN hM +

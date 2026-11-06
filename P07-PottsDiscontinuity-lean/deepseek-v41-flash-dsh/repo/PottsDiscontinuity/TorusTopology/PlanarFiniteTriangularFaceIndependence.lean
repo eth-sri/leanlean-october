@@ -5,7 +5,7 @@ module
 public import PottsDiscontinuity.TorusTopology.PlanarFiniteEvenTriangularElimination
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

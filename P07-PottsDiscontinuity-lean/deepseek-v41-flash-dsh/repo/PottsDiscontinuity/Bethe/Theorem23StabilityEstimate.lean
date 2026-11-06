@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.Theorem23Counting
 
 /-! # The counting-function contraction estimate (2.10) -/
 
-@[expose] public section
+public section
 
 open Set MeasureTheory intervalIntegral
 open scoped BigOperators
@@ -48,7 +48,6 @@ theorem exists_uniform_counting_contraction {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1) 
   refine ⟨m, hm, hm1, fun r D hD => ?_⟩
   let Q := C * D + 2 * C * (2 * r + 1 : ℝ) + C
   let E := X * Q / (2 * Real.pi) + m * (r : ℝ) / (2 * Real.pi)
-  have hQ : 0 < Q := by dsimp [Q]; positivity
   have hE : 0 < E := by dsimp [E]; positivity
   refine ⟨E, hE, fun Δ hΔ N k p hp hs hcount hbdd hmesh => ?_⟩
   have hΔvalid := lt_of_le_of_lt hΔ hΔ₀

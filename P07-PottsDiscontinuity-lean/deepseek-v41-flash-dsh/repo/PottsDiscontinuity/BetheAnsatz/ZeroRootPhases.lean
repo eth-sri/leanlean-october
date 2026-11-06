@@ -10,7 +10,7 @@ Changing one zero momentum to t multiplies a plane wave by the phase at the
 coordinate occupied by that root. This records the root's position explicitly.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Classical
 

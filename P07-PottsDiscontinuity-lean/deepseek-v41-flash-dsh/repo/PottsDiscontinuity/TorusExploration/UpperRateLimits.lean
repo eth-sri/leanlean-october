@@ -6,7 +6,7 @@ public import Mathlib.Topology.Instances.EReal.Lemmas
 
 /-! Numerical passage from the finite cylinder estimate to the height limsup. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusExploration
 open TorusRC Filter Topology

@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusTopology.IndexedWalk
 seam-closed components. The construction integrates indexed walks, so parallel
 edges and their seam crossings are retained. -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.TorusTopology

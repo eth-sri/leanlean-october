@@ -9,7 +9,7 @@ public import PottsDiscontinuity.Frozen.Defs.DiagonalSite
 public import PottsDiscontinuity.Potts.FreeSpinFormula
 public import PottsDiscontinuity.PottsThm.CriticalParameters
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

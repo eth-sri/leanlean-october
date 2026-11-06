@@ -6,7 +6,7 @@ public import Mathlib.LinearAlgebra.Dimension.FreeAndStrongRankCondition
 /-! The complete homological form of U=1: the two essential loops have opposite
 classes (a,1) and (-a,-1), with no restriction on the integer a. -/
 
-@[expose] public section
+public section
 
 open PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.TorusTopology

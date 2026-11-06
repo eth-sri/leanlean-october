@@ -6,7 +6,7 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceCorne
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverCompass
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

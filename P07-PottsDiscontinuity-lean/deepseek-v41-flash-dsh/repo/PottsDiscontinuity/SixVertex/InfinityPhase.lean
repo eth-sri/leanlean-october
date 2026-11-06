@@ -22,7 +22,6 @@ theorem slater_centered_eq_pair_product {k : ℕ} {q : ℂ} (hq : q ≠ 0)
     ext b a
     have hr : (a.rev.val : ℤ) = (k : ℤ) - 1 - a.val := by
       have hh : a.rev.val = k - 1 - a.val := by simp only [Fin.val_rev]; omega
-      have ha := a.isLt
       omega
     simp only [planeWaveMatrix, centeredMomenta, Matrix.projVandermonde_apply]
     rw [← zpow_natCast, ← zpow_natCast, ← _root_.zpow_neg_one,

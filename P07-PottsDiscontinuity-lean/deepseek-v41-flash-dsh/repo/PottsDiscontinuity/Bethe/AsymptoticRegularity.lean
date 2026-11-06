@@ -9,7 +9,7 @@ All bounds here are for a fixed `Δ < -1`, which is the parameter scope of
 Theorem 2.9. They follow from the already proved analyticity statements.
 -/
 
-@[expose] public section
+public section
 
 open Set
 

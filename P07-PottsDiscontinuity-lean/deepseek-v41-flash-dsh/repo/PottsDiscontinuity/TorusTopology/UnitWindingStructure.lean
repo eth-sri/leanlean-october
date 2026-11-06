@@ -5,7 +5,7 @@ public import PottsDiscontinuity.TorusTopology.VerticalSupport
 
 /-! The exact vertical support when U=1. Horizontal winding is unrestricted. -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.TorusTopology

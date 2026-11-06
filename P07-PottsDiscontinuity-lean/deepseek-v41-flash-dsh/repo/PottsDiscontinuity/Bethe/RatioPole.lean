@@ -50,16 +50,10 @@ theorem ratio_regularPart_eq_mul_norm {c x : ℝ}
     (hx : x ∈ Ioo (-Real.pi) Real.pi) (hx0 : x ≠ 0) :
     ratioRegularPart c x = |x| * ‖M c (z x)‖ := by
   have hzx := z_ne_one hx hx0
-  have hden : 1 - z x ≠ 0 := sub_ne_zero.mpr (Ne.symm hzx)
   have hM : M c (z x) = (1 - (c : ℂ) ^ 2 - z x) / (1 - z x) := by
     unfold M
     field_simp
     ring
-  have hxabs := (abs_pos.mpr hx0).ne'
-  have hsinc : |Real.sinc (x / 2)| ≠ 0 := by
-    have hd := norm_ne_zero_iff.mpr hden
-    rw [ratio_norm_denominator] at hd
-    exact (mul_ne_zero_iff.mp hd).2
   rw [hM, norm_div, ratio_norm_denominator]
   unfold ratioRegularPart
   field_simp

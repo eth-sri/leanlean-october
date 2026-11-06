@@ -7,7 +7,7 @@ public import PottsDiscontinuity.Bethe.Theorem23Local
 
 /-! # All zeros in the compact Bethe region are interior and regular -/
 
-@[expose] public section
+public section
 
 open Set
 

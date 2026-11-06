@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceSetPi
 public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
@@ -54,7 +54,6 @@ theorem parafermionicCoverFiniteFaceSetWithoutPivotsGraph_induce_carrier_edge_ca
       (parafermionicCoverFiniteFaceSetEdgeSupport S).card := by
   classical
   let U := parafermionicCoverFiniteFaceUnionGraph S
-  let C := parafermionicCoverFiniteFaceUnionCarrier S
   let R := parafermionicCoverFiniteFaceSetWithoutPivotsGraph S
   let E := parafermionicCoverFiniteFaceSetEdgeSupport S
   let P := parafermionicCoverFiniteFaceSetPivots S

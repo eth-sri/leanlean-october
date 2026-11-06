@@ -22,7 +22,7 @@ secant (Fourier transform of `sech` via the Beta function) instead of the residu
 by parts; `T̂` from the splitting `T = -α + U_λ` with `U_λ` an absolutely convergent sine series.
 -/
 
-@[expose] public section
+public section
 
 open Complex Real MeasureTheory Filter Topology Set intervalIntegral
 

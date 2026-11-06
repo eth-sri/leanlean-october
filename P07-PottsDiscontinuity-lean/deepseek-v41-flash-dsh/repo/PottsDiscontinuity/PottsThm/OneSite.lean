@@ -3,7 +3,7 @@ module
 public import PottsDiscontinuity.Potts.FreeSpinObservations
 public import PottsDiscontinuity.Potts.WiredSpinFormula
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

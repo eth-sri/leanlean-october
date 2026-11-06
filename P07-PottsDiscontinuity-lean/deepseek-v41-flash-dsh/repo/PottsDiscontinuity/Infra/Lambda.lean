@@ -8,7 +8,7 @@ public import Mathlib
 For `q > 4`, `λ = arcosh(√q/2)` is the unique `λ > 0` with `cosh λ = √q / 2`.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity
 

@@ -70,7 +70,6 @@ theorem ratio_ellSecond_weighted_bound {c : ℝ} (hc : 2 < c) :
         (fun x => pow_ne_zero 2 (ratio_numerator_pos hc x).ne'))
   obtain ⟨B₀, hB₀⟩ := (isCompact_Icc : IsCompact (Icc (-Real.pi) Real.pi)).exists_bound_of_continuousOn hR.continuousOn
   let B := max B₀ 0
-  have hB : 0 ≤ B := le_max_right _ _
   refine ⟨Real.pi ^ 2 / 4 + Real.pi ^ 2 * B, by positivity, ?_⟩
   intro x hx
   by_cases hx0 : x = 0

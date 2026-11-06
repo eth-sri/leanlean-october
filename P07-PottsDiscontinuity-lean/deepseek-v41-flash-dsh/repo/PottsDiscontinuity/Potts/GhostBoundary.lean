@@ -228,7 +228,6 @@ theorem literalJointProbability_eq_ghost_mul_coloring (q : ℕ) (hq : 2 ≤ q)
     (σ : SpinConfiguration q V) (ω : LiteralBond V → Bool) :
     literalJointProbability q V β i σ ω =
       ghostRCProbability q V β ω * ghostColoringProbability q V i hi ω σ := by
-  have hq0 : (q : ℝ) ≠ 0 := by exact_mod_cast (show q ≠ 0 by omega)
   rw [literalJointProbability, constraintJointProbability, constraintJointWeight_eq,
     literalJointPartition_eq_ghost q V β i hi, ghostRCProbability, ghostRCWeight,
     ghostColoringProbability]

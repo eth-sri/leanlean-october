@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusRC.LiftedPaths
 These lemmas preserve lifted displacements instead of substituting finite torus
 connectivity for a winding path. -/
 
-@[expose] public section
+public section
 
 open PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.TorusTopology

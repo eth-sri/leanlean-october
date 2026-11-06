@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.Theorem23Spacing
 
 /-! # Strict quantitative gap improvement at Bethe solutions -/
 
-@[expose] public section
+public section
 
 open Set
 

@@ -4,7 +4,7 @@ module
 
 public import PottsDiscontinuity.FK.FreeBoxLimit
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 namespace PottsDiscontinuity.FK

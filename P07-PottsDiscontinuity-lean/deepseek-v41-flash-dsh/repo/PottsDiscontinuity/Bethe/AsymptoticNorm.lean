@@ -9,7 +9,7 @@ The estimates here use convergence to zero, without imposing a rate.  They
 are the norm-equivalence part of the repair of Theorem 2.6.
 -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory
 open scoped Topology

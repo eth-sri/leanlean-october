@@ -4,7 +4,7 @@ public import PottsDiscontinuity.CorrLength.ConnectionEvents
 
 /-! # Actual connectivity under closed extension and embedded restriction -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusRC
 

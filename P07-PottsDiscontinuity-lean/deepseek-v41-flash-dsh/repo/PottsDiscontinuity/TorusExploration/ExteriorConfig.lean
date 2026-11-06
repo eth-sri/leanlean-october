@@ -4,7 +4,7 @@ public import PottsDiscontinuity.TorusTopology.IndexedWalk
 
 /-! Removing an entire actual cluster from an indexed configuration. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusExploration
 open Torus TorusTopology

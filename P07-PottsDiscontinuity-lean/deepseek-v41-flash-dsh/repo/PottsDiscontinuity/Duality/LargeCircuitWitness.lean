@@ -10,7 +10,7 @@ public import PottsDiscontinuity.RCInfinite.GraphModification
 /-! If there is no infinite primal cluster, closed dual circuits force
 connections from arbitrarily distant points of a fixed ray to the opposite half-plane. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 open FK FK.Medial

@@ -9,7 +9,7 @@ profile: this finite estimate applies to every derivative with `|x l'(x)|`
 bounded. The zero root is explicitly excluded.
 -/
 
-@[expose] public section
+public section
 
 open Set Finset
 open scoped BigOperators

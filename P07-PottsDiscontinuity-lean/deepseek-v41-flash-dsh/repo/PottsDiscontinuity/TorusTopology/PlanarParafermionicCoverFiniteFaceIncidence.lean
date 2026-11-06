@@ -87,8 +87,6 @@ theorem parafermionicCoverFiniteFaceDart_unique
     (he' : e ∈ parafermionicCoverFiniteFaceDarts g) : f = g := by
   rcases f with ⟨⟨x,y⟩,k⟩
   rcases g with ⟨⟨x',y'⟩,k'⟩
-  have hcf := (parafermionicCoverFiniteOrdinaryFaces_mem_iff n ((x,y),k)).mp hf
-  have hcg := (parafermionicCoverFiniteOrdinaryFaces_mem_iff n ((x',y'),k')).mp hg
   simp only [parafermionicCoverFiniteFaceDarts, Finset.mem_insert,
     Finset.mem_singleton, parafermionicCoverFaceRightLift_formula,
     parafermionicCoverFaceRightUpLift_formula,

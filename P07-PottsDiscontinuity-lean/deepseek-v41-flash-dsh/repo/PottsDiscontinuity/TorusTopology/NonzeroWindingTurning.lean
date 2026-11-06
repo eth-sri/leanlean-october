@@ -5,7 +5,7 @@ public import PottsDiscontinuity.TorusTopology.PeriodicLatticeTurning
 /-! The essential-loop turning classification, on the exact torus loop carrier
 `Torus.Loop` used in Corollary 3.13. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology
 open Torus TorusLoops Finset

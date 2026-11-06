@@ -8,7 +8,7 @@ public import PottsDiscontinuity.PottsThm.FreeCorrelationLimit
 public import PottsDiscontinuity.PottsThm.WiredCorrelation
 public import PottsDiscontinuity.PottsThm.WiredInfiniteAssociation
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 open scoped ENNReal

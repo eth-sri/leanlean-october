@@ -11,7 +11,7 @@ This is the corrected statement, with the rotated-lattice free one-arm decay
 provided as its sole additional premise.
 -/
 
-@[expose] public section
+public section
 
 open Filter Topology
 
@@ -85,7 +85,6 @@ theorem lemma_3_14_corrected_limsup
         |windingLoopDensityLogRate hN hNp q n| ≤ ε := by
       filter_upwards [eventually_ge_atTop K] with n hn
       have hnGeom : Kgeom ≤ n := le_trans (le_max_left Kgeom Kε) hn
-      have hnN : N ≤ n := le_trans (le_max_left N (r * (9 * N))) hnGeom
       have hNle : N ≤ 2 * (n + 1) := by omega
       have hmul : (9 * N) * r ≤ n + 1 := by
         calc

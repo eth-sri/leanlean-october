@@ -9,7 +9,7 @@ public import PottsDiscontinuity.TorusRC.CylinderEvents
 The boundary chain's signed intersection with the seam equals the medial loop's
 vertical winding. A single open seam edge has only two incident boundary ends. -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.TorusTopology

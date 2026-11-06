@@ -8,7 +8,7 @@ public import PottsDiscontinuity.Potts.SpinEventDecomposition
 
 /-! Corrected consequence 3: the free spin correlation and actual RC connectivity. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 
@@ -46,7 +46,6 @@ theorem free_spin_correlation (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
     (measurable_pi_apply x) (measurable_pi_apply y)]
   simp_rw [hp]
   rw [Finset.sum_const, Finset.card_univ, ← Nat.card_eq_fintype_card, card_pottsColors, nsmul_eq_mul]
-  have hq0 : (q : ℝ) ≠ 0 := by exact_mod_cast (show q ≠ 0 by omega)
   field_simp
 
 end

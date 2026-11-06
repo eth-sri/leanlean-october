@@ -6,7 +6,7 @@ public import Mathlib.Topology.Homotopy.Path
 public import PottsDiscontinuity.PottsThm.DiscontinuityConsequences
 public import PottsDiscontinuity.PottsThm.OneSite
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 
@@ -37,14 +37,6 @@ theorem critical_potts_limits_pairwise_distinct (q : ℕ) (hq : 4 < q)
     ∀ i j : Fin (q + 1), i ≠ j → (μ i).toMeasure ≠ (μ j).toMeasure := by
   have hq2 : 2 ≤ q := by omega
   have hβ : 0 < pottsCriticalBeta q := pottsCriticalBeta_pos q hq
-  have hθ : (criticalFKParameters q hq).toP =
-      (FK.criticalParameters ⟨(q : ℝ), by
-        change (1 : ℝ) ≤ (q : ℝ)
-        exact_mod_cast (show 1 ≤ q by omega)⟩).toP ∧
-      (criticalFKParameters q hq).toQ =
-      (FK.criticalParameters ⟨(q : ℝ), by
-        change (1 : ℝ) ≤ (q : ℝ)
-        exact_mod_cast (show 1 ≤ q by omega)⟩).toQ := fkCritical_toP_toQ q hq
   have hφ₀weak : Tendsto
       (fun n => boxProbabilityMeasure (fkParameters q hq2 (pottsCriticalBeta q) hβ) (0, 0) n)
       atTop (𝓝 φ₀) := by

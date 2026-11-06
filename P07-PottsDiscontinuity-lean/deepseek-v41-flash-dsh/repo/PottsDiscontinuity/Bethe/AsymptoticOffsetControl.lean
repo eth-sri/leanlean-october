@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticPartition
 
 /-! # Spatial control of the offset step function -/
 
-@[expose] public section
+public section
 
 open Set
 open scoped BigOperators

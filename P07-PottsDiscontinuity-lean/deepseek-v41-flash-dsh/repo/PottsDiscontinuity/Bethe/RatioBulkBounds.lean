@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.RatioLogDifference
 
 /-! # Uniform domination of the actual logarithmic quadrature tests -/
 
-@[expose] public section
+public section
 
 open Set Finset
 open scoped BigOperators

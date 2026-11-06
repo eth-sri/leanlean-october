@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.Theorem23Derivative
 
 /-! # Local analytic Bethe branches at regular solutions -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology

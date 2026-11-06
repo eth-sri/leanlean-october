@@ -84,8 +84,6 @@ theorem t1OutputWord_right {n : ℕ} {l : Fin (n + 1)}
 theorem t1OutputWord_left {n : ℕ} {l : Fin (n + 1)}
     (o : T1OutputIndex n l) : t1OutputWord o (t1EdgeLeft o.edge) = false := by
   have he := t1OutputEndCoordinate_ne_last o
-  have hlt : t1OutputCoordinate o.edge (o.σ.symm l) < Fin.last n :=
-    Fin.lt_last_iff_ne_last.mpr he
   have hleft : t1OutputCoordinate o.edge (t1EdgeLeft o.edge) = Fin.last n := by
     unfold t1OutputCoordinate
     rw [← t1OutputShift_last o.edge]
@@ -165,7 +163,6 @@ theorem t1OutputPath_nonempty {n : ℕ} {l : Fin (n + 1)}
 theorem t1OutputPath_head {n : ℕ} {l : Fin (n + 1)}
     (o : T1OutputIndex n l) :
     (t1OutputPath o).headD 0 = t1EdgeRight o.edge := by
-  let e := t1OutputCoordinate o.edge (o.σ.symm l)
   unfold t1OutputPath
   rw [List.ofFn_succ]
   simp [t1RunPathIndex, t1OutputShift_zero]

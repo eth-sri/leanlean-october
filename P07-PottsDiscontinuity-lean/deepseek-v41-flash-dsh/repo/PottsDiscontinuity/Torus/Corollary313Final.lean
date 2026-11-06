@@ -14,7 +14,7 @@ Lemma 3.10 weight identity and all three parts of Corollary 3.13 without those
 intermediate premises.
 -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 

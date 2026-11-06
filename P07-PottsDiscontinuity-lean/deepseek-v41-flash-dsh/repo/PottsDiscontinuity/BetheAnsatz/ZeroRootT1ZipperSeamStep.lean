@@ -11,7 +11,7 @@ The ordinary zipper identity also holds across the last-to-first edge. The
 Bethe boundary relation and the `N`-shift in the position phase cancel exactly.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Classical
 

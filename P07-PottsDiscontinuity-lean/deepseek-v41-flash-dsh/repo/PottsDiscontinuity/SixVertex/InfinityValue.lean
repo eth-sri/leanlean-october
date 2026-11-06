@@ -6,7 +6,7 @@ public import PottsDiscontinuity.SixVertex.InfinityPerron
 
 /-! # The exact largest eigenvalue at negative infinity (Lemma 3.2) -/
 
-@[expose] public section
+public section
 
 open Finset Matrix
 open PottsDiscontinuity.PerronFrobenius

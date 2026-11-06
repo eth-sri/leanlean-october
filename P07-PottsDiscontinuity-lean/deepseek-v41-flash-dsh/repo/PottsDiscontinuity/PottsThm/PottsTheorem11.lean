@@ -11,7 +11,7 @@ public import PottsDiscontinuity.PottsThm.MixtureSeparation
 public import PottsDiscontinuity.PottsThm.PottsColoringErgodicity
 public import PottsDiscontinuity.PottsThm.RateTransfer
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Real
 open scoped ENNReal

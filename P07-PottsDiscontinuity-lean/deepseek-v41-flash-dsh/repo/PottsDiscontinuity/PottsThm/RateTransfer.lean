@@ -4,7 +4,7 @@ public import PottsDiscontinuity.CorrLength.Positivity
 public import PottsDiscontinuity.Frozen.Defs.DiagonalSite
 public import PottsDiscontinuity.Potts.FreeSpinFormula
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

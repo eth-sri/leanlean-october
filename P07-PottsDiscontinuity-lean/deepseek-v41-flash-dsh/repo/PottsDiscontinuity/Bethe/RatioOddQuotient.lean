@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.RatioOddLogCorrection
 
 /-! # Exact five-factor expression for the odd eigenvalue quotient -/
 
-@[expose] public section
+public section
 
 open Finset
 open scoped BigOperators

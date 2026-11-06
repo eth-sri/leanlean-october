@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusTopology.WindingPhase
 /-! A loop of positive vertical winding b gives b distinct crossing clusters
 in the seam-closed cylinder, all within its original incident primal cluster. -/
 
-@[expose] public section
+public section
 
 open PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.TorusTopology

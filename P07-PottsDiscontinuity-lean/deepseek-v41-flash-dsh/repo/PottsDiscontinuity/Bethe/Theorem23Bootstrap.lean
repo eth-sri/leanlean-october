@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.Theorem23Comparison
 
 /-! # Mesh bootstrap for compact continuation -/
 
-@[expose] public section
+public section
 
 open Set
 open scoped BigOperators
@@ -21,7 +21,6 @@ theorem rootStepDensity_error_bddAbove {Δ : ℝ} (hΔ : Δ < -1)
   let c : Fin (n + 1) → ℝ := fun j => rootGapMultiplicity N n hs j /
     ((N : ℝ) * (rootPartitionPoint n p hn j.succ - rootPartitionPoint n p hn j.castSucc))
   let B := ∑ j, |c j|
-  have hB : 0 ≤ B := Finset.sum_nonneg fun _ _ => abs_nonneg _
   have hstep (x : ℝ) : |rootStepDensity N n p hp hn hs x| ≤ B := by
     unfold rootStepDensity
     apply (Finset.abs_sum_le_sum_abs _ _).trans
@@ -73,7 +72,6 @@ theorem exists_uniform_density_bound_of_Bethe_mesh (r : ℕ) {Δ₀ : ℝ}
   let hb := rootStepDensity_error_bddAbove (lt_of_le_of_lt hΔ hΔ₀) p hp (by omega) hs
   have hc := hcmp Δ hΔ N k p hp hs hBE D hD hb hmesh
   have ht := hestimate Δ hΔ N k p hp hs hcount hb hmesh
-  have hN : (0 : ℝ) < N := by exact_mod_cast (show 0 < N by omega)
   have hmix : m * densityNorm Δ (lt_of_le_of_lt hΔ hΔ₀)
       (fun x => rootStepDensity N (k + 1) p hp (by omega) hs x - rho Δ x) hb ≤ C / (N : ℝ) := by
     dsimp [C]

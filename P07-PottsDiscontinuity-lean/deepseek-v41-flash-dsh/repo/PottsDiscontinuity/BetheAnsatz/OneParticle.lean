@@ -16,7 +16,7 @@ transposition identity (9) requires `n ≥ 2`. For `n = 1` the transposition is 
 so the amplitude ratio is `1`, whereas the displayed right-hand side is `-1`.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Matrix
 

@@ -11,7 +11,7 @@ distinct cut-rectangle components, since the cut graph is a subgraph of the
 torus primal graph.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusLoops
 

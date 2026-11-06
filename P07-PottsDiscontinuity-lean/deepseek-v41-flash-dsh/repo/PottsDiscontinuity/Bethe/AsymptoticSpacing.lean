@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticQuadrature
 
 /-! # Spacing errors and the non-circular offset recurrence -/
 
-@[expose] public section
+public section
 
 open Set
 

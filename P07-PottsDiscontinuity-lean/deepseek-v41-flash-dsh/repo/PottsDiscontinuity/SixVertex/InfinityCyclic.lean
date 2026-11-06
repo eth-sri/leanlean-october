@@ -71,7 +71,6 @@ theorem sineLiftWeight_cyclicLiftLeft {k : ℕ} (P : ℤ) (hP : P ≠ 0)
       Real.sin (Real.pi * (((x 0 + P : ℤ) : ℝ) - x a.succ) / (P : ℝ)) =
         Real.sin (Real.pi * ((x a.succ : ℝ) - x 0) / (P : ℝ)) := by
     intro a
-    have hp : (P : ℝ) ≠ 0 := Int.cast_ne_zero.mpr hP
     have ht : Real.pi * (((x 0 + P : ℤ) : ℝ) - x a.succ) / (P : ℝ) =
         Real.pi - Real.pi * ((x a.succ : ℝ) - x 0) / (P : ℝ) := by
       push_cast

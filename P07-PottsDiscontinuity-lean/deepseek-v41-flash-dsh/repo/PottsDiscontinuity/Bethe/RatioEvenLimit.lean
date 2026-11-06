@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.RatioEvenAlgebra
 
 /-! # The complete even-deficit eigenvalue ratio limit -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory
 open scoped Topology BigOperators

@@ -180,7 +180,6 @@ theorem rectangleWeightedExplorationRootCrossing_le
           (embeddedConfigurationRestriction I G f hIG)).toMeasure E).toReal := by
         rw [hmap]
       _ ≤ ρ := by simpa [θ, E, ρ, R] using hconditional
-  have hc : 0 ≤ ρ := NNReal.coe_nonneg _
   have hjoint := pmf_joint_le_of_fiber_le_on_T p out hf S T' ρ hcond
   have hstate : ∀ C, rectangleComplementRemovedState hN hM U C = out C := by
     intro C

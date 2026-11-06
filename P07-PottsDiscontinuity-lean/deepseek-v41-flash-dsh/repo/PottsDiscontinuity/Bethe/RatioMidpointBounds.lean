@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.RatioSecondDerivative
 
 /-! # Summable bounds for the logarithms of odd midpoint factors -/
 
-@[expose] public section
+public section
 
 open Set
 

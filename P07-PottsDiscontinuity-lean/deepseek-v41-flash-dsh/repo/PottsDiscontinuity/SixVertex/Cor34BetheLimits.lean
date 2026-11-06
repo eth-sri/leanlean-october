@@ -15,7 +15,7 @@ This module identifies the generic continuous-family eigenvalue limits with the 
 cyclotomic products in (3.5), then evaluates them for the full range `r ≥ 0`.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Filter Topology
 open PottsDiscontinuity.PerronFrobenius

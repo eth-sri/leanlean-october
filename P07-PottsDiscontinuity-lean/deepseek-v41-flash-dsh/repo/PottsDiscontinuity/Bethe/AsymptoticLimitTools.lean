@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticTaylor
 
 /-! # Moving continuous tests for empirical sums -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology BigOperators

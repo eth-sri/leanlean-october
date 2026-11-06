@@ -9,7 +9,7 @@ public import PottsDiscontinuity.TorusTopology.StripPotential
 `TorusRC.torusCPrime` used in the proof of (3.15). The lower bound
 uses finite cellular topology and the actual prescribed integer lifts. -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.TorusTopology
@@ -24,7 +24,6 @@ theorem one_le_U_of_vertical_loop (hN : Even N) (hM : Even M) (j : Fin M)
     1 ≤ rcVerticalWinding hN hM j A := by
   classical
   obtain ⟨q,hq⟩ := hloop
-  have hp := Int.natAbs_pos.2 hq
   have hb : (loopVertical _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) j q).natAbs ≤
       verticalMass _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) j :=
     Finset.single_le_sum (fun r _ => Nat.zero_le

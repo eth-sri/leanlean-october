@@ -10,7 +10,7 @@ The index here is exactly the frozen index: `diagonalSite n = (⌊n/2⌋,⌊n/2�
 The theorem does not substitute `(n,n)` or infer off-diagonal bounds.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

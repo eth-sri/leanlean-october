@@ -13,7 +13,7 @@ fixed finite lattice box. The canonical origin-centered boxes are nested and
 exhaust the square lattice.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

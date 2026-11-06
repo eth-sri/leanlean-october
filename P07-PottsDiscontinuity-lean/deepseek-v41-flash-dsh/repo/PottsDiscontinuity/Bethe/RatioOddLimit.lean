@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Bethe.RatioOddQuotient
 
 /-! # The complete odd-deficit eigenvalue ratio limit -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory Finset
 open scoped Topology BigOperators
@@ -256,7 +256,6 @@ theorem ratio_odd_eigenvalue_limit_fourier (hodd : r % 2 ≠ 0)
           eigenvalueRegular c (p i)) atTop
         (𝓝 ((Real.exp (-(r : ℝ) * (lamOf Δ + 2 * S)) : ℝ) : ℂ)) := by
   have hlam : 0 < lamOf Δ := lamOf_pos hΔ
-  have hrnat : 0 < r := by omega
   obtain ⟨S, hS, hW15⟩ := PottsDiscontinuity.fourierRatioExponent
     (lam := lamOf Δ) (r := (r : ℝ)) hlam
   have hparam : -Real.cosh (lamOf Δ) = Δ := by rw [cosh_lamOf hΔ]; ring

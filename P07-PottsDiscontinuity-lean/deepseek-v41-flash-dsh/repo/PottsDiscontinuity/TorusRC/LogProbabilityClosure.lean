@@ -6,7 +6,7 @@ public import Mathlib.Topology.Instances.EReal.Lemmas
 
 /-! # Closing strict probability lower bounds after taking logarithms -/
 
-@[expose] public section
+public section
 
 open Filter Topology
 

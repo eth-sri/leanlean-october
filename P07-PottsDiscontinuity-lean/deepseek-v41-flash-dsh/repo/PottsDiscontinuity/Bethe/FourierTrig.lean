@@ -132,7 +132,6 @@ theorem integral_trigTerm_mul_sin (a b : ℕ → ℝ) (n m : ℕ) :
 /-- The constant coefficient of a trigonometric series. -/
 theorem cosCoeff_trigSeries_zero {a b : ℕ → ℝ} (ha : Summable a) (hb : Summable b) (a₀ : ℝ) :
     cosCoeff (trigSeries a₀ a b) 0 = 2 * π * a₀ := by
-  have hpi := Real.pi_pos
   have hs := hasSum_intervalIntegral_of_bound (F := fun n β => trigTerm a b n β)
     (f := fun β => ∑' n, trigTerm a b n β) (continuous_trigTerm a b) _ (ha.abs.add hb.abs)
     (abs_trigTerm_le a b) (hasSum_trigTerm ha hb)
@@ -148,7 +147,6 @@ theorem cosCoeff_trigSeries_zero {a b : ℕ → ℝ} (ha : Summable a) (hb : Sum
 
 theorem cosCoeff_trigSeries_succ {a b : ℕ → ℝ} (ha : Summable a) (hb : Summable b) (a₀ : ℝ)
     (m : ℕ) : cosCoeff (trigSeries a₀ a b) (m + 1) = π * a m := by
-  have hpi := Real.pi_pos
   have hcont : Continuous (fun β => ∑' n, trigTerm a b n β) :=
     continuous_tsum (continuous_trigTerm a b) (ha.abs.add hb.abs) (abs_trigTerm_le a b)
   have hs := hasSum_intervalIntegral_of_bound
@@ -180,7 +178,6 @@ theorem cosCoeff_trigSeries_succ {a b : ℕ → ℝ} (ha : Summable a) (hb : Sum
 
 theorem sinCoeff_trigSeries_succ {a b : ℕ → ℝ} (ha : Summable a) (hb : Summable b) (a₀ : ℝ)
     (m : ℕ) : sinCoeff (trigSeries a₀ a b) (m + 1) = π * b m := by
-  have hpi := Real.pi_pos
   have hcont : Continuous (fun β => ∑' n, trigTerm a b n β) :=
     continuous_tsum (continuous_trigTerm a b) (ha.abs.add hb.abs) (abs_trigTerm_le a b)
   have hs := hasSum_intervalIntegral_of_bound
@@ -227,9 +224,6 @@ theorem xiConv_trigSeries {μ : ℝ} (hμ : 0 < μ) {a b : ℕ → ℝ} (ha : Su
     (a₀ α : ℝ) :
     xiConv μ (trigSeries a₀ a b) α = trigSeries a₀ (fun n => Real.exp (-μ) ^ (n + 1) * a n)
       (fun n => Real.exp (-μ) ^ (n + 1) * b n) α := by
-  have hpi := Real.pi_pos
-  have hr : 0 < Real.exp (-μ) := Real.exp_pos _
-  have hr1 : Real.exp (-μ) < 1 := by rw [Real.exp_lt_one_iff]; linarith
   have hg : IntervalIntegrable (trigSeries a₀ a b) volume (-π) π :=
     (continuous_trigSeries ha hb a₀).intervalIntegrable _ _
   have h := hasSum_xiConv hμ hg α

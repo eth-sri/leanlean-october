@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.Theorem23Quadrature
 
 /-! # Exact physical masses of the discrete and continuous densities -/
 
-@[expose] public section
+public section
 
 open Set MeasureTheory intervalIntegral
 open scoped BigOperators

@@ -5,7 +5,7 @@ module
 public import PottsDiscontinuity.TorusTopology.PlanarFiniteTriangularFaceIndependence
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

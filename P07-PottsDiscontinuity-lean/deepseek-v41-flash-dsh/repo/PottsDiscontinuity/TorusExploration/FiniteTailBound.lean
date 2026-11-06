@@ -10,7 +10,7 @@ public import PottsDiscontinuity.TorusRC.TopologyBounds
 
 /-! The complete finite-volume upper estimate underlying (3.16). -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusExploration
 open Torus TorusRC FK CorrLength MeasureTheory

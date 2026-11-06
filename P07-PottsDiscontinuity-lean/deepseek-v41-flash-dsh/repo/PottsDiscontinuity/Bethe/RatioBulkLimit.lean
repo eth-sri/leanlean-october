@@ -10,7 +10,7 @@ root families are specialized separately: their displacement limit is
 Theorem 2.9 and their finite bounds come from the density-rate geometry.
 -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory Finset
 open scoped Topology BigOperators

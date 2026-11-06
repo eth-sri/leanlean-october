@@ -23,8 +23,6 @@ namespace PottsDiscontinuity.Bethe
 /-- `∫_{-π}^{π} β sin(m β) dβ = -2π (-1)^m / m`. -/
 theorem integral_id_mul_sin {m : ℕ} (hm : m ≠ 0) :
     ∫ β in (-π)..π, β * Real.sin (m * β) = -(2 * π * (-1) ^ m / m) := by
-  have hm' : (m : ℝ) ≠ 0 := by exact_mod_cast hm
-  have hpi := Real.pi_pos
   have h := intervalIntegral.integral_mul_deriv_eq_deriv_mul (a := -π) (b := π)
     (u := fun x : ℝ => x) (u' := fun _ => (1 : ℝ)) (v := fun x : ℝ => -(Real.cos (m * x) / m))
     (v' := fun x : ℝ => Real.sin (m * x))
@@ -82,7 +80,6 @@ theorem sinCoeff_neg_id (n : ℕ) :
 theorem hasSum_xiConv_neg_id {μ : ℝ} (hμ : 0 < μ) (α : ℝ) :
     HasSum (fun n : ℕ => 2 * (-1) ^ (n + 1) * Real.exp (-μ) ^ (n + 1) / ((n : ℝ) + 1) *
       Real.sin (((n + 1 : ℕ) : ℝ) * α)) (xiConv μ (fun β => -β) α) := by
-  have hpi := Real.pi_pos
   have hg : IntervalIntegrable (fun β : ℝ => -β) volume (-π) π :=
     (continuous_neg).intervalIntegrable _ _
   have h := hasSum_xiConv hμ hg α

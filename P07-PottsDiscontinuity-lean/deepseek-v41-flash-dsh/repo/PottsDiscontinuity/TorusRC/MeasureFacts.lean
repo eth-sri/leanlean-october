@@ -4,7 +4,7 @@ public import PottsDiscontinuity.TorusRC.Measure
 
 /-! # Finite-event formulas for the indexed torus probability -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Finset
 

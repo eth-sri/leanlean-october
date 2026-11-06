@@ -6,7 +6,7 @@ public import PottsDiscontinuity.TorusTopology.CompassWordTurning
 
 /-! Supporting phases and finite sums for an actual periodic lattice curve. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology
 open Finset

@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticRegularity
 
 /-! # Uniform phase Taylor estimates in the original root coordinates -/
 
-@[expose] public section
+public section
 
 open Set
 open scoped BigOperators
@@ -58,7 +58,6 @@ theorem theta_sum_linearized_remainder {Δ : ℝ} (hΔ : Δ < -1) :
   obtain ⟨K, hK, hb⟩ := theta_linearized_remainder hΔ
   refine ⟨K, hK, ?_⟩
   intro N n hN hn x u y v hx hu hy hv B hB hux hvy
-  have hNp : (0 : ℝ) < N := Nat.cast_pos.mpr hN
   have heq : (∑ j, (theta Δ u (v j) - theta Δ x (y j))) -
       (∑ j, d1Theta Δ x (y j)) * (u - x) -
       ∑ j, d2Theta Δ x (y j) * (v j - y j) =

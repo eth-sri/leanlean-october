@@ -9,7 +9,7 @@ Companion paper, equation `eq:V_on_phi`. The diagonal is counted once in each or
 This finite identity precedes the cyclic gap reindexing and uses the actual entries of (1.5).
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Matrix Classical
 

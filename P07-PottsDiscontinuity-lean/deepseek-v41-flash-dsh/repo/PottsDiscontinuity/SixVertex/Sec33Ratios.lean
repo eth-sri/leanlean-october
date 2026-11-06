@@ -10,7 +10,7 @@ with that root in the denominator; the centered-block comparison follows because
 is at most the largest block root.
 -/
 
-@[expose] public section
+public section
 
 open Finset Matrix Filter Topology PottsDiscontinuity.PerronFrobenius
 

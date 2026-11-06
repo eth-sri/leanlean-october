@@ -7,7 +7,7 @@ public import Mathlib.Combinatorics.SimpleGraph.Paths
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFiniteEdgeCount
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFiniteFaceCount
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
@@ -38,12 +38,6 @@ theorem parafermionicCoverFiniteEulerCount (n : ℕ) (hn : 1 ≤ n) :
   have hpoly : V+(2*n)^2*S = 4*n*(2*n+1)*S+S := by
     rw [hV]
     ring
-  have hsum : V+F+S+n = E+n+S+1 := by
-    calc
-      V+F+S+n = V+(F+S+n) := by omega
-      _ = V+((2*n)^2*S+1) := by rw [hF']
-      _ = (4*n*(2*n+1)*S+S)+1 := by omega
-      _ = E+n+S+1 := by rw [hE]
   omega
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

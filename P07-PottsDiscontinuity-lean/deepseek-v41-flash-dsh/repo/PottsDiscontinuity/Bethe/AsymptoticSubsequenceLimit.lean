@@ -7,7 +7,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticProducts
 
 /-! # Every uniform subsequential limit is the offset-equation solution -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory
 open scoped Topology BigOperators

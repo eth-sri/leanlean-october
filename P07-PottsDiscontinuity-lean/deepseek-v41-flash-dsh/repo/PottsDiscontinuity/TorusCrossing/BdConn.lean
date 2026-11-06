@@ -15,7 +15,7 @@ constant on the two port rows and does not change across non-boundary edges), so
 same amount across every boundary edge, contradicting that it changes across one part only.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusCrossing
 

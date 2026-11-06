@@ -11,7 +11,7 @@ expansion. Combining that expansion with the root-slot partition gives the
 T₀ plus paired T₁ decomposition on a punctured neighborhood.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Classical Filter Topology
 

@@ -9,7 +9,7 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSelectedC
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSelectedCornerNeighbors
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSimpleCycleOrientation
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

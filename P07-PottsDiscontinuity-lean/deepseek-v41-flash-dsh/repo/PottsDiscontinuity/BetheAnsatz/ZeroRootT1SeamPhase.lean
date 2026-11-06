@@ -9,7 +9,7 @@ At the seam, swapping the two momenta changes their positions by exactly `N`.
 This is the source of the extra `N t` term in the corrected T₁ phase.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Classical
 

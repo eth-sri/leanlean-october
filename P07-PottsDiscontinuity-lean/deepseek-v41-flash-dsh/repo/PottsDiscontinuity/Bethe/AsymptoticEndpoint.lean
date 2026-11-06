@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticQuadrature
 
 /-! # Fixed-rank roots approach the endpoints -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology

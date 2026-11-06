@@ -10,7 +10,7 @@ This connects the proved local smoothing sums to the exact parameter `sqrt (2 + 
 It supplies no FK or global topological input.
 -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 

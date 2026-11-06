@@ -10,7 +10,7 @@ Conjugating the seam swap by the cyclic rotation turns it into the ordinary
 swap of slots 0 and 1. The cyclic Bethe relation then gives its boundary factor.
 -/
 
-@[expose] public section
+public section
 
 open Complex
 

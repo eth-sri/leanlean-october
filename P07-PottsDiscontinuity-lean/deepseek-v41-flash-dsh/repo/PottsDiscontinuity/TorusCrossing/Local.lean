@@ -11,7 +11,7 @@ cells which is constant on each boundary row, if `c` sees an edge with both ends
 edge with an unlabelled end, then it sees an edge with exactly one labelled end.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusCrossing
 

@@ -16,7 +16,7 @@ exponent `π² / √(q-4)` into `π² / (2 sinh lam)`, which differs from `c` by
 (`tendsto_inv_sinh_sub_inv`).
 -/
 
-@[expose] public section
+public section
 
 open Filter Topology Real
 
@@ -87,14 +87,6 @@ theorem tendsto_term_zero :
   have hpos := Real.exp_pos c
   have hs : Real.sinh c = (Real.exp c - (Real.exp c)⁻¹) / 2 := by
     rw [Real.sinh_eq, Real.exp_neg]
-  have hgt : 1 < Real.exp c := Real.one_lt_exp_iff.2 hc
-  have hne : Real.exp c - (Real.exp c)⁻¹ ≠ 0 := by
-    have : (Real.exp c)⁻¹ < 1 := inv_lt_one_of_one_lt₀ hgt
-    linarith
-  have hne2 : 1 - (Real.exp c)⁻¹ * (Real.exp c)⁻¹ ≠ 0 := by
-    have h0 : (Real.exp c)⁻¹ < 1 := inv_lt_one_of_one_lt₀ hgt
-    have h00 : 0 < (Real.exp c)⁻¹ := inv_pos.2 hpos
-    nlinarith
   simp only [Nat.cast_zero, mul_zero, zero_add, one_mul]
   rw [hE, hs]
   field_simp
@@ -140,7 +132,6 @@ theorem tendsto_exp_mul_hyperbolic_series :
       rw [← Real.exp_nat_mul]
       have : Real.exp (-(2 * (k : ℝ) * c)) ≤ Real.exp ((k : ℝ) * -2) := by
         apply Real.exp_le_exp.2
-        have hk0 : (0 : ℝ) ≤ k := Nat.cast_nonneg k
         nlinarith
       linarith)
   have hg : ∑' k : ℕ, (if k = 0 then (8 : ℝ) else 0) = 8 := by
@@ -174,7 +165,6 @@ theorem sinh_le_mul_cosh {x : ℝ} (hx : 0 ≤ x) : Real.sinh x ≤ x * Real.cos
 theorem inv_sub_inv_sinh_le {x : ℝ} (hx : 0 < x) :
     0 ≤ 1 / x - 1 / Real.sinh x ∧ 1 / x - 1 / Real.sinh x ≤ (Real.cosh x - 1) / x := by
   have hs : x ≤ Real.sinh x := Real.self_le_sinh_iff.2 hx.le
-  have hspos : 0 < Real.sinh x := lt_of_lt_of_le hx hs
   have hc1 : 1 ≤ Real.cosh x := Real.one_le_cosh x
   have hsc := sinh_le_mul_cosh hx.le
   have e : 1 / x - 1 / Real.sinh x = (Real.sinh x - x) / (x * Real.sinh x) := by
@@ -272,9 +262,6 @@ theorem asymptotic13 :
   rw [show (8 : ℝ) / 8 = 1 by norm_num] at hlim
   refine hlim.congr' ?_
   filter_upwards [self_mem_nhdsWithin] with q hq
-  have hq' : 4 < q := hq
-  have hLpos : 0 < L q := (arcosh_pos_of_gt4 q hq').1
-  have hsq : 0 < Real.sqrt (q - 4) := Real.sqrt_pos.2 (by linarith)
   simp only [Function.comp, Pi.div_apply]
   set c := π ^ 2 / 2 * (L q)⁻¹ with hcdef
   set s := π ^ 2 / Real.sqrt (q - 4) with hsdef
@@ -288,8 +275,6 @@ theorem asymptotic13 :
   rw [hu]
   generalize (∑' k : ℕ, 4 / ((2 * (k : ℝ) + 1) * Real.sinh ((2 * (k : ℝ) + 1) * c))) = H
   rw [Real.exp_sub, Real.exp_neg]
-  have h1 := Real.exp_pos c
-  have h2 := Real.exp_pos s
   field_simp
 
 end PottsDiscontinuity

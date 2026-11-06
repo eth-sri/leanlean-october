@@ -9,7 +9,7 @@ The inequalities here use the unique increasing integer coordinates of the actua
 They supply the ordinary-coordinate side of the cyclic gap reindexing.
 -/
 
-@[expose] public section
+public section
 
 open Finset Classical
 

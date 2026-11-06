@@ -9,7 +9,7 @@ Finite summation by parts around the vertex rotations shows antisymmetry. The
 diagonal pairing is therefore zero over the rational coefficient field.
 -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 

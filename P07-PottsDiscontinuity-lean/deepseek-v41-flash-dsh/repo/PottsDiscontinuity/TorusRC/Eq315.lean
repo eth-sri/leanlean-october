@@ -6,7 +6,7 @@ public import PottsDiscontinuity.TorusRC.BlockLogRate
 
 /-! # Lemma 3.15, equation (3.15), with h319 as the sole external premise -/
 
-@[expose] public section
+public section
 
 open Filter Topology
 

@@ -18,7 +18,7 @@ public import PottsDiscontinuity.Bethe.Prop21Rho
   and `k' = Ξ_λ ≥ (e^λ-1)/(e^λ+1)`).
 -/
 
-@[expose] public section
+public section
 
 open Complex Real MeasureTheory Filter Topology Set intervalIntegral
 

@@ -12,7 +12,7 @@ This module reuses the definitions of (2.3) and (2.5) from
 the full closed parameter interval used in (2.3).
 -/
 
-@[expose] public section
+public section
 
 open Set
 

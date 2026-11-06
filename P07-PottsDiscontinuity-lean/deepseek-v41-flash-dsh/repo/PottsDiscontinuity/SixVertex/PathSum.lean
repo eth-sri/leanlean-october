@@ -9,7 +9,7 @@ For a square matrix `A` indexed by a finite type `S` and `m ≥ 1`,
 `tr (A ^ m) = ∑_{x : Fin m → S} ∏_{j : Fin m} A (x j) (x (j + 1 mod m))`.
 -/
 
-@[expose] public section
+public section
 
 open Finset Matrix
 

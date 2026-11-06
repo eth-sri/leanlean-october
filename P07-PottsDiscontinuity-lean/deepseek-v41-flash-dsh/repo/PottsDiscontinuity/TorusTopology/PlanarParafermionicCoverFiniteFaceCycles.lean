@@ -6,7 +6,7 @@ public import Mathlib.Combinatorics.SimpleGraph.Paths
 public import Mathlib.Tactic
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFiniteFaces
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

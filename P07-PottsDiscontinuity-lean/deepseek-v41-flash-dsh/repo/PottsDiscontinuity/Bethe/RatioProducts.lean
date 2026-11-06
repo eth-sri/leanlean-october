@@ -12,7 +12,7 @@ Source: Section 3.2 of arXiv:1611.09877v2 (proof of Theorem 1.3): the formula
 identifying a scalar with a transfer-matrix eigenvalue is needed here.
 -/
 
-@[expose] public section
+public section
 
 open scoped BigOperators ComplexConjugate
 open Complex Finset

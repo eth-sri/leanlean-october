@@ -145,8 +145,6 @@ theorem edgeRestriction_actualMultiClusterReveal_eq_induced_complement
       (G.induce (actualMultiClusterComplementSet G S A)) x y).1 hxy with
       ⟨u, w, hAdjInduced, hux, hwy⟩
     have hAdj : G.Adj u.val w.val := SimpleGraph.induce_adj.mp hAdjInduced
-    have hux' : u.val = x := hux
-    have hwy' : w.val = y := hwy
     subst x
     subst y
     rw [edgeRestriction, SimpleGraph.deleteEdges_adj]

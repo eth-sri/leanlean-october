@@ -11,7 +11,7 @@ public import PottsDiscontinuity.Infra.CylinderUniqueness
 
 /-! Positive association for actual, unbounded free connectivity events. -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

@@ -12,7 +12,7 @@ public import PottsDiscontinuity.Duality.ReverseInfiniteDuality
 origin percolation at the dual parameter. The Peierls argument counts actual
 connection events rather than enumerating exponentially many circuits. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 open FK FK.Medial MeasureTheory

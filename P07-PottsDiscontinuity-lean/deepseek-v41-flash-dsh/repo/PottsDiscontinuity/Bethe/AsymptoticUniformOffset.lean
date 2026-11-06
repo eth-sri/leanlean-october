@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticRegularity
 
 /-! # Uniform offset bounds from density errors -/
 
-@[expose] public section
+public section
 
 open Set
 

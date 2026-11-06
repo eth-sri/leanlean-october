@@ -11,7 +11,7 @@ frozen exterior states. This is the weighted form needed when the explored
 cluster region is fixed before the next root is tested.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusLoops
 

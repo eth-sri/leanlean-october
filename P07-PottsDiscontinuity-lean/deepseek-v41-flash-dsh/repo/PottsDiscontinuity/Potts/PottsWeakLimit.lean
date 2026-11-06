@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Potts.PottsBoxLaws
 
 /-! The frozen cylinder-limit predicate determines weak convergence of the box laws. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 

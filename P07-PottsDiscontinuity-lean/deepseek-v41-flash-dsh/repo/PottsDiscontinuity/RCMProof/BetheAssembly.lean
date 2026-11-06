@@ -49,7 +49,6 @@ theorem apply_17_at_critical_c
           (Real.arcosh (Real.sqrt q / 2) + 2 * S)))) := by
   let Δcrit : ℝ := -Real.sqrt q / 2
   let c : ℝ := Real.sqrt (2 + Real.sqrt q)
-  have hqpos : 0 < q := by linarith
   have hsqrtq : 2 < Real.sqrt q := by
     have hsquare := Real.sq_sqrt (show 0 ≤ q by linarith)
     have hsqrt_nonneg := Real.sqrt_nonneg q
@@ -85,10 +84,8 @@ theorem apply_17_at_critical_c
     SixVertex.cor34_final_exists_family_at_endpoint 0 hΔcrit
   let B : ℕ := max (max Nq Np) (r + 2)
   let N : ℕ → ℕ := fun i => 4 * (i + B)
-  have hB : 0 < B := by dsimp [B]; omega
   have hBq : Nq ≤ B := by dsimp [B]; omega
   have hBp : Np ≤ B := by dsimp [B]; omega
-  have hBr : r + 2 ≤ B := by dsimp [B]; omega
   have hhalf (i : ℕ) : N i / 2 = 2 * (i + B) := by
     dsimp [N]
     rw [show 4 * (i + B) = 2 * (2 * (i + B)) by omega]
@@ -116,7 +113,6 @@ theorem apply_17_at_critical_c
     let k := Nat.ceil x
     filter_upwards [Filter.eventually_ge_atTop k] with i hi
     have hki : k ≤ N i := by
-      have hki' : k ≤ i + B := by omega
       dsimp [N]
       omega
     have hxk : x ≤ (k : ℝ) := Nat.le_ceil x

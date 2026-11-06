@@ -12,7 +12,7 @@ level `≥ c + k` contains a sub-path from level `c` to level `c + k` staying in
 `[c, c + k]`.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusCrossing
 

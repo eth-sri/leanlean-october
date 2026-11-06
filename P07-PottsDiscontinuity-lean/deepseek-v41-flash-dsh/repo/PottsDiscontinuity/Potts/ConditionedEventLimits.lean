@@ -4,7 +4,7 @@ public import Mathlib.MeasureTheory.Measure.Portmanteau
 
 /-! Transfer of connection-data limits through uniformly positive conditioning. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 

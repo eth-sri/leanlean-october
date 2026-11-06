@@ -17,7 +17,7 @@ The analytic input is `tendsto_log_sum_mul_pow`: if one weight-positive term `μ
 dominates, `(1/M) * log (∑ i, μ i ^ M * a i) → log ρ`.
 -/
 
-@[expose] public section
+public section
 
 open Matrix Filter Topology
 
@@ -72,7 +72,6 @@ theorem tendsto_log_sum_mul_pow (μ a : ι → ℝ) (i0 : ι) {ρ : ℝ} (hρ : 
     simpa using (tendsto_const_nhds (x := Real.log ρ)).add h0
   refine hlim.congr' ?_
   filter_upwards [hTpos, eventually_ge_atTop 1] with M hM hM1
-  have hMne : (M : ℝ) ≠ 0 := by positivity
   have hpow : ρ ^ M ≠ 0 := (pow_pos hρ M).ne'
   have hSpos : (∑ i, μ i ^ M * a i) ≠ 0 := by
     intro h

@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Potts.CylinderColoring
 
 /-! Edwards–Sokal cylinder kernels as functions of finite observed partitions. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 

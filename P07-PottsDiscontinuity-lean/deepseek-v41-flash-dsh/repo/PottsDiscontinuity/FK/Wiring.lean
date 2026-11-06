@@ -16,7 +16,7 @@ These statements concern the component count. Actual paths still use only the
 selected original graph edges, and can change when such an edge is inserted.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

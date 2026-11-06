@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.Theorem23Comparison
 
 /-! # Diagonal estimates for the rescaled Bethe Jacobian -/
 
-@[expose] public section
+public section
 
 open Set
 open scoped BigOperators

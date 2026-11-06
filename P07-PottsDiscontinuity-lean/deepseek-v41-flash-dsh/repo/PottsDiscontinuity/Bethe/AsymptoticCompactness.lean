@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticInterpolation
 
 /-! # Arzelà--Ascoli applied to continuous offset envelopes -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology BoundedContinuousFunction

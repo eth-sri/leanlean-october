@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.Theorem23Admissible
 
 /-! # Interior of the separated gap region -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology

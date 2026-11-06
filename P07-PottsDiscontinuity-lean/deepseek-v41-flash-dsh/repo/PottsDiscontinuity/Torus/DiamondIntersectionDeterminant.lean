@@ -10,7 +10,7 @@ explicit displacement classes therefore reduces any cycle to a boundary, giving
 the determinant formula for the alternating intersection pairing.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Torus
 

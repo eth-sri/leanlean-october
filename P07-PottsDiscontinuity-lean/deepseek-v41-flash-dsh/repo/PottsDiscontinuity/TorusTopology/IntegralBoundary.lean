@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusLoops.LoopClusterProjection
 coefficients are differences, so flooring a rational face potential preserves
 an integer boundary chain exactly. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology
 open Torus TorusLoops

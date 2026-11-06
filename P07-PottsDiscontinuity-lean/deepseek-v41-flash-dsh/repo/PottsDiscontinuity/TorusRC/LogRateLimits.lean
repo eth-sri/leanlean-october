@@ -6,7 +6,7 @@ public import Mathlib.Topology.Instances.EReal.Lemmas
 
 /-! # Logarithmic limits of block-product lower bounds -/
 
-@[expose] public section
+public section
 
 open Filter Topology
 
@@ -22,8 +22,6 @@ theorem tendsto_completeBlocks_div (d : ℕ) (hd : 0 < d) :
   filter_upwards [eventually_ge_atTop 1] with M hM
   have hsplit : ((M%d:ℕ):ℝ)+(d:ℝ)*((M/d:ℕ):ℝ) = (M:ℝ) := by
     exact_mod_cast Nat.mod_add_div M d
-  have hdR : (d:ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hd)
-  have hMR : (M:ℝ) ≠ 0 := by exact_mod_cast (show M ≠ 0 by omega)
   field_simp
   nlinarith
 

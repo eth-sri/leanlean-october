@@ -9,7 +9,7 @@ The finite line either contains an ordinary ML transition, or its end letters
 form the boundary ML transition. The latter is moved by toroidal rotation.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Classical
 

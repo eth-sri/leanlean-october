@@ -11,7 +11,7 @@ event that all of its edges are open has positive probability in a sufficiently
 large finite free box, and hence in the canonical free limit.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

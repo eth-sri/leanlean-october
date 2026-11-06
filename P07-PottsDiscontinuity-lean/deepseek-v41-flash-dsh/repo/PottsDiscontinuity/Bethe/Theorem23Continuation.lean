@@ -8,7 +8,7 @@ This topological lemma isolates the compactness step in continuation. Its
 hypotheses are local sections and local uniqueness, not global existence.
 -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology

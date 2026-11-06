@@ -6,7 +6,7 @@ public import PottsDiscontinuity.TorusCrossing.Planar
 # The dual board graph is connected
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusCrossing
 

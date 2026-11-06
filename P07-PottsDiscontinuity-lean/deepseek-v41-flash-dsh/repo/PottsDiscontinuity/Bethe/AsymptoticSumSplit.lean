@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticOffset
 
 /-! # Bulk and boundary sums for the offset expansion -/
 
-@[expose] public section
+public section
 
 open scoped BigOperators
 

@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticTaylor
 
 /-! # The averaged Taylor expansion, uniform in both offset parities -/
 
-@[expose] public section
+public section
 
 open Set
 open scoped BigOperators

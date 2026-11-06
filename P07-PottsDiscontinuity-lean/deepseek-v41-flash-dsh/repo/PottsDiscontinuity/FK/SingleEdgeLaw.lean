@@ -14,7 +14,7 @@ They are increasing with the other open edges, and obey uniform finite-energy
 bounds. No association or multi-edge stochastic domination is asserted here.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 

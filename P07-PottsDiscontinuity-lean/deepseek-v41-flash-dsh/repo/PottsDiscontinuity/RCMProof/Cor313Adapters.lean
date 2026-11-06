@@ -3,7 +3,7 @@ module
 public import PottsDiscontinuity.RCMProof.Contracts
 public import PottsDiscontinuity.Torus.Corollary313Final
 
-@[expose] public section
+public section
 
 open Finset
 

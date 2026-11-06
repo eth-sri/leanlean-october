@@ -84,10 +84,6 @@ theorem rc_theorem_1_2_from_item3 (q : ℝ) (hq : 4 < q)
       (-1 : ℝ) ^ k / k * Real.tanh (k * lam))
       atTop (𝓝 S₀) := by
     simpa [lam] using hS₀
-  have hS' : Tendsto (fun N : ℕ => ∑ k ∈ Finset.Icc 1 N,
-      (-1 : ℝ) ^ k / k * Real.tanh (k * lam))
-      atTop (𝓝 S) := by
-    simpa [lam] using hS
   have hSS : S = S₀ := tendsto_nhds_unique hS hS₀'
   have hL : 0 < lam + 2 * S := by
     rw [hSS]

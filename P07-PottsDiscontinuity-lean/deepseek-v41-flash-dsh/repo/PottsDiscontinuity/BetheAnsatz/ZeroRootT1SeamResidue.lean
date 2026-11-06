@@ -10,7 +10,7 @@ At a seam ML edge the unique pole is the cyclic edge from the last slot to
 slot zero. Its residue combines with the corrected phase slope containing `N`.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Filter Topology Classical
 

@@ -2,7 +2,7 @@ module
 
 public import PottsDiscontinuity.FK.LimitTranslation
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 

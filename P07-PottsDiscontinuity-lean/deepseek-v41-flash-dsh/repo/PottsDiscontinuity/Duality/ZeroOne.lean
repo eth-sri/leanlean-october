@@ -10,7 +10,7 @@ of an infinite cluster, given a zero–one law for the existence event. Neither
 positive origin percolation nor the zero–one law is established here.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 

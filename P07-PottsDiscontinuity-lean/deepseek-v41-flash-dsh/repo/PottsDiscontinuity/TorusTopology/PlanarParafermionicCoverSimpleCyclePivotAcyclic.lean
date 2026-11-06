@@ -10,7 +10,7 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceSetPi
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceUnionCarrierTransport
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSimpleCycleFillingContainment
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 

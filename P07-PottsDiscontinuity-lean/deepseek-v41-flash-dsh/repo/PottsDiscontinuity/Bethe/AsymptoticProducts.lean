@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticOffsetControl
 
 /-! # Root values and products in the uniform limit argument -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology
