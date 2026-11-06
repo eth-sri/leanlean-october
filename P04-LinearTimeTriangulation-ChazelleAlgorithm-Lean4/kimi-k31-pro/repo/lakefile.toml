@@ -1,0 +1,31 @@
+name = "ChazelleTriangulation"
+version = "0.1.0"
+defaultTargets = ["Chazelle", "Challenge", "Solution"]
+
+[leanOptions]
+autoImplicit = false
+relaxedAutoImplicit = false
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4.git"
+rev = "065356127b1dc0016f66b7283ce0ce2c4055aa55"
+
+[[lean_lib]]
+name = "Chazelle"
+
+[[lean_lib]]
+name = "Challenge"
+
+[[lean_lib]]
+name = "Solution"
+
+[[lean_lib]]
+name = "Checks"
+globs = []
+
+# Organizer-style validation module.  Not a default target and not part
+# of what Palomar builds; `scripts/validate.sh` builds it explicitly (`lake build Validation`).
+[[lean_lib]]
+name = "Validation"
+globs = []
