@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterPhase1Exec
 
 /-!
@@ -33,7 +37,7 @@ theorem segPot_segL {s μ L : ℕ} {bo : ℕ → ℕ} (hL : ∀ b, cntBelow bo �
   induction j with
   | zero => simp [segL, segPot]
   | succ j ih =>
-    rw [cntLt_succ]
+    Ξ cntLt_succ
     simp only [segL, segPot, List.map_append, List.sum_append] at ih ⊢
     have hlen : len (cntLt bo μ j, cntLt bo μ (j + 1)) = cntBelow bo μ j := len_seg j
     have hsz : Nat.size (cntBelow bo μ j) ≤ L := Nat.size_le.mpr (hL j)
@@ -48,23 +52,23 @@ theorem memGraph_congr {m m' : ℕ → ℕ} {B μ E A : ℕ} (hA : ∀ a, a < A 
     (hB : B + 2 < A) (hO : m B + 2 * E ≤ A) (hV : m (B + 2) + 2 * E ≤ A)
     (hopp : ∀ d, d < 2 * E → m (m B + d) < 2 * E) :
     memGraph m' B μ E = memGraph m B μ E := by
-  have eB : m' B = m B := hA _ (by omega)
-  have eB2 : m' (B + 2) = m (B + 2) := hA _ (by omega)
+  have eB : m' B = m B := hA _ (⋄)
+  have eB2 : m' (B + 2) = m (B + 2) := hA _ (⋄)
   have hmd : ∀ u v, MemDart m' B E u v ↔ MemDart m B E u v := fun u v => by
     unfold MemDart
-    rw [eB, eB2]
+    Ξ eB, eB2
     constructor
     · rintro ⟨d, hd, h1, h2⟩
       have ho := hopp d hd
-      rw [hA (m (B + 2) + d) (by omega)] at h1
-      rw [hA (m B + d) (by omega), hA (m (B + 2) + m (m B + d)) (by omega)] at h2
+      rw [hA (m (B + 2) + d) (⋄)] at h1
+      rw [hA (m B + d) (⋄), hA (m (B + 2) + m (m B + d)) (⋄)] at h2
       exact ⟨d, hd, h1, h2⟩
     · rintro ⟨d, hd, h1, h2⟩
       have ho := hopp d hd
-      refine ⟨d, hd, by rw [hA (m (B + 2) + d) (by omega)]; exact h1, ?_⟩
-      rw [hA (m B + d) (by omega), hA (m (B + 2) + m (m B + d)) (by omega)]; exact h2
+      refine ⟨d, hd, by rw [hA (m (B + 2) + d) (⋄)]; exact h1, ?_⟩
+      rw [hA (m B + d) (⋄), hA (m (B + 2) + m (m B + d)) (⋄)]; exact h2
   ext u v
-  simp only [memGraph, hmd]
+  ϴ memGraph, hmd
 
 theorem segL_congr {s μ : ℕ} {bo bo' : ℕ → ℕ} (h : ∀ w, w < μ → bo w = bo' w) (j : ℕ) :
     segL s μ bo j = segL s μ bo' j := by

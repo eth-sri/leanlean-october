@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoCand1TabSpec
 public import Chazelle.Core.SweepIoCand1E
 public import Chazelle.Core.SweepIoCand1G
@@ -57,9 +59,9 @@ theorem tabL_val (m f : ℕ → ℕ) (hk : f K1 = 1) :
       regB m tabL f tbT = 2 ∧
       ∀ q, (q < tbA ∨ tbT < q) → regB m tabL f q = f q := by
   have hk' : f 240611 = 1 := hk
-  simp only [tabL, regB, regI, upd, tbA, tbF, tbE, tbH, tbT, sw, qJ, K1]
+  ϴ tabL, regB, regI, upd, tbA, tbF, tbE, tbH, tbT, sw, qJ, K1
   norm_num [hk']
-  refine ⟨by ring, by ring_nf, by ring_nf, by ring_nf, fun q hq => ?_⟩
+  refine ⟨⋆, by ring_nf, by ring_nf, by ring_nf, fun q hq => ?_⟩
   split_ifs <;> first | rfl | omega
 
 theorem tabL_ok {W : ℕ} (m f : ℕ → ℕ) (hk : f K1 = 1)
@@ -68,21 +70,21 @@ theorem tabL_ok {W : ℕ} (m f : ℕ → ℕ) (hk : f K1 = 1)
   have hW' : f 240302 + 3 * f 243227 + 2 ≤ W := hW
   have s : ∀ i, 4820 ≤ i → i ≤ 4824 → IScr (sw i) := fun i h1 h2 =>
     iscr_sw (by unfold sw; omega) (by unfold sw; omega)
-  simp only [tabL, okB, okI, regI, upd, tbA, tbF, tbE, tbH, tbT, qJ, K1, sw]
+  ϴ tabL, okB, okI, regI, upd, tbA, tbF, tbE, tbH, tbT, qJ, K1, sw
   norm_num [hk']
-  refine ⟨s 4820 (by norm_num) (by norm_num), ⟨s 4820 (by norm_num) (by norm_num), ?_⟩,
-    ⟨s 4820 (by norm_num) (by norm_num), ?_⟩, ⟨s 4820 (by norm_num) (by norm_num), ?_⟩,
-    s 4821 (by norm_num) (by norm_num), ⟨s 4820 (by norm_num) (by norm_num), ?_⟩,
-    s 4822 (by norm_num) (by norm_num), ⟨s 4820 (by norm_num) (by norm_num), ?_⟩,
-    s 4823 (by norm_num) (by norm_num), ⟨s 4824 (by norm_num) (by norm_num), ?_⟩⟩ <;> omega
+  refine ⟨s 4820 (⊛) (⊛), ⟨s 4820 (⊛) (⊛), ?_⟩,
+    ⟨s 4820 (⊛) (⊛), ?_⟩, ⟨s 4820 (⊛) (⊛), ?_⟩,
+    s 4821 (⊛) (⊛), ⟨s 4820 (⊛) (⊛), ?_⟩,
+    s 4822 (⊛) (⊛), ⟨s 4820 (⊛) (⊛), ?_⟩,
+    s 4823 (⊛) (⊛), ⟨s 4824 (⊛) (⊛), ?_⟩⟩ <;> omega
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The table step of a regular endpoint query of side `1`.** -/
 theorem tabStep : TabStepSpec := by
   refine ⟨tabB, tabK, ?_⟩
   intro P W X Ok J H N₁ N₂ E c₀ c L z hA hI hj hz hd hzR hzs hzt hacc hroom
   have hK := hA.hK.fix hI
-  have k1 : c.nreg K1 = 1 := hK.2.1
+  have k1 := hK.2.1
   set j := c.nreg qJ with hjdef
   set σ := dirOf (c.nreg qD) with hσdef
   have hσ : σ = 1 ∨ σ = -1 := by rw [hσdef]; unfold dirOf; split_ifs <;> simp

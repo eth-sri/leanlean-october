@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvTOrient
 public import Chazelle.Core.BruteRam3
 
@@ -41,24 +43,24 @@ theorem i0F_eq (C : Chain) (li : Bool) : i0F li C.m (C.sideS C.sideBeta) = i0 C 
   have hS := sideS_le_two_m C C.sideBeta
   have hsA : TourA.sA C C.sideBeta = if C.sideS C.sideBeta < 2 * C.m then C.sideS C.sideBeta
       else 0 := by
-    rw [sA_eq]
+    Ξ sA_eq
     split_ifs with h
     · exact Nat.mod_eq_of_lt h
-    · rw [show C.sideS C.sideBeta = 2 * C.m by omega, Nat.mod_self]
-  rw [i0_eq]
+    · Ξ show C.sideS C.sideBeta = 2 * C.m by omega, Nat.mod_self
+  Ξ i0_eq
   have hs := sA_lt' (C := C)
   unfold i0F
-  rw [← hsA]
+  Ξ ← hsA
   cases li
-  · simp only [Bool.false_eq_true, ite_false]
+  · ϴ Bool.false_eq_true, ite_false
     split_ifs with h
-    · rw [Nat.mod_eq_of_lt (by omega)]; omega
+    · rw [Nat.mod_eq_of_lt (⋄)]; omega
     · rw [show 3 * C.m - TourA.sA C C.sideBeta = (C.m - TourA.sA C C.sideBeta) + 2 * C.m by
-        omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-  · simp only [ite_true]
+        omega, Nat.add_mod_right, Nat.mod_eq_of_lt (⋄)]
+  · ϴ ite_true
     split_ifs with h
-    · rw [Nat.mod_eq_of_lt (by omega)]
-    · rw [show TourA.sA C C.sideBeta = 0 by omega, Nat.sub_zero, Nat.mod_self]
+    · Ξ Nat.mod_eq_of_lt (⋄)
+    · Ξ show TourA.sA C C.sideBeta = 0 by omega, Nat.sub_zero, Nat.mod_self
 
 /-! ## The program -/
 
@@ -84,7 +86,7 @@ def c0S : Stmt := .seq c0Pre (.seq Brute.setupS c0Calc)
 /-- The registers of `c0Calc`. -/
 def Bcalc (r : ℕ) : Bool := decide (190005 ≤ r ∧ r ≤ 190016)
 
-theorem wrM_c0Calc : wrM Bcalc c0Calc = true := by decide
+theorem wrM_c0Calc : wrM Bcalc c0Calc = true := ⌖
 
 /-- The registers of `c0S`. -/
 def Bc0 (r : ℕ) : Bool := Brute.Bm r || B19 r
@@ -92,7 +94,7 @@ def Bc0 (r : ℕ) : Bool := Brute.Bm r || B19 r
 /-- The registers of `c0Pre`. -/
 def Bpre (r : ℕ) : Bool := decide (r = 180000 ∨ r = 180001 ∨ r = 190002 ∨ r = 190017)
 
-theorem wrM_c0Pre' : wrM Bpre c0Pre = true := by decide
+theorem wrM_c0Pre' : wrM Bpre c0Pre = true := ⌖
 
 section exec
 
@@ -129,25 +131,25 @@ theorem c0Calc_exec (c : Config) (hw : WordsBounded W c) {m tS : ℕ} {li : Bool
       by_cases h : tS < 2 * m
       · refine spec_ifLtN_true (by config_simp; rw [h15, h12]; exact h) ?_
         refine spec_instr (Exec.copyN ‹WordsBounded _ _› _ _) fun _ => ?_
-        refine ⟨by omega, by config_simp; rw [h15, hsA, ite_eq_left h], fun r hr => ?_, rfl⟩
+        refine ⟨⋄, by config_simp; rw [h15, hsA, ite_eq_left h], fun r hr => ?_, rfl⟩
         simp only; rw [Machine.upd_other _ _ _ hr]
       · refine spec_ifLtN_false (by config_simp; rw [h15, h12]; exact h) ?_
         refine spec_skip ‹WordsBounded _ _› ?_
-        refine ⟨by omega, by config_simp; rw [hsA, ite_eq_right h], fun r _ => rfl, rfl⟩
+        refine ⟨⋄, by config_simp; rw [hsA, ite_eq_right h], fun r _ => rfl, rfl⟩
     refine ⟨c₁, k₁, e₁, ?_⟩
     have w₁ := e₁.wb_right
     have g : ∀ r, r ≠ 190012 → r ≠ 190005 → r ≠ 190006 → r ≠ 190010 →
         c₁.nreg r = c.nreg r := fun r a1 a2 a3 a4 => by
       rw [g₁ r a1]; simp [a1, a2, a3, a4]
-    have v05 : c₁.nreg 190005 = 0 := by rw [g₁ _ (by norm_num)]; simp
-    have v06 : c₁.nreg 190006 = 6 := by rw [g₁ _ (by norm_num)]; simp
-    have v10 : c₁.nreg 190010 = m := by rw [g₁ _ (by norm_num)]; simp [h01]
-    have v01 : c₁.nreg 180001 = m := by rw [g _ (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num), h01]
-    have v12' : c₁.nreg 180012 = 2 * m := by rw [g _ (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num), h12]
+    have v05 : c₁.nreg 190005 = 0 := by rw [g₁ _ (⊛)]; simp
+    have v06 : c₁.nreg 190006 = 6 := by rw [g₁ _ (⊛)]; simp
+    have v10 : c₁.nreg 190010 = m := by rw [g₁ _ (⊛)]; simp [h01]
+    have v01 : c₁.nreg 180001 = m := by rw [g _ (⊛) (by norm_num) (by norm_num)
+      (⊛), h01]
+    have v12' : c₁.nreg 180012 = 2 * m := by rw [g _ (⊛) (by norm_num) (by norm_num)
+      (⊛), h12]
     have vb : c₁.nreg 190001 = if li then 1 else 0 := by
-      rw [g _ (by norm_num) (by norm_num) (by norm_num) (by norm_num), hb]
+      rw [g _ (⊛) (by norm_num) (by norm_num) (by norm_num), hb]
     -- `i0`
     refine spec_seq ?_
     obtain ⟨c₂, k₂, e₂, hk₂, v13, g₂, m₂⟩ : ∃ c₂ k₂, Exec P W
@@ -165,30 +167,30 @@ theorem c0Calc_exec (c : Config) (hw : WordsBounded W c) {m tS : ℕ} {li : Bool
         · refine spec_ifLtN_true (by rw [v01, v12]; exact h) ?_
           exec_block
           · rw [v12', v01]; omega
-          refine ⟨by omega, ?_, fun r a1 a2 => by config_simp; simp [a1, a2], rfl⟩
+          refine ⟨⋄, ?_, fun r a1 a2 => by config_simp; simp [a1, a2], rfl⟩
           config_simp
-          rw [v12', v01, v12]
+          Ξ v12', v01, v12
           unfold i0F; rw [← hsA]; simp [h]
         · refine spec_ifLtN_false (by rw [v01, v12]; exact h) ?_
           refine spec_instr (Exec.subN ‹WordsBounded _ _› _ _ _) fun _ => ?_
-          refine ⟨by omega, ?_, fun r a1 a2 => by config_simp; simp [a1], rfl⟩
+          refine ⟨⋄, ?_, fun r a1 a2 => by config_simp; simp [a1], rfl⟩
           config_simp
-          rw [v01, v12]
+          Ξ v01, v12
           unfold i0F; rw [← hsA]; simp [h]
       · -- `LeftInside`
         refine spec_ifLtN_true (by rw [v05, vb]; simp) ?_
         refine spec_seq ?_
-        refine spec_instr (Exec.constN ‹WordsBounded _ _› _ _ (by omega)) fun _ => ?_
+        refine spec_instr (Exec.constN ‹WordsBounded _ _› _ _ (⋄)) fun _ => ?_
         by_cases h : 0 < sA
         · refine spec_ifLtN_true (by config_simp; rw [v05, v12]; exact h) ?_
           refine spec_instr (Exec.subN ‹WordsBounded _ _› _ _ _) fun _ => ?_
-          refine ⟨by omega, ?_, fun r a1 a2 => by config_simp; simp [a1], rfl⟩
+          refine ⟨⋄, ?_, fun r a1 a2 => by config_simp; simp [a1], rfl⟩
           config_simp
-          rw [v12', v12]
+          Ξ v12', v12
           unfold i0F; rw [← hsA]; simp [h]
         · refine spec_ifLtN_false (by config_simp; rw [v05, v12]; exact h) ?_
           refine spec_skip ‹WordsBounded _ _› ?_
-          refine ⟨by omega, ?_, fun r a1 a2 => by config_simp; simp [a1], rfl⟩
+          refine ⟨⋄, ?_, fun r a1 a2 => by config_simp; simp [a1], rfl⟩
           config_simp
           unfold i0F; rw [← hsA]; simp [h]
     refine ⟨c₂, k₂, e₂, ?_⟩
@@ -197,29 +199,29 @@ theorem c0Calc_exec (c : Config) (hw : WordsBounded W c) {m tS : ℕ} {li : Bool
       unfold i0F; split_ifs <;> omega
     refine spec_seq ?_
     exec_block
-    · rw [v13, g₂ _ (by norm_num) (by norm_num), v06]; omega
-    · config_simp; rw [v13, g₂ _ (by norm_num) (by norm_num), v06,
-        g₂ _ (by norm_num) (by norm_num), v01]; omega
+    · rw [v13, g₂ _ (⊛) (by norm_num), v06]; omega
+    · config_simp; rw [v13, g₂ _ (⊛) (by norm_num), v06,
+        g₂ _ (⊛) (by norm_num), v01]; omega
     have w₃ := ‹WordsBounded W _›
     cases li
-    · refine spec_ifLtN_false (by config_simp; rw [g₂ _ (by norm_num) (by norm_num), v05,
-        g₂ _ (by norm_num) (by norm_num), vb]; simp) ?_
+    · refine spec_ifLtN_false (by config_simp; rw [g₂ _ (⊛) (by norm_num), v05,
+        g₂ _ (⊛) (by norm_num), vb]; simp) ?_
       refine spec_instr (Exec.copyN ‹WordsBounded _ _› _ _) fun _ => ?_
-      refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩
-      · config_simp; rw [g₂ _ (by norm_num) (by norm_num), v10]
-      · config_simp; rw [v13, g₂ _ (by norm_num) (by norm_num), v06]
-      · config_simp; rw [v13, g₂ _ (by norm_num) (by norm_num), v06,
-          g₂ _ (by norm_num) (by norm_num), v01]
-      · config_simp; rw [g₂ _ (by norm_num) (by norm_num), v01]; rfl
+      refine ⟨⋄, ?_, ?_, ?_, ?_, ?_⟩
+      · config_simp; rw [g₂ _ (⊛) (by norm_num), v10]
+      · config_simp; rw [v13, g₂ _ (⊛) (by norm_num), v06]
+      · config_simp; rw [v13, g₂ _ (⊛) (by norm_num), v06,
+          g₂ _ (⊛) (by norm_num), v01]
+      · config_simp; rw [g₂ _ (⊛) (by norm_num), v01]; rfl
       · config_simp; rw [m₂, m₁]
-    · refine spec_ifLtN_true (by config_simp; rw [g₂ _ (by norm_num) (by norm_num), v05,
-        g₂ _ (by norm_num) (by norm_num), vb]; simp) ?_
-      refine spec_instr (Exec.constN ‹WordsBounded _ _› _ _ (by omega)) fun _ => ?_
-      refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩
-      · config_simp; rw [g₂ _ (by norm_num) (by norm_num), v10]
-      · config_simp; rw [v13, g₂ _ (by norm_num) (by norm_num), v06]
-      · config_simp; rw [v13, g₂ _ (by norm_num) (by norm_num), v06,
-          g₂ _ (by norm_num) (by norm_num), v01]
+    · refine spec_ifLtN_true (by config_simp; rw [g₂ _ (⊛) (by norm_num), v05,
+        g₂ _ (⊛) (by norm_num), vb]; simp) ?_
+      refine spec_instr (Exec.constN ‹WordsBounded _ _› _ _ (⋄)) fun _ => ?_
+      refine ⟨⋄, ?_, ?_, ?_, ?_, ?_⟩
+      · config_simp; rw [g₂ _ (⊛) (by norm_num), v10]
+      · config_simp; rw [v13, g₂ _ (⊛) (by norm_num), v06]
+      · config_simp; rw [v13, g₂ _ (⊛) (by norm_num), v06,
+          g₂ _ (⊛) (by norm_num), v01]
       · config_simp; rfl
       · config_simp; rw [m₂, m₁]
   exact ⟨c', k, e, hk, h1, h2, h3, h4, exec_frameM e wrM_c0Calc, hm⟩
@@ -250,34 +252,34 @@ theorem c0S_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) {C : Chain} (hC : 
   obtain ⟨hCP, hCs, hCm⟩ := hC
   have hWn : P.n + 3 ≤ W := by unfold hostWords at hWh; omega
   obtain ⟨c₁, k₁, e₁, hk₁, p0, p1, F₁, m₁⟩ := c0Pre_exec (P := P) hWn c hw
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := F₁.1 _ (by decide)
+  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := F₁.1 _ (⌖)
   obtain ⟨c₂, k₂, e₂, hk₂, -, hCtx, -, hlow, -, -, R₂, RR₂, rm₂, o₂⟩ :=
     Brute.setup_exec (P := P) hG (by unfold hostWords at hWh; omega)
-      (by unfold hostWords at hWh; omega) hCP (by omega) c₁ e₁.wb_right
-      (by rw [p0, hCs]) (by rw [p1]; omega) (by rw [hA₁]; omega)
+      (by unfold hostWords at hWh; omega) hCP (⋄) c₁ e₁.wb_right
+      (Ρ p0, hCs) (by rw [p1]; omega) (by rw [hA₁]; omega)
   obtain ⟨-, x01, -, -, -, x12, -, x15, -⟩ := hCtx
   have hb₂ : c₂.nreg 190001 = if li then 1 else 0 := by
-    rw [R₂ _ (by decide), F₁.1 _ (by decide), hb]
+    Ξ R₂ _ (⌖), F₁.1 _ (⌖), hb
   obtain ⟨c₃, k₃, e₃, hk₃, v10, v14, v15, v16, F₃, m₃⟩ := c0Calc_exec (P := P) c₂ e₂.wb_right
     (m := C.m) (tS := C.sideS C.sideBeta) (li := li) x01 x12 x15 hb₂
     (sideS_le_two_m C C.sideBeta) (by unfold hostWords at hWh; omega)
   have hi0 := i0F_eq C li
-  refine ⟨c₃, k₁ + (k₂ + k₃), .seq e₁ (.seq e₂ e₃), by omega, v10, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨c₃, k₁ + (k₂ + k₃), .seq e₁ (.seq e₂ e₃), ⋄, v10, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · rw [v14, hi0]; rfl
   · rw [v15, hi0]; rfl
   · rw [v16]; unfold idxI; cases li <;> simp; omega
-  · rw [F₃.1 _ (by decide), hb₂]
+  · Ξ F₃.1 _ (⌖), hb₂
   · refine ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_⟩
-    · unfold Bc0 at hr; simp only [Bool.or_eq_false_iff] at hr
+    · unfold Bc0 at hr; ϴ' Bool.or_eq_false_iff at hr
       rw [F₃.1 r (by unfold Bcalc; unfold B19 at hr; simp at hr ⊢; omega), R₂ r hr.1, F₁.1 r
         (by unfold Bpre; unfold B19 at hr; unfold Brute.Bm at hr; simp at hr ⊢; omega)]
-    · unfold Bc0 at hr; simp only [Bool.or_eq_false_iff] at hr
+    · unfold Bc0 at hr; ϴ' Bool.or_eq_false_iff at hr
       rw [F₃.2.1 r (by unfold Bcalc; unfold B19 at hr; simp at hr ⊢; omega), RR₂ r hr.1, F₁.2.1 r
         (by unfold Bpre; unfold B19 at hr; unfold Brute.Bm at hr; simp at hr ⊢; omega)]
-    · rw [F₃.2.2.1, rm₂, F₁.2.2.1]
-    · rw [F₃.2.2.2, o₂, F₁.2.2.2]
+    · Ξ F₃.2.2.1, rm₂, F₁.2.2.1
+    · Ξ F₃.2.2.2, o₂, F₁.2.2.2
   · intro a ha
-    rw [m₃, hlow a (by rw [hA₁]; exact ha), m₁]
+    Ξ m₃, hlow a (by rw [hA₁]; exact ha), m₁
 
 end exec
 

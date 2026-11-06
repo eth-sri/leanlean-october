@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleQFacts
 
 /-!
@@ -42,7 +44,7 @@ theorem semOK_of (h : QAt P m O E V H C N B k) (hG : GoodEnv P) {o : QOrigin} (h
   · show sgnOf (σbOf d) = 1 ∨ sgnOf (σbOf d) = -1
     exact sgnOf_cases _
   · show ZoOK C (sgnOf (σbOf d)) _ (qzoOf (Qof P) o)
-    rw [sgnOf_σbOf]
+    Ξ sgnOf_σbOf
     rcases o with p | hh
     · exact Or.inl rfl
     · exact Or.inr ⟨rfl, rfl⟩
@@ -68,7 +70,7 @@ theorem qry_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤
   have hT := hA'.topOK hG hv
   have hs := semOK_of hA hG hol (c.nreg 120004)
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, hq₁⟩ := qLoad_exec hA hEW c hw hm hO hW ho hol
-  have m₁ : c₁.nmem = m := by rw [f₁.2.2.1, hm]
+  have m₁ : c₁.nmem = m := Ρ f₁.2.2.1, hm
   have hDL : V'.DL + V'.nD ≤ W := by have := hA'.DL_le; omega
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, tr⟩ := restS_exec arcCover hG hW hs c₁ e₁.wb_right hq₁
     (by rw [m₁]; exact hA'.qmem hEW) (by rw [m₁]; exact hA'.ordOK hEW)
@@ -77,20 +79,20 @@ theorem qry_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤
     (by rw [m₁]; exact hNC) (by rw [m₁]; exact hCS)
     (by rw [m₁]; exact chPr_mono (hA'.chordRec hT))
     (by
-      rw [m₁]
+      Ξ m₁
       intro t hpart hnd bD hD hbD kk hkk
       obtain ⟨X, hX⟩ := sel_facts (hA'.chordRec hT) hs hA.simple hpart hnd hD hbD
       obtain ⟨h1, h2⟩ := hX.stop.1 kk hkk
       exact ⟨by rw [walk_n]; exact h1, h2⟩)
   rw [m₁] at hk₂ tr
   have hk₂' : k₂ ≤ 715 * V.L + 700 + dstarCost m V' + 4 * candCost V' NC CS + 500 := hk₂
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, ?_, ?_⟩
+  refine ⟨c₂, _, .seq e₁ e₂, ⋄, ?_, ?_⟩
   · refine ⟨fun r hr => ?_, fun r hr => ?_, f₂.2.2.1.trans f₁.2.2.1,
       f₂.2.2.2.1.trans f₁.2.2.2.1, f₂.2.2.2.2.trans f₁.2.2.2.2⟩
     · simp only [BQ, Bool.or_eq_false_iff] at hr
-      rw [f₂.1 r hr.2, f₁.1 r hr.1]
+      Ξ f₂.1 r hr.2, f₁.1 r hr.1
     · simp only [BQ, Bool.or_eq_false_iff] at hr
-      rw [f₂.2.1 r hr.2, f₁.2.1 r hr.1]
+      Ξ f₂.2.1 r hr.2, f₁.2.1 r hr.1
   · have := rest_answer (hA'.mainCtx hT) hs tr
     rwa [show sgnOf V'.σb = dirOf (c.nreg 120004) from sgnOf_σbOf _] at this
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranRamRm
 
 /-!
@@ -39,7 +41,7 @@ def wbBody : Stmt := block [.addN 90105 90044 90101, .loadN 90102 90105, .addN 9
 def wbStmt : Stmt :=
   .seq (block [.constN 90101 0, .subN 90108 90050 90019]) (.whileLtN 90101 90100 wbBody)
 
-theorem wrS_wb : wrS Brm wbStmt = true := by decide
+theorem wrS_wb : wrS Brm wbStmt = true := ⌖
 
 /-- The facts the write-back loop keeps. -/
 structure WbI (W : ℕ) (d : Dm) (S : St) (X top1 : ℕ) (L : List ℕ) (c₀ c : Config) : Prop where
@@ -295,11 +297,11 @@ theorem optUnl_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : Con
       (∀ a, (a < d.b0 + d.oNxt ∨ d.b0 + d.oEg ≤ a) → c'.nmem a = c.nmem a) := by
   cases b with
   | false =>
-    exact ⟨c, _, .ifLtN_true (by rw [hbit, hC.one]; decide) (.skip hw), by omega, henc,
+    exact ⟨c, _, .ifLtN_true (by rw [hbit, hC.one]; decide) (.skip hw), ⋄, henc,
       fun _ _ _ _ => rfl, fun _ _ => rfl⟩
   | true =>
     obtain ⟨c', k, e, hk, h1, h2, h3⟩ := unlinkS_exec (P := P) hw hC henc hD h5 h6 h7 hj hjA hp hn
-    exact ⟨c', _, .ifLtN_false (by rw [hbit, hC.one]; decide) e, by omega, h1, h2, h3⟩
+    exact ⟨c', _, .ifLtN_false (by rw [hbit, hC.one]; decide) e, ⋄, h1, h2, h3⟩
 
 /-- Unlink the dying positions and decrement the counts. -/
 def ringStmt : Stmt :=
@@ -319,7 +321,7 @@ theorem optUnl_bound {S : St} {A : ℕ} (b : Bool) {j j' : ℕ} (hn : S.nxt j < 
     (S.optUnl b j).nxt j' < A ∧ (S.optUnl b j).prv j' < A := by
   unfold St.optUnl St.unl
   split_ifs
-  · simp only [Function.update_apply]
+  · ϴ Function.update_apply
     constructor <;> split_ifs <;> assumption
   · exact ⟨hn', hp'⟩
 
@@ -335,33 +337,33 @@ theorem ringStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {S : St} {c : C
       (∀ a, (a < d.b0 + d.oCnt ∨ d.b0 + d.oEg ≤ a) → c'.nmem a = c.nmem a) := by
   obtain ⟨y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15⟩ := d.lay
   obtain ⟨c₁, k₁, e₁, hk₁, E₁, r₁, m₁⟩ := optUnl_exec (P := P) (rb := 90072) (rn := 90068)
-    (b := decide (S.cnt n1 = 1)) hw hC henc hD (by decide) (by decide) (by decide) h68 h72 hn1
+    (b := decide (S.cnt n1 = 1)) hw hC henc hD (⌖) (⌖) (⌖) h68 h72 hn1
     b1.2 b1.1
-  have hC₁ : Cst c₁ E d := hC.frame fun r hr _ => r₁ r (by omega) (by omega) (by omega)
+  have hC₁ : Cst c₁ E d := hC.frame fun r hr _ => r₁ r (⋄) (⋄) (⋄)
   have bb := optUnl_bound (S := S) (decide (S.cnt n1 = 1)) (j := n1) b1.1 b1.2 b2.1 b2.2
   obtain ⟨c₂, k₂, e₂, hk₂, E₂, r₂, m₂⟩ := optUnl_exec (P := P) (rb := 90073) (rn := 90069)
-    (b := decide (S.cnt n2 = 1)) e₁.wb_right hC₁ E₁ hD (by decide) (by decide) (by decide)
-    (by rw [r₁ _ (by decide) (by decide) (by decide), h69])
-    (by rw [r₁ _ (by decide) (by decide) (by decide), h73]) hn2 bb.2 bb.1
-  have hC₂ : Cst c₂ E d := hC₁.frame fun r hr _ => r₂ r (by omega) (by omega) (by omega)
+    (b := decide (S.cnt n2 = 1)) e₁.wb_right hC₁ E₁ hD (⌖) (⌖) (⌖)
+    (Ρ r₁ _ (⌖) (⌖) (⌖), h69)
+    (Ρ r₁ _ (⌖) (⌖) (⌖), h73) hn2 bb.2 bb.1
+  have hC₂ : Cst c₂ E d := hC₁.frame fun r hr _ => r₂ r (⋄) (⋄) (⋄)
   obtain ⟨c₃, k₃, e₃, hk₃, E₃, r₃, m₃⟩ := decS_exec (P := P) (rn := 90068) e₂.wb_right hC₂ E₂ hD
-    (by decide) (by decide)
-    (by rw [r₂ _ (by decide) (by decide) (by decide), r₁ _ (by decide) (by decide) (by decide),
+    (⌖) (⌖)
+    (by rw [r₂ _ (⌖) (⌖) (⌖), r₁ _ (⌖) (⌖) (⌖),
       h68]) hn1
-  have hC₃ : Cst c₃ E d := hC₂.frame fun r hr _ => r₃ r (by omega) (by omega)
+  have hC₃ : Cst c₃ E d := hC₂.frame fun r hr _ => r₃ r (⋄) (⋄)
   obtain ⟨c₄, k₄, e₄, hk₄, E₄, r₄, m₄⟩ := decS_exec (P := P) (rn := 90069) e₃.wb_right hC₃ E₃ hD
-    (by decide) (by decide)
-    (by rw [r₃ _ (by decide) (by decide), r₂ _ (by decide) (by decide) (by decide),
-      r₁ _ (by decide) (by decide) (by decide), h69]) hn2
-  refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega, ?_, ?_, ?_⟩
+    (⌖) (⌖)
+    (by rw [r₃ _ (⌖) (⌖), r₂ _ (⌖) (⌖) (⌖),
+      r₁ _ (⌖) (⌖) (⌖), h69]) hn2
+  refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), ⋄, ?_, ?_, ?_⟩
   · refine E₄.st_congr (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
       (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ _ _ => rfl) (fun j _ => ?_)
       (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
-    simp only [St.rg, optUnl_cnt, Function.update_apply, ite_eq_right (Ne.symm hne)]
+    ϴ St.rg, optUnl_cnt, Function.update_apply, ite_eq_right (Ne.symm hne)
   · intro r a1 a2 a3
-    rw [r₄ r a1 a2, r₃ r a1 a2, r₂ r a1 a2 a3, r₁ r a1 a2 a3]
+    Ξ r₄ r a1 a2, r₃ r a1 a2, r₂ r a1 a2 a3, r₁ r a1 a2 a3
   · intro a ha
-    rw [m₄ a (by omega), m₃ a (by omega), m₂ a (by omega), m₁ a (by omega)]
+    Ξ m₄ a (⋄), m₃ a (⋄), m₂ a (⋄), m₁ a (⋄)
 
 end
 

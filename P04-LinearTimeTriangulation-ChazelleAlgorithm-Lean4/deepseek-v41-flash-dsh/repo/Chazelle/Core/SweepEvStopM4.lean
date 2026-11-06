@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopRC
 public import Chazelle.Core.RestoreTShot
 
@@ -41,7 +43,7 @@ theorem h6_of_abs (C : Chain) (Q : Polygon) {x : WPos}
   push Not at hlt
   have hv : (chainModel C).pos Q ⟨e, 0⟩ = (chainModel C).W.vtx e := by
     show sidePt _ e ((chainModel C).param Q ⟨e, 0⟩) = _
-    rw [show (chainModel C).param Q ⟨e, 0⟩ = 0 from rfl, Chazelle.Chain.sidePt_zero]
+    Ξ show (chainModel C).param Q ⟨e, 0⟩ = 0 from rfl, Chazelle.Chain.sidePt_zero
   rw [hv, Restore.chain_box_vtx_abs C hlt] at hy
   exact lt_irrefl _ hy
 
@@ -70,7 +72,7 @@ theorem far_free (C : Chain) {a : Point} (ha : a.2 ≤ C.top.2) {σ : ℝ} (hσ 
   show ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (farPt C a σ) (-σ) s ∈ C.dom
   filter_upwards [Ioo_mem_nhdsGT hT] with s hs
   unfold farPt
-  rw [Sweep.rayPt_back]
+  Ξ Sweep.rayPt_back
   exact hin _ (by linarith [hs.2]) (by linarith [hs.1])
 
 /-- **Only the candidate of `C₂`**: without a first hit of `C₁` it is the first hit of `C`. -/
@@ -78,7 +80,7 @@ theorem win_only2 {a : Point} (ha : a.2 ≤ J.right.top.2) {σ : ℝ} (hσ : σ 
     (hf : FreeAt J.whole a σ) (hno : ¬ (FreeAt J.left a σ ∧ a.2 ≤ J.left.top.2)) {τ₂ : ℝ}
     (h2 : τ₂ = J.right.hitParam a σ) : τ₂ = J.whole.hitParam a σ := by
   rcases hit_cases ha hσ with h | ⟨h1, h⟩
-  · rw [h, h2]
+  · Ξ h, h2
   · exact absurd ⟨free_left hf h1, h1⟩ hno
 
 /-- **The nearer candidate** is the first hit of `C`. -/
@@ -115,7 +117,7 @@ theorem right_v_pos (Q : Polygon) :
 
 theorem right_top_pos (Q : Polygon) : (chainModel J.right).pos Q ⟨6, 0⟩ = J.right.top := by
   show sidePt _ _ ((chainModel J.right).param Q ⟨6, 0⟩) = _
-  rw [show (chainModel J.right).param Q ⟨6, 0⟩ = 0 from rfl]
+  Ξ show (chainModel J.right).param Q ⟨6, 0⟩ = 0 from rfl
   exact (sidePt_top_copies J.right).1
 
 /-- The top of `C₂` is off `C₁` unless it is the shared vertex. -/
@@ -178,7 +180,7 @@ theorem parent_key_iff (hP : J.P.Simple) {P : Polygon} {N : NF}
     rw [hpt] at hpa
     refine hiff.2 ?_
     rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
-    · rw [ite_eq_right (by norm_num)] at hpa; exact Or.inr ⟨rfl, hpa⟩
+    · rw [ite_eq_right (⊛)] at hpa; exact Or.inr ⟨rfl, hpa⟩
     · rw [ite_eq_left rfl] at hpa; exact Or.inl ⟨rfl, hpa⟩
   · intro hsub
     have hend := hiff.1 hsub
@@ -197,12 +199,12 @@ theorem parent_key_iff (hP : J.P.Simple) {P : Polygon} {N : NF}
     have hpa : sidePt (chainModel J.right).W (endPos N i (1 - b)).edge
         ((chainModel J.right).param (Qof P) (endPos N i (1 - b))) = a := by
       show (chainModel J.right).pos (Qof P) (endPos N i (1 - b)) = a
-      rw [hpt]
+      Ξ hpt
       rcases hend with ⟨rfl, h⟩ | ⟨rfl, h⟩
       · rw [ite_eq_left rfl]; exact h
-      · rw [ite_eq_right (by norm_num)]; exact h
-    obtain ⟨e1, e2⟩ := hM.attach_unique (hS₂ hc) hAt hA' (by rw [hpa, hA.2.2.2.1])
-    rw [e1, e2]
+      · rw [ite_eq_right (⊛)]; exact h
+    obtain ⟨e1, e2⟩ := hM.attach_unique (hS₂ hc) hAt hA' (Ρ hpa, hA.2.2.2.1)
+    Ξ e1, e2
 
 end SweepStop
 

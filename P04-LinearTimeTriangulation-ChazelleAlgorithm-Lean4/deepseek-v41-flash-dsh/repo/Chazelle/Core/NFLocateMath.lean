@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.WalkKey
 
 /-!
@@ -34,7 +36,7 @@ open Chazelle.Chain (sideInArc)
 /-- `getD` in range is indexing. -/
 theorem getD_of_lt {α : Type*} {l : List α} {i : ℕ} (d : α) (h : i < l.length) :
     l.getD i d = l[i] := by
-  simp [List.getD_eq_getElem?_getD, h]
+  Θ List.getD_eq_getElem?_getD, h
 
 /-- **Cyclic order**: if `q` is not strictly inside the cyclic interval `(a, b)` and the three
 keys are distinct, then `b` is strictly inside `(a, q)`. -/
@@ -44,15 +46,15 @@ theorem sideInArc_swap {a b q : ℝ} (hab : a ≠ b) (haq : a ≠ q) (hbq : b �
   rcases lt_or_gt_of_ne hab with h1 | h1
   · rw [ite_eq_left h1] at h
     rcases lt_or_gt_of_ne haq with h2 | h2
-    · rw [ite_eq_left h2]
+    · Ξ ite_eq_left h2
       refine ⟨h1, ?_⟩
       rcases lt_or_gt_of_ne hbq with h3 | h3
       · exact h3
       · exact absurd ⟨h2, h3⟩ h
-    · rw [ite_eq_right (not_lt.2 h2.le)]
+    · Ξ ite_eq_right (not_lt.2 h2.le)
       exact Or.inl h1
   · rw [ite_eq_right (not_lt.2 h1.le), not_or, not_lt, not_lt] at h
-    rw [ite_eq_right (not_lt.2 h.1)]
+    Ξ ite_eq_right (not_lt.2 h.1)
     exact Or.inr (lt_of_le_of_ne h.2 hbq)
 
 /-- The unpacked validity of a normal form: its region correspondence and arc records. -/
@@ -81,15 +83,15 @@ theorem isArc_of_listed {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {j :
 theorem seq_length {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) :
     N.seq.length = N.arcs.length := by
   obtain ⟨-, -, -, hS⟩ := isNF_arcs h
-  rw [hS.1.length_eq, List.length_range]
+  Ξ hS.1.length_eq, List.length_range
 
 /-- Entries of the arc-sequence table are arc indices. -/
 theorem seq_lt {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {i : ℕ}
     (hi : i < N.arcs.length) : N.seq.getD i 0 < N.arcs.length := by
   obtain ⟨-, -, -, hS⟩ := isNF_arcs h
   have hl := seq_length h
-  rw [getD_of_lt 0 (by omega)]
-  have hm : N.seq[i]'(by omega) ∈ List.range N.arcs.length := hS.1.subset (List.getElem_mem _)
+  rw [getD_of_lt 0 (⋄)]
+  have hm : N.seq[i]'(⋄) ∈ List.range N.arcs.length := hS.1.subset (List.getElem_mem _)
   exact List.mem_range.1 hm
 
 /-- Every arc index occurs in the arc-sequence table. -/
@@ -99,7 +101,7 @@ theorem seq_surj {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {j : ℕ}
   have hl := seq_length h
   have hm : j ∈ N.seq := hS.1.symm.subset (List.mem_range.2 hj)
   obtain ⟨i, hi, e⟩ := List.mem_iff_getElem.1 hm
-  exact ⟨i, by omega, by rw [getD_of_lt 0 hi, e]⟩
+  exact ⟨i, ⋄, by rw [getD_of_lt 0 hi, e]⟩
 
 /-- **The table is sorted** by start keys. -/
 theorem seq_sorted {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {i i' : ℕ} (hii : i ≤ i')
@@ -108,8 +110,8 @@ theorem seq_sorted {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {i i' : �
   obtain ⟨-, -, -, hS⟩ := isNF_arcs h
   have hl := seq_length h
   rcases lt_or_eq_of_le hii with hlt | rfl
-  · rw [getD_of_lt 0 (by omega), getD_of_lt 0 (by omega)]
-    exact List.pairwise_iff_getElem.1 hS.2 i i' (by omega) (by omega) hlt
+  · rw [getD_of_lt 0 (⋄), getD_of_lt 0 (by omega)]
+    exact List.pairwise_iff_getElem.1 hS.2 i i' (⋄) (by omega) hlt
   · exact le_rfl
 
 /-- `KeyPred` bounds the key from above, its negation from below. -/

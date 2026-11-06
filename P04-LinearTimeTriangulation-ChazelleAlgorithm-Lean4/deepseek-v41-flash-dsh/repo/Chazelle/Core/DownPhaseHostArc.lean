@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseHostData
 public import Chazelle.Core.DownPhaseArcT
 
@@ -36,7 +38,7 @@ theorem cyc_unwrap {n l a b y : ℝ} (hl : 0 ≤ l ∧ l < n) (ha : 0 ≤ a ∧ 
   unfold sideInArc
   split_ifs at * <;> constructor <;> intro h <;> cyc_close2
 
-theorem unwrapK_self {n l : ℝ} : unwrapK n l l = l := by unfold unwrapK; rw [ite_eq_left le_rfl]
+theorem unwrapK_self {n l : ℝ} : unwrapK n l l = l := by unfold unwrapK; Ξ ite_eq_left le_rfl
 
 theorem unwrapK_bounds {n l x : ℝ} (hl : 0 ≤ l ∧ l < n) (hx : 0 ≤ x ∧ x < n) :
     l ≤ unwrapK n l x ∧ unwrapK n l x < l + n := by
@@ -65,11 +67,11 @@ theorem ukey_mono {i₀ j j' : ℕ} (hi₀ : i₀ < nk M F U) (hjj : j < j') (hj
     hostKeys_bounds (hk_mem hM hF hfin hi)
   unfold ukey
   split_ifs with h1 h2 h2
-  · exact hk_strictMono hM hF hfin (by omega) h2
-  · have := hb _ h1; have := hb (i₀ + j' - nk M F U) (by omega); linarith
+  · exact hk_strictMono hM hF hfin (⋄) h2
+  · have := hb _ h1; have := hb (i₀ + j' - nk M F U) (⋄); linarith
   · omega
   · have := hk_strictMono (U := U) hM hF hfin (i := i₀ + j - nk M F U)
-      (j := i₀ + j' - nk M F U) (by omega) (by omega)
+      (j := i₀ + j' - nk M F U) (⋄) (⋄)
     linarith
 
 theorem wrapK_ukey {i₀ j : ℕ} (hi₀ : i₀ < nk M F U) (hj : j < nk M F U) :
@@ -78,44 +80,44 @@ theorem wrapK_ukey {i₀ j : ℕ} (hi₀ : i₀ < nk M F U) (hj : j < nk M F U) 
     hostKeys_bounds (hk_mem hM hF hfin hi)
   unfold ukey wrapK
   split_ifs with h1 h2 h2
-  · rw [Nat.mod_eq_of_lt h1]
+  · Ξ Nat.mod_eq_of_lt h1
   · exfalso; exact h2 (hb _ h1).2
-  · exfalso; have := hb (i₀ + j - nk M F U) (by omega); linarith
+  · exfalso; have := hb (i₀ + j - nk M F U) (⋄); linarith
   · rw [add_sub_cancel_right, show (i₀ + j) % nk M F U = i₀ + j - nk M F U by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]]
+      rw [Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (⋄)]]
 
 /-- `ukey` is the unwrapped key relative to `hk i₀`. -/
 theorem ukey_eq_unwrap {i₀ j : ℕ} (hi₀ : i₀ < nk M F U) (hj : j < nk M F U) :
     ukey M F U i₀ j = unwrapK M.W.n (hk M F U i₀) (hk M F U ((i₀ + j) % nk M F U)) := by
   unfold ukey unwrapK
   split_ifs with h1 h2 h2
-  · rw [Nat.mod_eq_of_lt h1]
-  · exfalso; rw [Nat.mod_eq_of_lt h1] at h2
+  · Ξ Nat.mod_eq_of_lt h1
+  · exfalso; Ξ' Nat.mod_eq_of_lt h1 at h2
     rcases Nat.eq_zero_or_pos j with hj0 | hj0
-    · subst hj0; exact h2 (by rw [add_zero])
-    · exact h2 (hk_strictMono hM hF hfin (by omega) h1).le
+    · subst hj0; exact h2 (Ρ add_zero)
+    · exact h2 (hk_strictMono hM hF hfin (⋄) h1).le
   · exfalso
     rw [show (i₀ + j) % nk M F U = i₀ + j - nk M F U by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]] at h2
-    exact not_le.2 (hk_strictMono hM hF hfin (i := i₀ + j - nk M F U) (j := i₀) (by omega)
+      rw [Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (⋄)]] at h2
+    exact not_le.2 (hk_strictMono hM hF hfin (i := i₀ + j - nk M F U) (j := i₀) (⋄)
       hi₀) h2
   · rw [show (i₀ + j) % nk M F U = i₀ + j - nk M F U by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]]
+      rw [Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (⋄)]]
 
 omit hM hF hfin in
 theorem ukey_zero {i₀ : ℕ} (hi₀ : i₀ < nk M F U) : ukey M F U i₀ 0 = hk M F U i₀ := by
-  unfold ukey; rw [add_zero, ite_eq_left hi₀]
+  unfold ukey; Ξ add_zero, ite_eq_left hi₀
 
 end
 
 /-- Steps from `a` to `b` modulo `N`. -/
 theorem add_steps_mod {N a b : ℕ} (ha : a < N) (hb : b < N) : (a + (b + N - a) % N) % N = b := by
   rcases Nat.lt_or_ge b a with h | h
-  · have e1 : (b + N - a) % N = b + N - a := Nat.mod_eq_of_lt (by omega)
-    rw [e1, show a + (b + N - a) = b + N by omega, Nat.add_mod_right, Nat.mod_eq_of_lt hb]
+  · have e1 : (b + N - a) % N = b + N - a := Nat.mod_eq_of_lt (⋄)
+    Ξ e1, show a + (b + N - a) = b + N by omega, Nat.add_mod_right, Nat.mod_eq_of_lt hb
   · have e1 : (b + N - a) % N = b - a := by
-      rw [show b + N - a = (b - a) + N by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-    rw [e1, show a + (b - a) = b by omega, Nat.mod_eq_of_lt hb]
+      Ξ show b + N - a = (b - a) + N by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (⋄)
+    Ξ e1, show a + (b - a) = b by omega, Nat.mod_eq_of_lt hb
 
 /-! ## The keys of an arc -/
 
@@ -243,7 +245,7 @@ theorem unwrapK_wrapK {n l y : ℝ} (_hl : 0 ≤ l) (_hn : 0 < n) (hy1 : l ≤ y
     unwrapK n l (wrapK n y) = y := by
   unfold wrapK
   by_cases h1 : y < n
-  · rw [ite_eq_left h1]; unfold unwrapK; rw [ite_eq_left hy1]
+  · rw [ite_eq_left h1]; unfold unwrapK; Ξ ite_eq_left hy1
   · rw [ite_eq_right h1]; unfold unwrapK
     have : ¬ l ≤ y - n := by push Not; linarith
     rw [ite_eq_right this]; ring
@@ -258,15 +260,15 @@ theorem hostPt_wrap_lerp (W : Polygon) (hn : 0 < W.n) {p : ℕ} (hp : p < 2 * W.
   have hnr : (0 : ℝ) < n := by exact_mod_cast hn
   rcases hy2.lt_or_eq with hy2 | hy2
   · -- inside the edge
-    have ht0 : 0 ≤ y - p := by linarith
-    have ht1 : y - p < 1 := by linarith
+    have ht0 : 0 ≤ y - p := ⟡
+    have ht1 : y - p < 1 := ⟡
     unfold wrapK
     split_ifs with h
     · have hpn : p < n := by
         have : (p : ℝ) < n := lt_of_le_of_lt hy1 h
         exact_mod_cast this
-      rw [show y = (p : ℝ) + (y - p) by ring, hostPt_eq W ht0 ht1, Nat.mod_eq_of_lt hpn]
-      simp only [add_sub_cancel_left]
+      Ξ show y = (p : ℝ) + (y - p) by ring, hostPt_eq W ht0 ht1, Nat.mod_eq_of_lt hpn
+      ϴ add_sub_cancel_left
       rfl
     · push Not at h
       have hpn : n ≤ p := by
@@ -274,13 +276,13 @@ theorem hostPt_wrap_lerp (W : Polygon) (hn : 0 < W.n) {p : ℕ} (hp : p < 2 * W.
         have : (p : ℝ) + 1 ≤ n := by exact_mod_cast hpn
         linarith
       have hmod : p % n = p - n := by
-        rw [Nat.mod_eq_sub_mod hpn, Nat.mod_eq_of_lt (by omega)]
+        Ξ Nat.mod_eq_sub_mod hpn, Nat.mod_eq_of_lt (⋄)
       rw [show y - n = ((p - n : ℕ) : ℝ) + (y - p) by push_cast [hpn]; ring,
         hostPt_eq W ht0 ht1, hmod]
       rfl
   · -- the end of the edge
     subst hy2
-    rw [show ((p : ℝ) + 1 - p) = 1 by ring, Chazelle.Geometry.lerp_one]
+    Ξ show ((p : ℝ) + 1 - p) = 1 by ring, Chazelle.Geometry.lerp_one
     unfold wrapK
     split_ifs with h
     · have hpn : p + 1 < n := by
@@ -303,8 +305,8 @@ theorem hostPt_wrap_lerp (W : Polygon) (hn : 0 < W.n) {p : ℕ} (hp : p < 2 * W.
       rcases Nat.lt_or_ge p n with h' | h'
       · rw [Nat.mod_eq_of_lt h', show p + 1 = n by omega, Nat.mod_self]; omega
       · have e : p % n = p - n := by
-          rw [Nat.mod_eq_sub_mod h', Nat.mod_eq_of_lt (show p - n < n by omega)]
-        rw [e, Nat.mod_eq_of_lt (show p - n + 1 < n by omega)]
+          Ξ Nat.mod_eq_sub_mod h', Nat.mod_eq_of_lt (show p - n < n by omega)
+        Ξ e, Nat.mod_eq_of_lt (show p - n + 1 < n by omega)
         omega
 
 /-- **A piece of an arc** lies in one walk edge: between two consecutive host keys of an arc there
@@ -327,19 +329,19 @@ theorem arc_piece (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {l r : �
   have hnN : 0 < M.W.n := by
     have : (0 : ℝ) < (M.W.n : ℝ) := hn
     exact_mod_cast this
-  have hu0 : ukey M F U i_l 0 = l := by rw [ukey_zero hil, hA.hl]
+  have hu0 : ukey M F U i_l 0 = l := Ρ ukey_zero hil, hA.hl
   have hab : ukey M F U i_l j < ukey M F U i_l (j + 1) :=
-    ukey_mono hM hF hfin hil (Nat.lt_succ_self j) (by omega)
+    ukey_mono hM hF hfin hil (Nat.lt_succ_self j) (⋄)
   have hla : l ≤ ukey M F U i_l j := by
     rcases Nat.eq_zero_or_pos j with h0 | h0
-    · rw [h0, hu0]
-    · rw [← hu0]; exact (ukey_mono hM hF hfin hil h0 (by omega)).le
+    · Ξ h0, hu0
+    · rw [← hu0]; exact (ukey_mono hM hF hfin hil h0 (⋄)).le
   have hbr : ukey M F U i_l (j + 1) ≤ unwrapK n l r := by
-    rw [← hA.hud]
+    Ξ ← hA.hud
     rcases (show j + 1 ≤ d by omega).lt_or_eq with h | h
     · exact (ukey_mono hM hF hfin hil h hdN).le
-    · rw [h]
-  have hrb : 0 ≤ r ∧ r < n := hA.hr ▸ hb _ (Nat.mod_lt _ (by omega))
+    · Ξ h
+  have hrb : 0 ≤ r ∧ r < n := hA.hr ▸ hb _ (Nat.mod_lt _ (⋄))
   have hur : unwrapK n l r < l + n := (unwrapK_bounds hlb hrb).2
   have ha0 : 0 ≤ ukey M F U i_l j := le_trans hlb.1 hla
   set p := ⌊ukey M F U i_l j⌋₊ with hp
@@ -358,7 +360,7 @@ theorem arc_piece (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {l r : �
     have huw : unwrapK n l (wrapK n k) = k := unwrapK_wrapK hlb.1 hn hk1.le hk3
     have hlr' : unwrapK n l l < unwrapK n l r := by rw [unwrapK_self]; exact lt_trans hk1 hk2
     have hin : sideInArc l r (wrapK n k) := by
-      rw [cyc_unwrap hlb hlb hrb ⟨hwk, hwl⟩ hlr', unwrapK_self, huw]
+      Ξ cyc_unwrap hlb hlb hrb ⟨hwk, hwl⟩ hlr', unwrapK_self, huw
       exact ⟨hk1, hk2⟩
     have hint : ∃ k' : ℕ, wrapK n k = k' := by
       unfold wrapK
@@ -371,17 +373,17 @@ theorem arc_piece (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {l r : �
         push_cast [this]; ring
     obtain ⟨j', hj'0, hj'd, hj'⟩ := hA.vtx _ hwk hwl hin hint
     have hu' : ukey M F U i_l j' = k := by
-      rw [ukey_eq_unwrap hM hF hfin hil (by omega), hA.hl, hj', huw]
+      Ξ ukey_eq_unwrap hM hF hfin hil (⋄), hA.hl, hj', huw
     have h1 : j < j' := by
       by_contra h; push Not at h
       rcases h.lt_or_eq with h | h
-      · have := ukey_mono hM hF hfin hil h (by omega); linarith
-      · rw [h] at hu'; linarith
+      · have := ukey_mono hM hF hfin hil h (⋄); linarith
+      · Ξ' h at hu'; linarith
     have h2 : j' < j + 1 := by
       by_contra h; push Not at h
       rcases h.lt_or_eq with h | h
-      · have := ukey_mono hM hF hfin hil h (by omega); linarith
-      · rw [← h] at hu'; linarith
+      · have := ukey_mono hM hF hfin hil h (⋄); linarith
+      · Ξ' ← h at hu'; linarith
     omega
   refine ⟨p, hpa, hbp, ?_, fun y hy1 hy2 => ?_⟩
   · have : ((p : ℕ) : ℝ) < ((2 * M.W.n : ℕ) : ℝ) := by push_cast; linarith

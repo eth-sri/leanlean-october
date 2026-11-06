@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoCand0U
 
 /-!
@@ -107,7 +109,7 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 theorem kmain_le : Kmain κL κS c₀ F ≤ Kbr κL κS c₀ F := by unfold Kbr; omega
 theorem kshared_le : 35007 + (Klh c₀ F + 2) ≤ Kbr κL κS c₀ F := by unfold Kbr; omega
 
-set_option maxHeartbeats 8000000 in
+
 /-- **The test of the last walk edge.** -/
 theorem t3_irs (hM : Side0MathSpec) (hLab : Lab0Body lab0 κL) (hSC : S0Body candC Aux κS)
     (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hXl : X.CapLocal)
@@ -131,45 +133,45 @@ theorem t3_irs (hM : Side0MathSpec) (hLab : Lab0Body lab0 κL) (hSC : S0Body can
   unfold t3S
   refine IRS.seq (K₁ := 1) ((IRS.block [.addN tq qE K1] hI (by
     simp only [okB, okI]; exact ⟨⟨iscr_sw (by unfold tq sw; omega) (by unfold tq sw; omega),
-      hWq⟩, trivial⟩)).mono (by simp) (fun _ h => h)) ?_
+      hWq⟩, trivial⟩)).mono (✓) (fun _ h => h)) ?_
   rintro c₂ hI₂ hA₂ hA₂' hc₂
-  have hm₂ : c₂.nmem = c'.nmem := by rw [hc₂]
+  have hm₂ : c₂.nmem = c'.nmem := Ρ hc₂
   have hr₂ : ∀ r, r ≠ tq → c₂.nreg r = c'.nreg r := fun r hr => by
     rw [hc₂]; simp only [regB, regI, ]; exact upd_other _ _ _ hr
   have htq : c₂.nreg tq = c'.nreg qE + c'.nreg K1 := by
     rw [hc₂]; simp only [regB, regI, ]; exact upd_same _ _ _
   have fr2 : ∀ r, bandOf r ∉ oracleBands → ¬ NS r → r ≠ ALLOC → c₂.nreg r = c'.nreg r :=
     fun r _ h2 _ => hr₂ r (fun h => h2 (by subst h; unfold NS tq sw; omega))
-  have hfr₂ : CandFr c c₂ := hfr.trans (candFr_ns fr2 hA₂ (fun a _ => by rw [hm₂]))
+  have hfr₂ : CandFr c c₂ := hfr.trans (candFr_ns fr2 hA₂ (fun a _ => Ρ hm₂))
   have hst₂ : AccSt P J z c L c₂ := hst.keep (acc_ns fr2)
   have hA2e : c₂.nreg ALLOC = c'.nreg ALLOC := hr₂ ALLOC (by unfold tq ALLOC sw; omega)
   obtain ⟨eE2, -, -, -, -, -, -, -⟩ := pipe8 hfr₂
   have e33 : c₂.nreg (sw 33) = 2 * J.m₁ + 7 := by
-    rw [hI₂.hin _ (by unfold IFix sw; omega)]
+    Ξ hI₂.hin _ (by unfold IFix sw; omega)
     obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, h33, -⟩ := hA.hst
     exact h33
   have e46 : c₂.nreg (sw 46) = cstL J 1 := by
-    rw [hI₂.hin _ (by unfold IFix sw; omega)]
+    Ξ hI₂.hin _ (by unfold IFix sw; omega)
     obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, h45, -⟩ := hA.hst
-    exact h45 1 (by norm_num)
+    exact h45 1 (⊛)
   have hK₂ := hA.hK.fix hI₂
-  have htq' : c₂.nreg tq = c.nreg qE + 1 := by rw [htq, eE, hK.2.1]
+  have htq' : c₂.nreg tq = c.nreg qE + 1 := Ρ htq, eE, hK.2.1
   have hmain : z ≠ J.shared → IRS P W c₀ (mainS lab0 candC sh) c₂ (Kbr κL κS c₀ F) (fun c'' =>
       CandOut P J z c c'' ∧ CandFr c c'') := fun hzs =>
     (main_irs hM hLab hSC hsh hBs hXl hA hAux hI₂ hQ hfr₂ hst₂ hl hzL hzs hbR
       (by have := kmain_le (κL := κL) (κS := κS) (c₀ := c₀) (F := F); omega)).mono kmain_le
       (fun _ h => h)
   have hn₁ : c.nreg qE < 2 * J.m₁ + 7 := by have := q.he; rw [cm_n] at this; exact this
-  refine (IRS.ite (K := 2 + Kbr κL κS c₀ F) (fun h1 => ?_) (fun h1 => ?_)).mono (by omega)
+  refine (IRS.ite (K := 2 + Kbr κL κS c₀ F) (fun h1 => ?_) (fun h1 => ?_)).mono (⋄)
     (fun _ h => h)
-  · refine (hmain fun hzs => ?_).mono (by omega) (fun _ h => h)
+  · refine (hmain fun hzs => ?_).mono (⋄) (fun _ h => h)
     rw [htq', e33] at h1
     rcases ((shared_iff₁ hA.hP (Qof P) q.he q.hP0 q.hP1).1 (q.hpos.trans hzs)).2 with h | h
     · exact hne h
     · have h' : c.nreg qE + 1 = 2 * J.m₁ + 7 := h.1
       omega
   · rw [htq', e33] at h1
-    refine (IRS.ite (K := Kbr κL κS c₀ F) (fun h2 => ?_) (fun h2 => ?_)).mono (by omega)
+    refine (IRS.ite (K := Kbr κL κS c₀ F) (fun h2 => ?_) (fun h2 => ?_)).mono (⋄)
       (fun _ h => h)
     · refine hmain fun hzs => ?_
       rw [hK₂.2.2.1, e46] at h2
@@ -179,7 +181,7 @@ theorem t3_irs (hM : Side0MathSpec) (hLab : Lab0Body lab0 κL) (hSC : S0Body can
         omega
     · rw [hK₂.2.2.1, e46] at h2
       have h6 : cstL J 1 = 6 := by rw [cstL_one] at h2 ⊢; omega
-      have hzs : z = J.shared := q.hpos.symm.trans
+      have hzs := q.hpos.symm.trans
         ((shared_iff₁ hA.hP (Qof P) q.he q.hP0 q.hP1).2 ⟨hpar, Or.inr ⟨by show c.nreg qE + 1 = _; omega, h6⟩⟩)
       exact (shared_irs hsh hBs hXl hA hI₂ hQ hfr₂ hst₂ hl hzs
         (by have := kshared_le (κL := κL) (κS := κS) (c₀ := c₀) (F := F); omega)).mono
@@ -188,7 +190,7 @@ theorem t3_irs (hM : Side0MathSpec) (hLab : Lab0Body lab0 κL) (hSC : S0Body can
 /-- The cost of `t3S`. -/
 abbrev Kt3 (κL κS : ℕ → ℕ) (c₀ : Config) (F : ℕ → ℕ) : ℕ := 1 + (2 + (2 + Kbr κL κS c₀ F))
 
-set_option maxHeartbeats 8000000 in
+
 /-- **The class test.** -/
 theorem cls0_irs (hM : Side0MathSpec) (hLab : Lab0Body lab0 κL) (hSC : S0Body candC Aux κS)
     (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hXl : X.CapLocal)
@@ -210,22 +212,22 @@ theorem cls0_irs (hM : Side0MathSpec) (hLab : Lab0Body lab0 κL) (hSC : S0Body c
   unfold cls0
   refine (IRS.seq (K₁ := 2) (K₂ := 11015 + (2 + (2 + (2 + Kt3 κL κS c₀ F))))
     ((IRS.block [.copyN nE qE, .copyN nH qH] hI (by
-      simp only [okB, okI]
+      ϴ okB, okI
       exact ⟨iscr_sw (by unfold nE sw; omega) (by unfold nE sw; omega),
         iscr_sw (by unfold nH sw; omega) (by unfold nH sw; omega), trivial⟩)).mono
-      (by simp) (fun _ h => h)) ?_).mono (by unfold Kcls Kt3; omega) (fun _ h => h)
+      (✓) (fun _ h => h)) ?_).mono (by unfold Kcls Kt3; omega) (fun _ h => h)
   rintro c₂ hI₂ hA₂ hA₂' hc₂
-  have hm₂ : c₂.nmem = c'.nmem := by rw [hc₂]
+  have hm₂ : c₂.nmem = c'.nmem := Ρ hc₂
   have v2 : c₂.nreg nE = c'.nreg qE ∧ c₂.nreg nH = c'.nreg qH ∧
       ∀ r, r ≠ nE → r ≠ nH → c₂.nreg r = c'.nreg r := by
-    rw [hc₂]
+    Ξ hc₂
     refine ⟨?_, ?_, fun r h1 h2 => ?_⟩ <;>
       simp (disch := (unfold nE nH qE qH sw at *; omega)) only [regB, regI, upd_same, upd_other]
   obtain ⟨vE, vH, vo⟩ := v2
   have fr2 : ∀ r, bandOf r ∉ oracleBands → ¬ NS r → r ≠ ALLOC → c₂.nreg r = c'.nreg r :=
     fun r _ h2 _ => vo r (fun h => h2 (by subst h; unfold NS nE sw; omega))
       (fun h => h2 (by subst h; unfold NS nH sw; omega))
-  have hfr₂ : CandFr c c₂ := hfr.trans (candFr_ns fr2 hA₂ (fun a _ => by rw [hm₂]))
+  have hfr₂ : CandFr c c₂ := hfr.trans (candFr_ns fr2 hA₂ (fun a _ => Ρ hm₂))
   have hst₂ : AccSt P J z c L c₂ := hst.keep (acc_ns fr2)
   have hA2e : c₂.nreg ALLOC = c'.nreg ALLOC := vo ALLOC (by unfold nE ALLOC sw; omega)
     (by unfold nH ALLOC sw; omega)
@@ -251,11 +253,11 @@ theorem cls0_irs (hM : Side0MathSpec) (hLab : Lab0Body lab0 κL) (hSC : S0Body c
   obtain ⟨eE3, -, -, -, -, -, -, -⟩ := pipe8 hfr₃
   have hK₃ := hA.hK.fix hI₃
   have e46 : c₃.nreg (sw 46) = cstL J 1 := by
-    rw [hI₃.hin _ (by unfold IFix sw; omega)]
+    Ξ hI₃.hin _ (by unfold IFix sw; omega)
     obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, h45, -⟩ := hA.hst
-    exact h45 1 (by norm_num)
+    exact h45 1 (⊛)
   have hKbr := kmain_le (κL := κL) (κS := κS) (c₀ := c₀) (F := F)
-  refine (IRS.ite (K := 2 + (2 + Kt3 κL κS c₀ F)) (fun h1 => ?_) (fun h1 => ?_)).mono (by omega)
+  refine (IRS.ite (K := 2 + (2 + Kt3 κL κS c₀ F)) (fun h1 => ?_) (fun h1 => ?_)).mono (⋄)
     (fun _ h => h)
   · -- a positive parameter: not the shared vertex
     rw [hK₃.1, n3H] at h1
@@ -267,28 +269,28 @@ theorem cls0_irs (hM : Side0MathSpec) (hLab : Lab0Body lab0 κL) (hSC : S0Body c
       (by show _ ≤ 2 + (2 + (1 + (2 + (2 + Kbr κL κS c₀ F)))); unfold Kbr; omega) (fun _ h => h)
   · rw [hK₃.1, n3H] at h1
     have hpar : (chainModel J.left).param (Qof P) ⟨c.nreg qE, c.nreg qH⟩ = 0 :=
-      (nhgt_eq_zero_iff _ _ _).1 (by omega)
-    refine (IRS.ite (K := 2 + Kt3 κL κS c₀ F) (fun h2 => ?_) (fun h2 => ?_)).mono (by omega)
+      (nhgt_eq_zero_iff _ _ _).1 (⋄)
+    refine (IRS.ite (K := 2 + Kt3 κL κS c₀ F) (fun h2 => ?_) (fun h2 => ?_)).mono (⋄)
       (fun _ h => h)
     · rw [eE3, e46] at h2
-      exact (t3_irs hM hLab hSC hsh hBs hXl hA hAux hI₃ hQ hfr₃ hst₃ hl hzL hbR hpar (by omega)
+      exact (t3_irs hM hLab hSC hsh hBs hXl hA hAux hI₃ hQ hfr₃ hst₃ hl hzL hbR hpar (⋄)
         (by have h := hroom; unfold Kcls at h; show _ + (1 + (2 + (2 + Kbr κL κS c₀ F))) ≤ W; omega)).mono
         (by show _ ≤ 2 + (1 + (2 + (2 + Kbr κL κS c₀ F))); omega) (fun _ h => h)
     · rw [eE3, e46] at h2
-      refine (IRS.ite (K := Kt3 κL κS c₀ F) (fun h3 => ?_) (fun h3 => ?_)).mono (by omega)
+      refine (IRS.ite (K := Kt3 κL κS c₀ F) (fun h3 => ?_) (fun h3 => ?_)).mono (⋄)
         (fun _ h => h)
       · rw [eE3, e46] at h3
-        exact t3_irs hM hLab hSC hsh hBs hXl hA hAux hI₃ hQ hfr₃ hst₃ hl hzL hbR hpar (by omega)
+        exact t3_irs hM hLab hSC hsh hBs hXl hA hAux hI₃ hQ hfr₃ hst₃ hl hzL hbR hpar (⋄)
           (by have h := hroom; unfold Kcls at h; show _ + (1 + (2 + (2 + Kbr κL κS c₀ F))) ≤ W; omega)
       · rw [eE3, e46] at h3
-        have hzs : z = J.shared := q.hpos.symm.trans
+        have hzs := q.hpos.symm.trans
           ((shared_iff₁ hA.hP (Qof P) q.he q.hP0 q.hP1).2 ⟨hpar, Or.inl (by
             show c.nreg qE = cstL J 1; omega)⟩)
         exact (shared_irs hsh hBs hXl hA hI₃ hQ hfr₃ hst₃ hl hzs
           (by have h := hroom; unfold Kcls Kbr at h; omega)).mono
           (by show _ ≤ 1 + (2 + (2 + Kbr κL κS c₀ F)); unfold Kbr; omega) (fun _ h => h)
 
-set_option maxHeartbeats 8000000 in
+
 /-- **The candidate step of side `0`.** -/
 theorem cand0_irs (hM : Side0MathSpec) (hLab : Lab0Body lab0 κL) (hSC : S0Body candC Aux κS)
     (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hXl : X.CapLocal)
@@ -298,25 +300,25 @@ theorem cand0_irs (hM : Side0MathSpec) (hLab : Lab0Body lab0 κL) (hSC : S0Body 
       CandOut P J z c c' ∧ CandFr c c') := by
   unfold cand0 Kc0
   unfold Kc0 at hroom
-  refine IRS.seq (start_irs hsh hBs hXl hA hI hQ h0 (by omega)) ?_
+  refine IRS.seq (start_irs hsh hBs hXl hA hI hQ h0 (⋄)) ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨L, hst, hl, hfr⟩
   obtain ⟨eE, -, -, -, -, -, -, eR⟩ := pipe8 hfr
   have hK₁ := hA.hK.fix hI₁
   have hbR1 := hQ.hbR.1
   refine (IRS.ite (K := 2 + (Klh c₀ F + Kcls κL κS c₀ F)) (fun h1 => ?_) (fun h1 => ?_)).mono
-    (by omega) (fun _ h => h)
+    (⋄) (fun _ h => h)
   · rw [hK₁.2.1, eR] at h1
-    exact IRS.skip hI₁ (above_out hQ hfr hst hl (by omega))
+    exact IRS.skip hI₁ (above_out hQ hfr hst hl (⋄))
   · rw [hK₁.2.1, eR] at h1
-    have hbR : c.nreg bR = 1 := by omega
+    have hbR : c.nreg bR = 1 := ⋄
     refine (IRS.ite (K := Klh c₀ F + Kcls κL κS c₀ F) (fun h2 => ?_) (fun h2 => ?_)).mono
-      (by omega) (fun _ h => h)
+      (⋄) (fun _ h => h)
     · rw [hK₁.2.2.2.1, eE] at h2
-      exact (box_irs hsh hBs hXl hA hI₁ hQ hfr hst hl hbR h2 (by omega)).mono (by omega)
+      exact (box_irs hsh hBs hXl hA hI₁ hQ hfr hst hl hbR h2 (⋄)).mono (⋄)
         (fun _ h => h)
     · rw [hK₁.2.2.2.1, eE] at h2
-      exact (cls0_irs hM hLab hSC hsh hBs hXl hA hAux hI₁ hQ hfr hst hl hbR (by omega)
-        (by omega)).mono (by omega) (fun _ h => h)
+      exact (cls0_irs hM hLab hSC hsh hBs hXl hA hAux hI₁ hQ hfr hst hl hbR (⋄)
+        (⋄)).mono (⋄) (fun _ h => h)
 
 end Steps
 

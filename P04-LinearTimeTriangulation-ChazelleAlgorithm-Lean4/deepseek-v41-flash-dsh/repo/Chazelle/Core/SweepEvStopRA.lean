@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopTasks
 
 /-!
@@ -48,9 +50,9 @@ theorem EvEnv.fx (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, h40, h45, h33, h34, h35, -⟩ := hst
   have fix : ∀ i, i < 700 → c.nreg (sw i) = c₀.nreg (sw i) := fun i hi =>
     hI.hin _ (by unfold IFix sw; omega)
-  refine ⟨E.hK.fix hI, fun k hk => by rw [fix _ (by omega)]; exact h40 k hk,
-    fun k hk => by rw [fix _ (by omega)]; exact h45 k hk, by rw [fix _ (by omega)]; exact h33,
-    by rw [fix _ (by omega)]; exact h34, by rw [fix _ (by omega)]; exact h35, E.gw' hI,
+  refine ⟨E.hK.fix hI, fun k hk => by rw [fix _ (⋄)]; exact h40 k hk,
+    fun k hk => by rw [fix _ (⋄)]; exact h45 k hk, by rw [fix _ (⋄)]; exact h33,
+    by rw [fix _ (⋄)]; exact h34, by rw [fix _ (⋄)]; exact h35, E.gw' hI,
     E.hM.fix hI, E.ctxW' hI, E.ctx2' hI, E.ctx1' hI⟩
 
 /-! ## Conversions -/
@@ -69,35 +71,35 @@ theorem convR_irs (hP : J.P.Simple) (hI : IInv W c₀ c) (hK : Consts c₀) (hfx
       (∀ r, ¬ CvSet po r → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
   have hn₂ : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n J.right
   have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
-  have g0 := hfx.r40 0 (by norm_num)
-  have g1 := hfx.r40 1 (by norm_num)
-  have g2 := hfx.r40 2 (by norm_num)
-  have g4 := hfx.r40 4 (by norm_num)
-  simp only [cstR, List.getD_cons_zero, List.getD_cons_succ] at g0 g1 g2 g4
+  have g0 := hfx.r40 0 (⊛)
+  have g1 := hfx.r40 1 (⊛)
+  have g2 := hfx.r40 2 (⊛)
+  have g4 := hfx.r40 4 (⊛)
+  ϴ' cstR, List.getD_cons_zero, List.getD_cons_succ at g0 g1 g2 g4
   have hpen : c.nreg pe < c.nreg (sw 34) := by
-    rw [hfx.n2]
+    Ξ hfx.n2
     rcases hcl with (h | h) | ⟨-, h⟩ | ⟨h, -⟩ <;> simp only at h <;> omega
   have hτ := tpos_lt J.right 0
   have hτw := tpos_lt J.whole J.m₁
   have hmm : J.whole.m = J.left.m + J.right.m := rfl
-  rw [hn] at hW
+  Ξ' hn at hW
   refine (convS_irs (Or.inl rfl) (Or.inr rfl) ⟨hpe.1, hpe.2.1, hpe.2.2.1⟩ hpo hI hK hpen
     (by show c.nreg (sw (40 + 1)) < _; rw [g1, hfx.n2]; omega) (by rw [hfx.n2]; omega)
     (by show c.nreg (sw (40 + 0)) < _; rw [g0, hfx.nw]; omega) (by rw [hfx.nw]; omega)).mono
     le_rfl ?_
   rintro c' ⟨hv, hr, hm⟩
   have hS := sideConvR J hP
-  have e0 : c.nreg (sw 40) = 6 + tpos J.whole J.m₁ := g0
+  have e0 := g0
   have e1 : c.nreg (sw 40 + 1) = 6 + tpos J.right 0 := g1
   have e2 : c.nreg (sw 40 + 2) = rL1 J := g2
   have e4 : c.nreg (sw 40 + 4) = rδ J := g4
-  rw [e0, e1, e2, e4, hfx.n2, hfx.nw, ← hn₂, ← hn] at hv
+  Ξ' e0, e1, e2, e4, hfx.n2, hfx.nw, ← hn₂, ← hn at hv
   obtain ⟨a1, a2, a3⟩ := conv_pos hS (Qof P) (e := c.nreg pe) (h := h) (by
     rcases hcl with h' | ⟨h6, h'⟩ | ⟨h', h''⟩
     · exact Or.inl h'
     · exact Or.inr (Or.inl ⟨h6, h'⟩)
     · exact Or.inr (Or.inr ⟨h', h''⟩))
-  rw [← hv] at a1 a2 a3
+  Ξ' ← hv at a1 a2 a3
   exact ⟨a1, a2, a3, hr, hm⟩
 
 /-- **A position of the model of `C₁` converted to the model of `C`.** -/
@@ -114,35 +116,35 @@ theorem convL_irs (hP : J.P.Simple) (hI : IInv W c₀ c) (hK : Consts c₀) (hfx
       (∀ r, ¬ CvSet po r → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
   have hn₁ : (chainModel J.left).W.n = 2 * J.left.m + 7 := cm_n J.left
   have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
-  have g0 := hfx.r45 0 (by norm_num)
-  have g1 := hfx.r45 1 (by norm_num)
-  have g2 := hfx.r45 2 (by norm_num)
-  have g4 := hfx.r45 4 (by norm_num)
-  simp only [cstL, List.getD_cons_zero, List.getD_cons_succ] at g0 g1 g2 g4
+  have g0 := hfx.r45 0 (⊛)
+  have g1 := hfx.r45 1 (⊛)
+  have g2 := hfx.r45 2 (⊛)
+  have g4 := hfx.r45 4 (⊛)
+  ϴ' cstL, List.getD_cons_zero, List.getD_cons_succ at g0 g1 g2 g4
   have hpen : c.nreg pe < c.nreg (sw 33) := by
-    rw [hfx.n1]
+    Ξ hfx.n1
     rcases hcl with (h | h) | ⟨-, h⟩ | ⟨h, -⟩ <;> simp only at h <;> omega
   have hτ := tpos_lt J.left J.m₁
   have hτw := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
   have hmm : J.whole.m = J.left.m + J.right.m := rfl
-  rw [hn] at hW
+  Ξ' hn at hW
   refine (convS_irs (Or.inr rfl) (Or.inl rfl) ⟨hpe.1, hpe.2.1, hpe.2.2.1⟩ hpo hI hK hpen
     (by show c.nreg (sw (45 + 1)) < _; rw [g1, hfx.n1]; omega) (by rw [hfx.n1]; omega)
     (by show c.nreg (sw (45 + 0)) < _; rw [g0, hfx.nw]; omega) (by rw [hfx.nw]; omega)).mono
     le_rfl ?_
   rintro c' ⟨hv, hr, hm⟩
   have hS := sideConvL J hP
-  have e0 : c.nreg (sw 45) = 6 + tpos J.whole (J.m₁ + 2 * J.m₂) := g0
+  have e0 := g0
   have e1 : c.nreg (sw 45 + 1) = 6 + tpos J.left J.m₁ := g1
   have e2 : c.nreg (sw 45 + 2) = lL1 J := g2
   have e4 : c.nreg (sw 45 + 4) = lδ J := g4
-  rw [e0, e1, e2, e4, hfx.n1, hfx.nw, ← hn₁, ← hn] at hv
+  Ξ' e0, e1, e2, e4, hfx.n1, hfx.nw, ← hn₁, ← hn at hv
   obtain ⟨a1, a2, a3⟩ := conv_pos hS (Qof P) (e := c.nreg pe) (h := h) (by
     rcases hcl with h' | ⟨h6, h'⟩ | ⟨h', h''⟩
     · exact Or.inl h'
     · exact Or.inr (Or.inl ⟨h6, h'⟩)
     · exact Or.inr (Or.inr ⟨h', h''⟩))
-  rw [← hv] at a1 a2 a3
+  Ξ' ← hv at a1 a2 a3
   exact ⟨a1, a2, a3, hr, hm⟩
 
 /-! ## The attachment at the origin -/
@@ -162,7 +164,7 @@ def stA : Stmt := .seq (convS (sw 40) (sw 34) oPE oXE) (callArr (sw 2) oXE oPH o
 /-- The registers `stA` writes (besides the oracle bands). -/
 def StAW (r : ℕ) : Prop := CvSet oXE r ∨ (oF0 ≤ r ∧ r ≤ oF0 + 2)
 
-set_option maxRecDepth 20000 in
+
 theorem stA_irs (hP : J.P.Simple) (hNF : IsNF (chainModel J.right) (Qof P) N₂)
     (hI : IInv W c₀ c) (hK : Consts c₀) (hfx : Fx P W J c)
     {kind k b : ℕ} (hok : StOK P J N₂ kind k b) (hb : c.nreg oB = b)
@@ -195,11 +197,11 @@ theorem stA_irs (hP : J.P.Simple) (hNF : IsNF (chainModel J.right) (Qof P) N₂)
     (by unfold cX oPH sw; omega) (by unfold cT oPH sw; omega) (by unfold cDd oPH sw; omega)
   have hB1 : c₁.nreg oB = c.nreg oB := k1 _ (by unfold oXE oB sw; omega)
     (by unfold cX oB sw; omega) (by unfold cT oB sw; omega) (by unfold cDd oB sw; omega)
-  have hctx : ChainCtx P W c₁ (sw 2) J.whole := hfx.ctxW.transport
+  have hctx := hfx.ctxW.transport
     (k1 _ (by unfold oXE sw; omega) (by unfold cX sw; omega) (by unfold cT sw; omega)
-      (by unfold cDd sw; omega)) (fun x _ => by rw [hm1]) (by rw [hA1])
+      (by unfold cDd sw; omega)) (fun x _ => Ρ hm1) (Ρ hA1)
   have hposM : (chainModel J.whole).pos (Qof P) ⟨c₁.nreg oXE, c₁.nreg oPH⟩ = a := by
-    rw [hH1, hxpos, hpos]
+    Ξ hH1, hxpos, hpos
   have hR : J.right.radius = J.whole.radius := rfl
   refine (callArr_irs (o := oF0) hI₁ hctx
     ⟨by unfold sw; omega, by unfold sw; omega, by unfold oXE sw; omega, by unfold oXE sw; omega,
@@ -208,7 +210,7 @@ theorem stA_irs (hP : J.P.Simple) (hNF : IsNF (chainModel J.right) (Qof P) N₂)
     ⟨by rw [hH1, hxpar]; exact hpp.1, by rw [hH1, hxpar]; exact hpp.2.1,
       by rw [hH1]; exact hpp.2.2⟩ (by rw [hposM]; exact hay) (by rw [hA1]; omega)).mono le_rfl ?_
   rintro c' ⟨⟨hf1, hf2, hf3⟩, hr2, hA2, hm2⟩
-  rw [hposM, hB1, hb] at hf2 hf3
+  Ξ' hposM, hB1, hb at hf2 hf3
   have hσ := SweepStop.dirOf_cases' b
   have hon : a ∈ J.whole.set ∨ (|a.1| = J.whole.radius ∧ |a.2| < J.whole.radius) := by
     by_cases h1 : kind = 1
@@ -221,9 +223,9 @@ theorem stA_irs (hP : J.P.Simple) (hNF : IsNF (chainModel J.right) (Qof P) N₂)
     exact hf3 hne p t harr
   · refine ⟨fun r h1 h2 h3 => ?_, by rw [← hA1]; exact hA2, fun x hx => by
       rw [hm2 x (by rw [hA1]; exact hx), hm1]⟩
-    have h2' : ¬ (CvSet oXE r ∨ (oF0 ≤ r ∧ r ≤ oF0 + 2)) := h2
-    rw [hr2 r h1 (fun h => h2' (Or.inr (by omega))) (fun h => h2' (Or.inr (by omega)))
-      (fun h => h2' (Or.inr (by omega))) h3]
+    have h2' := h2
+    rw [hr2 r h1 (fun h => h2' (Or.inr (⋄))) (fun h => h2' (Or.inr (⋄)))
+      (fun h => h2' (Or.inr (⋄))) h3]
     exact hr1 r (fun h => h2' (Or.inl h))
 
 end

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranRing
 
 /-!
@@ -108,7 +110,7 @@ noncomputable def supR (M : Model) (G : Set (Set Point)) (U : Set Point) : Set P
 theorem supR_spec {M : Model} {G : Set (Set Point)} {U : Set Point}
     (h : ∃ Z ∈ M.regions G, U ⊆ Z) : supR M G U ∈ M.regions G ∧ U ⊆ supR M G U := by
   unfold supR
-  rw [dite_eq_left h]
+  Ξ dite_eq_left h
   exact h.choose_spec
 
 theorem supR_eq {M : Model} {G : Set (Set Point)} {U Z : Set Point} (hU : U.Nonempty)
@@ -231,7 +233,7 @@ theorem _root_.Chazelle.Core.Gran.St.cl_spec (hE : E.Good) {x : ℕ} (hx : x < E
 theorem lv_iff (h : Inv E st) {j : ℕ} (hj : j < E.A) :
     st.Lv j ↔ ∃ i ∈ st.L E, st.nd0 i = j ∨ st.nd1 i = j := by
   unfold St.Lv
-  rw [h.cnt j hj]
+  Ξ h.cnt j hj
   unfold St.cntOf
   constructor
   · intro hpos
@@ -246,23 +248,23 @@ theorem lv_iff (h : Inv E st) {j : ℕ} (hj : j < E.A) :
       exact ⟨i, ⟨hi.1, hi.2.1⟩, Or.inr hi.2.2⟩
   · rintro ⟨i, ⟨hiK, hil⟩, h0 | h1⟩
     · have : 0 < ((Finset.range E.K).filter fun i => st.live i = 1 ∧ st.nd0 i = j).card :=
-        Finset.card_pos.2 ⟨i, by simp [hiK, hil, h0]⟩
+        Finset.card_pos.2 ⟨i, ⊚ hiK, hil, h0⟩
       omega
     · have : 0 < ((Finset.range E.K).filter fun i => st.live i = 1 ∧ st.nd1 i = j).card :=
-        Finset.card_pos.2 ⟨i, by simp [hiK, hil, h1]⟩
+        Finset.card_pos.2 ⟨i, ⊚ hiK, hil, h1⟩
       omega
 
 /-- **The cuts of the current submap are the start keys of the live positions.** -/
 theorem cut_iff (hE : E.Good) (h : Inv E st) (k : ℝ) :
     E.M.IsCut (st.F E) k ↔ ∃ j, j < E.A ∧ st.Lv j ∧ E.key j = k := by
   unfold St.F
-  rw [isCut_fam_iff hE.hNF hE.hM]
+  Ξ isCut_fam_iff hE.hNF hE.hM
   constructor
   · rintro ⟨i, hiL, hi, hk | hk⟩
     · obtain ⟨h1, h2⟩ := h.stat.nd0 i hi
-      exact ⟨st.nd0 i, h1, (h.lv_iff h1).2 ⟨i, hiL, Or.inl rfl⟩, by rw [h2, hk]⟩
+      exact ⟨st.nd0 i, h1, (h.lv_iff h1).2 ⟨i, hiL, Or.inl rfl⟩, Ρ h2, hk⟩
     · obtain ⟨h1, h2⟩ := h.stat.nd1 i hi
-      exact ⟨st.nd1 i, h1, (h.lv_iff h1).2 ⟨i, hiL, Or.inr rfl⟩, by rw [h2, hk]⟩
+      exact ⟨st.nd1 i, h1, (h.lv_iff h1).2 ⟨i, hiL, Or.inr rfl⟩, Ρ h2, hk⟩
   · rintro ⟨j, hj, hL, rfl⟩
     obtain ⟨i, hiL, h0 | h1⟩ := (h.lv_iff hj).1 hL
     · refine ⟨i, hiL, hiL.1, Or.inl ?_⟩
@@ -321,7 +323,7 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
   have eb := edge_lt hE hb
   obtain ⟨pa0, pa1⟩ := par_mem hE ha
   obtain ⟨pb0, pb1⟩ := par_mem hE hb
-  rw [key_edge, key_edge, arcWt_formula hE.hcd ea eb pa0 pa1 pb0 pb1, ← key_edge, ← key_edge]
+  Ξ key_edge, key_edge, arcWt_formula hE.hcd ea eb pa0 pa1 pb0 pb1, ← key_edge, ← key_edge
   have hcnt : E.M.counted (E.edge b) ↔ (E.ch = false ∨ (6 ≤ E.edge b ∧ E.edge b < 2 * E.m + 6)) :=
     hE.hcd.2 _ eb
   obtain ⟨hpz1, hpz⟩ := h.pz b hb
@@ -332,26 +334,26 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
     refine ⟨fun hc => ?_, fun hc => ?_⟩
     · unfold bump
       by_cases hz : E.par b = 0
-      · rw [ite_eq_right (by rw [hz]; exact lt_irrefl 0)]
+      · Ξ ite_eq_right (by rw [hz]; exact lt_irrefl 0)
         by_contra h'
-        have : st.pz b = 1 := by omega
+        have : st.pz b = 1 := ⋄
         exact (hpz.1 this).2 hz
-      · rw [ite_eq_left (lt_of_le_of_ne pb0 (Ne.symm hz))]
+      · Ξ ite_eq_left (lt_of_le_of_ne pb0 (Ne.symm hz))
         exact (hpz.2 ⟨hc, hz⟩).symm
     · by_contra h'
-      exact hc (hpz.1 (by omega)).1
+      exact hc (hpz.1 (⋄)).1
   have hb01 : bump (E.par b) ≤ 1 := by unfold bump; split_ifs <;> omega
   have hnE : E.n = E.M.W.n := rfl
   unfold gwt Env.sz
-  rw [h.eg a ha, h.eg b hb]
+  Ξ h.eg a ha, h.eg b hb
   by_cases hab : a = b
   · subst hab; simp
   have hk : E.key a ≠ E.key b := fun e => hab (key_inj hE ha hb e)
-  rw [ite_eq_right hab, ite_eq_right hk]
+  Ξ ite_eq_right hab, ite_eq_right hk
   by_cases hlt : a < b
   · have hkl := key_strict hE hlt hb
     have hle := edge_mono hE ha hb hkl
-    rw [ite_eq_left hlt, ite_eq_left hkl]
+    Ξ ite_eq_left hlt, ite_eq_left hkl
     cases hch : E.ch with
     | false =>
       have hc : E.M.counted (E.edge b) := hcnt.2 (Or.inl hch)
@@ -363,20 +365,20 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
       rw [hch] at hcnt
       simp only [Bool.true_eq_false, false_or] at hcnt
       unfold cntIn bB
-      simp only [ite_true]
+      ϴ ite_true
       by_cases hc : E.M.counted (E.edge b)
       · have := hcnt.1 hc
         have := hbx.1 hc
-        simp only [min_def, max_def]
+        ϴ min_def, max_def
         split_ifs <;> omega
       · have h1 := mt hcnt.2 hc
         have := hbx.2 hc
-        simp only [min_def, max_def]
+        ϴ min_def, max_def
         split_ifs <;> omega
-  · have hlt' : b < a := by omega
+  · have hlt' : b < a := ⋄
     have hkl := key_strict hE hlt' ha
     have hle := edge_mono hE hb ha hkl
-    rw [ite_eq_right hlt, ite_eq_right (not_lt.2 hkl.le)]
+    Ξ ite_eq_right hlt, ite_eq_right (not_lt.2 hkl.le)
     cases hch : E.ch with
     | false =>
       have hc : E.M.counted (E.edge b) := hcnt.2 (Or.inl hch)
@@ -388,24 +390,24 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
       rw [hch] at hcnt
       simp only [Bool.true_eq_false, false_or] at hcnt
       unfold cntIn bB
-      simp only [ite_true]
+      ϴ ite_true
       by_cases hc : E.M.counted (E.edge b)
       · have := hcnt.1 hc
         have := hbx.1 hc
-        simp only [min_def, max_def]
+        ϴ min_def, max_def
         split_ifs <;> omega
       · have h1 := mt hcnt.2 hc
         have := hbx.2 hc
-        simp only [min_def, max_def]
+        ϴ min_def, max_def
         split_ifs <;> omega
 
 /-- `size` by integer arithmetic. -/
 theorem size_eq (hE : E.Good) : E.M.size = cntIn E.ch E.m 0 E.n := by
-  rw [← ncard_counted hE.hcd le_rfl]
+  Ξ ← ncard_counted hE.hcd le_rfl
   unfold Model.size
   congr 1
   ext p
-  simp only [mem_ofPred_eq]
+  ϴ mem_ofPred_eq
   constructor
   · rintro ⟨h1, h2⟩; exact ⟨h1, h2, Nat.zero_le _, h1⟩
   · rintro ⟨h1, h2, -, -⟩; exact ⟨h1, h2⟩
@@ -417,11 +419,11 @@ theorem Inv.final (_hE : E.Good) (h : Inv E st) (htop : st.top = 0) :
     E.M.Granular (st.F E) E.γ ∧ E.M.DegLe (st.F E) E.D := by
   refine ⟨⟨h.semi, ?_⟩, h.degLe⟩
   have : Merge.ContractionCondIn E.M.D E.M.weight (st.F E) E.γ := by
-    rw [Merge.contractionCondIn_iff]
+    Ξ Merge.contractionCondIn_iff
     intro c hc
     have hcS := hc.1
     obtain ⟨i, hiL, -, rfl⟩ := hcS
-    exact h.work i hiL (fun t ht => absurd ht (by omega)) hc
+    exact h.work i hiL (fun t ht => absurd ht (⋄)) hc
   exact this
 
 end

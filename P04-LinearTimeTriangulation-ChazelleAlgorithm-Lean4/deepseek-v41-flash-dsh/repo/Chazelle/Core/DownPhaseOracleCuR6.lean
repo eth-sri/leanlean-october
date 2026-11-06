@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleCuR5
 public import Chazelle.Core.DownPhaseOracleShH
 
@@ -56,11 +58,11 @@ def queryC (cu : Stmt) : Stmt := .seq normI (.seq (branchC cu) asmC)
 theorem flat_len_le {m : ℕ → ℕ} {n Gγ : ℕ} :
     ∀ {sls : List Slot}, (∀ sl ∈ sls, sl.q ≤ Gγ) →
       (sls.flatMap (slotPcs m n)).length ≤ sls.length * Gγ
-  | [], _ => by simp
+  | [], _ => ✓
   | sl :: sls, h => by
-    have ih := flat_len_le (m := m) (n := n) (sls := sls) (fun s hs => h s (by simp [hs]))
-    have h1 := h sl (by simp)
-    rw [List.flatMap_cons, List.length_append, slotPcs_length, List.length_cons]
+    have ih := flat_len_le (m := m) (n := n) (sls := sls) (fun s hs => h s (⊚ hs))
+    have h1 := h sl (✓)
+    Ξ List.flatMap_cons, List.length_append, slotPcs_length, List.length_cons
     nlinarith
 
 theorem slotPcs_fields {m : ℕ → ℕ} {n : ℕ} {sls : List Slot} {pc : Pc}
@@ -77,20 +79,20 @@ theorem rdPc_of_words {m : ℕ → ℕ} {A j : ℕ} {pc : Pc}
   obtain ⟨⟨a, b⟩, ⟨d, e⟩, k, en, x, dir, pw⟩ := pc
   simp only at hd hp
   subst hd hp
-  have h0 := h 0 (by norm_num)
-  have h1 := h 1 (by norm_num)
-  have h2 := h 2 (by norm_num)
-  have h3 := h 3 (by norm_num)
-  have h4 := h 4 (by norm_num)
-  have h5 := h 5 (by norm_num)
-  have h6 := h 6 (by norm_num)
+  have h0 := h 0 (⊛)
+  have h1 := h 1 (⊛)
+  have h2 := h 2 (⊛)
+  have h3 := h 3 (⊛)
+  have h4 := h 4 (⊛)
+  have h5 := h 5 (⊛)
+  have h6 := h 6 (⊛)
   simp only [Nat.add_zero, pcW] at h0 h1 h2 h3 h4 h5 h6
   unfold rdPc
-  rw [h0, h1, h2, h3, h4, h5, h6]
+  Ξ h0, h1, h2, h3, h4, h5, h6
 
 theorem slotsOf_nil {c : Config} (h : ∀ j, j < 4 → c.nreg (170200 + 5 * j) = 0) :
     slotsOf c 4 = [] := by
-  rw [slotsOf_free (k := 0) (by norm_num) (fun j _ hj => h j hj)]; rfl
+  rw [slotsOf_free (k := 0) (⊛) (fun j _ hj => h j hj)]; rfl
 
 /-! ## Execution -/
 

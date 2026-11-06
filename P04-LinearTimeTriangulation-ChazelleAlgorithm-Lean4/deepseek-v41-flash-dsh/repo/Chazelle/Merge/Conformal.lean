@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Merge.Augmented
 public import Chazelle.Chain.Weight
 
@@ -195,7 +197,7 @@ theorem eq_of_subset (h : IsSplit D S e R R₁ R₂) {P : Set Point}
 /-- An old region other than `R` is a region of `insert e S`. -/
 theorem mem_of_ne (h : IsSplit D S e R R₁ R₂) {P : Set Point} (hP : P ∈ regionsIn D S)
     (hPR : P ≠ R) : P ∈ regionsIn D (insert e S) := by
-  rw [h.eq]
+  Ξ h.eq
   exact Or.inl ⟨hP, hPR⟩
 
 /-- `e` does not touch the old regions other than `R`. -/
@@ -275,7 +277,7 @@ theorem exits_disjoint (hF : ChordSystem D F) (hS : S ⊆ F) (he : e ∈ F)
 theorem ncard_exits (hF : ChordSystem D F) (hS : S ⊆ F) (he : e ∈ F) (heS : e ∉ S)
     (h : IsSplit D S e R R₁ R₂) {W : Set (Set Point)} (hW : W ⊆ S) :
     (exitsIn D W R).ncard = (exitsIn D W R₁).ncard + (exitsIn D W R₂).ncard := by
-  rw [h.exits_eq_union hF hS he heS hW]
+  Ξ h.exits_eq_union hF hS he heS hW
   exact ncard_union_eq (h.exits_disjoint hF hS he hW) (exitsIn_finite hF (hW.trans hS) _)
     (exitsIn_finite hF (hW.trans hS) _)
 
@@ -285,7 +287,7 @@ theorem exits_insert₁ (hF : ChordSystem D F) (hS : S ⊆ F) (he : e ∈ F) (he
     (exitsIn D (insert e S) R₁).ncard = (exitsIn D S R₁).ncard + 1 := by
   have : exitsIn D (insert e S) R₁ = insert e (exitsIn D S R₁) := by
     ext c
-    simp only [exitsIn, mem_insert_iff, mem_ofPred_eq]
+    ϴ exitsIn, mem_insert_iff, mem_ofPred_eq
     constructor
     · rintro ⟨rfl | hc, ht⟩
       · exact Or.inl rfl
@@ -293,7 +295,7 @@ theorem exits_insert₁ (hF : ChordSystem D F) (hS : S ⊆ F) (he : e ∈ F) (he
     · rintro (rfl | ⟨hc, ht⟩)
       · exact ⟨Or.inl rfl, h.touches₁ hF hS he heS⟩
       · exact ⟨Or.inr hc, ht⟩
-  rw [this, ncard_insert_of_notMem (fun h' => heS h'.1) (exitsIn_finite hF hS _)]
+  Ξ this, ncard_insert_of_notMem (fun h' => heS h'.1) (exitsIn_finite hF hS _)
 
 theorem exits_insert₂ (hF : ChordSystem D F) (hS : S ⊆ F) (he : e ∈ F) (heS : e ∉ S)
     (h : IsSplit D S e R R₁ R₂) :
@@ -305,7 +307,7 @@ theorem exits_other (hF : ChordSystem D F) (hS : S ⊆ F) (h : IsSplit D S e R R
     {P : Set Point} (hP : P ∈ regionsIn D S) (hPR : P ≠ R) :
     exitsIn D (insert e S) P = exitsIn D S P := by
   ext c
-  simp only [exitsIn, mem_insert_iff, mem_ofPred_eq]
+  ϴ exitsIn, mem_insert_iff, mem_ofPred_eq
   constructor
   · rintro ⟨rfl | hc, ht⟩
     · exact absurd ht (h.not_touches hF hS hP hPR)
@@ -320,7 +322,7 @@ end IsSplit
 theorem exitsIn_insert_of_touches {W : Set (Set Point)} {e U : Set Point}
     (h : TouchesIn D e U) : exitsIn D (insert e W) U = insert e (exitsIn D W U) := by
   ext c
-  simp only [exitsIn, mem_insert_iff, mem_ofPred_eq]
+  ϴ exitsIn, mem_insert_iff, mem_ofPred_eq
   constructor
   · rintro ⟨rfl | hc, ht⟩
     · exact Or.inl rfl
@@ -332,7 +334,7 @@ theorem exitsIn_insert_of_touches {W : Set (Set Point)} {e U : Set Point}
 theorem exitsIn_insert_of_not_touches {W : Set (Set Point)} {e U : Set Point}
     (h : ¬ TouchesIn D e U) : exitsIn D (insert e W) U = exitsIn D W U := by
   ext c
-  simp only [exitsIn, mem_insert_iff, mem_ofPred_eq]
+  ϴ exitsIn, mem_insert_iff, mem_ofPred_eq
   constructor
   · rintro ⟨rfl | hc, ht⟩
     · exact absurd ht h
@@ -362,9 +364,9 @@ theorem mem_regionsIn_of_interiorChords_eq_empty (hF : ChordSystem D F) {S : Set
   have heq : R = connectedComponentIn (freeIn D F) p := by
     apply Subset.antisymm
     · exact (regionsIn_isPreconnected hR).subset_connectedComponentIn hp hRF
-    · rw [regionsIn_eq_component hR hp]
+    · Ξ regionsIn_eq_component hR hp
       exact connectedComponentIn_mono p (freeIn_anti D hS)
-  rw [heq]
+  Ξ heq
   exact mem_regionsIn (hRF hp)
 
 /-- If a region `R` of `S` contains no chord of the full map, its exit chords are bounded by the
@@ -414,33 +416,33 @@ theorem splitStatement_aux (hF : ChordSystem D F) {Δ n : ℕ} (ih : SplitStatem
   -- the counted exit chords of `R₂` now include `e` iff `a₁ = 1`
   have hcount : (exitsIn D W' R₂).ncard = a₁ + (exitsIn D W R₂).ncard := by
     by_cases h1 : a₁ = 1
-    · have : W' = insert e W := by rw [hW'def, ite_eq_left h1]
+    · have : W' = insert e W := Ρ hW'def, ite_eq_left h1
       rw [this, exitsIn_insert_of_touches (h.touches₂ hF hS he heS),
         ncard_insert_of_notMem (fun h' => heW h'.1) (exitsIn_finite hF (hW.trans hS) _), h1]
       omega
-    · have : W' = W := by rw [hW'def, ite_eq_right h1]
-      rw [this]
+    · have : W' = W := Ρ hW'def, ite_eq_right h1
+      Ξ this
       omega
   -- `W'` counts at most `a₁` more exit chords than `W`, and none more away from `e`
   have hN1 : ∀ Q, ¬ TouchesIn D e Q → (exitsIn D W' Q).ncard ≤ (exitsIn D W Q).ncard := by
     intro Q hQ
     have : exitsIn D W' Q ⊆ exitsIn D W Q := by
-      rw [← exitsIn_insert_of_not_touches (W := W) hQ]
+      Ξ ← exitsIn_insert_of_not_touches (W := W) hQ
       exact exitsIn_mono hW'2 Q
     exact ncard_le_ncard this (exitsIn_finite hF (hW.trans hS) Q)
   have hN2 : ∀ Q, (exitsIn D W' Q).ncard ≤ (exitsIn D W Q).ncard + a₁ := by
     intro Q
     by_cases h1 : a₁ = 1
-    · have : W' = insert e W := by rw [hW'def, ite_eq_left h1]
-      rw [this, h1]
+    · have : W' = insert e W := Ρ hW'def, ite_eq_left h1
+      Ξ this, h1
       calc (exitsIn D (insert e W) Q).ncard ≤ (insert e (exitsIn D W Q)).ncard := by
             refine ncard_le_ncard ?_ ((exitsIn_finite hF (hW.trans hS) Q).insert e)
             rintro c ⟨hc | hc, ht⟩
             · exact Or.inl hc
             · exact Or.inr ⟨hc, ht⟩
         _ ≤ (exitsIn D W Q).ncard + 1 := ncard_insert_le _ _
-    · have : W' = W := by rw [hW'def, ite_eq_right h1]
-      rw [this]
+    · have : W' = W := Ρ hW'def, ite_eq_right h1
+      Ξ this
       exact Nat.le_add_right _ _
   -- the recursion into `R₂`
   have hint : (interiorChords D F (insert e S) R₂).ncard ≤ n := by
@@ -455,7 +457,7 @@ theorem splitStatement_aux (hF : ChordSystem D F) {Δ n : ℕ} (ih : SplitStatem
   have hΔ' : ∀ U ∈ regionsIn D F, U ⊆ R₂ → (exitsIn D F U).ncard ≤ Δ :=
     fun U hU hUR => hΔ U hU (hUR.trans h.sub₂)
   have hdeg' : Δ < (exitsIn D W' R₂).ncard := by
-    rw [hcount, ha₁, ← h.ncard_exits hF hS he heS hW]
+    Ξ hcount, ha₁, ← h.ncard_exits hF hS he heS hW
     exact hdeg
   obtain ⟨f, hf, hfS', hfR₂, hQ⟩ := ih (insert e S) W' R₂ hS' hW'3 h.mem₂ hint hΔ' hdeg'
   have hfS : f ∉ S := fun h' => hfS' (mem_insert_of_mem e h')
@@ -487,7 +489,7 @@ theorem splitStatement_aux (hF : ChordSystem D F) {Δ n : ℕ} (ih : SplitStatem
   by_cases hPP : P = P₀
   · subst hPP
     have hW_T : W ⊆ insert f S := hW.trans (subset_insert f S)
-    rw [hPs.ncard_exits hF hT he heT hW_T]
+    Ξ hPs.ncard_exits hF hT he heT hW_T
     have hP₁mem : P₁ ∈ regionsIn D (insert f (insert e S)) := by rw [← hswap]; exact hPs.mem₁
     have hP₂mem : P₂ ∈ regionsIn D (insert f (insert e S)) := by rw [← hswap]; exact hPs.mem₂
     have hR₁' : R₁ ∈ regionsIn D (insert e (insert f S)) := by rw [hswap]; exact hR₁mem
@@ -496,13 +498,13 @@ theorem splitStatement_aux (hF : ChordSystem D F) {Δ n : ℕ} (ih : SplitStatem
         (fun h' => hPs.ne (h1.symm.trans h'.symm))
       have hq := hQ P₂ hP₂mem hP₂R₂
       have hn2 := hN2 P₂
-      rw [← h1]
+      Ξ ← h1
       omega
     · have hP₁R₂ : P₁ ⊆ R₂ := hK P₁ hP₁mem (hPs.sub₁.trans hPR)
         (fun h' => hPs.ne (h'.trans h1))
       have hq := hQ P₁ hP₁mem hP₁R₂
       have hn2 := hN2 P₁
-      rw [← h1]
+      Ξ ← h1
       omega
   · have hPe : ¬ TouchesIn D e P := hPs.not_touches hF hT hP hPP
     have hPmem : P ∈ regionsIn D (insert f (insert e S)) := by
@@ -560,7 +562,7 @@ theorem edgeOfIn_eq (hF : ChordSystem D F) {S : Set (Set Point)} (hS : S ⊆ F) 
     edgeOfIn D S c = s(U, V) := by
   have h := hF.touches_iff hS hc
   unfold edgeOfIn
-  rw [dite_eq_left h]
+  Ξ dite_eq_left h
   obtain ⟨-, hspec⟩ := Classical.choose_spec (Classical.choose_spec h)
   rcases (hspec U hU).1 hcU with rfl | rfl <;> rcases (hspec V hV).1 hcV with rfl | rfl
   · exact absurd rfl hne
@@ -584,7 +586,7 @@ theorem edgeOfIn_injOn (hF : ChordSystem D F) (hD : IsPreconnected D) (hne : D.N
   have h3 : (dualGraphIn D S).edgeSet.ncard ≤ (edgeOfIn D S '' S).ncard :=
     ncard_le_ncard hsub (hfin.image _)
   have h4 : (edgeOfIn D S '' S).ncard ≤ S.ncard := ncard_image_le hfin
-  exact injOn_of_ncard_image_eq (by omega) hfin
+  exact injOn_of_ncard_image_eq (⋄) hfin
 
 /-- The neighbours of a region `U` in the dual graph of `S`. -/
 def neighborsIn (D : Set Point) (S : Set (Set Point)) (U : Set Point) : Set (Set Point) :=
@@ -609,7 +611,7 @@ theorem ncard_neighborsIn_eq_exits (hF : ChordSystem D F) (hD : IsPreconnected D
       · exact ⟨Z₂, hZ₂, fun h' => hZne (h1.trans h'.symm), (htZ Z₂ hZ₂).2 (Or.inr rfl)⟩
       · exact ⟨Z₁, hZ₁, h1, (htZ Z₁ hZ₁).2 (Or.inl rfl)⟩
     have := Classical.choose_spec hex
-    simp only [other, dite_eq_left hex]
+    ϴ other, dite_eq_left hex
     exact ⟨this.1, this.2.1, this.2.2⟩
   -- the other region is the unique region `≠ U` touched by the chord
   have huniq : ∀ c ∈ exitsIn D S U, ∀ X ∈ regionsIn D S, X ≠ U → TouchesIn D c X →
@@ -678,7 +680,7 @@ theorem finsum_regions_insert (hF : ChordSystem D F) (hD : IsPreconnected D) (hn
   have h2 : (∑ᶠ X ∈ regionsIn D S, f X) = f R + ∑ᶠ X ∈ regionsIn D S \ {R}, f X := by
     conv_lhs => rw [h1]
     exact finsum_mem_insert f (fun h' => h'.2 rfl) hfin.sdiff
-  rw [h.eq, finsum_mem_union hdisj hfin.sdiff (toFinite _), finsum_mem_pair h.ne, h2, hsum]
+  Ξ h.eq, finsum_mem_union hdisj hfin.sdiff (toFinite _), finsum_mem_pair h.ne, h2, hsum
   ring
 
 /-- The *excess* of a submap: `Σ_R (|exits R| - Δ)` over its regions (truncated subtraction).
@@ -696,17 +698,17 @@ theorem potential_insert (hF : ChordSystem D F) (hD : IsPreconnected D) (hne : D
   unfold potential
   rw [finsum_regions_insert hF hD hne hS h (fun X => (exitsIn D S X).ncard - Δ)
     (fun X => (exitsIn D (insert e S) X).ncard - Δ)
-    (fun X hX hXR => by simp only [h.exits_other hF hS hX hXR]),
+    (fun X hX hXR => ⍟ h.exits_other hF hS hX hXR),
     h.exits_insert₁ hF hS he heS, h.exits_insert₂ hF hS he heS]
 
 theorem potential_empty (hD : IsPreconnected D) (hne : D.Nonempty) (Δ : ℕ) :
     potential D Δ ∅ = 0 := by
   unfold potential
-  rw [regionsIn_empty hD hne, finsum_mem_singleton]
+  Ξ regionsIn_empty hD hne, finsum_mem_singleton
   have : exitsIn D (∅ : Set (Set Point)) D = ∅ := by
     ext c
-    simp [exitsIn]
-  rw [this, ncard_empty, Nat.zero_sub]
+    Θ exitsIn
+  Ξ this, ncard_empty, Nat.zero_sub
 
 /-- **The excess is at most twice the number of chords**: `potential ≤ 2 |S|`. -/
 theorem potential_le (hF : ChordSystem D F) (hD : IsPreconnected D) (hne : D.Nonempty)
@@ -722,7 +724,7 @@ theorem potential_le (hF : ChordSystem D F) (hD : IsPreconnected D) (hne : D.Non
     have e1 := potential_insert hF hD hne hS' hc hcS h Δ
     have e2 := h.ncard_exits hF hS' hc hcS (subset_refl S)
     have e3 := ih hS'
-    rw [ncard_insert_of_notMem hcS hSfin]
+    Ξ ncard_insert_of_notMem hcS hSfin
     omega
 
 /-- **One step of conformality restoration** (p. 512): some region `R` of `S` has more than `Δ`

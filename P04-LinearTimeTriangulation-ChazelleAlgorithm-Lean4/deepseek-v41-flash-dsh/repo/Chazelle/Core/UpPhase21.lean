@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase20
 
 /-!
@@ -66,7 +68,7 @@ theorem initA_exec {c : Config} (hw : WordsBounded W c) {S p : ℕ}
     by config_simp, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
   unfold bandOf bUp at hr
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 16000000 in
 theorem initH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ} (hA : c.nreg ALLOC = A)
@@ -136,7 +138,7 @@ theorem initR_exec {c : Config} (hw : WordsBounded W c) {H S D n1 : ℕ}
     Machine.upd_apply]) <;> (try split_ifs) <;> first | omega | rfl)
   unfold InitRRG at h1
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 end proofs
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStep
 
 /-!
@@ -62,11 +64,11 @@ theorem vtx_tpos' (C : Chain) {k : ℕ} (hk : k ≤ C.m) :
   have hn := cm_n C
   have hτ := tpos_lt C k
   have h1 := C.one_le
-  have := walk_tour C k 0 (by omega)
+  have := walk_tour C k 0 (⋄)
   rw [Nat.add_zero, Nat.mod_eq_of_lt (by rw [hn]; omega)] at this
-  rw [this]
+  Ξ this
   unfold tourV
-  rw [Nat.add_zero, Nat.mod_eq_of_lt (by omega)]
+  rw [Nat.add_zero, Nat.mod_eq_of_lt (⋄)]
   unfold Chazelle.Chain.sideE; rw [ite_eq_left hk]
 
 theorem Lst_rlen : Lst J = rlen J := rL1_add_rL2 J
@@ -78,7 +80,7 @@ theorem nvt_left (hP : J.P.Simple) (hv : ¬ VNotTop J) :
   have htop := left_top_eq J hv
   have hm1 : J.left.m = J.m₁ := rfl
   have hk : J.left.topIdx = J.m₁ := by
-    have h1 : J.left.vertex J.left.topIdx = J.left.vertex J.m₁ := htop
+    have h1 := htop
     exact J.left.sideVertex_inj hP J.left.topIdx_le (by rw [hm1]) h1
   have h1 := J.one_le_m₁
   have hτ : tpos J.left J.m₁ = 0 := by
@@ -133,13 +135,13 @@ theorem gL_eq : (gW J + lOff J) % (chainModel J.whole).W.n = 6 + tpos J.whole (J
   have hτ := tpos_lt J.whole J.m₁
   have hτ' := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
   unfold gW lOff
-  exact add_dOf (by omega) (by omega)
+  exact add_dOf (⋄) (by omega)
 
 /-- The walk edge of the left stretch at `d` is the edge at offset `lOff + d`. -/
 theorem left_edge_eq (d : ℕ) :
     (6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d) % (chainModel J.whole).W.n =
       (gW J + (lOff J + d)) % (chainModel J.whole).W.n := by
-  rw [← gL_eq J, ← add_assoc, Nat.mod_add_mod]
+  Ξ ← gL_eq J, ← add_assoc, Nat.mod_add_mod
 
 end Map
 

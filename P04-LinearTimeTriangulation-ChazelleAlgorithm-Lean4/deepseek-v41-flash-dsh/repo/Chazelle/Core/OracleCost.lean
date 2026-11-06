@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Cost.Oracle
 
 /-!
@@ -32,20 +34,20 @@ theorem le_of_le_min {x g M : ℝ} (hg : 0 ≤ g) (hM : 0 ≤ M) (hxg : x ≤ 8 
   · have e : g = g ^ ((1 : ℝ) / 3) * g ^ ((2 : ℝ) / 3) := by
       rcases hg.lt_or_eq with hg' | hg'
       · rw [← Real.rpow_add hg']; norm_num
-      · subst hg'; rw [Real.zero_rpow (by norm_num)]; ring
-    have : g ^ ((2 : ℝ) / 3) ≤ M ^ ((2 : ℝ) / 3) := Real.rpow_le_rpow hg h (by norm_num)
+      · subst hg'; rw [Real.zero_rpow (⊛)]; ring
+    have : g ^ ((2 : ℝ) / 3) ≤ M ^ ((2 : ℝ) / 3) := Real.rpow_le_rpow hg h (⊛)
     have h13 : 0 ≤ g ^ ((1 : ℝ) / 3) := Real.rpow_nonneg hg _
     calc x ≤ 8 * g := hxg
-      _ = 8 * (g ^ ((1 : ℝ) / 3) * g ^ ((2 : ℝ) / 3)) := by rw [← e]
+      _ = 8 * (g ^ ((1 : ℝ) / 3) * g ^ ((2 : ℝ) / 3)) := Ρ ← e
       _ ≤ 8 * (g ^ ((1 : ℝ) / 3) * M ^ ((2 : ℝ) / 3)) := by gcongr
   · have e : M = M ^ ((1 : ℝ) / 3) * M ^ ((2 : ℝ) / 3) := by
       rcases hM.lt_or_eq with hM' | hM'
       · rw [← Real.rpow_add hM']; norm_num
-      · subst hM'; rw [Real.zero_rpow (by norm_num)]; ring
-    have : M ^ ((1 : ℝ) / 3) ≤ g ^ ((1 : ℝ) / 3) := Real.rpow_le_rpow hM h (by norm_num)
+      · subst hM'; rw [Real.zero_rpow (⊛)]; ring
+    have : M ^ ((1 : ℝ) / 3) ≤ g ^ ((1 : ℝ) / 3) := Real.rpow_le_rpow hM h (⊛)
     have h23 : 0 ≤ M ^ ((2 : ℝ) / 3) := Real.rpow_nonneg hM _
     calc x ≤ 8 * M := hxM
-      _ = 8 * (M ^ ((1 : ℝ) / 3) * M ^ ((2 : ℝ) / 3)) := by rw [← e]
+      _ = 8 * (M ^ ((1 : ℝ) / 3) * M ^ ((2 : ℝ) / 3)) := Ρ ← e
       _ ≤ 8 * (g ^ ((1 : ℝ) / 3) * M ^ ((2 : ℝ) / 3)) := by gcongr
 
 /-- The minimal `k` with `μ ≤ k³` satisfies `k² ≤ 2 μ^{2/3} + 2`. -/
@@ -62,18 +64,18 @@ theorem sq_le_of_min {μ k : ℕ} (hk : k = 1 ∨ (k - 1) ^ 3 < μ) :
       · subst h0; push_cast; linarith
       · have hc : (((k - 1 : ℕ) : ℝ)) ^ 3 < μ := by exact_mod_cast hk
         have hkm : ((k - 1 : ℕ) : ℝ) = (k : ℝ) - 1 := by
-          rw [Nat.cast_sub (by omega)]; push_cast; ring
+          rw [Nat.cast_sub (⋄)]; push_cast; ring
         have hroot : ((k - 1 : ℕ) : ℝ) ≤ (μ : ℝ) ^ ((1 : ℝ) / 3) := by
           have h0 : (0 : ℝ) ≤ ((k - 1 : ℕ) : ℝ) := Nat.cast_nonneg _
           have e : ((k - 1 : ℕ) : ℝ) = ((((k - 1 : ℕ) : ℝ)) ^ 3) ^ ((1 : ℝ) / 3) := by
             rw [← Real.rpow_natCast, ← Real.rpow_mul h0]; norm_num
-          rw [e]
-          exact Real.rpow_le_rpow (by positivity) hc.le (by norm_num)
+          Ξ e
+          exact Real.rpow_le_rpow (⟢) hc.le (⊛)
         linarith
   have hk0 : (0 : ℝ) ≤ k := Nat.cast_nonneg k
   calc ((k : ℝ)) ^ 2 ≤ ((μ : ℝ) ^ ((1 : ℝ) / 3) + 1) ^ 2 := by gcongr
     _ ≤ 2 * ((μ : ℝ) ^ ((1 : ℝ) / 3)) ^ 2 + 2 := by nlinarith [sq_nonneg ((μ : ℝ) ^ ((1 : ℝ) / 3) - 1)]
-    _ = 2 * (μ : ℝ) ^ ((2 : ℝ) / 3) + 2 := by rw [hsq]
+    _ = 2 * (μ : ℝ) ^ ((2 : ℝ) / 3) + 2 := Ρ hsq
 
 /-- **The query scan fits the budget, general form**: with `μ (γ + 1) ≤ c (2 m + 1) + d (γ + 1)`
 (e.g. `μ ≤ 3 K + 4` nodes for `K` chords with `K (γ + 1) ≤ c₀ (2 m + 1)`), scanning `k²` nodes of
@@ -88,13 +90,13 @@ theorem scan_le_gen {c d γ m μ k w : ℕ} (hγ : 1 ≤ γ)
   set A : ℝ := g ^ ((1 : ℝ) / 3) * M ^ ((2 : ℝ) / 3) with hA
   have hg1 : (1 : ℝ) ≤ g := by rw [hg]; exact_mod_cast hγ
   have hM1 : (1 : ℝ) ≤ M := by rw [hM]; have : (0 : ℝ) ≤ m := Nat.cast_nonneg m; linarith
-  have hA0 : 0 ≤ A := by positivity
+  have hA0 : 0 ≤ A := ⟢
   have hwγR : (w : ℝ) ≤ g := by rw [hg]; exact_mod_cast hwγ
   have hwmR : (w : ℝ) ≤ 2 * (m : ℝ) + 7 := by exact_mod_cast hwm
   have hw0 : (0 : ℝ) ≤ w := Nat.cast_nonneg w
   have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   have hw1 : (w : ℝ) + 1 ≤ 8 * A :=
-    le_of_le_min (by linarith) (by linarith) (by linarith) (by rw [hM]; linarith)
+    le_of_le_min (⟡) (⟡) (⟡) (by rw [hM]; linarith)
   have hμR : (μ : ℝ) * (g + 1) ≤ (c : ℝ) * (2 * (m : ℝ) + 1) + d * (g + 1) := by
     rw [hg]; exact_mod_cast hμ
   have hμ0 : (0 : ℝ) ≤ μ := Nat.cast_nonneg μ
@@ -105,43 +107,43 @@ theorem scan_le_gen {c d γ m μ k w : ℕ} (hγ : 1 ≤ γ)
   have he1 : 1 ≤ e := by rw [he]; linarith
   have hmain : ((w : ℝ) + 1) * (μ : ℝ) ^ ((2 : ℝ) / 3) ≤ 8 * e * A := by
     rcases le_total g M with hgM | hMg
-    · have hgpos : 0 < g := by linarith
+    · have hgpos : 0 < g := ⟡
       have hμb : (μ : ℝ) ≤ e * (M / g) := by
-        have h1 : (μ : ℝ) * g ≤ (c : ℝ) * (2 * (m : ℝ) + 1) + d * (g + 1) := by nlinarith
+        have h1 : (μ : ℝ) * g ≤ (c : ℝ) * (2 * (m : ℝ) + 1) + d * (g + 1) := ⊞
         have h2 : (c : ℝ) * (2 * (m : ℝ) + 1) ≤ 2 * c * M := by rw [hM]; nlinarith
-        have h3 : (d : ℝ) * (g + 1) ≤ 2 * d * M := by nlinarith
-        rw [mul_div_assoc', le_div_iff₀ hgpos, he]
+        have h3 : (d : ℝ) * (g + 1) ≤ 2 * d * M := ⊞
+        Ξ mul_div_assoc', le_div_iff₀ hgpos, he
         nlinarith
       have hpow : (μ : ℝ) ^ ((2 : ℝ) / 3) ≤ (e * (M / g)) ^ ((2 : ℝ) / 3) :=
-        Real.rpow_le_rpow hμ0 hμb (by norm_num)
+        Real.rpow_le_rpow hμ0 hμb (⊛)
       have hsplit : (e * (M / g)) ^ ((2 : ℝ) / 3) =
           e ^ ((2 : ℝ) / 3) * (M ^ ((2 : ℝ) / 3) / g ^ ((2 : ℝ) / 3)) := by
-        rw [Real.mul_rpow (by linarith) (by positivity), Real.div_rpow (by linarith) hgpos.le]
-      have hc23 : e ^ ((2 : ℝ) / 3) ≤ e := Real.rpow_le_self_of_one_le he1 (by norm_num)
+        Ξ Real.mul_rpow (⟡) (⟢), Real.div_rpow (⟡) hgpos.le
+      have hc23 : e ^ ((2 : ℝ) / 3) ≤ e := Real.rpow_le_self_of_one_le he1 (⊛)
       have hg23 : 0 < g ^ ((2 : ℝ) / 3) := Real.rpow_pos_of_pos hgpos _
       have hg13 : g / g ^ ((2 : ℝ) / 3) = g ^ ((1 : ℝ) / 3) := by
         rw [div_eq_iff hg23.ne', ← Real.rpow_add hgpos]; norm_num
-      have hM23 : 0 ≤ M ^ ((2 : ℝ) / 3) := Real.rpow_nonneg (by linarith) _
-      have hw2 : (w : ℝ) + 1 ≤ 2 * g := by linarith
+      have hM23 : 0 ≤ M ^ ((2 : ℝ) / 3) := Real.rpow_nonneg (⟡) _
+      have hw2 : (w : ℝ) + 1 ≤ 2 * g := ⟡
       calc ((w : ℝ) + 1) * (μ : ℝ) ^ ((2 : ℝ) / 3)
           ≤ (2 * g) * (e * (M ^ ((2 : ℝ) / 3) / g ^ ((2 : ℝ) / 3))) := by
-            apply mul_le_mul hw2 _ hμ23 (by linarith)
+            apply mul_le_mul hw2 _ hμ23 (⟡)
             calc (μ : ℝ) ^ ((2 : ℝ) / 3) ≤ _ := hpow
               _ = _ := hsplit
               _ ≤ _ := by gcongr
-        _ = 2 * e * ((g / g ^ ((2 : ℝ) / 3)) * M ^ ((2 : ℝ) / 3)) := by ring
-        _ = 2 * e * A := by rw [hg13]
-        _ ≤ 8 * e * A := by nlinarith
-    · have hgpos : 0 < g := by linarith
+        _ = 2 * e * ((g / g ^ ((2 : ℝ) / 3)) * M ^ ((2 : ℝ) / 3)) := ⋆
+        _ = 2 * e * A := Ρ hg13
+        _ ≤ 8 * e * A := ⊞
+    · have hgpos : 0 < g := ⟡
       have hμb : (μ : ℝ) ≤ e := by
-        have h1 : (μ : ℝ) * g ≤ (c : ℝ) * (2 * (m : ℝ) + 1) + d * (g + 1) := by nlinarith
+        have h1 : (μ : ℝ) * g ≤ (c : ℝ) * (2 * (m : ℝ) + 1) + d * (g + 1) := ⊞
         have h2 : (c : ℝ) * (2 * (m : ℝ) + 1) ≤ 2 * c * g := by
           have : 2 * (m : ℝ) + 1 ≤ 2 * g := by rw [hM] at hMg; linarith
           nlinarith
-        have h3 : (d : ℝ) * (g + 1) ≤ 2 * d * g := by nlinarith
+        have h3 : (d : ℝ) * (g + 1) ≤ 2 * d * g := ⊞
         by_contra hcon
         push Not at hcon
-        rw [he] at hcon
+        Ξ' he at hcon
         nlinarith
       have hμ23b : (μ : ℝ) ^ ((2 : ℝ) / 3) ≤ e := by
         rcases le_total (μ : ℝ) 1 with h1 | h1
@@ -150,12 +152,12 @@ theorem scan_le_gen {c d γ m μ k w : ℕ} (hγ : 1 ≤ γ)
         · have := Real.rpow_le_self_of_one_le h1 (by norm_num : (2 : ℝ) / 3 ≤ 1)
           linarith
       calc ((w : ℝ) + 1) * (μ : ℝ) ^ ((2 : ℝ) / 3) ≤ (8 * A) * e :=
-            mul_le_mul hw1 hμ23b hμ23 (by positivity)
-        _ = 8 * e * A := by ring
+            mul_le_mul hw1 hμ23b hμ23 (⟢)
+        _ = 8 * e * A := ⋆
   have hk2 := sq_le_of_min hk
   calc ((w : ℝ) + 1) * (k : ℝ) ^ 2 ≤ ((w : ℝ) + 1) * (2 * (μ : ℝ) ^ ((2 : ℝ) / 3) + 2) :=
-        mul_le_mul_of_nonneg_left hk2 (by linarith)
-    _ = 2 * (((w : ℝ) + 1) * (μ : ℝ) ^ ((2 : ℝ) / 3)) + 2 * ((w : ℝ) + 1) := by ring
+        mul_le_mul_of_nonneg_left hk2 (⟡)
+    _ = 2 * (((w : ℝ) + 1) * (μ : ℝ) ^ ((2 : ℝ) / 3)) + 2 * ((w : ℝ) + 1) := ⋆
     _ ≤ 2 * (8 * e * A) + 2 * (8 * A) := by gcongr
     _ = (32 * (c : ℝ) + 32 * d + 32) * A := by rw [he]; ring
 

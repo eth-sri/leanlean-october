@@ -107,7 +107,7 @@ theorem find_start {P : Polygon} {W : ℕ} {c : Config} {M : Model} {N : NF} {X 
   have hk : c.nmem (c.nreg 81000) = 0 → 2 * c.nmem (c.nreg 81000 + 3) + 7 ≤ W := fun h0 => by
     rcases hMD with ⟨-, H', C', hC, hM⟩ | ⟨h1, -⟩
     · have := walk_le_W (P := P) (M := M) (W := W) (Or.inl ⟨h0, H', C', hC, hM⟩) hwf hWh hM
-      have hm : c.nmem (c.nreg 81000 + 1 + 2) = C'.m := hC.2.2.2.1
+      have hm := hC.2.2.2.1
       rw [show c.nreg 81000 + 1 + 2 = c.nreg 81000 + 3 by omega] at hm
       omega
     · omega
@@ -130,7 +130,7 @@ theorem find_start {P : Polygon} {W : ℕ} {c : Config} {M : Model} {N : NF} {X 
       (∀ e, e < M.W.n → M.counted e → c₀.nreg 81021 ≤ e ∧ e < c₀.nreg 81025) := by
     rcases hMD with ⟨h0, H', C', hC, hM⟩ | ⟨h1, -, hM⟩
     · obtain ⟨d21, d19, d25, d17⟩ := vch h0
-      have hm : c.nmem (c.nreg 81000 + 1 + 2) = C'.m := hC.2.2.2.1
+      have hm := hC.2.2.2.1
       rw [show c.nreg 81000 + 1 + 2 = c.nreg 81000 + 3 by omega] at hm
       rw [hm] at d19 d25 d17
       have hn : M.W.n = 2 * C'.m + 7 := by rw [hM]; exact chainModel_n C'
@@ -197,9 +197,9 @@ theorem cnt_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
     exact Robust.transport h0 (fun a ha => hI.hm a ha)
   have hNA := hN.nfAt
   obtain ⟨hB7, -, -, hrb, -, -⟩ := nf_bounds hN
-  have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
+  have hA0 := hI.hA
   have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
-  have hrl : E.r < E.N.regions.length := hE.hr
+  have hrl := hE.hr
   obtain ⟨hna, hnc, -⟩ := hNA.2.2.2.2.2.2.2.1 _ hrl
   have b1 := hrb _ hE.hr
   have e01 : c.nreg 81001 = E.NH := by rw [hI.hin _ (by unfold FFix; omega), hE.i1]

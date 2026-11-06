@@ -58,7 +58,7 @@ theorem valid_complete_int (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point
     exact hnot c hc s hs hsT.2
   have hrayR : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w σ s ∈ R := by
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hT] with s hs hsT
-    have hs0 : (0 : ℝ) < s := hs
+    have hs0 := hs
     refine heR ⟨?_, hdom s hs0 hsT.2⟩
     rw [heq]; exact (mem_chordOf hσ hT.le).2 ⟨s, hs0.le, hsT.2.le, rfl⟩
   by_cases hcut : M.IsCut S ((p : ℝ) + t)

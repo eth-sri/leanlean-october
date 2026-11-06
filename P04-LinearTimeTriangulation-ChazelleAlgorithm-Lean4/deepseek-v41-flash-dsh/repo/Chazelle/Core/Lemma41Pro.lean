@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Tab
 
 /-!
@@ -79,7 +81,7 @@ theorem proC_exec {c : Config} (hw : WordsBounded W c) (hW : 8 ≤ W) :
     by config_simp, by config_simp, by config_simp, by config_simp, fun r hr => ?_, rfl, rfl, rfl,
     rfl⟩
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 16000000 in
 theorem proL_exec {c : Config} (hw : WordsBounded W c) {h a L lam : ℕ}
@@ -110,21 +112,21 @@ theorem proL_exec {c : Config} (hw : WordsBounded W c) {h a L lam : ℕ}
   all_goals try (config_simp; (try simp only [h00, h01, h02, h03, h24, h80, h83, h84]); omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl,
     rfl⟩
-  · config_simp; simp only [h01]
-  · config_simp; simp only [h01, h02]
-  · config_simp; simp only [h03]
-  · config_simp; simp only [h00, h83]
-  · config_simp; simp only [h00, h24]
-  · config_simp; simp only [h00, h24, h80]
-  · config_simp; simp only [h00, h80]
-  · config_simp; simp only [h00, h03, h24, h80]
-  · config_simp; simp only [h00, h24]
-  · config_simp; simp only [h00, h03, h24, h84]
-  · config_simp; simp only [h00, h03, h24, h80, h84]
+  · config_simp; ϴ h01
+  · config_simp; ϴ h01, h02
+  · config_simp; ϴ h03
+  · config_simp; ϴ h00, h83
+  · config_simp; ϴ h00, h24
+  · config_simp; ϴ h00, h24, h80
+  · config_simp; ϴ h00, h80
+  · config_simp; ϴ h00, h03, h24, h80
+  · config_simp; ϴ h00, h24
+  · config_simp; ϴ h00, h03, h24, h84
+  · config_simp; ϴ h00, h03, h24, h80, h84
   · config_simp
   · unfold ProRG at hr
     simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 /-- `⌈log₂ λ⌉` is the first `c` with `λ ≤ 2^c`. -/
 theorem clog_eq_of {lam c : ℕ} (h1 : lam ≤ 2 ^ c) (h2 : c ≤ Nat.clog 2 lam) :
@@ -268,24 +270,24 @@ theorem proH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ}
         c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   have hAl : ALLOC = 9999 := rfl
-  rw [hAl] at hA ⊢
+  Ξ' hAl at hA ⊢
   unfold proH
   exec_block
   all_goals try (config_simp; (try simp only [hA, h24, h29, h86]); omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ⟨?_, fun i hi => ?_⟩, fun a ha => ?_,
     fun r h1 h2 h3 h4 h5 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [hA, h86]
-  · config_simp; simp only [hA]
-  · config_simp; simp only [hA, h86]
-  · config_simp; simp only [hA, h24, Machine.upd_apply]; split_ifs <;> first | omega | simp [Host.whole]
+  · config_simp; ϴ hA, h86
+  · config_simp; ϴ hA
+  · config_simp; ϴ hA, h86
+  · config_simp; simp only [hA, h24, Machine.upd_apply]; split_ifs <;> first | omega | Θ Host.whole
   · have hi0 : i = 0 := by simp [Host.whole] at hi; omega
     subst hi0
-    simp only [Host.whole, List.getD_cons_zero]
-    simp only [hA, h24, h29, Machine.upd_apply]
+    ϴ Host.whole, List.getD_cons_zero
+    ϴ hA, h24, h29, Machine.upd_apply
     refine ⟨?_, ?_, ?_⟩ <;> (split_ifs <;> first | omega)
   · config_simp; simp only [hA, h24, Machine.upd_apply]; split_ifs <;> first | omega
   · simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 end proofs
 

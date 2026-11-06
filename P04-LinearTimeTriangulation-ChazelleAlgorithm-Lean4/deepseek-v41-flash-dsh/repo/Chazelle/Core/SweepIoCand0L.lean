@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoCand0M
 
 /-!
@@ -149,11 +151,11 @@ theorem setL_ok (m f : ℕ → ℕ) {md nf nr e t : ℕ} (_hmd : OutL md) (hW : 
   have s : ∀ j, 1100 ≤ j → j ≤ 1107 → IScr (sw j) := fun j h1 h2 =>
     iscr_sw (by unfold sw; omega) (by unfold sw; omega)
   unfold OutL at _hmd
-  simp only [setL, okB, okI, regI]
-  refine ⟨s 1100 le_rfl (by norm_num), ⟨s 1101 (by norm_num) (by norm_num), ?_⟩,
-    s 1102 (by norm_num) (by norm_num), s 1103 (by norm_num) (by norm_num),
-    s 1104 (by norm_num) (by norm_num), s 1105 (by norm_num) (by norm_num),
-    s 1106 (by norm_num) (by norm_num), ⟨s 1107 (by norm_num) le_rfl, ht⟩, trivial⟩
+  ϴ setL, okB, okI, regI
+  refine ⟨s 1100 le_rfl (⊛), ⟨s 1101 (by norm_num) (by norm_num), ?_⟩,
+    s 1102 (⊛) (by norm_num), s 1103 (by norm_num) (by norm_num),
+    s 1104 (⊛) (by norm_num), s 1105 (by norm_num) (by norm_num),
+    s 1106 (⊛) (by norm_num), ⟨s 1107 (by norm_num) le_rfl, ht⟩, trivial⟩
   have e1 : upd f lMD (f md) lMD = f md := upd_same _ _ _
   have e2 : upd f lMD (f md) K1 = f K1 := upd_other _ _ _ (by unfold K1 lMD sw; omega)
   rw [e1, e2, hk]; exact hW
@@ -217,7 +219,7 @@ theorem lhs_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterOK
   have hK := hA.hK.fix hI
   have om : ∀ r, IFix r → OutL r := fun r h => by unfold IFix at h; unfold OutL sw; omega
   have hmdW : c.nreg md + 1 ≤ W := by
-    rw [hI.hin _ hfm]
+    Ξ hI.hin _ hfm
     have := hS.hmwf.1; have := hI.hA; have := hI.hw.1 ALLOC; omega
   obtain ⟨v1, v2, v3, v4, v5, v6, v7, v8, vo⟩ :=
     setL_val c.nmem c.nreg (md := md) (t := t) (om _ hfn) (om _ hfr) heo
@@ -225,21 +227,21 @@ theorem lhs_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterOK
   refine IRS.seq (K₁ := 8) (K₂ := localK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6) + 1)
       (c₀.nreg (sw 6)))
     ((IRS.block (setL md nf nr e t) hI (setL_ok c.nmem c.nreg (om _ hfm) hmdW hK.2.1
-      (by unfold lhsK at hroom; omega))).mono (by simp [setL]) (fun _ h => h)) ?_
+      (by unfold lhsK at hroom; omega))).mono (⊚ setL) (fun _ h => h)) ?_
   rintro c₁ hI₁ hA₁ hA₁' hc₁
-  have hm₁ : c₁.nmem = c.nmem := by rw [hc₁]
-  have hreg₁ : c₁.nreg = regB c.nmem (setL md nf nr e t) c.nreg := by rw [hc₁]
+  have hm₁ : c₁.nmem = c.nmem := Ρ hc₁
+  have hreg₁ : c₁.nreg = regB c.nmem (setL md nf nr e t) c.nreg := Ρ hc₁
   rw [← hreg₁] at v1 v2 v3 v4 v5 v6 v7 v8 vo
   have r1 : ∀ r, OutL r → c₁.nreg r = c.nreg r := fun r hr => vo r hr
   have hL : LCtx P W C N E c₁ := lctx_of hS hI₁ hA.htab hA.hTB hA.hTW
-    (by rw [v1, hI.hin _ hfm])
-    (by rw [v2, hI.hin _ hfm, hK.2.1])
-    (by rw [v3, hI.hin _ hfn])
+    (Ρ v1, hI.hin _ hfm)
+    (Ρ v2, hI.hin _ hfm, hK.2.1)
+    (Ρ v3, hI.hin _ hfn)
   obtain ⟨hAr, hCh⟩ := region_bounds' hL.hP hS.hNF hS.hdeg
   have eTL : c₁.nreg TLR = c₀.nreg TLR := hI₁.hin _ (by unfold IFix TLR sw; omega)
   have hacc₁ : AccOK P accA Mod R₀ ((chainModel C).pos (Qof P) ⟨c₁.nreg lE, c₁.nreg lH⟩)
       (dirOf (c₁.nreg lD)) L c₁ := by
-    rw [v4, v5, v6, hz]
+    Ξ v4, v5, v6, hz
     exact hacc.transport (fun j hj => r1 _ (by unfold OutL accA sw; omega))
   have h := localHit_irs (x := ⟨c₁.nreg lE, c₁.nreg lH⟩) (d := c₁.nreg lD) (Da := c₀.nreg (sw 6) + 1)
     (Dc := c₀.nreg (sw 6)) hsh hBs hXl hI₁ hA.hK hL hA.hX hA.hcap hS.hOk hS.hsg hAr hCh rfl rfl rfl
@@ -255,11 +257,11 @@ theorem lhs_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterOK
   rw [v4, v5, v6] at geo'
   rw [hz] at geo'
   have hAA : c₁.nreg ALLOC = c.nreg ALLOC := r1 ALLOC (by unfold OutL ALLOC sw; omega)
-  refine ⟨⟨L', a', s', g', fun hg => (geo' hg).2⟩, fun r h1 h2 h3 => ?_, by omega,
+  refine ⟨⟨L', a', s', g', fun hg => (geo' hg).2⟩, fun r h1 h2 h3 => ?_, ⋄,
     fun a ha => ?_⟩
-  · rw [fr r h1 h2 h3]
+  · Ξ fr r h1 h2 h3
     exact r1 r (by unfold LHW sw at h2; unfold OutL sw; omega)
-  · rw [hm' a (by omega), hm₁]
+  · rw [hm' a (⋄), hm₁]
 
 end Run
 

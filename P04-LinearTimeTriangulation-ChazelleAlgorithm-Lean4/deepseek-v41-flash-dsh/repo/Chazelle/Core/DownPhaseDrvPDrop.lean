@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvPDesc
 public import Chazelle.Core.DownPhaseDrvTFiltS
 public import Chazelle.Core.DownPhaseWallChain
@@ -88,44 +92,44 @@ theorem memD_keep {m₀ m : ℕ → ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {B' i
       else if a = B' + 3 * rankF keepW L₀ i then (L₀.getD i (0, 0, 0)).1
       else m a) = memD m₀ L₀ B' (i + 1) a := by
   have hr := DownBase.rankF_succ keepW (0, 0, 0) hi
-  rw [ite_eq_left hk] at hr
+  Ξ' ite_eq_left hk at hr
   set j := rankF keepW L₀ i with hj
   have hg := DownBase.getD_filter_rank keepW (0, 0, 0) hi hk
-  rw [← hj] at hg
+  Ξ' ← hj at hg
   have htw : ∀ s, s < 3 → tw (L₀.filter keepW) (3 * j + s) =
       if s = 0 then (L₀.getD i (0, 0, 0)).1
       else if s = 1 then (L₀.getD i (0, 0, 0)).2.1
       else (L₀.getD i (0, 0, 0)).2.2 := fun s hs => by
     unfold tw
-    rw [show (3 * j + s) % 3 = s by omega, show (3 * j + s) / 3 = j by omega, hg]
-  rw [hm a]
+    Ξ show (3 * j + s) % 3 = s by omega, show (3 * j + s) / 3 = j by omega, hg
+  Ξ hm a
   unfold memD
-  rw [hr]
+  Ξ hr
   by_cases h3 : a = B' + 3 * j + 2
   · subst h3
-    rw [ite_eq_left rfl, ite_eq_left (by omega), show B' + 3 * j + 2 - B' = 3 * j + 2 by omega,
-      htw 2 (by norm_num)]
+    rw [ite_eq_left rfl, ite_eq_left (⋄), show B' + 3 * j + 2 - B' = 3 * j + 2 by omega,
+      htw 2 (⊛)]
     try simp
   by_cases h4 : a = B' + 3 * j + 1
   · subst h4
-    rw [ite_eq_right h3, ite_eq_left rfl, ite_eq_left (by omega), show B' + 3 * j + 1 - B' = 3 * j + 1 by omega,
-      htw 1 (by norm_num)]
+    rw [ite_eq_right h3, ite_eq_left rfl, ite_eq_left (⋄), show B' + 3 * j + 1 - B' = 3 * j + 1 by omega,
+      htw 1 (⊛)]
     try simp
   by_cases h5 : a = B' + 3 * j
   · subst h5
-    rw [ite_eq_right h3, ite_eq_right h4, ite_eq_left rfl, ite_eq_left (by omega),
-      show B' + 3 * j - B' = 3 * j + 0 by omega, htw 0 (by norm_num)]
+    rw [ite_eq_right h3, ite_eq_right h4, ite_eq_left rfl, ite_eq_left (⋄),
+      show B' + 3 * j - B' = 3 * j + 0 by omega, htw 0 (⊛)]
     try simp
-  rw [ite_eq_right h3, ite_eq_right h4, ite_eq_right h5]
+  Ξ ite_eq_right h3, ite_eq_right h4, ite_eq_right h5
   split_ifs <;> first | rfl | omega
 
 theorem memD_drop {m₀ : ℕ → ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {B' i : ℕ}
     (hi : i < L₀.length) (hk : keepW (L₀.getD i (0, 0, 0)) = false) (a : ℕ) :
     memD m₀ L₀ B' i a = memD m₀ L₀ B' (i + 1) a := by
   have hr := DownBase.rankF_succ keepW (0, 0, 0) hi
-  rw [hk] at hr
-  simp only [Bool.false_eq_true, ite_false, Nat.add_zero] at hr
-  unfold memD; rw [hr]
+  Ξ' hk at hr
+  ϴ' Bool.false_eq_true, ite_false, Nat.add_zero at hr
+  unfold memD; Ξ hr
 
 /-! ## The pieces of one record -/
 
@@ -141,21 +145,21 @@ theorem isOT_exec (c : Config) {p : ℕ} {t e : Stmt} {K : ℕ} {R : Config → 
     ∃ c' k, Exec P W (isOT p t e) c c' k ∧ k ≤ K + 7 ∧ R c' := by
   unfold isOT
   by_cases g1 : c.nreg p < c.nreg 218021
-  · obtain ⟨c', k, ex, hk, hR⟩ := he (by omega)
-    exact ⟨c', _, .ifLtN_true g1 ex, by omega, hR⟩
+  · obtain ⟨c', k, ex, hk, hR⟩ := he (⋄)
+    exact ⟨c', _, .ifLtN_true g1 ex, ⋄, hR⟩
   by_cases g2 : c.nreg p < c.nreg 218079
-  · obtain ⟨c', k, ex, hk, hR⟩ := ht (by omega)
-    exact ⟨c', _, .ifLtN_false g1 (.ifLtN_true g2 ex), by omega, hR⟩
+  · obtain ⟨c', k, ex, hk, hR⟩ := ht (⋄)
+    exact ⟨c', _, .ifLtN_false g1 (.ifLtN_true g2 ex), ⋄, hR⟩
   by_cases g3 : c.nreg 218079 < c.nreg p
   · by_cases g4 : c.nreg p < c.nreg 218080
-    · obtain ⟨c', k, ex, hk, hR⟩ := ht (by omega)
+    · obtain ⟨c', k, ex, hk, hR⟩ := ht (⋄)
       exact ⟨c', _, .ifLtN_false g1 (.ifLtN_false g2 (.ifLtN_true g3 (.ifLtN_true g4 ex))),
-        by omega, hR⟩
-    · obtain ⟨c', k, ex, hk, hR⟩ := he (by omega)
+        ⋄, hR⟩
+    · obtain ⟨c', k, ex, hk, hR⟩ := he (⋄)
       exact ⟨c', _, .ifLtN_false g1 (.ifLtN_false g2 (.ifLtN_true g3 (.ifLtN_false g4 ex))),
-        by omega, hR⟩
-  · obtain ⟨c', k, ex, hk, hR⟩ := he (by omega)
-    exact ⟨c', _, .ifLtN_false g1 (.ifLtN_false g2 (.ifLtN_false g3 ex)), by omega, hR⟩
+        ⋄, hR⟩
+  · obtain ⟨c', k, ex, hk, hR⟩ := he (⋄)
+    exact ⟨c', _, .ifLtN_false g1 (.ifLtN_false g2 (.ifLtN_false g3 ex)), ⋄, hR⟩
 
 /-- **The wall flag.** -/
 theorem dTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) (h21 : c.nreg 218021 = 1)
@@ -168,31 +172,31 @@ theorem dTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) (h21 : c.
   have hset : ∃ c' k, Exec P W (.instr (.constN 218077 1)) c c' k ∧ k ≤ 1 ∧
       (c'.nreg 218077 = 1 ∧ (∀ r, r ≠ 218077 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output) :=
-    ⟨_, _, Exec.constN hw 218077 1 hW, le_rfl, by simp, fun r hr => by simp [hr], rfl, rfl, rfl,
+    ⟨_, _, Exec.constN hw 218077 1 hW, le_rfl, ✓, fun r hr => by simp [hr], rfl, rfl, rfl,
       rfl⟩
   have hskip : ∃ c' k, Exec P W .skip c c' k ∧ k ≤ 8 ∧
       (c'.nreg 218077 = 0 ∧ (∀ r, r ≠ 218077 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output) :=
-    ⟨c, 0, .skip hw, by omega, h77, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
+    ⟨c, 0, .skip hw, ⋄, h77, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
   unfold dTest BoxT.WallRec
   simp only
   by_cases hl : c.nreg 218073 = 1 ∨ c.nreg 218073 = 3
   · by_cases hr : c.nreg 218074 = 1 ∨ c.nreg 218074 = 3
-    · rw [ite_eq_left ⟨hl, hr⟩]
+    · Ξ ite_eq_left ⟨hl, hr⟩
       obtain ⟨c₁, k₁, ex₁, hk₁, h₁⟩ := isOT_exec (P := P) (W := W) c (p := 218074)
         (t := .instr (.constN 218077 1)) (e := .skip) (K := 8)
         (R := fun c' => c'.nreg 218077 = 1 ∧ (∀ r, r ≠ 218077 → c'.nreg r = c.nreg r) ∧
           c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output)
         h21 h79 h80 (fun _ => by
-          obtain ⟨c', k, ex, hk, h⟩ := hset; exact ⟨c', k, ex, by omega, h⟩)
+          obtain ⟨c', k, ex, hk, h⟩ := hset; exact ⟨c', k, ex, ⋄, h⟩)
         (fun h' => absurd hr h')
       obtain ⟨c', k, ex, hk, h⟩ := isOT_exec (P := P) (W := W) c (p := 218073)
         (t := isOT 218074 (.instr (.constN 218077 1)) .skip) (e := .skip) (K := 15)
         (R := fun c' => c'.nreg 218077 = 1 ∧ (∀ r, r ≠ 218077 → c'.nreg r = c.nreg r) ∧
           c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output)
-        h21 h79 h80 (fun _ => ⟨c₁, k₁, ex₁, by omega, h₁⟩) (fun h' => absurd hl h')
-      exact ⟨c', k, ex, by omega, h⟩
-    · rw [ite_eq_right (fun h => hr h.2)]
+        h21 h79 h80 (fun _ => ⟨c₁, k₁, ex₁, ⋄, h₁⟩) (fun h' => absurd hl h')
+      exact ⟨c', k, ex, ⋄, h⟩
+    · Ξ ite_eq_right (fun h => hr h.2)
       obtain ⟨c₁, k₁, ex₁, hk₁, h₁⟩ := isOT_exec (P := P) (W := W) c (p := 218074)
         (t := .instr (.constN 218077 1)) (e := .skip) (K := 8)
         (R := fun c' => c'.nreg 218077 = 0 ∧ (∀ r, r ≠ 218077 → c'.nreg r = c.nreg r) ∧
@@ -202,17 +206,17 @@ theorem dTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) (h21 : c.
         (t := isOT 218074 (.instr (.constN 218077 1)) .skip) (e := .skip) (K := 15)
         (R := fun c' => c'.nreg 218077 = 0 ∧ (∀ r, r ≠ 218077 → c'.nreg r = c.nreg r) ∧
           c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output)
-        h21 h79 h80 (fun _ => ⟨c₁, k₁, ex₁, by omega, h₁⟩) (fun h' => absurd hl h')
-      exact ⟨c', k, ex, by omega, h⟩
-  · rw [ite_eq_right (fun h => hl h.1)]
+        h21 h79 h80 (fun _ => ⟨c₁, k₁, ex₁, ⋄, h₁⟩) (fun h' => absurd hl h')
+      exact ⟨c', k, ex, ⋄, h⟩
+  · Ξ ite_eq_right (fun h => hl h.1)
     obtain ⟨c', k, ex, hk, h⟩ := isOT_exec (P := P) (W := W) c (p := 218073)
       (t := isOT 218074 (.instr (.constN 218077 1)) .skip) (e := .skip) (K := 8)
       (R := fun c' => c'.nreg 218077 = 0 ∧ (∀ r, r ≠ 218077 → c'.nreg r = c.nreg r) ∧
         c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output)
       h21 h79 h80 (fun h' => absurd h' hl) (fun _ => hskip)
-    exact ⟨c', k, ex, by omega, h⟩
+    exact ⟨c', k, ex, ⋄, h⟩
 
-set_option maxHeartbeats 4000000 in
+
 theorem dLoad_exec (c : Config) (hw : WordsBounded W c) {a : ℕ} (h71 : c.nreg 218071 = a)
     (h21 : c.nreg 218021 = 1) (haW : a + 5 ≤ W) :
     ∃ c' k, Exec P W dLoad c c' k ∧ k = 9 ∧ c'.nreg 218072 = c.nmem a ∧
@@ -230,7 +234,7 @@ theorem dLoad_exec (c : Config) (hw : WordsBounded W c) {a : ℕ} (h71 : c.nreg 
   all_goals simp (disch := omega) only [Config.nreg_mk, Machine.upd_same,
     Machine.upd_other, h71, h21]
 
-set_option maxHeartbeats 4000000 in
+
 /-- **Append a triple.** -/
 theorem dKeep_exec (c : Config) (hw : WordsBounded W c) {w j : ℕ} (h75 : c.nreg 218075 = w)
     (h76 : c.nreg 218076 = j) (h21 : c.nreg 218021 = 1) (hwW : w + 3 ≤ W) (hjW : j + 1 ≤ W) :
@@ -268,7 +272,7 @@ structure DInv (m₀ : ℕ → ℕ) (L₀ : List (ℕ × ℕ × ℕ)) (CB B' : �
   out : d.output = cI.output
   mem : ∀ a, d.nmem a = memD m₀ L₀ B' (d.nreg 218070) a
 
-set_option maxHeartbeats 8000000 in
+
 /-- **One record.** -/
 theorem dBody_exec {m₀ : ℕ → ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {CB B' : ℕ}
     (hR : DrvT.RecsT m₀ CB L₀) (hCB : L₀.length = 0 ∨ CB + 5 * L₀.length ≤ B')
@@ -403,15 +407,15 @@ theorem dLoop_exec {m₀ : ℕ → ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {CB B'
       obtain ⟨d', k, e, hw', hI', hi', hk1, hk2⟩ := dBody_exec hR hCB hBW hwd hId ht
       have := hId.rK
       refine ⟨d', k, e, ⟨hw', hI'⟩, ?_, ?_⟩
-      · rw [hi']; rw [this] at ht; omega
+      · rw [hi']; Ξ' this at ht; omega
       · rw [hi']; omega)
     ⟨hw, hI⟩
   have hi := hI'.i_le
-  rw [hI'.rK] at htest
-  refine ⟨d', k, e, hw', hI', by omega, ?_, ?_⟩
-  · rw [h0] at hψ; have : d'.nreg 218070 = L₀.length := by omega
-    rw [this] at hψ; omega
-  · rw [h0] at hk; omega
+  Ξ' hI'.rK at htest
+  refine ⟨d', k, e, hw', hI', ⋄, ?_, ?_⟩
+  · Ξ' h0 at hψ; have : d'.nreg 218070 = L₀.length := ⋄
+    Ξ' this at hψ; omega
+  · Ξ' h0 at hk; omega
 
 end exec
 
@@ -424,21 +428,21 @@ theorem chordListAt_memD {m₀ m : ℕ → ℕ} {L₀ : List (ℕ × ℕ × ℕ)
   intro j hj
   have hq : ∀ q, q < 3 → m (B' + 3 * j + q) = tw (BoxT.dropWalls L₀) (3 * j + q) := by
     intro q hq
-    rw [hm]; unfold memD; rw [hlen, ite_eq_left (by omega), show B' + 3 * j + q - B' = 3 * j + q by
+    rw [hm]; unfold memD; rw [hlen, ite_eq_left (⋄), show B' + 3 * j + q - B' = 3 * j + q by
       omega]; rfl
   refine ⟨?_, ?_, ?_⟩
-  · have := hq 0 (by norm_num); rw [Nat.add_zero, Nat.add_zero] at this; rw [this]
+  · have := hq 0 (⊛); Ξ' Nat.add_zero, Nat.add_zero at this; Ξ this
     unfold tw; rw [show 3 * j % 3 = 0 by omega, show 3 * j / 3 = j by omega]; simp
-  · rw [hq 1 (by norm_num)]
+  · Ξ hq 1 (⊛)
     unfold tw; rw [show (3 * j + 1) % 3 = 1 by omega, show (3 * j + 1) / 3 = j by omega]; simp
-  · rw [hq 2 (by norm_num)]
+  · Ξ hq 2 (⊛)
     unfold tw; rw [show (3 * j + 2) % 3 = 2 by omega, show (3 * j + 2) / 3 = j by omega]; simp
 
 section exec2
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
+
 theorem dSetup_exec (c : Config) (hw : WordsBounded W c) {A B₀ K₀ CB : ℕ}
     (hA : c.nreg 9999 = A) (hB : c.nreg 218015 = B₀) (hBA : B₀ + 11 < A)
     (hK : c.nmem B₀ = K₀) (hCB : c.nmem (B₀ + 3) = CB) (h21 : c.nreg 218021 = 1)
@@ -450,7 +454,7 @@ theorem dSetup_exec (c : Config) (hw : WordsBounded W c) {A B₀ K₀ CB : ℕ}
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold dSetup
   have e : ALLOC = 9999 := rfl
-  rw [e]
+  Ξ e
   exec_block
   all_goals try omega
   all_goals try (simp (disch := omega) only [Config.nreg_mk, Config.nmem_mk, Machine.upd_same,
@@ -459,7 +463,7 @@ theorem dSetup_exec (c : Config) (hw : WordsBounded W c) {A B₀ K₀ CB : ℕ}
   all_goals simp (disch := omega) only [Config.nreg_mk, Config.nmem_mk, Machine.upd_same,
     Machine.upd_other, hA, hB, hK, hCB, h21]
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The wall filter.** -/
 theorem dropS_exec (c : Config) (hw : WordsBounded W c) {N : NF}
     (hN : Robust (c.nreg ALLOC) c.nmem (fun m => NFAt m (c.nreg 218015) N))

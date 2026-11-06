@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreNodeEndMath
 public import Chazelle.Core.RestoreWitness
 
@@ -37,11 +39,11 @@ theorem rot_u (hS : Stretch M Cα g g' L) {a b : ℝ} (ha0 : 0 ≤ a) (han : a <
   have hgn : (g : ℝ) < M.W.n := by exact_mod_cast hS.hg
   have hx0 : (0 : ℝ) ≤ (((g + u) % M.W.n : ℕ) : ℝ) := Nat.cast_nonneg _
   have hxn : (((g + u) % M.W.n : ℕ) : ℝ) < M.W.n := by exact_mod_cast Nat.mod_lt _ hn
-  rw [sideInArc_rot hg0 hgn ha0 han hb0 hbn hx0 hxn]
+  Ξ sideInArc_rot hg0 hgn ha0 han hb0 hbn hx0 hxn
   have h := off_key (n := M.W.n) (g := g) (d := u) hS.hg (by have := hS.hLn; omega)
     (t := 0) le_rfl zero_lt_one
   rw [add_zero, add_zero] at h
-  rw [h]
+  Ξ h
 
 theorem ray_ne' {z : Point} {σ T : ℝ} (hσ : σ = 1 ∨ σ = -1) (hT : 0 < T) : z ≠ rayPt z σ T := by
   intro h
@@ -103,7 +105,7 @@ theorem end_gend (hS : Stretch M Cα g g' L) (hGα : WalkAx (chainModel Cα)) (h
   refine ⟨h0, harr, ?_, fun u hu => ?_⟩
   · have hr := rot_u hS hkE0 hkEn hkF0 hkFn hx
     rw [hoE] at hr
-    rw [← hr]
+    Ξ ← hr
     rw [add_zero] at hpr
     exact hpr
   · have hr := rot_u hS hkE0 hkEn hkF0 hkFn hu

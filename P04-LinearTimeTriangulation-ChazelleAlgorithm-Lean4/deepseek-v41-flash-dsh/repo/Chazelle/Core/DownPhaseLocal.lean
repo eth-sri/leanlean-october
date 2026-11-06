@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseArcBrk
 public import Chazelle.Core.DownPhaseBoxAttach
 public import Chazelle.Core.FactsInterior
@@ -66,14 +68,14 @@ theorem near_sub_region (hQ : Q.Simple) {F : Set (Set Point)}
     obtain ⟨y, a, b, hh, rfl⟩ := hF hc
     have hzD : z ∉ M.D := hM.trace p hp t ht0 ht1.le
     have hab := hh.lt
-    have hzy : z.2 = y := hzc.1
+    have hzy := hzc.1
     refine hcut ⟨hseg y a b, hc, p, t, ⟨hp, ht0, ht1, hzc, min (b - a) rL,
       lt_min (by linarith) hrL, fun x hx hxz hdist => ?_⟩, rfl⟩
     have hd1 : |x.1 - z.1| < b - a := by
       have h := lt_of_lt_of_le hdist (min_le_left _ _)
       have h2 : dist x.1 z.1 ≤ dist x z := by rw [Prod.dist_eq]; exact le_max_left _ _
       rw [Real.dist_eq] at h2; exact lt_of_le_of_lt h2 h
-    have hxy : x.2 = y := hx.1
+    have hxy := hx.1
     -- `z` is an end of the chord
     have hzend : z.1 = a ∨ z.1 = b := by
       by_contra hne

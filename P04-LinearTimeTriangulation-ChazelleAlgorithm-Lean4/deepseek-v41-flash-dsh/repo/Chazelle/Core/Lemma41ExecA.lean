@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Main
 
 /-!
@@ -20,7 +22,7 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 16000000 in
+
 /-- **The prologue on the RAM.** -/
 theorem l41A_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
     {c : Config} (hw : WordsBounded W c) {A h a L lam : ℕ}
@@ -42,11 +44,11 @@ theorem l41A_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
       c5.nreg 160080 = 2 ∧ c5.nreg 160081 = 5 ∧ c5.nreg 160082 = 6 ∧ c5.nreg 160083 = 3 ∧
       c5.nreg 160084 = 4 ∧ c5.nreg 160087 = 8 := by
   have hAl : ALLOC = 9999 := rfl
-  have hn3 : 3 ≤ P.n := hG.1.1
+  have hn3 := hG.1.1
   have hWn' : 128 * P.n + 3 ≤ W := by unfold hostWords at hWh; omega
   have hRaw := hR.holds
   have hΛ : 1 ≤ c.nmem h := by omega
-  have hΛtg : c.nmem h ≤ topGrade P.n + 1 := hRaw.1
+  have hΛtg := hRaw.1
   obtain ⟨t0, t1, t2, t3, tS0, tS1, tS1lt, tpow, thalf, tent⟩ := tab_lt hR (by omega) hΛ
   obtain ⟨S, hS⟩ : ∃ S, c.nmem (h + 1) = S := ⟨_, rfl⟩
   obtain ⟨T, hT⟩ : ∃ T, c.nmem (h + 2) = T := ⟨_, rfl⟩
@@ -82,7 +84,7 @@ theorem l41A_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
   rw [hm1, hT, eTl, e0G] at p33
   rw [hm1, hS, tS1, hpowl.2.1, hpowcb.1] at p32
   rw [hm1] at hm2
-  have c2r : ∀ r, ¬ ProRG r → c2.nreg r = c1.nreg r := fr2
+  have c2r := fr2
   have c2_03 : c2.nreg 160003 = lam := by
     rw [c2r _ (by unfold ProRG; decide), fr1 _ (Or.inl (by decide))]; exact r3
   have c2_24 : c2.nreg 160024 = 1 := by rw [c2r _ (by unfold ProRG; decide)]; exact q24

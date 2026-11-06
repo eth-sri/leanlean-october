@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreNodeArr
 
 /-!
@@ -73,23 +75,23 @@ theorem inE_iff (hS : Stretch M Cα g g' L) {p : ℕ} (hp : p < (chainModel Cα)
 /-- The parameter of a vertex position is `0`. -/
 theorem key_vtx (M : Model) (Q : Polygon) (p : ℕ) : M.key Q ⟨p, 0⟩ = p := by
   show (p : ℝ) + M.param Q ⟨p, 0⟩ = p
-  rw [show M.param Q ⟨p, 0⟩ = 0 from rfl, add_zero]
+  Ξ show M.param Q ⟨p, 0⟩ = 0 from rfl, add_zero
 
 /-- The comparison of `(p, 0)` and `(p, h)` tells whether the parameter is positive. -/
 theorem key_pz (M : Model) (Q : Polygon) (p h : ℕ) :
     M.key Q ⟨p, 0⟩ < M.key Q ⟨p, h⟩ ↔ 0 < M.param Q ⟨p, h⟩ := by
-  rw [key_vtx]
+  Ξ key_vtx
   show (p : ℝ) < p + M.param Q ⟨p, h⟩ ↔ _
   constructor <;> intro h <;> linarith
 
 /-- **The host position of an end** has the parameter of the end. -/
 theorem endM_param (hS : Stretch M Cα g g' L) {Q : Polygon} {d : ℕ} (hd : d < L) (h : ℕ) :
     M.param Q ⟨(g + d) % M.W.n, h⟩ = (chainModel Cα).param Q ⟨g' + d, h⟩ := by
-  rw [param_agree hS.hA hd h, hS.mod' hd.le]
+  Ξ param_agree hS.hA hd h, hS.mod' hd.le
 
 theorem endM_pos (hS : Stretch M Cα g g' L) {Q : Polygon} {d : ℕ} (hd : d < L) (h : ℕ) :
     M.pos Q ⟨(g + d) % M.W.n, h⟩ = (chainModel Cα).pos Q ⟨g' + d, h⟩ := by
-  rw [pos_agree hS.hA hd h, hS.mod' hd.le]
+  Ξ pos_agree hS.hA hd h, hS.mod' hd.le
 
 /-- **The host offset of an end** is its rotated key. -/
 theorem endM_off (hS : Stretch M Cα g g' L) {d : ℕ} (hd : d < L) {t : ℝ} (ht0 : 0 ≤ t)

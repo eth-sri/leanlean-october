@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildPhaseBSetup
 
 /-!
@@ -23,8 +25,8 @@ theorem sum_ind (k R : ℕ) :
   induction R with
   | zero => simp
   | succ R ih =>
-    rw [List.range_succ, List.map_append, List.sum_append, ih]
-    simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    Ξ List.range_succ, List.map_append, List.sum_append, ih
+    ϴ List.map_cons, List.map_nil, List.sum_cons, List.sum_nil
     split_ifs <;> omega
 
 theorem sum_cntF (key : ℕ → ℕ) {n R : ℕ} (h : ∀ j, j < n → key j < R) :
@@ -35,7 +37,7 @@ theorem sum_cntF (key : ℕ → ℕ) {n R : ℕ} (h : ∀ j, j < n → key j < R
     have e : (List.range R).map (cntF key (n + 1)) =
         (List.range R).map fun r => cntF key n r + (if key n = r then 1 else 0) := by
       apply List.map_congr_left; intro r _; exact cntF_succ key n r
-    rw [e, List.sum_map_add, ih (fun j hj => h j (by omega)), sum_ind, ite_eq_left (h n (by omega))]
+    rw [e, List.sum_map_add, ih (fun j hj => h j (⋄)), sum_ind, ite_eq_left (h n (by omega))]
 
 theorem sum_cnt2F_le (u v : ℕ → ℕ) (n R : ℕ) : ((List.range R).map (cnt2F u v n)).sum ≤ 2 * n := by
   induction n with
@@ -50,9 +52,9 @@ theorem sum_cnt2F_le (u v : ℕ → ℕ) (n R : ℕ) : ((List.range R).map (cnt2
       calc _ ≤ ((List.range R).map fun r =>
               (if u n = r then 1 else 0) + (if v n = r then 1 else 0)).sum :=
             List.sum_le_sum (fun r _ => this r)
-        _ = _ := by rw [List.sum_map_add]
+        _ = _ := Ρ List.sum_map_add
         _ ≤ 2 := by rw [sum_ind, sum_ind]; split_ifs <;> omega
-    rw [e, List.sum_map_add]
+    Ξ e, List.sum_map_add
     omega
 
 theorem offF_eq (cA cC : ℕ → ℕ) (R : ℕ) :
@@ -62,7 +64,7 @@ theorem offF_eq (cA cC : ℕ → ℕ) (R : ℕ) :
 /-- **The size of the list table.** -/
 theorem offF_R_le (key u v : ℕ → ℕ) {A K R : ℕ} (h : ∀ j, j < A → key j < R) :
     offF (cntF key A) (cnt2F u v K) R ≤ A + 2 * K := by
-  rw [offF_eq, sum_cntF key h]
+  Ξ offF_eq, sum_cntF key h
   have := sum_cnt2F_le u v K R
   omega
 
@@ -71,7 +73,7 @@ theorem lstF_congr {key key' : ℕ → ℕ} {n : ℕ} (h : ∀ j, j < n → key 
   unfold lstF
   apply List.filter_congr
   intro j hj
-  rw [h j (List.mem_range.1 hj)]
+  Ξ h j (List.mem_range.1 hj)
 
 theorem cntF_congr {key key' : ℕ → ℕ} {n : ℕ} (h : ∀ j, j < n → key j = key' j) :
     cntF key n = cntF key' n := by
@@ -81,7 +83,7 @@ theorem wmaxF_congr {key key' w w' : ℕ → ℕ} {n : ℕ} (h : ∀ j, j < n �
     (hw : ∀ j, j < n → w j = w' j) : wmaxF key w n = wmaxF key' w' n := by
   funext r
   unfold wmaxF
-  rw [lstF_congr h]
+  Ξ lstF_congr h
   congr 1
   apply List.map_congr_left
   intro j hj
@@ -93,7 +95,7 @@ theorem lst2F_congr {u v u' v' : ℕ → ℕ} {n : ℕ} (hu : ∀ i, i < n → u
   unfold lst2F
   apply List.filter_congr
   intro i hi
-  rw [hu i (List.mem_range.1 hi), hv i (List.mem_range.1 hi)]
+  Ξ hu i (List.mem_range.1 hi), hv i (List.mem_range.1 hi)
 
 theorem cnt2F_congr {u v u' v' : ℕ → ℕ} {n : ℕ} (hu : ∀ i, i < n → u i = u' i)
     (hv : ∀ i, i < n → v i = v' i) : cnt2F u v n = cnt2F u' v' n := by

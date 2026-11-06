@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranInitB
 
 /-!
@@ -67,7 +69,7 @@ theorem init_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have hM : WalkAx M := walkAx_of_goodModel hGM
   have hR1 : 1 ≤ N.nRegions := by rw [nRegions_eq hNF hM]; omega
   obtain ⟨c₅, k₅, e₅, hk₅, I₅, G₅⟩ := initA_exec (P := P) hw h0 h1 h2 h3 hWh hwf hMD hNW hNF hRC
-    hRO hdeg (by omega) hK1 hR1
+    hRO hdeg (⋄) hK1 hR1
   obtain ⟨c₈, k₈, e₈, hk₈, I₈, G₈⟩ := initB_exec (P := P) I₅ hG hWh hwf hMD hGM hNW hNF hne
     (by rw [I₅.alloc]; show c.nreg ALLOC + (dmOf N.nChords N.arcs.length N.nRegions D 0).oEnd + _ ≤ W
         omega)
@@ -91,7 +93,7 @@ theorem init_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have hEnd : d.oEnd = (dmOf N.nChords N.arcs.length N.nRegions D 0).oEnd := rfl
   have hDim : DimOK E d W := ⟨rfl, rfl, rfl, rfl, by show c.nreg ALLOC + d.oEnd ≤ W; omega, hsz,
     hW3⟩
-  have hC : Cst c₈ E d := Cst.of_bases I₈.bases I₈.r14 (by rw [I₈.r18, envOf_sz hMD]) I₈.r19
+  have hC : Cst c₈ E d := Cst.of_bases I₈.bases I₈.r14 (Ρ I₈.r18, envOf_sz hMD) I₈.r19
     I₈.r20 I₈.r21
   refine ⟨c₈, _, .seq e₅ e₈, ?_, ⟨I₈.wb, hC, henc, I₈.r50, I₈.r51, I₈.mem⟩, hI, hE, hDim,
     I₈.r52, I₈.r00, I₈.r01, I₈.r02, I₈.r03, I₈.r10, I₈.r13, I₈.r28, I₈.alloc,

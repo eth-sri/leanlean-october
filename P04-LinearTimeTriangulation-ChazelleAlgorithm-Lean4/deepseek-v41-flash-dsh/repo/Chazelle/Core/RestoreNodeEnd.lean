@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreStretch
 
 /-!
@@ -44,7 +46,7 @@ theorem side_after {a b : ℝ} (hab : a ≠ b) (k : ℝ) :
   filter_upwards [lt_after a k, after_lt b k] with ε h1 h2
   unfold sideInArc
   split_ifs with h
-  · rw [h1, h2]
+  · Ξ h1, h2
     constructor
     · rintro ⟨h3, h4⟩
       rcases h3.lt_or_eq with h3 | h3
@@ -53,7 +55,7 @@ theorem side_after {a b : ℝ} (hab : a ≠ b) (k : ℝ) :
     · rintro (rfl | ⟨h3, h4⟩)
       · exact ⟨le_rfl, h⟩
       · exact ⟨h3.le, h4⟩
-  · rw [h1, h2]
+  · Ξ h1, h2
     have hba : b < a := lt_of_le_of_ne (not_lt.1 h) (Ne.symm hab)
     constructor
     · rintro (h3 | h3)

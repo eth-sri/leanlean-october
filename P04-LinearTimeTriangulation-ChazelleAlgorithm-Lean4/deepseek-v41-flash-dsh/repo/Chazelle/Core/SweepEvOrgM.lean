@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvMap3
 public import Chazelle.Core.SweepIoLocal
 
@@ -42,7 +44,7 @@ theorem rec_ends {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) Q 
   have hmem : (N.chord k).toSet (chainModel C) Q ∈ N.F (chainModel C) Q := by
     refine ⟨N.chord k, ?_, rfl⟩
     unfold NF.chord
-    rw [NFLoc.getD_of_lt _ hk]
+    Ξ NFLoc.getD_of_lt _ hk
     exact List.getElem_mem _
   obtain ⟨y, a, b, hH, -, heq, -, -⟩ := Merge.augChords_spec (show _ ∈ Merge.augChords C from hN.1.2.1 hmem)
   obtain ⟨h1, h2, h3⟩ := rec_pos_ends (hN.2.2.1 k hk) heq hH.lt

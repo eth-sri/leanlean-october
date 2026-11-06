@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranInitL1
 
 /-!
@@ -56,22 +58,22 @@ theorem slotLoop_exec {P : Polygon} {W D S L deg : ℕ} {ex : List ℕ} {c₀ : 
     (body := slotBody) (SlotI W D S L deg ex c₀) (fun c => D - c.nreg 90081) 7 (fun _ h => h.wb)
     (fun c I ht => by
       obtain ⟨hwc, hle, hr, hs, hm⟩ := I
-      rw [hr 90002 (by decide) (by decide) (by decide) (by decide), h02] at ht
-      have c78 : c.nreg 90078 = S := by rw [hr _ (by decide) (by decide) (by decide) (by decide), h78]
+      Ξ' hr 90002 (⌖) (⌖) (⌖) (⌖), h02 at ht
+      have c78 : c.nreg 90078 = S := Ρ hr _ (⌖) (⌖) (⌖) (⌖), h78
       have c79 : c.nreg 90079 = deg := by
-        rw [hr _ (by decide) (by decide) (by decide) (by decide), h79]
-      have c80 : c.nreg 90080 = L := by rw [hr _ (by decide) (by decide) (by decide) (by decide), h80]
+        Ξ hr _ (⌖) (⌖) (⌖) (⌖), h79
+      have c80 : c.nreg 90080 = L := Ρ hr _ (⌖) (⌖) (⌖) (⌖), h80
       have c19 : c.nreg 90019 = 1 := by
-        rw [hr _ (by decide) (by decide) (by decide) (by decide), h19]
+        Ξ hr _ (⌖) (⌖) (⌖) (⌖), h19
       generalize htu : c.nreg 90081 = t at ht hle hs
       have e₁ := Exec.addN (P := P) hwc 90082 90078 90081 (by rw [c78, htu]; omega)
       set c₁ : Config := { c with nreg := upd c.nreg 90082 (c.nreg 90078 + c.nreg 90081) } with hc₁
-      have w₁ : WordsBounded W c₁ := e₁.wb_right
-      have d82 : c₁.nreg 90082 = S + t := by rw [hc₁]; simp [upd, c78, htu]
-      have d81 : c₁.nreg 90081 = t := by rw [hc₁]; simp [upd, htu]
-      have d79 : c₁.nreg 90079 = deg := by rw [hc₁]; simp [upd, c79]
-      have d80 : c₁.nreg 90080 = L := by rw [hc₁]; simp [upd, c80]
-      have d19 : c₁.nreg 90019 = 1 := by rw [hc₁]; simp [upd, c19]
+      have w₁ := e₁.wb_right
+      have d82 : c₁.nreg 90082 = S + t := by rw [hc₁]; Θ upd, c78, htu
+      have d81 : c₁.nreg 90081 = t := by rw [hc₁]; Θ upd, htu
+      have d79 : c₁.nreg 90079 = deg := by rw [hc₁]; Θ upd, c79
+      have d80 : c₁.nreg 90080 = L := by rw [hc₁]; Θ upd, c80
+      have d19 : c₁.nreg 90019 = 1 := by rw [hc₁]; Θ upd, c19
       have dm : c₁.nmem = c.nmem := rfl
       -- the store of the slot value
       obtain ⟨c₂, k₂, e₂, hk₂, q⟩ : ∃ c₂ k₂, Exec P W (.ifLtN 90081 90079
@@ -83,40 +85,40 @@ theorem slotLoop_exec {P : Polygon} {W D S L deg : ℕ} {ex : List ℕ} {c₀ : 
         · refine spec_ifLtN_true (by rw [d81, d79]; exact hlt) ?_
           exec_block
           · rw [d80, d81]; omega
-          · refine ⟨by omega, ?_, fun r a1 a2 => by simp [upd, a1, a2]⟩
+          · refine ⟨⋄, ?_, fun r a1 a2 => ⊚ upd, a1, a2⟩
             config_simp
-            rw [d82, d80, d81, dm, hm _ (hdisj t hlt), hsrc t hlt]
+            Ξ d82, d80, d81, dm, hm _ (hdisj t hlt), hsrc t hlt
         · refine spec_ifLtN_false (by rw [d81, d79]; exact hlt) ?_
           exec_block
           · omega
-          · refine ⟨by omega, ?_, fun r a1 a2 => by simp [upd, a2]⟩
+          · refine ⟨⋄, ?_, fun r a1 a2 => ⊚ upd, a2⟩
             config_simp
-            rw [d82, dm, List.getD_eq_getElem?_getD, List.getElem?_eq_none (by omega)]; rfl
+            rw [d82, dm, List.getD_eq_getElem?_getD, List.getElem?_eq_none (⋄)]; rfl
       obtain ⟨q2, qr⟩ := q
       have w₂ := e₂.wb_right
-      have f19 : c₂.nreg 90019 = 1 := by rw [qr _ (by decide) (by decide), d19]
-      have f81 : c₂.nreg 90081 = t := by rw [qr _ (by decide) (by decide), d81]
+      have f19 : c₂.nreg 90019 = 1 := Ρ qr _ (⌖) (⌖), d19
+      have f81 : c₂.nreg 90081 = t := Ρ qr _ (⌖) (⌖), d81
       have e₃ := Exec.addN (P := P) w₂ 90081 90081 90019 (by rw [f19, f81]; omega)
       refine ⟨_, _, .seq e₁ (.seq e₂ e₃), ⟨e₃.wb_right, ?_, fun r a1 a2 a3 a4 => ?_,
-        fun u hu => ?_, fun a ha => ?_⟩, by omega, ?_⟩
+        fun u hu => ?_, fun a ha => ?_⟩, ⋄, ?_⟩
       · config_simp; rw [f19, f81]; omega
       · config_simp
-        rw [Machine.upd_other _ _ _ a1, qr r a3 a4, hc₁]
-        simp only [upd, a2, ite_false]
+        Ξ Machine.upd_other _ _ _ a1, qr r a3 a4, hc₁
+        ϴ upd, a2, ite_false
         exact hr r a1 a2 a3 a4
-      · config_simp at hu; rw [f19, f81] at hu
-        config_simp; rw [q2]
+      · config_simp at hu; Ξ' f19, f81 at hu
+        config_simp; Ξ q2
         by_cases hut : u = t
         · rw [hut]; simp
-        · rw [Machine.upd_other _ _ _ (by omega)]; exact hs u (by omega)
-      · config_simp; rw [q2, Machine.upd_other _ _ _ (by omega)]; exact hm a ha
+        · rw [Machine.upd_other _ _ _ (⋄)]; exact hs u (⋄)
+      · config_simp; rw [q2, Machine.upd_other _ _ _ (⋄)]; exact hm a ha
       · config_simp; rw [f19, f81]; omega)
-    ⟨hw, by omega, fun _ _ _ _ _ => rfl, fun u hu => by rw [h81] at hu; omega, fun _ _ => rfl⟩
+    ⟨hw, ⋄, fun _ _ _ _ _ => rfl, fun u hu => by rw [h81] at hu; omega, fun _ _ => rfl⟩
   have hfull : c'.nreg 90081 = D := by
-    rw [I'.regs 90002 (by decide) (by decide) (by decide) (by decide), h02] at hx
+    Ξ' I'.regs 90002 (⌖) (⌖) (⌖) (⌖), h02 at hx
     have := I'.t_le; omega
-  refine ⟨c', k, e, ?_, fun u hu => I'.slot u (by omega), I'.mem, I'.regs⟩
-  rw [h81] at hk
+  refine ⟨c', k, e, ?_, fun u hu => I'.slot u (⋄), I'.mem, I'.regs⟩
+  Ξ' h81 at hk
   omega
 
 /-- Degree, list base, weight and exit base of region `r70` (`r71 = RB + 5 r`, `r78` its slots). -/
@@ -139,9 +141,9 @@ def regBody : Stmt := .seq regHead (.seq regL (.seq slotLoop regTail))
 def regLoop : Stmt := .seq (block [.constN 90070 0, .copyN 90071 90016, .copyN 90078 90027,
   .constN 90076 5]) (.whileLtN 90070 90012 regBody)
 
-theorem wrS_regLoop : wrS Binit regLoop = true := by decide
+theorem wrS_regLoop : wrS Binit regLoop = true := ⌖
 
-set_option maxHeartbeats 1000000 in
+
 theorem regHead_exec {P : Polygon} {W : ℕ} {d : Dm} (c : Config) (hw : WordsBounded W c)
     {RB LB r S dg w : ℕ} {ex : List ℕ} (hB : Bases c d) (h70 : c.nreg 90070 = r)
     (h71 : c.nreg 90071 = RB + 5 * r) (h78 : c.nreg 90078 = S) (_h22 : c.nreg 90022 = LB)
@@ -155,11 +157,11 @@ theorem regHead_exec {P : Polygon} {W : ℕ} {d : Dm} (c : Config) (hw : WordsBo
       (∀ q, q ≠ 90072 → q ≠ 90074 → q ≠ 90075 → q ≠ 90079 → q ≠ 90080 → q ≠ 90081 →
         c'.nreg q = c.nreg q) := by
   obtain ⟨y1, y2, y3, y4, y5, y6, y7, y8, y9, y10, y11, y12, y13, y14, y15⟩ := d.lay
-  have hEx : d.oEx ≤ d.oEnd := by omega
+  have hEx : d.oEx ≤ d.oEnd := ⋄
   have v1 : upd c.nmem (d.b0 + d.oDeg + r) dg (RB + 5 * r + 3) = c.nmem (RB + 5 * r + 3) :=
-    Machine.upd_other _ _ _ (by omega)
+    Machine.upd_other _ _ _ (⋄)
   have v2 : upd c.nmem (d.b0 + d.oDeg + r) dg (RB + 5 * r + 3 + 1) = w := by
-    rw [Machine.upd_other _ _ _ (by omega)]; exact hrec.wt
+    rw [Machine.upd_other _ _ _ (⋄)]; exact hrec.wt
   unfold regHead
   exec_block
   all_goals try omega
@@ -167,7 +169,7 @@ theorem regHead_exec {P : Polygon} {W : ℕ} {d : Dm} (c : Config) (hw : WordsBo
     h20, h21, hrec.deg, v1, v2]; omega)
   refine ⟨rfl, ?_, ?_, rfl, ?_, fun q a1 a2 a3 a4 a5 a6 => by
     config_simp; simp [upd, a1, a2, a3, a4, a5, a6]⟩ <;> config_simp <;>
-    simp only [hB.bDeg, hB.bWt, hB.bExb, h70, h71, h78, h19, h20, h21, hrec.deg, v1, v2]
+    ϴ hB.bDeg, hB.bWt, hB.bExb, h70, h71, h78, h19, h20, h21, hrec.deg, v1, v2
 
 /-- The region-loop invariant. -/
 structure RegI (W R D RB : ℕ) (d : Dm) (rg : ℕ → RRec) (c₀ c : Config) : Prop where
@@ -365,29 +367,29 @@ theorem regLoop_exec {P : Polygon} {W R D RB LB : ℕ} {d : Dm} {rg : ℕ → RR
     exec_block
     · omega
     · omega
-    · refine ⟨rfl, ⟨by assumption, ?_, ?_, ?_, ?_, fun r hr => ?_, fun x hx => ?_, fun x hx => ?_,
+    · refine ⟨rfl, ⟨⟁, ?_, ?_, ?_, ?_, fun r hr => ?_, fun x hx => ?_, fun x hx => ?_,
         fun x hx => ?_, fun x t hx _ => ?_, fun a _ => rfl⟩, ?_⟩
       · config_simp; omega
       · config_simp; rw [h16]; omega
       · config_simp; rw [h27]; omega
       · config_simp
-      · simp only [Binit, decide_eq_false_iff_not] at hr
+      · ϴ' Binit, decide_eq_false_iff_not at hr
         config_simp; simp only [upd]; split_ifs <;> first | rfl | omega
       all_goals first | (simp [upd] at hx) | config_simp
   obtain ⟨c', k, e, I', hx, hk⟩ := Exec.whileLtN_bounded (P := P) (a := 90070) (b := 90012)
     (body := regBody) (RegI W R D RB d rg c₀) (fun c => R - c.nreg 90070) (9 * D + 22)
     (fun _ h => h.wb)
     (fun c I ht => by
-      have t : c.nreg 90070 < R := by rw [I.regs 90012 (by decide), h12] at ht; exact ht
+      have t : c.nreg 90070 < R := by rw [I.regs 90012 (⌖), h12] at ht; exact ht
       obtain ⟨c', k, e, I', hk, hi⟩ := regBody_exec (P := P) I hB hR hD h02 h12 h22 h19 h20 h21
         hrec hdeg hRB hL hW t
-      exact ⟨c', k, e, I', hk, by omega⟩) q
+      exact ⟨c', k, e, I', hk, ⋄⟩) q
   have hK' : c'.nreg 90070 = R := by
-    rw [I'.regs 90012 (by decide), h12] at hx; have := I'.r_le; omega
-  refine ⟨c', _, .seq e₁ e, ?_, fun x hx => ⟨I'.deg x (by omega), I'.wt x (by omega),
-    I'.exb x (by omega), fun t ht => I'.ex x t (by omega) ht⟩, I'.mem⟩
-  rw [q0] at hk
-  have : (9 * D + 22 + 2) * (R - 0) = (9 * D + 24) * R := by rw [Nat.sub_zero]
+    Ξ' I'.regs 90012 (⌖), h12 at hx; have := I'.r_le; omega
+  refine ⟨c', _, .seq e₁ e, ?_, fun x hx => ⟨I'.deg x (⋄), I'.wt x (⋄),
+    I'.exb x (⋄), fun t ht => I'.ex x t (⋄) ht⟩, I'.mem⟩
+  Ξ' q0 at hk
+  have : (9 * D + 22 + 2) * (R - 0) = (9 * D + 24) * R := Ρ Nat.sub_zero
   omega
 
 end

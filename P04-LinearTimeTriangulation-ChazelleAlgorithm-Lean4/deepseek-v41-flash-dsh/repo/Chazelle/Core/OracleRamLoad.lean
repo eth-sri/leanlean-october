@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleAtFacts
 
 /-!
@@ -63,7 +65,7 @@ def qLoad : Stmt := .seq qLoadA (.seq qLoadB qLoadC)
 /-- The registers written by `qLoad`. -/
 def BLd (r : ℕ) : Bool := decide (120010 ≤ r ∧ r ≤ 120049) || decide (120190 ≤ r ∧ r ≤ 120191)
 
-theorem wr_qLoad : wr BLd qLoad = true := by decide
+theorem wr_qLoad : wr BLd qLoad = true := ⌖
 
 /-- The values loaded by `qLoadA`. -/
 theorem qLoadA_exec {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host} {C : Chain}
@@ -90,7 +92,7 @@ def BLdB (r : ℕ) : Bool :=
   decide (120015 ≤ r ∧ r ≤ 120020) || decide (r = 120029) || decide (120043 ≤ r ∧ r ≤ 120047) ||
     decide (120190 ≤ r ∧ r ≤ 120191)
 
-theorem wr_qLoadB : wr BLdB qLoadB = true := by decide
+theorem wr_qLoadB : wr BLdB qLoadB = true := ⌖
 
 /-- The values loaded by `qLoadB`. -/
 theorem qLoadB_exec {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host} {C : Chain}
@@ -108,7 +110,7 @@ theorem qLoadB_exec {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : Q
   unfold qLoadB
   exec_block
   all_goals (config_simp; (try simp only [h11, h13, h14, hm, hA.dm, Nat.add_assoc] at *); (try norm_num); (try omega))
-  exact ⟨hA.ds, hA.dt, hA.dβ, by ring, hA.nCB, hA.nAB, hA.nRB, hA.nSB, hA.nLB⟩
+  exact ⟨hA.ds, hA.dt, hA.dβ, ⋆, hA.nCB, hA.nAB, hA.nRB, hA.nSB, hA.nLB⟩
 
 /-- The height vertex of a query origin. -/
 def qhzOf : QOrigin → ℕ
@@ -127,7 +129,7 @@ def σbOf (v : ℕ) : ℕ := if v = 1 then 1 else 0
 /-- The registers written by `qLoadC`. -/
 def BLdC (r : ℕ) : Bool := decide (120021 ≤ r ∧ r ≤ 120027)
 
-theorem wr_qLoadC : wr BLdC qLoadC = true := by decide
+theorem wr_qLoadC : wr BLdC qLoadC = true := ⌖
 
 /-- The derived constants of `qLoadC`. -/
 theorem qLoadC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {n s m t β : ℕ}
@@ -237,7 +239,7 @@ theorem qLoadC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
 noncomputable def qV (V : QV) (P : Polygon) (o : QOrigin) (d : ℕ) : QV :=
   { V with hz := qhzOf o, σb := σbOf d, zo := qzoOf (Qof P) o }
 
-theorem wr_qLoadA : wr BLd qLoadA = true := by decide
+theorem wr_qLoadA : wr BLd qLoadA = true := ⌖
 
 /-- **Loading the constants of the query.** -/
 theorem qLoad_exec {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host} {C : Chain}
@@ -313,15 +315,15 @@ theorem QAt.qvok {P : Polygon} {m : ℕ → ℕ} {O E : ℕ} {V : QV} {H : Host}
     (hol : o.Lt P.n) (d : ℕ) : QVOK P C (qV V P o d) := by
   have hQn : (Qof P).n = P.n := shear_n _ _
   obtain ⟨-, -, hd1, hd2, hd3, hd4⟩ := hA.desc
-  have hsn : C.s < P.n := by have := hA.s_lt; rw [hA.CQ, hQn] at this; exact this
+  have hsn : C.s < P.n := by have := hA.s_lt; Ξ' hA.CQ, hQn at this; exact this
   refine ⟨hA.CQ, by show V.s = C.s; rw [← hA.ds, hd1], by show V.m = C.m; rw [← hA.dm, hd2],
     ?_, ?_, ?_, by show V.s < P.n; rw [← hA.ds, hd1]; exact hsn⟩
   · show V.sS = C.sideS C.sideBeta
-    rw [hA.sS, ← hA.dβ, ← hA.dt, hd3, ← hA.dm, hd2]
+    Ξ hA.sS, ← hA.dβ, ← hA.dt, hd3, ← hA.dm, hd2
     unfold Chain.sideS
     by_cases hb : C.sideBeta = true
-    · rw [ite_eq_left (hd4.2 hb), ite_eq_left hb]
-    · rw [ite_eq_right (fun h => hb (hd4.1 h)), ite_eq_right hb]
+    · Ξ ite_eq_left (hd4.2 hb), ite_eq_left hb
+    · Ξ ite_eq_right (fun h => hb (hd4.1 h)), ite_eq_right hb
   · show qhzOf o < P.n
     rcases o with (i | ⟨e, h⟩) | h
     · exact hol

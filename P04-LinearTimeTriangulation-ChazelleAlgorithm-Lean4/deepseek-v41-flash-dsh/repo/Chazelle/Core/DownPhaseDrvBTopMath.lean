@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBTopProg
 public import Chazelle.Core.DownPhaseDrvBSize
 public import Chazelle.Core.Setup
@@ -57,7 +59,7 @@ section sizes
 
 variable {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {li : Bool} {γ : ℕ}
 
-set_option maxHeartbeats 1000000 in
+
 /-- **The bounds of the region loop.** -/
 theorem reg_sizes (hG : GoodEnv P) (hok : ChordTriplesOK (interiorModel (Qof P)) (Qof P) L)
     (hperm : E.Perm (List.range (2 * L.length)))
@@ -123,14 +125,14 @@ theorem newLB_facts (hG : GoodEnv P) (hok : ChordTriplesOK (interiorModel (Qof P
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
   have hDH : DistinctHeights (Qof P) := (goodShear_epsOf hG.2).2.1
   by_cases hK : L.length = 0
-  · rw [newLB_zero li (Qof P) E hK]
+  · Ξ newLB_zero li (Qof P) E hK
     have hL : L = [] := List.length_eq_zero_iff.1 hK
     subst hL
-    rw [List.nil_append]
+    Ξ List.nil_append
     exact ⟨newL0_ok hQ hDH hli, newL0_full hQ hDH hli⟩
-  · rw [newLB_pos li (Qof P) E (by omega)]
+  · rw [newLB_pos li (Qof P) E (⋄)]
     obtain ⟨-, -, -, reg, hRC, hCS, hAO, hRO, -⟩ := DownMath.isNF_build hQ hok hperm hsort
-    have B : BaseCtx (Qof P) L E reg li := ⟨hQ, hDH, hok, hperm, hsort, by omega,
+    have B : BaseCtx (Qof P) L E reg li := ⟨hQ, hDH, hok, hperm, hsort, ⋄,
       ⟨hRC, hCS, hAO, hRO⟩, hli⟩
     exact ⟨newL_ok B, newL_full B⟩
 
@@ -143,11 +145,11 @@ theorem count_le {K c p b : ℕ} (h : K * 2 ^ b ≤ c * (2 ^ p + 2 ^ b)) : K ≤
   have h1 : 1 ≤ 2 ^ b := Nat.one_le_two_pow
   have h2 : c * (2 ^ p + 2 ^ b) ≤ c * (2 ^ p + 1) * 2 ^ b := by
     have : 2 ^ p + 2 ^ b ≤ (2 ^ p + 1) * 2 ^ b := by
-      have : 2 ^ p ≤ 2 ^ p * 2 ^ b := Nat.le_mul_of_pos_right _ (by omega)
+      have : 2 ^ p ≤ 2 ^ p * 2 ^ b := Nat.le_mul_of_pos_right _ (⋄)
       rw [Nat.add_mul, Nat.one_mul]; omega
     calc c * (2 ^ p + 2 ^ b) ≤ c * ((2 ^ p + 1) * 2 ^ b) := Nat.mul_le_mul_left _ this
-      _ = c * (2 ^ p + 1) * 2 ^ b := by ring
-  exact Nat.le_of_mul_le_mul_right (h.trans h2) (by omega)
+      _ = c * (2 ^ p + 1) * 2 ^ b := ⋆
+  exact Nat.le_of_mul_le_mul_right (h.trans h2) (⋄)
 
 /-- A count below the threshold is at most the sum of the counts below it. -/
 theorem cnt_le_sum (cnt : ℕ → ℕ) {Λ lam : ℕ} (h : lam < Λ) :
@@ -165,7 +167,7 @@ def topK (κR κS κD κB Cc Γ : ℕ) : ℕ :=
 theorem topK_ge {κR κS κD κB Cc Γ : ℕ} (h : 1 ≤ κS) : 20 * Γ + 73 ≤ topK κR κS κD κB Cc Γ := by
   unfold topK
   have h1 : 1 ≤ κS * (9 * Cc + 2) := Nat.mul_le_mul h (by omega : 1 ≤ 9 * Cc + 2)
-  have h2 : 20 * Γ + 33 ≤ κS * (9 * Cc + 2) * (20 * Γ + 33) := Nat.le_mul_of_pos_left _ (by omega)
+  have h2 : 20 * Γ + 33 ≤ κS * (9 * Cc + 2) * (20 * Γ + 33) := Nat.le_mul_of_pos_left _ (⋄)
   omega
 
 /-- **The total cost is linear.** -/
@@ -181,25 +183,25 @@ theorem top_cost {n K K₂ A K' S₀ Cm Mb Cc Γ κR κS κD κB : ℕ} (hK : K 
         κB * ((3 * Cc + 2) * (n + 1)) + 40 * (n + 1) := by
     unfold topK; ring
   have hX1 : K + 1 ≤ (3 * Cc + 1) * (n + 1) := by
-    have : Cc * (2 * n + 3) ≤ 3 * Cc * (n + 1) := by nlinarith
+    have : Cc * (2 * n + 3) ≤ 3 * Cc * (n + 1) := ⊞
     nlinarith
   have hX2 : K + K₂ + A + 1 ≤ (9 * Cc + 2) * (n + 1) := by
-    have : Cc * (2 * n + 3) ≤ 3 * Cc * (n + 1) := by nlinarith
+    have : Cc * (2 * n + 3) ≤ 3 * Cc * (n + 1) := ⊞
     nlinarith
   have hX3 : K + K₂ + 1 ≤ (3 * Cc + 2) * (n + 1) := by
-    have : Cc * (2 * n + 3) ≤ 3 * Cc * (n + 1) := by nlinarith
+    have : Cc * (2 * n + 3) ≤ 3 * Cc * (n + 1) := ⊞
     nlinarith
-  have hX4 : K' + 1 ≤ (3 * Cc + 2) * (n + 1) := by omega
+  have hX4 : K' + 1 ≤ (3 * Cc + 2) * (n + 1) := ⋄
   have t1 : κR * (K + 1) * (S₀ + 1) * (Cm + 1) ≤
       κR * ((3 * Cc + 1) * (n + 1)) * (5 * Γ + 9) * (Γ + 3) :=
-    Nat.mul_le_mul (Nat.mul_le_mul (Nat.mul_le_mul_left _ hX1) (by omega)) (by omega)
+    Nat.mul_le_mul (Nat.mul_le_mul (Nat.mul_le_mul_left _ hX1) (⋄)) (by omega)
   have hcl : Nat.clog 2 Mb + 1 ≤ 20 * Γ + 33 := by have := clog_le_self Mb; omega
   have t2 : κS * (K + K₂ + A + 1) * (Nat.clog 2 Mb + 1) ≤
       κS * ((9 * Cc + 2) * (n + 1)) * (20 * Γ + 33) :=
     Nat.mul_le_mul (Nat.mul_le_mul_left _ hX2) hcl
   have t3 : κD * (K + K₂ + 1) ≤ κD * ((3 * Cc + 2) * (n + 1)) := Nat.mul_le_mul_left _ hX3
   have t4 : κB * (K' + 1) ≤ κB * ((3 * Cc + 2) * (n + 1)) := Nat.mul_le_mul_left _ hX4
-  rw [e]
+  Ξ e
   omega
 
 end

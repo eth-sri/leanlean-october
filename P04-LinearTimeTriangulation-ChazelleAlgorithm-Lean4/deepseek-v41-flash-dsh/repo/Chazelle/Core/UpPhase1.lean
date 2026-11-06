@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Of
 
 /-!
@@ -63,7 +65,7 @@ theorem halfBody_exec {c : Config} (hw : WordsBounded W c) {D t y Al : ℕ}
   · config_simp; simp only [h03, h40, h20, Machine.upd_apply]; split_ifs <;> first | omega
   · unfold HalfBRG at h1
     simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 16000000 in
 /-- **The halving table on the RAM.** -/
@@ -90,8 +92,8 @@ theorem halfS_exec {c : Config} (hw : WordsBounded W c) {n D : ℕ}
     unfold HalfRG at hr
     simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
-  have r1 : ∀ r, ¬ HalfRG r → c1.nreg r = c.nreg r := fr1
-  let I : Config → Prop := fun c' => WordsBounded W c' ∧ ∃ k, 2 * k ≤ n + 2 ∧
+  have r1 := fr1
+  let I := fun c' => WordsBounded W c' ∧ ∃ k, 2 * k ≤ n + 2 ∧
     c'.nreg 170040 = 2 * k ∧ c'.nreg 170041 = k ∧ c'.nreg 170042 = n + 1 ∧
     c'.nreg 170003 = D ∧ c'.nreg ALLOC = D + 2 * k ∧
     (∀ x, x < 2 * k → c'.nmem (D + x) = x / 2) ∧ (∀ a, a < D → c'.nmem a = c.nmem a) ∧
@@ -103,7 +105,7 @@ theorem halfS_exec {c : Config} (hw : WordsBounded W c) {n D : ℕ}
       (fun c' => 9 * (n + 2 - c'.nreg 170040)) (fun c' => c'.nreg ALLOC) (fun c' h => h.1)
       (fun c2 ⟨hw2, t, ht, h40, h41, h42, h03, hA2, hent, hlow, fr2, hrr2, hrm2, ho2⟩ htest => by
         rw [h40, h42] at htest
-        have g : ∀ r, ¬ HalfRG r → r ≠ ALLOC → c2.nreg r = c.nreg r := fr2
+        have g := fr2
         obtain ⟨c3, k3, e3, hk3, hw3, q40, q41, qA, qm0, qm1, qm, fr3, hrr3, hrm3, ho3⟩ :=
           halfBody_exec (P := P) hw2 h03 h40 h41 hA2
             (by rw [g _ (by unfold HalfRG; omega) (by rw [hAl]; omega)]; exact h20)
@@ -133,7 +135,7 @@ theorem halfS_exec {c : Config} (hw : WordsBounded W c) {n D : ℕ}
   rw [h40', h42'] at htest
   have hk' : k ≤ 9 * (n + 2) + 2 := by
     have := hk; simp only [i40, Nat.sub_zero] at this; exact this
-  have hψ' : c'.nreg ALLOC ≤ c1.nreg ALLOC + k := hψ
+  have hψ' := hψ
   have hA1 : c1.nreg ALLOC = D := by rw [r1 _ (by unfold HalfRG; rw [hAl]; omega)]; exact hA
   refine ⟨c', k1 + k, .seq e1 e, ?_, hw', h03', by omega, by omega, by omega,
     fun x hx => hent x (by omega), hlow, fr', hrr', hrm', ho'⟩

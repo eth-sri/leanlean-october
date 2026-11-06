@@ -1,5 +1,11 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBCorner
 public import Chazelle.Core.DownPhaseDrvBShot
 
@@ -85,7 +91,7 @@ def visitS : Stmt := .seq edgeS (.seq candS (.seq candB (.seq updS
 /-- The registers `visitS` writes. -/
 def Bvis (r : ℕ) : Bool := Bk r || decide (r = 212091) || decide (212094 ≤ r ∧ r ≤ 212112)
 
-theorem wr_candB : wr (fun r => decide (212107 ≤ r ∧ r ≤ 212112)) candB = true := by decide
+theorem wr_candB : wr (fun r => decide (212107 ≤ r ∧ r ≤ 212112)) candB = true := ⌖
 
 /-! ## Mathematics of the bits -/
 
@@ -97,7 +103,7 @@ theorem cand_iff_bits {Q : Polygon} {i q d : ℕ} (hq : q < Q.n) (_hd : d ≤ 1)
     (h4 : b4 ↔ (if d = 0 then (Q.vtx i).1 < edgeXAt Q q i else edgeXAt Q q i < (Q.vtx i).1)) :
     (((b0 ∧ b1) ∨ (b2 ∧ b3)) ∧ b4) ↔ Cand Q i (sgnD d) q := by
   unfold Cand Strad
-  rw [h0, h1, h2, h3, h4]
+  Ξ h0, h1, h2, h3, h4
   unfold sgnD
   by_cases h : d = 0
   · simp only [h, ite_true, one_mul, sub_pos]; tauto
@@ -109,8 +115,8 @@ theorem nearer_iff {Q : Polygon} {i q q' d : ℕ} (_hd : d ≤ 1) {b : Prop}
     b ↔ sgnD d * edgeXAt Q q i < sgnD d * edgeXAt Q q' i := by
   rw [hb]; unfold sgnD
   by_cases h : d = 0
-  · simp [h]
-  · simp only [h, ite_false, neg_one_mul, neg_lt_neg_iff]
+  · Θ h
+  · ϴ h, ite_false, neg_one_mul, neg_lt_neg_iff
 
 section exec
 
@@ -124,18 +130,18 @@ theorem wS_exec (c : Config) (hw : WordsBounded W c) {n st u : ℕ} (hn : c.nreg
   have e₁ := Exec.addN (P := P) hw 212094 212093 212091 (by rw [hst, hu]; omega)
   have w₁ := e₁.wb_right
   set c₁ : Config := { c with nreg := upd c.nreg 212094 (c.nreg 212093 + c.nreg 212091) }
-  have v₁ : c₁.nreg 212094 = st + u := by simp [c₁, hst, hu]
-  have n₁ : c₁.nreg 212010 = n := by simp [c₁, hn]
+  have v₁ : c₁.nreg 212094 = st + u := ⊚ c₁, hst, hu
+  have n₁ : c₁.nreg 212010 = n := ⊚ c₁, hn
   by_cases h : st + u < n
   · have ex : Exec P W wS c c₁ (1 + (0 + 1)) :=
       .seq e₁ (.ifLtN_true (by rw [v₁, n₁]; exact h) (.skip w₁))
-    exact ⟨c₁, _, ex, by omega, by rw [v₁, Nat.mod_eq_of_lt h], exec_frameB ex (by decide)⟩
+    exact ⟨c₁, _, ex, ⋄, by rw [v₁, Nat.mod_eq_of_lt h], exec_frameB ex (by decide)⟩
   · have e₂ := Exec.subN (P := P) w₁ 212094 212094 212010
     have ex : Exec P W wS c _ (1 + (1 + 2)) :=
       .seq e₁ (.ifLtN_false (by rw [v₁, n₁]; exact h) e₂)
-    refine ⟨_, _, ex, by omega, ?_, exec_frameB ex (by decide)⟩
-    simp only [Machine.upd_same]
-    rw [v₁, n₁, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+    refine ⟨_, _, ex, ⋄, ?_, exec_frameB ex (by decide)⟩
+    ϴ Machine.upd_same
+    rw [v₁, n₁, Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (by omega)]
 
 theorem qS_exec (c : Config) (hw : WordsBounded W c) {n w : ℕ} {li : Bool}
     (hn : c.nreg 212010 = n) (_hn2 : 2 ≤ n) (hwr : c.nreg 212094 = w) (hwn : w < n)
@@ -147,30 +153,30 @@ theorem qS_exec (c : Config) (hw : WordsBounded W c) {n w : ℕ} {li : Bool}
   | true =>
     have e₁ := Exec.copyN (P := P) hw 212095 212094
     have ex : Exec P W qS c _ (1 + 1) := .ifLtN_true (by rw [c1, hli]; simp) e₁
-    refine ⟨_, _, ex, by omega, ?_, exec_frameB ex (by decide)⟩
-    simp [hwr, qE]
+    refine ⟨_, _, ex, ⋄, ?_, exec_frameB ex (⌖)⟩
+    Θ hwr, qE
   | false =>
     have e₁ := Exec.addN (P := P) hw 212106 212094 212000 (by rw [hwr, c0]; omega)
     have w₁ := e₁.wb_right
     set c₁ : Config := { c with nreg := upd c.nreg 212106 (c.nreg 212094 + c.nreg 212000) }
-    have v₁ : c₁.nreg 212106 = w + 1 := by simp [c₁, hwr, c0]
-    have n₁ : c₁.nreg 212010 = n := by simp [c₁, hn]
+    have v₁ : c₁.nreg 212106 = w + 1 := ⊚ c₁, hwr, c0
+    have n₁ : c₁.nreg 212010 = n := ⊚ c₁, hn
     by_cases h : w + 1 < n
     · obtain ⟨c₂, e₂, v₂⟩ : ∃ c₂, Exec P W (block [.subN 212095 212010 212002,
           .subN 212095 212095 212094]) c₁ c₂ 2 ∧ c₂.nreg 212095 = n - 2 - w := by
         have a₁ := Exec.subN (P := P) w₁ 212095 212010 212002
         have a₂ := Exec.subN (P := P) a₁.wb_right 212095 212095 212094
         refine ⟨_, Exec.block_cons a₁ (Exec.block_cons a₂ (Exec.block_nil a₂.wb_right)), ?_⟩
-        simp [c₁, hn, c2, hwr]
+        Θ c₁, hn, c2, hwr
       have ex : Exec P W qS c c₂ _ :=
         .ifLtN_false (by rw [c1, hli]; simp) (.seq e₁ (.ifLtN_true (by rw [v₁, n₁]; exact h) e₂))
-      refine ⟨c₂, _, ex, by omega, ?_, exec_frameB ex (by decide)⟩
-      rw [v₂]; simp [qE, h]
+      refine ⟨c₂, _, ex, ⋄, ?_, exec_frameB ex (⌖)⟩
+      rw [v₂]; Θ qE, h
     · have e₂ := Exec.subN (P := P) w₁ 212095 212010 212000
       have ex : Exec P W qS c _ _ :=
         .ifLtN_false (by rw [c1, hli]; simp) (.seq e₁ (.ifLtN_false (by rw [v₁, n₁]; exact h) e₂))
-      refine ⟨_, _, ex, by omega, ?_, exec_frameB ex (by decide)⟩
-      simp [c₁, hn, c0, qE, h]
+      refine ⟨_, _, ex, ⋄, ?_, exec_frameB ex (⌖)⟩
+      Θ c₁, hn, c0, qE, h
 
 theorem q1S_exec (c : Config) (hw : WordsBounded W c) {n q : ℕ} (hn : c.nreg 212010 = n)
     (hq : c.nreg 212095 = q) (hqn : q < n) (c0 : c.nreg 212000 = 1) (hW : n + 1 ≤ W) :
@@ -201,23 +207,23 @@ theorem edgeS_exec (c : Config) (hw : WordsBounded W c) {n st u : ℕ} {li : Boo
     ∃ c' k, Exec P W edgeS c c' k ∧ k ≤ 14 ∧ c'.nreg 212094 = (st + u) % n ∧
       c'.nreg 212095 = qE li n ((st + u) % n) ∧ c'.nreg 212096 = (qE li n ((st + u) % n) + 1) % n ∧
       FrameB (fun r => decide (r = 212094 ∨ r = 212095 ∨ r = 212096 ∨ r = 212106)) c c' := by
-  have hwn : (st + u) % n < n := Nat.mod_lt _ (by omega)
-  obtain ⟨c₁, k₁, e₁, hk₁, v₁, f₁⟩ := wS_exec (P := P) c hw hn hst hu hsn hun (by omega)
-  have g₁ : ∀ r, r ≠ 212094 → c₁.nreg r = c.nreg r := fun r hr => f₁.1 r (by simp [hr])
+  have hwn : (st + u) % n < n := Nat.mod_lt _ (⋄)
+  obtain ⟨c₁, k₁, e₁, hk₁, v₁, f₁⟩ := wS_exec (P := P) c hw hn hst hu hsn hun (⋄)
+  have g₁ : ∀ r, r ≠ 212094 → c₁.nreg r = c.nreg r := fun r hr => f₁.1 r (⊚ hr)
   obtain ⟨c₂, k₂, e₂, hk₂, v₂, f₂⟩ := qS_exec (P := P) c₁ e₁.wb_right (li := li)
-    (by rw [g₁ _ (by decide), hn]) hn2 v₁ hwn (by rw [g₁ _ (by decide), hli])
-    (by rw [g₁ _ (by decide), c0]) (by rw [g₁ _ (by decide), c1]) (by rw [g₁ _ (by decide), c2])
-    (by omega)
+    (Ρ g₁ _ (⌖), hn) hn2 v₁ hwn (Ρ g₁ _ (⌖), hli)
+    (Ρ g₁ _ (⌖), c0) (Ρ g₁ _ (⌖), c1) (Ρ g₁ _ (⌖), c2)
+    (⋄)
   have g₂ : ∀ r, r ≠ 212095 → r ≠ 212106 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
-    f₂.1 r (by simp [h1, h2])
+    f₂.1 r (⊚ h1, h2)
   obtain ⟨c₃, k₃, e₃, hk₃, v₃, f₃⟩ := q1S_exec (P := P) c₂ e₂.wb_right
-    (by rw [g₂ _ (by decide) (by decide), g₁ _ (by decide), hn]) v₂ (DownMath.qE_lt li hwn)
-    (by rw [g₂ _ (by decide) (by decide), g₁ _ (by decide), c0]) (by omega)
-  have g₃ : ∀ r, r ≠ 212096 → c₃.nreg r = c₂.nreg r := fun r hr => f₃.1 r (by simp [hr])
+    (Ρ g₂ _ (⌖) (⌖), g₁ _ (⌖), hn) v₂ (DownMath.qE_lt li hwn)
+    (Ρ g₂ _ (⌖) (⌖), g₁ _ (⌖), c0) (⋄)
+  have g₃ : ∀ r, r ≠ 212096 → c₃.nreg r = c₂.nreg r := fun r hr => f₃.1 r (⊚ hr)
   have ex : Exec P W edgeS c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
-  refine ⟨c₃, _, ex, by omega, ?_, ?_, v₃, exec_frameB ex (by decide)⟩
-  · rw [g₃ _ (by decide), g₂ _ (by decide) (by decide), v₁]
-  · rw [g₃ _ (by decide), v₂]
+  refine ⟨c₃, _, ex, ⋄, ?_, ?_, v₃, exec_frameB ex (⌖)⟩
+  · Ξ g₃ _ (⌖), g₂ _ (⌖) (⌖), v₁
+  · Ξ g₃ _ (⌖), v₂
 
 /-- The registers `candS` writes. -/
 def Bcs (r : ℕ) : Bool := Bk r || decide (212100 ≤ r ∧ r ≤ 212104)
@@ -225,17 +231,17 @@ def Bcs (r : ℕ) : Bool := Bk r || decide (212100 ≤ r ∧ r ≤ 212104)
 theorem bt_cs {d : ℕ} (hd : 212100 ≤ d ∧ d ≤ 212104) (r : ℕ) (h : Brute.Bt d r = true) :
     Bcs r = true := by
   unfold Brute.Bt at h; unfold Bcs
-  simp only [Bool.or_eq_true, decide_eq_true_eq] at h ⊢
+  ϴ' Bool.or_eq_true, decide_eq_true_eq at h ⊢
   rcases h with h | h
   · exact Or.inl h
   · subst h; exact Or.inr hd
 
 theorem bvis_cs (r : ℕ) (h : Bcs r = true) : Bvis r = true := by
   unfold Bcs at h; unfold Bvis
-  simp only [Bool.or_eq_true, decide_eq_true_eq] at h ⊢
+  ϴ' Bool.or_eq_true, decide_eq_true_eq at h ⊢
   rcases h with h | h
   · exact Or.inl (Or.inl h)
-  · exact Or.inr ⟨by omega, by omega⟩
+  · exact Or.inr ⟨⋄, ⋄⟩
 
 theorem bvis_of {r : ℕ} (h : r = 212091 ∨ (212094 ≤ r ∧ r ≤ 212112)) : Bvis r = true := by
   unfold Bvis; simp only [Bool.or_eq_true, decide_eq_true_eq]; tauto
@@ -245,7 +251,7 @@ theorem keep_bt {d : ℕ} {c₁ c₂ : Config} (f : FrameB (Brute.Bt d) c₁ c�
   refine f.1 r ?_
   unfold Brute.Bt Bk; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The tests of a candidate.** -/
 theorem candS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : WordsBounded W c)
     {q q1 i d : ℕ} (hq : c.nreg 212095 = q) (hq1 : c.nreg 212096 = q1) (hi : c.nreg 212070 = i)
@@ -259,51 +265,51 @@ theorem candS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Word
       (c'.nreg 212103 = 1 ↔ ((Qof P).vtx i).2 < ((Qof P).vtx q).2) ∧
       (c'.nreg 212104 = 1 ↔ if d = 0 then ((Qof P).vtx i).1 < edgeXAt (Qof P) q i
         else edgeXAt (Qof P) q i < ((Qof P).vtx i).1) := by
-  have o95 : Src.Out (.v 212095) := Or.inr (by norm_num)
-  have o96 : Src.Out (.v 212096) := Or.inr (by norm_num)
-  have o70 : Src.Out (.v 212070) := Or.inr (by norm_num)
-  have oe : Src.Out (.e 212095 212070) := ⟨Or.inr (by norm_num), Or.inr (by norm_num)⟩
-  obtain ⟨c₁, k₁, e₁, hk₁, f₁, b₁, t₁⟩ := Brute.testS_exec (P := P) hG hW (op := 1) (by norm_num)
-    o95 o70 o70 (d := 212100) c hw (by simp [Src.pt, SymPt.Lt, hq, hqn]) (by simp [Src.pt, SymPt.Lt, hi, hin])
-    (by simp [Src.pt, SymPt.Lt, hi, hin])
+  have o95 : Src.Out (.v 212095) := Or.inr (⊛)
+  have o96 : Src.Out (.v 212096) := Or.inr (⊛)
+  have o70 : Src.Out (.v 212070) := Or.inr (⊛)
+  have oe : Src.Out (.e 212095 212070) := ⟨Or.inr (⊛), Or.inr (⊛)⟩
+  obtain ⟨c₁, k₁, e₁, hk₁, f₁, b₁, t₁⟩ := Brute.testS_exec (P := P) hG hW (op := 1) (⊛)
+    o95 o70 o70 (d := 212100) c hw (⊚ Src.pt, SymPt.Lt, hq, hqn) (⊚ Src.pt, SymPt.Lt, hi, hin)
+    (⊚ Src.pt, SymPt.Lt, hi, hin)
   have k₁' : ∀ r, (r < 10000 ∨ 10500 ≤ r) → r ≠ 212100 → c₁.nreg r = c.nreg r :=
     fun r h h' => keep_bt f₁ h h'
-  obtain ⟨c₂, k₂, e₂, hk₂, f₂, b₂, t₂⟩ := Brute.testS_exec (P := P) hG hW (op := 1) (by norm_num)
+  obtain ⟨c₂, k₂, e₂, hk₂, f₂, b₂, t₂⟩ := Brute.testS_exec (P := P) hG hW (op := 1) (⊛)
     o70 o96 o70 (d := 212101) c₁ e₁.wb_right
-    (by simp [Src.pt, SymPt.Lt, k₁' 212070 (by norm_num) (by norm_num), hi, hin])
-    (by simp [Src.pt, SymPt.Lt, k₁' 212096 (by norm_num) (by norm_num), hq1, hq1n])
-    (by simp [Src.pt, SymPt.Lt, k₁' 212070 (by norm_num) (by norm_num), hi, hin])
+    (⊚ Src.pt, SymPt.Lt, k₁' 212070 (⊛) (⊛), hi, hin)
+    (⊚ Src.pt, SymPt.Lt, k₁' 212096 (⊛) (⊛), hq1, hq1n)
+    (⊚ Src.pt, SymPt.Lt, k₁' 212070 (⊛) (⊛), hi, hin)
   have k₂' : ∀ r, (r < 10000 ∨ 10500 ≤ r) → r ≠ 212101 → c₂.nreg r = c₁.nreg r :=
     fun r h h' => keep_bt f₂ h h'
-  obtain ⟨c₃, k₃, e₃, hk₃, f₃, b₃, t₃⟩ := Brute.testS_exec (P := P) hG hW (op := 1) (by norm_num)
+  obtain ⟨c₃, k₃, e₃, hk₃, f₃, b₃, t₃⟩ := Brute.testS_exec (P := P) hG hW (op := 1) (⊛)
     o96 o70 o70 (d := 212102) c₂ e₂.wb_right
-    (by simp [Src.pt, SymPt.Lt, k₂' 212096 (by norm_num) (by norm_num),
-      k₁' 212096 (by norm_num) (by norm_num), hq1, hq1n])
-    (by simp [Src.pt, SymPt.Lt, k₂' 212070 (by norm_num) (by norm_num),
-      k₁' 212070 (by norm_num) (by norm_num), hi, hin])
-    (by simp [Src.pt, SymPt.Lt, k₂' 212070 (by norm_num) (by norm_num),
-      k₁' 212070 (by norm_num) (by norm_num), hi, hin])
+    (by simp [Src.pt, SymPt.Lt, k₂' 212096 (⊛) (⊛),
+      k₁' 212096 (⊛) (⊛), hq1, hq1n])
+    (by simp [Src.pt, SymPt.Lt, k₂' 212070 (⊛) (⊛),
+      k₁' 212070 (⊛) (⊛), hi, hin])
+    (by simp [Src.pt, SymPt.Lt, k₂' 212070 (⊛) (⊛),
+      k₁' 212070 (⊛) (⊛), hi, hin])
   have k₃' : ∀ r, (r < 10000 ∨ 10500 ≤ r) → r ≠ 212102 → c₃.nreg r = c₂.nreg r :=
     fun r h h' => keep_bt f₃ h h'
   have r95 : c₃.nreg 212095 = q := by
-    rw [k₃' _ (by norm_num) (by norm_num), k₂' _ (by norm_num) (by norm_num),
-      k₁' _ (by norm_num) (by norm_num), hq]
+    rw [k₃' _ (⊛) (⊛), k₂' _ (⊛) (⊛),
+      k₁' _ (⊛) (⊛), hq]
   have r70 : c₃.nreg 212070 = i := by
-    rw [k₃' _ (by norm_num) (by norm_num), k₂' _ (by norm_num) (by norm_num),
-      k₁' _ (by norm_num) (by norm_num), hi]
-  obtain ⟨c₄, k₄, e₄, hk₄, f₄, b₄, t₄⟩ := Brute.testS_exec (P := P) hG hW (op := 1) (by norm_num)
-    o70 o95 o70 (d := 212103) c₃ e₃.wb_right (by simp [Src.pt, SymPt.Lt, r70, hin])
-    (by simp [Src.pt, SymPt.Lt, r95, hqn]) (by simp [Src.pt, SymPt.Lt, r70, hin])
+    rw [k₃' _ (⊛) (⊛), k₂' _ (⊛) (⊛),
+      k₁' _ (⊛) (⊛), hi]
+  obtain ⟨c₄, k₄, e₄, hk₄, f₄, b₄, t₄⟩ := Brute.testS_exec (P := P) hG hW (op := 1) (⊛)
+    o70 o95 o70 (d := 212103) c₃ e₃.wb_right (⊚ Src.pt, SymPt.Lt, r70, hin)
+    (⊚ Src.pt, SymPt.Lt, r95, hqn) (⊚ Src.pt, SymPt.Lt, r70, hin)
   have k₄' : ∀ r, (r < 10000 ∨ 10500 ≤ r) → r ≠ 212103 → c₄.nreg r = c₃.nreg r :=
     fun r h h' => keep_bt f₄ h h'
-  have r95' : c₄.nreg 212095 = q := by rw [k₄' _ (by norm_num) (by norm_num), r95]
-  have r70' : c₄.nreg 212070 = i := by rw [k₄' _ (by norm_num) (by norm_num), r70]
+  have r95' : c₄.nreg 212095 = q := Ρ k₄' _ (⊛) (⊛), r95
+  have r70' : c₄.nreg 212070 = i := Ρ k₄' _ (⊛) (⊛), r70
   have r86 : c₄.nreg 212086 = d := by
-    rw [k₄' _ (by norm_num) (by norm_num), k₃' _ (by norm_num) (by norm_num),
-      k₂' _ (by norm_num) (by norm_num), k₁' _ (by norm_num) (by norm_num), hd]
+    rw [k₄' _ (⊛) (⊛), k₃' _ (⊛) (⊛),
+      k₂' _ (⊛) (⊛), k₁' _ (⊛) (⊛), hd]
   have r01 : c₄.nreg 212001 = 0 := by
-    rw [k₄' _ (by norm_num) (by norm_num), k₃' _ (by norm_num) (by norm_num),
-      k₂' _ (by norm_num) (by norm_num), k₁' _ (by norm_num) (by norm_num), c1]
+    rw [k₄' _ (⊛) (⊛), k₃' _ (⊛) (⊛),
+      k₂' _ (⊛) (⊛), k₁' _ (⊛) (⊛), c1]
   -- the side test
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, b₅, t₅⟩ : ∃ c₅ k₅, Exec P W
       (.ifLtN 212001 212086 (testS 0 (.e 212095 212070) (.v 212070) (.v 212070) 212104)
@@ -313,36 +319,36 @@ theorem candS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Word
         else edgeXAt (Qof P) q i < ((Qof P).vtx i).1) := by
     by_cases h0 : d = 0
     · obtain ⟨c₅, k₅, e₅, hk₅, f₅, b₅, t₅⟩ := Brute.testS_exec (P := P) hG hW (op := 0)
-        (by norm_num) o70 oe o70 (d := 212104) c₄ e₄.wb_right (by simp [Src.pt, SymPt.Lt, r70', hin])
-        (by simp [Src.pt, SymPt.Lt, r95', r70', hqn, hin]) (by simp [Src.pt, SymPt.Lt, r70', hin])
-      refine ⟨c₅, k₅ + 2, .ifLtN_false (by rw [r01, r86, h0]; omega) e₅, by omega, f₅, b₅, ?_⟩
-      rw [t₅, ite_eq_left h0]
-      simp [SignTest, Src.pt, SymPt.eval, r70', r95']
+        (⊛) o70 oe o70 (d := 212104) c₄ e₄.wb_right (⊚ Src.pt, SymPt.Lt, r70', hin)
+        (⊚ Src.pt, SymPt.Lt, r95', r70', hqn, hin) (⊚ Src.pt, SymPt.Lt, r70', hin)
+      refine ⟨c₅, k₅ + 2, .ifLtN_false (by rw [r01, r86, h0]; omega) e₅, ⋄, f₅, b₅, ?_⟩
+      Ξ t₅, ite_eq_left h0
+      Θ SignTest, Src.pt, SymPt.eval, r70', r95'
     · obtain ⟨c₅, k₅, e₅, hk₅, f₅, b₅, t₅⟩ := Brute.testS_exec (P := P) hG hW (op := 0)
-        (by norm_num) oe o70 o70 (d := 212104) c₄ e₄.wb_right
-        (by simp [Src.pt, SymPt.Lt, r95', r70', hqn, hin]) (by simp [Src.pt, SymPt.Lt, r70', hin])
-        (by simp [Src.pt, SymPt.Lt, r70', hin])
-      refine ⟨c₅, k₅ + 1, .ifLtN_true (by rw [r01, r86]; omega) e₅, by omega, f₅, b₅, ?_⟩
-      rw [t₅, ite_eq_right h0]
-      simp [SignTest, Src.pt, SymPt.eval, r70', r95']
+        (⊛) oe o70 o70 (d := 212104) c₄ e₄.wb_right
+        (⊚ Src.pt, SymPt.Lt, r95', r70', hqn, hin) (⊚ Src.pt, SymPt.Lt, r70', hin)
+        (⊚ Src.pt, SymPt.Lt, r70', hin)
+      refine ⟨c₅, k₅ + 1, .ifLtN_true (by rw [r01, r86]; omega) e₅, ⋄, f₅, b₅, ?_⟩
+      Ξ t₅, ite_eq_right h0
+      Θ SignTest, Src.pt, SymPt.eval, r70', r95'
   have k₅' : ∀ r, (r < 10000 ∨ 10500 ≤ r) → r ≠ 212104 → c₅.nreg r = c₄.nreg r :=
     fun r h h' => keep_bt f₅ h h'
   have ex : Exec P W candS c c₅ (k₁ + (k₂ + (k₃ + (k₄ + k₅)))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
   have hf : FrameB Bcs c c₅ :=
-    fbTrans (fbTrans (fbTrans (fbTrans (fbMono f₁ (bt_cs (by norm_num)))
-      (fbMono f₂ (bt_cs (by norm_num)))) (fbMono f₃ (bt_cs (by norm_num))))
-      (fbMono f₄ (bt_cs (by norm_num)))) (fbMono f₅ (bt_cs (by norm_num)))
+    fbTrans (fbTrans (fbTrans (fbTrans (fbMono f₁ (bt_cs (⊛)))
+      (fbMono f₂ (bt_cs (⊛)))) (fbMono f₃ (bt_cs (⊛))))
+      (fbMono f₄ (bt_cs (⊛)))) (fbMono f₅ (bt_cs (⊛)))
   have v100 : c₅.nreg 212100 = c₁.nreg 212100 := by
-    rw [k₅' _ (by norm_num) (by norm_num), k₄' _ (by norm_num) (by norm_num),
-      k₃' _ (by norm_num) (by norm_num), k₂' _ (by norm_num) (by norm_num)]
+    rw [k₅' _ (⊛) (⊛), k₄' _ (⊛) (⊛),
+      k₃' _ (⊛) (⊛), k₂' _ (⊛) (⊛)]
   have v101 : c₅.nreg 212101 = c₂.nreg 212101 := by
-    rw [k₅' _ (by norm_num) (by norm_num), k₄' _ (by norm_num) (by norm_num),
-      k₃' _ (by norm_num) (by norm_num)]
+    rw [k₅' _ (⊛) (⊛), k₄' _ (⊛) (⊛),
+      k₃' _ (⊛) (⊛)]
   have v102 : c₅.nreg 212102 = c₃.nreg 212102 := by
-    rw [k₅' _ (by norm_num) (by norm_num), k₄' _ (by norm_num) (by norm_num)]
-  have v103 : c₅.nreg 212103 = c₄.nreg 212103 := by rw [k₅' _ (by norm_num) (by norm_num)]
-  refine ⟨c₅, _, ex, by omega, hf, ?_, ?_, ?_, ?_, ?_, t₅⟩
+    Ξ k₅' _ (⊛) (⊛), k₄' _ (⊛) (⊛)
+  have v103 : c₅.nreg 212103 = c₄.nreg 212103 := Ρ k₅' _ (⊛) (⊛)
+  refine ⟨c₅, _, ex, ⋄, hf, ?_, ?_, ?_, ?_, ?_, t₅⟩
   · intro r h1 h2
     interval_cases r
     · rw [v100]; exact b₁
@@ -350,15 +356,15 @@ theorem candS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Word
     · rw [v102]; exact b₃
     · rw [v103]; exact b₄
     · exact b₅
-  · rw [v100, t₁]; simp [SignTest, Src.pt, SymPt.eval, hq, hi]
-  · rw [v101, t₂]
-    simp [SignTest, Src.pt, SymPt.eval, k₁' 212070 (by norm_num) (by norm_num),
-      k₁' 212096 (by norm_num) (by norm_num), hi, hq1]
-  · rw [v102, t₃]
-    simp [SignTest, Src.pt, SymPt.eval, k₂' 212070 (by norm_num) (by norm_num),
-      k₁' 212070 (by norm_num) (by norm_num), k₂' 212096 (by norm_num) (by norm_num),
-      k₁' 212096 (by norm_num) (by norm_num), hi, hq1]
-  · rw [v103, t₄]; simp [SignTest, Src.pt, SymPt.eval, r70, r95]
+  · rw [v100, t₁]; Θ SignTest, Src.pt, SymPt.eval, hq, hi
+  · Ξ v101, t₂
+    simp [SignTest, Src.pt, SymPt.eval, k₁' 212070 (⊛) (⊛),
+      k₁' 212096 (⊛) (⊛), hi, hq1]
+  · Ξ v102, t₃
+    simp [SignTest, Src.pt, SymPt.eval, k₂' 212070 (⊛) (⊛),
+      k₁' 212070 (⊛) (⊛), k₂' 212096 (⊛) (⊛),
+      k₁' 212096 (⊛) (⊛), hi, hq1]
+  · rw [v103, t₄]; Θ SignTest, Src.pt, SymPt.eval, r70, r95
 
 /-- **The candidate bit.** -/
 theorem candB_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) (c0 : c.nreg 212000 = 1)
@@ -376,7 +382,7 @@ theorem candB_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W) (c0 : c.n
     all_goals try (config_simp; omega)
   exact ⟨c', k, ex, hk, v1, v2, exec_frameB ex wr_candB⟩
 
-theorem wr_setB : wr (fun r => decide (212097 ≤ r ∧ r ≤ 212099)) setB = true := by decide
+theorem wr_setB : wr (fun r => decide (212097 ≤ r ∧ r ≤ 212099)) setB = true := ⌖
 
 /-- The new best. -/
 theorem setB_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) :
@@ -396,20 +402,20 @@ def Bup (r : ℕ) : Bool := Bk r || decide (212097 ≤ r ∧ r ≤ 212105)
 
 theorem bup_vis (r : ℕ) (h : Bup r = true) : Bvis r = true := by
   unfold Bup at h; unfold Bvis
-  simp only [Bool.or_eq_true, decide_eq_true_eq] at h ⊢
+  ϴ' Bool.or_eq_true, decide_eq_true_eq at h ⊢
   rcases h with h | h
   · exact Or.inl (Or.inl h)
-  · exact Or.inr ⟨by omega, by omega⟩
+  · exact Or.inr ⟨⋄, ⋄⟩
 
 theorem bt_up {d : ℕ} (hd : 212097 ≤ d ∧ d ≤ 212105) (r : ℕ) (h : Brute.Bt d r = true) :
     Bup r = true := by
   unfold Brute.Bt at h; unfold Bup
-  simp only [Bool.or_eq_true, decide_eq_true_eq] at h ⊢
+  ϴ' Bool.or_eq_true, decide_eq_true_eq at h ⊢
   rcases h with h | h
   · exact Or.inl h
   · subst h; exact Or.inr hd
 
-set_option maxHeartbeats 2000000 in
+
 /-- **The update of the best candidate**: a candidate replaces the best if there is none or if it
 is strictly nearer (in direction `sgnD d`). -/
 theorem updS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : WordsBounded W c)
@@ -427,67 +433,67 @@ theorem updS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Words
           c'.nreg 212099 = c.nreg 212099) := by
   have fs : ∀ {c₁ c₂ : Config}, FrameB (fun r => decide (212097 ≤ r ∧ r ≤ 212099)) c₁ c₂ →
       FrameB Bup c₁ c₂ := fun f => fbMono f fun r h => by
-        simp only [decide_eq_true_eq] at h; unfold Bup; simp only [Bool.or_eq_true,
+        ϴ' decide_eq_true_eq at h; unfold Bup; simp only [Bool.or_eq_true,
           decide_eq_true_eq]; omega
   by_cases hc : c.nreg 212107 = 1
   · by_cases hh0 : c.nreg 212099 = 0
-    · obtain ⟨c', k, e, hk, v1, v2, v3, f⟩ := setB_exec (P := P) c hw (by omega)
+    · obtain ⟨c', k, e, hk, v1, v2, v3, f⟩ := setB_exec (P := P) c hw (⋄)
       have ex : Exec P W updS c c' _ :=
         .ifLtN_true (by rw [c1, hc]; omega) (.ifLtN_false (by rw [c1, hh0]; omega) e)
-      exact ⟨c', _, ex, by omega, fs f, fun _ => ⟨v1, v2.trans hq, v3⟩,
+      exact ⟨c', _, ex, ⋄, fs f, fun _ => ⟨v1, v2.trans hq, v3⟩,
         fun h => absurd ⟨hc, Or.inl hh0⟩ h⟩
-    · have hh1 : c.nreg 212099 = 1 := by omega
+    · have hh1 : c.nreg 212099 = 1 := ⋄
       have hbn := hbqn hh1
-      have oe : Src.Out (.e 212095 212070) := ⟨Or.inr (by norm_num), Or.inr (by norm_num)⟩
-      have ob : Src.Out (.e 212098 212070) := ⟨Or.inr (by norm_num), Or.inr (by norm_num)⟩
-      have o70 : Src.Out (.v 212070) := Or.inr (by norm_num)
+      have oe : Src.Out (.e 212095 212070) := ⟨Or.inr (⊛), Or.inr (⊛)⟩
+      have ob : Src.Out (.e 212098 212070) := ⟨Or.inr (⊛), Or.inr (⊛)⟩
+      have o70 : Src.Out (.v 212070) := Or.inr (⊛)
       -- the nearness test
       obtain ⟨c₁, k₁, e₁, hk₁, f₁, b₁, t₁⟩ : ∃ c₁ k₁, Exec P W nearS c c₁ k₁ ∧ k₁ ≤ 247 ∧
           FrameB (Brute.Bt 212105) c c₁ ∧ c₁.nreg 212105 ≤ 1 ∧
           (c₁.nreg 212105 = 1 ↔ sgnD d * edgeXAt (Qof P) q i < sgnD d * edgeXAt (Qof P) bq i) := by
         by_cases h0 : d = 0
         · obtain ⟨c₁, k₁, e₁, hk₁, f₁, b₁, t₁⟩ := Brute.testS_exec (P := P) hG hW (op := 0)
-            (by norm_num) oe ob o70 (d := 212105) c hw (by simp [Src.pt, SymPt.Lt, hq, hi, hqn, hin])
-            (by simp [Src.pt, SymPt.Lt, hbq, hi, hbn, hin]) (by simp [Src.pt, SymPt.Lt, hi, hin])
-          refine ⟨c₁, k₁ + 2, .ifLtN_false (by rw [c1, hd, h0]; omega) e₁, by omega, f₁, b₁, ?_⟩
+            (⊛) oe ob o70 (d := 212105) c hw (⊚ Src.pt, SymPt.Lt, hq, hi, hqn, hin)
+            (⊚ Src.pt, SymPt.Lt, hbq, hi, hbn, hin) (⊚ Src.pt, SymPt.Lt, hi, hin)
+          refine ⟨c₁, k₁ + 2, .ifLtN_false (by rw [c1, hd, h0]; omega) e₁, ⋄, f₁, b₁, ?_⟩
           rw [t₁, ← nearer_iff (Q := Qof P) (i := i) (q := q) (q' := bq) hd1
-            (b := edgeXAt (Qof P) q i < edgeXAt (Qof P) bq i) (by rw [ite_eq_left h0])]
-          simp [SignTest, Src.pt, SymPt.eval, hq, hbq, hi]
+            (b := edgeXAt (Qof P) q i < edgeXAt (Qof P) bq i) (Ρ ite_eq_left h0)]
+          Θ SignTest, Src.pt, SymPt.eval, hq, hbq, hi
         · obtain ⟨c₁, k₁, e₁, hk₁, f₁, b₁, t₁⟩ := Brute.testS_exec (P := P) hG hW (op := 0)
-            (by norm_num) ob oe o70 (d := 212105) c hw (by simp [Src.pt, SymPt.Lt, hbq, hi, hbn, hin])
-            (by simp [Src.pt, SymPt.Lt, hq, hi, hqn, hin]) (by simp [Src.pt, SymPt.Lt, hi, hin])
-          refine ⟨c₁, k₁ + 1, .ifLtN_true (by rw [c1, hd]; omega) e₁, by omega, f₁, b₁, ?_⟩
+            (⊛) ob oe o70 (d := 212105) c hw (⊚ Src.pt, SymPt.Lt, hbq, hi, hbn, hin)
+            (⊚ Src.pt, SymPt.Lt, hq, hi, hqn, hin) (⊚ Src.pt, SymPt.Lt, hi, hin)
+          refine ⟨c₁, k₁ + 1, .ifLtN_true (by rw [c1, hd]; omega) e₁, ⋄, f₁, b₁, ?_⟩
           rw [t₁, ← nearer_iff (Q := Qof P) (i := i) (q := q) (q' := bq) hd1
-            (b := edgeXAt (Qof P) bq i < edgeXAt (Qof P) q i) (by rw [ite_eq_right h0])]
-          simp [SignTest, Src.pt, SymPt.eval, hq, hbq, hi]
+            (b := edgeXAt (Qof P) bq i < edgeXAt (Qof P) q i) (Ρ ite_eq_right h0)]
+          Θ SignTest, Src.pt, SymPt.eval, hq, hbq, hi
       have k₁' : ∀ r, (r < 10000 ∨ 10500 ≤ r) → r ≠ 212105 → c₁.nreg r = c.nreg r :=
         fun r h h' => keep_bt f₁ h h'
-      have c1' : c₁.nreg 212001 = 0 := by rw [k₁' _ (by norm_num) (by norm_num), c1]
+      have c1' : c₁.nreg 212001 = 0 := Ρ k₁' _ (⊛) (⊛), c1
       by_cases hn : c₁.nreg 212105 = 1
-      · obtain ⟨c', k, e, hk, v1, v2, v3, f⟩ := setB_exec (P := P) c₁ e₁.wb_right (by omega)
+      · obtain ⟨c', k, e, hk, v1, v2, v3, f⟩ := setB_exec (P := P) c₁ e₁.wb_right (⋄)
         have ex : Exec P W updS c c' _ :=
           .ifLtN_true (by rw [c1, hc]; omega) (.ifLtN_true (by rw [c1, hh1]; omega)
             (.seq e₁ (.ifLtN_true (by rw [c1', hn]; omega) e)))
-        refine ⟨c', _, ex, by omega, fbTrans (fbMono f₁ (bt_up (by norm_num))) (fs f),
+        refine ⟨c', _, ex, ⋄, fbTrans (fbMono f₁ (bt_up (⊛))) (fs f),
           fun _ => ⟨?_, ?_, v3⟩, fun h => absurd ⟨hc, Or.inr (t₁.1 hn)⟩ h⟩
-        · rw [v1, k₁' _ (by norm_num) (by norm_num)]
-        · rw [v2, k₁' _ (by norm_num) (by norm_num), hq]
+        · Ξ v1, k₁' _ (⊛) (⊛)
+        · Ξ v2, k₁' _ (⊛) (⊛), hq
       · have ex : Exec P W updS c c₁ _ :=
           .ifLtN_true (by rw [c1, hc]; omega) (.ifLtN_true (by rw [c1, hh1]; omega)
             (.seq e₁ (.ifLtN_false (by rw [c1']; omega) (.skip e₁.wb_right))))
-        refine ⟨c₁, _, ex, by omega, fbMono f₁ (bt_up (by norm_num)), fun h => ?_, fun _ => ?_⟩
+        refine ⟨c₁, _, ex, ⋄, fbMono f₁ (bt_up (⊛)), fun h => ?_, fun _ => ?_⟩
         · rcases h.2 with h' | h'
           · omega
           · exact absurd (t₁.2 h') hn
-        · exact ⟨k₁' _ (by norm_num) (by norm_num), k₁' _ (by norm_num) (by norm_num),
-            k₁' _ (by norm_num) (by norm_num)⟩
+        · exact ⟨k₁' _ (⊛) (⊛), k₁' _ (⊛) (⊛),
+            k₁' _ (⊛) (⊛)⟩
   · have ex : Exec P W updS c c _ := .ifLtN_false (by rw [c1]; omega) (.skip hw)
-    exact ⟨c, _, ex, by omega, FrameB.refl _ _, fun h => absurd h.1 hc, fun _ => ⟨rfl, rfl, rfl⟩⟩
+    exact ⟨c, _, ex, ⋄, FrameB.refl _ _, fun h => absurd h.1 hc, fun _ => ⟨rfl, rfl, rfl⟩⟩
 
 /-- The cost bound of one visit. -/
 def visK : ℕ := 1600
 
-set_option maxHeartbeats 4000000 in
+
 /-- **One walk edge of the scan**: the edge `w = (st + u) mod n`; a candidate replaces the best if
 there is none or if it is strictly nearer. -/
 theorem visitS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 ≤ W) (c : Config)
@@ -508,35 +514,35 @@ theorem visitS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 ≤
             sgnD d * edgeXAt (Qof P) (c.nreg 212098) i)) →
         c'.nreg 212097 = c.nreg 212097 ∧ c'.nreg 212098 = c.nreg 212098 ∧
           c'.nreg 212099 = c.nreg 212099) := by
-  have hn3 : 3 ≤ P.n := hG.1.1
+  have hn3 := hG.1.1
   set w := (st + u) % P.n with hwdef
-  have hwn : w < P.n := Nat.mod_lt _ (by omega)
+  have hwn : w < P.n := Nat.mod_lt _ (⋄)
   set q := qE li P.n w with hqdef
   have hqn : q < P.n := DownMath.qE_lt li hwn
   -- the edge
-  obtain ⟨c₁, k₁, e₁, hk₁, v94, v95, v96, f₁⟩ := edgeS_exec (P := P) c hw hn (by omega) hst hu hsn
+  obtain ⟨c₁, k₁, e₁, hk₁, v94, v95, v96, f₁⟩ := edgeS_exec (P := P) c hw hn (⋄) hst hu hsn
     hun.le hli c0 c1 c2 hW2
   have g₁ : ∀ r, r ≠ 212094 → r ≠ 212095 → r ≠ 212096 → r ≠ 212106 → c₁.nreg r = c.nreg r :=
-    fun r a b c d => f₁.1 r (by simp [a, b, c, d])
+    fun r a b c d => f₁.1 r (⊚ a, b, c, d)
   -- the tests
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hb₂, t0, t1, t2, t3, t4⟩ := candS_exec (P := P) hG hW c₁ e₁.wb_right
-    v95 v96 (by rw [g₁ _ (by decide) (by decide) (by decide) (by decide), hi])
-    (by rw [g₁ _ (by decide) (by decide) (by decide) (by decide), hd]) hd1
-    (by rw [g₁ _ (by decide) (by decide) (by decide) (by decide), c1]) hqn
-    (Nat.mod_lt _ (by omega)) hin
+    v95 v96 (Ρ g₁ _ (⌖) (⌖) (⌖) (⌖), hi)
+    (Ρ g₁ _ (⌖) (⌖) (⌖) (⌖), hd) hd1
+    (Ρ g₁ _ (⌖) (⌖) (⌖) (⌖), c1) hqn
+    (Nat.mod_lt _ (⋄)) hin
   have g₂ : ∀ r, (r < 10000 ∨ 10500 ≤ r) → (r < 212100 ∨ 212104 < r) → c₂.nreg r = c₁.nreg r :=
     fun r h h' => f₂.1 r (by unfold Bcs Bk; simp; omega)
   -- the candidate bit
-  obtain ⟨c₃, k₃, e₃, hk₃, hb₃, t₃, f₃⟩ := candB_exec (P := P) c₂ e₂.wb_right (by omega)
-    (by rw [g₂ _ (by norm_num) (by norm_num), g₁ _ (by decide) (by decide) (by decide) (by decide),
+  obtain ⟨c₃, k₃, e₃, hk₃, hb₃, t₃, f₃⟩ := candB_exec (P := P) c₂ e₂.wb_right (⋄)
+    (by rw [g₂ _ (⊛) (⊛), g₁ _ (⌖) (⌖) (⌖) (⌖),
       c0])
-    (hb₂ _ le_rfl (by norm_num)) (hb₂ _ (by norm_num) (by norm_num))
-    (hb₂ _ (by norm_num) (by norm_num)) (hb₂ _ (by norm_num) (by norm_num))
-    (hb₂ _ (by norm_num) le_rfl)
+    (hb₂ _ le_rfl (⊛)) (hb₂ _ (⊛) (⊛))
+    (hb₂ _ (⊛) (⊛)) (hb₂ _ (⊛) (⊛))
+    (hb₂ _ (⊛) le_rfl)
   have g₃ : ∀ r, (r < 212107 ∨ 212112 < r) → c₃.nreg r = c₂.nreg r := fun r h =>
     f₃.1 r (by simp; omega)
   have hcand : c₃.nreg 212107 = 1 ↔ Cand (Qof P) i (sgnD d) q := by
-    rw [t₃]
+    Ξ t₃
     have hQn : (Qof P).n = P.n := shear_n _ _
     exact cand_iff_bits (Q := Qof P) (by rw [hQn]; exact hqn) hd1 t0 (by rw [hQn]; exact t1)
       (by rw [hQn]; exact t2) t3 t4
@@ -544,27 +550,27 @@ theorem visitS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 ≤
   have kc : ∀ r, (r < 10000 ∨ 10500 ≤ r) → (r < 212094 ∨ 212112 < r ∨ r = 212097 ∨ r = 212098 ∨
       r = 212099) → c₃.nreg r = c.nreg r := by
     intro r h h'
-    rw [g₃ r (by omega), g₂ r h (by omega), g₁ r (by omega) (by omega) (by omega) (by omega)]
+    Ξ g₃ r (⋄), g₂ r h (⋄), g₁ r (⋄) (⋄) (⋄) (⋄)
   have k94 : c₃.nreg 212094 = w := by
-    rw [g₃ _ (by norm_num), g₂ _ (by norm_num) (by norm_num), v94]
+    Ξ g₃ _ (⊛), g₂ _ (⊛) (⊛), v94
   have k95 : c₃.nreg 212095 = q := by
-    rw [g₃ _ (by norm_num), g₂ _ (by norm_num) (by norm_num), v95]
+    Ξ g₃ _ (⊛), g₂ _ (⊛) (⊛), v95
   -- the update
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, u1, u2⟩ := updS_exec (P := P) hG hW c₃ e₃.wb_right (i := i) (d := d)
-    (q := q) (bq := c.nreg 212098) (by rw [kc _ (by norm_num) (by norm_num), hi])
-    (by rw [kc _ (by norm_num) (by norm_num), hd]) hd1 k95
-    (by rw [kc _ (by norm_num) (by norm_num)]) (by rw [kc _ (by norm_num) (by norm_num), c1])
-    hb₃ (by rw [kc _ (by norm_num) (by norm_num)]; exact hh) hin hqn
-    (by rw [kc _ (by norm_num) (by norm_num)]; exact hbqn)
-  have g₄ : ∀ r, Bup r = false → c₄.nreg r = c₃.nreg r := f₄.1
+    (q := q) (bq := c.nreg 212098) (Ρ kc _ (⊛) (⊛), hi)
+    (Ρ kc _ (⊛) (⊛), hd) hd1 k95
+    (Ρ kc _ (⊛) (⊛)) (Ρ kc _ (⊛) (⊛), c1)
+    hb₃ (by rw [kc _ (⊛) (⊛)]; exact hh) hin hqn
+    (by rw [kc _ (⊛) (⊛)]; exact hbqn)
+  have g₄ := f₄.1
   -- the counter
   have u91 : c₄.nreg 212091 = u := by
-    rw [g₄ _ (by decide), g₃ _ (by norm_num), g₂ _ (by norm_num) (by norm_num),
-      g₁ _ (by decide) (by decide) (by decide) (by decide), hu]
+    rw [g₄ _ (⌖), g₃ _ (⊛), g₂ _ (⊛) (⊛),
+      g₁ _ (⌖) (⌖) (⌖) (⌖), hu]
   have u00 : c₄.nreg 212000 = 1 := by
-    rw [g₄ _ (by decide), kc _ (by norm_num) (by norm_num), c0]
+    Ξ g₄ _ (⌖), kc _ (⊛) (⊛), c0
   have e₅ := Exec.addN (P := P) e₄.wb_right 212091 212091 212000 (by rw [u91, u00]; omega)
-  have f₅ : FrameB (fun r => decide (r = 212091)) c₄ _ := exec_frameB e₅ (by decide)
+  have f₅ : FrameB (fun r => decide (r = 212091)) c₄ _ := exec_frameB e₅ (⌖)
   have ex : Exec P W visitS c _ (k₁ + (k₂ + (k₃ + (k₄ + 1)))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
   have ec : ∀ r, r ≠ 212091 →
@@ -573,24 +579,24 @@ theorem visitS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (hW2 : 2 * P.n + 2 ≤
   refine ⟨_, _, ex, ?_, ?_, ?_, ?_, ?_⟩
   · unfold visK; omega
   · refine fbTrans (fbTrans (fbTrans (fbTrans (fbMono f₁ ?_) (fbMono f₂ bvis_cs)) (fbMono f₃ ?_))
-      (fbMono f₄ bup_vis)) (fbMono f₅ ?_) <;> intro r h <;> simp only [decide_eq_true_eq] at h <;>
-      exact bvis_of (by omega)
-  · simp only [Machine.upd_apply, ite_true, u91, u00]
+      (fbMono f₄ bup_vis)) (fbMono f₅ ?_) <;> intro r h <;> ϴ' decide_eq_true_eq at h <;>
+      exact bvis_of (⋄)
+  · ϴ Machine.upd_apply, ite_true, u91, u00
   · intro h
     have h' : c₃.nreg 212107 = 1 ∧ (c₃.nreg 212099 = 0 ∨
         sgnD d * edgeXAt (Qof P) q i < sgnD d * edgeXAt (Qof P) (c.nreg 212098) i) := by
-      rw [hcand, kc _ (by norm_num) (by norm_num)]; exact h
+      rw [hcand, kc _ (⊛) (⊛)]; exact h
     obtain ⟨a1, a2, a3⟩ := u1 h'
-    exact ⟨by dsimp only; rw [ec _ (by norm_num), a1, k94], by dsimp only; rw [ec _ (by norm_num), a2],
-      by dsimp only; rw [ec _ (by norm_num), a3]⟩
+    exact ⟨by dsimp only; rw [ec _ (⊛), a1, k94], by dsimp only; rw [ec _ (⊛), a2],
+      by dsimp only; rw [ec _ (⊛), a3]⟩
   · intro h
     have h' : ¬ (c₃.nreg 212107 = 1 ∧ (c₃.nreg 212099 = 0 ∨
         sgnD d * edgeXAt (Qof P) q i < sgnD d * edgeXAt (Qof P) (c.nreg 212098) i)) := by
-      rw [hcand, kc _ (by norm_num) (by norm_num)]; exact h
+      rw [hcand, kc _ (⊛) (⊛)]; exact h
     obtain ⟨a1, a2, a3⟩ := u2 h'
-    exact ⟨by dsimp only; rw [ec _ (by norm_num), a1, kc _ (by norm_num) (by norm_num)],
-      by dsimp only; rw [ec _ (by norm_num), a2, kc _ (by norm_num) (by norm_num)],
-      by dsimp only; rw [ec _ (by norm_num), a3, kc _ (by norm_num) (by norm_num)]⟩
+    exact ⟨by dsimp only; rw [ec _ (⊛), a1, kc _ (⊛) (⊛)],
+      by dsimp only; rw [ec _ (⊛), a2, kc _ (⊛) (⊛)],
+      by dsimp only; rw [ec _ (⊛), a3, kc _ (⊛) (⊛)]⟩
 
 end exec
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTProg
 public import Chazelle.Core.FactsArcs
 
@@ -48,13 +50,13 @@ theorem arcs_listed (hNF : IsNF M (Qof P) N) {reg : ℕ → Set Point}
   have hmem : i ∈ (N.region r).arcs := (hArcs.2.2.2 r hr i).2 ⟨hi, hir⟩
   obtain ⟨j, hj, hji⟩ := List.getElem_of_mem hmem
   have hat : arcAt N r j = i := by
-    rw [arcAt, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some, hji]
+    Ξ arcAt, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some, hji
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hps : ProperPos M (Qof P) P.n (N.arc i).s := by rw [← hQn]; exact (hpp i hi).1
   have hpe : ProperPos M (Qof P) P.n (N.arc i).e := by rw [← hQn]; exact (hpp i hi).2
   refine ⟨j, hj, ?_, ?_⟩
-  · rw [harr j hj, nArc, hat, (normOf_facts hps).2.2.2.1, hia]
-  · rw [harr j hj, nArc, hat, (normOf_facts hpe).2.2.2.1, hib]
+  · Ξ harr j hj, nArc, hat, (normOf_facts hps).2.2.2.1, hia
+  · Ξ harr j hj, nArc, hat, (normOf_facts hpe).2.2.2.1, hib
 
 /-- The direction of a bit is `± 1`. -/
 theorem dir_pm (v : ℕ) : dirOf v = 1 ∨ dirOf v = -1 := dirOf_pm v
@@ -103,8 +105,8 @@ theorem length_le_ncard {α β : Type*} {L : List α} (hL : L.Nodup) {f : α →
   classical
   have hnd : (L.map f).Nodup := List.Nodup.map_on (fun a ha b hb h => hinj a ha b hb h) hL
   have hlen : L.length = (L.map f).toFinset.card := by
-    rw [List.toFinset_card_of_nodup hnd, List.length_map]
-  rw [hlen, ← Set.ncard_coe_finset]
+    Ξ List.toFinset_card_of_nodup hnd, List.length_map
+  Ξ hlen, ← Set.ncard_coe_finset
   exact Set.ncard_le_ncard (fun y hy => by
     simp only [Finset.mem_coe, List.mem_toFinset, List.mem_map] at hy
     obtain ⟨a, ha, rfl⟩ := hy
@@ -214,25 +216,25 @@ theorem testS_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
       (N.region (c₀.nreg 83002)).chords.length (F (c₀.nreg 83003))) (TestFacts P M N c₀) := by
   obtain ⟨c₁', k₁', ex₁, hk₁, hI₁', rf₁⟩ := tSetup_exec (P := P) hw hE.hwfMD.1
   have S1 : RSB (dBands ∪ Bo) P W c₀ tSetup c₀ 4 (fun _ => True) :=
-    ⟨c₁', k₁', ex₁, by omega, hI₁', rf₁.mono Finset.subset_union_left le_rfl, trivial⟩
+    ⟨c₁', k₁', ex₁, ⋄, hI₁', rf₁.mono Finset.subset_union_left le_rfl, trivial⟩
   unfold testK at hroom ⊢
   refine RSB.seq S1 (fun c₁ hI₁ hA₁ _ => ?_)
   refine RSB.seq (RSB.of_RS Finset.subset_union_left (tInit_rs hE hI₁)) (fun c₂ hI₂ hA₂ h₂ => ?_)
   obtain ⟨z11, z14, ag₂⟩ := h₂
   refine RSB.seq (RSB.of_RS Finset.subset_union_left
-    (valid_rs gKey_ok gLeft_ok turn_ok hE hI₂ (by omega))) (fun c₃ hI₃ hA₃ h₃ => ?_)
+    (valid_rs gKey_ok gLeft_ok turn_ok hE hI₂ (⋄))) (fun c₃ hI₃ hA₃ h₃ => ?_)
   obtain ⟨b10, i10, ag₃⟩ := h₃
   have y11 : c₃.nreg 83011 = 0 := by
-    rw [ag₃ _ (by norm_num) (by norm_num) (by simp [validScr]), z11]
+    rw [ag₃ _ (⊛) (by norm_num) (by simp [validScr]), z11]
   have y14 : c₃.nreg 83014 = 0 := by
-    rw [ag₃ _ (by norm_num) (by norm_num) (by simp [validScr]), z14]
+    rw [ag₃ _ (⊛) (by norm_num) (by simp [validScr]), z14]
   by_cases hv : c₃.nreg 83010 = 1
   · have g : c₃.nreg 83022 < c₃.nreg 83010 := by rw [hI₃.h22, hv]; omega
     have hV : ValidB M P N (c₀.nreg 83002) (xOf c₀) (c₀.nreg 83008) := i10.1 hv
     have hne := family_ne hE.hNF hE.hr hV.1
     obtain ⟨reg, hregs⟩ := hE.regs
     refine RSB.ifT g (RSB.seq (shotA_rsb hE hI₃ hX hcap hXl hOk hne hsg hsh hBs hB8 hBo
-      (by omega)) (fun c₄ hI₄ hA₄ h₄ => ?_))
+      (⋄)) (fun c₄ hI₄ hA₄ h₄ => ?_))
     obtain ⟨⟨h11, m, B, hs, A, harr, hnear, hlo, hhi, hyes, hno⟩, e10, e14⟩ := h₄
     by_cases hh : c₄.nreg 83011 = 1
     · obtain ⟨t, hfh, hpp, hpe, hpos⟩ := hyes hh
@@ -242,27 +244,27 @@ theorem testS_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
       have harrival := arrival_of_attach (dir_pm _) hfh.1 hatt hw'
       have hy : ∀ C : Chain, M = chainModel C →
           |(M.pos (Qof P) ⟨c₄.nreg 83012, c₄.nreg 83013⟩).2| < C.radius := fun C hM => by
-        rw [hpos, Visibility.rayPt_snd]
+        Ξ hpos, Visibility.rayPt_snd
         exact lt_of_le_of_lt (C.abs_le_coordBound_of_mem_set (hE.hxC C hM)).2
           C.coordBound_lt_radius
       have hex : ∀ C : Chain, M = chainModel C → ∃ p t, Sweep.Arrival M.W
           (M.pos (Qof P) ⟨c₄.nreg 83012, c₄.nreg 83013⟩) (dirOf (c₀.nreg 83008)) p t :=
         fun _ _ => ⟨p', t', by rw [hpos]; exact harrival⟩
       refine RSB.ifT g' (RSB.of_RS Finset.subset_union_left
-        (postHit_rs hE hI₄ hpp hpe hy hex (by omega))) |>.mono le_rfl (fun c₅ h₅ => ?_)
+        (postHit_rs hE hI₄ hpp hpe hy hex (⋄))) |>.mono le_rfl (fun c₅ h₅ => ?_)
       obtain ⟨q1, q2, q3, q4, q5, q6, q7, q8, q9, q10⟩ := h₅
-      have v10 : c₅.nreg 83010 = 1 := by rw [q9, e10, hv]
-      have v11 : c₅.nreg 83011 = 1 := by rw [q10, hh]
-      refine ⟨by omega, ⟨fun _ => hV, fun _ => v10⟩, by omega, q6, fun _ => v10, fun _ => v11,
+      have v10 : c₅.nreg 83010 = 1 := Ρ q9, e10, hv
+      have v11 : c₅.nreg 83011 = 1 := Ρ q10, hh
+      refine ⟨⋄, ⟨fun _ => hV, fun _ => v10⟩, by omega, q6, fun _ => v10, fun _ => v11,
         fun _ => ⟨m, B, hs, A, harr, hnear, hlo, hhi, fun _ => ⟨t, _, hfh, hpp, hpe, hpos, q1, q2,
           q3, q4, q5, q7, q8⟩, fun h => absurd v11 h⟩⟩
-    · have h0 : c₄.nreg 83011 = 0 := by omega
+    · have h0 : c₄.nreg 83011 = 0 := ⋄
       have g' : ¬ c₄.nreg 83022 < c₄.nreg 83011 := by rw [h0]; omega
       refine (RSB.ifF g' (RSB.skip (K := postHitK (N.region (c₀.nreg 83002)).chords.length)
         (Q := fun c' => c' = c₄) hI₄ rfl)).mono le_rfl (fun c₅ h₅ => ?_)
-      rw [h₅]
-      have v10 : c₄.nreg 83010 = 1 := by rw [e10, hv]
-      refine ⟨by omega, ⟨fun _ => hV, fun _ => v10⟩, by omega, by rw [e14, y14]; omega,
+      Ξ h₅
+      have v10 : c₄.nreg 83010 = 1 := Ρ e10, hv
+      refine ⟨⋄, ⟨fun _ => hV, fun _ => v10⟩, by omega, by rw [e14, y14]; omega,
         fun h => absurd h hh, fun h => by rw [e14, y14] at h; omega,
         fun _ => ⟨m, B, hs, A, harr, hnear, hlo, hhi, fun h => absurd h hh, fun _ => hno hh⟩⟩
   · have g : ¬ c₃.nreg 83022 < c₃.nreg 83010 := by rw [hI₃.h22]; omega
@@ -270,8 +272,8 @@ theorem testS_rsb {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs
       (N.region (c₀.nreg 83002)).arcs.length +
         (postHitK (N.region (c₀.nreg 83002)).chords.length + 2))
       (Q := fun c' => c' = c₃) hI₃ rfl)).mono le_rfl (fun c₅ h₅ => ?_)
-    rw [h₅]
-    refine ⟨b10, i10, by omega, by omega, fun h => by rw [y11] at h; omega,
+    Ξ h₅
+    refine ⟨b10, i10, ⋄, by omega, fun h => by rw [y11] at h; omega,
       fun h => by rw [y14] at h; omega, fun h => absurd h hv⟩
 
 end

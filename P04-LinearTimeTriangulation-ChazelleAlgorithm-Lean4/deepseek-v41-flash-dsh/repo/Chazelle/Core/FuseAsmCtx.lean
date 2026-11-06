@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmCapStage
 public import Chazelle.Core.GranNFBounds
 
@@ -40,8 +42,8 @@ theorem chainDesc_keep {P : Polygon} {A : ℕ} {m m' : ℕ → ℕ} {B : ℕ} {H
     ChainDescAt m' B (Qof P) H C ∧ ChainWF P A m' B := by
   obtain ⟨-, -, hEb, -⟩ := hwf.2 H C hC
   have h5 := hwf.1
-  exact ⟨chainDescAt_copy hC hEb he (fun j hj => he _ (by omega)),
-    chainWF_copy hwf hC he (fun j hj => he _ (by omega)) h5 le_rfl⟩
+  exact ⟨chainDescAt_copy hC hEb he (fun j hj => he _ (⋄)),
+    chainWF_copy hwf hC he (fun j hj => he _ (⋄)) h5 le_rfl⟩
 
 theorem FCtx.keep {P : Polygon} {W : ℕ} {J : Merge.Junction} {H : Host} {N₁ N₂ : NF} {A : ℕ}
     {c c' : Config} (h : FCtx P W J H N₁ N₂ A c)
@@ -49,14 +51,14 @@ theorem FCtx.keep {P : Polygon} {W : ℕ} {J : Merge.Junction} {H : Host} {N₁ 
     (hm : ∀ a, a < A → c'.nmem a = c.nmem a) (ha : c.nreg ALLOC ≤ c'.nreg ALLOC) :
     FCtx P W J H N₁ N₂ A c' := by
   obtain ⟨hG, hW, ⟨hl, hr', hw⟩, ⟨wl, wr', ww, hreg⟩, hP, hgen, n₁, n₂, i₁, i₂, hle⟩ := h
-  have e0 := hr 70000 (by norm_num) (by norm_num)
-  have e1 := hr 70001 (by norm_num) (by norm_num)
-  have e2 := hr 70002 (by norm_num) (by norm_num)
+  have e0 := hr 70000 (⊛) (⊛)
+  have e1 := hr 70001 (⊛) (⊛)
+  have e2 := hr 70002 (⊛) (⊛)
   rw [← e0] at hl wl
   rw [← e1] at hr' wr'
   rw [← e2] at hw ww hreg
-  rw [← hr 70003 (by norm_num) (by norm_num)] at n₁
-  rw [← hr 70004 (by norm_num) (by norm_num)] at n₂
+  rw [← hr 70003 (⊛) (⊛)] at n₁
+  rw [← hr 70004 (⊛) (⊛)] at n₂
   obtain ⟨kl, kwl⟩ := chainDesc_keep wl hl hm
   obtain ⟨kr, kwr⟩ := chainDesc_keep wr' hr' hm
   obtain ⟨kw, kww⟩ := chainDesc_keep ww hw hm
@@ -64,7 +66,7 @@ theorem FCtx.keep {P : Polygon} {W : ℕ} {J : Merge.Junction} {H : Host} {N₁ 
     n₁.transport hm, n₂.transport hm, i₁, i₂, le_trans hle ha⟩
   obtain ⟨-, -, hEb, -⟩ := ww.2 H J.whole hw
   have h5 := ww.1
-  have e0 : c'.nmem (c'.nreg 70002) = c.nmem (c'.nreg 70002) := hm _ (by omega)
+  have e0 : c'.nmem (c'.nreg 70002) = c.nmem (c'.nreg 70002) := hm _ (⋄)
   have hH : HostAt c'.nmem (c'.nmem (c'.nreg 70002)) H := by
     rw [e0]; exact hostAt_agree hw.1 hEb hm
   have := NFLoc.hostAt_unique hH' hH

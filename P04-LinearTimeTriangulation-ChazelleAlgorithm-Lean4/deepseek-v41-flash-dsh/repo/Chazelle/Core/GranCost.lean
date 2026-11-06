@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranBD
 
 /-!
@@ -32,8 +34,8 @@ theorem clog_two_le {K A : ℕ} (hA : A ≤ 2 * K) : Nat.clog 2 A ≤ Nat.clog 2
 theorem costInit_le {K A R D : ℕ} (hA : A ≤ 2 * K) (hR : R = K + 1) :
     costInit K A R D ≤ 100000 * (D * K + D + K + 1) + 10880 * (K * (Nat.clog 2 A + 1)) := by
   unfold costInit costA NFLoc.locCost
-  rw [dmOf_oEnd]
-  simp only [dmOf, Dm.cap]
+  Ξ dmOf_oEnd
+  ϴ dmOf, Dm.cap
   subst hR
   ring_nf
   nlinarith [hA]
@@ -42,7 +44,7 @@ theorem room_le (K A R D : ℕ) :
     (dmOf K A R D 0).oEnd + K * (2 * NFLoc.locCost 5100 A + 30) ≤ costInit K A R D := by
   unfold costInit costA
   have : K * (2 * NFLoc.locCost 5100 A + 30) ≤ K * (2 * NFLoc.locCost 5100 A + 32) :=
-    Nat.mul_le_mul_left _ (by omega)
+    Nat.mul_le_mul_left _ (⋄)
   omega
 
 theorem costBD_mono {κB κD D x y : ℕ} (h : x ≤ y) : costBD κB κD D x ≤ costBD κB κD D y := by
@@ -57,7 +59,7 @@ theorem cost_total {κB κD K A R D ℓ : ℕ} (hA : A ≤ 2 * K) (hR : R = K + 
   have hKX : K + 1 ≤ X := by rw [hX]; nlinarith
   have hY : K * (Nat.clog 2 A + 1) ≤ 2 * X := by
     have := clog_two_le hA
-    have : K * (Nat.clog 2 A + 1) ≤ K * (Nat.clog 2 K + 2) := Nat.mul_le_mul_left _ (by omega)
+    have : K * (Nat.clog 2 A + 1) ≤ K * (Nat.clog 2 K + 2) := Nat.mul_le_mul_left _ (⋄)
     rw [hX]; nlinarith
   have hℓX : ℓ * (Nat.clog 2 ℓ + 1) + 1 ≤ X := by
     have := Nat.mul_le_mul hℓ (Nat.add_le_add_right (Nat.clog_mono_right 2 hℓ) 1)
@@ -66,17 +68,17 @@ theorem cost_total {κB κD K A R D ℓ : ℕ} (hA : A ≤ 2 * K) (hR : R = K + 
   set T := (D + 2) ^ 2 with hT
   have hT4 : 4 ≤ T := by rw [hT]; nlinarith
   have hDK : D * K + D + K + 1 ≤ T * X := by
-    have : D * K + D + K + 1 = (D + 1) * (K + 1) := by ring
-    rw [this]
+    have : D * K + D + K + 1 = (D + 1) * (K + 1) := ⋆
+    Ξ this
     exact Nat.mul_le_mul (by rw [hT]; nlinarith) hKX
   have hL : (60 * D + 402) * (K + (D + 1) * K) ≤ 402 * (T * X) := by
-    have : (60 * D + 402) * (K + (D + 1) * K) = ((60 * D + 402) * (D + 2)) * K := by ring
-    rw [this]
+    have : (60 * D + 402) * (K + (D + 1) * K) = ((60 * D + 402) * (D + 2)) * K := ⋆
+    Ξ this
     have h1 : (60 * D + 402) * (D + 2) ≤ 402 * T := by rw [hT]; nlinarith
-    calc ((60 * D + 402) * (D + 2)) * K ≤ (402 * T) * X := Nat.mul_le_mul h1 (by omega)
-      _ = 402 * (T * X) := by ring
-  have hX1 : X ≤ T * X := Nat.le_mul_of_pos_left X (by omega)
-  have hTX : 4 ≤ T * X := by nlinarith
+    calc ((60 * D + 402) * (D + 2)) * K ≤ (402 * T) * X := Nat.mul_le_mul h1 (⋄)
+      _ = 402 * (T * X) := ⋆
+  have hX1 : X ≤ T * X := Nat.le_mul_of_pos_left X (⋄)
+  have hTX : 4 ≤ T * X := ⊞
   have hB : costBD κB κD D ℓ ≤ 7 + (κB + κD * (D + 1)) * X := by
     unfold costBD
     have := Nat.mul_le_mul_left κB hℓX
@@ -85,7 +87,7 @@ theorem cost_total {κB κD K A R D ℓ : ℕ} (hA : A ≤ 2 * K) (hR : R = K + 
   unfold costMain κGran
   have e : (500000 * T + κB + κD * (D + 1)) * X = 500000 * (T * X) + (κB + κD * (D + 1)) * X := by
     ring
-  rw [e]
+  Ξ e
   omega
 
 end

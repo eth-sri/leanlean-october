@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIface
 
 /-!
@@ -55,9 +57,9 @@ theorem seesInWhole_hit (Q : Polygon) (i : ℕ) (q : ℕ × ℕ × ℕ) {z : Poi
   · exact ⟨fun _ => hhit.1, fun _ => trivial⟩
   · intro _
     refine ⟨?_, hat⟩
-    rw [hs]
+    Ξ hs
     unfold Merge.shoot
-    rw [hhit.2]
+    Ξ hhit.2
 
 /-- **Answer of a direction that is not free, either side**: any flag other than `1`. -/
 theorem seesInWhole_notFree' (Q : Polygon) (i : ℕ) (q : ℕ × ℕ × ℕ) {z : Point} {σ : ℝ}
@@ -75,7 +77,7 @@ theorem whole_of_genuine_above₁ {z : Point} (hz₂ : z.2 ≤ J.right.top.2)
     (h₂ : Genuine J.right z σ τ₂) : FreeAt J.whole z σ ∧ J.whole.hitParam z σ = τ₂ := by
   obtain ⟨hf₂, he₂⟩ := (genuine_iff J.right hz₂ hσ).1 h₂
   refine ⟨?_, ?_⟩
-  · rw [freeAt_whole_iff J (hz₂.trans J.right_top_le)]
+  · Ξ freeAt_whole_iff J (hz₂.trans J.right_top_le)
     filter_upwards [hf₂] with t ht2
     refine ⟨J.right.dom_subset_box ht2, fun hmem => ?_, J.right.not_mem_set_of_mem_dom ht2⟩
     have := J.left.snd_le_top_of_mem_set hmem
@@ -85,9 +87,9 @@ theorem whole_of_genuine_above₁ {z : Point} (hz₂ : z.2 ≤ J.right.top.2)
       rw [whole_hitParam_eq_min J (hz₂.trans J.right_top_le) hσ,
         rayHit_eq_empty_of_above J.left hz₁, right_hitParam_eq J hz₂]
       refine min_eq_right ?_
-      rw [← right_hitParam_eq J hz₂]
+      Ξ ← right_hitParam_eq J hz₂
       exact Merge.rayHit_anti (empty_subset _) z hσ
-    rw [e, he₂]
+    Ξ e, he₂
 
 end Gen
 
@@ -120,7 +122,7 @@ theorem not_sideLeft_horizontal {W : Polygon} {p : ℕ} {t : ℝ} (ht0 : 0 < t) 
   have hBX : sideCross (b - v) (rayPt v σ 1 - v) = 0 := by unfold sideCross; rw [eB2, eX2]; ring
   have hdot : sideDot (b - v) (a - v) ≤ 0 := by
     unfold sideDot; rw [eB1, eB2, eA1, eA2]
-    have h1 : 0 ≤ (1 - t) * t := mul_nonneg (by linarith) ht0.le
+    have h1 : 0 ≤ (1 - t) * t := mul_nonneg (⟡) ht0.le
     nlinarith [sq_nonneg (b.1 - a.1)]
   unfold sideCcw at hs
   rw [hBA, hBX] at hs
@@ -143,16 +145,16 @@ theorem param_of_arrival (Q : Polygon) {p : ℕ} {t : ℝ} (ht0 : 0 ≤ t) (ht1 
   · have ht : t = 0 := by
       by_contra hne
       exact not_sideLeft_horizontal (lt_of_le_of_ne ht0 (Ne.symm hne)) ht1 hh σ hsec
-    rw [ht]
+    Ξ ht
     unfold Model.param
     simp only
-    rw [ite_eq_left hh]
+    Ξ ite_eq_left hh
   · unfold Model.param
     simp only
-    rw [ite_eq_right hh, hy]
+    Ξ ite_eq_right hh, hy
     have : (M.wb p).2 - (M.wa p).2 ≠ 0 := sub_ne_zero.2 (Ne.symm hh)
     have e : (sidePt M.W p t).2 = (M.wa p).2 + t * ((M.wb p).2 - (M.wa p).2) := rfl
-    rw [e]
+    Ξ e
     field_simp
     ring
 
@@ -161,7 +163,7 @@ theorem pos_of_arrival (Q : Polygon) {p : ℕ} {t : ℝ} (ht0 : 0 ≤ t) (ht1 : 
     (hsec : sideLeft M.W p t (rayPt (sidePt M.W p t) σ 1)) :
     M.pos Q ⟨p, h + 1⟩ = sidePt M.W p t := by
   unfold Model.pos
-  rw [param_of_arrival Q ht0 ht1 hy hsec]
+  Ξ param_of_arrival Q ht0 ht1 hy hsec
   rfl
 
 end Record
@@ -193,20 +195,20 @@ theorem recordData_of_arrival (Q : Polygon) {z : Point} {σ : ℝ} (hσ : σ = 1
   have hw' : rayPt (rayPt z σ T) (-σ) T = z := by
     apply point_ext <;> simp [rayPt]
   have hAz' : Arrival M.W (rayPt (rayPt z σ T) (-σ) T) (-σ) pz tz := by
-    rw [hw']
+    Ξ hw'
     refine ⟨hpz, htz0, htz1, hptz, ?_⟩
     rw [neg_neg]; exact hsecz
   have att_z := attach_left_of_arrival hnσ hT hAz'
   rw [hw', Geometry.segment_comm] at att_z
   have att_w := attach_left_of_arrival hσ hT ⟨hpw, htw0, htw1, hptw, hsecw⟩
   refine ⟨hh, ?_, ?_, ?_, ?_, fun h1 => ?_, fun h1 => ?_⟩
-  · rw [pos_of_arrival Q htz0 htz1 hyz hsz, hptz]
-  · rw [pos_of_arrival Q htw0 htw1 hyw hsw, hptw]
+  · Ξ pos_of_arrival Q htz0 htz1 hyz hsz, hptz
+  · Ξ pos_of_arrival Q htw0 htw1 hyw hsw, hptw
   · rw [ez]; exact att_z
   · rw [ew]; exact att_w
-  · simp [h1]
+  · Θ h1
   · have : σ ≠ 1 := by rw [h1]; norm_num
-    simp [this]
+    Θ this
 
 end RecordJ
 

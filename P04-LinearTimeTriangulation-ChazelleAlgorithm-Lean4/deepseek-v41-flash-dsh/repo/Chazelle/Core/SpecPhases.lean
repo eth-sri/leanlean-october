@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecAssembly
 public import Chazelle.Core.SpecMerge
 
@@ -280,7 +282,7 @@ theorem ceilBeta_mono {g g' : ℕ} (h : g ≤ g') : Cost.ceilBeta g ≤ Cost.cei
 
 theorem ceilBeta_succ_le (g : ℕ) : Cost.ceilBeta (g + 1) ≤ Cost.ceilBeta g + 1 := by
   unfold Cost.ceilBeta
-  rw [Nat.ceil_le]
+  Ξ Nat.ceil_le
   have h1 := Nat.le_ceil (Cost.beta * (g : ℝ))
   rw [Cost.beta_eq] at h1 ⊢
   push_cast
@@ -288,8 +290,8 @@ theorem ceilBeta_succ_le (g : ℕ) : Cost.ceilBeta (g + 1) ≤ Cost.ceilBeta g +
 
 theorem clog_succ_le {g : ℕ} (hg : 1 ≤ g) : Nat.clog 2 (g + 1) ≤ Nat.clog 2 g + 1 := by
   apply Nat.clog_le_of_le_pow
-  have := Nat.le_pow_clog (b := 2) (by norm_num) g
-  rw [pow_succ]
+  have := Nat.le_pow_clog (b := 2) (⊛) g
+  Ξ pow_succ
   omega
 
 /-- **The recurrence of the revised schedule**:
@@ -298,7 +300,7 @@ theorem gradeGran_step (g : ℕ) :
     gradeGran g + fuseLoss * (Nat.clog 2 (g + 1) + 1) ≤ gradeGran (g + 1) := by
   unfold gradeGran fuseLoss
   have h1 : 2 ^ Cost.ceilBeta g ≤ 2 ^ Cost.ceilBeta (g + 1) :=
-    Nat.pow_le_pow_right (by norm_num) (ceilBeta_mono (Nat.le_succ g))
+    Nat.pow_le_pow_right (⊛) (ceilBeta_mono (Nat.le_succ g))
   have h2 : Nat.clog 2 g ≤ Nat.clog 2 (g + 1) := Nat.clog_mono_right 2 (Nat.le_succ g)
   have h3 : g * (Nat.clog 2 g + 2) + (Nat.clog 2 (g + 1) + 1) ≤
       (g + 1) * (Nat.clog 2 (g + 1) + 2) := by
@@ -322,10 +324,10 @@ theorem gradeGran_succ_le_two_mul {g : ℕ} (hg : 2 ≤ g) :
   unfold gradeGran fuseLoss
   have h1 : 2 ^ Cost.ceilBeta (g + 1) ≤ 2 * 2 ^ Cost.ceilBeta g := by
     calc 2 ^ Cost.ceilBeta (g + 1) ≤ 2 ^ (Cost.ceilBeta g + 1) :=
-          Nat.pow_le_pow_right (by norm_num) (ceilBeta_succ_le g)
+          Nat.pow_le_pow_right (⊛) (ceilBeta_succ_le g)
       _ = 2 * 2 ^ Cost.ceilBeta g := by rw [pow_succ]; ring
-  have h2 := clog_succ_le (g := g) (by omega)
-  have hc : 1 ≤ Nat.clog 2 g := Nat.clog_pos (by norm_num) (by omega)
+  have h2 := clog_succ_le (g := g) (⋄)
+  have hc : 1 ≤ Nat.clog 2 g := Nat.clog_pos (⊛) (⋄)
   have h3 : (g + 1) * (Nat.clog 2 (g + 1) + 2) ≤ 2 * (g * (Nat.clog 2 g + 2)) := by
     have := Nat.mul_le_mul_left (g + 1) (Nat.add_le_add_right h2 2)
     nlinarith
@@ -340,18 +342,18 @@ theorem gradeGran_cap {g : ℕ} (hg : lemma41Start ≤ g) : gradeGran g + 1 ≤ 
   | base =>
     have hb : Cost.ceilBeta 7 ≤ 2 := by
       unfold Cost.ceilBeta
-      rw [Nat.ceil_le, Cost.beta_eq]
+      Ξ Nat.ceil_le, Cost.beta_eq
       norm_num
-    have hc : Nat.clog 2 7 ≤ 3 := Nat.clog_le_of_le_pow (by norm_num)
-    have hp : 2 ^ Cost.ceilBeta 7 ≤ 2 ^ 2 := Nat.pow_le_pow_right (by norm_num) hb
+    have hc : Nat.clog 2 7 ≤ 3 := Nat.clog_le_of_le_pow (⊛)
+    have hp : 2 ^ Cost.ceilBeta 7 ≤ 2 ^ 2 := Nat.pow_le_pow_right (⊛) hb
     unfold gradeGran fuseLoss
-    have : 7 * (Nat.clog 2 7 + 2) ≤ 7 * (3 + 2) := Nat.mul_le_mul_left 7 (by omega)
+    have : 7 * (Nat.clog 2 7 + 2) ≤ 7 * (3 + 2) := Nat.mul_le_mul_left 7 (⋄)
     norm_num at hp this ⊢
     omega
   | succ g hg ih =>
-    have h2 := gradeGran_succ_le_two_mul (g := g) (by omega)
-    have e : g + 1 - 1 = (g - 1) + 1 := by omega
-    rw [e, pow_succ]
+    have h2 := gradeGran_succ_le_two_mul (g := g) (⋄)
+    have e : g + 1 - 1 = (g - 1) + 1 := ⋄
+    Ξ e, pow_succ
     omega
 
 /-- **The revised schedule is within a constant factor of the paper's**:
@@ -366,17 +368,17 @@ theorem gradeGran_le_real (g : ℕ) :
     · subst h0; simp
     · have := Nat.mul_le_mul_left g (Nat.add_le_add_right hc 2)
       nlinarith
-  have hsq := Cost.natPow_le_two_rpow 2 5 (by norm_num) g
+  have hsq := Cost.natPow_le_two_rpow 2 5 (⊛) g
   have hexp : (2 : ℝ) ^ ((g : ℝ) / (5 : ℕ)) ≤ (2 : ℝ) ^ Cost.ceilBeta g := by
-    rw [← Real.rpow_natCast (2 : ℝ) (Cost.ceilBeta g)]
-    apply Real.rpow_le_rpow_of_exponent_le (by norm_num)
+    Ξ ← Real.rpow_natCast (2 : ℝ) (Cost.ceilBeta g)
+    apply Real.rpow_le_rpow_of_exponent_le (⊛)
     have := Cost.beta_mul_le_ceilBeta g
     rw [Cost.beta_eq] at this
     push_cast
     linarith
   have hpolyR : ((g * (Nat.clog 2 g + 2) : ℕ) : ℝ) ≤ 3 * (g : ℝ) ^ 2 := by exact_mod_cast hpoly
   push_cast at hsq hpolyR ⊢
-  have h2 : (0 : ℝ) ≤ (2 : ℝ) ^ Cost.ceilBeta g := by positivity
+  have h2 : (0 : ℝ) ≤ (2 : ℝ) ^ Cost.ceilBeta g := ⟢
   nlinarith
 
 /-- The oracle grade of a merge at grade `λ`: `⌈log₂ (γ'_λ + 1)⌉ ≤ ⌈βλ⌉ + 11`. -/
@@ -386,7 +388,7 @@ theorem clog_gradeGran_le (g : ℕ) :
   have h := gradeGran_le_real g
   have hN : gradeGran g ≤ 1201 * 2 ^ Cost.ceilBeta g := by exact_mod_cast h
   have h1 : 1 ≤ 2 ^ Cost.ceilBeta g := Nat.one_le_two_pow
-  rw [pow_add]
+  Ξ pow_add
   omega
 
 end

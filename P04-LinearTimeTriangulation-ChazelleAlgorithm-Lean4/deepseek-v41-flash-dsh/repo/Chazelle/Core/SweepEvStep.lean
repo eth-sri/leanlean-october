@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvDet
 public import Chazelle.Core.SweepEvNoTie
 
@@ -63,9 +65,9 @@ theorem shoot_sub_end {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords
     Merge.shoot J.whole a σ ⊆ c := by
   obtain ⟨y, l, r, hH, hy, hceq, hl, hr⟩ := Merge.augChords_spec (hS₂ hc)
   rcases ha with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-  · rw [hl, hceq]
+  · Ξ hl, hceq
     exact Merge.shoot_subset_pos J.whole hH.lt (fun hd => hH.right_not (dom_right J hd hy))
-  · rw [hr, hceq]
+  · Ξ hr, hceq
     exact Merge.shoot_subset_neg J.whole hH.lt (fun hd => hH.left_not (dom_right J hd hy))
 
 /-- **A non-stop chord is an endpoint-query chord.** -/
@@ -110,7 +112,7 @@ theorem nonstop_found (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   have hS₂a := hS₂.2.1
   have hS₂f := hS₂.1
   have hNTV : NoTieV J S₂ := noTieV hP hS₂a
-  have hLt : (Lst J : ℝ) < oW J (pK + tK) := by linarith
+  have hLt : (Lst J : ℝ) < oW J (pK + tK) := ⟡
   obtain ⟨c, hc, a, σ, ha, haR, hav, hat, hfree, rfl⟩ := nonstop_cases hS₂a he hns
   have hsub := shoot_sub_end hS₂a hc ha
   rcases det_of_evInv hP hS₂ hF hLK hInv hpK htK0 htK1 hoK hgap he heK with
@@ -124,7 +126,7 @@ theorem nonstop_found (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
     · exact shoot_sub_end hS₂a hc (Or.inl ⟨rfl, rfl⟩)
     · exact shoot_sub_end hS₂a hc (Or.inr ⟨rfl, rfl⟩)
   · by_cases hhe : Merge.shoot J.whole a' σ' = Merge.shoot J.whole a σ
-    · rw [← hhe]
+    · Ξ ← hhe
       exact ⟨c', hc', a', σ', ha', ha'R, ha'v, ha't, hfree', rfl, Or.inl ⟨V, hV, hVΛ, hT⟩⟩
     · -- the other piece of `c'`
       have hsub' := shoot_sub_end hS₂a hc' ha'

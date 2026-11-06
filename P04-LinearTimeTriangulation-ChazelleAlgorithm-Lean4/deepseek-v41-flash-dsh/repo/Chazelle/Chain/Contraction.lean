@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Chain.DualTree
 
 /-!
@@ -31,7 +33,7 @@ theorem regionsIn_eq_of_subset {T : Set (Set Point)} {W W' : Set Point}
     (hW : W ∈ regionsIn D T) (hW' : W' ∈ regionsIn D T) {U : Set Point} (hU : U.Nonempty)
     (h1 : U ⊆ W) (h2 : U ⊆ W') : W = W' := by
   obtain ⟨p, hp⟩ := hU
-  rw [regionsIn_eq_component hW (h1 hp), regionsIn_eq_component hW' (h2 hp)]
+  Ξ regionsIn_eq_component hW (h1 hp), regionsIn_eq_component hW' (h2 hp)
 
 /-- Every region of a submap lies in a region of any coarser submap. -/
 theorem exists_regionsIn_superset {S T : Set (Set Point)} (hT : T ⊆ S)

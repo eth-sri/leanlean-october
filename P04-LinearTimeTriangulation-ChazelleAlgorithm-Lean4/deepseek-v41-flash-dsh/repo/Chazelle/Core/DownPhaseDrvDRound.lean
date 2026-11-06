@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvDReg
 public import Chazelle.Core.DownPhaseDrvRSplG
 public import Chazelle.Core.DownPhaseDrvRRoundSpec
@@ -139,7 +141,7 @@ theorem hdS_exec (c : Config) (hw : WordsBounded W c) {H : ℕ} (h05 : c.nreg 21
     all_goals try rfl
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
     q.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.2.2,
-    exec_frameB ex (by decide)⟩
+    exec_frameB ex (⌖)⟩
 
 /-- The registers of the reservation. -/
 def Bres (r : ℕ) : Bool := decide (r = 216023) || decide (r = 9999)
@@ -206,7 +208,7 @@ theorem midS_exec (c : Config) (hw : WordsBounded W c) {R B RB : ℕ} (h13 : c.n
     exec_block
     all_goals try (config_simp; (try simp only [h13, h18, h15, h05]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> (try simp only [h13, h18, h15, h05]) <;> omega
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (⌖)⟩
 
 set_option maxHeartbeats 1000000 in
 /-- The arguments of the splice. -/
@@ -222,7 +224,7 @@ theorem splArgs_exec (c : Config) (hw : WordsBounded W c) :
     unfold splArgs
     exec_block
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex (⌖)⟩
 
 /-- The round counter. -/
 theorem incr_exec (c : Config) (hw : WordsBounded W c) {t : ℕ} (h10 : c.nreg 216010 = t)
@@ -234,7 +236,7 @@ theorem incr_exec (c : Config) (hw : WordsBounded W c) {t : ℕ} (h10 : c.nreg 2
     exec_block
     · rw [h10, h02]; exact ht
     · refine ⟨rfl, ?_⟩; config_simp; rw [h10, h02]
-  exact ⟨c', k, ex, hk, q, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q, exec_frameB ex (⌖)⟩
 
 end exec
 

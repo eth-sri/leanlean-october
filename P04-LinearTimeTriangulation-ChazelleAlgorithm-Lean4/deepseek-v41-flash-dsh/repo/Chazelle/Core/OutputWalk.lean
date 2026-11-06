@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OutputGeom
 
 /-!
@@ -103,13 +105,13 @@ theorem walk_vtx (Q : Polygon) {k : ℕ} (hk : k < Q.n) :
     rw [e1, e2]; rfl
   · have e1 : interiorWalk Q = ⟨Q.vertices.reverse⟩ := by unfold interiorWalk; simp [h]
     have e2 : revOf Q = true := by unfold revOf; simp [h]
-    rw [e1, e2]
+    Ξ e1, e2
     exact FactsInterior.rev_vtx Q k hk
 
 /-- The walk successor. -/
 theorem walk_succ (Q : Polygon) {p : ℕ} (hp : p < Q.n) :
     (interiorWalk Q).vtx ((p + 1) % (interiorWalk Q).n) = Q.vtx (wv (revOf Q) Q.n (nxt Q.n p)) := by
-  rw [walk_n, ← nxt_eq hp, walk_vtx Q (nxt_lt hp)]
+  Ξ walk_n, ← nxt_eq hp, walk_vtx Q (nxt_lt hp)
 
 /-! ## The direction of a walk edge next to an interior point -/
 
@@ -185,10 +187,10 @@ theorem left_mid (hQ : Q.Simple) (D : TrapData Q) :
   have hlt := D.isTrap.edgeX_lt hQ D.free hy1 hy2
   have hnv : ∀ k, k < Q.n → Q.vtx k ≠ ((edgeX Q D.i ym, ym) : Point) := by
     intro k hk hkz
-    have e1 : (Q.vtx k).1 = edgeX Q D.i ym := by rw [hkz]
-    have e2 : (Q.vtx k).2 = ym := by rw [hkz]
+    have e1 : (Q.vtx k).1 = edgeX Q D.i ym := Ρ hkz
+    have e2 : (Q.vtx k).2 = ym := Ρ hkz
     exact D.isTrap.no_vertex k hk (by rw [e2]; exact hy1) (by rw [e2]; exact hy2)
-      (by rw [e1, e2]) (by rw [e1, e2]; exact hlt.le)
+      (Ρ e1, e2) (by rw [e1, e2]; exact hlt.le)
   refine ⟨t, ⟨?_, ?_⟩, hzt.symm⟩
   · rcases ht0.lt_or_eq with h | h
     · exact h
@@ -213,10 +215,10 @@ theorem right_mid (hQ : Q.Simple) (D : TrapData Q) :
   have hlt := D.isTrap.edgeX_lt hQ D.free hy1 hy2
   have hnv : ∀ k, k < Q.n → Q.vtx k ≠ ((edgeX Q D.j ym, ym) : Point) := by
     intro k hk hkz
-    have e1 : (Q.vtx k).1 = edgeX Q D.j ym := by rw [hkz]
-    have e2 : (Q.vtx k).2 = ym := by rw [hkz]
+    have e1 : (Q.vtx k).1 = edgeX Q D.j ym := Ρ hkz
+    have e2 : (Q.vtx k).2 = ym := Ρ hkz
     exact D.isTrap.no_vertex k hk (by rw [e2]; exact hy1) (by rw [e2]; exact hy2)
-      (by rw [e1, e2]; exact hlt.le) (by rw [e1, e2])
+      (by rw [e1, e2]; exact hlt.le) (Ρ e1, e2)
   refine ⟨t, ⟨?_, ?_⟩, hzt.symm⟩
   · rcases ht0.lt_or_eq with h | h
     · exact h
@@ -234,10 +236,10 @@ theorem walk_pt (_hQ : Q.Simple) {e : ℕ} (he : e < Q.n) {t : ℝ} (ht : t ∈ 
   have hp := inp_lt (b := revOf Q) he
   have hpp : inp (revOf Q) Q.n (inp (revOf Q) Q.n e) = e := inp_inp he
   unfold sidePt
-  rw [walk_vtx Q hp, walk_succ Q hp, ← nxt_eq he]
+  Ξ walk_vtx Q hp, walk_succ Q hp, ← nxt_eq he
   rcases wv_inp (b := revOf Q) hp with ⟨-, h1, h2⟩ | ⟨-, h1, h2⟩
   · rw [h1, h2, hpp]; exact ⟨t, ht, rfl⟩
-  · rw [h1, h2, hpp, Geometry.lerp_symm]
+  · Ξ h1, h2, hpp, Geometry.lerp_symm
     exact ⟨1 - t, ⟨by linarith [ht.2], by linarith [ht.1]⟩, rfl⟩
 
 /-- **The walk runs down the left side edge**: walk edge `inp i` starts at the upper end of the
@@ -252,11 +254,11 @@ theorem walk_left (hQ : Q.Simple) (D : TrapData Q) :
   obtain ⟨t', ht', hz'⟩ := walk_pt hQ hi ht
   have hpW : inp (revOf Q) Q.n D.i < (interiorWalk Q).n := by rw [walk_n]; exact hp
   have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
-  have hy1 : D.y₁ < (D.y₁ + D.y₂) / 2 := by linarith
-  have hy2 : (D.y₁ + D.y₂) / 2 < D.y₂ := by linarith
+  have hy1 : D.y₁ < (D.y₁ + D.y₂) / 2 := ⟡
+  have hy2 : (D.y₁ + D.y₂) / 2 < D.y₂ := ⟡
   have hlt := D.isTrap.edgeX_lt hQ D.free hy1 hy2
   have := walk_down hWs hWo hpW ht' (sub_pos.2 hlt) (fun δ hδ hδ' => by
-    rw [hWf, hWb, hz', hzt]
+    Ξ hWf, hWb, hz', hzt
     exact D.region_subset_interior hQ ⟨hy1, hy2, by simp only; linarith, by simp only; linarith⟩)
   rwa [walk_succ Q hp, walk_vtx Q hp] at this
 
@@ -272,11 +274,11 @@ theorem walk_right (hQ : Q.Simple) (D : TrapData Q) :
   obtain ⟨t', ht', hz'⟩ := walk_pt hQ hj ht
   have hpW : inp (revOf Q) Q.n D.j < (interiorWalk Q).n := by rw [walk_n]; exact hp
   have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
-  have hy1 : D.y₁ < (D.y₁ + D.y₂) / 2 := by linarith
-  have hy2 : (D.y₁ + D.y₂) / 2 < D.y₂ := by linarith
+  have hy1 : D.y₁ < (D.y₁ + D.y₂) / 2 := ⟡
+  have hy2 : (D.y₁ + D.y₂) / 2 < D.y₂ := ⟡
   have hlt := D.isTrap.edgeX_lt hQ D.free hy1 hy2
   have := walk_up hWs hWo hpW ht' (sub_pos.2 hlt) (fun δ hδ hδ' => by
-    rw [hWf, hWb, hz', hzt]
+    Ξ hWf, hWb, hz', hzt
     exact D.region_subset_interior hQ ⟨hy1, hy2, by simp only; linarith, by simp only; linarith⟩)
   rwa [walk_succ Q hp, walk_vtx Q hp] at this
 

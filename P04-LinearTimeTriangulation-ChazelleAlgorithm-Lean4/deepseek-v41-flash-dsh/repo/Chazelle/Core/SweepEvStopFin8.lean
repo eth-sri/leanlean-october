@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopFin6
 public import Chazelle.Core.SweepEvStopFin7B
 public import Chazelle.Core.SweepEvStopFinS2
@@ -66,19 +68,19 @@ theorem orgOut_transfer {R : ℕ → Prop} {N : NF} {kind k b : ℕ} {c₃ c' : 
 /-- The cost bound. -/
 theorem slf_cost {A B T Kp Ks Pc : ℕ} (hA : 1 ≤ A) (hB : T + 1 ≤ B) (hP : Pc ≤ Kp * A + 5) :
     44037 + (Pc + ((Ks * (T + 1) + 40) + 100)) ≤ (44200 + Kp + Ks) * A * B := by
-  have hB1 : 1 ≤ B := by omega
-  have h1 : 1 ≤ A * B := Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (by omega) (by omega))
-  have h2 : Kp * A ≤ Kp * A * B := Nat.le_mul_of_pos_right _ (by omega)
+  have hB1 : 1 ≤ B := ⋄
+  have h1 : 1 ≤ A * B := Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (⋄) (⋄))
+  have h2 : Kp * A ≤ Kp * A * B := Nat.le_mul_of_pos_right _ (⋄)
   have h3 : Ks * (T + 1) ≤ Ks * A * B := by
     calc Ks * (T + 1) ≤ Ks * B := Nat.mul_le_mul_left _ hB
       _ ≤ Ks * A * B := by
-        rw [mul_assoc]; exact Nat.mul_le_mul_left _ (Nat.le_mul_of_pos_left _ (by omega))
+        rw [mul_assoc]; exact Nat.mul_le_mul_left _ (Nat.le_mul_of_pos_left _ (⋄))
   have h4 : 44200 ≤ 44200 * A * B := by
-    rw [mul_assoc]; exact Nat.le_mul_of_pos_right _ (by omega)
-  have e : (44200 + Kp + Ks) * A * B = 44200 * A * B + Kp * A * B + Ks * A * B := by ring
+    rw [mul_assoc]; exact Nat.le_mul_of_pos_right _ (⋄)
+  have e : (44200 + Kp + Ks) * A * B = 44200 * A * B + Kp * A * B + Ks * A * B := ⋆
   rw [e]; omega
 
-set_option maxHeartbeats 32000000 in
+
 /-- **Task Fin** from the stretch labels and the emission. -/
 theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
   obtain ⟨ps, κp, hps⟩ := parTask

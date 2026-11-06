@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecMerge
 
 /-!
@@ -27,7 +29,7 @@ open Chazelle.Merge (lend rend FreeAt shoot freeAt_vertex shoot_vertex)
 
 theorem getD_lt {α : Type*} {l : List α} {i : ℕ} (h : i < l.length) (d : α) :
     l.getD i d = l[i] := by
-  simp [List.getD_eq_getElem?_getD, h]
+  Θ List.getD_eq_getElem?_getD, h
 
 variable (J : Merge.Junction)
 
@@ -37,7 +39,7 @@ def shots (Z : Set (Point × ℝ)) : Set (Set Point) :=
 
 theorem shots_union (Z Z' : Set (Point × ℝ)) : shots J (Z ∪ Z') = shots J Z ∪ shots J Z' := by
   ext d
-  simp only [shots, Set.mem_union, Set.mem_ofPred_eq]
+  ϴ shots, Set.mem_union, Set.mem_ofPred_eq
   constructor
   · rintro ⟨x, hx | hx, h⟩
     · exact Or.inl ⟨x, hx, h⟩
@@ -71,7 +73,7 @@ theorem shots_vtxQ (k : ℕ) :
     shots J (vtxQ J k) = {d | ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ J.whole.DirFree k σ ∧
       d = J.whole.chordSet k σ} := by
   ext d
-  simp only [shots, vtxQ, Set.mem_insert_iff, Set.mem_singleton_iff, Set.mem_ofPred_eq]
+  ϴ shots, vtxQ, Set.mem_insert_iff, Set.mem_singleton_iff, Set.mem_ofPred_eq
   constructor
   · rintro ⟨x, hx, hf, rfl⟩
     rcases hx with rfl | rfl
@@ -85,7 +87,7 @@ theorem shared_eq_shots : J.sharedChords = shots J (vtxQ J J.m₁) := by
   rw [shots_vtxQ]; rfl
 
 theorem top_eq_shots : topChords J = shots J (topQ J) := by
-  rw [topQ, shots_union, shots_vtxQ, shots_vtxQ]
+  Ξ topQ, shots_union, shots_vtxQ, shots_vtxQ
   ext d
   simp only [topChords, topIdxs, Finset.mem_insert, Finset.mem_singleton, Set.mem_union,
     Set.mem_ofPred_eq]
@@ -99,16 +101,16 @@ theorem top_eq_shots : topChords J = shots J (topQ J) := by
 
 theorem cap_eq_shots : capChords J = shots J (capQ J) := by
   ext d
-  simp only [capChords, shots, capQ, Set.mem_ofPred_eq]
+  ϴ capChords, shots, capQ, Set.mem_ofPred_eq
   constructor
   · rintro ⟨he, hf, rfl⟩; exact ⟨_, ⟨he, rfl⟩, hf, rfl⟩
   · rintro ⟨x, ⟨he, rfl⟩, hf, rfl⟩; exact ⟨he, hf, rfl⟩
 
 theorem fusion_eq_shots (S₁ S₂ : Set (Set Point)) :
     J.fusion S₁ S₂ = shots J (endQ (S₁ ∪ S₂)) ∪ shots J (vtxQ J J.m₁) := by
-  rw [← shared_eq_shots, endQ, shots_union]
+  Ξ ← shared_eq_shots, endQ, shots_union
   ext d
-  simp only [Merge.Junction.fusion, shots, Set.mem_union, Set.mem_ofPred_eq]
+  ϴ Merge.Junction.fusion, shots, Set.mem_union, Set.mem_ofPred_eq
   constructor
   · rintro ((⟨c, hc, hf, rfl⟩ | ⟨c, hc, hf, rfl⟩) | h)
     · exact Or.inl (Or.inl ⟨_, ⟨c, hc, rfl⟩, hf, rfl⟩)

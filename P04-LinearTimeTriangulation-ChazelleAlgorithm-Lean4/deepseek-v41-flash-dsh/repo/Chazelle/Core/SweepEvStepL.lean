@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStepL9
 
 /-!
@@ -35,11 +37,11 @@ theorem stepTask : StepTask := by
   obtain ⟨hlabR, hinv⟩ := S.labels
   have hsome := stp_key_some hI hd
   obtain ⟨-, -, -, -, -, -, -, -, -, hkN4, -⟩ := hI.2.2.2.2.2.2.2 hsome
-  have eTB : c'.nreg cTB = c.nreg cTB := stp_iter_keep hI (k := 661) (by omega)
-  have elB : c'.nreg lB = c.nreg lB := stp_iter_keep hI (k := 2430) (by omega)
-  have egN : c'.nreg gN = c.nreg gN := stp_iter_keep hI (k := 2440) (by omega)
+  have eTB : c'.nreg cTB = c.nreg cTB := stp_iter_keep hI (k := 661) (⋄)
+  have elB : c'.nreg lB = c.nreg lB := stp_iter_keep hI (k := 2430) (⋄)
+  have egN : c'.nreg gN = c.nreg gN := stp_iter_keep hI (k := 2440) (⋄)
   have egR : ∀ u, u < 2 → c'.nreg (gR + u) = c.nreg (gR + u) := fun u hu => by
-    have := stp_iter_keep hI (k := 2441 + u) (by omega)
+    have := stp_iter_keep hI (k := 2441 + u) (⋄)
     rwa [show sw (2441 + u) = gR + u by unfold gR sw; omega] at this
   have hAl := stp_alloc_mono hI
   have hgN := L.gapN
@@ -47,11 +49,11 @@ theorem stepTask : StepTask := by
     stops := hstops
     sorted := fun i i' hii hi' => by
       rw [esC] at hi'
-      rw [(hso i (by omega)).2.2, (hso i' hi').2.2]
+      rw [(hso i (⋄)).2.2, (hso i' hi').2.2]
       exact L.sorted i i' hii hi'
     two := fun i hi => by
       rw [esC] at hi
-      rw [(hso i (by omega)).2.2, (hso (i + 2) hi).2.2]
+      rw [(hso i (⋄)).2.2, (hso (i + 2) hi).2.2]
       exact L.two i hi
     tab0 := by rw [eTB]; exact L.tab0
     lay1 := by rw [eTB, elB]; exact L.lay1
@@ -67,11 +69,11 @@ theorem stepTask : StepTask := by
     gapN := by rw [egN]; exact L.gapN
     gapR := fun i hi => by
       rw [egN] at hi
-      rw [egR i (by omega)]
+      rw [egR i (⋄)]
       exact L.gapR i hi
     gap := fun V hV => by
       obtain ⟨i, hi, hiV⟩ := L.gap V hV
-      exact ⟨i, by rw [egN]; exact hi, by rw [egR i (by omega)]; exact hiV⟩
+      exact ⟨i, by rw [egN]; exact hi, by rw [egR i (⋄)]; exact hiV⟩
     ptr := hptr
     ptrL := hptrL
     log := S.log'

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecPhases
 
 /-!
@@ -20,7 +22,7 @@ theorem gradeRaw_handle_lt {O : OracleIface} {P : Polygon} {m : ℕ → ℕ} {h 
   by_contra hA
   push Not at hA
   have := (hR (Function.update m h (topGrade P.n + 2)) fun a ha => by
-    rw [Function.update_of_ne (by omega)]).1
+    rw [Function.update_of_ne (⋄)]).1
   rw [Function.update_self] at this
   omega
 
@@ -29,7 +31,7 @@ theorem gradeCtx_capLocal (O : OracleIface) : (gradeCtx O).CapLocal := by
   intro P m m' g A hmm' hh
   have hlt := gradeRaw_handle_lt (O := O) hh
   show 2 ^ (m' g - 1) = 2 ^ (m g - 1)
-  rw [hmm' g hlt]
+  Ξ hmm' g hlt
 
 end
 

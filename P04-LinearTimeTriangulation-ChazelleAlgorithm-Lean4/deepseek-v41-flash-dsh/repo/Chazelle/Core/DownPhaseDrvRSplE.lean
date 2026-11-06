@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRSplD
 
 /-!
@@ -23,8 +25,8 @@ theorem bsCost_le {bk : ℕ → ℕ} {n b Mb : ℕ} (h : bcnt bk n b ≤ Mb) :
   unfold bsCost SortR.sortCost
   have hc := Nat.clog_mono_right 2 h
   have : bcnt bk n b * (Nat.clog 2 (bcnt bk n b) + 1) ≤ bcnt bk n b * (Nat.clog 2 Mb + 1) :=
-    Nat.mul_le_mul_left _ (by omega)
-  have h2 : bcnt bk n b ≤ bcnt bk n b * (Nat.clog 2 Mb + 1) := Nat.le_mul_of_pos_right _ (by omega)
+    Nat.mul_le_mul_left _ (⋄)
+  have h2 : bcnt bk n b ≤ bcnt bk n b * (Nat.clog 2 Mb + 1) := Nat.le_mul_of_pos_right _ (⋄)
   nlinarith
 
 /-- **The cost of the bucket part.** -/
@@ -42,8 +44,8 @@ theorem splB2Cost_le {bk : ℕ → ℕ} {n A Mb : ℕ} (hA : ∀ q, q < n → bk
     ring
   have hb : ∑ b ∈ Finset.range (A + 1), bcnt bk n b = n := bstart_all hA
   rw [e, hb] at hsum
-  have h1 : 1 ≤ Nat.clog 2 Mb + 1 := by omega
-  have h3 : (n + A + 1) ≤ (n + A + 1) * (Nat.clog 2 Mb + 1) := Nat.le_mul_of_pos_right _ (by omega)
+  have h1 : 1 ≤ Nat.clog 2 Mb + 1 := ⋄
+  have h3 : (n + A + 1) ≤ (n + A + 1) * (Nat.clog 2 Mb + 1) := Nat.le_mul_of_pos_right _ (⋄)
   nlinarith
 
 end

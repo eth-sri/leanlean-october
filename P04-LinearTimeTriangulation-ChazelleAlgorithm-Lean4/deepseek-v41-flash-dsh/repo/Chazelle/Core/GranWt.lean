@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranRemove
 
 /-!
@@ -44,32 +46,32 @@ theorem ncard_counted {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
   | false =>
     have e : {p : ℕ | p < M.W.n ∧ M.counted p ∧ l ≤ p ∧ p < r} = Ico l r := by
       ext p
-      simp only [mem_ofPred_eq, mem_Ico]
+      ϴ mem_ofPred_eq, mem_Ico
       constructor
       · rintro ⟨-, -, h1, h2⟩; exact ⟨h1, h2⟩
       · rintro ⟨h1, h2⟩
-        exact ⟨by omega, (hD.2 p (by omega)).2 (Or.inl rfl), h1, h2⟩
-    rw [e, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico]
+        exact ⟨⋄, (hD.2 p (⋄)).2 (Or.inl rfl), h1, h2⟩
+    Ξ e, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico
     rfl
   | true =>
     have hm := hD.1 rfl
     have e : {p : ℕ | p < M.W.n ∧ M.counted p ∧ l ≤ p ∧ p < r} =
         Ico (max l 6) (min r (2 * m + 6)) := by
       ext p
-      simp only [mem_ofPred_eq, mem_Ico]
+      ϴ mem_ofPred_eq, mem_Ico
       constructor
       · rintro ⟨hp, hc, h1, h2⟩
         have := (hD.2 p hp).1 hc
         rcases this with h | h
-        · exact absurd h (by decide)
+        · exact absurd h (⌖)
         · refine ⟨max_le h1 h.1, lt_min h2 h.2⟩
       · rintro ⟨h1, h2⟩
         have h1' := le_of_max_le_left h1
         have h1'' := le_of_max_le_right h1
         have h2' := lt_of_lt_of_le h2 (min_le_left _ _)
         have h2'' := lt_of_lt_of_le h2 (min_le_right _ _)
-        exact ⟨by omega, (hD.2 p (by omega)).2 (Or.inr ⟨h1'', h2''⟩), h1', h2'⟩
-    rw [e, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico]
+        exact ⟨⋄, (hD.2 p (⋄)).2 (Or.inr ⟨h1'', h2''⟩), h1', h2'⟩
+    Ξ e, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico
     rfl
 
 /-- The edge bump `[0 < t]`. -/

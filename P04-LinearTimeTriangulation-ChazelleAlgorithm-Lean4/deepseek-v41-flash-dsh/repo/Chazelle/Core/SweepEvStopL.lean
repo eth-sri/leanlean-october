@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopM2
 
 /-!
@@ -215,7 +217,7 @@ theorem raw_eq_of_key (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) 
   have ha : rSet P J N r ∈ Merge.augChords J.whole := F₂plus_subset J hS₂.2.1 hm
   have ha' : rSet P J N r' ∈ Merge.augChords J.whole := F₂plus_subset J hS₂.2.1 hm'
   have hpt : sidePt (chainModel J.whole).W r.1 (rPar P J r) =
-      sidePt (chainModel J.whole).W r'.1 (rPar P J r') := by rw [he, ht]
+      sidePt (chainModel J.whole).W r'.1 (rPar P J r') := Ρ he, ht
   rw [hend, hend', h2] at hpt
   split_ifs at hpt
   · exact aug_eq_of_lend ha ha' hpt
@@ -232,7 +234,7 @@ theorem raw_dc_eq (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N)
   have hm := (stop_mem hP hN hok hf).1
   have ha := F₂plus_subset J hS₂.2.1 hm
   have hpt : sidePt (chainModel J.whole).W r.1 (rPar P J r) =
-      sidePt (chainModel J.whole).W r'.1 (rPar P J r') := by rw [he, ht]
+      sidePt (chainModel J.whole).W r'.1 (rPar P J r') := Ρ he, ht
   rw [hend, hend', ← hs] at hpt
   have hne := lend_ne_rend ha
   have hdd : d = d' := by
@@ -242,9 +244,9 @@ theorem raw_dc_eq (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N)
     · exact absurd hpt.symm hne
     · omega
   unfold rKey
-  rw [offK_eq, offK_eq, hdd]
+  Ξ offK_eq, offK_eq, hdd
   show ((oW J (r.1 + rPar P J r)), d') = (oW J (r'.1 + rPar P J r'), d')
-  rw [he, ht]
+  Ξ he, ht
 
 /-- **The stop list from the deduped raw records** (a list `O` of raw items with strictly
 increasing keys covering the keys of all raw items). -/
@@ -263,7 +265,7 @@ theorem stopsOK_of' {α : Type*} (hP : J.P.Simple) (hN : IsNF (chainModel J.righ
   have hst : stopsOf J (Qof P) N (O.map rec) =
       O.map (fun y => ((rec y).1, rPar P J (rec y), rSet P J N (rec y))) := by
     unfold stopsOf; rw [List.map_map]; rfl
-  rw [hst]
+  Ξ hst
   refine ⟨?_, ?_, ?_, ?_⟩
   · intro s hs
     obtain ⟨y, hy, rfl⟩ := List.mem_map.1 hs
@@ -275,13 +277,13 @@ theorem stopsOK_of' {α : Type*} (hP : J.P.Simple) (hN : IsNF (chainModel J.righ
     obtain ⟨y, hy, hky⟩ := hcov x hx
     obtain ⟨e1, e2, e3⟩ := raw_eq_of_key hP hN (hO y hy) (hok x hx) hky
     refine List.mem_map.2 ⟨y, hy, ?_⟩
-    rw [e1, e2, e3, h1, h2, h3]
-  · rw [List.pairwise_map]
+    Ξ e1, e2, e3, h1, h2, h3
+  · Ξ List.pairwise_map
     exact hinc.imp fun {a b} h => by
       have := KLt.fst_le h
       simp only [rKey, offK_eq] at this
       exact this
-  · rw [List.Nodup, List.pairwise_map]
+  · Ξ List.Nodup, List.pairwise_map
     refine List.Pairwise.imp_of_mem (fun {a b} ha hb h heq => ?_) hinc
     obtain ⟨h1, h2⟩ := Prod.ext_iff.1 heq
     obtain ⟨h2, h3⟩ := Prod.ext_iff.1 h2

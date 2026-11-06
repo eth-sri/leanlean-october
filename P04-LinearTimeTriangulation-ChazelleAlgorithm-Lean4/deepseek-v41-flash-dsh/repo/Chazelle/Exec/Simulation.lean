@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Exec.Interp
 public import Chazelle.Machine.Basic
 
@@ -46,12 +48,12 @@ noncomputable def castConfig (c : QConfig) : Config where
 
 /-- The embedded polygon has the same number of vertices. -/
 @[simp] theorem castPoly_n (Pq : QPolygon) : (castPoly Pq).n = Pq.length := by
-  simp [castPoly, Polygon.n]
+  Θ castPoly, Polygon.n
 
 /-- Vertex lookup commutes with the embedding (including the out-of-range origin). -/
 @[simp] theorem castPoly_vtx (Pq : QPolygon) (i : ℕ) :
     (castPoly Pq).vtx i = castPt (listVtx Pq i) := by
-  simp only [castPoly, Polygon.vtx, listVtx, List.getD_eq_getElem?_getD, List.getElem?_map]
+  ϴ castPoly, Polygon.vtx, listVtx, List.getD_eq_getElem?_getD, List.getElem?_map
   cases Pq[i]? <;> simp [castPt]
 
 @[simp] theorem castConfig_pc (c : QConfig) : (castConfig c).pc = c.pc := rfl

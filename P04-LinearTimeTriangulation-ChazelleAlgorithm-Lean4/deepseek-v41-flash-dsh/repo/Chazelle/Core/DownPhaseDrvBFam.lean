@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBEmit
 
 /-!
@@ -37,13 +41,13 @@ def famL (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) : Set (Set Poi
 
 theorem famL_append (M : Model) (Q : Polygon) (L L₂ : List (ℕ × ℕ × ℕ)) :
     famL M Q (L ++ L₂) = famL M Q L ∪ famL M Q L₂ := by
-  ext c; simp [famL, or_and_right, exists_or]
+  ext c; Θ famL, or_and_right, exists_or
 
 /-- **The chords of `buildNF` are those of its list.** -/
 theorem F_build (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) :
     (buildNF M Q L E).F M Q = famL M Q L := by
   ext c
-  simp only [NF.F, BuildNF.buildNF, List.mem_map, List.mem_range, famL]
+  ϴ NF.F, BuildNF.buildNF, List.mem_map, List.mem_range, famL
   constructor
   · rintro ⟨r, ⟨i, hi, rfl⟩, rfl⟩
     exact ⟨_, BuildOrder.getD_mem hi, rfl⟩
@@ -51,9 +55,9 @@ theorem F_build (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : Li
     obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hx
     refine ⟨_, ⟨i, hi, rfl⟩, ?_⟩
     have : L.getD i (0, 0, 0) = L[i] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+      Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some
     unfold BuildNF.chordRec
-    rw [this]
+    Ξ this
     rfl
 
 /-- A vertex chord meets the interior. -/
@@ -62,9 +66,9 @@ theorem chord_dom_nonempty {Q : Polygon} (hQ : Q.Simple) {c : Set Point} (hc : c
   obtain ⟨i, σ, hi, hσ, hdir, rfl⟩ := hc
   have hpos := Visibility.chordParam_pos hQ hi hdir
   refine ⟨Visibility.rayPt (Q.vtx i) σ (Visibility.chordParam Q i σ / 2), ?_, ?_⟩
-  · rw [Visibility.chordSet_eq_image hQ hi hdir]
-    exact ⟨_, ⟨by linarith, by linarith⟩, rfl⟩
-  · exact (Visibility.chord_spec hQ hi hdir).2.2 _ (by linarith) (by linarith)
+  · Ξ Visibility.chordSet_eq_image hQ hi hdir
+    exact ⟨_, ⟨⟡, ⟡⟩, rfl⟩
+  · exact (Visibility.chord_spec hQ hi hdir).2.2 _ (⟡) (⟡)
 
 /-- The chords of `Q` are admissible chords of its interior model, at vertex heights. -/
 theorem chords_family {Q : Polygon} (hQ : Q.Simple) {c : Set Point} (hc : c ∈ chords Q) :
@@ -75,16 +79,16 @@ theorem chords_family {Q : Polygon} (hQ : Q.Simple) {c : Set Point} (hc : c ∈ 
 theorem host_pts_lt {n : ℕ} (hn : 0 < n) {H : Host} (hH : HostWF n H) :
     ∀ s ∈ H.pts n, s.Lt n := by
   intro s hs
-  simp only [Host.pts, List.mem_flatMap] at hs
+  ϴ' Host.pts, List.mem_flatMap at hs
   obtain ⟨it, hit, hs⟩ := hs
   have hwf := hH it hit
   cases it with
   | run a ℓ =>
-    simp only [HostItem.pts, List.mem_map, List.mem_range] at hs
+    ϴ' HostItem.pts, List.mem_map, List.mem_range at hs
     obtain ⟨k, -, rfl⟩ := hs
     exact Nat.mod_lt _ hn
   | pt x =>
-    simp only [HostItem.pts, List.mem_singleton] at hs
+    ϴ' HostItem.pts, List.mem_singleton at hs
     subst hs; exact hwf
 
 theorem wlist_mem {li : Bool} {pts : List SymPt} {s : SymPt} (h : s ∈ wlist li pts) : s ∈ pts := by
@@ -140,7 +144,7 @@ theorem BaseCtx.fam (B : BaseCtx Q L E reg li) :
     (interiorModel Q).ChordFamily Q ((buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) :=
   (DownMath.isNF_build B.hQ B.hL B.hperm B.hsort).1
 
-set_option maxHeartbeats 2000000 in
+
 /-- The facts of a new chord. -/
 theorem newL_mem (B : BaseCtx Q L E reg li) {x : ℕ × ℕ × ℕ}
     (hx : x ∈ newL li Q (buildNF (interiorModel Q) Q L E)) :
@@ -154,10 +158,10 @@ theorem newL_mem (B : BaseCtx Q L E reg li) {x : ℕ × ℕ × ℕ}
       ProperPos (interiorModel Q) Q Q.n (recOf x).rpos ∧ x.1 < Q.n := by
   unfold newL at hx
   obtain ⟨r, hr, hxr⟩ := List.mem_flatMap.1 hx
-  rw [List.mem_range] at hr
+  Ξ' List.mem_range at hr
   obtain ⟨hR, hl⟩ := region_facts (B.rc hr) B.hli
   have := regList_sound B.hQ B.hdh B.hli B.fam hR hl hxr
-  rw [F_build] at this
+  Ξ' F_build at this
   exact ⟨r, hr, hxr, this⟩
 
 /-- **The new chord list is valid** with the old one. -/
@@ -168,8 +172,8 @@ theorem newL_ok (B : BaseCtx Q L E reg li) :
   · -- finite
     have : {c | ∃ x ∈ L ++ newL li Q (buildNF (interiorModel Q) Q L E), c = (recOf x).toSet (interiorModel Q) Q} =
         (fun x => (recOf x).toSet (interiorModel Q) Q) '' {x | x ∈ L ++ newL li Q (buildNF (interiorModel Q) Q L E)} := by
-      ext c; simp [eq_comm]
-    rw [this]
+      ext c; Θ eq_comm
+    Ξ this
     exact (List.finite_toSet _).image _
   · rintro c ⟨x, hx, rfl⟩
     rcases List.mem_append.1 hx with hx | hx
@@ -182,16 +186,16 @@ theorem newL_ok (B : BaseCtx Q L E reg li) :
     · obtain ⟨-, -, -, -, -, -, -, -, -, h⟩ := newL_mem B hx
       exact ⟨x.1, h, _, _, rfl⟩
   · -- distinct
-    rw [List.map_append, List.nodup_append]
+    Ξ List.map_append, List.nodup_append
     refine ⟨hL.2.1, ?_, ?_⟩
     · unfold newL
-      rw [List.map_flatMap, List.nodup_flatMap]
+      Ξ List.map_flatMap, List.nodup_flatMap
       refine ⟨fun r hr => ?_, ?_⟩
-      · rw [List.mem_range] at hr
+      · Ξ' List.mem_range at hr
         obtain ⟨hR, hl⟩ := region_facts (B.rc hr) B.hli
         exact regList_nodup B.hQ B.hdh B.hli B.fam hR hl
       · refine List.nodup_range.pairwise_of_forall_ne fun r hr r' hr' hrr => ?_
-        rw [List.mem_range] at hr hr'
+        Ξ' List.mem_range at hr hr'
         refine List.disjoint_left.2 fun c hc hc' => hrr ?_
         obtain ⟨x, hx, rfl⟩ := List.mem_map.1 hc
         obtain ⟨x', hx', hxx⟩ := List.mem_map.1 hc'
@@ -199,12 +203,12 @@ theorem newL_ok (B : BaseCtx Q L E reg li) :
         obtain ⟨hR', hl'⟩ := region_facts (B.rc hr') B.hli
         obtain ⟨hcQ, -, hcR, -⟩ := regList_sound B.hQ B.hdh B.hli B.fam hR hl hx
         obtain ⟨-, -, hcR', -⟩ := regList_sound B.hQ B.hdh B.hli B.fam hR' hl' hx'
-        rw [hxx] at hcR'
+        Ξ' hxx at hcR'
         obtain ⟨z, hz⟩ := chord_dom_nonempty B.hQ hcQ
         have hreg := B.hregs.1
         rcases Chazelle.Chain.regionsIn_eq_or_disjoint (hreg.1 r hr) (hreg.1 r' hr') with h | h
         · exact hreg.2.1 r r' hr hr' h
-        · exact absurd (h.le_bot ⟨hcR hz, hcR' hz⟩) (by simp)
+        · exact absurd (h.le_bot ⟨hcR hz, hcR' hz⟩) (✓)
     · intro c hc c' hc' hcc
       subst hcc
       obtain ⟨x, hx, rfl⟩ := List.mem_map.1 hc
@@ -226,17 +230,17 @@ theorem newL_ok (B : BaseCtx Q L E reg li) :
 theorem newL_full (B : BaseCtx Q L E reg li) :
     chords Q ⊆ famL (interiorModel Q) Q (L ++ newL li Q (buildNF (interiorModel Q) Q L E)) := by
   intro c hc
-  rw [famL_append]
+  Ξ famL_append
   by_cases hcS : c ∈ famL (interiorModel Q) Q L
   · exact Or.inl hcS
   right
   have hFam := B.fam
-  rw [F_build] at hFam
+  Ξ' F_build at hFam
   obtain ⟨R, hR, hcR, -⟩ := DownDrv.full_in_region B.hQ hFam hc hcS
-  rw [← F_build (E := E)] at hR
+  Ξ' ← F_build (E := E) at hR
   obtain ⟨r, hr, rfl⟩ := B.hregs.1.2.2 R hR
   obtain ⟨hRo, hl⟩ := region_facts (B.rc hr) B.hli
-  rw [F_build] at hRo
+  Ξ' F_build at hRo
   obtain ⟨x, hx, hxc⟩ := regList_complete B.hQ B.hdh B.hli hRo hl hc hcS hcR
   exact ⟨x, List.mem_flatMap.2 ⟨r, List.mem_range.2 hr, hx⟩, hxc.symm⟩
 
@@ -258,9 +262,9 @@ theorem run_pts_lt (hQ : Q.Simple) :
   have hn : 0 < Q.n := by have := hQ.1; omega
   refine host_pts_lt hn ?_ s (wlist_mem hs)
   intro it hit
-  simp only [List.mem_singleton] at hit
+  ϴ' List.mem_singleton at hit
   subst hit
-  exact ⟨by omega, by omega⟩
+  exact ⟨⋄, ⋄⟩
 
 theorem regOK0 (hQ : Q.Simple) (hli : li = true ↔ Mountain.LeftInside Q) :
     RegOK Q ∅ (interiorModel Q).D (polyOf Q (wlist li (Host.pts Q.n [HostItem.run 0 (Q.n - 1)]))) := by
@@ -278,7 +282,7 @@ theorem newL0_ok (hQ : Q.Simple) (hDH : DistinctHeights Q)
   · have : {c | ∃ x ∈ newL0 li Q, c = (recOf x).toSet (interiorModel Q) Q} =
         (fun x => (recOf x).toSet (interiorModel Q) Q) '' {x | x ∈ newL0 li Q} := by
       ext c; simp [eq_comm]
-    rw [this]
+    Ξ this
     exact (List.finite_toSet _).image _
   · rintro c ⟨x, hx, rfl⟩
     exact chords_family hQ (regList_sound hQ hDH hli hFam hR hl hx).1
@@ -305,15 +309,15 @@ theorem length_le_of_chords {Q : Polygon} {L₂ : List (ℕ × ℕ × ℕ)}
     (hnd : (L₂.map fun x => (recOf x).toSet (interiorModel Q) Q).Nodup)
     (hc : ∀ x ∈ L₂, (recOf x).toSet (interiorModel Q) Q ∈ chords Q) : L₂.length ≤ 2 * Q.n := by
   have h1 : (L₂.map fun x => (recOf x).toSet (interiorModel Q) Q).toFinset.card = L₂.length := by
-    rw [List.toFinset_card_of_nodup hnd, List.length_map]
+    Ξ List.toFinset_card_of_nodup hnd, List.length_map
   have h2 : ((L₂.map fun x => (recOf x).toSet (interiorModel Q) Q).toFinset : Set (Set Point)) ⊆
       chords Q := by
     intro c hc'
-    simp only [List.coe_toFinset, mem_ofPred_eq, List.mem_map] at hc'
+    ϴ' List.coe_toFinset, mem_ofPred_eq, List.mem_map at hc'
     obtain ⟨x, hx, rfl⟩ := hc'
     exact hc x hx
   have h3 := Set.ncard_le_ncard h2 (Visibility.chords_finite Q)
-  rw [Set.ncard_coe_finset, h1] at h3
+  Ξ' Set.ncard_coe_finset, h1 at h3
   exact h3.trans (Visibility.chords_ncard_le Q)
 
 end

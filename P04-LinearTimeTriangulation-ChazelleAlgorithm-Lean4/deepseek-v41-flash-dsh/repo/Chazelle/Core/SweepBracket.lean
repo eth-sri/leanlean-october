@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepChain
 
 /-!
@@ -47,8 +49,8 @@ theorem side_arc {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
       (θ = -1 → ¬ sideInArc (pn + tn) (pf + tf) (p + t)) := by
   obtain ⟨hfseg, hy, hopen, -, -⟩ := hM.attach_seg (hF hf) hN hFr hNF
   have hmid : lerp (sidePt M.W pn tn) (sidePt M.W pf tf) (1 / 2) ∈ f := by
-    rw [hfseg]; exact Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)
-  have hmidD := hopen (1 / 2) ⟨by norm_num, by norm_num⟩
+    rw [hfseg]; exact Geometry.lerp_mem_segment _ _ (⊛) (⊛)
+  have hmidD := hopen (1 / 2) ⟨⊛, ⊛⟩
   have hsym : lerp (sidePt M.W pf tf) (sidePt M.W pn tn) (1 / 2) =
       lerp (sidePt M.W pn tn) (sidePt M.W pf tf) (1 / 2) := by
     apply Geometry.point_ext <;> simp [Geometry.lerp] <;> ring
@@ -56,12 +58,12 @@ theorem side_arc {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
   · intro hθ1
     subst hθ1
     have hleft := left_of_side hρ hS (a := sidePt M.W pf tf) (b := sidePt M.W pn tn) hy.symm
-      (by rw [hsym]; exact hmid) (by rw [hsym]; exact hmidD) (by linarith)
+      (by rw [hsym]; exact hmid) (by rw [hsym]; exact hmidD) (⟡)
     exact fun hin => hM.not_left_of_after hF hf hFr hN (Ne.symm hNF) hG hp ht hin hfG hleft
   · intro hθ1
     subst hθ1
     have hleft := left_of_side hρ hS (a := sidePt M.W pn tn) (b := sidePt M.W pf tf) hy hmid
-      hmidD (by linarith)
+      hmidD (⟡)
     exact fun hin => hM.not_left_of_after hF hf hN hFr hNF hG hp ht hin hfG hleft
 
 /-- **A third chord at a tie** is one of the two chords of the tie. -/
@@ -187,19 +189,19 @@ theorem back_end (hP : J.P.Simple) {Q : Polygon}
     · exact hZout ⟨hpos, hlt⟩
     · apply hsa
       rcases hP0.lt_or_eq with hP0' | hP0'
-      · exact (sideInArc_rev_iff_off hg0 hgn kZ0 kZ1 kP0 kP1 kx0 kx1 (by linarith)).2
-          (Or.inr (by linarith))
+      · exact (sideInArc_rev_iff_off hg0 hgn kZ0 kZ1 kP0 kP1 kx0 kx1 (⟡)).2
+          (Or.inr (⟡))
       · exfalso
-        have hk := off_inj hg0 hgn kP0 kP1 kZ0 kZ1 (by linarith)
+        have hk := off_inj hg0 hgn kP0 kP1 kZ0 kZ1 (⟡)
         exact hne (by obtain ⟨rfl, rfl⟩ := sideKey_inj hPa.2.1 hPa.2.2.1 hZa.2.1 hZa.2.2.1 hk; rfl)
   refine ⟨hLZ, ?_⟩
   have hPZ : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by linarith
+      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := ⟡
   have hle : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) ≤
       off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) := by
     by_contra hc
     push Not at hc
-    exact hsa ((sideInArc_iff_off hg0 hgn kP0 kP1 kZ0 kZ1 kx0 kx1 hPZ).2 ⟨by linarith, hc⟩)
+    exact hsa ((sideInArc_iff_off hg0 hgn kP0 kP1 kZ0 kZ1 kx0 kx1 hPZ).2 ⟨⟡, hc⟩)
   rcases hle.lt_or_eq with hq | hq
   · exact hq
   · exact absurd ⟨h, hh, pz, tz, hZa, (off_inj hg0 hgn kZ0 kZ1 kx0 kx1 hq).symm⟩ hnc₀
@@ -249,7 +251,7 @@ theorem fwd_end (hP : J.P.Simple) {Q : Polygon}
       exact hZout ⟨hpos, hlt⟩
     refine ⟨hLZ, ?_⟩
     have hPZ : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
-        off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by linarith
+        off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := ⟡
     have hle : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) ≤
         off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by
       by_contra hc

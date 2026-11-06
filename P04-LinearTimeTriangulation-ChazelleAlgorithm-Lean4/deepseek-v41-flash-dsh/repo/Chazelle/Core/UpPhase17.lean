@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase16
 
 /-!
@@ -103,9 +105,9 @@ theorem gamA_exec {c : Config} (hw : WordsBounded W c) {S p g1 cb G2 : ℕ}
   all_goals try (config_simp; (try simp only [h00, h02, h07, h21, h25, hcb]); omega)
   refine ⟨rfl, ‹_›, by config_simp, by config_simp, by config_simp; simp only [h00, h21],
     by config_simp; exact h07, ?_, fun r a1 a2 a3 a4 a5 a6 a7 => ?_, rfl, rfl, rfl, rfl⟩
-  · config_simp; simp only [h00, h02, h07, h21, h25, hcb, hG2]
+  · config_simp; ϴ h00, h02, h07, h21, h25, hcb, hG2
   · simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 16000000 in
 /-- **`γ'_{g}`** for the grade in `170007`. -/

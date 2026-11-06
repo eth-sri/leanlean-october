@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTValid2
 public import Chazelle.Core.RestoreTCountMath
 
@@ -38,28 +40,28 @@ def updArc (bab bak bkb f : ℕ) : Stmt :=
 theorem updArc_rs {bab bak bkb f : ℕ} {a b k : ℝ} (hf : Scr f) (hI : TInv W c₀ c)
     (h1 : BitIs c bab (a < b)) (h2 : BitIs c bak (a < k)) (h3 : BitIs c bkb (k < b)) :
     RS P W c₀ (updArc bab bak bkb f) c 7 (fun c' => FlagUpd c c' f (sideInArc a b k)) := by
-  have e1 : c.nreg 83023 = 1 := hI.h23
-  rw [← sideInArc_bits]
+  have e1 := hI.h23
+  Ξ ← sideInArc_bits
   unfold updArc
   rcases bit01 h1 with ⟨q1, n1⟩ | ⟨q1, n1⟩ <;>
   rcases bit01 h2 with ⟨q2, n2⟩ | ⟨q2, n2⟩ <;>
   rcases bit01 h3 with ⟨q3, n3⟩ | ⟨q3, n3⟩
-  · refine RS.ifT (by omega) (RS.ifT (by omega) (RS.ifT (by omega) (leaf_skip hI ?_)))
-    simp [n1, n2, n3]
-  · refine RS.ifT (by omega) (RS.ifT (by omega) (RS.ifF (by omega) (leaf_set hI hf le_rfl ?_)))
-    simp [n1, n3]
-  · refine RS.ifT (by omega) (RS.ifF (by omega) (leaf_set hI hf (by norm_num) ?_))
-    simp [n1, n2]
-  · refine RS.ifT (by omega) (RS.ifF (by omega) (leaf_set hI hf (by norm_num) ?_))
-    simp [n1, n2]
-  · refine RS.ifF (by omega) (RS.ifT (by omega) (leaf_skip hI ?_))
-    simp [n1, n2]
-  · refine RS.ifF (by omega) (RS.ifT (by omega) (leaf_skip hI ?_))
-    simp [n1, n2]
-  · refine RS.ifF (by omega) (RS.ifF (by omega) (RS.ifT (by omega) (leaf_skip hI ?_)))
-    simp [n1, n3]
-  · refine RS.ifF (by omega) (RS.ifF (by omega) (RS.ifF (by omega) (leaf_set hI hf le_rfl ?_)))
-    simp [n1, n2, n3]
+  · refine RS.ifT (⋄) (RS.ifT (⋄) (RS.ifT (⋄) (leaf_skip hI ?_)))
+    Θ n1, n2, n3
+  · refine RS.ifT (⋄) (RS.ifT (⋄) (RS.ifF (⋄) (leaf_set hI hf le_rfl ?_)))
+    Θ n1, n3
+  · refine RS.ifT (⋄) (RS.ifF (⋄) (leaf_set hI hf (⊛) ?_))
+    Θ n1, n2
+  · refine RS.ifT (⋄) (RS.ifF (⋄) (leaf_set hI hf (⊛) ?_))
+    Θ n1, n2
+  · refine RS.ifF (⋄) (RS.ifT (⋄) (leaf_skip hI ?_))
+    Θ n1, n2
+  · refine RS.ifF (⋄) (RS.ifT (⋄) (leaf_skip hI ?_))
+    Θ n1, n2
+  · refine RS.ifF (⋄) (RS.ifF (⋄) (RS.ifT (⋄) (leaf_skip hI ?_)))
+    Θ n1, n3
+  · refine RS.ifF (⋄) (RS.ifF (⋄) (RS.ifF (⋄) (leaf_set hI hf le_rfl ?_)))
+    Θ n1, n2, n3
 
 
 /-! ## Reading an exit chord -/
@@ -81,18 +83,18 @@ theorem cRead_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
   have hil := (chordAt_lt hE ht).1
   set i := chordAt N (c₀.nreg 83002) (c.nreg 83030) with hidef
   have h1 := tRegItem_exec (f := 3) (tr := 83030) (Or.inr rfl) (by unfold InR; omega) hE hI
-    (by rw [ite_eq_right (by decide)]; exact ht) (by omega)
-  rw [ite_eq_right (by decide)] at h1
-  refine RS.mono (K := 20 + (1 + (14 + (1 + (14 + 14))))) ?_ (by norm_num) (fun _ h => h)
+    (by rw [ite_eq_right (⌖)]; exact ht) (⋄)
+  Ξ' ite_eq_right (⌖) at h1
+  refine RS.mono (K := 20 + (1 + (14 + (1 + (14 + 14))))) ?_ (⊛) (fun _ h => h)
   refine RS.seq (RS.op h1) fun c₁ hI₁ hA₁ ⟨v₁, h8₁⟩ =>
     RS.seq (RS.copy hI₁ (r := 83032) (a := 50210) (by unfold Scr; omega))
     fun c₂ hI₂ hA₂ hc₂ => ?_
   have q2 : c₂.nreg 83032 = i := by rw [hc₂, upd_eq, v₁]; rfl
   have a2 : Agr c c₂ [83032] := (Agr.of_band h8₁ []).trans (Agr.of_upd hc₂)
-  refine RS.seq (chF_rs (f := 0) (d := 83047) (by norm_num) (by unfold Scr; omega) hE hI₂
-    (by rw [q2]; exact hil) (by omega)) fun c₃ hI₃ hA₃ ⟨v₃, a₃⟩ => ?_
-  have q3 : c₃.nreg 83032 = i := by rw [a₃ _ (by norm_num) (by norm_num) (by simp), q2]
-  have e23 : c₃.nreg 83023 = 1 := hI₃.h23
+  refine RS.seq (chF_rs (f := 0) (d := 83047) (⊛) (by unfold Scr; omega) hE hI₂
+    (by rw [q2]; exact hil) (⋄)) fun c₃ hI₃ hA₃ ⟨v₃, a₃⟩ => ?_
+  have q3 : c₃.nreg 83032 = i := Ρ a₃ _ (⊛) (⊛) (✓), q2
+  have e23 := hI₃.h23
   have hh : (N.chord i).h < P.n := by
     obtain ⟨-, -, -, reg, -, -, -, -, -, hh, -⟩ := hE.hNF
     have := hh _ hil
@@ -100,18 +102,18 @@ theorem cRead_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
   refine RS.seq (RS.add hI₃ (r := 83047) (a := 83047) (b := 83023) (by unfold Scr; omega)
     (by rw [v₃, e23, q2]; have := hE.hW; unfold hostWords at this; simp only [crFld]; omega))
     fun c₄ hI₄ hA₄ h₄ => ?_
-  have q4 : c₄.nreg 83032 = i := by rw [h₄, upd_ne (by norm_num), q3]
+  have q4 : c₄.nreg 83032 = i := Ρ h₄, upd_ne (⊛), q3
   have v4 : c₄.nreg 83047 = (N.chord i).h + 1 := by rw [h₄, upd_eq, v₃, e23, q2]; rfl
-  refine RS.seq (chF_rs (f := 1) (d := 83048) (by norm_num) (by unfold Scr; omega) hE hI₄
-    (by rw [q4]; exact hil) (by omega)) fun c₅ hI₅ hA₅ ⟨v₅, a₅⟩ => ?_
-  have q5 : c₅.nreg 83032 = i := by rw [a₅ _ (by norm_num) (by norm_num) (by simp), q4]
-  refine (chF_rs (f := 2) (d := 83049) (by norm_num) (by unfold Scr; omega) hE hI₅
-    (by rw [q5]; exact hil) (by omega)).mono le_rfl fun c₆ ⟨v₆, a₆⟩ => ?_
+  refine RS.seq (chF_rs (f := 1) (d := 83048) (⊛) (by unfold Scr; omega) hE hI₄
+    (by rw [q4]; exact hil) (⋄)) fun c₅ hI₅ hA₅ ⟨v₅, a₅⟩ => ?_
+  have q5 : c₅.nreg 83032 = i := Ρ a₅ _ (⊛) (⊛) (✓), q4
+  refine (chF_rs (f := 2) (d := 83049) (⊛) (by unfold Scr; omega) hE hI₅
+    (by rw [q5]; exact hil) (⋄)).mono le_rfl fun c₆ ⟨v₆, a₆⟩ => ?_
   refine ⟨?_, ?_, ?_, ((((a2.trans a₃).trans (Agr.of_upd h₄)).trans a₅).trans a₆).mono
-    (by simp)⟩
-  · rw [a₆ _ (by norm_num) (by norm_num) (by simp), a₅ _ (by norm_num) (by norm_num) (by simp),
+    (✓)⟩
+  · rw [a₆ _ (⊛) (⊛) (✓), a₅ _ (⊛) (⊛) (✓),
       v4]
-  · rw [a₆ _ (by norm_num) (by norm_num) (by simp), v₅, q4]; rfl
+  · rw [a₆ _ (⊛) (⊛) (✓), v₅, q4]; rfl
   · rw [v₆, q5]; rfl
 
 /-! ## The comparisons of the ends -/
@@ -140,61 +142,61 @@ theorem cCmps_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : Ke
       BitIs c' 83066 (keyAt M P c 83049 83047 < keyAt M P c 83012 83013) ∧
       BitIs c' 83067 (keyAt M P c 83012 83013 < keyAt M P c 83049 83047) ∧
       Agr c c' [83060, 83061, 83062, 83063, 83064, 83065, 83066, 83067]) := by
-  have i5 := hI.hin 83005 (by norm_num) (by norm_num)
-  have i6 := hI.hin 83006 (by norm_num) (by norm_num)
+  have i5 := hI.hin 83005 (⊛) (⊛)
+  have i6 := hI.hin 83006 (⊛) (⊛)
   have hx : PosG M (Qof P) P.n ⟨c.nreg 83005, c.nreg 83006⟩ := by
     rw [i5, i6]; exact hE.xPosG
   unfold cCmps
-  refine RS.mono (K := (Kk + 2) + ((Kk + 2) + ((Kk + 2) + (Kk + 2)))) ?_ (by omega)
+  refine RS.mono (K := (Kk + 2) + ((Kk + 2) + ((Kk + 2) + (Kk + 2)))) ?_ (⋄)
     (fun _ h => h)
   have g : ∀ {c₁ : Config} {S : List ℕ}, Agr c c₁ S → (∀ q ∈ [83005, 83006, 83012, 83013, 83047,
       83048, 83049], q ∉ S) → ∀ q ∈ [83005, 83006, 83012, 83013, 83047, 83048, 83049],
       c₁.nreg q = c.nreg q := fun ha hS q hq => by
     have := hS q hq
-    simp only [List.mem_cons, List.not_mem_nil, or_false] at hq
-    exact ha q (by omega) (by omega) this
+    ϴ' List.mem_cons, List.not_mem_nil, or_false at hq
+    exact ha q (⋄) (⋄) this
   refine RS.seq (kcmp_rs hK (by unfold InR; omega) (by unfold InR; omega) (by unfold InR; omega)
-    (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (by omega) hE hI hL hx
-    (by omega)) fun c₁ hI₁ hA₁ ⟨b60, b61, a₁⟩ => ?_
-  have g1 := g a₁ (by simp)
+    (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (⋄) hE hI hL hx
+    (⋄)) fun c₁ hI₁ hA₁ ⟨b60, b61, a₁⟩ => ?_
+  have g1 := g a₁ (✓)
   refine RS.seq (kcmp_rs hK (by unfold InR; omega) (by unfold InR; omega) (by unfold InR; omega)
-    (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (by omega) hE hI₁
-    (by rw [g1 83048 (by simp), g1 83047 (by simp)]; exact hL)
-    (by rw [g1 83012 (by simp), g1 83013 (by simp)]; exact hf) (by omega))
+    (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (⋄) hE hI₁
+    (by rw [g1 83048 (✓), g1 83047 (✓)]; exact hL)
+    (by rw [g1 83012 (✓), g1 83013 (✓)]; exact hf) (⋄))
     fun c₂ hI₂ hA₂ ⟨b62, b63, a₂⟩ => ?_
-  have g2 := g (a₁.trans a₂) (by simp)
+  have g2 := g (a₁.trans a₂) (✓)
   refine RS.seq (kcmp_rs hK (by unfold InR; omega) (by unfold InR; omega) (by unfold InR; omega)
-    (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (by omega) hE hI₂
-    (by rw [g2 83049 (by simp), g2 83047 (by simp)]; exact hR)
-    (by rw [g2 83005 (by simp), g2 83006 (by simp)]; exact hx) (by omega))
+    (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (⋄) hE hI₂
+    (by rw [g2 83049 (✓), g2 83047 (✓)]; exact hR)
+    (by rw [g2 83005 (✓), g2 83006 (✓)]; exact hx) (⋄))
     fun c₃ hI₃ hA₃ ⟨b64, b65, a₃⟩ => ?_
-  have g3 := g ((a₁.trans a₂).trans a₃) (by simp)
+  have g3 := g ((a₁.trans a₂).trans a₃) (✓)
   refine (kcmp_rs hK (by unfold InR; omega) (by unfold InR; omega) (by unfold InR; omega)
-    (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (by omega) hE hI₃
-    (by rw [g3 83049 (by simp), g3 83047 (by simp)]; exact hR)
-    (by rw [g3 83012 (by simp), g3 83013 (by simp)]; exact hf) (by omega)).mono le_rfl
+    (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (⋄) hE hI₃
+    (by rw [g3 83049 (✓), g3 83047 (✓)]; exact hR)
+    (by rw [g3 83012 (✓), g3 83013 (✓)]; exact hf) (⋄)).mono le_rfl
     fun c₄ ⟨b66, b67, a₄⟩ => ?_
   unfold keyAt at *
-  rw [g1 83048 (by simp), g1 83047 (by simp), g1 83012 (by simp), g1 83013 (by simp)] at b62 b63
-  rw [g2 83049 (by simp), g2 83047 (by simp), g2 83005 (by simp), g2 83006 (by simp)] at b64 b65
-  rw [g3 83049 (by simp), g3 83047 (by simp), g3 83012 (by simp), g3 83013 (by simp)] at b66 b67
+  Ξ' g1 83048 (✓), g1 83047 (✓), g1 83012 (✓), g1 83013 (✓) at b62 b63
+  Ξ' g2 83049 (✓), g2 83047 (✓), g2 83005 (✓), g2 83006 (✓) at b64 b65
+  Ξ' g3 83049 (✓), g3 83047 (✓), g3 83012 (✓), g3 83013 (✓) at b66 b67
   have t4 : ∀ q ∈ [83060, 83061, 83062, 83063, 83064, 83065], c₄.nreg q = c₃.nreg q := by
-    intro q hq; simp only [List.mem_cons, List.not_mem_nil, or_false] at hq
-    exact a₄ q (by omega) (by omega) (by simp; omega)
+    intro q hq; ϴ' List.mem_cons, List.not_mem_nil, or_false at hq
+    exact a₄ q (⋄) (⋄) (by simp; omega)
   have t3 : ∀ q ∈ [83060, 83061, 83062, 83063], c₃.nreg q = c₂.nreg q := by
-    intro q hq; simp only [List.mem_cons, List.not_mem_nil, or_false] at hq
-    exact a₃ q (by omega) (by omega) (by simp; omega)
+    intro q hq; ϴ' List.mem_cons, List.not_mem_nil, or_false at hq
+    exact a₃ q (⋄) (⋄) (by simp; omega)
   have t2 : ∀ q ∈ [83060, 83061], c₂.nreg q = c₁.nreg q := by
-    intro q hq; simp only [List.mem_cons, List.not_mem_nil, or_false] at hq
-    exact a₂ q (by omega) (by omega) (by simp; omega)
+    intro q hq; ϴ' List.mem_cons, List.not_mem_nil, or_false at hq
+    exact a₂ q (⋄) (⋄) (by simp; omega)
   refine ⟨b60.of_eq ?_, b61.of_eq ?_, b62.of_eq ?_, b63.of_eq ?_, b64.of_eq ?_, b65.of_eq ?_,
-    b66, b67, (((a₁.trans a₂).trans a₃).trans a₄).mono (by simp)⟩
-  · rw [t4 _ (by simp), t3 _ (by simp), t2 _ (by simp)]
-  · rw [t4 _ (by simp), t3 _ (by simp), t2 _ (by simp)]
-  · rw [t4 _ (by simp), t3 _ (by simp)]
-  · rw [t4 _ (by simp), t3 _ (by simp)]
-  · rw [t4 _ (by simp)]
-  · rw [t4 _ (by simp)]
+    b66, b67, (((a₁.trans a₂).trans a₃).trans a₄).mono (✓)⟩
+  · Ξ t4 _ (✓), t3 _ (✓), t2 _ (✓)
+  · Ξ t4 _ (✓), t3 _ (✓), t2 _ (✓)
+  · Ξ t4 _ (✓), t3 _ (✓)
+  · Ξ t4 _ (✓), t3 _ (✓)
+  · Ξ t4 _ (✓)
+  · Ξ t4 _ (✓)
 
 
 /-! ## The side flags -/
@@ -223,41 +225,41 @@ theorem cUpd_rs {kx kf kL kR : ℝ} (hI : TInv W c₀ c) (b56 : BitIs c 83056 (k
       c'.nreg 83068 ≤ 1 ∧ (c'.nreg 83068 = 1 ↔ sideInArc kx kf kL ∨ sideInArc kx kf kR) ∧
       c'.nreg 83069 ≤ 1 ∧ (c'.nreg 83069 = 1 ↔ sideInArc kf kx kL ∨ sideInArc kf kx kR) ∧
       Agr c c' [83068, 83069]) := by
-  have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rw [hI.h23] at this; exact this
+  have hW1 : 1 ≤ W := by have := hI.hw.1 83023; Ξ' hI.h23 at this; exact this
   unfold cUpd
-  refine RS.mono (K := 1 + (1 + (7 + (7 + (7 + 7))))) ?_ (by norm_num) (fun _ h => h)
-  refine RS.seq (RS.const hI (r := 83068) (v := 0) (by unfold Scr; omega) (by omega))
+  refine RS.mono (K := 1 + (1 + (7 + (7 + (7 + 7))))) ?_ (⊛) (fun _ h => h)
+  refine RS.seq (RS.const hI (r := 83068) (v := 0) (by unfold Scr; omega) (⋄))
     fun c₁ hI₁ _ h₁ => ?_
-  refine RS.seq (RS.const hI₁ (r := 83069) (v := 0) (by unfold Scr; omega) (by omega))
+  refine RS.seq (RS.const hI₁ (r := 83069) (v := 0) (by unfold Scr; omega) (⋄))
     fun c₂ hI₂ _ h₂ => ?_
-  have a2 : Agr c c₂ [83068, 83069] := ((Agr.of_upd h₁).trans (Agr.of_upd h₂)).mono (by simp)
+  have a2 : Agr c c₂ [83068, 83069] := ((Agr.of_upd h₁).trans (Agr.of_upd h₂)).mono (✓)
   have tr : ∀ {c' : Config} {S : List ℕ}, Agr c c' S → ∀ r ∈ [83056, 83057, 83060, 83061, 83062,
       83063, 83064, 83065, 83066, 83067], r ∉ S → c'.nreg r = c.nreg r := fun ha r hr hS => by
-    simp only [List.mem_cons, List.not_mem_nil, or_false] at hr
-    exact ha r (by omega) (by omega) hS
-  refine RS.seq (updArc_rs (by unfold Scr; omega) hI₂ (b56.of_eq (tr a2 _ (by simp) (by simp)))
-    (b61.of_eq (tr a2 _ (by simp) (by simp))) (b62.of_eq (tr a2 _ (by simp) (by simp))))
+    ϴ' List.mem_cons, List.not_mem_nil, or_false at hr
+    exact ha r (⋄) (⋄) hS
+  refine RS.seq (updArc_rs (by unfold Scr; omega) hI₂ (b56.of_eq (tr a2 _ (✓) (✓)))
+    (b61.of_eq (tr a2 _ (✓) (✓))) (b62.of_eq (tr a2 _ (✓) (✓))))
     fun c₃ hI₃ _ ⟨u1, u2, a₃⟩ => ?_
   have a3 := a2.trans a₃
-  refine RS.seq (updArc_rs (by unfold Scr; omega) hI₃ (b56.of_eq (tr a3 _ (by simp) (by simp)))
-    (b65.of_eq (tr a3 _ (by simp) (by simp))) (b66.of_eq (tr a3 _ (by simp) (by simp))))
+  refine RS.seq (updArc_rs (by unfold Scr; omega) hI₃ (b56.of_eq (tr a3 _ (✓) (✓)))
+    (b65.of_eq (tr a3 _ (✓) (✓))) (b66.of_eq (tr a3 _ (✓) (✓))))
     fun c₄ hI₄ _ ⟨v1, v2, a₄⟩ => ?_
   have a4 := a3.trans a₄
-  refine RS.seq (updArc_rs (by unfold Scr; omega) hI₄ (b57.of_eq (tr a4 _ (by simp) (by simp)))
-    (b63.of_eq (tr a4 _ (by simp) (by simp))) (b60.of_eq (tr a4 _ (by simp) (by simp))))
+  refine RS.seq (updArc_rs (by unfold Scr; omega) hI₄ (b57.of_eq (tr a4 _ (✓) (✓)))
+    (b63.of_eq (tr a4 _ (✓) (✓))) (b60.of_eq (tr a4 _ (✓) (✓))))
     fun c₅ hI₅ _ ⟨w1, w2, a₅⟩ => ?_
   have a5 := a4.trans a₅
-  refine (updArc_rs (by unfold Scr; omega) hI₅ (b57.of_eq (tr a5 _ (by simp) (by simp)))
-    (b67.of_eq (tr a5 _ (by simp) (by simp))) (b64.of_eq (tr a5 _ (by simp) (by simp)))).mono
+  refine (updArc_rs (by unfold Scr; omega) hI₅ (b57.of_eq (tr a5 _ (✓) (✓)))
+    (b67.of_eq (tr a5 _ (✓) (✓))) (b64.of_eq (tr a5 _ (✓) (✓)))).mono
     le_rfl fun c₆ ⟨z1, z2, a₆⟩ => ?_
-  have e68 : c₂.nreg 83068 = 0 := by rw [h₂, upd_ne (by norm_num), h₁, upd_eq]
-  have e69 : c₂.nreg 83069 = 0 := by rw [h₂, upd_eq]
+  have e68 : c₂.nreg 83068 = 0 := Ρ h₂, upd_ne (⊛), h₁, upd_eq
+  have e69 : c₂.nreg 83069 = 0 := Ρ h₂, upd_eq
   have f68 : c₆.nreg 83068 = c₄.nreg 83068 := by
-    rw [a₆ _ (by norm_num) (by norm_num) (by simp), a₅ _ (by norm_num) (by norm_num) (by simp)]
+    Ξ a₆ _ (⊛) (⊛) (✓), a₅ _ (⊛) (⊛) (✓)
   have f69 : c₄.nreg 83069 = c₂.nreg 83069 := by
-    rw [a₄ _ (by norm_num) (by norm_num) (by simp), a₃ _ (by norm_num) (by norm_num) (by simp)]
-  refine ⟨by rw [f68]; exact v2 (u2 (by omega)), ?_, z2 (w2 (by rw [f69]; omega)), ?_,
-    (((a2.trans a₃).trans a₄).trans a₅).trans a₆ |>.mono (by simp)⟩
+    Ξ a₄ _ (⊛) (⊛) (✓), a₃ _ (⊛) (⊛) (✓)
+  refine ⟨by rw [f68]; exact v2 (u2 (⋄)), ?_, z2 (w2 (by rw [f69]; omega)), ?_,
+    (((a2.trans a₃).trans a₄).trans a₅).trans a₆ |>.mono (✓)⟩
   · rw [f68, v1, u1, e68]; simp
   · rw [z1, w1, f69, e69]; simp
 
@@ -305,16 +307,16 @@ theorem countBody_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK 
     fun c₁ hI₁ hA₁ ⟨s1, s2, s3, a₁⟩ => ?_
   have g1 : ∀ q ∈ [83005, 83006, 83012, 83013, 83030, 83031, 83053, 83054, 83056, 83057],
       c₁.nreg q = c.nreg q := fun q hq => by
-    simp only [List.mem_cons, List.not_mem_nil, or_false] at hq
-    exact a₁ q (by omega) (by omega) (by simp; omega)
+    ϴ' List.mem_cons, List.not_mem_nil, or_false at hq
+    exact a₁ q (⋄) (⋄) (by simp; omega)
   have hLp : PosG M (Qof P) P.n ⟨c₁.nreg 83048, c₁.nreg 83047⟩ := by rw [s1, s2]; exact hpos.1
   have hRp : PosG M (Qof P) P.n ⟨c₁.nreg 83049, c₁.nreg 83047⟩ := by rw [s1, s3]; exact hpos.2
   have hfp : PosG M (Qof P) P.n ⟨c₁.nreg 83012, c₁.nreg 83013⟩ := by
-    rw [g1 83012 (by simp), g1 83013 (by simp), f12, f13]; exact hf
+    rw [g1 83012 (✓), g1 83013 (✓), f12, f13]; exact hf
   refine RS.seq (cCmps_rs hK hE hI₁ hLp hRp hfp (by unfold countKB at hroom; omega))
     fun c₂ hI₂ hA₂ ⟨b60, b61, b62, b63, b64, b65, b66, b67, a₂⟩ => ?_
-  have i5 := hI₁.hin 83005 (by norm_num) (by norm_num)
-  have i6 := hI₁.hin 83006 (by norm_num) (by norm_num)
+  have i5 := hI₁.hin 83005 (⊛) (⊛)
+  have i6 := hI₁.hin 83006 (⊛) (⊛)
   set i := chordAt N (c₀.nreg 83002) (c.nreg 83030)
   have kL : keyAt M P c₁ 83048 83047 = M.key (Qof P) (N.chord i).lpos := by
     unfold keyAt; rw [s1, s2]; rfl
@@ -323,58 +325,58 @@ theorem countBody_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK 
   have kx : keyAt M P c₁ 83005 83006 = M.key (Qof P) (xOf c₀) := by
     unfold keyAt; rw [i5, i6]; rfl
   have kf : keyAt M P c₁ 83012 83013 = M.key (Qof P) f := by
-    unfold keyAt; rw [g1 83012 (by simp), g1 83013 (by simp), f12, f13]
-  rw [kL, kx] at b60 b61
-  rw [kL, kf] at b62 b63
-  rw [kR, kx] at b64 b65
-  rw [kR, kf] at b66 b67
+    unfold keyAt; Ξ g1 83012 (✓), g1 83013 (✓), f12, f13
+  Ξ' kL, kx at b60 b61
+  Ξ' kL, kf at b62 b63
+  Ξ' kR, kx at b64 b65
+  Ξ' kR, kf at b66 b67
   have a12 := a₁.trans a₂
-  have b56' := b56.of_eq (a12 83056 (by norm_num) (by norm_num) (by simp))
-  have b57' := b57.of_eq (a12 83057 (by norm_num) (by norm_num) (by simp))
+  have b56' := b56.of_eq (a12 83056 (⊛) (⊛) (✓))
+  have b57' := b57.of_eq (a12 83057 (⊛) (⊛) (✓))
   refine RS.seq (cUpd_rs hI₂ b56' b57' b60 b61 b62 b63 b64 b65 b66 b67)
     fun c₃ hI₃ hA₃ ⟨u1, u2, v1, v2, a₃⟩ => ?_
   have a13 := a12.trans a₃
   have g3 : ∀ q ∈ [83030, 83031, 83053, 83054, 83056, 83057, 83012, 83013],
       c₃.nreg q = c.nreg q := fun q hq => by
-    simp only [List.mem_cons, List.not_mem_nil, or_false] at hq
-    exact a13 q (by omega) (by omega) (by simp; omega)
-  have e23 : c₃.nreg 83023 = 1 := hI₃.h23
+    ϴ' List.mem_cons, List.not_mem_nil, or_false at hq
+    exact a13 q (⋄) (⋄) (by simp; omega)
+  have e23 := hI₃.h23
   have hcl : c.nreg 83053 ≤ c.nreg 83030 := by rw [n53]; exact cntP_le _ _
   have hcl' : c.nreg 83054 ≤ c.nreg 83030 := by rw [n54]; exact cntP_le _ _
   have hW31 := hI.hw.1 83031
   unfold cAdd
   refine RS.seq (RS.add hI₃ (r := 83053) (a := 83053) (b := 83068) (by unfold Scr; omega)
-    (by rw [g3 83053 (by simp)]; omega)) fun c₄ hI₄ _ h₄ => ?_
+    (by rw [g3 83053 (✓)]; omega)) fun c₄ hI₄ _ h₄ => ?_
   refine RS.seq (RS.add hI₄ (r := 83054) (a := 83054) (b := 83069) (by unfold Scr; omega)
-    (by rw [h₄, upd_ne (by norm_num), upd_ne (by norm_num), g3 83054 (by simp)]; omega))
+    (by rw [h₄, upd_ne (⊛), upd_ne (⊛), g3 83054 (✓)]; omega))
     fun c₅ hI₅ _ h₅ => ?_
-  have e23' : c₅.nreg 83023 = 1 := hI₅.h23
+  have e23' := hI₅.h23
   have e30 : c₅.nreg 83030 = c.nreg 83030 := by
-    rw [h₅, upd_ne (by norm_num), h₄, upd_ne (by norm_num), g3 83030 (by simp)]
+    Ξ h₅, upd_ne (⊛), h₄, upd_ne (⊛), g3 83030 (✓)
   refine (RS.add hI₅ (r := 83030) (a := 83030) (b := 83023) (by unfold Scr; omega)
     (by rw [e30, e23']; omega)).mono le_rfl fun c₆ h₆ => ?_
   have v53 : c₆.nreg 83053 = c.nreg 83053 + c₃.nreg 83068 := by
-    rw [h₆, upd_ne (by norm_num), h₅, upd_ne (by norm_num), h₄, upd_eq, g3 83053 (by simp)]
+    Ξ h₆, upd_ne (⊛), h₅, upd_ne (⊛), h₄, upd_eq, g3 83053 (✓)
   have v54 : c₆.nreg 83054 = c.nreg 83054 + c₃.nreg 83069 := by
-    rw [h₆, upd_ne (by norm_num), h₅, upd_eq, h₄, upd_ne (by norm_num), upd_ne (by norm_num),
-      g3 83054 (by simp)]
-  have v30 : c₆.nreg 83030 = c.nreg 83030 + 1 := by rw [h₆, upd_eq, e30, e23']
+    rw [h₆, upd_ne (⊛), h₅, upd_eq, h₄, upd_ne (⊛), upd_ne (⊛),
+      g3 83054 (✓)]
+  have v30 : c₆.nreg 83030 = c.nreg 83030 + 1 := Ρ h₆, upd_eq, e30, e23'
   have a36 : Agr c₃ c₆ [83053, 83054, 83030] :=
-    (((Agr.of_upd h₄).trans (Agr.of_upd h₅)).trans (Agr.of_upd h₆)).mono (by simp)
+    (((Agr.of_upd h₄).trans (Agr.of_upd h₅)).trans (Agr.of_upd h₆)).mono (✓)
   have a16 := a13.trans a36
   have g6 : ∀ q, 80000 ≤ q → q < 90000 → q ∉ countScr → c₆.nreg q = c.nreg q :=
     fun q h1 h2 hq => a16 q h1 h2 (fun h => hq (by simp [countScr] at h ⊢; omega))
   refine ⟨⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, v30⟩
-  · rw [g6 83031 (by norm_num) (by norm_num) (by simp [countScr])]; exact hL
-  · rw [v30, g6 83031 (by norm_num) (by norm_num) (by simp [countScr])]; omega
+  · rw [g6 83031 (⊛) (⊛) (⊚ countScr)]; exact hL
+  · rw [v30, g6 83031 (⊛) (⊛) (⊚ countScr)]; omega
   · rw [v53, v30, cntP_succ, ← n53, flag_val u1 u2]; rfl
   · rw [v54, v30, cntP_succ, ← n54, flag_val v1 v2]; rfl
-  · exact b56.of_eq (g6 83056 (by norm_num) (by norm_num) (by simp [countScr]))
-  · exact b57.of_eq (g6 83057 (by norm_num) (by norm_num) (by simp [countScr]))
-  · rw [g6 83012 (by norm_num) (by norm_num) (by simp [countScr]), f12]
-  · rw [g6 83013 (by norm_num) (by norm_num) (by simp [countScr]), f13]
+  · exact b56.of_eq (g6 83056 (⊛) (⊛) (⊚ countScr))
+  · exact b57.of_eq (g6 83057 (⊛) (⊛) (⊚ countScr))
+  · Ξ g6 83012 (⊛) (⊛) (by simp [countScr]), f12
+  · Ξ g6 83013 (⊛) (⊛) (by simp [countScr]), f13
   · intro q h1 h2 hq
-    rw [g6 q h1 h2 hq, aS q h1 h2 hq]
+    Ξ g6 q h1 h2 hq, aS q h1 h2 hq
 
 
 /-- The success bit: both counts at least `2`. -/
@@ -411,85 +413,85 @@ theorem count_rs {kc : ℕ → ℕ → ℕ → ℕ → Stmt} {Kk : ℕ} (hK : Ke
       Agr c c' countW) := by
   have hW1 : 1 ≤ W := by have := hI.hw.1 83023; rw [hI.h23] at this; exact this
   have hW2 : 2 ≤ W := by have := hE.hW; unfold hostWords at this; omega
-  have i5 := hI.hin 83005 (by norm_num) (by norm_num)
-  have i6 := hI.hin 83006 (by norm_num) (by norm_num)
+  have i5 := hI.hin 83005 (⊛) (⊛)
+  have i6 := hI.hin 83006 (⊛) (⊛)
   have hx : PosG M (Qof P) P.n ⟨c.nreg 83005, c.nreg 83006⟩ := by rw [i5, i6]; exact hE.xPosG
   have hfp : PosG M (Qof P) P.n ⟨c.nreg 83012, c.nreg 83013⟩ := by rw [hf12, hf13]; exact hf
   unfold countS countK
   unfold countK at hroom
   refine RS.seq (kcmp_rs hK (by unfold InR; omega) (by unfold InR; omega) (by unfold InR; omega)
-    (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (by omega) hE hI hx hfp
-    (by omega)) fun c₁ hI₁ hA₁ ⟨b56, b57, a₁⟩ => ?_
+    (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (⋄) hE hI hx hfp
+    (⋄)) fun c₁ hI₁ hA₁ ⟨b56, b57, a₁⟩ => ?_
   have kx : M.key (Qof P) ⟨c.nreg 83005, c.nreg 83006⟩ = M.key (Qof P) (xOf c₀) := by
     rw [i5, i6]; rfl
   have kf : M.key (Qof P) ⟨c.nreg 83012, c.nreg 83013⟩ = M.key (Qof P) f := by
-    rw [hf12, hf13]
+    Ξ hf12, hf13
   rw [kx, kf] at b56 b57
-  refine RS.seq (RS.const hI₁ (r := 83053) (v := 0) (by unfold Scr; omega) (by omega))
+  refine RS.seq (RS.const hI₁ (r := 83053) (v := 0) (by unfold Scr; omega) (⋄))
     fun c₂ hI₂ hA₂ h₂ => ?_
-  refine RS.seq (RS.const hI₂ (r := 83054) (v := 0) (by unfold Scr; omega) (by omega))
+  refine RS.seq (RS.const hI₂ (r := 83054) (v := 0) (by unfold Scr; omega) (⋄))
     fun c₃ hI₃ hA₃ h₃ => ?_
   refine RS.seq (RS.const hI₃ (r := 83055) (v := 2) (by unfold Scr; omega) hW2)
     fun c₄ hI₄ hA₄ h₄ => ?_
-  refine RS.seq (RS.op (tRegLen_exec (f := 2) (Or.inr rfl) hE hI₄ (by omega)))
+  refine RS.seq (RS.op (tRegLen_exec (f := 2) (Or.inr rfl) hE hI₄ (⋄)))
     fun c₅ hI₅ hA₅ ⟨v₅, h8₅⟩ => ?_
   refine RS.seq (RS.copy hI₅ (r := 83031) (a := 50210) (by unfold Scr; omega))
     fun c₆ hI₆ hA₆ h₆ => ?_
-  refine RS.seq (RS.const hI₆ (r := 83030) (v := 0) (by unfold Scr; omega) (by omega))
+  refine RS.seq (RS.const hI₆ (r := 83030) (v := 0) (by unfold Scr; omega) (⋄))
     fun c₇ hI₇ hA₇ h₇ => ?_
   have a27 : Agr c₁ c₇ [83053, 83054, 83055, 83031, 83030] :=
     ((((((Agr.of_upd h₂).trans (Agr.of_upd h₃)).trans (Agr.of_upd h₄)).trans
-      (Agr.of_band h8₅ [])).trans (Agr.of_upd h₆)).trans (Agr.of_upd h₇)).mono (by simp)
+      (Agr.of_band h8₅ [])).trans (Agr.of_upd h₆)).trans (Agr.of_upd h₇)).mono (✓)
   have a17 := a₁.trans a27
   have e31 : c₇.nreg 83031 = (N.region (c₀.nreg 83002)).chords.length := by
-    rw [h₇, upd_ne (by norm_num), h₆, upd_eq, v₅]; rfl
-  have e30 : c₇.nreg 83030 = 0 := by rw [h₇, upd_eq]
+    rw [h₇, upd_ne (⊛), h₆, upd_eq, v₅]; rfl
+  have e30 : c₇.nreg 83030 = 0 := Ρ h₇, upd_eq
   have e53 : c₇.nreg 83053 = 0 := by
-    rw [h₇, upd_ne (by norm_num), h₆, upd_ne (by norm_num), h8₅ _ (by norm_num) (by norm_num),
-      h₄, upd_ne (by norm_num), h₃, upd_ne (by norm_num), h₂, upd_eq]
+    rw [h₇, upd_ne (⊛), h₆, upd_ne (by norm_num), h8₅ _ (by norm_num) (by norm_num),
+      h₄, upd_ne (⊛), h₃, upd_ne (by norm_num), h₂, upd_eq]
   have e54 : c₇.nreg 83054 = 0 := by
-    rw [h₇, upd_ne (by norm_num), h₆, upd_ne (by norm_num), h8₅ _ (by norm_num) (by norm_num),
-      h₄, upd_ne (by norm_num), h₃, upd_eq]
+    rw [h₇, upd_ne (⊛), h₆, upd_ne (by norm_num), h8₅ _ (by norm_num) (by norm_num),
+      h₄, upd_ne (⊛), h₃, upd_eq]
   have e55 : c₇.nreg 83055 = 2 := by
-    rw [h₇, upd_ne (by norm_num), h₆, upd_ne (by norm_num), h8₅ _ (by norm_num) (by norm_num),
+    rw [h₇, upd_ne (⊛), h₆, upd_ne (by norm_num), h8₅ _ (by norm_num) (by norm_num),
       h₄, upd_eq]
   have hI0 : CountI M P N c₀ f c₇ c₇ := by
-    refine ⟨e31, by omega, by rw [e53, e30, cntP_zero], by rw [e54, e30, cntP_zero],
-      b56.of_eq (a27 _ (by norm_num) (by norm_num) (by simp)),
-      b57.of_eq (a27 _ (by norm_num) (by norm_num) (by simp)), ?_, ?_, Agr.refl _ _⟩
-    · rw [a17 _ (by norm_num) (by norm_num) (by simp), hf12]
-    · rw [a17 _ (by norm_num) (by norm_num) (by simp), hf13]
+    refine ⟨e31, ⋄, by rw [e53, e30, cntP_zero], by rw [e54, e30, cntP_zero],
+      b56.of_eq (a27 _ (⊛) (by norm_num) (by simp)),
+      b57.of_eq (a27 _ (⊛) (by norm_num) (by simp)), ?_, ?_, Agr.refl _ _⟩
+    · rw [a17 _ (⊛) (by norm_num) (by simp), hf12]
+    · rw [a17 _ (⊛) (by norm_num) (by simp), hf13]
   have hμ : (countKB Kk + 2) * (c₇.nreg 83031 - c₇.nreg 83030) =
       (countKB Kk + 2) * (N.region (c₀.nreg 83002)).chords.length := by
-    rw [e31, e30, Nat.sub_zero]
+    Ξ e31, e30, Nat.sub_zero
   refine RS.seq ((RS.while (CountI M P N c₀ f c₇) (fun c => c.nreg 83031 - c.nreg 83030)
-    (countKB Kk) (fun c hA ht => by omega)
+    (countKB Kk) (fun c hA ht => ⋄)
     (fun c hIc hA ht hr => (countBody_rs hK hE hf hIc hA ht hr).mono le_rfl
       fun c' ⟨hA', h30⟩ => ⟨hA', by rw [h30, hA'.1]; have := hA.1; omega⟩)
-    hI₇ hI0 (by rw [hμ]; omega)).mono (by rw [hμ]) (fun c h => h))
+    hI₇ hI0 (by rw [hμ]; omega)).mono (Ρ hμ) (fun c h => h))
     fun c₈ hI₈ hA₈ ⟨⟨hL, htL, n53, n54, _, _, _, _, a₈⟩, hnt⟩ => ?_
-  have hT : c₈.nreg 83030 = (N.region (c₀.nreg 83002)).chords.length := by omega
+  have hT : c₈.nreg 83030 = (N.region (c₀.nreg 83002)).chords.length := ⋄
   rw [hT] at n53 n54
   have e55' : c₈.nreg 83055 = 2 := by
-    rw [a₈ _ (by norm_num) (by norm_num) (by simp [countScr]), e55]
-  have a18 : Agr c c₈ countW := (a17.trans a₈).mono (by simp [countScr, countW])
+    rw [a₈ _ (⊛) (by norm_num) (by simp [countScr]), e55]
+  have a18 : Agr c c₈ countW := (a17.trans a₈).mono (⊚ countScr, countW)
   unfold succS
-  refine RS.seq (RS.const hI₈ (r := 83014) (v := 0) (by unfold Scr; omega) (by omega))
+  refine RS.seq (RS.const hI₈ (r := 83014) (v := 0) (by unfold Scr; omega) (⋄))
     fun c₉ hI₉ hA₉ h₉ => ?_
-  have q53 : c₉.nreg 83053 = c₈.nreg 83053 := by rw [h₉, upd_ne (by norm_num)]
-  have q54 : c₉.nreg 83054 = c₈.nreg 83054 := by rw [h₉, upd_ne (by norm_num)]
-  have q55 : c₉.nreg 83055 = 2 := by rw [h₉, upd_ne (by norm_num), e55']
-  have q14 : c₉.nreg 83014 = 0 := by rw [h₉, upd_eq]
-  have a19 : Agr c c₉ countW := (a18.trans (Agr.of_upd h₉)).mono (by simp [countW])
+  have q53 : c₉.nreg 83053 = c₈.nreg 83053 := by rw [h₉, upd_ne (⊛)]
+  have q54 : c₉.nreg 83054 = c₈.nreg 83054 := by rw [h₉, upd_ne (⊛)]
+  have q55 : c₉.nreg 83055 = 2 := by rw [h₉, upd_ne (⊛), e55']
+  have q14 : c₉.nreg 83014 = 0 := Ρ h₉, upd_eq
+  have a19 : Agr c c₉ countW := (a18.trans (Agr.of_upd h₉)).mono (⊚ countW)
   by_cases t1 : c₉.nreg 83053 < c₉.nreg 83055
-  · refine RS.ifT t1 (RS.skip hI₉ ⟨by omega, ?_, a19⟩)
+  · refine RS.ifT t1 (RS.skip hI₉ ⟨⋄, ?_, a19⟩)
     rw [q14, ← n53, ← q53]; omega
   · by_cases t2 : c₉.nreg 83054 < c₉.nreg 83055
-    · refine RS.ifF t1 (RS.ifT t2 (RS.skip hI₉ ⟨by omega, ?_, a19⟩))
+    · refine RS.ifF t1 (RS.ifT t2 (RS.skip hI₉ ⟨⋄, ?_, a19⟩))
       rw [q14, ← n54, ← q54]; omega
     · refine RS.ifF t1 (RS.ifF t2 ((RS.const hI₉ (r := 83014) (v := 1) (by unfold Scr; omega)
-        hW1).mono (by norm_num) fun c' h' => ⟨by rw [h', upd_eq], ?_,
-          (a19.trans (Agr.of_upd h')).mono (by simp [countW])⟩))
+        hW1).mono (⊛) fun c' h' => ⟨by rw [h', upd_eq], ?_,
+          (a19.trans (Agr.of_upd h')).mono (⊚ countW)⟩))
       rw [h', upd_eq, ← n53, ← n54, ← q53, ← q54]; omega
 
 end

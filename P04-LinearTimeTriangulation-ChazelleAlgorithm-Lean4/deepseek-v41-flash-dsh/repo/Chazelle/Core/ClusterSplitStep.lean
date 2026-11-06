@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterDriver
 
 /-!
@@ -53,11 +55,11 @@ theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : Li
   have hmk := fun (y : ℕ) (hy : y < μ) => marksF_df (m0 := m) (S := S) (lo := lo) (hi := hi)
     (lbot := lbot) (ltop := ltop) T hSF.upT_eq (fun x hx => by rw [hμ] at hx ⊢; exact hSF.upT_lt x hx)
     hμ (fun x hx => hD.pos_iff hlv hx) hwin hSF.lev hSF.vert hSF.opp hSF.att
-    (fun y hy => ⟨by omega, by omega⟩) f ⟨y, hy⟩
+    (fun y hy => ⟨⋄, ⋄⟩) f ⟨y, hy⟩
   have hmo : ∀ x, ¬ (S.bDF ≤ x ∧ x < S.bDF + S.μ) → marksF m S lo hi lbot ltop upT f x = m x := by
     intro x hx
     have hup : ∀ x, x < S.μ → upT x < S.μ := fun x hx => by
-      rw [hμ] at hx ⊢; exact hSF.upT_lt x hx
+      Ξ' hμ at hx ⊢; exact hSF.upT_lt x hx
     have hvl : ∀ u : Fin μ, (u : ℕ) < S.μ := fun u => by rw [hμ]; exact u.2
     unfold marksF
     rw [markStep_other hup (by rw [hSF.att, hSF.vert]; exact hvl _) hx,
@@ -68,19 +70,19 @@ theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : Li
     intro x h1 h2
     show copyF _ S lo hi x = m x
     unfold copyF
-    rw [ite_eq_right h2, hmo x h1]
+    Ξ ite_eq_right h2, hmo x h1
   have htmp : ∀ i, lo ≤ i → i < hi → m2 (S.bTMP + i) = m (S.bACT + i) := by
     intro i h1 h2
     show copyF _ S lo hi _ = _
     unfold copyF
-    rw [ite_eq_left ⟨by omega, by omega⟩, hmo _ (by omega)]
+    Ξ ite_eq_left ⟨⋄, ⋄⟩, hmo _ (⋄)
     congr 2; omega
   have hm2d : ∀ x, ¬ (S.bTMP + lo ≤ x ∧ x < S.bTMP + hi) →
       m2 x = marksF m S lo hi lbot ltop upT f x := by
     intro x h2
     show copyF _ S lo hi x = _
     unfold copyF
-    rw [ite_eq_right h2]
+    Ξ ite_eq_right h2
   clear_value m2
   have hcp := hSF.cpMem
   -- the class reads
@@ -89,24 +91,24 @@ theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : Li
       inClass (fun x => m (S.bSO + x)) (fun x => m (S.bSF + x))
       (fun x => m (S.bFPAR + x)) (fun x => m (S.bFPRE + x)) (fun x => m (S.bFSZ + x)) 0 X f κ) := by
     intro X hX κ
-    have h1 := hcp.so_lt X (by omega)
+    have h1 := hcp.so_lt X (⋄)
     have h2 := hcp.sf_lt _ h1
     have h6 := hcp.fp_lt f (by rw [hN]; exact f.2)
     have hf : (f : ℕ) < N := f.2
-    have hfU : (f : ℕ) + 1 ≤ U := by omega
+    have hfU : (f : ℕ) + 1 ≤ U := ⋄
     set y := m (S.bSO + X) with hy
     set z := m (S.bSF + y) with hz
-    have e1 : m2 (S.bSO + X) = m (S.bSO + X) := hm2 _ (by omega) (by omega)
-    have e2 : m2 (S.bSF + y) = m (S.bSF + y) := hm2 _ (by omega) (by omega)
-    have e3 : m2 (S.bFPAR + z) = m (S.bFPAR + z) := hm2 _ (by omega) (by omega)
-    have e4 : m2 (S.bFPRE + z) = m (S.bFPRE + z) := hm2 _ (by omega) (by omega)
-    have e5 : m2 (S.bFSZ + z) = m (S.bFSZ + z) := hm2 _ (by omega) (by omega)
+    have e1 : m2 (S.bSO + X) = m (S.bSO + X) := hm2 _ (⋄) (⋄)
+    have e2 : m2 (S.bSF + y) = m (S.bSF + y) := hm2 _ (⋄) (⋄)
+    have e3 : m2 (S.bFPAR + z) = m (S.bFPAR + z) := hm2 _ (⋄) (⋄)
+    have e4 : m2 (S.bFPRE + z) = m (S.bFPRE + z) := hm2 _ (⋄) (⋄)
+    have e5 : m2 (S.bFSZ + z) = m (S.bFSZ + z) := hm2 _ (⋄) (⋄)
     set w := m (S.bFPAR + f) with hw
     generalize hfv : (f : ℕ) = fv at hfU hw
-    have e6 : m2 (S.bFPAR + fv) = m (S.bFPAR + fv) := hm2 _ (by omega) (by omega)
-    have e7 : m2 (S.bSO + w) = m (S.bSO + w) := hm2 _ (by omega) (by omega)
-    have e8 : m2 (S.bFPRE + fv) = m (S.bFPRE + fv) := hm2 _ (by omega) (by omega)
-    have e9 : m2 (S.bFSZ + fv) = m (S.bFSZ + fv) := hm2 _ (by omega) (by omega)
+    have e6 : m2 (S.bFPAR + fv) = m (S.bFPAR + fv) := hm2 _ (⋄) (⋄)
+    have e7 : m2 (S.bSO + w) = m (S.bSO + w) := hm2 _ (⋄) (⋄)
+    have e8 : m2 (S.bFPRE + fv) = m (S.bFPRE + fv) := hm2 _ (⋄) (⋄)
+    have e9 : m2 (S.bFSZ + fv) = m (S.bFSZ + fv) := hm2 _ (⋄) (⋄)
     subst hfv
     exact inClass_congr (sO := fun x => m (S.bSO + x)) (sF := fun x => m (S.bSF + x))
       (fp := fun x => m (S.bFPAR + x)) (pr := fun x => m (S.bFPRE + x))
@@ -123,34 +125,34 @@ theorem sel_iff {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : Li
     have hv : m (S.bACT + i) < μ := hD.sinv.lt _ hlv _ hvi
     have hnD : m (S.bACT + i) ∉ D := (hD.sinv.off _ hlv _ hvi).1
     unfold SelI
-    rw [htmp i h1 h2, hm2d (S.bDF + _) (by omega), hmk _ hv,
-      hm2 (S.bFIRST + _) (by omega) (by omega)]
+    rw [htmp i h1 h2, hm2d (S.bDF + _) (⋄), hmk _ hv,
+      hm2 (S.bFIRST + _) (⋄) (⋄)]
     have hfi : m (S.bFIRST + m (S.bACT + i)) < N := by
       have := hSF.first ⟨_, hv⟩; simp only at this; rw [this]; exact Fin.isLt _
-    rw [hm2 (S.bFPRE + _) (by omega) (by omega), hcls X hX]
+    Ξ hm2 (S.bFPRE + _) (⋄) (⋄), hcls X hX
     constructor
     · rintro ⟨hne, hc⟩
-      exact ⟨fun hmN => hne (by rw [ite_eq_left ⟨hvi, hmN⟩]), hc⟩
+      exact ⟨fun hmN => hne (Ρ ite_eq_left ⟨hvi, hmN⟩), hc⟩
     · rintro ⟨hne, hc⟩
       refine ⟨?_, hc⟩
-      rw [ite_eq_right (fun h => hne h.2)]
+      Ξ ite_eq_right (fun h => hne h.2)
       intro h
       exact hnD ((hD.df _ hv).mp h)
   have hfp : m2 (S.bFP + f) = M.fperm f := by
-    rw [hm2 _ (by omega) (by omega)]; exact hSF.fp f
+    rw [hm2 _ (⋄) (⋄)]; exact hSF.fp f
   have hf : (f : ℕ) < N := f.2
-  refine ⟨fun i h1 h2 => hsel f (by omega) i h1 h2, fun i h1 h2 => ?_,
+  refine ⟨fun i h1 h2 => hsel f (⋄) i h1 h2, fun i h1 h2 => ?_,
     fun i h1 h2 => ?_⟩
   · have := (M.fperm f).2
-    rw [hfp, hN]; exact hsel _ (by omega) i h1 h2
-  · rw [hN]; exact hsel _ (by omega) i h1 h2
+    rw [hfp, hN]; exact hsel _ (⋄) i h1 h2
+  · rw [hN]; exact hsel _ (⋄) i h1 h2
 
 /-- The preorder interval test in memory. -/
 theorem SFacts.hint {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
     (hSF : SFacts M T a ha C R first preE slot upT k c S A0 U W m) (g h : Fin N) :
     C.IsDesc h g ↔ m (S.bFPRE + g) ≤ m (S.bFPRE + h) ∧
       m (S.bFPRE + h) < m (S.bFPRE + g) + m (S.bFSZ + g) := by
-  rw [hSF.pre g g.2, hSF.pre h h.2, hSF.sz g g.2]
+  Ξ hSF.pre g g.2, hSF.pre h h.2, hSF.sz g g.2
   exact desc_interval hSF.R_ok hSF.R_n hSF.R_up hSF.R_pre g h
 
 open Classical in
@@ -190,7 +192,7 @@ theorem cls_facts {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : 
     exact ⟨t, ht, hm, hc⟩
   · exact h2 _ (hmem i a b) q.1 t t' ht ht' q.2 q'.2
   · have := h3 t ht
-    rw [card_items_filter hinj] at this
+    Ξ' card_items_filter hinj at this
     unfold cntS QC
     convert this using 4
 

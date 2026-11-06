@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Desc
 public import Chazelle.Core.Lemma41Host
 
@@ -55,7 +57,7 @@ theorem descWhole {m : ℕ → ℕ} {Q : Polygon} {H : Host} {C₁ C₂ : Chain}
   obtain ⟨-, -, -, -, -, b5⟩ := h2
   refine ⟨by rw [e0]; exact a0, by rw [jOf_whole_P]; exact a1, e1, e2, ?_, ?_⟩
   · rw [e3, whole_topIdx J, hl, hr]; rfl
-  · rw [e4, whole_sideBeta J, hl, hr]
+  · Ξ e4, whole_sideBeta J, hl, hr
     split_ifs
     · exact a5
     · exact b5

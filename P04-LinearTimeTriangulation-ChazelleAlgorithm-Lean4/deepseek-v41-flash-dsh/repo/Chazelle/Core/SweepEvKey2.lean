@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvTasks3
 
 /-!
@@ -59,10 +61,10 @@ theorem kqIsOne_irs {r : ℕ} {s : Stmt} {K : ℕ} {Q : Config → Prop} (hI : I
   unfold kqIsOne
   by_cases h1 : c.nreg K0 < c.nreg r
   · by_cases h2 : c.nreg r < c.nreg K2
-    · exact (IRS.ifT h1 (IRS.ifT h2 (hs (by omega)))).mono (by omega) (fun _ h => h)
-    · exact (IRS.ifT h1 (IRS.ifF h2 (IRS.skip (K := 0) hI (hq (by omega))))).mono (by omega)
+    · exact (IRS.ifT h1 (IRS.ifT h2 (hs (⋄)))).mono (⋄) (fun _ h => h)
+    · exact (IRS.ifT h1 (IRS.ifF h2 (IRS.skip (K := 0) hI (hq (⋄))))).mono (⋄)
         (fun _ h => h)
-  · exact (IRS.ifF h1 (IRS.skip (K := 0) hI (hq (by omega)))).mono (by omega) (fun _ h => h)
+  · exact (IRS.ifF h1 (IRS.skip (K := 0) hI (hq (⋄)))).mono (⋄) (fun _ h => h)
 
 /-! ## Offer to the running minimum -/
 
@@ -93,23 +95,23 @@ theorem kqTake_irs (hI : IInv W c₀ c) (hW : 1 ≤ W) :
     IRS P W c₀ (block kqTake) c 3 (fun c' => c'.nreg kqF = 1 ∧ c'.nreg kqE = c.nreg kqSE ∧
       c'.nreg kqH = c.nreg kqSH ∧ EFr OffR c c') := by
   refine (IRS.block kqTake hI ?_).mono le_rfl ?_
-  · simp only [kqTake, okB, okI]
-    exact ⟨⟨iscr_sw' (by norm_num) (by norm_num), hW⟩, iscr_sw' (by norm_num) (by norm_num),
-      iscr_sw' (by norm_num) (by norm_num), trivial⟩
+  · ϴ kqTake, okB, okI
+    exact ⟨⟨iscr_sw' (⊛) (⊛), hW⟩, iscr_sw' (⊛) (⊛),
+      iscr_sw' (⊛) (⊛), trivial⟩
   · rintro c' rfl
     refine ⟨?_, ?_, ?_, ⟨fun r _ hr hra => ?_, ?_, fun a _ => rfl⟩⟩
-    · simp [kqTake, regB, regI, upd, kqF, kqE, kqH, kqSE, kqSH, sw]
-    · simp [kqTake, regB, regI, upd, kqF, kqE, kqH, kqSE, kqSH, sw]
-    · simp [kqTake, regB, regI, upd, kqF, kqE, kqH, kqSE, kqSH, sw]
+    · Θ kqTake, regB, regI, upd, kqF, kqE, kqH, kqSE, kqSH, sw
+    · Θ kqTake, regB, regI, upd, kqF, kqE, kqH, kqSE, kqSH, sw
+    · Θ kqTake, regB, regI, upd, kqF, kqE, kqH, kqSE, kqSH, sw
     · unfold OffR at hr
-      simp only [kqTake, regB, regI]
-      rw [upd_other _ _ _ (by tauto), upd_other _ _ _ (by tauto), upd_other _ _ _ (by tauto)]
-    · simp only [kqTake, regB, regI]
+      ϴ kqTake, regB, regI
+      Ξ upd_other _ _ _ (by tauto), upd_other _ _ _ (by tauto), upd_other _ _ _ (by tauto)
+    · ϴ kqTake, regB, regI
       rw [upd_other _ _ _ (by unfold ALLOC kqH sw; omega),
         upd_other _ _ _ (by unfold ALLOC kqE sw; omega),
         upd_other _ _ _ (by unfold ALLOC kqF sw; omega)]
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The offer.** -/
 theorem offerQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c)
     (hctx : ChainCtx P W c (sw 2) J.whole) (hgw : c.nreg cGW = gW J)
@@ -190,37 +192,37 @@ theorem storeL_irs {x : ℕ} (hx : IScr x) (hx1 : x ≠ K1) :
         (∀ i (h : i < vs.length), c'.nmem (c.nreg x + i) = c.nreg (vs[i])) ∧
         (∀ y, (y < c.nreg x ∨ c.nreg x + vs.length ≤ y) → c'.nmem y = c.nmem y) ∧
         (∀ r, r ≠ x → c'.nreg r = c.nreg r))
-  | [], c, hI, _, _, _, _ => IRS.skip hI ⟨fun i h => absurd h (by simp), fun _ _ => rfl,
+  | [], c, hI, _, _, _, _ => IRS.skip hI ⟨fun i h => absurd h (✓), fun _ _ => rfl,
       fun _ _ => rfl⟩
   | v :: vs, c, hI, hK1, hv, hA, hW => by
     have hvx : v ≠ x := hv v List.mem_cons_self
-    simp only [List.length_cons] at hW ⊢
-    have e : 2 * (vs.length + 1) = 1 + (1 + 2 * vs.length) := by ring
-    rw [e]
+    ϴ' List.length_cons at hW ⊢
+    have e : 2 * (vs.length + 1) = 1 + (1 + 2 * vs.length) := ⋆
+    Ξ e
     refine IRS.seq (IRS.store (v := v) hI hA) ?_
     rintro c₁ hI₁ - - rfl
     refine IRS.seq (IRS.instr1 (i := .addN x x K1) hI₁ ⟨hx, by simp only [hK1]; omega⟩) ?_
     rintro c₂ hI₂ - - rfl
     have hx2 : (upd c.nreg x (c.nreg x + c.nreg K1)) x = c.nreg x + 1 := by
-      rw [upd_same, hK1]
+      Ξ upd_same, hK1
     refine (storeL_irs hx hx1 vs hI₂ (by simp only [regI]; rw [upd_other _ _ _ (Ne.symm hx1)]; exact hK1)
       (fun w hw => hv w (List.mem_cons_of_mem _ hw))
       (by simp only [regI]; rw [hx2]; omega)
       (by simp only [regI]; rw [hx2]; omega)).mono le_rfl ?_
     rintro c' ⟨s1, s2, s3⟩
-    simp only [regI, hx2] at s1 s2 s3
+    ϴ' regI, hx2 at s1 s2 s3
     refine ⟨fun i hi => ?_, fun y hy => ?_, fun r hr => ?_⟩
     · rcases i with _ | i
-      · rw [s2 _ (Or.inl (by omega))]
+      · Ξ s2 _ (Or.inl (⋄))
         simp
       · have := s1 i (by simpa using hi)
-        rw [show c.nreg x + (i + 1) = c.nreg x + 1 + i by ring, this]
-        simp only [List.getElem_cons_succ]
-        rw [upd_other _ _ _ (hv _ (List.mem_cons_of_mem _ (List.getElem_mem _)))]
-    · rw [s2 _ (by omega)]
-      simp only [upd]
-      rw [ite_eq_right (by omega)]
-    · rw [s3 r hr, upd_other _ _ _ hr]
+        Ξ show c.nreg x + (i + 1) = c.nreg x + 1 + i by ring, this
+        ϴ List.getElem_cons_succ
+        Ξ upd_other _ _ _ (hv _ (List.mem_cons_of_mem _ (List.getElem_mem _)))
+    · Ξ s2 _ (⋄)
+      ϴ upd
+      Ξ ite_eq_right (⋄)
+    · Ξ s3 r hr, upd_other _ _ _ hr
 
 /-! ## Loads -/
 
@@ -235,15 +237,15 @@ theorem ldStop_irs (hI : IInv W c₀ c) (hK1 : c.nreg K1 = 1)
       c'.nreg kqSE = c.nmem (c.nreg sB + 5 * c.nreg sP) ∧
       c'.nreg kqSH = c.nmem (c.nreg sB + 5 * c.nreg sP + 1) ∧
       (∀ q, q ≠ kqX → q ≠ kqSE → q ≠ kqSH → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
-  simp only [sw, K1, sB, sP, Nat.reduceAdd] at hK1 hW
+  ϴ' sw, K1, sB, sP, Nat.reduceAdd at hK1 hW
   refine (IRS.block ldStopL hI ?_).mono le_rfl ?_
-  · simp [ldStopL, okB, okI, regI, upd, kqX, kqSE, kqSH, sP, sB, K1, sw, IScr, hK1]
+  · Θ ldStopL, okB, okI, regI, upd, kqX, kqSE, kqSH, sP, sB, K1, sw, IScr, hK1
     omega
   · rintro c' rfl
-    simp [ldStopL, regB, regI, upd, kqX, kqSE, kqSH, sP, sB, K1, sw, hK1]
+    Θ ldStopL, regB, regI, upd, kqX, kqSE, kqSH, sP, sB, K1, sw, hK1
     refine ⟨by ring_nf, by ring_nf, ?_⟩
     intro r ha hb hc
-    simp [ha, hb, hc]
+    Θ ha, hb, hc
 
 /-- Load the flag of the auxiliary record `sP`: `kqX = aB + 5 sP`. -/
 def ldAuxL : List Instr :=
@@ -254,15 +256,15 @@ theorem ldAux_irs (hI : IInv W c₀ c) (hW : c.nreg aB + 5 * c.nreg sP ≤ W) :
       c'.nreg kqX = c.nreg aB + 5 * c.nreg sP ∧
       c'.nreg kqV = c.nmem (c.nreg aB + 5 * c.nreg sP) ∧
       (∀ q, q ≠ kqX → q ≠ kqV → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
-  simp only [sw, aB, sP, Nat.reduceAdd] at hW
+  ϴ' sw, aB, sP, Nat.reduceAdd at hW
   refine (IRS.block ldAuxL hI ?_).mono le_rfl ?_
-  · simp [ldAuxL, okB, okI, regI, upd, kqX, kqV, sP, aB, sw, IScr]
+  · Θ ldAuxL, okB, okI, regI, upd, kqX, kqV, sP, aB, sw, IScr
     omega
   · rintro c' rfl
-    simp [ldAuxL, regB, regI, upd, kqX, kqV, sP, aB, sw]
+    Θ ldAuxL, regB, regI, upd, kqX, kqV, sP, aB, sw
     refine ⟨by ring_nf, by ring_nf, ?_⟩
     intro r ha hb
-    simp [ha, hb]
+    Θ ha, hb
 
 /-- Advance `kqX` and load `kqV` (resp. `kqY`) from it. -/
 theorem ldNext_irs {r : ℕ} (hr : r = kqV ∨ r = kqY) (hI : IInv W c₀ c) (hK1 : c.nreg K1 = 1)
@@ -270,15 +272,15 @@ theorem ldNext_irs {r : ℕ} (hr : r = kqV ∨ r = kqY) (hI : IInv W c₀ c) (hK
     IRS P W c₀ (block [.addN kqX kqX K1, .loadN r kqX]) c 2 (fun c' =>
       c'.nreg kqX = c.nreg kqX + 1 ∧ c'.nreg r = c.nmem (c.nreg kqX + 1) ∧
       (∀ q, q ≠ kqX → q ≠ r → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
-  simp only [sw, K1, kqX, Nat.reduceAdd] at hK1 hW
+  ϴ' sw, K1, kqX, Nat.reduceAdd at hK1 hW
   refine (IRS.block _ hI ?_).mono le_rfl ?_
   · rcases hr with rfl | rfl <;>
     simp [okB, okI, kqX, kqV, kqY, K1, sw, IScr, hK1] <;> omega
   · rintro c' rfl
     rcases hr with rfl | rfl <;>
-    · simp [regB, regI, upd, kqX, kqV, kqY, K1, sw, hK1]
+    · Θ regB, regI, upd, kqX, kqV, kqY, K1, sw, hK1
       intro r ha hb
-      simp [ha, hb]
+      Θ ha, hb
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvTasks
 public import Chazelle.Core.FactsArcs
 public import Chazelle.Core.GranSize
@@ -51,7 +53,7 @@ theorem arcsTask : ArcsTask := by
     have hU : reg r ∈ M.regions F := hRC.1 r hr
     obtain ⟨hfin, hle⟩ := arcsPerRegion M Q F hGM hFam (reg r) hU
     refine le_trans ?_ hle
-    rw [← Set.ncard_coe_finset]
+    Ξ ← Set.ncard_coe_finset
     refine Set.ncard_le_ncard_of_injOn (fun j => (M.key Q (N.arc j).s, M.key Q (N.arc j).e))
       (fun j hj => ?_) (fun j hj j' hj' h => ?_) hfin
     · simp only [Finset.coe_filter, Finset.mem_range, Set.mem_ofPred_eq] at hj ⊢
@@ -60,13 +62,13 @@ theorem arcsTask : ArcsTask := by
       exact this
     · simp only [Finset.coe_filter, Finset.mem_range, Set.mem_ofPred_eq] at hj hj'
       have hk : M.key Q (N.arc j).s = M.key Q (N.arc j').s := congrArg Prod.fst h
-      exact hAO.2.1 j j' hj.1 hj'.1 (by rw [hj.2, hj'.2]) hk
+      exact hAO.2.1 j j' hj.1 hj'.1 (Ρ hj.2, hj'.2) hk
   -- 3. the degrees sum to at most `2 K`
   have hsys := hM.sys F hFam.2.1 hFam.1
   have hpot := Merge.potential_le hsys hM.preconn hM.nonempty (subset_refl F) 0
   have himg : M.regions F = reg '' ((Finset.range R : Finset ℕ) : Set ℕ) := by
     ext U
-    simp only [Finset.coe_range, Set.mem_image, Set.mem_Iio]
+    ϴ Finset.coe_range, Set.mem_image, Set.mem_Iio
     constructor
     · intro hU; obtain ⟨r, hr, rfl⟩ := hRC.2.2 U hU; exact ⟨r, hr, rfl⟩
     · rintro ⟨r, hr, rfl⟩; exact hRC.1 r hr
@@ -76,7 +78,7 @@ theorem arcsTask : ArcsTask := by
     have e : Merge.potential M.D 0 F = ∑ r ∈ Finset.range R, M.deg F (reg r) := by
       unfold Merge.potential
       change ∑ᶠ U ∈ M.regions F, _ = _
-      rw [himg, finsum_mem_image hinj, finsum_mem_coe_finset]
+      Ξ himg, finsum_mem_image hinj, finsum_mem_coe_finset
       rfl
     rw [← e]; exact hpot
   -- 4. the count

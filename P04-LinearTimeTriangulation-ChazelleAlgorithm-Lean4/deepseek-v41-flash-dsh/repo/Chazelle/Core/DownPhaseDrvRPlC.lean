@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRPlB
 
 /-!
@@ -54,7 +56,7 @@ def ItemOK (n : ℕ) : HostItem → Prop
 /-- The registers `plS` writes. -/
 def Bpl (r : ℕ) : Bool := decide (219001 ≤ r ∧ r ≤ 219029) || decide (r = 9999)
 
-theorem wrM2_plS : wrM2 Bpl (fun _ => false) plS = true := by decide
+theorem wrM2_plS : wrM2 Bpl (fun _ => false) plS = true := ⌖
 
 theorem hostLeaves_take_succ (n C : ℕ) (H : Host) {i : ℕ} (hi : i < H.length) :
     hostLeaves n C 0 (H.take (i + 1)) = hostLeaves n C 0 (H.take i) ++
@@ -69,7 +71,7 @@ theorem pts_take_succ (n : ℕ) (H : Host) {i : ℕ} (hi : i < H.length) :
   rw [List.take_add_one, List.getElem?_eq_getElem hi, Option.toList_some, DownMath.pts_append,
     List.length_append, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi,
     Option.getD_some]
-  simp [Host.pts]
+  Θ Host.pts
 
 section exec
 

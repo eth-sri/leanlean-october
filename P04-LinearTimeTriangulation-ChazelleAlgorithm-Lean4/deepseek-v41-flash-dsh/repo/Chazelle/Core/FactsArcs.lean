@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FactsCut
 
 /-!
@@ -129,9 +131,9 @@ theorem finite_cuts (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hf
       ⋃ p ∈ Iio M.W.n, ⋃ e ∈ E, (fun t : ℝ => (p : ℝ) + t) ''
         {t : ℝ | sidePt M.W p t = e} := by
     rintro x ⟨c, hc, p, t, hA, rfl⟩
-    simp only [mem_iUnion, mem_Iio, mem_image, mem_ofPred_eq]
+    ϴ mem_iUnion, mem_Iio, mem_image, mem_ofPred_eq
     refine ⟨p, hA.1, sidePt M.W p t, ?_, t, rfl, rfl⟩
-    rw [hE, mem_iUnion₂]
+    Ξ hE, mem_iUnion₂
     exact ⟨c, hc, hA.2.2.2.1, hM.trace p hA.1 t hA.2.1 hA.2.2.1.le⟩
   refine Set.Finite.subset ((finite_Iio _).biUnion fun p hp => hEf.biUnion fun e _ => ?_) hsub
   refine Set.Finite.image _ (Set.Subsingleton.finite ?_)
@@ -301,7 +303,7 @@ theorem exists_exit_at_end (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
   obtain ⟨tx, htx, hxfree⟩ := hM.exists_after hF hfin hB₀.1 hB₀.2.1 hB₀.2.2.1
   have htx' : tx ∈ Ioo (0 : ℝ) 1 := ⟨by linarith [hB₀.2.1, htx.1], htx.2⟩
   have hbx : b < pb + tx := by rw [hb]; linarith [htx.1]
-  have hxcut : ¬ M.IsCut F (pb + tx) := fun h => hxfree _ h ⟨by linarith, le_rfl⟩
+  have hxcut : ¬ M.IsCut F (pb + tx) := fun h => hxfree _ h ⟨⟡, le_rfl⟩
   rw [← hb] at hxfree
   -- the region of `F` faced at `x` is `U`
   obtain ⟨V, hV, hxV⟩ := hM.exists_faces_of_not_cut hF hfin hB₀.1 htx' hxcut
@@ -315,7 +317,7 @@ theorem exists_exit_at_end (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
   have hVTr : VT ∈ M.regions T := ⟨v, hVfree hv, rfl⟩
   have hUT : U = connectedComponentIn (freeIn M.D T) u := region_of_exits hsys hU hu
   have hUTr : U ∈ M.regions T := by
-    rw [hUT]
+    Ξ hUT
     exact ⟨u, ((Chazelle.Chain.regionsIn_subset hU).trans
       (Chazelle.Chain.freeIn_anti M.D hTF)) hu, rfl⟩
   have hxVT : M.Faces pb tx VT := hxV.mono fun δ h => hVVT h
@@ -400,7 +402,7 @@ theorem arcs_bound (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
       intro ab hab
       have h := hM.exists_exit_at_end hF hfin hne hU hab
       have e : f ab = h.choose := dite_eq_left h
-      rw [e]
+      Ξ e
       exact h.choose_spec
     have hinj : InjOn f S := by
       rintro ⟨a, b⟩ hab ⟨a', b'⟩ hab' heq
@@ -409,7 +411,7 @@ theorem arcs_bound (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
       rw [← heq] at hA'
       simp only at hb hb'
       set c := f (a, b)
-      have hc : c ∈ F := hcT.1
+      have hc := hcT.1
       obtain ⟨-, hcutb, hab0⟩ := arc_cuts hne hab
       obtain ⟨-, hcutb', hab0'⟩ := arc_cuts hne hab'
       have hfree := hab.2.2.2.2.2.1
@@ -429,10 +431,10 @@ theorem arcs_bound (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
         obtain ⟨py, hpy, ty, hty, hyin, -, hyf⟩ := exists_pos_in_arc hne hab
         obtain ⟨py', hpy', ty', hty', hyin', -, hyf'⟩ := exists_pos_in_arc hne hab'
         have h1 : sideInArc (p' + t') (p + t) (py + ty) := by
-          rw [← hb, ← hb']
+          Ξ ← hb, ← hb'
           exact cyc_sub hyin (fun h => hfree _ h hcutb') (Ne.symm hbb)
         have h2 : sideInArc (p + t) (p' + t') (py' + ty') := by
-          rw [← hb, ← hb']
+          Ξ ← hb, ← hb'
           exact cyc_sub hyin' (fun h => hfree' _ h hcutb) hbb
         have hU1 := hM.region_subset_of_sector hc hU hpy hty hyf (hK₁ py hpy ty hty.1.le hty.2 h1)
         have hU2 := hM.region_subset_of_sector hc hU hpy' hty' hyf'

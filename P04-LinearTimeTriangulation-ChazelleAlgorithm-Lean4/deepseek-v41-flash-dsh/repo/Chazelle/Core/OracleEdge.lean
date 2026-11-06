@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleQuery
 
 /-!
@@ -57,21 +59,21 @@ theorem rayPt_mem_edge_iff {e h : ℕ} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % 
     {z : Point} (hz : z.2 = (Q.vtx h).2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (t : ℝ) :
     rayPt z σ t ∈ Q.edge e ↔ Spans Q e h ∧ t = σ * (xe Q e h - z.1) := by
   unfold Polygon.edge
-  rw [Chazelle.Visibility.mem_segment_iff_xAt hne]
-  simp only [rayPt_fst, rayPt_snd, hz]
+  Ξ Chazelle.Visibility.mem_segment_iff_xAt hne
+  ϴ rayPt_fst, rayPt_snd, hz
   have hx : xAt (Q.vtx e) (Q.vtx ((e + 1) % Q.n)) (Q.vtx h).2 = xe Q e h := rfl
-  rw [hx]
+  Ξ hx
   have hs := sigma_sq hσ
   constructor
   · rintro ⟨hsp, hx'⟩
     refine ⟨hsp, ?_⟩
-    have : σ * (z.1 + σ * t) = σ * xe Q e h := by rw [hx']
-    have e2 : σ * (z.1 + σ * t) = σ * z.1 + (σ * σ) * t := by ring
+    have : σ * (z.1 + σ * t) = σ * xe Q e h := Ρ hx'
+    have e2 : σ * (z.1 + σ * t) = σ * z.1 + (σ * σ) * t := ⋆
     rw [e2, hs] at this
     linarith
   · rintro ⟨hsp, rfl⟩
     refine ⟨hsp, ?_⟩
-    have e2 : z.1 + σ * (σ * (xe Q e h - z.1)) = z.1 + (σ * σ) * (xe Q e h - z.1) := by ring
+    have e2 : z.1 + σ * (σ * (xe Q e h - z.1)) = z.1 + (σ * σ) * (xe Q e h - z.1) := ⋆
     rw [e2, hs]; ring
 
 /-- **The answer for one edge.** -/
@@ -92,7 +94,7 @@ theorem spans_iff (hD : DistinctHeights Q) {e h : ℕ} (he : e < Q.n) (hh : h < 
     Spans Q e h ↔ (h = e ∨ h = (e + 1) % Q.n) ∨
       ((Q.vtx e).2 < (Q.vtx h).2 ∧ (Q.vtx h).2 < (Q.vtx ((e + 1) % Q.n)).2) ∨
       ((Q.vtx ((e + 1) % Q.n)).2 < (Q.vtx h).2 ∧ (Q.vtx h).2 < (Q.vtx e).2) := by
-  have hn : 0 < Q.n := by omega
+  have hn : 0 < Q.n := ⋄
   have he1 : (e + 1) % Q.n < Q.n := Nat.mod_lt _ hn
   unfold Spans
   constructor
@@ -120,12 +122,12 @@ theorem ahead_iff {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (x z : ℝ) :
     0 < σ * (x - z) ↔ (σ = 1 ∧ z < x) ∨ (σ = -1 ∧ x < z) := by
   rcases hσ with rfl | rfl
   · constructor
-    · intro h; left; exact ⟨rfl, by linarith⟩
+    · intro h; left; exact ⟨rfl, ⟡⟩
     · rintro (⟨-, h⟩ | ⟨h, -⟩)
       · linarith
       · norm_num at h
   · constructor
-    · intro h; right; exact ⟨rfl, by linarith⟩
+    · intro h; right; exact ⟨rfl, ⟡⟩
     · rintro (⟨h, -⟩ | ⟨-, h⟩)
       · norm_num at h
       · linarith
@@ -135,12 +137,12 @@ theorem better_iff {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (x x' z : ℝ) :
     σ * (x - z) < σ * (x' - z) ↔ (σ = 1 ∧ x < x') ∨ (σ = -1 ∧ x' < x) := by
   rcases hσ with rfl | rfl
   · constructor
-    · intro h; left; exact ⟨rfl, by linarith⟩
+    · intro h; left; exact ⟨rfl, ⟡⟩
     · rintro (⟨-, h⟩ | ⟨h, -⟩)
       · linarith
       · norm_num at h
   · constructor
-    · intro h; right; exact ⟨rfl, by linarith⟩
+    · intro h; right; exact ⟨rfl, ⟡⟩
     · rintro (⟨h, -⟩ | ⟨-, h⟩)
       · norm_num at h
       · linarith

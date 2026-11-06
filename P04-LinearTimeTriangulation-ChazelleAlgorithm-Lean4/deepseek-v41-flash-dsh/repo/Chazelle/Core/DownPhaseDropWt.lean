@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.FactsAttach
 public import Chazelle.Core.FactsL23
 
@@ -75,10 +79,10 @@ theorem edgesIn_finite (a b : ℝ) : (edgesIn M a b).Finite :=
   (Set.finite_lt_nat M.W.n).subset fun _ hp => hp.1
 
 theorem arcWt_le_n (a b : ℝ) : M.arcWt a b ≤ M.W.n := by
-  rw [arcWt_eq']
+  Ξ arcWt_eq'
   calc (edgesIn M a b).ncard ≤ ((Finset.range M.W.n : Finset ℕ) : Set ℕ).ncard :=
         Set.ncard_le_ncard (fun p hp => by simpa using hp.1) (Finset.finite_toSet _)
-    _ = M.W.n := by rw [Set.ncard_coe_finset, Finset.card_range]
+    _ = M.W.n := Ρ Set.ncard_coe_finset, Finset.card_range
 
 /-- The weight of an arc is at most the weight of its region. -/
 theorem arcWt_le_weight {F : Set (Set Point)} {X : Set Point} {a b : ℝ} (h : M.IsArc F X a b) :
@@ -88,7 +92,7 @@ theorem arcWt_le_weight {F : Set (Set Point)} {X : Set Point} {a b : ℝ} (h : M
 theorem arcWt_le_of_sub {a b a' b' : ℝ}
     (h : ∀ p : ℕ, M.counted p → ∀ t : ℝ, 0 < t → t < 1 → sideInArc a b (p + t) →
       sideInArc a' b' (p + t)) : M.arcWt a b ≤ M.arcWt a' b' := by
-  rw [arcWt_eq', arcWt_eq']
+  Ξ arcWt_eq', arcWt_eq'
   refine Set.ncard_le_ncard ?_ (edgesIn_finite a' b')
   rintro p ⟨hp, hc, t, ht0, ht1, hx⟩
   exact ⟨hp, hc, t, ht0, ht1, h p hc t ht0 ht1 hx⟩
@@ -97,7 +101,7 @@ theorem arcWt_le_add {a b a₁ b₁ a₂ b₂ : ℝ}
     (h : ∀ p : ℕ, M.counted p → ∀ t : ℝ, 0 < t → t < 1 → sideInArc a b (p + t) →
       sideInArc a₁ b₁ (p + t) ∨ sideInArc a₂ b₂ (p + t)) :
     M.arcWt a b ≤ M.arcWt a₁ b₁ + M.arcWt a₂ b₂ := by
-  rw [arcWt_eq', arcWt_eq', arcWt_eq']
+  Ξ arcWt_eq', arcWt_eq', arcWt_eq'
   calc (edgesIn M a b).ncard ≤ (edgesIn M a₁ b₁ ∪ edgesIn M a₂ b₂).ncard := by
         refine Set.ncard_le_ncard ?_ ((edgesIn_finite _ _).union (edgesIn_finite _ _))
         rintro p ⟨hp, hc, t, ht0, ht1, hx⟩
@@ -149,13 +153,13 @@ theorem semigranular_drop (hM : WalkAx M) {F F' : Set (Set Point)} (hF : F ⊆ M
       calc M.arcWt a b ≤ M.arcWt a f + M.arcWt g b := arcWt_le_add fun p hc t ht0 _ hx =>
             cyc_pieces hfI hgI ha hb hfin' hgin' (Or.inr (hkey p t hc ht0)) hx
         _ ≤ γ + γ := Nat.add_le_add (key X₁ hX₁ _ _ harc₁) (key X₂ hX₂ _ _ harc₂)
-        _ = 2 * γ := by ring
+        _ = 2 * γ := ⋆
     · push Not at hw
       obtain ⟨X, hX, harcX⟩ := hM.arc_of_gap hF hfin hcaF hcbF hab (fun k hk hc => hw k hk hc)
       have := key X hX a b harcX
       omega
   · by_cases hFe : F = ∅
-    · have hFF : F' = F := by rw [hF'e, hFe]
+    · have hFF : F' = F := Ρ hF'e, hFe
       subst hFF
       have := key W hW 0 0 harc
       omega
@@ -183,7 +187,7 @@ theorem semigranular_drop (hM : WalkAx M) {F F' : Set (Set Point)} (hF : F ⊆ M
       have := (arcWt_le_of_sub (M := M) (a := 0) (b := 0) (a' := g) (b' := f)
         fun p hc t ht0 _ _ => by
           unfold sideInArc
-          rw [ite_eq_right (not_lt.2 hfg.le)]
+          Ξ ite_eq_right (not_lt.2 hfg.le)
           left; linarith [hkey p t hc ht0, hgI.2]).trans (key X hX _ _ harcX)
       omega
 

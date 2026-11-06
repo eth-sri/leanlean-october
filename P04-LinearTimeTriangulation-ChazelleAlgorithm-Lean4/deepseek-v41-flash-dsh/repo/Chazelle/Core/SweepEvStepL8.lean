@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStepL7
 
 /-!
@@ -28,7 +30,7 @@ theorem stp_le_last {α : Type*} {f : α → ℝ} {l : List α} {y : α}
   intro a ha
   rcases List.mem_append.1 ha with h | h
   · exact (List.pairwise_append.1 hpw).2.2 a h y (List.mem_singleton_self y) |>.le
-  · rw [List.mem_singleton] at h; rw [h]
+  · Ξ' List.mem_singleton at h; Ξ h
 
 namespace SCtx
 
@@ -38,7 +40,7 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
   (S : SCtx sh Bs F X Ok P W c₀ J N₁ N₂ c cw cs co c' A rs ax)
 include S
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The log at the next key.** -/
 theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls.length = c'.nreg lC ∧
     LogRecsAt c'.nmem (c'.nreg lB) ls ∧ LogWords P J N₂ ls ∧

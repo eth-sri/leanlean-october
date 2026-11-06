@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMathJunc
 
 /-!
@@ -55,11 +57,11 @@ theorem chunks_zero (C s a : ℕ) : chunks C s a 0 = [] := by
 
 theorem chunks_le {C s a L : ℕ} (h0 : L ≠ 0) (h : L ≤ C ∨ C = 0) :
     chunks C s a L = [(s, L, a)] := by
-  rw [chunks, ite_eq_right h0, ite_eq_left h]
+  Ξ chunks, ite_eq_right h0, ite_eq_left h
 
 theorem chunks_gt {C s a L : ℕ} (h0 : L ≠ 0) (h : C < L) (hC : C ≠ 0) :
     chunks C s a L = (s, C, a) :: chunks C (s + C) (a + C) (L - C) := by
-  rw [chunks, ite_eq_right h0, ite_eq_right (by omega)]
+  rw [chunks, ite_eq_right h0, ite_eq_right (⋄)]
 
 /-- The pieces of a segment: inside it, nonempty, at most `C` edges, `Q` start shifted like the
 host start. -/
@@ -75,10 +77,10 @@ theorem mem_chunks {C : ℕ} (hC : 1 ≤ C) : ∀ (L s a : ℕ) (x : ℕ × ℕ 
     · rw [chunks_le h0 (Or.inl hle)] at hx
       simp only [List.mem_singleton] at hx
       subst hx; dsimp only; omega
-    · rw [chunks_gt h0 (by omega) (by omega)] at hx
+    · rw [chunks_gt h0 (⋄) (by omega)] at hx
       rcases List.mem_cons.1 hx with rfl | hx
       · dsimp only; omega
-      · have := ih (L - C) (by omega) (s + C) (a + C) x hx
+      · have := ih (L - C) (⋄) (s + C) (a + C) x hx
         omega
 
 /-- The number of pieces of a segment. -/
@@ -91,9 +93,9 @@ theorem chunks_length {C : ℕ} (hC : 1 ≤ C) : ∀ (L s a : ℕ), (chunks C s 
     · rw [h0, chunks_zero]; simp
     by_cases hle : L ≤ C
     · rw [chunks_le h0 (Or.inl hle)]; simp; omega
-    · rw [chunks_gt h0 (by omega) (by omega)]
-      have := ih (L - C) (by omega) (s + C) (a + C)
-      simp only [List.length_cons, Nat.succ_mul]
+    · rw [chunks_gt h0 (⋄) (by omega)]
+      have := ih (L - C) (⋄) (s + C) (a + C)
+      ϴ List.length_cons, Nat.succ_mul
       omega
 
 /-! ## Leaves of a run -/

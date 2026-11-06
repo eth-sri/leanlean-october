@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FactsInterior
 
 /-!
@@ -37,13 +39,13 @@ open Chazelle.Geometry (lerp lerp_zero lerp_one lerp_mem_segment)
 `t = t'`. -/
 theorem key_inj {p p' : ℕ} {t t' : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) (ht' : 0 ≤ t') (ht1' : t' < 1)
     (h : (p : ℝ) + t = p' + t') : p = p' ∧ t = t' := by
-  have h1 : (p : ℝ) < p' + 1 := by linarith
-  have h2 : (p' : ℝ) < p + 1 := by linarith
+  have h1 : (p : ℝ) < p' + 1 := ⟡
+  have h2 : (p' : ℝ) < p + 1 := ⟡
   have h1' : p < p' + 1 := by exact_mod_cast h1
   have h2' : p' < p + 1 := by exact_mod_cast h2
-  have hpp : p = p' := by omega
+  have hpp : p = p' := ⋄
   subst hpp
-  exact ⟨rfl, by linarith⟩
+  exact ⟨rfl, ⟡⟩
 
 /-- The closed key interval of host edge `i` (of `N` edges, keys `κ`): `[κ i, κ (i+1)]`, and for
 the last edge the wrapped interval `[κ (N-1), ∞) ∪ (-∞, κ 0]`. -/
@@ -149,7 +151,7 @@ variable (h : KeyHost W D V pp tt)
 include h
 
 theorem vtx_mem_boundary {i : ℕ} (hi : i < V.length) : V.getD i (0, 0) ∈ W.boundary := by
-  rw [h.vtx_eq i hi]
+  Ξ h.vtx_eq i hi
   exact sidePt_mem_boundary (h.pos_lt i hi) (h.t_nonneg i hi) (h.t_lt i hi).le
 
 theorem succ_lt {i : ℕ} : (i + 1) % V.length < V.length :=
@@ -160,7 +162,7 @@ theorem inKeyIv_self {i : ℕ} (_hi : i < V.length) :
     InKeyIv (keyOf pp tt) V.length i (keyOf pp tt i) := by
   unfold InKeyIv
   split_ifs with h1
-  · exact ⟨le_rfl, (h.mono i (i + 1) (by omega) h1).le⟩
+  · exact ⟨le_rfl, (h.mono i (i + 1) (⋄) h1).le⟩
   · exact Or.inl le_rfl
 
 theorem inKeyIv_succ {i : ℕ} (hi : i < V.length) :
@@ -188,10 +190,10 @@ theorem pt_key {i : ℕ} (hi : i < V.length) {z : Point}
         have hk := h.succ_lt (i := i)
         refine ⟨pp ((i + 1) % V.length), h.pos_lt _ hk, tt ((i + 1) % V.length),
           h.t_nonneg _ hk, h.t_lt _ hk, ?_, h.inKeyIv_succ hi⟩
-        rw [lerp_one, h.vtx_eq _ hk]
+        Ξ lerp_one, h.vtx_eq _ hk
     · subst hs0
       refine ⟨pp i, h.pos_lt i hi, tt i, h.t_nonneg i hi, h.t_lt i hi, ?_, h.inKeyIv_self hi⟩
-      rw [lerp_zero, h.vtx_eq i hi]
+      Ξ lerp_zero, h.vtx_eq i hi
 
 /-- A walk point at the key of vertex `k` is vertex `k`. -/
 theorem eq_vtx_of_key {k : ℕ} (hk : k < V.length) {p : ℕ} {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1)
@@ -252,7 +254,7 @@ theorem simple : (⟨V⟩ : Polygon).Simple := by
           (hzp.symm.trans hzp')
         obtain ⟨k, hk, hki', hkj', hx⟩ := inKeyIv_inter h.mono hi hj hij hki hkj
         have hzk : z = V.getD k (0, 0) := hzp.trans (h.eq_vtx_of_key hk ht0 ht1 hx)
-        simp only [Polygon.commonEndpoints, hn, hv]
+        ϴ Polygon.commonEndpoints, hn, hv
         refine ⟨?_, ?_⟩
         · rcases hki' with rfl | rfl
           · exact Or.inl hzk
@@ -261,7 +263,7 @@ theorem simple : (⟨V⟩ : Polygon).Simple := by
           · exact Or.inl hzk
           · exact Or.inr hzk
     · rintro z ⟨hz1, hz2⟩
-      simp only [Polygon.edge, hn, hv]
+      ϴ Polygon.edge, hn, hv
       refine ⟨?_, ?_⟩
       · rcases hz1 with rfl | rfl
         · exact Chazelle.Geometry.left_mem_segment _ _

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvDCall
 public import Chazelle.Core.ShearInv
 public import Chazelle.Core.FactsFullDegInt
@@ -27,7 +29,7 @@ open Machine Machine.Stmt Programs SignK BuildRam
 def InDrv (B : ℕ → Bool) : Prop := ∀ r, B r = true → bandOf r ∈ DrvR.drvBands ∧ r ≠ ALLOC
 
 theorem mem_drvBands {r : ℕ} (h1 : 10000 ≤ r) (h2 : r < 230000) : bandOf r ∈ DrvR.drvBands := by
-  simp only [DrvR.drvBands, phaseBands, bCore, Finset.mem_erase, Finset.mem_Icc, bandOf]
+  ϴ DrvR.drvBands, phaseBands, bCore, Finset.mem_erase, Finset.mem_Icc, bandOf
   omega
 
 theorem rf_of_frameM {B : ℕ → Bool} (hB : InDrv B) {A₀ : ℕ} {c c' : Config} {k : ℕ}
@@ -42,21 +44,21 @@ theorem rf_of_frameM {B : ℕ → Bool} (hB : InDrv B) {A₀ : ℕ} {c c' : Conf
     · rfl
     · exact absurd rfl (hB _ h').2)
   exact ⟨fun r hr _ => h.1 r (hnot r hr), fun r hr => h.2.1 r (hnot r hr), hm,
-    fun a _ => by rw [h.2.2.1], h.2.2.2, by omega, by omega⟩
+    fun a _ => by rw [h.2.2.1], h.2.2.2, ⋄, by omega⟩
 
 theorem rf_of_frameB {B : ℕ → Bool} (hB : InDrv B) {A₀ : ℕ} {c c' : Config} {k : ℕ}
     (h : FrameB B c c') : Restore.RF DrvR.drvBands A₀ c c' k :=
-  rf_of_frameM hB (BuildRam.FrameB.toM h) (fun a _ => by rw [h.2.2.1])
+  rf_of_frameM hB (BuildRam.FrameB.toM h) (fun a _ => Ρ h.2.2.1)
 
 theorem inDrv_scan : InDrv Bscan := by
   intro r hr
   simp only [Bscan, BuildRam.Bhalf, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨mem_drvBands (⋄) (by omega), by unfold ALLOC; omega⟩
 
 theorem inDrv_appT : InDrv BappT := by
   intro r hr
   simp only [BappT, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨mem_drvBands (⋄) (by omega), by unfold ALLOC; omega⟩
 
 theorem inDrv_eq {q : ℕ} (h1 : 10000 ≤ q) (h2 : q < 230000) (hq : q ≠ ALLOC) :
     InDrv (fun r => decide (r = q)) := by
@@ -68,9 +70,9 @@ theorem inDrv_eq {q : ℕ} (h1 : 10000 ≤ q) (h2 : q < 230000) (hq : q ≠ ALLO
 theorem inDrv_arg : InDrv (fun r => decide (81000 ≤ r ∧ r ≤ 81006)) := by
   intro r hr
   simp only [decide_eq_true_eq] at hr
-  exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨mem_drvBands (⋄) (by omega), by unfold ALLOC; omega⟩
 
-theorem find_bands : restoreBands ∪ DrvR.ioBandsD ⊆ DrvR.drvBands := by decide
+theorem find_bands : restoreBands ∪ DrvR.ioBandsD ⊆ DrvR.drvBands := ⌖
 
 /-- The splitting step keeps the registers of `bDownDrv` and `coreReg 1`. -/
 theorem find_keeps {c c' : Config} {k : ℕ} (h : Frame (restoreBands ∪ DrvR.ioBandsD) c c' k)
@@ -90,7 +92,7 @@ theorem hQ (hG : GoodEnv E.P) : E.Q.Simple := (shearInvariance (epsOf E.P) E.P).
 theorem hGM (hG : GoodEnv E.P) : GoodModel E.M := Or.inr ⟨E.Q, E.hQ hG, rfl⟩
 
 theorem nRegions_N : E.N.nRegions = E.R := by
-  simp [NF.nRegions, BuildNF.buildNF, REnv.R]
+  Θ NF.nRegions, BuildNF.buildNF, REnv.R
 
 end REnv
 

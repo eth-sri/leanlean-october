@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvGEnv
 public import Chazelle.Core.GranSize
 
@@ -31,9 +33,9 @@ theorem exec_seq_inv {P : Polygon} {W : ℕ} {s t : Stmt} {c c' : Config} {k : �
 /-- The number of points of a host whose runs have at most `2 C` edges. -/
 theorem pts_length_le_runs (n C : ℕ) : ∀ H : Host, (∀ a ℓ, HostItem.run a ℓ ∈ H → ℓ ≤ 2 * C) →
     (H.pts n).length ≤ H.length * (2 * C + 1)
-  | [], _ => by simp [Host.pts]
+  | [], _ => ⊚ Host.pts
   | .pt x :: H, h => by
-    rw [DownMath.pts_cons, List.length_append, List.length_cons, Nat.succ_mul]
+    Ξ DownMath.pts_cons, List.length_append, List.length_cons, Nat.succ_mul
     have := pts_length_le_runs n C H fun a ℓ hm => h a ℓ (List.mem_cons_of_mem _ hm)
     simp only [HostItem.pts, List.length_singleton]; omega
   | .run a ℓ :: H, h => by
@@ -59,7 +61,7 @@ section exec
 
 variable {O : OracleIface} {P : Polygon} {W : ℕ} {R : RData}
 
-set_option maxHeartbeats 4000000 in
+
 /-- **One piece**: computed, then merged into the accumulated chain (or becoming it). -/
 theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
     (hsp : PcMeets O sp κP)
@@ -84,7 +86,7 @@ theorem pcS_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ}
         d'.nreg q = d.nreg q) ∧
       Frame drvBands d d' k := by
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hn3 : 3 ≤ P.n := hF.hG.1.1
+  have hn3 := hF.hG.1.1
   have hNPn : (R.H.poly (Qof P)).n = R.NP := by rw [DownMath.host_poly_n, hF.hNP]
   have hW1 : 1579 ≤ W := by unfold pcB at hroom; omega
   -- the piece

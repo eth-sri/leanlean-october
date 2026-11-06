@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterLabelStage
 public import Chazelle.Core.SortRam
 
@@ -52,7 +56,7 @@ theorem bumpS_exec {c : Config} (hw : WordsBounded W c) {E : ℕ} (h1 : c.nreg 1
     ⟨hw, hA, fun r _ => rfl, rfl, rfl, rfl, rfl⟩
   have e2 : c'.nreg 130086 = E := by rw [hr' _ (by rw [hAl]; omega)]; exact hE
   rw [e2] at htest
-  exact ⟨c', k, e, hk, hw', by omega, hψ, hr', hm', hrr', hrm', ho'⟩
+  exact ⟨c', k, e, hk, hw', ⋄, hψ, hr', hm', hrr', hrm', ho'⟩
 
 end proofs
 

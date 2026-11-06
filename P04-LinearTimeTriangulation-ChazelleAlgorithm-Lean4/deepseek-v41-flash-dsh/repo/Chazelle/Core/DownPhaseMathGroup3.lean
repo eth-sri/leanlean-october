@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMathGroup2
 
 /-!
@@ -33,8 +35,8 @@ theorem runCnt_arith2 {n x c y : ℕ} (hx : x < n) (hcn : c < n) (hy : y = (x + 
   · rw [Nat.mod_eq_of_lt h, show x + c + n - x = c + n by omega, Nat.add_mod_right,
       Nat.mod_eq_of_lt hcn]
   · have e : (x + c) % n = x + c - n := by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-    rw [e, show x + c - n + n - x = c by omega, Nat.mod_eq_of_lt hcn]
+      Ξ Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (⋄)
+    Ξ e, show x + c - n + n - x = c by omega, Nat.mod_eq_of_lt hcn
 
 /-- The points of an arc group. -/
 def grpPts (li : Bool) (n : ℕ) (N : NF) (r : ℕ) (xs xe xn : WPos) : List SymPt :=

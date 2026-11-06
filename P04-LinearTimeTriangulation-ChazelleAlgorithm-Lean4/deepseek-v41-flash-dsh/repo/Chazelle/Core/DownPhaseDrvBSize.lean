@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBArc
 public import Chazelle.Core.FactsArcs
 public import Chazelle.Core.DownPhaseDrvCount
@@ -63,13 +65,13 @@ theorem region_arcs_nodup (r : ℕ) :
     ((BuildNF.buildNF (interiorModel Q) Q L E).region r).arcs.Nodup := by
   unfold NF.region
   by_cases hr : r < L.length + 1
-  · rw [List.getD_eq_getElem?_getD]
+  · Ξ List.getD_eq_getElem?_getD
     simp only [BuildNF.buildNF, List.getElem?_map, List.getElem?_range hr, Option.map_some,
       Option.getD_some]
     exact List.nodup_range.filter _
-  · rw [List.getD_eq_getElem?_getD]
-    simp only [BuildNF.buildNF, List.getElem?_map]
-    rw [List.getElem?_eq_none (by simp; omega)]
+  · Ξ List.getD_eq_getElem?_getD
+    ϴ BuildNF.buildNF, List.getElem?_map
+    Ξ List.getElem?_eq_none (by simp; omega)
     simp
 
 /-- **A region has at most `deg + 1` arcs.** -/
@@ -115,12 +117,12 @@ theorem ncard_biUnion_le_mul {α β : Type*} {T : Set α} (hT : T.Finite) (f : �
   induction T, hT using Set.Finite.induction_on with
   | empty => simp
   | @insert c T hcT hT ih =>
-    rw [Set.biUnion_insert, Set.ncard_insert_of_notMem hcT hT]
+    Ξ Set.biUnion_insert, Set.ncard_insert_of_notMem hcT hT
     refine (Set.ncard_union_le _ _).trans ?_
     have h1 := hf c (Set.mem_insert c T)
     have h2 := ih (fun x hx => hf x (Set.mem_insert_of_mem c hx))
       (fun x hx => hfin x (Set.mem_insert_of_mem c hx))
-    rw [Nat.mul_succ]
+    Ξ Nat.mul_succ
     omega
 
 /-- **A region has at most `(deg + 1) γ + 2 deg` host points.** -/
@@ -139,11 +141,11 @@ theorem regPts_length_le (B : BaseCtx Q L E reg li) {r : ℕ}
       DownHost.nk (interiorModel Q)
         ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r) := by
     unfold regPts
-    rw [wlist_length, DownMath.regHost_pts]
+    Ξ wlist_length, DownMath.regHost_pts
     split_ifs
     · exact hlen
     · rw [List.length_reverse]; exact hlen
-  rw [hlenP]
+  Ξ hlenP
   have hM := walkAx_interiorModel B.hQ
   have hnk := DownDrv.nk_le hM B.fam.2.1 B.fam.1 (reg r)
   obtain ⟨hfin, hcard⟩ := arcsPerRegion (interiorModel Q) Q _ (Or.inr ⟨Q, B.hQ, rfl⟩) B.fam _ hR
@@ -264,11 +266,11 @@ theorem arcWt_zero (Q : Polygon) : (interiorModel Q).arcWt 0 0 = Q.n := by
   have : {p : ℕ | p < (interiorModel Q).W.n ∧ (interiorModel Q).counted p ∧
       ∃ t : ℝ, 0 < t ∧ t < 1 ∧ sideInArc 0 0 (p + t)} = {p | p < Q.n} := by
     ext p
-    simp only [mem_ofPred_eq, hn]
+    ϴ mem_ofPred_eq, hn
     constructor
     · exact fun h => h.1
     · intro h
-      refine ⟨h, trivial, 1 / 2, by norm_num, by norm_num, ?_⟩
+      refine ⟨h, trivial, 1 / 2, ⊛, by norm_num, ?_⟩
       unfold sideInArc; rw [ite_eq_right (lt_irrefl _)]; left; positivity
   rw [this, show {p : ℕ | p < Q.n} = ((Finset.range Q.n : Finset ℕ) : Set ℕ) by ext; simp,
     Set.ncard_coe_finset, Finset.card_range]
@@ -280,13 +282,13 @@ theorem n_le_of_empty {Q : Polygon} (hQ : Q.Simple) {E : List ℕ} (hE : E = [])
   subst hE
   set I := interiorModel Q with hI
   set N := BuildNF.buildNF I Q [] [] with hN
-  have hL : ChordTriplesOK I Q [] := ⟨⟨by simp, by simp, by simp⟩, by simp, by simp, by simp⟩
-  have hNF : IsNF I Q N := DownMath.isNF_build hQ hL (by simp) (by simp)
+  have hL : ChordTriplesOK I Q [] := ⟨⟨✓, by simp, by simp⟩, by simp, by simp, by simp⟩
+  have hNF : IsNF I Q N := DownMath.isNF_build hQ hL (✓) (by simp)
   obtain ⟨-, -, -, reg, hRC, -, hAO, -⟩ := id hNF
   have hA : N.arcs = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by
     show BuildNF.arcList I Q [] [] = _
     unfold BuildNF.arcList
-    rw [ite_eq_left (show ([] : List (ℕ × ℕ × ℕ)).length = 0 from rfl)]
+    Ξ ite_eq_left (show ([] : List (ℕ × ℕ × ℕ)).length = 0 from rfl)
   have h0 : 0 < N.arcs.length := by rw [hA]; simp
   obtain ⟨hreg, harc⟩ := hAO.1 0 h0
   have ha : N.arc 0 = ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ := by unfold NF.arc; rw [hA]; rfl

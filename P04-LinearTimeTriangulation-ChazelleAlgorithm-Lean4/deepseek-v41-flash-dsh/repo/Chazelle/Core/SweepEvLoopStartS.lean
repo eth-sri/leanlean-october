@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvLoopStartR
 
 /-!
@@ -27,8 +29,8 @@ theorem getD_d5 {l : List (ℕ × ℕ × ℕ × ℕ × ℕ)} {i : ℕ} (h : i < 
 theorem getD_d5' {l : List (ℕ × ℕ × ℕ × ℕ × ℕ)} {i : ℕ} (h : i < l.length) :
     l.getD i d5 = l[i] := List.getD_eq_getElem _ _ h
 
-set_option maxHeartbeats 16000000 in
-set_option maxRecDepth 20000 in
+
+
 /-- **One stop step.** -/
 theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     {Ok : Polygon → Model → Prop} {J : Merge.Junction} {N₁ N₂ : NF}

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Separator.Cotree
 
 /-!
@@ -68,7 +70,7 @@ noncomputable def sepSet (f : F) : Finset V :=
 omit [Fintype D] [DecidableEq D] [Fintype F] [DecidableEq F] in
 /-- Membership in the separator of a face: an ancestor of a corner of the face. -/
 theorem mem_sepSet {f : F} {v : V} : v ∈ T.sepSet f ↔ ∃ e, M.face e = f ∧ T.IsAnc v (M.vert e) := by
-  simp [sepSet]
+  Θ sepSet
 
 omit [Fintype D] [DecidableEq D] [Fintype F] [DecidableEq F] in
 /-- A vertex off `sepSet f` is not on the root path of any corner of `f`. -/
@@ -79,7 +81,7 @@ omit [Fintype D] [DecidableEq D] [Fintype F] [DecidableEq F] in
 /-- A vertex off `sepSet f` is not on the root path of the head of a dart of `f`. -/
 theorem not_isAnc_head_of_notMem_sepSet {f : F} {v : V} (hv : v ∉ T.sepSet f) {e : D}
     (he : M.face e = f) : ¬ T.IsAnc v (M.head e) := by
-  rw [← M.vert_fperm]
+  Ξ ← M.vert_fperm
   exact T.not_isAnc_of_notMem_sepSet hv (by rw [M.face_fperm_apply]; exact he)
 
 omit [DecidableEq F] in
@@ -105,10 +107,10 @@ theorem card_sepSet_filter_shift_le (f : F) (c : ℕ) (I : Finset ℕ) :
     intro v hv
     simp only [Finset.mem_filter, mem_sepSet] at hv
     obtain ⟨⟨e, he, hanc⟩, hl⟩ := hv
-    simp only [Finset.mem_biUnion, Finset.mem_filter, Finset.mem_univ, true_and, E]
+    ϴ Finset.mem_biUnion, Finset.mem_filter, Finset.mem_univ, true_and, E
     exact ⟨e, he, hanc, hl⟩
   refine (Finset.card_le_card hsub).trans (Finset.card_biUnion_le.trans ?_)
-  rw [faceDeg, ← smul_eq_mul, ← Finset.sum_const]
+  Ξ faceDeg, ← smul_eq_mul, ← Finset.sum_const
   refine Finset.sum_le_sum (fun e _ => ?_)
   refine Finset.card_le_card_of_injOn (fun v => T.level v + c) ?_ ?_
   · intro v hv

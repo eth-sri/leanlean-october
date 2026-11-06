@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoClass
 
 /-!
@@ -138,15 +140,15 @@ theorem symKey_meets : Meets absKey primBands (PrimPre SymIn) (PrimPost SymOut)
   obtain ⟨c', k, ex, hk, hr⟩ := classify_exec (Kb := 27 * H.length + 50)
     (Kv := 27 * H.length + 45) (Ki := 60 * H.length + 200) (R := SymOut P C c₀) c₀ c hE hinp hen
     hp0 hp1 hhn hy
-    (fun c₂ hE₂ g₂ d₂ he hpos => by omega)
-    (fun c₂ hE₂ g₂ h6 hpar => symVtx_exec c₂ hE₂ (g₂ 50201 (by norm_num) (by norm_num)) h6
-      (by omega) hpar)
-    (fun c₂ hE₂ g₂ _ h6 hpos => symInt_exec c₂ hE₂ hregH (g₂ 50201 (by norm_num) (by norm_num))
-      (g₂ 50202 (by norm_num) (by norm_num)) h6 (by
+    (fun c₂ hE₂ g₂ d₂ he hpos => ⋄)
+    (fun c₂ hE₂ g₂ h6 hpar => symVtx_exec c₂ hE₂ (g₂ 50201 (⊛) (by norm_num)) h6
+      (⋄) hpar)
+    (fun c₂ hE₂ g₂ _ h6 hpos => symInt_exec c₂ hE₂ hregH (g₂ 50201 (⊛) (by norm_num))
+      (g₂ 50202 (⊛) (by norm_num)) h6 (by
         rcases hcls with ⟨-, h⟩ | ⟨h, h'⟩
         · exact h
         · rw [h'] at hpos; exact absurd hpos (lt_irrefl _)) hpos hp1 hhn)
-  exact ⟨c', k, ex, by omega, hr⟩
+  exact ⟨c', k, ex, ⋄, hr⟩
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleRamArc
 
 /-!
@@ -144,7 +146,7 @@ theorem nodeCostFrom_succ (m : ℕ → ℕ) (V : QV) {v t : ℕ} (ht : t < nodeN
     nodeCostFrom m V v t = (1132 * (arcLenM m V (nodeArc m V v t) + 1) + 40) +
       nodeCostFrom m V v (t + 1) := by
   unfold nodeCostFrom
-  rw [Finset.sum_eq_sum_Ico_succ_bot ht]
+  Ξ Finset.sum_eq_sum_Ico_succ_bot ht
 
 theorem nodeBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤ W) {C : Chain}
     {V : QV} {z : Point} (hs : SemOK P C V z) {c₀ : Config} {S : Set Point} {v : ℕ}
@@ -155,7 +157,7 @@ theorem nodeBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32
         nodeCostFrom c₀.nmem V v (c.nreg 120098) := by
   set t := c.nreg 120098 with ht_def
   have htn : t < nodeNa c₀.nmem V v := by rw [h.na] at ht; exact ht
-  have hmem : c.nmem = c₀.nmem := h.fr.2.2.1
+  have hmem := h.fr.2.2.1
   obtain ⟨hSB, hj0, hRB, hLB, hlist⟩ := hm.node v hvA
   obtain ⟨hjA, hLBt⟩ := hlist t htn
   set j := nodeArc c₀.nmem V v t with hj_def
@@ -172,14 +174,14 @@ theorem nodeBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32
       · config_simp; rw [h.ls, hmem]; rfl
       · config_simp; upd_solve
   obtain ⟨x80, r₁, m₁, rr₁, rm₁, o₁⟩ := v₁
-  have hq₁ : QConst P V c₁ := h.q.congr fun r h1 h2 => r₁ r (by omega) (by omega)
+  have hq₁ : QConst P V c₁ := h.q.congr fun r h1 h2 => r₁ r (⋄) (by omega)
   have hb₁ : BestOK P.n V.s V.m c₁ := by
     unfold BestOK
-    rw [r₁ 120050 (by decide) (by decide), r₁ 120051 (by decide) (by decide),
-      r₁ 120052 (by decide) (by decide)]
+    rw [r₁ 120050 (⌖) (by decide), r₁ 120051 (by decide) (by decide),
+      r₁ 120052 (⌖) (by decide)]
     exact h.b
   have hbo₁ : bestOf c₁ = bestOf c := by
-    unfold bestOf; rw [r₁ 120050 (by decide) (by decide), r₁ 120052 (by decide) (by decide)]
+    unfold bestOf; rw [r₁ 120050 (⌖) (by decide), r₁ 120052 (by decide) (by decide)]
   have hm₁ : c₁.nmem = c₀.nmem := m₁.trans hmem
   -- 2. scan it
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hb₂, hit₂⟩ := arcScan_exec (P := P) hG hW hs c₁ e₁.wb_right hq₁ hb₁
@@ -188,10 +190,10 @@ theorem nodeBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32
     (by rw [x80]; exact haddr) (by rw [x80]; exact hpos)
     (S := S ∪ {x | ∃ t', t' < t ∧ x ∈ arcPts c₀.nmem V C (nodeArc c₀.nmem V v t')})
     (by rw [hbo₁]; exact h.hit)
-  have R₂ : ∀ r, BA r = false → c₂.nreg r = c₁.nreg r := f₂.1
+  have R₂ := f₂.1
   have hq₂ : QConst P V c₂ := hq₁.frame f₂ BA_const
   -- 3. next
-  have x98 : c₂.nreg 120098 = t := (R₂ _ (by decide)).trans (r₁ _ (by decide) (by decide))
+  have x98 : c₂.nreg 120098 = t := (R₂ _ (⌖)).trans (r₁ _ (by decide) (by decide))
   have hW98 : t + 1 ≤ W := by
     have := h.wb.1 120096; rw [h.na] at this; omega
   obtain ⟨c₃, e₃, v₃, r₃, m₃⟩ := add_exec (P := P) e₂.wb_right 120098 120098 120011
@@ -200,38 +202,38 @@ theorem nodeBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32
   have R₃ : ∀ r, BA r = false → r ≠ 120099 → r ≠ 120080 → r ≠ 120098 → c₃.nreg r = c.nreg r :=
     fun r h1 h2 h3 h4 => (r₃ r h4).trans ((R₂ r h1).trans (r₁ r h2 h3))
   have ex : Exec P W nodeBody c c₃ (k₁ + (k₂ + 1)) := .seq e₁ (.seq e₂ e₃)
-  have fb := exec_frameB ex (B := BN) (by decide)
-  refine ⟨c₃, _, ex, ⟨e₃.wb_right, hq₂.congr fun r h1 h2 => r₃ r (by omega), ?_, ?_, ?_, ?_,
+  have fb := exec_frameB ex (B := BN) (⌖)
+  refine ⟨c₃, _, ex, ⟨e₃.wb_right, hq₂.congr fun r h1 h2 => r₃ r (⋄), ?_, ?_, ?_, ?_,
     ?_, ?_, h.fr.trans fb⟩, ?_⟩
   · unfold BestOK
-    rw [r₃ 120050 (by decide), r₃ 120051 (by decide), r₃ 120052 (by decide)]
+    rw [r₃ 120050 (⌖), r₃ 120051 (by decide), r₃ 120052 (by decide)]
     exact hb₂
-  · rw [R₃ _ (by decide) (by decide) (by decide) (by decide)]; exact h.rv
-  · rw [R₃ _ (by decide) (by decide) (by decide) (by decide)]; exact h.na
-  · rw [R₃ _ (by decide) (by decide) (by decide) (by decide)]; exact h.ls
+  · rw [R₃ _ (⌖) (by decide) (by decide) (by decide)]; exact h.rv
+  · rw [R₃ _ (⌖) (by decide) (by decide) (by decide)]; exact h.na
+  · rw [R₃ _ (⌖) (by decide) (by decide) (by decide)]; exact h.ls
   · rw [v₃]; omega
   · have hbo : bestOf c₃ = bestOf c₂ := by
-      unfold bestOf; rw [r₃ 120050 (by decide), r₃ 120052 (by decide)]
-    rw [hbo, v₃]
+      unfold bestOf; rw [r₃ 120050 (⌖), r₃ 120052 (by decide)]
+    Ξ hbo, v₃
     have e : {x | ∃ t', t' < t + 1 ∧ x ∈ arcPts c₀.nmem V C (nodeArc c₀.nmem V v t')} =
         {x | ∃ t', t' < t ∧ x ∈ arcPts c₀.nmem V C (nodeArc c₀.nmem V v t')} ∪
           arcPts c₀.nmem V C j := by
       ext x
-      simp only [Set.mem_ofPred_eq, Set.mem_union]
+      ϴ Set.mem_ofPred_eq, Set.mem_union
       constructor
       · rintro ⟨t', ht', hx⟩
         rcases Nat.lt_succ_iff_lt_or_eq.1 ht' with h' | rfl
         · exact Or.inl ⟨t', h', hx⟩
         · exact Or.inr hx
       · rintro (⟨t', ht', hx⟩ | hx)
-        · exact ⟨t', by omega, hx⟩
-        · exact ⟨t, by omega, hx⟩
-    rw [e, ← Set.union_assoc]
+        · exact ⟨t', ⋄, hx⟩
+        · exact ⟨t, ⋄, hx⟩
+    Ξ e, ← Set.union_assoc
     exact hit₂
-  · rw [v₃, nodeCostFrom_succ c₀.nmem V htn]
+  · Ξ v₃, nodeCostFrom_succ c₀.nmem V htn
     have e : arcLenM c₀.nmem V (nodeArc c₀.nmem V v t) = lenOf V.A (2 * V.m + 7)
         (arcSe c₀.nmem V j) (arcEe c₀.nmem V j) (arcPos c₀.nmem V j) := rfl
-    rw [e]
+    Ξ e
     omega
 
 /-- **The scan of node `v`** (register `120090`). -/
@@ -273,9 +275,9 @@ theorem nodeScan_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 3
     subst hk; exact ⟨c₁, e, hq'⟩
   obtain ⟨x92, r₁, m₁, rr₁, rm₁, o₁⟩ := v₁
   obtain ⟨c₂, e₂, v₂, r₂, m₂, rr₂, rm₂, o₂⟩ := t5_exec (P := P) (rd := 120093) (rs := 120092)
-    (rb := 120044) (by decide) (by decide) c₁ e₁.wb_right (by
-      rw [x92, r₁ _ (by decide) (by decide), hq.AB]; omega)
-  rw [x92, r₁ _ (by decide) (by decide), hq.AB] at v₂
+    (rb := 120044) (⌖) (by decide) c₁ e₁.wb_right (by
+      rw [x92, r₁ _ (⌖) (by decide), hq.AB]; omega)
+  rw [x92, r₁ _ (⌖) (by decide), hq.AB] at v₂
   have e₃ := Exec.loadN e₂.wb_right 120094 120093 (P := P)
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg 120094 (c₂.nmem (c₂.nreg 120093)) } with hc₃
   have x94 : c₃.nreg 120094 = nodeReg c.nmem V v := by
@@ -283,9 +285,9 @@ theorem nodeScan_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 3
   have r₃ : ∀ r, r ≠ 120094 → c₃.nreg r = c₂.nreg r := fun r hr => by
     rw [hc₃]; config_simp; upd_solve
   obtain ⟨c₄, e₄, v₄, r₄, m₄, rr₄, rm₄, o₄⟩ := t5_exec (P := P) (rd := 120095) (rs := 120094)
-    (rb := 120045) (by decide) (by decide) c₃ e₃.wb_right (by
-      rw [x94, r₃ _ (by decide), r₂ _ (by decide), r₁ _ (by decide) (by decide), hq.RB]; omega)
-  rw [x94, r₃ _ (by decide), r₂ _ (by decide), r₁ _ (by decide) (by decide), hq.RB] at v₄
+    (rb := 120045) (⌖) (by decide) c₃ e₃.wb_right (by
+      rw [x94, r₃ _ (⌖), r₂ _ (by decide), r₁ _ (by decide) (by decide), hq.RB]; omega)
+  rw [x94, r₃ _ (⌖), r₂ _ (by decide), r₁ _ (by decide) (by decide), hq.RB] at v₄
   have m₄' : c₄.nmem = c.nmem := by rw [m₄]; show c₂.nmem = c.nmem; rw [m₂, m₁]
   obtain ⟨c₅, k₅, e₅, hk₅, v₅⟩ : ∃ c₅ k₅, Exec P W (block [.loadN 120096 120095,
       .addN 120095 120095 120011, .loadN 120097 120095, .addN 120097 120097 120047,
@@ -295,10 +297,10 @@ theorem nodeScan_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 3
         (∀ r, r ≠ 120095 → r ≠ 120096 → r ≠ 120097 → r ≠ 120098 → c₅.nreg r = c₄.nreg r) ∧
         c₅.nmem = c₄.nmem ∧ c₅.rreg = c₄.rreg ∧ c₅.rmem = c₄.rmem ∧ c₅.output = c₄.output) := by
     have hq4 : c₄.nreg 120011 = 1 := by
-      rw [r₄ _ (by decide), r₃ _ (by decide), r₂ _ (by decide), r₁ _ (by decide) (by decide),
+      rw [r₄ _ (⌖), r₃ _ (by decide), r₂ _ (by decide), r₁ _ (by decide) (by decide),
         hq.one]
     have hq47 : c₄.nreg 120047 = V.LB := by
-      rw [r₄ _ (by decide), r₃ _ (by decide), r₂ _ (by decide), r₁ _ (by decide) (by decide),
+      rw [r₄ _ (⌖), r₃ _ (by decide), r₂ _ (by decide), r₁ _ (by decide) (by decide),
         hq.LB]
     have w₄ := e₄.wb_right
     exec_block
@@ -315,18 +317,18 @@ theorem nodeScan_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 3
   -- the frame of the head
   have exh : Exec P W nodeHead c c₅ (2 + (4 + (1 + (4 + k₅)))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
-  have fh := exec_frameB exh (B := fun r => decide (120091 ≤ r ∧ r ≤ 120098)) (by decide)
-  have hmh : c₅.nmem = c.nmem := fh.2.2.1
+  have fh := exec_frameB exh (B := fun r => decide (120091 ≤ r ∧ r ≤ 120098)) (⌖)
+  have hmh := fh.2.2.1
   have R₅ : ∀ r, (r < 120091 ∨ 120098 < r) → c₅.nreg r = c.nreg r := fun r hr =>
     fh.1 r (by simp only [decide_eq_false_iff_not, not_and, not_le]; omega)
   have I₀ : NInv P W C V z c S v c₅ := by
-    refine ⟨e₅.wb_right, hq.congr fun r h1 h2 => R₅ r (by omega), ?_, R₅ _ (by omega), x96, x97,
+    refine ⟨e₅.wb_right, hq.congr fun r h1 h2 => R₅ r (⋄), ?_, R₅ _ (by omega), x96, x97,
       by rw [x98]; omega, ?_, FrameB.mono fh fun r hr => ?_⟩
     · unfold BestOK
-      rw [R₅ 120050 (by omega), R₅ 120051 (by omega), R₅ 120052 (by omega)]; exact hb
+      rw [R₅ 120050 (⋄), R₅ 120051 (by omega), R₅ 120052 (by omega)]; exact hb
     · have hbo : bestOf c₅ = bestOf c := by
-        unfold bestOf; rw [R₅ 120050 (by omega), R₅ 120052 (by omega)]
-      rw [hbo, x98]
+        unfold bestOf; rw [R₅ 120050 (⋄), R₅ 120052 (by omega)]
+      Ξ hbo, x98
       have : {x | ∃ t, t < 0 ∧ x ∈ arcPts c.nmem V C (nodeArc c.nmem V v t)} = ∅ := by
         ext x; simp
       rw [this, Set.union_empty]; exact hS
@@ -344,7 +346,7 @@ theorem nodeScan_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 3
   · have e : nodePts c.nmem V C v =
         {x | ∃ t, t < c₆.nreg 120098 ∧ x ∈ arcPts c.nmem V C (nodeArc c.nmem V v t)} := by
       ext x
-      simp only [nodePts, Set.mem_ofPred_eq, ht6]
+      ϴ nodePts, Set.mem_ofPred_eq, ht6
       exact ⟨fun h => h.2, fun h => ⟨hvA, h⟩⟩
     rw [e]; exact I₆.hit
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRSplC
 
 /-!
@@ -28,9 +30,9 @@ def Bs56 (r : ℕ) : Bool :=
 /-- The registers `spl6` writes. -/
 def Bs6 (r : ℕ) : Bool := decide (210061 ≤ r ∧ r ≤ 210063)
 
-theorem wrM2_spl5 : wrM2 Bs56 (fun _ => false) spl5 = true := by decide
-theorem wrM2_spl6 : wrM2 Bs6 (fun _ => false) spl6 = true := by decide
-theorem wrM2_cpS : wrM2 Bcp (fun _ => false) cpS = true := by decide
+theorem wrM2_spl5 : wrM2 Bs56 (fun _ => false) spl5 = true := ⌖
+theorem wrM2_spl6 : wrM2 Bs6 (fun _ => false) spl6 = true := ⌖
+theorem wrM2_cpS : wrM2 Bcp (fun _ => false) cpS = true := ⌖
 
 /-- The cost of `splC`. -/
 def splCCost (K K₂ : ℕ) : ℕ := 14 * K + 7 * (2 * K₂) + 11026 * (2 * (K + K₂)) + 40
@@ -39,7 +41,7 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The merged event list.** -/
 theorem splC_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     (hw : WordsBounded W c) {D T SE Rb K K₂ : ℕ} {M : Model} {L' : List (ℕ × ℕ × ℕ)}
@@ -82,7 +84,7 @@ theorem splC_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   -- copy `E`
   obtain ⟨c₂, k₂, e₂, hk₂, w₂, hs₂, hm₂, f₂⟩ := cpS_exec (P := P) e₁.wb_right v61 v62 v63
     (by rw [g₁ _ (by decide), h34]) (Or.inl (by omega)) (by omega) (by omega)
-  have g₂ : ∀ r, Bcp r = false → c₂.nreg r = c₁.nreg r := f₂.1
+  have g₂ := f₂.1
   -- the arguments of the second copy
   obtain ⟨c₃, k₃, e₃, hk₃, u61, u62, u63, hm₃⟩ : ∃ c₃ k₃, Exec P W spl6 c₂ c₃ k₃ ∧ k₃ = 3 ∧
       c₃.nreg 210061 = 2 * K₂ ∧ c₃.nreg 210062 = Rb ∧ c₃.nreg 210063 = A₃ + 2 * K ∧
@@ -101,7 +103,7 @@ theorem splC_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   obtain ⟨c₄, k₄, e₄, hk₄, w₄, hs₄, hm₄, f₄⟩ := cpS_exec (P := P) e₃.wb_right u61 u62 u63
     (by rw [g₃ _ (by decide), g₂ _ (by decide), g₁ _ (by decide), h34]) (Or.inl (by omega))
     (by omega) (by omega)
-  have g₄ : ∀ r, Bcp r = false → c₄.nreg r = c₃.nreg r := f₄.1
+  have g₄ := f₄.1
   -- registers before the merge
   have k5 : ∀ r, Bcp r = false → Bs6 r = false → c₄.nreg r = c₁.nreg r := fun r h1 h2 => by
     rw [g₄ r h1, g₃ r h2, g₂ r h1]

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmColl
 public import Chazelle.Core.FuseAsmHt
 
@@ -46,7 +48,7 @@ def clqBody : Stmt :=
 /-- The collection loop. -/
 def clqLoop : Stmt := .whileLtN 70112 70111 clqBody
 
-set_option maxHeartbeats 4000000 in
+
 theorem clqCopy_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {s t a K : ℕ}
     (h13 : c.nreg 70113 = s) (h15 : c.nreg 70115 = t) (hA : c.nreg ALLOC = a)
     (h05 : c.nreg 70105 = 1) (h18 : c.nreg 70118 = 2) (h10 : c.nreg 70110 = K)
@@ -87,7 +89,7 @@ structure CLQI (W : ℕ) (L : List (ℕ × ℕ × ℕ)) (R : List (ℕ × ℕ ×
   rm : c.rmem = c₀.rmem
   out : c.output = c₀.output
 
-set_option maxHeartbeats 8000000 in
+
 theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R : List (ℕ × ℕ × ℕ × ℕ)}
     {QB RB LB : ℕ} {pre : List (ℕ × ℕ × ℕ)} {c₀ c : Config}
     (hI : CLQI W L R QB RB LB pre c₀ c) (ht : c.nreg 70112 < R.length) (h05 : c₀.nreg 70105 = 1)
@@ -139,7 +141,7 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
     have := hmem 0 (by omega); simp only [add_zero] at this; rw [this]; exact q0
   have q₁ : ∀ x, x ≠ 70114 → c₁.nreg x = c.nreg x := fun x hx => by
     rw [hc₁]; simp [upd_other _ _ _ hx]
-  have hw₁ : WordsBounded W c₁ := e₁.wb_right
+  have hw₁ := e₁.wb_right
   -- the copy (or not)
   obtain ⟨c₂, k₂, e₂, hk₂, a₂, n₂, m₂, l₂, q₂, rr₂, rm₂, o₂⟩ : ∃ c₂ k₂, Exec P W
       (.ifLtN 70108 70114 (.ifLtN 70114 70118 clqCopy .skip) .skip) c₁ c₂ k₂ ∧ k₂ ≤ 16 ∧
@@ -251,19 +253,19 @@ theorem clqLoop_exec {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
         c'.nreg 70112 = R.length
   | 0, c, hI, hn => by
     have h11' : c.nreg 70111 = R.length := by
-      rw [hI.regs 70111 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-        (by decide), h11]
-    exact ⟨c, 2, .whileLtN_false (by rw [h11']; omega) hI.wb, by omega, by omega, hI, by omega⟩
+      rw [hI.regs 70111 (⌖) (⌖) (⌖) (⌖) (⌖) (⌖)
+        (⌖), h11]
+    exact ⟨c, 2, .whileLtN_false (by rw [h11']; omega) hI.wb, ⋄, ⋄, hI, ⋄⟩
   | n + 1, c, hI, hn => by
-    have ht : c.nreg 70112 < R.length := by omega
+    have ht : c.nreg 70112 < R.length := ⋄
     obtain ⟨c', k, e, hI', hk, hk4, hc'⟩ := clqBody_step (P := P) hI ht h05 h08 h16 h17 h18 hLR hR hQ
       hRB hQB hW hWK
     obtain ⟨c'', k₂, e₂, hk₂, hk₂', hI'', hK⟩ := clqLoop_exec h05 h08 h16 h17 h18 h11 hLR hR hQ hRB hQB
-      hW hWK n c' hI' (by omega)
+      hW hWK n c' hI' (⋄)
     have h11' : c.nreg 70111 = R.length := by
-      rw [hI.regs 70111 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-        (by decide), h11]
-    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [h11']; exact ht) e e₂, by omega, by omega,
+      rw [hI.regs 70111 (⌖) (⌖) (⌖) (⌖) (⌖) (⌖)
+        (⌖), h11]
+    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [h11']; exact ht) e e₂, ⋄, ⋄,
       hI'', hK⟩
 
 end

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopFace3
 
 /-!
@@ -50,7 +52,7 @@ theorem fr_rD {r : ℕ} (h : ¬ (sw 700 ≤ r ∧ r < sw 2200)) : r < sw 1100 �
 theorem fr_rC {q : ℕ} (h : sw 4110 ≤ q ∧ q ≤ sw 4113) :
     bandOf q ∉ oracleBands ∧ q ≠ frA ∧ (q < sw 1100 ∨ sw 1207 < q) ∧ q ≠ ALLOC := by
   unfold sw at h
-  exact ⟨not_oracle_sw (by omega) (by omega), by unfold frA sw; omega,
+  exact ⟨not_oracle_sw (⋄) (⋄), by unfold frA sw; omega,
     Or.inr (by unfold sw; omega), by unfold ALLOC; omega⟩
 
 theorem fr_le1 {a K W : ℕ} (h : a + (K + 22100) ≤ W) : a + K ≤ W :=
@@ -73,8 +75,8 @@ theorem fr_noncut {C : Chain} {N : NF} (hP : C.P.Simple)
   rcases hpre with h0 | h
   · have hn : nhgt (chainModel C) (Qof P) x = 0 := (nhgt_zero_iff x).2 h0
     have he : x.edge < 6 := by
-      by_contra hc; exact hv ⟨by omega, hn⟩
-    rw [fr_key, h0, add_zero]
+      by_contra hc; exact hv ⟨⋄, hn⟩
+    Ξ fr_key, h0, add_zero
     exact frc_box_noncut hP hN he
   · exact h
 
@@ -210,10 +212,10 @@ set_option maxRecDepth 20000 in
 theorem fr_cost (L : ℕ) : (faceLocK L + 22100) + (faceLocK L + 22100) ≤ 60000 * (L + 1) := by
   unfold faceLocK
   have h1 : 5500 * (L + 1) + 9 + 60 + 22100 + (5500 * (L + 1) + 9 + 60 + 22100) =
-      11000 * (L + 1) + 44338 := by ring
-  rw [h1]
-  have h2 : 60000 * (L + 1) = 11000 * (L + 1) + 49000 * (L + 1) := by ring
-  rw [h2]
+      11000 * (L + 1) + 44338 := ⋆
+  Ξ h1
+  have h2 : 60000 * (L + 1) = 11000 * (L + 1) + 49000 * (L + 1) := ⋆
+  Ξ h2
   have h3 : 49000 ≤ 49000 * (L + 1) := Nat.le_mul_of_pos_right _ (Nat.succ_pos L)
   generalize 11000 * (L + 1) = A at *
   generalize 49000 * (L + 1) = B at *
@@ -222,7 +224,7 @@ theorem fr_cost (L : ℕ) : (faceLocK L + 22100) + (faceLocK L + 22100) ≤ 6000
 set_option maxRecDepth 20000 in
 theorem fr_room {a L W : ℕ} (h : a + 60000 * (L + 1) ≤ W) :
     a + (faceLocK L + 22100) + (faceLocK L + 22100) ≤ W := by
-  rw [Nat.add_assoc]
+  Ξ Nat.add_assoc
   exact le_trans (Nat.add_le_add_left (fr_cost L) a) h
 
 set_option maxHeartbeats 4000000 in

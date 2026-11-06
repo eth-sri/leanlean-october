@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopL
 
 /-!
@@ -57,7 +59,7 @@ theorem orig_attach {kind k b : ℕ} (hD : OrgD P J N kind k b) :
   have ha : (stOrig J (Qof P) N kind k b).2 ≤ J.whole.top.2 := le_trans ha2 J.right_top_le
   have hb := hok.2.1
   have hσ := dirOf_cases' b
-  rw [stopSet_eq]
+  Ξ stopSet_eq
   set a := stOrig J (Qof P) N kind k b
   obtain ⟨hT, -, -⟩ := Merge.hit_of_freeAt J.whole ha hσ hf
   have hends : (if b = 1 then Merge.lend (Merge.shoot J.whole a (dirOf b))
@@ -67,10 +69,10 @@ theorem orig_attach {kind k b : ℕ} (hD : OrgD P J N kind k b) :
     rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
     · rw [dirOf_zero] at hT ⊢
       obtain ⟨h1, h2⟩ := ends_shoot_neg J.whole hT.le
-      simp [h1, h2]
+      Θ h1, h2
     · rw [dirOf_one] at hT ⊢
       obtain ⟨h1, h2⟩ := ends_shoot_pos J.whole hT.le
-      simp [h1, h2]
+      Θ h1, h2
   refine ⟨fun p t hA => ⟨attach_of_origin hP ha haD hσ hf hA, by rw [hends.1]; exact hA.2.2.2.1⟩,
     fun p t hA => ⟨attach_of_far hP ha haD hσ hf hA, by rw [hends.2]; exact hA.2.2.2.1⟩,
     fun p t hA => ?_⟩
@@ -92,8 +94,8 @@ theorem attach_two {kind k b : ℕ} (hD : OrgD P J N kind k b) {p₀ p₁ : ℕ}
   have ha : stopSet J (Qof P) N kind k b ∈ (chainModel J.whole).Adm :=
     F₂plus_subset J hN.1.2.1 hm
   rcases i3 q s hA with h | h
-  · exact Or.inl (hM.attach_unique ha hA (i1 p₀ t₀ h₀).1 (by rw [h.2.2.2.1, h₀.2.2.2.1]))
-  · exact Or.inr (hM.attach_unique ha hA (i2 p₁ t₁ h₁).1 (by rw [h.2.2.2.1, h₁.2.2.2.1]))
+  · exact Or.inl (hM.attach_unique ha hA (i1 p₀ t₀ h₀).1 (Ρ h.2.2.2.1, h₀.2.2.2.1))
+  · exact Or.inr (hM.attach_unique ha hA (i2 p₁ t₁ h₁).1 (Ρ h.2.2.2.1, h₁.2.2.2.1))
 
 /-- **Anchored, pocket**: from the offsets of the two attachments. -/
 theorem anc_pocket_iff {kind k b : ℕ} (hD : OrgD P J N kind k b) {p₀ p₁ : ℕ} {t₀ t₁ : ℝ}
@@ -131,7 +133,7 @@ theorem orig_far_ne {kind k b : ℕ} (hD : OrgD P J N kind k b) :
   have ha : (stOrig J (Qof P) N kind k b).2 ≤ J.whole.top.2 := le_trans ha2 J.right_top_le
   have hσ := dirOf_cases' b
   obtain ⟨hT, -, -⟩ := Merge.hit_of_freeAt J.whole ha hσ hf
-  rw [stopSet_eq]
+  Ξ stopSet_eq
   refine ⟨fun h => ?_, ?_, rayPt_mem_shoot _ _ _ hT.le le_rfl⟩
   · have := congrArg Prod.fst h
     unfold farPt at this
@@ -156,7 +158,7 @@ theorem parent_wall (_hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N
   obtain ⟨-, hb, hw, -⟩ := hD.ok
   obtain ⟨hk, -⟩ := hw rfl
   obtain ⟨-, hcase⟩ := stOrig_wall (Q := Qof P) hN hk hb
-  rw [stopSet_eq]
+  Ξ stopSet_eq
   refine shoot_sub_end hN.1.2.1 (chord_mem hk) ?_
   rcases hcase with ⟨rfl, h⟩ | ⟨rfl, h⟩
   · exact Or.inl ⟨dirOf_one, h⟩

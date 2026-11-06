@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterPhase2
 
 /-!
@@ -27,7 +31,7 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 16000000 in
+
 theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     {F : Type} [Fintype F] [DecidableEq F] {M : CombMap (Fin g.μ) F (Fin g.N)} {T : SpanTree M}
     {a : F → Fin g.N} {ha : ∀ f, M.face (a f) = f} {C : CoTree (starTree T a ha)} {R : BTree}

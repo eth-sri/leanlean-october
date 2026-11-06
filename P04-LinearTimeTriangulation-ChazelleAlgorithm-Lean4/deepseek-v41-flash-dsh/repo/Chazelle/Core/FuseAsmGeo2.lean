@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmGeo
 public import Chazelle.Core.FuseAsmCover
 
@@ -27,18 +29,18 @@ theorem walk_vtx_tpos (C : Chain) {k : ℕ} (hk : k ≤ C.m) :
   have hn := cm_n C
   have hτ := tpos_lt C k
   have h1 := C.one_le
-  have := walk_tour C k 0 (by omega)
+  have := walk_tour C k 0 (⋄)
   rw [Nat.add_zero, Nat.mod_eq_of_lt (by rw [hn]; omega)] at this
-  rw [this]
+  Ξ this
   unfold tourV
-  rw [Nat.add_zero, Nat.mod_eq_of_lt (by omega)]
+  rw [Nat.add_zero, Nat.mod_eq_of_lt (⋄)]
   unfold sideE; rw [ite_eq_left hk]
 
 /-- **A chain vertex as a walk position.** -/
 theorem vpos (C : Chain) (Q : Polygon) {k : ℕ} (hk : k ≤ C.m) :
     (chainModel C).pos Q ⟨6 + tpos C k, 0⟩ = C.vertex k := by
   unfold Model.pos
-  rw [show (chainModel C).param Q ⟨6 + tpos C k, 0⟩ = 0 from rfl, Geometry.lerp_zero]
+  Ξ show (chainModel C).param Q ⟨6 + tpos C k, 0⟩ = 0 from rfl, Geometry.lerp_zero
   exact walk_vtx_tpos C hk
 
 theorem vpos_edge (C : Chain) (k : ℕ) : 6 + tpos C k < (chainModel C).W.n := by
@@ -76,13 +78,13 @@ theorem ratio_mem {a b : ℝ} (hab : 0 < a * b) (hle : |b| ≤ |a|) (hne : a ≠
       by_contra h; push Not at h; nlinarith
     rw [abs_of_neg ha, abs_of_neg hb] at hle
     refine ⟨le_of_lt (div_pos_of_neg_of_neg hb ha), ?_⟩
-    rw [div_lt_one_of_neg ha]
+    Ξ div_lt_one_of_neg ha
     rcases lt_or_gt_of_ne hne with h' | h' <;> linarith
   · have hb : 0 < b := by
       by_contra h; push Not at h; nlinarith
     rw [abs_of_pos ha, abs_of_pos hb] at hle
     refine ⟨le_of_lt (div_pos hb ha), ?_⟩
-    rw [div_lt_one ha]
+    Ξ div_lt_one ha
     rcases lt_or_gt_of_ne hne with h' | h' <;> linarith
 
 /-- **The cap query on `C₁`** (the nearer arm is `w`, the far arm `[v, u]` is on `C₁`). -/
@@ -161,8 +163,8 @@ theorem capDir_eq {ρ : ℕ} (h : ρ ≤ 1 ∧ (ρ = 1 ↔ ¬ (capNear J).1 < (c
     dirOf ρ = capDir J := by
   unfold dirOf capDir
   by_cases hc : (capNear J).1 < (capOrigin J).1
-  · rw [ite_eq_left hc, ite_eq_right (fun h1 => (h.2.1 h1) hc)]
-  · rw [ite_eq_right hc, ite_eq_left (h.2.2 hc)]
+  · Ξ ite_eq_left hc, ite_eq_right (fun h1 => (h.2.1 h1) hc)
+  · Ξ ite_eq_right hc, ite_eq_left (h.2.2 hc)
 
 end
 

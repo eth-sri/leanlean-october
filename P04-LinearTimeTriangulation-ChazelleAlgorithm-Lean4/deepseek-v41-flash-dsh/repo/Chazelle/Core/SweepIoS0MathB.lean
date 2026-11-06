@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoS0MathA
 
 /-!
@@ -33,7 +35,7 @@ theorem getD_mem {α : Type*} {l : List α} {i : ℕ} (hi : i < l.length) (d : �
     l.getD i d ∈ l := by
   rw [List.getD_eq_getElem _ _ hi]; exact List.getElem_mem hi
 
-set_option maxHeartbeats 2000000 in
+
 /-- **The labels of the region faced at a position, from the event log.** -/
 theorem labels_of_log (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite)

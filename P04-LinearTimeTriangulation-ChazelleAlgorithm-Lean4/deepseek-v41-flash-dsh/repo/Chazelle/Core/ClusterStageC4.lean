@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterStageC3
 
 /-!
@@ -26,7 +28,7 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
+
 /-- **Stage C.** -/
 theorem stageC_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     (hk : 0 < g.k') (hkμ : g.k' ≤ g.μ) {lev : ℕ → ℕ}
@@ -66,13 +68,13 @@ theorem stageC_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     unfold LvMem at h; unfold CMem; omega))
   have k16 : ∀ a, ¬ LvMem g a → ¬ (g.base 33 ≤ a ∧ a < g.base 33 + g.μ) →
       ¬ (g.base 34 ≤ a ∧ a < g.base 34 + g.k') → c6.nmem a = c2.nmem a := fun a h6 h3 h4 => by
-    rw [hf6.2.2.2.2 a h6, hf5.2.2.2.2 a id, hf4.2.2.2.2 a h4, hf3.2.2.2.2 a h3]
+    Ξ hf6.2.2.2.2 a h6, hf5.2.2.2.2 a id, hf4.2.2.2.2 a h4, hf3.2.2.2.2 a h3
   refine ⟨c6, k1 + (k2 + (k3 + (k4 + (k5 + k6)))),
-    .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 e6)))), by omega, hw6, f6,
+    .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 e6)))), ⋄, hw6, f6,
     fun w hw' => ?_, fun j hj => ?_, c5.nreg 130836, hρ5, hlv6, hmin5⟩
-  · rw [k16 _ (by unfold LvMem; omega) (by omega) (by omega),
-      hf2.2.2.2.2 _ (by omega)]; exact hh1 w hw'
-  · rw [k16 _ (by unfold LvMem; omega) (by omega) (by omega)]; exact hp2 j hj
+  · rw [k16 _ (by unfold LvMem; omega) (⋄) (⋄),
+      hf2.2.2.2.2 _ (⋄)]; exact hh1 w hw'
+  · rw [k16 _ (by unfold LvMem; omega) (⋄) (⋄)]; exact hp2 j hj
 
 end proofs
 

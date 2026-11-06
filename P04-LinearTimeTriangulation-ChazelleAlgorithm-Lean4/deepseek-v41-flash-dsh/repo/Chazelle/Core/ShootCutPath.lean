@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutCStep2
 
 /-!
@@ -95,7 +97,7 @@ theorem card_Ico_sub {U U' F : ℕ} (h : U ≤ U') :
     ((Finset.Ico U' F).filter (BrkU C nQ H)).card ≤
       ((Finset.Ico U F).filter (BrkU C nQ H)).card :=
   Finset.card_le_card fun x hx => by
-    simp only [Finset.mem_filter, Finset.mem_Ico] at hx ⊢; exact ⟨⟨by omega, hx.1.2⟩, hx.2⟩
+    simp only [Finset.mem_filter, Finset.mem_Ico] at hx ⊢; exact ⟨⟨⋄, hx.1.2⟩, hx.2⟩
 
 theorem card_Ico_succ {U U' F : ℕ} (h : U < U') (hU : U < F) (hb : BrkU C nQ H U) :
     ((Finset.Ico U' F).filter (BrkU C nQ H)).card + 1 ≤
@@ -106,7 +108,7 @@ theorem card_Ico_succ {U U' F : ℕ} (h : U < U') (hU : U < F) (hb : BrkU C nQ H
     simp only [Finset.mem_insert, Finset.mem_filter, Finset.mem_Ico] at hx ⊢
     rcases hx with rfl | hx
     · exact ⟨⟨le_rfl, hU⟩, hb⟩
-    · exact ⟨⟨by omega, hx.1.2⟩, hx.2⟩
+    · exact ⟨⟨⋄, hx.1.2⟩, hx.2⟩
   have hnot : U ∉ (Finset.Ico U' F).filter (BrkU C nQ H) := by
     simp only [Finset.mem_filter, Finset.mem_Ico]; omega
   have := Finset.card_le_card hsub
@@ -120,11 +122,11 @@ theorem mu_lt {F U U' : ℕ} (h : U < U') (hF : U' ≤ F)
   have h1 := card_Ico_sub (C := C) (nQ := nQ) (H := H) (F := F) h.le
   rcases hb with hb | hb | hb
   · unfold mu
-    have := card_Ico_succ (F := F) h (by omega) hb
+    have := card_Ico_succ (F := F) h (⋄) hb
     split_ifs <;> omega
   · subst hb
     have hz : mu C nQ H U' U' = 0 := by unfold mu; simp
-    rw [hz]
+    Ξ hz
     unfold mu
     by_cases hU : BrkU C nQ H U
     · have := card_Ico_succ (F := U') h h hU
@@ -133,9 +135,9 @@ theorem mu_lt {F U U' : ℕ} (h : U < U') (hF : U' ≤ F)
       omega
   · unfold mu
     by_cases hU : BrkU C nQ H U
-    · have := card_Ico_succ (F := F) h (by omega) hU
+    · have := card_Ico_succ (F := F) h (⋄) hU
       split_ifs <;> omega
-    · rw [ite_eq_right (fun h' => h'.2 hb), ite_eq_left ⟨by omega, hU⟩]
+    · rw [ite_eq_right (fun h' => h'.2 hb), ite_eq_left ⟨⋄, hU⟩]
       omega
 
 /-- The potential is at most `2 · #breakpoints + 1`. -/
@@ -152,16 +154,16 @@ theorem card_brkU_le (hn : 0 < nQ) (hwf : HostWF nQ H) {U F : ℕ}
     intro x hx y hy hxy
     simp only [Finset.coe_filter, Finset.mem_Ico, Set.mem_ofPred_eq] at hx hy
     simp only at hxy
-    have hN : 0 < 2 * C.m + 7 := by omega
+    have hN : 0 < 2 * C.m + 7 := ⋄
     rcases Nat.lt_or_ge x y with h | h
     · exfalso
       have : (2 * C.m + 7) ∣ y - x := (Nat.modEq_iff_dvd' h.le).1 hxy
-      have := Nat.le_of_dvd (by omega) this
+      have := Nat.le_of_dvd (⋄) this
       omega
     · rcases h.lt_or_eq with h | h
       · exfalso
         have : (2 * C.m + 7) ∣ x - y := (Nat.modEq_iff_dvd' h.le).1 hxy.symm
-        have := Nat.le_of_dvd (by omega) this
+        have := Nat.le_of_dvd (⋄) this
         omega
       · exact h.symm
   have himg : ((Finset.Ico U F).filter (BrkU C nQ H)).image (fun x => x % (2 * C.m + 7)) ⊆
@@ -172,9 +174,9 @@ theorem card_brkU_le (hn : 0 < nQ) (hwf : HostWF nQ H) {U F : ℕ}
     rcases hx.2 with h | ⟨h6, hlt, hb⟩
     · exact Finset.mem_insert.2 (Or.inl h)
     · refine Finset.mem_insert.2 (Or.inr (Finset.mem_image.2 ⟨x % (2 * C.m + 7) - 6, ?_,
-        by omega⟩))
-      simp only [Finset.mem_filter, Finset.mem_range]
-      exact ⟨by omega, hb⟩
+        ⋄⟩))
+      ϴ Finset.mem_filter, Finset.mem_range
+      exact ⟨⋄, hb⟩
   have h1 := Finset.card_le_card himg
   rw [Finset.card_image_of_injOn hinj] at h1
   have h2 := Finset.card_insert_le (2 * C.m + 6)

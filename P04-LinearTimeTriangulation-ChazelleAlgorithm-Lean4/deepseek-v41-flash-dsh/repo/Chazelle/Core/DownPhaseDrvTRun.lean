@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvTBuild
 public import Chazelle.Core.DownPhaseDrvRInv
 
@@ -43,14 +45,14 @@ def BsetB (r : ℕ) : Bool := decide (40000 ≤ r ∧ r ≤ 40002)
 /-- The registers of `finT`. -/
 def BfinT (r : ℕ) : Bool := decide (210001 ≤ r ∧ r ≤ 210005)
 
-theorem wrM_setB : wrM BsetB setB = true := by decide
-theorem wrM_finT : wrM BfinT finT = true := by decide
+theorem wrM_setB : wrM BsetB setB = true := ⌖
+theorem wrM_finT : wrM BfinT finT = true := ⌖
 
 theorem le_gradeGran (g : ℕ) : g ≤ gradeGran g := by
-  have : g ≤ g * (Nat.clog 2 g + 2) := Nat.le_mul_of_pos_right _ (by omega)
+  have : g ≤ g * (Nat.clog 2 g + 2) := Nat.le_mul_of_pos_right _ (⋄)
   have h1 : gradeGran g = 2 ^ Cost.ceilBeta g + fuseLoss * (g * (Nat.clog 2 g + 2)) := rfl
   have h2 : fuseLoss = 1 := rfl
-  rw [h1, h2, one_mul]
+  Ξ h1, h2, one_mul
   exact this.trans (Nat.le_add_left _ _)
 
 /-- **The cost of the transition.** -/
@@ -59,10 +61,10 @@ theorem trans_cost_le {n K K₀ : ℕ} (hn : 3 ≤ n) (hK : K ≤ K₀)
     (14 * n + 120) + (260 * n + 1950) + (54 * K₀ + 21) + 3 +
       (κBuild * (K * (Nat.clog 2 K + 1) + 1) + 4) + 5 ≤ κT * (n + 1) := by
   set p := topGrade n with hp
-  have hnp : n - 1 ≤ 2 ^ p := Nat.le_pow_clog (by norm_num) _
+  have hnp : n - 1 ≤ 2 ^ p := Nat.le_pow_clog (⊛) _
   have hgp : p ≤ gradeGran p := le_gradeGran p
   have hK₀n : K₀ ≤ 1680 * n := by
-    have : K₀ ≤ K₀ * (gradeGran p + 1) := Nat.le_mul_of_pos_right _ (by omega)
+    have : K₀ ≤ K₀ * (gradeGran p + 1) := Nat.le_mul_of_pos_right _ (⋄)
     omega
   have hKpow : K ≤ 2 ^ (p + 12) := by
     have h2 : 2 ^ (p + 12) = 4096 * 2 ^ p := by rw [pow_add]; norm_num; ring
@@ -70,9 +72,9 @@ theorem trans_cost_le {n K K₀ : ℕ} (hn : 3 ≤ n) (hK : K ≤ K₀)
     omega
   have hclog : Nat.clog 2 K ≤ p + 12 := Nat.clog_le_of_le_pow hKpow
   have hKK : K * (Nat.clog 2 K + 1) ≤ 13 * (K₀ * (gradeGran p + 1)) := by
-    calc K * (Nat.clog 2 K + 1) ≤ K * (13 * (p + 1)) := Nat.mul_le_mul_left _ (by omega)
-      _ ≤ K₀ * (13 * (gradeGran p + 1)) := Nat.mul_le_mul hK (by omega)
-      _ = 13 * (K₀ * (gradeGran p + 1)) := by ring
+    calc K * (Nat.clog 2 K + 1) ≤ K * (13 * (p + 1)) := Nat.mul_le_mul_left _ (⋄)
+      _ ≤ K₀ * (13 * (gradeGran p + 1)) := Nat.mul_le_mul hK (⋄)
+      _ = 13 * (K₀ * (gradeGran p + 1)) := ⋆
   unfold κBuild κT
   omega
 
@@ -80,7 +82,7 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
+
 theorem setB_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W setB c c' k ∧ k = 3 ∧ c'.nreg 40000 = c.nreg 190021 ∧
       c'.nreg 40001 = c.nreg 190022 ∧ c'.nreg 40002 = c.nreg 190036 ∧
@@ -93,7 +95,7 @@ theorem setB_exec (c : Config) (hw : WordsBounded W c) :
     exact ⟨rfl, by config_simp, by config_simp, by config_simp, rfl⟩
   exact ⟨c', k, e, hk, h1, h2, h3, exec_frameM e wrM_setB, hm⟩
 
-set_option maxHeartbeats 1000000 in
+
 theorem finT_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W finT c c' k ∧ k = 5 ∧ c'.nreg 210001 = c.nreg 190021 ∧
       c'.nreg 210002 = c.nreg 190022 ∧ c'.nreg 210003 = c.nreg 190036 ∧

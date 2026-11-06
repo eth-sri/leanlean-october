@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Chain.Chord
 
 /-!
@@ -71,7 +73,7 @@ theorem rayHitSet_bddBelow (r : ℝ) (A : Set Point) (v : Point) (σ : ℝ) :
 /-- A horizontal ray eventually leaves every box. -/
 theorem rayHitSet_nonempty (r : ℝ) (A : Set Point) (v : Point) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     (rayHitSet r A v σ).Nonempty := by
-  refine ⟨|r| + |v.1| + 1, by positivity, Or.inl ?_⟩
+  refine ⟨|r| + |v.1| + 1, ⟢, Or.inl ?_⟩
   intro hbox
   have hx := abs_lt.1 hbox.1
   simp only [rayPt_fst] at hx
@@ -91,7 +93,7 @@ theorem rayHit_le {r : ℝ} {A : Set Point} {v : Point} {σ t : ℝ} (ht : t ∈
 theorem rayHitSet_union (r : ℝ) (A B : Set Point) (v : Point) (σ : ℝ) :
     rayHitSet r (A ∪ B) v σ = rayHitSet r A v σ ∪ rayHitSet r B v σ := by
   ext t
-  simp only [rayHitSet, mem_ofPred_eq, mem_union]
+  ϴ rayHitSet, mem_ofPred_eq, mem_union
   tauto
 
 /-- **First hit against a union**: the ray hits `A ∪ B` first at the earlier of its first hits
@@ -99,7 +101,7 @@ of `A` and of `B`. -/
 theorem rayHit_union (r : ℝ) (A B : Set Point) (v : Point) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     rayHit r (A ∪ B) v σ = min (rayHit r A v σ) (rayHit r B v σ) := by
   unfold rayHit
-  rw [rayHitSet_union]
+  Ξ rayHitSet_union
   exact csInf_union (rayHitSet_bddBelow r A v σ) (rayHitSet_nonempty r A v hσ)
     (rayHitSet_bddBelow r B v σ) (rayHitSet_nonempty r B v hσ)
 
@@ -151,7 +153,7 @@ theorem rayHit_spec {r : ℝ} {A : Set Point} (hA : IsClosed A) (v : Point) {σ 
       · rintro ⟨ht1, ht2⟩
         exact ⟨lt_of_lt_of_le hpos ht1, ht2⟩
     have hclosed : IsClosed (rayHitSet r A v σ) := by
-      rw [hset]
+      Ξ hset
       exact isClosed_Ici.inter
         (((Chain.isOpen_box r).isClosed_compl.union hA).preimage (continuous_rayPt v σ))
     exact (hclosed.csInf_mem hne hbdd).2
@@ -162,7 +164,7 @@ theorem rayHit_spec {r : ℝ} {A : Set Point} (hA : IsClosed A) (v : Point) {σ 
 chain: the slit plays no role. -/
 theorem not_mem_dom_iff (C : Chain) {p : Point} (hp : p.2 ≤ C.top.2) :
     p ∉ C.dom ↔ p ∉ Chain.box C.radius ∨ p ∈ C.set := by
-  rw [C.mem_dom_iff]
+  Ξ C.mem_dom_iff
   constructor
   · intro h
     by_cases hb : p ∈ Chain.box C.radius
@@ -172,7 +174,7 @@ theorem not_mem_dom_iff (C : Chain) {p : Point} (hp : p.2 ≤ C.top.2) :
       refine ⟨hb, hs, fun hsl => hs ?_⟩
       obtain ⟨h1, h2, -⟩ := C.mem_slit_iff.1 hsl
       have : p = C.top := Prod.ext h1 (le_antisymm hp h2)
-      rw [this]
+      Ξ this
       exact C.top_mem_set
     · exact Or.inl hb
   · rintro (h | h) ⟨h1, h2, -⟩
@@ -184,14 +186,14 @@ horizontal ray from `v` (defined with the slit) equals the slit-free hit set of 
 theorem hitSet_eq_rayHitSet (C : Chain) {v : Point} (hv : v.2 ≤ C.top.2) (σ : ℝ) :
     C.hitSet v σ = rayHitSet C.radius C.set v σ := by
   ext t
-  simp only [Chain.hitSet, rayHitSet, mem_ofPred_eq, mem_compl_iff]
-  rw [not_mem_dom_iff C (by rw [rayPt_snd]; exact hv)]
+  ϴ Chain.hitSet, rayHitSet, mem_ofPred_eq, mem_compl_iff
+  Ξ not_mem_dom_iff C (by rw [rayPt_snd]; exact hv)
 
 /-- The first-hit parameter of a chain ignores the slit below the top. -/
 theorem hitParam_eq_rayHit (C : Chain) {v : Point} (hv : v.2 ≤ C.top.2) (σ : ℝ) :
     C.hitParam v σ = rayHit C.radius C.set v σ := by
   unfold Chain.hitParam rayHit
-  rw [hitSet_eq_rayHitSet C hv]
+  Ξ hitSet_eq_rayHitSet C hv
 
 /-- First-hit parameters are nonnegative. -/
 theorem hitParam_nonneg (C : Chain) (v : Point) (σ : ℝ) : 0 ≤ C.hitParam v σ :=
@@ -204,7 +206,7 @@ theorem vertex_inj (C : Chain) (hP : C.P.Simple) {a b : ℕ} (ha : a ≤ C.m) (h
   have h1 := simple_vtx_inj hP (C.edgeIdx_lt a) (C.edgeIdx_lt b) h
   have h2 : a ≡ b [MOD C.P.n] := Nat.ModEq.add_left_cancel' C.s h1
   unfold Nat.ModEq at h2
-  rwa [Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt (by omega)] at h2
+  rwa [Nat.mod_eq_of_lt (⋄), Nat.mod_eq_of_lt (by omega)] at h2
 
 /-- Distinct chain edges have distinct indices in the polygon. -/
 theorem edgeIdx_inj (C : Chain) {a b : ℕ} (ha : a < C.P.n) (hb : b < C.P.n)
@@ -235,12 +237,12 @@ theorem segment_rayPt_subset (v : Point) (σ : ℝ) {t t' : ℝ} (ht : 0 ≤ t) 
   rcases (ht.trans htt').lt_or_eq with hpos | h0
   · refine ⟨t / t', div_nonneg ht hpos.le, (div_le_one hpos).2 htt', ?_⟩
     refine Prod.ext ?_ ?_
-    · simp only [rayPt_fst]
+    · ϴ rayPt_fst
       field_simp
       ring
-    · simp only [rayPt_snd, sub_self, mul_zero, add_zero]
+    · ϴ rayPt_snd, sub_self, mul_zero, add_zero
   · have ht0 : t = 0 := le_antisymm (h0 ▸ htt') ht
-    rw [ht0, rayPt_zero]
+    Ξ ht0, rayPt_zero
     exact Geometry.left_mem_segment _ _
 
 /-- The initial part of a ray from a point off a closed set avoids the set. -/
@@ -302,12 +304,12 @@ theorem whole_vertex (k : ℕ) : J.whole.vertex k = J.left.vertex k := rfl
 /-- Vertex `m₁ + j` of `C` is vertex `j` of `C₂`. -/
 theorem whole_vertex_add (j : ℕ) : J.whole.vertex (J.m₁ + j) = J.right.vertex j := by
   show J.P.vtx ((J.s + (J.m₁ + j)) % J.P.n) = J.P.vtx ((J.s + J.m₁ + j) % J.P.n)
-  rw [Nat.add_assoc]
+  Ξ Nat.add_assoc
 
 /-- The first vertex of `C₂` is the shared vertex. -/
 theorem right_vertex_zero : J.right.vertex 0 = J.shared := by
   show J.P.vtx ((J.s + J.m₁ + 0) % J.P.n) = J.P.vtx ((J.s + J.m₁) % J.P.n)
-  rw [Nat.add_zero]
+  Ξ Nat.add_zero
 
 /-- Vertex `m₁` of `C` is the shared vertex. -/
 theorem whole_vertex_m₁ : J.whole.vertex J.m₁ = J.shared := rfl
@@ -315,7 +317,7 @@ theorem whole_vertex_m₁ : J.whole.vertex J.m₁ = J.shared := rfl
 /-- Edge `m₁ + j` of `C` is edge `j` of `C₂`. -/
 theorem whole_chainEdge_add (j : ℕ) : J.whole.chainEdge (J.m₁ + j) = J.right.chainEdge j := by
   show J.P.edge ((J.s + (J.m₁ + j)) % J.P.n) = J.P.edge ((J.s + J.m₁ + j) % J.P.n)
-  rw [Nat.add_assoc]
+  Ξ Nat.add_assoc
 
 /-- **The union of the two chains.** -/
 theorem whole_set : J.whole.set = J.left.set ∪ J.right.set := by
@@ -327,13 +329,13 @@ theorem whole_set : J.whole.set = J.left.set ∪ J.right.set := by
     · exact Or.inl ⟨k, hk1, hp⟩
     · right
       refine ⟨k - J.m₁, by rw [right_m]; omega, ?_⟩
-      have hk' : k = J.m₁ + (k - J.m₁) := by omega
+      have hk' : k = J.m₁ + (k - J.m₁) := ⋄
       rw [hk', whole_chainEdge_add] at hp
       exact hp
   · rintro (⟨k, hk, hp⟩ | ⟨j, hj, hp⟩)
     · exact ⟨k, by rw [whole_m]; rw [left_m] at hk; omega, hp⟩
     · refine ⟨J.m₁ + j, by rw [whole_m]; rw [right_m] at hj; omega, ?_⟩
-      rw [whole_chainEdge_add]
+      Ξ whole_chainEdge_add
       exact hp
 
 /-- `C₁ ⊆ C`. -/

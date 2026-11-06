@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmPtRam
 public import Chazelle.Core.MergeAsmDesc
 
@@ -26,14 +28,14 @@ theorem ptAns_of_res (J : Merge.Junction) (P : Polygon) (i : ℕ) (hP : J.P.Simp
     (hhv : ((Qof P).vtx hv).2 = z.2) (hvn : hv < (Qof P).n) :
     PtAns J (Qof P) i z (dirOf ρ) l := by
   rcases hres with ⟨rfl, hno⟩ | ⟨e', h', rfl, harr⟩
-  · rw [hz] at hno
+  · Ξ' hz at hno
     exact ptAns_none J (Qof P) hP i hzs ((sideChain J i).snd_le_top_of_mem_set hzs) hno
-  · rw [hz] at harr
+  · Ξ' hz at harr
     exact ptAns_some J (Qof P) i harr hhv hvn ((sideChain J i).snd_le_top_of_mem_set hzs)
 
-theorem dirOf_one : dirOf 1 = 1 := by simp [dirOf]
+theorem dirOf_one : dirOf 1 = 1 := ⊚ dirOf
 
-theorem dirOf_zero : dirOf 0 = -1 := by simp [dirOf]
+theorem dirOf_zero : dirOf 0 = -1 := ⊚ dirOf
 
 /-- The registers that the point queries may write outside the primitive bands. -/
 def Bpt (r : ℕ) : Bool := Bprim r || decide (50200 ≤ r ∧ r < 50210) ||
@@ -43,13 +45,13 @@ def Bpt (r : ℕ) : Bool := Bprim r || decide (50200 ≤ r ∧ r < 50210) ||
 def BR (r : ℕ) : Bool := Bprim r || Btp r
 
 theorem br_prim {r : ℕ} (h : BR r = false) : Bprim r = false := by
-  simp only [BR, Bool.or_eq_false_iff] at h; exact h.1
+  ϴ' BR, Bool.or_eq_false_iff at h; exact h.1
 
 theorem br_tp {r : ℕ} (h : BR r = false) : Btp r = false := by
-  simp only [BR, Bool.or_eq_false_iff] at h; exact h.2
+  ϴ' BR, Bool.or_eq_false_iff at h; exact h.2
 
 theorem bprim_of {r : ℕ} (h : Bpt r = false) : Bprim r = false := by
-  simp only [Bpt, Bool.or_eq_false_iff] at h; exact h.1.1.1.1
+  ϴ' Bpt, Bool.or_eq_false_iff at h; exact h.1.1.1.1
 
 theorem btp_of {r : ℕ} (h : Bpt r = false) : Btp r = false := by
   simp only [Bpt, Bprim, Btp, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]

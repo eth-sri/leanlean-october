@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvWinR2
 
 /-!
@@ -69,8 +71,8 @@ theorem win_F_empty_iff {M : Model} {Q : Polygon} {N : NF} :
     N.F M Q = ∅ ↔ N.chords.length = 0 := by
   rw [← Set.not_nonempty_iff_eq_empty, win_F_nonempty_iff]; omega
 
-set_option maxHeartbeats 8000000 in
-set_option maxRecDepth 20000 in
+
+
 /-- **The body.** -/
 theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
     (he1 : c.nreg wE1 < (chainModel J.left).W.n)
@@ -96,7 +98,7 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   set M := chainModel J.left with hMd
   set x₀ := M.key (Qof P) ⟨c.nreg wE1, c.nreg kH⟩ with hx₀
   have hK := E.hK.fix hI
-  have k0 : c.nreg K0 = 0 := hK.1
+  have k0 := hK.1
   have hP₁ : J.left.P.Simple := E.hP
   have hNF := E.hNF₁
   have hQn : (Qof P).n = P.n := shear_n _ _
@@ -121,7 +123,7 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     obtain ⟨-, ⟨hpe, hee, -⟩⟩ := arc_end_facts hP₁ hNF hj
     exact ⟨hpe, hee, end6 hP₁ hNF hFne hj⟩
   have hNT := win_nt E hI
-  have hNA : NFAt c.nmem (c.nreg (sw 3)) N₁ := hNT.nfAt
+  have hNA := hNT.nfAt
   have hA0 := arcs_pos hP₁ hNF
   obtain ⟨b7, b4A, b6A⟩ := NFLoc.nfWithin_bounds hNT hNF hA0
   obtain ⟨-, -, hTB, -⟩ := win_tab E hI

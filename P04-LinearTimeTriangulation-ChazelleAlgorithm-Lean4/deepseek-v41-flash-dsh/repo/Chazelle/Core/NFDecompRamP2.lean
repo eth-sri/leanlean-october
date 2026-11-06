@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFDecompRamP1
 
 /-!
@@ -18,7 +22,7 @@ open Machine Machine.Stmt Programs Chazelle.Core.Dec
 /-- Close a `Same` goal for an explicit register update. -/
 macro "same_tac" : tactic =>
   `(tactic| exact ⟨fun x hx => by
-      simp only [List.mem_cons, List.not_mem_nil, or_false, not_or] at hx
+      ϴ' List.mem_cons, List.not_mem_nil, or_false, not_or at hx
       config_simp
       simp (disch := omega) only [Machine.upd_other], rfl, rfl, rfl⟩)
 
@@ -30,7 +34,7 @@ variable {A R K CB RB LB : ℕ}
 theorem ite_lt_min (a b : ℕ) : (if a < b then a else b) = min a b := by
   split_ifs with h
   · exact (min_eq_left h.le).symm
-  · exact (min_eq_right (by omega)).symm
+  · exact (min_eq_right (⋄)).symm
 
 /-- The top branch: `top r := r`, `best r := r`, `bestv r := 0`. -/
 theorem topBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB c)
@@ -40,8 +44,8 @@ theorem topBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB 
       ∀ f u, f < 19 → u < R → fv c'.nmem A R f u =
         if f = 8 ∧ u = r then r else if f = 9 ∧ u = r then r else if f = 10 ∧ u = r then 0
         else fv c.nmem A R f u := by
-  have b8 := hR.b 8 (by norm_num); have b9 := hR.b 9 (by norm_num); have b10 := hR.b 10 (by norm_num)
-  simp only [Nat.reduceAdd] at b8 b9 b10
+  have b8 := hR.b 8 (⊛); have b9 := hR.b 9 (⊛); have b10 := hR.b 10 (⊛)
+  ϴ' Nat.reduceAdd at b8 b9 b10
   have z := hR.zero
   unfold topBr
   exec_block
@@ -50,14 +54,14 @@ theorem topBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB 
     | skip
   refine ⟨rfl, ?_, fun a ha => ?_, fun f u hf hu => ?_⟩
   · same_tac
-  · config_simp; simp only [b8, b9, b10, h40]
-    rw [fv_store_out (by norm_num) hr ha, fv_store_out (by norm_num) hr ha,
-      fv_store_out (by norm_num) hr ha]
-  · config_simp; simp only [b8, b9, b10, h40, z]
-    rw [fv_store hr hu, fv_store hr hu, fv_store hr hu]
+  · config_simp; ϴ b8, b9, b10, h40
+    rw [fv_store_out (⊛) hr ha, fv_store_out (⊛) hr ha,
+      fv_store_out (⊛) hr ha]
+  · config_simp; ϴ b8, b9, b10, h40, z
+    Ξ fv_store hr hu, fv_store hr hu, fv_store hr hu
     by_cases hur : u = r
     · subst hur; interval_cases f <;> simp
-    · simp [hur]
+    · Θ hur
 
 /-- The non-top branch: the top of `r` is its parent's; the candidate of that top may improve. -/
 theorem ntBr_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB c)
@@ -323,25 +327,25 @@ theorem p2_congr {R i : ℕ} {o o' p p' q q' rm rm' S S' : ℕ → ℕ} {st st' 
     T3Agree R (p2 o p q rm S st i) (p2 o' p' q' rm' S' st' i) := by
   intro u hu
   unfold p2
-  rw [ho]
+  Ξ ho
   by_cases h0 : o' i = 0
-  · rw [ite_eq_left (Or.inl h0), ite_eq_left (Or.inl h0)]
+  · Ξ ite_eq_left (Or.inl h0), ite_eq_left (Or.inl h0)
     obtain ⟨a1, a2, a3⟩ := hag u hu
-    simp only [Function.update_apply]
+    ϴ Function.update_apply
     split_ifs <;> simp_all
-  · rw [hq h0, hrm h0]
+  · Ξ hq h0, hrm h0
     by_cases htop : rm' (q' (o' i)) = 1
-    · rw [ite_eq_left (Or.inr htop), ite_eq_left (Or.inr htop)]
+    · Ξ ite_eq_left (Or.inr htop), ite_eq_left (Or.inr htop)
       obtain ⟨a1, a2, a3⟩ := hag u hu
-      simp only [Function.update_apply]
+      ϴ Function.update_apply
       split_ifs <;> simp_all
     · have hnt : ¬ (o' i = 0 ∨ rm' (q' (o' i)) = 1) := by tauto
-      rw [ite_eq_right hnt, ite_eq_right hnt, hp h0]
-      have ht : st.top (p' (o' i)) = st'.top (p' (o' i)) := (hag _ (hpR h0)).1
-      rw [ht]
+      Ξ ite_eq_right hnt, ite_eq_right hnt, hp h0
+      have ht := (hag _ (hpR h0)).1
+      Ξ ht
       set t := st'.top (p' (o' i)) with htdef
       have htR' := htR h0
-      rw [hS _ hr, hS _ htR', (hag t htR').2.2]
+      Ξ hS _ hr, hS _ htR', (hag t htR').2.2
       obtain ⟨a1, a2, a3⟩ := hag u hu
       split_ifs <;> simp only [Function.update_apply] <;> split_ifs <;> simp_all
 
@@ -361,13 +365,13 @@ theorem p2S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
   let S : ℕ → T3 := fun i =>
     (List.range i).foldl (p2 ord prg pch rem (sz R prg pch rem)) (t3Of c.nmem A R)
   have hS : ∀ i, S (i + 1) = p2 ord prg pch rem (sz R prg pch rem) (S i) i := fun i => by
-    simp only [S, List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil]
+    ϴ S, List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil
   unfold p2S
   refine spec_seq (spec_instr (Exec.constN hw 60020 0 (Nat.zero_le _)) fun hw1 => ?_)
   set c1 := { c with nreg := upd c.nreg 60020 0 } with hc1
   have hf1 : DFr (A + 12) (A + 12 + 19 * R) c c1 :=
     DFr.nreg _ fun r hr _ => by
-      unfold Prot at hr; rw [Machine.upd_other _ _ _ (by omega)]
+      unfold Prot at hr; Ξ Machine.upd_other _ _ _ (⋄)
   obtain ⟨c', k, e, ⟨hw', hf', hj', hag', hv'⟩, htest, hk⟩ := Exec.whileLtN_potential (P := P) (W := W)
     (a := 60020) (b := 60013) (body := p2Body)
     (fun d => WordsBounded W d ∧ DFr (A + 12) (A + 12 + 19 * R) c d ∧ d.nreg 60020 ≤ R ∧
@@ -376,19 +380,19 @@ theorem p2S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
     (fun d => 42 * (R - d.nreg 60020)) (fun d hd => hd.1)
     (fun d ⟨hwd, hfd, hjd, hagd, hvd⟩ htest => by
       have hRd := hR.frame hfd
-      rw [hRd.rR] at htest
+      Ξ' hRd.rR at htest
       obtain ⟨i, hidef⟩ : ∃ i, d.nreg 60020 = i := ⟨_, rfl⟩
-      rw [hidef] at htest hjd hagd
+      Ξ' hidef at htest hjd hagd
       have hv1 : ∀ v, v < R → fv d.nmem A R 1 v = ord v := fun v hv => by
-        rw [hvd 1 v (by norm_num) (by norm_num) (by norm_num) (by norm_num) hv, hord v hv]
+        Ξ hvd 1 v (⊛) (⊛) (⊛) (⊛) hv, hord v hv
       have hv3 : ∀ v, v < R → fv d.nmem A R 3 v = prg v := fun v hv => by
-        rw [hvd 3 v (by norm_num) (by norm_num) (by norm_num) (by norm_num) hv, hprg v hv]
+        Ξ hvd 3 v (⊛) (⊛) (⊛) (⊛) hv, hprg v hv
       have hv4 : ∀ v, v < R → fv d.nmem A R 4 v = pch v := fun v hv => by
-        rw [hvd 4 v (by norm_num) (by norm_num) (by norm_num) (by norm_num) hv, hpch v hv]
+        Ξ hvd 4 v (⊛) (⊛) (⊛) (⊛) hv, hpch v hv
       have hv11 : ∀ v, v < R → fv d.nmem A R 11 v = rem v := fun v hv => by
-        rw [hvd 11 v (by norm_num) (by norm_num) (by norm_num) (by norm_num) hv, hrem v hv]
+        Ξ hvd 11 v (⊛) (⊛) (⊛) (⊛) hv, hrem v hv
       have hv7 : ∀ v, v < R → fv d.nmem A R 7 v = sz R prg pch rem v := fun v hv => by
-        rw [hvd 7 v (by norm_num) (by norm_num) (by norm_num) (by norm_num) hv, hsize v hv]
+        Ξ hvd 7 v (⊛) (⊛) (⊛) (⊛) hv, hsize v hv
       have hr := h.ord_lt i htest
       have hP2 := p2_fold h (rem := rem) (S := sz R prg pch rem) (le_of_lt htest) (fun _ _ => rfl)
         (t3Of c.nmem A R)
@@ -396,43 +400,43 @@ theorem p2S_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
       have htopR : ord i ≠ 0 → (S i).top (prg (ord i)) < R := fun h0 => by
         have hpR := h.prg_lt _ hr h0
         have := h.pos_prg _ hr h0
-        rw [h.pos_ord i htest] at this
+        Ξ' h.pos_ord i htest at this
         exact (hP2.1 _ hpR this).1
       obtain ⟨d', k', e', hk', hf'', h20', hv''⟩ := p2Body_exec (P := P) hwd hRd hAW hidef htest
         (by rw [hv1 i htest]; exact hr)
         (fun h0 => by rw [hv1 i htest] at h0 ⊢; rw [hv4 _ hr]; have := h.pch_lt _ hr h0; omega)
         (fun h0 => by rw [hv1 i htest] at h0 ⊢; rw [hv3 _ hr]; exact h.prg_lt _ hr h0)
         (fun h0 => by
-          rw [hv1 i htest] at h0 ⊢
-          rw [hv3 _ hr]
+          Ξ' hv1 i htest at h0 ⊢
+          Ξ hv3 _ hr
           have := (hagd _ (h.prg_lt _ hr h0)).1
-          simp only [t3Of] at this
-          rw [this]
+          ϴ' t3Of at this
+          Ξ this
           exact htopR h0)
-      refine ⟨d', k', e', ⟨e'.wb_right, hfd.trans hf'', by omega, ?_, fun f u hf h8 h9 h10 hu => ?_⟩,
+      refine ⟨d', k', e', ⟨e'.wb_right, hfd.trans hf'', ⋄, ?_, fun f u hf h8 h9 h10 hu => ?_⟩,
         by rw [h20', hidef]; omega⟩
-      · rw [h20', hS i]
+      · Ξ h20', hS i
         have hc := p2_congr (R := R) (i := i) (st := t3Of d.nmem A R) (st' := S i) hagd
           (hv1 i htest) hr (fun h0 => hv4 _ hr) (fun h0 => hv11 _ (by have := h.pch_lt _ hr h0; omega))
           (fun h0 => hv3 _ hr) (fun h0 => h.prg_lt _ hr h0) htopR hv7
         intro u hu
         obtain ⟨a1, a2, a3⟩ := hc u hu
         refine ⟨?_, ?_, ?_⟩
-        · show fv d'.nmem A R 8 u = _; rw [hv'' 8 u (by norm_num) hu]; exact a1
-        · show fv d'.nmem A R 9 u = _; rw [hv'' 9 u (by norm_num) hu]; exact a2
-        · show fv d'.nmem A R 10 u = _; rw [hv'' 10 u (by norm_num) hu]; exact a3
-      · rw [hv'' f u hf hu]
-        simp only [h8, h9, h10, ite_false]
+        · show fv d'.nmem A R 8 u = _; rw [hv'' 8 u (⊛) hu]; exact a1
+        · show fv d'.nmem A R 9 u = _; rw [hv'' 9 u (⊛) hu]; exact a2
+        · show fv d'.nmem A R 10 u = _; rw [hv'' 10 u (⊛) hu]; exact a3
+      · Ξ hv'' f u hf hu
+        ϴ h8, h9, h10, ite_false
         exact hvd f u hf h8 h9 h10 hu)
     ⟨hw1, hf1, by simp only [hc1]; config_simp; omega, by
       simp only [hc1]; config_simp; intro u _; exact ⟨rfl, rfl, rfl⟩, fun _ _ _ _ _ _ _ => rfl⟩
   have hR' := hR.frame hf'
-  rw [hR'.rR] at htest
-  have hjR : c'.nreg 60020 = R := by omega
+  Ξ' hR'.rR at htest
+  have hjR : c'.nreg 60020 = R := ⋄
   have h0 : c1.nreg 60020 = 0 := by simp only [hc1]; config_simp
-  rw [h0] at hk
-  rw [hjR] at hag'
-  exact ⟨c', k, e, by omega, hw', hf', hag', hv'⟩
+  Ξ' h0 at hk
+  Ξ' hjR at hag'
+  exact ⟨c', k, e, ⋄, hw', hf', hag', hv'⟩
 
 end p2ram
 

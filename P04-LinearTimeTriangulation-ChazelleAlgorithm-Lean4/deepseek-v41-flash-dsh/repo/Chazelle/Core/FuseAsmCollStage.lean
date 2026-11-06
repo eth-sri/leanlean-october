@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmSweep
 
 /-!
@@ -23,15 +25,15 @@ theorem chordList_agree {m m' : ℕ → ℕ} {B E : ℕ} {L : List (ℕ × ℕ �
     (h : ChordListAt m B L) (hE : B + 3 * L.length ≤ E) (he : ∀ a, a < E → m' a = m a) :
     ChordListAt m' B L := fun i hi => by
   obtain ⟨h0, h1, h2⟩ := h i hi
-  exact ⟨by rw [he _ (by omega)]; exact h0, by rw [he _ (by omega)]; exact h1,
-    by rw [he _ (by omega)]; exact h2⟩
+  exact ⟨by rw [he _ (⋄)]; exact h0, by rw [he _ (⋄)]; exact h1,
+    by rw [he _ (⋄)]; exact h2⟩
 
 theorem resultList_agree {m m' : ℕ → ℕ} {B E : ℕ} {R : List (ℕ × ℕ × ℕ × ℕ)}
     (h : ResultListAt m B R) (hE : B + 4 * R.length ≤ E) (he : ∀ a, a < E → m' a = m a) :
     ResultListAt m' B R := fun i hi => by
   obtain ⟨h0, h1, h2, h3⟩ := h i hi
-  exact ⟨by rw [he _ (by omega)]; exact h0, by rw [he _ (by omega)]; exact h1,
-    by rw [he _ (by omega)]; exact h2, by rw [he _ (by omega)]; exact h3⟩
+  exact ⟨by rw [he _ (⋄)]; exact h0, by rw [he _ (⋄)]; exact h1,
+    by rw [he _ (⋄)]; exact h2, by rw [he _ (⋄)]; exact h3⟩
 
 /-- The arguments of the first collection loop. -/
 def clSet : Stmt := block [.constN 70110 0, .constN 70116 3, .constN 70117 4, .constN 70118 2,
@@ -45,7 +47,7 @@ def clSet2 : Stmt := block [.copyN 70111 70154, .constN 70112 0, .copyN 70113 70
 /-- **The collection.** -/
 def collectS : Stmt := .seq clSet (.seq clqLoop (.seq clSet2 clqLoop))
 
-set_option maxHeartbeats 16000000 in
+
 theorem collectS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     {L₀ L₁ : List (ℕ × ℕ × ℕ)} {R₀ R₁ : List (ℕ × ℕ × ℕ × ℕ)}
     (h05 : c.nreg 70105 = 1) (h08 : c.nreg 70108 = 0)
@@ -66,7 +68,7 @@ theorem collectS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       Frame FB c c' k ∧
       (∀ r, (r < 70110 ∨ 70119 < r) → r ≠ 70156 → r ≠ ALLOC → c'.nreg r = c.nreg r) := by
   obtain ⟨A, hA⟩ : ∃ x, c.nreg ALLOC = x := ⟨_, rfl⟩
-  have hA' : c.nreg 9999 = A := hA
+  have hA' := hA
   obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W clSet c c₁ k₁ ∧ k₁ = 9 ∧
       (c₁.nreg 70110 = 0 ∧ c₁.nreg 70116 = 3 ∧ c₁.nreg 70117 = 4 ∧ c₁.nreg 70118 = 2 ∧
         c₁.nreg 70156 = A ∧ c₁.nreg 70111 = L₀.length ∧ c₁.nreg 70112 = 0 ∧
@@ -177,7 +179,7 @@ theorem collectS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       rw [g₄ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) h3,
         ur r (by omega) (by omega) (by omega) (by omega),
         g₂ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) h3, tr r h1 h2]
-  have a₄ : c₄.nreg ALLOC = A + 3 * (C₀ ++ C₁).length := i4a
+  have a₄ := i4a
   have hlen : (C₀ ++ C₁).length ≤ L₀.length + L₁.length := by
     rw [List.length_append]; omega
   refine ⟨c₄, _, ex, by omega, ?_, i4c, by rw [a₄, hA], by rw [hA]; exact i4l,

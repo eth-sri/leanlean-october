@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecNF
 public import Chazelle.Final.Interface
 public import Chazelle.Machine.Structured
@@ -67,7 +69,7 @@ theorem bandOf_bandReg (b i : ℕ) (hi : i < 10000) : bandOf (bandReg b i) = b :
   unfold bandOf bandReg
   omega
 
-theorem bandOf_alloc : bandOf ALLOC = 0 := by decide
+theorem bandOf_alloc : bandOf ALLOC = 0 := ⌖
 
 /-! ## Frames and the judgement -/
 
@@ -95,20 +97,20 @@ theorem Frame.trans {B₁ B₂ : Finset ℕ} {c c₁ c₂ : Config} {k₁ k₂ :
   obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := h₁
   obtain ⟨r₂, rr₂, m₂, rm₂, o₂, a₂, b₂⟩ := h₂
   refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, o₂.trans o₁,
-    a₁.trans a₂, by omega⟩
+    a₁.trans a₂, ⋄⟩
   · rw [Finset.mem_union, not_or] at hr
-    rw [r₂ r hr.2 hra, r₁ r hr.1 hra]
+    Ξ r₂ r hr.2 hra, r₁ r hr.1 hra
   · rw [Finset.mem_union, not_or] at hr
-    rw [rr₂ r hr.2, rr₁ r hr.1]
-  · rw [m₂ a (lt_of_lt_of_le ha a₁), m₁ a ha]
-  · rw [rm₂ a (lt_of_lt_of_le ha a₁), rm₁ a ha]
+    Ξ rr₂ r hr.2, rr₁ r hr.1
+  · Ξ m₂ a (lt_of_lt_of_le ha a₁), m₁ a ha
+  · Ξ rm₂ a (lt_of_lt_of_le ha a₁), rm₁ a ha
 
 /-- A frame for fewer bands is a frame for more. -/
 theorem Frame.mono {B B' : Finset ℕ} {c c' : Config} {k k' : ℕ} (h : Frame B c c' k)
     (hB : B ⊆ B') (hk : k ≤ k') : Frame B' c c' k' := by
   obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := h
   exact ⟨fun r hr hra => r₁ r (fun h => hr (hB h)) hra, fun r hr => rr₁ r (fun h => hr (hB h)),
-    m₁, rm₁, o₁, a₁, by omega⟩
+    m₁, rm₁, o₁, a₁, ⋄⟩
 
 /-! ## Normal forms in memory -/
 
@@ -235,7 +237,7 @@ theorem ChainWF.mono {P : Polygon} {E E' : ℕ} {m : ℕ → ℕ} {B : ℕ} (h :
     (hE : E ≤ E') : ChainWF P E' m B :=
   ⟨by have := h.1; omega, fun H C hC => by
     obtain ⟨h1, h2, h3, h4⟩ := h.2 H C hC
-    exact ⟨h1, h2, by omega, h4⟩⟩
+    exact ⟨h1, h2, ⋄, h4⟩⟩
 
 theorem ModelDescWF.mono {P : Polygon} {E E' : ℕ} {m : ℕ → ℕ} {B : ℕ} (h : ModelDescWF P E m B)
     (hE : E ≤ E') : ModelDescWF P E' m B :=

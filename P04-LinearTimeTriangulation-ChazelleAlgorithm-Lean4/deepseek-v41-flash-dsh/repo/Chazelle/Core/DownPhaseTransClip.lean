@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseTransDom
 
 /-!
@@ -51,7 +53,7 @@ theorem cross_sides {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t₀
     (hcont2.tendsto 0).mono_left nhdsWithin_le_nhds (by rw [h0']; exact ball_mem_nhds w hr)
   obtain ⟨δ, hδs, hδ1, hδ2, hδ0⟩ := ((Chazelle.Jordan.edge_sides hP hi ht₀).and
     (hev1.and (hev2.and self_mem_nhdsWithin))).exists
-  have hδ0' : (0 : ℝ) < δ := hδ0
+  have hδ0' := hδ0
   have huv : u ≠ v := fun e => hh (by rw [e])
   have hsq := Chazelle.Jordan.sqLen_pos huv
   -- the two half-disks
@@ -91,7 +93,7 @@ theorem cross_sides {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t₀
     have := hdet (-1); rw [show w.1 + -1 * ε = w.1 - ε by ring] at this; rw [this]; ring
   have hdp : Chazelle.det u v ((w.1 + ε, w.2) : Point) = -(ε * (v.2 - u.2)) := by
     have := hdet 1; rw [show w.1 + 1 * ε = w.1 + ε by ring] at this; rw [this]; ring
-  have hLR : offset u v t₀ δ ∈ P.filled ↔ offset u v t₀ (-δ) ∉ P.filled := hδs
+  have hLR := hδs
   rcases lt_or_gt_of_ne (sub_ne_zero.2 (Ne.symm hh)) with hneg | hpos
   · -- `v.2 < u.2`: the right neighbour is on the positive side
     have hpH : ((w.1 + ε, w.2) : Point) ∈ Hp := ⟨hp, by
@@ -152,7 +154,7 @@ theorem sub_chord {y a b x : ℝ} (hab : a ≤ x ∧ x ≤ b)
     have : b' ≤ t := csInf_le hBbdd ⟨⟨ht1, le_trans ht2.le hb'B.1.2⟩, hn⟩
     linarith
   refine ⟨a', b', ha'A.1.1, ha'x, hxb', hb'B.1.2,
-    ⟨by linarith, ha'A.2, hb'B.2, fun t ht1 ht2 => ?_⟩⟩
+    ⟨⟡, ha'A.2, hb'B.2, fun t ht1 ht2 => ?_⟩⟩
   rcases le_or_gt t x with h | h
   · exact hleft t ht1 h
   · exact hright t h.le ht2
@@ -297,7 +299,7 @@ theorem chordFamily_pieces (T : Top Q C) {F₀ : Set (Set Point)}
     obtain ⟨y', a', b', hc', rfl⟩ := hd.1
     have e := hdc (show ((a', y') : Point) ∈ hseg y' a' b' from ⟨rfl, le_rfl, hc'.lt.le⟩)
     refine ⟨h, by rw [← T.hP]; exact hh', a', b', ?_⟩
-    rw [show y' = (C.P.vtx h).2 from e.1, T.hP]
+    Ξ show y' = (C.P.vtx h).2 from e.1, T.hP
   · exact Set.ncard_le_ncard_of_injOn f (fun d hd => hf d hd) hinj hF₀.1
 
 end

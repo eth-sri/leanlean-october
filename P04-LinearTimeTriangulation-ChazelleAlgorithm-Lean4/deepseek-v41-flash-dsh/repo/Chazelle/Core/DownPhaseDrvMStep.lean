@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMirrorExtract
 public import Chazelle.Core.DownPhaseStepMain
 
@@ -98,14 +100,14 @@ theorem downStepG (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     refine ⟨?_, ?_⟩
     · have hdegTG : I.deg T V = I.deg G V := by
         unfold Model.deg
-        rw [exits_restrict hsys hST hGT hR hK hVR]
-      rw [hdegTG]
+        Ξ exits_restrict hsys hST hGT hR hK hVR
+      Ξ hdegTG
       have h1 : I.deg G V ≤ (chainModel (C R)).deg (F R) U + I.deg S R :=
         (hEx R hR).deg (hF R hR).1.2.1 (hF R hR).1.1 hVR hVU
       have h2 := (hF R hR).2.1 U hU
       have h3 := hdeg R hR
       omega
-    · rw [weight_restrict hM hTadm hTfin hSG hGT hR hK hV hVR]
+    · Ξ weight_restrict hM hTadm hTfin hSG hGT hR hK hV hVR
       exact ((hEx R hR).weight (hF R hR).1.2.1 (hF R hR).1.1 hU hVR hVU).trans
         ((hF R hR).2.2 U hU)
   exact ⟨hX1, fun V hV => (key V hV).1, fun V hV => (key V hV).2, hX4⟩

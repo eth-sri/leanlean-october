@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopM2C2
 
 /-!
@@ -186,7 +188,7 @@ theorem m2Task : M2Task := by
   by_cases h0 : c.nreg oKd < c.nreg K1
   · refine (IRS.ifT h0 (m2cS_irs E hI hM hD hpos (by rw [hK1] at h0; omega) hr')).mono ?_
       (fun _ h => h)
-    exact le_trans (Nat.add_le_add_left (by norm_num) _) hK
+    exact le_trans (Nat.add_le_add_left (⊛) _) hK
   · have hin : IRS P W c₀ (.ifLtN K1 oKd (m2cS sh) (m2cW sh)) c
         (m2cK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) + 2)
         (fun c' => M2Out P J N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB) c' ∧ EFr M2R c c') := by
@@ -202,7 +204,7 @@ theorem m2Task : M2Task := by
           ((m2cW_irs E hI hM hD hpos hk1 (le_trans (Nat.add_le_add_left hle _) hr')).mono hle
             (fun _ h => h)))
     refine (IRS.ifF h0 hin).mono ?_ (fun _ h => h)
-    exact le_trans (le_of_eq (by ring)) hK
+    exact le_trans (le_of_eq (⋆)) hK
 end
 
 end SweepEv

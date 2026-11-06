@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.Facts2Chain
 
 /-!
@@ -53,7 +57,7 @@ theorem xAt_sub (s : Point × Point) (y y' : ℝ) :
 /-- Two points of an obstacle segment: the slope relation. -/
 theorem slope_of_mem {s : Point × Point} (hs : s.1.2 < s.2.2) {u v : Point} (hu : u ∈ seg s)
     (hv : v ∈ seg s) : v.1 - u.1 = (v.2 - u.2) * ((s.2.1 - s.1.1) / (s.2.2 - s.1.2)) := by
-  rw [((mem_seg_iff hs).1 hu).2.2, ((mem_seg_iff hs).1 hv).2.2, xAt_sub]
+  Ξ ((mem_seg_iff hs).1 hu).2.2, ((mem_seg_iff hs).1 hv).2.2, xAt_sub
 
 /-- The offset curve tends to the base point. -/
 theorem tendsto_offset (u v : Point) (t : ℝ) :
@@ -61,9 +65,9 @@ theorem tendsto_offset (u v : Point) (t : ℝ) :
   have hc : Continuous fun δ : ℝ => Jordan.offset u v t δ := by
     unfold Jordan.offset
     exact continuous_const.add (continuous_id.smul continuous_const)
-  have h0 : Jordan.offset u v t 0 = lerp u v t := by simp [Jordan.offset]
+  have h0 : Jordan.offset u v t 0 = lerp u v t := ⊚ Jordan.offset
   have := hc.tendsto 0
-  rw [h0] at this
+  Ξ' h0 at this
   exact this.mono_left nhdsWithin_le_nhds
 
 variable {R : ℝ} {S : Set (Point × Point)} {q : Point} {sL sR : Point × Point} {y₁ y₂ : ℝ}
@@ -95,9 +99,9 @@ theorem wall_of_faces (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {s : Poin
     exact hnv w hw (hwy.trans e.symm)
   -- a point of the offset curve in the trapezoid
   obtain ⟨δ, hδin, hδ⟩ := (hev.and self_mem_nhdsWithin).exists
-  have hδ0 : (0 : ℝ) < δ := hδ
+  have hδ0 := hδ
   obtain ⟨-, -, hoL, hoR⟩ := hδin
-  rw [Jordan.offset_fst, Jordan.offset_snd] at hoL hoR
+  Ξ' Jordan.offset_fst, Jordan.offset_snd at hoL hoR
   have hz1 : z.1 = u.1 + t * (v.1 - u.1) := rfl
   have hz2 : z.2 = u.2 + t * (v.2 - u.2) := rfl
   have huv : u.2 ≠ v.2 := by
@@ -106,8 +110,8 @@ theorem wall_of_faces (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {s : Poin
     have h2 : s.2 ∈ Chazelle.segment u v := hseg ▸ hi_mem_seg s
     obtain ⟨a, -, -, ha⟩ := h1
     obtain ⟨b, -, -, hb⟩ := h2
-    have e1 : s.1.2 = u.2 := by rw [ha]; simp [e]
-    have e2 : s.2.2 = u.2 := by rw [hb]; simp [e]
+    have e1 : s.1.2 = u.2 := by rw [ha]; Θ e
+    have e2 : s.2.2 = u.2 := by rw [hb]; Θ e
     linarith
   rcases lt_or_eq_of_le hp3 with hlt | heqL
   · rcases lt_or_eq_of_le hp4 with hlt' | heqR
@@ -124,15 +128,15 @@ theorem wall_of_faces (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {s : Poin
       push Not at hlt2
       have hk := slope_of_mem hsu huS hvS
       have hx := xAt_sub s (u.2 + t * (v.2 - u.2) + δ * (v.1 - u.1)) z.2
-      rw [← heqR, hz2] at hx
+      Ξ' ← heqR, hz2 at hx
       set k := (s.2.1 - s.1.1) / (s.2.2 - s.1.2)
-      have hd : 0 < u.2 - v.2 := by linarith
+      have hd : 0 < u.2 - v.2 := ⟡
       have e : xAt s (u.2 + t * (v.2 - u.2) + δ * (v.1 - u.1)) - z.1 =
           δ * (v.2 - u.2) * k ^ 2 := by rw [hx, hk]; ring
       have h1 : δ * (v.2 - u.2) * k ^ 2 ≤ 0 :=
-        mul_nonpos_of_nonpos_of_nonneg (by nlinarith) (sq_nonneg k)
-      have h2 : δ * (v.2 - u.2) < 0 := by nlinarith
-      rw [← hz1] at hoR
+        mul_nonpos_of_nonpos_of_nonneg (⊞) (sq_nonneg k)
+      have h2 : δ * (v.2 - u.2) < 0 := ⊞
+      Ξ' ← hz1 at hoR
       linarith
   · -- on the left wall
     have hzL : z ∈ seg sL := (mem_seg_iff (hS.up sL h.hL)).2
@@ -146,29 +150,29 @@ theorem wall_of_faces (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {s : Poin
     push Not at hlt2
     have hk := slope_of_mem hsu huS hvS
     have hx := xAt_sub s (u.2 + t * (v.2 - u.2) + δ * (v.1 - u.1)) z.2
-    rw [heqL, hz2] at hx
+    Ξ' heqL, hz2 at hx
     set k := (s.2.1 - s.1.1) / (s.2.2 - s.1.2)
-    have hd : 0 < v.2 - u.2 := by linarith
+    have hd : 0 < v.2 - u.2 := ⟡
     have e : xAt s (u.2 + t * (v.2 - u.2) + δ * (v.1 - u.1)) - z.1 =
         δ * (v.2 - u.2) * k ^ 2 := by rw [hx, hk]; ring
     have h1 : 0 ≤ δ * (v.2 - u.2) * k ^ 2 := mul_nonneg (mul_pos hδ0 hd).le (sq_nonneg k)
     have h2 : 0 < δ * (v.2 - u.2) := mul_pos hδ0 hd
-    rw [← hz1] at hoL
+    Ξ' ← hz1 at hoL
     linarith
 
 /-! ## Small facts about the tour of the double boundary -/
 
 /-- `ord` does not depend on the order of two points at different heights. -/
 theorem ord_comm {u w : Point} (h : u.2 ≠ w.2) : ChainObs.ord u w = ChainObs.ord w u := by
-  rcases lt_or_gt_of_ne h with h' | h' <;> simp [ChainObs.ord, h', not_lt.2 h'.le]
+  rcases lt_or_gt_of_ne h with h' | h' <;> Θ ChainObs.ord, h', not_lt.2 h'.le
 
 /-- `ord` of a downward pair. -/
 theorem ord_down {u w : Point} (h : w.2 < u.2) : ChainObs.ord u w = (w, u) := by
-  simp [ChainObs.ord, not_lt.2 h.le]
+  Θ ChainObs.ord, not_lt.2 h.le
 
 /-- `ord` of an upward pair. -/
 theorem ord_upward {u w : Point} (h : u.2 < w.2) : ChainObs.ord u w = (u, w) := by
-  simp [ChainObs.ord, h]
+  Θ ChainObs.ord, h
 
 /-- The positions of the Euler tour of the path are determined by the pair of consecutive
 vertices they visit. -/
@@ -185,22 +189,22 @@ theorem tour_inj (β : Bool) {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m
     (h1 : C.sideIdx β i = C.sideIdx β i') (h2 : C.sideIdx β (i + 1) = C.sideIdx β (i' + 1)) :
     i = i' := by
   have hm := C.two_m_pos
-  rw [Chain.sideIdx_eq, Chain.sideIdx_eq] at h1
-  rw [Chain.sideIdx_succ, Chain.sideIdx_succ] at h2
+  Ξ' Chain.sideIdx_eq, Chain.sideIdx_eq at h1
+  Ξ' Chain.sideIdx_succ, Chain.sideIdx_succ at h2
   have hj := sideE_pair_inj (Nat.mod_lt _ hm) (Nat.mod_lt _ hm) h1 h2
-  have h3 : C.sideS β + i ≡ C.sideS β + i' [MOD 2 * C.m] := hj
+  have h3 := hj
   exact Nat.ModEq.eq_of_lt_of_lt (Nat.ModEq.add_left_cancel' _ h3) hi hi'
 
 /-- The walk edge `i + 6` of the chain model starts at the tour vertex `i`. -/
 theorem wa_tour (β : Bool) {i : ℕ} (hi : i < 2 * C.m) :
     (C.sideWalk β).vtx (i + 6) = C.vertex (C.sideIdx β i) :=
-  C.sideWalk_vtx_tour β (by omega)
+  C.sideWalk_vtx_tour β (⋄)
 
 /-- The walk edge `i + 6` of the chain model ends at the tour vertex `i + 1`. -/
 theorem wb_tour (β : Bool) {i : ℕ} (hi : i < 2 * C.m) :
     (C.sideWalk β).vtx ((i + 6 + 1) % (C.sideWalk β).n) = C.vertex (C.sideIdx β (i + 1)) := by
-  rw [C.sideWalk_n, Nat.mod_eq_of_lt (by omega), show i + 6 + 1 = (i + 1) + 6 by ring]
-  exact C.sideWalk_vtx_tour β (by omega)
+  Ξ C.sideWalk_n, Nat.mod_eq_of_lt (⋄), show i + 6 + 1 = (i + 1) + 6 by ring
+  exact C.sideWalk_vtx_tour β (⋄)
 
 /-- The ends of a walk edge of the double boundary span a chain edge. -/
 theorem tour_edge (hDH : DistinctHeights C.P) (β : Bool) (i : ℕ) :
@@ -214,18 +218,18 @@ theorem tour_edge (hDH : DistinctHeights C.P) (β : Bool) (i : ℕ) :
   have hv := ChainObs.vertex_snd_ne hDH hl hl' hne
   refine ⟨hv, ?_⟩
   rcases hs with h | h
-  · exact ⟨C.sideIdx β i, by omega, by rw [h]⟩
-  · refine ⟨C.sideIdx β (i + 1), by omega, ?_⟩
-    rw [ord_comm hv, h]
+  · exact ⟨C.sideIdx β i, ⋄, Ρ h⟩
+  · refine ⟨C.sideIdx β (i + 1), ⋄, ?_⟩
+    Ξ ord_comm hv, h
 
 /-! ## The classification of the counted walk edges facing a region of the full map -/
 
 /-- The set of keys inside an arc is open. -/
 theorem isOpen_sideInArc (a b : ℝ) : IsOpen {x : ℝ | sideInArc a b x} := by
   by_cases hab : a < b
-  · simp only [sideInArc, hab, ite_true]
+  · ϴ sideInArc, hab, ite_true
     exact (isOpen_lt continuous_const continuous_id).inter (isOpen_lt continuous_id continuous_const)
-  · simp only [sideInArc, hab, ite_false]
+  · ϴ sideInArc, hab, ite_false
     exact (isOpen_lt continuous_const continuous_id).union (isOpen_lt continuous_id continuous_const)
 
 /-- A point of an open set of reals can be moved off a finite set. -/
@@ -233,7 +237,7 @@ theorem exists_avoid {O : Set ℝ} (hO : IsOpen O) {t : ℝ} (ht : t ∈ O) {B :
     (hB : B.Finite) : ∃ t' ∈ O, t' ∉ B := by
   obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.1 hO t ht
   have hinf : (Metric.ball t ε).Infinite := by
-    rw [Real.ball_eq_Ioo]; exact Set.Ioo_infinite (by linarith)
+    rw [Real.ball_eq_Ioo]; exact Set.Ioo_infinite (⟡)
   obtain ⟨t', ht'1, ht'2⟩ := (hinf.sdiff hB).nonempty
   exact ⟨t', hball ht'1, ht'2⟩
 
@@ -272,7 +276,7 @@ theorem arc_edge_class (hP : C.P.Simple) (hDH : DistinctHeights C.P) {z : Point}
     intro w hw e
     apply ht'B
     refine ⟨w, hw, ?_⟩
-    simp only [Geometry.lerp_snd] at e
+    ϴ' Geometry.lerp_snd at e
     have hd : v.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm huv)
     field_simp
     linarith
@@ -283,7 +287,7 @@ theorem arc_edge_class (hP : C.P.Simple) (hDH : DistinctHeights C.P) {z : Point}
     have e1 : (chainModel C).wa (i + 6) = u := wa_tour C.sideBeta hi
     have e2 : (chainModel C).wb (i + 6) = v := wb_tour C.sideBeta hi
     unfold Model.Faces at hF
-    rw [e1, e2] at hF
+    Ξ' e1, e2 at hF
     exact hF.mono fun δ hδ => hU hδ
   rcases wall_of_faces hS hT hs hseg ht'0.le ht'1.le hnv hF' with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · exact Or.inl ⟨h1, h2⟩
@@ -299,7 +303,7 @@ theorem region_trap (hP : C.P.Simple) (hDH : DistinctHeights C.P) {z : Point}
   have hS := ChainObs.good hP hDH
   have hfull : FullAt C.radius (ChainObs.segs C) C.chords := ChainObs.fullAt subset_rfl
   have hdom := ChainObs.dom_eq (C := C)
-  rw [← hdom] at hz ⊢
+  Ξ' ← hdom at hz ⊢
   obtain ⟨sL, sR, y₁, y₂, hT⟩ := exists_trap hS hfull hz.1 hz.2
   exact ⟨sL, sR, y₁, y₂, hT, hT.region_subset hS hfull hz⟩
 
@@ -324,9 +328,9 @@ theorem arcEdge_class (hP : C.P.Simple) (hDH : DistinctHeights C.P) {z : Point}
         ChainObs.ord (C.vertex (C.sideIdx C.sideBeta i))
           (C.vertex (C.sideIdx C.sideBeta (i + 1))) = sR)) := by
   obtain ⟨-, ⟨hc1, hc2⟩, t, ht0, ht1, hin⟩ := hp
-  refine ⟨p - 6, by omega, by omega, ?_⟩
-  have e : ((p - 6 + 6 : ℕ) : ℝ) = (p : ℝ) := by rw [Nat.sub_add_cancel hc1]
-  exact arc_edge_class hP hDH hT hU hab (by omega) ht0 ht1 (by rw [e]; exact hin)
+  refine ⟨p - 6, ⋄, ⋄, ?_⟩
+  have e : ((p - 6 + 6 : ℕ) : ℝ) = (p : ℝ) := Ρ Nat.sub_add_cancel hc1
+  exact arc_edge_class hP hDH hT hU hab (⋄) ht0 ht1 (by rw [e]; exact hin)
 
 /-- Two walk edges of the same class are equal. -/
 theorem class_inj (hP : C.P.Simple) {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m)
@@ -343,12 +347,12 @@ theorem class_inj (hP : C.P.Simple) {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 
   have key : C.vertex (C.sideIdx C.sideBeta i) = C.vertex (C.sideIdx C.sideBeta i') ∧
       C.vertex (C.sideIdx C.sideBeta (i + 1)) = C.vertex (C.sideIdx C.sideBeta (i' + 1)) := by
     rcases lt_or_gt_of_ne hne with h | h
-    · rw [ord_upward h, ord_upward (hdir.1 h)] at hord
+    · Ξ' ord_upward h, ord_upward (hdir.1 h) at hord
       exact ⟨(Prod.ext_iff.1 hord).1, (Prod.ext_iff.1 hord).2⟩
     · have h' : (C.vertex (C.sideIdx C.sideBeta (i' + 1))).2 <
           (C.vertex (C.sideIdx C.sideBeta i')).2 :=
         lt_of_le_of_ne (not_lt.1 fun h2 => absurd (hdir.2 h2) (not_lt.2 h.le)) (Ne.symm hne')
-      rw [ord_down h, ord_down h'] at hord
+      Ξ' ord_down h, ord_down h' at hord
       exact ⟨(Prod.ext_iff.1 hord).2, (Prod.ext_iff.1 hord).1⟩
   exact tour_inj C.sideBeta hi hi' (C.sideVertex_inj hP (hl _) (hl _) key.1)
     (C.sideVertex_inj hP (hl _) (hl _) key.2)
@@ -359,7 +363,7 @@ theorem fullMap_arcWt_le_two (hP : C.P.Simple) (hDH : DistinctHeights C.P) {U : 
     (hab : (chainModel C).IsArc C.chords U a b) : (chainModel C).arcWt a b ≤ 2 := by
   obtain ⟨z, hz, rfl⟩ := hU
   obtain ⟨sL, sR, y₁, y₂, hT, hsub⟩ := region_trap hP hDH hz
-  rw [arcWt_eq]
+  Ξ arcWt_eq
   set A := arcEdgeSet C a b
   set Dn := {p ∈ A | ∀ i, p = i + 6 →
     (C.vertex (C.sideIdx C.sideBeta (i + 1))).2 < (C.vertex (C.sideIdx C.sideBeta i)).2}
@@ -373,7 +377,7 @@ theorem fullMap_arcWt_le_two (hP : C.P.Simple) (hDH : DistinctHeights C.P) {U : 
     · exact Or.inl ⟨hp, fun i' e => by rw [show i' = i by omega]; exact h1⟩
     · exact Or.inr ⟨hp, fun i' e => by rw [show i' = i by omega]; exact h1⟩
   have hDn : Dn.ncard ≤ 1 := by
-    rw [Set.ncard_le_one_iff (hfinA.subset fun p hp => hp.1)]
+    Ξ Set.ncard_le_one_iff (hfinA.subset fun p hp => hp.1)
     intro p p' hp hp'
     obtain ⟨i, hi, rfl, hcl⟩ := arcEdge_class hP hDH hT hsub hab hp.1
     obtain ⟨i', hi', rfl, hcl'⟩ := arcEdge_class hP hDH hT hsub hab hp'.1
@@ -388,7 +392,7 @@ theorem fullMap_arcWt_le_two (hP : C.P.Simple) (hDH : DistinctHeights C.P) {U : 
       · exact absurd hd' (not_lt.2 h1'.le)
     · exact absurd hd (not_lt.2 h1.le)
   have hUp : Up.ncard ≤ 1 := by
-    rw [Set.ncard_le_one_iff (hfinA.subset fun p hp => hp.1)]
+    Ξ Set.ncard_le_one_iff (hfinA.subset fun p hp => hp.1)
     intro p p' hp hp'
     obtain ⟨i, hi, rfl, hcl⟩ := arcEdge_class hP hDH hT hsub hab hp.1
     obtain ⟨i', hi', rfl, hcl'⟩ := arcEdge_class hP hDH hT hsub hab hp'.1
@@ -400,11 +404,11 @@ theorem fullMap_arcWt_le_two (hP : C.P.Simple) (hDH : DistinctHeights C.P) {U : 
     · exact absurd hd (not_lt.2 h1.le)
     · rcases hcl' with ⟨h1', -⟩ | ⟨-, h1'⟩
       · exact absurd hd' (not_lt.2 h1'.le)
-      · rw [class_inj hP hi hi' (h1.trans h1'.symm) ⟨fun _ => hd', fun _ => hd⟩ hne hne']
+      · Ξ class_inj hP hi hi' (h1.trans h1'.symm) ⟨fun _ => hd', fun _ => hd⟩ hne hne'
   calc A.ncard ≤ (Dn ∪ Up).ncard := Set.ncard_le_ncard hcover ((hfinA.subset fun p hp => hp.1).union
         (hfinA.subset fun p hp => hp.1))
     _ ≤ Dn.ncard + Up.ncard := Set.ncard_union_le _ _
-    _ ≤ 2 := by omega
+    _ ≤ 2 := ⋄
 
 /-- **For a chain of one edge, the arcs of the full map meet at most one counted walk edge.** -/
 theorem fullMap_arcWt_le_one (hP : C.P.Simple) (hDH : DistinctHeights C.P) (hm : C.m = 1)
@@ -413,18 +417,18 @@ theorem fullMap_arcWt_le_one (hP : C.P.Simple) (hDH : DistinctHeights C.P) (hm :
   obtain ⟨z, hz, rfl⟩ := hU
   obtain ⟨sL, sR, y₁, y₂, hT, hsub⟩ := region_trap hP hDH hz
   have hLR : sL ≠ sR := by
-    intro e; rw [e] at hT; exact lt_irrefl _ (hT.lt_q.trans hT.q_lt)
-  rw [arcWt_eq]
+    intro e; Ξ' e at hT; exact lt_irrefl _ (hT.lt_q.trans hT.q_lt)
+  Ξ arcWt_eq
   have hfinA : (arcEdgeSet C a b).Finite :=
     (Set.finite_lt_nat (chainModel C).W.n).subset fun p hp => hp.1
-  rw [Set.ncard_le_one_iff hfinA]
+  Ξ Set.ncard_le_one_iff hfinA
   intro p p' hp hp'
   obtain ⟨i, hi, rfl, hcl⟩ := arcEdge_class hP hDH hT hsub hab hp
   obtain ⟨i', hi', rfl, hcl'⟩ := arcEdge_class hP hDH hT hsub hab hp'
   obtain ⟨hne, k, hk, hord⟩ := tour_edge hDH C.sideBeta i
   obtain ⟨hne', k', hk', hord'⟩ := tour_edge hDH C.sideBeta i'
-  have hk0 : k = 0 := by omega
-  have hk0' : k' = 0 := by omega
+  have hk0 : k = 0 := ⋄
+  have hk0' : k' = 0 := ⋄
   subst hk0 hk0'
   have hsame := hord.trans hord'.symm
   rcases hcl with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rcases hcl' with ⟨h1', h2'⟩ | ⟨h1', h2'⟩
@@ -432,7 +436,7 @@ theorem fullMap_arcWt_le_one (hP : C.P.Simple) (hDH : DistinctHeights C.P) (hm :
       ⟨fun h => absurd h1 (not_lt.2 h.le), fun h => absurd h1' (not_lt.2 h.le)⟩ hne hne']
   · exact absurd (h2.symm.trans (hsame.trans h2')) hLR
   · exact absurd (h2'.symm.trans (hsame.symm.trans h2)) hLR
-  · rw [class_inj hP hi hi' hsame ⟨fun _ => h1', fun _ => h1⟩ hne hne']
+  · Ξ class_inj hP hi hi' hsame ⟨fun _ => h1', fun _ => h1⟩ hne hne'
 
 /-- **The full map of a chain model is `2`-semigranular** (distinct heights). -/
 theorem fullMap_semigranular_two (hP : C.P.Simple) (hDH : DistinctHeights C.P) :

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvCand2
 
 /-!
@@ -30,8 +32,8 @@ theorem mEdge_eq {J : Merge.Junction} (d : ℕ) :
 theorem ψ_le (J : Merge.Junction) (d : ℕ) : ψ J d ≤ d := by
   unfold ψ; split_ifs <;> omega
 
-set_option maxHeartbeats 8000000 in
-set_option maxRecDepth 100000 in
+
+
 /-- **The accepting tail.** -/
 theorem evAccT_irs {J : Merge.Junction} {S₂ : Set (Set Point)} (hI : IInv W c₀ c)
     (hK₀ : Consts c₀) (hM₀ : MapK J c₀) (hP : J.P.Simple) (hS₂ : S₂ ⊆ Merge.augChords J.right)
@@ -72,7 +74,7 @@ theorem evAccT_irs {J : Merge.Junction} {S₂ : Set (Set Point)} (hI : IInv W c�
   -- 1. the map
   refine IRS.seq (K₁ := 20) (K₂ := 22280) (mapC_irs hI hK₀ hM₀ hpA (by omega)) ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨m1, m2, m3, m4, m5, m6⟩
-  have kk₁ : ∀ r, r ≠ cD → r ≠ cV → r ≠ cPs → c₁.nreg r = c.nreg r := m5
+  have kk₁ := m5
   have k01 : c₁.nreg K0 = 0 := (hK₀.fix hI₁).1
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := kk₁ _ (by unfold cD ALLOC sw; omega)
     (by unfold cV ALLOC sw; omega) (by unfold cPs ALLOC sw; omega)

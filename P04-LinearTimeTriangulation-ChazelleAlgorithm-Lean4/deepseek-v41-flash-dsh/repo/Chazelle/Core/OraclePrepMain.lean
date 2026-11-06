@@ -27,7 +27,7 @@ theorem chords_mul_le {C : Chain} {Q : Polygon} {N : NF} {γ : ℕ} (hP : C.P.Si
   have hM := walkAx_of_goodModel hGM
   have hF := hC.1.1
   have := hM.lemma23_walk hF.2.1 hF.1 hC.2.1 hC.2.2.1
-  rw [chords_ncard hC.1, walk_n] at this
+  Ξ' chords_ncard hC.1, walk_n at this
   linarith
 
 /-- **The preprocessing.** -/
@@ -36,7 +36,7 @@ def prepMainS : Stmt := .seq phA (.seq phB (.seq bookS (.seq ordStage (.seq hdrS
 /-- The bands of the preprocessing. -/
 def prepBands : Finset ℕ := {bSign, bSort, bLocate, bDecomp, bOPrep, bOQuery, bCluster}
 
-theorem prepBands_sub : prepBands ⊆ oracleBands ∪ {bOPrep} := by decide
+theorem prepBands_sub : prepBands ⊆ oracleBands ∪ {bOPrep} := ⌖
 
 set_option maxHeartbeats 64000000 in
 /-- **The preprocessing meets its specification.** -/
@@ -69,14 +69,14 @@ theorem prep_meets : Meets prepMainS prepBands
   have hN := hcan.1
   have hsimp : C.P.Simple := by rw [hCQ]; exact (shearInvariance (epsOf P) P).1 hG.1
   have hA0 := arcs_pos hsimp hN
-  have hNF : NFAt c.nmem NB N := hNFw.nfAt
+  have hNF := hNFw.nfAt
   obtain ⟨hDA, hall⟩ := hwf
   obtain ⟨-, -, -, hsl⟩ := hall H C hD
   have hW8 : 8 * P.n + 32 ≤ W := by
     have := C.m_lt; rw [hCQ, hQn] at this; have := C.one_le; unfold hostWords at hHW; omega
   -- the parameters
-  have hcK : c.nmem NB = N.chords.length := hNF.1
-  have hcm : c.nmem (D + 2) = C.m := hD.2.2.2.1
+  have hcK := hNF.1
+  have hcm := hD.2.2.2.1
   rw [hcK, hcm] at hroom
   have hγ1 := gamma_pos hsimp hcan
   have hK23 : N.chords.length ≤ 60 * (2 * C.m + 7) := by
@@ -179,12 +179,12 @@ theorem prep_meets : Meets prepMainS prepBands
   -- memory transports
   have mPH : ∀ a, cP.nmem a = cH.nmem a := fun a => by rw [mP]
   have mHO : ∀ a, a < O → cH.nmem a = cO.nmem a := fun a ha => memH a (Or.inl ha)
-  have mOK : ∀ a, a < AK → cO.nmem a = cK.nmem a := memO
-  have mKB : ∀ a, a < AB → cK.nmem a = cB.nmem a := GK.2.2.1
-  have mBA : ∀ a, a < A₁ → cB.nmem a = cA.nmem a := GB.2.2.1
+  have mOK := memO
+  have mKB := GK.2.2.1
+  have mBA := GB.2.2.1
   have hA₁B : A₁ ≤ AB := by omega
-  have hABK : AB ≤ AK := alK1
-  have hAKO : AK ≤ O := alO1
+  have hABK := alK1
+  have hAKO := alO1
   have mPA : ∀ a, a < A₁ → cP.nmem a = cA.nmem a := fun a ha => by
     rw [mPH, mHO a (by omega), mOK a (by omega), mKB a (by omega), mBA a ha]
   have mP0 : ∀ a, a < A₀ → cP.nmem a = c.nmem a := fun a ha => by
@@ -194,7 +194,7 @@ theorem prep_meets : Meets prepMainS prepBands
     rw [mPO a (by omega), mOK a ha]
   -- the cost
   have hz : 2 * N.arcs.length * (5500 * ((Nat.clog 2 (N.arcs.length + N.chords.length + 1)) + 1) + 410) = 11000 * (N.arcs.length * ((Nat.clog 2 (N.arcs.length + N.chords.length + 1)) + 1)) + 820 * N.arcs.length := by ring
-  have hkPE : kP ≤ 3 * (O + 18 - A₀) + 4 := hkP1
+  have hkPE := hkP1
   have hEk : O + 18 - A₀ ≤ kP := hkP2
   have hsubO : O + 18 - A₀ + A₀ = O + 18 := Nat.sub_add_cancel (by omega)
   refine ⟨cP, _, ex, ?_, ?_, ?_⟩
@@ -306,7 +306,7 @@ noncomputable def lemma36Oracle : OracleIface where
 /-- **Lemma 3.6** (WP-H): the oracle is valid. -/
 theorem lemma36Oracle_valid : lemma36Oracle.Valid :=
   ⟨prepBands_sub, prep_meets,
-    query_meets ⟨by decide, by decide, by decide⟩ le_rfl⟩
+    query_meets ⟨⌖, ⌖, ⌖⟩ le_rfl⟩
 
 end
 

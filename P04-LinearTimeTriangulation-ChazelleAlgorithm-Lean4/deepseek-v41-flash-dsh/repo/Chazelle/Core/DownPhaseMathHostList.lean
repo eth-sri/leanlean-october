@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMathHost
 public import Chazelle.Core.DownPhaseDrvMBase
 public import Chazelle.Existence.Rotate
@@ -38,7 +40,7 @@ theorem poly_eq_of_vtx {P P' : Polygon} (hn : P.n = P'.n)
     cases P' with
     | mk l' =>
       congr 1
-      have hn' : l.length = l'.length := hn
+      have hn' := hn
       refine List.ext_getElem hn' fun i h1 h2 => ?_
       have := hv i h1
       simp only [Polygon.vtx] at this
@@ -65,15 +67,15 @@ theorem poly_of_rep {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q)
   have h3 := three_le_nk hQ hFam hne hR
   apply poly_eq_of_vtx
   · show (L.map (SymPt.eval Q)).length = ((hostPoly Q S R).rotate i0).n
-    rw [Existence.n_rotate, hostPoly_n, List.length_map, hL]
+    Ξ Existence.n_rotate, hostPoly_n, List.length_map, hL
   · intro j hj
     have hj' : j < nk (interiorModel Q) S R := by simpa [Polygon.n, hL] using hj
     have hjL : j < L.length := by rw [hL]; exact hj'
     have hlt : (i0 + j) % nk (interiorModel Q) S R < nk (interiorModel Q) S R :=
-      Nat.mod_lt _ (by omega)
+      Nat.mod_lt _ (⋄)
     rw [Existence.vtx_rotate _ _ (by rw [hostPoly_n]; exact hj'), hostPoly_n,
       hostPoly_vtx hlt, ← rep_eval hQ hFam hne hR hli hdh hlt (hrep j hj')]
-    simp only [Polygon.vtx]
+    ϴ Polygon.vtx
     rw [List.getD_eq_getElem _ _ (by simpa using hjL), List.getElem_map,
       List.getD_eq_getElem _ _ hjL]
 
@@ -89,10 +91,10 @@ theorem edgeOK_of_rep {li : Bool} (hdh : DistinctHeights Q) {L : List SymPt} {i0
   intro j hj
   rw [hL] at hj ⊢
   have hidx : (i0 + (j + 1) % N) % N = ((i0 + j) % N + 1) % N := by
-    rw [Nat.add_mod_mod, Existence.mod_add_one_mod]
-  have h2 := hrep ((j + 1) % N) (Nat.mod_lt _ (by omega))
+    Ξ Nat.add_mod_mod, Existence.mod_add_one_mod
+  have h2 := hrep ((j + 1) % N) (Nat.mod_lt _ (⋄))
   rw [hidx] at h2
-  exact rep_edgeOK hQ hFam hne hR hdh (Nat.mod_lt _ (by omega)) (hrep j hj) h2
+  exact rep_edgeOK hQ hFam hne hR hdh (Nat.mod_lt _ (⋄)) (hrep j hj) h2
 
 end
 
@@ -153,9 +155,9 @@ theorem polyFacts_rotate (i0 : ℕ) : PolyFacts Q S R ((hostPoly Q S R).rotate i
   · rw [Existence.filled_rotate, Existence.boundary_rotate]; exact hint.symm
   · rw [Existence.boundary_rotate]; exact hbd
   · intro j hj
-    have hn : 0 < (hostPoly Q S R).n := by omega
+    have hn : 0 < (hostPoly Q S R).n := ⋄
     obtain ⟨i, hi, hij⟩ := Existence.exists_rot_index hn i0 j hj
-    exact ⟨i, by rw [Existence.n_rotate]; exact hi, by rw [Existence.vtx_rotate _ _ hi, hij]⟩
+    exact ⟨i, by rw [Existence.n_rotate]; exact hi, Ρ Existence.vtx_rotate _ _ hi, hij⟩
 
 /-- The facts for a reversal of a rotation of the host polygon. -/
 theorem polyFacts_rev (i0 : ℕ) {P : Polygon} (hn : P.n = ((hostPoly Q S R).rotate i0).n)
@@ -171,7 +173,7 @@ theorem polyFacts_rev (i0 : ℕ) {P : Polygon} (hn : P.n = ((hostPoly Q S R).rot
     obtain ⟨j', hj', e⟩ := hvx j hj
     set m := ((hostPoly Q S R).rotate i0).n
     refine ⟨m - 1 - j', by rw [hn]; omega, ?_⟩
-    rw [hv _ (by omega), show m - 1 - (m - 1 - j') = j' by omega]
+    rw [hv _ (⋄), show m - 1 - (m - 1 - j') = j' by omega]
     exact e
 
 end

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoPrim
 public import Chazelle.Core.OracleRamLoc
 public import Chazelle.Core.Facts2
@@ -44,10 +46,10 @@ theorem Consts.fix {c₀ c : Config} {W : ℕ} (h : Consts c₀) (hI : IInv W c�
   have k : ∀ i, 610 ≤ i → i ≤ 616 → c.nreg (sw i) = c₀.nreg (sw i) := fun i h1 h2 =>
     hI.hin _ (by unfold IFix sw; omega)
   obtain ⟨a, b, d, e, f, g, i⟩ := h
-  exact ⟨(k 610 le_rfl (by norm_num)).trans a, (k 611 (by norm_num) (by norm_num)).trans b,
-    (k 612 (by norm_num) (by norm_num)).trans d, (k 613 (by norm_num) (by norm_num)).trans e,
-    (k 614 (by norm_num) (by norm_num)).trans f, (k 615 (by norm_num) (by norm_num)).trans g,
-    (k 616 (by norm_num) le_rfl).trans i⟩
+  exact ⟨(k 610 le_rfl (⊛)).trans a, (k 611 (⊛) (⊛)).trans b,
+    (k 612 (⊛) (⊛)).trans d, (k 613 (⊛) (⊛)).trans e,
+    (k 614 (⊛) (⊛)).trans f, (k 615 (⊛) (⊛)).trans g,
+    (k 616 (⊛) le_rfl).trans i⟩
 
 variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
@@ -213,10 +215,10 @@ theorem bl_oracle {r : ℕ} (h : OracleR.BL r = true) : bandOf r ∈ oracleBands
   simp only [OracleR.BL, NFLoc.Bdir, NFLoc.Bloc, WalkKey.Bcmp, WalkKey.Bk, Bool.or_eq_true,
     decide_eq_true_eq] at h
   by_cases h1 : r < 20000
-  · exact band1_oracle (by omega) h1
+  · exact band1_oracle (⋄) h1
   by_cases h5 : r < 60000
-  · exact band5_oracle (by omega) h5
-  · exact band12_oracle (by omega) (by omega)
+  · exact band5_oracle (⋄) h5
+  · exact band12_oracle (⋄) (⋄)
 
 /-- **An oracle-framed run** as an answer-stage step: it writes only oracle registers, keeps the
 memory and emits nothing. -/
@@ -281,7 +283,7 @@ theorem locJ_irs {md nf pe ph o : ℕ} {C : Chain} {N : NF} (hI : IInv W c₀ c)
   unfold locJ
   set ins := [(50000, md), (50001, nf), (50002, pe), (50003, ph), (120041, TBR), (120042, TLR)]
     with hins
-  have hnd : (ins.map Prod.fst).Nodup := by simp [hins]
+  have hnd : (ins.map Prod.fst).Nodup := ⊚ hins
   have hsrc : ∀ p ∈ ins, ∀ q ∈ ins, p.2 ≠ q.1 := by
     simp only [hins, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq,
       hTB, hTL]; omega
@@ -290,17 +292,17 @@ theorem locJ_irs {md nf pe ph o : ℕ} {C : Chain} {N : NF} (hI : IInv W c₀ c)
   have hTLv : c.nreg TLR = c.nreg 240601 := rfl
   set l : List Instr := cps ins ++ [.constN 120012 0, .constN 120011 1] with hl
   have hok : okB W c.nmem l c.nreg := by
-    simp only [hl, hins, cps, List.map, List.cons_append, List.nil_append, okB, okI]
-    refine ⟨Or.inr (band5_oracle (by norm_num) (by norm_num)),
-      Or.inr (band5_oracle (by norm_num) (by norm_num)),
-      Or.inr (band5_oracle (by norm_num) (by norm_num)),
-      Or.inr (band5_oracle (by norm_num) (by norm_num)),
-      Or.inr (band12_oracle (by norm_num) (by norm_num)),
-      Or.inr (band12_oracle (by norm_num) (by norm_num)),
-      ⟨Or.inr (band12_oracle (by norm_num) (by norm_num)), Nat.zero_le _⟩,
-      ⟨Or.inr (band12_oracle (by norm_num) (by norm_num)), ?_⟩, trivial⟩
+    ϴ hl, hins, cps, List.map, List.cons_append, List.nil_append, okB, okI
+    refine ⟨Or.inr (band5_oracle (⊛) (⊛)),
+      Or.inr (band5_oracle (⊛) (⊛)),
+      Or.inr (band5_oracle (⊛) (⊛)),
+      Or.inr (band5_oracle (⊛) (⊛)),
+      Or.inr (band12_oracle (⊛) (⊛)),
+      Or.inr (band12_oracle (⊛) (⊛)),
+      ⟨Or.inr (band12_oracle (⊛) (⊛)), Nat.zero_le _⟩,
+      ⟨Or.inr (band12_oracle (⊛) (⊛)), ?_⟩, trivial⟩
     have := hWh; unfold hostWords at this; omega
-  have hlen : l.length = 8 := by simp [hl, hins, cps]
+  have hlen : l.length = 8 := ⊚ hl, hins, cps
   refine IRS.mono (K := l.length + (5500 * (c.nreg TLR + 1) + 1))
     (IRS.seq (IRS.block l hI hok) ?_) (by rw [hlen]; omega) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' rfl
@@ -311,16 +313,16 @@ theorem locJ_irs {md nf pe ph o : ℕ} {C : Chain} {N : NF} (hI : IInv W c₀ c)
       if r = 50001 then c.nreg nf else if r = 50000 then c.nreg md else c.nreg r) := by
     intro r
     show regB c.nmem l c.nreg r = _
-    simp only [hl, hins, cps, List.map, List.cons_append, List.nil_append, regB, regI]
-    simp only [upd]
-    have h1 : md ≠ 50000 := by omega
-    have h2 : nf ≠ 50000 ∧ nf ≠ 50001 := by omega
-    have h3 : pe ≠ 50000 ∧ pe ≠ 50001 ∧ pe ≠ 50002 := by omega
-    have h4 : ph ≠ 50000 ∧ ph ≠ 50001 ∧ ph ≠ 50002 ∧ ph ≠ 50003 := by omega
+    ϴ hl, hins, cps, List.map, List.cons_append, List.nil_append, regB, regI
+    ϴ upd
+    have h1 : md ≠ 50000 := ⋄
+    have h2 : nf ≠ 50000 ∧ nf ≠ 50001 := ⋄
+    have h3 : pe ≠ 50000 ∧ pe ≠ 50001 ∧ pe ≠ 50002 := ⋄
+    have h4 : ph ≠ 50000 ∧ ph ≠ 50001 ∧ ph ≠ 50002 ∧ ph ≠ 50003 := ⋄
     have h5 : (240600 : ℕ) ≠ 50000 ∧ (240600 : ℕ) ≠ 50001 ∧ (240600 : ℕ) ≠ 50002 ∧
-      (240600 : ℕ) ≠ 50003 := by omega
+      (240600 : ℕ) ≠ 50003 := ⋄
     have h6 : (240601 : ℕ) ≠ 50000 ∧ (240601 : ℕ) ≠ 50001 ∧ (240601 : ℕ) ≠ 50002 ∧
-      (240601 : ℕ) ≠ 50003 ∧ (240601 : ℕ) ≠ 120041 := by omega
+      (240601 : ℕ) ≠ 50003 ∧ (240601 : ℕ) ≠ 120041 := ⋄
     simp only [TBR, TLR, sw, ite_eq_right h2.1, ite_eq_right h3.1, ite_eq_right h3.2.1,
       ite_eq_right h4.1, ite_eq_right h4.2.1, ite_eq_right h4.2.2.1]
     split_ifs <;> first | rfl | omega
@@ -334,17 +336,17 @@ theorem locJ_irs {md nf pe ph o : ℕ} {C : Chain} {N : NF} (hI : IInv W c₀ c)
   have r11 : c₁.nreg 120011 = 1 := by rw [hreg]; simp
   have rother : ∀ r, bandOf r ∉ oracleBands → c₁.nreg r = c.nreg r := by
     intro r hr
-    rw [hreg]
+    Ξ hreg
     have h5 : r < 50000 ∨ 60000 ≤ r := by
       by_contra h'; push Not at h'; exact hr (band5_oracle h'.1 h'.2)
     have h12 : r < 120000 ∨ 130000 ≤ r := by
       by_contra h'; push Not at h'; exact hr (band12_oracle h'.1 h'.2)
     have : r ≠ 120011 ∧ r ≠ 120012 ∧ r ≠ 120042 ∧ r ≠ 120041 ∧ r ≠ 50003 ∧ r ≠ 50002 ∧
-        r ≠ 50001 ∧ r ≠ 50000 := by omega
+        r ≠ 50001 ∧ r ≠ 50000 := ⋄
     simp [this.1, this.2.1, this.2.2.1, this.2.2.2.1, this.2.2.2.2.1, this.2.2.2.2.2.1,
       this.2.2.2.2.2.2.1, this.2.2.2.2.2.2.2]
   have hm₁ : c₁.nmem = c.nmem := rfl
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := rother ALLOC (by decide)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := rother ALLOC (⌖)
   clear_value c₁
   clear hreg hc₁
   -- the locate call
@@ -372,14 +374,14 @@ theorem locJ_irs {md nf pe ph o : ℕ} {C : Chain} {N : NF} (hI : IInv W c₀ c)
   refine IRS.mono (IRS.reg (r := o) hI₃ (iscr_sw ho.1 ho.2)
     (Exec.copyN hI₃.hw o 120170)) le_rfl ?_
   rintro c' rfl
-  simp only [upd]
+  ϴ upd
   rw [r02, r03] at hl1 hl2
   refine ⟨hj₂, fun h => ?_, fun h => ?_, fun r hr hro hra => ?_, ?_, fr₂.2.2.1.trans hm₁⟩
   · exact hl1 h
   · exact hl2 h
-  · rw [ite_eq_right hro, hfo r hr, rother r hr]
+  · Ξ ite_eq_right hro, hfo r hr, rother r hr
   · rw [ite_eq_right (show ALLOC ≠ o from fun h => absurd ho.1 (by rw [← h]; decide)),
-      hfo ALLOC (by decide), hA1]
+      hfo ALLOC (⌖), hA1]
 
 end
 

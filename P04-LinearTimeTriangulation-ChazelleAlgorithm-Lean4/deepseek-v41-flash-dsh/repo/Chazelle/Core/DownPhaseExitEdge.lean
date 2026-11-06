@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseHostData
 
 /-!
@@ -30,7 +32,7 @@ theorem consecutive_of_empty (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite
     (hab : a ≠ b) (hnone : ∀ x ∈ hostKeys M F U, ¬ sideInArc a b x) :
     ∃ i, i < nk M F U ∧ hk M F U i = a ∧ hk M F U ((i + 1) % nk M F U) = b := by
   obtain ⟨i, hi, rfl⟩ := exists_hk hM hF hfin ha
-  have hsi : (i + 1) % nk M F U < nk M F U := Nat.mod_lt _ (by omega)
+  have hsi : (i + 1) % nk M F U < nk M F U := Nat.mod_lt _ (⋄)
   refine ⟨i, hi, rfl, ?_⟩
   exact cyc_first (hk_succ_ne hM hF hfin h2 hi) hab (hnone _ (hk_mem hM hF hfin hsi))
     (hk_gap hM hF hfin h2 hi hb)
@@ -61,7 +63,7 @@ theorem exit_chordGap (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
       intro y hy hyin
       have hU₂ := host_side hM hF hfin hU hc hB hA (Ne.symm hAB) hK₂ hy hyin
       apply hK12
-      rw [connectedComponentIn_eq (hU₁ hu), connectedComponentIn_eq (hU₂ hu)]
+      Ξ connectedComponentIn_eq (hU₁ hu), connectedComponentIn_eq (hU₂ hu)
     obtain ⟨i, hi, e1, e2⟩ := consecutive_of_empty hM hF hfin h2 hcB hcA (Ne.symm hkne) h1'
     exact ⟨i, hi, pb, pa, tb, ta, hB, hA, e1, e2, Ne.symm hAB,
       (hM.attach_seg (hF hc) hB hA (Ne.symm hAB)).1⟩

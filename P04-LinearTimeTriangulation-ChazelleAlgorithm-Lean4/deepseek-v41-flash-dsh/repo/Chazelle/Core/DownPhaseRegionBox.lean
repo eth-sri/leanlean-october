@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseRegionBelow
 public import Chazelle.Core.FactsChain
 
@@ -40,14 +42,14 @@ theorem exists_first_exit_dir {D : Set Point} (hD : IsOpen D) {z : Point} (hz : 
     have hD' : IsOpen D' := hD.preimage hf
     have hz' : ((-z.1, z.2) : Point) ∈ D' := by show f (-z.1, z.2) ∈ D; simpa [f] using hz
     obtain ⟨s, hs, h1, h2⟩ := exists_first_exit hD' hz' (R := B) (fun x hx => by
-      have := hB _ hx; simp only [f] at this; rw [abs_neg] at this; exact (abs_lt.1 this).2)
+      have := hB _ hx; ϴ' f at this; Ξ' abs_neg at this; exact (abs_lt.1 this).2)
     refine ⟨s, hs, fun s' hs' => ?_, ?_⟩
     · have := h1 s' hs'
-      simp only [D', f, mem_preimage] at this
+      ϴ' D', f, mem_preimage at this
       rw [show z.1 + -1 * s' = -(-z.1 + s') by ring]; exact this
     · intro h
       apply h2
-      simp only [D', f, mem_preimage]
+      ϴ D', f, mem_preimage
       rw [show -(-z.1 + s) = z.1 + -1 * s by ring]; exact h
 
 variable {Q : Polygon} {S : Set (Set Point)} {R : Set Point}
@@ -240,15 +242,15 @@ theorem region_abs_le (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hη1 : η < 1 := lt_of_lt_of_le hηρ (min_le_right _ _)
   set z' : Point := (z.1, z.2 + η)
   have hz'R : z' ∈ R := hball (by
-    rw [Metric.mem_ball, Prod.dist_eq]
-    simp only [z', Real.dist_eq, sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hη0]
+    Ξ Metric.mem_ball, Prod.dist_eq
+    ϴ z', Real.dist_eq, sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hη0
     exact max_lt hρ hηρ')
   have hvQ : ∀ i, i < Q.n → z'.2 ≠ (Q.vtx i).2 := by
     intro i hi e
     apply hηV
-    rw [Finset.coe_image]
+    Ξ Finset.coe_image
     exact ⟨(Q.vtx i).2, Finset.mem_image.2 ⟨i, Finset.mem_range.2 hi, rfl⟩, by
-      simp only [z'] at e; simp only; linarith⟩
+      ϴ' z' at e; simp only; linarith⟩
   -- the coordinates of a convex combination of host points
   have hcomb : ∀ i i', i < nk M S R → i' < nk M S R → ∀ lam ∈ Icc (0 : ℝ) 1,
       |(lerp (hostPt M.W (hk M S R i)) (hostPt M.W (hk M S R i')) lam).1| ≤ B ∧
@@ -258,7 +260,7 @@ theorem region_abs_le (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     obtain ⟨b1, b2⟩ := hB i' hi'
     have key : ∀ u v : ℝ, |u| ≤ B → |v| ≤ B → |u + lam * (v - u)| ≤ B := by
       intro u v hu hv
-      rw [abs_le] at *
+      Ξ' abs_le at *
       constructor <;> nlinarith [hlam.1, hlam.2, hu.1, hu.2, hv.1, hv.2]
     exact ⟨key _ _ a1 b1, key _ _ a2 b2⟩
   obtain ⟨s, hs, i, i', hi, hi', -, lam, hlam, he, -⟩ :=
@@ -267,10 +269,10 @@ theorem region_abs_le (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     ray_hit hQ hFam hne hR hz'R hvQ (Or.inr rfl)
   have c1 := hcomb i i' hi hi' lam hlam
   have c2 := hcomb j j' hj hj' lam₂ hlam₂
-  rw [← he] at c1
-  rw [← he₂] at c2
-  simp only [z'] at c1 c2
-  simp only [abs_le] at c1 c2
+  Ξ' ← he at c1
+  Ξ' ← he₂ at c2
+  ϴ' z' at c1 c2
+  ϴ' abs_le at c1 c2
   refine ⟨abs_lt.2 ⟨by linarith [c2.1.1], by linarith [c1.1.2]⟩,
     abs_lt.2 ⟨by linarith [c1.2.1], by linarith [c1.2.2]⟩⟩
 

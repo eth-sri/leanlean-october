@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvKey2Lab
 
 /-!
@@ -73,26 +75,26 @@ theorem kqGW_lt (J : Merge.Junction) : gW J < (chainModel J.whole).W.n := by
 
 theorem stopLabs_congr {m m' : ℕ → ℕ} {A i : ℕ} (h : ∀ t, t < 4 → m' (A + 5 * i + t) = m (A + 5 * i + t)) :
     stopLabs m' A i = stopLabs m A i := by
-  have h0 := h 0 (by norm_num); have h1 := h 1 (by norm_num)
-  simp only [Nat.add_zero] at h0
+  have h0 := h 0 (⊛); have h1 := h 1 (⊛)
+  ϴ' Nat.add_zero at h0
   unfold stopLabs
-  rw [h0, h1]
+  Ξ h0, h1
   split_ifs
   · apply List.map_congr_left
     intro t ht
-    rw [List.mem_range] at ht
-    have := h (2 + t) (by omega)
-    rw [← Nat.add_assoc] at this
+    Ξ' List.mem_range at ht
+    have := h (2 + t) (⋄)
+    Ξ' ← Nat.add_assoc at this
     exact this
   · rfl
 
 theorem skInv_zero (hS : SkCtx P J c d₀) (hsC : c.nreg sP ≤ c.nreg sC) (hN : d₀.nreg kqN ≤ 4)
     (hA : d₀.nreg kqA = 0) : SkInv P J c d₀ d₀ 0 :=
-  ⟨EFr.refl _ _, by rw [hS.hsP]; rfl, by omega, by norm_num, fun i h1 h2 => by omega, hN,
-    by simp [addLs], by omega, ⟨fun h => by omega, fun ⟨i, h1, h2, _⟩ => by omega⟩⟩
+  ⟨EFr.refl _ _, by rw [hS.hsP]; rfl, ⋄, by norm_num, fun i h1 h2 => by omega, hN,
+    by simp [addLs], ⋄, ⟨fun h => by omega, fun ⟨i, h1, h2, _⟩ => by omega⟩⟩
 
-set_option maxHeartbeats 16000000 in
-set_option maxRecDepth 100000 in
+
+
 /-- **One skip.** -/
 theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
     (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hS : SkCtx P J c d₀) (hId : IInv W c₀ d)
@@ -262,15 +264,15 @@ theorem skipS_irs {next : Stmt} {K : ℕ} {Q : Config → Prop} {j : ℕ}
 theorem skip2_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hS : SkCtx P J c d₀)
     (hId₀ : IInv W c₀ d₀) (h0 : SkInv P J c d₀ d₀ 0) (hroom : d₀.nreg ALLOC + 22400 ≤ W) :
     IRS P W c₀ (skipS (skipS .skip)) d₀ 22400 (SkDone P J c d₀) := by
-  refine (skipS_irs (K := 11200) E hS hId₀ (by norm_num) h0 (by omega) (fun d' hI' hA' h1 => ?_)
+  refine (skipS_irs (K := 11200) E hS hId₀ (⊛) h0 (⋄) (fun d' hI' hA' h1 => ?_)
     (fun _ h => h)).mono le_rfl (fun _ h => h)
-  refine (skipS_irs (K := 0) E hS hI' le_rfl h1 (by omega) (fun d'' hI'' _ h2 => IRS.skip hI'' ?_)
+  refine (skipS_irs (K := 0) E hS hI' le_rfl h1 (⋄) (fun d'' hI'' _ h2 => IRS.skip hI'' ?_)
     (fun _ h => h)).mono le_rfl (fun _ h => h)
   refine ⟨2, h2, fun hlt => ?_⟩
   obtain ⟨-, hsP, -, -, hoff, -⟩ := h2
-  rw [hsP]
-  rw [← hoff (c.nreg sP) le_rfl (by omega)]
-  exact ne_of_gt (hS.htwo _ (by omega))
+  Ξ hsP
+  Ξ ← hoff (c.nreg sP) le_rfl (⋄)
+  exact ne_of_gt (hS.htwo _ (⋄))
 
 end
 

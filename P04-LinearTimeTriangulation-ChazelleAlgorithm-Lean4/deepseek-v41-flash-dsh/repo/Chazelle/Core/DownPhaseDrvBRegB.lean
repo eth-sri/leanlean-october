@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBRegA
 public import Chazelle.Core.DownPhaseDrvBPieces2
 public import Chazelle.Core.DownPhaseDrvRHostSpec
@@ -89,8 +91,8 @@ theorem frame21_of_B {B : ℕ → Bool} {c c' : Config} {k : ℕ}
     cases h : B ALLOC
     · rfl
     · have := hB _ h; unfold ALLOC bandOf bDownDrv at this; omega)
-  exact frame21 (fun r h => Or.inl (hB r h)) (FrameB.toM hf) (fun a _ => by rw [hf.2.2.1]) hrr
-    (by omega) (by omega)
+  exact frame21 (fun r h => Or.inl (hB r h)) (FrameB.toM hf) (fun a _ => Ρ hf.2.2.1) hrr
+    (⋄) (by omega)
 
 set_option maxHeartbeats 8000000 in
 /-- **The host of the region.** -/

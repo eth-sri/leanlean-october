@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Setup
 public import Chazelle.Cost.DownPhase
 
@@ -54,19 +56,19 @@ def cntMax (A B : ℕ) : ℕ := (cntG A B)^[cntLam A B] (cntBase A B)
 theorem le_cntG {A : ℕ} (hA : 1 ≤ A) (B x : ℕ) : x ≤ cntG A B x := by
   have : x ≤ 2 * A * x := by
     calc x = 1 * x := (one_mul x).symm
-      _ ≤ 2 * A * x := Nat.mul_le_mul_right _ (by omega)
+      _ ≤ 2 * A * x := Nat.mul_le_mul_right _ (⋄)
   unfold cntG; omega
 
 theorem iterate_le_iterate {A : ℕ} (hA : 1 ≤ A) (B x : ℕ) {k k' : ℕ} (h : k ≤ k') :
     (cntG A B)^[k] x ≤ (cntG A B)^[k'] x := by
   obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le h
   clear h
-  rw [add_comm k d, Function.iterate_add_apply]
+  Ξ add_comm k d, Function.iterate_add_apply
   generalize (cntG A B)^[k] x = y
   induction d with
   | zero => simp
   | succ d ih =>
-    rw [Function.iterate_succ_apply']
+    Ξ Function.iterate_succ_apply'
     exact ih.trans (le_cntG hA B _)
 
 theorem cntBase_le_cnt {A : ℕ} (hA : 1 ≤ A) (B lam : ℕ) : cntBase A B ≤ cnt A B lam := by
@@ -85,7 +87,7 @@ theorem cnt_le_cntMax {A : ℕ} (hA : 1 ≤ A) (B lam : ℕ) : cnt A B lam ≤ c
 /-! ## The threshold -/
 
 theorem le_two_pow_cntL (A B : ℕ) : 8 * A + 32 * A * B ≤ 2 ^ cntL A B :=
-  Nat.le_pow_clog (by norm_num) _
+  Nat.le_pow_clog (⊛) _
 
 /-- **Contraction above the threshold**: with `b = ⌈βλ⌉`, `b' = ⌈β(b + 11)⌉`,
 `8 A 2^b' ≤ 2^b` and `32 A B ≤ 2^b`. -/
@@ -94,17 +96,17 @@ theorem big_of_ge {A B lam : ℕ} (h : cntLam A B ≤ lam) :
       32 * A * B ≤ 2 ^ Cost.ceilBeta lam := by
   have hL := le_two_pow_cntL A B
   set L := cntL A B
-  rw [Setup.ceilBeta_eq lam, Setup.ceilBeta_eq]
+  Ξ Setup.ceilBeta_eq lam, Setup.ceilBeta_eq
   unfold cntLam at h
   set b := (lam + 4) / 5 with hb
-  have hbL : 5 * L + 16 ≤ b := by omega
-  have hb' : (b + 11 + 4) / 5 + L ≤ b := by omega
+  have hbL : 5 * L + 16 ≤ b := ⋄
+  have hb' : (b + 11 + 4) / 5 + L ≤ b := ⋄
   have hpow : 2 ^ ((b + 11 + 4) / 5) * 2 ^ L ≤ 2 ^ b := by
-    rw [← pow_add]; exact Nat.pow_le_pow_right (by norm_num) hb'
-  have hLb : 2 ^ L ≤ 2 ^ b := Nat.pow_le_pow_right (by norm_num) (by omega)
+    rw [← pow_add]; exact Nat.pow_le_pow_right (⊛) hb'
+  have hLb : 2 ^ L ≤ 2 ^ b := Nat.pow_le_pow_right (⊛) (⋄)
   constructor
   · calc 8 * A * 2 ^ ((b + 11 + 4) / 5) ≤ 2 ^ L * 2 ^ ((b + 11 + 4) / 5) :=
-          Nat.mul_le_mul_right _ (by omega)
+          Nat.mul_le_mul_right _ (⋄)
       _ ≤ 2 ^ b := by rw [mul_comm]; exact hpow
   · omega
 
@@ -120,73 +122,73 @@ theorem step_arith {p b b' K K' n c c' A B G : ℕ}
       (c' = c ∧ A ≤ c ∧ 8 * A * B ≤ c ∧ 8 * A * 2 ^ b' ≤ 2 ^ b ∧ 32 * A * B ≤ 2 ^ b)) :
     K' * 2 ^ b' ≤ c' * (2 ^ p + 2 ^ b') := by
   have hY1 : 1 ≤ 2 ^ b' := Nat.one_le_two_pow
-  have hYX : 2 ^ b' ≤ 2 ^ b := Nat.pow_le_pow_right (by norm_num) hb'
-  have hXP : 2 ^ b ≤ 2 ^ p := Nat.pow_le_pow_right (by norm_num) hb
+  have hYX : 2 ^ b' ≤ 2 ^ b := Nat.pow_le_pow_right (⊛) hb'
+  have hXP : 2 ^ b ≤ 2 ^ p := Nat.pow_le_pow_right (⊛) hb
   set P := 2 ^ p
   set X := 2 ^ b
   set Y := 2 ^ b'
-  have hG0 : 0 < G := by omega
+  have hG0 : 0 < G := ⋄
   have h1 : K' * Y ≤ A * (K + 1) * Y + A * B * (n + 4 * K) := by
     apply Nat.le_of_mul_le_mul_right _ hG0
-    calc K' * Y * G = K' * G * Y := by ring
+    calc K' * Y * G = K' * G * Y := ⋆
       _ ≤ A * ((K + 1) * G + B * (n + 4 * K)) * Y := Nat.mul_le_mul_right _ hK'
-      _ = A * (K + 1) * Y * G + A * B * (n + 4 * K) * Y := by ring
+      _ = A * (K + 1) * Y * G + A * B * (n + 4 * K) * Y := ⋆
       _ ≤ A * (K + 1) * Y * G + A * B * (n + 4 * K) * G :=
           Nat.add_le_add_left (Nat.mul_le_mul_left _ hG) _
-      _ = (A * (K + 1) * Y + A * B * (n + 4 * K)) * G := by ring
+      _ = (A * (K + 1) * Y + A * B * (n + 4 * K)) * G := ⋆
   have hK2 : K * X ≤ 2 * c * P := by
     calc K * X ≤ c * (P + X) := hK
-      _ ≤ c * (P + P) := Nat.mul_le_mul_left _ (by omega)
-      _ = 2 * c * P := by ring
+      _ ≤ c * (P + P) := Nat.mul_le_mul_left _ (⋄)
+      _ = 2 * c * P := ⋆
   have hn2 : n ≤ 2 * P := by have : 1 ≤ P := Nat.one_le_two_pow; omega
   have eAn : A * B * n ≤ 2 * A * B * P := by
     calc A * B * n ≤ A * B * (2 * P) := Nat.mul_le_mul_left _ hn2
-      _ = 2 * A * B * P := by ring
+      _ = 2 * A * B * P := ⋆
   have e0 : K' * Y ≤ A * (K * Y) + A * Y + A * B * n + 4 * A * B * K := by
     calc K' * Y ≤ A * (K + 1) * Y + A * B * (n + 4 * K) := h1
-      _ = A * (K * Y) + A * Y + A * B * n + 4 * A * B * K := by ring
+      _ = A * (K * Y) + A * Y + A * B * n + 4 * A * B * K := ⋆
   rcases hc with hc | ⟨rfl, hAc, hABc, h8, h32⟩
   · have eKY : A * (K * Y) ≤ 2 * A * c * P := by
       calc A * (K * Y) ≤ A * (K * X) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hYX)
         _ ≤ A * (2 * c * P) := Nat.mul_le_mul_left _ hK2
-        _ = 2 * A * c * P := by ring
+        _ = 2 * A * c * P := ⋆
     have eK : 4 * A * B * K ≤ 8 * A * B * c * P := by
-      have : K ≤ K * X := Nat.le_mul_of_pos_right _ (by omega)
+      have : K ≤ K * X := Nat.le_mul_of_pos_right _ (⋄)
       calc 4 * A * B * K ≤ 4 * A * B * (K * X) := Nat.mul_le_mul_left _ this
         _ ≤ 4 * A * B * (2 * c * P) := Nat.mul_le_mul_left _ hK2
-        _ = 8 * A * B * c * P := by ring
+        _ = 8 * A * B * c * P := ⋆
     have hP1 : 1 ≤ P := Nat.one_le_two_pow
     calc K' * Y ≤ A * (K * Y) + A * Y + A * B * n + 4 * A * B * K := e0
-      _ ≤ 2 * A * c * P + A * Y + 2 * A * B * P + 8 * A * B * c * P := by omega
+      _ ≤ 2 * A * c * P + A * Y + 2 * A * B * P + 8 * A * B * c * P := ⋄
       _ ≤ cntG A B c * P + cntG A B c * Y := by
           unfold cntG
-          have : A * Y ≤ A * Y + (2 * A * c + 2 * A * B + 8 * A * B * c) * Y := by omega
+          have : A * Y ≤ A * Y + (2 * A * c + 2 * A * B + 8 * A * B * c) * Y := ⋄
           nlinarith
       _ ≤ c' * P + c' * Y :=
           Nat.add_le_add (Nat.mul_le_mul_right _ hc) (Nat.mul_le_mul_right _ hc)
-      _ = c' * (P + Y) := by ring
+      _ = c' * (P + Y) := ⋆
   · have hK2' : K * X ≤ 2 * (c' * P) := by rw [← mul_assoc]; exact hK2
     have eKY : 4 * (A * (K * Y)) ≤ c' * P := by
       have : 8 * (A * (K * Y)) ≤ 2 * (c' * P) := by
-        calc 8 * (A * (K * Y)) = K * (8 * A * Y) := by ring
+        calc 8 * (A * (K * Y)) = K * (8 * A * Y) := ⋆
           _ ≤ K * X := Nat.mul_le_mul_left _ h8
           _ ≤ 2 * (c' * P) := hK2'
       omega
     have eK : 16 * (A * B * K) ≤ c' * P := by
       have : 32 * (A * B * K) ≤ 2 * (c' * P) := by
-        calc 32 * (A * B * K) = K * (32 * A * B) := by ring
+        calc 32 * (A * B * K) = K * (32 * A * B) := ⋆
           _ ≤ K * X := Nat.mul_le_mul_left _ h32
           _ ≤ 2 * (c' * P) := hK2'
       omega
     have eN : 4 * (A * B * n) ≤ c' * P := by
       calc 4 * (A * B * n) ≤ 4 * (2 * A * B * P) := Nat.mul_le_mul_left _ eAn
-        _ = 8 * A * B * P := by ring
+        _ = 8 * A * B * P := ⋆
         _ ≤ c' * P := Nat.mul_le_mul_right _ hABc
     have eA : A * Y ≤ c' * Y := Nat.mul_le_mul_right _ hAc
     have e0' : K' * Y ≤ A * (K * Y) + A * Y + A * B * n + 4 * (A * B * K) := by
-      have : 4 * A * B * K = 4 * (A * B * K) := by ring
+      have : 4 * A * B * K = 4 * (A * B * K) := ⋆
       omega
-    rw [mul_add]
+    Ξ mul_add
     omega
 
 /-- **(I3) across one level.**  Let `16 ≤ λ ≤ p`, `μ = ⌈βλ⌉ + 11`, and let the counts `K` (level
@@ -205,12 +207,12 @@ theorem cnt_step {A B : ℕ} (hA : 1 ≤ A) {lam p K K' n G : ℕ} (h16 : 16 ≤
   refine step_arith hK (hbl.trans hlp) hb' hn hG hK' ?_
   by_cases hbig : cntLam A B ≤ Cost.ceilBeta lam + 11
   · -- both levels above the threshold
-    have hlam : cntLam A B ≤ lam := by omega
+    have hlam : cntLam A B ≤ lam := ⋄
     right
     have e1 : cnt A B lam = cntBase A B := by unfold cnt; rw [ite_eq_left hlam]
     have e2 : cnt A B (Cost.ceilBeta lam + 11) = cntBase A B := by unfold cnt; rw [ite_eq_left hbig]
     obtain ⟨h8, h32⟩ := big_of_ge hlam
-    rw [e1, e2]
+    Ξ e1, e2
     refine ⟨rfl, by unfold cntBase; omega, by unfold cntBase; omega, h8, h32⟩
   · -- the next level is below the threshold
     left
@@ -220,9 +222,9 @@ theorem cnt_step {A B : ℕ} (hA : 1 ≤ A) {lam p K K' n G : ℕ} (h16 : 16 ≤
     obtain ⟨k, hk, ek⟩ : ∃ k, k + 1 ≤ cntLam A B - (Cost.ceilBeta lam + 11) ∧
         cnt A B lam = (cntG A B)^[k] (cntBase A B) := by
       by_cases hl : cntLam A B ≤ lam
-      · exact ⟨0, by omega, by unfold cnt; rw [ite_eq_left hl]; rfl⟩
-      · exact ⟨cntLam A B - lam, by omega, by unfold cnt; rw [ite_eq_right hl]⟩
-    rw [e2, ek, ← Function.iterate_succ_apply' (cntG A B)]
+      · exact ⟨0, ⋄, by unfold cnt; rw [ite_eq_left hl]; rfl⟩
+      · exact ⟨cntLam A B - lam, ⋄, by unfold cnt; rw [ite_eq_right hl]⟩
+    Ξ e2, ek, ← Function.iterate_succ_apply' (cntG A B)
     exact iterate_le_iterate hA B _ hk
 
 /-! ## The transition -/
@@ -238,7 +240,7 @@ theorem cnt_trans {A : ℕ} (hA : 1 ≤ A) (B : ℕ) {K K₀ n p : ℕ} (hn : n 
   have hP1 : 1 ≤ 2 ^ p := Nat.one_le_two_pow
   calc K * 2 ^ Cost.ceilBeta p ≤ K₀ * (gradeGran p + 1) := Nat.mul_le_mul hK hg
     _ ≤ 840 * (2 * (n - 1) + 1) := hK₀
-    _ ≤ 2520 * 2 ^ p := by omega
+    _ ≤ 2520 * 2 ^ p := ⋄
     _ ≤ cntBase A B * 2 ^ p := Nat.mul_le_mul_right _ (by unfold cntBase; omega)
     _ ≤ cnt A B p * (2 ^ p + 2 ^ Cost.ceilBeta p) := Nat.mul_le_mul hc (Nat.le_add_right _ _)
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildStack
 public import Chazelle.Chain.Sides
 
@@ -40,22 +42,22 @@ theorem sideInArc_iff_cycDist {n k x y : ℝ} (_hk : 0 ≤ k ∧ k < n) (hx : 0 
     sideInArc k y x ↔ cycDist n k x < cycDist n k y := by
   unfold sideInArc cycDist
   rcases lt_or_gt_of_ne hkx with h1 | h1 <;> rcases lt_or_gt_of_ne hky with h2 | h2
-  · rw [ite_eq_left h2, ite_eq_left h1, ite_eq_left h2]
+  · Ξ ite_eq_left h2, ite_eq_left h1, ite_eq_left h2
     constructor
     · rintro ⟨-, h⟩; linarith
-    · intro h; exact ⟨h1, by linarith⟩
-  · rw [ite_eq_right (not_lt.2 h2.le), ite_eq_left h1, ite_eq_right (not_lt.2 h2.le)]
+    · intro h; exact ⟨h1, ⟡⟩
+  · Ξ ite_eq_right (not_lt.2 h2.le), ite_eq_left h1, ite_eq_right (not_lt.2 h2.le)
     exact ⟨fun _ => by linarith [hy.1, hx.2], fun _ => Or.inl h1⟩
-  · rw [ite_eq_left h2, ite_eq_right (not_lt.2 h1.le), ite_eq_left h2]
+  · Ξ ite_eq_left h2, ite_eq_right (not_lt.2 h1.le), ite_eq_left h2
     constructor
     · rintro ⟨h, -⟩; linarith
     · intro h; linarith [hx.1, hy.2]
-  · rw [ite_eq_right (not_lt.2 h2.le), ite_eq_right (not_lt.2 h1.le), ite_eq_right (not_lt.2 h2.le)]
+  · Ξ ite_eq_right (not_lt.2 h2.le), ite_eq_right (not_lt.2 h1.le), ite_eq_right (not_lt.2 h2.le)
     constructor
     · rintro (h | h)
       · linarith
       · linarith
-    · intro h; exact Or.inr (by linarith)
+    · intro h; exact Or.inr (⟡)
 
 /-- An attachment event: chord index, key of this end, key of the other end. -/
 abbrev Ev := ℕ × ℝ × ℝ
@@ -68,7 +70,7 @@ def EvLe (n : ℝ) (e f : Ev) : Prop :=
 /-- The chord index occurs in the chord word as often as its events in the list. -/
 theorem count_map_fst (L : List Ev) (i : ℕ) :
     (L.map Prod.fst).count i = (L.filter (fun e => e.1 == i)).length := by
-  rw [count_eq_countP, countP_map, countP_eq_length_filter]
+  Ξ count_eq_countP, countP_map, countP_eq_length_filter
   rfl
 
 /-- **The two events of a chord**: in a list where every event's partner (other end first) is
@@ -78,17 +80,17 @@ theorem partner_of_sublist {L : List Ev} (hkey : ∀ e ∈ L, e.2.1 ≠ e.2.2)
     (hpair : ∀ e ∈ L, (e.1, e.2.2, e.2.1) ∈ L)
     (htwice : ∀ e ∈ L, (L.map Prod.fst).count e.1 = 2) {e₁ e₂ : Ev} (h : [e₁, e₂] <+ L)
     (hi : e₁.1 = e₂.1) : e₂ = (e₁.1, e₁.2.2, e₁.2.1) := by
-  have he₁ : e₁ ∈ L := h.subset (by simp)
+  have he₁ : e₁ ∈ L := h.subset (✓)
   set F := L.filter (fun e => e.1 == e₁.1) with hF
   have hlen : F.length = 2 := by rw [hF, ← count_map_fst]; exact htwice e₁ he₁
   have hsub : [e₁, e₂] <+ F := by
-    rw [hF, sublist_filter_iff]
+    Ξ hF, sublist_filter_iff
     refine ⟨[e₁, e₂], h, ?_⟩
-    simp [hi]
+    Θ hi
   have heq : [e₁, e₂] = F := hsub.eq_of_length (by rw [hlen]; rfl)
   have hp : (e₁.1, e₁.2.2, e₁.2.1) ∈ F := by
-    rw [hF, mem_filter]
-    exact ⟨hpair e₁ he₁, by simp⟩
+    Ξ hF, mem_filter
+    exact ⟨hpair e₁ he₁, ✓⟩
   rw [← heq] at hp
   rcases mem_cons.1 hp with hp | hp
   · exfalso

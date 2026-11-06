@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranPzRam
 public import Chazelle.Core.NFLocateSpec
 public import Chazelle.Core.ShearInv
@@ -20,7 +22,7 @@ open Chazelle.Chain (sideE)
 
 @[expose] public section
 
-theorem wr_intIdx : wr Bdir intIdx = true := by decide
+theorem wr_intIdx : wr Bdir intIdx = true := ⌖
 
 theorem pz_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
     (c : Config) (hw : WordsBounded W c) {MD e h : ℕ} (h50 : c.nreg 50000 = MD)

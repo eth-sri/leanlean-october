@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOraclePlan
 
 /-!
@@ -73,7 +75,7 @@ include h in
 theorem sub_he' : ee < L ∨ (ee = L ∧ eh = 0) := by
   rcases h.hee with ⟨h0, h1⟩ | ⟨-, h1, -⟩
   · exact Or.inr ⟨h1, h0⟩
-  · exact Or.inl (by omega)
+  · exact Or.inl (⋄)
 
 include h in
 theorem sub_keyCeil : keyCeil ee ((interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩) = L := by

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoBruteMath
 
 /-!
@@ -64,19 +66,19 @@ theorem sPrepL_val (m f : ℕ → ℕ) {md base cnt : ℕ} (_h1 : md < 241300 �
     simp only [sPrepL, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;>
       omega)⟩ <;>
-  · simp only [sPrepL, regB, regI, upd, sO, qD, sw]
+  · ϴ sPrepL, regB, regI, upd, sO, qD, sw
     simp (disch := omega) only [ite_eq_right, ite_true, Nat.reduceAdd]
 
 theorem sPrepL_ok (m f : ℕ → ℕ) (md base cnt : ℕ) (hW : 0 ≤ W) : okB W m (sPrepL md base cnt) f := by
-  simp only [sPrepL, okB, okI]
-  exact ⟨iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num),
-    iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num),
-    iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num),
-    iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num),
-    iscr_sw (by norm_num) (by norm_num), ⟨iscr_sw (by norm_num) (by norm_num), hW⟩, trivial⟩
+  ϴ sPrepL, okB, okI
+  exact ⟨iscr_sw (⊛) (by norm_num), iscr_sw (by norm_num) (by norm_num),
+    iscr_sw (⊛) (by norm_num), iscr_sw (by norm_num) (by norm_num),
+    iscr_sw (⊛) (by norm_num), iscr_sw (by norm_num) (by norm_num),
+    iscr_sw (⊛) (by norm_num), iscr_sw (by norm_num) (by norm_num),
+    iscr_sw (⊛) (by norm_num), ⟨iscr_sw (by norm_num) (by norm_num), hW⟩, trivial⟩
 
-set_option maxHeartbeats 8000000 in
-set_option maxRecDepth 20000 in
+
+
 /-- **The shot from `sO`** and the offer of its hit. -/
 theorem symShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     {Ok : Polygon → Model → Prop} (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands)
@@ -117,12 +119,12 @@ theorem symShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   -- 1. prepare the shot block
   refine IRS.seq (K₂ := ShotList.shotCost (F (c₀.nreg (sw 5))) K + (offerK + 2))
     (IRS.block (sPrepL md base cnt) hI (sPrepL_ok _ _ _ _ _ (Nat.zero_le _))) ?_ |>.mono
-      (by simp [sPrepL, symShotK]) (fun _ h => h)
+      (⊚ sPrepL, symShotK) (fun _ h => h)
   rintro c₁ hI₁ - - hc1
   obtain ⟨p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, po⟩ := sPrepL_val c.nmem c.nreg
     (md := md) (base := base) (cnt := cnt) (by unfold SRegOK at rmd; omega)
     (by unfold SRegOK at rbase; omega) (by unfold SRegOK at rcnt; omega)
-  have hm1 : c₁.nmem = c.nmem := by rw [hc1]
+  have hm1 : c₁.nmem = c.nmem := Ρ hc1
   have q1 : ∀ q, (q < 241300 ∨ 241309 < q) → c₁.nreg q = c.nreg q := fun q hq => by
     rw [hc1]; exact po q hq
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := q1 _ (by unfold ALLOC; omega)
@@ -142,9 +144,9 @@ theorem symShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       (by rw [hc1]; exact p5)
   obtain ⟨hmd0, hmdC, hmdW, hmdA⟩ := hmd
   -- 2. the precondition of the shot
-  have hlow : ∀ a, a < c₀.nreg ALLOC → c₁.nmem a = c₀.nmem a := hI₁.hm
+  have hlow := hI₁.hm
   have hX1 : X.holds P c₁.nmem (c₁.nreg (RS + 8)) (c₁.nreg ALLOC) := by
-    rw [c8]
+    Ξ c8
     exact X.mono _ _ _ _ _ hI₁.hA (X.local_ _ _ _ _ _ (fun a ha => (hlow a ha).symm) hX)
   have hcap1 : c₁.nreg (RS + 7) ≤ X.cap P c₁.nmem (c₁.nreg (RS + 8)) := by
     rw [c7, c8, hXl P c₀.nmem c₁.nmem _ _ (fun a ha => hlow a ha) hX]; exact hcap
@@ -156,18 +158,18 @@ theorem symShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       Or.inr ⟨by rw [hev]; exact innerPt_box C hz1 hz2, fun x hx => by cases hx⟩,
       by rw [hev]; exact hz2, ?_⟩
     · rw [c0, hm1] at hH'
-      rw [← NFLoc.hostAt_unique hmdC.1 hH']
+      Ξ ← NFLoc.hostAt_unique hmdC.1 hH'
       exact hreg
     · rw [c2'] at hj
-      rw [c1', hm1, c7]
+      Ξ c1', hm1, c7
       exact harcs j hj
     · rw [c9] at hj; omega
-    · rw [hhl, hev]
+    · Ξ hhl, hev
       intro p t hp ht0 ht1 hpt
       exact absurd hpt (walk_ne_of_dom C hP hzD hp ht0 ht1)
   -- 3. the shot
   refine IRS.seq (shot_irs hsh hBs hXl hI₁ pre (by
-    rw [c7, c2', hA1]; unfold symShotK at hroom; omega)) ?_ |>.mono (by rw [c7, c2']) (fun _ h => h)
+    rw [c7, c2', hA1]; unfold symShotK at hroom; omega)) ?_ |>.mono (Ρ c7, c2') (fun _ h => h)
   rintro c₂ hI₂ - hAb ⟨hpost, k2, hA2, hm2⟩
   have hmdC1 : ModelDescAt c₁.nmem (c₁.nreg RS) (Qof P) (chainModel C) := by
     rw [c0, hm1]; exact hmdA
@@ -188,7 +190,7 @@ theorem symShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     fun r h1 h2 h3 => k2 r (not_oracle_sw h1 h2) (by unfold ALLOC; omega) h3
   have keepc : ∀ r, 240000 ≤ r → r < 250000 → (r < RS ∨ RS + 299 < r) →
       c₂.nreg r = c.nreg r :=
-    fun r h1 h2 h3 => (keep2 r h1 h2 (by omega)).trans (q1 r (by unfold RS at h3; omega))
+    fun r h1 h2 h3 => (keep2 r h1 h2 (⋄)).trans (q1 r (by unfold RS at h3; omega))
   have t2 : c₂.nreg tg = c.nreg tg := keepc _ rtg.1 rtg.2.1 (by unfold RS; have := rtg.2.2.1; omega)
   have d2 : c₂.nreg qD = c.nreg qD := keepc _ (by unfold qD sw; norm_num)
     (by unfold qD sw; norm_num) (by unfold qD RS sw; omega)
@@ -199,7 +201,7 @@ theorem symShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have hacc2 : AccOK P accA Mod R₀ z σ L c₂ := hacc.transport a2
   have hA2' : c.nreg ALLOC ≤ c₂.nreg ALLOC := hA1 ▸ hA2
   have hm2' : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
-    rw [hm2 a (by omega), hm1]
+    rw [hm2 a (⋄), hm1]
   have hctx2 : ChainCtx P W c₂ dsc C := hctx.transport cd2 hm2' hA2'
   have k0₂ : c₂.nreg K0 = 0 := (hK.fix hI₂).1
   -- the completeness of the shot
@@ -226,7 +228,7 @@ theorem symShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     refine (IRS.ifT (by rw [k0₂]; exact hflag) (offer_irs (L := L) (τ := t) (Mod := Mod) hI₂ hK hG
       (by unfold hostWords at hWh; omega)
       ⟨by unfold accA sw; norm_num, by unfold accA sw; norm_num⟩
-      ⟨rdsc.1, rdsc.2.1, by norm_num, by norm_num, by norm_num, by norm_num, rtg.1, rtg.2.1,
+      ⟨rdsc.1, rdsc.2.1, ⊛, by norm_num, by norm_num, by norm_num, rtg.1, rtg.2.1,
         by unfold qD sw; norm_num, by unfold qD sw; norm_num⟩
       ⟨by unfold accA; have := rdsc.2.2.2; unfold sw; omega, by unfold accA sw; omega,
         by unfold accA sw; omega, by unfold accA; have := rtg.2.2.2; unfold sw; omega,
@@ -234,23 +236,23 @@ theorem symShot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       (by rw [d2]; exact hacc2) (by rw [t2]; exact htag) (by rw [t2, hMod]; exact hctx2)
       (by rw [t2, hMod]; exact hR) (by rw [t2, hMod]; exact he2)
       (by rw [t2, hMod]; exact hpp2) (by rw [t2, hMod, d2]; exact hpos2)
-      (by rw [← hR]; exact hz2) hroom2)).mono (by omega) ?_
+      (by rw [← hR]; exact hz2) hroom2)).mono (⋄) ?_
     rintro c' ⟨hacc', k3, hA3, hm3⟩
     rw [d2] at hacc'
     refine ⟨insert t L, hacc', Or.inr ⟨t, rfl, hFH.1, ?_⟩, fun hf hlo' => ?_,
       fun r hr hrs hra hrA => ?_, hA2'.trans hA3, fun a ha => by
-        rw [hm3 a (by omega)]; exact hm2' a ha⟩
-    · rw [← hpos2]
+        rw [hm3 a (⋄)]; exact hm2' a ha⟩
+    · Ξ ← hpos2
       refine walk_hit_onCB C (Qof P) he2 hpp2 ?_
       rw [hpos2, rayPt_snd]; exact hzt
     · obtain ⟨-, ht⟩ := complete hf hlo'
-      rw [← ht t hFH]
+      Ξ ← ht t hFH
       exact Set.mem_insert _ _
     · rw [k3 r hr hra hrA]; exact frame2 r hr hrs hrA
   · refine (IRS.ifF hflag (IRS.skip (K := offerK) hI₂ ⟨L, hacc2, Or.inl rfl, fun hf hlo' => ?_,
-      fun r hr hrs hra hrA => frame2 r hr hrs hrA, hA2', hm2'⟩)).mono (by omega) (fun _ h => h)
+      fun r hr hrs hra hrA => frame2 r hr hrs hrA, hA2', hm2'⟩)).mono (⋄) (fun _ h => h)
     rw [k0₂] at hflag
-    exact absurd (complete hf hlo').1 (by omega)
+    exact absurd (complete hf hlo').1 (⋄)
 
 end
 

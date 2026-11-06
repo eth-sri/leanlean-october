@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepMachine7
 
 /-!
@@ -53,7 +55,7 @@ theorem end_not_mem_dom {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChor
     {c : Set Point} (hc : c ∈ S₂) :
     Merge.lend c ∉ J.whole.dom ∧ Merge.rend c ∉ J.whole.dom := by
   obtain ⟨y, l, r, hH, hy, -, hl, hr⟩ := Merge.augChords_spec (hS₂ hc)
-  rw [hl, hr]
+  Ξ hl, hr
   exact ⟨fun hd => hH.left_not (dom_right J hd hy), fun hd => hH.right_not (dom_right J hd hy)⟩
 
 /-- **A non-stop chord has an attachment on the open right stretch.** -/
@@ -155,14 +157,14 @@ theorem next_event_origin (hP : J.P.Simple)
           ((σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c)) ∧
           a ∈ J.right.set ∧ a ≠ J.shared) ∨ a = J.right.top) := by
   have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hF.2.1
+  have hFs := hF.2.1
   have hvD : J.shared ∉ J.whole.dom := fun hd =>
     J.whole.not_mem_set_of_mem_dom hd (J.left_set_subset J.shared_mem_left)
   -- the stretch attachment of `e`
   obtain ⟨pB, tB, heB, hB0, hBL, hBr, hBv⟩ :=
     stretch_end J hP hS₂.2.1 hS₂.1 he (hstop e he heK)
   have hLK : ((rL1 J + rL2 J : ℕ) : ℝ) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pK + tK) := by linarith
+      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pK + tK) := ⟡
   have heKB : sidePt (chainModel J.whole).W pK tK ≠ sidePt (chainModel J.whole).W pB tB := by
     intro h
     have := off_right_pt J hP hS₂.2.1 hS₂.1 hpK htK0 htK1 (by rw [h]; exact hBr)
@@ -178,7 +180,7 @@ theorem next_event_origin (hP : J.P.Simple)
     exact ⟨pb, tb, hb, hbL⟩
   obtain ⟨h, hh, hhK⟩ := next_event_detected J hP hS₂ hF hG hL hvalid hp₀ ht₀ hnc₀ hfG₀ ho₀
     hpK htK0 htK1 hoK hgap he heK heB heKB hB0 hBL hnobr
-  have hhF : h ∈ F₂plus J S₂ := hh.1
+  have hhF := hh.1
   refine ⟨h, hhF, hhK, ?_⟩
   have hns := hstop h hhF hhK
   rcases cand_cases J hS₂.2.1 hh with ⟨c, hc, htouch, hcase⟩ | ⟨σ, hσ, hfree, rfl⟩ |
@@ -188,12 +190,12 @@ theorem next_event_origin (hP : J.P.Simple)
       · by_contra hr
         exact hns (Or.inr ⟨c, hc, _, 1, Or.inl ⟨rfl, rfl⟩, hr, hfree, rfl⟩)
       · intro hlv
-        exact hns (Or.inl ⟨1, Or.inl rfl, by rw [← hlv]; exact hfree, by rw [hlv]⟩)
+        exact hns (Or.inl ⟨1, Or.inl rfl, by rw [← hlv]; exact hfree, Ρ hlv⟩)
     · refine ⟨_, -1, Or.inr rfl, hfree, rfl, Or.inl ⟨c, hc, htouch, Or.inr ⟨rfl, rfl⟩, ?_, ?_⟩⟩
       · by_contra hr
         exact hns (Or.inr ⟨c, hc, _, -1, Or.inr ⟨rfl, rfl⟩, hr, hfree, rfl⟩)
       · intro hlv
-        exact hns (Or.inl ⟨-1, Or.inr rfl, by rw [← hlv]; exact hfree, by rw [hlv]⟩)
+        exact hns (Or.inl ⟨-1, Or.inr rfl, by rw [← hlv]; exact hfree, Ρ hlv⟩)
   · exact absurd (Or.inl ⟨σ, hσ, hfree, rfl⟩) hns
   · exact ⟨_, σ, hσ, hfree, rfl, Or.inr rfl⟩
 

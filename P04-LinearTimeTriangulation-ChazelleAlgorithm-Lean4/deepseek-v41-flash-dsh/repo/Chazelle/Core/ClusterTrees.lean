@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterEnc
 public import Chazelle.Core.ClusterBfs
 public import Chazelle.Core.ClusterSplitMath
@@ -32,7 +36,7 @@ omit [Fintype F] [DecidableEq F] in
 theorem reach_all (hM : M.Connected) (hG : EnvEnc G M (fun v => (v : ℕ)) (fun d => (d : ℕ)))
     (hdb : ∀ d, d < N → G.db d ≠ 1) (hvb : ∀ v, v < μ → G.vb v ≠ 1) (u w : Fin μ) :
     G.Reach u w := by
-  rw [hG.reach_iff]
+  Ξ hG.reach_iff
   obtain ⟨p⟩ := M.reachable_of_connected hM u w
   induction p with
   | nil => exact Relation.ReflTransGen.refl
@@ -62,7 +66,7 @@ theorem primal_tree (hM : M.Connected) (hμ : 0 < μ) (hGN : G.N = N)
     obtain ⟨hi, hqi⟩ := Classical.choose_spec (hq v)
     refine hI.par _ hi ?_
     by_contra h0
-    have : Classical.choose (hq v) = 0 := by omega
+    have : Classical.choose (hq v) = 0 := ⋄
     rw [this, hI.q0] at hqi
     exact hv hqi.symm
   have hqv : ∀ v : Fin μ, q (Classical.choose (hq v)) = v := fun v =>
@@ -81,7 +85,7 @@ theorem primal_tree (hM : M.Connected) (hμ : 0 < μ) (hGN : G.N = N)
     obtain ⟨-, -, hh, -⟩ := hpar v (hne v hv)
     rw [hqv] at hh
     apply Fin.ext
-    rw [← hG.head (pd v), (hpd v (hne v hv)).2]
+    Ξ ← hG.head (pd v), (hpd v (hne v hv)).2
     exact hh
   have hlev : ∀ v : Fin μ, v ≠ r → lev (M.vert (pd v)) + 1 = lev v := by
     intro v hv
@@ -89,7 +93,7 @@ theorem primal_tree (hM : M.Connected) (hμ : 0 < μ) (hGN : G.N = N)
     rw [hqv] at hvj hlj
     have : ((M.vert (pd v) : Fin μ) : ℕ) = q j := by
       rw [← hG.vert (pd v), (hpd v (hne v hv)).2]; exact hvj
-    rw [this, hlj]
+    Ξ this, hlj
   refine ⟨⟨r, fun v => lev v, fun v => M.opp (pd v), hI.lev0, fun v hv => ?_,
     fun v hv => ?_⟩, rfl, fun v => rfl, fun v hv => ?_, fun d => ?_, fun v => ?_⟩
   · show M.vert (M.opp (pd v)) = v
@@ -98,13 +102,13 @@ theorem primal_tree (hM : M.Connected) (hμ : 0 < μ) (hGN : G.N = N)
     rw [M.head_opp]; exact hlev v hv
   · refine ⟨(hpd v (hne v hv)).1, ?_, ?_⟩
     · show ((M.opp (pd v) : Fin N) : ℕ) = G.opp (par v)
-      rw [← (hpd v (hne v hv)).2, hG.opp]
-    · rw [SpanTree.parent_of_ne _ hv]
+      Ξ ← (hpd v (hne v hv)).2, hG.opp
+    · Ξ SpanTree.parent_of_ne _ hv
       show ((M.head (M.opp (pd v)) : Fin μ) : ℕ) = G.vert (par v)
-      rw [M.head_opp, ← (hpd v (hne v hv)).2, hG.vert]
+      Ξ M.head_opp, ← (hpd v (hne v hv)).2, hG.vert
   · show lev (M.head d) ≤ lev (M.vert d) + 1
     obtain ⟨i, hi, hqi⟩ := hq (M.vert d)
-    have := hI.lev_head_le hi (hGN ▸ d.2) (by rw [hG.vert, hqi]) (hdb _ d.2)
+    have := hI.lev_head_le hi (hGN ▸ d.2) (Ρ hG.vert, hqi) (hdb _ d.2)
       (by rw [hG.head]; exact hvb _ (M.head d).2)
     rw [hG.head, hqi] at this
     exact this
@@ -114,7 +118,7 @@ theorem primal_tree (hM : M.Connected) (hμ : 0 < μ) (hGN : G.N = N)
     have h2 := hI.tn
     have h3 : G.nv ≤ μ := by
       by_contra h
-      obtain ⟨w, hw⟩ := hG.eV_surj μ (by omega)
+      obtain ⟨w, hw⟩ := hG.eV_surj μ (⋄)
       have := w.2
       omega
     rw [hqi] at h1
@@ -175,7 +179,7 @@ theorem dual_cotree (hM : M.Connected) (hN : 0 < N) (hGN : G.N = 3 * N) (hGnv : 
     constructor
     · rintro ⟨x, hx, rfl, rfl, -, -⟩
       refine ⟨x, ?_, rfl, rfl⟩
-      rw [SpanTree.mem_coDarts]
+      Ξ SpanTree.mem_coDarts
       exact fun h => hx ((hdb x).mpr h)
     · rintro ⟨x, hx, rfl, rfl⟩
       refine ⟨x, fun h => (SpanTree.mem_coDarts TS).mp hx ((hdb x).mp h), rfl, rfl,
@@ -200,7 +204,7 @@ theorem dual_cotree (hM : M.Connected) (hN : 0 < N) (hGN : G.N = 3 * N) (hGnv : 
       exact Finset.mem_image.mpr ⟨i, Finset.mem_range.mpr hi, hqi⟩
     have := Finset.card_le_card hsub
     rw [Finset.card_range] at this
-    exact this.trans (Finset.card_image_le.trans (by rw [Finset.card_range]))
+    exact this.trans (Finset.card_image_le.trans (Ρ Finset.card_range))
   subst t
   set r0 : Fin N := ⟨0, hN⟩
   have hne : ∀ g : Fin N, g ≠ r0 → (g : ℕ) ≠ 0 := fun g hg h => hg (Fin.ext h)
@@ -209,7 +213,7 @@ theorem dual_cotree (hM : M.Connected) (hN : 0 < N) (hGN : G.N = 3 * N) (hGnv : 
     obtain ⟨hi, hqi⟩ := Classical.choose_spec (hq g)
     refine hI.par _ hi ?_
     by_contra h0
-    have : Classical.choose (hq g) = 0 := by omega
+    have : Classical.choose (hq g) = 0 := ⋄
     rw [this, hI.q0] at hqi
     exact hne g hg hqi.symm
   have hqv : ∀ g : Fin N, q (Classical.choose (hq g)) = g := fun g =>
@@ -224,13 +228,13 @@ theorem dual_cotree (hM : M.Connected) (hN : 0 < N) (hGN : G.N = 3 * N) (hGnv : 
     if hg : g ≠ r0 then Classical.choose (hdec g hg) else .inl r0
   have hfp : ∀ g : Fin N, g ≠ r0 → enc N (fp g) = par g := by
     intro g hg
-    simp only [fp, dite_eq_left hg]
+    ϴ fp, dite_eq_left hg
     exact Classical.choose_spec (hdec g hg)
   have hmem : ∀ g : Fin N, g ≠ r0 → fp g ∈ TS.coDarts := by
     intro g hg
     obtain ⟨-, hdb', -, -⟩ := hpar g hg
     rw [hqv, ← hfp g hg] at hdb'
-    rw [SpanTree.mem_coDarts]
+    Ξ SpanTree.mem_coDarts
     exact fun h => hdb' ((hdb _).mpr h)
   have hhead : ∀ g : Fin N, g ≠ r0 → (star M).face ((star M).opp (fp g)) = g := by
     intro g hg
@@ -243,7 +247,7 @@ theorem dual_cotree (hM : M.Connected) (hN : 0 < N) (hGN : G.N = 3 * N) (hGnv : 
     rw [hqv, ← hfp g hg, hG.vert] at hvj
     rw [hqv] at hlj
     have : (((star M).face (fp g) : Fin N) : ℕ) = q j := hvj
-    rw [this, hlj]
+    Ξ this, hlj
   refine ⟨rfl, ⟨r0, fp, fun g => lev g, hI.lev0, hmem, hhead, hlev⟩, rfl,
     fun g hg => ⟨?_, hfp g hg⟩, ⟨hN, fun i hi => ?_, fun i hi j hj hij => hI.qinj i hi j hj hij,
     fun i hi0 hi => ?_⟩, fun g => ?_⟩
@@ -254,13 +258,13 @@ theorem dual_cotree (hM : M.Connected) (hN : 0 < N) (hGN : G.N = 3 * N) (hGnv : 
   · -- the parents agree
     unfold BTree.up BTree.root
     simp only
-    rw [hI.q0]
+    Ξ hI.q0
     by_cases hg : g = r0
     · subst hg
-      simp [CoTree.parent]
+      Θ CoTree.parent
       intro h; exact absurd rfl h
     · have hg0 := hne g hg
-      rw [ite_eq_right hg0, CoTree.parent_of_ne _ hg, ← hfp g hg, hG.vert]
+      Ξ ite_eq_right hg0, CoTree.parent_of_ne _ hg, ← hfp g hg, hG.vert
       rfl
 
 end dual

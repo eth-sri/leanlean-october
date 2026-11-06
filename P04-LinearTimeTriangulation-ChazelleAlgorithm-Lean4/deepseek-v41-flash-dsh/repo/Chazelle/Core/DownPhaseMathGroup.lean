@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMathWalk
 
 /-!
@@ -77,11 +79,11 @@ theorem ptSym_rep {N : NF} {R : Set Point} (hN : IsNF (interiorModel Q) Q N)
     RepPt li Q (N.F (interiorModel Q) Q) R i (ptSym li Q.n x isEnd) := by
   obtain ⟨c, hc, hxc⟩ := hx
   obtain ⟨-, hA, ek, eh, hh, hy⟩ := chordPos_attach hN hc hxc
-  have hfl : ⌊(interiorModel Q).key Q x⌋₊ = x.edge := by rw [ek, floor_add hA.2.1 hA.2.2.1]
+  have hfl : ⌊(interiorModel Q).key Q x⌋₊ = x.edge := Ρ ek, floor_add hA.2.1 hA.2.2.1
   right
   refine ⟨hex, x.hgt - 1, by rw [eh]; simpa using hh, ?_, ?_⟩
   · rw [hki, ek, hostPt_eq _ hA.2.1 hA.2.2.1, eh, Nat.add_sub_cancel]; exact hy.symm
-  · rw [hki]
+  · Ξ hki
     by_cases hb : (isEnd && atVtx li Q.n x) = true
     · have hb' := hb
       simp only [Bool.and_eq_true] at hb'
@@ -91,7 +93,7 @@ theorem ptSym_rep {N : NF} {R : Set Point} (hN : IsNF (interiorModel Q) Q N)
       unfold ptSym; rw [ite_eq_left hb, hfl]
     · right
       refine ⟨fun ⟨hint, hAp⟩ => hb ?_, ?_⟩
-      · simp only [Bool.and_eq_true]
+      · ϴ Bool.and_eq_true
         exact ⟨(hend hint).2 hAp, (atVtx_iff hN hdh hli ⟨c, hc, hxc⟩).2 hint⟩
       · unfold ptSym; rw [ite_eq_right hb, hfl]
 

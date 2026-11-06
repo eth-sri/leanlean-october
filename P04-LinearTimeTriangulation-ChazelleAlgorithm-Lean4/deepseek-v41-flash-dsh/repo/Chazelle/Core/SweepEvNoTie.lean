@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvAnchor
 
 /-!
@@ -119,10 +121,10 @@ theorem noTieV (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merg
     (hpt.trans J.whole_vertex_m₁.symm)
   have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
   have hτ := tpos_lt J.whole J.m₁
-  have hp : i + 6 < (chainModel J.whole).W.n := hA.1
+  have hp := hA.1
   have hg : gW J < (chainModel J.whole).W.n := by unfold gW; omega
   have hoff : oW J (((i + 6 : ℕ) : ℝ) + 0) = (dOf (chainModel J.whole).W.n (gW J) (i + 6) : ℝ) :=
-    by rw [oW, off_key' hg hp le_rfl one_pos, add_zero]
+    Ρ oW, off_key' hg hp le_rfl one_pos, add_zero
   rw [hoff, Lst, rL1_add_rL2] at hL
   have hL' : rlen J < dOf (chainModel J.whole).W.n (gW J) (i + 6) := by exact_mod_cast hL
   have hcase : i = 0 ∨ i = 2 * J.whole.m := by

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleShC
 
 /-!
@@ -58,9 +60,9 @@ def BSQ (r : ℕ) : Bool :=
 def Barc (r : ℕ) : Bool :=
   decide (140000 ≤ r ∧ r < 140014) || decide (r = 170133 ∨ r = 170142 ∨ r = 170143)
 
-theorem wr_arcOne : wr Barc arcOne = true := by decide
-theorem wr_arcTwoA : wr Barc arcTwoA = true := by decide
-theorem wr_arcTwoB : wr Barc arcTwoB = true := by decide
+theorem wr_arcOne : wr Barc arcOne = true := ⌖
+theorem wr_arcTwoA : wr Barc arcTwoA = true := ⌖
+theorem wr_arcTwoB : wr Barc arcTwoB = true := ⌖
 
 theorem barc_io {r : ℕ} (h : Barc r = true) : bandOf r ∈ ioBands ∧ r ≠ ALLOC :=
   io_of_band (by simp only [Barc, Bool.or_eq_true, decide_eq_true_eq] at h; omega)
@@ -128,8 +130,8 @@ theorem frame_chainI {c c' : Config} {k : ℕ} (hk : 14 ≤ k) (hA : c'.nreg ALL
     (ho : c'.output = c.output) : Frame ioBands c c' k := by
   have hB : ∀ r, Bchain r = true → bandOf r ∈ ioBands := fun r h => (io_of_band (by
     simp only [Bchain, Bk, Bool.or_eq_true, decide_eq_true_eq] at h; omega)).1
-  refine ⟨fun r hr' ha => ?_, fun r hr' => ?_, hm, fun a _ => by rw [hrm], ho, by omega,
-    by omega⟩
+  refine ⟨fun r hr' ha => ?_, fun r hr' => ?_, hm, fun a _ => by rw [hrm], ho, ⋄,
+    ⋄⟩
   · cases hb : Bchain r
     · exact hr r hb ha
     · exact absurd (hB r hb) hr'
@@ -142,7 +144,7 @@ theorem sub_y_le {Q : Polygon} {u L sh ee eh : ℕ} (h : SubOK Q u L sh ee eh) :
     (ee : ℝ) + (interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩ ≤ L := by
   rcases h.hee with ⟨h0, h1⟩ | ⟨h0, h1, -⟩
   · have : (interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩ = 0 := by rw [h0]; rfl
-    rw [this, h1, add_zero]
+    Ξ this, h1, add_zero
   · have := h.he.2.1
     have : (ee : ℝ) + 1 = L := by exact_mod_cast h1
     linarith

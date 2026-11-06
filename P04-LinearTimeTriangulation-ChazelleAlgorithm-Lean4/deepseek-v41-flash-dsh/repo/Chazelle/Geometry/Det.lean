@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Geometry.Basic
 
 /-!
@@ -96,7 +98,7 @@ theorem exists_lerp_of_det_eq_zero {a b c : Point} (hab : a ≠ b) (h : det a b 
   · have h2 : b.2 - a.2 ≠ 0 := by
       intro h2; apply hab; apply point_ext <;> linarith
     refine ⟨(c.2 - a.2) / (b.2 - a.2), point_ext ?_ ?_⟩
-    · simp only [lerp_fst]
+    · ϴ lerp_fst
       have : (c.1 - a.1) * (b.2 - a.2) = 0 := by rw [h1] at h; linarith
       rcases mul_eq_zero.1 this with h3 | h3
       · rw [h1]; linarith
@@ -135,8 +137,8 @@ theorem det_smul_eq_bary_combination (a b c x : Point) :
 theorem det_smul_add_smul_add_smul (a b p q r : Point) (u v w : ℝ) (huvw : u + v + w = 1) :
     det a b (u • p + v • q + w • r) = u * det a b p + v * det a b q + w * det a b r := by
   unfold det
-  simp only [add_fst, add_snd, smul_fst, smul_snd]
-  have hw : w = 1 - u - v := by linarith
+  ϴ add_fst, add_snd, smul_fst, smul_snd
+  have hw : w = 1 - u - v := ⟡
   subst hw; ring
 
 end

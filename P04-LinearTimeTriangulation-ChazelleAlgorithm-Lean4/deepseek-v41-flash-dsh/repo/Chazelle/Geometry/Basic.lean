@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Spec
 public import Mathlib.Analysis.Convex.Segment
 public import Mathlib.Analysis.Convex.Topology
@@ -112,7 +114,7 @@ theorem lerp_mem_segment (a b : Point) {t : ℝ} (h0 : 0 ≤ t) (h1 : t ≤ 1) :
 /-- The specification's closed segment is Mathlib's `segment ℝ a b`. -/
 theorem segment_eq (a b : Point) : Chazelle.segment a b = _root_.segment ℝ a b := by
   ext p
-  rw [segment_eq_image']
+  Ξ segment_eq_image'
   constructor
   · rintro ⟨t, ht0, ht1, rfl⟩
     exact ⟨t, ⟨ht0, ht1⟩, (lerp_eq_add_smul a b t).symm⟩
@@ -127,7 +129,7 @@ theorem mem_segment_iff_weights {a b p : Point} :
 
 /-- The segment is symmetric. -/
 theorem segment_comm (a b : Point) : Chazelle.segment a b = Chazelle.segment b a := by
-  rw [segment_eq, segment_eq, segment_symm]
+  Ξ segment_eq, segment_eq, segment_symm
 
 /-- The left endpoint lies on the segment. -/
 theorem left_mem_segment (a b : Point) : a ∈ Chazelle.segment a b := by
@@ -140,7 +142,7 @@ theorem right_mem_segment (a b : Point) : b ∈ Chazelle.segment a b := by
 /-- The segment is the convex hull of its endpoints. -/
 theorem segment_eq_convexHull_pair (a b : Point) :
     Chazelle.segment a b = convexHull ℝ {a, b} := by
-  rw [segment_eq, convexHull_pair]
+  Ξ segment_eq, convexHull_pair
 
 /-- A segment is convex. -/
 theorem segment_convex (a b : Point) : Convex ℝ (Chazelle.segment a b) := by
@@ -163,7 +165,7 @@ theorem isCompact_convexHull_of_finite {s : Set Point} (hs : s.Finite) :
 
 /-- A segment is compact. -/
 theorem isCompact_segment (a b : Point) : IsCompact (Chazelle.segment a b) := by
-  rw [segment_eq_convexHull_pair]
+  Ξ segment_eq_convexHull_pair
   exact isCompact_convexHull_of_finite ((Set.finite_singleton b).insert a)
 
 /-- A segment is closed. -/
@@ -185,7 +187,7 @@ theorem isBoundedSet_iff {S : Set Point} : IsBoundedSet S ↔ Bornology.IsBounde
   constructor
   · rintro ⟨R, hR⟩
     refine isBounded_iff_forall_norm_le.2 ⟨R, fun p hp => ?_⟩
-    rw [norm_prod_le_iff, Real.norm_eq_abs, Real.norm_eq_abs]
+    Ξ norm_prod_le_iff, Real.norm_eq_abs, Real.norm_eq_abs
     exact hR p hp
   · intro h
     obtain ⟨C, hC⟩ := isBounded_iff_forall_norm_le.1 h

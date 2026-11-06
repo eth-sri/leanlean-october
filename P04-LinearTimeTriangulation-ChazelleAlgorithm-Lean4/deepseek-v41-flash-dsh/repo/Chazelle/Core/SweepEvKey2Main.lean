@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvKey2Fin
 
 /-!
@@ -33,24 +35,24 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 /-! ## Register sets -/
 
 theorem selR_KR {r : ℕ} (h : SelR r) : KR r := by
-  simp only [SelR, OffR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, sw] at h
+  ϴ' SelR, OffR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, sw at h
   simp only [KR, kE, kH, kN, kL, sP, dF, lC, sw]; omega
 
 theorem preR_KR {r : ℕ} (h : PreR r) : KR r := by
-  simp only [PreR, LblR, kE, kH, dF, kqB, kqA, kqO, kqN, kqL, sw] at h
+  ϴ' PreR, LblR, kE, kH, dF, kqB, kqA, kqO, kqN, kqL, sw at h
   simp only [KR, kE, kH, kN, kL, sP, dF, lC, sw]; omega
 
 theorem skR_KR {r : ℕ} (h : SkR r) : KR r := by
-  simp only [SkR, KStR, LblR, sP, kqSE, kqSH, kqO, kqA, kqX, kqV, kqY, kqN, kqL, sw] at h
+  ϴ' SkR, KStR, LblR, sP, kqSE, kqSH, kqO, kqA, kqX, kqV, kqY, kqN, kqL, sw at h
   simp only [KR, kE, kH, kN, kL, sP, dF, lC, sw]; omega
 
 theorem lbl_KR {r : ℕ} (h : LblR kN kL r) : KR r := by
-  simp only [LblR, kN, kL, sw] at h
+  ϴ' LblR, kN, kL, sw at h
   simp only [KR, kE, kH, kN, kL, sP, dF, lC, sw]; omega
 
 theorem lbl_not {r : ℕ} (h : LblR kN kL r) :
     ¬ SelR r ∧ ¬ PreR r ∧ ¬ SkR r ∧ r ≠ kqX ∧ r ≠ kqY ∧ r ≠ lC ∧ 240000 ≤ r ∧ r < 250000 := by
-  simp only [LblR, kN, kL, sw] at h
+  ϴ' LblR, kN, kL, sw at h
   simp only [SelR, OffR, PreR, SkR, KStR, LblR, kqF, kqE, kqH, kqO, kqSE, kqSH, kqX, kqV, kqY,
     kE, kH, dF, kqB, kqA, kqN, kqL, sP, lC, sw]
   omega
@@ -61,17 +63,17 @@ theorem sel_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
     (hH : CandHyp P J c) (hroom : c.nreg ALLOC + 22100 ≤ W) :
     IRS P W c₀ kqSel c 22061 (fun d => SelInv P J c d True True) := by
   unfold kqSel
-  refine IRS.seq (K₁ := 8) (K₂ := 22053) (selB_irs (J := J) hI E.hK (by omega)) ?_
+  refine IRS.seq (K₁ := 8) (K₂ := 22053) (selB_irs (J := J) hI E.hK (⋄)) ?_
   rintro d hId - hA hS
   refine IRS.seq (K₁ := 11029) (K₂ := 11024) (selS_irs E.hK hH (E.ctxW' hId) (E.gw' hId)
-    (kqGW_lt J) hId hS (by omega)) ?_
+    (kqGW_lt J) hId hS (⋄)) ?_
   rintro d' hId' - hA' hS'
-  exact selW_irs E.hK hH (E.ctxW' hId') (E.gw' hId') (kqGW_lt J) hId' hS' (by omega)
+  exact selW_irs E.hK hH (E.ctxW' hId') (E.gw' hId') (kqGW_lt J) hId' hS' (⋄)
 
 /-! ## The next key -/
 
-set_option maxHeartbeats 32000000 in
-set_option maxRecDepth 100000 in
+
+
 /-- **The next key.** -/
 theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
     (hb : c.nreg bF = 1 → PosW P J (c.nreg bE) (c.nreg bH))
@@ -150,7 +152,7 @@ theorem key_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
     have hB5 : d₅.nreg kqB ≤ 1 := by rw [e5 kqB (by simp)]; exact hB1
     refine IRS.seq (K₁ := 9) (K₂ := 20) (fin_irs hI₅ E.hK hB5 hA5) ?_
     rintro d₆ hI₆ hA₆ hA₆' ⟨f1, f2, f3, f4⟩
-    have e6 : ∀ r, ¬ LblR kN kL r → d₆.nreg r = d₅.nreg r := f1
+    have e6 := f1
     have eLB6 : d₆.nreg lB = c.nreg lB := by
       rw [e6 lB (by simp only [LblR, lB, kN, kL, sw]; omega), e5 lB (by simp), e0 lB (by simp)]
     have eLC6 : d₆.nreg lC = c.nreg lC := by

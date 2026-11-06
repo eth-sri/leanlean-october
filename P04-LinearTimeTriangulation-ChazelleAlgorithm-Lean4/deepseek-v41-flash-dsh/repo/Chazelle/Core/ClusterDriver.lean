@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterSplitTail
 public import Chazelle.Core.ClusterSplitCorrect
 public import Chazelle.Core.ClusterStack
@@ -27,7 +31,7 @@ variable {μ N : ℕ} {F : Type} [Fintype F] [DecidableEq F] {M : CombMap (Fin �
 theorem desc_interval (hR : R.OK) (hRn : R.n = N) (hup : ∀ g : Fin N, R.up g = C.parent g)
     {pre slot : ℕ → ℕ} (hP : R.PreInv pre slot R.n) (g h : Fin N) :
     C.IsDesc h g ↔ pre g ≤ pre h ∧ pre h < pre g + (R.sub g).card := by
-  rw [isDesc_iff_anc hup, hP.anc_iff hR (by rw [hRn]; exact g.2) (by rw [hRn]; exact h.2)]
+  Ξ isDesc_iff_anc hup, hP.anc_iff hR (by rw [hRn]; exact g.2) (by rw [hRn]; exact h.2)
 
 /-- **The climb finds a centroid.** -/
 theorem centroid_typed (hR : R.OK) (hRn : R.n = N) (hup : ∀ g : Fin N, R.up g = C.parent g)
@@ -53,7 +57,7 @@ theorem centroid_typed (hR : R.OK) (hRn : R.n = N) (hup : ∀ g : Fin N, R.up g 
     have hv := hlt (act i) (mem_items.mpr ⟨i, h1, h2, rfl⟩)
     refine ⟨?_, rfl⟩
     rw [hfN ⟨act i, hv⟩, hRn]; exact Fin.isLt _
-  have hmed : lo ≤ lo + (hi - lo) / 2 ∧ lo + (hi - lo) / 2 < hi := by omega
+  have hmed : lo ≤ lo + (hi - lo) / 2 ∧ lo + (hi - lo) / 2 < hi := ⋄
   have hy : firstN (act (lo + (hi - lo) / 2)) < R.n := (hphi _ hmed.1 hmed.2).1
   have hanc : ∀ z, z < R.n → BTree.GdN pre (fun g => (R.sub g).card)
       (fun i => pre (firstN (act i))) lo hi z → R.Anc z (firstN (act (lo + (hi - lo) / 2))) :=
@@ -87,37 +91,37 @@ theorem markStep_df {m : ℕ → ℕ} {S : SS} {lo hi lbot ltop : ℕ} {upT : �
     markStep m S lo hi lbot ltop upT u (S.bDF + x) =
       if (x : ℕ) ∈ items act (lo, hi) ∧ T.IsAnc x u then 1 else m (S.bDF + x) := by
   unfold markStep
-  rw [hlev]
+  Ξ hlev
   by_cases hin : (x : ℕ) ∈ items act (lo, hi)
   · have hw := anc_window T hup x u (hwin x hin)
     by_cases hbt : lbot ≤ min (T.level u) ltop
-    · rw [ite_eq_left hbt]
+    · Ξ ite_eq_left hbt
       unfold markMem
       have e : (∃ x', S.bDF + (x : ℕ) = S.bDF + x' ∧ lo ≤ m (S.bPOS + x') ∧
           m (S.bPOS + x') < hi ∧ ∃ i', i' < min (T.level u) ltop + 1 - lbot ∧
             x' = upT^[i'] (upT^[T.level u - min (T.level u) ltop] u)) ↔ T.IsAnc x u := by
-        rw [← hw]
+        Ξ ← hw
         constructor
         · rintro ⟨x', hx', -, -, i', hi', rfl⟩
           refine ⟨hbt, i', hi', ?_⟩
-          have : (x : ℕ) = upT^[i'] (upT^[T.level u - min (T.level u) ltop] u) := by omega
-          rw [this, ← Function.iterate_add_apply, Nat.add_comm]
+          have : (x : ℕ) = upT^[i'] (upT^[T.level u - min (T.level u) ltop] u) := ⋄
+          Ξ this, ← Function.iterate_add_apply, Nat.add_comm
         · rintro ⟨-, i', hi', h⟩
           refine ⟨x, rfl, (hpos x x.2).mpr hin |>.1, (hpos x x.2).mpr hin |>.2, i', hi', ?_⟩
-          rw [h, ← Function.iterate_add_apply, Nat.add_comm]
+          Ξ h, ← Function.iterate_add_apply, Nat.add_comm
       by_cases ha : T.IsAnc x u
-      · rw [ite_eq_left (e.mpr ha), ite_eq_left ⟨hin, ha⟩]
-      · rw [ite_eq_right (fun h => ha (e.mp h)), ite_eq_right (fun h => ha h.2)]
-    · rw [ite_eq_right hbt, ite_eq_right]
+      · Ξ ite_eq_left (e.mpr ha), ite_eq_left ⟨hin, ha⟩
+      · Ξ ite_eq_right (fun h => ha (e.mp h)), ite_eq_right (fun h => ha h.2)
+    · Ξ ite_eq_right hbt, ite_eq_right
       rintro ⟨-, ha⟩
       exact hbt (hw.mpr ha).1
   · have hno : ¬ ((x : ℕ) ∈ items act (lo, hi) ∧ T.IsAnc x u) := fun h => hin h.1
-    rw [ite_eq_right hno]
+    Ξ ite_eq_right hno
     split_ifs
     · unfold markMem
-      rw [ite_eq_right]
+      Ξ ite_eq_right
       rintro ⟨x', hx', h1, h2, -⟩
-      have : x' = x := by omega
+      have : x' = x := ⋄
       subst this
       exact hin ((hpos x x.2).mp ⟨h1, h2⟩)
     · rfl
@@ -145,14 +149,14 @@ theorem marksF_df {a : F → Fin N} {m0 : ℕ → ℕ} {S : SS} {lo hi lbot ltop
       markStep m S lo hi lbot ltop upT u (S.bPOS + y) = m0 (S.bPOS + y) ∧
       markStep m S lo hi lbot ltop upT u (S.bLEV + y) = m0 (S.bLEV + y) := by
     intro m u hu hm y hy
-    rw [markStep_other hupl hu (hDF y hy).1, markStep_other hupl hu (hDF y hy).2]
+    Ξ markStep_other hupl hu (hDF y hy).1, markStep_other hupl hu (hDF y hy).2
     exact hm y hy
   have hv0 : m0 (S.bVERT + f) = M.vert f := hvert f
   have hv1 : m0 (S.bVERT + m0 (S.bOPP + f)) = M.head f := by
     rw [hopp f, hvert]; rfl
-  have hv2 : m0 (S.bVERT + m0 (S.bATT + f)) = M.vert (a (M.face f)) := by rw [hatt f, hvert]
+  have hv2 : m0 (S.bVERT + m0 (S.bATT + f)) = M.vert (a (M.face f)) := Ρ hatt f, hvert
   unfold marksF
-  rw [hv0, hv1, hv2]
+  Ξ hv0, hv1, hv2
   have k1 := keep m0 (M.vert f) (by rw [hSμ]; exact Fin.isLt _) (fun y _ => ⟨rfl, rfl⟩)
   have k2 := keep (markStep m0 S lo hi lbot ltop upT (M.vert f)) (M.head f)
     (by rw [hSμ]; exact Fin.isLt _) k1
@@ -166,14 +170,14 @@ theorem marksF_df {a : F → Fin N} {m0 : ℕ → ℕ} {S : SS} {lo hi lbot ltop
     unfold markN
     exact ⟨fun ⟨_, h⟩ => h, fun h => ⟨x.2, h⟩⟩
   by_cases h1 : (x : ℕ) ∈ items act (lo, hi) ∧ T.IsAnc x (M.vert (a (M.face f)))
-  · rw [ite_eq_left h1, ite_eq_left ⟨h1.1, hmk.mpr (Or.inr (Or.inr h1.2))⟩]
-  · rw [ite_eq_right h1]
+  · Ξ ite_eq_left h1, ite_eq_left ⟨h1.1, hmk.mpr (Or.inr (Or.inr h1.2))⟩
+  · Ξ ite_eq_right h1
     by_cases h2 : (x : ℕ) ∈ items act (lo, hi) ∧ T.IsAnc x (M.head f)
-    · rw [ite_eq_left h2, ite_eq_left ⟨h2.1, hmk.mpr (Or.inr (Or.inl h2.2))⟩]
-    · rw [ite_eq_right h2]
+    · Ξ ite_eq_left h2, ite_eq_left ⟨h2.1, hmk.mpr (Or.inr (Or.inl h2.2))⟩
+    · Ξ ite_eq_right h2
       by_cases h3 : (x : ℕ) ∈ items act (lo, hi) ∧ T.IsAnc x (M.vert f)
-      · rw [ite_eq_left h3, ite_eq_left ⟨h3.1, hmk.mpr (Or.inl h3.2)⟩]
-      · rw [ite_eq_right h3, ite_eq_right]
+      · Ξ ite_eq_left h3, ite_eq_left ⟨h3.1, hmk.mpr (Or.inl h3.2)⟩
+      · Ξ ite_eq_right h3, ite_eq_right
         rintro ⟨hin, hm⟩
         rcases hmk.mp hm with h | h | h
         · exact h3 ⟨hin, h⟩
@@ -190,7 +194,7 @@ theorem inClass_congr {sO sF fp pr sz sO' sF' fp' pr' sz' : ℕ → ℕ} {r0 X f
     (h8 : pr' f = pr f) (h9 : sz' f = sz f) :
     inClass sO' sF' fp' pr' sz' r0 X f κ ↔ inClass sO sF fp pr sz r0 X f κ := by
   unfold inClass
-  rw [h1, h2, h3, h4, h5, h6, h7, h8, h9]
+  Ξ h1, h2, h3, h4, h5, h6, h7, h8, h9
 
 /-! ## The static facts and the invariant of the driver -/
 
@@ -278,8 +282,8 @@ theorem enc_surj {x : ℕ} (hx : x < 3 * N) : ∃ y, enc N y = x := by
   by_cases h1 : x < N
   · exact ⟨.inl ⟨x, h1⟩, rfl⟩
   · by_cases h2 : x < 2 * N
-    · exact ⟨.inr (.inl ⟨x - N, by omega⟩), by simp only [enc]; omega⟩
-    · exact ⟨.inr (.inr ⟨x - 2 * N, by omega⟩), by simp only [enc]; omega⟩
+    · exact ⟨.inr (.inl ⟨x - N, ⋄⟩), by simp only [enc]; omega⟩
+    · exact ⟨.inr (.inr ⟨x - 2 * N, ⋄⟩), by simp only [enc]; omega⟩
 
 /-- The class-test memory facts. -/
 theorem SFacts.cpMem {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
@@ -289,14 +293,14 @@ theorem SFacts.cpMem {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
   have := hL.hSO; have := hL.hSF; have := hL.hFPAR; have := hL.hFPRE; have := hL.hFSZ
   have := hL.hNU; have := hL.hW; have := h.hN
   have hLU0 : 0 ≤ S.L * U := Nat.zero_le _
-  refine ⟨by omega, by omega, by omega, by omega, by omega, fun x hx => ?_, fun x hx => ?_,
+  refine ⟨⋄, by omega, by omega, by omega, by omega, fun x hx => ?_, fun x hx => ?_,
     fun g hg => ?_, fun g hg => ?_⟩
-  · obtain ⟨y, rfl⟩ := enc_surj (N := N) (x := x) (by omega)
+  · obtain ⟨y, rfl⟩ := enc_surj (N := N) (x := x) (⋄)
     rw [h.so, h.hN]; exact enc_lt _
-  · obtain ⟨y, rfl⟩ := enc_surj (N := N) (x := x) (by omega)
+  · obtain ⟨y, rfl⟩ := enc_surj (N := N) (x := x) (⋄)
     rw [h.sf, h.hN]; exact Fin.isLt _
-  · rw [h.hN]; exact h.fpar_lt g (by omega)
-  · rw [h.pre g (by omega), h.sz g (by omega)]
+  · rw [h.hN]; exact h.fpar_lt g (⋄)
+  · rw [h.pre g (⋄), h.sz g (by omega)]
     obtain ⟨hp1, hp2⟩ := h.R_ok.pos_spec (show g < R.n by rw [h.R_n]; omega)
     have hb := h.R_pre.bound (R.pos g) hp1
     rw [hp2, h.R_n] at hb
@@ -310,17 +314,17 @@ theorem SFacts.markMem {S : SS} {A0 U : ℕ} {m : ℕ → ℕ}
   have := hL.hLEV; have := hL.hUPT; have := hL.hPOW; have := hL.hPV; have := hL.hPOS
   have := hL.hDF; have := hL.hμU; have := hL.hW; have := hL.hLU; have := h.hμ
   have := h.pow_big
-  have hLU0 : S.L * S.μ ≤ S.L * U := Nat.mul_le_mul_left _ (by omega)
+  have hLU0 : S.L * S.μ ≤ S.L * U := Nat.mul_le_mul_left _ (⋄)
   have hSμ : S.μ = μ := h.hμ
-  refine ⟨fun x hx => by rw [hSμ]; exact h.upT_lt x (by omega), fun x hx => h.pv x (by omega),
-    fun j hj x hx => by rw [hSμ]; exact h.upt_tab j hj x (by omega), h.pow, fun x hx => ?_,
+  refine ⟨fun x hx => by rw [hSμ]; exact h.upT_lt x (⋄), fun x hx => h.pv x (by omega),
+    fun j hj x hx => by rw [hSμ]; exact h.upt_tab j hj x (⋄), h.pow, fun x hx => ?_,
     fun x hx => ?_,
-    by omega, by omega, by omega, by omega, by omega, by omega, by omega, by omega, by omega,
-    by omega, by omega⟩
-  · have := h.lev ⟨x, by omega⟩; simp only at this; rw [this]
-    have := h.lev_lt ⟨x, by omega⟩; omega
-  · have := h.lev ⟨x, by omega⟩; simp only at this; rw [this]
-    have := h.lev_lt ⟨x, by omega⟩; omega
+    ⋄, by omega, by omega, by omega, by omega, by omega, by omega, by omega, by omega,
+    ⋄, by omega⟩
+  · have := h.lev ⟨x, ⋄⟩; simp only at this; rw [this]
+    have := h.lev_lt ⟨x, ⋄⟩; omega
+  · have := h.lev ⟨x, ⋄⟩; simp only at this; rw [this]
+    have := h.lev_lt ⟨x, ⋄⟩; omega
 
 end derived
 
@@ -361,7 +365,7 @@ theorem DInv.pos_iff {S : SS} {m : ℕ → ℕ} {stk : List (ℕ × ℕ)} {fin :
       · rcases hI.sinv.rdisj q p hq hp hqp with h | h | h | h <;> omega
   · intro h
     obtain ⟨i, h1, h2, rfl⟩ := mem_items.mp h
-    rw [hI.pos_in p hp i h1 h2]
+    Ξ hI.pos_in p hp i h1 h2
     exact ⟨h1, h2⟩
 
 end inv

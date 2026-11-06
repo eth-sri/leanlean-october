@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepRamInit
 public import Chazelle.Core.SweepPrimJun
 
@@ -107,7 +111,7 @@ theorem Bjun_sw (j : ℕ) : Bjun (sw j) = false := by
   unfold sw; simp only [Bjun, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
 
 /-- `init0` writes inside `Bs0`. -/
-theorem wr_init0 : wr Bs0 init0 = true := by decide
+theorem wr_init0 : wr Bs0 init0 = true := ⌖
 
 /-- The registers `init0` writes. -/
 def B0 (r : ℕ) : Bool := decide (240090 ≤ r ∧ r < 240094) || decide (50200 ≤ r ∧ r < 50203)
@@ -119,15 +123,15 @@ def Bside (r : ℕ) : Bool := decide (240020 ≤ r ∧ r < 240050)
 def Bn (r : ℕ) : Bool := decide (240033 ≤ r ∧ r < 240036) || decide (240097 ≤ r ∧ r < 240099)
 
 /-- `init0` writes only `B0`. -/
-theorem wr_init0' : wr B0 init0 = true := by decide
+theorem wr_init0' : wr B0 init0 = true := ⌖
 /-- `initSide` writes only `Bside`. -/
-theorem wr_initSide' : wr Bside initSide = true := by decide
+theorem wr_initSide' : wr Bside initSide = true := ⌖
 /-- `nBlk` writes only `Bn`. -/
-theorem wr_nBlk' : wr Bn nBlk = true := by decide
+theorem wr_nBlk' : wr Bn nBlk = true := ⌖
 /-- `initSide` writes inside `Bs0`. -/
-theorem wr_initSide : wr Bs0 initSide = true := by decide
+theorem wr_initSide : wr Bs0 initSide = true := ⌖
 /-- `nBlk` writes inside `Bs0`. -/
-theorem wr_nBlk : wr Bs0 nBlk = true := by decide
+theorem wr_nBlk : wr Bs0 nBlk = true := ⌖
 
 /-! ## Execution of the blocks -/
 
@@ -138,10 +142,10 @@ theorem init0_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       c'.nreg 50200 = c.nreg (sw 0) ∧ c'.nreg 50201 = c.nreg (sw 1) ∧
       c'.nreg 50202 = c.nreg (sw 2) := by
   unfold init0
-  simp only [sw, Nat.reduceAdd] at *
+  ϴ' sw, Nat.reduceAdd at *
   exec_block
   all_goals try omega
-  refine ⟨by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+  refine ⟨⋄, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
 
 /-- **Side `0`** of the side selection. -/
 theorem sideT_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
@@ -154,9 +158,9 @@ theorem sideT_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       c'.nreg (sw 46) = c.nreg 50216 ∧ c'.nreg (sw 47) = c.nreg 50217 ∧
       c'.nreg (sw 48) = c.nreg 50218 ∧ c'.nreg (sw 49) = c.nreg 50219 := by
   unfold sideT
-  simp only [sw, Nat.reduceAdd] at *
+  ϴ' sw, Nat.reduceAdd at *
   exec_block
-  refine ⟨by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+  refine ⟨⋄, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
 
 /-- **Side `1`** of the side selection. -/
 theorem sideF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
@@ -169,9 +173,9 @@ theorem sideF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       c'.nreg (sw 46) = c.nreg 50211 ∧ c'.nreg (sw 47) = c.nreg 50212 ∧
       c'.nreg (sw 48) = c.nreg 50213 ∧ c'.nreg (sw 49) = c.nreg 50214 := by
   unfold sideF
-  simp only [sw, Nat.reduceAdd] at *
+  ϴ' sw, Nat.reduceAdd at *
   exec_block
-  refine ⟨by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+  refine ⟨⋄, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
 
 /-- **The side selection**: query chain descriptor, label chain descriptor, normal forms and
 correspondence constants of the side `i = sw 7`. -/
@@ -190,7 +194,7 @@ theorem initSide_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hi with h0 | h1
   · obtain ⟨c', k, ex, hk, a20, a21, a23, a24, a40, a41, a42, a43, a44, a45, a46, a47, a48, a49⟩ :=
       sideT_exec (P := P) c hw
-    refine ⟨c', k + 1, .ifLtN_true (by rw [h0, h91]; omega) ex, by omega, ?_, ?_, ?_, ?_,
+    refine ⟨c', k + 1, .ifLtN_true (by rw [h0, h91]; omega) ex, ⋄, ?_, ?_, ?_, ?_,
       fun k hk => ?_, fun k hk => ?_⟩
     · rw [h0]; exact a20
     · rw [h0]; exact a21
@@ -200,7 +204,7 @@ theorem initSide_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
     · rw [h0]; simp only [↓reduceIte]; interval_cases k <;> assumption
   · obtain ⟨c', k, ex, hk, a20, a21, a23, a24, a40, a41, a42, a43, a44, a45, a46, a47, a48, a49⟩ :=
       sideF_exec (P := P) c hw
-    refine ⟨c', k + 2, .ifLtN_false (by rw [h1, h91]; omega) ex, by omega, ?_, ?_, ?_, ?_,
+    refine ⟨c', k + 2, .ifLtN_false (by rw [h1, h91]; omega) ex, ⋄, ?_, ?_, ?_, ?_,
       fun k hk => ?_, fun k hk => ?_⟩
     · rw [h1]; exact a20
     · rw [h1]; exact a21
@@ -220,7 +224,7 @@ theorem nBlk_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       c'.nreg (sw 34) = 2 * c.nmem (c.nreg (sw 21) + 2) + 7 ∧
       c'.nreg (sw 35) = 2 * c.nmem (c.nreg (sw 2) + 2) + 7 := by
   unfold nBlk
-  simp only [sw, Nat.reduceAdd] at *
+  ϴ' sw, Nat.reduceAdd at *
   exec_block
   all_goals (config_simp; simp only [h92, h93]; omega)
 
@@ -231,13 +235,13 @@ theorem mdA_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
       (∀ r, r ≠ sw 96 → r ≠ sw 30 → r ≠ sw 97 → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold mdA ALLOC
-  simp only [sw, Nat.reduceAdd] at *
+  ϴ' sw, Nat.reduceAdd at *
   exec_block
-  refine ⟨by omega, ?_, ?_, ?_, ?_, rfl, rfl, rfl, rfl⟩
+  refine ⟨⋄, ?_, ?_, ?_, ?_, rfl, rfl, rfl, rfl⟩
   · config_simp
   · config_simp
   · config_simp
-  · intro r h1 h2 h3; config_simp; simp [h1, h2, h3]
+  · intro r h1 h2 h3; config_simp; Θ h1, h2, h3
 
 /-- The second block of `mdBlk`. -/
 theorem mdB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
@@ -246,12 +250,12 @@ theorem mdB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
       (∀ r, r ≠ sw 31 → r ≠ sw 97 → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold mdB
-  simp only [sw, Nat.reduceAdd] at *
+  ϴ' sw, Nat.reduceAdd at *
   exec_block
-  refine ⟨by omega, ?_, ?_, ?_, rfl, rfl, rfl, rfl⟩
+  refine ⟨⋄, ?_, ?_, ?_, rfl, rfl, rfl, rfl⟩
   · config_simp
   · config_simp
-  · intro r h1 h2; config_simp; simp [h1, h2]
+  · intro r h1 h2; config_simp; Θ h1, h2
 
 /-- The allocator update of `mdBlk`. -/
 theorem mdC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
@@ -259,11 +263,11 @@ theorem mdC_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
       (∀ r, r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold mdC ALLOC
-  simp only [sw, Nat.reduceAdd] at *
+  ϴ' sw, Nat.reduceAdd at *
   exec_block
-  refine ⟨by omega, ?_, ?_, rfl, rfl, rfl, rfl⟩
+  refine ⟨⋄, ?_, ?_, rfl, rfl, rfl, rfl⟩
   · config_simp
-  · intro r h1; config_simp; simp [h1]
+  · intro r h1; config_simp; Θ h1
 
 /-- **The two model descriptors**: `0` and the query chain descriptor at `A = ALLOC`, `0` and
 the label chain descriptor at `A + 6`; the allocator moves to `A + 12`. -/
@@ -289,19 +293,19 @@ theorem mdBlk_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   have n91 : sw 91 ≠ sw 96 ∧ sw 91 ≠ sw 97 ∧ sw 91 ≠ sw 30 ∧ sw 91 ≠ sw 31 ∧ sw 91 ≠ sw 98 := by
     unfold sw; omega
   obtain ⟨c₁, k₁, e₁, hk₁, a96, a30, a97, ar, am, arr, arm, ao⟩ := mdA_exec (P := P) c hw
-  rw [← hAd] at a96 a30
-  have b90 : c₁.nreg (sw 90) = 0 := by rw [ar _ n90.1 n90.2.2.1 n90.2.1, h90]
-  have b91 : c₁.nreg (sw 91) = 1 := by rw [ar _ n91.1 n91.2.2.1 n91.2.1, h91]
+  Ξ' ← hAd at a96 a30
+  have b90 : c₁.nreg (sw 90) = 0 := Ρ ar _ n90.1 n90.2.2.1 n90.2.1, h90
+  have b91 : c₁.nreg (sw 91) = 1 := Ρ ar _ n91.1 n91.2.2.1 n91.2.1, h91
   obtain ⟨c₂, k₂, e₂, hk₂, d96, d0, dv, dlo, dhi, dr, drr, drm, dout⟩ :=
     copyDesc_exec (P := P) c₁ e₁.wb_right b90 b91 (by rw [a96, a97]; exact s20)
       (by rw [a96]; omega)
-  have c90 : c₂.nreg (sw 90) = 0 := by rw [dr _ n90.1 n90.2.1 n90.2.2.2.2, b90]
-  have c91 : c₂.nreg (sw 91) = 1 := by rw [dr _ n91.1 n91.2.1 n91.2.2.2.2, b91]
+  have c90 : c₂.nreg (sw 90) = 0 := Ρ dr _ n90.1 n90.2.1 n90.2.2.2.2, b90
+  have c91 : c₂.nreg (sw 91) = 1 := Ρ dr _ n91.1 n91.2.1 n91.2.2.2.2, b91
   obtain ⟨c₃, k₃, e₃, hk₃, b31, b97, br, bm, brr, brm, bo⟩ := mdB_exec (P := P) c₂ e₂.wb_right
-  have g90 : c₃.nreg (sw 90) = 0 := by rw [br _ n90.2.2.2.1 n90.2.1, c90]
-  have g91 : c₃.nreg (sw 91) = 1 := by rw [br _ n91.2.2.2.1 n91.2.1, c91]
+  have g90 : c₃.nreg (sw 90) = 0 := Ρ br _ n90.2.2.2.1 n90.2.1, c90
+  have g91 : c₃.nreg (sw 91) = 1 := Ρ br _ n91.2.2.2.1 n91.2.1, c91
   have g96 : c₃.nreg (sw 96) = A + 6 := by
-    rw [br _ (by unfold sw; omega) (by unfold sw; omega), d96, a96]
+    Ξ br _ (by unfold sw; omega) (by unfold sw; omega), d96, a96
   have g97 : c₃.nreg (sw 97) = c.nreg (sw 21) := by
     rw [b97, dr _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega),
       ar _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega)]
@@ -311,29 +315,29 @@ theorem mdBlk_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   have ex : Exec P W mdBlk c c₅ (k₁ + (k₂ + (k₃ + (k₄ + k₅)))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
   -- memory of the final configuration
-  have mem : ∀ a, c₅.nmem a = c₄.nmem a := fun a => by rw [hm5]
+  have mem : ∀ a, c₅.nmem a = c₄.nmem a := fun a => Ρ hm5
   have m4 : ∀ a, a < A + 6 → c₄.nmem a = c₂.nmem a := fun a ha => by
-    rw [flo a (by rw [g96]; exact ha), bm]
+    Ξ flo a (by rw [g96]; exact ha), bm
   have m2 : ∀ a, a < A → c₂.nmem a = c.nmem a := fun a ha => by
-    rw [dlo a (by rw [a96]; exact ha), am]
-  refine ⟨c₅, _, ex, by omega, ?_, ?_, ?_, ?_, fun j hj => ?_, ?_, fun j hj => ?_,
+    Ξ dlo a (by rw [a96]; exact ha), am
+  refine ⟨c₅, _, ex, ⋄, ?_, ?_, ?_, ?_, fun j hj => ?_, ?_, fun j hj => ?_,
     fun a ha => ?_, fun r h1 h2 h3 h4 h5 h6 => ?_, ?_, ?_, ?_⟩
-  · rw [hA5, f96, g96]
+  · Ξ hA5, f96, g96
   · rw [hr5 _ (by unfold sw ALLOC; omega),
       fr _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega),
       br _ (by unfold sw; omega) (by unfold sw; omega),
       dr _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega), a30]
   · rw [hr5 _ (by unfold sw ALLOC; omega),
       fr _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega), b31, d96, a96]
-  · rw [mem, m4 _ (by omega), ← a96, d0]
-  · rw [mem, m4 _ (by omega), ← a96, dv j hj, a97, am]
-  · rw [mem, ← g96, f0]
-  · rw [mem, ← g96, fv j hj, g97, bm, dlo _ (by rw [a96]; omega), am]
-  · rw [mem, m4 _ (by omega), m2 _ ha]
-  · rw [hr5 _ h1, fr _ h4 h5 h6, br _ h3 h5, dr _ h4 h5 h6, ar _ h4 h2 h5]
-  · rw [hrr5, frr, brr, drr, arr]
-  · rw [hrm5, frm, brm, drm, arm]
-  · rw [ho5, fout, bo, dout, ao]
+  · Ξ mem, m4 _ (⋄), ← a96, d0
+  · Ξ mem, m4 _ (⋄), ← a96, dv j hj, a97, am
+  · Ξ mem, ← g96, f0
+  · Ξ mem, ← g96, fv j hj, g97, bm, dlo _ (by rw [a96]; omega), am
+  · Ξ mem, m4 _ (⋄), m2 _ ha
+  · Ξ hr5 _ h1, fr _ h4 h5 h6, br _ h3 h5, dr _ h4 h5 h6, ar _ h4 h2 h5
+  · Ξ hrr5, frr, brr, drr, arr
+  · Ξ hrm5, frm, brm, drm, arm
+  · Ξ ho5, fout, bo, dout, ao
 
 /-! ## The state after stage 0 -/
 
@@ -344,8 +348,8 @@ theorem chainDesc_keep {P : Polygon} {m m' : ℕ → ℕ} {bw E E' : ℕ} {H : H
     ChainDescAt m' bw (Qof P) H C ∧ ChainWF P E' m' bw := by
   obtain ⟨hb, hwf'⟩ := hwf
   obtain ⟨-, -, hEb, -⟩ := hwf' H C hC
-  have hc : ∀ j, j < 5 → m' (bw + j) = m (bw + j) := fun j hj => he _ (by omega)
-  exact ⟨chainDescAt_copy hC hEb he hc, chainWF_copy ⟨hb, hwf'⟩ hC he hc (by omega) hEE⟩
+  have hc : ∀ j, j < 5 → m' (bw + j) = m (bw + j) := fun j hj => he _ (⋄)
+  exact ⟨chainDescAt_copy hC hEb he hc, chainWF_copy ⟨hb, hwf'⟩ hC he hc (⋄) hEE⟩
 
 /-- **The state after stage 0** (entry configuration `c₀`, junction `J` on host `H`, side
 `i = sw 7`). -/
@@ -395,7 +399,7 @@ theorem sw_side {c : Config} {t : ℕ} (ht : t ≤ 1) :
   rcases Nat.le_one_iff_eq_zero_or_eq_one.1 ht with rfl | rfl <;> rfl
 
 /-- `junConst` writes inside `Bs0`. -/
-theorem wr_junConst' : wr Bs0 junConst = true := by decide
+theorem wr_junConst' : wr Bs0 junConst = true := ⌖
 
 /-- The correspondence constants selected by the side. -/
 theorem cstLb_eq (J : Merge.Junction) {i : ℕ} (hi : i ≤ 1) (m : ℕ → ℕ)
@@ -426,13 +430,13 @@ theorem initS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   have hwm : J.whole.m = J.m₁ + J.m₂ := rfl
   -- 0.1
   obtain ⟨c₁, k₁, e₁, hk₁, u90, u91, u92, u93, u200, u201, u202⟩ :=
-    init0_exec (P := P) c hw (by omega)
+    init0_exec (P := P) c hw (⋄)
   have G₁ := exec_frameB e₁ wr_init0'
   have ulo : ∀ j, j < 20 → c₁.nreg (sw j) = c.nreg (sw j) := fun j hj => G₁.1 _ (by
     unfold sw; simp only [B0, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
   have F₁ := exec_frameB e₁ wr_init0
   have A1 : c₁.nreg ALLOC = A := F₁.1 ALLOC (by unfold ALLOC; decide)
-  have M1 : c₁.nmem = c.nmem := F₁.2.2.1
+  have M1 := F₁.2.2.1
   have hJ1 : JunctionAt c₁.nmem (c₁.nreg 50200) (c₁.nreg 50201) (c₁.nreg 50202) (Qof P) H J := by
     rw [M1, u200, u201, u202]; exact hJ
   -- 0.2: `junConst`
@@ -445,80 +449,80 @@ theorem initS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   have F₂ := exec_frameB e₂ wr_junConst'
   have k₂s : ∀ j, c₂.nreg (sw j) = c₁.nreg (sw j) := fun j => J₂.1 _ (Bjun_sw j)
   have A2 : c₂.nreg ALLOC = A := by
-    rw [J₂.1 ALLOC (by unfold ALLOC; decide), A1]
-  have M2 : c₂.nmem = c.nmem := by rw [J₂.2.2.1, M1]
+    Ξ J₂.1 ALLOC (by unfold ALLOC; decide), A1
+  have M2 : c₂.nmem = c.nmem := Ρ J₂.2.2.1, M1
   have cR : ∀ k, k < 5 → c₂.nreg (50210 + k) = cstR J k := fun k hk => by
     interval_cases k <;> simp only [cstR] <;> assumption
   have cL : ∀ k, k < 5 → c₂.nreg (50215 + k) = cstL J k := fun k hk => by
     interval_cases k <;> simp only [cstL] <;> assumption
   -- 0.3: the side
-  have i2 : c₂.nreg (sw 7) = i := by rw [k₂s, ulo _ (by omega)]
-  have o91 : c₂.nreg (sw 91) = 1 := by rw [k₂s, u91]
+  have i2 : c₂.nreg (sw 7) = i := Ρ k₂s, ulo _ (⋄)
+  have o91 : c₂.nreg (sw 91) = 1 := Ρ k₂s, u91
   obtain ⟨c₃, k₃, e₃, hk₃, t20, t21, t23, t24, t40, t45⟩ :=
     initSide_exec (P := P) c₂ e₂.wb_right o91 (by rw [i2]; exact hi)
   have G₃ := exec_frameB e₃ wr_initSide'
   have tlo : ∀ r, (r < sw 20 ∨ sw 50 ≤ r) → c₃.nreg r = c₂.nreg r := fun r hr => G₃.1 r (by
     unfold sw at hr; simp only [Bside, decide_eq_false_iff_not]; omega)
-  rw [i2] at t20 t21 t23 t24 t40 t45
+  Ξ' i2 at t20 t21 t23 t24 t40 t45
   have F₃ := exec_frameB e₃ wr_initSide
-  have A3 : c₃.nreg ALLOC = A := by rw [F₃.1 ALLOC (by unfold ALLOC; decide), A2]
-  have M3 : c₃.nmem = c.nmem := by rw [F₃.2.2.1, M2]
+  have A3 : c₃.nreg ALLOC = A := Ρ F₃.1 ALLOC (by unfold ALLOC; decide), A2
+  have M3 : c₃.nmem = c.nmem := Ρ F₃.2.2.1, M2
   have lo3 : ∀ j, j < 20 → c₃.nreg (sw j) = c.nreg (sw j) := fun j hj => by
-    rw [tlo _ (Or.inl (by unfold sw; omega)), k₂s, ulo _ (by omega)]
-  have hi1 : 1 - i ≤ 1 := by omega
+    Ξ tlo _ (Or.inl (by unfold sw; omega)), k₂s, ulo _ (⋄)
+  have hi1 : 1 - i ≤ 1 := ⋄
   obtain ⟨dq, wq⟩ := side_desc hJ wl wr' hi
   obtain ⟨dl, wl'⟩ := side_desc hJ wl wr' hi1
   have q20 : c₃.nreg (sw 20) = if i = 0 then c.nreg (sw 0) else c.nreg (sw 1) := by
-    rw [t20, k₂s, ulo _ (by omega), sw_side hi]; split <;> rfl
+    rw [t20, k₂s, ulo _ (⋄), sw_side hi]; split <;> rfl
   have q21 : c₃.nreg (sw 21) = if 1 - i = 0 then c.nreg (sw 0) else c.nreg (sw 1) := by
-    rw [t21, k₂s, ulo _ (by omega), sw_side hi1]; split <;> rfl
+    rw [t21, k₂s, ulo _ (⋄), sw_side hi1]; split <;> rfl
   -- 0.4: the walk lengths
   have x92 : c₃.nreg (sw 92) = 7 := by
-    rw [tlo _ (Or.inr (by unfold sw; omega)), k₂s, u92]
+    Ξ tlo _ (Or.inr (by unfold sw; omega)), k₂s, u92
   have x93 : c₃.nreg (sw 93) = 2 := by
-    rw [tlo _ (Or.inr (by unfold sw; omega)), k₂s, u93]
+    Ξ tlo _ (Or.inr (by unfold sw; omega)), k₂s, u93
   have mq : c.nmem ((if i = 0 then c.nreg (sw 0) else c.nreg (sw 1)) + 2) = (sideChain J i).m :=
     dq.2.2.2.1
   have ml : c.nmem ((if 1 - i = 0 then c.nreg (sw 0) else c.nreg (sw 1)) + 2) =
       (sideChain J (1 - i)).m := dl.2.2.2.1
-  have mw : c.nmem (c.nreg (sw 2) + 2) = J.whole.m := hJ.2.2.2.2.2.1
+  have mw := hJ.2.2.2.2.2.1
   have bq := wq.1
   have bl := wl'.1
   have mq' := mle i
   have ml' := mle (1 - i)
   obtain ⟨c₄, k₄, e₄, hk₄, n33, n34, n35⟩ := nBlk_exec (P := P) c₃ e₃.wb_right x92 x93
-    (by rw [q20]; omega) (by rw [q21]; omega) (by rw [lo3 _ (by omega)]; omega)
+    (by rw [q20]; omega) (by rw [q21]; omega) (by rw [lo3 _ (⋄)]; omega)
     (by rw [M3, q20, mq]; omega) (by rw [M3, q21, ml]; omega)
-    (by rw [M3, lo3 _ (by omega), mw]; omega)
+    (by rw [M3, lo3 _ (⋄), mw]; omega)
   have F₄ := exec_frameB e₄ wr_nBlk
   have G₄ := exec_frameB e₄ wr_nBlk'
   have nlo : ∀ r, r ≠ sw 33 → r ≠ sw 34 → r ≠ sw 35 → r ≠ sw 97 → r ≠ sw 98 →
       c₄.nreg r = c₃.nreg r := fun r h1 h2 h3 h4 h5 => G₄.1 r (by
     unfold sw at h1 h2 h3 h4 h5
     simp only [Bn, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
-  have A4 : c₄.nreg ALLOC = A := by rw [F₄.1 ALLOC (by unfold ALLOC; decide), A3]
-  have M4 : c₄.nmem = c.nmem := by rw [F₄.2.2.1, M3]
+  have A4 : c₄.nreg ALLOC = A := Ρ F₄.1 ALLOC (by unfold ALLOC; decide), A3
+  have M4 : c₄.nmem = c.nmem := Ρ F₄.2.2.1, M3
   have k4 : ∀ j, j ≠ 33 → j ≠ 34 → j ≠ 35 → j ≠ 97 → j ≠ 98 → c₄.nreg (sw j) = c₃.nreg (sw j) :=
     fun j h1 h2 h3 h4 h5 => nlo _ (by unfold sw; omega) (by unfold sw; omega)
       (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega)
   -- 0.5: the model descriptors
   have y90 : c₄.nreg (sw 90) = 0 := by
-    rw [k4 _ (by omega) (by omega) (by omega) (by omega) (by omega),
+    rw [k4 _ (⋄) (⋄) (⋄) (⋄) (⋄),
       tlo _ (Or.inr (by unfold sw; omega)), k₂s, u90]
   have y91 : c₄.nreg (sw 91) = 1 := by
-    rw [k4 _ (by omega) (by omega) (by omega) (by omega) (by omega),
+    rw [k4 _ (⋄) (⋄) (⋄) (⋄) (⋄),
       tlo _ (Or.inr (by unfold sw; omega)), k₂s, u91]
   have y20 : c₄.nreg (sw 20) = if i = 0 then c.nreg (sw 0) else c.nreg (sw 1) := by
-    rw [k4 _ (by omega) (by omega) (by omega) (by omega) (by omega), q20]
+    Ξ k4 _ (⋄) (⋄) (⋄) (⋄) (⋄), q20
   have y21 : c₄.nreg (sw 21) = if 1 - i = 0 then c.nreg (sw 0) else c.nreg (sw 1) := by
-    rw [k4 _ (by omega) (by omega) (by omega) (by omega) (by omega), q21]
+    Ξ k4 _ (⋄) (⋄) (⋄) (⋄) (⋄), q21
   obtain ⟨c₅, k₅, e₅, hk₅, zA, z30, z31, z0, zq, z6, zl, zlo, zr, zrr, zrm, zo⟩ :=
     mdBlk_exec (P := P) c₄ e₄.wb_right y90 y91 (by rw [y20, A4]; exact bq)
       (by rw [y21, A4]; exact bl) (by rw [A4]; omega)
-  rw [A4] at zA z30 z31 z0 zq z6 zl zlo
-  rw [y20, M4] at zq
-  rw [y21, M4] at zl
-  rw [M4] at zlo
+  Ξ' A4 at zA z30 z31 z0 zq z6 zl zlo
+  Ξ' y20, M4 at zq
+  Ξ' y21, M4 at zl
+  Ξ' M4 at zlo
   have k5 : ∀ j, j ≠ 30 → j ≠ 31 → j ≠ 96 → j ≠ 97 → j ≠ 98 → c₅.nreg (sw j) = c₄.nreg (sw j) :=
     fun j h1 h2 h3 h4 h5 => zr _ (nA j) (by unfold sw; omega) (by unfold sw; omega)
       (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega)
@@ -526,56 +530,56 @@ theorem initS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
   -- register reading through stages 0.4 and 0.5
   have r45 : ∀ j, j < 30 ∨ (35 < j ∧ j < 96) → c₅.nreg (sw j) = c₃.nreg (sw j) := fun j hj => by
-    rw [k5 _ (by omega) (by omega) (by omega) (by omega) (by omega),
-      k4 _ (by omega) (by omega) (by omega) (by omega) (by omega)]
+    rw [k5 _ (⋄) (⋄) (⋄) (⋄) (⋄),
+      k4 _ (⋄) (⋄) (⋄) (⋄) (⋄)]
   have lo5 : ∀ j, j < 20 → c₅.nreg (sw j) = c.nreg (sw j) := fun j hj => by
-    rw [r45 _ (Or.inl (by omega)), lo3 _ hj]
+    Ξ r45 _ (Or.inl (⋄)), lo3 _ hj
   -- memory
   have keep := fun {b : ℕ} {C : Chain} (hw' : ChainWF P A c.nmem b)
       (hC : ChainDescAt c.nmem b (Qof P) H C) =>
-    chainDesc_keep (m' := c₅.nmem) (E' := A + 12) hw' hC zlo (by omega)
+    chainDesc_keep (m' := c₅.nmem) (E' := A + 12) hw' hC zlo (⋄)
   obtain ⟨j0, w0⟩ := keep wl hJ.1
   obtain ⟨j1, w1⟩ := keep wr' hJ.2.1
   obtain ⟨j2, w2⟩ := keep ww hJ.2.2
   obtain ⟨jq, wq5⟩ := keep wq dq
   obtain ⟨jl, wl5⟩ := keep wl' dl
   obtain ⟨mdq, mwq, -⟩ := modelDesc_of_copy (E' := A + 12) wq dq le_rfl zlo z0
-    (fun j hj => zq j hj) (by omega)
-  obtain ⟨mdl, mwl, -⟩ := modelDesc_of_copy (A := A + 6) (E' := A + 12) wl' dl (by omega) zlo z6
-    (fun j hj => zl j hj) (by omega)
-  refine ⟨c₅, _, ex, by omega, ?_, ?_⟩
+    (fun j hj => zq j hj) (⋄)
+  obtain ⟨mdl, mwl, -⟩ := modelDesc_of_copy (A := A + 6) (E' := A + 12) wl' dl (⋄) zlo z6
+    (fun j hj => zl j hj) (⋄)
+  refine ⟨c₅, _, ex, ⋄, ?_, ?_⟩
   · refine ⟨?_, ?_, ?_, ?_, lo5, zA, ?_, ⟨?_, ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_, ?_,
       fun k hk => ?_, fun k hk => ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-    · rw [r45 _ (Or.inr (by omega)), tlo _ (Or.inr (by unfold sw; omega)), k₂s, u90]
-    · rw [r45 _ (Or.inr (by omega)), tlo _ (Or.inr (by unfold sw; omega)), k₂s, u91]
-    · rw [r45 _ (Or.inr (by omega)), x92]
-    · rw [r45 _ (Or.inr (by omega)), x93]
-    · rw [lo5 0 (by omega), lo5 1 (by omega), lo5 2 (by omega)]; exact ⟨j0, j1, j2⟩
-    · rw [lo5 0 (by omega), zA]; exact w0
-    · rw [lo5 1 (by omega), zA]; exact w1
-    · rw [lo5 2 (by omega), zA]; exact w2
+    · Ξ r45 _ (Or.inr (⋄)), tlo _ (Or.inr (by unfold sw; omega)), k₂s, u90
+    · Ξ r45 _ (Or.inr (⋄)), tlo _ (Or.inr (by unfold sw; omega)), k₂s, u91
+    · Ξ r45 _ (Or.inr (⋄)), x92
+    · Ξ r45 _ (Or.inr (⋄)), x93
+    · rw [lo5 0 (⋄), lo5 1 (⋄), lo5 2 (⋄)]; exact ⟨j0, j1, j2⟩
+    · rw [lo5 0 (⋄), zA]; exact w0
+    · rw [lo5 1 (⋄), zA]; exact w1
+    · rw [lo5 2 (⋄), zA]; exact w2
     · intro H' hH'
-      rw [lo5 2 (by omega)] at hH'
-      have hb : c₅.nmem (c.nreg (sw 2)) = c.nmem (c.nreg (sw 2)) := zlo _ (by omega)
-      rw [hb] at hH'
+      Ξ' lo5 2 (⋄) at hH'
+      have hb : c₅.nmem (c.nreg (sw 2)) = c.nmem (c.nreg (sw 2)) := zlo _ (⋄)
+      Ξ' hb at hH'
       obtain ⟨-, -, hEb, -⟩ := ww.2 H J.whole hJ.2.2
       have hH : HostAt c₅.nmem (c.nmem (c.nreg (sw 2))) H := hostAt_agree hJ.2.2.1 hEb zlo
-      rw [NFLoc.hostAt_unique hH' hH]
+      Ξ NFLoc.hostAt_unique hH' hH
       exact hreg H hJ.2.2.1
-    · rw [r45 _ (Or.inl (by omega)), q20]; exact jq
-    · rw [r45 _ (Or.inl (by omega)), q20, zA]; exact wq5
-    · rw [r45 _ (Or.inl (by omega)), q21]; exact jl
-    · rw [r45 _ (Or.inl (by omega)), q21, zA]; exact wl5
-    · rw [r45 _ (Or.inl (by omega)), t23, k₂s, ulo _ (by omega)]
-    · rw [r45 _ (Or.inl (by omega)), t24, k₂s, ulo _ (by omega)]
-    · rw [r45 _ (Or.inr (by omega)), t40 k hk]
+    · rw [r45 _ (Or.inl (⋄)), q20]; exact jq
+    · rw [r45 _ (Or.inl (⋄)), q20, zA]; exact wq5
+    · rw [r45 _ (Or.inl (⋄)), q21]; exact jl
+    · rw [r45 _ (Or.inl (⋄)), q21, zA]; exact wl5
+    · Ξ r45 _ (Or.inl (⋄)), t23, k₂s, ulo _ (⋄)
+    · Ξ r45 _ (Or.inl (⋄)), t24, k₂s, ulo _ (⋄)
+    · Ξ r45 _ (Or.inr (⋄)), t40 k hk
       exact (cstLb_eq J hi c₂.nreg cR cL hk).1
-    · rw [r45 _ (Or.inr (by omega)), t45 k hk]
+    · Ξ r45 _ (Or.inr (⋄)), t45 k hk
       exact (cstLb_eq J hi c₂.nreg cR cL hk).2
-    · rw [k5 _ (by omega) (by omega) (by omega) (by omega) (by omega), n33, M3, q20, mq]
-    · rw [k5 _ (by omega) (by omega) (by omega) (by omega) (by omega), n34, M3, q21, ml]
-    · rw [k5 _ (by omega) (by omega) (by omega) (by omega) (by omega), n35, M3,
-        lo3 _ (by omega), mw]
+    · Ξ k5 _ (⋄) (⋄) (⋄) (⋄) (⋄), n33, M3, q20, mq
+    · Ξ k5 _ (⋄) (⋄) (⋄) (⋄) (⋄), n34, M3, q21, ml
+    · rw [k5 _ (⋄) (⋄) (⋄) (⋄) (⋄), n35, M3,
+        lo3 _ (⋄), mw]
     · rw [z30]; exact mdq
     · rw [z30, zA]; exact mwq
     · rw [z31]; exact mdl
@@ -584,7 +588,7 @@ theorem initS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
     have F4 : FrameB Bs0 c c₄ := F₁.trans (F₂.trans (F₃.trans F₄))
     have hB : ∀ r, bandOf r ∉ ({bSweep, bLocate} : Finset ℕ) → Bs0 r = false := by
       intro r hr
-      simp only [bandOf, bSweep, bLocate, Finset.mem_insert, Finset.mem_singleton] at hr
+      ϴ' bandOf, bSweep, bLocate, Finset.mem_insert, Finset.mem_singleton at hr
       simp only [Bs0, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
     have hsw : ∀ r j, bandOf r ∉ ({bSweep, bLocate} : Finset ℕ) → j < 10000 → r ≠ sw j := by
       intro r j hr hj h
@@ -592,12 +596,12 @@ theorem initS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       rw [h]; unfold sw
       simp only [bandOf, bSweep, bLocate, Finset.mem_insert, Finset.mem_singleton]; omega
     refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩
-    · rw [zr r hra (hsw r 30 hr (by omega)) (hsw r 31 hr (by omega)) (hsw r 96 hr (by omega))
-        (hsw r 97 hr (by omega)) (hsw r 98 hr (by omega)), F4.1 r (hB r hr)]
-    · rw [zrr, F4.2.1 r (hB r hr)]
-    · rw [zlo a ha]
-    · rw [zrm, F4.2.2.2.1]
-    · rw [zo, F4.2.2.2.2]
+    · rw [zr r hra (hsw r 30 hr (⋄)) (hsw r 31 hr (⋄)) (hsw r 96 hr (⋄))
+        (hsw r 97 hr (⋄)) (hsw r 98 hr (⋄)), F4.1 r (hB r hr)]
+    · Ξ zrr, F4.2.1 r (hB r hr)
+    · Ξ zlo a ha
+    · Ξ zrm, F4.2.2.2.1
+    · Ξ zo, F4.2.2.2.2
     · rw [zA]; omega
     · rw [zA]; omega
 

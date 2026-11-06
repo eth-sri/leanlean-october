@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShotListGLev
 
 /-!
@@ -181,14 +185,14 @@ theorem shotListG_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
     have hlv : levLeaves M Q c₂ R 3 0 (pieceR c₂ (rL R 0)) =
         leaves (M.key Q) hl (arcAt c.nmem AB j) := by
       rw [levLeaves_eq M Q c₂ R hkl 3 0 (by omega), holesFrom_eq c₂ R hkl, hhl2, harc]
-    have hjK' : j < A := hlt
+    have hjK' := hlt
     have best₂ : BestG P M R c₂ (sofJ M Q hl c.nmem AB j) z (dirOf (c₂.nreg (R + 6))) := by
       rw [g6]
       exact hbest.congr (k2 (R + 20) (by omega)) (k2 (R + 21) (by omega))
         (k2 (R + 22) (by omega))
     obtain ⟨hpok, hwt⟩ := harcs j hjK'
     have hA2 : c₂.nreg ALLOC = cc.nreg ALLOC := k2 _ (by unfold ALLOC; omega)
-    have hroomj : cc.nreg ALLOC + (A - j) * Bi ≤ W := hrm
+    have hroomj := hrm
     have hKj : Bi ≤ (A - j) * Bi := Nat.le_mul_of_pos_left _ (by omega)
     obtain ⟨c₃, k₃, e₃, hk₃, b₃, fr₃⟩ := levG_exec hsh hBs hXl hR hRB hBo hS hk hBk hx hBx hol hof hoy
       3 0 c₂ (sofJ M Q hl c.nmem AB j) (by omega) e₂.wb_right ctx₂ ho₂

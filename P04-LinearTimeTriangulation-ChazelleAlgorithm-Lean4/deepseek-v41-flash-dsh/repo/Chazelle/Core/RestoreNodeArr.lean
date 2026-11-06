@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreNodeEnd
 
 /-!
@@ -42,13 +44,13 @@ theorem arrival_off (hS : Stretch M Cα g g' L) (hGα : WalkAx (chainModel Cα))
   have hg : (g : ℝ) < M.W.n := by exact_mod_cast hS.hg
   have hFA' := hFA
   obtain ⟨hpF, htF0, htF1, -⟩ := hFA'
-  have hk0 : (0 : ℝ) ≤ pF + tF := by positivity
+  have hk0 : (0 : ℝ) ≤ pF + tF := ⟢
   refine ⟨off_nonneg hk0 hg, fun h0 hL => ?_⟩
   set d := dOf M.W.n g pF with hd
   have he : off M.W.n g (pF + tF) = d + tF := off_key' hS.hg hpF htF0 htF1
   rw [he] at h0 hL ⊢
   have hdL : d < L := by
-    have : (d : ℝ) < L := by linarith
+    have : (d : ℝ) < L := ⟡
     exact_mod_cast this
   have hdt : tF = 0 → 1 ≤ d := fun h => by
     rw [h, add_zero] at h0
@@ -60,7 +62,7 @@ theorem arrival_off (hS : Stretch M Cα g g' L) (hGα : WalkAx (chainModel Cα))
     htF1 hdt hfar (by rw [← hpF']; exact hFA)
   have hg' : g' < (chainModel Cα).W.n := by rw [Stretch.nα]; have := hS.hgL; omega
   have hdα : d < (chainModel Cα).W.n := by rw [Stretch.nα]; have := hS.hgL; omega
-  rw [hpO, htO, ← hS.mod' hdL.le, off_key hg' hdα htF0 htF1]
+  Ξ hpO, htO, ← hS.mod' hdL.le, off_key hg' hdα htF0 htF1
 
 end
 

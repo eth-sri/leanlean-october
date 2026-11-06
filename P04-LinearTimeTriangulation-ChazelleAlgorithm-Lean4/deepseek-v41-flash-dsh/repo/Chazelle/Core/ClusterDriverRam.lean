@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterSplitExec
 
 /-!
@@ -35,7 +39,7 @@ omit [Fintype F] [DecidableEq F] in
 theorem DInv.nsp_le {S : SS} {m : ℕ → ℕ} {stk : List (ℕ × ℕ)} {fin : Finset (ℕ × ℕ)}
     {D : Finset ℕ} {nsp : ℕ} (hD : DInv M T k c S m stk fin D nsp) (hs : 0 < S.s) :
     nsp ≤ 2 * μ / S.s := by
-  rw [Nat.le_div_iff_mul_le hs]
+  Ξ Nat.le_div_iff_mul_le hs
   have := hD.sinv.pot2
   omega
 

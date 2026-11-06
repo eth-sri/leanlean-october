@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecNF
 
 /-!
@@ -67,7 +69,7 @@ variable {R K : ℕ} {up dn ord pos prg pch : ℕ → ℕ} (h : Rooted R K up dn
 include h
 
 theorem Rooted.pos_inj {r s : ℕ} (hr : r < R) (hs : s < R) (he : pos r = pos s) : r = s := by
-  rw [← h.ord_pos r hr, ← h.ord_pos s hs, he]
+  Ξ ← h.ord_pos r hr, ← h.ord_pos s hs, he
 
 theorem Rooted.R_pos : 0 < R := by rw [h.hR]; omega
 
@@ -84,7 +86,7 @@ theorem AncX.pos_le {a b : ℕ} (hab : AncX R prg pch rem a b) (hb : b < R) :
     have hxR : x < R := hpc ▸ h.prg_lt c hc hc0
     have hlt : pos x < pos c := hpc ▸ h.pos_prg c hc hc0
     obtain ⟨ha, hle, -⟩ := ih hxR
-    exact ⟨ha, by omega, fun _ => by omega⟩
+    exact ⟨ha, ⋄, fun _ => ⋄⟩
 
 theorem AncX.antisymm {a b : ℕ} (hab : AncX R prg pch rem a b) (hba : AncX R prg pch rem b a)
     (hb : b < R) : a = b := by
@@ -118,7 +120,7 @@ theorem AncX.chain {a b u : ℕ} (hau : AncX R prg pch rem a u) (hbu : AncX R pr
     rcases (AncX.back_iff h).1 hbu with rfl | ⟨-, -, -, hbx⟩
     · exact Or.inl (hax.tail hxc)
     · obtain ⟨-, -, hpc, -⟩ := hxc
-      rw [hpc] at hbx
+      Ξ' hpc at hbx
       exact ih hbx
 
 omit h in
@@ -146,7 +148,7 @@ theorem exists_top {u : ℕ} (hu : u < R) : ∃ t, IsTop pch rem t ∧ AncX R pr
   | _ n ih =>
     by_cases ht : IsTop pch rem u
     · exact ⟨u, ht, ReflTransGen.refl⟩
-    · simp only [IsTop, not_or] at ht
+    · ϴ' IsTop, not_or at ht
       have hpR := h.prg_lt u hu ht.1
       obtain ⟨t, htt, hta⟩ := ih (pos (prg u)) (hp ▸ h.pos_prg u hu ht.1) hpR rfl
       exact ⟨t, htt, hta.tail ⟨hu, ht.1, rfl, ht.2⟩⟩
@@ -156,7 +158,7 @@ theorem anc_root {u : ℕ} (hu : u < R) : AncX R prg pch rem0 0 u := by
   obtain ⟨t, ht, hta⟩ := exists_top h (rem := rem0) hu
   rcases ht with rfl | h1
   · exact hta
-  · simp [rem0] at h1
+  · Θ' rem0 at h1
 
 omit h in
 /-- Removing more chords shrinks the ancestor relation. -/
@@ -188,7 +190,7 @@ theorem AncX.of_keep {rem' : ℕ → ℕ} {a b : ℕ} (hab : AncX R prg pch rem 
     have hxR : x < R := h3 ▸ h.prg_lt c h1 h2
     have h5 := (AncX.pos_le h hax hxR).2.1
     have h6 := h.pos_prg c h1 h2
-    rw [h3, hca] at h6
+    Ξ' h3, hca at h6
     omega
 
 /-- The part of a component below one of its regions. -/
@@ -205,7 +207,7 @@ theorem AncX.of_anc0 {a b v : ℕ} (hav : AncX R prg pch rem a v) (hbv : AncX R 
     rcases (AncX.back_iff h).1 hbv with rfl | ⟨-, -, -, hbx⟩
     · exact ReflTransGen.refl
     · have hpc := hxc.2.2.1
-      rw [hpc] at hbx
+      Ξ' hpc at hbx
       exact (ih hbx hab (hpc ▸ h.prg_lt c hv hxc.2.1)).tail hxc
 
 /-- The upper part of a component path. -/
@@ -214,14 +216,14 @@ theorem AncX.upper {a v w : ℕ} (hav : AncX R prg pch rem a v) (hwv : AncX R pr
   induction hav generalizing w with
   | refl =>
     have := AncX.antisymm h hwv haw hv
-    rw [this]
+    Ξ this
     exact ReflTransGen.refl
   | tail hax hxc ih =>
     rename_i x c
     rcases (AncX.back_iff h).1 hwv with rfl | ⟨-, -, -, hwx⟩
     · exact hax.tail hxc
     · have hpc := hxc.2.2.1
-      rw [hpc] at hwx
+      Ξ' hpc at hwx
       exact ih hwx haw (hpc ▸ h.prg_lt c hv hxc.2.1)
 
 /-- The parent chords of distinct regions are distinct. -/
@@ -231,15 +233,15 @@ theorem Rooted.pch_inj {s s' : ℕ} (hs : s < R) (hs' : s' < R) (h0 : s ≠ 0) (
   have p1 := h.pos_prg s hs h0
   have p2 := h.pos_prg s' hs' h0'
   rcases h.ends s hs h0 with ⟨a1, a2⟩ | ⟨a1, a2⟩ <;>
-    rcases h.ends s' hs' h0' with ⟨b1, b2⟩ | ⟨b1, b2⟩ <;> rw [he] at a1 a2
+    rcases h.ends s' hs' h0' with ⟨b1, b2⟩ | ⟨b1, b2⟩ <;> Ξ' he at a1 a2
   · exact hne (a2.symm.trans b2)
   · -- `s = prg s'` and `s' = prg s`
     have e1 : s = prg s' := a2.symm.trans b2
     have e2 : s' = prg s := b1.symm.trans a1
-    rw [← e1] at p2; rw [← e2] at p1; omega
+    Ξ' ← e1 at p2; Ξ' ← e2 at p1; omega
   · have e1 : s = prg s' := a1.symm.trans b1
     have e2 : s' = prg s := b2.symm.trans a2
-    rw [← e1] at p2; rw [← e2] at p1; omega
+    Ξ' ← e1 at p2; Ξ' ← e2 at p1; omega
   · exact hne (a1.symm.trans b1)
 
 /-- With no chord removed below `K`, every region is in the component of the root. -/
@@ -286,12 +288,12 @@ variable {rem : ℕ → ℕ}
 omit h in
 theorem mem_sub {u v : ℕ} : v ∈ sub R prg pch rem u ↔ v < R ∧ AncX R prg pch rem u v := by
   classical
-  simp [sub]
+  Θ sub
 
 omit h in
 theorem mem_kids {u c : ℕ} : c ∈ kids R prg pch rem u ↔ ChX R prg pch rem u c := by
   classical
-  simp only [kids, mem_filter, mem_range, and_iff_right_iff_imp]
+  ϴ kids, mem_filter, mem_range, and_iff_right_iff_imp
   exact fun hc => hc.1
 
 omit h in
@@ -309,37 +311,37 @@ theorem sz_rec {u : ℕ} (hu : u < R) :
   classical
   have hdisj : (↑(kids R prg pch rem u) : Set ℕ).PairwiseDisjoint (sub R prg pch rem) := by
     intro c hc c' hc' hne
-    rw [Finset.mem_coe, mem_kids] at hc hc'
-    rw [Function.onFun, Finset.disjoint_left]
+    Ξ' Finset.mem_coe, mem_kids at hc hc'
+    Ξ Function.onFun, Finset.disjoint_left
     intro v hv hv'
-    rw [mem_sub] at hv hv'
+    Ξ' mem_sub at hv hv'
     rcases AncX.chain h hv.2 hv'.2 with h1 | h1
     · rcases (AncX.back_iff h).1 h1 with e | ⟨-, -, -, h2⟩
       · exact hne e
-      · rw [hc'.2.2.1] at h2
+      · Ξ' hc'.2.2.1 at h2
         have h3 := (h2.pos_le h hu).2.1
         have h4 := h.pos_prg c hc.1 hc.2.1
-        rw [hc.2.2.1] at h4
+        Ξ' hc.2.2.1 at h4
         omega
     · rcases (AncX.back_iff h).1 h1 with e | ⟨-, -, -, h2⟩
       · exact hne e.symm
-      · rw [hc.2.2.1] at h2
+      · Ξ' hc.2.2.1 at h2
         have h3 := (h2.pos_le h hu).2.1
         have h4 := h.pos_prg c' hc'.1 hc'.2.1
-        rw [hc'.2.2.1] at h4
+        Ξ' hc'.2.2.1 at h4
         omega
   have hnot : u ∉ (kids R prg pch rem u).biUnion (sub R prg pch rem) := by
-    rw [Finset.mem_biUnion]
+    Ξ Finset.mem_biUnion
     rintro ⟨c, hc, hu'⟩
-    rw [mem_kids] at hc
-    rw [mem_sub] at hu'
+    Ξ' mem_kids at hc
+    Ξ' mem_sub at hu'
     have h3 := (hu'.2.pos_le h hu).2.1
     have h4 := h.pos_prg c hc.1 hc.2.1
-    rw [hc.2.2.1] at h4
+    Ξ' hc.2.2.1 at h4
     omega
   have heq : sub R prg pch rem u = insert u ((kids R prg pch rem u).biUnion (sub R prg pch rem)) := by
     ext v
-    rw [Finset.mem_insert, Finset.mem_biUnion, mem_sub]
+    Ξ Finset.mem_insert, Finset.mem_biUnion, mem_sub
     constructor
     · rintro ⟨hv, hav⟩
       rcases hav.cases_head with e | ⟨c, huc, hcv⟩
@@ -347,11 +349,11 @@ theorem sz_rec {u : ℕ} (hu : u < R) :
       · exact Or.inr ⟨c, mem_kids.2 huc, mem_sub.2 ⟨hv, hcv⟩⟩
     · rintro (rfl | ⟨c, hc, hv⟩)
       · exact ⟨hu, ReflTransGen.refl⟩
-      · rw [mem_kids] at hc
-        rw [mem_sub] at hv
+      · Ξ' mem_kids at hc
+        Ξ' mem_sub at hv
         exact ⟨hv.1, ReflTransGen.head hc hv.2⟩
   unfold sz
-  rw [heq, Finset.card_insert_of_notMem hnot, Finset.card_biUnion hdisj]
+  Ξ heq, Finset.card_insert_of_notMem hnot, Finset.card_biUnion hdisj
   omega
 
 /-- A proper descendant has a strictly smaller subtree. -/
@@ -361,17 +363,17 @@ theorem sz_lt {a c : ℕ} (hac : AncX R prg pch rem a c) (hne : a ≠ c) (hc : c
   have ha := (hac.pos_le h hc).1
   have hsub : insert a (sub R prg pch rem c) ⊆ sub R prg pch rem a := by
     intro v hv
-    rw [Finset.mem_insert] at hv
+    Ξ' Finset.mem_insert at hv
     rcases hv with rfl | hv
     · exact self_mem_sub ha
-    · rw [mem_sub] at hv ⊢
+    · Ξ' mem_sub at hv ⊢
       exact ⟨hv.1, hac.trans hv.2⟩
   have hna : a ∉ sub R prg pch rem c := by
-    rw [mem_sub]
+    Ξ mem_sub
     rintro ⟨-, hca⟩
     exact hne (AncX.antisymm h hac hca hc)
   have := Finset.card_le_card hsub
-  rw [Finset.card_insert_of_notMem hna] at this
+  Ξ' Finset.card_insert_of_notMem hna at this
   exact this
 
 end sizes2
@@ -386,26 +388,26 @@ theorem pigeon {s : Finset ℕ} (f : ℕ → ℕ) (u m D : ℕ) (e : Prop) [Deci
     (∃ c ∈ s, m ≤ D * f c) ∨ (e ∧ m ≤ D * u) := by
   classical
   by_contra hno
-  simp only [not_or, not_exists, not_and, not_le] at hno
+  ϴ' not_or, not_exists, not_and, not_le at hno
   obtain ⟨h1, h2⟩ := hno
   have hs : ∑ c ∈ s, D * f c ≤ ∑ c ∈ s, m := Finset.sum_le_sum fun c hc => (h1 c hc).le
-  rw [← Finset.mul_sum, Finset.sum_const, smul_eq_mul] at hs
+  Ξ' ← Finset.mul_sum, Finset.sum_const, smul_eq_mul at hs
   by_cases he : e
   · have h2' := h2 he
-    rw [ite_eq_left he] at hcard
+    Ξ' ite_eq_left he at hcard
     have : D * m = D * (∑ c ∈ s, f c) + D * u := by rw [← hsum]; ring
-    have h3 : D * m < (s.card + 1) * m := by nlinarith
+    have h3 : D * m < (s.card + 1) * m := ⊞
     have h4 : (s.card + 1) * m ≤ D * m := Nat.mul_le_mul_right _ hcard
     omega
   · have hu0 := hu he
-    rw [ite_eq_right he, add_zero] at hcard
-    rw [hu0, add_zero] at hsum
+    Ξ' ite_eq_right he, add_zero at hcard
+    Ξ' hu0, add_zero at hsum
     have hne : s.Nonempty := by
       rcases Finset.eq_empty_or_nonempty s with h0 | h0
-      · rw [h0, Finset.sum_empty] at hsum; omega
+      · Ξ' h0, Finset.sum_empty at hsum; omega
       · exact h0
     have hs' : ∑ c ∈ s, D * f c < ∑ c ∈ s, m := Finset.sum_lt_sum_of_nonempty hne h1
-    rw [← Finset.mul_sum, Finset.sum_const, smul_eq_mul, hsum] at hs'
+    Ξ' ← Finset.mul_sum, Finset.sum_const, smul_eq_mul, hsum at hs'
     have h4 : s.card * m ≤ D * m := Nat.mul_le_mul_right _ hcard
     omega
 
@@ -428,72 +430,72 @@ theorem exists_good
   set n := sz R prg pch rem t with hn_def
   set V := (range R).filter (fun v => AncX R prg pch rem t v ∧ n < 2 * sz R prg pch rem v) with hV
   have htV : t ∈ V := by
-    rw [hV, Finset.mem_filter, Finset.mem_range]
-    exact ⟨ht, ReflTransGen.refl, by omega⟩
+    Ξ hV, Finset.mem_filter, Finset.mem_range
+    exact ⟨ht, ReflTransGen.refl, ⋄⟩
   obtain ⟨v, hvV, hvmax⟩ := Finset.exists_max_image V pos ⟨t, htV⟩
-  rw [hV, Finset.mem_filter, Finset.mem_range] at hvV
+  Ξ' hV, Finset.mem_filter, Finset.mem_range at hvV
   obtain ⟨hvR, htv, hvbig⟩ := hvV
   -- the children of `v` are small
   have hsmall : ∀ c ∈ kids R prg pch rem v, 2 * sz R prg pch rem c ≤ n := by
     intro c hc
-    rw [mem_kids] at hc
+    Ξ' mem_kids at hc
     by_contra hbig
     have hcV : c ∈ V := by
-      rw [hV, Finset.mem_filter, Finset.mem_range]
-      exact ⟨hc.1, htv.tail hc, by omega⟩
+      Ξ hV, Finset.mem_filter, Finset.mem_range
+      exact ⟨hc.1, htv.tail hc, ⋄⟩
     have := hvmax c hcV
     have h4 := h.pos_prg c hc.1 hc.2.1
-    rw [hc.2.2.1] at h4
+    Ξ' hc.2.2.1 at h4
     omega
   -- the kids in the component are tree kids
   have hkids : (kids R prg pch rem v).card ≤ (kids R prg pch rem0 v).card := by
     apply Finset.card_le_card
     intro c hc
-    rw [mem_kids] at hc ⊢
-    exact ⟨hc.1, hc.2.1, hc.2.2.1, by simp [rem0]⟩
+    Ξ' mem_kids at hc ⊢
+    exact ⟨hc.1, hc.2.1, hc.2.2.1, ⊚ rem0⟩
   have hrec := sz_rec h (rem := rem) hvR
   have hvt : v ≠ t → v ≠ 0 := by
     intro hne h0
     exact AncX.not_top htv (Ne.symm hne) (Or.inl h0)
   have hsv : sz R prg pch rem v ≤ n := by
     by_cases e : t = v
-    · rw [hn_def, e]
+    · Ξ hn_def, e
     · have := sz_lt h htv e hvR; omega
   have hcard : (kids R prg pch rem v).card + (if v ≠ t then 1 else 0) ≤ D := by
     have hd := hdeg v hvR
     by_cases e : v = t
-    · rw [ite_eq_right (not_not.2 e)]
+    · Ξ ite_eq_right (not_not.2 e)
       have : 0 ≤ (if v = 0 then 0 else 1) := Nat.zero_le _
       omega
-    · rw [ite_eq_left e]
-      rw [ite_eq_right (hvt e)] at hd
+    · Ξ ite_eq_left e
+      Ξ' ite_eq_right (hvt e) at hd
       omega
   have hsum : ∑ c ∈ kids R prg pch rem v, sz R prg pch rem c +
       (if v ≠ t then n - sz R prg pch rem v else 0) = n - 1 := by
     by_cases e : v = t
-    · rw [ite_eq_right (not_not.2 e), add_zero]
-      rw [e] at hrec ⊢; omega
-    · rw [ite_eq_left e]
+    · Ξ ite_eq_right (not_not.2 e), add_zero
+      Ξ' e at hrec ⊢; omega
+    · Ξ ite_eq_left e
       omega
   rcases pigeon (fun c => sz R prg pch rem c) _ (n - 1) D (v ≠ t) hsum hcard
-    (fun hh => ite_eq_right hh) (by omega) with
+    (fun hh => ite_eq_right hh) (⋄) with
     ⟨c, hc, hc'⟩ | ⟨hne, hu⟩
   · have hc2 := hsmall c hc
-    rw [mem_kids] at hc
+    Ξ' mem_kids at hc
     refine ⟨c, hc.1, htv.tail hc, ?_, ?_⟩
     · intro e
-      rw [e] at hc
+      Ξ' e at hc
       have h4 := h.pos_prg t hc.1 hc.2.1
-      rw [hc.2.2.1] at h4
+      Ξ' hc.2.2.1 at h4
       have := (htv.pos_le h hvR).2.1
       omega
     · have : min (sz R prg pch rem c) (n - sz R prg pch rem c) = sz R prg pch rem c :=
-        min_eq_left (by omega)
+        min_eq_left (⋄)
       rw [this]; exact hc'
-  · rw [ite_eq_left hne] at hu
+  · Ξ' ite_eq_left hne at hu
     refine ⟨v, hvR, htv, hne, ?_⟩
     have : min (sz R prg pch rem v) (n - sz R prg pch rem v) = n - sz R prg pch rem v :=
-      min_eq_right (by omega)
+      min_eq_right (⋄)
     rw [this]; exact hu
 
 end sep

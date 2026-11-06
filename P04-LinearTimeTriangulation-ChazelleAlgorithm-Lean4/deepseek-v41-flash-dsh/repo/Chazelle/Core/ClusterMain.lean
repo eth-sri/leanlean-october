@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterCost
 
 /-!
@@ -21,7 +23,7 @@ def clusterProg : Stmt := .seq phase1 (.seq phase2a (.seq labS (.seq outS bumpS)
 /-- A filter over `Fin n` counts like the filter over `range n`. -/
 theorem card_fin_filter {n : ℕ} (p : ℕ → Prop) [DecidablePred p] :
     (Finset.univ.filter (fun v : Fin n => p v)).card = ((Finset.range n).filter p).card := by
-  rw [← Finset.card_map Fin.valEmbedding]
+  Ξ ← Finset.card_map Fin.valEmbedding
   congr 1
   ext x
   simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and, Fin.valEmbedding_apply,

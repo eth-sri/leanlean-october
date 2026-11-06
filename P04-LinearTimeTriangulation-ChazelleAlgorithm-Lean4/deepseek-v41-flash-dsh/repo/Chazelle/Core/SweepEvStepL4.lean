@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStepL3
 public import Chazelle.Core.SweepEvLoopStartM
 
@@ -29,8 +31,8 @@ theorem stp_mem_full {l : List ℕ} {U : Finset ℕ} (hnd : l.Nodup) (hl : l.len
     (hU : ∀ x ∈ l, x ∈ U) (hc : U.card ≤ 4) {x : ℕ} (hx : x ∈ U) : x ∈ l := by
   classical
   have hsub : l.toFinset ⊆ U := fun y hy => hU y (List.mem_toFinset.1 hy)
-  have hcard : l.toFinset.card = 4 := by rw [List.toFinset_card_of_nodup hnd, hl]
-  have heq : l.toFinset = U := Finset.eq_of_subset_of_card_le hsub (by omega)
+  have hcard : l.toFinset.card = 4 := Ρ List.toFinset_card_of_nodup hnd, hl
+  have heq : l.toFinset = U := Finset.eq_of_subset_of_card_le hsub (⋄)
   rw [← heq] at hx
   exact List.mem_toFinset.1 hx
 
@@ -47,11 +49,11 @@ theorem stp_addLs_all {U : Finset ℕ} (hc : U.card ≤ 4) :
   | append_singleton vs v ih =>
     intro l hnd hl hU hV
     obtain ⟨h1, h2, h3, h4, h5⟩ := ih l hnd hl hU (fun x hx => hV x (List.mem_append_left _ hx))
-    rw [addLs_append']
+    Ξ addLs_append'
     have hvU : v ∈ U := hV v (List.mem_append_right _ (List.mem_singleton_self v))
     set l' := addLs l vs with hl'
     have hsame : addLs l' [v] = addL l' v := rfl
-    rw [hsame]
+    Ξ hsame
     refine ⟨addL_nodup h1 v, addL_length_le h2 v, fun x hx => ?_, fun x hx => mem_addL_of_mem (h4 x hx),
       fun x hx => ?_⟩
     · rcases mem_addL hx with h | h
@@ -65,7 +67,7 @@ theorem stp_addLs_all {U : Finset ℕ} (hc : U.card ≤ 4) :
         split_ifs with hif
         · rcases hif with hif | hif
           · exact hif
-          · exact stp_mem_full h1 (by omega) h3 hc hvU
+          · exact stp_mem_full h1 (⋄) h3 hc hvU
         · exact List.mem_append_right _ (List.mem_singleton_self _)
 
 /-- **The label set of a key** is the image of its label list. -/
@@ -75,26 +77,26 @@ theorem stp_curLab_eq {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config
   unfold curLab labSet
   congr 1
   ext l
-  simp only [mem_ofPred_eq, lblOf, List.mem_map, List.mem_range]
+  ϴ mem_ofPred_eq, lblOf, List.mem_map, List.mem_range
   constructor
   · rintro (⟨h, rfl⟩ | ⟨h, rfl⟩ | ⟨h, rfl⟩ | ⟨h, rfl⟩)
-    · exact ⟨0, by omega, by rw [add_zero]⟩
-    · exact ⟨1, by omega, rfl⟩
-    · exact ⟨2, by omega, rfl⟩
-    · exact ⟨3, by omega, rfl⟩
+    · exact ⟨0, ⋄, Ρ add_zero⟩
+    · exact ⟨1, ⋄, rfl⟩
+    · exact ⟨2, ⋄, rfl⟩
+    · exact ⟨3, ⋄, rfl⟩
   · rintro ⟨i, hi, rfl⟩
-    have : i = 0 ∨ i = 1 ∨ i = 2 ∨ i = 3 := by omega
+    have : i = 0 ∨ i = 1 ∨ i = 2 ∨ i = 3 := ⋄
     rcases this with rfl | rfl | rfl | rfl
-    · exact Or.inl ⟨by omega, by rw [add_zero]⟩
-    · exact Or.inr (Or.inl ⟨by omega, rfl⟩)
-    · exact Or.inr (Or.inr (Or.inl ⟨by omega, rfl⟩))
-    · exact Or.inr (Or.inr (Or.inr ⟨by omega, rfl⟩))
+    · exact Or.inl ⟨⋄, Ρ add_zero⟩
+    · exact Or.inr (Or.inl ⟨⋄, rfl⟩)
+    · exact Or.inr (Or.inr (Or.inl ⟨⋄, rfl⟩))
+    · exact Or.inr (Or.inr (Or.inr ⟨⋄, rfl⟩))
 
 /-- The registers of a label list are its entries. -/
 theorem stp_mem_lblOf {c : Config} {i : ℕ} (hi : i < c.nreg kN) (h4 : c.nreg kN ≤ 4) :
     c.nreg (kL + i) ∈ lblOf c kN kL := by
   unfold lblOf
-  exact List.mem_map.2 ⟨i, List.mem_range.2 (by omega), rfl⟩
+  exact List.mem_map.2 ⟨i, List.mem_range.2 (⋄), rfl⟩
 
 end
 

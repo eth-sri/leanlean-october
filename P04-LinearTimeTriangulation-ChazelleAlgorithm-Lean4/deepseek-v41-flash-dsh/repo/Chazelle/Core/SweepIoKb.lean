@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoSym
 
 /-!
@@ -109,8 +111,8 @@ theorem kbit_meets {op : ℕ} (hop : op ≤ 3) :
     Meets (kbit 10500 10503 10506 op 10520) {bSign} KbPre (KbPost op) (fun _ _ => 241) := by
   intro P W c hw ⟨hG, hW, sa, sb, sd, ha, hb, hd, la, lb, ld⟩ _
   obtain ⟨c', k, ex, hk, hfr, hle, hiff⟩ := kbit_exec (a := 10500) (b := 10503) (d := 10506)
-    (op := op) (dst := 10520) hG hW c hw (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) hop la lb ld ha hb hd
+    (op := op) (dst := 10520) hG hW c hw (⊛) (by norm_num)
+    (⊛) (by norm_num) hop la lb ld ha hb hd
   refine ⟨c', k, ex, hk, ⟨hle, fun sa' sb' sd' ha' hb' hd' => ?_⟩, NFLoc.frame_of_frameB hfr
     (fun r hr => ?_) k⟩
   · rw [symPtIn_unique ha' ha, symPtIn_unique hb' hb, symPtIn_unique hd' hd]; exact hiff

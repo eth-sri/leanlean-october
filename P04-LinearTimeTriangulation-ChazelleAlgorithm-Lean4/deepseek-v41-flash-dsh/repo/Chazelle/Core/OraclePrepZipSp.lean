@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepZip
 
 /-!
@@ -49,30 +53,30 @@ theorem locZ_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
       c₁.nreg = upd (upd c.nreg 50000 V.MD) 50001 V.NB ∧ c₁.nmem = c.nmem := by
     exec_block
     refine ⟨rfl, ?_, rfl⟩
-    config_simp; rw [h.rMD, h.rNB]
+    config_simp; Ξ h.rMD, h.rNB
   have R₁ : ∀ r, (r < 50000 ∨ 50001 < r) → c₁.nreg r = c.nreg r :=
     fun r a => by rw [n₁]; simp only [upd]; split_ifs <;> first | omega
   have h₁ : ZEnv P W lo C N V c₁ := h.stable (fun r hr => R₁ r (by
-      simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr; omega))
-    (fun a _ => by rw [mm₁])
+      ϴ' ZKeep, Bool.or_eq_true, decide_eq_true_eq at hr; omega))
+    (fun a _ => Ρ mm₁)
   have hTB := hL.TB_le
   have hPW := h.hW
   have hnW : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
-  have g2 : c₁.nreg 50002 = pw := by rw [R₁ _ (by omega), h2]
-  have g3 : c₁.nreg 50003 = ph := by rw [R₁ _ (by omega), h3]
+  have g2 : c₁.nreg 50002 = pw := Ρ R₁ _ (⋄), h2
+  have g3 : c₁.nreg 50003 = ph := Ρ R₁ _ (⋄), h3
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hq₂, loc1, loc2⟩ := myLoc_exec arcCover (P := P) (W := W) (c := c₁)
-    e₁.wb_right ⟨h.good, by omega, by rw [n₁]; config_simp; have := hL.md_le; omega,
+    e₁.wb_right ⟨h.good, ⋄, by rw [n₁]; config_simp; have := hL.md_le; omega,
       by rw [n₁, mm₁]; config_simp; exact hL.chwf, chainModel C,
       by rw [n₁, mm₁]; config_simp; exact hL.md, by rw [g2, hnW]; omega⟩
-    h.good (by omega) (by rw [n₁, mm₁]; config_simp; exact hL.md) hL.good
+    h.good (⋄) (by rw [n₁, mm₁]; config_simp; exact hL.md) hL.good
     (by rw [n₁, mm₁]; config_simp; exact hL.nf) h.isNF (by rw [g2, g3]; exact hp) hL.st
     h₁.rTB h₁.rL h₁.pk.zero h₁.pk.one
     (by rw [mm₁]; exact hL.tab) (by rw [← hA]; exact hL.A_lt)
     (by rw [n₁]; config_simp; exact hL.NB_le) (by rw [n₁, mm₁]; config_simp; rw [← hA]; exact hL.AB_le)
     (by rw [n₁, mm₁]; config_simp; rw [← hA]; exact hL.SB_le) hTB
-  rw [g2, g3] at loc1 loc2
-  have fr₁ : FrameB BLZ c c₁ := exec_frameB e₁ (by decide)
-  exact ⟨c₂, _, .seq e₁ e₂, by omega, fr₁.trans (FrameB.mono f₂ fun r hr => by simp [BLZ, hr]),
+  Ξ' g2, g3 at loc1 loc2
+  have fr₁ : FrameB BLZ c c₁ := exec_frameB e₁ (⌖)
+  exact ⟨c₂, _, .seq e₁ e₂, ⋄, fr₁.trans (FrameB.mono f₂ fun r hr => ⊚ BLZ, hr),
     by rw [hA]; exact hq₂, loc1, loc2⟩
 
 /-- Test the end of the located arc against the reference position, adjust. -/
@@ -105,98 +109,98 @@ theorem tstS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, v₄, v₄'⟩ := arcPosS_exec (P := P) hw (AB := V.AB)
     (SB := V.SB) (A := V.A) (p := q0) (o := if d then 1 else 3) h.rAB h.rSB h.pk.one
     h03 hq0A ho (by split_ifs <;> omega) (by rw [hsq']; exact hjl')
-    (by have := hL.SB_le; have := hL.TB_le; rw [h.mem.2.2] at *; omega)
-    (by have := hL.AB_le; have := hL.TB_le; rw [h.mem.2.1] at *; omega)
-  rw [hwv'] at v₄
-  rw [hhv'] at v₄'
+    (by have := hL.SB_le; have := hL.TB_le; Ξ' h.mem.2.2 at *; omega)
+    (by have := hL.AB_le; have := hL.TB_le; Ξ' h.mem.2.1 at *; omega)
+  Ξ' hwv' at v₄
+  Ξ' hhv' at v₄'
   set w2 := (endPos N d q0).edge
   set hc2 := (endPos N d q0).hgt
   have h₄ : ZEnv P W lo C N V c₄ := h.stable (fun r hr => f₄.1 r (by
-    simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr; simp; omega))
-    (fun a _ => by rw [f₄.2.2.1])
-  have y210 : c₄.nreg 110210 = Yw := by rw [f₄.1 _ (by decide), h10]
-  have y211 : c₄.nreg 110211 = Yz := by rw [f₄.1 _ (by decide), h11]
+    ϴ' ZKeep, Bool.or_eq_true, decide_eq_true_eq at hr; simp; omega))
+    (fun a _ => Ρ f₄.2.2.1)
+  have y210 : c₄.nreg 110210 = Yw := Ρ f₄.1 _ (⌖), h10
+  have y211 : c₄.nreg 110211 = Yz := Ρ f₄.1 _ (⌖), h11
   obtain ⟨c₅, k₅, e₅, hk₅, n₅⟩ : ∃ c₅ k₅, Exec P W (block [.copyN 110212 110100,
       .copyN 110100 110210]) c₄ c₅ k₅ ∧ k₅ = 2 ∧
       c₅.nreg = upd (upd c₄.nreg 110212 w2) 110100 Yw := by
     have w₄ := e₄.wb_right
     exec_block
     refine ⟨rfl, ?_⟩
-    config_simp; rw [v₄, y210]
+    config_simp; Ξ v₄, y210
   have hm₅ : c₅.nmem = c₄.nmem :=
-    (exec_frameB e₅ (B := fun r => decide (r = 110212 ∨ r = 110100)) (by decide)).2.2.1
+    (exec_frameB e₅ (B := fun r => decide (r = 110212 ∨ r = 110100)) (⌖)).2.2.1
   have R₅ : ∀ r, r ≠ 110212 → r ≠ 110100 → c₅.nreg r = c₄.nreg r := fun r a b => by
-    rw [n₅, upd_other _ _ _ b, upd_other _ _ _ a]
+    Ξ n₅, upd_other _ _ _ b, upd_other _ _ _ a
   have h₅ : ZEnv P W lo C N V c₅ := h₄.stable (fun r hr => R₅ r (by
-      simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr; omega) (by
-      simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr; omega))
-    (fun a _ => by rw [hm₅])
+      ϴ' ZKeep, Bool.or_eq_true, decide_eq_true_eq at hr; omega) (by
+      ϴ' ZKeep, Bool.or_eq_true, decide_eq_true_eq at hr; omega))
+    (fun a _ => Ρ hm₅)
   have hm1 := C.one_le
   have hmn := h.m_lt
   have hS := C.sideS_lt C.sideBeta
   have hR := rT_lt C
   have hPW := h.hW
   obtain ⟨c₆, k₆, e₆, hk₆, f₆, -, rest₆⟩ := posA_exec (P := P) e₅.wb_right h₅.pk hm1 hmn h.s_lt hS hR
-    (by omega)
+    (⋄)
   have x100 : c₅.nreg 110100 = Yw := by rw [n₅]; config_simp
-  have x101 : c₅.nreg 110101 = hc2 := by rw [R₅ _ (by decide) (by decide), v₄']
-  rw [x100, x101] at rest₆
+  have x101 : c₅.nreg 110101 = hc2 := Ρ R₅ _ (⌖) (⌖), v₄'
+  Ξ' x100, x101 at rest₆
   obtain ⟨-, z₆, -⟩ := rest₆ hY7
-  have z₆' : c₆.nreg 110103 = nz C Yw hc2 := by rw [z₆, ← nzN_eq, h.Qn]
-  obtain ⟨c₇, k₇, e₇, hk₇, f₇, v₇⟩ := eqS_exec (P := P) e₆.wb_right (by omega)
-  have x212 : c₆.nreg 110212 = w2 := by rw [f₆.1 _ (by decide), n₅]; config_simp
+  have z₆' : c₆.nreg 110103 = nz C Yw hc2 := Ρ z₆, ← nzN_eq, h.Qn
+  obtain ⟨c₇, k₇, e₇, hk₇, f₇, v₇⟩ := eqS_exec (P := P) e₆.wb_right (⋄)
+  have x212 : c₆.nreg 110212 = w2 := by rw [f₆.1 _ (⌖), n₅]; config_simp
   have x210 : c₆.nreg 110210 = Yw := by
-    rw [f₆.1 _ (by decide), R₅ _ (by decide) (by decide), y210]
+    Ξ f₆.1 _ (⌖), R₅ _ (⌖) (⌖), y210
   have x211 : c₆.nreg 110211 = Yz := by
-    rw [f₆.1 _ (by decide), R₅ _ (by decide) (by decide), y211]
-  rw [x212, x210, z₆', x211] at v₇
+    Ξ f₆.1 _ (⌖), R₅ _ (⌖) (⌖), y211
+  Ξ' x212, x210, z₆', x211 at v₇
   have g170 : c₇.nreg 120170 = q0 := by
-    rw [f₇.1 _ (by decide), f₆.1 _ (by decide), R₅ _ (by decide) (by decide),
-      f₄.1 _ (by decide), h170]
+    rw [f₇.1 _ (⌖), f₆.1 _ (⌖), R₅ _ (⌖) (⌖),
+      f₄.1 _ (⌖), h170]
   have h₇ : ZEnv P W lo C N V c₇ := h₅.stable (fun r hr => by
       rw [f₇.1 r (by simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr; simp; omega),
         f₆.1 r (by simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr; simp [BPA]; omega)])
-    (fun a _ => by rw [f₇.2.2.1, f₆.2.2.1])
+    (fun a _ => Ρ f₇.2.2.1, f₆.2.2.1)
   have hAW : V.A + 1 ≤ W := by
     have a := hL.SB_le; have b := hL.TB_le; have c' := hL.A_lt
     rcases Nat.eq_zero_or_pos V.L with h0 | h0
-    · rw [h0, pow_zero] at c'; omega
+    · Ξ' h0, pow_zero at c'; omega
     · omega
   obtain ⟨c₈, k₈, e₈, hk₈, f₈, v₈⟩ := adjS_exec (P := P) e₇.wb_right d h₇.pk.one h₇.pk.zero h₇.rA
     (by rw [g170]; exact hq0A) hAW
-  rw [g170] at v₈
+  Ξ' g170 at v₈
   -- the key test
   have hkeq : (chainModel C).key (Qof P) (endPos N d q0) = (chainModel C).key (Qof P) ⟨Yw, Yz⟩ ↔
       (w2 = Yw ∧ nz C Yw hc2 = Yz) := by
     obtain ⟨hw72, hh2, hp02, hp12⟩ := h.arcEnd (j := sj N q0) (by rw [← hA]; exact hjl') d
     have hwe2 : (if d then (N.arc (sj N q0)).s else (N.arc (sj N q0)).e) = endPos N d q0 := by
       unfold endPos; rfl
-    rw [hwe2] at hw72 hh2 hp02 hp12
+    Ξ' hwe2 at hw72 hh2 hp02 hp12
     have := key_eq_iff C hD (w := Yw) (hc := Yz) (w2 := w2) (hc2 := hc2) hY6 hY7 hYh
       hh2 hYp ⟨hp02, hp12⟩
-    rw [hYnz] at this
-    rw [← this, ← hQ]
-  have e13 : c₈.nreg 110213 = c₇.nreg 110213 := f₈.1 _ (by decide)
+    Ξ' hYnz at this
+    Ξ ← this, ← hQ
+  have e13 : c₈.nreg 110213 = c₇.nreg 110213 := f₈.1 _ (⌖)
   have ex : Exec P W (tstS d) c c₈ _ := .seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ e₈)))
-  refine ⟨c₈, _, ex, by omega, ?_, ?_, ?_⟩
-  · have fr₅ : FrameB BTS c₄ c₅ := exec_frameB e₅ (by decide)
+  refine ⟨c₈, _, ex, ⋄, ?_, ?_, ?_⟩
+  · have fr₅ : FrameB BTS c₄ c₅ := exec_frameB e₅ (⌖)
     refine (FrameB.mono f₄ fun r hr => ?_).trans (fr₅.trans ((FrameB.mono f₆ fun r hr => ?_).trans
       ((FrameB.mono f₇ fun r hr => ?_).trans (FrameB.mono f₈ fun r hr => ?_))))
     all_goals
-      simp only [BPA, decide_eq_true_eq] at hr
-      simp only [BTS, Bool.or_eq_true, decide_eq_true_eq]
+      ϴ' BPA, decide_eq_true_eq at hr
+      ϴ BTS, Bool.or_eq_true, decide_eq_true_eq
       omega
-  · rw [e13, v₇]
+  · Ξ e13, v₇
     by_cases he : (chainModel C).key (Qof P) (endPos N d q0) = (chainModel C).key (Qof P) ⟨Yw, Yz⟩
-    · rw [ite_eq_left (hkeq.1 he), ite_eq_left he]
-    · rw [ite_eq_right (fun h' => he (hkeq.2 h')), ite_eq_right he]
-  · rw [v₈, e13]
+    · Ξ ite_eq_left (hkeq.1 he), ite_eq_left he
+    · Ξ ite_eq_right (fun h' => he (hkeq.2 h')), ite_eq_right he
+  · Ξ v₈, e13
 
 theorem sideInArc_ne {s e x : ℝ} (h : sideInArc s e x) : x ≠ s ∧ x ≠ e := by
   unfold sideInArc at h
   split_ifs at h with hse
   · exact ⟨fun h' => by rw [h'] at h; linarith [h.1], fun h' => by rw [h'] at h; linarith [h.2]⟩
-  · refine ⟨fun h' => ?_, fun h' => ?_⟩ <;> rw [h'] at h <;> rcases h with h | h <;> linarith
+  · refine ⟨fun h' => ?_, fun h' => ?_⟩ <;> Ξ' h' at h <;> rcases h with h | h <;> linarith
 
 /-- **The analysis of a walk vertex `X`** (in `110220`). -/
 def kiS : Stmt :=
@@ -212,8 +216,8 @@ def BKI (r : ℕ) : Bool := BLZ r || BTS r || decide (110203 ≤ r ∧ r ≤ 110
   decide (110210 ≤ r ∧ r ≤ 110211) || decide (110223 ≤ r ∧ r ≤ 110228)
 
 theorem BKI_keep {r : ℕ} (h : ZKeep r = true ∨ (110229 ≤ r ∧ r ≤ 110299)) : BKI r = false := by
-  simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at h
-  simp [BKI, BLZ, BTS, BL, Bdir, Bloc, Bcmp, Bk]
+  ϴ' ZKeep, Bool.or_eq_true, decide_eq_true_eq at h
+  Θ BKI, BLZ, BTS, BL, Bdir, Bloc, Bcmp, Bk
   omega
 
 open Classical in
@@ -269,14 +273,14 @@ theorem kiS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : C
     (fun a _ => by rw [fr₃.2.2.1])
   have R₂₃ : ∀ r, r ≠ 110203 → r ≠ 110204 → c₃.nreg r = c₂.nreg r := fun r a b => by
     rw [n₃, upd_other _ _ _ b, upd_other _ _ _ a]
-  have R₁₂ : ∀ r, BLZ r = false → c₂.nreg r = c₁.nreg r := f₂.1
+  have R₁₂ := f₂.1
   have g10 : c₃.nreg 110210 = X := by
     rw [R₂₃ _ (by decide) (by decide), R₁₂ _ (by simp [BLZ, BL, Bdir, Bloc, Bcmp, Bk]), n₁]
     config_simp
   have g11 : c₃.nreg 110211 = 0 := by
     rw [R₂₃ _ (by decide) (by decide), R₁₂ _ (by simp [BLZ, BL, Bdir, Bloc, Bcmp, Bk]), n₁]
     config_simp
-  have hq0A : q0 < V.A := hq₂
+  have hq0A := hq₂
   have hnz0 : nz C X 0 = 0 := by unfold nz; simp
   -- 4. the start
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, s₄, a₄⟩ := tstS_exec e₃.wb_right h₃ true (q0 := q0)

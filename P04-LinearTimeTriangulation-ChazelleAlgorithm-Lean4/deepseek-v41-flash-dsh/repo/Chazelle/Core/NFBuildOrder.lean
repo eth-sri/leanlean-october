@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FactsTie
 public import Chazelle.Core.NFBuildSort
 public import Chazelle.Core.SpecKernels
@@ -52,7 +54,7 @@ noncomputable def events (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)
 theorem events_map_fst (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) :
     (events M Q L).map Prod.fst = (List.range L.length).flatMap (fun i => [i, i]) := by
   unfold events evPair
-  rw [List.map_flatMap]
+  Ξ List.map_flatMap
   rfl
 
 theorem count_doubles (n i : ℕ) :
@@ -60,25 +62,25 @@ theorem count_doubles (n i : ℕ) :
   induction n with
   | zero => simp
   | succ n ih =>
-    rw [List.range_succ, List.flatMap_append, List.count_append, ih]
+    Ξ List.range_succ, List.flatMap_append, List.count_append, ih
     simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil, List.count_cons,
       List.count_nil, beq_iff_eq]
     by_cases h : i = n
     · subst h; simp
     · have h' : ¬ n = i := Ne.symm h
-      simp only [h', ite_false, add_zero]
+      ϴ h', ite_false, add_zero
       by_cases h2 : i < n
-      · rw [ite_eq_left h2, ite_eq_left (by omega)]
-      · rw [ite_eq_right h2, ite_eq_right (by omega)]
+      · rw [ite_eq_left h2, ite_eq_left (⋄)]
+      · rw [ite_eq_right h2, ite_eq_right (⋄)]
 
 theorem count_events (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) {i : ℕ}
     (hi : i < L.length) : ((events M Q L).map Prod.fst).count i = 2 := by
-  rw [events_map_fst, count_doubles, ite_eq_left hi]
+  Ξ events_map_fst, count_doubles, ite_eq_left hi
 
 theorem mem_events {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {e : Ev} :
     e ∈ events M Q L ↔ ∃ i < L.length, e ∈ evPair M Q L i := by
   unfold events
-  simp [List.mem_flatMap]
+  Θ List.mem_flatMap
 
 /-- **The two attachments of a record** of an admissible attached chord are at distinct points:
 the left endpoint at `lpos`, the right one at `rpos`. -/
@@ -102,7 +104,7 @@ theorem endpoints {M : Model} (hM : WalkAx M) {Q : Polygon} {r : CRec}
 
 /-- A triple of the list, by index. -/
 theorem getD_mem {L : List (ℕ × ℕ × ℕ)} {i : ℕ} (hi : i < L.length) : L.getD i (0, 0, 0) ∈ L := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+  Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some
   exact List.getElem_mem hi
 
 /-- Distinct indices of a valid chord list give distinct chords. -/
@@ -113,7 +115,7 @@ theorem chordSet_inj {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} (h
   have hi' : i < (L.map fun x => (recOf x).toSet M Q).length := by rw [List.length_map]; exact hi
   have hj' : j < (L.map fun x => (recOf x).toSet M Q).length := by rw [List.length_map]; exact hj
   refine (hnd.getElem_inj_iff (hi := hi') (hj := hj')).1 ?_
-  rw [List.getElem_map, List.getElem_map]
+  Ξ List.getElem_map, List.getElem_map
   unfold chordSet at h
   rwa [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some,
     List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj, Option.getD_some] at h
@@ -167,7 +169,7 @@ theorem parenthesis_of_sorted {M : Model} (hM : WalkAx M) {Q : Polygon}
   refine BuildSort.noCross_of_sorted (n := (M.W.n : ℝ)) ?_ ?_ ?_ ?_ ?_ hsorted
   · intro e he
     obtain ⟨i, hi, -, pa, pb, ta, tb, hA, hB, hAB, h1, h2⟩ := event_data hM hL ((hmem e).1 he)
-    rw [h1, h2]
+    Ξ h1, h2
     exact ⟨(keyb hA).1, (keyb hA).2, (keyb hB).1, (keyb hB).2,
       WalkAx.key_ne_of_pt_ne hA hB hAB⟩
   · intro e he
@@ -180,25 +182,25 @@ theorem parenthesis_of_sorted {M : Model} (hM : WalkAx M) {Q : Polygon}
     · rw [List.mem_singleton] at he; subst he; simp
   · intro e he
     obtain ⟨i, hi, hei, -⟩ := event_data hM hL ((hmem e).1 he)
-    rw [(hperm.map Prod.fst).count_eq, hei]
+    Ξ (hperm.map Prod.fst).count_eq, hei
     exact count_events M Q L hi
   · intro e he f hf hef
     obtain ⟨i, hi, hei, pa, pb, ta, tb, hA, hB, hAB, h1, h2⟩ := event_data hM hL ((hmem e).1 he)
     obtain ⟨j, hj, hfj, pc, pd, tc, td, hC, hD, -, h3, h4⟩ := event_data hM hL ((hmem f).1 hf)
-    rw [h1, h2, h3, h4]
+    Ξ h1, h2, h3, h4
     have hne : chordSet M Q L i ≠ chordSet M Q L j := fun h =>
       hef (by rw [hei, hfj]; exact chordSet_inj hL hi hj h)
     exact hM.no_cross hAdm hfin (chordSet_mem hi) (chordSet_mem hj) hne hA hB hAB hC hD
   · intro e he f hf hef
     obtain ⟨i, hi, hei, pa, pb, ta, tb, hA, hB, hAB, h1, h2⟩ := event_data hM hL ((hmem e).1 he)
     obtain ⟨j, hj, hfj, pc, pd, tc, td, hC, hD, hCD, h3, h4⟩ := event_data hM hL ((hmem f).1 hf)
-    have k1 : (pa : ℝ) + ta = pc + tc := by rw [← h1, ← h3, hef]
-    have k2 : (pb : ℝ) + tb = pd + td := by rw [← h2, ← h4, hef]
+    have k1 : (pa : ℝ) + ta = pc + tc := Ρ ← h1, ← h3, hef
+    have k2 : (pb : ℝ) + tb = pd + td := Ρ ← h2, ← h4, hef
     obtain ⟨rfl, rfl⟩ := sideKey_inj hA.2.1 hA.2.2.1 hC.2.1 hC.2.2.1 k1
     obtain ⟨rfl, rfl⟩ := sideKey_inj hB.2.1 hB.2.2.1 hD.2.1 hD.2.2.1 k2
     have e1 := (hM.attach_seg (hAdm (chordSet_mem hi)) hA hB hAB).1
     have e2 := (hM.attach_seg (hAdm (chordSet_mem hj)) hC hD hCD).1
-    rw [hei, hfj]
+    Ξ hei, hfj
     exact chordSet_inj hL hi hj (e1.trans e2.symm)
 
 /-! ## The tie rule is the direction rule -/

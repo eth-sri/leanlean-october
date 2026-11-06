@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFCover
 public import Chazelle.Core.MergeAsmMath
 
@@ -39,7 +41,7 @@ theorem region_arcs_le {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hNF :
     have hj' := List.mem_toFinset.1 hj'
     obtain ⟨hjl, hjr⟩ := (hArcs.2.2.2 r hr j).1 hj
     obtain ⟨hjl', hjr'⟩ := (hArcs.2.2.2 r hr j').1 hj'
-    exact hArcs.2.1 j j' hjl hjl' (by rw [hjr, hjr']) (congrArg Prod.fst he)
+    exact hArcs.2.1 j j' hjl hjl' (Ρ hjr, hjr') (congrArg Prod.fst he)
   have hsub : f '' (↑l.toFinset : Set ℕ) ⊆ {ab : ℝ × ℝ | M.IsArc (N.F M Q) (reg r) ab.1 ab.2} := by
     rintro _ ⟨j, hj, rfl⟩
     have hj := List.mem_toFinset.1 hj
@@ -49,8 +51,8 @@ theorem region_arcs_le {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hNF :
     exact this
   obtain ⟨hfin, hcard⟩ := hM.arcs_bound hFam.2.1 hFam.1 hU
   have hl : l.length = (↑l.toFinset : Set ℕ).ncard := by
-    rw [Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd]
-  calc l.length = (f '' (↑l.toFinset : Set ℕ)).ncard := by rw [hinj.ncard_image, hl]
+    Ξ Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd
+  calc l.length = (f '' (↑l.toFinset : Set ℕ)).ncard := Ρ hinj.ncard_image, hl
     _ ≤ {ab : ℝ × ℝ | M.IsArc (N.F M Q) (reg r) ab.1 ab.2}.ncard := Set.ncard_le_ncard hsub hfin
     _ ≤ M.deg (N.F M Q) (reg r) + 1 := hcard
     _ ≤ D + 1 := by have := hD _ hU; omega
@@ -80,10 +82,10 @@ theorem arc_isArc (hE : FGood E c₀) {reg : ℕ → Set Point}
     E.M.IsArc (E.N.F E.M (Qof E.P)) (reg E.r) (E.M.key (Qof E.P) (arcOf E.N E.r t).s)
       (E.M.key (Qof E.P) (arcOf E.N E.r t).e) := by
   obtain ⟨-, -, hArcs, -⟩ := hregs
-  have hr : E.r < E.N.nRegions := hE.hr
+  have hr := hE.hr
   set j := (E.N.region E.r).arcs.getD t 0 with hjdef
   have hjm : j ∈ (E.N.region E.r).arcs := by
-    rw [hjdef, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
+    Ξ hjdef, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some
     exact List.getElem_mem ht
   obtain ⟨hj, hjr⟩ := (hArcs.2.2.2 E.r hr j).1 hjm
   have := (hArcs.1 j hj).2
@@ -99,13 +101,13 @@ theorem arc_ne (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : �
   rcases hc with ⟨-, -, h⟩ | ⟨hF, -, -⟩
   · exact h
   · exfalso
-    have hr : E.r < E.N.nRegions := hE.hr
+    have hr := hE.hr
     obtain ⟨-, -, -, hRg⟩ := hregs
     obtain ⟨i, hi⟩ := List.exists_mem_of_ne_nil _ hch
     obtain ⟨hi', -⟩ := ((hRg E.r hr).1 i).1 hi
     have hmem : E.N.chord i ∈ E.N.chords := by
       unfold NF.chord
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi', Option.getD_some]
+      Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi', Option.getD_some
       exact List.getElem_mem hi'
     have : (E.N.chord i).toSet E.M (Qof E.P) ∈ E.N.F E.M (Qof E.P) := ⟨E.N.chord i, hmem, rfl⟩
     rw [hF] at this
@@ -145,7 +147,7 @@ theorem piece_wt_le {n a b : ℝ} {q : ℕ} {s e : ℕ → ℝ} {M : Model} (hn 
   refine Set.ncard_le_ncard (fun p hp => ?_) ((Set.finite_Iio M.W.n).subset fun x hx => hx.1)
   obtain ⟨hp, hc, τ, h0, h1, hin⟩ := hp
   have hpn : (p : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp
-  exact ⟨hp, hc, τ, h0, h1, tile_inner h hi ⟨by positivity, by rw [hn]; linarith⟩ hin⟩
+  exact ⟨hp, hc, τ, h0, h1, tile_inner h hi ⟨⟢, by rw [hn]; linarith⟩ hin⟩
 
 
 /-! ## A kind-1 piece -/
@@ -200,9 +202,9 @@ theorem k1hyp_of (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t :
   have hm1 := Cα.one_le
   -- the piece's chain lies on the model's chain
   have hsub : ∀ C : Chain, E.M = chainModel C → Cα.set ⊆ C.set := fun C hM => by
-    have hc := counted_of_wt (M := E.M) hs (by omega) hmn hwt'
+    have hc := counted_of_wt (M := E.M) hs (⋄) hmn hwt'
     have hdir' := hdir
-    have hn' : n = (chainModel C).W.n := by rw [← hM]
+    have hn' : n = (chainModel C).W.n := Ρ ← hM
     rw [hn'] at hdir'
     rw [hM] at hc hdir'
     exact piece_set_sub hdir' hc
@@ -222,10 +224,10 @@ theorem k1hyp_of (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t :
   · show L + 1 + 7 * i + 6 < _
     omega
   · have hv : E.M.pos (Qof E.P) ⟨s, 0⟩ = E.M.W.vtx s := by
-      rw [pos_eq_sidePt, param_vtx, Chazelle.Chain.sidePt_zero]
+      Ξ pos_eq_sidePt, param_vtx, Chazelle.Chain.sidePt_zero
     show E.M.pos (Qof E.P) ⟨s, 0⟩ ∈ C.set
-    rw [hv]
-    have hs0 : (s + 0) % n = s := by rw [Nat.add_zero, Nat.mod_eq_of_lt hs]
+    Ξ hv
+    have hs0 : (s + 0) % n = s := Ρ Nat.add_zero, Nat.mod_eq_of_lt hs
     rcases hdir with hu | hd
     · rw [← hs0, hu 0 (Nat.zero_le _)]; exact hsub C hM (Cα.vertex_mem_set (Nat.zero_le _))
     · rw [← hs0, hd 0 (Nat.zero_le _)]; exact hsub C hM (Cα.vertex_mem_set (Nat.sub_le _ _))
@@ -240,7 +242,7 @@ theorem k1hyp_of (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t :
       Nat.clog_le_of_le_pow Nat.lt_two_pow_self
     rcases Nat.lt_or_ge N.nChords 2 with h | h
     · omega
-    · have := hcb (N.nChords - 1) (by omega)
+    · have := hcb (N.nChords - 1) (⋄)
       omega
 
 

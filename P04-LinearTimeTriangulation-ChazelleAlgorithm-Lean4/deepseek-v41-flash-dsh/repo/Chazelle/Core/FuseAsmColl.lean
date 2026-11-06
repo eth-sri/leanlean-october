@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmList
 
 /-!
@@ -32,13 +34,13 @@ theorem chordListAt_append {m : ℕ → ℕ} {A : ℕ} {L : List (ℕ × ℕ × 
   rw [List.length_append, List.length_singleton] at hi
   rcases Nat.lt_or_ge i L.length with hlt | hge
   · have e : (L ++ [x]).getD i (0, 0, 0) = L.getD i (0, 0, 0) := by
-      simp [List.getD_eq_getElem?_getD, List.getElem?_append_left hlt]
+      Θ List.getD_eq_getElem?_getD, List.getElem?_append_left hlt
     rw [e]; exact h i hlt
-  · have hi' : i = L.length := by omega
+  · have hi' : i = L.length := ⋄
     subst hi'
     have e : (L ++ [x]).getD L.length (0, 0, 0) = x := by
-      simp [List.getD_eq_getElem?_getD]
-    rw [e]
+      Θ List.getD_eq_getElem?_getD
+    Ξ e
     exact ⟨h0, h1, h2⟩
 
 /-- The invariant of the collection loop. -/

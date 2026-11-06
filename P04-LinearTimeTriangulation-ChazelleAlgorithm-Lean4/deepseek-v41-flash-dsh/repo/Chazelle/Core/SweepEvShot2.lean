@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvShot
 public import Chazelle.Core.SweepEvCand
 
@@ -29,7 +31,7 @@ theorem origin_mem_left_dom {J : Merge.Junction} (hP : J.P.Simple) {a : Point}
   by_contra hn
   rcases (Merge.not_mem_dom_iff J.left ha₁).1 hn with hb | hs
   · have hR : J.left.radius = J.right.radius := rfl
-    rw [hR] at hb; exact hb (J.right.set_subset_box haR)
+    Ξ' hR at hb; exact hb (J.right.set_subset_box haR)
   · exact not_mem_left_of_right hP haR hav hs
 
 /-- The direction of a code `≤ 1` and of its complement. -/

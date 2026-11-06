@@ -32,8 +32,8 @@ def farChk : Stmt :=
 
 variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 100000 in
+
+
 /-- **The far-end test**: `cFr = 1` iff the hit is before the far end in the direction `oD`. -/
 theorem farChk_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c₀)
     (hctx1 : ChainCtx P W c CD₁ J.left) (hctx2 : ChainCtx P W c (sw 21) J.right)
@@ -128,8 +128,8 @@ theorem farChk_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
 
 /-! ## The walk edge -/
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 100000 in
+
+
 /-- **The walk edge of `M`**: `cME := (cGL + cPs) mod n` (`cGL, cPs < n`). -/
 theorem mapE_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hM₀ : MapK J c₀)
     (hps : c.nreg cPs < (chainModel J.whole).W.n) (hW : 2 * (chainModel J.whole).W.n ≤ W) :
@@ -193,8 +193,8 @@ theorem tabAddrL_val (m f : ℕ → ℕ) :
   simp only [tabAddrL, regB, regI, upd_same, upd_other _ _ _ hK, upd_other _ _ _ hS]
   ring
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 100000 in
+
+
 /-- **The table write.** -/
 theorem tabW_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hT : c₀.nreg ALLOC ≤ c.nreg cTB)
     (hW : c.nreg cTB + 3 * (2 * c.nreg oK + c.nreg oS) + 2 ≤ W) :
@@ -204,7 +204,7 @@ theorem tabW_irs (hI : IInv W c₀ c) (hK₀ : Consts c₀) (hT : c₀.nreg ALLO
         (c.nreg cTB + 3 * (2 * c.nreg oK + c.nreg oS) + 2) (c.nreg (eA + 2)) ∧
       (∀ r, r ≠ cTA → c'.nreg r = c.nreg r)) := by
   have hK := hK₀.fix hI
-  have k1 : c.nreg K1 = 1 := hK.2.1
+  have k1 := hK.2.1
   have hsA : IScr cTA := iscr_sw' (by norm_num) (by norm_num)
   have hK' : oK ≠ cTA := by unfold oK cTA sw; omega
   have hS' : oS ≠ cTA := by unfold oS cTA sw; omega

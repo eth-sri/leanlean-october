@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Mountain.BaseSign
 public import Chazelle.EarClip.RamDet
 
@@ -81,25 +83,25 @@ def stk (f : ℕ → ℕ) : ℕ → List ℕ
 theorem stk_congr {f g : ℕ → ℕ} {t : ℕ} (h : ∀ i, i < t → f i = g i) : stk f t = stk g t := by
   induction t with
   | zero => rfl
-  | succ t ih => rw [stk_succ, stk_succ, h t (by omega), ih (fun i hi => h i (by omega))]
+  | succ t ih => rw [stk_succ, stk_succ, h t (⋄), ih (fun i hi => h i (⋄))]
 
 /-- Writing at address `t` does not change the stack `stk f t`. -/
 theorem stk_upd (f : ℕ → ℕ) (t v : ℕ) : stk (upd f t v) t = stk f t :=
-  stk_congr (fun i hi => Machine.upd_other _ _ _ (by omega))
+  stk_congr (fun i hi => Machine.upd_other _ _ _ (⋄))
 
 /-- **Push**: writing `v` at address `t` and taking `t + 1` entries pushes `v`. -/
 theorem stk_push (f : ℕ → ℕ) (t v : ℕ) : stk (upd f t v) (t + 1) = v :: stk f t := by
-  rw [stk_succ, Machine.upd_same, stk_upd]
+  Ξ stk_succ, Machine.upd_same, stk_upd
 
 /-- A stack with at least two entries: its top two entries are `f (t - 1)` and `f (t - 2)`. -/
 theorem stk_two {f : ℕ → ℕ} {t : ℕ} (ht : 2 ≤ t) :
     stk f t = f (t - 1) :: f (t - 2) :: stk f (t - 2) := by
-  obtain ⟨u, rfl⟩ : ∃ u, t = u + 2 := ⟨t - 2, by omega⟩
+  obtain ⟨u, rfl⟩ : ∃ u, t = u + 2 := ⟨t - 2, ⋄⟩
   simp
 
 /-- **Pop**: dropping the top entry. -/
 theorem stk_pop {f : ℕ → ℕ} {t : ℕ} (ht : 1 ≤ t) : stk f t = f (t - 1) :: stk f (t - 1) := by
-  obtain ⟨u, rfl⟩ : ∃ u, t = u + 1 := ⟨t - 1, by omega⟩
+  obtain ⟨u, rfl⟩ : ∃ u, t = u + 1 := ⟨t - 1, ⋄⟩
   simp
 
 /-! ### The program -/

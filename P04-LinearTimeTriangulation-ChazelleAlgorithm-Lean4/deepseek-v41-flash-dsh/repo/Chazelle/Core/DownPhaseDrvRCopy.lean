@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRLib
 public import Chazelle.Core.SortList
 
@@ -30,7 +32,7 @@ def cpS : Stmt := .seq (.instr (.constN 210060 0)) (.whileLtN 210060 210061 cpBo
 /-- The registers `cpS` writes. -/
 def Bcp (r : ℕ) : Bool := decide (r = 210060) || decide (r = 210064) || decide (r = 210065)
 
-theorem wrM_cpBody : wrM Bcp cpBody = true := by decide
+theorem wrM_cpBody : wrM Bcp cpBody = true := ⌖
 
 section exec
 

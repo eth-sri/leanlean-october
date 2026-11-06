@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleShF
 
 /-!
@@ -36,30 +38,30 @@ def queryI (sh : Stmt) : Stmt := .seq normI (.seq (branchI sh) outI)
 theorem log_le_clog_succ {L γ : ℕ} (h1 : 1 ≤ L) (h2 : L ≤ γ) :
     Nat.log 2 (2 * L) ≤ Nat.clog 2 γ + 1 := by
   have e : Nat.log 2 (2 * L) = Nat.log 2 L + 1 := by
-    rw [mul_comm]; exact Nat.log_mul_base (by norm_num) (by omega)
-  rw [e]
+    rw [mul_comm]; exact Nat.log_mul_base (⊛) (by omega)
+  Ξ e
   have := Nat.log_mono_right (b := 2) h2
   have := Nat.log_le_clog 2 γ
   omega
 
 set_option maxRecDepth 20000 in
 theorem room_one {A lg Fg cl W : ℕ} (h : A + (4 * Fg + 3000 * (cl + 1) + 19000) ≤ W)
-    (hl : lg ≤ cl + 1) : A + 2 * Fg + 1204 * lg + 4500 ≤ W := by omega
+    (hl : lg ≤ cl + 1) : A + 2 * Fg + 1204 * lg + 4500 ≤ W := ⋄
 
 set_option maxRecDepth 20000 in
 theorem room_two {A k lg lg₁ Fg cl W : ℕ} (h : A + (4 * Fg + 3000 * (cl + 1) + 19000) ≤ W)
     (hk : k ≤ 2 * Fg + 1204 * lg₁ + 4500) (hl₁ : lg₁ ≤ cl + 1) (hl : lg ≤ cl + 1) :
-    A + k + 2 * Fg + 1204 * lg + 4500 ≤ W := by omega
+    A + k + 2 * Fg + 1204 * lg + 4500 ≤ W := ⋄
 
 set_option maxRecDepth 20000 in
 theorem cost_one {k₂ k₃ lg Fg cl : ℕ} (h2 : k₂ = 5) (h3 : k₃ ≤ 2 * Fg + 1204 * lg + 4500)
-    (hl : lg ≤ cl + 1) : k₂ + k₃ + 1 ≤ 4 * Fg + 3000 * (cl + 1) + 18000 := by omega
+    (hl : lg ≤ cl + 1) : k₂ + k₃ + 1 ≤ 4 * Fg + 3000 * (cl + 1) + 18000 := ⋄
 
 set_option maxRecDepth 20000 in
 theorem cost_two {k₂ k₃ k₄ k₅ lg lg₁ Fg cl : ℕ} (h2 : k₂ = 5)
     (h3 : k₃ ≤ 2 * Fg + 1204 * lg₁ + 4500) (h4 : k₄ ≤ 8) (h5 : k₅ ≤ 2 * Fg + 1204 * lg + 4500)
     (hl₁ : lg₁ ≤ cl + 1) (hl : lg ≤ cl + 1) :
-    k₂ + (k₃ + (k₄ + k₅)) + 2 ≤ 4 * Fg + 3000 * (cl + 1) + 18000 := by omega
+    k₂ + (k₃ + (k₄ + k₅)) + 2 ≤ 4 * Fg + 3000 * (cl + 1) + 18000 := ⋄
 
 section exec
 
@@ -108,11 +110,11 @@ theorem queryI_exec {sh : Stmt} {F : ℕ → ℕ}
   have f₁ : ∀ r, Bnorm r = false → c₁.nreg r = c.nreg r := F₁.1
   have S₁ : SEnv P W O s c₁ := hS.keep (fun r h1 h2 => f₁ r (by
     simp only [Bnorm, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
-    (fun a _ => by rw [F₁.2.2.1]) (by rw [f₁ _ (by decide)])
+    (fun a _ => by rw [F₁.2.2.1]) (by rw [f₁ _ (⌖)])
   have Fr₁ : Frame ioBands c c₁ k₁ := frameIO_of_frameB (B := Bnorm) (fun r hr => io_of_band (by
     simp only [Bnorm, Bk, Bool.or_eq_true, decide_eq_true_eq] at hr; omega)) F₁ k₁
   have hB₁ : BestI P c₁ ∅ (s.o.eval (Qof P)) (dirOf s.dir) :=
-    bestI_empty (by rw [f₁ _ (by decide)]; exact h70)
+    bestI_empty (by rw [f₁ _ (⌖)]; exact h70)
   set A := (interiorModel (Qof P)).arcSet ((interiorModel (Qof P)).key (Qof P) ⟨s.e₁, s.h₁⟩)
     ((interiorModel (Qof P)).key (Qof P) ⟨s.e₂, s.h₂⟩) with hAd
   set z := s.o.eval (Qof P) with hzd
@@ -121,10 +123,10 @@ theorem queryI_exec {sh : Stmt} {F : ℕ → ℕ}
       d'.nreg r = d.nreg r := fun F r hr => F.1 r (by
         simp only [Bset, decide_eq_false_iff_not]; omega)
   have keepSet : ∀ {d d' : Config}, FrameB Bset d d' → SEnv P W O s d → SEnv P W O s d' :=
-    fun F hS' => hS'.keep (fun r h1 h2 => bandSet F r (by omega)) (fun a _ => by rw [F.2.2.1])
-      (by rw [bandSet F _ (by unfold ALLOC; omega)])
+    fun F hS' => hS'.keep (fun r h1 h2 => bandSet F r (⋄)) (fun a _ => by rw [F.2.2.1])
+      (Ρ bandSet F _ (by unfold ALLOC; omega))
   have bestSet : ∀ {d d' : Config} {S' : Set Point}, FrameB Bset d d' → BestI P d S' z σ →
-      BestI P d' S' z σ := fun F hb => hb.keep (fun r h1 h2 => bandSet F r (by omega))
+      BestI P d' S' z σ := fun F hb => hb.keep (fun r h1 h2 => bandSet F r (⋄))
   -- the branch
   have hbr : ∃ c₂ k₂, Exec P W (branchI sh) c₁ c₂ k₂ ∧
       k₂ ≤ 4 * F s.γ + 3000 * (Nat.clog 2 s.γ + 1) + 18000 ∧ BestI P c₂ (∅ ∪ A) z σ ∧
@@ -142,25 +144,25 @@ theorem queryI_exec {sh : Stmt} {F : ℕ → ℕ}
           (nh (Qof P) s.e₂ s.h₂) ≤ s.γ := hwL ▸ hwt
       have hlog := log_le_clog_succ hL1 hLγ
       have hA₂ : c₂.nreg ALLOC = c.nreg ALLOC := by
-        rw [bandSet Fs _ (by unfold ALLOC; omega), f₁ _ (by decide)]
+        rw [bandSet Fs _ (by unfold ALLOC; omega), f₁ _ (⌖)]
       obtain ⟨c₃, k₃, e₃, hk₃, hB₃, S₃, F₃, g₃⟩ := sqS_exec hsh c₂ e₂.wb_right S₂
-        (by rw [b33, S₁.r1]) (by rw [b34, S₁.r2]) (by rw [b35, a31]) (by rw [b36, a30]) (by rw [b37, a32])
+        (Ρ b33, S₁.r1) (by rw [b34, S₁.r2]) (by rw [b35, a31]) (by rw [b36, a30]) (by rw [b37, a32])
         hsub hLγ ho1 ho2 hol (by rw [← hset]; exact hoA) (bestSet Fs hB₁)
         (by rw [hA₂]; exact room_one hroom hlog)
       refine ⟨c₃, _, .ifLtN_true hcond (.seq e₂ e₃), cost_one hk₂ hk₃ hlog,
         by rw [hAd, hset]; exact hB₃, S₃,
-        ((frameIO_of_frameB (fun r h => bset_io h) Fs k₂).trans F₃).mono (by simp) (by omega)⟩
+        ((frameIO_of_frameB (fun r h => bset_io h) Fs k₂).trans F₃).mono (✓) (by omega)⟩
     · -- two sub-queries
       push Not at hL
       have hcond : ¬ c₁.nreg 170032 < c₁.nreg 170010 := by rw [a32, S₁.r10, ← hQ]; omega
-      obtain ⟨hsubA, hsubB, hset, hwn⟩ := plan_two q (by omega)
+      obtain ⟨hsubA, hsubB, hset, hwn⟩ := plan_two q (⋄)
       have hnγ : P.n ≤ s.γ := by rw [← hQ]; exact hwn ▸ hwt
       -- the first sub-query
-      obtain ⟨c₂, k₂, e₂, hk₂, b33, b34, b35, b36, b37, Fs⟩ := setTwoA_exec (P := P) c₁ w₁ (by omega)
+      obtain ⟨c₂, k₂, e₂, hk₂, b33, b34, b35, b36, b37, Fs⟩ := setTwoA_exec (P := P) c₁ w₁ (⋄)
       have S₂ := keepSet Fs S₁
       have hA₂ : c₂.nreg ALLOC = c.nreg ALLOC := by
-        rw [bandSet Fs _ (by unfold ALLOC; omega), f₁ _ (by decide)]
-      have hlogA := log_le_clog_succ (L := 2) (γ := s.γ) (by norm_num) (by omega)
+        rw [bandSet Fs _ (by unfold ALLOC; omega), f₁ _ (⌖)]
+      have hlogA := log_le_clog_succ (L := 2) (γ := s.γ) (⊛) (⋄)
       have hsA : (interiorModel (Qof P)).arcSet ((interiorModel (Qof P)).key (Qof P) ⟨s.e₁, s.h₁⟩)
           ((interiorModel (Qof P)).key (Qof P) ⟨s.e₂, s.h₂⟩) ⊇ oset (interiorWalk (Qof P)) s.e₁
           ((interiorModel (Qof P)).param (Qof P) ⟨s.e₁, s.h₁⟩)
@@ -168,22 +170,22 @@ theorem queryI_exec {sh : Stmt} {F : ℕ → ℕ}
         rw [hset]; exact Set.subset_union_left
       obtain ⟨c₃, k₃, e₃, hk₃, hB₃, S₃, F₃, g₃⟩ := sqS_exec hsh c₂ e₂.wb_right S₂ (u := s.e₁)
         (L := 2) (sh₀ := s.h₁) (ee := 2) (eh := 0)
-        (by rw [b33, S₁.r1]) (by rw [b34, S₁.r2]) b35 b36 b37
-        hsubA (by omega) ho1 ho2 hol (fun h => hoA (hsA h)) (bestSet Fs hB₁)
+        (Ρ b33, S₁.r1) (by rw [b34, S₁.r2]) b35 b36 b37
+        hsubA (⋄) ho1 ho2 hol (fun h => hoA (hsA h)) (bestSet Fs hB₁)
         (by rw [hA₂]; exact room_one hroom hlogA)
       -- the second sub-query
       have c31 : c₃.nreg 170031 = eeOf (Qof P) s.e₁ s.h₁ s.e₂ (nh (Qof P) s.e₂ s.h₂) := by
-        rw [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a31
+        rw [g₃ _ (⊛) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a31
       have c30 : c₃.nreg 170030 = nh (Qof P) s.e₂ s.h₂ := by
-        rw [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a30
+        rw [g₃ _ (⊛) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a30
       have c32 : c₃.nreg 170032 = spanL (eeOf (Qof P) s.e₁ s.h₁ s.e₂ (nh (Qof P) s.e₂ s.h₂))
           (nh (Qof P) s.e₂ s.h₂) := by
-        rw [g₃ _ (by norm_num) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a32
+        rw [g₃ _ (⊛) (by norm_num) (by decide), bandSet Fs _ (by omega)]; exact a32
       obtain ⟨c₄, k₄, e₄, hk₄, d33, d34, d35, d36, d37, Ft⟩ := setTwoB_exec (P := P) c₃
         e₃.wb_right S₃ he1
       have S₄ := keepSet Ft S₃
       have hA₄ : c₄.nreg ALLOC ≤ c.nreg ALLOC + k₃ := by
-        rw [bandSet Ft _ (by unfold ALLOC; omega)]
+        Ξ bandSet Ft _ (by unfold ALLOC; omega)
         have := F₃.2.2.2.2.2.2; omega
       have hLB : spanL (eeOf (Qof P) s.e₁ s.h₁ s.e₂ (nh (Qof P) s.e₂ s.h₂))
           (nh (Qof P) s.e₂ s.h₂) - 2 ≤ s.γ := by
@@ -199,23 +201,23 @@ theorem queryI_exec {sh : Stmt} {F : ℕ → ℕ}
         rw [hset]; exact Set.subset_union_right
       obtain ⟨c₅, k₅, e₅, hk₅, hB₅, S₅, F₅, g₅⟩ := sqS_exec hsh c₄ e₄.wb_right S₄
         (u := (s.e₁ + 2) % (Qof P).n) (sh₀ := 0)
-        (by rw [d33, hQ]) d34 (by rw [d35, c31]) (by rw [d36, c30]) (by rw [d37, c32])
+        (Ρ d33, hQ) d34 (by rw [d35, c31]) (by rw [d36, c30]) (by rw [d37, c32])
         hsubB hLB ho1 ho2 hol (fun h => hoA (hsB h)) (bestSet Ft hB₃)
         (le_trans (Nat.add_le_add_right (Nat.add_le_add_right (Nat.add_le_add_right hA₄ _) _) _)
           (room_two hroom hk₃ hlogA hlogB))
       refine ⟨c₅, _, .ifLtN_false hcond (.seq e₂ (.seq e₃ (.seq e₄ e₅))),
         cost_two hk₂ hk₃ hk₄ hk₅ hlogA hlogB, ?_, S₅,
         ((((frameIO_of_frameB (fun r h => bset_io h) Fs k₂).trans F₃).trans
-          (frameIO_of_frameB (fun r h => bset_io h) Ft k₄)).trans F₅).mono (by simp) (by omega)⟩
-      rw [hAd, hset, ← Set.union_assoc]
+          (frameIO_of_frameB (fun r h => bset_io h) Ft k₄)).trans F₅).mono (✓) (by omega)⟩
+      Ξ hAd, hset, ← Set.union_assoc
       exact hB₅
   obtain ⟨c₂, k₂, e₂, hk₂, hB₂, S₂, F₂⟩ := hbr
   -- the answer
   obtain ⟨c₃, k₃, e₃, hk₃, hhit, hno, F₃⟩ := outI_exec c₂ e₂.wb_right S₂ hB₂
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, fun h => ?_, fun h => ?_,
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ⋄, fun h => ?_, fun h => ?_,
     ((Fr₁.trans F₂).trans (frameIO_of_frameB (B := Bout) (fun r hr => io_of_band (by
       simp only [Bout, Bool.or_eq_true, decide_eq_true_eq] at hr; omega)) F₃ k₃)).mono
-      (by simp) (by omega)⟩
+      (✓) (by omega)⟩
   · obtain ⟨t, h1, h2, h3, h4⟩ := hhit h
     rw [Set.empty_union] at h1
     exact ⟨t, h1, h2, h3, h4⟩

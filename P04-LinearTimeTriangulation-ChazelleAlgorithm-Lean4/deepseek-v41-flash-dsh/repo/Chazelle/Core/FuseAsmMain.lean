@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmAux
 
 /-!
@@ -36,8 +38,8 @@ theorem ddSet_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
   refine ⟨rfl, ?_, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
   all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
 
-set_option maxRecDepth 20000 in
-set_option maxHeartbeats 64000000 in
+
+
 /-- **The fusion driver.** -/
 theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCtx}
     {Ok : Polygon → Model → Prop}

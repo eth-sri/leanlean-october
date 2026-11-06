@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvCand4
 public import Chazelle.Core.SweepEvSpec
 
@@ -89,7 +91,7 @@ theorem md : ModelDescAt c.nmem (c.nreg MD₁) (Qof P) (chainModel J.left) ∧
   swap
   · have := E.hm0; omega
   obtain ⟨w1, w2, w3⟩ := ShotList.modelDesc_keep E.hmwf E.hm0 hC' (fun a ha => hI.hm a ha) hI.hA
-  rw [eMD, eCD]
+  Ξ eMD, eCD
   exact ⟨Or.inl ⟨w2, H, C', w3, hMC⟩, w1, w2, E.hcd⟩
 
 theorem ctx1' : ChainCtx P W c CD₁ J.left :=
@@ -108,7 +110,7 @@ theorem tb' (_E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂)
     (hI : IInv W c₀ c) : c.nreg cTB = c₀.nreg cTB := hI.hin _ (by unfold IFix cTB sw; omega)
 
 theorem nw₂' : NFWithin c.nmem (c.nreg (sw 4)) (c.nreg ALLOC) N₂ := by
-  rw [hI.hin _ (by unfold IFix sw; omega)]
+  Ξ hI.hin _ (by unfold IFix sw; omega)
   exact (E.hNW₂.transport (fun a ha => hI.hm a ha)).mono hI.hA
 
 end EvEnv

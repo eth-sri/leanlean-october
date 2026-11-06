@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopBrute
 
 /-!
@@ -34,7 +36,7 @@ theorem bruteTask : BruteTask := by
   unfold stbProg
   refine (IRS.seq (K₁ := 10) (K₂ := bLoopK N₁.arcs.length +
       (symShotK (F (c₀.nreg (sw 5))) N₁.arcs.length + 12))
-    ((IRS.block stbPre hI (stbPre_ok _ _)).mono (by simp [stbPre]) (fun _ h => h)) ?_).mono
+    ((IRS.block stbPre hI (stbPre_ok _ _)).mono (⊚ stbPre) (fun _ h => h)) ?_).mono
     hcost (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' rfl
   simp only at hA₁ hA₁'
@@ -60,17 +62,17 @@ theorem bruteTask : BruteTask := by
     w9 _ (nb j hj) hb (by unfold ALLOC sw; omega)
   have hs2 : SymPtIn c₂ sO s := by
     refine symPtIn_copy hs ?_ ?_ ?_
-    · rw [show sO = sw 3231 from rfl, keep 3231 (by norm_num) (by unfold BSet sw; omega)]
+    · rw [show sO = sw 3231 from rfl, keep 3231 (⊛) (by unfold BSet sw; omega)]
       exact p1
-    · rw [show sO + 1 = sw 3232 from rfl, keep 3232 (by norm_num) (by unfold BSet sw; omega)]
+    · rw [show sO + 1 = sw 3232 from rfl, keep 3232 (⊛) (by unfold BSet sw; omega)]
       exact p2
-    · rw [show sO + 2 = sw 3233 from rfl, keep 3233 (by norm_num) (by unfold BSet sw; omega)]
+    · rw [show sO + 2 = sw 3233 from rfl, keep 3233 (⊛) (by unfold BSet sw; omega)]
       exact p3
   have d2 : c₂.nreg qD = c.nreg brOD := by
-    rw [show qD = sw 3212 from rfl, keep 3212 (by norm_num) (by unfold BSet sw; omega)]
+    rw [show qD = sw 3212 from rfl, keep 3212 (⊛) (by unfold BSet sw; omega)]
     exact p4
   have a2 : c₂.nreg accA = 0 := by
-    rw [show accA = sw 2000 from rfl, keep 2000 (by norm_num) (by unfold BSet sw; omega)]
+    rw [show accA = sw 2000 from rfl, keep 2000 (⊛) (by unfold BSet sw; omega)]
     exact p5
   have hacc : AccOK P accA (fun _ => J.left) J.left.radius (s.eval (Qof P))
       (dirOf (c₂.nreg qD)) ∅ c₂ := accOK_init _ _ _ _ _ a2
@@ -88,24 +90,24 @@ theorem bruteTask : BruteTask := by
         c₀.nreg (sw 5) := by
     intro j hj
     rw [hN1] at hj
-    rw [w1, w7 j hj]
+    Ξ w1, w7 j hj
     exact nArc_piece hP hNF E.hsg₁ hj
   have hss := symShot_irs (C := J.left) (H := H) (md := MD₁) (base := SweepIo.bBase)
     (cnt := SweepIo.bN) (dsc := CD₁) (tg := K0) (Mod := fun _ => J.left) (R₀ := J.left.radius)
     (L := ∅) (s := s) (z := s.eval (Qof P)) E.hsh E.hBs E.hXl hI₂ E.hK E.hG E.hWh E.hX E.hcap E.hOk₁
-    hmd hreg (E.ctx1' hI₂) harcs (by rw [w1, hN1, w6]) hs2 hsl rfl hzD hz1 hz2 hzt
+    hmd hreg (E.ctx1' hI₂) harcs (Ρ w1, hN1, w6) hs2 hsl rfl hzD hz1 hz2 hzt
     hacc (by rw [hK2.1]; omega) rfl rfl
-    ⟨sregOK_sw (by norm_num) (by norm_num) (by norm_num),
-      sregOK_sw (by norm_num) (by norm_num) (by norm_num),
-      sregOK_sw (by norm_num) (by norm_num) (by norm_num),
-      sregOK_sw (by norm_num) (by norm_num) (by norm_num),
-      sregOK_sw (by norm_num) (by norm_num) (by norm_num)⟩
+    ⟨sregOK_sw (⊛) (by norm_num) (by norm_num),
+      sregOK_sw (⊛) (by norm_num) (by norm_num),
+      sregOK_sw (⊛) (by norm_num) (by norm_num),
+      sregOK_sw (⊛) (by norm_num) (by norm_num),
+      sregOK_sw (⊛) (by norm_num) (by norm_num)⟩
     (by rw [hN1]; omega)
   rw [hN1] at hss
   refine IRS.seq (K₁ := symShotK (F (c₀.nreg (sw 5))) N₁.arcs.length) (K₂ := 12) hss ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨L', hacc', hL', hcomp, k3, hA3, hm3⟩
   rw [d2] at hacc' hL' hcomp
-  refine (IRS.block stbPost hI₃ (stbPost_ok _ _)).mono (by simp [stbPost]) ?_
+  refine (IRS.block stbPost hI₃ (stbPost_ok _ _)).mono (⊚ stbPost) ?_
   rintro c' rfl
   obtain ⟨qv, q0, q1, q2, q3, qo⟩ := stbPost_val c₃.nmem c₃.nreg
   unfold BruteOut
@@ -120,10 +122,10 @@ theorem bruteTask : BruteTask := by
       exit_in_arcs J.left hP hNF (Q := Qof P) (SweepPrim.dirOf_cases _) hzt hf
     refine ⟨p, t, hp, ht0, ht1, ⟨j, hj, ?_⟩, fun g hg => absurd hg
       (List.not_mem_nil), hpt.symm⟩
-    rw [w1, w7 j hj]
+    Ξ w1, w7 j hj
     obtain ⟨⟨hps, -, -⟩, ⟨hpe, -, -⟩⟩ := arc_end_facts hP hNF hj
     unfold nArc
-    rw [(Restore.normOf_facts hps).2.2.2.1, (Restore.normOf_facts hpe).2.2.2.1]
+    Ξ (Restore.normOf_facts hps).2.2.2.1, (Restore.normOf_facts hpe).2.2.2.1
     exact hin
   have hmem : FreeAt J.left z σ → J.left.hitParam z σ ∈ L' := fun hf => hcomp hf (hexit hf)
   obtain ⟨f1, f0, fs⟩ := hacc'
@@ -139,19 +141,19 @@ theorem bruteTask : BruteTask := by
       refine ⟨τ, hτ0, hon, by rw [q1]; exact he, by rw [q1, q2]; exact hpp,
         by rw [q1, q2]; exact hpos, ?_, fun hf => ?_⟩
       · refine absRec_transport hrec ?_ ?_ ?_ ?_
-        · have := q3 0 (by norm_num); simpa using this
-        · have := q3 1 (by norm_num); rw [show brF + 3 + 1 = brF + 3 + 1 from rfl] at this
+        · have := q3 0 (⊛); simpa using this
+        · have := q3 1 (⊛); rw [show brF + 3 + 1 = brF + 3 + 1 from rfl] at this
           rw [show accA + 4 + 1 = accA + 4 + 1 from rfl]; omega
-        · have := q3 2 (by norm_num); omega
-        · have := q3 3 (by norm_num); omega
+        · have := q3 2 (⊛); omega
+        · have := q3 3 (⊛); omega
       · have := hmem hf
         simp only [Set.mem_insert_iff, Set.mem_empty_iff_false, or_false] at this
         exact this.symm
-  · rw [q0]
+  · Ξ q0
     have hne : L' ≠ ∅ := fun h => by rw [h] at hmem; exact Set.notMem_empty _ (hmem hf)
     by_contra hc
-    exact hne (f0 (by omega))
-  · rw [hm3 a (by omega), w8 a (by rw [← eA1] at hA₁; omega)]
+    exact hne (f0 (⋄))
+  · rw [hm3 a (⋄), w8 a (by rw [← eA1] at hA₁; omega)]
   · rw [hA3']; omega
   · intro r hr hb hra
     unfold BrR at hb
@@ -159,19 +161,19 @@ theorem bruteTask : BruteTask := by
     · have hr4 : 244001 ≤ r ∧ r ≤ 244005 := by
         unfold StbPostW brF at hp; unfold sw at hp hb; omega
       obtain ⟨i, hi, rfl⟩ : ∃ i, i < 5 ∧ r = sw 4001 + i :=
-        ⟨r - 244001, by omega, by unfold sw; omega⟩
+        ⟨r - 244001, ⋄, by unfold sw; omega⟩
       have esv : stbSv + i = sw (3990 + i) := by unfold stbSv sw; omega
-      rw [qv i hi, k3 _ (by rw [esv]; exact nb (3990 + i) (by omega))
+      rw [qv i hi, k3 _ (by rw [esv]; exact nb (3990 + i) (⋄))
         (by unfold RS stbSv sw; omega) (by unfold accA stbSv sw; omega)
         (by unfold ALLOC stbSv sw; omega)]
-      rw [esv, keep (3990 + i) (by omega) (by unfold BSet sw; omega), ← esv]
+      rw [esv, keep (3990 + i) (⋄) (by unfold BSet sw; omega), ← esv]
       exact pv i hi
     · have hb' := hb
       unfold sw at hb'
       have e1 : ¬ (RS ≤ r ∧ r < RS + 300) := by unfold RS; omega
       have e2 : r < accA ∨ accA + 12 < r := by unfold accA sw; omega
       have e3 : ¬ BSet r := by unfold BSet; unfold StbPostW brF at hp; unfold sw at hb hp ⊢; omega
-      rw [qo r hp, k3 r hr e1 e2 hra, w9 r hr e3 hra]
+      Ξ qo r hp, k3 r hr e1 e2 hra, w9 r hr e3 hra
       exact po r (by unfold StbPreW qD accA; unfold sw at hb ⊢; omega)
 
 end

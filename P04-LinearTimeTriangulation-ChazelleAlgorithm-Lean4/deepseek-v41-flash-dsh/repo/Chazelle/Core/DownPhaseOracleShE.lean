@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleQPlan
 
 /-!
@@ -60,15 +62,15 @@ def outI : Stmt :=
 /-- The registers the parameter blocks write. -/
 def Bset (r : ℕ) : Bool := decide (170033 ≤ r ∧ r < 170038)
 
-theorem wr_setOne : wr Bset setOne = true := by decide
-theorem wr_setTwoA : wr Bset setTwoA = true := by decide
-theorem wr_setTwoB : wr Bset setTwoB = true := by decide
+theorem wr_setOne : wr Bset setOne = true := ⌖
+theorem wr_setTwoA : wr Bset setTwoA = true := ⌖
+theorem wr_setTwoB : wr Bset setTwoB = true := ⌖
 
 /-- The registers the answer writes. -/
 def Bout (r : ℕ) : Bool :=
   decide (140010 ≤ r ∧ r < 140013) || decide (r = 170092 ∨ r = 170095 ∨ r = 170096)
 
-theorem wr_outI : wr Bout outI = true := by decide
+theorem wr_outI : wr Bout outI = true := ⌖
 
 /-! ## Execution -/
 
@@ -124,16 +126,16 @@ theorem setTwoB_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   · omega
   by_cases h : s.e₁ + 2 < P.n
   · refine spec_ifLtN_true (by config_simp; rw [hS.r1, hS.r18, hS.r10]; exact h) ?_
-    refine spec_skip ‹_› ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
-    · rw [hS.r1, hS.r18, Nat.mod_eq_of_lt h]
-    · rw [hS.r18]
-    · rw [hS.r18]
+    refine spec_skip ‹_› ⟨⋄, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+    · Ξ hS.r1, hS.r18, Nat.mod_eq_of_lt h
+    · Ξ hS.r18
+    · Ξ hS.r18
   · refine spec_ifLtN_false (by config_simp; rw [hS.r1, hS.r18, hS.r10]; exact h) ?_
     exec_block
-    refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
-    · rw [hS.r1, hS.r18, hS.r10, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-    · rw [hS.r18]
-    · rw [hS.r18]
+    refine ⟨⋄, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+    · rw [hS.r1, hS.r18, hS.r10, Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (by omega)]
+    · Ξ hS.r18
+    · Ξ hS.r18
 
 /-- **The answer of the interior shooter.** -/
 theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S : Set Point}
@@ -163,7 +165,7 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
   · refine spec_ifLtN_true g ?_
     exec_block
     · omega
-    refine ⟨by omega, fun h => by config_simp at h, fun _ => hb3 (by rw [hS.r11] at g; omega)⟩
+    refine ⟨⋄, fun h => by config_simp at h, fun _ => hb3 (by rw [hS.r11] at g; omega)⟩
   refine spec_ifLtN_false g ?_
   obtain ⟨sb, t, hsb, hbs, hfh, hev⟩ := hb2 (by rw [hS.r11] at g; omega)
   have hbsQ := hbs
@@ -186,7 +188,7 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
     · omega
     have hiv : ivV (c.nreg 170014) (c.nreg 170019) (c.nreg 170072) = iv (Qof P) q := by
       rw [kq]; exact hS.ivv q
-    refine ⟨by omega, fun _ => ⟨t, hfh, ?_, ?_, ?_⟩, fun h => (h (by config_simp)).elim⟩
+    refine ⟨⋄, fun _ => ⟨t, hfh, ?_, ?_, ?_⟩, fun h => (h (by config_simp)).elim⟩
     · config_simp; rw [hiv]; rw [hQ] at hpp; exact hpp
     · config_simp; rw [hiv, mi_n]; exact hlt
     · config_simp; rw [hiv]; exact hpos
@@ -204,14 +206,14 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
       (by config_simp; rw [ke]; omega)
     refine spec_seq ⟨c₂, k₂, e₂, ?_⟩
     have w₂ := e₂.wb_right
-    have b73 : c₂.nreg 170073 = h := by rw [ir _ (by decide) (by decide)]; config_simp; exact kh
-    have b11 : c₂.nreg 170011 = 1 := by rw [ir _ (by decide) (by decide)]; config_simp; exact hS.r11
+    have b73 : c₂.nreg 170073 = h := by rw [ir _ (⌖) (by decide)]; config_simp; exact kh
+    have b11 : c₂.nreg 170011 = 1 := by rw [ir _ (⌖) (by decide)]; config_simp; exact hS.r11
     have hie : c₂.nreg 170096 = iEdge (Qof P) e := by
       rw [i96]; config_simp; rw [ke, ← hS.iev e]
     exec_block
     · omega
     · config_simp; rw [b73, b11]; omega
-    refine ⟨by omega, fun _ => ⟨t, hfh, ?_, ?_, ?_⟩, fun h => (h (by config_simp)).elim⟩
+    refine ⟨⋄, fun _ => ⟨t, hfh, ?_, ?_, ?_⟩, fun h => (h (by config_simp)).elim⟩
     · config_simp; rw [hie, b73, b11]; rw [hQ] at hpp; exact hpp
     · config_simp; rw [hie, mi_n]; exact hlt
     · config_simp; rw [hie, b73, b11]; exact hpos

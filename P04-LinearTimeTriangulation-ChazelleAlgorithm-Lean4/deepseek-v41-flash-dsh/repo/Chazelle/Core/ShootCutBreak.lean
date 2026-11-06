@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutWalk
 
 /-!
@@ -66,7 +68,7 @@ theorem card_brkSet (n : ℕ) (H : Host) : (brkSet n H).card ≤ 4 * H.length :=
         ((brkOffs n (H.getD r (.run 0 0))).image fun t => NFLoc.preLen n H r + t).card
       ≤ ∑ _r ∈ Finset.range H.length, 4 :=
         Finset.sum_le_sum fun r _ => Finset.card_image_le.trans (card_brkOffs n _)
-    _ = 4 * H.length := by simp [mul_comm]
+    _ = 4 * H.length := ⊚ mul_comm
 
 /-- The unique offset in `[0, n)` with a given residue. -/
 theorem off_of_mod {n a t c : ℕ} (hn : 0 < n) (ht : t < n) (_hc : c < n) (h : (a + t) % n = c) :
@@ -89,29 +91,29 @@ theorem hostBreak_mem {n : ℕ} {H : Host} (hn : 0 < n) (hwf : HostWF n H) {u : 
   obtain ⟨r, hr, h1, h2, hc⟩ := h
   unfold brkSet
   refine Finset.mem_biUnion.2 ⟨r, Finset.mem_range.2 hr, Finset.mem_image.2 ?_⟩
-  refine ⟨u - NFLoc.preLen n H r, ?_, by omega⟩
+  refine ⟨u - NFLoc.preLen n H r, ?_, ⋄⟩
   have hsucc := NFLoc.preLen_succ n H hr
-  have hget : H.getD r (.run 0 0) = H[r] := by simp [List.getD_eq_getElem?_getD, hr]
+  have hget : H.getD r (.run 0 0) = H[r] := ⊚ List.getD_eq_getElem?_getD, hr
   rw [hget] at hc ⊢
   have hit := hwf H[r] (List.getElem_mem hr)
   generalize H[r] = it at hc hsucc hit
   cases it with
   | pt x =>
     simp only [NFLoc.itemCnt] at hsucc
-    simp only [brkOffs, Finset.mem_singleton]
+    ϴ brkOffs, Finset.mem_singleton
     omega
   | run a ℓ =>
     simp only [NFLoc.itemCnt] at hsucc
     simp only at hit
-    have ht : u - NFLoc.preLen n H r < n := by omega
-    simp only [brkOffs, Finset.mem_insert, Finset.mem_singleton]
+    have ht : u - NFLoc.preLen n H r < n := ⋄
+    ϴ brkOffs, Finset.mem_insert, Finset.mem_singleton
     rcases hc with hc | hc | hc | hc
     · exact Or.inl hc
     · exact Or.inr (Or.inl hc)
     · right; right; left
-      rw [off_of_mod hn ht hn hc, Nat.add_zero]
+      Ξ off_of_mod hn ht hn hc, Nat.add_zero
     · right; right; right
-      rw [off_of_mod hn ht (by omega) hc]
+      rw [off_of_mod hn ht (⋄) hc]
       congr 1
       omega
 
@@ -169,13 +171,13 @@ theorem card_fiber_le (u : ℕ) :
     · obtain ⟨q, hq⟩ := (Nat.modEq_iff_dvd' hle).1 (by unfold Nat.ModEq; exact h.symm)
       have hq0 : q = 0 := by
         by_contra h0
-        have : C.P.n ≤ C.P.n * q := Nat.le_mul_of_pos_right _ (by omega)
+        have : C.P.n ≤ C.P.n * q := Nat.le_mul_of_pos_right _ (⋄)
         omega
       subst hq0; omega
     · obtain ⟨q, hq⟩ := (Nat.modEq_iff_dvd' hle).1 (by unfold Nat.ModEq; exact h)
       have hq0 : q = 0 := by
         by_contra h0
-        have : C.P.n ≤ C.P.n * q := Nat.le_mul_of_pos_right _ (by omega)
+        have : C.P.n ≤ C.P.n * q := Nat.le_mul_of_pos_right _ (⋄)
         omega
       subst hq0; omega
   refine le_trans (Finset.card_le_card (t := ((Finset.range (2 * C.m)).filter fun i =>
@@ -192,7 +194,7 @@ theorem card_fiber_le (u : ℕ) :
   have hex : ∃ i, i < 2 * C.m ∧ uOf C i = u := ⟨i, hi.1, hi.2⟩
   have hsp := Classical.epsilon_spec hex
   have hki := hk _ _ (hi.2.trans hsp.2.symm)
-  simp only [Finset.mem_union, Finset.mem_filter, Finset.mem_range]
+  ϴ Finset.mem_union, Finset.mem_filter, Finset.mem_range
   have hlt := tJ_lt C i
   unfold sideE at hki
   split_ifs at hki with h1 h2 h2

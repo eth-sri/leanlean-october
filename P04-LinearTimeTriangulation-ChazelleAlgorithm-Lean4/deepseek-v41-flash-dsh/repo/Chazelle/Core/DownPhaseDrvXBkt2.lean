@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvXBkt
 
 /-!
@@ -42,14 +44,14 @@ theorem bktF_congr {A j : ℕ} {a a' b b' c c' : Prop} [Decidable a] [Decidable 
     (hc : c ↔ c') : bktF A j a b c = bktF A j a' b' c' := by
   unfold bktF
   by_cases h1 : a
-  · rw [ite_eq_left h1, ite_eq_left (ha.1 h1)]
-  · rw [ite_eq_right h1, ite_eq_right (fun h => h1 (ha.2 h))]
+  · Ξ ite_eq_left h1, ite_eq_left (ha.1 h1)
+  · Ξ ite_eq_right h1, ite_eq_right (fun h => h1 (ha.2 h))
     by_cases h2 : b
-    · rw [ite_eq_left h2, ite_eq_left (hb.1 h2)]
-    · rw [ite_eq_right h2, ite_eq_right (fun h => h2 (hb.2 h))]
+    · Ξ ite_eq_left h2, ite_eq_left (hb.1 h2)
+    · Ξ ite_eq_right h2, ite_eq_right (fun h => h2 (hb.2 h))
       by_cases h3 : c
-      · rw [ite_eq_left h3, ite_eq_left (hc.1 h3)]
-      · rw [ite_eq_right h3, ite_eq_right (fun h => h3 (hc.2 h))]
+      · Ξ ite_eq_left h3, ite_eq_left (hc.1 h3)
+      · Ξ ite_eq_right h3, ite_eq_right (fun h => h3 (hc.2 h))
 
 instance (x y : WPos) : Decidable (PosEq x y) := by unfold PosEq; infer_instance
 
@@ -71,9 +73,9 @@ theorem onArc_iff {N : NF} {j : ℕ} {x : WPos} (hx : GoodPos Q x) (hs : GoodPos
   have h3 := key_lt_iff hli hdh hn hx.1 he.1 hx.2.1 he.2.1 hx.2.2
   unfold sideInArc
   by_cases hse : PosLt Q li (N.arc j).s (N.arc j).e
-  · rw [ite_eq_left (h1.2 hse), h2, h3]
+  · Ξ ite_eq_left (h1.2 hse), h2, h3
     exact ⟨fun h => ⟨fun _ => h, fun h' => absurd hse h'⟩, fun h => h.1 hse⟩
-  · rw [ite_eq_right (fun h => hse (h1.1 h)), h2, h3]
+  · Ξ ite_eq_right (fun h => hse (h1.1 h)), h2, h3
     exact ⟨fun h => ⟨fun h' => absurd h' hse, fun _ => h⟩, fun h => h.2 hse⟩
 
 open Classical in
@@ -90,7 +92,7 @@ theorem bkt_spec {N : NF} {A : ℕ} (hA : N.arcs.length = A)
     keyBkt Q N x = bktF A j (PosEq x (N.arc j).s) (PosEq x (N.arc j).e)
       (PosLt Q li (N.arc j).s x) := by
   classical
-  rw [keyBkt_eq hA hinc hnext hfree hj ((onArc_iff hli hdh hn hx hs he).2 hon)]
+  Ξ keyBkt_eq hA hinc hnext hfree hj ((onArc_iff hli hdh hn hx hs he).2 hon)
   exact bktF_congr (key_eq_iff hli hdh hn hx.1 hs.1 hx.2.1 hs.2.1 hx.2.2 hs.2.2)
     (key_eq_iff hli hdh hn hx.1 he.1 hx.2.1 he.2.1 hx.2.2 he.2.2)
     (key_lt_iff hli hdh hn hs.1 hx.1 hs.2.1 hx.2.1 hs.2.2)
@@ -109,7 +111,7 @@ namespace XHyp
 variable (X : XHyp P li L E reg r C NR)
 include X
 
-theorem hE : E.length = 2 * L.length := by rw [X.hperm.length_eq, List.length_range]
+theorem hE : E.length = 2 * L.length := Ρ X.hperm.length_eq, List.length_range
 
 /-- **The arcs of the interior normal form.** -/
 theorem arc_facts :
@@ -175,7 +177,7 @@ theorem hlt_iff {P : Polygon} (hG : GoodEnv P) {u v : ℕ} (hu : u < (Qof P).n) 
     ((Qof P).vtx u).2 < ((Qof P).vtx v).2 ↔ Mountain.ylexLT (P.vtx u) (P.vtx v) := by
   have hgood := goodShear_epsOf hG.2
   have hn : (Qof P).n = P.n := shear_n _ P
-  rw [hgood.2.2.1 u v (by rw [← hn]; exact hu) (by rw [← hn]; exact hv)]
+  Ξ hgood.2.2.1 u v (by rw [← hn]; exact hu) (by rw [← hn]; exact hv)
   show _ ↔ ((Qof P).vtx u).2 < ((Qof P).vtx v).2 ∨
     (((Qof P).vtx u).2 = ((Qof P).vtx v).2 ∧ ((Qof P).vtx u).1 < ((Qof P).vtx v).1)
   constructor

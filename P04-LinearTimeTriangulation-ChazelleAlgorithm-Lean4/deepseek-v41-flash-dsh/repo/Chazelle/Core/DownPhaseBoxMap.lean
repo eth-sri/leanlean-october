@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecNF
 
 /-!
@@ -33,18 +37,18 @@ variable {B k : ℝ}
 theorem stretch_of_abs_le (_hB : 0 ≤ B) {x : ℝ} (hx : |x| ≤ B) : stretch B k x = x := by
   unfold stretch
   obtain ⟨h1, h2⟩ := abs_le.1 hx
-  rw [max_eq_right (by linarith), min_eq_right (by linarith)]
+  rw [max_eq_right (⟡), min_eq_right (⟡)]
   ring
 
 theorem stretch_of_ge (hB : 0 ≤ B) {x : ℝ} (hx : B ≤ x) : stretch B k x = B + (x - B) * k := by
   unfold stretch
-  rw [max_eq_left (by linarith), min_eq_right (by linarith)]
+  rw [max_eq_left (⟡), min_eq_right (⟡)]
   ring
 
 theorem stretch_of_le (hB : 0 ≤ B) {x : ℝ} (hx : x ≤ -B) :
     stretch B k x = -B + (x + B) * k := by
   unfold stretch
-  rw [max_eq_right (by linarith), min_eq_left (by linarith)]
+  rw [max_eq_right (⟡), min_eq_left (⟡)]
   ring
 
 theorem continuous_stretch (B k : ℝ) : Continuous (stretch B k) := by
@@ -52,11 +56,11 @@ theorem continuous_stretch (B k : ℝ) : Continuous (stretch B k) := by
 
 theorem stretch_neg (hB : 0 ≤ B) (x : ℝ) : stretch B k (-x) = -stretch B k x := by
   rcases le_total x (-B) with h | h
-  · rw [stretch_of_le hB h, stretch_of_ge hB (by linarith)]; ring
+  · rw [stretch_of_le hB h, stretch_of_ge hB (⟡)]; ring
   · rcases le_total x B with h' | h'
     · rw [stretch_of_abs_le hB (abs_le.2 ⟨h, h'⟩),
-        stretch_of_abs_le hB (abs_le.2 ⟨by linarith, by linarith⟩)]
-    · rw [stretch_of_ge hB h', stretch_of_le hB (by linarith)]; ring
+        stretch_of_abs_le hB (abs_le.2 ⟨⟡, ⟡⟩)]
+    · rw [stretch_of_ge hB h', stretch_of_le hB (⟡)]; ring
 
 /-- The stretch is strictly increasing. -/
 theorem stretch_strictMono (hB : 0 ≤ B) (hk : 0 < k) : StrictMono (stretch B k) := by
@@ -68,9 +72,9 @@ theorem stretch_strictMono (hB : 0 ≤ B) (hk : 0 < k) : StrictMono (stretch B k
       intro z
       split_ifs with h1 h2
       · exact stretch_of_le hB h1
-      · exact stretch_of_abs_le hB (abs_le.2 ⟨by linarith, h2⟩)
-      · exact stretch_of_ge hB (by linarith)
-    rw [e x, e y]
+      · exact stretch_of_abs_le hB (abs_le.2 ⟨⟡, h2⟩)
+      · exact stretch_of_ge hB (⟡)
+    Ξ e x, e y
     split_ifs <;> nlinarith
   exact key
 
@@ -80,7 +84,7 @@ theorem stretch_inv (hB : 0 ≤ B) (hk : 0 < k) (x : ℝ) : stretch B k⁻¹ (st
       rw [stretch_of_le hB h]; nlinarith
     rw [stretch_of_le hB h1, stretch_of_le hB h]; field_simp; ring
   · rcases le_total x B with h' | h'
-    · rw [stretch_of_abs_le hB (abs_le.2 ⟨h, h'⟩), stretch_of_abs_le hB (abs_le.2 ⟨h, h'⟩)]
+    · Ξ stretch_of_abs_le hB (abs_le.2 ⟨h, h'⟩), stretch_of_abs_le hB (abs_le.2 ⟨h, h'⟩)
     · have h1 : B ≤ stretch B k x := by
         rw [stretch_of_ge hB h']; nlinarith
       rw [stretch_of_ge hB h1, stretch_of_ge hB h']; field_simp; ring
@@ -105,17 +109,17 @@ noncomputable def stretchHomeo (hB : 0 ≤ B) (hk : 0 < k) : Point ≃ₜ Point 
 
 theorem stretchPt_of_le (hB : 0 ≤ B) {p : Point} (h1 : |p.1| ≤ B) (h2 : |p.2| ≤ B) :
     stretchPt B k p = p := by
-  unfold stretchPt; rw [stretch_of_abs_le hB h1, stretch_of_abs_le hB h2]
+  unfold stretchPt; Ξ stretch_of_abs_le hB h1, stretch_of_abs_le hB h2
 
 /-- The slope that maps the radius `R` to `R'`. -/
 noncomputable def slope (B R R' : ℝ) : ℝ := (R' - B) / (R - B)
 
 theorem slope_pos {R R' : ℝ} (hR : B < R) (hR' : B < R') : 0 < slope B R R' :=
-  div_pos (by linarith) (by linarith)
+  div_pos (⟡) (⟡)
 
 theorem stretch_radius (hB : 0 ≤ B) {R R' : ℝ} (hR : B < R) :
     stretch B (slope B R R') R = R' := by
-  have h : R - B ≠ 0 := by linarith
+  have h : R - B ≠ 0 := ⟡
   rw [stretch_of_ge hB hR.le]; unfold slope; field_simp; ring
 
 /-- The stretch maps the open interval `(-R, R)` onto `(-R', R')`. -/
@@ -124,17 +128,17 @@ theorem abs_stretch_lt_iff (hB : 0 ≤ B) {R R' : ℝ} (hR : B < R) (hR' : B < R
   have hk := slope_pos hR hR'
   have hm := stretch_strictMono hB hk
   have h1 : stretch B (slope B R R') R = R' := stretch_radius hB hR
-  have h2 : stretch B (slope B R R') (-R) = -R' := by rw [stretch_neg hB, h1]
+  have h2 : stretch B (slope B R R') (-R) = -R' := Ρ stretch_neg hB, h1
   have e1 : ∀ x, stretch B (slope B R R') x < R' ↔ x < R := fun x => by
     have := hm.lt_iff_lt (a := x) (b := R); rwa [h1] at this
   have e2 : ∀ x, -R' < stretch B (slope B R R') x ↔ -R < x := fun x => by
     have := hm.lt_iff_lt (a := -R) (b := x); rwa [h2] at this
-  rw [abs_lt, abs_lt, e1, e2]
+  Ξ abs_lt, abs_lt, e1, e2
 
 /-- **The box image.** -/
 theorem stretchPt_mem_box_iff (hB : 0 ≤ B) {R R' : ℝ} (hR : B < R) (hR' : B < R') (p : Point) :
     stretchPt B (slope B R R') p ∈ Chazelle.Chain.box R' ↔ p ∈ Chazelle.Chain.box R := by
-  simp only [Chazelle.Chain.mem_box_iff, stretchPt, abs_stretch_lt_iff hB hR hR']
+  ϴ Chazelle.Chain.mem_box_iff, stretchPt, abs_stretch_lt_iff hB hR hR'
 
 end
 

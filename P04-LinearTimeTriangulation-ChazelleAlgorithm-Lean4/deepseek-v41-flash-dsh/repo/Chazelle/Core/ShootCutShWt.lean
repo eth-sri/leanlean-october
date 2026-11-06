@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutShK1R
 public import Chazelle.Core.ShootCutGen
 public import Chazelle.Core.ShootCutArc
@@ -35,7 +37,7 @@ theorem KPath.mem {n : ℝ} : ∀ {V : ℝ} {ps : List Pc} {V' : ℝ}, KPath M Q
     rcases List.mem_cons.1 hpc with rfl | hpc
     · exact ⟨V, V₁, le_rfl, h2, h4.le, h1, h3⟩
     · obtain ⟨U, U₁, a1, a2, a3, a4, a5⟩ := KPath.mem h4 pc hpc
-      exact ⟨U, U₁, by linarith, a2, a3, a4, a5⟩
+      exact ⟨U, U₁, ⟡, a2, a3, a4, a5⟩
 
 /-- **A kind-1 piece is no longer than the weight of the subarc.** -/
 theorem kind1_pw_le {P : Polygon} {C : Chain} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPos}
@@ -119,25 +121,25 @@ theorem query_cost_le {κ gg M γ : ℕ} (hg : gg ≤ cutGran γ) (hM : M ≤ γ
       κ * (rpowCeil (cutGran γ * (γ + 1) ^ 2) ((1 : ℝ) / 3) + 1) := by
   have e : (gg : ℝ) ^ ((1 : ℝ) / 3) * ((M : ℝ) + 1) ^ ((2 : ℝ) / 3) =
       ((gg : ℝ) * ((M : ℝ) + 1) ^ 2) ^ ((1 : ℝ) / 3) := by
-    rw [Real.mul_rpow (by positivity) (by positivity), ← Real.rpow_natCast,
-      ← Real.rpow_mul (by positivity)]
+    rw [Real.mul_rpow (⟢) (⟢), ← Real.rpow_natCast,
+      ← Real.rpow_mul (⟢)]
     norm_num
   have h1 : ((gg : ℝ) * ((M : ℝ) + 1) ^ 2) ^ ((1 : ℝ) / 3) ≤
       (((cutGran γ * (γ + 1) ^ 2 : ℕ) : ℝ)) ^ ((1 : ℝ) / 3) := by
-    apply Real.rpow_le_rpow (by positivity) _ (by norm_num)
+    apply Real.rpow_le_rpow (⟢) _ (⊛)
     push_cast
     have a : (gg : ℝ) ≤ cutGran γ := by exact_mod_cast hg
     have b0 : (M : ℝ) ≤ γ := by exact_mod_cast hM
-    have b : (M : ℝ) + 1 ≤ γ + 1 := by linarith
+    have b : (M : ℝ) + 1 ≤ γ + 1 := ⟡
     have b2 : ((M : ℝ) + 1) ^ 2 ≤ ((γ : ℝ) + 1) ^ 2 := by
-      apply pow_le_pow_left₀ (by positivity) b
-    exact mul_le_mul a b2 (by positivity) (by positivity)
+      apply pow_le_pow_left₀ (⟢) b
+    exact mul_le_mul a b2 (⟢) (⟢)
   have h2 : (((cutGran γ * (γ + 1) ^ 2 : ℕ) : ℝ)) ^ ((1 : ℝ) / 3) ≤
       (rpowCeil (cutGran γ * (γ + 1) ^ 2) ((1 : ℝ) / 3) : ℝ) := Nat.le_ceil _
-  rw [e]
+  Ξ e
   apply Nat.ceil_le.2
   push_cast
-  exact mul_le_mul_of_nonneg_left (by linarith [h1.trans h2]) (by positivity)
+  exact mul_le_mul_of_nonneg_left (by linarith [h1.trans h2]) (⟢)
 
 /-- **The query facts of a kind-1 piece**, read from the grade table in any memory `m'` agreeing
 with `m` below the bound `A` of the table: its Lemma 3.6 structure, the chain of the structure

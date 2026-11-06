@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBApp
 public import Chazelle.Core.DownPhaseDrvBSpec
 
@@ -98,7 +102,7 @@ noncomputable def TL (r : ℕ) : List (ℕ × (ℕ × ℕ × ℕ)) :=
   (List.range r).flatMap fun r' => (E.recs r').map fun x => (r', x)
 
 theorem TL_succ (r : ℕ) : E.TL (r + 1) = E.TL r ++ (E.recs r).map fun x => (r, x) := by
-  unfold TL; rw [List.range_succ, List.flatMap_append, List.flatMap_singleton]
+  unfold TL; Ξ List.range_succ, List.flatMap_append, List.flatMap_singleton
 
 theorem TL_all : E.TL (E.K + 1) = tagLB E.li E.Q E.L E.E := rfl
 
@@ -126,12 +130,12 @@ variable {E : BEnv}
 
 theorem pts_pos {r : ℕ} (hK : 0 < E.K) : E.pts r = regPts E.li E.Q.n E.N r := by
   have : E.L.length ≠ 0 := Nat.pos_iff_ne_zero.1 hK
-  simp only [BEnv.pts, ptsB, this, ↓reduceIte]
+  ϴ BEnv.pts, ptsB, this, ↓reduceIte
 
 theorem pts_zero {r : ℕ} (hK : E.K = 0) :
     E.pts r = wlist E.li (Host.pts E.Q.n [HostItem.run 0 (E.Q.n - 1)]) := by
   have : E.L.length = 0 := hK
-  simp only [BEnv.pts, ptsB, this, ↓reduceIte]
+  ϴ BEnv.pts, ptsB, this, ↓reduceIte
 
 variable (hE : BGood E)
 include hE
@@ -155,7 +159,7 @@ theorem hli : E.li = true ↔ Mountain.LeftInside E.Q := by
 
 omit hE in
 theorem nRegions (_hE : BGood E) : E.N.nRegions = E.K + 1 := by
-  simp [NF.nRegions, BuildNF.buildNF]
+  Θ NF.nRegions, BuildNF.buildNF
 
 /-- The context of the base case (`K > 0`). -/
 theorem ctx (hK : 0 < E.K) : BaseCtx E.Q E.L E.E E.reg E.li :=
@@ -166,7 +170,7 @@ theorem ctx (hK : 0 < E.K) : BaseCtx E.Q E.L E.E E.reg E.li :=
 theorem pts_lt {r : ℕ} (hr : r < E.K + 1) : ∀ s ∈ E.pts r, s.Lt E.Q.n := by
   rcases Nat.eq_zero_or_pos E.K with hK | hK
   · rw [pts_zero hK]; exact run_pts_lt hE.hQ
-  · rw [pts_pos hK]
+  · Ξ pts_pos hK
     exact (region_facts ((hE.ctx hK).rc (by rw [hE.nRegions]; exact hr)) hE.hli).2
 
 /-- **The shooting polygon of a region.** -/
@@ -178,7 +182,7 @@ theorem regOK {r : ℕ} (hr : r < E.K + 1) :
       (Set.notMem_empty c)⟩, ?_⟩
     rw [pts_zero hK]; exact regOK0 hE.hQ hE.hli
   · refine ⟨_, E.reg r, (hE.ctx hK).fam, ?_⟩
-    rw [pts_pos hK]
+    Ξ pts_pos hK
     exact (region_facts ((hE.ctx hK).rc (by rw [hE.nRegions]; exact hr)) hE.hli).1
 
 end BGood

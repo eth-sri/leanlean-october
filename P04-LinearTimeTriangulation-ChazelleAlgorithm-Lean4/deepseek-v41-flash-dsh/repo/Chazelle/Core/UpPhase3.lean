@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase2
 
 /-!
@@ -40,7 +42,7 @@ theorem unionB_exec {c : Config} (hw : WordsBounded W c) {TD : ℕ} (hA : c.nreg
   refine ⟨rfl, ‹_›, by config_simp; simp only [hA], by config_simp; simp only [hA, h23],
     by config_simp, fun r a1 a2 a3 => ?_, rfl, rfl, rfl, rfl⟩
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 16000000 in
 /-- **The descriptor of the union on the RAM** (whole host). -/

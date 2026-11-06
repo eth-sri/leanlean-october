@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Existence.SplitDiagonal
 public import Chazelle.Existence.Base
 
@@ -45,7 +49,7 @@ theorem prevIdx_add_two_mod (P : Polygon) {i : ℕ} (hi : i < P.n) :
 /-- `prevIdx P i + 2 + k ≡ i + 1 + k`. -/
 theorem prevIdx_add_two_add_mod (P : Polygon) {i : ℕ} (hi : i < P.n) (k : ℕ) :
     ((prevIdx P i + 2) % P.n + k) % P.n = (i + 1 + k) % P.n := by
-  rw [prevIdx_add_two_mod P hi, Nat.mod_add_mod]
+  Ξ prevIdx_add_two_mod P hi, Nat.mod_add_mod
 
 /-- `prevIdx P i` reduced mod `n` is itself. -/
 theorem prevIdx_mod (P : Polygon) {i : ℕ} (hi : i < P.n) : prevIdx P i % P.n = prevIdx P i :=
@@ -55,9 +59,9 @@ theorem prevIdx_mod (P : Polygon) {i : ℕ} (hi : i < P.n) : prevIdx P i % P.n =
 theorem prevIdx_of_mod (P : Polygon) (hn : 0 < P.n) (a : ℕ) :
     prevIdx P (a % P.n) = (a + P.n - 1) % P.n := by
   unfold prevIdx
-  have h1 : a % P.n + P.n - 1 = a % P.n + (P.n - 1) := by omega
-  have h2 : a + P.n - 1 = a + (P.n - 1) := by omega
-  rw [h1, h2, Nat.mod_add_mod]
+  have h1 : a % P.n + P.n - 1 = a % P.n + (P.n - 1) := ⋄
+  have h2 : a + P.n - 1 = a + (P.n - 1) := ⋄
+  Ξ h1, h2, Nat.mod_add_mod
 
 /-- The previous index of `(s + 1) % n` is `s % n`. -/
 theorem prevIdx_succ_mod (P : Polygon) (hn : 0 < P.n) (s : ℕ) :
@@ -68,7 +72,7 @@ theorem prevIdx_succ_mod (P : Polygon) (hn : 0 < P.n) (s : ℕ) :
 theorem isDiagonal_mod_iff (P : Polygon) (s L : ℕ) :
     IsDiagonal P (s % P.n) L ↔ IsDiagonal P s L := by
   unfold IsDiagonal
-  rw [Nat.mod_mod, Nat.mod_add_mod]
+  Ξ Nat.mod_mod, Nat.mod_add_mod
 
 /-! ### Ears -/
 
@@ -92,7 +96,7 @@ variable (P : Polygon) (i : ℕ)
 theorem chord_ear_eq (hi : i < P.n) :
     Chazelle.segment (P.vtx (prevIdx P i % P.n)) (P.vtx ((prevIdx P i + 2) % P.n)) =
       Chazelle.segment (P.vtx (prevIdx P i)) (P.vtx ((i + 1) % P.n)) := by
-  rw [prevIdx_mod P hi, prevIdx_add_two_mod P hi]
+  Ξ prevIdx_mod P hi, prevIdx_add_two_mod P hi
 
 /-- The ear chord lies in the filled region, in the form used by `weakTriangulates_of_diagonal`. -/
 theorem chord_ear_subset_filled (hi : i < P.n) (he : IsEar P i) :
@@ -120,23 +124,23 @@ theorem vtx_earArc (hi : i < P.n) :
     (P.arc (prevIdx P i) 2).vtx 1 = P.vtx i ∧
     (P.arc (prevIdx P i) 2).vtx 2 = P.vtx ((i + 1) % P.n) := by
   refine ⟨?_, ?_, ?_⟩
-  · rw [vtx_arc P _ _ (by norm_num : 0 ≤ 2), Nat.add_zero, prevIdx_mod P hi]
-  · rw [vtx_arc P _ _ (by norm_num : 1 ≤ 2), prevIdx_add_one_mod P hi]
-  · rw [vtx_arc P _ _ (le_rfl : 2 ≤ 2), prevIdx_add_two_mod P hi]
+  · Ξ vtx_arc P _ _ (by norm_num : 0 ≤ 2), Nat.add_zero, prevIdx_mod P hi
+  · Ξ vtx_arc P _ _ (by norm_num : 1 ≤ 2), prevIdx_add_one_mod P hi
+  · Ξ vtx_arc P _ _ (le_rfl : 2 ≤ 2), prevIdx_add_two_mod P hi
 
 /-- **The ear triangle is nondegenerate.** -/
 theorem det_ear_ne_zero (hP : P.Simple) (hi : i < P.n) (he : IsEar P i) :
     det (P.vtx (prevIdx P i)) (P.vtx i) (P.vtx ((i + 1) % P.n)) ≠ 0 := by
   have h := det_ne_zero_of_simple_three _ (simple_earArc P i hP he) (n_arc P _ _)
   obtain ⟨h0, h1, h2⟩ := vtx_earArc P i hi
-  rw [h0, h1, h2] at h
+  Ξ' h0, h1, h2 at h
   exact h
 
 /-- Relabelling the triangle `(0, 1, 2)` of the ear arc gives the ear triangle. -/
 theorem relabel_ear (hi : i < P.n) :
     relabel (prevIdx P i) P.n (0, 1, 2) = earTriangle P i := by
   unfold relabel earTriangle
-  simp only [Nat.add_zero, prevIdx_mod P hi, prevIdx_add_one_mod P hi, prevIdx_add_two_mod P hi]
+  ϴ Nat.add_zero, prevIdx_mod P hi, prevIdx_add_one_mod P hi, prevIdx_add_two_mod P hi
 
 /-- **Ear clipping preserves weak triangulations.**  A weak triangulation `T` of `clip P i`,
 relabelled to the indices of `P` and preceded by the ear triangle, weakly triangulates `P`. -/
@@ -147,7 +151,7 @@ theorem weakTriangulates_clip (hP : P.Simple) (hi : i < P.n) (he : IsEar P i)
   have h₁ : WeakTriangulates (P.arc (prevIdx P i) 2) [(0, 1, 2)] :=
     weakTriangulates_triangle _ (simple_earArc P i hP he) (n_arc P _ _)
   have := weakTriangulates_of_diagonal hP he.1 (chord_ear_subset_filled P i hi he) h₁ h
-  rw [List.map_cons, List.map_nil, List.singleton_append, relabel_ear P i hi] at this
+  Ξ' List.map_cons, List.map_nil, List.singleton_append, relabel_ear P i hi at this
   exact this
 
 end

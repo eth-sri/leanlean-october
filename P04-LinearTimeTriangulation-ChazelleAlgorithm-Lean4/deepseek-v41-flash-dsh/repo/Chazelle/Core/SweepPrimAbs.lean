@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepPrimCls
 
 /-!
@@ -38,15 +40,15 @@ def OnLine (Q : Polygon) (E : ℕ) (p : Point) : Prop := p.1 = Visibility.edgeX 
 theorem onLine_lerp {Q : Polygon} {E : ℕ} {a b : Point} (ha : OnLine Q E a) (hb : OnLine Q E b)
     (t : ℝ) : OnLine Q E (Geometry.lerp a b t) := by
   unfold OnLine Visibility.edgeX Visibility.xAt at *
-  simp only [Geometry.lerp_fst, Geometry.lerp_snd]
+  ϴ Geometry.lerp_fst, Geometry.lerp_snd
   rw [ha, hb]; ring
 
 theorem onLine_left (Q : Polygon) (E : ℕ) : OnLine Q E (Q.vtx E) := by
-  unfold OnLine Visibility.edgeX; rw [Visibility.xAt_left]
+  unfold OnLine Visibility.edgeX; Ξ Visibility.xAt_left
 
 theorem onLine_right {Q : Polygon} {E : ℕ} (h : (Q.vtx E).2 ≠ (Q.vtx ((E + 1) % Q.n)).2) :
     OnLine Q E (Q.vtx ((E + 1) % Q.n)) := by
-  unfold OnLine Visibility.edgeX; rw [Visibility.xAt_right h]
+  unfold OnLine Visibility.edgeX; Ξ Visibility.xAt_right h
 
 theorem onLine_onEdge (Q : Polygon) (E h : ℕ) : OnLine Q E ((SymPt.onEdge E h).eval Q) := rfl
 
@@ -57,15 +59,15 @@ def hostEdgeIdx (n : ℕ) : SymPt → SymPt → ℕ
   | .vtx i, .vtx j => if j = (i + 1) % n then i else j
 
 theorem hostEdgeOK_symm {n : ℕ} {s₁ s₂ : SymPt} (h : HostEdgeOK n s₁ s₂) : HostEdgeOK n s₂ s₁ := by
-  cases s₁ <;> cases s₂ <;> simp only [HostEdgeOK] at h ⊢ <;> omega
+  cases s₁ <;> cases s₂ <;> ϴ' HostEdgeOK at h ⊢ <;> omega
 
 theorem edge_heights_ne {Q : Polygon} (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {E : ℕ}
     (hE : E < Q.n) : (Q.vtx E).2 ≠ (Q.vtx ((E + 1) % Q.n)).2 := by
-  refine hD _ _ hE (Nat.mod_lt _ (by omega)) ?_
+  refine hD _ _ hE (Nat.mod_lt _ (⋄)) ?_
   intro h
   rcases Nat.lt_or_ge (E + 1) Q.n with h' | h'
-  · rw [Nat.mod_eq_of_lt h'] at h; omega
-  · rw [show E + 1 = Q.n by omega, Nat.mod_self] at h; omega
+  · Ξ' Nat.mod_eq_of_lt h' at h; omega
+  · Ξ' show E + 1 = Q.n by omega, Nat.mod_self at h; omega
 
 /-- **Both ends of a non-horizontal host edge lie on the line of the edge `hostEdgeIdx`.** -/
 theorem hostEdge_onLine {Q : Polygon} (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {s₁ s₂ : SymPt}
@@ -77,31 +79,31 @@ theorem hostEdge_onLine {Q : Polygon} (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) 
   | onEdge e h =>
     cases s₂ with
     | vtx j =>
-      simp only [HostEdgeOK, hostEdgeIdx, SymPt.Lt, SymPt.eval] at hok hl₁ hl₂ ⊢
+      ϴ' HostEdgeOK, hostEdgeIdx, SymPt.Lt, SymPt.eval at hok hl₁ hl₂ ⊢
       refine ⟨hl₁.1, onLine_onEdge Q e h, ?_⟩
       rcases hok with rfl | rfl
       · exact onLine_left Q j
       · exact onLine_right (edge_heights_ne hD hn hl₁.1)
     | onEdge e' h' =>
-      simp only [HostEdgeOK, hostEdgeIdx, SymPt.Lt, SymPt.eval] at hok hl₁ hl₂ hnh ⊢
+      ϴ' HostEdgeOK, hostEdgeIdx, SymPt.Lt, SymPt.eval at hok hl₁ hl₂ hnh ⊢
       rcases hok with rfl | rfl
       · exact absurd rfl hnh
       · exact ⟨hl₁.1, onLine_onEdge Q e h, onLine_onEdge Q e h'⟩
   | vtx i =>
     cases s₂ with
     | onEdge e h =>
-      simp only [HostEdgeOK, hostEdgeIdx, SymPt.Lt, SymPt.eval] at hok hl₁ hl₂ ⊢
+      ϴ' HostEdgeOK, hostEdgeIdx, SymPt.Lt, SymPt.eval at hok hl₁ hl₂ ⊢
       refine ⟨hl₂.1, ?_, onLine_onEdge Q e h⟩
       rcases hok with rfl | rfl
       · exact onLine_left Q i
       · exact onLine_right (edge_heights_ne hD hn hl₂.1)
     | vtx j =>
-      simp only [HostEdgeOK, hostEdgeIdx, SymPt.Lt, SymPt.eval] at hok hl₁ hl₂ ⊢
+      ϴ' HostEdgeOK, hostEdgeIdx, SymPt.Lt, SymPt.eval at hok hl₁ hl₂ ⊢
       by_cases hj : j = (i + 1) % Q.n
-      · rw [ite_eq_left hj]
+      · Ξ ite_eq_left hj
         refine ⟨hl₁, onLine_left Q i, ?_⟩
         rw [hj]; exact onLine_right (edge_heights_ne hD hn hl₁)
-      · rw [ite_eq_right hj]
+      · Ξ ite_eq_right hj
         have hi : i = (j + 1) % Q.n := by rcases hok with h | h; exacts [absurd h hj, h]
         refine ⟨hl₂, ?_, onLine_left Q j⟩
         rw [hi]; exact onLine_right (edge_heights_ne hD hn hl₂)
@@ -140,7 +142,7 @@ theorem tour_abs {P : Polygon} (hG : GoodEnv P) {H : Host} {C : Chain} (_hCP : C
       ((chainModel C).pos (Qof P) ⟨i + 6, hc⟩).1 =
         ((SymPt.onEdge (hostEdgeIdx P.n s₁ s₂) (hc - 1)).eval (Qof P)).1 := by
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hn3 : 3 ≤ P.n := hG.1.1
+  have hn3 := hG.1.1
   set N := (H.pts P.n).length with hN
   have hN0 : 0 < N := by rw [← hNn]; exact C.n_pos
   set L := H.pts P.n
@@ -148,7 +150,7 @@ theorem tour_abs {P : Polygon} (hG : GoodEnv P) {H : Host} {C : Chain} (_hCP : C
   have hok : HostEdgeOK P.n s₁ s₂ := by
     have hstep := C.sideTour_step C.sideBeta i
     have hmod : ∀ a, ((a % N) + 1) % N = (a + 1) % N := fun a => by
-      rw [Nat.add_mod, Nat.mod_mod, ← Nat.add_mod]
+      Ξ Nat.add_mod, Nat.mod_mod, ← Nat.add_mod
     rcases hstep with h | h
     · have := hreg ((C.s + C.sideIdx C.sideBeta i) % N) (Nat.mod_lt _ hN0)
       rw [getD_of_getElem? h1, hmod, show C.s + C.sideIdx C.sideBeta i + 1 =
@@ -164,23 +166,23 @@ theorem tour_abs {P : Polygon} (hG : GoodEnv P) {H : Host} {C : Chain} (_hCP : C
     rw [hv₂]; show (C.sideWalk C.sideBeta).vtx ((i + 6 + 1) % (C.sideWalk C.sideBeta).n) = _
     rw [C.sideWalk_next_tour _ hi]; rfl
   have hne := ne_of_param_pos ht
-  rw [hwa, hwb] at hne
+  Ξ' hwa, hwb at hne
   have hD := distinct_Qof hG
-  rw [← hQn] at hok hl₁ hl₂ ⊢
-  obtain ⟨hE, hon₁, hon₂⟩ := hostEdge_onLine hD (by omega) hl₁ hl₂ hok hne
+  Ξ' ← hQn at hok hl₁ hl₂ ⊢
+  obtain ⟨hE, hon₁, hon₂⟩ := hostEdge_onLine hD (⋄) hl₁ hl₂ hok hne
   refine ⟨hE, ?_⟩
   have hpos : OnLine (Qof P) (hostEdgeIdx (Qof P).n s₁ s₂) ((chainModel C).pos (Qof P) ⟨i + 6, hc⟩) := by
     show OnLine _ _ (Geometry.lerp ((chainModel C).wa (i + 6)) ((chainModel C).wb (i + 6)) _)
     rw [hwa, hwb]; exact onLine_lerp hon₁ hon₂ _
-  rw [hpos]
+  Ξ hpos
   have hne' : ((chainModel C).wa (i + 6)).2 ≠ ((chainModel C).wb (i + 6)).2 := by
     rw [hwa, hwb]; exact hne
-  rw [Model.pos_snd (Q := Qof P) (x := ⟨i + 6, hc⟩) hne']
+  Ξ Model.pos_snd (Q := Qof P) (x := ⟨i + 6, hc⟩) hne'
   have hc1 : 1 ≤ hc := by
     rcases Nat.eq_zero_or_pos hc with rfl | h
     · exact absurd (show (chainModel C).param (Qof P) ⟨i + 6, 0⟩ = 0 from rfl) (ne_of_gt ht)
     · exact h
-  obtain ⟨h', rfl⟩ : ∃ h', hc = h' + 1 := ⟨hc - 1, by omega⟩
+  obtain ⟨h', rfl⟩ : ∃ h', hc = h' + 1 := ⟨hc - 1, ⋄⟩
   rfl
 
 
@@ -219,8 +221,8 @@ theorem edgeIdxS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
         fun _ => ⟨by omega, by simp [j2, hostEdgeIdx], fun r h1 h2 h3 => by simp [h3]⟩)
     | vtx j =>
       obtain ⟨j1, j2⟩ := h2
-      have k2' : c.nreg 50131 = i := k2
-      have j2' : c.nreg 50137 = j := j2
+      have k2' := k2
+      have j2' := j2
       simp only [SymPt.Lt] at hl₁ hl₂
       have e₁ := Exec.addN (P := P) hw 50140 50131 50032 (by rw [k2', h32]; omega)
       set c₁ : Config := { c with nreg := upd c.nreg 50140 (c.nreg 50131 + c.nreg 50032) }
@@ -301,21 +303,21 @@ def absInt : Stmt :=
 /-- **The primitive `absKey`.** -/
 def absKey : Stmt := .seq pHead (classify absBox absVtx absInt)
 
-theorem wr_absKey : wr Bprim absKey = true := by decide
+theorem wr_absKey : wr Bprim absKey = true := ⌖
 
 theorem absTop_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     (hE : CEnv P W H C c) :
     ∃ c' k, Exec P W absTop c c' k ∧ k ≤ 27 * H.length + 45 ∧
       AbsRec P c' 50210 C.top.1 C.radius := by
-  have e₁ := Exec.constN (P := P) hE.wb 50120 0 (by omega)
-  have hE₁ : CEnv P W H C _ := hE.step e₁ (by decide)
+  have e₁ := Exec.constN (P := P) hE.wb 50120 0 (⋄)
+  have hE₁ : CEnv P W H C _ := hE.step e₁ (⌖)
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp, -⟩ := tvLoad_exec _ hE₁ (i := 0)
-    (by simp) (by omega) (dst := 50211) (by norm_num)
+    (✓) (⋄) (dst := 50211) (⊛)
   have e₃ := Exec.constN (P := P) e₂.wb_right 50210 1 (by have := hE.hW; omega)
-  refine ⟨_, _, .seq e₁ (.seq e₂ e₃), by omega, C.radius_pos, Or.inr (Or.inr ⟨by simp,
+  refine ⟨_, _, .seq e₁ (.seq e₂ e₃), ⋄, C.radius_pos, Or.inr (Or.inr ⟨✓,
     C.abs_top_fst_lt_radius, sp, symPtIn_of_eq isp fun j h1 h2 => by simp [show j ≠ 50210 by
       omega], lsp, ?_⟩)⟩
-  rw [vsp, zero_add, walk_vtx_six]
+  Ξ vsp, zero_add, walk_vtx_six
 
 theorem absBox_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     (hE : CEnv P W H C c) {e hc : ℕ} (h01 : c.nreg 50201 = e)
@@ -329,7 +331,7 @@ theorem absBox_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     · omega
     · omega
     · exact absurd (le_antisymm (not_lt.1 h2) (not_lt.1 h1)) hne
-  rw [chain_dirCode_small C he] at hdir
+  Ξ' chain_dirCode_small C he at hdir
   have hR := C.radius_pos
   have hW := hE.hW
   obtain ⟨-, e1, -, e3, -, e5, -⟩ := C.sidePt_box C.sideBeta ((chainModel C).param (Qof P) ⟨e, hc⟩)
@@ -338,21 +340,21 @@ theorem absBox_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   by_cases h1 : e < 2
   · have he1 : e = 1 := by split_ifs at hdir <;> omega
     subst he1
-    refine ⟨_, _, .ifLtN_true (by rw [h01, hE.r82]; omega) (Exec.constN hE.wb _ _ (by omega)),
-      by omega, hR, Or.inl ⟨by simp, ?_⟩⟩
-    rw [hpos, e1]
+    refine ⟨_, _, .ifLtN_true (by rw [h01, hE.r82]; omega) (Exec.constN hE.wb _ _ (⋄)),
+      ⋄, hR, Or.inl ⟨✓, ?_⟩⟩
+    Ξ hpos, e1
   by_cases h3 : e < 4
   · have he3 : e = 3 := by split_ifs at hdir <;> omega
     subst he3
     refine ⟨_, _, .ifLtN_false (by rw [h01, hE.r82]; omega) (.ifLtN_true
-      (by rw [h01, hE.r84]; omega) (Exec.constN hE.wb _ _ (by omega))), by omega, hR,
-      Or.inr (Or.inl ⟨by simp, ?_⟩)⟩
-    rw [hpos, e3]
+      (by rw [h01, hE.r84]; omega) (Exec.constN hE.wb _ _ (⋄))), ⋄, hR,
+      Or.inr (Or.inl ⟨✓, ?_⟩)⟩
+    Ξ hpos, e3
   · have he5 : e = 5 := by split_ifs at hdir <;> omega
     subst he5
     obtain ⟨c', k', ex, hk, hrec⟩ := absTop_exec c hE
     refine ⟨c', _, .ifLtN_false (by rw [h01, hE.r82]; omega) (.ifLtN_false
-      (by rw [h01, hE.r84]; omega) ex), by omega, ?_⟩
+      (by rw [h01, hE.r84]; omega) ex), ⋄, ?_⟩
     rw [hpos, e5]; exact hrec
 
 theorem absVtx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
@@ -395,35 +397,35 @@ theorem absInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     exec_block
     · config_simp; rw [hE.r53]; omega
     · refine ⟨rfl, by config_simp; rw [h01, hE.r81], by config_simp; rw [hE.r53]; ring,
-        fun r h1 h2 => by simp [h1, h2]⟩
+        fun r h1 h2 => ⊚ h1, h2⟩
   obtain ⟨q20, q43, r₁⟩ := q
   have hE₁ : CEnv P W H C c₁ := hE.keep e₁.wb_right
-    (exec_frameB e₁ (B := fun r => r == 50120 || r == 50143) (by decide)).2.2.1
-    (fun r hr => r₁ r (ne_of_mem_of_not_mem hr (by decide)) (ne_of_mem_of_not_mem hr (by decide)))
+    (exec_frameB e₁ (B := fun r => r == 50120 || r == 50143) (⌖)).2.2.1
+    (fun r hr => r₁ r (ne_of_mem_of_not_mem hr (⌖)) (ne_of_mem_of_not_mem hr (⌖)))
   by_cases hlt : e - 6 < 2 * C.m
   · set i := e - 6 with hi
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, s₁, i₁, l₁, v₁, x₁⟩ := tvLoad_exec c₁ hE₁ (i := i) q20
-      hlt.le (dst := 50130) (by norm_num)
+      hlt.le (dst := 50130) (⊛)
     have w₂ := e₂.wb_right
     have e₃ := Exec.addN (P := P) w₂ 50120 50120 50032
-      (by rw [f₂.1 _ (by decide), q20, hE₂.r32]; omega)
+      (by rw [f₂.1 _ (⌖), q20, hE₂.r32]; omega)
     set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50120 (c₂.nreg 50120 + c₂.nreg 50032) }
       with hc₃
-    have hE₃ : CEnv P W H C c₃ := hE₂.step e₃ (by decide)
+    have hE₃ : CEnv P W H C c₃ := hE₂.step e₃ (⌖)
     obtain ⟨c₄, k₄, e₄, hk₄, f₄, hE₄, s₂, i₂, l₂, v₂, x₂⟩ := tvLoad_exec c₃ hE₃ (i := i + 1)
       (by rw [hc₃]; simp [f₂.1 _ (by decide : Btv 50130 50120 = false) ▸ q20, hE₂.r32])
-      (by omega) (dst := 50136) (by norm_num)
+      (⋄) (dst := 50136) (⊛)
     have i₁' : SymPtIn c₄ 50130 s₁ := symPtIn_keep (symPtIn_of_eq i₁ fun j h1 h2 => by
       rw [hc₃]; simp [show j ≠ 50120 by omega]) f₄
       (by intro j h1 h2; interval_cases j <;> decide)
-    obtain ⟨c₅, k₅, e₅, hk₅, v₅, r₅⟩ := edgeIdxS_exec (P := P) c₄ e₄.wb_right (by omega)
+    obtain ⟨c₅, k₅, e₅, hk₅, v₅, r₅⟩ := edgeIdxS_exec (P := P) c₄ e₄.wb_right (⋄)
       hE₄.r32 i₁' i₂ l₁ l₂
     have q02 : c₅.nreg 50202 = hc := by
-      rw [r₅ _ (by decide) (by decide) (by decide), f₄.1 _ (by decide), hc₃]
+      Ξ r₅ _ (⌖) (⌖) (⌖), f₄.1 _ (⌖), hc₃
       simp only
-      rw [upd_other _ _ _ (by decide), f₂.1 _ (by decide), r₁ _ (by decide) (by decide), h02]
+      Ξ upd_other _ _ _ (⌖), f₂.1 _ (⌖), r₁ _ (⌖) (⌖), h02
     have q32 : c₅.nreg 50032 = 1 := by
-      rw [r₅ _ (by decide) (by decide) (by decide), hE₄.r32]
+      Ξ r₅ _ (⌖) (⌖) (⌖), hE₄.r32
     obtain ⟨hEi, hx⟩ := tour_abs hE.hG hE.hP hreg hNn hlt x₁ x₂ l₁ l₂ v₁ v₂
       (hc := hc) (by rw [show i + 6 = e by omega]; exact ht)
     have hc1 : 1 ≤ hc := by
@@ -437,29 +439,29 @@ theorem absInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       exec_block
       all_goals try omega
       refine ⟨rfl, by config_simp, by config_simp, by config_simp; exact v₅, ?_⟩
-      config_simp; rw [q02, q32]
+      config_simp; Ξ q02, q32
     obtain ⟨q10, q11⟩ := q
     have ex : Exec P W absInt c c₆ (k₁ + (k₂ + (1 + (k₄ + (k₅ + k₆))) + 1)) :=
       .seq e₁ (.ifLtN_true (by rw [q20, q43]; exact hlt) (.seq e₂ (.seq e₃ (.seq e₄
         (.seq e₅ e₆)))))
     have hmem : (chainModel C).pos (Qof P) ⟨e, hc⟩ ∈ C.set := by
-      have hei : e = i + 6 := by omega
-      rw [pos_eq_sidePt]
-      rw [hei] at ht ht1 ⊢
-      exact C.sideWalk_tour_pt_mem _ hlt.le (fun h => absurd h (by omega)) ht.le ht1
+      have hei : e = i + 6 := ⋄
+      Ξ pos_eq_sidePt
+      Ξ' hei at ht ht1 ⊢
+      exact C.sideWalk_tour_pt_mem _ hlt.le (fun h => absurd h (⋄)) ht.le ht1
     refine ⟨c₆, _, ex, by have := hE.hlen; omega, C.radius_pos, Or.inr (Or.inr ⟨q10,
       lt_of_le_of_lt (C.abs_le_coordBound_of_mem_set hmem).1 C.coordBound_lt_radius,
-      _, q11, ⟨hEi, by omega⟩, ?_⟩)⟩
-    rw [show e = i + 6 by omega, hx]
-  · have he' : e = 2 * C.m + 6 := by omega
+      _, q11, ⟨hEi, ⋄⟩, ?_⟩)⟩
+    Ξ show e = i + 6 by omega, hx
+  · have he' : e = 2 * C.m + 6 := ⋄
     obtain ⟨c₂, k₂, e₂, hk₂, hrec⟩ := absTop_exec c₁ hE₁
-    refine ⟨c₂, _, .seq e₁ (.ifLtN_false (by rw [q20, q43]; exact hlt) e₂), by omega, ?_⟩
+    refine ⟨c₂, _, .seq e₁ (.ifLtN_false (by rw [q20, q43]; exact hlt) e₂), ⋄, ?_⟩
     subst he'
     obtain ⟨-, -, -, -, -, -, e6⟩ := C.sidePt_box C.sideBeta
       ((chainModel C).param (Qof P) ⟨2 * C.m + 6, hc⟩)
-    rw [pos_eq_sidePt, show (chainModel C).W = C.sideWalk C.sideBeta from rfl]
+    Ξ pos_eq_sidePt, show (chainModel C).W = C.sideWalk C.sideBeta from rfl
     simp only
-    rw [e6]
+    Ξ e6
     exact hrec
 
 
@@ -486,13 +488,13 @@ theorem absKey_meets : Meets absKey primBands (PrimPre AbsKeyIn) (PrimPost AbsKe
     (Kv := 27 * H.length + 45) (Ki := 60 * H.length + 200)
     (R := fun c' => AbsRec P c' 50210 ((chainModel C).pos (Qof P)
       ⟨c₀.nreg 50201, c₀.nreg 50202⟩).1 C.radius) c₀ c hE hinp hen hp0 hp1 hhn hy
-    (fun c₂ hE₂ g₂ d₂ he hpos => absBox_exec c₂ hE₂ (g₂ 50201 (by norm_num) (by norm_num)) d₂ he
+    (fun c₂ hE₂ g₂ d₂ he hpos => absBox_exec c₂ hE₂ (g₂ 50201 (⊛) (⊛)) d₂ he
       hpos)
-    (fun c₂ hE₂ g₂ h6 hpar => absVtx_exec c₂ hE₂ (g₂ 50201 (by norm_num) (by norm_num)) h6
-      (by omega) hpar)
-    (fun c₂ hE₂ g₂ _ h6 hpos => absInt_exec c₂ hE₂ hregH (g₂ 50201 (by norm_num) (by norm_num))
-      (g₂ 50202 (by norm_num) (by norm_num)) h6 (by omega) hpos hp1 hhn)
-  exact ⟨c', k, ex, by omega, hr⟩
+    (fun c₂ hE₂ g₂ h6 hpar => absVtx_exec c₂ hE₂ (g₂ 50201 (⊛) (⊛)) h6
+      (⋄) hpar)
+    (fun c₂ hE₂ g₂ _ h6 hpos => absInt_exec c₂ hE₂ hregH (g₂ 50201 (⊛) (⊛))
+      (g₂ 50202 (⊛) (⊛)) h6 (⋄) hpos hp1 hhn)
+  exact ⟨c', k, ex, ⋄, hr⟩
 
 /-- **`absCmp`**: the bit `x₁ < x₂` of the abscissa records at `50201` and `50205` into `50210`. -/
 def absCmp : Stmt :=
@@ -504,7 +506,7 @@ def absCmp : Stmt :=
           (.ifLtN 50032 50205 (.instr (.constN 50210 1))
             (kbit 50202 50206 50202 0 50210)))))
 
-theorem wr_absCmp : wr Bprim absCmp = true := by decide
+theorem wr_absCmp : wr Bprim absCmp = true := ⌖
 
 /-- The kind of an abscissa record is `0`, `1` or `2`. -/
 theorem AbsRec.kind {P : Polygon} {c : Config} {r : ℕ} {x R : ℝ} (h : AbsRec P c r x R) :

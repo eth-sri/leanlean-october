@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleRay
 
 /-!
@@ -79,16 +81,16 @@ theorem cp_inj (hP : C.P.Simple) {k k' : ℕ} {τ τ' : ℝ} (h : CCoord C k τ)
       apply hne
       have hd : τ - τ' ≠ 0 := sub_ne_zero.2 hne'
       apply Prod.ext
-      · have : (τ - τ') * ((C.vertex (k + 1)).1 - (C.vertex k).1) = 0 := by linarith
+      · have : (τ - τ') * ((C.vertex (k + 1)).1 - (C.vertex k).1) = 0 := ⟡
         have := (mul_eq_zero.1 this).resolve_left hd
         linarith
-      · have : (τ - τ') * ((C.vertex (k + 1)).2 - (C.vertex k).2) = 0 := by linarith
+      · have : (τ - τ') * ((C.vertex (k + 1)).2 - (C.vertex k).2) = 0 := ⟡
         have := (mul_eq_zero.1 this).resolve_left hd
         linarith
     · exfalso
       apply C.sideOpen_not_mem_chainEdge hP hkm hk'm (Ne.symm hkk) ⟨hτ, hτ1⟩
       show cp C k τ ∈ C.chainEdge k'
-      rw [heq, C.chainEdge_eq]
+      Ξ heq, C.chainEdge_eq
       exact Geometry.lerp_mem_segment _ _ hτ'.le hτ1'.le
 
 /-- The tour index on the double circle: `j = (S + i) mod 2 m`. -/
@@ -185,7 +187,7 @@ theorem pos_on_chain {p : ℕ} (hp : p < 2 * C.m + 7) {t : ℝ} (ht : 0 ≤ t) (
       rcases eq_or_lt_of_le ht with h0 | h0
       · exact Or.inr ⟨rfl, h0.symm⟩
       · exact absurd hx (C.sideWalk_box_pt C.sideBeta (Or.inr ⟨rfl, h0⟩) ht ht1).1
-    · exact Or.inl ⟨by omega, by omega⟩
+    · exact Or.inl ⟨⋄, by omega⟩
 
 /-- The closing vertex of the walk is the top, like the first tour vertex. -/
 theorem sidePt_last :
@@ -226,10 +228,10 @@ theorem mirror_sum (hP : C.P.Simple) {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : 
         (e = 2 * C.m → i = 0 ∧ t = 0) := by
     intro p t hp ht ht1 hx
     rcases pos_on_chain C hp ht ht1 hx with ⟨h1, h2⟩ | ⟨h1, h2⟩
-    · refine ⟨p - 6, 0, by omega, Or.inl rfl, ?_, by rw [show p - 6 + 6 = p by omega], by omega⟩
-      rw [Nat.cast_sub (by omega)]; push_cast; ring
+    · refine ⟨p - 6, 0, ⋄, Or.inl rfl, ?_, by rw [show p - 6 + 6 = p by omega], by omega⟩
+      rw [Nat.cast_sub (⋄)]; push_cast; ring
     · subst h1; subst h2
-      refine ⟨0, 2 * C.m, by omega, Or.inr rfl, by push_cast; ring, sidePt_last C, fun _ => ⟨rfl, rfl⟩⟩
+      refine ⟨0, 2 * C.m, ⋄, Or.inr rfl, by push_cast; ring, sidePt_last C, fun _ => ⟨rfl, rfl⟩⟩
   obtain ⟨i, e, hi, he, hk, hpt, he2⟩ := norm hp ht ht1 hx
   obtain ⟨i', e', hi', he', hk', hpt', he2'⟩ := norm hp' ht' ht1' hx'
   have heq' : sidePt (C.sideWalk C.sideBeta) (i + 6) t = sidePt (C.sideWalk C.sideBeta) (i' + 6) t' := by
@@ -251,10 +253,10 @@ theorem mirror_sum (hP : C.P.Simple) {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : 
     have hi0' : (0 : ℝ) ≤ i' := Nat.cast_nonneg i'
     have hm0 : (0 : ℝ) < C.m := by exact_mod_cast hm
     have hqq : (q : ℤ) = q' := by
-      have h1 : 2 * (C.m : ℝ) * ((q : ℝ) - q') < 2 * C.m := by linarith
-      have h2 : -(2 * (C.m : ℝ)) < 2 * C.m * ((q : ℝ) - q') := by linarith
-      have h3 : ((q : ℝ) - q') < 1 := by nlinarith
-      have h4 : -1 < ((q : ℝ) - q') := by nlinarith
+      have h1 : 2 * (C.m : ℝ) * ((q : ℝ) - q') < 2 * C.m := ⟡
+      have h2 : -(2 * (C.m : ℝ)) < 2 * C.m * ((q : ℝ) - q') := ⟡
+      have h3 : ((q : ℝ) - q') < 1 := ⊞
+      have h4 : -1 < ((q : ℝ) - q') := ⊞
       have h5 : ((q : ℤ) : ℝ) - ((q' : ℤ) : ℝ) < 1 := by push_cast; linarith
       have h6 : -1 < ((q : ℤ) : ℝ) - ((q' : ℤ) : ℝ) := by push_cast; linarith
       have h7 : (q : ℤ) - q' < 1 := by exact_mod_cast h5

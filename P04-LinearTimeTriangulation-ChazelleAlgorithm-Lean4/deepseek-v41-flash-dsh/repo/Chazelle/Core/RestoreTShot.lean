@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTHoles
 public import Chazelle.Core.RestoreTXCmp
 public import Chazelle.Core.DownPhaseOracleHit
@@ -48,8 +50,8 @@ theorem innerPt_mi_edge {Q : Polygon} (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) 
     (h1 : (interiorModel Q).param Q ⟨p, h⟩ < 1) :
     (interiorModel Q).InnerPt ((interiorModel Q).pos Q ⟨p, h⟩) := by
   set t := (interiorModel Q).param Q ⟨p, h⟩
-  have hq : (p + 1) % Q.n < Q.n := Nat.mod_lt _ (by omega)
-  have hne : p ≠ (p + 1) % Q.n := succ_ne (by omega) hp
+  have hq : (p + 1) % Q.n < Q.n := Nat.mod_lt _ (⋄)
+  have hne : p ≠ (p + 1) % Q.n := succ_ne (⋄) hp
   have hn' : (interiorModel Q).W.n = Q.n := IOrc.mi_n
   have va : (interiorModel Q).W.vtx p = Q.vtx (IOrc.iv Q p) := IOrc.iw_vtx hp
   have vb : (interiorModel Q).W.vtx ((p + 1) % Q.n) = Q.vtx (IOrc.iv Q ((p + 1) % Q.n)) :=
@@ -60,12 +62,12 @@ theorem innerPt_mi_edge {Q : Polygon} (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) 
       lerp (Q.vtx (IOrc.iv Q p)) (Q.vtx (IOrc.iv Q ((p + 1) % Q.n))) t := by
     unfold Model.pos
     simp only
-    rw [IOrc.mi_wa hp, IOrc.mi_wb hp]
-  rw [hz]
+    Ξ IOrc.mi_wa hp, IOrc.mi_wb hp
+  Ξ hz
   set a := Q.vtx (IOrc.iv Q p)
   set b := Q.vtx (IOrc.iv Q ((p + 1) % Q.n))
   unfold Model.InnerPt
-  simp only [Geometry.lerp_fst, Geometry.lerp_snd]
+  ϴ Geometry.lerp_fst, Geometry.lerp_snd
   refine ⟨?_, ?_⟩
   · rcases lt_or_gt_of_ne hy with hab | hab
     · refine ⟨p, (p + 1) % Q.n, by rw [hn']; exact hp, by rw [hn']; exact hq, ?_, ?_⟩
@@ -92,7 +94,7 @@ theorem chain_vtx_abs_fst (C : Chain) {p : ℕ} (hp : p < (chainModel C).W.n) :
   have htop : |C.top.1| ≤ C.radius := (C.abs_le_coordBound_of_mem_set C.top_mem_set).1.trans hR.le
   have hRp : 0 ≤ C.radius := (abs_nonneg _).trans htop
   have hW : (chainModel C).W = C.sideWalk C.sideBeta := rfl
-  rw [hW]
+  Ξ hW
   rcases (by omega : p = 0 ∨ p = 1 ∨ p = 2 ∨ p = 3 ∨ p = 4 ∨ p = 5 ∨ 6 ≤ p) with
     rfl | rfl | rfl | rfl | rfl | rfl | h6
   · rw [C.sideWalk_vtx_zero]; exact htop
@@ -101,20 +103,20 @@ theorem chain_vtx_abs_fst (C : Chain) {p : ℕ} (hp : p < (chainModel C).W.n) :
   · rw [C.sideWalk_vtx_three]; exact (abs_of_nonneg hRp).le
   · rw [C.sideWalk_vtx_four]; exact (abs_of_nonneg hRp).le
   · rw [C.sideWalk_vtx_five]; exact htop
-  · obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by omega⟩
-    rw [C.sideWalk_vtx_tour _ (by omega), Chain.sideTour]
+  · obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, ⋄⟩
+    Ξ C.sideWalk_vtx_tour _ (⋄), Chain.sideTour
     exact (C.abs_le_coordBound_of_mem_set (C.vertex_mem_set (C.sideIdx_le _ _))).1.trans hR.le
 
 /-- **A point of the walk of a chain model is within the vertical sides of the box.** -/
 theorem chain_pos_abs_fst (C : Chain) (Q : Polygon) {x : WPos}
     (he : x.edge < (chainModel C).W.n) (h0 : 0 ≤ (chainModel C).param Q x)
     (h1 : (chainModel C).param Q x ≤ 1) : |((chainModel C).pos Q x).1| ≤ C.radius := by
-  have hn : 0 < (chainModel C).W.n := by omega
+  have hn : 0 < (chainModel C).W.n := ⋄
   unfold Model.pos
-  simp only [Model.wa, Model.wb, Geometry.lerp_fst]
+  ϴ Model.wa, Model.wb, Geometry.lerp_fst
   have ha := abs_le.1 (chain_vtx_abs_fst C he)
   have hb := abs_le.1 (chain_vtx_abs_fst C (Nat.mod_lt (x.edge + 1) hn))
-  rw [abs_le]
+  Ξ abs_le
   constructor <;> nlinarith
 
 /-- **An inner point of a chain model**: a point of the walk strictly inside the height band of
@@ -129,7 +131,7 @@ theorem innerPt_chain_walk (C : Chain) (Q : Polygon) {x : WPos}
   have v1 : (chainModel C).W.vtx 1 = (-C.radius, C.radius) := rfl
   have v2 : (chainModel C).W.vtx 2 = (-C.radius, -C.radius) := rfl
   have v3 : (chainModel C).W.vtx 3 = (C.radius, -C.radius) := rfl
-  refine ⟨⟨2, 1, by omega, by omega, ?_, ?_⟩, ⟨1, 3, by omega, by omega, ?_, ?_⟩⟩
+  refine ⟨⟨2, 1, ⋄, ⋄, ?_, ?_⟩, ⟨1, 3, ⋄, ⋄, ?_, ?_⟩⟩
   · rw [v2]; simp only; linarith
   · rw [v1]; simp only; linarith
   · rw [v1]; simp only; linarith
@@ -142,7 +144,7 @@ theorem chain_box_vtx_abs (C : Chain) {p : ℕ} (hp : p < 6) :
   have hR : 0 ≤ C.radius := (abs_nonneg _).trans
     ((C.abs_le_coordBound_of_mem_set C.top_mem_set).1.trans C.coordBound_lt_radius.le)
   have hW : (chainModel C).W = C.sideWalk C.sideBeta := rfl
-  rw [hW]
+  Ξ hW
   rcases (by omega : p = 0 ∨ p = 1 ∨ p = 2 ∨ p = 3 ∨ p = 4 ∨ p = 5) with
     rfl | rfl | rfl | rfl | rfl | rfl
   · rw [C.sideWalk_vtx_zero]; exact abs_of_nonneg hR
@@ -164,9 +166,9 @@ theorem posG_of_band {M : Model} {Q : Polygon} {n : ℕ} {x : WPos} (he : x.edge
     simp only at h0
     subst h0
     show Geometry.lerp (M.wa e) (M.wb e) 0 = _
-    simp [Geometry.lerp, Model.wa]
+    Θ Geometry.lerp, Model.wa
   have := hy C hM
-  rw [hv, hM, chain_box_vtx_abs C (by omega)] at this
+  Ξ' hv, hM, chain_box_vtx_abs C (⋄) at this
   exact lt_irrefl _ this
 
 /-! ## The arcs of the region are pieces of the shot -/
@@ -183,7 +185,7 @@ theorem TGood.end_ok (hE : TGood P W M N c₀) {x : WPos}
     NormPos M (Qof P) P.n (normOf M (Qof P) x) ∧ (normOf M (Qof P) x).edge < M.W.n ∧
       ((normOf M (Qof P) x).hgt = 0 ∨ M.InnerPt (M.pos (Qof P) (normOf M (Qof P) x))) := by
   have hQn : (Qof P).n = P.n := shear_n _ _
-  rw [hQn] at hx
+  Ξ' hQn at hx
   obtain ⟨hN, he, hpos, -, hcase⟩ := normOf_facts hx
   have hkey : M.key (Qof P) x = x.edge + M.param (Qof P) x := rfl
   have hxe : x.edge < M.W.n := by
@@ -193,7 +195,7 @@ theorem TGood.end_ok (hE : TGood P W M N c₀) {x : WPos}
   rcases hcase with h0 | hp
   · exact Or.inl h0
   right
-  rw [hpos]
+  Ξ hpos
   have hp' : 0 < M.param (Qof P) x := by
     unfold normOf at hp; split_ifs at hp with hz
     · simp at hp
@@ -215,11 +217,11 @@ theorem TGood.arc_piece (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempt
       M.arcWt (M.key (Qof P) (nArc M (Qof P) N (c₀.nreg 83002) t).1)
         (M.key (Qof P) (nArc M (Qof P) N (c₀.nreg 83002) t).2) ≤ γ := by
   set r := c₀.nreg 83002
-  have hr : r < N.nRegions := hE.hr
+  have hr := hE.hr
   obtain ⟨-, -, -, reg, hRC, -, hArcs, -, -, -, hpp⟩ := hE.hNF
   set j := arcAt N r t with hjdef
   have hjm : j ∈ (N.region r).arcs := by
-    rw [hjdef, arcAt, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
+    Ξ hjdef, arcAt, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some
     exact List.getElem_mem ht
   obtain ⟨hj, -⟩ := (hArcs.2.2.2 r hr j).1 hjm
   obtain ⟨hjr, harc⟩ := hArcs.1 j hj
@@ -233,8 +235,8 @@ theorem TGood.arc_piece (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempt
   have hks := (normOf_facts hps).2.2.2.1
   have hke := (normOf_facts hpe).2.2.2.1
   refine ⟨⟨hs.1, he.1, hs.2.1, he.2.1, hs.2.2, he.2.2⟩, ?_⟩
-  simp only [nArc]
-  rw [hks, hke]
+  ϴ nArc
+  Ξ hks, hke
   exact (BoxT.arcWt_le_weight (hArcs.1 j hj).2).trans (hsg _ hU)
 
 end arcs
@@ -257,7 +259,7 @@ def shPrep : Stmt := .seq (block (SweepPrim.copies shL)) (.instr (.constN 84003 
 def shW : List ℕ := [84000, 84001, 84002, 84003, 84004, 84005, 84006, 84007, 84008]
 
 theorem shW_scr : ∀ r ∈ shW, Scr r := by
-  intro r hr; simp only [shW, List.mem_cons, List.not_mem_nil, or_false] at hr; unfold Scr; omega
+  intro r hr; ϴ' shW, List.mem_cons, List.not_mem_nil, or_false at hr; unfold Scr; omega
 
 theorem shPrep_rs (hE : TGood P W M N c₀) (hI : TInv W c₀ c) :
     RS P W c₀ shPrep c 9 (fun c' => (∀ p ∈ shL, c'.nreg p.1 = c.nreg p.2) ∧
@@ -296,11 +298,11 @@ theorem shotPre_of {X : MemCtx} {Ok : Polygon → Model → Prop} (hE : TGood P 
       ShotList.arcAt c.nmem B j = nArc M (Qof P) N (c₀.nreg 83002) j)
     (hho : HoleOut M (Qof P) c (M.pos (Qof P) ⟨c₀.nreg 83005, c₀.nreg 83006⟩)) :
     ShotPreG X Ok RS0 P W M (TInv W c₀) (YR M) c := by
-  have hm : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a := hI.hm
+  have hm := hI.hm
   have hA := hI.hA
-  have i00 : c.nreg 83000 = c₀.nreg 83000 := hI.hin _ (by norm_num) (by norm_num)
+  have i00 : c.nreg 83000 = c₀.nreg 83000 := hI.hin _ (⊛) (⊛)
   obtain ⟨hMD, hwf⟩ := hI.modelDesc hE
-  rw [i00] at hMD hwf
+  Ξ' i00 at hMD hwf
   have hX' : X.holds P c.nmem (c₀.nreg 83004) (c.nreg ALLOC) :=
     X.mono _ _ _ _ _ hA (X.local_ _ _ _ _ _ (fun a ha => (hm a ha).symm) hX)
   have hcap' : X.cap P c.nmem (c₀.nreg 83004) = X.cap P c₀.nmem (c₀.nreg 83004) :=
@@ -314,7 +316,7 @@ theorem shotPre_of {X : MemCtx} {Ok : Polygon → Model → Prop} (hE : TGood P 
   have horig : (∃ q, Origin.walk x = .walk ⟨q, 0⟩) ∨ (M.InnerPt ((Origin.walk x).eval M (Qof P)) ∧
       ∀ y, Origin.walk x = .walk y → ProperPos M (Qof P) P.n y) := by
     rcases hE.hxc with h0 | hp
-    · exact Or.inl ⟨c₀.nreg 83005, by rw [hxdef, h0]⟩
+    · exact Or.inl ⟨c₀.nreg 83005, Ρ hxdef, h0⟩
     right
     refine ⟨?_, fun y hy => by cases hy; exact hE.hxp⟩
     show M.InnerPt (M.pos (Qof P) x)
@@ -325,13 +327,13 @@ theorem shotPre_of {X : MemCtx} {Ok : Polygon → Model → Prop} (hE : TGood P 
       have hQn : (Qof P).n = P.n := shear_n _ _
       have hn3 : 3 ≤ (Qof P).n := by rw [hQn]; exact hE.hG.1.1
       have he := hE.hxe
-      rw [IOrc.mi_n] at he
+      Ξ' IOrc.mi_n at he
       exact innerPt_mi_edge (ShootCut.goodEnv_distinct hE.hG) hn3 he hp hE.hxp.2.1
   -- the holes
   obtain ⟨h9, hhl, hcov, -⟩ := hho
   have hv : ∀ g ∈ ShotList.holeList c 84000, g.1.hgt = 0 ∧ g.1.edge < M.W.n := by
     intro g hg
-    simp only [ShotList.holeList, List.mem_map, List.mem_range] at hg
+    ϴ' ShotList.holeList, List.mem_map, List.mem_range at hg
     obtain ⟨j, hj, rfl⟩ := hg
     exact ⟨rfl, (hhl j (by have : j < min (c.nreg 84009) 3 := hj; omega)).1⟩
   refine ⟨hE.hG, hE.hW, ?_, ?_, ?_, ?_, ?_, hI, hOk, ?_, h9, ?_, hhl, Origin.walk x,
@@ -344,11 +346,11 @@ theorem shotPre_of {X : MemCtx} {Ok : Polygon → Model → Prop} (hE : TGood P 
   · show c.nreg 84001 + 4 * c.nreg 84002 ≤ c.nreg ALLOC; rw [h01, h02]; exact hB
   · intro j hj
     change j < c.nreg 84002 at hj
-    rw [h02] at hj
+    Ξ' h02 at hj
     show PieceOK M (Qof P) P.n (ShotList.arcAt c.nmem (c.nreg 84001) j) ∧
       M.arcWt (M.key (Qof P) (ShotList.arcAt c.nmem (c.nreg 84001) j).1)
         (M.key (Qof P) (ShotList.arcAt c.nmem (c.nreg 84001) j).2) ≤ c.nreg 84007
-    rw [h01, harr j hj, h07]
+    Ξ h01, harr j hj, h07
     exact hE.arc_piece hne hsg hj
   · exact avoid_of_cover hcov hv _ _ _
 
@@ -370,7 +372,7 @@ def tArr : Stmt := .ifLtN 83021 83023 tArrC .skip
 
 theorem rho_dir {v : ℕ} (hv : v ≤ 1) : -dirOf (1 - v) = dirOf v := by
   have : 1 - v = if v = 1 then 0 else 1 := by split_ifs <;> omega
-  rw [this, SweepPrim.neg_dirOf_flip]
+  Ξ this, SweepPrim.neg_dirOf_flip
 
 /-- **The arrival step.**  From a proper position `f` (registers `83012`, `83013`) of a point at
 which, in a chain model, an arrival position of the ray exists: in a chain model the registers

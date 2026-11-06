@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFComplete2
 public import Chazelle.Core.ShootCutCutterOK
 
@@ -54,15 +56,15 @@ theorem closed_of_unwrap {n a x y z : ℝ} (ha : 0 ≤ a ∧ a < n) (hx : 0 ≤ 
   · rcases h2.lt_or_eq with h2 | h2
     · exact Or.inl ((cyc_unwrap ha hx hz hy hxz).2 ⟨h1, h2⟩)
     · right; right
-      rw [← wrapK_unwrapK (n := n) (l := a) hy, h2, wrapK_unwrapK hz]
+      Ξ ← wrapK_unwrapK (n := n) (l := a) hy, h2, wrapK_unwrapK hz
   · right; left
-    rw [← wrapK_unwrapK (n := n) (l := a) hy, ← h1, wrapK_unwrapK hx]
+    Ξ ← wrapK_unwrapK (n := n) (l := a) hy, ← h1, wrapK_unwrapK hx
 
 theorem dir_bit {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     ∃ σb, σb ≤ 1 ∧ dirOf σb = σ := by
   rcases hσ with rfl | rfl
-  · exact ⟨1, le_rfl, by simp [dirOf]⟩
-  · exact ⟨0, by norm_num, by simp [dirOf]⟩
+  · exact ⟨1, le_rfl, ⊚ dirOf⟩
+  · exact ⟨0, ⊛, by simp [dirOf]⟩
 
 
 /-- **A pair run of the good vertex's arcs finds a success.** -/
@@ -78,8 +80,8 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
   have hcp' := hcp
   obtain ⟨hLq, -, hq1, -, -, -, -, hk0w, hk1w, hpos, hkind⟩ := hcp'
   -- the good vertex
-  have hX0 : X.hgt = 0 := hG.hgc.1
-  have hXe : X.edge < E.M.W.n := hG.hgc.2.1
+  have hX0 := hG.hgc.1
+  have hXe := hG.hgc.2.1
   have hXX : X = ⟨X.edge, 0⟩ := by cases X; simp only at hX0 ⊢; rw [hX0]
   have hxk : 0 ≤ (X.edge : ℝ) + 0 ∧ (X.edge : ℝ) + 0 < E.M.W.n := by
     have : (X.edge : ℝ) + 1 ≤ E.M.W.n := by exact_mod_cast hXe
@@ -117,7 +119,7 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
     set n := E.M.W.n with hndef
     set s := c₃.nmem (L + 1 + 7 * i' + 0) with hsdef
     have hs : s < n := (hpos i' hi').2.2.1
-    have hmn : Cα'.m < n := hK.hmn
+    have hmn := hK.hmn
     have hm1 := Cα'.one_le
     have kS : psK E c₃.nmem L i' = (s : ℝ) := by
       unfold psK; simp only at hpw0; rw [hpw0]; exact key_vtx' _ _ _

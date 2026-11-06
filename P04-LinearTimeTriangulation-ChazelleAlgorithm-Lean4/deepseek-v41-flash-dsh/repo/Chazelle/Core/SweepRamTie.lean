@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepMachine21L
 
 /-!
@@ -56,24 +58,24 @@ theorem sub_of_mem_dom (hP : J.P.Simple) {S₂ : Set (Set Point)}
     · exact h
     · exfalso; apply hH.right_not; rw [← h, ← hKpt]; exact hKD
   have hya : a.2 = y := by
-    have := hKe; rw [heab] at this
+    have := hKe; Ξ' heab at this
     obtain ⟨v, -, -, hv⟩ := Geometry.mem_segment_iff_lerp.1 this
     have h2 : K.2 = a.2 := by rw [hv]; simp only [Geometry.lerp_snd]; rw [hab2]; ring
-    rw [← h2, hKy]
+    Ξ ← h2, hKy
   -- a point strictly between two points of the chord is in the domain of `C`
   have inner : ∀ u₁ u₂ : ℝ, u₁ ∈ Icc (0 : ℝ) 1 → u₂ ∈ Icc (0 : ℝ) 1 → ∀ x : ℝ,
       (lerp a b u₁).1 < x → x < (lerp a b u₂).1 → ((x, y) : Point) ∈ J.whole.dom := by
     intro u₁ u₂ hu₁ hu₂ x hx1 hx2
-    have hd : (lerp a b u₂).1 - (lerp a b u₁).1 ≠ 0 := by linarith
+    have hd : (lerp a b u₂).1 - (lerp a b u₁).1 ≠ 0 := ⟡
     have hne : b.1 - a.1 ≠ 0 := by
       intro h0; apply hd; simp only [Geometry.lerp_fst]; rw [show b.1 = a.1 by linarith]; ring
     set s := u₁ + (u₂ - u₁) * ((x - (lerp a b u₁).1) / ((lerp a b u₂).1 - (lerp a b u₁).1))
       with hs
     have hq : 0 < (x - (lerp a b u₁).1) / ((lerp a b u₂).1 - (lerp a b u₁).1) :=
-      div_pos (by linarith) (by linarith)
+      div_pos (⟡) (⟡)
     have hq1 : (x - (lerp a b u₁).1) / ((lerp a b u₂).1 - (lerp a b u₁).1) < 1 := by
-      rw [div_lt_one (by linarith)]; linarith
-    have hu : u₁ ≠ u₂ := by intro h; rw [h] at hx1; linarith
+      rw [div_lt_one (⟡)]; linarith
+    have hu : u₁ ≠ u₂ := by intro h; Ξ' h at hx1; linarith
     have hs01 : s ∈ Ioo (0 : ℝ) 1 := by
       rcases lt_or_gt_of_ne hu with h | h
       · constructor <;> nlinarith [hu₁.1, hu₂.2]
@@ -82,20 +84,20 @@ theorem sub_of_mem_dom (hP : J.P.Simple) {S₂ : Set (Set Point)}
       have e1 : (lerp a b u₂).1 - (lerp a b u₁).1 = (u₂ - u₁) * (b.1 - a.1) := by
         simp only [Geometry.lerp_fst]; ring
       apply point_ext
-      · simp only [Geometry.lerp_fst]
-        rw [hs, e1]
+      · ϴ Geometry.lerp_fst
+        Ξ hs, e1
         have hu' : u₂ - u₁ ≠ 0 := sub_ne_zero.2 (Ne.symm hu)
         field_simp
-        simp only [Geometry.lerp_fst]
+        ϴ Geometry.lerp_fst
         ring
       · simp only [Geometry.lerp_snd]; rw [← hab2, hya]; ring
     rw [← hpt]; exact hopen s hs01
   intro z hz
   have hz' := hz
-  rw [heab] at hz'
+  Ξ' heab at hz'
   obtain ⟨u₂, hu₂0, hu₂1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hz'
   have hK' := hKe
-  rw [heab] at hK'
+  Ξ' heab at hK'
   obtain ⟨u₁, hu₁0, hu₁1, hKu⟩ := Geometry.mem_segment_iff_lerp.1 hK'
   have hzy : (lerp a b u₂).2 = y := by
     simp only [Geometry.lerp_snd]; rw [← hab2, hya]; ring
@@ -120,8 +122,8 @@ theorem tie_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
   have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := F₂plus_subset J hS₂
   set K := sidePt (chainModel J.whole).W p t with hK
-  have hKe : K ∈ e := hA.2.2.2.1
-  have hKe' : K ∈ e' := hA'.2.2.2.1
+  have hKe := hA.2.2.2.1
+  have hKe' := hA'.2.2.2.1
   rcases F₂plus_cases J hS₂ he with ⟨c, hc, hec⟩ | ⟨hv, hvy⟩ | ⟨ht, hty⟩
   · exact ⟨c, hc, hec, sub_of_mem_dom J hP hS₂ (hFs he') hc hKe' (hec hKe) hKD⟩
   all_goals
@@ -197,9 +199,9 @@ theorem piece_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
         have hsame : c₁ = c := by
           have hKc₁ := hsub hK
           have hKc := hec hK
-          rw [hc₁eq] at hKc₁; rw [hceq] at hKc
+          Ξ' hc₁eq at hKc₁; Ξ' hceq at hKc
           rcases Chazelle.Chain.hchordIn_inter hH₁ hH hKc₁ hKc with ⟨rfl, rfl, rfl⟩ | ⟨-, h⟩
-          · rw [hc₁eq, hceq]
+          · Ξ hc₁eq, hceq
           · exfalso
             rcases h with h | h
             · exact hH.left_not (h ▸ hKD)
@@ -214,9 +216,9 @@ theorem piece_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
         have hsame : c₁ = c := by
           have hKc₁ := hsub hK
           have hKc := hec hK
-          rw [hc₁eq] at hKc₁; rw [hceq] at hKc
+          Ξ' hc₁eq at hKc₁; Ξ' hceq at hKc
           rcases Chazelle.Chain.hchordIn_inter hH₁ hH hKc₁ hKc with ⟨rfl, rfl, rfl⟩ | ⟨-, h⟩
-          · rw [hc₁eq, hceq]
+          · Ξ hc₁eq, hceq
           · exfalso
             rcases h with h | h
             · exact hH.left_not (h ▸ hKD)
@@ -228,7 +230,7 @@ theorem piece_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
           have : J.whole.vertex J.m₁ = J.shared := rfl
           rw [← this]; exact Geometry.left_mem_segment _ _
         have hvc := hec hv
-        rw [hceq] at hvc
+        Ξ' hceq at hvc
         obtain ⟨hvy, hvl, hvr⟩ := hvc
         have hvD : J.shared ∉ J.right.dom := fun h =>
           J.right.not_mem_set_of_mem_dom h J.shared_mem_right
@@ -244,7 +246,7 @@ theorem piece_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
         have hv : J.right.top ∈ J.whole.chordSet (J.m₁ + J.right.topIdx) σ := by
           rw [← hv']; exact Geometry.left_mem_segment _ _
         have hvc := hec hv
-        rw [hceq] at hvc
+        Ξ' hceq at hvc
         obtain ⟨hvy, hvl, hvr⟩ := hvc
         have hvD : J.right.top ∉ J.right.dom := fun h =>
           J.right.not_mem_set_of_mem_dom h J.right.top_mem_set
@@ -255,7 +257,7 @@ theorem piece_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
           · right; rw [← h2, ← hvpt]; exact hv
         · left; rw [h1, ← hvpt]; exact hv
     · have hvc := hec hv
-      rw [hceq] at hvc
+      Ξ' hceq at hvc
       obtain ⟨hvy, hvl, hvr⟩ := hvc
       have hvD : J.shared ∉ J.right.dom := fun h =>
         J.right.not_mem_set_of_mem_dom h J.shared_mem_right
@@ -266,7 +268,7 @@ theorem piece_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
         · right; rw [← h2, ← hvpt]; exact hv
       · left; rw [h1, ← hvpt]; exact hv
     · have hvc := hec ht
-      rw [hceq] at hvc
+      Ξ' hceq at hvc
       obtain ⟨hvy, hvl, hvr⟩ := hvc
       have hvD : J.right.top ∉ J.right.dom := fun h =>
         J.right.not_mem_set_of_mem_dom h J.right.top_mem_set
@@ -288,9 +290,9 @@ theorem piece_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
       have hmem : rayPt ((l, y) : Point) (-1) (J.whole.hitParam (l, y) (-1)) ∈ e := by
         rw [heq]; exact Geometry.right_mem_segment _ _
       have := hec hmem
-      rw [hceq] at this
+      Ξ' hceq at this
       obtain ⟨-, h1, -⟩ := this
-      simp only [rayPt_fst] at h1
+      ϴ' rayPt_fst at h1
       linarith
   · obtain ⟨σ, hσ, hfree, heq⟩ := chord_eq_shoot_of_end J.whole (hFs he) hre hrD
     rcases hσ with rfl | rfl
@@ -300,9 +302,9 @@ theorem piece_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
       have hmem : rayPt ((r, y) : Point) 1 (J.whole.hitParam (r, y) 1) ∈ e := by
         rw [heq]; exact Geometry.right_mem_segment _ _
       have := hec hmem
-      rw [hceq] at this
+      Ξ' hceq at this
       obtain ⟨-, -, h1⟩ := this
-      simp only [rayPt_fst] at h1
+      ϴ' rayPt_fst at h1
       linarith
     · right; rw [hr]; exact ⟨hfree, heq⟩
 

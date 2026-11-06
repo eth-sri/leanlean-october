@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreShoot
 public import Chazelle.Core.RestoreHoles
 public import Chazelle.Core.RestoreTNear
@@ -121,7 +123,7 @@ theorem arrival_of_attach {W : Polygon} {z : Point} {σ T : ℝ} (hσ : σ = 1 �
   have hsr : s ≤ r / 2 := min_le_left _ _
   have hsT : s ≤ T / 2 := min_le_right _ _
   have hmem : rayPt (rayPt z σ T) (-σ) s ∈ chordOf z σ T := by
-    rw [rayPt_back]; exact (mem_chordOf hσ hT.le).2 ⟨T - s, by linarith, by linarith, rfl⟩
+    rw [rayPt_back]; exact (mem_chordOf hσ hT.le).2 ⟨T - s, ⟡, ⟡, rfl⟩
   have hd : dist (rayPt (rayPt z σ T) (-σ) s) (rayPt z σ T) = s := Sweep.dist_rayPt _ hσ' hs.le
   have hne : rayPt (rayPt z σ T) (-σ) s ≠ sidePt W p t := by
     rw [hw]; intro h; rw [h, dist_self] at hd; linarith
@@ -151,15 +153,15 @@ theorem param_code (M : Model) (Q : Polygon) {y : WPos} {h : ℕ}
     | zero => rfl
     | succ g =>
       show 0 = (if (M.wa e).2 = (M.wb e).2 then 0 else _)
-      rw [ite_eq_left hz]
-  · rw [div_eq_iff (sub_ne_zero.2 (Ne.symm hz))]
+      Ξ ite_eq_left hz
+  · Ξ div_eq_iff (sub_ne_zero.2 (Ne.symm hz))
     linarith
 
 /-- **The point of a position from the height vertex.** -/
 theorem pos_code (M : Model) (Q : Polygon) {y : WPos} {h : ℕ}
     (hy : (M.pos Q y).2 = (Q.vtx h).2) : M.pos Q ⟨y.edge, h + 1⟩ = M.pos Q y := by
   unfold Model.pos
-  rw [param_code M Q hy]
+  Ξ param_code M Q hy
 
 end
 

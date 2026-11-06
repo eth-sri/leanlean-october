@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Ram11
 
 /-!
@@ -43,13 +45,13 @@ def TreeSt (P : Polygon) (W : ℕ) (X : MemCtx) (cs : Config) (As hp hX Gl a L :
     X.holds P c.nmem hX (c.nreg ALLOC) ∧ X.cap P c.nmem hX = X.cap P cs.nmem hX
 
 theorem clog_half {j : ℕ} (hj : 2 ≤ j) : Nat.clog 2 j = Nat.clog 2 ((j + 1) / 2) + 1 := by
-  rw [Nat.clog_of_two_le (by norm_num) hj, show j + 2 - 1 = j + 1 by omega]
+  rw [Nat.clog_of_two_le (⊛) hj, show j + 2 - 1 = j + 1 by omega]
 
 section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 16000000 in
+
 /-- **The merge tree on the RAM.** -/
 theorem tree_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 ≤ W)
     {sM : Stmt} {κ F G H : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
@@ -84,76 +86,76 @@ theorem tree_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
       unfold LvRG PairRG DescRG RbRG at h5; omega
     by_cases hlen : ns.length ≤ 1
     · -- the loop ends
-      have h1 : ns.length = 1 := by omega
-      refine ⟨c, 2, ns, γ₀, .whileLtN_false ?_ hw, by omega, by omega, h1,
+      have h1 : ns.length = 1 := ⋄
+      refine ⟨c, 2, ns, γ₀, .whileLtN_false ?_ hw, ⋄, by omega, h1,
         ⟨hw, h14, h33, ⟨B, h66, hB, hL⟩, hc, hj1, ha, hsum, hγ, hγ1, hone, hclog, hAs, hm, hrm,
           ho, hr, hrr, hX', hcap'⟩⟩
-      rw [h14, cr _ (by omega) (by omega) (nl _ (by omega) (by omega) (by omega) (by omega))]
+      rw [h14, cr _ (⋄) (by omega) (nl _ (by omega) (by omega) (by omega) (by omega))]
       rw [s24]; omega
     · -- one level
-      have hj2 : 2 ≤ ns.length := by omega
+      have hj2 : 2 ≤ ns.length := ⋄
       set t := lvTgt Gl ns.length γ₀ with ht
       have hcl := clog_half hj2
-      have hcl1 : 1 ≤ Nat.clog 2 ns.length := by omega
+      have hcl1 : 1 ≤ Nat.clog 2 ns.length := ⋄
       have hfl : fuseLoss = 1 := rfl
       have htg : γ₀ + fuseLoss ≤ t := by
         rw [ht]; unfold lvTgt; split_ifs <;> omega
       have hbud' : c.nreg ALLOC + lvCost κ F G H ns γ₀ ≤ W := by
         have : totCost κ F G H Gl (f + 1) ns γ₀ = lvCost κ F G H ns γ₀ + 2 +
             totCost κ F G H Gl f (pairUp ns t) t := by
-          rw [totCost, ite_eq_right_of_eq_false _ _ (eq_false hlen)]
+          Ξ totCost, ite_eq_right_of_eq_false _ _ (eq_false hlen)
         omega
       have cv : ∀ r, (r < 160035 ∨ (160067 < r ∧ r < 160090)) → 160000 ≤ r →
           r ≠ 160014 → r ≠ 160033 → r ≠ 160034 → c.nreg r = cs.nreg r :=
-        fun r h1 h2 h3 h4 h5 => cr r h2 (by omega) (nl r (by omega) h3 h4 h5)
+        fun r h1 h2 h3 h4 h5 => cr r h2 (⋄) (nl r (by omega) h3 h4 h5)
       have c32 : c.nreg 160032 = Gl := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s32
+        rw [cv _ (⋄) (by omega) (by omega) (by omega) (by omega)]; exact s32
       have c00 : c.nreg 160000 = hX := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s00
+        rw [cv _ (⋄) (by omega) (by omega) (by omega) (by omega)]; exact s00
       have c24 : c.nreg 160024 = 1 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s24
+        rw [cv _ (⋄) (by omega) (by omega) (by omega) (by omega)]; exact s24
       have c80 : c.nreg 160080 = 2 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s80
+        rw [cv _ (⋄) (by omega) (by omega) (by omega) (by omega)]; exact s80
       have c81 : c.nreg 160081 = 5 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s81
+        rw [cv _ (⋄) (by omega) (by omega) (by omega) (by omega)]; exact s81
       have c83 : c.nreg 160083 = 3 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s83
+        rw [cv _ (⋄) (by omega) (by omega) (by omega) (by omega)]; exact s83
       have c84 : c.nreg 160084 = 4 := by
-        rw [cv _ (by omega) (by omega) (by omega) (by omega) (by omega)]; exact s84
+        rw [cv _ (⋄) (by omega) (by omega) (by omega) (by omega)]; exact s84
       obtain ⟨c1, k1, e1, hk1, hw1, hA1, hA1', l14, l33, ⟨B', l66, hB', hL'⟩, lm, lrm, lo, lr, lrr,
           lX, lcap⟩ :=
         level_exec hG hWh hWn hMM hXc hOk hw (A0 := c.nreg ALLOC) (B := B) (hp := hp) (hX := hX)
           (γ₀ := γ₀) (Gl := Gl) (ns := ns) hj2 rfl h66 h14 h33 c32 c00 c24 c80 c81 c83 c84
-          hL hc hB hγ hγ1 hX' (by rw [hcap']; omega) htg (by omega) hbud'
+          hL hc hB hγ hγ1 hX' (by rw [hcap']; omega) htg (⋄) hbud'
       have hlen' : (pairUp ns t).length = (ns.length + 1) / 2 := pairUp_length ns t
-      have hγt : γ₀ ≤ t := by omega
+      have hγt : γ₀ ≤ t := ⋄
       have hst1 : TreeSt P W X cs As hp hX Gl a L (pairUp ns t) t c1 := by
-        refine ⟨hw1, l14, l33, ⟨B', l66, hB', hL'⟩, consec_pairUp t hc, by omega,
-          by rw [nd_pairUp_zero ns t (by omega)]; exact ha, by rw [pairUp_sum]; exact hsum,
-          pairUp_gran hγ hγt, pairUp_gran_pos hγ1 (by omega), fun h => ?_, ?_, by omega,
-          fun x hx => by rw [lm x (by omega)]; exact hm x hx,
-          fun x hx => by rw [lrm x (by omega)]; exact hrm x hx, by rw [lo, ho],
+        refine ⟨hw1, l14, l33, ⟨B', l66, hB', hL'⟩, consec_pairUp t hc, ⋄,
+          by rw [nd_pairUp_zero ns t (⋄)]; exact ha, by rw [pairUp_sum]; exact hsum,
+          pairUp_gran hγ hγt, pairUp_gran_pos hγ1 (⋄), fun h => ?_, ?_, by omega,
+          fun x hx => by rw [lm x (⋄)]; exact hm x hx,
+          fun x hx => by rw [lrm x (⋄)]; exact hrm x hx, by rw [lo, ho],
           fun r h1 h2 h3 => by rw [lr r h1 h2 h3]; exact hr r h1 h2 h3,
-          fun r h1 h2 => by rw [lrr r h1 h2]; exact hrr r h1 h2, lX, by rw [lcap, hcap']⟩
-        · rw [nd_pairUp_merge ns t 0 (by omega)]
-          simp only [ht]; unfold lvTgt; rw [ite_eq_left (by omega)]
-        · rw [hlen']
+          fun r h1 h2 => by rw [lrr r h1 h2]; exact hrr r h1 h2, lX, Ρ lcap, hcap'⟩
+        · rw [nd_pairUp_merge ns t 0 (⋄)]
+          simp only [ht]; unfold lvTgt; rw [ite_eq_left (⋄)]
+        · Ξ hlen'
           rw [ht]; unfold lvTgt; split_ifs with h3
-          · have : (ns.length + 1) / 2 = 1 := by omega
+          · have : (ns.length + 1) / 2 = 1 := ⋄
             rw [this, Nat.clog_one_right]; omega
           · omega
       have hbud1 : c1.nreg ALLOC + totCost κ F G H Gl f (pairUp ns t) t ≤ W := by
         have : totCost κ F G H Gl (f + 1) ns γ₀ = lvCost κ F G H ns γ₀ + 2 +
             totCost κ F G H Gl f (pairUp ns t) t := by
-          rw [totCost, ite_eq_right_of_eq_false _ _ (eq_false hlen)]
+          Ξ totCost, ite_eq_right_of_eq_false _ _ (eq_false hlen)
         omega
       obtain ⟨c', k, ns', γ', e', hk', hA', h1', hst'⟩ :=
-        ih (pairUp ns t) t c1 (by omega) hst1 hbud1
-      refine ⟨c', k1 + 2 + k, ns', γ', .whileLtN_true ?_ e1 e', ?_, by omega, h1', hst'⟩
+        ih (pairUp ns t) t c1 (⋄) hst1 hbud1
+      refine ⟨c', k1 + 2 + k, ns', γ', .whileLtN_true ?_ e1 e', ?_, ⋄, h1', hst'⟩
       · rw [h14, c24]; omega
       · have : totCost κ F G H Gl (f + 1) ns γ₀ = lvCost κ F G H ns γ₀ + 2 +
             totCost κ F G H Gl f (pairUp ns t) t := by
-          rw [totCost, ite_eq_right_of_eq_false _ _ (eq_false hlen)]
+          Ξ totCost, ite_eq_right_of_eq_false _ _ (eq_false hlen)
         omega
 
 end proofs

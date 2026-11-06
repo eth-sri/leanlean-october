@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseBoxTransfer
 
 /-!
@@ -34,7 +38,7 @@ def dropWalls (L : List (ℕ × ℕ × ℕ)) : List (ℕ × ℕ × ℕ) := L.fil
 
 theorem mem_dropWalls {L : List (ℕ × ℕ × ℕ)} {x : ℕ × ℕ × ℕ} :
     x ∈ dropWalls L ↔ x ∈ L ∧ ¬ WallRec x := by
-  simp [dropWalls]
+  Θ dropWalls
 
 /-- A sublist of a valid chord list is valid. -/
 theorem chordTriplesOK_sublist {M : Model} {Q : Polygon} {L L' : List (ℕ × ℕ × ℕ)}
@@ -70,7 +74,7 @@ theorem band_of_edge {e : ℕ} (he : e < (C.sideWalk C.sideBeta).n) (h1 : e ≠ 
   rw [Geometry.lerp_snd] at hpy
   rcases Nat.lt_or_ge e 6 with h6 | h6
   · have hmod : (e + 1) % (C.sideWalk C.sideBeta).n = e + 1 := by
-      rw [hn]; exact Nat.mod_eq_of_lt (by omega)
+      rw [hn]; exact Nat.mod_eq_of_lt (⋄)
     rw [hmod] at hpy
     interval_cases e
     · rw [C.sideWalk_vtx_zero, C.sideWalk_vtx_one] at hpy
@@ -89,18 +93,18 @@ theorem band_of_edge {e : ℕ} (he : e < (C.sideWalk C.sideBeta).n) (h1 : e ≠ 
       nlinarith
   · rcases Nat.lt_or_ge e (2 * C.m + 6) with h' | h'
     · have hmod : (e + 1) % (C.sideWalk C.sideBeta).n = e + 1 := by
-        rw [hn]; exact Nat.mod_eq_of_lt (by omega)
+        rw [hn]; exact Nat.mod_eq_of_lt (⋄)
       rw [hmod] at hpy
-      have hu := h.abs_le_of_mem (tour_mem C h6 (by omega))
-      have hv := h.abs_le_of_mem (tour_mem C (by omega : 6 ≤ e + 1) (by omega))
+      have hu := h.abs_le_of_mem (tour_mem C h6 (⋄))
+      have hv := h.abs_le_of_mem (tour_mem C (by omega : 6 ≤ e + 1) (⋄))
       have hb := abs_lerp_le hu hv ht.1 ht.2.le
       rw [Geometry.lerp_snd, hpy] at hb
       exact hb.2
-    · have he' : e = 2 * C.m + 6 := by omega
+    · have he' : e = 2 * C.m + 6 := ⋄
       subst he'
       rw [C.sideWalk_vtx_wrap, walk_last] at hpy
       simp only [Chain.slitTop] at hpy
-      have hy : y = C.top.2 := by nlinarith
+      have hy : y = C.top.2 := ⊞
       rw [hy]; exact htop.2
 
 /-- The height of a chord of a valid chord list of a chain, at an end off the side walls, is in
@@ -114,15 +118,15 @@ theorem band_of_end {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} (hL : ChordTrip
   obtain ⟨hp, ht0, ht1, hmem, -⟩ := hA
   obtain ⟨y', a, b, hh, hyt, e⟩ := hL.1.2.1 ⟨x, hx, rfl⟩
   have hmem' := hmem
-  rw [e] at hmem'
+  Ξ' e at hmem'
   have hy1 : (sidePt (C.sideWalk C.sideBeta) w.edge ((chainModel C).param Q w)).2 =
       (Q.vtx x.1).2 := hmem.1
-  have hy2 : (sidePt (C.sideWalk C.sideBeta) w.edge ((chainModel C).param Q w)).2 = y' := hmem'.1
-  have hyy : (Q.vtx x.1).2 = y' := hy1.symm.trans hy2
+  have hy2 := hmem'.1
+  have hyy := hy1.symm.trans hy2
   have hR : |y'| < C.radius := by
     have hm := hh.open_mem ((a + b) / 2) (by linarith [hh.lt]) (by linarith [hh.lt])
     exact (C.dom_subset_box hm).2
-  rw [hyy]
+  Ξ hyy
   exact h.band_of_edge hp h1 h3 ⟨ht0, ht1⟩ hy2 hyt hR
 
 /-- **The chords off the side walls are in the band.** -/
@@ -130,7 +134,7 @@ theorem inBand_dropWalls {Q : Polygon} {L : List (ℕ × ℕ × ℕ)}
     (hL : ChordTriplesOK (chainModel C) Q L) : InBand C C' Q (dropWalls L) := by
   intro x hx
   obtain ⟨hx, hw⟩ := mem_dropWalls.1 hx
-  have hb : bnd C C' - 1 / 2 < bnd C C' := by linarith
+  have hb : bnd C C' - 1 / 2 < bnd C C' := ⟡
   unfold WallRec at hw
   by_cases hl : x.2.1 = 1 ∨ x.2.1 = 3
   · have hr : ¬ (x.2.2 = 1 ∨ x.2.2 = 3) := fun hr => hw ⟨hl, hr⟩

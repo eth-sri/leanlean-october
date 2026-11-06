@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvMStep
 public import Chazelle.Core.DownPhaseDrvCount
 public import Chazelle.Core.FactsL23
@@ -46,10 +48,10 @@ theorem chainModel_size (C : Chain) : (chainModel C).size = 2 * C.m := by
   have : {p : ℕ | p < (chainModel C).W.n ∧ (chainModel C).counted p} =
       Set.Ico 6 (2 * C.m + 6) := by
     ext p
-    simp only [Set.mem_ofPred_eq, Set.mem_Ico, hn]
+    ϴ Set.mem_ofPred_eq, Set.mem_Ico, hn
     change p < 2 * C.m + 7 ∧ (6 ≤ p ∧ p < 2 * C.m + 6) ↔ _
     omega
-  rw [this, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico]
+  Ξ this, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico
   omega
 
 /-- **Lemma 2.3 for a chain model** (explicit constant): `|F| (γ + 1) ≤ 140 (D + 2) (2 m + 1)`. -/
@@ -61,16 +63,16 @@ theorem lemma23_chain {C : Chain} (hP : C.P.Simple) {Q : Polygon} {F : Set (Set 
   have hW := walkAx_of_goodModel hM
   obtain ⟨hfin, hAdm, -⟩ := hF
   obtain ⟨hn, p₀, hp₀, hc₀⟩ := goodModel_walk _ hM
-  rw [← chainModel_size]
+  Ξ ← chainModel_size
   rcases Nat.eq_zero_or_pos γ with rfl | hγ
   · rcases F.eq_empty_or_nonempty with rfl | hne
     · simp
     · exact absurd hgran.1 (hW.not_semigranular_zero hAdm hfin hne hp₀ hc₀)
   · have h := hW.lemma23_walk hAdm hfin hdeg hgran
-    calc F.ncard * (γ + 1) ≤ 2 * (F.ncard * γ) := by nlinarith
+    calc F.ncard * (γ + 1) ≤ 2 * (F.ncard * γ) := ⊞
       _ ≤ 2 * (2 * (D + 2) * (5 * (chainModel C).W.n)) := Nat.mul_le_mul_left _ h
       _ ≤ 2 * (2 * (D + 2) * (5 * (7 * ((chainModel C).size + 1)))) := by gcongr
-      _ = 140 * (D + 2) * ((chainModel C).size + 1) := by ring
+      _ = 140 * (D + 2) * ((chainModel C).size + 1) := ⋆
 
 /-! ## The host sizes -/
 
@@ -103,10 +105,10 @@ theorem level_bound {K K₁ K' A B n γ : ℕ} (h1 : K₁ * (γ + 1) ≤ K * (γ
     K' * (γ + 1) ≤ A * ((K + 1) * (γ + 1) + B * (n + 4 * K)) := by
   calc K' * (γ + 1) ≤ (K' + 1) * (γ + 1) := Nat.mul_le_mul_right _ (Nat.le_succ _)
     _ ≤ A * (K₁ + 1) * (γ + 1) := Nat.mul_le_mul_right _ h2
-    _ = A * (K₁ * (γ + 1) + (γ + 1)) := by ring
+    _ = A * (K₁ * (γ + 1) + (γ + 1)) := ⋆
     _ ≤ A * (K * (γ + 1) + B * (n + 4 * K) + (γ + 1)) :=
         Nat.mul_le_mul_left _ (Nat.add_le_add_right h1 _)
-    _ = A * ((K + 1) * (γ + 1) + B * (n + 4 * K)) := by ring
+    _ = A * ((K + 1) * (γ + 1) + B * (n + 4 * K)) := ⋆
 
 /-! ## The transition -/
 

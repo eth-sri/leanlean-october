@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepLabelJ
 
 /-!
@@ -54,13 +56,13 @@ theorem vertexEnd_arith {m b i : ℕ} (hm : 0 < m) (hb : b ≤ 2 * m) (hi : i �
       x % (2 * m + 7) = if x < 2 * m + 7 then x else x - (2 * m + 7) := by
     intro x hx; split_ifs with h
     · exact Nat.mod_eq_of_lt h
-    · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+    · rw [Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (by omega)]
   have key2 : ∀ x, x < 2 * (2 * m) → x % (2 * m) = if x < 2 * m then x else x - 2 * m := by
     intro x hx; split_ifs with h
     · exact Nat.mod_eq_of_lt h
-    · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-  rw [key2 _ (by omega)]
-  interval_cases hq' : (b + i) / (2 * m) <;> split_ifs <;> rw [key _ (by omega)] <;>
+    · rw [Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (by omega)]
+  rw [key2 _ (⋄)]
+  interval_cases hq' : (b + i) / (2 * m) <;> split_ifs <;> rw [key _ (⋄)] <;>
     split_ifs <;> omega
 
 /-- **The positions at the last vertex** of the walk of a chain model, read from its tour
@@ -73,7 +75,7 @@ theorem off_vertexEnd (hP : C.P.Simple) {p : ℕ} (hp : p < (chainModel C).W.n) 
   have hn := cm_n C
   have hτ := tpos_lt C C.m
   have hm := C.two_m_pos
-  rw [off_key' (by rw [hn]; omega) hp le_rfl zero_lt_one, add_zero]
+  Ξ off_key' (by rw [hn]; omega) hp le_rfl zero_lt_one, add_zero
   have h0 : (bS C + i) % (2 * C.m) = C.m := by
     rw [Chain.sideIdx_eq] at hidx
     unfold Chain.sideE at hidx
@@ -81,9 +83,9 @@ theorem off_vertexEnd (hP : C.P.Simple) {p : ℕ} (hp : p < (chainModel C).W.n) 
     split_ifs at hidx
     · exact hidx
     · omega
-  have := vertexEnd_arith (m := C.m) (b := bS C) (i := i) (by omega) (bS_le C) hi h0
+  have := vertexEnd_arith (m := C.m) (b := bS C) (i := i) (⋄) (bS_le C) hi h0
   unfold dOf
-  rw [hn]
+  Ξ hn
   unfold tpos
   rcases this with h | ⟨h1, h2⟩
   · left; rw [h]; simp

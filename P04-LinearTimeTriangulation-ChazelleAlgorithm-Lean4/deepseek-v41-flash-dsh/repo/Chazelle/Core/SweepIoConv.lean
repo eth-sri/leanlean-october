@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoLHit5
 
 /-!
@@ -45,7 +47,7 @@ theorem param_pos_of_wab {M M' : Model} {p p' : ℕ} (ha : M.wa p = M'.wa p')
     (hb : M.wb p = M'.wb p') (Q : Polygon) (h : ℕ) :
     M.param Q ⟨p, h⟩ = M'.param Q ⟨p', h⟩ ∧ M.pos Q ⟨p, h⟩ = M'.pos Q ⟨p', h⟩ := by
   have hp : M.param Q ⟨p, h⟩ = M'.param Q ⟨p', h⟩ := by
-    unfold Model.param; simp only; rw [ha, hb]
+    unfold Model.param; simp only; Ξ ha, hb
   exact ⟨hp, by unfold Model.pos; simp only; rw [ha, hb, hp]⟩
 
 /-- **A side of a junction for the conversion**: the side model `M'` of the chain `C'`, the
@@ -73,11 +75,11 @@ theorem sideConvR (J : Merge.Junction) (hP : J.P.Simple) :
     fun d hd t => corrR_sidePt J hP hd t,
     fun e he => ?_⟩
   · unfold Sweep.rL1 Sweep.rL2 Sweep.rδ
-    simp only [hm2] at hτ ⊢
+    ϴ' hm2 at hτ ⊢
     split_ifs with h1 h2
     · left; exact ⟨rfl, rfl, rfl⟩
-    · right; left; refine ⟨by omega, rfl, rfl, rfl⟩
-    · right; right; refine ⟨by omega, rfl, by omega, rfl⟩
+    · right; left; refine ⟨⋄, rfl, rfl, rfl⟩
+    · right; right; refine ⟨⋄, rfl, ⋄, rfl⟩
   · obtain ⟨ha, hb, -, -⟩ := boxTwin_pos (FuseMath.radius_of_P J (C' := J.right) rfl) he
       ⟨[]⟩ 0
     exact ⟨ha.symm, hb.symm⟩
@@ -93,11 +95,11 @@ theorem sideConvL (J : Merge.Junction) (hP : J.P.Simple) :
     fun d hd t => corrL_sidePt J hP hd t,
     fun e he => ?_⟩
   · unfold Sweep.lL1 Sweep.lL2 Sweep.lδ
-    simp only [hm1] at hτ ⊢
+    ϴ' hm1 at hτ ⊢
     split_ifs with h1 h2
     · left; exact ⟨rfl, rfl, rfl⟩
-    · right; left; refine ⟨by omega, rfl, rfl, rfl⟩
-    · right; right; refine ⟨by omega, rfl, by omega, rfl⟩
+    · right; left; refine ⟨⋄, rfl, rfl, rfl⟩
+    · right; right; refine ⟨⋄, rfl, ⋄, rfl⟩
   · obtain ⟨ha, hb, -, -⟩ := boxTwin_pos (FuseMath.radius_of_P J (C' := J.left) rfl) he
       ⟨[]⟩ 0
     exact ⟨ha.symm, hb.symm⟩
@@ -122,7 +124,7 @@ theorem slit_start_pos (C : Chain) (Q : Polygon) {h : ℕ}
   have hv6 : (chainModel C).wa 6 = C.top := C.sideWalk_vtx_six _
   have hvt : (chainModel C).wa (2 * C.m + 6) = C.top := by
     show (C.sideWalk C.sideBeta).vtx (2 * C.m + 6) = C.top
-    rw [show 2 * C.m + 6 = 2 * C.m + 6 by rfl, C.sideWalk_vtx_tour _ le_rfl, Chain.sideTour_two_m]
+    Ξ show 2 * C.m + 6 = 2 * C.m + 6 by rfl, C.sideWalk_vtx_tour _ le_rfl, Chain.sideTour_two_m
   have hwb : (chainModel C).wb (2 * C.m + 6) = C.slitTop := C.sideWalk_vtx_wrap _
   have hR := C.top_snd_lt_radius
   have hp6 : (chainModel C).param Q ⟨6, h⟩ = 0 := by
@@ -130,20 +132,20 @@ theorem slit_start_pos (C : Chain) (Q : Polygon) {h : ℕ}
     · rfl
     · have hk : (Q.vtx k).2 = C.top.2 := by
         unfold Model.param at h0; simp only at h0
-        rw [hvt, hwb] at h0
+        Ξ' hvt, hwb at h0
         have hne : C.slitTop.2 - C.top.2 ≠ 0 := by
           simp only [Chain.slitTop]; linarith
-        rw [ite_eq_right (by simp only [Chain.slitTop]; linarith)] at h0
+        Ξ' ite_eq_right (by simp only [Chain.slitTop]; linarith) at h0
         rcases div_eq_zero_iff.1 h0 with h3 | h3
         · linarith
         · exact absurd h3 hne
-      unfold Model.param; simp only; rw [hv6]
+      unfold Model.param; simp only; Ξ hv6
       split_ifs
       · rfl
-      · rw [hk, sub_self, zero_div]
+      · Ξ hk, sub_self, zero_div
   refine ⟨hp6, ?_⟩
   unfold Model.pos
-  rw [hp6, h0, Geometry.lerp_zero, Geometry.lerp_zero, hv6, hvt]
+  Ξ hp6, h0, Geometry.lerp_zero, Geometry.lerp_zero, hv6, hvt
 
 /-- The index arithmetic of a tour edge. -/
 theorem conv_arith {m τ L1 L2 δ x : ℕ} (hτ : τ < 2 * m)
@@ -153,8 +155,8 @@ theorem conv_arith {m τ L1 L2 δ x : ℕ} (hτ : τ < 2 * m)
       (6 + τ + Sweep.dq L1 δ (convD (6 + τ) L1 δ (2 * m + 7) x)) % (2 * m + 7) = x := by
   have key : ∀ v, v = x ∨ v = x + (2 * m + 7) → v % (2 * m + 7) = x := by
     rintro v (rfl | rfl)
-    · exact Nat.mod_eq_of_lt (by omega)
-    · rw [Nat.add_mod_right]; exact Nat.mod_eq_of_lt (by omega)
+    · exact Nat.mod_eq_of_lt (⋄)
+    · rw [Nat.add_mod_right]; exact Nat.mod_eq_of_lt (⋄)
   unfold Sweep.dq convD
   constructor
   · rcases hc with ⟨h1, h2, h3⟩ | ⟨h0, h1, h2, h3⟩ | ⟨h0, h1, h2, h3⟩ <;> subst h1 h2 h3 <;>
@@ -166,9 +168,9 @@ theorem conv_arith {m τ L1 L2 δ x : ℕ} (hτ : τ < 2 * m)
 theorem add_mod_cases {g d n : ℕ} (hg : g < n) (hd : d < n) : (g + d) % n = convM g n d := by
   unfold convM
   split_ifs with h
-  · exact Nat.mod_eq_of_lt (by omega)
-  · rw [show g + d = (d - (n - g)) + n by omega, Nat.add_mod_right]
-    exact Nat.mod_eq_of_lt (by omega)
+  · exact Nat.mod_eq_of_lt (⋄)
+  · Ξ show g + d = (d - (n - g)) + n by omega, Nat.add_mod_right
+    exact Nat.mod_eq_of_lt (⋄)
 
 /-- **The converted position has the same point.** -/
 theorem conv_pos {M M' : Model} {C' : Chain} {g g' L1 L2 δ : ℕ}
@@ -237,8 +239,8 @@ def convS (b nr pe po : ℕ) : Stmt :=
 /-- The registers `convS` writes. -/
 def CvSet (po r : ℕ) : Prop := r = po ∨ r = cX ∨ r = cT ∨ r = cDd
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
+
+
 /-- **The conversion on the RAM.** -/
 theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr = sw 33 ∨ nr = sw 34)
     (hpe : pe ≠ cX ∧ pe ≠ cT ∧ pe ≠ cDd) (hpo : IScr po ∧ po ≠ cX ∧ po ≠ cT ∧ po ≠ cDd)
@@ -250,8 +252,8 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
         (c.nreg nr) (c.nreg (sw 35)) (c.nreg pe) ∧
       (∀ r, ¬ CvSet po r → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
   have hKc := hK.fix hI
-  have k1 : c.nreg K1 = 1 := hKc.2.1
-  have k6 : c.nreg K6 = 6 := hKc.2.2.1
+  have k1 := hKc.2.1
+  have k6 := hKc.2.2.1
   have hbl : 240040 ≤ b ∧ b ≤ 240045 := by rcases hbr with rfl | rfl <;> simp [sw]
   have hnl : 240033 ≤ nr ∧ nr ≤ 240034 := by rcases hnr with rfl | rfl <;> simp [sw]
   have eX : cX = 243300 := rfl

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopH
 
 /-!
@@ -223,7 +225,7 @@ theorem lhRun_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       hTB := by rw [hTBR₂]; exact hM.hTB
       hTW := by rw [hTBR₂, hTLR₂]; have := hM.hTW; omega }
   obtain ⟨hAr, hCh⟩ := region_bounds (C := C) hPs hNF hdeg
-  have hposxs : (chainModel C).pos (Qof P) xs = (chainModel C).pos (Qof P) x := hkpos
+  have hposxs := hkpos
   have hlocs : (xs.edge = 1 ∨ xs.edge = 3) ∨
       (6 ≤ xs.edge ∧ (chainModel C).pos (Qof P) xs ∈ C.set) := by
     rw [hposxs]

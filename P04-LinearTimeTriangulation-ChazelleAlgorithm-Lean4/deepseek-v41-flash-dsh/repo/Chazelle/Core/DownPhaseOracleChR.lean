@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleSubM
 
 /-!
@@ -71,7 +73,7 @@ def Bch (r : ℕ) : Bool :=
 
 theorem btop_bch {r : ℕ} (h : Btop r = true) : Bch r = true := by
   unfold Btop at h; unfold Bch
-  simp only [Bool.or_eq_true, decide_eq_true_eq] at h ⊢
+  ϴ' Bool.or_eq_true, decide_eq_true_eq at h ⊢
   rcases h with h | h
   · exact Or.inl (Or.inl (Or.inr h))
   · exact Or.inr h
@@ -103,29 +105,29 @@ theorem csI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {u L
   unfold csI
   by_cases hb : c.nreg 170014 < c.nreg 170011
   · have hL' : ¬ Mountain.LeftInside (Qof P) := fun h => by
-      have := hS.lb.2 h; rw [hS.r11] at hb; omega
+      have := hS.lb.2 h; Ξ' hS.r11 at hb; omega
     refine spec_ifLtN_true hb ?_
     refine spec_seq ?_
     exec_block
     · config_simp; rw [hS.r19, hS.r10, hu, hL]; omega
     by_cases hlt : P.n - 1 - u + (P.n - L) < P.n
     · refine spec_ifLtN_true (by config_simp; rw [hS.r19, hS.r10, hu, hL]; exact hlt) ?_
-      refine spec_skip ‹_› ⟨by omega, ?_, rfl, fun r h1 h2 => ?_⟩
-      · config_simp; rw [hS.r19, hS.r10, hu, hL]
-        unfold cStart; rw [ite_eq_right hL', hQ, Nat.mod_eq_of_lt hlt]
+      refine spec_skip ‹_› ⟨⋄, ?_, rfl, fun r h1 h2 => ?_⟩
+      · config_simp; Ξ hS.r19, hS.r10, hu, hL
+        unfold cStart; Ξ ite_eq_right hL', hQ, Nat.mod_eq_of_lt hlt
       · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
     · refine spec_ifLtN_false (by config_simp; rw [hS.r19, hS.r10, hu, hL]; exact hlt) ?_
       exec_block
-      refine ⟨by omega, ?_, rfl, fun r h1 h2 => ?_⟩
-      · config_simp; rw [hS.r19, hS.r10, hu, hL]
-        unfold cStart; rw [ite_eq_right hL', hQ, Nat.mod_eq_sub_mod (by omega),
-          Nat.mod_eq_of_lt (by omega)]
+      refine ⟨⋄, ?_, rfl, fun r h1 h2 => ?_⟩
+      · config_simp; Ξ hS.r19, hS.r10, hu, hL
+        unfold cStart; rw [ite_eq_right hL', hQ, Nat.mod_eq_sub_mod (⋄),
+          Nat.mod_eq_of_lt (⋄)]
       · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
   · have hL' : Mountain.LeftInside (Qof P) := hS.lb.1 (by rw [hS.r11] at hb; have := hS.lb1; omega)
     refine spec_ifLtN_false hb ?_
     exec_block
-    refine ⟨by omega, ?_, rfl, fun r h1 h2 => ?_⟩
-    · config_simp; rw [hu]; unfold cStart; rw [ite_eq_left hL']
+    refine ⟨⋄, ?_, rfl, fun r h1 h2 => ?_⟩
+    · config_simp; rw [hu]; unfold cStart; Ξ ite_eq_left hL'
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
 
 /-- **The vertex ranges of the chain.** -/
@@ -143,18 +145,18 @@ theorem rngI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {cs
   by_cases hlt : cs + L < P.n
   · refine spec_ifLtN_true (by config_simp; rw [hcs, hL, hS.r10]; exact hlt) ?_
     exec_block
-    refine ⟨by omega, ?_, ?_, ?_, rfl, fun r h1 h2 h3 h4 => ?_⟩
-    · config_simp; rw [hcs, hL]; unfold rY1; rw [ite_eq_left hlt]
-    · config_simp; rw [hcs]; unfold rX2; rw [ite_eq_left hlt]
-    · config_simp; rw [hcs]; unfold rY2; rw [ite_eq_left hlt]
+    refine ⟨⋄, ?_, ?_, ?_, rfl, fun r h1 h2 h3 h4 => ?_⟩
+    · config_simp; rw [hcs, hL]; unfold rY1; Ξ ite_eq_left hlt
+    · config_simp; rw [hcs]; unfold rX2; Ξ ite_eq_left hlt
+    · config_simp; rw [hcs]; unfold rY2; Ξ ite_eq_left hlt
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
   · refine spec_ifLtN_false (by config_simp; rw [hcs, hL, hS.r10]; exact hlt) ?_
     exec_block
     · omega
-    refine ⟨by omega, ?_, ?_, ?_, rfl, fun r h1 h2 h3 h4 => ?_⟩
-    · config_simp; rw [hS.r19]; unfold rY1; rw [ite_eq_right hlt]
-    · config_simp; unfold rX2; rw [ite_eq_right hlt]
-    · config_simp; rw [hcs, hL, hS.r10]; unfold rY2; rw [ite_eq_right hlt]
+    refine ⟨⋄, ?_, ?_, ?_, rfl, fun r h1 h2 h3 h4 => ?_⟩
+    · config_simp; rw [hS.r19]; unfold rY1; Ξ ite_eq_right hlt
+    · config_simp; unfold rX2; Ξ ite_eq_right hlt
+    · config_simp; rw [hcs, hL, hS.r10]; unfold rY2; Ξ ite_eq_right hlt
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
 
 /-- Two copies. -/
@@ -166,9 +168,9 @@ theorem copy2_exec (c : Config) (hw : WordsBounded W c) (a b a' b' : ℕ) (hab :
       c'.rmem = c.rmem ∧ c'.output = c.output := by
   exec_block
   refine ⟨rfl, ?_, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-  · simp [upd, hab, Ne.symm hab]
-  · simp [upd, Ne.symm hb]
-  · simp [upd, h1, h2]
+  · Θ upd, hab, Ne.symm hab
+  · Θ upd, Ne.symm hb
+  · Θ upd, h1, h2
 
 /-- **The cover of the first range.** -/
 theorem top1_exec {G : ℕ → Prop} (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
@@ -181,37 +183,37 @@ theorem top1_exec {G : ℕ → Prop} (c : Config) (hw : WordsBounded W c) (hS : 
       c'.nmem = c.nmem := by
   have hn := hS.n3
   obtain ⟨c₁, k₁, e₁, hk₁, a46, a59, r₁, m₁, -, -, -⟩ := copy2_exec (P := P) c hw 170046 170059
-    170038 170039 (by norm_num) (by norm_num)
-  have S₁ : SEnv P W O s c₁ := hS.keep (fun r h1 h2 => r₁ r (by omega) (by omega))
-    (fun a _ => by rw [m₁]) (by rw [r₁ _ (by decide) (by decide)])
+    170038 170039 (⊛) (⊛)
+  have S₁ : SEnv P W O s c₁ := hS.keep (fun r h1 h2 => r₁ r (⋄) (⋄))
+    (fun a _ => Ρ m₁) (Ρ r₁ _ (⌖) (⌖))
   obtain ⟨c₂, k₂, e₂, hk₂, b46, r₂, m₂⟩ := cmpUpd_exec c₁ e₁.wb_right S₁
     (by rw [a46, hx]; omega) (by rw [a59, hy]; omega)
-  have S₂ : SEnv P W O s c₂ := S₁.keep (fun r h1 h2 => r₂ r (by omega) (by omega) (by omega))
-    (fun a _ => by rw [m₂]) (by rw [r₂ _ (by decide) (by decide) (by decide)])
+  have S₂ : SEnv P W O s c₂ := S₁.keep (fun r h1 h2 => r₂ r (⋄) (⋄) (⋄))
+    (fun a _ => Ρ m₂) (Ρ r₂ _ (⌖) (⌖) (⌖))
   obtain ⟨c₃, k₃, e₃, hk₃, d50, d51, r₃, m₃, -, -, -⟩ := copy2_exec (P := P) c₂ e₂.wb_right
-    170050 170051 170038 170039 (by norm_num) (by norm_num)
-  have S₃ : SEnv P W O s c₃ := S₂.keep (fun r h1 h2 => r₃ r (by omega) (by omega))
-    (fun a _ => by rw [m₃]) (by rw [r₃ _ (by decide) (by decide)])
+    170050 170051 170038 170039 (⊛) (⊛)
+  have S₃ : SEnv P W O s c₃ := S₂.keep (fun r h1 h2 => r₃ r (⋄) (⋄))
+    (fun a _ => Ρ m₃) (Ρ r₃ _ (⌖) (⌖))
   have k38 : c₂.nreg 170038 = x := by
-    rw [r₂ _ (by decide) (by decide) (by decide), r₁ _ (by decide) (by decide)]; exact hx
+    rw [r₂ _ (⌖) (⌖) (⌖), r₁ _ (⌖) (⌖)]; exact hx
   have k39 : c₂.nreg 170039 = y := by
-    rw [r₂ _ (by decide) (by decide) (by decide), r₁ _ (by decide) (by decide)]; exact hy
-  have v46 : c₃.nreg 170046 = c₂.nreg 170046 := r₃ _ (by decide) (by decide)
+    rw [r₂ _ (⌖) (⌖) (⌖), r₁ _ (⌖) (⌖)]; exact hy
+  have v46 : c₃.nreg 170046 = c₂.nreg 170046 := r₃ _ (⌖) (⌖)
   have hmx := Y_max_le (P := P) (a := c₁.nreg 170046) (b := c₁.nreg 170059)
-  rw [← b46, a46, a59, hx, hy] at hmx
+  Ξ' ← b46, a46, a59, hx, hy at hmx
   have hv : c₂.nreg 170046 = x ∨ c₂.nreg 170046 = y := by
     rw [b46, a46, a59, hx, hy]; split_ifs
     · exact Or.inr rfl
     · exact Or.inl rfl
   obtain ⟨c₄, k₄, e₄, hk₄, S₄, g₄, n₄, cov₄, r₄, -, m₄⟩ := topLoop_exec (G := G) c₃ e₃.wb_right S₃
-    (by rw [d50, k38]) (by rw [d51, k39]) hxy hyn hcap
-    (by rw [v46]; rcases hv with h | h <;> rw [h] <;> exact hgood _ (by omega) (by omega))
+    (Ρ d50, k38) (Ρ d51, k39) hxy hyn hcap
+    (by rw [v46]; rcases hv with h | h <;> rw [h] <;> exact hgood _ (⋄) (⋄))
     (by rw [v46]; rcases hv with h | h <;> rw [h] <;> omega)
     (by rw [v46]; exact hmx.1) (by rw [v46]; exact hmx.2) hgood
-  refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega, S₄, g₄, n₄, cov₄,
-    fun r h1 h2 => ?_, by rw [m₄, m₃, m₂, m₁]⟩
-  rw [r₄ r h1 h2, r₃ r (by omega) (by omega), r₂ r (by omega) (by omega) h2,
-    r₁ r (by omega) (by omega)]
+  refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), ⋄, S₄, g₄, n₄, cov₄,
+    fun r h1 h2 => ?_, Ρ m₄, m₃, m₂, m₁⟩
+  rw [r₄ r h1 h2, r₃ r (⋄) (⋄), r₂ r (⋄) (⋄) h2,
+    r₁ r (⋄) (⋄)]
 
 /-- **The cover of the second range.** -/
 theorem top2_exec {G : ℕ → Prop} (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
@@ -231,17 +233,17 @@ theorem top2_exec {G : ℕ → Prop} (c : Config) (hw : WordsBounded W c) (hS : 
       k₁ = 1 ∧ c₁.nreg 170059 = x ∧ (∀ r, r ≠ 170059 → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem := by
     exec_block
     refine ⟨rfl, by config_simp; exact hx, fun r hr => ?_, rfl⟩
-    simp only [Config.nreg_mk, upd, ite_eq_right hr]
-  have S₁ : SEnv P W O s c₁ := hS.keep (fun r h1 h2 => r₁ r (by omega))
-    (fun a _ => by rw [m₁]) (by rw [r₁ _ (by decide)])
+    ϴ Config.nreg_mk, upd, ite_eq_right hr
+  have S₁ : SEnv P W O s c₁ := hS.keep (fun r h1 h2 => r₁ r (⋄))
+    (fun a _ => Ρ m₁) (Ρ r₁ _ (⌖))
   obtain ⟨c₂, k₂, e₂, hk₂, b46, r₂, m₂⟩ := cmpUpd_exec c₁ e₁.wb_right S₁
-    (by rw [r₁ _ (by decide)]; exact hvn) (by rw [a59]; omega)
-  have S₂ : SEnv P W O s c₂ := S₁.keep (fun r h1 h2 => r₂ r (by omega) (by omega) (by omega))
-    (fun a _ => by rw [m₂]) (by rw [r₂ _ (by decide) (by decide) (by decide)])
+    (by rw [r₁ _ (⌖)]; exact hvn) (by rw [a59]; omega)
+  have S₂ : SEnv P W O s c₂ := S₁.keep (fun r h1 h2 => r₂ r (⋄) (⋄) (⋄))
+    (fun a _ => Ρ m₂) (Ρ r₂ _ (⌖) (⌖) (⌖))
   have k41 : c₂.nreg 170041 = y := by
-    rw [r₂ _ (by decide) (by decide) (by decide), r₁ _ (by decide)]; exact hy
+    rw [r₂ _ (⌖) (⌖) (⌖), r₁ _ (⌖)]; exact hy
   have k40 : c₂.nreg 170040 = x := by
-    rw [r₂ _ (by decide) (by decide) (by decide), r₁ _ (by decide)]; exact hx
+    rw [r₂ _ (⌖) (⌖) (⌖), r₁ _ (⌖)]; exact hx
   -- the second end
   obtain ⟨c₃, k₃, e₃, hk₃, a59', r₃, m₃⟩ : ∃ c₃ k₃, Exec P W (block [.copyN 170059 170041]) c₂ c₃ k₃ ∧
       k₃ = 1 ∧ c₃.nreg 170059 = y ∧ (∀ r, r ≠ 170059 → c₃.nreg r = c₂.nreg r) ∧
@@ -249,45 +251,45 @@ theorem top2_exec {G : ℕ → Prop} (c : Config) (hw : WordsBounded W c) (hS : 
     have w₂ := e₂.wb_right
     exec_block
     refine ⟨rfl, by config_simp; exact k41, fun r hr => ?_, rfl⟩
-    simp only [Config.nreg_mk, upd, ite_eq_right hr]
-  have S₃ : SEnv P W O s c₃ := S₂.keep (fun r h1 h2 => r₃ r (by omega))
-    (fun a _ => by rw [m₃]) (by rw [r₃ _ (by decide)])
+    ϴ Config.nreg_mk, upd, ite_eq_right hr
+  have S₃ : SEnv P W O s c₃ := S₂.keep (fun r h1 h2 => r₃ r (⋄))
+    (fun a _ => Ρ m₃) (Ρ r₃ _ (⌖))
   have hmx1 := Y_max_le (P := P) (a := c₁.nreg 170046) (b := c₁.nreg 170059)
-  rw [← b46, a59, r₁ _ (by decide)] at hmx1
+  Ξ' ← b46, a59, r₁ _ (⌖) at hmx1
   have hv2 : c₂.nreg 170046 < P.n ∧ G (c₂.nreg 170046) := by
-    rw [b46, a59, r₁ _ (by decide)]; split_ifs
-    · exact ⟨by omega, hgood x le_rfl hxy⟩
+    rw [b46, a59, r₁ _ (⌖)]; split_ifs
+    · exact ⟨⋄, hgood x le_rfl hxy⟩
     · exact ⟨hvn, hvG⟩
   obtain ⟨c₄, k₄, e₄, hk₄, b46', r₄, m₄⟩ := cmpUpd_exec c₃ e₃.wb_right S₃
-    (by rw [r₃ _ (by decide)]; exact hv2.1) (by rw [a59']; omega)
-  have S₄ : SEnv P W O s c₄ := S₃.keep (fun r h1 h2 => r₄ r (by omega) (by omega) (by omega))
-    (fun a _ => by rw [m₄]) (by rw [r₄ _ (by decide) (by decide) (by decide)])
+    (by rw [r₃ _ (⌖)]; exact hv2.1) (by rw [a59']; omega)
+  have S₄ : SEnv P W O s c₄ := S₃.keep (fun r h1 h2 => r₄ r (⋄) (⋄) (⋄))
+    (fun a _ => Ρ m₄) (Ρ r₄ _ (⌖) (⌖) (⌖))
   have hmx2 := Y_max_le (P := P) (a := c₃.nreg 170046) (b := c₃.nreg 170059)
-  rw [← b46', a59', r₃ _ (by decide)] at hmx2
+  Ξ' ← b46', a59', r₃ _ (⌖) at hmx2
   have hv4 : c₄.nreg 170046 < P.n ∧ G (c₄.nreg 170046) := by
-    rw [b46', a59', r₃ _ (by decide)]; split_ifs
-    · exact ⟨by omega, hgood y hxy le_rfl⟩
+    rw [b46', a59', r₃ _ (⌖)]; split_ifs
+    · exact ⟨⋄, hgood y hxy le_rfl⟩
     · exact hv2
   have k40' : c₄.nreg 170040 = x := by
-    rw [r₄ _ (by decide) (by decide) (by decide), r₃ _ (by decide)]; exact k40
+    rw [r₄ _ (⌖) (⌖) (⌖), r₃ _ (⌖)]; exact k40
   have k41' : c₄.nreg 170041 = y := by
-    rw [r₄ _ (by decide) (by decide) (by decide), r₃ _ (by decide)]; exact k41
+    rw [r₄ _ (⌖) (⌖) (⌖), r₃ _ (⌖)]; exact k41
   -- the cover
   obtain ⟨c₅, k₅, e₅, hk₅, d50, d51, r₅, m₅, -, -, -⟩ := copy2_exec (P := P) c₄ e₄.wb_right
-    170050 170051 170040 170041 (by norm_num) (by norm_num)
-  have S₅ : SEnv P W O s c₅ := S₄.keep (fun r h1 h2 => r₅ r (by omega) (by omega))
-    (fun a _ => by rw [m₅]) (by rw [r₅ _ (by decide) (by decide)])
-  have v46 : c₅.nreg 170046 = c₄.nreg 170046 := r₅ _ (by decide) (by decide)
+    170050 170051 170040 170041 (⊛) (⊛)
+  have S₅ : SEnv P W O s c₅ := S₄.keep (fun r h1 h2 => r₅ r (⋄) (⋄))
+    (fun a _ => Ρ m₅) (Ρ r₅ _ (⌖) (⌖))
+  have v46 : c₅.nreg 170046 = c₄.nreg 170046 := r₅ _ (⌖) (⌖)
   obtain ⟨c₆, k₆, e₆, hk₆, S₆, g₆, n₆, cov₆, r₆, y₆, m₆⟩ := topLoop_exec (G := G) c₅ e₅.wb_right S₅
-    (by rw [d50, k40']) (by rw [d51, k41']) hxy hyn hcap (by rw [v46]; exact hv4.2)
+    (Ρ d50, k40') (Ρ d51, k41') hxy hyn hcap (by rw [v46]; exact hv4.2)
     (by rw [v46]; exact hv4.1) (by rw [v46]; exact hmx1.2.trans hmx2.1)
     (by rw [v46]; exact hmx2.2) hgood
-  refine ⟨c₆, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆)))), by omega, S₆, g₆, n₆, cov₆,
-    ?_, fun r h1 h2 => ?_, by rw [m₆, m₅, m₄, m₃, m₂, m₁]⟩
-  · rw [v46] at y₆
+  refine ⟨c₆, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆)))), ⋄, S₆, g₆, n₆, cov₆,
+    ?_, fun r h1 h2 => ?_, Ρ m₆, m₅, m₄, m₃, m₂, m₁⟩
+  · Ξ' v46 at y₆
     exact le_trans hmx1.1 (hmx2.1.trans y₆)
-  · rw [r₆ r h1 h2, r₅ r (by omega) (by omega), r₄ r (by omega) (by omega) h2, r₃ r (by omega),
-      r₂ r (by omega) (by omega) h2, r₁ r (by omega)]
+  · rw [r₆ r h1 h2, r₅ r (⋄) (⋄), r₄ r (⋄) (⋄) h2, r₃ r (⋄),
+      r₂ r (⋄) (⋄) h2, r₁ r (⋄)]
 
 /-- **The top index.** -/
 theorem tI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {v cs : ℕ}
@@ -303,17 +305,17 @@ theorem tI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {v cs
   · config_simp; rw [hv, hS.r10]; omega
   by_cases hlt : v + P.n - cs < P.n
   · refine spec_ifLtN_true (by config_simp; rw [hv, hS.r10, hcs]; exact hlt) ?_
-    refine spec_skip ‹_› ⟨by omega, by config_simp; exact hv, ?_, rfl, fun r h1 h2 => ?_⟩
-    · config_simp; rw [hv, hS.r10, hcs, Nat.mod_eq_of_lt hlt]
+    refine spec_skip ‹_› ⟨⋄, by config_simp; exact hv, ?_, rfl, fun r h1 h2 => ?_⟩
+    · config_simp; Ξ hv, hS.r10, hcs, Nat.mod_eq_of_lt hlt
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
   · refine spec_ifLtN_false (by config_simp; rw [hv, hS.r10, hcs]; exact hlt) ?_
     exec_block
-    refine ⟨by omega, by config_simp; exact hv, ?_, rfl, fun r h1 h2 => ?_⟩
-    · config_simp; rw [hv, hS.r10, hcs, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+    refine ⟨⋄, by config_simp; exact hv, ?_, rfl, fun r h1 h2 => ?_⟩
+    · config_simp; Ξ hv, hS.r10, hcs, Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (⋄)
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
 
 theorem log_two_mono {a b : ℕ} (h : a ≤ b) : Nat.log 2 (2 * a) ≤ Nat.log 2 (2 * b) :=
-  Nat.log_mono_right (by omega)
+  Nat.log_mono_right (⋄)
 
 /-- **The chain of a stretch and its top.** -/
 theorem topCh_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {u L : ℕ}
@@ -329,20 +331,20 @@ theorem topCh_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {u
   have hD : DistinctHeights (Qof P) := (goodShear_epsOf hS.good.2).2.1
   set cs := cStart (Qof P) u L with hcsd
   have hcsn : cs < P.n := by rw [← hQ]; exact cStart_lt (by rw [hQ]; exact hun)
-  have hLn : L < P.n := by omega
+  have hLn : L < P.n := ⋄
   -- the start
   obtain ⟨c₁, k₁, e₁, hk₁, a38, m₁, r₁⟩ := csI_exec c hw hS hu hL hun h1 h2'
-  rw [← hcsd] at a38
-  have S₁ : SEnv P W O s c₁ := hS.keep (fun r h1 h2 => r₁ r (by omega) (by omega))
-    (fun a _ => by rw [m₁]) (by rw [r₁ _ (by decide) (by decide)])
+  Ξ' ← hcsd at a38
+  have S₁ : SEnv P W O s c₁ := hS.keep (fun r h1 h2 => r₁ r (⋄) (⋄))
+    (fun a _ => Ρ m₁) (Ρ r₁ _ (⌖) (⌖))
   -- the ranges
   obtain ⟨c₂, k₂, e₂, hk₂, b39, b40, b41, m₂, r₂⟩ := rngI_exec c₁ e₁.wb_right S₁ a38
-    (by rw [r₁ _ (by decide) (by decide)]; exact hL) hcsn h2'
-  have S₂ : SEnv P W O s c₂ := S₁.keep (fun r h1 h2 => r₂ r (by omega) (by omega) (by omega)
-    (by omega)) (fun a _ => by rw [m₂]) (by rw [r₂ _ (by decide) (by decide) (by decide)
-      (by decide)])
+    (by rw [r₁ _ (⌖) (⌖)]; exact hL) hcsn h2'
+  have S₂ : SEnv P W O s c₂ := S₁.keep (fun r h1 h2 => r₂ r (⋄) (⋄) (⋄)
+    (⋄)) (fun a _ => Ρ m₂) (by rw [r₂ _ (⌖) (⌖) (⌖)
+      (⌖)])
   have b38 : c₂.nreg 170038 = cs := by
-    rw [r₂ _ (by decide) (by decide) (by decide) (by decide)]; exact a38
+    rw [r₂ _ (⌖) (⌖) (⌖) (⌖)]; exact a38
   let G : ℕ → Prop := fun v => InCh (Qof P).n cs L v
   have hcap1 : rY1 P.n cs L - cs ≤ 2 ^ (s.m₀ s.h - 1) := le_trans rY1_sub hcap
   have hcap2 : rY2 P.n cs L - rX2 P.n cs L ≤ 2 ^ (s.m₀ s.h - 1) := le_trans (rY2_sub hcsn) hcap
@@ -353,9 +355,9 @@ theorem topCh_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {u
       show InCh (Qof P).n cs L v
       rw [hQ]; exact of_rng1 hcsn hv1 hv2)
   have c40 : c₃.nreg 170040 = rX2 P.n cs L := by
-    rw [r₃ _ (by omega) (by omega)]; exact b40
+    rw [r₃ _ (⋄) (⋄)]; exact b40
   have c41 : c₃.nreg 170041 = rY2 P.n cs L := by
-    rw [r₃ _ (by omega) (by omega)]; exact b41
+    rw [r₃ _ (⋄) (⋄)]; exact b41
   -- the second cover
   obtain ⟨c₄, k₄, e₄, hk₄, S₄, g₄, n₄, cov₄, y₄, r₄, m₄⟩ := top2_exec (G := G) c₃ e₃.wb_right S₃
     c40 c41 (rX2_le hcsn hLn) (by have := rY2_lt hcsn hLn (L := L); omega) hcap2
@@ -363,15 +365,15 @@ theorem topCh_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {u
       show InCh (Qof P).n cs L v
       rw [hQ]; exact of_rng2 hcsn hLn hv1 hv2) g₃ n₃
   have c38 : c₄.nreg 170038 = cs := by
-    rw [r₄ _ (by omega) (by omega), r₃ _ (by omega) (by omega)]; exact b38
+    rw [r₄ _ (⋄) (⋄), r₃ _ (⋄) (⋄)]; exact b38
   -- the top index
   obtain ⟨c₅, k₅, e₅, hk₅, d79, d74, m₅, r₅⟩ := tI_exec c₄ e₄.wb_right S₄ rfl c38 n₄ hcsn
-  have S₅ : SEnv P W O s c₅ := S₄.keep (fun r h1 h2 => r₅ r (by omega) (by omega))
-    (fun a _ => by rw [m₅]) (by rw [r₅ _ (by decide) (by decide)])
+  have S₅ : SEnv P W O s c₅ := S₄.keep (fun r h1 h2 => r₅ r (⋄) (⋄))
+    (fun a _ => Ρ m₅) (Ρ r₅ _ (⌖) (⌖))
   -- the mathematics
   have hmax : ∀ k, k ≤ L → ((Qof P).vtx ((cs + k) % (Qof P).n)).2 ≤ ((Qof P).vtx (c₄.nreg 170046)).2 := by
     intro k hk
-    rw [hQ]
+    Ξ hQ
     rcases rng_of hcsn hLn hk with ⟨k1, k2⟩ | ⟨k1, k2⟩
     · exact (cov₃ _ k1 k2).trans y₄
     · exact cov₄ _ k1 k2
@@ -381,9 +383,9 @@ theorem topCh_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {u
   have hlog1 : Nat.log 2 (2 * (rY1 P.n cs L - cs)) ≤ Nat.log 2 (2 * L) := log_two_mono rY1_sub
   have hlog2 : Nat.log 2 (2 * (rY2 P.n cs L - rX2 P.n cs L)) ≤ Nat.log 2 (2 * L) :=
     log_two_mono (rY2_sub hcsn)
-  refine ⟨c₅, _, ex, by omega, S₅, by rw [r₅ _ (by decide) (by decide)]; exact c38,
+  refine ⟨c₅, _, ex, ⋄, S₅, by rw [r₅ _ (⌖) (⌖)]; exact c38,
     by rw [d79]; exact n₄, ?_, by rw [d79]; exact hTv, exec_frameB ex wr_topCh⟩
-  rw [d74, hT, hQ]
+  Ξ d74, hT, hQ
 
 end exec
 

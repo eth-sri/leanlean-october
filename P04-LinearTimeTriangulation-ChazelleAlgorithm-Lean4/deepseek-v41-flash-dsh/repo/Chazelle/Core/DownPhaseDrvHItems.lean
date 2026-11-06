@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvHFacts
 
 /-!
@@ -52,8 +54,8 @@ def wr3 (m : ℕ → ℕ) (p a b c : ℕ) : ℕ → ℕ := upd (upd (upd m p a) 
 
 theorem wr3_lt {m : ℕ → ℕ} {p a b c x : ℕ} (hx : x < p) : wr3 m p a b c x = m x := by
   unfold wr3
-  rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-    Machine.upd_other _ _ _ (by omega)]
+  rw [Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega),
+    Machine.upd_other _ _ _ (⋄)]
 
 theorem ItemsAt.nil (m : ℕ → ℕ) (T : ℕ) : ItemsAt m T [] := fun i hi => by simp at hi
 
@@ -65,32 +67,32 @@ theorem ItemsAt.snoc {m : ℕ → ℕ} {T : ℕ} {xs : List HostItem} (h : Items
   rw [List.length_append, List.length_singleton] at hi
   unfold wr3
   rcases Nat.lt_or_ge i xs.length with h1 | h1
-  · rw [List.getD_append _ _ _ _ h1]
+  · Ξ List.getD_append _ _ _ _ h1
     obtain ⟨a1, a2, a3⟩ := h i h1
     refine ⟨?_, ?_, ?_⟩
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), a1]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), a2]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), a3]
-  · have hi' : i = xs.length := by omega
+    · rw [Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega),
+        Machine.upd_other _ _ _ (⋄), a1]
+    · rw [Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega),
+        Machine.upd_other _ _ _ (⋄), a2]
+    · rw [Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega),
+        Machine.upd_other _ _ _ (⋄), a3]
+  · have hi' : i = xs.length := ⋄
     subst hi'
-    rw [List.getD_append_right _ _ _ _ le_rfl, Nat.sub_self]
-    simp only [List.getD_cons_zero]
+    Ξ List.getD_append_right _ _ _ _ le_rfl, Nat.sub_self
+    ϴ List.getD_cons_zero
     refine ⟨?_, ?_, ?_⟩
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
+    · rw [Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega),
         Machine.upd_same]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_same]
-    · rw [Machine.upd_same]
+    · rw [Machine.upd_other _ _ _ (⋄), Machine.upd_same]
+    · Ξ Machine.upd_same
 
 /-- Items survive a change of the memory outside their words. -/
 theorem ItemsAt.congr {m m' : ℕ → ℕ} {T : ℕ} {xs : List HostItem} (h : ItemsAt m T xs)
     (hm : ∀ a, T ≤ a → a < T + 3 * xs.length → m' a = m a) : ItemsAt m' T xs := by
   intro i hi
   obtain ⟨a1, a2, a3⟩ := h i hi
-  exact ⟨by rw [hm _ (by omega) (by omega), a1], by rw [hm _ (by omega) (by omega), a2],
-    by rw [hm _ (by omega) (by omega), a3]⟩
+  exact ⟨by rw [hm _ (⋄) (by omega), a1], by rw [hm _ (by omega) (by omega), a2],
+    by rw [hm _ (⋄) (by omega), a3]⟩
 
 /-- **The host layout** is the count word followed by the items. -/
 theorem hostAt_of {m : ℕ → ℕ} {B : ℕ} {H : Host} (h0 : m B = H.length) (h : ItemsAt m (B + 1) H) :
@@ -109,7 +111,7 @@ theorem hostAt_of {m : ℕ → ℕ} {B : ℕ} {H : Host} (h0 : m B = H.length) (
 theorem getD_reverse_items {xs : List HostItem} {i : ℕ} (hi : i < xs.length) :
     xs.reverse.getD i (.run 0 0) = xs.getD (xs.length - 1 - i) (.run 0 0) := by
   rw [List.getD_eq_getElem _ _ (by simpa using hi), List.getElem_reverse,
-    List.getD_eq_getElem _ _ (by omega)]
+    List.getD_eq_getElem _ _ (⋄)]
 
 /-! ## Point counts -/
 
@@ -120,19 +122,19 @@ theorem ptsLen_nil (n : ℕ) : ptsLen n [] = 0 := rfl
 
 theorem ptsLen_append (n : ℕ) (xs ys : List HostItem) :
     ptsLen n (xs ++ ys) = ptsLen n xs + ptsLen n ys := by
-  simp [ptsLen, Host.pts, List.flatMap_append]
+  Θ ptsLen, Host.pts, List.flatMap_append
 
 theorem ptsLen_pt (n : ℕ) (x : SymPt) : ptsLen n [.pt x] = 1 := by
-  simp [ptsLen, Host.pts, HostItem.pts]
+  Θ ptsLen, Host.pts, HostItem.pts
 
 theorem ptsLen_run (n a l : ℕ) : ptsLen n [.run a l] = l + 1 := by
-  simp [ptsLen, Host.pts, HostItem.pts]
+  Θ ptsLen, Host.pts, HostItem.pts
 
 theorem ptsLen_reverse (n : ℕ) (xs : List HostItem) : ptsLen n xs.reverse = ptsLen n xs := by
   induction xs with
   | nil => rfl
   | cons x xs ih =>
-    rw [List.reverse_cons, ptsLen_append, ih, show x :: xs = [x] ++ xs from rfl, ptsLen_append]
+    Ξ List.reverse_cons, ptsLen_append, ih, show x :: xs = [x] ++ xs from rfl, ptsLen_append
     omega
 
 /-! ## The points written by the RAM -/
@@ -153,7 +155,7 @@ def pre (li : Bool) (n : ℕ) (N : NF) (r t : ℕ) : List HostItem :=
 
 theorem pre_succ (li : Bool) (n : ℕ) (N : NF) (r t : ℕ) :
     pre li n N r (t + 1) = pre li n N r t ++ arcIt li n N r t := by
-  simp [pre, List.range_succ, List.flatMap_append]
+  Θ pre, List.range_succ, List.flatMap_append
 
 theorem pre_full (li : Bool) (n : ℕ) (N : NF) (r : ℕ) :
     pre li n N r (N.region r).arcs.length = walkItems li n N r := rfl
@@ -165,7 +167,7 @@ theorem arcItems_length_le (li : Bool) (n : ℕ) (N : NF) (r jp j : ℕ) :
     (arcItems li n N r jp j).length ≤ 4 := by
   unfold arcItems
   have := runItems_length_le li n (N.arc j).s (N.arc j).e
-  simp only [List.length_append, List.length_singleton]
+  ϴ List.length_append, List.length_singleton
   split_ifs <;> simp <;> omega
 
 theorem pre_length_le (li : Bool) (n : ℕ) (N : NF) (r t : ℕ) :
@@ -173,7 +175,7 @@ theorem pre_length_le (li : Bool) (n : ℕ) (N : NF) (r t : ℕ) :
   induction t with
   | zero => simp [pre]
   | succ t ih =>
-    rw [pre_succ, List.length_append]
+    Ξ pre_succ, List.length_append
     have := arcItems_length_le li n N r ((N.region r).arcs.getD t 0)
       ((N.region r).arcs.getD ((t + 1) % (N.region r).arcs.length) 0)
     unfold arcIt
@@ -203,11 +205,11 @@ theorem ptsLen_pre_le (li : Bool) {n : ℕ} (hn : 0 < n) (N : NF) (r t : ℕ) :
   induction t with
   | zero => simp [pre, ptsLen_nil]
   | succ t ih =>
-    rw [pre_succ, ptsLen_append]
+    Ξ pre_succ, ptsLen_append
     have := ptsLen_arcItems_le li hn N r ((N.region r).arcs.getD t 0)
       ((N.region r).arcs.getD ((t + 1) % (N.region r).arcs.length) 0)
     unfold arcIt
-    rw [Nat.mul_succ]
+    Ξ Nat.mul_succ
     omega
 
 end

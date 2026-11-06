@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvPBuild
 public import Chazelle.Core.DownPhaseDrvRPieceSpec
 public import Chazelle.Core.BruteMain
@@ -36,10 +38,10 @@ theorem piece_cost (κL κB κBd κG4 μ X K : ℕ) (hX : μ + 1 ≤ X) (hK : K 
     (1204 * μ + 140000) + κLst κL κB * X + (κBd * (K + 1) + 4) + (κG4 * (K + 1) + 5) ≤
       (141204 + κLst κL κB + 1950481 * κBd + 1950481 * κG4 + 9) * X := by
   have e : (141204 + κLst κL κB + 1950481 * κBd + 1950481 * κG4 + 9) * X =
-      141204 * X + κLst κL κB * X + κBd * (1950481 * X) + κG4 * (1950481 * X) + 9 * X := by ring
-  rw [e]
-  have h1 : κBd * (K + 1) ≤ κBd * (1950481 * X) := Nat.mul_le_mul_left _ (by omega)
-  have h2 : κG4 * (K + 1) ≤ κG4 * (1950481 * X) := Nat.mul_le_mul_left _ (by omega)
+      141204 * X + κLst κL κB * X + κBd * (1950481 * X) + κG4 * (1950481 * X) + 9 * X := ⋆
+  Ξ e
+  have h1 : κBd * (K + 1) ≤ κBd * (1950481 * X) := Nat.mul_le_mul_left _ (⋄)
+  have h2 : κG4 * (K + 1) ≤ κG4 * (1950481 * X) := Nat.mul_le_mul_left _ (⋄)
   have h3 : 141204 * (μ + 1) ≤ 141204 * X := Nat.mul_le_mul_left _ hX
   generalize κBd * (K + 1) = a at *
   generalize κBd * (1950481 * X) = b at *
@@ -72,11 +74,11 @@ theorem desc_wf {P : Polygon} {H : Host} {C : Chain} {m : ℕ → ℕ} {A E HB :
     (hAE : A + 6 ≤ E) (hHB : HB + 3 * H.length + 4 ≤ E) (hl : H.length ≤ 64)
     (hwf : HostWF P.n H) (hs : C.s < C.P.n) : ModelDescWF P E m A := by
   obtain ⟨h0, hd, h1⟩ := hdesc
-  refine ⟨hAE, fun _ => ⟨by omega, fun H' C' hd' => ?_⟩⟩
+  refine ⟨hAE, fun _ => ⟨⋄, fun H' C' hd' => ?_⟩⟩
   have hH' : H' = H := hostAt_unique hd'.1 hd.1
   subst hH'
-  have hP : C'.P = C.P := by rw [hd'.2.1, hd.2.1]
-  have hs' : C'.s = C.s := by rw [← hd'.2.2.1, hd.2.2.1]
+  have hP : C'.P = C.P := Ρ hd'.2.1, hd.2.1
+  have hs' : C'.s = C.s := Ρ ← hd'.2.2.1, hd.2.2.1
   refine ⟨hl, hwf, by rw [h1]; exact hHB, by rw [hs', hP]; exact hs⟩
 
 theorem modelDescAt_of {Q : Polygon} {H : Host} {C : Chain} {m : ℕ → ℕ} {A HB : ℕ}
@@ -89,7 +91,7 @@ theorem gradeCtx_frame {O : OracleIface} {P : Polygon} {m m' : ℕ → ℕ} {g A
     (gradeCtx O).holds P m' g A' :=
   (gradeCtx O).mono P m' g A A' hA ((gradeCtx O).local_ P m m' g A (fun a ha => (hm a ha).symm) h)
 
-set_option maxHeartbeats 16000000 in
+
 /-- **The pieces of a region chain (D4)**, from Lemma 4.1. -/
 theorem pieceSpec_of {O : OracleIface} (hL : Lemma41Spec O) : DrvR.PieceSpec O := by
   classical
@@ -136,7 +138,7 @@ theorem pieceSpec_of {O : OracleIface} (hL : Lemma41Spec O) : DrvR.PieceSpec O :
   rw [hA] at d10 d99 ml₁ d0 d1 d2 d3 d4 d5
   rw [hμ] at hk₁
   have w₁ := e₁.wb_right
-  have i₁ : ∀ r, 218000 ≤ r → r < 218010 → c₁.nreg r = c.nreg r := gin₁
+  have i₁ := gin₁
   -- 2. the chord list
   have hmem₁gh : c₁.nmem (c.nreg 218008) = c.nmem (c.nreg 218008) := ml₁ _ (by omega)
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, gin₂, L, hCL, hK, hB, hok, hdeg, hwt, hKc⟩ :=
@@ -205,7 +207,7 @@ theorem pieceSpec_of {O : OracleIface} (hL : Lemma41Spec O) : DrvR.PieceSpec O :
       i₁ _ (by norm_num) (by norm_num)]
   have hR₃ := hR₂.frame F₃
   have hA₃ : A + 6 ≤ c₃.nreg ALLOC := hA₂.trans F₃.2.2.2.2.2.1
-  have hk₃A : c₃.nreg ALLOC ≤ c₂.nreg ALLOC + k₃ := F₃.2.2.2.2.2.2
+  have hk₃A := F₃.2.2.2.2.2.2
   have hlenN : N₁.chords.length = L.length := by rw [← hN4, List.length_map]
   have hFN : N₁.F (chainModel CH) (Qof P) = famOf (chainModel CH) (Qof P) L := BoxT.F_eq_famOf hN4
   obtain ⟨c₄, k₄, e₄, hk₄, F₄, gin₄, N₂, hM1, hM2, hcan⟩ := granS_exec hGm c₃ w₃ hG hW

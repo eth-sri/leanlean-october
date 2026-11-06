@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutSeg
 
 /-!
@@ -42,7 +44,7 @@ theorem xAt_eq_of_line {u w a b : Point} (huw : u.2 ≠ w.2) (hab : a.2 ≠ b.2)
   unfold xAt at ha hb ⊢
   have h1 : w.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm huw)
   have h2 : b.2 - a.2 ≠ 0 := sub_ne_zero.2 (Ne.symm hab)
-  rw [ha, hb]
+  Ξ ha, hb
   field_simp
   ring
 
@@ -90,12 +92,12 @@ theorem hostEdge_onLine (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {sp₁ sp₂ :
       simp only [HostEdgeOK] at hok
       simp only [SymPt.Lt] at hl₁ hl₂
       by_cases hj : j = (i + 1) % Q.n
-      · have e : edgeOf Q.n (.vtx i) (.vtx j) = i := by simp [edgeOf, hj]
-        rw [e]
+      · have e : edgeOf Q.n (.vtx i) (.vtx j) = i := ⊚ edgeOf, hj
+        Ξ e
         subst hj
         exact ⟨hl₁, (vtx_onLine hD hn hl₁).1, (vtx_onLine hD hn hl₁).2⟩
-      · have e : edgeOf Q.n (.vtx i) (.vtx j) = j := by simp [edgeOf, hj]
-        rw [e]
+      · have e : edgeOf Q.n (.vtx i) (.vtx j) = j := ⊚ edgeOf, hj
+        Ξ e
         have hi : i = (j + 1) % Q.n := hok.resolve_left hj
         subst hi
         exact ⟨hl₂, (vtx_onLine hD hn hl₂).2, (vtx_onLine hD hn hl₂).1⟩
@@ -132,7 +134,7 @@ theorem pos_eq_onEdge (M : Model) (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {p h
   have hQnh := edge_nh hD hn he
   unfold Model.pos Model.param
   simp only
-  rw [ite_eq_right (by rw [ha, hb]; exact hnh), ha, hb]
+  Ξ ite_eq_right (by rw [ha, hb]; exact hnh), ha, hb
   have hy : (lerp (sp₁.eval Q) (sp₂.eval Q)
       (((Q.vtx h).2 - (sp₁.eval Q).2) / ((sp₂.eval Q).2 - (sp₁.eval Q).2))).2 = (Q.vtx h).2 :=
     hpar_snd hnh _
@@ -161,7 +163,7 @@ theorem firstHit_shift {S : Set Point} {z z' : Point} {σ : ℝ} (hσ : σ = 1 �
     intro t ht
     have := (hahead _ ht rfl).1
     simp only [rayPt_fst] at this
-    have : σ * (σ * t) = t := by rw [← mul_assoc, hσ2, one_mul]
+    have : σ * (σ * t) = t := Ρ ← mul_assoc, hσ2, one_mul
     nlinarith
   refine ⟨fun t' ht' => ⟨?_, ?_, fun s hs1 hs2 hsS => ?_⟩, fun hN t ht hS => ?_⟩
   · apply ahead_z
@@ -169,18 +171,18 @@ theorem firstHit_shift {S : Set Point} {z z' : Point} {σ : ℝ} (hσ : σ = 1 �
   · rw [key]; simp only [add_sub_cancel_right]; exact ht'.2.1
   · rw [key] at hsS
     have hpos : 0 < s - σ * (z'.1 - z.1) := by
-      have := (hahead _ hsS (by simp [rayPt_snd, hy])).2
+      have := (hahead _ hsS (⊚ rayPt_snd, hy)).2
       simp only [rayPt_fst] at this
       have e : σ * (σ * (s - σ * (z'.1 - z.1))) = s - σ * (z'.1 - z.1) := by
-        rw [← mul_assoc, hσ2, one_mul]
+        Ξ ← mul_assoc, hσ2, one_mul
       nlinarith
-    exact ht'.2.2 _ hpos (by linarith) hsS
+    exact ht'.2.2 _ hpos (⟡) hsS
   · rw [key] at hS
     have hpos : 0 < t - σ * (z'.1 - z.1) := by
-      have := (hahead _ hS (by simp [rayPt_snd, hy])).2
+      have := (hahead _ hS (⊚ rayPt_snd, hy)).2
       simp only [rayPt_fst] at this
       have e : σ * (σ * (t - σ * (z'.1 - z.1))) = t - σ * (z'.1 - z.1) := by
-        rw [← mul_assoc, hσ2, one_mul]
+        Ξ ← mul_assoc, hσ2, one_mul
       nlinarith
     exact hN _ hpos hS
 

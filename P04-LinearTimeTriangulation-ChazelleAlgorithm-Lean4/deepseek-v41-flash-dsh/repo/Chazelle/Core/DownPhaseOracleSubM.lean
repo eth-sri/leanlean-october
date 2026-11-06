@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleTop
 public import Chazelle.Core.BruteCorner
 
@@ -58,7 +60,7 @@ theorem rng_of {n cs L k : ℕ} (hcs : cs < n) (hL : L < n) (hk : k ≤ L) :
   by_cases h : cs + k < n
   · left; rw [Nat.mod_eq_of_lt h]; split_ifs <;> omega
   · right
-    rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+    rw [Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (by omega)]
     split_ifs <;> omega
 
 theorem of_rng1 {n cs L v : ℕ} (hcs : cs < n) (h1 : cs ≤ v) (h2 : v ≤ rY1 n cs L) :
@@ -129,7 +131,7 @@ def BetaF (A T B : Point) : Prop :=
     (det A T B = 0 ∧ T.2 < B.2 ∧ T.1 < B.1) ∨ (det A T B = 0 ∧ B.2 < T.2)
 
 theorem prev_idx {n s T : ℕ} (hn : 1 < n) (hT : 1 ≤ T) :
-    (s + (T - 1)) % n = ((s + T) % n + n - 1) % n := sub_idx (by omega) hT (by omega)
+    (s + (T - 1)) % n = ((s + T) % n + n - 1) % n := sub_idx (⋄) hT (by omega)
 
 /-- **The orientation bit of a chain of `Q`** (top not the first vertex), with the vertex indices
 of `Q` taken modulo `n`. -/
@@ -140,14 +142,14 @@ theorem sideBeta_ch {C : Chain} (hC : C.P = Q) (hD : DistinctHeights Q) (hT0 : 0
   have hn : 1 < Q.n := by have := C.add_one_le; have := C.one_le; rw [hC] at *; omega
   have eA : C.vertex (C.topIdx - 1) = Q.vtx ((v + Q.n - 1) % Q.n) := by
     show C.P.vtx ((C.s + (C.topIdx - 1)) % C.P.n) = _
-    rw [hC, prev_idx hn hT0, hv]
+    Ξ hC, prev_idx hn hT0, hv
   have eT : C.top = Q.vtx v := by
     show C.P.vtx ((C.s + C.topIdx) % C.P.n) = _
-    rw [hC, hv]
+    Ξ hC, hv
   have eB : C.vertex (C.topIdx + 1) = Q.vtx ((v + 1) % Q.n) := by
     show C.P.vtx ((C.s + (C.topIdx + 1)) % C.P.n) = _
-    rw [hC, hv, Nat.mod_add_mod, Nat.add_assoc]
-  rw [Brute.sideBeta_iff (C := C) hDH hT0, eA, eT, eB]
+    Ξ hC, hv, Nat.mod_add_mod, Nat.add_assoc
+  Ξ Brute.sideBeta_iff (C := C) hDH hT0, eA, eT, eB
   unfold BetaF
   constructor
   · rintro (h | ⟨h1, h3⟩ | h | h)
@@ -174,11 +176,11 @@ def mod2 (L j : ℕ) : ℕ :=
 theorem mod2_eq {L j : ℕ} (_hL : 1 ≤ L) (hj : j < 6 * L) : mod2 L j = j % (2 * L) := by
   unfold mod2
   by_cases h1 : 2 * L ≤ j
-  · rw [ite_eq_left h1]
+  · Ξ ite_eq_left h1
     by_cases h2 : 2 * L ≤ j - 2 * L
-    · rw [ite_eq_left h2, Nat.mod_eq_sub_mod h1, Nat.mod_eq_sub_mod h2, Nat.mod_eq_of_lt (by omega)]
-    · rw [ite_eq_right h2, Nat.mod_eq_sub_mod h1, Nat.mod_eq_of_lt (by omega)]
-  · rw [ite_eq_right h1, ite_eq_right h1, Nat.mod_eq_of_lt (by omega)]
+    · rw [ite_eq_left h2, Nat.mod_eq_sub_mod h1, Nat.mod_eq_sub_mod h2, Nat.mod_eq_of_lt (⋄)]
+    · rw [ite_eq_right h2, Nat.mod_eq_sub_mod h1, Nat.mod_eq_of_lt (⋄)]
+  · rw [ite_eq_right h1, ite_eq_right h1, Nat.mod_eq_of_lt (⋄)]
 
 /-- The vertex index of `Q` at the walk vertex `6 + i` (`i ≤ 2L`) of the chain model. -/
 def cVtxV (n cs L S i : ℕ) : ℕ :=
@@ -207,13 +209,13 @@ theorem hitSym_ch {C : Chain} {v : ℕ} (hv : v = (C.s + C.topIdx) % C.P.n) {e h
     hitSym C e h = hitSymV C.P.n C.s C.m (sSV C.sideBeta C.topIdx C.m) v e h := by
   unfold hitSym hitSymV
   by_cases h6 : e < 6 ∨ 2 * C.m + 6 ≤ e
-  · rw [ite_eq_left h6, ite_eq_left h6, hv]
-  · rw [ite_eq_right h6, ite_eq_right h6]
+  · Ξ ite_eq_left h6, ite_eq_left h6, hv
+  · Ξ ite_eq_right h6, ite_eq_right h6
     have e1 : cVtx C e = cVtxV C.P.n C.s C.m (sSV C.sideBeta C.topIdx C.m) (e - 6) := by
-      rw [← cVtx_ch (by omega), show e - 6 + 6 = e by omega]
+      rw [← cVtx_ch (⋄), show e - 6 + 6 = e by omega]
     have e2 : cVtx C (e + 1) = cVtxV C.P.n C.s C.m (sSV C.sideBeta C.topIdx C.m) (e - 6 + 1) := by
-      rw [← cVtx_ch (by omega), show e - 6 + 1 + 6 = e + 1 by omega]
-    rw [e1, e2]
+      rw [← cVtx_ch (⋄), show e - 6 + 1 + 6 = e + 1 by omega]
+    Ξ e1, e2
 
 /-! ## First hits on a union -/
 

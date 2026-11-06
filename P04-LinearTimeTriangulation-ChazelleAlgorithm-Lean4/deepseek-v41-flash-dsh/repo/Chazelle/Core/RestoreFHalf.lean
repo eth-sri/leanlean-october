@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFTest
 
 /-!
@@ -69,8 +71,8 @@ theorem halves_at (hE : FGood E c₀) (hI : FInv E.W c₀ c) :
   have hA := hI.allocA hE
   have hX : E.X.holds E.P c.nmem E.g (c.nreg ALLOC) :=
     E.X.mono _ _ _ _ _ hA (E.X.local_ _ _ _ _ _ (fun a ha => (hag a ha).symm) hE.hX)
-  have g4 : c.nreg 81004 = E.g := by rw [hI.hin _ (by unfold FFix; omega), hE.i4]
-  rw [g4]
+  have g4 : c.nreg 81004 = E.g := Ρ hI.hin _ (by unfold FFix; omega), hE.i4
+  Ξ g4
   exact hE.hhalf _ _ _ _ hX
 
 /-- **Halving** as a run step of the search. -/
@@ -79,7 +81,7 @@ theorem halfS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
     FRS B E.P E.W c₀ halfS c (halfK E.P.n x) (fun c' => c'.nreg 81121 = x / 2 ∧
       c'.nreg 81122 = x % 2 ∧ ∀ q, q ≠ 81120 → q ≠ 81121 → q ≠ 81122 → q ≠ 81123 →
         q ≠ 81124 → c'.nreg q = c.nreg q) := by
-  have hn3 : 3 ≤ E.P.n := hE.hG.1.1
+  have hn3 := hE.hG.1.1
   have fx : ∀ c', FInv E.W c₀ c' → c'.nreg 81020 = E.P.n ∧ c'.nreg 81022 = 2 * (E.P.n / 2) ∧
       c'.nreg 81023 = E.P.n / 2 ∧ c'.nreg 81014 = 3 := fun c' hI' =>
     ⟨by rw [hI'.hin _ (by unfold FFix; omega), hE.pn],

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFLt
 public import Chazelle.Core.RestoreFVert
 
@@ -37,9 +39,9 @@ theorem setR_fs {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FInv E.W c₀ c) {r v
       ∀ q, q ≠ r → c'.nreg q = c.nreg q) := by
   unfold SReg at hr
   have ok : okB E.W c.nmem [.constN r v] c.nreg := by
-    simp only [okB, okI]; exact ⟨⟨Or.inl (Or.inl ⟨by omega, by omega⟩), hv⟩, trivial⟩
-  refine (FRS.block hB _ hI ok).mono (by simp) (fun c' h' => ?_)
-  have e' : ∀ q, c'.nreg q = regB c.nmem [.constN r v] c.nreg q := fun q => by rw [h']
+    simp only [okB, okI]; exact ⟨⟨Or.inl (Or.inl ⟨⋄, ⋄⟩), hv⟩, trivial⟩
+  refine (FRS.block hB _ hI ok).mono (✓) (fun c' h' => ?_)
+  have e' : ∀ q, c'.nreg q = regB c.nmem [.constN r v] c.nreg q := fun q => Ρ h'
   exact ⟨by rw [e']; simp [regB, regI, upd], fun q hq => by rw [e']; simp [regB, regI, upd, hq]⟩
 
 /-- The host edge and height code of an end strictly inside the stretch. -/

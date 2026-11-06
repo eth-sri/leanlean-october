@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranStep
 
 /-!
@@ -76,14 +78,14 @@ omit hE h hc in
 theorem rm_L (_hE : E.Good) (_h : Inv E st) (hc : c ∈ st.L E)
     (μ : ℕ) : (st.remove c μ).L E = st.L E \ {c} := by
   ext i
-  simp only [St.L, St.remove, mem_sdiff, mem_ofPred_eq, mem_singleton_iff]
+  ϴ St.L, St.remove, mem_sdiff, mem_ofPred_eq, mem_singleton_iff
   by_cases hic : i = c
   · subst hic; simp
   · rw [Function.update_of_ne hic]; tauto
 
 theorem rm_F (μ : ℕ) : (st.remove c μ).F E = st.F E \ {cs E.M E.Q E.N c} := by
   unfold St.F
-  rw [rm_L hE h hc]
+  Ξ rm_L hE h hc
   exact fam_diff hE hc
 
 omit hE h hc in
@@ -110,7 +112,7 @@ theorem deg_list (hE : E.Good) {L' : Set ℕ} (hL' : ∀ i ∈ L', i < E.K) {Z :
   have e : {d | d ∈ fam E.M E.Q E.N L' ∧ TouchesIn E.M.D d Z} =
       (fun i => cs E.M E.Q E.N i) '' {i | i ∈ l} := by
     ext d
-    simp only [mem_ofPred_eq, mem_image]
+    ϴ mem_ofPred_eq, mem_image
     constructor
     · rintro ⟨⟨i, hiL, hi, rfl⟩, ht⟩
       exact ⟨i, (hl i).2 ⟨hiL, ht⟩, rfl⟩
@@ -120,19 +122,19 @@ theorem deg_list (hE : E.Good) {L' : Set ℕ} (hL' : ∀ i ∈ L', i < E.K) {Z :
   have hinj : Set.InjOn (fun i => cs E.M E.Q E.N i) {i | i ∈ l} := by
     intro i hi i' hi' he
     exact cs_inj hE.hNF (hL' i ((hl i).1 hi).1) (hL' i' ((hl i').1 hi').1) he
-  rw [e, hinj.ncard_image]
-  rw [show {i | i ∈ l} = (l.toFinset : Set ℕ) by ext; simp]
-  rw [Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd]
+  Ξ e, hinj.ncard_image
+  Ξ show {i | i ∈ l} = (l.toFinset : Set ℕ) by ext; simp
+  Ξ Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd
 
 /-- The exit list of a class is its list of exits. -/
 theorem exl_of_list (st : St) (x : ℕ) {l : List ℕ} (hd : st.deg x = l.length)
     (he : ∀ t, t < l.length → st.ex x t = l.getD t 0) : st.exl x = l := by
   unfold St.exl
   apply List.ext_getElem
-  · rw [List.length_ofFn, hd]
+  · Ξ List.length_ofFn, hd
   · intro t h1 h2
-    rw [List.getElem_ofFn]
-    rw [he t h2, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h2]
+    Ξ List.getElem_ofFn
+    Ξ he t h2, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h2
     rfl
 
 section Rm
@@ -152,7 +154,7 @@ theorem rm_cl_in {x : ℕ} (hx : x < E.R)
     (hxc : st.cl E x = st.cl E (st.s0 c) ∨ st.cl E x = st.cl E (st.s1 c)) (μ : ℕ) :
     (st.remove c μ).cl E x = P := by
   show supR E.M ((st.remove c μ).F E) (E.reg x) = P
-  rw [rm_F hE h hc]
+  Ξ rm_F hE h hc
   refine supR_eq (Chazelle.Chain.regionsIn_nonempty (hE.hRC.1 x hx)) hs.mem ?_
   refine (St.cl_spec (st := st) hE hx).2.trans ?_
   rcases hxc with e | e <;> rw [e]
@@ -173,7 +175,7 @@ theorem cl_out (hE : E.Good) (_h : Inv E st) (hc : c ∈ st.L E)
 theorem rm_cl_out {x : ℕ} (hx : x < E.R) (h1 : st.cl E x ≠ st.cl E (st.s0 c))
     (h2 : st.cl E x ≠ st.cl E (st.s1 c)) (μ : ℕ) : (st.remove c μ).cl E x = st.cl E x := by
   show supR E.M ((st.remove c μ).F E) (E.reg x) = st.cl E x
-  rw [rm_F hE h hc]
+  Ξ rm_F hE h hc
   exact supR_eq (Chazelle.Chain.regionsIn_nonempty (hE.hRC.1 x hx))
     (cl_out hE h hc hs hx h1 h2).1 (St.cl_spec (st := st) hE hx).2
 
@@ -194,7 +196,7 @@ theorem touch_P {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c) :
     · exact Or.inr h'
   · intro ht
     have : cs E.M E.Q E.N i ∈ Merge.exitsIn E.M.D (st.F E \ {cs E.M E.Q E.N c}) P := by
-      rw [e]
+      Ξ e
       rcases ht with h' | h'
       · exact Or.inl ⟨hiS, h'⟩
       · exact Or.inr ⟨hiS, h'⟩
@@ -213,8 +215,8 @@ theorem not_both {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c)
 theorem mem_newEx (i : ℕ) :
     i ∈ st.newEx c ↔ i ∈ st.L E ∧ i ≠ c ∧ TouchesIn E.M.D (cs E.M E.Q E.N i) P := by
   unfold St.newEx
-  simp only [List.mem_append, List.mem_filter, bne_iff_ne, ne_eq]
-  rw [exl_X hE h hc, exl_Y hE h hc]
+  ϴ List.mem_append, List.mem_filter, bne_iff_ne, ne_eq
+  Ξ exl_X hE h hc, exl_Y hE h hc
   constructor
   · rintro (⟨⟨hi, ht⟩, hic⟩ | ⟨⟨hi, ht⟩, hic⟩)
     · exact ⟨hi, hic, (touch_P hE h hc hs hi hic).2 (Or.inl ht)⟩
@@ -226,7 +228,7 @@ theorem mem_newEx (i : ℕ) :
 
 theorem newEx_nodup : (st.newEx c).Nodup := by
   unfold St.newEx
-  rw [List.nodup_append]
+  Ξ List.nodup_append
   refine ⟨((h.cls _ ⟨c, hc, Or.inl rfl⟩).2.2.1).filter _,
     ((h.cls _ ⟨c, hc, Or.inr rfl⟩).2.2.1).filter _, fun a ha b hb hab => ?_⟩
   subst hab
@@ -256,10 +258,10 @@ theorem newEx_length (hE : E.Good) (h : Inv E st) (hc : c ∈ st.L E)
 
 theorem deg_P :
     E.M.deg (st.F E \ {cs E.M E.Q E.N c}) P = (st.newEx c).length := by
-  rw [← fam_diff hE hc]
+  Ξ ← fam_diff hE hc
   refine (deg_list hE (fun i hi => hi.1.1) (newEx_nodup hE h hc hs) fun i => ?_).symm
-  rw [mem_newEx hE h hc hs]
-  simp only [mem_sdiff, mem_singleton_iff]
+  Ξ mem_newEx hE h hc hs
+  ϴ mem_sdiff, mem_singleton_iff
   tauto
 
 theorem other_ne {Z : Set Point} (hZ : Z ∈ E.M.regions (st.F E \ {cs E.M E.Q E.N c}))
@@ -267,10 +269,10 @@ theorem other_ne {Z : Set Point} (hZ : Z ∈ E.M.regions (st.F E \ {cs E.M E.Q E
   refine ⟨split_old (St.cs_mem_F hc) hs hZ hZP, fun e => hZP ?_, fun e => hZP ?_⟩
   · have hX := (h.cl_mem hE hc).1
     exact Chazelle.Chain.regionsIn_eq_of_subset hZ hs.mem
-      (Chazelle.Chain.regionsIn_nonempty hX) (by rw [e]) hs.sub₁
+      (Chazelle.Chain.regionsIn_nonempty hX) (Ρ e) hs.sub₁
   · have hY := (h.cl_mem hE hc).2
     exact Chazelle.Chain.regionsIn_eq_of_subset hZ hs.mem
-      (Chazelle.Chain.regionsIn_nonempty hY) (by rw [e]) hs.sub₂
+      (Chazelle.Chain.regionsIn_nonempty hY) (Ρ e) hs.sub₂
 
 theorem deg_other {Z : Set Point} (hZ : Z ∈ E.M.regions (st.F E \ {cs E.M E.Q E.N c}))
     (hZP : Z ≠ P) :
@@ -278,7 +280,7 @@ theorem deg_other {Z : Set Point} (hZ : Z ∈ E.M.regions (st.F E \ {cs E.M E.Q 
   have e := hs.exits_other (hsys_F hE h hc hs) sdiff_subset hZ hZP
   rw [Merge.insert_sdiff_self (St.cs_mem_F hc)] at e
   show (Merge.exitsIn E.M.D _ Z).ncard = (Merge.exitsIn E.M.D _ Z).ncard
-  rw [e]
+  Ξ e
 
 theorem weight_other' {Z : Set Point} (hZ : Z ∈ E.M.regions (st.F E \ {cs E.M E.Q E.N c}))
     (hZP : Z ≠ P) :

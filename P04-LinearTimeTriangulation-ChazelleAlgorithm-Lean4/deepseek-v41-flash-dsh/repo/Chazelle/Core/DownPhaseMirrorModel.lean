@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMirrorWalk
 public import Chazelle.Core.SpecBase
 
@@ -37,9 +39,9 @@ theorem mir_rayPt (p : Point) (σ t : ℝ) : mir (rayPt p σ t) = rayPt (mir p) 
 
 theorem hseg_mir (y a b : ℝ) : mir '' hseg y a b = hseg y (-b) (-a) := by
   ext x
-  rw [mem_image_mir]
-  simp only [hseg, mem_ofPred_eq, mir_fst, mir_snd]
-  constructor <;> rintro ⟨h1, h2, h3⟩ <;> exact ⟨h1, by linarith, by linarith⟩
+  Ξ mem_image_mir
+  ϴ hseg, mem_ofPred_eq, mir_fst, mir_snd
+  constructor <;> rintro ⟨h1, h2, h3⟩ <;> exact ⟨h1, ⟡, ⟡⟩
 
 /-- **Horizontal chords of the mirrored domain.** -/
 theorem isHChordIn_mir {D : Set Point} {y a b : ℝ} :
@@ -50,14 +52,14 @@ theorem isHChordIn_mir {D : Set Point} {y a b : ℝ} :
       fun x h1 h2 => ?_⟩
     · rw [mem_image_mir, mir_pt, neg_neg]; exact hm
     · rw [mem_image_mir, mir_pt, neg_neg]; exact hm
-    · have := h.open_mem (-x) (by linarith) (by linarith)
+    · have := h.open_mem (-x) (⟡) (⟡)
       rwa [mem_image_mir, mir_pt, neg_neg] at this
   · intro h
     refine ⟨by linarith [h.lt], fun hm => h.right_not ?_, fun hm => h.left_not ?_,
       fun x h1 h2 => ?_⟩
     · rwa [mem_image_mir, mir_pt, neg_neg] at hm
     · rwa [mem_image_mir, mir_pt, neg_neg] at hm
-    · rw [mem_image_mir, mir_pt]; exact h.open_mem (-x) (by linarith) (by linarith)
+    · rw [mem_image_mir, mir_pt]; exact h.open_mem (-x) (⟡) (⟡)
 
 theorem closure_mir (U : Set Point) : closure (mir '' U) = mir '' closure U :=
   (mirHomeo.image_closure U).symm
@@ -73,7 +75,7 @@ theorem mem_mirF {F : Set (Set Point)} {c : Set Point} : c ∈ mirF F ↔ mir ''
   · intro h; exact ⟨mir '' c, h, image_mir_image_mir c⟩
 
 theorem image_mem_mirF {F : Set (Set Point)} {e : Set Point} : mir '' e ∈ mirF F ↔ e ∈ F := by
-  rw [mem_mirF, image_mir_image_mir]
+  Ξ mem_mirF, image_mir_image_mir
 
 theorem mirF_mirF (F : Set (Set Point)) : mirF (mirF F) = F := by
   ext c; rw [mem_mirF, mem_mirF, image_mir_image_mir]
@@ -96,7 +98,7 @@ theorem mirF_union (F G : Set (Set Point)) : mirF (F ∪ G) = mirF F ∪ mirF G 
 
 theorem sUnion_mirF (F : Set (Set Point)) : ⋃₀ mirF F = mir '' ⋃₀ F := by
   ext x
-  rw [mem_image_mir, mem_sUnion, mem_sUnion]
+  Ξ mem_image_mir, mem_sUnion, mem_sUnion
   constructor
   · rintro ⟨c, hc, hx⟩
     exact ⟨mir '' c, mem_mirF.1 hc, mem_image_of_mem mir hx⟩
@@ -111,21 +113,21 @@ theorem freeIn_mir (D : Set Point) (F : Set (Set Point)) :
 theorem regionsIn_mir (D : Set Point) (F : Set (Set Point)) :
     regionsIn (mir '' D) (mirF F) = mirF (regionsIn D F) := by
   ext U
-  rw [mem_mirF]
+  Ξ mem_mirF
   unfold regionsIn
-  rw [freeIn_mir]
+  Ξ freeIn_mir
   constructor
   · rintro ⟨z, hz, rfl⟩
     refine ⟨mir z, mem_image_mir.1 hz, ?_⟩
-    rw [image_connectedComponentIn_mir, image_mir_image_mir]
+    Ξ image_connectedComponentIn_mir, image_mir_image_mir
   · rintro ⟨z, hz, hU⟩
     refine ⟨mir z, mem_image_mir.2 (by rwa [mir_mir]), ?_⟩
-    rw [← image_mir_image_mir U, hU, image_connectedComponentIn_mir]
+    Ξ ← image_mir_image_mir U, hU, image_connectedComponentIn_mir
 
 theorem touchesIn_mir {D c U : Set Point} :
     TouchesIn (mir '' D) (mir '' c) (mir '' U) ↔ TouchesIn D c U := by
   unfold TouchesIn
-  rw [← image_inter mir_injective, closure_mir]
+  Ξ ← image_inter mir_injective, closure_mir
   constructor
   · rintro ⟨z, hz, hzU⟩
     exact ⟨mir z, mem_image_mir.1 hz, mem_image_mir.1 hzU⟩
@@ -175,18 +177,18 @@ theorem arcWt_self (M : Model) (a : ℝ) :
   unfold Model.arcWt
   congr 1
   ext p
-  simp only [mem_ofPred_eq]
+  ϴ mem_ofPred_eq
   constructor
   · rintro ⟨h1, h2, -⟩; exact ⟨h1, h2⟩
   · rintro ⟨h1, h2⟩
     refine ⟨h1, h2, ?_⟩
     unfold sideInArc
-    simp only [lt_irrefl, ite_false]
+    ϴ lt_irrefl, ite_false
     by_cases h : (p : ℝ) + 1 / 2 = a
-    · exact ⟨1 / 4, by norm_num, by norm_num, Or.inr (by linarith)⟩
+    · exact ⟨1 / 4, ⊛, ⊛, Or.inr (⟡)⟩
     · rcases lt_or_gt_of_ne h with h | h
-      · exact ⟨1 / 2, by norm_num, by norm_num, Or.inr h⟩
-      · exact ⟨1 / 2, by norm_num, by norm_num, Or.inl h⟩
+      · exact ⟨1 / 2, ⊛, ⊛, Or.inr h⟩
+      · exact ⟨1 / 2, ⊛, ⊛, Or.inl h⟩
 
 namespace ModelMir
 
@@ -212,11 +214,11 @@ theorem deg (F : Set (Set Point)) (U : Set Point) : M'.deg (mirF F) (mir '' U) =
       rw [← touchesIn_mir, image_mir_image_mir]; exact ht
     · rintro ⟨e, ⟨he, ht⟩, rfl⟩
       exact ⟨⟨e, he, rfl⟩, by rw [h.D]; exact touchesIn_mir.2 ht⟩
-  rw [e, Set.ncard_image_of_injective _ mirF_injective]
+  Ξ e, Set.ncard_image_of_injective _ mirF_injective
 
 theorem deg' (F : Set (Set Point)) (U' : Set Point) :
     M'.deg (mirF F) U' = M.deg F (mir '' U') := by
-  rw [← h.deg, image_mir_image_mir]
+  Ξ ← h.deg, image_mir_image_mir
 
 /-- **Cut keys correspond** (reflected keys). -/
 theorem isCut (F : Set (Set Point)) {x' : ℝ} (hx0 : 0 ≤ x') (hxn : x' < M.W.n) :
@@ -241,7 +243,7 @@ theorem faces {p' : ℕ} (hp : p' < M.W.n) (t' : ℝ) (U : Set Point) :
   unfold Model.Faces Model.wa Model.wb
   rw [h.n_eq, h.walk.vtx p' hp, h.walk.vtx _ (Nat.mod_lt _ h.walk.n_pos),
     idx_next h.walk.n_pos hp, idx_succ h.walk.n_pos hp]
-  simp only [mem_image_mir, mir_offset, mir_mir, offset_rev]
+  ϴ mem_image_mir, mir_offset, mir_mir, offset_rev
 
 /-- Facing at all interior edge positions. -/
 theorem faces_all (U : Set Point) :
@@ -249,14 +251,14 @@ theorem faces_all (U : Set Point) :
       ∀ p : ℕ, ∀ t : ℝ, p < M.W.n → 0 < t → t < 1 → M.Faces p t U := by
   have hn := h.walk.n_pos
   have hc := h.walk.c_lt
-  rw [h.n_eq]
+  Ξ h.n_eq
   constructor
   · intro H p t hp ht0 ht1
-    have := H _ (1 - t) (Nat.mod_lt (c + 2 * M.W.n - 1 - p) hn) (by linarith) (by linarith)
+    have := H _ (1 - t) (Nat.mod_lt (c + 2 * M.W.n - 1 - p) hn) (⟡) (⟡)
     rwa [h.faces (Nat.mod_lt _ hn), idx_q_invol hc hp, sub_sub_cancel] at this
   · intro H p' t' hp ht0 ht1
-    rw [h.faces hp]
-    exact H _ _ (Nat.mod_lt _ hn) (by linarith) (by linarith)
+    Ξ h.faces hp
+    exact H _ _ (Nat.mod_lt _ hn) (⟡) (⟡)
 
 theorem rk_lt {x : ℝ} (hx0 : 0 ≤ x) (hxn : x < M.W.n) :
     0 ≤ rk M.W.n c x ∧ rk M.W.n c x < M.W.n := rk_bounds h.walk.c_lt hx0 hxn
@@ -278,14 +280,14 @@ theorem isArc {F : Set (Set Point)} (hF : F.Nonempty) (U : Set Point) {a' b' : �
       (mirF F = ∅ ∧ a' = 0 ∧ b' = 0)) ↔
       ((M.IsCut F (rk n c b') ∧ M.IsCut F (rk n c a') ∧ rk n c b' ≠ rk n c a') ∨
         (F = ∅ ∧ rk n c b' = 0 ∧ rk n c a' = 0)) := by
-    rw [h.isCut F ha0 han, h.isCut F hb0 hbn]
+    Ξ h.isCut F ha0 han, h.isCut F hb0 hbn
     have hne : a' ≠ b' ↔ rk n c b' ≠ rk n c a' := by
       constructor
       · intro hab e
         apply hab
-        rw [← rk_rk hc ha0 han, ← rk_rk hc hb0 hbn, e]
+        Ξ ← rk_rk hc ha0 han, ← rk_rk hc hb0 hbn, e
       · rintro hab rfl; exact hab rfl
-    rw [hne]
+    Ξ hne
     constructor
     · rintro (⟨h1, h2, h3⟩ | ⟨h1, -⟩)
       · exact Or.inl ⟨h2, h1, h3⟩
@@ -310,23 +312,23 @@ theorem isArc {F : Set (Set Point)} (hF : F.Nonempty) (U : Set Point) {a' b' : �
       M'.Faces p' t' (mir '' U)) ↔
       (∀ p : ℕ, ∀ t : ℝ, p < n → 0 < t → t < 1 → sideInArc (rk n c b') (rk n c a') (p + t) →
         M.Faces p t U) := by
-    rw [h.n_eq]
+    Ξ h.n_eq
     constructor
     · intro H p t hp ht0 ht1 hin
       have hq := Nat.mod_lt (c + 2 * n - 1 - p) hn
       have hq' : ((c + 2 * n - 1 - p) % n : ℕ) < (n : ℝ) := by exact_mod_cast hq
       have hql : (((c + 2 * n - 1 - p) % n : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast hq
-      have := H _ (1 - t) hq (by linarith) (by linarith) ?_
+      have := H _ (1 - t) hq (⟡) (⟡) ?_
       · rwa [h.faces hq, idx_q_invol hc hp, sub_sub_cancel] at this
-      · rw [sideInArc_rk hc ha0 han hb0 hbn (by positivity) (by linarith),
-          rk_edge hc hq (by linarith) (by linarith), idx_q_invol hc hp, sub_sub_cancel]
+      · rw [sideInArc_rk hc ha0 han hb0 hbn (⟢) (⟡),
+          rk_edge hc hq (⟡) (⟡), idx_q_invol hc hp, sub_sub_cancel]
         exact hin
     · intro H p' t' hp ht0 ht1 hin
       have hpl : (p' : ℝ) + 1 ≤ n := by exact_mod_cast hp
-      rw [h.faces hp]
-      apply H _ _ (Nat.mod_lt _ hn) (by linarith) (by linarith)
-      rw [← rk_edge hc hp ht0 ht1]
-      exact (sideInArc_rk hc ha0 han hb0 hbn (by positivity) (by linarith)).1 hin
+      Ξ h.faces hp
+      apply H _ _ (Nat.mod_lt _ hn) (⟡) (⟡)
+      Ξ ← rk_edge hc hp ht0 ht1
+      exact (sideInArc_rk hc ha0 han hb0 hbn (⟢) (⟡)).1 hin
   unfold Model.IsArc
   constructor
   · rintro ⟨-, -, -, -, h1, h2, h3⟩
@@ -342,24 +344,24 @@ theorem arcWt {a' b' : ℝ} (ha0 : 0 ≤ a') (han : a' < M.W.n) (hb0 : 0 ≤ b')
   have hc := h.walk.c_lt
   set n := M.W.n with hn_def
   unfold Model.arcWt
-  rw [h.n_eq]
+  Ξ h.n_eq
   refine Set.ncard_congr (fun p' _ => (c + 2 * n - 1 - p') % n) ?_ ?_ ?_
   · rintro p' ⟨hp, hcnt, t', ht0, ht1, hin⟩
     have hpl : (p' : ℝ) + 1 ≤ n := by exact_mod_cast hp
-    refine ⟨Nat.mod_lt _ hn, (h.counted p' hp).1 hcnt, 1 - t', by linarith, by linarith, ?_⟩
-    rw [← rk_edge hc hp ht0 ht1]
-    exact (sideInArc_rk hc ha0 han hb0 hbn (by positivity) (by linarith)).1 hin
+    refine ⟨Nat.mod_lt _ hn, (h.counted p' hp).1 hcnt, 1 - t', ⟡, ⟡, ?_⟩
+    Ξ ← rk_edge hc hp ht0 ht1
+    exact (sideInArc_rk hc ha0 han hb0 hbn (⟢) (⟡)).1 hin
   · rintro p₁ p₂ ⟨hp₁, -⟩ ⟨hp₂, -⟩ e
-    rw [← idx_q_invol hc hp₁, ← idx_q_invol hc hp₂]
+    Ξ ← idx_q_invol hc hp₁, ← idx_q_invol hc hp₂
     exact congrArg (fun q => (c + 2 * n - 1 - q) % n) e
   · rintro p ⟨hp, hcnt, t, ht0, ht1, hin⟩
     have hq := Nat.mod_lt (c + 2 * n - 1 - p) hn
     have hql : (((c + 2 * n - 1 - p) % n : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast hq
-    refine ⟨(c + 2 * n - 1 - p) % n, ⟨hq, ?_, 1 - t, by linarith, by linarith, ?_⟩,
+    refine ⟨(c + 2 * n - 1 - p) % n, ⟨hq, ?_, 1 - t, ⟡, ⟡, ?_⟩,
       idx_q_invol hc hp⟩
     · rw [h.counted _ hq, idx_q_invol hc hp]; exact hcnt
-    · rw [sideInArc_rk hc ha0 han hb0 hbn (by positivity) (by linarith),
-        rk_edge hc hq (by linarith) (by linarith), idx_q_invol hc hp, sub_sub_cancel]
+    · rw [sideInArc_rk hc ha0 han hb0 hbn (⟢) (⟡),
+        rk_edge hc hq (⟡) (⟡), idx_q_invol hc hp, sub_sub_cancel]
       exact hin
 
 /-- **Weights correspond.** -/
@@ -370,12 +372,12 @@ theorem weight (F : Set (Set Point)) (U : Set Point) :
   unfold Model.weight
   congr 1
   rcases F.eq_empty_or_nonempty with rfl | hF
-  · rw [mirF_empty]
+  · Ξ mirF_empty
     have e0 : M'.arcWt 0 0 = M.arcWt 0 0 := by
       have hn' : (0 : ℝ) < M.W.n := by exact_mod_cast hn
-      rw [h.arcWt le_rfl hn' le_rfl hn', arcWt_self, arcWt_self]
+      Ξ h.arcWt le_rfl hn' le_rfl hn', arcWt_self, arcWt_self
     ext w
-    simp only [mem_image, mem_ofPred_eq, Prod.exists]
+    ϴ mem_image, mem_ofPred_eq, Prod.exists
     constructor
     · rintro ⟨a, b, hab, rfl⟩
       obtain ⟨rfl, rfl, hn', hf⟩ := isArc_empty.1 hab
@@ -384,7 +386,7 @@ theorem weight (F : Set (Set Point)) (U : Set Point) :
       obtain ⟨rfl, rfl, -, hf⟩ := isArc_empty.1 hab
       exact ⟨0, 0, isArc_empty.2 ⟨rfl, rfl, h.n_eq ▸ hn, (h.faces_all U).2 hf⟩, e0⟩
   · ext w
-    simp only [mem_image, mem_ofPred_eq, Prod.exists]
+    ϴ mem_image, mem_ofPred_eq, Prod.exists
     constructor
     · rintro ⟨a', b', hab, rfl⟩
       have ha := hab.2.1; have hb := hab.2.2.2.1
@@ -398,25 +400,25 @@ theorem weight (F : Set (Set Point)) (U : Set Point) :
       · rw [h.isArc hF U rb0 rbn ra0 ran, rk_rk hc hab.1 hab.2.1,
           rk_rk hc hab.2.2.1 hab.2.2.2.1]
         exact hab
-      · rw [h.arcWt rb0 rbn ra0 ran, rk_rk hc hab.1 hab.2.1, rk_rk hc hab.2.2.1 hab.2.2.2.1]
+      · Ξ h.arcWt rb0 rbn ra0 ran, rk_rk hc hab.1 hab.2.1, rk_rk hc hab.2.2.1 hab.2.2.2.1
 
 /-- **Chord families correspond** (for the mirrored height polygon). -/
 theorem chordFamily (Q : Polygon) (F : Set (Set Point)) :
     M'.ChordFamily Q.mir (mirF F) ↔ M.ChordFamily Q F := by
   unfold Model.ChordFamily
-  rw [mirF_finite, h.Adm, mirF_subset, mir_n]
-  have hy : ∀ k, (Q.mir.vtx k).2 = (Q.vtx k).2 := fun k => by rw [mir_vtx, mir_snd]
+  Ξ mirF_finite, h.Adm, mirF_subset, mir_n
+  have hy : ∀ k, (Q.mir.vtx k).2 = (Q.vtx k).2 := fun k => Ρ mir_vtx, mir_snd
   constructor
   · rintro ⟨h1, h2, h3⟩
     refine ⟨h1, h2, fun e he => ?_⟩
     obtain ⟨k, hk, a, b, hab⟩ := h3 _ (image_mem_mirF.2 he)
     refine ⟨k, hk, -b, -a, ?_⟩
-    rw [← image_mir_image_mir e, hab, hseg_mir, hy]
+    Ξ ← image_mir_image_mir e, hab, hseg_mir, hy
   · rintro ⟨h1, h2, h3⟩
     refine ⟨h1, h2, fun e' he' => ?_⟩
     obtain ⟨k, hk, a, b, hab⟩ := h3 _ (mem_mirF.1 he')
     refine ⟨k, hk, -b, -a, ?_⟩
-    rw [← image_mir_image_mir e', hab, hseg_mir, hy]
+    Ξ ← image_mir_image_mir e', hab, hseg_mir, hy
 
 end ModelMir
 

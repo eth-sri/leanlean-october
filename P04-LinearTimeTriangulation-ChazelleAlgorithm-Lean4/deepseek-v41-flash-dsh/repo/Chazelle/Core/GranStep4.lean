@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranStep3
 
 /-!
@@ -31,7 +33,7 @@ theorem cnt_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
       (st.remove c μ).nd0 i = j) =
       ((Finset.range E.K).filter fun i => st.live i = 1 ∧ st.nd0 i = j).erase c := by
     ext i
-    simp only [Finset.mem_filter, Finset.mem_range, Finset.mem_erase]
+    ϴ Finset.mem_filter, Finset.mem_range, Finset.mem_erase
     show (_ ∧ Function.update st.live c 0 i = 1 ∧ st.nd0 i = j) ↔ _
     by_cases hic : i = c
     · subst hic; simp
@@ -40,21 +42,21 @@ theorem cnt_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
       (st.remove c μ).nd1 i = j) =
       ((Finset.range E.K).filter fun i => st.live i = 1 ∧ st.nd1 i = j).erase c := by
     ext i
-    simp only [Finset.mem_filter, Finset.mem_range, Finset.mem_erase]
+    ϴ Finset.mem_filter, Finset.mem_range, Finset.mem_erase
     show (_ ∧ Function.update st.live c 0 i = 1 ∧ st.nd1 i = j) ↔ _
     by_cases hic : i = c
     · subst hic; simp
     · rw [Function.update_of_ne hic]; tauto
   unfold St.cntOf
-  rw [k0, k1]
+  Ξ k0, k1
   show Function.update (Function.update st.cnt (st.nd0 c) (st.cnt (st.nd0 c) - 1)) (st.nd1 c)
       (st.cnt (st.nd1 c) - 1) j = _
   have e := h.cnt j hj
   unfold St.cntOf at e
   have m0 : c ∈ ((Finset.range E.K).filter fun i => st.live i = 1 ∧ st.nd0 i = j) ↔
-      st.nd0 c = j := by simp [hcK, hc.2]
+      st.nd0 c = j := ⊚ hcK, hc.2
   have m1 : c ∈ ((Finset.range E.K).filter fun i => st.live i = 1 ∧ st.nd1 i = j) ↔
-      st.nd1 c = j := by simp [hcK, hc.2]
+      st.nd1 c = j := ⊚ hcK, hc.2
   by_cases h1 : j = st.nd1 c
   · subst h1
     rw [Function.update_self, Finset.card_erase_of_mem (m1.2 rfl),
@@ -62,7 +64,7 @@ theorem cnt_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
     unfold St.cntOf
     have := Finset.card_pos.2 ⟨c, m1.2 rfl⟩
     omega
-  · rw [Function.update_of_ne h1]
+  · Ξ Function.update_of_ne h1
     by_cases h0 : j = st.nd0 c
     · subst h0
       rw [Function.update_self, Finset.card_erase_of_mem (m0.2 rfl),
@@ -82,7 +84,7 @@ theorem lv_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
       (st.nd1 c) (st.cnt (st.nd1 c) - 1) j ↔ _
   by_cases h1 : j = st.nd1 c
   · subst h1
-    rw [Function.update_self]
+    Ξ Function.update_self
     have hL := (h.key_nd_cut hE hc (Or.inr rfl)).2.1
     have hd := h.dd_iff hE hc (Or.inr rfl)
     unfold St.Lv at hL
@@ -95,10 +97,10 @@ theorem lv_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
     · rintro ⟨-, hdd⟩
       have : st.cnt (st.nd1 c) ≠ 1 := fun e => by rw [hd.2 e] at hdd; exact Bool.noConfusion hdd
       omega
-  · rw [Function.update_of_ne h1]
+  · Ξ Function.update_of_ne h1
     by_cases h0 : j = st.nd0 c
     · subst h0
-      rw [Function.update_self]
+      Ξ Function.update_self
       have hL := (h.key_nd_cut hE hc (Or.inl rfl)).2.1
       have hd := h.dd_iff hE hc (Or.inl rfl)
       unfold St.Lv at hL
@@ -111,7 +113,7 @@ theorem lv_rm (μ : ℕ) {j : ℕ} (hj : j < E.A) :
       · rintro ⟨-, hdd⟩
         have : st.cnt (st.nd0 c) ≠ 1 := fun e => by rw [hd.2 e] at hdd; exact Bool.noConfusion hdd
         omega
-    · rw [Function.update_of_ne h0]
+    · Ξ Function.update_of_ne h0
       constructor
       · intro hp
         refine ⟨hp, ?_⟩
@@ -142,7 +144,7 @@ theorem ring_rm (μ : ℕ) :
     (sdiff_subset.trans (St.F_adm (st := st) hE)) hne'
   obtain ⟨a, ha, haL, had, rfl⟩ := (h.cut_sdiff_iff hE hc _).1 hk₁
   obtain ⟨b, hb, hbL, hbd, rfl⟩ := (h.cut_sdiff_iff hE hc _).1 hk₂
-  have hab : a ≠ b := fun e => hk (by rw [e])
+  have hab : a ≠ b := fun e => hk (Ρ e)
   have hn1 := h.key_nd_cut hE hc (Or.inl rfl)
   have hn2 := h.key_nd_cut hE hc (Or.inr rfl)
   -- positions that die are not `a`, `b`
@@ -157,14 +159,14 @@ theorem ring_rm (μ : ℕ) :
     by_cases d1 : st.cnt (st.nd0 c) = 1
     · have hd1 : st.dd c (st.nd0 c) = true := (h.dd_iff hE hc (Or.inl rfl)).2 d1
       have e1 : r1 = St.unl (st.nxt, st.prv) (st.nd0 c) := ite_eq_left d1
-      rw [e1]
+      Ξ e1
       refine (ringOK_unl (r := (st.nxt, st.prv)) h.ring hn1.1 hn1.2.1
         ⟨a, b, ha, hb, haL, hbL, (hdead _ hd1).1, (hdead _ hd1).2, hab⟩).congr
         (fun j _ => ?_) (fun _ _ _ => rfl) (fun _ _ _ => rfl)
-      simp only [Lv1]
+      ϴ Lv1
       exact ⟨fun h' => ⟨h'.1, h'.2 d1⟩, fun h' => ⟨h'.1, fun _ => h'.2⟩⟩
     · have e1 : r1 = (st.nxt, st.prv) := ite_eq_right d1
-      rw [e1]
+      Ξ e1
       exact h.ring.congr (fun j _ => by simp only [Lv1]; exact ⟨fun h' => h'.1,
         fun h' => ⟨h', fun e => absurd e d1⟩⟩) (fun _ _ _ => rfl) (fun _ _ _ => rfl)
   -- the second unlink
@@ -173,21 +175,21 @@ theorem ring_rm (μ : ℕ) :
   have hLv1b : Lv1 b := ⟨hbL, fun d1 e => (hdead _ ((h.dd_iff hE hc (Or.inl rfl)).2 d1)).2 e⟩
   have hfin : RingOK (fun j => Lv1 j ∧ (st.cnt (st.nd1 c) = 1 → j ≠ st.nd1 c)) E.A
       (st.ring2 c).1 (st.ring2 c).2 := by
-    rw [hring2]
+    Ξ hring2
     by_cases d2 : st.cnt (st.nd1 c) = 1
     · have hd2 : st.dd c (st.nd1 c) = true := (h.dd_iff hE hc (Or.inr rfl)).2 d2
-      rw [ite_eq_left d2]
+      Ξ ite_eq_left d2
       have hn2L : Lv1 (st.nd1 c) := ⟨hn2.2.1, fun _ e => hne e.symm⟩
       refine (ringOK_unl hR1 hn2.1 hn2L
         ⟨a, b, ha, hb, hLv1a, hLv1b, (hdead _ hd2).1, (hdead _ hd2).2, hab⟩).congr
         (fun j _ => ?_) (fun _ _ _ => rfl) (fun _ _ _ => rfl)
       exact ⟨fun h' => ⟨h'.1, h'.2 d2⟩, fun h' => ⟨h'.1, fun _ => h'.2⟩⟩
-    · rw [ite_eq_right d2]
+    · Ξ ite_eq_right d2
       exact hR1.congr (fun j _ => ⟨fun h' => h'.1, fun h' => ⟨h', fun e => absurd e d2⟩⟩)
         (fun _ _ _ => rfl) (fun _ _ _ => rfl)
   refine hfin.congr (fun j hj => ?_) (fun _ _ _ => rfl) (fun _ _ _ => rfl)
-  rw [hl hj]
-  simp only [Lv1]
+  Ξ hl hj
+  ϴ Lv1
   constructor
   · rintro ⟨hL, hdd⟩
     refine ⟨⟨hL, fun d1 e => ?_⟩, fun d2 e => ?_⟩

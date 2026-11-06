@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseTourA
 
 /-!
@@ -34,22 +36,22 @@ theorem tourB_lt (k : ℕ) : tourB C β k < 2 * C.m := TourA.tourA_lt _
 
 theorem sideIdx_tourB {k : ℕ} (hk : k < C.m) : C.sideIdx β (tourB C β k) = k + 1 := by
   unfold tourB
-  rw [Chain.sideIdx_eq, TourA.mod_tourA (by omega)]
+  rw [Chain.sideIdx_eq, TourA.mod_tourA (⋄)]
   unfold sideE; split_ifs <;> omega
 
 theorem sideIdx_tourB_succ {k : ℕ} (hk : k < C.m) : C.sideIdx β (tourB C β k + 1) = k := by
   unfold tourB
-  rw [C.sideIdx_succ, TourA.mod_tourA (by omega)]
-  unfold sideE; rw [ite_eq_right (by omega)]; omega
+  rw [C.sideIdx_succ, TourA.mod_tourA (⋄)]
+  unfold sideE; rw [ite_eq_right (⋄)]; omega
 
 theorem vtx_tourB {k : ℕ} (hk : k < C.m) :
     (C.sideWalk β).vtx (tourB C β k + 6) = C.vertex (k + 1) := by
-  rw [C.sideWalk_vtx_tour β (tourB_lt k).le]
+  Ξ C.sideWalk_vtx_tour β (tourB_lt k).le
   unfold Chain.sideTour; rw [sideIdx_tourB hk]
 
 theorem vtx_tourB_succ {k : ℕ} (hk : k < C.m) :
     (C.sideWalk β).vtx ((tourB C β k + 6 + 1) % (C.sideWalk β).n) = C.vertex k := by
-  rw [C.sideWalk_next_tour β (tourB_lt k), C.sideWalk_vtx_tour β (tourB_lt k)]
+  Ξ C.sideWalk_next_tour β (tourB_lt k), C.sideWalk_vtx_tour β (tourB_lt k)
   unfold Chain.sideTour; rw [sideIdx_tourB_succ hk]
 
 /-- **Contiguity of side `B`**: the pass of edge `k` follows the pass of edge `k + 1`, except at

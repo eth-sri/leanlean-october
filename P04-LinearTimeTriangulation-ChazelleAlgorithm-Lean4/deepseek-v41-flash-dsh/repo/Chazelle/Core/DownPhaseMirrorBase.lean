@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Mountain.Orientation
 public import Chazelle.Chain.Sides
 
@@ -38,7 +40,7 @@ def mir (p : Point) : Point := (-p.1, p.2)
   unfold mir; simp
 
 theorem mir_injective : Function.Injective mir := fun p q h => by
-  rw [← mir_mir p, h, mir_mir]
+  Ξ ← mir_mir p, h, mir_mir
 
 theorem mir_eq_iff {p q : Point} : mir p = q ↔ p = mir q := by
   constructor
@@ -76,7 +78,7 @@ theorem image_connectedComponentIn_mir (A : Set Point) (x : Point) :
     mir '' connectedComponentIn A x = connectedComponentIn (mir '' A) (mir x) := by
   by_cases hx : x ∈ A
   · exact mirHomeo.image_connectedComponentIn hx
-  · rw [connectedComponentIn_eq_empty hx, image_empty, connectedComponentIn_eq_empty]
+  · Ξ connectedComponentIn_eq_empty hx, image_empty, connectedComponentIn_eq_empty
     rw [mem_image_mir, mir_mir]; exact hx
 
 theorem mir_lerp (a b : Point) (t : ℝ) : mir (lerp a b t) = lerp (mir a) (mir b) t := by
@@ -93,7 +95,7 @@ theorem mir_sub (p q : Point) : mir p - mir q = mir (p - q) := by
 
 theorem mir_segment (a b : Point) : mir '' Chazelle.segment a b = Chazelle.segment (mir a) (mir b) := by
   ext x
-  rw [mem_image_mir]
+  Ξ mem_image_mir
   constructor
   · rintro ⟨t, ht0, ht1, h⟩
     refine ⟨t, ht0, ht1, ?_⟩
@@ -110,21 +112,21 @@ def _root_.Chazelle.Polygon.mir (P : Polygon) : Polygon := ⟨P.vertices.map Cha
 variable (P : Polygon)
 
 @[simp] theorem mir_n : P.mir.n = P.n := by
-  simp [Polygon.mir, Polygon.n]
+  Θ Polygon.mir, Polygon.n
 
 theorem mir_vtx (i : ℕ) : P.mir.vtx i = mir (P.vtx i) := by
-  simp only [Polygon.mir, Polygon.vtx, List.getD_eq_getElem?_getD, List.getElem?_map]
+  ϴ Polygon.mir, Polygon.vtx, List.getD_eq_getElem?_getD, List.getElem?_map
   cases h : P.vertices[i]? with
   | none => simp [mir]
   | some v => simp
 
 theorem mir_edge (i : ℕ) : P.mir.edge i = mir '' P.edge i := by
   unfold Polygon.edge
-  rw [mir_segment, mir_n, mir_vtx, mir_vtx]
+  Ξ mir_segment, mir_n, mir_vtx, mir_vtx
 
 theorem mir_boundary : P.mir.boundary = mir '' P.boundary := by
   ext x
-  rw [mem_image_mir]
+  Ξ mem_image_mir
   constructor
   · rintro ⟨i, hi, hx⟩
     rw [mir_n] at hi
@@ -137,8 +139,8 @@ theorem mir_boundary : P.mir.boundary = mir '' P.boundary := by
 theorem mir_commonEndpoints (i j : ℕ) :
     P.mir.commonEndpoints i j = mir '' P.commonEndpoints i j := by
   ext x
-  rw [mem_image_mir]
-  simp only [Polygon.commonEndpoints, mem_ofPred_eq, mir_n, mir_vtx, ← mir_eq_iff]
+  Ξ mem_image_mir
+  ϴ Polygon.commonEndpoints, mem_ofPred_eq, mir_n, mir_vtx, ← mir_eq_iff
 
 /-- **The mirror image of a simple polygon is simple.** -/
 theorem mir_simple (hP : P.Simple) : P.mir.Simple := by
@@ -167,23 +169,23 @@ theorem mir_filled : P.mir.filled = mir '' P.filled := by
         mir '' connectedComponentIn P.boundaryᶜ (mir x) := by
       rw [image_connectedComponentIn_mir, mir_mir, mir_boundary,
         image_compl_eq ⟨mir_injective, fun y => ⟨mir y, mir_mir y⟩⟩]
-    rw [e]
+    Ξ e
     constructor
     · intro h
       have := isBoundedSet_mir h
       rwa [image_mir_image_mir] at this
     · exact isBoundedSet_mir
   ext x
-  rw [mem_image_mir]
+  Ξ mem_image_mir
   show x ∈ P.mir.boundary ∪ {p | IsBoundedSet (connectedComponentIn P.mir.boundaryᶜ p)} ↔
     mir x ∈ P.boundary ∪ {p | IsBoundedSet (connectedComponentIn P.boundaryᶜ p)}
-  rw [mem_union, mem_union, mem_ofPred_eq, mem_ofPred_eq, key, mir_boundary, mem_image_mir]
+  Ξ mem_union, mem_union, mem_ofPred_eq, mem_ofPred_eq, key, mir_boundary, mem_image_mir
 
 /-- **The orientation flips.** -/
 theorem leftInside_mir (hP : P.Simple) : Mountain.LeftInside P.mir ↔ ¬ Mountain.LeftInside P := by
   have hn := Chazelle.Jordan.simple_three_le hP
-  have hev := Mountain.eventually_offset_orient hP (i := 0) (by omega) (t := 1 / 2)
-    ⟨by norm_num, by norm_num⟩
+  have hev := Mountain.eventually_offset_orient hP (i := 0) (⋄) (t := 1 / 2)
+    ⟨⊛, by norm_num⟩
   have e : ∀ δ : ℝ, Chazelle.Jordan.leftPoint P.mir 0 (1 / 2) δ ∈ P.mir.filled ↔
       offset (P.vtx 0) (P.vtx ((0 + 1) % P.n)) (1 / 2) (-δ) ∈ P.filled := by
     intro δ
@@ -195,7 +197,7 @@ theorem leftInside_mir (hP : P.Simple) : Mountain.LeftInside P.mir ↔ ¬ Mounta
   have ho2 : ¬ Mountain.LeftInside P → Mountain.orient P = -1 := fun hL => by
     unfold Mountain.orient; rw [ite_eq_right hL]
   unfold Mountain.LeftInside
-  simp only [e]
+  ϴ e
   constructor
   · intro h hL
     have ho : Mountain.orient P = 1 := ho1 hL

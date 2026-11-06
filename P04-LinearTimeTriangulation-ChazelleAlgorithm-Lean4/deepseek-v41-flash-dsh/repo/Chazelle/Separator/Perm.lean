@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Mathlib.GroupTheory.Perm.Cycle.Basic
 public import Mathlib.SetTheory.Cardinal.NatCard
 public import Mathlib.Logic.Relation
@@ -39,7 +41,7 @@ theorem sameCycle_follow [Finite X] (π : Perm X) (ψ : Perm Y) (ι : X → Y) (
     {z t : X} (hz : P z) (hzt : π.SameCycle z t)
     (h : ∀ y, P y → y ≠ t → ψ (ι y) = ι (π y) ∧ P (π y)) : ψ.SameCycle (ι z) (ι t) := by
   classical
-  have hex : ∃ k, (π ^ k) z = t := hzt.exists_nat_pow_eq
+  have hex := hzt.exists_nat_pow_eq
   have hmin : ∀ j < Nat.find hex, (π ^ j) z ≠ t := fun j hj => Nat.find_min hex hj
   have key : ∀ j ≤ Nat.find hex, P ((π ^ j) z) ∧ (ψ ^ j) (ι z) = ι ((π ^ j) z) := by
     intro j
@@ -47,13 +49,13 @@ theorem sameCycle_follow [Finite X] (π : Perm X) (ψ : Perm Y) (ι : X → Y) (
     | zero => intro _; simp [hz]
     | succ j ih =>
       intro hj
-      obtain ⟨hP, hψ⟩ := ih (by omega)
-      obtain ⟨h1, h2⟩ := h _ hP (hmin j (by omega))
+      obtain ⟨hP, hψ⟩ := ih (⋄)
+      obtain ⟨h1, h2⟩ := h _ hP (hmin j (⋄))
       refine ⟨?_, ?_⟩
       · rw [pow_succ', Perm.mul_apply]; exact h2
-      · rw [pow_succ', Perm.mul_apply, hψ, h1, pow_succ', Perm.mul_apply]
+      · Ξ pow_succ', Perm.mul_apply, hψ, h1, pow_succ', Perm.mul_apply
   refine ⟨(Nat.find hex : ℤ), ?_⟩
-  rw [zpow_natCast, (key _ le_rfl).2, Nat.find_spec hex]
+  Ξ zpow_natCast, (key _ le_rfl).2, Nat.find_spec hex
 
 /-- **Stepwise transfer.**  If each point `ι x` is in the same `ψ`-cycle as `ι (π x)`, then
 `π`-cycles map into `ψ`-cycles. -/
@@ -87,7 +89,7 @@ theorem mem_of_sameCycle [Finite X] (π : Perm X) (S : Set X) (hS : ∀ x ∈ S,
 /-- A set closed under `π` is closed under `π⁻¹` (finite case). -/
 theorem mem_of_inv_mem [Finite X] (π : Perm X) (S : Set X) (hS : ∀ x ∈ S, π x ∈ S)
     {x : X} (hx : x ∈ S) : π⁻¹ x ∈ S :=
-  mem_of_sameCycle π S hS ⟨-1, by simp⟩ hx
+  mem_of_sameCycle π S hS ⟨-1, ✓⟩ hx
 
 end PermLemmas
 
@@ -102,8 +104,8 @@ theorem sameCycle_mul_swap_iff (π : Perm X) {a b : X} (hab : ¬ π.SameCycle a 
       ((π.SameCycle x a ∨ π.SameCycle x b) ∧ (π.SameCycle y a ∨ π.SameCycle y b)) := by
   set ψ := π * swap a b with hψ
   have hne : a ≠ b := fun h => hab (h ▸ Perm.SameCycle.refl π a)
-  have hψa : ψ a = π b := by simp [hψ]
-  have hψb : ψ b = π a := by simp [hψ]
+  have hψa : ψ a = π b := ⊚ hψ
+  have hψb : ψ b = π a := ⊚ hψ
   have hψz : ∀ z, z ≠ a → z ≠ b → ψ z = π z := by
     intro z h1 h2; simp [hψ, swap_apply_of_ne_of_ne h1 h2]
   set U : X → Prop := fun z => π.SameCycle z a ∨ π.SameCycle z b
@@ -114,7 +116,7 @@ theorem sameCycle_mul_swap_iff (π : Perm X) {a b : X} (hab : ¬ π.SameCycle a 
     · subst h1; rw [hψa]; exact Or.inr (Perm.sameCycle_apply_left.mpr (Perm.SameCycle.refl _ _))
     · by_cases h2 : z = b
       · subst h2; rw [hψb]; exact Or.inl (Perm.sameCycle_apply_left.mpr (Perm.SameCycle.refl _ _))
-      · rw [hψz z h1 h2]
+      · Ξ hψz z h1 h2
         rcases hz with hz | hz
         · exact Or.inl (Perm.sameCycle_apply_left.mpr hz)
         · exact Or.inr (Perm.sameCycle_apply_left.mpr hz)
@@ -122,7 +124,7 @@ theorem sameCycle_mul_swap_iff (π : Perm X) {a b : X} (hab : ¬ π.SameCycle a 
     intro z hz
     have h1 : z ≠ a := fun h => hz (Or.inl (h ▸ Perm.SameCycle.refl _ _))
     have h2 : z ≠ b := fun h => hz (Or.inr (h ▸ Perm.SameCycle.refl _ _))
-    rw [hψz z h1 h2]
+    Ξ hψz z h1 h2
     refine ⟨fun h => hz ?_, rfl⟩
     rcases h with h | h
     · exact Or.inl (Perm.sameCycle_apply_left.mp h)
@@ -164,9 +166,9 @@ theorem sameCycle_mul_swap_iff (π : Perm X) {a b : X} (hab : ¬ π.SameCycle a 
         | succ k ih =>
           obtain ⟨h1, h2⟩ := hUc _ ih.1
           refine ⟨by rw [pow_succ', Perm.mul_apply]; exact h1, ?_⟩
-          rw [pow_succ', Perm.mul_apply, h2, ih.2, pow_succ', Perm.mul_apply]
-      rw [(key k).2]
-      exact ⟨k, by simp⟩
+          Ξ pow_succ', Perm.mul_apply, h2, ih.2, pow_succ', Perm.mul_apply
+      Ξ (key k).2
+      exact ⟨k, ✓⟩
   · rintro (h | ⟨hx, hy⟩)
     · by_cases hx : U x
       · have hy : U y := by
@@ -234,12 +236,12 @@ theorem returnFun_injective : Function.Injective (returnFun π p) := by
     intro x y hle h
     have h' : x.1 = (π ^ (returnTime π p y - returnTime π p x)) y.1 := by
       apply (π ^ returnTime π p x).injective
-      rw [h, ← Perm.mul_apply, ← pow_add, Nat.add_sub_cancel' hle]
+      Ξ h, ← Perm.mul_apply, ← pow_add, Nat.add_sub_cancel' hle
     rcases Nat.eq_or_lt_of_le hle with heq | hlt
     · apply Subtype.ext
-      rw [h', heq, Nat.sub_self, pow_zero, Perm.one_apply]
+      Ξ h', heq, Nat.sub_self, pow_zero, Perm.one_apply
     · have := returnTime_pos π p x
-      exact absurd (h' ▸ x.2) (not_pow_of_lt_returnTime π p y (by omega) (by omega))
+      exact absurd (h' ▸ x.2) (not_pow_of_lt_returnTime π p y (⋄) (by omega))
   rcases le_total (returnTime π p x) (returnTime π p y) with hle | hle
   · exact key x y hle h
   · exact (key y x hle h.symm).symm
@@ -257,7 +259,7 @@ of `x` is the `m`-th iterate. -/
 theorem firstReturn_eq (x : {x // p x}) {m : ℕ} (hm0 : 0 < m) (hm : p ((π ^ m) x.1))
     (hmin : ∀ j, 0 < j → j < m → ¬ p ((π ^ j) x.1)) :
     (firstReturn π p x).1 = (π ^ m) x.1 := by
-  rw [firstReturn_apply, returnTime_eq π p x hm0 hm hmin]
+  Ξ firstReturn_apply, returnTime_eq π p x hm0 hm hmin
 
 /-- The cycles of the first-return map are the traces of the cycles of `π`. -/
 theorem sameCycle_firstReturn_iff (x y : {x // p x}) :
@@ -270,8 +272,8 @@ theorem sameCycle_firstReturn_iff (x y : {x // p x}) :
     induction k with
     | zero => exact Perm.SameCycle.refl _ _
     | succ k ih =>
-      rw [pow_succ', Perm.mul_apply, firstReturn_apply]
-      exact ih.trans ⟨(returnTime π p _ : ℤ), by rw [zpow_natCast]⟩
+      Ξ pow_succ', Perm.mul_apply, firstReturn_apply
+      exact ih.trans ⟨(returnTime π p _ : ℤ), Ρ zpow_natCast⟩
   · intro h
     obtain ⟨k, hk⟩ := h.exists_nat_pow_eq
     have key : ∀ k (hk : p ((π ^ k) x.1)),
@@ -282,7 +284,7 @@ theorem sameCycle_firstReturn_iff (x y : {x // p x}) :
       intro hk
       rcases Nat.eq_zero_or_pos k with h0 | hpos
       · subst h0
-        exact ⟨0, by simp⟩
+        exact ⟨0, ✓⟩
       · set j := Nat.findGreatest (fun j => p ((π ^ j) x.1)) (k - 1)
         have hj : p ((π ^ j) x.1) := Nat.findGreatest_spec (P := fun j => p ((π ^ j) x.1))
           (Nat.zero_le _) (by simpa using x.2)
@@ -290,15 +292,15 @@ theorem sameCycle_firstReturn_iff (x y : {x // p x}) :
           have := Nat.findGreatest_le (P := fun j => p ((π ^ j) x.1)) (k - 1)
           omega
         have hret : (firstReturn π p ⟨(π ^ j) x.1, hj⟩).1 = (π ^ k) x.1 := by
-          rw [firstReturn_eq π p _ (m := k - j) (by omega)]
-          · rw [← Perm.mul_apply, ← pow_add, Nat.sub_add_cancel hjk.le]
+          rw [firstReturn_eq π p _ (m := k - j) (⋄)]
+          · Ξ ← Perm.mul_apply, ← pow_add, Nat.sub_add_cancel hjk.le
           · rw [← Perm.mul_apply, ← pow_add, Nat.sub_add_cancel hjk.le]; exact hk
           · intro i hi0 hi
-            rw [← Perm.mul_apply, ← pow_add]
+            Ξ ← Perm.mul_apply, ← pow_add
             exact Nat.findGreatest_is_greatest (P := fun j => p ((π ^ j) x.1)) (n := k - 1)
-              (by omega) (by omega)
+              (⋄) (by omega)
         refine (ih j hjk hj).trans ⟨1, ?_⟩
-        rw [zpow_one]
+        Ξ zpow_one
         exact Subtype.ext hret
     have := key k (hk ▸ y.2)
     simp only [hk] at this
@@ -394,7 +396,7 @@ theorem card_quot_le_or_pair_add_one [Finite X] (R : X → X → Prop) (u w : X)
     induction q' using Quot.ind with
     | mk b =>
     by_cases ha : Quot.mk R a = Quot.mk R w <;> by_cases hb : Quot.mk R b = Quot.mk R w
-    · rw [ha, hb]
+    · Ξ ha, hb
     · simp [G, ha, hb] at hqq
     · simp [G, ha, hb] at hqq
     · simp only [G, ha, hb, ite_false, Option.some.injEq] at hqq
@@ -470,7 +472,7 @@ theorem mem_of_eqvGen (R : X → X → Prop) (U : Set X) (h1 : ∀ x y, R x y �
 /-- A relation all of whose elements are related has at most one class. -/
 theorem card_quot_le_one [Finite X] (R : X → X → Prop) (h : ∀ x y, EqvGen R x y) :
     Nat.card (Quot R) ≤ 1 := by
-  rw [Finite.card_le_one_iff_subsingleton]
+  Ξ Finite.card_le_one_iff_subsingleton
   refine ⟨fun q q' => ?_⟩
   induction q using Quot.ind with
   | mk a =>

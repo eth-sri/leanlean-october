@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTIntKey
 
 /-!
@@ -44,10 +46,10 @@ theorem Bik_band (r : ℕ) (h : Bik r = true) : bandOf r ∈ primBands ∧ r ≠
     refine ⟨?_, this.2⟩
     have h1 := this.1
     simp only [Finset.mem_insert, Finset.mem_singleton] at h1
-    simp only [primBands, Finset.mem_insert, Finset.mem_singleton]
+    ϴ primBands, Finset.mem_insert, Finset.mem_singleton
     tauto
   all_goals first
-    | (subst h; exact ⟨by simp [primBands, bandOf, bLocate], by unfold ALLOC; omega⟩)
+    | (subst h; exact ⟨⊚ primBands, bandOf, bLocate, by unfold ALLOC; omega⟩)
     | exact ⟨by simp only [primBands, bandOf, bLocate, bSign, Finset.mem_insert,
         Finset.mem_singleton]; omega, by unfold ALLOC; omega⟩
 
@@ -58,7 +60,7 @@ theorem gKey_ok : KeyOK gKey 11010 := by
   intro a b d e ha hb hd he P W M N c₀ c hE hI hx hy hroom
   have h21 := hI.h21
   have h23 := hI.h23
-  have i0 := hI.hin 83000 (by norm_num) (by norm_num)
+  have i0 := hI.hin 83000 (⊛) (⊛)
   unfold InR at ha hb hd he
   rcases hE.kind with ⟨h0, C, hM⟩ | ⟨h1, hMi, hbit⟩
   · -- a chain model
@@ -69,10 +71,10 @@ theorem gKey_ok : KeyOK gKey 11010 := by
       subst hM'; exact ⟨hy.1, hy.2.1, hy.2.2 C' rfl⟩
     obtain ⟨c', k, ex, hk, b1, b2, hf⟩ := keyCmp_exec (by unfold InR; omega) (by unfold InR; omega)
       (by unfold InR; omega) (by unfold InR; omega) hI.hw hE.hG hE.hW hwf hC hI.h22 hx' hy'
-      (hE.hWm C' hM') (by omega)
+      (hE.hWm C' hM') (⋄)
     obtain ⟨hI', hrf, h8⟩ := hI.prim ex.wb_right hf
-    refine ⟨c', k + 1, .ifLtN_true (by rw [h21, h23, h0]; omega) ex, by omega, ?_, ?_,
-      hI', hrf.mono subset_rfl (by omega), h8⟩
+    refine ⟨c', k + 1, .ifLtN_true (by rw [h21, h23, h0]; omega) ex, ⋄, ?_, ?_,
+      hI', hrf.mono subset_rfl (⋄), h8⟩
     · rw [hM']; exact b1
     · rw [hM']; exact b2
   · -- the interior model
@@ -81,7 +83,7 @@ theorem gKey_ok : KeyOK gKey 11010 := by
     obtain ⟨hMD, hwf⟩ := hI.modelDesc hE
     have hD : c.nreg 83000 + 1 ≤ W := by have := hwf.1; have := hI.hw.1 ALLOC; omega
     have hmd : c.nmem (c.nreg 83000 + 1) = c₀.nmem (c₀.nreg 83000 + 1) := by
-      rw [i0, hI.hm _ (by have := hE.hwfMD.1; omega)]
+      Ξ i0, hI.hm _ (by have := hE.hwfMD.1; omega)
     obtain ⟨c', k, ex, hk, b1, b2⟩ := iKey_exec (P := P) (a := a) (b := b) (d := d) (e := e)
       hE.hG (by have := hE.hW; unfold hostWords at this; omega) hI.hw hbit hmd hD
       (by intro r hr; simp only [List.mem_cons, List.not_mem_nil, or_false] at hr
@@ -89,8 +91,8 @@ theorem gKey_ok : KeyOK gKey 11010 := by
       hx.2.1 hy.2.1 (by rw [← hn]; exact hx.1) (by rw [← hn]; exact hy.1)
     have hfr : FrameB Bik c c' := exec_frameB ex (wr_iKey a b d e)
     obtain ⟨hI', hrf, h8⟩ := hI.prim ex.wb_right (frame_of_frameB hfr Bik_band k)
-    refine ⟨c', k + 2, .ifLtN_false (by rw [h21, h23, h1]; omega) ex, by omega, b1, b2,
-      hI', hrf.mono subset_rfl (by omega), h8⟩
+    refine ⟨c', k + 2, .ifLtN_false (by rw [h21, h23, h1]; omega) ex, ⋄, b1, b2,
+      hI', hrf.mono subset_rfl (⋄), h8⟩
 
 end
 

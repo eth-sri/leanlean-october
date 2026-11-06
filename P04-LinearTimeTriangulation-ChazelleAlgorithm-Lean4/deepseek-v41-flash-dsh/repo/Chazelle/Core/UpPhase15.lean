@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase14
 
 /-!
@@ -56,28 +58,28 @@ theorem rowBody_exec {c : Config} (hw : WordsBounded W c) {j p x Al : ℕ}
       (∀ r, ¬ RowBRG r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   have hAl : ALLOC = 9999 := rfl
-  rw [hAl] at hA ⊢
+  Ξ' hAl at hA ⊢
   unfold rowBody
   exec_block
   all_goals try (config_simp; (try simp only [h40, h41, h42, hA, h20, h21, h22,
     Machine.upd_apply]); (try split_ifs) <;> omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun a h1 => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [h40, h20]
-  · config_simp; simp only [h41, h22]
-  · config_simp; simp only [h42, h22, h41, h20, h21, Machine.upd_apply]
+  · config_simp; ϴ h40, h20
+  · config_simp; ϴ h41, h22
+  · config_simp; ϴ h42, h22, h41, h20, h21, Machine.upd_apply
     split_ifs <;> first | omega
-  · config_simp; simp only [hA, h22]
-  · config_simp; simp only [h42, h22, h41, h20, h21, Machine.upd_apply]
+  · config_simp; ϴ hA, h22
+  · config_simp; ϴ h42, h22, h41, h20, h21, Machine.upd_apply
     split_ifs <;> first | omega
-  · config_simp; simp only [h42, h22, h41, h20, h21, Machine.upd_apply]
+  · config_simp; ϴ h42, h22, h41, h20, h21, Machine.upd_apply
     split_ifs <;> first | omega
-  · config_simp; simp only [h42, h22, h41, h20, h21, Machine.upd_apply]
+  · config_simp; ϴ h42, h22, h41, h20, h21, Machine.upd_apply
     split_ifs <;> first | omega
-  · config_simp; simp only [h42, h22, h41, h20, h21, Machine.upd_apply]
+  · config_simp; ϴ h42, h22, h41, h20, h21, Machine.upd_apply
     split_ifs <;> first | omega
   · unfold RowBRG at h1
     simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 32000000 in
 /-- **The row of grade `g`**: entry `i` at `R' + 3 i` holds the entry of cell `i`. -/

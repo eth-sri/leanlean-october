@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Ears.Basic
 public import Chazelle.Ears.Test
 public import Chazelle.Ears.Exists
@@ -49,11 +51,11 @@ open Chazelle.Ears
 /-- `getD` at an in-range index is `getElem`. -/
 theorem getD_eq_getElem_of_lt {α : Type} (l : List α) (d : α) {i : ℕ} (hi : i < l.length) :
     l.getD i d = l[i] := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+  Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some
 
 /-- `(range n).getD i 0 = i` for `i < n`. -/
 theorem getD_range {n i : ℕ} (hi : i < n) : (List.range n).getD i 0 = i := by
-  rw [getD_eq_getElem_of_lt _ _ (by simpa using hi), List.getElem_range]
+  Ξ getD_eq_getElem_of_lt _ _ (by simpa using hi), List.getElem_range
 
 /-- Two polygons with the same vertex list are equal. -/
 theorem polygon_ext {P Q : Polygon} (h : P.vertices = Q.vertices) : P = Q := by
@@ -71,40 +73,40 @@ theorem vertices_subPoly (l : List ℕ) : (subPoly P l).vertices = l.map P.vtx :
 
 /-- `subPoly P l` has `l.length` vertices. -/
 @[simp] theorem n_subPoly (l : List ℕ) : (subPoly P l).n = l.length := by
-  simp [subPoly, Polygon.n]
+  Θ subPoly, Polygon.n
 
 /-- Vertex `j < l.length` of `subPoly P l` is `P.vtx l[j]`. -/
 theorem vtx_subPoly (l : List ℕ) {j : ℕ} (hj : j < l.length) :
     (subPoly P l).vtx j = P.vtx l[j] := by
-  simp [subPoly, Polygon.vtx, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj]
+  Θ subPoly, Polygon.vtx, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj
 
 /-- Vertex `j < l.length` of `subPoly P l` is `P.vtx (l.getD j 0)`. -/
 theorem vtx_subPoly_getD (l : List ℕ) {j : ℕ} (hj : j < l.length) :
     (subPoly P l).vtx j = P.vtx (l.getD j 0) := by
-  rw [vtx_subPoly P l hj, getD_eq_getElem_of_lt l 0 hj]
+  Ξ vtx_subPoly P l hj, getD_eq_getElem_of_lt l 0 hj
 
 /-- `subPoly P (List.range P.n) = P`. -/
 theorem subPoly_range : subPoly P (List.range P.n) = P := by
   apply polygon_ext
-  rw [vertices_subPoly]
+  Ξ vertices_subPoly
   apply List.ext_getElem
-  · simp [Polygon.n]
+  · Θ Polygon.n
   · intro i h1 h2
-    simp only [List.getElem_map, List.getElem_range]
+    ϴ List.getElem_map, List.getElem_range
     exact getD_eq_getElem_of_lt _ _ h2
 
 /-- Rotating the index list rotates the sub-polygon. -/
 theorem subPoly_rotate (l : List ℕ) (r : ℕ) :
     subPoly P (l.rotate r) = (subPoly P l).rotate r := by
   apply polygon_ext
-  rw [vertices_subPoly]
+  Ξ vertices_subPoly
   unfold Polygon.rotate
   apply List.ext_getElem
   · simp
   · intro i h1 h2
     have hi : i < l.length := by simpa using h1
-    simp only [List.getElem_map, List.getElem_rotate, List.getElem_range, n_subPoly]
-    rw [vtx_subPoly P l (Nat.mod_lt _ (by omega)), Nat.add_comm r i]
+    ϴ List.getElem_map, List.getElem_rotate, List.getElem_range, n_subPoly
+    rw [vtx_subPoly P l (Nat.mod_lt _ (⋄)), Nat.add_comm r i]
 
 /-! ### Clipping a position -/
 
@@ -122,7 +124,7 @@ theorem clipList_eq_rotate_eraseIdx (l : List ℕ) {p : ℕ} (hp : 1 ≤ p) :
 theorem length_clipList (l : List ℕ) (p : ℕ) (h2 : 2 ≤ l.length) :
     (clipList l p).length = l.length - 1 := by
   unfold clipList
-  rw [List.length_eraseIdx_of_lt (by rw [List.length_rotate]; omega), List.length_rotate]
+  Ξ List.length_eraseIdx_of_lt (by rw [List.length_rotate]; omega), List.length_rotate
 
 /-- The entries of the clipped list: position `0` is the predecessor `l[(p + m - 1) % m]`,
 position `k ≥ 1` is `l[(p + k) % m]`. -/
@@ -147,7 +149,7 @@ theorem getD_clipList (l : List ℕ) (p : ℕ) (h2 : 2 ≤ l.length) {k : ℕ}
     (hk : k < l.length - 1) (d : ℕ) :
     (clipList l p).getD k d =
       if k = 0 then l.getD ((p + l.length - 1) % l.length) d else l.getD ((p + k) % l.length) d := by
-  rw [List.getD_eq_getElem?_getD, getElem?_clipList l p h2 hk]
+  Ξ List.getD_eq_getElem?_getD, getElem?_clipList l p h2 hk
   split_ifs <;> rw [List.getD_eq_getElem?_getD]
 
 /-- The clipped list, rotated by one (so that it starts at the successor `l[(p + 1) % m]`),
@@ -181,9 +183,9 @@ theorem subPoly_clipList_rotate (l : List ℕ) (p : ℕ) (h3 : 3 ≤ l.length) (
 /-- The sub-polygon of the clipped list is the clipped polygon rotated by `m - 2`. -/
 theorem subPoly_clipList_eq (l : List ℕ) (p : ℕ) (h3 : 3 ≤ l.length) (hp : p < l.length) :
     subPoly P (clipList l p) = (clip (subPoly P l) p).rotate (l.length - 2) := by
-  rw [← subPoly_clipList_rotate P l p h3 hp, ← subPoly_rotate, List.rotate_rotate]
+  Ξ ← subPoly_clipList_rotate P l p h3 hp, ← subPoly_rotate, List.rotate_rotate
   congr 1
-  rw [show 1 + (l.length - 2) = (clipList l p).length by rw [length_clipList l p (by omega)]; omega,
+  rw [show 1 + (l.length - 2) = (clipList l p).length by rw [length_clipList l p (⋄)]; omega,
     List.rotate_length]
 
 /-! ### Relabelling triangles -/
@@ -196,8 +198,8 @@ def relabelList (l : List ℕ) (t : Polygon.Triangle) : Polygon.Triangle :=
 theorem relabelList_range {n : ℕ} {t : Polygon.Triangle} (h : t.1 < n ∧ t.2.1 < n ∧ t.2.2 < n) :
     relabelList (List.range n) t = t := by
   obtain ⟨t1, t2, t3⟩ := t
-  simp only [relabelList]
-  rw [getD_range h.1, getD_range h.2.1, getD_range h.2.2]
+  ϴ relabelList
+  Ξ getD_range h.1, getD_range h.2.1, getD_range h.2.2
 
 /-- The position map from `clipList l p` (length `m - 1`) to `l` (length `m`), as a triangle
 relabelling: rotate by `m - 2` (undoing the rotation of `subPoly_clipList_eq`) then embed the
@@ -225,8 +227,8 @@ theorem relabelList_clipRelabel (l : List ℕ) (p : ℕ) (h3 : 3 ≤ l.length) {
     (ht : t.1 < l.length - 1 ∧ t.2.1 < l.length - 1 ∧ t.2.2 < l.length - 1) :
     relabelList l (clipRelabel l.length p t) = relabelList (clipList l p) t := by
   obtain ⟨t1, t2, t3⟩ := t
-  simp only [relabelList, clipRelabel, relabel_fst, relabel_snd_fst, relabel_snd_snd]
-  rw [getD_clipList_eq l p h3 ht.1, getD_clipList_eq l p h3 ht.2.1, getD_clipList_eq l p h3 ht.2.2]
+  ϴ relabelList, clipRelabel, relabel_fst, relabel_snd_fst, relabel_snd_snd
+  Ξ getD_clipList_eq l p h3 ht.1, getD_clipList_eq l p h3 ht.2.1, getD_clipList_eq l p h3 ht.2.2
 
 /-! ### Weak triangulations and rotation -/
 
@@ -246,15 +248,15 @@ theorem weakTriangulates_rotate (s : ℕ) {T : List Polygon.Triangle}
     obtain ⟨t', ht', rfl⟩ := ht
     exact validTriangle_rotate P s (hvalid t' ht')
   · rw [List.length_map, ← n_rotate P s]; exact hcount
-  · rw [← filled_rotate P s, ← hunion]
+  · Ξ ← filled_rotate P s, ← hunion
     ext p
-    simp only [Set.mem_ofPred_eq, List.mem_map]
+    ϴ Set.mem_ofPred_eq, List.mem_map
     constructor
     · rintro ⟨_, ⟨t, ht, rfl⟩, hp⟩
       exact ⟨t, ht, by rw [triSet_rotate P s (hidx t ht)]; exact hp⟩
     · rintro ⟨t, ht, hp⟩
       exact ⟨_, ⟨t, ht, rfl⟩, by rw [← triSet_rotate P s (hidx t ht)]; exact hp⟩
-  · rw [List.pairwise_map]
+  · Ξ List.pairwise_map
     refine hdisj.imp_of_mem ?_
     intro a b ha hb h
     rw [triSet_rotate P s (hidx a ha), triSet_rotate P s (hidx b hb)] at h
@@ -262,10 +264,10 @@ theorem weakTriangulates_rotate (s : ℕ) {T : List Polygon.Triangle}
   · intro t ht i hi hmem
     rw [List.mem_map] at ht
     obtain ⟨t', ht', rfl⟩ := ht
-    obtain ⟨j, hj, hji⟩ := exists_rot_index (by omega) s i hi
-    have e1 : P.vtx i = (P.rotate s).vtx j := by rw [vtx_rotate P s hj, hji]
+    obtain ⟨j, hj, hji⟩ := exists_rot_index (⋄) s i hi
+    have e1 : P.vtx i = (P.rotate s).vtx j := Ρ vtx_rotate P s hj, hji
     rw [e1, ← triSet_rotate P s (hidx t' ht')] at hmem
-    rw [e1, ← triVertices_rotate P s (hidx t' ht')]
+    Ξ e1, ← triVertices_rotate P s (hidx t' ht')
     exact hvert t' ht' j (by rw [n_rotate]; exact hj) hmem
 
 /-! ### The clipping step for sub-polygons -/
@@ -292,7 +294,7 @@ theorem weakTriangulates_clipList (l : List ℕ) (p : ℕ) (h3 : 3 ≤ l.length)
 theorem simple_subPoly_clipList (l : List ℕ) (p : ℕ) (h3 : 3 ≤ l.length) (hp : p < l.length)
     (hQ : (subPoly P l).Simple) (he : IsEar (subPoly P l) p) :
     (subPoly P (clipList l p)).Simple := by
-  rw [subPoly_clipList_eq P l p h3 hp]
+  Ξ subPoly_clipList_eq P l p h3 hp
   exact simple_rotate _ _ (simple_clip _ _ hQ he)
 
 end

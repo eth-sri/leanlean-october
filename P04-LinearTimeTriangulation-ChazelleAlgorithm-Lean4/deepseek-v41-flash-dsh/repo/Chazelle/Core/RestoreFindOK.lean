@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFCostB
 public import Chazelle.Core.RestoreFComplete3
 public import Chazelle.Core.RestoreDrvPos
@@ -56,7 +58,7 @@ theorem find_cost {t f g h a d k : ℕ} (hf : 1 ≤ f) (hg : 1 ≤ g) (hk : k �
       ((10 ^ 9 * ((t * (f + 1) + 20) * (h + a + 1)) + 22) * g + 2)) + 3) * k + 4) + 2) * k + 2)) ≤
       10 ^ 10 * (t + 21) * (d + 2) ^ 2 * f * g * (h + a + 1) := by
   set S := h + a + 1 with hS
-  have hS1 : 1 ≤ S := by omega
+  have hS1 : 1 ≤ S := ⋄
   set T := t * (f + 1) + 20 with hT
   -- the piece bound
   have hTf : T ≤ 2 * (t + 20) * f := by
@@ -67,13 +69,13 @@ theorem find_cost {t f g h a d k : ℕ} (hf : 1 ≤ f) (hg : 1 ≤ g) (hk : k �
   -- the pair bound
   set P := 10 ^ 9 * 2 * (t + 21) * f * S with hP
   have hP1 : 1 ≤ P := by
-    rw [hP]; have : 1 ≤ (t + 21) * f * S := Nat.one_le_iff_ne_zero.2 (by positivity)
+    rw [hP]; have : 1 ≤ (t + 21) * f * S := Nat.one_le_iff_ne_zero.2 (⟢)
     nlinarith
   have hpair : 70 + 11040 + 11040 + 7 + g + 3 + ((10 ^ 9 * (T * S) + 22) * g + 2) + 3 ≤
       (P + 22200) * g := by
     have : (10 ^ 9 * (T * S) + 22) * g ≤ P * g := Nat.mul_le_mul_right _ hKp
     nlinarith
-  have hk1 : k + 1 ≤ d + 2 := by omega
+  have hk1 : k + 1 ≤ d + 2 := ⋄
   -- the loops
   have hloop : 30 + (17 + (((((70 + 11040 + 11040 + 7 + g + 3 +
       ((10 ^ 9 * (T * S) + 22) * g + 2)) + 3) * k + 4) + 2) * k + 2)) ≤
@@ -81,21 +83,21 @@ theorem find_cost {t f g h a d k : ℕ} (hf : 1 ≤ f) (hg : 1 ≤ g) (hk : k �
     generalize hX : 70 + 11040 + 11040 + 7 + g + 3 + ((10 ^ 9 * (T * S) + 22) * g + 2) = X at hpair ⊢
     set Q := (P + 22200) * g with hQ
     have h1 : (X + 3) * k ≤ Q * k := Nat.mul_le_mul_right _ hpair
-    have h2 : ((X + 3) * k + 4 + 2) * k ≤ (Q * k + 6) * k := Nat.mul_le_mul_right _ (by omega)
+    have h2 : ((X + 3) * k + 4 + 2) * k ≤ (Q * k + 6) * k := Nat.mul_le_mul_right _ (⋄)
     have h3 : (Q * k + 6) * k ≤ (Q * (d + 1) + 6) * (d + 1) :=
       Nat.mul_le_mul (by have := Nat.mul_le_mul_left Q hk; omega) hk
     have h4 : (Q * (d + 1) + 6) * (d + 1) + 49 ≤ (P + 22300) * g * (d + 2) ^ 2 := by
       have e : (P + 22300) * g * (d + 2) ^ 2 = Q * (d + 2) ^ 2 + 100 * g * (d + 2) ^ 2 := by
         rw [hQ]; ring
-      rw [e]
+      Ξ e
       have : Q * (d + 1) * (d + 1) ≤ Q * (d + 2) ^ 2 := by
-        rw [mul_assoc, ← pow_two]; exact Nat.mul_le_mul_left _ (Nat.pow_le_pow_left (by omega) 2)
+        rw [mul_assoc, ← pow_two]; exact Nat.mul_le_mul_left _ (Nat.pow_le_pow_left (⋄) 2)
       nlinarith
     omega
   calc _ ≤ (P + 22300) * g * (d + 2) ^ 2 := hloop
     _ ≤ 10 ^ 10 * (t + 21) * (d + 2) ^ 2 * f * g * (h + a + 1) := by
       have : P + 22300 ≤ 10 ^ 10 * (t + 21) * f * S := by
-        rw [hP]; have : 1 ≤ (t + 21) * f * S := Nat.one_le_iff_ne_zero.2 (by positivity)
+        rw [hP]; have : 1 ≤ (t + 21) * f * S := Nat.one_le_iff_ne_zero.2 (⟢)
         nlinarith
       calc (P + 22300) * g * (d + 2) ^ 2 ≤ 10 ^ 10 * (t + 21) * f * S * g * (d + 2) ^ 2 := by
             gcongr

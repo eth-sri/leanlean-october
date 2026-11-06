@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecMerge
 
 /-!
@@ -110,7 +112,7 @@ theorem whole_hitParam_eq_min (J : Merge.Junction) {z : Point} (hz : z.2 ≤ J.w
     {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     J.whole.hitParam z σ =
       min (rayHit J.whole.radius J.left.set z σ) (rayHit J.whole.radius J.right.set z σ) := by
-  rw [hitParam_eq_rayHit _ hz, J.whole_set, rayHit_union _ _ _ _ hσ]
+  Ξ hitParam_eq_rayHit _ hz, J.whole_set, rayHit_union _ _ _ _ hσ
 
 /-- Below the top of `C₁`, its slit-free first hit is the first hit in the model of `C₁`. -/
 theorem left_hitParam_eq (J : Merge.Junction) {z : Point} (hz : z.2 ≤ J.left.top.2) (σ : ℝ) :
@@ -129,7 +131,7 @@ theorem rayHit_eq_empty_of_above (C : Chain) {z : Point} (hz : C.top.2 < z.2) (r
   unfold rayHit
   congr 1
   ext t
-  simp only [rayHitSet, mem_ofPred_eq, mem_empty_iff_false, or_false]
+  ϴ rayHitSet, mem_ofPred_eq, mem_empty_iff_false, or_false
   constructor
   · rintro ⟨ht, h | h⟩
     · exact ⟨ht, h⟩

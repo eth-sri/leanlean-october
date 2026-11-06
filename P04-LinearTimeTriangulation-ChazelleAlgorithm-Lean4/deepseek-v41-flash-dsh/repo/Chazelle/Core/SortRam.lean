@@ -164,9 +164,9 @@ theorem whileLtN_potential_lb {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt}
   | _ n ih =>
     by_cases ht : c.nreg a < c.nreg b
     · obtain ⟨c₁, k₁, hb, hI₁, hΦ, hψ⟩ := hbody c hc ht
-      obtain ⟨c', k₂, hl, hI', ht', hk₂, hψ'⟩ := ih (Φ c₁) (by omega) hI₁ rfl
-      exact ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht', by omega, by omega⟩
-    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, by omega, by omega⟩
+      obtain ⟨c', k₂, hl, hI', ht', hk₂, hψ'⟩ := ih (Φ c₁) (⋄) hI₁ rfl
+      exact ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht', ⋄, ⋄⟩
+    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, ⋄, ⋄⟩
 
 /-! ## Sort-local steps -/
 
@@ -219,7 +219,7 @@ theorem takeL_exec (c : Config) (hc : WordsBounded W c) (h1 : c.nreg 30007 + c.n
   · config_simp; exact h2
   · config_simp; exact h3
   · refine ⟨rfl, by config_simp, by config_simp, fun r h1 h2 h3 => ?_, rfl, rfl, rfl⟩
-    simp [h1, h2, h3]
+    Θ h1, h2, h3
 
 /-- `takeR`: `dst[k] := src[j]`, `j := j + 1` (scratch `sr 16`, `sr 18`). -/
 theorem takeR_exec (c : Config) (hc : WordsBounded W c) (h1 : c.nreg 30007 + c.nreg 30014 ≤ W)
@@ -235,7 +235,7 @@ theorem takeR_exec (c : Config) (hc : WordsBounded W c) (h1 : c.nreg 30007 + c.n
   · config_simp; exact h2
   · config_simp; exact h3
   · refine ⟨rfl, by config_simp, by config_simp, fun r h1 h2 h3 => ?_, rfl, rfl, rfl⟩
-    simp [h1, h2, h3]
+    Θ h1, h2, h3
 
 /-- `cmpLoad`: `sr 0 := src[i]`, `sr 1 := src[j]` (scratch `sr 16`). -/
 theorem cmpLoad_exec (c : Config) (hc : WordsBounded W c) (h1 : c.nreg 30007 + c.nreg 30013 ≤ W)
@@ -250,7 +250,7 @@ theorem cmpLoad_exec (c : Config) (hc : WordsBounded W c) (h1 : c.nreg 30007 + c
   · exact h1
   · config_simp; exact h2
   · refine ⟨rfl, by config_simp, by config_simp, fun r h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
-    simp [h1, h2, h3]
+    Θ h1, h2, h3
 
 /-- `addN` with its effect spelled out. -/
 theorem addN_char {c : Config} (hc : WordsBounded W c) (r x y : ℕ) (h : c.nreg x + c.nreg y ≤ W) :
@@ -277,21 +277,21 @@ theorem clamp_exec {c : Config} (hc : WordsBounded W c) (r x : ℕ) (hr : r ≠ 
       c'.nreg = upd c.nreg r (min (c.nreg x + c.nreg 30009) (c.nreg 30004)) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   obtain ⟨c₁, e₁, n₁, m₁, rr₁, rm₁, o₁⟩ := addN_char (P := P) hc r x 30009 h
-  have hK : c₁.nreg 30004 = c.nreg 30004 := by rw [n₁, Machine.upd_other _ _ _ (Ne.symm hr)]
-  have hR : c₁.nreg r = c.nreg x + c.nreg 30009 := by rw [n₁, Machine.upd_same]
+  have hK : c₁.nreg 30004 = c.nreg 30004 := Ρ n₁, Machine.upd_other _ _ _ (Ne.symm hr)
+  have hR : c₁.nreg r = c.nreg x + c.nreg 30009 := Ρ n₁, Machine.upd_same
   by_cases ht : c₁.nreg 30004 < c₁.nreg r
   · obtain ⟨c₂, e₂, n₂, m₂, rr₂, rm₂, o₂⟩ := copyN_char (P := P) e₁.wb_right r 30004
     refine ⟨c₂, _, .seq e₁ (.ifLtN_true ht e₂), le_refl _, ?_, m₂.trans m₁, rr₂.trans rr₁,
       rm₂.trans rm₁, o₂.trans o₁⟩
-    rw [n₂, hK, n₁, Machine.upd_upd_same]
+    Ξ n₂, hK, n₁, Machine.upd_upd_same
     congr 1
-    rw [hK, hR] at ht
+    Ξ' hK, hR at ht
     omega
   · refine ⟨c₁, _, .seq e₁ (.ifLtN_false ht (.skip e₁.wb_right)), le_refl _, ?_, m₁, rr₁, rm₁,
       o₁⟩
-    rw [n₁]
+    Ξ n₁
     congr 1
-    rw [hK, hR] at ht
+    Ξ' hK, hR at ht
     omega
 
 /-- `cursors`: `i := lo`, `j := mid`, `k := lo`, cost `3`. -/
@@ -305,7 +305,7 @@ theorem cursors_exec {c : Config} (hc : WordsBounded W c) :
   exec_block
   refine ⟨rfl, by config_simp, by config_simp, by config_simp, fun r h1 h2 h3 => ?_, rfl, rfl,
     rfl, rfl⟩
-  simp [h1, h2, h3]
+  Θ h1, h2, h3
 
 /-- `swapBlock`: exchange the arrays, double the width, cost `4`. -/
 theorem swap_exec {c : Config} (hc : WordsBounded W c) (h : c.nreg 30009 + c.nreg 30009 ≤ W) :
@@ -319,7 +319,7 @@ theorem swap_exec {c : Config} (hc : WordsBounded W c) (h : c.nreg 30009 + c.nre
   · config_simp; exact h
   · refine ⟨rfl, by config_simp, by config_simp, by config_simp, fun r h1 h2 h3 h4 => ?_, rfl,
       rfl, rfl, rfl⟩
-    simp [h1, h2, h3, h4]
+    Θ h1, h2, h3, h4
 
 end pieces
 
@@ -328,11 +328,11 @@ end pieces
 /-- Dropping from a list read as a segment. -/
 theorem drop_of_seg {m : ℕ → ℕ} {p n : ℕ} {l : List ℕ} (h : seg m p n = l) (d : ℕ) :
     l.drop d = seg m (p + d) (n - d) := by
-  rw [← h, seg_drop]
+  Ξ ← h, seg_drop
 
 /-- A nonempty segment starts with its first word. -/
 theorem seg_pos {m : ℕ → ℕ} {p n : ℕ} (h : 0 < n) : seg m p n = m p :: seg m (p + 1) (n - 1) := by
-  obtain ⟨n', rfl⟩ : ∃ n', n = n' + 1 := ⟨n - 1, by omega⟩
+  obtain ⟨n', rfl⟩ : ∃ n', n = n' + 1 := ⟨n - 1, ⋄⟩
   rw [seg_succ]; rfl
 
 /-- A segment of length `0` is empty. -/
@@ -391,14 +391,14 @@ theorem MergeInv.congr {c c' : Config}
     MergeInv W J le Bc A₀ c₀ cS src dst lo mid hi a b c' := by
   have e := fun r (h1 : 30000 ≤ r ∧ r < 40000) (h2 : r ≠ 30000) (h3 : r ≠ 30001) (h4 : r ≠ 30002)
     (h5 : r ≠ 30016) (h6 : r ≠ 30018) => hr r (Or.inl h1) h2 h3 h4 h5 h6
-  have e6 := e 30006 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-  have e7 := e 30007 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-  have e8 := e 30008 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-  have e11 := e 30011 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-  have e12 := e 30012 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-  have e13 := e 30013 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-  have e14 := e 30014 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-  have e15 := e 30015 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
+  have e6 := e 30006 (⋄) (⋄) (⋄) (⋄) (⋄) (⋄)
+  have e7 := e 30007 (⋄) (⋄) (⋄) (⋄) (⋄) (⋄)
+  have e8 := e 30008 (⋄) (⋄) (⋄) (⋄) (⋄) (⋄)
+  have e11 := e 30011 (⋄) (⋄) (⋄) (⋄) (⋄) (⋄)
+  have e12 := e 30012 (⋄) (⋄) (⋄) (⋄) (⋄) (⋄)
+  have e13 := e 30013 (⋄) (⋄) (⋄) (⋄) (⋄) (⋄)
+  have e14 := e 30014 (⋄) (⋄) (⋄) (⋄) (⋄) (⋄)
+  have e15 := e 30015 (⋄) (⋄) (⋄) (⋄) (⋄) (⋄)
   exact
   { wb := hw, hJ := hJ, loc := hloc, one := e6.trans h.one, rsrc := e7.trans h.rsrc,
     rdst := e8.trans h.rdst, rmid := e11.trans h.rmid, rhi := e12.trans h.rhi,
@@ -419,10 +419,10 @@ theorem store_facts {c : Config} (h : MergeInv W J le Bc A₀ c₀ cS src dst lo
   have := h.lo_i; have := h.i_mid; have := h.mid_j; have := h.j_hi; have := h.disj
   refine ⟨?_, ?_, fun x hx => ?_⟩
   · rw [← h.ma]; apply seg_congr; intro t ht
-    rw [Machine.upd_other _ _ _ (by have := h.disj; omega)]
+    Ξ Machine.upd_other _ _ _ (by have := h.disj; omega)
   · rw [← h.mb]; apply seg_congr; intro t ht
-    rw [Machine.upd_other _ _ _ (by have := h.disj; omega)]
-  · rw [Machine.upd_other _ _ _ (by omega)]; exact h.mem x hx
+    Ξ Machine.upd_other _ _ _ (by have := h.disj; omega)
+  · rw [Machine.upd_other _ _ _ (⋄)]; exact h.mem x hx
 
 /-- **Taking the left head**: `takeL` then `k := k + 1` keeps the invariant, when the left run is
 not exhausted and its head is `≤` the head of the right run (if any). -/
@@ -443,59 +443,59 @@ theorem stepL (hJs : JStable J A₀) {c : Config}
   obtain ⟨c₃, k₃, e₃, rfl, hm₃, hi₃, hr₃, hrr₃, hrm₃, ho₃⟩ := takeL_exec (P := P) c h.wb
     (by rw [h.rsrc]; omega) (by rw [h.rdst]; omega) (by rw [h.one]; omega)
   have w₃ := e₃.wb_right
-  have k₃ : c₃.nreg 30015 = c.nreg 30015 := hr₃ _ (by omega) (by omega) (by omega)
-  have o₃ : c₃.nreg 30006 = 1 := (hr₃ _ (by omega) (by omega) (by omega)).trans h.one
+  have k₃ : c₃.nreg 30015 = c.nreg 30015 := hr₃ _ (⋄) (⋄) (⋄)
+  have o₃ : c₃.nreg 30006 = 1 := (hr₃ _ (⋄) (⋄) (⋄)).trans h.one
   obtain ⟨c₄, e₄, n₄, m₄, rr₄, rm₄, o₄⟩ := addN_char (P := P) w₃ 30015 30015 30006
     (by rw [k₃, o₃]; omega)
-  refine ⟨c₃, c₄, e₃, e₄, ?_, by rw [n₄, Machine.upd_same, k₃, o₃]⟩
-  have w₄ : WordsBounded W c₄ := e₄.wb_right
+  refine ⟨c₃, c₄, e₃, e₄, ?_, Ρ n₄, Machine.upd_same, k₃, o₃⟩
+  have w₄ := e₄.wb_right
   -- the new memory
   have hm₄ : c₄.nmem = upd c.nmem (dst + c.nreg 30015) (c.nmem (src + c.nreg 30013)) := by
-    rw [m₄, hm₃, h.rsrc, h.rdst]
+    Ξ m₄, hm₃, h.rsrc, h.rdst
   have hlok : lo ≤ c.nreg 30015 := by have := h.lo_i; have := h.mid_j; omega
-  have hkhi : c.nreg 30015 < hi := by omega
+  have hkhi : c.nreg 30015 < hi := ⋄
   obtain ⟨sa, sb, sm⟩ := store_facts h (v := c.nmem (src + c.nreg 30013)) hlok hkhi
   -- registers
   have r₄ : ∀ r, r ≠ 30013 → r ≠ 30015 → r ≠ 30016 → r ≠ 30018 → c₄.nreg r = c.nreg r := by
     intro r h1 h2 h3 h4
     rw [n₄, Machine.upd_other _ _ _ h2]; exact hr₃ r h1 h3 h4
   have i₄ : c₄.nreg 30013 = c.nreg 30013 + 1 := by
-    rw [n₄, Machine.upd_other _ _ _ (by omega), hi₃, h.one]
-  have j₄ : c₄.nreg 30014 = c.nreg 30014 := r₄ _ (by omega) (by omega) (by omega) (by omega)
+    Ξ n₄, Machine.upd_other _ _ _ (⋄), hi₃, h.one
+  have j₄ : c₄.nreg 30014 = c.nreg 30014 := r₄ _ (⋄) (⋄) (⋄) (⋄)
   have kk₄ : c₄.nreg 30015 = c.nreg 30015 + 1 := by
-    rw [n₄, Machine.upd_same, k₃, o₃]
+    Ξ n₄, Machine.upd_same, k₃, o₃
   -- the sort-local step
   have hsl : SL A₀ c c₄ := by
     refine ⟨fun r hb ha => ?_, rr₄.trans hrr₃, fun x hx => ?_, rm₄.trans hrm₃, o₄.trans ho₃⟩
     · have := bandOf_sort hb
-      exact r₄ r (by omega) (by omega) (by omega) (by omega)
-    · rw [hm₄, Machine.upd_other _ _ _ (by have := h.dA; omega)]
+      exact r₄ r (⋄) (⋄) (⋄) (⋄)
+    · Ξ hm₄, Machine.upd_other _ _ _ (by have := h.dA; omega)
   have hJ₄ : J c₄ := hJs c c₄ h.hJ hsl.1 hsl.2.1 hsl.2.2.1 hsl.2.2.2.1 hsl.2.2.2.2
   -- the list step
   have hA : a.drop (c.nreg 30013 - lo) =
       c.nmem (src + c.nreg 30013) :: a.drop (c.nreg 30013 + 1 - lo) := by
-    rw [drop_of_seg h.ma, drop_of_seg h.ma, seg_pos (by omega)]
+    Ξ drop_of_seg h.ma, drop_of_seg h.ma, seg_pos (⋄)
     congr 1
     · congr 1; omega
     · apply seg_arg <;> omega
   have hout := h.out
-  rw [hA] at hout
+  Ξ' hA at hout
   have hstep := merge_step_left hout (fun y ys' hy => by
     have hjh : c.nreg 30014 < hi := by
       by_contra hc
-      rw [drop_of_seg h.mb, seg_eq_nil (by omega)] at hy
+      Ξ' drop_of_seg h.mb, seg_eq_nil (⋄) at hy
       exact List.cons_ne_nil _ _ hy.symm
-    rw [drop_of_seg h.mb, seg_pos (by omega)] at hy
+    Ξ' drop_of_seg h.mb, seg_pos (⋄) at hy
     obtain ⟨rfl, -⟩ := List.cons.inj hy
     have := hle hjh
     rwa [show src + mid + (c.nreg 30014 - mid) = src + c.nreg 30014 by omega])
   exact
   { wb := w₄, hJ := hJ₄, loc := h.loc.sl hsl,
-    one := (r₄ _ (by omega) (by omega) (by omega) (by omega)).trans h.one,
-    rsrc := (r₄ _ (by omega) (by omega) (by omega) (by omega)).trans h.rsrc,
-    rdst := (r₄ _ (by omega) (by omega) (by omega) (by omega)).trans h.rdst,
-    rmid := (r₄ _ (by omega) (by omega) (by omega) (by omega)).trans h.rmid,
-    rhi := (r₄ _ (by omega) (by omega) (by omega) (by omega)).trans h.rhi,
+    one := (r₄ _ (⋄) (⋄) (⋄) (⋄)).trans h.one,
+    rsrc := (r₄ _ (⋄) (⋄) (⋄) (⋄)).trans h.rsrc,
+    rdst := (r₄ _ (⋄) (⋄) (⋄) (⋄)).trans h.rdst,
+    rmid := (r₄ _ (⋄) (⋄) (⋄) (⋄)).trans h.rmid,
+    rhi := (r₄ _ (⋄) (⋄) (⋄) (⋄)).trans h.rhi,
     keep := fun r _ _ _ _ h13 _ h15 h16 h18 =>
       (r₄ r h13 h15 h16 h18).trans (h.keep r ‹_› ‹_› ‹_› ‹_› h13 ‹_› h15 h16 h18),
     lo_i := by rw [i₄]; omega, i_mid := by rw [i₄]; omega, mid_j := by rw [j₄]; exact h.mid_j,
@@ -528,60 +528,60 @@ theorem stepR (hJs : JStable J A₀) {c : Config}
   obtain ⟨c₃, k₃, e₃, rfl, hm₃, hi₃, hr₃, hrr₃, hrm₃, ho₃⟩ := takeR_exec (P := P) c h.wb
     (by rw [h.rsrc]; omega) (by rw [h.rdst]; omega) (by rw [h.one]; omega)
   have w₃ := e₃.wb_right
-  have k₃ : c₃.nreg 30015 = c.nreg 30015 := hr₃ _ (by omega) (by omega) (by omega)
-  have o₃ : c₃.nreg 30006 = 1 := (hr₃ _ (by omega) (by omega) (by omega)).trans h.one
+  have k₃ : c₃.nreg 30015 = c.nreg 30015 := hr₃ _ (⋄) (⋄) (⋄)
+  have o₃ : c₃.nreg 30006 = 1 := (hr₃ _ (⋄) (⋄) (⋄)).trans h.one
   obtain ⟨c₄, e₄, n₄, m₄, rr₄, rm₄, o₄⟩ := addN_char (P := P) w₃ 30015 30015 30006
     (by rw [k₃, o₃]; omega)
-  refine ⟨c₃, c₄, e₃, e₄, ?_, by rw [n₄, Machine.upd_same, k₃, o₃]⟩
-  have w₄ : WordsBounded W c₄ := e₄.wb_right
+  refine ⟨c₃, c₄, e₃, e₄, ?_, Ρ n₄, Machine.upd_same, k₃, o₃⟩
+  have w₄ := e₄.wb_right
   -- the new memory
   have hm₄ : c₄.nmem = upd c.nmem (dst + c.nreg 30015) (c.nmem (src + c.nreg 30014)) := by
-    rw [m₄, hm₃, h.rsrc, h.rdst]
+    Ξ m₄, hm₃, h.rsrc, h.rdst
   have hlok : lo ≤ c.nreg 30015 := by have := h.lo_i; have := h.mid_j; omega
-  have hkhi : c.nreg 30015 < hi := by omega
+  have hkhi : c.nreg 30015 < hi := ⋄
   obtain ⟨sa, sb, sm⟩ := store_facts h (v := c.nmem (src + c.nreg 30014)) hlok hkhi
   -- registers
   have r₄ : ∀ r, r ≠ 30014 → r ≠ 30015 → r ≠ 30016 → r ≠ 30018 → c₄.nreg r = c.nreg r := by
     intro r h1 h2 h3 h4
     rw [n₄, Machine.upd_other _ _ _ h2]; exact hr₃ r h1 h3 h4
   have j₄ : c₄.nreg 30014 = c.nreg 30014 + 1 := by
-    rw [n₄, Machine.upd_other _ _ _ (by omega), hi₃, h.one]
-  have i₄ : c₄.nreg 30013 = c.nreg 30013 := r₄ _ (by omega) (by omega) (by omega) (by omega)
+    Ξ n₄, Machine.upd_other _ _ _ (⋄), hi₃, h.one
+  have i₄ : c₄.nreg 30013 = c.nreg 30013 := r₄ _ (⋄) (⋄) (⋄) (⋄)
   have kk₄ : c₄.nreg 30015 = c.nreg 30015 + 1 := by
-    rw [n₄, Machine.upd_same, k₃, o₃]
+    Ξ n₄, Machine.upd_same, k₃, o₃
   -- the sort-local step
   have hsl : SL A₀ c c₄ := by
     refine ⟨fun r hb ha => ?_, rr₄.trans hrr₃, fun x hx => ?_, rm₄.trans hrm₃, o₄.trans ho₃⟩
     · have := bandOf_sort hb
-      exact r₄ r (by omega) (by omega) (by omega) (by omega)
-    · rw [hm₄, Machine.upd_other _ _ _ (by have := h.dA; omega)]
+      exact r₄ r (⋄) (⋄) (⋄) (⋄)
+    · Ξ hm₄, Machine.upd_other _ _ _ (by have := h.dA; omega)
   have hJ₄ : J c₄ := hJs c c₄ h.hJ hsl.1 hsl.2.1 hsl.2.2.1 hsl.2.2.2.1 hsl.2.2.2.2
   -- the list step
   have hB : b.drop (c.nreg 30014 - mid) =
       c.nmem (src + c.nreg 30014) :: b.drop (c.nreg 30014 + 1 - mid) := by
-    rw [drop_of_seg h.mb, drop_of_seg h.mb, seg_pos (by omega)]
+    Ξ drop_of_seg h.mb, drop_of_seg h.mb, seg_pos (⋄)
     congr 1
     · congr 1; omega
     · apply seg_arg <;> omega
   have hout := h.out
-  rw [hB] at hout
+  Ξ' hB at hout
   have hstep := merge_step_right hout (fun x xs' hx => by
     have hil : c.nreg 30013 < mid := by
       by_contra hc
-      rw [drop_of_seg h.ma, seg_eq_nil (by omega)] at hx
+      Ξ' drop_of_seg h.ma, seg_eq_nil (⋄) at hx
       exact List.cons_ne_nil _ _ hx.symm
-    rw [drop_of_seg h.ma, seg_pos (by omega)] at hx
+    Ξ' drop_of_seg h.ma, seg_pos (⋄) at hx
     obtain ⟨rfl, -⟩ := List.cons.inj hx
     have := hle hil
-    rw [show src + lo + (c.nreg 30013 - lo) = src + c.nreg 30013 by omega, this]
+    Ξ show src + lo + (c.nreg 30013 - lo) = src + c.nreg 30013 by omega, this
     decide)
   exact
   { wb := w₄, hJ := hJ₄, loc := h.loc.sl hsl,
-    one := (r₄ _ (by omega) (by omega) (by omega) (by omega)).trans h.one,
-    rsrc := (r₄ _ (by omega) (by omega) (by omega) (by omega)).trans h.rsrc,
-    rdst := (r₄ _ (by omega) (by omega) (by omega) (by omega)).trans h.rdst,
-    rmid := (r₄ _ (by omega) (by omega) (by omega) (by omega)).trans h.rmid,
-    rhi := (r₄ _ (by omega) (by omega) (by omega) (by omega)).trans h.rhi,
+    one := (r₄ _ (⋄) (⋄) (⋄) (⋄)).trans h.one,
+    rsrc := (r₄ _ (⋄) (⋄) (⋄) (⋄)).trans h.rsrc,
+    rdst := (r₄ _ (⋄) (⋄) (⋄) (⋄)).trans h.rdst,
+    rmid := (r₄ _ (⋄) (⋄) (⋄) (⋄)).trans h.rmid,
+    rhi := (r₄ _ (⋄) (⋄) (⋄) (⋄)).trans h.rhi,
     keep := fun r _ _ _ _ _ h14 h15 h16 h18 =>
       (r₄ r h14 h15 h16 h18).trans (h.keep r ‹_› ‹_› ‹_› ‹_› ‹_› h14 h15 h16 h18),
     lo_i := by rw [i₄]; exact h.lo_i, i_mid := by rw [i₄]; exact h.i_mid,
@@ -604,7 +604,7 @@ theorem Loc.cmp {c₀ c c' : Config} (h : Loc Bc A₀ c₀ c)
   refine ⟨fun r h1 h2 h3 => ?_, fun r h1 => (hrr r h1).trans (h.2.1 r h1),
     fun a ha => by rw [hm]; exact h.2.2.1 a ha, hrm.trans h.2.2.2.1, ho.trans h.2.2.2.2⟩
   have := bandOf_sort h2
-  exact (hr r (by omega) (by omega) (by omega) (Or.inl h1)).trans (h.1 r h1 h2 h3)
+  exact (hr r (⋄) (⋄) (⋄) (Or.inl h1)).trans (h.1 r h1 h2 h3)
 
 /-- **One iteration of the merge loop** (cost `≤ κ + 14`). -/
 theorem mergeBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
@@ -699,7 +699,7 @@ theorem mergeLoop_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
   have h3 := I'.rk
   have h4 := I'.lo_i
   have h5 := I'.mid_j
-  rw [hi'] at hex
+  Ξ' hi' at hex
   rw [List.drop_of_length_le (by rw [← I'.ma]; simp; omega),
     List.drop_of_length_le (by rw [← I'.mb]; simp; omega), List.nil_merge, List.append_nil,
     show c'.nreg 30015 - lo = hi - lo by omega] at this
@@ -749,16 +749,16 @@ theorem mpass_take_step (hw : 0 < w) {lo mid hi t : ℕ} (hlo : lo = t * (2 * w)
     rw [← List.take_add]; congr 1; omega
   have hlen : (l.take lo).length = t * (2 * w) := by
     rw [List.length_take, ← hlo]; omega
-  have hb : hi - lo ≤ 2 * w := by omega
+  have hb : hi - lo ≤ 2 * w := ⋄
   have hlen2 : ((l.drop lo).take (hi - lo)).length ≤ 2 * w := by
     rw [List.length_take]; exact (Nat.min_le_left _ _).trans hb
-  rw [e1, mpass_append hw t _ _ hlen, mpass_small hw _ hlen2]
+  Ξ e1, mpass_append hw t _ _ hlen, mpass_small hw _ hlen2
   congr 2
   · rw [List.take_take]; congr 1; omega
-  · rw [List.drop_take, List.drop_drop]
+  · Ξ List.drop_take, List.drop_drop
     by_cases h : lo + w ≤ l.length
     · rw [show lo + w = mid by omega]; congr 1; omega
-    · rw [List.drop_of_length_le (l := l) (by omega), List.drop_of_length_le (l := l) (by omega)]
+    · Ξ List.drop_of_length_le (l := l) (⋄), List.drop_of_length_le (l := l) (⋄)
       simp
 
 /-- **One iteration of the pair loop**: merge one pair of runs. -/
@@ -893,8 +893,8 @@ theorem pairBody_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
     have e1 : K - lo = (K - hi) + (hi - lo) := by omega
     rw [e1, Nat.mul_add]
     have : 1 ≤ hi - lo := by omega
-    have hk₁' : k₁ ≤ 3 := hk₁
-    have hk₂' : k₂ ≤ 3 := hk₂
+    have hk₁' := hk₁
+    have hk₂' := hk₂
     nlinarith
 
 /-- **The pair loop**: one whole pass, `dst[0, K) = mpass w l`, cost `≤ (κ + 30) K + 2`. -/
@@ -909,10 +909,10 @@ theorem pairLoop_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
     (fun _ h => h.wb) (fun d hd ht => pairBody_inv (P := P) hcmp hJs hB hd ht) h
   have hK := I'.rK
   have hlo := I'.lo_K
-  have hlK : c'.nreg 30010 = K := by omega
+  have hlK : c'.nreg 30010 = K := ⋄
   refine ⟨c', k, e, I', hk, hlK, ?_⟩
   have := I'.out
-  rw [hlK, List.take_of_length_le (by rw [← I'.ml, seg_length])] at this
+  Ξ' hlK, List.take_of_length_le (by rw [← I'.ml, seg_length]) at this
   exact this
 
 end pass
@@ -1018,15 +1018,15 @@ theorem passLoop_inv {cmp : Stmt} {κ : ℕ} (hcmp : CmpOK P W cmp Bc J le κ)
       have h1 := hd.rw
       have h2 := I.rw
       have h3 := hd.rK
-      rw [h1, h3] at ht
-      have hq : q < Nat.clog 2 K := (Nat.lt_clog_iff_pow_lt (by norm_num)).2 ht
-      rw [h1, h2, Nat.log_pow (by norm_num), Nat.log_pow (by norm_num)]
+      Ξ' h1, h3 at ht
+      have hq : q < Nat.clog 2 K := (Nat.lt_clog_iff_pow_lt (⊛)).2 ht
+      Ξ h1, h2, Nat.log_pow (⊛), Nat.log_pow (⊛)
       omega) ⟨p, h⟩
-  refine ⟨c', k, e, ⟨p', I'⟩, by rw [h.rw, Nat.log_pow (by norm_num)] at hk; exact hk, ?_⟩
+  refine ⟨c', k, e, ⟨p', I'⟩, by rw [h.rw, Nat.log_pow (⊛)] at hk; exact hk, ?_⟩
   obtain ⟨l, hl, hperm, hs⟩ := I'.lst
   have hw := I'.rw
   have hK := I'.rK
-  rw [hw, hK] at hex
+  Ξ' hw, hK at hex
   refine ⟨l, hl, hperm, pairwise_of_chunkSorted hs ?_⟩
   rw [← hl, seg_length]; omega
 
@@ -1054,7 +1054,7 @@ theorem copyBody_exec {c : Config} (hc : WordsBounded W c) (h1 : c.nreg 30003 + 
   · config_simp; exact h4
   · refine ⟨rfl, by config_simp, by config_simp, by config_simp, fun r h1 h2 h3 h4 => ?_, rfl,
       rfl, rfl⟩
-    simp [h1, h2, h3, h4]
+    Θ h1, h2, h3, h4
 
 /-- `sortInit`: the constants, the arrays `A₀ = ALLOC`, `A₀ + K`, `i := 0`; cost `5`. -/
 theorem sortInit_exec {c : Config} (hc : WordsBounded W c) (h1 : 2 ≤ W)
@@ -1072,7 +1072,7 @@ theorem sortInit_exec {c : Config} (hc : WordsBounded W c) (h1 : 2 ≤ W)
   · omega
   · refine ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
       fun r h1 h2 h3 h4 h5 => ?_, rfl, rfl, rfl, rfl⟩
-    simp [h1, h2, h3, h4, h5]
+    Θ h1, h2, h3, h4, h5
 
 variable {J : Config → Prop} {Bc : Finset ℕ} {A₀ : ℕ}
 
@@ -1152,7 +1152,7 @@ theorem sortCost_ge (κ K : ℕ) :
     5 + (8 * K + 2) + 1 + (((κ + 30) * K + 9) * Nat.clog 2 K + 2) + 1 ≤ sortCost κ K := by
   unfold sortCost
   have hc : Nat.clog 2 K ≤ K := Nat.clog_le_of_le_pow (Nat.lt_two_pow_self).le
-  have h1 : 30 * K ≤ (κ + 30) * K := Nat.mul_le_mul_right _ (by omega)
+  have h1 : 30 * K ≤ (κ + 30) * K := Nat.mul_le_mul_right _ (⋄)
   nlinarith
 
 /-- The cost bound leaves room for the two arrays. -/
@@ -1160,7 +1160,7 @@ theorem sortCost_room (κ K : ℕ) : 2 * K + 2 ≤ sortCost κ K := by
   unfold sortCost
   have h1 : K ≤ K * (Nat.clog 2 K + 1) := Nat.le_mul_of_pos_right _ (Nat.succ_pos _)
   have h2 : 30 * (K + 1) ≤ (κ + 30) * (K * (Nat.clog 2 K + 1) + 1) :=
-    Nat.mul_le_mul (by omega) (by omega)
+    Nat.mul_le_mul (⋄) (⋄)
   omega
 
 /-- **The sort meets its specification** (at the level of executions).  From a word-bounded
@@ -1283,7 +1283,7 @@ theorem sort_meets {cmp : Stmt} {Bc : Finset ℕ} (hB : bSort ∉ Bc) (κ : ℕ)
   set L := seg c.nmem (c.nreg 30003) (c.nreg 30004) with hL
   have hlen : L.length = c.nreg 30004 := seg_length
   obtain ⟨c', k, e, hk, hJ', hfr, h1, h2, L', h3, h4, h5⟩ := sortStmt_exec (P := P) hcmp hB htr hto
-    hw hJ hJs L (by rw [hlen]) hlen.symm (by rw [hlen, ← e3, ← e4]; exact hS)
+    hw hJ hJs L (Ρ hlen) hlen.symm (by rw [hlen, ← e3, ← e4]; exact hS)
     (by rw [hlen, ← e4]; exact hroom)
   refine ⟨c', k, e, by rw [e4, ← hlen]; exact hk, ⟨by rw [e5]; exact h1,
     by rw [e5, e4, ← hlen]; exact h2, ?_, ?_⟩, hfr⟩

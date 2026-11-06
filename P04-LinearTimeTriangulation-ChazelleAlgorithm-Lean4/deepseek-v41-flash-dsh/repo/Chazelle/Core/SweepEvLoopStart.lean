@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvLoopStartQ
 
 /-!
@@ -31,20 +33,20 @@ theorem stopData_transport' {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c'
     StopData P J N₂ c' rs ax := by
   obtain ⟨hl, hlax, hSR, hAR, h5, h6, h7, h8⟩ := h
   refine ⟨by rw [hsC]; exact hl, hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
-  · rw [hsB, hm _ (Or.inl (by omega)), hm _ (Or.inl (by omega)), hm _ (Or.inl (by omega)),
-      hm _ (Or.inl (by omega)), hm _ (Or.inl (by omega))]
+  · rw [hsB, hm _ (Or.inl (⋄)), hm _ (Or.inl (⋄)), hm _ (Or.inl (⋄)),
+      hm _ (Or.inl (⋄)), hm _ (Or.inl (⋄))]
     exact hSR i hi
-  · rw [haB, hm _ (Or.inr (by omega)), hm _ (Or.inr (by omega)), hm _ (Or.inr (by omega)),
-      hm _ (Or.inr (by omega)), hm _ (Or.inr (by omega))]
+  · rw [haB, hm _ (Or.inr (⋄)), hm _ (Or.inr (⋄)), hm _ (Or.inr (⋄)),
+      hm _ (Or.inr (⋄)), hm _ (Or.inr (⋄))]
     exact hAR i hi
 
 theorem stopOff_eq {P : Polygon} {J : Merge.Junction} {c : Config}
     {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)} (hSR : StopRecsAt c.nmem (c.nreg sB) rs) {i : ℕ}
     (hi : i < rs.length) : stopOff P J c i = soff P J rs[i] := by
   obtain ⟨h1, h2, -⟩ := hSR i hi
-  rw [List.getD_eq_getElem _ _ hi] at h1 h2
+  Ξ' List.getD_eq_getElem _ _ hi at h1 h2
   unfold stopOff stopE stopH offK soff oW
-  rw [h1, h2]
+  Ξ h1, h2
   rfl
 
 theorem lblOf_mem {c : Config} {v : ℕ} (h : v ∈ lblOf c kN kL) :
@@ -57,15 +59,15 @@ theorem mem_curLab {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config} {
     (h : v ∈ lblOf c kN kL) : regOf (chainModel J.right) (Qof P) N₂ v ∈ curLab P J N₂ c := by
   obtain ⟨t, ht, rfl⟩ := lblOf_mem h
   refine ⟨c.nreg (kL + t), ?_, rfl⟩
-  have : t = 0 ∨ t = 1 ∨ t = 2 ∨ t = 3 := by omega
+  have : t = 0 ∨ t = 1 ∨ t = 2 ∨ t = 3 := ⋄
   rcases this with rfl | rfl | rfl | rfl
-  · left; exact ⟨by omega, rfl⟩
-  · right; left; exact ⟨by omega, rfl⟩
-  · right; right; left; exact ⟨by omega, rfl⟩
-  · right; right; right; exact ⟨by omega, rfl⟩
+  · left; exact ⟨⋄, rfl⟩
+  · right; left; exact ⟨⋄, rfl⟩
+  · right; right; left; exact ⟨⋄, rfl⟩
+  · right; right; right; exact ⟨⋄, rfl⟩
 
-set_option maxHeartbeats 32000000 in
-set_option maxRecDepth 20000 in
+
+
 /-- **Task L0: the start of the event loop.** -/
 theorem loopStartTask : LoopStartTask := by
   refine ⟨start, fun _ => 200000, ?_⟩
@@ -77,13 +79,13 @@ theorem loopStartTask : LoopStartTask := by
   have hP := E.hP
   have hNF := E.hNF₂
   set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
-  have hS₂ : S₂ ⊆ Merge.augChords J.right := hNF.1.2.1
+  have hS₂ := hNF.1.2.1
   have hS₂f : S₂.Finite := hNF.1.1
   -- registers of `c`
   have hlBc : c.nreg lB = c₁.nreg lB := hfr1 _ (not_oracle_sw (by simp [lB, sw])
     (by simp [lB, sw])) (by unfold S2R; simp [lB, sw]) (by simp [lB, ALLOC, sw])
   have hTB : c.nreg cTB = c₀.nreg cTB := hI.hin _ (by unfold IFix cTB sw; omega)
-  have hTB₀ : c₀.nreg cTB = c₀.nreg ALLOC := E.hTA
+  have hTB₀ := E.hTA
   have hlay : c.nreg sB + 5 * c.nreg sC ≤ c.nreg ALLOC ∧
       c.nreg aB + 5 * c.nreg sC ≤ c.nreg ALLOC := by rw [← hl]; exact ⟨hsB2, haB2⟩
   have hlB : c₀.nreg ALLOC ≤ c.nreg lB := by rw [hlBc]; omega
@@ -114,8 +116,8 @@ theorem loopStartTask : LoopStartTask := by
   -- the stop data
   have hSD' : StopData P J N₂ c' rs ax := stopData_transport' hSD sC' sB' aB' (fun a ha =>
     mem a (by omega) (Or.inr (by omega)))
-  have hSR' : StopRecsAt c'.nmem (c'.nreg sB) rs := hSD'.2.2.1
-  have hlen' : rs.length = c'.nreg sC := hSD'.1
+  have hSR' := hSD'.2.2.1
+  have hlen' := hSD'.1
   -- the start key
   obtain ⟨hpw, hoK, -⟩ := startMathTask P J N₂ hP hNF
   have hkey : keyOff P J c' = Lst J := by
@@ -135,7 +137,7 @@ theorem loopStartTask : LoopStartTask := by
     · rintro _ ⟨l, hl', rfl⟩
       have hx := haux i hi
       rw [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _ _ (by omega)] at hx
-      have hnl : (ax[i]'(by omega)).2.1 ≤ 2 := hx.2.2.1
+      have hnl := hx.2.2.1
       have hl'' : l ∈ axLabs (ax.getD i d5) := by
         rw [List.getD_eq_getElem _ _ (show i < ax.length by omega)]
         unfold axLabs

@@ -55,20 +55,20 @@ def emitS : Stmt := .seq recS (.seq DrvD.appT bktS)
 /-- The registers `recS` writes. -/
 def Brec (r : ℕ) : Bool := decide (81008 ≤ r ∧ r ≤ 81010) || decide (r = 212046)
 
-theorem wr_recS : wr Brec recS = true := by decide
+theorem wr_recS : wr Brec recS = true := ⌖
 
 /-- The registers `emitS` writes. -/
 def Bemit (r : ℕ) : Bool := Brec r || DrvD.Bapp r
 
-theorem bemit_rec (r : ℕ) (h : Brec r = true) : Bemit r = true := by simp [Bemit, h]
+theorem bemit_rec (r : ℕ) (h : Brec r = true) : Bemit r = true := ⊚ Bemit, h
 
-theorem bemit_app (r : ℕ) (h : DrvD.Bapp r = true) : Bemit r = true := by simp [Bemit, h]
+theorem bemit_app (r : ℕ) (h : DrvD.Bapp r = true) : Bemit r = true := ⊚ Bemit, h
 
 section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 2000000 in
+
 /-- **The record.** -/
 theorem recS_exec (c : Config) (hw : WordsBounded W c) {li : Bool} {n i d w : ℕ}
     (hn : c.nreg 212010 = n) (hi : c.nreg 212070 = i) (_hin : i < n) (hd : c.nreg 212086 = d)
@@ -80,53 +80,53 @@ theorem recS_exec (c : Config) (hw : WordsBounded W c) {li : Bool} {n i d w : �
   have e₁ := Exec.copyN (P := P) hw 81008 212070
   set c₁ : Config := { c with nreg := upd c.nreg 81008 (c.nreg 212070) } with hc₁
   have w₁ := e₁.wb_right
-  have g₁ : ∀ r, r ≠ 81008 → c₁.nreg r = c.nreg r := fun r h => by rw [hc₁]; simp [h]
+  have g₁ : ∀ r, r ≠ 81008 → c₁.nreg r = c.nreg r := fun r h => by rw [hc₁]; Θ h
   -- `ivB`
   obtain ⟨c₂, k₂, e₂, hk₂, v46, g₂⟩ : ∃ c₂ k₂, Exec P W ivS c₁ c₂ k₂ ∧ k₂ ≤ 4 ∧
       c₂.nreg 212046 = ivB li n i ∧ ∀ r, r ≠ 212046 → c₂.nreg r = c₁.nreg r := by
     cases li with
     | true =>
       have a := Exec.copyN (P := P) w₁ 212046 212070
-      refine ⟨_, _, .ifLtN_true (by rw [g₁ _ (by norm_num), g₁ _ (by norm_num), c1, hli]; simp) a,
-        by omega, ?_, fun r h => by simp [h]⟩
-      simp only [Machine.upd_same]; rw [g₁ _ (by norm_num), hi]; rfl
+      refine ⟨_, _, .ifLtN_true (by rw [g₁ _ (⊛), g₁ _ (⊛), c1, hli]; simp) a,
+        ⋄, ?_, fun r h => ⊚ h⟩
+      simp only [Machine.upd_same]; rw [g₁ _ (⊛), hi]; rfl
     | false =>
       obtain ⟨c₂, k₂, e₂, hk₂, v⟩ : ∃ c₂ k₂, Exec P W (block [.subN 212046 212010 212000,
           .subN 212046 212046 212070]) c₁ c₂ k₂ ∧ k₂ = 2 ∧ (c₂.nreg 212046 = n - 1 - i ∧
           ∀ r, r ≠ 212046 → c₂.nreg r = c₁.nreg r) := by
         exec_block
         refine ⟨rfl, ?_, fun r h => ?_⟩
-        · config_simp; rw [g₁ _ (by norm_num), g₁ _ (by norm_num), g₁ _ (by norm_num), hn, c0, hi]
-        · config_simp; simp [h]
-      exact ⟨c₂, _, .ifLtN_false (by rw [g₁ _ (by norm_num), g₁ _ (by norm_num), c1, hli]; simp)
-        e₂, by omega, by rw [v.1]; rfl, v.2⟩
+        · config_simp; Ξ g₁ _ (⊛), g₁ _ (⊛), g₁ _ (⊛), hn, c0, hi
+        · config_simp; Θ h
+      exact ⟨c₂, _, .ifLtN_false (by rw [g₁ _ (⊛), g₁ _ (⊛), c1, hli]; simp)
+        e₂, ⋄, by rw [v.1]; rfl, v.2⟩
   have w₂ := e₂.wb_right
   -- the ends
-  have hd' : c₂.nreg 212086 = d := by rw [g₂ _ (by norm_num), g₁ _ (by norm_num), hd]
-  have c1' : c₂.nreg 212001 = 0 := by rw [g₂ _ (by norm_num), g₁ _ (by norm_num), c1]
-  have hw' : c₂.nreg 212097 = w := by rw [g₂ _ (by norm_num), g₁ _ (by norm_num), hw97]
+  have hd' : c₂.nreg 212086 = d := Ρ g₂ _ (⊛), g₁ _ (⊛), hd
+  have c1' : c₂.nreg 212001 = 0 := Ρ g₂ _ (⊛), g₁ _ (⊛), c1
+  have hw' : c₂.nreg 212097 = w := Ρ g₂ _ (⊛), g₁ _ (⊛), hw97
   have h81 : c₂.nreg 81008 = i := by
-    rw [g₂ _ (by norm_num), hc₁]; simp only [Machine.upd_same]; exact hi
+    rw [g₂ _ (⊛), hc₁]; simp only [Machine.upd_same]; exact hi
   rcases (by omega : d = 0 ∨ d = 1) with rfl | rfl
   · obtain ⟨c₃, k₃, e₃, hk₃, v⟩ : ∃ c₃ k₃, Exec P W (block [.copyN 81009 212046,
         .copyN 81010 212097]) c₂ c₃ k₃ ∧ k₃ = 2 ∧ (c₃.nreg 81009 = ivB li n i ∧
         c₃.nreg 81010 = w ∧ c₃.nreg 81008 = i) := by
       exec_block
-      refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [v46, hw', h81]
+      refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> ϴ v46, hw', h81
     have ex : Exec P W recS c c₃ _ := .seq e₁ (.seq e₂ (.ifLtN_false (by rw [c1', hd']; omega) e₃))
-    exact ⟨c₃, _, ex, by omega, v.2.2, v.1, v.2.1, exec_frameB ex wr_recS⟩
+    exact ⟨c₃, _, ex, ⋄, v.2.2, v.1, v.2.1, exec_frameB ex wr_recS⟩
   · obtain ⟨c₃, k₃, e₃, hk₃, v⟩ : ∃ c₃ k₃, Exec P W (block [.copyN 81009 212097,
         .copyN 81010 212046]) c₂ c₃ k₃ ∧ k₃ = 2 ∧ (c₃.nreg 81009 = w ∧
         c₃.nreg 81010 = ivB li n i ∧ c₃.nreg 81008 = i) := by
       exec_block
-      refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [v46, hw', h81]
+      refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> ϴ v46, hw', h81
     have ex : Exec P W recS c c₃ _ := .seq e₁ (.seq e₂ (.ifLtN_true (by rw [c1', hd']; omega) e₃))
-    exact ⟨c₃, _, ex, by omega, v.2.2, v.1, v.2.1, exec_frameB ex wr_recS⟩
+    exact ⟨c₃, _, ex, ⋄, v.2.2, v.1, v.2.1, exec_frameB ex wr_recS⟩
 
 theorem vtrip_fst (li : Bool) (n i d w : ℕ) : (vtrip li n i d w).1 = i := by
   unfold vtrip; split_ifs <;> rfl
 
-set_option maxHeartbeats 8000000 in
+
 /-- **Appending an emitted chord**: the record `x = vtrip li n i d w` is appended at
 `B₂ + 3 |T|`, the buckets of its ends at `BK + 2 |T|`, `BK + 2 |T| + 1` (`BK = B₂ + 3 Kmax`). -/
 theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
@@ -173,7 +173,7 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
   -- 1. the record
   obtain ⟨c₁, k₁, e₁, hk₁, r1, r2, r3, f₁⟩ := recS_exec (P := P) c hw hn hi hin hd hd1 hw97 hli c0 c1
   have w₁ := e₁.wb_right
-  have g₁ : ∀ q, Brec q = false → c₁.nreg q = c.nreg q := f₁.1
+  have g₁ := f₁.1
   -- 2. the triple
   obtain ⟨c₂, k₂, e₂, hk₂, m₂, d21', d20', d42, d43, d41, d400, d40, f₂⟩ := DrvD.appT_exec (P := P)
     c₁ w₁ (d := B₂ + 3 * t) (n := t) (p := p) (LB := m₀ (H + 7))
@@ -189,7 +189,7 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
   rw [r1, vtrip_fst] at d41
   rw [r2] at d40
   rw [g₁ _ (by decide), d001] at d400
-  have g₂ : ∀ q, DrvD.BappT q = false → c₂.nreg q = c₁.nreg q := f₂.1
+  have g₂ := f₂.1
   have m₂' : ∀ a, (a < B₂ + 3 * t ∨ B₂ + 3 * t + 3 ≤ a) → c₂.nmem a = c.nmem a := fun a ha => by
     rw [m₂, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
       Machine.upd_other _ _ _ (by omega), f₁.2.2.1]
@@ -265,7 +265,7 @@ theorem emitS_exec (_hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (c : Config)
       (by rw [K2 _ (by decide) (by decide), d17]) d02₂
       (by rw [K2 _ (by decide) (by decide), d03]) (by rw [d400]) (hex hKp 0 (by norm_num))
     have w₃ := e₃.wb_right
-    have g₃ : ∀ q, DrvD.Bscan q = false → c₃.nreg q = c₂.nreg q := f₃.1
+    have g₃ := f₃.1
     obtain ⟨c₄, k₄, e₄, hk₄, m₄, d22₄, f₄⟩ := DrvD.stB_exec (P := P) c₃ w₃
       (d := BK + 2 * t) (by rw [g₃ _ (by decide), d22₂]) (by rw [g₃ _ (by decide), d02₂])
       (by omega)

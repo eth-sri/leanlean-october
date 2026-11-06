@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase15
 
 /-!
@@ -80,32 +82,32 @@ theorem recA_exec {c : Config} (hw : WordsBounded W c) {A h g : ℕ}
       (∀ r, ¬ RecRG r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   have hAl : ALLOC = 9999 := rfl
-  rw [hAl] at hA ⊢
+  Ξ' hAl at hA ⊢
   unfold recA
   exec_block
   all_goals try (config_simp; (try simp only [hA, h05, h07, h20, h21, h22, h25]); omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun a h1 => ?_, fun r h1 h2 => ?_,
     rfl, rfl, rfl⟩
-  · config_simp; simp only [hA, h25]
-  · config_simp; simp only [hA]
-  · config_simp; simp only [h07, h20]
-  · config_simp; simp only [hA, h25]
-  · config_simp; simp only [h05, h21, hA, h20, h22, Machine.upd_apply]
+  · config_simp; ϴ hA, h25
+  · config_simp; ϴ hA
+  · config_simp; ϴ h07, h20
+  · config_simp; ϴ hA, h25
+  · config_simp; ϴ h05, h21, hA, h20, h22, Machine.upd_apply
     split_ifs <;> first | omega
   · config_simp
-  · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
+  · config_simp; ϴ hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply
     split_ifs <;> first | omega
-  · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
+  · config_simp; ϴ hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply
     split_ifs <;> first | omega
-  · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
+  · config_simp; ϴ hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply
     split_ifs <;> first | omega
-  · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
+  · config_simp; ϴ hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply
     split_ifs <;> first | omega
-  · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
+  · config_simp; ϴ hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply
     split_ifs <;> first | omega
   · unfold RecRG at h1
     simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 16000000 in
 theorem copyBody_exec {c : Config} (hw : WordsBounded W c) {j T T' Al : ℕ}
@@ -118,20 +120,20 @@ theorem copyBody_exec {c : Config} (hw : WordsBounded W c) {j T T' Al : ℕ}
       (∀ r, ¬ CopyRG r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   have hAl : ALLOC = 9999 := rfl
-  rw [hAl] at hA ⊢
+  Ξ' hAl at hA ⊢
   unfold copyBody
   exec_block
   all_goals try (config_simp; (try simp only [hA, h50, h56, h57, h20]); omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, fun a h1 => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [h50, h20]
-  · config_simp; simp only [hA, h20]
-  · config_simp; simp only [h50, h56, h57, Machine.upd_apply]
+  · config_simp; ϴ h50, h20
+  · config_simp; ϴ hA, h20
+  · config_simp; ϴ h50, h56, h57, Machine.upd_apply
     split_ifs <;> first | omega
-  · config_simp; simp only [h50, h56, h57, Machine.upd_apply]
+  · config_simp; ϴ h50, h56, h57, Machine.upd_apply
     split_ifs <;> first | omega
   · unfold CopyRG at h1
     simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 16000000 in
 /-- **The rows of the old grades**: `T'[j] = T[j]` for `j < g`. -/

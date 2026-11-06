@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildRegions
 
 /-!
@@ -46,7 +48,7 @@ theorem kap_mem {S : List Ev} {m : ℕ} (hm : m < S.length) : ∃ e ∈ S, e.2.1
 theorem kap_mono {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {i j : ℕ} (hij : i ≤ j)
     (hj : j < S.length) : kap S i ≤ kap S j := by
   rcases hij.lt_or_eq with h | rfl
-  · rw [kap_eq (h.trans hj), kap_eq hj]
+  · Ξ kap_eq (h.trans hj), kap_eq hj
     exact key_le_of_evLe (pairwise_iff_getElem.1 hs i j (h.trans hj) hj h)
   · exact le_rfl
 
@@ -54,10 +56,10 @@ theorem kap_mono {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {i j : ℕ} 
 theorem key_le_or_ge {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {m : ℕ}
     (hm : m + 1 < S.length) {e : Ev} (he : e ∈ S) : e.2.1 ≤ kap S m ∨ kap S (m + 1) ≤ e.2.1 := by
   obtain ⟨k, hk, hke⟩ := index_of_mem he
-  rw [← hke]
+  Ξ ← hke
   rcases Nat.lt_or_ge m k with h | h
   · exact Or.inr (kap_mono hs h hk)
-  · exact Or.inl (kap_mono hs h (by omega))
+  · exact Or.inl (kap_mono hs h (⋄))
 
 /-- **The number of events below a key inside a gap.** -/
 theorem cntBelow_gap {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {m : ℕ}
@@ -86,7 +88,7 @@ theorem cntBelow_gap {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {m : ℕ
 theorem cntBelow_first {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n))
     {y : ℝ} (hy : y < kap S 0) : cntBelow S y = 0 := by
   unfold cntBelow
-  rw [countP_eq_zero]
+  Ξ countP_eq_zero
   intro a ha
   obtain ⟨k, hk, hka⟩ := index_of_mem ha
   have := kap_mono hs (Nat.zero_le k) hk
@@ -135,7 +137,7 @@ theorem isCut_iff {k : ℝ} : M.IsCut (famOf M Q L) k ↔ ∃ e ∈ S, e.2.1 = k
     · obtain ⟨rfl, rfl⟩ := h.walk.attach_unique (h.adm (chordSet_mem hj)) hA hL hpt
       exact ⟨_, h.eL_mem hj, rfl⟩
     · have hpt' : sidePt M.W p t = sidePt M.W (crec L j).rp (M.param Q (crec L j).rpos) := by
-        rw [hoth _ _ hA hpt, hRe]
+        Ξ hoth _ _ hA hpt, hRe
       obtain ⟨rfl, rfl⟩ := h.walk.attach_unique (h.adm (chordSet_mem hj)) hA hR hpt'
       exact ⟨_, h.eR_mem hj, rfl⟩
   · rintro ⟨e, he, rfl⟩
@@ -157,17 +159,17 @@ theorem kap_cut {m : ℕ} (hm : m < S.length) : M.IsCut (famOf M Q L) (kap S m) 
   h.isCut_iff.2 (BuildSort.kap_mem hm)
 
 theorem length_S : S.length = 2 * L.length := by
-  rw [h.perm.length_eq]
+  Ξ h.perm.length_eq
   unfold events
-  rw [length_flatMap]
+  Ξ length_flatMap
   have : ∀ i ∈ List.range L.length, (evPair M Q L i).length = 2 := fun i _ => rfl
-  rw [List.map_congr_left this, map_const', length_range, sum_replicate, smul_eq_mul, mul_comm]
+  Ξ List.map_congr_left this, map_const', length_range, sum_replicate, smul_eq_mul, mul_comm
 
 /-- **A gap is an arc** of the region of its label. -/
 theorem arc_of_gap {m : ℕ} (hm : m + 1 < S.length) (hlt : kap S m < kap S (m + 1)) :
     M.IsArc (famOf M Q L) (reg M Q L S (BuildStack.label (S.map Prod.fst) (m + 1)))
       (kap S m) (kap S (m + 1)) := by
-  have ha := h.kap_bounds (m := m) (by omega)
+  have ha := h.kap_bounds (m := m) (⋄)
   have hb := h.kap_bounds hm
   have hin : ∀ x, sideInArc (kap S m) (kap S (m + 1)) x ↔ kap S m < x ∧ x < kap S (m + 1) := by
     intro x; unfold sideInArc; rw [ite_eq_left hlt]
@@ -176,7 +178,7 @@ theorem arc_of_gap {m : ℕ} (hm : m + 1 < S.length) (hlt : kap S m < kap S (m +
     rw [hin] at hx
     obtain ⟨e, he, rfl⟩ := h.isCut_iff.1 hcut
     rcases BuildSort.key_le_or_ge h.sorted hm he with h1 | h1 <;> linarith [hx.1, hx.2]
-  refine ⟨ha.1, ha.2, hb.1, hb.2, Or.inl ⟨h.kap_cut (by omega), h.kap_cut hm, hlt.ne⟩, hnocut,
+  refine ⟨ha.1, ha.2, hb.1, hb.2, Or.inl ⟨h.kap_cut (⋄), h.kap_cut hm, hlt.ne⟩, hnocut,
     fun p t hp ht0 ht1 hx => ?_⟩
   have hcut := hnocut _ hx
   have hf := (h.faces_reg hp ⟨ht0, ht1⟩ hcut).2
@@ -190,7 +192,7 @@ theorem label_ends : BuildStack.label (S.map Prod.fst) 0 = none ∧
   obtain ⟨hnc, htw⟩ := h.word
   refine ⟨rfl, ?_⟩
   unfold BuildStack.label
-  rw [← length_map (f := Prod.fst), take_length, BuildStack.run_eq_nil htw hnc]
+  Ξ ← length_map (f := Prod.fst), take_length, BuildStack.run_eq_nil htw hnc
   rfl
 
 /-- **The wrapping gap is an arc of the root region.** -/
@@ -308,7 +310,7 @@ theorem arc_of_empty (hK : L.length = 0) :
     M.IsArc (famOf M Q L) (reg M Q L S none) 0 0 := by
   have hF := h.fam_empty hK
   have hS : S = [] := by
-    rw [List.eq_nil_iff_forall_not_mem]
+    Ξ List.eq_nil_iff_forall_not_mem
     intro e he
     have := (h.mem_cases he).1; omega
   have hnocut : ∀ x, ¬ M.IsCut (famOf M Q L) x := by

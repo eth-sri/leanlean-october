@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShotListCut
 public import Chazelle.Core.ShotListFrame
 
@@ -25,10 +27,10 @@ open Chazelle.Chain (sideInArc)
 
 /-- A vertex position is normalised. -/
 theorem normPos_vtx (M : Model) (Q : Polygon) (n x : ℕ) : NormPos M Q n ⟨x, 0⟩ := by
-  refine ⟨⟨?_, ?_, by simp⟩, Or.inl rfl⟩ <;> simp [Model.param]
+  refine ⟨⟨?_, ?_, ✓⟩, Or.inl rfl⟩ <;> Θ Model.param
 
 theorem key_vtx (M : Model) (Q : Polygon) (x : ℕ) : M.key Q ⟨x, 0⟩ = x := by
-  simp [Model.key, Model.param]
+  Θ Model.key, Model.param
 
 /-- **Lexicographic comparison of normalised positions** (not both inside one edge). -/
 theorem lexLt_iff_key {M : Model} {Q : Polygon} {n : ℕ} {u v : WPos} (hu : NormPos M Q n u)
@@ -64,7 +66,7 @@ theorem eqF_eval {c : Config} {xa ax : ℕ} {x a : ℝ} (h1 : BitIs c xa (x < a)
   obtain ⟨-, i1⟩ := h1
   obtain ⟨-, i2⟩ := h2
   unfold eqF
-  simp only [BF.eval, Bool.and_eq_true, Bool.not_eq_true', decide_eq_false_iff_not, i1, i2]
+  ϴ BF.eval, Bool.and_eq_true, Bool.not_eq_true', decide_eq_false_iff_not, i1, i2
   constructor
   · rintro ⟨h, h'⟩; exact le_antisymm (not_lt.1 h') (not_lt.1 h)
   · rintro rfl; exact ⟨lt_irrefl _, lt_irrefl _⟩
@@ -126,22 +128,22 @@ def RegsOK (R : ℕ) : Prop :=
 
 theorem bprim_R {R : ℕ} (hR : RegsOK R) {i : ℕ} (hi : i < 300) : Bprim (R + i) = false := by
   unfold RegsOK at hR
-  simp only [Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not]
+  ϴ Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not
   omega
 
 /-- The registers written by `offB`. -/
 def Boff (R : ℕ) (r : ℕ) : Bool := r == R + 100 || Bprim r || decide (50200 ≤ r ∧ r < 50210)
 
 theorem wr_offCmp' (R : ℕ) : wr (Boff R) offCmp = true :=
-  wr_mono wr_offCmp (fun r hr => by simp [Boff, hr])
+  wr_mono wr_offCmp (fun r hr => ⊚ Boff, hr)
 
 theorem wr_offCall (R ℓ : ℕ) : wr (Boff R) (offCall R ℓ) = true := by
   have h := wr_offCmp' R
-  simp [offCall, wr, block, wrOK, Boff, h]
+  Θ offCall, wr, block, wrOK, Boff, h
 
 theorem wr_offB (R ℓ : ℕ) : wr (Boff R) (offB R ℓ) = true := by
   have h := wr_offCall R ℓ
-  simp [offB, wr, h]
+  Θ offB, wr, h
 
 /-- Loading the inputs of `offCmp`. -/
 theorem offLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (cd L z : ℕ)
@@ -180,32 +182,32 @@ theorem offB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
       BitIs c (R + 100) (M.key (Qof P) (posR c (L, L + 1)) <
         M.key (Qof P) (posR c (L + 2, L + 3))) := fun hne => by
     have := lexLt_iff_key ha hb hne
-    simp only [posR] at this ⊢
+    ϴ' posR at this ⊢
     exact ⟨hbit.1, hbit.2.trans this⟩
   have wk := wr_offB R ℓ
   unfold offB
   simp only
   by_cases h1 : c.nreg L < c.nreg (L + 2)
   · have ex : Exec P W (offB R ℓ) c c _ := .ifLtN_true h1 (.skip hw)
-    exact ⟨c, _, ex, by omega, hne_of (by omega), exec_frameB ex wk⟩
+    exact ⟨c, _, ex, ⋄, hne_of (⋄), exec_frameB ex wk⟩
   by_cases h2 : c.nreg (L + 2) < c.nreg L
   · have ex : Exec P W (offB R ℓ) c c _ := .ifLtN_false h1 (.ifLtN_true h2 (.skip hw))
-    exact ⟨c, _, ex, by omega, hne_of (by omega), exec_frameB ex wk⟩
+    exact ⟨c, _, ex, ⋄, hne_of (⋄), exec_frameB ex wk⟩
   by_cases h3 : c.nreg (R + 30) < c.nreg (L + 1)
   swap
   · have ex : Exec P W (offB R ℓ) c c _ :=
       .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_false h3 (.skip hw)))
-    exact ⟨c, _, ex, by omega, hne_of (by omega), exec_frameB ex wk⟩
+    exact ⟨c, _, ex, ⋄, hne_of (⋄), exec_frameB ex wk⟩
   by_cases h4 : c.nreg (R + 30) < c.nreg (L + 3)
   swap
   · have ex : Exec P W (offB R ℓ) c c _ :=
       .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true h3 (.ifLtN_false h4 (.skip hw))))
-    exact ⟨c, _, ex, by omega, hne_of (by omega), exec_frameB ex wk⟩
+    exact ⟨c, _, ex, ⋄, hne_of (⋄), exec_frameB ex wk⟩
   -- two interior positions of one edge: `offCmp`
   have hR' := hR; unfold RegsOK at hR'
   obtain ⟨c₁, k₁, e₁, hk₁, p1, p2, p3, p4, p5, p6, pr, pm, pal⟩ :=
-    offLoad_exec (P := P) c hw (R + 34) L (R + 30) (by omega) (by omega)
-  rw [hz] at p6
+    offLoad_exec (P := P) c hw (R + 34) L (R + 30) (⋄) (⋄)
+  Ξ' hz at p6
   have w₁ := e₁.wb_right
   have hn0 : 0 < M.W.n := by
     have : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n _
@@ -223,14 +225,14 @@ theorem offB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
   have ex : Exec P W (offB R ℓ) c _ _ :=
     .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true h3 (.ifLtN_true h4
       (.seq e₁ (.seq e₂ (Exec.block_cons e₃ (Exec.block_nil e₃.wb_right)))))))
-  refine ⟨_, _, ex, by omega, ⟨?_, ?_⟩, exec_frameB ex wk⟩
+  refine ⟨_, _, ex, ⋄, ⟨?_, ?_⟩, exec_frameB ex wk⟩
   · simp only [upd_same]; exact o1.1
-  · simp only [upd_same]
-    rw [o1.2, p2, p3, p4, p5, p6]
+  · ϴ upd_same
+    Ξ o1.2, p2, p3, p4, p5, p6
     have kx := ha.1.1
     have ky := hb.1.1
-    simp only [posR] at kx ky ⊢
-    rw [Nat.cast_zero]
+    ϴ' posR at kx ky ⊢
+    Ξ Nat.cast_zero
     exact (key_lt_iff_off kx ky).symm
 
 
@@ -289,51 +291,51 @@ theorem formB_exec {P : Polygon} {W : ℕ} (R : ℕ) (c : Config) (hw : WordsBou
   have kp : ∀ {B : ℕ → Bool} {cc cc' : Config} {r : ℕ} {p : Prop}, BitIs cc r p →
       FrameB B cc cc' → B r = false → BitIs cc' r p := fun h hf hr => bitIs_keep h hf hr
   obtain ⟨c₁, k₁, e₁, hk₁, v₁, f₁⟩ := siaF_exec (P := P) c hw hW (d := R + 120)
-    (by omega) (by omega) (by omega) bxy bxa bay
+    (⋄) (⋄) (⋄) bxy bxa bay
   have k1 := fun {r : ℕ} {p : Prop} (h : BitIs c r p) (hr : r < R + 120) =>
     kp h f₁ (wset_lt hr)
   obtain ⟨c₂, k₂, e₂, hk₂, v₂, f₂⟩ := siaF_exec (P := P) c₁ e₁.wb_right hW (d := R + 140)
-    (by omega) (by omega) (by omega) (k1 bab (by omega)) (k1 bay (by omega)) (k1 byb (by omega))
+    (⋄) (⋄) (⋄) (k1 bab (⋄)) (k1 bay (⋄)) (k1 byb (⋄))
   have k2 := fun {r : ℕ} {p : Prop} (h : BitIs c₁ r p) (hr : r < R + 140) =>
     kp h f₂ (wset_lt hr)
   obtain ⟨c₃, k₃, e₃, hk₃, v₃, f₃⟩ := siaF_exec (P := P) c₂ e₂.wb_right hW (d := R + 160)
-    (by omega) (by omega) (by omega) (k2 (k1 byb (by omega)) (by omega))
-    (k2 (k1 byx (by omega)) (by omega)) (k2 (k1 bxb (by omega)) (by omega))
+    (⋄) (⋄) (⋄) (k2 (k1 byb (⋄)) (⋄))
+    (k2 (k1 byx (⋄)) (⋄)) (k2 (k1 bxb (⋄)) (⋄))
   have k3 := fun {r : ℕ} {p : Prop} (h : BitIs c₂ r p) (hr : r < R + 160) =>
     kp h f₃ (wset_lt hr)
   obtain ⟨c₄, k₄, e₄, hk₄, v₄, f₄⟩ := siaF_exec (P := P) c₃ e₃.wb_right hW (d := R + 180)
-    (by omega) (by omega) (by omega) (k3 (k2 (k1 bab (by omega)) (by omega)) (by omega))
-    (k3 (k2 (k1 bax (by omega)) (by omega)) (by omega))
-    (k3 (k2 (k1 bxb (by omega)) (by omega)) (by omega))
+    (⋄) (⋄) (⋄) (k3 (k2 (k1 bab (⋄)) (⋄)) (⋄))
+    (k3 (k2 (k1 bax (⋄)) (⋄)) (⋄))
+    (k3 (k2 (k1 bxb (⋄)) (⋄)) (⋄))
   have k4 := fun {r : ℕ} {p : Prop} (h : BitIs c₃ r p) (hr : r < R + 180) =>
     kp h f₄ (wset_lt hr)
   obtain ⟨c₅, k₅, e₅, hk₅, v₅, f₅⟩ := siaF_exec (P := P) c₄ e₄.wb_right hW (d := R + 200)
-    (by omega) (by omega) (by omega)
-    (k4 (k3 (k2 (k1 bxb (by omega)) (by omega)) (by omega)) (by omega))
-    (k4 (k3 (k2 (k1 bxy (by omega)) (by omega)) (by omega)) (by omega))
-    (k4 (k3 (k2 (k1 byb (by omega)) (by omega)) (by omega)) (by omega))
+    (⋄) (⋄) (⋄)
+    (k4 (k3 (k2 (k1 bxb (⋄)) (⋄)) (⋄)) (⋄))
+    (k4 (k3 (k2 (k1 bxy (⋄)) (⋄)) (⋄)) (⋄))
+    (k4 (k3 (k2 (k1 byb (⋄)) (⋄)) (⋄)) (⋄))
   have k5 := fun {r : ℕ} {p : Prop} (h : BitIs c₄ r p) (hr : r < R + 200) =>
     kp h f₅ (wset_lt hr)
   obtain ⟨c₆, k₆, e₆, hk₆, v₆, f₆⟩ := eqF_exec (P := P) c₅ e₅.wb_right hW (d := R + 220)
-    (by omega) (by omega)
-    (k5 (k4 (k3 (k2 (k1 bxa (by omega)) (by omega)) (by omega)) (by omega)) (by omega))
-    (k5 (k4 (k3 (k2 (k1 bax (by omega)) (by omega)) (by omega)) (by omega)) (by omega))
+    (⋄) (⋄)
+    (k5 (k4 (k3 (k2 (k1 bxa (⋄)) (⋄)) (⋄)) (⋄)) (⋄))
+    (k5 (k4 (k3 (k2 (k1 bax (⋄)) (⋄)) (⋄)) (⋄)) (⋄))
   have k6 := fun {r : ℕ} {p : Prop} (h : BitIs c₅ r p) (hr : r < R + 220) =>
     kp h f₆ (wset_lt hr)
   have fz : ∀ {f : BF} {d : ℕ} {cc cc' : Config}, FrameB (f.wset d) cc cc' → R + 120 ≤ d →
       d + f.size < R + 240 → FrameB (Bform R) cc cc' := fun h h1 h2 => fr h (fun r hr => by
-    simp only [SweepPrim.BF.wset, decide_eq_true_eq] at hr; omega)
-  refine ⟨c₆, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆)))), by omega,
-    k6 (k5 (k4 (k3 (k2 v₁ (by omega)) (by omega)) (by omega)) (by omega)) (by omega),
-    k6 (k5 (k4 (k3 v₂ (by omega)) (by omega)) (by omega)) (by omega),
-    k6 (k5 (k4 v₃ (by omega)) (by omega)) (by omega), k6 (k5 v₄ (by omega)) (by omega),
-    k6 v₅ (by omega), v₆, ?_⟩
-  exact (fz f₁ (by omega) (by rw [siaF_size]; omega)).trans
-    ((fz f₂ (by omega) (by rw [siaF_size]; omega)).trans
-    ((fz f₃ (by omega) (by rw [siaF_size]; omega)).trans
-    ((fz f₄ (by omega) (by rw [siaF_size]; omega)).trans
-    ((fz f₅ (by omega) (by rw [siaF_size]; omega)).trans
-    (fz f₆ (by omega) (by rw [eqF_size]; omega))))))
+    ϴ' SweepPrim.BF.wset, decide_eq_true_eq at hr; omega)
+  refine ⟨c₆, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆)))), ⋄,
+    k6 (k5 (k4 (k3 (k2 v₁ (⋄)) (⋄)) (⋄)) (⋄)) (⋄),
+    k6 (k5 (k4 (k3 v₂ (⋄)) (⋄)) (⋄)) (⋄),
+    k6 (k5 (k4 v₃ (⋄)) (⋄)) (⋄), k6 (k5 v₄ (⋄)) (⋄),
+    k6 v₅ (⋄), v₆, ?_⟩
+  exact (fz f₁ (⋄) (by rw [siaF_size]; omega)).trans
+    ((fz f₂ (⋄) (by rw [siaF_size]; omega)).trans
+    ((fz f₃ (⋄) (by rw [siaF_size]; omega)).trans
+    ((fz f₄ (⋄) (by rw [siaF_size]; omega)).trans
+    ((fz f₅ (⋄) (by rw [siaF_size]; omega)).trans
+    (fz f₆ (⋄) (by rw [eqF_size]; omega))))))
 
 
 /-! ## The cutting block -/
@@ -352,8 +354,8 @@ theorem cmpList_ok {R ℓ : ℕ} (hℓ : ℓ ≤ 2) : CmpOK (R + 30) (cmpList R 
   · simp only [cmpOuts, cmpList, rL, List.map_cons, List.map_nil, List.mem_cons,
       List.not_mem_nil, or_false]
     omega
-  · simp [cmpOuts, cmpList]
-  · simp only [cmpList, rL, List.mem_cons, List.not_mem_nil, or_false] at ht
+  · Θ cmpOuts, cmpList
+  · ϴ' cmpList, rL, List.mem_cons, List.not_mem_nil, or_false at ht
     rcases ht with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
     · simp only [cmpOuts, cmpList, rL, List.map_cons, List.map_nil, List.mem_cons,
         List.not_mem_nil, or_false]
@@ -426,7 +428,7 @@ theorem cutB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
   have gL2 : c₁.nreg (L + 2) = c.nreg (L + 2) := in₁ _ (by omega)
   have gL3 : c₁.nreg (L + 3) = c.nreg (L + 3) := in₁ _ (by omega)
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := in₁ _ (by unfold ALLOC; unfold RegsOK at hR; omega)
-  have hM1 : c₁.nmem = c.nmem := f₁.2.2.1
+  have hM1 := f₁.2.2.1
   have pa : posR c₁ (L, L + 1) = a := by
     simp only [posR, ha_def, WPos.mk.injEq]; exact ⟨gL0, gL1⟩
   have pb : posR c₁ (L + 2, L + 3) = b := by
@@ -437,7 +439,7 @@ theorem cutB_exec {P : Polygon} {W : ℕ} {R ℓ : ℕ} (hR : RegsOK R) (hℓ : 
     (by rw [gL0]; exact hae) (by rw [gL2]; exact hbe)
     (by rw [gL0, gL1, gL2, gL3]; exact bab)
   rw [pa, pb] at kab
-  have in₂ : ∀ r, Boff R r = false → c₂.nreg r = c₁.nreg r := f₂.1
+  have in₂ := f₂.1
   have o₂ : ∀ r, (R + 100 < r ∧ r < R + 300) → Boff R r = false := fun r hr => by
     have := bprim_R hR (i := r - R) (by omega)
     rw [show R + (r - R) = r by omega] at this

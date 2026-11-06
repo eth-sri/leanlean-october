@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleQueryExec
 
 /-!
@@ -40,10 +42,10 @@ theorem card_le_arcWt {M : Model} {a b : ℝ} (T : Finset ℕ)
     (hT : ∀ q ∈ T, q < M.W.n ∧ M.counted q ∧ sideInArc a b ((q : ℝ) + 1 / 2)) :
     T.card ≤ M.arcWt a b := by
   unfold Model.arcWt
-  rw [← Set.ncard_coe_finset]
+  Ξ ← Set.ncard_coe_finset
   refine Set.ncard_le_ncard (fun q hq => ?_) ((Set.finite_Iio M.W.n).subset fun p hp => hp.1)
   obtain ⟨h1, h2, h3⟩ := hT q hq
-  exact ⟨h1, h2, 1 / 2, by norm_num, by norm_num, h3⟩
+  exact ⟨h1, h2, 1 / 2, ⊛, ⊛, h3⟩
 
 /-- **`γ ≥ 1`** for a `γ`-canonical normal form of a chain. -/
 theorem gamma_pos (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4) : 1 ≤ γ := by
@@ -54,21 +56,21 @@ theorem gamma_pos (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4)
   have hnW : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
   have hm1 := C.one_le
   by_contra h0
-  have hγ : γ = 0 := by omega
+  have hγ : γ = 0 := ⋄
   subst hγ
   by_cases hne : (N.F (chainModel C) Q).Nonempty
   · exact hM.not_semigranular_zero hF.2.1 hF.1 hne (p₀ := 6) (by rw [hnW]; omega)
       (show 6 ≤ 6 ∧ 6 < 2 * C.m + 6 by omega) hsg
-  · rw [Set.not_nonempty_iff_eq_empty] at hne
+  · Ξ' Set.not_nonempty_iff_eq_empty at hne
     obtain ⟨U, hU, a, b, harc⟩ := (arcCover (chainModel C) Q _ hGM hF).1
     have hab : a = 0 ∧ b = 0 := by
       rcases harc.2.2.2.2.1 with ⟨⟨c, hc, -⟩, -⟩ | ⟨-, h1, h2⟩
-      · rw [hne] at hc; exact absurd hc (Set.notMem_empty _)
+      · Ξ' hne at hc; exact absurd hc (Set.notMem_empty _)
       · exact ⟨h1, h2⟩
     obtain ⟨rfl, rfl⟩ := hab
     have := card_le_arcWt (M := chainModel C) (a := 0) (b := 0) {6} (by
       intro q hq
-      rw [Finset.mem_singleton] at hq; subst hq
+      Ξ' Finset.mem_singleton at hq; subst hq
       refine ⟨by rw [hnW]; omega, show 6 ≤ 6 ∧ 6 < 2 * C.m + 6 by omega, ?_⟩
       unfold sideInArc; rw [ite_eq_right (lt_irrefl _)]; left; norm_num)
     have := arcWt_le_gamma hGM hF hsg hU harc
@@ -82,13 +84,13 @@ theorem card_counted_ge (m : ℕ) (S : Finset ℕ) (hS : ∀ q ∈ S, q < 2 * m 
     (fun q => 6 ≤ q ∧ q < 2 * m + 6)
   have hsub : S.filter (fun q => ¬ (6 ≤ q ∧ q < 2 * m + 6)) ⊆ Finset.range 6 ∪ {2 * m + 6} := by
     intro q hq
-    rw [Finset.mem_filter] at hq
+    Ξ' Finset.mem_filter at hq
     have := hS q hq.1
-    rw [Finset.mem_union, Finset.mem_range, Finset.mem_singleton]
+    Ξ Finset.mem_union, Finset.mem_range, Finset.mem_singleton
     omega
   have hc := Finset.card_le_card hsub
   have hc2 : (Finset.range 6 ∪ {2 * m + 6}).card ≤ 7 :=
-    (Finset.card_union_le _ _).trans (by simp)
+    (Finset.card_union_le _ _).trans (✓)
   omega
 
 /-- **The walk edges scanned for an arc.** -/
@@ -117,7 +119,7 @@ theorem scanLen_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4
   have hte1 : (chainModel C).param Q (N.arc (sj N p)).e < 1 := he1
   have ha1 := harc.2.1
   have hb1 := harc.2.2.2.1
-  rw [hnW] at ha1 hb1
+  Ξ' hnW at ha1 hb1
   have hse : se < 2 * C.m + 7 := by
     have : (se : ℝ) < 2 * C.m + 7 := by rw [hsk] at ha1; push_cast at ha1; linarith
     exact_mod_cast this
@@ -127,26 +129,26 @@ theorem scanLen_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4
   have hw := wrap_iff hN hGM hp
   unfold scanLenR
   by_cases hwr : p + 1 < N.arcs.length
-  · rw [ite_eq_left hwr]
+  · Ξ ite_eq_left hwr
     have hab := hw.2 hwr
-    rw [hsk, hek] at hab
+    Ξ' hsk, hek at hab
     have hT := card_le_arcWt (M := chainModel C) (a := sk (chainModel C) Q N p)
       (b := ek (chainModel C) Q N p) ((Finset.Ioo se ee).filter fun q => 6 ≤ q ∧ q < 2 * C.m + 6) (by
         intro q hq
-        rw [Finset.mem_filter, Finset.mem_Ioo] at hq
+        Ξ' Finset.mem_filter, Finset.mem_Ioo at hq
         refine ⟨by rw [hnW]; omega, hq.2, ?_⟩
-        rw [hsk, hek]; unfold sideInArc; rw [ite_eq_left hab]
+        rw [hsk, hek]; unfold sideInArc; Ξ ite_eq_left hab
         have h1 : (se : ℝ) + 1 ≤ q := by exact_mod_cast hq.1.1
         have h2 : (q : ℝ) + 1 ≤ ee := by exact_mod_cast hq.1.2
         constructor <;> linarith)
     have hc := card_counted_ge C.m (Finset.Ioo se ee) (fun q hq => by
-      rw [Finset.mem_Ioo] at hq; omega)
-    rw [Nat.card_Ioo] at hc
+      Ξ' Finset.mem_Ioo at hq; omega)
+    Ξ' Nat.card_Ioo at hc
     constructor <;> omega
-  · rw [ite_eq_right hwr]
+  · Ξ ite_eq_right hwr
     have hab : ¬ (sk (chainModel C) Q N p < ek (chainModel C) Q N p) := fun h => hwr (hw.1 h)
     have hab' := hab
-    rw [hsk, hek] at hab'
+    Ξ' hsk, hek at hab'
     have hes : ee ≤ se := by
       have : (ee : ℝ) < se + 1 := by push Not at hab'; linarith
       have : ee < se + 1 := by exact_mod_cast this
@@ -155,9 +157,9 @@ theorem scanLen_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4
       (b := ek (chainModel C) Q N p) ((Finset.Ioo se (2 * C.m + 7) ∪ Finset.range ee).filter
       fun q => 6 ≤ q ∧ q < 2 * C.m + 6) (by
         intro q hq
-        rw [Finset.mem_filter, Finset.mem_union, Finset.mem_Ioo, Finset.mem_range] at hq
+        Ξ' Finset.mem_filter, Finset.mem_union, Finset.mem_Ioo, Finset.mem_range at hq
         refine ⟨by rw [hnW]; omega, hq.2, ?_⟩
-        unfold sideInArc; rw [ite_eq_right hab, hsk, hek]
+        unfold sideInArc; Ξ ite_eq_right hab, hsk, hek
         rcases hq.1 with h | h
         · left
           have h1 : (se : ℝ) + 1 ≤ q := by exact_mod_cast h.1
@@ -166,12 +168,12 @@ theorem scanLen_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4
           have h2 : (q : ℝ) + 1 ≤ ee := by exact_mod_cast h
           linarith)
     have hdis : Disjoint (Finset.Ioo se (2 * C.m + 7)) (Finset.range ee) := by
-      rw [Finset.disjoint_left]
+      Ξ Finset.disjoint_left
       intro q h1 h2
-      rw [Finset.mem_Ioo] at h1; rw [Finset.mem_range] at h2; omega
+      Ξ' Finset.mem_Ioo at h1; Ξ' Finset.mem_range at h2; omega
     have hc := card_counted_ge C.m (Finset.Ioo se (2 * C.m + 7) ∪ Finset.range ee) (fun q hq => by
-      rw [Finset.mem_union, Finset.mem_Ioo, Finset.mem_range] at hq; omega)
-    rw [Finset.card_union_of_disjoint hdis, Nat.card_Ioo, Finset.card_range] at hc
+      Ξ' Finset.mem_union, Finset.mem_Ioo, Finset.mem_range at hq; omega)
+    Ξ' Finset.card_union_of_disjoint hdis, Nat.card_Ioo, Finset.card_range at hc
     constructor <;> omega
 
 /-- **A region lists at most five arcs.** -/
@@ -195,7 +197,7 @@ theorem region_arcs_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N 
     rintro _ ⟨j, hj, rfl⟩
     obtain ⟨h1, h2⟩ := hmem j hj
     have := (hA.1 j h1).2
-    rw [h2] at this; exact this
+    Ξ' h2 at this; exact this
   obtain ⟨hfin, hcard⟩ := hM.arcs_bound hF.2.1 hF.1 hU
   have hdeg := hC.2.1 _ hU
   have hL : L.length = ({j | j ∈ L} : Set ℕ).ncard := by
@@ -219,8 +221,8 @@ theorem arcs_le_regions (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N
           ≤ (N.region r).arcs.toFinset.card := by
             apply Finset.card_le_card
             intro j hj
-            rw [Finset.mem_filter, Finset.mem_range] at hj
-            rw [List.mem_toFinset]
+            Ξ' Finset.mem_filter, Finset.mem_range at hj
+            Ξ List.mem_toFinset
             exact (hA.2.2.2 r hr' j).2 hj
         _ ≤ (N.region r).arcs.length := List.toFinset_card_le _
         _ ≤ 5 := region_arcs_le hP hC hr')
@@ -249,7 +251,7 @@ theorem regions_eq (hP : C.P.Simple) (hN : IsNF (chainModel C) Q N) :
       obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
       refine ⟨i, hi, ?_⟩
       show (N.chord i).toSet _ _ = _
-      unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]
+      unfold NF.chord; Ξ NFLoc.getD_of_lt _ hi
     · rintro ⟨i, hi, rfl⟩
       refine ⟨N.chord i, ?_, rfl⟩
       unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]; exact List.getElem_mem hi

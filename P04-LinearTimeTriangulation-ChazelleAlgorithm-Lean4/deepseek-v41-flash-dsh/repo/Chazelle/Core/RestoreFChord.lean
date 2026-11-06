@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFHalf
 public import Chazelle.Core.RestoreTRead
 
@@ -78,10 +80,10 @@ theorem chordLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (h
     exact Robust.transport hN (fun a ha => hI₂.hm a ha)
   have hNA := hN₂.nfAt
   obtain ⟨-, hch, -⟩ := nf_bounds hN₂
-  have hk' : x / 2 < N.chords.length := hk
+  have hk' := hk
   obtain ⟨hB7, -⟩ := nf_bounds hN₂
   have hcb := hch _ hk
-  have hA0 : c₀.nreg ALLOC ≤ c₂.nreg ALLOC := hI₂.hA
+  have hA0 := hI₂.hA
   have hAW : c₂.nreg ALLOC ≤ E.W := hI₂.hw.1 ALLOC
   obtain ⟨r1, r2, r3, r4, r5⟩ := hNA.2.2.2.2.2.1 _ hk'
   have k3 : c₂.nreg 81014 = 3 := by rw [hI₂.hin _ (by unfold FFix; omega), hE.k3]

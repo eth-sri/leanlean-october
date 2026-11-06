@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleCArc
 public import Chazelle.Core.BruteRam2
 public import Chazelle.Core.ShotListLeaf
@@ -62,21 +64,21 @@ theorem saveS_exec {P : Polygon} {W : ℕ} (b : ℕ) (hb : b + 13 < 170000) (c :
         rcases hp with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
         rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
         simp <;> omega)
-    (by simp [saveL])
-  refine ⟨c', e, fun i hi => ?_, h1 (170013, b + 13) (by simp [saveL]), fun r hr => h2 r ?_,
+    (⊚ saveL)
+  refine ⟨c', e, fun i hi => ?_, h1 (170013, b + 13) (⊚ saveL), fun r hr => h2 r ?_,
     h3, h4, h5, h6⟩
   · interval_cases i
-    · exact h1 (170000, b) (by simp [saveL])
-    · exact h1 (170001, b + 1) (by simp [saveL])
-    · exact h1 (170002, b + 2) (by simp [saveL])
-    · exact h1 (170003, b + 3) (by simp [saveL])
-    · exact h1 (170004, b + 4) (by simp [saveL])
-    · exact h1 (170005, b + 5) (by simp [saveL])
-    · exact h1 (170006, b + 6) (by simp [saveL])
-    · exact h1 (170007, b + 7) (by simp [saveL])
-    · exact h1 (170008, b + 8) (by simp [saveL])
-    · exact h1 (170009, b + 9) (by simp [saveL])
-  · simp only [saveL, List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false]
+    · exact h1 (170000, b) (⊚ saveL)
+    · exact h1 (170001, b + 1) (⊚ saveL)
+    · exact h1 (170002, b + 2) (⊚ saveL)
+    · exact h1 (170003, b + 3) (⊚ saveL)
+    · exact h1 (170004, b + 4) (⊚ saveL)
+    · exact h1 (170005, b + 5) (⊚ saveL)
+    · exact h1 (170006, b + 6) (⊚ saveL)
+    · exact h1 (170007, b + 7) (⊚ saveL)
+    · exact h1 (170008, b + 8) (⊚ saveL)
+    · exact h1 (170009, b + 9) (⊚ saveL)
+  · ϴ saveL, List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false
     omega
 
 /-- The set-up: constants, the host record, the flag of the running minimum. -/
@@ -110,7 +112,7 @@ def BinitB (r : ℕ) : Bool :=
     r = 170093 ∨ r = 170016 ∨ r = 170017 ∨ r = 170015 ∨ r = 170091 ∨ r = 9999 ∨ r = 170070 ∨
     r = 170014)
 
-theorem wrM_initI : BuildRam.wrM BinitB initI = true := by decide
+theorem wrM_initI : BuildRam.wrM BinitB initI = true := ⌖
 
 /-- **The set-up.** -/
 theorem initI_exec {P : Polygon} {W : ℕ} (c : Config)

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleCuR7
 
 /-!
@@ -39,11 +41,11 @@ def cuI (cu : Stmt) : Stmt :=
 def GI (G : ℕ → ℕ) (γ : ℕ) : ℕ := 172 * G γ + 2408 * (Nat.clog 2 γ + 1) + 6400
 
 theorem roomC_q {A G' cl W : ℕ} (h : A + (172 * G' + 2408 * (cl + 1) + 6400) ≤ W) :
-    A + 8 + (172 * G' + 2408 * (cl + 1) + 6300) ≤ W := by linarith
+    A + 8 + (172 * G' + 2408 * (cl + 1) + 6300) ≤ W := ⟡
 
 theorem costC_q' {k₁ k₂ k₃ G' cl : ℕ} (h1 : k₁ = 2) (h2 : k₂ ≤ 50)
     (h3 : k₃ ≤ 172 * G' + 2408 * (cl + 1) + 6300) :
-    k₁ + (k₂ + k₃ + 2) ≤ 172 * G' + 2408 * (cl + 1) + 6400 := by linarith
+    k₁ + (k₂ + k₃ + 2) ≤ 172 * G' + 2408 * (cl + 1) + 6400 := ⟡
 
 section exec
 
@@ -54,7 +56,7 @@ theorem loadC_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) :
       c'.nreg 170099 = c.nmem (c.nreg 150000) ∧ c'.nreg 170098 = 1 ∧
       FrameB (fun r => decide (r = 170098 ∨ r = 170099)) c c' := by
   have hwr : wr (fun r => decide (r = 170098 ∨ r = 170099))
-      (block [.loadN 170099 150000, .constN 170098 1]) = true := by decide
+      (block [.loadN 170099 150000, .constN 170098 1]) = true := ⌖
   suffices h : ∃ c' k, Exec P W (block [.loadN 170099 150000, .constN 170098 1]) c c' k ∧ k = 2 ∧
       c'.nreg 170099 = c.nmem (c.nreg 150000) ∧ c'.nreg 170098 = 1 by
     obtain ⟨c', k, e, h1, h2, h3⟩ := h
@@ -73,42 +75,42 @@ theorem interiorCutter_of {cu : Stmt} {G H : ℕ → ℕ}
   unfold hostWords at hW
   beta_reduce at hcost
   have hQ : (Qof P).n = P.n := qn'
-  obtain ⟨c₁, k₁, e₁, hk₁, a99, a98, F₁⟩ := loadC_exec (P := P) c hw (by omega)
+  obtain ⟨c₁, k₁, e₁, hk₁, a99, a98, F₁⟩ := loadC_exec (P := P) c hw (⋄)
   have w₁ := e₁.wb_right
   have f₁ : ∀ r, r ≠ 170098 → r ≠ 170099 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
-    F₁.1 r (by simp [h1, h2])
+    F₁.1 r (⊚ h1, h2)
   have Fr₁ : Frame ioBands c c₁ k₁ := frameIO_of_frameB (fun r h => load_io h) F₁ k₁
   have rk : ∀ i, i < 20 → rd c₁ bCut i = rd c bCut i := fun i hi =>
     f₁ _ (by unfold bandReg bCut; omega) (by unfold bandReg bCut; omega)
-  have hm₁ : c₁.nmem = c.nmem := F₁.2.2.1
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by decide) (by decide)
-  have r0 := rk 0 (by norm_num)
-  have r1 := rk 1 (by norm_num)
-  have r2 := rk 2 (by norm_num)
-  have r3 := rk 3 (by norm_num)
-  have r4 := rk 4 (by norm_num)
-  have r9 := rk 9 (by norm_num)
-  have r13 := rk 13 (by norm_num)
+  have hm₁ := F₁.2.2.1
+  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (⌖) (⌖)
+  have r0 := rk 0 (⊛)
+  have r1 := rk 1 (⊛)
+  have r2 := rk 2 (⊛)
+  have r3 := rk 3 (⊛)
+  have r4 := rk 4 (⊛)
+  have r9 := rk 9 (⊛)
+  have r13 := rk 13 (⊛)
   by_cases hk : c.nmem (c.nreg 150000) = 0
   · -- a chain descriptor: the chain cutter itself
     have hlt : c₁.nreg 170099 < c₁.nreg 170098 := by rw [a99, a98, hk]; omega
     have hOk' := okModel_of_okI hMD hk hOk
     obtain ⟨c₂, k₂, e₂, hk₂, hpost, F₂⟩ := hcu P W c₁ w₁ (by
       beta_reduce
-      simp only [r0, r1, r2, r3, r4, r9, r13, hm₁, hA₁]
+      ϴ r0, r1, r2, r3, r4, r9, r13, hm₁, hA₁
       exact ⟨hG, hHW, hX, hcap, hMDWF, M, hMD, hOk', hsP, heP, hs1, he1, hin1, hin2, hwt⟩) (by
       beta_reduce
-      rw [r9, hA₁]
+      Ξ r9, hA₁
       have : G (rd c bCut 9) ≤ GI G (rd c bCut 9) := by unfold GI; omega
       omega)
     refine ⟨c₂, _, .seq e₁ (.ifLtN_true hlt e₂), ?_, fun M' hM' => ?_,
-      (Fr₁.trans (F₂.mono oracleBands_sub_io le_rfl)).mono (by simp) (by omega)⟩
+      (Fr₁.trans (F₂.mono oracleBands_sub_io le_rfl)).mono (✓) (⋄)⟩
     · beta_reduce at hk₂ ⊢
-      rw [r9] at hk₂
+      Ξ' r9 at hk₂
       have : G (rd c bCut 9) + 3 ≤ GI G (rd c bCut 9) := by unfold GI; omega
       omega
     · have hp := hpost M' (by rw [r0, hm₁]; exact hM')
-      simp only [r1, r2, r3, r4, r9, hA₁] at hp
+      ϴ' r1, r2, r3, r4, r9, hA₁ at hp
       obtain ⟨p1, p2, p3, prest⟩ := hp
       have : G (rd c bCut 9) ≤ GI G (rd c bCut 9) := by unfold GI; omega
       exact ⟨p1, p2, p3.trans this, prest⟩
@@ -143,25 +145,25 @@ theorem interiorCutter_of {cu : Stmt} {G H : ℕ → ℕ}
     have sh2 : (statC c₁).h₂ = rd c bCut 4 := r4
     have sγ : (statC c₁).γ = rd c bCut 9 := r9
     have q : QFacts (Qof P) (statC c₁).e₁ (statC c₁).h₁ (statC c₁).e₂ (statC c₁).h₂ := by
-      rw [se1, sh1, se2, sh2]
+      Ξ se1, sh1, se2, sh2
       exact ⟨hn3, hD, by rw [← hmn]; exact hs1, by rw [← hmn]; exact he1,
         by rw [hQ]; exact hsP, by rw [hQ]; exact heP⟩
     obtain ⟨c₃, k₃, ps, e₃, hk₃, hne, hlen, hAL, hq, hLE, hr, hkp, hv, F₃⟩ :=
       queryC_exec (H := H) hcu c₂ w₂ S₂ hfree q (by rw [se1, sh1, se2, sh2, sγ]; exact hwt) (by
-        rw [hA₂, hA₁, sγ]
+        Ξ hA₂, hA₁, sγ
         unfold GI at hcost
         exact roomC_q hcost)
-    rw [se1, sh1, se2, sh2] at hkp
-    rw [sγ] at hlen hv
+    Ξ' se1, sh1, se2, sh2 at hkp
+    Ξ' sγ at hlen hv
     refine ⟨c₃, _, .seq e₁ (.ifLtN_false hge (.seq e₂ e₃)), ?_, fun M' hM' => ?_,
-      ((Fr₁.trans F₂).trans F₃).mono (by simp) (by omega)⟩
+      ((Fr₁.trans F₂).trans F₃).mono (✓) (⋄)⟩
     · beta_reduce
-      rw [sγ] at hk₃
+      Ξ' sγ at hk₃
       unfold GI
       exact costC_q' hk₁ hk₂ hk₃
     · have hM'I : M' = interiorModel (Qof P) := by
         rcases hM' with ⟨h0, -⟩ | ⟨-, -, h⟩
-        · rw [hk1] at h0; exact absurd h0 (by norm_num)
+        · Ξ' hk1 at h0; exact absurd h0 (⊛)
         · exact h
       subst hM'I
       set K := (interiorModel (Qof P)).key (Qof P) with hK
@@ -170,36 +172,36 @@ theorem interiorCutter_of {cu : Stmt} {G H : ℕ → ℕ}
       -- the order facts of the list
       have hsb := pkey_bd (N := P.n) hsP hs1
       have heb := pkey_bd (N := P.n) heP he1
-      rw [hmn] at hsb heb
+      Ξ' hmn at hsb heb
       obtain ⟨-, -, hmod, -, -, -, -, -⟩ := qplan q
-      rw [se1, sh1, se2, sh2] at hmod
-      have hy1 : (interiorModel (Qof P)).param (Qof P) ⟨rd c bCut 3, rd c bCut 4⟩ < 1 := heP.2.1
+      Ξ' se1, sh1, se2, sh2 at hmod
+      have hy1 := heP.2.1
       have hle := ee_bound (Q := Qof P) (e₁ := rd c bCut 1) (h₁ := rd c bCut 2) (e₂ := rd c bCut 3)
-        (h₂ := nh (Qof P) (rd c bCut 3) (rd c bCut 4)) (by omega) hsP.1
+        (h₂ := nh (Qof P) (rd c bCut 3) (rd c bCut 4)) (⋄) hsP.1
         (by rw [param_nh (by rw [← hmn]; exact he1)]; exact hy1)
-      rw [param_nh (by rw [← hmn]; exact he1)] at hle
+      Ξ' param_nh (by rw [← hmn]; exact he1) at hle
       obtain ⟨o1, o2, o3, o4⟩ := cut_out (s := ⟨rd c bCut 1, rd c bCut 2⟩)
-        (e := ⟨rd c bCut 3, rd c bCut 4⟩) hkp hv hne (by rw [key_eq]) (by
+        (e := ⟨rd c bCut 3, rd c bCut 4⟩) hkp hv hne (Ρ key_eq) (by
           refine ⟨(((rd c bCut 1 + eeOf (Qof P) (rd c bCut 1) (rd c bCut 2) (rd c bCut 3)
             (nh (Qof P) (rd c bCut 3) (rd c bCut 4))) / (Qof P).n : ℕ) : ℤ), ?_⟩
-          rw [key_eq]
+          Ξ key_eq
           set a := rd c bCut 1 + eeOf (Qof P) (rd c bCut 1) (rd c bCut 2) (rd c bCut 3)
             (nh (Qof P) (rd c bCut 3) (rd c bCut 4)) with ha
           have e1 := Nat.mod_add_div a (Qof P).n
-          rw [hmod] at e1
+          Ξ' hmod at e1
           have e2 : ((rd c bCut 3 : ℕ) : ℝ) + (Qof P).n * ((a / (Qof P).n : ℕ) : ℝ) = a := by
             exact_mod_cast e1
           have e3 : (a : ℝ) = rd c bCut 1 + eeOf (Qof P) (rd c bCut 1) (rd c bCut 2) (rd c bCut 3)
               (nh (Qof P) (rd c bCut 3) (rd c bCut 4)) := by rw [ha]; push_cast; ring
-          simp only [Int.cast_natCast]
-          linarith) hsb heb (by linarith)
+          ϴ Int.cast_natCast
+          linarith) hsb heb (⟡)
       -- the list in memory
-      have hlenq : c₃.nmem (rd c₃ bCut 10) = ps.length := hq
+      have hlenq := hq
       have hpne := List.length_pos_iff.2 hne
       have hvi : ∀ i (hi : i < ps.length), PcV P (interiorModel (Qof P)) c₃.nmem (c₃.nreg ALLOC)
           (H (rd c bCut 9)) (rdPc c₃.nmem A i) := fun i hi => by
         rw [hr i hi]; exact hv _ (List.getElem_mem hi)
-      have hri : ∀ i (hi : i < ps.length), rdPc c₃.nmem A i = ps[i]'hi := hr
+      have hri := hr
       dsimp only
       refine ⟨by rw [hA₁] at hA₂; show c.nreg ALLOC ≤ A; omega,
         by show A + 1 + 7 * c₃.nmem A ≤ c₃.nreg ALLOC; rw [hq]; exact hLE,
@@ -208,28 +210,28 @@ theorem interiorCutter_of {cu : Stmt} {G H : ℕ → ℕ}
       · show K (rdPc c₃.nmem A 0).s = K ⟨rd c bCut 1, rd c bCut 2⟩
         rw [hri 0 hpne]; exact o1
       · show K (rdPc c₃.nmem A (c₃.nmem A - 1)).e = K ⟨rd c bCut 3, rd c bCut 4⟩
-        rw [show c₃.nmem A = ps.length from hq, hri _ (by omega)]; exact o2
+        rw [show c₃.nmem A = ps.length from hq, hri _ (⋄)]; exact o2
       · intro i hi
-        rw [show c₃.nmem (rd c₃ bCut 10) = ps.length from hq] at hi
+        Ξ' show c₃.nmem (rd c₃ bCut 10) = ps.length from hq at hi
         show K (rdPc c₃.nmem A i).e = K (rdPc c₃.nmem A (i + 1)).s
-        rw [hri i (by omega), hri (i + 1) hi]; exact o3 i hi
+        rw [hri i (⋄), hri (i + 1) hi]; exact o3 i hi
       · intro i hi
-        rw [show c₃.nmem (rd c₃ bCut 10) = ps.length from hq] at hi
+        Ξ' show c₃.nmem (rd c₃ bCut 10) = ps.length from hq at hi
         show sideInArc (K (rdPc c₃.nmem A i).s) (K ⟨rd c bCut 3, rd c bCut 4⟩)
           (K (rdPc c₃.nmem A i).e)
-        rw [hri i (by omega)]; exact o4 i hi
+        rw [hri i (⋄)]; exact o4 i hi
       · intro i hi
-        rw [show c₃.nmem (rd c₃ bCut 10) = ps.length from hq] at hi
+        Ξ' show c₃.nmem (rd c₃ bCut 10) = ps.length from hq at hi
         exact (hvi i hi).2.2.2.2.2.1
       · intro i hi
-        rw [show c₃.nmem (rd c₃ bCut 10) = ps.length from hq] at hi
+        Ξ' show c₃.nmem (rd c₃ bCut 10) = ps.length from hq at hi
         exact (hvi i hi).2.2.2.2.2.2
       · intro i hi
-        rw [show c₃.nmem (rd c₃ bCut 10) = ps.length from hq] at hi
+        Ξ' show c₃.nmem (rd c₃ bCut 10) = ps.length from hq at hi
         have h := hvi i hi
         exact ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1⟩
       · intro i hi
-        rw [show c₃.nmem (rd c₃ bCut 10) = ps.length from hq] at hi
+        Ξ' show c₃.nmem (rd c₃ bCut 10) = ps.length from hq at hi
         exact (hvi i hi).2.2.2.2.1
 
 end exec

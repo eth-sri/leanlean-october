@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvLoopStartS
 public import Chazelle.Core.SweepEvFace3
 
@@ -21,8 +23,8 @@ open OracleQ (sj sk ek succP predP)
 
 @[expose] public section
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
+
+
 /-- **The region of `N₂` faced at a walk vertex of `C₂`** (the run step of `face`). -/
 theorem face_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     {Ok : Polygon → Model → Prop} {P : Polygon} {W : ℕ} {c₀ c : Config} {J : Merge.Junction}
@@ -65,12 +67,12 @@ theorem face_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       c₂.nreg q = c₁.nreg q := by
     intro q hq
     rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      exact n2 _ (not_oracle_sw (by simp [fEE, fEH, fE, fA, lR0, lR1, lR2, sw])
-        (by simp [fEE, fEH, fE, fA, lR0, lR1, lR2, sw]))
-        (by simp [fEE, fEH, fE, fA, lR0, lR1, lR2, fSH, sw])
-        (by simp [fEE, fEH, fE, fA, lR0, lR1, lR2, fO, sw])
-        (by simp [fEE, fEH, fE, fA, lR0, lR1, lR2, fO, sw])
-        (by simp [fEE, fEH, fE, fA, lR0, lR1, lR2, ALLOC, sw])
+      exact n2 _ (not_oracle_sw (⊚ fEE, fEH, fE, fA, lR0, lR1, lR2, sw)
+        (⊚ fEE, fEH, fE, fA, lR0, lR1, lR2, sw))
+        (⊚ fEE, fEH, fE, fA, lR0, lR1, lR2, fSH, sw)
+        (⊚ fEE, fEH, fE, fA, lR0, lR1, lR2, fO, sw)
+        (⊚ fEE, fEH, fE, fA, lR0, lR1, lR2, fO, sw)
+        (⊚ fEE, fEH, fE, fA, lR0, lR1, lR2, ALLOC, sw)
   -- 3. normalise the end of the arc
   refine IRS.seq (normS_irs (dsc := sw 21) (pe := fEE) (ph := fEH) (o := fO) (C := J.right) hI₂ hK₂
     (E.ctx2' hI₂) ⟨by unfold sw; norm_num, by unfold sw; norm_num, by unfold fEE sw; norm_num,
@@ -78,10 +80,10 @@ theorem face_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     ⟨by unfold fO sw; norm_num, by unfold fO sw; norm_num, by unfold fO fEE sw; norm_num,
       by unfold fO fEH sw; norm_num, by unfold fO fEE sw; norm_num, by unfold fO fEH sw; norm_num,
       by unfold fEE fEH sw; norm_num⟩
-    (by rw [n2' fEE (by simp), vEE]; exact hee)
-    (by rw [n2' fEE (by simp), n2' fEH (by simp), vEE, vEH]; exact ppe)
-    (by rw [n2' fEE (by simp), n2' fEH (by simp), vEE, vEH]; exact hey)
-    (by have := hA₂'; rw [hAl1] at this; exact face_room3 hroom this)) ?_
+    (by rw [n2' fEE (✓), vEE]; exact hee)
+    (by rw [n2' fEE (✓), n2' fEH (✓), vEE, vEH]; exact ppe)
+    (by rw [n2' fEE (✓), n2' fEH (✓), vEE, vEH]; exact hey)
+    (by have := hA₂'; Ξ' hAl1 at this; exact face_room3 hroom this)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨v3EE, v3EH, k3, hA3, hm3⟩
   have n3 : ∀ q, bandOf q ∉ oracleBands → q ≠ fEH → q ≠ fO → q ≠ fO + 1 → q ≠ ALLOC →
       c₃.nreg q = c₂.nreg q := k3
@@ -89,33 +91,33 @@ theorem face_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       q = K0 ∨ q = K1) → c₃.nreg q = c₂.nreg q := by
     intro q hq
     rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-      exact n3 _ (not_oracle_sw (by simp [fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, sw])
-        (by simp [fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, sw]))
-        (by simp [fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, fEH, sw])
-        (by simp [fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, fO, sw])
-        (by simp [fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, fO, sw])
-        (by simp [fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, ALLOC, sw])
+      exact n3 _ (not_oracle_sw (⊚ fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, sw)
+        (⊚ fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, sw))
+        (⊚ fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, fEH, sw)
+        (⊚ fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, fO, sw)
+        (⊚ fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, fO, sw)
+        (⊚ fSE, fSH, fE, fA, lR0, lR1, lR2, K0, K1, ALLOC, sw)
   have hK₃ := E.hK.fix hI₃
   -- 4. the selection
   refine (faceSel_irs hI₃ hK₃.1).mono le_rfl ?_
   rintro c₄ ⟨v4R, k4, hm4⟩
   -- the values at the selection
-  have eA : c₃.nreg fA = c.nreg fA := by rw [n3' fA (by simp), n2' fA (by simp), hfa1]
-  have eE : c₃.nreg fE = c.nreg fE := by rw [n3' fE (by simp), n2' fE (by simp), hfe1]
-  have eK1 : c₃.nreg K1 = 1 := hK₃.2.1
-  have eSE : c₃.nreg fSE = (N₂.arc (sj N₂ j)).s.edge := by rw [n3' fSE (by simp), v2SE, vSE]
+  have eA : c₃.nreg fA = c.nreg fA := Ρ n3' fA (✓), n2' fA (✓), hfa1
+  have eE : c₃.nreg fE = c.nreg fE := Ρ n3' fE (✓), n2' fE (✓), hfe1
+  have eK1 := hK₃.2.1
+  have eSE : c₃.nreg fSE = (N₂.arc (sj N₂ j)).s.edge := Ρ n3' fSE (✓), v2SE, vSE
   have eSH : c₃.nreg fSH = nhgt (chainModel J.right) (Qof P) (N₂.arc (sj N₂ j)).s := by
-    rw [n3' fSH (by simp), v2SH, vSE, vSH]
-  have eEE : c₃.nreg fEE = (N₂.arc (sj N₂ j)).e.edge := by rw [v3EE, n2' fEE (by simp), vEE]
+    Ξ n3' fSH (✓), v2SH, vSE, vSH
+  have eEE : c₃.nreg fEE = (N₂.arc (sj N₂ j)).e.edge := Ρ v3EE, n2' fEE (✓), vEE
   have eEH : c₃.nreg fEH = nhgt (chainModel J.right) (Qof P) (N₂.arc (sj N₂ j)).e := by
-    rw [v3EH, n2' fEE (by simp), n2' fEH (by simp), vEE, vEH]
+    Ξ v3EH, n2' fEE (✓), n2' fEH (✓), vEE, vEH
   have eR0 : c₃.nreg lR0 = (N₂.arc (sj N₂ (predP N₂.arcs.length j))).reg := by
-    rw [n3' lR0 (by simp), n2' lR0 (by simp), r0]
+    Ξ n3' lR0 (✓), n2' lR0 (✓), r0
   have eR1 : c₃.nreg lR1 = (N₂.arc (sj N₂ j)).reg := by
-    rw [n3' lR1 (by simp), n2' lR1 (by simp), r1]
+    Ξ n3' lR1 (✓), n2' lR1 (✓), r1
   have eR2 : c₃.nreg lR2 = (N₂.arc (sj N₂ (succP N₂.arcs.length j))).reg := by
-    rw [n3' lR2 (by simp), n2' lR2 (by simp), r2]
-  rw [eA, eE, eK1, eSE, eSH, eEE, eEH, eR0, eR1, eR2] at v4R
+    Ξ n3' lR2 (✓), n2' lR2 (✓), r2
+  Ξ' eA, eE, eK1, eSE, eSH, eEE, eEH, eR0, eR1, eR2 at v4R
   -- the key tests
   have hS : (N₂.arc (sj N₂ j)).s.edge = c.nreg fE ∧
       nhgt (chainModel J.right) (Qof P) (N₂.arc (sj N₂ j)).s = 0 ↔
@@ -128,22 +130,22 @@ theorem face_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have hjP := OracleQ.predP_lt hj
   have hjN := OracleQ.succP_lt hj
   refine ⟨?_, fun h0 => ?_, fun h1 => ?_, ?_, ?_, ?_⟩
-  · rw [v4R]
+  · Ξ v4R
     split_ifs
     · exact (arc_regOf hNF hjP).1
     · exact (arc_regOf hNF hj).1
     · exact (arc_regOf hNF hjN).1
     · exact (arc_regOf hNF hj).1
-  · rw [v4R, ite_eq_left (by omega)]
+  · Ξ v4R, ite_eq_left (⋄)
     split_ifs with h
     · exact face_before_eq hP₂ hNF hfe hj (hS.1 h)
     · exact face_before_ne hP₂ hNF hfe hj hl1 hl2 (fun h' => h (hS.2 h'))
-  · rw [v4R, ite_eq_right (by omega)]
+  · Ξ v4R, ite_eq_right (⋄)
     split_ifs with h
     · exact face_after_eq hP₂ hNF hfe hj (hE.1 h)
     · exact face_after_ne hP₂ hNF hfe hj hl1 hl2 (fun h' => h (hE.2 h'))
   · intro a ha
-    rw [hm4, hm3 a (by omega), hm2 a (by omega), hm1]
+    Ξ hm4, hm3 a (⋄), hm2 a (⋄), hm1
   · rw [k4 ALLOC (by unfold ALLOC fR sw; norm_num)]; omega
   · intro r hr hFR hra
     have hout' : ¬ (sw 700 ≤ r ∧ r < sw 2200) := fun h => hFR (Or.inl h)
@@ -154,7 +156,7 @@ theorem face_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     have h2 : r ≠ fSH := fun h => by subst h; unfold fSH sw at hout'; omega
     have h3 : r ≠ fO := fun h => by subst h; unfold fO sw at hout'; omega
     have h4 : r ≠ fO + 1 := fun h => by subst h; unfold fO sw at hout'; omega
-    rw [k4 r hrR, n3 r hr h1 h3 h4 hra, n2 r hr h2 h3 h4 hra]
+    Ξ k4 r hrR, n3 r hr h1 h3 h4 hra, n2 r hr h2 h3 h4 hra
     exact hk1 r hr hout
 
 
@@ -173,11 +175,11 @@ theorem cst_regs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀
   have fx : ∀ k, k < 700 → c.nreg (sw k) = c₀.nreg (sw k) := fun k hk =>
     hI.hin _ (by unfold IFix sw; omega)
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · rw [fx 41 (by norm_num), show sw 41 = sw (40 + 1) from rfl, h40 1 (by norm_num)]; simp [cstR]
-  · rw [fx 42 (by norm_num), show sw 42 = sw (40 + 2) from rfl, h40 2 (by norm_num)]; simp [cstR]
-  · rw [fx 43 (by norm_num), show sw 43 = sw (40 + 3) from rfl, h40 3 (by norm_num)]; simp [cstR]
-  · rw [fx 44 (by norm_num), show sw 44 = sw (40 + 4) from rfl, h40 4 (by norm_num)]; simp [cstR]
-  · rw [fx 34 (by norm_num), h34, cm_n]
+  · rw [fx 41 (⊛), show sw 41 = sw (40 + 1) from rfl, h40 1 (⊛)]; Θ cstR
+  · rw [fx 42 (⊛), show sw 42 = sw (40 + 2) from rfl, h40 2 (⊛)]; Θ cstR
+  · rw [fx 43 (⊛), show sw 43 = sw (40 + 3) from rfl, h40 3 (⊛)]; Θ cstR
+  · rw [fx 44 (⊛), show sw 44 = sw (40 + 4) from rfl, h40 4 (⊛)]; Θ cstR
+  · Ξ fx 34 (⊛), h34, cm_n
 
 end Consts
 
@@ -213,8 +215,8 @@ def fposK (L T : ℕ) : ℕ := L + (3 + (1 + 30000 * (T + 1)))
 /-- The registers `fpos` may write besides `FR`. -/
 def FPR (r : ℕ) : Prop := FR r ∨ r = zT ∨ r = fE ∨ r = fA
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
+
+
 /-- **The region faced at a computed vertex.** -/
 theorem fpos_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     {Ok : Polygon → Model → Prop} {P : Polygon} {W : ℕ} {c₀ c : Config} {J : Merge.Junction}

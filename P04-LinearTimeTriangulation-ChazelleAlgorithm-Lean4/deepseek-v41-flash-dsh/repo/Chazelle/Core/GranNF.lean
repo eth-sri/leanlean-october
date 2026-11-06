@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranWt
 
 /-!
@@ -49,17 +51,17 @@ theorem mem_F_iff {c : Set Point} : c ∈ N.F M Q ↔ ∃ i, i < N.nChords ∧ c
     obtain ⟨i, hi, e⟩ := List.mem_iff_getElem.1 hr
     refine ⟨i, hi, ?_⟩
     unfold cs NF.chord
-    rw [NFLoc.getD_of_lt _ hi, e]
+    Ξ NFLoc.getD_of_lt _ hi, e
   · rintro ⟨i, hi, rfl⟩
     refine ⟨N.chords[i], List.getElem_mem hi, ?_⟩
     unfold cs NF.chord
-    rw [NFLoc.getD_of_lt _ hi]
+    Ξ NFLoc.getD_of_lt _ hi
 
 theorem cs_mem {i : ℕ} (hi : i < N.nChords) : cs M Q N i ∈ N.F M Q := mem_F_iff.2 ⟨i, hi, rfl⟩
 
 theorem fam_univ : fam M Q N univ = N.F M Q := by
   ext c
-  rw [mem_F_iff]
+  Ξ mem_F_iff
   constructor
   · rintro ⟨i, -, hi, rfl⟩; exact ⟨i, hi, rfl⟩
   · rintro ⟨i, hi, rfl⟩; exact ⟨i, mem_univ _, hi, rfl⟩
@@ -119,7 +121,7 @@ theorem lpt_ne_rpt (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) :
   have hset : cs M Q N i = Visibility.hseg (Q.vtx (N.chord i).h).2
       (M.pos Q (N.chord i).lpos).1 (M.pos Q (N.chord i).rpos).1 := rfl
   have hx : (M.pos Q (N.chord i).lpos).1 = (M.pos Q (N.chord i).rpos).1 := by
-    rw [pos_eq_sidePt, pos_eq_sidePt]
+    Ξ pos_eq_sidePt, pos_eq_sidePt
     exact congrArg Prod.fst he
   have ha : a ∈ cs M Q N i := by rw [hcab]; exact Geometry.left_mem_segment a b
   have hb : b ∈ cs M Q N i := by rw [hcab]; exact Geometry.right_mem_segment a b
@@ -127,7 +129,7 @@ theorem lpt_ne_rpt (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) :
   obtain ⟨ha1, ha2, ha3⟩ := ha
   obtain ⟨hb1, hb2, hb3⟩ := hb
   rw [hx] at ha2 hb2
-  exact hab (Prod.ext (by linarith) (by rw [ha1, hb1]))
+  exact hab (Prod.ext (⟡) (Ρ ha1, hb1))
 
 /-- **The attachments of a record's chord** are at the keys of its two positions. -/
 theorem attach_keys (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) {p : ℕ} {t : ℝ}
@@ -148,7 +150,7 @@ theorem attach_keys (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) {p : ℕ} {t 
 /-- The two keys of a record differ. -/
 theorem lkey_ne_rkey (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) :
     M.key Q (N.chord i).lpos ≠ M.key Q (N.chord i).rpos := by
-  rw [key_lpos, key_rpos]
+  Ξ key_lpos, key_rpos
   exact WalkAx.key_ne_of_pt_ne (attach_l hN hi) (attach_r hN hi) (lpt_ne_rpt hN hM hi)
 
 /-- **The cuts of a subfamily** are the keys of the positions of its records. -/
@@ -171,7 +173,7 @@ theorem seq_nodup : N.seq.Nodup := by
 theorem seq_inj {i i' : ℕ} (hi : i < N.arcs.length) (hi' : i' < N.arcs.length)
     (h : N.seq.getD i 0 = N.seq.getD i' 0) : i = i' := by
   have hl := NFLoc.seq_length hN
-  rw [NFLoc.getD_of_lt 0 (by omega), NFLoc.getD_of_lt 0 (by omega)] at h
+  rw [NFLoc.getD_of_lt 0 (⋄), NFLoc.getD_of_lt 0 (⋄)] at h
   exact (List.Nodup.getElem_inj_iff (seq_nodup hN)).1 h
 
 /-- Distinct arcs of a nonempty submap start at distinct keys. -/
@@ -195,8 +197,8 @@ theorem pk_cut (hne : (N.F M Q).Nonempty) {i : ℕ} (hi : i < N.arcs.length) :
 theorem pk_strict (hne : (N.F M Q).Nonempty) {i i' : ℕ} (hii : i < i')
     (hi' : i' < N.arcs.length) : pk M Q N i < pk M Q N i' := by
   refine lt_of_le_of_ne (NFLoc.seq_sorted hN hii.le hi') fun h => ?_
-  have := start_inj hN hne (NFLoc.seq_lt hN (by omega)) (NFLoc.seq_lt hN hi') h
-  have := seq_inj hN (by omega) hi' this
+  have := start_inj hN hne (NFLoc.seq_lt hN (⋄)) (NFLoc.seq_lt hN hi') h
+  have := seq_inj hN (⋄) hi' this
   omega
 
 theorem pk_inj (hne : (N.F M Q).Nonempty) {i i' : ℕ} (hi : i < N.arcs.length)
@@ -229,7 +231,7 @@ theorem deg_region (hNF : IsNF M Q N) (_hRC : RegionCorr M Q N reg)
   have e : {c | c ∈ N.F M Q ∧ TouchesIn M.D c (reg r)} =
       (fun i => cs M Q N i) '' {i | i ∈ (N.region r).chords} := by
     ext c
-    simp only [mem_ofPred_eq, mem_image]
+    ϴ mem_ofPred_eq, mem_image
     constructor
     · rintro ⟨hc, ht⟩
       obtain ⟨i, hi, rfl⟩ := mem_F_iff.1 hc
@@ -240,10 +242,10 @@ theorem deg_region (hNF : IsNF M Q N) (_hRC : RegionCorr M Q N reg)
   have hinj : Set.InjOn (fun i => cs M Q N i) {i | i ∈ (N.region r).chords} := by
     intro i hi i' hi' h
     exact cs_inj hNF ((hmem i).1 hi).1 ((hmem i').1 hi').1 h
-  rw [e, hinj.ncard_image]
+  Ξ e, hinj.ncard_image
   rw [show {i | i ∈ (N.region r).chords} = ((N.region r).chords.toFinset : Set ℕ) by
     ext; simp]
-  rw [Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd]
+  Ξ Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd
 
 omit hN in
 /-- **Chord `i` touches exactly the regions `up` and `dn` of its record**, which differ. -/
@@ -258,9 +260,9 @@ theorem touch_iff_side (hNF : IsNF M Q N) (hM : WalkAx M) (hRC : RegionCorr M Q 
   have hc : cs M Q N i ∈ M.Adm := F_adm hNF (cs_mem hi)
   obtain ⟨a, b, -, hcab, -, hopen, -, -⟩ := hM.ends _ hc
   set z := Geometry.lerp a b (1 / 2) with hz
-  have hzD : z ∈ M.D := hopen _ ⟨by norm_num, by norm_num⟩
+  have hzD : z ∈ M.D := hopen _ ⟨⊛, ⊛⟩
   have hzc : z ∈ cs M Q N i := by
-    rw [hcab]; exact Geometry.lerp_mem_segment a b (by norm_num) (by norm_num)
+    rw [hcab]; exact Geometry.lerp_mem_segment a b (⊛) (⊛)
   obtain ⟨ε₀, hε₀, hε⟩ := hCSi z hzc hzD
   obtain ⟨δ, ⟨h1, h2⟩, hδ0, hδ1⟩ := ((hside z hzc hzD).and (Ioo_mem_nhdsGT hε₀)).exists
   obtain ⟨e1, e2⟩ := hε δ hδ0 hδ1
@@ -272,8 +274,8 @@ theorem touch_iff_side (hNF : IsNF M Q N) (hM : WalkAx M) (hRC : RegionCorr M Q 
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hV (hRC.1 _ hdn) with h | h
     · exact h
     · exact absurd e2 (h.notMem_of_mem_left h2)
-  refine ⟨fun h => hUV (by rw [hUup, hVdn, h]), fun r hr => ?_⟩
-  rw [htouch _ (hRC.1 r hr), hUup, hVdn]
+  refine ⟨fun h => hUV (Ρ hUup, hVdn, h), fun r hr => ?_⟩
+  Ξ htouch _ (hRC.1 r hr), hUup, hVdn
   constructor
   · rintro (h | h)
     · exact Or.inl (hRC.2.1 _ _ hr hup h)

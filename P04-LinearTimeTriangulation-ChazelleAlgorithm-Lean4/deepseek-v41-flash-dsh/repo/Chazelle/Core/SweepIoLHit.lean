@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoMin
 public import Chazelle.Core.SweepIoLocal
 public import Chazelle.Core.SweepIoShot
@@ -87,8 +89,8 @@ theorem nbrRegsL_val (m f : ℕ → ℕ) :
     regB m nbrRegsL f lR2 = m (f lAB + 5 * m (f lSB + f lJN)) := by
   simp only [nbrRegsL, regOfL, List.cons_append, List.nil_append, regB, regI, upd, lX, lY, lSB,
     lAB, lJP, lJ, lJN, lR0, lR1, lR2, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  exact ⟨congrArg m (by ring), congrArg m (by ring), congrArg m (by ring)⟩
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
+  exact ⟨congrArg m (⋆), congrArg m (⋆), congrArg m (⋆)⟩
 
 theorem nbrRegsL_other (m f : ℕ → ℕ) {q : ℕ} (h1 : q ≠ lX) (h2 : q ≠ lY) (h3 : q ≠ lR0)
     (h4 : q ≠ lR1) (h5 : q ≠ lR2) : regB m nbrRegsL f q = f q :=
@@ -105,14 +107,14 @@ theorem nbrHead_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk4 : f K4 = 4) (hk6 :
   have e1 : f 240611 = 1 := hk1
   have e4 : f 240613 = 4 := hk4
   have e6 : f 240612 = 6 := hk6
-  simp only [nbrHead, regB, regI, upd, lX, lA, lSB, lAB, lNF, K1, K4, K6, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e4, e6]
+  ϴ nbrHead, regB, regI, upd, lX, lA, lSB, lAB, lNF, K1, K4, K6, sw
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e4, e6
   exact ⟨trivial, trivial, trivial⟩
 
 theorem nbrHead_other (m f : ℕ → ℕ) {q : ℕ} (h1 : q ≠ lX) (h2 : q ≠ lA) (h3 : q ≠ lSB)
     (h4 : q ≠ lAB) : regB m nbrHead f q = f q :=
   regB_other m nbrHead f (fun i hi => by
-    simp only [nbrHead, List.mem_cons, List.not_mem_nil, or_false] at hi
+    ϴ' nbrHead, List.mem_cons, List.not_mem_nil, or_false at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;> intro h <;>
       subst h <;> simp_all)
 
@@ -123,12 +125,12 @@ theorem nbrHead_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk4 : f K4 = 4) (hk6 : 
   have e6 : f 240612 = 6 := hk6
   have hb' : f 241102 + 6 ≤ W := hb
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
-  simp only [nbrHead, okB, okI, regI, upd, lX, lA, lSB, lAB, lNF, K1, K4, K6, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e4, e6]
-  exact ⟨⟨s 1112 (by norm_num) (by norm_num), by omega⟩, s 1114 (by norm_num) (by norm_num),
-    ⟨s 1112 (by norm_num) (by norm_num), by omega⟩, s 1115 (by norm_num) (by norm_num),
-    ⟨s 1112 (by norm_num) (by norm_num), by omega⟩, s 1116 (by norm_num) (by norm_num), trivial⟩
+    iscr_sw (⋄) (⋄)
+  ϴ nbrHead, okB, okI, regI, upd, lX, lA, lSB, lAB, lNF, K1, K4, K6, sw
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e4, e6
+  exact ⟨⟨s 1112 (⊛) (⊛), ⋄⟩, s 1114 (⊛) (⊛),
+    ⟨s 1112 (⊛) (⊛), ⋄⟩, s 1115 (⊛) (⊛),
+    ⟨s 1112 (⊛) (⊛), ⋄⟩, s 1116 (⊛) (⊛), trivial⟩
 
 theorem nbrRegsL_ok (m f : ℕ → ℕ) (hb : ∀ p, p = lJP ∨ p = lJ ∨ p = lJN →
       f lSB + f p ≤ W ∧ f lAB + 5 * m (f lSB + f p) ≤ W) : okB W m nbrRegsL f := by
@@ -142,22 +144,22 @@ theorem nbrRegsL_ok (m f : ℕ → ℕ) (hb : ∀ p, p = lJP ∨ p = lJ ∨ p = 
   have d1' : f 241115 + f 241118 ≤ W := d1
   have d2' : f 241116 + 5 * m (f 241115 + f 241118) ≤ W := d2
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
+    iscr_sw (⋄) (⋄)
   simp only [nbrRegsL, regOfL, List.cons_append, List.nil_append, okB, okI, regI, upd, lX, lY,
     lSB, lAB, lJP, lJ, lJN, lR0, lR1, lR2, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  refine ⟨⟨s 1112 (by norm_num) (by norm_num), a1'⟩, s 1112 (by norm_num) (by norm_num),
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    s 1109 (by norm_num) (by norm_num),
-    ⟨s 1112 (by norm_num) (by norm_num), b1'⟩, s 1112 (by norm_num) (by norm_num),
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    s 1110 (by norm_num) (by norm_num),
-    ⟨s 1112 (by norm_num) (by norm_num), d1'⟩, s 1112 (by norm_num) (by norm_num),
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    s 1111 (by norm_num) (by norm_num), trivial⟩
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
+  refine ⟨⟨s 1112 (⊛) (⊛), a1'⟩, s 1112 (⊛) (⊛),
+    ⟨s 1113 (⊛) (⊛), ⋄⟩, ⟨s 1113 (⊛) (⊛), ⋄⟩,
+    ⟨s 1113 (⊛) (⊛), ⋄⟩, ⟨s 1113 (⊛) (⊛), ⋄⟩,
+    s 1109 (⊛) (⊛),
+    ⟨s 1112 (⊛) (⊛), b1'⟩, s 1112 (⊛) (⊛),
+    ⟨s 1113 (⊛) (⊛), ⋄⟩, ⟨s 1113 (⊛) (⊛), ⋄⟩,
+    ⟨s 1113 (⊛) (⊛), ⋄⟩, ⟨s 1113 (⊛) (⊛), ⋄⟩,
+    s 1110 (⊛) (⊛),
+    ⟨s 1112 (⊛) (⊛), d1'⟩, s 1112 (⊛) (⊛),
+    ⟨s 1113 (⊛) (⊛), ⋄⟩, ⟨s 1113 (⊛) (⊛), ⋄⟩,
+    ⟨s 1113 (⊛) (⊛), ⋄⟩, ⟨s 1113 (⊛) (⊛), ⋄⟩,
+    s 1111 (⊛) (⊛), trivial⟩
 
 /-- The memory after `put3`. -/
 def mem3 (m : ℕ → ℕ) (A v0 v1 v2 : ℕ) : ℕ → ℕ := upd (upd (upd m A v0) (A + 1) v1) (A + 2) v2
@@ -182,20 +184,20 @@ theorem put3_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 3 
     · config_simp; omega
     · config_simp
     · config_simp
-      simp only [upd, ite_eq_right h1, ite_eq_right h2]
+      ϴ upd, ite_eq_right h1, ite_eq_right h2
     · config_simp
-      simp only [k1, mem3]
+      ϴ k1, mem3
   obtain ⟨c', k, ex, hk, h1, h2, h3, h4, h5, h6, h7⟩ := ex
-  refine IRS.ofExec hI ex (by omega) (fun r hr hra => h3 r hra (fun h => hr (by
-    subst h; exact iscr_sw (by norm_num) (by norm_num)))) h5 (fun a ha => ?_) h6 h7
+  refine IRS.ofExec hI ex (⋄) (fun r hr hra => h3 r hra (fun h => hr (by
+    subst h; exact iscr_sw (⊛) (⊛)))) h5 (fun a ha => ?_) h6 h7
     (by show c.nreg 9999 ≤ c'.nreg 9999; omega) (by show c'.nreg 9999 ≤ c.nreg 9999 + k; omega)
     ⟨h1, h2, fun r a b => h3 r a b, h4⟩
-  rw [h4]
+  Ξ h4
   have h0 : c₀.nreg 9999 ≤ c.nreg 9999 := hI.hA
   have ha' : a < c₀.nreg 9999 := ha
   unfold mem3
-  simp only [upd]
-  rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega)]
+  ϴ upd
+  Ξ ite_eq_right (⋄), ite_eq_right (⋄), ite_eq_right (⋄)
 
 /-- The neighbouring spine positions. -/
 theorem nbrJ_irs (hI : IInv W c₀ c) (hK : Consts c) {A j : ℕ} (hA : c.nreg lA = A)
@@ -210,51 +212,51 @@ theorem nbrJ_irs (hI : IInv W c₀ c) (hK : Consts c) {A j : ℕ} (hA : c.nreg l
       (fun c' => c' = { c with nreg := upd c.nreg lJP (predP A j) }) := by
     by_cases h0 : c.nreg lJ < c.nreg K1
     · refine (IRS.ifT h0 (IRS.reg hI (iscr_sw (by unfold lJP sw; norm_num) (by unfold lJP sw; norm_num))
-        (Exec.subN hI.hw lJP lA K1))).mono (by omega) ?_
+        (Exec.subN hI.hw lJP lA K1))).mono (⋄) ?_
       rintro c' rfl
-      rw [hA, k1, show predP A j = A - 1 by unfold predP; rw [ite_eq_left (by omega)]]
+      Ξ hA, k1, show predP A j = A - 1 by unfold predP; Ξ ite_eq_left (⋄)
     · refine (IRS.ifF h0 (IRS.reg hI (iscr_sw (by unfold lJP sw; norm_num) (by unfold lJP sw; norm_num))
         (Exec.subN hI.hw lJP lJ K1))).mono le_rfl ?_
       rintro c' rfl
-      rw [hj, k1, show predP A j = j - 1 by unfold predP; rw [ite_eq_right (by omega)]]
-  refine IRS.seq step1 ?_ |>.mono (K := 3 + (1 + 3)) (by omega) (fun _ h => h)
+      Ξ hj, k1, show predP A j = j - 1 by unfold predP; Ξ ite_eq_right (⋄)
+  refine IRS.seq step1 ?_ |>.mono (K := 3 + (1 + 3)) (⋄) (fun _ h => h)
   rintro c₁ hI₁ - - hc1
   have c1J : c₁.nreg lJ = j := by
     rw [hc1]; show upd c.nreg lJP (predP A j) lJ = j
-    rw [upd_other _ _ _ (by unfold lJ lJP sw; norm_num), hj]
+    Ξ upd_other _ _ _ (by unfold lJ lJP sw; norm_num), hj
   have c1K : c₁.nreg K1 = 1 := by
     rw [hc1]; show upd c.nreg lJP (predP A j) K1 = 1
-    rw [upd_other _ _ _ (by unfold K1 lJP sw; norm_num), k1]
+    Ξ upd_other _ _ _ (by unfold K1 lJP sw; norm_num), k1
   have c1A : c₁.nreg lA = A := by
     rw [hc1]; show upd c.nreg lJP (predP A j) lA = A
-    rw [upd_other _ _ _ (by unfold lA lJP sw; norm_num), hA]
+    Ξ upd_other _ _ _ (by unfold lA lJP sw; norm_num), hA
   have c1P : c₁.nreg lJP = predP A j := by
     rw [hc1]; show upd c.nreg lJP (predP A j) lJP = _
-    rw [upd_same]
+    Ξ upd_same
   have c1r : ∀ r, r ≠ lJP → c₁.nreg r = c.nreg r := by
     intro r hr; rw [hc1]; show upd c.nreg lJP (predP A j) r = _
-    rw [upd_other _ _ _ hr]
+    Ξ upd_other _ _ _ hr
   have hjW : c₁.nreg lJ + c₁.nreg K1 ≤ W := by rw [c1J, c1K]; omega
   refine IRS.seq (IRS.reg hI₁ (iscr_sw (by unfold lJN sw; norm_num) (by unfold lJN sw; norm_num))
     (Exec.addN hI₁.hw lJN lJ K1 hjW)) ?_
   rintro c₂ hI₂ - - hc2
   have v2N : c₂.nreg lJN = j + 1 := by
     rw [hc2]; show upd c₁.nreg lJN (c₁.nreg lJ + c₁.nreg K1) lJN = _
-    rw [upd_same, c1J, c1K]
+    Ξ upd_same, c1J, c1K
   have v2A : c₂.nreg lA = A := by
     rw [hc2]; show upd c₁.nreg lJN (c₁.nreg lJ + c₁.nreg K1) lA = _
-    rw [upd_other _ _ _ (by unfold lA lJN sw; norm_num), c1A]
+    Ξ upd_other _ _ _ (by unfold lA lJN sw; norm_num), c1A
   have v2P : c₂.nreg lJP = predP A j := by
     rw [hc2]; show upd c₁.nreg lJN (c₁.nreg lJ + c₁.nreg K1) lJP = _
-    rw [upd_other _ _ _ (by unfold lJP lJN sw; norm_num), c1P]
+    Ξ upd_other _ _ _ (by unfold lJP lJN sw; norm_num), c1P
   have v2r : ∀ r, r ≠ lJP → r ≠ lJN → c₂.nreg r = c.nreg r := by
     intro r h1 h2
     rw [hc2]; show upd c₁.nreg lJN (c₁.nreg lJ + c₁.nreg K1) r = _
-    rw [upd_other _ _ _ h2, c1r r h1]
+    Ξ upd_other _ _ _ h2, c1r r h1
   by_cases hn : j + 1 < A
   · have hc : c₂.nreg lJN < c₂.nreg lA := by rw [v2N, v2A]; exact hn
-    refine (IRS.ifT hc (IRS.skip (K := 1) hI₂ ?_)).mono (by omega) (fun _ h => h)
-    refine ⟨v2P, by rw [v2N]; unfold succP; rw [ite_eq_left hn], v2r, by rw [hc2, hc1]⟩
+    refine (IRS.ifT hc (IRS.skip (K := 1) hI₂ ?_)).mono (⋄) (fun _ h => h)
+    refine ⟨v2P, by rw [v2N]; unfold succP; rw [ite_eq_left hn], v2r, Ρ hc2, hc1⟩
   · have hc : ¬ c₂.nreg lJN < c₂.nreg lA := by rw [v2N, v2A]; exact hn
     refine (IRS.ifF hc (IRS.reg hI₂ (iscr_sw (by unfold lJN sw; norm_num) (by unfold lJN sw; norm_num))
         (Exec.constN hI₂.hw lJN 0 (Nat.zero_le _)))).mono le_rfl ?_
@@ -262,7 +264,7 @@ theorem nbrJ_irs (hI : IInv W c₀ c) (hK : Consts c) {A j : ℕ} (hA : c.nreg l
     have w1 : upd c₂.nreg lJN 0 lJP = predP A j := by
       rw [upd_other _ _ _ (by unfold lJP lJN sw; norm_num)]; exact v2P
     have w2 : upd c₂.nreg lJN 0 lJN = succP A j := by
-      rw [upd_same]; unfold succP; rw [ite_eq_right hn]
+      rw [upd_same]; unfold succP; Ξ ite_eq_right hn
     have w3 : ∀ r, r ≠ lJP → r ≠ lJN → upd c₂.nreg lJN 0 r = c.nreg r := by
       intro r h1 h2; rw [upd_other _ _ _ h2]; exact v2r r h1 h2
     exact ⟨w1, w2, w3, by show c₂.nmem = c.nmem; rw [hc2, hc1]⟩

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoSpec
 public import Chazelle.Core.MergeAsmDesc
 
@@ -47,7 +49,7 @@ theorem key_in_arc (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
   set F := N.F M Q with hFd
   have hGM : GoodModel M := Or.inl ⟨C, hP, rfl⟩
   have hM : WalkAx M := walkAx_of_goodModel hGM
-  have hFam : M.ChordFamily Q F := hN.1
+  have hFam := hN.1
   obtain ⟨hRC, -, hArcs, -⟩ := regOf_spec hN
   have ofArc : ∀ U ∈ M.regions F, ∀ a b, M.IsArc F U a b →
       ∃ j < N.arcs.length, M.key Q (N.arc j).s = a ∧ M.key Q (N.arc j).e = b := by
@@ -61,7 +63,7 @@ theorem key_in_arc (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     obtain ⟨U, -, -, r, hU, -, -, harc, -, -⟩ := hM.attach_face hFam.2.1 hFam.1 hc hAc
     obtain ⟨j, hj, hs, -⟩ := ofArc U hU _ _ harc
     refine ⟨j, hj, Or.inr (Or.inl ?_)⟩
-    rw [hs, hk]
+    Ξ hs, hk
   · obtain ⟨U, hU, l, r, harc, hin⟩ := exists_arc_around hGM hFam hkey hcut
     obtain ⟨j, hj, hs, he⟩ := ofArc U hU _ _ harc
     exact ⟨j, hj, Or.inl (by rw [hs, he]; exact hin)⟩
@@ -80,7 +82,7 @@ theorem exit_in_arcs (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
   set w := rayPt z σ T with hw
   -- the height is inside the box
   have hzR : |z.2| < C.radius := by
-    have := C.dom_subset_box (hdom (T / 2) (by linarith) (by linarith))
+    have := C.dom_subset_box (hdom (T / 2) (⟡) (⟡))
     simpa [rayPt] using this.2
   -- the hit point is on the chain or on a vertical side of the box
   have he : w ∈ C.set ∨ (|w.1| = C.radius ∧ |w.2| < C.radius) := by
@@ -90,13 +92,13 @@ theorem exit_in_arcs (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
       · by_contra hgt
         push Not at hgt
         set ε := min (T / 2) ((|w.1| - C.radius) / 2) with hε
-        have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
-        have hεT : ε < T := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-        have hbox := C.dom_subset_box (hdom (T - ε) (by linarith) (by linarith))
-        have h1 : |(rayPt z σ (T - ε)).1| < C.radius := hbox.1
+        have hε0 : 0 < ε := lt_min (⟡) (⟡)
+        have hεT : ε < T := lt_of_le_of_lt (min_le_left _ _) (⟡)
+        have hbox := C.dom_subset_box (hdom (T - ε) (⟡) (⟡))
+        have h1 := hbox.1
         have h2 : |w.1| ≤ |(rayPt z σ (T - ε)).1| + ε := by
           have e : w.1 = (rayPt z σ (T - ε)).1 + σ * ε := by simp [hw, rayPt]; ring
-          rw [e]
+          Ξ e
           refine (abs_add_le _ _).trans ?_
           rcases hσ with rfl | rfl <;> simp [abs_of_pos hε0]
         have h3 : ε ≤ (|w.1| - C.radius) / 2 := min_le_right _ _
@@ -106,7 +108,7 @@ theorem exit_in_arcs (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
         exact h ⟨hlt, by simpa [hw] using hzR⟩
     · exact Or.inl h
   -- a walk position at the hit point
-  have hT2 : (0 : ℝ) < T / 2 := by linarith
+  have hT2 : (0 : ℝ) < T / 2 := ⟡
   have hee : w ≠ rayPt w (-σ) (T / 2) := by
     intro h
     have := congrArg Prod.fst h
@@ -116,16 +118,16 @@ theorem exit_in_arcs (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     intro s hs
     have e : lerp w (rayPt w (-σ) (T / 2)) s = rayPt z σ (T - s * (T / 2)) := by
       apply point_ext <;> simp [lerp, rayPt, hw]; ring
-    rw [e]
+    Ξ e
     exact hdom _ (by nlinarith [hs.2]) (by nlinarith [hs.1])
   obtain ⟨p, t, hp, ht, ht1, hpt, -⟩ :=
-    C.sideSees_chordEnd hP C.sideBeta hee (by simp [rayPt]) hopen he
-  have hpt' : sidePt (chainModel C).W p t = w := hpt
+    C.sideSees_chordEnd hP C.sideBeta hee (⊚ rayPt) hopen he
+  have hpt' := hpt
   have hkey : 0 < (p : ℝ) + t := by
     by_contra hle
     push Not at hle
     have hp0 : p = 0 := by
-      have : (p : ℝ) ≤ 0 := by linarith
+      have : (p : ℝ) ≤ 0 := ⟡
       exact_mod_cast le_antisymm (by exact_mod_cast this) (Nat.zero_le p)
     have ht0 : t = 0 := by
       have : (0 : ℝ) ≤ p := Nat.cast_nonneg p
@@ -168,7 +170,7 @@ theorem innerPt_box (C : Chain) {z : Point} (h1 : |z.1| < C.radius) (h2 : |z.2| 
   have v1 : (chainModel C).W.vtx 1 = (-C.radius, C.radius) := rfl
   have v2 : (chainModel C).W.vtx 2 = (-C.radius, -C.radius) := rfl
   have v3 : (chainModel C).W.vtx 3 = (C.radius, -C.radius) := rfl
-  refine ⟨⟨2, 1, by omega, by omega, ?_, ?_⟩, ⟨1, 3, by omega, by omega, ?_, ?_⟩⟩
+  refine ⟨⟨2, 1, ⋄, ⋄, ?_, ?_⟩, ⟨1, 3, ⋄, ⋄, ?_, ?_⟩⟩
   · rw [v2]; simp only; linarith
   · rw [v1]; simp only; linarith
   · rw [v1]; simp only; linarith
@@ -237,14 +239,14 @@ theorem mdFacts_of {B d : ℕ} {C : Chain} (hI : IInv W c₀ c)
 theorem AEnv.mdL (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hI : IInv W c₀ c) :
     MdFacts P c (c.nreg (sw 30)) H J.left := by
   obtain ⟨-, -, -, -, -, -, d20, w20, -, -, -, -, -, -, -, -, -, d30, w30, -, -⟩ := hA.hst
-  rw [hI.hin _ (by unfold IFix sw; omega)]
+  Ξ hI.hin _ (by unfold IFix sw; omega)
   exact mdFacts_of hI d20 w20 d30 w30 hA.hmd₁
 
 /-- **The model descriptor of `C₂`** at `sw 31`. -/
 theorem AEnv.mdR (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hI : IInv W c₀ c) :
     MdFacts P c (c.nreg (sw 31)) H J.right := by
   obtain ⟨-, -, -, -, -, -, -, -, d21, w21, -, -, -, -, -, -, -, -, -, d31, w31⟩ := hA.hst
-  rw [hI.hin _ (by unfold IFix sw; omega)]
+  Ξ hI.hin _ (by unfold IFix sw; omega)
   exact mdFacts_of hI d21 w21 d31 w31 hA.hmd₂
 
 end Env

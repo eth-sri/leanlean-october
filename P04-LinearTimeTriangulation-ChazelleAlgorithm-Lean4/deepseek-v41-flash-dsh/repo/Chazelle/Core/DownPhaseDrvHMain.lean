@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvHLoop
 
 /-!
@@ -33,37 +35,37 @@ theorem nfAt_recs {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' :
     N.chords = N'.chords ∧ N.arcs = N'.arcs ∧ N.regions = N'.regions := by
   obtain ⟨c0, a0, r0, -, -, hc, ha, hr, -⟩ := h
   obtain ⟨c0', a0', r0', -, -, hc', ha', hr', -⟩ := h'
-  refine ⟨list_ext_getD ⟨0, 0, 0, 0, 0⟩ (by omega) fun i hi => ?_,
-    list_ext_getD ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ (by omega) fun j hj => ?_,
-    list_ext_getD ⟨[], [], 0⟩ (by omega) fun q hq => ?_⟩
+  refine ⟨list_ext_getD ⟨0, 0, 0, 0, 0⟩ (⋄) fun i hi => ?_,
+    list_ext_getD ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ (⋄) fun j hj => ?_,
+    list_ext_getD ⟨[], [], 0⟩ (⋄) fun q hq => ?_⟩
   · obtain ⟨a1, a2, a3, a4, a5⟩ := hc i hi
-    obtain ⟨b1, b2, b3, b4, b5⟩ := hc' i (by omega)
+    obtain ⟨b1, b2, b3, b4, b5⟩ := hc' i (⋄)
     change N.chord i = N'.chord i
     rcases hx : N.chord i with ⟨x1, x2, x3, x4, x5⟩
     rcases hy : N'.chord i with ⟨y1, y2, y3, y4, y5⟩
-    rw [hx] at a1 a2 a3 a4 a5; rw [hy] at b1 b2 b3 b4 b5
+    Ξ' hx at a1 a2 a3 a4 a5; Ξ' hy at b1 b2 b3 b4 b5
     simp only at a1 a2 a3 a4 a5 b1 b2 b3 b4 b5
     simp only [CRec.mk.injEq]; omega
   · obtain ⟨a1, a2, a3, a4, a5⟩ := ha j hj
-    obtain ⟨b1, b2, b3, b4, b5⟩ := ha' j (by omega)
+    obtain ⟨b1, b2, b3, b4, b5⟩ := ha' j (⋄)
     change N.arc j = N'.arc j
     rcases hx : N.arc j with ⟨x1, ⟨x2, x3⟩, ⟨x4, x5⟩⟩
     rcases hy : N'.arc j with ⟨y1, ⟨y2, y3⟩, ⟨y4, y5⟩⟩
-    rw [hx] at a1 a2 a3 a4 a5; rw [hy] at b1 b2 b3 b4 b5
+    Ξ' hx at a1 a2 a3 a4 a5; Ξ' hy at b1 b2 b3 b4 b5
     simp only at a1 a2 a3 a4 a5 b1 b2 b3 b4 b5
     simp only [ARec.mk.injEq, WPos.mk.injEq]; omega
   · obtain ⟨a1, a2, a3, a4, a5⟩ := hr q hq
-    obtain ⟨b1, b2, b3, b4, b5⟩ := hr' q (by omega)
+    obtain ⟨b1, b2, b3, b4, b5⟩ := hr' q (⋄)
     change N.region q = N'.region q
     have harcs : (N.region q).arcs = (N'.region q).arcs :=
-      list_ext_getD 0 (by omega) fun t ht => by rw [← a4 t ht, ← b4 t (by omega)]
+      list_ext_getD 0 (⋄) fun t ht => Ρ ← a4 t ht, ← b4 t (⋄)
     have hchs : (N.region q).chords = (N'.region q).chords :=
-      list_ext_getD 0 (by omega) fun t ht => by rw [← a5 t ht, ← b5 t (by omega)]
+      list_ext_getD 0 (⋄) fun t ht => Ρ ← a5 t ht, ← b5 t (⋄)
     rcases hx : N.region q with ⟨x1, x2, x3⟩
     rcases hy : N'.region q with ⟨y1, y2, y3⟩
-    rw [hx, hy] at harcs hchs; rw [hx] at a3; rw [hy] at b3
+    Ξ' hx, hy at harcs hchs; Ξ' hx at a3; Ξ' hy at b3
     simp only at harcs hchs a3 b3
-    simp only [RRec.mk.injEq]; exact ⟨harcs, hchs, by omega⟩
+    simp only [RRec.mk.injEq]; exact ⟨harcs, hchs, ⋄⟩
 
 /-- `regHost` reads only the chord, arc and region records. -/
 theorem regHost_congr {N N' : NF} (hc : N.chords = N'.chords) (ha : N.arcs = N'.arcs)
@@ -78,7 +80,7 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
+
 /-- **The setup**: constants, bases of the normal form and the record of region `r`. -/
 theorem setupS_exec (c : Config) (hw : WordsBounded W c) {B r A₀ : ℕ}
     (h00 : c.nreg 215000 = B) (h01 : c.nreg 215001 = r) (hA₀ : c.nreg 9999 = A₀)
@@ -111,14 +113,14 @@ theorem setupS_exec (c : Config) (hw : WordsBounded W c) {B r A₀ : ℕ}
     exec_block
     all_goals try (config_simp; (try simp only [h00, h01, add_5, add_1_1]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, rfl⟩ <;>
-      config_simp <;> simp only [h00, h01, add_5, add_1_1, hA₀]
+      config_simp <;> ϴ h00, h01, add_5, add_1_1, hA₀
   exact ⟨d, k, ex, hk, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16,
     h17, h18, h19, hm, exec_frameM ex wrM_setupS⟩
 
 
 end exec
 
-set_option maxHeartbeats 4000000 in
+
 /-- **D3a: the host RAM.** -/
 theorem hostRamSpec : DrvR.HostRamSpec := by
   refine ⟨hostS, 3000, ?_⟩
@@ -192,7 +194,7 @@ theorem hostRamSpec : DrvR.HostRamSpec := by
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
   have fA := exec_frameM ex wrM_hostS
   have fR := exec_frameM2 ex wrM2_hostS
-  have g₄ : ∀ q, Bcp q = false → d₄.nreg q = d₃.nreg q := f₄.1
+  have g₄ := f₄.1
   have a99 : (upd d₄.nreg 9999 (d₄.nreg 215082)) 9999 = c.nreg 9999 + 6 * xs.length + 1 := by
     rw [Machine.upd_same, w82]
   have a10 : (upd d₄.nreg 9999 (d₄.nreg 215082)) 215010 = c.nreg 9999 + 3 * xs.length := by

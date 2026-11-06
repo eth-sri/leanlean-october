@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Machine.Basic
 
 /-!
@@ -70,7 +72,7 @@ def relocate (off : ℕ) (p : Program) : Program := p.map (Instr.relocate off)
   List.getElem?_map ..
 
 @[simp] theorem relocate_zero (p : Program) : p.relocate 0 = p := by
-  rw [relocate, show Instr.relocate 0 = id from funext Instr.relocate_zero, List.map_id]
+  Ξ relocate, show Instr.relocate 0 = id from funext Instr.relocate_zero, List.map_id
 
 @[simp] theorem relocate_nil (off : ℕ) : Program.relocate off [] = [] := rfl
 
@@ -126,7 +128,7 @@ theorem SubAt.tail {ins : Instr} {p q : Program} {base : ℕ} (h : SubAt (ins ::
 
 theorem SubAt.singleton_iff {ins : Instr} {q : Program} {base : ℕ} :
     SubAt [ins] q base ↔ q[base]? = some ins := by
-  simp [SubAt.cons_iff]
+  Θ SubAt.cons_iff
 
 theorem SubAt.append_iff {p₁ p₂ q : Program} {base : ℕ} :
     SubAt (p₁ ++ p₂) q base ↔ SubAt p₁ q base ∧ SubAt p₂ q (base + p₁.length) := by
@@ -155,7 +157,7 @@ theorem SubAt.of_append_right {p₁ p₂ q : Program} {base : ℕ} (h : SubAt (p
 /-- The lookup lemma for concatenation. -/
 theorem getElem?_append_length_add (p₁ p₂ : Program) (i : ℕ) :
     (p₁ ++ p₂)[p₁.length + i]? = p₂[i]? := by
-  rw [List.getElem?_append_right (Nat.le_add_right _ _), Nat.add_sub_cancel_left]
+  Ξ List.getElem?_append_right (Nat.le_add_right _ _), Nat.add_sub_cancel_left
 
 /-- The first half of a concatenation sits at address `0`. -/
 theorem SubAt.append_left (p₁ p₂ : Program) : SubAt p₁ (p₁ ++ p₂) 0 := by

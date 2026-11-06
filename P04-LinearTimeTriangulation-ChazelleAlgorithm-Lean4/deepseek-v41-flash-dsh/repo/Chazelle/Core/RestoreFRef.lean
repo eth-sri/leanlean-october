@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFChord
 
 /-!
@@ -70,9 +72,9 @@ theorem refLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
     Robust.transport hN (fun a ha => hI.hm a ha)
   have hNA := hN'.nfAt
   obtain ⟨hB7, -, hab, hrb, hlb, -⟩ := nf_bounds hN'
-  have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
+  have hA0 := hI.hA
   have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
-  have hrl : c.nreg 81156 < N.regions.length := hdn
+  have hrl := hdn
   obtain ⟨-, -, -, hl, -⟩ := hNA.2.2.2.2.2.2.2.1 _ hrl
   have rj := hl 0 har
   rw [Nat.add_zero] at rj
@@ -156,7 +158,7 @@ theorem kidLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
   have hB8 : c.nreg 81134 + 11 < c₀.nreg ALLOC := by
     have := robust_addr (v := N.dec.length) fun m' hm' => (hN' m' hm').2.2.2.2.1
     omega
-  have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
+  have hA0 := hI.hA
   have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
   obtain ⟨-, r1, r2⟩ := hNA.2.2.2.2.2.2.2.2.2.1 _ hk
   have k7 : c.nreg 81016 = 7 := by rw [hI.hin _ (by unfold FFix; omega), hE.k7]

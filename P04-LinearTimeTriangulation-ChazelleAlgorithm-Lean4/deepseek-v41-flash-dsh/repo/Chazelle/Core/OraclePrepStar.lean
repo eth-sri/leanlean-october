@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepArr
 
 /-!
@@ -50,7 +52,7 @@ noncomputable def starList (ρ : ℕ → ℕ) (A : ℕ) : List (ℕ × ℕ) := e
 theorem mem_starList {ρ : ℕ → ℕ} {A : ℕ} {c : ℕ × ℕ} :
     c ∈ starList ρ A ↔ c.2 < A ∧ c.1 = fpos ρ c.2 ∧ fpos ρ c.2 + 2 ≤ c.2 := by
   unfold starList
-  rw [mem_emitted]
+  Ξ mem_emitted
   constructor
   · rintro ⟨j, hj, hφ⟩
     unfold starOf at hφ
@@ -60,14 +62,14 @@ theorem mem_starList {ρ : ℕ → ℕ} {A : ℕ} {c : ℕ × ℕ} :
   · rintro ⟨h1, h2, h3⟩
     refine ⟨c.2, h1, ?_⟩
     unfold starOf
-    rw [ite_eq_left h3, ← h2]
+    Ξ ite_eq_left h3, ← h2
 
 /-- Emitted pairs whose second component is the index have no repetition. -/
 theorem emitted_nodup {φ : ℕ → Option (ℕ × ℕ)} (h : ∀ i x, φ i = some x → x.2 = i) (n : ℕ) :
     (emitted φ n).Nodup := by
   unfold emitted
   refine List.Nodup.filterMap (fun a a' b hb hb' => ?_) List.nodup_range
-  rw [← h a b hb, ← h a' b hb']
+  Ξ ← h a b hb, ← h a' b hb'
 
 theorem starList_nodup (ρ : ℕ → ℕ) (A : ℕ) : (starList ρ A).Nodup :=
   emitted_nodup (fun i x hx => by
@@ -118,7 +120,7 @@ theorem rgS_exec {P : Polygon} {W : ℕ} {d : Config} (hwd : WordsBounded W d) {
     · config_simp; rw [hSB, hp, hs, hAB]; omega
     · refine ⟨rfl, ?_⟩
       config_simp; rw [hSB, hp, hs, hAB, ← hr]; congr 1; ring
-  exact ⟨d', k, e, hk, exec_frameB e (by decide), v⟩
+  exact ⟨d', k, e, hk, exec_frameB e (⌖), v⟩
 
 /-! ## The first position of each region -/
 

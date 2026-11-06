@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepStar
 
 /-!
@@ -41,7 +43,7 @@ theorem normP_some {a b : ℕ} {c : ℕ × ℕ} (h : normP a b = some c) :
   · right; exact ⟨min_eq_right hab, max_eq_left hab⟩
 
 theorem normP_of_lt {a b : ℕ} (h : a + 2 ≤ b) : normP a b = some (a, b) := by
-  unfold normP; rw [min_eq_left (by omega), max_eq_right (by omega), ite_eq_left h]
+  unfold normP; rw [min_eq_left (⋄), max_eq_right (⋄), ite_eq_left h]
 
 theorem normP_none_of_le_one {A a b : ℕ} (hA : A ≤ 1) (ha : a < max A 1) (hb : b < max A 1) :
     normP a b = none := by
@@ -162,8 +164,8 @@ theorem pair_of_gen (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
   obtain ⟨h1, h2⟩ := normP_some h
   have hZ := zipRel_of_gen hN hP hne ha hb hG
   rcases h2 with ⟨e1, e2⟩ | ⟨e1, e2⟩
-  · rw [e1, e2]; exact ⟨by omega, hb, hZ⟩
-  · rw [e1, e2]; exact ⟨by omega, ha, hZ.symm⟩
+  · rw [e1, e2]; exact ⟨⋄, hb, hZ⟩
+  · rw [e1, e2]; exact ⟨⋄, ha, hZ.symm⟩
 
 /-- **Every raw pair is a zipper chord**: not a spine edge, in range, and a zipper pair. -/
 theorem zipRaw_sound (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {c : ℕ × ℕ}
@@ -179,9 +181,9 @@ theorem zipRaw_sound (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {c : ℕ �
       List.mem_nil_iff, or_false, id] at hc
     rcases hc with (⟨j, hj, hφ⟩ | ⟨j, hj, hφ⟩) | ⟨o, ho, ho'⟩
     · unfold zipSk at hφ; split_ifs at hφ
-      rw [normP_none_of_le_one hA (by omega) (befArc_lt C Q N _)] at hφ; cases hφ
+      rw [normP_none_of_le_one hA (⋄) (befArc_lt C Q N _)] at hφ; cases hφ
     · unfold zipEk at hφ; split_ifs at hφ
-      rw [normP_none_of_le_one hA (aftArc_lt C Q N _) (by omega)] at hφ; cases hφ
+      rw [normP_none_of_le_one hA (aftArc_lt C Q N _) (⋄)] at hφ; cases hφ
     · have n1 := normP_none_of_le_one hA (aftArc_lt C Q N 6) (befArc_lt C Q N (κT C))
       have n2 := normP_none_of_le_one hA (aftArc_lt C Q N (κT C)) (befArc_lt C Q N (2 * C.m + 6))
       have n3 := normP_none_of_le_one hA (inArcIdx_lt C Q N 6) (inArcIdx_lt C Q N (κT C))
@@ -257,8 +259,8 @@ theorem zipRaw_complete (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {p q : 
   by_cases hq1 : q = p + 1
   · exact Or.inl hq1
   right
-  have h2 : p + 2 ≤ q := by omega
-  have hp : p < N.arcs.length := by omega
+  have h2 : p + 2 ≤ q := ⋄
+  have hp : p < N.arcs.length := ⋄
   have hne : (N.F (chainModel C) Q).Nonempty := by
     by_contra hF
     have := arcs_le_one_of_empty hN hGM (Set.not_nonempty_iff_eq_empty.1 hF)
@@ -278,29 +280,29 @@ theorem zipRaw_complete (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {p q : 
   have hr0 : ∀ {x : ℝ}, x ≠ κT C → x = 6 → 0 < rT C := fun {x} h1 h2 => by
     subst h2
     by_contra h0
-    have : rT C = 0 := by omega
+    have : rT C = 0 := ⋄
     apply h1; rw [← hTdef, this]; norm_num
   unfold zipRaw
-  simp only [List.mem_append, OracleR.mem_emitted]
-  rcases zip_cases hN hP hne hp hq (by omega) hZ with
+  ϴ List.mem_append, OracleR.mem_emitted
+  rcases zip_cases hN hP hne hp hq (⋄) hZ with
     ⟨x, y, hx, hy, hxy, h1, h2'⟩ | ⟨hI, hB⟩ | ⟨hI, hA⟩ | ⟨h6, hA, hB⟩ | ⟨hA, hB⟩
   · right
     obtain ⟨ix, ex⟩ := inIdx hp h1
     obtain ⟨iy, ey⟩ := inIdx hq h2'
     rcases hx with rfl | rfl | rfl <;> rcases hy with rfl | rfl | rfl
     · exact absurd rfl hxy
-    · exact mem_zipSp (o := sp3 C Q N) (by simp [zipSpO]) (by
+    · exact mem_zipSp (o := sp3 C Q N) (⊚ zipSpO) (by
         unfold sp3; rw [ite_eq_left ⟨hr0 hxy rfl, ix, iy⟩, ex, ey, hn])
-    · exact mem_zipSp (o := sp5 C Q N) (by simp [zipSpO]) (by
+    · exact mem_zipSp (o := sp5 C Q N) (⊚ zipSpO) (by
         unfold sp5; rw [ite_eq_left ⟨ix, iy⟩, ex, ey, hn])
-    · exact mem_zipSp (o := sp3 C Q N) (by simp [zipSpO]) (by
+    · exact mem_zipSp (o := sp3 C Q N) (⊚ zipSpO) (by
         unfold sp3; rw [ite_eq_left ⟨hr0 (Ne.symm hxy) rfl, iy, ix⟩, ex, ey, hn'])
     · exact absurd rfl hxy
-    · exact mem_zipSp (o := sp4 C Q N) (by simp [zipSpO]) (by
+    · exact mem_zipSp (o := sp4 C Q N) (⊚ zipSpO) (by
         unfold sp4; rw [ite_eq_left ⟨ix, iy⟩, ex, ey, hn])
-    · exact mem_zipSp (o := sp5 C Q N) (by simp [zipSpO]) (by
+    · exact mem_zipSp (o := sp5 C Q N) (⊚ zipSpO) (by
         unfold sp5; rw [ite_eq_left ⟨iy, ix⟩, ex, ey, hn'])
-    · exact mem_zipSp (o := sp4 C Q N) (by simp [zipSpO]) (by
+    · exact mem_zipSp (o := sp4 C Q N) (⊚ zipSpO) (by
         unfold sp4; rw [ite_eq_left ⟨iy, ix⟩, ex, ey, hn'])
     · exact absurd rfl hxy
   · left; left
@@ -309,24 +311,24 @@ theorem zipRaw_complete (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {p q : 
       ⟨q, hq, hB⟩
     obtain ⟨hb, hB'⟩ := befArc_spec C Q N hex
     unfold zipSk
-    rw [ite_eq_left ⟨hI, hex⟩, before_unique hN hP hne hb hq hB' hB, hn]
+    Ξ ite_eq_left ⟨hI, hex⟩, before_unique hN hP hne hb hq hB' hB, hn
   · left; right
     refine ⟨q, hq, ?_⟩
     have hex : ∃ p', p' < N.arcs.length ∧ After C Q N p' (mk C (ek (chainModel C) Q N q)) :=
       ⟨p, hp, hA⟩
     obtain ⟨ha, hA'⟩ := aftArc_spec C Q N hex
     unfold zipEk
-    rw [ite_eq_left ⟨hI, hex⟩, after_unique hN hP hne ha hp hA' hA, hn]
+    Ξ ite_eq_left ⟨hI, hex⟩, after_unique hN hP hne ha hp hA' hA, hn
   · right
     have e1 : ∃ p', p' < N.arcs.length ∧ After C Q N p' 6 := ⟨p, hp, hA⟩
     have e2 : ∃ q', q' < N.arcs.length ∧ Before C Q N q' (κT C) := ⟨q, hq, hB⟩
     have hr : 0 < rT C := by
       by_contra h0
-      have : rT C = 0 := by omega
+      have : rT C = 0 := ⋄
       rw [← hTdef, this] at h6; norm_num at h6
     obtain ⟨ha, hA'⟩ := aftArc_spec C Q N e1
     obtain ⟨hb, hB'⟩ := befArc_spec C Q N e2
-    exact mem_zipSp (o := sp1 C Q N) (by simp [zipSpO]) (by
+    exact mem_zipSp (o := sp1 C Q N) (⊚ zipSpO) (by
       unfold sp1; rw [ite_eq_left ⟨hr, e1, e2⟩, after_unique hN hP hne ha hp hA' hA,
         before_unique hN hP hne hb hq hB' hB, hn])
   · right
@@ -334,7 +336,7 @@ theorem zipRaw_complete (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {p q : 
     have e2 : ∃ q', q' < N.arcs.length ∧ Before C Q N q' (2 * C.m + 6) := ⟨q, hq, hB⟩
     obtain ⟨ha, hA'⟩ := aftArc_spec C Q N e1
     obtain ⟨hb, hB'⟩ := befArc_spec C Q N e2
-    exact mem_zipSp (o := sp2 C Q N) (by simp [zipSpO]) (by
+    exact mem_zipSp (o := sp2 C Q N) (⊚ zipSpO) (by
       unfold sp2; rw [ite_eq_left ⟨e1, e2⟩, after_unique hN hP hne ha hp hA' hA,
         before_unique hN hP hne hb hq hB' hB, hn])
 

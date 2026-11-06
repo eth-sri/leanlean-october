@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.MergeAsmDesc
 public import Chazelle.Core.MergeAsmCost
 public import Chazelle.Core.RestoreDrvPos
@@ -43,7 +45,7 @@ theorem frame_band {b : ℕ} {c c' : Config} (h : FrameB (inBand b) c c') (hb : 
 
 theorem ftr {c c₁ c₂ : Config} {k₁ k₂ : ℕ} (h₁ : Frame MB c c₁ k₁)
     (h₂ : Frame MB c₁ c₂ k₂) : Frame MB c c₂ (k₁ + k₂) :=
-  (h₁.trans h₂).mono (by simp) le_rfl
+  (h₁.trans h₂).mono (✓) le_rfl
 
 theorem holds_frame {X : MemCtx} {P : Polygon} {g : ℕ} {B : Finset ℕ} {c c' : Config} {k : ℕ}
     (hX : X.holds P c.nmem g (c.nreg ALLOC)) (hf : Frame B c c' k) :
@@ -61,8 +63,8 @@ theorem descS_frame {c c' : Config} {A : ℕ} (hA : c.nreg ALLOC = A) (hA' : c'.
     (hr : ∀ r, (r < 100010 ∨ 100022 ≤ r) → r ≠ ALLOC → c'.nreg r = c.nreg r)
     (hrr : c'.rreg = c.rreg) (hrm : c'.rmem = c.rmem) (ho : c'.output = c.output) :
     Frame MB c c' 27 := by
-  refine ⟨fun r hb hra => hr r ?_ hra, fun r _ => by rw [hrr], fun a ha => hm a (by omega),
-    fun a _ => by rw [hrm], ho, by omega, by omega⟩
+  refine ⟨fun r hb hra => hr r ?_ hra, fun r _ => by rw [hrr], fun a ha => hm a (⋄),
+    fun a _ => by rw [hrm], ho, ⋄, by omega⟩
   by_contra h
   push Not at h
   apply hb
@@ -75,7 +77,7 @@ theorem descS_frame {c c' : Config} {A : ℕ} (hA : c.nreg ALLOC = A) (hA' : c'.
 def supTo (f : ℕ → ℕ) (n : ℕ) : ℕ := (Finset.range (n + 1)).sup f
 
 theorem le_supTo {f : ℕ → ℕ} {n d : ℕ} (h : d ≤ n) : f d ≤ supTo f n :=
-  Finset.le_sup (f := f) (Finset.mem_range.2 (by omega))
+  Finset.le_sup (f := f) (Finset.mem_range.2 (⋄))
 
 /-- The constant of Lemma 2.3 in the form `K₁ + K₂ + 1 ≤ β (m + 1)`. -/
 def βf (c23 : ℕ → ℕ) (D : ℕ) : ℕ := 16 * c23 D + 1
@@ -109,27 +111,27 @@ theorem oracle_pos_merge {sh cu : Stmt} {Bs Bc : Finset ℕ} {F G H : ℕ → �
   obtain ⟨A, hAd⟩ : ∃ A, c.nreg ALLOC = A := ⟨_, rfl⟩
   rw [hAd] at hwf hX
   set ĉ := withDesc c bw
-  have hA : ĉ.nreg ALLOC = A + 6 := by simp [ĉ, withDesc, hAd]
+  have hA : ĉ.nreg ALLOC = A + 6 := ⊚ ĉ, withDesc, hAd
   have hAW : A ≤ W := hAd ▸ hw.1 ALLOC
   have hmem : ∀ a, ĉ.nmem a = if a = A then 0 else if A < a ∧ a < A + 6 then
-      c.nmem (bw + (a - A - 1)) else c.nmem a := fun a => by simp only [ĉ, withDesc, hAd]
+      c.nmem (bw + (a - A - 1)) else c.nmem a := fun a => ⍟ ĉ, withDesc, hAd
   have he : ∀ a, a < A → ĉ.nmem a = c.nmem a := fun a ha => by
-    rw [hmem, ite_eq_right (by omega), ite_eq_right (by omega)]
+    rw [hmem, ite_eq_right (⋄), ite_eq_right (by omega)]
   have hbA := hwf.1
   have hw' : WordsBounded (W + 6) ĉ := by
     refine ⟨fun r => ?_, fun a => ?_⟩
-    · simp only [ĉ, withDesc]
+    · ϴ ĉ, withDesc
       by_cases hr : r = ALLOC
       · subst hr; simp only [upd_same]; omega
       · simp only [upd_other _ _ _ hr]; have := hw.1 r; omega
-    · rw [hmem]
+    · Ξ hmem
       split_ifs
       · omega
       · have := hw.2 (bw + (a - A - 1)); omega
       · have := hw.2 a; omega
-  have h0 : ĉ.nmem A = 0 := by rw [hmem, ite_eq_left rfl]
+  have h0 : ĉ.nmem A = 0 := Ρ hmem, ite_eq_left rfl
   have hc : ∀ j, j < 5 → ĉ.nmem (A + 1 + j) = c.nmem (bw + j) := fun j hj => by
-    rw [hmem, ite_eq_right (by omega), ite_eq_left (by omega), show A + 1 + j - A - 1 = j by omega]
+    rw [hmem, ite_eq_right (⋄), ite_eq_left (by omega), show A + 1 + j - A - 1 = j by omega]
   obtain ⟨hMD, hMWF⟩ := modelDesc_copy hwf hC le_rfl he h0 hc (E' := A + 6) le_rfl
   have hCd : ChainDescAt ĉ.nmem (A + 1) (Qof P) Hs C := by
     obtain ⟨-, -, hEb, -⟩ := hwf.2 Hs C hC
@@ -138,12 +140,12 @@ theorem oracle_pos_merge {sh cu : Stmt} {Bs Bc : Finset ℕ} {F G H : ℕ → �
       HostRegular (Qof P).n H' := fun _ H' C' h' => by
     rw [NFLoc.hostAt_unique h'.1 hCd.1]; exact hreg
   have hX' : X.holds P ĉ.nmem g (ĉ.nreg ALLOC) := by
-    rw [hA]
-    exact X.mono _ _ _ _ _ (by omega) (X.local_ _ _ _ _ _ (fun a ha => (he a ha).symm) hX)
+    Ξ hA
+    exact X.mono _ _ _ _ _ (⋄) (X.local_ _ _ _ _ _ (fun a ha => (he a ha).symm) hX)
   have hcap' : γ ≤ X.cap P ĉ.nmem g := by
     rw [hloc P c.nmem ĉ.nmem g _ he hX]; exact hcap
-  exact Restore.oracle_pos hsh hcu hw' hG (by omega) hX' hcap' (by rw [hA]; exact hMWF) hreg' hMD
-    (Or.inl ⟨C, hP, rfl⟩) hOk hγ (by omega) hγW (by omega)
+  exact Restore.oracle_pos hsh hcu hw' hG (⋄) hX' hcap' (by rw [hA]; exact hMWF) hreg' hMD
+    (Or.inl ⟨C, hP, rfl⟩) hOk hγ (⋄) hγW (by omega)
 
 end
 

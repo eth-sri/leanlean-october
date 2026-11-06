@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleHit
 
 /-!
@@ -37,43 +39,43 @@ variable {Q : Polygon}
 theorem oset_mod (W : Polygon) (g : ℕ) (x y : ℝ) : oset W (g % W.n) x y = oset W g x y := by
   ext z; constructor
   · rintro ⟨d, t, h0, h1, h2, h3, rfl⟩
-    exact ⟨d, t, h0, h1, h2, h3, by simp only [Nat.add_assoc, Nat.mod_add_mod]⟩
+    exact ⟨d, t, h0, h1, h2, h3, ⍟ Nat.add_assoc, Nat.mod_add_mod⟩
   · rintro ⟨d, t, h0, h1, h2, h3, rfl⟩
-    exact ⟨d, t, h0, h1, h2, h3, by simp only [Nat.add_assoc, Nat.mod_add_mod]⟩
+    exact ⟨d, t, h0, h1, h2, h3, ⍟ Nat.add_assoc, Nat.mod_add_mod⟩
 
 /-- **The points of a subarc lie on its chain.** -/
 theorem oset_sub_set {u L : ℕ} (hu : u < Q.n) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q.n) {x y : ℝ}
     (hy : y ≤ L) : oset (interiorWalk Q) u x y ⊆ (ch Q u L h1 h2).set := by
   rintro _ ⟨d, t, ht0, ht1, hx, hdy, rfl⟩
-  have hQ1 : 1 ≤ Q.n := by omega
+  have hQ1 : 1 ≤ Q.n := ⋄
   have hd : d ≤ L := by
-    have : (d : ℝ) ≤ L := by linarith
+    have : (d : ℝ) ≤ L := ⟡
     exact_mod_cast this
   have tv : ∀ k, k ≤ L → (interiorWalk Q).vtx ((u + k) % (interiorWalk Q).n) =
       WalkEmbed.tourV (ch Q u L h1 h2) (jStart Q L) k := fun k hk => by
     have e1 := iw_tour (a := cStart Q u L) (m := L) (hm1 := h1) (hm := h2) hQ1 (d := k) hk
-    rw [uStart_cStart hu (by omega)] at e1
+    Ξ' uStart_cStart hu (⋄) at e1
     exact e1
   rcases ht0.lt_or_eq with htp | rfl
   · have hd1 : d + 1 ≤ L := by
-      have : (d : ℝ) < L := by linarith
+      have : (d : ℝ) < L := ⟡
       have : d < L := by exact_mod_cast this
       omega
-    rw [tv d hd, show u + d + 1 = u + (d + 1) by ring, tv (d + 1) hd1]
+    Ξ tv d hd, show u + d + 1 = u + (d + 1) by ring, tv (d + 1) hd1
     unfold jStart
     split_ifs
-    · rw [ShootCut.tourV_up _ hd, ShootCut.tourV_up _ hd1]
+    · Ξ ShootCut.tourV_up _ hd, ShootCut.tourV_up _ hd1
       exact ShootCut.segment_mem_set _ (show d < (ch Q u L h1 h2).m by rw [ch_m]; omega)
         (ShootCut.lerp_mem_segment ht0 ht1)
     · have e1 : WalkEmbed.tourV (ch Q u L h1 h2) L d = (ch Q u L h1 h2).vertex (L - d) :=
         ShootCut.tourV_down (ch Q u L h1 h2) hd
       have e2 : WalkEmbed.tourV (ch Q u L h1 h2) L (d + 1) =
           (ch Q u L h1 h2).vertex (L - (d + 1)) := ShootCut.tourV_down (ch Q u L h1 h2) hd1
-      rw [e1, e2]
+      Ξ e1, e2
       refine ShootCut.segment_mem_set _ (k := L - (d + 1)) (by rw [ch_m]; omega) ?_
-      rw [show L - (d + 1) + 1 = L - d by omega, Chazelle.Geometry.segment_comm]
+      Ξ show L - (d + 1) + 1 = L - d by omega, Chazelle.Geometry.segment_comm
       exact ShootCut.lerp_mem_segment ht0 ht1
-  · rw [lerp_zero, tv d hd]
+  · Ξ lerp_zero, tv d hd
     unfold WalkEmbed.tourV
     exact Chain.vertex_mem_set _ (Chazelle.Chain.sideE_le (Nat.mod_lt _ (Chain.two_m_pos _)).le)
 
@@ -81,21 +83,21 @@ theorem oset_sub_set {u L : ℕ} (hu : u < Q.n) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q
 
 theorem abs_lerp_le {a b : ℝ} {B t : ℝ} (ha : |a| ≤ B) (hb : |b| ≤ B) (ht0 : 0 ≤ t)
     (ht1 : t ≤ 1) : |a + t * (b - a)| ≤ B := by
-  rw [abs_le] at *
+  Ξ' abs_le at *
   constructor <;> nlinarith
 
 /-- A proper position of the interior walk lies within the coordinate bound of `Q`. -/
 theorem mi_pos_bound {p h : ℕ} (hp : p < Q.n) (hpp : ProperPos (interiorModel Q) Q Q.n ⟨p, h⟩) :
     |((interiorModel Q).pos Q ⟨p, h⟩).1| ≤ Jordan.coordBound Q ∧
       |((interiorModel Q).pos Q ⟨p, h⟩).2| ≤ Jordan.coordBound Q := by
-  have hn : 0 < Q.n := by omega
+  have hn : 0 < Q.n := ⋄
   have ha := mi_wa hp
   have hb := mi_wb hp
   have i1 := iv_lt hp
   have i2 := iv_lt (Q := Q) (p := (p + 1) % Q.n) (Nat.mod_lt _ hn)
   unfold Model.pos
   simp only
-  rw [ha, hb, lerp_fst, lerp_snd]
+  Ξ ha, hb, lerp_fst, lerp_snd
   exact ⟨abs_lerp_le (Jordan.abs_fst_vtx_le_coordBound Q i1)
       (Jordan.abs_fst_vtx_le_coordBound Q i2) hpp.1 hpp.2.1.le,
     abs_lerp_le (Jordan.abs_snd_vtx_le_coordBound Q i1)
@@ -114,12 +116,12 @@ theorem param_nh {e h : ℕ} (he : e < Q.n) :
   unfold nh
   split_ifs with hc
   · obtain ⟨h0, h1⟩ := hc
-    obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
-    simp only [Nat.add_sub_cancel] at h1
+    obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, ⋄⟩
+    ϴ' Nat.add_sub_cancel at h1
     show (0 : ℝ) = _
     unfold Model.param
     simp only
-    rw [mi_wa he, ← h1]
+    Ξ mi_wa he, ← h1
     split_ifs <;> simp
   · rfl
 
@@ -134,10 +136,10 @@ theorem param_pos_nh (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e h : ℕ} (he :
     (hh : h ≤ Q.n) (hp0 : 0 ≤ (interiorModel Q).param Q ⟨e, h⟩) (h0 : nh Q e h ≠ 0) :
     0 < (interiorModel Q).param Q ⟨e, nh Q e h⟩ := by
   have hnh : nh Q e h = h := nh_zero_or.resolve_left h0
-  rw [hnh] at h0 ⊢
+  Ξ' hnh at h0 ⊢
   have hc : ¬ (h ≠ 0 ∧ h - 1 = iv Q e) := by
-    intro hc; unfold nh at hnh; rw [ite_eq_left hc] at hnh; exact h0 hnh.symm
-  obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
+    intro hc; unfold nh at hnh; Ξ' ite_eq_left hc at hnh; exact h0 hnh.symm
+  obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, ⋄⟩
   have hne : h' ≠ iv Q e := fun hc' => hc ⟨h0, by simpa using hc'⟩
   rcases hp0.lt_or_eq with hlt | heq
   · exact hlt
@@ -147,25 +149,25 @@ theorem param_pos_nh (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e h : ℕ} (he :
     have hwa := mi_wa (Q := Q) he
     have hwb := mi_wb (Q := Q) he
     have hnh' : ((interiorModel Q).wa e).2 ≠ ((interiorModel Q).wb e).2 := by
-      rw [hwa, hwb]
+      Ξ hwa, hwb
       have h1 := iv_lt (Q := Q) he
-      have h2 := iv_lt (Q := Q) (p := (e + 1) % Q.n) (Nat.mod_lt _ (by omega))
+      have h2 := iv_lt (Q := Q) (p := (e + 1) % Q.n) (Nat.mod_lt _ (⋄))
       refine hD _ _ h1 h2 ?_
       unfold iv
       split_ifs
       · intro hc2
         rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h3 | h3
-        · rw [Nat.mod_eq_of_lt h3] at hc2; omega
-        · rw [h3, Nat.mod_self] at hc2; omega
+        · Ξ' Nat.mod_eq_of_lt h3 at hc2; omega
+        · Ξ' h3, Nat.mod_self at hc2; omega
       · intro hc2
         rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h3 | h3
-        · rw [Nat.mod_eq_of_lt h3] at hc2; omega
-        · rw [h3, Nat.mod_self] at hc2; omega
-    rw [ite_eq_right hnh', eq_comm, div_eq_zero_iff] at heq
+        · Ξ' Nat.mod_eq_of_lt h3 at hc2; omega
+        · Ξ' h3, Nat.mod_self at hc2; omega
+    Ξ' ite_eq_right hnh', eq_comm, div_eq_zero_iff at heq
     rcases heq with heq | heq
-    · rw [hwa] at heq
-      exact hD _ _ (by omega) (iv_lt he) hne (by linarith)
-    · exact hnh' (by linarith)
+    · Ξ' hwa at heq
+      exact hD _ _ (⋄) (iv_lt he) hne (⟡)
+    · exact hnh' (⟡)
 
 /-! ## The plan of a query -/
 
@@ -187,11 +189,11 @@ theorem arcWt_around {e₁ : ℕ} (he₁ : e₁ < Q.n) {x t₂ : ℝ} (hx : x < 
     (htx : t₂ ≤ x) : (interiorModel Q).arcWt ((e₁ : ℝ) + x) ((e₁ : ℝ) + t₂) = Q.n := by
   have hc : ∀ p, p < (interiorModel Q).W.n →
       ((interiorModel Q).counted p ↔ 0 ≤ p ∧ p < (interiorModel Q).W.n) := fun p hp => by
-    rw [mi_n] at hp ⊢; exact interiorModel_counted_iff Q p (by rw [mi_n]; exact hp)
-  rw [(interiorModel Q).arcWt_closed hc le_rfl ⟨by linarith, hx⟩ ⟨ht0.le, by linarith⟩, mi_n]
+    Ξ' mi_n at hp ⊢; exact interiorModel_counted_iff Q p (by rw [mi_n]; exact hp)
+  Ξ (interiorModel Q).arcWt_closed hc le_rfl ⟨⟡, hx⟩ ⟨ht0.le, ⟡⟩, mi_n
   unfold arcWtNat keyCeil
-  rw [ite_eq_right (by linarith), ite_eq_right ht0.ne']
-  simp only [min_eq_left he₁.le]
+  Ξ ite_eq_right (⟡), ite_eq_right ht0.ne'
+  ϴ min_eq_left he₁.le
   omega
 
 /-- **The plan of an interior query** (with the normalized end). -/

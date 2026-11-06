@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterStageD1
 
 /-!
@@ -30,11 +32,11 @@ noncomputable def rk (μ : ℕ) (bo key : ℕ → ℕ) (v : ℕ) : ℕ :=
 noncomputable def plPos (μ : ℕ) (bo key : ℕ → ℕ) (v : ℕ) : ℕ := cntLt bo μ (bo v) + rk μ bo key v
 
 theorem cntLt_succ (f : ℕ → ℕ) (n b : ℕ) : cntLt f n (b + 1) = cntLt f n b + cntBelow f n b := by
-  rw [← sum_cntBelow, ← sum_cntBelow, Finset.sum_range_succ]
+  Ξ ← sum_cntBelow, ← sum_cntBelow, Finset.sum_range_succ
 
 theorem cntLt_mono (f : ℕ → ℕ) (n : ℕ) {b b' : ℕ} (h : b ≤ b') : cntLt f n b ≤ cntLt f n b' := by
   unfold cntLt; apply Finset.card_le_card; intro v hv
-  simp only [Finset.mem_filter] at hv ⊢; exact ⟨hv.1, by omega⟩
+  simp only [Finset.mem_filter] at hv ⊢; exact ⟨hv.1, ⋄⟩
 
 variable {μ : ℕ} {bo key : ℕ → ℕ}
 
@@ -43,15 +45,15 @@ theorem rk_lt {v : ℕ} (hv : v < μ) : rk μ bo key v < cntBelow bo μ (bo v) :
   apply Finset.card_lt_card
   rw [Finset.ssubset_iff_of_subset (fun w hw => by
     simp only [Finset.mem_filter] at hw ⊢; exact ⟨hw.1, hw.2.1⟩)]
-  exact ⟨v, by simp [hv], by simp⟩
+  exact ⟨v, by simp [hv], ✓⟩
 
 theorem rk_lt_rk {v w : ℕ} (hw : w < μ) (hb : bo w = bo v) (hk : key w < key v) :
     rk μ bo key w < rk μ bo key v := by
   unfold rk
   apply Finset.card_lt_card
   rw [Finset.ssubset_iff_of_subset (fun x hx => by
-    simp only [Finset.mem_filter] at hx ⊢; exact ⟨hx.1, by rw [hx.2.1, hb], by omega⟩)]
-  exact ⟨w, by simp [hw, hb, hk], by simp⟩
+    simp only [Finset.mem_filter] at hx ⊢; exact ⟨hx.1, by rw [hx.2.1, hb], ⋄⟩)]
+  exact ⟨w, by simp [hw, hb, hk], ✓⟩
 
 theorem rk_eq_cB {v : ℕ} : rk μ bo key v = cB μ bo key (key v) (bo v) := rfl
 
@@ -77,7 +79,7 @@ theorem plPos_inj (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = w
 theorem key_le_of_plPos {v w : ℕ} (hw : w < μ) (hb : bo w = bo v)
     (h : plPos μ bo key v ≤ plPos μ bo key w) : key v ≤ key w := by
   by_contra hk
-  have := rk_lt_rk (bo := bo) (key := key) hw hb (by omega); unfold plPos at h; rw [hb] at h; omega
+  have := rk_lt_rk (bo := bo) (key := key) hw hb (⋄); unfold plPos at h; rw [hb] at h; omega
 
 /-- **The block `b` fills its segment.** -/
 theorem exists_plPos (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = w) {b i : ℕ}
@@ -96,7 +98,7 @@ theorem exists_plPos (hinj : ∀ v w, v < μ → w < μ → key v = key w → v 
       exact plPos_inj hinj hv.1 hw.1 h)]
     rfl
   have heq := Finset.eq_of_subset_of_card_le hsub (by rw [hcard, Nat.card_Ico, cntLt_succ]; omega)
-  have hi : i ∈ Finset.Ico (cntLt bo μ b) (cntLt bo μ (b + 1)) := by simp [h1, h2]
+  have hi : i ∈ Finset.Ico (cntLt bo μ b) (cntLt bo μ (b + 1)) := ⊚ h1, h2
   rw [← heq] at hi
   obtain ⟨v, hv, rfl⟩ := Finset.mem_image.mp hi
   simp only [hT, Finset.mem_filter, Finset.mem_range] at hv
@@ -108,23 +110,23 @@ theorem cB_succ_of (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = 
     cB μ bo key (j + 1) b = cB μ bo key j b + if bo v = b then 1 else 0 := by
   unfold cB
   split_ifs with hb
-  · rw [← Finset.card_insert_of_notMem (s := (Finset.range μ).filter _) (a := v) (by simp; omega)]
+  · Ξ ← Finset.card_insert_of_notMem (s := (Finset.range μ).filter _) (a := v) (by simp; omega)
     apply congrArg Finset.card; ext w; simp only [Finset.mem_filter, Finset.mem_insert, Finset.mem_range]
     constructor
     · rintro ⟨h1, h2, h3⟩
       rcases Nat.lt_or_ge (key w) j with h | h
       · exact Or.inr ⟨h1, h2, h⟩
-      · exact Or.inl (hinj w v h1 hv (by omega))
+      · exact Or.inl (hinj w v h1 hv (⋄))
     · rintro (rfl | ⟨h1, h2, h3⟩)
-      · exact ⟨hv, hb, by omega⟩
-      · exact ⟨h1, h2, by omega⟩
+      · exact ⟨hv, hb, ⋄⟩
+      · exact ⟨h1, h2, ⋄⟩
   · refine (congrArg Finset.card ?_).trans (Nat.add_zero _).symm; ext w; simp only [Finset.mem_filter, Finset.mem_range]
     constructor
     · rintro ⟨h1, h2, h3⟩
       rcases Nat.lt_or_ge (key w) j with h | h
       · exact ⟨h1, h2, h⟩
-      · have := hinj w v h1 hv (by omega); subst this; exact absurd h2 hb
-    · rintro ⟨h1, h2, h3⟩; exact ⟨h1, h2, by omega⟩
+      · have := hinj w v h1 hv (⋄); subst this; exact absurd h2 hb
+    · rintro ⟨h1, h2, h3⟩; exact ⟨h1, h2, ⋄⟩
 
 /-- One step of the scan without an item of block `b`. -/
 theorem cB_succ_none {j b : ℕ} (h : ∀ w, w < μ → key w = j → bo w ≠ b) :
@@ -134,8 +136,8 @@ theorem cB_succ_none {j b : ℕ} (h : ∀ w, w < μ → key w = j → bo w ≠ b
   · rintro ⟨h1, h2, h3⟩
     rcases Nat.lt_or_ge (key w) j with h' | h'
     · exact ⟨h1, h2, h'⟩
-    · exact absurd h2 (h w h1 (by omega))
-  · rintro ⟨h1, h2, h3⟩; exact ⟨h1, h2, by omega⟩
+    · exact absurd h2 (h w h1 (⋄))
+  · rintro ⟨h1, h2, h3⟩; exact ⟨h1, h2, ⋄⟩
 
 theorem cB_full {n b : ℕ} (h : ∀ w, w < μ → key w < n) : cB μ bo key n b = cntBelow bo μ b := by
   unfold cB cntBelow; apply congrArg Finset.card; ext w; simp only [Finset.mem_filter, Finset.mem_range]
@@ -156,7 +158,7 @@ structure PlInv (μ : ℕ) (bo key : ℕ → ℕ) (a1 a2 a3 : ℕ) (m0 : ℕ →
 
 theorem PlInv.zero {a1 a2 a3 : ℕ} {m : ℕ → ℕ} (h : ∀ b, b < μ → m (a1 + b) = cntLt bo μ b) :
     PlInv μ bo key a1 a2 a3 m 0 m :=
-  ⟨fun b hb => by rw [h b hb]; simp [cB], fun v _ => by simp, fun v _ _ h => by omega⟩
+  ⟨fun b hb => by rw [h b hb]; simp [cB], fun v _ => ✓, fun v _ _ h => by omega⟩
 
 /-- **A placing step.** -/
 theorem PlInv.step (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = w) {a1 a2 a3 : ℕ}
@@ -168,27 +170,27 @@ theorem PlInv.step (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = 
   have hqe : plPos μ bo key v = cntLt bo μ (bo v) + cB μ bo key j (bo v) := by
     unfold plPos; rw [rk_eq_cB, hk]
   refine ⟨fun b hb' => ?_, fun w hw => ?_, fun w hw hbw hkw => ?_⟩
-  · rw [cB_succ_of hinj hv hk]
+  · Ξ cB_succ_of hinj hv hk
     by_cases hbb : bo v = b
     · subst hbb; rw [Machine.upd_same, ite_eq_left rfl, hqe]; omega
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), hI.cnt b hb', ite_eq_right hbb, Nat.add_zero]
-  · rw [Machine.upd_other _ _ _ (by omega)]
+    · rw [Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega),
+        Machine.upd_other _ _ _ (⋄), hI.cnt b hb', ite_eq_right hbb, Nat.add_zero]
+  · rw [Machine.upd_other _ _ _ (⋄)]
     by_cases hwv : w = v
-    · subst hwv; rw [Machine.upd_same, ite_eq_left ⟨hb, by omega⟩]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega), hI.pos w hw]
-      have : key w ≠ j := fun h => hwv (hinj w v hw hv (by omega))
+    · subst hwv; rw [Machine.upd_same, ite_eq_left ⟨hb, ⋄⟩]
+    · rw [Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega), hI.pos w hw]
+      have : key w ≠ j := fun h => hwv (hinj w v hw hv (⋄))
       by_cases hc : bo w < μ ∧ key w < j
-      · rw [ite_eq_left hc, ite_eq_left ⟨hc.1, by omega⟩]
-      · rw [ite_eq_right hc, ite_eq_right (fun h => hc ⟨h.1, by omega⟩)]
+      · rw [ite_eq_left hc, ite_eq_left ⟨hc.1, ⋄⟩]
+      · rw [ite_eq_right hc, ite_eq_right (fun h => hc ⟨h.1, ⋄⟩)]
   · have hqw := plPos_lt_μ (key := key) hw hbw
-    rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
+    rw [Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega)]
     by_cases hwv : w = v
     · subst hwv; rw [Machine.upd_same]
     · have hne : plPos μ bo key w ≠ plPos μ bo key v := fun h => hwv (plPos_inj hinj hw hv h)
-      rw [Machine.upd_other _ _ _ (by omega)]
+      rw [Machine.upd_other _ _ _ (⋄)]
       exact hI.act w hw hbw (by
-        have : key w ≠ j := fun h => hwv (hinj w v hw hv (by omega))
+        have : key w ≠ j := fun h => hwv (hinj w v hw hv (⋄))
         omega)
 
 /-- **A step without placement.** -/
@@ -196,24 +198,24 @@ theorem PlInv.skip {a1 a2 a3 : ℕ} {m0 m : ℕ → ℕ} {j : ℕ}
     (hI : PlInv μ bo key a1 a2 a3 m0 j m) (hn : ∀ w, w < μ → key w = j → ¬ bo w < μ) :
     PlInv μ bo key a1 a2 a3 m0 (j + 1) m := by
   refine ⟨fun b hb => ?_, fun w hw => ?_, fun w hw hbw hkw => ?_⟩
-  · rw [cB_succ_none (fun w hw hk h => hn w hw hk (by omega))]; exact hI.cnt b hb
-  · rw [hI.pos w hw]
+  · rw [cB_succ_none (fun w hw hk h => hn w hw hk (⋄))]; exact hI.cnt b hb
+  · Ξ hI.pos w hw
     by_cases hc : bo w < μ ∧ key w < j
-    · rw [ite_eq_left hc, ite_eq_left ⟨hc.1, by omega⟩]
+    · rw [ite_eq_left hc, ite_eq_left ⟨hc.1, ⋄⟩]
     · rw [ite_eq_right hc, ite_eq_right (fun h => hc ⟨h.1, by
         rcases Nat.lt_or_ge (key w) j with h' | h'
         · exact h'
-        · exact absurd h.1 (hn w hw (by omega))⟩)]
+        · exact absurd h.1 (hn w hw (⋄))⟩)]
   · exact hI.act w hw hbw (by
       rcases Nat.lt_or_ge (key w) j with h' | h'
       · exact h'
-      · exact absurd hbw (hn w hw (by omega)))
+      · exact absurd hbw (hn w hw (⋄)))
 
 /-- The end of the scan. -/
 theorem PlInv.full {a1 a2 a3 : ℕ} {m0 m : ℕ → ℕ} {n : ℕ}
     (hI : PlInv μ bo key a1 a2 a3 m0 n m) (h : ∀ w, w < μ → key w < n) {b : ℕ} (hb : b < μ) :
     m (a1 + b) = cntLt bo μ (b + 1) := by
-  rw [hI.cnt b hb, cB_full h, cntLt_succ]
+  Ξ hI.cnt b hb, cB_full h, cntLt_succ
 
 end
 

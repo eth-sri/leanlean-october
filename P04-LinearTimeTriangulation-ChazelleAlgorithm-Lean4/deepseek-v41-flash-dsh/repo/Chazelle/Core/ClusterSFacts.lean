@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterStageD5
 public import Chazelle.Core.ClusterStageC4
 public import Chazelle.Core.ClusterStageB2S
@@ -71,7 +75,7 @@ theorem lv_win {k cs l l' : ℕ} (hk : 0 < k) (h : (l' + cs) / k = (l + cs) / k)
 
 variable {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The static facts.** -/
 theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     {M : CombMap (Fin g.μ) F (Fin g.N)} {T : SpanTree M} {a : F → Fin g.N}
@@ -123,7 +127,7 @@ theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   · have hlvv := hlv _ (hA.lev_lt v)
     obtain ⟨hb, ht, -, -⟩ := hlvv
     show m (g.base 38 + T.level v) + 1 - m (g.base 37 + T.level v) ≤ g.k'
-    rw [hb, ht]
+    Ξ hb, ht
     have := Nat.mod_lt (T.level v + cs) hk
     omega
 

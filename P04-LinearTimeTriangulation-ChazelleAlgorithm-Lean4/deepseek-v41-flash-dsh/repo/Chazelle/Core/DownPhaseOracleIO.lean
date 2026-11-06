@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleCuH
 public import Chazelle.Core.DownPhaseDrvRObl
 
@@ -60,7 +62,7 @@ theorem one_le_rpowCeil' (γ : ℕ) : 1 ≤ rpowCeil (cutGran γ * (γ + 1) ^ 2)
     unfold cutGran gradeGran
     have := Nat.one_le_two_pow (n := Cost.ceilBeta (Nat.clog 2 γ))
     omega
-  have h2 : 1 ≤ cutGran γ * (γ + 1) ^ 2 := Nat.mul_le_mul h1 (Nat.one_le_pow _ _ (by omega))
+  have h2 : 1 ≤ cutGran γ * (γ + 1) ^ 2 := Nat.mul_le_mul h1 (Nat.one_le_pow _ _ (⋄))
   unfold rpowCeil
   apply Nat.one_le_iff_ne_zero.2
   intro h0
@@ -77,8 +79,8 @@ theorem shCost_ge (κ γ : ℕ) :
   have hR := one_le_rpowCeil' γ
   set R := rpowCeil (cutGran γ * (γ + 1) ^ 2) ((1 : ℝ) / 3)
   set a := Nat.clog 2 γ + 1
-  have ha : 1 ≤ a := by omega
-  have h1 : a ≤ a * R := Nat.le_mul_of_pos_right _ (by omega)
+  have ha : 1 ≤ a := ⋄
+  have h1 : a ≤ a * R := Nat.le_mul_of_pos_right _ (⋄)
   have h2 : 0 ≤ κ * a * R := Nat.zero_le _
   nlinarith
 
@@ -87,7 +89,7 @@ theorem cuCost_ge (κ γ : ℕ) :
   unfold GI DrvR.cuCost
   beta_reduce
   set a := Nat.clog 2 γ + 1
-  have ha : 1 ≤ a := by omega
+  have ha : 1 ≤ a := ⋄
   nlinarith
 
 /-- **The interior oracles** (finding E7-B): from the oracles of `ShootCutSpec O`, a shooter and a

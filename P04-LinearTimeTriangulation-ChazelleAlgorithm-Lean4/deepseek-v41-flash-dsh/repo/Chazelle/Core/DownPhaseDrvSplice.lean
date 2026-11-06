@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildCmp
 
 /-!
@@ -33,7 +35,7 @@ theorem buildNF_arcs (hK : 0 < L.length) :
     (buildNF M Q L E).arcs = (gapStarts M Q L E).map (arcRec M Q L E) := by
   show arcList M Q L E = _
   unfold arcList
-  rw [ite_eq_right (by omega)]
+  rw [ite_eq_right (⋄)]
 
 /-- Arc `j` runs from the event at `gapStarts j` to the next event. -/
 theorem buildNF_arc (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
@@ -54,22 +56,22 @@ theorem buildNF_seq : (buildNF M Q L E).seq = List.range (buildNF M Q L E).arcs.
 
 theorem getD_append_left {c : ℕ} (hc : c < 2 * L.length) :
     (L ++ L₂).getD (c / 2) (0, 0, 0) = L.getD (c / 2) (0, 0, 0) := by
-  rw [List.getD_append _ _ _ _ (by omega)]
+  rw [List.getD_append _ _ _ _ (⋄)]
 
 /-- **Old event codes name the same walk positions after appending chords.** -/
 theorem wposOf_append {c : ℕ} (hc : c < 2 * L.length) : wposOf (L ++ L₂) c = wposOf L c := by
   unfold wposOf
-  simp only [BuildRegions.crec]
-  rw [getD_append_left hc]
+  ϴ BuildRegions.crec
+  Ξ getD_append_left hc
 
 theorem tieBit_append {c : ℕ} (hc : c < 2 * L.length) : tieBit M (L ++ L₂) c = tieBit M L c := by
   unfold tieBit
-  rw [wposOf_append hc]
+  Ξ wposOf_append hc
 
 theorem codeLe_append {c c' : ℕ} (hc : c < 2 * L.length) (hc' : c' < 2 * L.length) :
     codeLe M Q (L ++ L₂) c c' ↔ codeLe M Q L c c' := by
   unfold codeLe
-  rw [wposOf_append hc, wposOf_append hc', tieBit_append hc, tieBit_append hc']
+  Ξ wposOf_append hc, wposOf_append hc', tieBit_append hc, tieBit_append hc'
 
 open Classical in
 /-- The comparator as a Boolean function. -/
@@ -94,13 +96,13 @@ theorem splice_ok (hperm : E.Perm (List.range (2 * L.length)))
   constructor
   · unfold splice
     refine (List.merge_perm_append (le := codeLeB M Q (L ++ L₂))).trans ?_
-    rw [List.length_append, Nat.mul_add, List.range_add]
+    Ξ List.length_append, Nat.mul_add, List.range_add
     exact hperm.append hperm₂
   · have hE : E.Pairwise (fun a b => codeLeB M Q (L ++ L₂) a b = true) := by
       refine hsort.imp_of_mem fun {a b} ha hb hab => ?_
       have ha' := List.mem_range.1 (hperm.mem_iff.1 ha)
       have hb' := List.mem_range.1 (hperm.mem_iff.1 hb)
-      rw [codeLeB_iff, codeLe_append ha' hb']
+      Ξ codeLeB_iff, codeLe_append ha' hb'
       exact hab
     have hE₂ : E₂.Pairwise (fun a b => codeLeB M Q (L ++ L₂) a b = true) :=
       hsort₂.imp fun h => (codeLeB_iff _ _).2 h

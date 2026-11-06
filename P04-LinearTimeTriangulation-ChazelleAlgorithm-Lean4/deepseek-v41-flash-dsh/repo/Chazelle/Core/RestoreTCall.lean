@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTestSpec
 public import Chazelle.Core.SweepPrimOff
 public import Chazelle.Core.SweepPrimAbs
@@ -85,7 +87,7 @@ theorem callPrim {p : Stmt} {K : ℕ} {Inp : Polygon → ℕ → Chain → Confi
       intro b hb
       simp only [Finset.mem_union, Finset.mem_singleton] at hb
       rcases hb with rfl | hb
-      · simp [primBands]
+      · Θ primBands
       · exact hb) le_rfl
 
 end

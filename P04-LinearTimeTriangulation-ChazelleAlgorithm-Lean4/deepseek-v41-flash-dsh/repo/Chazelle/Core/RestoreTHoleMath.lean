@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTArcs
 public import Chazelle.Core.SweepPrimArr
 
@@ -37,7 +39,7 @@ theorem tour_mod {m S a : ℕ} (hS : S ≤ 2 * m) (ha : a < 2 * m) :
     (S + a) % (2 * m) = if S + a < 2 * m then S + a else S + a - 2 * m := by
   split_ifs with h
   · exact Nat.mod_eq_of_lt h
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  · rw [Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (by omega)]
 
 /-- The tour position determines the tour step. -/
 theorem tour_inj {m S a b : ℕ} (hS : S ≤ 2 * m) (ha : a < 2 * m) (hb : b < 2 * m)
@@ -234,13 +236,13 @@ theorem cover_chain_vertex (hP : C.P.Simple) {k : ℕ} (hk : k ≤ C.m) {hs : Li
       ∃ g ∈ hs, sideInArc ((chainModel C).key Q g.1) ((chainModel C).key Q g.2)
         ((p : ℝ) + 0) := fun q hq hm hpq => by
     refine ⟨_, hm, ?_⟩
-    simp only [vHole, key_hole]
+    ϴ vHole, key_hole
     subst hpq
-    exact vHole_mem (by omega) hq
+    exact vHole_mem (⋄) hq
   rcases hpc with h | h | ⟨h, hkt⟩
-  · exact mem _ (by omega) h1 h
-  · exact mem _ (by omega) h2 h
-  · exact mem _ (by omega) (h3 hkt) h
+  · exact mem _ (⋄) h1 h
+  · exact mem _ (⋄) h2 h
+  · exact mem _ (⋄) (h3 hkt) h
 
 /-- **The chain edge holes.** -/
 theorem cover_chain_edge (hP : C.P.Simple) {i : ℕ} (hi : i < 2 * C.m) {τ : ℝ} (hτ : 0 < τ)
@@ -255,7 +257,7 @@ theorem cover_chain_edge (hP : C.P.Simple) {i : ℕ} (hi : i < 2 * C.m) {τ : �
       ∃ g ∈ hs, sideInArc ((chainModel C).key Q g.1) ((chainModel C).key Q g.2)
         ((p : ℝ) + t) := fun q _ hm hpq => by
     refine ⟨_, hm, ?_⟩
-    simp only [eHole, key_hole]
+    ϴ eHole, key_hole
     subst hpq
     exact eHole_mem hp htp ht1
   rcases hpc with h | h
@@ -271,11 +273,11 @@ theorem cover_unique {M : Model} (hW : M.W.Simple) {e : ℕ} (he : e < M.W.n) {�
   obtain ⟨rfl, rfl⟩ := FactsInterior.pos_unique hW hp he ht0 ht1 hτ0 hτ1 hz
   rcases ht0.lt_or_eq with h | h
   · refine ⟨_, he' h, ?_⟩
-    simp only [eHole, key_hole]
+    ϴ eHole, key_hole
     exact eHole_mem hp h ht1
   · subst h
     refine ⟨_, hv rfl, ?_⟩
-    simp only [vHole, key_hole]
+    ϴ vHole, key_hole
     exact vHole_mem h3 hp
 
 end

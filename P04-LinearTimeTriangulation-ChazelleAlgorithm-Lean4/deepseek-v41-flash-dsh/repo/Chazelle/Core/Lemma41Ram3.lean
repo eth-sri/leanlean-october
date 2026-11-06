@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Ram2
 
 /-!
@@ -47,7 +49,7 @@ structure CovTab (m0 : ℕ → ℕ) (lam b D PW T R0 W : ℕ) : Prop where
   wb : b + 2 ^ lam ≤ W
   wR : R0 + 12 * lam + 6 ≤ W
 
-set_option maxHeartbeats 8000000 in
+
 /-- **One piece of the cover.** -/
 theorem coverBody_exec {c : Config} (hw : WordsBounded W c) {lam b D PW T hp R0 x cnt : ℕ}
     {m0 : ℕ → ℕ} (hR : CovRegs c lam b D PW T hp) (hT : CovTab m0 lam b D PW T R0 W)
@@ -76,7 +78,7 @@ theorem coverBody_exec {c : Config} (hw : WordsBounded W c) {lam b D PW T hp R0 
   have hq : x / 2 ^ g = i := by rw [hi, Nat.mul_div_cancel_left _ (by positivity)]
   have hib : (i + 1) * 2 ^ g ≤ b := by have := hok.2; rw [hi] at this; nlinarith
   obtain ⟨he1, he2⟩ := hT.ent g hgl i hib
-  have g1 : ∀ r, ¬ AscRG r → c1.nreg r = c.nreg r := fr1
+  have g1 := fr1
   -- the entry
   obtain ⟨c2, k2, e2, hk2, hw2, h17, h18, fr2, hm2, hrr2, hrm2, ho2⟩ := entB_exec (P := P) hw1
     (T := T) (g := g) (q := i)
@@ -130,7 +132,7 @@ theorem coverBody_exec {c : Config} (hw : WordsBounded W c) {lam b D PW T hp R0 
       fr2 r (by unfold AscRG at hr; omega) (by unfold AscRG at hr; omega)
         (by unfold AscRG at hr; omega), g1 r (by tauto)]
 
-set_option maxHeartbeats 8000000 in
+
 /-- **The cover loop.** -/
 theorem coverS_exec {c : Config} (hw : WordsBounded W c) {lam b D PW T hp R0 a : ℕ}
     (hR : CovRegs c lam b D PW T hp) (hT : CovTab c.nmem lam b D PW T R0 W)

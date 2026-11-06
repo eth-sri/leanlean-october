@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildRegFill
 
 /-!
@@ -23,7 +25,7 @@ def seqLoop : Stmt :=
   .whileLtN 43201 43102 (block [.addN 43230 44004 43201, .storeN 43230 43201,
     .addN 43201 43201 43011])
 
-theorem wr_seqLoop : wrM (fun r => decide (r = 43201 ∨ r = 43230)) seqLoop = true := by decide
+theorem wr_seqLoop : wrM (fun r => decide (r = 43201 ∨ r = 43230)) seqLoop = true := ⌖
 
 /-- The memory with the sequence table of length `j` at `QT`. -/
 def seqMem (m : ℕ → ℕ) (QT j a : ℕ) : ℕ := if QT ≤ a ∧ a < QT + j then a - QT else m a
@@ -45,9 +47,9 @@ theorem seqLoop_exec (d : Config) (hw : WordsBounded W d) {A QT : ℕ} (hA : d.n
       FrameM (fun r => decide (r = 43201 ∨ r = 43230)) d e ∧ e.nmem = seqMem d.nmem QT j)
     (fun e => 5 * (A - e.nreg 43201)) (fun e he => he.1)
     (fun e ⟨hwe, j, hje, hjA, hfe, hme⟩ htest => by
-      have r1 : e.nreg 44004 = QT := by rw [hfe.1 _ (by decide), hQT]
-      have r2 : e.nreg 43011 = 1 := by rw [hfe.1 _ (by decide), h1]
-      have r3 : e.nreg 43102 = A := by rw [hfe.1 _ (by decide), hA]
+      have r1 : e.nreg 44004 = QT := by rw [hfe.1 _ (⌖), hQT]
+      have r2 : e.nreg 43011 = 1 := by rw [hfe.1 _ (⌖), h1]
+      have r3 : e.nreg 43102 = A := by rw [hfe.1 _ (⌖), hA]
       rw [hje, r3] at htest
       have X : ∃ e' k, Exec P W (block [.addN 43230 44004 43201, .storeN 43230 43201,
           .addN 43201 43201 43011]) e e' k ∧ k = 3 ∧ e'.nreg 43201 = j + 1 ∧
@@ -56,18 +58,18 @@ theorem seqLoop_exec (d : Config) (hw : WordsBounded W d) {A QT : ℕ} (hA : d.n
         · rw [r1, hje]; omega
         · config_simp; rw [hje, r2]; omega
         · refine ⟨rfl, ?_, ?_⟩ <;> config_simp
-          · rw [hje, r2]
-          · rw [r1, hje, hme]
+          · Ξ hje, r2
+          · Ξ r1, hje, hme
             funext a
-            simp only [upd_apply, seqMem]
+            ϴ upd_apply, seqMem
             split_ifs <;> omega
       obtain ⟨e', k, x, hk, hj', hm'⟩ := X
-      exact ⟨e', k, x, ⟨x.wb_right, j + 1, hj', by omega, hfe.trans (exec_frameM x (by decide)),
+      exact ⟨e', k, x, ⟨x.wb_right, j + 1, hj', ⋄, hfe.trans (exec_frameM x (by decide)),
         hm'⟩, by rw [hj', hje]; omega⟩)
     ⟨hw, 0, hi, Nat.zero_le _, FrameM.refl _ _, by
-      funext a; simp only [seqMem]; rw [ite_eq_right (by omega)]⟩
+      funext a; simp only [seqMem]; rw [ite_eq_right (⋄)]⟩
   have hjA' : j = A := by
-    rw [hj', hf.1 _ (by decide), hA] at htest; omega
+    rw [hj', hf.1 _ (⌖), hA] at htest; omega
   subst hjA'
   exact ⟨d', k, e, by rw [hi] at hk; omega, hw', hf, hm'⟩
 
@@ -85,7 +87,7 @@ def hdrB : Stmt :=
     .storeN 43231 44000, .addN 43231 43231 43011, .storeN 43231 43010,
     .copyN 40003 44000]
 
-theorem wr_hdrB : wrM (fun r => decide (r = 43231 ∨ r = 40003)) hdrB = true := by decide
+theorem wr_hdrB : wrM (fun r => decide (r = 43231 ∨ r = 40003)) hdrB = true := ⌖
 
 /-- The twelve header words. -/
 def hdrW (K A R CT AT RT QT LT H : ℕ) (f : ℕ) : ℕ :=
@@ -118,10 +120,10 @@ theorem hdrB_exec (d : Config) (hw : WordsBounded W d) {K A R CT AT RT QT LT H :
     | (config_simp; simp (config := { failIfUnchanged := false }) only [hH, h1]; omega)
     | skip
   refine ⟨rfl, ?_, fun f hf => ?_, fun a ha => ?_⟩ <;> config_simp
-  · rw [hH]
-  · simp only [hH, hK, hA, hR, hCT, hAT, hRT, hQT, hLT, h0, h1, upd_apply, hdrW]
+  · Ξ hH
+  · ϴ hH, hK, hA, hR, hCT, hAT, hRT, hQT, hLT, h0, h1, upd_apply, hdrW
     interval_cases f <;> ifs_omega
-  · simp only [hH, h1, upd_apply]
+  · ϴ hH, h1, upd_apply
     ifs_omega
 
 end exec

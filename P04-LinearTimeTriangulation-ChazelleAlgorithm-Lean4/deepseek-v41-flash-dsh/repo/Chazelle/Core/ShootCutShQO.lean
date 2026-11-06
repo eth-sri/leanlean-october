@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutShK1M
 public import Chazelle.Core.ShootCutOrig
 
@@ -41,7 +43,7 @@ theorem conv_gt {lo a b t : ℝ} (ha : lo < a) (hb : lo < b) (h0 : 0 ≤ t) (h1 
 
 theorem conv_lt {hi a b t : ℝ} (ha : a < hi) (hb : b < hi) (h0 : 0 ≤ t) (h1 : t ≤ 1) :
     (1 - t) * a + t * b < hi := by
-  have := conv_gt (lo := -hi) (a := -a) (b := -b) (by linarith) (by linarith) h0 h1
+  have := conv_gt (lo := -hi) (a := -a) (b := -b) (⟡) (by linarith) h0 h1
   linarith
 
 /-- A segment between two points of `C` is in `InC C`. -/
@@ -51,26 +53,26 @@ theorem inC_seg {C : Chain} {a b x : Point} (ha : a ∈ C.set) (hb : b ∈ C.set
   have lb := inC_of_mem hb
   obtain ⟨t, h0, h1, rfl⟩ := hx
   simp only [InC] at la lb ⊢
-  have e1 : a.1 + t * (b.1 - a.1) = (1 - t) * a.1 + t * b.1 := by ring
-  have e2 : a.2 + t * (b.2 - a.2) = (1 - t) * a.2 + t * b.2 := by ring
-  rw [e1, e2]
+  have e1 : a.1 + t * (b.1 - a.1) = (1 - t) * a.1 + t * b.1 := ⋆
+  have e2 : a.2 + t * (b.2 - a.2) = (1 - t) * a.2 + t * b.2 := ⋆
+  Ξ e1, e2
   obtain ⟨a1, a2, a3⟩ := la
   obtain ⟨b1, b2, b3⟩ := lb
   rw [abs_lt] at a1 a2 b1 b2 ⊢
-  rw [abs_lt]
+  Ξ abs_lt
   refine ⟨⟨conv_gt a1.1 b1.1 h0 h1, conv_lt a1.2 b1.2 h0 h1⟩,
-    ⟨conv_gt a2.1 b2.1 h0 h1, conv_lt a2.2 b2.2 h0 h1⟩, by nlinarith⟩
+    ⟨conv_gt a2.1 b2.1 h0 h1, conv_lt a2.2 b2.2 h0 h1⟩, ⊞⟩
 
 /-- **The points of a block of tour edges** are points of `C`. -/
 theorem block_inC {C : Chain} {p₀ w : ℕ} (hw : 1 ≤ w) (hp6 : 6 ≤ p₀) (hp : p₀ + w ≤ 2 * C.m + 6)
     {x : Point} (hx : x ∈ (chainModel C).arcSet (p₀ : ℝ) ((p₀ + w : ℕ) : ℝ)) : InC C x := by
   have hnW : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
-  obtain ⟨d, hd, hxd⟩ := (arcSet_nat (M := chainModel C) (p₀ := p₀) hw (by omega) x).1 hx
+  obtain ⟨d, hd, hxd⟩ := (arcSet_nat (M := chainModel C) (p₀ := p₀) hw (⋄) x).1 hx
   have hv : ∀ q, 6 ≤ q → q ≤ 2 * C.m + 6 → (chainModel C).W.vtx q ∈ C.set := fun q h1 h2 => by
-    obtain ⟨i, rfl⟩ : ∃ i, q = i + 6 := ⟨q - 6, by omega⟩
-    rw [SweepPrim.walk_vtx_tour C (by omega)]
+    obtain ⟨i, rfl⟩ : ∃ i, q = i + 6 := ⟨q - 6, ⋄⟩
+    rw [SweepPrim.walk_vtx_tour C (⋄)]
     exact C.vertex_mem_set (C.sideIdx_le _ _)
-  exact inC_seg (hv _ (by omega) (by omega)) (hv _ (by omega) (by omega)) hxd
+  exact inC_seg (hv _ (⋄) (by omega)) (hv _ (by omega) (by omega)) hxd
 
 variable {C : Chain} {S : Set Point} {z : Point} {σ : ℝ}
 
@@ -104,7 +106,7 @@ theorem box_shift (hσ : σ = 1 ∨ σ = -1) {R R' : ℝ} {z' : Point} (hz : z.1
   refine firstHit_shift hσ hy fun x hx _ => ?_
   have h := hS x hx
   simp only [abs_lt] at h
-  rw [hz, hz']
+  Ξ hz, hz'
   rcases hσ with rfl | rfl
   · constructor <;> linarith [h.1.1, h.2.1]
   · constructor <;> linarith [h.1.2, h.2.2]

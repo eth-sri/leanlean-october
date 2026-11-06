@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FactsTie
 
 /-!
@@ -143,7 +145,7 @@ theorem separates_iff (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {pa pb 
       intro q τ hQ
       by_cases h : sidePt M.W q τ = sidePt M.W pa ta
       · exact Or.inl (hM.attach_unique hc hQ hA h)
-      · exact Or.inr (hM.attach_unique hc hQ hB (by rw [hoth q τ hQ h, hBe]))
+      · exact Or.inr (hM.attach_unique hc hQ hB (Ρ hoth q τ hQ h, hBe))
     have hkab : (pa : ℝ) + ta ≠ pb + tb := key_ne_of_pt_ne hA hB hAB
     rcases hcase pa' ta' hA' with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
       rcases hcase pb' tb' hB' with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
@@ -186,7 +188,7 @@ theorem not_touches_of_split (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
     (hM.isOpen.sdiff (hsys.isClosed_chord hj)).connectedComponentIn
   obtain ⟨u, huK, huU⟩ := mem_closure_iff.1 hzU _ hopenK hzK
   apply hne
-  rw [connectedComponentIn_eq (hUK huU), connectedComponentIn_eq huK]
+  Ξ connectedComponentIn_eq (hUK huU), connectedComponentIn_eq huK
 
 end WalkAx
 

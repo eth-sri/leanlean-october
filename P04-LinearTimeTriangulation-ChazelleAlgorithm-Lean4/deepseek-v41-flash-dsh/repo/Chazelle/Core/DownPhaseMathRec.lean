@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMathOrd
 public import Chazelle.Core.DownPhaseDrvSplice
 public import Chazelle.Core.NFBuildValid
@@ -85,13 +87,13 @@ theorem region_arcs_build {r : ℕ} (_hK : 0 < L.length) (hr : r < L.length + 1)
       BuildNF.regArcs (interiorModel Q) Q L E r := by
   unfold NF.region buildNF
   simp only
-  rw [List.getD_eq_getElem _ _ (by simpa using hr)]
+  Ξ List.getD_eq_getElem _ _ (by simpa using hr)
   simp
 
 /-- **The arcs of a region are listed in increasing record order.** -/
 theorem region_arcs_sorted {r : ℕ} (hK : 0 < L.length) (hr : r < L.length + 1) :
     ((buildNF (interiorModel Q) Q L E).region r).arcs.Pairwise (· < ·) := by
-  rw [region_arcs_build hK hr]
+  Ξ region_arcs_build hK hr
   exact (List.pairwise_lt_range).filter _
 
 /-- **The ends of an arc record are chord positions.** -/

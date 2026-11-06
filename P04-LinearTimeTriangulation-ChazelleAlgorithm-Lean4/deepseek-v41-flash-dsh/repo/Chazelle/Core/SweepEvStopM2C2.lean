@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopM2C
 
 /-!
@@ -37,7 +39,7 @@ theorem m2c_M2R_set {r : ℕ} (h : r = lE ∨ r = lH ∨ r = lD) : M2R r := by
 
 theorem m2c_nr (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c) :
     c.nreg (sw 34) = 2 * J.right.m + 7 := by
-  rw [hI.hin _ (by unfold IFix sw; omega)]
+  Ξ hI.hin _ (by unfold IFix sw; omega)
   obtain ⟨H, -, hst⟩ := E.hst
   exact hst.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1
 

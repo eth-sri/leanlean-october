@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41ExecB
 public import Chazelle.Core.Lemma41Levels
 
@@ -22,7 +24,7 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 16000000 in
+
 /-- **Lemma 4.1 on the RAM.** -/
 theorem l41_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
     {sM : Stmt} {κ F G H : ℕ → ℕ} (hMM : MergeMeets sM κ F G H (gradeCtx O) OkModel)
@@ -40,7 +42,7 @@ theorem l41_exec {O : OracleIface} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W)
       Frame l41Bands c c' k := by
   have hAl : ALLOC = 9999 := rfl
   have hWn : P.n + 3 ≤ W := by unfold hostWords at hWh; omega
-  have hR : Robust A c.nmem (fun m' => GradeRaw O P m' h A) := hX
+  have hR := hX
   have hBig0 : 40 * lam ^ 2 + 169 * lam + 84 + 11 * (cover lam (a + L) a).length ≤
       l41Big κ F G H lam a L := by unfold l41Big; omega
   have hsqpos : lam ≤ lam ^ 2 := by nlinarith

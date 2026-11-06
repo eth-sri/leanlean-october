@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopFin4
 public import Chazelle.Core.SweepEvStopFinS0
 public import Chazelle.Core.SweepEvStopLabFinal
@@ -33,7 +35,7 @@ theorem slf_labSet2 (J : Merge.Junction) (Q : Polygon) (N : NF) (l₀ l₁ l₂ 
     labSet J Q N 2 l₀ l₁ l₂ l₃ =
       {regOf (chainModel J.right) Q N l₀, regOf (chainModel J.right) Q N l₁} := by
   ext V
-  simp only [labSet, Set.mem_image, mem_ofPred_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
+  ϴ labSet, Set.mem_image, mem_ofPred_eq, Set.mem_insert_iff, Set.mem_singleton_iff
   constructor
   · rintro ⟨l, hl, rfl⟩
     rcases hl with ⟨-, rfl⟩ | ⟨-, rfl⟩ | ⟨h, -⟩ | ⟨h, -⟩
@@ -42,8 +44,8 @@ theorem slf_labSet2 (J : Merge.Junction) (Q : Polygon) (N : NF) (l₀ l₁ l₂ 
     · omega
     · omega
   · rintro (rfl | rfl)
-    · exact ⟨l₀, Or.inl ⟨by norm_num, rfl⟩, rfl⟩
-    · exact ⟨l₁, Or.inr (Or.inl ⟨by norm_num, rfl⟩), rfl⟩
+    · exact ⟨l₀, Or.inl ⟨⊛, rfl⟩, rfl⟩
+    · exact ⟨l₁, Or.inr (Or.inl ⟨⊛, rfl⟩), rfl⟩
 
 /-- A stretch attachment: its offset `d`. -/
 theorem slf_stretch (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂) {p : ℕ} {t : ℝ}
@@ -75,7 +77,7 @@ theorem slf_lab_par (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {kind k b : �
   obtain ⟨hreg, -⟩ := regOf_spec hN
   obtain ⟨hu, hdn, -⟩ := (regOf_spec hN).2.1 i hi
   obtain ⟨s1, s2⟩ := sideOf_rec hN hi
-  rw [slf_labSet2]
+  Ξ slf_labSet2
   exact hL1 _ (chord_mem hi) hsub _ (hreg.1 _ hu) _ (hreg.1 _ hdn) s1 s2
 
 /-- **The side labels faced at the counterpart of the stretch attachment.** -/
@@ -102,7 +104,7 @@ theorem slf_lab_str (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {kind k b : �
   have hL2 := (labTask J (Qof P) _ _ hP hN.1 (F₂plus_chordFamily E) hm hst hnp hC1 d t hd
     hA.2.1 hA.2.2.1 htd (by rw [← hpd]; exact hA)).2
   obtain ⟨hreg, -⟩ := regOf_spec hN
-  rw [slf_labSet2]
+  Ξ slf_labSet2
   exact hL2 hnopar _ (hreg.1 _ hla) _ (hreg.1 _ hlb) hAf hB1 hB0
 
 end

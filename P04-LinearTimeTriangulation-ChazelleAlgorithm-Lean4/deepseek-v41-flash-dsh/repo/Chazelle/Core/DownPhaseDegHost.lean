@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDegCount
 public import Chazelle.Core.Facts2Chain
 public import Chazelle.Core.SpecPhases
@@ -28,8 +32,8 @@ open Chazelle.Visibility (hseg rayPt)
 open Chazelle.Geometry (point_ext)
 
 theorem vtx_mem_vertices {P : Polygon} {i : ℕ} (hi : i < P.n) : P.vtx i ∈ P.vertices := by
-  simp only [Polygon.vtx]
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+  ϴ Polygon.vtx
+  Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some
   exact List.getElem_mem hi
 
 namespace ChainObs
@@ -144,7 +148,7 @@ theorem fullDegLe_host {C : Chain} (hP : C.P.Simple) {t : ℕ}
   intro F hF U hU
   have hdom := ChainObs.dom_eq (C := C)
   show {c | c ∈ C.chords ∪ F ∧ TouchesIn C.dom c U}.ncard ≤ 2 * (t + 1)
-  rw [← hdom]
+  Ξ ← hdom
   refine HSegObs.deg_leH (ChainObs.goodH hP ht) (G := C.chords ∪ F) ?_
     (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by rw [hdom]; exact hU)
   rintro c (hc | hc)
@@ -160,14 +164,14 @@ theorem vtx_mod_eq (Q : Polygon) (hDH : DistinctHeights Q) {i j : ℕ}
     (h : (Q.vtx (i % Q.n)).2 = (Q.vtx (j % Q.n)).2) : Q.vtx (i % Q.n) = Q.vtx (j % Q.n) := by
   rcases Nat.eq_zero_or_pos Q.n with h0 | h0
   · have hnil : Q.vertices = [] := List.eq_nil_of_length_eq_zero h0
-    simp [Polygon.vtx, hnil]
+    Θ Polygon.vtx, hnil
   · by_contra hne
-    exact hDH _ _ (Nat.mod_lt _ h0) (Nat.mod_lt _ h0) (fun e => hne (by rw [e])) h
+    exact hDH _ _ (Nat.mod_lt _ h0) (Nat.mod_lt _ h0) (fun e => hne (Ρ e)) h
 
 /-- The points of one host item at one height: at most one. -/
 theorem item_ncard_le (Q : Polygon) (hDH : DistinctHeights Q) (it : HostItem) (y : ℝ) :
     {p | p ∈ (it.pts Q.n).map (SymPt.eval Q) ∧ p.2 = y}.ncard ≤ 1 := by
-  rw [Set.ncard_le_one ((List.finite_toSet _).subset fun p hp => hp.1)]
+  Ξ Set.ncard_le_one ((List.finite_toSet _).subset fun p hp => hp.1)
   rintro p ⟨hp, hpy⟩ p' ⟨hp', hp'y⟩
   cases it with
   | run a ℓ =>
@@ -175,11 +179,11 @@ theorem item_ncard_le (Q : Polygon) (hDH : DistinctHeights Q) (it : HostItem) (y
       Function.comp_apply] at hp hp'
     obtain ⟨k, -, rfl⟩ := hp
     obtain ⟨k', -, rfl⟩ := hp'
-    simp only [SymPt.eval] at hpy hp'y ⊢
+    ϴ' SymPt.eval at hpy hp'y ⊢
     exact vtx_mod_eq Q hDH (hpy.trans hp'y.symm)
   | pt x =>
-    simp only [HostItem.pts, List.map_cons, List.map_nil, List.mem_singleton] at hp hp'
-    rw [hp, hp']
+    ϴ' HostItem.pts, List.map_cons, List.map_nil, List.mem_singleton at hp hp'
+    Ξ hp, hp'
 
 /-- **A host has at most `H.length` vertices at one height.** -/
 theorem host_ncard_le (Q : Polygon) (hDH : DistinctHeights Q) (H : Host) (y : ℝ) :
@@ -192,7 +196,7 @@ theorem host_ncard_le (Q : Polygon) (hDH : DistinctHeights Q) (H : Host) (y : �
         {p | p ∈ (it.pts Q.n).map (SymPt.eval Q) ∧ p.2 = y} ∪
           {p | p ∈ (Host.pts Q.n H).map (SymPt.eval Q) ∧ p.2 = y} := by
       rintro p ⟨hp, hpy⟩
-      simp only [Host.pts, List.flatMap_cons, List.map_append, List.mem_append] at hp
+      ϴ' Host.pts, List.flatMap_cons, List.map_append, List.mem_append at hp
       rcases hp with hp | hp
       · exact Or.inl ⟨hp, hpy⟩
       · exact Or.inr ⟨hp, hpy⟩

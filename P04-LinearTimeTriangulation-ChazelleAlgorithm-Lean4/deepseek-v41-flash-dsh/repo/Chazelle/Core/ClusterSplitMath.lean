@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterStarSep
 public import Chazelle.Core.ClusterMedian
 public import Chazelle.Core.ClusterStack
@@ -39,8 +43,8 @@ theorem enc_lt {N : ℕ} (x : Fin N ⊕ Fin N ⊕ Fin N) : enc N x < 3 * N := by
   rcases x with d | d | d <;> simp only [enc] <;> omega
 
 theorem enc_inj {N : ℕ} {x y : Fin N ⊕ Fin N ⊕ Fin N} (h : enc N x = enc N y) : x = y := by
-  rcases x with d | d | d <;> rcases y with e | e | e <;> simp only [enc] at h <;>
-    first | (congr 1; exact Fin.ext (by omega)) | (congr 2; exact Fin.ext (by omega)) |
+  rcases x with d | d | d <;> rcases y with e | e | e <;> ϴ' enc at h <;>
+    first | (congr 1; exact Fin.ext (⋄)) | (congr 2; exact Fin.ext (⋄)) |
       (exfalso; omega)
 
 @[simp] theorem enc_inl {N : ℕ} (d : Fin N) : enc N (.inl d) = d := rfl
@@ -66,12 +70,12 @@ theorem isDesc_iff_anc (hup : ∀ g : Fin N, R.up g = (C.parent g : ℕ)) (h g :
     | zero => intro x; rfl
     | succ n ih =>
       intro x
-      rw [Function.iterate_succ_apply, Function.iterate_succ_apply, ← ih, hup]
+      Ξ Function.iterate_succ_apply, Function.iterate_succ_apply, ← ih, hup
   constructor
   · rintro ⟨n, hn⟩
-    exact ⟨n, by rw [hit, hn]⟩
+    exact ⟨n, Ρ hit, hn⟩
   · rintro ⟨n, hn⟩
-    exact ⟨n, Fin.ext (by rw [← hit, hn])⟩
+    exact ⟨n, Fin.ext (Ρ ← hit, hn)⟩
 
 /-- **The class test is the side of the fundamental cycle.** -/
 theorem inClass_iff (hM : M.Planar) {sopp sface fparN pre sz : ℕ → ℕ} {r0 : ℕ}
@@ -85,40 +89,40 @@ theorem inClass_iff (hM : M.Planar) {sopp sface fparN pre sz : ℕ → ℕ} {r0 
       x ∈ (starTree T a ha).coDarts ∧ h ∈ (starTree T a ha).cross x := by
   have hSM : (star M).Planar := star_planar M hM
   set gF : Fin N := (star M).face ((star M).opp x) with hgF
-  have hg : sface (sopp (enc N x)) = (gF : ℕ) := by rw [hsopp, hsface]
+  have hg : sface (sopp (enc N x)) = (gF : ℕ) := Ρ hsopp, hsface
   have hne : ∀ g : Fin N, (g : ℕ) ≠ r0 ↔ g ≠ C.r0 := by
-    intro g; rw [hr0]; exact ⟨fun h e => h (by rw [e]), fun h e => h (Fin.ext e)⟩
+    intro g; rw [hr0]; exact ⟨fun h e => h (Ρ e), fun h e => h (Fin.ext e)⟩
   unfold inClass
-  rw [hg]
+  Ξ hg
   by_cases hd : (gF : ℕ) ≠ r0 ∧ fparN gF = enc N x
-  · rw [ite_eq_left hd]
+  · Ξ ite_eq_left hd
     have hg0 : gF ≠ C.r0 := (hne gF).mp hd.1
     have hfx : C.fpar gF = x := enc_inj (by rw [← hfpar gF hg0]; exact hd.2)
-    rw [← hfx, C.cross_fpar hSM hg0, hint]
+    Ξ ← hfx, C.cross_fpar hSM hg0, hint
     exact ⟨fun h => ⟨C.mem gF hg0, h⟩, fun h => h.2⟩
-  · rw [ite_eq_right hd]
+  · Ξ ite_eq_right hd
     by_cases hu : (f : ℕ) ≠ r0 ∧ sopp (fparN f) = enc N x
-    · rw [ite_eq_left hu]
+    · Ξ ite_eq_left hu
       have hf0 : f ≠ C.r0 := (hne f).mp hu.1
       have hfx : (star M).opp (C.fpar f) = x := by
         apply enc_inj
         rw [← hsopp, ← hfpar f hf0]; exact hu.2
-      rw [← hfx, C.cross_opp_fpar hSM hf0, hint]
+      Ξ ← hfx, C.cross_opp_fpar hSM hf0, hint
       exact ⟨fun h => ⟨(starTree T a ha).opp_mem_coDarts (C.mem f hf0), h⟩, fun h => h.2⟩
-    · rw [ite_eq_right hu]
-      simp only [false_iff, not_and]
+    · Ξ ite_eq_right hu
+      ϴ false_iff, not_and
       intro hco _
       obtain ⟨g', hg', rfl | rfl⟩ := (C.mem_coDarts_iff hSM).mp hco
       · -- a parent dart: the down test holds
         apply hd
         have : gF = g' := C.head g' hg'
-        rw [this]
+        Ξ this
         exact ⟨(hne g').mpr hg', hfpar g' hg'⟩
       · -- the opposite of a parent dart: the up test holds
         apply hu
         have hfg : f = g' := by rw [← hx]; exact C.head g' hg'
         subst hfg
-        exact ⟨(hne _).mpr hg', by rw [hfpar _ hg', hsopp]⟩
+        exact ⟨(hne _).mpr hg', Ρ hfpar _ hg', hsopp⟩
 
 /-- The vertex choice of the star map: the old dart `first v` at a real vertex, the spoke of
 `a g` at a centre. -/
@@ -131,8 +135,8 @@ theorem delta_vert {first : Fin μ → Fin N} (hfirst : ∀ v, M.vert (first v) 
     (ha' : ∀ g, M.face (a g) = g) (x : Fin μ ⊕ F) :
     (star M).vert (delta first a x) = x := by
   rcases x with v | g
-  · simp [delta, hfirst]
-  · simp [delta, ha']
+  · Θ delta, hfirst
+  · Θ delta, ha'
 
 /-- A set of real vertices as a set of star vertices. -/
 noncomputable def liftP (P : Finset ℕ) : Finset (Fin μ ⊕ F) :=
@@ -143,7 +147,7 @@ omit [Fintype F] [DecidableEq F] in
 theorem mem_liftP {P : Finset ℕ} {x : Fin μ ⊕ F} :
     x ∈ liftP (μ := μ) (F := F) P ↔ ∃ v : Fin μ, x = .inl v ∧ (v : ℕ) ∈ P := by
   unfold liftP
-  rw [Finset.mem_map]
+  Ξ Finset.mem_map
   constructor
   · rintro ⟨v, hv, rfl⟩
     exact ⟨v, rfl, (@Finset.mem_filter _ _ (Classical.decPred _) _ _).mp hv |>.2⟩
@@ -155,11 +159,11 @@ theorem card_liftP {P : Finset ℕ} (hP : ∀ v ∈ P, v < μ) : (liftP (μ := �
     (F := F) P).card = P.card := by
   classical
   unfold liftP
-  rw [Finset.card_map]
+  Ξ Finset.card_map
   have : P = (@Finset.filter _ (fun v : Fin μ => (v : ℕ) ∈ P) (Classical.decPred _)
       Finset.univ).map Fin.valEmbedding := by
     ext v
-    simp only [Finset.mem_map, Fin.valEmbedding_apply]
+    ϴ Finset.mem_map, Fin.valEmbedding_apply
     constructor
     · intro hv
       exact ⟨⟨v, hP v hv⟩, (@Finset.mem_filter _ _ (Classical.decPred _) _ _).mpr
@@ -167,7 +171,7 @@ theorem card_liftP {P : Finset ℕ} (hP : ∀ v ∈ P, v < μ) : (liftP (μ := �
     · rintro ⟨w, hw, rfl⟩
       exact ((@Finset.mem_filter _ _ (Classical.decPred _) _ _).mp hw).2
   conv_rhs => rw [this]
-  rw [Finset.card_map]
+  Ξ Finset.card_map
 
 omit [Fintype F] [DecidableEq F] in
 /-- Counting a predicate of lifted vertices. -/
@@ -176,10 +180,10 @@ theorem card_filter_liftP {P : Finset ℕ} (hP : ∀ v ∈ P, v < μ) (Q : Fin �
     (hQ : ∀ v : Fin μ, (v : ℕ) ∈ P → (Q (.inl v) ↔ Q' v)) :
     ((liftP (μ := μ) (F := F) P).filter Q).card = (P.filter Q').card := by
   have hP' : ∀ v ∈ P.filter Q', v < μ := fun v hv => hP v (Finset.mem_filter.mp hv).1
-  rw [← card_liftP (μ := μ) (F := F) hP']
+  Ξ ← card_liftP (μ := μ) (F := F) hP'
   congr 1
   ext x
-  rw [Finset.mem_filter, mem_liftP, mem_liftP]
+  Ξ Finset.mem_filter, mem_liftP, mem_liftP
   constructor
   · rintro ⟨⟨v, rfl, hv⟩, hq⟩
     exact ⟨v, rfl, Finset.mem_filter.mpr ⟨hv, (hQ v hv).mp hq⟩⟩
@@ -193,7 +197,7 @@ theorem card_items_filter {act : ℕ → ℕ} {lo hi : ℕ}
     ((items act (lo, hi)).filter Q).card = ((Finset.Ico lo hi).filter (fun i => Q (act i))).card := by
   unfold items
   simp only
-  rw [Finset.filter_image, Finset.card_image_of_injOn]
+  Ξ Finset.filter_image, Finset.card_image_of_injOn
   intro x hx y hy hxy
   exact hinj (Finset.mem_coe.mpr (Finset.mem_filter.mp hx).1)
     (Finset.mem_coe.mpr (Finset.mem_filter.mp hy).1) hxy
@@ -208,19 +212,19 @@ theorem good_iff {first : Fin μ → Fin N} {firstN : ℕ → ℕ}
       BTree.GdN pre sz (fun i => pre (firstN (act i))) lo hi z := by
   classical
   unfold Good cnt BTree.GdN cntIn
-  rw [card_liftP hlt, items_card hinj]
+  Ξ card_liftP hlt, items_card hinj
   have hc : ((liftP (μ := μ) (F := F) (items act (lo, hi))).filter
       (fun x => C.IsDesc ((star M).face (delta first a x)) z)).card =
       ((Finset.Ico lo hi).filter (fun i => pre z ≤ pre (firstN (act i)) ∧
         pre (firstN (act i)) < pre z + sz z)).card := by
     rw [card_filter_liftP hlt _ (fun v => pre z ≤ pre (firstN v) ∧ pre (firstN v) < pre z + sz z)
       (fun v hv => by
-        simp only [delta, star_face, starFace_inl]
+        ϴ delta, star_face, starFace_inl
         rw [hint, hfN])]
     exact card_items_filter hinj _
   unfold len
   simp only
-  rw [← hc]
+  Ξ ← hc
 
 /-- The marked vertices of the split at `f`: the `T`-ancestors of the three corners of the star
 face `f`. -/
@@ -230,7 +234,7 @@ def markN (T : SpanTree M) (a : F → Fin N) (f : Fin N) (v : ℕ) : Prop :=
 
 theorem markN_iff (f : Fin N) (v : Fin μ) :
     markN T a f v ↔ (Sum.inl v : Fin μ ⊕ F) ∈ (starTree T a ha).sepSet f := by
-  rw [star_mem_sepSet_inl]
+  Ξ star_mem_sepSet_inl
   unfold markN
   constructor
   · rintro ⟨h, hh⟩; exact hh
@@ -286,7 +290,7 @@ theorem split_math (hM : M.Planar) {first : Fin μ → Fin N} (hfirst : ∀ v, M
           (starDarts (M := M) f t)) := by
     intro v t ht
     have hft : (star M).face (starDarts (M := M) f t) = f := (hx _).mpr ⟨t, ht, rfl⟩
-    rw [hfN]
+    Ξ hfN
     exact inClass_iff hM hsopp hsface hr0 hfpar hint hft (first v)
   have hmemcls : ∀ (v : Fin μ) t, t < 3 →
       ((.inl v : Fin μ ⊕ F) ∈ cls (starTree T a ha) δ P' f (starDarts (M := M) f) t ↔
@@ -294,7 +298,7 @@ theorem split_math (hM : M.Planar) {first : Fin μ → Fin N} (hfirst : ∀ v, M
           inClass sopp sface fparN pre sz r0 (enc N (starDarts (M := M) f t)) f
             (pre (firstN v))) := by
     intro v t ht
-    rw [mem_cls, hic v t ht, markN_iff (ha := ha)]
+    Ξ mem_cls, hic v t ht, markN_iff (ha := ha)
     constructor
     · rintro ⟨h1, h2, h3⟩
       obtain ⟨w, hw, hwv⟩ := mem_liftP.mp h1
@@ -305,7 +309,7 @@ theorem split_math (hM : M.Planar) {first : Fin μ → Fin N} (hfirst : ∀ v, M
   refine ⟨fun v hv hm => ?_, fun v hv hm t t' ht ht' h1 h2 => ?_, fun t ht => ?_,
     fun d t t' ht ht' ⟨a1, a2, a3⟩ ⟨b1, b2, b3⟩ => ?_⟩
   · have hvμ := hlt v hv
-    have hm' : ¬ markN T a f (⟨v, hvμ⟩ : Fin μ) := hm
+    have hm' := hm
     obtain ⟨t, ht, hvt⟩ := hcov (.inl ⟨v, hvμ⟩) (mem_liftP.mpr ⟨_, rfl, hv⟩)
       (by rw [← markN_iff (ha := ha)]; exact hm')
     exact ⟨t, ht, ((hmemcls ⟨v, hvμ⟩ t ht).mp hvt).2.2⟩
@@ -327,10 +331,10 @@ theorem split_math (hM : M.Planar) {first : Fin μ → Fin N} (hfirst : ∀ v, M
           exact Finset.mem_filter.mpr ⟨(mem_cls.mp hx').1, hx'⟩
         · intro hx'
           exact (Finset.mem_filter.mp hx').2
-      rw [e1]
+      Ξ e1
       exact card_filter_liftP hlt _ _ (fun v hv => by
         rw [hmemcls v t ht]; exact ⟨fun h => h.2, fun h => ⟨hv, h⟩⟩)
-    rw [← hc]
+    Ξ ← hc
     unfold len at hh
     simpa using hh
   · have hs := hedge (.inl d) t t' ht ht'
@@ -348,10 +352,10 @@ theorem card_mark_le (f : Fin N) (S : Finset ℕ) (hSμ : ∀ v ∈ S, v < μ) (
   classical
   set S' : Finset (Fin μ) := Finset.univ.filter (fun v : Fin μ => (v : ℕ) ∈ S)
   have h := star_sep_card T a ha f c j k S' (fun v hv => by
-    have hv' : (v : ℕ) ∈ S := (Finset.mem_filter.mp hv).2
+    have hv' := (Finset.mem_filter.mp hv).2
     exact hS v hv')
   refine le_trans (le_of_eq ?_) h
-  rw [← Finset.card_map Fin.valEmbedding]
+  Ξ ← Finset.card_map Fin.valEmbedding
   congr 1
   ext v
   simp only [Finset.mem_filter, Finset.mem_map, Fin.valEmbedding_apply, Finset.mem_univ,

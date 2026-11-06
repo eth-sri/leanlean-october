@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranNd
 
 /-!
@@ -29,8 +31,8 @@ variable {M : Model} {Q : Polygon} {N : NF}
 theorem ncard_F (hN : IsNF M Q N) : (N.F M Q).ncard = N.nChords := by
   have e : N.F M Q = (fun i => cs M Q N i) '' {i | i < N.nChords} := by
     ext c
-    rw [mem_F_iff]
-    simp only [mem_image, mem_ofPred_eq]
+    Ξ mem_F_iff
+    ϴ mem_image, mem_ofPred_eq
     constructor
     · rintro ⟨i, hi, rfl⟩; exact ⟨i, hi, rfl⟩
     · rintro ⟨i, hi, rfl⟩; exact ⟨i, hi, rfl⟩
@@ -47,7 +49,7 @@ theorem nRegions_eq (hN : IsNF M Q N) (hM : WalkAx M) : N.nRegions = N.nChords +
   rw [ncard_F hN] at hcard
   have e : M.regions (N.F M Q) = reg '' {r | r < N.nRegions} := by
     ext U
-    simp only [mem_image, mem_ofPred_eq]
+    ϴ mem_image, mem_ofPred_eq
     constructor
     · intro hU
       obtain ⟨r, hr, rfl⟩ := hRC.2.2 U hU
@@ -91,7 +93,7 @@ theorem arcs_le (hN : IsNF M Q N) (hM : WalkAx M) (hne : (N.F M Q).Nonempty) :
 theorem chords_le {reg : ℕ → Set Point} (hN : IsNF M Q N) (hRC : RegionCorr M Q N reg)
     (hRO : RegionsOK M Q N reg) {D : ℕ} (hD : M.DegLe (N.F M Q) D) {r : ℕ}
     (hr : r < N.nRegions) : (N.region r).chords.length ≤ D := by
-  rw [← deg_region hN hRC hRO hr]
+  Ξ ← deg_region hN hRC hRO hr
   exact hD _ (hRC.1 r hr)
 
 /-- The left end of a chord record is a position of the walk proper. -/
@@ -125,7 +127,7 @@ theorem edge_lt' (hN : IsNF M Q N) (hne : (N.F M Q).Nonempty) {j : ℕ} (hj : j 
   obtain ⟨-, -, -, -, -, -, -, -, -, -, hpp⟩ := id hN
   obtain ⟨hs0, hs1, -⟩ := (hpp _ (NFLoc.seq_lt hN hj)).1
   unfold pk Model.key at hk
-  have hfl : ((N.arc (N.seq.getD j 0)).s.edge : ℝ) < p + 1 := by linarith
+  have hfl : ((N.arc (N.seq.getD j 0)).s.edge : ℝ) < p + 1 := ⟡
   have : (N.arc (N.seq.getD j 0)).s.edge < p + 1 := by exact_mod_cast hfl
   omega
 

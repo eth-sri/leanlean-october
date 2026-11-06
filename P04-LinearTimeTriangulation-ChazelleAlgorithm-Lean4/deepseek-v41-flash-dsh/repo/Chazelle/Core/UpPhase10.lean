@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase9
 
 /-!
@@ -105,15 +107,15 @@ theorem URegs.of_frame {c c' : Config} {n hp h g cnt γ cntP R : ℕ}
     hk r (Or.inl ⟨a, b⟩)
   have k' : ∀ r, 170019 ≤ r → r < 170030 → c'.nreg r = c.nreg r := fun r a b =>
     hk r (Or.inr (Or.inl ⟨a, b⟩))
-  exact ⟨(k _ (by omega) (by omega)).trans hu.r01, (k _ (by omega) (by omega)).trans hu.r04,
-    (k _ (by omega) (by omega)).trans hu.r05, (k _ (by omega) (by omega)).trans hu.r07,
-    (k _ (by omega) (by omega)).trans hu.r08, (k _ (by omega) (by omega)).trans hu.r10,
-    (k _ (by omega) (by omega)).trans hu.r11, (k _ (by omega) (by omega)).trans hu.r12,
-    (k _ (by omega) (by omega)).trans hu.r14, (k' _ (by omega) (by omega)).trans hu.r19,
-    (k' _ (by omega) (by omega)).trans hu.r20, (k' _ (by omega) (by omega)).trans hu.r21,
-    (k' _ (by omega) (by omega)).trans hu.r22, (k' _ (by omega) (by omega)).trans hu.r23,
-    (k' _ (by omega) (by omega)).trans hu.r25, (k' _ (by omega) (by omega)).trans hu.r26,
-    (k' _ (by omega) (by omega)).trans hu.r28, (k' _ (by omega) (by omega)).trans hu.r29,
+  exact ⟨(k _ (⋄) (⋄)).trans hu.r01, (k _ (⋄) (⋄)).trans hu.r04,
+    (k _ (⋄) (⋄)).trans hu.r05, (k _ (⋄) (⋄)).trans hu.r07,
+    (k _ (⋄) (⋄)).trans hu.r08, (k _ (⋄) (⋄)).trans hu.r10,
+    (k _ (⋄) (⋄)).trans hu.r11, (k _ (⋄) (⋄)).trans hu.r12,
+    (k _ (⋄) (⋄)).trans hu.r14, (k' _ (⋄) (⋄)).trans hu.r19,
+    (k' _ (⋄) (⋄)).trans hu.r20, (k' _ (⋄) (⋄)).trans hu.r21,
+    (k' _ (⋄) (⋄)).trans hu.r22, (k' _ (⋄) (⋄)).trans hu.r23,
+    (k' _ (⋄) (⋄)).trans hu.r25, (k' _ (⋄) (⋄)).trans hu.r26,
+    (k' _ (⋄) (⋄)).trans hu.r28, (k' _ (⋄) (⋄)).trans hu.r29,
     (hk _ (Or.inr (Or.inr rfl))).trans hu.r37⟩
 
 theorem URegs.of_kept {c c' : Config} {n hp h g cnt γ cntP R : ℕ}
@@ -168,7 +170,7 @@ theorem cellB_exec {c : Config} (hw : WordsBounded W c) {A d f o x i s pg q t : 
   · config_simp; simp only [hA, h20, h30, h31, h32, h18, Machine.upd_apply]
     split_ifs <;> first | omega
   · simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 end proofs
 

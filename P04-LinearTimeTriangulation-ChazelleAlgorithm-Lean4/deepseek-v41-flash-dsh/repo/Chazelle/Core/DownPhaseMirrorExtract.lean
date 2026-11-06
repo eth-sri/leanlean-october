@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMirrorChain
 public import Chazelle.Core.DownPhaseMirrorInterior
 public import Chazelle.Core.DownPhaseDrvOrient
@@ -77,11 +79,11 @@ theorem extractOK_host (X : Extract.Ctx Q S R) {g : ℕ} (hg : g < nk (interiorM
 theorem kept_mir (R : Set Point) (F : Set (Set Point)) :
     mirF (Extract.kept R F) = Extract.kept (mir '' R) (mirF F) := by
   ext c
-  rw [mem_mirF]
+  Ξ mem_mirF
   unfold Extract.kept
-  simp only [mem_ofPred_eq, mem_mirF]
+  ϴ mem_ofPred_eq, mem_mirF
   have e : mir '' (c ∩ mir '' R) = mir '' c ∩ R := by
-    rw [image_inter mir_injective, image_mir_image_mir]
+    Ξ image_inter mir_injective, image_mir_image_mir
   constructor
   · rintro ⟨h1, h2⟩
     refine ⟨h1, ?_⟩
@@ -93,13 +95,13 @@ theorem kept_mir (R : Set Point) (F : Set (Set Point)) :
 /-- The mirrored family after extraction. -/
 theorem mirF_step (S : Set (Set Point)) (R : Set Point) (F : Set (Set Point)) :
     mirF (S ∪ Extract.kept R F) = mirF S ∪ Extract.kept (mir '' R) (mirF F) := by
-  rw [mirF_union, kept_mir]
+  Ξ mirF_union, kept_mir
 
 /-- **The region hypotheses of the mirror image.** -/
 theorem ctx_mir (X : Extract.Ctx Q S R) : Extract.Ctx Q.mir (mirF S) (mir '' R) := by
   have hI := modelMir_interior X.hQ
   refine ⟨mir_simple Q X.hQ, (hI.chordFamily Q S).2 X.hFam, mirF_nonempty.2 X.hne, ?_⟩
-  rw [hI.regions]
+  Ξ hI.regions
   exact image_mem_mirF.2 X.hR
 
 /-- **Extraction transfers from the mirror image.** -/
@@ -126,7 +128,7 @@ theorem extractOK_of_mir {C : Chain} (hQ : Q.Simple) (hP : C.P.Simple)
     obtain ⟨U', hU', hVU'⟩ := h.region hV' (image_mono hVR)
     rw [hC.regions] at hU'
     refine ⟨mir '' U', mem_mirF.1 hU', ?_⟩
-    rw [← image_mir_image_mir V]
+    Ξ ← image_mir_image_mir V
     exact image_mono hVU'
   · intro F₁ hF₁ hfin U hU V hVR hVU
     have hU' : mir '' U ∈ (chainModel C.mir).regions (mirF F₁) := by

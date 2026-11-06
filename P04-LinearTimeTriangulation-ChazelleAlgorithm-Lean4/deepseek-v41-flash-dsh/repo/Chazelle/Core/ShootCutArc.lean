@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutFirst2
 
 /-!
@@ -24,7 +26,7 @@ namespace ShootCut
 
 /-- The list of pieces goes from `x` to `y` (consecutively). -/
 theorem Chained.get {x y : WPos} {ps : List Pc} (h : Chained x ps y) :
-    ∀ i (hi : i + 1 < ps.length), (ps[i]'(by omega)).e = (ps[i + 1]'hi).s := by
+    ∀ i (hi : i + 1 < ps.length), (ps[i]'(⋄)).e = (ps[i + 1]'hi).s := by
   induction ps generalizing x with
   | nil => intro i hi; simp at hi
   | cons p ps ih =>
@@ -35,10 +37,10 @@ theorem Chained.get {x y : WPos} {ps : List Pc} (h : Chained x ps y) :
       cases ps with
       | nil => simp at hi
       | cons q qs =>
-        simp only [List.getElem_cons_zero, List.getElem_cons_succ]
+        ϴ List.getElem_cons_zero, List.getElem_cons_succ
         exact h2.1.symm
     | succ i =>
-      simp only [List.getElem_cons_succ]
+      ϴ List.getElem_cons_succ
       exact ih h2 i (by simp at hi ⊢; omega)
 
 theorem Chained.append' : ∀ {x y z : WPos} {ps qs : List Pc}, Chained x ps y → Chained y qs z →
@@ -51,7 +53,7 @@ theorem Chained.last : ∀ {x y : WPos} {ps : List Pc}, Chained x ps y → (hne 
   | _, _, [], _, hne => absurd rfl hne
   | _, _, [_], ⟨_, h2⟩, _ => h2
   | _, _, _ :: q :: qs, ⟨_, h2⟩, _ => by
-      rw [List.getLast_cons (List.cons_ne_nil q qs)]
+      Ξ List.getLast_cons (List.cons_ne_nil q qs)
       exact Chained.last h2 (List.cons_ne_nil q qs)
 
 theorem upath_chained {n : ℕ} : ∀ {u : ℕ} {ps : List Pc} {u' : ℕ}, UPath n u ps u' →
@@ -66,9 +68,9 @@ structure ArcOK (s e : WPos) (ps : List Pc) : Prop where
   ne : ps ≠ []
   hs : (ps.head ne).s = s
   he : (chainModel C).key Q (ps.getLast ne).e = (chainModel C).key Q e
-  ch : ∀ i (hi : i + 1 < ps.length), (ps[i]'(by omega)).e = (ps[i + 1]'hi).s
-  e6 : ∀ i (hi : i + 1 < ps.length), sideInArc ((chainModel C).key Q (ps[i]'(by omega)).s)
-    ((chainModel C).key Q e) ((chainModel C).key Q (ps[i]'(by omega)).e)
+  ch : ∀ i (hi : i + 1 < ps.length), (ps[i]'(⋄)).e = (ps[i + 1]'hi).s
+  e6 : ∀ i (hi : i + 1 < ps.length), sideInArc ((chainModel C).key Q (ps[i]'(⋄)).s)
+    ((chainModel C).key Q e) ((chainModel C).key Q (ps[i]'(⋄)).e)
   kp : KPath (chainModel C) Q ((2 * C.m + 7 : ℕ) : ℝ) ((chainModel C).key Q s) ps
     ((chainModel C).key Q s + len ((2 * C.m + 7 : ℕ) : ℝ) ((chainModel C).key Q s)
       ((chainModel C).key Q e))
@@ -88,7 +90,7 @@ theorem key_range {N : ℕ} {x : WPos} (hx : ProperPos (chainModel C) Q N x)
 theorem T_unw (k k' : ℝ) (n : ℝ) : ∃ j : ℤ, k + len n k k' = k' + j * n := by
   unfold len
   split_ifs
-  · exact ⟨0, by ring⟩
+  · exact ⟨0, ⋆⟩
   · exact ⟨1, by push_cast; ring⟩
 
 /-- **A single piece** `[s, e]`. -/
@@ -153,7 +155,7 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
   -- the whole path of keys
   have hkU : ∀ u : ℕ, ∃ j : ℤ, (u : ℝ) = M.key Q ⟨u % n, 0⟩ + j * n := fun u => by
     refine ⟨((u / n : ℕ) : ℤ), ?_⟩
-    rw [key_hgt0, Int.cast_natCast]
+    Ξ key_hgt0, Int.cast_natCast
     have := Nat.mod_add_div u n
     have e : ((u % n : ℕ) : ℝ) + ((u / n : ℕ) : ℝ) * (n : ℝ) = (u : ℝ) := by
       exact_mod_cast (show u % n + u / n * n = u by rw [Nat.mul_comm]; omega)
@@ -171,7 +173,7 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
     obtain ⟨j, hj⟩ := KPath.last hkp hne
     obtain ⟨j', hj'⟩ := hTu
     have hb := (pcOK_keys (hok _ (List.getLast_mem hne))).2
-    exact key_eq_of_unw hn0 hb kE (i := j) (j := j') (by rw [← hj, ← hj'])
+    exact key_eq_of_unw hn0 hb kE (i := j) (j := j') (Ρ ← hj, ← hj')
   -- consecutive
   have hch : Chained s (p₁ :: (loop ++ fin)) ((p₁ :: (loop ++ fin)).getLast hne).e := by
     have hc : ∃ y, Chained s (p₁ :: (loop ++ fin)) y := by
@@ -185,13 +187,13 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
   swap
   · intro pc hpc
     rcases List.mem_cons.1 hpc with rfl | hpc
-    · exact ⟨Or.inl hp₁s, Or.inr (by rw [hp₁e])⟩
+    · exact ⟨Or.inl hp₁s, Or.inr (Ρ hp₁e)⟩
     rcases List.mem_append.1 hpc with hpc | hpc
     · have := UPath.ends hloop pc hpc; exact ⟨Or.inr this.1, Or.inr this.2⟩
     · rcases hfin with ⟨rfl, _⟩ | ⟨rfl, _⟩
       · rw [List.mem_singleton] at hpc; subst hpc; exact ⟨Or.inr rfl, Or.inl rfl⟩
       · simp at hpc
-  have := e6_of_kpath hn0 hkp (by linarith) (fun pc hpc => pcOK_keys (hok pc hpc)) hne i hi
+  have := e6_of_kpath hn0 hkp (⟡) (fun pc hpc => pcOK_keys (hok pc hpc)) hne i hi
   rw [hlast] at this
   exact this
 

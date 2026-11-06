@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvTasks2
 public import Chazelle.Core.SweepEvLabM
 public import Chazelle.Core.SweepMachine14
@@ -50,15 +52,15 @@ theorem start_key_pt (hP : J.P.Simple) :
   · obtain ⟨hv, -, hτ, hL⟩ := caseB_facts J hlt
     have e : (gW J + Lst J) % (chainModel J.whole).W.n = 2 * J.whole.m + 6 := by
       unfold gW
-      rw [hL, hn, Nat.mod_eq_of_lt (by omega)]
+      rw [hL, hn, Nat.mod_eq_of_lt (⋄)]
       omega
-    rw [e, (sidePt_top_copies J.whole).2, shared_eq_top J hv]
+    Ξ e, (sidePt_top_copies J.whole).2, shared_eq_top J hv
   · have hlo : lOff J = Lst J := by
       by_cases hv : VNotTop J
-      · rw [lOff_of_vnt J hv, Lst_rlen]
+      · Ξ lOff_of_vnt J hv, Lst_rlen
       · exact (caseC_facts J hv hlt).2.1
     have := start_pt J hP
-    rw [add_zero, Nat.mod_eq_of_lt (by omega), ← gL_eq J, hlo] at this
+    rw [add_zero, Nat.mod_eq_of_lt (⋄), ← gL_eq J, hlo] at this
     exact this
 
 /-- **A position whose point is in the domain of `C₂` is strictly beyond the start.** -/
@@ -130,7 +132,7 @@ theorem origin_end (hP : J.P.Simple) {c : Set Point} (hc : c ∈ Merge.augChords
   obtain ⟨-, -, hτ, -, hint, -⟩ := origin_hit hP hc ha haR hav hlt
   unfold Merge.shoot at hb
   refine seg_end hb hbD (fun s hs => ?_) hba
-  rw [lerp_rayPt]
+  Ξ lerp_rayPt
   exact hint _ (mul_pos hs.1 hτ) (by nlinarith [hs.2])
 
 /-- **The chord from a valid origin is not a stop chord.** -/
@@ -277,7 +279,7 @@ end Origin
 /-- **Task O: the chord seen from a valid origin.** -/
 theorem originTask : SweepEv.OriginTask := by
   intro J Q N hP hN _hF
-  have hS₂ : N.F (chainModel J.right) Q ⊆ Merge.augChords J.right := hN.1.2.1
+  have hS₂ := hN.1.2.1
   refine ⟨fun j hj haR hav hat hlt => ?_, fun j j' hj hj' haR hav _hat hlt haR' hav' _hat' hlt'
     heq => ?_⟩
   · obtain ⟨hc, ha⟩ := query_chord (J := J) (Q := Q) hj
@@ -286,7 +288,7 @@ theorem originTask : SweepEv.OriginTask := by
   · obtain ⟨hc, ha⟩ := query_chord (J := J) (Q := Q) hj
     obtain ⟨hc', ha'⟩ := query_chord (J := J) (Q := Q) hj'
     obtain ⟨-, hσ, hcc⟩ := origin_inj hP (hS₂ hc) (hS₂ hc') ha ha' haR hav hlt haR' hav' hlt' heq
-    have hk := hN.2.1 (j / 2) (j' / 2) (by omega) (by omega) hcc
+    have hk := hN.2.1 (j / 2) (j' / 2) (⋄) (⋄) hcc
     have hpar : j % 2 = j' % 2 := by
       have e1 := (endOrigin_eq J hN hj).2
       have e2 := (endOrigin_eq J hN hj').2

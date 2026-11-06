@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTKey
 public import Chazelle.Core.RestoreDrvProg
 
@@ -34,11 +36,11 @@ open Machine Machine.Stmt Programs SweepPrim WalkEmbed
 
 theorem hostAt_agree_r {m m' : ℕ → ℕ} {B E : ℕ} {H : Host} (h : HostAt m B H)
     (hE : B + 3 * H.length + 4 ≤ E) (hm : ∀ a, a < E → m' a = m a) : HostAt m' B H := by
-  refine ⟨by rw [hm _ (by omega)]; exact h.1, fun i hi => ?_⟩
+  refine ⟨by rw [hm _ (⋄)]; exact h.1, fun i hi => ?_⟩
   have hh := h.2 i hi
-  have e1 := hm (B + 1 + 3 * i) (by omega)
-  have e2 := hm (B + 2 + 3 * i) (by omega)
-  have e3 := hm (B + 3 + 3 * i) (by omega)
+  have e1 := hm (B + 1 + 3 * i) (⋄)
+  have e2 := hm (B + 2 + 3 * i) (⋄)
+  have e3 := hm (B + 3 + 3 * i) (⋄)
   generalize H.getD i (.run 0 0) = it at hh ⊢
   cases it with
   | run a l => obtain ⟨h1, h2, h3⟩ := hh; exact ⟨e1.trans h1, e2.trans h2, e3.trans h3⟩
@@ -51,9 +53,9 @@ theorem chainDesc_agree {m m' : ℕ → ℕ} {bw E : ℕ} {Q : Polygon} {H : Hos
     (hC : ChainDescAt m bw Q H C) (hb : bw + 5 ≤ E) (hE : m bw + 3 * H.length + 4 ≤ E)
     (he : ∀ a, a < E → m' a = m a) : ChainDescAt m' bw Q H C := by
   obtain ⟨h0, h1, h2, h3, h4, h5⟩ := hC
-  refine ⟨?_, h1, by rw [he _ (by omega)]; exact h2, by rw [he _ (by omega)]; exact h3,
-    by rw [he _ (by omega)]; exact h4, by rw [he _ (by omega)]; exact h5⟩
-  rw [he _ (by omega)]
+  refine ⟨?_, h1, by rw [he _ (⋄)]; exact h2, by rw [he _ (by omega)]; exact h3,
+    by rw [he _ (⋄)]; exact h4, by rw [he _ (by omega)]; exact h5⟩
+  rw [he _ (⋄)]
   exact hostAt_agree_r h0 hE he
 
 theorem chainWF_agree {P : Polygon} {m m' : ℕ → ℕ} {bw E E' : ℕ} {H : Host} {C : Chain}
@@ -61,14 +63,14 @@ theorem chainWF_agree {P : Polygon} {m m' : ℕ → ℕ} {bw E E' : ℕ} {H : Ho
     (he : ∀ a, a < E → m' a = m a) (hEE : E ≤ E') : ChainWF P E' m' bw := by
   obtain ⟨hl, hHW, hEb, hs⟩ := hwf.2 H C hC
   have hb := hwf.1
-  refine ⟨by omega, fun H' C' hC' => ?_⟩
-  have c0 : m' bw = m bw := he _ (by omega)
+  refine ⟨⋄, fun H' C' hC' => ?_⟩
+  have c0 : m' bw = m bw := he _ (⋄)
   have hH' : HostAt m' (m bw) H := hostAt_agree_r hC.1 hEb he
   have hHH : H' = H := NFLoc.hostAt_unique (by rw [← c0]; exact hC'.1) hH'
   subst hHH
   refine ⟨hl, hHW, by rw [c0]; omega, ?_⟩
-  have e1 : C'.s = C.s := by rw [← hC'.2.2.1, ← hC.2.2.1, he _ (by omega)]
-  have e2 : C'.P = C.P := by rw [hC'.2.1, hC.2.1]
+  have e1 : C'.s = C.s := by rw [← hC'.2.2.1, ← hC.2.2.1, he _ (⋄)]
+  have e2 : C'.P = C.P := Ρ hC'.2.1, hC.2.1
   rw [e1, e2]; exact hs
 
 /-! ## The fixed data of a run -/
@@ -120,21 +122,21 @@ variable {P : Polygon} {W : ℕ} {M : Model} {N : NF} {c₀ c : Config}
 theorem TInv.modelDesc (hE : TGood P W M N c₀) (hI : TInv W c₀ c) :
     ModelDescAt c.nmem (c.nreg 83000) (Qof P) M ∧
       ModelDescWF P (c.nreg ALLOC) c.nmem (c.nreg 83000) := by
-  have h0 := hI.hin 83000 (by norm_num) (by norm_num)
+  have h0 := hI.hin 83000 (⊛) (⊛)
   have hA6 := hE.hwfMD.1
   rcases hE.hMD with ⟨hz, H, C, hC, hM⟩ | ⟨h1, hbit, hM⟩
   · have hcw : ChainWF P (c₀.nreg ALLOC) c₀.nmem (c₀.nreg 83000 + 1) := hE.hwfMD.2 hz
     obtain ⟨-, -, hEb, -⟩ := hcw.2 H C hC
     have hC' := chainDesc_agree hC hcw.1 hEb hI.hm
-    have hz' : c.nmem (c₀.nreg 83000) = 0 := by rw [hI.hm _ (by omega)]; exact hz
-    rw [h0]
+    have hz' : c.nmem (c₀.nreg 83000) = 0 := by rw [hI.hm _ (⋄)]; exact hz
+    Ξ h0
     exact ⟨Or.inl ⟨hz', H, C, hC', hM⟩, by have := hI.hA; omega,
       fun _ => chainWF_agree hcw hC hI.hm hI.hA⟩
-  · have h1' : c.nmem (c₀.nreg 83000) = 1 := by rw [hI.hm _ (by omega)]; exact h1
-    have hb' : c.nmem (c₀.nreg 83000 + 1) = c₀.nmem (c₀.nreg 83000 + 1) := hI.hm _ (by omega)
-    rw [h0]
+  · have h1' : c.nmem (c₀.nreg 83000) = 1 := by rw [hI.hm _ (⋄)]; exact h1
+    have hb' : c.nmem (c₀.nreg 83000 + 1) = c₀.nmem (c₀.nreg 83000 + 1) := hI.hm _ (⋄)
+    Ξ h0
     exact ⟨Or.inr ⟨h1', by rw [hb']; exact hbit, hM⟩, by have := hI.hA; omega,
-      fun h => by omega⟩
+      fun h => ⋄⟩
 
 /-- **The chain descriptor of a chain model**, at any configuration of the run. -/
 theorem TInv.chain (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {C : Chain}
@@ -143,30 +145,30 @@ theorem TInv.chain (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {C : Chain}
       ChainWF P (c.nreg ALLOC) c.nmem (c.nreg 83020) := by
   obtain ⟨hMD, hwf⟩ := hI.modelDesc hE
   obtain ⟨hz, H, C', hC, hM'⟩ := chainDesc_of hMD hM
-  rw [hI.h20, ← hI.hin 83000 (by norm_num) (by norm_num)]
+  rw [hI.h20, ← hI.hin 83000 (⊛) (by norm_num)]
   exact ⟨H, C', hC, hM', hwf.2 hz⟩
 
 theorem TInv.nfWithin (hE : TGood P W M N c₀) (hI : TInv W c₀ c) :
     NFWithin c.nmem (c.nreg 83001) (c₀.nreg ALLOC) N := by
-  rw [hI.hin 83001 (by norm_num) (by norm_num)]
+  rw [hI.hin 83001 (⊛) (by norm_num)]
   exact hE.hN.transport hI.hm
 
 /-- The primitive bands are bands of the test. -/
-theorem primBands_sub : primBands ⊆ dBands := by decide
+theorem primBands_sub : primBands ⊆ dBands := ⌖
 
 /-- **A primitive step keeps the invariant** and band `bRestore`. -/
 theorem TInv.prim {c' : Config} {k : ℕ} (hI : TInv W c₀ c) (hw : WordsBounded W c')
     (hf : Frame primBands c c' k) : TStep W c₀ c c' k := by
   have h8 : ∀ q, 80000 ≤ q → q < 90000 → c'.nreg q = c.nreg q := fun q h1 h2 =>
     hf.1 q (by
-      rw [band8 h1 h2]
+      Ξ band8 h1 h2
       simp [primBands, bRestore, bSign, bLocate]) (by unfold ALLOC; omega)
-  refine ⟨⟨hw, fun q h1 h2 => (h8 q h1 (by omega)).trans (hI.hin q h1 h2),
+  refine ⟨⟨hw, fun q h1 h2 => (h8 q h1 (⋄)).trans (hI.hin q h1 h2),
     hI.hA.trans hf.2.2.2.2.2.1, fun a ha => (hf.2.2.1 a (by have := hI.hA; omega)).trans
-      (hI.hm a ha), by rw [h8 _ (by norm_num) (by norm_num)]; exact hI.h20,
-    by rw [h8 _ (by norm_num) (by norm_num)]; exact hI.h21,
-    by rw [h8 _ (by norm_num) (by norm_num)]; exact hI.h22,
-    by rw [h8 _ (by norm_num) (by norm_num)]; exact hI.h23⟩,
+      (hI.hm a ha), by rw [h8 _ (⊛) (by norm_num)]; exact hI.h20,
+    by rw [h8 _ (⊛) (by norm_num)]; exact hI.h21,
+    by rw [h8 _ (⊛) (by norm_num)]; exact hI.h22,
+    by rw [h8 _ (⊛) (by norm_num)]; exact hI.h23⟩,
     (RF.of_frame hf hI.hA).mono primBands_sub le_rfl, h8⟩
 
 theorem TStep.trans {c₁ c₂ : Config} {k₁ k₂ : ℕ} (h₁ : TStep W c₀ c c₁ k₁)
@@ -189,11 +191,11 @@ theorem TInv.regs {c' : Config} {k : ℕ} (hI : TInv W c₀ c) (hw : WordsBounde
     (hrr : c'.rreg = c.rreg) (hm : c'.nmem = c.nmem) (hrm : c'.rmem = c.rmem)
     (ho : c'.output = c.output) : TInv W c₀ c' ∧ RF dBands (c₀.nreg ALLOC) c c' k := by
   have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold ALLOC; omega)
-  refine ⟨⟨hw, fun q h1 h2 => (hr q (by omega)).trans (hI.hin q h1 h2), by rw [hA]; exact hI.hA,
-    fun a ha => by rw [hm]; exact hI.hm a ha, by rw [hr _ (by omega)]; exact hI.h20,
-    by rw [hr _ (by omega)]; exact hI.h21, by rw [hr _ (by omega)]; exact hI.h22,
-    by rw [hr _ (by omega)]; exact hI.h23⟩,
-    rf_of_regs (fun r hr' => hr r (by omega)) hrr hm hrm ho⟩
+  refine ⟨⟨hw, fun q h1 h2 => (hr q (⋄)).trans (hI.hin q h1 h2), by rw [hA]; exact hI.hA,
+    fun a ha => by rw [hm]; exact hI.hm a ha, by rw [hr _ (⋄)]; exact hI.h20,
+    by rw [hr _ (⋄)]; exact hI.h21, by rw [hr _ (by omega)]; exact hI.h22,
+    by rw [hr _ (⋄)]; exact hI.h23⟩,
+    rf_of_regs (fun r hr' => hr r (⋄)) hrr hm hrm ho⟩
 
 end
 

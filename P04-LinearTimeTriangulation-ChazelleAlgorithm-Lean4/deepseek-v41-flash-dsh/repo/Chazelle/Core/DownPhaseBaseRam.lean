@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseBaseList
 public import Chazelle.Core.SortRam
 
@@ -123,49 +127,49 @@ theorem mem1_keep {m₀ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
       else if a = B' + 3 * rankF (keepX li n) L i then (L.getD i (0, 0, 0)).1 else m a) =
       mem1 m₀ li n L B' X (i + 1) a := by
   have hr := rankF_succ (keepX li n) (0, 0, 0) hi
-  rw [ite_eq_left hk] at hr
+  Ξ' ite_eq_left hk at hr
   have hle := rankF_le (keepX li n) L i
   set j := rankF (keepX li n) L i with hj
   have hg := getD_keepL (li := li) (n := n) hi hk
-  rw [← hj] at hg
+  Ξ' ← hj at hg
   have hkc : ∀ s, s < 2 → keptC li n L (2 * i + s) = true := fun s hs => by
     unfold keptC; rw [show (2 * i + s) / 2 = i by omega]; exact hk
   have hnc : ∀ s, s < 2 → newCode li n L (2 * i + s) = 2 * j + s := fun s hs => by
     unfold newCode; rw [show (2 * i + s) / 2 = i by omega, ← hj]; omega
-  rw [hm a]
+  Ξ hm a
   unfold mem1
-  rw [hr]
+  Ξ hr
   by_cases h1 : a = X + 2 * i + 1
   · subst h1
-    rw [ite_eq_left rfl, ite_eq_right (by omega), ite_eq_left (by omega), show X + 2 * i + 1 - X = 2 * i + 1 by
-      omega, tbl, ite_eq_left (hkc 1 (by norm_num)), hnc 1 (by norm_num)]
+    rw [ite_eq_left rfl, ite_eq_right (⋄), ite_eq_left (⋄), show X + 2 * i + 1 - X = 2 * i + 1 by
+      omega, tbl, ite_eq_left (hkc 1 (⊛)), hnc 1 (⊛)]
   by_cases h2 : a = X + 2 * i
   · subst h2
-    rw [ite_eq_right h1, ite_eq_left rfl, ite_eq_right (by omega), ite_eq_left (by omega), show X + 2 * i - X = 2 * i by
-      omega, tbl, show 2 * i = 2 * i + 0 by rfl, ite_eq_left (hkc 0 (by norm_num)),
-      hnc 0 (by norm_num)]
-  rw [ite_eq_right h1, ite_eq_right h2]
+    rw [ite_eq_right h1, ite_eq_left rfl, ite_eq_right (⋄), ite_eq_left (⋄), show X + 2 * i - X = 2 * i by
+      omega, tbl, show 2 * i = 2 * i + 0 by rfl, ite_eq_left (hkc 0 (⊛)),
+      hnc 0 (⊛)]
+  Ξ ite_eq_right h1, ite_eq_right h2
   have htw : ∀ s, s < 3 → tw (keepL li n L) (3 * j + s) =
       if s = 0 then (L.getD i (0, 0, 0)).1 else if s = 1 then (L.getD i (0, 0, 0)).2.1
       else (L.getD i (0, 0, 0)).2.2 := fun s hs => by
     unfold tw
-    rw [show (3 * j + s) % 3 = s by omega, show (3 * j + s) / 3 = j by omega, hg]
+    Ξ show (3 * j + s) % 3 = s by omega, show (3 * j + s) / 3 = j by omega, hg
   by_cases h3 : a = B' + 3 * j + 2
   · subst h3
-    rw [ite_eq_left rfl, ite_eq_left (by omega), show B' + 3 * j + 2 - B' = 3 * j + 2 by omega,
-      htw 2 (by norm_num)]
+    rw [ite_eq_left rfl, ite_eq_left (⋄), show B' + 3 * j + 2 - B' = 3 * j + 2 by omega,
+      htw 2 (⊛)]
     simp
   by_cases h4 : a = B' + 3 * j + 1
   · subst h4
-    rw [ite_eq_right h3, ite_eq_left rfl, ite_eq_left (by omega), show B' + 3 * j + 1 - B' = 3 * j + 1 by omega,
-      htw 1 (by norm_num)]
+    rw [ite_eq_right h3, ite_eq_left rfl, ite_eq_left (⋄), show B' + 3 * j + 1 - B' = 3 * j + 1 by omega,
+      htw 1 (⊛)]
     simp
   by_cases h5 : a = B' + 3 * j
   · subst h5
-    rw [ite_eq_right h3, ite_eq_right h4, ite_eq_left rfl, ite_eq_left (by omega),
-      show B' + 3 * j - B' = 3 * j + 0 by omega, htw 0 (by norm_num)]
+    rw [ite_eq_right h3, ite_eq_right h4, ite_eq_left rfl, ite_eq_left (⋄),
+      show B' + 3 * j - B' = 3 * j + 0 by omega, htw 0 (⊛)]
     simp
-  rw [ite_eq_right h3, ite_eq_right h4, ite_eq_right h5]
+  Ξ ite_eq_right h3, ite_eq_right h4, ite_eq_right h5
   split_ifs <;> first | rfl | omega
 
 /-- The memory step of a dropped chord. -/
@@ -207,7 +211,7 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
+
 theorem dLoad_exec (c : Config) (hw : WordsBounded W c) {a : ℕ} (h111 : c.nreg 200111 = a)
     (h100 : c.nreg 200100 = 1) (haW : a + 3 ≤ W) :
     ∃ c' k, Exec P W dLoad c c' k ∧ k = 7 ∧ c'.nreg 200112 = c.nmem a ∧
@@ -267,7 +271,7 @@ theorem dTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {li : Boo
     by rw [rr₂, rr₁], by rw [rm₂, rm₁], by rw [o₂, o₁]⟩
   rw [v₂, v₁, r₁ _ (by norm_num), r₁ _ (by norm_num)]
 
-set_option maxHeartbeats 4000000 in
+
 /-- **A kept chord.** -/
 theorem dKeep_exec (c : Config) (hw : WordsBounded W c) {w x j : ℕ} (h119 : c.nreg 200119 = w)
     (h117 : c.nreg 200117 = x) (h118 : c.nreg 200118 = j) (h100 : c.nreg 200100 = 1)
@@ -286,10 +290,10 @@ theorem dKeep_exec (c : Config) (hw : WordsBounded W c) {w x j : ℕ} (h119 : c.
   refine ⟨rfl, ?_, ?_, ?_, fun r a1 a2 a3 a4 => ?_, fun a => ?_, rfl, rfl, rfl⟩
   all_goals simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h119, h117, h118, h100]
-  simp only [Machine.upd_apply]
+  ϴ Machine.upd_apply
   congr 1 <;> (try ring_nf)
 
-set_option maxHeartbeats 4000000 in
+
 /-- **A dropped chord.** -/
 theorem dDrop_exec (c : Config) (hw : WordsBounded W c) {x : ℕ} (h117 : c.nreg 200117 = x)
     (h100 : c.nreg 200100 = 1) (h101 : c.nreg 200101 = 0) (hxW : x + 2 ≤ W) :
@@ -304,7 +308,7 @@ theorem dDrop_exec (c : Config) (hw : WordsBounded W c) {x : ℕ} (h117 : c.nreg
   refine ⟨rfl, ?_, fun r a1 => ?_, fun a => ?_, rfl, rfl, rfl⟩
   all_goals simp (disch := omega) only [Machine.upd_same,
     Machine.upd_other, h117, h100, h101]
-  simp only [Machine.upd_apply]
+  ϴ Machine.upd_apply
 
 end exec
 

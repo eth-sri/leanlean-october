@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterSep
 
 /-!
@@ -52,7 +56,7 @@ theorem centroid_half (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f
     have : P.filter (fun v => M.face (δ v) ∈ T.cross (C.fpar g)) =
         P.filter (fun v => C.IsDesc (M.face (δ v)) g) := by
       ext v; simp only [Finset.mem_filter, C.cross_fpar hM hg]
-    rw [this]
+    Ξ this
     convert hng using 3
   · -- the parent side of `f`
     have hgf : g = f := (C.head g hg).symm.trans hdf
@@ -63,7 +67,7 @@ theorem centroid_half (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f
     have : P.filter (fun v => M.face (δ v) ∈ T.cross (M.opp (C.fpar g))) =
         P.filter (fun v => ¬ C.IsDesc (M.face (δ v)) g) := by
       ext v; simp only [Finset.mem_filter, C.cross_opp_fpar hM hg]
-    rw [this]
+    Ξ this
     have e : (P.filter (fun v => C.IsDesc (M.face (δ v)) g)).card =
         (haveI := Classical.decPred (fun v => C.IsDesc (M.face (δ v)) g);
           (P.filter (fun v => C.IsDesc (M.face (δ v)) g)).card) := by

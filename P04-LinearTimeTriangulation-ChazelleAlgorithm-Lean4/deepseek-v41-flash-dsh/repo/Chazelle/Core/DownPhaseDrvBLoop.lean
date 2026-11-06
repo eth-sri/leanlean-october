@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBPieces2
 public import Chazelle.Core.DownPhaseDrvBBkt
 public import Chazelle.Core.RestoreTRead
@@ -58,7 +62,7 @@ section init
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The initialisation.** -/
 theorem regInit_exec (c : Config) (hw : WordsBounded W c) {MD K H B₂ : ℕ}
     (h01 : c.nreg 210001 = MD) (h03 : c.nreg 210003 = K) (h05 : c.nreg 210005 = H)
@@ -86,12 +90,12 @@ theorem regInit_exec (c : Config) (hw : WordsBounded W c) {MD K H B₂ : ℕ}
     exec_block
     all_goals (try (config_simp; simp (config := { failIfUnchanged := false }) only
       [h01, h03, h05, h19]; omega))
-    all_goals (try (refine ⟨by omega, ?_⟩))
+    all_goals (try (refine ⟨⋄, ?_⟩))
     all_goals (repeat' apply And.intro)
     all_goals (config_simp <;> simp (config := { failIfUnchanged := false }) only
       [h01, h03, h05, h19])
     all_goals omega
-  have f1 : FrameB Binit c d1 := exec_frameB e1 (by decide)
+  have f1 : FrameB Binit c d1 := exec_frameB e1 (⌖)
   have hw1 := e1.wb_right
   obtain ⟨d2, k2, e2, hk2, v11, f2⟩ : ∃ d2 k2, Exec P W
       (.ifLtN 212020 212000 .skip (.ifLtN 212000 212020 .skip (block [.constN 212011 1]))) d1 d2 k2 ∧
@@ -101,28 +105,28 @@ theorem regInit_exec (c : Config) (hw : WordsBounded W c) {MD K H B₂ : ℕ}
         (.ifLtN 212020 212000 .skip (.ifLtN 212000 212020 .skip (block [.constN 212011 1])))
         d1 d2 k2 ∧ k2 ≤ 5 ∧ d2.nreg 212011 = (if c.nmem (MD + 1) = 1 then 1 else 0) := by
       by_cases c1 : d1.nreg 212020 < d1.nreg 212000
-      · exact ⟨d1, 0 + 1, .ifLtN_true c1 (.skip hw1), by omega,
-          by rw [a11, ite_eq_right (by omega)]⟩
+      · exact ⟨d1, 0 + 1, .ifLtN_true c1 (.skip hw1), ⋄,
+          by rw [a11, ite_eq_right (⋄)]⟩
       · by_cases c2 : d1.nreg 212000 < d1.nreg 212020
-        · exact ⟨d1, 0 + 1 + 2, .ifLtN_false c1 (.ifLtN_true c2 (.skip hw1)), by omega,
-            by rw [a11, ite_eq_right (by omega)]⟩
+        · exact ⟨d1, 0 + 1 + 2, .ifLtN_false c1 (.ifLtN_true c2 (.skip hw1)), ⋄,
+            by rw [a11, ite_eq_right (⋄)]⟩
         · refine spec_ifLtN_false c1 ?_
           refine spec_ifLtN_false c2 ?_
           exec_block
           · omega
-          · refine ⟨by omega, ?_⟩
+          · refine ⟨⋄, ?_⟩
             config_simp
-            rw [ite_eq_left (by omega)]
-    exact ⟨d2, k2, e2, hk2, v, exec_frameB e2 (by decide)⟩
+            rw [ite_eq_left (⋄)]
+    exact ⟨d2, k2, e2, hk2, v, exec_frameB e2 (⌖)⟩
   have g : ∀ r, r ≠ 212011 → d2.nreg r = d1.nreg r := fun r hr =>
     f2.1 r (by simp only [decide_eq_false_iff_not]; exact hr)
-  refine ⟨d2, k1 + k2, .seq e1 e2, by omega, by rw [g _ (by decide), a00],
-    by rw [g _ (by decide), a01], by rw [g _ (by decide), a02], by rw [g _ (by decide), a10], v11,
-    by rw [g _ (by decide), a12], by rw [g _ (by decide), b02], by rw [g _ (by decide), b03],
-    by rw [g _ (by decide), b05], by rw [g _ (by decide), b06], by rw [g _ (by decide), b14],
-    by rw [g _ (by decide), b16], by rw [g _ (by decide), b17], by rw [g _ (by decide), b31],
-    by rw [g _ (by decide), a13], by rw [g _ (by decide), a14], by rw [g _ (by decide), a18],
-    by rw [g _ (by decide), b20], by rw [g _ (by decide), b21], by rw [g _ (by decide), b22],
+  refine ⟨d2, k1 + k2, .seq e1 e2, ⋄, by rw [g _ (by decide), a00],
+    by rw [g _ (⌖), a01], by rw [g _ (by decide), a02], by rw [g _ (by decide), a10], v11,
+    by rw [g _ (⌖), a12], by rw [g _ (by decide), b02], by rw [g _ (by decide), b03],
+    by rw [g _ (⌖), b05], by rw [g _ (by decide), b06], by rw [g _ (by decide), b14],
+    by rw [g _ (⌖), b16], by rw [g _ (by decide), b17], by rw [g _ (by decide), b31],
+    by rw [g _ (⌖), a13], by rw [g _ (by decide), a14], by rw [g _ (by decide), a18],
+    by rw [g _ (⌖), b20], by rw [g _ (by decide), b21], by rw [g _ (by decide), b22],
     f1.trans ⟨fun r hr => f2.1 r (by simp only [Binit, decide_eq_false_iff_not] at hr ⊢; omega),
       fun r hr => f2.2.1 r (by simp only [Binit, decide_eq_false_iff_not] at hr ⊢; omega),
       f2.2.2⟩⟩

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FactsFullDegInt
 
 /-!
@@ -53,7 +55,7 @@ theorem full_in_region (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S
     isPreconnected_Ioo.image _ (by fun_prop : Continuous fun x : ℝ => ((x, y) : Point)).continuousOn
   set z₀ : Point := ((a + b) / 2, y)
   have hz₀ : z₀ ∈ (fun x : ℝ => ((x, y) : Point)) '' Ioo a b :=
-    ⟨(a + b) / 2, ⟨by linarith, by linarith⟩, rfl⟩
+    ⟨(a + b) / 2, ⟨⟡, ⟡⟩, rfl⟩
   refine ⟨connectedComponentIn (freeIn D S) z₀, ⟨z₀, hfree hz₀, rfl⟩, ?_, ⟨z₀, hsubD hz₀⟩⟩
   exact hopen.trans (hpre.subset_connectedComponentIn hz₀ hfree)
 

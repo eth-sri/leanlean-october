@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutShCmp
 public import Chazelle.Core.ShootCutShPiece
 
@@ -48,7 +50,7 @@ theorem edge_cand {U V z X : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hzS :
   intro sel
   classical
   have e0 : ∀ f : ℕ, ∀ x : ℝ, Cand (seg U V) z σ 0 x → Cand (seg U V) z σ 0 (selX U V X f) :=
-    fun _ _ h => ⟨fun h' => absurd h' (by norm_num), h.2⟩
+    fun _ _ h => ⟨fun h' => absurd h' (⊛), h.2⟩
   by_cases hUV : U.2 = V.2
   · by_cases hzU : z.2 = U.2
     · have hc := seg_on hσ hUV hzU hzS

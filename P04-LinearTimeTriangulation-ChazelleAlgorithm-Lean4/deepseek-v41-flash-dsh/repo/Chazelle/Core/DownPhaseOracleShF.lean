@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleShE
 
 /-!
@@ -53,7 +55,7 @@ theorem frontI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P)
   obtain ⟨c₁, e₁, a10, a13, ar, arr, am, arm, ao⟩ := saveS_exec (P := P) 140000 (by norm_num) c hw
   have w₁ := e₁.wb_right
   have aA : c₁.nreg ALLOC = c.nreg ALLOC := ar _ (by unfold ALLOC; omega)
-  have F₁ : Frame ioBands c c₁ 11 := frameIO_of_frameB
+  have F₁ := frameIO_of_frameB
     (B := fun r => decide (170000 ≤ r ∧ r < 170014))
     (fun r hr => io_of_band (Or.inl (by simp at hr; omega)))
     ⟨fun r hr => ar r (by simpa using hr), fun r _ => by rw [arr], am, arm, ao⟩ 11
@@ -85,17 +87,17 @@ theorem frontI_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P)
     exact ShotList.originIn_copy ho e5 e6 e7
   obtain ⟨c₃, k₃, e₃, hk₃, s₃, r₃, m₃, rr₃, rm₃, o₃⟩ := originI_exec (P := P) c₂ w₂ hn3 b11 b10 b12
     b18 b19 (by rw [b14, a0, am]; exact hbit) b14' ho₂ hol (by omega)
-  have F₃ : Frame ioBands c₂ c₃ k₃ := frameIO_of_frameB
+  have F₃ := frameIO_of_frameB
     (B := fun r => decide (r = 170020 ∨ r = 170021 ∨ r = 170022 ∨ r = 170092 ∨ r = 170095 ∨
       r = 170096))
     (fun r hr => io_of_band (Or.inl (by simp at hr; omega)))
     ⟨fun r hr => r₃ r (by unfold BorgR; simpa using hr), fun r _ => by rw [rr₃], m₃, rm₃, o₃⟩ k₃
-  have k3 : ∀ r, ¬ BorgR r → c₃.nreg r = c₂.nreg r := r₃
+  have k3 := r₃
   have g : ∀ r, ¬ BorgR r → ¬ BinitR r → c₃.nreg r = c₁.nreg r := fun r h1 h2 => by
     rw [k3 r h1, br r h2]
   have gs : ∀ i, i < 10 → c₃.nreg (170000 + i) = c.nreg (140000 + i) := fun i hi => by
     rw [g _ (by unfold BorgR; omega) (by unfold BinitR; omega)]; exact a10 i hi
-  have q : ∀ r, ¬ BorgR r → c₃.nreg r = c₂.nreg r := k3
+  have q := k3
   have ex : Exec P W frontI c c₃ (11 + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
   have cA : c₃.nreg ALLOC = c.nreg ALLOC + 8 := by
     rw [q _ (by unfold BorgR ALLOC; omega), bA, aA]

@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBFam
 public import Chazelle.Core.DownPhaseDrvDScan
 
@@ -49,8 +53,8 @@ theorem ends_on_arcs (B : BaseCtx Q L E reg li) {r : ℕ}
   obtain ⟨hcQ, hcS, hcR, hatt, -⟩ := regList_sound B.hQ B.hdh B.hli B.fam hR hl hx
   have hFam := B.fam
   have hM := walkAx_interiorModel B.hQ
-  have hnc : N.nChords = L.length := DownMath.nChords_build B.hQ B.hL B.hperm B.hsort
-  have hNF : IsNF (interiorModel Q) Q N := DownMath.isNF_build B.hQ B.hL B.hperm B.hsort
+  have hnc := DownMath.nChords_build B.hQ B.hL B.hperm B.hsort
+  have hNF := DownMath.isNF_build B.hQ B.hL B.hperm B.hsort
   have hne : (N.F (interiorModel Q) Q).Nonempty :=
     ⟨_, (DownMath.chordPos_attach hNF (show 0 < N.nChords by rw [hnc]; exact B.hK)
       (Or.inl rfl)).1⟩
@@ -76,7 +80,7 @@ theorem scan_hex (B : BaseCtx Q L E reg li) {r : ℕ}
         (DrvD.tB (interiorModel Q) Q (BuildNF.buildNF (interiorModel Q) Q L E) y j) = true := by
   obtain ⟨j, hjm, hj, hcl⟩ := ends_on_arcs B hr hx hy
   have hE : 0 < E.length := by rw [B.hperm.length_eq, List.length_range]; have := B.hK; omega
-  exact ⟨j, hjm, DrvD.match_of_closedArc B.hK hE hj hcl (by simp [DrvD.tA]) (by simp [DrvD.tB])⟩
+  exact ⟨j, hjm, DrvD.match_of_closedArc B.hK hE hj hcl (⊚ DrvD.tA) (⊚ DrvD.tB)⟩
 
 /-! ## The walk edges of an arc -/
 
@@ -88,11 +92,11 @@ theorem evPos_ok (B : BaseCtx Q L E reg li) {m : ℕ} (hm : m < E.length) :
     (wposOf L (E.getD m 0)).edge < Q.n ∧ 0 ≤ (interiorModel Q).param Q (wposOf L (E.getD m 0)) ∧
       (interiorModel Q).param Q (wposOf L (E.getD m 0)) < 1 := by
   have hmem : E.getD m 0 ∈ E := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hm, Option.getD_some]
+    Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hm, Option.getD_some
     exact List.getElem_mem hm
   have hc : E.getD m 0 < 2 * L.length := by simpa using B.hperm.mem_iff.1 hmem
   obtain ⟨hp, h0, h1, -⟩ := BuildNF.attach_wposOf B.hL hc
-  rw [show (interiorModel Q).W.n = Q.n from DownMath.walk_n Q] at hp
+  Ξ' show (interiorModel Q).W.n = Q.n from DownMath.walk_n Q at hp
   exact ⟨hp, h0, h1⟩
 
 /-- The key of a position on a walk edge determines its edge. -/
@@ -100,8 +104,8 @@ theorem edge_of_key {M : Model} {Q : Polygon} {x : WPos} (h0 : 0 ≤ M.param Q x
     (h1 : M.param Q x < 1) {w : ℕ} (hk : (w : ℝ) ≤ M.key Q x) (hk' : M.key Q x < w + 1) :
     x.edge = w := by
   unfold Model.key at hk hk'
-  have a : (x.edge : ℝ) < w + 1 := by linarith
-  have b : (w : ℝ) < x.edge + 1 := by linarith
+  have a : (x.edge : ℝ) < w + 1 := ⟡
+  have b : (w : ℝ) < x.edge + 1 := ⟡
   have a' : x.edge < w + 1 := by exact_mod_cast a
   have b' : w < x.edge + 1 := by exact_mod_cast b
   omega

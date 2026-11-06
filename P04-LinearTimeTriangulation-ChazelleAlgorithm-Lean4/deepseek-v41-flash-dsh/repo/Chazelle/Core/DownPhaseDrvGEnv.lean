@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvGPiece
 public import Chazelle.Core.DownPhaseDrvGCost
 public import Chazelle.Core.GradeCtx
@@ -37,16 +39,16 @@ theorem gradeCtx_cap_le {O : OracleIface} {P : Polygon} {m : ℕ → ℕ} {g A :
     (h : (gradeCtx O).holds P m g A) : (gradeCtx O).cap P m g ≤ 2 * P.n := by
   have h1 : m g ≤ topGrade P.n + 1 := h.holds.1
   show 2 ^ (m g - 1) ≤ 2 * P.n
-  have h2 : 2 ^ (m g - 1) ≤ 2 ^ topGrade P.n := Nat.pow_le_pow_right (by norm_num) (by omega)
+  have h2 : 2 ^ (m g - 1) ≤ 2 ^ topGrade P.n := Nat.pow_le_pow_right (⊛) (⋄)
   refine h2.trans ?_
   unfold topGrade
   rcases Nat.lt_or_ge (P.n - 1) 2 with h3 | h3
-  · have : Nat.clog 2 (P.n - 1) = 0 := Nat.clog_of_right_le_one (by omega) 2
+  · have : Nat.clog 2 (P.n - 1) = 0 := Nat.clog_of_right_le_one (⋄) 2
     rw [this]; simp; omega
-  · have h4 := Nat.pow_pred_clog_lt_self (b := 2) (by norm_num) (show 1 < P.n - 1 by omega)
-    have h5 : 1 ≤ Nat.clog 2 (P.n - 1) := Nat.clog_pos (by norm_num) (by omega)
+  · have h4 := Nat.pow_pred_clog_lt_self (b := 2) (⊛) (show 1 < P.n - 1 by omega)
+    have h5 : 1 ≤ Nat.clog 2 (P.n - 1) := Nat.clog_pos (⊛) (⋄)
     have e : 2 ^ Nat.clog 2 (P.n - 1) = 2 * 2 ^ (Nat.clog 2 (P.n - 1)).pred := by
-      rw [← pow_succ', Nat.pred_eq_sub_one, Nat.sub_add_cancel h5]
+      Ξ ← pow_succ', Nat.pred_eq_sub_one, Nat.sub_add_cancel h5
     omega
 
 /-- **The data of a run of the region procedure.** -/
@@ -125,10 +127,10 @@ def envRegs : List ℕ :=
     219142, 219143, 219144, 219145, 219146, 219100, 219101, 219103, 219104, 219107]
 
 theorem envRegs_band : ∀ q ∈ envRegs, bandOf q = bDownDrv ∧ 219000 ≤ q ∧
-    (q < 219110 ∨ 219139 < q) ∧ q ≠ 219222 := by decide
+    (q < 219110 ∨ 219139 < q) ∧ q ≠ 219222 := ⌖
 
 theorem envRegs_band2 : ∀ q ∈ envRegs, q ≠ 219220 ∧ q ≠ 219221 ∧ q ≠ 219222 ∧
-    (q < 219224 ∨ 219229 < q) ∧ (q < 219240 ∨ 219251 < q) := by decide
+    (q < 219224 ∨ 219229 < q) ∧ (q < 219240 ∨ 219251 < q) := ⌖
 
 /-- The environment survives a step keeping its registers and the memory below `A₁`. -/
 theorem REnv.keep {R : RData} {d d' : Config} (h : REnv R d)
@@ -178,9 +180,9 @@ theorem REnv.table (hF : RFacts O P W R) {d : Config} (h : REnv R d) :
   obtain ⟨a1, a2, a3⟩ := hF.hT i hi
   have := hF.hTA
   refine ⟨?_, ?_, ?_⟩
-  · rw [h.low _ (by omega)]; exact a1
-  · rw [h.low _ (by omega)]; exact a2
-  · rw [h.low _ (by omega)]; exact a3
+  · rw [h.low _ (⋄)]; exact a1
+  · rw [h.low _ (⋄)]; exact a2
+  · rw [h.low _ (⋄)]; exact a3
 
 end facts
 
@@ -203,13 +205,13 @@ theorem AccOK.keep {P : Polygon} {R : RData} {d d' : Config} {pos γ : ℕ} {B :
     (h : AccOK P R d pos γ) (hf : Frame B d d' k)
     (hr : ∀ q, q = 219110 ∨ q = 219111 ∨ q = 219112 ∨ q = 219113 ∨ q = 219222 →
       d'.nreg q = d.nreg q) : AccOK P R d' pos γ := by
-  have r10 := hr 219110 (by simp)
-  have r11 := hr 219111 (by simp)
-  refine ⟨by rw [hr _ (by simp), h.r22], by rw [hr _ (by simp), h.r12],
-    by rw [hr _ (by simp), h.r13], by rw [r10]; have := hf.2.2.2.2.2.1; have := h.dA; omega,
+  have r10 := hr 219110 (✓)
+  have r11 := hr 219111 (✓)
+  refine ⟨by rw [hr _ (✓), h.r22], by rw [hr _ (by simp), h.r12],
+    by rw [hr _ (✓), h.r13], by rw [r10]; have := hf.2.2.2.2.2.1; have := h.dA; omega,
     by rw [r10]; exact h.lo1, by rw [r11]; exact h.lo2, fun C hP hs hm => ?_⟩
   obtain ⟨h1, N, h2, h3⟩ := h.desc C hP hs hm
-  rw [r10, r11]
+  Ξ r10, r11
   exact ⟨h1.frame hf, N, h2.frame hf, h3⟩
 
 end

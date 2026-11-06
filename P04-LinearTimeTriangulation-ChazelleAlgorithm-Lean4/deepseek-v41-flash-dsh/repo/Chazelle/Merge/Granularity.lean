@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Merge.Conformal
 
 /-!
@@ -106,7 +108,7 @@ theorem mem_sdiff_of_not_touches (hF : ChordSystem D F) {S : Set (Set Point)} (h
   have hX' : X ∈ regionsIn D (insert c (S \ {c})) := by rw [hins]; exact hX
   rcases h.mem_cases hX' with ⟨hXT, hXP⟩ | rfl | rfl
   · refine ⟨hXT, ?_⟩
-    rw [← h.exits_other hF hT hXT hXP, hins]
+    Ξ ← h.exits_other hF hT hXT hXP, hins
   · exact absurd (h.touches₁ hF hT (hS hc) hcT) hcX
   · exact absurd (h.touches₂ hF hT (hS hc) hcT) hcX
 
@@ -146,7 +148,7 @@ theorem contractionCondIn_iff {wt : Set (Set Point) → Set Point → ℕ} {S : 
     by_contra hle
     push Not at hle
     refine h c ⟨hc, U, hU, V, hV, hne, hcU, hcV, hlow, fun W' hW' hUW' => ?_⟩
-    rw [regionsIn_eq_of_subset hW' hW (regionsIn_nonempty hU) hUW' hUW]
+    Ξ regionsIn_eq_of_subset hW' hW (regionsIn_nonempty hU) hUW' hUW
     exact hle
 
 /-- The two regions touched by a removable chord are the two halves `R₁`, `R₂` of the removal
@@ -219,7 +221,7 @@ theorem removable_of_removable_sdiff (hF : ChordSystem D F)
     · exact hsep R₂ hR₂ h1 (hs.touches₂ hF hS1 (hS hc) hc1)
   obtain ⟨hWmem, -⟩ := mem_sdiff_of_not_touches hF hS1 hc'1 hW' hc'W
   have hcomm : (S \ {c}) \ {c'} = (S \ {c'}) \ {c} := sdiff_right_comm _ _ _
-  rw [← hloc (S \ {c}) hS1 c' hc'1 W hW' hc'W, hcomm]
+  Ξ ← hloc (S \ {c}) hS1 c' hc'1 W hW' hc'W, hcomm
   rw [hcomm] at hWmem
   exact hW W hWmem hUW
 

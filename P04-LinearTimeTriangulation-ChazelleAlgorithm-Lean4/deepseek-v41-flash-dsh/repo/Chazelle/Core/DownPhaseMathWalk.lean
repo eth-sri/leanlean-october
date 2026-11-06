@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMathRec2
 
 /-!
@@ -41,7 +43,7 @@ theorem repFrom_single {li : Bool} {s : SymPt} {i : ℕ}
     (h : RepPt li Q S R (i % nk (interiorModel Q) S R) s) : RepFrom li Q S R [s] i := by
   intro j hj
   simp only [List.length_singleton] at hj
-  obtain rfl : j = 0 := by omega
+  obtain rfl : j = 0 := ⋄
   simpa using h
 
 theorem repFrom_append {li : Bool} {L L' : List SymPt} {i : ℕ} (h : RepFrom li Q S R L i)
@@ -61,20 +63,20 @@ theorem repFrom_flatMap {li : Bool} (G : ℕ → List SymPt) (d J : ℕ → ℕ)
     RepFrom li Q S R ((List.range k).flatMap G) i ∧
       ((List.range k).flatMap G).length = grpOff d J k := by
   induction k with
-  | zero => exact ⟨repFrom_nil li i, by simp [grpOff]⟩
+  | zero => exact ⟨repFrom_nil li i, ⊚ grpOff⟩
   | succ k ih =>
-    obtain ⟨h1, h2⟩ := ih fun t ht => hG t (by omega)
-    obtain ⟨h3, h4⟩ := hG k (by omega)
-    rw [List.range_succ, List.flatMap_append, List.flatMap_singleton]
+    obtain ⟨h1, h2⟩ := ih fun t ht => hG t (⋄)
+    obtain ⟨h3, h4⟩ := hG k (⋄)
+    Ξ List.range_succ, List.flatMap_append, List.flatMap_singleton
     refine ⟨repFrom_append h1 (by rw [h2]; exact h3), ?_⟩
-    rw [List.length_append, h2, h4, grpOff_succ]
+    Ξ List.length_append, h2, h4, grpOff_succ
 
 theorem repFrom_rotate {li : Bool} {L : List SymPt} {i : ℕ}
     (hL : L.length = nk (interiorModel Q) S R) (h : RepFrom li Q S R L i) (m : ℕ) :
     RepFrom li Q S R (L.rotate m) (i + m) := by
   intro j hj
   rw [List.length_rotate] at hj
-  have hpos : 0 < L.length := by omega
+  have hpos : 0 < L.length := ⋄
   have hjm := h ((j + m) % L.length) (Nat.mod_lt _ hpos)
   rw [List.getD_eq_getElem _ _ (by rw [List.length_rotate]; exact hj), List.getElem_rotate,
     ← List.getD_eq_getElem _ (.vtx 0) (Nat.mod_lt _ hpos)]
@@ -96,12 +98,12 @@ theorem regHost_pts (li : Bool) (n : ℕ) (N : NF) (r : ℕ) :
       else ((walkItems li n N r).flatMap (wpts li n)).reverse := by
   unfold regHost Host.pts
   cases li
-  · simp only [Bool.false_eq_true, ite_false]
-    rw [List.reverse_flatMap]
+  · ϴ Bool.false_eq_true, ite_false
+    Ξ List.reverse_flatMap
     congr 1
     funext it
-    simp [wpts]
-  · simp only [ite_true]
+    Θ wpts
+  · ϴ ite_true
     congr 1
 
 theorem wpts_pt (li : Bool) (n : ℕ) (x : SymPt) : wpts li n (.pt x) = [x] := by

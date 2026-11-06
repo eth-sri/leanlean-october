@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranStep2
 
 /-!
@@ -67,10 +69,10 @@ theorem rm_s0 (hE : E.Good) (h : Inv E st) (hc : c ∈ st.L E)
   by_cases e : st.s0 i = st.s1 c
   · have hmem : i ∈ st.exl (st.s1 c) := by
       refine (exl_Y hE h hc i).2 ⟨hi, ?_⟩
-      rw [← e]
+      Ξ ← e
       exact ((h.sides i hi).2.2.2 _ (St.cl_spec (st := st) hE (h.sides i hi).1).1).2 (Or.inl rfl)
-    rw [ite_eq_left ⟨hmem, hic, e⟩, ite_eq_left e]
-  · rw [ite_eq_right (fun h' => e h'.2.2), ite_eq_right e]
+    Ξ ite_eq_left ⟨hmem, hic, e⟩, ite_eq_left e
+  · Ξ ite_eq_right (fun h' => e h'.2.2), ite_eq_right e
 
 omit hE h hc hs in
 /-- The relabelling of the second side. -/
@@ -83,11 +85,11 @@ theorem rm_s1 (hE : E.Good) (h : Inv E st) (hc : c ∈ st.L E)
   by_cases e : st.s1 i = st.s1 c
   · have hmem : i ∈ st.exl (st.s1 c) := by
       refine (exl_Y hE h hc i).2 ⟨hi, ?_⟩
-      rw [← e]
+      Ξ ← e
       exact ((h.sides i hi).2.2.2 _ (St.cl_spec (st := st) hE (h.sides i hi).2.1).1).2
         (Or.inr rfl)
-    rw [ite_eq_left ⟨hmem, hic, e⟩, ite_eq_left e]
-  · rw [ite_eq_right (fun h' => e h'.2.2), ite_eq_right e]
+    Ξ ite_eq_left ⟨hmem, hic, e⟩, ite_eq_left e
+  · Ξ ite_eq_right (fun h' => e h'.2.2), ite_eq_right e
 
 /-- The class after the removal of an old class. -/
 theorem rm_cl_g {x : ℕ} (hx : x < E.R) (μ : ℕ) :
@@ -101,7 +103,7 @@ theorem rm_cl_g {x : ℕ} (hx : x < E.R) (μ : ℕ) :
 /-- The class of a relabelled side is the class of the old side. -/
 theorem rm_cl_s0 {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c) (μ : ℕ) :
     (st.remove c μ).cl E ((st.remove c μ).s0 i) = (st.remove c μ).cl E (st.s0 i) := by
-  rw [rm_s0 hE h hc hs hi hic]
+  Ξ rm_s0 hE h hc hs hi hic
   split_ifs with e
   · rw [e, rm_cl_in hE h hc hs (h.sides c hc).1 (Or.inl rfl),
       rm_cl_in hE h hc hs (h.sides c hc).2.1 (Or.inr rfl)]
@@ -109,7 +111,7 @@ theorem rm_cl_s0 {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c) (μ : ℕ) :
 
 theorem rm_cl_s1 {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c) (μ : ℕ) :
     (st.remove c μ).cl E ((st.remove c μ).s1 i) = (st.remove c μ).cl E (st.s1 i) := by
-  rw [rm_s1 hE h hc hs hi hic]
+  Ξ rm_s1 hE h hc hs hi hic
   split_ifs with e
   · rw [e, rm_cl_in hE h hc hs (h.sides c hc).1 (Or.inl rfl),
       rm_cl_in hE h hc hs (h.sides c hc).2.1 (Or.inr rfl)]
@@ -171,7 +173,7 @@ theorem sides_rm {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c) (μ : ℕ) :
         eq_comm (a := Z), eq_comm (a := Z), g_eq_P_iff hE h hc hs hW0, g_eq_P_iff hE h hc hs hW1]
       tauto
     · obtain ⟨hZS, hZ0, hZ1⟩ := other_ne hE h hc hs hZ hZP
-      rw [htouch Z hZS]
+      Ξ htouch Z hZS
       have k : ∀ W, (Z = (if W = st.cl E (st.s0 c) ∨ W = st.cl E (st.s1 c) then P else W) ↔
           Z = W) := by
         intro W
@@ -182,7 +184,7 @@ theorem sides_rm {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c) (μ : ℕ) :
             · exact absurd (e.trans hw) hZ0
             · exact absurd (e.trans hw) hZ1
         · exact Iff.rfl
-      rw [k, k]
+      Ξ k, k
 
 /-- **The referenced classes after the removal**: the merged class `s0 c`, or an old class not
 touched by `c`. -/
@@ -234,49 +236,49 @@ theorem cls_rm (hlow : st.deg (st.s0 c) < 3 ∨ st.deg (st.s1 c) < 3) {x : ℕ}
         TouchesIn E.M.D (cs E.M E.Q E.N i) ((st.remove c (st.mu E c)).cl E x)) ∧
       (st.remove c (st.mu E c)).deg x ≤ E.D := by
   set μ := st.mu E c
-  rw [rm_F hE h hc, rm_L hE h hc]
+  Ξ rm_F hE h hc, rm_L hE h hc
   rcases ref_cases hE h hc hs μ hx with rfl | ⟨hxR, hxlt, h1, h2⟩
   · have hcl : (st.remove c μ).cl E (st.s0 c) = P :=
       rm_cl_in hE h hc hs (h.sides c hc).1 (Or.inl rfl) μ
     have hdeg : (st.remove c μ).deg (st.s0 c) = (st.newEx c).length := by
       show Function.update st.deg (st.s0 c) _ (st.s0 c) = _
-      rw [Function.update_self]
+      Ξ Function.update_self
     have hexl : (st.remove c μ).exl (st.s0 c) = st.newEx c := by
       refine exl_of_list _ _ hdeg fun t ht => ?_
       show (if st.s0 c = st.s0 c ∧ t < (st.newEx c).length then (st.newEx c).getD t 0
         else st.ex (st.s0 c) t) = _
-      rw [ite_eq_left ⟨rfl, ht⟩]
-    rw [hcl, hdeg, hexl]
+      Ξ ite_eq_left ⟨rfl, ht⟩
+    Ξ hcl, hdeg, hexl
     refine ⟨(deg_P hE h hc hs).symm, ?_, newEx_nodup hE h hc hs, fun i => ?_,
       newEx_le hE h hc hs hlow⟩
     · show Function.update st.wt (st.s0 c) μ (st.s0 c) = _
-      rw [Function.update_self]
+      Ξ Function.update_self
       exact h.mu_eq hE hc hs
-    · rw [mem_newEx hE h hc hs]
-      simp only [mem_sdiff, mem_singleton_iff]
+    · Ξ mem_newEx hE h hc hs
+      ϴ mem_sdiff, mem_singleton_iff
       tauto
-  · have hxX : x ≠ st.s0 c := fun e => h1 (by rw [e])
+  · have hxX : x ≠ st.s0 c := fun e => h1 (Ρ e)
     obtain ⟨hcx, hxP⟩ := cl_out hE h hc hs hxlt h1 h2
     have hcl : (st.remove c μ).cl E x = st.cl E x := rm_cl_out hE h hc hs hxlt h1 h2 μ
     have hdeg : (st.remove c μ).deg x = st.deg x := by
       show Function.update st.deg (st.s0 c) _ x = _
-      rw [Function.update_of_ne hxX]
+      Ξ Function.update_of_ne hxX
     have hexl : (st.remove c μ).exl x = st.exl x := by
       unfold St.exl
-      rw [hdeg]
+      Ξ hdeg
       congr 1
       funext t
       show (if x = st.s0 c ∧ (t : ℕ) < (st.newEx c).length then (st.newEx c).getD t 0
         else st.ex x t) = _
-      rw [ite_eq_right (fun h' => hxX h'.1)]
+      Ξ ite_eq_right (fun h' => hxX h'.1)
     obtain ⟨d1, w1, n1, m1, l1⟩ := h.cls x hxR
-    rw [hcl, hdeg, hexl]
+    Ξ hcl, hdeg, hexl
     refine ⟨by rw [deg_other hE h hc hs hcx hxP]; exact d1, ?_, n1, fun i => ?_, l1⟩
     · show Function.update st.wt (st.s0 c) μ x = _
-      rw [Function.update_of_ne hxX, weight_other' hE h hc hs hcx hxP]
+      Ξ Function.update_of_ne hxX, weight_other' hE h hc hs hcx hxP
       exact w1
-    · rw [m1]
-      simp only [mem_sdiff, mem_singleton_iff]
+    · Ξ m1
+      ϴ mem_sdiff, mem_singleton_iff
       constructor
       · rintro ⟨hi, ht⟩
         refine ⟨⟨hi, fun e => ?_⟩, ht⟩

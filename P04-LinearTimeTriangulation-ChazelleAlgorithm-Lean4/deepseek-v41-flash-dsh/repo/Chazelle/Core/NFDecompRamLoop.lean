@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFDecompRamRound
 
 /-!
@@ -55,16 +57,16 @@ theorem rinv_start (h : Rooted R K up dn ord pos prg pch) {σ : RS}
     have : sz R prg pch σ.rem t ≤ R := by
       classical
       unfold sz sub
-      exact (Finset.card_filter_le _ _).trans (by rw [Finset.card_range])
+      exact (Finset.card_filter_le _ _).trans (Ρ Finset.card_range)
     have := h.hR
-    simp only [Function.iterate_zero, id]
+    ϴ Function.iterate_zero, id
     omega
   i7 _ := ⟨fun e he => by rw [hrem e he]; omega, hact, hside⟩
-  i8 hj := absurd hj (by norm_num)
+  i8 hj := absurd hj (⊛)
   i9 := by
-    rw [hfin]
+    Ξ hfin
     symm
-    rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+    Ξ Finset.card_eq_zero, Finset.filter_eq_empty_iff
     intro t ht ⟨htop, hact'⟩
     rw [Finset.mem_range] at ht
     rw [istop_start h hrem ht] at htop
@@ -78,7 +80,7 @@ theorem rounds_le_self (D K : ℕ) : rounds D K ≤ K := by
     induction i with
     | zero => left; simp
     | succ i ih =>
-      rw [Function.iterate_succ_apply']
+      Ξ Function.iterate_succ_apply'
       rcases Nat.eq_zero_or_pos ((hstep D)^[i] K) with h0 | hpos
       · right; rw [h0]; have := hstep_le D 0; omega
       · rcases ih with ih | ih
@@ -113,7 +115,7 @@ theorem roundsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB R
       ∀ t, t < R → IsTop (tv mB A R 4) (rsOf c'.nmem A R (c'.nreg 60024) (c'.nreg 60023)).rem t →
         (rsOf c'.nmem A R (c'.nreg 60024) (c'.nreg 60023)).act t ≠ 1 := by
   have hKR : K < R := by have := h.hR; omega
-  have hR0 : 0 < R := by omega
+  have hR0 : 0 < R := ⋄
   have hrK := rounds_le_self D K
   unfold roundsS
   -- the three counters
@@ -128,9 +130,9 @@ theorem roundsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB R
   have hf3 : DFr (A + 12) (A + 12 + 19 * R) c c3 :=
     DFr.nreg _ fun r hr _ => by
       unfold Prot at hr
-      simp only [hc2, hc1]
-      rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
+      ϴ hc2, hc1
+      rw [Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (⋄),
+        Machine.upd_other _ _ _ (⋄)]
   have m3 : c3.nmem = c.nmem := rfl
   have r22 : c3.nreg 60022 = 0 := by simp only [hc3, hc2, hc1]; config_simp
   have r23 : c3.nreg 60023 = 0 := by simp only [hc3, hc2, hc1]; config_simp
@@ -139,10 +141,10 @@ theorem roundsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB R
       (rsOf c3.nmem A R (c3.nreg 60024) (c3.nreg 60023)) (fun _ => ∅) (fun _ => 0) :=
     rinv_start h (fun e he => by
         show tv c3.nmem A R 11 e = 0
-        rw [tv_lt (by omega), m3]; exact h11 e (by omega))
+        rw [tv_lt (⋄), m3]; exact h11 e (⋄))
       (fun e he => by
         show tv c3.nmem A R 12 e = 0
-        rw [tv_lt (by omega), m3]; exact h12 e (by omega))
+        rw [tv_lt (⋄), m3]; exact h12 e (⋄))
       (by show tv c3.nmem A R 13 0 = 1; rw [tv_lt hR0, m3]; exact h13)
       (by show tv c3.nmem A R 15 0 = 2; rw [tv_lt hR0, m3]; exact h15)
       (by show c3.nreg 60023 = 0; exact r23) _ _
@@ -160,21 +162,21 @@ theorem roundsS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB R
       obtain ⟨t, ht1, ht2, ht3⟩ := (fin_lt_iff h hId).1 ht
       have hjr := le_rounds_of_active h hId ht1 ht2 ht3
       obtain ⟨d', k', e', hk', hw'', hf'', hst'', h7'', hj'', gc', cr', hI''⟩ :=
-        roundBody_exec (P := P) hwd hRd hAW h hch hdeg hstd h7d hId hjdef (by omega) ht
-      refine ⟨d', k', e', ⟨hw'', hfd.trans hf'', hst'', h7'', by omega, j + 1, hj'', gc', cr',
+        roundBody_exec (P := P) hwd hRd hAW h hch hdeg hstd h7d hId hjdef (⋄) ht
+      refine ⟨d', k', e', ⟨hw'', hfd.trans hf'', hst'', h7'', ⋄, j + 1, hj'', gc', cr',
         hI''⟩, ?_⟩
-      rw [hj'', hjdef]
-      have : rounds D K + 1 - j = (rounds D K + 1 - (j + 1)) + 1 := by omega
-      rw [this, Nat.mul_add]
+      Ξ hj'', hjdef
+      have : rounds D K + 1 - j = (rounds D K + 1 - (j + 1)) + 1 := ⋄
+      Ξ this, Nat.mul_add
       omega)
-    ⟨e3.wb_right, hf3, by rw [m3]; exact hst, by rw [m3]; exact h7, by omega, 0, r22, _, _, hI0⟩
+    ⟨e3.wb_right, hf3, by rw [m3]; exact hst, by rw [m3]; exact h7, ⋄, 0, r22, _, _, hI0⟩
   have hR' := hR.frame hf'
   rw [hR'.rR] at htest
   subst hjd
   refine ⟨c', 3 + k, .seq eB e, ?_, hw', hf', hst', _, gc, cr, hI', fun t ht htop hact => ?_⟩
   · rw [r22] at hk
     have : (175 * R + 45) * (rounds D K + 1 - 0) = (175 * R + 45) * (rounds D K + 1) := by
-      rw [Nat.sub_zero]
+      Ξ Nat.sub_zero
     omega
   · exact htest ((fin_lt_iff h hI').2 ⟨t, ht, htop, hact⟩)
 

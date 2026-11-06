@@ -40,14 +40,14 @@ def levF (sh : Stmt) (R : ℕ) : ℕ → ℕ → Stmt
 def pcSet (M : Model) (Q : Polygon) (L : List (WPos × WPos)) : Set Point :=
   ⋃ p ∈ L, M.arcSet (M.key Q p.1) (M.key Q p.2)
 
-theorem pcSet_nil (M : Model) (Q : Polygon) : pcSet M Q [] = ∅ := by simp [pcSet]
+theorem pcSet_nil (M : Model) (Q : Polygon) : pcSet M Q [] = ∅ := ⊚ pcSet
 
 theorem pcSet_single (M : Model) (Q : Polygon) (p : WPos × WPos) :
-    pcSet M Q [p] = M.arcSet (M.key Q p.1) (M.key Q p.2) := by simp [pcSet]
+    pcSet M Q [p] = M.arcSet (M.key Q p.1) (M.key Q p.2) := ⊚ pcSet
 
 theorem pcSet_append (M : Model) (Q : Polygon) (L L' : List (WPos × WPos)) :
     pcSet M Q (L ++ L') = pcSet M Q L ∪ pcSet M Q L' := by
-  ext x; simp [pcSet, or_and_right, exists_or]
+  ext x; Θ pcSet, or_and_right, exists_or
 
 /-- **The pieces reached by the recursion** from level `ℓ` (`f` levels), with the holes read in
 the registers of `c`. -/
@@ -63,18 +63,18 @@ theorem levLeaves_congr (M : Model) (Q : Polygon) {c c' : Config} {R : ℕ}
     ∀ f ℓ, f + ℓ ≤ 3 → ∀ q, levLeaves M Q c' R f ℓ q = levLeaves M Q c R f ℓ q
   | 0, _, _, _ => rfl
   | f + 1, ℓ, hf, q => by
-    simp only [levLeaves]
+    ϴ levLeaves
     have e1 : c'.nreg (R + 30 + ℓ) = c.nreg (R + 30 + ℓ) := by
-      rw [show R + 30 + ℓ = R + (30 + ℓ) by omega]; exact h _ (Or.inr (by omega))
-    have e2 : c'.nreg (R + 9) = c.nreg (R + 9) := h 9 (Or.inl (by omega))
+      rw [show R + 30 + ℓ = R + (30 + ℓ) by omega]; exact h _ (Or.inr (⋄))
+    have e2 : c'.nreg (R + 9) = c.nreg (R + 9) := h 9 (Or.inl (⋄))
     have e3 : c'.nreg (R + 10 + 2 * ℓ) = c.nreg (R + 10 + 2 * ℓ) :=
-      by rw [show R + 10 + 2 * ℓ = R + (10 + 2 * ℓ) by omega]; exact h _ (Or.inl (by omega))
+      by rw [show R + 10 + 2 * ℓ = R + (10 + 2 * ℓ) by omega]; exact h _ (Or.inl (⋄))
     have e4 : c'.nreg (R + 11 + 2 * ℓ) = c.nreg (R + 11 + 2 * ℓ) :=
-      by rw [show R + 11 + 2 * ℓ = R + (11 + 2 * ℓ) by omega]; exact h _ (Or.inl (by omega))
-    simp only [e1, e2, e3, e4]
+      by rw [show R + 11 + 2 * ℓ = R + (11 + 2 * ℓ) by omega]; exact h _ (Or.inl (⋄))
+    ϴ e1, e2, e3, e4
     congr 1
     funext p
-    exact levLeaves_congr M Q h f (ℓ + 1) (by omega) p
+    exact levLeaves_congr M Q h f (ℓ + 1) (⋄) p
 
 /-! ## Pieces with good ends -/
 
@@ -94,7 +94,7 @@ theorem levPieces_ends {M : Model} {Q : Polygon} {hp : Prop} [Decidable hp] {a b
     rcases cut1_cases (M.key Q) a b ⟨x, 0⟩ ⟨y, 0⟩ h with
       ⟨-, -, -, rfl, rfl⟩ | ⟨-, -, -, rfl, rfl⟩ | ⟨-, -, rfl, rfl⟩ |
       ⟨-, -, -, rfl, rfl⟩ | ⟨-, -, -, -, rfl, rfl⟩ | ⟨-, -, -, rfl, rfl⟩ <;> simp
-  · simp only [List.mem_singleton] at h; subst h; simp
+  · ϴ' List.mem_singleton at h; subst h; simp
 
 /-- **Good ends are preserved by cutting.** -/
 theorem pieceOK_levPieces {M : Model} {Q : Polygon} {n : ℕ} {hp : Prop} [Decidable hp]
@@ -124,11 +124,11 @@ def levCost (Fg f : ℕ) : ℕ := (2 ^ (f + 1) - 1) * (Fg + 30000)
 theorem levCost_succ (Fg f : ℕ) : levCost Fg (f + 1) = 2 * levCost Fg f + (Fg + 30000) := by
   unfold levCost
   have : 1 ≤ 2 ^ (f + 1) := Nat.one_le_two_pow
-  rw [pow_succ]
+  Ξ pow_succ
   zify [this, show 1 ≤ 2 ^ (f + 1) * 2 by omega]
   ring
 
-theorem levCost_zero (Fg : ℕ) : levCost Fg 0 = Fg + 30000 := by simp [levCost]
+theorem levCost_zero (Fg : ℕ) : levCost Fg 0 = Fg + 30000 := ⊚ levCost
 
 theorem rL_succ (R ℓ : ℕ) : rL R (ℓ + 1) = rL R ℓ + 10 := by unfold rL; ring
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase17
 
 /-!
@@ -69,7 +71,7 @@ theorem GK.kept {r : ℕ} (h : GK r) : Kept r ∧ r ≠ 170015 ∧ r ≠ 170016 
     rcases h1 with h1 | h1
     · unfold OutB bandOf at h1; omega
     · omega
-  · refine ⟨Or.inr ⟨by unfold bandOf bUp; omega, by omega⟩, by omega⟩
+  · refine ⟨Or.inr ⟨by unfold bandOf bUp; omega, ⋄⟩, ⋄⟩
 
 theorem GK.ne_alloc {r : ℕ} (h : GK r) : r ≠ ALLOC := h.kept.1.ne_alloc
 

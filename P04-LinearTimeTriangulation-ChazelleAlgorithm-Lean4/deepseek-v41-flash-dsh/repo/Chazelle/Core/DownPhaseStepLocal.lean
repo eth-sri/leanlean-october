@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseLocal
 
 /-!
@@ -57,7 +59,7 @@ theorem region_restrict (hSG : S ⊆ G) (hGT : G ⊆ T) (hR : R ∈ regionsIn D 
       exact (Chazelle.Chain.regionsIn_disjoint_of_ne hR' hR hne).le_bot
         ⟨hsub ⟨hwc, hwG.1⟩, hWR hw⟩
   have hWV : W ⊆ V := by
-    rw [Chazelle.Chain.regionsIn_eq_component hV hv]
+    Ξ Chazelle.Chain.regionsIn_eq_component hV hv
     exact isPreconnected_connectedComponentIn.subset_connectedComponentIn hvW hWT
   have hVW : V ⊆ W := (Chazelle.Chain.regionsIn_isPreconnected hV).subset_connectedComponentIn hv hVG
   exact ⟨v, hVG hv, Subset.antisymm hVW hWV⟩
@@ -105,7 +107,7 @@ theorem weight_restrict {M : Model} (hM : WalkAx M) (hT : T ⊆ M.Adm) (hfin : T
       have hHT : H ⊆ T := union_subset hGT (insert_subset hcT fun d hd => (hKsub hd).1)
       have hHd : H \ {c} = G ∪ K := by
         ext d
-        simp only [hH, Set.mem_sdiff, mem_union, mem_insert_iff, mem_singleton_iff]
+        ϴ hH, Set.mem_sdiff, mem_union, mem_insert_iff, mem_singleton_iff
         constructor
         · rintro ⟨h1 | rfl | h1, h2⟩
           · exact Or.inl h1
@@ -119,9 +121,9 @@ theorem weight_restrict {M : Model} (hM : WalkAx M) (hT : T ⊆ M.Adm) (hfin : T
       have hnt : ¬ TouchesIn M.D c V := touch_restrict hsys hST hR hK hVR hcT hcG
       have := hloc H hHT c (Or.inr (mem_insert c K)) V hVH hnt
       rw [hHd] at this
-      rw [← this, ih hKsub]
+      Ξ ← this, ih hKsub
   have hTG : T = G ∪ (T \ G) := (union_sdiff_cancel hGT).symm
-  rw [hTG]
+  Ξ hTG
   exact key _ (hfin.subset sdiff_subset) subset_rfl
 
 end

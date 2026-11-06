@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepRotMath
 
 /-!
@@ -42,8 +44,8 @@ theorem sortedDarts_of {M : ℕ} {G K s : ℕ → ℕ}
   rcases h with h | ⟨h1, h2⟩
   · exact Or.inl h
   · rcases eq_or_lt_of_le h2 with e | e
-    · have := hinj _ _ (hlt t (by omega)) (hlt t' ht') h1 e
-      exact absurd (inj_of_surj hlt hs (by omega) ht' this) (by omega)
+    · have := hinj _ _ (hlt t (⋄)) (hlt t' ht') h1 e
+      exact absurd (inj_of_surj hlt hs (⋄) ht' this) (⋄)
     · exact Or.inr ⟨h1, e⟩
 
 variable {B : BookData}
@@ -59,7 +61,7 @@ theorem rot_eq_csucc (hV : B.Valid) {s : ℕ → ℕ}
     rcases hc with ⟨a, b⟩ | ⟨a, b⟩
     · exact Or.inl ⟨a, fun f hf hk => b f.1 f.2 hf hk⟩
     · exact Or.inr ⟨fun f hf => a f.1 f.2 hf, fun f hf => b f.1 f.2 hf⟩)
-  rw [this]
+  Ξ this
 
 /-- **The book map in memory is a planar map.** -/
 theorem planarMapAt_of_arrays (hV : B.Valid) {m : ℕ → ℕ} {Bh : ℕ}

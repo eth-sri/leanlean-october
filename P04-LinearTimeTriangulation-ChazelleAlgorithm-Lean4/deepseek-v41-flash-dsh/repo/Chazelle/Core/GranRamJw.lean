@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranRamMu
 
 /-!
@@ -50,7 +52,7 @@ theorem Cst.frame {c c' : Config} {E : Env} {d : Dm} (h : Cst c E d)
   obtain ⟨a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19,
     a20⟩ := h
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hr _ (by norm_num) (by norm_num)]; assumption)
+    (rw [hr _ (⊛) (⊛)]; assumption)
 
 /-! ## The weight of a gap -/
 
@@ -68,7 +70,7 @@ def gwStmt : Stmt :=
 /-- Registers in `[a, b)`. -/
 def Bin (a b : ℕ) (r : ℕ) : Bool := decide (a ≤ r ∧ r < b)
 
-theorem wr_gwStmt : wr (Bin 90092 90100) gwStmt = true := by decide
+theorem wr_gwStmt : wr (Bin 90092 90100) gwStmt = true := ⌖
 
 /-- **The weight of a gap between two positions.** -/
 theorem gwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Config)
@@ -99,13 +101,13 @@ theorem gwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Co
   · config_simp; rw [hPz]; dm_simp; omega
   · config_simp; rw [hEg, hPz, rb, rx]; omega
   -- after the loads
-  have la : c.nmem (d.b0 + d.oEg + a) = st.eg a := ra
+  have la := ra
   unfold gwt
   by_cases hab : a < b
   · refine spec_ifLtN_true (by config_simp; exact hab)
-      (spec_instr (Exec.subN ‹_› _ _ _) fun _ => ⟨by omega, ?_⟩)
+      (spec_instr (Exec.subN ‹_› _ _ _) fun _ => ⟨⋄, ?_⟩)
     config_simp
-    rw [ite_eq_right (by omega), ite_eq_left hab, hEg, hPz, rb, rx, ra]
+    Ξ ite_eq_right (⋄), ite_eq_left hab, hEg, hPz, rb, rx, ra
   · refine spec_ifLtN_false (by config_simp; exact hab) ?_
     by_cases hba : b < a
     · refine spec_ifLtN_true (by config_simp; exact hba) ?_
@@ -116,26 +118,26 @@ theorem gwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Co
             c'.nreg 90092 = (E.sz - st.eg a) + min (st.eg b + st.pz b) (st.eg a) := by
         intro c₁ hw₁ h99 h98
         refine ⟨_, 1, Exec.addN hw₁ _ _ _ (by rw [h99, h98]; omega), rfl, ?_⟩
-        config_simp; rw [h98, h99]
+        config_simp; Ξ h98, h99
       by_cases hm : st.eg b + st.pz b < st.eg a
       · have e1 := Exec.copyN (P := P) hw₁ 90099 90097
         obtain ⟨c', k₂, e2, hk₂, hr⟩ := hmin _ e1.wb_right
           (by config_simp; rw [hEg, hPz, rb, rx, min_eq_left hm.le])
           (by config_simp; rw [hsz, hEg, ra])
         refine ⟨c', _, .seq (Exec.ifLtN_true (by config_simp; rw [hEg, hPz, rb, rx, ra]; exact hm)
-          e1) e2, by omega, ?_⟩
-        rw [hr, ite_eq_right (by omega), ite_eq_right hab]
+          e1) e2, ⋄, ?_⟩
+        Ξ hr, ite_eq_right (⋄), ite_eq_right hab
       · have e1 := Exec.copyN (P := P) hw₁ 90099 90094
         obtain ⟨c', k₂, e2, hk₂, hr⟩ := hmin _ e1.wb_right
-          (by config_simp; rw [hEg, ra, min_eq_right (by omega)])
+          (by config_simp; rw [hEg, ra, min_eq_right (⋄)])
           (by config_simp; rw [hsz, hEg, ra])
         refine ⟨c', _, .seq (Exec.ifLtN_false (by config_simp; rw [hEg, hPz, rb, rx, ra]; exact hm)
-          e1) e2, by omega, ?_⟩
-        rw [hr, ite_eq_right (by omega), ite_eq_right hab]
+          e1) e2, ⋄, ?_⟩
+        Ξ hr, ite_eq_right (⋄), ite_eq_right hab
     · refine spec_ifLtN_false (by config_simp; exact hba)
-        (spec_instr (Exec.copyN ‹_› _ _) fun _ => ⟨by omega, ?_⟩)
+        (spec_instr (Exec.copyN ‹_› _ _) fun _ => ⟨⋄, ?_⟩)
       config_simp
-      rw [ite_eq_left (by omega), hsz]
+      Ξ ite_eq_left (⋄), hsz
 
 /-! ## The death test -/
 
@@ -147,7 +149,7 @@ def ddStmt : Stmt :=
       (.ifLtN 90088 90069 .skip (.ifLtN 90069 90088 .skip
         (.ifLtN 90073 90019 .skip (.instr (.constN 90089 1))))))
 
-theorem wr_ddStmt : wr (Bin 90089 90090) ddStmt = true := by decide
+theorem wr_ddStmt : wr (Bin 90089 90090) ddStmt = true := ⌖
 
 /-- One test of `ddStmt`. -/
 theorem ddOne_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W)
@@ -158,19 +160,19 @@ theorem ddOne_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       c'.nreg 90089 = (if c.nreg rj = c.nreg rn ∧ b = true then 1 else c.nreg 90089) ∧
       ∀ r, r ≠ 90089 → c'.nreg r = c.nreg r := by
   by_cases h1 : c.nreg rj < c.nreg rn
-  · exact ⟨c, _, .ifLtN_true h1 (.skip hw), by omega, by rw [ite_eq_right (by omega)],
+  · exact ⟨c, _, .ifLtN_true h1 (.skip hw), ⋄, by rw [ite_eq_right (by omega)],
       fun _ _ => rfl⟩
   by_cases h2 : c.nreg rn < c.nreg rj
-  · exact ⟨c, _, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw)), by omega,
-      by rw [ite_eq_right (by omega)], fun _ _ => rfl⟩
+  · exact ⟨c, _, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw)), ⋄,
+      by rw [ite_eq_right (⋄)], fun _ _ => rfl⟩
   cases b with
   | false =>
     exact ⟨c, _, .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true (by rw [hb, h19]; decide)
-      (.skip hw))), by omega, by simp, fun _ _ => rfl⟩
+      (.skip hw))), ⋄, by simp, fun _ _ => rfl⟩
   | true =>
     refine ⟨_, _, .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_false (by rw [hb, h19]; decide)
-      (Exec.constN hw 90089 1 hW))), by omega, ?_, fun r hr => by simp [upd, hr]⟩
-    rw [ite_eq_left ⟨by omega, rfl⟩]; simp
+      (Exec.constN hw 90089 1 hW))), ⋄, ?_, fun r hr => by simp [upd, hr]⟩
+    rw [ite_eq_left ⟨⋄, rfl⟩]; simp
 
 /-- **The death test.** -/
 theorem ddStmt_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W)
@@ -184,21 +186,21 @@ theorem ddStmt_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
         (decide (c.nreg 90088 = c.nreg 90069) && b2)) by
     obtain ⟨c', k, e, hk, hr⟩ := h
     exact ⟨c', k, e, hk, hr, exec_frameB e wr_ddStmt⟩
-  have e0 := Exec.constN (P := P) hw 90089 0 (by omega)
+  have e0 := Exec.constN (P := P) hw 90089 0 (⋄)
   set c₀ := { c with nreg := upd c.nreg 90089 0 }
   obtain ⟨c₁, k₁, e₁, hk₁, h₁, f₁⟩ := ddOne_exec (P := P) (rj := 90088) (rn := 90068) (rb := 90072)
-    c₀ e0.wb_right hW (b := b1) (by simp [c₀, upd, h19]) (by simp [c₀, upd, h72])
-    (by simp [c₀, upd])
+    c₀ e0.wb_right hW (b := b1) (⊚ c₀, upd, h19) (⊚ c₀, upd, h72)
+    (⊚ c₀, upd)
   obtain ⟨c₂, k₂, e₂, hk₂, h₂, f₂⟩ := ddOne_exec (P := P) (rj := 90088) (rn := 90069) (rb := 90073)
-    c₁ e₁.wb_right hW (b := b2) (by rw [f₁ _ (by decide)]; simp [c₀, upd, h19])
-    (by rw [f₁ _ (by decide)]; simp [c₀, upd, h73]) (by rw [h₁]; split_ifs <;> simp [c₀, upd])
-  refine ⟨c₂, _, .seq e0 (.seq e₁ e₂), by omega, ?_⟩
-  rw [h₂, h₁, f₁ _ (by decide), f₁ _ (by decide)]
+    c₁ e₁.wb_right hW (b := b2) (by rw [f₁ _ (⌖)]; simp [c₀, upd, h19])
+    (by rw [f₁ _ (⌖)]; simp [c₀, upd, h73]) (by rw [h₁]; split_ifs <;> simp [c₀, upd])
+  refine ⟨c₂, _, .seq e0 (.seq e₁ e₂), ⋄, ?_⟩
+  Ξ h₂, h₁, f₁ _ (⌖), f₁ _ (⌖)
   simp only [c₀, upd, ite_eq_right (show (90088 : ℕ) ≠ 90089 by decide),
     ite_eq_right (show (90068 : ℕ) ≠ 90089 by decide), ite_eq_right (show (90069 : ℕ) ≠ 90089 by decide)]
   unfold bit
   cases b1 <;> cases b2 <;> by_cases x1 : c.nreg 90088 = c.nreg 90068 <;>
-    by_cases x2 : c.nreg 90088 = c.nreg 90069 <;> simp [x1, x2]
+    by_cases x2 : c.nreg 90088 = c.nreg 90069 <;> Θ x1, x2
 
 /-! ## The weight of the gap around a dying position -/
 
@@ -216,15 +218,15 @@ theorem skipLoad_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       (∀ r, r ≠ 90080 → r ≠ rp → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
   cases b with
   | false =>
-    exact ⟨c, _, .ifLtN_true (by rw [h89, h19]; decide) (.skip hw), by omega, by simp,
+    exact ⟨c, _, .ifLtN_true (by rw [h89, h19]; decide) (.skip hw), ⋄, ✓,
       fun _ _ _ => rfl, rfl⟩
   | true =>
     refine spec_ifLtN_false (by rw [h89, h19]; decide) ?_
     exec_block
     · exact hW rfl
-    · refine ⟨by omega, ?_, fun r h1 h2 => ?_, rfl⟩
-      · simp [upd]
-      · simp [upd, h1, h2]
+    · refine ⟨⋄, ?_, fun r h1 h2 => ?_, rfl⟩
+      · Θ upd
+      · Θ upd, h1, h2
 
 /-- `r85 := jw` for the position `r86` with death bit `r87`. -/
 def jwStmt : Stmt :=
@@ -238,7 +240,7 @@ def jwStmt : Stmt :=
                 (.seq (block [.copyN 90090 90081, .copyN 90091 90082])
                   (.seq gwStmt (.instr (.copyN 90085 90092))))))))))
 
-theorem wr_jwStmt : wr (Bin 90080 90100) jwStmt = true := by decide
+theorem wr_jwStmt : wr (Bin 90080 90100) jwStmt = true := ⌖
 
 /-- **The weight of the gap around a dying position** (`St.jw`). -/
 theorem jwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Config)
@@ -284,7 +286,7 @@ theorem jwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Co
     (by rw [qr _ (by decide) (by decide) (by decide), h72])
     (by rw [qr _ (by decide) (by decide) (by decide), h73])
   have w₂ := e₂.wb_right
-  have g₂ : ∀ r, Bin 90089 90090 r = false → c₂.nreg r = c₁.nreg r := f₂.1
+  have g₂ := f₂.1
   have hdd1 : c₂.nreg 90089 = bit (st.dd cc (st.prv k)) := by
     rw [d₂, q88, qr _ (by decide) (by decide) (by decide),
       qr _ (by decide) (by decide) (by decide), h68, h69]
@@ -331,7 +333,7 @@ theorem jwStmt_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} (c : Co
     (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h72])
     (by rw [c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h73])
   have w₅ := e₅.wb_right
-  have g₅ : ∀ r, Bin 90089 90090 r = false → c₅.nreg r = c₄.nreg r := f₅.1
+  have g₅ := f₅.1
   have hdd2 : c₅.nreg 90089 = bit (st.dd cc (st.nxt k)) := by
     rw [d₅, q88', c4r _ (by decide) (by decide) (by decide) (by decide) (by decide),
       c4r _ (by decide) (by decide) (by decide) (by decide) (by decide), h68, h69]

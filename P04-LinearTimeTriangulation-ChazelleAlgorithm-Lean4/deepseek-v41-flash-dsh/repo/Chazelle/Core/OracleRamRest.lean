@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleRamTop
 
 /-!
@@ -74,7 +76,7 @@ theorem restS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
   by_cases hab : ((Qof P).vtx V.tv).2 < ((Qof P).vtx V.hz).2
   · have hd : c₁.nreg 120053 = 1 := t₁.2 hab
     refine ⟨c₁, _, .seq e₁ (.ifLtN_false (by rw [hd, hq₁.one]; omega) (.skip e₁.wb_right)),
-      by omega, g₁, Or.inl ⟨hab, z₁ hd⟩⟩
+      ⋄, g₁, Or.inl ⟨hab, z₁ hd⟩⟩
   have hd : c₁.nreg 120053 = 0 := by have := mt t₁.1 hab; omega
   -- 2. the chord search
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, ht₂, hpre₂, hpost₂⟩ := chordSearch_exec (P := P) hG hW hv htv c₁
@@ -101,14 +103,14 @@ theorem restS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
     simp only [BDg, BX, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
   have m₄ : c₄.nmem = c.nmem := f₄.2.2.1.trans m₃
   have x53 : c₃.nreg 120053 = 0 := by
-    rw [f₃.1 _ (by decide), f₂.1 _ (by decide)]; exact hd
-  have g₂ : FrameB BRest c₁ c₂ := FrameB.mono f₂ fun r hr => by simp [BRest, hr]
-  have g₃ : FrameB BRest c₂ c₃ := FrameB.mono f₃ fun r hr => by simp [BRest, hr]
-  have g₄ : FrameB BRest c₃ c₄ := FrameB.mono f₄ fun r hr => by simp [BRest, hr]
+    rw [f₃.1 _ (⌖), f₂.1 _ (⌖)]; exact hd
+  have g₂ : FrameB BRest c₁ c₂ := FrameB.mono f₂ fun r hr => ⊚ BRest, hr
+  have g₃ : FrameB BRest c₂ c₃ := FrameB.mono f₃ fun r hr => ⊚ BRest, hr
+  have g₄ : FrameB BRest c₃ c₄ := FrameB.mono f₄ fun r hr => ⊚ BRest, hr
   by_cases hdg : FoundC V c.nmem t ∧ DegC P C V c.nmem t
   · obtain ⟨h53, hA, hB⟩ := d₄ hdg
     refine ⟨c₄, _, .seq e₁ (.ifLtN_true (by rw [hd, hq₁.one]; omega) (.seq e₂ (.seq e₃ (.seq e₄
-      (.ifLtN_false (by rw [h53, hq₄.one]; omega) (.skip e₄.wb_right)))))), by omega,
+      (.ifLtN_false (by rw [h53, hq₄.one]; omega) (.skip e₄.wb_right)))))), ⋄,
       g₁.trans (g₂.trans (g₃.trans g₄)), Or.inr (Or.inl ⟨hab, t, hpart, hdg.1, hdg.2, hA, hB⟩)⟩
   -- 5. the main phase
   have x53' : c₄.nreg 120053 = 0 := by rw [nd₄ hdg]; exact x53
@@ -127,17 +129,17 @@ theorem restS_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} (hG : GoodEnv P
           (f' := FoundC V c.nmem t) (w := c₄.nreg 120141) (w' := nearC V c.nmem t)
           (cb := CBof P C V bD (c₄.nreg 120141)) (cb' := CBof P C V bD (nearC V c.nmem t))
           (by rw [x140]; exact fd₃) (fun h => by rw [x141]; exact (nf₃ (fd₃.1 (by rw [← x140]; exact h))).1)
-          (fun h => by rw [x141, (nf₃ (fd₃.1 (by rw [← x140]; exact h))).1])])
+          (fun h => Ρ x141, (nf₃ (fd₃.1 (by rw [← x140]; exact h))).1)])
   rw [m₄] at hD₅ hit₅ hk₅
   have hsel : selOf C V bD (c₄.nreg 120140 = 1) (c₄.nreg 120141) (CBof P C V bD (c₄.nreg 120141)) =
       selOf C V bD (FoundC V c.nmem t) (nearC V c.nmem t) (CBof P C V bD (nearC V c.nmem t)) :=
     selOf_congr (by rw [x140]; exact fd₃)
       (fun h => by rw [x141]; exact (nf₃ (fd₃.1 (by rw [← x140]; exact h))).1)
-      (fun h => by rw [x141, (nf₃ (fd₃.1 (by rw [← x140]; exact h))).1])
+      (fun h => Ρ x141, (nf₃ (fd₃.1 (by rw [← x140]; exact h))).1)
   rw [hsel] at hloc₅
-  have g₅ : FrameB BRest c₄ c₅ := FrameB.mono f₅ fun r hr => by simp [BRest, hr]
+  have g₅ : FrameB BRest c₄ c₅ := FrameB.mono f₅ fun r hr => ⊚ BRest, hr
   refine ⟨c₅, _, .seq e₁ (.ifLtN_true (by rw [hd, hq₁.one]; omega) (.seq e₂ (.seq e₃ (.seq e₄
-    (.ifLtN_true (by rw [x53', hq₄.one]; omega) e₅))))), by omega,
+    (.ifLtN_true (by rw [x53', hq₄.one]; omega) e₅))))), ⋄,
     g₁.trans (g₂.trans (g₃.trans (g₄.trans g₅))),
     Or.inr (Or.inr ⟨hab, t, hpart, hdg, bD, hD₅, hbD₅, pk, fun k hk => ?_, hit₅, hb₅, o5, o6⟩)⟩
   unfold mainPos; exact hloc₅ k hk

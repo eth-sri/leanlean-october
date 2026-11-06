@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterStageD2
 public import Chazelle.Core.ClusterPlace
 
@@ -21,7 +25,7 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The placement scan.** -/
 theorem placeS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     {inv vert first lev hl blk key : ℕ → ℕ}

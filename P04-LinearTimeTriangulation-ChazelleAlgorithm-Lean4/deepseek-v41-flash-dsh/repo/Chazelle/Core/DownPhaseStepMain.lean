@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseStepLocal
 public import Chazelle.Core.DownPhaseExtractMain
 public import Chazelle.Core.SpecPhases
@@ -54,7 +56,7 @@ theorem gamma1_le (μ : ℕ) : gamma1 μ ≤ 2 ^ (Cost.ceilBeta μ + 12) := by
   have hN : gradeGran μ ≤ 1201 * 2 ^ Cost.ceilBeta μ := by exact_mod_cast h
   have h1 : 1 ≤ 2 ^ Cost.ceilBeta μ := Nat.one_le_two_pow
   unfold gamma1
-  rw [pow_add]
+  Ξ pow_add
   omega
 
 end

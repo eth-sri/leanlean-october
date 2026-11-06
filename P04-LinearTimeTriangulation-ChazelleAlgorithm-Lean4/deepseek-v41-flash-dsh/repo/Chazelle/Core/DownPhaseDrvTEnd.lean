@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvTShift
 
 /-!
@@ -41,22 +43,22 @@ theorem hseg_near {y a b : ℝ} (hab : a < b) {e : Point} (he : e ∈ hseg y a b
     intro δ hδ h
     have := congrArg Prod.fst h
     simp only at this
-    exact hδ (by linarith)
+    exact hδ (⟡)
   rcases heb.lt_or_eq with h | h
   · set δ := min (r / 2) ((b - e.1) / 2) with hδ
-    have hδ0 : 0 < δ := lt_min (by linarith) (by linarith)
+    have hδ0 : 0 < δ := lt_min (⟡) (⟡)
     have hδ1 : δ ≤ r / 2 := min_le_left _ _
     have hδ2 : δ ≤ (b - e.1) / 2 := min_le_right _ _
     refine ⟨(e.1 + δ, y), ⟨rfl, by simp only; linarith, by simp only; linarith⟩, hne δ hδ0.ne',
       ?_⟩
     rw [hdist, abs_of_pos hδ0]; linarith
   · set δ := min (r / 2) ((e.1 - a) / 2) with hδ
-    have hea : a < e.1 := by linarith
-    have hδ0 : 0 < δ := lt_min (by linarith) (by linarith)
+    have hea : a < e.1 := ⟡
+    have hδ0 : 0 < δ := lt_min (⟡) (⟡)
     have hδ1 : δ ≤ r / 2 := min_le_left _ _
     have hδ2 : δ ≤ (e.1 - a) / 2 := min_le_right _ _
     refine ⟨(e.1 + -δ, y), ⟨rfl, by simp only; linarith, by simp only; linarith⟩,
-      hne (-δ) (by linarith), ?_⟩
+      hne (-δ) (⟡), ?_⟩
     rw [hdist, abs_neg, abs_of_pos hδ0]; linarith
 
 /-- **Uniqueness of attachment positions** in a model with the walk axioms: a position with the
@@ -75,13 +77,13 @@ theorem pos_eq_of_sector {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈
   set e := sidePt M.W p t with he
   have heD : e ∉ M.D := hM.trace p hp t ht0 ht1.le
   have hend : WalkEnd M.W c e := by
-    rw [hcab] at hmem
+    Ξ' hcab at hmem
     obtain ⟨s, hs0, hs1, hs⟩ := Chazelle.Geometry.mem_segment_iff_lerp.1 hmem
     rcases hs0.lt_or_eq with h0 | h0
     · rcases hs1.lt_or_eq with h1 | h1
       · exact absurd (hs ▸ hopen s ⟨h0, h1⟩) heD
-      · rw [h1, Chazelle.Geometry.lerp_one] at hs; rw [hs]; exact hEb
-    · rw [← h0, Chazelle.Geometry.lerp_zero] at hs; rw [hs]; exact hEa
+      · Ξ' h1, Chazelle.Geometry.lerp_one at hs; rw [hs]; exact hEb
+    · Ξ' ← h0, Chazelle.Geometry.lerp_zero at hs; rw [hs]; exact hEa
   by_contra hne
   have hne' : p = p' → t ≠ t' := fun h1 h2 => hne ⟨h1.symm, h2.symm⟩
   obtain ⟨r, hr, hdis⟩ := hend.2 p p' t t' hp ht0 ht1 hp' ht' ht1' hne' rfl hpt
@@ -100,8 +102,8 @@ theorem int_lt_top (hQ : Q.Simple) (T : Trans.Top Q C) {x : Point}
   obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.1 hO x hx
   have hmem : ((x.1, x.2 + ε / 2) : Point) ∈ Q.filled \ Q.boundary := hball (by
     rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq, sub_self, abs_zero,
-      show x.2 + ε / 2 - x.2 = ε / 2 by ring, abs_of_pos (by linarith)]
-    exact max_lt hε (by linarith))
+      show x.2 + ε / 2 - x.2 = ε / 2 by ring, abs_of_pos (⟡)]
+    exact max_lt hε (⟡))
   have := T.filled_below_top hQ hmem.1
   simp only at this
   linarith
@@ -111,15 +113,15 @@ height. -/
 theorem lerp_snd_ne {A B : Point} (h : A.2 ≠ B.2) {s : ℝ} (hs : s ∈ Ioo (0 : ℝ) 1) :
     (lerp A B s).2 ≠ A.2 ∧ (lerp A B s).2 ≠ B.2 ∧
       (lerp A B s).2 < max A.2 B.2 := by
-  rw [Chazelle.Geometry.lerp_snd]
+  Ξ Chazelle.Geometry.lerp_snd
   obtain ⟨h0, h1⟩ := hs
   have hd : B.2 - A.2 ≠ 0 := sub_ne_zero.2 (Ne.symm h)
   refine ⟨fun e => hd ?_, fun e => hd ?_, ?_⟩
-  · have : s * (B.2 - A.2) = 0 := by linarith
+  · have : s * (B.2 - A.2) = 0 := ⟡
     rcases mul_eq_zero.1 this with h' | h'
     · linarith
     · exact h'
-  · have : (s - 1) * (B.2 - A.2) = 0 := by linarith
+  · have : (s - 1) * (B.2 - A.2) = 0 := ⟡
     rcases mul_eq_zero.1 this with h' | h'
     · linarith
     · exact h'
@@ -137,7 +139,7 @@ theorem iw_snd_ne (_hQ : Q.Simple) (_T : Trans.Top Q C) (hD : Trans.DistinctH Q)
     (hli : li = true ↔ Mountain.LeftInside Q) {j k : ℕ} (hj : j < Q.n) (hk : k < Q.n)
     (hjk : j ≠ k) :
     ((interiorWalk Q).vtx j).2 ≠ ((interiorWalk Q).vtx k).2 := by
-  rw [iw_vtx_idx hli hj, iw_vtx_idx hli hk]
+  Ξ iw_vtx_idx hli hj, iw_vtx_idx hli hk
   refine hD _ _ (idxI_lt hj) (idxI_lt hk) ?_
   unfold idxI; split_ifs <;> omega
 
@@ -225,7 +227,7 @@ theorem inner_of_interior {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : �
     · rw [hWf, hWb]; exact hN x hx hxe (lt_of_lt_of_le hxd (min_le_left _ _))
   obtain ⟨rS, hrS, hS⟩ := hsecI
   -- points of the chord have the height of the end
-  have hey : e.2 = y := hemem.1
+  have hey := hemem.1
   have hxy : ∀ x ∈ hseg y a b, x.2 = e.2 := fun x hx => by rw [hey]; exact hx.1
   -- an interior point near the end, for the top cases
   have htopc : e ≠ C.top := by

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepCh
 public import Chazelle.Core.ShearInv
 
@@ -41,9 +43,9 @@ theorem exec_rframeS {P : Polygon} {W : ℕ} {B : ℕ → Bool} {s : Stmt} {c c'
   induction h with
   | skip _ => exact fun _ _ => rfl
   | @instr ins c c' _ he _ _ =>
-    simp only [wrRS] at hs
-    cases ins <;> simp only [wrRSOK, wrROK, Bool.false_eq_true] at hs <;>
-      simp only [Instr.effect, Option.some.injEq] at he <;>
+    ϴ' wrRS at hs
+    cases ins <;> ϴ' wrRSOK, wrROK, Bool.false_eq_true at hs <;>
+      ϴ' Instr.effect, Option.some.injEq at he <;>
       (try split at he) <;> (try simp only [Option.some.injEq, reduceCtorEq] at he) <;> subst he <;>
       intro j hj <;>
       first
@@ -52,16 +54,16 @@ theorem exec_rframeS {P : Polygon} {W : ℕ} {B : ℕ → Bool} {s : Stmt} {c c'
          · subst hh; simp_all
          · rfl)
   | seq _ _ ih₁ ih₂ =>
-    simp only [wrRS, Bool.and_eq_true] at hs
+    ϴ' wrRS, Bool.and_eq_true at hs
     exact fun r hr => (ih₂ hs.2 r hr).trans (ih₁ hs.1 r hr)
   | ifLtN_true _ _ ih =>
-    simp only [wrRS, Bool.and_eq_true] at hs; exact ih hs.1
+    ϴ' wrRS, Bool.and_eq_true at hs; exact ih hs.1
   | ifLtN_false _ _ ih =>
-    simp only [wrRS, Bool.and_eq_true] at hs; exact ih hs.2
+    ϴ' wrRS, Bool.and_eq_true at hs; exact ih hs.2
   | ifLtR_true _ _ ih =>
-    simp only [wrRS, Bool.and_eq_true] at hs; exact ih hs.1
+    ϴ' wrRS, Bool.and_eq_true at hs; exact ih hs.1
   | ifLtR_false _ _ ih =>
-    simp only [wrRS, Bool.and_eq_true] at hs; exact ih hs.2
+    ϴ' wrRS, Bool.and_eq_true at hs; exact ih hs.2
   | whileLtN_false _ _ => exact fun _ _ => rfl
   | whileLtN_true _ _ _ ih₁ ih₂ =>
     exact fun r hr => (ih₂ hs r hr).trans (ih₁ (by simpa [wrRS] using hs) r hr)
@@ -110,15 +112,15 @@ theorem sS_of_desc {m : ℕ → ℕ} {D : ℕ} {Q : Polygon} {H : Host} {C : Cha
   obtain ⟨-, -, -, -, -, hd4⟩ := hD
   unfold Chain.sideS
   by_cases hb : C.sideBeta = true
-  · rw [ite_eq_left (hd4.2 hb), ite_eq_left hb]
-  · rw [ite_eq_right (fun h => hb (hd4.1 h)), ite_eq_right hb]
+  · Ξ ite_eq_left (hd4.2 hb), ite_eq_left hb
+  · Ξ ite_eq_right (fun h => hb (hd4.1 h)), ite_eq_right hb
 
 /-- The chord order only reads the chord area, the chain and the top vertex of the values. -/
 theorem chLe_V_congr {P : Polygon} {C : Chain} {V V' : QV} {m : ℕ → ℕ} {i j : ℕ}
     (hCB : V.CB = V'.CB) (hm : V.m = V'.m) (hs : V.s = V'.s) (htv : V.tv = V'.tv) :
     ChLe P C V m i j ↔ ChLe P C V' m i j := by
   unfold ChLe xpX' xpSym chH chL
-  rw [hCB, hm, hs, htv]
+  Ξ hCB, hm, hs, htv
 
 theorem arcs_pos {C : Chain} {Q : Polygon} {N : NF} (hs : C.P.Simple)
     (hN : IsNF (chainModel C) Q N) : 0 < N.arcs.length := by
@@ -130,7 +132,7 @@ theorem arcs_pos {C : Chain} {Q : Polygon} {N : NF} (hs : C.P.Simple)
 /-- The bands of phase A. -/
 def aBands : Finset ℕ := {bSort, bSign, bDecomp, bOPrep, bOQuery}
 
-set_option maxHeartbeats 8000000 in
+
 theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (hG : GoodEnv P)
     (hW : 8 * P.n + 32 ≤ W) {H : Host} {C : Chain} {N : NF} {A₀ : ℕ}
     (hD : ChainDescAt c.nmem (c.nreg 110000) (Qof P) H C) (hCQ : C.P = Qof P)
@@ -172,7 +174,7 @@ theorem phA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   have hAL : ALLOC = 9999 := rfl
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hsimp : C.P.Simple := by rw [hCQ]; exact (shearInvariance (epsOf P) P).1 hG.1
-  have hNF : NFAt c.nmem (c.nreg 110001) N := hNFw.nfAt
+  have hNF := hNFw.nfAt
   have hA0 := arcs_pos hsimp hN
   obtain ⟨hNB7, hABb, hSBb⟩ := NFLoc.nfWithin_bounds hNFw hN hA0
   have hLle : Nat.clog 2 (N.arcs.length + N.chords.length + 1) ≤

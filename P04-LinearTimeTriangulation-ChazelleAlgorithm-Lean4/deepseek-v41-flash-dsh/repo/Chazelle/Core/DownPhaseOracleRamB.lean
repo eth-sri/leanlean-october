@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleRamA
 
 /-!
@@ -38,22 +40,22 @@ theorem edgeOf_iv (hn : 3 ≤ Q.n) {e : ℕ} (he : e < Q.n) :
     ShootCut.edgeOf Q.n (.vtx (iv Q e)) (.vtx (iv Q ((e + 1) % Q.n))) = iEdge Q e := by
   unfold iv iEdge
   by_cases hL : Mountain.LeftInside Q
-  · simp only [hL, ↓reduceIte, ShootCut.edgeOf]
-  · simp only [hL, ↓reduceIte, ShootCut.edgeOf]
+  · ϴ hL, ↓reduceIte, ShootCut.edgeOf
+  · ϴ hL, ↓reduceIte, ShootCut.edgeOf
     by_cases h1 : e + 1 < Q.n
-    · rw [Nat.mod_eq_of_lt h1, ite_eq_left h1]
-      rw [ite_eq_right]
+    · Ξ Nat.mod_eq_of_lt h1, ite_eq_left h1
+      Ξ ite_eq_right
       · omega
       · intro hc
         rcases (show Q.n - 1 - e + 1 < Q.n ∨ Q.n - 1 - e + 1 = Q.n by omega) with h2 | h2
-        · rw [Nat.mod_eq_of_lt h2] at hc; omega
-        · rw [h2, Nat.mod_self] at hc; omega
-    · rw [show e + 1 = Q.n by omega, Nat.mod_self]
-      simp only [lt_irrefl, ↓reduceIte]
-      rw [ite_eq_right]
+        · Ξ' Nat.mod_eq_of_lt h2 at hc; omega
+        · Ξ' h2, Nat.mod_self at hc; omega
+    · Ξ show e + 1 = Q.n by omega, Nat.mod_self
+      ϴ lt_irrefl, ↓reduceIte
+      Ξ ite_eq_right
       · omega
       · intro hc
-        rw [show Q.n - 1 - e = 0 by omega, Nat.zero_add, Nat.mod_eq_of_lt (by omega)] at hc
+        Ξ' show Q.n - 1 - e = 0 by omega, Nat.zero_add, Nat.mod_eq_of_lt (⋄) at hc
         omega
 
 /-- **The symbolic origin** is in range, evaluates to the origin and lies within the coordinate
@@ -72,50 +74,50 @@ theorem oSym_spec (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) {o : Origin}
   | sym p =>
     refine ⟨hol, rfl, ?_⟩
     rcases hof with ⟨q, hq⟩ | ⟨hin, -⟩
-    · exact absurd hq (by simp)
+    · exact absurd hq (✓)
     · exact hbd hin
   | walk x =>
     obtain ⟨e, h⟩ := x
-    have he : e < Q.n := by have := hol.1; rw [mi_n] at this; exact this
+    have he : e < Q.n := by have := hol.1; Ξ' mi_n at this; exact this
     cases h with
     | zero =>
       have hv : Origin.eval (interiorModel Q) Q (.walk ⟨e, 0⟩) = Q.vtx (iv Q e) := by
         show Chazelle.Geometry.lerp _ _ 0 = _
-        rw [Chazelle.Geometry.lerp_zero, mi_wa he]
-      rw [hv]
+        Ξ Chazelle.Geometry.lerp_zero, mi_wa he
+      Ξ hv
       exact ⟨iv_lt he, rfl, Jordan.abs_fst_vtx_le_coordBound Q (iv_lt he),
         Jordan.abs_snd_vtx_le_coordBound Q (iv_lt he)⟩
     | succ h =>
       rcases hof with ⟨q, hq⟩ | ⟨hin, hpp⟩
-      · exact absurd hq (by simp)
+      · exact absurd hq (✓)
       have hpp' := hpp ⟨e, h + 1⟩ rfl
       have hh : h < Q.n := by have := hpp'.2.2; simp only at this; omega
       have hnh : ((interiorModel Q).wa e).2 ≠ ((interiorModel Q).wb e).2 := by
-        rw [mi_wa he, mi_wb he]
-        refine hD _ _ (iv_lt he) (iv_lt (Nat.mod_lt _ (by omega))) ?_
+        Ξ mi_wa he, mi_wb he
+        refine hD _ _ (iv_lt he) (iv_lt (Nat.mod_lt _ (⋄))) ?_
         unfold iv
         split_ifs
         · intro hc
           rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h3 | h3
-          · rw [Nat.mod_eq_of_lt h3] at hc; omega
-          · rw [h3, Nat.mod_self] at hc; omega
+          · Ξ' Nat.mod_eq_of_lt h3 at hc; omega
+          · Ξ' h3, Nat.mod_self at hc; omega
         · intro hc
           rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h3 | h3
-          · rw [Nat.mod_eq_of_lt h3] at hc; omega
-          · rw [h3, Nat.mod_self] at hc; omega
+          · Ξ' Nat.mod_eq_of_lt h3 at hc; omega
+          · Ξ' h3, Nat.mod_self at hc; omega
       have hok : HostEdgeOK Q.n (.vtx (iv Q e)) (.vtx (iv Q ((e + 1) % Q.n))) := by
-        simp only [HostEdgeOK, iv]
+        ϴ HostEdgeOK, iv
         split_ifs
         · left; rfl
         · right
           rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h3 | h3
-          · rw [Nat.mod_eq_of_lt h3]; rw [Nat.mod_eq_of_lt (by omega)]; omega
+          · rw [Nat.mod_eq_of_lt h3]; rw [Nat.mod_eq_of_lt (⋄)]; omega
           · rw [h3, Nat.mod_self, show Q.n - 1 - 0 + 1 = Q.n by omega, Nat.mod_self]; omega
-      have hpos := ShootCut.pos_eq_onEdge (interiorModel Q) hD (by omega) (p := e) (h := h)
+      have hpos := ShootCut.pos_eq_onEdge (interiorModel Q) hD (⋄) (p := e) (h := h)
         (sp₁ := .vtx (iv Q e)) (sp₂ := .vtx (iv Q ((e + 1) % Q.n))) (mi_wa he) (mi_wb he)
-        (iv_lt he) (iv_lt (Nat.mod_lt _ (by omega))) hok hnh
-      rw [edgeOf_iv hn he] at hpos
-      refine ⟨⟨iEdge_lt (by omega) he, hh⟩, hpos.symm, hbd hin⟩
+        (iv_lt he) (iv_lt (Nat.mod_lt _ (⋄))) hok hnh
+      Ξ' edgeOf_iv hn he at hpos
+      refine ⟨⟨iEdge_lt (⋄) he, hh⟩, hpos.symm, hbd hin⟩
 
 /-! ## Index helpers on the RAM (input `170095`, output `170096`, scratch `170092`) -/
 
@@ -132,18 +134,18 @@ theorem ivF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       c' = { c with nreg := upd c.nreg 170096 (ivV (c.nreg 170014) (c.nreg 170019) (c.nreg 170095)) } := by
   unfold ivF ivV
   by_cases h : c.nreg 170014 < c.nreg 170011
-  · exact ⟨_, _, .ifLtN_true h (Exec.subN hw 170096 170019 170095), by omega,
-      by rw [ite_eq_left (by omega)]⟩
-  · exact ⟨_, _, .ifLtN_false h (Exec.copyN hw 170096 170095), by omega,
-      by rw [ite_eq_right (by omega)]⟩
+  · exact ⟨_, _, .ifLtN_true h (Exec.subN hw 170096 170019 170095), ⋄,
+      Ρ ite_eq_left (⋄)⟩
+  · exact ⟨_, _, .ifLtN_false h (Exec.copyN hw 170096 170095), ⋄,
+      Ρ ite_eq_right (⋄)⟩
 
 /-- `ivV` is `iv` for the orientation bit of `Q`. -/
 theorem ivV_eq {b : ℕ} (hb : b = 1 ↔ Mountain.LeftInside Q) (hb1 : b ≤ 1) (p : ℕ) :
     ivV b (Q.n - 1) p = iv Q p := by
   unfold ivV iv
   by_cases hL : Mountain.LeftInside Q
-  · rw [ite_eq_left hL, ite_eq_right (by have := hb.2 hL; omega)]
-  · rw [ite_eq_right hL, ite_eq_left (by by_contra h; exact hL (hb.1 (by omega)))]
+  · Ξ ite_eq_left hL, ite_eq_right (by have := hb.2 hL; omega)
+  · Ξ ite_eq_right hL, ite_eq_left (by by_contra h; exact hL (hb.1 (⋄)))
 
 /-- `170096 := iEdge 170095` (the walk edge carrying an edge of `Q`). -/
 def iEdgeF : Stmt :=
@@ -172,18 +174,18 @@ theorem iEdgeF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     by_cases h2 : c.nreg 170095 + 1 < P.n
     · refine spec_ifLtN_true (by config_simp; omega) ?_
       exec_block
-      refine ⟨by omega, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-      · config_simp; rw [ite_eq_left (by omega), ite_eq_left h2, h19, h11]
+      refine ⟨⋄, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
+      · config_simp; Ξ ite_eq_left (⋄), ite_eq_left h2, h19, h11
       · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
     · refine spec_ifLtN_false (by config_simp; omega) ?_
       exec_block
-      refine ⟨by omega, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-      · config_simp; rw [ite_eq_left (by omega), ite_eq_right h2, h19]
+      refine ⟨⋄, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
+      · config_simp; Ξ ite_eq_left (⋄), ite_eq_right h2, h19
       · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
   · refine spec_ifLtN_false h ?_
     exec_block
-    refine ⟨by omega, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-    · config_simp; rw [ite_eq_right (by omega)]
+    refine ⟨⋄, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
+    · config_simp; Ξ ite_eq_right (⋄)
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
 
 /-- `iEdgeV` is `iEdge` for the orientation bit of `Q`. -/
@@ -191,8 +193,8 @@ theorem iEdgeV_eq {b : ℕ} (hb : b = 1 ↔ Mountain.LeftInside Q) (hb1 : b ≤ 
     iEdgeV b Q.n p = iEdge Q p := by
   unfold iEdgeV iEdge
   by_cases hL : Mountain.LeftInside Q
-  · rw [ite_eq_left hL, ite_eq_right (by have := hb.2 hL; omega)]
-  · rw [ite_eq_right hL, ite_eq_left (by by_contra h; exact hL (hb.1 (by omega)))]
+  · Ξ ite_eq_left hL, ite_eq_right (by have := hb.2 hL; omega)
+  · Ξ ite_eq_right hL, ite_eq_left (by by_contra h; exact hL (hb.1 (⋄)))
     split_ifs <;> omega
 
 /-! ## The static environment -/
@@ -268,22 +270,22 @@ the memory below the allocator, and does not lower the allocator. -/
 theorem keep (h : SEnv P W O s c) (hr : ∀ r, 170000 ≤ r → r < 170030 → c'.nreg r = c.nreg r)
     (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) (ha : c.nreg ALLOC ≤ c'.nreg ALLOC) :
     SEnv P W O s c' := by
-  have k : ∀ r, 170000 ≤ r → r < 170030 → c'.nreg r = c.nreg r := hr
+  have k := hr
   have hal := h.alloc
-  refine ⟨h.good, h.hW, (k _ (by omega) (by omega)).trans h.r1, (k _ (by omega) (by omega)).trans h.r2,
-    (k _ (by omega) (by omega)).trans h.r3, (k _ (by omega) (by omega)).trans h.r4,
-    (k _ (by omega) (by omega)).trans h.r8, (k _ (by omega) (by omega)).trans h.r9,
-    (k _ (by omega) (by omega)).trans h.r13, (k _ (by omega) (by omega)).trans h.r10,
-    (k _ (by omega) (by omega)).trans h.r11, (k _ (by omega) (by omega)).trans h.r12,
-    (k _ (by omega) (by omega)).trans h.r18, (k _ (by omega) (by omega)).trans h.r19,
-    by rw [k _ (by omega) (by omega)]; exact h.lb, by rw [k _ (by omega) (by omega)]; exact h.lb1,
-    (k _ (by omega) (by omega)).trans h.r15, (k _ (by omega) (by omega)).trans h.r16,
-    (k _ (by omega) (by omega)).trans h.r17,
-    NFLoc.symPtIn_copy h.org (k _ (by omega) (by omega)) (k _ (by omega) (by omega))
-      (k _ (by omega) (by omega)),
-    fun a ha => (hm a (by omega)).trans (h.mem a ha), (hm _ (by omega)).trans h.host0,
-    (hm _ (by omega)).trans h.host1, (hm _ (by omega)).trans h.host2,
-    (hm _ (by omega)).trans h.host3, by omega, h.grade, h.cap⟩
+  refine ⟨h.good, h.hW, (k _ (⋄) (⋄)).trans h.r1, (k _ (⋄) (⋄)).trans h.r2,
+    (k _ (⋄) (⋄)).trans h.r3, (k _ (⋄) (⋄)).trans h.r4,
+    (k _ (⋄) (⋄)).trans h.r8, (k _ (⋄) (⋄)).trans h.r9,
+    (k _ (⋄) (⋄)).trans h.r13, (k _ (⋄) (⋄)).trans h.r10,
+    (k _ (⋄) (⋄)).trans h.r11, (k _ (⋄) (⋄)).trans h.r12,
+    (k _ (⋄) (⋄)).trans h.r18, (k _ (⋄) (⋄)).trans h.r19,
+    by rw [k _ (⋄) (⋄)]; exact h.lb, by rw [k _ (⋄) (⋄)]; exact h.lb1,
+    (k _ (⋄) (⋄)).trans h.r15, (k _ (⋄) (⋄)).trans h.r16,
+    (k _ (⋄) (⋄)).trans h.r17,
+    NFLoc.symPtIn_copy h.org (k _ (⋄) (⋄)) (k _ (⋄) (⋄))
+      (k _ (⋄) (⋄)),
+    fun a ha => (hm a (⋄)).trans (h.mem a ha), (hm _ (⋄)).trans h.host0,
+    (hm _ (⋄)).trans h.host1, (hm _ (⋄)).trans h.host2,
+    (hm _ (⋄)).trans h.host3, ⋄, h.grade, h.cap⟩
 
 theorem n3 (h : SEnv P W O s c) : 3 ≤ P.n := Chazelle.Jordan.simple_three_le h.good.1
 
@@ -343,7 +345,7 @@ theorem originI_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       | onEdge e h => rw [ho.1]; omega
     refine spec_ifLtN_true hk ?_
     exec_block
-    refine ⟨by omega, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
+    refine ⟨⋄, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
     · refine NFLoc.symPtIn_copy ho (by config_simp) (by config_simp) (by config_simp)
     · unfold BorgR at hr; simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
   | walk x =>
@@ -366,9 +368,9 @@ theorem originI_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       refine ⟨_, _, e₁, ?_⟩
       have w₁ := e₁.wb_right
       exec_block
-      refine ⟨by omega, ⟨by config_simp, ?_⟩, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
+      refine ⟨⋄, ⟨by config_simp, ?_⟩, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
       · config_simp
-        rw [k6', hvv e]
+        Ξ k6', hvv e
       · unfold BorgR at hr; simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
     | succ h =>
       refine spec_ifLtN_true (by rw [h12, k7']; omega) ?_
@@ -382,16 +384,16 @@ theorem originI_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       refine ⟨_, _, e₁, ?_⟩
       have w₁ := e₁.wb_right
       exec_block
-      refine ⟨by omega, ⟨?_, ?_, ?_⟩, fun r hr => ?_, by rw [qm], by rw [qr], by rw [qrm],
-        by rw [qo]⟩
-      · config_simp; rw [q _ (by omega) (by omega)]; try config_simp
+      refine ⟨⋄, ⟨?_, ?_, ?_⟩, fun r hr => ?_, by rw [qm], by rw [qr], by rw [qrm],
+        Ρ qo⟩
+      · config_simp; rw [q _ (⋄) (by omega)]; try config_simp
       · config_simp; rw [q96]; config_simp; rw [k6', hev]
-      · config_simp; rw [q _ (by omega) (by omega)]; config_simp; rw [k7', h11]; try rfl
+      · config_simp; rw [q _ (⋄) (by omega)]; config_simp; rw [k7', h11]; try rfl
       · unfold BorgR at hr
-        simp only [Config.nreg_mk, upd]
+        ϴ Config.nreg_mk, upd
         split_ifs with h1
         · omega
-        · rw [q r (by omega) (by omega)]; config_simp
+        · rw [q r (⋄) (by omega)]; config_simp
           simp only [upd]; split_ifs <;> first | rfl | omega
 
 /-! ## Conditional assignments -/
@@ -404,9 +406,9 @@ theorem exec_ite_upd {P : Polygon} {W : ℕ} {a b r : ℕ} {s₁ s₂ : Stmt} {v
       { c with nreg := upd c.nreg r (if c.nreg a < c.nreg b then v₁ else v₂) } k ∧ k ≤ K + 2 := by
   by_cases h : c.nreg a < c.nreg b
   · obtain ⟨k, e, hk⟩ := h₁ h
-    exact ⟨k + 1, by rw [ite_eq_left h]; exact .ifLtN_true h e, by omega⟩
+    exact ⟨k + 1, by rw [ite_eq_left h]; exact .ifLtN_true h e, ⋄⟩
   · obtain ⟨k, e, hk⟩ := h₂ h
-    exact ⟨k + 2, by rw [ite_eq_right h]; exact .ifLtN_false h e, by omega⟩
+    exact ⟨k + 2, by rw [ite_eq_right h]; exact .ifLtN_false h e, ⋄⟩
 
 theorem exec_skip_upd {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (r : ℕ) :
     Exec P W .skip c { c with nreg := upd c.nreg r (c.nreg r) } 0 := by

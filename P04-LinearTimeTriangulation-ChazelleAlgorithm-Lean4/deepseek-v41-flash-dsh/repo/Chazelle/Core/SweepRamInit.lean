@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepRamLog
 public import Chazelle.Core.NFLocateSpec
 public import Chazelle.Core.ShotListFrame
@@ -116,52 +118,52 @@ theorem copyDesc_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
     obtain ⟨c', k', ex, hk', a, b, m, r, x, y, z⟩ := cp1_exec (P := P) cc hcc hone
       (by rw [hd]; omega) (by rw [hs]; omega)
     have hread : cc.nmem (S + k) = c.nmem (S + k) := by
-      rw [hkeep _ (Or.inl (by omega)), m₂, upd_other _ _ _ (by omega)]
+      rw [hkeep _ (Or.inl (⋄)), m₂, upd_other _ _ _ (by omega)]
     refine ⟨c', k', ex, hk', by rw [a, hd]; ring, by rw [b, hs]; ring, fun a' ha' => ?_,
       fun j hj => ?_, r, x, y, z⟩
-    · rw [m, hd, hs, upd_other _ _ _ (by omega)]
-      exact hkeep a' (by omega)
-    · rw [m, hd, hs]
+    · rw [m, hd, hs, upd_other _ _ _ (⋄)]
+      exact hkeep a' (⋄)
+    · Ξ m, hd, hs
       rcases (Nat.lt_succ_iff.1 hj).lt_or_eq with hj' | rfl
-      · rw [upd_other _ _ _ (by omega)]; exact hval j hj'
-      · rw [upd_same, hread]
-  have hr2 : ∀ r, r ≠ sw 96 → c₂.nreg r = c.nreg r := r₂
+      · rw [upd_other _ _ _ (⋄)]; exact hval j hj'
+      · Ξ upd_same, hread
+  have hr2 := r₂
   obtain ⟨c₃, k₃, e₃, hk₃, d₃, s₃, m₃, v₃, r₃, x₃, y₃, z₃⟩ :=
-    step c₂ 0 w₂ (by omega) (by rw [d₂]) (by rw [hr2 _ (by unfold sw; omega)]; rfl)
-      (by rw [hr2 _ (by unfold sw; omega), h1]) (fun _ _ => rfl) (fun j hj => absurd hj (by omega))
+    step c₂ 0 w₂ (⋄) (by rw [d₂]) (by rw [hr2 _ (by unfold sw; omega)]; rfl)
+      (by rw [hr2 _ (by unfold sw; omega), h1]) (fun _ _ => rfl) (fun j hj => absurd hj (⋄))
   have o3 : c₃.nreg (sw 91) = 1 := by
     rw [r₃ _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega),
       hr2 _ (by unfold sw; omega), h1]
   obtain ⟨c₄, k₄, e₄, hk₄, d₄, s₄, m₄, v₄, r₄, x₄, y₄, z₄⟩ :=
-    step c₃ 1 e₃.wb_right (by omega) d₃ s₃ o3 m₃ v₃
+    step c₃ 1 e₃.wb_right (⋄) d₃ s₃ o3 m₃ v₃
   have o4 : c₄.nreg (sw 91) = 1 := by
-    rw [r₄ _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega), o3]
+    Ξ r₄ _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega), o3
   obtain ⟨c₅, k₅, e₅, hk₅, d₅, s₅, m₅, v₅, r₅, x₅, y₅, z₅⟩ :=
-    step c₄ 2 e₄.wb_right (by omega) d₄ s₄ o4 m₄ v₄
+    step c₄ 2 e₄.wb_right (⋄) d₄ s₄ o4 m₄ v₄
   have o5 : c₅.nreg (sw 91) = 1 := by
-    rw [r₅ _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega), o4]
+    Ξ r₅ _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega), o4
   obtain ⟨c₆, k₆, e₆, hk₆, d₆, s₆, m₆, v₆, r₆, x₆, y₆, z₆⟩ :=
-    step c₅ 3 e₅.wb_right (by omega) d₅ s₅ o5 m₅ v₅
+    step c₅ 3 e₅.wb_right (⋄) d₅ s₅ o5 m₅ v₅
   have o6 : c₆.nreg (sw 91) = 1 := by
-    rw [r₆ _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega), o5]
+    Ξ r₆ _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega), o5
   obtain ⟨c₇, k₇, e₇, hk₇, d₇, s₇, m₇, v₇, r₇, x₇, y₇, z₇⟩ :=
-    step c₆ 4 e₆.wb_right (by omega) d₆ s₆ o6 m₆ v₆
+    step c₆ 4 e₆.wb_right (⋄) d₆ s₆ o6 m₆ v₆
   have ex : Exec P W copyDesc c c₇ (1 + 1 + 0 + (k₃ + (k₄ + (k₅ + (k₆ + k₇))))) := by
     unfold copyDesc
     exact .seq (Exec.block_cons e₁ (Exec.block_cons e₂ (Exec.block_nil w₂)))
       (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))
-  refine ⟨c₇, _, ex, by omega, by rw [d₇], ?_, fun j hj => v₇ j hj, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [m₇ _ (Or.inl (by omega)), m₂, upd_same]
+  refine ⟨c₇, _, ex, ⋄, by rw [d₇], ?_, fun j hj => v₇ j hj, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · rw [m₇ _ (Or.inl (⋄)), m₂, upd_same]
   · intro a ha
-    rw [m₇ _ (Or.inl (by omega)), m₂, upd_other _ _ _ (by omega)]
+    rw [m₇ _ (Or.inl (⋄)), m₂, upd_other _ _ _ (by omega)]
   · intro a ha
-    rw [m₇ _ (Or.inr (by omega)), m₂, upd_other _ _ _ (by omega)]
+    rw [m₇ _ (Or.inr (⋄)), m₂, upd_other _ _ _ (by omega)]
   · intro r h96 h97 h98
     rw [r₇ r h96 h97 h98, r₆ r h96 h97 h98, r₅ r h96 h97 h98, r₄ r h96 h97 h98,
       r₃ r h96 h97 h98, hr2 r h96]
-  · rw [x₇, x₆, x₅, x₄, x₃]
-  · rw [y₇, y₆, y₅, y₄, y₃]
-  · rw [z₇, z₆, z₅, z₄, z₃]
+  · Ξ x₇, x₆, x₅, x₄, x₃
+  · Ξ y₇, y₆, y₅, y₄, y₃
+  · Ξ z₇, z₆, z₅, z₄, z₃
 
 /-! ## The copied descriptor describes the chain model -/
 
@@ -175,7 +177,7 @@ theorem modelDesc_of_copy {P : Polygon} {m m' : ℕ → ℕ} {bw A E E' : ℕ} {
   obtain ⟨-, -, hEb, -⟩ := hwf.2 H C hC
   have hC' := chainDescAt_copy hC hEb he hc
   exact ⟨Or.inl ⟨h0, H, C, hC', rfl⟩,
-    ⟨by omega, fun _ => chainWF_copy hwf hC he hc (by omega) (by omega)⟩, hC'⟩
+    ⟨⋄, fun _ => chainWF_copy hwf hC he hc (by omega) (by omega)⟩, hC'⟩
 
 /-! ## The junction of the descriptors -/
 

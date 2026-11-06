@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Machine.Relocate
 
 /-!
@@ -109,7 +113,7 @@ variable {P : Polygon} {c : Config}
 theorem effect_divR (r a b : ℕ) (hb : c.rreg b ≠ 0) :
     (Instr.divR r a b).effect P c =
       some { c with rreg := upd c.rreg r (c.rreg a / c.rreg b) } := by
-  simp [effect, hb]
+  Θ effect, hb
 @[simp] theorem effect_loadR (r a : ℕ) :
     (Instr.loadR r a).effect P c =
       some { c with rreg := upd c.rreg r (c.rmem (c.nreg a)) } := rfl
@@ -133,7 +137,7 @@ theorem effect_divR (r a b : ℕ) (hb : c.rreg b ≠ 0) :
 /-- The effect is insensitive to the program counter. -/
 theorem effect_setPc (ins : Instr) (p : ℕ) :
     ins.effect P { c with pc := p } = (ins.effect P c).map (fun c' => { c' with pc := p }) := by
-  cases ins <;> simp only [effect, Option.map_some, Option.map_none]
+  cases ins <;> ϴ effect, Option.map_some, Option.map_none
   split <;> simp_all
 
 /-- `step` on a straight-line instruction is `effect` followed by `pc + 1`. -/
@@ -327,76 +331,76 @@ include hw
 
 theorem inputSize (r : ℕ) (hn : P.n ≤ W) :
     Exec P W (.instr (.inputSize r)) c { c with nreg := upd c.nreg r P.n } 1 :=
-  .instr (by simp) rfl hw (WordsBounded.upd_nreg hw hn c.pc)
+  .instr (✓) rfl hw (WordsBounded.upd_nreg hw hn c.pc)
 
 theorem constN (r k : ℕ) (hk : k ≤ W) :
     Exec P W (.instr (.constN r k)) c { c with nreg := upd c.nreg r k } 1 :=
-  .instr (by simp) rfl hw (WordsBounded.upd_nreg hw hk c.pc)
+  .instr (✓) rfl hw (WordsBounded.upd_nreg hw hk c.pc)
 
 theorem copyN (r a : ℕ) :
     Exec P W (.instr (.copyN r a)) c { c with nreg := upd c.nreg r (c.nreg a) } 1 :=
-  .instr (by simp) rfl hw (WordsBounded.upd_nreg hw (hw.1 a) c.pc)
+  .instr (✓) rfl hw (WordsBounded.upd_nreg hw (hw.1 a) c.pc)
 
 theorem addN (r a b : ℕ) (hab : c.nreg a + c.nreg b ≤ W) :
     Exec P W (.instr (.addN r a b)) c { c with nreg := upd c.nreg r (c.nreg a + c.nreg b) } 1 :=
-  .instr (by simp) rfl hw (WordsBounded.upd_nreg hw hab c.pc)
+  .instr (✓) rfl hw (WordsBounded.upd_nreg hw hab c.pc)
 
 theorem subN (r a b : ℕ) :
     Exec P W (.instr (.subN r a b)) c { c with nreg := upd c.nreg r (c.nreg a - c.nreg b) } 1 :=
-  .instr (by simp) rfl hw (WordsBounded.upd_nreg hw ((Nat.sub_le _ _).trans (hw.1 a)) c.pc)
+  .instr (✓) rfl hw (WordsBounded.upd_nreg hw ((Nat.sub_le _ _).trans (hw.1 a)) c.pc)
 
 theorem loadN (r a : ℕ) :
     Exec P W (.instr (.loadN r a)) c { c with nreg := upd c.nreg r (c.nmem (c.nreg a)) } 1 :=
-  .instr (by simp) rfl hw (WordsBounded.upd_nreg hw (hw.2 _) c.pc)
+  .instr (✓) rfl hw (WordsBounded.upd_nreg hw (hw.2 _) c.pc)
 
 theorem storeN (a r : ℕ) :
     Exec P W (.instr (.storeN a r)) c { c with nmem := upd c.nmem (c.nreg a) (c.nreg r) } 1 :=
-  .instr (by simp) rfl hw (WordsBounded.upd_nmem hw (hw.1 r) c.pc)
+  .instr (✓) rfl hw (WordsBounded.upd_nmem hw (hw.1 r) c.pc)
 
 theorem constR (r : ℕ) (z : ℤ) :
     Exec P W (.instr (.constR r z)) c { c with rreg := upd c.rreg r (z : ℝ) } 1 :=
-  .instr (by simp) rfl hw hw
+  .instr (✓) rfl hw hw
 
 theorem copyR (r a : ℕ) :
     Exec P W (.instr (.copyR r a)) c { c with rreg := upd c.rreg r (c.rreg a) } 1 :=
-  .instr (by simp) rfl hw hw
+  .instr (✓) rfl hw hw
 
 theorem addR (r a b : ℕ) :
     Exec P W (.instr (.addR r a b)) c { c with rreg := upd c.rreg r (c.rreg a + c.rreg b) } 1 :=
-  .instr (by simp) rfl hw hw
+  .instr (✓) rfl hw hw
 
 theorem subR (r a b : ℕ) :
     Exec P W (.instr (.subR r a b)) c { c with rreg := upd c.rreg r (c.rreg a - c.rreg b) } 1 :=
-  .instr (by simp) rfl hw hw
+  .instr (✓) rfl hw hw
 
 theorem mulR (r a b : ℕ) :
     Exec P W (.instr (.mulR r a b)) c { c with rreg := upd c.rreg r (c.rreg a * c.rreg b) } 1 :=
-  .instr (by simp) rfl hw hw
+  .instr (✓) rfl hw hw
 
 theorem divR (r a b : ℕ) (hb : c.rreg b ≠ 0) :
     Exec P W (.instr (.divR r a b)) c { c with rreg := upd c.rreg r (c.rreg a / c.rreg b) } 1 :=
-  .instr (by simp) (Instr.effect_divR r a b hb) hw hw
+  .instr (✓) (Instr.effect_divR r a b hb) hw hw
 
 theorem loadR (r a : ℕ) :
     Exec P W (.instr (.loadR r a)) c { c with rreg := upd c.rreg r (c.rmem (c.nreg a)) } 1 :=
-  .instr (by simp) rfl hw hw
+  .instr (✓) rfl hw hw
 
 theorem storeR (a r : ℕ) :
     Exec P W (.instr (.storeR a r)) c { c with rmem := upd c.rmem (c.nreg a) (c.rreg r) } 1 :=
-  .instr (by simp) rfl hw hw
+  .instr (✓) rfl hw hw
 
 theorem readX (r a : ℕ) :
     Exec P W (.instr (.readX r a)) c { c with rreg := upd c.rreg r (P.vtx (c.nreg a)).1 } 1 :=
-  .instr (by simp) rfl hw hw
+  .instr (✓) rfl hw hw
 
 theorem readY (r a : ℕ) :
     Exec P W (.instr (.readY r a)) c { c with rreg := upd c.rreg r (P.vtx (c.nreg a)).2 } 1 :=
-  .instr (by simp) rfl hw hw
+  .instr (✓) rfl hw hw
 
 theorem emit (a b d : ℕ) :
     Exec P W (.instr (.emit a b d)) c
       { c with output := c.output ++ [(c.nreg a, c.nreg b, c.nreg d)] } 1 :=
-  .instr (by simp) rfl hw hw
+  .instr (✓) rfl hw hw
 
 end instrRules
 
@@ -430,9 +434,9 @@ theorem loop_potential (test : Config → Prop) (body loop : Stmt)
   | _ n ih =>
     by_cases ht : test c
     · obtain ⟨c₁, k₁, hb, hI₁, hΦ⟩ := hbody c hc ht
-      obtain ⟨c', k₂, hl, hI', ht', hk₂⟩ := ih (Φ c₁) (by omega) hI₁ rfl
-      exact ⟨c', k₁ + 2 + k₂, htrue c c₁ c' k₁ k₂ ht hb hl, hI', ht', by omega⟩
-    · exact ⟨c, 2, hfalse c ht (hI c hc), hc, ht, by omega⟩
+      obtain ⟨c', k₂, hl, hI', ht', hk₂⟩ := ih (Φ c₁) (⋄) hI₁ rfl
+      exact ⟨c', k₁ + 2 + k₂, htrue c c₁ c' k₁ k₂ ht hb hl, hI', ht', ⋄⟩
+    · exact ⟨c, 2, hfalse c ht (hI c hc), hc, ht, ⋄⟩
 
 /-- Loop rule with a potential for `whileLtN a b body`: total cost `≤ Φ c + 2`. -/
 theorem whileLtN_potential {a b : ℕ} {body : Stmt} (I : Config → Prop) (Φ : Config → ℕ)
@@ -461,7 +465,7 @@ theorem loop_bounded (test : Config → Prop) (body loop : Stmt)
       obtain ⟨c', k, he, hI', hk, hμ⟩ := hbody c hc ht
       refine ⟨c', k, he, hI', ?_⟩
       have : (B + 2) * (μ c' + 1) ≤ (B + 2) * μ c := Nat.mul_le_mul_left _ hμ
-      rw [Nat.mul_add, Nat.mul_one] at this
+      Ξ' Nat.mul_add, Nat.mul_one at this
       omega) hc
 
 /-- `whileLtN` with a bounded body cost `B` and a strictly decreasing measure `μ`. -/
@@ -486,7 +490,7 @@ theorem SubAt.cast {p q : Program} {b b' : ℕ} (h : SubAt p q b) (hb : b = b') 
 
 /-- Two configurations differing only in an equal program counter are equal. -/
 theorem setPc_congr {c : Config} {p p' : ℕ} (h : p = p') :
-    ({ c with pc := p } : Config) = { c with pc := p' } := by rw [h]
+    ({ c with pc := p } : Config) = { c with pc := p' } := Ρ h
 
 /-- Replace the final configuration of a bounded run by an equal one. -/
 theorem RunsTo.cast_end {prog : Program} {P : Polygon} {W k : ℕ} {c c' c'' : Config}
@@ -501,7 +505,7 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     RunsTo q P W k { c with pc := base } { c' with pc := base + codeSize s } := by
   induction h generalizing q base with
   | @skip c hw =>
-    exact (RunsTo.zero (wordsBounded_setPc.mpr hw)).cast_end (setPc_congr (by simp))
+    exact (RunsTo.zero (wordsBounded_setPc.mpr hw)).cast_end (setPc_congr (✓))
   | @instr ins c c' hs he hw hw' =>
     have hq0 : q[base]? = some ins := SubAt.singleton_iff.mp hq
     have hst : step q P { c with pc := base } = some { c' with pc := base + 1 } := by
@@ -510,13 +514,13 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
       exact this
     exact RunsTo.single hw hw' hst
   | @seq s t c c₁ c₂ k₁ k₂ _ _ ih₁ ih₂ =>
-    simp only [compile] at hq
+    ϴ' compile at hq
     have h₁ := ih₁ hq.of_append_left
-    have h₂ := ih₂ (hq.of_append_right.cast (by rw [length_compile]))
+    have h₂ := ih₂ (hq.of_append_right.cast (Ρ length_compile))
     exact (h₁.trans h₂).cast_end (setPc_congr (by rw [codeSize_seq]; omega))
   | @ifLtN_true a b t e c c' k ht _ ih =>
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtN a b (base + 2 + codeSize e)) := hq.head
+    ϴ' compile at hq
+    have h0 := hq.head
     have hqt : SubAt (compile t (base + 2 + codeSize e)) q (base + 2 + codeSize e) :=
       hq.tail.of_append_right.tail.cast (by rw [length_compile]; omega)
     have hst : step q P { c with pc := base } = some { c with pc := base + 2 + codeSize e } :=
@@ -526,11 +530,11 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     exact (RunsTo.cons hw hst hrun).cast_end
       (setPc_congr (by rw [codeSize_ifLtN]; omega))
   | @ifLtN_false a b t e c c' k ht _ ih =>
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtN a b (base + 2 + codeSize e)) := hq.head
-    have hqe : SubAt (compile e (base + 1)) q (base + 1) := hq.tail.of_append_left
+    ϴ' compile at hq
+    have h0 := hq.head
+    have hqe := hq.tail.of_append_left
     have hj : q[base + 1 + codeSize e]? = some (.jump (base + 2 + codeSize e + codeSize t)) :=
-      hq.tail.of_append_right.cast (by rw [length_compile]) |>.head
+      hq.tail.of_append_right.cast (Ρ length_compile) |>.head
     have hst : step q P { c with pc := base } = some { c with pc := base + 1 } :=
       step_brLtN_false h0 ht
     have hrun := ih hqe
@@ -541,8 +545,8 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     exact ((RunsTo.cons hw hst hrun).snoc hstj hrun.wb_end).cast_end
       (setPc_congr (by rw [codeSize_ifLtN]; omega))
   | @ifLtR_true a b t e c c' k ht _ ih =>
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtR a b (base + 2 + codeSize e)) := hq.head
+    ϴ' compile at hq
+    have h0 := hq.head
     have hqt : SubAt (compile t (base + 2 + codeSize e)) q (base + 2 + codeSize e) :=
       hq.tail.of_append_right.tail.cast (by rw [length_compile]; omega)
     have hst : step q P { c with pc := base } = some { c with pc := base + 2 + codeSize e } :=
@@ -552,11 +556,11 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     exact (RunsTo.cons hw hst hrun).cast_end
       (setPc_congr (by rw [codeSize_ifLtR]; omega))
   | @ifLtR_false a b t e c c' k ht _ ih =>
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtR a b (base + 2 + codeSize e)) := hq.head
-    have hqe : SubAt (compile e (base + 1)) q (base + 1) := hq.tail.of_append_left
+    ϴ' compile at hq
+    have h0 := hq.head
+    have hqe := hq.tail.of_append_left
     have hj : q[base + 1 + codeSize e]? = some (.jump (base + 2 + codeSize e + codeSize t)) :=
-      hq.tail.of_append_right.cast (by rw [length_compile]) |>.head
+      hq.tail.of_append_right.cast (Ρ length_compile) |>.head
     have hst : step q P { c with pc := base } = some { c with pc := base + 1 } :=
       step_brLtR_false h0 ht
     have hrun := ih hqe
@@ -567,9 +571,9 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
     exact ((RunsTo.cons hw hst hrun).snoc hstj hrun.wb_end).cast_end
       (setPc_congr (by rw [codeSize_ifLtR]; omega))
   | @whileLtN_false a b body c ht hw =>
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtN a b (base + 2)) := hq.head
-    have h1 : q[base + 1]? = some (.jump (base + 3 + codeSize body)) := hq.tail.head
+    ϴ' compile at hq
+    have h0 := hq.head
+    have h1 := hq.tail.head
     have hst : step q P { c with pc := base } = some { c with pc := base + 1 } :=
       step_brLtN_false h0 ht
     have hstj : step q P { c with pc := base + 1 } =
@@ -581,12 +585,12 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
       (setPc_congr (by rw [codeSize_whileLtN]; omega))
   | @whileLtN_true a b body c c₁ c' k₁ k₂ ht _ _ ih₁ ih₂ =>
     have hq' := hq
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtN a b (base + 2)) := hq.head
+    ϴ' compile at hq
+    have h0 := hq.head
     have hqb : SubAt (compile body (base + 2)) q (base + 2) :=
-      hq.tail.tail.of_append_left.cast (by omega)
+      hq.tail.tail.of_append_left.cast (⋄)
     have hj : q[base + 2 + codeSize body]? = some (.jump base) :=
-      hq.tail.tail.of_append_right.cast (by rw [length_compile]) |>.head
+      hq.tail.tail.of_append_right.cast (Ρ length_compile) |>.head
     have hst : step q P { c with pc := base } = some { c with pc := base + 2 } :=
       step_brLtN_true h0 ht
     have hrun := ih₁ hqb
@@ -594,11 +598,11 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
         some { c₁ with pc := base } := step_jump hj
     have hrest := ih₂ hq'
     have hw : WordsBounded W { c with pc := base } := hrun.wb_start
-    exact (((RunsTo.cons hw hst hrun).snoc hstj hrun.wb_end).trans hrest).cast (by omega)
+    exact (((RunsTo.cons hw hst hrun).snoc hstj hrun.wb_end).trans hrest).cast (⋄)
   | @whileLtR_false a b body c ht hw =>
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtR a b (base + 2)) := hq.head
-    have h1 : q[base + 1]? = some (.jump (base + 3 + codeSize body)) := hq.tail.head
+    ϴ' compile at hq
+    have h0 := hq.head
+    have h1 := hq.tail.head
     have hst : step q P { c with pc := base } = some { c with pc := base + 1 } :=
       step_brLtR_false h0 ht
     have hstj : step q P { c with pc := base + 1 } =
@@ -610,12 +614,12 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
       (setPc_congr (by rw [codeSize_whileLtR]; omega))
   | @whileLtR_true a b body c c₁ c' k₁ k₂ ht _ _ ih₁ ih₂ =>
     have hq' := hq
-    simp only [compile] at hq
-    have h0 : q[base]? = some (.brLtR a b (base + 2)) := hq.head
+    ϴ' compile at hq
+    have h0 := hq.head
     have hqb : SubAt (compile body (base + 2)) q (base + 2) :=
-      hq.tail.tail.of_append_left.cast (by omega)
+      hq.tail.tail.of_append_left.cast (⋄)
     have hj : q[base + 2 + codeSize body]? = some (.jump base) :=
-      hq.tail.tail.of_append_right.cast (by rw [length_compile]) |>.head
+      hq.tail.tail.of_append_right.cast (Ρ length_compile) |>.head
     have hst : step q P { c with pc := base } = some { c with pc := base + 2 } :=
       step_brLtR_true h0 ht
     have hrun := ih₁ hqb
@@ -623,7 +627,7 @@ theorem Exec.runsTo {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
         some { c₁ with pc := base } := step_jump hj
     have hrest := ih₂ hq'
     have hw : WordsBounded W { c with pc := base } := hrun.wb_start
-    exact (((RunsTo.cons hw hst hrun).snoc hstj hrun.wb_end).trans hrest).cast (by omega)
+    exact (((RunsTo.cons hw hst hrun).snoc hstj hrun.wb_end).trans hrest).cast (⋄)
 
 /-- **Top level.**  An execution of `s` from the initial configuration gives a
 `RunsWithin` for the program `compile s 0 ++ [halt]` with `k + 1` steps. -/
@@ -632,14 +636,14 @@ theorem runsWithin_of_exec {P : Polygon} {W : ℕ} {s : Stmt} {c' : Config} {k :
     RunsWithin (compile s 0 ++ [Instr.halt]) P W (k + 1) c'.output := by
   have hsub : SubAt (compile s 0) (compile s 0 ++ [Instr.halt]) 0 := SubAt.append_left _ _
   have hrun := h.runsTo hsub
-  rw [Nat.zero_add] at hrun
+  Ξ' Nat.zero_add at hrun
   have hinit : ({ initConfig with pc := 0 } : Config) = initConfig := rfl
-  rw [hinit] at hrun
+  Ξ' hinit at hrun
   have hh : AtHalt (compile s 0 ++ [Instr.halt]) { c' with pc := codeSize s } := by
     unfold AtHalt
     have : codeSize s = (compile s 0).length := (length_compile s 0).symm
     show (compile s 0 ++ [Instr.halt])[codeSize s]? = some Instr.halt
-    rw [this]
+    Ξ this
     exact List.getElem?_concat_length
   have := runsWithin_of_runsTo hrun hh
   exact this

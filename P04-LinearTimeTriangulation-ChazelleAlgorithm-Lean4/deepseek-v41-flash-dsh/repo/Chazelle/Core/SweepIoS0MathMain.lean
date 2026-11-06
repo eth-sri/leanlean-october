@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoS0MathC
 
 /-!
@@ -37,7 +39,7 @@ theorem end_off_right {c : Set Point} (hc : c ∈ Merge.augChords J.right) :
     Merge.lend c ∉ J.right.dom ∧ Merge.rend c ∉ J.right.dom ∧
       (Merge.lend c).2 ≤ J.right.top.2 ∧ (Merge.rend c).2 ≤ J.right.top.2 := by
   obtain ⟨y, l, r, hH, hy, -, hl, hr⟩ := Merge.augChords_spec hc
-  rw [hl, hr]
+  Ξ hl, hr
   exact ⟨hH.left_not, hH.right_not, hy, hy⟩
 
 /-- **(C4): the endpoint table.** -/
@@ -70,7 +72,7 @@ theorem case_C4 (hP : J.P.Simple) {Q : Polygon} {N₂ : NF} {T : ℕ → Option 
         filter_upwards [hfo] with s hs
         exact dom_right J hs (by rw [rayPt_snd]; exact ho2)
       obtain ⟨-, hD₂, -⟩ := Merge.hit_of_freeAt J.right ho2 hd hfr₂
-      have hm' : J.whole.hitParam o d = J.right.hitParam o d := hm
+      have hm' := hm
       rw [← hm', hoz] at hD₂
       exact hD₂ hzR
     · rw [hTj] at hm
@@ -115,7 +117,7 @@ theorem case_C3 (hP : J.P.Simple) {Q : Polygon} {N₂ : NF}
     ∃ r ∈ rs, r.1 = pz ∧ (chainModel J.whole).param Q ⟨r.1, r.2.1⟩ = tz ∧
       dirOf r.2.2.2.2 = -σ ∧
       SweepIo.stopOrig J Q N₂ r.2.2.1 r.2.2.2.1 r.2.2.2.2 = J.right.top := by
-  have hS₂ : N₂.F (chainModel J.right) Q ⊆ Merge.augChords J.right := hN.1.2.1
+  have hS₂ := hN.1.2.1
   have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
   have hstop : StopChord2 J (N₂.F (chainModel J.right) Q) e := Or.inr ⟨-σ, hnσ, hfo, heo⟩
   have hatt : SideAttach (chainModel J.whole).W e pz tz := by
@@ -137,10 +139,10 @@ theorem case_C3 (hP : J.P.Simple) {Q : Polygon} {N₂ : NF}
     J.whole.not_mem_set_of_mem_dom h (J.left_set_subset J.shared_mem_left)
   -- the origin of the record is the top of `C₂`
   have ho'top : o' = J.right.top := by
-    rw [ho']
+    Ξ ho'
     unfold SweepIo.stopOrig
     by_cases hk0 : r.2.2.1 = 0
-    · rw [ite_eq_left hk0]
+    · Ξ ite_eq_left hk0
       exfalso
       have hsm : J.shared ∈ e := by
         have := ho'e; rw [ho'] at this; unfold SweepIo.stopOrig at this
@@ -150,8 +152,8 @@ theorem case_C3 (hP : J.P.Simple) {Q : Polygon} {N₂ : NF}
       · exact htopL (h ▸ J.shared_mem_left)
     by_cases hk1 : r.2.2.1 = 1
     swap
-    · rw [ite_eq_right hk0, ite_eq_right hk1]
-    rw [ite_eq_right hk0, ite_eq_left hk1]
+    · Ξ ite_eq_right hk0, ite_eq_right hk1
+    Ξ ite_eq_right hk0, ite_eq_left hk1
     · have hme : endOrigin J Q N₂ (2 * r.2.2.2.1 + if dirOf r.2.2.2.2 = 1 then 0 else 1) ∈ e := by
         have := ho'e; rw [ho'] at this; unfold SweepIo.stopOrig at this
         rwa [ite_eq_right hk0, ite_eq_left hk1] at this
@@ -163,7 +165,7 @@ theorem case_C3 (hP : J.P.Simple) {Q : Polygon} {N₂ : NF}
             N₂.F (chainModel J.right) Q := by
           refine ⟨N₂.chord (j / 2), ?_, rfl⟩
           unfold NF.chord
-          rw [hj2, List.getD_eq_getElem _ _ hk]
+          Ξ hj2, List.getD_eq_getElem _ _ hk
           exact List.getElem_mem _
         obtain ⟨hl, hr', hl2, hr2⟩ := end_off_right J (hS₂ hcF)
         have hoff : endOrigin J Q N₂ j ∉ J.right.dom ∧
@@ -179,7 +181,7 @@ theorem case_C3 (hP : J.P.Simple) {Q : Polygon} {N₂ : NF}
       · -- out of range: the slit top's vertical line
         push Not at hk
         have h1' := endOrigin_big J Q N₂ (j := j) (by rw [hj2]; exact hk)
-        exact Prod.ext h1' (by rw [hey _ hme, hey _ htope])
+        exact Prod.ext h1' (Ρ hey _ hme, hey _ htope)
   -- the direction
   have hd'c : d' = 1 ∨ d' = -1 := dirOf_cases _
   rw [ho'top] at hsh
@@ -213,8 +215,8 @@ open WalkEmbed Sweep S0Math
 /-- **The cases of the first hit of a side-0 query.** -/
 theorem side0Math : Side0MathSpec := by
   intro P J N₂ rs ls T _hG hP hN hlog hstops htab z σ hσ hzL hzv hz2 hfree pz tz hA
-  have hS₂ : N₂.F (chainModel J.right) (Qof P) ⊆ Merge.augChords J.right := hN.1.2.1
-  have hS₂f : (N₂.F (chainModel J.right) (Qof P)).Finite := hN.1.1
+  have hS₂ := hN.1.2.1
+  have hS₂f := hN.1.1
   have hzR := left_pt_right_dom J hP hzL hzv hz2
   obtain ⟨hpz, htz0, htz1, hpt, hsec⟩ := hA
   have hLst : (Lst J : ℝ) < oW J (pz + tz) :=
@@ -251,11 +253,11 @@ theorem side0Math : Side0MathSpec := by
     · -- (C3): a top chord
       subst hot
       right; right; left
-      have heo' : e = Merge.shoot J.whole J.right.top (-σ) := by rw [heo, hdσ]
+      have heo' : e = Merge.shoot J.whole J.right.top (-σ) := Ρ heo, hdσ
       have hfo' : FreeAt J.whole J.right.top (-σ) := by rw [← hdσ]; exact hfo
       obtain ⟨r, hr, h1, h2, h3, h4⟩ := case_C3 J hP hN hstops hσ hzR he hfo' heo' hze
         (fun p hp hpD => hends p hp hpD) hey hc.2 hT0 hwo ⟨hpz, htz0, htz1, hpt, hsec⟩ hLst.le hev
-      exact ⟨r, hr, h1, h2, h3, by rw [h4, hwo]⟩
+      exact ⟨r, hr, h1, h2, h3, Ρ h4, hwo⟩
     · rcases hkind with rfl | rfl | ⟨c, hc', hco⟩
       · exact absurd J.shared_mem_left hc.2
       · exact absurd rfl hot
@@ -264,7 +266,7 @@ theorem side0Math : Side0MathSpec := by
         have hov : o ≠ J.shared := fun h => hc.2 (h ▸ J.shared_mem_left)
         obtain ⟨j, hj, hTj, hdj, h1, h2, h3, h4⟩ := case_C4 J hP htab hσ hzR hc' hco hfo hc.1
           hov hot hdσ hoz ⟨hpz, htz0, htz1, hpt, hsec⟩ (by rw [← heo]; exact hev)
-        exact ⟨j, hj, hTj, hdj, h1, h2, h3, by rw [h4, hwo]⟩
+        exact ⟨j, hj, hTj, hdj, h1, h2, h3, Ρ h4, hwo⟩
   · -- the ray starts in a region of `F₂⁺`
     rw [neg_neg] at hsec
     have hFam := chordFamily_hPoly J.whole (F₂plus_finite J hS₂f) (F₂plus_subset J hS₂)

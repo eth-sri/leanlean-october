@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFLocateMath
 
 /-!
@@ -81,14 +83,14 @@ def Bloc (r : ℕ) : Bool :=
   decide (10500 ≤ r ∧ r < 10506) || decide (50000 ≤ r ∧ r < 50030) ||
     decide (50100 ≤ r ∧ r < 50117)
 
-theorem wr_locSetup : wr Bloc locSetup = true := by decide
+theorem wr_locSetup : wr Bloc locSetup = true := ⌖
 
 theorem Bloc_band (r : ℕ) (h : Bloc r = true) : bandOf r ∈ ({bLocate, bSign} : Finset ℕ) ∧
     r ≠ ALLOC := by
   unfold Bloc at h
   simp only [Bool.or_eq_true, decide_eq_true_eq] at h
   unfold bandOf bLocate bSign ALLOC
-  simp only [Finset.mem_insert, Finset.mem_singleton]
+  ϴ Finset.mem_insert, Finset.mem_singleton
   omega
 
 theorem Bdir_band (r : ℕ) (h : Bdir r = true) : bandOf r ∈ ({bLocate, bSign} : Finset ℕ) ∧
@@ -96,7 +98,7 @@ theorem Bdir_band (r : ℕ) (h : Bdir r = true) : bandOf r ∈ ({bLocate, bSign}
   unfold Bdir at h
   simp only [Bool.or_eq_true, decide_eq_true_eq] at h
   unfold bandOf bLocate bSign ALLOC
-  simp only [Finset.mem_insert, Finset.mem_singleton]
+  ϴ Finset.mem_insert, Finset.mem_singleton
   omega
 
 /-! ## Uniqueness of what the layout determines -/
@@ -123,7 +125,7 @@ theorem nfAt_arcs_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h
   have e' := h'.2.2.2.2.2.2.1 j hj
   have a1 : N.arc j = N.arcs[j] := getD_of_lt _ hj'
   have a2 : N'.arc j = N'.arcs[j] := getD_of_lt _ hj
-  rw [← a1, ← a2]
+  Ξ ← a1, ← a2
   exact aRec_ext (e'.1.symm.trans e.1) (e'.2.1.symm.trans e.2.1) (e'.2.2.1.symm.trans e.2.2.1)
     (e'.2.2.2.1.symm.trans e.2.2.2.1) (e'.2.2.2.2.symm.trans e.2.2.2.2)
 
@@ -137,7 +139,7 @@ theorem nfAt_chords_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) 
   have e' := h'.2.2.2.2.2.1 j hj
   have a1 : N.chord j = N.chords[j] := getD_of_lt _ hj'
   have a2 : N'.chord j = N'.chords[j] := getD_of_lt _ hj
-  rw [← a1, ← a2]
+  Ξ ← a1, ← a2
   exact cRec_ext (e'.1.symm.trans e.1) (e'.2.1.symm.trans e.2.1) (e'.2.2.1.symm.trans e.2.2.1)
     (e'.2.2.2.1.symm.trans e.2.2.2.1) (e'.2.2.2.2.symm.trans e.2.2.2.2)
 
@@ -151,11 +153,11 @@ theorem cmpPr_eq {P : Polygon} {M : Model} {N : NF} {m : ℕ → ℕ} {B : ℕ} 
     cmpPr P x (dirCode M x.edge) (m (B + 4)) N.arcs.length m j = true ↔
       KeyPred M (Qof P) x (N.arc j).s := by
   unfold cmpPr
-  rw [ite_eq_left hj]
+  Ξ ite_eq_left hj
   obtain ⟨-, e1, e2, -⟩ := hN.2.2.2.2.2.2.1 j hj
   have hs : (⟨m (m (B + 4) + 5 * j + 1), m (m (B + 4) + 5 * j + 2)⟩ : WPos) = (N.arc j).s := by
-    rw [e1, e2]
-  rw [hs]
+    Ξ e1, e2
+  Ξ hs
   exact keyDec_iff hx (hst j hj)
 
 end

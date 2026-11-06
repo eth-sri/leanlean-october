@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvTasks2
 
 /-!
@@ -52,7 +54,7 @@ theorem exec_regI {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
   | addN r a b => exact Exec.addN hw r a b hi
   | subN r a b => exact Exec.subN hw r a b
   | loadN r a => exact Exec.loadN hw r a
-  | _ => exact absurd hi (by simp [okWI])
+  | _ => exact absurd hi (⊚ okWI)
 
 /-- **A straight-line register block** runs to `regB`. -/
 theorem exec_regB {P : Polygon} {W : ℕ} : ∀ (l : List Instr) {c : Config}, WordsBounded W c →
@@ -81,7 +83,7 @@ def regA : List Instr :=
     .addN iT (sw 21) K2, .loadN cm iT, .addN iT (sw 21) K3, .loadN cTop iT,
     .addN iT (sw 21) K4, .loadN iB iT]
 
-set_option maxRecDepth 20000 in
+
 theorem regA_ok {W : ℕ} (m f : ℕ → ℕ) (hW : 6 ≤ W) (h1 : f (sw 47) + f (sw 49) ≤ W)
     (h2 : f (sw 42) + f (sw 43) ≤ W) (h3 : f (sw 35) - (f (sw 42) + f (sw 43)) + f (sw 49) ≤ W)
     (h4 : f (sw 40) + (f (sw 42) + f (sw 43)) ≤ W) (h5 : f (sw 45) + f (sw 35) ≤ W)
@@ -92,7 +94,7 @@ theorem regA_ok {W : ℕ} (m f : ℕ → ℕ) (hW : 6 ≤ W) (h1 : f (sw 47) + f
     Nat.reduceAdd, Nat.reduceEqDiff, not_false_eq_true, and_true, true_and]
   omega
 
-set_option maxRecDepth 20000 in
+
 theorem regA_val (m f : ℕ → ℕ) :
     regB m regA f K0 = 0 ∧ regB m regA f K1 = 1 ∧ regB m regA f K6 = 6 ∧
     regB m regA f K4 = 4 ∧ regB m regA f K5 = 5 ∧ regB m regA f K2 = 2 ∧
@@ -164,11 +166,11 @@ theorem offS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) :
     ∃ k, Exec P W offS c { c with nreg := upd c.nreg iO (if c.nreg iO < c.nreg (sw 35) then c.nreg iO else c.nreg iO - c.nreg (sw 35)) } k ∧
       k ≤ 3 := by
   by_cases h : c.nreg iO < c.nreg (sw 35)
-  · refine ⟨1, ?_, by omega⟩
-    rw [ite_eq_left h, upd_eq_self]
+  · refine ⟨1, ?_, ⋄⟩
+    Ξ ite_eq_left h, upd_eq_self
     exact .ifLtN_true h (.skip hw)
   · refine ⟨3, ?_, le_rfl⟩
-    rw [ite_eq_right h]
+    Ξ ite_eq_right h
     exact .ifLtN_false h (Exec.subN hw _ _ _)
 
 theorem b1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) :
@@ -180,15 +182,15 @@ theorem sideSS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     ∃ k, Exec P W sideSS c { c with nreg := upd c.nreg cS (if c.nreg iB = c.nreg K1 then c.nreg cTop else c.nreg c2m - c.nreg cTop) } k ∧ k ≤ 5 := by
   unfold sideSS
   by_cases h1 : c.nreg iB < c.nreg K1
-  · refine ⟨2, ?_, by omega⟩
-    rw [ite_eq_right (by omega)]
+  · refine ⟨2, ?_, ⋄⟩
+    rw [ite_eq_right (⋄)]
     exact .ifLtN_true h1 (Exec.subN hw _ _ _)
   · by_cases h2 : c.nreg K1 < c.nreg iB
-    · refine ⟨4, ?_, by omega⟩
-      rw [ite_eq_right (by omega)]
+    · refine ⟨4, ?_, ⋄⟩
+      rw [ite_eq_right (⋄)]
       exact .ifLtN_false h1 (.ifLtN_true h2 (Exec.subN hw _ _ _))
     · refine ⟨5, ?_, le_rfl⟩
-      rw [ite_eq_left (by omega)]
+      rw [ite_eq_left (⋄)]
       exact .ifLtN_false h1 (.ifLtN_false h2 (Exec.copyN hw _ _))
 
 /-! ## The first part, at the register level -/
@@ -212,7 +214,7 @@ theorem initRA_exec_regs {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded
   obtain ⟨k₄, e₄, hk₄⟩ := sideSS_exec (P := P) e₃.wb_right
   exact ⟨_, .seq e₀ (.seq e₁ (.seq e₂ (.seq e₃ e₄))), by simp only [regA] at *; simp; omega⟩
 
-set_option maxRecDepth 20000 in
+
 /-- The values of `fIA`. -/
 theorem fIA_val (m f : ℕ → ℕ) :
     fIA m f K0 = 0 ∧ fIA m f K1 = 1 ∧ fIA m f K6 = 6 ∧ fIA m f K4 = 4 ∧ fIA m f K5 = 5 ∧
@@ -239,7 +241,7 @@ theorem fIA_val (m f : ℕ → ℕ) :
   have o46 := o (sw 46) (by unfold sw; omega)
   obtain ⟨v0, v1, v6, v4, v5, v2, v3, vgw, vn1, vnw, vll, vld, vle, v2m, v2m6, vL, vE, vG, vO', vm,
     vt, vB⟩ := hv
-  simp only [fIA]
+  ϴ fIA
   simp only [K0, K1, K2, K3, K4, K5, K6, cGW, cN1, cNW, cLL, cLD, cLE, c2m, c2m6, iL, cE1, iG,
     iO, cm, cTop, iB, cGL, cB1, cS, sw, Nat.reduceAdd] at *
   simp only [Machine.upd_same, ne_eq, Machine.upd_other, Nat.reduceEqDiff, not_false_eq_true,
@@ -253,7 +255,7 @@ theorem fIA_val (m f : ℕ → ℕ) :
 theorem ite_sub_mod {x n : ℕ} (h : x < 2 * n) : (if x < n then x else x - n) = x % n := by
   split_ifs with h'
   · exact (Nat.mod_eq_of_lt h').symm
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  · rw [Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (by omega)]
 
 theorem rlen_le (J : Merge.Junction) : Lst J ≤ 2 * J.m₂ + 7 := by
   rw [Lst_rlen]; unfold rlen; split_ifs <;> omega
@@ -270,7 +272,7 @@ theorem lδ_le (J : Merge.Junction) : lδ J ≤ 7 := by
   · omega
   · split <;> omega
 
-set_option maxRecDepth 20000 in
+
 /-- **The first part of the initialisation**: the constants, `MapK`, `cGW` and the constants of
 the classification except the top of `C₁`, from the stage-0 state.  Only `sw 610 … 704` change. -/
 theorem initRA_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.Junction}
@@ -282,14 +284,14 @@ theorem initRA_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.J
       c'.nreg cm = J.right.m ∧ c'.nreg cTop = J.right.topIdx ∧
       c'.nreg cS = J.right.sideS J.right.sideBeta ∧ c'.nreg c2m6 = 2 * J.right.m + 6 := by
   obtain ⟨h90, h91, h92, h93, -, -, -, -, d21, w21, -, -, hR, hL, h33, h34, h35, -⟩ := h0
-  have r0 : c.nreg (sw 40) = 6 + tpos J.whole J.m₁ := by simpa [cstR] using hR 0 (by norm_num)
-  have r2 : c.nreg (sw 42) = rL1 J := by simpa [cstR] using hR 2 (by norm_num)
-  have r3 : c.nreg (sw 43) = rL2 J := by simpa [cstR] using hR 3 (by norm_num)
+  have r0 : c.nreg (sw 40) = 6 + tpos J.whole J.m₁ := by simpa [cstR] using hR 0 (⊛)
+  have r2 : c.nreg (sw 42) = rL1 J := by simpa [cstR] using hR 2 (⊛)
+  have r3 : c.nreg (sw 43) = rL2 J := by simpa [cstR] using hR 3 (⊛)
   have l0 : c.nreg (sw 45) = 6 + tpos J.whole (J.m₁ + 2 * J.m₂) := by
-    simpa [cstL] using hL 0 (by norm_num)
-  have l1 : c.nreg (sw 46) = 6 + tpos J.left J.m₁ := by simpa [cstL] using hL 1 (by norm_num)
-  have l2 : c.nreg (sw 47) = lL1 J := by simpa [cstL] using hL 2 (by norm_num)
-  have l4 : c.nreg (sw 49) = lδ J := by simpa [cstL] using hL 4 (by norm_num)
+    simpa [cstL] using hL 0 (⊛)
+  have l1 : c.nreg (sw 46) = 6 + tpos J.left J.m₁ := by simpa [cstL] using hL 1 (⊛)
+  have l2 : c.nreg (sw 47) = lL1 J := by simpa [cstL] using hL 2 (⊛)
+  have l4 : c.nreg (sw 49) = lδ J := by simpa [cstL] using hL 4 (⊛)
   have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n _
   have hn₁ : (chainModel J.left).W.n = 2 * J.left.m + 7 := cm_n _
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
@@ -302,68 +304,68 @@ theorem initRA_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.J
   have hll := lL1_le J
   have hld := lδ_le J
   have one₁ := J.one_le_m₁
-  have hd21 : c.nreg (sw 21) + 5 ≤ c.nreg ALLOC := w21.1
+  have hd21 := w21.1
   have hAW := hw.1 ALLOC
-  have hok : okW W c.nmem regA c.nreg := regA_ok _ _ (by omega)
+  have hok : okW W c.nmem regA c.nreg := regA_ok _ _ (⋄)
     (by rw [l2, l4]; omega) (by rw [r2, r3]; omega) (by rw [h35, r2, r3, l4]; omega)
-    (by rw [r0, r2, r3]; omega) (by rw [l0, h35]; omega) (by omega)
+    (by rw [r0, r2, r3]; omega) (by rw [l0, h35]; omega) (⋄)
   obtain ⟨k, ex, hk⟩ := initRA_exec_regs (P := P) hw hok
   obtain ⟨v0, v1, v6, v4, v5, v2, v3, vgw, vn1, vnw, vll, vld, vle, v2m, v2m6, vE, vG, vB1, vm,
     vt, vS⟩ := fIA_val c.nmem c.nreg
-  have hHm : c.nmem (c.nreg (sw 21) + 2) = J.right.m := d21.2.2.2.1
-  have hHt : c.nmem (c.nreg (sw 21) + 3) = J.right.topIdx := d21.2.2.2.2.1
-  have hHb : c.nmem (c.nreg (sw 21) + 4) = 1 ↔ J.right.sideBeta = true := d21.2.2.2.2.2
+  have hHm := d21.2.2.2.1
+  have hHt := d21.2.2.2.2.1
+  have hHb := d21.2.2.2.2.2
   refine ⟨_, k, ex, hk, rfl, rfl, rfl, rfl, fun r hr => ?_, ⟨v0, v1, v6, v4, v5, v2, v3⟩,
     ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · simp only [fIA]
+  · ϴ fIA
     simp only [cGL, iO, cB1, cS, sw] at hr ⊢
-    rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega),
-      upd_other _ _ _ (by omega)]
+    rw [upd_other _ _ _ (⋄), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega),
+      upd_other _ _ _ (⋄)]
     exact regA_other _ _ (by simp only [sw]; omega)
   · -- b₁
     show fIA c.nmem c.nreg cB1 = b₁ J
-    rw [vB1, r2, r3, l0, h35, r0, h33, h91, l1, ← hLst]
+    Ξ vB1, r2, r3, l0, h35, r0, h33, h91, l1, ← hLst
     unfold b₁
     have hO : (if 6 + tpos J.whole (J.m₁ + 2 * J.m₂) + (2 * J.whole.m + 7) -
           (6 + tpos J.whole J.m₁) < 2 * J.whole.m + 7
         then 6 + tpos J.whole (J.m₁ + 2 * J.m₂) + (2 * J.whole.m + 7) - (6 + tpos J.whole J.m₁)
         else 6 + tpos J.whole (J.m₁ + 2 * J.m₂) + (2 * J.whole.m + 7) - (6 + tpos J.whole J.m₁) -
           (2 * J.whole.m + 7)) = lOff J := by
-      rw [ite_sub_mod (by omega)]
+      rw [ite_sub_mod (⋄)]
       unfold lOff dOf
-      rw [hn]
-    rw [hO]
+      Ξ hn
+    Ξ hO
     split_ifs <;> omega
   · show fIA c.nmem c.nreg cN1 = _
-    rw [vn1, h33, hn₁]
+    Ξ vn1, h33, hn₁
   · show fIA c.nmem c.nreg cE1 = E₁ J
-    rw [vE, h35, r2, r3, l4]
+    Ξ vE, h35, r2, r3, l4
     unfold E₁
-    rw [hn, hLst]
+    Ξ hn, hLst
   · show fIA c.nmem c.nreg cLL = _
-    rw [vll, l2]
+    Ξ vll, l2
   · show fIA c.nmem c.nreg cLD = _
-    rw [vld, l4]
+    Ξ vld, l4
   · show fIA c.nmem c.nreg cGL = _
-    rw [vG, r0, r2, r3, h35, ite_sub_mod (by omega), hn, hLst]
+    rw [vG, r0, r2, r3, h35, ite_sub_mod (⋄), hn, hLst]
     rfl
   · show fIA c.nmem c.nreg cNW = _
-    rw [vnw, h35, hn]
+    Ξ vnw, h35, hn
   · show fIA c.nmem c.nreg cLE = _
-    rw [vle, l2, l4]
+    Ξ vle, l2, l4
   · show fIA c.nmem c.nreg cGW = _
     rw [vgw, r0]; rfl
   · show fIA c.nmem c.nreg c2m = _
     rw [v2m, h34, h92]; omega
   · show fIA c.nmem c.nreg cm = _
-    rw [vm, hHm]
+    Ξ vm, hHm
   · show fIA c.nmem c.nreg cTop = _
-    rw [vt, hHt]
+    Ξ vt, hHt
   · show fIA c.nmem c.nreg cS = _
-    rw [vS, hHt, h34, h92]
+    Ξ vS, hHt, h34, h92
     unfold Chain.sideS
     by_cases hb : J.right.sideBeta = true
-    · rw [ite_eq_left (hHb.2 hb), ite_eq_left hb]
+    · Ξ ite_eq_left (hHb.2 hb), ite_eq_left hb
     · rw [ite_eq_right (fun h => hb (hHb.1 h)), ite_eq_right hb]; omega
   · show fIA c.nmem c.nreg c2m6 = _
     rw [v2m6, h34, h91]; omega

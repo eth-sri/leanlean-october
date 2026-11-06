@@ -1,5 +1,13 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.SortRam
 
 /-!
@@ -130,7 +138,7 @@ theorem LocL.cmp {Bc : Finset ℕ} {A₀ : ℕ} {c₀ c c' : Config} (h : LocL B
   refine ⟨fun r h1 h2 h3 => ?_, fun r h1 => (hrr r h1).trans (h.2.1 r h1),
     fun a ha => by rw [hm]; exact h.2.2.1 a ha, hrm.trans h.2.2.2.1, ho.trans h.2.2.2.2⟩
   have := bandOf_loc h2
-  exact (hr r (by omega) (by omega) (by omega) (Or.inl h1)).trans (h.1 r h1 h2 h3)
+  exact (hr r (⋄) (⋄) (⋄) (Or.inl h1)).trans (h.1 r h1 h2 h3)
 
 /-! ## The table of powers -/
 
@@ -165,7 +173,7 @@ variable {c₀ : Config} {A n : ℕ}
 theorem tab_len_le {L : ℕ} (h : L = 0 ∨ 2 ^ (L - 1) ≤ n) : L ≤ Nat.clog 2 n + 1 := by
   rcases h with h | h
   · omega
-  · have h1 := Nat.le_log_of_pow_le (by norm_num) h
+  · have h1 := Nat.le_log_of_pow_le (⊛) h
     have h2 := Nat.log_le_clog 2 n
     omega
 
@@ -500,7 +508,7 @@ theorem liftLoop_inv {cmp : Stmt} {κ : ℕ} (hcmp : PredOK P W cmp Bc J pr κ)
       exact ⟨d', k, e, I, hk, hi⟩) h
   refine ⟨c', k, e, I', hk, fun hlt => ?_⟩
   have hz := I'.zero
-  rw [hz] at hex
+  Ξ' hz at hex
   have := I'.post (by rw [show c'.nreg 50112 = 0 by omega, pow_zero]; omega)
   rwa [show c'.nreg 50112 = 0 by omega, pow_zero, Nat.add_sub_cancel] at this
 

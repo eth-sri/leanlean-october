@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoLHit2
 
 /-!
@@ -48,13 +50,13 @@ theorem chord_far {C : Chain} {N : NF} (hNF : IsNF (chainModel C) (Qof P) N) {k 
   rcases hca with ⟨hd, hlx, hhx⟩ | ⟨hd, hrx, hhx⟩
   · have hx : x = (N.chord k).lpos := by
       unfold CRec.lpos; rw [hlx, hhx]
-    rw [ite_eq_left hd, hx, hla, hrb, hd]
-    refine ⟨⟨hr0, hr1, by unfold CRec.rpos; simp only; omega⟩, hrp, b - a, by linarith, ?_⟩
+    Ξ ite_eq_left hd, hx, hla, hrb, hd
+    refine ⟨⟨hr0, hr1, by unfold CRec.rpos; simp only; omega⟩, hrp, b - a, ⟡, ?_⟩
     apply Geometry.point_ext <;> simp [rayPt, dirOf]
   · have hx : x = (N.chord k).rpos := by
       unfold CRec.rpos; rw [hrx, hhx]
-    rw [ite_eq_right hd, hx, hla, hrb]
-    refine ⟨⟨hl0, hl1, by unfold CRec.lpos; simp only; omega⟩, hlp, b - a, by linarith, ?_⟩
+    Ξ ite_eq_right hd, hx, hla, hrb
+    refine ⟨⟨hl0, hl1, by unfold CRec.lpos; simp only; omega⟩, hlp, b - a, ⟡, ?_⟩
     apply Geometry.point_ext <;> simp [rayPt, dirOf, hd]
 
 /-! ## Registers and programs of the scan -/
@@ -121,9 +123,9 @@ theorem scanReadL_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
     regB m scanReadL f sRp = m (f sC3 + 5 * m (f sCl + f sT) + 2) ∧
     regB m scanReadL f sH1 = m (f sC3 + 5 * m (f sCl + f sT)) + 1 := by
   have e1 : f 240611 = 1 := hk1
-  simp only [scanReadL, regB, regI, upd, sX, sY, sCl, sT, sK, sC3, sCh, sLp, sRp, sH1, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  exact ⟨congrArg m (by ring), congrArg m (by ring), congrArg m (by ring)⟩
+  ϴ scanReadL, regB, regI, upd, sX, sY, sCl, sT, sK, sC3, sCh, sLp, sRp, sH1, K1, sw
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1
+  exact ⟨congrArg m (⋆), congrArg m (by ring), congrArg m (by ring)⟩
 
 theorem scanReadL_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb : f sCl + f sT ≤ W)
     (hb2 : f sC3 + 5 * m (f sCl + f sT) + 2 ≤ W) (hb3 : m (f sC3 + 5 * m (f sCl + f sT)) + 1 ≤ W) :
@@ -164,8 +166,8 @@ theorem chordsDone_mono {C : Chain} {N : NF} {x : WPos} {d : ℕ} {ks : List ℕ
 
 /-! ## Offering a far end -/
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
+
+
 theorem offerFar_irs {src : ℕ} (hsrc : src = sLp ∨ src = sRp) {C : Chain} {Mod : ℕ → Chain}
     {R₀ : ℝ} {z : Point} {L : Set ℝ} {τ : ℝ} (hI : IInv W c₀ c) (hK : Consts c₀)
     (hG : GoodEnv P) (hW3 : P.n + 3 ≤ W) (hctx : ChainCtx P W c lCD C)
@@ -188,20 +190,20 @@ theorem offerFar_irs {src : ℕ} (hsrc : src = sLp ∨ src = sRp) {C : Chain} {M
   have hok : okB W c.nmem [.copyN sFe src, .copyN sFh sH1] c.nreg :=
     ⟨iscr_sw (by unfold sFe sw; norm_num) (by unfold sFe sw; norm_num),
       iscr_sw (by unfold sFh sw; norm_num) (by unfold sFh sw; norm_num), trivial⟩
-  refine IRS.seq (K₂ := offerFK) (IRS.block _ hI hok) ?_ |>.mono (by simp) (fun _ h => h)
+  refine IRS.seq (K₂ := offerFK) (IRS.block _ hI hok) ?_ |>.mono (✓) (fun _ h => h)
   rintro c₁ hI₁ - - hc1
   have vFe : c₁.nreg sFe = c.nreg src := by
     rw [hc1]; show regB c.nmem [.copyN sFe src, .copyN sFh sH1] c.nreg sFe = _
-    simp only [regB, regI]
-    rw [upd_other _ _ _ (by unfold sFe sFh sw; norm_num), upd_same]
+    ϴ regB, regI
+    Ξ upd_other _ _ _ (by unfold sFe sFh sw; norm_num), upd_same
   have vFh : c₁.nreg sFh = c.nreg sH1 := by
     rw [hc1]; show regB c.nmem [.copyN sFe src, .copyN sFh sH1] c.nreg sFh = _
-    simp only [regB, regI]
-    rw [upd_same, upd_other _ _ _ (by unfold sFe sH1 sw; norm_num)]
+    ϴ regB, regI
+    Ξ upd_same, upd_other _ _ _ (by unfold sFe sH1 sw; norm_num)
   have k1 : ∀ q, q ≠ sFe → q ≠ sFh → c₁.nreg q = c.nreg q := by
     intro q h1 h2; rw [hc1]; show regB c.nmem [.copyN sFe src, .copyN sFh sH1] c.nreg q = _
     simp only [regB, regI]; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
-  have hm1 : c₁.nmem = c.nmem := by rw [hc1]
+  have hm1 : c₁.nmem = c.nmem := Ρ hc1
   have kk : ∀ q, ¬ SSet q → c₁.nreg q = c.nreg q := fun q hq =>
     k1 q (fun h => hq (by subst h; unfold SSet sFe sw; omega))
       (fun h => hq (by subst h; unfold SSet sFh sw; omega))
@@ -228,15 +230,15 @@ theorem offerFar_irs {src : ℕ} (hsrc : src = sLp ∨ src = sRp) {C : Chain} {M
     ⟨by unfold lCD accA sw; omega, by unfold sFe accA sw; omega, by unfold sFh accA sw; omega,
       by unfold lT accA sw; omega, by unfold lD accA sw; omega, by unfold lO accA sw; omega⟩
     (by rw [d1]; exact hacc.transport a1) (by rw [t1]; exact htag)
-    (by rw [t1, hMod]; exact hctx.transport cd1 (fun a _ => by rw [hm1]) hA1.ge)
-    (by rw [t1, hMod]; exact hR) (by rw [n1, hn, t1, hMod]) (by rw [t1, hMod, vFe]; exact he)
+    (by rw [t1, hMod]; exact hctx.transport cd1 (fun a _ => Ρ hm1) hA1.ge)
+    (by rw [t1, hMod]; exact hR) (Ρ n1, hn, t1, hMod) (by rw [t1, hMod, vFe]; exact he)
     (by rw [t1, hMod, vFe, vFh]; exact hpp) (by rw [t1, hMod, vFe, vFh, d1]; exact hpos) hy
     (by rw [hA1]; omega)).mono le_rfl ?_
   rintro c' ⟨⟨L', hacc', hL', hc'⟩, k2, hA2, hm2⟩
   simp only [d1, t1, hMod] at hacc' hL' hc'
   refine ⟨⟨L', hacc', hL', hc'⟩, fun r hr hs1 hs2 hra hro hro1 hrA => ?_, by rw [← hA1]; exact hA2,
-    fun a ha => by rw [hm2 a (by omega), hm1]⟩
-  rw [k2 r hr hra hs2 hro hro1 hrA]
+    fun a ha => by rw [hm2 a (⋄), hm1]⟩
+  Ξ k2 r hr hra hs2 hro hro1 hrA
   exact k1 r hs1 hs2
 
 /-! ## The test of a chord -/
@@ -244,8 +246,8 @@ theorem offerFar_irs {src : ℕ} (hsrc : src = sLp ∨ src = sRp) {C : Chain} {M
 /-- The cost of the test. -/
 def scanTestK : ℕ := 14 + offerFK
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
+
+
 /-- **The double equality test and the offer.** -/
 theorem eqOffer_irs {a src : ℕ} (_ha : a = sLp ∨ a = sRp) (hsrc : src = sLp ∨ src = sRp)
     {C : Chain} {N : NF} {k : ℕ} (hk : k < N.nChords) {Mod : ℕ → Chain} {R₀ : ℝ} {z : Point}
@@ -284,27 +286,27 @@ theorem eqOffer_irs {a src : ℕ} (_ha : a = sLp ∨ a = sRp) (hsrc : src = sLp 
   unfold eqT
   by_cases h1 : c.nreg a < c.nreg lE
   · exact (IRS.ifT h1 (hnone (fun hca => by have := (hiff.2 hca).1; omega) (8 + offerFK))).mono
-      (by omega) (fun _ h => h)
-  refine IRS.mono (K := (8 + offerFK) + 2) (IRS.ifF h1 ?_) (by omega) (fun _ h => h)
+      (⋄) (fun _ h => h)
+  refine IRS.mono (K := (8 + offerFK) + 2) (IRS.ifF h1 ?_) (⋄) (fun _ h => h)
   by_cases h2 : c.nreg lE < c.nreg a
   · exact (IRS.ifT h2 (hnone (fun hca => by have := (hiff.2 hca).1; omega) (6 + offerFK))).mono
-      (by omega) (fun _ h => h)
-  refine IRS.mono (K := (6 + offerFK) + 2) (IRS.ifF h2 ?_) (by omega) (fun _ h => h)
+      (⋄) (fun _ h => h)
+  refine IRS.mono (K := (6 + offerFK) + 2) (IRS.ifF h2 ?_) (⋄) (fun _ h => h)
   by_cases h3 : c.nreg sH1 < c.nreg lH
   · exact (IRS.ifT h3 (hnone (fun hca => by have := (hiff.2 hca).2; omega) (4 + offerFK))).mono
-      (by omega) (fun _ h => h)
-  refine IRS.mono (K := (4 + offerFK) + 2) (IRS.ifF h3 ?_) (by omega) (fun _ h => h)
+      (⋄) (fun _ h => h)
+  refine IRS.mono (K := (4 + offerFK) + 2) (IRS.ifF h3 ?_) (⋄) (fun _ h => h)
   by_cases h4 : c.nreg lH < c.nreg sH1
   · exact (IRS.ifT h4 (hnone (fun hca => by have := (hiff.2 hca).2; omega) (2 + offerFK))).mono
-      (by omega) (fun _ h => h)
-  refine IRS.mono (K := (2 + offerFK) + 2) (IRS.ifF h4 ?_) (by omega) (fun _ h => h)
+      (⋄) (fun _ h => h)
+  refine IRS.mono (K := (2 + offerFK) + 2) (IRS.ifF h4 ?_) (⋄) (fun _ h => h)
   -- a match
-  have hca : Sweep.ChordAt (N.chord k) ⟨c.nreg lE, c.nreg lH⟩ (c.nreg lD) := hiff.1 ⟨by omega, by omega⟩
+  have hca : Sweep.ChordAt (N.chord k) ⟨c.nreg lE, c.nreg lH⟩ (c.nreg lD) := hiff.1 ⟨⋄, by omega⟩
   obtain ⟨hpp, hedge, τ, hτ, hpos⟩ := chord_far hNF hk hca
   rw [hfar] at hpp hedge hpos
   rw [← hz] at hpos
   refine (offerFar_irs hsrc (L := L) (τ := τ) hI hK hG hW3 hctx hacc htag hMod hR hn hedge hpp hpos hy
-    (by omega)).mono le_rfl ?_
+    (⋄)).mono le_rfl ?_
   rintro c' ⟨⟨L', hacc', hL', hc'⟩, k', hA', hm'⟩
   refine ⟨⟨L', hacc', ?_, fun τ' hτ' => ?_, fun hzt k'' hk'' hca' => ?_⟩, k', hA', hm'⟩
   · rcases hL' with rfl | ⟨rfl, -⟩

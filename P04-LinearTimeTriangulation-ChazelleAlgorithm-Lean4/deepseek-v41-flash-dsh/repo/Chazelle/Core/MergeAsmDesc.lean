@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.MergeAsmLoop
 public import Chazelle.Core.NFLocateHost
 
@@ -24,19 +26,19 @@ open Machine SignK
 theorem hostAt_agree {m m' : ℕ → ℕ} {h E : ℕ} {H : Host} (hH : HostAt m h H)
     (hE : h + 3 * H.length + 4 ≤ E) (he : ∀ a, a < E → m' a = m a) : HostAt m' h H := by
   obtain ⟨h0, h1⟩ := hH
-  refine ⟨by rw [he _ (by omega)]; exact h0, fun i hi => ?_⟩
+  refine ⟨by rw [he _ (⋄)]; exact h0, fun i hi => ?_⟩
   have := h1 i hi
   revert this
   cases H.getD i (.run 0 0) with
   | run a l =>
     intro h; simp only at h ⊢
-    rw [he _ (by omega), he _ (by omega), he _ (by omega)]; exact h
+    rw [he _ (⋄), he _ (by omega), he _ (by omega)]; exact h
   | pt x =>
     cases x with
-    | vtx j => intro h; simp only at h ⊢; rw [he _ (by omega), he _ (by omega)]; exact h
+    | vtx j => intro h; simp only at h ⊢; rw [he _ (⋄), he _ (by omega)]; exact h
     | onEdge e j =>
       intro h; simp only at h ⊢
-      rw [he _ (by omega), he _ (by omega), he _ (by omega)]; exact h
+      rw [he _ (⋄), he _ (by omega), he _ (by omega)]; exact h
 
 /-- **Copying a chain descriptor** (host layout below `E`, the five words copied to `d`). -/
 theorem chainDescAt_copy {m m' : ℕ → ℕ} {bw d E : ℕ} {Q : Polygon} {H : Host} {C : Chain}
@@ -44,15 +46,15 @@ theorem chainDescAt_copy {m m' : ℕ → ℕ} {bw d E : ℕ} {Q : Polygon} {H : 
     (he : ∀ a, a < E → m' a = m a) (hc : ∀ j, j < 5 → m' (d + j) = m (bw + j)) :
     ChainDescAt m' d Q H C := by
   obtain ⟨h0, h1, h2, h3, h4, h5⟩ := hC
-  have c0 := hc 0 (by omega)
-  have c1 := hc 1 (by omega)
-  have c2 := hc 2 (by omega)
-  have c3 := hc 3 (by omega)
-  have c4 := hc 4 (by omega)
+  have c0 := hc 0 (⋄)
+  have c1 := hc 1 (⋄)
+  have c2 := hc 2 (⋄)
+  have c3 := hc 3 (⋄)
+  have c4 := hc 4 (⋄)
   simp only [add_zero] at c0
   refine ⟨?_, h1, by rw [c1]; exact h2, by rw [c2]; exact h3, by rw [c3]; exact h4,
     by rw [c4]; exact h5⟩
-  rw [c0]
+  Ξ c0
   exact hostAt_agree h0 hE he
 
 /-- **A well-formed copy of a chain descriptor.** -/
@@ -62,13 +64,13 @@ theorem chainWF_copy {P : Polygon} {m m' : ℕ → ℕ} {bw d E E' : ℕ} {H : H
     (hd : d + 5 ≤ E') (hEE : E ≤ E') : ChainWF P E' m' d := by
   obtain ⟨hl, hHW, hEb, hs⟩ := hwf.2 H C hC
   refine ⟨hd, fun H' C' hC' => ?_⟩
-  have c0 : m' d = m bw := by simpa using hc 0 (by omega)
+  have c0 : m' d = m bw := by simpa using hc 0 (⋄)
   have hH' : HostAt m' (m bw) H := hostAt_agree hC.1 hEb he
   have hHH : H' = H := NFLoc.hostAt_unique (by rw [← c0]; exact hC'.1) hH'
   subst hHH
   refine ⟨hl, hHW, by rw [c0]; omega, ?_⟩
-  have e1 : C'.s = C.s := by rw [← hC'.2.2.1, ← hC.2.2.1, hc 1 (by omega)]
-  have e2 : C'.P = C.P := by rw [hC'.2.1, hC.2.1]
+  have e1 : C'.s = C.s := by rw [← hC'.2.2.1, ← hC.2.2.1, hc 1 (⋄)]
+  have e2 : C'.P = C.P := Ρ hC'.2.1, hC.2.1
   rw [e1, e2]; exact hs
 
 /-- **The copied model descriptor**: `m' A = 0` and the five words of the chain descriptor at
@@ -79,8 +81,8 @@ theorem modelDesc_copy {P : Polygon} {m m' : ℕ → ℕ} {bw A E E' : ℕ} {H :
     (hc : ∀ j, j < 5 → m' (A + 1 + j) = m (bw + j)) (hE' : A + 6 ≤ E') :
     ModelDescAt m' A (Qof P) (chainModel C) ∧ ModelDescWF P E' m' A := by
   obtain ⟨-, -, hEb, -⟩ := hwf.2 H C hC
-  refine ⟨Or.inl ⟨h0, H, C, chainDescAt_copy hC hEb he hc, rfl⟩, by omega, fun _ => ?_⟩
-  exact chainWF_copy hwf hC he hc (by omega) (by omega)
+  refine ⟨Or.inl ⟨h0, H, C, chainDescAt_copy hC hEb he hc, rfl⟩, ⋄, fun _ => ?_⟩
+  exact chainWF_copy hwf hC he hc (⋄) (by omega)
 
 /-- **The model descriptor survives** a change of the memory at or above `E` (for a descriptor
 of a chain model built as above). -/
@@ -92,10 +94,10 @@ theorem modelDesc_agree {P : Polygon} {m m' : ℕ → ℕ} {A E : ℕ} {H : Host
   have hcw : ChainWF P E m (A + 1) := hwf.2 h0
   obtain ⟨-, -, hEb, -⟩ := hcw.2 H C hC
   have hA6 := hwf.1
-  have hc : ∀ j, j < 5 → m' (A + 1 + j) = m (A + 1 + j) := fun j hj => he _ (by omega)
+  have hc : ∀ j, j < 5 → m' (A + 1 + j) = m (A + 1 + j) := fun j hj => he _ (⋄)
   have hC' := chainDescAt_copy hC hEb he hc
-  have h0' : m' A = 0 := by rw [he _ (by omega)]; exact h0
-  exact ⟨Or.inl ⟨h0', H, C, hC', rfl⟩, ⟨hA6, fun _ => chainWF_copy hcw hC he hc (by omega) le_rfl⟩,
+  have h0' : m' A = 0 := by rw [he _ (⋄)]; exact h0
+  exact ⟨Or.inl ⟨h0', H, C, hC', rfl⟩, ⟨hA6, fun _ => chainWF_copy hcw hC he hc (⋄) le_rfl⟩,
     hC', h0'⟩
 
 /-- The number of edges of a chain with a well-formed descriptor: `2 m + 2 ≤ 128 n`. -/

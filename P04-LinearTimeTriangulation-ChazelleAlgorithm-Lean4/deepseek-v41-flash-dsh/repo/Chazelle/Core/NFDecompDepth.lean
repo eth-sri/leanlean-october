@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFDecompPass
 
 /-!
@@ -29,7 +31,7 @@ theorem hstep_lt (D m : ℕ) (hm : 1 ≤ m) : hstep D m < m := by
   rcases Nat.eq_zero_or_pos D with rfl | hD
   · simp; omega
   · apply Nat.div_lt_of_lt_mul
-    have : (D - 1) * m < D * m := Nat.mul_lt_mul_of_pos_right (by omega) (by omega)
+    have : (D - 1) * m < D * m := Nat.mul_lt_mul_of_pos_right (⋄) (by omega)
     linarith [Nat.mul_comm m D]
 
 theorem hstep_mono (D : ℕ) {a b : ℕ} (hab : a ≤ b) : hstep D a ≤ hstep D b :=
@@ -39,20 +41,20 @@ theorem hstep_iter_mono (D n : ℕ) {a b : ℕ} (hab : a ≤ b) : (hstep D)^[n] 
   induction n generalizing a b with
   | zero => exact hab
   | succ n ih =>
-    rw [Function.iterate_succ_apply, Function.iterate_succ_apply]
+    Ξ Function.iterate_succ_apply, Function.iterate_succ_apply
     exact ih (hstep_mono D hab)
 
 theorem hstep_iter_anti (D m : ℕ) {i j : ℕ} (hij : i ≤ j) : (hstep D)^[j] m ≤ (hstep D)^[i] m := by
   induction hij with
   | refl => exact le_rfl
   | step _ ih =>
-    rw [Function.iterate_succ_apply']
+    Ξ Function.iterate_succ_apply'
     exact (hstep_le D _).trans ih
 
 /-- `m' ≤ hstep D m` as soon as `D m' ≤ (D - 1) m`. -/
 theorem le_hstep {D m m' : ℕ} (hD : 1 ≤ D) (h : D * m' ≤ (D - 1) * m) : m' ≤ hstep D m := by
   unfold hstep
-  rw [Nat.le_div_iff_mul_le (by omega)]
+  rw [Nat.le_div_iff_mul_le (⋄)]
   linarith [Nat.mul_comm m' D]
 
 theorem hstep_exists (D K : ℕ) : ∃ i, (hstep D)^[i] K = 0 := by
@@ -62,11 +64,11 @@ theorem hstep_exists (D K : ℕ) : ∃ i, (hstep D)^[i] K = 0 := by
     induction i with
     | zero => left; simp
     | succ i ih =>
-      rw [Function.iterate_succ_apply']
+      Ξ Function.iterate_succ_apply'
       rcases ih with h1 | h1
       · by_cases h0 : (hstep D)^[i] K = 0
         · right; rw [h0]; exact Nat.le_zero.1 (hstep_le D 0)
-        · left; have := hstep_lt D ((hstep D)^[i] K) (by omega); omega
+        · left; have := hstep_lt D ((hstep D)^[i] K) (⋄); omega
       · right; rw [h1]; exact Nat.le_zero.1 (hstep_le D 0)
   rcases this K with h1 | h1
   · omega
@@ -92,20 +94,20 @@ theorem iter_D_half {D : ℕ} (hD : 1 ≤ D) (m : ℕ) : 2 * (hstep D)^[D] m ≤
     induction i with
     | zero => right; simp
     | succ i ih =>
-      rw [Function.iterate_succ_apply']
+      Ξ Function.iterate_succ_apply'
       set x := (hstep D)^[i] m
       have hx : hstep D x ≤ x := hstep_le D x
       have hDx : D * hstep D x ≤ (D - 1) * x := by
         unfold hstep
         have := Nat.div_mul_le_self ((D - 1) * x) D
         linarith [Nat.mul_comm D ((D - 1) * x / D)]
-      rcases ih (by omega) with h1 | h1
+      rcases ih (⋄) with h1 | h1
       · left; omega
       · by_cases h2 : 2 * x ≤ m
         · left; omega
         · right
           have e1 : (D - 1) * x + x = D * x := by
-            rw [← Nat.succ_mul, Nat.succ_eq_add_one, Nat.sub_add_cancel hD]
+            Ξ ← Nat.succ_mul, Nat.succ_eq_add_one, Nat.sub_add_cancel hD
           nlinarith
   rcases key D le_rfl with h1 | h1
   · exact h1
@@ -119,15 +121,15 @@ theorem rounds_le {D : ℕ} (hD : 1 ≤ D) (K : ℕ) : rounds D K ≤ D * Nat.cl
     | zero => intro m hm; simp at hm; subst hm; simp
     | succ c ih =>
       intro m hm
-      rw [Nat.mul_succ, Function.iterate_add_apply]
+      Ξ Nat.mul_succ, Function.iterate_add_apply
       have h1 := iter_D_half hD m
       have h2 : (hstep D)^[D] m + 1 ≤ 2 ^ c := by
         rw [pow_succ] at hm; omega
       exact Nat.le_zero.1 ((hstep_iter_mono D (D * c) le_rfl).trans (ih _ h2).le)
-  exact Nat.find_min' _ (key _ K (Nat.le_pow_clog (by norm_num) _))
+  exact Nat.find_min' _ (key _ K (Nat.le_pow_clog (⊛) _))
 
 theorem rounds_zero (D : ℕ) : rounds D 0 = 0 :=
-  Nat.le_zero.1 (Nat.find_min' _ (by simp))
+  Nat.le_zero.1 (Nat.find_min' _ (✓))
 
 end
 

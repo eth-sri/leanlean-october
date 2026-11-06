@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseDegChain
 
 /-!
@@ -32,11 +34,11 @@ theorem counted_mem_set (C : Chain) {p : ℕ} (hp : p < (chainModel C).W.n)
     (hc : (chainModel C).counted p) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1) :
     sidePt (chainModel C).W p t ∈ C.set := by
   obtain ⟨h6, h2m⟩ : 6 ≤ p ∧ p < 2 * C.m + 6 := hc
-  obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by omega⟩
-  have hi : i < 2 * C.m := by omega
-  rw [cm_W]
+  obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, ⋄⟩
+  have hi : i < 2 * C.m := ⋄
+  Ξ cm_W
   unfold sidePt
-  rw [C.sideWalk_next_tour _ hi, C.sideWalk_vtx_tour _ hi.le, C.sideWalk_vtx_tour _ (by omega)]
+  rw [C.sideWalk_next_tour _ hi, C.sideWalk_vtx_tour _ hi.le, C.sideWalk_vtx_tour _ (⋄)]
   unfold Chain.sideTour
   rcases C.sideTour_step C.sideBeta i with h | h
   · exact C.sideLerp_mem_set (Or.inl h) (C.sideIdx_le _ i) (C.sideIdx_le _ _) ht0 ht1
@@ -54,10 +56,10 @@ theorem attach_sup {W : Polygon} {f c : Set Point} {p : ℕ} {t : ℝ} (hA : Sid
   have hxd' : dist x q < dist e q := lt_of_lt_of_le hxd (min_le_right _ _)
   have hdist : ∀ u : ℝ, 0 ≤ u → dist (lerp q b u) q = u * dist b q := by
     intro u hu
-    rw [dist_comm, dist_eq_norm, dist_eq_norm]
+    Ξ dist_comm, dist_eq_norm, dist_eq_norm
     have : q - lerp q b u = u • (q - b) := by
       apply Geometry.point_ext <;> simp [lerp] <;> ring
-    rw [this, norm_smul, Real.norm_eq_abs, abs_of_nonneg hu, norm_sub_rev]
+    Ξ this, norm_smul, Real.norm_eq_abs, abs_of_nonneg hu, norm_sub_rev
   rw [hcb] at hx hec
   obtain ⟨s, hs0, hs1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hx
   obtain ⟨se, hse0, hse1, hese⟩ := Geometry.mem_segment_iff_lerp.1 hec
@@ -70,7 +72,7 @@ theorem attach_sup {W : Polygon} {f c : Set Point} {p : ℕ} {t : ℝ} (hA : Sid
     · rw [← h, mul_zero] at hd; exact absurd hd (lt_irrefl _)
   have hsse : s < se := lt_of_mul_lt_mul_right hxd' hbq.le
   have hse : 0 < se := lt_of_le_of_lt hs0 hsse
-  rw [hfe, hese]
+  Ξ hfe, hese
   refine Geometry.mem_segment_iff_lerp.2 ⟨s / se, div_nonneg hs0 hse.le,
     (div_le_one hse).2 hsse.le, ?_⟩
   apply Geometry.point_ext <;> simp only [Geometry.lerp_fst, Geometry.lerp_snd] <;>
@@ -83,8 +85,8 @@ theorem pieceAt_of_agree {C' : Chain} (hC'P : C'.P = J.P) {g g' L : ℕ}
     (hA : Agree (chainModel J.whole).W (chainModel C').W g g' L) : PieceAt J C' g g' L := by
   have hR := radius_of_P J hC'P
   refine ⟨hg, hg', hL, hL', hA, fun d hd hc => ?_⟩
-  rw [counted_iff_box _ (Nat.mod_lt _ (by omega))] at hc
-  rw [counted_iff_box _ (Nat.mod_lt _ (by omega))]
+  rw [counted_iff_box _ (Nat.mod_lt _ (⋄))] at hc
+  rw [counted_iff_box _ (Nat.mod_lt _ (⋄))]
   rw [mod_succ_mod] at hc ⊢
   rw [hA d hd.le, hA (d + 1) hd] at hc
   rw [hR]; exact hc
@@ -93,7 +95,7 @@ theorem pieceAt_of_agree {C' : Chain} (hC'P : C'.P = J.P) {g g' L : ℕ}
 theorem dOf_shift {n g s p : ℕ} (hg : g < n) (hp : p < n) (hs : s ≤ dOf n g p) :
     dOf n ((g + s) % n) p = dOf n g p - s := by
   have h1 := off_shift hg hp hs le_rfl one_pos
-  have h2 := off_key' (g := (g + s) % n) (Nat.mod_lt _ (by omega)) hp le_rfl one_pos
+  have h2 := off_key' (g := (g + s) % n) (Nat.mod_lt _ (⋄)) hp le_rfl one_pos
   rw [h1, add_zero, add_zero] at h2
   exact_mod_cast h2.symm
 
@@ -130,7 +132,7 @@ theorem side_two_pieces (_hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
   set s := 2 * C.m - τ with hs_def
   set s' := 2 * C'.m - τ' with hs'_def
   have hstart : W.vtx g = J.shared := by
-    have := walk_tour C J₀ 0 (by omega)
+    have := walk_tour C J₀ 0 (⋄)
     rw [add_zero, Nat.mod_eq_of_lt hg] at this
     rw [this, hv0]; rfl
   by_cases hsl : s < ℓ
@@ -157,8 +159,8 @@ theorem side_two_pieces (_hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
     (Nat.mod_lt _ (by rw [hn']; omega))
     (by rw [hn]; omega) (by rw [hn']; omega) hA2
   have hpt : W.vtx ((g + s') % W.n) = C'.top := by
-    rw [hA1 s' le_rfl]
-    have := walk_box C' J₀' 0 (by omega)
+    Ξ hA1 s' le_rfl
+    have := walk_box C' J₀' 0 (⋄)
     rw [add_zero] at this
     exact this
   refine ⟨g, g', s', _, _, ℓ - s', hpc1, hpc2, Or.inl hstart, Or.inr hpt, fun p hp hin => ?_⟩
@@ -167,7 +169,7 @@ theorem side_two_pieces (_hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
   · exact Or.inl hD
   · push Not at hD
     right
-    rw [dOf_shift hg hp hD]
+    Ξ dOf_shift hg hp hD
     omega
 
 /-- **The glue chords are augmented chords of `C`.** -/
@@ -175,29 +177,29 @@ theorem glue_subset_aug (hgen : SharedGeneric J) : glueChords J ⊆ Merge.augCho
   rintro d (hd | ⟨hext, hfree, rfl⟩)
   · exact Merge.chords_subset_augChords _ (topChords_subset_chords J hd)
   · obtain ⟨hτ0, hτ1, hnear, hnf⟩ := cap_param J hgen hext
-    have hm₁ : 1 ≤ J.m₁ := J.one_le_m₁
-    have hm₂ : 1 ≤ J.m₂ := J.one_le_m₂
+    have hm₁ := J.one_le_m₁
+    have hm₂ := J.one_le_m₂
     have hwm : J.whole.m = J.m₁ + J.m₂ := rfl
     have hmem : capOrigin J ∈ J.whole.set := by
       unfold capOrigin
       generalize (((capNear J).2 - (sharedV J).2) / ((capFar J).2 - (sharedV J).2)) = τ
         at hτ0 hτ1 ⊢
       rcases hnf with ⟨-, hf⟩ | ⟨-, hf⟩
-      · rw [hf]
-        exact J.whole.sideLerp_mem_set (a := J.m₁) (b := J.m₁ + 1) (Or.inl rfl) (by omega)
-          (by omega) hτ0.le hτ1.le
-      · rw [hf]
-        exact J.whole.sideLerp_mem_set (a := J.m₁) (b := J.m₁ - 1) (Or.inr (by omega))
-          (by omega) (by omega) hτ0.le hτ1.le
+      · Ξ hf
+        exact J.whole.sideLerp_mem_set (a := J.m₁) (b := J.m₁ + 1) (Or.inl rfl) (⋄)
+          (⋄) hτ0.le hτ1.le
+      · Ξ hf
+        exact J.whole.sideLerp_mem_set (a := J.m₁) (b := J.m₁ - 1) (Or.inr (⋄))
+          (⋄) (by omega) hτ0.le hτ1.le
     have hy : (capOrigin J).2 ≤ J.whole.top.2 := by
       have : (capOrigin J).2 = (capNear J).2 := by
         unfold capOrigin
-        simp only [Geometry.lerp_snd]
+        ϴ Geometry.lerp_snd
         exact hnear.symm
-      rw [this]
+      Ξ this
       rcases hnf with ⟨hn, -⟩ | ⟨hn, -⟩
-      · rw [hn]; exact J.whole.vertex_snd_le_top (by omega)
-      · rw [hn]; exact J.whole.vertex_snd_le_top (by omega)
+      · rw [hn]; exact J.whole.vertex_snd_le_top (⋄)
+      · rw [hn]; exact J.whole.vertex_snd_le_top (⋄)
     have hdir : capDir J = 1 ∨ capDir J = -1 := by
       unfold capDir; split_ifs
       · exact Or.inr rfl
@@ -230,8 +232,8 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
   set M' := chainModel C' with hM'def
   have hM : WalkAx M := walkAx_chainModel hP
   have hM' : WalkAx M' := walkAx_chainModel hS.simple
-  have hn : 0 < M.W.n := by omega
-  have hn' : 0 < M'.W.n := by omega
+  have hn : 0 < M.W.n := ⋄
+  have hn' : 0 < M'.W.n := ⋄
   have hdt' : t = 0 → 1 ≤ d := fun h => by
     rw [h, add_zero] at hdt; exact_mod_cast hdt
   have hq' : sidePt M.W ((g + d) % M.W.n) t = sidePt M'.W ((g' + d) % M'.W.n) t :=
@@ -243,7 +245,7 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
   · left
     refine ⟨hf.1, d, t, hd, ht0, ht1, hdt, hA, hadj, c, hci, ?_⟩
     set q := sidePt M'.W ((g' + d) % M'.W.n) t with hq
-    have hqf : q ∈ f := hAf'.2.2.2.1
+    have hqf := hAf'.2.2.2.1
     have hqD : q ∉ M.D := by rw [← hq']; exact hM.trace _ hA.1 t ht0 ht1.le
     have hqD' : q ∉ C'.dom := hM'.trace _ hAf'.1 t ht0 ht1.le
     obtain ⟨e, hfe, he, -, -, -⟩ := chord_through hM hfA hqf hqD
@@ -259,10 +261,10 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
           hqD'
       · have hqe : q = ((b, y) : Point) := Prod.ext h2 hq2
         refine attach_sup hAf' hfe he (b := ((a, y) : Point)) ?_ hec
-        rw [hceq, hseg, Geometry.segment_comm, ← hqe]
+        Ξ hceq, hseg, Geometry.segment_comm, ← hqe
     · have hqe : q = ((a, y) : Point) := Prod.ext h1.symm hq2
       refine attach_sup hAf' hfe he (b := ((b, y) : Point)) ?_ hec
-      rw [hceq, hseg, ← hqe]
+      Ξ hceq, hseg, ← hqe
   · obtain ⟨pb, tb, hB, hBne⟩ := hM.other_attach hfA hA
     by_cases hX : off M.W.n g (pb + tb) = 0 ∨ (L : ℝ) ≤ off M.W.n g (pb + tb)
     · exact Or.inr ⟨hf, d, t, hd, ht0, ht1, hdt, hA, hadj, pb, tb, hB, hBne, hX⟩
@@ -277,11 +279,11 @@ theorem classify (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
     have hB' : SideAttach M.W f ((g + dB) % M.W.n) tb := by rw [hpb]; exact hB
     -- the two attachment points of `f` are on `C'`
     have hmemB : sidePt M.W pb tb ∈ C'.set := by
-      rw [← hpb, hAg.sidePt_eq hdBL tb]
+      Ξ ← hpb, hAg.sidePt_eq hdBL tb
       exact counted_mem_set C' (Nat.mod_lt _ hn') (hcntP dB hdBL (by rw [hpb]; exact hcnt _ _ hB))
         hB.2.1 hB.2.2.1.le
     have hmemA : sidePt M.W ((g + d) % M.W.n) t ∈ C'.set := by
-      rw [hq']
+      Ξ hq'
       exact counted_mem_set C' (Nat.mod_lt _ hn') (hcntP d hd (hcnt _ _ hA)) ht0 ht1.le
     -- the near end of `f` is one of them
     obtain ⟨u, w, -, hends⟩ := seg_end hM hfA

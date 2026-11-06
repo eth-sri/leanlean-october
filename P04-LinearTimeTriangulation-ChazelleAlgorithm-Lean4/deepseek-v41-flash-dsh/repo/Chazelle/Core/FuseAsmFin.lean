@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmHt
 public import Chazelle.Core.FuseDeg
 public import Chazelle.Core.FuseMath
@@ -59,7 +61,7 @@ theorem fuseList_set {S₁ S₂ : Set (Set Point)} {L₀ L₁ : List (ℕ × ℕ
   · rw [fused_eq_shots, show endQ (S₁ ∪ S₂) ∪ vtxQ J J.m₁ ∪ topQ J ∪ capQ J = fuseZ J S₁ S₂ from rfl,
       ← shots_eq_of J hC.1 hC.2, shots_union, ← e₀, ← e₁]
     ext c
-    simp only [Set.mem_union, Set.mem_ofPred_eq]
+    ϴ Set.mem_union, Set.mem_ofPred_eq
     constructor
     · rintro ⟨x, hx, rfl⟩
       rcases List.mem_append.1 ((hD x).1 hx) with h | h
@@ -105,7 +107,7 @@ theorem fuseList_ok (hP : J.P.Simple) (hQ : DistinctHeights Q) (hgen : SharedGen
     obtain ⟨a, b, d⟩ := x
     obtain ⟨a', b', d'⟩ := y
     simp only [recOf] at e1 e2 e3
-    rw [e1, e2, e3]
+    Ξ e1, e2, e3
   · have hsub : D ⊆ collectQ L₀ R₀ ++ collectQ L₁ R₁ := fun x hx => (hD x).1 hx
     have := (hnd.subperm hsub).length_le
     rw [List.length_append] at this

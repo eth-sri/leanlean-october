@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutCutter2
 public import Chazelle.Core.NFBuildMain
 
@@ -30,32 +32,32 @@ def Bcut (r : ℕ) : Bool :=
   decide (r / 10000 = 1) || decide (r / 10000 = 5) || decide (r / 10000 = 14) ||
     decide (r / 10000 = 15) || decide (r = 9999)
 
-theorem wrM_cutter : BuildRam.wrM Bcut cutter = true := by decide
+theorem wrM_cutter : BuildRam.wrM Bcut cutter = true := ⌖
 
 /-- The real registers the arc-cutter writes: bands `1, 5, 14, 15`. -/
 def BcutR (r : ℕ) : Bool :=
   decide (r / 10000 = 1) || decide (r / 10000 = 5) || decide (r / 10000 = 14) ||
     decide (r / 10000 = 15)
 
-theorem wrM2_cutter : BuildRam.wrM2 Bcut BcutR cutter = true := by decide
+theorem wrM2_cutter : BuildRam.wrM2 Bcut BcutR cutter = true := ⌖
 
 theorem BcutR_false {r : ℕ} (hr : bandOf r ∉ oracleBands) : BcutR r = false := by
-  have h1 : (1 : ℕ) ∈ oracleBands := by decide
-  have h5 : (5 : ℕ) ∈ oracleBands := by decide
-  have h14 : (14 : ℕ) ∈ oracleBands := by decide
-  have h15 : (15 : ℕ) ∈ oracleBands := by decide
+  have h1 : (1 : ℕ) ∈ oracleBands := ⌖
+  have h5 : (5 : ℕ) ∈ oracleBands := ⌖
+  have h14 : (14 : ℕ) ∈ oracleBands := ⌖
+  have h15 : (15 : ℕ) ∈ oracleBands := ⌖
   unfold bandOf at hr
   unfold BcutR
   have a1 : r / 10000 ≠ 1 := fun h => hr (h ▸ h1)
   have a5 : r / 10000 ≠ 5 := fun h => hr (h ▸ h5)
   have a14 : r / 10000 ≠ 14 := fun h => hr (h ▸ h14)
   have a15 : r / 10000 ≠ 15 := fun h => hr (h ▸ h15)
-  simp [a1, a5, a14, a15]
+  Θ a1, a5, a14, a15
 
 theorem chainModel_ne_interior' (C : Chain) (Q : Polygon) : chainModel C ≠ interiorModel Q := by
   intro h
   have := congrArg (fun M : Model => M.counted 0) h
-  simp [chainModel, interiorModel] at this
+  Θ' chainModel, interiorModel at this
 
 /-- The model descriptor of a chain model holds a chain descriptor. -/
 theorem modelDesc_chain {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {M : Model} {C : Chain}
@@ -85,10 +87,10 @@ theorem chainDesc_unique {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {H H' : Host}
 def κc : ℕ := 2500000
 
 theorem Bcut_false {r : ℕ} (hr : bandOf r ∉ oracleBands) (ha : r ≠ ALLOC) : Bcut r = false := by
-  have h1 : (1 : ℕ) ∈ oracleBands := by decide
-  have h5 : (5 : ℕ) ∈ oracleBands := by decide
-  have h14 : (14 : ℕ) ∈ oracleBands := by decide
-  have h15 : (15 : ℕ) ∈ oracleBands := by decide
+  have h1 : (1 : ℕ) ∈ oracleBands := ⌖
+  have h5 : (5 : ℕ) ∈ oracleBands := ⌖
+  have h14 : (14 : ℕ) ∈ oracleBands := ⌖
+  have h15 : (15 : ℕ) ∈ oracleBands := ⌖
   unfold bandOf at hr
   unfold Bcut
   have a1 : r / 10000 ≠ 1 := fun h => hr (h ▸ h1)
@@ -96,7 +98,7 @@ theorem Bcut_false {r : ℕ} (hr : bandOf r ∉ oracleBands) (ha : r ≠ ALLOC) 
   have a14 : r / 10000 ≠ 14 := fun h => hr (h ▸ h14)
   have a15 : r / 10000 ≠ 15 := fun h => hr (h ▸ h15)
   have a9 : r ≠ 9999 := ha
-  simp [a1, a5, a14, a15, a9]
+  Θ a1, a5, a14, a15, a9
 
 /-- **The arc-cutter meets `CutterOK`.** -/
 theorem cutter_ok (O : OracleIface) :
@@ -136,7 +138,7 @@ theorem cutter_ok (O : OracleIface) :
   rw [hnW] at hs1 he1
   have S : SEnv O P C H (m₀ (MD + 1)) h γ m₀ A₀ W :=
     ⟨hD.2.1, hD.1, hHA, hHwf, hlen, hsC, hX, hcap, hAW, hHW, by omega, hG⟩
-  have hin : e.hgt = 0 ∨ (chainModel C).InnerPt ((chainModel C).pos (Qof P) e) := hin2
+  have hin := hin2
   -- `2 γ ≤ W`
   have hγW : 2 * γ ≤ W := by
     have hG0 := hX.holds
@@ -169,7 +171,7 @@ theorem cutter_ok (O : OracleIface) :
     unfold cutter; exact .seq e₁ (.seq e₂ e₃)
   have fM := BuildRam.exec_frameM ex wrM_cutter
   have fR := BuildRam.exec_frameM2 ex wrM2_cutter
-  have hA₂ : c₂.nreg ALLOC = A₀ := hI₂.alloc
+  have hA₂ := hI₂.alloc
   have hrec := hI₂.recs
   rw [List.take_of_length_le hq] at hrec
   have hne := arc.ne

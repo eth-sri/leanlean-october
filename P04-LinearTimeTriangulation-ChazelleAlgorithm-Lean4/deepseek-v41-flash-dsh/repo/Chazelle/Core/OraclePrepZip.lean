@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepZipBody
 
 /-!
@@ -42,82 +44,82 @@ theorem zipBody_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c
         c'.nreg 110290 = 1 ∧ c'.nreg 110291 = z.1 ∧ c'.nreg 110292 = z.2 := by
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, o₁, -, fl₁, mir₁⟩ := prepS_exec hw h hx hxA d
   have h₁ : ZEnv P W lo C N V c₁ := h.stable (fun r hr => f₁.1 r (by
-    simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr
+    ϴ' ZKeep, Bool.or_eq_true, decide_eq_true_eq at hr
     simp only [BPR, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
-    (fun a _ => by rw [f₁.2.2.1])
-  have x₁ : c₁.nreg 110299 = x := by rw [f₁.1 _ (by decide), hx]
+    (fun a _ => Ρ f₁.2.2.1)
+  have x₁ : c₁.nreg 110299 = x := Ρ f₁.1 _ (⌖), hx
   have hA := h.mem.1.A
   have hkx : (chainModel C).key C.P (endPos N d x) =
       if d then sk (chainModel C) (Qof P) N x else ek (chainModel C) (Qof P) N x := by
-    rw [h.CQ, key_endPos]
+    Ξ h.CQ, key_endPos
   have hkx' : (chainModel C).key (Qof P) (endPos N d x) =
       if d then sk (chainModel C) (Qof P) N x else ek (chainModel C) (Qof P) N x := by
-    rw [key_endPos]
+    Ξ key_endPos
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, h.simple, rfl⟩
   by_cases hI : InI C ((chainModel C).key C.P (endPos N d x))
-  · rw [ite_eq_left hI] at fl₁
+  · Ξ' ite_eq_left hI at fl₁
     have ht : c₁.nreg 120012 < c₁.nreg 110104 := by rw [h₁.pk.zero, fl₁]; exact Nat.one_pos
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, q, hqA, hq, n₂, s₂⟩ := locS_exec e₁.wb_right h₁ x₁ hxA d o₁ hI mir₁
     have ex : Exec P W (zipBody d) c c₂ _ :=
       .seq e₁ (.ifLtN_true (e := .instr (.constN 110290 0)) ht e₂)
-    have fr : FrameB BZB c c₂ := (FrameB.mono f₁ fun r hr => by simp [BZB, hr]).trans
-      (FrameB.mono f₂ fun r hr => by simp [BZB, hr])
+    have fr : FrameB BZB c c₂ := (FrameB.mono f₁ fun r hr => ⊚ BZB, hr).trans
+      (FrameB.mono f₂ fun r hr => ⊚ BZB, hr)
     -- the pair function is `normP x q`
     suffices H : zipF C (Qof P) N d x = normP x q by
-      rw [H]; exact ⟨_, _, ex, by omega, fr, n₂, s₂⟩
-    rw [hkx] at hI
+      rw [H]; exact ⟨_, _, ex, ⋄, fr, n₂, s₂⟩
+    Ξ' hkx at hI
     have hqN : q < N.arcs.length := by rw [← hA]; exact hqA
     have hxN : x < N.arcs.length := by rw [← hA]; exact hxA
     by_cases hne : (N.F (chainModel C) (Qof P)).Nonempty
     · have hq' := hq hne
-      rw [hkx'] at hq'
+      Ξ' hkx' at hq'
       unfold zipF
       cases d
-      · simp only [Bool.false_eq_true, ite_false] at hI hq' ⊢
+      · ϴ' Bool.false_eq_true, ite_false at hI hq' ⊢
         have hex : ∃ p, p < N.arcs.length ∧
             After C (Qof P) N p (mk C (ek (chainModel C) (Qof P) N x)) := ⟨q, hqN, hq'⟩
         obtain ⟨ha, hA'⟩ := aftArc_spec C (Qof P) N hex
         unfold zipEk
-        rw [ite_eq_left ⟨hI, hex⟩, after_unique h.isNF h.simple hne ha hqN hA' hq', normP_comm]
-      · simp only [ite_true] at hI hq' ⊢
+        Ξ ite_eq_left ⟨hI, hex⟩, after_unique h.isNF h.simple hne ha hqN hA' hq', normP_comm
+      · ϴ' ite_true at hI hq' ⊢
         have hex : ∃ p, p < N.arcs.length ∧
             Before C (Qof P) N p (mk C (sk (chainModel C) (Qof P) N x)) := ⟨q, hqN, hq'⟩
         obtain ⟨hb, hB'⟩ := befArc_spec C (Qof P) N hex
         unfold zipSk
-        rw [ite_eq_left ⟨hI, hex⟩, before_unique h.isNF h.simple hne hb hqN hB' hq']
+        Ξ ite_eq_left ⟨hI, hex⟩, before_unique h.isNF h.simple hne hb hqN hB' hq'
     · have hA1 := arcs_le_one_of_empty h.isNF hGM (Set.not_nonempty_iff_eq_empty.1 hne)
-      rw [normP_none_of_le_one hA1 (by omega) (by omega)]
+      Ξ normP_none_of_le_one hA1 (⋄) (⋄)
       unfold zipF
       cases d
-      · simp only [Bool.false_eq_true, ite_false]
+      · ϴ Bool.false_eq_true, ite_false
         unfold zipEk; split_ifs
-        · exact normP_none_of_le_one hA1 (aftArc_lt C (Qof P) N _) (by omega)
+        · exact normP_none_of_le_one hA1 (aftArc_lt C (Qof P) N _) (⋄)
         · rfl
-      · simp only [ite_true]
+      · ϴ ite_true
         unfold zipSk; split_ifs
-        · exact normP_none_of_le_one hA1 (by omega) (befArc_lt C (Qof P) N _)
+        · exact normP_none_of_le_one hA1 (⋄) (befArc_lt C (Qof P) N _)
         · rfl
-  · rw [ite_eq_right hI] at fl₁
+  · Ξ' ite_eq_right hI at fl₁
     have ht : ¬ c₁.nreg 120012 < c₁.nreg 110104 := by rw [h₁.pk.zero, fl₁]; exact Nat.lt_irrefl 0
     have e₂ := Exec.constN (P := P) e₁.wb_right 110290 0 (Nat.zero_le _)
     have ex : Exec P W (zipBody d) c _ _ := .seq e₁ (.ifLtN_false (t := locS d) ht e₂)
-    have fr : FrameB BZB c _ := (FrameB.mono f₁ fun r hr => by simp [BZB, hr]).trans
-      (FrameB.mono (exec_frameB e₂ (B := fun r => decide (r = 110290)) (by decide))
+    have fr : FrameB BZB c _ := (FrameB.mono f₁ fun r hr => ⊚ BZB, hr).trans
+      (FrameB.mono (exec_frameB e₂ (B := fun r => decide (r = 110290)) (⌖))
         fun r hr => by simp at hr; subst hr; decide)
     have hnone : zipF C (Qof P) N d x = none := by
-      rw [hkx] at hI
+      Ξ' hkx at hI
       unfold zipF
       cases d
-      · simp only [Bool.false_eq_true, ite_false] at hI ⊢
-        unfold zipEk; rw [ite_eq_right (fun h' => hI h'.1)]
-      · simp only [ite_true] at hI ⊢
-        unfold zipSk; rw [ite_eq_right (fun h' => hI h'.1)]
-    refine ⟨_, _, ex, by omega, fr, fun _ => by config_simp, fun z hz => ?_⟩
-    rw [hnone] at hz; cases hz
+      · ϴ' Bool.false_eq_true, ite_false at hI ⊢
+        unfold zipEk; Ξ ite_eq_right (fun h' => hI h'.1)
+      · ϴ' ite_true at hI ⊢
+        unfold zipSk; Ξ ite_eq_right (fun h' => hI h'.1)
+    refine ⟨_, _, ex, ⋄, fr, fun _ => by config_simp, fun z hz => ?_⟩
+    Ξ' hnone at hz; cases hz
 
 theorem BZB_keep {r : ℕ} (h : ZKeep r = true ∨ (110293 ≤ r ∧ r ≤ 110299)) : BZB r = false := by
-  simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at h
-  simp [BZB, BPR, BLS, BL, Bdir, Bloc, Bcmp, Bk]
+  ϴ' ZKeep, Bool.or_eq_true, decide_eq_true_eq at h
+  Θ BZB, BPR, BLS, BL, Bdir, Bloc, Bcmp, Bk
   omega
 
 /-- The capacity of the raw pair arrays. -/

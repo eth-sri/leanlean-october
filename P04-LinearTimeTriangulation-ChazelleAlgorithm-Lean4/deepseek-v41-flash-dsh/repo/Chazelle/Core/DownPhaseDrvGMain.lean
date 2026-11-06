@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvGInit
 public import Chazelle.Core.DownPhaseDrvRRegSpec
 public import Chazelle.Core.ShootCutGrade
@@ -31,7 +33,7 @@ section exec
 
 variable {O : OracleIface} {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 16000000 in
+
 /-- **The region procedure, one run.** -/
 theorem rgS_run {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets O sp κP)
     (hM : L41.MergeMeets sM κ (L41.scF κs) (L41.scG κs) cutGran (gradeCtx O) OkModel)
@@ -69,7 +71,7 @@ theorem rgS_run {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets
     hsimp, hNP, hNP3, hruns⟩ := hPre
   have hAL : ALLOC = 9999 := rfl
   have hqn : (Qof P).n = P.n := shear_n _ _
-  have hn3 : 3 ≤ P.n := hG.1.1
+  have hn3 := hG.1.1
   have hhw : hostWords P.n = 256 * P.n + 16 := rfl
   set μ := c.nreg 219202 with hμ
   set L := lemma41Nat μ with hLdef
@@ -78,7 +80,7 @@ theorem rgS_run {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets
     unfold rgK; rw [hpc]; unfold pcB
     have h1 : mcK (κ 130) κs * L ≤ mcK (κ 130) κs * (L + 1) := Nat.mul_le_mul_left _ (by omega)
     nlinarith
-  have hHA0' : HostAt c.nmem (c.nreg 219200) H := hHA0.holds
+  have hHA0' := hHA0.holds
   have hwfP : HostWF P.n H := hqn ▸ hwf
   have hK60 : (hostLeaves P.n (2 ^ μ) 0 H).length ≤ 60 := by
     have := hostLeaves_length_le (n := P.n) (C := 2 ^ μ) Nat.one_le_two_pow H 0
@@ -122,7 +124,7 @@ theorem rgS_run {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets
       (by decide), t03, hA₁])
     (by rw [hm₃ _ (by omega)]; exact hHA0'.1) (by rw [t9₃]; have := hrgK; omega)
   have hw₄ := e₄.wb_right
-  have g₄ : ∀ q, Bi1 q = false → c₄.nreg q = c₃.nreg q := f₄.1
+  have g₄ := f₄.1
   have g₀₄ : ∀ q, (q < 219000 ∨ (219029 < q ∧ q < 219100) ∨ (219107 < q ∧ q < 219140) ∨
       (219146 < q ∧ q < 219220) ∨ (219231 < q ∧ q ≠ 219250 ∧ q ≠ 219251)) → q ≠ 9999 →
       c₄.nreg q = c.nreg q := fun q h1 h2 => by

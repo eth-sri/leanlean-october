@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoCand1M
 public import Chazelle.Core.SweepRamInit
 public import Chazelle.Core.RestoreTKey
@@ -77,7 +79,7 @@ theorem lctxR (h1 : c.nreg lMD = c₀.nreg (sw 31)) (h2 : c.nreg lCD = c₀.nreg
         hA.hP, by have := hA.hWm; have : J.right.m ≤ J.whole.m := by
                     show J.m₂ ≤ J.m₁ + J.m₂; omega
                   omega⟩
-      hcd := by rw [h1, h2]
+      hcd := Ρ h1, h2
       hmd := by rw [h1]; exact Or.inl ⟨m0c, H, J.right, mdc, rfl⟩
       hmwf := by rw [h1]; exact mwfc
       hm0 := by rw [h1]; exact m0c
@@ -119,7 +121,7 @@ theorem lctxL (h1 : c.nreg lMD = c₀.nreg (sw 30)) (h2 : c.nreg lCD = c₀.nreg
         hA.hP, by have := hA.hWm; have : J.left.m ≤ J.whole.m := by
                     show J.m₁ ≤ J.m₁ + J.m₂; omega
                   omega⟩
-      hcd := by rw [h1, h2]
+      hcd := Ρ h1, h2
       hmd := by rw [h1]; exact Or.inl ⟨m0c, H, J.left, mdc, rfl⟩
       hmwf := by rw [h1]; exact mwfc
       hm0 := by rw [h1]; exact m0c

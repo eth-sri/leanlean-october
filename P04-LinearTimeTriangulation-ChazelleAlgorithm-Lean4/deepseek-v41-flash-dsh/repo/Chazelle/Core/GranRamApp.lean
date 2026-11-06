@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranRamBody
 
 /-!
@@ -51,9 +53,9 @@ theorem exec_frameS {P : Polygon} {W : ℕ} {B : ℕ → Bool} {s : Stmt} {c c' 
   induction h with
   | skip _ => exact ⟨fun _ _ => rfl, fun _ _ => rfl, rfl, rfl⟩
   | @instr ins c c' _ he _ _ =>
-    simp only [wrS] at hs
-    cases ins <;> simp only [wrSOK, wrOK, Bool.false_eq_true] at hs <;>
-      simp only [Instr.effect, Option.some.injEq] at he <;>
+    ϴ' wrS at hs
+    cases ins <;> ϴ' wrSOK, wrOK, Bool.false_eq_true at hs <;>
+      ϴ' Instr.effect, Option.some.injEq at he <;>
       (try split at he) <;> (try simp only [Option.some.injEq, reduceCtorEq] at he) <;> subst he <;>
       refine ⟨fun j hj => ?_, fun j hj => ?_, rfl, rfl⟩ <;>
       first
@@ -62,16 +64,16 @@ theorem exec_frameS {P : Polygon} {W : ℕ} {B : ℕ → Bool} {s : Stmt} {c c' 
          · subst hh; simp_all
          · rfl)
   | seq _ _ ih₁ ih₂ =>
-    simp only [wrS, Bool.and_eq_true] at hs
+    ϴ' wrS, Bool.and_eq_true at hs
     exact (ih₁ hs.1).trans (ih₂ hs.2)
   | ifLtN_true _ _ ih =>
-    simp only [wrS, Bool.and_eq_true] at hs; exact ih hs.1
+    ϴ' wrS, Bool.and_eq_true at hs; exact ih hs.1
   | ifLtN_false _ _ ih =>
-    simp only [wrS, Bool.and_eq_true] at hs; exact ih hs.2
+    ϴ' wrS, Bool.and_eq_true at hs; exact ih hs.2
   | ifLtR_true _ _ ih =>
-    simp only [wrS, Bool.and_eq_true] at hs; exact ih hs.1
+    ϴ' wrS, Bool.and_eq_true at hs; exact ih hs.1
   | ifLtR_false _ _ ih =>
-    simp only [wrS, Bool.and_eq_true] at hs; exact ih hs.2
+    ϴ' wrS, Bool.and_eq_true at hs; exact ih hs.2
   | whileLtN_false _ _ => exact ⟨fun _ _ => rfl, fun _ _ => rfl, rfl, rfl⟩
   | whileLtN_true _ _ _ ih₁ ih₂ => exact (ih₁ hs).trans (ih₂ hs)
   | whileLtR_false _ _ => exact ⟨fun _ _ => rfl, fun _ _ => rfl, rfl, rfl⟩
@@ -112,19 +114,19 @@ structure AppI (W rs rn S T D' cc ℓ₀ : ℕ) (l P₀ : List ℕ) (m₀ : ℕ 
 theorem take_succ_filter (l : List ℕ) (t cc : ℕ) (ht : t < l.length) :
     (l.take (t + 1)).filter (· != cc) =
       (l.take t).filter (· != cc) ++ if l.getD t 0 != cc then [l.getD t 0] else [] := by
-  rw [List.take_add_one, List.filter_append, List.getElem?_eq_getElem ht]
+  Ξ List.take_add_one, List.filter_append, List.getElem?_eq_getElem ht
   simp only [Option.toList_some, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht,
     Option.getD_some]
-  rw [List.filter_cons]
+  Ξ List.filter_cons
   split_ifs <;> simp
 
 theorem getD_append_left {l₁ l₂ : List ℕ} {i : ℕ} (h : i < l₁.length) :
     (l₁ ++ l₂).getD i 0 = l₁.getD i 0 := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_append_left h]
+  Ξ List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_append_left h
 
 theorem getD_append_len (l₁ : List ℕ) (v : ℕ) (l₂ : List ℕ) :
     (l₁ ++ v :: l₂).getD l₁.length 0 = v := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_append_right (le_refl _)]
+  Ξ List.getD_eq_getElem?_getD, List.getElem?_append_right (le_refl _)
   simp
 
 /-- **The filtering append loop.** -/

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvMap
 
 /-!
@@ -41,7 +43,7 @@ theorem left_top_pts (hv : ¬ VNotTop J) :
     sidePt (chainModel J.left).W 6 0 = J.shared ∧
       sidePt (chainModel J.left).W (2 * J.left.m + 6) 0 = J.shared := by
   obtain ⟨h1, h2⟩ := sidePt_top_copies J.left
-  rw [left_top_eq J hv] at h1 h2
+  Ξ' left_top_eq J hv at h1 h2
   exact ⟨h1, h2⟩
 
 /-- `lδ = 0` forces `lL2 = 0`. -/
@@ -54,7 +56,7 @@ theorem left_G (h : 0 < lδ J) :
       0 < tpos J.left J.m₁ ∧ tpos J.left J.m₁ < 2 * J.m₁ := by
   have := tpos_lt J.left J.m₁
   have hm1 : J.left.m = J.m₁ := rfl
-  rw [hm1] at this
+  Ξ' hm1 at this
   unfold lδ lL1 lL2 at *
   split_ifs at * <;> omega
 
@@ -83,14 +85,14 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
       SideAttach (chainModel J.whole).W (Merge.shoot J.whole a σ) (mEdge J d) t ∧
         oW J ((mEdge J d : ℝ) + t) = (Lst J : ℝ) + ψ J d + t := by
     intro d' hd' hsec he hoff
-    rw [he] at hA
+    Ξ' he at hA
     obtain ⟨hS, hO⟩ := cut_of_genuine_gen J hP hσ hτ hhit hd' hsec hA
     have hE : mEdge J d = (6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d') % (chainModel J.whole).W.n := by
-      rw [mEdge_def, left_edge_eq, hoff]
-    rw [hE]
+      Ξ mEdge_def, left_edge_eq, hoff
+    Ξ hE
     refine ⟨hS, ?_⟩
-    rw [oW_def, show ((gW J : ℕ) : ℝ) = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) from rfl, hO]
-    have : ((lOff J + d' : ℕ) : ℝ) = ((Lst J + ψ J d : ℕ) : ℝ) := by rw [hoff]
+    Ξ oW_def, show ((gW J : ℕ) : ℝ) = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) from rfl, hO
+    have : ((lOff J + d' : ℕ) : ℝ) = ((Lst J + ψ J d : ℕ) : ℝ) := Ρ hoff
     push_cast at this
     linarith
   -- the split vertex
@@ -104,15 +106,15 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
     subst ht
     have hS := attach_split_of_arrival J hP hlt hσ hτ hk hA
     have hshoot : Merge.shoot J.whole a σ = Chazelle.segment a (rayPt a σ τ) := by
-      unfold Merge.shoot; rw [hhit]
+      unfold Merge.shoot; Ξ hhit
     have hE : mEdge J d = (6 + tpos J.whole (J.m₁ + 2 * J.m₂) + lL1 J) %
         (chainModel J.whole).W.n := by
-      rw [mEdge_def, left_edge_eq, hoff]
-    rw [hE, hshoot]
+      Ξ mEdge_def, left_edge_eq, hoff
+    Ξ hE, hshoot
     refine ⟨hS, ?_⟩
     rw [oW_def, show ((gW J : ℕ) : ℝ) = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) from rfl,
       off_left_gen J (by rw [← lL1_add_lL2 J]; exact hlt) le_rfl one_pos]
-    have : ((lOff J + lL1 J : ℕ) : ℝ) = ((Lst J + ψ J d : ℕ) : ℝ) := by rw [hoff]
+    have : ((lOff J + lL1 J : ℕ) : ℝ) = ((Lst J + ψ J d : ℕ) : ℝ) := Ρ hoff
     push_cast at this
     linarith
   -- the box block of `C`
@@ -123,101 +125,101 @@ theorem map_sound (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ 
       SideAttach (chainModel J.whole).W (Merge.shoot J.whole a σ) (mEdge J d) t ∧
         oW J ((mEdge J d : ℝ) + t) = (Lst J : ℝ) + ψ J d + t := by
     intro d'' hv' hd'' hsec he hidx hoff
-    rw [he] at hA
+    Ξ' he at hA
     obtain ⟨hS, hO⟩ := cut_of_genuine_box J hv' hσ hτ hhit hd'' hsec hA
     have hE : mEdge J d = (2 * J.whole.m + 6 + d'') % (chainModel J.whole).W.n := by
-      rw [mEdge_def, hidx]
-    rw [hE]
+      Ξ mEdge_def, hidx
+    Ξ hE
     refine ⟨hS, ?_⟩
-    rw [oW_def, show ((gW J : ℕ) : ℝ) = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) from rfl, hO]
+    Ξ oW_def, show ((gW J : ℕ) : ℝ) = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) from rfl, hO
     have : ((2 * J.whole.m - tpos J.whole J.m₁ + d'' : ℕ) : ℝ) = ((Lst J + ψ J d : ℕ) : ℝ) := by
-      rw [hoff]
+      Ξ hoff
     push_cast at this ⊢
     linarith
   by_cases hVNT : VNotTop J
   · -- case a: the left stretch fills the `C₁` part
-    have hlOff : lOff J = Lst J := by rw [lOff_of_vnt J hVNT, Lst_rlen]
+    have hlOff : lOff J = Lst J := Ρ lOff_of_vnt J hVNT, Lst_rlen
     have hlen : Lst J + llen J = (chainModel J.whole).W.n := by
       rw [Lst_rlen]; exact rlen_add_llen J hVNT
-    have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; rw [ite_eq_right (by omega)]
+    have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; Ξ ite_eq_right (⋄)
     have hE₁ : E₁ J = llen J + lδ J := by unfold E₁; omega
     have hL := lL1_add_lL2 J
-    rw [hE₁] at hdE
-    rw [hb] at hA hnv viaGen viaSplit
+    Ξ' hE₁ at hdE
+    Ξ' hb at hA hnv viaGen viaSplit
     by_cases hdl : d < lL1 J
-    · have hψ : ψ J d = d := by unfold ψ; rw [ite_eq_right (by omega)]
-      refine viaGen d (by omega) (fun ht => ⟨fun hd0 => ?_, by omega⟩) ?_ (by rw [hψ, hlOff])
+    · have hψ : ψ J d = d := by unfold ψ; Ξ ite_eq_right (⋄)
+      refine viaGen d (⋄) (fun ht => ⟨fun hd0 => ?_, ⋄⟩) ?_ (Ρ hψ, hlOff)
       · apply hnv ht
-        rw [hd0, add_zero, Nat.mod_eq_of_lt (by omega)]
+        Ξ hd0, add_zero, Nat.mod_eq_of_lt (⋄)
         exact left_v_pt
-      · unfold dq; rw [ite_eq_left hdl]
+      · unfold dq; Ξ ite_eq_left hdl
     · by_cases hδ : lδ J = 0
       · have := lL2_of_lδ hδ; omega
-      · have hδ' : 0 < lδ J := by omega
+      · have hδ' : 0 < lδ J := ⋄
         obtain ⟨h7, hl1, hl2, hτp, hτl⟩ := left_G hδ'
-        rw [h7] at hgap hsplit hdE
+        Ξ' h7 at hgap hsplit hdE
         by_cases hd1 : d = lL1 J
-        · have ht : t = 0 := by by_contra h; exact hsplit ⟨by omega, hd1, h⟩
-          refine viaSplit (by omega) ht (Or.inr ?_) ?_
-          · rw [hd1, hl1, hn₁, hm1, Nat.mod_eq_of_lt (by omega)]; omega
-          · have hψ : ψ J d = lL1 J := by unfold ψ; rw [ite_eq_right (by omega)]; exact hd1
-            rw [hψ, hlOff]
+        · have ht : t = 0 := by by_contra h; exact hsplit ⟨⋄, hd1, h⟩
+          refine viaSplit (⋄) ht (Or.inr ?_) ?_
+          · rw [hd1, hl1, hn₁, hm1, Nat.mod_eq_of_lt (⋄)]; omega
+          · have hψ : ψ J d = lL1 J := by unfold ψ; rw [ite_eq_right (⋄)]; exact hd1
+            Ξ hψ, hlOff
         · have hd2 : lL1 J + 7 ≤ d := by
-            by_contra h; exact hgap ⟨by omega, by omega, by omega⟩
+            by_contra h; exact hgap ⟨⋄, ⋄, ⋄⟩
           have hψ : ψ J d = d - 7 := by
-            unfold ψ; rw [ite_eq_left ⟨hδ', by omega⟩, ite_eq_right (by omega), h7]
+            unfold ψ; Ξ ite_eq_left ⟨hδ', ⋄⟩, ite_eq_right (⋄), h7
           by_cases hs : d = lL1 J + 7 ∧ t = 0
-          · refine viaSplit (by omega) hs.2 (Or.inl ?_) ?_
-            · rw [hs.1, hl1, hn₁, hm1]
+          · refine viaSplit (⋄) hs.2 (Or.inl ?_) ?_
+            · Ξ hs.1, hl1, hn₁, hm1
               rw [show 6 + tpos J.left J.m₁ + (2 * J.m₁ - tpos J.left J.m₁ + 7) =
-                6 + (2 * J.m₁ + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+                6 + (2 * J.m₁ + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (⋄)]
             · rw [hψ, hlOff]; omega
-          · refine viaGen (d - 7) (by omega) (fun ht => ⟨by omega, fun h => hs ⟨by omega, ht⟩⟩)
-              ?_ (by rw [hψ, hlOff])
-            unfold dq; rw [ite_eq_right (by omega), h7, show d - 7 + 7 = d by omega]
+          · refine viaGen (d - 7) (⋄) (fun ht => ⟨⋄, fun h => hs ⟨⋄, ht⟩⟩)
+              ?_ (Ρ hψ, hlOff)
+            unfold dq; Ξ ite_eq_right (⋄), h7, show d - 7 + 7 = d by omega
   · -- `v` is the top of `C`: no gap, `ψ = id`
     obtain ⟨hτ0, hδ0, hl1, hl2, hll⟩ := nvt_left J hP hVNT
-    have hψ : ψ J d = d := by unfold ψ; rw [ite_eq_right (by omega)]
+    have hψ : ψ J d = d := by unfold ψ; Ξ ite_eq_right (⋄)
     obtain ⟨hp6, hp26⟩ := left_top_pts hVNT
     by_cases hbox : Lst J < lOff J
     · obtain ⟨-, hlo, hτs, hLst⟩ := caseB_facts J hbox
-      have hb : b₁ J = 2 * J.left.m + 6 := by unfold b₁; rw [ite_eq_left hbox]
+      have hb : b₁ J = 2 * J.left.m + 6 := by unfold b₁; Ξ ite_eq_left hbox
       have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; rw [hn, hδ0]; omega
-      rw [hE₁] at hdE
-      rw [hb] at hA hnv viaGen viaSplit
+      Ξ' hE₁ at hdE
+      Ξ' hb at hA hnv viaGen viaSplit
       by_cases hd7 : d < 7
-      · refine viaBox d hVNT hd7 (fun ht => ?_) (by rw [hb]) (by rw [hψ]; unfold gW; omega)
+      · refine viaBox d hVNT hd7 (fun ht => ?_) (Ρ hb) (by rw [hψ]; unfold gW; omega)
           (by rw [hψ]; omega)
         by_contra h0
         apply hnv ht
-        rw [show d = 0 by omega, add_zero, Nat.mod_eq_of_lt (by omega)]
+        Ξ show d = 0 by omega, add_zero, Nat.mod_eq_of_lt (⋄)
         exact hp26
-      · refine viaGen (d - 7) (by omega) (fun ht => ⟨fun h0 => ?_, by omega⟩) ?_
+      · refine viaGen (d - 7) (⋄) (fun ht => ⟨fun h0 => ?_, ⋄⟩) ?_
           (by rw [hψ]; omega)
         · apply hnv ht
           rw [hn₁, show 2 * J.left.m + 6 + d = 6 + (2 * J.left.m + 7) by omega, Nat.add_mod_right,
-            Nat.mod_eq_of_lt (by omega)]
+            Nat.mod_eq_of_lt (⋄)]
           exact hp6
-        · unfold dq; rw [ite_eq_left (by omega), hτ0, hn₁]
+        · unfold dq; Ξ ite_eq_left (⋄), hτ0, hn₁
           rw [show 2 * J.left.m + 6 + d = (6 + 0 + (d - 7)) + (2 * J.left.m + 7) by omega,
             Nat.add_mod_right]
     · obtain ⟨hτs, hlo, hLst⟩ := caseC_facts J hVNT hbox
-      have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; rw [ite_eq_right hbox]
+      have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; Ξ ite_eq_right hbox
       have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; rw [hn, hδ0]; omega
-      rw [hE₁] at hdE
-      rw [hb, hτ0] at hA hnv viaGen viaSplit
+      Ξ' hE₁ at hdE
+      Ξ' hb, hτ0 at hA hnv viaGen viaSplit
       by_cases hd2 : d < 2 * J.m₁
-      · refine viaGen d (by omega) (fun ht => ⟨fun h0 => ?_, by omega⟩) ?_ (by rw [hψ, hlo])
+      · refine viaGen d (⋄) (fun ht => ⟨fun h0 => ?_, ⋄⟩) ?_ (Ρ hψ, hlo)
         · apply hnv ht
-          rw [h0, Nat.mod_eq_of_lt (by omega)]
+          Ξ h0, Nat.mod_eq_of_lt (⋄)
           exact hp6
-        · unfold dq; rw [ite_eq_left (by omega)]
-      · refine viaBox (d - 2 * J.m₁) hVNT (by omega) (fun ht => ?_) ?_ ?_ ?_
+        · unfold dq; Ξ ite_eq_left (⋄)
+      · refine viaBox (d - 2 * J.m₁) hVNT (⋄) (fun ht => ?_) ?_ ?_ ?_
         · by_contra h0
           apply hnv ht
-          rw [show 6 + 0 + d = 2 * J.left.m + 6 by omega, Nat.mod_eq_of_lt (by omega)]
+          Ξ show 6 + 0 + d = 2 * J.left.m + 6 by omega, Nat.mod_eq_of_lt (⋄)
           exact hp26
-        · rw [hb, hτ0]
+        · Ξ hb, hτ0
           congr 1
           omega
         · rw [hψ]; unfold gW; omega

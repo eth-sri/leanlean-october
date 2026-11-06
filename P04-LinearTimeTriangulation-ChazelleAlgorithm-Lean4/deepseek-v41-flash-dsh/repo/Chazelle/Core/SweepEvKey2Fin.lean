@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvKey2Skip
 
 /-!
@@ -73,14 +75,14 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 theorem kqLblOf_copy {c c' : Config} {N L N' L' : ℕ} (hN : c'.nreg N' = c.nreg N)
     (hL : ∀ i, i < 4 → c'.nreg (L' + i) = c.nreg (L + i)) : lblOf c' N' L' = lblOf c N L := by
   unfold lblOf
-  rw [hN]
+  Ξ hN
   apply List.map_congr_left
   intro i hi
-  rw [List.mem_range] at hi
-  exact hL i (by omega)
+  Ξ' List.mem_range at hi
+  exact hL i (⋄)
 
-set_option maxHeartbeats 16000000 in
-set_option maxRecDepth 100000 in
+
+
 /-- **The steps before the skipping.** -/
 theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀ d)
     (hpk : PosW P J (d.nreg kqE) (d.nreg kqH))
@@ -243,7 +245,7 @@ theorem pre_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hId : IInv W c₀
     · rw [w0 _ (by kqr)] at h; exact absurd h hB0
     · unfold lblOf; rw [wN]; rfl
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The new label list.** -/
 theorem fin_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hB : d.nreg kqB ≤ 1)
     (hA : d.nreg kqA ≤ 1) :
@@ -289,7 +291,7 @@ theorem fin_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hB : d.nreg kqB ≤
     · refine IRS.ifF h2 (IRS.skip hId ⟨fun _ _ => rfl, rfl, fun h => ?_, fun _ _ => rfl⟩)
       rw [hK.1] at h1 h2; omega
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The log record.** -/
 theorem writeLog_irs (hId : IInv W c₀ d) (hK₀ : Consts c₀) (hA : c₀.nreg ALLOC ≤ d.nreg lB)
     (hW : d.nreg lB + 7 * d.nreg lC + 7 ≤ W) :

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoLab0M
 
 /-!
@@ -79,17 +81,17 @@ theorem put1_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 1 
     refine ⟨rfl, ?_, fun r hr => ?_, ?_, rfl, rfl, rfl⟩
     · config_simp; omega
     · config_simp
-      simp only [upd, ite_eq_right hr]
+      ϴ upd, ite_eq_right hr
     · config_simp
   obtain ⟨c', k, ex, hk, h1, h2, h3, h4, h5, h6⟩ := ex
-  refine IRS.ofExec hI ex (by omega) (fun r _ hr => h2 r hr) h4 (fun a ha => ?_) h5 h6
+  refine IRS.ofExec hI ex (⋄) (fun r _ hr => h2 r hr) h4 (fun a ha => ?_) h5 h6
     (by show c.nreg 9999 ≤ c'.nreg 9999; omega) (by show c'.nreg 9999 ≤ c.nreg 9999 + k; omega)
     ⟨h1, h2, h3⟩
-  rw [h3]
+  Ξ h3
   have h0 : c₀.nreg 9999 ≤ c.nreg 9999 := hI.hA
   have ha' : a < c₀.nreg 9999 := ha
-  simp only [upd]
-  rw [ite_eq_right (by omega)]
+  ϴ upd
+  Ξ ite_eq_right (⋄)
 
 /-- The registers of a slot. -/
 def SlotW (r : ℕ) : Prop := r = sV ∨ r = sA ∨ r = sX ∨ r = sN ∨ r = sE
@@ -99,13 +101,13 @@ theorem addrL_val (m f : ℕ → ℕ) (e : ℕ) (hk2 : f K2 = 2) (hk3 : f K3 = 3
     regB m (addrL e) f sN = m (f (sw 300) + 7 * f e + 2) := by
   have hk2' : f 240615 = 2 := hk2
   have hk3' : f 240616 = 3 := hk3
-  simp only [addrL, regB, regI, upd, sA, sX, sN, sE, K2, K3, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, hk2', hk3']
-  exact ⟨by ring, congrArg m (by ring)⟩
+  ϴ addrL, regB, regI, upd, sA, sX, sN, sE, K2, K3, sw
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, hk2', hk3'
+  exact ⟨⋆, congrArg m (⋆)⟩
 
 theorem addrL_other (m f : ℕ → ℕ) (e : ℕ) {q : ℕ} (hq : ¬ SlotW q) : regB m (addrL e) f q = f q :=
   regB_other m (addrL e) f (fun i hi => by
-    simp only [addrL, List.mem_cons, List.not_mem_nil, or_false] at hi
+    ϴ' addrL, List.mem_cons, List.not_mem_nil, or_false at hi
     unfold SlotW at hq
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;>
       intro h <;> subst h <;> simp at hq)
@@ -116,33 +118,33 @@ theorem addrL_ok (m f : ℕ → ℕ) (e : ℕ) (hk2 : f K2 = 2) (hk3 : f K3 = 3)
   have hk3' : f 240616 = 3 := hk3
   have hb' : f 240300 + 7 * f e + 3 ≤ W := hb
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
-  simp only [addrL, okB, okI, regI, upd, sA, sX, sN, sE, K2, K3, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, hk2', hk3']
-  exact ⟨s 4037 (by norm_num) (by norm_num), ⟨s 4034 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, ⟨s 4034 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, ⟨s 4034 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, ⟨s 4035 (by norm_num) (by norm_num), by omega⟩,
-    s 4036 (by norm_num) (by norm_num), ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, trivial⟩
+    iscr_sw (⋄) (⋄)
+  ϴ addrL, okB, okI, regI, upd, sA, sX, sN, sE, K2, K3, sw
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, hk2', hk3'
+  exact ⟨s 4037 (⊛) (⊛), ⟨s 4034 (⊛) (⊛), ⋄⟩,
+    ⟨s 4034 (⊛) (⊛), ⋄⟩, ⟨s 4034 (⊛) (⊛), ⋄⟩,
+    ⟨s 4034 (⊛) (⊛), ⋄⟩, ⟨s 4034 (⊛) (⊛), ⋄⟩,
+    ⟨s 4034 (⊛) (⊛), ⋄⟩, ⟨s 4035 (⊛) (⊛), ⋄⟩,
+    s 4036 (⊛) (⊛), ⟨s 4034 (⊛) (⊛), ⋄⟩, trivial⟩
 
 theorem labL_val (m f : ℕ → ℕ) (k : ℕ) :
     regB m (labL k) f sV = m (f sA + f k) := by
-  simp only [labL, regB, regI, upd, sA, sV, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
+  ϴ labL, regB, regI, upd, sA, sV, sw
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
 
 theorem labL_other (m f : ℕ → ℕ) (k : ℕ) {q : ℕ} (hq : ¬ SlotW q) : regB m (labL k) f q = f q :=
   regB_other m (labL k) f (fun i hi => by
-    simp only [labL, List.mem_cons, List.not_mem_nil, or_false] at hi
+    ϴ' labL, List.mem_cons, List.not_mem_nil, or_false at hi
     unfold SlotW at hq
     rcases hi with rfl | rfl <;> simp only [dstI] <;> intro h <;> subst h <;> simp at hq)
 
 theorem labL_ok (m f : ℕ → ℕ) (k : ℕ) (hb : f sA + f k ≤ W) : okB W m (labL k) f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
-  simp only [labL, okB, okI, sA, sV, sw] at hb ⊢
-  exact ⟨⟨s 4034 (by norm_num) (by norm_num), hb⟩, s 4033 (by norm_num) (by norm_num), trivial⟩
+    iscr_sw (⋄) (⋄)
+  ϴ' labL, okB, okI, sA, sV, sw at hb ⊢
+  exact ⟨⟨s 4034 (⊛) (⊛), hb⟩, s 4033 (⊛) (⊛), trivial⟩
 
-set_option maxHeartbeats 1000000 in
+
 /-- **One slot**: its value is stored at the allocator. -/
 theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ SlotW e) (hk : ¬ SlotW k)
     (hk3 : c.nreg k ≤ 3) (hAL : c.nreg (sw 300) + 7 * c.nreg (sw 301) ≤ W)
@@ -248,10 +250,10 @@ theorem slotVal_congr {m m' : ℕ → ℕ} {AL E g e k : ℕ} (hk : k ≤ 3)
     slotVal m' AL E g e k = slotVal m AL E g e k := by
   unfold slotVal
   by_cases he : e < E
-  · rw [h _ (by omega), h _ (by omega)]
-  · simp [he]
+  · Ξ h _ (⋄), h _ (⋄)
+  · Θ he
 
-set_option maxHeartbeats 1000000 in
+
 /-- **A list of slots**: the values in order at the allocator. -/
 theorem slots_irs : ∀ (l : List (ℕ × ℕ)) {c : Config}, IInv W c₀ c → Consts c₀ →
     (∀ p ∈ l, ¬ SlotW p.1 ∧ ¬ SlotW p.2 ∧ p.1 ≠ ALLOC ∧ p.2 ≠ ALLOC ∧ c.nreg p.2 ≤ 3) →

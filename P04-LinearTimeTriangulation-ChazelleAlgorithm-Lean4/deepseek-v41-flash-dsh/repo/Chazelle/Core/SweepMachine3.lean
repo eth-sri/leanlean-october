@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepMachine2
 
 /-!
@@ -80,7 +82,7 @@ theorem no_label_of_pocket (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hya : (((g + d) % n : ℕ) : ℝ) + t ≠ pa + ta := fun h => hc ⟨e, he, pa, ta, hA, h⟩
   have hyb : (((g + d) % n : ℕ) : ℝ) + t ≠ pb + tb := fun h => hc ⟨e, he, pb, tb, hB, h⟩
   refine (sep_iff_btw hg0 hgn a0 a1 b0 b1 x0 x1 y0 y1 hk13 hxy hxa hxb hya hyb).2 ?_
-  rw [hoy, hBo]
+  Ξ hoy, hBo
   unfold Btw
   constructor
   · intro _ h2
@@ -109,7 +111,7 @@ theorem dir_opposite {M : Model} (hM : WalkAx M) {e : Set Point} (he : e ∈ M.A
   have hb'e : b' ∈ e := by rw [hcab']; exact Geometry.right_mem_segment _ _
   have h1 := hdA a' ha'e
   have h2 := hdA b' hb'e
-  simp only [Geometry.lerp_fst]
+  ϴ Geometry.lerp_fst
   rcases hA' with hA' | hA' <;> rcases hB' with hB' | hB'
   · exact absurd (hA'.trans hB'.symm) hAB
   · rw [hB']; rw [hA'] at h2; nlinarith

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseTourB
 public import Chazelle.Core.DownPhaseFrontier
 
@@ -77,7 +79,7 @@ theorem Top.filled_below_top (hQ : Q.Simple) (T : Top Q C) {z : Point} (hz : z �
     linarith [ht.1]
   have hw : f L ∉ Q.filled := Chazelle.Jordan.far_not_mem_filled Q (Or.inr (Or.inr (Or.inl (by
     simp only [hf, hL]; linarith [le_abs_self z.2, neg_abs_le z.2]))))
-  have hzT : z ∈ f '' Icc 0 L := ⟨0, ⟨le_rfl, hL0⟩, by simp [hf]⟩
+  have hzT : z ∈ f '' Icc 0 L := ⟨0, ⟨le_rfl, hL0⟩, ⊚ hf⟩
   exact FactsInterior.subset_exterior hQ hpre hsub ⟨L, ⟨hL0, le_rfl⟩, rfl⟩ hw hzT hz
 
 /-- The chain lies on the boundary of `Q`. -/

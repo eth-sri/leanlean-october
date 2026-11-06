@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepRot
 
 /-!
@@ -33,7 +35,7 @@ theorem planar_of_mem {B : BookData} (hV : B.Valid) {m : ℕ → ℕ} {Bh VT ROT
     rw [h2]; exact hvt d hd
   refine ⟨planarMapAt_of_arrays hV hopp (fun d hd => ?_) hvt', memGraph_eq hopp hvt'⟩
   obtain ⟨t, ht, rfl⟩ := hsd.surj d hd
-  rw [h1, hrot t ht, ← rot_eq_csucc hV hsd ht]
+  Ξ h1, hrot t ht, ← rot_eq_csucc hV hsd ht
 
 /-! ## The set-up blocks -/
 
@@ -101,7 +103,7 @@ theorem allocS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       FrameB (fun r => decide (r = rb ∨ r = 9999)) c c' ∧ c'.rreg = c.rreg ∧ c'.nreg rb = A ∧
       c'.nreg 9999 = A + n := by
   have hwr : wr (fun r => decide (r = rb ∨ r = 9999)) (allocS rb rn) = true := by
-    simp [allocS, block, wr, wrOK]
+    Θ allocS, block, wr, wrOK
   suffices H : ∃ c' k, Exec P W (allocS rb rn) c c' k ∧ k = 2 ∧ c'.rreg = c.rreg ∧
       c'.nreg rb = A ∧ c'.nreg 9999 = A + n by
     obtain ⟨c', k, ex, hk, rr, a, b⟩ := H
@@ -135,8 +137,8 @@ theorem hdS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {A
   · refine ⟨rfl, fun r a b d => ?_, rfl, rfl, rfl, ?_, by config_simp; rw [hA],
       by config_simp; rw [hA, h2, h1]⟩
     · config_simp
-      simp only [upd_apply, a, b, d, ite_false]
-    · config_simp; rw [hA, h1, h52, h62, h50]
+      ϴ upd_apply, a, b, d, ite_false
+    · config_simp; Ξ hA, h1, h52, h62, h50
 
 /-! ## The map stage -/
 
@@ -156,7 +158,7 @@ theorem MPres_not {r : ℕ} (h : MPres r) : ¬ ((60004 ≤ r ∧ r ≤ 60007) �
 
 theorem b6_ne {r : ℕ} (hr : (decide (bandOf r = 6) || decide (r = 9999)) = false) :
     r ≠ 9999 ∧ (r < 60000 ∨ 70000 ≤ r) := by
-  simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; unfold bandOf at hr; omega
+  ϴ' Bool.or_eq_false_iff, decide_eq_false_iff_not at hr; unfold bandOf at hr; omega
 
 set_option maxHeartbeats 2000000 in
 theorem mapS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {B : BookData}

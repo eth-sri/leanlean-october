@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterFinal
 public import Chazelle.Core.ClusterLabelRam
 
@@ -50,7 +54,7 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
+
 theorem labS_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     {M : CombMap (Fin g.μ) F (Fin g.N)} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     (hmap : MapArrays c.nmem g.bO g.bR g.bV g.μ g.N M)

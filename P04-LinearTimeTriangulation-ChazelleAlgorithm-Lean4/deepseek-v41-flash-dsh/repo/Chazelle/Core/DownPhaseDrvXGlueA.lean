@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvXContracts
 public import Chazelle.Core.DownPhaseDrvXPos2
 public import Chazelle.Core.DownPhaseDrvXKept
@@ -31,7 +33,7 @@ open DrvR (regHost OnArcKey)
 theorem ga_regHost_nil (li : Bool) (n : ℕ) (N : NF) (r : ℕ) (h : (N.region r).arcs.length = 0) :
     regHost li n N r = [] := by
   unfold regHost DrvR.walkItems
-  rw [h]
+  Ξ h
   split_ifs <;> simp
 
 /-- An end on an arc of the region is on one of the arcs of the arc list, by comparisons. -/
@@ -49,10 +51,10 @@ theorem ga_onArc {P : Polygon} {li : Bool} {N : NF} {r : ℕ}
   have hjA := hras t ht
   rw [List.getD_eq_getElem _ _ ht] at hjA
   refine ⟨t, ht, ?_⟩
-  rw [e]
+  Ξ e
   exact (onArc_iff hli hdh hn hx (hgood _ hjA).1 (hgood _ hjA).2).1 ho
 
-set_option maxHeartbeats 16000000 in
+
 /-- **Glue A.** -/
 theorem xeGlue : XEGlue := by
   intro P W c L E C NR hG hWh hb1 hbit hLne hok hperm hsort hdeg hNW hr hHost hHB hCP hCs hCm

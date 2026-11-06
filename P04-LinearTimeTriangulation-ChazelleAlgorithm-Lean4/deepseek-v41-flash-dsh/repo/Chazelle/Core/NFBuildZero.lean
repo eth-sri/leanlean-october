@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildPhaseB
 
 /-!
@@ -25,17 +27,17 @@ theorem Model.arcWt_self (M : Model) {lo hi : ℕ}
   have hset : {p : ℕ | p < M.W.n ∧ M.counted p ∧ ∃ t : ℝ, 0 < t ∧ t < 1 ∧
       sideInArc x x (p + t)} = ↑(Finset.Ico lo hi) := by
     ext p
-    simp only [mem_ofPred_eq, Finset.coe_Ico, mem_Ico]
-    rw [Model.mem_arcEdges_iff, ite_eq_right (lt_irrefl x)]
+    ϴ mem_ofPred_eq, Finset.coe_Ico, mem_Ico
+    Ξ Model.mem_arcEdges_iff, ite_eq_right (lt_irrefl x)
     constructor
     · rintro ⟨hp, hcp, -⟩
       exact (hc p hp).1 hcp
     · rintro ⟨h1, h2⟩
-      refine ⟨by omega, (hc p (by omega)).2 ⟨h1, h2⟩, ?_⟩
+      refine ⟨⋄, (hc p (⋄)).2 ⟨h1, h2⟩, ?_⟩
       by_cases h : (p : ℝ) < x
       · exact Or.inl h
       · right; push Not at h; linarith
-  rw [hset, ncard_coe_finset, Nat.card_Ico]
+  Ξ hset, ncard_coe_finset, Nat.card_Ico
 
 namespace BuildRam
 
@@ -95,31 +97,31 @@ theorem nfAt_zero {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : 
     NFAt m H (BuildNF.buildNF M Q L E) := by
   have hL' : L = [] := List.length_eq_zero_iff.1 hL
   subst hL'
-  have hz : ∀ f, f < 24 → m (H + f) = zeroW H (BuildNF.regWt M Q [] E 0) f := hm
+  have hz := hm
   have v : ∀ f, f < 24 → m (H + f) = [0, 1, 1, H + 12, H + 12, H + 17, H + 22, H + 23, H, 0, H, 0,
       0, 0, 0, 0, 0, 1, 0, 0, 1, BuildNF.regWt M Q [] E 0, 0, 0].getD f 0 := fun f hf => by
-    rw [hz f hf, zeroW_eq _ _ _ hf]
-  have e0 : m H = 0 := v 0 (by norm_num)
-  have e1 : m (H + 1) = 1 := v 1 (by norm_num)
-  have e2 : m (H + 2) = 1 := v 2 (by norm_num)
-  have e4 : m (H + 4) = H + 12 := v 4 (by norm_num)
-  have e5 : m (H + 5) = H + 17 := v 5 (by norm_num)
-  have e6 : m (H + 6) = H + 22 := v 6 (by norm_num)
-  have e7 : m (H + 7) = H + 23 := v 7 (by norm_num)
-  have e9 : m (H + 9) = 0 := v 9 (by norm_num)
-  have e11 : m (H + 11) = 0 := v 11 (by norm_num)
-  have e12 : m (H + 12) = 0 := v 12 (by norm_num)
-  have e13 : m (H + 13) = 0 := v 13 (by norm_num)
-  have e14 : m (H + 14) = 0 := v 14 (by norm_num)
-  have e15 : m (H + 15) = 0 := v 15 (by norm_num)
-  have e16 : m (H + 16) = 0 := v 16 (by norm_num)
-  have e17 : m (H + 17) = 1 := v 17 (by norm_num)
-  have e18 : m (H + 18) = 0 := v 18 (by norm_num)
-  have e19 : m (H + 19) = 0 := v 19 (by norm_num)
-  have e20 : m (H + 20) = 1 := v 20 (by norm_num)
-  have e21 : m (H + 21) = BuildNF.regWt M Q [] E 0 := v 21 (by norm_num)
-  have e22 : m (H + 22) = 0 := v 22 (by norm_num)
-  have e23 : m (H + 23) = 0 := v 23 (by norm_num)
+    Ξ hz f hf, zeroW_eq _ _ _ hf
+  have e0 : m H = 0 := v 0 (⊛)
+  have e1 : m (H + 1) = 1 := v 1 (⊛)
+  have e2 : m (H + 2) = 1 := v 2 (⊛)
+  have e4 : m (H + 4) = H + 12 := v 4 (⊛)
+  have e5 : m (H + 5) = H + 17 := v 5 (⊛)
+  have e6 : m (H + 6) = H + 22 := v 6 (⊛)
+  have e7 : m (H + 7) = H + 23 := v 7 (⊛)
+  have e9 : m (H + 9) = 0 := v 9 (⊛)
+  have e11 : m (H + 11) = 0 := v 11 (⊛)
+  have e12 : m (H + 12) = 0 := v 12 (⊛)
+  have e13 : m (H + 13) = 0 := v 13 (⊛)
+  have e14 : m (H + 14) = 0 := v 14 (⊛)
+  have e15 : m (H + 15) = 0 := v 15 (⊛)
+  have e16 : m (H + 16) = 0 := v 16 (⊛)
+  have e17 : m (H + 17) = 1 := v 17 (⊛)
+  have e18 : m (H + 18) = 0 := v 18 (⊛)
+  have e19 : m (H + 19) = 0 := v 19 (⊛)
+  have e20 : m (H + 20) = 1 := v 20 (⊛)
+  have e21 : m (H + 21) = BuildNF.regWt M Q [] E 0 := v 21 (⊛)
+  have e22 : m (H + 22) = 0 := v 22 (⊛)
+  have e23 : m (H + 23) = 0 := v 23 (⊛)
   have hA : BuildNF.arcList M Q [] E = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by
     unfold BuildNF.arcList; simp
   have hRA : BuildNF.regArcs M Q [] E 0 = [0] := by
@@ -128,49 +130,49 @@ theorem nfAt_zero {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : 
     unfold BuildNF.regChords; simp
   refine ⟨?_, ?_, ?_, ?_, ?_, fun i hi => ?_, fun j hj => ?_, fun r hr => ?_, fun j hj => ?_,
     fun k hk => ?_, fun r hr => ?_⟩
-  · rw [e0]; simp [BuildNF.buildNF]
+  · rw [e0]; Θ BuildNF.buildNF
   · rw [e1]; show 1 = (BuildNF.arcList M Q [] E).length; rw [hA]; rfl
-  · rw [e2]; simp [BuildNF.buildNF]
+  · rw [e2]; Θ BuildNF.buildNF
   · rw [e9]; rfl
   · rw [e11]; rfl
-  · simp [BuildNF.buildNF] at hi
+  · Θ' BuildNF.buildNF at hi
   · have hj' : j = 0 := by
       have : (BuildNF.buildNF M Q [] E).arcs = BuildNF.arcList M Q [] E := rfl
-      rw [this, hA] at hj; simp at hj; exact hj
+      Ξ' this, hA at hj; simp at hj; exact hj
     subst hj'
     have ha : (BuildNF.buildNF M Q [] E).arc 0 = ⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩ := by
       unfold NF.arc; show (BuildNF.arcList M Q [] E).getD 0 _ = _; rw [hA]; rfl
-    rw [e4, ha]
+    Ξ e4, ha
     refine ⟨?_, ?_, ?_, ?_, ?_⟩
-    · rw [Nat.mul_zero, Nat.add_zero, show H + 12 = H + 12 from rfl, e12]
-    · rw [Nat.mul_zero, Nat.add_zero, show H + 12 + 1 = H + 13 from rfl, e13]
-    · rw [Nat.mul_zero, Nat.add_zero, show H + 12 + 2 = H + 14 from rfl, e14]
-    · rw [Nat.mul_zero, Nat.add_zero, show H + 12 + 3 = H + 15 from rfl, e15]
-    · rw [Nat.mul_zero, Nat.add_zero, show H + 12 + 4 = H + 16 from rfl, e16]
+    · Ξ Nat.mul_zero, Nat.add_zero, show H + 12 = H + 12 from rfl, e12
+    · Ξ Nat.mul_zero, Nat.add_zero, show H + 12 + 1 = H + 13 from rfl, e13
+    · Ξ Nat.mul_zero, Nat.add_zero, show H + 12 + 2 = H + 14 from rfl, e14
+    · Ξ Nat.mul_zero, Nat.add_zero, show H + 12 + 3 = H + 15 from rfl, e15
+    · Ξ Nat.mul_zero, Nat.add_zero, show H + 12 + 4 = H + 16 from rfl, e16
   · have hr' : r = 0 := by simpa [BuildNF.buildNF] using hr
     subst hr'
     have hreg := (show (BuildNF.buildNF M Q [] E).region 0 =
       ⟨BuildNF.regArcs M Q [] E 0, BuildNF.regChords M Q [] E 0, BuildNF.regWt M Q [] E 0⟩ by
         unfold NF.region BuildNF.buildNF; rfl)
-    rw [e5, hreg, hRA, hRC]
-    simp only [Nat.mul_zero, Nat.add_zero]
+    Ξ e5, hreg, hRA, hRC
+    ϴ Nat.mul_zero, Nat.add_zero
     refine ⟨?_, ?_, ?_, fun t ht => ?_, fun t ht => ?_⟩
     · rw [show H + 17 = H + 17 from rfl, e17]; rfl
     · rw [show H + 17 + 2 = H + 19 from rfl, e19]; rfl
-    · rw [show H + 17 + 4 = H + 21 from rfl, e21]
-    · simp only [List.length_singleton, Nat.lt_one_iff] at ht
+    · Ξ show H + 17 + 4 = H + 21 from rfl, e21
+    · ϴ' List.length_singleton, Nat.lt_one_iff at ht
       subst ht
       rw [e7, show H + 17 + 1 = H + 18 from rfl, e18, Nat.add_zero, Nat.add_zero,
         show H + 23 = H + 23 from rfl, e23]; rfl
     · simp at ht
   · have hj' : j = 0 := by
       have : (BuildNF.buildNF M Q [] E).seq = List.range (BuildNF.arcList M Q [] E).length := rfl
-      rw [this, hA] at hj; simp at hj; exact hj
+      Ξ' this, hA at hj; simp at hj; exact hj
     subst hj'
-    rw [e6, Nat.add_zero, show H + 22 = H + 22 from rfl, e22]
+    Ξ e6, Nat.add_zero, show H + 22 = H + 22 from rfl, e22
     rfl
-  · simp [BuildNF.buildNF] at hk
-  · simp [BuildNF.buildNF] at hr
+  · Θ' BuildNF.buildNF at hk
+  · Θ' BuildNF.buildNF at hr
 
 /-- The stores of `zeroCase`. -/
 def zeroStores : Stmt :=
@@ -185,7 +187,7 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
+
 theorem zeroStores_exec (d : Config) (hw : WordsBounded W d) {H hd : ℕ}
     (hH : d.nreg 44000 = H) (hhd : d.nreg 44021 = hd) (hW : H + 24 ≤ W) :
     ∃ d' k, Exec P W zeroStores d d' k ∧ k ≤ 90 ∧ 24 ≤ k ∧ d'.nreg 40003 = H ∧
@@ -198,14 +200,14 @@ theorem zeroStores_exec (d : Config) (hw : WordsBounded W d) {H hd : ℕ}
   all_goals first
     | (config_simp; simp (config := { failIfUnchanged := false }) only [hH]; omega)
     | skip
-  refine ⟨by omega, by omega, ?_, fun r h1 h2 => ?_, fun f hf => ?_, fun a ha => ?_⟩ <;>
+  refine ⟨⋄, ⋄, ?_, fun r h1 h2 => ?_, fun f hf => ?_, fun a ha => ?_⟩ <;>
     config_simp
-  · rw [hH]
+  · Ξ hH
   · simp (disch := omega) only [upd_other]
-  · simp only [hH, hhd, upd_apply]
-    rw [zeroW_eq _ _ _ hf]
+  · ϴ hH, hhd, upd_apply
+    Ξ zeroW_eq _ _ _ hf
     interval_cases f <;> ifs_omega <;> rfl
-  · simp only [hH, upd_apply]
+  · ϴ hH, upd_apply
     ifs_omega
 
 end exec
@@ -213,7 +215,7 @@ end exec
 theorem regWt_zero {M : Model} {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     (hL : L.length = 0) {m : ℕ → ℕ} {D : ℕ} (hM : ModelDescAt m D (Qof P) M) :
     BuildNF.regWt M (Qof P) L E 0 = hdOf m D P.n := by
-  have hL' : L = [] := List.length_eq_zero_iff.1 hL
+  have hL' := List.length_eq_zero_iff.1 hL
   subst hL'
   have hA : BuildNF.arcList M (Qof P) [] E = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by
     unfold BuildNF.arcList; simp
@@ -222,19 +224,19 @@ theorem regWt_zero {M : Model} {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E :
   obtain ⟨hc, hhi⟩ := countedIv (P := P) hM
   have hlohi : loOf m D ≤ hiOf m D P.n := by unfold loOf hiOf; split_ifs <;> omega
   unfold BuildNF.regWt
-  rw [hRA, hA]
-  simp only [List.map_cons, List.map_nil, List.foldr_cons, List.foldr_nil, List.getD_cons_zero]
+  Ξ hRA, hA
+  ϴ List.map_cons, List.map_nil, List.foldr_cons, List.foldr_nil, List.getD_cons_zero
   unfold BuildNF.arcW
-  rw [M.arcWt_self hc hhi, hdOf_eq]
+  Ξ M.arcWt_self hc hhi, hdOf_eq
   omega
 
 section exec
 
 variable {P : Polygon} {W : ℕ}
 
-theorem wr_zeroCase : wrM BphaseB zeroCase = true := by decide
+theorem wr_zeroCase : wrM BphaseB zeroCase = true := ⌖
 
-set_option maxHeartbeats 1000000 in
+
 /-- **The empty chord list.** -/
 theorem zeroCase_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounded W c)
     {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {D H : ℕ} (hL : L.length = 0)

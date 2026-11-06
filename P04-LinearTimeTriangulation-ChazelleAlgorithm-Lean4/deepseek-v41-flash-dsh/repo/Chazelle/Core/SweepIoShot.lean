@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShotListMain
 
 /-!
@@ -51,7 +55,7 @@ theorem shotList_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemC
   have hLB : levCost (F (c.nreg (R + 7))) 3 + 20 = Bi := rfl
   have hW8 : 8 ≤ W := by unfold hostWords at hHW; omega
   have hD6 := hmwf.1
-  have hroom' : c.nreg ALLOC + shotCost Fg K ≤ W := hroom
+  have hroom' := hroom
   unfold shotCost at hroom'
   -- initialisation
   obtain ⟨c₁, k₁, e₁, hk₁, i30, i31, i32, i33, i34, i20, i28, i36, i37, i35, f₁⟩ :=
@@ -59,7 +63,7 @@ theorem shotList_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemC
   have k1 : ∀ r, (r < R + 20 ∨ R + 40 ≤ r) → c₁.nreg r = c.nreg r := fun r hr =>
     f₁.1 r (by simp only [Bmid, decide_eq_false_iff_not]; omega)
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by unfold ALLOC; omega)
-  have hM1 : c₁.nmem = c.nmem := f₁.2.2.1
+  have hM1 := f₁.2.2.1
   -- the holes of the recursion
   have holes_ok : HolesOK (M.key Q) hl := by
     refine holesOK_of M Q (fun g hg => ?_)
@@ -143,7 +147,7 @@ theorem shotList_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemC
     have hlv : levLeaves M Q c₂ R 3 0 (pieceR c₂ (rL R 0)) =
         leaves (M.key Q) hl (arcAt c.nmem AB j) := by
       rw [levLeaves_eq M Q c₂ R hk 3 0 (by omega), holesFrom_eq c₂ R hk, hhl2, harc]
-    have hjK' : j < K := hlt
+    have hjK' := hlt
     have best₂ : BestOK P C R c₂ (sofJ M Q hl c.nmem AB j) z (dirOf (c₂.nreg (R + 6))) := by
       rw [g6]
       exact hbest.congr (k2 (R + 20) (by omega)) (k2 (R + 21) (by omega))
@@ -151,7 +155,7 @@ theorem shotList_execR {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemC
         (k2 (R + 24 + 2) (by omega)) (k2 (R + 24 + 3) (by omega))
     obtain ⟨hpok, hwt⟩ := harcs j hjK'
     have hA2 : c₂.nreg ALLOC = cc.nreg ALLOC := k2 _ (by unfold ALLOC; omega)
-    have hroomj : cc.nreg ALLOC + (K - j) * Bi ≤ W := hrm
+    have hroomj := hrm
     have hKj : Bi ≤ (K - j) * Bi := Nat.le_mul_of_pos_left _ (by omega)
     obtain ⟨c₃, k₃, e₃, hk₃, b₃, fr₃⟩ := lev_exec hsh hBs hXl hR (H := H) (C := C) hol hof hoy
       3 0 c₂ (sofJ M Q hl c.nmem AB j) (by omega) e₂.wb_right ctx₂ ho₂ (by rw [harc]; exact hpok)

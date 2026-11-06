@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBGeo
 public import Chazelle.Core.DownPhaseBaseFull
 public import Chazelle.Core.DownPhaseMathHost
@@ -68,7 +70,7 @@ theorem strad_nonHoriz {q i : ℕ} (h : Strad Q q i) : NonHoriz Q q := by
 /-- A straddling edge crosses the height of `v_i` in its open part. -/
 theorem strad_open {q i : ℕ} (h : Strad Q q i) :
     OpenEdgePt Q q ((edgeXAt Q q i, (Q.vtx i).2) : Point) := by
-  rw [Visibility.openEdgePt_iff_edgeX (strad_nonHoriz h)]
+  Ξ Visibility.openEdgePt_iff_edgeX (strad_nonHoriz h)
   refine ⟨?_, rfl⟩
   unfold edgeBot edgeTop
   rcases h with ⟨h1, h2⟩ | ⟨h1, h2⟩
@@ -88,7 +90,7 @@ theorem rayPt_cross {v : Point} {σ x : ℝ} (hσ : σ = 1 ∨ σ = -1) :
   have hσσ : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
   ext
   · simp only [Visibility.rayPt_fst]; rw [← mul_assoc, hσσ]; ring
-  · simp only [Visibility.rayPt_snd]
+  · ϴ Visibility.rayPt_snd
 
 /-- **No candidate crossing is strictly before the far end.** -/
 theorem cand_le (hQ : Q.Simple) {i : ℕ} (hi : i < Q.n) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
@@ -102,11 +104,11 @@ theorem cand_le (hQ : Q.Simple) {i : ℕ} (hi : i < Q.n) {σ : ℝ} (hσ : σ = 
     by_contra hlt
     push Not at hlt
     have := (Visibility.chord_spec hQ hi hdir).2.2 _ hside hlt
-    rw [rayPt_cross hσ] at this
+    Ξ' rayPt_cross hσ at this
     exact this.2 hX
   have e : σ * (chordEnd Q i σ).1 = σ * (Q.vtx i).1 + chordParam Q i σ := by
-    rw [Visibility.chordEnd_fst, mul_add, ← mul_assoc, hσσ, one_mul]
-  rw [e]
+    Ξ Visibility.chordEnd_fst, mul_add, ← mul_assoc, hσσ, one_mul
+  Ξ e
   nlinarith
 
 /-- **The far end is a candidate crossing**, in the open part of its edge. -/
@@ -128,24 +130,24 @@ theorem far_cand (hQ : Q.Simple) (hDH : DistinctHeights Q) {i : ℕ} (hi : i < Q
   have hn3 := simple_three_le hQ
   have hNH : NonHoriz Q q := by
     unfold NonHoriz
-    refine hDH _ _ hq (Nat.mod_lt _ (by omega)) ?_
+    refine hDH _ _ hq (Nat.mod_lt _ (⋄)) ?_
     intro e
     by_cases h : q + 1 < Q.n
-    · rw [Nat.mod_eq_of_lt h] at e; omega
-    · rw [show q + 1 = Q.n by omega, Nat.mod_self] at e; omega
+    · Ξ' Nat.mod_eq_of_lt h at e; omega
+    · Ξ' show q + 1 = Q.n by omega, Nat.mod_self at e; omega
   obtain ⟨⟨hb, ht'⟩, hx⟩ := (Visibility.openEdgePt_iff_edgeX hNH).1 hop
   have hz2 : z.2 = (Q.vtx i).2 := rfl
-  rw [hz2] at hb ht' hx
+  Ξ' hz2 at hb ht' hx
   have hxq : edgeXAt Q q i = z.1 := hx.symm
   refine ⟨q, ⟨hq, ?_, ?_⟩, hxq, hop⟩
   · unfold edgeBot at hb
     unfold edgeTop at ht'
     rcases le_total (Q.vtx q).2 (Q.vtx ((q + 1) % Q.n)).2 with h | h
-    · rw [min_eq_left h] at hb; rw [max_eq_right h] at ht'
+    · Ξ' min_eq_left h at hb; Ξ' max_eq_right h at ht'
       exact Or.inl ⟨hb, ht'⟩
-    · rw [min_eq_right h] at hb; rw [max_eq_left h] at ht'
+    · Ξ' min_eq_right h at hb; Ξ' max_eq_left h at ht'
       exact Or.inr ⟨hb, ht'⟩
-  · rw [hxq, hz, Visibility.chordEnd_fst, add_sub_cancel_left, ← mul_assoc, hσσ, one_mul]
+  · Ξ hxq, hz, Visibility.chordEnd_fst, add_sub_cancel_left, ← mul_assoc, hσσ, one_mul
     exact Visibility.chordParam_pos hQ hi hdir
 
 /-- **A candidate not after the far end carries it.** -/
@@ -158,7 +160,7 @@ theorem cand_min (hQ : Q.Simple) {i : ℕ} (hi : i < Q.n) {σ : ℝ} (hσ : σ =
   have hx : edgeXAt Q q i = (chordEnd Q i σ).1 :=
     mul_left_cancel₀ hσ0 (le_antisymm hmin h1)
   have := strad_open hc.2.1
-  rw [hx] at this
+  Ξ' hx at this
   exact this
 
 /-! ## Walk edges -/
@@ -191,7 +193,7 @@ theorem scan_min (hQ : Q.Simple) (hDH : DistinctHeights Q) {i : ℕ} (hi : i < Q
     openEdge_unique hQ hcq.1 (DownMath.qE_lt li hw₀) hoq hz₀
   subst hq₀
   have := hmin w₀ hw₀E hw₀ hcq
-  rw [hxq] at this
+  Ξ' hxq at this
   exact cand_min hQ hi hσ hdir hc this
 
 /-! ## The record of a vertex chord -/
@@ -212,15 +214,15 @@ theorem openEdge_walk {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) (h
     {w : ℕ} (hw : w < Q.n) {z : Point} (hz : OpenEdgePt Q (qE li Q.n w) z) :
     ∃ t ∈ Ioo (0 : ℝ) 1, sidePt (interiorWalk Q) w t = z := by
   obtain ⟨s, hs, rfl⟩ := hz
-  have hw1 : (w + 1) % Q.n < Q.n := Nat.mod_lt _ (by omega)
+  have hw1 : (w + 1) % Q.n < Q.n := Nat.mod_lt _ (⋄)
   have hv0 := DownMath.walk_vtx hli hw
   have hv1 := DownMath.walk_vtx hli hw1
   have hWn : (interiorWalk Q).n = Q.n := DownMath.walk_n Q
-  rcases DownMath.edge_ends li (by omega) hw with ⟨h1, h2⟩ | ⟨h1, h2⟩
+  rcases DownMath.edge_ends li (⋄) hw with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · refine ⟨s, hs, ?_⟩
-    unfold sidePt; rw [hWn, hv0, hv1, h1, h2]
+    unfold sidePt; Ξ hWn, hv0, hv1, h1, h2
   · refine ⟨1 - s, ⟨by linarith [hs.2], by linarith [hs.1]⟩, ?_⟩
-    unfold sidePt; rw [hWn, hv0, hv1, h1, h2, ← Geometry.lerp_symm]
+    unfold sidePt; Ξ hWn, hv0, hv1, h1, h2, ← Geometry.lerp_symm
 
 /-- **The record of a vertex chord.**  If the far end of the chord of vertex `i` in direction
 `sgnD d` lies in the open part of edge `qE w` of `Q`, the record `vtrip li n i d w` describes the
@@ -271,7 +273,7 @@ theorem vtrip_ok (hQ : Q.Simple) (hDH : DistinctHeights Q) {li : Bool}
   -- the chord as a segment between its two ends
   have hc : chordSet Q i σ ∈ chords Q := ⟨i, σ, hi, hσ, hdir, rfl⟩
   have hHC := FullDegInt.hc_full hQ hc
-  have hadm : chordSet Q i σ ∈ I.Adm := hHC
+  have hadm := hHC
   have hM := walkAx_interiorModel hQ
   obtain ⟨A, B, hAB, hcAB, -, hopen, hWA, hWB⟩ := hM.ends _ hadm
   have hσσ : σ * σ = 1 := sgnD_mul_self d

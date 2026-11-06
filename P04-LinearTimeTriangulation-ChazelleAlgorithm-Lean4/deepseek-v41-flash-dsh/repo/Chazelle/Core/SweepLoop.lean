@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepTop
 public import Chazelle.Core.SweepChainT2
 
@@ -65,7 +67,7 @@ theorem after_unique {M : Model} {F : Set (Set Point)} {p : ℕ} {t : ℝ} (ht1 
   obtain ⟨δ', hδ', h2⟩ := h'
   set s := min (min δ δ') (1 - t) / 2 with hs
   have hs0 : 0 < s := by
-    have : 0 < min (min δ δ') (1 - t) := lt_min (lt_min hδ hδ') (by linarith)
+    have : 0 < min (min δ δ') (1 - t) := lt_min (lt_min hδ hδ') (⟡)
     linarith
   have hs1 : s < δ := by
     have := min_le_left (min δ δ') (1 - t); have := min_le_left δ δ'; linarith
@@ -112,7 +114,7 @@ theorem after_side {M : Model} {Q : Polygon} {F : Set (Set Point)} (hGM : GoodMo
   obtain ⟨U, hU, hS⟩ := side_region_exists hM hFam.2.1 hFam.1 he hρ
   have hfac := (faced_or_middle hGM hFam he hA hρ hU hS hdir).1 huniq
   have hd2 : -dir * dir = -1 := by rcases hdir with ⟨rfl, -⟩ | ⟨rfl, -⟩ <;> norm_num
-  rw [after_unique hA.2.2.1 hG hU hW (hfac.1 hd2)]
+  Ξ after_unique hA.2.2.1 hG hU hW (hfac.1 hd2)
   exact hS
 
 /-- **The region faced just before a uniquely attached chord** lies on its side `dir` (item
@@ -129,7 +131,7 @@ theorem before_side {M : Model} {Q : Polygon} {F : Set (Set Point)} (hGM : GoodM
   obtain ⟨U, hU, hS⟩ := side_region_exists hM hFam.2.1 hFam.1 he hρ
   have hfac := (faced_or_middle hGM hFam he hA hρ hU hS hdir).1 huniq
   have hd2 : dir * dir = 1 := by rcases hdir with ⟨rfl, -⟩ | ⟨rfl, -⟩ <;> norm_num
-  rw [before_unique hA.2.1 hG hU hW (hfac.2 hd2)]
+  Ξ before_unique hA.2.1 hG hU hW (hfac.2 hd2)
   exact hS
 
 /-- **The regions faced around a tie** (item (c)): at a tie whose leaving edge goes down, the
@@ -146,7 +148,7 @@ theorem after_side_tie {M : Model} {Q : Polygon} {F : Set (Set Point)} (hGM : Go
     ((M.wa p).2 < (M.wb p).2 → AfterFaces M p t G → SideOf M 1 cw G) ∧
     ((M.wa p).2 < (M.wb p).2 → BeforeFaces M p t G → SideOf M 1 ce G) := by
   have hM := walkAx_of_goodModel hGM
-  have hF : F ⊆ M.Adm := hFam.2.1
+  have hF := hFam.2.1
   have hfin : F.Finite := hFam.1
   obtain ⟨Ue, hUe, hSe⟩ := side_region_exists hM hF hfin hce (Or.inr rfl : (-1 : ℝ) = 1 ∨ _)
   obtain ⟨Uw, hUw, hSw⟩ := side_region_exists hM hF hfin hcw (Or.inr rfl : (-1 : ℝ) = 1 ∨ _)
@@ -159,16 +161,16 @@ theorem after_side_tie {M : Model} {Q : Polygon} {F : Set (Set Point)} (hGM : Go
   refine ⟨fun hdn hW => ?_, fun hdn hW => ?_, fun hup hW => ?_, fun hup hW => ?_⟩
   · obtain ⟨-, -, h, -⟩ := fe (Or.inr rfl) hUe hSe
     have hfac := (h hdn).2 rfl
-    rw [after_unique hAe.2.2.1 hG hUe hW (hfac.1 (by norm_num))]; exact hSe
+    rw [after_unique hAe.2.2.1 hG hUe hW (hfac.1 (⊛))]; exact hSe
   · obtain ⟨-, -, h, -⟩ := fw (Or.inr rfl) hUw hSw
     have hfac := (h hdn).2 rfl
-    rw [before_unique hAw.2.1 hG hUw hW (hfac.2 (by norm_num))]; exact hSw
+    rw [before_unique hAw.2.1 hG hUw hW (hfac.2 (⊛))]; exact hSw
   · obtain ⟨-, -, -, h⟩ := fw (Or.inl rfl) hUw' hSw'
     have hfac := (h hup).2 rfl
-    rw [after_unique hAw.2.2.1 hG hUw' hW (hfac.1 (by norm_num))]; exact hSw'
+    rw [after_unique hAw.2.2.1 hG hUw' hW (hfac.1 (⊛))]; exact hSw'
   · obtain ⟨-, -, -, h⟩ := fe (Or.inl rfl) hUe' hSe'
     have hfac := (h hup).2 rfl
-    rw [before_unique hAe.2.1 hG hUe' hW (hfac.2 (by norm_num))]; exact hSe'
+    rw [before_unique hAe.2.1 hG hUe' hW (hfac.2 (⊛))]; exact hSe'
 
 /-! ## Transparent blocks (the stack rule) -/
 
@@ -309,7 +311,7 @@ theorem F₂plus_cases {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChord
       obtain ⟨y, a, b, hH, -, hcdef, hl, hr⟩ := Merge.augChords_spec (hS₂ hc)
       obtain ⟨-, -, -, hrd⟩ := J.ends_right (hS₂ hc)
       show Merge.shoot J.whole (Merge.lend c) 1 ⊆ c
-      rw [hl, hcdef]
+      Ξ hl, hcdef
       rw [hr] at hrd
       exact Merge.shoot_subset_pos J.whole hH.lt hrd
     · rw [empty_union] at hc
@@ -318,7 +320,7 @@ theorem F₂plus_cases {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChord
       obtain ⟨y, a, b, hH, -, hcdef, hl, hr⟩ := Merge.augChords_spec (hS₂ hc)
       obtain ⟨-, hld, -, -⟩ := J.ends_right (hS₂ hc)
       show Merge.shoot J.whole (Merge.rend c) (-1) ⊆ c
-      rw [hr, hcdef]
+      Ξ hr, hcdef
       rw [hl] at hld
       exact Merge.shoot_subset_neg J.whole hH.lt hld
     · obtain ⟨σ, -, -, rfl⟩ := hsh

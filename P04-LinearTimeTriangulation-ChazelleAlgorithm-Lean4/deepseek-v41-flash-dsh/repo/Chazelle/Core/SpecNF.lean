@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecBase
 
 /-!
@@ -322,21 +324,21 @@ theorem Host.pts_length_le {n : ℕ} {H : Host} (h : HostWF n H) :
   induction H with
   | nil => simp [Host.pts]
   | cons it H ih =>
-    have hit := h it (by simp)
+    have hit := h it (✓)
     have ih' := ih fun it' hit' => h it' (List.mem_cons_of_mem _ hit')
     have e : (Host.pts n (it :: H)).length = (it.pts n).length + (Host.pts n H).length := by
-      simp [Host.pts]
+      Θ Host.pts
     have hi : (it.pts n).length ≤ n := by
       cases it with
       | run a l =>
-        simp only [HostItem.pts, List.length_map, List.length_range]
+        ϴ HostItem.pts, List.length_map, List.length_range
         exact hit.2
       | pt x =>
-        simp only [HostItem.pts, List.length_singleton]
+        ϴ HostItem.pts, List.length_singleton
         cases x with
         | vtx i => simp only [SymPt.Lt] at hit; omega
         | onEdge e' h' => simp only [SymPt.Lt] at hit; omega
-    rw [e, List.length_cons, Nat.succ_mul]
+    Ξ e, List.length_cons, Nat.succ_mul
     omega
 
 /-- The host of the up phase: the geometry polygon itself. -/
@@ -344,7 +346,7 @@ def Host.whole (n : ℕ) : Host := [.run 0 (n - 1)]
 
 /-- The whole host has one symbolic vertex per input vertex. -/
 theorem Host.whole_pts_length (n : ℕ) (hn : 1 ≤ n) : ((Host.whole n).pts n).length = n := by
-  simp [Host.whole, Host.pts, HostItem.pts]
+  Θ Host.whole, Host.pts, HostItem.pts
   omega
 
 end

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvXRamI
 
 /-!
@@ -34,7 +36,7 @@ noncomputable def xL (P : Polygon) (v : XV) (NR : NF) (i : ℕ) : List (ℕ × �
 theorem kl_succ (P : Polygon) (v : XV) (NR : NF) (i : ℕ) :
     kl P v NR (i + 1) = kl P v NR i ++ (if kR P v (NR.chord i) then [i] else []) := by
   unfold kl
-  rw [List.range_succ, List.filter_append]
+  Ξ List.range_succ, List.filter_append
   congr 1
   by_cases h : kR P v (NR.chord i) <;> simp [h]
 
@@ -48,25 +50,25 @@ theorem xL_not {P : Polygon} {v : XV} {NR : NF} {i : ℕ} (h : ¬ kR P v (NR.cho
 
 theorem xL_length_le (P : Polygon) (v : XV) (NR : NF) (i : ℕ) : (xL P v NR i).length ≤ i := by
   unfold xL kl
-  rw [List.length_map]
-  exact (List.length_filter_le _ _).trans (by rw [List.length_range])
+  Ξ List.length_map
+  exact (List.length_filter_le _ _).trans (Ρ List.length_range)
 
 theorem endPos_append {L M : List (ℕ × ℕ × ℕ)} {q : ℕ} (hq : q < 2 * L.length) :
     endPos (L ++ M) q = endPos L q := by
   unfold endPos
-  rw [List.getD_append _ _ _ _ (by omega)]
+  rw [List.getD_append _ _ _ _ (⋄)]
 
 theorem endPos_last_l (L : List (ℕ × ℕ × ℕ)) (x : ℕ × ℕ × ℕ) :
     endPos (L ++ [x]) (2 * L.length) = (recOf x).lpos := by
   unfold endPos
-  rw [ite_eq_left (by omega), show 2 * L.length / 2 = L.length by omega,
+  rw [ite_eq_left (⋄), show 2 * L.length / 2 = L.length by omega,
     List.getD_append_right _ _ _ _ (le_refl _), Nat.sub_self]
   rfl
 
 theorem endPos_last_r (L : List (ℕ × ℕ × ℕ)) (x : ℕ × ℕ × ℕ) :
     endPos (L ++ [x]) (2 * L.length + 1) = (recOf x).rpos := by
   unfold endPos
-  rw [ite_eq_right (by omega), show (2 * L.length + 1) / 2 = L.length by omega,
+  rw [ite_eq_right (⋄), show (2 * L.length + 1) / 2 = L.length by omega,
     List.getD_append_right _ _ _ _ (le_refl _), Nat.sub_self]
   rfl
 
@@ -78,7 +80,7 @@ theorem stMem_apply (P : Polygon) (v : XV) (N : NF) (mm : ℕ → ℕ) (cnt : �
       else if a = v.LxB + 3 * cnt + 1 then (xP P v c.h c.lp).edge
       else if a = v.LxB + 3 * cnt then c.h else mm a := by
   unfold stMem
-  simp only [Machine.upd_apply]
+  ϴ Machine.upd_apply
 
 section loop
 

@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterSplitMath
 public import Chazelle.Core.ClusterPhase
 
@@ -80,11 +84,11 @@ theorem eqThen_exec {S : Stmt} {c : Config} (hw : WordsBounded W c) (x y : ℕ)
     ∃ c' k, Exec P W (eqThen x y S) c c' k ∧ k ≤ K + 4 ∧ R c' := by
   unfold eqThen
   by_cases h1 : c.nreg x < c.nreg y
-  · exact ⟨c, 0 + 1, .ifLtN_true h1 (.skip hw), by omega, hne (by omega)⟩
+  · exact ⟨c, 0 + 1, .ifLtN_true h1 (.skip hw), ⋄, hne (⋄)⟩
   · by_cases h2 : c.nreg y < c.nreg x
-    · exact ⟨c, 0 + 1 + 2, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw)), by omega, hne (by omega)⟩
-    · obtain ⟨c', k, e, hk, hr⟩ := hS (by omega)
-      exact ⟨c', k + 2 + 2, .ifLtN_false h1 (.ifLtN_false h2 e), by omega, hr⟩
+    · exact ⟨c, 0 + 1 + 2, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw)), ⋄, hne (⋄)⟩
+    · obtain ⟨c', k, e, hk, hr⟩ := hS (⋄)
+      exact ⟨c', k + 2 + 2, .ifLtN_false h1 (.ifLtN_false h2 e), ⋄, hr⟩
 
 /-- **The class parameters.** -/
 theorem cpStmt_exec {c : Config} (hw : WordsBounded W c) (hzero : c.nreg 130009 = 0)

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepPrimAbs
 public import Chazelle.Core.SweepIoPrim
 
@@ -45,12 +47,12 @@ theorem tour_pt {P : Polygon} (hG : GoodEnv P) {H : Host} {C : Chain} (hCP : C.P
   obtain ⟨hE, hx⟩ := tour_abs hG hCP hreg hNn hi h1 h2 hl₁ hl₂ hv₁ hv₂ ht
   refine ⟨hE, Prod.ext hx ?_⟩
   have hne := ne_of_param_pos ht
-  rw [Model.pos_snd hne]
+  Ξ Model.pos_snd hne
   have hc1 : 1 ≤ hc := by
     rcases Nat.eq_zero_or_pos hc with rfl | h
     · exact absurd (show (chainModel C).param (Qof P) ⟨i + 6, 0⟩ = 0 from rfl) (ne_of_gt ht)
     · exact h
-  obtain ⟨h', rfl⟩ : ∃ h', hc = h' + 1 := ⟨hc - 1, by omega⟩
+  obtain ⟨h', rfl⟩ : ∃ h', hc = h' + 1 := ⟨hc - 1, ⋄⟩
   rfl
 
 /-! ## The machine -/
@@ -72,7 +74,7 @@ def symCore : Stmt := .ifLtN 50202 50032 symVtx symInt
 /-- **The primitive `symAt`.** -/
 def symAt : Stmt := .seq pHead symCore
 
-theorem wr_symAt : wr Bprim symAt = true := by decide
+theorem wr_symAt : wr Bprim symAt = true := ⌖
 
 theorem symVtx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     (hE : CEnv P W H C c) {e hc : ℕ} (h01 : c.nreg 50201 = e) (he6 : 6 ≤ e)
@@ -81,12 +83,12 @@ theorem symVtx_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       ∃ s : SymPt, SymPtIn c' 50210 s ∧ s.Lt P.n ∧
         s.eval (Qof P) = (chainModel C).pos (Qof P) ⟨e, hc⟩ := by
   have e₁ := Exec.subN (P := P) hE.wb 50120 50201 50081
-  have hE₁ : CEnv P W H C _ := hE.step e₁ (by decide)
+  have hE₁ : CEnv P W H C _ := hE.step e₁ (⌖)
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp, -⟩ := tvLoad_exec _ hE₁ (i := e - 6)
-    (by simp [h01, hE.r81]) (by omega) (dst := 50210) (by norm_num)
+    (⊚ h01, hE.r81) (⋄) (dst := 50210) (⊛)
   have hv : (chainModel C).pos (Qof P) ⟨e, hc⟩ = (chainModel C).W.vtx (e - 6 + 6) := by
-    rw [pos_eq_sidePt, hpar, Chazelle.Chain.sidePt_zero, show e - 6 + 6 = e by omega]
-  exact ⟨c₂, _, .seq e₁ e₂, by omega, sp, isp, lsp, by rw [vsp, hv]⟩
+    Ξ pos_eq_sidePt, hpar, Chazelle.Chain.sidePt_zero, show e - 6 + 6 = e by omega
+  exact ⟨c₂, _, .seq e₁ e₂, ⋄, sp, isp, lsp, Ρ vsp, hv⟩
 
 theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     (hE : CEnv P W H C c) (hreg : HostRegular P.n H) {e hc : ℕ} (h01 : c.nreg 50201 = e)
@@ -101,37 +103,37 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have hNW := hE.NW
   have hmN := C.m_lt
   set i := e - 6 with hi
-  have hlt : i < 2 * C.m := by omega
+  have hlt : i < 2 * C.m := ⋄
   have e₁ := Exec.subN (P := P) hE.wb 50120 50201 50081
   set c₁ : Config := { c with nreg := upd c.nreg 50120 (c.nreg 50201 - c.nreg 50081) } with hc₁
-  have hE₁ : CEnv P W H C c₁ := hE.step e₁ (by decide)
+  have hE₁ : CEnv P W H C c₁ := hE.step e₁ (⌖)
   have q20 : c₁.nreg 50120 = i := by
     show upd c.nreg 50120 (c.nreg 50201 - c.nreg 50081) 50120 = i
-    rw [upd_same, h01, hE.r81]
+    Ξ upd_same, h01, hE.r81
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, s₁, i₁, l₁, v₁, x₁⟩ := tvLoad_exec c₁ hE₁ (i := i) q20
-    hlt.le (dst := 50130) (by norm_num)
+    hlt.le (dst := 50130) (⊛)
   have w₂ := e₂.wb_right
   have e₃ := Exec.addN (P := P) w₂ 50120 50120 50032
-    (by rw [f₂.1 _ (by decide), q20, hE₂.r32]; omega)
+    (by rw [f₂.1 _ (⌖), q20, hE₂.r32]; omega)
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50120 (c₂.nreg 50120 + c₂.nreg 50032) }
     with hc₃
-  have hE₃ : CEnv P W H C c₃ := hE₂.step e₃ (by decide)
+  have hE₃ : CEnv P W H C c₃ := hE₂.step e₃ (⌖)
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, hE₄, s₂, i₂, l₂, v₂, x₂⟩ := tvLoad_exec c₃ hE₃ (i := i + 1)
     (by rw [hc₃]; simp [f₂.1 _ (by decide : Btv 50130 50120 = false) ▸ q20, hE₂.r32])
-    (by omega) (dst := 50136) (by norm_num)
+    (⋄) (dst := 50136) (⊛)
   have i₁' : SymPtIn c₄ 50130 s₁ := symPtIn_keep (symPtIn_of_eq i₁ fun j h1 h2 => by
     rw [hc₃]; simp [show j ≠ 50120 by omega]) f₄
     (by intro j h1 h2; interval_cases j <;> decide)
-  obtain ⟨c₅, k₅, e₅, hk₅, v₅, r₅⟩ := edgeIdxS_exec (P := P) c₄ e₄.wb_right (by omega)
+  obtain ⟨c₅, k₅, e₅, hk₅, v₅, r₅⟩ := edgeIdxS_exec (P := P) c₄ e₄.wb_right (⋄)
     hE₄.r32 i₁' i₂ l₁ l₂
   have q02 : c₅.nreg 50202 = hc := by
-    rw [r₅ _ (by decide) (by decide) (by decide), f₄.1 _ (by decide), hc₃]
+    Ξ r₅ _ (⌖) (⌖) (⌖), f₄.1 _ (⌖), hc₃
     simp only
-    rw [upd_other _ _ _ (by decide), f₂.1 _ (by decide), hc₁]
+    Ξ upd_other _ _ _ (⌖), f₂.1 _ (⌖), hc₁
     simp only
-    rw [upd_other _ _ _ (by decide), h02]
+    Ξ upd_other _ _ _ (⌖), h02
   have q32 : c₅.nreg 50032 = 1 := by
-    rw [r₅ _ (by decide) (by decide) (by decide), hE₄.r32]
+    Ξ r₅ _ (⌖) (⌖) (⌖), hE₄.r32
   have ht' : 0 < (chainModel C).param (Qof P) ⟨i + 6, hc⟩ := by
     rw [show i + 6 = e by omega]; exact ht
   obtain ⟨hEi, hpt⟩ := tour_pt hE.hG hE.hP hreg hNn hlt x₁ x₂ l₁ l₂ v₁ v₂ ht'
@@ -146,11 +148,11 @@ theorem symInt_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     exec_block
     all_goals try omega
     refine ⟨rfl, by config_simp, by config_simp; exact v₅, ?_⟩
-    config_simp; rw [q02, q32]
+    config_simp; Ξ q02, q32
   have ex : Exec P W symInt c c₆ (1 + (k₂ + (1 + (k₄ + (k₅ + k₆))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
-  refine ⟨c₆, _, ex, by have := hE.hlen; omega, _, q, ⟨hEi, by omega⟩, ?_⟩
-  rw [show e = i + 6 by omega, hpt]
+  refine ⟨c₆, _, ex, by have := hE.hlen; omega, _, q, ⟨hEi, ⋄⟩, ?_⟩
+  Ξ show e = i + 6 by omega, hpt
 
 /-- The input condition of `symAt`: a tour position with a normalised height code, a regular
 host. -/
@@ -172,18 +174,18 @@ theorem symAt_meets : Meets symAt primBands (PrimPre SymIn) (PrimPost SymOut)
   intro P W H C c₀ c hC hE ⟨h6, hen, ⟨hp0, hp1, hhn⟩, hnorm, hreg⟩ hinp
   have hregH := hreg H hC.1
   have hlen := hE.hlen
-  have i01 := hinp 50201 (by norm_num) (by norm_num)
-  have i02 := hinp 50202 (by norm_num) (by norm_num)
+  have i01 := hinp 50201 (⊛) (⊛)
+  have i02 := hinp 50202 (⊛) (⊛)
   unfold SymOut symCore
   by_cases hz : c.nreg 50202 < c.nreg 50032
-  · have hc0 : c₀.nreg 50202 = 0 := by rw [← i02]; rw [hE.r32] at hz; omega
-    obtain ⟨c', k, ex, hk, s, hs⟩ := symVtx_exec c hE i01 h6 (by omega) (hnorm.1 hc0)
-    exact ⟨c', _, .ifLtN_true hz ex, by omega, s, hs⟩
-  · have hc0 : c₀.nreg 50202 ≠ 0 := by rw [← i02]; rw [hE.r32] at hz; omega
+  · have hc0 : c₀.nreg 50202 = 0 := by rw [← i02]; Ξ' hE.r32 at hz; omega
+    obtain ⟨c', k, ex, hk, s, hs⟩ := symVtx_exec c hE i01 h6 (⋄) (hnorm.1 hc0)
+    exact ⟨c', _, .ifLtN_true hz ex, ⋄, s, hs⟩
+  · have hc0 : c₀.nreg 50202 ≠ 0 := by rw [← i02]; Ξ' hE.r32 at hz; omega
     have hpos : 0 < (chainModel C).param (Qof P) ⟨c₀.nreg 50201, c₀.nreg 50202⟩ :=
       lt_of_le_of_ne hp0 (fun h => hc0 (hnorm.2 h.symm))
     obtain ⟨c', k, ex, hk, s, hs⟩ := symInt_exec c hE hregH i01 i02 h6 hen hpos hhn
-    exact ⟨c', _, .ifLtN_false hz ex, by omega, s, hs⟩
+    exact ⟨c', _, .ifLtN_false hz ex, ⋄, s, hs⟩
 
 end
 

@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterMap
 
 /-!
@@ -33,7 +37,7 @@ def Sorted (κ : ℕ → ℕ) (lo hi : ℕ) : Prop := ∀ i i', lo ≤ i → i �
 /-- The start: `pos = lo` and `2^J > hi - lo`. -/
 theorem LbInv.init {κ : ℕ → ℕ} {lo hi x J : ℕ} (hlh : lo ≤ hi) (hJ : hi - lo < 2 ^ J) :
     LbInv κ lo hi x lo J :=
-  ⟨le_rfl, hlh, fun i h1 h2 => by omega, fun h => by omega⟩
+  ⟨le_rfl, hlh, fun i h1 h2 => ⋄, fun h => ⋄⟩
 
 /-- **One step** at level `j + 1 → j`: jump by `2^j` iff the jump stays in range and the key at
 the new `pos - 1` is below the target. -/
@@ -48,9 +52,9 @@ theorem LbInv.step {κ : ℕ → ℕ} {lo hi x pos j : ℕ} (hs : Sorted κ lo h
     refine ⟨by have := hI.lo_le; omega, h1, fun i hi1 hi2 => ?_, fun h => ?_⟩
     · by_cases hip : i < pos
       · exact hI.below i hi1 hip
-      · exact lt_of_le_of_lt (hs i (pos + 2 ^ j - 1) hi1 (by omega) (by omega)) h2
+      · exact lt_of_le_of_lt (hs i (pos + 2 ^ j - 1) hi1 (⋄) (⋄)) h2
     · have := hI.above (by rw [hpow]; omega)
-      rw [show pos + 2 ^ j + 2 ^ j - 1 = pos + 2 ^ (j + 1) - 1 by rw [hpow]; omega]
+      Ξ show pos + 2 ^ j + 2 ^ j - 1 = pos + 2 ^ (j + 1) - 1 by rw [hpow]; omega
       exact this
   · intro h
     refine ⟨hI.lo_le, hI.le_hi, hI.below, fun hin => ?_⟩
@@ -64,7 +68,7 @@ theorem LbInv.final {κ : ℕ → ℕ} {lo hi x pos : ℕ} (hs : Sorted κ lo hi
     (∀ i, lo ≤ i → i < pos → κ i < x) ∧ (∀ i, pos ≤ i → i < hi → x ≤ κ i) := by
   refine ⟨hI.below, fun i hi1 hi2 => ?_⟩
   have := hI.above (by simp; omega)
-  simp only [pow_zero, Nat.add_sub_cancel] at this
+  ϴ' pow_zero, Nat.add_sub_cancel at this
   exact le_trans this (hs pos i (hI.lo_le) hi1 hi2)
 
 /-! ## Climb -/
@@ -82,7 +86,7 @@ theorem ClimbInv.step {up : ℕ → ℕ} {Good : ℕ → Prop} {x j : ℕ} (hI :
   constructor
   · intro h
     refine ⟨h, ?_⟩
-    rw [← Function.iterate_add_apply, show 2 ^ j + 2 ^ j = 2 ^ (j + 1) by rw [pow_succ]; ring]
+    Ξ ← Function.iterate_add_apply, show 2 ^ j + 2 ^ j = 2 ^ (j + 1) by rw [pow_succ]; ring
     exact hI.good
   · intro h
     exact ⟨hI.bad, h⟩

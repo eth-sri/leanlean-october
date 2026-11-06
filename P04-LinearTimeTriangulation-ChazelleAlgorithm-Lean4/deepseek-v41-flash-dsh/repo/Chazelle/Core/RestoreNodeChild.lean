@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreNodeEnd
 public import Chazelle.Core.RestoreTree
 
@@ -63,10 +65,10 @@ theorem child_side {M : Model} {Q : Polygon} {N : NF} {reg : ℕ → Set Point} 
   set ke := M.key Q (N.arc j).e
   obtain ⟨ε, hε⟩ := (hf.and ((side_after hab p).and ((side_after hab ks).and
     ((after_start ks ke).and ((after_ne p ka).and ((after_ne p kb).and ((after_ne ks ka).and
-      ((after_ne ks kb).and ((small_lt 1 one_pos).and ((small_lt (1 - τ) (by linarith)).and
+      ((after_ne ks kb).and ((small_lt 1 one_pos).and ((small_lt (1 - τ) (⟡)).and
         self_mem_nhdsWithin)))))))))).exists
   obtain ⟨hfp, hsp, hss, hst, n1, n2, n3, n4, hε1, hετ, hε0⟩ := hε
-  have hε0' : (0 : ℝ) < ε := hε0
+  have hε0' := hε0
   have hsedge : s.edge < M.W.n := by
     obtain ⟨-, h, -⟩ := harc
     have := hτ0
@@ -75,10 +77,10 @@ theorem child_side {M : Model} {Q : Polygon} {N : NF} {reg : ℕ → Set Point} 
       linarith
     exact_mod_cast h'
   have hf₀ : M.Faces s.edge (τ + ε) (reg (N.chord k).dn) :=
-    harc.2.2.2.2.2.2 s.edge (τ + ε) hsedge (by linarith) (by linarith)
+    harc.2.2.2.2.2.2 s.edge (τ + ε) hsedge (⟡) (⟡)
       (by rw [← add_assoc, ← hks]; exact hst)
   have hd := decide_side hGM hN hT hregs.1 hregs.2.1 hk hA hB hAB hr hp hε0' hε1 hfp hsedge
-    (by linarith) (by linarith) hf₀
+    (⟡) (⟡) hf₀
   have sw : ∀ v, v ≠ ka → v ≠ kb → (sideInArc kb ka v ↔ ¬ sideInArc ka kb v) := fun v h1 h2 =>
     Chazelle.Chain.sideInArc_swap (Ne.symm hab) h2 h1
   have ex : sideInArc ka kb (p + ε) ↔ sideInArc ka kb p := by

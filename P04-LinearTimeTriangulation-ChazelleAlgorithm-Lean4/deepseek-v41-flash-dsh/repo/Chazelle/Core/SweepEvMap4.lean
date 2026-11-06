@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvMap2
 
 /-!
@@ -36,7 +38,7 @@ theorem edge_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (htp
   have hτ₁ := tpos_lt J.left J.m₁
   have hτw := tpos_lt J.whole J.m₁
   obtain ⟨hdE, hgap, hsplit, -⟩ := hv
-  have ht0 : t ≠ 0 := htp.ne'
+  have ht0 := htp.ne'
   have viaGen : ∀ d' : ℕ, d' < lL1 J + lL2 J →
       (b₁ J + d) % (chainModel J.left).W.n =
         (6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d') % (chainModel J.left).W.n →
@@ -45,8 +47,8 @@ theorem edge_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (htp
         sidePt (chainModel J.left).W ((b₁ J + d) % (chainModel J.left).W.n) s := by
     intro d' hd' he hoff
     have hE : mEdge J d = (6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d') % (chainModel J.whole).W.n := by
-      rw [mEdge_def, left_edge_eq, hoff]
-    rw [hE, he]
+      Ξ mEdge_def, left_edge_eq, hoff
+    Ξ hE, he
     exact (corr_left0 J hP (S₁ := ∅) (empty_subset _) finite_empty).sidePt_eq hd' s
   have viaBox : ∀ d'' : ℕ, (hv' : ¬ VNotTop J) → d'' < 7 →
       (b₁ J + d) % (chainModel J.left).W.n = (2 * J.left.m + 6 + d'') % (chainModel J.left).W.n →
@@ -55,59 +57,59 @@ theorem edge_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (htp
         sidePt (chainModel J.left).W ((b₁ J + d) % (chainModel J.left).W.n) s := by
     intro d'' hv' hd'' he hidx
     have hE : mEdge J d = (2 * J.whole.m + 6 + d'') % (chainModel J.whole).W.n := by
-      rw [mEdge_def, hidx]
-    rw [hE, he]
+      Ξ mEdge_def, hidx
+    Ξ hE, he
     exact (box_agree J hv').sidePt_eq hd'' s
   by_cases hVNT : VNotTop J
-  · have hlOff : lOff J = Lst J := by rw [lOff_of_vnt J hVNT, Lst_rlen]
+  · have hlOff : lOff J = Lst J := Ρ lOff_of_vnt J hVNT, Lst_rlen
     have hlen : Lst J + llen J = (chainModel J.whole).W.n := by
       rw [Lst_rlen]; exact rlen_add_llen J hVNT
-    have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; rw [ite_eq_right (by omega)]
+    have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; Ξ ite_eq_right (⋄)
     have hE₁ : E₁ J = llen J + lδ J := by unfold E₁; omega
     have hL := lL1_add_lL2 J
-    rw [hE₁] at hdE
-    rw [hb] at viaGen ⊢
+    Ξ' hE₁ at hdE
+    Ξ' hb at viaGen ⊢
     by_cases hdl : d < lL1 J
-    · have hψ : ψ J d = d := by unfold ψ; rw [ite_eq_right (by omega)]
-      refine viaGen d (by omega) ?_ (by rw [hψ, hlOff])
-      unfold dq; rw [ite_eq_left hdl]
+    · have hψ : ψ J d = d := by unfold ψ; Ξ ite_eq_right (⋄)
+      refine viaGen d (⋄) ?_ (Ρ hψ, hlOff)
+      unfold dq; Ξ ite_eq_left hdl
     · by_cases hδ : lδ J = 0
       · have := lL2_of_lδ hδ; omega
-      · have hδ' : 0 < lδ J := by omega
+      · have hδ' : 0 < lδ J := ⋄
         obtain ⟨h7, hl1, hl2, hτp, hτl⟩ := left_G hδ'
-        rw [h7] at hgap hsplit hdE
-        have hd1 : d ≠ lL1 J := fun hd1 => hsplit ⟨by omega, hd1, ht0⟩
+        Ξ' h7 at hgap hsplit hdE
+        have hd1 : d ≠ lL1 J := fun hd1 => hsplit ⟨⋄, hd1, ht0⟩
         have hd2 : lL1 J + 7 ≤ d := by
-          by_contra h; exact hgap ⟨by omega, by omega, by omega⟩
+          by_contra h; exact hgap ⟨⋄, ⋄, ⋄⟩
         have hψ : ψ J d = d - 7 := by
-          unfold ψ; rw [ite_eq_left ⟨hδ', by omega⟩, ite_eq_right (by omega), h7]
-        refine viaGen (d - 7) (by omega) ?_ (by rw [hψ, hlOff])
-        unfold dq; rw [ite_eq_right (by omega), h7, show d - 7 + 7 = d by omega]
+          unfold ψ; Ξ ite_eq_left ⟨hδ', ⋄⟩, ite_eq_right (⋄), h7
+        refine viaGen (d - 7) (⋄) ?_ (Ρ hψ, hlOff)
+        unfold dq; Ξ ite_eq_right (⋄), h7, show d - 7 + 7 = d by omega
   · obtain ⟨hτ0, hδ0, hl1, hl2, hll⟩ := nvt_left J hP hVNT
-    have hψ : ψ J d = d := by unfold ψ; rw [ite_eq_right (by omega)]
+    have hψ : ψ J d = d := by unfold ψ; Ξ ite_eq_right (⋄)
     by_cases hbox : Lst J < lOff J
     · obtain ⟨-, hlo, hτs, hLst⟩ := caseB_facts J hbox
-      have hb : b₁ J = 2 * J.left.m + 6 := by unfold b₁; rw [ite_eq_left hbox]
+      have hb : b₁ J = 2 * J.left.m + 6 := by unfold b₁; Ξ ite_eq_left hbox
       have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; rw [hn, hδ0]; omega
-      rw [hE₁] at hdE
-      rw [hb] at viaGen ⊢
+      Ξ' hE₁ at hdE
+      Ξ' hb at viaGen ⊢
       by_cases hd7 : d < 7
-      · have := viaBox d hVNT hd7 (by rw [hb]) (by rw [hψ]; unfold gW; omega)
+      · have := viaBox d hVNT hd7 (Ρ hb) (by rw [hψ]; unfold gW; omega)
         rwa [hb] at this
-      · refine viaGen (d - 7) (by omega) ?_ (by rw [hψ]; omega)
-        unfold dq; rw [ite_eq_left (by omega), hτ0, hn₁]
+      · refine viaGen (d - 7) (⋄) ?_ (by rw [hψ]; omega)
+        unfold dq; Ξ ite_eq_left (⋄), hτ0, hn₁
         rw [show 2 * J.left.m + 6 + d = (6 + 0 + (d - 7)) + (2 * J.left.m + 7) by omega,
           Nat.add_mod_right]
     · obtain ⟨hτs, hlo, hLst⟩ := caseC_facts J hVNT hbox
-      have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; rw [ite_eq_right hbox]
+      have hb : b₁ J = 6 + tpos J.left J.m₁ := by unfold b₁; Ξ ite_eq_right hbox
       have hE₁ : E₁ J = 2 * J.m₁ + 7 := by unfold E₁; rw [hn, hδ0]; omega
-      rw [hE₁] at hdE
-      rw [hb, hτ0] at viaGen ⊢
+      Ξ' hE₁ at hdE
+      Ξ' hb, hτ0 at viaGen ⊢
       by_cases hd2 : d < 2 * J.m₁
-      · refine viaGen d (by omega) ?_ (by rw [hψ, hlo])
-        unfold dq; rw [ite_eq_left (by omega)]
-      · have := viaBox (d - 2 * J.m₁) hVNT (by omega) (by
-          rw [hb, hτ0]
+      · refine viaGen d (⋄) ?_ (Ρ hψ, hlo)
+        unfold dq; Ξ ite_eq_left (⋄)
+      · have := viaBox (d - 2 * J.m₁) hVNT (⋄) (by
+          Ξ hb, hτ0
           congr 1
           omega) (by rw [hψ]; unfold gW; omega)
         rwa [hb, hτ0] at this
@@ -120,17 +122,17 @@ theorem param_corr (hP : J.P.Simple) {d : ℕ} {t : ℝ} (hv : MValid J d t) (ht
       (chainModel J.left).param Q ⟨(b₁ J + d) % (chainModel J.left).W.n, h⟩ := by
   have e0 := edge_corr hP hv htp 0
   have e1 := edge_corr hP hv htp 1
-  simp only [Chazelle.Chain.sidePt_zero] at e0
+  ϴ' Chazelle.Chain.sidePt_zero at e0
   have hwa : (chainModel J.whole).wa (mEdge J d) =
       (chainModel J.left).wa ((b₁ J + d) % (chainModel J.left).W.n) := e0
   have hwb : (chainModel J.whole).wb (mEdge J d) =
       (chainModel J.left).wb ((b₁ J + d) % (chainModel J.left).W.n) := by
     unfold Model.wb
-    rw [Nat.mod_add_mod]
+    Ξ Nat.mod_add_mod
     unfold Chazelle.Chain.sidePt at e1
     simpa [Geometry.lerp_one] using e1
   unfold Model.param
-  rw [hwa, hwb]
+  Ξ hwa, hwb
 
 end EdgeCorr
 

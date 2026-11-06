@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDropWt
 
 /-!
@@ -91,7 +95,7 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
       · obtain ⟨c, hc, hwc'⟩ := hwF
         have hc' : c ∉ F' := fun h => (hWF' hwW).2 ⟨c, h, hwc'⟩
         have := hW c hc hc' w hwc'
-        exact Or.inl ⟨⟨hb1.1, hb1.2⟩, ⟨hb2.1, by linarith⟩⟩
+        exact Or.inl ⟨⟨hb1.1, hb1.2⟩, ⟨hb2.1, ⟡⟩⟩
       · have hwfree : w ∈ freeIn D F := ⟨hwD, hwF⟩
         rw [closure_union] at hwc
         rcases hwc with hwc | hwc
@@ -99,7 +103,7 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
           · exact Or.inl ⟨⟨hb1.1, hb1.2⟩, ⟨hb2.1, hwy⟩⟩
           · have := hclU' hwc
             simp only [mem_ofPred_eq] at this
-            exact Or.inr (hfreeX w hwfree (hclU w hwc (by linarith)))
+            exact Or.inr (hfreeX w hwfree (hclU w hwc (⟡)))
         · exact Or.inr (hfreeX w hwfree hwc)
     refine le_trans (Set.ncard_le_ncard ?_ hfin') (hd X hXr)
     rintro c ⟨hc, z, ⟨hzc, hzD⟩, hzW⟩
@@ -108,7 +112,7 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
     have hz := closure_mono hsubW hzW
     rw [closure_union] at hz
     rcases hz with hz | hz
-    · exact hclU z hz (by linarith)
+    · exact hclU z hz (⟡)
     · exact hz
   · -- `W` misses the dropped chords: it is a region of `F`
     have hWF : W ⊆ freeIn D F := by
@@ -119,12 +123,12 @@ theorem degLe_drop {D : Set Point} {F F' : Set (Set Point)} (hsys : ChordSystem 
       have hwy := hW c hc hc' w hwc
       obtain ⟨hb1, hb2⟩ := hDbox w (hWF' hw).1
       rw [abs_lt] at hb1 hb2
-      exact hWU ⟨w, hw, ⟨hb1.1, hb1.2⟩, ⟨hb2.1, by linarith⟩⟩
+      exact hWU ⟨w, hw, ⟨hb1.1, hb1.2⟩, ⟨hb2.1, ⟡⟩⟩
     obtain ⟨w0, hw0⟩ := Chazelle.Chain.regionsIn_nonempty hWr
     have hWeq : W = connectedComponentIn (freeIn D F) w0 := by
       apply Subset.antisymm
       · exact (Chazelle.Chain.regionsIn_isPreconnected hWr).subset_connectedComponentIn hw0 hWF
-      · rw [Chazelle.Chain.regionsIn_eq_component hWr hw0]
+      · Ξ Chazelle.Chain.regionsIn_eq_component hWr hw0
         exact connectedComponentIn_mono w0 (Chazelle.Chain.freeIn_anti D hsub)
     have hWr' : W ∈ regionsIn D F := ⟨w0, hWF hw0, hWeq⟩
     refine le_trans (Set.ncard_le_ncard ?_ (hfin.subset fun c hc => hc.1)) (hd W hWr')

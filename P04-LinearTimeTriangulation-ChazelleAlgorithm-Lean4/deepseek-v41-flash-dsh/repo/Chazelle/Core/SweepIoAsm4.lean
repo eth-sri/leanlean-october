@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoAsm3
 public import Chazelle.Core.SweepEvWinArcs
 public import Chazelle.Core.MergeAsmDesc
@@ -31,7 +33,7 @@ variable {P : Polygon} {W : ℕ}
 theorem chordList_keep {m m' : ℕ → ℕ} {A E : ℕ} {L : List (ℕ × ℕ × ℕ)} (h : ChordListAt m A L)
     (hb : A + 3 * L.length ≤ E) (he : ∀ a, a < E → m' a = m a) : ChordListAt m' A L := by
   intro i hi
-  rw [he _ (by omega), he (A + 3 * i + 1) (by omega), he (A + 3 * i + 2) (by omega)]
+  rw [he _ (⋄), he (A + 3 * i + 1) (by omega), he (A + 3 * i + 2) (by omega)]
   exact h i hi
 
 theorem bands_sub {r : ℕ} (hr : bandOf r ∉ sweepBands ∪ oracleBands) :
@@ -81,20 +83,20 @@ theorem asm_aenv {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junct
     AEnv P W X Ok J H N₁ N₂ (c.nreg ALLOC) c₄ := by
   set A₀ := c.nreg ALLOC with hA₀
   set A₃ := c₃.nreg ALLOC with hA₃d
-  have hA₄ : A₃ + 12 ≤ c₄.nreg ALLOC := by omega
+  have hA₄ : A₃ + 12 ≤ c₄.nreg ALLOC := ⋄
   have r : ∀ j, j < 30 → c₄.nreg (sw j) = c₃.nreg (sw j) := fun j hj =>
-    r₄ j (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-      (Or.inl (by omega))
+    r₄ j (⋄) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
+      (Or.inl (⋄))
   have rr : ∀ j, (j = 200 ∨ j = 201 ∨ j = 300 ∨ j = 301 ∨ j = 302) →
       c₄.nreg (sw j) = c₃.nreg (sw j) := fun j hj =>
-    r₄ j (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-      (Or.inl (by omega))
-  have e3 : c₄.nreg (sw 3) = c.nreg (sw 3) := (r 3 (by omega)).trans (hr₃ 3 (by simp))
-  have e4 : c₄.nreg (sw 4) = c.nreg (sw 4) := (r 4 (by omega)).trans (hr₃ 4 (by simp))
-  have e5 : c₄.nreg (sw 5) = c.nreg (sw 5) := (r 5 (by omega)).trans (hr₃ 5 (by simp))
-  have e6 : c₄.nreg (sw 6) = c.nreg (sw 6) := (r 6 (by omega)).trans (hr₃ 6 (by simp))
-  have e10 : c₄.nreg (sw 10) = c.nreg (sw 10) := (r 10 (by omega)).trans (hr₃ 10 (by simp))
-  have m : ∀ a, a < A₀ → c₄.nmem a = c.nmem a := fun a ha => (m₄ a (by omega)).trans (hm₃ a ha)
+    r₄ j (⋄) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
+      (Or.inl (⋄))
+  have e3 : c₄.nreg (sw 3) = c.nreg (sw 3) := (r 3 (⋄)).trans (hr₃ 3 (by simp))
+  have e4 : c₄.nreg (sw 4) = c.nreg (sw 4) := (r 4 (⋄)).trans (hr₃ 4 (by simp))
+  have e5 : c₄.nreg (sw 5) = c.nreg (sw 5) := (r 5 (⋄)).trans (hr₃ 5 (by simp))
+  have e6 : c₄.nreg (sw 6) = c.nreg (sw 6) := (r 6 (⋄)).trans (hr₃ 6 (by simp))
+  have e10 : c₄.nreg (sw 10) = c.nreg (sw 10) := (r 10 (⋄)).trans (hr₃ 10 (by simp))
+  have m : ∀ a, a < A₀ → c₄.nmem a = c.nmem a := fun a ha => (m₄ a (⋄)).trans (hm₃ a ha)
   obtain ⟨b3, -⟩ := Restore.nf_bounds hNW₁
   obtain ⟨b4, -⟩ := Restore.nf_bounds hNW₂
   have hK₁ : c.nmem (c.nreg (sw 3)) = N₁.nChords := hNW₁.nfAt.1
@@ -104,12 +106,12 @@ theorem asm_aenv {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junct
   obtain ⟨-, -, -, -, -, -, d20, w20, d21, w21, -⟩ := hst₃'
   have hn₂ : (chainModel J.right).W.n = 2 * J.right.m + 7 := WalkEmbed.cm_n J.right
   obtain ⟨md30, mw30, -⟩ := modelDesc_of_copy (P := P) (A := A₃) (E' := c₄.nreg ALLOC) w20 d20
-    le_rfl m₄ z0 zq (by omega)
+    le_rfl m₄ z0 zq (⋄)
   obtain ⟨md31, mw31, -⟩ := modelDesc_of_copy (P := P) (A := A₃ + 6) (E' := c₄.nreg ALLOC) w21 d21
-    (by omega) m₄ z6 zl (by omega)
+    (⋄) m₄ z6 zl (by omega)
   have hst₄ : SweepEv.St0S P c₄ H J := by
-    refine st0S_md hst₃ (fun j hj h11 h30 h31 => r₄ j (by omega) h30 h31 (by omega) (by omega)
-      (by omega) (by omega) (by omega) (Or.inl (by omega))) m₄ (by omega) ?_ ?_ ?_ ?_
+    refine st0S_md hst₃ (fun j hj h11 h30 h31 => r₄ j (⋄) h30 h31 (by omega) (by omega)
+      (⋄) (by omega) (by omega) (Or.inl (by omega))) m₄ (by omega) ?_ ?_ ?_ ?_
     · rw [z30]; exact md30
     · rw [z30]; exact mw30
     · rw [z31]; exact md31
@@ -135,42 +137,42 @@ theorem asm_aenv {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junct
       hsg₁ := by rw [e5]; exact hsg₁
       hsg₂ := by rw [e5]; exact hsg₂
       hst := hst₄
-      hE := by omega
+      hE := ⋄
       hWm := hWm
       hK := hK
       htab := ttab
-      hbig₁ := by omega
-      hbig₂ := by omega
+      hbig₁ := ⋄
+      hbig₂ := ⋄
       hbigE := ?_
-      hTB := by omega
-      hTW := by omega
+      hTB := ⋄
+      hTW := ⋄
       hout := out_transport hout₃ rr m₄ hs₃ hl₃ ht₃
       hstops := ?_
       hlog := ?_
       htabw := ?_
-      hK₁ := by rw [e3, m _ (by omega)]; exact hK₁
-      hK₂ := by rw [e4, m _ (by omega)]; exact hK₂
+      hK₁ := by rw [e3, m _ (⋄)]; exact hK₁
+      hK₂ := by rw [e4, m _ (⋄)]; exact hK₂
       hmd₁ := fun j hj => by
-        rw [z30, zq j hj, r 20 (by omega), m₄ _ (by omega)]
+        rw [z30, zq j hj, r 20 (⋄), m₄ _ (by omega)]
       hmd₂ := fun j hj => by
-        rw [z31, zl j hj, r 21 (by omega), m₄ _ (by omega)] }
-  · rw [e10]
-    exact X.mono _ _ _ _ _ (by omega) (X.local_ _ _ _ _ _ (fun a ha => (m a ha).symm) hX)
+        rw [z31, zl j hj, r 21 (⋄), m₄ _ (by omega)] }
+  · Ξ e10
+    exact X.mono _ _ _ _ _ (⋄) (X.local_ _ _ _ _ _ (fun a ha => (m a ha).symm) hX)
   · rw [e5, e10, hXl _ _ _ _ _ m hX]; exact hcap
   · show rd c₄ bSweep 201 + rd c₄ bSweep 301 + 2 * N₂.nChords < 2 ^ c₄.nreg TLR
-    rw [show rd c₄ bSweep 201 = rd c₃ bSweep 201 from rr 201 (by simp),
-      show rd c₄ bSweep 301 = rd c₃ bSweep 301 from rr 301 (by simp)]
+    rw [show rd c₄ bSweep 201 = rd c₃ bSweep 201 from rr 201 (✓),
+      show rd c₄ bSweep 301 = rd c₃ bSweep 301 from rr 301 (✓)]
     omega
   · show rd c₄ bSweep 200 + 5 * rd c₄ bSweep 201 ≤ c₄.nreg ALLOC
-    rw [show rd c₄ bSweep 200 = rd c₃ bSweep 200 from rr 200 (by simp),
-      show rd c₄ bSweep 201 = rd c₃ bSweep 201 from rr 201 (by simp)]
+    rw [show rd c₄ bSweep 200 = rd c₃ bSweep 200 from rr 200 (✓),
+      show rd c₄ bSweep 201 = rd c₃ bSweep 201 from rr 201 (✓)]
     omega
   · show rd c₄ bSweep 300 + 7 * rd c₄ bSweep 301 ≤ c₄.nreg ALLOC
-    rw [show rd c₄ bSweep 300 = rd c₃ bSweep 300 from rr 300 (by simp),
-      show rd c₄ bSweep 301 = rd c₃ bSweep 301 from rr 301 (by simp)]
+    rw [show rd c₄ bSweep 300 = rd c₃ bSweep 300 from rr 300 (✓),
+      show rd c₄ bSweep 301 = rd c₃ bSweep 301 from rr 301 (✓)]
     omega
   · show rd c₄ bSweep 302 + 3 * (2 * N₂.nChords) ≤ c₄.nreg ALLOC
-    rw [show rd c₄ bSweep 302 = rd c₃ bSweep 302 from rr 302 (by simp)]
+    rw [show rd c₄ bSweep 302 = rd c₃ bSweep 302 from rr 302 (✓)]
     omega
 
 end

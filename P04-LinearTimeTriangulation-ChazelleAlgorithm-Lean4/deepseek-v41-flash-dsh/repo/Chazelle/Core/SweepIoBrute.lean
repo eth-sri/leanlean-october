@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoBruteLoop
 public import Chazelle.Core.SweepIoBruteShot
 
@@ -34,8 +36,8 @@ def bruteK : ℕ := 600000
 
 theorem brute_cost (A Fg : ℕ) : bLoopK A + symShotK Fg A ≤ bruteK * (A + 1) * (Fg + 1) := by
   unfold bLoopK symShotK ShotList.shotCost bArcK offerK bruteK
-  have e1 : (A + 1) * (16 * Fg + 500000) = 16 * ((A + 1) * Fg) + 500000 * (A + 1) := by ring
-  have e2 : 600000 * (A + 1) * (Fg + 1) = 600000 * ((A + 1) * Fg) + 600000 * (A + 1) := by ring
+  have e1 : (A + 1) * (16 * Fg + 500000) = 16 * ((A + 1) * Fg) + 500000 * (A + 1) := ⋆
+  have e2 : 600000 * (A + 1) * (Fg + 1) = 600000 * ((A + 1) * Fg) + 600000 * (A + 1) := ⋆
   rw [e1, e2]; omega
 
 theorem sregOK_sw {j : ℕ} (h1 : j < 1300 ∨ 1600 ≤ j) (h2 : j < 2000 ∨ 2012 < j) (h3 : j < 10000) :
@@ -67,13 +69,13 @@ theorem bruteSpec : BruteSpec := by
     w9 _ (nb j hj) hb (by unfold ALLOC sw; omega)
   have a1 : ∀ j, j ≤ 12 → c₁.nreg (accA + j) = c.nreg (accA + j) := fun j hj => by
     have e : accA + j = sw (2000 + j) := by unfold accA sw; omega
-    rw [e]; exact keep (2000 + j) (by omega) (by unfold BSet sw; omega)
-  have d1 : c₁.nreg qD = c.nreg qD := keep 3212 (by norm_num) (by unfold BSet sw; omega)
+    rw [e]; exact keep (2000 + j) (⋄) (by unfold BSet sw; omega)
+  have d1 : c₁.nreg qD = c.nreg qD := keep 3212 (⊛) (by unfold BSet sw; omega)
   have hacc1 : AccOK P accA (ModB J (c.nreg bL) (c.nreg bR)) J.whole.radius z
       (dirOf (c₁.nreg qD)) L c₁ := by rw [d1]; exact hacc.transport a1
-  have hs1 : SymPtIn c₁ sO s := symPtIn_copy hs (keep 3231 (by norm_num) (by unfold BSet sw; omega))
-    (keep 3232 (by norm_num) (by unfold BSet sw; omega))
-    (keep 3233 (by norm_num) (by unfold BSet sw; omega))
+  have hs1 : SymPtIn c₁ sO s := symPtIn_copy hs (keep 3231 (⊛) (by unfold BSet sw; omega))
+    (keep 3232 (⊛) (by unfold BSet sw; omega))
+    (keep 3233 (⊛) (by unfold BSet sw; omega))
   have hK0 : c₁.nreg K0 = 0 := (hA.hK.fix hI₁).1
   have hMod : ModB J (c.nreg bL) (c.nreg bR) (c₁.nreg K0) = J.left := by
     rw [hK0, hbL]; simp [ModB]
@@ -87,18 +89,18 @@ theorem bruteSpec : BruteSpec := by
         c₀.nreg (sw 5) := by
     intro j hj
     rw [hN1] at hj
-    rw [w1, w7 j hj]
+    Ξ w1, w7 j hj
     exact nArc_piece hP hNF hA.hsg₁ hj
   refine (symShot_irs (C := J.left) (H := H) (md := sw 30) (base := bBase) (cnt := bN)
     (dsc := sw 20) (tg := K0) hsh hBs hXl hI₁ hA.hK hA.hG hA.hWh hA.hX hA.hcap hA.hOk₁
-    (hA.mdL hI₁) hA.hostReg (hA.ctxL hI₁) harcs (by rw [w1, hN1, w6]) hs1 hsl hz hzD hz1 hz2 hzt
+    (hA.mdL hI₁) hA.hostReg (hA.ctxL hI₁) harcs (Ρ w1, hN1, w6) hs1 hsl hz hzD hz1 hz2 hzt
     hacc1 (by rw [hK0]; omega) hMod rfl
-    ⟨sregOK_sw (by norm_num) (by norm_num) (by norm_num),
-      sregOK_sw (by norm_num) (by norm_num) (by norm_num),
-      sregOK_sw (by norm_num) (by norm_num) (by norm_num),
-      sregOK_sw (by norm_num) (by norm_num) (by norm_num),
-      sregOK_sw (by norm_num) (by norm_num) (by norm_num)⟩
-    (by rw [hN1]; have := hA₁'; have := hroom'; omega)).mono (by rw [hN1]) ?_
+    ⟨sregOK_sw (⊛) (⊛) (⊛),
+      sregOK_sw (⊛) (⊛) (⊛),
+      sregOK_sw (⊛) (⊛) (⊛),
+      sregOK_sw (⊛) (⊛) (⊛),
+      sregOK_sw (⊛) (⊛) (⊛)⟩
+    (by rw [hN1]; have := hA₁'; have := hroom'; omega)).mono (Ρ hN1) ?_
   rintro c' ⟨L', hacc', hL', hcomp, k2, hA2, hm2⟩
   rw [d1] at hacc' hcomp hL'
   refine ⟨⟨L', hacc', ?_, fun τ hτ => ?_, fun hf => ?_⟩, ?_, ?_, fun a ha => ?_⟩
@@ -115,17 +117,17 @@ theorem bruteSpec : BruteSpec := by
       exit_in_arcs J.left hP hNF (Q := Qof P) (dirOf_cases _) hzt hf
     refine ⟨p, t, hp, ht0, ht1, ⟨j, by rw [hN1]; exact hj, ?_⟩, fun g hg => absurd hg
       (List.not_mem_nil), hpt.symm⟩
-    rw [w1, w7 j hj]
+    Ξ w1, w7 j hj
     obtain ⟨⟨hps, -, -⟩, ⟨hpe, -, -⟩⟩ := arc_end_facts hP hNF hj
     unfold nArc
-    rw [(Restore.normOf_facts hps).2.2.2.1, (Restore.normOf_facts hpe).2.2.2.1]
+    Ξ (Restore.normOf_facts hps).2.2.2.1, (Restore.normOf_facts hpe).2.2.2.1
     exact hin
   · intro r hr h1 h2 h3 hrA
     rw [k2 r hr (fun h => h1 (by unfold RS at h; unfold sw; omega))
       (by unfold accA sw at *; omega) hrA]
     exact w9 r hr (fun h => by unfold BSet sw at h; unfold sw at h1 h3; omega) hrA
   · have := hA₁; have := hA2; omega
-  · rw [hm2 a (by omega)]; exact w8 a ha
+  · rw [hm2 a (⋄)]; exact w8 a ha
 
 end
 

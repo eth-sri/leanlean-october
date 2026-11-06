@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopSort
 
 /-!
@@ -58,42 +60,42 @@ def ssWM (m : ℕ → ℕ) (Src D E nd ne : ℕ) (a : ℕ) : ℕ :=
   else if E ≤ a ∧ a < E + ne then m (Src + 6 + (a - E)) else m a
 
 theorem ssWM_zero (m : ℕ → ℕ) (Src D E : ℕ) : ssWM m Src D E 0 0 = m := by
-  funext a; unfold ssWM; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+  funext a; unfold ssWM; Ξ ite_eq_right (⋄), ite_eq_right (⋄)
 
 theorem ssWM_src {m : ℕ → ℕ} {Src D E nd ne : ℕ} (hSD : Src + 11 ≤ D) (hDE : D + 5 ≤ E)
     {u : ℕ} (hu : u < 11) : ssWM m Src D E nd ne (Src + u) = m (Src + u) := by
-  unfold ssWM; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+  unfold ssWM; Ξ ite_eq_right (⋄), ite_eq_right (⋄)
 
 theorem ssWM_stepD {m : ℕ → ℕ} {Src D E nd ne : ℕ} (_hDE : D + 5 ≤ E) (hnd : nd < 5) (_hne : ne ≤ 5) :
     upd (ssWM m Src D E nd ne) (D + nd) (m (Src + ssOff nd)) = ssWM m Src D E (nd + 1) ne := by
   funext a
   unfold ssWM
-  rw [upd_apply]
+  Ξ upd_apply
   by_cases h : a = D + nd
   · subst h
     rw [ite_eq_left rfl, ite_eq_left (show D ≤ D + nd ∧ D + nd < D + (nd + 1) by omega),
       show D + nd - D = nd by omega]
-  · rw [ite_eq_right h]
+  · Ξ ite_eq_right h
     by_cases h2 : D ≤ a ∧ a < D + nd
-    · rw [ite_eq_left h2, ite_eq_left (show D ≤ a ∧ a < D + (nd + 1) by omega)]
-    · rw [ite_eq_right h2, ite_eq_right (show ¬ (D ≤ a ∧ a < D + (nd + 1)) by omega)]
+    · Ξ ite_eq_left h2, ite_eq_left (show D ≤ a ∧ a < D + (nd + 1) by omega)
+    · Ξ ite_eq_right h2, ite_eq_right (show ¬ (D ≤ a ∧ a < D + (nd + 1)) by omega)
 
 theorem ssWM_stepE {m : ℕ → ℕ} {Src D E nd ne : ℕ} (hDE : D + 5 ≤ E) (hnd : nd ≤ 5) (hne : ne < 5) :
     upd (ssWM m Src D E nd ne) (E + ne) (m (Src + 6 + ne)) = ssWM m Src D E nd (ne + 1) := by
   funext a
   unfold ssWM
-  rw [upd_apply]
+  Ξ upd_apply
   by_cases h : a = E + ne
   · subst h
     rw [ite_eq_left rfl, ite_eq_right (show ¬ (D ≤ E + ne ∧ E + ne < D + nd) by omega),
       ite_eq_left (show E ≤ E + ne ∧ E + ne < E + (ne + 1) by omega), show E + ne - E = ne by omega]
-  · rw [ite_eq_right h]
+  · Ξ ite_eq_right h
     by_cases h2 : D ≤ a ∧ a < D + nd
-    · rw [ite_eq_left h2, ite_eq_left h2]
-    · rw [ite_eq_right h2, ite_eq_right h2]
+    · Ξ ite_eq_left h2, ite_eq_left h2
+    · Ξ ite_eq_right h2, ite_eq_right h2
       by_cases h3 : E ≤ a ∧ a < E + ne
-      · rw [ite_eq_left h3, ite_eq_left (show E ≤ a ∧ a < E + (ne + 1) by omega)]
-      · rw [ite_eq_right h3, ite_eq_right (show ¬ (E ≤ a ∧ a < E + (ne + 1)) by omega)]
+      · Ξ ite_eq_left h3, ite_eq_left (show E ≤ a ∧ a < E + (ne + 1) by omega)
+      · Ξ ite_eq_right h3, ite_eq_right (show ¬ (E ≤ a ∧ a < E + (ne + 1)) by omega)
 
 /-! ## One copied word -/
 
@@ -120,14 +122,14 @@ theorem ssCw_exec {P : Polygon} {W : ℕ} {d : Config} (hw : WordsBounded W d) {
   refine ⟨_, Exec.block_cons e₁ (Exec.block_cons e₂ (Exec.block_cons e₃ (Exec.block_cons e₄
     (Exec.block_nil e₄.wb_right)))), ?_, ?_, fun r a b c' => ?_, ?_, rfl, rfl, rfl⟩
   · simp only
-    rw [upd_other _ _ _ (Ne.symm hR2), upd_same, upd_other _ _ _ nVS, upd_other _ _ _ nK1.1, hK1]
-  · simp only [upd_same]
+    Ξ upd_other _ _ _ (Ne.symm hR2), upd_same, upd_other _ _ _ nVS, upd_other _ _ _ nK1.1, hK1
+  · ϴ upd_same
     rw [upd_other _ _ _ hR2, upd_other _ _ _ hR1, upd_other _ _ _ nK1.2, upd_other _ _ _ nK1.1,
       hK1]
   · simp only
-    rw [upd_other _ _ _ c', upd_other _ _ _ b, upd_other _ _ _ a]
+    Ξ upd_other _ _ _ c', upd_other _ _ _ b, upd_other _ _ _ a
   · simp only
-    rw [upd_other _ _ _ hR1, upd_same]
+    Ξ upd_other _ _ _ hR1, upd_same
 
 /-! ## The record write -/
 
@@ -156,15 +158,15 @@ theorem ssWrHead_val (m f : ℕ → ℕ) :
   refine ⟨?_, ?_, ?_, fun r a b d e g h i => ?_⟩
   all_goals simp only [ssWrHead, regB, regI, sr1, sr2, sr3, sr4, srS, srD, srE, srX, sC, sB, aB, gRB, sw,
     Nat.reduceAdd, upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true]
-  simp only [sr1, sr2, sr3, sr4, srS, srD, srE, sw, Nat.reduceAdd] at a b d e g h i
-  simp only [upd_apply]
-  repeat rw [ite_eq_right (by omega)]
+  ϴ' sr1, sr2, sr3, sr4, srS, srD, srE, sw, Nat.reduceAdd at a b d e g h i
+  ϴ upd_apply
+  repeat rw [ite_eq_right (⋄)]
 
 set_option maxRecDepth 20000 in
 theorem ssWrHead_ok {W : ℕ} (m f : ℕ → ℕ)
     (h1 : f gRB + 11 * f srX + 11 ≤ f sB + 5 * f sC) (h2 : f aB + 5 * f sC + 6 ≤ W)
     (h3 : f sB ≤ f aB) : okW W m ssWrHead f := by
-  simp only [srX, sC, sB, aB, gRB, sw, Nat.reduceAdd] at h1 h2 h3
+  ϴ' srX, sC, sB, aB, gRB, sw, Nat.reduceAdd at h1 h2 h3
   simp only [ssWrHead, okW, okWI, regI, sr1, sr2, sr3, sr4, srS, srD, srE, srX, sC, sB, aB, gRB, sw,
     Nat.reduceAdd, upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true, and_true]
   omega

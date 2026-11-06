@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleMainAns
 
 /-!
@@ -30,9 +32,9 @@ theorem QAt.topOK (h : QAt P m O E V H C N B k) (hG : GoodEnv P) (hv : QVOK P C 
   have hn : 0 < P.n := by
     have := C.n_pos; rw [h.CQ, hQn] at this; exact this
   refine ⟨hv, ?_, by rw [h.tv]; exact Nat.mod_lt _ hn, distinctHeights_of_goodEnv hG⟩
-  rw [h.tv, ← h.dt, hd3]
+  Ξ h.tv, ← h.dt, hd3
   unfold Chain.top
-  rw [vertex_eq hv]
+  Ξ vertex_eq hv
 
 theorem QAt.chordRec (h : QAt P m O E V H C N B k) (hT : TopOK P C V) : ChordRecOK P C V m N :=
   ⟨hT, h.isNF, h.nf, h.nCB, h.hK, h.ch_lt, h.ch_inj, h.ch_sorted⟩
@@ -62,23 +64,23 @@ theorem rest_answer {B : BookData} (X : MainCtx P C V N B m) {z : Point} (hs : S
       have hfh := q1 _ hbo
       refine ⟨_, hfh, ?_, ?_⟩
       · rw [o6, he]; exact Nat.mod_lt _ (by have := hT.tv_lt; omega)
-      · rw [o6, he]
+      · Ξ o6, he
         have hsp := spans_of_vOf_pos hfh.1
-        rw [vOf_of_spans hsp]
+        Ξ vOf_of_spans hsp
         have hσ2 : sgnOf V.σb * sgnOf V.σb = 1 := by
           rcases hs.σ with h | h <;> rw [h] <;> norm_num
         have hpt : rayPt z (sgnOf V.σb) (sgnOf V.σb *
             (xe (Qof P) (eIdx (Qof P).n V.s (c'.nreg 120052)) V.hz - z.1)) =
             ((xe (Qof P) (eIdx (Qof P).n V.s (c'.nreg 120052)) V.hz, ((Qof P).vtx V.hz).2) : Point) := by
-          simp only [rayPt]
+          ϴ rayPt
           ext
           · simp only; rw [← mul_assoc, hσ2, one_mul]; ring
           · simp only; rw [hs.zy]
-        rw [hpt]
+        Ξ hpt
         rw [hQn] at hsp ⊢
         have hn2 : 2 ≤ P.n := by
           have := C.add_one_le; have := C.one_le; rw [hv.CQ, hQn] at *; omega
-        exact xe_mem_edge hT (Nat.mod_lt _ (by omega)) hsp hn2
+        exact xe_mem_edge hT (Nat.mod_lt _ (⋄)) hsp hn2
     · rw [o5] at hf
       have hbo : bestOf c' = none := by unfold bestOf; rw [ite_eq_right hf]
       exact q2 hbo

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Chain.Contraction
 
 /-!
@@ -79,7 +81,7 @@ theorem regionsIn_erase (hF : ChordSystem D F) {S : Set (Set Point)} (hS : S ⊆
       by_cases hpc : p ∈ c
       · exact Or.inr ⟨hpc, hRD hp⟩
       · left
-        rw [hunion]
+        Ξ hunion
         exact ⟨hp, hpc⟩
     · rintro (hp | hp)
       · rw [hunion] at hp
@@ -94,7 +96,7 @@ theorem regionsIn_erase (hF : ChordSystem D F) {S : Set (Set Point)} (hS : S ⊆
     rw [hunion] at this
     exact this.1
   refine ⟨R₁, R₂, hne, hR₁, hR₂, htouch, hReq ▸ hR, ?_⟩
-  rw [← hReq]
+  Ξ ← hReq
   ext W
   constructor
   · intro hW
@@ -114,7 +116,7 @@ theorem regionsIn_erase (hF : ChordSystem D F) {S : Set (Set Point)} (hS : S ⊆
       rcases hWS with h | h
       · exact h.1
       · exact absurd h hW12
-    · rw [mem_singleton_iff.1 hW]
+    · Ξ mem_singleton_iff.1 hW
       exact hR
 
 /-! ### Removing a set of chords -/

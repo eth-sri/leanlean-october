@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Mountain.Stack
 public import Chazelle.Visibility.Ray
 
@@ -40,8 +44,8 @@ theorem det_swap_swap_swap (a b c : Point) : det a.swap b.swap c.swap = -det a b
 
 /-- Balls of the sup metric are symmetric under swapping the coordinates. -/
 theorem swap_mem_ball_swap_iff {y v : Point} {r : ℝ} : y.swap ∈ ball v.swap r ↔ y ∈ ball v r := by
-  rw [mem_ball_iff_abs, mem_ball_iff_abs]
-  simp only [Prod.fst_swap, Prod.snd_swap]
+  Ξ mem_ball_iff_abs, mem_ball_iff_abs
+  ϴ Prod.fst_swap, Prod.snd_swap
   exact and_comm
 
 variable (P : Polygon)
@@ -64,17 +68,17 @@ theorem sector_lowest_subset_interior (hM : IsMountain P) {σ : ℝ} (hσ : σ =
   have hP := hM.1
   set T := transpose P with hTdef
   have hT : T.Simple := transpose_simple hP
-  have hTn : T.n = P.n := transpose_n P
+  have hTn := transpose_n P
   have hmin : ∀ i, i < T.n → lexLE (T.vtx 0) (T.vtx i) := by
     intro i hi
-    rw [hTn] at hi
-    rw [hTdef, transpose_vtx, transpose_vtx]
+    Ξ' hTn at hi
+    Ξ hTdef, transpose_vtx, transpose_vtx
     rcases ylexLE_zero P hM hi with h | ⟨h1, h2⟩
     · exact Or.inl h
     · exact Or.inr ⟨h1, h2⟩
   have hσ' : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
   have hposT : 0 < (-σ) * det (T.vtx (T.n - 1)) (T.vtx 0) (T.vtx 1) := by
-    rw [hTn, hTdef, transpose_vtx, transpose_vtx, transpose_vtx, det_swap_swap_swap]
+    Ξ hTn, hTdef, transpose_vtx, transpose_vtx, transpose_vtx, det_swap_swap_swap
     linarith
   obtain ⟨r, hr, hsec⟩ := sector_subset_interior hT hmin hσ' hposT
   refine ⟨r, hr, fun y hy h1 h2 => ?_⟩
@@ -130,7 +134,7 @@ theorem mountain_orient_det (hM : IsMountain P) :
       ⟨by linarith [hs01.2], by linarith [hs01.1]⟩ hσ
     rw [hsucc, ← hu, ← hv]
     filter_upwards [eventually_offset_mem σ hW hsW, self_mem_nhdsWithin] with δ hδ hδ0
-    have hδ0' : (0 : ℝ) < δ := hδ0
+    have hδ0' := hδ0
     refine (hsec _ hδ.1 ?_ hδ.2).1
     show 0 < σ * det u v (offset u v (1 - s) (σ * δ))
     rw [det_offset, show σ * (σ * δ * sqLen u v) = (σ * σ) * (δ * sqLen u v) by ring, hσ2, one_mul]
@@ -148,7 +152,7 @@ theorem mountain_triangulates_of_sign (hM : IsMountain P) {σ : ℝ} (hσ : σ =
     have h := mountain_orient_det P hM
     rcases sign_eq_or_eq_neg hσ (orient_eq P) with h' | h'
     · exact h'
-    · rw [h', neg_mul] at hpos; linarith
+    · Ξ' h', neg_mul at hpos; linarith
   exact ⟨mountain_triangulates P hM hor, mountainTests_le P hM hor⟩
 
 end

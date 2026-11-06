@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildEvCmp
 public import Chazelle.Core.SortRam
 
@@ -50,42 +52,42 @@ theorem recWord_eq (L : List (ℕ × ℕ × ℕ)) (i k : ℕ) (hk : k < 8) :
       if k = 0 then (L.getD i (0, 0, 0)).2.1 else if k = 1 then (L.getD i (0, 0, 0)).1 + 1
       else if k = 2 then 0 else if k = 3 then i else if k = 4 then (L.getD i (0, 0, 0)).2.2
       else if k = 5 then (L.getD i (0, 0, 0)).1 + 1 else if k = 6 then 1 else i := by
-  have e0 : (2 * i) % 2 = 0 := by omega
-  have e1 : (2 * i + 1) % 2 = 1 := by omega
-  have d0 : 2 * i / 2 = i := by omega
-  have d1 : (2 * i + 1) / 2 = i := by omega
+  have e0 : (2 * i) % 2 = 0 := ⋄
+  have e1 : (2 * i + 1) % 2 = 1 := ⋄
+  have d0 : 2 * i / 2 = i := ⋄
+  have d1 : (2 * i + 1) / 2 = i := ⋄
   unfold recWord
   interval_cases k
-  · rw [show (8 * i + 0) % 4 = 0 by omega, show (8 * i + 0) / 4 = 2 * i by omega]
-    simp [wposOf, e0, d0, BuildRegions.crec, CRec.lpos, recOf]
-  · rw [show (8 * i + 1) % 4 = 1 by omega, show (8 * i + 1) / 4 = 2 * i by omega]
-    simp [wposOf, e0, d0, BuildRegions.crec, CRec.lpos, recOf]
-  · rw [show (8 * i + 2) % 4 = 2 by omega, show (8 * i + 2) / 4 = 2 * i by omega]
-    simp [e0]
-  · rw [show (8 * i + 3) % 4 = 3 by omega, show (8 * i + 3) / 4 = 2 * i by omega]
-    simp [d0]
-  · rw [show (8 * i + 4) % 4 = 0 by omega, show (8 * i + 4) / 4 = 2 * i + 1 by omega]
-    simp [wposOf, e1, d1, BuildRegions.crec, CRec.rpos, recOf]
-  · rw [show (8 * i + 5) % 4 = 1 by omega, show (8 * i + 5) / 4 = 2 * i + 1 by omega]
-    simp [wposOf, e1, d1, BuildRegions.crec, CRec.rpos, recOf]
-  · rw [show (8 * i + 6) % 4 = 2 by omega, show (8 * i + 6) / 4 = 2 * i + 1 by omega]
-    simp [e1]
-  · rw [show (8 * i + 7) % 4 = 3 by omega, show (8 * i + 7) / 4 = 2 * i + 1 by omega]
-    simp [d1]
+  · Ξ show (8 * i + 0) % 4 = 0 by omega, show (8 * i + 0) / 4 = 2 * i by omega
+    Θ wposOf, e0, d0, BuildRegions.crec, CRec.lpos, recOf
+  · Ξ show (8 * i + 1) % 4 = 1 by omega, show (8 * i + 1) / 4 = 2 * i by omega
+    Θ wposOf, e0, d0, BuildRegions.crec, CRec.lpos, recOf
+  · Ξ show (8 * i + 2) % 4 = 2 by omega, show (8 * i + 2) / 4 = 2 * i by omega
+    Θ e0
+  · Ξ show (8 * i + 3) % 4 = 3 by omega, show (8 * i + 3) / 4 = 2 * i by omega
+    Θ d0
+  · Ξ show (8 * i + 4) % 4 = 0 by omega, show (8 * i + 4) / 4 = 2 * i + 1 by omega
+    Θ wposOf, e1, d1, BuildRegions.crec, CRec.rpos, recOf
+  · Ξ show (8 * i + 5) % 4 = 1 by omega, show (8 * i + 5) / 4 = 2 * i + 1 by omega
+    Θ wposOf, e1, d1, BuildRegions.crec, CRec.rpos, recOf
+  · Ξ show (8 * i + 6) % 4 = 2 by omega, show (8 * i + 6) / 4 = 2 * i + 1 by omega
+    Θ e1
+  · Ξ show (8 * i + 7) % 4 = 3 by omega, show (8 * i + 7) / 4 = 2 * i + 1 by omega
+    Θ d1
 
 /-- The record table gives `RecsAt`. -/
 theorem recsAt_of {m : ℕ → ℕ} {T : ℕ} {L : List (ℕ × ℕ × ℕ)}
     (h : ∀ q, q < 8 * L.length → m (T + q) = recWord L q) : RecsAt m T L := by
   intro c hc
   have w : ∀ k, k < 4 → m (T + 4 * c + k) = recWord L (4 * c + k) := fun k hk => by
-    rw [← h (4 * c + k) (by omega)]; congr 1; omega
-  have r : ∀ k, k < 4 → (4 * c + k) % 4 = k ∧ (4 * c + k) / 4 = c := fun k hk => ⟨by omega, by omega⟩
+    rw [← h (4 * c + k) (⋄)]; congr 1; omega
+  have r : ∀ k, k < 4 → (4 * c + k) % 4 = k ∧ (4 * c + k) / 4 = c := fun k hk => ⟨⋄, ⋄⟩
   refine ⟨?_, ?_, ?_, ?_⟩
-  · have := w 0 (by norm_num); rw [Nat.add_zero] at this
-    rw [this, recWord, ite_eq_left (by omega), (r 0 (by norm_num)).2]
-  · rw [w 1 (by norm_num), recWord, (r 1 (by norm_num)).1, (r 1 (by norm_num)).2]; simp
-  · rw [w 2 (by norm_num), recWord, (r 2 (by norm_num)).1, (r 2 (by norm_num)).2]; simp
-  · rw [w 3 (by norm_num), recWord, (r 3 (by norm_num)).1, (r 3 (by norm_num)).2]; simp
+  · have := w 0 (⊛); Ξ' Nat.add_zero at this
+    Ξ this, recWord, ite_eq_left (⋄), (r 0 (⊛)).2
+  · rw [w 1 (⊛), recWord, (r 1 (⊛)).1, (r 1 (⊛)).2]; simp
+  · rw [w 2 (⊛), recWord, (r 2 (⊛)).1, (r 2 (⊛)).2]; simp
+  · rw [w 3 (⊛), recWord, (r 3 (⊛)).1, (r 3 (⊛)).2]; simp
 
 section exec
 
@@ -111,37 +113,37 @@ theorem recStep_mem {m₀ m : ℕ → ℕ} {L : List (ℕ × ℕ × ℕ)} {T S�
     upd (upd (upd (upd (upd (upd (upd (upd (upd (upd m a0 v0) a1 v1) a2 v2) a3 v3) a4 v4) a5 v5)
       a6 v6) a7 v7) a8 v8) a9 v9 a = recMem m₀ L T S₀ (i + 1) a := by
   subst a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 v0 v1 v2 v3 v4 v5 v6 v7 v8 v9 S₀
-  simp only [upd_apply]
-  rw [hm a]
+  ϴ upd_apply
+  Ξ hm a
   unfold recMem
   have hr : a < T ∨ (T ≤ a ∧ a < T + 8 * i) ∨ (∃ k, k < 8 ∧ a = T + 8 * i + k) ∨
       (T + 8 * i + 8 ≤ a ∧ a < T + 8 * L.length) ∨
       (T + 8 * L.length ≤ a ∧ a < T + 8 * L.length + 2 * i) ∨ a = T + 8 * L.length + 2 * i ∨
       a = T + 8 * L.length + 2 * i + 1 ∨ T + 8 * L.length + 2 * i + 2 ≤ a := by
     by_cases h : T + 8 * i ≤ a ∧ a < T + 8 * i + 8
-    · exact Or.inr (Or.inr (Or.inl ⟨a - (T + 8 * i), by omega, by omega⟩))
+    · exact Or.inr (Or.inr (Or.inl ⟨a - (T + 8 * i), ⋄, ⋄⟩))
     · omega
   rcases hr with h | h | ⟨k, hk, rfl⟩ | h | h | h | h | h
-  · repeat' (first | rw [if_pos (by omega)] | rw [ite_eq_right (by omega)])
-  · repeat' (first | rw [ite_eq_left (by omega)] | rw [ite_eq_right (by omega)])
+  · repeat' (first | rw [if_pos (⋄)] | rw [ite_eq_right (⋄)])
+  · repeat' (first | rw [ite_eq_left (⋄)] | rw [ite_eq_right (⋄)])
   · interval_cases k <;>
-    · repeat' (first | rw [ite_eq_left (by omega)] | rw [ite_eq_right (by omega)])
+    · repeat' (first | rw [ite_eq_left (⋄)] | rw [ite_eq_right (⋄)])
       first
-        | (rw [show T + 8 * i + 0 - T = 8 * i + 0 by omega, recWord_eq L i 0 (by norm_num)]; rfl)
-        | (rw [show T + 8 * i + 1 - T = 8 * i + 1 by omega, recWord_eq L i 1 (by norm_num)]; rfl)
-        | (rw [show T + 8 * i + 2 - T = 8 * i + 2 by omega, recWord_eq L i 2 (by norm_num)]; rfl)
-        | (rw [show T + 8 * i + 3 - T = 8 * i + 3 by omega, recWord_eq L i 3 (by norm_num)]; rfl)
-        | (rw [show T + 8 * i + 4 - T = 8 * i + 4 by omega, recWord_eq L i 4 (by norm_num)]; rfl)
-        | (rw [show T + 8 * i + 5 - T = 8 * i + 5 by omega, recWord_eq L i 5 (by norm_num)]; rfl)
-        | (rw [show T + 8 * i + 6 - T = 8 * i + 6 by omega, recWord_eq L i 6 (by norm_num)]; rfl)
-        | (rw [show T + 8 * i + 7 - T = 8 * i + 7 by omega, recWord_eq L i 7 (by norm_num)]; rfl)
-  · repeat' (first | rw [if_pos (by omega)] | rw [ite_eq_right (by omega)])
-  · repeat' (first | rw [ite_eq_left (by omega)] | rw [ite_eq_right (by omega)])
-  · repeat' (first | rw [ite_eq_left (by omega)] | rw [ite_eq_right (by omega)])
+        | (rw [show T + 8 * i + 0 - T = 8 * i + 0 by omega, recWord_eq L i 0 (⊛)]; rfl)
+        | (rw [show T + 8 * i + 1 - T = 8 * i + 1 by omega, recWord_eq L i 1 (⊛)]; rfl)
+        | (rw [show T + 8 * i + 2 - T = 8 * i + 2 by omega, recWord_eq L i 2 (⊛)]; rfl)
+        | (rw [show T + 8 * i + 3 - T = 8 * i + 3 by omega, recWord_eq L i 3 (⊛)]; rfl)
+        | (rw [show T + 8 * i + 4 - T = 8 * i + 4 by omega, recWord_eq L i 4 (⊛)]; rfl)
+        | (rw [show T + 8 * i + 5 - T = 8 * i + 5 by omega, recWord_eq L i 5 (⊛)]; rfl)
+        | (rw [show T + 8 * i + 6 - T = 8 * i + 6 by omega, recWord_eq L i 6 (⊛)]; rfl)
+        | (rw [show T + 8 * i + 7 - T = 8 * i + 7 by omega, recWord_eq L i 7 (⊛)]; rfl)
+  · repeat' (first | rw [if_pos (⋄)] | rw [ite_eq_right (⋄)])
+  · repeat' (first | rw [ite_eq_left (⋄)] | rw [ite_eq_right (⋄)])
+  · repeat' (first | rw [ite_eq_left (⋄)] | rw [ite_eq_right (⋄)])
     omega
-  · repeat' (first | rw [ite_eq_left (by omega)] | rw [ite_eq_right (by omega)])
+  · repeat' (first | rw [ite_eq_left (⋄)] | rw [ite_eq_right (⋄)])
     omega
-  · repeat' (first | rw [if_pos (by omega)] | rw [ite_eq_right (by omega)])
+  · repeat' (first | rw [if_pos (⋄)] | rw [ite_eq_right (⋄)])
 
 /-- The invariant of the record loop. -/
 structure RecInv (m₀ : ℕ → ℕ) (L : List (ℕ × ℕ × ℕ)) (B T S₀ : ℕ) (c₀ d : Config) : Prop where
@@ -172,28 +174,28 @@ theorem recLoop_exec {m₀ : ℕ → ℕ} {L : List (ℕ × ℕ × ℕ)} {B T S�
     (fun d => WordsBounded W d ∧ RecInv m₀ L B T S₀ c₀ d)
     (fun d => 32 * (L.length - d.nreg 43020)) (fun d => 30 * d.nreg 43020) (fun d hd => hd.1)
     (fun d ⟨hwd, hId⟩ htest => by
-      rw [hId.rK] at htest
+      Ξ' hId.rK at htest
       obtain ⟨i, hi⟩ : ∃ i, d.nreg 43020 = i := ⟨_, rfl⟩
-      rw [hi] at htest
+      Ξ' hi at htest
       have ha21 := hId.a21; have ha22 := hId.a22; have ha23 := hId.a23; have ha24 := hId.a24
-      rw [hi] at ha21 ha22 ha23 ha24
+      Ξ' hi at ha21 ha22 ha23 ha24
       have o := hId.r1; have z := hId.r0
       obtain ⟨l1, l2, l3⟩ := hL i htest
       have hx : L.getD i (0, 0, 0) ∈ L := BuildOrder.getD_mem htest
       have hh := hhW _ hx
       have m21 : d.nmem (B + 3 * i) = (L.getD i (0, 0, 0)).1 := by
-        rw [hId.mem, recMem, ite_eq_right (by omega), ite_eq_right (by omega), l1]
+        Ξ hId.mem, recMem, ite_eq_right (⋄), ite_eq_right (⋄), l1
       have m22 : d.nmem (B + 3 * i + 1) = (L.getD i (0, 0, 0)).2.1 := by
-        rw [hId.mem, recMem, ite_eq_right (by omega), ite_eq_right (by omega), l2]
+        Ξ hId.mem, recMem, ite_eq_right (⋄), ite_eq_right (⋄), l2
       have m23 : d.nmem (B + 3 * i + 2) = (L.getD i (0, 0, 0)).2.2 := by
-        rw [hId.mem, recMem, ite_eq_right (by omega), ite_eq_right (by omega), l3]
+        Ξ hId.mem, recMem, ite_eq_right (⋄), ite_eq_right (⋄), l3
       unfold recBody
       exec_block
       all_goals first
         | (config_simp; simp (config := { failIfUnchanged := false }) only [hi, ha21, ha22, ha23,
             ha24, o, z, m21, m22, m23, hS]; omega)
         | skip
-      have fr := hId.fr; have hm := hId.mem; simp only [hi] at hm
+      have fr := hId.fr; have hm := hId.mem; ϴ' hi at hm
       refine ⟨⟨‹WordsBounded _ _›, ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => ?_, hId.rr, hId.rm,
         hId.out, fun a => ?_⟩⟩, ?_, ?_⟩
       all_goals config_simp
@@ -206,16 +208,16 @@ theorem recLoop_exec {m₀ : ℕ → ℕ} {L : List (ℕ × ℕ × ℕ)} {B T S�
       · rw [ha23, hi, o]; omega
       · rw [ha24, hi, o]; omega
       · simp (disch := omega) only [upd_other]; exact fr r hr
-      · rw [hi, o]
+      · Ξ hi, o
         refine recStep_mem hm htest ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ ?_ hS a <;>
-          simp only [ha21, ha22, ha23, ha24, z, m21, m22, m23, hS]
+          ϴ ha21, ha22, ha23, ha24, z, m21, m22, m23, hS
       · rw [hi, o]; omega
       · rw [hi, o]; omega)
     ⟨hw, hI⟩
   refine ⟨c', k, e, ?_, ?_, hw', hI', ?_⟩
-  · rw [h0] at hk; omega
-  · have := hI'.i_le; rw [hI'.rK] at htest; rw [h0] at hψ; omega
-  · have := hI'.i_le; rw [hI'.rK] at htest; omega
+  · Ξ' h0 at hk; omega
+  · have := hI'.i_le; Ξ' hI'.rK at htest; Ξ' h0 at hψ; omega
+  · have := hI'.i_le; Ξ' hI'.rK at htest; omega
 
 end exec
 

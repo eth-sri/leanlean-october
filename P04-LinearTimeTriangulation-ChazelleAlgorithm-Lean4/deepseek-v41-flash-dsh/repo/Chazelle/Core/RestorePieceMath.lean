@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreStretch
 public import Chazelle.Core.ShootCutPiece
 
@@ -59,13 +61,13 @@ theorem dir_correct {M : Model} {Q : Polygon} (hDH : DistinctHeights Q) {Cα : C
     unfold Chain.vertex Chain.edgeIdx; rw [hQ, Nat.add_zero, Nat.mod_eq_of_lt hsP]
   have vm : Cα.vertex Cα.m = Q.vtx ((Cα.s + Cα.m) % Q.n) := by
     unfold Chain.vertex Chain.edgeIdx; rw [hQ]
-  have hs0 : (s + 0) % M.W.n = s := by rw [Nat.add_zero, Nat.mod_eq_of_lt hsn]
+  have hs0 : (s + 0) % M.W.n = s := Ρ Nat.add_zero, Nat.mod_eq_of_lt hsn
   rcases hdir with hu | hd
   · have e := hu 0 (Nat.zero_le _)
     rw [hs0, v0] at e
     have hhs : h = Cα.s := by
-      by_contra hne; exact hDH h Cα.s hh hsP hne (by rw [hy, e])
-    rw [ite_eq_left hhs]
+      by_contra hne; exact hDH h Cα.s hh hsP hne (Ρ hy, e)
+    Ξ ite_eq_left hhs
     intro d hd'; rw [hu d hd', ShootCut.tourV_up Cα hd']
   · have e := hd 0 (Nat.zero_le _)
     rw [hs0, Nat.sub_zero, vm] at e
@@ -74,10 +76,10 @@ theorem dir_correct {M : Model} {Q : Polygon} (hDH : DistinctHeights Q) {Cα : C
       intro h'
       by_cases hc : Cα.s + Cα.m < Q.n
       · rw [Nat.mod_eq_of_lt hc] at h'; omega
-      · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at h'; omega
+      · rw [Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (by omega)] at h'; omega
     have hhs : h = (Cα.s + Cα.m) % Q.n := by
-      by_contra hne'; exact hDH h _ hh hlt hne' (by rw [hy, e])
-    rw [ite_eq_right (by rw [hhs]; exact hne)]
+      by_contra hne'; exact hDH h _ hh hlt hne' (Ρ hy, e)
+    Ξ ite_eq_right (by rw [hhs]; exact hne)
     intro d hd'; rw [hd d hd', ShootCut.tourV_down Cα hd']
 
 end

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Leaf
 public import Chazelle.Core.GradeCtx
 
@@ -79,7 +81,7 @@ theorem baseB_exec {c : Config} (hw : WordsBounded W c) :
   exec_block
   refine ⟨rfl, ‹_›, by config_simp, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 4000000 in
 theorem epiB_exec {c : Config} (hw : WordsBounded W c) {B : ℕ} (h66 : c.nreg 160066 = B)
@@ -93,7 +95,7 @@ theorem epiB_exec {c : Config} (hw : WordsBounded W c) {B : ℕ} (h66 : c.nreg 1
   all_goals try (config_simp; (try simp only [h66, h24]); omega)
   refine ⟨rfl, ‹_›, by config_simp; simp only [h66, h24], fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 end proofs
 

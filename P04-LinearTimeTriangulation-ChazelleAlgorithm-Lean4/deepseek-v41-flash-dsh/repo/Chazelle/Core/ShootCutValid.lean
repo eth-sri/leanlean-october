@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutWalk
 public import Chazelle.Core.ShootCutGrade
 
@@ -87,7 +89,7 @@ theorem kind1_facts {O : OracleIface} {P : Polygon} {C : Chain} {m m' : ℕ → 
   have hR' : Robust A m' fun m'' => GradeRaw O P m'' h A := hR.transport hm'
   have hΛ : g < m' h := by
     have := (grade_low hR).1
-    rw [hm' h (by omega)]; exact hgΛ
+    rw [hm' h (⋄)]; exact hgΛ
   obtain ⟨Hs, Cα, N, hC, hwf, hP, -, -, hsC, hmC, hN, hcan, -⟩ := hR'.holds.2.2.2 g b hΛ hb
   have hPQ : Cα.P = Qof P := hP
   have hent : m' (m' (h + 2) + g) + 3 * b = pc.entry := by
@@ -104,36 +106,36 @@ theorem kind1_facts {O : OracleIface} {P : Polygon} {C : Chain} {m m' : ℕ → 
   have hV : ∀ d, d ≤ Cα.m → (chainModel C).W.vtx (pc.s.edge + d) =
       WalkEmbed.tourV Cα (if pc.dir = 1 then 0 else Cα.m) d := by
     intro d hd
-    rw [hW d (by omega)]
+    rw [hW d (⋄)]
     split_ifs with hd1
-    · rw [tourV_up Cα hd, grade_vertex hP hx hd, hsα]
-    · rw [tourV_down Cα hd, grade_vertex hP hx (by omega), hsα, hlen]
+    · Ξ tourV_up Cα hd, grade_vertex hP hx hd, hsα
+    · rw [tourV_down Cα hd, grade_vertex hP hx (⋄), hsα, hlen]
       congr 1; omega
   have hn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
-  have hsP : pc.s = ⟨pc.s.edge, 0⟩ := by rw [← hs0]
-  have heP : pc.e = ⟨pc.s.edge + Cα.m, 0⟩ := by rw [hlen, ← hee, ← he0]
+  have hsP : pc.s = ⟨pc.s.edge, 0⟩ := Ρ ← hs0
+  have heP : pc.e = ⟨pc.s.edge + Cα.m, 0⟩ := Ρ hlen, ← hee, ← he0
   refine ⟨hwf.mono hA', Hs, Cα, N, hC, hN.mono hA', ⟨gradeGran g, hgran, hcan⟩, ?_, ?_, ?_⟩
-  · rw [hsP, heP, key_hgt0, key_hgt0]
-    refine arcSet_tour (J := if pc.dir = 1 then 0 else Cα.m) (by split_ifs <;> simp) (by omega)
+  · Ξ hsP, heP, key_hgt0, key_hgt0
+    refine arcSet_tour (J := if pc.dir = 1 then 0 else Cα.m) (by split_ifs <;> simp) (⋄)
       hV
-  · rw [hsP, heP, key_hgt0, key_hgt0]
-    exact arcWt_chain_nat C (by rw [hlen]; exact Nat.one_le_two_pow) h6 (by omega)
-  · rw [hsP, heP]
+  · Ξ hsP, heP, key_hgt0, key_hgt0
+    exact arcWt_chain_nat C (by rw [hlen]; exact Nat.one_le_two_pow) h6 (⋄)
+  · Ξ hsP, heP
     have hmod : (pc.s.edge + Cα.m) % (chainModel C).W.n = pc.s.edge + Cα.m :=
-      Nat.mod_eq_of_lt (by omega)
+      Nat.mod_eq_of_lt (⋄)
     have := pieceWalk_tour (M := chainModel C) (Cα := Cα) (p₀ := pc.s.edge)
-      (J := if pc.dir = 1 then 0 else Cα.m) (by omega) (fun d hd => by
-        rw [Nat.mod_eq_of_lt (by omega)]; exact hV d hd)
+      (J := if pc.dir = 1 then 0 else Cα.m) (⋄) (fun d hd => by
+        rw [Nat.mod_eq_of_lt (⋄)]; exact hV d hd)
     rw [hmod] at this
     refine ⟨this, hPQ, ?_⟩
     dsimp only
     rcases hdir with hd1 | hd0
     · left
       intro d hd
-      rw [Nat.mod_eq_of_lt (by omega), hV d hd, ite_eq_left hd1, tourV_up Cα hd]
+      rw [Nat.mod_eq_of_lt (⋄), hV d hd, ite_eq_left hd1, tourV_up Cα hd]
     · right
       intro d hd
-      rw [Nat.mod_eq_of_lt (by omega), hV d hd, ite_eq_right (by omega), tourV_down Cα hd]
+      rw [Nat.mod_eq_of_lt (⋄), hV d hd, ite_eq_right (by omega), tourV_down Cα hd]
 
 end ShootCut
 

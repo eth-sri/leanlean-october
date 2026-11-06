@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvKept
 public import Chazelle.Core.DownPhaseRegionBox
 public import Chazelle.Core.DownPhaseExtractMain
@@ -95,7 +97,7 @@ theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
   have hH : (hostPoly Q S R).Simple := hostPts_simple hQ hFam hne hR
   have X : Extract.Ctx Q S R := ⟨hQ, hFam, hne, hR⟩
   have h3 := X.three
-  have hN2 : 2 ≤ nk M S R := le_trans (by norm_num) h3
+  have hN2 : 2 ≤ nk M S R := le_trans (⊛) h3
   obtain ⟨hWs, hWb, hWf, hWo⟩ := FactsInterior.interiorWalk_spec hQ
   obtain ⟨z, hzR, hzV⟩ := exists_mem_off_heights hRo (Chazelle.Chain.regionsIn_nonempty hR)
     ((Finset.range Q.n).image (fun i => (Q.vtx i).2))
@@ -120,14 +122,14 @@ theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
   have hlam' : lam ∈ Ioo (0 : ℝ) 1 :=
     ⟨lt_of_le_of_ne hlam.1 (Ne.symm hlam0), lt_of_le_of_ne hlam.2 hlam1⟩
   -- the gap is an arc gap
-  have hsi : (i + 1) % nk M S R < nk M S R := Nat.mod_lt _ (by omega)
+  have hsi : (i + 1) % nk M S R < nk M S R := Nat.mod_lt _ (⋄)
   rcases gap_cases hM hF hfin hne hR hN2 hi with ⟨a', b', harc, hsub⟩ | ⟨c, hc, p, p', t, t', hA,
       hB, hka, hkb, -⟩
   swap
   · exfalso
     obtain ⟨h, hh, x₁, x₂, rfl⟩ := hFam.2.2 c hc
-    have hA' : A = sidePt M.W p t := by rw [hAdef, hka, hostPt_eq M.W hA.2.1 hA.2.2.1]
-    have hB' : B = sidePt M.W p' t' := by rw [hBdef, hkb, hostPt_eq M.W hB.2.1 hB.2.2.1]
+    have hA' : A = sidePt M.W p t := Ρ hAdef, hka, hostPt_eq M.W hA.2.1 hA.2.2.1
+    have hB' : B = sidePt M.W p' t' := Ρ hBdef, hkb, hostPt_eq M.W hB.2.1 hB.2.2.1
     have e1 : A.2 = (Q.vtx h).2 := by rw [hA']; exact hA.2.2.2.1.1
     have e2 : B.2 = (Q.vtx h).2 := by rw [hB']; exact hB.2.2.2.1.1
     rw [e1, e2, sub_self, mul_zero, add_zero] at hPy
@@ -149,7 +151,7 @@ theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
   have hvi' : (hostPoly Q S R).vtx ((i + 1) % (hostPoly Q S R).n) = B := by
     rw [hHn]; exact hostPoly_vtx hsi
   have hiH : i < (hostPoly Q S R).n := by rw [hHn]; exact hi
-  have hcpos : 0 < t'' - τ₀ := by linarith
+  have hcpos : 0 < t'' - τ₀ := ⟡
   set t' := τ₀ + lam * (t'' - τ₀) with ht'
   have ht'I : t' ∈ Ioo (0 : ℝ) 1 := by
     constructor
@@ -157,18 +159,18 @@ theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
     · have : lam * (t'' - τ₀) < 1 * (t'' - τ₀) := mul_lt_mul_of_pos_right hlam'.2 hcpos
       linarith
   have hWn : (interiorWalk Q).n = M.W.n := rfl
-  have hpW : p < (interiorWalk Q).n := hp
+  have hpW := hp
   have hoff : ∀ δ : ℝ, Chazelle.Jordan.offset ((hostPoly Q S R).vtx i)
       ((hostPoly Q S R).vtx ((i + 1) % (hostPoly Q S R).n)) lam δ =
       Chazelle.Jordan.offset ((interiorWalk Q).vtx p)
         ((interiorWalk Q).vtx ((p + 1) % (interiorWalk Q).n)) t' (δ * (t'' - τ₀)) := by
     intro δ
-    rw [hvi, hvi', show A = sidePt M.W p τ₀ from hAe, show B = sidePt M.W p t'' from hBe]
+    Ξ hvi, hvi', show A = sidePt M.W p τ₀ from hAe, show B = sidePt M.W p t'' from hBe
     exact ExtG.offset_lerp_pair _ _ _ _ _ _
   -- the exit point
   have hP' : Chazelle.Jordan.offset ((interiorWalk Q).vtx p)
       ((interiorWalk Q).vtx ((p + 1) % (interiorWalk Q).n)) t' 0 = P := by
-    rw [← zero_mul (t'' - τ₀), ← hoff 0, Chazelle.Jordan.offset_zero, hvi, hvi', he]
+    Ξ ← zero_mul (t'' - τ₀), ← hoff 0, Chazelle.Jordan.offset_zero, hvi, hvi', he
   refine Mountain.orient_eq_of_eventually hH hiH hlam' (Or.inl rfl) ?_
   have hev := Mountain.eventually_offset_orient hWs hpW ht'I
   rw [hWo] at hev
@@ -187,7 +189,7 @@ theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
     exact (this.eventually (isOpen_ball.mem_nhds (mem_ball_self hr))).filter_mono
       nhdsWithin_le_nhds
   filter_upwards [hev', hnearev] with δ hδ hball
-  rw [one_mul, hoff]
+  Ξ one_mul, hoff
   have hD : Chazelle.Jordan.offset ((interiorWalk Q).vtx p)
       ((interiorWalk Q).vtx ((p + 1) % (interiorWalk Q).n)) t' (δ * (t'' - τ₀)) ∈ M.D := by
     have h1 := hδ.1
@@ -207,7 +209,7 @@ theorem interiorWalk_hostPoly (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFam
     rw [ite_eq_right hL] at h
     norm_num at h
   unfold interiorWalk
-  rw [ite_eq_left hL]
+  Ξ ite_eq_left hL
 
 end
 

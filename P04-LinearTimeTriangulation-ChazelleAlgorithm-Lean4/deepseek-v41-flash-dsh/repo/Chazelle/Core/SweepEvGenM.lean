@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvTasks
 public import Chazelle.Core.SweepIoLHit5
 public import Chazelle.Core.SweepIoQPos
@@ -80,7 +82,7 @@ theorem genuine_iff_abs {C : Chain} {a : Point} {σ τ : ℝ} (hσ : σ = 1 ∨ 
       (rayPt (rayPt a σ τ) (-σ) (C.hitParam (rayPt a σ τ) (-σ))).1 < a.1)) ∧
     (σ = -1 → (Genuine C a σ τ ↔
       a.1 < (rayPt (rayPt a σ τ) (-σ) (C.hitParam (rayPt a σ τ) (-σ))).1)) := by
-  rw [genuine_iff_rev hσ ha hw h0 htop hfree]
+  Ξ genuine_iff_rev hσ ha hw h0 htop hfree
   refine ⟨fun h1 => ?_, fun h1 => ?_⟩ <;> subst h1 <;> simp only [rayPt_fst] <;>
     constructor <;> intro h <;> linarith
 
@@ -136,9 +138,9 @@ theorem arr_facts {C : Chain} {Q : Polygon} {N : ℕ} {x : WPos} {w : Point} {σ
 theorem hgt_of_pos {M : Model} {Q : Polygon} {x : WPos} {h : ℕ} (hx : x.hgt = h + 1)
     (hpar : M.param Q x ≠ 0) : (Q.vtx h).2 = (M.pos Q x).2 := by
   have hne : (M.wa x.edge).2 ≠ (M.wb x.edge).2 := fun he => hpar (Model.param_horizontal he)
-  rw [Model.pos_snd hne]
+  Ξ Model.pos_snd hne
   unfold Model.hgtY
-  rw [hx]
+  Ξ hx
 
 /-- **The vertex fix**: a vertex position gets a positive height code naming its height; the
 parameter (`0`) and the point are kept. -/
@@ -152,7 +154,7 @@ theorem vtx_fix {M : Model} {Q : Polygon} {e h' : ℕ} (hht : (Q.vtx h').2 = (M.
       simp only [Nat.add_sub_cancel]; rw [hht, hwa])))
   refine ⟨hpar, ?_⟩
   unfold Model.pos
-  rw [hpar, hp0]
+  Ξ hpar, hp0
 
 /-- The two copies `6` and `2m + 6` of the top of a chain have the same point. -/
 theorem pos_top_copies (C : Chain) (Q : Polygon) :
@@ -177,11 +179,11 @@ theorem symHgt {P : Polygon} {c : Config} {o : ℕ} {s : SymPt} (hs : SymPtIn c 
   cases s with
   | vtx i =>
     obtain ⟨h0, h1⟩ := hs
-    rw [ite_eq_left h0, h1]
+    Ξ ite_eq_left h0, h1
     exact ⟨hl, rfl⟩
   | onEdge e h =>
     obtain ⟨h0, -, h2⟩ := hs
-    rw [ite_eq_right (by omega), h2]
+    rw [ite_eq_right (⋄), h2]
     exact ⟨hl.2, rfl⟩
 
 /-! ## Region bounds -/

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoSpec2
 public import Chazelle.Core.SweepEvOrgM
 
@@ -24,19 +26,19 @@ open Machine Machine.Stmt Programs SweepRam SweepPrim WalkEmbed Sweep
 theorem qPt_end {J : Merge.Junction} {P : Polygon} {N₂ : NF} (hN : IsNF (chainModel J.right) (Qof P) N₂)
     (L₁ : List (ℕ × ℕ × ℕ)) {j : ℕ} (hj : j < 2 * N₂.nChords) :
     qPt J P 1 (sweepEndQ N₂.chords ++ L₁) j = endOrigin J (Qof P) N₂ j := by
-  rw [(endOrigin_eq J hN hj).1]
+  Ξ (endOrigin_eq J hN hj).1
   have hlen : (sweepEndQ N₂.chords).length = 2 * N₂.nChords := by
-    simp [sweepEndQ, NF.nChords]
+    Θ sweepEndQ, NF.nChords
   have hget : (sweepEndQ N₂.chords ++ L₁).getD j (0, 0, 0) =
       (let r := N₂.chords.getD (j / 2) ⟨0, 0, 0, 0, 0⟩
        if j % 2 = 0 then (r.lp, r.h + 1, 1) else (r.rp, r.h + 1, 0)) := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_append_left (by rw [hlen]; exact hj)]
+    Ξ List.getD_eq_getElem?_getD, List.getElem?_append_left (by rw [hlen]; exact hj)
     simp only [sweepEndQ, List.getElem?_map, List.getElem?_range (show j < 2 * N₂.chords.length
       from hj), Option.map_some, Option.getD_some]
   unfold qPt
-  rw [hget]
-  have hsc : sideChain J 1 = J.right := by unfold sideChain; rw [ite_eq_right (by norm_num)]
-  rw [hsc]
+  Ξ hget
+  have hsc : sideChain J 1 = J.right := by unfold sideChain; rw [ite_eq_right (⊛)]
+  Ξ hsc
   unfold endPos NF.chord CRec.lpos CRec.rpos
   by_cases h : j % 2 = 0 <;> simp [h]
 
@@ -54,7 +56,7 @@ theorem brute_card (hT : TopCountSpec) {P : Polygon} {J : Merge.Junction} {N₂ 
   obtain ⟨L₁, rfl, hL₁⟩ := hend hi
   subst hi
   have hlen : (sweepEndQ N₂.chords ++ L₁).length = 2 * N₂.nChords + L₁.length := by
-    simp [sweepEndQ, NF.nChords]
+    Θ sweepEndQ, NF.nChords
   set K := 2 * N₂.nChords with hK
   have hsub : (Finset.range (sweepEndQ N₂.chords ++ L₁).length).filter
       (fun j => 1 = 1 ∧ BruteQ J N₂ j (qPt J P 1 (sweepEndQ N₂.chords ++ L₁) j)) ⊆
@@ -63,7 +65,7 @@ theorem brute_card (hT : TopCountSpec) {P : Polygon} {J : Merge.Junction} {N₂ 
     intro j hj
     simp only [Finset.mem_filter, Finset.mem_range, hlen] at hj
     obtain ⟨hjL, -, hb⟩ := hj
-    rw [Finset.mem_union, Finset.mem_Ico, Finset.mem_filter, Finset.mem_range]
+    Ξ Finset.mem_union, Finset.mem_Ico, Finset.mem_filter, Finset.mem_range
     rcases hb with hb | hb
     · exact Or.inl ⟨hb, hjL⟩
     · by_cases hjK : K ≤ j
@@ -75,7 +77,7 @@ theorem brute_card (hT : TopCountSpec) {P : Polygon} {J : Merge.Junction} {N₂ 
     have := hT P J N₂ hG hP hN
     refine le_trans (le_of_eq ?_) this
     show (Multiset.filter _ (Multiset.range K)).card = _
-    rw [Multiset.range, Multiset.filter_coe, Multiset.coe_card]
+    Ξ Multiset.range, Multiset.filter_coe, Multiset.coe_card
   calc _ ≤ (Finset.Ico K (K + L₁.length) ∪
         (Finset.range K).filter (fun j => endOrigin J (Qof P) N₂ j = J.right.top)).card :=
       Finset.card_le_card hsub

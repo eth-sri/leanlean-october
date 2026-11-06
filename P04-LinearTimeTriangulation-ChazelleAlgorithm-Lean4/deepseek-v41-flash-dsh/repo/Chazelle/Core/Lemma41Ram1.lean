@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Cover
 public import Chazelle.Programs.Tactics
 
@@ -25,11 +27,11 @@ open Machine Machine.Stmt Programs
 
 theorem dvd_succ_iff {x g : ℕ} (h : 2 ^ g ∣ x) : 2 ^ (g + 1) ∣ x ↔ (x / 2 ^ g) % 2 = 0 := by
   obtain ⟨k, rfl⟩ := h
-  rw [Nat.mul_div_cancel_left _ (by positivity), pow_succ, Nat.mul_dvd_mul_iff_left (by positivity)]
+  Ξ Nat.mul_div_cancel_left _ (⟢), pow_succ, Nat.mul_dvd_mul_iff_left (⟢)
   exact Nat.dvd_iff_mod_eq_zero
 
 theorem div_succ (x g : ℕ) : x / 2 ^ (g + 1) = x / 2 ^ g / 2 := by
-  rw [pow_succ, Nat.div_div_eq_div_mul]
+  Ξ pow_succ, Nat.div_div_eq_div_mul
 
 /-- If `g` satisfies the grade condition but `g + 1` does not (or is out of range), `g` is the
 greedy grade. -/
@@ -74,7 +76,7 @@ def AscInv (lam b x : ℕ) (c0 c : Config) : Prop :=
     GradeOK b x (c.nreg 160012) ∧ c.nreg 160013 = x / 2 ^ c.nreg 160012 ∧
     (c.nreg 160025 = 0 ∨ (c.nreg 160025 = 1 ∧ c.nreg 160012 = nextG lam b x))
 
-set_option maxHeartbeats 4000000 in
+
 /-- One step of the ascending search. -/
 theorem ascBody_exec {c0 c : Config} (hw : WordsBounded W c) {lam b x D PW : ℕ}
     (h10 : c0.nreg 160010 = x) (h11 : c0.nreg 160011 = b) (h26 : c0.nreg 160026 = lam)
@@ -94,7 +96,7 @@ theorem ascBody_exec {c0 c : Config} (hw : WordsBounded W c) {lam b x D PW : ℕ
   have r20 : c.nreg 160020 = D := by rw [hr _ (by unfold AscRG; omega)]; exact h20
   have r21 : c.nreg 160021 = PW := by rw [hr _ (by unfold AscRG; omega)]; exact h21
   set g := c.nreg 160012 with hg
-  have hxb : x + 2 ^ g ≤ b := hok.2
+  have hxb := hok.2
   have hqx : x / 2 ^ g ≤ x := Nat.div_le_self _ _
   have hpg := Nat.one_le_two_pow (n := g)
   have hpl : 2 ^ g ≤ 2 ^ lam := Nat.pow_le_pow_right (by norm_num) (by omega)
@@ -151,7 +153,7 @@ theorem ascBody_exec {c0 c : Config} (hw : WordsBounded W c) {lam b x D PW : ℕ
     have g2 : c2.nreg 160012 = g := by rw [k2r _ (by omega) (by omega), k1 _ (by omega)]
     have q2 : c2.nreg 160013 = x / 2 ^ g := by
       rw [k2r _ (by omega) (by omega), k1 _ (by omega)]; exact hq
-    have t13 : c2.nreg 160013 = x / 2 ^ g := q2
+    have t13 := q2
     by_cases hodd : c2.nreg 160018 < c2.nreg 160013
     · rw [h18, t13] at hodd
       obtain ⟨e3, hI3⟩ := stop c2 hw2 fr2 hm2 hrr2 hrm2 ho2 g2 q2
@@ -236,7 +238,7 @@ theorem ascBody_exec {c0 c : Config} (hw : WordsBounded W c) {lam b x D PW : ℕ
       Machine.upd_other _ _ _ (show (160012 : ℕ) ≠ 160025 by omega)]
     rw [k1 _ (by omega), hf]; omega
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The greedy grade on the RAM.** -/
 theorem ascS_exec {c : Config} (hw : WordsBounded W c) {lam b x D PW : ℕ}
     (h10 : c.nreg 160010 = x) (h11 : c.nreg 160011 = b) (h26 : c.nreg 160026 = lam)
@@ -296,11 +298,11 @@ theorem forN {ri rn : ℕ} {body : Stmt} (I : ℕ → Config → Prop) (n B : �
     (fun c => (B + 2) * (n - c.nreg ri)) (fun c ⟨j, h, _⟩ => (hI j c h).1)
     (fun c ⟨j, h, hjn⟩ htest => by
       obtain ⟨-, hri, hrn⟩ := hI j c h
-      rw [hri, hrn] at htest
+      Ξ' hri, hrn at htest
       obtain ⟨c', k, e, hk, h'⟩ := hbody j c htest h
       obtain ⟨-, hri', -⟩ := hI (j + 1) c' h'
-      refine ⟨c', k, e, ⟨j + 1, h', by omega⟩, ?_⟩
-      rw [hri, hri']
+      refine ⟨c', k, e, ⟨j + 1, h', ⋄⟩, ?_⟩
+      Ξ hri, hri'
       have : (B + 2) * (n - j) = (B + 2) * (n - (j + 1)) + (B + 2) := by
         rw [← Nat.mul_succ]; congr 1; omega
       omega) ⟨j₀, hc, hj₀⟩
@@ -309,7 +311,7 @@ theorem forN {ri rn : ℕ} {body : Stmt} (I : ℕ → Config → Prop) (n B : �
   subst hj'n
   refine ⟨c', k, e, ?_, hIj⟩
   obtain ⟨-, hri0, -⟩ := hI j₀ c hc
-  rw [hri0] at hk
+  Ξ' hri0 at hk
   exact hk
 
 end proofs

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFDecompBfs
 public import Chazelle.Core.SortRam
 
@@ -71,9 +73,9 @@ theorem ifEqN_ne {a b : ℕ} {t e : Stmt} {c : Config} {Q : Config → ℕ → P
   unfold ifEqN
   obtain ⟨c', k, ex, q⟩ := he
   by_cases hlt : c.nreg a < c.nreg b
-  · exact ⟨c', k + 1, .ifLtN_true hlt ex, q _ (by omega)⟩
-  · have hlt' : c.nreg b < c.nreg a := by omega
-    exact ⟨c', k + 1 + 2, .ifLtN_false hlt (.ifLtN_true hlt' ex), q _ (by omega)⟩
+  · exact ⟨c', k + 1, .ifLtN_true hlt ex, q _ (⋄)⟩
+  · have hlt' : c.nreg b < c.nreg a := ⋄
+    exact ⟨c', k + 1 + 2, .ifLtN_false hlt (.ifLtN_true hlt' ex), q _ (⋄)⟩
 
 /-- Spec of `ldF`. -/
 theorem ldF_exec {c : Config} (hw : WordsBounded W c) (d f x : ℕ)
@@ -85,7 +87,7 @@ theorem ldF_exec {c : Config} (hw : WordsBounded W c) (d f x : ℕ)
   refine spec_step (Exec.addN hw _ _ _ hb) fun hw1 => ?_
   refine spec_step (Exec.loadN hw1 _ _) fun _ => ?_
   refine spec_nil ‹_› ⟨rfl, ?_⟩
-  simp only [Machine.upd_same]
+  ϴ Machine.upd_same
 
 /-- Spec of `stF`. -/
 theorem stF_exec {c : Config} (hw : WordsBounded W c) (f x v : ℕ) (hv : v ≠ 60030)
@@ -98,7 +100,7 @@ theorem stF_exec {c : Config} (hw : WordsBounded W c) (f x v : ℕ) (hv : v ≠ 
   refine spec_step (Exec.addN hw _ _ _ hb) fun hw1 => ?_
   refine spec_step (Exec.storeN hw1 _ _) fun _ => ?_
   refine spec_nil ‹_› ⟨rfl, ?_⟩
-  simp only [Machine.upd_same, Machine.upd_other _ _ _ hv]
+  ϴ Machine.upd_same, Machine.upd_other _ _ _ hv
 
 end spec
 
@@ -139,16 +141,16 @@ theorem DFr.trans {lo hi : ℕ} {c₁ c₂ c₃ : Config} (h₁ : DFr lo hi c₁
 theorem DRegs.of_regs {A R K CB RB LB : ℕ} {c c' : Config} (h : DRegs A R K CB RB LB c)
     (k : ∀ r, Prot r → r ≠ ALLOC → c'.nreg r = c.nreg r) : DRegs A R K CB RB LB c' := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun f hf' => ?_⟩
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.zero
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.one
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.two
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rR
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rK
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rCB
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rRB
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rLB
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rA
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rR1
+  · rw [k _ (by unfold Prot; omega) (⌖)]; exact h.zero
+  · rw [k _ (by unfold Prot; omega) (⌖)]; exact h.one
+  · rw [k _ (by unfold Prot; omega) (⌖)]; exact h.two
+  · rw [k _ (by unfold Prot; omega) (⌖)]; exact h.rR
+  · rw [k _ (by unfold Prot; omega) (⌖)]; exact h.rK
+  · rw [k _ (by unfold Prot; omega) (⌖)]; exact h.rCB
+  · rw [k _ (by unfold Prot; omega) (⌖)]; exact h.rRB
+  · rw [k _ (by unfold Prot; omega) (⌖)]; exact h.rLB
+  · rw [k _ (by unfold Prot; omega) (⌖)]; exact h.rA
+  · rw [k _ (by unfold Prot; omega) (⌖)]; exact h.rR1
   · rw [k _ (by unfold Prot fb; omega) (by unfold fb ALLOC; omega)]; exact h.base f hf'
 
 theorem DRegs.frame {A R K CB RB LB lo hi : ℕ} {c c' : Config} (h : DRegs A R K CB RB LB c)
@@ -167,7 +169,7 @@ theorem addr_inj {A R f g i j : ℕ} (hi : i < R) (hj : j < R)
   rcases lt_trichotomy f g with hfg | rfl | hfg
   · have : (f + 1) * R ≤ g * R := Nat.mul_le_mul_right _ hfg
     rw [Nat.succ_mul] at this; omega
-  · exact ⟨rfl, by omega⟩
+  · exact ⟨rfl, ⋄⟩
   · have : (g + 1) * R ≤ f * R := Nat.mul_le_mul_right _ hfg
     rw [Nat.succ_mul] at this; omega
 
@@ -176,19 +178,19 @@ theorem fv_store {m : ℕ → ℕ} {A R f i v g j : ℕ} (hi : i < R) (hj : j < 
     fv (upd m (A + 12 + f * R + i) v) A R g j = if g = f ∧ j = i then v else fv m A R g j := by
   unfold fv
   by_cases e : g = f ∧ j = i
-  · rw [ite_eq_left e, e.1, e.2, Machine.upd_same]
-  · rw [ite_eq_right e, Machine.upd_other]
+  · Ξ ite_eq_left e, e.1, e.2, Machine.upd_same
+  · Ξ ite_eq_right e, Machine.upd_other
     intro h
     exact e (addr_inj hj hi h)
 
 /-- A store into the field block leaves the memory outside it unchanged. -/
 theorem fv_store_out {m : ℕ → ℕ} {A R f i v a : ℕ} (hf : f < 19) (hi : i < R)
     (ha : a < A + 12 ∨ A + 12 + 19 * R ≤ a) : upd m (A + 12 + f * R + i) v a = m a := by
-  rw [Machine.upd_other]
+  Ξ Machine.upd_other
   intro h
   rcases ha with ha | ha
   · omega
-  · have : (f + 1) * R ≤ 19 * R := Nat.mul_le_mul_right _ (by omega)
+  · have : (f + 1) * R ≤ 19 * R := Nat.mul_le_mul_right _ (⋄)
     rw [Nat.succ_mul] at this; omega
 
 end

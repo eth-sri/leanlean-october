@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopFace
 public import Chazelle.Core.SweepEvFace3
 public import Chazelle.Core.SweepEvStopTasks

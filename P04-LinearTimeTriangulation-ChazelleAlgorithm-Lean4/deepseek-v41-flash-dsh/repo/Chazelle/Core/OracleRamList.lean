@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleRamNode
 
 /-!
@@ -77,14 +79,14 @@ theorem dstarBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 3
       · config_simp; rw [h.q.DL, hmem]
       · config_simp; upd_solve
   obtain ⟨x90, r₁, m₁, rr₁, rm₁, o₁⟩ := v₁
-  have hq₁ : QConst P V c₁ := h.q.congr fun r h1 h2 => r₁ r (by omega) (by omega)
+  have hq₁ : QConst P V c₁ := h.q.congr fun r h1 h2 => r₁ r (⋄) (by omega)
   have hb₁ : BestOK P.n V.s V.m c₁ := by
     unfold BestOK
-    rw [r₁ 120050 (by decide) (by decide), r₁ 120051 (by decide) (by decide),
-      r₁ 120052 (by decide) (by decide)]
+    rw [r₁ 120050 (⌖) (by decide), r₁ 120051 (by decide) (by decide),
+      r₁ 120052 (⌖) (by decide)]
     exact h.b
   have hbo₁ : bestOf c₁ = bestOf c := by
-    unfold bestOf; rw [r₁ 120050 (by decide) (by decide), r₁ 120052 (by decide) (by decide)]
+    unfold bestOf; rw [r₁ 120050 (⌖) (by decide), r₁ 120052 (by decide) (by decide)]
   have hm₁ : c₁.nmem = c₀.nmem := m₁.trans hmem
   -- 2. scan it
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hb₂, hit₂⟩ := nodeScan_exec (P := P) hG hW hs c₁ e₁.wb_right hq₁ hb₁
@@ -93,38 +95,38 @@ theorem dstarBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 3
   have R₂ : ∀ r, BN r = false → c₂.nreg r = c₁.nreg r := f₂.1
   have hq₂ : QConst P V c₂ := hq₁.frame f₂ BN_const
   -- 3. next
-  have x100 : c₂.nreg 120100 = i := (R₂ _ (by decide)).trans (r₁ _ (by decide) (by decide))
+  have x100 : c₂.nreg 120100 = i := (R₂ _ (⌖)).trans (r₁ _ (by decide) (by decide))
   have hW1 : i + 1 ≤ W := by have := h.wb.1 120035; rw [h.q.nD] at this; omega
   obtain ⟨c₃, e₃, v₃, r₃, m₃⟩ := add_exec (P := P) e₂.wb_right 120100 120100 120011
     (by rw [x100, hq₂.one]; exact hW1)
   rw [x100, hq₂.one] at v₃
   have ex : Exec P W dstarBody c c₃ (k₁ + (k₂ + 1)) := .seq e₁ (.seq e₂ e₃)
-  have fb := exec_frameB ex (B := BD) (by decide)
-  refine ⟨c₃, _, ex, ⟨e₃.wb_right, hq₂.congr fun r h1 h2 => r₃ r (by omega), ?_, by omega, ?_,
+  have fb := exec_frameB ex (B := BD) (⌖)
+  refine ⟨c₃, _, ex, ⟨e₃.wb_right, hq₂.congr fun r h1 h2 => r₃ r (⋄), ?_, by omega, ?_,
     h.fr.trans fb⟩, ?_⟩
   · unfold BestOK
-    rw [r₃ 120050 (by decide), r₃ 120051 (by decide), r₃ 120052 (by decide)]
+    rw [r₃ 120050 (⌖), r₃ 120051 (by decide), r₃ 120052 (by decide)]
     exact hb₂
   · have hbo : bestOf c₃ = bestOf c₂ := by
-      unfold bestOf; rw [r₃ 120050 (by decide), r₃ 120052 (by decide)]
-    rw [hbo, v₃]
+      unfold bestOf; rw [r₃ 120050 (⌖), r₃ 120052 (by decide)]
+    Ξ hbo, v₃
     have e : dstarPts c₀.nmem V C (i + 1) =
         dstarPts c₀.nmem V C i ∪ nodePts c₀.nmem V C (c₀.nmem (V.DL + i)) := by
       ext x
-      simp only [dstarPts, Set.mem_ofPred_eq, Set.mem_union]
+      ϴ dstarPts, Set.mem_ofPred_eq, Set.mem_union
       constructor
       · rintro ⟨t, ht, hx⟩
         rcases Nat.lt_succ_iff_lt_or_eq.1 ht with h' | rfl
         · exact Or.inl ⟨t, h', hx⟩
         · exact Or.inr hx
       · rintro (⟨t, ht, hx⟩ | hx)
-        · exact ⟨t, by omega, hx⟩
-        · exact ⟨i, by omega, hx⟩
-    rw [e, ← Set.union_assoc]
+        · exact ⟨t, ⋄, hx⟩
+        · exact ⟨i, ⋄, hx⟩
+    Ξ e, ← Set.union_assoc
     exact hit₂
-  · rw [v₃]
+  · Ξ v₃
     unfold dstarCostFrom
-    rw [Finset.sum_eq_sum_Ico_succ_bot hin]
+    Ξ Finset.sum_eq_sum_Ico_succ_bot hin
     omega
 
 /-- **The scan of the nodes of `D*`.** -/
@@ -137,17 +139,17 @@ theorem dstarS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
       BestOK P.n V.s V.m c' ∧
       Sweep.FirstHitOpt (S ∪ dstarPts c.nmem V C V.nD) z (sgnOf V.σb)
         (bestVal (Qof P) V.s V.hz (sgnOf V.σb) z (bestOf c')) := by
-  obtain ⟨c₁, e₁, v₁, r₁⟩ := const_exec (P := P) hw 120100 0 (by omega)
+  obtain ⟨c₁, e₁, v₁, r₁⟩ := const_exec (P := P) hw 120100 0 (⋄)
   have I₀ : DInv P W C V z c S c₁ := by
-    refine ⟨e₁.wb_right, hq.congr fun r h1 h2 => r₁ r (by omega), ?_, by rw [v₁]; omega, ?_, ?_⟩
+    refine ⟨e₁.wb_right, hq.congr fun r h1 h2 => r₁ r (⋄), ?_, by rw [v₁]; omega, ?_, ?_⟩
     · unfold BestOK
-      rw [r₁ 120050 (by decide), r₁ 120051 (by decide), r₁ 120052 (by decide)]; exact hb
+      rw [r₁ 120050 (⌖), r₁ 120051 (by decide), r₁ 120052 (by decide)]; exact hb
     · have hbo : bestOf c₁ = bestOf c := by
-        unfold bestOf; rw [r₁ 120050 (by decide), r₁ 120052 (by decide)]
-      rw [hbo, v₁]
+        unfold bestOf; rw [r₁ 120050 (⌖), r₁ 120052 (by decide)]
+      Ξ hbo, v₁
       have : dstarPts c.nmem V C 0 = ∅ := by ext x; simp [dstarPts]
       rw [this, Set.union_empty]; exact hS
-    · exact FrameB.mono (exec_frameB e₁ (B := fun r => decide (r = 120100)) (by decide))
+    · exact FrameB.mono (exec_frameB e₁ (B := fun r => decide (r = 120100)) (⌖))
         fun r hr => by
           simp only [decide_eq_true_eq] at hr
           simp only [BD, Bool.or_eq_true, decide_eq_true_eq]; omega

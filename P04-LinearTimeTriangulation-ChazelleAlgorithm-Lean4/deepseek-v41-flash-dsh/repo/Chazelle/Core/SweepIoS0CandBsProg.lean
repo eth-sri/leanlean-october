@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoS0CandBsSpec
 
 /-!
@@ -70,9 +72,9 @@ theorem lsInit_exec (d : Config) (hw : WordsBounded W d) :
     exec_block
     all_goals try (config_simp; omega)
     refine ⟨rfl, ?_, ?_⟩ <;> config_simp
-  have hf := SignK.exec_frameB ex (B := LB) (by decide)
+  have hf := SignK.exec_frameB ex (B := LB) (⌖)
   exact ⟨d', k, ex, hk, q1, q2, hf.1, funext fun r => WalkKey.exec_rframe ex
-    (B := fun _ => false) (by decide) r rfl, hf.2.2.1, hf.2.2.2.1, hf.2.2.2.2⟩
+    (B := fun _ => false) (⌖) r rfl, hf.2.2.1, hf.2.2.2.1, hf.2.2.2.2⟩
 
 set_option maxHeartbeats 1000000 in
 theorem lsB1_exec (d : Config) (hw : WordsBounded W d) {I KK TB E : ℕ}
@@ -89,9 +91,9 @@ theorem lsB1_exec (d : Config) (hw : WordsBounded W d) {I KK TB E : ℕ}
     exec_block
     all_goals try (config_simp; (try simp only [h00, h01, hTB, hE, hK1]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [h00, h01, hTB, hE, hK1]
-  have hf := SignK.exec_frameB ex (B := LB) (by decide)
+  have hf := SignK.exec_frameB ex (B := LB) (⌖)
   exact ⟨d', k, ex, hk, q1, q2, q3, q4, hf.1, funext fun r => WalkKey.exec_rframe ex
-    (B := fun _ => false) (by decide) r rfl, hf.2.2.1, hf.2.2.2.1, hf.2.2.2.2⟩
+    (B := fun _ => false) (⌖) r rfl, hf.2.2.1, hf.2.2.2.1, hf.2.2.2.2⟩
 
 set_option maxHeartbeats 2000000 in
 theorem lsB2_exec (d : Config) (hw : WordsBounded W d) {I Pv E AL : ℕ}
@@ -112,9 +114,9 @@ theorem lsB2_exec (d : Config) (hw : WordsBounded W d) {I Pv E AL : ℕ}
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> (try simp only [h00, h03, hAL, hK1])
     · congr 1; omega
     · congr 1; omega
-  have hf := SignK.exec_frameB ex (B := LB) (by decide)
+  have hf := SignK.exec_frameB ex (B := LB) (⌖)
   exact ⟨d', k, ex, hk, q1, q2, q3, q4, q5, hf.1, funext fun r => WalkKey.exec_rframe ex
-    (B := fun _ => false) (by decide) r rfl, hf.2.2.1, hf.2.2.2.1, hf.2.2.2.2⟩
+    (B := fun _ => false) (⌖) r rfl, hf.2.2.1, hf.2.2.2.1, hf.2.2.2.2⟩
 
 theorem lsB3_exec (d : Config) (hw : WordsBounded W d) :
     ∃ d' k, Exec P W lsB3 d d' k ∧ k = 1 ∧ d'.nreg 244000 = d.nreg 244004 ∧
@@ -125,9 +127,9 @@ theorem lsB3_exec (d : Config) (hw : WordsBounded W d) :
     unfold lsB3
     exec_block
     refine ⟨rfl, ?_, ?_⟩ <;> config_simp
-  have hf := SignK.exec_frameB ex (B := LB) (by decide)
+  have hf := SignK.exec_frameB ex (B := LB) (⌖)
   exact ⟨d', k, ex, hk, q1, q2, hf.1, funext fun r => WalkKey.exec_rframe ex
-    (B := fun _ => false) (by decide) r rfl, hf.2.2.1, hf.2.2.2.1, hf.2.2.2.2⟩
+    (B := fun _ => false) (⌖) r rfl, hf.2.2.1, hf.2.2.2.1, hf.2.2.2.2⟩
 
 end exec
 

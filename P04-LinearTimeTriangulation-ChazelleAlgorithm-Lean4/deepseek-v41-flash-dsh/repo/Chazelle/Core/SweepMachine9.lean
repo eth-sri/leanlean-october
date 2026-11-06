@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepMachine8
 
 /-!
@@ -33,10 +35,10 @@ theorem endpoint_attach {M : Model} (hM : WalkAx M) {e : Set Point} (he : e ∈ 
     ∃ (p : ℕ) (t : ℝ), SideAttach M.W e p t ∧ sidePt M.W p t = x := by
   obtain ⟨a, b, -, hcab, -, hopen, ⟨⟨pa, ta, hAa, hAa'⟩, -⟩, ⟨⟨pb, tb, hBb, hBb'⟩, -⟩⟩ := hM.ends e he
   by_cases hxa : x = a
-  · exact ⟨pa, ta, hAa, by rw [hAa', hxa]⟩
+  · exact ⟨pa, ta, hAa, Ρ hAa', hxa⟩
   · rw [hcab] at hx
     have := seg_end hx hxD hopen hxa
-    exact ⟨pb, tb, hBb, by rw [hBb', this]⟩
+    exact ⟨pb, tb, hBb, Ρ hBb', this⟩
 
 section Machine
 
@@ -56,7 +58,7 @@ theorem stretch_decomp (hP : J.P.Simple) {S₂ : Set (Set Point)}
   set d := dOf (chainModel J.whole).W.n (6 + tpos J.whole J.m₁) p
   rw [hoff] at h0 hL
   refine ⟨d, ?_, fun ht => ?_, hpd.symm⟩
-  · have : (d : ℝ) < ((rL1 J + rL2 J : ℕ) : ℝ) := by linarith
+  · have : (d : ℝ) < ((rL1 J + rL2 J : ℕ) : ℝ) := ⟡
     exact_mod_cast this
   · rw [ht, add_zero] at h0
     intro hd; rw [hd] at h0; simp at h0

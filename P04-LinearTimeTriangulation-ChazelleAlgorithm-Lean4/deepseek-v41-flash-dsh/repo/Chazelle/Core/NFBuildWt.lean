@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecNF
 
 /-!
@@ -51,20 +53,20 @@ theorem mem_arcEdges_iff (a b : ℝ) (p : ℕ) :
   split_ifs with h
   · constructor
     · rintro ⟨t, ht0, ht1, h1, h2⟩
-      exact ⟨by linarith, by linarith⟩
+      exact ⟨⟡, ⟡⟩
     · rintro ⟨h1, h2⟩
       -- a point of `(max a p, min b (p + 1))`
       refine ⟨(max a p + min b (p + 1)) / 2 - p, ?_, ?_, ?_, ?_⟩
-      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
+      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (⟡))
         have : (p : ℝ) ≤ max a p := le_max_right _ _
         linarith
       · have : min b (p + 1) ≤ (p : ℝ) + 1 := min_le_right _ _
-        have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
+        have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (⟡))
         linarith
-      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
+      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (⟡))
         have : a ≤ max a p := le_max_left _ _
         linarith
-      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
+      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (⟡))
         have : min b (p + 1) ≤ b := min_le_left _ _
         linarith
   · constructor
@@ -73,21 +75,21 @@ theorem mem_arcEdges_iff (a b : ℝ) (p : ℕ) :
       · left; linarith
     · rintro (h1 | h1)
       · refine ⟨(min b (p + 1) - p) / 2, ?_, ?_, Or.inr ?_⟩
-        · have : (p : ℝ) < min b (p + 1) := lt_min h1 (by linarith)
+        · have : (p : ℝ) < min b (p + 1) := lt_min h1 (⟡)
           linarith
         · have : min b (p + 1) ≤ (p : ℝ) + 1 := min_le_right _ _
           linarith
-        · have : (p : ℝ) < min b (p + 1) := lt_min h1 (by linarith)
+        · have : (p : ℝ) < min b (p + 1) := lt_min h1 (⟡)
           have : min b (p + 1) ≤ b := min_le_left _ _
           linarith
       · refine ⟨(max a p + (p + 1)) / 2 - p, ?_, ?_, Or.inl ?_⟩
-        · have : max a p < (p : ℝ) + 1 := max_lt h1 (by linarith)
+        · have : max a p < (p : ℝ) + 1 := max_lt h1 (⟡)
           have : (p : ℝ) ≤ max a p := le_max_right _ _
           linarith
-        · have : max a p < (p : ℝ) + 1 := max_lt h1 (by linarith)
+        · have : max a p < (p : ℝ) + 1 := max_lt h1 (⟡)
           have : (p : ℝ) ≤ max a p := le_max_right _ _
           linarith
-        · have : max a p < (p : ℝ) + 1 := max_lt h1 (by linarith)
+        · have : max a p < (p : ℝ) + 1 := max_lt h1 (⟡)
           have : a ≤ max a p := le_max_left _ _
           linarith
 
@@ -103,7 +105,7 @@ theorem lt_key_iff {p e : ℕ} {f : ℝ} (hf : 0 ≤ f ∧ f < 1) :
       have : (p : ℝ) < e + 1 := by linarith [hf.2]
       exact_mod_cast this
     · intro h1
-      have : p ≤ e := by omega
+      have : p ≤ e := ⋄
       have : (p : ℝ) ≤ e := by exact_mod_cast this
       linarith
 
@@ -138,8 +140,8 @@ theorem arcWt_closed {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ l
         obtain ⟨h1, h2⟩ := (hc p hp).1 hcp
         exact ⟨⟨h4, h1⟩, h3, h2⟩
       · rintro ⟨⟨h4, h1⟩, h3, h2⟩
-        exact ⟨by omega, (hc p (by omega)).2 ⟨h1, h2⟩, h3, h4⟩
-    rw [hset, ncard_coe_finset, Nat.card_Ico]
+        exact ⟨⋄, (hc p (⋄)).2 ⟨h1, h2⟩, h3, h4⟩
+    Ξ hset, ncard_coe_finset, Nat.card_Ico
   · have hset : {p : ℕ | p < M.W.n ∧ M.counted p ∧ ∃ t : ℝ, 0 < t ∧ t < 1 ∧
         sideInArc (ea + fa) (eb + fb) (p + t)} =
         ↑(Finset.Ico lo hi \ Finset.Ico (max (keyCeil eb fb) lo) (min ea hi)) := by
@@ -152,10 +154,10 @@ theorem arcWt_closed {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ l
         obtain ⟨h1, h2⟩ := (hc p hp).1 hcp
         refine ⟨⟨h1, h2⟩, ?_⟩; omega
       · rintro ⟨⟨h1, h2⟩, h3⟩
-        refine ⟨by omega, (hc p (by omega)).2 ⟨h1, h2⟩, ?_⟩; omega
-    rw [hset, ncard_coe_finset, Finset.card_sdiff_of_subset, Nat.card_Ico, Nat.card_Ico]
+        refine ⟨⋄, (hc p (⋄)).2 ⟨h1, h2⟩, ?_⟩; omega
+    Ξ hset, ncard_coe_finset, Finset.card_sdiff_of_subset, Nat.card_Ico, Nat.card_Ico
     intro p
-    simp only [Finset.mem_Ico, max_le_iff, lt_min_iff]
+    ϴ Finset.mem_Ico, max_le_iff, lt_min_iff
     omega
 
 /-- **The weight of an arc between two walk positions** of the walk proper (parameters in
@@ -182,7 +184,7 @@ theorem chainModel_n (C : Chain) : (chainModel C).W.n = 2 * C.m + 7 :=
 
 /-- The walk of the interior model has `n` edges. -/
 theorem interiorModel_n (Q : Polygon) : (interiorModel Q).W.n = Q.n := by
-  simp only [interiorModel, interiorWalk]
+  ϴ interiorModel, interiorWalk
   split_ifs <;> simp [Polygon.n]
 
 /-- The interior model counts every walk edge. -/

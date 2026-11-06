@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvXRamH
 
 /-!
@@ -23,7 +25,7 @@ section ch
 
 variable {P : Polygon} {W : ℕ} {v : XV} {N NR : NF} {ras : ℕ → ℕ} {A0 : ℕ} {mem0 : ℕ → ℕ}
 
-set_option maxHeartbeats 8000000 in
+
 open Classical in
 /-- **One chord record of `N_R`.** -/
 theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded W d)
@@ -73,7 +75,7 @@ theorem chS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBounded
     exec_frameB e1 (by decide)
   have hw1 := e1.wb_right
   have g1 : XG P v d1 := hg.frameM (FrameB.toM f1) (by decide)
-  have m1 : d1.nmem = d.nmem := f1.2.2.1
+  have m1 := f1.2.2.1
   -- step 2: the left end
   obtain ⟨d2, k2, e2, hk2, bL, encL, f2⟩ := clsS_exec (P := P) d1 hw1 (n := (Qof P).n)
     (m := v.m) (T := v.T) (HB := v.HB) (h := (NR.chord i).h) (p := (NR.chord i).lp) (β := v.β)

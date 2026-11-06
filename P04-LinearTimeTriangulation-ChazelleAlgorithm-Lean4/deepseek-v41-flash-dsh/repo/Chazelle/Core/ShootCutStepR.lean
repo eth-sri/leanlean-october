@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutRun
 
 /-!
@@ -45,20 +47,20 @@ theorem single_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Pr
     all_goals first | (config_simp; rw [h40, h91]; done) | (config_simp; rw [h40]; done) |
       (config_simp; done) | skip
     simp only [upd]; split_ifs <;> first | rfl | omega
-  have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (by decide)
+  have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (⌖)
   have hR : PcRegs d₁ (sgPc c) := ⟨v50, v51, v52, v53, v54, fun h => by simp [sgPc] at h⟩
   obtain ⟨d₂, k₂, e₂, hk₂, hI₂, kp, mem₂⟩ := hE.run _ (sgPc c) d₁ e₁.wb_right (hE.stable _ _ _ hI fr₁) hR hpv
   have q40 : d₂.nreg 150040 = c := by
-    rw [kp _ (by unfold Keep; omega), r₁ _ (by omega), h40]
+    Ξ kp _ (by unfold Keep; omega), r₁ _ (⋄), h40
   have q91 : d₂.nreg 150091 = 1 := by
-    rw [kp _ (by unfold Keep; omega), r₁ _ (by omega), h91]
+    Ξ kp _ (by unfold Keep; omega), r₁ _ (⋄), h91
   have e₃ := Exec.addN (P := P) e₂.wb_right 150040 150040 150091 (by rw [q40, q91]; omega)
-  refine ⟨_, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by omega,
-    hE.stable _ _ _ hI₂ (exec_frameB e₃ (by decide)), by config_simp; rw [q40, q91],
+  refine ⟨_, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), ⋄,
+    hE.stable _ _ _ hI₂ (exec_frameB e₃ (⌖)), by config_simp; rw [q40, q91],
     fun r hr h1 => ?_, fun a ha => ?_⟩
   · config_simp
-    rw [upd_other _ _ _ h1, kp r hr, r₁ r (by unfold Keep at hr; omega)]
-  · config_simp; rw [mem₂ a ha, m₁]
+    Ξ upd_other _ _ _ h1, kp r hr, r₁ r (by unfold Keep at hr; omega)
+  · config_simp; Ξ mem₂ a ha, m₁
 
 /-- **`150071 := min 150071 r`.** -/
 theorem minTo_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) (r : ℕ) :
@@ -86,32 +88,32 @@ theorem upLen_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
       (∀ x, x ≠ 150071 → x ≠ 150075 → d₁.nreg x = d.nreg x) ∧ d₁.nmem = d.nmem := by
     exec_block
     refine ⟨rfl, ?_, ?_, fun x h1 h2 => ?_, rfl⟩
-    · config_simp; rw [h23, h61]
-    · config_simp; rw [h69, h66]
+    · config_simp; Ξ h23, h61
+    · config_simp; Ξ h69, h66
     · simp only [upd]; split_ifs <;> first | rfl | omega
   obtain ⟨d₂, k₂, e₂, hk₂, o71', r₂, m₂⟩ := minTo_exec (P := P) d₁ e₁.wb_right 150075
   obtain ⟨d₃, k₃, e₃, hk₃, o75', r₃, m₃⟩ : ∃ d₃ k₃, Exec P W
       (block [.subN 150075 150027 150070, .subN 150075 150075 150091]) d₂ d₃ k₃ ∧ k₃ = 2 ∧
       d₃.nreg 150075 = n - q - 1 ∧ (∀ x, x ≠ 150075 → d₃.nreg x = d₂.nreg x) ∧
       d₃.nmem = d₂.nmem := by
-    have a27 : d₂.nreg 150027 = n := by rw [r₂ _ (by omega), r₁ _ (by omega) (by omega), h27]
-    have a70 : d₂.nreg 150070 = q := by rw [r₂ _ (by omega), r₁ _ (by omega) (by omega), h70]
-    have a91 : d₂.nreg 150091 = 1 := by rw [r₂ _ (by omega), r₁ _ (by omega) (by omega), h91]
+    have a27 : d₂.nreg 150027 = n := Ρ r₂ _ (⋄), r₁ _ (⋄) (⋄), h27
+    have a70 : d₂.nreg 150070 = q := Ρ r₂ _ (⋄), r₁ _ (⋄) (⋄), h70
+    have a91 : d₂.nreg 150091 = 1 := Ρ r₂ _ (⋄), r₁ _ (⋄) (⋄), h91
     have w₂ := e₂.wb_right
     exec_block
     refine ⟨rfl, ?_, fun x h1 => ?_, rfl⟩
-    · config_simp; rw [a27, a70, a91]
+    · config_simp; Ξ a27, a70, a91
     · simp only [upd]; split_ifs <;> first | rfl | omega
   obtain ⟨d₄, k₄, e₄, hk₄, o71'', r₄, m₄⟩ := minTo_exec (P := P) d₃ e₃.wb_right 150075
   obtain ⟨d₅, k₅, e₅, hk₅, o71''', r₅, m₅⟩ := minTo_exec (P := P) d₄ e₄.wb_right 150072
-  refine ⟨d₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by omega,
-    ?_, fun x h1 h2 => ?_, by rw [m₅, m₄, m₃, m₂, m₁]⟩
+  refine ⟨d₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), ⋄,
+    ?_, fun x h1 h2 => ?_, Ρ m₅, m₄, m₃, m₂, m₁⟩
   · have a1 : d₄.nreg 150072 = lim := by
-      rw [r₄ 150072 (by omega), r₃ 150072 (by omega), r₂ 150072 (by omega),
-        r₁ 150072 (by omega) (by omega), h72]
-    have a2 : d₃.nreg 150071 = d₂.nreg 150071 := r₃ _ (by omega)
-    rw [o71''', o71'', a1, a2, o71', o75', o71, o75]
-  · rw [r₅ _ h1, r₄ _ h1, r₃ _ h2, r₂ _ h1, r₁ _ h1 h2]
+      rw [r₄ 150072 (⋄), r₃ 150072 (⋄), r₂ 150072 (⋄),
+        r₁ 150072 (⋄) (⋄), h72]
+    have a2 : d₃.nreg 150071 = d₂.nreg 150071 := r₃ _ (⋄)
+    Ξ o71''', o71'', a1, a2, o71', o75', o71, o75
+  · Ξ r₅ _ h1, r₄ _ h1, r₃ _ h2, r₂ _ h1, r₁ _ h1 h2
 
 /-- The straight part of a descending stretch: `L` into `150071`. -/
 theorem dnLen_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) {m2 J t q lim : ℕ}
@@ -176,26 +178,26 @@ theorem upStretch_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc →
       d'.nreg 150096 = 6 ∧ WordsBounded W d' ∧ (∀ a, a < A₀ → d'.nmem a = m₀ a) := by
   set L := min (min (min (mC - J) (ℓ - t)) (P.n - q - 1)) lim with hL
   obtain ⟨d₁, k₁, e₁, hk₁, o71, r₁, m₁⟩ := upLen_exec (P := P) d hw h23 h61 h69 h66 h27 h70 h72 h91
-  have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (by decide)
+  have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (⌖)
   have k₁' : ∀ r, r ≠ 150071 → r ≠ 150075 → d₁.nreg r = d.nreg r := r₁
   obtain ⟨d₂, k₂, ps', e₂, hk₂, hI₂, hch, hv, hlen, o40, r₂, a90, a91, m₂⟩ :=
-    dyUp_exec hE (ps₀ := ps₀) (q₀ := q) (L := L) (c₀ := c) d₁ env hblk (by omega)
-      (by have : L ≤ P.n := by omega
-          omega) (by omega) (by omega) e₁.wb_right
+    dyUp_exec hE (ps₀ := ps₀) (q₀ := q) (L := L) (c₀ := c) d₁ env hblk (⋄)
+      (by have : L ≤ P.n := ⋄
+          omega) (⋄) (by omega) e₁.wb_right
       (fun a ha => by rw [m₁]; exact hm a ha)
-      (by rw [k₁' _ (by omega) (by omega), h90]) (by rw [k₁' _ (by omega) (by omega), h91])
-      (by rw [k₁' _ (by omega) (by omega), h34]) (by rw [k₁' _ (by omega) (by omega), h35])
-      (by rw [k₁' _ (by omega) (by omega), h36]) (by rw [k₁' _ (by omega) (by omega), h70])
-      o71 (by rw [k₁' _ (by omega) (by omega), h40]) (hE.stable _ _ _ hI fr₁)
+      (by rw [k₁' _ (⋄) (by omega), h90]) (by rw [k₁' _ (by omega) (by omega), h91])
+      (by rw [k₁' _ (⋄) (by omega), h34]) (by rw [k₁' _ (by omega) (by omega), h35])
+      (by rw [k₁' _ (⋄) (by omega), h36]) (by rw [k₁' _ (by omega) (by omega), h70])
+      o71 (by rw [k₁' _ (⋄) (by omega), h40]) (hE.stable _ _ _ hI fr₁)
   obtain ⟨d₃, k₃, e₃, hk₃, b90, b91, b92, b93, b96, r₃, m₃⟩ :=
-    cInit_exec (P := P) d₂ e₂.wb_right (by omega)
-  refine ⟨d₃, k₁ + (k₂ + k₃), ps', .seq e₁ (.seq e₂ e₃), by omega,
-    hE.stable _ _ _ hI₂ (exec_frameB e₃ (by decide)), hch, hv, hlen,
-    by rw [r₃ _ (by omega) (by omega) (by omega) (by omega) (by omega), o40],
+    cInit_exec (P := P) d₂ e₂.wb_right (⋄)
+  refine ⟨d₃, k₁ + (k₂ + k₃), ps', .seq e₁ (.seq e₂ e₃), ⋄,
+    hE.stable _ _ _ hI₂ (exec_frameB e₃ (⌖)), hch, hv, hlen,
+    by rw [r₃ _ (⋄) (by omega) (by omega) (by omega) (by omega), o40],
     fun r h1 h2 h3 => ?_, b90, b91, b92, b93, b96, e₃.wb_right,
     fun a ha => by rw [m₃]; exact m₂ a ha⟩
-  rw [r₃ _ (by omega) (by omega) (by omega) (by omega) (by omega), r₂ r h1 h2 h3,
-    k₁' r (by omega) (by omega)]
+  rw [r₃ _ (⋄) (by omega) (by omega) (by omega) (by omega), r₂ r h1 h2 h3,
+    k₁' r (⋄) (by omega)]
 
 /-- **A descending stretch** on the RAM: its length `L` and its downward cover. -/
 theorem dnStretch_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop}
@@ -222,25 +224,25 @@ theorem dnStretch_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc →
       d'.nreg 150096 = 6 ∧ WordsBounded W d' ∧ (∀ a, a < A₀ → d'.nmem a = m₀ a) := by
   set L := min (min (min (m2 - J) t) q) lim with hL
   obtain ⟨d₁, k₁, e₁, hk₁, o71, r₁, m₁⟩ := dnLen_exec (P := P) d hw h29 h61 h66 h70 h72
-  have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (by decide)
+  have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (⌖)
   have k₁' : ∀ r, r ≠ 150071 → d₁.nreg r = d.nreg r := r₁
   obtain ⟨d₂, k₂, ps', e₂, hk₂, hI₂, hch, hv, hlen, o40, r₂, a90, a91, m₂⟩ :=
-    dyDn_exec hE (ps₀ := ps₀) (q₀ := q) (L := L) (c₀ := c) d₁ env hblk (by omega)
-      (by omega) (by omega) (by omega) (by omega) e₁.wb_right
+    dyDn_exec hE (ps₀ := ps₀) (q₀ := q) (L := L) (c₀ := c) d₁ env hblk (⋄)
+      (⋄) (by omega) (by omega) (by omega) e₁.wb_right
       (fun a ha => by rw [m₁]; exact hm a ha)
-      (by rw [k₁' _ (by omega), h90]) (by rw [k₁' _ (by omega), h91])
-      (by rw [k₁' _ (by omega), h34]) (by rw [k₁' _ (by omega), h35])
-      (by rw [k₁' _ (by omega), h36]) (by rw [k₁' _ (by omega), h70])
-      o71 (by rw [k₁' _ (by omega), h40]) (hE.stable _ _ _ hI fr₁)
+      (by rw [k₁' _ (⋄), h90]) (by rw [k₁' _ (by omega), h91])
+      (by rw [k₁' _ (⋄), h34]) (by rw [k₁' _ (by omega), h35])
+      (by rw [k₁' _ (⋄), h36]) (by rw [k₁' _ (by omega), h70])
+      o71 (by rw [k₁' _ (⋄), h40]) (hE.stable _ _ _ hI fr₁)
   obtain ⟨d₃, k₃, e₃, hk₃, b90, b91, b92, b93, b96, r₃, m₃⟩ :=
-    cInit_exec (P := P) d₂ e₂.wb_right (by omega)
-  refine ⟨d₃, k₁ + (k₂ + k₃), ps', .seq e₁ (.seq e₂ e₃), by omega,
-    hE.stable _ _ _ hI₂ (exec_frameB e₃ (by decide)), hch, hv, hlen,
-    by rw [r₃ _ (by omega) (by omega) (by omega) (by omega) (by omega), o40],
+    cInit_exec (P := P) d₂ e₂.wb_right (⋄)
+  refine ⟨d₃, k₁ + (k₂ + k₃), ps', .seq e₁ (.seq e₂ e₃), ⋄,
+    hE.stable _ _ _ hI₂ (exec_frameB e₃ (⌖)), hch, hv, hlen,
+    by rw [r₃ _ (⋄) (by omega) (by omega) (by omega) (by omega), o40],
     fun r h1 h2 h3 => ?_, b90, b91, b92, b93, b96, e₃.wb_right,
     fun a ha => by rw [m₃]; exact m₂ a ha⟩
-  rw [r₃ _ (by omega) (by omega) (by omega) (by omega) (by omega), r₂ r h1 h2 h3,
-    k₁' r (by omega)]
+  rw [r₃ _ (⋄) (by omega) (by omega) (by omega) (by omega), r₂ r h1 h2 h3,
+    k₁' r (⋄)]
 
 end
 

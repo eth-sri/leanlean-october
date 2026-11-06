@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvXRamA
 
 /-!
@@ -48,13 +50,13 @@ theorem x_sub (d : Config) (hw : WordsBounded W d) (r a b : ℕ) :
 
 theorem x_skipR (d : Config) (hw : WordsBounded W d) (r : ℕ) :
     ∃ d' k, Exec P W .skip d d' k ∧ k ≤ 1 ∧ NRegs d d' (upd d.nreg r (d.nreg r)) :=
-  ⟨d, 0, .skip hw, by omega, by rw [Machine.upd_eq_self], rfl, rfl, rfl, rfl⟩
+  ⟨d, 0, .skip hw, ⋄, by rw [Machine.upd_eq_self], rfl, rfl, rfl, rfl⟩
 
 theorem x_mono {s : Stmt} {d : Config} {K K' : ℕ} {Q : Config → Prop}
     (h : ∃ d' k, Exec P W s d d' k ∧ k ≤ K ∧ Q d') (hK : K ≤ K') :
     ∃ d' k, Exec P W s d d' k ∧ k ≤ K' ∧ Q d' := by
   obtain ⟨d', k, e, hk, q⟩ := h
-  exact ⟨d', k, e, by omega, q⟩
+  exact ⟨d', k, e, ⋄, q⟩
 
 theorem x_if {a b : ℕ} {t e : Stmt} {d : Config} {K : ℕ} {f g : ℕ → ℕ}
     (ht : d.nreg a < d.nreg b → ∃ d' k, Exec P W t d d' k ∧ k ≤ K ∧ NRegs d d' f)
@@ -63,9 +65,9 @@ theorem x_if {a b : ℕ} {t e : Stmt} {d : Config} {K : ℕ} {f g : ℕ → ℕ}
       NRegs d d' (if d.nreg a < d.nreg b then f else g) := by
   by_cases h : d.nreg a < d.nreg b
   · obtain ⟨d', k, ex, hk, hn⟩ := ht h
-    exact ⟨d', k + 1, .ifLtN_true h ex, by omega, by rw [ite_eq_left h]; exact hn⟩
+    exact ⟨d', k + 1, .ifLtN_true h ex, ⋄, by rw [ite_eq_left h]; exact hn⟩
   · obtain ⟨d', k, ex, hk, hn⟩ := he h
-    exact ⟨d', k + 2, .ifLtN_false h ex, by omega, by rw [ite_eq_right h]; exact hn⟩
+    exact ⟨d', k + 2, .ifLtN_false h ex, ⋄, by rw [ite_eq_right h]; exact hn⟩
 
 theorem x_ifR {a b r : ℕ} {t e : Stmt} {d : Config} {K : ℕ} {v₁ v₂ : ℕ}
     (ht : d.nreg a < d.nreg b → ∃ d' k, Exec P W t d d' k ∧ k ≤ K ∧ NRegs d d' (upd d.nreg r v₁))
@@ -76,8 +78,8 @@ theorem x_ifR {a b r : ℕ} {t e : Stmt} {d : Config} {K : ℕ} {v₁ v₂ : ℕ
   obtain ⟨d', k, ex, hk, hn⟩ := x_if ht he
   refine ⟨d', k, ex, hk, ?_⟩
   by_cases h : d.nreg a < d.nreg b
-  · rw [ite_eq_left h] at hn ⊢; exact hn
-  · rw [ite_eq_right h] at hn ⊢; exact hn
+  · Ξ' ite_eq_left h at hn ⊢; exact hn
+  · Ξ' ite_eq_right h at hn ⊢; exact hn
 
 /-- Sequencing with an `NRegs` first part. -/
 theorem x_seq {s t : Stmt} {d : Config} {K₁ K₂ : ℕ} {Q₁ Q₂ : Config → Prop}
@@ -86,7 +88,7 @@ theorem x_seq {s t : Stmt} {d : Config} {K₁ K₂ : ℕ} {Q₁ Q₂ : Config �
     ∃ d₂ k, Exec P W (.seq s t) d d₂ k ∧ k ≤ K₁ + K₂ ∧ Q₂ d₂ := by
   obtain ⟨d₁, k₁, e₁, hk₁, q₁⟩ := h₁
   obtain ⟨d₂, k₂, e₂, hk₂, q₂⟩ := h₂ d₁ e₁.wb_right q₁
-  exact ⟨d₂, k₁ + k₂, .seq e₁ e₂, by omega, q₂⟩
+  exact ⟨d₂, k₁ + k₂, .seq e₁ e₂, ⋄, q₂⟩
 
 end steps
 
@@ -99,7 +101,7 @@ def Enc (d : Config) : SymPt → Prop
 
 theorem Enc.congr {d d' : Config} {s : SymPt} (h : Enc d s) (h0 : d'.nreg 217070 = d.nreg 217070)
     (h1 : d'.nreg 217071 = d.nreg 217071) (h2 : d'.nreg 217072 = d.nreg 217072) : Enc d' s := by
-  cases s <;> simp only [Enc] at h ⊢ <;> omega
+  cases s <;> ϴ' Enc at h ⊢ <;> omega
 
 /-- A host item at address `p` (three words). -/
 def ItemAt (m : ℕ → ℕ) (p : ℕ) : HostItem → Prop
@@ -115,17 +117,17 @@ def ItemWF (n : ℕ) : HostItem → Prop
 theorem itemAt_of_hostAt {m : ℕ → ℕ} {B : ℕ} {H : Host} (hH : HostAt m B H) {i : ℕ}
     (hi : i < H.length) : ItemAt m (B + 1 + 3 * i) (H.getD i (.run 0 0)) := by
   have h := hH.2 i hi
-  have e1 : B + 1 + 3 * i + 1 = B + 2 + 3 * i := by omega
-  have e2 : B + 1 + 3 * i + 2 = B + 3 + 3 * i := by omega
-  rcases hx : H.getD i (.run 0 0) with ⟨a, ℓ⟩ | ⟨j | ⟨e, h'⟩⟩ <;> rw [hx] at h <;>
-    simp only [ItemAt, e1, e2] at h ⊢ <;> exact h
+  have e1 : B + 1 + 3 * i + 1 = B + 2 + 3 * i := ⋄
+  have e2 : B + 1 + 3 * i + 2 = B + 3 + 3 * i := ⋄
+  rcases hx : H.getD i (.run 0 0) with ⟨a, ℓ⟩ | ⟨j | ⟨e, h'⟩⟩ <;> Ξ' hx at h <;>
+    ϴ' ItemAt, e1, e2 at h ⊢ <;> exact h
 
 theorem itemWF_of_hostWF {n : ℕ} {H : Host} (hH : HostWF n H) {i : ℕ} (hi : i < H.length) :
     ItemWF n (H.getD i (.run 0 0)) := by
   have hmem : H.getD i (.run 0 0) ∈ H := by
     rw [List.getD_eq_getElem _ _ hi]; exact List.getElem_mem hi
   have h := hH _ hmem
-  rcases hx : H.getD i (.run 0 0) with ⟨a, ℓ⟩ | x <;> rw [hx] at h <;> exact h
+  rcases hx : H.getD i (.run 0 0) with ⟨a, ℓ⟩ | x <;> Ξ' hx at h <;> exact h
 
 theorem pts_take_succ {n : ℕ} {H : Host} {j : ℕ} (hj : j < H.length) :
     Host.pts n (H.take (j + 1)) = Host.pts n (H.take j) ++ (H.getD j (.run 0 0)).pts n := by
@@ -139,15 +141,15 @@ theorem hpt_take {n : ℕ} {H : Host} {j k : ℕ} (hk : k < (Host.pts n (H.take 
   unfold hpt
   conv_lhs => rw [← List.take_append_drop j H]
   unfold Host.pts at hk ⊢
-  rw [List.flatMap_append, List.getD_append _ _ _ _ hk]
+  Ξ List.flatMap_append, List.getD_append _ _ _ _ hk
 
 theorem run_pts_length (n a ℓ : ℕ) : ((HostItem.run a ℓ).pts n).length = ℓ + 1 := by
-  simp [HostItem.pts]
+  Θ HostItem.pts
 
 theorem run_pts_getD (n a ℓ : ℕ) {t : ℕ} (ht : t ≤ ℓ) :
     ((HostItem.run a ℓ).pts n).getD t (.vtx 0) = .vtx ((a + t) % n) := by
-  simp only [HostItem.pts]
-  rw [List.getD_eq_getElem _ _ (by simp; omega)]
+  ϴ HostItem.pts
+  Ξ List.getD_eq_getElem _ _ (by simp; omega)
   simp
 
 /-! ## `lookS` -/
@@ -191,8 +193,8 @@ def Blook (r : ℕ) : Bool :=
 def Bitem (r : ℕ) : Bool :=
   decide (r = 217070 ∨ r = 217071 ∨ r = 217072 ∨ r = 217093 ∨ r = 217097)
 
-theorem wr_lookRun : wr Bitem lookRun = true := by decide
-theorem wr_lookPt : wr Bitem lookPt = true := by decide
+theorem wr_lookRun : wr Bitem lookRun = true := ⌖
+theorem wr_lookPt : wr Bitem lookPt = true := ⌖
 
 section look
 
@@ -222,8 +224,8 @@ theorem lookRun_exec (d : Config) (hw : WordsBounded W d) {n a ℓ cum : ℕ}
       exec_block
       · omega
       · config_simp; omega
-      · refine ⟨by omega, by config_simp; omega, fun _ => ⟨by config_simp, by config_simp,
-          by config_simp⟩, fun h _ => absurd c1 (by omega)⟩
+      · refine ⟨⋄, by config_simp; omega, fun _ => ⟨by config_simp, by config_simp,
+          by config_simp⟩, fun h _ => absurd c1 (⋄)⟩
     · refine spec_ifLtN_false c1 ?_
       refine spec_seq ?_
       exec_block
@@ -233,8 +235,8 @@ theorem lookRun_exec (d : Config) (hw : WordsBounded W d) {n a ℓ cum : ℕ}
         exec_block
         · config_simp; omega
         · config_simp; omega
-        · refine ⟨by omega, by config_simp; omega, fun h => absurd h (by omega),
-            fun _ h => absurd c2 (by omega)⟩
+        · refine ⟨⋄, by config_simp; omega, fun h => absurd h (⋄),
+            fun _ h => absurd c2 (⋄)⟩
       · refine spec_ifLtN_false (by config_simp; omega) ?_
         refine spec_seq ?_
         exec_block
@@ -246,20 +248,20 @@ theorem lookRun_exec (d : Config) (hw : WordsBounded W d) {n a ℓ cum : ℕ}
           exec_block
           · config_simp; omega
           · config_simp; omega
-          · refine ⟨by omega, by config_simp; omega, fun h => absurd h (by omega),
+          · refine ⟨⋄, by config_simp; omega, fun h => absurd h (⋄),
               fun _ _ => ?_⟩
-            simp only [Enc]
+            ϴ Enc
             config_simp
             rw [Nat.mod_eq_of_lt c3]; omega
         · refine spec_ifLtN_false (by config_simp; omega) ?_
           exec_block
           · config_simp; omega
           · config_simp; omega
-          · refine ⟨by omega, by config_simp; omega, fun h => absurd h (by omega),
+          · refine ⟨⋄, by config_simp; omega, fun h => absurd h (⋄),
               fun _ _ => ?_⟩
-            simp only [Enc]
+            ϴ Enc
             config_simp
-            rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+            Ξ Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (⋄)
             omega
   exact ⟨d', k, ex, hk, h1, h2, h3, exec_frameB ex wr_lookRun⟩
 
@@ -284,20 +286,20 @@ theorem lookPt_exec (d : Config) (hw : WordsBounded W d) {cum : ℕ}
       refine spec_skip hw ?_
       exec_block
       · omega
-      · refine ⟨by omega, by config_simp; omega, fun _ => ⟨by config_simp, by config_simp,
-          by config_simp⟩, fun h => absurd c1 (by omega)⟩
+      · refine ⟨⋄, by config_simp; omega, fun _ => ⟨by config_simp, by config_simp,
+          by config_simp⟩, fun h => absurd c1 (⋄)⟩
     · refine spec_ifLtN_false c1 ?_
       by_cases c2 : d.nreg 217093 < d.nreg 217090
       · refine spec_ifLtN_true c2 ?_
         refine spec_skip hw ?_
         exec_block
         · omega
-        · refine ⟨by omega, by config_simp; omega, fun _ => ⟨by config_simp, by config_simp,
-            by config_simp⟩, fun h => absurd c2 (by omega)⟩
+        · refine ⟨⋄, by config_simp; omega, fun _ => ⟨by config_simp, by config_simp,
+            by config_simp⟩, fun h => absurd c2 (⋄)⟩
       · refine spec_ifLtN_false c2 ?_
         exec_block
         · config_simp; omega
-        · refine ⟨by omega, by config_simp; omega, fun h => absurd h (by omega),
+        · refine ⟨⋄, by config_simp; omega, fun h => absurd h (⋄),
             fun _ => ⟨by config_simp, by config_simp, by config_simp⟩⟩
   exact ⟨d', k, ex, hk, h1, h2, h3, exec_frameB ex wr_lookPt⟩
 

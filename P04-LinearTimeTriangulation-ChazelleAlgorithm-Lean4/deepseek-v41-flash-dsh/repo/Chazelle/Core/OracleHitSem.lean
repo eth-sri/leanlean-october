@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleRamEdge
 
 /-!
@@ -115,9 +117,9 @@ theorem fold_step {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctHeigh
   convert hu using 1
   unfold upd1
   by_cases hh : HitC Q s hz σ zo ci
-  · rw [ite_eq_left hh]
+  · Ξ ite_eq_left hh
     by_cases hall : ∀ cb, best = some cb → BetterC Q s hz σ ci cb
-    · rw [ite_eq_left ⟨hh, hall⟩]
+    · Ξ ite_eq_left ⟨hh, hall⟩
       rcases best with _ | cb
       · rfl
       · have hb := hall cb rfl
@@ -125,8 +127,8 @@ theorem fold_step {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctHeigh
         have hlt : vOf Q s hz σ z ci < vOf Q s hz σ z cb := by
           rw [vOf_of_spans hh.1, vOf_of_spans hcb, better_iff hσ]; exact hb
         show some (vOf Q s hz σ z ci) = some (min (vOf Q s hz σ z cb) (vOf Q s hz σ z ci))
-        rw [min_eq_right hlt.le]
-    · rw [ite_eq_right (fun h => hall h.2)]
+        Ξ min_eq_right hlt.le
+    · Ξ ite_eq_right (fun h => hall h.2)
       push Not at hall
       obtain ⟨cb, rfl, hnb⟩ := hall
       have hcb := spans_of_vOf_pos (show FirstHit S z σ (vOf Q s hz σ z cb) from hS).1
@@ -136,8 +138,8 @@ theorem fold_step {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctHeigh
         rw [vOf_of_spans hh.1, vOf_of_spans hcb] at hc
         exact hnb (by rwa [better_iff hσ] at hc)
       show some (vOf Q s hz σ z cb) = some (min (vOf Q s hz σ z cb) (vOf Q s hz σ z ci))
-      rw [min_eq_left hle]
-  · rw [ite_eq_right hh, ite_eq_right (fun h => hh h.1)]
+      Ξ min_eq_left hle
+  · Ξ ite_eq_right hh, ite_eq_right (fun h => hh h.1)
     rcases best with _ | cb <;> rfl
 
 end OracleQ

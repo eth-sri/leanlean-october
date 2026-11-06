@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Jordan.Jordan
 
 /-!
@@ -52,12 +56,12 @@ theorem filled_inter_subset_of_interior_disjoint {Q₁ Q₂ : Polygon} (h₁ : Q
       z ∈ A.filled → z ∈ B.filled → z ∈ A.boundary := by
     intro A B hA hB hAB hzA hzB
     by_contra hzb
-    have hopen : IsOpen (A.filled \ A.boundary) := isOpen_filled_sdiff_boundary hA
-    have hnhds : A.filled \ A.boundary ∈ 𝓝 z := hopen.mem_nhds ⟨hzA, hzb⟩
-    have hcl : z ∈ closure (B.filled \ B.boundary) := filled_subset_closure_interior hB hzB
+    have hopen := isOpen_filled_sdiff_boundary hA
+    have hnhds := hopen.mem_nhds ⟨hzA, hzb⟩
+    have hcl := filled_subset_closure_interior hB hzB
     obtain ⟨y, hy⟩ := mem_closure_iff_nhds.1 hcl _ hnhds
     have : y ∈ (A.filled \ A.boundary) ∩ (B.filled \ B.boundary) := hy
-    rw [hAB] at this
+    Ξ' hAB at this
     exact this
   refine ⟨key Q₁ Q₂ h₁ h₂ hI hz₁ hz₂, key Q₂ Q₁ h₂ h₁ ?_ hz₂ hz₁⟩
   rw [inter_comm]; exact hI
@@ -84,7 +88,7 @@ theorem common_interior_empty {P Q₁ Q₂ : Polygon} (hP : P.Simple) (h₁ : Q�
   -- `I` lies in the exterior of `P`
   have hIP : I ⊆ P.filledᶜ := by
     rintro z ⟨⟨hz₁, hz₁b⟩, ⟨hz₂, hz₂b⟩⟩
-    have hzP : z ∉ P.boundary := fun h => (hb' h).elim hz₁b hz₂b
+    have hzP := fun h => (hb' h).elim hz₁b hz₂b
     intro hzf
     have := (hxor z hzP hz₁b hz₂b).1 hzf
     exact (this.1 hz₁) hz₂
@@ -101,7 +105,7 @@ theorem common_interior_empty {P Q₁ Q₂ : Polygon} (hP : P.Simple) (h₁ : Q�
     refine ⟨⟨hz₁, fun h => hzP (hb (Or.inl h))⟩, ⟨hz₂, fun h => hzP (hb (Or.inr h))⟩⟩
   -- connectedness of the exterior
   by_contra hne
-  rw [← Ne, ← nonempty_iff_ne_empty] at hne
+  Ξ' ← Ne, ← nonempty_iff_ne_empty at hne
   obtain ⟨z, hz⟩ := hne
   have hVopen : IsOpen (P.filledᶜ ∩ (closure I)ᶜ) :=
     (isOpen_filled_compl P).inter isClosed_closure.isOpen_compl
@@ -161,7 +165,7 @@ theorem split_filled {P Q₁ Q₂ : Polygon} (hP : P.Simple) (h₁ : Q₁.Simple
         exact h.2 ⟨fun _ => hz₂f, fun _ => hzf⟩
       · have hz₁f : z ∉ Q₁.filled := fun h' => hz₂ (hmeet ⟨h', hzf⟩).2
         exact h.2 ⟨fun h' => absurd h' hz₁f, fun h' => absurd hzf h'⟩
-  · rw [interior_filled h₁, interior_filled h₂, Set.disjoint_iff_inter_eq_empty]
+  · Ξ interior_filled h₁, interior_filled h₂, Set.disjoint_iff_inter_eq_empty
     exact hI
 
 /-- The filled region of `P` is the union of the filled regions of `Q₁` and `Q₂`

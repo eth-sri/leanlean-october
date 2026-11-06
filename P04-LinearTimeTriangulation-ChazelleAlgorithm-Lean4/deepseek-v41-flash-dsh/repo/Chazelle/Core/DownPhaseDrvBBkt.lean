@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBPieces
 public import Chazelle.Core.DownPhaseDrvBFam
 public import Chazelle.Core.DownPhaseDrvDRMath
@@ -48,11 +52,11 @@ theorem countP_half (P : ℕ → Bool) (m : ℕ) :
 theorem countP_range_getD {α : Type*} (l : List α) (d : α) (p : α → Bool) :
     (List.range l.length).countP (fun i => p (l.getD i d)) = l.countP p := by
   have e : (List.range l.length).map (fun i => l.getD i d) = l := by
-    apply List.ext_getElem (by simp)
+    apply List.ext_getElem (✓)
     intro i h1 h2
-    simp [List.getElem?_eq_getElem h2]
+    Θ List.getElem?_eq_getElem h2
   conv_rhs => rw [← e]
-  rw [List.countP_map]
+  Ξ List.countP_map
   rfl
 
 /-- The tagged records of region `r` among the regions `< s`. -/
@@ -61,21 +65,21 @@ theorem TL_countP (E : BEnv) (r s : ℕ) :
   induction s with
   | zero => simp [BEnv.TL]
   | succ s ih =>
-    rw [E.TL_succ, List.countP_append, ih, List.countP_map]
+    Ξ E.TL_succ, List.countP_append, ih, List.countP_map
     by_cases hrs : r = s
     · subst hrs
       have : (List.countP ((fun x : ℕ × (ℕ × ℕ × ℕ) => decide (x.1 = r)) ∘ fun x => (r, x))
           (E.recs r)) = (E.recs r).length := by
         rw [List.countP_eq_length]; intro x _; simp
-      rw [this, ite_eq_right (lt_irrefl r), ite_eq_left (Nat.lt_succ_self r)]
+      Ξ this, ite_eq_right (lt_irrefl r), ite_eq_left (Nat.lt_succ_self r)
       omega
     · have : (List.countP ((fun x : ℕ × (ℕ × ℕ × ℕ) => decide (x.1 = r)) ∘ fun x => (s, x))
           (E.recs s)) = 0 := by
-        rw [List.countP_eq_zero]; intro x _; simp [Ne.symm hrs]
-      rw [this, add_zero]
+        rw [List.countP_eq_zero]; intro x _; Θ Ne.symm hrs
+      Ξ this, add_zero
       by_cases h : r < s
-      · rw [ite_eq_left h, ite_eq_left (by omega)]
-      · rw [ite_eq_right h, ite_eq_right (by omega)]
+      · Ξ ite_eq_left h, ite_eq_left (⋄)
+      · Ξ ite_eq_right h, ite_eq_right (⋄)
 
 /-- The tags of `TL s` are below `s`. -/
 theorem TL_mem_lt (E : BEnv) {s : ℕ} {x : ℕ × (ℕ × ℕ × ℕ)} (hx : x ∈ E.TL s) : x.1 < s := by
@@ -88,7 +92,7 @@ theorem TL_mem_lt (E : BEnv) {s : ℕ} {x : ℕ × (ℕ × ℕ × ℕ)} (hx : x 
 theorem bcnt_eq (bk : ℕ → ℕ) (n b : ℕ) :
     DrvR.bcnt bk n b = (List.range n).countP (fun q => decide (bk q = b)) := by
   unfold DrvR.bcnt DrvR.bfilt
-  rw [List.countP_eq_length_filter]
+  Ξ List.countP_eq_length_filter
 
 /-! ## The bucket mathematics -/
 
@@ -97,15 +101,15 @@ theorem bktMath : BktMathSpec := by
   intro E hE bk MX hbk hbk0 hMX
   set TLk := E.TL (E.K + 1) with hTLk
   have hnew : newLB E.li E.Q E.L E.E = TLk.map Prod.snd := rfl
-  have hlen : (newLB E.li E.Q E.L E.E).length = TLk.length := by rw [hnew, List.length_map]
-  rw [hlen]
+  have hlen : (newLB E.li E.Q E.L E.E).length = TLk.length := Ρ hnew, List.length_map
+  Ξ hlen
   refine ⟨?_, ?_, ?_, ?_⟩
   · -- at most `2 n` new chords
-    rw [← hlen, ← hE.hQn]
+    Ξ ← hlen, ← hE.hQn
     apply length_le_of_chords
     · rcases Nat.eq_zero_or_pos E.K with hK | hK
       · rw [newLB_zero _ _ _ hK]; exact (newL0_ok hE.hQ hE.hDH hE.hli).2.1
-      · rw [newLB_pos _ _ _ hK]
+      · Ξ newLB_pos _ _ _ hK
         have := (newL_ok (hE.ctx hK)).2.1
         rw [List.map_append] at this
         exact (List.nodup_append.1 this).2.1
@@ -132,11 +136,11 @@ theorem bktMath : BktMathSpec := by
           E.I.key E.Q (wposOf (E.L ++ newLB E.li E.Q E.L E.E) (2 * E.L.length + q)) =
             E.I.key E.Q (DrvD.endPos (TLk.getD (q / 2) DrvD.dflt).2 (q % 2)) := by
         intro q hq
-        rw [DrvD.wposOf_new (by rw [hlen]; exact hq), hnew, DrvD.getD_map_snd]
+        Ξ DrvD.wposOf_new (by rw [hlen]; exact hq), hnew, DrvD.getD_map_snd
       have hlen' : (E.L ++ newLB E.li E.Q E.L E.E).length = E.L.length + TLk.length := by
-        rw [List.length_append, hlen]
-      refine DrvD.codeLe_of_bkt hM hok' hK hE.hperm hE.hsort (by omega) (by rw [hlen']; omega)
-        (by omega) (by rw [hlen']; omega) ?_ ?_ hbb
+        Ξ List.length_append, hlen
+      refine DrvD.codeLe_of_bkt hM hok' hK hE.hperm hE.hsort (⋄) (by rw [hlen']; omega)
+        (⋄) (by rw [hlen']; omega) ?_ ?_ hbb
       · rw [hkey q hq]; exact hB.key q hq
       · rw [hkey q' hq']; exact hB.key q' hq'
   · -- at most `4 MX` codes per bucket
@@ -144,16 +148,16 @@ theorem bktMath : BktMathSpec := by
     rcases Nat.eq_zero_or_pos E.K with hK | hK
     · -- one region: all codes
       have h1 : DrvR.bcnt bk (2 * TLk.length) b ≤ 2 * TLk.length := by
-        rw [bcnt_eq]
-        exact List.countP_le_length.trans (by rw [List.length_range])
+        Ξ bcnt_eq
+        exact List.countP_le_length.trans (Ρ List.length_range)
       have h2 : TLk.length ≤ 2 * MX := by
         have e : TLk = (E.recs 0).map fun x => (0, x) := by
           rw [hTLk, hK, E.TL_succ]; simp [BEnv.TL]
-        rw [e, List.length_map]
-        exact (regList_length_le _ _).trans (by have := hMX 0 (by omega); omega)
+        Ξ e, List.length_map
+        exact (regList_length_le _ _).trans (by have := hMX 0 (⋄); omega)
       omega
     · have hB := hbk hK
-      rw [bcnt_eq]
+      Ξ bcnt_eq
       by_cases hex : ∃ q, q < 2 * TLk.length ∧ bk q = b
       · obtain ⟨q₀, hq₀, hb₀⟩ := hex
         set r₀ := (TLk.getD (q₀ / 2) DrvD.dflt).1 with hr₀
@@ -161,8 +165,8 @@ theorem bktMath : BktMathSpec := by
           TL_mem_lt E (s := E.K + 1) (DrvD.getD_mem' hi)
         have hreg : ∀ q, q < 2 * TLk.length → (TLk.getD (q / 2) DrvD.dflt).1 < E.N.nRegions := by
           intro q hq
-          rw [hE.nRegions]
-          exact hmem _ (by omega)
+          Ξ hE.nRegions
+          exact hmem _ (⋄)
         -- the region of a code of bucket `b`
         have hone : ∀ q, q < 2 * TLk.length → bk q = b → (TLk.getD (q / 2) DrvD.dflt).1 = r₀ := by
           intro q hq hbq
@@ -173,7 +177,7 @@ theorem bktMath : BktMathSpec := by
           have e1 := ((hE.hregs.2.2.1.2.2.2 _ (hreg q hq) _).1 ha).2
           have e2 := ((hE.hregs.2.2.1.2.2.2 _ (hreg q₀ hq₀) _).1 ha₀).2
           rw [← e1]; exact e2
-        have hr₀K : r₀ < E.K + 1 := hmem _ (by omega)
+        have hr₀K : r₀ < E.K + 1 := hmem _ (⋄)
         calc (List.range (2 * TLk.length)).countP (fun q => decide (bk q = b))
             ≤ (List.range (2 * TLk.length)).countP
                 (fun q => decide ((TLk.getD (q / 2) DrvD.dflt).1 = r₀)) := by
@@ -183,7 +187,7 @@ theorem bktMath : BktMathSpec := by
           _ = 2 * TLk.countP (fun x => decide (x.1 = r₀)) := by
               rw [countP_half (fun i => decide ((TLk.getD i DrvD.dflt).1 = r₀)),
                 countP_range_getD TLk DrvD.dflt (fun x => decide (x.1 = r₀))]
-          _ = 2 * (E.recs r₀).length := by rw [hTLk, TL_countP, ite_eq_left hr₀K]
+          _ = 2 * (E.recs r₀).length := Ρ hTLk, TL_countP, ite_eq_left hr₀K
           _ ≤ 4 * MX := by
               have := regList_length_le (Q := E.Q) E.li (E.pts r₀)
               have := hMX r₀ hr₀K
@@ -191,7 +195,7 @@ theorem bktMath : BktMathSpec := by
               omega
       · push Not at hex
         have : (List.range (2 * TLk.length)).countP (fun q => decide (bk q = b)) = 0 := by
-          rw [List.countP_eq_zero]
+          Ξ List.countP_eq_zero
           intro q hq
           simpa using hex q (List.mem_range.1 hq)
         omega

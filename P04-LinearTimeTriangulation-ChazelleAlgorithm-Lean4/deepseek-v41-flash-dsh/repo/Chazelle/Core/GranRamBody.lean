@@ -46,16 +46,16 @@ theorem bx_le {E : Env} {st : St} (hE : E.Good) (h : StatOK E st) {j : ℕ} (hj 
   have he := edge_lt hE hj
   have hcnt := hE.hcd.2 _ he
   obtain ⟨h1, h2⟩ := h.pz j hj
-  rw [h.eg j hj]
+  Ξ h.eg j hj
   unfold Env.sz cntIn bB
   have hnE : E.n = E.M.W.n := rfl
   cases hch : E.ch with
   | false => simp only [Bool.false_eq_true, ite_false]; omega
   | true =>
     have hn := hE.hn hch
-    simp only [ite_true]
-    rw [hch] at hcnt
-    simp only [Bool.true_eq_false, false_or] at hcnt
+    ϴ ite_true
+    Ξ' hch at hcnt
+    ϴ' Bool.true_eq_false, false_or at hcnt
     by_cases hz : st.pz j = 1
     · have := hcnt.1 (h2.1 hz).1
       omega
@@ -157,7 +157,7 @@ def ndStmt : Stmt :=
     (.seq (.ifLtN 90070 90021 (.instr (.constN 90072 1)) (.instr (.constN 90072 0)))
       (.ifLtN 90071 90021 (.instr (.constN 90073 1)) (.instr (.constN 90073 0))))
 
-theorem wr_ndStmt : wr (Bin 90061 90074) ndStmt = true := by decide
+theorem wr_ndStmt : wr (Bin 90061 90074) ndStmt = true := ⌖
 
 /-- A death bit from a positive count. -/
 theorem bitSet_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W)
@@ -191,7 +191,7 @@ theorem nd_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
   obtain ⟨hn1, -⟩ := hI.stat.nd1 cc hc.1
   have hL0 := (hI.lv_iff hn0).2 ⟨cc, hc, Or.inl rfl⟩
   have hL1 := (hI.lv_iff hn1).2 ⟨cc, hc, Or.inr rfl⟩
-  rw [← hD.A] at hn0 hn1
+  Ξ' ← hD.A at hn0 hn1
   have e1 : c.nmem (d.b0 + d.oNd0 + cc) = st.nd0 cc := henc.nd0 _ hcK
   have e2 : c.nmem (d.b0 + d.oNd1 + cc) = st.nd1 cc := henc.nd1 _ hcK
   have e3 : c.nmem (d.b0 + d.oCnt + st.nd0 cc) = st.cnt (st.nd0 cc) := henc.cnt _ hn0
@@ -209,22 +209,22 @@ theorem nd_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config
     · config_simp; rw [hC.bNd0, h62, e1, hC.bCnt]; dm_simp; omega
     · config_simp; rw [hC.bNd1, h62, e2, hC.bCnt]; dm_simp; omega
     · refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
-      · rw [hC.bNd0, h62, e1]
-      · rw [hC.bNd1, h62, e2]
-      · rw [hC.bNd0, h62, e1, hC.bCnt, e3]
-      · rw [hC.bNd1, h62, e2, hC.bCnt, e4]
+      · Ξ hC.bNd0, h62, e1
+      · Ξ hC.bNd1, h62, e2
+      · Ξ hC.bNd0, h62, e1, hC.bCnt, e3
+      · Ξ hC.bNd1, h62, e2, hC.bCnt, e4
       · exact hC.two
   obtain ⟨q68, q69, q70, q71, q21⟩ := q
   obtain ⟨c₂, k₂, ex₂, hk₂, b₂, r₂, -⟩ := bitSet_exec (P := P) (rk := 90070) (rd := 90072) c₁
     ex₁.wb_right (by have := hD.W1; omega) q21 (by rw [q70]; exact hL0)
   obtain ⟨c₃, k₃, ex₃, hk₃, b₃, r₃, -⟩ := bitSet_exec (P := P) (rk := 90071) (rd := 90073) c₂
-    ex₂.wb_right (by have := hD.W1; omega) (by rw [r₂ _ (by decide), q21])
-    (by rw [r₂ _ (by decide), q71]; exact hL1)
-  refine ⟨c₃, _, .seq ex₁ (.seq ex₂ ex₃), by omega, ?_, ?_, ?_, ?_⟩
-  · rw [r₃ _ (by decide), r₂ _ (by decide), q68]
-  · rw [r₃ _ (by decide), r₂ _ (by decide), q69]
-  · rw [r₃ _ (by decide), b₂, q70]
-  · rw [b₃, r₂ _ (by decide), q71]
+    ex₂.wb_right (by have := hD.W1; omega) (Ρ r₂ _ (⌖), q21)
+    (by rw [r₂ _ (⌖), q71]; exact hL1)
+  refine ⟨c₃, _, .seq ex₁ (.seq ex₂ ex₃), ⋄, ?_, ?_, ?_, ?_⟩
+  · Ξ r₃ _ (⌖), r₂ _ (⌖), q68
+  · Ξ r₃ _ (⌖), r₂ _ (⌖), q69
+  · Ξ r₃ _ (⌖), b₂, q70
+  · Ξ b₃, r₂ _ (⌖), q71
 
 /-! ## The merged weight -/
 
@@ -255,10 +255,10 @@ theorem maxStmt_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
     (rd := 90078) c₁ e₁.wb_right
   obtain ⟨c₃, k₃, e₃, hk₃, m₃, r₃, n₃⟩ := maxSet_exec (P := P) (ra := 90078) (rb := 90079)
     (rd := 90078) c₂ e₂.wb_right
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, ?_, fun r a1 a2 => ?_, by rw [n₃, n₂, n₁]⟩
-  · rw [m₃, m₂, r₂ _ (by decide), m₁, r₁ _ (by decide), r₁ _ (by decide)]
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ⋄, ?_, fun r a1 a2 => ?_, Ρ n₃, n₂, n₁⟩
+  · Ξ m₃, m₂, r₂ _ (⌖), m₁, r₁ _ (⌖), r₁ _ (⌖)
     exact max_comm _ _
-  · rw [r₃ r a1, r₂ r a1, r₁ r a2]
+  · Ξ r₃ r a1, r₂ r a1, r₁ r a2
 
 /-- **The merged weight** `r78 := St.mu E c`. -/
 def muStmt : Stmt :=
@@ -270,7 +270,7 @@ def muStmt : Stmt :=
           (.seq jwStmt (.seq (.instr (.copyN 90077 90085)) maxStmt))))))
     (.instr (.copyN 90078 90018))
 
-theorem wr_muStmt : wr (Bin 90061 90100) muStmt = true := by decide
+theorem wr_muStmt : wr (Bin 90061 90100) muStmt = true := ⌖
 
 theorem mu_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config}
     (hE : E.Good) (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d st)

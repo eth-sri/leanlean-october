@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvInit2
 
 /-!
@@ -53,15 +55,15 @@ theorem while_exact {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} (I : ℕ �
   intro j d hI hj
   induction hn : L - j generalizing j d with
   | zero =>
-    have hjL : j = L := by omega
+    have hjL : j = L := ⋄
     subst hjL
     exact ⟨d, .whileLtN_false (fun h => absurd ((htest j d hI).1 h) (lt_irrefl _)) (hwb j d hI),
       hI⟩
   | succ n ih =>
-    have hlt : j < L := by omega
+    have hlt : j < L := ⋄
     obtain ⟨d₁, e₁, hI₁⟩ := hbody j d hI hlt
-    obtain ⟨d', e', hI'⟩ := ih (j + 1) d₁ hI₁ (by omega) (by omega)
-    refine ⟨d', (Exec.whileLtN_true ((htest j d hI).2 hlt) e₁ e').cast (by ring), hI'⟩
+    obtain ⟨d', e', hI'⟩ := ih (j + 1) d₁ hI₁ (⋄) (by omega)
+    refine ⟨d', (Exec.whileLtN_true ((htest j d hI).2 hlt) e₁ e').cast (⋆), hI'⟩
 
 set_option maxRecDepth 20000 in
 theorem tabHead_val (m f : ℕ → ℕ) :
@@ -73,7 +75,7 @@ theorem tabHead_val (m f : ℕ → ℕ) :
     Nat.reduceAdd, upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true]
   · simp only [K1, sw, Nat.reduceAdd] at h1; rw [h1]
   · simp only [TBR, TLR, iX, iA, iN, iV, sw, Nat.reduceAdd] at a b d e g i
-    simp only [upd_apply, ite_eq_right a, ite_eq_right b, ite_eq_right d, ite_eq_right e, ite_eq_right g, ite_eq_right i]
+    ϴ upd_apply, ite_eq_right a, ite_eq_right b, ite_eq_right d, ite_eq_right e, ite_eq_right g, ite_eq_right i
 
 set_option maxRecDepth 20000 in
 /-- **The table of powers**: base `A₀` (the allocator), length `L = ⌈log₂ (a₁ + a₂ + 1)⌉`. -/

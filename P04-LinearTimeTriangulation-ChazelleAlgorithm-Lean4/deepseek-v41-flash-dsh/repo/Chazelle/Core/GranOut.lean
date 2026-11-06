@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranInit
 
 /-!
@@ -33,9 +35,9 @@ def outList (N : NF) (live : ℕ → ℕ) (i : ℕ) : List (ℕ × ℕ × ℕ) :
 theorem liveList_succ (live : ℕ → ℕ) (i : ℕ) :
     liveList live (i + 1) = liveList live i ++ (if live i = 1 then [i] else []) := by
   unfold liveList
-  rw [List.range_succ, List.filter_append]
+  Ξ List.range_succ, List.filter_append
   congr 1
-  by_cases h : live i = 1 <;> simp [h]
+  by_cases h : live i = 1 <;> Θ h
 
 theorem mem_liveList {live : ℕ → ℕ} {i u : ℕ} : u ∈ liveList live i ↔ u < i ∧ live u = 1 := by
   unfold liveList; simp
@@ -49,7 +51,7 @@ theorem outList_ok {E : Env} {st : St} (hE : E.Good) :
       ChordTriplesOK E.M E.Q (outList E.N st.live E.K) := by
   have hF : {c | ∃ x ∈ outList E.N st.live E.K, c = (recOf x).toSet E.M E.Q} = st.F E := by
     ext c
-    simp only [outList, List.mem_map, Set.mem_ofPred_eq]
+    ϴ outList, List.mem_map, Set.mem_ofPred_eq
     constructor
     · rintro ⟨x, ⟨u, hu, rfl⟩, rfl⟩
       obtain ⟨h1, h2⟩ := mem_liveList.1 hu
@@ -58,13 +60,13 @@ theorem outList_ok {E : Env} {st : St} (hE : E.Good) :
       exact ⟨trip E.N u, ⟨u, mem_liveList.2 ⟨h1, h2⟩, rfl⟩, rfl⟩
   refine ⟨hF, ?_, ?_, fun x hx => ?_, fun x hx => ?_⟩
   · rw [hF]; exact fam_chordFamily hE.hNF _
-  · rw [outList, List.map_map]
+  · Ξ outList, List.map_map
     refine (liveList_nodup st.live E.K).map_on fun u hu v hv h => ?_
     exact cs_inj hE.hNF (mem_liveList.1 hu).1 (mem_liveList.1 hv).1 h
-  · simp only [outList, List.mem_map] at hx
+  · ϴ' outList, List.mem_map at hx
     obtain ⟨u, hu, rfl⟩ := hx
     exact hE.hNF.2.2.1 u (mem_liveList.1 hu).1
-  · simp only [outList, List.mem_map] at hx
+  · ϴ' outList, List.mem_map at hx
     obtain ⟨u, hu, rfl⟩ := hx
     obtain ⟨-, -, -, -, -, -, -, -, -, hh, -⟩ := hE.hNF
     exact hh u (mem_liveList.1 hu).1
@@ -86,9 +88,9 @@ def outBody : Stmt :=
 def outStmt : Stmt := .seq (block [.constN 90070 0, .copyN 90071 90013, .constN 90095 0,
   .copyN 90096 90028, .constN 90076 5]) (.whileLtN 90070 90010 outBody)
 
-theorem wrS_outStmt : wrS Binit outStmt = true := by decide
+theorem wrS_outStmt : wrS Binit outStmt = true := ⌖
 
-set_option maxHeartbeats 2000000 in
+
 theorem writeT_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {p q L : ℕ}
     (h71 : c.nreg 90071 = p) (h96 : c.nreg 90096 = q) (h95 : c.nreg 90095 = L)
     (h19 : c.nreg 90019 = 1) (h21 : c.nreg 90021 = 2) (hpq : p + 2 < q) (hq : q + 3 ≤ W)
@@ -109,7 +111,7 @@ theorem writeT_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
 
 theorem liveList_length_le (live : ℕ → ℕ) (i : ℕ) : (liveList live i).length ≤ i := by
   unfold liveList
-  exact (List.length_filter_le _ _).trans (by simp)
+  exact (List.length_filter_le _ _).trans (✓)
 
 theorem outList_length_le (N : NF) (live : ℕ → ℕ) (i : ℕ) : (outList N live i).length ≤ i := by
   unfold outList; rw [List.length_map]; exact liveList_length_le live i
@@ -122,21 +124,21 @@ theorem ChordListAt.congr {m m' : ℕ → ℕ} {A : ℕ} {L : List (ℕ × ℕ �
     (hm : ∀ a, A ≤ a → a < A + 3 * L.length → m' a = m a) : ChordListAt m' A L := by
   intro i hi
   obtain ⟨h0, h1, h2⟩ := h i hi
-  exact ⟨(hm _ (by omega) (by omega)).trans h0, (hm _ (by omega) (by omega)).trans h1,
-    (hm _ (by omega) (by omega)).trans h2⟩
+  exact ⟨(hm _ (⋄) (⋄)).trans h0, (hm _ (⋄) (⋄)).trans h1,
+    (hm _ (⋄) (⋄)).trans h2⟩
 
 theorem ChordListAt.snoc {m m' : ℕ → ℕ} {A : ℕ} {L : List (ℕ × ℕ × ℕ)} {x : ℕ × ℕ × ℕ}
     (h : ChordListAt m A L) (hm : ∀ a, A ≤ a → a < A + 3 * L.length → m' a = m a)
     (h0 : m' (A + 3 * L.length) = x.1) (h1 : m' (A + 3 * L.length + 1) = x.2.1)
     (h2 : m' (A + 3 * L.length + 2) = x.2.2) : ChordListAt m' A (L ++ [x]) := by
   intro i hi
-  rw [List.length_append, List.length_singleton] at hi
+  Ξ' List.length_append, List.length_singleton at hi
   rcases Nat.lt_or_ge i L.length with hl | hl
-  · rw [List.getD_eq_getElem?_getD, List.getElem?_append_left hl, ← List.getD_eq_getElem?_getD]
+  · Ξ List.getD_eq_getElem?_getD, List.getElem?_append_left hl, ← List.getD_eq_getElem?_getD
     exact (ChordListAt.congr h hm) i hl
-  · have : i = L.length := by omega
+  · have : i = L.length := ⋄
     subst this
-    rw [List.getD_eq_getElem?_getD, List.getElem?_append_right le_rfl, Nat.sub_self]
+    Ξ List.getD_eq_getElem?_getD, List.getElem?_append_right le_rfl, Nat.sub_self
     exact ⟨h0, h1, h2⟩
 
 /-! ## The loop -/
@@ -189,7 +191,7 @@ structure OutEnv (W K CB LB0 b0 : ℕ) (N : NF) (live : ℕ → ℕ) (c₀ : Con
   hb0 : b0 + K ≤ LB0
   hW : LB0 + 3 * K ≤ W
 
-set_option maxHeartbeats 1000000 in
+
 theorem outBody_exec {P : Polygon} {W K CB LB0 b0 : ℕ} {N : NF} {live : ℕ → ℕ} {c₀ c : Config}
     (hE : OutEnv W K CB LB0 b0 N live c₀) (hI : OutI W K CB LB0 N live c₀ c)
     (ht : c.nreg 90070 < K) :

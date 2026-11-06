@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvTasks3
 public import Chazelle.Core.GranSize
 public import Chazelle.Core.RestoreTRead
@@ -83,7 +87,7 @@ theorem auxKeep_trans {c c₁ c₂ : Config} (h₁ : AuxKeep c c₁) (hr : ∀ r
     (h₂ : AuxKeep c₁ c₂) : AuxKeep c c₂ := fun x hx1 hx2 => by
   have ea : c₁.nreg aB = c.nreg aB := hr _ (by unfold ER; simp)
   have es : c₁.nreg sC = c.nreg sC := hr _ (by unfold ER; simp)
-  rw [h₂ x (by omega) (by omega), h₁ x hx1 hx2]
+  Ξ h₂ x (⋄) (⋄), h₁ x hx1 hx2
 
 /-! ## Both ends of one chord -/
 
@@ -94,19 +98,19 @@ def uPre1 : List Instr := [.copyN oK uK, .copyN oS K1]
 def odPair (od : Stmt) : Stmt := .seq (block uPre0) (.seq od (.seq (block uPre1) od))
 
 theorem uPre0_lr : ∀ i ∈ uPre0, LR (dstI i) := by
-  simp [uPre0, dstI, LR]
+  Θ uPre0, dstI, LR
 
 theorem uPre1_lr : ∀ i ∈ uPre1, LR (dstI i) := by
-  simp [uPre1, dstI, LR]
+  Θ uPre1, dstI, LR
 
 theorem pair_union (O : Set ℕ) (k : ℕ) :
     insert (2 * k + 1) (insert (2 * k + 0) O) = O ∪ pairS k := by
   ext j
-  simp only [mem_insert_iff, mem_union, pairS, mem_ofPred_eq]
+  ϴ mem_insert_iff, mem_union, pairS, mem_ofPred_eq
   constructor
   · rintro (h | h | h)
     · exact Or.inr ⟨1, le_rfl, h⟩
-    · exact Or.inr ⟨0, by omega, h⟩
+    · exact Or.inr ⟨0, ⋄, h⟩
     · exact Or.inl h
   · rintro (h | ⟨s, hs, h⟩)
     · exact Or.inr (Or.inr h)
@@ -125,22 +129,22 @@ theorem odPair_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Ko
     IRS P W c₀ (odPair od) c (2 * Kod + 4) (fun c' => Inv (O ∪ pairS k) c' ∧
       (∀ r, ER r ∨ (LR r ∧ r ≠ oK ∧ r ≠ oS) → c'.nreg r = c.nreg r) ∧ AuxKeep c c') := by
   have hK := E.hK.fix hI
-  have k0 : c.nreg K0 = 0 := hK.1
-  have k1 : c.nreg K1 = 1 := hK.2.1
-  refine IRS.mono (K := 2 + (Kod + (2 + Kod))) (IRS.seq (IRS.block uPre0 hI ?_) ?_) (by omega)
+  have k0 := hK.1
+  have k1 := hK.2.1
+  refine IRS.mono (K := 2 + (Kod + (2 + Kod))) (IRS.seq (IRS.block uPre0 hI ?_) ?_) (⋄)
     (fun _ h => h)
-  · simp [uPre0, okB, okI, IScr, oK, oS, sw]
+  · Θ uPre0, okB, okI, IScr, oK, oS, sw
   rintro c₁ hI₁ hA1 hA1' hc1
-  have r1 : c₁.nreg = regB c.nmem uPre0 c.nreg := by rw [hc1]
-  have m1 : c₁.nmem = c.nmem := by rw [hc1]
+  have r1 : c₁.nreg = regB c.nmem uPre0 c.nreg := Ρ hc1
+  have m1 : c₁.nmem = c.nmem := Ρ hc1
   have v1k : c₁.nreg oK = k := by
-    rw [r1]; simp [uPre0, regB, regI, upd, oK, oS, uK, sw] at hk ⊢; exact hk
+    rw [r1]; Θ' uPre0, regB, regI, upd, oK, oS, uK, sw at hk ⊢; exact hk
   have v1s : c₁.nreg oS = 0 := by
-    rw [r1]; simp [uPre0, regB, regI, upd, oK, oS, K0, sw] at k0 ⊢; exact k0
+    rw [r1]; Θ' uPre0, regB, regI, upd, oK, oS, K0, sw at k0 ⊢; exact k0
   have o1 : ∀ r, r ≠ oK → r ≠ oS → c₁.nreg r = c.nreg r := fun r h1 h2 => by
-    rw [r1]
+    Ξ r1
     exact regB_other _ _ _ (fun i hi he => by
-      simp only [uPre0, List.mem_cons, List.not_mem_nil, or_false] at hi
+      ϴ' uPre0, List.mem_cons, List.not_mem_nil, or_false at hi
       rcases hi with rfl | rfl
       · exact h1 he.symm
       · exact h2 he.symm)
@@ -149,37 +153,37 @@ theorem odPair_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Ko
   have nAs : ALLOC ≠ oS := by unfold ALLOC oS sw; omega
   have eA1 : c₁.nreg ALLOC = c.nreg ALLOC := o1 _ nAk nAs
   refine IRS.seq (hod O _ hI₁ inv1 (by rw [v1k]; exact hkn) (by rw [v1s]; omega)
-    (by omega)) ?_
-  rw [v1k, v1s]
+    (⋄)) ?_
+  Ξ v1k, v1s
   rintro c₂ hI₂ hA2 hA2' ⟨inv2, keep2, aux2⟩
   have hk2 : c₂.nreg uK = k := by
     rw [keep2 _ (Or.inl ⟨by unfold LR uK; simp [sw], by unfold uK oK sw; omega,
       by unfold uK oS sw; omega⟩)]
-    rw [o1 _ (by unfold uK oK sw; omega) (by unfold uK oS sw; omega), hk]
+    Ξ o1 _ (by unfold uK oK sw; omega) (by unfold uK oS sw; omega), hk
   have hK2 := E.hK.fix hI₂
   refine IRS.seq (IRS.block uPre1 hI₂ ?_) ?_
-  · simp [uPre1, okB, okI, IScr, oK, oS, sw]
+  · Θ uPre1, okB, okI, IScr, oK, oS, sw
   rintro c₃ hI₃ hA3 hA3' hc3
-  have r3 : c₃.nreg = regB c₂.nmem uPre1 c₂.nreg := by rw [hc3]
-  have m3 : c₃.nmem = c₂.nmem := by rw [hc3]
+  have r3 : c₃.nreg = regB c₂.nmem uPre1 c₂.nreg := Ρ hc3
+  have m3 : c₃.nmem = c₂.nmem := Ρ hc3
   have v3k : c₃.nreg oK = k := by
-    rw [r3]; simp [uPre1, regB, regI, upd, oK, oS, uK, sw] at hk2 ⊢; exact hk2
+    rw [r3]; Θ' uPre1, regB, regI, upd, oK, oS, uK, sw at hk2 ⊢; exact hk2
   have v3s : c₃.nreg oS = 1 := by
     have := hK2.2.1
-    rw [r3]; simp [uPre1, regB, regI, upd, oK, oS, K1, sw] at this ⊢; exact this
+    rw [r3]; Θ' uPre1, regB, regI, upd, oK, oS, K1, sw at this ⊢; exact this
   have o3 : ∀ r, r ≠ oK → r ≠ oS → c₃.nreg r = c₂.nreg r := fun r h1 h2 => by
-    rw [r3]
+    Ξ r3
     exact regB_other _ _ _ (fun i hi he => by
-      simp only [uPre1, List.mem_cons, List.not_mem_nil, or_false] at hi
+      ϴ' uPre1, List.mem_cons, List.not_mem_nil, or_false at hi
       rcases hi with rfl | rfl
       · exact h1 he.symm
       · exact h2 he.symm)
   have inv3 : Inv (insert (2 * k + 0) O) c₃ := by rw [hc3]; exact inv_blk hst uPre1_lr inv2
   have eA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := o3 _ nAk nAs
-  refine (hod _ _ hI₃ inv3 (by rw [v3k]; exact hkn) (by rw [v3s])
-    (by omega)).mono le_rfl ?_
+  refine (hod _ _ hI₃ inv3 (by rw [v3k]; exact hkn) (Ρ v3s)
+    (⋄)).mono le_rfl ?_
   rintro c' ⟨inv', keep', aux'⟩
-  rw [v3k, v3s] at inv'
+  Ξ' v3k, v3s at inv'
   have ER_ne : ∀ r, ER r → r ≠ oK ∧ r ≠ oS := fun r h =>
     ⟨fun e => er_not_lr h (e ▸ Or.inl rfl), fun e => er_not_lr h (e ▸ Or.inr (Or.inl rfl))⟩
   have keepAll : ∀ r, ER r ∨ (LR r ∧ r ≠ oK ∧ r ≠ oS) → c'.nreg r = c.nreg r := fun r hr => by
@@ -191,10 +195,10 @@ theorem odPair_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Ko
       rcases hr with h | h
       · exact ER_ne r h
       · exact h.2
-    rw [keep' r hr', o3 r hne.1 hne.2, keep2 r hr', o1 r hne.1 hne.2]
+    Ξ keep' r hr', o3 r hne.1 hne.2, keep2 r hr', o1 r hne.1 hne.2
   refine ⟨by rw [← pair_union]; exact inv', keepAll, ?_⟩
   have e3 : ∀ r, ER r → c₃.nreg r = c.nreg r := fun r h => by
-    rw [o3 r (ER_ne r h).1 (ER_ne r h).2, keep2 r (Or.inr h), o1 r (ER_ne r h).1 (ER_ne r h).2]
+    Ξ o3 r (ER_ne r h).1 (ER_ne r h).2, keep2 r (Or.inr h), o1 r (ER_ne r h).1 (ER_ne r h).2
   have e1 : ∀ r, ER r → c₁.nreg r = c.nreg r := fun r h => o1 r (ER_ne r h).1 (ER_ne r h).2
   have hEa : ER aB := by unfold ER; simp
   have hEs : ER sC := by unfold ER; simp
@@ -225,20 +229,20 @@ def regDo (od : Stmt) : Stmt := .seq (block regHead) (.whileLtN uT uLen (regBody
 def regK (Kod D : ℕ) : ℕ := (2 * Kod + 10) * D + 17
 
 theorem regHead_lr : ∀ i ∈ regHead, LR (dstI i) := by
-  simp [regHead, dstI, LR, uA, uY, uLen, uOff, uR7, uT, oK, oS, sw]
+  Θ regHead, dstI, LR, uA, uY, uLen, uOff, uR7, uT, oK, oS, sw
 
 theorem regBody0_lr : ∀ i ∈ regBody0, LR (dstI i) := by
-  simp [regBody0, dstI, LR, uA, uK, oK, oS, sw]
+  Θ regBody0, dstI, LR, uA, uK, oK, oS, sw
 
 theorem uInc_lr : ∀ i ∈ uInc, LR (dstI i) := by
-  simp [uInc, dstI, LR, uT, oK, oS, sw]
+  Θ uInc, dstI, LR, uT, oK, oS, sw
 
 theorem regHead_val (m f : ℕ → ℕ) (k5 : f K5 = 5) (k2 : f K2 = 2) (k3 : f K3 = 3)
     (k6 : f K6 = 6) (k1 : f K1 = 1) :
     regB m regHead f uLen = m (m (f (sw 4) + 5) + 5 * f uR + 2) ∧
     regB m regHead f uOff = m (m (f (sw 4) + 5) + 5 * f uR + 3) ∧
     regB m regHead f uR7 = m (f (sw 4) + 7) ∧ regB m regHead f uT = 0 := by
-  simp only [K5, K2, K3, K6, K1, sw] at k5 k2 k3 k6 k1
+  ϴ' K5, K2, K3, K6, K1, sw at k5 k2 k3 k6 k1
   refine ⟨?_, ?_, ?_, ?_⟩ <;>
     simp [regHead, regB, regI, upd, uA, uY, uLen, uOff, uR7, uT, uR, K5, K2, K3, K6, K1, sw,
       k5, k2, k3, k6, k1] <;> ring_nf
@@ -246,29 +250,29 @@ theorem regHead_val (m f : ℕ → ℕ) (k5 : f K5 = 5) (k2 : f K2 = 2) (k3 : f 
 theorem regHead_ok (m f : ℕ → ℕ) (k5 : f K5 = 5) (k2 : f K2 = 2) (k3 : f K3 = 3)
     (k6 : f K6 = 6) (k1 : f K1 = 1) (hb1 : f (sw 4) + 7 ≤ W)
     (hb2 : m (f (sw 4) + 5) + 5 * f uR + 3 ≤ W) : okB W m regHead f := by
-  simp only [K5, K2, K3, K6, K1, sw, uR, Nat.reduceAdd] at k5 k2 k3 k6 k1 hb1 hb2
+  ϴ' K5, K2, K3, K6, K1, sw, uR, Nat.reduceAdd at k5 k2 k3 k6 k1 hb1 hb2
   simp [regHead, okB, okI, regI, upd, uA, uY, uLen, uOff, uR7, uT, uR, K5, K2, K3, K6, K1, sw,
     k5, k2, k3, k6, k1, IScr]
   omega
 
 theorem regBody0_val (m f : ℕ → ℕ) :
     regB m regBody0 f uK = m (f uR7 + f uOff + f uT) := by
-  simp [regBody0, regB, regI, upd, uA, uK, uR7, uOff, uT, sw]
+  Θ regBody0, regB, regI, upd, uA, uK, uR7, uOff, uT, sw
 
 theorem regBody0_ok (m f : ℕ → ℕ) (hb : f uR7 + f uOff + f uT ≤ W) : okB W m regBody0 f := by
-  simp only [uR7, uOff, uT, sw, Nat.reduceAdd] at hb
-  simp [regBody0, okB, okI, regI, upd, uA, uK, uR7, uOff, uT, sw, IScr]
+  ϴ' uR7, uOff, uT, sw, Nat.reduceAdd at hb
+  Θ regBody0, okB, okI, regI, upd, uA, uK, uR7, uOff, uT, sw, IScr
   omega
 
 /-- The chords of a region as positions of its list. -/
 theorem regO_eq (N : NF) (r : ℕ) : regO N r =
     {j | ∃ t, t < (N.region r).chords.length ∧ j ∈ pairS ((N.region r).chords.getD t 0)} := by
   ext j
-  simp only [regO, pairS, mem_ofPred_eq]
+  ϴ regO, pairS, mem_ofPred_eq
   constructor
   · rintro ⟨k, hk, s, hs, rfl⟩
     obtain ⟨t, ht, rfl⟩ := List.getElem_of_mem hk
-    exact ⟨t, ht, s, hs, by rw [List.getD_eq_getElem _ _ ht]⟩
+    exact ⟨t, ht, s, hs, Ρ List.getD_eq_getElem _ _ ht⟩
   · rintro ⟨t, ht, s, hs, rfl⟩
     exact ⟨_, by rw [List.getD_eq_getElem _ _ ht]; exact List.getElem_mem ht, s, hs, rfl⟩
 
@@ -276,17 +280,17 @@ theorem pre_succ (l : List ℕ) (t : ℕ) :
     {j | ∃ t', t' < t + 1 ∧ j ∈ pairS (l.getD t' 0)} =
       {j | ∃ t', t' < t ∧ j ∈ pairS (l.getD t' 0)} ∪ pairS (l.getD t 0) := by
   ext j
-  simp only [mem_ofPred_eq, mem_union]
+  ϴ mem_ofPred_eq, mem_union
   constructor
   · rintro ⟨t', ht', hj⟩
     rcases (by omega : t' < t ∨ t' = t) with h | rfl
     · exact Or.inl ⟨t', h, hj⟩
     · exact Or.inr hj
   · rintro (⟨t', ht', hj⟩ | hj)
-    · exact ⟨t', by omega, hj⟩
-    · exact ⟨t, by omega, hj⟩
+    · exact ⟨t', ⋄, hj⟩
+    · exact ⟨t, ⋄, hj⟩
 
-set_option maxHeartbeats 4000000 in
+
 /-- **Both ends of every chord of a region.** -/
 theorem regDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod : ℕ}
     {Inv : Set ℕ → Config → Prop} (hod : OdOK P W c₀ N₂ od Kod Inv) (hst : InvStab Inv)
@@ -300,7 +304,7 @@ theorem regDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod
   set B := c₀.nreg (sw 4) with hBd
   have hB : c.nreg (sw 4) = B := hI.hin _ (by unfold IFix sw; omega)
   have hNW := E.hNW₂
-  have hNA : NFAt c₀.nmem B N₂ := hNW.holds
+  have hNA := hNW.holds
   obtain ⟨b1, -, -, b4, -, b6⟩ := Restore.nf_bounds hNW
   obtain ⟨-, -, -, reg, hRC, -, -, hRO, -⟩ := E.hNF₂
   have hlenD : (N₂.region r).chords.length ≤ D := Gran.chords_le E.hNF₂ hRC hRO E.hdeg₂ hrn
@@ -309,12 +313,12 @@ theorem regDo_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {od : Stmt} {Kod
   set off := c₀.nmem (R5 + 5 * r + 3) with hoff
   set len := (N₂.region r).chords.length with hlen
   have hreg := hNA.2.2.2.2.2.2.2.1 r hrn
-  have hlen0 : c₀.nmem (R5 + 5 * r + 2) = len := hreg.2.1
+  have hlen0 := hreg.2.1
   have hch : ∀ t, t < len → c₀.nmem (R7 + off + t) = (N₂.region r).chords.getD t 0 :=
     fun t ht => hreg.2.2.2.2 t ht
   have hb4 := b4 r hrn
   have hb6 : ∀ t, t < len → R7 + off + t < c₀.nreg ALLOC := b6 r hrn
-  have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
+  have hA0 := hI.hA
   have hAW : c.nreg ALLOC ≤ W := hI.hw.1 ALLOC
   have hm5 : c.nmem (B + 5) = R5 := hI.hm _ (by omega)
   -- the head

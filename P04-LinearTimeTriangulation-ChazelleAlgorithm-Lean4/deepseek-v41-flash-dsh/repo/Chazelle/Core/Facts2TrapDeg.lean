@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Facts2Trap
 
 /-!
@@ -87,7 +89,7 @@ theorem side_iff {c : Set Point} (hc : HCD D c) {y₀ : ℝ} {w₀ : Point} (hw�
     (hw₀y : w₀.2 = y₀) {z : Point} (hz : z ∈ c) (hzD : z ∈ D) (hzy : z.2 = y₀) :
     (∃ z' ∈ c, z' ∈ D ∧ z'.2 = y₀ ∧ z'.1 < w₀.1) ↔ z.1 < w₀.1 := by
   obtain ⟨y, a, b, h, rfl⟩ := hc
-  have hy : y = y₀ := by rw [← hzy, hz.1]
+  have hy : y = y₀ := Ρ ← hzy, hz.1
   constructor
   · rintro ⟨z', hz', hz'D, -, hlt⟩
     by_contra hge
@@ -96,7 +98,7 @@ theorem side_iff {c : Set Point} (hc : HCD D c) {y₀ : ℝ} {w₀ : Point} (hw�
       have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rw [this]; exact hzD)
     have := between_mem h hz' hz'D hz hzD hlt.le (lt_of_le_of_ne hge (Ne.symm hne)).le
     apply hw₀
-    have e : ((w₀.1, y) : Point) = w₀ := point_ext rfl (by rw [hy, hw₀y])
+    have e : ((w₀.1, y) : Point) = w₀ := point_ext rfl (Ρ hy, hw₀y)
     rw [← e]; exact this
   · intro hlt; exact ⟨z, hz, hzD, hzy, hlt⟩
 
@@ -138,15 +140,15 @@ theorem side_chords_eq (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ
       (z.1 < v.1 ↔ z'.1 < v.1) → c = c' := by
     intro c c' z z' hc hc' hz hz' hzD hz'D hzy hz'y hzx hz'x hle hside
     obtain ⟨y, a, b, hh, rfl⟩ := hc
-    have hy : y = Y := by rw [← hzy, hz.1]
+    have hy : y = Y := Ρ ← hzy, hz.1
     have hs1 := hstrict z hzD hzy hzx.1 hzx.2
     have hs2 := hstrict z' hz'D hz'y hz'x.1 hz'x.2
     have hall : ∀ s : ℝ, z.1 ≤ s → s ≤ z'.1 → ((s, Y) : Point) ∈ dom R S := by
       intro s h1 h2
-      refine ⟨⟨abs_lt.2 ⟨by linarith, by linarith⟩, hYR⟩, fun hobs => ?_⟩
-      have hw := hvert _ hobs rfl (by linarith) (by linarith)
+      refine ⟨⟨abs_lt.2 ⟨⟡, ⟡⟩, hYR⟩, fun hobs => ?_⟩
+      have hw := hvert _ hobs rfl (⟡) (⟡)
       have he := hS.distinct v _ hv hw (hvY ▸ hYR) hvY
-      have hsv : s = v.1 := by rw [he]
+      have hsv : s = v.1 := Ρ he
       have hzv : z.1 ≠ v.1 := fun e => hvD (by
         rw [show v = z from point_ext e.symm (hvY.trans hzy.symm)]; exact hzD)
       have hz'v : z'.1 ≠ v.1 := fun e => hvD (by
@@ -154,7 +156,7 @@ theorem side_chords_eq (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ
       rcases lt_or_gt_of_ne hzv with h3 | h3
       · have := hside.1 h3; linarith [lt_of_le_of_ne h2 (hsv ▸ hz'v.symm)]
       · linarith [lt_of_le_of_ne h1 (hsv ▸ hzv)]
-    have hz'c : z' ∈ Visibility.hseg y a b := mem_of_joined hh hz hzD (by rw [hz'y, hy]) (fun s h1 h2 => by
+    have hz'c : z' ∈ Visibility.hseg y a b := mem_of_joined hh hz hzD (Ρ hz'y, hy) (fun s h1 h2 => by
       rw [min_eq_left hle] at h1; rw [max_eq_right hle] at h2
       rw [hy]; exact hall s h1 h2)
     exact eq_of_common ⟨y, a, b, hh, rfl⟩ hc' hz'c hz' hz'D
@@ -180,7 +182,7 @@ theorem ncard_side_le_two (hS : Good R S) (h : Trap R S q sL sR y₁ y₂) {Y : 
     have h1 := side_iff hcH hvD hvY hz hzD hzy
     have h2 := side_iff hc'H hvD hvY hz' hz'D hz'y
     have hside : z.1 < v.1 ↔ z'.1 < v.1 := by
-      rw [← h1, ← h2]
+      Ξ ← h1, ← h2
       simp only [f, decide_eq_decide] at hff
       exact hff
     exact h.side_chords_eq hS hY1 hY2 hvert hv hvY hcH hc'H hz hz' hzD hz'D hzy hz'y hzx hz'x hside
@@ -212,8 +214,8 @@ theorem deg_le_four (hS : Good R S) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD
   have hfreeU : U ⊆ freeIn D G := connectedComponentIn_subset _ _
   have hcl : closure U ⊆ ctr sL sR y₁ y₂ :=
     (closure_mono hUT).trans (closure_tr_subset _ _ _ _)
-  have hqy₁ : y₁ < q.2 := hqT.1
-  have hqy₂ : q.2 < y₂ := hqT.2.1
+  have hqy₁ := hqT.1
+  have hqy₂ := hqT.2.1
   -- a domain point of the closed trapezoid at a middle height is inside
   have hmid : ∀ z ∈ D, z ∈ ctr sL sR y₁ y₂ → y₁ < z.2 → z.2 < y₂ → z ∈ T := by
     intro z hzD hzC hz1 hz2
@@ -224,12 +226,12 @@ theorem deg_le_four (hS : Good R S) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD
   have hslice : ∀ c ∈ G, ∀ z ∈ c, z ∈ T → ∀ w ∈ T, w.2 = z.2 → w ∈ c := by
     intro c hc z hz hzT w hwT hwz
     obtain ⟨y, a, b, hh, rfl⟩ := hG c hc
-    have hzy : z.2 = y := hz.1
+    have hzy := hz.1
     refine mem_of_joined hh hz (hTD hzT) (hwz.trans hzy) fun s h1 h2 => hTD ?_
     have hseg : Chazelle.segment z w ⊆ T :=
       Geometry.segment_subset_of_convex (convex_tr _ _ _ _) hzT hwT
     apply hseg
-    rw [Visibility.segment_horizontal_eq_hseg hwz.symm]
+    Ξ Visibility.segment_horizontal_eq_hseg hwz.symm
     exact ⟨hzy.symm, h1, h2⟩
   -- `U` is on one side of a chord crossing `T`
   have hno : ∀ c ∈ G, ∀ z ∈ c, z ∈ T → ∀ p ∈ U, p.2 ≠ z.2 := fun c hc z hz hzT p hp he =>
@@ -349,7 +351,7 @@ theorem deg_le_four (hS : Good R S) {G : Set (Set Point)} (hG : ∀ c ∈ G, HCD
     (hGfin.subset fun c hc => hc.1).union (hGfin.subset fun c hc => hc.1)
   calc {c | c ∈ G ∧ TouchesIn D c U}.ncard ≤ (E₁ ∪ E₂).ncard := ncard_le_ncard hsub hfin12
     _ ≤ E₁.ncard + E₂.ncard := ncard_union_le _ _
-    _ ≤ 4 := by omega
+    _ ≤ 4 := ⋄
 
 end SegObs
 

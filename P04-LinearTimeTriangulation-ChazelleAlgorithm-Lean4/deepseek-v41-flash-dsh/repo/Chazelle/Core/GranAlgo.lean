@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranStep4
 
 /-!
@@ -47,25 +49,25 @@ theorem Inv.step (hE : E.Good) (h : Inv E st) (htop : 0 < st.top) : Inv E (st.st
   split_ifs with hl hdeg hmu
   · -- both classes have degree `≥ 3`: not removable
     refine h.pop_keep htop fun hr => ?_
-    have hc : st.cur ∈ st.L E := ⟨h.stk _ (by omega), hl⟩
+    have hc : st.cur ∈ st.L E := ⟨h.stk _ (⋄), hl⟩
     obtain ⟨P, hs⟩ := h.split hE hc
     obtain ⟨hlow, -⟩ := (h.removable_iff hE hc hs).1 hr
     omega
   · -- the merged weight exceeds `γ`: not removable
     refine h.pop_keep htop fun hr => ?_
-    have hc : st.cur ∈ st.L E := ⟨h.stk _ (by omega), hl⟩
+    have hc : st.cur ∈ st.L E := ⟨h.stk _ (⋄), hl⟩
     obtain ⟨P, hs⟩ := h.split hE hc
     obtain ⟨-, hw⟩ := (h.removable_iff hE hc hs).1 hr
     rw [← h.mu_eq hE hc hs] at hw
     omega
   · -- removable
-    have hc : st.cur ∈ st.L E := ⟨h.stk _ (by omega), hl⟩
+    have hc : st.cur ∈ st.L E := ⟨h.stk _ (⋄), hl⟩
     obtain ⟨P, hs⟩ := h.split hE hc
     refine h.remove hE htop hc ((h.removable_iff hE hc hs).2 ⟨?_, ?_⟩)
     · push Not at hdeg
       by_cases h3 : 3 ≤ st.deg (st.s0 st.cur)
       · exact Or.inr (hdeg h3)
-      · exact Or.inl (by omega)
+      · exact Or.inl (⋄)
     · rw [← h.mu_eq hE hc hs]; omega
   · exact h.pop_dead htop hl
 
@@ -76,13 +78,13 @@ theorem measure_step (hE : E.Good) (h : Inv E st) (htop : 0 < st.top) :
   split_ifs with hl hdeg hmu
   · unfold St.pop; simp only; omega
   · unfold St.pop; simp only; omega
-  · have hc : st.cur ∈ st.L E := ⟨h.stk _ (by omega), hl⟩
+  · have hc : st.cur ∈ st.L E := ⟨h.stk _ (⋄), hl⟩
     obtain ⟨P, hs⟩ := h.split hE hc
     have hlow : st.deg (st.s0 st.cur) < 3 ∨ st.deg (st.s1 st.cur) < 3 := by
       push Not at hdeg
       by_cases h3 : 3 ≤ st.deg (st.s0 st.cur)
       · exact Or.inr (hdeg h3)
-      · exact Or.inl (by omega)
+      · exact Or.inl (⋄)
     have hlen := newEx_le hE h hc hs hlow
     have hfinL : (st.L E).Finite := (Set.finite_lt_nat E.K).subset fun i hi => hi.1
     have hnl : 1 ≤ st.nlive := by

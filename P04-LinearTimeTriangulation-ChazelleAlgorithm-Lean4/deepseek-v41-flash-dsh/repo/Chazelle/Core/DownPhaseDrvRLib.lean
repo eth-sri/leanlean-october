@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildPassRam
 public import Chazelle.Core.SortRam
 
@@ -33,17 +35,17 @@ theorem forLoop {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (Kb 
     ∃ c' k, Exec P W (.whileLtN ir nr body) c c' k ∧ Inv N c' ∧ k ≤ (Kb + 2) * (N - j) + 2 := by
   induction hn : N - j generalizing j c with
   | zero =>
-    have hjN : j = N := by omega
+    have hjN : j = N := ⋄
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by omega⟩
+    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, ⋄⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    have hlt : j < N := by omega
+    have hlt : j < N := ⋄
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁⟩ := hbody j c hlt hc
-    obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (by omega) (by omega)
+    obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (⋄) (⋄)
     refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_⟩
-    rw [Nat.mul_succ]
+    Ξ Nat.mul_succ
     omega
 
 /-- **A counted loop with a cost `f j` for the iteration at counter value `j`.** -/
@@ -56,17 +58,17 @@ theorem forLoopSum {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (
       k ≤ (∑ i ∈ Finset.Ico j N, (f i + 2)) + 2 := by
   induction hn : N - j generalizing j c with
   | zero =>
-    have hjN : j = N := by omega
+    have hjN : j = N := ⋄
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by simp⟩
+    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, ✓⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    have hlt : j < N := by omega
+    have hlt : j < N := ⋄
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁⟩ := hbody j c hlt hc
-    obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (by omega) (by omega)
+    obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (⋄) (⋄)
     refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_⟩
-    rw [Finset.sum_eq_sum_Ico_succ_bot hlt]
+    Ξ Finset.sum_eq_sum_Ico_succ_bot hlt
     omega
 
 end loops

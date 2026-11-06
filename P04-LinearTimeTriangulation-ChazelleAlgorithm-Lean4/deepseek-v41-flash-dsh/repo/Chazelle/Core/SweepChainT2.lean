@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepChainT
 
 /-!
@@ -59,7 +61,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
         GapPair J S₂ G V := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
+  have hFs := hC.hF
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
     exact_mod_cast hC.hg
@@ -72,7 +74,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
   set L := rL1 J + rL2 J with hLdef
   have hoN : off W.n (g : ℝ) ((((g + d) % W.n : ℕ) : ℝ) + t) = d + t := hC.off_M hd ht0 ht1
   have hN0 : 0 < off W.n (g : ℝ) ((((g + d) % W.n : ℕ) : ℝ) + t) := by
-    rw [hoN]
+    Ξ hoN
     rcases ht0.lt_or_eq with h | h
     · have : (0 : ℝ) ≤ d := Nat.cast_nonneg d
       linarith
@@ -80,7 +82,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
       have : (1 : ℝ) ≤ d := by exact_mod_cast Nat.one_le_iff_ne_zero.2 this
       linarith
   have hNL : off W.n (g : ℝ) ((((g + d) % W.n : ℕ) : ℝ) + t) < ((L : ℕ) : ℝ) := by
-    rw [hoN]
+    Ξ hoN
     have : (d : ℝ) + 1 ≤ ((L : ℕ) : ℝ) := by exact_mod_cast hd
     linarith
   -- the bound through `f`, given a bound (or nothing) at the far end
@@ -134,7 +136,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
     have hθρ : θ * ρ * θ * ρ = 1 := by
       rcases hθ with rfl | rfl <;> rcases hρ with rfl | rfl <;> norm_num
     have hori' : 0 < θ * ρ * (Pf.1 - Bp.1) := by
-      have h1 : 0 < θ * ρ * (Pn.1 - Pf.1) := hori
+      have h1 := hori
       nlinarith [mul_pos h1 h1]
     rcases hpart with ⟨c', hc', hfc', hVs'⟩ | ⟨-, hoff⟩
     · -- recursion along the partner
@@ -144,7 +146,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
         refine ⟨fun h ⟨hh, z, hz, hz'⟩ => ⟨hh, z, hz, ?_⟩, fun hsub => ?_⟩
         · have e : θ * ρ * (Pf.1 - z.1) = θ * ρ * (Pf.1 - Bp.1) + θ * ρ * (Bp.1 - z.1) := by
             ring
-          rw [e]
+          Ξ e
           exact add_pos hori' hz'
         · obtain ⟨-, z, hz, hz'⟩ := hsub ⟨hf', Bp, hB.2.2.2.1, hori'⟩
           obtain ⟨hseg', -, -, -, -⟩ := hM.attach_seg (hFs hf') hA' hB (Ne.symm hBne)
@@ -152,7 +154,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
           obtain ⟨s, hs0, hs1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hz
           simp only [Geometry.lerp_fst] at hz'
           have : θ * ρ * (Bp.1 - (Pf.1 + s * (Bp.1 - Pf.1))) =
-              (1 - s) * (θ * ρ * (Bp.1 - Pf.1)) := by ring
+              (1 - s) * (θ * ρ * (Bp.1 - Pf.1)) := ⋆
           nlinarith
       exact ih _ (lt_of_lt_of_le hlt hN) d' 0 f' pb tb V' hV' le_rfl hd' le_rfl zero_lt_one
         (fun _ => hd'0) hf' hA' hB (Ne.symm hBne) hS' hori' ⟨c', hc', hfc', hVs'⟩
@@ -162,10 +164,10 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
       have hoF0 := hC.off_M hd' (t := 0) le_rfl zero_lt_one
       refine chord_bound hM hFs hf' hA' hB (Ne.symm hBne) hρ hG hS' hθ hori' hg0 hgn ?_ ?_
         fun _ _ _ _ _ _ _ _ => Or.inr ?_
-      · rw [hoF0]
+      · Ξ hoF0
         have : (1 : ℝ) ≤ d' := by exact_mod_cast Nat.one_le_iff_ne_zero.2 hd'0
         linarith
-      · rw [hoF0]
+      · Ξ hoF0
         have : (d' : ℝ) + 1 ≤ ((L : ℕ) : ℝ) := by exact_mod_cast hd'
         linarith
       · by_contra hc
@@ -194,7 +196,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
     subst hdL
     have hδ : 0 < rδ J := by
       by_contra h0
-      have := hC.hδ (by omega)
+      have := hC.hδ (⋄)
       omega
     have hd'0 : rL1 J ≠ 0 := by
       intro h; rw [h] at hin1; simp at hin1
@@ -256,10 +258,10 @@ theorem end_bound2 (hP : J.P.Simple) {Q : Polygon}
   have hoF0 := hC.off_M hd (t := 0) le_rfl zero_lt_one
   refine chord_bound hC.hM hC.hF hf hfA hB (Ne.symm hBne) hρ hG hS hθ hori hg0 hgn ?_ ?_
     fun _ _ _ _ _ _ _ _ => Or.inr ?_
-  · rw [hoF0]
+  · Ξ hoF0
     have : (1 : ℝ) ≤ d := by exact_mod_cast Nat.one_le_iff_ne_zero.2 hd0
     linarith
-  · rw [hoF0]
+  · Ξ hoF0
     have : (d : ℝ) + 1 ≤ ((rL1 J + rL2 J : ℕ) : ℝ) := by exact_mod_cast hd
     linarith
   · by_contra hc
@@ -297,7 +299,7 @@ theorem label_side_gen2 (hP : J.P.Simple) {Q : Polygon}
     (hL : RLabel J S₂ G V') : V' = V ∨ (GapLab J S₂ V' ∧ GapLab J S₂ V) := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
+  have hFs := hC.hF
   have hcx : c ∈ S₂x J S₂ := subset_S₂x J S₂ hc
   rcases local_step2 J hP hS₂ hF hd ht0 ht1 hsec he hcx hec heA hρ hG hV hGs hVs with
     hRL | ⟨rfl, f', hf', hne, hA', hS', hpart⟩
@@ -319,12 +321,12 @@ theorem label_side_gen2 (hP : J.P.Simple) {Q : Polygon}
   have hθρ : θ * ρ * (θ * ρ) = 1 := by
     rcases hθ with rfl | rfl <;> rcases hρ with rfl | rfl <;> norm_num
   have hori' : 0 < -θ * ρ * (Pa.1 - Bq.1) := by
-    have e1 : -θ * ρ * (Pa.1 - Bq.1) = θ * ρ * (Bq.1 - Pa.1) := by ring
-    rw [e1]
+    have e1 : -θ * ρ * (Pa.1 - Bq.1) = θ * ρ * (Bq.1 - Pa.1) := ⋆
+    Ξ e1
     have hprod : 0 < (θ * ρ * (Pa.1 - Bp.1)) * (θ * ρ * (Bq.1 - Pa.1)) := by
       have e2 : (θ * ρ * (Pa.1 - Bp.1)) * (θ * ρ * (Bq.1 - Pa.1)) =
-          (θ * ρ * (θ * ρ)) * (-((Bp.1 - Pa.1) * (Bq.1 - Pa.1))) := by ring
-      rw [e2, hθρ, one_mul]
+          (θ * ρ * (θ * ρ)) * (-((Bp.1 - Pa.1) * (Bq.1 - Pa.1))) := ⋆
+      Ξ e2, hθρ, one_mul
       linarith
     exact pos_of_mul_pos_right hprod hori.le
   have hθ' : -θ = 1 ∨ -θ = -1 := by rcases hθ with rfl | rfl <;> norm_num

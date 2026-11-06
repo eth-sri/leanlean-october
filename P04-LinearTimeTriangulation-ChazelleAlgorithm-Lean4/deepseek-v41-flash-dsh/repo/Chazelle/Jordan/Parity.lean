@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Jordan.SegmentFacts
 public import Mathlib.Data.ZMod.Basic
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
@@ -127,14 +129,14 @@ theorem not_crosses_of_below {z u v : Point} (hu : u.2 < z.2) (hv : v.2 < z.2) :
   · nlinarith [mul_pos (sub_pos.2 hv) (sub_pos.2 h2), mul_nonneg (sub_pos.2 hu).le (sub_nonneg.2 h1)]
 
 @[simp] theorem crossBit_eq_true_iff {z u v : Point} : crossBit z u v = true ↔ crosses z u v := by
-  simp [crossBit]
+  Θ crossBit
 
 @[simp] theorem crossBit_eq_false_iff {z u v : Point} :
     crossBit z u v = false ↔ ¬ crosses z u v := by
-  simp [crossBit]
+  Θ crossBit
 
 theorem crossInd_comm {z u v : Point} : crossInd z u v = crossInd z v u := by
-  simp only [crossInd]
+  ϴ crossInd
   exact if_congr crosses_comm rfl rfl
 
 theorem crossInd_of_crosses {z u v : Point} (h : crosses z u v) : crossInd z u v = 1 :=
@@ -150,13 +152,13 @@ theorem crossInd_of_not_crosses {z u v : Point} (h : ¬ crosses z u v) : crossIn
   unfold crossInd; split_ifs with h <;> simp [h]
 
 theorem aboveInd_of_ne {z w : Point} (h : w.1 ≠ z.1) : aboveInd z w = 0 := by
-  simp [aboveInd, h]
+  Θ aboveInd, h
 
 theorem aboveInd_of_le {z w : Point} (h : w.2 ≤ z.2) : aboveInd z w = 0 := by
-  simp [aboveInd, not_lt.2 h]
+  Θ aboveInd, not_lt.2 h
 
 theorem aboveInd_of_lt {z w : Point} (h1 : w.1 = z.1) (h2 : z.2 < w.2) : aboveInd z w = 1 := by
-  simp [aboveInd, h1, h2]
+  Θ aboveInd, h1, h2
 
 theorem zmod_two_add_self (x : ZMod 2) : x + x = 0 := by
   revert x; decide
@@ -175,7 +177,7 @@ theorem parity_eq_iff {P : Polygon} {z z' : Point} :
 
 theorem parity_eq_false_iff {P : Polygon} {z : Point} :
     parity P z = false ↔ crossSum P z = 0 := by
-  simp only [parity, decide_eq_false_iff_not]
+  ϴ parity, decide_eq_false_iff_not
   generalize crossSum P z = a
   revert a
   decide
@@ -210,9 +212,9 @@ theorem crossInd_eventually_of_lt {z u v : Point} (huv : u.1 < v.1) (hz : z ∉ 
   have hfst : Tendsto (fun z' : Point => z'.1) (𝓝 z) (𝓝 z.1) := continuous_fst.tendsto z
   have hcr : ∀ z' : Point, crosses z' u v ↔ u.1 ≤ z'.1 ∧ z'.1 < v.1 ∧ L z' < 0 := by
     intro z'
-    rw [crosses_iff_of_lt huv]
-    simp only [hL, sub_neg]
-  have hvz : v.1 ≠ u.1 := huv.ne'
+    Ξ crosses_iff_of_lt huv
+    ϴ hL, sub_neg
+  have hvz := huv.ne'
   rcases lt_trichotomy z.1 u.1 with hA | hB | hC
   · -- z strictly to the left of the edge
     filter_upwards [hfst.eventually_lt_const hA] with z' hz'
@@ -226,7 +228,7 @@ theorem crossInd_eventually_of_lt {z u v : Point} (huv : u.1 < v.1) (hz : z ∉ 
       apply hz
       have : z = u := Prod.ext hB h
       rw [this]; exact left_mem_segment u v
-    have hLz : L z = (z.2 - u.2) * (v.1 - u.1) := by simp [hL, hB]
+    have hLz : L z = (z.2 - u.2) * (v.1 - u.1) := ⊚ hL, hB
     have hd : 0 < v.1 - u.1 := sub_pos.2 huv
     have hav : aboveInd z v = 0 := aboveInd_of_ne (by rw [hB]; exact hvz)
     rcases lt_or_gt_of_ne hzu2 with h1 | h1
@@ -236,12 +238,12 @@ theorem crossInd_eventually_of_lt {z u v : Point} (huv : u.1 < v.1) (hz : z ∉ 
       have hcz : crosses z u v := (hcr z).2 ⟨hB.ge, hB ▸ huv, hLneg⟩
       filter_upwards [hfst.eventually_lt_const (hB ▸ huv), hLt.eventually_lt_const hLneg]
         with z' hz'1 hz'2
-      rw [crossInd_of_crosses hcz, hau, hav]
+      Ξ crossInd_of_crosses hcz, hau, hav
       by_cases hlt : z'.1 < z.1
       · rw [crossInd_of_not_crosses (fun h => absurd ((hcr z').1 h).1 (not_le.2 (hB ▸ hlt))),
           ite_eq_left hlt]
         decide
-      · rw [crossInd_of_crosses ((hcr z').2 ⟨hB ▸ not_lt.1 hlt, hz'1, hz'2⟩), ite_eq_right hlt]
+      · Ξ crossInd_of_crosses ((hcr z').2 ⟨hB ▸ not_lt.1 hlt, hz'1, hz'2⟩), ite_eq_right hlt
         decide
     · -- u below z: the bit is 0 near z
       have hLpos : 0 < L z := by rw [hLz]; exact mul_pos (sub_pos.2 h1) hd
@@ -256,11 +258,11 @@ theorem crossInd_eventually_of_lt {z u v : Point} (huv : u.1 < v.1) (hz : z ∉ 
       have hLz : L z ≠ 0 := by
         intro h
         apply hz
-        rw [mem_segment_iff_of_lt huv]
+        Ξ mem_segment_iff_of_lt huv
         exact ⟨hC.le, hC1.le, by simpa [hL, sub_eq_zero] using h⟩
       have hau : aboveInd z u = 0 := aboveInd_of_ne hC.ne
       have hav : aboveInd z v = 0 := aboveInd_of_ne hC1.ne'
-      rw [hau, hav]
+      Ξ hau, hav
       rcases lt_or_gt_of_ne hLz with h1 | h1
       · filter_upwards [hfst.eventually_const_lt hC, hfst.eventually_lt_const hC1,
           hLt.eventually_lt_const h1] with z' hz'1 hz'2 hz'3
@@ -287,9 +289,9 @@ theorem crossInd_eventually_of_lt {z u v : Point} (huv : u.1 < v.1) (hz : z ∉ 
         have hav : aboveInd z v = 1 := aboveInd_of_lt hD.symm h1
         filter_upwards [hfst.eventually_const_lt hC, hLt.eventually_lt_const hLneg]
           with z' hz'1 hz'2
-        rw [crossInd_of_not_crosses hcz, hau, hav]
+        Ξ crossInd_of_not_crosses hcz, hau, hav
         by_cases hlt : z'.1 < z.1
-        · rw [crossInd_of_crosses ((hcr z').2 ⟨hz'1.le, hD ▸ hlt, hz'2⟩), ite_eq_left hlt]
+        · Ξ crossInd_of_crosses ((hcr z').2 ⟨hz'1.le, hD ▸ hlt, hz'2⟩), ite_eq_left hlt
           decide
         · rw [crossInd_of_not_crosses (fun h => absurd ((hcr z').1 h).2.1 (hD ▸ hlt)),
             ite_eq_right hlt]
@@ -324,7 +326,7 @@ theorem crossInd_eventually {z u v : Point} (hz : z ∉ segment u v) :
     simp
   · have hz' : z ∉ segment v u := segment_comm u v ▸ hz
     filter_upwards [crossInd_eventually_of_lt h hz'] with z' hz'
-    rw [crossInd_comm, hz', ← crossInd_comm, add_comm (aboveInd z v)]
+    Ξ crossInd_comm, hz', ← crossInd_comm, add_comm (aboveInd z v)
 
 /-! ### Telescoping around the closed walk -/
 
@@ -334,17 +336,17 @@ theorem sum_range_succ_mod {M : Type} [AddCommMonoid M] (f : ℕ → M) (n : ℕ
   cases n with
   | zero => simp
   | succ m =>
-    rw [Finset.sum_range_succ, Finset.sum_range_succ' f, Nat.mod_self]
+    Ξ Finset.sum_range_succ, Finset.sum_range_succ' f, Nat.mod_self
     congr 1
     apply Finset.sum_congr rfl
     intro i hi
     rw [Finset.mem_range] at hi
-    rw [Nat.mod_eq_of_lt (by omega)]
+    rw [Nat.mod_eq_of_lt (⋄)]
 
 /-- The endpoint contributions telescope around the closed walk. -/
 theorem sum_aboveInd_edges (P : Polygon) (z : Point) :
     ∑ i ∈ Finset.range P.n, (aboveInd z (P.vtx i) + aboveInd z (P.vtx ((i + 1) % P.n))) = 0 := by
-  rw [Finset.sum_add_distrib, sum_range_succ_mod (fun i => aboveInd z (P.vtx i)) P.n]
+  Ξ Finset.sum_add_distrib, sum_range_succ_mod (fun i => aboveInd z (P.vtx i)) P.n
   exact zmod_two_add_self _
 
 /-- **Local constancy of the crossing sum** off the boundary. -/
@@ -358,11 +360,11 @@ theorem crossSum_eventually_eq (P : Polygon) {z : Point} (hz : z ∉ P.boundary)
   rw [← Filter.eventually_all_finset] at h
   filter_upwards [h] with z' hz'
   unfold crossSum
-  rw [Finset.sum_congr rfl hz', Finset.sum_add_distrib]
+  Ξ Finset.sum_congr rfl hz', Finset.sum_add_distrib
   by_cases hlt : z'.1 < z.1
-  · simp only [ite_eq_left hlt]
-    rw [sum_aboveInd_edges, add_zero]
-  · simp only [ite_eq_right hlt, Finset.sum_const_zero, add_zero]
+  · ϴ ite_eq_left hlt
+    Ξ sum_aboveInd_edges, add_zero
+  · ϴ ite_eq_right hlt, Finset.sum_const_zero, add_zero
 
 /-- **Local constancy of the parity** off the boundary. -/
 theorem parity_eventually_eq (P : Polygon) {z : Point} (hz : z ∉ P.boundary) :
@@ -373,7 +375,7 @@ theorem parity_eventually_eq (P : Polygon) {z : Point} (hz : z ∉ P.boundary) :
 /-- The parity is continuous (into the discrete space `Bool`) on the complement of the
 boundary. -/
 theorem continuousOn_parity (P : Polygon) : ContinuousOn (parity P) P.boundaryᶜ := by
-  rw [(isOpen_boundary_compl P).continuousOn_iff]
+  Ξ (isOpen_boundary_compl P).continuousOn_iff
   intro z hz
   exact continuousAt_const.congr_of_eventuallyEq (parity_eventually_eq P hz)
 
@@ -400,7 +402,7 @@ theorem crossInd_flip_edge {z u v : Point} (huv : u.1 ≠ v.1) (hz : z ∈ segme
     · exact key u v h hz hzu hzv
     · obtain ⟨h1, h2, h3⟩ := key v u h (segment_comm u v ▸ hz) hzv hzu
       rw [segment_comm] at h1 h2
-      rw [crossInd_comm, h3, crossInd_comm]
+      Ξ crossInd_comm, h3, crossInd_comm
       exact ⟨h1, h2, rfl⟩
   intro u v huv hz hzu hzv
   rw [mem_segment_iff_of_lt huv] at hz
@@ -428,25 +430,25 @@ theorem crossInd_flip_edge {z u v : Point} (huv : u.1 ≠ v.1) (hz : z ∈ segme
         · linarith
       exact Prod.ext h this
   refine ⟨?_, ?_, ?_⟩
-  · rw [mem_segment_iff_of_lt huv]
+  · Ξ mem_segment_iff_of_lt huv
     rintro ⟨-, -, h⟩
     simp only at h
     nlinarith [mul_pos hε hd]
-  · rw [mem_segment_iff_of_lt huv]
+  · Ξ mem_segment_iff_of_lt huv
     rintro ⟨-, -, h⟩
     simp only at h
     nlinarith [mul_pos hε hd]
   · have hnc : ¬ crosses (z.1, z.2 + ε) u v := by
-      rw [crosses_iff_of_lt huv]
+      Ξ crosses_iff_of_lt huv
       rintro ⟨-, -, h⟩
       simp only at h
       nlinarith [mul_pos hε hd]
     have hc : crosses (z.1, z.2 - ε) u v := by
-      rw [crosses_iff_of_lt huv]
+      Ξ crosses_iff_of_lt huv
       refine ⟨h0, h1', ?_⟩
       simp only
       nlinarith [mul_pos hε hd]
-    rw [crossInd_of_not_crosses hnc, crossInd_of_crosses hc, zero_add]
+    Ξ crossInd_of_not_crosses hnc, crossInd_of_crosses hc, zero_add
 
 /-- **Flip.**  Let `z` be a point of edge `i` of `P` that is not an endpoint of that edge,
 with edge `i` non-vertical and `z` on no other edge.  Then for all sufficiently small `ε > 0`
@@ -460,10 +462,10 @@ theorem parity_flip (P : Polygon) {i : ℕ} (hi : i < P.n) {z : Point} (hz : z �
         parity P (z.1, z.2 + ε) ≠ parity P (z.1, z.2 - ε) := by
   have hup : Tendsto (fun ε : ℝ => ((z.1, z.2 + ε) : Point)) (𝓝[>] 0) (𝓝 z) :=
     ((by fun_prop : Continuous fun ε : ℝ => ((z.1, z.2 + ε) : Point)).tendsto' 0 z
-      (by simp)).mono_left nhdsWithin_le_nhds
+      (✓)).mono_left nhdsWithin_le_nhds
   have hdn : Tendsto (fun ε : ℝ => ((z.1, z.2 - ε) : Point)) (𝓝[>] 0) (𝓝 z) :=
     ((by fun_prop : Continuous fun ε : ℝ => ((z.1, z.2 - ε) : Point)).tendsto' 0 z
-      (by simp)).mono_left nhdsWithin_le_nhds
+      (✓)).mono_left nhdsWithin_le_nhds
   -- for every other edge: eventually off the edge, and the bit is unchanged
   have hj : ∀ j ∈ (Finset.range P.n).erase i, ∀ᶠ ε in 𝓝[>] (0 : ℝ),
       ((z.1, z.2 + ε) : Point) ∉ P.edge j ∧ ((z.1, z.2 - ε) : Point) ∉ P.edge j ∧
@@ -479,8 +481,8 @@ theorem parity_flip (P : Polygon) {i : ℕ} (hi : i < P.n) {z : Point} (hz : z �
       hup.eventually (crossInd_eventually hzj), hdn.eventually (crossInd_eventually hzj)]
       with ε h1 h2 h3 h4
     refine ⟨h1, h2, ?_, ?_⟩
-    · rw [h3, ite_eq_right (lt_irrefl _), add_zero]
-    · rw [h4, ite_eq_right (lt_irrefl _), add_zero]
+    · Ξ h3, ite_eq_right (lt_irrefl _), add_zero
+    · Ξ h4, ite_eq_right (lt_irrefl _), add_zero
   rw [← Filter.eventually_all_finset] at hj
   have hall : ∀ᶠ ε in 𝓝[>] (0 : ℝ),
       (z.1, z.2 + ε) ∉ P.boundary ∧ (z.1, z.2 - ε) ∉ P.boundary ∧
@@ -508,7 +510,7 @@ theorem parity_flip (P : Polygon) {i : ℕ} (hi : i < P.n) {z : Point} (hz : z �
             crossInd (z.1, z.2 - ε) (P.vtx j) (P.vtx ((j + 1) % P.n)) := by
         apply Finset.sum_congr rfl
         intro j hj
-        rw [(hε j hj).2.2.1, (hε j hj).2.2.2]
+        Ξ (hε j hj).2.2.1, (hε j hj).2.2.2
       rw [hrest, add_left_inj, ← hi3] at heq
       exact zmod_two_add_one_ne _ heq.symm
   obtain ⟨ε₀, hε₀, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hall
@@ -526,7 +528,7 @@ theorem abs_fst_vtx_le_coordBound (P : Polygon) {i : ℕ} (hi : i < P.n) :
   calc |(P.vtx i).1| ≤ |(P.vtx i).1| + |(P.vtx i).2| := by
         linarith [abs_nonneg (P.vtx i).2]
     _ ≤ _ := Finset.single_le_sum (f := fun i => |(P.vtx i).1| + |(P.vtx i).2|)
-        (fun j _ => by positivity) (Finset.mem_range.2 hi)
+        (fun j _ => ⟢) (Finset.mem_range.2 hi)
 
 theorem abs_snd_vtx_le_coordBound (P : Polygon) {i : ℕ} (hi : i < P.n) :
     |(P.vtx i).2| ≤ coordBound P := by
@@ -534,7 +536,7 @@ theorem abs_snd_vtx_le_coordBound (P : Polygon) {i : ℕ} (hi : i < P.n) :
   calc |(P.vtx i).2| ≤ |(P.vtx i).1| + |(P.vtx i).2| := by
         linarith [abs_nonneg (P.vtx i).1]
     _ ≤ _ := Finset.single_le_sum (f := fun i => |(P.vtx i).1| + |(P.vtx i).2|)
-        (fun j _ => by positivity) (Finset.mem_range.2 hi)
+        (fun j _ => ⟢) (Finset.mem_range.2 hi)
 
 /-- **Far away**: a point to the right of, to the left of, or above every vertex has crossing
 sum `0`. -/
@@ -545,7 +547,7 @@ theorem crossSum_eq_zero_of_far (P : Polygon) {z : Point}
   apply Finset.sum_eq_zero
   intro i hi
   have hi' : i < P.n := Finset.mem_range.1 hi
-  have hi2 : (i + 1) % P.n < P.n := Nat.mod_lt _ (by omega)
+  have hi2 : (i + 1) % P.n < P.n := Nat.mod_lt _ (⋄)
   apply crossInd_of_not_crosses
   rcases hz with h | h | h
   · exact not_crosses_of_le ((abs_le.1 (abs_fst_vtx_le_coordBound P hi')).2.trans h.le)

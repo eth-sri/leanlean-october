@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvLoopStartL
 
 /-!
@@ -25,7 +27,7 @@ def stores (a : ℕ) : List ℕ → Stmt
 
 variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
-set_option maxHeartbeats 4000000 in
+
 /-- **Consecutive stores.** -/
 theorem stores_irs (hK : Consts c₀) {a : ℕ} (ha : IScr a) :
     ∀ (rs : List ℕ) (c : Config), IInv W c₀ c → c₀.nreg ALLOC ≤ c.nreg a → (∀ r ∈ rs, r ≠ a) →
@@ -82,8 +84,8 @@ def lsLogRegs : List ℕ := [kE, kH, kN, kL, kL + 1, kL + 2, kL + 3]
 /-- **The first log record.** -/
 def stLog : Stmt := .seq (.instr (.copyN zX lB)) (.seq (stores zX lsLogRegs) (.instr (.constN lC 1)))
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
+
+
 theorem stLog_irs (hK : Consts c₀) (hI : IInv W c₀ c) (hlB : c₀.nreg ALLOC ≤ c.nreg lB)
     (hroom : c.nreg lB + 7 ≤ W) :
     IRS P W c₀ stLog c 16 (fun c' => c'.nreg lC = 1 ∧

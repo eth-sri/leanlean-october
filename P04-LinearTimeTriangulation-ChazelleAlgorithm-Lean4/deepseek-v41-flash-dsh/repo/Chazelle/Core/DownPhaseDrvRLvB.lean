@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRLvA
 public import Chazelle.Core.DownPhaseDrvRMgC
 public import Chazelle.Core.GradeCtx
@@ -120,16 +122,16 @@ theorem hostAt_robust {m : ℕ → ℕ} {B A : ℕ} {H : Host} (h : HostAt m B H
     (hA : B + 3 * H.length + 1 ≤ A) : Robust A m (fun m => HostAt m B H) := by
   intro m' hm'
   obtain ⟨h0, hi⟩ := h
-  refine ⟨by rw [hm' B (by omega)]; exact h0, fun i hi' => ?_⟩
+  refine ⟨by rw [hm' B (⋄)]; exact h0, fun i hi' => ?_⟩
   have := hi i hi'
   revert this
   rcases H.getD i (.run 0 0) with ⟨a, ℓ⟩ | ⟨⟨j⟩ | ⟨e, hh⟩⟩ <;> simp only <;> intro hh' <;>
     · first
       | (obtain ⟨x1, x2, x3⟩ := hh'
-         exact ⟨by rw [hm' _ (by omega)]; exact x1, by rw [hm' _ (by omega)]; exact x2,
-           by rw [hm' _ (by omega)]; exact x3⟩)
+         exact ⟨by rw [hm' _ (⋄)]; exact x1, by rw [hm' _ (by omega)]; exact x2,
+           by rw [hm' _ (⋄)]; exact x3⟩)
       | (obtain ⟨x1, x2⟩ := hh'
-         exact ⟨by rw [hm' _ (by omega)]; exact x1, by rw [hm' _ (by omega)]; exact x2⟩)
+         exact ⟨by rw [hm' _ (⋄)]; exact x1, by rw [hm' _ (by omega)]; exact x2⟩)
 
 /-! ## Counted loops with the allocator -/
 
@@ -147,17 +149,17 @@ theorem forLoopA {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (Kb
       c'.nreg ALLOC ≤ c.nreg ALLOC + k := by
   induction hn : N - j generalizing j c with
   | zero =>
-    have hjN : j = N := by omega
+    have hjN : j = N := ⋄
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by omega, by omega⟩
+    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, ⋄, by omega⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    have hlt : j < N := by omega
+    have hlt : j < N := ⋄
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁, hA₁⟩ := hbody j c hlt hc
-    obtain ⟨c', k₂, e₂, hI', hk₂, hA₂⟩ := ih hI₁ (by omega) (by omega)
-    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_, by omega⟩
-    rw [Nat.mul_succ]
+    obtain ⟨c', k₂, e₂, hI', hk₂, hA₂⟩ := ih hI₁ (⋄) (by omega)
+    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_, ⋄⟩
+    Ξ Nat.mul_succ
     omega
 
 end loops
@@ -219,7 +221,7 @@ theorem LvCtx.envD {O : OracleIface} {P : Polygon} {W : ℕ} {c₁ : Config} {L 
     EnvD (gradeCtx O) P W c := by
   refine ⟨h.good, h.w3, h.wh, ?_, ?_, ?_⟩
   · rw [h0]; exact setup_transport h.setup hm hA
-  · rw [h1]
+  · Ξ h1
     exact (gradeCtx O).mono P _ _ _ _ hA
       ((gradeCtx O).local_ P c₁.nmem c.nmem _ _ (fun a ha => (hm a ha).symm) h.holds)
   · rw [h1, gradeCtx_capLocal O P c₁.nmem c.nmem _ _ hm h.holds]; exact h.cap

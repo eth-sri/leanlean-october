@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopRA
 
 /-!
@@ -40,13 +42,13 @@ theorem ResOK.transport {C : Chain} {a : Point} {σ : ℝ} {G : Prop} {F : ℕ} 
     (h : ResOK P C a σ G F c) (hr : ∀ i, i < 7 → c'.nreg (F + i) = c.nreg (F + i)) :
     ResOK P C a σ G F c' := by
   obtain ⟨h1, h2, h3⟩ := h
-  have e0 : c'.nreg F = c.nreg F := hr 0 (by norm_num)
+  have e0 : c'.nreg F = c.nreg F := hr 0 (⊛)
   refine ⟨by rw [e0]; exact h1, fun hf => ?_, fun hg => by rw [e0]; exact h3 hg⟩
   rw [e0] at hf
   obtain ⟨τ, a1, a2, a3, a4, a5, a6, a7⟩ := h2 hf
-  rw [hr 1 (by norm_num), hr 2 (by norm_num)]
-  exact ⟨τ, a1, a2, a3, a4, a5, absRec_transport a6 (hr 3 (by norm_num)) (hr 4 (by norm_num))
-    (hr 5 (by norm_num)) (hr 6 (by norm_num)), a7⟩
+  rw [hr 1 (⊛), hr 2 (by norm_num)]
+  exact ⟨τ, a1, a2, a3, a4, a5, absRec_transport a6 (hr 3 (⊛)) (hr 4 (by norm_num))
+    (hr 5 (⊛)) (hr 6 (by norm_num)), a7⟩
 
 /-- The empty result. -/
 def noRes (F : ℕ) : Stmt := .instr (.constN F 0)

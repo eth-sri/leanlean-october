@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvKey
 
 /-!
@@ -38,8 +40,8 @@ theorem attach_snd_eq (hP : J.P.Simple) {f : Set Point} (hf : f ∈ Merge.augCho
     intro w hw
     rw [hfab] at hw
     obtain ⟨s, -, -, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hw
-    simp only [Geometry.lerp_snd, hy, sub_self, mul_zero, add_zero]
-  rw [key z hz, key _ hA.2.2.2.1]
+    ϴ Geometry.lerp_snd, hy, sub_self, mul_zero, add_zero
+  Ξ key z hz, key _ hA.2.2.2.1
 
 /-- **The point of a tie off the open right stretch** is in the domain of `C₂` or is the shared
 vertex. -/

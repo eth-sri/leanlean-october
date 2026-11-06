@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleEdge
 
 /-!
@@ -78,8 +80,8 @@ theorem scanLen_eq (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple) {p : ℕ}
   unfold scanLen scanLenR
   have hw := wrap_iff hN (Or.inl ⟨C, hP, rfl⟩) hp
   by_cases h : p + 1 < N.arcs.length
-  · rw [ite_eq_left (hw.2 h), ite_eq_left h]
-  · rw [ite_eq_right (fun h' => h (hw.1 h')), ite_eq_right h]
+  · Ξ ite_eq_left (hw.2 h), ite_eq_left h
+  · Ξ ite_eq_right (fun h' => h (hw.1 h')), ite_eq_right h
 
 end Len
 

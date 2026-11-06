@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildCmp
 
 /-!
@@ -49,7 +53,7 @@ theorem idxOf_map_of_inj {α β : Type*} [BEq α] [LawfulBEq α] [BEq β] [Lawfu
   induction l with
   | nil => rfl
   | cons x xs ih =>
-    rw [map_cons, idxOf_cons, idxOf_cons]
+    Ξ map_cons, idxOf_cons, idxOf_cons
     by_cases hx : x = a
     · subst hx; simp
     · have hfx : f x ≠ f a := fun e => hx (h x (mem_cons_self ..) e)
@@ -57,11 +61,11 @@ theorem idxOf_map_of_inj {α β : Type*} [BEq α] [LawfulBEq α] [BEq β] [Lawfu
         ih (fun y hy => h y (mem_cons_of_mem _ hy))]
 
 theorem wposOf_even (L : List (ℕ × ℕ × ℕ)) (i : ℕ) : wposOf L (2 * i) = (crec L i).lpos := by
-  simp [wposOf]
+  Θ wposOf
 
 theorem wposOf_odd (L : List (ℕ × ℕ × ℕ)) (i : ℕ) : wposOf L (2 * i + 1) = (crec L i).rpos := by
-  simp only [wposOf]
-  rw [ite_eq_right (by omega), show (2 * i + 1) / 2 = i by omega]
+  ϴ wposOf
+  rw [ite_eq_right (⋄), show (2 * i + 1) / 2 = i by omega]
 
 theorem kl_eq (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (i : ℕ) :
     kl M Q L i = M.key Q (wposOf L (2 * i)) := by
@@ -107,14 +111,14 @@ theorem gmap_key {c : ℕ} (hc : c < 2 * L.length) :
     gmap M M' Q L (M.key Q (wposOf L c)) = M'.key Q (wposOf L c) := by
   have h : InS M Q L (M.key Q (wposOf L c)) := ⟨c, hc, rfl⟩
   unfold gmap
-  rw [dite_eq_left h]
+  Ξ dite_eq_left h
   exact (hK.eq_iff h.choose_spec.1 hc).2 h.choose_spec.2
 
 theorem gmap_lt {x y : ℝ} (hx : InS M Q L x) (hy : InS M Q L y) :
     gmap M M' Q L x < gmap M M' Q L y ↔ x < y := by
   obtain ⟨c, hc, rfl⟩ := hx
   obtain ⟨c', hc', rfl⟩ := hy
-  rw [hK.gmap_key hc, hK.gmap_key hc']
+  Ξ hK.gmap_key hc, hK.gmap_key hc'
   exact hK.lt c c' hc hc'
 
 theorem gmap_inj {x y : ℝ} (hx : InS M Q L x) (hy : InS M Q L y)
@@ -126,45 +130,45 @@ theorem gmap_inj {x y : ℝ} (hx : InS M Q L x) (hy : InS M Q L y)
 
 omit hK in
 theorem inS_kl {i : ℕ} (hi : i < L.length) : InS M Q L (kl M Q L i) :=
-  ⟨2 * i, by omega, (kl_eq M Q L i).symm⟩
+  ⟨2 * i, ⋄, (kl_eq M Q L i).symm⟩
 
 omit hK in
 theorem inS_kr {i : ℕ} (hi : i < L.length) : InS M Q L (kr M Q L i) :=
-  ⟨2 * i + 1, by omega, (kr_eq M Q L i).symm⟩
+  ⟨2 * i + 1, ⋄, (kr_eq M Q L i).symm⟩
 
 theorem kl' {i : ℕ} (hi : i < L.length) : kl M' Q L i = gmap M M' Q L (kl M Q L i) := by
-  rw [kl_eq, kl_eq, hK.gmap_key (by omega)]
+  Ξ kl_eq, kl_eq, hK.gmap_key (⋄)
 
 theorem kr' {i : ℕ} (hi : i < L.length) : kr M' Q L i = gmap M M' Q L (kr M Q L i) := by
-  rw [kr_eq, kr_eq, hK.gmap_key (by omega)]
+  Ξ kr_eq, kr_eq, hK.gmap_key (⋄)
 
 theorem klr_lt_iff {i : ℕ} (hi : i < L.length) : kl M' Q L i < kr M' Q L i ↔ kl M Q L i < kr M Q L i := by
-  rw [hK.kl' hi, hK.kr' hi, hK.gmap_lt (inS_kl hi) (inS_kr hi)]
+  Ξ hK.kl' hi, hK.kr' hi, hK.gmap_lt (inS_kl hi) (inS_kr hi)
 
 theorem evOf_eq {c : ℕ} (hc : c < 2 * L.length) :
     evOf M' Q L c = mapEv (gmap M M' Q L) (evOf M Q L c) := by
-  have hi : c / 2 < L.length := by omega
+  have hi : c / 2 < L.length := ⋄
   unfold evOf
   split_ifs
-  · simp only [eL, mapEv, hK.kl' hi, hK.kr' hi]
-  · simp only [eR, mapEv, hK.kl' hi, hK.kr' hi]
+  · ϴ eL, mapEv, hK.kl' hi, hK.kr' hi
+  · ϴ eR, mapEv, hK.kl' hi, hK.kr' hi
 
 theorem e1_eq {i : ℕ} (hi : i < L.length) : e1 M' Q L i = mapEv (gmap M M' Q L) (e1 M Q L i) := by
   have hlt := hK.klr_lt_iff hi
   have hgt : kr M' Q L i < kl M' Q L i ↔ kr M Q L i < kl M Q L i := by
-    rw [hK.kl' hi, hK.kr' hi, hK.gmap_lt (inS_kr hi) (inS_kl hi)]
-  simp only [e1, mapEv, lo, BuildRegions.hi]
+    Ξ hK.kl' hi, hK.kr' hi, hK.gmap_lt (inS_kr hi) (inS_kl hi)
+  ϴ e1, mapEv, lo, BuildRegions.hi
   rcases le_total (kl M Q L i) (kr M Q L i) with h | h
   · have h' : kl M' Q L i ≤ kr M' Q L i := not_lt.1 (fun l => absurd (hgt.1 l) (not_lt.2 h))
-    rw [min_eq_left h, max_eq_right h, min_eq_left h', max_eq_right h', hK.kl' hi, hK.kr' hi]
+    Ξ min_eq_left h, max_eq_right h, min_eq_left h', max_eq_right h', hK.kl' hi, hK.kr' hi
   · have h' : kr M' Q L i ≤ kl M' Q L i := not_lt.1 (fun l => absurd (hlt.1 l) (not_lt.2 h))
-    rw [min_eq_right h, max_eq_left h, min_eq_right h', max_eq_left h', hK.kl' hi, hK.kr' hi]
+    Ξ min_eq_right h, max_eq_left h, min_eq_right h', max_eq_left h', hK.kl' hi, hK.kr' hi
 
 omit hK in
 /-- The keys of the events of codes. -/
 theorem evOf_inS {c : ℕ} (hc : c < 2 * L.length) :
     InS M Q L (evOf M Q L c).2.1 ∧ InS M Q L (evOf M Q L c).2.2 := by
-  have hi : c / 2 < L.length := by omega
+  have hi : c / 2 < L.length := ⋄
   unfold evOf
   split_ifs
   · exact ⟨inS_kl hi, inS_kr hi⟩
@@ -173,7 +177,7 @@ theorem evOf_inS {c : ℕ} (hc : c < 2 * L.length) :
 omit hK in
 theorem e1_inS {i : ℕ} (hi : i < L.length) :
     InS M Q L (e1 M Q L i).2.1 ∧ InS M Q L (e1 M Q L i).2.2 := by
-  simp only [e1, lo, BuildRegions.hi]
+  ϴ e1, lo, BuildRegions.hi
   rcases le_total (kl M Q L i) (kr M Q L i) with h | h
   · rw [min_eq_left h, max_eq_right h]; exact ⟨inS_kl hi, inS_kr hi⟩
   · rw [min_eq_right h, max_eq_left h]; exact ⟨inS_kr hi, inS_kl hi⟩
@@ -183,17 +187,17 @@ include hE
 
 theorem evs_eq : evs M' Q L E = (evs M Q L E).map (mapEv (gmap M M' Q L)) := by
   unfold evs
-  rw [map_map]
+  Ξ map_map
   exact map_congr_left fun c hc => hK.evOf_eq (hE c hc)
 
 theorem word_eq : word M' Q L E = word M Q L E := by
   unfold word
-  rw [hK.evs_eq hE, map_map]
+  Ξ hK.evs_eq hE, map_map
   rfl
 
 theorem outside_eq {i : ℕ} (hi : i < L.length) : outside M' Q L E i = outside M Q L E i := by
   unfold outside
-  rw [hK.word_eq hE, hK.evs_eq hE, hK.e1_eq hi, idxOf_map_of_inj]
+  Ξ hK.word_eq hE, hK.evs_eq hE, hK.e1_eq hi, idxOf_map_of_inj
   intro x hx e
   unfold evs at hx
   obtain ⟨c, hc, rfl⟩ := mem_map.1 hx
@@ -205,44 +209,44 @@ theorem outside_eq {i : ℕ} (hi : i < L.length) : outside M' Q L E i = outside 
 
 theorem chordRec_eq {i : ℕ} (hi : i < L.length) : chordRec M' Q L E i = chordRec M Q L E i := by
   unfold chordRec
-  rw [hK.outside_eq hE hi]
-  simp only [hK.klr_lt_iff hi]
+  Ξ hK.outside_eq hE hi
+  ϴ hK.klr_lt_iff hi
 
 theorem kap_eq' {m : ℕ} (hm : m < E.length) :
     kap (evs M' Q L E) m = gmap M M' Q L (kap (evs M Q L E) m) ∧
       InS M Q L (kap (evs M Q L E) m) := by
   have hm' : m < (evs M Q L E).length := by simpa [evs] using hm
   have hm'' : m < (evs M' Q L E).length := by simpa [evs] using hm
-  rw [BuildSort.kap_eq hm'', BuildSort.kap_eq hm']
+  Ξ BuildSort.kap_eq hm'', BuildSort.kap_eq hm'
   constructor
-  · simp only [hK.evs_eq hE, getElem_map, mapEv]
-  · simp only [evs, getElem_map]
+  · ϴ hK.evs_eq hE, getElem_map, mapEv
+  · ϴ evs, getElem_map
     exact (evOf_inS (M := M) (Q := Q) (hE _ (getElem_mem _))).1
 
 theorem gapStarts_eq : gapStarts M' Q L E = gapStarts M Q L E := by
   unfold gapStarts
   apply filter_congr
   intro m hm
-  rw [mem_range] at hm
+  Ξ' mem_range at hm
   by_cases hl : m + 1 = E.length
-  · simp [hl]
-  · have hm1 : m + 1 < E.length := by omega
+  · Θ hl
+  · have hm1 : m + 1 < E.length := ⋄
     obtain ⟨a1, a2⟩ := hK.kap_eq' hE hm
     obtain ⟨b1, b2⟩ := hK.kap_eq' hE hm1
-    simp only [hl, false_or, a1, b1, hK.gmap_lt a2 b2]
+    ϴ hl, false_or, a1, b1, hK.gmap_lt a2 b2
 
 theorem arcList_eq : arcList M' Q L E = arcList M Q L E := by
   unfold arcList arcRec
-  rw [hK.gapStarts_eq hE, hK.word_eq hE]
+  Ξ hK.gapStarts_eq hE, hK.word_eq hE
 
 theorem regArcs_eq (r : ℕ) : regArcs M' Q L E r = regArcs M Q L E r := by
-  unfold regArcs; rw [hK.arcList_eq hE]
+  unfold regArcs; Ξ hK.arcList_eq hE
 
 theorem regChords_eq (r : ℕ) : regChords M' Q L E r = regChords M Q L E r := by
   unfold regChords
   apply filter_congr
   intro i hi
-  rw [hK.chordRec_eq hE (mem_range.1 hi)]
+  Ξ hK.chordRec_eq hE (mem_range.1 hi)
 
 theorem arcW_eq {a : ARec} (ha : a ∈ arcList M Q L E) : arcW M' Q a = arcW M Q a := by
   unfold arcList at ha
@@ -252,7 +256,7 @@ theorem arcW_eq {a : ARec} (ha : a ∈ arcList M Q L E) : arcW M' Q a = arcW M Q
     exact hK.wt0 (length_eq_zero_iff.1 h0)
   · obtain ⟨m, hm, rfl⟩ := mem_map.1 ha
     have hmE : m < E.length := mem_range.1 (mem_filter.1 hm).1
-    have hpos : 0 < E.length := by omega
+    have hpos : 0 < E.length := ⋄
     have hs : E.getD m 0 < 2 * L.length := by
       rw [getD_eq_getElem _ _ hmE]; exact hE _ (getElem_mem _)
     have he : E.getD ((m + 1) % E.length) 0 < 2 * L.length := by
@@ -261,43 +265,43 @@ theorem arcW_eq {a : ARec} (ha : a ∈ arcList M Q L E) : arcW M' Q a = arcW M Q
 
 theorem regWt_eq (r : ℕ) : regWt M' Q L E r = regWt M Q L E r := by
   unfold regWt
-  rw [hK.regArcs_eq hE, hK.arcList_eq hE]
+  Ξ hK.regArcs_eq hE, hK.arcList_eq hE
   congr 1
   apply map_congr_left
   intro j hj
-  have hj' : j < (arcList M Q L E).length := mem_range.1 (mem_filter.1 hj).1
-  rw [getD_eq_getElem _ _ hj']
+  have hj' := mem_range.1 (mem_filter.1 hj).1
+  Ξ getD_eq_getElem _ _ hj'
   exact hK.arcW_eq hE (getElem_mem _)
 
 /-- **Congruence of `buildNF`**: models that agree on the chord list compute the same normal
 form from the same event order. -/
 theorem buildNF_eq : buildNF M' Q L E = buildNF M Q L E := by
   unfold buildNF
-  rw [hK.arcList_eq hE]
+  Ξ hK.arcList_eq hE
   congr 1
   · exact map_congr_left fun i hi => hK.chordRec_eq hE (mem_range.1 hi)
   · exact map_congr_left fun r _ => by
-      rw [hK.regArcs_eq hE, hK.regChords_eq hE, hK.regWt_eq hE]
+      Ξ hK.regArcs_eq hE, hK.regChords_eq hE, hK.regWt_eq hE
 
 omit hE
 
 theorem tieBit_eq {c : ℕ} (hc : c < 2 * L.length) : tieBit M' L c = tieBit M L c := by
   unfold tieBit
-  simp only [hK.dir c hc]
+  ϴ hK.dir c hc
 
 /-- **The comparators agree** on the event codes. -/
 theorem codeLe_iff {c c' : ℕ} (hc : c < 2 * L.length) (hc' : c' < 2 * L.length) :
     codeLe M' Q L c c' ↔ codeLe M Q L c c' := by
   unfold codeLe
-  rw [hK.lt c c' hc hc', hK.eq_iff hc hc', hK.tieBit_eq hc, hK.tieBit_eq hc']
+  Ξ hK.lt c c' hc hc', hK.eq_iff hc hc', hK.tieBit_eq hc, hK.tieBit_eq hc'
 
 /-- An event order sorted for `M` is sorted for `M'`. -/
 theorem sorted {E : List ℕ} (hperm : E.Perm (List.range (2 * L.length)))
     (hsort : E.Pairwise (codeLe M Q L)) : E.Pairwise (codeLe M' Q L) := by
   apply hsort.imp_of_mem
   intro a b ha hb h
-  have ha' : a < 2 * L.length := mem_range.1 (hperm.subset ha)
-  have hb' : b < 2 * L.length := mem_range.1 (hperm.subset hb)
+  have ha' := mem_range.1 (hperm.subset ha)
+  have hb' := mem_range.1 (hperm.subset hb)
   exact (hK.codeLe_iff ha' hb').2 h
 
 end KeyCongr
@@ -322,20 +326,20 @@ theorem exits_eq {reg : ℕ → Set Point} (hN : ∀ i i', i < N.nChords → i' 
     · rintro ⟨⟨x, hx, rfl⟩, ht⟩
       obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hx
       have hc : N.chord i = N.chords[i] := by
-        unfold NF.chord; rw [getD_eq_getElem _ _ hi]
+        unfold NF.chord; Ξ getD_eq_getElem _ _ hi
       refine ⟨i, (hmem i).2 ⟨hi, ?_⟩, ?_⟩
       · rw [hc]; exact ht
-      · simp only [hc]
+      · ϴ hc
     · rintro ⟨i, hi, rfl⟩
       obtain ⟨hi', ht⟩ := (hmem i).1 hi
       refine ⟨⟨N.chord i, ?_, rfl⟩, ht⟩
       unfold NF.chord; rw [getD_eq_getElem _ _ hi']; exact getElem_mem _
   have hinj : Set.InjOn (fun i => (N.chord i).toSet M Q) {i | i ∈ (N.region r).chords} :=
     fun i hi i' hi' e => hN i i' ((hmem i).1 hi).1 ((hmem i').1 hi').1 e
-  rw [hset, hinj.ncard_image]
+  Ξ hset, hinj.ncard_image
   have : {i | i ∈ (N.region r).chords} = ((N.region r).chords.toFinset : Set ℕ) := by
     ext; simp
-  rw [this, Set.ncard_coe_finset, toFinset_card_of_nodup hnd]
+  Ξ this, Set.ncard_coe_finset, toFinset_card_of_nodup hnd
 
 /-- **Bounded degree from the records.** -/
 theorem degLe_iff (h : IsNF M Q N) (d : ℕ) :
@@ -343,12 +347,12 @@ theorem degLe_iff (h : IsNF M Q N) (d : ℕ) :
   obtain ⟨-, hinj, -, reg, hC, -, -, hR, -⟩ := h
   constructor
   · intro hD r hr
-    rw [← exits_eq hinj hR hr]
+    Ξ ← exits_eq hinj hR hr
     exact hD _ (hC.1 r hr)
   · intro hD U hU
     obtain ⟨r, hr, rfl⟩ := hC.2.2 U hU
     unfold Model.deg
-    rw [exits_eq hinj hR hr]
+    Ξ exits_eq hinj hR hr
     exact hD r hr
 
 /-- **Semigranularity from the records.** -/
@@ -357,11 +361,11 @@ theorem semigranular_iff (h : IsNF M Q N) (γ : ℕ) :
   obtain ⟨-, -, -, reg, hC, -, -, hR, -⟩ := h
   constructor
   · intro hS r hr
-    rw [(hR r hr).2.2.2]
+    Ξ (hR r hr).2.2.2
     exact hS _ (hC.1 r hr)
   · intro hS U hU
     obtain ⟨r, hr, rfl⟩ := hC.2.2 U hU
-    rw [← (hR r hr).2.2.2]
+    Ξ ← (hR r hr).2.2.2
     exact hS r hr
 
 /-- **Transfer of degree and weight bounds** between two models in which the same record is a

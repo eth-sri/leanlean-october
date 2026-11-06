@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OutputNF
 
 /-!
@@ -89,7 +91,7 @@ theorem fold_flags (b : Bool) (n ri : ℕ) (L : List CRec) (a : Acc) :
   induction L generalizing a with
   | nil => simp
   | cons c L ih =>
-    simp only [List.foldl_cons]
+    ϴ List.foldl_cons
     obtain ⟨h1, h2, h3, h4⟩ := ih (accStep b n ri a c)
     refine ⟨?_, ?_, ?_, ?_⟩
     · rw [h1]; simp only [accStep, Bool.or_eq_true, decide_eq_true_eq, List.mem_cons]
@@ -148,7 +150,7 @@ theorem fold_vals (b : Bool) (n ri T B pI pJ : ℕ) (L : List CRec)
   induction L generalizing a with
   | nil => exact ha
   | cons c L ih =>
-    simp only [List.foldl_cons]
+    ϴ List.foldl_cons
     apply ih (fun c' hc' => hL c' (List.mem_cons_of_mem _ hc'))
     obtain ⟨h1, h2, h3, h4⟩ := hL c List.mem_cons_self
     obtain ⟨a1, a2, a3, a4⟩ := ha
@@ -176,7 +178,7 @@ variable {Q : Polygon} {N : NF} {reg : ℕ → Set Point}
 theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : TrapData Q)
     (hD : D.region = reg ri) : trapOf (revOf Q) Q.n N ri = Final.trapRecOf D := by
   have hQ := H.simple
-  have hn3 : 3 ≤ Q.n := hQ.1
+  have hn3 := hQ.1
   have hi := D.isTrap.hi
   have hj := D.isTrap.hj
   have hpi := inp_lt (b := revOf Q) hi
@@ -195,10 +197,10 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
     obtain ⟨f1, f2, f3, f4⟩ := H.facts hr D hD hk
     obtain ⟨hlp, hrp, -⟩ := rec_attach H.nf hkN
     refine ⟨f1, f2, fun h => ?_, fun h => ?_⟩
-    · rw [← f3 h, inp_inp hlp]
-    · rw [← f4 h, inp_inp hrp]
+    · Ξ ← f3 h, inp_inp hlp
+    · Ξ ← f4 h, inp_inp hrp
   obtain ⟨vT, vB, vL, vR⟩ := fold_vals (revOf Q) Q.n ri D.top D.bot (inp (revOf Q) Q.n D.i)
-    (inp (revOf Q) Q.n D.j) L hfacts Acc.init (by simp [Acc.init])
+    (inp (revOf Q) Q.n D.j) L hfacts Acc.init (⊚ Acc.init)
   obtain ⟨fT, fB, fL, fR⟩ := fold_flags (revOf Q) Q.n ri L Acc.init
   simp only [show Acc.init.hT = false from rfl, show Acc.init.hB = false from rfl,
     show Acc.init.hL = false from rfl, show Acc.init.hR = false from rfl, Bool.false_eq_true,
@@ -283,24 +285,24 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
     cases hLa : a.hL
     · cases hTa : a.hT
       · have hRa : a.hR = true := hLR.resolve_left (by rw [hLa]; decide)
-        simp only [Bool.false_eq_true, ite_false]
-        rw [vR hRa]
+        ϴ Bool.false_eq_true, ite_false
+        Ξ vR hRa
         exact (wv_inj (nxt_lt hpj) hpi ((peak hTa).2.trans (peak hTa).1.symm))
-      · simp only [Bool.false_eq_true, ite_false, ite_true]
-        rw [vT hTa, ← (noL hLa).1, wv_wv hpi]
+      · ϴ Bool.false_eq_true, ite_false, ite_true
+        Ξ vT hTa, ← (noL hLa).1, wv_wv hpi
     · simp only [ite_true]; exact vL hLa
   have hpr : (if a.hR then a.pr else if a.hB then wv (revOf Q) Q.n a.vb
       else nxt Q.n (inp (revOf Q) Q.n D.i)) = inp (revOf Q) Q.n D.j := by
     cases hRa : a.hR
     · cases hBa : a.hB
-      · simp only [Bool.false_eq_true, ite_false]
+      · ϴ Bool.false_eq_true, ite_false
         exact wv_inj (nxt_lt hpi) hpj ((valley hBa).1.trans (valley hBa).2.symm)
-      · simp only [Bool.false_eq_true, ite_false, ite_true]
-        rw [vB hBa, ← (noR hRa).2, wv_wv hpj]
+      · ϴ Bool.false_eq_true, ite_false, ite_true
+        Ξ vB hBa, ← (noR hRa).2, wv_wv hpj
     · simp only [ite_true]; exact vR hRa
-  simp only [trapOf, finish, ← ha]
-  rw [hpl, hpr]
-  simp only [Final.trapRecOf, Final.TrapRec.mk.injEq]
+  ϴ trapOf, finish, ← ha
+  Ξ hpl, hpr
+  ϴ Final.trapRecOf, Final.TrapRec.mk.injEq
   refine ⟨inp_inp hi, inp_inp hj, ?_, ?_⟩
   · cases hTa : a.hT
     · simp only [Bool.false_eq_true, ite_false]; exact (peak hTa).2
@@ -320,12 +322,12 @@ theorem table_ok (H : RegCtx Q N reg) :
   have hDspec : ∀ s hs, (Dof s hs).region = reg s := fun s hs =>
     Classical.choose_spec (exists_trapData hQ (hregQ s (List.mem_range.1 hs)))
   refine ⟨(List.range N.nRegions).pmap Dof (fun _ h => h), ?_, ?_, fun R => ⟨fun hR => ?_, ?_⟩⟩
-  · rw [List.map_pmap]
+  · Ξ List.map_pmap
     rw [List.pmap_congr_left (q := fun s => s ∈ List.range N.nRegions)
       (g := fun s _ => trapOf (revOf Q) Q.n N s) _ (H₂ := fun _ h => h)
       (fun s hs h1 _ => (trapOf_eq H (List.mem_range.1 hs) (Dof s h1) (hDspec s h1)).symm)]
     exact List.pmap_eq_map _
-  · rw [List.map_pmap]
+  · Ξ List.map_pmap
     rw [List.pmap_congr_left (q := fun s => s ∈ List.range N.nRegions) (g := fun s _ => reg s) _
       (H₂ := fun _ h => h) (fun s _ h1 _ => hDspec s h1), List.pmap_eq_map]
     refine List.Nodup.map_on (fun x hx y hy hxy => ?_) List.nodup_range
@@ -342,10 +344,10 @@ theorem vtxChordTable_nil (hQ : Q.Simple) (hdh : DistinctHeights Q) :
     Final.IsVtxChordTable Q [] := by
   refine ⟨fun c => ⟨fun h => absurd h List.not_mem_nil, fun ⟨h1, h2, h3, h4⟩ => ?_⟩, List.nodup_nil⟩
   exfalso
-  have hy : (Q.vtx c.dst).2 = (Q.vtx c.src).2 := by rw [← h4, chordEnd_snd]
+  have hy : (Q.vtx c.dst).2 = (Q.vtx c.src).2 := Ρ ← h4, chordEnd_snd
   have hsd : c.dst = c.src := by
     by_contra hne; exact hdh _ _ h2 h1 hne hy
-  exact chordEnd_ne_vtx hQ h1 h3 (by rw [h4, hsd])
+  exact chordEnd_ne_vtx hQ h1 h3 (Ρ h4, hsd)
 
 /-- **A region has at most four exit chords** (two at the top vertex, two at the bottom
 vertex). -/
@@ -378,12 +380,12 @@ theorem chords_length_le (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) 
       exact H.dh _ _ hv (H.hlt k hkN) hne e1
     obtain ⟨f1, f2, -, -⟩ := H.facts hr D hD hk
     have hfk : f k = chordSet Q (N.chord k).h σ := by rw [hf]; simp only; rw [hS, hvh]
-    rw [hfk, hT]
+    Ξ hfk, hT
     by_cases hdn : (N.chord k).dn = ri
     · rw [f1 hdn]; rcases hσ with rfl | rfl <;> simp
     · rw [f2 hdn]; rcases hσ with rfl | rfl <;> simp
   have hT4 : T.card ≤ 4 := by
-    rw [hT]
+    Ξ hT
     refine (Finset.card_insert_le _ _).trans ?_
     refine Nat.succ_le_succ ((Finset.card_insert_le _ _).trans ?_)
     refine Nat.succ_le_succ ((Finset.card_insert_le _ _).trans ?_)

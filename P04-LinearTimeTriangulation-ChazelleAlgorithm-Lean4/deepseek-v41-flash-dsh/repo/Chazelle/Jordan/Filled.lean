@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Jordan.Parity
 public import Chazelle.Geometry.Det
 public import Mathlib.Topology.Connected.LocallyConnected
@@ -56,8 +58,8 @@ theorem straddleInd_eq (z u v : Point) : straddleInd z u v = leInd z u + leInd z
 /-- The number of edges straddling the abscissa of `z` is even. -/
 theorem sum_straddleInd (P : Polygon) (z : Point) :
     ∑ i ∈ Finset.range P.n, straddleInd z (P.vtx i) (P.vtx ((i + 1) % P.n)) = 0 := by
-  simp only [straddleInd_eq]
-  rw [Finset.sum_add_distrib, sum_range_succ_mod (fun i => leInd z (P.vtx i)) P.n]
+  ϴ straddleInd_eq
+  Ξ Finset.sum_add_distrib, sum_range_succ_mod (fun i => leInd z (P.vtx i)) P.n
   exact zmod_two_add_self _
 
 /-- A point strictly below both endpoints is crossed by the edge iff the edge straddles it. -/
@@ -77,11 +79,11 @@ theorem crosses_iff_straddles_of_below {z u v : Point} (hu : z.2 < u.2) (hv : z.
 theorem crossSum_eq_zero_of_far_below (P : Polygon) {z : Point} (hz : z.2 < -coordBound P) :
     crossSum P z = 0 := by
   unfold crossSum
-  rw [← sum_straddleInd P z]
+  Ξ ← sum_straddleInd P z
   apply Finset.sum_congr rfl
   intro i hi
   have hi' : i < P.n := Finset.mem_range.1 hi
-  have hi2 : (i + 1) % P.n < P.n := Nat.mod_lt _ (by omega)
+  have hi2 : (i + 1) % P.n < P.n := Nat.mod_lt _ (⋄)
   have hu : z.2 < (P.vtx i).2 := hz.trans_le (abs_le.1 (abs_snd_vtx_le_coordBound P hi')).1
   have hv : z.2 < (P.vtx ((i + 1) % P.n)).2 :=
     hz.trans_le (abs_le.1 (abs_snd_vtx_le_coordBound P hi2)).1
@@ -112,9 +114,9 @@ theorem abs_le_coordBound_of_parity_true (P : Polygon) {z : Point} (hz : parity 
   have : coordBound P < z.1 ∨ z.1 < -coordBound P ∨ coordBound P < z.2 ∨ z.2 < -coordBound P := by
     rcases h with (h | h) | (h | h)
     · exact Or.inl h
-    · exact Or.inr (Or.inl (by linarith))
+    · exact Or.inr (Or.inl (⟡))
     · exact Or.inr (Or.inr (Or.inl h))
-    · exact Or.inr (Or.inr (Or.inr (by linarith)))
+    · exact Or.inr (Or.inr (Or.inr (⟡)))
   rw [parity_eq_false_of_far_any P this] at hz
   exact Bool.false_ne_true hz
 
@@ -124,7 +126,7 @@ theorem abs_le_coordBound_of_parity_true (P : Polygon) {z : Point} (hz : parity 
 theorem abs_le_coordBound_of_mem_boundary (P : Polygon) {p : Point} (hp : p ∈ P.boundary) :
     |p.1| ≤ coordBound P ∧ |p.2| ≤ coordBound P := by
   obtain ⟨i, hi, t, ht0, ht1, rfl⟩ := hp
-  have hi2 : (i + 1) % P.n < P.n := Nat.mod_lt _ (by omega)
+  have hi2 : (i + 1) % P.n < P.n := Nat.mod_lt _ (⋄)
   have h1 := abs_le.1 (abs_fst_vtx_le_coordBound P hi)
   have h2 := abs_le.1 (abs_snd_vtx_le_coordBound P hi)
   have h3 := abs_le.1 (abs_fst_vtx_le_coordBound P hi2)
@@ -195,7 +197,7 @@ theorem exists_abs_add_mul_gt {c : ℝ} (hc : c ≠ 0) (w R : ℝ) : ∃ s : ℝ
 /-- The ray `{w + s • d | 0 ≤ s}`. -/
 def ray (w d : Point) : Set Point := (fun s : ℝ => w + s • d) '' Ici 0
 
-theorem mem_ray_self (w d : Point) : w ∈ ray w d := ⟨0, le_rfl, by simp⟩
+theorem mem_ray_self (w d : Point) : w ∈ ray w d := ⟨0, le_rfl, ✓⟩
 
 /-- A ray is preconnected. -/
 theorem isPreconnected_ray (w d : Point) : IsPreconnected (ray w d) :=
@@ -229,22 +231,22 @@ theorem not_isBoundedSet_connectedComponentIn_of_far (P : Polygon) {w : Point}
     (hw : coordBound P < w.1 ∨ w.1 < -coordBound P ∨ coordBound P < w.2 ∨ w.2 < -coordBound P) :
     ¬ IsBoundedSet (connectedComponentIn P.boundaryᶜ w) := by
   rcases hw with h | h | h | h
-  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (1, 0)) (by simp) ?_
+  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (1, 0)) (✓) ?_
     rintro _ ⟨s, hs, rfl⟩ hp
     have := (abs_le.1 (abs_le_coordBound_of_mem_boundary P hp).1).2
     simp only [Geometry.add_fst, Geometry.smul_fst] at this
     linarith [mem_Ici.1 hs]
-  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (-1, 0)) (by simp) ?_
+  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (-1, 0)) (✓) ?_
     rintro _ ⟨s, hs, rfl⟩ hp
     have := (abs_le.1 (abs_le_coordBound_of_mem_boundary P hp).1).1
     simp only [Geometry.add_fst, Geometry.smul_fst] at this
     linarith [mem_Ici.1 hs]
-  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (0, 1)) (by simp) ?_
+  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (0, 1)) (✓) ?_
     rintro _ ⟨s, hs, rfl⟩ hp
     have := (abs_le.1 (abs_le_coordBound_of_mem_boundary P hp).2).2
     simp only [Geometry.add_snd, Geometry.smul_snd] at this
     linarith [mem_Ici.1 hs]
-  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (0, -1)) (by simp) ?_
+  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (0, -1)) (✓) ?_
     rintro _ ⟨s, hs, rfl⟩ hp
     have := (abs_le.1 (abs_le_coordBound_of_mem_boundary P hp).2).1
     simp only [Geometry.add_snd, Geometry.smul_snd] at this
@@ -277,9 +279,9 @@ theorem filled_subset_square (P : Polygon) :
   rw [not_and_or, not_le, not_le, lt_abs, lt_abs] at h
   rcases h with (h | h) | (h | h)
   · exact Or.inl h
-  · exact Or.inr (Or.inl (by linarith))
+  · exact Or.inr (Or.inl (⟡))
   · exact Or.inr (Or.inr (Or.inl h))
-  · exact Or.inr (Or.inr (Or.inr (by linarith)))
+  · exact Or.inr (Or.inr (Or.inr (⟡)))
 
 /-- **The filled region is bounded.** -/
 theorem filled_bounded (P : Polygon) : IsBoundedSet P.filled :=
@@ -290,18 +292,18 @@ theorem filled_bounded (P : Polygon) : IsBoundedSet P.filled :=
 /-- The complement of the filled region: points off the boundary with unbounded component. -/
 theorem mem_filled_compl_iff (P : Polygon) {z : Point} :
     z ∈ P.filledᶜ ↔ z ∉ P.boundary ∧ ¬ IsBoundedSet (connectedComponentIn P.boundaryᶜ z) := by
-  simp only [mem_compl_iff, Polygon.filled, mem_union, not_or]
+  ϴ mem_compl_iff, Polygon.filled, mem_union, not_or
   rfl
 
 /-- The complement of the filled region is a union of components, hence open. -/
 theorem isOpen_filled_compl (P : Polygon) : IsOpen P.filledᶜ := by
-  rw [isOpen_iff_mem_nhds]
+  Ξ isOpen_iff_mem_nhds
   intro z hz
   rw [mem_filled_compl_iff] at hz
   apply Filter.mem_of_superset
     ((isOpen_connectedComponentIn_boundary_compl P z).mem_nhds (mem_connectedComponentIn hz.1))
   intro w hw
-  rw [mem_filled_compl_iff, ← connectedComponentIn_eq hw]
+  Ξ mem_filled_compl_iff, ← connectedComponentIn_eq hw
   exact ⟨connectedComponentIn_subset _ _ hw, hz.2⟩
 
 /-- **The filled region is closed.** -/

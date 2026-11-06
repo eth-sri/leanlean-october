@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Ram9
 
 /-!
@@ -55,21 +57,21 @@ theorem rbBody_exec {c : Config} (hw : WordsBounded W c) {p0 e0 t Al : ℕ}
       (∀ r, ¬ RbBRG r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   have hAl : ALLOC = 9999 := rfl
-  rw [hAl] at hA ⊢
+  Ξ' hAl at hA ⊢
   unfold rbBody
   exec_block
   all_goals try (config_simp; (try simp only [h95, h96, h97, hA, h24, h80]); omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, fun a h1 h2 => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [h95, h80]
+  · config_simp; ϴ h95, h80
   · config_simp; simp only [h95, h96, h80, h24, Machine.upd_apply]; split_ifs <;> first | omega
-  · config_simp; simp only [h97, h24]
-  · config_simp; simp only [hA, h80]
+  · config_simp; ϴ h97, h24
+  · config_simp; ϴ hA, h80
   · config_simp; simp only [h95, h96, h80, h24, Machine.upd_apply]; split_ifs <;> omega
   · config_simp; simp only [h95, h96, h80, h24, Machine.upd_apply]; split_ifs <;> omega
   · config_simp; simp only [h95, h96, h80, h24, Machine.upd_apply]; split_ifs <;> first | omega
   · unfold RbBRG at h1
     simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 8000000 in
 theorem rbInit_exec {c : Config} (hw : WordsBounded W c) {B J : ℕ}
@@ -79,18 +81,18 @@ theorem rbInit_exec {c : Config} (hw : WordsBounded W c) {B J : ℕ}
       c'.nreg 160097 = 0 ∧ (∀ r, ¬ RbRG r → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   have hAl : ALLOC = 9999 := rfl
-  rw [hAl] at hA
+  Ξ' hAl at hA
   unfold rbInit
   exec_block
   all_goals try (config_simp; (try simp only [hA, h64]); omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, fun r h1 => ?_, rfl, rfl, rfl, rfl⟩
-  · config_simp; simp only [hA]
+  · config_simp; ϴ hA
   · config_simp; simp only [hA, h64]; ring
   · config_simp
   · config_simp
   · unfold RbRG at h1
     simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 /-- The invariant of the rebuild after `t` entries. -/
 def RbInv (W : ℕ) (c0 : Config) (B J : ℕ) (e : ℕ → ℕ) (t : ℕ) (c : Config) : Prop :=
@@ -186,8 +188,8 @@ theorem levelAt_of_cells {P : Polygon} {m m' : ℕ → ℕ} {B hp : ℕ} {ns : L
   intro k hk
   obtain ⟨-, -, C, h1, h2, h3⟩ := hc k hk
   refine ⟨C, h1, h2, ?_⟩
-  rw [(hent k hk).1, (hent k hk).2]
-  exact (h3.agree hout).mono (by omega)
+  Ξ (hent k hk).1, (hent k hk).2
+  exact (h3.agree hout).mono (⋄)
 
 end
 

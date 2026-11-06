@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFDecompRound
 
 /-!
@@ -83,7 +85,7 @@ theorem cut_chosen {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ
   have htop' := top_of h hch hT hB hI b1 htop b2
   refine ⟨b1, b2, hnt.1, h.pch_lt _ b1 hnt.1, hch', htop', ⟨hnt.2, ?_, ?_⟩, hnt.2⟩
   · rw [hch', htop']; exact hact
-  · rw [hch', htop']
+  · Ξ hch', htop'
 
 /-- A chosen chord is the parent chord of the best candidate of its component. -/
 theorem chosen_unique {w : ℕ} (hw : w < R) (hw0 : w ≠ 0) (hc : Chosen σ top best chOf (pch w)) :
@@ -96,12 +98,12 @@ theorem chosen_unique {w : ℕ} (hw : w < R) (hw0 : w ≠ 0) (hc : Chosen σ top
 theorem rem_next {e : ℕ} (he : e < K) :
     (next R K prg pch isdn chOf top best σ).rem e = 1 ↔
       σ.rem e = 1 ∨ Chosen σ top best chOf e := by
-  simp only [next, ite_eq_left he]
+  ϴ next, ite_eq_left he
   by_cases hp : σ.pend e = 1
-  · rw [ite_eq_left hp]
+  · Ξ ite_eq_left hp
     have := hI.i0 e he hp
     exact ⟨fun h1 => Or.inl h1, fun _ => this⟩
-  · rw [ite_eq_right hp]
+  · Ξ ite_eq_right hp
     by_cases hc : Chosen σ top best chOf e
     · rw [ite_eq_left hc]; exact ⟨fun _ => Or.inr hc, fun _ => rfl⟩
     · rw [ite_eq_right hc]; exact ⟨fun h1 => Or.inl h1, fun h1 => h1.resolve_right hc⟩
@@ -113,12 +115,12 @@ theorem rem_mono {e : ℕ} (hr : σ.rem e = 1) : (next R K prg pch isdn chOf top
 
 theorem pend_next {e : ℕ} (he : e < K) :
     nPend K chOf top best σ e = 1 ↔ Chosen σ top best chOf e := by
-  simp only [nPend, ite_eq_left he]
+  ϴ nPend, ite_eq_left he
   by_cases hp : σ.pend e = 1
-  · rw [ite_eq_left hp]
+  · Ξ ite_eq_left hp
     have := hI.i0 e he hp
-    exact ⟨fun h1 => absurd h1 (by norm_num), fun h1 => absurd this h1.1⟩
-  · rw [ite_eq_right hp]
+    exact ⟨fun h1 => absurd h1 (⊛), fun h1 => absurd this h1.1⟩
+  · Ξ ite_eq_right hp
     by_cases hc : Chosen σ top best chOf e
     · rw [ite_eq_left hc]; exact ⟨fun _ => hc, fun _ => rfl⟩
     · rw [ite_eq_right hc]; exact ⟨fun h1 => absurd h1 hp, fun h1 => absurd h1 hc⟩
@@ -129,7 +131,7 @@ theorem istop_next {u : ℕ} (hu : u < R) :
   by_cases h0 : u = 0
   · subst h0; exact ⟨fun _ => Or.inl (Or.inl rfl), fun _ => Or.inl rfl⟩
   · have hpk := h.pch_lt u hu h0
-    simp only [IsTop, h0, false_or, rem_next h hch hT hB hI hpk, ne_eq, not_false_eq_true, true_and]
+    ϴ IsTop, h0, false_or, rem_next h hch hT hB hI hpk, ne_eq, not_false_eq_true, true_and
 
 /-- The ancestor relation after the round: the old one, avoiding the chosen chords. -/
 theorem ancX_next {a v : ℕ} (hv : v < R) :
@@ -177,7 +179,7 @@ theorem sub_uncut {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t)
     (hncut : σ.act t = 1 → best t = t) :
     sub R prg pch (next R K prg pch isdn chOf top best σ).rem t = sub R prg pch σ.rem t := by
   ext v
-  rw [mem_sub, mem_sub]
+  Ξ mem_sub, mem_sub
   constructor
   · rintro ⟨hv, hav⟩
     exact ⟨hv, ((ancX_next h hch hT hB hI hv).1 hav).1⟩
@@ -190,7 +192,7 @@ open Classical in
 theorem sub_member {t c : ℕ} (htc : AncX R prg pch σ.rem t c) :
     sub R prg pch σ.rem c = (sub R prg pch σ.rem t).filter (fun v => AncX R prg pch rem0 c v) := by
   ext v
-  rw [mem_filter, mem_sub, mem_sub]
+  Ξ mem_filter, mem_sub, mem_sub
   constructor
   · rintro ⟨hv, hcv⟩
     exact ⟨⟨hv, (anc_member h htc hv).1 hcv |>.1⟩, ((anc_member h htc hv).1 hcv).2⟩
@@ -202,7 +204,7 @@ theorem sub_cut_c {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.
     sub R prg pch (next R K prg pch isdn chOf top best σ).rem (best t) = sub R prg pch σ.rem (best t) := by
   obtain ⟨b1, b2, -, -, -, -, -, -⟩ := cut_chosen h hch hT hB hI ht htop hact hbt
   ext v
-  rw [mem_sub, mem_sub]
+  Ξ mem_sub, mem_sub
   constructor
   · rintro ⟨hv, hav⟩
     exact ⟨hv, ((ancX_next h hch hT hB hI hv).1 hav).1⟩
@@ -223,7 +225,7 @@ theorem sub_cut_t {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.
       (sub R prg pch σ.rem t).filter (fun v => ¬ AncX R prg pch rem0 (best t) v) := by
   obtain ⟨b1, b2, -, -, -, -, hcho, -⟩ := cut_chosen h hch hT hB hI ht htop hact hbt
   ext v
-  rw [mem_filter, mem_sub, mem_sub]
+  Ξ mem_filter, mem_sub, mem_sub
   constructor
   · rintro ⟨hv, hav⟩
     obtain ⟨htv, hkeep⟩ := (ancX_next h hch hT hB hI hv).1 hav
@@ -246,8 +248,8 @@ theorem sz_cut {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.act
   obtain ⟨b1, b2, -, -, -, -, -, -⟩ := cut_chosen h hch hT hB hI ht htop hact hbt
   refine ⟨by unfold sz; rw [sub_cut_c h hch hT hB hI ht htop hact hbt], ?_⟩
   unfold sz
-  rw [sub_cut_t h hch hT hB hI ht htop hact hbt, sub_member h hch hT hB hI b2]
-  rw [Nat.add_comm]
+  Ξ sub_cut_t h hch hT hB hI ht htop hact hbt, sub_member h hch hT hB hI b2
+  Ξ Nat.add_comm
   exact Finset.card_filter_add_card_filter_not (fun v => AncX R prg pch rem0 (best t) v)
 
 end step

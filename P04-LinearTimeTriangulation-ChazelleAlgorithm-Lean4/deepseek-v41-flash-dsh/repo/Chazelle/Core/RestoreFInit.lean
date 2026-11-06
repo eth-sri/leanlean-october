@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFPairs
 public import Chazelle.Core.DownPhaseOracleHit
 
@@ -49,9 +51,9 @@ theorem execB {P : Polygon} {W : ℕ} : ∀ (l : List Instr) {c : Config}, Words
       | addN r a b => exact Exec.addN hw r a b hi
       | subN r a b => exact Exec.subN hw r a b
       | loadN r a => exact Exec.loadN hw r a
-      | _ => exact absurd hi (by simp [okX])
+      | _ => exact absurd hi (⊚ okX)
     have h2 := execB l (P := P) (c := { c with nreg := regI c.nmem i c.nreg }) h1.wb_right hl
-    exact (Exec.seq h1 h2).cast (by simp [Nat.add_comm])
+    exact (Exec.seq h1 h2).cast (⊚ Nat.add_comm)
 
 /-! ## The program -/
 
@@ -98,7 +100,7 @@ theorem fInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
   -- the input size
   have e1 := Exec.inputSize (P := P) hw 81020 hnW
   set c₁ : Config := { c with nreg := upd c.nreg 81020 P.n } with hc₁
-  have hw₁ : WordsBounded W c₁ := e1.wb_right
+  have hw₁ := e1.wb_right
   have r₁ : ∀ q, q ≠ 81020 → c₁.nreg q = c.nreg q := fun q h => by simp [hc₁, upd, h]
   have n₁ : c₁.nreg 81020 = P.n := by simp [hc₁, upd]
   -- the constants
@@ -109,7 +111,7 @@ theorem fInit_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
     (repeat' apply And.intro) <;> omega
   have e2 := execB (P := P) fIniL hw₁ ok2
   set c₂ : Config := { c₁ with nreg := regB c₁.nmem fIniL c₁.nreg } with hc₂
-  have hw₂ : WordsBounded W c₂ := e2.wb_right
+  have hw₂ := e2.wb_right
   have v₂ : ∀ q, c₂.nreg q = regB c.nmem fIniL c₁.nreg q := fun q => rfl
   have f₂ : ∀ q, ¬ IniW q → c₂.nreg q = c.nreg q := fun q hq => by
     rw [v₂, regB_other _ _ _ (fun i hi => ?_), r₁ q (fun h => hq (by unfold IniW; omega))]

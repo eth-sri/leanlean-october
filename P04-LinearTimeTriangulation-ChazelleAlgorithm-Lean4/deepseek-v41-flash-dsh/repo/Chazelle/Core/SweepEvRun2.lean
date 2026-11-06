@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvRunCost
 
 /-!
@@ -51,16 +53,16 @@ theorem runTask_of (hGen : GenTask) (hStop : StopTask) (hWin : WinTask) (hOrgs :
     (K' := N₁.nChords + N₂.nChords + 1) (n := (keyS P J N₁ N₂).ncard) (κWD := κW (c₀.nreg (sw 6)))
     (κGD := κG (c₀.nreg (sw 6))) (κO := κO) (κK := κK) (κP := κP) (κSD := κS (c₀.nreg (sw 6)))
     (κS0D := κS0 (c₀.nreg (sw 6)))
-    (KG := κG (c₀.nreg (sw 6)) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1)) rfl hT (by omega)
-    (by omega) rfl
+    (KG := κG (c₀.nreg (sw 6)) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1)) rfl hT (⋄)
+    (⋄) rfl
   unfold runProg
   refine IRS.mono (IRS.seq (hPr sh Bs F X Ok P W c₀ c₀ J N₁ N₂ E hI0 E.hTA.symm (by
       have := Nat.mul_le_mul_left κP (Nat.le_refl (N₁.nChords + N₂.nChords + 1)); omega)) ?_)
     hsum (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' hPO
-  refine IRS.seq (hS sh Bs F X Ok P W c₀ c₁ J N₁ N₂ E hI₁ (by omega)) ?_
+  refine IRS.seq (hS sh Bs F X Ok P W c₀ c₁ J N₁ N₂ E hI₁ (⋄)) ?_
   rintro c₂ hI₂ hA₂ hA₂' hSO
-  refine IRS.seq (hSt sh Bs F X Ok P W c₀ c₁ c₂ J N₁ N₂ E hPO hSO hI₂ (by omega)) ?_
+  refine IRS.seq (hSt sh Bs F X Ok P W c₀ c₁ c₂ J N₁ N₂ E hPO hSO hI₂ (⋄)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨hL3, -, -⟩
   refine (loop_irs (Kb := iterK (κW (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1)) κK κO
       (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))
@@ -74,7 +76,7 @@ theorem runTask_of (hGen : GenTask) (hStop : StopTask) (hWin : WinTask) (hOrgs :
       hIc hLc hr)
     (fun c cw cs co c' h1 h2 h3 => hL1 sh Bs F X Ok P W c₀ J N₁ N₂ c cw cs co c' E h1 h2 h3)
     (fun c cw cs co c' h1 h2 h3 => hL2 sh Bs F X Ok P W c₀ J N₁ N₂ c cw cs co c' E h1 h2 h3)
-    hfin hI₃ (E.hK.fix hI₃).2.1 hL3 (by omega)).mono le_rfl ?_
+    hfin hI₃ (E.hK.fix hI₃).2.1 hL3 (⋄)).mono le_rfl ?_
   exact fun c' h => h.2
 
 end

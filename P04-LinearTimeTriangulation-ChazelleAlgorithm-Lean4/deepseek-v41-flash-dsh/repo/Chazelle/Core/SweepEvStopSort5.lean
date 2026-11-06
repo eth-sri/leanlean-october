@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopSort4
 
 /-!
@@ -137,8 +139,8 @@ theorem ssAllocL_val (m f : ℕ → ℕ) :
   all_goals simp only [ssAllocL, regB, regI, srSB, sB, srT, aB, ALLOC, sC, srJ, gRC, sw,
     Nat.reduceAdd, upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true]
   simp only [srSB, sB, srT, aB, ALLOC, sC, srJ, sw, Nat.reduceAdd] at a b d e g h i
-  simp only [upd_apply]
-  repeat rw [ite_eq_right (by omega)]
+  ϴ upd_apply
+  repeat rw [ite_eq_right (⋄)]
 
 set_option maxRecDepth 20000 in
 theorem ssAllocL_ok {W : ℕ} (m f : ℕ → ℕ)

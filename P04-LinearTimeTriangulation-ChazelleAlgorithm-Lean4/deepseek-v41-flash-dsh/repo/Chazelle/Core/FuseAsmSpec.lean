@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmMain
 
 /-!
@@ -50,11 +52,11 @@ theorem fuseSpec_of (hS : SweepSpecH) (hBd : BuildNFSpec) : FuseSpec := by
   subst eJ
   have e1 := chords_eq_of_nfAt hN1.nfAt hA1
   have e2 := chords_eq_of_nfAt hN2.nfAt hA2
-  rw [← nf_F_congr e1, ← nf_F_congr e2, ← nChords_congr e1, ← nChords_congr e2]
+  Ξ ← nf_F_congr e1, ← nf_F_congr e2, ← nChords_congr e1, ← nChords_congr e2
   refine ⟨N, hle, hNW, hIs, hNF, hNk, ?_, ?_⟩
-  · rw [hNF]
+  · Ξ hNF
     exact hcapF J (Qof P) _ _ _ hPs hgen hi1.1 hi2.1 hd1 hd2
-  · rw [hNF]
+  · Ξ hNF
     exact FuseMath.fusionWeightSpec J (Qof P) _ _ _ hPs hgen hi1.1 hi2.1 hs1 hs2
 
 end

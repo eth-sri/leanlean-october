@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutPiece
 public import Chazelle.Core.NFLocateChain
 
@@ -42,22 +44,22 @@ theorem tJ_lt (i : ℕ) : tJ C i < 2 * C.m := Nat.mod_lt _ C.two_m_pos
 
 theorem tJ_add {i d : ℕ} (h : tJ C i + d < 2 * C.m) : tJ C (i + d) = tJ C i + d := by
   unfold tJ at h ⊢
-  rw [← Nat.add_assoc, ← Nat.mod_add_mod, Nat.mod_eq_of_lt h]
+  Ξ ← Nat.add_assoc, ← Nat.mod_add_mod, Nat.mod_eq_of_lt h
 
 /-- The walk vertex of tour position `i` is the chain vertex `sideE m (tJ i)`. -/
 theorem walk_vtx (i : ℕ) (hi : i ≤ 2 * C.m) :
     (chainModel C).W.vtx (i + 6) = C.vertex (sideE C.m (tJ C i)) := by
   show (C.sideWalk C.sideBeta).vtx (i + 6) = _
-  rw [C.sideWalk_vtx_tour _ hi]
+  Ξ C.sideWalk_vtx_tour _ hi
   rfl
 
 /-- The chain index at tour position `i + d` when the tour climbs. -/
 theorem sideE_up {i d : ℕ} (hJ : tJ C i + d ≤ C.m) :
     sideE C.m (tJ C (i + d)) = sideE C.m (tJ C i) + d := by
   have h1 := C.one_le
-  rw [tJ_add C (by omega)]
+  rw [tJ_add C (⋄)]
   unfold sideE
-  rw [ite_eq_left hJ, ite_eq_left (by omega)]
+  rw [ite_eq_left hJ, ite_eq_left (⋄)]
 
 /-- The chain index at tour position `i + d` when the tour descends. -/
 theorem sideE_down {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : tJ C i + d ≤ 2 * C.m) :
@@ -126,7 +128,7 @@ theorem run_down (hP : C.P = H.poly Q) {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : t
     split_ifs at * <;> omega
   have hidx : (C.s + sideE C.m (tJ C (i + d))) % C.P.n = NFLoc.preLen Q.n H r + (t - d) := by
     rw [sideE_down C hm hJ]
-    have hpos : 0 < C.P.n := C.n_pos
+    have hpos := C.n_pos
     have e := Nat.div_add_mod (C.s + sideE C.m (tJ C i)) C.P.n
     rw [hu] at e
     have e2 : C.s + (sideE C.m (tJ C i) - d) =
@@ -156,7 +158,7 @@ theorem grade_vertex {Q : Polygon} {Cα : Chain} (hP : Cα.P = Q) (hx : Cα.s + 
     (hd : d ≤ Cα.m) : Cα.vertex d = Q.vtx (Cα.s + d) := by
   unfold Chain.vertex Chain.edgeIdx
   subst hP
-  rw [Nat.mod_eq_of_lt (by omega)]
+  rw [Nat.mod_eq_of_lt (⋄)]
 
 end ShootCut
 

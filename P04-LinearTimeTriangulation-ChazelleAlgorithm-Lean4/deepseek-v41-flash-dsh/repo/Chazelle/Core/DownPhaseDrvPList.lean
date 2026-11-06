@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvPFront
 
 /-!
@@ -34,12 +36,12 @@ theorem frame_of_wr {s : Stmt} {B : ℕ → Bool} {c c' : Config} {k : ℕ} (e :
     (hs : wr B s = true) (hB : ∀ r, B r = true → bandOf r ∈ DrvR.drvBands)
     (hA : B ALLOC = false) : Frame DrvR.drvBands c c' k :=
   let F := exec_frameB e hs
-  DrvT.frame_drv ⟨F.1, F.2.1, F.2.2.2.1, F.2.2.2.2⟩ hB hA (fun a _ => by rw [F.2.2.1])
+  DrvT.frame_drv ⟨F.1, F.2.1, F.2.2.2.1, F.2.2.2.2⟩ hB hA (fun a _ => Ρ F.2.2.1)
 
-theorem band21_not_brute : (21 : ℕ) ∉ bruteBands := by decide
-theorem band21_not_l41 : (21 : ℕ) ∉ l41Bands := by decide
-theorem brute_sub : bruteBands ⊆ DrvR.drvBands := by decide
-theorem l41_sub : l41Bands ⊆ DrvR.drvBands := by decide
+theorem band21_not_brute : (21 : ℕ) ∉ bruteBands := ⌖
+theorem band21_not_l41 : (21 : ℕ) ∉ l41Bands := ⌖
+theorem brute_sub : bruteBands ⊆ DrvR.drvBands := ⌖
+theorem l41_sub : l41Bands ⊆ DrvR.drvBands := ⌖
 
 theorem rdB0 (c : Config) : rd c bBrute 0 = c.nreg 180000 := rfl
 theorem rdB1 (c : Config) : rd c bBrute 1 = c.nreg 180001 := rfl
@@ -51,7 +53,7 @@ theorem rdL2 (c : Config) : rd c bL41 2 = c.nreg 160002 := rfl
 theorem rdL3 (c : Config) : rd c bL41 3 = c.nreg 160003 := rfl
 theorem rdL4 (c : Config) : rd c bL41 4 = c.nreg 160004 := rfl
 
-set_option maxHeartbeats 4000000 in
+
 /-- **Brute force on a short leaf.** -/
 theorem bruteCall_exec {sB : Stmt} {κB : ℕ} (hBm : BruteM sB κB) (c : Config)
     (hw : WordsBounded W c) (hG : GoodEnv P) (hW : hostWords P.n ≤ W)
@@ -149,12 +151,12 @@ theorem bruteCall_exec {sB : Stmt} {κB : ℕ} (hBm : BruteM sB κB) (c : Config
 theorem seven_le_clog {m : ℕ} (hm : 65 ≤ m) : 7 ≤ Nat.clog 2 m := by
   by_contra h
   push Not at h
-  have h1 : m ≤ 2 ^ Nat.clog 2 m := Nat.le_pow_clog (by norm_num) m
-  have h2 : 2 ^ Nat.clog 2 m ≤ 2 ^ 6 := Nat.pow_le_pow_right (by norm_num) (by omega)
-  have : (2 : ℕ) ^ 6 = 64 := by norm_num
+  have h1 : m ≤ 2 ^ Nat.clog 2 m := Nat.le_pow_clog (⊛) m
+  have h2 : 2 ^ Nat.clog 2 m ≤ 2 ^ 6 := Nat.pow_le_pow_right (⊛) (⋄)
+  have : (2 : ℕ) ^ 6 = 64 := ⊛
   omega
 
-set_option maxHeartbeats 4000000 in
+
 /-- **Lemma 4.1 on a long leaf.** -/
 theorem l41Call_exec {O : OracleIface} {sL : Stmt} {κL : ℕ} (hLm : L41M O sL κL) (c : Config)
     (hw : WordsBounded W c) (hG : GoodEnv P) (hW : hostWords P.n ≤ W)
@@ -269,11 +271,11 @@ theorem gradeGran_ge_two {g : ℕ} (hg : 1 ≤ g) : 2 ≤ gradeGran g := by
   have h2 : 1 ≤ 2 ^ Cost.ceilBeta g := Nat.one_le_two_pow
   have : gradeGran g = 2 ^ Cost.ceilBeta g + fuseLoss * (g * (Nat.clog 2 g + 2)) := rfl
   have hf : fuseLoss = 1 := rfl
-  rw [this, hf, one_mul]
-  have : g ≤ g * (Nat.clog 2 g + 2) := Nat.le_mul_of_pos_right _ (by omega)
+  Ξ this, hf, one_mul
+  have : g ≤ g * (Nat.clog 2 g + 2) := Nat.le_mul_of_pos_right _ (⋄)
   omega
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The normal form of a leaf** (brute force or Lemma 4.1) and the facts of its wall-filtered
 chord list in the chain model of the piece. -/
 theorem nf0_exec {O : OracleIface} {sL sB : Stmt} {κL κB : ℕ} (hLm : L41M O sL κL)
@@ -303,48 +305,48 @@ theorem nf0_exec {O : OracleIface} {sL sB : Stmt} {κL κB : ℕ} (hLm : L41M O 
           1950480 * (lemma41Nat (c.nreg 218005) + 1) ∧
         N₀.chords.length ≤ 108360 * (lemma41Nat (c.nreg 218005) + 1) := by
   obtain ⟨μ, hμ⟩ : ∃ μ, c.nreg 218005 = μ := ⟨_, rfl⟩
-  rw [hμ] at hμm hμΛ hγ hroom ⊢
+  Ξ' hμ at hμm hμΛ hγ hroom ⊢
   have hQs : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
   by_cases h64 : c.nreg 218002 < c.nreg 218022
-  · rw [h22] at h64
+  · Ξ' h22 at h64
     obtain ⟨c₁, k₁, e₁, hk₁, F₁, r₁, CQ, N₀, γ', hCQ, hCs, hCm, hN₀, hcan, hγ'⟩ :=
-      bruteCall_exec hBm c hw hG hW h21 hm1 (by omega) ham (by omega)
+      bruteCall_exec hBm c hw hG hW h21 hm1 (⋄) ham (⋄)
     have hT := htwin CQ hCQ hCs hCm
     obtain ⟨hok, hdeg, hwt⟩ := leaf_list hG hCQ hT hCHs hcan
     have hK := k0_count (by rw [hCQ]; exact hQs) hcan
-    rw [hCm] at hK
+    Ξ' hCm at hK
     have hK₀ : N₀.chords.length ≤ 108360 := by
-      have : N₀.chords.length ≤ N₀.chords.length * (γ' + 1) := Nat.le_mul_of_pos_right _ (by omega)
+      have : N₀.chords.length ≤ N₀.chords.length * (γ' + 1) := Nat.le_mul_of_pos_right _ (⋄)
       omega
     have hKc : N₀.chords.length * (Nat.clog 2 N₀.chords.length + 1) ≤ 1950480 := by
       have h1 := kcost_mono hK₀
-      have h2 : Nat.clog 2 108360 ≤ 17 := Nat.clog_le_of_le_pow (by norm_num)
+      have h2 : Nat.clog 2 108360 ≤ 17 := Nat.clog_le_of_le_pow (⊛)
       have : 108360 * (Nat.clog 2 108360 + 1) ≤ 1950480 := by
-        calc 108360 * (Nat.clog 2 108360 + 1) ≤ 108360 * 18 := Nat.mul_le_mul_left _ (by omega)
-          _ = 1950480 := by norm_num
+        calc 108360 * (Nat.clog 2 108360 + 1) ≤ 108360 * 18 := Nat.mul_le_mul_left _ (⋄)
+          _ = 1950480 := ⊛
       omega
     have hγle : 2 * γ' ≤ c.nreg 218007 := by
       rcases hγ' with ⟨h1, rfl⟩ | ⟨h2, rfl⟩
       · have := gradeGran_ge_one μ; omega
       · have hμ1 : 1 ≤ μ := by
           by_contra h0
-          have : μ = 0 := by omega
-          rw [this] at hμm; simp at hμm; omega
+          have : μ = 0 := ⋄
+          Ξ' this at hμm; simp at hμm; omega
         have := gradeGran_ge_two hμ1; omega
-    refine ⟨c₁, _, Exec.ifLtN_true (by rw [h22]; exact h64) e₁, by omega,
-      Frame.mono F₁ le_rfl (by omega), fun r hr a b d => r₁ r hr a, N₀, hN₀, hok, hdeg,
+    refine ⟨c₁, _, Exec.ifLtN_true (by rw [h22]; exact h64) e₁, ⋄,
+      Frame.mono F₁ le_rfl (⋄), fun r hr a b d => r₁ r hr a, N₀, hN₀, hok, hdeg,
       semigranular_mono hwt hγle, ?_, ?_⟩
-    · have : 1950480 ≤ 1950480 * (lemma41Nat μ + 1) := Nat.le_mul_of_pos_right _ (by omega)
+    · have : 1950480 ≤ 1950480 * (lemma41Nat μ + 1) := Nat.le_mul_of_pos_right _ (⋄)
       omega
-    · have : 108360 ≤ 108360 * (lemma41Nat μ + 1) := Nat.le_mul_of_pos_right _ (by omega)
+    · have : 108360 ≤ 108360 * (lemma41Nat μ + 1) := Nat.le_mul_of_pos_right _ (⋄)
       omega
-  · rw [h22] at h64
+  · Ξ' h22 at h64
     obtain ⟨c₁, k₁, e₁, hk₁, F₁, r₁, CQ, N₀, g, hCQ, hCs, hCm, hN₀, hcan, hg1, hgμ, hmg⟩ :=
-      l41Call_exec hLm c hw hG hW hgr h21 (by omega) hμm hμΛ ham (by omega)
+      l41Call_exec hLm c hw hG hW hgr h21 (⋄) hμm hμΛ ham (⋄)
     have hT := htwin CQ hCQ hCs hCm
     obtain ⟨hok, hdeg, hwt⟩ := leaf_list hG hCQ hT hCHs hcan
     have hK := k0_count (by rw [hCQ]; exact hQs) hcan
-    rw [hCm] at hK
+    Ξ' hCm at hK
     have hK2 : N₀.chords.length * 2 ^ Cost.ceilBeta g ≤ 2520 * 2 ^ g := by
       have h1 : N₀.chords.length * 2 ^ Cost.ceilBeta g ≤ N₀.chords.length * (gradeGran g + 1) :=
         Nat.mul_le_mul_left _ (by have := gradeGran_ge g; omega)
@@ -353,28 +355,28 @@ theorem nf0_exec {O : OracleIface} {sL sB : Stmt} {κL κB : ℕ} (hLm : L41M O 
     have hKc := kcost_le hg1 hK2
     have hmono := lemma41Nat_mono hgμ
     have hγle : 2 * gradeGran g ≤ c.nreg 218007 := (Nat.mul_le_mul_left 2 (gradeGran_mono hgμ)).trans hγ
-    refine ⟨c₁, _, Exec.ifLtN_false (by rw [h22]; exact h64) e₁, by omega,
-      Frame.mono F₁ le_rfl (by omega), r₁, N₀, hN₀, hok, hdeg, semigranular_mono hwt hγle, ?_, ?_⟩
-    · have : 35280 * lemma41Nat g ≤ 1950480 * (lemma41Nat μ + 1) := by nlinarith
+    refine ⟨c₁, _, Exec.ifLtN_false (by rw [h22]; exact h64) e₁, ⋄,
+      Frame.mono F₁ le_rfl (⋄), r₁, N₀, hN₀, hok, hdeg, semigranular_mono hwt hγle, ?_, ?_⟩
+    · have : 35280 * lemma41Nat g ≤ 1950480 * (lemma41Nat μ + 1) := ⊞
       omega
     · have h0 : N₀.chords.length ≤ N₀.chords.length * (Nat.clog 2 N₀.chords.length + 1) :=
-        Nat.le_mul_of_pos_right _ (by omega)
-      have : 35280 * lemma41Nat g ≤ 108360 * (lemma41Nat μ + 1) := by nlinarith
+        Nat.le_mul_of_pos_right _ (⋄)
+      have : 35280 * lemma41Nat g ≤ 108360 * (lemma41Nat μ + 1) := ⊞
       omega
 
 /-- The constant of the chord list of a piece. -/
 def κLst (κL κB : ℕ) : ℕ := κB * 274625 + κL + 4659540
 
-set_option maxRecDepth 100000 in
+
 theorem lst_cost (κL κB μ X : ℕ) (hX : μ + 1 ≤ X) :
     κB * 274625 + 12 + 4 * μ + κL * X + 43 * (108360 * X) + 22 ≤ κLst κL κB * X := by
   unfold κLst
-  have e : (κB * 274625 + κL + 4659540) * X = κB * 274625 * X + κL * X + 4659540 * X := by ring
-  rw [e]
-  have h2 : 43 * (108360 * X) = 4659480 * X := by ring
-  rw [h2]
-  have h1 : κB * 274625 ≤ κB * 274625 * X := Nat.le_mul_of_pos_right _ (by omega)
-  have h3 : 4659480 * X + 60 * X = 4659540 * X := by ring
+  have e : (κB * 274625 + κL + 4659540) * X = κB * 274625 * X + κL * X + 4659540 * X := ⋆
+  Ξ e
+  have h2 : 43 * (108360 * X) = 4659480 * X := ⋆
+  Ξ h2
+  have h1 : κB * 274625 ≤ κB * 274625 * X := Nat.le_mul_of_pos_right _ (⋄)
+  have h3 : 4659480 * X + 60 * X = 4659540 * X := ⋆
   generalize κB * 274625 * X = A at h1 ⊢
   generalize κL * X = B
   generalize κB * 274625 = D at *
@@ -382,7 +384,7 @@ theorem lst_cost (κL κB μ X : ℕ) (hX : μ + 1 ≤ X) :
   generalize 4659540 * X = F at *
   omega
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The chord list of a piece**: empty (connector) or the wall-filtered chords of the normal
 form of the leaf, at `218016` (length `218017`), below the allocator. -/
 theorem listS_exec {O : OracleIface} {sL sB : Stmt} {κL κB : ℕ} (hLm : L41M O sL κL)

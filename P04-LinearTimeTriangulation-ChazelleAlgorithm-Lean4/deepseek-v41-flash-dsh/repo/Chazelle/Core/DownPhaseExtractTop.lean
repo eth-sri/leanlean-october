@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseExtractPiece
 
 /-!
@@ -45,10 +47,10 @@ theorem wrapK_nat {n K : ℕ} (_hn : 0 < n) (hK : K < 2 * n) :
   unfold wrapK
   split_ifs with h
   · have : K < n := by exact_mod_cast h
-    rw [Nat.mod_eq_of_lt this]
+    Ξ Nat.mod_eq_of_lt this
   · push Not at h
     have : n ≤ K := by exact_mod_cast h
-    rw [Nat.mod_eq_sub_mod this, Nat.mod_eq_of_lt (by omega)]
+    rw [Nat.mod_eq_sub_mod this, Nat.mod_eq_of_lt (⋄)]
     push_cast [this]; ring
 
 /-- **The corner at an inner host key**: the chain corner there is positively scaled from the
@@ -66,7 +68,7 @@ theorem corner_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hM := X.walkAx
   have hF := X.hFam.2.1
   have hfin := X.hFam.1
-  have hdN : d < nk (interiorModel Q) S R := hA.hdN
+  have hdN := hA.hdN
   have hb0 := hostKeys_bounds (hk_mem (U := R) hM hF hfin hA.hil)
   have hn : 0 < (interiorModel Q).W.n := by
     have : (0 : ℝ) < (interiorModel Q).W.n := lt_of_le_of_lt hb0.1 hb0.2
@@ -123,7 +125,7 @@ theorem top_not_inner (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hM := X.walkAx
   have hF := X.hFam.2.1
   have hfin := X.hFam.1
-  have hdN : d < nk (interiorModel Q) S R := hA.hdN
+  have hdN := hA.hdN
   obtain ⟨hWs, hWb, hWf, hWo⟩ := FactsInterior.interiorWalk_spec X.hQ
   obtain ⟨P, hPn, hPkey, hvP, hsec⟩ := corner_inner (g := g) (h3 := h3) X hA hj0 hjd
   set C := hostChain Q S R g h3 with hC
@@ -214,7 +216,7 @@ theorem no_split (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
   have hTm := C.topIdx_le
   unfold TourA.sA
   rcases C.sideS_mod C.sideBeta with ⟨hs, hc⟩ | ⟨hs, hT0, -⟩
-  · rw [hs]
+  · Ξ hs
     rcases hc with hb | hT | hT
     · exact fun hT => top_not_inner X harc hA hj0 hjd hT hb
     · omega

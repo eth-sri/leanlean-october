@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildPassArc
 
 /-!
@@ -26,27 +28,27 @@ def Bgap (r : ℕ) : Bool :=
     decide (42113 ≤ r ∧ r < 42116) || decide (r = 43120)
 
 theorem wr_gapS : wrM Bgap gapS = true := by
-  have h1 : wrM Bgap arcS = true := wrM_mono (fun r hr => by simp [Bgap, hr]) wr_arcS
+  have h1 : wrM Bgap arcS = true := wrM_mono (fun r hr => ⊚ Bgap, hr) wr_arcS
   have h2 : wrM Bgap (halfS 42110 42111 42113 42114 42116 42117) = true :=
-    wrM_of_wr (wr_mono (fun r hr => by simp [Bgap, hr]) wr_halfS)
-  simp only [gapS, wrM, block, loadRec, h1, h2, Bool.and_true, Bool.true_and]
+    wrM_of_wr (wr_mono (fun r hr => ⊚ Bgap, hr) wr_halfS)
+  ϴ gapS, wrM, block, loadRec, h1, h2, Bool.and_true, Bool.true_and
   decide
 
 theorem Bgap_false {r : ℕ} (h : r < 10000 ∨ (10503 ≤ r ∧ r ≤ 40000) ∨ (40103 ≤ r ∧ r < 41110) ∨
     (41120 ≤ r ∧ r < 42113) ∨ (42117 < r ∧ r < 43102) ∨ (43102 < r ∧ r < 43106) ∨
     (43106 < r ∧ r < 43120) ∨ (43128 ≤ r ∧ r < 43140) ∨ (43142 < r ∧ r < 43150) ∨ 43151 < r) :
     Bgap r = false := by
-  have ha := Barc_false (r := r) (by omega)
+  have ha := Barc_false (r := r) (⋄)
   simp only [Bgap, ha, BhalfS, Bhalf, Bool.false_or, Bool.or_eq_false_iff,
     decide_eq_false_iff_not]
   omega
 
 theorem bhalf_of_bgap {r : ℕ} (h : Bgap r = false) : BhalfS 42116 42117 r = false := by
-  simp only [Bgap, Bool.or_eq_false_iff] at h; exact h.1.1.1.2
+  ϴ' Bgap, Bool.or_eq_false_iff at h; exact h.1.1.1.2
 
 theorem ne_of_bgap {r : ℕ} (h : Bgap r = false) : r ≠ 43106 ∧ r ≠ 43140 ∧ r ≠ 43141 ∧
     r ≠ 43142 ∧ r ≠ 42113 ∧ r ≠ 42114 ∧ r ≠ 42115 ∧ r ≠ 43120 := by
-  simp only [Bgap, Bool.or_eq_false_iff, decide_eq_false_iff_not] at h
+  ϴ' Bgap, Bool.or_eq_false_iff, decide_eq_false_iff_not at h
   omega
 
 section exec

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepAnswer2
 
 /-!
@@ -56,7 +58,7 @@ theorem vertex_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
         0 < sideCross ((-σ, 0) : Point) ((chainModel C).W.vtx
           ((p + (chainModel C).W.n - 1) % (chainModel C).W.n) - (chainModel C).W.vtx p)) := by
   have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
-  have hF : F ⊆ (chainModel C).Adm := hFam.2.1
+  have hF := hFam.2.1
   have hfin : F.Finite := hFam.1
   have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
   obtain ⟨hp, -, -, hpt, hsec⟩ := hA
@@ -88,13 +90,13 @@ theorem vertex_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
     rintro ⟨c, hcF, hxc⟩
     exact hc c hcF hxc
   set z := rayPt w (-σ) (δ / 2) with hz
-  have hzfree : z ∈ freeIn C.dom F := hfree _ ⟨by linarith, by linarith⟩
+  have hzfree : z ∈ freeIn C.dom F := hfree _ ⟨⟡, ⟡⟩
   set U := connectedComponentIn (freeIn C.dom F) z with hU
   have hUreg : U ∈ (chainModel C).regions F := Chazelle.Chain.mem_regionsIn hzfree
   have hconn : IsPreconnected ((fun s => rayPt w (-σ) s) '' Ioo (0 : ℝ) δ) :=
     isPreconnected_Ioo.image _ (by unfold rayPt; fun_prop)
   have hsubU : (fun s => rayPt w (-σ) s) '' Ioo (0 : ℝ) δ ⊆ U :=
-    hconn.subset_connectedComponentIn ⟨δ / 2, ⟨by linarith, by linarith⟩, rfl⟩
+    hconn.subset_connectedComponentIn ⟨δ / 2, ⟨⟡, ⟡⟩, rfl⟩
       (by rintro _ ⟨s, hs, rfl⟩; exact hfree s hs)
   have happ : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt (chainModel C).W p 0) (-σ) s ∈ U := by
     filter_upwards [Ioo_mem_nhdsGT hδ0] with s hs
@@ -114,7 +116,7 @@ theorem freeAt_of_leave (hP : C.P.Simple) {z : Point} {σ : ℝ} (hσ : σ = 1 �
   obtain ⟨r, hr, hsf⟩ := sector_free hM (F := ∅) (empty_subset _) finite_empty hp ht ht1
   filter_upwards [Ioo_mem_nhdsGT hr] with s hs
   have hsec' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ s) := by
-    rw [hpt]
+    Ξ hpt
     have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
       rw [hpt]; exact hsec
     have := (sideLeft_rayPt_iff _ p t σ one_pos hs.1).1 h1
@@ -142,7 +144,7 @@ theorem leave_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
           0 < sideCross ((σ, 0) : Point) ((chainModel C).W.vtx
             ((p + (chainModel C).W.n - 1) % (chainModel C).W.n) - (chainModel C).W.vtx p))) := by
   have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
-  have hF : F ⊆ (chainModel C).Adm := hFam.2.1
+  have hF := hFam.2.1
   have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
   have hA : Arrival (chainModel C).W z (-σ) p t := ⟨hp, ht, ht1, hpt, by rw [neg_neg]; exact hsec⟩
   have hsec' : ∀ s > 0, sideLeft (chainModel C).W p t (rayPt z σ s) := by

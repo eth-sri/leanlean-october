@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFDecompRamLoop
 
 /-!
@@ -38,7 +40,7 @@ theorem kids_deg (h : Rooted R K up dn ord pos prg pch) {lst : ℕ → List ℕ}
     obtain ⟨c, hc, rfl⟩ := hi
     rw [mem_kids] at hc
     obtain ⟨c1, c2, c3, -⟩ := hc
-    rw [List.mem_toFinset, hlists v hv]
+    Ξ List.mem_toFinset, hlists v hv
     refine ⟨h.pch_lt c c1 c2, ?_⟩
     rcases h.ends c c1 c2 with ⟨a1, -⟩ | ⟨-, a2⟩
     · left; rw [a1, c3]
@@ -47,11 +49,11 @@ theorem kids_deg (h : Rooted R K up dn ord pos prg pch) {lst : ℕ → List ℕ}
     Finset.card_image_of_injOn hinj
   have hlen : (lst v).toFinset.card = (lst v).length := List.toFinset_card_of_nodup (hnd v hv)
   by_cases hv0 : v = 0
-  · rw [ite_eq_left hv0, Nat.add_zero, ← hcard1, ← hlen]
+  · Ξ ite_eq_left hv0, Nat.add_zero, ← hcard1, ← hlen
     exact Finset.card_le_card himg
-  · rw [ite_eq_right hv0]
+  · Ξ ite_eq_right hv0
     have hpv : pch v ∈ (lst v).toFinset := by
-      rw [List.mem_toFinset, hlists v hv]
+      Ξ List.mem_toFinset, hlists v hv
       refine ⟨h.pch_lt v hv hv0, ?_⟩
       rcases h.ends v hv hv0 with ⟨-, a2⟩ | ⟨a1, -⟩
       · right; exact a2
@@ -100,7 +102,7 @@ section robust
 theorem rb_addr {E : ℕ} {m : ℕ → ℕ} {a v : ℕ} (h : Robust E m fun m' => m' a = v) : a < E := by
   by_contra hge
   have := h (Function.update m a (v + 1)) (fun b hb => by
-    rw [Function.update_of_ne (by omega)])
+    rw [Function.update_of_ne (⋄)])
   simp at this
 
 /-- A word reached through a pointer: the pointer and the word lie below the bound. -/
@@ -147,21 +149,21 @@ theorem inEnv_of {m : ℕ → ℕ} {B A : ℕ} {N : NF} (h : NFWithin m B A N) :
         have := ((h m' hm').2.2.2.2.2.1 i hi).2.2.2.2
         simpa only [Nat.add_assoc] using this
     have := (rb_addr2 r4).2
-    exact ⟨a1, a2, by omega⟩
+    exact ⟨a1, a2, ⋄⟩
   · obtain ⟨-, a2, -, -, -⟩ := hN.2.2.2.2.2.2.2.1 r hr
     have r4 : Robust A m fun m' => m' (m' (B + 5) + (5 * r + 4)) = (N.region r).wt :=
       fun m' hm' => by
         have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.1
         simpa only [Nat.add_assoc] using this
     have := (rb_addr2 r4).2
-    exact ⟨a2, by omega⟩
+    exact ⟨a2, ⋄⟩
   · obtain ⟨-, -, -, -, a5⟩ := hN.2.2.2.2.2.2.2.1 r hr
     have r4 : Robust A m fun m' => m' (m' (B + 5) + (5 * r + 4)) = (N.region r).wt :=
       fun m' hm' => by
         have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.1
         simpa only [Nat.add_assoc] using this
     obtain ⟨hB5, hw⟩ := rb_addr2 r4
-    have hc : m (B + 5) + 5 * r + 3 < A := by omega
+    have hc : m (B + 5) + 5 * r + 3 < A := ⋄
     have r5 : Robust A m fun m' => m' (m' (B + 7) + m' (m (B + 5) + 5 * r + 3) + t) =
         (N.region r).chords.getD t 0 := fun m' hm' => by
       have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.2.2 t ht
@@ -173,7 +175,7 @@ theorem inEnv_of {m : ℕ → ℕ} {B A : ℕ} {N : NF} (h : NFWithin m B A N) :
       have := r6 m' hm'
       simpa only [Nat.add_assoc] using this
     have := (rb_addr2 r7).2
-    exact ⟨a5 t ht, by omega⟩
+    exact ⟨a5 t ht, ⋄⟩
 
 /-- Region records are determined by their fields. -/
 theorem rRec_ext' {a b : RRec} (h1 : a.arcs = b.arcs) (h2 : a.chords = b.chords)
@@ -214,7 +216,7 @@ theorem nfAt_chords_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N)
   have e' := h'.2.2.2.2.2.1 j hj
   have a1 : N.chord j = N.chords[j] := getD_of_lt hj' _
   have a2 : N'.chord j = N'.chords[j] := getD_of_lt hj _
-  rw [← a1, ← a2]
+  Ξ ← a1, ← a2
   exact cRec_ext' (e'.1.symm.trans e.1) (e'.2.1.symm.trans e.2.1) (e'.2.2.1.symm.trans e.2.2.1)
     (e'.2.2.2.1.symm.trans e.2.2.2.1) (e'.2.2.2.2.symm.trans e.2.2.2.2)
 
@@ -228,7 +230,7 @@ theorem nfAt_arcs_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (
   have e' := h'.2.2.2.2.2.2.1 j hj
   have a1 : N.arc j = N.arcs[j] := getD_of_lt hj' _
   have a2 : N'.arc j = N'.arcs[j] := getD_of_lt hj _
-  rw [← a1, ← a2]
+  Ξ ← a1, ← a2
   exact aRec_ext' (e'.1.symm.trans e.1) (e'.2.1.symm.trans e.2.1) (e'.2.2.1.symm.trans e.2.2.1)
     (e'.2.2.2.1.symm.trans e.2.2.2.1) (e'.2.2.2.2.symm.trans e.2.2.2.2)
 
@@ -242,12 +244,12 @@ theorem nfAt_regions_eq' {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N
   have e' := h'.2.2.2.2.2.2.2.1 j hj
   have a1 : N.region j = N.regions[j] := getD_of_lt hj' _
   have a2 : N'.region j = N'.regions[j] := getD_of_lt hj _
-  rw [← a1, ← a2]
+  Ξ ← a1, ← a2
   refine rRec_ext' ?_ ?_ (e'.2.2.1.symm.trans e.2.2.1)
   · exact list_ext_getD (e'.1.symm.trans e.1) fun t ht => by
-      rw [← e.2.2.2.1 t ht, ← e'.2.2.2.1 t (by rw [← e'.1, e.1]; exact ht)]
+      Ξ ← e.2.2.2.1 t ht, ← e'.2.2.2.1 t (by rw [← e'.1, e.1]; exact ht)
   · exact list_ext_getD (e'.2.1.symm.trans e.2.1) fun t ht => by
-      rw [← e.2.2.2.2 t ht, ← e'.2.2.2.2 t (by rw [← e'.2.1, e.2.1]; exact ht)]
+      Ξ ← e.2.2.2.2 t ht, ← e'.2.2.2.2 t (by rw [← e'.2.1, e.2.1]; exact ht)
 
 end env
 

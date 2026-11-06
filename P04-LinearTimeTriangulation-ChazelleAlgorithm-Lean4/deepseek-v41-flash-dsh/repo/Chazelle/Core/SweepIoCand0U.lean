@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoCand0T
 
 /-!
@@ -78,7 +80,7 @@ theorem main_irs {lab0 : Stmt → Stmt} {candC : Stmt}
   refine IRS.seq (K₁ := 16707) (callSym_irs (dsc := sw 2) (re := zE) (rh := qH) (o := sw 3230)
     hI hctx (by unfold zE qH sw; omega) (by unfold sw; omega) (by rw [eZ]; exact hQ.hzE)
     (by rw [eZ, eH]; exact hQ.hzpp) (by rw [eZ, eH, hzW]; exact q.hy)
-    (by rw [eZ, eH]; exact hcls') (by omega)) ?_
+    (by rw [eZ, eH]; exact hcls') (⋄)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨sp, hsp, hspl, hspe, fr2, hA2, hm2⟩
   rw [eZ, eH, hzW] at hspe
   have hfr₂ : CandFr c c₂ := hfr.trans (candFr_of_set (S := fun r => sw 3230 ≤ r ∧ r ≤ sw 3233)
@@ -87,7 +89,7 @@ theorem main_irs {lab0 : Stmt → Stmt} {candC : Stmt}
   obtain ⟨-, -, eD2, -, eP2, ePh2, eL2, eR2⟩ := pipe8 hfr₂
   have hacc₂ : AccOK P accA (ModB J (c₂.nreg bL) (c₂.nreg bR)) J.whole.radius z
       (dirOf (c₂.nreg qD)) L c₂ := by
-    rw [eL2, eR2, eD2]
+    Ξ eL2, eR2, eD2
     exact hst.1.transport (fun j hj => by
       rw [fr2 _ (not_oracle_sw (by unfold accA sw; omega) (by unfold accA sw; omega))
         (by unfold accA sw; omega) (by unfold accA ALLOC sw; omega)])
@@ -95,7 +97,7 @@ theorem main_irs {lab0 : Stmt → Stmt} {candC : Stmt}
   refine IRS.seq (hLab sh Bs F X Ok hsh hBs hXl P W c₀ c₂ J H N₁ N₂ E L sp z hA hI₂ hzL hzs hz2
     (by rw [eD2]; exact q.hfree) (by rw [eP2]; exact hQ.hzP) (by rw [eP2, ePh2]; exact hQ.hzPp)
     (by rw [eP2, ePh2, eD2]; exact hQ.harr) (by unfold sO; exact hsp) hspl hspe
-    (by rw [eR2]; exact hbR) hacc₂ (by omega)) ?_
+    (by rw [eR2]; exact hbR) hacc₂ (⋄)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨⟨L₃, a3, s3, g3, comp3⟩, fr3⟩
   rw [eL2, eR2, eD2] at a3
   rw [eD2] at g3 comp3
@@ -106,7 +108,7 @@ theorem main_irs {lab0 : Stmt → Stmt} {candC : Stmt}
   refine (hSC P W X Ok J H N₁ N₂ E c₀ c₃ L₃ z hA hAux hI₃ hzL hzs hz2
     (by rw [eD3]; exact q.hfree) (by rw [eP3]; exact hQ.hzP) (by rw [eP3, ePh3]; exact hQ.hzPp)
     (by rw [eP3, ePh3, eD3]; exact hQ.harr) (by rw [eL3]; exact q.hbL) (by rw [eR3]; exact hbR)
-    (by rw [eL3, eR3, eD3]; exact a3) (by omega)).mono le_rfl ?_
+    (by rw [eL3, eR3, eD3]; exact a3) (⋄)).mono le_rfl ?_
   rintro c₄ ⟨⟨L₄, a4, s4, g4, stp, tab⟩, fr4⟩
   rw [eL3, eR3, eD3] at a4
   rw [eD3] at g4 stp tab

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepPrimKer
 
 /-!
@@ -47,9 +49,9 @@ theorem prod_nonneg_of_cross_zero {B A : Point} (h : sideCross B A = 0) :
     0 ≤ (B.1 * A.1) * (B.2 * A.2) := by
   unfold sideCross at h
   have : (B.1 * A.1) * (B.2 * A.2) = (B.1 * A.2) * (B.1 * A.2) := by
-    have e : B.2 * A.1 = B.1 * A.2 := by linarith
-    calc (B.1 * A.1) * (B.2 * A.2) = (B.1 * A.2) * (B.2 * A.1) := by ring
-      _ = (B.1 * A.2) * (B.1 * A.2) := by rw [e]
+    have e : B.2 * A.1 = B.1 * A.2 := ⟡
+    calc (B.1 * A.1) * (B.2 * A.2) = (B.1 * A.2) * (B.2 * A.1) := ⋆
+      _ = (B.1 * A.2) * (B.1 * A.2) := Ρ e
   rw [this]; exact mul_self_nonneg _
 
 /-- The sign of the dot product of parallel vectors, negative case. -/
@@ -107,7 +109,7 @@ theorem sideCcw_horiz_iff (B A : Point) {s : ℝ} (hs : s = 1 ∨ s = -1) :
     · rintro ⟨h1, h2⟩; push Not at h1; exact lt_of_le_of_ne h1 h2
   have hBXne : sideCross B ((s, 0) : Point) ≠ 0 ↔ (0 < B.2 ∨ B.2 < 0) := by
     have e : sideCross B ((s, 0) : Point) = -(s * B.2) := by unfold sideCross; ring
-    rw [e, ne_eq, neg_eq_zero, mul_eq_zero, not_or]
+    Ξ e, ne_eq, neg_eq_zero, mul_eq_zero, not_or
     have hs0 : s ≠ 0 := by rcases hs with rfl | rfl <;> norm_num
     constructor
     · rintro ⟨-, h⟩
@@ -116,7 +118,7 @@ theorem sideCcw_horiz_iff (B A : Point) {s : ℝ} (hs : s = 1 ∨ s = -1) :
     · rintro (h | h)
       exacts [⟨hs0, h.ne'⟩, ⟨hs0, h.ne⟩]
   unfold sideCcw SecProp
-  rw [hneg, hBXne]
+  Ξ hneg, hBXne
   rcases hs with rfl | rfl
   · have hBX : 0 < sideCross B ((1, 0) : Point) ↔ B.2 < 0 := by
       unfold sideCross; constructor <;> intro h <;> simp at h ⊢ <;> linarith
@@ -124,27 +126,27 @@ theorem sideCcw_horiz_iff (B A : Point) {s : ℝ} (hs : s = 1 ∨ s = -1) :
       unfold sideCross; constructor <;> intro h <;> simp at h ⊢ <;> linarith
     have hdBX : sideDot B ((1, 0) : Point) < 0 ↔ B.1 < 0 := by
       unfold sideDot; constructor <;> intro h <;> simp at h ⊢ <;> linarith
-    rw [hBX, hXA, hdBX]
-    simp only [true_and, not_true_eq_false, false_and, or_false]
+    Ξ hBX, hXA, hdBX
+    ϴ true_and, not_true_eq_false, false_and, or_false
     by_cases hz : sideCross B A = 0
-    · rw [dot_neg_iff_of_cross_zero hz, dot_pos_iff_of_cross_zero hz]
+    · Ξ dot_neg_iff_of_cross_zero hz, dot_pos_iff_of_cross_zero hz
       simp only [hz, lt_irrefl, not_false_eq_true, true_and, false_and, not_true_eq_false,
         false_or]
-    · simp only [hz, false_and, or_false, not_false_eq_true, true_and, and_true]
+    · ϴ hz, false_and, or_false, not_false_eq_true, true_and, and_true
   · have hBX : 0 < sideCross B ((-1, 0) : Point) ↔ 0 < B.2 := by
       unfold sideCross; constructor <;> intro h <;> simp at h ⊢ <;> linarith
     have hXA : 0 < sideCross ((-1, 0) : Point) A ↔ A.2 < 0 := by
       unfold sideCross; constructor <;> intro h <;> simp at h ⊢ <;> linarith
     have hdBX : sideDot B ((-1, 0) : Point) < 0 ↔ 0 < B.1 := by
       unfold sideDot; constructor <;> intro h <;> simp at h ⊢ <;> linarith
-    rw [hBX, hXA, hdBX]
-    have hn : ¬ ((-1 : ℝ) = 1) := by norm_num
-    simp only [hn, false_and, false_or, not_false_eq_true, true_and]
+    Ξ hBX, hXA, hdBX
+    have hn : ¬ ((-1 : ℝ) = 1) := ⊛
+    ϴ hn, false_and, false_or, not_false_eq_true, true_and
     by_cases hz : sideCross B A = 0
-    · rw [dot_neg_iff_of_cross_zero hz, dot_pos_iff_of_cross_zero hz]
+    · Ξ dot_neg_iff_of_cross_zero hz, dot_pos_iff_of_cross_zero hz
       simp only [hz, lt_irrefl, not_false_eq_true, true_and, false_and, not_true_eq_false,
         false_or]
-    · simp only [hz, false_and, or_false, not_false_eq_true, true_and, and_true]
+    · ϴ hz, false_and, or_false, not_false_eq_true, true_and, and_true
 
 
 /-- **The left sector of a corner for a horizontal direction** in terms of the comparisons of
@@ -156,8 +158,8 @@ theorem sideLeftOf_horiz_iff (a v b : Point) {s : ℝ} (hs : s = 1 ∨ s = -1) :
   unfold sideLeftOf
   have hx : Visibility.rayPt v s 1 - v = ((s, 0) : Point) := by
     refine Prod.ext ?_ ?_ <;> simp [Visibility.rayPt]
-  rw [hx, sideCcw_horiz_iff _ _ hs, Chazelle.Chain.sideCross_corner]
-  simp only [Prod.fst_sub, Prod.snd_sub, sub_pos, sub_neg]
+  Ξ hx, sideCcw_horiz_iff _ _ hs, Chazelle.Chain.sideCross_corner
+  ϴ Prod.fst_sub, Prod.snd_sub, sub_pos, sub_neg
 
 /-- The sector formula as a Boolean formula over bit registers `r₀ … r₁₀` (in the order of the
 arguments of `SecProp`). -/
@@ -189,7 +191,7 @@ theorem secBF_vars {p : ℕ → Prop} {sp oP oZ b2p b2n b1p b1n a2p a2n a1p a1n 
     (secBF sp oP oZ b2p b2n b1p b1n a2p a2n a1p a1n).VarsOK p := by
   simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at h
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11⟩ := h
-  simp only [secBF, BF.VarsOK, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, and_self]
+  ϴ secBF, BF.VarsOK, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, and_self
 
 end
 

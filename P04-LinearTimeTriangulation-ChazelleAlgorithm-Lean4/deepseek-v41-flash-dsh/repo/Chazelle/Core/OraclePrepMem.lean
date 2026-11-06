@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepPhB
 
 /-!
@@ -24,7 +26,7 @@ theorem robust_addrF {E : ℕ} {m : ℕ → ℕ} {f : (ℕ → ℕ) → ℕ} {v 
     (h : Robust E m fun m' => m' (f m') = v) : f m < E := by
   by_contra hge
   have hm' : ∀ a, a < E → Function.update m (f m) (v + 1) a = m a := fun a ha => by
-    rw [Function.update_of_ne (by omega)]
+    rw [Function.update_of_ne (⋄)]
   have := h _ hm'
   dsimp only at this
   rw [hf _ hm', Function.update_self] at this
@@ -33,11 +35,11 @@ theorem robust_addrF {E : ℕ} {m : ℕ → ℕ} {f : (ℕ → ℕ) → ℕ} {v 
 /-- A host layout depends only on the memory below its end. -/
 theorem hostAt_agree {m m' : ℕ → ℕ} {B E : ℕ} {H : Host} (h : HostAt m B H)
     (hE : B + 3 * H.length + 4 ≤ E) (hm : ∀ a, a < E → m' a = m a) : HostAt m' B H := by
-  refine ⟨by rw [hm _ (by omega)]; exact h.1, fun i hi => ?_⟩
+  refine ⟨by rw [hm _ (⋄)]; exact h.1, fun i hi => ?_⟩
   have hh := h.2 i hi
-  have e1 := hm (B + 1 + 3 * i) (by omega)
-  have e2 := hm (B + 2 + 3 * i) (by omega)
-  have e3 := hm (B + 3 + 3 * i) (by omega)
+  have e1 := hm (B + 1 + 3 * i) (⋄)
+  have e2 := hm (B + 2 + 3 * i) (⋄)
+  have e3 := hm (B + 3 + 3 * i) (⋄)
   generalize H.getD i (.run 0 0) = it at hh ⊢
   cases it with
   | run a l => obtain ⟨h1, h2, h3⟩ := hh; exact ⟨e1.trans h1, e2.trans h2, e3.trans h3⟩
@@ -51,9 +53,9 @@ theorem chainDescAt_agree {m m' : ℕ → ℕ} {D X : ℕ} {Q : Polygon} {H : Ho
     (h : ChainDescAt m D Q H C) (hD : D + 5 ≤ X) (hH : m D + 3 * H.length + 4 ≤ X)
     (hm : ∀ a, a < X → m' a = m a) : ChainDescAt m' D Q H C := by
   obtain ⟨h0, h1, h2, h3, h4, h5⟩ := h
-  refine ⟨?_, h1, by rw [hm _ (by omega)]; exact h2, by rw [hm _ (by omega)]; exact h3,
-    by rw [hm _ (by omega)]; exact h4, by rw [hm _ (by omega)]; exact h5⟩
-  rw [hm _ (by omega)]
+  refine ⟨?_, h1, by rw [hm _ (⋄)]; exact h2, by rw [hm _ (by omega)]; exact h3,
+    by rw [hm _ (⋄)]; exact h4, by rw [hm _ (by omega)]; exact h5⟩
+  rw [hm _ (⋄)]
   exact hostAt_agree h0 hH hm
 
 /-- A copy of a chain descriptor describes the same chain. -/
@@ -61,8 +63,8 @@ theorem chainDescAt_copy {m : ℕ → ℕ} {D D' : ℕ} {Q : Polygon} {H : Host}
     (h : ChainDescAt m D Q H C) (hc : ∀ i, i < 5 → m (D' + i) = m (D + i)) :
     ChainDescAt m D' Q H C := by
   obtain ⟨h0, h1, h2, h3, h4, h5⟩ := h
-  have e0 := hc 0 (by omega); have e1 := hc 1 (by omega); have e2 := hc 2 (by omega)
-  have e3 := hc 3 (by omega); have e4 := hc 4 (by omega)
+  have e0 := hc 0 (⋄); have e1 := hc 1 (⋄); have e2 := hc 2 (⋄)
+  have e3 := hc 3 (⋄); have e4 := hc 4 (⋄)
   simp only [Nat.add_zero] at e0
   exact ⟨by rw [e0]; exact h0, h1, by rw [e1]; exact h2, by rw [e2]; exact h3, by rw [e3]; exact h4,
     by rw [e4]; exact h5⟩
@@ -78,7 +80,7 @@ theorem chainWF_agree {P : Polygon} {m m' : ℕ → ℕ} {D X : ℕ} {H : Host} 
   have hH : H' = H := NFLoc.hostAt_unique hC'.1 hD'.1
   have hC : C' = C := NFLoc.chain_eq_of_desc hC' hD'
   subst hH hC
-  rw [hm _ (by omega)]
+  rw [hm _ (⋄)]
   exact ⟨h1, h2, h3, h4⟩
 
 /-- **The model descriptor** made of `0` and a copy of a well-formed chain descriptor. -/
@@ -87,11 +89,11 @@ theorem modelDesc_of {P : Polygon} {m : ℕ → ℕ} {D MD X : ℕ} {H : Host} {
     (hc : ∀ i, i < 5 → m (MD + 1 + i) = m (D + i)) (hMX : MD + 6 ≤ X) :
     ModelDescAt m MD (Qof P) (chainModel C) ∧ ModelDescWF P X m MD := by
   have hD' : ChainDescAt m (MD + 1) (Qof P) H C := chainDescAt_copy hD hc
-  refine ⟨Or.inl ⟨h0, H, C, hD', rfl⟩, hMX, fun _ => ⟨by omega, fun H' C' hC' => ?_⟩⟩
+  refine ⟨Or.inl ⟨h0, H, C, hD', rfl⟩, hMX, fun _ => ⟨⋄, fun H' C' hC' => ?_⟩⟩
   have hH : H' = H := NFLoc.hostAt_unique hC'.1 hD'.1
   have hC : C' = C := NFLoc.chain_eq_of_desc hC' hD'
   subst hH hC
-  have e0 : m (MD + 1) = m D := by have := hc 0 (by omega); simpa using this
+  have e0 : m (MD + 1) = m D := by have := hc 0 (⋄); simpa using this
   obtain ⟨h1, h2, h3, h4⟩ := hwf.2 H' C' hD
   exact ⟨h1, h2, by rw [e0]; exact h3, h4⟩
 

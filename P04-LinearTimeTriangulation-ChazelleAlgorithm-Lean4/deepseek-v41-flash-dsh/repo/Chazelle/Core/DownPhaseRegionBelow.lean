@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseHostChain
 public import Chazelle.Core.DownPhaseLocal
 
@@ -95,7 +97,7 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     have h1 := (Loc.tendsto_mul_const_nhdsGT (show 0 < 1 - t by linarith [ht.2])).eventually
       (cyc_open hin)
     filter_upwards [h1, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)] with s h1 hs1
-    have hs0 : 0 < s := hs1.1
+    have hs0 := hs1.1
     refine harc.2.2.2.2.2.2 p _ hp (by nlinarith [ht.1, ht.2]) (by nlinarith [ht.1, ht.2, hs1.2]) ?_
     rw [← add_assoc]; exact h1
   obtain ⟨r0, hr0, hnear⟩ := Loc.near_sub_region hQ hF hfin hp ht.1.le ht.2 hncut hX hfX

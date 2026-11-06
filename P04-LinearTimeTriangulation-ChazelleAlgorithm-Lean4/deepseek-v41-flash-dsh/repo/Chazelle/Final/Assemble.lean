@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Final.LinkSplit
 
 /-!
@@ -43,12 +45,12 @@ theorem triangulates_of_pairs (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : Enum
   have hpiece : ∀ m' ∈ M', IsPiece P m' := fun m' hm' => hD.isPiece hP (hperm.mem_iff.1 hm')
   set g : List ℕ → List ℕ × List Polygon.Triangle := fun m' => acc.getD (M'.idxOf m') ([], [])
     with hg
-  have hlen : M'.length = acc.length := hrot.length_eq
+  have hlen := hrot.length_eq
   have hMg : acc = M'.map g := by
     apply List.ext_getElem
-    · rw [List.length_map, hlen]
+    · Ξ List.length_map, hlen
     · intro t h1 h2
-      simp only [List.getElem_map, hg]
+      ϴ List.getElem_map, hg
       rw [hnd.idxOf_getElem, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h1,
         Option.getD_some]
   have hgmem : ∀ m' ∈ M', g m' ∈ acc := by
@@ -58,10 +60,10 @@ theorem triangulates_of_pairs (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : Enum
     intro m' hm'
     obtain ⟨t, ht, rfl⟩ := List.mem_iff_getElem.1 hm'
     have := List.forall₂_iff_get.1 hrot
-    obtain ⟨r, hr⟩ := this.2 t ht (by omega)
+    obtain ⟨r, hr⟩ := this.2 t ht (⋄)
     refine ⟨r, ?_⟩
-    simp only [hg]
-    rw [hnd.idxOf_getElem, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega),
+    ϴ hg
+    rw [hnd.idxOf_getElem, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (⋄),
       Option.getD_some]
     simpa using hr
   set T' : List ℕ → List Polygon.Triangle := fun m' =>
@@ -81,7 +83,7 @@ theorem triangulates_of_pairs (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : Enum
     have e : T' m' = (g m').2.map (relabel r m'.length) := by
       rw [hT']; simp only [dite_eq_left h]; rfl
     refine ⟨by rw [e]; exact hw', ?_⟩
-    rw [e, List.map_map]
+    Ξ e, List.map_map
     apply List.map_congr_left
     intro t ht
     have hb := Chazelle.Split.index_lt_of_weak hw ht
@@ -93,11 +95,11 @@ theorem triangulates_of_pairs (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : Enum
       Nat.add_comm r t1, Nat.add_comm r t2, Nat.add_comm r t3]
   have heq : acc.flatMap (fun p => p.2.map (relabelList p.1)) =
       M'.flatMap (fun m' => (T' m').map (relabelList m')) := by
-    rw [hMg, List.flatMap_map]
+    Ξ hMg, List.flatMap_map
     apply List.flatMap_congr
     intro m' hm'
     exact (hwT m' hm').2.symm
-  rw [heq]
+  Ξ heq
   have hsplit : ∀ m ∈ splitAll (List.range P.n) D, WeakTriangulates (subPoly P m) (T' m) :=
     fun m hm => (hwT m (hperm.mem_iff.2 hm)).1
   exact triangulates_perm (triangulates_of_weak (hD.weakTriangulates hP hsplit))

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepSort
 
 /-!
@@ -40,7 +42,7 @@ def pLoad : Stmt := .seq pLoadA (.seq qLoadB (.seq pLoadC pLoadD))
 /-- The registers written by `pLoad`. -/
 def BPL (r : ℕ) : Bool := decide (120010 ≤ r ∧ r ≤ 120049) || decide (120190 ≤ r ∧ r ≤ 120191)
 
-theorem wr_pLoad : wr BPL pLoad = true := by decide
+theorem wr_pLoad : wr BPL pLoad = true := ⌖
 
 /-- The facts loaded by `pLoad`. -/
 structure PLoaded (P : Polygon) (D NB s mm ti bb A K CB AB RB SB LB : ℕ) (c : Config) : Prop where

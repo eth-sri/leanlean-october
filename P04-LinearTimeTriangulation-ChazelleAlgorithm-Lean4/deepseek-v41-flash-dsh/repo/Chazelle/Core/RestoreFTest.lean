@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFRun
 public import Chazelle.Core.RestoreDrvReg
 
@@ -133,7 +135,7 @@ variable {E : FEnv} {c₀ c : Config}
 /-- The memory below the initial allocator is the initial memory. -/
 theorem FInv.agree (hE : FGood E c₀) (hI : FInv E.W c₀ c) :
     ∀ a, a < E.A₀ → c.nmem a = E.m₀ a := fun a ha => by
-  rw [hI.hm a (by rw [hE.a0]; exact ha), hE.m0]
+  Ξ hI.hm a (by rw [hE.a0]; exact ha), hE.m0
 
 theorem FInv.allocA (hE : FGood E c₀) (hI : FInv E.W c₀ c) : E.A₀ ≤ c.nreg ALLOC := by
   rw [← hE.a0]; exact hI.hA
@@ -167,7 +169,7 @@ theorem test_pre (hE : FGood E c₀) (hI : FInv E.W c₀ c) (h0 : c.nreg 83000 =
   have hA := hI.allocA hE
   obtain ⟨hMD', hwf'⟩ := Gran.desc_agree' hE.hwf hE.hMD hag
   obtain ⟨c1, c2, c3, c4, c5, c6, c7⟩ := hc
-  rw [h0, h1, h2, h3, h4, h9]
+  Ξ h0, h1, h2, h3, h4, h9
   refine ⟨hE.hG, hE.hWh, ?_, ?_, hwf'.mono hA, hregKeep hE.hwf hE.hMD hE.hreg hag,
     simpKeep hE.hwf hE.hMD hE.hsimp hag, c7, E.M, E.N, hMD', hE.hGM, hE.hOk,
     (hE.hNW.transport hag).mono hA, hE.hNF, hE.hdeg, hE.hsg, hE.hr, c1, c2, c3,
@@ -271,8 +273,8 @@ theorem tcall_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
         c'.nreg 81009 = c.nreg 81009 ∧ c'.nreg 81010 = c.nreg 81010) ∧
       (c.nreg 81007 = 0 → TOut E c c')) := by
   have fx : ∀ q, FFix q → c.nreg q = c₀.nreg q := fun q hq => hI.hin q hq
-  have k0 : c.nreg 81011 = 0 := by rw [fx _ (by unfold FFix; omega), hE.k0]
-  have k1 : c.nreg 81012 = 1 := by rw [fx _ (by unfold FFix; omega), hE.k1]
+  have k0 : c.nreg 81011 = 0 := Ρ fx _ (by unfold FFix; omega), hE.k0
+  have k1 : c.nreg 81012 = 1 := Ρ fx _ (by unfold FFix; omega), hE.k1
   have hW1 : 1 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
   rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hfl with h0 | h1
   · -- the test runs
@@ -286,12 +288,12 @@ theorem tcall_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       (by simp only [tK, tArgsL, List.length_cons, List.length_nil]; omega) (fun _ h => h)
     subst h₁
     -- the registers after the arguments
-    have i0 : c.nreg 81000 = E.MD := by rw [fx _ (by unfold FFix; omega), hE.i0]
-    have i1 : c.nreg 81001 = E.NH := by rw [fx _ (by unfold FFix; omega), hE.i1]
-    have i2 : c.nreg 81002 = E.r := by rw [fx _ (by unfold FFix; omega), hE.i2]
-    have i3 : c.nreg 81003 = E.γ := by rw [fx _ (by unfold FFix; omega), hE.i3]
-    have i4 : c.nreg 81004 = E.g := by rw [fx _ (by unfold FFix; omega), hE.i4]
-    have i5 : c.nreg 81005 = E.d := by rw [fx _ (by unfold FFix; omega), hE.i5]
+    have i0 : c.nreg 81000 = E.MD := Ρ fx _ (by unfold FFix; omega), hE.i0
+    have i1 : c.nreg 81001 = E.NH := Ρ fx _ (by unfold FFix; omega), hE.i1
+    have i2 : c.nreg 81002 = E.r := Ρ fx _ (by unfold FFix; omega), hE.i2
+    have i3 : c.nreg 81003 = E.γ := Ρ fx _ (by unfold FFix; omega), hE.i3
+    have i4 : c.nreg 81004 = E.g := Ρ fx _ (by unfold FFix; omega), hE.i4
+    have i5 : c.nreg 81005 = E.d := Ρ fx _ (by unfold FFix; omega), hE.i5
     set c₁ : Config := { c with nreg := regB c.nmem tArgsL c.nreg } with hc₁
     have r0 : c₁.nreg 83000 = E.MD := by rw [hc₁]; exact a0.trans i0
     have r1 : c₁.nreg 83001 = E.NH := by rw [hc₁]; exact a1.trans i1
@@ -310,13 +312,13 @@ theorem tcall_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       rw [r5, r6, r7, r8]; exact hc
     have pre := test_pre hE hI₁ r0 r1 r2 r3 r4 r9 hc'
     have hcost : E.κt (c₁.nreg 83009) * (E.F (c₁.nreg 83003) + 1) =
-        E.κt E.d * (E.F E.γ + 1) := by rw [r9, r3]
+        E.κt E.d * (E.F E.γ + 1) := Ρ r9, r3
     refine FRS.seq ((FRS.call hT hBT hI₁ pre (by rw [hcost, hA₁]; unfold tK at hroom; omega)
       (fun c' hp q hq => hp.1 q (band8 (by unfold FFix at hq; omega) (by unfold FFix at hq; omega))
         (by unfold FFix at hq; omega))).mono (le_of_eq hcost) (fun _ h => h))
       (fun c₂ hI₂ _ hp => ?_)
     obtain ⟨⟨hkeep, b10, b11, b14, hres⟩, -, -⟩ := hp
-    have z₂ : c₂.nreg 81011 = 0 := by rw [hI₂.hin _ (by unfold FFix; omega), hE.k0]
+    have z₂ : c₂.nreg 81011 = 0 := Ρ hI₂.hin _ (by unfold FFix; omega), hE.k0
     -- the record of a success
     have hwin : FRS B E.P E.W c₀ (.ifLtN 81011 83014 tWin .skip) c₂ 6 (fun c₃ =>
         (∀ q, (q < 81007 ∨ 81010 < q) → c₃.nreg q = c₂.nreg q) ∧
@@ -326,30 +328,30 @@ theorem tcall_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       rcases Nat.le_one_iff_eq_zero_or_eq_one.1 b14 with s0 | s1
       · have g' : ¬ c₂.nreg 81011 < c₂.nreg 83014 := by rw [z₂, s0]; omega
         refine (FRS.ifF g' (FRS.skip hI₂ (K := 0) (Q := fun c' => c' = c₂) rfl)).mono
-          (by omega) ?_
+          (⋄) ?_
         intro c' hc'
-        rw [hc']
+        Ξ hc'
         have e7 : c₂.nreg 81007 = 0 := by
-          rw [hkeep 81007 (band8 (by omega) (by omega)) (by omega), rfr _ (by omega), h0]
-        exact ⟨fun _ _ => rfl, by rw [e7, s0], by omega, fun h => by omega⟩
+          rw [hkeep 81007 (band8 (⋄) (by omega)) (by omega), rfr _ (by omega), h0]
+        exact ⟨fun _ _ => rfl, by rw [e7, s0], ⋄, fun h => by omega⟩
       · have g' : c₂.nreg 81011 < c₂.nreg 83014 := by rw [z₂, s1]; omega
         refine (FRS.ifT g' (FRS.block hB tWinL hI₂ (okB_tWin hW1 _ _))).mono
-          (by simp [tWinL]) ?_
+          (⊚ tWinL) ?_
         intro c' hc'
-        rw [hc']
+        Ξ hc'
         obtain ⟨w8, w9, w10, w7, wfr⟩ := tWin_eff c₂.nmem c₂.nreg
         exact ⟨wfr, by simp only []; rw [w7, s1], by simp only []; rw [w7],
           fun _ => ⟨w8, w9, w10⟩⟩
     refine hwin.mono le_rfl (fun c₃ ⟨h3fr, h3s, h3le, h3t⟩ => ?_)
     have keep₂ : ∀ q, 80000 ≤ q → q < 83000 → c₂.nreg q = c₁.nreg q := fun q h1 h2 =>
-      hkeep q (band8 h1 (by omega)) h2
-    refine ⟨fun q h1 h2 => ?_, h3le, fun h => by omega, fun _ => ?_⟩
-    · rw [h3fr q (by omega), keep₂ q (by omega) h2, rfr q (by omega)]
+      hkeep q (band8 h1 (⋄)) h2
+    refine ⟨fun q h1 h2 => ?_, h3le, fun h => ⋄, fun _ => ?_⟩
+    · rw [h3fr q (⋄), keep₂ q (by omega) h2, rfr q (by omega)]
     -- the contract of the test, for the candidate of `c`
-    have e10 : c₃.nreg 83010 = c₂.nreg 83010 := h3fr _ (by omega)
-    have e11 : c₃.nreg 83011 = c₂.nreg 83011 := h3fr _ (by omega)
-    have e12 : c₃.nreg 83012 = c₂.nreg 83012 := h3fr _ (by omega)
-    have e13 : c₃.nreg 83013 = c₂.nreg 83013 := h3fr _ (by omega)
+    have e10 : c₃.nreg 83010 = c₂.nreg 83010 := h3fr _ (⋄)
+    have e11 : c₃.nreg 83011 = c₂.nreg 83011 := h3fr _ (⋄)
+    have e12 : c₃.nreg 83012 = c₂.nreg 83012 := h3fr _ (⋄)
+    have e13 : c₃.nreg 83013 = c₂.nreg 83013 := h3fr _ (⋄)
     refine ⟨by rw [e10]; exact b10, by rw [e11]; exact b11, fun reg hregs => ?_⟩
     have hag := hI.agree hE
     obtain ⟨hMD', -⟩ := Gran.desc_agree' hE.hwf hE.hMD hag
@@ -359,7 +361,7 @@ theorem tcall_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     have hres' := hres E.M E.N reg hMD₁ hNA₁ hE.hNF hregs
     simp only [r2, r5, r6, r8] at hres'
     obtain ⟨p1, p2, p3⟩ := hres'
-    simp only [e10, e11, e12, e13]
+    ϴ e10, e11, e12, e13
     refine ⟨fun hs => ?_, fun hv hh => ?_, p3⟩
     · have hs' := h3s.1 hs
       obtain ⟨t8, t9, t10⟩ := h3t hs'
@@ -370,7 +372,7 @@ theorem tcall_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     have g : ¬ c.nreg 81007 < c.nreg 81012 := by rw [h1, k1]; omega
     refine (FRS.ifF g (FRS.skip hI (K := 0) (Q := fun c' => c' = c) rfl)).mono (by unfold tK; omega) ?_
     rintro c' rfl
-    exact ⟨fun q _ _ => rfl, hfl, fun _ => ⟨h1, rfl, rfl, rfl⟩, fun h => by omega⟩
+    exact ⟨fun q _ _ => rfl, hfl, fun _ => ⟨h1, rfl, rfl, rfl⟩, fun h => ⋄⟩
 
 end
 

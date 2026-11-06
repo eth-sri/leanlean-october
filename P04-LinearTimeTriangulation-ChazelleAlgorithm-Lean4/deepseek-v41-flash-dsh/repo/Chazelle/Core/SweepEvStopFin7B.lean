@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopFin7A
 
 /-!
@@ -39,12 +41,12 @@ theorem slfEmits_spec : SlfEmitsSpec := by
   -- 1. the reversed code
   refine (IRS.seq (K₁ := 1) (K₂ := 37 + 37) (IRS.block [.subN slfDc K1 oB] hI
     ⟨iscr_sw (by unfold slfDc sw; omega) (by unfold slfDc sw; omega), trivial⟩) ?_).mono
-    (by norm_num) (fun _ h => h)
+    (⊛) (fun _ h => h)
   rintro c₁ hI₁ - - rfl
   set c₁ : Config := { c with nreg := regB c.nmem [.subN slfDc K1 oB] c.nreg } with hc₁
-  have v1 : c₁.nreg slfDc = 1 - b := by simp [hc₁, regB, regI, upd, hK.2.1, hbb]
+  have v1 : c₁.nreg slfDc = 1 - b := ⊚ hc₁, regB, regI, upd, hK.2.1, hbb
   have k1 : ∀ q, q ≠ slfDc → c₁.nreg q = c.nreg q := fun q hq => by
-    simp [hc₁, regB, regI, upd, hq]
+    Θ hc₁, regB, regI, upd, hq
   have rr1 : ∀ q, (sw 4000 ≤ q ∧ q ≤ sw 4066) ∨ q = K0 ∨ q = K1 ∨ q = ALLOC →
       c₁.nreg q = c.nreg q := fun q hq => k1 q (by
         rcases hq with h | rfl | rfl | rfl <;> simp only [slfDc, K0, K1, ALLOC, sw] at * <;> omega)
@@ -66,7 +68,7 @@ theorem slfEmits_spec : SlfEmitsSpec := by
   have c2O4 : c₂.nreg (slfO + 4) = c.nreg (slfO + 4) :=
     c2r _ (by unfold slfO slfX sw; omega) (by unfold slfO gRC sw; omega) (by unfold slfO slfDc sw; omega)
   have c2Dc : c₂.nreg slfDc = 1 - b := by
-    rw [r2 _ (by unfold slfDc slfX sw; omega) (by unfold slfDc gRC sw; omega), v1]
+    Ξ r2 _ (by unfold slfDc slfX sw; omega) (by unfold slfDc gRC sw; omega), v1
   have hgrc2 : c₂.nreg gRC ≤ c.nreg gRC + 1 := by rw [g2]; split_ifs <;> omega
   -- 3. the record of `A₁`
   refine (slfMaybe_irs (bitr := slfO + 4) (hX _ (Or.inr (Or.inr (Or.inr (Or.inl rfl)))))
@@ -77,7 +79,7 @@ theorem slfEmits_spec : SlfEmitsSpec := by
     (by rw [c2r _ (by unfold K1 slfX sw; omega) (by unfold K1 gRC sw; omega)
       (by unfold K1 slfDc sw; omega)]; exact hK.2.1)
     (by rw [c2RB]; exact hR0) (by rw [c2RB]; have := hI.hw.1 ALLOC; omega)
-    (by rw [c2O4]; exact bit1.1)).mono (by norm_num) ?_
+    (by rw [c2O4]; exact bit1.1)).mono (⊛) ?_
   rintro c' ⟨g3, w3, m3, r3⟩
   simp only [c2O4, c2RB] at g3 w3 m3
   -- the facts
@@ -109,11 +111,11 @@ theorem slfEmits_spec : SlfEmitsSpec := by
       intro q hq
       exact k1 q (by rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
           simp only [oF0, oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, slfDc, sw] <;> omega)
-    rw [g (oF0 + 1) (by simp), g (oF0 + 2) (by simp), g oKd (by simp), g oKk (by simp),
-      g oB (by simp)] at q1
-    rw [g oB (by simp)] at q2
-    rw [g slfA (by simp), g slfN (by simp), g slfL0 (by simp), g slfL1 (by simp),
-      g oPar (by simp)] at q3
+    rw [g (oF0 + 1) (✓), g (oF0 + 2) (✓), g oKd (✓), g oKk (✓),
+      g oB (✓)] at q1
+    rw [g oB (✓)] at q2
+    rw [g slfA (✓), g slfN (✓), g slfL0 (✓), g slfL1 (✓),
+      g oPar (✓)] at q3
     refine ⟨slfRawV hD hb A0 pt0 (hE0 h) pw0 (hax ⟨_, _, A0, hE0 h⟩) q1 q2 q3, q1⟩
   -- the record of `A₁` in `c'`
   have rec1 : c.nreg (slfO + 4) ≠ 1 → RawV P J N₂ c'.nmem (c.nreg gRB) (c₂.nreg gRC) ∧
@@ -134,11 +136,11 @@ theorem slfEmits_spec : SlfEmitsSpec := by
           simp only [oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, gRC, sw] <;> omega)
         (by rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
           simp only [oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, slfDc, sw] <;> omega)
-    rw [e1, e2, g oKd (by simp), g oKk (by simp), g oB (by simp)] at q1
+    rw [e1, e2, g oKd (✓), g oKk (✓), g oB (✓)] at q1
     rw [c2Dc] at q2
-    rw [g slfA (by simp), g slfN (by simp), g slfL0 (by simp), g slfL1 (by simp),
-      g oPar (by simp)] at q3
-    refine ⟨slfRawV hD (d := 1 - b) (by omega) A1 pt1 (hE1 h) pw1 (hax ⟨_, _, A1, hE1 h⟩) q1 q2 q3,
+    rw [g slfA (✓), g slfN (✓), g slfL0 (✓), g slfL1 (✓),
+      g oPar (✓)] at q3
+    refine ⟨slfRawV hD (d := 1 - b) (⋄) A1 pt1 (hE1 h) pw1 (hax ⟨_, _, A1, hE1 h⟩) q1 q2 q3,
       q1⟩
   -- the post
   have hO0 : c.nreg slfO ≤ 1 := bit0.1
@@ -158,15 +160,15 @@ theorem slfEmits_spec : SlfEmitsSpec := by
     · have hE : c.nreg slfO ≠ 1 := fun h => absurd (hN0 h) (not_lt.2 hL)
       obtain ⟨-, hr⟩ := rec0 hE
       refine ⟨c.nreg gRC, le_rfl, by rw [g3, g2, ite_eq_right hE]; split_ifs <;> omega, ?_, ?_, ?_⟩
-      · rw [hr]
-      · rw [hr]
-      · rw [hr]
+      · Ξ hr
+      · Ξ hr
+      · Ξ hr
     · have hE : c.nreg (slfO + 4) ≠ 1 := fun h => absurd (hN1 h) (not_lt.2 hL)
       obtain ⟨-, hr⟩ := rec1 hE
       refine ⟨c₂.nreg gRC, by rw [g2]; omega, by rw [g3, ite_eq_right hE]; omega, ?_, ?_, ?_⟩
-      · rw [hr]
-      · rw [hr]
-      · rw [hr]
+      · Ξ hr
+      · Ξ hr
+      · Ξ hr
   · -- memory
     rw [m3 a (by rcases hs with h | h <;> [left; right] <;> rw [g2] <;> split_ifs <;> omega),
       m2 a (by rcases hs with h | h <;> [left; right] <;> omega)]
@@ -180,7 +182,7 @@ theorem slfEmits_spec : SlfEmitsSpec := by
     have a1 : r ≠ slfX := by intro h; apply hS'; subst h; unfold slfX sw; omega
     have a2 : r ≠ gRC := fun h => hS' (Or.inr (Or.inl h))
     have a3 : r ≠ slfDc := by intro h; apply hS'; subst h; unfold slfDc sw; omega
-    rw [r3 r a1 a2, c2r r a1 a2 a3]
+    Ξ r3 r a1 a2, c2r r a1 a2 a3
 
 end
 

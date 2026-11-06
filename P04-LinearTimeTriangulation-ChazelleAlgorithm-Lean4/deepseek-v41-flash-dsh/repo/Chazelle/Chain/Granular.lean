@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Chain.Contraction
 public import Mathlib.Combinatorics.SimpleGraph.DegreeSum
 
@@ -89,10 +91,10 @@ variable {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableR
 the degree-weighted sum over `s`. -/
 theorem sum_dart_fst_filter (s : Finset V) (f : V → ℕ) :
     ∑ d ∈ (univ : Finset G.Dart) with d.fst ∈ s, f d.fst = ∑ v ∈ s, G.degree v * f v := by
-  rw [← sum_fiberwise_eq_sum_filter' (univ : Finset G.Dart) s (fun d : G.Dart => d.fst) f]
+  Ξ ← sum_fiberwise_eq_sum_filter' (univ : Finset G.Dart) s (fun d : G.Dart => d.fst) f
   apply sum_congr rfl
   intro v _
-  rw [sum_const, smul_eq_mul, G.dart_fst_fiber_card_eq_degree v]
+  Ξ sum_const, smul_eq_mul, G.dart_fst_fiber_card_eq_degree v
 
 /-- Summing a function of the first vertex over all darts gives the degree-weighted sum. -/
 theorem sum_dart_fst (f : V → ℕ) :
@@ -127,22 +129,22 @@ theorem card_sub_one_le_two_mul_sum_low (hG : G.IsTree) :
   classical
   by_cases hN : Fintype.card V ≤ 1
   · omega
-  have hnt : Nontrivial V := Fintype.one_lt_card_iff_nontrivial.1 (by omega)
+  have hnt : Nontrivial V := Fintype.one_lt_card_iff_nontrivial.1 (⋄)
   have hpos : ∀ v, 1 ≤ G.degree v := fun v =>
     le_trans (hG.connected.preconnected.minDegree_pos_of_nontrivial) (G.minDegree_le_degree v)
   have hsum : ∑ v, G.degree v + 2 = 2 * Fintype.card V := by
-    rw [G.sum_degrees_eq_twice_card_edges, ← hG.card_edgeFinset]
+    Ξ G.sum_degrees_eq_twice_card_edges, ← hG.card_edgeFinset
     ring
   set L := (univ : Finset V).filter (fun v => G.degree v ≤ 2) with hL
   set H := (univ : Finset V).filter (fun v => ¬ G.degree v ≤ 2) with hH
   have hsplit : ∑ v ∈ L, G.degree v + ∑ v ∈ H, G.degree v = ∑ v, G.degree v :=
     sum_filter_add_sum_filter_not _ _ _
   have hcard : #L + #H = Fintype.card V := by
-    rw [hL, hH, card_filter_add_card_filter_not, card_univ]
+    Ξ hL, hH, card_filter_add_card_filter_not, card_univ
   have hLlow : #L ≤ ∑ v ∈ L, G.degree v := by
     rw [card_eq_sum_ones]; exact sum_le_sum fun v _ => hpos v
   have hHhigh : 3 * #H ≤ ∑ v ∈ H, G.degree v := by
-    rw [card_eq_sum_ones, mul_sum, mul_one]
+    Ξ card_eq_sum_ones, mul_sum, mul_one
     exact sum_le_sum fun v hv => by
       have := (mem_filter.1 hv).2
       omega

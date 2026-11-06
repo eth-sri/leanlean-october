@@ -40,14 +40,14 @@ theorem sortCost_le (K : ℕ) :
   unfold SortR.sortCost
   have h1 := clog_two_mul_le K
   have h2 : 2 * K * (Nat.clog 2 (2 * K) + 1) ≤ 2 * K * (Nat.clog 2 K + 2) :=
-    Nat.mul_le_mul_left _ (by omega)
-  have h3 : K ≤ K * (Nat.clog 2 K + 1) := Nat.le_mul_of_pos_right _ (by omega)
-  have h4 : 2 * K * (Nat.clog 2 K + 2) = 2 * (K * (Nat.clog 2 K + 1)) + 2 * K := by ring
+    Nat.mul_le_mul_left _ (⋄)
+  have h3 : K ≤ K * (Nat.clog 2 K + 1) := Nat.le_mul_of_pos_right _ (⋄)
+  have h4 : 2 * K * (Nat.clog 2 K + 2) = 2 * (K * (Nat.clog 2 K + 1)) + 2 * K := ⋆
   nlinarith
 
 theorem seg_getD {m : ℕ → ℕ} {a n : ℕ} {E : List ℕ} (h : seg m a n = E) {j : ℕ} (hj : j < n) :
     m (a + j) = E.getD j 0 := by
-  rw [← h]
+  Ξ ← h
   unfold seg
   rw [List.getD_eq_getElem?_getD, List.getElem?_map, List.getElem?_range hj, Option.map_some,
     Option.getD_some]
@@ -80,9 +80,9 @@ theorem exec_frameM2 {P : Polygon} {W : ℕ} {BN BR : ℕ → Bool} {s : Stmt} {
   induction h with
   | skip _ => exact fun _ _ => rfl
   | @instr ins c c' _ he _ _ =>
-    simp only [wrM2] at hs
-    cases ins <;> simp only [wrOKM2, Bool.false_eq_true] at hs <;>
-      simp only [Instr.effect, Option.some.injEq] at he <;>
+    ϴ' wrM2 at hs
+    cases ins <;> ϴ' wrOKM2, Bool.false_eq_true at hs <;>
+      ϴ' Instr.effect, Option.some.injEq at he <;>
       (try split at he) <;> (try simp only [Option.some.injEq, reduceCtorEq] at he) <;> subst he <;>
       intro j hj <;>
       first
@@ -91,16 +91,16 @@ theorem exec_frameM2 {P : Polygon} {W : ℕ} {BN BR : ℕ → Bool} {s : Stmt} {
          · subst hh; simp_all
          · rfl)
   | seq _ _ ih₁ ih₂ =>
-    simp only [wrM2, Bool.and_eq_true] at hs
+    ϴ' wrM2, Bool.and_eq_true at hs
     exact fun r hr => (ih₂ hs.2 r hr).trans (ih₁ hs.1 r hr)
   | ifLtN_true _ _ ih =>
-    simp only [wrM2, Bool.and_eq_true] at hs; exact ih hs.1
+    ϴ' wrM2, Bool.and_eq_true at hs; exact ih hs.1
   | ifLtN_false _ _ ih =>
-    simp only [wrM2, Bool.and_eq_true] at hs; exact ih hs.2
+    ϴ' wrM2, Bool.and_eq_true at hs; exact ih hs.2
   | ifLtR_true _ _ ih =>
-    simp only [wrM2, Bool.and_eq_true] at hs; exact ih hs.1
+    ϴ' wrM2, Bool.and_eq_true at hs; exact ih hs.1
   | ifLtR_false _ _ ih =>
-    simp only [wrM2, Bool.and_eq_true] at hs; exact ih hs.2
+    ϴ' wrM2, Bool.and_eq_true at hs; exact ih hs.2
   | whileLtN_false _ _ => exact fun _ _ => rfl
   | whileLtN_true _ _ _ ih₁ ih₂ => exact fun r hr => (ih₂ hs r hr).trans (ih₁ hs r hr)
   | whileLtR_false _ _ => exact fun _ _ => rfl
@@ -112,60 +112,60 @@ theorem wrM2_of_wrM {B BN BR : ℕ → Bool} (hN : ∀ r, B r = true → BN r = 
   induction s with
   | skip => rfl
   | instr i =>
-    simp only [wrM] at h; simp only [wrM2]
-    cases i <;> simp only [wrOKM, wrOK] at h <;> simp only [wrOKM2] <;>
+    ϴ' wrM at h; ϴ wrM2
+    cases i <;> ϴ' wrOKM, wrOK at h <;> simp only [wrOKM2] <;>
       first | exact hN _ h | exact hR _ h | exact h
   | seq s t ihs iht =>
-    simp only [wrM, Bool.and_eq_true] at h; simp only [wrM2, ihs h.1, iht h.2, Bool.and_self]
+    ϴ' wrM, Bool.and_eq_true at h; ϴ wrM2, ihs h.1, iht h.2, Bool.and_self
   | ifLtN a b s t ihs iht =>
-    simp only [wrM, Bool.and_eq_true] at h; simp only [wrM2, ihs h.1, iht h.2, Bool.and_self]
+    ϴ' wrM, Bool.and_eq_true at h; ϴ wrM2, ihs h.1, iht h.2, Bool.and_self
   | ifLtR a b s t ihs iht =>
-    simp only [wrM, Bool.and_eq_true] at h; simp only [wrM2, ihs h.1, iht h.2, Bool.and_self]
-  | whileLtN a b s ih => simp only [wrM] at h; simp only [wrM2, ih h]
-  | whileLtR a b s ih => simp only [wrM] at h; simp only [wrM2, ih h]
+    ϴ' wrM, Bool.and_eq_true at h; ϴ wrM2, ihs h.1, iht h.2, Bool.and_self
+  | whileLtN a b s ih => simp only [wrM] at h; ϴ wrM2, ih h
+  | whileLtR a b s ih => simp only [wrM] at h; ϴ wrM2, ih h
 
 theorem wrM2_phaseB : wrM2 BphaseB BRb phaseB = true := by
-  have h1 : wrM2 BphaseB BRb setupB = true := by decide
-  have h2 : wrM2 BphaseB BRb lohiS = true := by decide
+  have h1 : wrM2 BphaseB BRb setupB = true := ⌖
+  have h2 : wrM2 BphaseB BRb lohiS = true := ⌖
   have h3 : wrM2 BphaseB BRb passLoop = true := by
     refine wrM2_of_wrM (B := Bpass) (fun r hr => ?_) (fun r hr => ?_) ?_
     · cases hb : Bpass r
-      · rw [hb] at hr; exact absurd hr (by simp)
+      · Ξ' hb at hr; exact absurd hr (✓)
       · by_contra hc
-        simp only [BphaseB, decide_eq_true_eq, not_or, not_and, not_lt] at hc
-        have : Bpass r = false := Bpass_false (by omega)
-        rw [this] at hb; exact absurd hb (by simp)
+        ϴ' BphaseB, decide_eq_true_eq, not_or, not_and, not_lt at hc
+        have : Bpass r = false := Bpass_false (⋄)
+        Ξ' this at hb; exact absurd hb (✓)
     · cases hb : Bpass r
-      · rw [hb] at hr; exact absurd hr (by simp)
+      · Ξ' hb at hr; exact absurd hr (✓)
       · by_contra hc
         have hc' : ¬ (r / 10000 = 1 ∨ r / 10000 = 4) := fun h' => hc (by
           unfold BRb bandOf bSign bBuild; simp only [decide_eq_true_eq]; exact h')
-        have : Bpass r = false := Bpass_false (by omega)
-        rw [this] at hb; exact absurd hb (by simp)
+        have : Bpass r = false := Bpass_false (⋄)
+        Ξ' this at hb; exact absurd hb (✓)
     · simp only [passLoop, wrM]; exact wr_passBody
   have h4 : wrM2 BphaseB BRb regPhase = true := wrM2_of_wrM (B := BregPhase)
     (fun r hr => by
-      simp only [BregPhase, Bool.or_eq_true, decide_eq_true_eq] at hr
+      ϴ' BregPhase, Bool.or_eq_true, decide_eq_true_eq at hr
       simp only [BphaseB, decide_eq_true_eq]; omega)
     (fun r hr => by
-      simp only [BregPhase, Bool.or_eq_true, decide_eq_true_eq] at hr
+      ϴ' BregPhase, Bool.or_eq_true, decide_eq_true_eq at hr
       unfold BRb bandOf bSign bBuild; simp only [decide_eq_true_eq]; omega) wr_regPhase
-  simp only [phaseB, phaseB1, wrM2, h1, h2, h3, h4, Bool.and_self]
+  ϴ phaseB, phaseB1, wrM2, h1, h2, h3, h4, Bool.and_self
 
-theorem wrM2_zeroCase : wrM2 BphaseB BRb zeroCase = true := by decide
+theorem wrM2_zeroCase : wrM2 BphaseB BRb zeroCase = true := ⌖
 
 theorem BphaseB_false {r : ℕ} (hr : bandOf r ∉ ({bBuild, bSort, bSign} : Finset ℕ))
     (hra : r ≠ ALLOC) : BphaseB r = false := by
-  simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bBuild, bSort, bSign] at hr
+  ϴ' Finset.mem_insert, Finset.mem_singleton, bandOf, bBuild, bSort, bSign at hr
   unfold ALLOC at hra
-  simp only [BphaseB, decide_eq_false_iff_not]
+  ϴ BphaseB, decide_eq_false_iff_not
   omega
 
 theorem BRb_false {r : ℕ} (hr : bandOf r ∉ ({bBuild, bSort, bSign} : Finset ℕ)) :
     BRb r = false := by
-  simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bBuild, bSort, bSign] at hr
+  ϴ' Finset.mem_insert, Finset.mem_singleton, bandOf, bBuild, bSort, bSign at hr
   unfold BRb bandOf bSign bBuild
-  simp only [decide_eq_false_iff_not]
+  ϴ decide_eq_false_iff_not
   omega
 
 /-- A register frame of phase B gives the frame of the specification. -/

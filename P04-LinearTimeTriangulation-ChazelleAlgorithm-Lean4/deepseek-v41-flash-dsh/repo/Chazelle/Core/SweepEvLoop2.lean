@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvLoop
 
 /-!
@@ -28,8 +30,8 @@ theorem keepR_of {r : ℕ} (h : (240000 ≤ r ∧ r < 240700) ∨ (242400 ≤ r 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
   {P : Polygon} {W : ℕ} {c₀ : Config} {J : Merge.Junction} {N₁ N₂ : NF}
 
-set_option maxHeartbeats 16000000 in
-set_option maxRecDepth 100000 in
+
+
 /-- **One iteration of the event loop.** -/
 theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt} {orgs : Stmt → Stmt}
     {KW KK κO KG : ℕ} (hgen : GenOK P W c₀ J g KG)
@@ -76,7 +78,7 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
   obtain ⟨rs, ax, hlen, haxl, hrecs, haux, hSok, hword, hauxok, hsize⟩ := hL.stops
   unfold iter iterK at *
   -- 1. the window
-  refine IRS.seq (K₁ := KW) (K₂ := 2 + (((12 * (c₀.nreg (sw 6)) + 8) * (odK (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) KG + κO) + κO) + KK)) (hwin c hI hL.key hL.keyL (by omega)) ?_
+  refine IRS.seq (K₁ := KW) (K₂ := 2 + (((12 * (c₀.nreg (sw 6)) + 8) * (odK (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) KG + κO) + κO) + KK)) (hwin c hI hL.key hL.keyL (⋄)) ?_
   rintro cw hIw hAw hAw' hWO
   have hWO' := hWO
   obtain ⟨rsW, hrsW2, hrsWR, hgK, hgB1, hgB2, harcs, hwX1, hwE, -, hmW, hfrW⟩ := hWO
@@ -84,8 +86,8 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
     hfrW r (band_sw_not ⟨h.1, h.2.1⟩) h.2.2.1 (by have := h.1; unfold ALLOC; omega)
   -- 2. the reset
   refine IRS.seq (K₁ := resetL.length) (K₂ := ((12 * (c₀.nreg (sw 6)) + 8) * (odK (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) KG + κO) + κO) + KK)
-    (IRS.block resetL hIw ⟨⟨iscr_sw (by unfold bF sw; omega) (by unfold bF sw; omega), by omega⟩,
-      ⟨iscr_sw (by unfold bN sw; omega) (by unfold bN sw; omega), by omega⟩, trivial⟩) ?_
+    (IRS.block resetL hIw ⟨⟨iscr_sw (by unfold bF sw; omega) (by unfold bF sw; omega), ⋄⟩,
+      ⟨iscr_sw (by unfold bN sw; omega) (by unfold bN sw; omega), ⋄⟩, trivial⟩) ?_
   rintro cs hIs hAs hAs' rfl
   have hrl : resetL.length = 2 := rfl
   set cs : Config := { cw with nreg := regB cw.nmem resetL cw.nreg } with hcsd
@@ -96,7 +98,7 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
   have hsO : ∀ r, r ≠ bF → r ≠ bN → cs.nreg r = cw.nreg r := fun r h1 h2 =>
     regB_other _ _ _ (by
       intro i hi
-      simp only [resetL, List.mem_cons, List.not_mem_nil, or_false] at hi
+      ϴ' resetL, List.mem_cons, List.not_mem_nil, or_false at hi
       rcases hi with rfl | rfl
       · exact Ne.symm h1
       · exact Ne.symm h2)
@@ -126,7 +128,7 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
     keepS _ (keepR_of (by unfold kL sw; omega))
   have kgR : ∀ i, i < 2 → cs.nreg (gR + i) = c.nreg (gR + i) := fun i hi =>
     keepS _ (keepR_of (by unfold gR sw; omega))
-  have hAcs : c.nreg ALLOC ≤ cs.nreg ALLOC := hAw
+  have hAcs := hAw
   -- the layout at `cs`
   have hT : cs.nreg cTB + 6 * N₂.nChords ≤ cs.nreg ALLOC := by
     have := hL.lay1; have := hL.lay2; have := hL.lay4; rw [kTB]; omega
@@ -154,9 +156,9 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
         (∀ r, (LR r ∧ r ≠ oK ∧ r ≠ oS) ∨ ER r → c''.nreg r = c'.nreg r) ∧
         (∀ x, c'.nreg aB ≤ x → x < c'.nreg aB + 5 * c'.nreg sC → c''.nmem x = c'.nmem x)) := by
     intro O c' hI' hInv hk hs hroom'
-    rw [sGK, hgK] at hInv ⊢
+    Ξ' sGK, hgK at hInv ⊢
     have hmono := orgDoK_mono (Fg := F (c₀.nreg (sw 5))) (KG := KG) hLlen
-    exact (orgDo_batch E hgen (cs := cs) (L := regArcs N₁ rsW) hLarc (by rw [sGK, hgK])
+    exact (orgDo_batch E hgen (cs := cs) (L := regArcs N₁ rsW) hLarc (Ρ sGK, hgK)
       (by rw [sGB]; omega) (fun k hk' => by rw [sGB]; exact harcs k hk') hT hWT hauxT hauxL
       (by rw [kkE, kkH]; exact hL.key) O c' hI' hInv hk hs
       (by unfold odK at hroom'; omega)).mono (by unfold odK; exact hmono) (fun _ h => h)
@@ -168,23 +170,23 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
         (cs.nreg wGK) []) O c2 :=
     fun O c1 c2 h hr hm _ _ _ => batch_stable h hr hm
   have hpar : ∀ i, i < cs.nreg sC → parOf cs i ≤ N₂.nChords := fun i hi => by
-    rw [ksC, ← hlen] at hi
+    Ξ' ksC, ← hlen at hi
     have hA := haux i (by rw [haxl]; exact hi)
     have hok := (hauxok i hi).2.2.2.2.2.2.1
     unfold parOf
-    rw [kaB, hmS _ (by have := hL.lay5; omega)]
+    Ξ kaB, hmS _ (by have := hL.lay5; omega)
     rw [hA.2.2.2.2]; exact hok
   refine IRS.seq (K₁ := ((12 * (c₀.nreg (sw 6)) + 8) * (odK (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) KG + κO) + κO)) (K₂ := KK)
-    (horgs (orgDo sh g) (odK (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) KG) _ hod hstab ∅ cs hIs (batch_base hsF (by omega))
+    (horgs (orgDo sh g) (odK (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) KG) _ hod hstab ∅ cs hIs (batch_base hsF (⋄))
       (fun i hi => by
-        rw [kkL i (by omega)]
+        Ξ kkL i (⋄)
         exact hL.labR i (by rw [kkN] at hi; omega))
       (fun i hi => by
-        rw [kgR i (by omega)]
+        Ξ kgR i (⋄)
         exact hL.gapR i (by rw [kgN] at hi; omega))
-      hpar hauxL (by omega)) ?_
+      hpar hauxL (⋄)) ?_
   rintro co hIo hAo hAo' hBo
-  rw [Set.empty_union] at hBo
+  Ξ' Set.empty_union at hBo
   have hBo' := hBo
   obtain ⟨hregO, hAO, A, hBA⟩ := hBo
   have keepO : ∀ r, KeepR r → co.nreg r = cs.nreg r := fun r h =>
@@ -192,7 +194,7 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
       (by have := h.1; unfold ALLOC; omega)
   have keepOC : ∀ r, KeepR r → co.nreg r = c.nreg r := fun r h => (keepO r h).trans (keepS r h)
   have hmO : ∀ x, cs.nreg cTB + 6 * N₂.nChords ≤ x → x < c.nreg ALLOC → co.nmem x = c.nmem x :=
-    fun x h1 h2 => (hBA.memT x (by omega) (Or.inr h1)).trans (hmS x h2)
+    fun x h1 h2 => (hBA.memT x (⋄) (Or.inr h1)).trans (hmS x h2)
   -- registers at `co`
   have oaB : co.nreg aB = c.nreg aB := keepOC _ (keepR_of (by unfold aB sw; omega))
   have osC : co.nreg sC = c.nreg sC := keepOC _ (keepR_of (by unfold sC sw; omega))
@@ -218,7 +220,7 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
     intro i hi
     have := hL.lay4; have := hL.lay1; have := hL.lay2
     unfold stopE stopH
-    rw [osB, hmO _ (by rw [kTB]; omega) (by omega), hmO _ (by rw [kTB]; omega) (by omega)]
+    Ξ osB, hmO _ (by rw [kTB]; omega) (⋄), hmO _ (by rw [kTB]; omega) (⋄)
     exact ⟨rfl, rfl⟩
   have hoff : ∀ i, i < c.nreg sC → offK P J (stopE co i) (stopH co i) = stopOff P J c i :=
     fun i hi => by rw [(hstopM i hi).1, (hstopM i hi).2]; rfl
@@ -226,27 +228,27 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
   have hroomL : co.nreg lB + 7 * (co.nreg lC + 1) ≤ co.nreg ALLOC := by
     have hm := hL.meas
     have h2 := hL.lay2; have h4 := hL.lay4
-    rw [olB, olC]
+    Ξ olB, olC
     have : c.nreg lC + 1 ≤ logCap N₁ N₂ := by unfold logCap; omega
     omega
   refine (hkey co hIo (by rw [okE, okH]; exact hL.key) (fun h => by
       obtain ⟨⟨j, hj⟩, -⟩ := hBA.bAcc h
       exact (hBA.acc _ hj).2.2.2.2.2.2.2.1)
-    (fun h => by rw [oE, oH]; rw [oX] at h; exact (hwE h).1)
+    (fun h => by rw [oE, oH]; Ξ' oX at h; exact (hwE h).1)
     (fun i hi => by
-      rw [osC] at hi
-      rw [(hstopM i hi).1, (hstopM i hi).2]
+      Ξ' osC at hi
+      Ξ (hstopM i hi).1, (hstopM i hi).2
       have hi' : i < rs.length := by rw [hlen]; exact hi
       obtain ⟨r1, r2, -⟩ := hrecs i hi'
-      unfold stopE stopH; rw [r1, r2]
+      unfold stopE stopH; Ξ r1, r2
       exact (hword _ (by rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi']; exact List.getElem_mem hi')).1)
     (fun i i' h1 h2 => by
-      rw [osC] at h2; rw [hoff i (by omega), hoff i' h2]; exact hL.sorted i i' h1 h2)
+      Ξ' osC at h2; rw [hoff i (⋄), hoff i' h2]; exact hL.sorted i i' h1 h2)
     (fun i h => by
-      rw [osC] at h; rw [hoff i (by omega), hoff (i + 2) h]; exact hL.two i h)
+      Ξ' osC at h; rw [hoff i (⋄), hoff (i + 2) h]; exact hL.two i h)
     (by rw [osP, osC]; exact hL.ptr) (by rw [okN]; exact hL.labN) hBA.fN
     (by rw [osB, osC]; have := hL.lay4; omega) (by rw [oaB, osC]; have := hL.lay5; omega)
-    (by rw [olB]; have := hL.lay1; have := hL.tab0; omega) hroomL (by omega)).mono le_rfl ?_
+    (by rw [olB]; have := hL.lay1; have := hL.tab0; omega) hroomL (⋄)).mono le_rfl ?_
   intro c' hK
   exact ⟨cw, cs, co, hWO', hAw, hRes, hBo', hK⟩
 

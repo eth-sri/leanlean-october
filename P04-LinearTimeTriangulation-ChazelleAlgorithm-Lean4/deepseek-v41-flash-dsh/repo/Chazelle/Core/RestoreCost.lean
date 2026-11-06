@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecMerge
 
 /-!
@@ -33,7 +35,7 @@ theorem exec_zero {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ}
   | skip _ => rfl
   | instr _ _ _ _ => omega
   | seq _ _ ih₁ ih₂ =>
-    rw [ih₂ (by omega), ih₁ (by omega)]
+    rw [ih₂ (⋄), ih₁ (by omega)]
   | ifLtN_true _ _ _ => omega
   | ifLtN_false _ _ _ => omega
   | ifLtR_true _ _ _ => omega
@@ -73,17 +75,17 @@ theorem withFlag_rd (c : Config) (v : ℕ) {i : ℕ} (hi : i ≠ 10) (_hi' : i <
     rd (withFlag c v) bShoot i = rd c bShoot i := by
   unfold rd withFlag bandReg
   simp only
-  rw [Machine.upd_other]
+  Ξ Machine.upd_other
   omega
 
 theorem withFlag_flag (c : Config) (v : ℕ) : rd (withFlag c v) bShoot 10 = v := by
   unfold rd withFlag
-  simp only [Machine.upd_same]
+  ϴ Machine.upd_same
 
 theorem withFlag_alloc (c : Config) (v : ℕ) : (withFlag c v).nreg ALLOC = c.nreg ALLOC := by
   unfold withFlag ALLOC bandReg bShoot
   simp only
-  rw [Machine.upd_other]
+  Ξ Machine.upd_other
   omega
 
 theorem withFlag_originIn (c : Config) (v : ℕ) (o : Origin) :
@@ -93,11 +95,11 @@ theorem withFlag_originIn (c : Config) (v : ℕ) (o : Origin) :
     intro j hj
     unfold withFlag bandReg bShoot
     simp only
-    rw [Machine.upd_other]
+    Ξ Machine.upd_other
     omega
-  have e0 := e 0 (by omega)
-  have e1 := e 1 (by omega)
-  have e2 := e 2 (by omega)
+  have e0 := e 0 (⋄)
+  have e1 := e 1 (⋄)
+  have e2 := e 2 (⋄)
   simp only [add_zero] at e0
   cases o with
   | sym p =>
@@ -112,7 +114,7 @@ theorem withFlag_wb {W : ℕ} {c : Config} (hw : WordsBounded W c) {v : ℕ} (hv
   refine ⟨fun r => ?_, h2⟩
   unfold withFlag
   simp only
-  rw [Machine.upd_apply]
+  Ξ Machine.upd_apply
   split_ifs
   · exact hv
   · exact h1 r
@@ -143,7 +145,7 @@ theorem shooter_cost_pos {sh : Stmt} {B : Finset ℕ} {F : ℕ → ℕ} {X : Mem
             (M.key (Qof P) ⟨rd c bShoot 3, rd c bShoot 4⟩))
     (hroom : c.nreg ALLOC + F (rd c bShoot 9) ≤ W) : 1 ≤ F (rd c bShoot 9) := by
   by_contra hF
-  have hF0 : F (rd c bShoot 9) = 0 := by omega
+  have hF0 : F (rd c bShoot 9) = 0 := ⋄
   obtain ⟨hG, hWh, hX, hcap, hwf, hreg, M, hM, hOk, hp1, hp2, he1, he2, hi1, hi2, hwt, o, hoLt,
     hoIn, hoK, hoA⟩ := hpre
   have hW1 : 1 ≤ W := le_trans (by unfold hostWords; omega) hWh
@@ -187,28 +189,28 @@ theorem shooter_cost_pos {sh : Stmt} {B : Finset ℕ} {F : ℕ → ℕ} {X : Mem
             o.eval M (Qof P) ∉ M.arcSet (M.key (Qof P) ⟨rd (withFlag c v) bShoot 1,
               rd (withFlag c v) bShoot 2⟩)
               (M.key (Qof P) ⟨rd (withFlag c v) bShoot 3, rd (withFlag c v) bShoot 4⟩) := by
-      simp only [r v 0 (by decide) (by decide), r v 1 (by decide) (by decide),
-        r v 2 (by decide) (by decide), r v 3 (by decide) (by decide),
-        r v 4 (by decide) (by decide), r v 9 (by decide) (by decide),
-        r v 13 (by decide) (by decide), withFlag_alloc, withFlag_originIn]
+      simp only [r v 0 (⌖) (by decide), r v 1 (by decide) (by decide),
+        r v 2 (⌖) (by decide), r v 3 (by decide) (by decide),
+        r v 4 (⌖) (by decide), r v 9 (by decide) (by decide),
+        r v 13 (⌖) (by decide), withFlag_alloc, withFlag_originIn]
       exact ⟨hG, hWh, hX, hcap, hwf, hreg, M, hM, hOk, hp1, hp2, he1, he2, hi1, hi2, hwt, o, hoLt,
         hoIn, hoK, hoA⟩
     obtain ⟨c', k, ex, hk, hpost, -⟩ := h P W (withFlag c v) hwv pre'
-      (by beta_reduce; rw [withFlag_alloc, r v 9 (by decide) (by decide)]; exact hroom)
+      (by beta_reduce; rw [withFlag_alloc, r v 9 (⌖) (by decide)]; exact hroom)
     beta_reduce at hk
-    rw [r v 9 (by decide) (by decide), hF0] at hk
-    have hc' := exec_zero ex (by omega)
+    rw [r v 9 (⌖) (by decide), hF0] at hk
+    have hc' := exec_zero ex (⋄)
     refine ⟨c', hc', fun M' o' hM' ho' => ?_⟩
     have hM'' : ModelDescAt (withFlag c v).nmem (rd (withFlag c v) bShoot 0) (Qof P) M' := by
-      rw [r v 0 (by decide) (by decide)]; exact hM'
+      rw [r v 0 (⌖) (by decide)]; exact hM'
     have ho'' : OriginIn (withFlag c v) (bandReg bShoot 5) o' := (withFlag_originIn c v o').2 ho'
     have := hpost M' o' hM'' ho''
-    simp only [r v 1 (by decide) (by decide), r v 2 (by decide) (by decide),
-      r v 3 (by decide) (by decide), r v 4 (by decide) (by decide),
-      r v 8 (by decide) (by decide)] at this
+    simp only [r v 1 (⌖) (by decide), r v 2 (by decide) (by decide),
+      r v 3 (⌖) (by decide), r v 4 (by decide) (by decide),
+      r v 8 (⌖) (by decide)] at this
     exact ⟨fun h1 => (this.1 h1).imp fun t ht => ht.1, this.2⟩
   obtain ⟨c₁, rfl, h₁⟩ := run 1 le_rfl
-  obtain ⟨c₀, rfl, h₀⟩ := run 0 (by omega)
+  obtain ⟨c₀, rfl, h₀⟩ := run 0 (⋄)
   obtain ⟨t, ht0, htA, -⟩ := (h₁ M o hM hoIn).1 (withFlag_flag c 1)
   exact (h₀ M o hM hoIn).2 (by rw [withFlag_flag]; omega) t ht0 htA
 

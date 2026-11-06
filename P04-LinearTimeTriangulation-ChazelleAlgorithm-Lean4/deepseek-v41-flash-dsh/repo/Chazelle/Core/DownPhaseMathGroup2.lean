@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMathGroup
 
 /-!
@@ -128,8 +130,8 @@ theorem partner_key {x : WPos} (hx : ChordPos N x) {m : ℕ}
       (interiorModel Q).key Q (partner N r x) := by
     apply attach_third hM (hN.1.2.1 hc₀S) ⟨_, _, hAx, ekx⟩ ⟨_, _, hAp, ekp⟩ ⟨p', t', hA', he'⟩
       hxp
-    rw [← hkm]
-    exact (hk_succ_ne hM hN.1.2.1 hN.1.1 (by omega) hm).symm
+    Ξ ← hkm
+    exact (hk_succ_ne hM hN.1.2.1 hN.1.1 (⋄) hm).symm
   exact ⟨hpos, hz.symm, ⟨c₀, hc₀S, ht₀, p', t', hA', he'⟩⟩
 
 end

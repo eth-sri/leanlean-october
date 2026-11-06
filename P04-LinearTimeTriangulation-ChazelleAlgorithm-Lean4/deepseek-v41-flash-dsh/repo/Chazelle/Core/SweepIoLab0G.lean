@@ -48,7 +48,7 @@ def LocAt (C : Chain) (Q : Polygon) (N : NF) (p j : ℕ) : Prop :=
 theorem key_zero (M : Model) (Q : Polygon) (p : ℕ) : M.key Q ⟨p, 0⟩ = (p : ℝ) := by
   show (p : ℝ) + M.param Q ⟨p, 0⟩ = p
   have : M.param Q ⟨p, 0⟩ = 0 := rfl
-  rw [this, add_zero]
+  Ξ this, add_zero
 
 theorem pp_zero (M : Model) (Q : Polygon) (n p : ℕ) : ProperPos M Q n ⟨p, 0⟩ := by
   have : M.param Q ⟨p, 0⟩ = 0 := rfl
@@ -60,35 +60,35 @@ theorem gS0_val (m f : ℕ → ℕ) :
     regB m gS0 f lE = f (sw 34) - f K1 ∧ regB m gS0 f lH = 0 ∧
     ∀ q, q ≠ gL → ¬ (sw 1100 ≤ q ∧ q ≤ sw 1119) → regB m gS0 f q = f q := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, fun q h1 h2 => regB_other _ _ _ (fun i hi => ?_)⟩
-  · simp only [gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gS0, List.mem_cons, List.not_mem_nil, or_false] at hi
+  · ϴ gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw
+    ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
+  · ϴ gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw
+    ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
+  · ϴ gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw
+    ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
+  · ϴ gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw
+    ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
+  · ϴ gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw
+    ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
+  · ϴ gS0, regB, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw
+    ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
+  · ϴ' gS0, List.mem_cons, List.not_mem_nil, or_false at hi
     unfold gL lMD lCD lNF lE lH sw at *
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;> omega
 
 theorem gS0_ok (m f : ℕ → ℕ) (hb : f (sw 31) + f K1 ≤ W) : okB W m gS0 f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
-  have hb' : f 240031 + f 240611 ≤ W := hb
-  simp only [gS0, okB, okI, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  exact ⟨s 1001 (by norm_num) (by norm_num), s 1100 (by norm_num) (by norm_num),
-    ⟨s 1101 (by norm_num) (by norm_num), hb'⟩, s 1102 (by norm_num) (by norm_num),
-    s 1103 (by norm_num) (by norm_num), ⟨s 1104 (by norm_num) (by norm_num), Nat.zero_le _⟩,
+    iscr_sw (⋄) (⋄)
+  have hb' := hb
+  ϴ gS0, okB, okI, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
+  exact ⟨s 1001 (⊛) (⊛), s 1100 (⊛) (⊛),
+    ⟨s 1101 (⊛) (⊛), hb'⟩, s 1102 (⊛) (⊛),
+    s 1103 (⊛) (⊛), ⟨s 1104 (⊛) (⊛), Nat.zero_le _⟩,
     trivial⟩
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
+
+
 /-- **The gap regions**: the three regions at each of the walk vertices `2 m₂ + 6` and `6` of
 `C₂`, as six words at the list address `gL`. -/
 theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Junction} {H : Host}

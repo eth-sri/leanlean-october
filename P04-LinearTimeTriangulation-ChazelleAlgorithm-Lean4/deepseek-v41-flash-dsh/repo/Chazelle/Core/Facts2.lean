@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FactsAttach
 public import Chazelle.Core.NFLocateMath
 
@@ -56,13 +58,13 @@ theorem arcCover : NFLoc.ArcCoverSpec := by
   refine ⟨?_, hstart⟩
   rcases F.eq_empty_or_nonempty with rfl | hne
   · obtain ⟨z, hz⟩ := hW.nonempty
-    have hfree : freeIn M.D ∅ = M.D := by simp [freeIn]
+    have hfree : freeIn M.D ∅ = M.D := ⊚ freeIn
     have hall : ∀ U ∈ M.regions (∅ : Set (Set Point)), U = M.D := by
       rintro U ⟨z', hz', rfl⟩
       rw [hfree] at hz' ⊢
       exact hW.preconn.connectedComponentIn hz'
     have hU : connectedComponentIn M.D z ∈ M.regions (∅ : Set (Set Point)) :=
-      ⟨z, by rw [hfree]; exact hz, by rw [hfree]⟩
+      ⟨z, by rw [hfree]; exact hz, Ρ hfree⟩
     have hnocut : ∀ x, ¬ M.IsCut ∅ x := fun x ⟨c, hc, _⟩ => hc
     obtain ⟨p₀, t₀, hp₀, -, -, -⟩ := hW.exists_faces (empty_subset _) finite_empty hU
     have hn : (0 : ℝ) < M.W.n := by exact_mod_cast (Nat.zero_lt_of_lt hp₀)
@@ -70,7 +72,7 @@ theorem arcCover : NFLoc.ArcCoverSpec := by
       fun x _ => hnocut x, fun p t hp ht0 ht1 _ => ?_⟩
     obtain ⟨U', hU', hf⟩ :=
       hW.exists_faces_of_not_cut (empty_subset _) finite_empty hp ⟨ht0, ht1⟩ (hnocut _)
-    rw [hall _ hU, ← hall _ hU']
+    Ξ hall _ hU, ← hall _ hU'
     exact hf
   · obtain ⟨c, hc⟩ := hne
     obtain ⟨-, -, -, -, -, -, ⟨⟨p, t, hA, -⟩, -⟩, -⟩ := hW.ends c (hAdm hc)
@@ -83,7 +85,7 @@ theorem arcCover : NFLoc.ArcCoverSpec := by
 theorem eventually_mul_pos {P : ℝ → Prop} (h : ∀ᶠ ε in 𝓝[>] (0 : ℝ), P ε) {w : ℝ} (hw : 0 < w) :
     ∀ᶠ δ in 𝓝[>] (0 : ℝ), P (δ * w) := by
   have ht : Tendsto (fun δ : ℝ => δ * w) (𝓝[>] (0 : ℝ)) (𝓝[>] (0 : ℝ)) := by
-    rw [tendsto_nhdsWithin_iff]
+    Ξ tendsto_nhdsWithin_iff
     refine ⟨?_, ?_⟩
     · have : Tendsto (fun δ : ℝ => δ * w) (𝓝 (0 : ℝ)) (𝓝 (0 * w)) :=
         (continuous_id.mul continuous_const).tendsto 0
@@ -133,7 +135,7 @@ theorem not_left_of_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Ad
   obtain ⟨δ, h1, h2, h3⟩ := (hleft.and (hF₁.and hsep)).exists
   rw [← hcab] at h3
   apply h3
-  rw [← connectedComponentIn_eq (hsub h1), ← connectedComponentIn_eq h2]
+  Ξ ← connectedComponentIn_eq (hsub h1), ← connectedComponentIn_eq h2
 
 end WalkAx
 
@@ -162,8 +164,8 @@ theorem upSide : UpSideSpec := by
   set a := sidePt M.W p t with ha
   set b := sidePt M.W pb tb with hb
   have hmid : lerp a b (1 / 2) ∈ c := by
-    rw [hcab]; exact lerp_mem_segment _ _ (by norm_num) (by norm_num)
-  have hmidD : lerp a b (1 / 2) ∈ M.D := hopen _ ⟨by norm_num, by norm_num⟩
+    rw [hcab]; exact lerp_mem_segment _ _ (⊛) (⊛)
+  have hmidD : lerp a b (1 / 2) ∈ M.D := hopen _ ⟨⊛, ⊛⟩
   have hsm := hside _ hmid hmidD
   have hbc : b ∈ c := by rw [hcab]; exact Geometry.right_mem_segment _ _
   have hne1 : a.1 ≠ b.1 := fun h => hAB (point_ext h hy)
@@ -178,16 +180,16 @@ theorem upSide : UpSideSpec := by
       · exfalso
         apply hnot
         have := eventually_mul_pos (hsm.mono fun _ h => h.1) (sub_pos.2 hlt)
-        rw [h]
+        Ξ h
         refine this.mono fun δ' h' => ?_
-        rw [offset_mid_ab hy]
+        Ξ offset_mid_ab hy
         exact h'
       · exact h
     have hVUp : V = Up := by
       rcases hV2 with h | h
       · exact h
       · exact absurd (hUDn.trans h.symm) hUV
-    rw [hUDn, hVUp]
+    Ξ hUDn, hVUp
     exact ⟨hBelow, hAbove⟩
   · -- `a` is the right endpoint: `U` is above
     have hlt : b.1 < a.1 := lt_of_le_of_ne (hpt ▸ hright b hbc) (Ne.symm hne1)
@@ -197,16 +199,16 @@ theorem upSide : UpSideSpec := by
       · exfalso
         apply hnot
         have := eventually_mul_pos (hsm.mono fun _ h => h.2) (sub_pos.2 hlt)
-        rw [h]
+        Ξ h
         refine this.mono fun δ' h' => ?_
-        rw [offset_mid_ab hy]
+        Ξ offset_mid_ab hy
         convert h' using 2
         ring
     have hVDn : V = Dn := by
       rcases hV2 with h | h
       · exact absurd (hUUp.trans h.symm) hUV
       · exact h
-    rw [hUUp, hVDn]
+    Ξ hUUp, hVDn
     exact ⟨hAbove, hBelow⟩
 
 end

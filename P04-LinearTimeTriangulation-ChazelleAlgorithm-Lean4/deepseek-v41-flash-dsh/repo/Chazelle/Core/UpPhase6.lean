@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase5
 public import Chazelle.Core.UpPhaseGran
 
@@ -56,21 +58,21 @@ theorem mdB_exec {c : Config} (hw : WordsBounded W c) {MD B : ℕ} (hA : c.nreg 
       (∀ r, ¬ MdRG r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   have hAl : ALLOC = 9999 := rfl
-  rw [hAl] at hA ⊢
+  Ξ' hAl at hA ⊢
   unfold mdB
   exec_block
   all_goals try (config_simp; (try simp only [hA, h30, h20, h26, h29]); omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, fun j hj => ?_, fun a ha => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [hA, h26]
-  · config_simp; simp only [hA]
+  · config_simp; ϴ hA, h26
+  · config_simp; ϴ hA
   · config_simp; simp only [hA, h29, h30, h20, Machine.upd_apply]; split_ifs <;> omega
   · config_simp
-    simp only [hA, h29, h30, h20, Machine.upd_apply]
+    ϴ hA, h29, h30, h20, Machine.upd_apply
     interval_cases j <;> (split_ifs <;> first | omega | rfl)
   · config_simp; simp only [hA, h30, h20, Machine.upd_apply]; split_ifs <;> first | omega
   · unfold MdRG at h1
     simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 16000000 in
 /-- **Coarsening, called from the up phase.** -/

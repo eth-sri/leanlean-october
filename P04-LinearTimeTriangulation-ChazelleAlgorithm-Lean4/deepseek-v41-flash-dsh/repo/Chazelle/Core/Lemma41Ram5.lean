@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Merge
 
 /-!
@@ -51,11 +53,11 @@ theorem whileLtN_potential_lb' {a b : ℕ} {body : Stmt}
   | _ n ih =>
     by_cases ht : c.nreg a < c.nreg b
     · obtain ⟨c₁, k₁, hb, hI₁, hΦ, hψ⟩ := hbody c hc ht
-      obtain ⟨c', k₂, hl, hI', ht', hk₂, hψ'⟩ := ih (Φ c₁) (by omega) hI₁ rfl
-      exact ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht', by omega, by omega⟩
-    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, by omega, by omega⟩
+      obtain ⟨c', k₂, hl, hI', ht', hk₂, hψ'⟩ := ih (Φ c₁) (⋄) hI₁ rfl
+      exact ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht', ⋄, ⋄⟩
+    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, ⋄, ⋄⟩
 
-set_option maxHeartbeats 8000000 in
+
 theorem l0Body_exec {c : Config} (hw : WordsBounded W c) {i p q Al : ℕ}
     (h70 : c.nreg 160070 = i) (h71 : c.nreg 160071 = p) (h72 : c.nreg 160072 = q)
     (hA : c.nreg ALLOC = Al) (h24 : c.nreg 160024 = 1) (h81 : c.nreg 160081 = 5)
@@ -83,9 +85,9 @@ theorem l0Body_exec {c : Config} (hw : WordsBounded W c) {i p q Al : ℕ}
   · config_simp; simp only [h72, h24, Machine.upd_apply]; split_ifs <;> first | omega
   · unfold L0RG at h1
     simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
-set_option maxHeartbeats 8000000 in
+
 /-- **The level array of the leaves.** -/
 theorem l0S_exec {c : Config} (hw : WordsBounded W c) {R0 j : ℕ}
     (hA : c.nreg ALLOC = R0) (h15 : c.nreg 160015 = R0 + 6 * j) (h14 : c.nreg 160014 = j)
@@ -112,7 +114,7 @@ theorem l0S_exec {c : Config} (hw : WordsBounded W c) {R0 j : ℕ}
     unfold L0RG at hr
     simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
-  have r1 : ∀ r, ¬ L0RG r → c1.nreg r = c.nreg r := fr1
+  have r1 := fr1
   let I : ℕ → Config → Prop := fun i c' => WordsBounded W c' ∧ c'.nreg 160070 = i ∧
     c'.nreg ALLOC = R0 + 8 * i ∧ c'.nreg 160071 = R0 + 6 * i ∧ c'.nreg 160072 = B0 + 2 * i ∧
     (∀ k, k < i → c'.nmem (B0 + 2 * k) = R0 + 6 * k ∧
@@ -126,7 +128,7 @@ theorem l0S_exec {c : Config} (hw : WordsBounded W c) {R0 j : ℕ}
       (fun c' => ∃ i, I i c' ∧ i ≤ j) (fun c' => 11 * (j - c'.nreg 160070))
       (fun c' => c'.nreg ALLOC) (fun c' ⟨i, h, _⟩ => h.1)
       (fun c2 ⟨i, ⟨hw2, h70, hA2, h71, h72, hent, hout, fr2, hrr2, hrm2, ho2⟩, hij⟩ htest => by
-        have g : ∀ r, ¬ L0RG r → r ≠ ALLOC → c2.nreg r = c.nreg r := fr2
+        have g := fr2
         have c14 : c2.nreg 160014 = j := by
           rw [g _ (by unfold L0RG; omega) (by rw [hAl]; omega)]; exact h14
         rw [h70, c14] at htest
@@ -162,7 +164,7 @@ theorem l0S_exec {c : Config} (hw : WordsBounded W c) {R0 j : ℕ}
   subst hij'
   have hk' : k ≤ 11 * i + 2 := by
     have := hk; simp only [h70, Nat.sub_zero] at this; exact this
-  have hψ' : c'.nreg ALLOC ≤ c1.nreg ALLOC + k := hψ
+  have hψ' := hψ
   have hA1 : c1.nreg ALLOC = R0 := by rw [r1 _ (by unfold L0RG; rw [hAl]; omega)]; exact hA
   exact ⟨c', k1 + k, .seq e1 e, by omega, hw', hA', by omega, hent,
     fun a ha => hout a (by omega), fr', hrr', hrm', ho'⟩

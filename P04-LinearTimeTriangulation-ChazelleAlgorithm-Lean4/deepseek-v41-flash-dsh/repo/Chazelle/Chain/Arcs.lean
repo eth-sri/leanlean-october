@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Chain.Contraction
 
 /-!
@@ -104,7 +106,7 @@ def edgeOffset (k : ℕ) (b : Bool) (t δ : ℝ) : Point :=
 
 theorem vertex_succ_eq (k : ℕ) : C.vertex (k + 1) = C.P.vtx ((C.edgeIdx k + 1) % C.P.n) := by
   unfold vertex
-  rw [edgeIdx_succ]
+  Ξ edgeIdx_succ
 
 /-- The chain edges have distinct indices in `P`. -/
 theorem edgeIdx_inj {j k : ℕ} (hj : j < C.m) (hk : k < C.m) (h : C.edgeIdx j = C.edgeIdx k) :
@@ -139,7 +141,7 @@ theorem ncard_biUnion_finset_le {ι α : Type*} (T : Finset ι) (s : ι → Set 
   induction T using Finset.induction_on with
   | empty => simp
   | insert a T haT ih =>
-    rw [Finset.sum_insert haT, Finset.set_biUnion_insert]
+    Ξ Finset.sum_insert haT, Finset.set_biUnion_insert
     exact (Set.ncard_union_le _ _).trans (Nat.add_le_add_left ih _)
 
 /-! ### Pieces -/

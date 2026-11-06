@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Visibility.Chord
 
 /-!
@@ -66,7 +68,7 @@ theorem regions_eq_or_disjoint {P : Polygon} {C D : Set Point} (hC : C ∈ regio
   · exact Or.inr h
   · left
     obtain ⟨p, hpz, hpw⟩ := not_disjoint_iff.1 h
-    rw [connectedComponentIn_eq hpz, connectedComponentIn_eq hpw]
+    Ξ connectedComponentIn_eq hpz, connectedComponentIn_eq hpw
 
 end
 

@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterEuler
 public import Chazelle.Core.ClusterLbRam
 
@@ -37,9 +41,9 @@ theorem cntIn_le_of_sub {κ : ℕ → ℕ} {lo hi a b l r : ℕ}
     (h : ∀ i, lo ≤ i → i < hi → a ≤ κ i → κ i < b → l ≤ i ∧ i < r) :
     cntIn κ lo hi a b ≤ r - l := by
   unfold cntIn
-  rw [← Nat.card_Ico l r]
+  Ξ ← Nat.card_Ico l r
   refine Finset.card_le_card (fun i hi' => ?_)
-  simp only [Finset.mem_filter, Finset.mem_Ico] at hi' ⊢
+  ϴ' Finset.mem_filter, Finset.mem_Ico at hi' ⊢
   exact h i hi'.1.1 hi'.1.2 hi'.2.1 hi'.2.2
 
 /-- **The median**: a key interval holding more than half of the sorted keys holds the key of
@@ -51,11 +55,11 @@ theorem median_mem {κ : ℕ → ℕ} {lo hi a b : ℕ} (hs : Sorted κ lo hi)
     by_contra h
     have : cntIn κ lo hi a b = 0 := by
       unfold cntIn
-      rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+      Ξ Finset.card_eq_zero, Finset.filter_eq_empty_iff
       intro i hi'; simp only [Finset.mem_Ico] at hi'; omega
     omega
   set m := lo + (hi - lo) / 2
-  have hm : m < hi := by omega
+  have hm : m < hi := ⋄
   constructor
   · by_contra h
     push Not at h
@@ -63,7 +67,7 @@ theorem median_mem {κ : ℕ → ℕ} {lo hi a b : ℕ} (hs : Sorted κ lo hi)
       (fun i h1 h2 h3 _ => by
         refine ⟨?_, h2⟩
         by_contra hi'
-        have := hs i m h1 (by omega) hm
+        have := hs i m h1 (⋄) hm
         omega)
     omega
   · by_contra h
@@ -72,7 +76,7 @@ theorem median_mem {κ : ℕ → ℕ} {lo hi a b : ℕ} (hs : Sorted κ lo hi)
       (fun i h1 h2 _ h4 => by
         refine ⟨h1, ?_⟩
         by_contra hi'
-        have := hs m i (by omega) (by omega) h2
+        have := hs m i (⋄) (⋄) h2
         omega)
     omega
 
@@ -89,12 +93,12 @@ theorem good_anc_median (hR : R.OK) (hP : R.PreInv pre slot R.n) {κ φ : ℕ �
     by_contra h
     have : cntIn κ lo hi (pre z) (pre z + (R.sub z).card) = 0 := by
       unfold cntIn
-      rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
-      intro i hi'; simp only [Finset.mem_Ico] at hi'; omega
+      Ξ Finset.card_eq_zero, Finset.filter_eq_empty_iff
+      intro i hi'; ϴ' Finset.mem_Ico at hi'; omega
     omega
   obtain ⟨h1, h2⟩ := median_mem hs hg
-  obtain ⟨hφ, hκm⟩ := hκ (lo + (hi - lo) / 2) (by omega) (by omega)
-  rw [hκm] at h1 h2
+  obtain ⟨hφ, hκm⟩ := hκ (lo + (hi - lo) / 2) (⋄) (⋄)
+  Ξ' hκm at h1 h2
   exact (hP.anc_iff hR hz hφ).mpr ⟨h1, h2⟩
 
 /-- **The root is good** for a nonempty piece whose keys are preorders. -/
@@ -103,14 +107,14 @@ theorem good_root (hR : R.OK) (hP : R.PreInv pre slot R.n) {κ φ : ℕ → ℕ}
     GdN pre (fun g => (R.sub g).card) κ lo hi R.root := by
   unfold GdN cntIn
   simp only
-  rw [hP.root, hR.card_sub_root]
+  Ξ hP.root, hR.card_sub_root
   have : (Finset.Ico lo hi).filter (fun i => 0 ≤ κ i ∧ κ i < 0 + R.n) = Finset.Ico lo hi := by
     refine Finset.filter_true_of_mem (fun i hi' => ?_)
-    simp only [Finset.mem_Ico] at hi'
+    ϴ' Finset.mem_Ico at hi'
     obtain ⟨a, b⟩ := hκ i hi'.1 hi'.2
-    rw [b]
+    Ξ b
     exact ⟨Nat.zero_le _, by have := hP.pre_lt hR a; omega⟩
-  rw [this, Nat.card_Ico]
+  Ξ this, Nat.card_Ico
   omega
 
 /-- Going up `j ≥ pos h` steps reaches the root. -/
@@ -118,20 +122,20 @@ theorem iterate_up_root (hR : R.OK) {h : ℕ} (hh : h < R.n) {j : ℕ} (hj : R.p
     R.up^[j] h = R.root := by
   induction j generalizing h with
   | zero =>
-    have : R.pos h = 0 := by omega
+    have : R.pos h = 0 := ⋄
     have e := (hR.pos_spec hh).2
-    rw [this] at e
+    Ξ' this at e
     rw [Function.iterate_zero_apply, ← e]; rfl
   | succ j ih =>
-    rw [Function.iterate_succ_apply]
+    Ξ Function.iterate_succ_apply
     by_cases hr : h = R.root
-    · have : R.up h = h := by simp [up, hr]
-      rw [this]
+    · have : R.up h = h := ⊚ up, hr
+      Ξ this
       exact ih hh (by rw [hr, hR.pos_root]; omega)
-    · have hup : R.up h = R.par h := by simp [up, hr]
+    · have hup : R.up h = R.par h := ⊚ up, hr
       obtain ⟨a, b⟩ := hR.par_spec hh hr
-      rw [hup]
-      exact ih a (by omega)
+      Ξ hup
+      exact ih a (⋄)
 
 /-- **Two children of one node on the path to `y` are equal.** -/
 theorem anc_ch_unique (hR : R.OK) {y c c' : ℕ} (hy : y < R.n) (hc : R.Anc c y)
@@ -169,19 +173,19 @@ theorem centroid_of_climb (hR : R.OK) {Gd : ℕ → Prop} {y f : ℕ} (hy : y < 
   rcases hres with ⟨hg, rfl⟩ | ⟨x, n, hx, hng, hg, rfl⟩
   · refine ⟨hg, fun c hc hcr hpc hgc => ?_⟩
     have h1 := hanc c hc hgc
-    have h2 : R.Anc f c := ⟨1, by simp [up, hcr, hpc]⟩
+    have h2 : R.Anc f c := ⟨1, ⊚ up, hcr, hpc⟩
     have := hR.anc_antisymm hy hc h1 h2
     subst this
     have := (hR.par_spec hc hcr).2
     rw [hpc] at this; omega
   · have hxr : x ≠ R.root := by
       intro h
-      have : R.up x = x := by simp [up, h]
+      have : R.up x = x := ⊚ up, h
       rw [this] at hg; exact hng hg
     have hxn : x < R.n := hx ▸ hR.iterate_up_lt n hy
     refine ⟨hg, fun c hc hcr hpc hgc => hng ?_⟩
-    have hupx : R.up x = R.par x := by simp [up, hxr]
-    have := anc_ch_unique hR hy (hanc c hc hgc) ⟨n, hx⟩ hcr hxr (by rw [hpc, hupx])
+    have hupx : R.up x = R.par x := ⊚ up, hxr
+    have := anc_ch_unique hR hy (hanc c hc hgc) ⟨n, hx⟩ hcr hxr (Ρ hpc, hupx)
     rw [← this]; exact hgc
 
 end

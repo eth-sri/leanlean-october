@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvLMFam
 
 /-!
@@ -44,7 +46,7 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
   refine ⟨fun r hr => ?_, ?_⟩
   · -- 1. the hosts
     obtain ⟨h1, h2, h3, h4⟩ := host_facts B hr hdeg hwt
-    exact ⟨h1, fun a ℓ h => by have := h2 a ℓ h; omega, h3, by omega⟩
+    exact ⟨h1, fun a ℓ h => by have := h2 a ℓ h; omega, h3, ⋄⟩
   intro γ₀ M C NR γR Lx hγ₀ hreg
   -- the host facts of the regions
   have hH : ∀ r, r < (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions →
@@ -66,7 +68,7 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
       hregs.1.2.1, fun U hU => hregs.1.2.2 U (by rw [hS]; exact hU), fun r hr => (hH r hr).2,
       fun r hr => ?_, fun r hr => ?_, fun r hr => ?_, fun r hr => ?_⟩
     · obtain ⟨-, -, -, hcan, -, hhi, -⟩ := hreg r hr
-      exact ⟨hcan.1.1, hcan.2.1, fun U hU => (hcan.2.2.1.1 U hU).trans (by omega)⟩
+      exact ⟨hcan.1.1, hcan.2.1, fun U hU => (hcan.2.2.1.1 U hU).trans (⋄)⟩
     · obtain ⟨-, -, -, -, -, -, hkept, -⟩ := hreg r hr
       exact hkept
     · obtain ⟨-, -, -, -, -, -, -, hnd, -⟩ := hreg r hr
@@ -84,8 +86,8 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
         (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) r).pts (Qof P).n).length := by
     intro r hr
     obtain ⟨hP, -, hm, -⟩ := hreg r hr
-    rw [hm, hP]
-    simp [Host.poly, Polygon.n]
+    Ξ hm, hP
+    Θ Host.poly, Polygon.n
   refine ⟨fun r hr => ?_, X.ok, fun q _ => keyBkt_le _ _ _,
     fun q q' hq hq' h => codeLe_of_keyBkt _ _ hq hq' h, fun b => ?_, fun E' hperm' hsort' => ?_⟩
   · -- 3. the size of the kept lists
@@ -94,7 +96,7 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
     have h4 := (host_facts B hr hdeg hwt).2.2.2
     calc (Lx r).length * (γ₀ + 1) ≤ 140 * (DrvR.regCap + 2) * (2 * (C r).m + 1) := h1
       _ ≤ 140 * (DrvR.regCap + 2) * (20 * 2 ^ DrvR.nextLvl lam + 17) :=
-        Nat.mul_le_mul_left _ (by omega)
+        Nat.mul_le_mul_left _ (⋄)
   · -- the buckets
     exact bcnt_le_four hK hperm hsort hregs
       (fun r hr => (hreg r hr).2.2.2.2.2.2.2.2.2.2)
@@ -109,15 +111,15 @@ theorem levelMathSpec : DrvR.LevelMathSpec := by
               reg U))) (Qof P)) := by
       rw [Gran.F_of_map (BuildNF.isNF_goodModel (Or.inr ⟨Qof P, hQ, rfl⟩) X.ok hperm' hsort').2.1,
         X.step]
-    rw [hF', hS]
+    Ξ hF', hS
     refine ⟨Set.subset_union_left, X.down.2.1, X.down.2.2, X.count (fun r hr => ?_)⟩
     have h1 := hsize r hr
     have h2 := hm r hr
     rw [pts_length B hr, hS] at h2
-    rw [← h2]
+    Ξ ← h2
     calc (Lx r).length * (γ₀ + 1) ≤ 140 * (DrvR.regCap + 2) * (2 * (C r).m + 1) := h1
-      _ ≤ 140 * (DrvR.regCap + 2) * (2 * ((C r).m + 1)) := Nat.mul_le_mul_left _ (by omega)
-      _ = 280 * (DrvR.regCap + 2) * ((C r).m + 1) := by ring
+      _ ≤ 140 * (DrvR.regCap + 2) * (2 * ((C r).m + 1)) := Nat.mul_le_mul_left _ (⋄)
+      _ = 280 * (DrvR.regCap + 2) * ((C r).m + 1) := ⋆
 
 end
 

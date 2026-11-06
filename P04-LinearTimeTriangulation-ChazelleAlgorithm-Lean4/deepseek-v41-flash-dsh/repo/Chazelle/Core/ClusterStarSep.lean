@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterStar
 public import Chazelle.Core.ClusterCentroid
 
@@ -34,17 +38,17 @@ theorem starTree_parent_inl (v : V) :
     (starTree T a ha).parent (.inl v) = .inl (T.parent v) := by
   unfold SpanTree.parent
   by_cases hv : v = T.root
-  · subst hv; simp [starTree]
-  · have : (Sum.inl v : V ⊕ F) ≠ (starTree T a ha).root := by simp [starTree, hv]
-    rw [ite_eq_right this, ite_eq_right hv]
+  · subst hv; Θ starTree
+  · have : (Sum.inl v : V ⊕ F) ≠ (starTree T a ha).root := ⊚ starTree, hv
+    Ξ ite_eq_right this, ite_eq_right hv
     rfl
 
 omit [Fintype V] [Fintype F] [DecidableEq D] in
 theorem starTree_parent_inr (g : F) :
     (starTree T a ha).parent (.inr g) = .inl (M.vert (a g)) := by
   unfold SpanTree.parent
-  have : (Sum.inr g : V ⊕ F) ≠ (starTree T a ha).root := by simp [starTree]
-  rw [ite_eq_right this]
+  have : (Sum.inr g : V ⊕ F) ≠ (starTree T a ha).root := ⊚ starTree
+  Ξ ite_eq_right this
   rfl
 
 omit [Fintype V] [Fintype F] [DecidableEq D] in
@@ -53,7 +57,7 @@ theorem starTree_iterate_inl (n : ℕ) (v : V) :
   induction n generalizing v with
   | zero => rfl
   | succ n ih =>
-    rw [Function.iterate_succ_apply, starTree_parent_inl, ih, Function.iterate_succ_apply]
+    Ξ Function.iterate_succ_apply, starTree_parent_inl, ih, Function.iterate_succ_apply
 
 omit [Fintype V] [Fintype F] [DecidableEq D] in
 /-- Ancestry between real vertices is ancestry in `T`. -/
@@ -61,10 +65,10 @@ theorem starTree_isAnc_inl (v u : V) :
     (starTree T a ha).IsAnc (.inl v) (.inl u) ↔ T.IsAnc v u := by
   constructor
   · rintro ⟨n, hn⟩
-    rw [starTree_iterate_inl] at hn
+    Ξ' starTree_iterate_inl at hn
     exact ⟨n, Sum.inl_injective hn⟩
   · rintro ⟨n, hn⟩
-    exact ⟨n, by rw [starTree_iterate_inl, hn]⟩
+    exact ⟨n, Ρ starTree_iterate_inl, hn⟩
 
 omit [Fintype V] [Fintype F] [DecidableEq D] in
 /-- A real vertex is an ancestor of a centre iff it is an ancestor of its corner. -/
@@ -74,7 +78,7 @@ theorem starTree_isAnc_inr (v : V) (g : F) :
   · rintro ⟨n, hn⟩
     rcases n with _ | n
     · simp at hn
-    · rw [Function.iterate_succ_apply, starTree_parent_inr, starTree_iterate_inl] at hn
+    · Ξ' Function.iterate_succ_apply, starTree_parent_inr, starTree_iterate_inl at hn
       exact ⟨n, Sum.inl_injective hn⟩
   · rintro ⟨n, hn⟩
     exact ⟨n + 1, by rw [Function.iterate_succ_apply, starTree_parent_inr,

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseExtractCorr
 public import Chazelle.Core.DownPhaseFrontier
 
@@ -113,9 +115,9 @@ theorem arcWt_kept (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
     linarith [ht.2]
   have hn : (0 : ℝ) < (interiorModel Q).W.n := lt_of_le_of_lt hlb.1 hlb.2
   obtain ⟨i_l, d, hA⟩ := arc_keys hM hF hfin X.hne X.hR harcY
-  have hl0 : ukey (interiorModel Q) S R i_l 0 = l := by rw [ukey_zero hA.hil, hA.hl]
+  have hl0 : ukey (interiorModel Q) S R i_l 0 = l := Ρ ukey_zero hA.hil, hA.hl
   have hlrU : l < unwrapK (interiorModel Q).W.n l r := by
-    rw [← hA.hud, ← hl0]
+    Ξ ← hA.hud, ← hl0
     exact ukey_mono hM hF hfin hA.hil hA.hd0 hA.hdN
   obtain ⟨h1, h2⟩ := unwrap_sub hlb hrb ha hb hxb hlrU hab hxab hxlr hla hra
   have hP : (hostChain Q S R g h3).P.Simple := hostPts_simple X.hQ X.hFam X.hne X.hR
@@ -172,7 +174,7 @@ theorem interiorWalk_vtx {k : ℕ} (hk : k < (interiorWalk Q).n) :
   unfold interiorWalk
   split_ifs
   · exact ⟨k, hk', rfl⟩
-  · exact ⟨Q.n - 1 - k, by omega, FactsInterior.rev_vtx Q k hk'⟩
+  · exact ⟨Q.n - 1 - k, ⋄, FactsInterior.rev_vtx Q k hk'⟩
 
 /-- **Host points lie at vertex heights of `Q`.** -/
 theorem host_height (X : Ctx Q S R) {i : ℕ} (hi : i < nk (interiorModel Q) S R) :

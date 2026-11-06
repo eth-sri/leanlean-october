@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvLTProg
 public import Chazelle.Core.DownPhaseDrvLTMath
 public import Chazelle.Core.DownPhaseDrvDMain
@@ -23,7 +25,7 @@ open SortL (seg)
 theorem inDrv_BL : DrvD.InDrv BL := by
   intro r hr
   simp only [BL, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (⋄) (⋄), by unfold ALLOC; omega⟩
 
 theorem BL_mono {B : ℕ → Bool} (h : ∀ r, B r = true → BL r = true) {c c' : Config}
     (hf : FrameM B c c') : FrameM BL c c' := hf.mono h
@@ -45,7 +47,7 @@ theorem ltInit_exec (c : Config) (hw : WordsBounded W c) (hW : 3 ≤ W) :
     exec_block
     all_goals try omega
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp; rfl
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex (⌖)⟩
 
 /-- The registers of the reservation. -/
 def Bres (r : ℕ) : Bool := decide (r = 211111) || decide (r = 9999)
@@ -114,7 +116,7 @@ theorem ltMid_exec (c : Config) (hw : WordsBounded W c) {K₂ A T : ℕ}
     all_goals try (config_simp; (try simp only [h12, h10, h09]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> (try simp only [h12, h10, h09]) <;>
       omega
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex (⌖)⟩
 
 /-- The registers `ltB1` writes. -/
 def B1 (r : ℕ) : Bool := decide (211140 ≤ r ∧ r ≤ 211145) || decide (210061 ≤ r ∧ r ≤ 210063)
@@ -137,7 +139,7 @@ theorem ltB1_exec (e : Config) (hw : WordsBounded W e) {p D : ℕ} (h31 : e.nreg
     all_goals try (config_simp; (try simp only [h31, h00, h13]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
       (try simp only [h31, h00, h13]) <;> (try omega)
-  have hf := exec_frameB ex (B := B1) (by decide)
+  have hf := exec_frameB ex (B := B1) (⌖)
   exact ⟨e', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
     q.2.2.2.2.2.2, hf.2.2.1, hf⟩
 
@@ -159,7 +161,7 @@ theorem ltB2_exec (e : Config) (hw : WordsBounded W e) {a ℓ b D₂ : ℕ}
     all_goals try (config_simp; (try simp only [h13, h44, h45, h43, h14]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
       (try simp only [h13, h44, h45, h43, h14])
-  have hf := exec_frameB ex (B := B2) (by decide)
+  have hf := exec_frameB ex (B := B2) (⌖)
   exact ⟨e', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, hf.2.2.1, hf⟩
 
 /-- The registers `ltB3` writes. -/
@@ -180,7 +182,7 @@ theorem ltB3_exec (e : Config) (hw : WordsBounded W e) {D₂ ℓ p j : ℕ}
     all_goals try (config_simp; (try simp only [h14, h45, h31, h01, h30, h00]); omega)
     refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;>
       (try simp only [h14, h45, h31, h01, h30, h00])
-  have hf := exec_frameB ex (B := B3) (by decide)
+  have hf := exec_frameB ex (B := B3) (⌖)
   exact ⟨e', k, ex, hk, q.1, q.2.1, q.2.2, hf.2.2.1, hf⟩
 
 set_option maxHeartbeats 2000000 in
@@ -201,7 +203,7 @@ theorem ltArgs_exec (c : Config) (hw : WordsBounded W c) {A K₂ BB K M : ℕ}
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
       (try simp only [h10, h12, h112, h03, h13, h01]) <;> (try omega)
   have hf := exec_frameB ex
-    (B := fun r => decide ((210020 ≤ r ∧ r ≤ 210024) ∨ r = 211150 ∨ r = 211151)) (by decide)
+    (B := fun r => decide ((210020 ≤ r ∧ r ≤ 210024) ∨ r = 211150 ∨ r = 211151)) (⌖)
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, hf.2.2.1, hf⟩
 
 set_option maxHeartbeats 1000000 in
@@ -215,7 +217,7 @@ theorem ltRd_exec (c : Config) (hw : WordsBounded W c) (hW : 134 ≤ W) :
     exec_block
     all_goals try omega
     refine ⟨rfl, ?_, ?_⟩ <;> config_simp
-  have hf := exec_frameB ex (B := fun r => decide (r = 216000 ∨ r = 216001)) (by decide)
+  have hf := exec_frameB ex (B := fun r => decide (r = 216000 ∨ r = 216001)) (⌖)
   exact ⟨c', k, ex, hk, q.1, q.2, hf.2.2.1, hf⟩
 
 end exec

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutPiece
 
 /-!
@@ -43,28 +45,28 @@ theorem wset_union {A B C : ℝ} (hAB : A ≤ B) (hBC : B ≤ C) :
   ext x
   constructor
   · rintro (⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩ | ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩)
-    · exact ⟨p, t, hp, h0, h1, ⟨X, hX1, by linarith, j, hj⟩, rfl⟩
-    · exact ⟨p, t, hp, h0, h1, ⟨X, by linarith, hX2, j, hj⟩, rfl⟩
+    · exact ⟨p, t, hp, h0, h1, ⟨X, hX1, ⟡, j, hj⟩, rfl⟩
+    · exact ⟨p, t, hp, h0, h1, ⟨X, ⟡, hX2, j, hj⟩, rfl⟩
   · rintro ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩
     by_cases hXB : X ≤ B
     · exact Or.inl ⟨p, t, hp, h0, h1, ⟨X, hX1, hXB, j, hj⟩, rfl⟩
-    · exact Or.inr ⟨p, t, hp, h0, h1, ⟨X, by linarith, hX2, j, hj⟩, rfl⟩
+    · exact Or.inr ⟨p, t, hp, h0, h1, ⟨X, ⟡, hX2, j, hj⟩, rfl⟩
 
 theorem wset_shift (A B : ℝ) (i : ℤ) :
     wset M (A + i * M.W.n) (B + i * M.W.n) = wset M A B := by
   ext x
   constructor
   · rintro ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩
-    refine ⟨p, t, hp, h0, h1, ⟨X - i * M.W.n, by linarith, by linarith, j + i, ?_⟩, rfl⟩
+    refine ⟨p, t, hp, h0, h1, ⟨X - i * M.W.n, ⟡, by linarith, j + i, ?_⟩, rfl⟩
     push_cast; linarith
   · rintro ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩
-    refine ⟨p, t, hp, h0, h1, ⟨X + i * M.W.n, by linarith, by linarith, j - i, ?_⟩, rfl⟩
+    refine ⟨p, t, hp, h0, h1, ⟨X + i * M.W.n, ⟡, by linarith, j - i, ?_⟩, rfl⟩
     push_cast; linarith
 
 /-- The last walk edge ends where the first begins. -/
 theorem wb_last (hn : 0 < M.W.n) : M.wb (M.W.n - 1) = M.wa 0 := by
   unfold Model.wb Model.wa
-  rw [Nat.sub_add_cancel hn, Nat.mod_self]
+  Ξ Nat.sub_add_cancel hn, Nat.mod_self
 
 /-- The integer `j` of a key `y ∈ [0, n]` congruent to `X ∈ [0, 2n)`. -/
 theorem int_range {n y X : ℝ} {j : ℤ} (hn : 0 < n) (hy0 : 0 ≤ y) (hy1 : y ≤ n)

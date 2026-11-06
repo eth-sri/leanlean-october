@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopLabSG
 public import Chazelle.Core.SweepChainT
 public import Chazelle.Core.SweepEvKey
@@ -63,25 +65,25 @@ theorem sg_sep {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 hM.isOpen z hzD
   obtain ⟨δ, ⟨hGd, hUd⟩, hδr⟩ := (((hGe' z hz hzD).and (hUe' z hz hzD)).and
     (Ioo_mem_nhdsGT hr)).exists
-  have hδ0 : 0 < δ := hδr.1
+  have hδ0 := hδr.1
   set S := (fun s : ℝ => ((z.1, z.2 + s) : Point)) '' Icc (-δ) δ with hSdef
   have hSc : IsPreconnected S :=
     isPreconnected_Icc.image _ (by fun_prop : Continuous fun s : ℝ => ((z.1, z.2 + s) : Point)).continuousOn
   have hSf : S ⊆ freeIn M.D {e} := by
     rintro _ ⟨s, ⟨hs1, hs2⟩, rfl⟩
     refine ⟨hball ?_, ?_⟩
-    · rw [Metric.mem_ball, Prod.dist_eq]
-      simp only [dist_self, Real.dist_eq, add_sub_cancel_left]
-      rw [max_lt_iff]
+    · Ξ Metric.mem_ball, Prod.dist_eq
+      ϴ dist_self, Real.dist_eq, add_sub_cancel_left
+      Ξ max_lt_iff
       exact ⟨hr, by rw [abs_lt]; constructor <;> linarith [hδr.2]⟩
     · rintro ⟨c, hc, hmem⟩
-      rw [mem_singleton_iff] at hc
+      Ξ' mem_singleton_iff at hc
       subst hc
       exact hze _ hmem rfl
   have ha : ((z.1, z.2 + -1 * δ) : Point) ∈ S :=
-    ⟨-δ, ⟨le_rfl, by linarith⟩, by simp⟩
+    ⟨-δ, ⟨le_rfl, ⟡⟩, ✓⟩
   have hb : ((z.1, z.2 + 1 * δ) : Point) ∈ S :=
-    ⟨δ, ⟨by linarith, le_rfl⟩, by simp⟩
+    ⟨δ, ⟨⟡, le_rfl⟩, ✓⟩
   have hSR := subset_region hR₁ hSc hSf ha (hGR hGd)
   have hb1 := hSR hb
   have hb2 := hUR hUd
@@ -99,10 +101,10 @@ theorem sg_top_not_mem {J : Merge.Junction} (hP : J.P.Simple) {S₂ : Set (Set P
   have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
   have huD := hM.trace _ hA1.1 0 le_rfl zero_le_one
   have hYD := hM.trace _ hA2.1 s hA2.2.1 hA2.2.2.1.le
-  have hue : sidePt (chainModel J.whole).W Pu 0 ∈ e' := hA1.2.2.2.1
-  have hYe : sidePt (chainModel J.whole).W q s ∈ e' := hA2.2.2.2.1
-  have hYf : sidePt (chainModel J.whole).W q s ∈ f' := hf'A.2.2.2.1
-  rw [hpt1] at hue huD hne2
+  have hue := hA1.2.2.2.1
+  have hYe := hA2.2.2.2.1
+  have hYf := hf'A.2.2.2.1
+  Ξ' hpt1 at hue huD hne2
   set u := J.right.top
   set Y := sidePt (chainModel J.whole).W q s
   have he'A := F₂plus_subset J hS₂ he'
@@ -112,7 +114,7 @@ theorem sg_top_not_mem {J : Merge.Junction} (hP : J.P.Simple) {S₂ : Set (Set P
   have hab := hH.lt
   have hend : ∀ w ∈ e', w ∉ (chainModel J.whole).D → w.1 = a ∨ w.1 = b := by
     intro w hw hwD
-    rw [he'd] at hw
+    Ξ' he'd at hw
     obtain ⟨hwy, hwa, hwb⟩ := hw
     rcases hwa.lt_or_eq with h1 | h1
     · rcases hwb.lt_or_eq with h2 | h2
@@ -125,11 +127,11 @@ theorem sg_top_not_mem {J : Merge.Junction} (hP : J.P.Simple) {S₂ : Set (Set P
   have huy : u.2 = y := by rw [he'd] at hue; exact hue.1
   have hYy : Y.2 = y := by rw [he'd] at hYe; exact hYe.1
   have huY : u.1 ≠ Y.1 := fun h => hne2 (Prod.ext h.symm (hYy.trans huy.symm))
-  rw [hf'd] at hu hYf
+  Ξ' hf'd at hu hYf
   obtain ⟨huy', hua', hub'⟩ := hu
   obtain ⟨-, hYa', hYb'⟩ := hYf
   have hsub : e' ⊆ f' := by
-    rw [he'd, hf'd]
+    Ξ he'd, hf'd
     rintro w ⟨hwy, hwa, hwb⟩
     refine ⟨hwy.trans (huy.symm.trans huy'), ?_, ?_⟩
     · rcases hu1 with h | h <;> rcases hY1 with h' | h'
@@ -144,7 +146,7 @@ theorem sg_top_not_mem {J : Merge.Junction} (hP : J.P.Simple) {S₂ : Set (Set P
       · exact absurd (h.trans h'.symm) huY
   exact hne (augChords_nest he'A hf'Ad hsub).symm
 
-set_option maxHeartbeats 4000000 in
+
 /-- **Task SG: the middle region of a split tie with a partner ending on `C₂`.** -/
 theorem splitGapTask : SplitGapTask := by
   intro J Q S₂ hP hS₂ hF hδ e he e' he' hne heA he'A ⟨qe, se, heB, heL⟩
@@ -152,15 +154,15 @@ theorem splitGapTask : SplitGapTask := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
   have hM₂ := hC.hM₂
-  have hS₂a : S₂ ⊆ Merge.augChords J.right := hS₂.2.1
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
+  have hS₂a := hS₂.2.1
+  have hFs := hC.hF
   have hGM : GoodModel (chainModel J.whole) := Or.inl ⟨J.whole, hP, rfl⟩
   have hGM₂ : GoodModel (chainModel J.right) := Or.inl ⟨J.right, hP, rfl⟩
   obtain ⟨hL1, -, hL2, -, hlt⟩ := caseG_consts J hδ
   have hτ' := tpos_lt J.right 0
   have hm2 : J.right.m = J.m₂ := rfl
-  have hL1pos : 1 ≤ rL1 J := by omega
-  have hd : rL1 J < rL1 J + rL2 J := by omega
+  have hL1pos : 1 ≤ rL1 J := ⋄
+  have hd : rL1 J < rL1 J + rL2 J := ⋄
   obtain ⟨hpt, -⟩ := split_facts J hδ
   set W := (chainModel J.whole).W with hWdef
   set W₂ := (chainModel J.right).W with hW₂def
@@ -169,7 +171,7 @@ theorem splitGapTask : SplitGapTask := by
   have he'A' : SideAttach W e' Pu 0 := he'A
   have hinPu : 0 < off W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) ((Pu : ℝ) + 0) ∧
       off W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) ((Pu : ℝ) + 0) < ((rL1 J + rL2 J : ℕ) : ℝ) := by
-    rw [hC.off_M hd (t := 0) le_rfl zero_lt_one]
+    Ξ hC.off_M hd (t := 0) le_rfl zero_lt_one
     have h1 : (1 : ℝ) ≤ rL1 J := by exact_mod_cast hL1pos
     have h2 : ((rL1 J : ℕ) : ℝ) + 1 ≤ ((rL1 J + rL2 J : ℕ) : ℝ) := by exact_mod_cast hd
     constructor <;> linarith
@@ -192,7 +194,7 @@ theorem splitGapTask : SplitGapTask := by
     have hVs : SideOf (chainModel J.right) 1 e' V := sideOf_mono hU₂s hU₂V
     obtain ⟨-, -, hp1, hp2, -, -⟩ := copy_facts J hδ
     have hk₂' : (6 + tpos J.right 0 + (rL1 J + rδ J)) % W₂.n =
-        (6 + tpos J.right 0 + rL1 J + rδ J) % W₂.n := by rw [← add_assoc]
+        (6 + tpos J.right 0 + rL1 J + rδ J) % W₂.n := Ρ ← add_assoc
     have hgap : GapLab J S₂ V := by
       rcases split_copy J hP hδ (F₂plus_subset J hS₂a he') (hSs hc) subset_rfl he'A' with
         ⟨hcW, hAk⟩ | ⟨hcE, hAk⟩
@@ -204,7 +206,7 @@ theorem splitGapTask : SplitGapTask := by
         have hFV := (faced_or_middle hGM₂ hSx hc hAk (Or.inl rfl) hU₂ hU₂s hdirC).1
           (fun c'' hc'' hA'' => oneAt_right J hP (S₂x_subset J hS₂a) hδ (rL1 J) (Or.inl rfl)
             c'' hc'' e' hc hA'' hAk)
-        exact ⟨hδ, hV, Or.inl (afterFaces_mono (hFV.1 (by norm_num)) hU₂V)⟩
+        exact ⟨hδ, hV, Or.inl (afterFaces_mono (hFV.1 (⊛)) hU₂V)⟩
       · have hdirC : ((1 : ℝ) = 1 ∧ ∀ z ∈ e',
             (sidePt W₂ ((6 + tpos J.right 0 + rL1 J + rδ J) % W₂.n) 0).1 ≤ z.1) ∨
             ((1 : ℝ) = -1 ∧ ∀ z ∈ e',
@@ -213,7 +215,7 @@ theorem splitGapTask : SplitGapTask := by
         have hFV := (faced_or_middle hGM₂ hSx hc hAk (Or.inl rfl) hU₂ hU₂s hdirC).1
           (fun c'' hc'' hA'' => oneAt_right J hP (S₂x_subset J hS₂a) hδ (rL1 J + rδ J)
             (Or.inr rfl) c'' hc'' e' hc (by rw [hk₂']; exact hA'') (by rw [hk₂']; exact hAk))
-        exact ⟨hδ, hV, Or.inr (beforeFaces_mono (hFV.2 (by norm_num)) hU₂V)⟩
+        exact ⟨hδ, hV, Or.inr (beforeFaces_mono (hFV.2 (⊛)) hU₂V)⟩
     refine ⟨V, hgap, ?_⟩
     -- at the far end `Y`
     obtain ⟨dY, hdY, hdY0, hqY⟩ := stretch_decomp J hP hS₂a hS₂.1 hYA.1 hYA.2.1 hYA.2.2.1 hY0'
@@ -221,7 +223,7 @@ theorem splitGapTask : SplitGapTask := by
     have hsecY : s = 0 → dY ≠ 0 ∧ dY ≠ rL1 J := by
       intro hs0
       refine ⟨hdY0 hs0, fun hdr => hYne' ?_⟩
-      rw [hqY, hs0, hdr]
+      Ξ hqY, hs0, hdr
     have hYA2 : SideAttach W e' ((6 + tpos J.whole J.m₁ + dY) % W.n) s := by
       rw [← hqY]; exact hYA
     rcases local_step2 J hP hS₂ hF hdY hYA.2.1 hYA.2.2.1 hsecY he' hc subset_rfl hYA2
@@ -241,12 +243,12 @@ theorem splitGapTask : SplitGapTask := by
             Merge.augChords_spec (F₂plus_subset J hS₂a he')
           have h1 := he'A'.2.2.2.1
           have h2 := hYA.2.2.2.1
-          rw [he'd] at h1 h2
+          Ξ' he'd at h1 h2
           exact h1.1.trans h2.1.symm
-        rw [hf'd] at hv hYf
+        Ξ' hf'd at hv hYf
         have hsh : J.shared = J.right.top := shared_eq_top_of_snd J (by
           rw [← hpt, huy, hYf.1, hv.1])
-        rw [← hsh, hf'd]
+        Ξ ← hsh, hf'd
         exact hv
       have vlab : ∀ c ∈ S₂, f' ⊆ c → SideOf (chainModel J.right) 1 c V →
           VLabel J S₂ G V := fun c hcS hfc hcV =>
@@ -277,22 +279,22 @@ theorem splitGapTask : SplitGapTask := by
     have hwb : ((chainModel J.whole).wb Pu).2 ≤ J.right.top.2 := by
       have e0 := hC.sideNext_eq hd
       have edq : dq (rL1 J) (rδ J) (rL1 J) = rL1 J + rδ J := by
-        unfold dq; rw [ite_eq_right (lt_irrefl _)]
+        unfold dq; Ξ ite_eq_right (lt_irrefl _)
       obtain ⟨-, g2, -, -, -, -, -, v7⟩ := gap_walk J hδ
-      rw [edq, g2] at e0
+      Ξ' edq, g2 at e0
       have e7 : Chazelle.Chain.sideNext W₂ 6 = J.right.sideTour J.right.sideBeta 1 := by
-        unfold Chazelle.Chain.sideNext; rw [hn₂, Nat.mod_eq_of_lt (by omega)]; exact v7
+        unfold Chazelle.Chain.sideNext; rw [hn₂, Nat.mod_eq_of_lt (⋄)]; exact v7
       show (Chazelle.Chain.sideNext W Pu).2 ≤ J.right.top.2
-      rw [e0, e7]
+      Ξ e0, e7
       have := sideTour_sub_top_snd J.right J.right.sideBeta 1
-      simp only [Prod.snd_sub] at this
+      ϴ' Prod.snd_sub at this
       linarith
     obtain ⟨U, hU, hUs⟩ := side_region_exists' hM hFs (F₂plus_finite J hS₂.1) he' (Or.inl rfl)
     obtain ⟨de', hde'⟩ := dirAt_exists hM (hFs he') he'A'
     obtain ⟨-, hhor, hdn, -⟩ :=
       (faced_or_middle hGM hF he' he'A' (Or.inl rfl) hU hUs hde').2 e he hne.symm heA'
     have hdesc : ((chainModel J.whole).wb Pu).2 < ((chainModel J.whole).wa Pu).2 := by
-      rw [hwa] at hhor ⊢
+      Ξ' hwa at hhor ⊢
       exact lt_of_le_of_ne hwb hhor
     have hUe : SideOf (chainModel J.whole) 1 e U := (hdn hdesc).1 rfl
     -- a point of `e'` in the domain, on a vertical line off `e`
@@ -302,7 +304,7 @@ theorem splitGapTask : SplitGapTask := by
     have hzy : z.2 = (sidePt W Pu 0).2 := by
       have h1 := he'A'.2.2.2.1
       have h2 := hz
-      rw [he'd] at h1 h2
+      Ξ' he'd at h1 h2
       exact h2.1.trans h1.1.symm
     have hzu : z.1 ≠ (sidePt W Pu 0).1 := fun h =>
       huD (show sidePt W Pu 0 ∈ (chainModel J.whole).D by
@@ -312,11 +314,11 @@ theorem splitGapTask : SplitGapTask := by
       · intro w hw hwz
         have := h1 w hw
         have := h2 z hz
-        exact hzu (le_antisymm (by linarith) (by linarith))
+        exact hzu (le_antisymm (⟡) (⟡))
       · intro w hw hwz
         have := h1 w hw
         have := h2 z hz
-        exact hzu (le_antisymm (by linarith) (by linarith))
+        exact hzu (le_antisymm (⟡) (⟡))
     exact sg_sep hM hFs he heA' hz hzD hze hG hU hGe hUe hGe' hUs
 
 end

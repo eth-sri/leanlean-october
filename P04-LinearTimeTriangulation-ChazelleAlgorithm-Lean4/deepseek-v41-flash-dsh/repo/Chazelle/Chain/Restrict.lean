@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Chain.Submap
 
 /-!
@@ -42,7 +44,7 @@ open Chazelle.Visibility (rayPt rayPt_fst rayPt_snd rayPt_zero continuous_rayPt 
 
 /-- The chain of all edges of `P` except edge `e₀`, starting at `e₀ + 1`. -/
 def puncture (P : Polygon) (hn : 3 ≤ P.n) (e₀ : ℕ) : Chain :=
-  ⟨P, (e₀ + 1) % P.n, P.n - 1, by omega, by omega⟩
+  ⟨P, (e₀ + 1) % P.n, P.n - 1, ⋄, ⋄⟩
 
 variable {P : Polygon} {hn : 3 ≤ P.n} {e₀ : ℕ}
 

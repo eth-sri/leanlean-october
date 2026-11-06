@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhaseCost
 
 /-!
@@ -34,15 +36,15 @@ theorem gT_le (κB κL : ℕ) (κG : ℕ → ℕ) (κO n g : ℕ) :
   set S := stepB κB κL κG κO g with hS
   set cnt := gradeCount n g with hcnt
   have h1 : gT κB κL κG κO n g ≤ (cnt + 1) * (S + 19) + 17 * g + 100 := by
-    have e : (cnt + 1) * (S + 19) = cnt * (S + 19) + S + 19 := by ring
-    have e2 : stepB κB κL κG κO g = S := hS.symm
-    have e3 : gradeCount n g = cnt := hcnt.symm
+    have e : (cnt + 1) * (S + 19) = cnt * (S + 19) + S + 19 := ⋆
+    have e2 := hS.symm
+    have e3 := hcnt.symm
     unfold gT gradeC; rw [e2, e3]; omega
   have h1' : (gT κB κL κG κO n g : ℝ) ≤ ((cnt : ℝ) + 1) * ((S : ℝ) + 19) + 17 * g + 100 := by
     exact_mod_cast h1
   have hSt := stepB_le κB κL κG κO g
   rw [← hS] at hSt; push_cast at hSt
-  have h2g : (0 : ℝ) < (2 : ℝ) ^ g := by positivity
+  have h2g : (0 : ℝ) < (2 : ℝ) ^ g := ⟢
   have hc : (cnt : ℝ) + 1 ≤ (n : ℝ) / (2 : ℝ) ^ g + 2 := by
     rw [hcnt]; unfold gradeCount
     have : (((n - 2) / 2 ^ g : ℕ) : ℝ) ≤ ((n - 2 : ℕ) : ℝ) / ((2 ^ g : ℕ) : ℝ) := Nat.cast_div_le
@@ -54,19 +56,19 @@ theorem gT_le (κB κL : ℕ) (κG : ℕ → ℕ) (κO n g : ℕ) :
   have hK := K1_nonneg κB κL κG κO
   have hY := Yg_le g
   have hY0 := Yg_pos g
-  have hS0 : (0 : ℝ) ≤ (S : ℝ) + 19 := by positivity
-  have hc0 : (0 : ℝ) ≤ (cnt : ℝ) + 1 := by positivity
+  have hS0 : (0 : ℝ) ≤ (S : ℝ) + 19 := ⟢
+  have hc0 : (0 : ℝ) ≤ (cnt : ℝ) + 1 := ⟢
   have e : ((n : ℝ) / (2 : ℝ) ^ g + 2) * Yg g =
       (n : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 76) + 2 * Yg g := by
     unfold Yg; field_simp
   have i1 : ((cnt : ℝ) + 1) * ((S : ℝ) + 19) ≤ ((n : ℝ) / (2 : ℝ) ^ g + 2) * (K1 κB κL κG κO * Yg g) :=
-    mul_le_mul hc hSt hS0 (by positivity)
+    mul_le_mul hc hSt hS0 (⟢)
   have i2 : ((n : ℝ) / (2 : ℝ) ^ g + 2) * (K1 κB κL κG κO * Yg g) =
       K1 κB κL κG κO * ((n : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 76) + 2 * Yg g) := by
     rw [← e]; ring
   have i3 : K1 κB κL κG κO * ((n : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 76) + 2 * Yg g) ≤
       K1 κB κL κG κO * ((n : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 76) + 2 * (2 : ℝ) ^ g) :=
-    mul_le_mul_of_nonneg_left (by linarith) hK
+    mul_le_mul_of_nonneg_left (⟡) hK
   linarith
 
 /-- **All grades cost `O(n)`.** -/

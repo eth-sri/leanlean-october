@@ -148,7 +148,7 @@ theorem tZ_iff {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ
   have hkc_le := tK_le C.sideBeta C.one_le p (T := C.topIdx)
   have hv0 := walk_vtx Y.X.hCs Y.X.hCm C.sideBeta h6 hp
   obtain ⟨-, ht0, ht1, hmem, rA, hrA, hsec⟩ := hat
-  have hz : (sidePt (C.sideWalk C.sideBeta) p t).2 = ((Qof P).vtx h).2 := hmem.1
+  have hz := hmem.1
   have hheight : ((Qof P).vtx (hidx (hpt (Qof P).n xH (tK C.m C.topIdx C.sideBeta p)))).2 =
       (C.P.vtx (tK C.m C.topIdx C.sideBeta p)).2 := by
     rw [Y.hpt_eval (by omega), eval_snd]
@@ -178,7 +178,7 @@ theorem tZ_iff {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ
         · linarith
       obtain ⟨x, hxc, hne, hxd⟩ := Extract.exists_near_mem hAB hmem hrA
       have hx := (hse x).1 (hsec x hxc hne hxd)
-      have hxy : x.2 = ((Qof P).vtx h).2 := hxc.1
+      have hxy := hxc.1
       unfold det at hx
       rw [hxy, hflat, ← hheight] at hx
       simp only [sub_self, mul_zero] at hx
@@ -297,7 +297,7 @@ theorem end_ok {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
   have hA : decide (tU C.m C.topIdx C.sideBeta p < C.m) = !li := by
     generalize decide (tU C.m C.topIdx C.sideBeta p < C.m) = d at hside ⊢
     cases li <;> cases d <;> simp_all
-  have hGn : (xG).n = xK := Y.gn
+  have hGn := Y.gn
   rcases ht0.lt_or_eq with ht0' | ht0'
   · have hp' : p < 2 * C.m + 6 := by
       rcases lt_or_eq_of_le hp with h' | h'

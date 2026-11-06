@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutShPt
 
 /-!
@@ -69,10 +71,10 @@ theorem AbsRecW.copy {P : Polygon} {c c' : Config} {r r' : ℕ} {x R : ℝ} (h :
   · exact Or.inl ⟨h0.trans k, hx⟩
   · exact Or.inr (Or.inl ⟨h0.trans k, hx⟩)
   · refine Or.inr (Or.inr ⟨h0.trans k, hx, s, ?_, hl, he⟩)
-    have e1 : r' + 1 + 1 = r' + 2 := by omega
-    have e2 : r + 1 + 1 = r + 2 := by omega
-    have e3 : r' + 1 + 2 = r' + 3 := by omega
-    have e4 : r + 1 + 2 = r + 3 := by omega
+    have e1 : r' + 1 + 1 = r' + 2 := ⋄
+    have e2 : r + 1 + 1 = r + 2 := ⋄
+    have e3 : r' + 1 + 2 = r' + 3 := ⋄
+    have e4 : r + 1 + 2 = r + 3 := ⋄
     exact NFLoc.symPtIn_copy hs h1 (by rw [e1, e2]; exact h2) (by rw [e3, e4]; exact h3)
 
 /-! ## Abscissae -/
@@ -90,7 +92,7 @@ theorem bit_const (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) (dst v : �
     {p : Prop} (hp : v = 1 ↔ p) :
     BitIs ({ c with nreg := upd c.nreg dst v } : Config) dst p ∧
       Exec P W (.instr (.constN dst v)) c { c with nreg := upd c.nreg dst v } 1 :=
-  ⟨⟨by simp; omega, by simp; exact hp⟩, Exec.constN hw dst v (by omega)⟩
+  ⟨⟨by simp; omega, by simp; exact hp⟩, Exec.constN hw dst v (⋄)⟩
 
 theorem xLess_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : WordsBounded W c)
     {a b dst : ℕ} (ha : 10500 ≤ a) (hb : 10500 ≤ b) (hdst : 10500 ≤ dst) (h1 : c.nreg K1 = 1)
@@ -109,60 +111,60 @@ theorem xLess_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Word
       simp [hr.2], fun _ _ => rfl, rfl, rfl, rfl⟩
   unfold xLess
   by_cases a0 : c.nreg a < c.nreg K1
-  · have ka : c.nreg a = 0 := by omega
+  · have ka : c.nreg a = 0 := ⋄
     have hxa : xa = -R := by
       rcases hA.2 with ⟨_, h⟩ | ⟨h', _⟩ | ⟨h', _⟩ <;> [exact h; omega; omega]
     by_cases b0 : c.nreg b < c.nreg K1
     · have hxb : xb = -R := by
         rcases hB.2 with ⟨_, h⟩ | ⟨h', _⟩ | ⟨h', _⟩ <;> [exact h; omega; omega]
-      obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 0 (by norm_num)
+      obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (⋄) dst 0 (⊛)
         (p := xa < xb) (by rw [hxa, hxb]; simp)
-      exact ⟨_, _, .ifLtN_true a0 (.ifLtN_true b0 ex), by norm_num, bt, fr 0⟩
+      exact ⟨_, _, .ifLtN_true a0 (.ifLtN_true b0 ex), ⊛, bt, fr 0⟩
     · have hlt : xa < xb := by
         rcases hB.2 with ⟨h', _⟩ | ⟨_, h⟩ | ⟨_, hx, s, -, -, -⟩
         · omega
         · rw [hxa, h]; linarith
         · rcases hok with hne | ⟨-, hs⟩
           · rw [hxa] at hne ⊢; exact lt_of_le_of_ne bB.1 hne
-          · rw [hxa]; exact (abs_lt.1 (hs (by omega))).1
-      obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 1 le_rfl (p := xa < xb)
+          · rw [hxa]; exact (abs_lt.1 (hs (⋄))).1
+      obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (⋄) dst 1 le_rfl (p := xa < xb)
         ⟨fun _ => hlt, fun _ => rfl⟩
-      exact ⟨_, _, .ifLtN_true a0 (.ifLtN_false b0 ex), by norm_num, bt, fr 1⟩
+      exact ⟨_, _, .ifLtN_true a0 (.ifLtN_false b0 ex), ⊛, bt, fr 1⟩
   by_cases a2 : c.nreg K1 < c.nreg a
   · have hxa : xa = R := by
       rcases hA.2 with ⟨h', _⟩ | ⟨_, h⟩ | ⟨h', _⟩ <;> [omega; exact h; omega]
-    obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 0 (by norm_num) (p := xa < xb)
-      ⟨fun h => absurd h (by norm_num), fun h => by rw [hxa] at h; linarith⟩
-    exact ⟨_, _, .ifLtN_false a0 (.ifLtN_true a2 ex), by norm_num, bt, fr 0⟩
-  have ka : c.nreg a = 1 := by omega
+    obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (⋄) dst 0 (⊛) (p := xa < xb)
+      ⟨fun h => absurd h (⊛), fun h => by rw [hxa] at h; linarith⟩
+    exact ⟨_, _, .ifLtN_false a0 (.ifLtN_true a2 ex), ⊛, bt, fr 0⟩
+  have ka : c.nreg a = 1 := ⋄
   obtain ⟨-, hxa, sa, isa, lsa, vsa⟩ : c.nreg a = 1 ∧ |xa| ≤ R ∧ ∃ s : SymPt, SymPtIn c (a + 1) s ∧
       s.Lt P.n ∧ (s.eval (Qof P)).1 = xa := by
     rcases hA.2 with ⟨h', _⟩ | ⟨h', _⟩ | h <;> [omega; omega; exact h]
   by_cases b0 : c.nreg b < c.nreg K1
   · have hxb : xb = -R := by
       rcases hB.2 with ⟨_, h⟩ | ⟨h', _⟩ | ⟨h', _⟩ <;> [exact h; omega; omega]
-    obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 0 (by norm_num) (p := xa < xb)
-      ⟨fun h => absurd h (by norm_num), fun h => by rw [hxb] at h; linarith [(abs_le.1 hxa).1]⟩
-    exact ⟨_, _, .ifLtN_false a0 (.ifLtN_false a2 (.ifLtN_true b0 ex)), by norm_num, bt, fr 0⟩
+    obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (⋄) dst 0 (⊛) (p := xa < xb)
+      ⟨fun h => absurd h (⊛), fun h => by rw [hxb] at h; linarith [(abs_le.1 hxa).1]⟩
+    exact ⟨_, _, .ifLtN_false a0 (.ifLtN_false a2 (.ifLtN_true b0 ex)), ⊛, bt, fr 0⟩
   by_cases b2 : c.nreg K1 < c.nreg b
   · have hxb : xb = R := by
       rcases hB.2 with ⟨h', _⟩ | ⟨_, h⟩ | ⟨h', _⟩ <;> [omega; exact h; omega]
     have hlt : xa < xb := by
-      rw [hxb]
+      Ξ hxb
       rcases hok with hne | ⟨hs, -⟩
       · rw [hxb] at hne; exact lt_of_le_of_ne (abs_le.1 hxa).2 hne
       · exact (abs_lt.1 (hs ka)).2
-    obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 1 le_rfl (p := xa < xb)
+    obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (⋄) dst 1 le_rfl (p := xa < xb)
       ⟨fun _ => hlt, fun _ => rfl⟩
     exact ⟨_, _, .ifLtN_false a0 (.ifLtN_false a2 (.ifLtN_false b0 (.ifLtN_true b2 ex))),
-      by norm_num, bt, fr 1⟩
+      ⊛, bt, fr 1⟩
   obtain ⟨-, -, sb, isb, lsb, vsb⟩ : c.nreg b = 1 ∧ |xb| ≤ R ∧ ∃ s : SymPt, SymPtIn c (b + 1) s ∧
       s.Lt P.n ∧ (s.eval (Qof P)).1 = xb := by
     rcases hB.2 with ⟨h', _⟩ | ⟨h', _⟩ | h <;> [omega; omega; exact h]
-  obtain ⟨c', k, ex, hk, f, b₁, t⟩ := kbit_exec (op := 0) (dst := dst) hG hW c hw (by omega)
-    (by omega) (by omega) hdst (by norm_num) lsa lsb lsa isa isb isa
+  obtain ⟨c', k, ex, hk, f, b₁, t⟩ := kbit_exec (op := 0) (dst := dst) hG hW c hw (⋄)
+    (⋄) (⋄) hdst (⊛) lsa lsb lsa isa isb isa
   refine ⟨c', _, .ifLtN_false a0 (.ifLtN_false a2 (.ifLtN_false b0 (.ifLtN_false b2 ex))),
-    by omega, ⟨b₁, ?_⟩, f⟩
+    ⋄, ⟨b₁, ?_⟩, f⟩
   rw [t]; show (sa.eval (Qof P)).1 < (sb.eval (Qof P)).1 ↔ _; rw [vsa, vsb]
 
 /-! ## Ordinates -/
@@ -220,49 +222,49 @@ theorem hLess_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Word
     by_cases b0 : c.nreg b < c.nreg K1
     · have hyb : yb = -R := by
         rcases hB with ⟨_, h⟩ | ⟨h', _⟩ | ⟨h', _⟩ <;> [exact h; omega; omega]
-      obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 0 (by norm_num)
+      obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (⋄) dst 0 (⊛)
         (p := ya < yb) (by rw [hya, hyb]; simp)
-      exact ⟨_, _, .ifLtN_true a0 (.ifLtN_true b0 ex), by norm_num, bt, fr 0⟩
+      exact ⟨_, _, .ifLtN_true a0 (.ifLtN_true b0 ex), ⊛, bt, fr 0⟩
     · have hlt : ya < yb := by
         rcases hB with ⟨h', _⟩ | ⟨_, h⟩ | ⟨_, hy, -⟩
         · omega
         · rw [hya, h]; linarith
         · rw [hya]; exact (abs_lt.1 hy).1
-      obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 1 le_rfl (p := ya < yb)
+      obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (⋄) dst 1 le_rfl (p := ya < yb)
         ⟨fun _ => hlt, fun _ => rfl⟩
-      exact ⟨_, _, .ifLtN_true a0 (.ifLtN_false b0 ex), by norm_num, bt, fr 1⟩
+      exact ⟨_, _, .ifLtN_true a0 (.ifLtN_false b0 ex), ⊛, bt, fr 1⟩
   by_cases a2 : c.nreg K1 < c.nreg a
   · have hya : ya = R := by
       rcases hA with ⟨h', _⟩ | ⟨_, h⟩ | ⟨h', _⟩ <;> [omega; exact h; omega]
-    obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 0 (by norm_num) (p := ya < yb)
-      ⟨fun h => absurd h (by norm_num), fun h => by rw [hya] at h; linarith⟩
-    exact ⟨_, _, .ifLtN_false a0 (.ifLtN_true a2 ex), by norm_num, bt, fr 0⟩
+    obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (⋄) dst 0 (⊛) (p := ya < yb)
+      ⟨fun h => absurd h (⊛), fun h => by rw [hya] at h; linarith⟩
+    exact ⟨_, _, .ifLtN_false a0 (.ifLtN_true a2 ex), ⊛, bt, fr 0⟩
   obtain ⟨-, hya, za, la, vya⟩ : c.nreg a = 1 ∧ |ya| < R ∧ c.nreg (a + 1) = 0 ∧
       c.nreg (a + 2) < P.n ∧ ya = ((Qof P).vtx (c.nreg (a + 2))).2 := by
     rcases hA with ⟨h', _⟩ | ⟨h', _⟩ | h <;> [omega; omega; exact h]
   by_cases b0 : c.nreg b < c.nreg K1
   · have hyb : yb = -R := by
       rcases hB with ⟨_, h⟩ | ⟨h', _⟩ | ⟨h', _⟩ <;> [exact h; omega; omega]
-    obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 0 (by norm_num) (p := ya < yb)
-      ⟨fun h => absurd h (by norm_num), fun h => by rw [hyb] at h; linarith [(abs_lt.1 hya).1]⟩
-    exact ⟨_, _, .ifLtN_false a0 (.ifLtN_false a2 (.ifLtN_true b0 ex)), by norm_num, bt, fr 0⟩
+    obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (⋄) dst 0 (⊛) (p := ya < yb)
+      ⟨fun h => absurd h (⊛), fun h => by rw [hyb] at h; linarith [(abs_lt.1 hya).1]⟩
+    exact ⟨_, _, .ifLtN_false a0 (.ifLtN_false a2 (.ifLtN_true b0 ex)), ⊛, bt, fr 0⟩
   by_cases b2 : c.nreg K1 < c.nreg b
   · have hyb : yb = R := by
       rcases hB with ⟨h', _⟩ | ⟨_, h⟩ | ⟨h', _⟩ <;> [omega; exact h; omega]
-    obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (by omega) dst 1 le_rfl (p := ya < yb)
+    obtain ⟨bt, ex⟩ := bit_const (P := P) c hw (⋄) dst 1 le_rfl (p := ya < yb)
       ⟨fun _ => by rw [hyb]; exact (abs_lt.1 hya).2, fun _ => rfl⟩
     exact ⟨_, _, .ifLtN_false a0 (.ifLtN_false a2 (.ifLtN_false b0 (.ifLtN_true b2 ex))),
-      by norm_num, bt, fr 1⟩
+      ⊛, bt, fr 1⟩
   obtain ⟨-, -, zb, lb, vyb⟩ : c.nreg b = 1 ∧ |yb| < R ∧ c.nreg (b + 1) = 0 ∧
       c.nreg (b + 2) < P.n ∧ yb = ((Qof P).vtx (c.nreg (b + 2))).2 := by
     rcases hB with ⟨h', _⟩ | ⟨h', _⟩ | h <;> [omega; omega; exact h]
   have isa : SymPtIn c (a + 1) (.vtx (c.nreg (a + 2))) := ⟨za, rfl⟩
   have isb : SymPtIn c (b + 1) (.vtx (c.nreg (b + 2))) := ⟨zb, rfl⟩
-  obtain ⟨c', k, ex, hk, f, b₁, t⟩ := kbit_exec (op := 1) (dst := dst) hG hW c hw (by omega)
-    (by omega) (by omega) hdst (by norm_num) (show (SymPt.vtx _).Lt P.n from la)
+  obtain ⟨c', k, ex, hk, f, b₁, t⟩ := kbit_exec (op := 1) (dst := dst) hG hW c hw (⋄)
+    (⋄) (⋄) hdst (⊛) (show (SymPt.vtx _).Lt P.n from la)
     (show (SymPt.vtx _).Lt P.n from lb) (show (SymPt.vtx _).Lt P.n from la) isa isb isa
   refine ⟨c', _, .ifLtN_false a0 (.ifLtN_false a2 (.ifLtN_false b0 (.ifLtN_false b2 ex))),
-    by omega, ⟨b₁, ?_⟩, f⟩
+    ⋄, ⟨b₁, ?_⟩, f⟩
   rw [t, vya, vyb]; rfl
 
 /-- **The bit `y_a = y_b`.** -/

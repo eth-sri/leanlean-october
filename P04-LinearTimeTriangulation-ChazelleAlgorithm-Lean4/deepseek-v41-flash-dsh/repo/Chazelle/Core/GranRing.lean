@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranNF
 
 /-!
@@ -98,10 +100,10 @@ theorem sideInArc_mono_iff {f : ℕ → ℝ} {A : ℕ}
   have e3 := key i b hi hb
   have e4 := key i a hi ha
   have e5 := key b i hb hi
-  simp only [Nat.cast_lt]
+  ϴ Nat.cast_lt
   by_cases hab : a < b
-  · rw [ite_eq_left (e1.2 hab), ite_eq_left hab, e2, e3]
-  · rw [ite_eq_right (mt e1.1 hab), ite_eq_right hab, e2, e3]
+  · Ξ ite_eq_left (e1.2 hab), ite_eq_left hab, e2, e3
+  · Ξ ite_eq_right (mt e1.1 hab), ite_eq_right hab, e2, e3
 
 /-! ## The ring -/
 
@@ -192,9 +194,9 @@ theorem ringOK_unlink {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h :
   intro j hj ⟨hjL, hjd⟩
   constructor
   · by_cases hjp : j = p
-    · rw [hjp, Function.update_self]
+    · Ξ hjp, Function.update_self
       exact ⟨hs.1, ⟨hs.2.1, hs.2.2.1⟩, hne.symm, fun i hi hiL => hgap2 i hi hiL⟩
-    · rw [Function.update_of_ne hjp]
+    · Ξ Function.update_of_ne hjp
       obtain ⟨a, b, c, e⟩ := (h j hj hjL).1
       have hnd : nxt j ≠ d := by
         intro hnd
@@ -202,9 +204,9 @@ theorem ringOK_unlink {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h :
         exact hjp (pred_unique h1 (h.pred hd hdL))
       exact ⟨a, ⟨b, hnd⟩, c, fun i hi hiL => e i hi hiL.1⟩
   · by_cases hjs : j = s
-    · rw [hjs, Function.update_self]
+    · Ξ hjs, Function.update_self
       exact ⟨hp.1, ⟨hp.2.1, hp.2.2.1⟩, hne, fun i hi hiL => hgap2 i hi hiL⟩
-    · rw [Function.update_of_ne hjs]
+    · Ξ Function.update_of_ne hjs
       obtain ⟨a, b, c, e⟩ := (h j hj hjL).2
       have hpd : prv j ≠ d := by
         intro hpd
@@ -224,7 +226,7 @@ theorem RingOK.congr {Lv Lv' : ℕ → Prop} {A : ℕ} {nxt prv nxt' prv' : ℕ 
   intro j hj hjL
   have hjL' := (hL j hj).1 hjL
   obtain ⟨⟨a, b, c, e⟩, ⟨a', b', c', e'⟩⟩ := h j hj hjL'
-  rw [hn j hj hjL', hp j hj hjL']
+  Ξ hn j hj hjL', hp j hj hjL'
   exact ⟨⟨a, (hL _ a).2 b, c, fun i hi hiL => e i hi ((hL i hi).1 hiL)⟩,
     ⟨a', (hL _ a').2 b', c', fun i hi hiL => e' i hi ((hL i hi).1 hiL)⟩⟩
 
@@ -232,7 +234,7 @@ theorem RingOK.congr {Lv Lv' : ℕ → Prop} {A : ℕ} {nxt prv nxt' prv' : ℕ 
 theorem not_cyc_succ (j i : ℕ) : ¬ cyc j (j + 1) i := by
   unfold cyc sideInArc
   push_cast
-  rw [ite_eq_left (by linarith)]
+  rw [ite_eq_left (⟡)]
   rintro ⟨a, b⟩
   have h1 : j < i := by exact_mod_cast a
   have h2 : (i : ℝ) < ((j + 1 : ℕ) : ℝ) := by push_cast; linarith
@@ -243,11 +245,11 @@ theorem not_cyc_succ (j i : ℕ) : ¬ cyc j (j + 1) i := by
 theorem not_cyc_wrap {A : ℕ} (hA : 1 ≤ A) {i : ℕ} (hi : i < A) : ¬ cyc (A - 1) 0 i := by
   unfold cyc sideInArc
   by_cases h : ((A - 1 : ℕ) : ℝ) < ((0 : ℕ) : ℝ)
-  · rw [ite_eq_left h]
+  · Ξ ite_eq_left h
     rintro ⟨-, b⟩
     have : i < 0 := by exact_mod_cast b
     omega
-  · rw [ite_eq_right h]
+  · Ξ ite_eq_right h
     rintro (a | b)
     · have : A - 1 < i := by exact_mod_cast a
       omega
@@ -281,7 +283,7 @@ theorem pred_skip {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : Rin
   have hp := h.pred hn hnL
   set p := prv n
   by_cases hDp : Dd p
-  · rw [ite_eq_left hDp]
+  · Ξ ite_eq_left hDp
     have hpm : p = m := (hD p hDp).resolve_left hp.2.2.1
     have hpp := h.pred hp.1 hp.2.1
     set pp := prv p
@@ -310,7 +312,7 @@ theorem pred_skip {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : Rin
     · have : j = p := by exact_mod_cast h2
       exact hjL.2 (this ▸ hDp)
     · exact hp.2.2.2 j hj hjL.1 h2
-  · rw [ite_eq_right hDp]
+  · Ξ ite_eq_right hDp
     exact ⟨hp.1, ⟨hp.2.1, hDp⟩, hp.2.2.1, fun j hj hjL => hp.2.2.2 j hj hjL.1⟩
 
 /-- **The live successor after deleting at most two positions.** -/
@@ -321,7 +323,7 @@ theorem succ_skip {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : Rin
   have hs := h.succ hn hnL
   set s := nxt n
   by_cases hDs : Dd s
-  · rw [ite_eq_left hDs]
+  · Ξ ite_eq_left hDs
     have hsm : s = m := (hD s hDs).resolve_left hs.2.2.1
     have hss := h.succ hs.1 hs.2.1
     set ss := nxt s
@@ -351,7 +353,7 @@ theorem succ_skip {Lv : ℕ → Prop} {A : ℕ} {nxt prv : ℕ → ℕ} (h : Rin
     · have : j = s := by exact_mod_cast h2
       exact hjL.2 (this ▸ hDs)
     · exact hss.2.2.2 j hj hjL.1 h2
-  · rw [ite_eq_right hDs]
+  · Ξ ite_eq_right hDs
     exact ⟨hs.1, ⟨hs.2.1, hDs⟩, hs.2.2.1, fun j hj hjL => hs.2.2.2 j hj hjL.1⟩
 
 end

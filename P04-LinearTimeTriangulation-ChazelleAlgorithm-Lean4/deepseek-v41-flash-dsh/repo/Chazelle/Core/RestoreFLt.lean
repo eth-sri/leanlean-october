@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFKey
 
 /-!
@@ -65,9 +67,9 @@ theorem cmpM_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
         E.M.key (Qof E.P) ⟨c.nreg a, c.nreg b⟩) ∧
       ∀ q, 80000 ≤ q → q < 90000 → ¬ KeyW q → q ≠ r → q ≠ r + 1 → c'.nreg q = c.nreg q) := by
   refine FRS.seq (K₂ := 2) (fKey_fs hE hB hI ha hb hd he hka hkb hkd hke hx hy
-    (by omega)) (fun c₁ hI₁ _ ⟨b1, b2, f1⟩ => ?_)
+    (⋄)) (fun c₁ hI₁ _ ⟨b1, b2, f1⟩ => ?_)
   refine (copy2 hr hI₁ hB).mono le_rfl (fun c' ⟨v1, v2, f2⟩ => ⟨b1.of_eq v1, b2.of_eq v2,
-    fun q h1 h2 h3 h4 h5 => by rw [f2 q h4 h5, f1 q h1 h2 h3]⟩)
+    fun q h1 h2 h3 h4 h5 => Ρ f2 q h4 h5, f1 q h1 h2 h3⟩)
 
 /-- **Piece-chain key comparison** as a run step of the search. -/
 theorem cmpA_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FInv E.W c₀ c)
@@ -85,12 +87,12 @@ theorem cmpA_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
         (chainModel Cα).key (Qof E.P) ⟨c.nreg a, c.nreg b⟩) ∧
       ∀ q, 80000 ≤ q → q < 90000 → ¬ KeyW q → q ≠ r → q ≠ r + 1 → c'.nreg q = c.nreg q) := by
   have ok : okB E.W c.nmem cmpAL c.nreg := by
-    simp only [cmpAL, okB, okI]
-    refine ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩),
-      ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by omega⟩, trivial⟩
+    ϴ cmpAL, okB, okI
+    refine ⟨Or.inl (Or.inl ⟨⊛, ⊛⟩),
+      ⟨Or.inl (Or.inl ⟨⊛, ⊛⟩), ⋄⟩, trivial⟩
   refine FRS.seq (K₂ := 11008) (FRS.block hB _ hI ok) (fun c₁ hI₁ hA₁ h₁ => ?_)
-  have e₁ : ∀ q, c₁.nreg q = regB c.nmem cmpAL c.nreg q := fun q => by rw [h₁]
-  have m₁ : c₁.nmem = c.nmem := by rw [h₁]
+  have e₁ : ∀ q, c₁.nreg q = regB c.nmem cmpAL c.nreg q := fun q => Ρ h₁
+  have m₁ : c₁.nmem = c.nmem := Ρ h₁
   have r20 : c₁.nreg 83020 = c.nreg 81133 := by rw [e₁]; simp [cmpAL, regB, regI, upd]
   have r22 : c₁.nreg 83022 = 0 := by rw [e₁]; simp [cmpAL, regB, regI, upd]
   have f₁ : ∀ q, q ≠ 83020 → q ≠ 83022 → c₁.nreg q = c.nreg q := fun q h1 h2 => by
@@ -98,7 +100,7 @@ theorem cmpA_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
   have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by unfold ALLOC; omega)
     (by unfold ALLOC; omega)
   have kf : ∀ q, ¬ KeyW q → c₁.nreg q = c.nreg q := fun q hq => by
-    unfold KeyW at hq; exact f₁ q (by omega) (by omega)
+    unfold KeyW at hq; exact f₁ q (⋄) (⋄)
   have hx₁ : PosOK Cα (Qof E.P) E.P.n ⟨c₁.nreg a, c₁.nreg b⟩ := by
     rw [kf a hka, kf b hkb]; exact hx
   have hy₁ : PosOK Cα (Qof E.P) E.P.n ⟨c₁.nreg d, c₁.nreg e⟩ := by
@@ -109,12 +111,12 @@ theorem cmpA_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
   have h8 : ∀ q, 80000 ≤ q → q < 90000 → c₂.nreg q = c₁.nreg q := fun q h1 h2 =>
     hf.1 q (by rw [band8 h1 h2]; simp [primBands, bRestore, bSign, bLocate])
       (by unfold ALLOC; omega)
-  refine FRS.seq (K₂ := 2) (FRS.prim (Q := fun c' => c' = c₂) hB hI₁ ex hf le_rfl (by omega) rfl)
+  refine FRS.seq (K₂ := 2) (FRS.prim (Q := fun c' => c' = c₂) hB hI₁ ex hf le_rfl (⋄) rfl)
     (fun c₃ hI₃ _ h₃ => ?_)
   subst h₃
   rw [kf a hka, kf b hkb, kf d hkd, kf e hke] at b1 b2
   refine (copy2 hr hI₃ hB).mono le_rfl (fun c' ⟨v1, v2, f2⟩ => ⟨b1.of_eq v1, b2.of_eq v2,
-    fun q h1 h2 h3 h4 h5 => by rw [f2 q h4 h5, h8 q h1 h2, kf q h3]⟩)
+    fun q h1 h2 h3 h4 h5 => Ρ f2 q h4 h5, h8 q h1 h2, kf q h3⟩)
 
 end
 

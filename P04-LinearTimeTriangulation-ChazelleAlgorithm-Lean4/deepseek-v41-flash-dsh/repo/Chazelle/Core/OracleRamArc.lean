@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleRamScan
 
 /-!
@@ -63,15 +65,15 @@ def scanned (C : Chain) (nW se t : ℕ) : Set Point := {x | ∃ k, k < t ∧ x �
 theorem scanned_succ (C : Chain) (nW se t : ℕ) :
     scanned C nW se (t + 1) = scanned C nW se t ∪ wseg C (scanW nW se t) := by
   ext x
-  simp only [scanned, Set.mem_ofPred_eq, Set.mem_union]
+  ϴ scanned, Set.mem_ofPred_eq, Set.mem_union
   constructor
   · rintro ⟨k, hk, hx⟩
     rcases Nat.lt_succ_iff_lt_or_eq.1 hk with h | rfl
     · exact Or.inl ⟨k, h, hx⟩
     · exact Or.inr hx
   · rintro (⟨k, hk, hx⟩ | hx)
-    · exact ⟨k, by omega, hx⟩
-    · exact ⟨t, by omega, hx⟩
+    · exact ⟨k, ⋄, hx⟩
+    · exact ⟨t, ⋄, hx⟩
 
 /-- **The invariant of the loop of `arcScan`.** -/
 structure AInv (P : Polygon) (W : ℕ) (C : Chain) (V : QV) (z : Point) (c₀ : Config) (S : Set Point)
@@ -98,7 +100,7 @@ theorem arcBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
   set t := c.nreg 120085 with ht_def
   have htl : t < len + 1 := by rw [h.lim] at ht; exact ht
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, hb₁, v₁⟩ := wstep_exec (P := P) hG (by omega) hs.hD hv c h.wb h.q h.b
-  have R₁ : ∀ r, BW r = false → c₁.nreg r = c.nreg r := f₁.1
+  have R₁ := f₁.1
   have x85 : c₁.nreg 120085 = t := R₁ _ (by decide)
   have x70 : c₁.nreg 120070 = scanW (2 * V.m + 7) se t := (R₁ _ (by decide)).trans h.w
   have hq₁ : QConst P V c₁ := h.q.frame f₁ BW_const
@@ -189,7 +191,7 @@ theorem arcScan_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32
   have hv := hs.hv
   have hmn : C.m < P.n := by
     have := C.m_lt; rw [hv.CQ, show (Qof P).n = P.n from shear_n _ _] at this; exact this
-  have hVm : V.m = C.m := hv.m
+  have hVm := hv.m
   have hAW : V.A ≤ W := by have := hw.1 120030; rw [hq.A] at this; exact this
   -- 1. the head
   obtain ⟨c₁, k₁, e₁, hk₁, v₁⟩ : ∃ c₁ k₁, Exec P W arcHead c c₁ k₁ ∧ k₁ = 11 ∧

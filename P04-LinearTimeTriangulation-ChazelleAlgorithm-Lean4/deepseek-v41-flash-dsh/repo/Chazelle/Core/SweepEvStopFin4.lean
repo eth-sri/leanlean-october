@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopFin3
 public import Chazelle.Core.SweepEvStopM3
 public import Chazelle.Core.SweepEvStopM4
@@ -53,18 +55,18 @@ theorem slfParOK_scan (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) 
   obtain ⟨-, -, -, haR, -⟩ := stOrig_facts hP hN hok
   have hiff := fun i (hi : i < N₂.nChords) =>
     parent_key_iff hP hN (haR h1) hb hD.free hA hi
-  rw [stopSet_eq]
+  Ξ stopSet_eq
   have hsub : 0 < par → Merge.shoot J.whole (stOrig J (Qof P) N₂ kind k b) (dirOf b) ⊆
       (N₂.chord (par - 1)).toSet (chainModel J.right) (Qof P) := fun hp =>
-    (hiff (par - 1) (by omega)).1 (hpos hp)
+    (hiff (par - 1) (⋄)).1 (hpos hp)
   refine ⟨hle, fun cc hcc hec => ?_, hsub⟩
   obtain ⟨i, hi, rfl⟩ := chord_of_mem hcc
   have hp : 0 < par := by
     by_contra h0
-    exact hzero (by omega) i hi ((hiff i hi).2 hec)
+    exact hzero (⋄) i hi ((hiff i hi).2 hec)
   refine ⟨hp, ?_⟩
   have e := stopSet_eq J (Qof P) N₂ kind k b
-  exact parent_eq hP hN hD (chord_mem (by omega)) hcc (e ▸ hsub hp) (e ▸ hec)
+  exact parent_eq hP hN hD (chord_mem (⋄)) hcc (e ▸ hsub hp) (e ▸ hec)
 
 /-- **The parent facts of a wall code.** -/
 theorem slfParOK_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂)
@@ -73,7 +75,7 @@ theorem slfParOK_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) 
   have hk : k < N₂.nChords := (hD.ok.2.2.1 rfl).1
   have hw := parent_wall hP hN hD
   unfold SlfParOK
-  simp only [Nat.add_sub_cancel]
+  ϴ Nat.add_sub_cancel
   exact ⟨hk, fun cc hcc hec => ⟨Nat.succ_pos _, parent_eq hP hN hD (chord_mem hk) hcc hw hec⟩,
     fun _ => hw⟩
 
@@ -115,32 +117,32 @@ theorem slfPar_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     exact ⟨slfParOK_scan hP hN hD h1 hA hle hpos hzero, fr, hA', hm⟩
   unfold slfParS
   by_cases h0 : c.nreg oKd < c.nreg K1
-  · have hk : c.nreg oKd ≠ 1 := by omega
-    rw [ite_eq_right hk]
-    exact (IRS.ifT h0 (scan hk)).mono (by omega) (fun _ h => h)
+  · have hk : c.nreg oKd ≠ 1 := ⋄
+    Ξ ite_eq_right hk
+    exact (IRS.ifT h0 (scan hk)).mono (⋄) (fun _ h => h)
   · refine (IRS.ifF (K := if c.nreg oKd = 1 then 3 else κp * (N₂.nChords + 1) + 2) h0 ?_).mono
       (by split_ifs <;> omega) (fun _ h => h)
     by_cases h2 : c.nreg K1 < c.nreg oKd
-    · have hk : c.nreg oKd ≠ 1 := by omega
-      rw [ite_eq_right hk]
+    · have hk : c.nreg oKd ≠ 1 := ⋄
+      Ξ ite_eq_right hk
       exact IRS.ifT h2 (scan hk)
-    · have hk : c.nreg oKd = 1 := by omega
-      rw [ite_eq_left hk]
+    · have hk : c.nreg oKd = 1 := ⋄
+      Ξ ite_eq_left hk
       have hD1 : OrgD P J N₂ 1 (c.nreg oKk) (c.nreg oB) := hk ▸ hD
       have hkK : c.nreg oKk < N₂.nChords := (hD1.ok.2.2.1 rfl).1
       have hTW := E.hTW
-      have hpar : IScr oPar := iscr_sw' (by norm_num) (by norm_num)
+      have hpar : IScr oPar := iscr_sw' (⊛) (⊛)
       refine IRS.ifF h2 ((IRS.block [.addN oPar oKk K1] hI
-        ⟨⟨hpar, by first | (rw [k1]; omega)⟩, trivial⟩).mono (by simp) ?_)
+        ⟨⟨hpar, by first | (rw [k1]; omega)⟩, trivial⟩).mono (✓) ?_)
       rintro c' rfl
       have hv : regB c.nmem [.addN oPar oKk K1] c.nreg oPar = c.nreg oKk + 1 := by
         simp only [regB, regI, upd_same]; rw [k1]
       refine ⟨by simp only; rw [hv, hk]; exact slfParOK_wall hP hN hD1, fun r _ hr _ => ?_,
         ?_, fun _ _ => rfl⟩
-      · simp only [regB, regI]
-        rw [upd_other _ _ _ (fun h => hr (Or.inl h))]
-      · simp only [regB, regI]
-        rw [upd_other _ _ _ (by unfold ALLOC oPar sw; omega)]
+      · ϴ regB, regI
+        Ξ upd_other _ _ _ (fun h => hr (Or.inl h))
+      · ϴ regB, regI
+        Ξ upd_other _ _ _ (by unfold ALLOC oPar sw; omega)
 
 end
 

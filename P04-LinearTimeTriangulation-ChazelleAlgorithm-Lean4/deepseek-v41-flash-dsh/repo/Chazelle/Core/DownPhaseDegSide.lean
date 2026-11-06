@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDegTrap
 
 /-!
@@ -56,8 +60,8 @@ theorem flat_vertex {s : Point × Point} (hs : s ∈ S) (hf : s.1.2 = s.2.2) {w 
   have hzmin : z.1 < min s.1.1 s.2.1 := by
     by_contra hc
     push Not at hc
-    exact hz (seg_subset_obs hs ((mem_seg_flat hf).2 ⟨hzy.trans hy, hc, by linarith⟩))
-  rcases min_choice s.1.1 s.2.1 with e | e <;> rw [e] at hzmin hmin
+    exact hz (seg_subset_obs hs ((mem_seg_flat hf).2 ⟨hzy.trans hy, hc, ⟡⟩))
+  rcases min_choice s.1.1 s.2.1 with e | e <;> Ξ' e at hzmin hmin
   · exact ⟨s.1, ⟨s, hs, Or.inl rfl⟩, hy.symm, hzmin, hmin⟩
   · exact ⟨s.2, ⟨s, hs, Or.inr rfl⟩, (hy.trans hf).symm, hzmin, hmin⟩
 
@@ -69,8 +73,8 @@ theorem flat_vertex' {s : Point × Point} (hs : s ∈ S) (hf : s.1.2 = s.2.2) {w
   have hzmax : max s.1.1 s.2.1 < z.1 := by
     by_contra hc
     push Not at hc
-    exact hz (seg_subset_obs hs ((mem_seg_flat hf).2 ⟨hzy.trans hy, by linarith, hc⟩))
-  rcases max_choice s.1.1 s.2.1 with e | e <;> rw [e] at hzmax hmax
+    exact hz (seg_subset_obs hs ((mem_seg_flat hf).2 ⟨hzy.trans hy, ⟡, hc⟩))
+  rcases max_choice s.1.1 s.2.1 with e | e <;> Ξ' e at hzmax hmax
   · exact ⟨s.1, ⟨s, hs, Or.inl rfl⟩, hy.symm, hmax, hzmax⟩
   · exact ⟨s.2, ⟨s, hs, Or.inr rfl⟩, (hy.trans hf).symm, hmax, hzmax⟩
 
@@ -82,10 +86,10 @@ theorem vert_between (_hS : GoodH R S t) {Y : ℝ} (hside : SideOK S sL sR Y) {z
     ∃ v, IsVert S v ∧ v.2 = Y ∧ z.1 < v.1 ∧ v.1 < z'.1 := by
   have hb1 := abs_lt.1 (box_of_dom hz).1
   have hb2 := abs_lt.1 (box_of_dom hz').1
-  have hYR : |Y| < R := hzy ▸ (box_of_dom hz).2
+  have hYR := hzy ▸ (box_of_dom hz).2
   have hw : ((s₀, Y) : Point) ∈ obs S := by
     by_contra hc
-    exact hnot ⟨⟨abs_lt.2 ⟨by linarith, by linarith⟩, hYR⟩, hc⟩
+    exact hnot ⟨⟨abs_lt.2 ⟨⟡, ⟡⟩, hYR⟩, hc⟩
   rcases hside _ hw rfl (by simp only; linarith) (by simp only; linarith) with hv | ⟨s, hs1, hf, hws⟩
   · exact ⟨_, hv, rfl, hs, hs'⟩
   · obtain ⟨v, hv, hvy, h1, h2⟩ := flat_vertex hs1 hf hws hz.2 hzy hs
@@ -166,21 +170,21 @@ theorem region_subsetH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {G : 
   refine isPreconnected_connectedComponentIn.subset_of_closure_inter_subset (isOpen_tr _ _ _ _)
     ⟨q, mem_connectedComponentIn hq, h.q_mem⟩ ?_
   rintro p ⟨hpc, hpU⟩
-  have hpf : p ∈ freeIn (dom R S) G := connectedComponentIn_subset _ _ hpU
+  have hpf := connectedComponentIn_subset _ _ hpU
   obtain ⟨hp1, hp2, hp3, hp4⟩ := closure_tr_subset _ _ _ _ hpc
-  have hpD : p ∈ dom R S := hpf.1
-  have hpG : p ∉ ⋃₀ G := hpf.2
-  have hx3 : xAt sL p.2 < p.1 := lt_of_le_of_ne hp3 fun e => hpD.2 (h.memLH hp1 hp2 e.symm)
-  have hx4 : p.1 < xAt sR p.2 := lt_of_le_of_ne hp4 fun e => hpD.2 (h.memRH hp1 hp2 e)
+  have hpD := hpf.1
+  have hpG := hpf.2
+  have hx3 := lt_of_le_of_ne hp3 fun e => hpD.2 (h.memLH hp1 hp2 e.symm)
+  have hx4 := lt_of_le_of_ne hp4 fun e => hpD.2 (h.memRH hp1 hp2 e)
   refine ⟨lt_of_le_of_ne hp1 fun e => ?_, lt_of_le_of_ne hp2 fun e => ?_, hx3, hx4⟩
   · obtain ⟨v, hv, hvy, hvx⟩ := h.bot_vertex
-    rw [← e] at hx3 hx4
-    obtain ⟨hv1, hv2⟩ := hvx (by linarith)
+    Ξ' ← e at hx3 hx4
+    obtain ⟨hv1, hv2⟩ := hvx (⟡)
     exact hpG (h.side_full hS hfull le_rfl h.y₁_lt_y₂.le (sideOK_bot hS h) hv hvy hv1 hv2 hpD
       e.symm hx3 hx4)
   · obtain ⟨v, hv, hvy, hvx⟩ := h.top_vertex
-    rw [e] at hx3 hx4
-    obtain ⟨hv1, hv2⟩ := hvx (by linarith)
+    Ξ' e at hx3 hx4
+    obtain ⟨hv1, hv2⟩ := hvx (⟡)
     exact hpG (h.side_full hS hfull h.y₁_lt_y₂.le le_rfl (sideOK_top hS h) hv hvy hv1 hv2 hpD
       e hx3 hx4)
 
@@ -208,7 +212,7 @@ theorem ncard_sideH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ
     if hc : c ∈ E then Classical.choose (hE c hc).2 else (0, 0)
   have hzc : ∀ c ∈ E, zc c ∈ c ∧ zc c ∈ dom R S ∧ (zc c).2 = Y ∧
       xAt sL Y ≤ (zc c).1 ∧ (zc c).1 ≤ xAt sR Y := fun c hc => by
-    simp only [zc, dite_eq_left hc]
+    ϴ zc, dite_eq_left hc
     exact Classical.choose_spec (hE c hc).2
   set V := {v | IsVert S v ∧ v.2 = Y} with hV
   have hVf : V.Finite := (finite_vertsH hS).subset fun v hv => hv.1
@@ -222,12 +226,12 @@ theorem ncard_sideH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ
     obtain ⟨hz', hz'D, hz'y, hz'x⟩ := hzc c' hc'
     obtain ⟨y, a, b, hh, hceq⟩ := (hE c hc).1
     have hzc1 : zc c ∈ Visibility.hseg y a b := hceq ▸ hz
-    have hy : y = Y := by rw [← hzy, hzc1.1]
+    have hy : y = Y := Ρ ← hzy, hzc1.1
     have hs1 := hstrict _ hzD hzy hzx.1 hzx.2
     have hs2 := hstrict _ hz'D hz'y hz'x.1 hz'x.2
     by_cases hall : ∀ s : ℝ, (zc c).1 ≤ s → s ≤ (zc c').1 → ((s, Y) : Point) ∈ dom R S
     · exfalso
-      have hz'c : zc c' ∈ Visibility.hseg y a b := mem_of_joined hh hzc1 hzD (by rw [hz'y, hy])
+      have hz'c : zc c' ∈ Visibility.hseg y a b := mem_of_joined hh hzc1 hzD (Ρ hz'y, hy)
         (fun s h1 h2 => by
           rw [min_eq_left hlt.le] at h1; rw [max_eq_right hlt.le] at h2
           rw [hy]; exact hall s h1 h2)
@@ -254,7 +258,7 @@ theorem ncard_sideH (hS : GoodH R S t) (h : Trap R S q sL sR y₁ y₂) {Y : ℝ
     obtain ⟨hz', hz'D, -, -⟩ := hzc c' hc'
     have hne : (zc c).1 ≠ (zc c').1 := by
       intro e
-      have hzz : zc c = zc c' := point_ext e (by rw [(hzc c hc).2.2.1, (hzc c' hc').2.2.1])
+      have hzz : zc c = zc c' := point_ext e (Ρ (hzc c hc).2.2.1, (hzc c' hc').2.2.1)
       exact hcc' (eq_of_common (hE c hc).1 (hE c' hc').1 hz (hzz ▸ hz') hzD)
     rcases lt_or_gt_of_ne hne with h1 | h1
     · have := hlt c hc c' hc' hcc' h1; simp only [g] at hgg this; omega

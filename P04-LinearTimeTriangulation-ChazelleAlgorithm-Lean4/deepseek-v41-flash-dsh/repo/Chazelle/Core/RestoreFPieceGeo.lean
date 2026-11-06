@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFArcs
 
 /-!
@@ -68,13 +70,13 @@ theorem counted_of_wt {M : Model} {s m : ℕ} (hs : s < M.W.n) (hm : 0 < m) (hmn
     sideInArc (s : ℝ) (((s + m) % n : ℕ) : ℝ) (p + t)} with hT
   have hSe : S = (fun d => (s + d) % n) '' Set.Iio m := by
     ext p
-    simp only [hS, Set.mem_ofPred_eq, Set.mem_image, Set.mem_Iio]
+    ϴ hS, Set.mem_ofPred_eq, Set.mem_image, Set.mem_Iio
     constructor
     · rintro ⟨hp, h⟩
       obtain ⟨d, hd, e⟩ := (piece_edges hs hm hmn hp).1 h
       exact ⟨d, hd, e⟩
     · rintro ⟨d, hd, rfl⟩
-      exact ⟨Nat.mod_lt _ (by omega), (piece_edges hs hm hmn (Nat.mod_lt _ (by omega))).2 ⟨d, hd, rfl⟩⟩
+      exact ⟨Nat.mod_lt _ (⋄), (piece_edges hs hm hmn (Nat.mod_lt _ (by omega))).2 ⟨d, hd, rfl⟩⟩
   have hinj : Set.InjOn (fun d => (s + d) % n) (Set.Iio m) := by
     intro x hx y hy hxy
     simp only [Set.mem_Iio] at hx hy
@@ -86,22 +88,22 @@ theorem counted_of_wt {M : Model} {s m : ℕ} (hs : s < M.W.n) (hm : 0 < m) (hmn
       obtain ⟨k, hk⟩ := h2
       rcases k with _ | k
       · omega
-      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ (by omega)
+      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ (⋄)
         omega
     · have := Nat.ModEq.add_left_cancel' s hxy
       have h2 := (Nat.modEq_iff_dvd' h.le).1 this.symm
       obtain ⟨k, hk⟩ := h2
       rcases k with _ | k
       · omega
-      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ (by omega)
+      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ (⋄)
         omega
   have hcS : S.ncard = m := by
-    rw [hSe, hinj.ncard_image, Set.ncard_eq_toFinset_card' , Set.toFinset_Iio]
+    Ξ hSe, hinj.ncard_image, Set.ncard_eq_toFinset_card', Set.toFinset_Iio
     simp
   have hTS : T ⊆ S := fun p hp => ⟨hp.1, hp.2.2⟩
   have hSf : S.Finite := by rw [hSe]; exact (Set.finite_Iio m).image _
   have hcT : T.ncard = m := hwt
-  have hTeq : T = S := Set.eq_of_subset_of_ncard_le hTS (by rw [hcS, hcT]) hSf
+  have hTeq : T = S := Set.eq_of_subset_of_ncard_le hTS (Ρ hcS, hcT) hSf
   intro d hd
   have hmem : (s + d) % n ∈ S := by rw [hSe]; exact ⟨d, hd, rfl⟩
   rw [← hTeq] at hmem

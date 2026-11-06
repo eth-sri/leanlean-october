@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStep
 public import Chazelle.Core.SweepEvEnv
 public import Chazelle.Core.DownPhaseMathJunc
@@ -57,7 +59,7 @@ theorem F₂plus_chordFamily' {J : Merge.Junction} {Q : Polygon} {S₂ : Set (Se
       rw [← e, Merge.Junction.whole_vertex_add]; rfl
   obtain ⟨y, l, r, -, -, rfl, -, -⟩ := Merge.augChords_spec (F₂plus_subset J hS₂a he)
   refine ⟨h, hh, l, r, ?_⟩
-  rw [show y = (Q.vtx h).2 from hz.1.symm.trans hzh]
+  Ξ show y = (Q.vtx h).2 from hz.1.symm.trans hzh
 
 /-- **The vertices of a described chain are at vertex heights of `Qof P`.** -/
 theorem whole_vertex_height {P : Polygon} (hn3 : 3 ≤ P.n) {E : ℕ} {m : ℕ → ℕ} {B : ℕ} {H : Host}
@@ -65,14 +67,14 @@ theorem whole_vertex_height {P : Polygon} (hn3 : 3 ≤ P.n) {E : ℕ} {m : ℕ �
     ∃ h, h < (Qof P).n ∧ (C.vertex k).2 = ((Qof P).vtx h).2 := by
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hHwf : HostWF (Qof P).n H := by rw [hQn]; exact (hwf.2 H C hC).2.1
-  have hn : 0 < (Qof P).n := by omega
-  rw [DownMath.chain_vertex_host hC.2.1 k, Gran.eval_snd]
+  have hn : 0 < (Qof P).n := ⋄
+  Ξ DownMath.chain_vertex_host hC.2.1 k, Gran.eval_snd
   refine ⟨_, Gran.hv_lt ?_, rfl⟩
   set L := H.pts (Qof P).n
   by_cases hi : (C.s + k) % L.length < L.length
-  · rw [List.getD_eq_getElem _ _ hi]
+  · Ξ List.getD_eq_getElem _ _ hi
     exact NFLoc.hostWF_pts hHwf hn _ (List.getElem_mem _)
-  · rw [List.getD_eq_default _ _ (by omega)]
+  · rw [List.getD_eq_default _ _ (⋄)]
     exact hn
 
 /-- **`F₂⁺` is a chord family of `Qof P`** in the environment of the event loop. -/

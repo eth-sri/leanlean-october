@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase6
 public import Chazelle.Core.UpPhaseArith
 
@@ -37,7 +39,7 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
+
 theorem lenS_exec {c : Config} (hw : WordsBounded W c) {n1 s pg : ℕ}
     (h28 : c.nreg 170028 = n1) (h16 : c.nreg 170016 = s) (h10 : c.nreg 170010 = pg) :
     ∃ c' k, Exec P W lenS c c' k ∧ k ≤ 4 ∧ WordsBounded W c' ∧
@@ -79,7 +81,7 @@ theorem lenS_exec {c : Config} (hw : WordsBounded W c) {n1 s pg : ℕ}
       by rw [hrm2, hrm1], by rw [ho2, ho1]⟩
     rw [i17, c10]; rw [i33, c10] at h; omega
 
-set_option maxHeartbeats 16000000 in
+
 /-- **The descriptor of a grade-0 chain** (the edge `v_i v_{i+1}`). -/
 theorem descU_exec0 (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : WordsBounded W c)
     {TD hp i : ℕ} (h07 : c.nreg 170007 = 0) (h20 : c.nreg 170020 = 1) (hA : c.nreg ALLOC = TD)
@@ -117,7 +119,7 @@ theorem descU_exec0 (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wo
       rw [fr2 r h2, fr1 r h1 h3 h4 h5],
     fun r h1 h2 h3 => by rw [hrr2, frr1 r h1 h2 h3], by rw [hrm2, hrm1], by rw [ho2, ho1]⟩
 
-set_option maxHeartbeats 16000000 in
+
 /-- **The descriptor of a chain of grade `g ≥ 1`** from its children. -/
 theorem descU_execG (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : WordsBounded W c)
     {TD hp g i R cnt : ℕ} (h07 : c.nreg 170007 = g) (hg : 1 ≤ g) (h20 : c.nreg 170020 = 1)
@@ -161,7 +163,7 @@ theorem descU_execG (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wo
       fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
     simp only
     repeat (rw [Machine.upd_other _ _ _ (by omega)])
-  have g1 : ∀ r, r ≠ 170034 → r ≠ 160035 → c1.nreg r = c.nreg r := fr1
+  have g1 := fr1
   set BL := c.nmem (R + 6 * i) with hBL
   have hs0 : gradeStart g i = gradeStart (g - 1) (2 * i) := by
     rw [← gradeStart_succ, hgg]

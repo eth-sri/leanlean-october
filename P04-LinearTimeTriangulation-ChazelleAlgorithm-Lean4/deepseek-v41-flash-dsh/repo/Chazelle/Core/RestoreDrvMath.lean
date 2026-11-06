@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreDrvReg
 
 /-!
@@ -37,7 +39,7 @@ theorem mem_highList {D r r' : ℕ} : r' ∈ highList N D r ↔ r' < r ∧ D < d
 theorem highList_nodup (D r : ℕ) : (highList N D r).Nodup := List.nodup_range.filter _
 
 theorem chords_map_nodup (hN : IsNF M Q N) : (N.chords.map fun x => x.toSet M Q).Nodup := by
-  rw [List.nodup_iff_injective_get]
+  Ξ List.nodup_iff_injective_get
   rintro ⟨i, hi⟩ ⟨j, hj⟩ h
   simp only [List.get_eq_getElem, List.getElem_map] at h
   simp only [List.length_map] at hi hj
@@ -66,7 +68,7 @@ theorem found_region (hM : WalkAx M) (_hN : IsNF M Q N) (hregs : NFRegs M Q N re
   have e1 := hRC.1 r hr
   have e2 := hRC.1 r' hr'
   have : reg r = reg r' := by
-    rw [Chazelle.Chain.regionsIn_eq_component e1 hz1, Chazelle.Chain.regionsIn_eq_component e2 hz2]
+    Ξ Chazelle.Chain.regionsIn_eq_component e1 hz1, Chazelle.Chain.regionsIn_eq_component e2 hz2
   exact hRC.2.1 r r' hr hr' this
 
 theorem fst_inj {l : List (ℕ × (ℕ × ℕ × ℕ))} (hl : (l.map Prod.fst).Nodup) {p p' : ℕ × (ℕ × ℕ × ℕ)}
@@ -76,9 +78,9 @@ theorem fst_inj {l : List (ℕ × (ℕ × ℕ × ℕ))} (hl : (l.map Prod.fst).N
   | cons a l ih =>
     simp only [List.map_cons, List.nodup_cons, List.mem_map] at hl
     rcases List.mem_cons.1 hp with h1 | h1 <;> rcases List.mem_cons.1 hp' with h2 | h2
-    · rw [h1, h2]
-    · exact absurd ⟨p', h2, by rw [← h, h1]⟩ hl.1
-    · exact absurd ⟨p, h1, by rw [h, h2]⟩ hl.1
+    · Ξ h1, h2
+    · exact absurd ⟨p', h2, Ρ ← h, h1⟩ hl.1
+    · exact absurd ⟨p, h1, Ρ h, h2⟩ hl.1
     · exact ih hl.2 h1 h2
 
 /-- The data of the end of a region loop. -/
@@ -109,7 +111,7 @@ theorem round_list_ok (hM : WalkAx M) (hN : IsNF M Q N) (hregs : NFRegs M Q N re
       have e : N.chords[i] = N.chord i := by
         unfold NF.chord; rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi,
           Option.getD_some]
-      rw [e]
+      Ξ e
       obtain ⟨-, -, -, -, -, -, hh, -⟩ := hN.2.2.2
       exact ⟨hN.1.2.1 (chord_toSet_mem hi), hh i hi, hN.2.2.1 i hi⟩
     · obtain ⟨p, hp, rfl⟩ := List.mem_map.1 hx
@@ -121,12 +123,12 @@ theorem round_list_ok (hM : WalkAx M) (hN : IsNF M Q N) (hregs : NFRegs M Q N re
     fun x hx => (hmem x hx).2.1⟩
   · rintro c ⟨x, hx, rfl⟩
     exact List.mem_map_of_mem (f := fun x => (recOf x).toSet M Q) hx
-  · rw [List.map_append]
+  · Ξ List.map_append
     refine List.nodup_append.2 ⟨?_, ?_, ?_⟩
     · have : (oldL N).map (fun x => (recOf x).toSet M Q) = N.chords.map fun x => x.toSet M Q := by
-        simp [oldL, recOf_toSet]
+        Θ oldL, recOf_toSet
       rw [this]; exact chords_map_nodup hN
-    · rw [List.map_map]
+    · Ξ List.map_map
       refine List.Nodup.map_on ?_ (List.Nodup.of_map _ h.nodup_fst)
       intro p hp p' hp' he
       exact fst_inj h.nodup_fst hp hp' (found_region hM hN hregs (h.lt hp) (h.lt hp')
@@ -178,7 +180,7 @@ theorem round_data (hM : WalkAx M) (_hN : IsNF M Q N) (hregs : NFRegs M Q N reg)
   have h1 := hreg p hp z hz hw
   have h2 := hreg p' hp' z' hz' hw'
   have := hRC.2.1 _ _ (h.lt hp) (h.lt hp') (h1.trans h2.symm)
-  rw [fst_inj h.nodup_fst hp hp' this]
+  Ξ fst_inj h.nodup_fst hp hp' this
 
 /-- **Every high region received a chord.** -/
 theorem round_all (hN : IsNF M Q N) (hregs : NFRegs M Q N reg) {D : ℕ}

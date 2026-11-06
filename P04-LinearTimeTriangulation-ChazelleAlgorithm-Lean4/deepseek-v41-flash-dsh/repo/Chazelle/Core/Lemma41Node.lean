@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Merge
 public import Chazelle.Core.Facts2Chain
 public import Chazelle.Core.ShearInv
@@ -30,32 +32,32 @@ def NodeOK (P : Polygon) (m : ℕ → ℕ) (A hp d f : ℕ) (C : Chain) (γ : �
 theorem hostAt_agree {m m' : ℕ → ℕ} {hp A : ℕ} {H : Host} (h : HostAt m hp H) (hl : H.length = 1)
     (hA : hp + 4 ≤ A) (he : ∀ a, a < A → m' a = m a) : HostAt m' hp H := by
   obtain ⟨h0, h1⟩ := h
-  refine ⟨by rw [he _ (by omega)]; exact h0, fun i hi => ?_⟩
-  have hi0 : i = 0 := by omega
+  refine ⟨by rw [he _ (⋄)]; exact h0, fun i hi => ?_⟩
+  have hi0 : i = 0 := ⋄
   subst hi0
   have := h1 0 hi
   revert this
   cases H.getD 0 (.run 0 0) with
-  | run a l => intro h; simp only at h ⊢; rw [he _ (by omega), he _ (by omega), he _ (by omega)]; exact h
+  | run a l => intro h; simp only at h ⊢; rw [he _ (⋄), he _ (by omega), he _ (by omega)]; exact h
   | pt x =>
     cases x with
-    | vtx j => intro h; simp only at h ⊢; rw [he _ (by omega), he _ (by omega)]; exact h
-    | onEdge e j => intro h; simp only at h ⊢; rw [he _ (by omega), he _ (by omega), he _ (by omega)]; exact h
+    | vtx j => intro h; simp only at h ⊢; rw [he _ (⋄), he _ (by omega)]; exact h
+    | onEdge e j => intro h; simp only at h ⊢; rw [he _ (⋄), he _ (by omega), he _ (by omega)]; exact h
 
 theorem chainDescAt_agree {m m' : ℕ → ℕ} {d hp A : ℕ} {Q : Polygon} {n : ℕ} {C : Chain}
     (h : ChainDescAt m d Q (Host.whole n) C) (hd : d + 5 ≤ A) (hh : m d = hp) (hA : hp + 7 ≤ A)
     (he : ∀ a, a < A → m' a = m a) : ChainDescAt m' d Q (Host.whole n) C := by
   obtain ⟨h0, h1, h2, h3, h4, h5⟩ := h
-  refine ⟨?_, h1, by rw [he _ (by omega)]; exact h2, by rw [he _ (by omega)]; exact h3,
-    by rw [he _ (by omega)]; exact h4, by rw [he _ (by omega)]; exact h5⟩
-  rw [he _ (by omega)]
+  refine ⟨?_, h1, by rw [he _ (⋄)]; exact h2, by rw [he _ (by omega)]; exact h3,
+    by rw [he _ (⋄)]; exact h4, by rw [he _ (by omega)]; exact h5⟩
+  rw [he _ (⋄)]
   exact hostAt_agree h0 rfl (by rw [hh]; omega) he
 
 /-- Nodes survive writes at or above `A`. -/
 theorem NodeOK.agree {P : Polygon} {m m' : ℕ → ℕ} {A hp d f : ℕ} {C : Chain} {γ : ℕ}
     (h : NodeOK P m A hp d f C γ) (he : ∀ a, a < A → m' a = m a) : NodeOK P m' A hp d f C γ := by
   obtain ⟨h1, h2, h3, h4, h5, h6, N, hN, hc⟩ := h
-  refine ⟨chainDescAt_agree h1 h4 h3 h5 he, h2, by rw [he _ (by omega)]; exact h3, h4, h5, h6,
+  refine ⟨chainDescAt_agree h1 h4 h3 h5 he, h2, by rw [he _ (⋄)]; exact h3, h4, h5, h6,
     N, ?_, hc⟩
   intro m'' hm''
   exact hN m'' (fun a ha => (hm'' a ha).trans (he a ha))
@@ -64,7 +66,7 @@ theorem NodeOK.agree {P : Polygon} {m m' : ℕ → ℕ} {A hp d f : ℕ} {C : Ch
 theorem NodeOK.mono {P : Polygon} {m : ℕ → ℕ} {A A' hp d f : ℕ} {C : Chain} {γ : ℕ}
     (h : NodeOK P m A hp d f C γ) (hA : A ≤ A') : NodeOK P m A' hp d f C γ := by
   obtain ⟨h1, h2, h3, h4, h5, h6, N, hN, hc⟩ := h
-  exact ⟨h1, h2, h3, by omega, by omega, h6, N, fun m' hm' => hN m' (fun a ha => hm' a (by omega)),
+  exact ⟨h1, h2, h3, ⋄, by omega, h6, N, fun m' hm' => hN m' (fun a ha => hm' a (by omega)),
     hc⟩
 
 /-- **Junctions of consecutive chains of `Q` are generic.** -/
@@ -76,18 +78,18 @@ theorem sharedGeneric_q {P : Polygon} (hG : GoodEnv P) {J : Junction} (hJ : J.P 
   have ev : ∀ k, J.s + k < P.n → J.whole.vertex k = (Qof P).vtx (J.s + k) := fun k hk => by
     unfold Chain.vertex Chain.edgeIdx
     show J.P.vtx ((J.s + k) % J.P.n) = _
-    rw [hJ, hQn, Nat.mod_eq_of_lt hk]
+    Ξ hJ, hQn, Nat.mod_eq_of_lt hk
   unfold SharedGeneric sharedU sharedV sharedW
-  rw [ev _ (by omega), ev _ (by omega), ev _ (by omega)]
-  refine ⟨hDH _ _ (by omega) (by omega) (by omega), hDH _ _ (by omega) (by omega) (by omega),
-    hDH _ _ (by omega) (by omega) (by omega)⟩
+  rw [ev _ (⋄), ev _ (by omega), ev _ (by omega)]
+  refine ⟨hDH _ _ (⋄) (by omega) (by omega), hDH _ _ (by omega) (by omega) (by omega),
+    hDH _ _ (⋄) (by omega) (by omega)⟩
 
 /-- A host description in memory is determined by the memory. -/
 theorem hostAt_unique {m : ℕ → ℕ} {B : ℕ} {H H' : Host} (h : HostAt m B H) (h' : HostAt m B H') :
     H = H' := by
   obtain ⟨l, hi⟩ := h
   obtain ⟨l', hi'⟩ := h'
-  apply List.ext_getElem (by omega)
+  apply List.ext_getElem (⋄)
   intro i h1 h2
   have a := hi i h1
   have b := hi' i h2

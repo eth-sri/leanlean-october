@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutArc
 
 /-!
@@ -34,21 +36,21 @@ theorem CoreRegs.of_low {MD mode : ℕ} {s e : WPos} {c c' : Config}
     (h93 : c'.nreg 150093 = 3) (h96 : c'.nreg 150096 = 6) :
     CoreRegs P C H Hh MD h γ mode s e m₀ c' := by
   have k : ∀ r, 150000 ≤ r → r < 150030 ∨ (150030 < r ∧ r < 150037) →
-      c'.nreg r = c.nreg r := fun r h1 h2 => hk r h1 (by omega) (by omega)
-  exact ⟨⟨(k _ (by norm_num) (by norm_num)).trans R.chain.h21,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h22,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h23,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h26,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h28,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h29, h91, h93, h96⟩,
-    (k _ (by norm_num) (by norm_num)).trans R.h00, (k _ (by norm_num) (by norm_num)).trans R.h01,
-    (k _ (by norm_num) (by norm_num)).trans R.h02, (k _ (by norm_num) (by norm_num)).trans R.h03,
-    (k _ (by norm_num) (by norm_num)).trans R.h04, (k _ (by norm_num) (by norm_num)).trans R.h09,
-    (k _ (by norm_num) (by norm_num)).trans R.h13, (k _ (by norm_num) (by norm_num)).trans R.h20,
-    (k _ (by norm_num) (by norm_num)).trans R.h27, (k _ (by norm_num) (by norm_num)).trans R.h31,
-    (k _ (by norm_num) (by norm_num)).trans R.h32, (k _ (by norm_num) (by norm_num)).trans R.h33,
-    (k _ (by norm_num) (by norm_num)).trans R.h34, (k _ (by norm_num) (by norm_num)).trans R.h35,
-    (k _ (by norm_num) (by norm_num)).trans R.h36, h90, h92⟩
+      c'.nreg r = c.nreg r := fun r h1 h2 => hk r h1 (⋄) (⋄)
+  exact ⟨⟨(k _ (⊛) (⊛)).trans R.chain.h21,
+      (k _ (⊛) (⊛)).trans R.chain.h22,
+      (k _ (⊛) (⊛)).trans R.chain.h23,
+      (k _ (⊛) (⊛)).trans R.chain.h26,
+      (k _ (⊛) (⊛)).trans R.chain.h28,
+      (k _ (⊛) (⊛)).trans R.chain.h29, h91, h93, h96⟩,
+    (k _ (⊛) (⊛)).trans R.h00, (k _ (⊛) (⊛)).trans R.h01,
+    (k _ (⊛) (⊛)).trans R.h02, (k _ (⊛) (⊛)).trans R.h03,
+    (k _ (⊛) (⊛)).trans R.h04, (k _ (⊛) (⊛)).trans R.h09,
+    (k _ (⊛) (⊛)).trans R.h13, (k _ (⊛) (⊛)).trans R.h20,
+    (k _ (⊛) (⊛)).trans R.h27, (k _ (⊛) (⊛)).trans R.h31,
+    (k _ (⊛) (⊛)).trans R.h32, (k _ (⊛) (⊛)).trans R.h33,
+    (k _ (⊛) (⊛)).trans R.h34, (k _ (⊛) (⊛)).trans R.h35,
+    (k _ (⊛) (⊛)).trans R.h36, h90, h92⟩
 
 /-- The cost bound of the general case. -/
 def genCost (K γ : ℕ) : ℕ := 1100 * ((2 * K + 90) * (Nat.log 2 γ + 1) + 1702) + 2 * K + 20000
@@ -111,7 +113,7 @@ theorem general_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       x ≠ 150043 → d₄.nreg x = d.nreg x := fun x h1 h2 h3 h4 h5 h6 => by
     simp only [hd₄, upd]; rw [ite_eq_right h6, r₃ x h5, g₂ x h1 h2 h3 h4]
   have w₄ := e₄.wb_right
-  have R₄ : CoreRegs P C H Hh MD h γ mode s e m₀ d₄ := R.of_low
+  have R₄ := R.of_low
     (fun r h1 h2 h3 => g₄ r (by omega) (by omega) (by omega) h3 (by omega) (by omega))
     (by rw [g₄ _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), R.h90])
     (by rw [g₄ _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), R.chain.h91])
@@ -141,7 +143,7 @@ theorem general_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   obtain ⟨d₅, k₅, p₁, ex₅, hk₅, hI₅, hp₁, hp₁s, hdone, hndone, kp₅, mem₅⟩ :=
     first_exec S hE (ps₀ := ps₀) d₄ w₄ R₄ b38 b37 b39 b30 hI₄ hs he hs1 he1
   have w₅ := ex₅.wb_right
-  have R₅ : CoreRegs P C H Hh MD h γ mode s e m₀ d₅ := R₄.of_low
+  have R₅ := R₄.of_low
     (fun r h1 h2 h3 => kp₅ r (Or.inl ⟨h1, by omega⟩) (by omega) (by omega))
     (by rw [kp₅ _ (by unfold Keep; omega) (by omega) (by omega), R₄.h90])
     (by rw [kp₅ _ (by unfold Keep; omega) (by omega) (by omega), R₄.chain.h91])
@@ -149,7 +151,7 @@ theorem general_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     (by rw [kp₅ _ (by unfold Keep; omega) (by omega) (by omega), R₄.chain.h93])
     (by rw [kp₅ _ (by unfold Keep; omega) (by omega) (by omega), R₄.chain.h96])
   have hm₅ : ∀ a, a < A₀ → d₅.nmem a = m₀ a := fun a ha => by rw [mem₅ a ha]; exact hm₄ a ha
-  have c91 : d₅.nreg 150091 = 1 := R₅.chain.h91
+  have c91 := R₅.chain.h91
   have hpre : ∀ {d' : Config} {k : ℕ}, Exec P W (.ifLtN 150043 150091
       (.seq setFlag (.seq (mainLoop emit) (final emit))) .skip) d₅ d' k →
       Exec P W (general emit) d d' ((k₁ + k₂) + (k₃ + (1 + (k₅ + k)))) := fun ex => by

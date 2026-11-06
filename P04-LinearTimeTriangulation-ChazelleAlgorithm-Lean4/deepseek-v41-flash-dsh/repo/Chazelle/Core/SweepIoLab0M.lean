@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoCand0L
 public import Chazelle.Core.SweepIoBruteShot
 public import Chazelle.Core.SweepIoS0CandBsSpec
@@ -74,8 +76,8 @@ theorem gap_reg {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF}
   set F := N.F M Q with hFdef
   have hGM : GoodModel M := Or.inl ⟨C, hP, rfl⟩
   have hM : WalkAx M := walkAx_of_goodModel hGM
-  have hFam : M.ChordFamily Q F := hN.1
-  have hF : F ⊆ M.Adm := hFam.2.1
+  have hFam := hN.1
+  have hF := hFam.2.1
   have hfin : F.Finite := hFam.1
   obtain ⟨hRC, -, hArcs, -⟩ := regOf_spec hN
   have hp' : ((p : ℝ) + 0) = p := add_zero _
@@ -173,7 +175,7 @@ theorem logKey_eq {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)} {m
   obtain ⟨a1, a2⟩ := S0C.logOf_getD J (Qof P) N₂ hi
   obtain ⟨m1, m2, -⟩ := hls i hi
   unfold logKey Model.key S0C.logPos
-  rw [a1, a2, m1, m2]
+  Ξ a1, a2, m1, m2
 
 /-- **The log entry of the key of `x`** is the result `t` of the binary search or `t - 1`. -/
 theorem logIdx_cases (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {x : WPos} {t i : ℕ}
@@ -217,7 +219,7 @@ theorem exit_mem_gather {P : Polygon} {C : Chain} (hP : C.P.Simple) {N : NF}
       ShotList.loSet (chainModel C) (Qof P) m A (regArcs N rs).length [] := by
   set M := chainModel C with hMdef
   set F := N.F M (Qof P) with hFdef
-  have hFam : M.ChordFamily (Qof P) F := hN.1
+  have hFam := hN.1
   obtain ⟨hRC, -, hArcs, -⟩ := regOf_spec hN
   have hU : regOf M (Qof P) N r ∈ M.regions F := hRC.1 r hr
   have hfree : FreeAt C z σ :=
@@ -234,12 +236,12 @@ theorem exit_mem_gather {P : Polygon} {C : Chain} (hP : C.P.Simple) {N : NF}
     have hmem' : i₀ ∈ regArcs N rs := List.mem_flatMap.2 ⟨r, hrs, hmem⟩
     obtain ⟨k, hk, hki⟩ := List.mem_iff_getElem.1 hmem'
     refine List.mem_map.2 ⟨k, List.mem_range.2 hk, ?_⟩
-    have hg : (regArcs N rs).getD k 0 = i₀ := by rw [List.getD_eq_getElem _ _ hk, hki]
-    rw [harcs k hk, hg]
+    have hg : (regArcs N rs).getD k 0 = i₀ := Ρ List.getD_eq_getElem _ _ hk, hki
+    Ξ harcs k hk, hg
     obtain ⟨⟨hps, -, -⟩, ⟨hpe, -, -⟩⟩ := arc_end_facts hP hN hi₀
     unfold nArc
     simp only
-    rw [(Restore.normOf_facts hps).2.2.2.1, (Restore.normOf_facts hpe).2.2.2.1, his, hie]
+    Ξ (Restore.normOf_facts hps).2.2.2.1, (Restore.normOf_facts hpe).2.2.2.1, his, hie
   have hFh := firstHit_arcs C hP hFam hU hzt hσ hray L hL
   have hw := hFh.2.1
   simp only [mem_iUnion] at hw

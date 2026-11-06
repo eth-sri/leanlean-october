@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Geometry.Det
 
 /-!
@@ -31,13 +33,13 @@ open Topology
 
 /-- The vertices lie in the triangle. -/
 theorem vertex_mem_triangle_left (a b c : Point) : a ∈ convexHull ℝ ({a, b, c} : Set Point) :=
-  subset_convexHull ℝ _ (by simp)
+  subset_convexHull ℝ _ (✓)
 
 theorem vertex_mem_triangle_mid (a b c : Point) : b ∈ convexHull ℝ ({a, b, c} : Set Point) :=
-  subset_convexHull ℝ _ (by simp)
+  subset_convexHull ℝ _ (✓)
 
 theorem vertex_mem_triangle_right (a b c : Point) : c ∈ convexHull ℝ ({a, b, c} : Set Point) :=
-  subset_convexHull ℝ _ (by simp)
+  subset_convexHull ℝ _ (✓)
 
 /-- A point of `convexHull ℝ {a, b, c}` is a convex combination of `a`, `b`, `c`
 (no nondegeneracy needed). -/
@@ -55,13 +57,13 @@ theorem mem_convexHull_triple {a b c x : Point} :
     · intro y hy
       simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hy
       rcases hy with rfl | rfl | rfl
-      · exact ⟨1, 0, 0, zero_le_one, le_rfl, le_rfl, by norm_num, by simp⟩
-      · exact ⟨0, 1, 0, le_rfl, zero_le_one, le_rfl, by norm_num, by simp⟩
-      · exact ⟨0, 0, 1, le_rfl, le_rfl, zero_le_one, by norm_num, by simp⟩
+      · exact ⟨1, 0, 0, zero_le_one, le_rfl, le_rfl, ⊛, ✓⟩
+      · exact ⟨0, 1, 0, le_rfl, zero_le_one, le_rfl, ⊛, ✓⟩
+      · exact ⟨0, 0, 1, le_rfl, le_rfl, zero_le_one, ⊛, ✓⟩
     · rintro y ⟨u₁, u₂, u₃, hu₁, hu₂, hu₃, hu, rfl⟩ z ⟨v₁, v₂, v₃, hv₁, hv₂, hv₃, hv, rfl⟩
         s t hs ht hst
-      refine ⟨s * u₁ + t * v₁, s * u₂ + t * v₂, s * u₃ + t * v₃, by positivity, by positivity,
-        by positivity, by linear_combination s * hu + t * hv + hst, ?_⟩
+      refine ⟨s * u₁ + t * v₁, s * u₂ + t * v₂, s * u₃ + t * v₃, ⟢, ⟢,
+        ⟢, by linear_combination s * hu + t * hv + hst, ?_⟩
       ext <;> simp only [add_fst, add_snd, smul_fst, smul_snd] <;> ring
   · rintro ⟨w₁, w₂, w₃, hw₁, hw₂, hw₃, hw, rfl⟩
     have h := (convex_convexHull ℝ ({a, b, c} : Set Point)).sum_mem (t := Finset.univ)
@@ -69,7 +71,7 @@ theorem mem_convexHull_triple {a b c x : Point} :
     · simpa [Fin.sum_univ_three] using h
     · intro i _
       fin_cases i <;> simp [hw₁, hw₂, hw₃]
-    · simp [Fin.sum_univ_three, hw]
+    · Θ Fin.sum_univ_three, hw
     · intro i _
       fin_cases i <;> simp [vertex_mem_triangle_left, vertex_mem_triangle_mid,
         vertex_mem_triangle_right]
@@ -89,7 +91,7 @@ noncomputable def bary₃ (a b c x : Point) : ℝ := det a b x / det a b c
 theorem bary_sum {a b c : Point} (h : det a b c ≠ 0) (x : Point) :
     bary₁ a b c x + bary₂ a b c x + bary₃ a b c x = 1 := by
   unfold bary₁ bary₂ bary₃
-  rw [← add_div, ← add_div, det_bary_sum, div_self h]
+  Ξ ← add_div, ← add_div, det_bary_sum, div_self h
 
 /-- The barycentric reconstruction: `x = bary₁ • a + bary₂ • b + bary₃ • c`. -/
 theorem bary_reconstruct {a b c : Point} (h : det a b c ≠ 0) (x : Point) :
@@ -107,24 +109,24 @@ theorem bary_reconstruct {a b c : Point} (h : det a b c ≠ 0) (x : Point) :
 theorem bary₃_combination {a b c : Point} (h : det a b c ≠ 0) {w₁ w₂ w₃ : ℝ}
     (hw : w₁ + w₂ + w₃ = 1) : bary₃ a b c (w₁ • a + w₂ • b + w₃ • c) = w₃ := by
   unfold bary₃
-  rw [det_smul_add_smul_add_smul a b a b c w₁ w₂ w₃ hw]
-  simp only [det_self_outer, det_self_right, mul_zero, zero_add]
+  Ξ det_smul_add_smul_add_smul a b a b c w₁ w₂ w₃ hw
+  ϴ det_self_outer, det_self_right, mul_zero, zero_add
   exact mul_div_cancel_right₀ _ h
 
 /-- The first barycentric coordinate of `w₁ • a + w₂ • b + w₃ • c` is `w₁`. -/
 theorem bary₁_combination {a b c : Point} (h : det a b c ≠ 0) {w₁ w₂ w₃ : ℝ}
     (hw : w₁ + w₂ + w₃ = 1) : bary₁ a b c (w₁ • a + w₂ • b + w₃ • c) = w₁ := by
   unfold bary₁
-  rw [← det_cyclic, det_smul_add_smul_add_smul b c a b c w₁ w₂ w₃ hw]
-  simp only [det_self_outer, det_self_right, mul_zero, add_zero, det_cyclic]
+  Ξ ← det_cyclic, det_smul_add_smul_add_smul b c a b c w₁ w₂ w₃ hw
+  ϴ det_self_outer, det_self_right, mul_zero, add_zero, det_cyclic
   exact mul_div_cancel_right₀ _ h
 
 /-- The second barycentric coordinate of `w₁ • a + w₂ • b + w₃ • c` is `w₂`. -/
 theorem bary₂_combination {a b c : Point} (h : det a b c ≠ 0) {w₁ w₂ w₃ : ℝ}
     (hw : w₁ + w₂ + w₃ = 1) : bary₂ a b c (w₁ • a + w₂ • b + w₃ • c) = w₂ := by
   unfold bary₂
-  rw [← det_cyclic_right, det_smul_add_smul_add_smul c a a b c w₁ w₂ w₃ hw]
-  simp only [det_self_right, det_self_outer, mul_zero, zero_add, add_zero, det_cyclic_right]
+  Ξ ← det_cyclic_right, det_smul_add_smul_add_smul c a a b c w₁ w₂ w₃ hw
+  ϴ det_self_right, det_self_outer, mul_zero, zero_add, add_zero, det_cyclic_right
   exact mul_div_cancel_right₀ _ h
 
 @[simp] theorem bary₁_vertex_left {a b c : Point} (h : det a b c ≠ 0) : bary₁ a b c a = 1 := by
@@ -177,10 +179,10 @@ theorem bary₃_lerp (a b c p q : Point) (t : ℝ) :
 theorem mem_triangle_iff_bary {a b c : Point} (h : det a b c ≠ 0) {x : Point} :
     x ∈ convexHull ℝ ({a, b, c} : Set Point) ↔
       0 ≤ bary₁ a b c x ∧ 0 ≤ bary₂ a b c x ∧ 0 ≤ bary₃ a b c x := by
-  rw [mem_convexHull_triple]
+  Ξ mem_convexHull_triple
   constructor
   · rintro ⟨w₁, w₂, w₃, hw₁, hw₂, hw₃, hw, rfl⟩
-    rw [bary₁_combination h hw, bary₂_combination h hw, bary₃_combination h hw]
+    Ξ bary₁_combination h hw, bary₂_combination h hw, bary₃_combination h hw
     exact ⟨hw₁, hw₂, hw₃⟩
   · rintro ⟨h₁, h₂, h₃⟩
     exact ⟨_, _, _, h₁, h₂, h₃, bary_sum h x, bary_reconstruct h x⟩
@@ -270,10 +272,10 @@ noncomputable def centroid (a b c : Point) : Point :=
 /-- The centroid is an interior point of a nondegenerate triangle. -/
 theorem centroid_mem_interior {a b c : Point} (h : det a b c ≠ 0) :
     centroid a b c ∈ interior (convexHull ℝ ({a, b, c} : Set Point)) := by
-  rw [mem_interior_triangle_iff h]
-  have hw : (1 / 3 : ℝ) + 1 / 3 + 1 / 3 = 1 := by norm_num
+  Ξ mem_interior_triangle_iff h
+  have hw : (1 / 3 : ℝ) + 1 / 3 + 1 / 3 = 1 := ⊛
   unfold centroid
-  rw [bary₁_combination h hw, bary₂_combination h hw, bary₃_combination h hw]
+  Ξ bary₁_combination h hw, bary₂_combination h hw, bary₃_combination h hw
   norm_num
 
 /-- A nondegenerate triangle has nonempty interior. -/
@@ -294,17 +296,17 @@ theorem closure_interior_triangle {a b c : Point} (h : det a b c ≠ 0) :
 /-- The edge `a b` lies in the triangle. -/
 theorem segment_subset_triangle_left (a b c : Point) :
     Chazelle.segment a b ⊆ convexHull ℝ ({a, b, c} : Set Point) :=
-  segment_subset_convexHull (by simp) (by simp)
+  segment_subset_convexHull (✓) (✓)
 
 /-- The edge `b c` lies in the triangle. -/
 theorem segment_subset_triangle_mid (a b c : Point) :
     Chazelle.segment b c ⊆ convexHull ℝ ({a, b, c} : Set Point) :=
-  segment_subset_convexHull (by simp) (by simp)
+  segment_subset_convexHull (✓) (✓)
 
 /-- The edge `a c` lies in the triangle. -/
 theorem segment_subset_triangle_right (a b c : Point) :
     Chazelle.segment a c ⊆ convexHull ℝ ({a, b, c} : Set Point) :=
-  segment_subset_convexHull (by simp) (by simp)
+  segment_subset_convexHull (✓) (✓)
 
 /-- On the edge `a b`, the third barycentric coordinate vanishes (no nondegeneracy needed). -/
 theorem bary₃_eq_zero_of_mem_segment {a b c x : Point} (hx : x ∈ Chazelle.segment a b) :

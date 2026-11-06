@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranRamApp
 
 /-!
@@ -27,7 +29,7 @@ theorem Enc.mem_congr {m m' : ℕ → ℕ} {d : Dm} {st : St} (h : Enc m d st)
   refine ⟨fun i hi => ?_, fun i hi => ?_, fun i hi => ?_, fun i hi => ?_, fun i hi => ?_,
     fun x hx => ?_, fun x hx => ?_, fun x hx => ?_, fun x t hx ht => ?_, fun j hj => ?_,
     fun j hj => ?_, fun j hj => ?_, fun j hj => ?_, fun j hj => ?_, fun t ht => ?_⟩
-  · rw [hm _ (by omega) (by dm_simp; omega)]; exact h.live i hi
+  · rw [hm _ (⋄) (by dm_simp; omega)]; exact h.live i hi
   · rw [hm _ (by dm_simp; omega) (by dm_simp; omega)]; exact h.s0 i hi
   · rw [hm _ (by dm_simp; omega) (by dm_simp; omega)]; exact h.s1 i hi
   · rw [hm _ (by dm_simp; omega) (by dm_simp; omega)]; exact h.nd0 i hi
@@ -66,31 +68,31 @@ theorem Enc.st_congr {m : ℕ → ℕ} {d : Dm} {st st' : St} (h : Enc m d st)
 /-! ## List facts -/
 
 theorem exl_length (st : St) (x : ℕ) : (st.exl x).length = st.deg x := by
-  unfold St.exl; rw [List.length_ofFn]
+  unfold St.exl; Ξ List.length_ofFn
 
 theorem exl_getD (st : St) {x t : ℕ} (ht : t < st.deg x) : (st.exl x).getD t 0 = st.ex x t := by
   unfold St.exl
-  rw [List.getD_eq_getElem?_getD, List.getElem?_ofFn]
-  simp [ht]
+  Ξ List.getD_eq_getElem?_getD, List.getElem?_ofFn
+  Θ ht
 
 theorem getD_not_mem_take {l : List ℕ} (hl : l.Nodup) {t : ℕ} (ht : t < l.length) :
     l.getD t 0 ∉ l.take t := by
   intro hm
   have e := List.take_append_drop t l
-  rw [List.drop_eq_getElem_cons ht] at e
-  rw [← e, List.nodup_append] at hl
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some] at hm
+  Ξ' List.drop_eq_getElem_cons ht at e
+  Ξ' ← e, List.nodup_append at hl
+  Ξ' List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some at hm
   exact hl.2.2 _ hm _ List.mem_cons_self rfl
 
 theorem mem_take_succ {l : List ℕ} {t : ℕ} (ht : t < l.length) (a : ℕ) :
     a ∈ l.take (t + 1) ↔ a ∈ l.take t ∨ a = l.getD t 0 := by
   rw [List.take_add_one, List.getElem?_eq_getElem ht, List.getD_eq_getElem?_getD,
     List.getElem?_eq_getElem ht]
-  simp only [List.mem_append, Option.toList_some, List.mem_singleton, Option.getD_some]
+  ϴ List.mem_append, Option.toList_some, List.mem_singleton, Option.getD_some
 
 theorem slot_le {D x t R : ℕ} (hx : x < R) (ht : t ≤ D) : D * x + t ≤ R * D := by
   have : D * x + t ≤ D * (x + 1) := by rw [Nat.mul_succ]; omega
-  have : D * (x + 1) ≤ D * R := Nat.mul_le_mul_left _ (by omega)
+  have : D * (x + 1) ≤ D * R := Nat.mul_le_mul_left _ (⋄)
   rw [Nat.mul_comm R]; omega
 
 /-- Layout facts. -/
@@ -117,7 +119,7 @@ def gatherStmt : Stmt :=
 /-- The registers `90100 … 90109`. -/
 def Brm (r : ℕ) : Bool := decide (90100 ≤ r ∧ r < 90110)
 
-theorem wrS_gather : wrS Brm gatherStmt = true := by decide
+theorem wrS_gather : wrS Brm gatherStmt = true := ⌖
 
 theorem gather_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Config}
     (hw : WordsBounded W c) (hC : Cst c E d) (henc : Enc c.nmem d st) (hD : DimOK E d W)
@@ -187,7 +189,7 @@ theorem gather_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {st : St} {c : Co
     (fun t ht => by rw [exl_length] at ht; left; omega)
     (by rw [exl_length]; omega) (by omega) (by rw [exl_length]; omega)
   have hw₂ := e₂.wb_right
-  have g₂ : ∀ r, Bapp r = false → c₂.nreg r = c₁.nreg r := F₂.1
+  have g₂ := F₂.1
   -- reset the counter
   have e₃ := Exec.constN (P := P) hw₂ 90101 0 (by omega)
   have hw₃ := e₃.wb_right
@@ -244,12 +246,12 @@ theorem condStore_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W
       c'.nmem = (if c.nreg a = c.nreg b then upd c.nmem (c.nreg p) (c.nreg v) else c.nmem) := by
   unfold condStore
   by_cases h1 : c.nreg a < c.nreg b
-  · exact ⟨c, _, .ifLtN_true h1 (.skip hw), by omega, rfl,
+  · exact ⟨c, _, .ifLtN_true h1 (.skip hw), ⋄, rfl,
       (ite_eq_right (show ¬ c.nreg a = c.nreg b by omega)).symm⟩
   by_cases h2 : c.nreg b < c.nreg a
-  · exact ⟨c, _, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw)), by omega, rfl,
+  · exact ⟨c, _, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw)), ⋄, rfl,
       (ite_eq_right (show ¬ c.nreg a = c.nreg b by omega)).symm⟩
-  · exact ⟨_, _, .ifLtN_false h1 (.ifLtN_false h2 (Exec.storeN hw p v)), by omega, rfl,
+  · exact ⟨_, _, .ifLtN_false h1 (.ifLtN_false h2 (Exec.storeN hw p v)), ⋄, rfl,
       (ite_eq_left (show c.nreg a = c.nreg b by omega)).symm⟩
 
 theorem Enc.cond_s0 {m : ℕ → ℕ} {d : Dm} {S : St} (h : Enc m d S) {e : ℕ} (he : e < d.K)
@@ -343,7 +345,7 @@ def relBody : Stmt :=
 /-- The relabelling loop. -/
 def relStmt : Stmt := .seq (.instr (.constN 90101 0)) (.whileLtN 90101 90067 relBody)
 
-theorem wrS_rel : wrS Brm relStmt = true := by decide
+theorem wrS_rel : wrS Brm relStmt = true := ⌖
 
 /-- The facts the relabelling loop keeps. -/
 structure RelI (W : ℕ) (d : Dm) (st : St) (cc : ℕ) (c₀ c : Config) : Prop where

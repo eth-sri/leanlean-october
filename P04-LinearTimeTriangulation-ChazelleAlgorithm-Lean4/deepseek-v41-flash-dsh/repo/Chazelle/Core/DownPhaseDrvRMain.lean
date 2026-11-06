@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRProg
 public import Chazelle.Core.Output
 
@@ -43,12 +45,12 @@ theorem whileLtN_potential_frame {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stm
   | _ n ih =>
     by_cases ht : c.nreg a < c.nreg b
     · obtain ⟨c₁, k₁, hb, hI₁, hF₁, hΦ⟩ := hbody c hc ht
-      obtain ⟨c', k₂, hl, hI', ht', hF₂, hk₂⟩ := ih (Φ c₁) (by omega) hI₁ rfl
+      obtain ⟨c', k₂, hl, hI', ht', hF₂, hk₂⟩ := ih (Φ c₁) (⋄) hI₁ rfl
       refine ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht',
-        (hF₁.trans hF₂).mono (by simp) (by omega), by omega⟩
+        (hF₁.trans hF₂).mono (✓) (⋄), ⋄⟩
     · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht,
         ⟨fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_rfl,
-          by omega⟩, by omega⟩
+          ⋄⟩, ⋄⟩
 
 /-! ## The loop invariant -/
 
@@ -68,7 +70,7 @@ theorem topGrade_le (n : ℕ) : topGrade n ≤ n := by
 
 /-- The setup record gives `λ ↦ ⌈λ/5⌉ + 11` for `λ ≤ p`. -/
 theorem setup_next {m : ℕ → ℕ} {S n E lam : ℕ} (h : SetupAt m S n E) (hl : lam ≤ topGrade n) :
-    m (S + topGrade n + 4 + lam) = Cost.ceilBeta lam := (h.2.2.1 lam (by omega)).2
+    m (S + topGrade n + 4 + lam) = Cost.ceilBeta lam := (h.2.2.1 lam (⋄)).2
 
 /-- `EnvD` in terms of the raw registers of `coreReg 0`. -/
 theorem EnvD.setup {X : MemCtx} {P : Polygon} {W : ℕ} {c : Config} (h : EnvD X P W c) :
@@ -94,9 +96,9 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
   obtain ⟨hw, hE, hlp, hInv, hg, h15, hroom⟩ := hI
   have hn₀n : n₀ ≤ P.n := by
     by_contra hc
-    rw [ite_eq_right hc] at hg; omega
+    Ξ' ite_eq_right hc at hg; omega
   have h16 : 16 ≤ rd c bDownDrv 0 := by
-    rw [ite_eq_left hn₀n] at hg; show 16 ≤ c.nreg 210000; omega
+    Ξ' ite_eq_left hn₀n at hg; show 16 ≤ c.nreg 210000; omega
   have hpot := pot_of_le (f := lvlBudget (κL + 20) cnt (topGrade P.n)) h16
   -- the level
   have hK := InvAt.len_le hInv
@@ -106,9 +108,9 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
     have h1 : (rd c bDownDrv 3 + 1) * (lemma41Nat (nextLvl (rd c bDownDrv 0)) + 1) ≤
         (cnt (rd c bDownDrv 0) * (2 ^ topGrade P.n + 2 ^ Cost.ceilBeta (rd c bDownDrv 0)) /
             2 ^ Cost.ceilBeta (rd c bDownDrv 0) + 1) *
-          (lemma41Nat (nextLvl (rd c bDownDrv 0)) + 1) := Nat.mul_le_mul_right _ (by omega)
+          (lemma41Nat (nextLvl (rd c bDownDrv 0)) + 1) := Nat.mul_le_mul_right _ (⋄)
     have h2 : 1 ≤ (rd c bDownDrv 3 + 1) * (lemma41Nat (nextLvl (rd c bDownDrv 0)) + 1) :=
-      Nat.one_le_iff_ne_zero.2 (by positivity)
+      Nat.one_le_iff_ne_zero.2 (⟢)
     nlinarith
   have hpre : EnvD X P W c ∧ n₀ ≤ P.n ∧ 16 ≤ rd c bDownDrv 0 ∧ rd c bDownDrv 0 ≤ topGrade P.n ∧
       InvAt cnt P c (rd c bDownDrv 0) := ⟨hE, hn₀n, h16, hlp, hInv⟩
@@ -123,28 +125,28 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
   have hS₁ := hE₁.setup
   have hA₁ := hF₁.2.2.2.2.2.2
   -- `λ := ⌈λ/5⌉ + 11`
-  have hl₁ : c₁.nreg 210000 = rd c bDownDrv 0 := h0₁
-  have hp₁ : c₁.nmem (c₁.nreg 230000 + 1) = topGrade P.n := hS₁.2.1
+  have hl₁ := h0₁
+  have hp₁ := hS₁.2.1
   have hnext := setup_next hS₁ hlp
   have hpn := topGrade_le P.n
   have hSA := hS₁.2.2.2
-  have hS₁W : c₁.nreg 230000 + topGrade P.n + 4 + rd c bDownDrv 0 ≤ W := by omega
+  have hS₁W : c₁.nreg 230000 + topGrade P.n + 4 + rd c bDownDrv 0 ≤ W := ⋄
   have hlt := Cost.ceilBeta_add_eleven_lt h16
   have hnW := hE.2.1
   obtain ⟨c₂, k₂, e₂, hk₂, hl₂, hr₂, hr₂', hm₂, hrr₂, hrm₂, ho₂⟩ :=
     lamNext_exec (P := P) c₁ hw₁ rfl hp₁ hl₁ hS₁W (by rw [hnext]; omega)
-  rw [hnext] at hl₂
+  Ξ' hnext at hl₂
   have hw₂ := e₂.wb_right
   -- the guard
   obtain ⟨c₃, k₃, e₃, hk₃, hg₃, h15₃, hr₃, hr₃', hl₃, hm₃, hrr₃, hrm₃, ho₃⟩ :=
-    guardS_exec (P := P) n₀ c₂ hw₂ hn₀ (by omega)
+    guardS_exec (P := P) n₀ c₂ hw₂ hn₀ (⋄)
   have hw₃ := e₃.wb_right
   -- frames
   have hF₂ : Frame {bDownDrv} c₁ c₂ k₂ := frame_drv hr₂ hm₂ hrr₂ hrm₂ ho₂
   have hF₃ : Frame {bDownDrv} c₂ c₃ k₃ := frame_drv hr₃ hm₃ hrr₃ hrm₃ ho₃
   have hsub : drvBands ∪ {bDownDrv} ∪ {bDownDrv} ⊆ drvBands := by
     intro x hx
-    simp only [Finset.mem_union, Finset.mem_singleton] at hx
+    ϴ' Finset.mem_union, Finset.mem_singleton at hx
     rcases hx with (hx | hx) | hx
     · exact hx
     · rw [hx]; exact bDownDrv_mem_drvBands
@@ -154,19 +156,19 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
     rw [rd_drv, Nat.add_zero, hl₃, hl₂]; rfl
   have hr13 : ∀ i, 1 ≤ i → i ≤ 5 → rd c₃ bDownDrv i = rd c₁ bDownDrv i := by
     intro i h1 h5
-    rw [rd_drv, rd_drv, hr₃' _ (by omega) (by omega), hr₂' _ (by omega) (by omega)]
+    Ξ rd_drv, rd_drv, hr₃' _ (⋄) (⋄), hr₂' _ (⋄) (⋄)
   have hA2 : c₂.nreg ALLOC = c₁.nreg ALLOC := hr₂ ALLOC (by unfold ALLOC; omega)
   have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := hr₃ ALLOC (by unfold ALLOC; omega)
   have hInv₃ : InvAt cnt P c₃ (nextLvl (rd c bDownDrv 0)) :=
-    hInv₁.transport hr13 (by rw [hA3, hA2]) (fun a _ => by rw [hm₃, hm₂])
+    hInv₁.transport hr13 (Ρ hA3, hA2) (fun a _ => Ρ hm₃, hm₂)
   have hE₃ : EnvD X P W c₃ :=
-    hE₁.frame hX (hF₂.trans hF₃) (by decide)
+    hE₁.frame hX (hF₂.trans hF₃) (⌖)
   have hpotn := nextLvl_lt h16
   refine ⟨c₃, k₁ + (k₂ + k₃), Exec.seq e₁ (Exec.seq e₂ e₃),
-    ⟨hw₃, hE₃, ?_, ?_, ?_, h15₃, ?_⟩, hF.mono subset_rfl (by omega), ?_⟩
+    ⟨hw₃, hE₃, ?_, ?_, ?_, h15₃, ?_⟩, hF.mono subset_rfl (⋄), ?_⟩
   · rw [hlam₃]; omega
   · rw [hlam₃]; exact hInv₃
-  · rw [hg₃, ite_eq_left hn₀n, ite_eq_left hn₀n, hl₃]
+  · Ξ hg₃, ite_eq_left hn₀n, ite_eq_left hn₀n, hl₃
   · rw [hlam₃, hA3, hA2]; omega
   · rw [hlam₃]; omega
 
@@ -175,12 +177,12 @@ theorem two_pow_topGrade_le (n : ℕ) : 2 ^ topGrade n ≤ 2 * n + 2 := by
   unfold topGrade
   rcases Nat.lt_or_ge (n - 1) 2 with h | h
   · rw [Nat.clog_of_right_le_one (show n - 1 ≤ 1 by omega), pow_zero]; omega
-  · have h1 := Nat.pow_pred_clog_lt_self (b := 2) (by norm_num) (show 1 < n - 1 by omega)
-    have h2 : 1 ≤ Nat.clog 2 (n - 1) := Nat.clog_pos (by norm_num) (by omega)
+  · have h1 := Nat.pow_pred_clog_lt_self (b := 2) (⊛) (show 1 < n - 1 by omega)
+    have h2 : 1 ≤ Nat.clog 2 (n - 1) := Nat.clog_pos (⊛) (⋄)
     obtain ⟨q, hq⟩ : ∃ q, Nat.clog 2 (n - 1) = q + 1 := ⟨_, (Nat.succ_pred_eq_of_pos h2).symm⟩
-    rw [hq] at h1 ⊢
-    rw [pow_succ]
-    simp only [Nat.pred_succ] at h1
+    Ξ' hq at h1 ⊢
+    Ξ pow_succ
+    ϴ' Nat.pred_succ at h1
     omega
 
 /-- The word bound of the host procedures from the budget. -/

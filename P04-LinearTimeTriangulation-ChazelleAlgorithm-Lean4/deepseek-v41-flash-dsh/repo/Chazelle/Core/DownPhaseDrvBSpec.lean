@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBArc
 public import Chazelle.Core.DownPhaseBaseSpec
 public import Chazelle.Core.DownPhaseDrvRBktM
@@ -58,32 +60,32 @@ noncomputable def newLB (li : Bool) (Q : Polygon) (L : List (ℕ × ℕ × ℕ))
 theorem newLB_eq_flatMap (li : Bool) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) :
     newLB li Q L E = (List.range (L.length + 1)).flatMap fun r => regList li Q (ptsB li Q L E r) := by
   unfold newLB tagLB
-  rw [List.map_flatMap]
+  Ξ List.map_flatMap
   congr 1
   funext r
-  rw [List.map_map]
+  Ξ List.map_map
   exact List.map_id' _
 
 /-- **`newLB` is `newL`** for `K > 0`. -/
 theorem newLB_pos (li : Bool) (Q : Polygon) {L : List (ℕ × ℕ × ℕ)} (E : List ℕ)
     (hK : 0 < L.length) :
     newLB li Q L E = newL li Q (BuildNF.buildNF (interiorModel Q) Q L E) := by
-  rw [newLB_eq_flatMap]
+  Ξ newLB_eq_flatMap
   unfold newL
   have hR : (BuildNF.buildNF (interiorModel Q) Q L E).nRegions = L.length + 1 := by
-    simp [NF.nRegions, BuildNF.buildNF]
-  rw [hR]
+    Θ NF.nRegions, BuildNF.buildNF
+  Ξ hR
   congr 1
   funext r
   unfold ptsB
-  rw [ite_eq_right (by omega)]
+  rw [ite_eq_right (⋄)]
 
 /-- **`newLB` is `newL0`** for `K = 0`. -/
 theorem newLB_zero (li : Bool) (Q : Polygon) {L : List (ℕ × ℕ × ℕ)} (E : List ℕ)
     (hK : L.length = 0) : newLB li Q L E = newL0 li Q := by
-  rw [newLB_eq_flatMap, hK]
+  Ξ newLB_eq_flatMap, hK
   unfold ptsB newL0
-  simp [hK]
+  Θ hK
 
 /-- **The precondition of the region loop**, with bounds `S₀` (points of a region) and `Cm`
 (walk edges of an arc of a region, or `n` when `K = 0`). -/

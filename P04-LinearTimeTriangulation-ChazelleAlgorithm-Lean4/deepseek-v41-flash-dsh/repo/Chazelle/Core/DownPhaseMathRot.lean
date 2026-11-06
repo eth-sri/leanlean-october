@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecBase
 public import Chazelle.Existence.Rotate
 
@@ -25,10 +27,10 @@ open Chazelle.Chain (sideE)
 theorem coordBound_rotate (P : Polygon) (s : ℕ) :
     Chazelle.Jordan.coordBound (P.rotate s) = Chazelle.Jordan.coordBound P := by
   unfold Chazelle.Jordan.coordBound
-  rw [Existence.n_rotate]
-  rw [← Existence.sum_range_rot (fun i => |(P.vtx i).1| + |(P.vtx i).2|) s P.n]
+  Ξ Existence.n_rotate
+  Ξ ← Existence.sum_range_rot (fun i => |(P.vtx i).1| + |(P.vtx i).2|) s P.n
   refine Finset.sum_congr rfl fun i hi => ?_
-  rw [Existence.vtx_rotate _ _ (Finset.mem_range.1 hi)]
+  Ξ Existence.vtx_rotate _ _ (Finset.mem_range.1 hi)
 
 section
 
@@ -39,7 +41,7 @@ include hm hv hr
 omit hr in
 theorem set_congr : C.set = C'.set := by
   ext p
-  simp only [Chain.set, Set.mem_ofPred_eq, Chain.chainEdge_eq, hv, hm]
+  ϴ Chain.set, Set.mem_ofPred_eq, Chain.chainEdge_eq, hv, hm
 
 omit hr in
 theorem topIdx_congr : C.topIdx = C'.topIdx := by
@@ -64,24 +66,24 @@ theorem slitTop_congr : C.slitTop = C'.slitTop := by
 
 theorem dom_congr : C.dom = C'.dom := by
   unfold Chain.dom Chain.obstacle Chain.slit
-  rw [set_congr hm hv, slitTop_congr hm hv hr, top_congr hm hv, radius_congr hr]
+  Ξ set_congr hm hv, slitTop_congr hm hv hr, top_congr hm hv, radius_congr hr
 
 theorem sideBeta_congr : C.sideBeta = C'.sideBeta := by
-  rw [Bool.eq_iff_iff, Chain.sideBeta_eq_true_iff, Chain.sideBeta_eq_true_iff]
-  simp only [hv, top_congr hm hv, slitTop_congr hm hv hr, topIdx_congr hm hv]
+  Ξ Bool.eq_iff_iff, Chain.sideBeta_eq_true_iff, Chain.sideBeta_eq_true_iff
+  ϴ hv, top_congr hm hv, slitTop_congr hm hv hr, topIdx_congr hm hv
 
 theorem sideWalk_congr (β : Bool) : C.sideWalk β = C'.sideWalk β := by
   unfold Chain.sideWalk Chain.boxList Chain.sideTour Chain.sideIdx Chain.sideS
-  simp only [hv, hm, slitTop_congr hm hv hr, radius_congr hr, topIdx_congr hm hv]
+  ϴ hv, hm, slitTop_congr hm hv hr, radius_congr hr, topIdx_congr hm hv
 
 theorem augChords_congr : Merge.augChords C = Merge.augChords C' := by
   unfold Merge.augChords
-  rw [dom_congr hm hv hr, top_congr hm hv]
+  Ξ dom_congr hm hv hr, top_congr hm hv
 
 theorem chords_congr : C.chords = C'.chords := by
   unfold Chain.chords Chain.DirFree Chain.chordSet Chain.chordEnd Chain.chordParam
     Chain.hitParam Chain.hitSet
-  simp only [hv, hm, dom_congr hm hv hr]
+  ϴ hv, hm, dom_congr hm hv hr
 
 /-- **The chain model depends only on the vertices, the length and the box radius.** -/
 theorem chainModel_congr : chainModel C = chainModel C' := by

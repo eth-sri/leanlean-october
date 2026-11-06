@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmSort
 
 /-!
@@ -39,7 +41,7 @@ def dd (l : List α) (d : α) : List α := ddp l d l.length
 theorem ddp_succ (l : List α) (d : α) (n : ℕ) :
     ddp l d (n + 1) = ddp l d n ++ (if keep l d n then [l.getD n d] else []) := by
   unfold ddp
-  rw [List.range_succ, List.filter_append, List.map_append]
+  Ξ List.range_succ, List.filter_append, List.map_append
   by_cases h : keep l d n <;> simp [h]
 
 theorem mem_dd (l : List α) (d : α) (x : α) : x ∈ dd l d ↔ x ∈ l := by
@@ -80,25 +82,25 @@ theorem dd_nodup {r : α → α → Prop} (hanti : ∀ x y, r x y → r y x → 
   -- wlog `i < j`
   have key : ∀ a b, a < b → b < l.length → keep l d b = true → l.getD a d = l.getD b d → False := by
     intro a b hab hb hk heq
-    have hb0 : b ≠ 0 := by omega
+    have hb0 : b ≠ 0 := ⋄
     unfold keep at hk
     simp only [hb0, false_or, decide_eq_true_eq, decide_eq_true_eq] at hk
     apply hk
     -- `l[a] = l[b]` and `a ≤ b - 1 < b`: sorted, so `l[b - 1] = l[b]`
     have ga : l.getD a d = l[a] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega)]; rfl
+      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (⋄)]; rfl
     have gb : l.getD b d = l[b] := by
       rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hb]; rfl
     have gc : l.getD (b - 1) d = l[b - 1] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega)]; rfl
-    rw [gb, gc]
+      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (⋄)]; rfl
+    Ξ gb, gc
     rw [ga, gb] at heq
     rcases Nat.lt_or_ge a (b - 1) with h | h
-    · have h1 : r l[a] l[b - 1] := List.pairwise_iff_getElem.1 hs _ _ (by omega) (by omega) h
-      have h2 : r l[b - 1] l[b] := List.pairwise_iff_getElem.1 hs _ _ (by omega) hb (by omega)
+    · have h1 : r l[a] l[b - 1] := List.pairwise_iff_getElem.1 hs _ _ (⋄) (by omega) h
+      have h2 : r l[b - 1] l[b] := List.pairwise_iff_getElem.1 hs _ _ (⋄) hb (by omega)
       rw [heq] at h1
       exact (hanti _ _ h2 h1).symm
-    · have : a = b - 1 := by omega
+    · have : a = b - 1 := ⋄
       subst this; exact heq.symm
   rcases Nat.lt_or_gt_of_ne hne with h | h
   · exact key i j h hj.1 hj.2 hij
@@ -124,7 +126,7 @@ structure IXI (W K S : ℕ) (c₀ c : Config) : Prop where
   rm : c.rmem = c₀.rmem
   out : c.output = c₀.output
 
-set_option maxHeartbeats 2000000 in
+
 theorem ixLoop_exec {P : Polygon} {W K S : ℕ} {c₀ : Config} (h05 : c₀.nreg 70105 = 1)
     (h01 : c₀.nreg 70201 = K) (hW : S + K + 1 ≤ W) :
     ∀ (n : ℕ) (c : Config), IXI W K S c₀ c → c.nreg 70200 + n = K →
@@ -171,9 +173,9 @@ theorem ixLoop_exec {P : Polygon} {W K S : ℕ} {c₀ : Config} (h05 : c₀.nreg
 
 theorem seg_range {m : ℕ → ℕ} {S K : ℕ} (h : ∀ j, j < K → m (S + j) = j) :
     SortL.seg m S K = List.range K := by
-  apply List.ext_getElem (by simp [SortL.seg])
+  apply List.ext_getElem (⊚ SortL.seg)
   intro j h1 h2
-  simp only [SortL.seg, List.getElem_map, List.getElem_range]
+  ϴ SortL.seg, List.getElem_map, List.getElem_range
   exact h j (by simpa using h2)
 
 end

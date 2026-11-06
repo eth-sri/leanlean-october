@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutDyDn
 public import Chazelle.Core.ShootCutGrade
 
@@ -104,7 +106,7 @@ theorem brk_pt {n : ℕ} {i r : ℕ} {x : SymPt} (hr : r < H.length) (hpt : H[r]
     Brk C n H i := by
   right; right
   refine ⟨r, hr, hu1, hu2, ?_⟩
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hr, Option.getD_some, hpt]
+  Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hr, Option.getD_some, hpt
   trivial
 
 end Run
@@ -114,7 +116,7 @@ end Run
 theorem lt_gradeCount {n g b : ℕ} (h : b * 2 ^ g + 2 ^ g ≤ n - 1) : b < gradeCount n g := by
   have hp := Nat.two_pow_pos g
   unfold gradeCount
-  have : b * 2 ^ g ≤ n - 2 := by omega
+  have : b * 2 ^ g ≤ n - 2 := ⋄
   have := (Nat.le_div_iff_mul_le hp).2 this
   omega
 
@@ -136,11 +138,11 @@ theorem upBlocks_of (hR : Robust A₀ m₀ fun m' => GradeRaw O P m' h A₀) (hA
     UpBlocks (VPc P C m₀ h γ) m₀ W A₀ (m₀ (h + 2)) c₀ q₀ L := by
   intro g b hlo hhi
   have hp := Nat.two_pow_pos g
-  have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
+  have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := ⋆
   refine ⟨fun hg => ?_, fun e he => ?_⟩
-  · obtain ⟨h1, h2⟩ := entry_low hR hg (γ := γ) (b := b) (by omega) hcap (by omega)
-    exact ⟨h1, by omega⟩
-  · refine ⟨blockUp_ok hwalk h6 hcL hqL hLγ hcap hlo hhi fun hg => he (by omega), rfl, rfl,
+  · obtain ⟨h1, h2⟩ := entry_low hR hg (γ := γ) (b := b) (⋄) hcap (by omega)
+    exact ⟨h1, ⋄⟩
+  · refine ⟨blockUp_ok hwalk h6 hcL hqL hLγ hcap hlo hhi fun hg => he (⋄), rfl, rfl,
       by simp only [upPc]; omega⟩
 
 /-- **The blocks of a descending stretch** are valid pieces for the downward sweep. -/
@@ -151,11 +153,11 @@ theorem dnBlocks_of (hR : Robust A₀ m₀ fun m' => GradeRaw O P m' h A₀) (hA
     DnBlocks (VPc P C m₀ h γ) m₀ W A₀ (m₀ (h + 2)) c₀ q₀ L := by
   intro g b hlo hhi
   have hp := Nat.two_pow_pos g
-  have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
+  have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := ⋆
   refine ⟨fun hg => ?_, fun e he => ?_⟩
-  · obtain ⟨h1, h2⟩ := entry_low hR hg (γ := γ) (b := b) (by omega) hcap (by omega)
-    exact ⟨h1, by omega⟩
-  · refine ⟨blockDn_ok hwalk h6 hcL hq hLq hLγ hcap hlo hhi fun hg => he (by omega), rfl, rfl,
+  · obtain ⟨h1, h2⟩ := entry_low hR hg (γ := γ) (b := b) (⋄) hcap (by omega)
+    exact ⟨h1, ⋄⟩
+  · refine ⟨blockDn_ok hwalk h6 hcL hq hLq hLγ hcap hlo hhi fun hg => he (⋄), rfl, rfl,
       by simp only [dnPc]; omega⟩
 
 end ShootCut

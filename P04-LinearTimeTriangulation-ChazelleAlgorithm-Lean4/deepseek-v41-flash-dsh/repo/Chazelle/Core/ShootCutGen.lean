@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutDecide
 public import Chazelle.Core.ShootCutTile
 
@@ -40,19 +42,19 @@ theorem arcWt_ge (C : Chain) {a b A T : ℝ}
       {p : ℕ | p < (chainModel C).W.n ∧ (chainModel C).counted p ∧
         ∃ t : ℝ, 0 < t ∧ t < 1 ∧ sideInArc a b (p + t)} := by
     intro p hp
-    simp only [Finset.coe_Ico, Set.mem_Ico] at hp
-    refine ⟨by rw [hW]; omega, (chainModel_counted_iff C p (by rw [hW]; omega)).2 ⟨by omega,
-      by omega⟩, 1 / 2, by norm_num, by norm_num, ?_⟩
+    ϴ' Finset.coe_Ico, Set.mem_Ico at hp
+    refine ⟨by rw [hW]; omega, (chainModel_counted_iff C p (by rw [hW]; omega)).2 ⟨⋄,
+      ⋄⟩, 1 / 2, ⊛, ⊛, ?_⟩
     have ev : (v : ℝ) = (c : ℝ) + ((v / n : ℕ) : ℝ) * n := by
       have := Nat.mod_add_div v n
       exact_mod_cast (show v = c + v / n * n by rw [Nat.mul_comm]; omega)
     have hpn : ((p : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast (show p + 1 ≤ n by omega)
-    refine sideInArc_unw hn0 ha.1 ha.2 hb.1 hb.2 (by positivity) (by linarith) hA
+    refine sideInArc_unw hn0 ha.1 ha.2 hb.1 hb.2 (⟢) (⟡) hA
       (X := (v : ℝ) + ((p - c : ℕ) : ℝ) + 1 / 2) ⟨((v / n : ℕ) : ℤ), ?_⟩ hT ?_ ?_ hTA
-    · rw [Int.cast_natCast, ev]
+    · Ξ Int.cast_natCast, ev
       push_cast [show c ≤ p by omega]
       ring
-    · have : (0 : ℝ) ≤ ((p - c : ℕ) : ℝ) := by positivity
+    · have : (0 : ℝ) ≤ ((p - c : ℕ) : ℝ) := ⟢
       linarith
     · have : ((p - c : ℕ) : ℝ) + 1 ≤ L := by exact_mod_cast (show p - c + 1 ≤ L by omega)
       linarith
@@ -60,7 +62,7 @@ theorem arcWt_ge (C : Chain) {a b A T : ℝ}
       ∃ t : ℝ, 0 < t ∧ t < 1 ∧ sideInArc a b (p + t)}.Finite :=
     (Set.finite_lt_nat _).subset fun p hp => hp.1
   have := Set.ncard_le_ncard hsub hfin
-  rw [Set.ncard_coe_finset, Nat.card_Ico] at this
+  Ξ' Set.ncard_coe_finset, Nat.card_Ico at this
   omega
 
 /-- **Two keys congruent modulo `n`** in `[0, n)` are equal. -/
@@ -73,8 +75,8 @@ theorem key_eq_of_unw {n x y : ℝ} (hn : 0 < n) (hx : 0 ≤ x ∧ x < n) (hy : 
     by_contra hc; push Not at hc; nlinarith
   have h3 : i - j > -1 := by exact_mod_cast h1
   have h4 : i - j < 1 := by exact_mod_cast h2
-  have h5 : i - j = 0 := by omega
-  rw [h5] at hij
+  have h5 : i - j = 0 := ⋄
+  Ξ' h5 at hij
   simp at hij
   linarith
 
@@ -145,11 +147,11 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
       · have : (e₂ : ℝ) + 1 ≤ e₁ := by exact_mod_cast hlt
         intro h; linarith [be.2, bs.1]
       · intro h; exact hsame ⟨heq.symm, h⟩
-    refine ⟨6, 2 * C.m + 5, ?_, ?_, ?_, by omega, by omega, ?_, fun _ => ?_, fun h => ?_⟩
-    · rw [ite_eq_left (Or.inl h1)]; exact Nat.mod_eq_of_lt (by omega)
+    refine ⟨6, 2 * C.m + 5, ?_, ?_, ?_, ⋄, ⋄, ?_, fun _ => ?_, fun h => ?_⟩
+    · rw [ite_eq_left (Or.inl h1)]; exact Nat.mod_eq_of_lt (⋄)
     · have : (e₁ : ℝ) + 1 ≤ 6 := by exact_mod_cast (show e₁ + 1 ≤ 6 by omega)
       push_cast; linarith [bs.2]
-    · rw [ite_eq_left (Or.inl h2)]; exact Nat.mod_eq_of_lt (by omega)
+    · rw [ite_eq_left (Or.inl h2)]; exact Nat.mod_eq_of_lt (⋄)
     · rw [hT2 hT]; push_cast; rw [cn]; linarith [be.1, show (0 : ℝ) ≤ e₂ by positivity]
     · rw [hT2 hT]; push_cast; rw [cn]; linarith [be.1, show (0 : ℝ) ≤ e₂ by positivity]
     · exact absurd (Or.inl (Or.inl h2)) h
@@ -157,15 +159,15 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
     have hT : ks < ke := by
       have : (e₁ : ℝ) + 1 ≤ e₂ := by exact_mod_cast (show e₁ + 1 ≤ e₂ by omega)
       linarith [bs.2, be.1]
-    refine ⟨6, 2 * C.m + 5, ?_, ?_, ?_, by omega, by omega, ?_, fun _ => ?_, fun h => ?_⟩
-    · rw [ite_eq_left (Or.inl h1)]; exact Nat.mod_eq_of_lt (by omega)
+    refine ⟨6, 2 * C.m + 5, ?_, ?_, ?_, ⋄, ⋄, ?_, fun _ => ?_, fun h => ?_⟩
+    · rw [ite_eq_left (Or.inl h1)]; exact Nat.mod_eq_of_lt (⋄)
     · have : (e₁ : ℝ) + 1 ≤ 6 := by exact_mod_cast (show e₁ + 1 ≤ 6 by omega)
       push_cast; linarith [bs.2]
-    · rw [ite_eq_left (Or.inr h2)]; exact Nat.mod_eq_of_lt (by omega)
-    · rw [hT1 hT]
+    · rw [ite_eq_left (Or.inr h2)]; exact Nat.mod_eq_of_lt (⋄)
+    · Ξ hT1 hT
       have : ((2 * C.m + 5 : ℕ) : ℝ) + 1 ≤ e₂ := by exact_mod_cast (show 2 * C.m + 5 + 1 ≤ e₂ by omega)
       linarith [be.1]
-    · rw [hT1 hT]
+    · Ξ hT1 hT
       have : ((2 * C.m + 5 : ℕ) : ℝ) + 1 ≤ e₂ := by exact_mod_cast (show 2 * C.m + 5 + 1 ≤ e₂ by omega)
       linarith [be.1]
     · exact absurd (Or.inl (Or.inr h2)) h
@@ -173,36 +175,36 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
     have hT : ks < ke := by
       have : (e₁ : ℝ) + 1 ≤ e₂ := by exact_mod_cast (show e₁ + 1 ≤ e₂ by omega)
       linarith [bs.2, be.1]
-    have hnU : ¬ (e₂ ≤ 5 ∨ e₂ = 2 * C.m + 6) := by omega
-    refine ⟨6, e₂, ?_, ?_, ?_, by omega, by omega, ?_, fun h => ?_, fun h => ?_⟩
-    · rw [ite_eq_left (Or.inl h1)]; exact Nat.mod_eq_of_lt (by omega)
+    have hnU : ¬ (e₂ ≤ 5 ∨ e₂ = 2 * C.m + 6) := ⋄
+    refine ⟨6, e₂, ?_, ?_, ?_, ⋄, ⋄, ?_, fun h => ?_, fun h => ?_⟩
+    · rw [ite_eq_left (Or.inl h1)]; exact Nat.mod_eq_of_lt (⋄)
     · have : (e₁ : ℝ) + 1 ≤ 6 := by exact_mod_cast (show e₁ + 1 ≤ 6 by omega)
       push_cast; linarith [bs.2]
-    · rw [ite_eq_right hnU]; exact Nat.mod_eq_of_lt (by omega)
+    · rw [ite_eq_right hnU]; exact Nat.mod_eq_of_lt (⋄)
     · rw [hT1 hT]; linarith [be.1]
-    · rw [hT1 hT, hkeq]
+    · Ξ hT1 hT, hkeq
       rcases h with h | h
       · exact absurd h hnU
       · linarith
-    · rw [hT1 hT, hkeq]
+    · Ξ hT1 hT, hkeq
       have : M.param Q e = 0 := by
         by_contra hc; exact h (Or.inr (lt_of_le_of_ne hp0 (Ne.symm hc)))
       rw [this]; ring
   -- the start on `2m + 6`
-  · exact absurd (Or.inl ⟨Or.inr h1, Or.inl h2, by rw [ite_eq_right (by omega), ite_eq_left h2]; omega⟩)
+  · exact absurd (Or.inl ⟨Or.inr h1, Or.inl h2, by rw [ite_eq_right (⋄), ite_eq_left h2]; omega⟩)
       hdone
   · -- both on `2m + 6`
-    have hT : ¬ ks < ke := by intro h; exact hsame ⟨by omega, h⟩
-    refine ⟨6 + n, 2 * C.m + 5 + n, ?_, ?_, ?_, by omega, by omega, ?_, fun _ => ?_, fun h => ?_⟩
-    · rw [ite_eq_left (Or.inr h1), Nat.add_mod_right]; exact Nat.mod_eq_of_lt (by omega)
+    have hT : ¬ ks < ke := by intro h; exact hsame ⟨⋄, h⟩
+    refine ⟨6 + n, 2 * C.m + 5 + n, ?_, ?_, ?_, ⋄, ⋄, ?_, fun _ => ?_, fun h => ?_⟩
+    · rw [ite_eq_left (Or.inr h1), Nat.add_mod_right]; exact Nat.mod_eq_of_lt (⋄)
     · have : (e₁ : ℝ) + 1 ≤ ((6 + n : ℕ) : ℝ) := by exact_mod_cast (show e₁ + 1 ≤ 6 + n by omega)
       linarith [bs.2]
-    · rw [ite_eq_left (Or.inr h2), Nat.add_mod_right]; exact Nat.mod_eq_of_lt (by omega)
-    · rw [hT2 hT]
+    · rw [ite_eq_left (Or.inr h2), Nat.add_mod_right]; exact Nat.mod_eq_of_lt (⋄)
+    · Ξ hT2 hT
       have : ((2 * C.m + 5 + n : ℕ) : ℝ) + 1 ≤ e₂ + n := by
         exact_mod_cast (show 2 * C.m + 5 + n + 1 ≤ e₂ + n by omega)
       linarith [be.1]
-    · rw [hT2 hT]
+    · Ξ hT2 hT
       have : ((2 * C.m + 5 + n : ℕ) : ℝ) + 1 ≤ e₂ + n := by
         exact_mod_cast (show 2 * C.m + 5 + n + 1 ≤ e₂ + n by omega)
       linarith [be.1]
@@ -211,69 +213,69 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
     have hT : ¬ ks < ke := by
       have : (e₂ : ℝ) + 1 ≤ e₁ := by exact_mod_cast (show e₂ + 1 ≤ e₁ by omega)
       intro h; linarith [be.2, bs.1]
-    have hnU : ¬ (e₂ ≤ 5 ∨ e₂ = 2 * C.m + 6) := by omega
-    refine ⟨6 + n, e₂ + n, ?_, ?_, ?_, by omega, by omega, ?_, fun h => ?_, fun h => ?_⟩
-    · rw [ite_eq_left (Or.inr h1), Nat.add_mod_right]; exact Nat.mod_eq_of_lt (by omega)
+    have hnU : ¬ (e₂ ≤ 5 ∨ e₂ = 2 * C.m + 6) := ⋄
+    refine ⟨6 + n, e₂ + n, ?_, ?_, ?_, ⋄, ⋄, ?_, fun h => ?_, fun h => ?_⟩
+    · rw [ite_eq_left (Or.inr h1), Nat.add_mod_right]; exact Nat.mod_eq_of_lt (⋄)
     · have : (e₁ : ℝ) + 1 ≤ ((6 + n : ℕ) : ℝ) := by exact_mod_cast (show e₁ + 1 ≤ 6 + n by omega)
       linarith [bs.2]
-    · rw [ite_eq_right hnU, Nat.add_mod_right]; exact Nat.mod_eq_of_lt (by omega)
+    · rw [ite_eq_right hnU, Nat.add_mod_right]; exact Nat.mod_eq_of_lt (⋄)
     · rw [hT2 hT]; push_cast; linarith [be.1]
-    · rw [hT2 hT, hkeq]
+    · Ξ hT2 hT, hkeq
       rcases h with h | h
       · exact absurd h hnU
       · push_cast; linarith
-    · rw [hT2 hT, hkeq]
+    · Ξ hT2 hT, hkeq
       have : M.param Q e = 0 := by
         by_contra hc; exact h (Or.inr (lt_of_le_of_ne hp0 (Ne.symm hc)))
       rw [this]; push_cast; ring
   -- the start on the double boundary
   · -- the end in `0 … 5`
     have hne : e₁ + 1 < 2 * C.m + 6 := by
-      by_contra hc; exact hdone (Or.inr ⟨by omega, Or.inl h2, hc⟩)
+      by_contra hc; exact hdone (Or.inr ⟨⋄, Or.inl h2, hc⟩)
     have hT : ¬ ks < ke := by
       have : (e₂ : ℝ) + 1 ≤ e₁ := by exact_mod_cast (show e₂ + 1 ≤ e₁ by omega)
       intro h; linarith [be.2, bs.1]
-    refine ⟨e₁ + 1, 2 * C.m + 5, ?_, ?_, ?_, by omega, by omega, ?_, fun _ => ?_, fun h => ?_⟩
-    · rw [ite_eq_right (by omega)]; exact Nat.mod_eq_of_lt (by omega)
+    refine ⟨e₁ + 1, 2 * C.m + 5, ?_, ?_, ?_, ⋄, ⋄, ?_, fun _ => ?_, fun h => ?_⟩
+    · rw [ite_eq_right (⋄)]; exact Nat.mod_eq_of_lt (⋄)
     · push_cast; linarith [bs.2]
-    · rw [ite_eq_left (Or.inl h2)]; exact Nat.mod_eq_of_lt (by omega)
+    · rw [ite_eq_left (Or.inl h2)]; exact Nat.mod_eq_of_lt (⋄)
     · rw [hT2 hT]; push_cast; rw [cn]; linarith [be.1, show (0 : ℝ) ≤ e₂ by positivity]
     · rw [hT2 hT]; push_cast; rw [cn]; linarith [be.1, show (0 : ℝ) ≤ e₂ by positivity]
     · exact absurd (Or.inl (Or.inl h2)) h
   · -- the end on `2m + 6`
     have hne : e₁ + 1 < 2 * C.m + 6 := by
-      by_contra hc; exact hdone (Or.inr ⟨by omega, Or.inr h2, hc⟩)
+      by_contra hc; exact hdone (Or.inr ⟨⋄, Or.inr h2, hc⟩)
     have hT : ks < ke := by
       have : (e₁ : ℝ) + 1 ≤ e₂ := by exact_mod_cast (show e₁ + 1 ≤ e₂ by omega)
       linarith [bs.2, be.1]
-    refine ⟨e₁ + 1, 2 * C.m + 5, ?_, ?_, ?_, by omega, by omega, ?_, fun _ => ?_, fun h => ?_⟩
-    · rw [ite_eq_right (by omega)]; exact Nat.mod_eq_of_lt (by omega)
+    refine ⟨e₁ + 1, 2 * C.m + 5, ?_, ?_, ?_, ⋄, ⋄, ?_, fun _ => ?_, fun h => ?_⟩
+    · rw [ite_eq_right (⋄)]; exact Nat.mod_eq_of_lt (⋄)
     · push_cast; linarith [bs.2]
-    · rw [ite_eq_left (Or.inr h2)]; exact Nat.mod_eq_of_lt (by omega)
-    · rw [hT1 hT]
+    · rw [ite_eq_left (Or.inr h2)]; exact Nat.mod_eq_of_lt (⋄)
+    · Ξ hT1 hT
       have : ((2 * C.m + 5 : ℕ) : ℝ) + 1 ≤ e₂ := by exact_mod_cast (show 2 * C.m + 5 + 1 ≤ e₂ by omega)
       linarith [be.1]
-    · rw [hT1 hT]
+    · Ξ hT1 hT
       have : ((2 * C.m + 5 : ℕ) : ℝ) + 1 ≤ e₂ := by exact_mod_cast (show 2 * C.m + 5 + 1 ≤ e₂ by omega)
       linarith [be.1]
     · exact absurd (Or.inl (Or.inr h2)) h
   · -- both on the double boundary
-    have hnU : ¬ (e₂ ≤ 5 ∨ e₂ = 2 * C.m + 6) := by omega
-    have hnU1 : ¬ (e₁ ≤ 5 ∨ e₁ = 2 * C.m + 6) := by omega
+    have hnU : ¬ (e₂ ≤ 5 ∨ e₂ = 2 * C.m + 6) := ⋄
+    have hnU1 : ¬ (e₁ ≤ 5 ∨ e₁ = 2 * C.m + 6) := ⋄
     rcases (show e₁ < e₂ ∨ e₂ ≤ e₁ by omega) with h3 | h3
     · have hT : ks < ke := by
         have : (e₁ : ℝ) + 1 ≤ e₂ := by exact_mod_cast (show e₁ + 1 ≤ e₂ by omega)
         linarith [bs.2, be.1]
-      refine ⟨e₁ + 1, e₂, ?_, ?_, ?_, by omega, by omega, ?_, fun h => ?_, fun h => ?_⟩
-      · rw [ite_eq_right hnU1]; exact Nat.mod_eq_of_lt (by omega)
+      refine ⟨e₁ + 1, e₂, ?_, ?_, ?_, ⋄, ⋄, ?_, fun h => ?_, fun h => ?_⟩
+      · rw [ite_eq_right hnU1]; exact Nat.mod_eq_of_lt (⋄)
       · push_cast; linarith [bs.2]
-      · rw [ite_eq_right hnU]; exact Nat.mod_eq_of_lt (by omega)
+      · rw [ite_eq_right hnU]; exact Nat.mod_eq_of_lt (⋄)
       · rw [hT1 hT]; linarith [be.1]
-      · rw [hT1 hT, hkeq]
+      · Ξ hT1 hT, hkeq
         rcases h with h | h
         · exact absurd h hnU
         · linarith
-      · rw [hT1 hT, hkeq]
+      · Ξ hT1 hT, hkeq
         have : M.param Q e = 0 := by
           by_contra hc; exact h (Or.inr (lt_of_le_of_ne hp0 (Ne.symm hc)))
         rw [this]; ring
@@ -282,16 +284,16 @@ theorem plan (C : Chain) (Q : Polygon) {N : ℕ} {s e : WPos}
         · have : (e₂ : ℝ) + 1 ≤ e₁ := by exact_mod_cast hlt
           intro h; linarith [be.2, bs.1]
         · intro h; exact hsame ⟨heq.symm, h⟩
-      refine ⟨e₁ + 1, e₂ + n, ?_, ?_, ?_, by omega, by omega, ?_, fun h => ?_, fun h => ?_⟩
-      · rw [ite_eq_right hnU1]; exact Nat.mod_eq_of_lt (by omega)
+      refine ⟨e₁ + 1, e₂ + n, ?_, ?_, ?_, ⋄, ⋄, ?_, fun h => ?_, fun h => ?_⟩
+      · rw [ite_eq_right hnU1]; exact Nat.mod_eq_of_lt (⋄)
       · push_cast; linarith [bs.2]
-      · rw [ite_eq_right hnU, Nat.add_mod_right]; exact Nat.mod_eq_of_lt (by omega)
+      · rw [ite_eq_right hnU, Nat.add_mod_right]; exact Nat.mod_eq_of_lt (⋄)
       · rw [hT2 hT]; push_cast; linarith [be.1]
-      · rw [hT2 hT, hkeq]
+      · Ξ hT2 hT, hkeq
         rcases h with h | h
         · exact absurd h hnU
         · push_cast; linarith
-      · rw [hT2 hT, hkeq]
+      · Ξ hT2 hT, hkeq
         have : M.param Q e = 0 := by
           by_contra hc; exact h (Or.inr (lt_of_le_of_ne hp0 (Ne.symm hc)))
         rw [this]; push_cast; ring

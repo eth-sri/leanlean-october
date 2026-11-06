@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvInv
 
 /-!
@@ -68,7 +70,7 @@ theorem side_meets_comp (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     have hzD' := hzD
     rw [h] at hzD'
     exact hM.trace pz (by have := hPZ.1; exact this) tz hPZ.2.1 hPZ.2.2.1.le (hPe ▸ hzD')
-  have hdist : dist z e < min r r' := hsb
+  have hdist := hsb
   have hzL : Chazelle.Chain.sideLeft M.W pz tz z :=
     hleft z hzZ (by rw [hPe]; exact hze) (by rw [hPe]; exact lt_of_lt_of_le hdist (min_le_right _ _))
   have hzK : z ∈ connectedComponentIn (M.D \ c) k :=

@@ -91,7 +91,7 @@ theorem interior_pos_sym (hG : GoodEnv P) {bit : ℕ} (hbit : bit = 1 ↔ Mounta
     {e h : ℕ} (he : e < P.n) :
     (interiorModel (Qof P)).pos (Qof P) ⟨e, h⟩ = (iSym bit P.n e h).eval (Qof P) := by
   have hn : (Qof P).n = P.n := shear_n _ _
-  have hn3 : 3 ≤ P.n := hG.1.1
+  have hn3 := hG.1.1
   rcases h with _ | k
   · simp only [Model.pos, Model.param, iSym, ite_true, SymPt.eval, Geometry.lerp_zero]
     exact interior_wa hbit he
@@ -235,8 +235,8 @@ theorem iRec_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Words
     ∃ c' k, Exec P W (iRec a b) c c' k ∧ k ≤ 20 ∧
       AbsRec P c' 50210 ((interiorModel (Qof P)).pos (Qof P) ⟨c.nreg a, c.nreg b⟩).1
         (Jordan.coordBound (Qof P) + 1) ∧ FrameB BiR c c' := by
-  have hn3 : 3 ≤ P.n := hG.1.1
-  have hbn : c.nreg b ≤ P.n := hp.2.2
+  have hn3 := hG.1.1
+  have hbn := hp.2.2
   set e := c.nreg a with he_def
   set h := c.nreg b with hh_def
   -- the head
@@ -315,7 +315,7 @@ theorem iRec_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Words
       refine ⟨c₂, _, .ifLtN_false g1 (.ifLtN_false g2 (.skip w₂)), by omega, ?_, FrameB.refl _ _⟩
       rw [r12]; unfold iIdx iEdgeIdx; simp [hb1]
   obtain ⟨c₃, k₃, e₃, hk₃, v12, F₃⟩ := hidx
-  have k3 : ∀ r, Bfx r = false → c₃.nreg r = c₂.nreg r := F₃.1
+  have k3 := F₃.1
   have ex : Exec P W (iRec a b) c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
   refine ⟨c₃, _, ex, by omega, ?_,
     F₁.trans (F₂.trans (frameB_mono F₃ (fun r hr => bfx_sub hr)))⟩

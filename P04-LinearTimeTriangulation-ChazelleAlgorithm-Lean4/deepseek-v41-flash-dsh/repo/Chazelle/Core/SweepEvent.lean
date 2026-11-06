@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepQuery
 public import Chazelle.Core.Facts2
 
@@ -62,7 +64,7 @@ theorem no_label_of_bracket (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hn := hC.n_pos
   set n := (chainModel J.whole).W.n with hndef
   set g := 6 + tpos J.whole J.m₁ with hgdef
-  have hg : g < n := hC.hg
+  have hg := hC.hg
   have hg0 : (0 : ℝ) ≤ (g : ℝ) := Nat.cast_nonneg _
   have hgn : (g : ℝ) < n := by exact_mod_cast hg
   have hne := (hC.hM.eq_iff_not_separates hC.hF hC.hfin hG hG hpx (Nat.mod_lt _ hn) htx ht hcx
@@ -90,7 +92,7 @@ theorem no_label_of_bracket (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hya : (((g + d) % n : ℕ) : ℝ) + t ≠ pa + ta := fun h => hc ⟨e, he, pa, ta, hA, h⟩
   have hyb : (((g + d) % n : ℕ) : ℝ) + t ≠ pb + tb := fun h => hc ⟨e, he, pb, tb, hB, h⟩
   refine (sep_iff_btw hg0 hgn a0 a1 b0 b1 x0 x1 y0 y1 hk13 hxy hxa hxb hya hyb).2 ?_
-  rw [hoy]
+  Ξ hoy
   unfold Btw at hbtw ⊢
   constructor
   · intro h1 h2
@@ -115,7 +117,7 @@ theorem region_eq_of_side {M : Model} {F : Set (Set Point)} {U U' : Set Point}
     (h : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z.1, z.2 + τ * δ) : Point) ∈ U)
     (h' : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z.1, z.2 + τ * δ) : Point) ∈ U') : U = U' := by
   obtain ⟨δ, h1, h2⟩ := (h.and h').exists
-  rw [Chazelle.Chain.regionsIn_eq_component hU h1, Chazelle.Chain.regionsIn_eq_component hU' h2]
+  Ξ Chazelle.Chain.regionsIn_eq_component hU h1, Chazelle.Chain.regionsIn_eq_component hU' h2
 
 /-- A region containing the points just above (below) a point of a chord in the domain touches
 the chord (it is an exit chord of the region). -/

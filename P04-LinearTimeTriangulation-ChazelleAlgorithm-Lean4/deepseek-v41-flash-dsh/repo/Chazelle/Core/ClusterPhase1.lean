@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterAlloc
 
 /-!
@@ -63,41 +67,41 @@ theorem B2F.congr {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have b26 := g.base_eq 26; have b28 := g.base_eq 28; have b29 := g.base_eq 29
   have b30 := g.base_eq 30
   have hLN : ∀ j, j < g.L → ∀ x, x < g.N → j * g.N + x < g.L * g.U := fun j hj x hx => by
-    have : (j + 1) * g.N ≤ g.L * g.U := Nat.mul_le_mul (by omega) (by omega)
+    have : (j + 1) * g.N ≤ g.L * g.U := Nat.mul_le_mul (⋄) (⋄)
     rw [Nat.succ_mul] at this; omega
   refine ⟨fun x hx => ?_, fun x hx => ?_, h.r0, fun x hx => ?_, fun x hx => ?_, h.R_ok, h.R_n,
     h.R_up, h.R_root, h.R_pre, fun j hj x hx => ?_⟩
-  · have := x.2; rw [he _ (Or.inl ⟨by omega, by omega⟩)]; exact h.fpar x hx
-  · rw [he _ (Or.inl ⟨by omega, by omega⟩)]; exact h.fpar_lt x hx
-  · rw [he _ (Or.inl ⟨by omega, by omega⟩)]; exact h.pre x hx
-  · rw [he _ (Or.inl ⟨by omega, by omega⟩)]; exact h.sz x hx
+  · have := x.2; rw [he _ (Or.inl ⟨⋄, ⋄⟩)]; exact h.fpar x hx
+  · rw [he _ (Or.inl ⟨⋄, ⋄⟩)]; exact h.fpar_lt x hx
+  · rw [he _ (Or.inl ⟨⋄, ⋄⟩)]; exact h.pre x hx
+  · rw [he _ (Or.inl ⟨⋄, ⋄⟩)]; exact h.sz x hx
   · have := hLN j hj x hx
-    rw [he _ (Or.inr ⟨by omega, by omega⟩)]; exact h.up_tab j hj x hx
+    rw [he _ (Or.inr ⟨⋄, ⋄⟩)]; exact h.up_tab j hj x hx
 
 /-- The block of a light-free level is a block index. -/
 theorem shift_div_lt {l cs k μ : ℕ} (hk : 0 < k) (hcs : cs < k) (_hkμ : k ≤ μ) (hl : l < μ) :
     (l + cs) / k < μ := by
-  rw [Nat.div_lt_iff_lt_mul hk]
-  obtain ⟨t, ht⟩ : ∃ t, μ = t + 1 := ⟨μ - 1, by omega⟩
-  rw [ht, Nat.succ_mul]
+  Ξ Nat.div_lt_iff_lt_mul hk
+  obtain ⟨t, ht⟩ : ∃ t, μ = t + 1 := ⟨μ - 1, ⋄⟩
+  Ξ ht, Nat.succ_mul
   have : t ≤ t * k := Nat.le_mul_of_pos_right _ hk
   omega
 
 theorem cntBelow_congr {f f' : ℕ → ℕ} {n r : ℕ} (h : ∀ v, v < n → f v = f' v) :
     cntBelow f n r = cntBelow f' n r := by
   unfold cntBelow; congr 1
-  exact Finset.filter_congr (fun v hv => by rw [h v (Finset.mem_range.mp hv)])
+  exact Finset.filter_congr (fun v hv => Ρ h v (Finset.mem_range.mp hv))
 
 theorem cntLt_congr {f f' : ℕ → ℕ} {n j : ℕ} (h : ∀ v, v < n → f v = f' v) :
     cntLt f n j = cntLt f' n j := by
   unfold cntLt; congr 1
-  exact Finset.filter_congr (fun v hv => by rw [h v (Finset.mem_range.mp hv)])
+  exact Finset.filter_congr (fun v hv => Ρ h v (Finset.mem_range.mp hv))
 
 theorem plPos_congr {μ : ℕ} {bo bo' key key' : ℕ → ℕ} (hb : ∀ w, w < μ → bo w = bo' w)
     (hk : ∀ w, w < μ → key w = key' w) {v : ℕ} (hv : v < μ) :
     plPos μ bo key v = plPos μ bo' key' v := by
   unfold plPos rk
-  rw [cntLt_congr hb, hb v hv]
+  Ξ cntLt_congr hb, hb v hv
   congr 2
   exact Finset.filter_congr (fun w hw => by
     simp only [hb w (Finset.mem_range.mp hw), hk w (Finset.mem_range.mp hw), hk v hv])

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutTile
 public import Chazelle.Core.SweepHit
 
@@ -39,7 +41,7 @@ def subSeg (M : Model) (p : ℕ) (s₀ s₁ : ℝ) : Set Point :=
 theorem wa_succ (M : Model) {p : ℕ} (hp : p + 1 < M.W.n) : M.wa (p + 1) = M.wb p := by
   unfold Model.wa Model.wb; rw [Nat.mod_eq_of_lt hp]
 
-theorem lerp_zero' (a b : Point) : lerp a b 0 = a := by simp [lerp]
+theorem lerp_zero' (a b : Point) : lerp a b 0 = a := ⊚ lerp
 theorem lerp_one' (a b : Point) : lerp a b 1 = b := by
   ext <;> simp [lerp]
 
@@ -114,7 +116,7 @@ noncomputable def hpar (u v : Point) (y : ℝ) : ℝ := (y - u.2) / (v.2 - u.2)
 
 theorem hpar_snd {u v : Point} (huv : u.2 ≠ v.2) (y : ℝ) : (lerp u v (hpar u v y)).2 = y := by
   unfold hpar
-  simp only [lerp_snd]
+  ϴ lerp_snd
   have : v.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm huv)
   field_simp
   ring

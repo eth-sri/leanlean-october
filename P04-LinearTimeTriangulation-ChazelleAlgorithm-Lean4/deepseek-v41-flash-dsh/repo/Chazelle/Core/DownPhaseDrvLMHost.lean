@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBSize
 public import Chazelle.Core.DownPhaseDrvRLvlSpec
 public import Chazelle.Core.DownPhaseMathRec2
@@ -34,13 +36,13 @@ theorem arcItems_length (li : Bool) (n : ℕ) (N : NF) (r jp j : ℕ) :
     (arcItems li n N r jp j).length ≤ 4 := by
   unfold arcItems
   have := runItems_length li n (N.arc j).s (N.arc j).e
-  simp only [List.length_append, List.length_singleton]
+  ϴ List.length_append, List.length_singleton
   split_ifs <;> simp <;> omega
 
 theorem walkItems_length (li : Bool) (n : ℕ) (N : NF) (r : ℕ) :
     (walkItems li n N r).length ≤ 4 * (N.region r).arcs.length := by
   unfold walkItems
-  rw [List.length_flatMap]
+  Ξ List.length_flatMap
   have : ∀ x ∈ (List.range (N.region r).arcs.length).map (fun t => (arcItems li n N r
       ((N.region r).arcs.getD t 0) ((N.region r).arcs.getD ((t + 1) %
         (N.region r).arcs.length) 0)).length), x ≤ 4 := by
@@ -98,8 +100,8 @@ theorem run_mem_regHost {li : Bool} {n : ℕ} {N : NF} {r a ℓ : ℕ}
   rw [List.mem_range] at ht
   refine ⟨_, ?_, run_mem_arcItems hmem⟩
   have hk : (t + 1) % (N.region r).arcs.length < (N.region r).arcs.length :=
-    Nat.mod_lt _ (by omega)
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk, Option.getD_some]
+    Nat.mod_lt _ (⋄)
+  Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk, Option.getD_some
   exact List.getElem_mem hk
 
 variable {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {reg : ℕ → Set Point} {li : Bool}
@@ -184,7 +186,7 @@ theorem pts_length (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
       DownHost.nk (interiorModel Q)
         ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q) (reg r) := by
   obtain ⟨-, -, -, hlen, -⟩ := DownMath.walk_rep (B.rc hr) B.hli
-  rw [DownMath.regHost_pts]
+  Ξ DownMath.regHost_pts
   split_ifs
   · exact hlen
   · rw [List.length_reverse]; exact hlen
@@ -212,21 +214,21 @@ theorem host_facts (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
   · obtain ⟨j, hj, hne, rfl⟩ := run_mem_regHost h
     have := runCnt_le B hr hwt hj hne
     omega
-  · rw [pts_length B hr]
+  · Ξ pts_length B hr
     have hne : ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q).Nonempty := by
       refine ⟨((BuildNF.buildNF (interiorModel Q) Q L E).chord 0).toSet (interiorModel Q) Q,
         (BuildNF.buildNF (interiorModel Q) Q L E).chord 0, ?_, rfl⟩
       unfold NF.chord
       have h0 : 0 < (BuildNF.buildNF (interiorModel Q) Q L E).chords.length := by
         simp [BuildNF.buildNF]; exact B.hK
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h0, Option.getD_some]
+      Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem h0, Option.getD_some
       exact List.getElem_mem h0
     exact DownHost.three_le_nk B.hQ B.fam hne hR
   · have h1 := DrvB.regPts_length_le B hr hwt
     rw [DrvB.regPts, DrvB.wlist_length] at h1
     have h2 : ((interiorModel Q).deg ((BuildNF.buildNF (interiorModel Q) Q L E).F
         (interiorModel Q) Q) (reg r) + 1) * γ ≤ 5 * γ :=
-      Nat.mul_le_mul_right _ (by omega)
+      Nat.mul_le_mul_right _ (⋄)
     omega
 
 end

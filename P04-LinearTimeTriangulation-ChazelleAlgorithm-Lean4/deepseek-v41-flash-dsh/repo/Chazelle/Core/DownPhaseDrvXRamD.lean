@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvXRamC
 
 /-!
@@ -33,9 +35,9 @@ theorem posLtF_iff {P : Polygon} (hG : GoodEnv P) (li : Bool) {x y : WPos}
     (hx : x.edge < (Qof P).n) (hx1 : 1 ≤ x.hgt) (hxn : x.hgt ≤ (Qof P).n) (hy1 : 1 ≤ y.hgt)
     (hyn : y.hgt ≤ (Qof P).n) :
     posLtF P li (Qof P).n x.edge x.hgt y.edge y.hgt = if PosLt (Qof P) li x y then 1 else 0 := by
-  have hn : 0 < (Qof P).n := by omega
+  have hn : 0 < (Qof P).n := ⋄
   have h1 := hltF_eq_one hG (DownMath.ivB_lt li hx) (DownMath.ivB_lt li (Nat.mod_lt (x.edge + 1) hn))
-  have h2 := hltF_eq_one hG (u := x.hgt - 1) (v := y.hgt - 1) (by omega) (by omega)
+  have h2 := hltF_eq_one hG (u := x.hgt - 1) (v := y.hgt - 1) (⋄) (⋄)
   have b1 := hltF_le P (ivB li (Qof P).n x.edge) (ivB li (Qof P).n ((x.edge + 1) % (Qof P).n))
   have b2 := hltF_le P (x.hgt - 1) (y.hgt - 1)
   have hiff : (EdgeUp (Qof P) li x.edge ↔
@@ -44,7 +46,7 @@ theorem posLtF_iff {P : Polygon} (hG : GoodEnv P) (li : Bool) {x y : WPos}
         hltF P (x.hgt - 1) (y.hgt - 1) := by
     unfold EdgeUp; rw [← h1, ← h2]; omega
   unfold posLtF PosLt
-  rw [hiff]
+  Ξ hiff
   split_ifs <;> omega
 
 section pieces
@@ -59,17 +61,17 @@ theorem eq2S_exec (d : Config) (hw : WordsBounded W d) {a b c e dst : ℕ} (ha :
       NRegs d d' (upd d.nreg dst
         (if d.nreg a = d.nreg b ∧ d.nreg c = d.nreg e then 1 else 0)) := by
   unfold eq2S
-  refine x_mono (x_seq (K₂ := 9) (x_const d hw dst 0 (by omega)) (fun d1 hw1 n1 => ?_)) (by omega)
+  refine x_mono (x_seq (K₂ := 9) (x_const d hw dst 0 (⋄)) (fun d1 hw1 n1 => ?_)) (by omega)
   obtain ⟨d2, k2, e2, hk2, n2⟩ := x_ifR (P := P) (W := W) (r := dst) (d := d1) (K := 7)
-    (fun _ => x_mono (x_skipR d1 hw1 dst) (by omega))
-    (fun _ => x_ifR (fun _ => x_mono (x_skipR d1 hw1 dst) (by omega))
-      (fun _ => x_ifR (fun _ => x_mono (x_skipR d1 hw1 dst) (by omega))
+    (fun _ => x_mono (x_skipR d1 hw1 dst) (⋄))
+    (fun _ => x_ifR (fun _ => x_mono (x_skipR d1 hw1 dst) (⋄))
+      (fun _ => x_ifR (fun _ => x_mono (x_skipR d1 hw1 dst) (⋄))
         (fun _ => x_ifR (fun _ => x_skipR d1 hw1 dst)
-          (fun _ => x_const d1 hw1 dst 1 (by omega)))))
-  refine ⟨d2, k2, e2, by omega, ?_⟩
+          (fun _ => x_const d1 hw1 dst 1 (⋄)))))
+  refine ⟨d2, k2, e2, ⋄, ?_⟩
   refine ⟨?_, n2.2.1.trans n1.2.1, n2.2.2.1.trans n1.2.2.1, n2.2.2.2.1.trans n1.2.2.2.1,
     n2.2.2.2.2.trans n1.2.2.2.2⟩
-  rw [n2.1, n1.1, Machine.upd_upd_same]
+  Ξ n2.1, n1.1, Machine.upd_upd_same
   simp only [Machine.upd_other _ _ _ ha, Machine.upd_other _ _ _ hb, Machine.upd_other _ _ _ hc,
     Machine.upd_other _ _ _ he, Machine.upd_same]
   congr 1
@@ -116,29 +118,29 @@ theorem onS_exec (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) (h27 : d.nr
           else 1) else (if d.nreg 217125 < 1 then 0 else (if d.nreg 217126 < 1 then 0 else 1)))
         else 1) else 1)) := by
   unfold onS
-  refine x_mono (x_seq (K₂ := 15) (x_const d hw 217127 0 (by omega)) (fun d1 hw1 n1 => ?_))
-    (by omega)
+  refine x_mono (x_seq (K₂ := 15) (x_const d hw 217127 0 (⋄)) (fun d1 hw1 n1 => ?_))
+    (⋄)
   have s0 := fun (K : ℕ) (hK : 1 ≤ K) => x_mono (P := P) (x_skipR d1 hw1 217127) hK
-  have s1 := fun (K : ℕ) (hK : 1 ≤ K) => x_mono (P := P) (x_const d1 hw1 217127 1 (by omega)) hK
+  have s1 := fun (K : ℕ) (hK : 1 ≤ K) => x_mono (P := P) (x_const d1 hw1 217127 1 (⋄)) hK
   obtain ⟨d2, k2, e2, hk2, n2⟩ := x_ifR (P := P) (W := W) (r := 217127) (d := d1) (K := 13)
     (fun _ => x_ifR (fun _ => x_ifR
-        (fun _ => x_ifR (fun _ => x_ifR (fun _ => s0 5 (by omega)) (fun _ => s1 5 (by omega)))
-          (fun _ => s1 7 (by omega)))
-        (fun _ => x_ifR (fun _ => s0 7 (by omega))
-          (fun _ => x_ifR (fun _ => s0 5 (by omega)) (fun _ => s1 5 (by omega)))))
-      (fun _ => s1 11 (by omega)))
-    (fun _ => s1 13 (by omega))
-  refine ⟨d2, k2, e2, by omega, ?_⟩
+        (fun _ => x_ifR (fun _ => x_ifR (fun _ => s0 5 (⋄)) (fun _ => s1 5 (by omega)))
+          (fun _ => s1 7 (⋄)))
+        (fun _ => x_ifR (fun _ => s0 7 (⋄))
+          (fun _ => x_ifR (fun _ => s0 5 (⋄)) (fun _ => s1 5 (by omega)))))
+      (fun _ => s1 11 (⋄)))
+    (fun _ => s1 13 (⋄))
+  refine ⟨d2, k2, e2, ⋄, ?_⟩
   refine ⟨?_, n2.2.1.trans n1.2.1, n2.2.2.1.trans n1.2.2.1, n2.2.2.2.1.trans n1.2.2.2.1,
     n2.2.2.2.2.trans n1.2.2.2.2⟩
-  rw [n2.1, n1.1, Machine.upd_upd_same]
+  Ξ n2.1, n1.1, Machine.upd_upd_same
   config_simp
-  simp only [h27]
+  ϴ h27
 
 /-- The registers `bktFS` writes. -/
 def BbktF (r : ℕ) : Bool := decide (r = 217112 ∨ r = 217128)
 
-theorem wr_bktF : wr BbktF bktFS = true := by decide
+theorem wr_bktF : wr BbktF bktFS = true := ⌖
 
 set_option maxHeartbeats 2000000 in
 /-- **The bucket formula.** -/
@@ -195,7 +197,7 @@ theorem bktFS_exec (d : Config) (hw : WordsBounded W d) {A j : ℕ} (hj : j < A)
 /-- The registers `arcRdS` writes. -/
 def Brd (r : ℕ) : Bool := decide ((217116 ≤ r ∧ r ≤ 217121) ∨ r = 217128)
 
-theorem wr_arcRd : wr Brd arcRdS = true := by decide
+theorem wr_arcRd : wr Brd arcRdS = true := ⌖
 
 set_option maxHeartbeats 2000000 in
 /-- **Read arc `j`** (the region list entry at `217114`). -/
@@ -216,11 +218,11 @@ theorem arcRd_exec (d : Config) (hw : WordsBounded W d) {AB j se sh ee eh : ℕ}
     unfold arcRdS
     exec_block
     all_goals (try (config_simp; simp only [h14, h27, h31]; omega))
-    refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [h14, h27, h31]
-    · exact k1 _ (by omega)
-    · exact k2 _ (by omega)
-    · exact k3 _ (by omega)
-    · exact k4 _ (by omega)
+    refine ⟨⋄, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [h14, h27, h31]
+    · exact k1 _ (⋄)
+    · exact k2 _ (⋄)
+    · exact k3 _ (⋄)
+    · exact k4 _ (⋄)
   exact ⟨d', k, ex, hk, v16, v18, v19, v20, v21, exec_frameB ex wr_arcRd⟩
 
 end pieces

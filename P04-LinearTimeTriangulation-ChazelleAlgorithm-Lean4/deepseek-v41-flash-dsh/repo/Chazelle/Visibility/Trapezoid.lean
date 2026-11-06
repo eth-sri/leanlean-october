@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Visibility.HSeg
 
 /-!
@@ -59,8 +61,8 @@ theorem isOpen_trapSet (P : Polygon) (i j : ℕ) (y₁ y₂ : ℝ) : IsOpen (tra
     isOpen_lt continuous_fst ((continuous_edgeX P j).comp continuous_snd)
   have : trapSet P i j y₁ y₂ = {p : Point | y₁ < p.2} ∩ ({p : Point | p.2 < y₂} ∩
       ({p : Point | edgeX P i p.2 < p.1} ∩ {p : Point | p.1 < edgeX P j p.2})) := by
-    ext p; simp [trapSet]
-  rw [this]
+    ext p; Θ trapSet
+  Ξ this
   exact h1.inter (h2.inter (h3.inter h4))
 
 theorem isClosed_closedTrap (P : Polygon) (i j : ℕ) (y₁ y₂ : ℝ) :
@@ -73,8 +75,8 @@ theorem isClosed_closedTrap (P : Polygon) (i j : ℕ) (y₁ y₂ : ℝ) :
     isClosed_le continuous_fst ((continuous_edgeX P j).comp continuous_snd)
   have : closedTrap P i j y₁ y₂ = {p : Point | y₁ ≤ p.2} ∩ ({p : Point | p.2 ≤ y₂} ∩
       ({p : Point | edgeX P i p.2 ≤ p.1} ∩ {p : Point | p.1 ≤ edgeX P j p.2})) := by
-    ext p; simp [closedTrap]
-  rw [this]
+    ext p; Θ closedTrap
+  Ξ this
   exact h1.inter (h2.inter (h3.inter h4))
 
 theorem trapSet_subset_closedTrap (P : Polygon) (i j : ℕ) (y₁ y₂ : ℝ) :
@@ -89,7 +91,7 @@ theorem closure_trapSet_subset (P : Polygon) (i j : ℕ) (y₁ y₂ : ℝ) :
 theorem combo_lt_combo {a b a' b' s s' : ℝ} (h1 : a < a') (h2 : b < b') (hs : 0 ≤ s)
     (hs' : 0 ≤ s') (h : s + s' = 1) : s * a + s' * b < s * a' + s' * b' := by
   rcases eq_or_lt_of_le hs with rfl | hs
-  · have : s' = 1 := by linarith
+  · have : s' = 1 := ⟡
     subst this; linarith
   · nlinarith [mul_lt_mul_of_pos_left h1 hs, mul_le_mul_of_nonneg_left h2.le hs']
 
@@ -100,18 +102,18 @@ theorem convex_trapSet (P : Polygon) (i j : ℕ) (y₁ y₂ : ℝ) : Convex ℝ 
   obtain ⟨hy1, hy2, hy3, hy4⟩ := hy
   refine ⟨?_, ?_, ?_, ?_⟩
   · show y₁ < (a • x + b • y).2
-    simp only [Geometry.add_snd, Geometry.smul_snd]
+    ϴ Geometry.add_snd, Geometry.smul_snd
     exact combo_lt hx1 hy1 ha hb hab
   · show (a • x + b • y).2 < y₂
-    simp only [Geometry.add_snd, Geometry.smul_snd]
+    ϴ Geometry.add_snd, Geometry.smul_snd
     exact combo_gt hx2 hy2 ha hb hab
   · show edgeX P i (a • x + b • y).2 < (a • x + b • y).1
-    simp only [Geometry.add_snd, Geometry.smul_snd, Geometry.add_fst, Geometry.smul_fst]
-    rw [edgeX_combo P i hab]
+    ϴ Geometry.add_snd, Geometry.smul_snd, Geometry.add_fst, Geometry.smul_fst
+    Ξ edgeX_combo P i hab
     exact combo_lt_combo hx3 hy3 ha hb hab
   · show (a • x + b • y).1 < edgeX P j (a • x + b • y).2
-    simp only [Geometry.add_snd, Geometry.smul_snd, Geometry.add_fst, Geometry.smul_fst]
-    rw [edgeX_combo P j hab]
+    ϴ Geometry.add_snd, Geometry.smul_snd, Geometry.add_fst, Geometry.smul_fst
+    Ξ edgeX_combo P j hab
     exact combo_lt_combo hx4 hy4 ha hb hab
 
 /-- A preconnected set avoiding the boundary and containing an interior point is interior. -/
@@ -210,18 +212,18 @@ theorem exists_top_height {P : Polygon} {q : Point} {i j : ℕ} (hi : i < P.n) (
   have hall : ∀ y ∈ C, q.2 < y := by
     rintro y (⟨k, -, rfl, h, -⟩ | h)
     · exact h
-    · simp only [mem_insert_iff, mem_singleton_iff] at h
+    · ϴ' mem_insert_iff, mem_singleton_iff at h
       rcases h with rfl | rfl
       · exact hqi
       · exact hqj
   refine ⟨y₂, hall _ hy₂C, hmin _ (Or.inr (Or.inl rfl)), hmin _ (Or.inr (Or.inr rfl)), ?_, ?_⟩
   · intro k hk h1 h2 h3 h4
     have := hmin _ (Or.inl ⟨k, hk, rfl, h1, h3, h4⟩)
-    simp only [id] at this
+    ϴ' id at this
     linarith
   · rcases hy₂C with ⟨k, hk, hky, -, h3, h4⟩ | h
     · exact ⟨k, hk, hky, fun _ => ⟨h3, h4⟩⟩
-    · simp only [mem_insert_iff, mem_singleton_iff] at h
+    · ϴ' mem_insert_iff, mem_singleton_iff at h
       rcases h with rfl | rfl
       · obtain ⟨k, hk, hky, hkx⟩ := exists_vtx_edgeTop hi nhL
         exact ⟨k, hk, hky, fun hle => ⟨hkx.ge, by rw [hkx]; exact hle⟩⟩
@@ -255,18 +257,18 @@ theorem exists_bot_height {P : Polygon} {q : Point} {i j : ℕ} (hi : i < P.n) (
   have hall : ∀ y ∈ C, y < q.2 := by
     rintro y (⟨k, -, rfl, h, -⟩ | h)
     · exact h
-    · simp only [mem_insert_iff, mem_singleton_iff] at h
+    · ϴ' mem_insert_iff, mem_singleton_iff at h
       rcases h with rfl | rfl
       · exact hqi
       · exact hqj
   refine ⟨y₁, hall _ hy₁C, hmax _ (Or.inr (Or.inl rfl)), hmax _ (Or.inr (Or.inr rfl)), ?_, ?_⟩
   · intro k hk h1 h2 h3 h4
     have := hmax _ (Or.inl ⟨k, hk, rfl, h2, h3, h4⟩)
-    simp only [id] at this
+    ϴ' id at this
     linarith
   · rcases hy₁C with ⟨k, hk, hky, -, h3, h4⟩ | h
     · exact ⟨k, hk, hky, fun _ => ⟨h3, h4⟩⟩
-    · simp only [mem_insert_iff, mem_singleton_iff] at h
+    · ϴ' mem_insert_iff, mem_singleton_iff at h
       rcases h with rfl | rfl
       · obtain ⟨k, hk, hky, hkx⟩ := exists_vtx_edgeBot hi nhL
         exact ⟨k, hk, hky, fun hle => ⟨hkx.ge, by rw [hkx]; exact hle⟩⟩
@@ -285,8 +287,8 @@ theorem exists_isTrap {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ free
   intro k hk h1 h2 h3 h4
   rcases lt_trichotomy (P.vtx k).2 q.2 with hlt | heq | hgt
   · exact hnoB k hk h1 hlt h3 h4
-  · rw [heq, ← leftEnd_fst_eq_edgeX nhL hL] at h3
-    rw [heq, ← rightEnd_fst_eq_edgeX nhR hR] at h4
+  · Ξ' heq, ← leftEnd_fst_eq_edgeX nhL hL at h3
+    Ξ' heq, ← rightEnd_fst_eq_edgeX nhR hR at h4
     exact not_vtx_mem_closedHSeg hP hq hk heq h3 h4
   · exact hnoT k hk hgt h2 h3 h4
 
@@ -308,7 +310,7 @@ theorem segment_exit {T : Set Point} (hT : IsOpen T) (hc : Convex ℝ T) (u w : 
   have hba : BddAbove S := ⟨1, fun s hs => hs.2.1⟩
   have hSconv : Convex ℝ S := by
     intro s hs s' hs' a b ha hb hab
-    have hb' : b = 1 - a := by linarith
+    have hb' : b = 1 - a := ⟡
     subst hb'
     refine ⟨?_, ?_, ?_⟩
     · show 0 ≤ a * s + (1 - a) * s'
@@ -317,11 +319,11 @@ theorem segment_exit {T : Set Point} (hT : IsOpen T) (hc : Convex ℝ T) (u w : 
       nlinarith [mul_le_mul_of_nonneg_left hs.2.1 ha, mul_le_mul_of_nonneg_left hs'.2.1 hb]
     · show lerp u w (a • s + (1 - a) • s') ∈ T
       have e : lerp u w (a • s + (1 - a) • s') = a • lerp u w s + (1 - a) • lerp u w s' := by
-        rw [point_ext_iff]
+        Ξ point_ext_iff
         simp only [smul_eq_mul, lerp_fst, lerp_snd, Geometry.add_fst, Geometry.add_snd,
           Geometry.smul_fst, Geometry.smul_snd]
         constructor <;> ring
-      rw [e]
+      Ξ e
       exact hc hs.2.2 hs'.2.2 ha hb hab
   have hord := hSconv.ordConnected
   have hcont : Continuous (lerp u w) := continuous_lerp u w
@@ -346,7 +348,7 @@ theorem segment_exit {T : Set Point} (hT : IsOpen T) (hc : Convex ℝ T) (u w : 
       exact (hord.out hs₀S hbS ⟨hs.1.le, hsb.le⟩).2.2
     · rw [← heq]; exact subset_closure hs₀
   · by_contra hcon
-    rw [not_or, not_not] at hcon
+    Ξ' not_or, not_not at hcon
     obtain ⟨hne0, hmem⟩ := hcon
     have hpos : 0 < sInf S := lt_of_le_of_ne (le_csInf hSne (fun s hs => hs.1)) (Ne.symm hne0)
     have hev : ∀ᶠ s in 𝓝 (sInf S), lerp u w s ∈ T :=
@@ -355,7 +357,7 @@ theorem segment_exit {T : Set Point} (hT : IsOpen T) (hc : Convex ℝ T) (u w : 
     have hsS : s ∈ S := ⟨hs.1.le, (hs.2.le.trans (csInf_le hbb hs₀S)).trans h1, hsT⟩
     exact absurd (csInf_le hbb hsS) (not_le.2 hs.2)
   · by_contra hcon
-    rw [not_or, not_not] at hcon
+    Ξ' not_or, not_not at hcon
     obtain ⟨hne1, hmem⟩ := hcon
     have hlt1 : sSup S < 1 := lt_of_le_of_ne (csSup_le hSne (fun s hs => hs.2.1)) hne1
     have hev : ∀ᶠ s in 𝓝 (sSup S), lerp u w s ∈ T :=
@@ -375,12 +377,12 @@ theorem no_edge_at_base (hP : P.Simple) (hq : q ∈ freeRegion P) (h : IsTrap P 
     {k : ℕ} (hk : k < P.n) (hki : k ≠ i) (hkj : k ≠ j) {z : Point} (hz : z ∈ P.edge k)
     (hzc : z ∈ closedTrap P i j y₁ y₂) (hzy : z.2 = q.2) : False := by
   obtain ⟨-, -, h3, h4⟩ := hzc
-  rw [hzy, ← h.leftEnd_eq] at h3
-  rw [hzy, ← h.rightEnd_eq] at h4
+  Ξ' hzy, ← h.leftEnd_eq at h3
+  Ξ' hzy, ← h.rightEnd_eq at h4
   rcases closedHSeg_inter_boundary hP hq.1 hzy h3 h4 ⟨k, hk, hz⟩ with e | e
-  · rw [e] at hz
+  · Ξ' e at hz
     exact h.left_mem.not_mem_other hP h.hi hk hki hz
-  · rw [e] at hz
+  · Ξ' e at hz
     exact h.right_mem.not_mem_other hP h.hj hk hkj hz
 
 /-- No point of an edge other than `i`, `j` lies in the closed trapezoid strictly between the
@@ -396,7 +398,7 @@ theorem no_band_point (hP : P.Simple) (h : IsTrap P q i j y₁ y₂) {k : ℕ} (
     · exact ⟨(k + 1) % P.n, succIdx_lt P hk, hv⟩
     · have hor : x.1 = edgeX P i x.2 ∨ x.1 = edgeX P j x.2 := by
         by_contra hne
-        rw [not_or] at hne
+        Ξ' not_or at hne
         exact hv ⟨h1, h2, lt_of_le_of_ne h3 (Ne.symm hne.1), lt_of_le_of_ne h4 hne.2⟩
       rcases hor with hor | hor
       · rcases simple_endpoint_of_mem_two hP hk h.hi hki hx (h.mem_edgeL h1.le h2.le hor) with e | e
@@ -439,13 +441,13 @@ theorem not_mem_boundary (hP : P.Simple) (hq : q ∈ freeRegion P) (h : IsTrap P
       lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₁ = P.vtx ((k + 1) % P.n) ∨
       lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₁ ∉ trapSet P i j y₁ y₂ := by
     rcases hv₁ with e | hv
-    · left; rw [e, lerp_zero]
+    · left; Ξ e, lerp_zero
     · right; right; exact hv
   have hv₂' : lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₂ = P.vtx k ∨
       lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₂ = P.vtx ((k + 1) % P.n) ∨
       lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₂ ∉ trapSet P i j y₁ y₂ := by
     rcases hv₂ with e | hv
-    · right; left; rw [e, lerp_one]
+    · right; left; Ξ e, lerp_one
     · right; right; exact hv
   have hcont : ContinuousOn (fun s => (lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s).2) (Icc s₁ s₂) :=
     (continuous_lerp _ _).snd.continuousOn
@@ -454,8 +456,8 @@ theorem not_mem_boundary (hP : P.Simple) (hq : q ∈ freeRegion P) (h : IsTrap P
       p.2 ≤ (lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₂).2) ∨
       ((lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₂).2 ≤ p.2 ∧
       p.2 ≤ (lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₁).2) := by
-    rw [hps']
-    simp only [lerp_snd]
+    Ξ hps'
+    ϴ lerp_snd
     rcases le_total (P.vtx k).2 (P.vtx ((k + 1) % P.n)).2 with hd | hd
     · left
       constructor <;> nlinarith [mul_le_mul_of_nonneg_right hs₁ (sub_nonneg.2 hd),
@@ -488,7 +490,7 @@ theorem not_mem_boundary (hP : P.Simple) (hq : q ∈ freeRegion P) (h : IsTrap P
       ((lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₂).2 ≤ q.2 ∧
       q.2 ≤ (lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₁).2)
   · exact hIVT hA
-  · rw [not_or] at hA
+  · Ξ' not_or at hA
     obtain ⟨hA1, hA2⟩ := hA
     have key : ∀ x, x ∈ P.edge k → x ∈ closedTrap P i j y₁ y₂ →
         (x = P.vtx k ∨ x = P.vtx ((k + 1) % P.n) ∨ x ∉ trapSet P i j y₁ y₂) →
@@ -500,13 +502,13 @@ theorem not_mem_boundary (hP : P.Simple) (hq : q ∈ freeRegion P) (h : IsTrap P
     · rcases le_or_gt (lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₁).2 q.2 with hx | hx
       · have : (lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₂).2 < q.2 := by
           by_contra hh; exact hA1 ⟨hx, not_lt.1 hh⟩
-        exact key _ hx₂e hx₂c hv₂' (by linarith) (by linarith)
-      · exact key _ hx₁e hx₁c hv₁' (by linarith) (by linarith)
+        exact key _ hx₂e hx₂c hv₂' (⟡) (⟡)
+      · exact key _ hx₁e hx₁c hv₁' (⟡) (⟡)
     · rcases le_or_gt (lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₂).2 q.2 with hx | hx
       · have : (lerp (P.vtx k) (P.vtx ((k + 1) % P.n)) s₁).2 < q.2 := by
           by_contra hh; exact hA2 ⟨hx, not_lt.1 hh⟩
-        exact key _ hx₁e hx₁c hv₁' (by linarith) (by linarith)
-      · exact key _ hx₂e hx₂c hv₂' (by linarith) (by linarith)
+        exact key _ hx₁e hx₁c hv₁' (⟡) (⟡)
+      · exact key _ hx₂e hx₂c hv₂' (⟡) (⟡)
 
 /-- **The trapezoid is interior.** -/
 theorem trapSet_subset_interior (hP : P.Simple) (hq : q ∈ freeRegion P)
@@ -521,13 +523,13 @@ theorem trapSet_subset_freeRegion (hP : P.Simple) (hq : q ∈ freeRegion P)
   refine ⟨h.trapSet_subset_interior hP hq hp, ?_⟩
   rintro ⟨S, hS, hpS⟩
   obtain ⟨m, σ, hm, hσ, hdir, rfl, hch⟩ := chords_spec hP hS
-  rw [chordSet_eq_hseg] at hpS
+  Ξ' chordSet_eq_hseg at hpS
   obtain ⟨hy, ha, hb⟩ := hpS
   obtain ⟨hp1, hp2, hp3, hp4⟩ := hp
   -- the emitting vertex is at the height of `p`, outside the closed corridor
   have hnot : ¬ (edgeX P i (P.vtx m).2 ≤ (P.vtx m).1 ∧ (P.vtx m).1 ≤ edgeX P j (P.vtx m).2) :=
     fun hh => h.no_vertex m hm (hy ▸ hp1) (hy ▸ hp2) hh.1 hh.2
-  rw [← hy, not_and_or, not_le, not_le] at hnot
+  Ξ' ← hy, not_and_or, not_le, not_le at hnot
   have hbL : ((edgeX P i p.2, p.2) : Point) ∈ P.boundary :=
     ⟨i, h.hi, h.mem_edgeL hp1.le hp2.le rfl⟩
   have hbR : ((edgeX P j p.2, p.2) : Point) ∈ P.boundary :=
@@ -540,19 +542,19 @@ theorem trapSet_subset_freeRegion (hP : P.Simple) (hq : q ∈ freeRegion P)
       rcases le_total (P.vtx m).1 (chordEnd P m σ).1 with hle | hle
       · exact min_eq_left hle
       · exfalso
-        rw [max_eq_left hle] at hb
+        Ξ' max_eq_left hle at hb
         linarith
-    have hint := hch.open_int (edgeX P i p.2) (by rw [hmin]; exact hlt) (by linarith)
-    rw [← hy] at hint
+    have hint := hch.open_int (edgeX P i p.2) (by rw [hmin]; exact hlt) (⟡)
+    Ξ' ← hy at hint
     exact hint.2 hbL
   · have hmax : max (P.vtx m).1 (chordEnd P m σ).1 = (P.vtx m).1 := by
       rcases le_total (P.vtx m).1 (chordEnd P m σ).1 with hle | hle
       · exfalso
-        rw [min_eq_left hle] at ha
+        Ξ' min_eq_left hle at ha
         linarith
       · exact max_eq_left hle
-    have hint := hch.open_int (edgeX P j p.2) (by linarith) (by rw [hmax]; exact hlt)
-    rw [← hy] at hint
+    have hint := hch.open_int (edgeX P j p.2) (⟡) (by rw [hmax]; exact hlt)
+    Ξ' ← hy at hint
     exact hint.2 hbR
 
 end IsTrap
@@ -576,24 +578,24 @@ theorem side_edge_false {P : Polygon} {y₀ ε : ℝ} (hε : ε = 1 ∨ ε = -1)
   have htend : Tendsto (fun η : ℝ => lerp u w (t + ε * (w.2 - u.2) * η)) (𝓝[>] 0)
       (𝓝 (lerp u w t)) := by
     have := hcont.tendsto 0
-    simp only [mul_zero, add_zero] at this
+    ϴ' mul_zero, add_zero at this
     exact this.mono_left nhdsWithin_le_nhds
   have hev1 := htend.eventually hnear
   have hev2 : ∀ᶠ η in 𝓝[>] (0 : ℝ), t + ε * (w.2 - u.2) * η ∈ Ioo (0 : ℝ) 1 := by
     have hc : Continuous fun η : ℝ => t + ε * (w.2 - u.2) * η := by fun_prop
     have : Tendsto (fun η : ℝ => t + ε * (w.2 - u.2) * η) (𝓝[>] 0) (𝓝 t) := by
       have := hc.tendsto 0
-      simp only [mul_zero, add_zero] at this
+      ϴ' mul_zero, add_zero at this
       exact this.mono_left nhdsWithin_le_nhds
     exact this.eventually (isOpen_Ioo.mem_nhds ht)
   obtain ⟨η, hη1, hη2, hη0⟩ := (hev1.and (hev2.and self_mem_nhdsWithin)).exists
-  have hη0' : (0 : ℝ) < η := hη0
+  have hη0' := hη0
   have hpos : 0 < ε * ((lerp u w (t + ε * (w.2 - u.2) * η)).2 - y₀) := by
-    rw [← hey]
-    simp only [lerp_snd]
+    Ξ ← hey
+    ϴ lerp_snd
     have : ε * ((u.2 + (t + ε * (w.2 - u.2) * η) * (w.2 - u.2)) - (u.2 + t * (w.2 - u.2))) =
-        (ε * ε) * ((w.2 - u.2) * (w.2 - u.2)) * η := by ring
-    rw [this, hε2, one_mul]
+        (ε * ε) * ((w.2 - u.2) * (w.2 - u.2)) * η := ⋆
+    Ξ this, hε2, one_mul
     exact mul_pos (mul_self_pos.2 hd0) hη0'
   have hmem := hU (hη1 hpos)
   exact hmem.2 ⟨j, hj, lerp_mem_segment _ _ hη2.1.le hη2.2.le⟩
@@ -610,19 +612,19 @@ theorem not_free_of_side {P : Polygon} (hP : P.Simple) {y₀ a b ε : ℝ} (hε 
     (hpb : p.1 < b) : False := by
   have hnot : ¬ ((leftEnd P p).1 ≤ (P.vtx m).1 ∧ (P.vtx m).1 ≤ (rightEnd P p).1) :=
     fun hh => not_vtx_mem_closedHSeg hP hp hm (hmy.trans hpy.symm) hh.1 hh.2
-  rw [not_and_or, not_le, not_le] at hnot
+  Ξ' not_and_or, not_le, not_le at hnot
   rcases hnot with hlt | hlt
   · obtain ⟨i, hi, hL, hnh⟩ := exists_leftEdge hP hp
     have hle : (leftEnd P p).1 < p.1 := leftEnd_fst_lt hP hp.1
     have he : (((leftEnd P p).1, y₀) : Point) = leftEnd P p := point_ext rfl hpy.symm
-    have := hnear (leftEnd P p).1 (by linarith) (by linarith)
-    rw [he] at this
+    have := hnear (leftEnd P p).1 (⟡) (⟡)
+    Ξ' he at this
     exact side_edge_false hε hU (by rw [leftEnd_snd]; exact hpy) this hi hnh hL
   · obtain ⟨j, hj, hR, hnh⟩ := exists_rightEdge hP hp
     have hle : p.1 < (rightEnd P p).1 := lt_rightEnd_fst hP hp.1
     have he : (((rightEnd P p).1, y₀) : Point) = rightEnd P p := point_ext rfl hpy.symm
-    have := hnear (rightEnd P p).1 (by linarith) (by linarith)
-    rw [he] at this
+    have := hnear (rightEnd P p).1 (⟡) (⟡)
+    Ξ' he at this
     exact side_edge_false hε hU (by rw [rightEnd_snd]; exact hpy) this hj hnh hR
 
 namespace IsTrap
@@ -644,7 +646,7 @@ theorem near_top (h : IsTrap P q i j y₁ y₂) {x : ℝ} (hx1 : edgeX P i y₂ 
       {p' : Point | y₁ < p'.2 ∧ edgeX P i p'.2 < p'.1 ∧ p'.1 < edgeX P j p'.2} :=
     ⟨h.bot_lt.trans h.lt_top, hx1, hx2⟩
   filter_upwards [hopen.mem_nhds hmem] with p' hp' hpos
-  exact ⟨hp'.1, by linarith, hp'.2.1, hp'.2.2⟩
+  exact ⟨hp'.1, ⟡, hp'.2.1, hp'.2.2⟩
 
 /-- Near a point of the open bottom side, the points above the bottom height are in the
 trapezoid. -/
@@ -662,7 +664,7 @@ theorem near_bot (h : IsTrap P q i j y₁ y₂) {x : ℝ} (hx1 : edgeX P i y₁ 
       {p' : Point | p'.2 < y₂ ∧ edgeX P i p'.2 < p'.1 ∧ p'.1 < edgeX P j p'.2} :=
     ⟨h.bot_lt.trans h.lt_top, hx1, hx2⟩
   filter_upwards [hopen.mem_nhds hmem] with p' hp' hpos
-  exact ⟨by linarith, hp'.1, hp'.2.1, hp'.2.2⟩
+  exact ⟨⟡, hp'.1, hp'.2.1, hp'.2.2⟩
 
 /-- **A free point of the closure of the trapezoid lies in the trapezoid.** -/
 theorem closure_inter_free (hP : P.Simple) (hq : q ∈ freeRegion P) (h : IsTrap P q i j y₁ y₂) :
@@ -677,7 +679,7 @@ theorem closure_inter_free (hP : P.Simple) (hq : q ∈ freeRegion P) (h : IsTrap
   · rcases h1.lt_or_eq with hlt | heq
     · exact hlt
     · exfalso
-      rw [← heq] at h3' h4'
+      Ξ' ← heq at h3' h4'
       obtain ⟨m, hm, hmy, hmx⟩ := h.bot_vertex
       obtain ⟨hma, hmb⟩ := hmx (h3'.trans h4').le
       exact not_free_of_side hP (Or.inl rfl) (h.trapSet_subset_interior hP hq)
@@ -685,7 +687,7 @@ theorem closure_inter_free (hP : P.Simple) (hq : q ∈ freeRegion P) (h : IsTrap
   · rcases h2.lt_or_eq with hlt | heq
     · exact hlt
     · exfalso
-      rw [heq] at h3' h4'
+      Ξ' heq at h3' h4'
       obtain ⟨m, hm, hmy, hmx⟩ := h.top_vertex
       obtain ⟨hma, hmb⟩ := hmx (h3'.trans h4').le
       exact not_free_of_side hP (Or.inr rfl) (h.trapSet_subset_interior hP hq)
@@ -716,13 +718,13 @@ theorem top_mem_closure (h : IsTrap P q i j y₁ y₂) {x : ℝ} (hx1 : edgeX P 
   have hcont : Continuous fun η : ℝ => ((x, y₂ - η) : Point) := by fun_prop
   have htend : Tendsto (fun η : ℝ => ((x, y₂ - η) : Point)) (𝓝[>] 0) (𝓝 (x, y₂)) := by
     have := hcont.tendsto 0
-    simp only [sub_zero] at this
+    ϴ' sub_zero at this
     exact this.mono_left nhdsWithin_le_nhds
   refine mem_closure_of_tendsto htend ?_
   have hev := htend.eventually (h.near_top hx1 hx2)
   filter_upwards [hev, self_mem_nhdsWithin] with η hη hη0
   have hη0' : (0 : ℝ) < η := hη0
-  exact hη (by linarith)
+  exact hη (⟡)
 
 /-- A point of the open bottom side is in the closure of the trapezoid. -/
 theorem bot_mem_closure (h : IsTrap P q i j y₁ y₂) {x : ℝ} (hx1 : edgeX P i y₁ < x)
@@ -730,20 +732,20 @@ theorem bot_mem_closure (h : IsTrap P q i j y₁ y₂) {x : ℝ} (hx1 : edgeX P 
   have hcont : Continuous fun η : ℝ => ((x, y₁ + η) : Point) := by fun_prop
   have htend : Tendsto (fun η : ℝ => ((x, y₁ + η) : Point)) (𝓝[>] 0) (𝓝 (x, y₁)) := by
     have := hcont.tendsto 0
-    simp only [add_zero] at this
+    ϴ' add_zero at this
     exact this.mono_left nhdsWithin_le_nhds
   refine mem_closure_of_tendsto htend ?_
   have hev := htend.eventually (h.near_bot hx1 hx2)
   filter_upwards [hev, self_mem_nhdsWithin] with η hη hη0
   have hη0' : (0 : ℝ) < η := hη0
-  exact hη (by linarith)
+  exact hη (⟡)
 
 /-- **The open top side consists of boundary points and chord points.** -/
 theorem top_side (hP : P.Simple) (hq : q ∈ freeRegion P) (h : IsTrap P q i j y₁ y₂) {x : ℝ}
     (hx1 : edgeX P i y₂ < x) (hx2 : x < edgeX P j y₂) :
     ((x, y₂) : Point) ∈ P.boundary ∪ chordUnion P := by
   by_contra hcon
-  rw [mem_union, not_or] at hcon
+  Ξ' mem_union, not_or at hcon
   have hc := h.top_mem_closure hx1 hx2
   have hfree : ((x, y₂) : Point) ∈ freeRegion P :=
     ⟨⟨h.closure_subset_filled hP hq hc, hcon.1⟩, hcon.2⟩
@@ -755,7 +757,7 @@ theorem bot_side (hP : P.Simple) (hq : q ∈ freeRegion P) (h : IsTrap P q i j y
     (hx1 : edgeX P i y₁ < x) (hx2 : x < edgeX P j y₁) :
     ((x, y₁) : Point) ∈ P.boundary ∪ chordUnion P := by
   by_contra hcon
-  rw [mem_union, not_or] at hcon
+  Ξ' mem_union, not_or at hcon
   have hc := h.bot_mem_closure hx1 hx2
   have hfree : ((x, y₁) : Point) ∈ freeRegion P :=
     ⟨⟨h.closure_subset_filled hP hq hc, hcon.1⟩, hcon.2⟩

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvKey2
 
 /-!
@@ -90,8 +92,8 @@ theorem kqEfr_block {X : ℕ → Prop} (l : List Instr) (hX : ∀ i ∈ l, X (ds
 theorem kqStop_keep {X : ℕ → Prop} {c d : Config} (h : EFr X c d) (hsB : ¬ X sB)
     (hH : c.nreg sB + 5 * c.nreg sC ≤ c.nreg ALLOC) {i : ℕ} (hi : i < c.nreg sC) :
     d.nmem (d.nreg sB + 5 * i) = stopE c i ∧ d.nmem (d.nreg sB + 5 * i + 1) = stopH c i := by
-  rw [h.kkeep hsB (by unfold sB sw; omega)]
-  exact ⟨h.2.2 _ (by omega), h.2.2 _ (by omega)⟩
+  Ξ h.kkeep hsB (by unfold sB sw; omega)
+  exact ⟨h.2.2 _ (⋄), h.2.2 _ (⋄)⟩
 
 /-! ## The steps -/
 
@@ -151,42 +153,42 @@ theorem selS_irs (hK₀ : Consts c₀) (hH : CandHyp P J c)
     obtain ⟨l1, l2⟩ := kqStop_keep fr (by unfold SelR; kqr) hH.2.2.2 hs
     refine IRS.mono (K := 11027 + 2) (IRS.ifT (by rw [eSP, eSC]; exact hs) ?_) le_rfl (fun _ h => h)
     refine IRS.seq (K₁ := 7) (K₂ := 11020) (ldStop_irs hId hKd.2.1 (by
-      rw [eSP, eSB]
+      Ξ eSP, eSB
       have := hH.2.2.2; have := fr.2.1; omega)) ?_
     rintro d₁ hI₁ hA₁ hA₁' ⟨s1, s2, s3, s4⟩
     rw [eSP, l1] at s1; rw [eSP, l2] at s2
     have fr1 : EFr SelR d d₁ := ⟨fun r _ hr _ => s3 r (fun h => hr (Or.inr (Or.inr (Or.inr h))))
       (fun h => hr (Or.inr (Or.inl h))) (fun h => hr (Or.inr (Or.inr (Or.inl h)))),
-      (s3 ALLOC (by kqr) (by kqr) (by kqr)).ge, fun a _ => by rw [s4]⟩
+      (s3 ALLOC (by kqr) (by kqr) (by kqr)).ge, fun a _ => Ρ s4⟩
     have k1 : ∀ r, r = kqF ∨ r = kqE ∨ r = kqH → d₁.nreg r = d.nreg r := fun r hr => by
       rcases hr with rfl | rfl | rfl <;> exact s3 _ (by kqr) (by kqr) (by kqr)
     have hF1 : d₁.nreg kqF ≤ 1 := by rw [k1 _ (Or.inl rfl)]; exact hF
     refine (offerQ_irs hI₁ (hK₀.fix hI₁) (hctx.transport (fr1.kkeep (by unfold SelR; kqr) (by kqr))
       (fun a ha => fr1.2.2 a ha) fr1.2.1) (by rw [fr1.kkeep (by unfold SelR; kqr) (by kqr)]; exact hgw)
-      hgn hF1 (fun h => ?_) (by rw [s1, s2]; exact hH.2.2.1 _ hs) (by omega)).mono le_rfl ?_
+      hgn hF1 (fun h => ?_) (by rw [s1, s2]; exact hH.2.2.1 _ hs) (⋄)).mono le_rfl ?_
     · rw [k1 _ (Or.inl rfl)] at h
-      rw [k1 _ (Or.inr (Or.inl rfl)), k1 _ (Or.inr (Or.inr rfl))]
+      Ξ k1 _ (Or.inr (Or.inl rfl)), k1 _ (Or.inr (Or.inr rfl))
       exact candK_posW hH (hmin h).1
     rintro d' ⟨o1, o2, o3, o4, fr2⟩
     rw [s1, s2] at o2 o3
     rw [k1 _ (Or.inl rfl), k1 _ (Or.inr (Or.inl rfl)), k1 _ (Or.inr (Or.inr rfl))] at o2 o4
-    refine ⟨fr.trans (fr1.trans (fr2.mono fun r h => Or.inl h)), by omega,
+    refine ⟨fr.trans (fr1.trans (fr2.mono fun r h => Or.inl h)), ⋄,
       ⟨fun _ => Or.inr (Or.inl ⟨trivial, hs⟩), fun _ => o1⟩, fun _ => ?_⟩
     rcases o2 with ⟨hF', e1, e2⟩ | ⟨e1, e2⟩
     · obtain ⟨m1, m2, -, -⟩ := hmin hF'
-      rw [e1, e2]
+      Ξ e1, e2
       refine ⟨m1, m2, fun _ _ => by rw [← e1, ← e2]; exact o3, fun h => h.elim⟩
-    · rw [e1, e2]
+    · Ξ e1, e2
       refine ⟨Or.inr (Or.inl ⟨hs, rfl, rfl⟩), fun hb => ?_, fun _ _ => le_rfl, fun h => h.elim⟩
       have hF' : d.nreg kqF = 1 := hiff.2 (Or.inl hb)
-      rw [← e1, ← e2]
+      Ξ ← e1, ← e2
       exact (o4 hF').trans ((hmin hF').2.1 hb)
   · rw [eSP, eSC] at hs
     refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [eSP, eSC]; exact hs) (IRS.skip hId rfl))
-      (by norm_num) ?_
+      (⊛) ?_
     rintro d' rfl
     refine ⟨fr, hF, ?_, fun h => ?_⟩
-    · rw [hiff]
+    · Ξ hiff
       constructor
       · rintro (h | ⟨h, -⟩ | ⟨h, -⟩)
         · exact Or.inl h
@@ -213,10 +215,10 @@ theorem selW_irs (hK₀ : Consts c₀) (hH : CandHyp P J c)
   unfold selW
   by_cases hs : d.nreg K0 < d.nreg wX
   · have hw : c.nreg wX ≠ 0 := by rw [hKd.1] at hs; omega
-    refine IRS.mono (K := 0 + 2) (IRS.ifT hs (IRS.skip hId rfl)) (by norm_num) ?_
+    refine IRS.mono (K := 0 + 2) (IRS.ifT hs (IRS.skip hId rfl)) (⊛) ?_
     rintro d' rfl
     refine ⟨fr, hF, ?_, fun h => ?_⟩
-    · rw [hiff]
+    · Ξ hiff
       constructor
       · rintro (h | h | ⟨h, -⟩)
         · exact Or.inl h
@@ -231,33 +233,33 @@ theorem selW_irs (hK₀ : Consts c₀) (hH : CandHyp P J c)
   · have hw : c.nreg wX = 0 := by rw [hKd.1] at hs; omega
     refine IRS.mono (K := 11022 + 2) (IRS.ifF hs ?_) le_rfl (fun _ h => h)
     refine IRS.seq (K₁ := 2) (K₂ := 11020) (IRS.block [.copyN kqSE wE, .copyN kqSH wH] hId
-      ⟨iscr_sw' (by norm_num) (by norm_num), iscr_sw' (by norm_num) (by norm_num), trivial⟩) ?_
+      ⟨iscr_sw' (⊛) (⊛), iscr_sw' (⊛) (⊛), trivial⟩) ?_
     rintro d₁ hI₁ hA₁ hA₁' hd₁
     have fr1 : EFr SelR d d₁ := by
-      rw [hd₁]; exact kqEfr_block _ (by simp [dstI, SelR]) (by unfold SelR; kqr)
+      rw [hd₁]; exact kqEfr_block _ (⊚ dstI, SelR) (by unfold SelR; kqr)
     have s1 : d₁.nreg kqSE = d.nreg wE := by rw [hd₁]; simp [regB, regI, upd, kqSE, kqSH, wE, sw]
     have s2 : d₁.nreg kqSH = d.nreg wH := by rw [hd₁]; simp [regB, regI, upd, kqSE, kqSH, wH, sw]
     rw [eWE] at s1; rw [eWH] at s2
     have k1 : ∀ r, r = kqF ∨ r = kqE ∨ r = kqH → d₁.nreg r = d.nreg r := fun r hr => by
-      rw [hd₁]
+      Ξ hd₁
       rcases hr with rfl | rfl | rfl <;> simp [regB, regI, upd, kqF, kqE, kqH, kqSE, kqSH, sw]
     have hF1 : d₁.nreg kqF ≤ 1 := by rw [k1 _ (Or.inl rfl)]; exact hF
     refine (offerQ_irs hI₁ (hK₀.fix hI₁) (hctx.transport (fr1.kkeep (by unfold SelR; kqr) (by kqr))
       (fun a ha => fr1.2.2 a ha) fr1.2.1) (by rw [fr1.kkeep (by unfold SelR; kqr) (by kqr)]; exact hgw)
-      hgn hF1 (fun h => ?_) (by rw [s1, s2]; exact hH.2.1 hw) (by omega)).mono le_rfl ?_
+      hgn hF1 (fun h => ?_) (by rw [s1, s2]; exact hH.2.1 hw) (⋄)).mono le_rfl ?_
     · rw [k1 _ (Or.inl rfl)] at h
-      rw [k1 _ (Or.inr (Or.inl rfl)), k1 _ (Or.inr (Or.inr rfl))]
+      Ξ k1 _ (Or.inr (Or.inl rfl)), k1 _ (Or.inr (Or.inr rfl))
       exact candK_posW hH (hmin h).1
     rintro d' ⟨o1, o2, o3, o4, fr2⟩
     rw [s1, s2] at o2 o3
     rw [k1 _ (Or.inl rfl), k1 _ (Or.inr (Or.inl rfl)), k1 _ (Or.inr (Or.inr rfl))] at o2 o4
-    refine ⟨fr.trans (fr1.trans (fr2.mono fun r h => Or.inl h)), by omega,
+    refine ⟨fr.trans (fr1.trans (fr2.mono fun r h => Or.inl h)), ⋄,
       ⟨fun _ => Or.inr (Or.inr ⟨trivial, hw⟩), fun _ => o1⟩, fun _ => ?_⟩
     rcases o2 with ⟨hF', e1, e2⟩ | ⟨e1, e2⟩
     · obtain ⟨m1, m2, m3, -⟩ := hmin hF'
-      rw [e1, e2]
+      Ξ e1, e2
       exact ⟨m1, m2, m3, fun _ _ => by rw [← e1, ← e2]; exact o3⟩
-    · rw [e1, e2]
+    · Ξ e1, e2
       have hle : ∀ x : ℝ, d.nreg kqF = 1 → offK P J (d.nreg kqE) (d.nreg kqH) ≤ x →
           offK P J (c.nreg wE) (c.nreg wH) ≤ x := fun x hF' hx => by
         rw [← e1, ← e2]; exact (o4 hF').trans hx

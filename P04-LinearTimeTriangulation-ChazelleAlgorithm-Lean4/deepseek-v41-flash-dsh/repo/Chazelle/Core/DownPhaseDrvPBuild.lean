@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvPList
 
 /-!
@@ -37,10 +39,10 @@ theorem rdG2 (c : Config) : rd c bGran 2 = c.nreg 90002 := rfl
 theorem rdG3 (c : Config) : rd c bGran 3 = c.nreg 90003 := rfl
 theorem rdG4 (c : Config) : rd c bGran 4 = c.nreg 90004 := rfl
 
-theorem build_sub : ({bBuild, bSort, bSign} : Finset ℕ) ⊆ DrvR.drvBands := by decide
-theorem gran_sub : granBands ⊆ DrvR.drvBands := by decide
-theorem band21_not_build : (21 : ℕ) ∉ ({bBuild, bSort, bSign} : Finset ℕ) := by decide
-theorem band21_not_gran : (21 : ℕ) ∉ granBands := by decide
+theorem build_sub : ({bBuild, bSort, bSign} : Finset ℕ) ⊆ DrvR.drvBands := ⌖
+theorem gran_sub : granBands ⊆ DrvR.drvBands := ⌖
+theorem band21_not_build : (21 : ℕ) ∉ ({bBuild, bSort, bSign} : Finset ℕ) := ⌖
+theorem band21_not_gran : (21 : ℕ) ∉ granBands := ⌖
 
 /-- A frame of a block of register copies into one band of the driver. -/
 theorem frame_copies {s : Stmt} {c c' : Config} {k : ℕ} (e : Exec P W s c c' k) {lo hi : ℕ}
@@ -138,10 +140,10 @@ theorem granS_exec {sG : Stmt} {κG : ℕ → ℕ} (hGm : GranM sG κG) (c : Con
     simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
   have w₁ := e₁.wb_right
   have G₁ : Frame DrvR.drvBands c c₁ k₁ := frame_copies e₁ (lo := 90000) (hi := 90004)
-    (by decide) (fun r h1 h2 => by rw [DrvT.mem_drvBands]; unfold bandOf; omega)
+    (⌖) (fun r h1 h2 => by rw [DrvT.mem_drvBands]; unfold bandOf; omega)
     (by unfold ALLOC; omega)
   have hm₁ : c₁.nmem = c.nmem := (exec_frameB e₁ (B := fun r => decide (90000 ≤ r ∧ r < 90004))
-    (by decide)).2.2.1
+    (⌖)).2.2.1
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := r₁ _ (by unfold ALLOC; omega)
   have hK : c₁.nmem (c₁.nreg 90001) = N.chords.length := by
     rw [hm₁, v1]; exact hN.nfAt.1
@@ -168,10 +170,10 @@ theorem granS_exec {sG : Stmt} {κG : ℕ → ℕ} (hGm : GranM sG κG) (c : Con
     exact ⟨rfl, by config_simp, rfl⟩
   have G₂ : Frame DrvR.drvBands c₁ c₂ k₂ := F₂.mono gran_sub le_rfl
   have G₃ : Frame DrvR.drvBands c₂ c₃ k₃ := frame_of_wr e₃ (B := fun r => r == 218011)
-    (by decide) (fun r hr => by simp only [beq_iff_eq] at hr; subst hr; decide) (by decide)
+    (⌖) (fun r hr => by simp only [beq_iff_eq] at hr; subst hr; decide) (⌖)
   have hA₃ : c₃.nreg ALLOC = c₂.nreg ALLOC := by rw [r₃]; simp [upd, ALLOC]
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega,
-    (G₁.trans (G₂.trans G₃)).mono (by simp) (by omega), fun r hr h11 => ?_, N', ?_, ?_, hN3⟩
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ⋄,
+    (G₁.trans (G₂.trans G₃)).mono (✓) (⋄), fun r hr h11 => ?_, N', ?_, ?_, hN3⟩
   · rw [r₃]; simp only [upd, ite_eq_right h11]
     rw [F₂.1 r (by rw [hr]; exact band21_not_gran) (by unfold ALLOC bandOf at *; omega),
       r₁ r (by unfold bandOf at hr; omega)]

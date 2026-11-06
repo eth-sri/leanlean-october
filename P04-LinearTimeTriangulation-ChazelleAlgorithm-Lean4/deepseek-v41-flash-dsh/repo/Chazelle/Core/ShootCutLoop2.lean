@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutLoop
 
 /-!
@@ -29,7 +31,7 @@ open Machine Machine.Stmt Programs SignK NFLoc
 theorem Uof_mod {U₀ n c : ℕ} (hn : 0 < n) (hc : c < n) : Uof U₀ n c % n = c := by
   unfold Uof
   have ha := Nat.mod_lt U₀ hn
-  rw [Nat.add_mod, Nat.mod_mod]
+  Ξ Nat.add_mod, Nat.mod_mod
   by_cases h : c + n - U₀ % n < n
   · rw [Nat.mod_eq_of_lt h, show U₀ % n + (c + n - U₀ % n) = c + n by omega, Nat.add_mod_right,
       Nat.mod_eq_of_lt hc]
@@ -75,8 +77,8 @@ variable {O : OracleIface} {P : Polygon} {C : Chain} {H : Host} {Hh h γ : ℕ} 
 theorem flag_of {n U' F : ℕ} (hn : 0 < n) (hU' : U' ≤ F) (hF : F < U' + n) :
     (if U' % n = F % n then 0 else 1) = (if U' < F then 1 else 0) := by
   by_cases h : U' < F
-  · rw [ite_eq_right (resid_gap hn h hF).1, ite_eq_left h]
-  · rw [show U' = F by omega, ite_eq_left rfl, ite_eq_right (lt_irrefl F)]
+  · Ξ ite_eq_right (resid_gap hn h hF).1, ite_eq_left h
+  · Ξ show U' = F by omega, ite_eq_left rfl, ite_eq_right (lt_irrefl F)
 
 /-- **One iteration of the main loop.** -/
 theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
@@ -132,7 +134,7 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       rwa [show U + (c + Lc - c) = U + Lc by omega] at this
     have hU₀ : Uof U₀ n (d₂.nreg 150040) = U + Lc := by
       rw [a40, ← hmod', Uof_eq hn0 (by omega) (by omega)]
-    have hU' : Uof U₀ (2 * C.m + 7) (d₂.nreg 150040) = U + Lc := hU₀
+    have hU' := hU₀
     have hkeep : ∀ r, 150000 ≤ r → r < 150044 → r ≠ 150040 → r ≠ 150042 →
         d₂.nreg r = d.nreg r := fun r h1 h2 h3 h4 => by
       rw [r₂ r h4, post.keep r h1 h2 h3]
@@ -194,7 +196,7 @@ theorem loopBody_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     have a40 : d₂.nreg 150040 = 6 := by rw [r₂ _ (by omega), o40]
     have hU₀ : Uof U₀ n (d₂.nreg 150040) = U + 7 := by
       rw [a40, ← hmod', Uof_eq hn0 (by omega) (by omega)]
-    have hU' : Uof U₀ (2 * C.m + 7) (d₂.nreg 150040) = U + 7 := hU₀
+    have hU' := hU₀
     have hkeep : ∀ r, 150000 ≤ r → r < 150044 → r ≠ 150040 → r ≠ 150042 →
         d₂.nreg r = d.nreg r := fun r h1 h2 h3 h4 => by
       rw [r₂ r h4, kp r (Or.inl ⟨h1, h2⟩) h3]
@@ -253,9 +255,9 @@ theorem mainLoop_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     (fun d hd ht => loopBody_exec S hE L dI h41 d hd ht) hL
   refine ⟨d', k, ex, hL', ?_, hk⟩
   obtain ⟨-, R', -, -, -, -, hUF, h42, -⟩ := hL'
-  rw [R'.h90, h42] at hx
+  Ξ' R'.h90, h42 at hx
   by_contra hne
-  rw [ite_eq_left (lt_of_le_of_ne hUF hne)] at hx
+  Ξ' ite_eq_left (lt_of_le_of_ne hUF hne) at hx
   omega
 
 end

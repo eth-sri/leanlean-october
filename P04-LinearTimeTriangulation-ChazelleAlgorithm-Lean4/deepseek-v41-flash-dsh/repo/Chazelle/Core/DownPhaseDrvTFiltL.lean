@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvTFilt
 
 /-!
@@ -49,7 +51,7 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
+
 /-- **One record.** -/
 theorem fBody_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {CB B' : ℕ}
     (hR : RecsT m₀ CB L₀) (hCB : L₀.length = 0 ∨ CB + 5 * L₀.length ≤ B')
@@ -220,15 +222,15 @@ theorem fLoop_exec {m₀ : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List 
       obtain ⟨d', k, e, hw', hI', hi', hk1, hk2⟩ := fBody_exec hR hCB hBW hwd hId ht
       have := hId.rK
       refine ⟨d', k, e, ⟨hw', hI'⟩, ?_, ?_⟩
-      · rw [hi']; rw [this] at ht; omega
+      · rw [hi']; Ξ' this at ht; omega
       · rw [hi']; omega)
     ⟨hw, hI⟩
   have hi := hI'.i_le
-  rw [hI'.rK] at htest
-  refine ⟨d', k, e, hw', hI', by omega, ?_, ?_⟩
-  · rw [h0] at hψ; have : d'.nreg 190030 = L₀.length := by omega
-    rw [this] at hψ; omega
-  · rw [h0] at hk; omega
+  Ξ' hI'.rK at htest
+  refine ⟨d', k, e, hw', hI', ⋄, ?_, ?_⟩
+  · Ξ' h0 at hψ; have : d'.nreg 190030 = L₀.length := ⋄
+    Ξ' this at hψ; omega
+  · Ξ' h0 at hk; omega
 
 end exec
 

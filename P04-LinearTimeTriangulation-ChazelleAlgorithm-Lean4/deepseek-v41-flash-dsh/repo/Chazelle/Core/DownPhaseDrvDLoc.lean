@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvDArc
 public import Chazelle.Core.RestoreDrvMath
 public import Chazelle.Core.DownPhaseDrvRBktM
@@ -45,8 +47,8 @@ def arcOfB (A b : ℕ) : ℕ := if b = 0 ∨ A ≤ b then A - 1 else b - 1
 theorem arcOfB_bktB {A j : ℕ} (hj : j < A) (t₂ : Bool) : arcOfB A (bktB A j t₂) = j := by
   unfold arcOfB bktB
   by_cases h : j + 1 < A
-  · rw [ite_eq_left h, ite_eq_right (by omega)]; omega
-  · rw [ite_eq_right h]
+  · rw [ite_eq_left h, ite_eq_right (⋄)]; omega
+  · Ξ ite_eq_right h
     cases t₂ <;> simp <;> omega
 
 /-- **A match gives the bucket condition.** -/
@@ -59,15 +61,15 @@ theorem bkt_of_match (N : NF) {x : ℝ} {j : ℕ} (hj : j < N.arcs.length) {t₁
   · rw [ite_eq_left h] at hm ⊢
     simp only [Bool.and_eq_true] at hm
     right; left
-    exact ⟨by omega, h, by rw [Nat.add_sub_cancel]; exact h₁.1 hm.1,
+    exact ⟨⋄, h, by rw [Nat.add_sub_cancel]; exact h₁.1 hm.1,
       by rw [Nat.add_sub_cancel]; exact h₂.1 hm.2⟩
   · rw [ite_eq_right h] at hm ⊢
-    have hjA : j = N.arcs.length - 1 := by omega
+    have hjA : j = N.arcs.length - 1 := ⋄
     by_cases ht : t₂ = true
-    · rw [ite_eq_left ht]
+    · Ξ ite_eq_left ht
       left
       exact ⟨rfl, by rw [← hjA]; exact h₂.1 ht⟩
-    · rw [ite_eq_right ht]
+    · Ξ ite_eq_right ht
       have ht1 : t₁ = true := by
         simp only [Bool.or_eq_true] at hm
         rcases hm with h' | h'
@@ -103,17 +105,17 @@ theorem match_of_closedArc (hK : 0 < L.length) (hE : 0 < E.length) {j : ℕ}
     matchB (buildNF M Q L E).arcs.length j t₁ t₂ = true := by
   unfold matchB
   by_cases h : j + 1 < (buildNF M Q L E).arcs.length
-  · rw [ite_eq_left h]
+  · Ξ ite_eq_left h
     have hlt := key_s_lt_e (M := M) (Q := Q) hK hE (j := j) (by rw [← arcs_length hK]; exact h)
-    simp only [Bool.and_eq_true]
+    ϴ Bool.and_eq_true
     rcases hc with hc | hc | hc
     · unfold sideInArc at hc
       rw [ite_eq_left hlt] at hc
       exact ⟨h₁.2 hc.1.le, h₂.2 hc.2.le⟩
     · exact ⟨h₁.2 hc.ge, h₂.2 (hc ▸ hlt.le)⟩
     · exact ⟨h₁.2 (hc ▸ hlt.le), h₂.2 hc.le⟩
-  · rw [ite_eq_right h]
-    simp only [Bool.or_eq_true]
+  · Ξ ite_eq_right h
+    ϴ Bool.or_eq_true
     rcases hc with hc | hc | hc
     · unfold sideInArc at hc
       split_ifs at hc
@@ -135,10 +137,10 @@ theorem bcnt_le_two {bk : ℕ → ℕ} {n b : ℕ}
   push Not at hcon
   set l := DrvR.bfilt bk n b with hl
   have hpw : l.Pairwise (· < ·) := List.Pairwise.filter _ List.pairwise_lt_range
-  have m0 := (DrvR.mem_bfilt (bk := bk)).1 (List.getElem_mem (l := l) (n := 0) (by omega))
-  have m2 := (DrvR.mem_bfilt (bk := bk)).1 (List.getElem_mem (l := l) (n := 2) (by omega))
-  have h01 := List.pairwise_iff_getElem.1 hpw 0 1 (by omega) (by omega) (by omega)
-  have h12 := List.pairwise_iff_getElem.1 hpw 1 2 (by omega) (by omega) (by omega)
+  have m0 := (DrvR.mem_bfilt (bk := bk)).1 (List.getElem_mem (l := l) (n := 0) (⋄))
+  have m2 := (DrvR.mem_bfilt (bk := bk)).1 (List.getElem_mem (l := l) (n := 2) (⋄))
+  have h01 := List.pairwise_iff_getElem.1 hpw 0 1 (⋄) (⋄) (⋄)
+  have h12 := List.pairwise_iff_getElem.1 hpw 1 2 (⋄) (⋄) (⋄)
   have := h _ _ m0.1 m2.1 m0.2 m2.2
   omega
 

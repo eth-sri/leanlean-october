@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoS0CandBsSpec
 
 /-!
@@ -101,8 +103,8 @@ theorem aux_iinv {P : Polygon} {W : ℕ} {J : Merge.Junction} {N₂ : NF} {c₀ 
   obtain ⟨A₀, hA₀, h⟩ := h
   refine ⟨A₀, le_trans hA₀ hI.hA, fun c' hr hm hA => h c' (fun q hq hq11 => ?_)
     (fun a ha => ?_) hA⟩
-  · rw [hr q hq hq11, hI.hin q hq]
-  · rw [hm a ha, hI.hm a (by omega)]
+  · Ξ hr q hq hq11, hI.hin q hq
+  · rw [hm a ha, hI.hm a (⋄)]
 
 /-- `Aux` survives a write of `sw 11`. -/
 theorem aux_sw11 {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config} {v : ℕ}
@@ -111,7 +113,7 @@ theorem aux_sw11 {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config} {v 
   have hAl : upd c.nreg (sw 11) v ALLOC = c.nreg ALLOC := upd_other _ _ _ (by unfold ALLOC sw; omega)
   refine ⟨A₀, by simp only; rw [hAl]; exact hA₀,
     fun c' hr hm hA => h c' (fun q hq hq11 => ?_) hm hA⟩
-  rw [hr q hq hq11]
+  Ξ hr q hq hq11
   exact upd_other _ _ _ hq11
 
 theorem rd_sw (c : Config) (k : ℕ) : rd c bSweep k = c.nreg (sw k) := rfl
@@ -126,13 +128,13 @@ theorem auxCore_transport {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c' :
     hr _ (by unfold IFix sw; omega) (by unfold sw; omega)
   obtain ⟨b1, b2, b3, b4, hsl, hst, htb⟩ := h
   simp only [AuxCore, rd_sw] at *
-  have eB : c'.nreg sB = c.nreg sB := fx 620 (by norm_num) (by norm_num)
-  have e200 := fx 200 (by norm_num) (by norm_num)
-  have e201 := fx 201 (by norm_num) (by norm_num)
-  have e300 := fx 300 (by norm_num) (by norm_num)
-  have e301 := fx 301 (by norm_num) (by norm_num)
-  have e302 := fx 302 (by norm_num) (by norm_num)
-  rw [eB, e200, e201, e300, e301, e302]
+  have eB : c'.nreg sB = c.nreg sB := fx 620 (⊛) (by norm_num)
+  have e200 := fx 200 (⊛) (⊛)
+  have e201 := fx 201 (⊛) (⊛)
+  have e300 := fx 300 (⊛) (⊛)
+  have e301 := fx 301 (⊛) (⊛)
+  have e302 := fx 302 (⊛) (⊛)
+  Ξ eB, e200, e201, e300, e301, e302
   set B := c.nreg sB
   set AL := c.nreg (sw 300)
   set E := c.nreg (sw 301)
@@ -140,43 +142,43 @@ theorem auxCore_transport {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c' :
   set S := c.nreg (sw 201)
   set AT := c.nreg (sw 302)
   have mL : ∀ i, i < E → ∀ d, d < 7 → c'.nmem (AL + 7 * i + d) = c.nmem (AL + 7 * i + d) :=
-    fun i hi d hd => hm _ (by nlinarith)
+    fun i hi d hd => hm _ (⊞)
   have mL0 : ∀ i, i < E → c'.nmem (AL + 7 * i) = c.nmem (AL + 7 * i) := fun i hi => by
-    simpa using mL i hi 0 (by norm_num)
+    simpa using mL i hi 0 (⊛)
   have mS : ∀ x, x < S → ∀ d, d < 5 → c'.nmem (AS + 5 * x + d) = c.nmem (AS + 5 * x + d) :=
-    fun x hx d hd => hm _ (by nlinarith)
+    fun x hx d hd => hm _ (⊞)
   have mS0 : ∀ x, x < S → c'.nmem (AS + 5 * x) = c.nmem (AS + 5 * x) := fun x hx => by
-    simpa using mS x hx 0 (by norm_num)
+    simpa using mS x hx 0 (⊛)
   have mT : ∀ j, j < 2 * N₂.nChords → ∀ d, d < 3 → c'.nmem (AT + 3 * j + d) = c.nmem (AT + 3 * j + d) :=
-    fun j hj d hd => hm _ (by nlinarith)
+    fun j hj d hd => hm _ (⊞)
   have mT0 : ∀ j, j < 2 * N₂.nChords → c'.nmem (AT + 3 * j) = c.nmem (AT + 3 * j) := fun j hj => by
-    simpa using mT j hj 0 (by norm_num)
+    simpa using mT j hj 0 (⊛)
   have mB : ∀ i, i < E → ∀ s, s ≤ 1 → ∀ d, d < 3 →
       c'.nmem (slotA B i s + d) = c.nmem (slotA B i s + d) :=
     fun i hi s hs d hd => hm _ (by unfold slotA; nlinarith)
   have mB0 : ∀ i, i < E → ∀ s, s ≤ 1 → c'.nmem (slotA B i s) = c.nmem (slotA B i s) :=
-    fun i hi s hs => by simpa using mB i hi s hs 0 (by norm_num)
+    fun i hi s hs => by simpa using mB i hi s hs 0 (⊛)
   have hlogPos : ∀ i, i < E → logPos c'.nmem AL i = logPos c.nmem AL i := fun i hi => by
-    unfold logPos; rw [mL0 i hi, mL i hi 1 (by norm_num)]
+    unfold logPos; rw [mL0 i hi, mL i hi 1 (⊛)]
   have hlogPt : ∀ i, i < E → logPt P J c'.nmem AL i = logPt P J c.nmem AL i := fun i hi => by
     unfold logPt; rw [hlogPos i hi]
-  refine ⟨by omega, by omega, by omega, by omega, fun i hi s hs => ?_, fun x hx => ?_,
+  refine ⟨⋄, by omega, by omega, by omega, fun i hi s hs => ?_, fun x hx => ?_,
     fun j hj hv hf => ?_⟩
   · obtain ⟨f1, f2⟩ := hsl i hi s hs
     unfold SlotOK
-    rw [mB0 i hi s hs, mB i hi s hs 1 (by norm_num), mB i hi s hs 2 (by norm_num),
+    rw [mB0 i hi s hs, mB i hi s hs 1 (⊛), mB i hi s hs 2 (by norm_num),
       hlogPt i hi]
     exact ⟨f1, f2⟩
   · obtain ⟨i, hi, e1, e2, e3⟩ := hst x hx
     refine ⟨i, hi, ?_, ?_, ?_⟩
-    · rw [mL0 i hi, mS0 x hx, e1]
-    · rw [hlogPos i hi, mS0 x hx, mS x hx 1 (by norm_num), e2]
-    · rw [mS x hx 4 (by norm_num), mB0 i hi _ (by unfold sOf; split_ifs <;> omega), e3]
+    · Ξ mL0 i hi, mS0 x hx, e1
+    · rw [hlogPos i hi, mS0 x hx, mS x hx 1 (⊛), e2]
+    · rw [mS x hx 4 (⊛), mB0 i hi _ (by unfold sOf; split_ifs <;> omega), e3]
   · obtain ⟨i, hi, e1, e2, e3⟩ := htb j hj hv (by rw [← mT0 j hj]; exact hf)
     refine ⟨i, hi, ?_, ?_, ?_⟩
-    · rw [mL0 i hi, mT j hj 1 (by norm_num), e1]
-    · rw [hlogPos i hi, mT j hj 1 (by norm_num), mT j hj 2 (by norm_num), e2]
-    · rw [mB0 i hi _ (by omega), e3]
+    · rw [mL0 i hi, mT j hj 1 (⊛), e1]
+    · rw [hlogPos i hi, mT j hj 1 (⊛), mT j hj 2 (by norm_num), e2]
+    · rw [mB0 i hi _ (⋄), e3]
 
 /-- **`AuxCore` gives `Aux`.** -/
 theorem aux_of_core {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c : Config}

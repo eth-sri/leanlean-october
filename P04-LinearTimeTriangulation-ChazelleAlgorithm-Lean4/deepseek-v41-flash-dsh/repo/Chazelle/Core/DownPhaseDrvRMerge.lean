@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRBSort
 public import Chazelle.Core.DownPhaseDrvSplice
 
@@ -32,10 +34,10 @@ theorem merge_congr {f g : ℕ → ℕ → Bool} :
     | nil => intro _; simp
     | cons y ys ih₂ =>
       intro h
-      rw [List.cons_merge_cons, List.cons_merge_cons, h x (by simp) y (by simp)]
+      rw [List.cons_merge_cons, List.cons_merge_cons, h x (✓) y (by simp)]
       split_ifs
-      · rw [ih (y :: ys) fun a ha b hb => h a (by simp [ha]) b hb]
-      · rw [ih₂ fun a ha b hb => h a ha b (by simp [hb])]
+      · rw [ih (y :: ys) fun a ha b hb => h a (⊚ ha) b hb]
+      · rw [ih₂ fun a ha b hb => h a ha b (⊚ hb)]
 
 /-- The merge registers. -/
 def mgSetup : Stmt :=

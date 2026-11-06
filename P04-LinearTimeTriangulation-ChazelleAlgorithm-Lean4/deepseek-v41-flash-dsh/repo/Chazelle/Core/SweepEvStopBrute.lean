@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopTasks
 public import Chazelle.Core.SweepIoBrute
 public import Chazelle.Core.SweepEvWinArcs
@@ -67,11 +69,11 @@ theorem stbPre_val (m f : ℕ → ℕ) :
     (∀ q, ¬ StbPreW q → regB m stbPre f q = f q) := by
   refine ⟨fun i hi => ?_, ?_, ?_, ?_, ?_, ?_, fun q hq => ?_⟩
   · interval_cases i <;> simp [stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw]
-  · simp [stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw]
-  · simp [stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw]
-  · simp [stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw]
-  · simp [stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw]
-  · simp [stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw]
+  · Θ stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw
+  · Θ stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw
+  · Θ stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw
+  · Θ stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw
+  · Θ stbPre, regB, regI, upd, stbSv, sO, qD, accA, brOS, brOD, sw
   refine regB_other _ _ _ (fun i hi => ?_)
   simp only [stbPre, List.mem_cons, List.not_mem_nil, or_false] at hi
   unfold StbPreW at hq
@@ -82,12 +84,12 @@ theorem stbPre_val (m f : ℕ → ℕ) :
 theorem stbPre_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m stbPre f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (sw j) := fun j h1 h2 =>
     iscr_sw (by unfold sw; omega) (by unfold sw; omega)
-  simp only [stbPre, okB, okI]
-  refine ⟨s 3990 (by norm_num) (by norm_num), s 3991 (by norm_num) (by norm_num),
-    s 3992 (by norm_num) (by norm_num), s 3993 (by norm_num) (by norm_num),
-    s 3994 (by norm_num) (by norm_num), s 3231 (by norm_num) (by norm_num),
-    s 3232 (by norm_num) (by norm_num), s 3233 (by norm_num) (by norm_num),
-    s 3212 (by norm_num) (by norm_num), ⟨s 2000 (by norm_num) (by norm_num), Nat.zero_le _⟩,
+  ϴ stbPre, okB, okI
+  refine ⟨s 3990 (⊛) (⊛), s 3991 (⊛) (⊛),
+    s 3992 (⊛) (⊛), s 3993 (⊛) (⊛),
+    s 3994 (⊛) (⊛), s 3231 (⊛) (⊛),
+    s 3232 (⊛) (⊛), s 3233 (⊛) (⊛),
+    s 3212 (⊛) (⊛), ⟨s 2000 (⊛) (⊛), Nat.zero_le _⟩,
     trivial⟩
 
 /-- The registers written by `stbPost`. -/
@@ -101,9 +103,9 @@ theorem stbPost_val (m f : ℕ → ℕ) :
     (∀ q, ¬ StbPostW q → regB m stbPost f q = f q) := by
   refine ⟨fun i hi => ?_, ?_, ?_, ?_, fun j hj => ?_, fun q hq => ?_⟩
   · interval_cases i <;> simp [stbPost, regB, regI, upd, stbSv, accA, brF, sw]
-  · simp [stbPost, regB, regI, upd, stbSv, accA, brF, sw]
-  · simp [stbPost, regB, regI, upd, stbSv, accA, brF, sw]
-  · simp [stbPost, regB, regI, upd, stbSv, accA, brF, sw]
+  · Θ stbPost, regB, regI, upd, stbSv, accA, brF, sw
+  · Θ stbPost, regB, regI, upd, stbSv, accA, brF, sw
+  · Θ stbPost, regB, regI, upd, stbSv, accA, brF, sw
   · interval_cases j <;> simp [stbPost, regB, regI, upd, stbSv, accA, brF, sw]
   refine regB_other _ _ _ (fun i hi => ?_)
   simp only [stbPost, List.mem_cons, List.not_mem_nil, or_false] at hi
@@ -115,24 +117,24 @@ theorem stbPost_val (m f : ℕ → ℕ) :
 theorem stbPost_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m stbPost f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (sw j) := fun j h1 h2 =>
     iscr_sw (by unfold sw; omega) (by unfold sw; omega)
-  simp only [stbPost, okB, okI]
-  refine ⟨s 4001 (by norm_num) (by norm_num), s 4002 (by norm_num) (by norm_num),
-    s 4003 (by norm_num) (by norm_num), s 4004 (by norm_num) (by norm_num),
-    s 4005 (by norm_num) (by norm_num), s 4084 (by norm_num) (by norm_num),
-    s 4085 (by norm_num) (by norm_num), s 4086 (by norm_num) (by norm_num),
-    s 4087 (by norm_num) (by norm_num), s 4088 (by norm_num) (by norm_num),
-    s 4089 (by norm_num) (by norm_num), s 4090 (by norm_num) (by norm_num), trivial⟩
+  ϴ stbPost, okB, okI
+  refine ⟨s 4001 (⊛) (⊛), s 4002 (⊛) (⊛),
+    s 4003 (⊛) (⊛), s 4004 (⊛) (⊛),
+    s 4005 (⊛) (⊛), s 4084 (⊛) (⊛),
+    s 4085 (⊛) (⊛), s 4086 (⊛) (⊛),
+    s 4087 (⊛) (⊛), s 4088 (⊛) (⊛),
+    s 4089 (⊛) (⊛), s 4090 (⊛) (⊛), trivial⟩
 
 /-- The cost bound. -/
 theorem stb_cost (A K Fg : ℕ) (hA : A ≤ 3 * K + 1) :
     10 + (bLoopK A + (symShotK Fg A + 12)) ≤ stbK * (K + 1) * (Fg + 1) := by
   have h := brute_cost A Fg
   have h2 : bruteK * (A + 1) * (Fg + 1) ≤ bruteK * (3 * (K + 1)) * (Fg + 1) :=
-    Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega)) le_rfl
+    Nat.mul_le_mul (Nat.mul_le_mul_left _ (⋄)) le_rfl
   have e : stbK * (K + 1) * (Fg + 1) =
       bruteK * (3 * (K + 1)) * (Fg + 1) + 100 * ((K + 1) * (Fg + 1)) := by
     unfold stbK; ring
-  have h3 : 1 ≤ (K + 1) * (Fg + 1) := Nat.one_le_iff_ne_zero.2 (by positivity)
+  have h3 : 1 ≤ (K + 1) * (Fg + 1) := Nat.one_le_iff_ne_zero.2 (⟢)
   omega
 
 end

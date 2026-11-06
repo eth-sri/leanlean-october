@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTCall
 
 /-!
@@ -63,7 +65,7 @@ theorem posOK_of {C : Chain} {Q : Polygon} {n : ℕ} {x : WPos} (he : x.edge < (
     PosOK C Q n x := by
   refine ⟨he, hx, fun h0 => ?_⟩
   by_contra h6
-  have hp := box_param_pos C (by omega) hx.1 hy
+  have hp := box_param_pos C (⋄) hx.1 hy
   rcases x with ⟨e, h⟩
   simp only at h0
   subst h0
@@ -84,7 +86,7 @@ def InR (r : ℕ) : Prop := 80000 ≤ r ∧ r < 90000
 theorem kcL_hd {a b d e : ℕ} (ha : InR a) (hb : InR b) (hd : InR d) (he : InR e) :
     ∀ q ∈ kcL a b d e, ∀ r ∈ kcL a b d e, q.1 ≠ r.2 := by
   unfold InR at *
-  simp only [kcL, List.mem_cons, List.not_mem_nil, or_false]
+  ϴ kcL, List.mem_cons, List.not_mem_nil, or_false
   rintro q (rfl | rfl | rfl | rfl | rfl | rfl) r (rfl | rfl | rfl | rfl | rfl | rfl) <;>
     simp only <;> omega
 
@@ -104,13 +106,13 @@ theorem keyCmp_exec {a b d e : ℕ} (ha : InR a) (hb : InR b) (hd : InR d) (he :
         (chainModel C).key (Qof P) ⟨c.nreg a, c.nreg b⟩) ∧
       Frame primBands c c' k := by
   obtain ⟨c₁, c', k, h1, -, -, ex, hk, hout, hf⟩ := callPrim offCmp_meets (kcL a b d e)
-    (kcL_hd ha hb hd he) (by simp [kcL]) (by simp [kcL])
-    (src := 83020) (by simp [kcL]) hw hG hW hwf hC (fun c₁ h1 _ _ => by
-      have q1 := h1 (50201, a) (by simp [kcL])
-      have q2 := h1 (50202, b) (by simp [kcL])
-      have q3 := h1 (50203, d) (by simp [kcL])
-      have q4 := h1 (50204, e) (by simp [kcL])
-      have q5 := h1 (50205, 83022) (by simp [kcL])
+    (kcL_hd ha hb hd he) (⊚ kcL) (⊚ kcL)
+    (src := 83020) (⊚ kcL) hw hG hW hwf hC (fun c₁ h1 _ _ => by
+      have q1 := h1 (50201, a) (⊚ kcL)
+      have q2 := h1 (50202, b) (⊚ kcL)
+      have q3 := h1 (50203, d) (⊚ kcL)
+      have q4 := h1 (50204, e) (⊚ kcL)
+      have q5 := h1 (50205, 83022) (⊚ kcL)
       simp only at q1 q2 q3 q4 q5
       obtain ⟨hx1, hx2, hx3⟩ := hx
       obtain ⟨hy1, hy2, hy3⟩ := hy
@@ -118,11 +120,11 @@ theorem keyCmp_exec {a b d e : ℕ} (ha : InR a) (hb : InR b) (hd : InR d) (he :
         by rw [q1, q2]; exact hx2, by rw [q3, q4]; exact hy2, fun h => ?_, fun h => ?_, hWm⟩
       · rw [q1]; rw [q2] at h; exact hx3 h
       · rw [q3]; rw [q4] at h; exact hy3 h) hroom
-  have q1 := h1 (50201, a) (by simp [kcL])
-  have q2 := h1 (50202, b) (by simp [kcL])
-  have q3 := h1 (50203, d) (by simp [kcL])
-  have q4 := h1 (50204, e) (by simp [kcL])
-  have q5 := h1 (50205, 83022) (by simp [kcL])
+  have q1 := h1 (50201, a) (⊚ kcL)
+  have q2 := h1 (50202, b) (⊚ kcL)
+  have q3 := h1 (50203, d) (⊚ kcL)
+  have q4 := h1 (50204, e) (⊚ kcL)
+  have q5 := h1 (50205, 83022) (⊚ kcL)
   simp only at q1 q2 q3 q4 q5
   obtain ⟨o1, o2⟩ := hout
   rw [q1, q2, q3, q4, q5, h0, Nat.cast_zero, off_zero (key_nonneg hx.2.1),

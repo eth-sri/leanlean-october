@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase10
 
 /-!
@@ -70,9 +72,9 @@ theorem descU_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) (hn : 2 ≤ P.n) {c : 
       have := gradeLen_pos (g := 0) hn hi; have := gradeLen_le P.n 0 i; simp at this; omega
     unfold gradeStart at h16 hfit; simp only [pow_zero, Nat.mul_one] at h16 hfit
     obtain ⟨c', k, e, hk, hw', hA', o30, w0, hdesc, hm, fr, frr, hrm, ho⟩ :=
-      descU_exec0 (P := P) hG hWn hw hu.r07 hu.r20 hA hu.r04 h16 hu.r01 hu.r23 (by omega)
-        hH (by omega) hW hW8
-    refine ⟨c', k, e, hk, hw', by omega, by omega, by omega, by rw [o30]; exact w0,
+      descU_exec0 (P := P) hG hWn hw hu.r07 hu.r20 hA hu.r04 h16 hu.r01 hu.r23 (⋄)
+        hH (⋄) hW hW8
+    refine ⟨c', k, e, hk, hw', ⋄, ⋄, ⋄, by rw [o30]; exact w0,
       fun C h1 h2 h3 => by rw [o30]; exact hdesc C h1 h2 h3,
       fun a ha => hm a (Or.inl ha), fun r hr => fr r hr.not_d0 (by
         rintro rfl; have := hr.range; omega) hr.not_brute hr.bk hr.ne_alloc,
@@ -80,11 +82,11 @@ theorem descU_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) (hn : 2 ≤ P.n) {c : 
         (by unfold OutB at hr; unfold bBrute; omega), hrm, ho⟩
   · have hR' := hR hg1
     have h2i := two_mul_lt_gradeCount hg1 hi
-    have hgm : g - 1 < c.nmem h := by omega
+    have hgm : g - 1 < c.nmem h := ⋄
     have hrw := hrow (g - 1) hgm
     rw [hR'] at hrw
     obtain ⟨hNL, -⟩ := hE (g - 1) (2 * i) hgm h2i
-    have e6 : ∀ x, x + 3 * (2 * i) = x + 6 * i := fun x => by ring
+    have e6 : ∀ x, x + 3 * (2 * i) = x + 6 * i := fun x => ⋆
     simp only [rowE, hR', e6] at hNL
     have hL : ∀ C : Chain, C.P = Qof P → C.s = gradeStart (g - 1) (2 * i) →
         C.m = gradeLen P.n (g - 1) (2 * i) →
@@ -99,7 +101,7 @@ theorem descU_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) (hn : 2 ≤ P.n) {c : 
         NodeOK P c.nmem A hp (c.nmem (R + 6 * i + 3)) (c.nmem (R + 6 * i + 3 + 1)) C
           (gradeGran (g - 1)) := fun h2 C a b d => by
       obtain ⟨hNR, -⟩ := hE (g - 1) (2 * i + 1) hgm h2
-      have e6 : ∀ x, x + 3 * (2 * i + 1) = x + 6 * i + 3 := fun x => by ring
+      have e6 : ∀ x, x + 3 * (2 * i + 1) = x + 6 * i + 3 := fun x => ⋆
       simp only [rowE, hR', e6] at hNR
       exact hNR C a b d
     obtain ⟨c', k, e, hk, hw', hA1, hA2, o30, w0, hdesc, hm, fr, frr, hrm, ho⟩ :=
@@ -116,8 +118,8 @@ theorem descU_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) (hn : 2 ≤ P.n) {c : 
               C.s = gradeStart (g - 1) (2 * i + 1) ∧ C.m = gradeLen P.n (g - 1) (2 * i + 1) :=
             ⟨gChain P (g - 1) (2 * i + 1) hn h2, rfl, rfl, rfl⟩
           exact (hRc h2 CR e1 e2 e3).2.2.2.1)
-        (by omega) hW (by omega)
-    refine ⟨c', k, e, by omega, hw', hA1, hA2, o30, w0, hdesc, hm,
+        (⋄) hW (⋄)
+    refine ⟨c', k, e, ⋄, hw', hA1, hA2, o30, w0, hdesc, hm,
       fun r hr => fr r hr.not_desc hr.bk ?_ ?_ ?_ ?_ ?_ ?_ hr.ne_alloc,
       fun r hr => frr r (outB_bk hr) (by rintro rfl; unfold OutB bandOf at hr; omega), hrm,
       ho⟩ <;>

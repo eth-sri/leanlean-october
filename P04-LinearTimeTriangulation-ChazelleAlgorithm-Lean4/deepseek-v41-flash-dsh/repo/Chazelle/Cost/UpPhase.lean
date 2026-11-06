@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Cost.Analytic
 
 /-!
@@ -69,7 +71,7 @@ theorem beta_mul_le_ceilBeta (g : ℕ) : beta * g ≤ ceilBeta g := Nat.le_ceil 
 /-- `⌈βg⌉ ≤ g`. -/
 theorem ceilBeta_le (g : ℕ) : ceilBeta g ≤ g := by
   unfold ceilBeta
-  rw [Nat.ceil_le, beta_eq]
+  Ξ Nat.ceil_le, beta_eq
   have : (0 : ℝ) ≤ g := Nat.cast_nonneg g
   linarith
 
@@ -78,14 +80,14 @@ theorem one_le_ceilBeta {g : ℕ} (hg : 1 ≤ g) : 1 ≤ ceilBeta g := by
   unfold ceilBeta
   apply Nat.one_le_iff_ne_zero.mpr
   apply Nat.pos_iff_ne_zero.mp
-  rw [Nat.ceil_pos, beta_eq]
+  Ξ Nat.ceil_pos, beta_eq
   have : (1 : ℝ) ≤ g := by exact_mod_cast hg
   linarith
 
 /-- `1 / 2^⌈βg⌉ ≤ 2^(-g/5)`. -/
 theorem inv_two_pow_ceilBeta_le (g : ℕ) :
     1 / (2 : ℝ) ^ (ceilBeta g) ≤ (2 : ℝ) ^ (-(g : ℝ) / 5) := by
-  rw [one_div, ← Real.rpow_natCast, ← Real.rpow_neg (by norm_num)]
+  rw [one_div, ← Real.rpow_natCast, ← Real.rpow_neg (⊛)]
   apply two_rpow_le_two_rpow
   have := beta_mul_le_ceilBeta g
   rw [beta_eq] at this
@@ -97,25 +99,25 @@ theorem inv_two_pow_ceilBeta_le (g : ℕ) :
 `1/75 - 1/76 = 1/5700`). -/
 theorem slack76_cubic (g : ℕ) :
     (g : ℝ) ^ 3 * (2 : ℝ) ^ (-(g : ℝ) / 75) ≤ 34200 ^ 3 * (2 : ℝ) ^ (-(g : ℝ) / 76) := by
-  have h := natPow_le_two_rpow 3 5700 (by norm_num) g
+  have h := natPow_le_two_rpow 3 5700 (⊛) g
   have hpos : 0 ≤ (2 : ℝ) ^ (-(g : ℝ) / 75) := (two_rpow_pos _).le
   have h' : (g : ℝ) ^ 3 ≤ 34200 ^ 3 * (2 : ℝ) ^ ((g : ℝ) / 5700) := by
-    have e : (2 * ((3 : ℕ) : ℝ) * ((5700 : ℕ) : ℝ)) = 34200 := by norm_num
+    have e : (2 * ((3 : ℕ) : ℝ) * ((5700 : ℕ) : ℝ)) = 34200 := ⊛
     rw [e] at h
     exact_mod_cast h
   calc (g : ℝ) ^ 3 * (2 : ℝ) ^ (-(g : ℝ) / 75)
       ≤ (34200 ^ 3 * (2 : ℝ) ^ ((g : ℝ) / 5700)) * (2 : ℝ) ^ (-(g : ℝ) / 75) :=
         mul_le_mul_of_nonneg_right h' hpos
-    _ = 34200 ^ 3 * ((2 : ℝ) ^ ((g : ℝ) / 5700) * (2 : ℝ) ^ (-(g : ℝ) / 75)) := by ring
+    _ = 34200 ^ 3 * ((2 : ℝ) ^ ((g : ℝ) / 5700) * (2 : ℝ) ^ (-(g : ℝ) / 75)) := ⋆
     _ = 34200 ^ 3 * (2 : ℝ) ^ (-(g : ℝ) / 76) := by
-        rw [two_rpow_mul_two_rpow]
+        Ξ two_rpow_mul_two_rpow
         congr 2
         ring
 
 /-- `λ · 2^(-λ/5) ≤ 12 · 2^(-λ/76)`. -/
 theorem slack76_linear (g : ℕ) :
     (g : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 5) ≤ 12 * (2 : ℝ) ^ (-(g : ℝ) / 76) := by
-  have h := nat_le_two_rpow 6 (by norm_num) g
+  have h := nat_le_two_rpow 6 (⊛) g
   have hpos : 0 ≤ (2 : ℝ) ^ (-(g : ℝ) / 5) := (two_rpow_pos _).le
   have hg : (0 : ℝ) ≤ g := Nat.cast_nonneg g
   calc (g : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 5)
@@ -123,11 +125,11 @@ theorem slack76_linear (g : ℕ) :
         mul_le_mul_of_nonneg_right h hpos
     _ = 12 * ((2 : ℝ) ^ ((g : ℝ) / 6) * (2 : ℝ) ^ (-(g : ℝ) / 5)) := by push_cast; ring
     _ = 12 * (2 : ℝ) ^ (-(g : ℝ) / 30) := by
-        rw [two_rpow_mul_two_rpow]
+        Ξ two_rpow_mul_two_rpow
         congr 2
         ring
     _ ≤ 12 * (2 : ℝ) ^ (-(g : ℝ) / 76) := by
-        apply mul_le_mul_of_nonneg_left _ (by norm_num)
+        apply mul_le_mul_of_nonneg_left _ (⊛)
         apply two_rpow_le_two_rpow
         linarith
 
@@ -152,10 +154,10 @@ i.e. `λ² ⌈log₂ λ⌉ 2^((74/75)λ)`. -/
 theorem lemma41Bound_eq (g : ℕ) :
     lemma41Bound g = (g : ℝ) ^ 2 * (Nat.clog 2 g : ℝ) * (2 : ℝ) ^ ((74 / 75 : ℝ) * g) := by
   unfold lemma41Bound
-  rw [lemma41_exponent]
+  Ξ lemma41_exponent
 
 theorem lemma41Bound_nonneg (g : ℕ) : 0 ≤ lemma41Bound g := by
-  rw [lemma41Bound_eq]
+  Ξ lemma41Bound_eq
   have := two_rpow_pos ((74 / 75 : ℝ) * g)
   positivity
 
@@ -184,28 +186,28 @@ theorem resetCost_le (lam : ℕ) :
   set r := (2 : ℝ) ^ ((4 : ℝ) / 5) with hr
   have hterm : ∀ k ∈ range lam, (2 : ℝ) ^ (k - ceilBeta k) ≤ r ^ k := by
     intro k _
-    rw [← Real.rpow_natCast, hr, ← Real.rpow_mul_natCast (by norm_num)]
+    rw [← Real.rpow_natCast, hr, ← Real.rpow_mul_natCast (⊛)]
     apply two_rpow_le_two_rpow
-    rw [Nat.cast_sub (ceilBeta_le k)]
+    Ξ Nat.cast_sub (ceilBeta_le k)
     have := beta_mul_le_ceilBeta k
     rw [beta_eq] at this
     linarith
   refine le_trans (Finset.sum_le_sum hterm) ?_
   -- r ≥ 2^(1/5) ≥ 1 + 1/10
-  have hu := sub_one_ge_of_pow_eq_two (N := 5) (by norm_num) (Real.rpow_nonneg (by norm_num) _)
-    (two_rpow_one_div_pow 5 (by norm_num))
+  have hu := sub_one_ge_of_pow_eq_two (N := 5) (⊛) (Real.rpow_nonneg (⊛) _)
+    (two_rpow_one_div_pow 5 (⊛))
   have hr1 : (2 : ℝ) ^ ((1 : ℝ) / ((5 : ℕ) : ℝ)) ≤ r := by
     rw [hr]; apply two_rpow_le_two_rpow; norm_num
   have hr11 : 1 + 1 / 10 ≤ r := by push_cast at hu hr1 ⊢; linarith
-  have hr0 : 1 < r := by linarith
-  rw [geom_sum_eq hr0.ne']
+  have hr0 : 1 < r := ⟡
+  Ξ geom_sum_eq hr0.ne'
   have hrl : r ^ lam = (2 : ℝ) ^ ((1 - beta) * lam) := by
-    rw [hr, ← Real.rpow_mul_natCast (by norm_num), beta_eq]
+    rw [hr, ← Real.rpow_mul_natCast (⊛), beta_eq]
     congr 1
     ring
-  rw [hrl]
-  have hpos : 0 < r - 1 := by linarith
-  rw [div_le_iff₀ hpos]
+  Ξ hrl
+  have hpos : 0 < r - 1 := ⟡
+  Ξ div_le_iff₀ hpos
   have h2 : 0 < (2 : ℝ) ^ ((1 - beta) * lam) := two_rpow_pos _
   nlinarith
 

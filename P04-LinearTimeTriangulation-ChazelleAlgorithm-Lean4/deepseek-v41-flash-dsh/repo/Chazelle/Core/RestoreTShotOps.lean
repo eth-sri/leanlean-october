@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShotListG
 public import Chazelle.Core.RestoreTDisp
 
@@ -34,14 +36,14 @@ theorem stable_tinv {W : ℕ} {c₀ : Config} {Bo : Finset ℕ} (hB8 : bRestore 
   intro c c' k hI hw' hf
   obtain ⟨r₁, -, m₁, -, -, a₁, -⟩ := hf
   have keep : ∀ q, 80000 ≤ q → q < 84000 → c'.nreg q = c.nreg q := fun q h1 h2 =>
-    r₁ q (by rw [band8 h1 (by omega)]; exact hB8) (by unfold ALLOC; omega)
+    r₁ q (by rw [band8 h1 (⋄)]; exact hB8) (by unfold ALLOC; omega)
       (by unfold RS0; omega)
-  refine ⟨hw', fun q h1 h2 => by rw [keep q h1 (by omega)]; exact hI.hin q h1 h2,
+  refine ⟨hw', fun q h1 h2 => by rw [keep q h1 (⋄)]; exact hI.hin q h1 h2,
     le_trans hI.hA a₁, fun a ha => by rw [m₁ a (by have := hI.hA; omega)]; exact hI.hm a ha,
-    by rw [keep _ (by norm_num) (by norm_num)]; exact hI.h20,
-    by rw [keep _ (by norm_num) (by norm_num)]; exact hI.h21,
-    by rw [keep _ (by norm_num) (by norm_num)]; exact hI.h22,
-    by rw [keep _ (by norm_num) (by norm_num)]; exact hI.h23⟩
+    by rw [keep _ (⊛) (⊛)]; exact hI.h20,
+    by rw [keep _ (⊛) (⊛)]; exact hI.h21,
+    by rw [keep _ (⊛) (⊛)]; exact hI.h22,
+    by rw [keep _ (⊛) (⊛)]; exact hI.h23⟩
 
 /-- The registers written by `gKey`. -/
 def BgK (r : ℕ) : Bool := Bprim r || decide (50200 ≤ r ∧ r < 50210)
@@ -61,12 +63,12 @@ theorem opW_BgK : OpW BgK := fun r hr => by
     rw [this]; decide
 
 theorem wr_gKey (a b d e : ℕ) : wr BgK (gKey a b d e) = true := by
-  have h1 : wr BgK offCmp = true := wr_mono wr_offCmp (fun r h => by simp [BgK, h])
+  have h1 : wr BgK offCmp = true := wr_mono wr_offCmp (fun r h => ⊚ BgK, h)
   have h2 : wr BgK (iKey a b d e) = true := wr_mono (wr_iKey a b d e) (fun r h => by
     have : Bprim r = true := by
       unfold Bik at h
       simp only [Bool.or_eq_true, beq_iff_eq, Bool.and_eq_true, decide_eq_true_eq] at h
-      simp only [Bprim, Bool.or_eq_true, decide_eq_true_eq]
+      ϴ Bprim, Bool.or_eq_true, decide_eq_true_eq
       rcases h with ((((h | h) | h) | h) | h) | h
       · simp only [Bdir, Bool.or_eq_true, decide_eq_true_eq] at h; omega
       · omega

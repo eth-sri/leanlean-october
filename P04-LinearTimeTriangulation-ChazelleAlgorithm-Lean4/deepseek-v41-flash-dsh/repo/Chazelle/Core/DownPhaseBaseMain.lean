@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseBaseSpec
 public import Chazelle.Core.ShearInv
 
@@ -24,37 +28,37 @@ theorem tw_eq (L' : List (ℕ × ℕ × ℕ)) (i q : ℕ) (hq : q < 3) :
     tw L' (3 * i + q) = if q = 0 then (L'.getD i (0, 0, 0)).1
       else if q = 1 then (L'.getD i (0, 0, 0)).2.1 else (L'.getD i (0, 0, 0)).2.2 := by
   unfold tw
-  rw [show (3 * i + q) % 3 = q by omega, show (3 * i + q) / 3 = i by omega]
+  Ξ show (3 * i + q) % 3 = q by omega, show (3 * i + q) / 3 = i by omega
 
 theorem mem1_zero (m₀ : ℕ → ℕ) (li : Bool) (n : ℕ) (L : List (ℕ × ℕ × ℕ)) (B' X a : ℕ) :
     mem1 m₀ li n L B' X 0 a = m₀ a := by
   unfold mem1
-  have h0 : rankF (keepX li n) L 0 = 0 := by simp [rankF]
-  rw [h0, ite_eq_right (by omega), ite_eq_right (by omega)]
+  have h0 : rankF (keepX li n) L 0 = 0 := ⊚ rankF
+  Ξ h0, ite_eq_right (⋄), ite_eq_right (⋄)
 
 theorem mem1_low {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {B' X i a : ℕ}
     (h1 : a < B') (h2 : a < X) : mem1 m₀ li n L B' X i a = m₀ a := by
   unfold mem1
-  rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+  Ξ ite_eq_right (⋄), ite_eq_right (⋄)
 
 theorem mem1_list {m₀ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {B' X i a : ℕ}
     (h1 : B' ≤ a) (h2 : a < B' + 3 * rankF (keepX li n) L i) :
     mem1 m₀ li n L B' X i a = tw (keepL li n L) (a - B') := by
   unfold mem1
-  rw [ite_eq_left ⟨h1, h2⟩]
+  Ξ ite_eq_left ⟨h1, h2⟩
 
 theorem mem2_low {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     {SE' t a : ℕ} (h : a < SE') : mem2 m₁ li n L E SE' t a = m₁ a := by
   unfold mem2
-  rw [ite_eq_right (by omega)]
+  Ξ ite_eq_right (⋄)
 
 theorem mem2_in {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     {SE' t a : ℕ} (h1 : SE' ≤ a) (h2 : a < SE' + (dropE li n L (E.take t)).length) :
     mem2 m₁ li n L E SE' t a = (dropE li n L (E.take t)).getD (a - SE') 0 := by
   unfold mem2
-  rw [ite_eq_left ⟨h1, h2⟩]
+  Ξ ite_eq_left ⟨h1, h2⟩
 
-set_option maxHeartbeats 16000000 in
+
 /-- **A1: `DropAugSpec`.** -/
 theorem dropAug : DropAugSpec := by
   refine ⟨dropStmt, 80, ?_⟩
@@ -86,7 +90,7 @@ theorem dropAug : DropAugSpec := by
   -- the bit
   obtain ⟨c₂, k₂, e₂, hk₂, b103, bfr, bm, brr, brm, bo⟩ :=
     dBit_exec (P := P) c₁ e₁.wb_right (by omega) s106 s105 s101 s103
-  have g21 : ∀ r, r ≠ 200103 → c₂.nreg r = c₁.nreg r := bfr
+  have g21 := bfr
   -- the chord pass
   have hI₁ : Inv1 c.nmem li P.n L B A₀ X c₂ c₂ :=
     { i_le := by rw [g21 _ (by norm_num), s110]; omega
@@ -156,7 +160,7 @@ theorem dropAug : DropAugSpec := by
       rw [ite_eq_right (by omega), ite_eq_left (by omega), Nat.add_sub_cancel_left])
     (by omega) hEl hperm (by omega) e₄.wb_right hI₂ m130
   -- the final configuration
-  have g5 : ∀ r, (r < 200130 ∨ 200135 < r) → c₅.nreg r = c₄.nreg r := hI₅.fr
+  have g5 := hI₅.fr
   have g51 : ∀ r, (r < 200110 ∨ 200135 < r) → r ≠ 200005 → r ≠ 200103 →
       c₅.nreg r = c₁.nreg r := fun r hr h5 h3 => by
     rw [g5 r (by omega), mfr r h5 (by omega) (by omega) (by omega), g3 r (by omega) h3]

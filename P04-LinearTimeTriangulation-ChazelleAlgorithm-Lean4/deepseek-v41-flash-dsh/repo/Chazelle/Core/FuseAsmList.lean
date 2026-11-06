@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmQuery
 public import Chazelle.Core.MergeAsmProg
 public import Chazelle.Core.FuseAsmSet
@@ -39,13 +41,13 @@ def endQL (cs : List CRec) : List (ℕ × ℕ × ℕ) :=
 theorem endQL_eq (cs : List CRec) : endQL cs = sweepEndQ cs := rfl
 
 theorem endQL_length (cs : List CRec) : (endQL cs).length = 2 * cs.length := by
-  simp [endQL]
+  Θ endQL
 
 theorem endQL_get (cs : List CRec) {j : ℕ} (hj : j < 2 * cs.length) :
     (endQL cs).getD j (0, 0, 0) =
       let r := cs.getD (j / 2) ⟨0, 0, 0, 0, 0⟩
       if j % 2 = 0 then (r.lp, r.h + 1, 1) else (r.rp, r.h + 1, 0) := by
-  simp [endQL, List.getD_eq_getElem?_getD, List.getElem?_range hj]
+  Θ endQL, List.getD_eq_getElem?_getD, List.getElem?_range hj
 
 /-- One chord: two queries. -/
 def qlBody : Stmt := block [.loadN 70103 70101, .addN 70104 70103 70105,
@@ -173,29 +175,29 @@ theorem chordList_endQL {m m₀ : ℕ → ℕ} {LB CB : ℕ} {cs : List CRec}
       m (LB + 6 * i + 4) = m₀ (CB + 5 * i) + 1 ∧ m (LB + 6 * i + 5) = 0) :
     ChordListAt m LB (endQL cs) := by
   intro j hj
-  rw [endQL_length] at hj
-  rw [endQL_get cs hj]
-  obtain ⟨i, rfl | rfl⟩ : ∃ i, j = 2 * i ∨ j = 2 * i + 1 := ⟨j / 2, by omega⟩
-  · have hi : i < cs.length := by omega
+  Ξ' endQL_length at hj
+  Ξ endQL_get cs hj
+  obtain ⟨i, rfl | rfl⟩ : ∃ i, j = 2 * i ∨ j = 2 * i + 1 := ⟨j / 2, ⋄⟩
+  · have hi : i < cs.length := ⋄
     obtain ⟨c0, c1, c2⟩ := hcs i hi
     obtain ⟨d0, d1, d2, -, -, -⟩ := hdone i hi
-    have e1 : 2 * i / 2 = i := by omega
-    have e2 : 2 * i % 2 = 0 := by omega
-    simp only [e1, e2, ite_true]
+    have e1 : 2 * i / 2 = i := ⋄
+    have e2 : 2 * i % 2 = 0 := ⋄
+    ϴ e1, e2, ite_true
     refine ⟨?_, ?_, ?_⟩
-    · rw [show LB + 3 * (2 * i) = LB + 6 * i by ring, d0, c1]
-    · rw [show LB + 3 * (2 * i) + 1 = LB + 6 * i + 1 by ring, d1, c0]
-    · rw [show LB + 3 * (2 * i) + 2 = LB + 6 * i + 2 by ring, d2]
-  · have hi : i < cs.length := by omega
+    · Ξ show LB + 3 * (2 * i) = LB + 6 * i by ring, d0, c1
+    · Ξ show LB + 3 * (2 * i) + 1 = LB + 6 * i + 1 by ring, d1, c0
+    · Ξ show LB + 3 * (2 * i) + 2 = LB + 6 * i + 2 by ring, d2
+  · have hi : i < cs.length := ⋄
     obtain ⟨c0, c1, c2⟩ := hcs i hi
     obtain ⟨-, -, -, d3, d4, d5⟩ := hdone i hi
-    have e1 : (2 * i + 1) / 2 = i := by omega
-    have e2 : (2 * i + 1) % 2 = 1 := by omega
-    simp only [e1, e2, one_ne_zero, ite_false]
+    have e1 : (2 * i + 1) / 2 = i := ⋄
+    have e2 : (2 * i + 1) % 2 = 1 := ⋄
+    ϴ e1, e2, one_ne_zero, ite_false
     refine ⟨?_, ?_, ?_⟩
-    · rw [show LB + 3 * (2 * i + 1) = LB + 6 * i + 3 by ring, d3, c2]
-    · rw [show LB + 3 * (2 * i + 1) + 1 = LB + 6 * i + 4 by ring, d4, c0]
-    · rw [show LB + 3 * (2 * i + 1) + 2 = LB + 6 * i + 5 by ring, d5]
+    · Ξ show LB + 3 * (2 * i + 1) = LB + 6 * i + 3 by ring, d3, c2
+    · Ξ show LB + 3 * (2 * i + 1) + 1 = LB + 6 * i + 4 by ring, d4, c0
+    · Ξ show LB + 3 * (2 * i + 1) + 2 = LB + 6 * i + 5 by ring, d5
 
 /-- **The chord-end queries of a normal form** are valid and ask exactly the chord ends. -/
 theorem endQL_ok (J : Merge.Junction) (Q : Polygon) (i : ℕ) {N : NF}
@@ -217,45 +219,45 @@ theorem endQL_ok (J : Merge.Junction) (Q : Polygon) (i : ℕ) {N : NF}
   have mem : ∀ q, q ∈ endQL N.chords ↔ ∃ k, k < N.chords.length ∧
       (q = ((N.chord k).lp, (N.chord k).h + 1, 1) ∨ q = ((N.chord k).rp, (N.chord k).h + 1, 0)) := by
     intro q
-    simp only [endQL, List.mem_map, List.mem_range, NF.chord]
+    ϴ endQL, List.mem_map, List.mem_range, NF.chord
     constructor
     · rintro ⟨j, hj, rfl⟩
-      refine ⟨j / 2, by omega, ?_⟩
+      refine ⟨j / 2, ⋄, ?_⟩
       split_ifs
       · exact Or.inl rfl
       · exact Or.inr rfl
     · rintro ⟨k, hk, rfl | rfl⟩
-      · exact ⟨2 * k, by omega, by simp⟩
-      · exact ⟨2 * k + 1, by omega, by
-          rw [show (2 * k + 1) / 2 = k by omega, ite_eq_right (by omega)]⟩
+      · exact ⟨2 * k, ⋄, ✓⟩
+      · exact ⟨2 * k + 1, ⋄, by
+          rw [show (2 * k + 1) / 2 = k by omega, ite_eq_right (⋄)]⟩
   refine ⟨fun q hq => ?_, ?_⟩
   · obtain ⟨k, hk, rfl | rfl⟩ := (mem q).1 hq
     · exact (key k hk).1
     · exact (key k hk).2.1
   · ext x
-    simp only [geoQ, endQ, NF.F, Set.mem_union, Set.mem_ofPred_eq]
+    ϴ geoQ, endQ, NF.F, Set.mem_union, Set.mem_ofPred_eq
     constructor
     · rintro ⟨q, hq, rfl⟩
       obtain ⟨k, hk, rfl | rfl⟩ := (mem q).1 hq
       · left
         refine ⟨_, ⟨N.chord k, memk k hk, rfl⟩, ?_⟩
         show (M.pos Q (N.chord k).lpos, dirOf 1) = _
-        rw [(key k hk).2.2.1]; simp [dirOf]
+        rw [(key k hk).2.2.1]; Θ dirOf
       · right
         refine ⟨_, ⟨N.chord k, memk k hk, rfl⟩, ?_⟩
         show (M.pos Q (N.chord k).rpos, dirOf 0) = _
-        rw [(key k hk).2.2.2]; simp [dirOf]
+        rw [(key k hk).2.2.2]; Θ dirOf
     · rintro (⟨c, ⟨r, hr, rfl⟩, rfl⟩ | ⟨c, ⟨r, hr, rfl⟩, rfl⟩)
       · obtain ⟨k, hk, rfl⟩ := List.getElem_of_mem hr
-        have hck : N.chord k = N.chords[k] := by unfold NF.chord; rw [getD_lt hk]
+        have hck : N.chord k = N.chords[k] := by unfold NF.chord; Ξ getD_lt hk
         refine ⟨_, (mem _).2 ⟨k, hk, Or.inl rfl⟩, ?_⟩
         show (lend (N.chords[k].toSet M Q), 1) = (M.pos Q (N.chord k).lpos, dirOf 1)
-        rw [(key k hk).2.2.1, hck]; simp [dirOf]
+        rw [(key k hk).2.2.1, hck]; Θ dirOf
       · obtain ⟨k, hk, rfl⟩ := List.getElem_of_mem hr
-        have hck : N.chord k = N.chords[k] := by unfold NF.chord; rw [getD_lt hk]
+        have hck : N.chord k = N.chords[k] := by unfold NF.chord; Ξ getD_lt hk
         refine ⟨_, (mem _).2 ⟨k, hk, Or.inr rfl⟩, ?_⟩
         show (rend (N.chords[k].toSet M Q), -1) = (M.pos Q (N.chord k).rpos, dirOf 0)
-        rw [(key k hk).2.2.2, hck]; simp [dirOf]
+        rw [(key k hk).2.2.2, hck]; Θ dirOf
 
 end
 

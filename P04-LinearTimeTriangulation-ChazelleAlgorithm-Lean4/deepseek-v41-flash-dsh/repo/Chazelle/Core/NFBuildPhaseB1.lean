@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildPhaseBAux
 
 /-!
@@ -52,7 +54,7 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     s16, s17, s18, s19, s20⟩ := setupB_exec (P := P) c hw hK hN h1 hH hSEr hroom
   have w₁ := x₁.wb_right
   have f₁ := exec_frameB x₁ wr_setupB
-  have g₁ : ∀ r, BsetupB r = false → c₁.nreg r = c.nreg r := f₁.1
+  have g₁ := f₁.1
   -- 2. the counted interval
   obtain ⟨c₂, k₂, x₂, hk₂, l1, l2, l3, l4, f₂⟩ := lohiS_exec (P := P) c₁ w₁ (D := D)
     (by rw [g₁ _ (by decide), hD]) (by rw [f₁.2.2.1]; exact twice_m_le hM hCW)

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutShOrg
 public import Chazelle.Core.ShootCutCutter2
 
@@ -104,18 +106,18 @@ theorem rec9_append {mem mem' : ℕ → ℕ} {L : ℕ} {ps : List Pc} {pc : Pc}
       mem' (L + 1 + 9 * ps.length + 8) = pc.pw) :
     Rec9 mem' L (ps ++ [pc]) := by
   intro i hi
-  simp only [List.length_append, List.length_singleton] at hi
+  ϴ' List.length_append, List.length_singleton at hi
   rcases (show i < ps.length ∨ i = ps.length by omega) with hlt | rfl
-  · rw [List.getElem_append_left hlt]
+  · Ξ List.getElem_append_left hlt
     obtain ⟨a0, a1, a2, a3, a4, a58⟩ := hold i hlt
-    refine ⟨by rw [hsame _ (by omega)]; exact a0, by rw [hsame _ (by omega)]; exact a1,
-      by rw [hsame _ (by omega)]; exact a2, by rw [hsame _ (by omega)]; exact a3,
-      by rw [hsame _ (by omega)]; exact a4, fun hk => ?_⟩
+    refine ⟨by rw [hsame _ (⋄)]; exact a0, by rw [hsame _ (⋄)]; exact a1,
+      by rw [hsame _ (⋄)]; exact a2, by rw [hsame _ (⋄)]; exact a3,
+      by rw [hsame _ (⋄)]; exact a4, fun hk => ?_⟩
     obtain ⟨b5, b6, b7, b8⟩ := a58 hk
-    exact ⟨by rw [hsame _ (by omega)]; exact b5, by rw [hsame _ (by omega)]; exact b6,
-      by rw [hsame _ (by omega)]; exact b7, by rw [hsame _ (by omega)]; exact b8⟩
-  · rw [List.getElem_append_right (le_refl _)]
-    simp only [Nat.sub_self, List.getElem_cons_zero]
+    exact ⟨by rw [hsame _ (⋄)]; exact b5, by rw [hsame _ (⋄)]; exact b6,
+      by rw [hsame _ (⋄)]; exact b7, by rw [hsame _ (⋄)]; exact b8⟩
+  · Ξ List.getElem_append_right (le_refl _)
+    ϴ Nat.sub_self, List.getElem_cons_zero
     exact ⟨h0, h1, h2, h3, h4, h58⟩
 
 /-! ## The contract of `shEmit` -/
@@ -351,7 +353,7 @@ theorem shFin_exec {P : Polygon} {W A₀ Nmax : ℕ} {m₀ : ℕ → ℕ} {c₀ 
       (∀ x, x ≠ ALLOC → d'.nreg x = d.nreg x) ∧ d' = { d with nreg := d'.nreg } := by
   have hAl : ALLOC = 9999 := rfl
   obtain ⟨hA, -, h1, -, hLW, -, hp, -, -⟩ := hI
-  rw [min_eq_left hq] at hp
+  Ξ' min_eq_left hq at hp
   set E := A₀ + 1 + 9 * ps.length with hE
   let Inv : Config → Prop := fun c => WordsBounded W c ∧ c.nreg ALLOC ≤ E ∧
     (∀ x, x ≠ ALLOC → c.nreg x = d.nreg x) ∧ c = { d with nreg := c.nreg }
@@ -360,21 +362,21 @@ theorem shFin_exec {P : Polygon} {W A₀ Nmax : ℕ} {m₀ : ℕ → ℕ} {c₀ 
     (body := .instr (.addN ALLOC ALLOC 140103)) Inv (fun c => 3 * (E - c.nreg ALLOC))
     (fun c => c.nreg ALLOC) (fun c h => h.1)
     (fun c ⟨hw', hA', hr', hm'⟩ ht => by
-      have e3 : c.nreg 140103 = 1 := by rw [hr' _ (by rw [hAl]; omega), h1]
-      have e0 : c.nreg 140100 = E := by rw [hr' _ (by rw [hAl]; omega), hp]
-      rw [e0] at ht
+      have e3 : c.nreg 140103 = 1 := Ρ hr' _ (by rw [hAl]; omega), h1
+      have e0 : c.nreg 140100 = E := Ρ hr' _ (by rw [hAl]; omega), hp
+      Ξ' e0 at ht
       have ex := Exec.addN (P := P) hw' ALLOC ALLOC 140103 (by rw [e3]; omega)
       refine ⟨_, 1, ex, ⟨ex.wb_right, ?_, fun x hx => ?_, ?_⟩, ?_, ?_⟩
       · simp only [Config.nreg_mk, Machine.upd_same]; rw [e3]; omega
       · simp only [Config.nreg_mk]; rw [Machine.upd_other _ _ _ hx]; exact hr' x hx
-      · rw [hm']
+      · Ξ hm'
       · simp only [Config.nreg_mk, Machine.upd_same]; rw [e3]; omega
       · simp only [Config.nreg_mk, Machine.upd_same]; rw [e3])
     ⟨hw, by rw [hA]; omega, fun _ _ => rfl, rfl⟩
-  have e0 : d₂.nreg 140100 = E := by rw [hr₂ _ (by rw [hAl]; omega), hp]
-  rw [e0] at hx₂
-  refine ⟨d₂, k₂, e₂, ?_, by omega, by omega, hr₂, hm₂⟩
-  rw [hA] at hk₂; omega
+  have e0 : d₂.nreg 140100 = E := Ρ hr₂ _ (by rw [hAl]; omega), hp
+  Ξ' e0 at hx₂
+  refine ⟨d₂, k₂, e₂, ?_, ⋄, ⋄, hr₂, hm₂⟩
+  Ξ' hA at hk₂; omega
 
 end
 

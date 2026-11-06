@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranRemove
 public import Chazelle.Core.FactsInterior
 
@@ -74,7 +76,7 @@ theorem semigranular_insert (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.
   · exact (Gran.weight_le_merged₂ hM hT hTfin heT hs').trans hPγ
   · have h1 : U ≠ R₁ := hs'.ne_of_mem_old hU' hUP
     have h2 : U ≠ R₂ := hs'.symm.ne_of_mem_old hU' hUP
-    rw [← Gran.weight_other hM hT hTfin heT hs' hU h1 h2]
+    Ξ ← Gran.weight_other hM hT hTfin heT hs' hU h1 h2
     rw [hsd] at hU' ⊢
     exact h U hU'
 

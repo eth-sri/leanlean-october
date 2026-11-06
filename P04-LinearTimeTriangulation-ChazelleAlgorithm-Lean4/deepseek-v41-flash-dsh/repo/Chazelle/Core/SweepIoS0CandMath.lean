@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoSpec
 public import Chazelle.Core.SweepEvOrgM
 public import Chazelle.Core.SweepIoClass
@@ -56,11 +58,11 @@ theorem origin_ray (C : Chain) {o z : Point} {d : ℝ} (_hd : d = 1 ∨ d = -1)
     · exact h1
     · rw [← h1, mul_zero] at hsh; exact absurd hsh (lt_irrefl _)
   have hs : s = 1 := by
-    have : 1 * h ≤ s * h := by linarith
+    have : 1 * h ≤ s * h := ⟡
     have := le_of_mul_le_mul_right this hpos
     linarith
   refine ⟨hpos, ?_⟩
-  rw [hzs', hs, one_mul]
+  Ξ hzs', hs, one_mul
 
 /-- The origin as a point of the ray from `z` in the opposite direction. -/
 theorem origin_back {o : Point} {d τ : ℝ} {z : Point} (hz : z = rayPt o d τ) :
@@ -103,7 +105,7 @@ theorem cand_unique {J : Merge.Junction} {o₁ o₂ z : Point} {d : ℝ} (hd : d
       ext
       · simp only [rayPt_fst]; linear_combination hxab
       · simp only [rayPt_snd]; exact hab
-    have := Chain.hitParam_le_of_not_mem_dom J.whole b d (t := tb - ta) (by linarith)
+    have := Chain.hitParam_le_of_not_mem_dom J.whole b d (t := tb - ta) (⟡)
       (by rw [← hpt]; exact ha)
     linarith
   rcases lt_trichotomy t₁ t₂ with hl | he | hl
@@ -138,14 +140,14 @@ theorem chord_mem_F {M : Model} {Q : Polygon} {N : NF} {k : ℕ} (hk : k < N.nCh
     (N.chord k).toSet M Q ∈ N.F M Q := by
   refine ⟨N.chord k, ?_, rfl⟩
   unfold NF.chord
-  rw [NFLoc.getD_of_lt _ hk]
+  Ξ NFLoc.getD_of_lt _ hk
   exact List.getElem_mem _
 
 /-- **The ends of the chords of `N₂` are off the domains** of `C₂` and of `C`. -/
 theorem endOrigin_not_dom (J : Merge.Junction) {Q : Polygon} {N : NF}
     (hN : IsNF (chainModel J.right) Q N) {j : ℕ} (hj : j < 2 * N.nChords) :
     endOrigin J Q N j ∉ J.right.dom ∧ endOrigin J Q N j ∉ J.whole.dom := by
-  have hk : j / 2 < N.nChords := by omega
+  have hk : j / 2 < N.nChords := ⋄
   have hmem := chord_mem_F (M := chainModel J.right) (Q := Q) hk
   have haug : (N.chord (j / 2)).toSet (chainModel J.right) Q ∈ Merge.augChords J.right :=
     hN.1.2.1 hmem
@@ -169,9 +171,9 @@ theorem stopOrig_not_dom (J : Merge.Junction) {Q : Polygon} {N : NF}
   unfold stopOrig
   by_cases h0 : kind = 0
   · rw [ite_eq_left h0]; exact right_not_dom J J.shared_mem_right
-  · rw [ite_eq_right h0]
+  · Ξ ite_eq_right h0
     by_cases h1 : kind = 1
-    · rw [ite_eq_left h1]
+    · Ξ ite_eq_left h1
       have := hk h1
       exact endOrigin_not_dom J hN (by split_ifs <;> omega)
     · rw [ite_eq_right h1]; exact right_not_dom J J.right.top_mem_set
@@ -194,13 +196,13 @@ theorem off_inj {n g x y : ℝ} (_hg0 : 0 ≤ g) (_hgn : g < n) (hx0 : 0 ≤ x) 
 theorem key_split {e e' : ℕ} {t t' : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (ht0' : 0 ≤ t')
     (ht1' : t' < 1) (h : (e : ℝ) + t = e' + t') : e = e' ∧ t = t' := by
   have hee : e = e' := by
-    have h1 : (e : ℝ) < e' + 1 := by linarith
-    have h2 : (e' : ℝ) < e + 1 := by linarith
+    have h1 : (e : ℝ) < e' + 1 := ⟡
+    have h2 : (e' : ℝ) < e + 1 := ⟡
     have h1' : e < e' + 1 := by exact_mod_cast h1
     have h2' : e' < e + 1 := by exact_mod_cast h2
     omega
   subst hee
-  exact ⟨rfl, by linarith⟩
+  exact ⟨rfl, ⟡⟩
 
 /-- The parameter of a point on a horizontal ray. -/
 theorem rayPt_param {z : Point} {σ τ τ' : ℝ} (hσ : σ = 1 ∨ σ = -1)

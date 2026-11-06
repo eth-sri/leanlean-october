@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTKey
 public import Chazelle.Core.RestoreCompleteInt
 
@@ -36,7 +38,7 @@ theorem chord_height_lt {C : Chain} (hP : C.P.Simple) {c : Set Point}
     (hc : c ∈ (chainModel C).Adm) {z : Point} (hz : z ∈ c) : |z.2| < C.radius := by
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
   obtain ⟨y, a, b, hH, rfl⟩ := adm_hchord hGM hc
-  have hy : z.2 = y := hz.1
+  have hy := hz.1
   have hm : (((a + b) / 2, y) : Point) ∈ (chainModel C).D :=
     hH.open_mem _ (by linarith [hH.lt]) (by linarith [hH.lt])
   have := (C.dom_subset_box hm).2
@@ -53,7 +55,7 @@ variable {C : Chain} {P : Polygon} {N : NF}
 
 theorem chord_mem_list {i : ℕ} (hi : i < N.nChords) : N.chord i ∈ N.chords := by
   unfold NF.chord
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+  Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some
   exact List.getElem_mem hi
 
 /-- **The ends of the chord records** are valid inputs of `offCmp`. -/
@@ -125,7 +127,7 @@ theorem exit_block {M : Model} (hM : WalkAx M) {Q : Polygon} {cr : CRec}
     rw [epr] at hx
     have e1 : (M.pos Q cr.rpos).1 = (sidePt M.W p 0).1 - s := by
       rw [hx]; simp only [Visibility.rayPt]; ring
-    have e2 : sidePt M.W p 0 = M.pos Q cr.lpos := by rw [← epl, hl, h0]
+    have e2 : sidePt M.W p 0 = M.pos Q cr.lpos := Ρ ← epl, hl, h0
     rw [e2] at e1
     linarith
   · have hA := hat.2
@@ -135,7 +137,7 @@ theorem exit_block {M : Model} (hM : WalkAx M) {Q : Polygon} {cr : CRec}
     rw [epl] at hx
     have e1 : (M.pos Q cr.lpos).1 = (sidePt M.W p 0).1 + s := by
       rw [hx]; simp only [Visibility.rayPt]; ring
-    have e2 : sidePt M.W p 0 = M.pos Q cr.rpos := by rw [← epr, hl, h0]
+    have e2 : sidePt M.W p 0 = M.pos Q cr.rpos := Ρ ← epr, hl, h0
     rw [e2] at e1
     linarith
 

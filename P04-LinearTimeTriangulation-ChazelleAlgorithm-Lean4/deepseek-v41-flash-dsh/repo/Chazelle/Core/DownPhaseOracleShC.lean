@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleShB
 
 /-!
@@ -78,15 +80,15 @@ theorem shSet_exec (c : Config) (hw : WordsBounded W c) :
       (∀ r, r ≠ 140000 → (r < 140005 ∨ 140009 < r) → r ≠ 140013 → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   obtain ⟨c', e, h1, h2, h3, h4, h5, h6⟩ := copies_exec (P := P) shSetL c hw
-    (by intro p hp q hq; simp only [shSetL, List.mem_cons, List.not_mem_nil, or_false] at hp hq
+    (by intro p hp q hq; ϴ' shSetL, List.mem_cons, List.not_mem_nil, or_false at hp hq
         rcases hp with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
         rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp)
-    (by simp [shSetL])
-  refine ⟨c', e, h1 (140000, 170078) (by simp [shSetL]), h1 (140005, 170020) (by simp [shSetL]),
-    h1 (140006, 170021) (by simp [shSetL]), h1 (140007, 170022) (by simp [shSetL]),
-    h1 (140008, 170008) (by simp [shSetL]), h1 (140009, 170009) (by simp [shSetL]),
-    h1 (140013, 170013) (by simp [shSetL]), fun r r1 r2 r3 => h2 r ?_, h3, h4, h5, h6⟩
-  simp only [shSetL, List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false]
+    (⊚ shSetL)
+  refine ⟨c', e, h1 (140000, 170078) (⊚ shSetL), h1 (140005, 170020) (⊚ shSetL),
+    h1 (140006, 170021) (⊚ shSetL), h1 (140007, 170022) (⊚ shSetL),
+    h1 (140008, 170008) (⊚ shSetL), h1 (140009, 170009) (⊚ shSetL),
+    h1 (140013, 170013) (⊚ shSetL), fun r r1 r2 r3 => h2 r ?_, h3, h4, h5, h6⟩
+  ϴ shSetL, List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false
   omega
 
 /-- **The context of the up-phase data** at the allocator, from the static environment. -/
@@ -98,7 +100,7 @@ theorem SEnv.ctx {c : Config} (hS : SEnv P W O s c) :
   refine ⟨(gradeCtx O).mono P _ _ _ _ (by have := hS.alloc; omega) hloc, ?_⟩
   have hh := (ShootCut.grade_low hS.grade).1
   show s.γ ≤ 2 ^ (c.nmem s.h - 1)
-  rw [hS.mem _ (by omega)]
+  Ξ hS.mem _ (⋄)
   exact hS.cap
 
 /-- **One shot at a chain arc.** -/
@@ -203,7 +205,7 @@ theorem shotI_exec {sh : Stmt} {F : ℕ → ℕ}
     by rw [← qn']; exact h2, by unfold hostWords at hW; exact hW⟩
   have hB₂ : BestI P c₂ Sp (s.o.eval (Qof P)) (dirOf s.dir) := (hB.keep (fun r h1 h2 =>
     k₁ r (by omega))).keep (fun r h1 h2 => g₂ r (by omega) (by omega))
-  have d8 : c₂.nreg 170008 = s.dir := S₂.r8
+  have d8 := S₂.r8
   -- the update
   have hcm : (chainModel C).W.n = 2 * L + 7 := cm_n'
   obtain ⟨c₃, k₃, e₃, hk₃, hB₃, F₃⟩ := updI_exec (P := P) c₂ w₂ hG hR₂ (C := C) ch_P rfl ch_m rfl
@@ -213,7 +215,7 @@ theorem shotI_exec {sh : Stmt} {F : ℕ → ℕ}
     (fun hf => by
       obtain ⟨t, hft, hpp, hlt, hpos⟩ := hhit hf
       exact ⟨t, hft, hpp, hpos⟩) hno hB₂
-  have f₃ : ∀ r, Bupd r = false → c₃.nreg r = c₂.nreg r := F₃.1
+  have f₃ := F₃.1
   have ex : Exec P W (shotI sh) c c₃ (7 + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
   have hk₂' : k₂ ≤ F s.γ := by have := hk₂; simp only [rd, bandReg] at this; rw [← h9]; exact this
   have F₃' : Frame ioBands c₂ c₃ k₃ := frameIO_of_frameB (B := Bupd) (fun r hr => io_of_band (by

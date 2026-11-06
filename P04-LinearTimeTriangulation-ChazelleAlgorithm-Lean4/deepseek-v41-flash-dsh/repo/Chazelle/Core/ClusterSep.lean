@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Separator.Clusters
 
 /-!
@@ -41,7 +45,7 @@ theorem label_adj' (δ : V → D) (hδ : ∀ v, M.vert (δ v) = v) {f : F} (e : 
     (T.not_isAnc_of_notMem_sepSet h1 hdf) (T.not_isAnc_head_of_notMem_sepSet h1 hdf)
     (T.not_isAnc_of_notMem_sepSet h2 hdf) (T.not_isAnc_head_of_notMem_sepSet h2 hdf)
     (hδ _) (hδ _)
-  rw [T.mem_cross, T.mem_cross]
+  Ξ T.mem_cross, T.mem_cross
   exact ⟨fun h => EqvGen.trans _ _ _ h key, fun h => EqvGen.trans _ _ _ h (EqvGen.symm _ _ key)⟩
 
 omit [DecidableEq F] in
@@ -105,7 +109,7 @@ def IsDesc (h g : F) : Prop := ∃ n : ℕ, C.parent^[n] h = g
 
 omit [Fintype F] in
 theorem parent_of_ne {g : F} (hg : g ≠ C.r0) : C.parent g = M.face (C.fpar g) := by
-  simp [parent, hg]
+  Θ parent, hg
 
 omit [Fintype F] in
 theorem isDesc_refl (g : F) : C.IsDesc g g := ⟨0, rfl⟩
@@ -139,13 +143,13 @@ theorem coDarts_eq (hM : M.Planar) : T.coDarts = C.treeDarts := by
     intro g hg g' hg' h
     have e1 := C.head g (Finset.ne_of_mem_erase hg)
     have e2 := C.head g' (Finset.ne_of_mem_erase hg')
-    rw [← e1, ← e2, h]
+    Ξ ← e1, ← e2, h
   have hinj2 : Set.InjOn (fun g => M.opp (C.fpar g)) (Finset.univ.erase C.r0 : Finset F) := by
     intro g hg g' hg' h
     exact hinj1 hg hg' (M.opp_injective h)
   have hdisj : Disjoint ((Finset.univ.erase C.r0).image C.fpar)
       ((Finset.univ.erase C.r0).image (fun g => M.opp (C.fpar g))) := by
-    rw [Finset.disjoint_left]
+    Ξ Finset.disjoint_left
     intro e h1 h2
     obtain ⟨g, hg, rfl⟩ := Finset.mem_image.mp h1
     obtain ⟨g', hg', heq⟩ := Finset.mem_image.mp h2
@@ -153,12 +157,12 @@ theorem coDarts_eq (hM : M.Planar) : T.coDarts = C.treeDarts := by
     have hg0' := Finset.ne_of_mem_erase hg'
     -- `g'` is the parent of `g` and `g` the parent of `g'`
     have a1 : M.face (C.fpar g') = g := by
-      have := C.head g hg0; rw [← heq, M.opp_opp] at this; exact this
+      have := C.head g hg0; Ξ' ← heq, M.opp_opp at this; exact this
     have a2 : M.face (C.fpar g) = g' := by
-      have := C.head g' hg0'; rw [heq] at this; exact this
+      have := C.head g' hg0'; Ξ' heq at this; exact this
     have l1 := C.lev g hg0
     have l2 := C.lev g' hg0'
-    rw [a2] at l1; rw [a1] at l2
+    Ξ' a2 at l1; rw [a1] at l2
     omega
   have hcard : C.treeDarts.card = 2 * (Fintype.card F - 1) := by
     unfold treeDarts
@@ -167,14 +171,14 @@ theorem coDarts_eq (hM : M.Planar) : T.coDarts = C.treeDarts := by
       Finset.card_univ]
     omega
   have hco := T.card_coDarts hM
-  have hF : 0 < Fintype.card F := Fintype.card_pos_iff.mpr ⟨C.r0⟩
-  exact (Finset.eq_of_subset_of_card_le hsub (by omega)).symm
+  have hF := Fintype.card_pos_iff.mpr ⟨C.r0⟩
+  exact (Finset.eq_of_subset_of_card_le hsub (⋄)).symm
 
 theorem mem_coDarts_iff (hM : M.Planar) {e : D} :
     e ∈ T.coDarts ↔ ∃ g, g ≠ C.r0 ∧ (e = C.fpar g ∨ e = M.opp (C.fpar g)) := by
-  rw [C.coDarts_eq hM]
+  Ξ C.coDarts_eq hM
   unfold treeDarts
-  simp only [Finset.mem_union, Finset.mem_image, Finset.mem_erase, Finset.mem_univ, and_true]
+  ϴ Finset.mem_union, Finset.mem_image, Finset.mem_erase, Finset.mem_univ, and_true
   constructor
   · rintro (⟨g, hg, rfl⟩ | ⟨g, hg, rfl⟩)
     · exact ⟨g, hg, Or.inl rfl⟩

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFTest
 
 /-!
@@ -83,9 +85,9 @@ theorem FRS.restrict {B : Finset ℕ} {P : Polygon} {W : ℕ} {s : Stmt} {c : Co
     (hc : c₀.nreg ALLOC ≤ c₀'.nreg ALLOC) : FRS B P W c₀ s c K Q := by
   obtain ⟨c', k, ex, hk, hI', hrf, hq⟩ := h
   refine ⟨c', k, ex, hk, ⟨hI'.hw, fun q hq => (hI'.hin q hq).trans (hI.hin q hq), le_trans hI.hA hI'.hA,
-    fun a ha => (hI'.hm a (by omega)).trans (hI.hm a ha)⟩, ?_, hq⟩
+    fun a ha => (hI'.hm a (⋄)).trans (hI.hm a ha)⟩, ?_, hq⟩
   obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := hrf
-  exact ⟨r₁, rr₁, fun a ha => m₁ a (by omega), fun a ha => rm₁ a (by omega), o₁, a₁, b₁⟩
+  exact ⟨r₁, rr₁, fun a ha => m₁ a (⋄), fun a ha => rm₁ a (⋄), o₁, a₁, b₁⟩
 
 end
 

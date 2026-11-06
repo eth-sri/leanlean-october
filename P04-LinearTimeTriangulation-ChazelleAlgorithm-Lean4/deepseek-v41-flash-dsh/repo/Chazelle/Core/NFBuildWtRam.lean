@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildWt
 public import Chazelle.Core.NFBuildCmpRam
 public import Chazelle.Core.GranPzExec
@@ -40,28 +42,28 @@ theorem arcWtNat_eq_wtF {lo hi ea eb pz lt : ℕ} {fa fb : ℝ} {counted : ℕ �
     arcWtNat lo hi ea fa eb fb = wtF lo hi ea eb pz lt := by
   unfold arcWtNat wtF keyCeil
   by_cases hl : (ea : ℝ) + fa < eb + fb
-  · rw [ite_eq_left hl, ite_eq_left (hlt.2 hl)]
+  · Ξ ite_eq_left hl, ite_eq_left (hlt.2 hl)
     by_cases hcb : counted eb
     · by_cases hf : fb = 0
       · have : pz = 0 := by
-          by_contra h; have := hpz.1 (by omega); exact this.2 hf
-        rw [ite_eq_left hf, this, Nat.add_zero]
+          by_contra h; have := hpz.1 (⋄); exact this.2 hf
+        Ξ ite_eq_left hf, this, Nat.add_zero
       · have : pz = 1 := hpz.2 ⟨hcb, hf⟩
-        rw [ite_eq_right hf, this]
-    · have : pz = 0 := by by_contra h; exact hcb (hpz.1 (by omega)).1
-      rw [this, Nat.add_zero]
+        Ξ ite_eq_right hf, this
+    · have : pz = 0 := by by_contra h; exact hcb (hpz.1 (⋄)).1
+      Ξ this, Nat.add_zero
       have hn := (not_congr hc).1 hcb
       split_ifs <;> omega
-  · rw [ite_eq_right hl, ite_eq_right (fun h => hl (hlt.1 h))]
+  · Ξ ite_eq_right hl, ite_eq_right (fun h => hl (hlt.1 h))
     by_cases hcb : counted eb
     · by_cases hf : fb = 0
       · have : pz = 0 := by
-          by_contra h; have := hpz.1 (by omega); exact this.2 hf
-        rw [ite_eq_left hf, this, Nat.add_zero]
+          by_contra h; have := hpz.1 (⋄); exact this.2 hf
+        Ξ ite_eq_left hf, this, Nat.add_zero
       · have : pz = 1 := hpz.2 ⟨hcb, hf⟩
-        rw [ite_eq_right hf, this]
-    · have : pz = 0 := by by_contra h; exact hcb (hpz.1 (by omega)).1
-      rw [this, Nat.add_zero]
+        Ξ ite_eq_right hf, this
+    · have : pz = 0 := by by_contra h; exact hcb (hpz.1 (⋄)).1
+      Ξ this, Nat.add_zero
       have hn := (not_congr hc).1 hcb
       split_ifs <;> omega
 
@@ -105,7 +107,7 @@ def lohiS : Stmt :=
       (block [.constN 44020 0, .inputSize 44021]))
 
 theorem wr_lohiS : wr (fun r => decide (r = 41023 ∨ r = 41019 ∨ r = 44020 ∨ r = 44021 ∨
-    r = 44022)) lohiS = true := by decide
+    r = 44022)) lohiS = true := ⌖
 
 /-- **The counted interval on the machine.** -/
 theorem lohiS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) {D : ℕ}
@@ -154,7 +156,7 @@ def pzR : Stmt := Stmt.ren σ Gran.pzStmt
 def BpzR (r : ℕ) : Bool := Gran.Bpz (σ r)
 
 theorem wr_pzR : wr BpzR pzR = true := by
-  rw [pzR, wr_ren σ_σ]
+  Ξ pzR, wr_ren σ_σ
   have : (fun r => BpzR (σ r)) = Gran.Bpz := by funext r; simp [BpzR, σ_σ]
   rw [this]; exact Gran.wr_pzStmt
 
@@ -196,7 +198,7 @@ def wtG (lo h ea eb pz lt : ℕ) : ℕ :=
 theorem wtF_eq_wtG {lo hi ea eb pz lt : ℕ} (hlh : lo ≤ hi) (hpz : pz = 1 → lo ≤ eb)
     (hpz1 : pz ≤ 1) : wtF lo hi ea eb pz lt = wtG lo (hi - lo) ea eb pz lt := by
   unfold wtF wtG
-  have : pz = 0 ∨ pz = 1 := by omega
+  have : pz = 0 ∨ pz = 1 := ⋄
   rcases this with rfl | rfl
   · split_ifs <;> simp only [Nat.min_def, Nat.max_def] <;> split_ifs <;> omega
   · have := hpz rfl
@@ -212,7 +214,7 @@ def wtS : Stmt :=
       (.seq (.ifLtN 43122 44021 (.instr (.copyN 43123 43122)) (.instr (.copyN 43123 44021)))
         (.instr (.subN 43121 43123 43127))))
 
-theorem wr_wtS : wr (fun r => decide (43121 ≤ r ∧ r < 43128)) wtS = true := by decide
+theorem wr_wtS : wr (fun r => decide (43121 ≤ r ∧ r < 43128)) wtS = true := ⌖
 
 /-- **The weight on the machine.** -/
 theorem wtS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
@@ -235,35 +237,35 @@ theorem wtS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
   set u := d.nreg 42110 - d.nreg 44020 with hu
   by_cases hl : d.nreg 43120 < 1
   · refine spec_ifLtN_true (by config_simp; rw [h1]; exact hl) ?_
-    rw [ite_eq_right (by omega)]
+    rw [ite_eq_right (⋄)]
     refine spec_seq ?_
     by_cases a1 : u < d.nreg 44021
     · refine spec_ifLtN_true (by config_simp; exact a1)
         (spec_instr (Exec.copyN ‹_› _ _) fun hw₂ => ?_)
       exec_block
-      refine ⟨by omega, ?_⟩
+      refine ⟨⋄, ?_⟩
       config_simp
-      rw [min_eq_left a1.le]
+      Ξ min_eq_left a1.le
     · refine spec_ifLtN_false (by config_simp; exact a1)
         (spec_instr (Exec.copyN ‹_› _ _) fun hw₂ => ?_)
       exec_block
-      refine ⟨by omega, ?_⟩
+      refine ⟨⋄, ?_⟩
       config_simp
-      rw [min_eq_right (not_lt.1 a1)]
+      Ξ min_eq_right (not_lt.1 a1)
   · refine spec_ifLtN_false (by config_simp; rw [h1]; exact hl) ?_
-    rw [ite_eq_left (by omega)]
+    rw [ite_eq_left (⋄)]
     refine spec_seq ?_
     by_cases a1 : t < d.nreg 44021
     · refine spec_ifLtN_true (by config_simp; exact a1)
         (spec_instr (Exec.copyN ‹_› _ _) fun hw₂ => ?_)
-      refine spec_instr (Exec.subN hw₂ _ _ _) fun _ => ⟨by omega, ?_⟩
+      refine spec_instr (Exec.subN hw₂ _ _ _) fun _ => ⟨⋄, ?_⟩
       config_simp
-      rw [min_eq_left a1.le]
+      Ξ min_eq_left a1.le
     · refine spec_ifLtN_false (by config_simp; exact a1)
         (spec_instr (Exec.copyN ‹_› _ _) fun hw₂ => ?_)
-      refine spec_instr (Exec.subN hw₂ _ _ _) fun _ => ⟨by omega, ?_⟩
+      refine spec_instr (Exec.subN hw₂ _ _ _) fun _ => ⟨⋄, ?_⟩
       config_simp
-      rw [min_eq_right (not_lt.1 a1)]
+      Ξ min_eq_right (not_lt.1 a1)
 
 end
 

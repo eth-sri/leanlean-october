@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Mountain.PieceCells
 
 /-!
@@ -78,7 +82,7 @@ theorem isPieceEdge_bot_top (D : TrapData P) : IsPieceEdge P D.bot D.top := by
   by_cases h : D.NonAdj
   · exact Or.inr (Or.inr (Or.inr (Or.inl (D.diag_mem_trapDiagonals h))))
   · unfold NonAdj at h
-    rw [not_and_or, not_not, not_not] at h
+    Ξ' not_and_or, not_not, not_not at h
     rcases h with h | h
     · exact Or.inr (Or.inl h)
     · exact Or.inl h
@@ -258,13 +262,13 @@ theorem gap_left (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) (D : TrapData
   set y₂ := D.y₂ with hy₂
   set a := edgeX P e y₂ with ha
   set b := (P.vtx D.top).1 with hb
-  have hty : (P.vtx D.top).2 = y₂ := htmem.2.1
+  have hty := htmem.2.1
   have hab : a < b := by
     refine lt_of_le_of_ne (by rw [ha, ← heq]; exact htmem.2.2.1) (fun h => hnot ?_)
     rw [← heq]
     exact D.isTrap.mem_edgeL (by rw [hty]; exact h12.le) (by rw [hty])
       (by rw [hty, ← hb, ← h, ha, heq])
-  have hbj : b ≤ edgeX P D.j y₂ := htmem.2.2.2
+  have hbj := htmem.2.2.2
   have hnov : ∀ k, k < P.n → (P.vtx k).2 = y₂ → a < (P.vtx k).1 → (P.vtx k).1 < b → False := by
     intro k hk hky hk1 hk2
     have hkS : k ∈ sideVtxSet P D.i D.j y₂ :=
@@ -335,42 +339,42 @@ theorem gap_right (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) (D : TrapDat
   set y₂ := D.y₂ with hy₂
   set a := (P.vtx c).1 with ha
   set b := edgeX P e y₂ with hb
-  have hcy : (P.vtx c).2 = y₂ := hcS.2.1
+  have hcy := hcS.2.1
   have hab : a < b := by
     refine lt_of_le_of_ne (by rw [hb, ← heq]; exact hcS.2.2.2) (fun h => hnot ?_)
-    rw [← heq]
-    exact D.isTrap.mem_edgeR (by rw [hcy]; exact h12.le) (by rw [hcy])
-      (by rw [hcy, ← ha, h, hb, heq])
-  have hai : edgeX P D.i y₂ ≤ a := hcS.2.2.1
+    Ξ ← heq
+    exact D.isTrap.mem_edgeR (by rw [hcy]; exact h12.le) (Ρ hcy)
+      (Ρ hcy, ← ha, h, hb, heq)
+  have hai := hcS.2.2.1
   have hnov : ∀ k, k < P.n → (P.vtx k).2 = y₂ → a < (P.vtx k).1 → (P.vtx k).1 < b → False := by
     intro k hk hky hk1 hk2
     have hkS : k ∈ sideVtxSet P D.i D.j y₂ :=
-      ⟨hk, hky, by linarith, by rw [heq]; exact hk2.le⟩
+      ⟨hk, hky, ⟡, by rw [heq]; exact hk2.le⟩
     linarith [hmax k hkS]
   have hbv : ∀ k, k < P.n → ((b, y₂) : Point) ≠ P.vtx k := by
     intro k hk h
     have h1 : (P.vtx k).1 = b := (congrArg Prod.fst h).symm
     have h2 : (P.vtx k).2 = y₂ := (congrArg Prod.snd h).symm
     have hkS : k ∈ sideVtxSet P D.i D.j y₂ :=
-      ⟨hk, h2, by rw [h1]; linarith, by rw [h1, hb, heq]⟩
+      ⟨hk, h2, by rw [h1]; linarith, Ρ h1, hb, heq⟩
     have := hmax k hkS
     rw [h1] at this
     linarith
   have hE : OpenEdgePt P e (b, y₂) := by
     have hmem : ((b, y₂) : Point) ∈ P.edge e := by
-      rw [← heq]
-      exact D.isTrap.mem_edgeR (p := (b, y₂)) h12.le le_rfl (by rw [hb, heq])
+      Ξ ← heq
+      exact D.isTrap.mem_edgeR (p := (b, y₂)) h12.le le_rfl (Ρ hb, heq)
     exact openEdgePt_of_mem_edge_ne hmem (hbv e he) (hbv _ (succIdx_lt P he))
   have hgap := fun x (hx1 : a < x) (hx2 : x < b) =>
-    D.gap_top hP (a := a) (b := b) hai (by rw [hb, heq]) hnov he hNH (Or.inr hE) hx1 hx2
+    D.gap_top hP (a := a) (b := b) hai (Ρ hb, heq) hnov he hNH (Or.inr hE) hx1 hx2
   have hct := htmin c hcS
   have hint : ∀ x, a < x → x < b →
       ((x, y₂) : Point) ∈ (subPoly P l).filled \ (subPoly P l).boundary := by
     intro x hx1 hx2
     have hcl : ((x, y₂) : Point) ∈ closure D.cellR := by
-      refine D.mem_closure_cellR hP (D.mem_closedTrap_top (by linarith)
+      refine D.mem_closure_cellR hP (D.mem_closedTrap_top (⟡)
         (by rw [heq]; linarith)) (fun _ => ?_)
-      rw [D.det_bot_top hP]
+      Ξ D.det_bot_top hP
       have ht2 := D.top_snd hP
       simp only
       nlinarith
@@ -391,7 +395,7 @@ theorem gap_right (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) (D : TrapDat
   change ∀ k ∈ sideVtxSet P D'.i D'.j D'.y₁, (P.vtx k).1 ≤ (P.vtx D'.bot).1 at hbmax
   have hcb := hbmax c hcS'
   have hbot : D'.bot = c := by
-    have hby : (P.vtx D'.bot).2 = y₂ := by rw [hbm.2.1, hy]
+    have hby : (P.vtx D'.bot).2 = y₂ := Ρ hbm.2.1, hy
     have hbj : (P.vtx D'.bot).1 ≤ b := by
       have := hbm.2.2.2; rw [hj', hy] at this; exact this
     have hba : (P.vtx D'.bot).1 = a := by
@@ -402,7 +406,7 @@ theorem gap_right (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) (D : TrapDat
       · exact hbv _ hbm.1 (point_ext h.symm hby.symm)
     exact simple_vtx_inj hP hbm.1 hcS.1 (point_ext (hba.trans ha) (hby.trans hcy.symm))
   refine ⟨D', hj', ?_, hbot⟩
-  have hxi := hint ((a + b) / 2) (by linarith) (by linarith)
+  have hxi := hint ((a + b) / 2) (⟡) (⟡)
   rw [← hy] at hxi
   exact D'.cellR_subset_of_bot hP hl (by rw [hy]; linarith) (by rw [hy]; linarith)
     (by rw [hbot]; linarith) hxi
@@ -437,7 +441,7 @@ theorem stateL_step_bot (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) (D : T
   · refine ⟨D.top, D.top_lt hP, ⟨D, heq, hS, Or.inr rfl⟩, ?_,
       D.bot_top_nbr hP hl hk (hc.trans hcb) (Or.inl hS)⟩
     apply ylexLT_of_snd_lt
-    rw [hcS.2.1, D.top_snd hP]
+    Ξ hcS.2.1, D.top_snd hP
     exact D.isTrap.bot_lt.trans D.isTrap.lt_top
   · obtain ⟨w, hw, hcw, hnb⟩ := D.bot_right_nbr hP hl hk hc hcS hcb hS
     exact ⟨w, hw.1, ⟨D, heq, hS, Or.inl hw⟩, Or.inr ⟨hcS.2.1.trans hw.2.1.symm, hcw⟩, hnb⟩
@@ -476,7 +480,7 @@ theorem StateR.step (hP : P.Simple) {l : List ℕ} (hl : IsPiece P l) {e : ℕ} 
       obtain ⟨D', hj', hS', hbot⟩ := D.gap_right hP hl he heq hS hcS hex hnot
       refine ⟨D'.top, D'.top_lt hP, ⟨D', hj', hS', Or.inr (D'.isTrap.topVtx_mem hP D'.free)⟩, ?_,
         D'.bot_top_nbr hP hl hk (hc.trans hbot.symm) (Or.inr hS')⟩
-      rw [← hbot]
+      Ξ ← hbot
       exact ylexLT_of_snd_lt (D'.bot_snd_lt_top_snd hP)
 
 end

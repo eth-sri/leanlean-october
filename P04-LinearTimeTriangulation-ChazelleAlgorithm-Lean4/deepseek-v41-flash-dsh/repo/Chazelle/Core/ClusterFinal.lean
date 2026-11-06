@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterFlagH
 
 /-!
@@ -49,7 +53,7 @@ theorem class_card {G : Env} (hI : SInv μ k s H slab Adj act [] fin D nsp)
     simp only [Finset.mem_filter] at hx0
     obtain ⟨hμ0, hH0, hD0⟩ := hX x0 hx0.1
     obtain ⟨p, hp, hxp⟩ := hI.cover x0 hμ0 hH0 hD0
-    have hpf : p ∈ fin := hp.resolve_left (by simp)
+    have hpf : p ∈ fin := hp.resolve_left (✓)
     have hsub : X.filter (fun v => lab v = l) ⊆ items act p := fun v hv => by
       simp only [Finset.mem_filter] at hv
       exact reach_items hI hstep hpf hxp (hlab x0 hx0.1 v hv.1 (hx0.2.trans hv.2.symm))
@@ -76,7 +80,7 @@ theorem minres_card {μ k ρ : ℕ} {f : ℕ → ℕ} (_hk : 0 < k) (hf : ∀ v,
   have hsum : ∑ r ∈ Finset.range k, cntBelow f μ r = μ := by
     rw [sum_cntBelow]; unfold cntLt
     rw [Finset.filter_true_of_mem (fun v hv => hf v (Finset.mem_range.mp hv))]; simp
-  calc k * cntBelow f μ ρ = ∑ _r ∈ Finset.range k, cntBelow f μ ρ := by simp
+  calc k * cntBelow f μ ρ = ∑ _r ∈ Finset.range k, cntBelow f μ ρ := ✓
     _ ≤ ∑ r ∈ Finset.range k, cntBelow f μ r :=
         Finset.sum_le_sum (fun r hr => hmin r (Finset.mem_range.mp hr))
     _ = μ := hsum
@@ -90,23 +94,23 @@ theorem dstar_bound {μ k k' s D H : ℕ} (hk : 1 ≤ k) (hμ : 0 < μ) (hμk : 
     subst e
     have hH' : H ≤ k' ^ 2 := by
       have : k' * H ≤ k' * k' ^ 2 := by
-        have e3 : k' * k' ^ 2 = k' ^ 3 := by ring
+        have e3 : k' * k' ^ 2 = k' ^ 3 := ⋆
         omega
-      exact Nat.le_of_mul_le_mul_left this (by omega)
+      exact Nat.le_of_mul_le_mul_left this (⋄)
     have hD' : D ≤ 6 * k' ^ 2 := by
       rcases Nat.le_total (k' * k') μ with h | h
       · rw [hs, min_eq_left h] at hD
         have : k' * k' * D ≤ k' * k' * (6 * k' ^ 2) := by
           calc k' * k' * D ≤ 6 * k' * μ := hD
             _ ≤ 6 * k' * k' ^ 3 := Nat.mul_le_mul_left _ hμk
-            _ = k' * k' * (6 * k' ^ 2) := by ring
-        exact Nat.le_of_mul_le_mul_left this (Nat.mul_pos (by omega) (by omega))
+            _ = k' * k' * (6 * k' ^ 2) := ⋆
+        exact Nat.le_of_mul_le_mul_left this (Nat.mul_pos (⋄) (by omega))
       · rw [hs, min_eq_right h] at hD
         have : μ * D ≤ μ * (6 * k') := by
           calc μ * D ≤ 6 * k' * μ := hD
-            _ = μ * (6 * k') := by ring
+            _ = μ * (6 * k') := ⋆
         have := Nat.le_of_mul_le_mul_left this hμ
-        have : k' ≤ k' ^ 2 := by nlinarith
+        have : k' ≤ k' ^ 2 := ⊞
         omega
     omega
   · have e : k' = μ := by rw [hk']; exact min_eq_right hkμ
@@ -116,12 +120,12 @@ theorem dstar_bound {μ k k' s D H : ℕ} (hk : 1 ≤ k) (hμ : 0 < μ) (hμk : 
     have hD' : D ≤ 6 * k' := by
       have : k' * D ≤ k' * (6 * k') := by
         calc k' * D ≤ 6 * k' * k' := hD
-          _ = k' * (6 * k') := by ring
+          _ = k' * (6 * k') := ⋆
       exact Nat.le_of_mul_le_mul_left this hμ
     have hH' : H ≤ 1 := by
-      have : k' * H ≤ k' * 1 := by omega
+      have : k' * H ≤ k' * 1 := ⋄
       exact Nat.le_of_mul_le_mul_left this hμ
-    have : k ≤ k ^ 2 := by nlinarith
+    have : k ≤ k ^ 2 := ⊞
     omega
 
 /-- The cluster size is at most `k²`. -/

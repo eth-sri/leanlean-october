@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoS0CandQ4
 public import Chazelle.Core.SweepIoS0CandBsMain
 
@@ -61,7 +63,7 @@ theorem lsPr_congr {P : Polygon} {J : Merge.Junction} {m m' : ℕ → ℕ} {AL G
     {j : ℕ} (hm : ∀ a, a < AL + 7 * E → m a = m' a) (hj : j < E) :
     lsPr P J m AL G x j ↔ lsPr P J m' AL G x j := by
   unfold lsPr
-  rw [hm (AL + 7 * j) (by omega), hm (AL + 7 * j + 1) (by omega)]
+  rw [hm (AL + 7 * j) (⋄), hm (AL + 7 * j + 1) (by omega)]
 
 theorem frQ_partFr {c c' : Config} (h : FrQ c c') : PartFr c c' :=
   ⟨fun r hr h1 _ h3 hra => h.1 r hr (fun hq => by

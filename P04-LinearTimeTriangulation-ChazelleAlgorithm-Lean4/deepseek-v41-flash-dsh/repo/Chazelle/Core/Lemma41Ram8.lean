@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Ram7
 public import Chazelle.Core.FactsL23
 public import Chazelle.Core.FactsInterior
@@ -51,7 +53,7 @@ theorem nf_chords_ncard {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainMode
       obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
       refine ⟨i, hi, ?_⟩
       show (N.chord i).toSet _ _ = _
-      unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]
+      unfold NF.chord; Ξ NFLoc.getD_of_lt _ hi
     · rintro ⟨i, hi, rfl⟩
       refine ⟨N.chord i, ?_, rfl⟩
       unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]; exact List.getElem_mem hi
@@ -69,14 +71,14 @@ theorem NodeOK.chords_le {P : Polygon} {m : ℕ → ℕ} {A hp d f : ℕ} {C : C
   have hF := hc.1.1
   have := hM.lemma23_walk hF.2.1 hF.1 hc.2.1 hc.2.2.1
   have hn : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n C.sideBeta
-  rw [nf_chords_ncard hc.1, hn] at this
+  Ξ' nf_chords_ncard hc.1, hn at this
   rw [hN.holds.1]; omega
 
 theorem NodeOK.chords_kb {P : Polygon} {m : ℕ → ℕ} {A hp d f : ℕ} {C : Chain} {x : Shp}
     (hG : GoodEnv P) (h : NodeOK P m A hp d f C x.2.2) (hm : C.m = x.2.1) (hγ : 1 ≤ x.2.2) :
     m f ≤ kb x := by
   have := h.chords_le hG
-  rw [hm] at this
+  Ξ' hm at this
   unfold kb
   exact (Nat.le_div_iff_mul_le hγ).mpr this
 
@@ -104,10 +106,10 @@ theorem forStep2 {ri rn : ℕ} {body : Stmt} (I : ℕ → Config → Prop) (N : 
     (fun c ⟨p, h, _⟩ => (hI p c h).1)
     (fun c ⟨p, h, hpn⟩ htest => by
       obtain ⟨-, hri, hrn⟩ := hI p c h
-      rw [hri, hrn] at htest
+      Ξ' hri, hrn at htest
       obtain ⟨c', k, e, hk, h', hA'⟩ := hbody p c htest h
       obtain ⟨-, hri', -⟩ := hI (p + 1) c' h'
-      refine ⟨c', k, e, ⟨p + 1, h', by omega⟩, ?_, hA'⟩
+      refine ⟨c', k, e, ⟨p + 1, h', ⋄⟩, ?_, hA'⟩
       rw [hri, hri', show 2 * (p + 1) / 2 = p + 1 by omega, show 2 * p / 2 = p by omega,
         Finset.sum_eq_sum_Ico_succ_bot (show p < (N + 1) / 2 by omega)]
       omega) ⟨0, hc, Nat.zero_le _⟩
@@ -116,7 +118,7 @@ theorem forStep2 {ri rn : ℕ} {body : Stmt} (I : ℕ → Config → Prop) (N : 
   subst hpn
   refine ⟨c', k, e, ?_, hIp, hψ⟩
   obtain ⟨-, hri0, -⟩ := hI 0 c hc
-  rw [hri0, show 2 * 0 / 2 = 0 by rfl, ← Finset.range_eq_Ico] at hk
+  Ξ' hri0, show 2 * 0 / 2 = 0 by rfl, ← Finset.range_eq_Ico at hk
   exact hk
 
 end proofs

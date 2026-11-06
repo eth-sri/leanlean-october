@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepLoop
 
 /-!
@@ -131,13 +133,13 @@ theorem sidePt_off_zero (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
     exact_mod_cast hC.hg
   obtain ⟨k0, k1⟩ := Corr.key_mem hp ht0 ht1
-  have hk := off_inj hg0 hgn k0 k1 hg0 hgn (by rw [h0, off_self])
+  have hk := off_inj hg0 hgn k0 k1 hg0 hgn (Ρ h0, off_self)
   obtain ⟨rfl, rfl⟩ := sideKey_inj ht0 ht1 le_rfl zero_lt_one
     (show (p : ℝ) + t = ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) + 0 by rw [add_zero]; exact hk)
-  rw [Chazelle.Chain.sidePt_zero]
+  Ξ Chazelle.Chain.sidePt_zero
   have := hC.A1 0 (Nat.zero_le _)
   rw [add_zero, add_zero, Nat.mod_eq_of_lt hC.hg, Nat.mod_eq_of_lt hC.hg'] at this
-  rw [this]
+  Ξ this
   exact right_vtx0 J
 
 /-- The split vertex (offset `rL1` inside the stretch, case G) is the top of `C₂`. -/
@@ -175,7 +177,7 @@ theorem cand_of_side (hP : J.P.Simple) {Q : Polygon}
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
     exact_mod_cast hC.hg
   obtain ⟨k0, k1⟩ := Corr.key_mem hB.1 hB.2.1 hB.2.2.1
-  have hBpt : sidePt (chainModel J.whole).W pB tB ∈ h := hB.2.2.2.1
+  have hBpt := hB.2.2.2.1
   rcases F₂plus_cases J hS₂.2.1 hh with ⟨c, hc, hhc⟩ | ⟨hv, -⟩ | ⟨ht, -⟩
   · rcases (off_nonneg k0 hgn).lt_or_eq with hpos | hzero
     · -- a proper position of the stretch, or the split vertex
@@ -190,7 +192,7 @@ theorem cand_of_side (hP : J.P.Simple) {Q : Polygon}
       · obtain ⟨rfl, hdr⟩ := hsplit
         rw [hdr] at hB hBpt hdL
         refine ⟨hh, Or.inr (Or.inr ?_)⟩
-        rw [← sidePt_split J hP hS₂.2.1 hS₂.1 hdL]
+        Ξ ← sidePt_split J hP hS₂.2.1 hS₂.1 hdL
         exact hBpt
       · have hsec : tB = 0 → dB ≠ 0 ∧ dB ≠ rL1 J := by
           intro ht0
@@ -204,7 +206,7 @@ theorem cand_of_side (hP : J.P.Simple) {Q : Polygon}
         exact ⟨hh, Or.inl ⟨c, hc, hhc, V', labS_trans J h1 h2,
           touches_of_sideOf J hS₂.2.1 hc hVs'⟩⟩
     · refine ⟨hh, Or.inr (Or.inl ?_)⟩
-      rw [← sidePt_off_zero J hP hS₂.2.1 hS₂.1 hB.1 hB.2.1 hB.2.2.1 hzero.symm]
+      Ξ ← sidePt_off_zero J hP hS₂.2.1 hS₂.1 hB.1 hB.2.1 hB.2.2.1 hzero.symm
       exact hBpt
   · exact ⟨hh, Or.inr (Or.inl hv)⟩
   · exact ⟨hh, Or.inr (Or.inr ht)⟩
@@ -263,7 +265,7 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
     ∃ h ∈ Cand J S₂ L, SideAttach (chainModel J.whole).W h pK tK := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
+  have hFs := hC.hF
   have hGM : GoodModel (chainModel J.whole) := Or.inl ⟨J.whole, hP, rfl⟩
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
@@ -351,20 +353,20 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
         rcases hθ with rfl | rfl <;> rcases hρ with rfl | rfl <;> norm_num
       have hori' : 0 < -θ * ρ * ((sidePt W A 0).1 - (sidePt W pb' tb').1) := by
         have e1 : -θ * ρ * ((sidePt W A 0).1 - (sidePt W pb' tb').1) =
-            θ * ρ * ((sidePt W pb' tb').1 - (sidePt W A 0).1) := by ring
-        rw [e1]
+            θ * ρ * ((sidePt W pb' tb').1 - (sidePt W A 0).1) := ⋆
+        Ξ e1
         have hprod : 0 < (θ * ρ * ((sidePt W A 0).1 - (sidePt W pb tb).1)) *
             (θ * ρ * ((sidePt W pb' tb').1 - (sidePt W A 0).1)) := by
           have e2 : (θ * ρ * ((sidePt W A 0).1 - (sidePt W pb tb).1)) *
               (θ * ρ * ((sidePt W pb' tb').1 - (sidePt W A 0).1)) =
               (θ * ρ * (θ * ρ)) * (-(((sidePt W pb tb).1 - (sidePt W A 0).1) *
-                ((sidePt W pb' tb').1 - (sidePt W A 0).1))) := by ring
-          rw [e2, hθρ, one_mul]
+                ((sidePt W pb' tb').1 - (sidePt W A 0).1))) := ⋆
+          Ξ e2, hθρ, one_mul
           linarith
         exact pos_of_mul_pos_right hprod hori.le
       have hAL : o ((A : ℝ) + 0) < ((rL1 J + rL2 J : ℕ) : ℝ) := by
         have hoA : o ((A : ℝ) + 0) = d + 0 := hC.off_M hd le_rfl zero_lt_one
-        rw [hoA]
+        Ξ hoA
         have : (d : ℝ) + 1 ≤ ((rL1 J + rL2 J : ℕ) : ℝ) := by exact_mod_cast hd
         linarith
       -- the forward chord of the tie and its far attachment
@@ -378,11 +380,11 @@ theorem next_event_detected (hP : J.P.Simple) {Q : Polygon}
             o (pb + tb) < ((rL1 J + rL2 J : ℕ) : ℝ) → o (pb + tb) ≠ 0 → False := by
         rcases hθ with rfl | rfl
         · obtain ⟨h1, h2⟩ := bracket_tie J hP hS₂ hF hρ hG he₂ he₁ hne hAL hA₂ hA₁ hB₂ hB₁
-            (Ne.symm hBne₂) (Ne.symm hBne₁) hS₂' hS₁ (by linarith) hori hout₂ hout₁ hp₀ ht₀ hnc₀
+            (Ne.symm hBne₂) (Ne.symm hBne₁) hS₂' hS₁ (⟡) hori hout₂ hout₁ hp₀ ht₀ hnc₀
             hfG₀ ho₀
           exact ⟨e₁, he₁, pb, tb, hB₁, ht₁, h1, h2⟩
         · obtain ⟨h1, h2⟩ := bracket_tie J hP hS₂ hF hρ hG he₁ he₂ (Ne.symm hne) hAL hA₁ hA₂
-            hB₁ hB₂ (Ne.symm hBne₁) (Ne.symm hBne₂) hS₁ hS₂' hori (by linarith) hout₁ hout₂ hp₀
+            hB₁ hB₂ (Ne.symm hBne₁) (Ne.symm hBne₂) hS₁ hS₂' hori (⟡) hout₁ hout₂ hp₀
             ht₀ hnc₀ hfG₀ ho₀
           exact ⟨e₂, he₂, pb', tb', hB₂, ht₂, h1, h2⟩
       have hnot : ¬ (o (pf + tf) = 0 ∨ o (pK + tK) < o (pf + tf)) := fun h =>

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseHostRegion
 
 /-!
@@ -85,8 +87,8 @@ theorem touch_sep (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {c : Set 
   have hs := hM.hsep (hF hc) hcab hab hy hopen
   rw [← hcab] at hs
   set z := lerp a b (1 / 2) with hz
-  have hzc : z ∈ c := by rw [hcab]; exact lerp_mem_segment _ _ (by norm_num) (by norm_num)
-  have hzD : z ∈ M.D := hopen (1 / 2) ⟨by norm_num, by norm_num⟩
+  have hzc : z ∈ c := by rw [hcab]; exact lerp_mem_segment _ _ (⊛) (by norm_num)
+  have hzD : z ∈ M.D := hopen (1 / 2) ⟨⊛, by norm_num⟩
   set d := b.1 - a.1 with hd
   have hd0 : d ≠ 0 := by
     intro h; apply hab; exact point_ext (by rw [hd] at h; linarith) hy
@@ -116,14 +118,14 @@ theorem touch_sep (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {c : Set 
   have hpt := hside' ⟨mul_pos hδ0 hdpos, hδ2⟩
   simp only [mem_ofPred_eq] at hpt
   apply hneq
-  rw [e1, e2]
+  Ξ e1, e2
   rcases lt_or_gt_of_ne hd0 with hneg | hpos
   · rw [abs_of_neg hneg] at hpt
-    have e3 : z.2 + δ * d = z.2 - δ * -d := by ring
-    have e4 : z.2 - δ * d = z.2 + δ * -d := by ring
-    rw [e3, e4, hmem _ (Or.inr hpt.2), hmem _ (Or.inl hpt.1)]
+    have e3 : z.2 + δ * d = z.2 - δ * -d := ⋆
+    have e4 : z.2 - δ * d = z.2 + δ * -d := ⋆
+    Ξ e3, e4, hmem _ (Or.inr hpt.2), hmem _ (Or.inl hpt.1)
   · rw [abs_of_pos hpos] at hpt
-    rw [hmem _ (Or.inl hpt.1), hmem _ (Or.inr hpt.2)]
+    Ξ hmem _ (Or.inl hpt.1), hmem _ (Or.inr hpt.2)
 
 /-- The region with a given side relation to a chord (`AboveOf`) is the upper side region. -/
 theorem eq_up_of_above (hM : WalkAx M) (hF : F ⊆ M.Adm) (_hfin : F.Finite)
@@ -133,8 +135,8 @@ theorem eq_up_of_above (hM : WalkAx M) (hF : F ⊆ M.Adm) (_hfin : F.Finite)
     (hX : X ∈ M.regions F) (hA : M.AboveOf c X) : X = Up := by
   obtain ⟨a, b, hab, hcab, -, hopen, -, -⟩ := hM.ends c (hF hc)
   have hzc : lerp a b (1 / 2) ∈ c := by
-    rw [hcab]; exact lerp_mem_segment _ _ (by norm_num) (by norm_num)
-  have hzD := hopen (1 / 2) ⟨by norm_num, by norm_num⟩
+    rw [hcab]; exact lerp_mem_segment _ _ (⊛) (by norm_num)
+  have hzD := hopen (1 / 2) ⟨⊛, ⊛⟩
   obtain ⟨δ, h1, h2⟩ := ((hA _ hzc hzD).and (hside _ hzc hzD)).exists
   rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hUp with h | h
   · exact h
@@ -148,8 +150,8 @@ theorem eq_dn_of_below (hM : WalkAx M) (hF : F ⊆ M.Adm) (_hfin : F.Finite)
     (hX : X ∈ M.regions F) (hB : M.BelowOf c X) : X = Dn := by
   obtain ⟨a, b, hab, hcab, -, hopen, -, -⟩ := hM.ends c (hF hc)
   have hzc : lerp a b (1 / 2) ∈ c := by
-    rw [hcab]; exact lerp_mem_segment _ _ (by norm_num) (by norm_num)
-  have hzD := hopen (1 / 2) ⟨by norm_num, by norm_num⟩
+    rw [hcab]; exact lerp_mem_segment _ _ (⊛) (by norm_num)
+  have hzD := hopen (1 / 2) ⟨⊛, ⊛⟩
   obtain ⟨δ, h1, h2⟩ := ((hB _ hzc hzD).and (hside _ hzc hzD)).exists
   rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hDn with h | h
   · exact h
@@ -277,9 +279,9 @@ theorem gap (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.Nonemp
     intro ce cw hce hcw hAe hAw hE hW hc0
     obtain ⟨ht0, hhor, -⟩ := hM.tie_shape hF hce hcw hAe hAw hE hW
     subst ht0
-    have hp₀ : p₀ < M.W.n := hAe.1
-    have hl0 : 0 ≤ l := harcY.1
-    have hln : l < M.W.n := harcY.2.1
+    have hp₀ := hAe.1
+    have hl0 := harcY.1
+    have hln := harcY.2.1
     have hlp : l ≠ (p₀ : ℝ) + 0 := (WalkAx.arc_cuts hne harcY).2.2
     -- the region faced just after `a` is `X`, just before is `Y`
     have hafter : ∀ Z ∈ M.regions F, (∃ δ > (0 : ℝ), ∀ t', 0 < t' → t' < δ → M.Faces p₀ t' Z) →

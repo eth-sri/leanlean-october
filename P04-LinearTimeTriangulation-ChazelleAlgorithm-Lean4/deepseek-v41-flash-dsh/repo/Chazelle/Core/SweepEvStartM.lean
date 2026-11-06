@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvTasks3
 public import Chazelle.Core.SweepEvOrigin
 public import Chazelle.Core.SweepEvStart
@@ -38,14 +40,14 @@ theorem start_key_ge_six (J : Merge.Junction) :
     have hτw := tpos_lt J.whole J.m₁
     have e : (gW J + Lst J) % (chainModel J.whole).W.n = 2 * J.whole.m + 6 := by
       unfold gW
-      rw [hL, hn, Nat.mod_eq_of_lt (by omega)]
+      rw [hL, hn, Nat.mod_eq_of_lt (⋄)]
       omega
     omega
   · have hlo : lOff J = Lst J := by
       by_cases hv : VNotTop J
-      · rw [lOff_of_vnt J hv, Lst_rlen]
+      · Ξ lOff_of_vnt J hv, Lst_rlen
       · exact (caseC_facts J hv hlt).2.1
-    rw [← hlo, gL_eq]
+    Ξ ← hlo, gL_eq
     omega
 
 /-- **Task S (mathematics): the start key.** -/

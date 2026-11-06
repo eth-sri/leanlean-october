@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTEnv
 
 /-!
@@ -31,7 +33,7 @@ theorem robust_addr3' {E : ℕ} {m : ℕ → ℕ} {b₁ p₂ t v : ℕ} (hp₂ :
     by_contra hge
     set Z := E + b₁ + m p₂ + t + 1 with hZ
     have := h (Function.update (Function.update m b₁ Z) (Z + m p₂ + t) (v + 1))
-      (fun a ha => by rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega)])
+      (fun a ha => Ρ Function.update_of_ne (⋄), Function.update_of_ne (⋄))
     simp only at this
     rw [Function.update_of_ne (show b₁ ≠ Z + m p₂ + t by omega), Function.update_self,
       Function.update_of_ne (show p₂ ≠ Z + m p₂ + t by omega),
@@ -39,7 +41,7 @@ theorem robust_addr3' {E : ℕ} {m : ℕ → ℕ} {b₁ p₂ t v : ℕ} (hp₂ :
     omega
   by_contra hge
   have := h (Function.update m (m b₁ + m p₂ + t) (v + 1)) (fun a ha => by
-    rw [Function.update_of_ne (by omega)])
+    rw [Function.update_of_ne (⋄)])
   simp only at this
   rw [Function.update_of_ne (show b₁ ≠ m b₁ + m p₂ + t by omega),
     Function.update_of_ne (show p₂ ≠ m b₁ + m p₂ + t by omega), Function.update_self] at this
@@ -62,7 +64,7 @@ theorem nf_bounds {m : ℕ → ℕ} {B E : ℕ} {N : NF} (h : NFWithin m B E N) 
         have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.1
         simpa only [Nat.add_assoc] using this)
     omega
-  refine ⟨by omega, fun i hi => ?_, fun j hj => ?_, hreg, fun r hr t ht => ?_,
+  refine ⟨⋄, fun i hi => ?_, fun j hj => ?_, hreg, fun r hr t ht => ?_,
     fun r hr t ht => ?_⟩
   · have := robust_addr2 (b := B + 3) (o := 5 * i + 4) (v := (N.chord i).dn)
       (fun m' hm' => by
@@ -75,17 +77,17 @@ theorem nf_bounds {m : ℕ → ℕ} {B E : ℕ} {N : NF} (h : NFWithin m B E N) 
         simpa only [Nat.add_assoc] using this)
     omega
   · have hp := hreg r hr
-    exact robust_addr3' (p₂ := m (B + 5) + 5 * r + 1) (by omega)
+    exact robust_addr3' (p₂ := m (B + 5) + 5 * r + 1) (⋄)
       (v := (N.region r).arcs.getD t 0) (fun m' hm' => by
-        have e := hm' (B + 5) (by omega)
+        have e := hm' (B + 5) (⋄)
         have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.2.1 t ht
-        rw [e] at this; exact this)
+        Ξ' e at this; exact this)
   · have hp := hreg r hr
-    exact robust_addr3' (p₂ := m (B + 5) + 5 * r + 3) (by omega)
+    exact robust_addr3' (p₂ := m (B + 5) + 5 * r + 3) (⋄)
       (v := (N.region r).chords.getD t 0) (fun m' hm' => by
-        have e := hm' (B + 5) (by omega)
+        have e := hm' (B + 5) (⋄)
         have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.2.2 t ht
-        rw [e] at this; exact this)
+        Ξ' e at this; exact this)
 
 /-! ## Calls of the readers -/
 
@@ -113,7 +115,7 @@ theorem callB {p : Stmt} {K : ℕ} {Pre : Polygon → ℕ → Config → Prop}
   obtain ⟨c', k, e, hk, hpost, hf⟩ := hp P W c₁ e₁.wb_right (hPre c₁ h1 h2 h4)
     (by rw [hA₁]; exact hroom)
   refine ⟨c₁, c', l.length + k, h1, h2, h4, .seq e₁ e, by simp only at hk; omega, hpost, ?_⟩
-  exact (hf₁.trans hf).mono (by simp [primBands]) le_rfl
+  exact (hf₁.trans hf).mono (⊚ primBands) le_rfl
 
 variable {P : Polygon} {W : ℕ} {M : Model} {N : NF} {c₀ c : Config}
 
@@ -132,24 +134,24 @@ theorem tRegLen_exec {f : ℕ} (hf : f = 0 ∨ f = 2) (hE : TGood P W M N c₀)
   have hN := hI.nfWithin hE
   have hNA := hN.holds
   have hr := hE.hr
-  have r02 := hI.hin 83002 (by norm_num) (by norm_num)
+  have r02 := hI.hin 83002 (⊛) (⊛)
   have hb := nf_bounds hN
   have hAW : c₀.nreg ALLOC ≤ W := (hI.hA.trans (hI.hw.1 ALLOC))
   obtain ⟨c₁, c', k, h1, -, hm1, ex, hk, hpost, hf⟩ := callB (regRd_meets (f := f)
     (by rcases hf with rfl | rfl <;> simp)) [(50200, 83001), (50201, 83002)]
-    (by simp) (by simp) (hl_loc (by simp)) hI.hw (fun c₁ h1 _ hm => by
-      have q0 := h1 (50200, 83001) (by simp)
-      have q1 := h1 (50201, 83002) (by simp)
+    (✓) (✓) (hl_loc (✓)) hI.hw (fun c₁ h1 _ hm => by
+      have q0 := h1 (50200, 83001) (✓)
+      have q1 := h1 (50201, 83002) (✓)
       simp only at q0 q1
       unfold NFRdOK
-      rw [hm, q0, q1, r02]
+      Ξ hm, q0, q1, r02
       have := hb.2.2.2.1 _ hr
       rcases hf with rfl | rfl <;> omega) hroom
-  have q0 := h1 (50200, 83001) (by simp)
-  have q1 := h1 (50201, 83002) (by simp)
+  have q0 := h1 (50200, 83001) (✓)
+  have q1 := h1 (50201, 83002) (✓)
   simp only at q0 q1
   refine ⟨c', k, ex, by simp at hk; omega, ?_, hI.prim ex.wb_right hf⟩
-  rw [hpost N (by rw [hm1, q0]; exact hNA) (by rw [q1, r02]; exact hr), q1, r02]
+  Ξ hpost N (by rw [hm1, q0]; exact hNA) (by rw [q1, r02]; exact hr), q1, r02
 
 /-- **Item `t` (register `tr`) of a list of region `83002`**: `f = 1` its arcs, `f = 3` its exit
 chords. -/

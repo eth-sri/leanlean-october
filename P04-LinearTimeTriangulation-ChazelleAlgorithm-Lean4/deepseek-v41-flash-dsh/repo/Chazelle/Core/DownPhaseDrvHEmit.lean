@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvHProg
 
 /-!
@@ -45,7 +47,7 @@ theorem qES_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n e : ℕ} (h
     | true =>
       refine spec_ifLtN_true (by rw [hK.zero, hK.li]; decide) ?_
       exec_block
-      refine ⟨by omega, ?_, rfl⟩
+      refine ⟨⋄, ?_, rfl⟩
       config_simp
       rw [h64]; rfl
     | false =>
@@ -56,18 +58,18 @@ theorem qES_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n e : ℕ} (h
       by_cases hlt : e + 1 < n
       · refine spec_ifLtN_true (by config_simp; rw [h64, hK.one, hK.nn]; exact hlt) ?_
         exec_block
-        refine ⟨by omega, ?_, rfl⟩
+        refine ⟨⋄, ?_, rfl⟩
         config_simp
-        rw [hK.nn, h64, hK.two]
-        simp only [qE, hlt, ↓reduceIte, Bool.false_eq_true, ↓reduceIte]
+        Ξ hK.nn, h64, hK.two
+        ϴ qE, hlt, ↓reduceIte, Bool.false_eq_true, ↓reduceIte
         omega
       · refine spec_ifLtN_false (by config_simp; rw [h64, hK.one, hK.nn]; exact hlt) ?_
         exec_block
-        refine ⟨by omega, ?_, rfl⟩
+        refine ⟨⋄, ?_, rfl⟩
         config_simp
-        rw [hK.nn, hK.one]
-        simp only [qE, hlt, ↓reduceIte, Bool.false_eq_true]
-  exact ⟨d', k, ex, hk, h66, hm, exec_frameM ex (by decide)⟩
+        Ξ hK.nn, hK.one
+        ϴ qE, hlt, ↓reduceIte, Bool.false_eq_true
+  exact ⟨d', k, ex, hk, h66, hm, exec_frameM ex (⌖)⟩
 
 
 /-- The buffer: items `xs` at `T`, the write pointer after them, the item and point counts. -/
@@ -85,13 +87,13 @@ theorem emitS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n e h T : �
   obtain ⟨d₁, k₁, e₁, hk₁, q66, qm, qf⟩ := qES_exec (P := P) d hw hK h64 hW3
   have g : ∀ q, (decide (q = 215066) || decide (q = 215069)) = false → d₁.nreg q = d.nreg q :=
     qf.1
-  have r20 : d₁.nreg 215020 = 1 := by rw [g _ (by decide), hK.one]
-  have r24 : d₁.nreg 215024 = 2 := by rw [g _ (by decide), hK.two]
-  have r23 : d₁.nreg 215023 = 3 := by rw [g _ (by decide), hK.three]
-  have r65 : d₁.nreg 215065 = h := by rw [g _ (by decide), h65]
-  have r40 : d₁.nreg 215040 = T + 3 * xs.length := by rw [g _ (by decide), h40]
-  have r11 : d₁.nreg 215011 = xs.length := by rw [g _ (by decide), h11]
-  have r12 : d₁.nreg 215012 = ptsLen n xs := by rw [g _ (by decide), h12]
+  have r20 : d₁.nreg 215020 = 1 := Ρ g _ (⌖), hK.one
+  have r24 : d₁.nreg 215024 = 2 := Ρ g _ (⌖), hK.two
+  have r23 : d₁.nreg 215023 = 3 := Ρ g _ (⌖), hK.three
+  have r65 : d₁.nreg 215065 = h := Ρ g _ (⌖), h65
+  have r40 : d₁.nreg 215040 = T + 3 * xs.length := Ρ g _ (⌖), h40
+  have r11 : d₁.nreg 215011 = xs.length := Ρ g _ (⌖), h11
+  have r12 : d₁.nreg 215012 = ptsLen n xs := Ρ g _ (⌖), h12
   have hw₁ := e₁.wb_right
   obtain ⟨d', k₂, e₂, hk₂, hm', p40, p11, p12⟩ : ∃ d' k₂, Exec P W wrPt d₁ d' k₂ ∧ k₂ = 9 ∧
       d'.nmem = wr3 d₁.nmem (T + 3 * xs.length) 2 (qE li n e) (h - 1) ∧
@@ -101,27 +103,27 @@ theorem emitS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n e h T : �
     exec_block
     all_goals try (config_simp; (try simp only [r20, r23, r24, r65, r40, q66, r11, r12]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
-      simp only [r20, r23, r24, r65, r40, q66, r11, r12]
+      ϴ r20, r23, r24, r65, r40, q66, r11, r12
     rw [show T + 3 * xs.length + 1 + 1 = T + 3 * xs.length + 2 by omega]; rfl
-  refine ⟨d', k₁ + k₂, .seq e₁ e₂, by omega, ⟨?_, ?_, ?_, ?_⟩, fun a ha => ?_, ?_⟩
-  · rw [hm', qm]
+  refine ⟨d', k₁ + k₂, .seq e₁ e₂, ⋄, ⟨?_, ?_, ?_, ?_⟩, fun a ha => ?_, ?_⟩
+  · Ξ hm', qm
     exact hI.snoc (ptE li n e h)
   · rw [p40, List.length_append, List.length_singleton]; ring
-  · rw [p11, List.length_append, List.length_singleton]
-  · rw [p12, ptsLen_append, ptE, ptsLen_pt]
-  · rw [hm', wr3_lt ha, qm]
+  · Ξ p11, List.length_append, List.length_singleton
+  · Ξ p12, ptsLen_append, ptE, ptsLen_pt
+  · Ξ hm', wr3_lt ha, qm
   · exact (qf.mono (fun q hq => by simp only [Bem, Bool.or_eq_true, decide_eq_true_eq] at hq ⊢; omega)).trans
-      (exec_frameM e₂ (by decide))
+      (exec_frameM e₂ (⌖))
 
 theorem mod_prev {e n : ℕ} (he : e < n) : (e + n - 1) % n = if e < 1 then n - 1 else e - 1 := by
   split_ifs with h
-  · rw [show e = 0 by omega, Nat.zero_add]; exact Nat.mod_eq_of_lt (by omega)
-  · rw [show e + n - 1 = (e - 1) + n by omega, Nat.add_mod_right]; exact Nat.mod_eq_of_lt (by omega)
+  · rw [show e = 0 by omega, Nat.zero_add]; exact Nat.mod_eq_of_lt (⋄)
+  · rw [show e + n - 1 = (e - 1) + n by omega, Nat.add_mod_right]; exact Nat.mod_eq_of_lt (⋄)
 
 theorem mod_once {v n : ℕ} (hv : v < 2 * n) : v % n = if v < n then v else v - n := by
   split_ifs with h
   · exact Nat.mod_eq_of_lt h
-  · rw [Nat.mod_eq_sub_mod (by omega)]; exact Nat.mod_eq_of_lt (by omega)
+  · rw [Nat.mod_eq_sub_mod (⋄)]; exact Nat.mod_eq_of_lt (⋄)
 
 theorem ivS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n ee : ℕ} (hK : Kst n li d)
     (h50 : d.nreg 215050 = ee) :
@@ -134,14 +136,14 @@ theorem ivS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n ee : ℕ} (
     | true =>
       refine spec_ifLtN_true (by rw [hK.zero, hK.li]; decide) ?_
       exec_block
-      refine ⟨by omega, ?_, rfl⟩
+      refine ⟨⋄, ?_, rfl⟩
       config_simp; rw [h50]; rfl
     | false =>
       refine spec_ifLtN_false (by rw [hK.zero, hK.li]; decide) ?_
       exec_block
-      refine ⟨by omega, ?_, rfl⟩
+      refine ⟨⋄, ?_, rfl⟩
       config_simp; rw [hK.nn, hK.one, h50]; rfl
-  exact ⟨d', k, ex, hk, h1, hm, exec_frameM ex (by decide)⟩
+  exact ⟨d', k, ex, hk, h1, hm, exec_frameM ex (⌖)⟩
 
 theorem atS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n ee eh iv : ℕ}
     (hK : Kst n li d) (h50 : d.nreg 215050 = ee) (h51 : d.nreg 215051 = eh)
@@ -170,16 +172,16 @@ theorem atS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n ee eh iv : 
       by_cases h0 : ee < 1
       · refine spec_ifLtN_true (by config_simp; rw [h50, hK.one]; omega) ?_
         exec_block
-        refine ⟨by omega, ?_, ?_, rfl⟩ <;> config_simp <;> simp only [hv, h0, ↓reduceIte, hK.nn, hK.one]
+        refine ⟨⋄, ?_, ?_, rfl⟩ <;> config_simp <;> ϴ hv, h0, ↓reduceIte, hK.nn, hK.one
       · refine spec_ifLtN_false (by config_simp; rw [h50, hK.one]; omega) ?_
         exec_block
-        refine ⟨by omega, ?_, ?_, rfl⟩ <;> config_simp <;>
-          simp only [hv, h0, ↓reduceIte, ↓reduceIte, hK.one, h50]
+        refine ⟨⋄, ?_, ?_, rfl⟩ <;> config_simp <;>
+          ϴ hv, h0, ↓reduceIte, ↓reduceIte, hK.one, h50
     · refine spec_ifLtN_false (by config_simp; rw [h51, hK.one, h70]; omega) ?_
       exec_block
       · omega
-      refine ⟨by omega, ?_, ?_, rfl⟩ <;> config_simp <;> simp only [hv, ↓reduceIte, h50]
-  exact ⟨d', k, ex, hk, h1, h2, hm, exec_frameM ex (by decide)⟩
+      refine ⟨⋄, ?_, ?_, rfl⟩ <;> config_simp <;> ϴ hv, ↓reduceIte, h50
+  exact ⟨d', k, ex, hk, h1, h2, hm, exec_frameM ex (⌖)⟩
 
 
 theorem rcS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n ee se δ : ℕ}
@@ -189,7 +191,7 @@ theorem rcS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n ee se δ : 
       d'.nmem = d.nmem ∧ FrameM (fun q => decide (q = 215073)) d d' := by
   obtain ⟨d', k, ex, hk, h1, hm⟩ : ∃ d' k, Exec P W rcS d d' k ∧ k ≤ 7 ∧
       d'.nreg 215073 = (ee + δ + n - 1 - se) % n ∧ d'.nmem = d.nmem := by
-    have hm := mod_once (v := ee + δ + n - 1 - se) (n := n) (by omega)
+    have hm := mod_once (v := ee + δ + n - 1 - se) (n := n) (⋄)
     unfold rcS
     refine spec_seq ?_
     exec_block
@@ -197,13 +199,13 @@ theorem rcS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n ee se δ : 
     · config_simp; rw [h50, h71, hK.nn]; omega
     by_cases hv : ee + δ + n - 1 - se < n
     · refine spec_ifLtN_true (by config_simp; rw [h50, h71, hK.nn, hK.one, h48]; exact hv) ?_
-      refine spec_skip ‹_› ⟨by omega, ?_, rfl⟩
-      config_simp; simp only [h50, h71, hK.nn, hK.one, h48, hm, hv, ↓reduceIte]
+      refine spec_skip ‹_› ⟨⋄, ?_, rfl⟩
+      config_simp; ϴ h50, h71, hK.nn, hK.one, h48, hm, hv, ↓reduceIte
     · refine spec_ifLtN_false (by config_simp; rw [h50, h71, hK.nn, hK.one, h48]; exact hv) ?_
       exec_block
-      refine ⟨by omega, ?_, rfl⟩
-      config_simp; simp only [h50, h71, hK.nn, hK.one, h48, hm, hv, ↓reduceIte]
-  exact ⟨d', k, ex, hk, h1, hm, exec_frameM ex (by decide)⟩
+      refine ⟨⋄, ?_, rfl⟩
+      config_simp; ϴ h50, h71, hK.nn, hK.one, h48, hm, hv, ↓reduceIte
+  exact ⟨d', k, ex, hk, h1, hm, exec_frameM ex (⌖)⟩
 
 theorem rsS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n se rc : ℕ}
     (hK : Kst n li d) (h48 : d.nreg 215048 = se) (h73 : d.nreg 215073 = rc) (hse : se < n)
@@ -222,15 +224,15 @@ theorem rsS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n se rc : ℕ
       · rw [h48, hK.one]; omega
       by_cases hv : se + 1 < n
       · refine spec_ifLtN_true (by config_simp; rw [h48, hK.one, hK.nn]; exact hv) ?_
-        refine spec_skip ‹_› ⟨by omega, ?_, rfl⟩
-        config_simp; simp only [h48, hK.one, ↓reduceIte, Nat.mod_eq_of_lt hv]
+        refine spec_skip ‹_› ⟨⋄, ?_, rfl⟩
+        config_simp; ϴ h48, hK.one, ↓reduceIte, Nat.mod_eq_of_lt hv
       · refine spec_ifLtN_false (by config_simp; rw [h48, hK.one, hK.nn]; exact hv) ?_
         exec_block
         · omega
-        refine ⟨by omega, ?_, rfl⟩
-        config_simp; simp only [↓reduceIte, show se + 1 = n by omega, Nat.mod_self]
+        refine ⟨⋄, ?_, rfl⟩
+        config_simp; ϴ ↓reduceIte, show se + 1 = n by omega, Nat.mod_self
     | false =>
-      have hm := mod_once (v := se + rc) (n := n) (by omega)
+      have hm := mod_once (v := se + rc) (n := n) (⋄)
       refine spec_ifLtN_false (by rw [hK.zero, hK.li]; decide) ?_
       refine spec_seq ?_
       exec_block
@@ -240,13 +242,13 @@ theorem rsS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n se rc : ℕ
       · refine spec_ifLtN_true (by config_simp; rw [h48, h73, hK.nn]; exact hv) ?_
         refine spec_skip ‹_› ?_
         exec_block
-        refine ⟨by omega, ?_, rfl⟩
-        config_simp; simp only [h48, h73, hK.nn, hK.one, Bool.false_eq_true, ↓reduceIte, hm, hv]
+        refine ⟨⋄, ?_, rfl⟩
+        config_simp; ϴ h48, h73, hK.nn, hK.one, Bool.false_eq_true, ↓reduceIte, hm, hv
       · refine spec_ifLtN_false (by config_simp; rw [h48, h73, hK.nn]; exact hv) ?_
         exec_block
-        refine ⟨by omega, ?_, rfl⟩
-        config_simp; simp only [h48, h73, hK.nn, hK.one, Bool.false_eq_true, ↓reduceIte, hm, hv]
-  exact ⟨d', k, ex, hk, h1, hm, exec_frameM ex (by decide)⟩
+        refine ⟨⋄, ?_, rfl⟩
+        config_simp; ϴ h48, h73, hK.nn, hK.one, Bool.false_eq_true, ↓reduceIte, hm, hv
+  exact ⟨d', k, ex, hk, h1, hm, exec_frameM ex (⌖)⟩
 
 
 theorem Kst.frame {n : ℕ} {li : Bool} {d d' : Config} (h : Kst n li d) {B : ℕ → Bool}
@@ -282,23 +284,23 @@ theorem wrRun_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n a rc T : 
     all_goals
       try (config_simp; (try simp only [hK.one, hK.three, hK.zero, h40, h11, h12, h73, h74]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
-      simp only [hK.one, hK.three, hK.zero, h40, h11, h12, h73, h74]
+      ϴ hK.one, hK.three, hK.zero, h40, h11, h12, h73, h74
     rw [show T + 3 * xs.length + 1 + 1 = T + 3 * xs.length + 2 by omega]; rfl
-  refine ⟨d', k, ex, hk, ⟨?_, ?_, ?_, ?_⟩, fun x hx => ?_, exec_frameM ex (by decide)⟩
+  refine ⟨d', k, ex, hk, ⟨?_, ?_, ?_, ?_⟩, fun x hx => ?_, exec_frameM ex (⌖)⟩
   · rw [hm']; exact hI.snoc (.run a (rc - 1))
   · rw [p40, List.length_append, List.length_singleton]; ring
-  · rw [p11, List.length_append, List.length_singleton]
+  · Ξ p11, List.length_append, List.length_singleton
   · rw [p12, ptsLen_append, ptsLen_run]; omega
-  · rw [hm', wr3_lt hx]
+  · Ξ hm', wr3_lt hx
 
 theorem runItems_of_ne {li : Bool} {n : ℕ} {s e : WPos} (h : runCnt li n s e ≠ 0) :
     runItems li n s e = [.run (if li then (s.edge + 1) % n
       else n - 1 - (s.edge + runCnt li n s e) % n) (runCnt li n s e - 1)] := by
-  unfold runItems; cases li <;> simp [h]
+  unfold runItems; cases li <;> Θ h
 
 theorem runCnt_eq (li : Bool) (n : ℕ) (s e : WPos) :
     runCnt li n s e = (e.edge + (if e.hgt - 1 = ivB li n e.edge then 0 else 1) + n - 1 - s.edge) % n := by
-  unfold runCnt atVtx; simp only [decide_eq_true_eq]
+  unfold runCnt atVtx; ϴ decide_eq_true_eq
 
 theorem runS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n T : ℕ} {s e : WPos}
     {xs : List HostItem} (hK : Kst n li d) (h48 : d.nreg 215048 = s.edge)

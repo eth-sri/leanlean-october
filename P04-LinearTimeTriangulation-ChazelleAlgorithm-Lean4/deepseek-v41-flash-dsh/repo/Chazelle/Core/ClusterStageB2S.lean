@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterStageB2
 
 /-!
@@ -52,7 +54,7 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have hU := g.U_ge
   have hE := g.END_eq
   have hLU := g.L_le_U
-  have hLN : g.L * g.N ≤ g.L * g.U := Nat.mul_le_mul_left _ (by omega)
+  have hLN : g.L * g.N ≤ g.L * g.U := Nat.mul_le_mul_left _ (⋄)
   have b17 := g.base_eq 17; have b20 := g.base_eq 20; have b24 := g.base_eq 24
   have b26 := g.base_eq 26; have b27 := g.base_eq 27; have b28 := g.base_eq 28
   have b29 := g.base_eq 29; have b30 := g.base_eq 30; have b31 := g.base_eq 31
@@ -64,14 +66,14 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   unfold stageB2
   -- `DLAB := N`
   obtain ⟨c1, k1, x1, hk1, hw1, hf1, hl1⟩ := fillWith_exec (P := P) hw hG.one
-    (hG.rbase 24 (by omega)) hG.rN hG.rN (by unfold FillRG; omega) (by unfold FillRG; omega)
-    (by unfold FillRG; omega) (by omega) (by omega)
+    (hG.rbase 24 (⋄)) hG.rN hG.rN (by unfold FillRG; omega) (by unfold FillRG; omega)
+    (by unfold FillRG; omega) (⋄) (by omega)
   have f1 : PFr StBRG Wr c c1 := hf1.mono (fun r h => by unfold FillRG at h; unfold StBRG; omega)
     (fun a h => by simp only [hWr]; omega)
   have b3 := g.base_eq 3; have b5 := g.base_eq 5; have b6 := g.base_eq 6; have b7 := g.base_eq 7
   have hA1 : AF g M T c1.nmem := hA.congr ⟨hO, hR, hV⟩
     (fun x hx => hf1.2.2.2.2 x (by unfold KeepA at hx; omega))
-  have hB1 : B1F g M T a ha c1.nmem := hB.congr (fun x h1 h2 => hf1.2.2.2.2 x (by omega))
+  have hB1 : B1F g M T a ha c1.nmem := hB.congr (fun x h1 h2 => hf1.2.2.2.2 x (⋄))
   -- the dual search
   obtain ⟨c2, k2, x2, hk2, hw2, hf2, C, hr0, hfpar2, hlt2, hROK, hq0, hRup⟩ :=
     dbfsP_exec (P := P) hw1 (hGR f1) hA1 hB1 hM hN hl1 hW
@@ -82,7 +84,7 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have f3 : PFr StBRG Wr c c3 := f2.trans (hf3.mono (fun r h => h) (fun a h => by
     simp only [hWr]; omega))
   have hlt3 : ∀ x, x < g.N → c3.nmem (g.base 26 + x) < 3 * g.N := fun x hx => by
-    rw [hf3.2.2.2.2 _ (by omega)]; exact hlt2 x hx
+    rw [hf3.2.2.2.2 _ (⋄)]; exact hlt2 x hx
   -- the dual parent array
   obtain ⟨c4, k4, x4, hk4, hw4, hf4, hp0, hp4⟩ := pfP_exec (P := P) hw3 (hGR f3) hN hlt3 hW
   have f4 : PFr StBRG Wr c c4 := f3.trans (hf4.mono (fun r h => h) (fun a h => by
@@ -98,12 +100,12 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     · subst h0
       simp only [Nat.add_zero]; rw [hp0]
       unfold BTree.up; rw [ite_eq_left hRroot.symm]
-    · rw [hp4 y (by omega) hy]
+    · rw [hp4 y (⋄) hy]
       unfold BTree.up
-      rw [ite_eq_right (by rw [hRroot]; exact h0)]
+      Ξ ite_eq_right (by rw [hRroot]; exact h0)
       show _ = c2.nmem (g.base 17 + c2.nmem (g.base 26 + y))
       have := hlt2 y hy
-      rw [hf3.2.2.2.2 (g.base 26 + y) (by omega), hf3.2.2.2.2 _ (by omega)]
+      rw [hf3.2.2.2.2 (g.base 26 + y) (⋄), hf3.2.2.2.2 _ (by omega)]
   -- the dual table
   obtain ⟨c5, k5, x5, hk5, hw5, hf5, htab⟩ := updP_exec (P := P) hw4 (hGR f4) hN hL
     (fun y hy => by rw [hpf y hy]; exact hupN y hy) hW
@@ -159,7 +161,7 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     have htabF : ∀ j, j < g.L → ∀ x, x < g.N →
         c5.nmem (g.A0 + 54 * g.U + g.L * g.U + j * g.N + x) = R.up^[2 ^ j] x := by
       intro j hj x hx
-      rw [htab j hj x hx]
+      Ξ htab j hj x hx
       exact (iterate_congr_lt (n := g.N) hpf hupN (2 ^ j) x hx).1
     clear * - hfparF hltF hr0 hpreF hszF hROK hRn hRup hRroot hpre3 htabF
     exact ⟨hfparF, hltF, hr0, hpreF, hszF, hROK, hRn, hRup, hRroot, hpre3, htabF⟩

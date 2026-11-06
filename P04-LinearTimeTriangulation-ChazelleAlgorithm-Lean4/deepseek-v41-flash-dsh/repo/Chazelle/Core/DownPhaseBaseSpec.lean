@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseBaseLoop2
 public import Chazelle.Core.NFBuildMain
 
@@ -80,7 +84,7 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
+
 /-- The setup block. -/
 theorem dSetup_exec (c : Config) (hw : WordsBounded W c) {D B K A₀ : ℕ}
     (h0 : c.nreg 200000 = D) (h1 : c.nreg 200001 = B) (h2 : c.nreg 200002 = K)
@@ -128,7 +132,7 @@ theorem dBit_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {b : ℕ}
     exact ⟨c, _, .ifLtN_false t1 (.skip hw), by omega,
       by rw [h103]; simp [show b ≠ 1 by omega], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
 
-set_option maxHeartbeats 4000000 in
+
 /-- Between the passes. -/
 theorem dMid_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W dMid c c' k ∧ k = 4 ∧ c'.nreg 200005 = c.nreg 200118 ∧

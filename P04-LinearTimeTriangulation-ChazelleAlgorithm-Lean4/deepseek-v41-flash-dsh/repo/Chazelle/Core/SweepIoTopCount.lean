@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoSpec
 public import Chazelle.Core.SweepEvOrgM
 
@@ -48,7 +50,7 @@ theorem chord_aug {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) Q
   have hmem : (N.chord k).toSet (chainModel C) Q ∈ N.F (chainModel C) Q := by
     refine ⟨N.chord k, ?_, rfl⟩
     unfold NF.chord
-    rw [NFLoc.getD_of_lt _ hk]
+    Ξ NFLoc.getD_of_lt _ hk
     exact List.getElem_mem _
   obtain ⟨y, a, b, hH, -, heq, hl, hr⟩ :=
     Merge.augChords_spec (show _ ∈ Merge.augChords C from hN.1.2.1 hmem)
@@ -83,7 +85,7 @@ theorem topCount : TopCountSpec := by
   set l := (List.range (2 * N₂.nChords)).filter
     (fun j => decide (endOrigin J (Qof P) N₂ j = J.right.top)) with hl
   have hnd : l.Nodup := (List.nodup_range).filter _
-  rw [← List.toFinset_card_of_nodup hnd]
+  Ξ ← List.toFinset_card_of_nodup hnd
   have hmem : ∀ j ∈ l.toFinset, j < 2 * N₂.nChords ∧ endOrigin J (Qof P) N₂ j = J.right.top := by
     intro j hj
     rw [List.mem_toFinset, hl, List.mem_filter, List.mem_range, decide_eq_true_eq] at hj

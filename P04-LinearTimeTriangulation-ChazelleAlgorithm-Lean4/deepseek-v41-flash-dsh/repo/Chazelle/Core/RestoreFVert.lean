@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFHv
 public import Chazelle.Core.RestoreSearchGood
 
@@ -46,14 +48,14 @@ theorem TOut.good (hE : FGood E c₀) {c' : Config} (h : TOut E c c') {reg : ℕ
   obtain ⟨T, hx0, hxe, hσ, hT, hsec, hdom, hout, hadm, hsw⟩ := hg
   obtain ⟨-, -, hcl⟩ := h
   obtain ⟨-, hex, hcomp⟩ := hcl reg hregs
-  have hxeq : (⟨c.nreg 81060, c.nreg 81061⟩ : WPos) = ⟨c.nreg 81060, 0⟩ := by rw [hx1]
-  rw [hxeq] at hex hcomp
+  have hxeq : (⟨c.nreg 81060, c.nreg 81061⟩ : WPos) = ⟨c.nreg 81060, 0⟩ := Ρ hx1
+  Ξ' hxeq at hex hcomp
   have hp0 : E.M.param (Qof E.P) ⟨c.nreg 81060, 0⟩ = 0 := rfl
   obtain ⟨h10, h11⟩ := hcomp (by rw [hp0]; exact hsec) hch T hT hdom hout hadm hsw.1 hsw.2.1
   obtain ⟨T', hT', hstr, hposf, hfe, hfp, hadm', hA, hB, hiff⟩ := hex h10 h11
   have hM := walkAx_of_goodModel hE.hGM
   have hout' : rayPt (E.M.pos (Qof E.P) ⟨c.nreg 81060, 0⟩) (dirOf (c.nreg 81063)) T' ∉ E.M.D := by
-    rw [← hposf]
+    Ξ ← hposf
     exact hM.trace _ hfe _ hfp.1 hfp.2.1.le
   have hdom' : ∀ t, 0 < t → t < T' →
       rayPt (E.M.pos (Qof E.P) ⟨c.nreg 81060, 0⟩) (dirOf (c.nreg 81063)) t ∈ E.M.D :=
@@ -79,7 +81,7 @@ theorem tcall_win (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   refine (tcall_fs hE hB hBT hI hw.1 hcand hroom).mono le_rfl (fun c' ⟨hk, hfl, h1, h0⟩ => ?_)
   rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hw.1 with hz | ho
   · have hout := h0 hz
-    refine ⟨hk, ⟨hfl, fun hf reg hregs => (hout.2.2 reg hregs).1 hf⟩, fun h => by omega,
+    refine ⟨hk, ⟨hfl, fun hf reg hregs => (hout.2.2 reg hregs).1 hf⟩, fun h => ⋄,
       fun reg hregs hch hx1 hg => hout.good hE hregs hch hx1 hg⟩
   · obtain ⟨f1, t8, t9, t10⟩ := h1 ho
     refine ⟨hk, ⟨hfl, fun _ reg hregs => ?_⟩, fun _ => f1, fun _ _ _ _ _ => f1⟩

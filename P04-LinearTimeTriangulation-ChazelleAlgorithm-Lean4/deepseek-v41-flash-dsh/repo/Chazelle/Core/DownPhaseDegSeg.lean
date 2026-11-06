@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.Facts2TrapDeg
 
 /-!
@@ -57,20 +61,20 @@ theorem mem_seg_flat {s : Point × Point} (hf : s.1.2 = s.2.2) {p : Point} :
   · rintro ⟨h1, h2, h3⟩
     by_cases he : s.1.1 = s.2.1
     · refine ⟨0, le_rfl, zero_le_one, point_ext ?_ ?_⟩
-      · simp only; rw [he] at h2 h3; simp at h2 h3; linarith
+      · simp only; Ξ' he at h2 h3; simp at h2 h3; linarith
       · simp only; rw [h1]; ring
     · have hd : s.2.1 - s.1.1 ≠ 0 := sub_ne_zero.2 (Ne.symm he)
       refine ⟨(p.1 - s.1.1) / (s.2.1 - s.1.1), ?_, ?_, point_ext ?_ ?_⟩
       · rcases lt_or_gt_of_ne he with h | h
-        · rw [min_eq_left h.le] at h2
-          exact div_nonneg (by linarith) (by linarith)
-        · rw [max_eq_left h.le] at h3
-          exact div_nonneg_of_nonpos (by linarith) (by linarith)
+        · Ξ' min_eq_left h.le at h2
+          exact div_nonneg (⟡) (⟡)
+        · Ξ' max_eq_left h.le at h3
+          exact div_nonneg_of_nonpos (⟡) (⟡)
       · rcases lt_or_gt_of_ne he with h | h
-        · rw [max_eq_right h.le] at h3
-          exact (div_le_one (by linarith)).2 (by linarith)
-        · rw [min_eq_right h.le] at h2
-          exact (div_le_one_of_neg (by linarith)).2 (by linarith)
+        · Ξ' max_eq_right h.le at h3
+          exact (div_le_one (⟡)).2 (⟡)
+        · Ξ' min_eq_right h.le at h2
+          exact (div_le_one_of_neg (⟡)).2 (⟡)
       · simp only; field_simp; ring
       · simp only; rw [h1, hf]; ring
 
@@ -95,8 +99,8 @@ theorem exists_hit_eastH (hS : GoodH R S t) {q : Point} (hq : q ∈ dom R S) :
       ∀ x, q.1 ≤ x → x < b → ((x, q.2) : Point) ∈ dom R S := by
   obtain ⟨s, hs, hin, hout⟩ := exists_first_exit (isOpen_domH hS) hq (R := R)
     (fun x hx => (abs_lt.1 (box_of_dom hx).1).2)
-  refine ⟨q.1 + s, by linarith, hout, fun x h1 h2 => ?_⟩
-  have := hin (x - q.1) ⟨by linarith, by linarith⟩
+  refine ⟨q.1 + s, ⟡, hout, fun x h1 h2 => ?_⟩
+  have := hin (x - q.1) ⟨⟡, ⟡⟩
   simpa using this
 
 theorem exists_hit_westH (hS : GoodH R S t) {q : Point} (hq : q ∈ dom R S) :
@@ -110,10 +114,10 @@ theorem exists_hit_westH (hS : GoodH R S t) {q : Point} (hq : q ∈ dom R S) :
       have := (abs_lt.1 (box_of_dom hx).1).1
       simp only at this
       linarith)
-  refine ⟨q.1 - s, by linarith, by simpa [hD', sub_eq_add_neg, add_comm] using hout,
+  refine ⟨q.1 - s, ⟡, by simpa [hD', sub_eq_add_neg, add_comm] using hout,
     fun x h1 h2 => ?_⟩
-  have := hin (q.1 - x) ⟨by linarith, by linarith⟩
-  simp only [hD', mem_ofPred_eq] at this
+  have := hin (q.1 - x) ⟨⟡, ⟡⟩
+  ϴ' hD', mem_ofPred_eq at this
   simpa using this
 
 theorem hit_mem_obsH (hS : GoodH R S t) {q : Point} (hq : q ∈ dom R S) {a : ℝ}
@@ -132,25 +136,25 @@ theorem hit_mem_obsH (hS : GoodH R S t) {q : Point} (hq : q ∈ dom R S) {a : �
         by_contra hne
         have hlt : a < -R := lt_of_le_of_ne ha hne
         have := box_of_dom (hin (-R) (by
-          rw [min_eq_left (by linarith)]; exact hlt) (by
-          rw [max_eq_right (by linarith)]; linarith))
+          rw [min_eq_left (⟡)]; exact hlt) (by
+          rw [max_eq_right (⟡)]; linarith))
         simp only [abs_neg] at this
         exact lt_irrefl _ (this.1.trans_le (le_abs_self R))
-      have hR0 : 0 < R := by linarith
+      have hR0 : 0 < R := ⟡
       refine seg_subset_obs hS.sideL ((mem_seg_iff (by simp only; linarith)).2
         ⟨by simp only; linarith, by simp only; linarith, ?_⟩)
-      simp [xAt, haR]
+      Θ xAt, haR
     · have haR : a = R := by
         by_contra hne
         have hlt : R < a := lt_of_le_of_ne ha (Ne.symm hne)
         have := box_of_dom (hin R (by
-          rw [min_eq_right (by linarith)]; linarith) (by
-          rw [max_eq_left (by linarith)]; exact hlt))
+          rw [min_eq_right (⟡)]; linarith) (by
+          rw [max_eq_left (⟡)]; exact hlt))
         exact lt_irrefl _ (this.1.trans_le (le_abs_self R))
-      have hR0 : 0 < R := by linarith
+      have hR0 : 0 < R := ⟡
       refine seg_subset_obs hS.sideR ((mem_seg_iff (by simp only; linarith)).2
         ⟨by simp only; linarith, by simp only; linarith, ?_⟩)
-      simp [xAt, haR]
+      Θ xAt, haR
 
 /-- **A horizontal hit that is not a vertex lies in the open part of a non-horizontal
 segment** (a horizontal segment on the line would be entered at a vertex first). -/
@@ -179,15 +183,15 @@ theorem hit_wall (hS : GoodH R S t) {q : Point} {a : ℝ} (hobs : ((a, q.2) : Po
       · exact hne2 e
     rcases lt_or_gt_of_ne haq with hlt | hgt
     · set x := min (max s.1.1 s.2.1) ((a + q.1) / 2) with hx
-      have hx1 : a < x := lt_min hmax' (by linarith)
-      have hx2 : x < q.1 := lt_of_le_of_lt (min_le_right _ _) (by linarith)
+      have hx1 : a < x := lt_min hmax' (⟡)
+      have hx2 : x < q.1 := lt_of_le_of_lt (min_le_right _ _) (⟡)
       have hxD := hin x (by rw [min_eq_left hlt.le]; exact hx1) (by rw [max_eq_right hlt.le]; exact hx2)
-      exact hxD.2 (seg_subset_obs hs ((mem_seg_flat hf).2 ⟨hy, by linarith, min_le_left _ _⟩))
+      exact hxD.2 (seg_subset_obs hs ((mem_seg_flat hf).2 ⟨hy, ⟡, min_le_left _ _⟩))
     · set x := max (min s.1.1 s.2.1) ((a + q.1) / 2) with hx
-      have hx1 : x < a := max_lt hmin' (by linarith)
-      have hx2 : q.1 < x := lt_of_lt_of_le (by linarith) (le_max_right _ _)
+      have hx1 : x < a := max_lt hmin' (⟡)
+      have hx2 : q.1 < x := lt_of_lt_of_le (⟡) (le_max_right _ _)
       have hxD := hin x (by rw [min_eq_right hgt.le]; exact hx2) (by rw [max_eq_left hgt.le]; exact hx1)
-      exact hxD.2 (seg_subset_obs hs ((mem_seg_flat hf).2 ⟨hy, le_max_left _ _, by linarith⟩))
+      exact hxD.2 (seg_subset_obs hs ((mem_seg_flat hf).2 ⟨hy, le_max_left _ _, ⟡⟩))
 
 end HSegObs
 

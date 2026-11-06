@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutShLpA
 
 /-!
@@ -36,7 +38,7 @@ theorem Blpl_env (r : ℕ) (h : envR r) : Blpl r = false := by
   omega
 
 theorem Blpl_org (r : ℕ) (h1 : 140234 ≤ r) (h2 : r < 140241) : Blpl r = false := by
-  simp only [Blpl, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
+  ϴ Blpl, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne
   omega
 
 theorem Bk0_loop (r : ℕ) (h : LoopR r) : Bk0 r = false := by
@@ -53,13 +55,13 @@ theorem Wk1_loop (r : ℕ) (h : LoopR r) : Wk1 r = false := by
 
 theorem Bk0_ob (r : ℕ) (h : Bk0 r = true) :
     (bandOf r = 1 ∨ bandOf r = 5 ∨ bandOf r = 12 ∨ bandOf r = 14) ∧ r ≠ ALLOC := by
-  simp only [Bk0, Bedge, Bmrg, Bk, Bprim, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq] at h
+  ϴ' Bk0, Bedge, Bmrg, Bk, Bprim, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq at h
   unfold bandOf ALLOC
   omega
 
 theorem Blpl_ob (r : ℕ) (h : Blpl r = true) :
     (bandOf r = 1 ∨ bandOf r = 5 ∨ bandOf r = 12 ∨ bandOf r = 14) ∧ r ≠ ALLOC := by
-  simp only [Blpl, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq] at h
+  ϴ' Blpl, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq at h
   unfold bandOf ALLOC
   omega
 
@@ -104,7 +106,7 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
   have w₁ := e₁.wb_right
   have E₁ := E.frame f₁ Blpl_env
   have Og₁ := Og.keep fun r a b => f₁.1 r (Blpl_org r a b)
-  have g1 : c₁.nreg K1 = 1 := E₁.k1
+  have g1 := E₁.k1
   have kl : ∀ r, LoopR r → r ≠ 140110 → c₁.nreg r = c.nreg r := fun r hr hr' =>
     f₁.1 r (by
       unfold LoopR at hr
@@ -112,7 +114,7 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
         beq_eq_false_iff_ne] at hr ⊢
       omega)
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := kl _ (by unfold LoopR; simp) (by decide)
-  have hm₁ : c₁.nmem = c.nmem := f₁.2.2.1
+  have hm₁ := f₁.2.2.1
   have hB₁ : CandAt P C c₁ 140210 (psSet C (Qof P) (ps.take j)) z σ :=
     hB.keep fun i hi => f₁.1 _ (by simp only [Blpl, Bool.or_eq_false_iff,
       decide_eq_false_iff_not, beq_eq_false_iff_ne]; omega)
@@ -128,7 +130,7 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
     rcases hends.2 with h' | h'
     · rw [h']; exact X.hein
     · exact Or.inl h'
-  have hW₀ : hostWords P.n ≤ W := E.hW
+  have hW₀ := E.hW
   -- the rest of the invariant after the piece
   have finish : ∀ (c₂ : Config) (k₂ : ℕ), Exec P W (.ifLtN 140254 K1 pieceK0 (pieceK1 O.query))
       c₁ c₂ k₂ → k₂ + 20 ≤ K → WordsBounded W c₂ → ShEnv P W H C z σ c₂ →
@@ -237,7 +239,7 @@ theorem Blpi_env (r : ℕ) (h : envR r) : Blpi r = false := by
 
 theorem Blpi_ob (r : ℕ) (h : Blpi r = true) :
     (bandOf r = 1 ∨ bandOf r = 5 ∨ bandOf r = 12 ∨ bandOf r = 14) ∧ r ≠ ALLOC := by
-  simp only [Blpi, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq] at h
+  ϴ' Blpi, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq at h
   unfold bandOf ALLOC
   omega
 
@@ -259,7 +261,7 @@ theorem shLoop_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
   obtain ⟨c₁, k₁, e₁, hk₁, v34, v10, v210, f₁⟩ := lpInit_exec (P := P) c hw E.k1 rfl
     hD.2.2.2.1 h101 (by have := hwf.1; omega) (by omega) (by omega)
   have E₁ := E.frame f₁ Blpi_env
-  have k₁' : ∀ r, Blpi r = false → c₁.nreg r = c.nreg r := f₁.1
+  have k₁' := f₁.1
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := k₁' _ (by decide)
   have F₁ : Frame oracleBands c c₁ k₁ := frame_of_frameB f₁ (fun r hr =>
     ⟨oracleBands_mem r (by have := (Blpi_ob r hr).1; omega), (Blpi_ob r hr).2⟩) k₁

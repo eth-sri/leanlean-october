@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepHit
 public import Chazelle.Core.WalkEmbed
 
@@ -64,7 +68,7 @@ theorem sideLeft_rayPt_iff (W : Polygon) (p : ℕ) (t : ℝ) (τ : ℝ) {s s' : 
     (hs' : 0 < s') :
     sideLeft W p t (rayPt (sidePt W p t) τ s) ↔ sideLeft W p t (rayPt (sidePt W p t) τ s') := by
   unfold sideLeft sideLeftOf
-  rw [rayPt_sub, rayPt_sub, sideCcw_smul hs, sideCcw_smul hs']
+  Ξ rayPt_sub, rayPt_sub, sideCcw_smul hs, sideCcw_smul hs'
 
 /-! ## The sector near a position -/
 
@@ -88,13 +92,13 @@ theorem sector_free (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hf
     obtain ⟨a, b, hab, hcab, hy, hopen, ha, hb⟩ := hM.ends c (hF hcF)
     by_cases hwc : w ∈ c
     · have hwab : w = a ∨ w = b := by
-        rw [hcab] at hwc
+        Ξ' hcab at hwc
         obtain ⟨s, hs0, hs1, he⟩ := Geometry.mem_segment_iff_lerp.1 hwc
         rcases hs0.lt_or_eq with hs0 | hs0
         · rcases hs1.lt_or_eq with hs1 | hs1
           · exact absurd (he ▸ hopen s ⟨hs0, hs1⟩) hwD
-          · right; rw [he, hs1, Geometry.lerp_one]
-        · left; rw [he, ← hs0, Geometry.lerp_zero]
+          · right; Ξ he, hs1, Geometry.lerp_one
+        · left; Ξ he, ← hs0, Geometry.lerp_zero
       have hWE : WalkEnd M.W c w := by
         rcases hwab with h | h
         · rw [h]; exact ha
@@ -109,7 +113,7 @@ theorem sector_free (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hf
         filter_upwards [ball_mem_nhds w (lt_min hr₁ hr₂)] with x hx hxl hxc
         exfalso
         have hxw : x ≠ sidePt M.W p' t' := by
-          rw [hpt']
+          Ξ hpt'
           rintro rfl
           exact sideLeft_not_self hne ht1 hxl
         have hx2 : dist x (sidePt M.W p' t') < r₂ := by
@@ -131,7 +135,7 @@ end Generic
 theorem subset_region {D : Set Point} {F : Set (Set Point)} {U : Set Point}
     (hU : U ∈ regionsIn D F) {H : Set Point} (hH : IsPreconnected H) (hHf : H ⊆ freeIn D F)
     {x : Point} (hxH : x ∈ H) (hxU : x ∈ U) : H ⊆ U := by
-  rw [Chazelle.Chain.regionsIn_eq_component hU hxU]
+  Ξ Chazelle.Chain.regionsIn_eq_component hU hxU
   exact hH.subset_connectedComponentIn hxH hHf
 
 /-- A walk position whose key is in the closed arc `[a, b]` has its point in `arcSet a b`. -/
@@ -164,7 +168,7 @@ theorem sideInArc_before_end {l r : ℝ} (_hlr : l ≠ r) :
   · filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT (show (0 : ℝ) < r - l by linarith)]
       with ε hε hε'
     have : (0 : ℝ) < ε := hε
-    exact ⟨by linarith [hε'.2], by linarith⟩
+    exact ⟨by linarith [hε'.2], ⟡⟩
   · filter_upwards [self_mem_nhdsWithin] with ε hε
     have : (0 : ℝ) < ε := hε
     right; linarith
@@ -264,18 +268,18 @@ variable {M : Model}
 theorem prev_succ_mod {n p : ℕ} (hp : p < n) : ((p + n - 1) % n + 1) % n = p := by
   rcases Nat.eq_zero_or_pos p with rfl | hp0
   · have h1 : (0 + n - 1) % n = n - 1 := by
-      rw [Nat.zero_add]; exact Nat.mod_eq_of_lt (by omega)
-    rw [h1, Nat.sub_add_cancel (by omega), Nat.mod_self]
+      rw [Nat.zero_add]; exact Nat.mod_eq_of_lt (⋄)
+    Ξ h1, Nat.sub_add_cancel (⋄), Nat.mod_self
   · have h1 : (p + n - 1) % n = p - 1 := by
-      rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right]
-      exact Nat.mod_eq_of_lt (by omega)
-    rw [h1, Nat.sub_add_cancel hp0]
+      Ξ show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right
+      exact Nat.mod_eq_of_lt (⋄)
+    Ξ h1, Nat.sub_add_cancel hp0
     exact Nat.mod_eq_of_lt hp
 
 /-- For `1 ≤ p`, the walk vertex before `p` is `p - 1`. -/
 theorem prev_mod {n p : ℕ} (hp : p < n) (hp0 : 1 ≤ p) : (p + n - 1) % n = p - 1 := by
-  rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right]
-  exact Nat.mod_eq_of_lt (by omega)
+  Ξ show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right
+  exact Nat.mod_eq_of_lt (⋄)
 
 /-- **A non-cut position inside an edge facing `U`** has its point on an arc of `U`. -/
 theorem arc_of_faces_edge (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
@@ -284,8 +288,8 @@ theorem arc_of_faces_edge (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)
     ∃ a b, M.IsArc F U a b ∧ sidePt M.W p t ∈ M.arcSet a b := by
   have hpos : (0 : ℝ) < p + t := by have := ht.1; positivity
   obtain ⟨X, hX, l, r, harc, hin⟩ := WalkEmbed.exists_arc_around hGM hFam hpos hcut
-  have hfX : M.Faces p t X := harc.2.2.2.2.2.2 p t hp ht.1 ht.2 hin
-  have hXU : X = U := WalkAx.faces_unique hX hU hfX hf
+  have hfX := harc.2.2.2.2.2.2 p t hp ht.1 ht.2 hin
+  have hXU := WalkAx.faces_unique hX hU hfX hf
   subst hXU
   exact ⟨l, r, harc, mem_arcSet_of_key hp ht.1.le ht.2.le (Or.inl hin)⟩
 
@@ -298,8 +302,8 @@ theorem arc_of_faces_after (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point
   obtain ⟨X, hX, l, r, harc, hin⟩ := WalkEmbed.exists_arc_around hGM hFam hpos hcut
   obtain ⟨s, ⟨hs1, hs2⟩, hs3⟩ :=
     ((hf.and (sideInArc_eventually_add hin)).and (Ioo_mem_nhdsGT one_pos)).exists
-  have hfX : M.Faces p s X := harc.2.2.2.2.2.2 p s hp hs3.1 hs3.2 hs2
-  have hXU : X = U := WalkAx.faces_unique hX hU hfX hs1
+  have hfX := harc.2.2.2.2.2.2 p s hp hs3.1 hs3.2 hs2
+  have hXU := WalkAx.faces_unique hX hU hfX hs1
   subst hXU
   exact ⟨l, r, harc, mem_arcSet_of_key hp le_rfl zero_le_one (Or.inl (by rwa [add_zero]))⟩
 
@@ -315,7 +319,7 @@ theorem arc_of_attach_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.
     ((hf.and (WalkAx.eventually_after_start hkr)).and (Ioo_mem_nhdsGT one_pos)).exists
   have hin : sideInArc ((p : ℝ) + 0) r (p + s) := by rw [add_zero] at hs2 ⊢; exact hs2
   have hfU' := harcU.2.2.2.2.2.2 p s hA.1 hs3.1 hs3.2 hin
-  have hUU : U' = U := WalkAx.faces_unique hU' hU hfU' hs1
+  have hUU := WalkAx.faces_unique hU' hU hfU' hs1
   subst hUU
   exact ⟨_, r, harcU, mem_arcSet_of_key hA.1 le_rfl zero_le_one (Or.inr (Or.inl rfl))⟩
 
@@ -336,7 +340,7 @@ theorem arc_of_attach_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
   have hp1 : p - 1 < M.W.n := by have := hA.1; omega
   have hfV' := harcV.2.2.2.2.2.2 (p - 1) (1 - s) hp1 (by linarith [hs3.2]) (by linarith [hs3.1])
     hin
-  have hVV : V' = U := WalkAx.faces_unique hV' hU hfV' hs1
+  have hVV := WalkAx.faces_unique hV' hU hfV' hs1
   subst hVV
   exact ⟨l, _, harcV, mem_arcSet_of_key hA.1 le_rfl zero_le_one (Or.inr (Or.inr rfl))⟩
 
@@ -351,11 +355,11 @@ variable {M : Model}
 /-- The distance from `w` of a point of a horizontal ray from `w`. -/
 theorem dist_rayPt (w : Point) {τ : ℝ} (hτ : τ = 1 ∨ τ = -1) {s : ℝ} (hs : 0 ≤ s) :
     dist (rayPt w τ s) w = s := by
-  rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq]
-  simp only [rayPt_fst, rayPt_snd, add_sub_cancel_left, sub_self, abs_zero]
+  Ξ Prod.dist_eq, Real.dist_eq, Real.dist_eq
+  ϴ rayPt_fst, rayPt_snd, add_sub_cancel_left, sub_self, abs_zero
   rcases hτ with rfl | rfl
-  · rw [one_mul, abs_of_nonneg hs, max_eq_left hs]
-  · rw [neg_one_mul, abs_neg, abs_of_nonneg hs, max_eq_left hs]
+  · Ξ one_mul, abs_of_nonneg hs, max_eq_left hs
+  · Ξ neg_one_mul, abs_neg, abs_of_nonneg hs, max_eq_left hs
 
 
 /-- Unfolding a corner sector. -/
@@ -396,12 +400,12 @@ theorem cross_dir_aux {B A : Point} {τ : ℝ} (h1 : sideCross B A = 0) (h2 : 0 
   simp only at *
   have e : τ * A.2 * (B.1 ^ 2 + B.2 ^ 2) = (τ * B.2) * (B.1 * A.1 + B.2 * A.2) := by
     linear_combination (τ * B.1) * h1
-  have hb : 0 < τ * B.2 := by linarith
+  have hb : 0 < τ * B.2 := ⟡
   have hS : 0 < B.1 ^ 2 + B.2 ^ 2 := by
-    have : B.2 ≠ 0 := by rintro h; rw [h] at hb; simp at hb
+    have : B.2 ≠ 0 := by rintro h; Ξ' h at hb; simp at hb
     positivity
-  have hP : 0 < (τ * B.2) * (B.1 * A.1 + B.2 * A.2) := mul_pos hb h2
-  rw [← e] at hP
+  have hP := mul_pos hb h2
+  Ξ' ← e at hP
   nlinarith [hP, hS]
 
 /-- **The first-hit point lies on an arc of the region** (generic good model).  Let the points
@@ -418,17 +422,17 @@ theorem hit_mem_arcSet (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
     (happ : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p t) τ s ∈ U) :
     ∃ a b, M.IsArc F U a b ∧ sidePt M.W p t ∈ M.arcSet a b := by
   have hM := walkAx_of_goodModel hGM
-  have hF : F ⊆ M.Adm := hFam.2.1
+  have hF := hFam.2.1
   have hfin : F.Finite := hFam.1
   obtain ⟨r, hr, hsf⟩ := sector_free hM hF hfin hp ht ht1
   have hUfree : U ⊆ freeIn M.D F := Chazelle.Chain.regionsIn_subset hU
   have hne := hM.nd p hp
   have hball : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p t) τ s ∈ ball (sidePt M.W p t) r := by
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hr] with s hs hs'
-    rw [mem_ball, dist_rayPt _ hτ (le_of_lt hs)]
+    Ξ mem_ball, dist_rayPt _ hτ (le_of_lt hs)
     exact hs'.2
   obtain ⟨s₁, ⟨hs₁U, hs₁B⟩, hs₁pos⟩ := ((happ.and hball).and self_mem_nhdsWithin).exists
-  have hs₁pos' : (0 : ℝ) < s₁ := hs₁pos
+  have hs₁pos' := hs₁pos
   -- the chords through the ray near `w` avoid it
   have havoid : ∀ c ∈ F, ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p t) τ s ∉ c := by
     intro c hc
@@ -438,19 +442,19 @@ theorem hit_mem_arcSet (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
   · -- a chord is attached at the position
     obtain ⟨c, hcF, p', t', hA', hk⟩ := hcut
     obtain ⟨hpp, htt⟩ := sideKey_inj ht ht1 hA'.2.1 hA'.2.2.1 hk
-    rw [← hpp, ← htt] at hA'
+    Ξ' ← hpp, ← htt at hA'
     obtain ⟨d, hd, -, hcD, hcmem⟩ := attached_opposite hM (hF hcF) hA' hτ (havoid c hcF)
     obtain ⟨r₃, hr₃, hcl⟩ := hA'.2.2.2.2
     -- a point of the chord near `w`
     set s₂ := min (d / 2) (r₃ / 2) with hs₂
-    have hs₂0 : 0 < s₂ := lt_min (by linarith) (by linarith)
-    have hs₂d : s₂ < d := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-    have hs₂r : s₂ < r₃ := lt_of_le_of_lt (min_le_right _ _) (by linarith)
+    have hs₂0 : 0 < s₂ := lt_min (⟡) (⟡)
+    have hs₂d : s₂ < d := lt_of_le_of_lt (min_le_left _ _) (⟡)
+    have hs₂r : s₂ < r₃ := lt_of_le_of_lt (min_le_right _ _) (⟡)
     have hx₂ : sideLeft M.W p t (rayPt (sidePt M.W p t) (-τ) s₂) := by
       refine hcl _ (hcmem s₂ hs₂0 hs₂d) ?_ ?_
       · intro h
         have := congrArg Prod.fst h
-        simp only [rayPt_fst] at this
+        ϴ' rayPt_fst at this
         rcases hτ with rfl | rfl <;> linarith
       · rw [dist_rayPt _ (by rcases hτ with rfl | rfl <;> norm_num) hs₂0.le]; exact hs₂r
     -- the position is a walk vertex
@@ -462,13 +466,13 @@ theorem hit_mem_arcSet (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
       have hw0 : det (M.W.vtx p) (M.W.vtx ((p + 1) % M.W.n)) (sidePt M.W p t) = 0 :=
         Geometry.det_lerp_self _ _ _
       unfold det at h1 h2 hw0
-      simp only [rayPt_fst, rayPt_snd] at h1 h2
+      ϴ' rayPt_fst, rayPt_snd at h1 h2
       rcases hτ with rfl | rfl <;> nlinarith
     subst ht0
     have hp1 : 1 ≤ p := by
       have : (0 : ℝ) < p := by simpa using hkey
       exact_mod_cast this
-    have hn0 : 0 < M.W.n := by omega
+    have hn0 : 0 < M.W.n := ⋄
     have hwv : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero _ _
     set v := M.W.vtx p with hv
     set a := M.W.vtx ((p + M.W.n - 1) % M.W.n) with ha
@@ -483,7 +487,7 @@ theorem hit_mem_arcSet (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
       fun x => sideLeft_zero _ _ _
     have hττ : τ * τ = 1 := by rcases hτ with rfl | rfl <;> norm_num
     have hdm0 : ((-τ, 0) : Point) ≠ 0 := by
-      intro h; have := congrArg Prod.fst h; simp only [Prod.fst_zero] at this
+      intro h; have := congrArg Prod.fst h; ϴ' Prod.fst_zero at this
       rcases hτ with rfl | rfl <;> norm_num at this
     have hvdm : v + ((-τ, 0) : Point) ≠ v := by
       intro h; apply hdm0; simpa using h
@@ -497,9 +501,9 @@ theorem hit_mem_arcSet (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
     have hBdm : ¬ (sideCross (b - v) ((-τ, 0) : Point) = 0 ∧
         0 < sideDot (b - v) ((-τ, 0) : Point)) := by
       rintro ⟨h1, h2⟩
-      simp only [sideCross, sideDot, Prod.fst_sub, Prod.snd_sub] at h1 h2
+      ϴ' sideCross, sideDot, Prod.fst_sub, Prod.snd_sub at h1 h2
       have hb2 : b.2 = v.2 := by
-        have h1' : (b.2 - v.2) * τ = 0 := by linarith
+        have h1' : (b.2 - v.2) * τ = 0 := ⟡
         rcases mul_eq_zero.1 h1' with h | h
         · linarith
         · rcases hτ with rfl | rfl <;> norm_num at h
@@ -515,12 +519,12 @@ theorem hit_mem_arcSet (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
       have e : sidePt M.W p (s / k) = rayPt v (-τ) s := by
         unfold sidePt
         apply point_ext
-        · simp only [lerp_fst, rayPt_fst]
+        · ϴ lerp_fst, rayPt_fst
           have h3 : s / k * (b.1 - v.1) = -τ * s := by
-            rw [div_mul_eq_mul_div, div_eq_iff hk0.ne', hk]
+            Ξ div_mul_eq_mul_div, div_eq_iff hk0.ne', hk
             linear_combination (-(s * (b.1 - v.1))) * hττ
-          rw [← h3]
-        · simp only [lerp_snd, rayPt_snd]
+          Ξ ← h3
+        · ϴ lerp_snd, rayPt_snd
           rw [show (M.W.vtx ((p + 1) % M.W.n)).2 = b.2 from rfl, hb2]; ring
       rw [e]; exact hmem
     -- the ray is on one side of the chord
@@ -534,8 +538,8 @@ theorem hit_mem_arcSet (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
         · exfalso; apply hBdm
           rcases h3 with h3 | h3
           · exact absurd h4 h3
-          · rw [sideCross_neg_dir, sideDot_neg_dir, h4]
-            exact ⟨by ring, by linarith⟩
+          · Ξ sideCross_neg_dir, sideDot_neg_dir, h4
+            exact ⟨⋆, ⟡⟩
         · exact Or.inl h4
     -- chord points through the sector are on the chord's ray
     have hchord : ∀ x ∈ ball v r, sideLeft M.W p 0 x → x ∉ ⋃₀ F →
@@ -549,7 +553,7 @@ theorem hit_mem_arcSet (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
       obtain ⟨d', -, hpts, -, -⟩ := attached_opposite hM (hF hc') hA'' hτ (havoid c' hc')
       obtain ⟨s', hs'0, -, hxs'⟩ := hpts x hxc'
       refine ⟨s', hs'0, ?_⟩
-      rw [hxs', hwv, rayPt_sub]
+      Ξ hxs', hwv, rayPt_sub
     have hs₁B' : rayPt v τ s₁ ∈ ball v r := by rw [← hwv]; exact hs₁B
     have hs₁U' : rayPt v τ s₁ ∈ U := by rw [← hwv]; exact hs₁U
     rcases hdich with h | h
@@ -570,15 +574,15 @@ theorem hit_mem_arcSet (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
         intro hxF
         obtain ⟨s', hs'0, hxs'⟩ := hray x hx.1 hxs hxF
         have h5 := hHsec x hx
-        rw [hxs'] at h5
+        Ξ' hxs' at h5
         refine Chazelle.Chain.sideCcw_not_ray_right hdm0 ?_ ?_ h5
         · unfold sideCross; simp only [Prod.smul_fst, Prod.smul_snd, smul_eq_mul]; ring
-        · unfold sideDot; simp only [Prod.smul_fst, Prod.smul_snd, smul_eq_mul]
+        · unfold sideDot; ϴ Prod.smul_fst, Prod.smul_snd, smul_eq_mul
           nlinarith [mul_nonneg hs'0 (mul_self_nonneg τ)]
       have hs₁H : rayPt v τ s₁ ∈ ball v r ∩ {x | sideLeftOf (v + ((-τ, 0) : Point)) v b x} := by
         refine ⟨hs₁B', ?_⟩
         show sideLeftOf (v + ((-τ, 0) : Point)) v b (rayPt v τ s₁)
-        rw [sideLeftOf_iff, add_sub_cancel_left, rayPt_sub, sideCcw_smul hs₁pos']
+        Ξ sideLeftOf_iff, add_sub_cancel_left, rayPt_sub, sideCcw_smul hs₁pos'
         exact ccw_half_left h
       have hHU := subset_region hU hHc hHfree hs₁H hs₁U'
       have hf : ∀ᶠ s in 𝓝[>] (0 : ℝ), M.Faces p s U := by
@@ -604,24 +608,24 @@ theorem hit_mem_arcSet (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
         intro hxF
         obtain ⟨s', hs'0, hxs'⟩ := hray x hx.1 hxs hxF
         have h5 := hHsec x hx
-        rw [hxs'] at h5
+        Ξ' hxs' at h5
         refine Chazelle.Chain.sideCcw_not_ray_left hdm0 ?_ ?_ h5
         · unfold sideCross; simp only [Prod.smul_fst, Prod.smul_snd, smul_eq_mul]; ring
-        · unfold sideDot; simp only [Prod.smul_fst, Prod.smul_snd, smul_eq_mul]
+        · unfold sideDot; ϴ Prod.smul_fst, Prod.smul_snd, smul_eq_mul
           nlinarith [mul_nonneg hs'0 (mul_self_nonneg τ)]
       have hs₁H : rayPt v τ s₁ ∈ ball v r ∩ {x | sideLeftOf a v (v + ((-τ, 0) : Point)) x} := by
         refine ⟨hs₁B', ?_⟩
         show sideLeftOf a v (v + ((-τ, 0) : Point)) (rayPt v τ s₁)
-        rw [sideLeftOf_iff, add_sub_cancel_left, rayPt_sub, sideCcw_smul hs₁pos']
+        Ξ sideLeftOf_iff, add_sub_cancel_left, rayPt_sub, sideCcw_smul hs₁pos'
         exact ccw_half_right h
       have hHU := subset_region hU hHc hHfree hs₁H hs₁U'
       have hf : ∀ᶠ s in 𝓝[>] (0 : ℝ), M.Faces (p - 1) (1 - s) U := by
         filter_upwards [hoff] with s hs
         filter_upwards [hs] with δ hδ
         have := hHU hδ.1
-        rw [one_mul] at this
+        Ξ' one_mul at this
         show Jordan.offset (M.W.vtx (p - 1)) (M.W.vtx ((p - 1 + 1) % M.W.n)) (1 - s) δ ∈ U
-        rw [Nat.sub_add_cancel hp1, Nat.mod_eq_of_lt hp, ← prev_mod hp hp1]
+        Ξ Nat.sub_add_cancel hp1, Nat.mod_eq_of_lt hp, ← prev_mod hp hp1
         exact this
       exact arc_of_attach_before hM hF hfin hcF hp1 hA' hU hf
   · -- no chord is attached at the position
@@ -654,7 +658,7 @@ theorem hit_mem_arcSet (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
       have hp0 : 0 < p := by
         have : (0 : ℝ) < p := by simpa using hkey
         exact_mod_cast this
-      have hn0 : 0 < M.W.n := by omega
+      have hn0 : 0 < M.W.n := ⋄
       have hwv : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero _ _
       set v := M.W.vtx p with hv
       set a := M.W.vtx ((p + M.W.n - 1) % M.W.n) with ha
@@ -669,7 +673,7 @@ theorem hit_mem_arcSet (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
       have hs₁H : rayPt v τ s₁ ∈ ball v r ∩ {x | sideLeftOf a v b x} := by
         refine ⟨by rw [← hwv]; exact hs₁B, ?_⟩
         have := hsec s₁ hs₁pos'
-        rw [hwv] at this
+        Ξ' hwv at this
         exact (sideLeft_zero _ _ _).1 this
       have hHU := subset_region hU hHc hHfree hs₁H (by rw [← hwv]; exact hs₁U)
       have hf : ∀ᶠ s in 𝓝[>] (0 : ℝ), M.Faces p s U := by
@@ -699,7 +703,7 @@ theorem ray_mem_region_of_arc (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Po
     (hsec : sideLeft M.W p t (rayPt (sidePt M.W p t) τ 1)) :
     ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p t) τ s ∈ U := by
   have hM := walkAx_of_goodModel hGM
-  have hF : F ⊆ M.Adm := hFam.2.1
+  have hF := hFam.2.1
   have hfin : F.Finite := hFam.1
   have hne := hM.nd p hp
   have hcut : ¬ M.IsCut F (p + t) := harc.2.2.2.2.2.1 _ hin
@@ -716,7 +720,7 @@ theorem ray_mem_region_of_arc (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Po
       0 < s := by
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hr] with s hs hs'
     refine ⟨?_, hs⟩
-    rw [mem_ball, dist_rayPt _ hτ (le_of_lt hs)]
+    Ξ mem_ball, dist_rayPt _ hτ (le_of_lt hs)
     exact hs'.2
   -- the sector near the position is a preconnected free set containing faced points
   obtain ⟨H, hHc, hHfree, hHsec, hHU⟩ : ∃ H : Set Point, IsPreconnected H ∧ H ⊆ freeIn M.D F ∧
@@ -732,7 +736,7 @@ theorem ray_mem_region_of_arc (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Po
       obtain ⟨δ, hδU, hδ⟩ := (hf.and (hM.eventually_offset_left hp ht' hr)).exists
       exact ⟨_, ⟨hδ.1, by simpa using (sideLeft_edge hne ht' _).1 hδ.2⟩, hδU⟩
     · subst ht0
-      have hn0 : 0 < M.W.n := by omega
+      have hn0 : 0 < M.W.n := ⋄
       have hwv : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero _ _
       have hbv : M.W.vtx ((p + 1) % M.W.n) ≠ M.W.vtx p := fun h => hne h.symm
       have hav : M.W.vtx ((p + M.W.n - 1) % M.W.n) ≠ M.W.vtx p := by
@@ -745,7 +749,7 @@ theorem ray_mem_region_of_arc (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Po
       obtain ⟨s, ⟨hs1, hs2⟩, hs3⟩ :=
         ((hoff.and (sideInArc_eventually_add hin)).and (Ioo_mem_nhdsGT one_pos)).exists
       have hf : M.Faces p s U := harc.2.2.2.2.2.2 p s hp hs3.1 hs3.2 (by
-        rw [add_zero] at hs2; exact hs2)
+        Ξ' add_zero at hs2; exact hs2)
       obtain ⟨δ, hδU, hδ⟩ := (hf.and hs1).exists
       refine ⟨_, hδ.2, ?_⟩
       rw [one_mul]; exact hδU
@@ -784,7 +788,7 @@ theorem sub_sector (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
             (M.W.vtx p + ((-τ, 0) : Point)) x}) := by
   obtain ⟨r, hr, hsf⟩ := sector_free hM hF hfin hp le_rfl one_pos
   have hne := hM.nd p hp
-  have hn0 : 0 < M.W.n := by omega
+  have hn0 : 0 < M.W.n := ⋄
   have hwv : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero _ _
   set v := M.W.vtx p with hv
   set a := M.W.vtx ((p + M.W.n - 1) % M.W.n) with ha
@@ -798,7 +802,7 @@ theorem sub_sector (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
   have hsecv : ∀ x, sideLeft M.W p 0 x ↔ sideCcw (b - v) (x - v) (a - v) :=
     fun x => sideLeft_zero _ _ _
   have hdm0 : ((-τ, 0) : Point) ≠ 0 := by
-    intro h; have := congrArg Prod.fst h; simp only [Prod.fst_zero] at this
+    intro h; have := congrArg Prod.fst h; ϴ' Prod.fst_zero at this
     rcases hτ with rfl | rfl <;> norm_num at this
   have hvdm : v + ((-τ, 0) : Point) ≠ v := by
     intro h; apply hdm0; simpa using h
@@ -806,15 +810,15 @@ theorem sub_sector (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
   obtain ⟨d, hd, -, -, hcmem⟩ := attached_opposite hM (hF hc) hA hτ (hnot c hc hA)
   obtain ⟨r₃, hr₃, hcl⟩ := hA.2.2.2.2
   set s₂ := min (d / 2) (r₃ / 2) with hs₂
-  have hs₂0 : 0 < s₂ := lt_min (by linarith) (by linarith)
+  have hs₂0 : 0 < s₂ := lt_min (⟡) (⟡)
   have hx₂ : sideLeft M.W p 0 (rayPt (sidePt M.W p 0) (-τ) s₂) := by
-    refine hcl _ (hcmem s₂ hs₂0 (lt_of_le_of_lt (min_le_left _ _) (by linarith))) ?_ ?_
+    refine hcl _ (hcmem s₂ hs₂0 (lt_of_le_of_lt (min_le_left _ _) (⟡))) ?_ ?_
     · intro h
       have := congrArg Prod.fst h
-      simp only [rayPt_fst] at this
+      ϴ' rayPt_fst at this
       rcases hτ with rfl | rfl <;> linarith
-    · rw [dist_rayPt _ (by rcases hτ with rfl | rfl <;> norm_num) hs₂0.le]
-      exact lt_of_le_of_lt (min_le_right _ _) (by linarith)
+    · Ξ dist_rayPt _ (by rcases hτ with rfl | rfl <;> norm_num) hs₂0.le
+      exact lt_of_le_of_lt (min_le_right _ _) (⟡)
   have hdm : sideCcw (b - v) ((-τ, 0) : Point) (a - v) := by
     have := (hsecv _).1 hx₂
     rwa [hwv, rayPt_sub, sideCcw_smul hs₂0] at this
@@ -824,7 +828,7 @@ theorem sub_sector (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
     have hA'' := (hsf x (by rw [hwv]; exact hx) hxl).2 c' hc' hxc'
     obtain ⟨d', -, hpts, -, -⟩ := attached_opposite hM (hF hc') hA'' hτ (hnot c' hc' hA'')
     obtain ⟨s', hs'0, -, hxs'⟩ := hpts x hxc'
-    exact ⟨s', hs'0, by rw [hxs', hwv, rayPt_sub]⟩
+    exact ⟨s', hs'0, Ρ hxs', hwv, rayPt_sub⟩
   have hsecr : ∀ s > 0, sideLeft M.W p 0 (rayPt v τ s) := by
     intro s hs
     have := (sideLeft_rayPt_iff _ p 0 τ one_pos hs).1 hsec
@@ -834,42 +838,42 @@ theorem sub_sector (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
     have hS : ∀ x ∈ ball v r, x ∈ (freeIn M.D F)ᶜ →
         ¬ sideLeftOf (v + ((-τ, 0) : Point)) v b x := by
       intro x hx hxF hxs
-      rw [sideLeftOf_iff, add_sub_cancel_left] at hxs
+      Ξ' sideLeftOf_iff, add_sub_cancel_left at hxs
       have hxl : sideLeft M.W p 0 x := (hsecv x).2 (Chazelle.Chain.sideCcw_sub_left hB0 hdm hxs)
       apply hxF
       refine ⟨(hsf x (by rw [hwv]; exact hx) hxl).1, fun hxU => ?_⟩
       obtain ⟨s', hs'0, hxs'⟩ := hray x hx hxl hxU
-      rw [hxs'] at hxs
+      Ξ' hxs' at hxs
       refine Chazelle.Chain.sideCcw_not_ray_right hdm0 ?_ ?_ hxs
       · unfold sideCross; simp only [Prod.smul_fst, Prod.smul_snd, smul_eq_mul]; ring
-      · unfold sideDot; simp only [Prod.smul_fst, Prod.smul_snd, smul_eq_mul]
+      · unfold sideDot; ϴ Prod.smul_fst, Prod.smul_snd, smul_eq_mul
         nlinarith [mul_nonneg hs'0 (mul_self_nonneg τ)]
     obtain ⟨hS1, hHc, hoff⟩ := Chazelle.Chain.sideSector hvdm hbv hr hS
     refine ⟨⟨hS1, hHc, hoff⟩, fun s hs hsr => ⟨?_, ?_⟩⟩
     · rw [mem_ball, dist_rayPt _ hτ hs.le]; exact hsr
     · show sideLeftOf (v + ((-τ, 0) : Point)) v b (rayPt v τ s)
-      rw [sideLeftOf_iff, add_sub_cancel_left, rayPt_sub, sideCcw_smul hs]
+      Ξ sideLeftOf_iff, add_sub_cancel_left, rayPt_sub, sideCcw_smul hs
       exact ccw_half_left h
   · intro h
     have hS : ∀ x ∈ ball v r, x ∈ (freeIn M.D F)ᶜ →
         ¬ sideLeftOf a v (v + ((-τ, 0) : Point)) x := by
       intro x hx hxF hxs
-      rw [sideLeftOf_iff, add_sub_cancel_left] at hxs
+      Ξ' sideLeftOf_iff, add_sub_cancel_left at hxs
       have hxl : sideLeft M.W p 0 x :=
         (hsecv x).2 (Chazelle.Chain.sideCcw_sub_right hB0 hdm0 hA0 hdm hxs)
       apply hxF
       refine ⟨(hsf x (by rw [hwv]; exact hx) hxl).1, fun hxU => ?_⟩
       obtain ⟨s', hs'0, hxs'⟩ := hray x hx hxl hxU
-      rw [hxs'] at hxs
+      Ξ' hxs' at hxs
       refine Chazelle.Chain.sideCcw_not_ray_left hdm0 ?_ ?_ hxs
       · unfold sideCross; simp only [Prod.smul_fst, Prod.smul_snd, smul_eq_mul]; ring
-      · unfold sideDot; simp only [Prod.smul_fst, Prod.smul_snd, smul_eq_mul]
+      · unfold sideDot; ϴ Prod.smul_fst, Prod.smul_snd, smul_eq_mul
         nlinarith [mul_nonneg hs'0 (mul_self_nonneg τ)]
     obtain ⟨hS1, hHc, hoff⟩ := Chazelle.Chain.sideSector hav hvdm hr hS
     refine ⟨⟨hS1, hHc, hoff⟩, fun s hs hsr => ⟨?_, ?_⟩⟩
     · rw [mem_ball, dist_rayPt _ hτ hs.le]; exact hsr
     · show sideLeftOf a v (v + ((-τ, 0) : Point)) (rayPt v τ s)
-      rw [sideLeftOf_iff, add_sub_cancel_left, rayPt_sub, sideCcw_smul hs]
+      Ξ sideLeftOf_iff, add_sub_cancel_left, rayPt_sub, sideCcw_smul hs
       exact ccw_half_right h
 
 /-- **The ray leaving a cut vertex on the side of the next edge** starts in the region of the arc
@@ -890,7 +894,7 @@ theorem ray_mem_region_after (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Poi
   obtain ⟨s, ⟨hs1, hs2⟩, hs3⟩ :=
     ((hoff.and (WalkAx.eventually_after_start hkb)).and (Ioo_mem_nhdsGT one_pos)).exists
   have hf : M.Faces p s U := harc.2.2.2.2.2.2 p s hp hs3.1 hs3.2 (by
-    rw [add_zero] at hs2 ⊢; exact hs2)
+    Ξ' add_zero at hs2 ⊢; exact hs2)
   obtain ⟨δ, hδU, hδ⟩ := (hf.and hs1).exists
   have hfree : ball (M.W.vtx p) r ∩ {x | sideLeftOf (M.W.vtx p + ((-τ, 0) : Point)) (M.W.vtx p)
       (M.W.vtx ((p + 1) % M.W.n)) x} ⊆ freeIn M.D F := fun x hx => by
@@ -898,7 +902,7 @@ theorem ray_mem_region_after (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Poi
   have hsub := subset_region hU hHc hfree hδ.2 (by rw [one_mul]; exact hδU)
   have hwv : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero _ _
   filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hr] with s hs hsr
-  rw [hwv]
+  Ξ hwv
   exact hsub (hrayH s hs hsr.2)
 
 /-- **The ray leaving a cut vertex on the side of the previous edge** starts in the region of the
@@ -920,21 +924,21 @@ theorem ray_mem_region_before (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Po
     ((hoff.and (sideInArc_before_end hak)).and (Ioo_mem_nhdsGT one_pos)).exists
   have hcast : ((p - 1 : ℕ) : ℝ) + (1 - s) = (p : ℝ) + 0 - s := by
     rw [Nat.cast_sub hp1]; push_cast; ring
-  have hf : M.Faces (p - 1) (1 - s) U := harc.2.2.2.2.2.2 (p - 1) (1 - s) (by omega)
+  have hf : M.Faces (p - 1) (1 - s) U := harc.2.2.2.2.2.2 (p - 1) (1 - s) (⋄)
     (by linarith [hs3.2]) (by linarith [hs3.1]) (by rw [hcast]; exact hs2)
   obtain ⟨δ, hδU, hδ⟩ := (hf.and hs1).exists
   have hfree : ball (M.W.vtx p) r ∩ {x | sideLeftOf (M.W.vtx ((p + M.W.n - 1) % M.W.n))
       (M.W.vtx p) (M.W.vtx p + ((-τ, 0) : Point)) x} ⊆ freeIn M.D F := fun x hx => by
     simpa using hS1 hx
   have hδU' : Jordan.offset (M.W.vtx ((p + M.W.n - 1) % M.W.n)) (M.W.vtx p) (1 - s) (1 * δ) ∈ U := by
-    rw [one_mul, prev_mod hp hp1]
+    Ξ one_mul, prev_mod hp hp1
     have e : M.W.vtx p = M.W.vtx ((p - 1 + 1) % M.W.n) := by
-      rw [Nat.sub_add_cancel hp1, Nat.mod_eq_of_lt hp]
+      Ξ Nat.sub_add_cancel hp1, Nat.mod_eq_of_lt hp
     rw [e]; exact hδU
   have hsub := subset_region hU hHc hfree hδ.1 hδU'
   have hwv : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero _ _
   filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hr] with s hs hsr
-  rw [hwv]
+  Ξ hwv
   exact hsub (hrayH s hs hsr.2)
 
 end Leave
@@ -951,7 +955,7 @@ theorem ray_subset_region (C : Chain) {F : Set (Set Point)} (hF : F ⊆ Merge.au
     {T : ℝ} (hT : 0 < T) (hdom : ∀ t, 0 < t → t < T → rayPt z σ t ∈ C.dom)
     (hini : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt z σ t ∈ U) :
     ∀ t, 0 < t → t < T → rayPt z σ t ∈ U := by
-  have hUfree : U ⊆ freeIn C.dom F := Chazelle.Chain.regionsIn_subset hU
+  have hUfree := Chazelle.Chain.regionsIn_subset hU
   have hIc : IsPreconnected (rayPt z σ '' Ioo 0 T) :=
     isPreconnected_Ioo.image _ (Chazelle.Visibility.continuous_rayPt z σ).continuousOn
   have hIfree : rayPt z σ '' Ioo 0 T ⊆ freeIn C.dom F := by
@@ -1001,7 +1005,7 @@ theorem local_shoot (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Po
     (hini : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt z σ t ∈ U) :
     ∃ a b, (chainModel C).IsArc F U a b ∧
       rayPt z σ (C.hitParam z σ) ∈ (chainModel C).arcSet a b := by
-  have hU' : U ∈ regionsIn C.dom F := hU
+  have hU' := hU
   have hUfree : U ⊆ freeIn C.dom F := Chazelle.Chain.regionsIn_subset hU'
   have hfree : Merge.FreeAt C z σ := hini.mono fun t ht => (hUfree ht).1
   obtain ⟨hT, hwD, hdom⟩ := Merge.hit_of_freeAt C hz hσ hfree
@@ -1013,7 +1017,7 @@ theorem local_shoot (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Po
     intro s; apply point_ext <;> simp [rayPt, hw]; ring
   -- the height is inside the box
   have hzR : |z.2| < C.radius := by
-    have := C.dom_subset_box (hdom (T / 2) (by linarith) (by linarith))
+    have := C.dom_subset_box (hdom (T / 2) (⟡) (⟡))
     simpa [rayPt] using this.2
   -- the hit point is on the chain or on a vertical side of the box
   have he : w ∈ C.set ∨ (|w.1| = C.radius ∧ |w.2| < C.radius) := by
@@ -1023,15 +1027,15 @@ theorem local_shoot (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Po
       · by_contra hgt
         push Not at hgt
         set ε := min (T / 2) ((|w.1| - C.radius) / 2) with hε
-        have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
-        have hεT : ε < T := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-        have hbox := C.dom_subset_box (hdom (T - ε) (by linarith) (by linarith))
-        have h1 : |(rayPt z σ (T - ε)).1| < C.radius := hbox.1
+        have hε0 : 0 < ε := lt_min (⟡) (⟡)
+        have hεT : ε < T := lt_of_le_of_lt (min_le_left _ _) (⟡)
+        have hbox := C.dom_subset_box (hdom (T - ε) (⟡) (⟡))
+        have h1 := hbox.1
         have h2 : |w.1| ≤ |(rayPt z σ (T - ε)).1| + ε := by
           have e : w.1 = (rayPt z σ (T - ε)).1 + σ * ε := by simp [hw, rayPt]; ring
-          rw [e]
+          Ξ e
           refine (abs_add_le _ _).trans ?_
-          rcases hσ with rfl | rfl <;> simp [abs_of_pos hε0]
+          rcases hσ with rfl | rfl <;> Θ abs_of_pos hε0
         have h3 : ε ≤ (|w.1| - C.radius) / 2 := min_le_right _ _
         linarith
       · by_contra hlt
@@ -1039,20 +1043,20 @@ theorem local_shoot (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Po
         exact h ⟨hlt, by simpa [hw] using hzR⟩
     · exact Or.inl h
   -- a walk position at the hit point whose sector contains the backward ray
-  have hT2 : (0 : ℝ) < T / 2 := by linarith
+  have hT2 : (0 : ℝ) < T / 2 := ⟡
   have hee : w ≠ rayPt w (-σ) (T / 2) := by
     intro h
     have := congrArg Prod.fst h
-    simp only [rayPt_fst] at this
+    ϴ' rayPt_fst at this
     rcases hσ with rfl | rfl <;> linarith
   have hopen : ∀ s ∈ Ioo (0 : ℝ) 1, lerp w (rayPt w (-σ) (T / 2)) s ∈ C.dom := by
     intro s hs
     have e : lerp w (rayPt w (-σ) (T / 2)) s = rayPt z σ (T - s * (T / 2)) := by
       apply point_ext <;> simp [lerp, rayPt, hw]; ring
-    rw [e]
+    Ξ e
     exact hdom _ (by nlinarith [hs.2]) (by nlinarith [hs.1])
   obtain ⟨p, t, hp, ht, ht1, hpt, hl⟩ :=
-    C.sideSees_chordEnd hP C.sideBeta hee (by simp [rayPt]) hopen he
+    C.sideSees_chordEnd hP C.sideBeta hee (⊚ rayPt) hopen he
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
   have hpt' : sidePt (chainModel C).W p t = w := hpt
   have hsec : ∀ s > 0, sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) (-σ) s) := by
@@ -1062,13 +1066,13 @@ theorem local_shoot (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Po
     exact (sideLeft_rayPt_iff _ p t (-σ) hT2 hs).1 hl'
   have happ : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt (chainModel C).W p t) (-σ) s ∈ U := by
     filter_upwards [Ioo_mem_nhdsGT hT] with s hs
-    rw [hpt', hback]
+    Ξ hpt', hback
     exact hray _ (by linarith [hs.2]) (by linarith [hs.1])
   have hkey : 0 < (p : ℝ) + t := by
     by_contra hle
     push Not at hle
     have hp0 : p = 0 := by
-      have : (p : ℝ) ≤ 0 := by linarith
+      have : (p : ℝ) ≤ 0 := ⟡
       exact_mod_cast le_antisymm (by exact_mod_cast this) (Nat.zero_le p)
     have ht0 : t = 0 := by
       have : (0 : ℝ) ≤ p := Nat.cast_nonneg p
@@ -1077,13 +1081,13 @@ theorem local_shoot (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Po
     have h0 : sidePt (chainModel C).W 0 0 = C.slitTop := by
       rw [Chazelle.Chain.sidePt_zero]; rfl
     have := congrArg Prod.snd (hpt.symm.trans h0)
-    simp only [hw, rayPt_snd, Chain.slitTop] at this
-    rw [this] at hzR
+    ϴ' hw, rayPt_snd, Chain.slitTop at this
+    Ξ' this at hzR
     have hR := C.radius_pos
-    rw [abs_of_pos hR] at hzR
+    Ξ' abs_of_pos hR at hzR
     exact lt_irrefl _ hzR
   obtain ⟨a, b, harc, hmem⟩ := hit_mem_arcSet hGM hFam hU hp ht ht1 hkey hnσ hsec happ
-  rw [hpt'] at hmem
+  Ξ' hpt' at hmem
   exact ⟨a, b, harc, hmem⟩
 
 /-- **The correctness of local shooting through the ray shooter.**  With `z` and `U` as in
@@ -1097,16 +1101,16 @@ theorem firstHit_arcs (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set (Set 
     (hini : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt z σ t ∈ U) (L : List (ℝ × ℝ))
     (hL' : ∀ a b, (chainModel C).IsArc F U a b → (a, b) ∈ L) :
     FirstHit (⋃ ab ∈ L, (chainModel C).arcSet ab.1 ab.2) z σ (C.hitParam z σ) := by
-  have hU' : U ∈ regionsIn C.dom F := hU
+  have hU' := hU
   have hfree : Merge.FreeAt C z σ :=
     hini.mono fun t ht => (Chazelle.Chain.regionsIn_subset hU' ht).1
   obtain ⟨a, b, harc, hmem⟩ := local_shoot C hP hFam hU hz hσ hini
   refine firstHit_of_compl_dom C hz hσ hfree ?_ ?_
   · intro x hx
-    simp only [mem_iUnion] at hx
+    ϴ' mem_iUnion at hx
     obtain ⟨ab, -, hx⟩ := hx
     exact arcSet_subset_compl_dom C hP _ _ hx
-  · simp only [mem_iUnion]
+  · ϴ mem_iUnion
     exact ⟨(a, b), hL' a b harc, hmem⟩
 
 end ChainModel

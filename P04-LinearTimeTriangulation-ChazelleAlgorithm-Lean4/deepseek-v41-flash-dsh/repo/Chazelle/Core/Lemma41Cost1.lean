@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Ram12
 
 /-!
@@ -32,10 +34,10 @@ def lvBound (κ F G H : ℕ → ℕ) (Gl G0 J L LS0 : ℕ) : ℕ :=
 
 theorem sum_range_nd (f : Shp → ℕ) : ∀ ns : List Shp,
     ∑ k ∈ range ns.length, f (nd ns k) = (ns.map f).sum
-  | [] => by simp
+  | [] => ✓
   | a :: l => by
-    rw [List.length_cons, Finset.sum_range_succ', List.map_cons, List.sum_cons]
-    simp only [nd_cons_succ, nd_cons_zero]
+    Ξ List.length_cons, Finset.sum_range_succ', List.map_cons, List.sum_cons
+    ϴ nd_cons_succ, nd_cons_zero
     rw [sum_range_nd f l]; ring
 
 theorem sum_pairs (g : ℕ → ℕ) : ∀ p : ℕ,
@@ -54,12 +56,12 @@ theorem sublist_sum_le {l₁ l₂ : List ℕ} (h : l₁.Sublist l₂) : l₁.sum
 /-- Two entries weigh at most the total. -/
 theorem pair_le_sum (ns : List Shp) {q : ℕ} (hq : q < ns.length / 2) :
     (nd ns (2 * q)).2.1 + (nd ns (2 * q + 1)).2.1 ≤ (ns.map fun x => x.2.1).sum := by
-  rw [← sum_range_nd]
+  Ξ ← sum_range_nd
   have hsub : ({2 * q, 2 * q + 1} : Finset ℕ) ⊆ range ns.length := by
     intro x hx; simp only [Finset.mem_insert, Finset.mem_singleton] at hx
     simp only [Finset.mem_range]; omega
   have := Finset.sum_le_sum_of_subset (f := fun k => (nd ns k).2.1) hsub
-  rw [Finset.sum_pair (by omega)] at this
+  rw [Finset.sum_pair (⋄)] at this
   exact this
 
 /-- **One merge.** -/
@@ -75,7 +77,7 @@ theorem pairCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G)
           Nat.clog 2 ((nd ns (2 * q)).2.1 + (nd ns (2 * q + 1)).2.1 + 1) + 1)
       ≤ κ 4 * (kb (nd ns (2 * q)) + kb (nd ns (2 * q + 1)) + 1) * F Gl * G Gl *
         (H Gl + Nat.clog 2 ((ns.map fun x => x.2.1).sum + 1) + 1) := by gcongr
-    _ = _ := by ring
+    _ = _ := ⋆
 
 /-- **One level.** -/
 theorem lvCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) (hH : Monotone H)
@@ -95,29 +97,29 @@ theorem lvCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) (
     rw [Finset.sum_add_distrib, ← Finset.sum_mul, sum_pairs (fun k => kb (nd ns k)),
       Finset.sum_const, Finset.card_range, smul_eq_mul]
   have h3 : ∑ k ∈ range (2 * p), kb (nd ns k) ≤ (ns.map kb).sum := by
-    rw [← sum_range_nd]
-    exact Finset.sum_le_sum_of_subset (Finset.range_subset_range.mpr (by omega))
+    Ξ ← sum_range_nd
+    exact Finset.sum_le_sum_of_subset (Finset.range_subset_range.mpr (⋄))
   have h4 : (∑ k ∈ range (2 * p), kb (nd ns k)) * Φ ≤ (ns.map kb).sum * Φ :=
     Nat.mul_le_mul_right _ h3
   have h5 : p * (Φ + 331) ≤ ns.length * Φ + 331 * ns.length := by
-    have : p ≤ ns.length := by omega
+    have : p ≤ ns.length := ⋄
     nlinarith
   unfold lvCost
-  rw [← hp]
-  have h6 : 13 * ((ns.length + 1) / 2) ≤ 13 * ns.length := by omega
-  have h7 : Φ * ((ns.map kb).sum + ns.length) = (ns.map kb).sum * Φ + ns.length * Φ := by ring
+  Ξ ← hp
+  have h6 : 13 * ((ns.length + 1) / 2) ≤ 13 * ns.length := ⋄
+  have h7 : Φ * ((ns.map kb).sum + ns.length) = (ns.map kb).sum * Φ + ns.length * Φ := ⋆
   omega
 
 theorem kb_split (G0 : ℕ) : ∀ ns : List Shp, (ns.map kb).sum =
     ((ns.filter (leafP G0)).map kb).sum + ((ns.filter fun x => !leafP G0 x).map kb).sum
-  | [] => by simp
+  | [] => ✓
   | a :: l => by
-    rw [List.filter_cons, List.filter_cons, List.map_cons, List.sum_cons, kb_split G0 l]
+    Ξ List.filter_cons, List.filter_cons, List.map_cons, List.sum_cons, kb_split G0 l
     cases leafP G0 a <;> simp <;> ring
 
 theorem sum_lin : ∀ ns : List Shp, (ns.map fun x => 60 * (2 * x.2.1 + 7)).sum =
     120 * (ns.map fun x => x.2.1).sum + 420 * ns.length
-  | [] => by simp
+  | [] => ✓
   | a :: l => by
     simp only [List.map_cons, List.sum_cons, List.length_cons, sum_lin l]; ring
 
@@ -125,34 +127,34 @@ theorem sum_lin : ∀ ns : List Shp, (ns.map fun x => 60 * (2 * x.2.1 + 7)).sum 
 theorem nonleaf_le (G0 : ℕ) : ∀ ns : List Shp, (∀ x ∈ ns, leafP G0 x = false → G0 + 1 ≤ x.2.2) →
     ((ns.filter fun x => !leafP G0 x).map kb).sum ≤
       (ns.map fun x => 60 * (2 * x.2.1 + 7)).sum / (G0 + 1)
-  | [], _ => by simp
+  | [], _ => ✓
   | a :: l, h => by
     have ih := nonleaf_le G0 l fun x hx => h x (List.mem_cons_of_mem _ hx)
-    rw [List.filter_cons, List.map_cons, List.sum_cons]
+    Ξ List.filter_cons, List.map_cons, List.sum_cons
     have hsplit : 60 * (2 * a.2.1 + 7) / (G0 + 1) + (l.map fun x => 60 * (2 * x.2.1 + 7)).sum / (G0 + 1)
         ≤ (60 * (2 * a.2.1 + 7) + (l.map fun x => 60 * (2 * x.2.1 + 7)).sum) / (G0 + 1) :=
       Nat.div_add_div_le_add_div
     cases hl : leafP G0 a
-    · simp only [Bool.not_false, ite_true, List.map_cons, List.sum_cons]
+    · ϴ Bool.not_false, ite_true, List.map_cons, List.sum_cons
       have ha := h a List.mem_cons_self hl
-      have hk : kb a ≤ 60 * (2 * a.2.1 + 7) / (G0 + 1) := Nat.div_le_div_left ha (by omega)
+      have hk : kb a ≤ 60 * (2 * a.2.1 + 7) / (G0 + 1) := Nat.div_le_div_left ha (⋄)
       omega
-    · simp only [Bool.not_true, Bool.false_eq_true, ite_false]
+    · ϴ Bool.not_true, Bool.false_eq_true, ite_false
       have : (l.map fun x => 60 * (2 * x.2.1 + 7)).sum / (G0 + 1) ≤
           (60 * (2 * a.2.1 + 7) + (l.map fun x => 60 * (2 * x.2.1 + 7)).sum) / (G0 + 1) :=
-        Nat.div_le_div_right (by omega)
+        Nat.div_le_div_right (⋄)
       omega
 
 /-- The leaves of the next level are leaves of this one. -/
 theorem leaves_pairUp_sublist {G0 t : ℕ} (ht : G0 < t) : ∀ ns : List Shp,
     ((pairUp ns t).filter (leafP G0)).Sublist (ns.filter (leafP G0))
-  | [] => by simp [pairUp]
-  | [a] => by simp [pairUp]
+  | [] => ⊚ pairUp
+  | [a] => ⊚ pairUp
   | a :: b :: rest => by
     have ih := leaves_pairUp_sublist ht rest
     have hm : leafP G0 (a.1, a.2.1 + b.2.1, t) = false := by
       unfold leafP; simp only [decide_eq_false_iff_not]; omega
-    simp only [pairUp, List.filter_cons, hm, Bool.false_eq_true, ite_false]
+    ϴ pairUp, List.filter_cons, hm, Bool.false_eq_true, ite_false
     refine ih.trans ?_
     have h1 : rest.Sublist (a :: b :: rest) :=
       (List.sublist_cons_self b rest).trans (List.sublist_cons_self a _)

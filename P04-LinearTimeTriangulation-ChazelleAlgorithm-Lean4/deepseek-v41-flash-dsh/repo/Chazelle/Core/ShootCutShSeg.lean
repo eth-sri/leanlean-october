@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutShTile
 public import Chazelle.Core.ShootCutSeg
 
@@ -43,13 +45,13 @@ theorem subSeg_eq_seg (M : Model) (p : ℕ) {α β : ℝ} (hαβ : α ≤ β) :
   constructor
   · rintro ⟨s, h0, h1, rfl⟩
     rcases hαβ.lt_or_eq with hlt | heq
-    · refine ⟨(s - α) / (β - α), div_nonneg (by linarith) (by linarith),
-        (div_le_one (by linarith)).2 (by linarith), ?_⟩
+    · refine ⟨(s - α) / (β - α), div_nonneg (⟡) (⟡),
+        (div_le_one (⟡)).2 (⟡), ?_⟩
       rw [lerp_lerp]; congr 1; field_simp; ring
     · subst heq
       exact ⟨0, le_rfl, zero_le_one, by rw [lerp_lerp]; congr 1; linarith⟩
   · rintro ⟨u, h0, h1, rfl⟩
-    refine ⟨α + u * (β - α), by nlinarith, by nlinarith, by rw [lerp_lerp]⟩
+    refine ⟨α + u * (β - α), ⊞, ⊞, Ρ lerp_lerp⟩
 
 theorem U_mem_seg (U V : Point) : U ∈ seg U V :=
   ⟨0, le_rfl, zero_le_one, by ext <;> simp⟩
@@ -67,7 +69,7 @@ variable {U V z : Point} {σ : ℝ}
 
 /-- **No hit**: the segment is at another height. -/
 theorem seg_off (h : U.2 = V.2) (hz : z.2 ≠ U.2) (x : ℝ) : Cand (seg U V) z σ 0 x :=
-  ⟨fun h' => absurd h' (by norm_num), fun _ t _ hS => hz (by
+  ⟨fun h' => absurd h' (⊛), fun _ t _ hS => hz (by
     rw [← seg_snd_of_eq h hS]; rfl)⟩
 
 /-- The ray point at the abscissa of a point at the height of `z`. -/
@@ -113,16 +115,16 @@ theorem seg_unique (h : U.2 ≠ V.2) {x x' : Point} (hx : x ∈ seg U V) (hx' : 
 theorem seg_at (hσ : σ = 1 ∨ σ = -1) (h : U.2 ≠ V.2) {X : Point} (hXS : X ∈ seg U V)
     (hX : X.2 = z.2) :
     Cand (seg U V) z σ (if 0 < σ * (X.1 - z.1) then 1 else 0) X.1 :=
-  cand_single hσ hXS hX fun x hx hxz => seg_unique h hx hXS (by rw [hxz, hX])
+  cand_single hσ hXS hX fun x hx hxz => seg_unique h hx hXS (Ρ hxz, hX)
 
 /-- **No hit**: the height of `z` is outside the heights of the ends. -/
 theorem seg_out (hout : ¬ (min U.2 V.2 ≤ z.2 ∧ z.2 ≤ max U.2 V.2)) (x : ℝ) :
     Cand (seg U V) z σ 0 x := by
-  refine ⟨fun h' => absurd h' (by norm_num), fun _ t _ hS => hout ?_⟩
+  refine ⟨fun h' => absurd h' (⊛), fun _ t _ hS => hout ?_⟩
   obtain ⟨u, h0, h1, he⟩ := hS
   have hy := congrArg Prod.snd he
   simp only [rayPt_snd, lerp_snd] at hy
-  rw [hy]
+  Ξ hy
   constructor
   · rcases le_total U.2 V.2 with hh | hh
     · rw [min_eq_left hh]; nlinarith
@@ -161,45 +163,45 @@ theorem seg_on (hσ : σ = 1 ∨ σ = -1) (h : U.2 = V.2) (hz : z.2 = U.2) (hzS 
       have hV' : σ * (V.1 - z.1) < 0 := lt_of_le_of_ne hV (fun h0 => by
         have : V.1 - z.1 = 0 := by
           rcases hσ with rfl | rfl <;> linarith
-        exact hzV (by linarith))
+        exact hzV (⟡))
       -- a point between `U` and `V` is `z`
       set u := (z.1 - U.1) / (V.1 - U.1)
       have hne : V.1 - U.1 ≠ 0 := fun h0 => by
-        have : V.1 = U.1 := by linarith
+        have : V.1 = U.1 := ⟡
         rw [this] at hV'; linarith
       have hu : z.1 = U.1 + u * (V.1 - U.1) := by simp only [u]; field_simp; ring
       rcases hσ with rfl | rfl
-      · have h1 : U.1 > z.1 := by linarith
-        have h2 : V.1 < z.1 := by linarith
-        exact hzn u (div_nonneg_of_nonpos (by linarith) (by linarith))
-          ((div_le_one_of_neg (by linarith)).2 (by linarith)) hu
-      · have h1 : U.1 < z.1 := by linarith
-        have h2 : V.1 > z.1 := by linarith
-        exact hzn u (div_nonneg (by linarith) (by linarith))
-          ((div_le_one (by linarith)).2 (by linarith)) hu
+      · have h1 : U.1 > z.1 := ⟡
+        have h2 : V.1 < z.1 := ⟡
+        exact hzn u (div_nonneg_of_nonpos (⟡) (⟡))
+          ((div_le_one_of_neg (⟡)).2 (⟡)) hu
+      · have h1 : U.1 < z.1 := ⟡
+        have h2 : V.1 > z.1 := ⟡
+        exact hzn u (div_nonneg (⟡) (⟡))
+          ((div_le_one (⟡)).2 (⟡)) hu
     · intro hV
       by_contra hU
       push Not at hU
       have hU' : σ * (U.1 - z.1) < 0 := lt_of_le_of_ne hU (fun h0 => by
         have : U.1 - z.1 = 0 := by
           rcases hσ with rfl | rfl <;> linarith
-        exact hzU (by linarith))
+        exact hzU (⟡))
       set u := (z.1 - U.1) / (V.1 - U.1)
       have hne : V.1 - U.1 ≠ 0 := fun h0 => by
-        have : V.1 = U.1 := by linarith
+        have : V.1 = U.1 := ⟡
         rw [this] at hV; linarith
       have hu : z.1 = U.1 + u * (V.1 - U.1) := by simp only [u]; field_simp; ring
       rcases hσ with rfl | rfl
-      · have h1 : U.1 < z.1 := by linarith
-        have h2 : V.1 > z.1 := by linarith
-        exact hzn u (div_nonneg (by linarith) (by linarith))
-          ((div_le_one (by linarith)).2 (by linarith)) hu
-      · have h1 : U.1 > z.1 := by linarith
-        have h2 : V.1 < z.1 := by linarith
-        exact hzn u (div_nonneg_of_nonpos (by linarith) (by linarith))
-          ((div_le_one_of_neg (by linarith)).2 (by linarith)) hu
+      · have h1 : U.1 < z.1 := ⟡
+        have h2 : V.1 > z.1 := ⟡
+        exact hzn u (div_nonneg (⟡) (⟡))
+          ((div_le_one (⟡)).2 (⟡)) hu
+      · have h1 : U.1 > z.1 := ⟡
+        have h2 : V.1 < z.1 := ⟡
+        exact hzn u (div_nonneg_of_nonpos (⟡) (⟡))
+          ((div_le_one_of_neg (⟡)).2 (⟡)) hu
   by_cases hU : 0 < σ * (U.1 - z.1)
-  · rw [ite_eq_left hU]
+  · Ξ ite_eq_left hU
     have hV := hside.1 hU
     -- the nearer end
     set X := if σ * U.1 ≤ σ * V.1 then U.1 else V.1 with hXd
@@ -211,29 +213,29 @@ theorem seg_on (hσ : σ = 1 ∨ σ = -1) (h : U.2 = V.2) (hz : z.2 = U.2) (hzS 
     have hXpos : 0 < σ * (X - z.1) := by rcases hXU with e | e <;> rw [e] <;> assumption
     refine ⟨fun _ => ⟨hXpos, ?_, fun t' h1 h2 hS => ?_⟩, fun h => absurd rfl h⟩
     · rcases hXU with e | e
-      · rw [e, rayPt_of_x hσ (by rw [hz])]; exact U_mem_seg U V
-      · rw [e, rayPt_of_x hσ (by rw [hz, h])]; exact V_mem_seg U V
+      · rw [e, rayPt_of_x hσ (Ρ hz)]; exact U_mem_seg U V
+      · rw [e, rayPt_of_x hσ (Ρ hz, h)]; exact V_mem_seg U V
     · obtain ⟨u, h0, h1', he⟩ := (hmem t').1 hS
       -- `σ x` of a point of the segment is at least `σ X`
       have hx : σ * (U.1 + u * (V.1 - U.1)) ≥ σ * X := by
-        have : σ * (U.1 + u * (V.1 - U.1)) = (1 - u) * (σ * U.1) + u * (σ * V.1) := by ring
+        have : σ * (U.1 + u * (V.1 - U.1)) = (1 - u) * (σ * U.1) + u * (σ * V.1) := ⋆
         rw [this]; nlinarith [hXle.1, hXle.2]
       have : σ * (z.1 + σ * t') = σ * z.1 + t' := by
-        rw [mul_add, ← mul_assoc, hσ2, one_mul]
+        Ξ mul_add, ← mul_assoc, hσ2, one_mul
       rw [← he, this] at hx
       linarith
-  · rw [ite_eq_right hU]
+  · Ξ ite_eq_right hU
     have hV : ¬ 0 < σ * (V.1 - z.1) := fun h' => hU (hside.2 h')
-    refine ⟨fun h => absurd h (by norm_num), fun _ t ht hS => ?_⟩
+    refine ⟨fun h => absurd h (⊛), fun _ t ht hS => ?_⟩
     obtain ⟨u, h0, h1, he⟩ := (hmem t).1 hS
     push Not at hU hV
-    have e0 : σ * (z.1 + σ * t) = σ * z.1 + t := by rw [mul_add, ← mul_assoc, hσ2, one_mul]
-    have e1 : σ * (z.1 + σ * t) = σ * (U.1 + u * (V.1 - U.1)) := by rw [he]
+    have e0 : σ * (z.1 + σ * t) = σ * z.1 + t := Ρ mul_add, ← mul_assoc, hσ2, one_mul
+    have e1 : σ * (z.1 + σ * t) = σ * (U.1 + u * (V.1 - U.1)) := Ρ he
     have e2 : t = (1 - u) * (σ * (U.1 - z.1)) + u * (σ * (V.1 - z.1)) := by
-      have : σ * z.1 + t = σ * (U.1 + u * (V.1 - U.1)) := by rw [← e0, e1]
+      have : σ * z.1 + t = σ * (U.1 + u * (V.1 - U.1)) := Ρ ← e0, e1
       linarith [this]
     have p1 : (1 - u) * (σ * (U.1 - z.1)) ≤ 0 :=
-      mul_nonpos_of_nonneg_of_nonpos (by linarith) hU
+      mul_nonpos_of_nonneg_of_nonpos (⟡) hU
     have p2 : u * (σ * (V.1 - z.1)) ≤ 0 := mul_nonpos_of_nonneg_of_nonpos h0 hV
     linarith
 

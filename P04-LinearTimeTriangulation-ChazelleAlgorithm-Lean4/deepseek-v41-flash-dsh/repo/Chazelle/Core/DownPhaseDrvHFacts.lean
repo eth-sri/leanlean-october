@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRHostSpec
 public import Chazelle.Core.DownPhaseMathRec
 public import Chazelle.Core.DownPhaseMathHost
@@ -87,10 +89,10 @@ theorem hfacts_of {Q : Polygon} (hQ : Q.Simple) {L : List (ℕ × ℕ × ℕ)} {
     intro x hx
     obtain ⟨i, hi, hxi⟩ := hx
     obtain ⟨-, hA, -, eh, hh, -⟩ := DownMath.chordPos_attach hN hi hxi
-    exact ⟨DownMath.walk_n Q ▸ hA.1, by omega⟩
+    exact ⟨DownMath.walk_n Q ▸ hA.1, ⋄⟩
   obtain ⟨-, -, -, reg, hRC, -, hAO, hRO, -, hh, -⟩ := id hN
   refine ⟨hr, region_arcs_le_of hM hN hdeg hr, ?_, fun j hj => ?_, fun i hi => ?_⟩
-  · rw [← Gran.deg_region hN hRC hRO hr]
+  · Ξ ← Gran.deg_region hN hRC hRO hr
     exact hdeg _ (hRC.1 r hr)
   · have hj' := ((hAO.2.2.2 r hr j).1 hj).1
     obtain ⟨hs, he⟩ := DownMath.arc_pos hQ hL hperm hsort hK hj'

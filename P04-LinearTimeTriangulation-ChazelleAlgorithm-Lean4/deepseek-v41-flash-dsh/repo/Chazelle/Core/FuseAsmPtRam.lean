@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmGeo2
 public import Chazelle.Core.FuseAsmCollQ
 public import Chazelle.Core.SweepPrimJun
@@ -55,7 +57,7 @@ def tposS : Stmt :=
 /-- The registers written by `tposS`. -/
 def Btp (r : ℕ) : Bool := decide (50100 ≤ r ∧ r ≤ 50112) || r == 50201
 
-theorem wr_tposS : wr Btp tposS = true := by decide
+theorem wr_tposS : wr Btp tposS = true := ⌖
 
 theorem tposS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {Q : Polygon}
     {H : Host} {C : Chain} (hC : ChainDescAt c.nmem (c.nreg 50200) Q H C) {k : ℕ}

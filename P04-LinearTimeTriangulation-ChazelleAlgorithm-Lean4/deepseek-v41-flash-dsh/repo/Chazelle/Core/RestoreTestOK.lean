@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTestMath
 public import Chazelle.Core.NFDecompGlue
 
@@ -78,18 +80,18 @@ theorem record_ok {Q : Polygon} {x f : WPos} {h σb lp rp : ℕ} {T : ℝ} (_hσ
     (hlr : (σb = 1 → lp = x.edge ∧ rp = f.edge) ∧ (σb ≠ 1 → lp = f.edge ∧ rp = x.edge)) :
     (recOf (h, lp, rp)).toSet M Q = chordOf (M.pos Q x) (dirOf σb) T ∧
       (recOf (h, lp, rp)).Attached M Q := by
-  have hfy : (M.pos Q f).2 = (Q.vtx h).2 := by rw [hf, rayPt_snd, hy]
+  have hfy : (M.pos Q f).2 = (Q.vtx h).2 := Ρ hf, rayPt_snd, hy
   have px := pos_code M Q hy
   have pf := pos_code M Q hfy
   have qx := param_code M Q hy
   have qf := param_code M Q hfy
-  have hfx : (M.pos Q f).1 = (M.pos Q x).1 + dirOf σb * T := by rw [hf, rayPt_fst]
+  have hfx : (M.pos Q f).1 = (M.pos Q x).1 + dirOf σb * T := Ρ hf, rayPt_fst
   by_cases h1 : σb = 1
   · obtain ⟨rfl, rfl⟩ := hlr.1 h1
     have hd : dirOf σb = 1 := by rw [h1]; rfl
     have e : (recOf (h, x.edge, f.edge)).toSet M Q = chordOf (M.pos Q x) (dirOf σb) T := by
       show Visibility.hseg (Q.vtx h).2 (M.pos Q ⟨x.edge, h + 1⟩).1 (M.pos Q ⟨f.edge, h + 1⟩).1 = _
-      rw [px, pf, chordOf, hfx, hd, hy, min_eq_left (by linarith), max_eq_right (by linarith)]
+      rw [px, pf, chordOf, hfx, hd, hy, min_eq_left (⟡), max_eq_right (by linarith)]
     refine ⟨e, ?_, ?_⟩
     · show SideAttach M.W _ x.edge (M.param Q ⟨x.edge, h + 1⟩)
       rw [qx, e]; exact hA
@@ -99,7 +101,7 @@ theorem record_ok {Q : Polygon} {x f : WPos} {h σb lp rp : ℕ} {T : ℝ} (_hσ
     have hd : dirOf σb = -1 := by unfold dirOf; rw [ite_eq_right h1]
     have e : (recOf (h, f.edge, x.edge)).toSet M Q = chordOf (M.pos Q x) (dirOf σb) T := by
       show Visibility.hseg (Q.vtx h).2 (M.pos Q ⟨f.edge, h + 1⟩).1 (M.pos Q ⟨x.edge, h + 1⟩).1 = _
-      rw [px, pf, chordOf, hfx, hd, hy, min_eq_right (by linarith), max_eq_left (by linarith)]
+      rw [px, pf, chordOf, hfx, hd, hy, min_eq_right (⟡), max_eq_left (by linarith)]
     refine ⟨e, ?_, ?_⟩
     · show SideAttach M.W _ f.edge (M.param Q ⟨f.edge, h + 1⟩)
       rw [qf, e]; exact hB
@@ -161,7 +163,7 @@ theorem test_post {W : ℕ} {c₀ c' : Config} (hE : TGood P W M N c₀)
       CountOK M (N.F M (Qof P)) (reg (c₀.nreg 83002)) (M.key (Qof P) (xOf c₀))
         (M.key (Qof P) f) := fun f => by
     unfold CountOK
-    rw [sideExits_ncard hGM hNF hregs hr, sideExits_ncard hGM hNF hregs hr]
+    Ξ sideExits_ncard hGM hNF hregs hr, sideExits_ncard hGM hNF hregs hr
   refine ⟨fun hs => ?_, fun h10 h11 => ?_, fun hL hch T hT hdom hout hadm hnF hsub => ?_⟩
   · -- soundness
     have h11 := i14 hs
@@ -171,13 +173,13 @@ theorem test_post {W : ℕ} {c₀ c' : Config} (hE : TGood P W M N c₀)
     obtain ⟨m, B, hs', A, -, -, -, -, hyes, -⟩ := h5 h10
     obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, htri⟩ := hyes h11
     obtain ⟨t15, t1, t2⟩ := htri hs
-    have hy : (M.pos (Qof P) (xOf c₀)).2 = ((Qof P).vtx (c₀.nreg 83007)).2 := hE.hy.symm
+    have hy := hE.hy.symm
     obtain ⟨he, hat⟩ := record_ok (lp := c'.nreg 83016) (rp := c'.nreg 83017) hE.hσ hT hy hposf
       hA hB ⟨t1, t2⟩
-    rw [t15]
+    Ξ t15
     have hQn : (Qof P).n = P.n := shear_n _ _
     refine ⟨hat, by rw [hQn]; exact hE.hh, by rw [he]; exact hadm, ?_⟩
-    rw [he]
+    Ξ he
     have hAB : sidePt M.W (xOf c₀).edge (M.param (Qof P) (xOf c₀)) ≠
         sidePt M.W (c'.nreg 83012) (M.param (Qof P) ⟨c'.nreg 83012, c'.nreg 83013⟩) := by
       show M.pos (Qof P) (xOf c₀) ≠ M.pos (Qof P) ⟨c'.nreg 83012, c'.nreg 83013⟩
@@ -204,7 +206,7 @@ theorem test_post {W : ℕ} {c₀ c' : Config} (hE : TGood P W M N c₀)
 def testκ (d : ℕ) : ℕ := testK (d + 1) d 0 + 16 * (d + 2)
 
 theorem testK_split (A D Fg : ℕ) : testK A D Fg = testK A D 0 + (A + 1) * (16 * Fg) := by
-  simp only [testK, shotAK, shotCostG, nodeG]
+  ϴ testK, shotAK, shotCostG, nodeG
   ring
 
 theorem testK_mono {A D A' D' : ℕ} (hA : A ≤ A') (hD : D ≤ D') : testK A D 0 ≤ testK A' D' 0 := by
@@ -215,9 +217,9 @@ theorem testK_mono {A D A' D' : ℕ} (hA : A ≤ A') (hD : D ≤ D') : testK A D
 /-- **The cost of the test** is at most `testκ d · (F γ + 1)`. -/
 theorem testK_le {A D d Fg : ℕ} (hA : A ≤ d + 1) (hD : D ≤ d) :
     testK A D Fg ≤ testκ d * (Fg + 1) := by
-  rw [testK_split]
+  Ξ testK_split
   have h1 := testK_mono hA hD
-  have h2 : (A + 1) * (16 * Fg) ≤ 16 * (d + 2) * Fg := by nlinarith
+  have h2 : (A + 1) * (16 * Fg) ≤ 16 * (d + 2) * Fg := ⊞
   unfold testκ
   nlinarith
 
@@ -235,7 +237,7 @@ theorem nf_patch {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : 
   have ha := NFLoc.nfAt_arcs_eq h h'
   have hr := DecR.nfAt_regions_eq' h h'
   unfold patch
-  rw [hc, ha, hr]
+  Ξ hc, ha, hr
 
 /-- **The candidate test meets its contract.** -/
 theorem testOK {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs Bo : Finset ℕ}
@@ -270,7 +272,7 @@ theorem testOK {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs Bo
     b14, fun M' N' reg hMD' hNA' hNF' hregs' => ?_⟩
   have eM : M = M' := (NFLoc.modelDesc_unique hMD' hMD).symm
   subst eM
-  have hNA : NFAt c.nmem (c.nreg 83001) N := hNw.holds
+  have hNA := hNw.holds
   have e := nf_patch hNA hNA'
   have hregs : NFRegs M (Qof P) N reg := by
     have h : NFRegs M (Qof P) (patch N N') reg := hregs'

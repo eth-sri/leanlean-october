@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFEndF
 public import Chazelle.Core.RestoreFSel
 public import Chazelle.Core.RestoreNodeCand
@@ -115,7 +119,7 @@ theorem node_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   obtain ⟨hpA, hpB⟩ := chord_posOK hsimp hP.hNα hk
   have hat := hP.hNα.2.2.1 k hk
   obtain ⟨dd, hDec⟩ := hP.hDec
-  have hdec : Nα.dec.length = Nα.nChords := hDec.1
+  have hdec := hDec.1
   obtain ⟨-, -, -, regα, h1α, h2α, h3α, h4α, -, hhα, -⟩ := id hP.hNα
   have hregsα : NFRegs (chainModel Cα) (Qof E.P) Nα regα := ⟨h1α, h2α, h3α, h4α⟩
   have hneα : (Nα.F (chainModel Cα) (Qof E.P)).Nonempty := ⟨_, _, Dec.chord_mem hk, rfl⟩
@@ -127,7 +131,7 @@ theorem node_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have hnW : E.P.n ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
   have hyc : ∀ z ∈ (Nα.chord k).toSet (chainModel Cα) (Qof E.P), z.2 = ((Qof E.P).vtx (Nα.chord k).h).2 :=
     fun z hz => by unfold CRec.toSet Visibility.hseg at hz; exact hz.1
-  have hgL : g' + L ≤ 2 * Cα.m + 6 := hS.hgL
+  have hgL := hS.hgL
   have hL0 := hS.hL0
   have hLn := hS.hLn
   have h6 := hS.h6
@@ -137,7 +141,7 @@ theorem node_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     (by unfold ndK at hroom; omega)) (fun c₁ hI₁ hA₁ ⟨u21, u52, u53, u54, u55, u56, f₁⟩ => ?_)).mono
     (by unfold ndK; omega) (fun _ h => h)
   rw [show 2 * k / 2 = k by omega] at u21 u52 u53 u54 u55 u56
-  have F1 : ∀ q, ¬ (81120 ≤ q ∧ q ≤ 81124) → ¬ (81152 ≤ q ∧ q ≤ 81158) → c₁.nreg q = c.nreg q := f₁
+  have F1 := f₁
   have sT : ∀ {x y : Config}, SRegs x g g' L Dα Bα →
       (∀ q, 81130 ≤ q → q ≤ 81135 → y.nreg q = x.nreg q) → SRegs y g g' L Dα Bα := by
     intro x y hs h
@@ -166,7 +170,7 @@ theorem node_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     rw [x30, x31, xp, show g' + d - g' = d by omega] at hr ⊢
     rw [x52, x55]
     exact end_cand hE hS hd hpo hAt hyc hr hσb
-  have hgn : g < E.M.W.n := hS.hg
+  have hgn := hS.hg
   have hWm := hP.hWm
   have hJ₁ : c₁.nreg 81140 < E.M.W.n ∧
       ProperPos E.M (Qof E.P) E.P.n ⟨c₁.nreg 81140, c₁.nreg 81141⟩ := by

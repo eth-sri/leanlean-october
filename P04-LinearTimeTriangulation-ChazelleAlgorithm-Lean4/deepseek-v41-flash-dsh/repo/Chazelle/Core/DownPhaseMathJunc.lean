@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecMerge
 public import Mathlib.Data.List.GetD
 
@@ -30,7 +32,7 @@ open Merge (Junction)
 /-! ## Host polygons -/
 
 theorem host_poly_n (Q : Polygon) (H : Host) : (H.poly Q).n = (H.pts Q.n).length := by
-  simp [Host.poly, Polygon.n]
+  Θ Host.poly, Polygon.n
 
 /-- The vertices of the host polygon are the evaluated host points. -/
 theorem host_poly_vtx (Q : Polygon) (H : Host) {i : ℕ} (hi : i < (H.pts Q.n).length) :
@@ -40,31 +42,31 @@ theorem host_poly_vtx (Q : Polygon) (H : Host) {i : ℕ} (hi : i < (H.pts Q.n).l
     List.getD_eq_getElem _ _ hi]
 
 theorem pts_append (n : ℕ) (H₁ H₂ : Host) : (H₁ ++ H₂).pts n = H₁.pts n ++ H₂.pts n := by
-  simp [Host.pts]
+  Θ Host.pts
 
 theorem pts_cons (n : ℕ) (it : HostItem) (H : Host) :
     Host.pts n (it :: H) = it.pts n ++ H.pts n := by
-  simp [Host.pts]
+  Θ Host.pts
 
 theorem run_pts_length (n a ℓ : ℕ) : ((HostItem.run a ℓ).pts n).length = ℓ + 1 := by
-  simp [HostItem.pts]
+  Θ HostItem.pts
 
 theorem run_pts_getD (n a ℓ : ℕ) {k : ℕ} (hk : k ≤ ℓ) :
     ((HostItem.run a ℓ).pts n).getD k (.vtx 0) = .vtx ((a + k) % n) := by
-  simp only [HostItem.pts]
-  rw [List.getD_eq_getElem _ _ (by simp; omega), List.getElem_map, List.getElem_range]
+  ϴ HostItem.pts
+  Ξ List.getD_eq_getElem _ _ (by simp; omega), List.getElem_map, List.getElem_range
 
 /-- **The points of a run item inside a host.** -/
 theorem pts_append_run (n : ℕ) (H₁ H₂ : Host) (a ℓ : ℕ) {k : ℕ} (hk : k ≤ ℓ) :
     ((H₁ ++ HostItem.run a ℓ :: H₂).pts n).getD ((H₁.pts n).length + k) (.vtx 0) =
       .vtx ((a + k) % n) := by
-  rw [pts_append, pts_cons, List.getD_eq_getElem?_getD, List.getElem?_append_right (by omega),
+  rw [pts_append, pts_cons, List.getD_eq_getElem?_getD, List.getElem?_append_right (⋄),
     Nat.add_sub_cancel_left, List.getElem?_append_left (by rw [run_pts_length]; omega),
     ← List.getD_eq_getElem?_getD, run_pts_getD n a ℓ hk]
 
 theorem pts_append_run_length (n : ℕ) (H₁ H₂ : Host) (a ℓ : ℕ) :
     (H₁.pts n).length + ℓ + 1 ≤ ((H₁ ++ HostItem.run a ℓ :: H₂).pts n).length := by
-  rw [pts_append, pts_cons, List.length_append, List.length_append, run_pts_length]
+  Ξ pts_append, pts_cons, List.length_append, List.length_append, run_pts_length
   omega
 
 /-! ## M-M1 -/
@@ -76,7 +78,7 @@ theorem chain_vertex_host {Q : Polygon} {H : Host} {C : Chain} (hP : C.P = H.pol
   have hn := C.n_pos
   rw [hP, host_poly_n] at hn
   unfold Chain.vertex Chain.edgeIdx
-  rw [hP, host_poly_n, host_poly_vtx Q H (Nat.mod_lt _ hn)]
+  Ξ hP, host_poly_n, host_poly_vtx Q H (Nat.mod_lt _ hn)
 
 /-- **M-M1.**  If the host points at the three junction positions (the shared vertex of `J` and
 its two neighbours) are vertices of `Q` with pairwise distinct indices, distinct heights give
@@ -88,7 +90,7 @@ theorem sharedGeneric_of_vtx {Q : Polygon} (hdh : DistinctHeights Q) {H : Host} 
     (hv : (H.pts Q.n).getD ((J.s + J.m₁) % (H.pts Q.n).length) (.vtx 0) = .vtx b)
     (hw : (H.pts Q.n).getD ((J.s + (J.m₁ + 1)) % (H.pts Q.n).length) (.vtx 0) = .vtx c) :
     SharedGeneric J := by
-  have hP' : J.whole.P = H.poly Q := hP
+  have hP' := hP
   have eU : sharedU J = Q.vtx a := by
     unfold sharedU; rw [chain_vertex_host hP', show J.whole.s = J.s from rfl, hu]; rfl
   have eV : sharedV J = Q.vtx b := by
@@ -145,7 +147,7 @@ theorem sharedGeneric_run {Q : Polygon} (hn : 3 ≤ Q.n) (hdh : DistinctHeights 
     rw [mod_pred (by omega) hj (by omega)]; omega
   have hw : (J.s + (J.m₁ + 1)) % N = (H₁.pts Q.n).length + (k + 1) := by
     rw [← add_assoc, mod_succ hj (by omega)]; omega
-  have hv : (J.s + J.m₁) % N = (H₁.pts Q.n).length + k := hj
+  have hv := hj
   have hn0 : 0 < Q.n := by omega
   have e1 : a + (k - 1) + 1 = a + k := by omega
   have e2 : a + (k - 1) + 2 = a + (k + 1) := by omega

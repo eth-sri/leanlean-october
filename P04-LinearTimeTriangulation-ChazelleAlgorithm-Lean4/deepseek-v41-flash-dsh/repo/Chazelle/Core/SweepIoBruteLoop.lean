@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoBruteMath
 
 /-!
@@ -66,13 +68,13 @@ theorem bRead_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
     regB m bRead f gE = m (f bA4 + 5 * f bT + 3) ∧
     regB m bRead f gE1 = m (f bA4 + 5 * f bT + 4) := by
   have e1 : f 240611 = 1 := hk1
-  simp only [bRead, regB, regI, upd, bX, bT, bA4, gS, gS1, gE, gE1, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  refine ⟨congrArg m (by ring), congrArg m (by ring), congrArg m (by ring), congrArg m (by ring)⟩
+  ϴ bRead, regB, regI, upd, bX, bT, bA4, gS, gS1, gE, gE1, K1, sw
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1
+  refine ⟨congrArg m (⋆), congrArg m (⋆), congrArg m (⋆), congrArg m (⋆)⟩
 
 theorem bRead_other (m f : ℕ → ℕ) {q : ℕ} (h : ¬ BSet q) : regB m bRead f q = f q :=
   regB_other m bRead f (fun i hi => by
-    simp only [bRead, List.mem_cons, List.not_mem_nil, or_false] at hi
+    ϴ' bRead, List.mem_cons, List.not_mem_nil, or_false at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
       simp only [dstI] <;> intro he <;> subst he <;> apply h <;>
       simp [BSet, bX, gS, gS1, gE, gE1, sw])
@@ -80,7 +82,7 @@ theorem bRead_other (m f : ℕ → ℕ) {q : ℕ} (h : ¬ BSet q) : regB m bRead
 theorem bRead_other' (m f : ℕ → ℕ) {q : ℕ} (h1 : q ≠ bX) (h2 : q ≠ gS) (h3 : q ≠ gS1)
     (h4 : q ≠ gE) (h5 : q ≠ gE1) : regB m bRead f q = f q :=
   regB_other m bRead f (fun i hi => by
-    simp only [bRead, List.mem_cons, List.not_mem_nil, or_false] at hi
+    ϴ' bRead, List.mem_cons, List.not_mem_nil, or_false at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
       simp only [dstI] <;> intro h <;> subst h <;> simp_all)
 
@@ -88,30 +90,30 @@ theorem bRead_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb : f bA4 + 5 * f bT + 4
     okB W m bRead f := by
   have e1 : f 240611 = 1 := hk1
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
+    iscr_sw (⋄) (⋄)
   have hb' : f 244003 + 5 * f 244005 + 4 ≤ W := hb
-  simp only [bRead, okB, okI, regI, upd, bX, bT, bA4, gS, gS1, gE, gE1, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  refine ⟨⟨s 4001 (by norm_num) (by norm_num), by omega⟩, ⟨s 4001 (by norm_num) (by norm_num),
-    by omega⟩, ⟨s 4001 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4001 (by norm_num) (by norm_num), by omega⟩, ⟨s 4001 (by norm_num) (by norm_num), by omega⟩,
-    s 1016 (by norm_num) (by norm_num), ⟨s 4001 (by norm_num) (by norm_num), by omega⟩,
-    s 1017 (by norm_num) (by norm_num), ⟨s 4001 (by norm_num) (by norm_num), by omega⟩,
-    s 1018 (by norm_num) (by norm_num), ⟨s 4001 (by norm_num) (by norm_num), by omega⟩,
-    s 1019 (by norm_num) (by norm_num), trivial⟩
+  ϴ bRead, okB, okI, regI, upd, bX, bT, bA4, gS, gS1, gE, gE1, K1, sw
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1
+  refine ⟨⟨s 4001 (⊛) (⊛), ⋄⟩, ⟨s 4001 (⊛) (⊛),
+    ⋄⟩, ⟨s 4001 (⊛) (⊛), ⋄⟩,
+    ⟨s 4001 (⊛) (⊛), ⋄⟩, ⟨s 4001 (⊛) (⊛), ⋄⟩,
+    s 1016 (⊛) (⊛), ⟨s 4001 (⊛) (⊛), ⋄⟩,
+    s 1017 (⊛) (⊛), ⟨s 4001 (⊛) (⊛), ⋄⟩,
+    s 1018 (⊛) (⊛), ⟨s 4001 (⊛) (⊛), ⋄⟩,
+    s 1019 (⊛) (⊛), trivial⟩
 
 theorem bHead_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk4 : f K4 = 4) :
     regB m bHead f bN = m (f (sw 3) + 1) ∧ regB m bHead f bA4 = m (f (sw 3) + 4) ∧
     regB m bHead f bBase = f ALLOC ∧ regB m bHead f bT = 0 := by
   have e1 : f 240611 = 1 := hk1
   have e4 : f 240613 = 4 := hk4
-  simp only [bHead, regB, regI, upd, bX, bN, bA4, bBase, bT, K1, K4, ALLOC, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e4]
+  ϴ bHead, regB, regI, upd, bX, bN, bA4, bBase, bT, K1, K4, ALLOC, sw
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e4
   exact ⟨trivial, trivial, trivial, trivial⟩
 
 theorem bHead_other (m f : ℕ → ℕ) {q : ℕ} (h : ¬ BSet q) : regB m bHead f q = f q :=
   regB_other m bHead f (fun i hi => by
-    simp only [bHead, List.mem_cons, List.not_mem_nil, or_false] at hi
+    ϴ' bHead, List.mem_cons, List.not_mem_nil, or_false at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl <;>
       simp only [dstI] <;> intro he <;> subst he <;> apply h <;>
       simp [BSet, bX, bN, bA4, bBase, bT, sw])
@@ -122,12 +124,12 @@ theorem bHead_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk4 : f K4 = 4) (hb : f (
   have e4 : f 240613 = 4 := hk4
   have hb' : f 240003 + 4 ≤ W := hb
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
-  simp only [bHead, okB, okI, regI, upd, bX, bN, bA4, bBase, bT, K1, K4, ALLOC, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e4]
-  exact ⟨⟨s 4001 (by norm_num) (by norm_num), by omega⟩, s 4002 (by norm_num) (by norm_num),
-    ⟨s 4001 (by norm_num) (by norm_num), by omega⟩, s 4003 (by norm_num) (by norm_num),
-    s 4004 (by norm_num) (by norm_num), ⟨s 4005 (by norm_num) (by norm_num), by omega⟩, trivial⟩
+    iscr_sw (⋄) (⋄)
+  ϴ bHead, okB, okI, regI, upd, bX, bN, bA4, bBase, bT, K1, K4, ALLOC, sw
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e4
+  exact ⟨⟨s 4001 (⊛) (⊛), ⋄⟩, s 4002 (⊛) (⊛),
+    ⟨s 4001 (⊛) (⊛), ⋄⟩, s 4003 (⊛) (⊛),
+    s 4004 (⊛) (⊛), ⟨s 4005 (⊛) (⊛), ⋄⟩, trivial⟩
 
 /-! ## The invariant -/
 
@@ -148,11 +150,11 @@ theorem nob_sw {j : ℕ} (h : j < 10000) : bandOf (sw j) ∉ oracleBands :=
 /-- The chain context survives the loop. -/
 theorem BW.ctx {M : Model} {Q : Polygon} {N : NF} {cS : Config} {i : ℕ} {C : Chain}
     (h : BW M Q N cS c i) (hctx : ChainCtx P W cS (sw 20) C) : ChainCtx P W c (sw 20) C :=
-  hctx.transport (h.2.2.2.2.2.2.2.2 _ (nob_sw (by norm_num)) bset_sw20
+  hctx.transport (h.2.2.2.2.2.2.2.2 _ (nob_sw (⊛)) bset_sw20
     (by unfold ALLOC sw; omega)) h.2.2.2.2.2.2.2.1 (by rw [h.2.2.2.2.2.1]; omega)
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
+
+
 /-- **One arc of the loop.** -/
 theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
     (hI : IInv W c₀ c) (hK : Consts c₀) (hctx : ChainCtx P W cS (sw 20) C)
@@ -164,10 +166,10 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
   have hK₀ := hK.fix hI
   have hctxc := hin.ctx hctx
   obtain ⟨w1, w2, w3, w4, w5, w6, w7, w8, w9⟩ := hin
-  have hNWc : NFWithin c.nmem B E N := hNW.transport (fun a ha => w8 a (by omega))
+  have hNWc : NFWithin c.nmem B E N := hNW.transport (fun a ha => w8 a (⋄))
   have hNA : NFAt c.nmem B N := hNWc.holds
   obtain ⟨b1, -, b3, -⟩ := Restore.nf_bounds hNWc
-  have vA4 : c.nreg bA4 = c.nmem (B + 4) := by rw [w5, hB, w8 _ (by omega)]
+  have vA4 : c.nreg bA4 = c.nmem (B + 4) := Ρ w5, hB, w8 _ (⋄)
   have harec := hNA.2.2.2.2.2.2.1 i hi
   have hab := b3 i hi
   obtain ⟨⟨hps, hse, hsy⟩, ⟨hpe, hee, hey⟩⟩ := arc_end_facts hP hNF hi
@@ -175,11 +177,11 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
   -- the read block
   have hok : okB W c.nmem bRead c.nreg := bRead_ok _ _ hK₀.2.1 (by rw [vA4, w2]; omega)
   refine IRS.mono (K := bRead.length + (11015 + (11015 + (8 + 1)))) (IRS.seq
-    (IRS.block bRead hI hok) ?_) (by simp [bRead, bArcK]) (fun _ h => h)
+    (IRS.block bRead hI hok) ?_) (⊚ bRead, bArcK) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' rfl
   set c₁ : Config := { c with nreg := regB c.nmem bRead c.nreg } with hc₁
   obtain ⟨r1s, r1s1, r1e, r1e1⟩ := bRead_val c.nmem c.nreg hK₀.2.1
-  rw [vA4, w2] at r1s r1s1 r1e r1e1
+  Ξ' vA4, w2 at r1s r1s1 r1e r1e1
   have v1s : c₁.nreg gS = (N.arc i).s.edge := by rw [← harec.2.1]; exact r1s
   have v1s1 : c₁.nreg gS1 = (N.arc i).s.hgt := by rw [← harec.2.2.1]; exact r1s1
   have v1e : c₁.nreg gE = (N.arc i).e.edge := by rw [← harec.2.2.2.1]; exact r1e
@@ -205,14 +207,14 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
   rintro c₂ hI₂ - - ⟨⟨n2s, n2s1, k2, -, -⟩, hA2, hm2⟩
   have nb : ∀ j, j < 10000 → bandOf (sw j) ∉ oracleBands := fun j hj => nob_sw hj
   have hctx₂ : ChainCtx P W c₂ (sw 20) C := hctx₁.transport
-    (k2 (sw 20) (nb 20 (by norm_num)) (by unfold gS1 sw; norm_num) (by unfold gO sw; norm_num)
+    (k2 (sw 20) (nb 20 (⊛)) (by unfold gS1 sw; norm_num) (by unfold gO sw; norm_num)
       (by unfold gO sw; norm_num) (by unfold ALLOC sw; norm_num))
-    (fun a' _ => by rw [hm2]) hA2.ge
+    (fun a' _ => Ρ hm2) hA2.ge
   have v2e : c₂.nreg gE = (N.arc i).e.edge := by
-    rw [k2 gE (nb 1018 (by norm_num)) (by unfold gE gS1 sw; norm_num) (by unfold gE gO sw; norm_num)
+    rw [k2 gE (nb 1018 (⊛)) (by unfold gE gS1 sw; norm_num) (by unfold gE gO sw; norm_num)
       (by unfold gE gO sw; norm_num) (by unfold gE ALLOC sw; norm_num), v1e]
   have v2e1 : c₂.nreg gE1 = (N.arc i).e.hgt := by
-    rw [k2 gE1 (nb 1019 (by norm_num)) (by unfold gE1 gS1 sw; norm_num)
+    rw [k2 gE1 (nb 1019 (⊛)) (by unfold gE1 gS1 sw; norm_num)
       (by unfold gE1 gO sw; norm_num) (by unfold gE1 gO sw; norm_num)
       (by unfold gE1 ALLOC sw; norm_num), v1e1]
   -- normalise the end
@@ -230,32 +232,32 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
     (by rw [hA2, hA1]; unfold bArcK at hroom; omega)) ⟨by unfold gE1 sw; norm_num,
       by unfold gO sw; norm_num⟩) ?_
   rintro c₃ hI₃ - - ⟨⟨n3e, n3e1, k3, -, -⟩, hA3, hm3⟩
-  have v3s : c₃.nreg gS = c₂.nreg gS := k3 gS (nb 1016 (by norm_num))
+  have v3s : c₃.nreg gS = c₂.nreg gS := k3 gS (nb 1016 (⊛))
     (by unfold gS gE1 sw; norm_num) (by unfold gS gO sw; norm_num)
     (by unfold gS gO sw; norm_num) (by unfold gS ALLOC sw; norm_num)
-  have v3s1 : c₃.nreg gS1 = c₂.nreg gS1 := k3 gS1 (nb 1017 (by norm_num))
+  have v3s1 : c₃.nreg gS1 = c₂.nreg gS1 := k3 gS1 (nb 1017 (⊛))
     (by unfold gS1 gE1 sw; norm_num) (by unfold gS1 gO sw; norm_num)
     (by unfold gS1 gO sw; norm_num) (by unfold gS1 ALLOC sw; norm_num)
   have ns : (⟨c₃.nreg gS, c₃.nreg gS1⟩ : WPos) =
       Restore.normOf (chainModel C) (Qof P) (N.arc i).s := by
-    rw [v3s, v3s1, n2s1, n2s, v1s, v1s1]
+    Ξ v3s, v3s1, n2s1, n2s, v1s, v1s1
     unfold nhgt
     have := (Restore.normOf_facts hps).2.1
     rcases hn : Restore.normOf (chainModel C) (Qof P) (N.arc i).s with ⟨e', h'⟩
-    rw [hn] at this
+    Ξ' hn at this
     simp only at this ⊢
-    rw [this]
+    Ξ this
   have ne' : (⟨c₃.nreg gE, c₃.nreg gE1⟩ : WPos) =
       Restore.normOf (chainModel C) (Qof P) (N.arc i).e := by
-    rw [n3e1, n3e, v2e, v2e1]
+    Ξ n3e1, n3e, v2e, v2e1
     unfold nhgt
     have := (Restore.normOf_facts hpe).2.1
     rcases hn : Restore.normOf (chainModel C) (Qof P) (N.arc i).e with ⟨e', h'⟩
-    rw [hn] at this
+    Ξ' hn at this
     simp only at this ⊢
-    rw [this]
-  have hA3' : c₃.nreg ALLOC = c.nreg ALLOC := by rw [hA3, hA2, hA1]
-  have hm3' : c₃.nmem = c.nmem := by rw [hm3, hm2]
+    Ξ this
+  have hA3' : c₃.nreg ALLOC = c.nreg ALLOC := Ρ hA3, hA2, hA1
+  have hm3' : c₃.nmem = c.nmem := Ρ hm3, hm2
   -- store the record
   refine IRS.seq (put4_irs hI₃ (hK.fix hI₃) (by rw [hA3']; unfold bArcK at hroom; omega)) ?_
   rintro c₄ hI₄ - - ⟨hA4, k4, hm4, -, -, -⟩
@@ -263,11 +265,11 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
   have k14 : ∀ q, bandOf q ∉ oracleBands → q ≠ bX → q ≠ gS → q ≠ gS1 → q ≠ gE → q ≠ gE1 →
       q ≠ gO → q ≠ gO + 1 → q ≠ ALLOC → c₄.nreg q = c.nreg q := by
     intro q hq h1 h2 h3 h4 h5 h6 h7 h8
-    rw [k4 _ h8, k3 _ hq h5 h6 h7 h8, k2 _ hq h3 h6 h7 h8]
+    Ξ k4 _ h8, k3 _ hq h5 h6 h7 h8, k2 _ hq h3 h6 h7 h8
     exact bRead_other' _ _ h1 h2 h3 h4 h5
-  have hA4' : c₄.nreg ALLOC = c.nreg ALLOC + 4 := by rw [hA4, hA3']
+  have hA4' : c₄.nreg ALLOC = c.nreg ALLOC + 4 := Ρ hA4, hA3'
   have k4T : c₄.nreg bT = i := by
-    rw [k14 bT (nb 4005 (by norm_num)) (by unfold bT bX sw; norm_num) (by unfold bT gS sw; norm_num)
+    rw [k14 bT (nb 4005 (⊛)) (by unfold bT bX sw; norm_num) (by unfold bT gS sw; norm_num)
       (by unfold bT gS1 sw; norm_num) (by unfold bT gE sw; norm_num)
       (by unfold bT gE1 sw; norm_num) (by unfold bT gO sw; norm_num)
       (by unfold bT gO sw; norm_num) (by unfold bT ALLOC sw; norm_num), w2]
@@ -275,20 +277,20 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
   have hok5 : okB W c₄.nmem [.addN bT bT K1] c₄.nreg := by
     have e1 : c₄.nreg 240611 = 1 := hK1₄
     have e3 : c₄.nreg 244005 = i := k4T
-    simp only [okB, okI, bT, K1, sw]
-    simp only [Nat.reduceAdd, e1, e3]
-    exact ⟨⟨iscr_sw (by norm_num) (by norm_num), by unfold bArcK at hroom; omega⟩, trivial⟩
-  refine (IRS.block _ hI₄ hok5).mono (by simp) ?_
+    ϴ okB, okI, bT, K1, sw
+    ϴ Nat.reduceAdd, e1, e3
+    exact ⟨⟨iscr_sw (⊛) (⊛), by unfold bArcK at hroom; omega⟩, trivial⟩
+  refine (IRS.block _ hI₄ hok5).mono (✓) ?_
   rintro c₅ rfl
   have r5 : ∀ q, q ≠ bT → regB c₄.nmem [.addN bT bT K1] c₄.nreg q = c₄.nreg q := fun q h1 =>
     regB_other _ _ _ (fun i hi => by
-      simp only [List.mem_cons, List.not_mem_nil, or_false] at hi
+      ϴ' List.mem_cons, List.not_mem_nil, or_false at hi
       rcases hi with rfl; simp only [dstI]; exact fun h => h1 h.symm)
   have v5T : regB c₄.nmem [.addN bT bT K1] c₄.nreg bT = i + 1 := by
     have e1 : c₄.nreg 240611 = 1 := hK1₄
     have e3 : c₄.nreg 244005 = i := k4T
-    simp only [regB, regI, upd, bT, K1, sw]
-    simp only [Nat.reduceAdd, ite_true, e1, e3]
+    ϴ regB, regI, upd, bT, K1, sw
+    ϴ Nat.reduceAdd, ite_true, e1, e3
   have kk : ∀ q, bandOf q ∉ oracleBands → q ≠ bT → q ≠ bX → q ≠ gS → q ≠ gS1 → q ≠ gE →
       q ≠ gE1 → q ≠ gO → q ≠ gO + 1 → q ≠ ALLOC →
       regB c₄.nmem [.addN bT bT K1] c₄.nreg q = c.nreg q :=
@@ -305,40 +307,40 @@ theorem bArc_irs {C : Chain} {N : NF} {B E : ℕ} {cS : Config} {i : ℕ}
       regB c₄.nmem [.addN bT bT K1] c₄.nreg q = c.nreg q := by
     intro q hq
     rcases hq with rfl | rfl | rfl <;>
-      exact kk _ (nb _ (by norm_num)) (by simp [bT, bBase, bN, bA4, sw])
-        (by simp [bX, bBase, bN, bA4, sw]) (by simp [gS, bBase, bN, bA4, sw])
-        (by simp [gS1, bBase, bN, bA4, sw]) (by simp [gE, bBase, bN, bA4, sw])
-        (by simp [gE1, bBase, bN, bA4, sw]) (by simp [gO, bBase, bN, bA4, sw])
-        (by simp [gO, bBase, bN, bA4, sw]) (by simp [ALLOC, bBase, bN, bA4, sw])
+      exact kk _ (nb _ (⊛)) (⊚ bT, bBase, bN, bA4, sw)
+        (⊚ bX, bBase, bN, bA4, sw) (⊚ gS, bBase, bN, bA4, sw)
+        (⊚ gS1, bBase, bN, bA4, sw) (⊚ gE, bBase, bN, bA4, sw)
+        (⊚ gE1, bBase, bN, bA4, sw) (⊚ gO, bBase, bN, bA4, sw)
+        (⊚ gO, bBase, bN, bA4, sw) (⊚ ALLOC, bBase, bN, bA4, sw)
   have hA5 : regB c₄.nmem [.addN bT bT K1] c₄.nreg ALLOC = c.nreg ALLOC + 4 := by
-    rw [r5 _ (by unfold bT ALLOC sw; norm_num), hA4']
+    Ξ r5 _ (by unfold bT ALLOC sw; norm_num), hA4'
   have hmem5 : c₄.nmem = mem4 c.nmem (cS.nreg ALLOC + 4 * i) (c₃.nreg gS) (c₃.nreg gS1)
-      (c₃.nreg gE) (c₃.nreg gE1) := by rw [hm4, hm3', hA3', w6]
+      (c₃.nreg gE) (c₃.nreg gE1) := Ρ hm4, hm3', hA3', w6
   refine ⟨?_, v5T, hi, ?_, ?_, ?_, fun k hk => ?_, fun a' ha' => ?_, fun q hq hb hqa => ?_⟩
-  · show regB _ _ _ bBase = _; rw [kreg _ (Or.inl rfl), w1]
-  · show regB _ _ _ bN = _; rw [kreg _ (Or.inr (Or.inl rfl)), w4]
-  · show regB _ _ _ bA4 = _; rw [kreg _ (Or.inr (Or.inr rfl)), w5]
+  · show regB _ _ _ bBase = _; Ξ kreg _ (Or.inl rfl), w1
+  · show regB _ _ _ bN = _; Ξ kreg _ (Or.inr (Or.inl rfl)), w4
+  · show regB _ _ _ bA4 = _; Ξ kreg _ (Or.inr (Or.inr rfl)), w5
   · show regB _ _ _ ALLOC = _; rw [hA5, w6]; ring
   · show ShotList.arcAt c₄.nmem _ k = _
-    rw [hmem5]
+    Ξ hmem5
     unfold mem4
     rcases Nat.lt_or_ge k i with hl | hg
-    · rw [Restore.arcAt_upd4 hl, w7 k hl]
-    · have hk' : k = i := by omega
+    · Ξ Restore.arcAt_upd4 hl, w7 k hl
+    · have hk' : k = i := ⋄
       subst hk'
-      rw [Restore.arcAt_upd4_new]
+      Ξ Restore.arcAt_upd4_new
       unfold nArc
-      rw [← ns, ← ne']
+      Ξ ← ns, ← ne'
   · show c₄.nmem a' = _
-    rw [hmem5]
+    Ξ hmem5
     unfold mem4
-    simp only [upd]
-    rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega), w8 a' ha']
+    ϴ upd
+    Ξ ite_eq_right (⋄), ite_eq_right (⋄), ite_eq_right (⋄), ite_eq_right (⋄), w8 a' ha'
   · show regB _ _ _ q = _
-    rw [kb q hq hb hqa, w9 q hq hb hqa]
+    Ξ kb q hq hb hqa, w9 q hq hb hqa
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
+
+
 /-- **The loop**: the normalised arcs of `N` at the allocator on entry, base in `bBase`, count
 in `bN`. -/
 theorem bLoop_irs {C : Chain} {N : NF} {B E : ℕ}
@@ -350,16 +352,16 @@ theorem bLoop_irs {C : Chain} {N : NF} {B E : ℕ}
       (fun c' => BW (chainModel C) (Qof P) N c c' N.arcs.length) := by
   have hK₀ := hK.fix hI
   obtain ⟨b1, -⟩ := Restore.nf_bounds hNW
-  have hNA : NFAt c.nmem B N := hNW.holds
+  have hNA := hNW.holds
   have hok : okB W c.nmem bHead c.nreg := bHead_ok _ _ hK₀.2.1 hK₀.2.2.2.1
     (by rw [hB]; have := hI.hw.1 ALLOC; omega)
   refine (IRS.seq (IRS.block bHead hI hok) ?_).mono (K := bHead.length + ((bArcK + 2) *
-    N.arcs.length + 2)) (by simp [bHead, bLoopK]) (fun _ h => h)
+    N.arcs.length + 2)) (⊚ bHead, bLoopK) (fun _ h => h)
   rintro c₁ hI₁ - - rfl
   obtain ⟨vN, vA4, vB, vT⟩ := bHead_val c.nmem c.nreg hK₀.2.1 hK₀.2.2.2.1
   set A := N.arcs.length with hAd
   have hBW1 : BW (chainModel C) (Qof P) N c { c with nreg := regB c.nmem bHead c.nreg } 0 := by
-    refine ⟨vB, vT, Nat.zero_le _, ?_, vA4, ?_, fun k hk => absurd hk (by omega), fun _ _ => rfl,
+    refine ⟨vB, vT, Nat.zero_le _, ?_, vA4, ?_, fun k hk => absurd hk (⋄), fun _ _ => rfl,
       fun q _ hq _ => bHead_other _ _ hq⟩
     · show regB _ _ _ bN = _; rw [vN, hB]; exact hNA.2.1
     · show regB _ _ _ ALLOC = _; rw [bHead_other _ _ (by unfold BSet ALLOC sw; omega)]; ring
@@ -369,7 +371,7 @@ theorem bLoop_irs {C : Chain} {N : NF} {B E : ℕ}
   refine (IRS.while (fun c' => ∃ i, BW (chainModel C) (Qof P) N c c' i)
     (fun c' => A - c'.nreg bT) bArcK ?_ ?_ hI₁ ⟨0, hBW1⟩ ?_).mono ?_ ?_
   · rintro c' ⟨i, hw⟩ hlt
-    rw [hw.2.1, hw.2.2.2.1] at hlt
+    Ξ' hw.2.1, hw.2.2.2.1 at hlt
     rw [hw.2.1]; omega
   · rintro c' hI' ⟨i, hw⟩ hlt hroom'
     have hi : i < A := by rw [hw.2.1, hw.2.2.2.1] at hlt; exact hlt
@@ -377,9 +379,9 @@ theorem bLoop_irs {C : Chain} {N : NF} {B E : ℕ}
       (fun c'' h => ⟨⟨i + 1, h⟩, ?_⟩)
     rw [h.2.1, hw.2.1]; omega
   · rw [hA1, hT1, Nat.sub_zero]; unfold bLoopK at hroom; omega
-  · rw [hT1, Nat.sub_zero]
+  · Ξ hT1, Nat.sub_zero
   · rintro c' ⟨⟨i, hw⟩, hn⟩
-    rw [hw.2.1, hw.2.2.2.1] at hn
+    Ξ' hw.2.1, hw.2.2.2.1 at hn
     have : i = A := by have := hw.2.2.1; omega
     subst this
     exact hw

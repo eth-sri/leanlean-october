@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Visibility.Map
 
 /-!
@@ -40,7 +42,7 @@ open Chazelle.Geometry (lerp lerp_fst lerp_snd lerp_zero lerp_one point_ext poin
 `u.2 ≠ w.2`). -/
 noncomputable def xAt (u w : Point) (y : ℝ) : ℝ := u.1 + (y - u.2) * ((w.1 - u.1) / (w.2 - u.2))
 
-theorem xAt_left (u w : Point) : xAt u w u.2 = u.1 := by simp [xAt]
+theorem xAt_left (u w : Point) : xAt u w u.2 = u.1 := ⊚ xAt
 
 theorem xAt_right {u w : Point} (h : u.2 ≠ w.2) : xAt u w w.2 = w.1 := by
   have hne : w.2 - u.2 ≠ 0 := sub_ne_zero.2 h.symm
@@ -52,7 +54,7 @@ theorem xAt_lerp {u w : Point} (h : u.2 ≠ w.2) (t : ℝ) :
     xAt u w (lerp u w t).2 = (lerp u w t).1 := by
   have hne : w.2 - u.2 ≠ 0 := sub_ne_zero.2 h.symm
   unfold xAt
-  simp only [lerp_fst, lerp_snd]
+  ϴ lerp_fst, lerp_snd
   field_simp
   ring
 
@@ -60,7 +62,7 @@ theorem xAt_lerp {u w : Point} (h : u.2 ≠ w.2) (t : ℝ) :
 theorem xAt_combo (u w : Point) {s t : ℝ} (hst : s + t = 1) (y y' : ℝ) :
     xAt u w (s * y + t * y') = s * xAt u w y + t * xAt u w y' := by
   unfold xAt
-  have : t = 1 - s := by linarith
+  have : t = 1 - s := ⟡
   subst this
   ring
 
@@ -89,15 +91,15 @@ theorem mem_segment_iff_xAt {u w : Point} (h : u.2 ≠ w.2) {p : Point} :
     refine ⟨(p.2 - u.2) / (w.2 - u.2), ?_, ?_, ?_⟩
     · rcases lt_or_gt_of_ne h with hlt | hgt
       · rw [min_eq_left hlt.le] at h1
-        exact div_nonneg (by linarith) (by linarith)
+        exact div_nonneg (⟡) (⟡)
       · rw [max_eq_left hgt.le] at h2
-        exact div_nonneg_of_nonpos (by linarith) (by linarith)
+        exact div_nonneg_of_nonpos (⟡) (⟡)
     · rcases lt_or_gt_of_ne h with hlt | hgt
       · rw [max_eq_right hlt.le] at h2
-        rw [div_le_one (by linarith)]; linarith
+        rw [div_le_one (⟡)]; linarith
       · rw [min_eq_right hgt.le] at h1
-        rw [div_le_one_of_neg (by linarith)]; linarith
-    · rw [point_ext_iff]
+        rw [div_le_one_of_neg (⟡)]; linarith
+    · Ξ point_ext_iff
       dsimp only
       constructor
       · rw [hx]; unfold xAt; ring
@@ -111,11 +113,11 @@ theorem openSegment_iff_xAt {u w : Point} (h : u.2 ≠ w.2) {p : Point} :
   constructor
   · rintro ⟨t, ⟨ht0, ht1⟩, rfl⟩
     refine ⟨⟨?_, ?_⟩, (xAt_lerp h t).symm⟩
-    · simp only [lerp_snd]
+    · ϴ lerp_snd
       rcases lt_or_gt_of_ne h with hlt | hgt
       · rw [min_eq_left hlt.le]; nlinarith
       · rw [min_eq_right hgt.le]; nlinarith
-    · simp only [lerp_snd]
+    · ϴ lerp_snd
       rcases lt_or_gt_of_ne h with hlt | hgt
       · rw [max_eq_right hlt.le]; nlinarith
       · rw [max_eq_left hgt.le]; nlinarith
@@ -123,16 +125,16 @@ theorem openSegment_iff_xAt {u w : Point} (h : u.2 ≠ w.2) {p : Point} :
     refine ⟨(p.2 - u.2) / (w.2 - u.2), ⟨?_, ?_⟩, ?_⟩
     · rcases lt_or_gt_of_ne h with hlt | hgt
       · rw [min_eq_left hlt.le] at h1
-        exact div_pos (by linarith) (by linarith)
+        exact div_pos (⟡) (⟡)
       · rw [max_eq_left hgt.le] at h2
-        exact div_pos_of_neg_of_neg (by linarith) (by linarith)
+        exact div_pos_of_neg_of_neg (⟡) (⟡)
     · rcases lt_or_gt_of_ne h with hlt | hgt
       · rw [max_eq_right hlt.le] at h2
-        rw [div_lt_one (by linarith)]; linarith
+        rw [div_lt_one (⟡)]; linarith
       · rw [min_eq_right hgt.le] at h1
-        rw [div_lt_one_of_neg (by linarith)]; linarith
-    · rw [point_ext_iff]
-      simp only [lerp_fst, lerp_snd]
+        rw [div_lt_one_of_neg (⟡)]; linarith
+    · Ξ point_ext_iff
+      ϴ lerp_fst, lerp_snd
       constructor
       · rw [hx]; unfold xAt; ring
       · rw [div_mul_cancel₀ _ hne]; ring
@@ -198,11 +200,11 @@ theorem exists_vtx_edgeTop {P : Polygon} {i : ℕ} (hi : i < P.n) (h : NonHoriz 
   unfold edgeTop edgeX
   rcases lt_or_gt_of_ne h with hlt | hgt
   · refine ⟨(i + 1) % P.n, succIdx_lt P hi, ?_, ?_⟩
-    · rw [max_eq_right hlt.le]
-    · rw [max_eq_right hlt.le, xAt_right h]
+    · Ξ max_eq_right hlt.le
+    · Ξ max_eq_right hlt.le, xAt_right h
   · refine ⟨i, hi, ?_, ?_⟩
-    · rw [max_eq_left hgt.le]
-    · rw [max_eq_left hgt.le, xAt_left]
+    · Ξ max_eq_left hgt.le
+    · Ξ max_eq_left hgt.le, xAt_left
 
 /-- The bottom endpoint of a non-horizontal edge is a vertex on the line of the edge. -/
 theorem exists_vtx_edgeBot {P : Polygon} {i : ℕ} (hi : i < P.n) (h : NonHoriz P i) :
@@ -210,11 +212,11 @@ theorem exists_vtx_edgeBot {P : Polygon} {i : ℕ} (hi : i < P.n) (h : NonHoriz 
   unfold edgeBot edgeX
   rcases lt_or_gt_of_ne h with hlt | hgt
   · refine ⟨i, hi, ?_, ?_⟩
-    · rw [min_eq_left hlt.le]
-    · rw [min_eq_left hlt.le, xAt_left]
+    · Ξ min_eq_left hlt.le
+    · Ξ min_eq_left hlt.le, xAt_left
   · refine ⟨(i + 1) % P.n, succIdx_lt P hi, ?_, ?_⟩
-    · rw [min_eq_right hgt.le]
-    · rw [min_eq_right hgt.le, xAt_right h]
+    · Ξ min_eq_right hgt.le
+    · Ξ min_eq_right hgt.le, xAt_right h
 
 /-! ### The horizontal segment of a free point -/
 
@@ -254,10 +256,10 @@ theorem mem_interior_of_between {P : Polygon} (hP : P.Simple) {q : Point}
   rw [leftEnd_fst] at h1
   rw [rightEnd_fst] at h2
   rcases le_or_gt q.1 p.1 with h | h
-  · have := open_ray_subset_interior hP hq (p.1 - q.1) (by linarith) (by linarith)
-    rwa [show (q.1 + (p.1 - q.1), q.2) = p from point_ext (by ring) hy.symm] at this
-  · have := open_left_ray_subset_interior hP hq (q.1 - p.1) (by linarith) (by linarith)
-    rwa [show (q.1 - (q.1 - p.1), q.2) = p from point_ext (by ring) hy.symm] at this
+  · have := open_ray_subset_interior hP hq (p.1 - q.1) (⟡) (⟡)
+    rwa [show (q.1 + (p.1 - q.1), q.2) = p from point_ext (⋆) hy.symm] at this
+  · have := open_left_ray_subset_interior hP hq (q.1 - p.1) (⟡) (⟡)
+    rwa [show (q.1 - (q.1 - p.1), q.2) = p from point_ext (⋆) hy.symm] at this
 
 /-- The closed horizontal segment meets the boundary only in its two endpoints. -/
 theorem closedHSeg_inter_boundary {P : Polygon} (hP : P.Simple) {q : Point}
@@ -284,23 +286,23 @@ theorem rayPt_mem_chordUnion {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P
   have hσ0 : σ ≠ 0 := by rcases hσ with rfl | rfl <;> norm_num
   have hle : s ≤ chordParam P i σ := (hit_of_initial hP hσ0 hs hint).1
   refine ⟨chordSet P i σ, ⟨i, σ, hi, hσ, hdir, rfl⟩, ?_⟩
-  rw [chordSet_eq_image hP hi hdir]
+  Ξ chordSet_eq_image hP hi hdir
   exact ⟨s, ⟨hs.le, hle⟩, rfl⟩
 
 /-- **The right endpoint of the horizontal segment of a free point is not a vertex.** -/
 theorem rightEnd_ne_vtx {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ freeRegion P) {k : ℕ}
     (hk : k < P.n) : rightEnd P q ≠ P.vtx k := by
   intro heq
-  have hq' : q ∈ P.filled \ P.boundary := hq.1
+  have hq' := hq.1
   have hR := rightHitParam_pos hP hq'
   apply hq.2
   have e : ∀ t, rayPt (P.vtx k) (-1) t = (q.1 + (rightHitParam P q - t), q.2) := by
     intro t
-    rw [← heq]
-    exact point_ext (by simp [rayPt]; ring) (by simp [rayPt])
+    Ξ ← heq
+    exact point_ext (by simp [rayPt]; ring) (⊚ rayPt)
   have hmem := rayPt_mem_chordUnion hP hk (Or.inr rfl) hR (fun t ht1 ht2 => by
-    rw [e]
-    exact open_ray_subset_interior hP hq' _ (by linarith) (by linarith))
+    Ξ e
+    exact open_ray_subset_interior hP hq' _ (⟡) (⟡))
   rw [e, sub_self, add_zero] at hmem
   exact hmem
 
@@ -308,16 +310,16 @@ theorem rightEnd_ne_vtx {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ fr
 theorem leftEnd_ne_vtx {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ freeRegion P) {k : ℕ}
     (hk : k < P.n) : leftEnd P q ≠ P.vtx k := by
   intro heq
-  have hq' : q ∈ P.filled \ P.boundary := hq.1
+  have hq' := hq.1
   have hL := leftHitParam_pos hP hq'
   apply hq.2
   have e : ∀ t, rayPt (P.vtx k) 1 t = (q.1 - (leftHitParam P q - t), q.2) := by
     intro t
-    rw [← heq]
-    exact point_ext (by simp [rayPt]; ring) (by simp [rayPt])
+    Ξ ← heq
+    exact point_ext (by simp [rayPt]; ring) (⊚ rayPt)
   have hmem := rayPt_mem_chordUnion hP hk (Or.inl rfl) hL (fun t ht1 ht2 => by
-    rw [e]
-    exact open_left_ray_subset_interior hP hq' _ (by linarith) (by linarith))
+    Ξ e
+    exact open_left_ray_subset_interior hP hq' _ (⟡) (⟡))
   rw [e, sub_self, sub_zero] at hmem
   exact hmem
 
@@ -348,7 +350,7 @@ theorem nonHoriz_of_openEdgePt_end {P : Polygon} (hP : P.Simple) {q : Point}
   have hpu : p.2 = u.2 := by rw [hpt, lerp_snd, ← hh]; ring
   have hqu : q.2 = u.2 := hpy.symm.trans hpu
   -- the abscissa of `p` is strictly between the endpoint abscissae
-  have hp1 : p.1 = u.1 + t * (w.1 - u.1) := by rw [hpt, lerp_fst]
+  have hp1 : p.1 = u.1 + t * (w.1 - u.1) := Ρ hpt, lerp_fst
   have hmin : min u.1 w.1 < p.1 := by
     rcases lt_or_gt_of_ne huw1 with h | h
     · rw [min_eq_left h.le, hp1]; nlinarith [ht.1, ht.2]
@@ -363,16 +365,16 @@ theorem nonHoriz_of_openEdgePt_end {P : Polygon} (hP : P.Simple) {q : Point}
   · by_cases hqM : q.1 ≤ max u.1 w.1
     · exact hq.2 ⟨j, hj, by rw [hedge]; exact ⟨hqu, hmq, hqM⟩⟩
     · -- `q` is to the right of the edge, so `max` lies strictly inside the left ray
-      have hint := open_left_ray_subset_interior hP hq (q.1 - max u.1 w.1) (by linarith)
-        (by linarith)
+      have hint := open_left_ray_subset_interior hP hq (q.1 - max u.1 w.1) (⟡)
+        (⟡)
       apply hint.2
       refine ⟨j, hj, ?_⟩
-      rw [hedge]
+      Ξ hedge
       exact ⟨hqu, by dsimp only; linarith [min_le_max (a := u.1) (b := w.1)], by dsimp only; linarith⟩
-  · have hint := open_ray_subset_interior hP hq (min u.1 w.1 - q.1) (by linarith) (by linarith)
+  · have hint := open_ray_subset_interior hP hq (min u.1 w.1 - q.1) (⟡) (⟡)
     apply hint.2
     refine ⟨j, hj, ?_⟩
-    rw [hedge]
+    Ξ hedge
     exact ⟨hqu, by dsimp only; linarith, by dsimp only; linarith [min_le_max (a := u.1) (b := w.1)]⟩
 
 /-- **The right endpoint lies on the open part of a non-horizontal edge.** -/

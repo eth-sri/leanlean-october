@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepMachine9
 
 /-!
@@ -36,20 +38,20 @@ theorem afterFaces_of_arc {F : Set (Set Point)} {U : Set Point} {l r : ℝ}
   obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hin
   refine ⟨δ, hδ, fun s hs0 hs1 hs2 => ?_⟩
   have := hsub ⟨hs0, hs1⟩
-  exact harc.2.2.2.2.2.2 p (t + s) hp (by linarith) hs2 (by rw [← add_assoc]; exact this)
+  exact harc.2.2.2.2.2.2 p (t + s) hp (⟡) hs2 (by rw [← add_assoc]; exact this)
 
 /-- **An arc faces its region just before its end at a walk vertex.** -/
 theorem beforeFaces_of_arc_end {F : Set (Set Point)} {U : Set Point} {l : ℝ} {p : ℕ}
     (hp : p < M.W.n) (hp1 : 1 ≤ p) (harc : M.IsArc F U l (p + 0)) (hlr : l ≠ (p : ℝ) + 0) :
     BeforeFaces M p 0 U := by
   obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 (sideInArc_before_end hlr)
-  have hδ' : (0 : ℝ) < δ := hδ
+  have hδ' := hδ
   refine ⟨min δ 1, lt_min hδ' one_pos, fun h => absurd h (lt_irrefl 0), fun _ s hs0 hs1 => ?_⟩
   have hs1' : s < δ := lt_of_lt_of_le hs1 (min_le_left _ _)
   have hs2 : s < 1 := lt_of_lt_of_le hs1 (min_le_right _ _)
   have := hsub ⟨hs0, hs1'⟩
-  rw [prev_mod hp hp1]
-  refine harc.2.2.2.2.2.2 (p - 1) (1 - s) (by omega) (by linarith) (by linarith) ?_
+  Ξ prev_mod hp hp1
+  refine harc.2.2.2.2.2.2 (p - 1) (1 - s) (⋄) (⟡) (⟡) ?_
   have hc : ((p - 1 : ℕ) : ℝ) + (1 - s) = (p : ℝ) + 0 - s := by
     rw [Nat.cast_sub hp1]; push_cast; ring
   rw [hc]; exact this
@@ -77,7 +79,7 @@ theorem leave_region (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
           BeforeFaces (chainModel C) p t U)) := by
   have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
-  have hF : F ⊆ (chainModel C).Adm := hFam.2.1
+  have hF := hFam.2.1
   have hfin : F.Finite := hFam.1
   have hsec' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
     rw [hpt]; exact hsec
@@ -109,7 +111,7 @@ theorem leave_region (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
       by_contra hle
       push Not at hle
       have hp0 : p = 0 := by
-        have : (p : ℝ) ≤ 0 := by linarith
+        have : (p : ℝ) ≤ 0 := ⟡
         exact_mod_cast le_antisymm (by exact_mod_cast this) (Nat.zero_le p)
       have ht0 : t = 0 := by
         have : (0 : ℝ) ≤ p := Nat.cast_nonneg p

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleRamSearch
 
 /-!
@@ -31,7 +33,7 @@ def chordSearchS : Stmt :=
 /-- The registers written by `chordSearchS`. -/
 def BCS (r : ℕ) : Bool := BP r || decide (50100 ≤ r ∧ r ≤ 50116)
 
-theorem wr_chordSearchS : wr BCS chordSearchS = true := by decide
+theorem wr_chordSearchS : wr BCS chordSearchS = true := ⌖
 
 /-- **The memory facts of the chord search.** -/
 structure ChordMemOK (V : QV) (m : ℕ → ℕ) (W : ℕ) : Prop where
@@ -60,20 +62,20 @@ theorem chordSearch_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n 
       fun r h1 h2 => by config_simp; upd_solve⟩, rfl⟩
   obtain ⟨x103, x104, r₁⟩ := v₁.1
   have m₁ := v₁.2
-  have hq₁ : QConst P V c₁ := hq.congr fun r h1 h2 => r₁ r (by omega) (by omega)
+  have hq₁ : QConst P V c₁ := hq.congr fun r h1 h2 => r₁ r (⋄) (⋄)
   have hTW : V.TB ≤ W := by have := hm.TB_le; omega
   have hpr := chordPr_ok (P := P) hG hW hv htv (T := V.TB) (m₀ := c.nmem) hm.recs hTW
   obtain ⟨c₂, k₂, e₂, hk₂, hJ₂, -, m₂, -, ht₂, hpre, hpost⟩ := tsearch_exec (P := P) hpr
-    (by simp [bLocate, bSign, bOQuery]) (rT := 120041) (rL := 120042) (T := V.TB) (L := V.L)
+    (⊚ bLocate, bSign, bOQuery) (rT := 120041) (rL := 120042) (T := V.TB) (L := V.L)
     (by unfold bandOf bLocate; omega) (by unfold bandOf bLocate; omega) e₁.wb_right
-    ⟨hq₁, fun a _ => by rw [m₁]⟩ (chJ_stable P V V.TB c.nmem) hq₁.TB hq₁.L
+    ⟨hq₁, fun a _ => Ρ m₁⟩ (chJ_stable P V V.TB c.nmem) hq₁.TB hq₁.L
     (fun j hj => by rw [m₁]; exact hm.tab j hj) (by rw [x104]; exact hm.K_lt)
     (by rw [x103, x104]; exact hm.CH_le) hm.TB_le
     (fun i j hij hj h => by
-      rw [x104] at hj; rw [x103, m₁] at h ⊢; exact hmono i j hij hj h) (by omega)
-  rw [x104] at ht₂ hpost
-  rw [x103, m₁] at hpre hpost
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, exec_frameB (.seq e₁ e₂) wr_chordSearchS, ht₂,
+      Ξ' x104 at hj; Ξ' x103, m₁ at h ⊢; exact hmono i j hij hj h) (⋄)
+  Ξ' x104 at ht₂ hpost
+  Ξ' x103, m₁ at hpre hpost
+  refine ⟨c₂, _, .seq e₁ e₂, ⋄, exec_frameB (.seq e₁ e₂) wr_chordSearchS, ht₂,
     fun j hj => hpre j hj, hpost⟩
 
 /-! ## The chord at the ray's height next to the origin -/
@@ -113,7 +115,7 @@ def chordPostS : Stmt := .seq (.instr (.constN 120140 0)) (.ifLtN 120024 120011 
 /-- The registers written by `chordPostS`. -/
 def BCP (r : ℕ) : Bool := BX2 r || decide (120120 ≤ r ∧ r ≤ 120121) || decide (120140 ≤ r ∧ r ≤ 120148)
 
-theorem wr_chordPostS : wr BCP chordPostS = true := by decide
+theorem wr_chordPostS : wr BCP chordPostS = true := ⌖
 
 section Post
 variable (P : Polygon) (C : Chain) (V : QV) (m : ℕ → ℕ) (t : ℕ)
@@ -150,8 +152,8 @@ theorem readRec_exec {P : Polygon} {W : ℕ} {V : QV} (c : Config) (hw : WordsBo
       (∀ r, r ≠ 120146 → r ≠ 120147 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
   unfold readRec
   obtain ⟨c₁, e₁, v₁, r₁, m₁, -, -, -⟩ := t5_exec (P := P) (rd := 120146) (rs := 120145)
-    (rb := 120043) (by decide) (by decide) c hw (by rw [hi, hCB]; omega)
-  rw [hi, hCB] at v₁
+    (rb := 120043) (⌖) (⌖) c hw (by rw [hi, hCB]; omega)
+  Ξ' hi, hCB at v₁
   refine ⟨_, _, .seq e₁ (Exec.loadN e₁.wb_right 120147 120146), rfl, ?_, ?_, fun r h1 h2 => ?_,
     ?_⟩
   · config_simp; exact v₁
@@ -217,12 +219,12 @@ theorem chordPost_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 
         c'.nreg 120143 ≤ 1 ∧ (c'.nreg 120143 = 1 ↔ DegC P C V c.nmem t)) by
     obtain ⟨c', k, ex, hk, h1, h2, h3⟩ := H
     exact ⟨c', k, ex, hk, exec_frameB ex wr_chordPostS, h1, h2, h3⟩
-  obtain ⟨c₀, e₀, v₀, r₀⟩ := const_exec (P := P) hw 120140 0 (by omega)
-  have hq₀ : QConst P V c₀ := hq.congr fun r h1 h2 => r₀ r (by omega)
+  obtain ⟨c₀, e₀, v₀, r₀⟩ := const_exec (P := P) hw 120140 0 (⋄)
+  have hq₀ : QConst P V c₀ := hq.congr fun r h1 h2 => r₀ r (⋄)
   have m₀ : c₀.nmem = c.nmem :=
-    (exec_frameB e₀ (B := fun r => decide (r = 120140)) (by decide)).2.2.1
+    (exec_frameB e₀ (B := fun r => decide (r = 120140)) (⌖)).2.2.1
   have w₀ := e₀.wb_right
-  have t₀ : c₀.nreg 50105 = t := by rw [r₀ _ (by decide), htd]
+  have t₀ : c₀.nreg 50105 = t := by rw [r₀ _ (⌖), htd]
   -- the common tail: the chord at position `j`
   have tail : ∀ (pos : Bool) (j : ℕ), j < V.K → (pos = true ↔ V.σb = 1) →
       jCOf V t = j → ∀ d : Config, WordsBounded W d → QConst P V d → d.nmem = c.nmem →
@@ -241,9 +243,9 @@ theorem chordPost_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 
     obtain ⟨d₁, k₁, e₁, hk₁, v146, v147, r₁, m₁⟩ := readRec_exec (P := P) (V := V) d hd hqd.CB h145
       hrec
     rw [hmd] at v147
-    have hq₁ : QConst P V d₁ := hqd.congr fun r h1 h2 => r₁ r (by omega) (by omega)
+    have hq₁ : QConst P V d₁ := hqd.congr fun r h1 h2 => r₁ r (⋄) (by omega)
     by_cases heq : chH c.nmem V (chAt c.nmem V j) = V.hz
-    · have hq12 : d₁.nreg 120147 = d₁.nreg 120023 := by rw [v147, hq₁.hz, heq]
+    · have hq12 : d₁.nreg 120147 = d₁.nreg 120023 := Ρ v147, hq₁.hz, heq
       have hmd₁ : d₁.nmem = c.nmem := m₁.trans hmd
       -- the ends
       obtain ⟨d₂, k₂, e₂, hk₂, a140, a141, a142, a120, a121, r₂, m₂⟩ :
@@ -266,8 +268,8 @@ theorem chordPost_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 
           rw [hmd₁] at a2 a3 a4
           refine ⟨d₂, k₂, e₂, hk₂, a1, ?_, ?_, ?_, a5, a6, a7⟩ <;>
             simp only [nearC, farC, ite_eq_left hσ, hjc] <;> assumption
-      have hq₂ : QConst P V d₂ := hq₁.congr fun r h1 h2 => r₂ r (by omega) (by omega) (by omega)
-        (by omega) (by omega) (by omega)
+      have hq₂ : QConst P V d₂ := hq₁.congr fun r h1 h2 => r₂ r (⋄) (by omega) (by omega)
+        (⋄) (by omega) (by omega)
       -- the comparison
       obtain ⟨d₃, k₃, e₃, hk₃, f₃, b₃, g₃⟩ : ∃ d₃ k₃, Exec P W (if pos then gtZS else ltZS) d₂ d₃ k₃ ∧
           k₃ ≤ 300 ∧ FrameB BX2 d₂ d₃ ∧ d₃.nreg 120128 ≤ 1 ∧
@@ -275,29 +277,29 @@ theorem chordPost_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 
             else EndLtZ P C V (nearC V c.nmem t) V.hz)) := by
         cases pos
         · have hσ : V.σb ≠ 1 := fun h => Bool.false_ne_true (hpos.2 h)
-          obtain ⟨d₃, k₃, e₃, hk₃, f₃, b₃, g₃⟩ := ltZS_exec (P := P) hG (by omega) hv htv d₂
+          obtain ⟨d₃, k₃, e₃, hk₃, f₃, b₃, g₃⟩ := ltZS_exec (P := P) hG (⋄) hv htv d₂
             e₂.wb_right hq₂ (by rw [a121]; exact hv.hz_lt)
           rw [a120, a121] at g₃
           exact ⟨d₃, k₃, e₃, hk₃, f₃, b₃, by rw [ite_eq_right hσ]; exact g₃⟩
         · have hσ : V.σb = 1 := hpos.1 rfl
-          obtain ⟨d₃, k₃, e₃, hk₃, f₃, b₃, g₃⟩ := gtZS_exec (P := P) hG (by omega) hv htv d₂
+          obtain ⟨d₃, k₃, e₃, hk₃, f₃, b₃, g₃⟩ := gtZS_exec (P := P) hG (⋄) hv htv d₂
             e₂.wb_right hq₂ (by rw [a121]; exact hv.hz_lt)
           rw [a120, a121] at g₃
           exact ⟨d₃, k₃, e₃, hk₃, f₃, b₃, by rw [ite_eq_left hσ]; exact g₃⟩
-      have one₃ : d₃.nreg 120011 = 1 := (f₃.1 _ (by decide)).trans hq₂.one
+      have one₃ : d₃.nreg 120011 = 1 := (f₃.1 _ (⌖)).trans hq₂.one
       have w₃ := e₃.wb_right
       obtain ⟨d₄, e₄, v₄, v₄'⟩ : ∃ d₄, Exec P W (.instr (.subN 120143 120011 120128)) d₃ d₄ 1 ∧
           d₄.nreg 120143 = d₃.nreg 120011 - d₃.nreg 120128 ∧
           ∀ r, r ≠ 120143 → d₄.nreg r = d₃.nreg r :=
         ⟨_, Exec.subN w₃ _ _ _, by config_simp, fun r hr => by config_simp; upd_solve⟩
       have R₄ : ∀ r, r ≠ 120143 → BX2 r = false → d₄.nreg r = d₂.nreg r := fun r h1 h2 => by
-        rw [v₄' r h1, f₃.1 r h2]
-      refine ⟨d₄, _, .seq e₁ (ifEq_eq_exec hq12 (.seq e₂ (.seq e₃ e₄))), by omega, ?_, ?_, fun _ => ?_⟩
-      · rw [R₄ _ (by decide) (by decide), a140]
-      · rw [R₄ _ (by decide) (by decide), a140]; simp [heq]
-      · refine ⟨by rw [R₄ _ (by decide) (by decide), a141], by rw [R₄ _ (by decide) (by decide), a142],
+        Ξ v₄' r h1, f₃.1 r h2
+      refine ⟨d₄, _, .seq e₁ (ifEq_eq_exec hq12 (.seq e₂ (.seq e₃ e₄))), ⋄, ?_, ?_, fun _ => ?_⟩
+      · rw [R₄ _ (⌖) (by decide), a140]
+      · rw [R₄ _ (⌖) (by decide), a140]; simp [heq]
+      · refine ⟨by rw [R₄ _ (⌖) (by decide), a141], by rw [R₄ _ (by decide) (by decide), a142],
           by rw [v₄, one₃]; omega, ?_⟩
-        rw [v₄, one₃]
+        Ξ v₄, one₃
         unfold DegC
         constructor
         · intro h hc; have := g₃.2 hc; omega
@@ -306,14 +308,14 @@ theorem chordPost_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 
       obtain ⟨k', ex', hk'⟩ := ifEq_ne_exec (S := .seq (if pos then foundPos else foundNeg)
         (.seq (if pos then gtZS else ltZS) (.instr (.subN 120143 120011 120128)))) hq12
         (.skip e₁.wb_right)
-      refine ⟨d₁, _, .seq e₁ ex', by omega, by rw [r₁ _ (by decide) (by decide), h140]; omega,
+      refine ⟨d₁, _, .seq e₁ ex', ⋄, by rw [r₁ _ (by decide) (by decide), h140]; omega,
         ?_, fun h => absurd h heq⟩
-      rw [r₁ _ (by decide) (by decide), h140]
-      simp [heq]
+      rw [r₁ _ (⌖) (by decide), h140]
+      Θ heq
   have hCH := hT.CH_le
   by_cases hσ : V.σb < 1
   · -- leftwards
-    have hσ' : V.σb ≠ 1 := by omega
+    have hσ' : V.σb ≠ 1 := ⋄
     have hjc : jCOf V t = t - 1 := by unfold jCOf; rw [ite_eq_right hσ']
     by_cases ht0 : 0 < t
     · obtain ⟨d, k, e, hk, v⟩ : ∃ d k, Exec P W (block [.subN 120148 50105 120011,
@@ -325,16 +327,16 @@ theorem chordPost_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 
         · refine ⟨rfl, ?_, fun r h1 h2 h3 => by config_simp; upd_solve, rfl⟩
           config_simp; rw [hq₀.CH, t₀, hq₀.one, m₀]; rfl
       obtain ⟨v145, rd, md⟩ := v
-      have hqd : QConst P V d := hq₀.congr fun r h1 h2 => rd r (by omega) (by omega) (by omega)
-      obtain ⟨d', k', e', hk', b', f', g'⟩ := tail false (t - 1) (by omega)
-        ⟨fun h => absurd h (by simp), fun h => absurd h hσ'⟩ hjc d e.wb_right hqd (md.trans m₀)
-        (by rw [rd _ (by decide) (by decide) (by decide), v₀]) v145
+      have hqd : QConst P V d := hq₀.congr fun r h1 h2 => rd r (⋄) (by omega) (by omega)
+      obtain ⟨d', k', e', hk', b', f', g'⟩ := tail false (t - 1) (⋄)
+        ⟨fun h => absurd h (✓), fun h => absurd h hσ'⟩ hjc d e.wb_right hqd (md.trans m₀)
+        (by rw [rd _ (⌖) (by decide) (by decide), v₀]) v145
       refine ⟨d', _, .seq e₀ (.ifLtN_true (by rw [hq₀.σb, hq₀.one]; exact hσ)
-        (.ifLtN_true (by rw [hq₀.zero, t₀]; exact ht0) (.seq e e'))), by omega, b', ?_, ?_⟩
+        (.ifLtN_true (by rw [hq₀.zero, t₀]; exact ht0) (.seq e e'))), ⋄, b', ?_, ?_⟩
       · rw [f']; unfold FoundC; rw [ite_eq_right hσ', hjc]; simp [ht0]
       · intro hF; unfold FoundC at hF; rw [ite_eq_right hσ', hjc] at hF; exact g' hF.2
     · refine ⟨c₀, _, .seq e₀ (.ifLtN_true (by rw [hq₀.σb, hq₀.one]; exact hσ)
-        (.ifLtN_false (by rw [hq₀.zero, t₀]; exact ht0) (.skip w₀))), by omega,
+        (.ifLtN_false (by rw [hq₀.zero, t₀]; exact ht0) (.skip w₀))), ⋄,
         by rw [v₀]; omega, ?_, ?_⟩
       · rw [v₀]; unfold FoundC; rw [ite_eq_right hσ']; simp [ht0]
       · intro hF; unfold FoundC at hF; rw [ite_eq_right hσ'] at hF; exact absurd hF.1 ht0
@@ -351,16 +353,16 @@ theorem chordPost_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 
         · refine ⟨rfl, ?_, fun r h1 h2 => by config_simp; upd_solve, rfl⟩
           config_simp; rw [hq₀.CH, t₀, m₀]; rfl
       obtain ⟨v145, rd, md⟩ := v
-      have hqd : QConst P V d := hq₀.congr fun r h1 h2 => rd r (by omega) (by omega)
+      have hqd : QConst P V d := hq₀.congr fun r h1 h2 => rd r (⋄) (by omega)
       obtain ⟨d', k', e', hk', b', f', g'⟩ := tail true t htK
         ⟨fun _ => hσ', fun _ => rfl⟩ hjc d e.wb_right hqd (md.trans m₀)
-        (by rw [rd _ (by decide) (by decide), v₀]) v145
+        (by rw [rd _ (⌖) (by decide), v₀]) v145
       refine ⟨d', _, .seq e₀ (.ifLtN_false (by rw [hq₀.σb, hq₀.one]; exact hσ)
-        (.ifLtN_true (by rw [hq₀.K, t₀]; exact htK) (.seq e e'))), by omega, b', ?_, ?_⟩
+        (.ifLtN_true (by rw [hq₀.K, t₀]; exact htK) (.seq e e'))), ⋄, b', ?_, ?_⟩
       · rw [f']; unfold FoundC; rw [ite_eq_left hσ', hjc]; simp [htK]
       · intro hF; unfold FoundC at hF; rw [ite_eq_left hσ', hjc] at hF; exact g' hF.2
     · refine ⟨c₀, _, .seq e₀ (.ifLtN_false (by rw [hq₀.σb, hq₀.one]; exact hσ)
-        (.ifLtN_false (by rw [hq₀.K, t₀]; exact htK) (.skip w₀))), by omega,
+        (.ifLtN_false (by rw [hq₀.K, t₀]; exact htK) (.skip w₀))), ⋄,
         by rw [v₀]; omega, ?_, ?_⟩
       · rw [v₀]; unfold FoundC; rw [ite_eq_left hσ']; simp [htK]
       · intro hF; unfold FoundC at hF; rw [ite_eq_left hσ'] at hF; exact absurd hF.1 htK

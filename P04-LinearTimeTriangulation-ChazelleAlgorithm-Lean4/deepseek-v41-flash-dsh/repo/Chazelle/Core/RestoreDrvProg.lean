@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFind
 public import Chazelle.Core.RestoreRound
 public import Chazelle.Core.RestoreCost
@@ -130,18 +132,18 @@ theorem RF.trans {B : Finset ℕ} {A₀ : ℕ} {c c₁ c₂ : Config} {k₁ k₂
   obtain ⟨r₂, rr₂, m₂, rm₂, o₂, a₂, b₂⟩ := h₂
   exact ⟨fun r hr hra => (r₂ r hr hra).trans (r₁ r hr hra), fun r hr => (rr₂ r hr).trans (rr₁ r hr),
     fun a ha => (m₂ a ha).trans (m₁ a ha), fun a ha => (rm₂ a ha).trans (rm₁ a ha),
-    o₂.trans o₁, a₁.trans a₂, by omega⟩
+    o₂.trans o₁, a₁.trans a₂, ⋄⟩
 
 theorem RF.mono {B B' : Finset ℕ} {A₀ : ℕ} {c c' : Config} {k k' : ℕ} (h : RF B A₀ c c' k)
     (hB : B ⊆ B') (hk : k ≤ k') : RF B' A₀ c c' k' := by
   obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := h
   exact ⟨fun r hr hra => r₁ r (fun h => hr (hB h)) hra, fun r hr => rr₁ r (fun h => hr (hB h)),
-    m₁, rm₁, o₁, a₁, by omega⟩
+    m₁, rm₁, o₁, a₁, ⋄⟩
 
 theorem RF.of_frame {B : Finset ℕ} {A₀ : ℕ} {c c' : Config} {k : ℕ} (h : Frame B c c' k)
     (hA : A₀ ≤ c.nreg ALLOC) : RF B A₀ c c' k := by
   obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := h
-  exact ⟨r₁, rr₁, fun a ha => m₁ a (by omega), fun a ha => rm₁ a (by omega), o₁, a₁, b₁⟩
+  exact ⟨r₁, rr₁, fun a ha => m₁ a (⋄), fun a ha => rm₁ a (⋄), o₁, a₁, b₁⟩
 
 theorem RF.to_frame {B : Finset ℕ} {c c' : Config} {k : ℕ} (h : RF B (c.nreg ALLOC) c c' k) :
     Frame B c c' k := h
@@ -152,9 +154,9 @@ def dBands : Finset ℕ := restoreBands ∪ oracleBands
 theorem band8 {r : ℕ} (h1 : 80000 ≤ r) (h2 : r < 90000) : bandOf r = bRestore := by
   unfold bandOf bRestore; omega
 
-theorem mem_dBands_8 : bRestore ∈ dBands := by decide
+theorem mem_dBands_8 : bRestore ∈ dBands := ⌖
 
-theorem alloc_notin : bandOf ALLOC ∉ dBands := by decide
+theorem alloc_notin : bandOf ALLOC ∉ dBands := ⌖
 
 /-- A register-only change within band `8` is an `RF` step. -/
 theorem rf_of_regs {A₀ : ℕ} {c c' : Config} {k : ℕ}
@@ -192,7 +194,7 @@ theorem rf_of_regs' {A₀ : ℕ} {c c' : Config} {k : ℕ}
     fun a _ => by rw [hrm], ho, by omega, by omega⟩
 
 theorem RF.refl {B : Finset ℕ} {A₀ : ℕ} (c : Config) (k : ℕ) : RF B A₀ c c k :=
-  ⟨fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, by omega⟩
+  ⟨fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, ⋄⟩
 
 /-- **A loop with a bounded body keeps the relative frame.** -/
 theorem whileLtN_frame {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} {B : Finset ℕ} {A₀ : ℕ}
@@ -206,13 +208,13 @@ theorem whileLtN_frame {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} {B : Fi
   | _ n ih =>
     by_cases ht : c.nreg a < c.nreg b
     · obtain ⟨c₁, k₁, hb, hI₁, hF₁, hk₁, hμ⟩ := hbody c hc ht
-      obtain ⟨c', k₂, hl, hI', ht', hF₂, hk₂⟩ := ih (μ c₁) (by omega) hI₁ rfl
+      obtain ⟨c', k₂, hl, hI', ht', hF₂, hk₂⟩ := ih (μ c₁) (⋄) hI₁ rfl
       refine ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht',
-        (hF₁.trans hF₂).mono subset_rfl (by omega), ?_⟩
-      have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * n := Nat.mul_le_mul_left _ (by omega)
+        (hF₁.trans hF₂).mono subset_rfl (⋄), ?_⟩
+      have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * n := Nat.mul_le_mul_left _ (⋄)
       rw [Nat.mul_add, Nat.mul_one] at this
       omega
-    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, RF.refl c 2, by omega⟩
+    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, RF.refl c 2, ⋄⟩
 
 end
 

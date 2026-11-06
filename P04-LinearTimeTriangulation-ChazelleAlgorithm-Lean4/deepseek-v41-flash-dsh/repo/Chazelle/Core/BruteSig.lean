@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.WalkKey
 public import Chazelle.Core.BruteOK
 
@@ -54,22 +58,22 @@ theorem load_exec {P : Polygon} {W : ℕ} (hW : 1 ≤ W) (s : ℕ) (hs : 10000 �
       c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   cases x with
   | v r =>
-    simp only [Src.Out] at hx
+    ϴ' Src.Out at hx
     unfold Src.load
     exec_block
     · omega
-    · refine ⟨by omega, ?_, fun r' hr' => ?_, rfl, rfl, rfl, rfl⟩
-      · simp only [Src.pt, SymPtIn]
+    · refine ⟨⋄, ?_, fun r' hr' => ?_, rfl, rfl, rfl, rfl⟩
+      · ϴ Src.pt, SymPtIn
         refine ⟨?_, ?_⟩ <;> simp (disch := omega) only [Machine.upd_same,
           Machine.upd_other]
       · simp (disch := omega) only [Machine.upd_other]
   | e r₁ r₂ =>
-    simp only [Src.Out] at hx
+    ϴ' Src.Out at hx
     unfold Src.load
     exec_block
     · omega
-    · refine ⟨by omega, ?_, fun r' hr' => ?_, rfl, rfl, rfl, rfl⟩
-      · simp only [Src.pt, SymPtIn]
+    · refine ⟨⋄, ?_, fun r' hr' => ?_, rfl, rfl, rfl, rfl⟩
+      · ϴ Src.pt, SymPtIn
         refine ⟨?_, ?_, ?_⟩ <;> simp (disch := omega) only [Machine.upd_same,
           Machine.upd_other]
       · simp (disch := omega) only [Machine.upd_other]
@@ -77,8 +81,8 @@ theorem load_exec {P : Polygon} {W : ℕ} (hW : 1 ≤ W) (s : ℕ) (hs : 10000 �
 theorem src_pt_eq {x : Src} (hx : x.Out) {c c' : Config}
     (h : ∀ r, (r < 10000 ∨ 10500 ≤ r) → c'.nreg r = c.nreg r) : x.pt c' = x.pt c := by
   cases x with
-  | v r => simp only [Src.pt, Src.Out] at hx ⊢; rw [h r hx]
-  | e r₁ r₂ => simp only [Src.pt, Src.Out] at hx ⊢; rw [h r₁ hx.1, h r₂ hx.2]
+  | v r => simp only [Src.pt, Src.Out] at hx ⊢; Ξ h r hx
+  | e r₁ r₂ => simp only [Src.pt, Src.Out] at hx ⊢; Ξ h r₁ hx.1, h r₂ hx.2
 
 /-- The write set of a test: the kernel's registers and the destination. -/
 def Bt (d : ℕ) (r : ℕ) : Bool := Bk r || decide (r = d)
@@ -92,30 +96,30 @@ theorem testS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
       c'.nreg d ≤ 1 ∧
       (c'.nreg d = 1 ↔ SignTest op ((x.pt c).eval (Qof P)) ((y.pt c).eval (Qof P))
         ((z.pt c).eval (Qof P))) := by
-  have hW1 : 1 ≤ W := by omega
+  have hW1 : 1 ≤ W := ⋄
   obtain ⟨c₁, k₁, e₁, hk₁, s₁, r₁, rr₁, m₁, rm₁, o₁⟩ :=
-    load_exec (P := P) hW1 10000 (by omega) x hx c hw
+    load_exec (P := P) hW1 10000 (⋄) x hx c hw
   obtain ⟨c₂, k₂, e₂, hk₂, s₂, r₂, rr₂, m₂, rm₂, o₂⟩ :=
-    load_exec (P := P) hW1 10003 (by omega) y hy c₁ e₁.wb_right
+    load_exec (P := P) hW1 10003 (⋄) y hy c₁ e₁.wb_right
   obtain ⟨c₃, k₃, e₃, hk₃, s₃, r₃, rr₃, m₃, rm₃, o₃⟩ :=
-    load_exec (P := P) hW1 10006 (by omega) z hz c₂ e₂.wb_right
-  have e₄ := Exec.constN (P := P) e₃.wb_right 10009 op (by omega)
+    load_exec (P := P) hW1 10006 (⋄) z hz c₂ e₂.wb_right
+  have e₄ := Exec.constN (P := P) e₃.wb_right 10009 op (⋄)
   set c₄ : Config := { c₃ with nreg := upd c₃.nreg 10009 op }
-  have q₄ : ∀ r, r ≠ 10009 → c₄.nreg r = c₃.nreg r := fun r hr => by simp [c₄, hr]
+  have q₄ : ∀ r, r ≠ 10009 → c₄.nreg r = c₃.nreg r := fun r hr => ⊚ c₄, hr
   -- the points survive
-  have hy₁ : y.pt c₁ = y.pt c := src_pt_eq hy fun r hr => r₁ r (by omega)
+  have hy₁ : y.pt c₁ = y.pt c := src_pt_eq hy fun r hr => r₁ r (⋄)
   have hz₁ : z.pt c₂ = z.pt c := by
-    rw [src_pt_eq hz fun r hr => r₂ r (by omega)]
-    exact src_pt_eq hz fun r hr => r₁ r (by omega)
+    rw [src_pt_eq hz fun r hr => r₂ r (⋄)]
+    exact src_pt_eq hz fun r hr => r₁ r (⋄)
   have S₁ : SymPtIn c₄ 10000 (x.pt c) := symPtIn_of_eq s₁ fun j h1 h2 => by
-    rw [q₄ j (by omega), r₃ j (by omega), r₂ j (by omega)]
+    rw [q₄ j (⋄), r₃ j (by omega), r₂ j (by omega)]
   have S₂ : SymPtIn c₄ 10003 (y.pt c) := by
-    rw [← hy₁]
-    exact symPtIn_of_eq s₂ fun j h1 h2 => by rw [q₄ j (by omega), r₃ j (by omega)]
+    Ξ ← hy₁
+    exact symPtIn_of_eq s₂ fun j h1 h2 => by rw [q₄ j (⋄), r₃ j (by omega)]
   have S₃ : SymPtIn c₄ 10006 (z.pt c) := by
-    rw [← hz₁]
-    exact symPtIn_of_eq s₃ fun j h1 h2 => by rw [q₄ j (by omega)]
-  have hop₄ : c₄.nreg 10009 = op := by simp [c₄]
+    Ξ ← hz₁
+    exact symPtIn_of_eq s₃ fun j h1 h2 => by rw [q₄ j (⋄)]
+  have hop₄ : c₄.nreg 10009 = op := ⊚ c₄
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, bit₅, sig₅⟩ := sig_exec (P := P) c₄ e₄.wb_right hG hW
     (by rw [hop₄]; exact hop) hlx hly hlz S₁ S₂ S₃
   rw [hop₄] at sig₅
@@ -123,20 +127,20 @@ theorem testS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
   set c₆ : Config := { c₅ with nreg := upd c₅.nreg d (c₅.nreg 10010) }
   have ex : Exec P W (testS op x y z d) c c₆ (k₁ + (k₂ + (k₃ + (1 + (k₅ + 1))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
-  have hd : c₆.nreg d = c₅.nreg 10010 := by simp [c₆]
-  refine ⟨c₆, _, ex, by omega, ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩, by rw [hd]; exact bit₅,
+  have hd : c₆.nreg d = c₅.nreg 10010 := ⊚ c₆
+  refine ⟨c₆, _, ex, ⋄, ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩, by rw [hd]; exact bit₅,
     by rw [hd]; exact sig₅⟩
   · have hr' : Bk r = false ∧ r ≠ d := by
       unfold Bt at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr; exact hr
     have hnk : r < 10000 ∨ 10500 ≤ r := by
       have := hr'.1; unfold Bk at this; simp only [decide_eq_false_iff_not] at this; omega
-    simp only [c₆]
-    rw [upd_other _ _ _ hr'.2, f₅.1 r hr'.1, q₄ r (by omega), r₃ r (by omega), r₂ r (by omega),
-      r₁ r (by omega)]
+    ϴ c₆
+    rw [upd_other _ _ _ hr'.2, f₅.1 r hr'.1, q₄ r (⋄), r₃ r (by omega), r₂ r (by omega),
+      r₁ r (⋄)]
   · have hr' : Bk r = false := by
       unfold Bt at hr; simp only [Bool.or_eq_false_iff] at hr; exact hr.1
-    simp only [c₆]
-    rw [f₅.2.1 r hr', rr₃, rr₂, rr₁]
+    ϴ c₆
+    Ξ f₅.2.1 r hr', rr₃, rr₂, rr₁
   · simp only [c₆]; rw [f₅.2.2.1, m₃, m₂, m₁]
   · simp only [c₆]; rw [f₅.2.2.2.1, rm₃, rm₂, rm₁]
   · simp only [c₆]; rw [f₅.2.2.2.2, o₃, o₂, o₁]

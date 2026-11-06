@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepPhB2
 public import Chazelle.Core.OracleQueryMeets
 
@@ -39,28 +41,28 @@ theorem ClFacts.mono {m m' : ℕ → ℕ} {B : BookData} {FL LAB k X : ℕ} (h :
   card := by
     refine le_trans (le_of_eq ?_) h.card
     congr 1; ext v
-    simp only [Finset.mem_filter, Finset.mem_range]
+    ϴ Finset.mem_filter, Finset.mem_range
     constructor
-    · rintro ⟨hv, e⟩; exact ⟨hv, by rw [← hX _ (by omega)]; exact e⟩
-    · rintro ⟨hv, e⟩; exact ⟨hv, by rw [hX _ (by omega)]; exact e⟩
+    · rintro ⟨hv, e⟩; exact ⟨hv, by rw [← hX _ (⋄)]; exact e⟩
+    · rintro ⟨hv, e⟩; exact ⟨hv, by rw [hX _ (⋄)]; exact e⟩
   hlab u v w hw := by
-    rw [hX _ (by have := u.2; omega), hX _ (by have := v.2; omega)]
+    Ξ hX _ (by have := u.2; omega), hX _ (by have := v.2; omega)
     exact h.hlab u v w fun x hx => by
       have := hw x hx; rwa [hX _ (by have := x.2; omega)] at this
   clus l := by
     refine le_trans (le_of_eq ?_) (h.clus l)
     congr 1; ext v
-    simp only [Finset.mem_filter, Finset.mem_range]
+    ϴ Finset.mem_filter, Finset.mem_range
     constructor
     · rintro ⟨hv, e1, e2⟩
-      exact ⟨hv, by rw [← hX _ (by omega)]; exact e1, by rw [← hX _ (by omega)]; exact e2⟩
+      exact ⟨hv, by rw [← hX _ (⋄)]; exact e1, by rw [← hX _ (⋄)]; exact e2⟩
     · rintro ⟨hv, e1, e2⟩
-      exact ⟨hv, by rw [hX _ (by omega)]; exact e1, by rw [hX _ (by omega)]; exact e2⟩
+      exact ⟨hv, by rw [hX _ (⋄)]; exact e1, by rw [hX _ (⋄)]; exact e2⟩
 
 /-- The trivial cluster facts: every node in `D*`, `k = 2` (at most `8` nodes, at least `2`). -/
 theorem ClFacts.triv {m : ℕ → ℕ} {B : BookData} {FL LAB : ℕ} (h2 : 2 ≤ B.N) (h8 : B.N ≤ 8)
     (hfl : ∀ v, v < B.N → m (FL + v) = 1) : ClFacts m B FL LAB 2 where
-  k_pos := by norm_num
+  k_pos := ⊛
   μ_le := by norm_num; omega
   k_min := Or.inr (by norm_num; omega)
   card := by
@@ -68,10 +70,10 @@ theorem ClFacts.triv {m : ℕ → ℕ} {B : BookData} {FL LAB : ℕ} (h2 : 2 ≤
     simp; omega
   hlab u v w hw := absurd (hfl u u.2) (hw u w.start_mem_support)
   clus l := by
-    rw [Finset.card_eq_zero.2]
+    Ξ Finset.card_eq_zero.2
     · exact Nat.zero_le _
     · ext v
-      simp only [Finset.mem_filter, Finset.mem_range, Finset.notMem_empty, iff_false, not_and]
+      ϴ Finset.mem_filter, Finset.mem_range, Finset.notMem_empty, iff_false, not_and
       intro hv e; exact absurd (hfl v hv) e
 
 /-! ## The trivial decomposition -/
@@ -96,8 +98,8 @@ theorem fill_exec {P : Polygon} {W : ℕ} {rb rv0 : ℕ} (hrb : rb = 130004 ∨ 
       c'.rmem = c.rmem ∧ c'.output = c.output := by
   obtain ⟨c', k, ex, hk, r', rr', mm, rm, o, -, -⟩ := scatS_exec (P := P) (W := W)
     (ri := 60093) (rn := 60034) (r1 := 120011) (ra := 60094) (rv := 60095) (body := fillBody rb rv0)
-    (B := fun r => decide (r = 60094 ∨ r = 60095)) (by decide) (by decide) (by decide) (by decide)
-    (by decide) (fun d => d.nreg rb = b ∧ d.nreg rv0 = v0) 0
+    (B := fun r => decide (r = 60094 ∨ r = 60095)) (⌖) (⌖) (⌖) (⌖)
+    (⌖) (fun d => d.nreg rb = b ∧ d.nreg rv0 = v0) 0
     (fun d d' hJ hr _ => ⟨by rw [hr rb (by rcases hrb with rfl | rfl <;> decide)
         (by rcases hrb with rfl | rfl <;> decide)]; exact hJ.1,
       by rw [hr rv0 (by rcases hrv with rfl | rfl <;> decide)
@@ -114,9 +116,9 @@ theorem fill_exec {P : Polygon} {W : ℕ} {rb rv0 : ℕ} (hrb : rb = 130004 ∨ 
               by config_simp; exact hJ.2⟩
       have hwr : wr (fun r => decide (r = 60094 ∨ r = 60095)) (fillBody rb rv0) = true := by
         rcases hrb with rfl | rfl <;> rcases hrv with rfl | rfl <;> decide
-      exact ⟨d', k, e, by omega, exec_frameB e hwr, v1, v2⟩)
-    hw ⟨hb, hv⟩ hμ h1 (by omega)
-  refine ⟨c', k, ex, by nlinarith, fun r a b' d => r' r (by simp; omega) a, ?_, mm, rm, o⟩
+      exact ⟨d', k, e, ⋄, exec_frameB e hwr, v1, v2⟩)
+    hw ⟨hb, hv⟩ hμ h1 (⋄)
+  refine ⟨c', k, ex, ⊞, fun r a b' d => r' r (by simp; omega) a, ?_, mm, rm, o⟩
   exact funext fun r => exec_rframeS ex (B := fun _ => false)
     (by rcases hrb with rfl | rfl <;> rcases hrv with rfl | rfl <;> decide) r rfl
 
@@ -176,7 +178,7 @@ def bookS : Stmt := .ifLtN 120012 120039 (.seq mapS clStage) trivS
 /-- The bands of `bookS`. -/
 def kBands : Finset ℕ := {bSort, bDecomp, bOPrep, bCluster}
 
-set_option maxHeartbeats 8000000 in
+
 theorem bookS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (hG : GoodEnv P)
     {C : Chain} {N : NF} (hCQ : C.P = Qof P) {γ : ℕ}
     (hcan : IsCanonicalNF (chainModel C) (Qof P) N γ 4)

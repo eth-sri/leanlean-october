@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvBatch2
 public import Chazelle.Core.SweepEvTasks4
 
@@ -50,7 +52,7 @@ theorem regArcs_length_le {N : NF} {rs : List ℕ} {B : ℕ}
     have h1 := h r List.mem_cons_self
     have h2 := ih fun r' hr' => h r' (List.mem_cons_of_mem _ hr')
     simp only [regArcs, List.flatMap_cons, List.length_append, List.length_cons] at h2 ⊢
-    rw [Nat.succ_mul]
+    Ξ Nat.succ_mul
     omega
 
 theorem regArcs_lt {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N) {rs : List ℕ}

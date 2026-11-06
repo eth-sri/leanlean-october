@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoS0CandInitTab
 
 /-!
@@ -37,11 +39,11 @@ theorem midT_desc {C : Chain} {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {H : Hos
     (if m (B + 4) = 1 then 2 * m (B + 2) - 2 * m (B + 3)
       else if m (B + 3) < m (B + 2) then 2 * m (B + 3) else 0) = midT C := by
   obtain ⟨-, -, -, h2, h3, h4⟩ := h
-  rw [h2, h3]
+  Ξ h2, h3
   unfold midT
   by_cases hb : C.sideBeta = true
-  · rw [ite_eq_left (h4.2 hb), ite_eq_left hb]
-  · rw [ite_eq_right (fun h => hb (h4.1 h)), ite_eq_right hb]
+  · Ξ ite_eq_left (h4.2 hb), ite_eq_left hb
+  · Ξ ite_eq_right (fun h => hb (h4.1 h)), ite_eq_right hb
 
 /-- The cost constant. -/
 def kIn (κL : ℕ) : ℕ := 30000 + 2 * κL
@@ -50,8 +52,8 @@ theorem cost_le (κL S E K t : ℕ) (ht : 1 ≤ t) :
     27 + (4 * (6 * E) + 2) + ((kSt κL (t - 1) + 2) * S + 2) +
         ((2 * (kTb κL (t - 1) + 9) + 3) * K + 2) + 1 ≤
       kIn κL * (S + E + 2 * K + 1) * t := by
-  obtain ⟨u, rfl⟩ : ∃ u, t = u + 1 := ⟨t - 1, by omega⟩
-  simp only [Nat.add_sub_cancel]
+  obtain ⟨u, rfl⟩ : ∃ u, t = u + 1 := ⟨t - 1, ⋄⟩
+  ϴ Nat.add_sub_cancel
   unfold kSt kTb kIn
   nlinarith [Nat.zero_le (κL * u * S), Nat.zero_le (κL * u * K), Nat.zero_le (κL * u * E),
     Nat.zero_le (κL * u), Nat.zero_le (u * S), Nat.zero_le (u * E), Nat.zero_le (u * K),
@@ -67,7 +69,7 @@ variable {P : Polygon} {W : ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop} 
   {H : Host} {N₁ N₂ : NF} {Eb : ℕ} {c : Config} {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
   {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)}
 
-set_option maxHeartbeats 8000000 in
+
 /-- **The run part of the initialisation** (all but the final write of `sw 620`). -/
 theorem body_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     (e : IE P W X Ok J H N₁ N₂ Eb c rs ls) (hw : WordsBounded W c)
@@ -93,12 +95,12 @@ theorem body_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   have hst := e.st0
   unfold kRun at hroom ⊢
   refine (IRS.seq (K₁ := 27) (K₂ := (4 * (6 * c.nreg (sw 301)) + 2) + (((kSt κL (c.nreg TLR) + 2) * c.nreg (sw 201) + 2) + ((2 * (kTb κL (c.nreg TLR) + 9) + 3) * N₂.nChords + 2)))
-    (hdr_irs hI0 hK hd (by omega) hTm h2m) ?_).mono (by omega) (fun _ h => h)
+    (hdr_irs hI0 hK hd (⋄) hTm h2m) ?_).mono (⋄) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' ⟨a1, a2, a3, a4, a5, a6, a7, a8, a9⟩
   have c1A : c₁.nreg ALLOC = c.nreg ALLOC := a8 _ (Or.inl (by unfold ALLOC sw; omega))
   have hK₁ : Consts c₁ := hK.fix hI₁
-  refine IRS.seq (K₁ := 4 * (6 * c.nreg (sw 301)) + 2) (K₂ := ((kSt κL (c.nreg TLR) + 2) * c.nreg (sw 201) + 2) + ((2 * (kTb κL (c.nreg TLR) + 9) + 3) * N₂.nChords + 2)) ((zeroLoop_irs hI₁ hK₁ a2 (by omega)
-    (by omega)).mono (by omega) (fun _ h => h)) ?_
+  refine IRS.seq (K₁ := 4 * (6 * c.nreg (sw 301)) + 2) (K₂ := ((kSt κL (c.nreg TLR) + 2) * c.nreg (sw 201) + 2) + ((2 * (kTb κL (c.nreg TLR) + 9) + 3) * N₂.nChords + 2)) ((zeroLoop_irs hI₁ hK₁ a2 (⋄)
+    (⋄)).mono (⋄) (fun _ h => h)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨z1, z2, z3, z4⟩
   rw [c1A] at z3
   have nA : ∀ r, r = ipB ∨ r = ipX ∨ r = ipJ ∨ r = ipKc ∨ r = ipM5 ∨ r = ipM6 → r ≠ ALLOC := by
@@ -106,26 +108,26 @@ theorem body_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   have b2 : c₂.nreg ipB = c.nreg ALLOC := (z2 _ (nA _ (Or.inl rfl))).trans a1
   have hS₂ : SInv P J N₂ (c.nreg (sw 200)) (c.nreg (sw 300)) (c.nreg (sw 301))
       (c.nreg (sw 302)) (c.nreg ALLOC) c₂.nmem 0 0 :=
-    SInv.zero (fun a h1 h2 => z3 a h1 (by omega))
+    SInv.zero (fun a h1 h2 => z3 a h1 (⋄))
   have hfix : ∀ k, k < 700 → c.nreg (sw k) = c.nreg (sw k) := fun _ _ => rfl
   refine IRS.seq (K₁ := (kSt κL (c.nreg TLR) + 2) * c.nreg (sw 201) + 2) (K₂ := ((2 * (kTb κL (c.nreg TLR) + 9) + 3) * N₂.nChords + 2))
-    (stLoop_irs hls e hI₂ b2 (by omega) ((z2 _ (nA _ (Or.inr (Or.inl rfl)))).trans a3) hS₂
-      (by omega)) ?_
+    (stLoop_irs hls e hI₂ b2 (⋄) ((z2 _ (nA _ (Or.inr (Or.inl rfl)))).trans a3) hS₂
+      (⋄)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨p1, p2, p3⟩
   have pr : ∀ r, PReg r → c₃.nreg r = c₁.nreg r := fun r hr => by
-    rw [p1 r hr]
+    Ξ p1 r hr
     exact z2 r (by rcases hr with rfl | rfl | rfl | rfl | rfl <;>
       simp [ipB, ipJ, ipKc, ipM5, ipM6, ALLOC, sw])
-  refine (tbLoop_irs hls e hI₃ ((pr _ (Or.inl rfl)).trans a1) (by omega)
+  refine (tbLoop_irs hls e hI₃ ((pr _ (Or.inl rfl)).trans a1) (⋄)
     ((pr _ (Or.inr (Or.inr (Or.inl rfl)))).trans (by rw [a6, hst.2.2]; omega))
     ((pr _ (Or.inr (Or.inl rfl))).trans (by rw [a7, midT_desc d21]; omega))
     ((pr _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))).trans a4)
     ((pr _ (Or.inr (Or.inr (Or.inr (Or.inr rfl))))).trans (a5.trans e.hA.hK₂)) p3
-    (by omega)).mono le_rfl ?_
+    (⋄)).mono le_rfl ?_
   rintro c' ⟨t1, t2, t3⟩
-  exact ⟨t2.trans ((pr _ (Or.inl rfl)).trans a1), by omega, t3⟩
+  exact ⟨t2.trans ((pr _ (Or.inl rfl)).trans a1), ⋄, t3⟩
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The initialisation of the side-0 stop and table candidates.** -/
 theorem initPart (hL : LSearchSpec) : InitPartSpec := by
   obtain ⟨lsS, κL, hls⟩ := hL
@@ -135,7 +137,7 @@ theorem initPart (hL : LSearchSpec) : InitPartSpec := by
   have e : IE P W X Ok J H N₁ N₂ Eb c rs ls := ⟨hA, od⟩
   simp only [rd_sw] at hroom ⊢
   have hcost := cost_le κL (c.nreg (sw 201)) (c.nreg (sw 301)) N₂.nChords (c.nreg TLR + 1)
-    (by omega)
+    (⋄)
   simp only [Nat.add_sub_cancel] at hcost
   obtain ⟨c₁, k₁, ex₁, hk₁, hI₁, hfr₁, q1, q2, q3⟩ :=
     body_irs hls e hw (by unfold kRun; omega)
@@ -146,23 +148,23 @@ theorem initPart (hL : LSearchSpec) : InitPartSpec := by
     rintro r hr rfl
     exact hr (by rw [band_sw (by unfold sB sw; omega) (by unfold sB sw; omega)]; exact bSweep_mem)
   have hsA : ALLOC ≠ sB := by unfold ALLOC sB sw; omega
-  refine ⟨_, k₁ + 1, ex, by omega, ?_, fun j hj hj' => ?_, ?_⟩
+  refine ⟨_, k₁ + 1, ex, ⋄, ?_, fun j hj hj' => ?_, ?_⟩
   · refine ⟨fun r hr hra => ?_, fun r hr => rr₁ r hr, fun a ha => hI₁.hm a ha,
       fun a ha => hI₁.hrm a ha, o₁, ?_, ?_⟩
     · simp only
-      rw [upd_other _ _ _ (nS r hr)]
+      Ξ upd_other _ _ _ (nS r hr)
       exact r₁ r hr hra
     · simp only; rw [upd_other _ _ _ hsA]; exact a₁
     · simp only; rw [upd_other _ _ _ hsA]; omega
   · simp only
-    rw [upd_other _ _ _ (by unfold sB sw; omega)]
+    Ξ upd_other _ _ _ (by unfold sB sw; omega)
     exact hI₁.hin _ (by unfold IFix sw; omega)
   · apply aux_of_core
     have fx : ∀ k, k < 700 → k ≠ 620 →
         (upd c₁.nreg sB (c₁.nreg ipB)) (sw k) = c.nreg (sw k) := fun k hk h620 => by
-      rw [upd_other _ _ _ (by unfold sB sw; omega)]
+      Ξ upd_other _ _ _ (by unfold sB sw; omega)
       exact hI₁.hin _ (by unfold IFix sw; omega)
-    have hB : (upd c₁.nreg sB (c₁.nreg ipB)) sB = c.nreg ALLOC := by rw [upd_same, q1]
+    have hB : (upd c₁.nreg sB (c₁.nreg ipB)) sB = c.nreg ALLOC := Ρ upd_same, q1
     have hAl : (upd c₁.nreg sB (c₁.nreg ipB)) ALLOC = c₁.nreg ALLOC := upd_other _ _ _ hsA
     have hlog := hA.hlog
     have hst := hA.hstops
@@ -170,17 +172,17 @@ theorem initPart (hL : LSearchSpec) : InitPartSpec := by
     simp only [rd_sw] at hlog hst htw
     refine auxCore_of_sinv ?_ ?_ ?_ ?_ ?_
     · simp only
-      rw [hB, hAl, fx 301 (by norm_num) (by norm_num)]; exact q2
+      rw [hB, hAl, fx 301 (⊛) (⊛)]; exact q2
     · simp only
-      rw [hAl, fx 300 (by norm_num) (by norm_num), fx 301 (by norm_num) (by norm_num)]; omega
+      rw [hAl, fx 300 (⊛) (⊛), fx 301 (⊛) (⊛)]; omega
     · simp only
-      rw [hAl, fx 200 (by norm_num) (by norm_num), fx 201 (by norm_num) (by norm_num)]; omega
+      rw [hAl, fx 200 (⊛) (⊛), fx 201 (⊛) (⊛)]; omega
     · simp only
-      rw [hAl, fx 302 (by norm_num) (by norm_num)]; omega
+      rw [hAl, fx 302 (⊛) (⊛)]; omega
     · simp only
-      rw [hB, fx 200 (by norm_num) (by norm_num), fx 201 (by norm_num) (by norm_num),
-        fx 300 (by norm_num) (by norm_num), fx 301 (by norm_num) (by norm_num),
-        fx 302 (by norm_num) (by norm_num)]
+      rw [hB, fx 200 (⊛) (⊛), fx 201 (⊛) (⊛),
+        fx 300 (⊛) (⊛), fx 301 (⊛) (⊛),
+        fx 302 (⊛) (⊛)]
       exact q3
 
 end main

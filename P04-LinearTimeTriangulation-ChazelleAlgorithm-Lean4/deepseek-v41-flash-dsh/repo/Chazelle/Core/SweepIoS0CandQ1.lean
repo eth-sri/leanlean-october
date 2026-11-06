@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoS0CandQMath
 
 /-!
@@ -60,14 +62,14 @@ theorem compl_of (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   · obtain ⟨i, hi, e1, e2, e3, hc⟩ := stop_match hA hX harr hrsl hrs hr hr1 hr2
     have hs : sOf r.2.2.2.2 = qS d := by
       apply dS_inj (sOf_le _) (qS_le _)
-      rw [dS_sOf, dS_qS, hdir]
+      Ξ dS_sOf, dS_qS, hdir
     rw [hs] at e3
     rw [← dS_sOf, hs] at hc
     exact H i hi (congrArg WPos.edge e1) e2 e3 _ τ hc hτ ho
   · obtain ⟨i, hi, e1, e2, e3, hc⟩ := tab_match hA hX harr hj hT ⟨hv1, hv2, hv3⟩
     have hs : j % 2 = qS d := by
-      apply dS_inj (by omega) (qS_le _)
-      rw [dS_mod, dS_qS, hdir]
+      apply dS_inj (⋄) (qS_le _)
+      Ξ dS_mod, dS_qS, hdir
     rw [hs] at e3
     rw [← dS_mod, hs] at hc
     exact H i hi (congrArg WPos.edge e1) e2 e3 _ τ hc hτ ho

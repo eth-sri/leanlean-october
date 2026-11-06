@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoSpec
 public import Chazelle.Core.SweepEvOrigin
 public import Chazelle.Core.SweepEvCand3
@@ -63,7 +65,7 @@ theorem left_pt_right_dom (hP : J.P.Simple) {z : Point} (hz : z ∈ J.left.set)
   by_contra h
   rcases (Merge.not_mem_dom_iff J.right hz2).1 h with hb | hs
   · apply hb
-    rw [FuseMath.radius_of_P J (C' := J.right) rfl, ← FuseMath.radius_of_P J (C' := J.left) rfl]
+    Ξ FuseMath.radius_of_P J (C' := J.right) rfl, ← FuseMath.radius_of_P J (C' := J.left) rfl
     exact J.left.set_subset_box hz
   · have : z ∈ J.left.set ∩ J.right.set := ⟨hz, hs⟩
     rw [J.left_inter_right hP] at this
@@ -71,7 +73,7 @@ theorem left_pt_right_dom (hP : J.P.Simple) {z : Point} (hz : z ∈ J.left.set)
 
 /-- A point of `C₁` is strictly inside the box of `C`. -/
 theorem left_pt_abs {z : Point} (hz : z ∈ J.left.set) : |z.2| < J.whole.radius := by
-  rw [← FuseMath.radius_of_P J (C' := J.left) rfl]
+  Ξ ← FuseMath.radius_of_P J (C' := J.left) rfl
   exact (J.left.set_subset_box hz).2
 
 /-- **The first hit of `C₁`**: unless the hit point of `C` is on `C₂` and off `C₁`, the first hit
@@ -94,7 +96,7 @@ theorem left_hit_of {z : Point} (hz₁ : z.2 ≤ J.left.top.2) {σ : ℝ} (hσ :
     rcases (Merge.not_mem_dom_iff J.whole (p := rayPt z σ T) (by rw [hy]; exact hz')).1 hwD
       with h | h
     · apply h
-      rw [← FuseMath.radius_of_P J (C' := J.left) rfl]
+      Ξ ← FuseMath.radius_of_P J (C' := J.left) rfl
       exact J.left.dom_subset_box hmem
     · rw [J.whole_set] at h
       rcases h with h | h
@@ -143,9 +145,9 @@ theorem after_of_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (
   have hgn : (g : ℝ) < M.W.n := by exact_mod_cast hg
   obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
     (eventually_not_cut_after hM hF hfin ((pa : ℝ) + ta))
-  have hδ₁' : (0 : ℝ) < δ₁ := hδ₁
+  have hδ₁' := hδ₁
   set D := off M.W.n g ((q : ℝ) + u) - off M.W.n g ((pa : ℝ) + ta) with hD
-  have hD0 : 0 < D := by linarith
+  have hD0 : 0 < D := ⟡
   refine ⟨min δ₁ D, lt_min hδ₁' hD0, fun s hs0 hs1 hs2 => ?_⟩
   have hsD : s < D := lt_of_lt_of_le hs1 (min_le_right _ _)
   have hsδ : s < δ₁ := lt_of_lt_of_le hs1 (min_le_left _ _)
@@ -153,13 +155,13 @@ theorem after_of_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (
     have := hsub ⟨hs0, hsδ⟩
     rw [Set.mem_ofPred_eq] at this
     rwa [← add_assoc]
-  have hts : ta + s ∈ Ioo (0 : ℝ) 1 := ⟨by linarith, hs2⟩
+  have hts : ta + s ∈ Ioo (0 : ℝ) 1 := ⟨⟡, hs2⟩
   obtain ⟨U', hU', hf'⟩ := hM.exists_faces_of_not_cut hF hfin hpa hts hnc
   have hoff : off M.W.n g ((pa : ℝ) + (ta + s)) = off M.W.n g ((pa : ℝ) + ta) + s :=
     off_add_small hg hpa hta hs0.le hs2
   have heq := same_region_of_gap hM hF hfin hg0 hgn hU' hU hpa hq hts hu hnc hqc hf' hqf
-    (by rw [hoff]; linarith) (fun x hx hx0 hxn ⟨h1, h2⟩ => hgap x hx hx0 hxn ⟨by linarith, h2⟩)
-  rw [← heq]
+    (by rw [hoff]; linarith) (fun x hx hx0 hxn ⟨h1, h2⟩ => hgap x hx hx0 hxn ⟨⟡, h2⟩)
+  Ξ ← heq
   exact hf'
 
 /-- **A region faced just after a position** is faced at a non-cut position of the same edge, at an
@@ -171,7 +173,7 @@ theorem near_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
       M.Faces p (t + s) U ∧
       off M.W.n g ((p : ℝ) + (t + s)) = off M.W.n g ((p : ℝ) + t) + s := by
   obtain ⟨s, hs0, hsε, hs1, hnc, hf⟩ := faces_near_after hM hF hfin ht0 ht1 hW hε
-  exact ⟨s, hs0, hsε, ⟨by linarith, hs1⟩, hnc, hf, off_add_small hg hp ht0 hs0.le hs1⟩
+  exact ⟨s, hs0, hsε, ⟨⟡, hs1⟩, hnc, hf, off_add_small hg hp ht0 hs0.le hs1⟩
 
 end Gen
 

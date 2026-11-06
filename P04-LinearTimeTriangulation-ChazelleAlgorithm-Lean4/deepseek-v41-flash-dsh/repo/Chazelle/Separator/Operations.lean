@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Separator.Maps
 public import Mathlib.Data.Fintype.BigOperators
 public import Mathlib.Algebra.BigOperators.Group.Finset.Piecewise
@@ -54,7 +56,7 @@ variable {M} {a b : D} {k : ℕ}
 
 /-- Membership in the arc `{fperm^j a : j < k}`. -/
 theorem mem_arc {x : D} : x ∈ M.arc a k ↔ ∃ j < k, (M.fperm ^ j) a = x := by
-  simp [arc]
+  Θ arc
 
 omit [DecidableEq D] in
 /-- The arc from `a` to `b ≠ a` is nonempty. -/
@@ -65,7 +67,7 @@ theorem arc_pos (hab : a ≠ b) (hk : (M.fperm ^ k) a = b) : 0 < k := by
 
 /-- The arc starts at `a`. -/
 theorem mem_arc_self (hab : a ≠ b) (hk : (M.fperm ^ k) a = b) : a ∈ M.arc a k :=
-  mem_arc.mpr ⟨0, arc_pos hab hk, by simp⟩
+  mem_arc.mpr ⟨0, arc_pos hab hk, ✓⟩
 
 /-- The arc stops before `b`. -/
 theorem notMem_arc_end (hmin : ∀ j < k, (M.fperm ^ j) a ≠ b) : b ∉ M.arc a k := by
@@ -91,9 +93,9 @@ theorem fperm_notMem_arc {x : D} (hx : x ∉ M.arc a k) (hxa : M.fperm x ≠ a) 
   rcases j with _ | j
   · simp at hjx; exact hxa hjx.symm
   · apply hx
-    refine mem_arc.mpr ⟨j, by omega, ?_⟩
+    refine mem_arc.mpr ⟨j, ⋄, ?_⟩
     apply M.fperm.injective
-    rw [← hjx, pow_succ', Perm.mul_apply]
+    Ξ ← hjx, pow_succ', Perm.mul_apply
 
 /-- The dart before `b` is the last dart of the arc. -/
 theorem fperm_symm_end_mem_arc (hab : a ≠ b) (hk : (M.fperm ^ k) a = b) :
@@ -116,7 +118,7 @@ theorem fperm_symm_start_notMem_arc (hk : (M.fperm ^ k) a = b)
 /-- The arc lies in the face of `a`. -/
 theorem sameCycle_of_mem_arc {x : D} (hx : x ∈ M.arc a k) : M.fperm.SameCycle a x := by
   obtain ⟨j, -, rfl⟩ := mem_arc.mp hx
-  exact ⟨j, by simp⟩
+  exact ⟨j, ✓⟩
 
 end Arc
 
@@ -146,18 +148,18 @@ variable {a b}
 /-- The new rotation on an old dart. -/
 theorem addRot_inl (hab : a ≠ b) (x : D) : M.addRot a b (inl x) =
     if M.rot x = a then inr true else if M.rot x = b then inr false else inl (M.rot x) := by
-  simp only [addRot, Perm.mul_apply, Perm.sumCongr_apply, Sum.map_inl, swap_apply_def]
+  ϴ addRot, Perm.mul_apply, Perm.sumCongr_apply, Sum.map_inl, swap_apply_def
   by_cases h1 : M.rot x = a
   · subst h1; simp
   · by_cases h2 : M.rot x = b
     · subst h2; simp [h1]
-    · simp [h1, h2]
+    · Θ h1, h2
 
 /-- The new dart `inr true` is followed by `a`. -/
 theorem addRot_true (hab : a ≠ b) : M.addRot a b (inr true) = inl a := by
   simp only [addRot, Perm.mul_apply, Perm.sumCongr_apply, Sum.map_inr, Perm.one_apply,
     swap_apply_def]
-  simp [hab]
+  Θ hab
 
 /-- The new dart `inr false` is followed by `b`. -/
 theorem addRot_false : M.addRot a b (inr false) = inl b := by
@@ -181,11 +183,11 @@ theorem addFperm_inl (hab : a ≠ b) (x : D) : (M.addRot a b * M.addOpp) (inl x)
 
 /-- The new face permutation at `inr true`. -/
 theorem addFperm_true : (M.addRot a b * M.addOpp) (inr true) = inl b := by
-  rw [Perm.mul_apply, addOpp_inr, Bool.not_true, addRot_false]
+  Ξ Perm.mul_apply, addOpp_inr, Bool.not_true, addRot_false
 
 /-- The new face permutation at `inr false`. -/
 theorem addFperm_false (hab : a ≠ b) : (M.addRot a b * M.addOpp) (inr false) = inl a := by
-  rw [Perm.mul_apply, addOpp_inr, Bool.not_false, addRot_true M hab]
+  Ξ Perm.mul_apply, addOpp_inr, Bool.not_false, addRot_true M hab
 
 /-- Away from the insertion points the new face permutation is the old one. -/
 theorem addFperm_inl_of_ne (hab : a ≠ b) {x : D} (h1 : M.fperm x ≠ a) (h2 : M.fperm x ≠ b) :
@@ -198,28 +200,28 @@ omit [DecidableEq D] in
 /-- The new `opp` is an involution. -/
 theorem addOpp_addOpp (z : D ⊕ Bool) : M.addOpp (M.addOpp z) = z := by
   rcases z with x | t
-  · simp [addOpp_inl, M.opp_opp]
-  · simp [addOpp_inr]
+  · Θ addOpp_inl, M.opp_opp
+  · Θ addOpp_inr
 
 omit [DecidableEq D] in
 /-- The new `opp` has no fixed point. -/
 theorem addOpp_ne (z : D ⊕ Bool) : M.addOpp z ≠ z := by
   rcases z with x | t
-  · simp [addOpp_inl, M.opp_ne]
+  · Θ addOpp_inl, M.opp_ne
   · cases t <;> simp [addOpp_inr]
 
 /-- The new rotation preserves vertices. -/
 theorem addVert_addRot (hab : a ≠ b) (z : D ⊕ Bool) :
     M.addVert a b (M.addRot a b z) = M.addVert a b z := by
   rcases z with x | t
-  · rw [addRot_inl M hab]
+  · Ξ addRot_inl M hab
     split_ifs with h1 h2
-    · simp [addVert, ← h1, M.vert_rot]
-    · simp [addVert, ← h2, M.vert_rot]
-    · simp [addVert, M.vert_rot]
+    · Θ addVert, ← h1, M.vert_rot
+    · Θ addVert, ← h2, M.vert_rot
+    · Θ addVert, M.vert_rot
   · cases t
-    · simp [addRot_false, addVert]
-    · simp [addRot_true M hab, addVert]
+    · Θ addRot_false, addVert
+    · Θ addRot_true M hab, addVert
 
 variable [Fintype D]
 
@@ -247,11 +249,11 @@ theorem addVert_sameCycle (hab : a ≠ b) (z w : D ⊕ Bool)
     rintro (x | t)
     · exact ⟨x, rfl, Perm.SameCycle.refl _ _⟩
     · cases t
-      · exact ⟨b, rfl, ⟨1, by rw [zpow_one, addRot_false]⟩⟩
-      · exact ⟨a, rfl, ⟨1, by rw [zpow_one, addRot_true M hab]⟩⟩
+      · exact ⟨b, rfl, ⟨1, Ρ zpow_one, addRot_false⟩⟩
+      · exact ⟨a, rfl, ⟨1, Ρ zpow_one, addRot_true M hab⟩⟩
   obtain ⟨x, hx, hzx⟩ := hrep z
   obtain ⟨y, hy, hwy⟩ := hrep w
-  have hxy : M.rot.SameCycle x y := M.sameCycle_of_vert x y (by rw [hx, hy, h])
+  have hxy : M.rot.SameCycle x y := M.sameCycle_of_vert x y (Ρ hx, hy, h)
   exact hzx.trans ((sameCycle_of_step M.rot (M.addRot a b) inl (M.addRot_step hab) hxy).trans
     hwy.symm)
 
@@ -262,27 +264,27 @@ theorem addFace_addFperm (hab : a ≠ b) (hk : (M.fperm ^ k) a = b)
     (hmin : ∀ j < k, (M.fperm ^ j) a ≠ b) (z : D ⊕ Bool) :
     M.addFace a k ((M.addRot a b * M.addOpp) z) = M.addFace a k z := by
   have hfb : M.face b = M.face a := by
-    rw [← hk]; exact (eq_of_sameCycle M.fperm M.face M.face_fperm ⟨k, by simp⟩).symm
+    rw [← hk]; exact (eq_of_sameCycle M.fperm M.face M.face_fperm ⟨k, ✓⟩).symm
   rcases z with x | t
-  · rw [addFperm_inl M hab]
+  · Ξ addFperm_inl M hab
     split_ifs with h1 h2
     · -- `x = fperm⁻¹ a`
-      have hx : x = M.fperm.symm a := by rw [← h1, Equiv.symm_apply_apply]
+      have hx : x = M.fperm.symm a := Ρ ← h1, Equiv.symm_apply_apply
       have hxn : x ∉ M.arc a k := hx ▸ fperm_symm_start_notMem_arc hk hmin
-      simp only [addFace, Sum.elim_inr, Sum.elim_inl, ite_true, ite_eq_right hxn]
-      rw [← h1, M.face_fperm_apply]
-    · have hx : x = M.fperm.symm b := by rw [← h2, Equiv.symm_apply_apply]
+      ϴ addFace, Sum.elim_inr, Sum.elim_inl, ite_true, ite_eq_right hxn
+      Ξ ← h1, M.face_fperm_apply
+    · have hx : x = M.fperm.symm b := Ρ ← h2, Equiv.symm_apply_apply
       have hxm : x ∈ M.arc a k := hx ▸ fperm_symm_end_mem_arc hab hk
-      simp [addFace, hxm]
-    · simp only [addFace, Sum.elim_inl, M.face_fperm_apply]
+      Θ addFace, hxm
+    · ϴ addFace, Sum.elim_inl, M.face_fperm_apply
       by_cases hx : x ∈ M.arc a k
-      · rw [ite_eq_left (fperm_mem_arc hk hx h2), ite_eq_left hx]
-      · rw [ite_eq_right (fperm_notMem_arc hx h1), ite_eq_right hx]
+      · Ξ ite_eq_left (fperm_mem_arc hk hx h2), ite_eq_left hx
+      · Ξ ite_eq_right (fperm_notMem_arc hx h1), ite_eq_right hx
   · cases t
-    · rw [addFperm_false M hab]
-      simp [addFace, mem_arc_self hab hk]
-    · rw [addFperm_true]
-      simp [addFace, notMem_arc_end hmin, hfb]
+    · Ξ addFperm_false M hab
+      Θ addFace, mem_arc_self hab hk
+    · Ξ addFperm_true
+      Θ addFace, notMem_arc_end hmin, hfb
 
 /-- Darts with the same new face label are in one cycle of the new face permutation. -/
 theorem addFace_sameCycle (hab : a ≠ b) (hk : (M.fperm ^ k) a = b)
@@ -290,7 +292,7 @@ theorem addFace_sameCycle (hab : a ≠ b) (hk : (M.fperm ^ k) a = b)
     (h : M.addFace a k z = M.addFace a k w) : (M.addRot a b * M.addOpp).SameCycle z w := by
   set ψ := M.addRot a b * M.addOpp with hψ
   have hfb : M.face b = M.face a := by
-    rw [← hk]; exact (eq_of_sameCycle M.fperm M.face M.face_fperm ⟨k, by simp⟩).symm
+    rw [← hk]; exact (eq_of_sameCycle M.fperm M.face M.face_fperm ⟨k, ✓⟩).symm
   -- representatives: label `none` ↦ `inr false`, label `some (face a)` ↦ `inr true`
   have hnone : ∀ z, M.addFace a k z = none → ψ.SameCycle z (inr false) := by
     rintro (x | t) hz
@@ -299,13 +301,13 @@ theorem addFace_sameCycle (hab : a ≠ b) (hk : (M.fperm ^ k) a = b)
       have h1 : ψ.SameCycle (inl x) (inl (M.fperm.symm b)) := by
         refine sameCycle_follow M.fperm ψ inl (fun y => y ∈ M.arc a k)
           (t := M.fperm.symm b) hx ?_ ?_
-        · have hab' : M.fperm.SameCycle a b := ⟨(k : ℤ), by rw [zpow_natCast, hk]⟩
+        · have hab' : M.fperm.SameCycle a b := ⟨(k : ℤ), Ρ zpow_natCast, hk⟩
           have hbb : M.fperm.SameCycle b (M.fperm.symm b) := ⟨-1, by rw [zpow_neg_one]; rfl⟩
           exact ((sameCycle_of_mem_arc hx).symm.trans hab').trans hbb
         · intro y hy hyb
           have hya : M.fperm y ≠ a := by
             rintro h; apply fperm_symm_start_notMem_arc hk hmin
-            have hy' : M.fperm.symm a = y := by rw [← h, Equiv.symm_apply_apply]
+            have hy' : M.fperm.symm a = y := Ρ ← h, Equiv.symm_apply_apply
             rw [hy']; exact hy
           have hyb' : M.fperm y ≠ b := by
             rintro h; apply hyb; rw [← h, Equiv.symm_apply_apply]
@@ -331,12 +333,12 @@ theorem addFace_sameCycle (hab : a ≠ b) (hk : (M.fperm ^ k) a = b)
             rintro h; apply hya; rw [← h, Equiv.symm_apply_apply]
           have hyb : M.fperm y ≠ b := by
             rintro h; apply hy
-            have : y = M.fperm.symm b := by rw [← h, Equiv.symm_apply_apply]
+            have : y = M.fperm.symm b := Ρ ← h, Equiv.symm_apply_apply
             rw [this]; exact fperm_symm_end_mem_arc hab hk
           exact ⟨addFperm_inl_of_ne M hab hya' hyb,
-            fperm_notMem_arc hy hya', by rw [M.face_fperm_apply, hfy]⟩
+            fperm_notMem_arc hy hya', Ρ M.face_fperm_apply, hfy⟩
       refine h1.trans ⟨1, ?_⟩
-      rw [zpow_one, hψ, addFperm_inl M hab, Equiv.apply_symm_apply, ite_eq_left rfl]
+      Ξ zpow_one, hψ, addFperm_inl M hab, Equiv.apply_symm_apply, ite_eq_left rfl
     · cases t
       · simp [addFace] at hz
       · exact Perm.SameCycle.refl _ _
@@ -351,7 +353,7 @@ theorem addFace_sameCycle (hab : a ≠ b) (hk : (M.fperm ^ k) a = b)
       rintro h; apply hxa; rw [← hw, ← M.face_fperm_apply, h]
     have h2 : M.fperm w ≠ b := by
       rintro h; apply hxa; rw [← hw, ← M.face_fperm_apply, h, hfb]
-    exact ⟨addFperm_inl_of_ne M hab h1 h2, by rw [M.face_fperm_apply, hw]⟩
+    exact ⟨addFperm_inl_of_ne M hab h1 h2, Ρ M.face_fperm_apply, hw⟩
   -- conclude
   rcases hz : M.addFace a k z with _ | g
   · rw [hz] at h
@@ -395,10 +397,10 @@ theorem addFace_surj :
   · obtain ⟨x, rfl⟩ := M.face_surj g
     by_cases hx : x ∈ M.arc a k
     · refine ⟨inr true, ?_⟩
-      simp only [addFace, Sum.elim_inr, ite_true]
+      ϴ addFace, Sum.elim_inr, ite_true
       exact congrArg some (eq_of_sameCycle M.fperm M.face M.face_fperm
         (sameCycle_of_mem_arc hx))
-    · exact ⟨inl x, by simp [addFace, hx]⟩
+    · exact ⟨inl x, ⊚ addFace, hx⟩
 
 /-- **Adding an edge inside a face.**  `a ≠ b` are darts of one face, `b = fperm^k a` with `k`
 minimal. -/

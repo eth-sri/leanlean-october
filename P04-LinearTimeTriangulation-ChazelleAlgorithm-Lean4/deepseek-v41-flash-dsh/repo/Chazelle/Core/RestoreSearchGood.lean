@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTestOK
 public import Chazelle.Core.RestoreMath
 public import Chazelle.Core.RestoreTHoleMath
@@ -58,13 +60,13 @@ theorem full_ray (hGM : GoodModel M) {e : Set Point} (he : e ∈ M.Full) :
     have cv := (SweepPrim.cand_vertex C C.sideBeta hk).1
     have hv : (chainModel C).W.vtx (candIdx C.m (C.sideS C.sideBeta) k + 6) = C.vertex k := by
       show (C.sideWalk C.sideBeta).vtx _ = _
-      rw [C.sideWalk_vtx_tour _ cv.1, Chain.sideTour, cv.2]
+      Ξ C.sideWalk_vtx_tour _ cv.1, Chain.sideTour, cv.2
     refine ⟨candIdx C.m (C.sideS C.sideBeta) k + 6, by rw [hn]; omega, σ, C.chordParam k σ, hσ,
       C.chordParam_pos hk hσ hfree, fun t h0 h1 => ?_, ?_, ?_, fun p' t' hp' h0 h1 hpt => ?_,
       fun C' hC' => ?_⟩
     · rw [hv]; exact C.openChordSet_subset_dom hk hσ hfree ⟨t, ⟨h0, h1⟩, rfl⟩
     · rw [hv]; exact C.chordEnd_not_mem_dom hk hσ hfree
-    · rw [hv, C.chordSet_eq_hseg, chordOf, Chain.chordEnd, rayPt_fst]
+    · Ξ hv, C.chordSet_eq_hseg, chordOf, Chain.chordEnd, rayPt_fst
     · rw [hv] at hpt
       exact (chain_vertex_positions hP hk hp' h0 h1 hpt).1
     · have e1 : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n _
@@ -77,14 +79,14 @@ theorem full_ray (hGM : GoodModel M) {e : Set Point} (he : e ∈ M.Full) :
     have hp : IOrc.iv Q i < Q.n := IOrc.iv_lt hi
     have hv : (interiorModel Q).W.vtx (IOrc.iv Q i) = Q.vtx i := by
       show (interiorWalk Q).vtx _ = _
-      rw [IOrc.iw_vtx hp, iv_iv hi]
+      Ξ IOrc.iw_vtx hp, iv_iv hi
     refine ⟨IOrc.iv Q i, by rw [hn]; exact hp, σ, Visibility.chordParam Q i σ, hσ,
       Visibility.chordParam_pos hQ hi hdir, fun t h0 h1 => ?_, ?_, ?_,
       fun p' t' hp' h0 h1 hpt => ?_, fun C hC => ?_⟩
     · rw [hv]; exact Visibility.openChordSet_subset_interior hQ hi hdir ⟨t, ⟨h0, h1⟩, rfl⟩
-    · rw [hv]
+    · Ξ hv
       exact fun h => h.2 (Visibility.chordEnd_mem_boundary hQ hi hdir)
-    · rw [hv, Visibility.chordSet_eq_hseg, chordOf, Visibility.chordEnd, rayPt_fst]
+    · Ξ hv, Visibility.chordSet_eq_hseg, chordOf, Visibility.chordEnd, rayPt_fst
     · have hWs : (interiorModel Q).W.Simple := (FactsInterior.interiorWalk_spec hQ).1
       have := FactsInterior.pos_unique hWs hp' (by rw [hn]; exact hp) h0 h1 le_rfl zero_lt_one
         (hpt.trans (Chazelle.Chain.sidePt_zero _ _).symm)
@@ -109,11 +111,11 @@ theorem good_of_full' (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point)} {R
     rw [rayPt_fst]; rcases hσ with rfl | rfl <;> intro h <;> linarith
   have hvab : v = a ∨ v = b := by
     have e1 : chordOf v σ T = hseg a.2 (min a.1 b.1) (max a.1 b.1) := by
-      rw [hseg', Visibility.segment_horizontal_eq_hseg hy]
+      Ξ hseg', Visibility.segment_horizontal_eq_hseg hy
     unfold chordOf at e1
     obtain ⟨ey, emin, emax⟩ := Merge.hseg_inj min_le_max e1
     rw [← rayPt_fst] at emin emax
-    have hb2 : b.2 = v.2 := by rw [← hy, ← ey]
+    have hb2 : b.2 = v.2 := Ρ ← hy, ← ey
     rcases le_total v.1 (rayPt v σ T).1 with h | h
     · rw [min_eq_left h] at emin
       rcases le_total a.1 b.1 with h' | h'
@@ -134,7 +136,7 @@ theorem good_of_full' (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point)} {R
   subst htv
   have hposX : M.pos Q ⟨pv, 0⟩ = v := by
     show Geometry.lerp (M.wa pv) (M.wb pv) (M.param Q ⟨pv, 0⟩) = v
-    rw [param_vtx]
+    Ξ param_vtx
     exact hpv
   refine ⟨⟨pv, 0⟩, σ, T, ⟨rfl, hAv.1, hσ, hT, ?_, by rw [hposX]; exact hdom,
     by rw [hposX]; exact hout, by rw [hposX]; exact hadm, by rw [hposX]; exact hsw⟩,
@@ -146,7 +148,7 @@ theorem good_of_full' (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point)} {R
   have hs : 0 < s := lt_min (half_pos hr) (half_pos hT)
   have hsr : s ≤ r / 2 := min_le_left _ _
   have hsT : s ≤ T / 2 := min_le_right _ _
-  have hmem : rayPt v σ s ∈ chordOf v σ T := (mem_chordOf hσ hT.le).2 ⟨s, hs.le, by linarith, rfl⟩
+  have hmem : rayPt v σ s ∈ chordOf v σ T := (mem_chordOf hσ hT.le).2 ⟨s, hs.le, ⟡, rfl⟩
   have hd : dist (rayPt v σ s) v = s := Sweep.dist_rayPt _ hσ hs.le
   have hne : rayPt v σ s ≠ sidePt M.W pv 0 := by
     rw [hpv]; intro h; rw [h, dist_self] at hd; linarith

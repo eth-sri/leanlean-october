@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SortRam
 public import Chazelle.Core.FuseAsmColl
 
@@ -32,7 +34,7 @@ instance (x y : ℕ × ℕ × ℕ) : Decidable (tle x y) := by unfold tle; infer
 theorem tle_antisymm {x y : ℕ × ℕ × ℕ} (h1 : tle x y) (h2 : tle y x) : x = y := by
   obtain ⟨a, b, c⟩ := x; obtain ⟨d, e, f⟩ := y
   unfold tle at h1 h2; simp only at h1 h2
-  have : a = d ∧ b = e ∧ c = f := by omega
+  have : a = d ∧ b = e ∧ c = f := ⋄
   obtain ⟨rfl, rfl, rfl⟩ := this; rfl
 
 /-- The order of the items. -/
@@ -48,7 +50,7 @@ theorem le3_total (m : ℕ → ℕ) (T K a b : ℕ) : (le3 m T K a b || le3 m T 
 theorem le3_trans (m : ℕ → ℕ) (T K a b c : ℕ) (h1 : le3 m T K a b = true)
     (h2 : le3 m T K b c = true) : le3 m T K a c = true := by
   unfold le3 tle at *
-  split_ifs at h1 h2 ⊢ <;> simp only [decide_eq_true_eq] at h1 h2 ⊢ <;> omega
+  split_ifs at h1 h2 ⊢ <;> ϴ' decide_eq_true_eq at h1 h2 ⊢ <;> omega
 
 /-- Load the triples of the two items into `70210 … 70215`. -/
 def ld3 : Stmt := block [.addN 70210 30000 30000, .addN 70210 70210 30000,
@@ -86,9 +88,9 @@ theorem cmp3J_stable (m₀ : ℕ → ℕ) (A₀ T K : ℕ) (g : ℕ → ℕ) :
   intro c c' ⟨h1, h2, h3, h4⟩ hr _ hm _ _
   have hb : ∀ r, 70000 ≤ r → r < 80000 → c'.nreg r = c.nreg r := fun r a b =>
     hr r (by unfold bandOf bSort; omega) (by unfold ALLOC; omega)
-  exact ⟨by rw [hb _ (by norm_num) (by norm_num)]; exact h1,
-    by rw [hb _ (by norm_num) (by norm_num)]; exact h2, fun a ha => (hm a ha).trans (h3 a ha),
-    fun r a b => by rw [hb r a (by omega)]; exact h4 r a b⟩
+  exact ⟨by rw [hb _ (⊛) (⊛)]; exact h1,
+    by rw [hb _ (⊛) (⊛)]; exact h2, fun a ha => (hm a ha).trans (h3 a ha),
+    fun r a b => by rw [hb r a (⋄)]; exact h4 r a b⟩
 
 set_option maxHeartbeats 4000000 in
 theorem ld3_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {T a b : ℕ}

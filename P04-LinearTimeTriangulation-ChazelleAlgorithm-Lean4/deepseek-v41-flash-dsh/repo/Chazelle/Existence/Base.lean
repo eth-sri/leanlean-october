@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Existence.Combine
 public import Chazelle.Jordan.Jordan
 
@@ -30,15 +34,15 @@ variable (P : Polygon)
 
 /-- Edge `0` of a polygon with three vertices. -/
 theorem edge_zero_three (h3 : P.n = 3) : P.edge 0 = segment (P.vtx 0) (P.vtx 1) := by
-  simp [Polygon.edge, h3]
+  Θ Polygon.edge, h3
 
 /-- Edge `1` of a polygon with three vertices. -/
 theorem edge_one_three (h3 : P.n = 3) : P.edge 1 = segment (P.vtx 1) (P.vtx 2) := by
-  simp [Polygon.edge, h3]
+  Θ Polygon.edge, h3
 
 /-- Edge `2` of a polygon with three vertices. -/
 theorem edge_two_three (h3 : P.n = 3) : P.edge 2 = segment (P.vtx 2) (P.vtx 0) := by
-  simp [Polygon.edge, h3]
+  Θ Polygon.edge, h3
 
 /-- The boundary of a polygon with three vertices is the union of its three edges. -/
 theorem mem_boundary_three (h3 : P.n = 3) {p : Point} :
@@ -46,15 +50,15 @@ theorem mem_boundary_three (h3 : P.n = 3) {p : Point} :
       p ∈ segment (P.vtx 2) (P.vtx 0) := by
   constructor
   · rintro ⟨i, hi, hp⟩
-    rw [h3] at hi
+    Ξ' h3 at hi
     interval_cases i
     · exact Or.inl (by rw [← edge_zero_three P h3]; exact hp)
     · exact Or.inr (Or.inl (by rw [← edge_one_three P h3]; exact hp))
     · exact Or.inr (Or.inr (by rw [← edge_two_three P h3]; exact hp))
   · rintro (hp | hp | hp)
-    · exact ⟨0, by omega, by rw [edge_zero_three P h3]; exact hp⟩
-    · exact ⟨1, by omega, by rw [edge_one_three P h3]; exact hp⟩
-    · exact ⟨2, by omega, by rw [edge_two_three P h3]; exact hp⟩
+    · exact ⟨0, ⋄, by rw [edge_zero_three P h3]; exact hp⟩
+    · exact ⟨1, ⋄, by rw [edge_one_three P h3]; exact hp⟩
+    · exact ⟨2, ⋄, by rw [edge_two_three P h3]; exact hp⟩
 
 /-- The boundary of a polygon with three vertices lies in the triangle of its vertices. -/
 theorem boundary_subset_triangle (h3 : P.n = 3) :
@@ -63,7 +67,7 @@ theorem boundary_subset_triangle (h3 : P.n = 3) :
   rcases (mem_boundary_three P h3).1 hp with h | h | h
   · exact Geometry.segment_subset_triangle_left _ _ _ h
   · exact Geometry.segment_subset_triangle_mid _ _ _ h
-  · rw [segment_comm] at h; exact Geometry.segment_subset_triangle_right _ _ _ h
+  · Ξ' segment_comm at h; exact Geometry.segment_subset_triangle_right _ _ _ h
 
 /-! ### Nondegeneracy -/
 
@@ -71,22 +75,22 @@ theorem boundary_subset_triangle (h3 : P.n = 3) :
 theorem det_ne_zero_of_simple_three (hP : P.Simple) (h3 : P.n = 3) :
     det (P.vtx 0) (P.vtx 1) (P.vtx 2) ≠ 0 := by
   intro hdet
-  have h01 : P.vtx 0 ≠ P.vtx 1 := simple_vtx_ne hP (by omega) (by omega) (by norm_num)
-  have h02 : P.vtx 0 ≠ P.vtx 2 := simple_vtx_ne hP (by omega) (by omega) (by norm_num)
-  have h12 : P.vtx 1 ≠ P.vtx 2 := simple_vtx_ne hP (by omega) (by omega) (by norm_num)
+  have h01 : P.vtx 0 ≠ P.vtx 1 := simple_vtx_ne hP (⋄) (⋄) (⊛)
+  have h02 : P.vtx 0 ≠ P.vtx 2 := simple_vtx_ne hP (⋄) (⋄) (⊛)
+  have h12 : P.vtx 1 ≠ P.vtx 2 := simple_vtx_ne hP (⋄) (⋄) (⊛)
   obtain ⟨t, ht⟩ := Geometry.exists_lerp_of_det_eq_zero h01 hdet
   rcases lt_or_ge t 0 with ht0 | ht0
   · -- `v₀` lies strictly between `v₁` and `v₂`: on edge `1`
-    have h1t : (1 : ℝ) - t ≠ 0 := by linarith
+    have h1t : (1 : ℝ) - t ≠ 0 := ⟡
     have hv0 : P.vtx 0 = Geometry.lerp (P.vtx 1) (P.vtx 2) (1 / (1 - t)) := by
-      rw [ht]
+      Ξ ht
       apply Geometry.point_ext <;> simp only [Geometry.lerp_fst, Geometry.lerp_snd] <;>
         field_simp <;> ring
     have hmem : P.vtx 0 ∈ P.edge 1 := by
-      rw [edge_one_three P h3, hv0]
-      refine Geometry.lerp_mem_segment _ _ (div_nonneg zero_le_one (by linarith)) ?_
-      rw [div_le_one (by linarith)]; linarith
-    have := eq_endpoint_of_vtx_mem_edge hP (k := 0) (i := 1) (by omega) (by omega) hmem
+      Ξ edge_one_three P h3, hv0
+      refine Geometry.lerp_mem_segment _ _ (div_nonneg zero_le_one (⟡)) ?_
+      rw [div_le_one (⟡)]; linarith
+    have := eq_endpoint_of_vtx_mem_edge hP (k := 0) (i := 1) (⋄) (⋄) hmem
     rw [h3] at this
     norm_num at this
     rcases this with h | h
@@ -95,25 +99,25 @@ theorem det_ne_zero_of_simple_three (hP : P.Simple) (h3 : P.n = 3) :
   rcases le_or_gt t 1 with ht1 | ht1
   · -- `v₂` lies on edge `0`
     have hmem : P.vtx 2 ∈ P.edge 0 := by
-      rw [edge_zero_three P h3, ht]
+      Ξ edge_zero_three P h3, ht
       exact Geometry.lerp_mem_segment _ _ ht0 ht1
-    have := eq_endpoint_of_vtx_mem_edge hP (k := 2) (i := 0) (by omega) (by omega) hmem
+    have := eq_endpoint_of_vtx_mem_edge hP (k := 2) (i := 0) (⋄) (⋄) hmem
     rw [h3] at this
     norm_num at this
     rcases this with h | h
     · exact h02 h.symm
     · exact h12 h.symm
   · -- `v₁` lies strictly between `v₀` and `v₂`: on edge `2`
-    have ht0' : t ≠ 0 := by linarith
+    have ht0' : t ≠ 0 := ⟡
     have hv1 : P.vtx 1 = Geometry.lerp (P.vtx 0) (P.vtx 2) (1 / t) := by
-      rw [ht]
+      Ξ ht
       apply Geometry.point_ext <;> simp only [Geometry.lerp_fst, Geometry.lerp_snd] <;>
         field_simp <;> ring
     have hmem : P.vtx 1 ∈ P.edge 2 := by
-      rw [edge_two_three P h3, segment_comm, hv1]
-      refine Geometry.lerp_mem_segment _ _ (by positivity) ?_
-      rw [div_le_one (by linarith)]; linarith
-    have := eq_endpoint_of_vtx_mem_edge hP (k := 1) (i := 2) (by omega) (by omega) hmem
+      Ξ edge_two_three P h3, segment_comm, hv1
+      refine Geometry.lerp_mem_segment _ _ (⟢) ?_
+      rw [div_le_one (⟡)]; linarith
+    have := eq_endpoint_of_vtx_mem_edge hP (k := 1) (i := 2) (⋄) (⋄) hmem
     rw [h3] at this
     norm_num at this
     rcases this with h | h
@@ -127,14 +131,14 @@ theorem not_mem_boundary_of_mem_interior_triangle (h3 : P.n = 3)
     (hdet : det (P.vtx 0) (P.vtx 1) (P.vtx 2) ≠ 0) {z : Point}
     (hz : z ∈ interior (convexHull ℝ ({P.vtx 0, P.vtx 1, P.vtx 2} : Set Point))) :
     z ∉ P.boundary := by
-  rw [Geometry.mem_interior_triangle_iff hdet] at hz
+  Ξ' Geometry.mem_interior_triangle_iff hdet at hz
   intro hb
   rcases (mem_boundary_three P h3).1 hb with h | h | h
   · have := Geometry.bary₃_eq_zero_of_mem_segment (c := P.vtx 2) h
     linarith [hz.2.2]
   · have := Geometry.bary₁_eq_zero_of_mem_segment (a := P.vtx 0) h
     linarith [hz.1]
-  · rw [segment_comm] at h
+  · Ξ' segment_comm at h
     have := Geometry.bary₂_eq_zero_of_mem_segment (b := P.vtx 1) h
     linarith [hz.2.1]
 
@@ -144,7 +148,7 @@ theorem mem_boundary_of_not_mem_interior_triangle (h3 : P.n = 3)
     (hz : z ∈ convexHull ℝ ({P.vtx 0, P.vtx 1, P.vtx 2} : Set Point))
     (hint : z ∉ interior (convexHull ℝ ({P.vtx 0, P.vtx 1, P.vtx 2} : Set Point))) :
     z ∈ P.boundary := by
-  rw [mem_boundary_three P h3]
+  Ξ mem_boundary_three P h3
   rcases Geometry.mem_edge_of_not_mem_interior hdet hz hint with h | h | h
   · exact Or.inl h
   · exact Or.inr (Or.inl h)
@@ -166,18 +170,18 @@ theorem not_mem_filled_of_neg_affine {P : Polygon} {T : Set Point} (hT : P.bound
     rw [sub_eq_zero] at h
     rw [h, hv] at hz
     linarith
-  rw [mem_filled_iff_bounded P hzb]
+  Ξ mem_filled_iff_bounded P hzb
   apply not_isBoundedSet_connectedComponentIn_of_ray P hvz
   rintro _ ⟨s, hs, rfl⟩
   have hs' : (0 : ℝ) ≤ s := hs
   have heq : z + s • (z - v) = Geometry.lerp v z (1 + s) := by
-    rw [Geometry.lerp_eq_add_smul]
+    Ξ Geometry.lerp_eq_add_smul
     apply Geometry.point_ext <;> simp <;> ring
   intro hb
   have hy := hTf _ (hT hb)
   simp only at hy
   rw [heq, hf, hv] at hy
-  have : (1 + s) * f z < 0 := mul_neg_of_pos_of_neg (by linarith) hz
+  have : (1 + s) * f z < 0 := mul_neg_of_pos_of_neg (⟡) hz
   linarith
 
 /-! ### The filled region of a triangle -/
@@ -188,7 +192,7 @@ theorem filled_eq_triangle (hP : P.Simple) (h3 : P.n = 3) :
     P.filled = convexHull ℝ ({P.vtx 0, P.vtx 1, P.vtx 2} : Set Point) := by
   have hdet := det_ne_zero_of_simple_three P hP h3
   set T := convexHull ℝ ({P.vtx 0, P.vtx 1, P.vtx 2} : Set Point) with hTdef
-  have hbT : P.boundary ⊆ T := boundary_subset_triangle P h3
+  have hbT := boundary_subset_triangle P h3
   have hTf : ∀ y ∈ T, 0 ≤ Geometry.bary₁ (P.vtx 0) (P.vtx 1) (P.vtx 2) y ∧
       0 ≤ Geometry.bary₂ (P.vtx 0) (P.vtx 1) (P.vtx 2) y ∧
       0 ≤ Geometry.bary₃ (P.vtx 0) (P.vtx 1) (P.vtx 2) y :=
@@ -197,7 +201,7 @@ theorem filled_eq_triangle (hP : P.Simple) (h3 : P.n = 3) :
   constructor
   · intro hz
     by_contra hzT
-    rw [hTdef, Geometry.mem_triangle_iff_bary hdet] at hzT
+    Ξ' hTdef, Geometry.mem_triangle_iff_bary hdet at hzT
     rcases not_and_or.1 hzT with h | h
     · exact not_mem_filled_of_neg_affine hbT (fun y hy => (hTf y hy).1)
         (Geometry.bary₁_lerp (P.vtx 0) (P.vtx 1) (P.vtx 2) (P.vtx 0) z)
@@ -241,19 +245,19 @@ theorem weakTriangulates_triangle (hP : P.Simple) (h3 : P.n = 3) :
   have hdet := det_ne_zero_of_simple_three P hP h3
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · intro t ht
-    rw [List.mem_singleton] at ht
+    Ξ' List.mem_singleton at ht
     subst ht
     exact ⟨by rw [h3]; norm_num, by rw [h3]; norm_num, by rw [h3]; norm_num, hdet⟩
   · rw [h3]; rfl
-  · rw [filled_eq_triangle P hP h3]
+  · Ξ filled_eq_triangle P hP h3
     ext p
-    simp only [Set.mem_ofPred_eq, List.mem_singleton, exists_eq_left]
+    ϴ Set.mem_ofPred_eq, List.mem_singleton, exists_eq_left
     rfl
   · exact List.pairwise_singleton _ _
   · intro t ht i hi _
-    rw [List.mem_singleton] at ht
+    Ξ' List.mem_singleton at ht
     subst ht
-    rw [h3] at hi
+    Ξ' h3 at hi
     show P.vtx i ∈ ({P.vtx 0, P.vtx 1, P.vtx 2} : Set Point)
     interval_cases i <;> simp
 

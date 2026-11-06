@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranInitL5
 
 /-!
@@ -51,7 +53,7 @@ theorem nf_areas {m : ℕ → ℕ} {B E : ℕ} {N : NF} (h : NFWithin m B E N) :
     (∀ j, j < N.arcs.length → m (B + 4) + 5 * j + 4 < E) ∧
     (∀ j, j < N.seq.length → m (B + 6) + j < E) := by
   have hB : B + 11 < E := robust_addr (v := N.dec.length) fun m' hm' => (h m' hm').2.2.2.2.1
-  refine ⟨by omega, fun i hi => ?_, fun r hr => ?_, fun r hr t ht => ?_, fun j hj => ?_,
+  refine ⟨⋄, fun i hi => ?_, fun r hr => ?_, fun r hr t ht => ?_, fun j hj => ?_,
     fun j hj => ?_⟩
   · have := robust_addr2 (b := B + 3) (o := 5 * i + 4) (v := (N.chord i).dn)
       (fun m' hm' => by
@@ -71,7 +73,7 @@ theorem nf_areas {m : ℕ → ℕ} {B E : ℕ} {N : NF} (h : NFWithin m B E N) :
       omega
     have := robust_addr3 (b₁ := B + 7) (p₂ := m (B + 5) + 5 * r + 3) (t := t)
       (v := (N.region r).chords.getD t 0) hp (fun m' hm' => by
-        have e5 : m' (B + 5) = m (B + 5) := hm' _ (by omega)
+        have e5 : m' (B + 5) = m (B + 5) := hm' _ (⋄)
         have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.2.2 t ht
         rw [e5] at this
         exact this)

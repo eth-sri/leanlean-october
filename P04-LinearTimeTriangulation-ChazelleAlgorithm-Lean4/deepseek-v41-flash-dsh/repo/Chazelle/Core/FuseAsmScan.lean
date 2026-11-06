@@ -207,7 +207,7 @@ def stl (m₀ : ℕ → ℕ) (T B K : ℕ) : List (ℕ × ℕ × ℕ) := (SortL.
 
 theorem stl_getD {m₀ : ℕ → ℕ} {T B K j : ℕ} (hj : j < K) :
     (stl m₀ T B K).getD j (0, 0, 0) = trip m₀ T (m₀ (B + j)) := by
-  simp [stl, SortL.seg, List.getD_eq_getElem?_getD, hj]
+  Θ stl, SortL.seg, List.getD_eq_getElem?_getD, hj
 
 /-- The invariant of the scan. -/
 structure DSI (W K T B LB : ℕ) (m₀ : ℕ → ℕ) (c₀ c : Config) : Prop where
@@ -226,8 +226,8 @@ structure DSI (W K T B LB : ℕ) (m₀ : ℕ → ℕ) (c₀ c : Config) : Prop w
 
 theorem ddp_length_le {α : Type*} [DecidableEq α] (l : List α) (d : α) (n : ℕ) :
     (ddp l d n).length ≤ n := by
-  unfold ddp; rw [List.length_map]
-  exact (List.length_filter_le _ _).trans (by simp)
+  unfold ddp; Ξ List.length_map
+  exact (List.length_filter_le _ _).trans (✓)
 
 set_option maxHeartbeats 8000000 in
 theorem dsBody_step {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ c : Config}
@@ -384,15 +384,15 @@ theorem dsLoop_exec {P : Polygon} {W K T B LB : ℕ} {m₀ : ℕ → ℕ} {c₀ 
       ∃ c' k, Exec P W dsLoop c c' k ∧ k ≤ 60 * n + 2 ∧ 3 * n ≤ k ∧ DSI W K T B LB m₀ c₀ c' ∧
         c'.nreg 70220 = K
   | 0, c, hI, hn => by
-    have h30' : c.nreg 70230 = K := by rw [hI.regs 70230 (by norm_num) (by decide), h30]
-    exact ⟨c, 2, .whileLtN_false (by rw [h30']; omega) hI.wb, by omega, by omega, hI, by omega⟩
+    have h30' : c.nreg 70230 = K := Ρ hI.regs 70230 (⊛) (⌖), h30
+    exact ⟨c, 2, .whileLtN_false (by rw [h30']; omega) hI.wb, ⋄, ⋄, hI, ⋄⟩
   | n + 1, c, hI, hn => by
-    have h30' : c.nreg 70230 = K := by rw [hI.regs 70230 (by norm_num) (by decide), h30]
-    have ht : c.nreg 70220 < K := by omega
+    have h30' : c.nreg 70230 = K := Ρ hI.regs 70230 (⊛) (⌖), h30
+    have ht : c.nreg 70220 < K := ⋄
     obtain ⟨c', k, e, hI', hk, hk3, hc'⟩ := dsBody_step (P := P) hI ht h05 h08 h16 hitems hTB hBL hW
     obtain ⟨c'', k₂, e₂, hk₂, hk₂', hI'', hK⟩ := dsLoop_exec h05 h08 h16 h30 hitems hTB hBL hW n c' hI'
-      (by omega)
-    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [h30']; exact ht) e e₂, by omega, by omega, hI'', hK⟩
+      (⋄)
+    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [h30']; exact ht) e e₂, ⋄, ⋄, hI'', hK⟩
 
 end
 

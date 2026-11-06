@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBase
 public import Chazelle.Core.DownPhaseDrvKept
 
@@ -113,8 +115,8 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       rw [show ((b, y) : Point) = z from Prod.ext e.symm hzy.symm]; exact hzD)
     -- a ray point just before `z` lies on the chord
     set δ := min (t / 2) (min (z.1 - a) (b - z.1) / 2) with hδ
-    have hδ0 : 0 < δ := lt_min (by linarith) (by
-      have : 0 < min (z.1 - a) (b - z.1) := lt_min (by linarith) (by linarith)
+    have hδ0 : 0 < δ := lt_min (⟡) (by
+      have : 0 < min (z.1 - a) (b - z.1) := lt_min (⟡) (by linarith)
       linarith)
     have hδt : δ < t := by have := min_le_left (t / 2) (min (z.1 - a) (b - z.1) / 2); linarith
     have hδa : δ < z.1 - a := by
@@ -123,7 +125,7 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     have hδb : δ < b - z.1 := by
       have := min_le_right (t / 2) (min (z.1 - a) (b - z.1) / 2)
       have := min_le_right (z.1 - a) (b - z.1); linarith
-    have hw := hbefore (t - δ) (by linarith) (by linarith)
+    have hw := hbefore (t - δ) (⟡) (⟡)
     rw [hHR] at hw
     apply (hRfree hw).2
     refine ⟨hseg y a b, hc, ?_, ?_, ?_⟩
@@ -138,8 +140,8 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hdirQ : DirInterior Q i σ := hin.mono fun t ht => hsub ht
   have hcs : chordSet Q i σ = chordSet H j σ := by
     unfold chordSet chordEnd chordParam
-    rw [hv, ← hvdef, heq]
-  have hTQ : chordParam Q i σ = hitParam H v σ := heq
+    Ξ hv, ← hvdef, heq
+  have hTQ := heq
   -- the domain part lies in `R`
   have himg := Visibility.chordSet_eq_image hQ hi hdirQ
   have hinR : ∀ t, 0 < t → t < chordParam Q i σ → rayPt v σ t ∈ R := fun t h1 h2 => by
@@ -148,8 +150,8 @@ theorem chord_of_host (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   · -- a point of the open chord would be free and on a chord of `S`
     have hT := Visibility.chordParam_pos hQ hi hdirQ
     have hmem : rayPt v σ (chordParam Q i σ / 2) ∈ chordSet Q i σ := by
-      rw [himg]; exact ⟨_, ⟨by linarith, by linarith⟩, rfl⟩
-    exact (hRfree (hinR _ (by linarith) (by linarith))).2 ⟨_, hS, hmem⟩
+      rw [himg]; exact ⟨_, ⟨⟡, by linarith⟩, rfl⟩
+    exact (hRfree (hinR _ (⟡) (by linarith))).2 ⟨_, hS, hmem⟩
   · rintro z ⟨hz, hzD⟩
     rw [himg] at hz
     obtain ⟨s, ⟨hs0, hs1⟩, rfl⟩ := hz
@@ -176,7 +178,7 @@ theorem hostPoly_bd_sub (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
   obtain ⟨-, hWb, -, -⟩ := FactsInterior.interiorWalk_spec hQ
   rcases hostEdge_cases hQ hFam hne hR hi hzi with ⟨p, hp, t, ht0, ht1, rfl⟩ | ⟨-, c, hc, hzc⟩
   · left
-    rw [← hWb]
+    Ξ ← hWb
     exact sidePt_mem_boundary hp ht0 ht1.le
   · exact Or.inr ⟨c, hc, hzc⟩
 
@@ -197,7 +199,7 @@ theorem exists_walk_vtx {k : ℕ} (hk : k < Q.n) :
   split_ifs
   · exact ⟨k, hk, rfl⟩
   · refine ⟨Q.n - 1 - k, by rw [FactsInterior.rev_n]; omega, ?_⟩
-    rw [FactsInterior.rev_vtx Q _ (by omega), show Q.n - 1 - (Q.n - 1 - k) = k by omega]
+    rw [FactsInterior.rev_vtx Q _ (⋄), show Q.n - 1 - (Q.n - 1 - k) = k by omega]
 
 /-- **A vertex of `Q` in the closure of a region is a vertex of its host polygon.** -/
 theorem vtx_mem_hostPoly (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
@@ -236,7 +238,7 @@ theorem vtx_mem_hostPoly (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q
           hsub kk (Nat.cast_nonneg kk) (by exact_mod_cast hkk) hkin⟩) hkin
     obtain ⟨q, hq, s, hs0, hs1, hzq, hkey⟩ := arcEdge_of_noVertex M.W hb1.1 hb1.2 hb2.1 hb2.2
       (hk_succ_ne hM hF hfin hN2 hi) hnv _ hzi
-    have hq' : q < (interiorWalk Q).n := hq
+    have hq' := hq
     obtain ⟨rfl, rfl⟩ := sidePt_eq_vtx hWs hq' hk' hs0 hs1 (hzq.symm.trans hkv.symm)
     -- the vertex key is an end of the gap
     have hnk := hnv q hq
@@ -304,7 +306,7 @@ theorem missing_found (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   obtain ⟨j, hj, hjv⟩ := vtx_mem_hostPoly hQ hFam hne hR hi hcl
   refine ⟨R, hR, i, σ, hi, hσ, rfl, hdir, hcR, j, hj, hjv, ?_⟩
   unfold DirInterior
-  rw [hjv, ← region_eq_intHost hQ hFam hne hR]
+  Ξ hjv, ← region_eq_intHost hQ hFam hne hR
   exact hev
 
 /-! ## No chord is emitted twice -/
@@ -331,7 +333,7 @@ theorem chordSet_inj (hQ : Q.Simple) (hdh : DistinctHeights Q) {i i' : ℕ} (hi 
   refine ⟨rfl, ?_⟩
   -- a point of the open chord of `σ` lies on the side `σ`
   have hm : rayPt (Q.vtx i) σ (chordParam Q i σ / 2) ∈ chordSet Q i σ' := by
-    rw [← h, himg]; exact ⟨_, ⟨by linarith, by linarith⟩, rfl⟩
+    rw [← h, himg]; exact ⟨_, ⟨⟡, by linarith⟩, rfl⟩
   rw [himg'] at hm
   obtain ⟨u, ⟨hu0, -⟩, hu⟩ := hm
   have e := congrArg Prod.fst hu

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFTest
 public import Chazelle.Core.RestoreTIntKey
 public import Chazelle.Core.RestoreTDisp
@@ -52,7 +54,7 @@ theorem fscr_5 {r : ℕ} (h1 : 50000 ≤ r) (h2 : r < 60000) : FScr r := by
 
 theorem pos_vtx0 (M : Model) (Q : Polygon) (e : ℕ) : M.pos Q ⟨e, 0⟩ = M.wa e := by
   show Geometry.lerp (M.wa e) (M.wb e) (M.param Q ⟨e, 0⟩) = M.wa e
-  rw [show M.param Q ⟨e, 0⟩ = 0 from rfl, Geometry.lerp_zero]
+  Ξ show M.param Q ⟨e, 0⟩ = 0 from rfl, Geometry.lerp_zero
 
 /-- **The height vertex** as a run step of the search. -/
 theorem fHv_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FInv E.W c₀ c)
@@ -67,7 +69,7 @@ theorem fHv_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
   have hA := hI.allocA hE
   obtain ⟨hMD, hwf⟩ := Gran.desc_agree' hE.hwf hE.hMD hag
   have hwfc := hwf.mono hA
-  have hn3 : 3 ≤ E.P.n := hE.hG.1.1
+  have hn3 := hE.hG.1.1
   have fx : ∀ c', FInv E.W c₀ c' → c'.nreg 81000 = E.MD ∧ c'.nreg 81011 = 0 ∧
       c'.nreg 81012 = 1 ∧ c'.nreg 81020 = E.P.n := fun c' hI' =>
     ⟨by rw [hI'.hin _ (by unfold FFix; omega), hE.i0],

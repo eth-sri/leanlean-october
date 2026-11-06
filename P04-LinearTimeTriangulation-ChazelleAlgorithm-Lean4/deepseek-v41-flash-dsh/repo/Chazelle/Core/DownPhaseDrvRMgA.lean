@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Node
 
 /-!
@@ -66,7 +68,7 @@ theorem mergePreR {P : Polygon} {W : ℕ} {c : Config} {X : MemCtx} (hG : GoodEn
   have hP1 : C1.P = H.poly (Qof P) := hd1.2.1
   have hP2 : C2.P = H.poly (Qof P) := hd2.2.1
   have hl : J.left = C1 := jOf_left C1 C2 hlen
-  have hr : J.right = C2 := jOf_right hlen (by rw [hP2, hP1]) hcons
+  have hr : J.right = C2 := jOf_right hlen (Ρ hP2, hP1) hcons
   have hwP : J.whole.P = H.poly (Qof P) := by rw [jOf_whole_P]; exact hP1
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hsT : J.whole.s < J.whole.P.n := by rw [jOf_whole_s, jOf_whole_P]; exact hs1

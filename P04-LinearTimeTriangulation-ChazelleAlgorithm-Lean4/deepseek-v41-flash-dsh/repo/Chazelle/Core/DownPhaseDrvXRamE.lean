@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvXRamD
 
 /-!
@@ -23,7 +25,7 @@ open DrvR (ivB qE)
 def Bbkt (r : ℕ) : Bool :=
   decide ((217112 ≤ r ∧ r ≤ 217128) ∨ (217150 ≤ r ∧ r ≤ 217156) ∨ (217160 ≤ r ∧ r ≤ 217162))
 
-theorem wr_bktBody : wr Bbkt bktBody = true := by decide
+theorem wr_bktBody : wr Bbkt bktBody = true := ⌖
 
 /-- The registers `posLtOn … dst` writes. -/
 def Bon (dst r : ℕ) : Bool :=
@@ -42,7 +44,7 @@ theorem onArc_bits (Q : Polygon) (li : Bool) (N : NF) (j : ℕ) (x : WPos) :
   unfold OnArcP
   by_cases p1 : PosEq x (N.arc j).s <;> by_cases p2 : PosEq x (N.arc j).e <;>
     by_cases p3 : PosLt Q li (N.arc j).s (N.arc j).e <;> by_cases p4 : PosLt Q li (N.arc j).s x <;>
-    by_cases p5 : PosLt Q li x (N.arc j).e <;> simp [p1, p2, p3, p4, p5]
+    by_cases p5 : PosLt Q li x (N.arc j).e <;> Θ p1, p2, p3, p4, p5
 
 open Classical in
 theorem bktF_bits (A j : ℕ) (a b c : Prop) [Decidable a] [Decidable b] [Decidable c] :
@@ -50,13 +52,13 @@ theorem bktF_bits (A j : ℕ) (a b c : Prop) [Decidable a] [Decidable b] [Decida
         (if (if c then 1 else 0) < 1 then 0 else 2 * j + 2) else 2 * ((j + 1) % A) + 1)
       else 2 * j + 1 : ℕ) = bktF A j a b c := by
   unfold bktF
-  by_cases p1 : a <;> by_cases p2 : b <;> by_cases p3 : c <;> simp [p1, p2, p3]
+  by_cases p1 : a <;> by_cases p2 : b <;> by_cases p3 : c <;> Θ p1, p2, p3
 
 section body
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
+
 open Classical in
 /-- **One arc of the bucket loop.** -/
 theorem bktBody_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : Bool} {N : NF}
@@ -77,44 +79,44 @@ theorem bktBody_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li :
         bktF N.arcs.length j (PosEq x (N.arc j).s) (PosEq x (N.arc j).e)
           (PosLt (Qof P) li (N.arc j).s x) else d.nreg 217112) ∧
       FrameB Bbkt d d' := by
-  have hW1 : 1 ≤ W := by omega
+  have hW1 : 1 ≤ W := ⋄
   have hn : 1 ≤ (Qof P).n := by have := hx.2.2; omega
   -- read the arc
   obtain ⟨d1, k1, e1, hk1, a16, a18, a19, a20, a21, f1⟩ := arcRd_exec (P := P) d hw h14 h27 h31 hAW
     m1 m2 m3 m4
   have hw1 := e1.wb_right
-  have g1 : ∀ r, Brd r = false → d1.nreg r = d.nreg r := f1.1
+  have g1 := f1.1
   -- `eqS`, `eqE`
   obtain ⟨d2, k2, e2, hk2, n2⟩ := eq2S_exec (P := P) d1 hw1 (a := 217110) (b := 217118)
-    (c := 217111) (e := 217119) (dst := 217122) (by decide) (by decide) (by decide) (by decide) hW1
+    (c := 217111) (e := 217119) (dst := 217122) (⌖) (by decide) (by decide) (by decide) hW1
   have hw2 := e2.wb_right
   obtain ⟨d3, k3, e3, hk3, n3⟩ := eq2S_exec (P := P) d2 hw2 (a := 217110) (b := 217120)
-    (c := 217111) (e := 217121) (dst := 217123) (by decide) (by decide) (by decide) (by decide) hW1
+    (c := 217111) (e := 217121) (dst := 217123) (⌖) (by decide) (by decide) (by decide) hW1
   have hw3 := e3.wb_right
   -- values in `d3`
   have c10 : d3.nreg 217110 = x.edge := by
-    rw [n3.other (by decide), n2.other (by decide), g1 _ (by decide), h10]
+    rw [n3.other (⌖), n2.other (by decide), g1 _ (by decide), h10]
   have c11 : d3.nreg 217111 = x.hgt := by
-    rw [n3.other (by decide), n2.other (by decide), g1 _ (by decide), h11]
+    rw [n3.other (⌖), n2.other (by decide), g1 _ (by decide), h11]
   have c18 : d3.nreg 217118 = (N.arc j).s.edge := by
-    rw [n3.other (by decide), n2.other (by decide), a18]
+    rw [n3.other (⌖), n2.other (by decide), a18]
   have c19 : d3.nreg 217119 = (N.arc j).s.hgt := by
-    rw [n3.other (by decide), n2.other (by decide), a19]
+    rw [n3.other (⌖), n2.other (by decide), a19]
   have c20 : d3.nreg 217120 = (N.arc j).e.edge := by
-    rw [n3.other (by decide), n2.other (by decide), a20]
+    rw [n3.other (⌖), n2.other (by decide), a20]
   have c21 : d3.nreg 217121 = (N.arc j).e.hgt := by
-    rw [n3.other (by decide), n2.other (by decide), a21]
+    rw [n3.other (⌖), n2.other (by decide), a21]
   have q3 : ∀ r, Bbkt r = false → d3.nreg r = d.nreg r := fun r hr => by
     rw [n3.other (by simp only [Bbkt, decide_eq_false_iff_not] at hr; omega),
       n2.other (by simp only [Bbkt, decide_eq_false_iff_not] at hr; omega),
       g1 r (by simp only [Bbkt, Brd, decide_eq_false_iff_not] at hr ⊢; omega)]
   have b22 : d3.nreg 217122 = if PosEq x (N.arc j).s then 1 else 0 := by
-    rw [n3.other (by decide), n2.same, g1 217110 (by decide), g1 217111 (by decide), h10, h11, a18,
+    rw [n3.other (⌖), n2.same, g1 217110 (by decide), g1 217111 (by decide), h10, h11, a18,
       a19]
     exact if_congr Iff.rfl rfl rfl
   have b23 : d3.nreg 217123 = if PosEq x (N.arc j).e then 1 else 0 := by
-    rw [n3.same, n2.other (by decide), n2.other (by decide), n2.other (by decide),
-      n2.other (by decide), g1 217110 (by decide), g1 217111 (by decide), h10, h11, a20, a21]
+    rw [n3.same, n2.other (⌖), n2.other (by decide), n2.other (by decide),
+      n2.other (⌖), g1 217110 (by decide), g1 217111 (by decide), h10, h11, a20, a21]
     exact if_congr Iff.rfl rfl rfl
   -- the three comparisons
   have hsx := posLtF_iff hG li hs.2.2 hs.2.1 hs.1.2.2 hx.2.1 hx.1.2.2
@@ -122,69 +124,69 @@ theorem bktBody_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li :
   have hxe := posLtF_iff hG li hx.2.2 hx.2.1 hx.1.2.2 he.2.1 he.1.2.2
   obtain ⟨d4, k4, e4, hk4, v4⟩ := posLtOn_exec (P := P) d3 hw3 (a := 217118) (b := 217119)
     (c := 217120) (e := 217121) (dst := 217124) (n := (Qof P).n) (li := li)
-    (by rw [q3 _ (by decide), h20]) (by rw [q3 _ (by decide), h26]) (by rw [q3 _ (by decide), h27])
-    (by rw [c18]; exact hs.2.2) hnW hW1 (by decide) (by decide) (by decide) (by decide)
-  have f4 : FrameB (Bon 217124) d3 d4 := exec_frameB e4 (by decide)
+    (by rw [q3 _ (⌖), h20]) (by rw [q3 _ (by decide), h26]) (by rw [q3 _ (by decide), h27])
+    (by rw [c18]; exact hs.2.2) hnW hW1 (⌖) (by decide) (by decide) (by decide)
+  have f4 : FrameB (Bon 217124) d3 d4 := exec_frameB e4 (⌖)
   have hw4 := e4.wb_right
   obtain ⟨d5, k5, e5, hk5, v5⟩ := posLtOn_exec (P := P) d4 hw4 (a := 217118) (b := 217119)
     (c := 217110) (e := 217111) (dst := 217125) (n := (Qof P).n) (li := li)
-    (by rw [f4.1 _ (by decide), q3 _ (by decide), h20])
-    (by rw [f4.1 _ (by decide), q3 _ (by decide), h26])
-    (by rw [f4.1 _ (by decide), q3 _ (by decide), h27])
-    (by rw [f4.1 _ (by decide), c18]; exact hs.2.2) hnW hW1 (by decide) (by decide) (by decide)
-    (by decide)
-  have f5 : FrameB (Bon 217125) d4 d5 := exec_frameB e5 (by decide)
+    (by rw [f4.1 _ (⌖), q3 _ (by decide), h20])
+    (by rw [f4.1 _ (⌖), q3 _ (by decide), h26])
+    (by rw [f4.1 _ (⌖), q3 _ (by decide), h27])
+    (by rw [f4.1 _ (⌖), c18]; exact hs.2.2) hnW hW1 (by decide) (by decide) (by decide)
+    (⌖)
+  have f5 : FrameB (Bon 217125) d4 d5 := exec_frameB e5 (⌖)
   have hw5 := e5.wb_right
   obtain ⟨d6, k6, e6, hk6, v6⟩ := posLtOn_exec (P := P) d5 hw5 (a := 217110) (b := 217111)
     (c := 217120) (e := 217121) (dst := 217126) (n := (Qof P).n) (li := li)
-    (by rw [f5.1 _ (by decide), f4.1 _ (by decide), q3 _ (by decide), h20])
-    (by rw [f5.1 _ (by decide), f4.1 _ (by decide), q3 _ (by decide), h26])
-    (by rw [f5.1 _ (by decide), f4.1 _ (by decide), q3 _ (by decide), h27])
-    (by rw [f5.1 _ (by decide), f4.1 _ (by decide), c10]; exact hx.2.2) hnW hW1 (by decide)
-    (by decide) (by decide) (by decide)
-  have f6 : FrameB (Bon 217126) d5 d6 := exec_frameB e6 (by decide)
+    (by rw [f5.1 _ (⌖), f4.1 _ (by decide), q3 _ (by decide), h20])
+    (by rw [f5.1 _ (⌖), f4.1 _ (by decide), q3 _ (by decide), h26])
+    (by rw [f5.1 _ (⌖), f4.1 _ (by decide), q3 _ (by decide), h27])
+    (by rw [f5.1 _ (⌖), f4.1 _ (by decide), c10]; exact hx.2.2) hnW hW1 (by decide)
+    (⌖) (by decide) (by decide)
+  have f6 : FrameB (Bon 217126) d5 d6 := exec_frameB e6 (⌖)
   have hw6 := e6.wb_right
   have b24 : d6.nreg 217124 = if PosLt (Qof P) li (N.arc j).s (N.arc j).e then 1 else 0 := by
-    rw [f6.1 _ (by decide), f5.1 _ (by decide), v4, c18, c19, c20, c21, hse]
+    rw [f6.1 _ (⌖), f5.1 _ (by decide), v4, c18, c19, c20, c21, hse]
   have b25 : d6.nreg 217125 = if PosLt (Qof P) li (N.arc j).s x then 1 else 0 := by
-    rw [f6.1 _ (by decide), v5, f4.1 _ (by decide), f4.1 _ (by decide), f4.1 _ (by decide),
-      f4.1 _ (by decide), c18, c19, c10, c11, hsx]
+    rw [f6.1 _ (⌖), v5, f4.1 _ (by decide), f4.1 _ (by decide), f4.1 _ (by decide),
+      f4.1 _ (⌖), c18, c19, c10, c11, hsx]
   have b26 : d6.nreg 217126 = if PosLt (Qof P) li x (N.arc j).e then 1 else 0 := by
-    rw [v6, f5.1 _ (by decide), f5.1 _ (by decide), f5.1 _ (by decide), f5.1 _ (by decide),
-      f4.1 _ (by decide), f4.1 _ (by decide), f4.1 _ (by decide), f4.1 _ (by decide), c10, c11,
+    rw [v6, f5.1 _ (⌖), f5.1 _ (by decide), f5.1 _ (by decide), f5.1 _ (by decide),
+      f4.1 _ (⌖), f4.1 _ (by decide), f4.1 _ (by decide), f4.1 _ (by decide), c10, c11,
       c20, c21, hxe]
   have q6 : ∀ r, Bbkt r = false → d6.nreg r = d.nreg r := fun r hr => by
     have hr' : Bon 217124 r = false ∧ Bon 217125 r = false ∧ Bon 217126 r = false := by
       simp only [Bbkt, Bon, decide_eq_false_iff_not] at hr ⊢; omega
-    rw [f6.1 _ hr'.2.2, f5.1 _ hr'.2.1, f4.1 _ hr'.1, q3 r hr]
+    Ξ f6.1 _ hr'.2.2, f5.1 _ hr'.2.1, f4.1 _ hr'.1, q3 r hr
   have b22' : d6.nreg 217122 = if PosEq x (N.arc j).s then 1 else 0 := by
-    rw [f6.1 _ (by decide), f5.1 _ (by decide), f4.1 _ (by decide), b22]
+    rw [f6.1 _ (⌖), f5.1 _ (by decide), f4.1 _ (by decide), b22]
   have b23' : d6.nreg 217123 = if PosEq x (N.arc j).e then 1 else 0 := by
-    rw [f6.1 _ (by decide), f5.1 _ (by decide), f4.1 _ (by decide), b23]
+    rw [f6.1 _ (⌖), f5.1 _ (by decide), f4.1 _ (by decide), b23]
   -- the arc test
-  obtain ⟨d7, k7, e7, hk7, n7⟩ := onS_exec (P := P) d6 hw6 hW1 (by rw [q6 _ (by decide), h27])
+  obtain ⟨d7, k7, e7, hk7, n7⟩ := onS_exec (P := P) d6 hw6 hW1 (by rw [q6 _ (⌖), h27])
   have hw7 := e7.wb_right
   have b27 : d7.nreg 217127 = if OnArcP (Qof P) li N j x then 1 else 0 := by
-    rw [n7.same, b22', b23', b24, b25, b26]
+    Ξ n7.same, b22', b23', b24, b25, b26
     exact onArc_bits (Qof P) li N j x
   have q7 : ∀ r, Bbkt r = false → d7.nreg r = d.nreg r := fun r hr => by
-    rw [n7.other (by simp only [Bbkt, decide_eq_false_iff_not] at hr; omega), q6 r hr]
+    Ξ n7.other (by simp only [Bbkt, decide_eq_false_iff_not] at hr; omega), q6 r hr
   -- the bucket
   have j16 : d7.nreg 217116 = j := by
-    rw [n7.other (by decide), f6.1 _ (by decide), f5.1 _ (by decide), f4.1 _ (by decide),
-      n3.other (by decide), n2.other (by decide), a16]
+    rw [n7.other (⌖), f6.1 _ (by decide), f5.1 _ (by decide), f4.1 _ (by decide),
+      n3.other (⌖), n2.other (by decide), a16]
   have p15 : d7.nreg 217115 = d.nreg 217115 := by
-    rw [n7.other (by decide), f6.1 _ (by decide), f5.1 _ (by decide), f4.1 _ (by decide),
-      n3.other (by decide), n2.other (by decide), g1 _ (by decide)]
+    rw [n7.other (⌖), f6.1 _ (by decide), f5.1 _ (by decide), f4.1 _ (by decide),
+      n3.other (⌖), n2.other (by decide), g1 _ (by decide)]
   have p12 : d7.nreg 217112 = d.nreg 217112 := by
-    rw [n7.other (by decide), f6.1 _ (by decide), f5.1 _ (by decide), f4.1 _ (by decide),
-      n3.other (by decide), n2.other (by decide), g1 _ (by decide)]
+    rw [n7.other (⌖), f6.1 _ (by decide), f5.1 _ (by decide), f4.1 _ (by decide),
+      n3.other (⌖), n2.other (by decide), g1 _ (by decide)]
   have b22'' : d7.nreg 217122 = if PosEq x (N.arc j).s then 1 else 0 := by
-    rw [n7.other (by decide), b22']
+    rw [n7.other (⌖), b22']
   have b23'' : d7.nreg 217123 = if PosEq x (N.arc j).e then 1 else 0 := by
-    rw [n7.other (by decide), b23']
+    rw [n7.other (⌖), b23']
   have b25'' : d7.nreg 217125 = if PosLt (Qof P) li (N.arc j).s x then 1 else 0 := by
-    rw [n7.other (by decide), b25]
+    rw [n7.other (⌖), b25]
   obtain ⟨d8, k8, e8, hk8, v15, v12, f8⟩ : ∃ d8 k8, Exec P W (.ifLtN 217115 217027
       (.ifLtN 217127 217027 .skip (.seq bktFS (block [.constN 217115 1]))) .skip) d7 d8 k8 ∧
       k8 ≤ 20 ∧
@@ -194,31 +196,31 @@ theorem bktBody_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li :
         bktF N.arcs.length j (PosEq x (N.arc j).s) (PosEq x (N.arc j).e)
           (PosLt (Qof P) li (N.arc j).s x) else d.nreg 217112) ∧
       FrameB (fun r => decide (r = 217112 ∨ r = 217115 ∨ r = 217128)) d7 d8 := by
-    have c27 : d7.nreg 217027 = 1 := (q7 217027 (by decide)).trans h27
+    have c27 : d7.nreg 217027 = 1 := (q7 217027 (⌖)).trans h27
     by_cases c1 : d.nreg 217115 < 1
     · by_cases c2 : OnArcP (Qof P) li N j x
       · obtain ⟨d8, k8, e8, hk8, w12, f8⟩ := bktFS_exec (P := P) d7 hw7 hj h2A c27
-          (by rw [q7 _ (by decide), h30]) (by rw [q7 _ (by decide), h44]) j16
+          (by rw [q7 _ (⌖), h30]) (by rw [q7 _ (by decide), h44]) j16
         obtain ⟨d9, k9, e9, hk9, n9⟩ := x_const (P := P) d8 e8.wb_right 217115 1 hW1
         have ex : Exec P W (.ifLtN 217115 217027
             (.ifLtN 217127 217027 .skip (.seq bktFS (block [.constN 217115 1]))) .skip) d7 d9
             (k8 + k9 + 2 + 1) :=
           .ifLtN_true (by rw [p15, c27]; exact c1)
             (.ifLtN_false (by rw [b27, c27, ite_eq_left c2]; omega) (.seq e8 e9))
-        refine ⟨d9, _, ex, by omega, ?_, ?_, ?_⟩
-        · rw [n9.same, ite_eq_left ⟨c1, c2⟩]
-        · rw [n9.other (by decide), w12, b22'', b23'', b25'',
+        refine ⟨d9, _, ex, ⋄, ?_, ?_, ?_⟩
+        · Ξ n9.same, ite_eq_left ⟨c1, c2⟩
+        · rw [n9.other (⌖), w12, b22'', b23'', b25'',
             ite_eq_left (show d.nreg 217115 < 1 ∧ OnArcP (Qof P) li N j x from ⟨c1, c2⟩)]
           exact bktF_bits _ _ _ _ _
         · exact (FrameB.trans ⟨fun r hr => f8.1 r (by simp only [BbktF, decide_eq_false_iff_not] at hr ⊢; omega),
             fun r hr => f8.2.1 r (by simp only [BbktF, decide_eq_false_iff_not] at hr ⊢; omega),
-            f8.2.2⟩ (exec_frameB e9 (by decide)))
+            f8.2.2⟩ (exec_frameB e9 (⌖)))
       · have ex : Exec P W (.ifLtN 217115 217027
             (.ifLtN 217127 217027 .skip (.seq bktFS (block [.constN 217115 1]))) .skip) d7 d7
             (0 + 1 + 1) :=
           .ifLtN_true (by rw [p15, c27]; exact c1)
             (.ifLtN_true (by rw [b27, c27, ite_eq_right c2]; omega) (.skip hw7))
-        refine ⟨d7, _, ex, by omega, ?_, ?_, FrameB.refl _ _⟩
+        refine ⟨d7, _, ex, ⋄, ?_, ?_, FrameB.refl _ _⟩
         · rw [p15, ite_eq_right (show ¬ (d.nreg 217115 < 1 ∧ OnArcP (Qof P) li N j x) from
             fun h => c2 h.2)]
         · rw [p12, ite_eq_right (show ¬ (d.nreg 217115 < 1 ∧ OnArcP (Qof P) li N j x) from
@@ -226,7 +228,7 @@ theorem bktBody_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li :
     · have ex : Exec P W (.ifLtN 217115 217027
           (.ifLtN 217127 217027 .skip (.seq bktFS (block [.constN 217115 1]))) .skip) d7 d7
           (0 + 2) := .ifLtN_false (by rw [p15, c27]; exact c1) (.skip hw7)
-      refine ⟨d7, _, ex, by omega, ?_, ?_, FrameB.refl _ _⟩
+      refine ⟨d7, _, ex, ⋄, ?_, ?_, FrameB.refl _ _⟩
       · rw [p15, ite_eq_right (show ¬ (d.nreg 217115 < 1 ∧ OnArcP (Qof P) li N j x) from
           fun h => c1 h.1)]
       · rw [p12, ite_eq_right (show ¬ (d.nreg 217115 < 1 ∧ OnArcP (Qof P) li N j x) from
@@ -234,12 +236,12 @@ theorem bktBody_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li :
   have hw8 := e8.wb_right
   -- advance
   have p13 : d8.nreg 217113 = d.nreg 217113 := by
-    rw [f8.1 _ (by decide), n7.other (by decide), f6.1 _ (by decide), f5.1 _ (by decide),
-      f4.1 _ (by decide), n3.other (by decide), n2.other (by decide), g1 _ (by decide)]
+    rw [f8.1 _ (⌖), n7.other (by decide), f6.1 _ (by decide), f5.1 _ (by decide),
+      f4.1 _ (⌖), n3.other (by decide), n2.other (by decide), g1 _ (by decide)]
   have p14 : d8.nreg 217114 = d.nreg 217114 := by
-    rw [f8.1 _ (by decide), n7.other (by decide), f6.1 _ (by decide), f5.1 _ (by decide),
-      f4.1 _ (by decide), n3.other (by decide), n2.other (by decide), g1 _ (by decide)]
-  have p27 : d8.nreg 217027 = 1 := by rw [f8.1 _ (by decide), q7 _ (by decide), h27]
+    rw [f8.1 _ (⌖), n7.other (by decide), f6.1 _ (by decide), f5.1 _ (by decide),
+      f4.1 _ (⌖), n3.other (by decide), n2.other (by decide), g1 _ (by decide)]
+  have p27 : d8.nreg 217027 = 1 := by rw [f8.1 _ (⌖), q7 _ (by decide), h27]
   obtain ⟨d9, k9, e9, hk9, w13, w14, g9⟩ : ∃ d9 k9, Exec P W (block [.addN 217114 217114 217027,
       .addN 217113 217113 217027]) d8 d9 k9 ∧ k9 ≤ 2 ∧ d9.nreg 217113 = d.nreg 217113 + 1 ∧
       d9.nreg 217114 = d.nreg 217114 + 1 ∧
@@ -247,17 +249,17 @@ theorem bktBody_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li :
     exec_block
     · omega
     · config_simp; omega
-    · refine ⟨by omega, ?_, ?_, fun r h1 h2 => ?_⟩ <;> config_simp
+    · refine ⟨⋄, ?_, ?_, fun r h1 h2 => ?_⟩ <;> config_simp
       · omega
       · omega
-      · simp only [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2]
+      · ϴ Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2
   have ex : Exec P W bktBody d d9 (k1 + (k2 + (k3 + (k4 + (k5 + (k6 + (k7 + (k8 + k9)))))))) := by
-    simp only [bktBody, seqs_cons₂, seqs_one]
+    ϴ bktBody, seqs_cons₂, seqs_one
     exact .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 (.seq e6 (.seq e7 (.seq e8 e9)))))))
-  exact ⟨d9, _, ex, by omega, w13, w14, by rw [g9 _ (by decide) (by decide), v15],
-    by rw [g9 _ (by decide) (by decide), v12], exec_frameB ex wr_bktBody⟩
+  exact ⟨d9, _, ex, ⋄, w13, w14, by rw [g9 _ (by decide) (by decide), v15],
+    by rw [g9 _ (⌖) (by decide), v12], exec_frameB ex wr_bktBody⟩
 
-set_option maxHeartbeats 4000000 in
+
 open Classical in
 /-- **`bktS`: the bucket of the position `⟨217110, 217111⟩`** (it lies on the closure of an arc
 of the region). -/
@@ -290,9 +292,9 @@ theorem bktS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : Bo
       · omega
       · omega
       · omega
-      · refine ⟨by omega, ?_, ?_, ?_⟩ <;> config_simp
+      · refine ⟨⋄, ?_, ?_, ?_⟩ <;> config_simp
         exact h33
-    exact ⟨d0, k0, e0, hk0, a13, a14, a15, exec_frameB e0 (by decide)⟩
+    exact ⟨d0, k0, e0, hk0, a13, a14, a15, exec_frameB e0 (⌖)⟩
   let Inv : ℕ → Config → Prop := fun t c => WordsBounded W c ∧ c.nreg 217113 = t ∧
     c.nreg 217032 = nRA ∧ c.nreg 217114 = RA + t ∧ c.nreg 217115 ≤ 1 ∧
     (c.nreg 217115 = 1 → ∃ t', t' < t ∧ OnArcP (Qof P) li N (ras t') x ∧
@@ -304,37 +306,37 @@ theorem bktS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : Bo
     (fun t c hc => ⟨hc.1, hc.2.1, hc.2.2.1⟩)
     (fun t c ht hc => by
       obtain ⟨hwc, c13, c32, c14, c15, cfound, cnot, cf⟩ := hc
-      have g : ∀ r, Bbkt r = false → c.nreg r = d.nreg r := cf.1
-      have cm : c.nmem = d.nmem := cf.2.2.1
+      have g := cf.1
+      have cm := cf.2.2.1
       obtain ⟨hR1, hR2⟩ := hRm t ht
       obtain ⟨hgs, hge⟩ := hgood _ hR2
       obtain ⟨m1, m2, m3, m4⟩ := hAm _ hR2
       obtain ⟨c', kb, eb, hkb, b13, b14, b15, b12, bf⟩ := bktBody_exec (P := P) c hwc hG (li := li)
         (N := N) (x := x) (AB := AB) hR2 hx hgs hge (by rw [c14, cm]; exact hR1)
         (by rw [cm]; exact m1) (by rw [cm]; exact m2) (by rw [cm]; exact m3)
-        (by rw [cm]; exact m4) (hAW _ hR2) h2A hnW (by omega) (by omega)
-        (by rw [g _ (by decide), h20]) (by rw [g _ (by decide), h26])
-        (by rw [g _ (by decide), h27]) (by rw [g _ (by decide), h30])
-        (by rw [g _ (by decide), h31]) (by rw [g _ (by decide), h44])
-        (by rw [g _ (by decide), h10]) (by rw [g _ (by decide), h11])
-      refine ⟨c', kb, eb, ⟨eb.wb_right, by omega, by rw [bf.1 _ (by decide), c32], by omega, ?_,
+        (by rw [cm]; exact m4) (hAW _ hR2) h2A hnW (⋄) (by omega)
+        (by rw [g _ (⌖), h20]) (by rw [g _ (by decide), h26])
+        (by rw [g _ (⌖), h27]) (by rw [g _ (by decide), h30])
+        (by rw [g _ (⌖), h31]) (by rw [g _ (by decide), h44])
+        (by rw [g _ (⌖), h10]) (by rw [g _ (by decide), h11])
+      refine ⟨c', kb, eb, ⟨eb.wb_right, ⋄, by rw [bf.1 _ (by decide), c32], by omega, ?_,
         ?_, ?_, cf.trans bf⟩, hkb⟩
       · rw [b15]; split_ifs <;> omega
       · intro h1
         by_cases hc : c.nreg 217115 < 1 ∧ OnArcP (Qof P) li N (ras t) x
-        · exact ⟨t, by omega, hc.2, by rw [b12, ite_eq_left hc]⟩
+        · exact ⟨t, ⋄, hc.2, by rw [b12, ite_eq_left hc]⟩
         · rw [b15, ite_eq_right hc] at h1
           obtain ⟨t', ht', hon, hv⟩ := cfound h1
-          exact ⟨t', by omega, hon, by rw [b12, ite_eq_right hc, hv]⟩
+          exact ⟨t', ⋄, hon, by rw [b12, ite_eq_right hc, hv]⟩
       · intro h0 t' ht'
         by_cases hc : c.nreg 217115 < 1 ∧ OnArcP (Qof P) li N (ras t) x
         · rw [b15, ite_eq_left hc] at h0; omega
         · rw [b15, ite_eq_right hc] at h0
           rcases Nat.lt_succ_iff_lt_or_eq.1 ht' with h | h
           · exact cnot h0 t' h
-          · subst h; exact fun hon => hc ⟨by omega, hon⟩)
-    (j := 0) ⟨e0.wb_right, a13, by rw [f0.1 _ (by decide), h32], by omega, by omega,
-      fun h => by omega, fun _ t' ht' => absurd ht' (Nat.not_lt_zero _), f0⟩ (Nat.zero_le _)
+          · subst h; exact fun hon => hc ⟨⋄, hon⟩)
+    (j := 0) ⟨e0.wb_right, a13, by rw [f0.1 _ (⌖), h32], by omega, by omega,
+      fun h => ⋄, fun _ t' ht' => absurd ht' (Nat.not_lt_zero _), f0⟩ (Nat.zero_le _)
   have hk : k0 + k' ≤ 302 * nRA + 6 := by
     have : nRA - 0 = nRA := Nat.sub_zero _
     rw [this] at hk'; omega
@@ -342,7 +344,7 @@ theorem bktS_exec (d : Config) (hw : WordsBounded W d) (hG : GoodEnv P) {li : Bo
   obtain ⟨t, ht, hon⟩ := hex
   by_cases h0 : d'.nreg 217115 = 0
   · exact absurd hon (hnot h0 t ht)
-  · exact hfound (by omega)
+  · exact hfound (⋄)
 
 end body
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvXRamE
 
 /-!
@@ -62,7 +64,7 @@ theorem pEdge_lt (li : Bool) {n : ℕ} {s : SymPt} (hs : s.Lt n) : pEdge li n s 
   cases s with
   | vtx j => exact DownMath.ivB_lt li hs
   | onEdge e h =>
-    simp only [pEdge]
+    ϴ pEdge
     split_ifs
     · exact Nat.mod_lt _ hn
     · exact DownMath.qE_lt li hs.1
@@ -122,7 +124,7 @@ def Bkept (r : ℕ) : Bool :=
     (217080 ≤ r ∧ r ≤ 217087) ∨ (217100 ≤ r ∧ r ≤ 217128) ∨ (217150 ≤ r ∧ r ≤ 217156) ∨
     (217160 ≤ r ∧ r ≤ 217162))
 
-theorem wrM_kept : wrM Bkept keptS = true := by decide
+theorem wrM_kept : wrM Bkept keptS = true := ⌖
 
 end
 

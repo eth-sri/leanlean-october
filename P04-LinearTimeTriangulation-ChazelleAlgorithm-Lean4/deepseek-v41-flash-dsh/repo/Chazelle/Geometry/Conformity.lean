@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Geometry.Triangle
 public import Mathlib.Analysis.LocallyConvex.Separation
 
@@ -46,7 +48,7 @@ theorem linearMap_apply_eq (φ : Point →ₗ[ℝ] ℝ) (p : Point) :
   have hp : p = p.1 • ((1, 0) : Point) + p.2 • ((0, 1) : Point) := by
     ext <;> simp
   conv_lhs => rw [hp]
-  rw [map_add, map_smul, map_smul, smul_eq_mul, smul_eq_mul]
+  Ξ map_add, map_smul, map_smul, smul_eq_mul, smul_eq_mul
   ring
 
 /-- A level set `{φ = u}` of a linear functional is convex. -/
@@ -64,7 +66,7 @@ theorem exists_injOn_level {φ : Point →ₗ[ℝ] ℝ} (hφ : φ ≠ 0) (u : �
     apply hφ
     apply LinearMap.ext
     intro p
-    rw [linearMap_apply_eq φ p, ← hα, ← hβ, h1, h2]
+    Ξ linearMap_apply_eq φ p, ← hα, ← hβ, h1, h2
     simp
   have hαβ : α ^ 2 + β ^ 2 ≠ 0 := by
     intro h0
@@ -76,7 +78,7 @@ theorem exists_injOn_level {φ : Point →ₗ[ℝ] ℝ} (hφ : φ ≠ 0) (u : �
   rw [linearMap_apply_eq φ x, ← hα, ← hβ] at hx
   rw [linearMap_apply_eq φ y, ← hα, ← hβ] at hy
   simp only [lin_apply] at hxy
-  have e1 : α * x.1 + β * x.2 = α * y.1 + β * y.2 := by rw [hx, hy]
+  have e1 : α * x.1 + β * x.2 = α * y.1 + β * y.2 := Ρ hx, hy
   have h1 : (α ^ 2 + β ^ 2) * (x.1 - y.1) = 0 := by linear_combination α * e1 - β * hxy
   have h2 : (α ^ 2 + β ^ 2) * (x.2 - y.2) = 0 := by linear_combination β * e1 + α * hxy
   rcases mul_eq_zero.1 h1 with h | h
@@ -101,10 +103,10 @@ theorem convexHull_inter_level_le (s : Finset Point) (φ : Point →ₗ[ℝ] ℝ
     -- all weight sits on vertices with `φ y = u`
     have hsum : ∑ y ∈ s, w y * (u - φ y) = 0 := by
       have hφx : φ x = ∑ y ∈ s, w y * φ y := by
-        rw [← hwx, map_sum]
-        simp only [map_smul, smul_eq_mul]
+        Ξ ← hwx, map_sum
+        ϴ map_smul, smul_eq_mul
       have : ∑ y ∈ s, w y * (u - φ y) = u * ∑ y ∈ s, w y - ∑ y ∈ s, w y * φ y := by
-        rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
+        Ξ Finset.mul_sum, ← Finset.sum_sub_distrib
         apply Finset.sum_congr rfl
         intro y _; ring
       rw [this, hw1, ← hφx, hxu]; ring
@@ -119,15 +121,15 @@ theorem convexHull_inter_level_le (s : Finset Point) (φ : Point →ₗ[ℝ] ℝ
     have hcoe : ((s.filter (fun y => φ y = u) : Finset Point) : Set Point) =
         (s : Set Point) ∩ {x | φ x = u} := by
       rw [Finset.coe_filter]; rfl
-    rw [← hcoe, Finset.mem_convexHull']
+    Ξ ← hcoe, Finset.mem_convexHull'
     refine ⟨w, fun y hy => hw0 y (Finset.mem_filter.1 hy).1, ?_, ?_⟩
-    · rw [Finset.sum_filter_of_ne (fun y hy hne => hw' y hy hne), hw1]
-    · rw [Finset.sum_filter_of_ne, hwx]
+    · Ξ Finset.sum_filter_of_ne (fun y hy hne => hw' y hy hne), hw1
+    · Ξ Finset.sum_filter_of_ne, hwx
       intro y hy hne
       apply hw' y hy
       intro h0
       apply hne
-      rw [h0, zero_smul]
+      Ξ h0, zero_smul
   · apply Set.subset_inter
     · exact convexHull_mono Set.inter_subset_left
     · exact convexHull_min Set.inter_subset_right (convex_level φ u)
@@ -139,7 +141,7 @@ theorem convexHull_inter_level_ge (s : Finset Point) (φ : Point →ₗ[ℝ] ℝ
       convexHull ℝ ((s : Set Point) ∩ {x | φ x = u}) := by
   have hL : {x : Point | (-φ) x = -u} = {x | φ x = u} := by
     ext x; simp only [Set.mem_ofPred_eq, LinearMap.neg_apply, neg_inj]
-  rw [← hL]
+  Ξ ← hL
   exact convexHull_inter_level_le s (-φ) (-u)
     (fun y hy => by rw [LinearMap.neg_apply]; linarith [hs y hy])
 
@@ -175,7 +177,7 @@ theorem exists_le_le_of_mem_convexHull_real {A : Set ℝ} {x : ℝ} (hx : x ∈ 
   suffices hS : convexHull ℝ A ⊆ {y : ℝ | ∃ a₁ ∈ A, ∃ a₂ ∈ A, a₁ ≤ y ∧ y ≤ a₂} from hS hx
   refine convexHull_min ?_ ?_
   · intro y hy; exact ⟨y, hy, y, hy, le_rfl, le_rfl⟩
-  · rw [convex_iff_ordConnected]
+  · Ξ convex_iff_ordConnected
     refine ⟨?_⟩
     rintro y ⟨a₁, ha₁, -, -, hy₁, -⟩ z ⟨-, -, a₂, ha₂, -, hz₂⟩ w ⟨hw₁, hw₂⟩
     exact ⟨a₁, ha₁, a₂, ha₂, hy₁.trans hw₁, hw₂.trans hz₂⟩
@@ -199,15 +201,15 @@ theorem convexHull_inter_convexHull_real {A B : Set ℝ}
     obtain ⟨b₁, hb₁, b₂, hb₂, hxb₁, hxb₂⟩ := exists_le_le_of_mem_convexHull_real hxB
     have hlo : max a₁ b₁ ∈ A ∩ B := by
       rcases le_total a₁ b₁ with h | h
-      · rw [max_eq_right h]
+      · Ξ max_eq_right h
         exact ⟨hAB b₁ hb₁ (mem_convexHull_real_of_between ha₁ ha₂ h (hxb₁.trans hxa₂)), hb₁⟩
-      · rw [max_eq_left h]
+      · Ξ max_eq_left h
         exact ⟨ha₁, hBA a₁ ha₁ (mem_convexHull_real_of_between hb₁ hb₂ h (hxa₁.trans hxb₂))⟩
     have hhi : min a₂ b₂ ∈ A ∩ B := by
       rcases le_total a₂ b₂ with h | h
-      · rw [min_eq_left h]
+      · Ξ min_eq_left h
         exact ⟨ha₂, hBA a₂ ha₂ (mem_convexHull_real_of_between hb₁ hb₂ (hxb₁.trans hxa₂) h)⟩
-      · rw [min_eq_right h]
+      · Ξ min_eq_right h
         exact ⟨hAB b₂ hb₂ (mem_convexHull_real_of_between ha₁ ha₂ (hxa₁.trans hxb₂) h), hb₂⟩
     exact mem_convexHull_real_of_between hlo hhi (max_le hxa₁ hxb₁) (le_min hxa₂ hxb₂)
   · exact Set.subset_inter (convexHull_mono Set.inter_subset_left)
@@ -241,7 +243,7 @@ theorem convexHull_inter_convexHull_of_injOn {L : Set Point} (hL : Convex ℝ L)
       subst this
       exact ⟨z, hBA z hy hz, rfl⟩
     have hx' : ψ x ∈ convexHull ℝ (ψ '' A) ∩ convexHull ℝ (ψ '' B) := by
-      rw [← LinearMap.image_convexHull, ← LinearMap.image_convexHull]
+      Ξ ← LinearMap.image_convexHull, ← LinearMap.image_convexHull
       exact ⟨Set.mem_image_of_mem ψ hxA, Set.mem_image_of_mem ψ hxB⟩
     rw [convexHull_inter_convexHull_real hAB' hBA', ← hψ.image_inter hA hB,
       ← LinearMap.image_convexHull] at hx'
@@ -315,7 +317,7 @@ theorem conforming_of_disjoint_interiors {a b c d e f : Point}
     constructor
     · intro hx; exact ⟨⟨hx.1, hsub hx⟩, ⟨hx.2, hsub hx⟩⟩
     · rintro ⟨⟨h1, -⟩, ⟨h2, -⟩⟩; exact ⟨h1, h2⟩
-  rw [hinter, hface₁, hface₂]
+  Ξ hinter, hface₁, hface₂
   -- the two faces on the line
   have hAB : ∀ y ∈ ({d, e, f} : Set Point) ∩ L,
       y ∈ convexHull ℝ (({a, b, c} : Set Point) ∩ L) → y ∈ ({a, b, c} : Set Point) ∩ L := by

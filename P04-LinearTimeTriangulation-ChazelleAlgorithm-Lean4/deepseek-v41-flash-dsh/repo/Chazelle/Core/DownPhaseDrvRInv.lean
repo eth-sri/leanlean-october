@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseNFSorted
 public import Chazelle.Core.SpecPhases
 public import Chazelle.Cost.DownPhase
@@ -103,7 +105,7 @@ theorem EnvD.transport {X : MemCtx} (hX : X.CapLocal) {P : Polygon} {W : ℕ} {c
   obtain ⟨hG, hW3, hWh, hS, hXh, hcap⟩ := h
   refine ⟨hG, hW3, hWh, ?_, ?_, ?_⟩
   · rw [h0]; exact setup_transport hS hm hA
-  · rw [h1]
+  · Ξ h1
     exact X.mono P _ _ _ _ hA (X.local_ P c.nmem c'.nmem _ _ (fun a ha => (hm a ha).symm) hXh)
   · rw [h1, hX P c.nmem c'.nmem _ _ hm hXh]; exact hcap
 
@@ -113,7 +115,7 @@ theorem EnvD.frame {X : MemCtx} (hX : X.CapLocal) {P : Polygon} {W : ℕ} {B : F
     EnvD X P W c' := by
   have hr : ∀ i, i < 10000 → c'.nreg (coreReg i) = c.nreg (coreReg i) := fun i hi =>
     hf.1 _ (by rw [coreReg_band i hi]; exact hB) (coreReg_ne_alloc i hi)
-  exact h.transport hX (hr 0 (by norm_num)) (hr 1 (by norm_num)) hf.2.2.2.2.2.1 hf.2.2.1
+  exact h.transport hX (hr 0 (⊛)) (hr 1 (by norm_num)) hf.2.2.2.2.2.1 hf.2.2.1
 
 /-! ## The level invariant -/
 
@@ -154,15 +156,15 @@ theorem InvAt.transport {cnt : ℕ → ℕ} {P : Polygon} {c c' : Config} {lam :
     (hA : c.nreg ALLOC ≤ c'.nreg ALLOC) (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) :
     InvAt cnt P c' lam := by
   obtain ⟨hD, hDa, L, E, hK, hLb, hLa, hEb, hEa, hok, hperm, hsort, hN, hdeg, hwt, hcnt⟩ := h
-  have h1 := hr 1 le_rfl (by norm_num)
+  have h1 := hr 1 le_rfl (⊛)
   refine ⟨by rw [h1]; omega, by rw [h1]; exact (hDa.transport hm).mono hA, L, E, ?_, ?_, ?_, ?_, ?_, hok, hperm, hsort, ?_,
     hdeg, hwt, hcnt⟩
-  · rw [hr 3 (by norm_num) (by norm_num)]; exact hK
-  · rw [hr 2 (by norm_num) (by norm_num)]; omega
-  · rw [hr 2 (by norm_num) (by norm_num)]; exact (hLa.transport hm).mono hA
-  · rw [hr 4 (by norm_num) (by norm_num)]; omega
-  · rw [hr 4 (by norm_num) (by norm_num)]; exact (hEa.transport hm).mono hA
-  · rw [hr 5 (by norm_num) (by norm_num)]; exact (hN.transport hm).mono hA
+  · rw [hr 3 (⊛) (by norm_num)]; exact hK
+  · rw [hr 2 (⊛) (by norm_num)]; omega
+  · rw [hr 2 (⊛) (by norm_num)]; exact (hLa.transport hm).mono hA
+  · rw [hr 4 (⊛) (by norm_num)]; omega
+  · rw [hr 4 (⊛) (by norm_num)]; exact (hEa.transport hm).mono hA
+  · rw [hr 5 (⊛) (by norm_num)]; exact (hN.transport hm).mono hA
 
 /-- (I3) as a bound on `K`: `K ≤ cnt λ (2^p + 2^⌈βλ⌉) / 2^⌈βλ⌉`. -/
 theorem InvAt.len_le {cnt : ℕ → ℕ} {P : Polygon} {c : Config} {lam : ℕ}
@@ -170,7 +172,7 @@ theorem InvAt.len_le {cnt : ℕ → ℕ} {P : Polygon} {c : Config} {lam : ℕ}
     rd c bDownDrv 3 ≤
       cnt lam * (2 ^ topGrade P.n + 2 ^ Cost.ceilBeta lam) / 2 ^ Cost.ceilBeta lam := by
   obtain ⟨-, -, L, E, hK, -, -, -, -, -, -, -, -, -, -, hcnt⟩ := h
-  rw [hK, Nat.le_div_iff_mul_le (by positivity)]
+  rw [hK, Nat.le_div_iff_mul_le (⟢)]
   exact hcnt
 
 /-! ## The component contracts -/

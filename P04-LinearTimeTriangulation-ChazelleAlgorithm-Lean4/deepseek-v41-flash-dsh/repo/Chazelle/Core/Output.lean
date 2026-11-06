@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OutputRam
 
 /-!
@@ -84,26 +86,26 @@ theorem prepS_spec {c : Config} (hc : WordsBounded W c) {σ : ℝ} {B T0 : ℕ}
       c1.nreg 220020 = 3 ∧ c1.nreg 220011 = 4 ∧ c1.nreg 220012 = 5 ∧ c1.nreg 220021 = 7 ∧
       c1.nreg 230003 = B ∧ c1.nreg 9999 = T0 := fun _ => by
     rw [hc1]; config_simp
-    exact ⟨by omega, hB, hT0⟩
+    exact ⟨⋄, hB, hT0⟩
   obtain ⟨b0, b1, b2, b17, b18, b19, b20, b11, b12, b21, b3, b9999⟩ := hA1 true
   have fr1 : ∀ r, 240000 ≤ r → c1.nreg r = c.nreg r := fun r hr => by
     rw [hc1]; simp (disch := omega) only [Machine.upd_other]
   have rr1 : ∀ r, 240000 ≤ r → c1.rreg r = c.rreg r := fun r hr => by
     rw [hc1]; simp (disch := omega) only [Machine.upd_other]
-  have m1 : c1.nmem = c.nmem := by rw [hc1]
-  have rm1 : c1.rmem = c.rmem := by rw [hc1]
-  have o1 : c1.output = c.output := by rw [hc1]
+  have m1 : c1.nmem = c.nmem := Ρ hc1
+  have rm1 : c1.rmem = c.rmem := Ρ hc1
+  have o1 : c1.output = c.output := Ρ hc1
   -- the reversal flag
   have hrev : ∃ c2 k2, Exec P W revS c1 c2 k2 ∧ k2 ≤ 3 ∧
       c2 = { c1 with nreg := upd c1.nreg 220003 (decide (σ < 0)).toNat } := by
     unfold revS
     by_cases hneg : σ < 0
     · refine spec_ifLtR_true (by rw [r1, r0]; exact hneg)
-        (spec_instr (Exec.constN hw1 220003 1 (by omega)) fun _ => ?_)
-      exact ⟨by omega, by simp [hneg]⟩
+        (spec_instr (Exec.constN hw1 220003 1 (⋄)) fun _ => ?_)
+      exact ⟨⋄, by simp [hneg]⟩
     · refine spec_ifLtR_false (by rw [r1, r0]; exact hneg)
-        (spec_instr (Exec.constN hw1 220003 0 (by omega)) fun _ => ?_)
-      exact ⟨by omega, by simp [hneg]⟩
+        (spec_instr (Exec.constN hw1 220003 0 (⋄)) fun _ => ?_)
+      exact ⟨⋄, by simp [hneg]⟩
   obtain ⟨c2, k2, e2, hk2, rfl⟩ := hrev
   refine spec_seq ⟨_, k2, e2, ?_⟩
   unfold readS
@@ -111,12 +113,12 @@ theorem prepS_spec {c : Config} (hc : WordsBounded W c) {σ : ℝ} {B T0 : ℕ}
   exec_block
   all_goals try (config_simp; simp only [b3, b19, b20, b12, b21]; omega)
   all_goals try omega
-  refine ⟨by omega, ⟨?_, ?_, ?_, ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
+  refine ⟨⋄, ⟨?_, ?_, ?_, ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     ?_, ?_, ?_, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
   all_goals try (config_simp; simp only [b0, b1, b2, b17, b18, b19, b20, b11, b12, b21, b3, b9999, m1]; done)
   all_goals try (config_simp; done)
   · rw [← fr1 r hr]; simp (disch := omega) only [Machine.upd_other]
-  · rw [← rr1 r hr]
+  · Ξ ← rr1 r hr
   all_goals first | exact m1 | exact rm1 | exact o1
 
 end prep
@@ -169,10 +171,10 @@ theorem outputSpecH : OutputSpecH := by
   intro P W c hw ⟨hge, hn3, hout, N, hRob, hNF, hfull, hhlt⟩ hroom
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hge.1
   have hgs := goodShear_epsOf hge.2
-  have hdh : DistinctHeights (Qof P) := hgs.2.1
+  have hdh := hgs.2.1
   have hPQ : ShearRel P (Qof P) := shearRel_Qof hge.2
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hn3' : 3 ≤ P.n := hge.1.1
+  have hn3' := hge.1.1
   obtain ⟨reg, hcorr, hsides, -, hregs, -⟩ := hNF.2.2.2
   have H : RegCtx (Qof P) N reg :=
     ⟨hQ, hdh, hNF, hfull, fun k hk => hQn ▸ hhlt k hk, hcorr, hsides, hregs⟩
@@ -290,7 +292,7 @@ theorem core_of_phasesH (hS : SetupSpec) (hUD : ∃ X : MemCtx, UpPhaseSpec X �
   have hC : (κS + κU + κD + κO) * (P.n + 1) = bS + bU + bD + bO := by
     subst hbS hbU hbD hbO; ring
   rw [hsum] at hW
-  have hn3 : P.n + 3 ≤ W := by omega
+  have hn3 : P.n + 3 ≤ W := ⋄
   have hw0 : WordsBounded W initConfig := ⟨fun _ => Nat.zero_le _, fun _ => Nat.zero_le _⟩
   have ha0 : initConfig.nreg ALLOC = 0 := rfl
   obtain ⟨c₁, k₁, e₁, hk₁, hq₁, hf₁⟩ := hS P W initConfig hw0 ⟨hge, hn3⟩
@@ -301,11 +303,11 @@ theorem core_of_phasesH (hS : SetupSpec) (hUD : ∃ X : MemCtx, UpPhaseSpec X �
     hU P W c₁ e₁.wb_right ⟨hge, hn3, hq₁⟩
       (show c₁.nreg ALLOC + κU * (P.n + 1) ≤ W by rw [← hbU]; omega)
   replace hk₂ : k₂ ≤ bU := by rw [hbU]; exact hk₂
-  have ha₂ : c₂.nreg ALLOC ≤ c₁.nreg ALLOC + k₂ := hf₂.2.2.2.2.2.2
+  have ha₂ := hf₂.2.2.2.2.2.2
   have hset₂ : Robust (c₂.nreg ALLOC) c₂.nmem
       (fun m => SetupAt m (c₂.nreg (coreReg 0)) P.n (c₂.nreg ALLOC)) := by
-    have h0 : c₂.nreg (coreReg 0) = c₁.nreg (coreReg 0) := hkeep₂ 0 (by simp)
-    rw [h0]
+    have h0 : c₂.nreg (coreReg 0) = c₁.nreg (coreReg 0) := hkeep₂ 0 (✓)
+    Ξ h0
     intro m hm
     have hq := (hq₁.frame hf₂) m hm
     exact ⟨hq.1, hq.2.1, hq.2.2.1, le_trans hq.2.2.2 hf₂.2.2.2.2.2.1⟩
@@ -313,14 +315,14 @@ theorem core_of_phasesH (hS : SetupSpec) (hUD : ∃ X : MemCtx, UpPhaseSpec X �
     hD P W c₂ e₂.wb_right ⟨hge, hn3, hset₂, hX₂, hcap₂, C, N, hC₂, hN₂, hcan₂⟩
       (show c₂.nreg ALLOC + κD * (P.n + 1) ≤ W by rw [← hbD]; omega)
   replace hk₃ : k₃ ≤ bD := by rw [hbD]; exact hk₃
-  have ha₃ : c₃.nreg ALLOC ≤ c₂.nreg ALLOC + k₃ := hf₃.2.2.2.2.2.2
+  have ha₃ := hf₃.2.2.2.2.2.2
   have hout₃ : c₃.output = [] := by
     rw [hf₃.2.2.2.2.1, hf₂.2.2.2.2.1, hf₁.2.2.2.2.1]; rfl
   obtain ⟨c₄, k₄, e₄, hk₄, hq₄, hf₄⟩ :=
     hO P W c₃ e₃.wb_right ⟨hge, hn3, hout₃, N', hN₃, hnf₃, hfull₃, hh₃⟩
       (show c₃.nreg ALLOC + κO * (P.n + 1) ≤ W by rw [← hbO]; omega)
   replace hk₄ : k₄ ≤ bO := by rw [hbO]; exact hk₄
-  have ha₄ : c₄.nreg ALLOC ≤ c₃.nreg ALLOC + k₄ := hf₄.2.2.2.2.2.2
+  have ha₄ := hf₄.2.2.2.2.2.2
   refine ⟨c₄, k₁ + (k₂ + (k₃ + k₄)), .seq e₁ (.seq e₂ (.seq e₃ e₄)), ?_, ?_,
     Qof P, shearRel_Qof (hgood P hP), (hsh (epsOf P) P).1 hP, hq₄⟩
   · rw [hC]; omega

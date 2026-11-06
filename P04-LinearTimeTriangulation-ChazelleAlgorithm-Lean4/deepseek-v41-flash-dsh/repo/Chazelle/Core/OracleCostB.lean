@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleCostQ
 
 /-!
@@ -56,7 +58,7 @@ theorem QAt.arcLen_eq (h : QAt P m O E V H C N B k) {j : ℕ} (hj : j < V.A) :
   have hsj : sj N (arcPos m V j) = j := hpj
   refine ⟨?_, by rw [← h.hA]; exact hpA⟩
   unfold scanLenR arcLenM lenOf
-  rw [hsj, ← h.hA, arcSe_eq hm hj, arcEe_eq hm hj]
+  Ξ hsj, ← h.hA, arcSe_eq hm hj, arcEe_eq hm hj
 
 /-- **The cost of the scan of a node.** -/
 theorem QAt.nodeCost_le (h : QAt P m O E V H C N B k) (hP : C.P.Simple) {u : ℕ} :
@@ -79,7 +81,7 @@ theorem QAt.nodeCost_le (h : QAt P m O E V H C N B k) (hP : C.P.Simple) {u : ℕ
     obtain ⟨e1, e2⟩ := h.arcLen_eq hjA.1
     obtain ⟨b1, b2⟩ := scanLen_le hP hC e2
     have hb : arcLenM m V (nodeArc m V u i) ≤ min (m (O + 2)) (2 * V.m + 7) + 10 := by
-      rw [e1, hVm]
+      Ξ e1, hVm
       rcases le_total (m (O + 2)) (2 * C.m + 7) with hh | hh
       · rw [min_eq_left hh]; omega
       · rw [min_eq_right hh]; omega

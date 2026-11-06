@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStepL4
 
 /-!
@@ -83,7 +85,7 @@ theorem stopOff_rs {i : ℕ} (hi : i < rs.length) :
   obtain ⟨e0, e1, -⟩ := hrec i hi
   rw [List.getD_eq_getElem _ _ hi] at e0 e1
   show offK P J (c.nmem (c.nreg sB + 5 * i)) (c.nmem (c.nreg sB + 5 * i + 1)) = _
-  rw [e0, e1]
+  Ξ e0, e1
   rfl
 
 /-- **A skipped stop is attached at the next key.** -/
@@ -101,14 +103,14 @@ theorem skip_at {i : ℕ} (h1 : c.nreg sP ≤ i) (h2 : i < c'.nreg sP) :
   obtain ⟨-, hle, -, hk3⟩ := stp_ptr_c' S.E S.L S.hI S.hd
   obtain ⟨-, -, esC', -, -⟩ := stp_arrays_c' S.E S.L S.hI S.hd
   have hlen := S.hD.1
-  have hi : i < rs.length := by omega
+  have hi : i < rs.length := ⋄
   refine ⟨hi, ?_⟩
   obtain ⟨f0, f1, a0, -⟩ := stop_facts S.hD.2.2.2.2.1 hi
   have ho := hk3 i h1 h2
   rw [S.stopOff_rs hi] at ho
   obtain ⟨e1, e2⟩ := S.posEq a0.1 a0.2.1 a0.2.2.1 ho
   refine ⟨f0, f1, ?_, e1, e2⟩
-  rw [← e2, ← e1]
+  Ξ ← e2, ← e1
   exact a0
 
 /-- **A stop chord at the next key is a skipped stop.** -/
@@ -131,9 +133,9 @@ theorem stop_idx {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.ri
   simp only [Prod.mk.injEq] at hreq
   obtain ⟨h1, h2, h3⟩ := hreq
   have ho : stopOff P J c i = keyOff P J c' := by
-    rw [S.stopOff_rs hi]
+    Ξ S.stopOff_rs hi
     unfold soff
-    rw [h2, h1]
+    Ξ h2, h1
     rfl
   have hic : i < c.nreg sC := hlen ▸ hi
   obtain ⟨-, -, hptr, -⟩ := stp_ptr_c' S.E S.L S.hI S.hd
@@ -141,9 +143,9 @@ theorem stop_idx {e : Set Point} (he : e ∈ F₂plus J (N₂.F (chainModel J.ri
   have hso := (stp_stops_c' S.E S.L S.hI S.hd).2 i hic
   refine ⟨i, hi, ?_, ?_, h3⟩
   · by_contra h
-    have := (S.L.ptrL i hic).1 (by omega)
+    have := (S.L.ptrL i hic).1 (⋄)
     linarith
-  · exact (hptr i (by omega)).2 (by rw [hso.2.2, ho])
+  · exact (hptr i (⋄)).2 (Ρ hso.2.2, ho)
 
 /-- **A non-stop chord at the next key** is the chord of an accepted triple at its offset, and
 the best candidate is there. -/

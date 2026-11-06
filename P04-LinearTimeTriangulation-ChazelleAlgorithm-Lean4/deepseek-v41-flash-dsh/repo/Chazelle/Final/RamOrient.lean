@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Final.Transfer
 public import Chazelle.Final.RamPieceTri
 public import Chazelle.Final.RamSplit
@@ -76,7 +78,7 @@ theorem orMinBody_inv {c₀ c : Config} (hI : OrInv P W c₀ c) (ht : c.nreg 232
   exec_block
   refine spec_name fun c₁ hc₁ => ?_
   have hw₁ : WordsBounded W c₁ := by rw [hc₁]; assumption
-  have e1 : c₁.nreg = c.nreg := by rw [hc₁]
+  have e1 : c₁.nreg = c.nreg := Ρ hc₁
   have ex : (c₁.rreg 230, c₁.rreg 231) = P.vtx (c.nreg 232) := by rw [hc₁]; config_simp
   have ey : (c₁.rreg 232, c₁.rreg 233) = P.vtx (c.nreg 231) := by rw [hc₁]; config_simp
   have hupd : ∃ c₂ k₂, Exec P W (ylexTest 230 231 232 233 (.instr (.copyN 231 232)) .skip) c₁ c₂ k₂ ∧
@@ -89,40 +91,40 @@ theorem orMinBody_inv {c₀ c : Config} (hI : OrInv P W c₀ c) (ht : c.nreg 232
       · config_simp; rw [ite_eq_left h, e1]
       · config_simp; rw [Machine.upd_other _ _ _ hr, e1]
     · rw [ex, ey] at h
-      refine ⟨c₁, 0, Exec.skip hw₁, by omega, ?_, fun r _ => by rw [e1], rfl, rfl, rfl, rfl⟩
-      rw [ite_eq_right h, e1]
+      refine ⟨c₁, 0, Exec.skip hw₁, ⋄, ?_, fun r _ => by rw [e1], rfl, rfl, rfl, rfl⟩
+      Ξ ite_eq_right h, e1
   refine spec_seq (spec_use hupd ?_)
   rintro c₂ k₂ hk₂ hw₂ ⟨h231, hfn₂, hfr₂, hnm₂, hrm₂, hout₂⟩
-  have e232 : c₂.nreg 232 = c.nreg 232 := hfn₂ 232 (by decide)
-  have e233 : c₂.nreg 233 = 1 := by rw [hfn₂ 233 (by decide), h233]
+  have e232 : c₂.nreg 232 = c.nreg 232 := hfn₂ 232 (⌖)
+  have e233 : c₂.nreg 233 = 1 := by rw [hfn₂ 233 (⌖), h233]
   refine spec_instr (Exec.addN hw₂ 232 232 233 (by rw [e232, e233]; have := hw.1 230; omega))
     fun hw₃ => ?_
   refine ⟨⟨hw₃, ?_, ?_, ?_, ?_, ?_, fun i hi => ?_, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩,
-    by omega, ?_⟩
+    ⋄, ?_⟩
   · config_simp; omega
   · config_simp; rw [e232, e233]; omega
   · config_simp; rw [h231, e232, e233]; split_ifs <;> omega
-  · config_simp; rw [hfn₂ 230 (by decide), h230]
+  · config_simp; rw [hfn₂ 230 (⌖), h230]
   · config_simp; exact e233
   · config_simp at hi
     rw [e232, e233] at hi
     config_simp
-    rw [h231]
+    Ξ h231
     split_ifs with hy
     · intro h'
       by_cases hic : i = c.nreg 232
       · subst hic; exact Chazelle.Mountain.ylexLT_irrefl _ h'
-      · exact hmin i (by omega) (Chazelle.Mountain.ylexLT_trans h' hy)
+      · exact hmin i (⋄) (Chazelle.Mountain.ylexLT_trans h' hy)
     · by_cases hic : i = c.nreg 232
       · subst hic; exact hy
-      · exact hmin i (by omega)
+      · exact hmin i (⋄)
   · config_simp
-    rw [Machine.upd_other _ _ _ (by omega), hfn₂ r (by omega)]
+    rw [Machine.upd_other _ _ _ (⋄), hfn₂ r (by omega)]
     exact hfn r hr
   · config_simp
     rw [hfr₂, hc₁]; config_simp
-    rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-      Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
+    rw [Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega),
+      Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega)]
     exact hfr r hr
   · config_simp; rw [hnm₂, hc₁]; exact hnm
   · config_simp; rw [hrm₂, hc₁]; exact hrm
@@ -139,7 +141,7 @@ theorem orientStmt_exec {Q : Polygon} (hPQ : ShearRel P Q) (hQ : Q.Simple) (c : 
       (∀ r, r ≠ 100 → (r < 230 ∨ 243 < r) → c'.rreg r = c.rreg r) ∧
       c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   obtain ⟨ε, -, hQe, hag⟩ := hPQ
-  have hn3 : 3 ≤ Q.n := hQ.1
+  have hn3 := hQ.1
   have hQn : Q.n = P.n := by rw [hQe]; exact Chazelle.Core.shear_n ε P
   have hn : 3 ≤ P.n := by omega
   unfold orientStmt

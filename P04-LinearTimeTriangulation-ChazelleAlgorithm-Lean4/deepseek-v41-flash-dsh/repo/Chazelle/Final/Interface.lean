@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Mountain.Decompose
 
 /-!
@@ -87,8 +89,8 @@ unless it is off the closed corridor; used to separate two side edges. -/
 theorem not_vtx_on_side {P : Polygon} (D : TrapData P) {y : ℝ}
     (h1 : D.y₁ < y) (h2 : y < D.y₂) {x : ℝ} (hx1 : edgeX P D.i y ≤ x) (hx2 : x ≤ edgeX P D.j y)
     {m : ℕ} (hm : m < P.n) (hmp : P.vtx m = (x, y)) : False := by
-  have e1 : (P.vtx m).1 = x := by rw [hmp]
-  have e2 : (P.vtx m).2 = y := by rw [hmp]
+  have e1 : (P.vtx m).1 = x := Ρ hmp
+  have e2 : (P.vtx m).2 = y := Ρ hmp
   exact D.isTrap.no_vertex m hm (by rw [e2]; exact h1) (by rw [e2]; exact h2)
     (by rw [e1, e2]; exact hx1) (by rw [e1, e2]; exact hx2)
 
@@ -100,7 +102,7 @@ theorem exists_vtx_of_mem_two_edges {P : Polygon} (hP : P.Simple) {a b : ℕ} (h
     rw [← simple_edge_inter hP ha hb hab]; exact ⟨hpa, hpb⟩
   rcases hc.1 with e | e
   · exact ⟨a, ha, e.symm⟩
-  · exact ⟨(a + 1) % P.n, Nat.mod_lt _ (by omega), e.symm⟩
+  · exact ⟨(a + 1) % P.n, Nat.mod_lt _ (⋄), e.symm⟩
 
 /-- **The left side edge depends only on the region.** -/
 theorem left_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P)
@@ -166,7 +168,7 @@ theorem IsTrapTable.mem_of_trapData {P : Polygon} (hP : P.Simple) {T : TrapTable
     (hT : IsTrapTable P T) (D : TrapData P) : trapRecOf D ∈ T := by
   obtain ⟨L, rfl, -, hreg⟩ := hT
   obtain ⟨D', hD', hreg'⟩ := (hreg D.region).1 (D.region_mem_regions hP)
-  rw [← trapRecOf_eq_of_region_eq hP D' D hreg']
+  Ξ ← trapRecOf_eq_of_region_eq hP D' D hreg'
   exact List.mem_map_of_mem hD'
 
 /-- **A trapezoid table has one record per region.** -/
@@ -176,14 +178,14 @@ theorem IsTrapTable.length_eq {P : Polygon} {T : TrapTable}
   obtain ⟨L, rfl, hnd, hreg⟩ := hT
   have hset : ((L.map TrapData.region).toFinset : Set (Set Point)) = regions P := by
     ext R
-    rw [Finset.mem_coe, List.mem_toFinset, hreg, List.mem_map]
+    Ξ Finset.mem_coe, List.mem_toFinset, hreg, List.mem_map
   rw [List.length_map, ← hset, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd,
     List.length_map]
 
 /-- A trapezoid table has at most `2 n + 1` records. -/
 theorem IsTrapTable.length_le {P : Polygon} (hP : P.Simple) {T : TrapTable}
     (hT : IsTrapTable P T) : T.length ≤ 2 * P.n + 1 := by
-  rw [hT.length_eq]
+  Ξ hT.length_eq
   exact regions_ncard_le hP
 
 /-! ### The vertex-chord table -/
@@ -235,13 +237,13 @@ theorem IsVtxChordTable.length_le {P : Polygon} {C : List ChordRec} (hC : IsVtxC
     C.length ≤ 2 * P.n := by
   obtain ⟨hmem, hnd⟩ := hC
   have h1 : (C.map fun c => (c.src, c.dir)).toFinset.card = C.length := by
-    rw [List.toFinset_card_of_nodup hnd, List.length_map]
+    Ξ List.toFinset_card_of_nodup hnd, List.length_map
   have h2 : (C.map fun c => (c.src, c.dir)).toFinset ⊆
       Finset.range P.n ×ˢ (Finset.univ : Finset Bool) := by
     intro x hx
     rw [List.mem_toFinset, List.mem_map] at hx
     obtain ⟨c, hc, rfl⟩ := hx
-    rw [Finset.mem_product, Finset.mem_range]
+    Ξ Finset.mem_product, Finset.mem_range
     exact ⟨((hmem c).1 hc).1, Finset.mem_univ _⟩
   have h3 := Finset.card_le_card h2
   rw [Finset.card_product, Finset.card_range, Finset.card_univ, Fintype.card_bool, h1] at h3
@@ -290,13 +292,13 @@ def diagList (P : Polygon) (T : TrapTable) (C : List ChordRec) : List (ℕ × �
 theorem mem_trapPairs_iff {P : Polygon} (hP : P.Simple) {T : TrapTable} (hT : IsTrapTable P T)
     {d : ℕ × ℕ} : d ∈ trapPairs P T ↔ d ∈ trapDiagonals P := by
   unfold trapPairs
-  rw [List.mem_map]
+  Ξ List.mem_map
   constructor
   · rintro ⟨r, hr, rfl⟩
     rw [List.mem_filter] at hr
     obtain ⟨D, rfl⟩ := hT.exists_of_mem hr.1
     refine ⟨D, ?_, rfl⟩
-    have h : decide (D.bot ≠ (D.top + 1) % P.n ∧ D.top ≠ (D.bot + 1) % P.n) = true := hr.2
+    have h := hr.2
     have h2 := of_decide_eq_true h
     exact h2
   · rintro ⟨D, hD, rfl⟩
@@ -308,7 +310,7 @@ theorem mem_trapPairs_iff {P : Polygon} (hP : P.Simple) {T : TrapTable} (hT : Is
 theorem mem_chordPairs_iff {P : Polygon} {C : List ChordRec} (hC : IsVtxChordTable P C)
     {d : ℕ × ℕ} : d ∈ chordPairs C ↔ d ∈ vtxChords P := by
   unfold chordPairs
-  rw [List.mem_map, mem_vtxChords_iff_chordRec]
+  Ξ List.mem_map, mem_vtxChords_iff_chordRec
   constructor
   · rintro ⟨c, hc, rfl⟩
     exact ⟨c, (hC.1 c).1 hc, rfl⟩
@@ -319,7 +321,7 @@ theorem mem_chordPairs_iff {P : Polygon} {C : List ChordRec} (hC : IsVtxChordTab
 theorem mem_pairs_iff {P : Polygon} (hP : P.Simple) {T : TrapTable} {C : List ChordRec}
     (hT : IsTrapTable P T) (hC : IsVtxChordTable P C) {d : ℕ × ℕ} :
     d ∈ trapPairs P T ++ chordPairs C ↔ d ∈ allDiagonals P := by
-  rw [List.mem_append, mem_trapPairs_iff hP hT, mem_chordPairs_iff hC]
+  Ξ List.mem_append, mem_trapPairs_iff hP hT, mem_chordPairs_iff hC
   rfl
 
 /-- **Specification of the final-stage input**: the members of `diagList P T C` are exactly the
@@ -328,7 +330,7 @@ theorem diagList_spec {P : Polygon} (hP : P.Simple) {T : TrapTable} {C : List Ch
     (hT : IsTrapTable P T) (hC : IsVtxChordTable P C) (d : ℕ × ℕ) :
     d ∈ diagList P T C ↔ ∃ e ∈ allDiagonals P, sortPair e = d := by
   unfold diagList
-  rw [List.mem_dedup, List.mem_map]
+  Ξ List.mem_dedup, List.mem_map
   constructor
   · rintro ⟨e, he, rfl⟩
     exact ⟨e, (mem_pairs_iff hP hT hC).1 he, rfl⟩
@@ -340,7 +342,7 @@ its swap is an inserted diagonal. -/
 theorem diagList_mem_iff {P : Polygon} (hP : P.Simple) {T : TrapTable} {C : List ChordRec}
     (hT : IsTrapTable P T) (hC : IsVtxChordTable P C) (d : ℕ × ℕ) :
     d ∈ diagList P T C ↔ d.1 < d.2 ∧ (d ∈ allDiagonals P ∨ d.swap ∈ allDiagonals P) := by
-  rw [diagList_spec hP hT hC]
+  Ξ diagList_spec hP hT hC
   constructor
   · rintro ⟨e, he, hed⟩
     rw [sortPair_eq_iff (allDiagonals_lt hP he).2.2] at hed
@@ -372,7 +374,7 @@ theorem diagList_length_le {P : Polygon} (hP : P.Simple) {T : TrapTable} {C : Li
   have h1 := (List.dedup_sublist ((trapPairs P T ++ chordPairs C).map sortPair)).length_le
   have h2 : (trapPairs P T).length ≤ T.length := by
     unfold trapPairs
-    rw [List.length_map]
+    Ξ List.length_map
     exact List.length_filter_le _ _
   have h3 : (chordPairs C).length = C.length := List.length_map _
   rw [List.length_map, List.length_append] at h1

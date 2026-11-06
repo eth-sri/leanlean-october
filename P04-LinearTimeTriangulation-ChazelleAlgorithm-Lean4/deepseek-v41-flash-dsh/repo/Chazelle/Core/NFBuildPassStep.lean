@@ -1,5 +1,13 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildPass
 public import Chazelle.Core.SortRam
 
@@ -40,24 +48,24 @@ theorem PassInv.top {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     {F : PassFix P W M L E D H T SE B CT AT ST WT lo hd mB} {c₀ d : Config} {m : ℕ}
     (I : PassInv F c₀ d m) :
     (if d.nreg 43101 = 0 then 0 else d.nmem (d.nreg 44006 + d.nreg 43101 - 1)) = topR E m := by
-  rw [BuildNF.topR_eq, I.r101, I.rST]
+  Ξ BuildNF.topR_eq, I.r101, I.rST
   split_ifs with h
   · rfl
-  · rw [show ST + (stk E m).length - 1 = ST + ((stk E m).length - 1) by omega]
-    exact I.stack _ (by omega)
+  · Ξ show ST + (stk E m).length - 1 = ST + ((stk E m).length - 1) by omega
+    exact I.stack _ (⋄)
 
 end exec
 
 theorem wr_passBody : wrM Bpass passBody = true := by
   have h1 : wrM Bpass curS = true := wrM_of_wr (wr_mono (fun r hr => by
-    simp only [decide_eq_true_eq] at hr
+    ϴ' decide_eq_true_eq at hr
     simp only [Bpass, Bool.or_eq_true, decide_eq_true_eq]; omega) wr_curS)
   have h2 : ∀ dst, (dst = 43115 ∨ dst = 43117) → wrM Bpass (topS dst) = true := fun dst hd =>
     wrM_of_wr (wr_mono (fun r hr => by
-      simp only [decide_eq_true_eq] at hr
+      ϴ' decide_eq_true_eq at hr
       simp only [Bpass, Bool.or_eq_true, decide_eq_true_eq]; omega) (wr_topS dst))
-  have h3 : wrM Bpass stepS = true := wrM_mono (fun r hr => by simp [Bpass, hr]) wr_stepS
-  have h4 : wrM Bpass gapS = true := wrM_mono (fun r hr => by simp [Bpass, hr]) wr_gapS
+  have h3 : wrM Bpass stepS = true := wrM_mono (fun r hr => ⊚ Bpass, hr) wr_stepS
+  have h4 : wrM Bpass gapS = true := wrM_mono (fun r hr => ⊚ Bpass, hr) wr_gapS
   simp only [passBody, wrM, block, h1, h2 43115 (Or.inl rfl), h2 43117 (Or.inr rfl), h3, h4,
     Bool.and_true, Bool.true_and]
   decide
@@ -67,21 +75,21 @@ theorem Bpass_false {r : ℕ} (h : r < 10000 ∨ (10503 ≤ r ∧ r ≤ 40000) �
     (43106 < r ∧ r < 43110) ∨ (43111 < r ∧ r < 43113) ∨ (43117 < r ∧ r < 43120) ∨
     (43128 ≤ r ∧ r < 43130) ∨ (43135 ≤ r ∧ r < 43140) ∨ (43142 < r ∧ r < 43150) ∨ 43151 < r) :
     Bpass r = false := by
-  have hg := Bgap_false (r := r) (by omega)
-  simp only [Bpass, hg, Bstep, Bool.false_or, Bool.or_eq_false_iff, decide_eq_false_iff_not]
+  have hg := Bgap_false (r := r) (⋄)
+  ϴ Bpass, hg, Bstep, Bool.false_or, Bool.or_eq_false_iff, decide_eq_false_iff_not
   omega
 
 theorem getD_dropLast {l : List ℕ} {k : ℕ} (hk : k < l.dropLast.length) :
     l.dropLast.getD k 0 = l.getD k 0 := by
   have hne : l ≠ [] := by rintro rfl; simp at hk
   conv_rhs => rw [← List.dropLast_append_getLast hne]
-  rw [List.getD_append _ _ _ _ hk]
+  Ξ List.getD_append _ _ _ _ hk
 
 section step
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
+
 /-- **One iteration of the main pass.** -/
 theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     {D H T SE B CT AT ST WT lo hd : ℕ} {mB : ℕ → ℕ}
@@ -99,7 +107,7 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
   set x := c / 2 with hx
   have hxK : x < K := by omega
   obtain ⟨re, rh, rpar, rch⟩ := F.recs c (by omega)
-  have lowd : ∀ a, a < H → d.nmem a = mB a := I.low
+  have lowd := I.low
   -- 1. the current code
   obtain ⟨d₁, k₁, x₁, hk₁, v10, v11, v12, v13, v14, f₁⟩ := curS_exec (P := P) d hw (c := c)
     (T := T) (by rw [I.r103, lowd _ (by omega), F.codes m hm]) I.rT I.r1a I.r1 (by omega)
@@ -112,7 +120,7 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
   have g₁ : ∀ r, Bpass r = false → d₁.nreg r = d.nreg r := fun r hr => f₁.1 r (by
     simp only [Bpass, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
     simp only [decide_eq_false_iff_not]; omega)
-  have mm₁ : d₁.nmem = d.nmem := f₁.2.2.1
+  have mm₁ := f₁.2.2.1
   have s₁ : d₁.nreg 43101 = d.nreg 43101 := f₁.1 _ (by decide)
   -- 2. the label before
   obtain ⟨d₂, k₂, x₂, hk₂, v15, f₂⟩ := topS_exec (P := P) d₁ w₁ (dst := 43115)
@@ -215,7 +223,7 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
   have w₄ := x₄.wb_right
   have g₄ : ∀ r, r ≠ 43117 → r ≠ 43116 → d₄.nreg r = d₃.nreg r := fun r a1 a2 => f₄.1 r (by
     simp only [decide_eq_false_iff_not]; omega)
-  have mm₄ : d₄.nmem = d₃.nmem := f₄.2.2.1
+  have mm₄ := f₄.2.2.1
   have G₄ : ∀ r, (r < 42110 ∨ (42112 < r ∧ r < 43101) ∨ (43101 < r ∧ r < 43110) ∨
       (43111 < r ∧ r < 43113) ∨ (43117 < r ∧ r < 43130) ∨ 43134 < r) →
       d₄.nreg r = d.nreg r := fun r hr => by
@@ -231,7 +239,7 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     rw [g₄ _ (by norm_num) (by norm_num), g₃ _ (by omega), g₂ _ (by norm_num) (by norm_num), v10]
   have e111 : d₄.nreg 42111 = (wposOf L c).hgt := by
     rw [g₄ _ (by norm_num) (by norm_num), g₃ _ (by omega), g₂ _ (by norm_num) (by norm_num), v11]
-  have e117 : d₄.nreg 43117 = topR E (m + 1) := v17
+  have e117 := v17
   have ec : ∀ {j}, j < E.length → E.getD j 0 < 2 * L.length := fun hj =>
     BuildNF.getD_lt_of_perm F.inp.perm hj
   obtain ⟨d₅, k₅, x₅, hk₅, f₅, hgap, hnogap⟩ := gapS_exec (P := P) F.good F.hwords d₄ w₄
@@ -254,7 +262,7 @@ theorem passBody_step {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     (by omega)
     (by rw [G₄ 44020 (by omega), G₄ 44021 (by omega), I.rlo, I.rhd]; exact F.cnt)
   have w₅ := x₅.wb_right
-  have g₅ : ∀ r, Bgap r = false → d₅.nreg r = d₄.nreg r := f₅.1
+  have g₅ := f₅.1
   -- 6. the next position
   have a100 : d₅.nreg 43100 = m := by
     rw [g₅ _ (Bgap_false (by omega)), G₄ 43100 (by omega), I.r100]
@@ -383,19 +391,19 @@ theorem passLoop_exec {M : Model} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     (fun d => WordsBounded W d ∧ ∃ m, PassInv F c₀ d m ∧ d.nreg 43100 = m)
     (fun d => 11702 * (E.length - d.nreg 43100)) (fun d => 12 * d.nreg 43100) (fun d hd => hd.1)
     (fun d ⟨hwd, m, Id, hmd⟩ htest => by
-      rw [Id.rN, hmd] at htest
+      Ξ' Id.rN, hmd at htest
       obtain ⟨d', k, x, hk, hk', hw', I'⟩ := passBody_step F Id htest hwd
       refine ⟨d', k, x, ⟨hw', m + 1, I', I'.r100⟩, ?_, ?_⟩
       · rw [I'.r100, hmd]; omega
       · rw [I'.r100, hmd]; omega)
     ⟨hw, 0, I, I.r100⟩
   have hmN := I'.m_le
-  rw [I'.rN, hm'] at htest
-  have : m' = E.length := by omega
+  Ξ' I'.rN, hm' at htest
+  have : m' = E.length := ⋄
   subst this
   refine ⟨d', k, e, ?_, ?_, hw', I'⟩
-  · rw [I.r100] at hk; omega
-  · rw [I.r100, hm'] at hψ
+  · Ξ' I.r100 at hk; omega
+  · Ξ' I.r100, hm' at hψ
     omega
 
 end step

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildPhaseB2
 
 /-!
@@ -37,15 +39,15 @@ theorem wr_phaseB : wrM BphaseB phaseB = true := by
     have := wrM_mono (B' := BphaseB) (fun r hr => ?_) wr_passBody
     · simp only [passLoop, wrM]; exact this
     · cases hb : Bpass r
-      · rw [hb] at hr; exact absurd hr (by simp)
+      · rw [hb] at hr; exact absurd hr (✓)
       · by_contra hc
         simp only [BphaseB, decide_eq_true_eq, not_or, not_and, not_lt] at hc
-        have : Bpass r = false := Bpass_false (by omega)
-        rw [this] at hb; exact absurd hb (by simp)
+        have : Bpass r = false := Bpass_false (⋄)
+        rw [this] at hb; exact absurd hb (✓)
   have h4 : wrM BphaseB regPhase = true := wrM_mono (fun r hr => by
     simp only [BregPhase, Bool.or_eq_true, decide_eq_true_eq] at hr
     simp only [BphaseB, decide_eq_true_eq]; omega) wr_regPhase
-  simp only [phaseB, phaseB1, wrM, h1, h2, h3, h4, Bool.and_self]
+  ϴ phaseB, phaseB1, wrM, h1, h2, h3, h4, Bool.and_self
 
 section exec
 

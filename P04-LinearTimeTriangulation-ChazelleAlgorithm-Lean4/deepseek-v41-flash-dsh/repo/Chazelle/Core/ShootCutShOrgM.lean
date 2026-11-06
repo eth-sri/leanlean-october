@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutShWt
 
 /-!
@@ -62,7 +64,7 @@ theorem innerPt_bounds {z : Point} (h : (chainModel C).InnerPt z) :
   have b := walk_y_bounds C hq
   have a' := walk_x_bounds C hp'
   have b' := walk_x_bounds C hq'
-  exact ⟨abs_lt.2 ⟨by linarith, by linarith⟩, abs_le.2 ⟨by linarith, by linarith⟩⟩
+  exact ⟨abs_lt.2 ⟨⟡, by linarith⟩, abs_le.2 ⟨by linarith, by linarith⟩⟩
 
 /-- **A position inside the slit**: a position of the walk strictly inside the box that is
 neither on a tour edge (edges `6 … 2m + 5`) nor a vertex lies above the top of the chain. -/

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoSpec
 public import Chazelle.Core.SweepEvGenM
 
@@ -82,30 +84,30 @@ theorem hit_onCB (C : Chain) {z : Point} {σ : ℝ} (hz : z.2 ≤ C.top.2) (hσ 
     hb | hs
   · -- on the box boundary
     have hR := C.radius_pos
-    have h2 : |z.2| < C.radius := (C.dom_subset_box (hin (T / 2) (by linarith) (by linarith))).2
+    have h2 : |z.2| < C.radius := (C.dom_subset_box (hin (T / 2) (⟡) (⟡))).2
     have h1 : |z.1 + σ * T| ≤ C.radius := by
       by_contra hgt
       push Not at hgt
       set δ := |z.1 + σ * T| - C.radius with hδ
-      have hδ0 : 0 < δ := by linarith
+      have hδ0 : 0 < δ := ⟡
       set t := T - min (T / 2) (δ / 2) with ht
       have hm1 : min (T / 2) (δ / 2) ≤ T / 2 := min_le_left _ _
       have hm2 : min (T / 2) (δ / 2) ≤ δ / 2 := min_le_right _ _
-      have hm0 : 0 < min (T / 2) (δ / 2) := lt_min (by linarith) (by linarith)
-      have hd := (C.dom_subset_box (hin t (by linarith) (by linarith))).1
+      have hm0 : 0 < min (T / 2) (δ / 2) := lt_min (⟡) (⟡)
+      have hd := (C.dom_subset_box (hin t (⟡) (⟡))).1
       simp only [rayPt_fst] at hd
       have hσa : |σ| = 1 := by rcases hσ with rfl | rfl <;> norm_num
-      have e : z.1 + σ * T = (z.1 + σ * t) + σ * (T - t) := by ring
+      have e : z.1 + σ * T = (z.1 + σ * t) + σ * (T - t) := ⋆
       have h3 : |z.1 + σ * T| ≤ |z.1 + σ * t| + |σ * (T - t)| := by
         rw [e]; exact abs_add_le _ _
       have h4 : |σ * (T - t)| = T - t := by
-        rw [abs_mul, hσa, one_mul, abs_of_nonneg (by rw [ht]; linarith)]
+        Ξ abs_mul, hσa, one_mul, abs_of_nonneg (by rw [ht]; linarith)
       rw [h4] at h3
       have h5 : T - t = min (T / 2) (δ / 2) := by rw [ht]; ring
       linarith
     have : ¬ (|z.1 + σ * T| < C.radius ∧ |z.2| < C.radius) := hb
     right; left
-    simp only [rayPt_fst]
+    ϴ rayPt_fst
     by_contra hne
     exact this ⟨lt_of_le_of_ne h1 hne, h2⟩
   · exact Or.inl hs

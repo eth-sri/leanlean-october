@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranSize
 public import Chazelle.Core.FactsL23
 public import Chazelle.Core.FactsInterior
@@ -50,7 +52,7 @@ theorem size_le_n (M : Model) : M.size ≤ M.W.n := by
   unfold Model.size
   calc {p : ℕ | p < M.W.n ∧ M.counted p}.ncard ≤ (Set.Iio M.W.n).ncard :=
         Set.ncard_le_ncard (fun p hp => hp.1) (Set.finite_Iio _)
-    _ = M.W.n := by rw [Set.ncard_eq_toFinset_card', Set.toFinset_Iio, Nat.card_Iio]
+    _ = M.W.n := Ρ Set.ncard_eq_toFinset_card', Set.toFinset_Iio, Nat.card_Iio
 
 theorem chainModel_n (C : Chain) : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n _
 
@@ -60,10 +62,10 @@ theorem chainModel_size (C : Chain) : (chainModel C).size = 2 * C.m := by
   have e : {p : ℕ | p < (chainModel C).W.n ∧ (chainModel C).counted p} =
       ((Finset.Ico 6 (2 * C.m + 6) : Finset ℕ) : Set ℕ) := by
     ext p
-    simp only [mem_ofPred_eq, Finset.coe_Ico, Set.mem_Ico, chainModel_n]
+    ϴ mem_ofPred_eq, Finset.coe_Ico, Set.mem_Ico, chainModel_n
     show p < 2 * C.m + 7 ∧ (6 ≤ p ∧ p < 2 * C.m + 6) ↔ _
     omega
-  rw [e, Set.ncard_coe_finset, Nat.card_Ico]
+  Ξ e, Set.ncard_coe_finset, Nat.card_Ico
   omega
 
 /-- A `(γ + 1)`-semigranular family of a chain model is `(min γ (2 m) + 1)`-semigranular. -/
@@ -71,7 +73,7 @@ theorem semigranular_min_chain' {C : Chain} {F : Set (Set Point)} {γ : ℕ}
     (h : (chainModel C).Semigranular F (γ + 1)) :
     (chainModel C).Semigranular F (min γ (2 * C.m) + 1) := by
   refine Model.Semigranular.mono _ (semigranular_min h) ?_
-  rw [chainModel_size]
+  Ξ chainModel_size
   omega
 
 /-! ## Degrees of normal forms -/
@@ -82,7 +84,7 @@ theorem degLe_of_lens {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N) {d : 
   obtain ⟨-, -, -, reg, hRC, -, -, hRO, -⟩ := id hN
   intro U hU
   obtain ⟨r, hr, rfl⟩ := hRC.2.2 U hU
-  rw [Gran.deg_region hN hRC hRO hr]
+  Ξ Gran.deg_region hN hRC hRO hr
   exact h r hr
 
 /-- **The chord lists from the degree bound.** -/
@@ -90,7 +92,7 @@ theorem lens_of_degLe {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N) {d : 
     (h : M.DegLe (N.F M Q) d) : ∀ r, r < N.nRegions → (N.region r).chords.length ≤ d := by
   obtain ⟨-, -, -, reg, hRC, -, -, hRO, -⟩ := id hN
   intro r hr
-  rw [← Gran.deg_region hN hRC hRO hr]
+  Ξ ← Gran.deg_region hN hRC hRO hr
   exact h _ (hRC.1 r hr)
 
 /-! ## Lemma 2.3 -/
@@ -107,9 +109,9 @@ theorem nChords_le_canonical {c : ℕ → ℕ} (hc : ∀ (M : Model) (Q : Polygo
   rw [Gran.ncard_F hnf] at h
   have hs := size_le_n (chainModel C)
   rw [chainModel_n] at hs
-  calc N.nChords ≤ N.nChords * (γ + 1) := Nat.le_mul_of_pos_right _ (by omega)
+  calc N.nChords ≤ N.nChords * (γ + 1) := Nat.le_mul_of_pos_right _ (⋄)
     _ ≤ c D * ((chainModel C).size + 1) := h
-    _ ≤ c D * (2 * C.m + 8) := Nat.mul_le_mul_left _ (by omega)
+    _ ≤ c D * (2 * C.m + 8) := Nat.mul_le_mul_left _ (⋄)
 
 /-! ## `Nat.clog` arithmetic -/
 
@@ -119,8 +121,8 @@ theorem clog_mono {a b : ℕ} (h : a ≤ b) : Nat.clog 2 a ≤ Nat.clog 2 b :=
 /-- `⌈log₂ (a b)⌉ ≤ ⌈log₂ a⌉ + ⌈log₂ b⌉`. -/
 theorem clog_mul_le (a b : ℕ) : Nat.clog 2 (a * b) ≤ Nat.clog 2 a + Nat.clog 2 b := by
   apply Nat.clog_le_of_le_pow
-  rw [pow_add]
-  exact Nat.mul_le_mul (Nat.le_pow_clog (by norm_num) a) (Nat.le_pow_clog (by norm_num) b)
+  Ξ pow_add
+  exact Nat.mul_le_mul (Nat.le_pow_clog (⊛) a) (Nat.le_pow_clog (⊛) b)
 
 theorem clog_le_self (a : ℕ) : Nat.clog 2 a ≤ a := by
   apply Nat.clog_le_of_le_pow

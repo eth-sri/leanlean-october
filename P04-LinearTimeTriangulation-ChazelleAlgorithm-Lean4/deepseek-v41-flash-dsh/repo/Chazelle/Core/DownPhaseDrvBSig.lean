@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.BruteSig
 public import Chazelle.Core.DownPhaseDrvRLib
 
@@ -41,8 +43,8 @@ theorem fbTrans {B : ℕ → Bool} {c₁ c₂ c₃ : Config} (h₁ : FrameB B c�
 /-- A register frame for fewer registers is one for more. -/
 theorem fbMono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' :=
-  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
-    fun r hr => h.2.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
+  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (✓)),
+    fun r hr => h.2.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (✓)),
     h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
 
 /-- Copy a register triple into the kernel registers from `s`. -/

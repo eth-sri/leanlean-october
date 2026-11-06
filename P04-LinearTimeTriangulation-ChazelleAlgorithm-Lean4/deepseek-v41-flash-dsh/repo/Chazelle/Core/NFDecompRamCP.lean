@@ -1,5 +1,13 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFDecompRamP2
 
 /-!
@@ -21,7 +29,7 @@ open Machine Machine.Stmt Programs Chazelle.Core.Dec
 def tv (m : ℕ → ℕ) (A R f : ℕ) : ℕ → ℕ := fun j => if j < R then fv m A R f j else 0
 
 theorem tv_lt {m : ℕ → ℕ} {A R f j : ℕ} (hj : j < R) : tv m A R f j = fv m A R f j := by
-  unfold tv; rw [ite_eq_left hj]
+  unfold tv; Ξ ite_eq_left hj
 
 /-- The round state held in memory (root and finished count from registers). -/
 def rsOf (m : ℕ → ℕ) (A R root fin : ℕ) : RS :=
@@ -41,45 +49,45 @@ theorem codeS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB 
     (hp : fv c.nmem A R 9 x ≠ x → fv c.nmem A R 4 (fv c.nmem A R 9 x) < R) :
     ∃ c' k, Exec P W (codeS d xr) c c' k ∧ k ≤ 12 ∧ c'.nmem = c.nmem ∧
       Same [60030, 60051, 60052, d] c c' ∧ c'.nreg d = code (tv c.nmem A R 9) (tv c.nmem A R 4) x := by
-  have b9 := hR.b 9 (by norm_num); have b4 := hR.b 4 (by norm_num)
+  have b9 := hR.b 9 (⊛); have b4 := hR.b 4 (⊛)
   simp only [Nat.reduceAdd] at b9 b4
   unfold codeS
   obtain ⟨c1, k1, e1, rfl, m1, s1, r51⟩ := ldF_rel (P := P) hw 60051 9 xr
     (by rw [show fb 9 = 60109 from rfl, b9, h]; omega)
   rw [show fb 9 = 60109 from rfl, b9, h] at r51
   have r51' : c1.nreg 60051 = fv c.nmem A R 9 x := r51
-  have hxr1 : c1.nreg xr = x := by rw [s1.1 _ (by simp; omega), h]
-  have hR1 : DRegs A R K CB RB LB c1 := hR.of_same s1 (by simp [Prot])
+  have hxr1 : c1.nreg xr = x := Ρ s1.1 _ (by simp; omega), h
+  have hR1 : DRegs A R K CB RB LB c1 := hR.of_same s1 (⊚ Prot)
   refine spec_seq ⟨c1, 2, e1, ?_⟩
   unfold code
-  rw [tv_lt hx]
+  Ξ tv_lt hx
   by_cases hbx : fv c.nmem A R 9 x = x
-  · refine ifEqN_eq (by rw [r51', hxr1, hbx]) ?_
-    rw [ite_eq_left hbx]
+  · refine ifEqN_eq (Ρ r51', hxr1, hbx) ?_
+    Ξ ite_eq_left hbx
     have hw1 := e1.wb_right
     clear hw
     exec_block
     · rw [hxr1]; omega
     · config_simp; rw [Machine.upd_other _ _ _ (Ne.symm hd.2.2.2), hxr1, hR1.one]; omega
-    · refine ⟨by omega, by rw [m1], ?_, ?_⟩
-      · refine (s1.mono (by simp)).trans ?_
+    · refine ⟨⋄, by rw [m1], ?_, ?_⟩
+      · refine (s1.mono (✓)).trans ?_
         exact ⟨fun y hy => by
           simp only [List.mem_cons, List.not_mem_nil, or_false, not_or] at hy
           config_simp; rw [Machine.upd_other _ _ _ hy.2.2.2], rfl, rfl, rfl⟩
       · config_simp; rw [Machine.upd_other _ _ _ (Ne.symm hd.2.2.2), hxr1, hR1.one]; ring
   · refine ifEqN_ne (by rw [r51', hxr1]; exact hbx) ?_
-    rw [ite_eq_right hbx]
+    Ξ ite_eq_right hbx
     have hpx := hp hbx
     obtain ⟨c2, k2, e2, rfl, m2, s2, r52⟩ := ldF_rel (P := P) e1.wb_right 60052 4 60051
-      (by rw [show fb 4 = 60104 from rfl, hR1.b 4 (by norm_num), r51']; omega)
-    rw [show fb 4 = 60104 from rfl, hR1.b 4 (by norm_num), r51', m1] at r52
+      (by rw [show fb 4 = 60104 from rfl, hR1.b 4 (⊛), r51']; omega)
+    rw [show fb 4 = 60104 from rfl, hR1.b 4 (⊛), r51', m1] at r52
     refine spec_seq ⟨c2, 2, e2, ?_⟩
     have hw2 := e2.wb_right
     refine spec_instr (Exec.addN hw2 _ _ _ (by rw [r52]; unfold fv at hpx ⊢; omega)) fun _ => ?_
     intro k' hk'
-    refine ⟨by omega, by rw [m2, m1], ?_, ?_⟩
-    · refine ((s1.mono (by simp)).trans (s2.mono (by simp))).trans ?_
-      exact Same.upd1 (by simp)
+    refine ⟨⋄, by rw [m2, m1], ?_, ?_⟩
+    · refine ((s1.mono (✓)).trans (s2.mono (by simp))).trans ?_
+      exact Same.upd1 (✓)
     · config_simp; rw [r52, tv_lt hb]; unfold fv; ring
 
 /-- The facts on the fields the chord pass relies on. -/
@@ -115,7 +123,7 @@ theorem fillS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB 
   set pc := fv c.nmem A R 3 ch with hpcdef
   set tp := fv c.nmem A R 8 pc with htpdef
   have htpR : tp < R := hF.topR pc hc3
-  have hchTop : fv c.nmem A R 8 ch = ch := hpt
+  have hchTop := hpt
   have htpTop : fv c.nmem A R 8 tp = tp := hF.topTop pc hc3
   unfold fillS
   obtain ⟨c1, k1, e1, rfl, m1, s1, r53⟩ := ldF_rel (P := P) hw 60053 6 60020
@@ -238,7 +246,7 @@ theorem fillS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB 
     rw [fv_store heR hu, fv_store heR hu, fv_store heR hu, m17]
     rw [s8.1 60060 (by simp),
       s9.1 60010 (by simp), s8.1 60010 (by simp), s17.1 60010 (by simp), hR.zero, r59']
-    have r60' : c7.nreg 60060 = code (tv c.nmem A R 9) (tv c.nmem A R 4) hi := r60
+    have r60' := r60
     rw [r60']
     by_cases hue : u = e
     · subst hue
@@ -415,7 +423,7 @@ theorem cpBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       ∀ f u, f < 19 → u < R → fv c'.nmem A R f u =
         if u = e ∧ CPF f then cpv c.nmem A R K f e else fv c.nmem A R f u := by
   have hKR := hF.hKR
-  have heR : e < R := by omega
+  have heR : e < R := ⋄
   obtain ⟨hc1, hc2, hc3⟩ := hF.chOf e he
   have htR := hF.topR _ hc1
   -- the next values at `e`
@@ -443,12 +451,12 @@ theorem cpBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       simp only [cpv, nxt, next, nPend, rsOf, Chosen, ite_eq_left he, hc, ht, tv_lt heR, tv_lt htR] <;> norm_num
   unfold cpBody
   obtain ⟨c1, k1, e1, rfl, m1, s1, r66⟩ := ldF_rel (P := P) hw 60066 12 60020
-    (by rw [show fb 12 = 60112 from rfl, hR.b 12 (by norm_num), h20]; omega)
-  rw [show fb 12 = 60112 from rfl, hR.b 12 (by norm_num), h20] at r66
+    (by rw [show fb 12 = 60112 from rfl, hR.b 12 (⊛), h20]; omega)
+  Ξ' show fb 12 = 60112 from rfl, hR.b 12 (⊛), h20 at r66
   change c1.nreg 60066 = fv c.nmem A R 12 e at r66
-  have hR1 := hR.of_same s1 (by simp [Prot])
+  have hR1 := hR.of_same s1 (⊚ Prot)
   have hF1 : CPFacts c1.nmem A R K := by rw [m1]; exact hF
-  have r20 : c1.nreg 60020 = e := by rw [s1.1 _ (by simp), h20]
+  have r20 : c1.nreg 60020 = e := Ρ s1.1 _ (✓), h20
   -- the middle, with its effect
   have hmid : ∃ c2 k2, Exec P W (ifEqN 60066 60011 fillS
         (.seq (ldF 60067 11 60020) (ifEqN 60067 60011 .skip chkS))) c1 c2 k2 ∧ k2 ≤ 56 ∧
@@ -461,9 +469,9 @@ theorem cpBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
     · refine ifEqN_eq (by rw [r66, hR1.one]; exact hp) ?_
       obtain ⟨c2, k2, e2, hk2, s2, hm2, hv2⟩ := fillS_exec (P := P) e1.wb_right hR1 hAW hF1 r20 he
         (by rw [m1]; exact hp) (by rw [m1]; exact hpt hp)
-      refine ⟨c2, k2, e2, by omega, s2.mono (by simp), fun a ha => by rw [hm2 a ha, m1],
+      refine ⟨c2, k2, e2, ⋄, s2.mono (✓), fun a ha => by rw [hm2 a ha, m1],
         fun f u hf hu => ?_⟩
-      rw [hv2 f u hf hu, m1]
+      Ξ hv2 f u hf hu, m1
       by_cases hue : u = e
       · subst hue
         by_cases hcf : CPF f
@@ -471,36 +479,36 @@ theorem cpBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
               cpv c.nmem A R K f u from ite_eq_left ⟨rfl, hcf⟩, hN f hcf, ite_eq_left hp]
           rcases hcf with rfl | rfl | rfl | rfl | rfl <;> simp
         · have : f ≠ 11 ∧ f ≠ 12 ∧ f ≠ 16 ∧ f ≠ 17 ∧ f ≠ 18 := by unfold CPF at hcf; omega
-          simp [this, hcf]
-      · simp [hue]
+          Θ this, hcf
+      · Θ hue
     · refine ifEqN_ne (by rw [r66, hR1.one]; exact hp) ?_
       obtain ⟨c2, k2, e2, rfl, m2, s2, r67⟩ := ldF_rel (P := P) e1.wb_right 60067 11 60020
-        (by rw [show fb 11 = 60111 from rfl, hR1.b 11 (by norm_num), r20]; omega)
-      rw [show fb 11 = 60111 from rfl, hR1.b 11 (by norm_num), r20, m1] at r67
+        (by rw [show fb 11 = 60111 from rfl, hR1.b 11 (⊛), r20]; omega)
+      Ξ' show fb 11 = 60111 from rfl, hR1.b 11 (⊛), r20, m1 at r67
       change c2.nreg 60067 = fv c.nmem A R 11 e at r67
-      have hR2 := hR1.of_same s2 (by simp [Prot])
-      have m12 : c2.nmem = c.nmem := by rw [m2, m1]
+      have hR2 := hR1.of_same s2 (⊚ Prot)
+      have m12 : c2.nmem = c.nmem := Ρ m2, m1
       refine spec_seq ⟨c2, 2, e2, ?_⟩
       by_cases hr : fv c.nmem A R 11 e = 1
       · refine ifEqN_eq (by rw [r67, hR2.one]; exact hr) (spec_skip e2.wb_right ?_)
         intro k' hk'
-        refine ⟨by omega, s2.mono (by simp), fun a _ => by rw [m12], fun f u hf hu => ?_⟩
-        rw [m12]
+        refine ⟨⋄, s2.mono (✓), fun a _ => by rw [m12], fun f u hf hu => ?_⟩
+        Ξ m12
         by_cases hue : u = e
         · subst hue
           by_cases hcf : CPF f
           · rw [ite_eq_left ⟨rfl, hcf⟩, hN f hcf, ite_eq_right hp,
               ite_eq_right (fun hh => hh.1 hr)]
-          · rw [ite_eq_right (fun hh => hcf hh.2)]
-        · rw [ite_eq_right (fun hh => hue hh.1)]
+          · Ξ ite_eq_right (fun hh => hcf hh.2)
+        · Ξ ite_eq_right (fun hh => hue hh.1)
       · refine ifEqN_ne (by rw [r67, hR2.one]; exact hr) ?_
         have hF2 : CPFacts c2.nmem A R K := by rw [m12]; exact hF
         obtain ⟨c3, k3, e3, hk3, s3, hm3, hv3⟩ := chkS_exec (P := P) e2.wb_right hR2 hAW hF2
-          (by rw [s2.1 _ (by simp), r20]) he
-        refine ⟨c3, k3, e3, fun k' hk' => fun k'' hk'' => ⟨by omega,
-          (s2.mono (by simp)).trans (s3.mono (by simp)), fun a ha => by rw [hm3 a ha, m12],
+          (Ρ s2.1 _ (✓), r20) he
+        refine ⟨c3, k3, e3, fun k' hk' => fun k'' hk'' => ⟨⋄,
+          (s2.mono (✓)).trans (s3.mono (✓)), fun a ha => by rw [hm3 a ha, m12],
           fun f u hf hu => ?_⟩⟩
-        rw [hv3 f u hf hu, m12]
+        Ξ hv3 f u hf hu, m12
         by_cases hue : u = e
         · subst hue
           by_cases hcf : CPF f
@@ -508,21 +516,21 @@ theorem cpBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
               cpv c.nmem A R K f u from ite_eq_left ⟨rfl, hcf⟩, hN f hcf, ite_eq_right hp]
             by_cases hch : fv c.nmem A R 13 (fv c.nmem A R 8 (fv c.nmem A R 6 u)) = 1 ∧
                 fv c.nmem A R 9 (fv c.nmem A R 8 (fv c.nmem A R 6 u)) = fv c.nmem A R 6 u
-            · rcases hcf with rfl | rfl | rfl | rfl | rfl <;> simp [hch, hr]
+            · rcases hcf with rfl | rfl | rfl | rfl | rfl <;> Θ hch, hr
             · rcases hcf with rfl | rfl | rfl | rfl | rfl <;> simp only <;> simp_all
           · have : ¬ (f = 11 ∨ f = 12 ∨ f = 16) := fun hh => hcf (by unfold CPF; omega)
-            rw [ite_eq_right (fun hh => this hh.2.2.2), ite_eq_right (fun hh => hcf hh.2)]
-        · rw [ite_eq_right (fun hh => hue hh.2.2.1), ite_eq_right (fun hh => hue hh.1)]
+            Ξ ite_eq_right (fun hh => this hh.2.2.2), ite_eq_right (fun hh => hcf hh.2)
+        · Ξ ite_eq_right (fun hh => hue hh.2.2.1), ite_eq_right (fun hh => hue hh.1)
   obtain ⟨c2, k2, e2, hk2, s2, hm2, hv2⟩ := hmid
-  have hR2 := hR1.of_same s2 (by simp [Prot])
+  have hR2 := hR1.of_same s2 (⊚ Prot)
   obtain ⟨c3, k3, e3, rfl, m3, s3, r20'⟩ := incr_exec (P := P) e2.wb_right hR2.one
-    (by rw [s2.1 _ (by simp), r20]; omega)
-  refine ⟨c3, 2 + (k2 + 1), .seq e1 (.seq e2 e3), by omega, ?_, by
-    rw [r20', s2.1 _ (by simp), r20], fun f u hf hu => by rw [m3, hv2 f u hf hu]⟩
+    (by rw [s2.1 _ (✓), r20]; omega)
+  refine ⟨c3, 2 + (k2 + 1), .seq e1 (.seq e2 e3), ⋄, ?_, by
+    rw [r20', s2.1 _ (✓), r20], fun f u hf hu => Ρ m3, hv2 f u hf hu⟩
   exact DFr.of_same (((s1.mono (l' := [60066, 60030, 60053, 60054, 60055, 60056, 60057, 60058,
-    60059, 60060, 60051, 60052, 60067, 60064, 60065, 60061, 60062, 60063, 60020]) (by simp)).trans
-    (s2.mono (by simp))).trans (s3.mono (by simp))) (by simp [Prot])
-    (fun a ha => by rw [m3, hm2 a ha])
+    60059, 60060, 60051, 60052, 60067, 60064, 60065, 60061, 60062, 60063, 60020]) (✓)).trans
+    (s2.mono (✓))).trans (s3.mono (✓))) (by simp [Prot])
+    (fun a ha => Ρ m3, hm2 a ha)
 
 theorem tv_congr {m m' : ℕ → ℕ} {A R f : ℕ} (h : ∀ u, u < R → fv m A R f u = fv m' A R f u) :
     tv m A R f = tv m' A R f := by
@@ -536,16 +544,16 @@ theorem cpv_congr {m m' : ℕ → ℕ} {e : ℕ} (heR : e < R)
     (he : ∀ f, CPF f → fv m A R f e = fv m' A R f e) (f : ℕ) :
     cpv m A R K f e = cpv m' A R K f e := by
   have t : ∀ f, f < 19 → ¬ CPF f → tv m A R f = tv m' A R f := fun f hf hc => tv_congr (hs f hf hc)
-  have t3 := t 3 (by norm_num) (by unfold CPF; omega)
-  have t4 := t 4 (by norm_num) (by unfold CPF; omega)
-  have t5 := t 5 (by norm_num) (by unfold CPF; omega)
-  have t6 := t 6 (by norm_num) (by unfold CPF; omega)
-  have t8 := t 8 (by norm_num) (by unfold CPF; omega)
-  have t9 := t 9 (by norm_num) (by unfold CPF; omega)
-  have t13 := t 13 (by norm_num) (by unfold CPF; omega)
-  have t14 := t 14 (by norm_num) (by unfold CPF; omega)
-  have t15 := t 15 (by norm_num) (by unfold CPF; omega)
-  have t0 := t 0 (by norm_num) (by unfold CPF; omega)
+  have t3 := t 3 (⊛) (by unfold CPF; omega)
+  have t4 := t 4 (⊛) (by unfold CPF; omega)
+  have t5 := t 5 (⊛) (by unfold CPF; omega)
+  have t6 := t 6 (⊛) (by unfold CPF; omega)
+  have t8 := t 8 (⊛) (by unfold CPF; omega)
+  have t9 := t 9 (⊛) (by unfold CPF; omega)
+  have t13 := t 13 (⊛) (by unfold CPF; omega)
+  have t14 := t 14 (⊛) (by unfold CPF; omega)
+  have t15 := t 15 (⊛) (by unfold CPF; omega)
+  have t0 := t 0 (⊛) (by unfold CPF; omega)
   have e11 := he 11 (by unfold CPF; omega); have e12 := he 12 (by unfold CPF; omega)
   have e16 := he 16 (by unfold CPF; omega); have e17 := he 17 (by unfold CPF; omega)
   have e18 := he 18 (by unfold CPF; omega)
@@ -567,11 +575,11 @@ theorem cpS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
   set c1 := { c with nreg := upd c.nreg 60020 0 } with hc1
   have hf1 : DFr (A + 12) (A + 12 + 19 * R) c c1 :=
     DFr.nreg _ fun r hr _ => by
-      unfold Prot at hr; rw [Machine.upd_other _ _ _ (by omega)]
+      unfold Prot at hr; Ξ Machine.upd_other _ _ _ (⋄)
   have hstat : ∀ d : Config, (∀ f u, f < 19 → u < R → fv d.nmem A R f u =
       if u < d.nreg 60020 ∧ CPF f then cpv c.nmem A R K f u else fv c.nmem A R f u) →
       ∀ f, f < 19 → ¬ CPF f → ∀ u, u < R → fv d.nmem A R f u = fv c.nmem A R f u :=
-    fun d hv f hf hc u hu => by rw [hv f u hf hu, ite_eq_right (fun hh => hc hh.2)]
+    fun d hv f hf hc u hu => Ρ hv f u hf hu, ite_eq_right (fun hh => hc hh.2)
   obtain ⟨c', k, e, ⟨hw', hf', hj', hv'⟩, htest, hk⟩ := Exec.whileLtN_potential (P := P) (W := W)
     (a := 60020) (b := 60014) (body := cpBody)
     (fun d => WordsBounded W d ∧ DFr (A + 12) (A + 12 + 19 * R) c d ∧ d.nreg 60020 ≤ K ∧
@@ -580,60 +588,60 @@ theorem cpS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
     (fun d => 64 * (K - d.nreg 60020)) (fun d hd => hd.1)
     (fun d ⟨hwd, hfd, hjd, hvd⟩ htest => by
       have hRd := hR.frame hfd
-      rw [hRd.rK] at htest
+      Ξ' hRd.rK at htest
       obtain ⟨e, hedef⟩ : ∃ e, d.nreg 60020 = e := ⟨_, rfl⟩
-      rw [hedef] at htest hjd hvd
-      have heR : e < R := by omega
+      Ξ' hedef at htest hjd hvd
+      have heR : e < R := ⋄
       have hs := hstat d (by rw [hedef]; exact hvd)
-      have h6 := hs 6 (by norm_num) (by unfold CPF; omega)
-      have h3 := hs 3 (by norm_num) (by unfold CPF; omega)
-      have h8 := hs 8 (by norm_num) (by unfold CPF; omega)
-      have h9 := hs 9 (by norm_num) (by unfold CPF; omega)
-      have h4 := hs 4 (by norm_num) (by unfold CPF; omega)
-      have h13 := hs 13 (by norm_num) (by unfold CPF; omega)
-      have h14 := hs 14 (by norm_num) (by unfold CPF; omega)
-      have h15 := hs 15 (by norm_num) (by unfold CPF; omega)
+      have h6 := hs 6 (⊛) (by unfold CPF; omega)
+      have h3 := hs 3 (⊛) (by unfold CPF; omega)
+      have h8 := hs 8 (⊛) (by unfold CPF; omega)
+      have h9 := hs 9 (⊛) (by unfold CPF; omega)
+      have h4 := hs 4 (⊛) (by unfold CPF; omega)
+      have h13 := hs 13 (⊛) (by unfold CPF; omega)
+      have h14 := hs 14 (⊛) (by unfold CPF; omega)
+      have h15 := hs 15 (⊛) (by unfold CPF; omega)
       have hFd : CPFacts d.nmem A R K := by
         refine ⟨hKR, fun e' he' => ?_, fun u hu => ?_, fun u hu => ?_, fun x hx htx => ?_,
           fun t ht htt ha hs2 => ?_⟩
         · obtain ⟨a1, a2, a3⟩ := hF.chOf e' he'
-          rw [h6 _ (by omega), h3 _ a1]; exact ⟨a1, a2, a3⟩
+          rw [h6 _ (⋄), h3 _ a1]; exact ⟨a1, a2, a3⟩
         · rw [h8 _ hu]; exact hF.topR u hu
         · rw [h8 _ hu, h8 _ (hF.topR u hu)]; exact hF.topTop u hu
-        · rw [h8 _ hx] at htx
+        · Ξ' h8 _ hx at htx
           obtain ⟨b1, b2⟩ := hF.best x hx htx
           rw [h9 _ hx]; refine ⟨b1, fun hb => ?_⟩; rw [h4 _ b1]; exact b2 hb
-        · rw [h8 _ ht] at htt; rw [h13 _ ht] at ha; rw [h15 _ ht] at hs2
+        · Ξ' h8 _ ht at htt; Ξ' h13 _ ht at ha; Ξ' h15 _ ht at hs2
           rw [h14 _ ht]; exact hF.cpar t ht htt ha hs2
       have heC : ∀ f, CPF f → fv d.nmem A R f e = fv c.nmem A R f e := fun f hc => by
         have hf : f < 19 := by unfold CPF at hc; omega
-        rw [hvd f e hf heR, ite_eq_right (fun hh => by omega)]
+        Ξ hvd f e hf heR, ite_eq_right (fun hh => ⋄)
       obtain ⟨d', k', e', hk', hf'', h20', hv''⟩ := cpBody_exec (P := P) hwd hRd hAW hFd hedef htest
         (fun hp => by
-          rw [heC 12 (by unfold CPF; omega)] at hp
+          Ξ' heC 12 (by unfold CPF; omega) at hp
           obtain ⟨a1, -, -⟩ := hF.chOf e htest
           rw [h6 _ heR, h8 _ a1]; exact hpt e htest hp)
-      refine ⟨d', k', e', ⟨e'.wb_right, hfd.trans hf'', by omega, fun f u hf hu => ?_⟩,
+      refine ⟨d', k', e', ⟨e'.wb_right, hfd.trans hf'', ⋄, fun f u hf hu => ?_⟩,
         by rw [h20', hedef]; omega⟩
-      rw [hv'' f u hf hu, h20', cpv_congr heR hs heC]
+      Ξ hv'' f u hf hu, h20', cpv_congr heR hs heC
       by_cases hue : u = e
       · subst hue
         by_cases hc : CPF f
-        · rw [ite_eq_left ⟨rfl, hc⟩, ite_eq_left ⟨by omega, hc⟩]
+        · Ξ ite_eq_left ⟨rfl, hc⟩, ite_eq_left ⟨⋄, hc⟩
         · rw [ite_eq_right (fun hh => hc hh.2), ite_eq_right (fun hh => hc hh.2), hvd f u hf hu,
             ite_eq_right (fun hh => hc hh.2)]
-      · rw [ite_eq_right (fun hh => hue hh.1), hvd f u hf hu]
-        have hiff : (u < e ↔ u < e + 1) := by omega
+      · Ξ ite_eq_right (fun hh => hue hh.1), hvd f u hf hu
+        have hiff : (u < e ↔ u < e + 1) := ⋄
         simp only [hiff])
     ⟨hw1, hf1, by simp only [hc1]; config_simp; omega, fun f u hf hu => by
-      simp only [hc1]; config_simp; rw [ite_eq_right (fun hh => by omega)]⟩
+      simp only [hc1]; config_simp; rw [ite_eq_right (fun hh => ⋄)]⟩
   have hR' := hR.frame hf'
-  rw [hR'.rK] at htest
-  have hjK : c'.nreg 60020 = K := by omega
+  Ξ' hR'.rK at htest
+  have hjK : c'.nreg 60020 = K := ⋄
   have h0 : c1.nreg 60020 = 0 := by simp only [hc1]; config_simp
-  rw [h0] at hk
-  refine ⟨c', k, e, by omega, hw', hf', fun f u hf hu => ?_⟩
-  rw [hv' f u hf hu, hjK]
+  Ξ' h0 at hk
+  refine ⟨c', k, e, ⋄, hw', hf', fun f u hf hu => ?_⟩
+  Ξ hv' f u hf hu, hjK
 
 end cpram
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutPiece
 public import Chazelle.Core.Lemma41Host
 public import Chazelle.Core.DownPhaseTransSide
@@ -89,17 +91,17 @@ theorem iw_tour (hQn : 1 ≤ Q.n) {d : ℕ} (hd : d ≤ m) :
     (interiorWalk Q).vtx ((uStart Q a m + d) % (interiorWalk Q).n) =
       WalkEmbed.tourV (subChain Q a m hm1 hm) (jStart Q m) d := by
   have hn : (interiorWalk Q).n = Q.n := Trans.iw_n
-  rw [hn]
+  Ξ hn
   unfold uStart jStart
   by_cases hL : Mountain.LeftInside Q
-  · simp only [hL, ↓reduceIte]
-    rw [ShootCut.tourV_up _ hd, Trans.iw_vtx_left hL, subChain_vertex, Nat.mod_add_mod]
-  · simp only [hL, ↓reduceIte]
+  · ϴ hL, ↓reduceIte
+    Ξ ShootCut.tourV_up _ hd, Trans.iw_vtx_left hL, subChain_vertex, Nat.mod_add_mod
+  · ϴ hL, ↓reduceIte
     have e : WalkEmbed.tourV (subChain Q a m hm1 hm) m d =
         (subChain Q a m hm1 hm).vertex (m - d) := ShootCut.tourV_down _ hd
-    rw [e, Trans.iw_vtx_right hL (Nat.mod_lt _ (by omega)), subChain_vertex]
+    rw [e, Trans.iw_vtx_right hL (Nat.mod_lt _ (⋄)), subChain_vertex]
     congr 1
-    rw [rev_idx (Nat.mod_lt _ (by omega)) (by omega), sub_idx (by omega) hd (by omega)]
+    rw [rev_idx (Nat.mod_lt _ (⋄)) (by omega), sub_idx (by omega) hd (by omega)]
 
 end
 

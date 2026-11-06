@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShotList
 
 /-!
@@ -24,16 +26,16 @@ def sofJ (M : Model) (Q : Polygon) (hs : List (WPos × WPos)) (m : ℕ → ℕ) 
   ⋃ i ∈ Finset.range j, pcSet M Q (leaves (M.key Q) hs (arcAt m A i))
 
 theorem sofJ_zero (M : Model) (Q : Polygon) (hs : List (WPos × WPos)) (m : ℕ → ℕ) (A : ℕ) :
-    sofJ M Q hs m A 0 = ∅ := by simp [sofJ]
+    sofJ M Q hs m A 0 = ∅ := ⊚ sofJ
 
 theorem sofJ_succ (M : Model) (Q : Polygon) (hs : List (WPos × WPos)) (m : ℕ → ℕ) (A j : ℕ) :
     sofJ M Q hs m A (j + 1) = sofJ M Q hs m A j ∪ pcSet M Q (leaves (M.key Q) hs (arcAt m A j)) := by
-  simp only [sofJ, Finset.range_add_one, Finset.set_biUnion_insert]
+  ϴ sofJ, Finset.range_add_one, Finset.set_biUnion_insert
   exact Set.union_comm _ _
 
 /-- The arc `j` read at the moving pointer. -/
 theorem arcAt_ptr (m : ℕ → ℕ) (A j : ℕ) : arcAt m (A + 4 * j) 0 = arcAt m A j := by
-  simp [arcAt]
+  Θ arcAt
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase8
 
 /-!
@@ -62,19 +64,19 @@ theorem UpEntry.mono {m : ℕ → ℕ} {A A' hp g i d f o : ℕ} (h : UpEntry O 
 theorem UpTab.mono {m : ℕ → ℕ} {h hp A A' : ℕ} (hT : UpTab O P m h hp A) (hA : A ≤ A') :
     UpTab O P m h hp A' := by
   obtain ⟨h1, h2, h3, h4, h5, ⟨h7, h7b, h7c⟩, h8, h9, h6⟩ := hT
-  exact ⟨h1, h2, h3, h4, by omega, ⟨by omega, by omega, by omega⟩, by omega,
+  exact ⟨h1, h2, h3, h4, ⋄, ⟨⋄, ⋄, ⋄⟩, ⋄,
     fun g hg => by have := h9 g hg; omega,
     fun g i hg hi => (h6 g i hg hi).mono hA⟩
 
 theorem Cells.mono {m : ℕ → ℕ} {A A' hp g : ℕ} (hA : A ≤ A') :
     ∀ {x i : ℕ}, Cells O P m A hp g x i → Cells O P m A' hp g x i
   | _, 0, _ => trivial
-  | _, _ + 1, ⟨h1, h2, h3⟩ => ⟨by omega, h2.mono hA, Cells.mono hA h3⟩
+  | _, _ + 1, ⟨h1, h2, h3⟩ => ⟨⋄, h2.mono hA, Cells.mono hA h3⟩
 
 /-- A robust fact implies its consequences, for a larger bound. -/
 theorem robust_of {A A' : ℕ} {m : ℕ → ℕ} {Φ Ψ : (ℕ → ℕ) → Prop} (h : Robust A m Φ)
     (hA : A ≤ A') (hΦ : ∀ m', Φ m' → Ψ m') : Robust A' m Ψ :=
-  fun m' hm' => hΦ m' (h m' fun a ha => hm' a (by omega))
+  fun m' hm' => hΦ m' (h m' fun a ha => hm' a (⋄))
 
 /-- The chain of a table entry: its descriptor is on the whole host. -/
 theorem chainWF_of_node {m : ℕ → ℕ} {A hp d f γ : ℕ} {C : Chain} (hn : 1 ≤ P.n)

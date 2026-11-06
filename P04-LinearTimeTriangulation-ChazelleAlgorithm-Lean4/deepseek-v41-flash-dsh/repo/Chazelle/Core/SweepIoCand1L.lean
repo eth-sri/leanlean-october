@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoCand1G
 
 /-!
@@ -113,7 +115,7 @@ theorem lhs_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterOK
   have om : ∀ r, IFix r → OutL r := fun r h => by unfold IFix at h; unfold OutL sw; omega
   have h8 : 8 ≤ lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) := by unfold lhsK; omega
   have hmdW : c.nreg md + 1 ≤ W := by
-    rw [hI.hin _ hfm]
+    Ξ hI.hin _ hfm
     have := hI.hA; have := hI.hw.1 ALLOC; omega
   obtain ⟨v1, v2, v3, v4, v5, v6, v7, v8, vo⟩ :=
     setL_val c.nmem c.nreg (t := t) (om _ hfm) (om _ hfn) (om _ hfr) heo
@@ -121,7 +123,7 @@ theorem lhs_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterOK
   refine IRS.seq (K₁ := 8) (K₂ := localK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6) + 1)
       (c₀.nreg (sw 6)))
     ((IRS.block (setL md nf nr e t) hI (setL_ok c.nmem c.nreg (om _ hfm) hmdW hK.2.1
-      (by have := hI.hw.1 ALLOC; omega))).mono (by simp [setL]) (fun _ h => h)) ?_
+      (by have := hI.hw.1 ALLOC; omega))).mono (⊚ setL) (fun _ h => h)) ?_
   rintro c₁ hI₁ hA₁ hA₁' hc₁
   subst hc₁
   simp only at *
@@ -138,7 +140,7 @@ theorem lhs_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterOK
   have a3 : c₁.nreg lD = c.nreg qD := v6
   have hacc₁ : AccOK P accA Mod R₀ ((chainModel C).pos (Qof P) ⟨c₁.nreg lE, c₁.nreg lH⟩)
       (dirOf (c₁.nreg lD)) L c₁ := by
-    rw [a1, a2, a3, hz]
+    Ξ a1, a2, a3, hz
     exact hacc.transport (fun j hj => r1 _ (by unfold OutL accA sw; omega))
   have h := localHit_irs (x := ⟨c₁.nreg lE, c₁.nreg lH⟩) (d := c₁.nreg lD)
     (Da := c₀.nreg (sw 6) + 1) (Dc := c₀.nreg (sw 6)) hsh hBs hXl hI₁ hA.hK hL hA.hX hA.hcap
@@ -158,7 +160,7 @@ theorem lhs_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} (hsh : ShooterOK
   rintro c' ⟨⟨L', a', s', g', geo'⟩, fr, hA', hm'⟩
   rw [a1, a2, a3, hz] at a' g' geo'
   refine ⟨⟨L', a', s', g', fun hg => (geo' hg).2⟩, fun r h1 h2 h3 => ?_, hA', fun a ha => ?_⟩
-  · rw [fr r h1 h2 h3]
+  · Ξ fr r h1 h2 h3
     exact r1 r (by unfold LHW sw at h2; unfold OutL sw; omega)
   · exact hm' a ha
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreCounts
 public import Chazelle.Core.NFDecompTree
 
@@ -57,14 +59,14 @@ theorem exists_chord_pt (hM : WalkAx M) (hN : IsNF M Q N) {i : ℕ} (hi : i < N.
     ∃ z, z ∈ (N.chord i).toSet M Q ∧ z ∈ M.D := by
   have hc : (N.chord i).toSet M Q ∈ M.Adm := hN.1.2.1 ⟨N.chord i, Dec.chord_mem hi, rfl⟩
   obtain ⟨a, b, -, heq, -, hopen, -, -⟩ := hM.ends _ hc
-  refine ⟨Geometry.lerp a b (1 / 2), ?_, hopen _ ⟨by norm_num, by norm_num⟩⟩
-  rw [heq]; exact Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)
+  refine ⟨Geometry.lerp a b (1 / 2), ?_, hopen _ ⟨⊛, ⊛⟩⟩
+  rw [heq]; exact Geometry.lerp_mem_segment _ _ (⊛) (⊛)
 
 /-- A preconnected subset of `D \ c` meeting a component of `D \ c` lies in it. -/
 theorem sub_comp {A : Set Point} {X : Set Point} (hX : IsPreconnected X) (hXA : X ⊆ A)
     {z w : Point} (hz : z ∈ X) (hzw : z ∈ connectedComponentIn A w) :
     X ⊆ connectedComponentIn A w := by
-  rw [connectedComponentIn_eq hzw]
+  Ξ connectedComponentIn_eq hzw
   exact hX.subset_connectedComponentIn hz hXA
 
 /-- **Neighbours through another chord are in the same component.** -/
@@ -86,15 +88,15 @@ theorem adj_same_comp (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N
   obtain ⟨hup, hdn, hside⟩ := hS i hi
   obtain ⟨ε₀, hε₀, hε⟩ := hside z hzc hzD
   set ε := min (ε₀ / 2) (ρ / 2) with hεdef
-  have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
-  obtain ⟨hu, hd⟩ := hε ε hε0 (lt_of_le_of_lt (min_le_left _ _) (by linarith))
+  have hε0 : 0 < ε := lt_min (⟡) (⟡)
+  obtain ⟨hu, hd⟩ := hε ε hε0 (lt_of_le_of_lt (min_le_left _ _) (⟡))
   have hbu : ((z.1, z.2 + ε) : Point) ∈ ball z ρ := by
-    rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq]
-    simp only [sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hε0]
+    Ξ mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq
+    ϴ sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hε0
     rw [max_eq_right hε0.le]; linarith [min_le_right (ε₀ / 2) (ρ / 2)]
   have hbd : ((z.1, z.2 - ε) : Point) ∈ ball z ρ := by
-    rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq]
-    simp only [sub_self, abs_zero, sub_sub_cancel_left, abs_neg, abs_of_pos hε0]
+    Ξ mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq
+    ϴ sub_self, abs_zero, sub_sub_cancel_left, abs_neg, abs_of_pos hε0
     rw [max_eq_right hε0.le]; linarith [min_le_right (ε₀ / 2) (ρ / 2)]
   have hregsub : ∀ r, r < N.nRegions → reg r ⊆ M.D \ c := fun r hr x hx =>
     ⟨(regionsIn_subset (hR r hr) hx).1, fun hxc => (regionsIn_subset (hR r hr) hx).2 ⟨c, hck, hxc⟩⟩
@@ -124,9 +126,9 @@ theorem comps_of (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
   have hsub : ({c} : Set (Set Point)) ⊆ N.F M Q := singleton_subset_iff.2 hck
   obtain ⟨ε₁, hε₁, hsep⟩ := hsys.chord_separates_in hsub (mem_singleton c) hzc hzD
   set ε := min (ε₀ / 2) (ε₁ / 2) with hεdef
-  have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
-  obtain ⟨hu, hd⟩ := hε ε hε0 (lt_of_le_of_lt (min_le_left _ _) (by linarith))
-  obtain ⟨hu', hd', hne⟩ := hsep ε hε0 (lt_of_le_of_lt (min_le_right _ _) (by linarith))
+  have hε0 : 0 < ε := lt_min (⟡) (⟡)
+  obtain ⟨hu, hd⟩ := hε ε hε0 (lt_of_le_of_lt (min_le_left _ _) (⟡))
+  obtain ⟨hu', hd', hne⟩ := hsep ε hε0 (lt_of_le_of_lt (min_le_right _ _) (⟡))
   have hfe : freeIn M.D {c} = M.D \ c := by ext w; simp [freeIn]
   rw [hfe] at hu' hd' hne
   have hregsub : ∀ r, r < N.nRegions → reg r ⊆ M.D \ c := fun r hr x hx =>

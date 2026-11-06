@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Facts2TrapDeg
 public import Chazelle.Core.FactsFullDegInt
 
@@ -89,7 +91,7 @@ variable {C}
 theorem edgeIdx_inj_le {j k : ℕ} (hj : j ≤ C.m) (hk : k ≤ C.m) (h : C.edgeIdx j = C.edgeIdx k) :
     j = k := by
   unfold Chain.edgeIdx at h
-  have h1 : C.s + j ≡ C.s + k [MOD C.P.n] := h
+  have h1 := h
   have h2 : j ≡ k [MOD C.P.n] := Nat.ModEq.add_left_cancel' C.s h1
   exact Nat.ModEq.eq_of_lt_of_lt h2 (by have := C.m_lt; omega) (by have := C.m_lt; omega)
 
@@ -128,7 +130,7 @@ theorem abs_top_fst_lt : |C.top.1| < C.radius := C.top_mem_box.1
 /-- **The domain of the segment obstacles is the chain domain.** -/
 theorem dom_eq : dom C.radius (segs C) = C.dom := by
   ext p
-  simp only [dom, Chain.dom, Chain.obstacle, Set.mem_sdiff, Set.mem_union]
+  ϴ dom, Chain.dom, Chain.obstacle, Set.mem_sdiff, Set.mem_union
   refine and_congr_right fun hbox => not_congr ⟨fun hp => ?_, fun hp => ?_⟩
   · obtain ⟨s, hs, hps⟩ := mem_iUnion₂.1 hp
     rcases seg_cases hs hps with ⟨h, -⟩ | ⟨-, h⟩ | ⟨-, h, -⟩ | ⟨-, h, -⟩
@@ -139,7 +141,7 @@ theorem dom_eq : dom C.radius (segs C) = C.dom := by
   · rcases hp with ⟨k, hk, hpk⟩ | hp
     · refine seg_subset_obs (Or.inl ⟨k, hk, rfl⟩) ?_
       rw [seg_ord, ← C.chainEdge_eq]; exact hpk
-    · exact seg_subset_obs (s := slitSeg C) (Or.inr (by simp)) hp
+    · exact seg_subset_obs (s := slitSeg C) (Or.inr (✓)) hp
 
 /-- The vertices within the height range of the box are chain vertices. -/
 theorem vert_eq_vertex {v : Point} (hv : IsVert (segs C) v) (hvR : |v.2| < C.radius) :
@@ -147,8 +149,8 @@ theorem vert_eq_vertex {v : Point} (hv : IsVert (segs C) v) (hvR : |v.2| < C.rad
   obtain ⟨s, hs, hvs⟩ := hv
   rcases hs with ⟨k, hk, rfl⟩ | hs
   · rcases ord_cases _ _ hvs with rfl | rfl
-    · exact ⟨k, by omega, rfl⟩
-    · exact ⟨k + 1, by omega, rfl⟩
+    · exact ⟨k, ⋄, rfl⟩
+    · exact ⟨k + 1, ⋄, rfl⟩
   · simp only [mem_insert_iff, mem_singleton_iff] at hs
     have hR := C.radius_pos
     rcases hs with rfl | rfl | rfl
@@ -257,12 +259,12 @@ theorem fullAt {G : Set (Set Point)} (hG : C.chords ⊆ G) : FullAt C.radius (se
   obtain ⟨σ, hσ, d, hd, hzd, hint⟩ : ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ ∃ d : ℝ, 0 < d ∧
       z = rayPt v σ d ∧ ∀ t, 0 < t → t < d → rayPt v σ t ∈ C.dom := by
     rcases lt_or_gt_of_ne hzv1 with h | h
-    · refine ⟨-1, Or.inr rfl, v.1 - z.1, by linarith, point_ext (by simp) (by simp [hzv]),
+    · refine ⟨-1, Or.inr rfl, v.1 - z.1, ⟡, point_ext (✓) (⊚ hzv),
         fun t ht1 ht2 => ?_⟩
       have := hbet (v.1 - t) (by rw [min_eq_right h.le]; linarith)
         (by rw [max_eq_left h.le]; linarith)
       simpa [rayPt, sub_eq_add_neg] using this
-    · refine ⟨1, Or.inl rfl, z.1 - v.1, by linarith, point_ext (by simp) (by simp [hzv]),
+    · refine ⟨1, Or.inl rfl, z.1 - v.1, ⟡, point_ext (✓) (⊚ hzv),
         fun t ht1 ht2 => ?_⟩
       have := hbet (v.1 + t) (by rw [min_eq_left h.le]; linarith)
         (by rw [max_eq_right h.le]; linarith)
@@ -272,7 +274,7 @@ theorem fullAt {G : Set (Set Point)} (hG : C.chords ⊆ G) : FullAt C.radius (se
     exact e1.mono fun t ht => hint t ht.1 ht.2
   have hle : d ≤ C.chordParam j σ := (C.hit_of_initial hvbox hσ hd hint).1
   have hzc : z ∈ C.chordSet j σ := by
-    rw [C.chordSet_eq_image hj hσ hfree]
+    Ξ C.chordSet_eq_image hj hσ hfree
     exact ⟨d, ⟨hd.le, hle⟩, hzd.symm⟩
   exact ⟨_, hG ⟨j, σ, hj, hσ, hfree, rfl⟩, hzc⟩
 
@@ -285,7 +287,7 @@ theorem fullDegLe_chain {C : Chain} (hP : C.P.Simple) (hDH : DistinctHeights C.P
   intro F hF U hU
   have hdom := ChainObs.dom_eq (C := C)
   show {c | c ∈ C.chords ∪ F ∧ TouchesIn C.dom c U}.ncard ≤ 4
-  rw [← hdom]
+  Ξ ← hdom
   refine SegObs.deg_le_four (ChainObs.good hP hDH) (G := C.chords ∪ F) ?_
     (C.chords_finite.union hF.1) (ChainObs.fullAt subset_union_left) (by rw [hdom]; exact hU)
   rintro c (hc | hc)

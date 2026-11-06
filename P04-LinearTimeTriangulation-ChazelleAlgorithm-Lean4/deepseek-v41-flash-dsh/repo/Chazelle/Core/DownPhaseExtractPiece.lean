@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseExtractGeom
 
 /-!
@@ -58,9 +60,9 @@ theorem vertex_arc (X : Ctx Q S R) {i_l : ℕ} (hil : i_l < nk (interiorModel Q)
     (hostChain Q S R g h3).vertex (kIdx (nk (interiorModel Q) S R) g i_l + j) =
       hostPt (interiorModel Q).W (hk (interiorModel Q) S R ((i_l + j) % nk (interiorModel Q) S R)) := by
   have hN : 0 < nk (interiorModel Q) S R := by have := X.three; omega
-  rw [hostChain_vertex, ← add_assoc]
+  Ξ hostChain_vertex, ← add_assoc
   unfold kIdx
-  rw [chain_idx (Nat.mod_lt _ hN) hil]
+  Ξ chain_idx (Nat.mod_lt _ hN) hil
 
 /-- The walk point of an unwrapped key in `[p, p + 1)` is at position `(p mod n, key - p)`. -/
 theorem wrapK_edge {n p : ℕ} (_hn : 0 < n) (hp : p < 2 * n) {y : ℝ} (hy1 : (p : ℝ) ≤ y)
@@ -76,7 +78,7 @@ theorem wrapK_edge {n p : ℕ} (_hn : 0 < n) (hp : p < 2 * n) {y : ℝ} (hy1 : (
       by_contra hpn; push Not at hpn
       have : (p : ℝ) + 1 ≤ n := by exact_mod_cast hpn
       linarith
-    rw [Nat.mod_eq_sub_mod hpn, Nat.mod_eq_of_lt (by omega)]
+    rw [Nat.mod_eq_sub_mod hpn, Nat.mod_eq_of_lt (⋄)]
     push_cast [hpn]; ring
 
 /-- **A piece of an arc**: chain edge `kl + j` lies on interior walk edge `p` (mod `n`). -/
@@ -103,11 +105,11 @@ theorem piece (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hfin := X.hFam.1
   have hdN := hA.hdN
   obtain ⟨p, hp1, hp2, hp3, hq⟩ := arc_piece hM hF hfin hA hj
-  have hjj := ukey_mono (U := R) hM hF hfin hA.hil (Nat.lt_succ_self j) (by omega)
+  have hjj := ukey_mono (U := R) hM hF hfin hA.hil (Nat.lt_succ_self j) (⋄)
   refine ⟨p, hp3, hp1, hp2, ?_, ?_, hq⟩
-  · rw [vertex_arc X hA.hil, ← wrapK_ukey hM hF hfin hA.hil (by omega)]
+  · rw [vertex_arc X hA.hil, ← wrapK_ukey hM hF hfin hA.hil (⋄)]
     exact hq _ le_rfl hjj.le
-  · rw [add_assoc, vertex_arc X hA.hil, ← wrapK_ukey hM hF hfin hA.hil (by omega)]
+  · rw [add_assoc, vertex_arc X hA.hil, ← wrapK_ukey hM hF hfin hA.hil (⋄)]
     exact hq _ hjj.le le_rfl
 
 /-- **Inner host keys are integers.** -/
@@ -119,7 +121,7 @@ theorem ukey_inner_int (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hfin := X.hFam.1
   obtain ⟨⟨k, hk⟩, -⟩ := hA.inner j hj0 hjd
   have hdN := hA.hdN
-  rw [ukey_eq_unwrap hM hF hfin hA.hil (by omega), hk]
+  rw [ukey_eq_unwrap hM hF hfin hA.hil (⋄), hk]
   unfold unwrapK
   split_ifs
   · exact ⟨k, rfl⟩

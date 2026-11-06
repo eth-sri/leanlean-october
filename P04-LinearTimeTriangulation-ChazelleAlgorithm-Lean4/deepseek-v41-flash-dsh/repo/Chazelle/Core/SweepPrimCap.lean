@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepPrimDir
 
 /-!
@@ -33,7 +35,7 @@ open Machine Machine.Stmt Programs SignK WalkKey NFLoc
 theorem det_lerp (v f p : Point) (hne : f.2 ≠ v.2) :
     det v f p = (f.2 - v.2) * ((Geometry.lerp v f ((p.2 - v.2) / (f.2 - v.2))).1 - p.1) := by
   have : f.2 - v.2 ≠ 0 := sub_ne_zero.2 hne
-  simp only [det, Geometry.lerp_fst]
+  ϴ det, Geometry.lerp_fst
   field_simp
   ring
 
@@ -41,11 +43,11 @@ theorem det_lerp (v f p : Point) (hne : f.2 ≠ v.2) :
 theorem capx_iff (v f p : Point) (hne : f.2 ≠ v.2) :
     p.1 < (Geometry.lerp v f ((p.2 - v.2) / (f.2 - v.2))).1 ↔
       (v.2 < f.2 ∧ 0 < det v f p) ∨ (f.2 < v.2 ∧ ¬ 0 < det v f p ∧ ¬ det v f p = 0) := by
-  rw [det_lerp v f p hne]
+  Ξ det_lerp v f p hne
   set L := (Geometry.lerp v f ((p.2 - v.2) / (f.2 - v.2))).1
   rcases lt_or_gt_of_ne hne with h | h
   · -- `f` below `v`
-    have hn : f.2 - v.2 < 0 := by linarith
+    have hn : f.2 - v.2 < 0 := ⟡
     constructor
     · intro hp; right
       refine ⟨h, ?_, ?_⟩
@@ -56,11 +58,11 @@ theorem capx_iff (v f p : Point) (hne : f.2 ≠ v.2) :
       · linarith
       · by_contra hc; push Not at hc
         rcases hc.lt_or_eq with hc | hc
-        · exact h2 (by nlinarith)
+        · exact h2 (⊞)
         · exact h3 (by rw [hc]; ring)
-  · have hp' : 0 < f.2 - v.2 := by linarith
+  · have hp' : 0 < f.2 - v.2 := ⟡
     constructor
-    · intro hp; left; exact ⟨h, by nlinarith⟩
+    · intro hp; left; exact ⟨h, ⊞⟩
     · rintro (⟨-, h2⟩ | ⟨h1, -⟩)
       · by_contra hc; push Not at hc; nlinarith
       · linarith
@@ -84,9 +86,9 @@ def cvLoad (dst : ℕ) : Stmt :=
 def Bcv (dst r : ℕ) : Bool := r == 50091 || Bhost r || decide (dst ≤ r ∧ r < dst + 3)
 
 theorem wr_cvLoad (dst : ℕ) : wr (Bcv dst) (cvLoad dst) = true := by
-  have h2 := wr_mono wr_hostPt (B' := Bcv dst) (fun r hr => by simp [Bcv, hr])
-  simp only [cvLoad, copies, List.map_cons, List.map_nil, block_cons, block_nil, wr, wrOK, h2]
-  simp [Bcv]
+  have h2 := wr_mono wr_hostPt (B' := Bcv dst) (fun r hr => ⊚ Bcv, hr)
+  ϴ cvLoad, copies, List.map_cons, List.map_nil, block_cons, block_nil, wr, wrOK, h2
+  Θ Bcv
 
 /-- **The host point of a chain vertex.** -/
 theorem cvLoad_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
@@ -96,29 +98,29 @@ theorem cvLoad_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       CEnv P W H C c' ∧ ∃ sp : SymPt, SymPtIn c' dst sp ∧ sp.Lt P.n ∧
         sp.eval (Qof P) = C.vertex k := by
   have e₁ := Exec.copyN (P := P) hE.wb 50091 50120
-  have hE₁ : CEnv P W H C _ := hE.frame (exec_frameB e₁ (B := fun r => r == 50091) (by decide))
-    e₁.wb_right (by decide)
+  have hE₁ : CEnv P W H C _ := hE.frame (exec_frameB e₁ (B := fun r => r == 50091) (⌖))
+    e₁.wb_right (⌖)
   have hmN : C.m < (H.pts P.n).length := by rw [← hE.n_eq]; exact C.m_lt
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, E₂, sp, hsp, hin⟩ := hostPt_exec (P := P) _ hE₁.host hE₁.hH
     hE₁.wf (by have := hE₁.hW; omega) hE₁.aW hE₁.NW hE₁.r52 hE₁.r87 (k := k)
-    (by simp [h120]) hE₁.hs (by omega)
+    (⊚ h120) hE₁.hs (⋄)
   have hE₂ : CEnv P W H C c₂ := hE₁.of_host E₂ f₂
   obtain ⟨c₃, e₃, h3, h3', _h3r, h3m, _h3rm, _h3o⟩ := copies_exec (P := P)
     [(dst, 50046), (dst + 1, 50047), (dst + 2, 50048)] c₂ e₂.wb_right
     (by intro p hp q hq; simp only [List.mem_cons, List.not_mem_nil, or_false] at hp hq
         rcases hp with rfl | rfl | rfl <;> rcases hq with rfl | rfl | rfl <;> simp <;> omega)
-    (by simp)
+    (✓)
   have ex : Exec P W (cvLoad dst) c c₃ (1 + (k₂ + 3)) := .seq e₁ (.seq e₂ e₃)
-  refine ⟨c₃, _, ex, by omega, exec_frameB ex (wr_cvLoad dst), ?_, sp, ?_, ?_, ?_⟩
+  refine ⟨c₃, _, ex, ⋄, exec_frameB ex (wr_cvLoad dst), ?_, sp, ?_, ?_, ?_⟩
   · refine hE₂.keep e₃.wb_right h3m fun r hr => h3' r ?_
     simp only [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
-    simp only [List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false]
+    ϴ List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false
     omega
-  · exact symPtIn_copy hin (h3 (dst, 50046) (by simp)) (h3 (dst + 1, 50047) (by simp))
-      (h3 (dst + 2, 50048) (by simp))
+  · exact symPtIn_copy hin (h3 (dst, 50046) (✓)) (h3 (dst + 1, 50047) (✓))
+      (h3 (dst + 2, 50048) (✓))
   · exact hostWF_pts hE.wf (by have := hE.hG.1.1; omega) _ (List.mem_of_getElem? hsp)
-  · rw [chain_vertex_host C hE.hP _ (sp := sp)]
-    rw [show (Qof P).n = P.n from shear_n _ _, hE.n_eq]
+  · Ξ chain_vertex_host C hE.hP _ (sp := sp)
+    Ξ show (Qof P).n = P.n from shear_n _ _, hE.n_eq
     exact hsp
 
 end

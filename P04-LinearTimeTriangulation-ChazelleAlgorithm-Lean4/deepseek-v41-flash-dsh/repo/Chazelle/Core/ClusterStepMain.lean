@@ -1,5 +1,11 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterStepInv
 
 /-!
@@ -28,8 +34,8 @@ def e4 (a b c d : ℕ) : ℕ → ℕ
 theorem mem_optSeg {s a b : ℕ} {q : ℕ × ℕ} : q ∈ optSeg s a b ↔ q = (a, b) ∧ s < b - a := by
   unfold optSeg
   split_ifs with h
-  · simp [h]
-  · simp [h]
+  · Θ h
+  · Θ h
 
 theorem sum_optSeg (g : ℕ × ℕ → ℕ) (s a b : ℕ) : ((optSeg s a b).map g).sum ≤ g (a, b) := by
   unfold optSeg; split_ifs <;> simp
@@ -95,16 +101,16 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
   have hinj : ∀ i i', lo ≤ i → i < hi → lo ≤ i' → i' < hi →
       m (S.bACT + i) = m (S.bACT + i') → i = i' := by
     intro i i' a b c d e
-    exact hD.sinv.inj _ hlv (by simp [a, b]) (by simp [c, d]) e
+    exact hD.sinv.inj _ hlv (⊚ a, b) (⊚ c, d) e
   have hnD : ∀ i, lo ≤ i → i < hi → m (S.bACT + i) ∉ D :=
     fun i i1 i2 => (hD.sinv.off _ hlv _ (hmem i i1 i2)).1
-  have hlen0 : ((lo, hi) :: rest).length ≤ μ := hD.sinv.length_le
-  simp only [List.length_cons] at hlen0
+  have hlen0 := hD.sinv.length_le
+  ϴ' List.length_cons at hlen0
   -- the memory after the marks and the copy
   obtain ⟨h2o, h2tmp, h2d, h2fp⟩ := m2_facts hSF hD hwin f
-  rw [← hm2] at h2o h2tmp h2d h2fp
+  Ξ' ← hm2 at h2o h2tmp h2d h2fp
   obtain ⟨Sel0, Sel1, Sel2⟩ := sel_iff hSF hD hwin f
-  rw [← hm2] at Sel0 Sel1 Sel2
+  Ξ' ← hm2 at Sel0 Sel1 Sel2
   obtain ⟨Ccov, Cuniq, Chalf, Cedge⟩ := cls_facts hSF hD hgood hch
   -- the class predicates
   set Q : ℕ → ℕ → Prop := fun t i => QC m S T a f t (m (S.bACT + i)) with hQ
@@ -112,23 +118,23 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
   have hQ1 : ∀ i, lo ≤ i → i < hi → (s1 i ↔ Q 1 i) := fun i i1 i2 => Sel1 i i1 i2
   have hQ2 : ∀ i, lo ≤ i → i < hi → (s2 i ↔ Q 2 i) := fun i i1 i2 => Sel2 i i1 i2
   have hc0 : ∀ x, x ≤ hi → cntS s0 lo x = cntS (Q 0) lo x :=
-    fun x hx => cntS_congr (fun i i1 i2 => hQ0 i i1 (by omega))
+    fun x hx => cntS_congr (fun i i1 i2 => hQ0 i i1 (⋄))
   have hc1 : ∀ x, x ≤ hi → cntS s1 lo x = cntS (Q 1) lo x :=
-    fun x hx => cntS_congr (fun i i1 i2 => hQ1 i i1 (by omega))
+    fun x hx => cntS_congr (fun i i1 i2 => hQ1 i i1 (⋄))
   have hc2 : ∀ x, x ≤ hi → cntS s2 lo x = cntS (Q 2) lo x :=
-    fun x hx => cntS_congr (fun i i1 i2 => hQ2 i i1 (by omega))
+    fun x hx => cntS_congr (fun i i1 i2 => hQ2 i i1 (⋄))
   have hQmk : ∀ t i, Q t i → ¬ markN T a f (m (S.bACT + i)) := fun t i h => h.1
   have hQu : ∀ i, lo ≤ i → i < hi → ∀ t t', t < 3 → t' < 3 → Q t i → Q t' i → t = t' :=
     fun i i1 i2 t t' ht ht' h h' => Cuniq i i1 i2 t t' ht ht' h h'
   -- the sum of the classes
   have hsum : cntS s0 lo hi + cntS s1 lo hi + cntS s2 lo hi ≤ hi - lo := by
     refine cntS3_le (fun i i1 i2 => ⟨fun ⟨x, y⟩ => ?_, fun ⟨x, y⟩ => ?_, fun ⟨x, y⟩ => ?_⟩)
-    · exact absurd (hQu i i1 i2 0 1 (by omega) (by omega) ((hQ0 i i1 i2).mp x) ((hQ1 i i1 i2).mp y))
-        (by omega)
-    · exact absurd (hQu i i1 i2 0 2 (by omega) (by omega) ((hQ0 i i1 i2).mp x) ((hQ2 i i1 i2).mp y))
-        (by omega)
-    · exact absurd (hQu i i1 i2 1 2 (by omega) (by omega) ((hQ1 i i1 i2).mp x) ((hQ2 i i1 i2).mp y))
-        (by omega)
+    · exact absurd (hQu i i1 i2 0 1 (⋄) (⋄) ((hQ0 i i1 i2).mp x) ((hQ1 i i1 i2).mp y))
+        (⋄)
+    · exact absurd (hQu i i1 i2 0 2 (⋄) (⋄) ((hQ0 i i1 i2).mp x) ((hQ2 i i1 i2).mp y))
+        (⋄)
+    · exact absurd (hQu i i1 i2 1 2 (⋄) (⋄) ((hQ1 i i1 i2).mp x) ((hQ2 i i1 i2).mp y))
+        (⋄)
   refine ⟨hsum, ?_⟩
   -- the boundaries
   set E := e4 lo e1 e2 e3 with hE
@@ -139,32 +145,32 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
   have hEs : ∀ t, t < 3 → E (t + 1) = E t + cntS (Q t) lo hi := by
     intro t ht
     rcases (show t = 0 ∨ t = 1 ∨ t = 2 by omega) with rfl | rfl | rfl
-    · rw [hE0, hE1, he1, hc0 hi le_rfl]
-    · rw [hE1, hE2, he2, hc1 hi le_rfl]
-    · rw [hE2, hE3, he3, hc2 hi le_rfl]
+    · Ξ hE0, hE1, he1, hc0 hi le_rfl
+    · Ξ hE1, hE2, he2, hc1 hi le_rfl
+    · Ξ hE2, hE3, he3, hc2 hi le_rfl
   have he3hi : e3 ≤ hi := by rw [he3, he2, he1]; omega
   have hEle : ∀ t, t ≤ 3 → lo ≤ E t ∧ E t ≤ e3 := by
     intro t ht
-    have := hEs 0 (by omega); have := hEs 1 (by omega); have := hEs 2 (by omega)
+    have := hEs 0 (⋄); have := hEs 1 (⋄); have := hEs 2 (⋄)
     rcases (show t = 0 ∨ t = 1 ∨ t = 2 ∨ t = 3 by omega) with rfl | rfl | rfl | rfl <;> omega
   -- the memory after the passes and the release
   have h2df : ∀ i, lo ≤ i → i < hi →
       (m2 (S.bDF + m (S.bACT + i)) = 1 ↔ markN T a f (m (S.bACT + i))) := by
     intro i i1 i2
-    rw [h2d _ (hactμ i i1 i2)]
+    Ξ h2d _ (hactμ i i1 i2)
     by_cases hmk : markN T a f (m (S.bACT + i))
-    · rw [ite_eq_left ⟨hmem i i1 i2, hmk⟩]; simp [hmk]
-    · rw [ite_eq_right (fun h => hmk h.2)]
+    · rw [ite_eq_left ⟨hmem i i1 i2, hmk⟩]; Θ hmk
+    · Ξ ite_eq_right (fun h => hmk h.2)
       exact ⟨fun h => absurd ((hD.df _ (hactμ i i1 i2)).mp h) (hnD i i1 i2), fun h => absurd h hmk⟩
   obtain ⟨SM1, SM2, SM3, SM4, SM5, SM6, SM7, SM8, SM9, SM10⟩ := stepMem hL (f := f)
     (mk := fun i => markN T a f (m (S.bACT + i))) hlh (by rw [hμ]; exact hhi)
     (fun i i1 i2 => by rw [hμ]; exact hactμ i i1 i2) hinj h2tmp h2df hsum
-    (fun i i1 i2 => ⟨fun ⟨x, y⟩ => absurd (hQu i i1 i2 0 1 (by omega) (by omega) ((hQ0 i i1 i2).mp x)
-        ((hQ1 i i1 i2).mp y)) (by omega),
-      fun ⟨x, y⟩ => absurd (hQu i i1 i2 0 2 (by omega) (by omega) ((hQ0 i i1 i2).mp x)
-        ((hQ2 i i1 i2).mp y)) (by omega),
-      fun ⟨x, y⟩ => absurd (hQu i i1 i2 1 2 (by omega) (by omega) ((hQ1 i i1 i2).mp x)
-        ((hQ2 i i1 i2).mp y)) (by omega)⟩)
+    (fun i i1 i2 => ⟨fun ⟨x, y⟩ => absurd (hQu i i1 i2 0 1 (⋄) (⋄) ((hQ0 i i1 i2).mp x)
+        ((hQ1 i i1 i2).mp y)) (⋄),
+      fun ⟨x, y⟩ => absurd (hQu i i1 i2 0 2 (⋄) (⋄) ((hQ0 i i1 i2).mp x)
+        ((hQ2 i i1 i2).mp y)) (⋄),
+      fun ⟨x, y⟩ => absurd (hQu i i1 i2 1 2 (⋄) (⋄) ((hQ1 i i1 i2).mp x)
+        ((hQ2 i i1 i2).mp y)) (⋄)⟩)
     (fun i i1 i2 h => by
       rcases h with h | h | h
       · exact hQmk 0 i ((hQ0 i i1 i2).mp h)
@@ -180,52 +186,52 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
       mS (S.bACT + (E t + cntS (Q t) lo i)) = m (S.bACT + i) := by
     intro t ht i i1 i2 h
     rcases (show t = 0 ∨ t = 1 ∨ t = 2 by omega) with rfl | rfl | rfl
-    · rw [hE0, ← hc0 i (by omega)]; exact SM2 i i1 i2 ((hQ0 i i1 i2).mpr h)
-    · rw [hE1, ← hc1 i (by omega), he1]; exact SM3 i i1 i2 ((hQ1 i i1 i2).mpr h)
-    · rw [hE2, ← hc2 i (by omega), he2, he1]; exact SM4 i i1 i2 ((hQ2 i i1 i2).mpr h)
+    · rw [hE0, ← hc0 i (⋄)]; exact SM2 i i1 i2 ((hQ0 i i1 i2).mpr h)
+    · rw [hE1, ← hc1 i (⋄), he1]; exact SM3 i i1 i2 ((hQ1 i i1 i2).mpr h)
+    · rw [hE2, ← hc2 i (⋄), he2, he1]; exact SM4 i i1 i2 ((hQ2 i i1 i2).mpr h)
   have hP : ∀ t, t < 3 → ∀ i, lo ≤ i → i < hi → Q t i →
       mS (S.bPOS + m (S.bACT + i)) = E t + cntS (Q t) lo i := by
     intro t ht i i1 i2 h
     rcases (show t = 0 ∨ t = 1 ∨ t = 2 by omega) with rfl | rfl | rfl
-    · rw [hE0, ← hc0 i (by omega)]; exact SM6 i i1 i2 ((hQ0 i i1 i2).mpr h)
-    · rw [hE1, ← hc1 i (by omega), he1]; exact SM7 i i1 i2 ((hQ1 i i1 i2).mpr h)
-    · rw [hE2, ← hc2 i (by omega), he2, he1]; exact SM8 i i1 i2 ((hQ2 i i1 i2).mpr h)
+    · rw [hE0, ← hc0 i (⋄)]; exact SM6 i i1 i2 ((hQ0 i i1 i2).mpr h)
+    · rw [hE1, ← hc1 i (⋄), he1]; exact SM7 i i1 i2 ((hQ1 i i1 i2).mpr h)
+    · rw [hE2, ← hc2 i (⋄), he2, he1]; exact SM8 i i1 i2 ((hQ2 i i1 i2).mpr h)
   have hdec : ∀ t, t < 3 → ∀ x, E t ≤ x → x < E (t + 1) →
       ∃ i, lo ≤ i ∧ i < hi ∧ Q t i ∧ E t + cntS (Q t) lo i = x := by
     intro t ht x h1 h2
-    rw [hEs t ht] at h2
-    obtain ⟨i, i1, i2, i3, i4⟩ := cntS_surj (sel := Q t) hlh (x - E t) (by omega)
-    exact ⟨i, i1, i2, i3, by omega⟩
+    Ξ' hEs t ht at h2
+    obtain ⟨i, i1, i2, i3, i4⟩ := cntS_surj (sel := Q t) hlh (x - E t) (⋄)
+    exact ⟨i, i1, i2, i3, ⋄⟩
   have hin : ∀ t, t < 3 → ∀ i, lo ≤ i → i < hi → Q t i →
       E t ≤ E t + cntS (Q t) lo i ∧ E t + cntS (Q t) lo i < E (t + 1) := by
     intro t ht i i1 i2 h
-    rw [hEs t ht]
+    Ξ hEs t ht
     have := cntS_lt i1 i2 h (i' := hi)
     omega
   have hloc : ∀ x, lo ≤ x → x < e3 → ∃ t, t < 3 ∧ E t ≤ x ∧ x < E (t + 1) := by
     intro x h1 h2
     by_cases c1 : x < E 1
-    · exact ⟨0, by omega, by rw [hE0]; exact h1, c1⟩
+    · exact ⟨0, ⋄, by rw [hE0]; exact h1, c1⟩
     · by_cases c2 : x < E 2
-      · exact ⟨1, by omega, by omega, c2⟩
-      · exact ⟨2, by omega, by omega, by rw [hE3]; exact h2⟩
+      · exact ⟨1, ⋄, ⋄, c2⟩
+      · exact ⟨2, ⋄, ⋄, by rw [hE3]; exact h2⟩
   -- the pushes
   have hstk0 : rest = stkList m S.bSTK rest.length := by
     have h := hD.stack
-    rw [List.length_cons, stkList] at h
+    Ξ' List.length_cons, stkList at h
     exact (List.cons.inj h).2
   have hrest : rest = stkList mS S.bSTK rest.length := by
-    rw [stkList_congr _ (fun x h1 h2 => ?_)]
+    Ξ stkList_congr _ (fun x h1 h2 => ?_)
     · exact hstk0
-    · rw [SM1' x (by omega) (by omega), h2o x (by omega) (by omega)]
+    · Ξ SM1' x (⋄) (⋄), h2o x (⋄) (⋄)
   have P1 := pushF_stk (bS := S.bSTK) (s := S.s) (a := lo) (b := e1) (q := (mS, tp)) hrest htp
   have P2 := pushF_stk (bS := S.bSTK) (s := S.s) (a := e1) (b := e2) P1.1 P1.2.1
   have P3 := pushF_stk (bS := S.bSTK) (s := S.s) (a := e2) (b := e3) P2.1 P2.2.1
-  rw [← hq] at P3
+  Ξ' ← hq at P3
   set news := optSeg S.s e2 e3 ++ optSeg S.s e1 e2 ++ optSeg S.s lo e1 with hnews_def
   have hL3 : optSeg S.s e2 e3 ++ (optSeg S.s e1 e2 ++ (optSeg S.s lo e1 ++ rest)) =
-      news ++ rest := by simp only [hnews_def, List.append_assoc]
-  rw [hL3] at P3
+      news ++ rest := ⍟ hnews_def, List.append_assoc
+  Ξ' hL3 at P3
   have hlo1 : ∀ a b, (optSeg S.s a b).length ≤ 1 := by
     intro a b; unfold optSeg; split_ifs <;> simp
   have hlen1 := hlo1 lo e1; have hlen2 := hlo1 e1 e2; have hlen3 := hlo1 e2 e3
@@ -237,25 +243,25 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
       simp only [List.length_append]; omega
     have l2 : (optSeg S.s e1 e2 ++ (optSeg S.s lo e1 ++ rest)).length ≤ rest.length + 3 := by
       simp only [List.length_append]; omega
-    rw [P3.2.2 x (by omega), P2.2.2 x (by omega), P1.2.2 x (by omega)]
+    Ξ P3.2.2 x (⋄), P2.2.2 x (⋄), P1.2.2 x (⋄)
   have hact_out : ∀ i, i < μ → (i < lo ∨ e3 ≤ i) → q.1 (S.bACT + i) = m (S.bACT + i) := by
     intro i h1 h2
-    rw [hqS _ (Or.inl (by omega)), SM1' _ (by omega) (by omega), h2o _ (by omega) (by omega)]
+    Ξ hqS _ (Or.inl (⋄)), SM1' _ (⋄) (⋄), h2o _ (⋄) (⋄)
   have hact_in : ∀ t, t < 3 → ∀ i, lo ≤ i → i < hi → Q t i →
       q.1 (S.bACT + (E t + cntS (Q t) lo i)) = m (S.bACT + i) := by
     intro t ht i i1 i2 h
     have := hin t ht i i1 i2 h
-    have := (hEle (t + 1) (by omega)).2
-    rw [hqS _ (Or.inl (by omega))]
+    have := (hEle (t + 1) (⋄)).2
+    Ξ hqS _ (Or.inl (⋄))
     exact hA t ht i i1 i2 h
   have hpos' : ∀ w, w < μ → q.1 (S.bPOS + w) = mS (S.bPOS + w) :=
-    fun w hw => hqS _ (Or.inl (by omega))
+    fun w hw => hqS _ (Or.inl (⋄))
   have hdf' : ∀ y, y < μ → q.1 (S.bDF + y) = m2 (S.bDF + y) := by
     intro y hy
-    rw [hqS _ (Or.inr (by omega)), SM1' _ (by omega) (by omega)]
+    Ξ hqS _ (Or.inr (⋄)), SM1' _ (⋄) (⋄)
   have hstat : StaticEq A0 U m q.1 := by
     intro x hx
-    rw [hqS _ (by omega), SM1' _ (by omega) (by omega), h2o _ (by omega) (by omega)]
+    Ξ hqS _ (⋄), SM1' _ (⋄) (⋄), h2o _ (⋄) (⋄)
   -- the split
   have hdec' : ∀ x, lo ≤ x → x < e3 → ∃ t i, t < 3 ∧ lo ≤ i ∧ i < hi ∧ Q t i ∧
       E t + cntS (Q t) lo i = x ∧ q.1 (S.bACT + x) = m (S.bACT + i) := by
@@ -271,11 +277,11 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
       le_rfl, fun t ht => by rw [hEs t ht]; omega, he3hi, ?_, Finset.filter_subset _ _,
       ?_, ?_, fun t ht => ?_, ?_, ?_⟩
     · intro x hx y hy hxy
-      simp only [Finset.coe_Ico, Set.mem_Ico] at hx hy
+      ϴ' Finset.coe_Ico, Set.mem_Ico at hx hy
       obtain ⟨t, i, ht, i1, i2, i3, i4, i5⟩ := hdec' x hx.1 hx.2
       obtain ⟨t', i', ht', j1, j2, j3, j4, j5⟩ := hdec' y hy.1 hy.2
       simp only at hxy
-      rw [i5, j5] at hxy
+      Ξ' i5, j5 at hxy
       have := hinj i i' i1 i2 j1 j2 hxy
       subst this
       have := hQu i i1 i2 t t' ht ht' i3 j3
@@ -292,12 +298,12 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
       obtain ⟨x, h1, h2, rfl⟩ := mem_items.mp hv
       obtain ⟨i, i1, i2, i3, i4⟩ := hdec t ht x h1 h2
       show q.1 (S.bACT + x) ∈ _ ∧ _
-      rw [← i4, hact_in t ht i i1 i2 i3]
+      Ξ ← i4, hact_in t ht i i1 i2 i3
       exact ⟨hmem i i1 i2, fun hs => hQmk t i i3 (Finset.mem_filter.mp hs).2⟩
     · have hCh : 2 * cntS (Q t) lo hi ≤ hi - lo := Chalf t ht
       unfold len
       simp only
-      rw [hEs t ht]
+      Ξ hEs t ht
       omega
     · rintro x y ⟨d, hd1, hd2⟩ t t' ht ht' hx hy
       obtain ⟨x', h1, h2, hx'⟩ := mem_items.mp hx
@@ -306,40 +312,40 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
       obtain ⟨i', j1, j2, j3, j4⟩ := hdec t' ht' y' h3 h4
       change q.1 (S.bACT + x') = x at hx'
       change q.1 (S.bACT + y') = y at hy'
-      rw [← i4, hact_in t ht i i1 i2 i3] at hx'
-      rw [← j4, hact_in t' ht' i' j1 j2 j3] at hy'
+      Ξ' ← i4, hact_in t ht i i1 i2 i3 at hx'
+      Ξ' ← j4, hact_in t' ht' i' j1 j2 j3 at hy'
       refine Cedge d t t' ht ht' ⟨?_, ?_⟩ ⟨?_, ?_⟩
       · rw [hd1, ← hx']; exact hmem i i1 i2
-      · have : (M.vert d : ℕ) = m (S.bACT + i) := by rw [hd1, hx']
+      · have : (M.vert d : ℕ) = m (S.bACT + i) := Ρ hd1, hx'
         rw [this]; exact i3
       · rw [hd2, ← hy']; exact hmem i' j1 j2
-      · have : (M.head d : ℕ) = m (S.bACT + i') := by rw [hd2, hy']
+      · have : (M.head d : ℕ) = m (S.bACT + i') := Ρ hd2, hy'
         rw [this]; exact j3
-    · have hv0 := hmem lo le_rfl (by omega)
+    · have hv0 := hmem lo le_rfl (⋄)
       refine card_mark_le (T := T) (a := a) (ha := ha) f _ (hD.sinv.lt _ hlv) c
         (slabN T c k (m (S.bACT + lo))) k (fun v hv => ?_)
       have hsl := hD.sinv.inslab _ hlv v hv _ hv0
       have e : slabN T c k v = (T.level ⟨v, hD.sinv.lt _ hlv v hv⟩ + c) / k := dite_eq_left _
-      rw [← hsl, e]
+      Ξ ← hsl, e
       exact ⟨Nat.div_mul_le_self _ _, Nat.lt_div_mul_add hk⟩
   -- the new stack entries
   have hnews : ∀ p, p ∈ news ↔ ∃ t, t < 3 ∧ p = scls E t ∧ S.s < len p := by
     intro p
     constructor
     · intro h
-      simp only [hnews_def, List.mem_append, mem_optSeg] at h
+      ϴ' hnews_def, List.mem_append, mem_optSeg at h
       rcases h with ((⟨rfl, h⟩ | ⟨rfl, h⟩) | ⟨rfl, h⟩)
-      · exact ⟨2, by omega, rfl, h⟩
-      · exact ⟨1, by omega, rfl, h⟩
-      · exact ⟨0, by omega, rfl, h⟩
+      · exact ⟨2, ⋄, rfl, h⟩
+      · exact ⟨1, ⋄, rfl, h⟩
+      · exact ⟨0, ⋄, rfl, h⟩
     · rintro ⟨t, ht, rfl, h⟩
-      simp only [hnews_def, List.mem_append, mem_optSeg]
+      ϴ hnews_def, List.mem_append, mem_optSeg
       rcases (show t = 0 ∨ t = 1 ∨ t = 2 by omega) with rfl | rfl | rfl
       · exact Or.inr ⟨rfl, h⟩
       · exact Or.inl (Or.inr ⟨rfl, h⟩)
       · exact Or.inl (Or.inl ⟨rfl, h⟩)
   have hnd : news.Nodup := by
-    simp only [hnews_def, optSeg]
+    ϴ hnews_def, optSeg
     split_ifs <;> simp only [List.nil_append, List.append_nil, List.cons_append,
       List.nodup_cons, List.mem_cons, List.not_mem_nil, List.nodup_nil, Prod.mk.injEq, or_false, not_or, and_true,
       not_false_eq_true] <;> (try constructor) <;> (try constructor) <;>
@@ -355,7 +361,7 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
     rcases hq with hq | hq
     · rcases List.mem_append.mp hq with hq | hq
       · obtain ⟨t, ht, rfl, hb⟩ := (hnews _).mp hq
-        exact Or.inr ⟨t, ht, rfl, by omega⟩
+        exact Or.inr ⟨t, ht, rfl, ⋄⟩
       · refine Or.inl ⟨Or.inl (List.mem_cons_of_mem _ hq), fun h => ?_⟩
         subst h
         exact (List.nodup_cons.mp hD.sinv.nodup).1 hq
@@ -371,12 +377,12 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
     by_cases hs : S.s < len (scls E t)
     · exact Or.inl (List.mem_append_left _ ((hnews _).mpr ⟨t, ht, rfl, hs⟩))
     · exact Or.inr (Finset.mem_union_right _ (Finset.mem_filter.mpr
-        ⟨Finset.mem_image.mpr ⟨t, Finset.mem_range.mpr ht, rfl⟩, hl, by omega⟩))
+        ⟨Finset.mem_image.mpr ⟨t, Finset.mem_range.mpr ht, rfl⟩, hl, ⋄⟩))
   have hold_pos : ∀ p', Lv ((lo, hi) :: rest) fin p' → p' ≠ (lo, hi) → ∀ i, p'.1 ≤ i →
       i < p'.2 → (i < lo ∨ hi ≤ i) ∧ i < μ := by
     intro p' hp' hne i h1 h2
     have := hD.rng p' hp'
-    refine ⟨?_, by omega⟩
+    refine ⟨?_, ⋄⟩
     rcases hD.sinv.rdisj p' (lo, hi) hp' hlv hne with h | h | h | h
     · left; simp only at h; omega
     · right; simp only at h; omega
@@ -390,15 +396,15 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
     simp only at hf
     have hfN : m (S.bFIRST + v) < N := by rw [hf]; exact Fin.isLt _
     unfold keyOf
-    rw [h, hstat (S.bFIRST + v) (Or.inl (by omega)), hstat _ (Or.inl (by omega))]
+    Ξ h, hstat (S.bFIRST + v) (Or.inl (⋄)), hstat _ (Or.inl (⋄))
   refine ⟨news, fin', D ∪ sep, ⟨SI', ?_, ?_, ?_, ?_, ?_, P3.1, ?_⟩, P3.2.1, hstat, ?_⟩
   · -- the separator flags
     intro v hv
-    rw [hdf' v hv, h2d v hv, Finset.mem_union]
+    Ξ hdf' v hv, h2d v hv, Finset.mem_union
     by_cases hc : v ∈ items (fun i => m (S.bACT + i)) (lo, hi) ∧ markN T a f v
-    · rw [ite_eq_left hc]
+    · Ξ ite_eq_left hc
       exact ⟨fun _ => Or.inr (Finset.mem_filter.mpr hc), fun _ => rfl⟩
-    · rw [ite_eq_right hc, hD.df v hv]
+    · Ξ ite_eq_right hc, hD.df v hv
       exact ⟨Or.inl, fun h => h.elim id (fun h' => absurd (Finset.mem_filter.mp h') hc)⟩
   · intro v hv
     rcases Finset.mem_union.mp hv with h | h
@@ -408,32 +414,32 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
     intro p' hp' i h1 h2
     rcases hlive p' hp' with ⟨hold, hne⟩ | ⟨t, ht, rfl, hlen⟩
     · obtain ⟨hio, hiμ⟩ := hold_pos p' hold hne i h1 h2
-      rw [hact_out i hiμ (by omega)]
+      Ξ hact_out i hiμ (⋄)
       have hw : m (S.bACT + i) < μ := hD.sinv.lt p' hold _ (mem_items.mpr ⟨i, h1, h2, rfl⟩)
       have hpi := hD.pos_in p' hold i h1 h2
       rw [hpos' _ hw, SM9 _ (by rw [hμ]; exact hw) (fun j j1 j2 e => ?_),
-        h2o _ (by omega) (by omega)]
+        h2o _ (⋄) (⋄)]
       · exact hpi
       · have := hD.pos_in _ hlv j j1 j2
-        rw [e, hpi] at this
+        Ξ' e, hpi at this
         omega
     · obtain ⟨j, j1, j2, j3, j4⟩ := hdec t ht i h1 h2
-      rw [← j4, hact_in t ht j j1 j2 j3, hpos' _ (hactμ j j1 j2), hP t ht j j1 j2 j3]
+      Ξ ← j4, hact_in t ht j j1 j2 j3, hpos' _ (hactμ j j1 j2), hP t ht j j1 j2 j3
   · -- the positions of all vertices
     intro w hw
-    rw [hpos' w hw]
+    Ξ hpos' w hw
     by_cases hex : ∃ j, lo ≤ j ∧ j < hi ∧ m (S.bACT + j) = w
     · obtain ⟨j, j1, j2, rfl⟩ := hex
       by_cases hmk : markN T a f (m (S.bACT + j))
-      · left; rw [SM5 j j1 j2 hmk, hμ]
+      · left; Ξ SM5 j j1 j2 hmk, hμ
       · right
         obtain ⟨t, ht, hQt⟩ := Ccov j j1 j2 hmk
         have hi' := hin t ht j j1 j2 hQt
-        rw [hP t ht j j1 j2 hQt]
+        Ξ hP t ht j j1 j2 hQt
         exact ⟨scls E t, hcls_live t ht (by unfold len scls; omega), hi'.1, hi'.2,
           hact_in t ht j j1 j2 hQt⟩
     · rw [SM9 w (by rw [hμ]; exact hw) (fun j j1 j2 e => hex ⟨j, j1, j2, e⟩),
-        h2o _ (by omega) (by omega)]
+        h2o _ (⋄) (⋄)]
       rcases hD.pos_out w hw with h | ⟨p'', hp'', h1, h2, h3⟩
       · exact Or.inl h
       · right
@@ -447,15 +453,15 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
             · exact Or.inl (List.mem_append_right _ h)
           · exact Or.inr (Finset.mem_union_left _ h)
         obtain ⟨hio, hiμ⟩ := hold_pos p'' hp'' hne _ h1 h2
-        exact ⟨p'', hlv', h1, h2, by rw [hact_out _ hiμ (by omega)]; exact h3⟩
+        exact ⟨p'', hlv', h1, h2, by rw [hact_out _ hiμ (⋄)]; exact h3⟩
   · -- the stack entries are sorted
     intro p' hp' i i' h1 h2 h3
     rcases List.mem_append.mp hp' with hn | hr
     · obtain ⟨t, ht, rfl, -⟩ := (hnews _).mp hn
       change E t ≤ i at h1
       change i' < E (t + 1) at h3
-      obtain ⟨j, j1, j2, j3, j4⟩ := hdec t ht i h1 (by omega)
-      obtain ⟨j', j1', j2', j3', j4'⟩ := hdec t ht i' (by omega) h3
+      obtain ⟨j, j1, j2, j3, j4⟩ := hdec t ht i h1 (⋄)
+      obtain ⟨j', j1', j2', j3', j4'⟩ := hdec t ht i' (⋄) h3
       have hjj : j ≤ j' := by
         by_contra hc
         have := cntS_lt j1' (show j' < j by omega) j3'
@@ -467,40 +473,40 @@ theorem dinv_split {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest :
       have hne : p' ≠ (lo, hi) := by
         rintro rfl
         exact (List.nodup_cons.mp hD.sinv.nodup).1 hr
-      obtain ⟨hio, hiμ⟩ := hold_pos p' hold hne i h1 (by omega)
-      obtain ⟨hio', hiμ'⟩ := hold_pos p' hold hne i' (by omega) h3
-      have hw := hD.sinv.lt p' hold _ (mem_items.mpr ⟨i, h1, by omega, rfl⟩)
-      have hw' := hD.sinv.lt p' hold _ (mem_items.mpr ⟨i', by omega, h3, rfl⟩)
-      rw [hkey i _ (hact_out i hiμ (by omega)) hw, hkey i' _ (hact_out i' hiμ' (by omega)) hw']
+      obtain ⟨hio, hiμ⟩ := hold_pos p' hold hne i h1 (⋄)
+      obtain ⟨hio', hiμ'⟩ := hold_pos p' hold hne i' (⋄) h3
+      have hw := hD.sinv.lt p' hold _ (mem_items.mpr ⟨i, h1, ⋄, rfl⟩)
+      have hw' := hD.sinv.lt p' hold _ (mem_items.mpr ⟨i', ⋄, h3, rfl⟩)
+      Ξ hkey i _ (hact_out i hiμ (⋄)) hw, hkey i' _ (hact_out i' hiμ' (⋄)) hw'
       exact hD.sorted p' (List.mem_cons_of_mem _ hr) i i' h1 h2 h3
   · -- the ranges
     intro p' hp'
     rcases hlive p' hp' with ⟨h, -⟩ | ⟨t, ht, rfl, -⟩
     · exact hD.rng _ h
-    · have := (hEle (t + 1) (by omega)).2
+    · have := (hEle (t + 1) (⋄)).2
       show E (t + 1) ≤ μ
       omega
   · -- the size potential
     have hsum3 : (news.map (fun p => len p * Nat.size (len p))).sum ≤
         len (e2, e3) * Nat.size (len (e2, e3)) + len (e1, e2) * Nat.size (len (e1, e2)) +
           len (lo, e1) * Nat.size (len (lo, e1)) := by
-      simp only [hnews_def, List.map_append, List.sum_append]
+      ϴ hnews_def, List.map_append, List.sum_append
       have := sum_optSeg (fun p => len p * Nat.size (len p)) S.s e2 e3
       have := sum_optSeg (fun p => len p * Nat.size (len p)) S.s e1 e2
       have := sum_optSeg (fun p => len p * Nat.size (len p)) S.s lo e1
       omega
     have hpot := split_size_pot (fun t => len (scls E t)) (hi - lo) (by
-      simp only [Finset.sum_range_succ, Finset.sum_range_zero]
+      ϴ Finset.sum_range_succ, Finset.sum_range_zero
       show 0 + (e1 - lo) + (e2 - e1) + (e3 - e2) ≤ hi - lo
       omega) (fun t ht => by
       have hCh : 2 * cntS (Q t) lo hi ≤ hi - lo := Chalf t ht
       show 2 * (E (t + 1) - E t) ≤ hi - lo
       rw [hEs t ht]; omega)
-    simp only [Finset.sum_range_succ, Finset.sum_range_zero] at hpot
+    ϴ' Finset.sum_range_succ, Finset.sum_range_zero at hpot
     have e0 : scls E 0 = (lo, e1) := rfl
     have e1' : scls E 1 = (e1, e2) := rfl
     have e2' : scls E 2 = (e2, e3) := rfl
-    rw [e0, e1', e2'] at hpot
+    Ξ' e0, e1', e2' at hpot
     omega
 
 end step

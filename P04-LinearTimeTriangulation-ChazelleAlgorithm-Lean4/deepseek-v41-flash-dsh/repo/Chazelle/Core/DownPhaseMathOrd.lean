@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMathCyc
 
 /-!
@@ -68,7 +70,7 @@ theorem cyc_start {n : ℝ} {a b x y : ℝ} (hxy : x ≠ y) (hx0 : 0 ≤ x) (hxn
     · -- `a < x`, so `b ≤ x`, and points just after `x` are not below `b`
       have hb : b ≤ x := by
         by_contra hb; push Not at hb; exact hnot ⟨h, hb⟩
-      obtain ⟨z, h1, -, -, -, -, h3⟩ := hpt (x + 1) (by linarith)
+      obtain ⟨z, h1, -, -, -, -, h3⟩ := hpt (x + 1) (⟡)
       linarith
   · simp only [ite_eq_right hab] at hnot hpt
     push Not at hnot
@@ -105,10 +107,10 @@ theorem start_of_arcGap {j : ℕ} (hj : j < nk (interiorModel Q) S R)
   have hM : WalkAx I := walkAx_interiorModel hQ
   have h3 : 3 ≤ N := three_le_nk hQ hFam hne hR
   obtain ⟨a', b', harc, hsub⟩ := hA
-  have hsj : (j + 1) % N < N := Nat.mod_lt _ (by omega)
+  have hsj : (j + 1) % N < N := Nat.mod_lt _ (⋄)
   have hbx := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hj)
   have hby := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hsj)
-  have e := cyc_start (hk_succ_ne hM hFam.2.1 hFam.1 (by omega) hj) hbx.1 hbx.2 hby.1 hby.2
+  have e := cyc_start (hk_succ_ne hM hFam.2.1 hFam.1 (⋄) hj) hbx.1 hbx.2 hby.1 hby.2
     harc.1 harc.2.1 hsub (fun h => harc.2.2.2.2.2.1 _ h hcut)
   exact ⟨b', e ▸ harc⟩
 
@@ -179,7 +181,7 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
     have hDt := hD t ht
     set m := (i t + d t) % N with hm
     have hmN : m < N := Nat.mod_lt _ (by omega)
-    have hbm : hk I S R m = b t := hDt.hr
+    have hbm := hDt.hr
     obtain ⟨c, ⟨hc, htc⟩, pc, tc, hAc, hec⟩ := hM.exists_exit_at_end hF hfin hne hR (harc t ht)
     have hx : hk I S R m ∈ exitKeys I S R := ⟨c, hc, htc, pc, tc, hAc, by rw [hbm]; exact hec⟩
     have hprev : prevIdx N m = (i t + (d t - 1)) % N := by

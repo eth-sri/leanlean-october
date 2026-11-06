@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoS0CandInitEnv
 
 /-!
@@ -77,7 +79,7 @@ theorem stB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   unfold stB
   -- read the record
   refine IRS.seq (K₁ := 14) (K₂ := kSt κL (c₀.nreg TLR) - 14)
-    (stLd_irs hI hK (e.fix hI (k := 200) (by norm_num)) rfl (by omega)) ?_ |>.mono
+    (stLd_irs hI hK (e.fix hI (k := 200) (⊛)) rfl (by omega)) ?_ |>.mono
     (by unfold kSt; omega) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' ⟨l1, l2, l3, l4, l5, lfr, lm⟩
   -- the origin
@@ -102,19 +104,19 @@ theorem stB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   rintro c₃ hI₃ hA₃ hA₃' ⟨s1, s2, sfr, sA, sm⟩
   have hq : (⟨c₂.nreg lsxE, c₂.nreg lsxH⟩ : WPos) =
       ⟨c₂.nmem (AS + 5 * x), c₂.nmem (AS + 5 * x + 1)⟩ := by
-    rw [q1, q2, mc c₂ hI₂ _ (by omega), mc c₂ hI₂ (AS + 5 * x + 1) (by omega)]
+    rw [q1, q2, mc c₂ hI₂ _ (⋄), mc c₂ hI₂ (AS + 5 * x + 1) (by omega)]
   rw [hq] at s1 s2
   have od₂ := e.odc (m := c₂.nmem) hI₂.hm
   simp only [rd_sw] at od₂
   obtain ⟨ht, e1, e2, hv⟩ := stop_step od₂ e.hA.hP e.hA.hNF₂ rfl hx s1 s2
-  rw [mc c₂ hI₂ (AS + 5 * x + 2) (by omega), mc c₂ hI₂ (AS + 5 * x + 3) (by omega),
-    mc c₂ hI₂ (AS + 5 * x + 4) (by omega)] at hv
+  rw [mc c₂ hI₂ (AS + 5 * x + 2) (⋄), mc c₂ hI₂ (AS + 5 * x + 3) (by omega),
+    mc c₂ hI₂ (AS + 5 * x + 4) (⋄)] at hv
   -- registers after the search
   have keep : ∀ r, 244100 ≤ r → r ≤ 244129 → r ≠ ipA → r ≠ ipK → r ≠ ipKk → r ≠ ipBb →
       r ≠ ipS → r ≠ ipE → r ≠ ipH → c₃.nreg r = c.nreg r := by
     intro r h1 h2 n1 n2 n3 n4 n5 n6 n7
-    rw [sfr r (not_oracle_sw (by omega) (by omega)) (by unfold LSet sw; omega)
-      (by unfold ALLOC; omega), k21 r (not_oracle_sw (by omega) (by omega)) (by unfold sw; omega)
+    rw [sfr r (not_oracle_sw (⋄) (by omega)) (by unfold LSet sw; omega)
+      (by unfold ALLOC; omega), k21 r (not_oracle_sw (⋄) (by omega)) (by unfold sw; omega)
       n6 n7 (by unfold ALLOC; omega)]
     exact lfr r (by unfold lsxE; unfold sw; omega) (by unfold lsxH; unfold sw; omega) n1 n2 n3 n4 n5
   have k3S : c₃.nreg ipS = sOf (c.nmem (AS + 5 * x + 4)) := by
@@ -141,7 +143,7 @@ theorem stB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   rintro c₄ hI₄ hA₄ hA₄' ⟨w1, w2⟩
   have k1 : c₄.nreg K1 = 1 := (e.hA.hK.fix hI₄).2.1
   have k4X : c₄.nreg ipX = x := by
-    rw [w2 _ (by unfold ipX ipT sw; omega)]
+    Ξ w2 _ (by unfold ipX ipT sw; omega)
     exact keep ipX (by unfold ipX sw; omega) (by unfold ipX sw; omega)
       (by unfold ipX ipA sw; omega) (by unfold ipX ipK sw; omega) (by unfold ipX ipKk sw; omega)
       (by unfold ipX ipBb sw; omega) (by unfold ipX ipS sw; omega) (by unfold ipX ipE sw; omega)
@@ -155,34 +157,34 @@ theorem stB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
       rcases hr with rfl | rfl | rfl | rfl | rfl <;> simp [ipX, ipB, ipM6, ipM5, ipJ, ipKc, sw]
     have hT : r ≠ ipT := by
       rcases hr with rfl | rfl | rfl | rfl | rfl <;> simp [ipT, ipB, ipM6, ipM5, ipJ, ipKc, sw]
-    simp only [regI]
-    rw [upd_other _ _ _ hx', w2 r hT]
+    ϴ regI
+    Ξ upd_other _ _ _ hx', w2 r hT
     rcases hr with rfl | rfl | rfl | rfl | rfl <;>
-      exact keep _ (by simp [ipB, ipM6, ipM5, ipJ, ipKc, sw])
-        (by simp [ipB, ipM6, ipM5, ipJ, ipKc, sw])
-        (by simp [ipB, ipM6, ipM5, ipJ, ipKc, ipA, sw])
-        (by simp [ipB, ipM6, ipM5, ipJ, ipKc, ipK, sw])
-        (by simp [ipB, ipM6, ipM5, ipJ, ipKc, ipKk, sw])
-        (by simp [ipB, ipM6, ipM5, ipJ, ipKc, ipBb, sw])
-        (by simp [ipB, ipM6, ipM5, ipJ, ipKc, ipS, sw])
-        (by simp [ipB, ipM6, ipM5, ipJ, ipKc, ipE, sw])
-        (by simp [ipB, ipM6, ipM5, ipJ, ipKc, ipH, sw])
-  · simp only [regI]
-    rw [upd_other _ _ _ (by unfold ALLOC ipX sw; omega)]
+      exact keep _ (⊚ ipB, ipM6, ipM5, ipJ, ipKc, sw)
+        (⊚ ipB, ipM6, ipM5, ipJ, ipKc, sw)
+        (⊚ ipB, ipM6, ipM5, ipJ, ipKc, ipA, sw)
+        (⊚ ipB, ipM6, ipM5, ipJ, ipKc, ipK, sw)
+        (⊚ ipB, ipM6, ipM5, ipJ, ipKc, ipKk, sw)
+        (⊚ ipB, ipM6, ipM5, ipJ, ipKc, ipBb, sw)
+        (⊚ ipB, ipM6, ipM5, ipJ, ipKc, ipS, sw)
+        (⊚ ipB, ipM6, ipM5, ipJ, ipKc, ipE, sw)
+        (⊚ ipB, ipM6, ipM5, ipJ, ipKc, ipH, sw)
+  · ϴ regI
+    Ξ upd_other _ _ _ (by unfold ALLOC ipX sw; omega)
     omega
   · simp only
-    rw [w1]
+    Ξ w1
     -- the invariant at the memory before the write
     have m3 : ∀ a, a < B + 6 * E → c₃.nmem a = c.nmem a := fun a ha => by
-      rw [sm a (by omega), om a (by omega), lm]
-    have hS₃ := hS.congr m3 (by omega) (by omega) (by omega)
+      rw [sm a (⋄), om a (by omega), lm]
+    have hS₃ := hS.congr m3 (⋄) (⋄) (⋄)
     have hv' : SlotVal P J ⟨c₃.nreg ipE, c₃.nreg ipH⟩ (sOf (c₂.nmem (AS + 5 * x + 4)))
         (logPt P J c₂.nmem AL (c₃.nreg lsI)) := by
-      rw [k3E, k3H, o1, o2, mc c₂ hI₂ (AS + 5 * x + 4) (by omega)]
+      rw [k3E, k3H, o1, o2, mc c₂ hI₂ (AS + 5 * x + 4) (⋄)]
       exact hv
-    have r4 : c₃.nmem (AS + 5 * x + 4) = c.nmem (AS + 5 * x + 4) := mc c₃ hI₃ _ (by omega)
+    have r4 : c₃.nmem (AS + 5 * x + 4) = c.nmem (AS + 5 * x + 4) := mc c₃ hI₃ _ (⋄)
     have h := hS₃.stopStep (m₂ := c₂.nmem) (fun a ha => (mc c₂ hI₂ a ha).trans
-      (mc c₃ hI₃ a ha).symm) (by omega) (by omega) (by omega) ht e1 e2 hv'
+      (mc c₃ hI₃ a ha).symm) (⋄) (by omega) (by omega) ht e1 e2 hv'
     rw [r4] at h
     exact h
 
@@ -199,7 +201,7 @@ theorem stLoop_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
       SInv P J N₂ (c₀.nreg (sw 200)) (c₀.nreg (sw 300)) (c₀.nreg (sw 301))
         (c₀.nreg (sw 302)) (c₀.nreg ALLOC) c'.nmem (c₀.nreg (sw 201)) 0) := by
   have f201 : ∀ d : Config, IInv W c₀ d → d.nreg (sw 201) = c₀.nreg (sw 201) :=
-    fun d hd => e.fix hd (k := 201) (by norm_num)
+    fun d hd => e.fix hd (k := 201) (⊛)
   let I : Config → Prop := fun d => (∀ r, PReg r → d.nreg r = c.nreg r) ∧
     c.nreg ALLOC ≤ d.nreg ALLOC ∧ d.nreg ipX ≤ c₀.nreg (sw 201) ∧
     SInv P J N₂ (c₀.nreg (sw 200)) (c₀.nreg (sw 300)) (c₀.nreg (sw 301))
@@ -211,17 +213,17 @@ theorem stLoop_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     (fun d hId hd hlt hr => by
       obtain ⟨d1, d2, d3, d4, -⟩ := hd
       rw [f201 d hId] at hlt
-      refine (IRS.withInv (stB_irs hls e hId ((d1 ipB hpB).trans hB) (by omega) hlt d4 hr)).mono le_rfl ?_
+      refine (IRS.withInv (stB_irs hls e hId ((d1 ipB hpB).trans hB) (⋄) hlt d4 hr)).mono le_rfl ?_
       rintro d' ⟨⟨g1, g2, g3, g4⟩, hId'⟩
-      refine ⟨⟨fun r hr => (g2 r hr).trans (d1 r hr), by omega, by omega, by rw [g1]; exact g4,
-        f201 d' hId'⟩, by omega⟩)
-    hI ⟨fun _ _ => rfl, le_rfl, by omega, by rw [hx]; exact hS, f201 c hI⟩ (by rw [hx]; simpa using hroom)
+      refine ⟨⟨fun r hr => (g2 r hr).trans (d1 r hr), ⋄, by omega, by rw [g1]; exact g4,
+        f201 d' hId'⟩, ⋄⟩)
+    hI ⟨fun _ _ => rfl, le_rfl, ⋄, by rw [hx]; exact hS, f201 c hI⟩ (by rw [hx]; simpa using hroom)
   rw [hx] at h
   simp only [Nat.sub_zero] at h
   refine h.mono le_rfl ?_
   rintro d ⟨⟨d1, d2, d3, d4, d6⟩, d5⟩
   rw [d6] at d5
-  have : d.nreg ipX = c₀.nreg (sw 201) := by omega
+  have : d.nreg ipX = c₀.nreg (sw 201) := ⋄
   rw [this] at d4
   exact ⟨d1, d2, d4⟩
 

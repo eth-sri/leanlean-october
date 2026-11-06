@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRPc
 public import Chazelle.Core.DownPhaseDrvRLib
 public import Chazelle.Core.NFBuildMain
@@ -38,14 +40,14 @@ def plCh : Stmt := .whileLtN 219017 219014 plChBody
 def Bch (r : ℕ) : Bool :=
   decide (r = 219004) || decide (219012 ≤ r ∧ r ≤ 219016) || decide (r = 219021)
 
-theorem wrM_plChBody : wrM Bch plChBody = true := by decide
+theorem wrM_plChBody : wrM Bch plChBody = true := ⌖
 
 /-- One piece off the front. -/
 theorem chunks_cons {C s a L : ℕ} (hC : 1 ≤ C) (hL : 1 ≤ L) :
     chunks C s a L = (s, min C L, a) :: chunks C (s + min C L) (a + min C L) (L - min C L) := by
   by_cases h : L ≤ C
-  · rw [chunks_le (by omega) (Or.inl h), min_eq_right h, Nat.sub_self, chunks_zero]
-  · rw [chunks_gt (by omega) (by omega) (by omega), min_eq_left (by omega)]
+  · Ξ chunks_le (⋄) (Or.inl h), min_eq_right h, Nat.sub_self, chunks_zero
+  · Ξ chunks_gt (⋄) (⋄) (⋄), min_eq_left (⋄)
 
 section exec
 
@@ -68,19 +70,19 @@ theorem plChBody_exec (d : Config) (hw : WordsBounded W d) {C L s a k ptr : ℕ}
       d₁.nmem = d.nmem := by
     by_cases h : C < L
     · refine ⟨_, _, .ifLtN_true (by rw [h02, h14]; exact h) (Exec.copyN (P := P) hw 219015 219002),
-        by omega, ?_, fun r hr => by simp [hr], rfl⟩
+        ⋄, ?_, fun r hr => by simp [hr], rfl⟩
       simp only [Machine.upd_same, h02]; rw [min_eq_left h.le]
     · refine ⟨_, _, .ifLtN_false (by rw [h02, h14]; exact h) (Exec.copyN (P := P) hw 219015 219014),
-        by omega, ?_, fun r hr => by simp [hr], rfl⟩
-      simp only [Machine.upd_same, h14]; rw [min_eq_right (by omega)]
+        ⋄, ?_, fun r hr => by simp [hr], rfl⟩
+      simp only [Machine.upd_same, h14]; rw [min_eq_right (⋄)]
   have w₁ := e₁.wb_right
-  have a12 : d₁.nreg 219012 = s := by rw [g₁ _ (by decide), h12]
-  have a13 : d₁.nreg 219013 = a := by rw [g₁ _ (by decide), h13]
-  have a14 : d₁.nreg 219014 = L := by rw [g₁ _ (by decide), h14]
-  have a16 : d₁.nreg 219016 = ptr := by rw [g₁ _ (by decide), h16]
-  have a04 : d₁.nreg 219004 = k := by rw [g₁ _ (by decide), h04]
-  have a18 : d₁.nreg 219018 = 1 := by rw [g₁ _ (by decide), h18]
-  have a20 : d₁.nreg 219020 = 3 := by rw [g₁ _ (by decide), h20]
+  have a12 : d₁.nreg 219012 = s := by rw [g₁ _ (⌖), h12]
+  have a13 : d₁.nreg 219013 = a := by rw [g₁ _ (⌖), h13]
+  have a14 : d₁.nreg 219014 = L := by rw [g₁ _ (⌖), h14]
+  have a16 : d₁.nreg 219016 = ptr := by rw [g₁ _ (⌖), h16]
+  have a04 : d₁.nreg 219004 = k := by rw [g₁ _ (⌖), h04]
+  have a18 : d₁.nreg 219018 = 1 := by rw [g₁ _ (⌖), h18]
+  have a20 : d₁.nreg 219020 = 3 := by rw [g₁ _ (⌖), h20]
   have hmin : min C L ≤ L := min_le_right _ _
   obtain ⟨d₂, j₂, e₂, hj₂, b12, b13, b14, b16, b04, bm⟩ : ∃ d₂ j₂, Exec P W
       (block [.storeN 219016 219012, .addN 219021 219016 219018, .storeN 219021 219015,
@@ -94,7 +96,7 @@ theorem plChBody_exec (d : Config) (hw : WordsBounded W d) {C L s a k ptr : ℕ}
     all_goals try (config_simp; (try simp only [a12, a13, a14, a16, a04, a18, a20, v15]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
       (try simp only [a12, a13, a14, a16, a04, a18, a20, v15])
-  refine ⟨d₂, j₁ + j₂, .seq e₁ e₂, by omega, b12, b13, b14, b16, b04, by rw [bm, m₁], ?_⟩
+  refine ⟨d₂, j₁ + j₂, .seq e₁ e₂, ⋄, b12, b13, b14, b16, b04, by rw [bm, m₁], ?_⟩
   exact exec_frameM (.seq e₁ e₂) wrM_plChBody
 
 /-- **The chunk loop** writes the pieces of the segment as triples at the pointer. -/

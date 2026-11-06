@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FactsTree
 
 /-!
@@ -172,7 +174,7 @@ theorem exists_exit_at_start (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
   have hVTr : VT ∈ M.regions T := ⟨v, hVfree hv, rfl⟩
   have hUT : U = connectedComponentIn (freeIn M.D T) u := region_of_exits hsys hU hu
   have hUTr : U ∈ M.regions T := by
-    rw [hUT]
+    Ξ hUT
     exact ⟨u, ((Chazelle.Chain.regionsIn_subset hU).trans
       (Chazelle.Chain.freeIn_anti M.D hTF)) hu, rfl⟩
   have hxVT : M.Faces px tx VT := hxV.mono fun δ h => hVVT h
@@ -254,11 +256,11 @@ theorem attach_face (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hf
     exact hne' ((connectedComponentIn_eq (hU1 hv)).trans (connectedComponentIn_eq (hU2 hv)).symm)
   · obtain ⟨c', hc', p', t', hA', hk'⟩ := hM.exists_exit_at_start hF hfin hne hU harcU
     obtain ⟨rfl, rfl⟩ := sideKey_inj hA'.2.1 hA'.2.2.1 hA.2.1 hA.2.2.1 hk'.symm
-    rw [← hsole c' hc'.1 hA']
+    Ξ ← hsole c' hc'.1 hA'
     exact hc'.2
   · obtain ⟨c', hc', p', t', hA', hk'⟩ := hM.exists_exit_at_end hF hfin hne hV harcV
     obtain ⟨rfl, rfl⟩ := sideKey_inj hA'.2.1 hA'.2.2.1 hA.2.1 hA.2.2.1 hk'.symm
-    rw [← hsole c' hc'.1 hA']
+    Ξ ← hsole c' hc'.1 hA'
     exact hc'.2
 
 end WalkAx
@@ -295,7 +297,7 @@ theorem attachFaceNC : AttachFaceSpecNC := by
     · linarith
   refine ⟨U, V, hU, hV, hUV, hcU, hcV, min δ₁ δ₂, lt_min hδ₁0 hδ₂0,
     fun p' t' hp' ht0 ht1 => ⟨fun h => ?_, fun h => ?_⟩⟩
-  · have hx0 : (0 : ℝ) ≤ p' + t' := by positivity
+  · have hx0 : (0 : ℝ) ≤ p' + t' := ⟢
     have hxn : (p' : ℝ) + t' < M.W.n := by
       have : (p' : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp'
       linarith
@@ -304,7 +306,7 @@ theorem attachFaceNC : AttachFaceSpecNC := by
       · exact Or.inl ⟨by linarith [h.1], by linarith [h.2]⟩
       · exact Or.inr ⟨by linarith [h.1], by linarith [h.2]⟩)
     exact harcU.2.2.2.2.2.2 p' t' hp' ht0 ht1 hin
-  · have hx0 : (0 : ℝ) ≤ p' + t' := by positivity
+  · have hx0 : (0 : ℝ) ≤ p' + t' := ⟢
     have hxn : (p' : ℝ) + t' < M.W.n := by
       have : (p' : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp'
       linarith

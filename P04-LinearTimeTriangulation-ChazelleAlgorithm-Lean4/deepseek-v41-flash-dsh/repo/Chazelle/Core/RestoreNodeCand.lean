@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreNodeEndMath
 public import Chazelle.Core.RestoreFEndP
 
@@ -24,7 +26,7 @@ theorem pos_of_param {M : Model} {Q : Polygon} {e a b : ℕ} (h : M.param Q ⟨e
     M.pos Q ⟨e, a⟩ = M.pos Q ⟨e, b⟩ := by
   show Geometry.lerp (M.wa e) (M.wb e) (M.param Q ⟨e, a⟩) =
     Geometry.lerp (M.wa e) (M.wb e) (M.param Q ⟨e, b⟩)
-  rw [h]
+  Ξ h
 
 /-- **The candidate at a node chord end.** -/
 theorem end_cand (hE : FGood E c₀) (hS : Stretch E.M Cα g g' L) {c : Set Point} {h : ℕ} {d : ℕ}

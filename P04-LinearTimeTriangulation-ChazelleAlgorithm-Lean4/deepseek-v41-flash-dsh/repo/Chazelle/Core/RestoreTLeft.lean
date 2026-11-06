@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTIntLeft
 public import Chazelle.Core.RestoreTChainLeft
 
@@ -20,7 +22,7 @@ open Machine Machine.Stmt Programs SweepPrim NFLoc SignK
 
 variable {P : Polygon} {W : ℕ} {M : Model} {N : NF} {c₀ c : Config}
 
-theorem wr_fixBit : wr (fun q => q == 50210) fixBit = true := by decide
+theorem wr_fixBit : wr (fun q => q == 50210) fixBit = true := ⌖
 
 /-- The edge case of the interior sector test. -/
 theorem iLeft_ok_edge (hE : TGood P W M N c₀) (hI : TInv W c₀ c) (hv : c₀.nreg 83006 ≠ 0)
@@ -59,17 +61,17 @@ theorem gLeft_ok : LeftOK gLeft 20000 := by
   have h21 := hI.h21
   have h23 := hI.h23
   rcases hE.kind with ⟨h0, C, hM⟩ | ⟨h1, hMi, hbit⟩
-  · obtain ⟨c', k, ex, hk, b, s⟩ := tLeft_exec hE hI hM (by omega)
-    exact ⟨c', k + 1, .ifLtN_true (by rw [h21, h23, h0]; omega) ex, by omega, b,
-      s.mono (by omega)⟩
-  · have i6 := hI.hin 83006 (by norm_num) (by norm_num)
+  · obtain ⟨c', k, ex, hk, b, s⟩ := tLeft_exec hE hI hM (⋄)
+    exact ⟨c', k + 1, .ifLtN_true (by rw [h21, h23, h0]; omega) ex, ⋄, b,
+      s.mono (⋄)⟩
+  · have i6 := hI.hin 83006 (⊛) (⊛)
     by_cases hv : c.nreg 83006 < c.nreg 83023
-    · obtain ⟨c', k, ex, hk, b, s⟩ := iLeft_ok_vertex hE hI hMi hbit (by omega) (by omega)
+    · obtain ⟨c', k, ex, hk, b, s⟩ := iLeft_ok_vertex hE hI hMi hbit (⋄) (⋄)
       exact ⟨c', k + 1 + 2, .ifLtN_false (by rw [h21, h23, h1]; omega) (.ifLtN_true hv ex),
-        by omega, b, s.mono (by omega)⟩
-    · obtain ⟨c', k, ex, hk, b, s⟩ := iLeft_ok_edge hE hI (by omega) (by omega)
+        ⋄, b, s.mono (⋄)⟩
+    · obtain ⟨c', k, ex, hk, b, s⟩ := iLeft_ok_edge hE hI (⋄) (⋄)
       exact ⟨c', k + 2 + 2, .ifLtN_false (by rw [h21, h23, h1]; omega) (.ifLtN_false hv ex),
-        by omega, b, s.mono (by omega)⟩
+        ⋄, b, s.mono (⋄)⟩
 
 end
 

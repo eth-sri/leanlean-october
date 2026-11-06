@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBPt
 
 /-!
@@ -24,20 +28,20 @@ def ptLoop : Stmt := .seq (.instr (.constN 212017 0)) (.whileLtN 212017 212016 p
 theorem flatMap_range_length_mono {α : Type*} (f : ℕ → List α) {m m' : ℕ} (h : m ≤ m') :
     ((List.range m).flatMap f).length ≤ ((List.range m').flatMap f).length := by
   induction m' with
-  | zero => have : m = 0 := by omega
+  | zero => have : m = 0 := ⋄
             subst this; exact le_rfl
   | succ m' ih =>
     rcases Nat.lt_or_ge m (m' + 1) with h' | h'
-    · rw [List.range_succ, List.flatMap_append, List.length_append]
-      exact (ih (by omega)).trans (Nat.le_add_right _ _)
-    · have : m = m' + 1 := by omega
+    · Ξ List.range_succ, List.flatMap_append, List.length_append
+      exact (ih (⋄)).trans (Nat.le_add_right _ _)
+    · have : m = m' + 1 := ⋄
       subst this; exact le_rfl
 
 section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The points of a region**: its records are appended. -/
 theorem ptLoop_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c : Config)
     {T : List (ℕ × (ℕ × ℕ × ℕ))} (hS : PtSt E r PA c T)

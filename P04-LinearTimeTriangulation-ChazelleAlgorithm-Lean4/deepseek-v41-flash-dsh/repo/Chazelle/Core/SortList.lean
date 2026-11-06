@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Mathlib.Data.Nat.Log
 public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.Linarith
@@ -35,7 +37,7 @@ def seg (m : ℕ → ℕ) (a n : ℕ) : List ℕ := (List.range n).map fun i => 
 variable {m m' : ℕ → ℕ} {a n : ℕ}
 
 /-- A segment has the requested length. -/
-@[simp] theorem seg_length : (seg m a n).length = n := by simp [seg]
+@[simp] theorem seg_length : (seg m a n).length = n := ⊚ seg
 
 /-- The empty segment. -/
 @[simp] theorem seg_zero : seg m a 0 = [] := rfl
@@ -43,11 +45,11 @@ variable {m m' : ℕ → ℕ} {a n : ℕ}
 /-- Reading a segment from its first word. -/
 theorem seg_succ : seg m a (n + 1) = m a :: seg m (a + 1) n := by
   unfold seg
-  rw [List.range_succ_eq_map, List.map_cons, List.map_map]
+  Ξ List.range_succ_eq_map, List.map_cons, List.map_map
   congr 1
   apply List.map_congr_left
   intro i _
-  simp only [Function.comp_apply]
+  ϴ Function.comp_apply
   congr 1
   omega
 
@@ -62,7 +64,7 @@ theorem seg_add (n₁ n₂ : ℕ) : seg m a (n₁ + n₂) = seg m a n₁ ++ seg 
 
 /-- Reading a segment from its last word. -/
 theorem seg_snoc : seg m a (n + 1) = seg m a n ++ [m (a + n)] := by
-  rw [seg_add n 1, seg_succ]
+  Ξ seg_add n 1, seg_succ
   simp
 
 /-- Segments agree when the memories agree on them. -/
@@ -80,7 +82,7 @@ theorem seg_drop (d : ℕ) : (seg m a n).drop d = seg m (a + d) (n - d) := by
     cases n with
     | zero => simp
     | succ n =>
-      rw [seg_succ, List.drop_succ_cons, ih]
+      Ξ seg_succ, List.drop_succ_cons, ih
       congr 1
       · omega
       · omega
@@ -98,18 +100,18 @@ theorem seg_take (d : ℕ) : (seg m a n).take d = seg m a (min d n) := by
 
 /-- The words of a segment. -/
 theorem seg_getD (i : ℕ) (hi : i < n) : (seg m a n).getD i 0 = m (a + i) := by
-  simp [seg, hi]
+  Θ seg, hi
 
 /-- A segment written one word past its end. -/
 theorem seg_upd_end (v : ℕ) (f : ℕ → ℕ)
     (hf : ∀ x, f x = if x = a + n then v else m x) :
     seg f a (n + 1) = seg m a n ++ [v] := by
-  rw [seg_snoc, hf (a + n), ite_eq_left rfl]
+  Ξ seg_snoc, hf (a + n), ite_eq_left rfl
   congr 1
   apply seg_congr
   intro i hi
-  simp only [hf]
-  rw [ite_eq_right_iff]
+  ϴ hf
+  Ξ ite_eq_right_iff
   intro h
   omega
 
@@ -126,7 +128,7 @@ termination_by l.length
 decreasing_by
   simp only [not_or] at _h
   have h1 : l.length ≠ 0 := by simpa using _h.2
-  simp only [List.length_drop]
+  ϴ List.length_drop
   omega
 
 variable {le}
@@ -142,7 +144,7 @@ theorem mpass_nil (w : ℕ) : mpass le w ([] : List α) = [] := by
 /-- The defining equation of a pass on a nonempty list. -/
 theorem mpass_eq {w : ℕ} {l : List α} (hw : 0 < w) (hl : l ≠ []) :
     mpass le w l = List.merge (l.take w) ((l.drop w).take w) le ++ mpass le w (l.drop (2 * w)) := by
-  rw [mpass, dite_eq_right_iff.mpr]
+  Ξ mpass, dite_eq_right_iff.mpr
   intro h
   rcases h with h | h
   · omega
@@ -159,22 +161,22 @@ theorem mpass_perm (w : ℕ) (l : List α) : (mpass le w l).Perm l := by
   induction h : l.length using Nat.strong_induction_on generalizing l with
   | _ n ih =>
     rcases Nat.eq_zero_or_pos w with rfl | hw
-    · rw [mpass_zero]
+    · Ξ mpass_zero
     by_cases hl : l = []
     · subst hl; rw [mpass_nil]
-    rw [mpass_eq hw hl]
+    Ξ mpass_eq hw hl
     have hlen : (l.drop (2 * w)).length < n := by
       have : l.length ≠ 0 := by simpa using hl
       simp only [List.length_drop]; omega
     have h1 := (List.merge_perm_append le (xs := l.take w) (ys := (l.drop w).take w)).append
       (ih _ hlen (l.drop (2 * w)) rfl)
-    exact h1.trans (by rw [take_append_take_drop])
+    exact h1.trans (Ρ take_append_take_drop)
 
 /-- The first block of a pass has length `min (2 w) |l|`. -/
 theorem merge_block_length (w : ℕ) (l : List α) :
     (List.merge (l.take w) ((l.drop w).take w) le).length = min (2 * w) l.length := by
-  rw [List.length_merge]
-  simp only [List.length_take, List.length_drop]
+  Ξ List.length_merge
+  ϴ List.length_take, List.length_drop
   omega
 
 /-- **A pass works block by block**: a prefix made of whole double blocks is passed
@@ -185,21 +187,21 @@ theorem mpass_append {w : ℕ} (hw : 0 < w) (t : ℕ) (l₁ l₂ : List α)
   | zero =>
     simp only [Nat.zero_mul, List.length_eq_zero_iff] at h
     subst h
-    simp [mpass_nil]
+    Θ mpass_nil
   | succ t ih =>
     have h2w : 2 * w ≤ l₁.length := by
       rw [h]; exact Nat.le_mul_of_pos_left _ (Nat.succ_pos t)
     have hl₁ : l₁ ≠ [] := by
       intro h'; subst h'; simp at h2w; omega
-    have hl : l₁ ++ l₂ ≠ [] := by simp [hl₁]
-    rw [mpass_eq hw hl, mpass_eq hw hl₁]
+    have hl : l₁ ++ l₂ ≠ [] := ⊚ hl₁
+    Ξ mpass_eq hw hl, mpass_eq hw hl₁
     have ht1 : (l₁ ++ l₂).take w = l₁.take w := by
-      rw [List.take_append_of_le_length (by omega)]
+      rw [List.take_append_of_le_length (⋄)]
     have ht2 : ((l₁ ++ l₂).drop w).take w = (l₁.drop w).take w := by
-      rw [List.drop_append_of_le_length (by omega),
+      rw [List.drop_append_of_le_length (⋄),
         List.take_append_of_le_length (by simp only [List.length_drop]; omega)]
     have ht3 : (l₁ ++ l₂).drop (2 * w) = l₁.drop (2 * w) ++ l₂ := by
-      rw [List.drop_append_of_le_length (by omega)]
+      rw [List.drop_append_of_le_length (⋄)]
     rw [ht1, ht2, ht3, ih _ (by simp only [List.length_drop]; rw [h, Nat.succ_mul]; omega),
       List.append_assoc]
 
@@ -219,26 +221,26 @@ theorem mpass_drop {w : ℕ} (hw : 0 < w) (t : ℕ) (l : List α) :
   | succ t ih =>
     by_cases hne : l = []
     · subst hne; simp [mpass_nil]
-    rw [mpass_eq hw hne]
+    Ξ mpass_eq hw hne
     have hB := merge_block_length (le := le) w l
-    have e1 : (t + 1) * (2 * w) = 2 * w + t * (2 * w) := by ring
+    have e1 : (t + 1) * (2 * w) = 2 * w + t * (2 * w) := ⋆
     by_cases hlen : 2 * w ≤ l.length
-    · rw [e1, ← List.drop_drop, List.drop_left' (by rw [hB]; omega), ih, List.drop_drop]
-    · have h1 : l.drop (2 * w) = [] := List.drop_of_length_le (by omega)
+    · Ξ e1, ← List.drop_drop, List.drop_left' (by rw [hB]; omega), ih, List.drop_drop
+    · have h1 : l.drop (2 * w) = [] := List.drop_of_length_le (⋄)
       rw [h1, mpass_nil, List.append_nil, List.drop_of_length_le (by rw [hB]; omega),
-        List.drop_of_length_le (l := l) (by omega), mpass_nil]
+        List.drop_of_length_le (l := l) (⋄), mpass_nil]
 
 /-- The first double block of a pass. -/
 theorem take_mpass {w : ℕ} (hw : 0 < w) (l : List α) :
     (mpass le w l).take (2 * w) = List.merge (l.take w) ((l.drop w).take w) le := by
   by_cases hne : l = []
   · subst hne; simp [mpass_nil]
-  rw [mpass_eq hw hne]
+  Ξ mpass_eq hw hne
   have hB := merge_block_length (le := le) w l
   by_cases hlen : 2 * w ≤ l.length
-  · rw [List.take_left' (by rw [hB]; omega)]
-  · have h1 : l.drop (2 * w) = [] := List.drop_of_length_le (by omega)
-    rw [h1, mpass_nil, List.append_nil, List.take_of_length_le (by rw [hB]; omega)]
+  · Ξ List.take_left' (by rw [hB]; omega)
+  · have h1 : l.drop (2 * w) = [] := List.drop_of_length_le (⋄)
+    Ξ h1, mpass_nil, List.append_nil, List.take_of_length_le (by rw [hB]; omega)
 
 /-! ## Sorted blocks -/
 
@@ -278,7 +280,7 @@ theorem merge_step_left {out a b xs ys : List α} {x : α}
     (h : out ++ List.merge (x :: xs) ys le = List.merge a b le)
     (hxy : ∀ y ys', ys = y :: ys' → le x y) :
     (out ++ [x]) ++ List.merge xs ys le = List.merge a b le := by
-  rw [← h]
+  Ξ ← h
   cases ys with
   | nil => simp
   | cons y ys' => rw [List.cons_merge_cons_pos _ _ _ (hxy y ys' rfl)]; simp
@@ -288,7 +290,7 @@ theorem merge_step_right {out a b xs ys : List α} {y : α}
     (h : out ++ List.merge xs (y :: ys) le = List.merge a b le)
     (hxy : ∀ x xs', xs = x :: xs' → ¬ le x y) :
     (out ++ [y]) ++ List.merge xs ys le = List.merge a b le := by
-  rw [← h]
+  Ξ ← h
   cases xs with
   | nil => simp
   | cons x xs' => rw [List.cons_merge_cons_neg _ _ _ (hxy x xs' rfl)]; simp

@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterPassMath
 
 /-!
@@ -63,25 +67,25 @@ theorem sepMem_apply (m0 : ℕ → ℕ) (bTMP bPOS bDF μ lo j x : ℕ) :
         · exact Or.inl ⟨i, a, hi, c, d⟩
         · subst hi; exact Or.inr ⟨c, d⟩
       · rintro (⟨i, a, b, c, d⟩ | ⟨c, d⟩)
-        · exact ⟨i, a, by omega, c, d⟩
-        · exact ⟨lo + j, by omega, by omega, c, d⟩
-    simp only [sepMem]
+        · exact ⟨i, a, ⋄, c, d⟩
+        · exact ⟨lo + j, ⋄, ⋄, c, d⟩
+    ϴ sepMem
     by_cases h1 : m0 (bDF + m0 (bTMP + (lo + j))) = 1
-    · rw [ite_eq_left h1, Machine.upd_apply]
+    · Ξ ite_eq_left h1, Machine.upd_apply
       by_cases hx : x = bPOS + m0 (bTMP + (lo + j))
-      · rw [ite_eq_left hx, ite_eq_left (hstep.mpr (Or.inr ⟨h1, hx⟩))]
-      · rw [ite_eq_right hx, ih]
+      · Ξ ite_eq_left hx, ite_eq_left (hstep.mpr (Or.inr ⟨h1, hx⟩))
+      · Ξ ite_eq_right hx, ih
         by_cases hex : ∃ i, lo ≤ i ∧ i < lo + j ∧ m0 (bDF + m0 (bTMP + i)) = 1 ∧
             x = bPOS + m0 (bTMP + i)
-        · rw [ite_eq_left hex, ite_eq_left (hstep.mpr (Or.inl hex))]
+        · Ξ ite_eq_left hex, ite_eq_left (hstep.mpr (Or.inl hex))
         · rw [ite_eq_right hex, ite_eq_right (fun h => by
             rcases hstep.mp h with h | h
             · exact hex h
             · exact hx h.2)]
-    · rw [ite_eq_right h1, ih]
+    · Ξ ite_eq_right h1, ih
       by_cases hex : ∃ i, lo ≤ i ∧ i < lo + j ∧ m0 (bDF + m0 (bTMP + i)) = 1 ∧
           x = bPOS + m0 (bTMP + i)
-      · rw [ite_eq_left hex, ite_eq_left (hstep.mpr (Or.inl hex))]
+      · Ξ ite_eq_left hex, ite_eq_left (hstep.mpr (Or.inl hex))
       · rw [ite_eq_right hex, ite_eq_right (fun h => by
           rcases hstep.mp h with h | h
           · exact hex h
@@ -114,7 +118,7 @@ theorem sepStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
       c2.output = c.output ∧ lo ≤ i)
     hi 13 (fun i c2 h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun i c2 hih ⟨hw2, hi2, hn2, hm2, hr2, hrr2, hrm2, ho2, hlo2⟩ => by
-      have r : ∀ x, ¬ SepRG x → c2.nreg x = c.nreg x := hr2
+      have r := hr2
       have rT := (r 130650 (by unfold SepRG; omega)).trans hT
       have rP := (r 130652 (by unfold SepRG; omega)).trans hP
       have rD := (r 130653 (by unfold SepRG; omega)).trans hD
@@ -142,7 +146,7 @@ theorem sepStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
         refine ⟨rfl, ‹_›, by config_simp; simp only [rT, hi2, mT], by
           config_simp; simp only [rT, rD, hi2, mT, mD], fun x h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
         simp only [Machine.upd_apply]; split_ifs <;> first | omega
-      have r3 : ∀ x, x ≠ 130677 → x ≠ 130678 → x ≠ 130679 → c3.nreg x = c2.nreg x := h3r
+      have r3 := h3r
       have h3i : c3.nreg 130676 = i := (r3 _ (by omega) (by omega) (by omega)).trans hi2
       have h31 : c3.nreg 130001 = 1 := (r3 _ (by omega) (by omega) (by omega)).trans r1
       have h3P : c3.nreg 130652 = bPOS := (r3 _ (by omega) (by omega) (by omega)).trans rP

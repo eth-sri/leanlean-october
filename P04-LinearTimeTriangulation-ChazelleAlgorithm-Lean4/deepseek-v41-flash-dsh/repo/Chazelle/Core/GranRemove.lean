@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranArcs
 
 /-!
@@ -90,7 +92,7 @@ theorem split_sdiff_nonempty (hc : c ∈ S) (hM : WalkAx M)
   · by_contra he
     rw [not_nonempty_iff_eq_empty] at he
     have hD : regionsIn M.D ∅ = {M.D} := Chazelle.Chain.regionsIn_empty hM.preconn hM.nonempty
-    have hP : P ∈ regionsIn M.D (S \ {c}) := hs.mem
+    have hP := hs.mem
     have hX'' : X ∈ regionsIn M.D (S \ {c}) := hX'
     have e1 : X = M.D := by
       rw [he, hD] at hX''; exact hX''
@@ -189,7 +191,7 @@ touch. -/
 theorem weight_other (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc : c ∈ S)
     (hs : Merge.IsSplit M.D (S \ {c}) c P R₁ R₂) {X : Set Point} (hX : X ∈ M.regions S)
     (h1 : X ≠ R₁) (h2 : X ≠ R₂) : M.weight (S \ {c}) X = M.weight S X := by
-  rw [weight_eq, weight_eq]
+  Ξ weight_eq, weight_eq
   congr 1
   unfold arcWts
   congr 1

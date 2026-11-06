@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIface
 public import Chazelle.Core.SweepRamStage0
 
@@ -86,8 +88,8 @@ theorem st0S_of_st0 {P : Polygon} {c₀ c : Config} {H : Host} {J : Merge.Juncti
   simp only [h7, sideChain, ↓reduceIte, Nat.sub_zero, one_ne_zero, Nat.add_zero] at *
   refine ⟨h90, h91, h92, h93, hJ, hwf, d20, w20, d21, w21, ?_, ?_, fun k hk => ?_,
     fun k hk => ?_, h33, h34, h35, d30, w30, d31, w31⟩
-  · rw [h23, hlo 3 (by omega)]
-  · rw [h24, hlo 4 (by omega)]
+  · rw [h23, hlo 3 (⋄)]
+  · rw [h24, hlo 4 (⋄)]
   · rw [h40 k hk]; simp [cstLb]
   · rw [h45 k hk]; simp [cstQ]
 

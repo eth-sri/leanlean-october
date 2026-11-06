@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseDegCover
 
 /-!
@@ -99,13 +101,13 @@ theorem jend (_hP : J.P.Simple) {C' C'' : Chain} (hR : C'.radius = C''.radius)
 theorem jend_left (hP : J.P.Simple) {S₂ : Set (Set Point)} (hj : S₂ ⊆ Merge.augChords J.right) :
     ∀ c ∈ S₂, ∀ q : Point, (q = Merge.lend c ∨ q = Merge.rend c) → q ∈ J.left.set →
       q = J.shared :=
-  jend J hP (C' := J.left) (C'' := J.right) rfl (by rw [J.left_inter_right hP]) hj
+  jend J hP (C' := J.left) (C'' := J.right) rfl (Ρ J.left_inter_right hP) hj
 
 theorem jend_right (hP : J.P.Simple) {S₁ : Set (Set Point)} (hj : S₁ ⊆ Merge.augChords J.left) :
     ∀ c ∈ S₁, ∀ q : Point, (q = Merge.lend c ∨ q = Merge.rend c) → q ∈ J.right.set →
       q = J.shared :=
   jend J hP (C' := J.right) (C'' := J.left) rfl
-    (by rw [Set.inter_comm, J.left_inter_right hP]) hj
+    (Ρ Set.inter_comm, J.left_inter_right hP) hj
 
 
 /-! ## The exceptional exit chords -/
@@ -147,7 +149,7 @@ theorem nc_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainMode
   have hM : WalkAx M := walkAx_chainModel hP
   have hn := cm_n J.whole
   set P0 : Finset ℕ := Finset.range 6 ∪ {2 * J.whole.m + 6} with hP0
-  have hP0c : P0.card ≤ 7 := (Finset.card_union_le _ _).trans (by simp)
+  have hP0c : P0.card ≤ 7 := (Finset.card_union_le _ _).trans (✓)
   set X : ℕ → Set (Set Point) := fun p =>
     {f | f ∈ exits M F R ∧ ∃ t : ℝ, SideAttach M.W f p t} with hX
   have hXp : ∀ p, (X p).ncard ≤ 6 := by
@@ -157,33 +159,33 @@ theorem nc_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainMode
     have hTfin : T.Finite := by
       refine (Set.Finite.image (fun x : ℝ => x - (p : ℝ)) (hM.finite_cuts hFA hfin)).subset ?_
       rintro t ⟨-, c, hc, hA⟩
-      exact ⟨p + t, ⟨c, hc.1, p, t, hA, rfl⟩, by ring⟩
+      exact ⟨p + t, ⟨c, hc.1, p, t, hA, rfl⟩, ⋆⟩
     have hsub : X p ⊆ ⋃ t ∈ insert 0 T, {f | f ∈ F ∧ SideAttach M.W f p t} := by
       rintro f ⟨hf, t, hA⟩
-      simp only [Set.mem_iUnion]
+      ϴ Set.mem_iUnion
       rcases hA.2.1.lt_or_eq with h | h
       · exact ⟨t, Or.inr ⟨h, f, hf, hA⟩, hf.1, hA⟩
       · exact ⟨t, Or.inl h.symm, hf.1, hA⟩
     calc (X p).ncard ≤ (⋃ t ∈ insert 0 T, {f | f ∈ F ∧ SideAttach M.W f p t}).ncard :=
           Set.ncard_le_ncard hsub (hfin.subset (by
-            intro f hf; simp only [Set.mem_iUnion] at hf; obtain ⟨t, -, hf, -⟩ := hf; exact hf))
+            intro f hf; ϴ' Set.mem_iUnion at hf; obtain ⟨t, -, hf, -⟩ := hf; exact hf))
       _ ≤ 2 * (insert 0 T).ncard :=
           ncard_biUnion_le_mul (hTfin.insert 0) _ fun t _ => ncard_at_le hM hFA hfin p t
       _ ≤ 6 := by have := Set.ncard_insert_le (0 : ℝ) T; omega
   have hsub : {f | f ∈ exits M F R ∧ ∃ (p : ℕ) (t : ℝ), SideAttach M.W f p t ∧ ¬ M.counted p} ⊆
       ⋃ p ∈ (P0 : Set ℕ), X p := by
     rintro f ⟨hf, p, t, hA, hc⟩
-    simp only [Set.mem_iUnion]
+    ϴ Set.mem_iUnion
     refine ⟨p, ?_, hf, t, hA⟩
     have hp := hA.1
-    rw [hn] at hp
+    Ξ' hn at hp
     have : ¬ (6 ≤ p ∧ p < 2 * J.whole.m + 6) := hc
     simp only [hP0, Finset.coe_union, Finset.coe_range, Finset.coe_singleton, Set.mem_union,
       Set.mem_Iio, Set.mem_singleton_iff]
     omega
   calc _ ≤ (⋃ p ∈ (P0 : Set ℕ), X p).ncard :=
         Set.ncard_le_ncard hsub (hfin.subset (by
-          intro f hf; simp only [Set.mem_iUnion] at hf; obtain ⟨p, -, hf, -⟩ := hf; exact hf.1))
+          intro f hf; ϴ' Set.mem_iUnion at hf; obtain ⟨p, -, hf, -⟩ := hf; exact hf.1))
     _ ≤ 6 * (P0 : Set ℕ).ncard := ncard_biUnion_le_mul P0.finite_toSet _ fun p _ => hXp p
     _ ≤ 42 := by rw [Set.ncard_coe_finset]; omega
 
@@ -192,12 +194,12 @@ theorem glue_thr {f : Set Point}
     (hf : f ∈ glueChords J ∨ f ∈ J.sharedChords) : Thr J f ∨ f ∈ capChords J := by
   rcases hf with (⟨k, hk, σ, -, -, rfl⟩ | hcap) | ⟨σ, -, -, rfl⟩
   · left
-    simp only [topIdxs, Finset.mem_insert, Finset.mem_singleton] at hk
+    ϴ' topIdxs, Finset.mem_insert, Finset.mem_singleton at hk
     have hmem : J.whole.vertex k ∈ J.whole.chordSet k σ := Geometry.left_mem_segment _ _
     rcases hk with rfl | rfl
     · right; left; exact hmem
     · right; right
-      rw [Merge.Junction.whole_vertex_add] at hmem
+      Ξ' Merge.Junction.whole_vertex_add at hmem
       exact hmem
   · exact Or.inr hcap
   · left; left
@@ -244,21 +246,21 @@ theorem four_pieces (hP : J.P.Simple) :
   obtain ⟨gA, gA', LA, gB, gB', LB, hA, hB, hsA, hsB, hcovL⟩ :=
     side_two_pieces J hP (C' := J.left) rfl (J₀ := J.m₁ + 2 * J.m₂) (J₀' := J.m₁)
       (ℓ := 2 * J.m₁) (fun e he => tourV_left J he)
-      (by rw [tourV_left J (by omega), tourV_left_zero]; rfl) (by simp) (by rw [hwm]; omega)
+      (by rw [tourV_left J (⋄), tourV_left_zero]; rfl) (✓) (by rw [hwm]; omega)
       (left_box_eq J)
   obtain ⟨gC, gC', LC, gD, gD', LD, hC, hD, hsC, hsD, hcovR⟩ :=
     side_two_pieces J hP (C' := J.right) rfl (J₀ := J.m₁) (J₀' := 0)
       (ℓ := 2 * J.m₂) (fun e he => tourV_right J he)
-      (by rw [tourV_right J (by omega), tourV_right_zero]; rfl) (by simp) (by rw [hwm]; omega)
+      (by rw [tourV_right J (⋄), tourV_right_zero]; rfl) (✓) (by rw [hwm]; omega)
       (right_box_eq J)
   refine ⟨gA, gA', LA, gB, gB', LB, gC, gC', LC, gD, gD', LD, hA, hB, hC, hD, hsA, hsB, hsC, hsD,
     fun p hp hc => ?_⟩
   obtain ⟨hc1, hc2⟩ : 6 ≤ p ∧ p < 2 * J.whole.m + 6 := hc
-  obtain ⟨i, rfl⟩ : ∃ i, p = 6 + i := ⟨p - 6, by omega⟩
+  obtain ⟨i, rfl⟩ : ∃ i, p = 6 + i := ⟨p - 6, ⋄⟩
   have hτlt := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
-  rw [hwm] at hτlt
+  Ξ' hwm at hτlt
   have hrel := tpos_rel J
-  rw [hwm] at hrel
+  Ξ' hwm at hrel
   rcases cover_arith h1 h2 hτlt hrel (show i < 2 * (J.m₁ + J.m₂) by omega) with hin | hin
   · rcases hcovL _ hp (by rw [hn, hwm]; exact hin) with h | h
     · exact Or.inl h
@@ -284,7 +286,7 @@ theorem in_piece (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
     f ∈ TypeI J C' Si S' R g g' L ∨ f ∈ CrossX (chainModel J.whole) S' R g L := by
   have hpd : (g + dOf (chainModel J.whole).W.n g p) % (chainModel J.whole).W.n = p :=
     add_dOf hpc.1 hA.1
-  rw [← hpd] at hA hadj
+  Ξ' ← hpd at hA hadj
   by_cases h0 : 0 < (dOf (chainModel J.whole).W.n g p : ℝ) + t
   · exact classify J hP hS hpc hjend hjnd hf hpar hcnt hsh hdp hA.2.1 hA.2.2.1 h0 hA hadj
   · exfalso
@@ -292,11 +294,11 @@ theorem in_piece (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
       have := (Nat.cast_nonneg (dOf (chainModel J.whole).W.n g p) : (0 : ℝ) ≤ _); linarith)
       hA.2.1
     have hd : dOf (chainModel J.whole).W.n g p = 0 := by
-      have : (dOf (chainModel J.whole).W.n g p : ℝ) ≤ 0 := by linarith
+      have : (dOf (chainModel J.whole).W.n g p : ℝ) ≤ 0 := ⟡
       exact_mod_cast le_antisymm this (Nat.cast_nonneg _)
-    rw [hd, ht, add_zero, Nat.mod_eq_of_lt hpc.1] at hA
+    Ξ' hd, ht, add_zero, Nat.mod_eq_of_lt hpc.1 at hA
     have hmem := hA.2.2.2.1
-    rw [Chazelle.Chain.sidePt_zero] at hmem
+    Ξ' Chazelle.Chain.sidePt_zero at hmem
     rcases hstart with h | h
     · exact hsh (h ▸ hmem)
     · exact htop (h ▸ hmem)
@@ -470,7 +472,7 @@ theorem fusionDegSpec : FusionDegSpec := by
   have hsubn := Set.ncard_le_ncard hsub hfin'
   have hDA : D * (adjExits M F R).ncard ≤ D * (16 * D + 65) := Nat.mul_le_mul_left D hA
   show (exits M F R).ncard ≤ 7 + 4 * D * (16 * D + 65)
-  rw [show 7 + 4 * D * (16 * D + 65) = 7 + 4 * (D * (16 * D + 65)) by ring]
+  Ξ show 7 + 4 * D * (16 * D + 65) = 7 + 4 * (D * (16 * D + 65)) by ring
   generalize D * (16 * D + 65) = Y at hDA ⊢
   generalize D * (adjExits M F R).ncard = Z at hDA h₁ h₂
   omega

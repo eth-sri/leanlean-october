@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvLoopStartF
 
 /-!
@@ -32,14 +34,14 @@ theorem dq_end (J : Merge.Junction) :
     split_ifs <;> omega
   unfold dq
   split_ifs with h
-  · have : rL2 J = 0 := by omega
+  · have : rL2 J = 0 := ⋄
     rw [this, h20 this]; omega
   · omega
 
 theorem vEnd_eq (J : Merge.Junction) :
     vEnd J = (6 + tpos J.right 0 + rL1 J + rL2 J + rδ J) % (chainModel J.right).W.n := by
   unfold vEnd
-  rw [dq_end]
+  Ξ dq_end
   congr 1
   ring
 
@@ -77,7 +79,7 @@ theorem corr_bounds (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) :
   have : J.right.m ≤ J.whole.m := by show J.m₂ ≤ J.m₁ + J.m₂; omega
   omega
 
-theorem iscrT : IScr zT := iscr_sw (by simp [zT, sw]) (by simp [zT, sw])
+theorem iscrT : IScr zT := iscr_sw (⊚ zT, sw) (⊚ zT, sw)
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 20000 in
@@ -98,49 +100,49 @@ theorem stLab_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   refine IRS.ite (K := fposK 3 (c₀.nreg TLR) + 2) (fun h => ?_) (fun h => ?_)
   · have h0 : c.nreg aF = 0 := by rw [hK₀.2.1] at h; omega
     have hok : okB W c.nmem vEndL c.nreg := by
-      simp only [vEndL, okB, okI, regI, upd, zT, sw]
-      simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
+      ϴ vEndL, okB, okI, regI, upd, zT, sw
+      ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
       have e1 : c.nreg 240041 = 6 + tpos J.right 0 := g1
       have e2 : c.nreg 240042 = rL1 J := g2
       have e3 : c.nreg 240043 = rL2 J := g3
       have e4 : c.nreg 240044 = rδ J := g4
-      rw [e1, e2, e3, e4]
-      exact ⟨⟨iscrT, by omega⟩, ⟨iscrT, by omega⟩, ⟨iscrT, by omega⟩, trivial⟩
+      Ξ e1, e2, e3, e4
+      exact ⟨⟨iscrT, ⋄⟩, ⟨iscrT, ⋄⟩, ⟨iscrT, ⋄⟩, trivial⟩
     have hv : regB c.nmem vEndL c.nreg zT = 6 + tpos J.right 0 + rL1 J + rL2 J + rδ J := by
-      simp only [vEndL, regB, regI, upd, zT, sw]
-      simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
+      ϴ vEndL, regB, regI, upd, zT, sw
+      ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
       have e1 : c.nreg 240041 = 6 + tpos J.right 0 := g1
       have e2 : c.nreg 240042 = rL1 J := g2
       have e3 : c.nreg 240043 = rL2 J := g3
       have e4 : c.nreg 240044 = rδ J := g4
-      rw [e1, e2, e3, e4]
+      Ξ e1, e2, e3, e4
     have hl : ∀ q, q ≠ zT → regB c.nmem vEndL c.nreg q = c.nreg q := fun q hq =>
       regB_other _ _ _ (fun i hi => by
-        simp only [vEndL, List.mem_cons, List.not_mem_nil, or_false] at hi
+        ϴ' vEndL, List.mem_cons, List.not_mem_nil, or_false at hi
         rcases hi with rfl | rfl | rfl <;> exact fun h => hq h.symm)
-    refine IRS.seq (K₁ := fposK 3 (c₀.nreg TLR)) (K₂ := 2) (fpos_irs E hI hok hv hl (by omega)
-      (le_refl _ |>.trans (by norm_num)) (by simp [vEndL]; omega)) ?_
+    refine IRS.seq (K₁ := fposK 3 (c₀.nreg TLR)) (K₂ := 2) (fpos_irs E hI hok hv hl (⋄)
+      (le_refl _ |>.trans (⊛)) (by simp [vEndL]; omega)) ?_
     rintro c₁ hI₁ hA₁ - ⟨r1, hb1, -, k1, A1, m1⟩
     have hb1' := hb1 rfl
-    rw [← vEnd_eq] at hb1'
-    refine (IRS.block [.copyN kL fR, .constN kN 1] hI₁ ⟨iscr_sw (by simp [kL, sw])
-      (by simp [kL, sw]), ⟨iscr_sw (by simp [kN, sw]) (by simp [kN, sw]),
-        by have := E.hWh; unfold hostWords at this; omega⟩, trivial⟩).mono (by simp) ?_
+    Ξ' ← vEnd_eq at hb1'
+    refine (IRS.block [.copyN kL fR, .constN kN 1] hI₁ ⟨iscr_sw (⊚ kL, sw)
+      (⊚ kL, sw), ⟨iscr_sw (⊚ kN, sw) (⊚ kN, sw),
+        by have := E.hWh; unfold hostWords at this; omega⟩, trivial⟩).mono (✓) ?_
     rintro c' rfl
     have vL : regB c₁.nmem [.copyN kL fR, .constN kN 1] c₁.nreg kL = c₁.nreg fR := by
-      simp [regB, regI, upd, kL, kN, fR, sw]
+      Θ regB, regI, upd, kL, kN, fR, sw
     have vN : regB c₁.nmem [.copyN kL fR, .constN kN 1] c₁.nreg kN = 1 := by
-      simp [regB, regI, upd, kN]
+      Θ regB, regI, upd, kN
     have vo : ∀ q, q ≠ kL → q ≠ kN → regB c₁.nmem [.copyN kL fR, .constN kN 1] c₁.nreg q =
-        c₁.nreg q := fun q h1 h2 => by simp [regB, regI, upd_other _ _ _ h1, upd_other _ _ _ h2]
-    refine ⟨fun h1 => by omega, fun _ => ⟨vN, by show regB _ _ _ kL < _; rw [vL]; exact r1,
+        c₁.nreg q := fun q h1 h2 => ⊚ regB, regI, upd_other _ _ _ h1, upd_other _ _ _ h2
+    refine ⟨fun h1 => ⋄, fun _ => ⟨vN, by show regB _ _ _ kL < _; rw [vL]; exact r1,
       by show BeforeFaces _ _ _ (regOf _ _ _ (regB _ _ _ kL)); rw [vL]; exact hb1'⟩,
       fun r hr hfp hlb hra => ?_, ?_, fun a ha => m1 a ha⟩
     · show regB _ _ _ r = _
-      rw [vo r (fun h => hlb (Or.inr (by subst h; omega))) (fun h => hlb (Or.inl h))]
+      Ξ vo r (fun h => hlb (Or.inr (by subst h; omega))) (fun h => hlb (Or.inl h))
       exact k1 r hr hfp hra
     · show c.nreg ALLOC ≤ regB _ _ _ ALLOC
-      rw [vo ALLOC (by simp [ALLOC, kL, sw]) (by simp [ALLOC, kN, sw])]; exact A1
+      rw [vo ALLOC (⊚ ALLOC, kL, sw) (⊚ ALLOC, kN, sw)]; exact A1
   · exact IRS.skip hI ⟨fun _ _ _ => rfl, fun h' => absurd (by rw [hK₀.2.1] at h; omega) h',
       fun _ _ _ _ _ => rfl, le_rfl, fun _ _ => rfl⟩
 

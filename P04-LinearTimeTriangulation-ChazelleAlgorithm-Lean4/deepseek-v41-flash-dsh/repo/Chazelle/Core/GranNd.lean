@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranPzExec
 
 /-!
@@ -69,7 +71,7 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   set SB := c.nmem (B + 6) with hSBdef
   set x : WPos := ⟨c.nreg 50002, c.nreg 50003⟩ with hxdef
   set A₀ := c.nreg ALLOC with hA₀
-  have hA1 : c.nmem (B + 1) = A := hN.2.1
+  have hA1 := hN.2.1
   have hsl : N.seq.length = A := seq_length hNF
   have hseq : ∀ i, i < A → c.nmem (SB + i) = N.seq.getD i 0 := fun i hi =>
     hN.2.2.2.2.2.2.2.2.1 i (by omega)
@@ -90,7 +92,7 @@ theorem pos_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have b2 : c₁.nreg 50002 = c.nreg 50002 := f₁.1 _ (by decide)
   have b3 : c₁.nreg 50003 = c.nreg 50003 := f₁.1 _ (by decide)
   have al₁ : c₁.nreg ALLOC = A₀ := f₁.1 _ (by decide)
-  have m₁ : c₁.nmem = c.nmem := f₁.2.2.1
+  have m₁ := f₁.2.2.1
   -- 2. the setup
   obtain ⟨c₂, k₂, e₂, hk₂, q⟩ : ∃ c₂ k₂, Exec P W locSetup c₁ c₂ k₂ ∧ k₂ = 14 ∧
       (c₂.nreg 10500 = c.nreg 50002 ∧ c₂.nreg 10501 = c.nreg 50003 ∧

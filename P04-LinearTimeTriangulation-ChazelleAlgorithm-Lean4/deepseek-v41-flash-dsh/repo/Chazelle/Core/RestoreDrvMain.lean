@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreDrvPos
 
 /-!
@@ -72,22 +74,22 @@ theorem rounds_exec {E : DrvEnv} (hE : DrvGood E) {c : Config} (hI : OutI E 0 c)
     (fun c => ∃ t, OutI E t c) (fun c => E.d0 + 1 - c.nreg 80010) E.Br
     (fun c ⟨_, h⟩ => h.wb)
     (fun c ⟨t, I⟩ ht => by
-      rw [I.r10, I.r11] at ht
+      Ξ' I.r10, I.r11 at ht
       obtain ⟨c', k, e, I', RF', hk⟩ := round_step hE I ht
       exact ⟨c', k, e, ⟨t + 1, I'⟩, RF', hk, by rw [I.r10, I'.r10]; omega⟩) ⟨0, hI⟩
   have ht : t = E.d0 + 1 := by
-    rw [I'.r10, I'.r11] at hx; have := I'.t_le; omega
+    Ξ' I'.r10, I'.r11 at hx; have := I'.t_le; omega
   subst ht
   refine ⟨c', k, e, I', RFl, ?_⟩
-  rw [hI.r10] at hk
+  Ξ' hI.r10 at hk
   simpa using hk
 
 /-! ## Arithmetic of the cost -/
 
 theorem clog_two_pow_mul (j x : ℕ) : Nat.clog 2 (2 ^ j * x) ≤ j + Nat.clog 2 x := by
   apply Nat.clog_le_of_le_pow
-  rw [pow_add]
-  exact Nat.mul_le_mul_left _ (Nat.le_pow_clog (by norm_num) x)
+  Ξ pow_add
+  exact Nat.mul_le_mul_left _ (Nat.le_pow_clog (⊛) x)
 
 /-- The constant of the round bound. -/
 def C1 (κf : ℕ → ℕ) (κB d0 D : ℕ) : ℕ :=
@@ -108,14 +110,14 @@ theorem Br_le (E : DrvEnv) (hF : 1 ≤ E.F E.γ) (hG : 1 ≤ E.G E.γ) :
   set A := E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog 2 E.γ + Nat.clog 2 K1 + 1) with hA
   set A0 := E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog 2 E.γ + 1) with hA0
   set L := Nat.clog 2 K1 with hL
-  have hFG : 1 ≤ E.F E.γ * E.G E.γ := Nat.one_le_iff_ne_zero.2 (by positivity)
+  have hFG : 1 ≤ E.F E.γ * E.G E.γ := Nat.one_le_iff_ne_zero.2 (⟢)
   have hA1 : 1 ≤ A := by
     rw [hA]; nlinarith
   have hA0A : A0 ≤ A := by
-    rw [hA, hA0]; exact Nat.mul_le_mul_left _ (by omega)
+    rw [hA, hA0]; exact Nat.mul_le_mul_left _ (⋄)
   have hLA : L + 1 ≤ A := by
-    rw [hA]
-    calc L + 1 ≤ 1 * (E.Hc E.γ + Nat.clog 2 E.γ + L + 1) := by omega
+    Ξ hA
+    calc L + 1 ≤ 1 * (E.Hc E.γ + Nat.clog 2 E.γ + L + 1) := ⋄
       _ ≤ E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog 2 E.γ + L + 1) := Nat.mul_le_mul_right _ hFG
   have hKc : E.Kc = T * K1 := rfl
   have hBf : E.Bf = E.κf (E.d0 + E.D) * A0 + 20 := by
@@ -125,22 +127,22 @@ theorem Br_le (E : DrvEnv) (hF : 1 ≤ E.F E.γ) (hG : 1 ≤ E.G E.γ) :
     rw [this]; exact clog_two_pow_mul _ _
   have hBr : E.Br = 40 + 21 * E.Kc + (E.Bf + 2) * E.Kc +
       E.κB * (2 * E.Kc * (Nat.clog 2 (2 * E.Kc) + 1) + 1) := rfl
-  have hK1p : 1 ≤ K1 := by omega
+  have hK1p : 1 ≤ K1 := ⋄
   have hTp : 1 ≤ T := Nat.one_le_two_pow
   -- the four terms
-  have t1 : 40 ≤ 40 * K1 * A := by nlinarith
+  have t1 : 40 ≤ 40 * K1 * A := ⊞
   have t2 : 21 * E.Kc ≤ 21 * T * K1 * A := by rw [hKc]; nlinarith
   have t3 : (E.Bf + 2) * E.Kc ≤ (E.κf (E.d0 + E.D) + 22) * T * K1 * A := by
-    rw [hBf, hKc]
-    have h1 : E.κf (E.d0 + E.D) * A0 + 22 ≤ (E.κf (E.d0 + E.D) + 22) * A := by nlinarith
+    Ξ hBf, hKc
+    have h1 : E.κf (E.d0 + E.D) * A0 + 22 ≤ (E.κf (E.d0 + E.D) + 22) * A := ⊞
     have h2 := Nat.mul_le_mul_right (T * K1) h1
     nlinarith
   have t4 : 2 * E.Kc * (Nat.clog 2 (2 * E.Kc) + 1) + 1 ≤
       (2 * T * (E.d0 + 3) + 1) * K1 * A := by
-    rw [hKc]
+    Ξ hKc
     have h1 : 2 * (T * K1) * (Nat.clog 2 (2 * (T * K1)) + 1) ≤
         2 * (T * K1) * (E.d0 + 3 + L) := Nat.mul_le_mul_left _ (by rw [← hKc]; omega)
-    have h2 : E.d0 + 3 + L ≤ (E.d0 + 3) * A := by nlinarith
+    have h2 : E.d0 + 3 + L ≤ (E.d0 + 3) * A := ⊞
     have h3 : 2 * (T * K1) * (E.d0 + 3 + L) ≤ 2 * (T * K1) * ((E.d0 + 3) * A) :=
       Nat.mul_le_mul_left _ h2
     nlinarith
@@ -150,7 +152,7 @@ theorem Br_le (E : DrvEnv) (hF : 1 ≤ E.F E.γ) (hG : 1 ≤ E.G E.γ) :
       40 * K1 * A + 21 * T * K1 * A + (E.κf (E.d0 + E.D) + 22) * T * K1 * A +
         E.κB * ((2 * T * (E.d0 + 3) + 1) * K1 * A) := by
     unfold C1; rw [← hT, ← hK1]; ring
-  rw [hC, hBr]
+  Ξ hC, hBr
   omega
 
 set_option maxHeartbeats 8000000 in

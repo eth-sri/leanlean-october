@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvOrg3
 public import Chazelle.Core.SweepIoLHit2
 
@@ -126,7 +128,7 @@ theorem nhgt_facts {M : Model} {Q : Polygon} {n : ℕ} {u : WPos} (hu : ProperPo
   obtain ⟨⟨hpp, hcase⟩, hedge, hpos, hkey, -⟩ := Restore.normOf_facts hu
   have he : (⟨u.edge, nhgt M Q u⟩ : WPos) = Restore.normOf M Q u := by
     unfold nhgt; rw [← hedge]
-  rw [he]
+  Ξ he
   have hpar : M.param Q (Restore.normOf M Q u) = M.param Q u := by
     unfold Model.key at hkey; rw [hedge] at hkey; linarith
   refine ⟨hpp, hpar, hpos, ⟨fun h => ?_, fun h => ?_⟩⟩

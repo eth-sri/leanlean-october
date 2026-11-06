@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleGraph
 public import Chazelle.Core.Facts2
 
@@ -44,7 +46,7 @@ def predP (A p : ℕ) : ℕ := if p = 0 then A - 1 else p - 1
 theorem predP_succP {A p : ℕ} (hp : p < A) : predP A (succP A p) = p := by
   unfold succP predP
   by_cases h : p + 1 < A
-  · rw [ite_eq_left h, ite_eq_right (by omega)]; omega
+  · rw [ite_eq_left h, ite_eq_right (⋄)]; omega
   · rw [ite_eq_right h, ite_eq_left rfl]; omega
 
 theorem succP_lt {A p : ℕ} (hp : p < A) : succP A p < A := by unfold succP; split_ifs <;> omega
@@ -143,7 +145,7 @@ theorem end_unique {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.length)
   obtain ⟨r, hr, hrj⟩ := NFLoc.seq_surj hN hj
   have hsr : sk M Q N r = ek M Q N p := by
     show M.key Q (N.arc (N.seq.getD r 0)).s = _
-    rw [hrj, hjs]
+    Ξ hrj, hjs
   have e1 := end_start_adj hN hGM hne hp hr hsr.symm
   have e2 := end_start_adj hN hGM hne hq hr (h ▸ hsr.symm)
   exact succP_inj hp hq (e1.symm.trans e2)
@@ -167,7 +169,7 @@ theorem candidate {t j : ℕ} (ht : t < N.arcs.length) (hj : j < N.arcs.length) 
   · rcases hloc2 (h ▸ hcte) with h' | h'
     · have := end_start_adj hN hGM hne ht hj (h.symm.trans h'.symm)
       right; right
-      rw [this, predP_succP ht]
+      Ξ this, predP_succP ht
     · exact Or.inl (end_unique hN hGM hne ht hj (h.symm.trans h'.symm))
 
 end Cand
@@ -202,14 +204,14 @@ theorem scanSet_subset (p : ℕ) : scanSet C Q N p ⊆ C.set := by
   · have hk : C.sideIdx C.sideBeta i < C.m := by
       have := C.sideIdx_le C.sideBeta (i + 1); omega
     refine ⟨_, hk, ?_⟩
-    rw [C.chainEdge_eq]
+    Ξ C.chainEdge_eq
     rwa [h] at hx
   · have hk : C.sideIdx C.sideBeta (i + 1) < C.m := by
       have := C.sideIdx_le C.sideBeta i; omega
     refine ⟨_, hk, ?_⟩
-    rw [C.chainEdge_eq, h]
+    Ξ C.chainEdge_eq, h
     obtain ⟨s, hs0, hs1, rfl⟩ := hx
-    exact ⟨1 - s, by linarith, by linarith, by ext <;> simp <;> ring⟩
+    exact ⟨1 - s, ⟡, by linarith, by ext <;> simp <;> ring⟩
 
 /-- **The scanned edges cover the chain points of an arc**: a point of the chain on the closed
 point set of the arc at spine position `p` (whose ends are proper positions) lies on a scanned
@@ -342,8 +344,8 @@ theorem arcs_le_one_of_empty {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N
   obtain ⟨U, hU⟩ := Set.ncard_eq_one.1 hcard
   by_contra hc
   push Not at hc
-  have h0 := hA.1 0 (by omega)
-  have h1 := hA.1 1 (by omega)
+  have h0 := hA.1 0 (⋄)
+  have h1 := hA.1 1 (⋄)
   have hr0 : reg (N.arc 0).reg = U := by
     have := hR.1 _ h0.1; rw [hF, hU] at this; exact this
   have hr1 : reg (N.arc 1).reg = U := by
@@ -354,7 +356,7 @@ theorem arcs_le_one_of_empty {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N
     rcases (hA.1 j hj).2.2.2.2.2.1 with ⟨hc, -⟩ | ⟨-, h, -⟩
     · obtain ⟨c, hc, -⟩ := hc; rw [hF] at hc; exact absurd hc (Set.notMem_empty _)
     · exact h
-  have := hA.2.1 0 1 (by omega) (by omega) hreg (by rw [hk 0 (by omega), hk 1 (by omega)])
+  have := hA.2.1 0 1 (⋄) (by omega) hreg (by rw [hk 0 (by omega), hk 1 (by omega)])
   omega
 
 end OracleQ

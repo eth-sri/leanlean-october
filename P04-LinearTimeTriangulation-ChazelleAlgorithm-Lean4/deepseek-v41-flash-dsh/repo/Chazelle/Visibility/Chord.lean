@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Visibility.Ray
 public import Chazelle.Existence.Convex
 public import Mathlib.Data.Set.Card
@@ -53,7 +55,7 @@ theorem DirInterior.ne_zero {P : Polygon} {i : ℕ} {σ : ℝ} (hi : i < P.n)
   rintro rfl
   obtain ⟨t, ht⟩ := h.exists
   apply ht.2
-  simp only [rayPt, zero_mul, add_zero]
+  ϴ rayPt, zero_mul, add_zero
   exact ⟨i, hi, Geometry.left_mem_segment _ _⟩
 
 /-! ### The chord -/
@@ -113,7 +115,7 @@ theorem chordEnd_ne_vtx {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {
   simp only [chordEnd_fst] at this
   have hσ := h.ne_zero hi
   have hpos := chordParam_pos hP hi h
-  have : σ * chordParam P i σ = 0 := by linarith
+  have : σ * chordParam P i σ = 0 := ⟡
   rcases mul_eq_zero.1 this with h' | h'
   · exact hσ h'
   · exact hpos.ne' h'
@@ -132,7 +134,7 @@ theorem chordSet_eq_image {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n)
   have hpos := chordParam_pos hP hi h
   ext p
   unfold chordSet Chazelle.segment
-  simp only [mem_ofPred_eq, mem_image, mem_Icc, chordEnd_fst, chordEnd_snd]
+  ϴ mem_ofPred_eq, mem_image, mem_Icc, chordEnd_fst, chordEnd_snd
   constructor
   · rintro ⟨t, ht0, ht1, rfl⟩
     refine ⟨t * chordParam P i σ, ⟨mul_nonneg ht0 hpos.le, ?_⟩, ?_⟩
@@ -150,7 +152,7 @@ theorem chordSet_eq_image {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n)
 theorem chordSet_eq_openChordSet_union {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n)
     {σ : ℝ} (h : DirInterior P i σ) :
     chordSet P i σ = openChordSet P i σ ∪ {P.vtx i, chordEnd P i σ} := by
-  rw [chordSet_eq_image hP hi h]
+  Ξ chordSet_eq_image hP hi h
   ext p
   simp only [openChordSet, mem_union, mem_image, mem_Icc, mem_Ioo, mem_insert_iff,
     mem_singleton_iff]
@@ -182,7 +184,7 @@ theorem chordSet_inter_boundary {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i 
     (h : DirInterior P i σ) :
     chordSet P i σ ∩ P.boundary = {P.vtx i, chordEnd P i σ} := by
   ext p
-  simp only [mem_inter_iff, mem_insert_iff, mem_singleton_iff]
+  ϴ mem_inter_iff, mem_insert_iff, mem_singleton_iff
   constructor
   · rintro ⟨hp, hb⟩
     rcases mem_chordSet_cases hP hi h hp with h1 | h1 | h1
@@ -250,14 +252,14 @@ theorem hchord_inter {P : Polygon} {y a b y' a' b' : ℝ} (h : IsHChord P y a b)
       · exact h1
       · exfalso
         apply hint.2
-        rw [show p = (a', y) from Prod.ext h1.symm hpy]
+        Ξ show p = (a', y) from Prod.ext h1.symm hpy
         exact h'.left_mem
     have hb' : p.1 < b' := by
       rcases hpb'.lt_or_eq with h1 | h1
       · exact h1
       · exfalso
         apply hint.2
-        rw [show p = (b', y) from Prod.ext h1 hpy]
+        Ξ show p = (b', y) from Prod.ext h1 hpy
         exact h'.right_mem
     left
     refine ⟨rfl, ?_, ?_⟩
@@ -283,7 +285,7 @@ theorem segment_horizontal_eq_hseg {a b : Point} (hab : a.2 = b.2) :
     Chazelle.segment a b = hseg a.2 (min a.1 b.1) (max a.1 b.1) := by
   ext p
   unfold hseg Chazelle.segment
-  simp only [mem_ofPred_eq]
+  ϴ mem_ofPred_eq
   constructor
   · rintro ⟨t, ht0, ht1, rfl⟩
     simp only
@@ -306,20 +308,20 @@ theorem segment_horizontal_eq_hseg {a b : Point} (hab : a.2 = b.2) :
     · refine ⟨(p.1 - a.1) / (b.1 - a.1), ?_, ?_, ?_⟩
       · rcases lt_or_gt_of_ne heq with h | h
         · rw [min_eq_left h.le] at h1
-          exact div_nonneg (by linarith) (by linarith)
+          exact div_nonneg (⟡) (by linarith)
         · rw [max_eq_left h.le] at h2
-          exact div_nonneg_of_nonpos (by linarith) (by linarith)
+          exact div_nonneg_of_nonpos (⟡) (by linarith)
       · rcases lt_or_gt_of_ne heq with h | h
         · rw [max_eq_right h.le] at h2
-          rw [div_le_one (by linarith)]; linarith
+          rw [div_le_one (⟡)]; linarith
         · rw [min_eq_right h.le] at h1
-          rw [div_le_one_of_neg (by linarith)]; linarith
-      · have hne : b.1 - a.1 ≠ 0 := fun h => heq (by linarith)
+          rw [div_le_one_of_neg (⟡)]; linarith
+      · have hne : b.1 - a.1 ≠ 0 := fun h => heq (⟡)
         rw [Geometry.point_ext_iff]; simp only
         constructor
         · field_simp
           ring
-        · rw [hy, ← hab, sub_self, mul_zero, add_zero]
+        · Ξ hy, ← hab, sub_self, mul_zero, add_zero
 
 /-- The chord of a vertex, as a horizontal segment between its two abscissae. -/
 theorem chordSet_eq_hseg (P : Polygon) (i : ℕ) (σ : ℝ) :
@@ -338,16 +340,16 @@ theorem isHChord_chord {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {�
   have hvb : P.vtx i ∈ P.boundary := ⟨i, hi, Geometry.left_mem_segment _ _⟩
   rcases hσ with rfl | rfl
   · have hlt : (P.vtx i).1 < (chordEnd P i 1).1 := by simp only [chordEnd_fst, one_mul]; linarith
-    rw [min_eq_left hlt.le, max_eq_right hlt.le]
+    Ξ min_eq_left hlt.le, max_eq_right hlt.le
     refine ⟨hlt, hv ▸ hvb, he ▸ hend, fun x hx1 hx2 => ?_⟩
-    have := hint (x - (P.vtx i).1) (by linarith) (by simp only [chordEnd_fst, one_mul] at hx2; linarith)
+    have := hint (x - (P.vtx i).1) (⟡) (by simp only [chordEnd_fst, one_mul] at hx2; linarith)
     simp only [rayPt, one_mul, add_sub_cancel] at this
     exact this
   · have hlt : (chordEnd P i (-1)).1 < (P.vtx i).1 := by
       simp only [chordEnd_fst, neg_one_mul]; linarith
-    rw [min_eq_right hlt.le, max_eq_left hlt.le]
+    Ξ min_eq_right hlt.le, max_eq_left hlt.le
     refine ⟨hlt, he ▸ hend, hv ▸ hvb, fun x hx1 hx2 => ?_⟩
-    have := hint ((P.vtx i).1 - x) (by linarith)
+    have := hint ((P.vtx i).1 - x) (⟡)
       (by simp only [chordEnd_fst, neg_one_mul] at hx1; linarith)
     simp only [rayPt, neg_one_mul, neg_sub, add_sub_cancel] at this
     exact this
@@ -358,9 +360,9 @@ theorem hseg_endpoints_eq (P : Polygon) (i : ℕ) (σ : ℝ) :
         ((max (P.vtx i).1 (chordEnd P i σ).1), (P.vtx i).2)} : Set Point) =
       {P.vtx i, chordEnd P i σ} := by
   rcases le_total (P.vtx i).1 (chordEnd P i σ).1 with h | h
-  · rw [min_eq_left h, max_eq_right h]
+  · Ξ min_eq_left h, max_eq_right h
     rfl
-  · rw [min_eq_right h, max_eq_left h, Set.pair_comm]
+  · Ξ min_eq_right h, max_eq_left h, Set.pair_comm
     rfl
 
 /-- **Chord intersection.**  Two vertex chords (in locally interior directions) are equal as
@@ -376,10 +378,10 @@ theorem chordSet_inter {P : Polygon} (hP : P.Simple) {i j : ℕ} (hi : i < P.n) 
   rcases hchord_inter (isHChord_chord hP hi hσ hiσ) (isHChord_chord hP hj hτ hjτ) hp1 hp2 with
     ⟨hy, ha, hb⟩ | ⟨h1, h2⟩
   · left
-    rw [chordSet_eq_hseg, chordSet_eq_hseg, hy, ha, hb]
+    Ξ chordSet_eq_hseg, chordSet_eq_hseg, hy, ha, hb
   · right
-    rw [← hseg_endpoints_eq P i σ, ← hseg_endpoints_eq P j τ]
-    simp only [mem_insert_iff, mem_singleton_iff]
+    Ξ ← hseg_endpoints_eq P i σ, ← hseg_endpoints_eq P j τ
+    ϴ mem_insert_iff, mem_singleton_iff
     exact ⟨h1, h2⟩
 
 /-- **Chord disjointness.**  Two distinct vertex chords meet only in points that are endpoints
@@ -405,7 +407,7 @@ theorem chords_subset_image (P : Polygon) :
       ((↑(Finset.range P.n) : Set ℕ) ×ˢ ({1, -1} : Set ℝ)) := by
   rintro S ⟨i, σ, hi, hσ, -, rfl⟩
   refine ⟨(i, σ), ⟨by simpa using hi, ?_⟩, rfl⟩
-  simp only [mem_insert_iff, mem_singleton_iff]
+  ϴ mem_insert_iff, mem_singleton_iff
   exact hσ
 
 theorem chords_finite (P : Polygon) : (chords P).Finite :=
@@ -422,7 +424,7 @@ theorem chords_ncard_le (P : Polygon) : (chords P).ncard ≤ 2 * P.n := by
         ncard_le_ncard (chords_subset_image P) (hfin.image _)
     _ ≤ ((↑(Finset.range P.n) : Set ℕ) ×ˢ ({1, -1} : Set ℝ)).ncard := ncard_image_le hfin
     _ = 2 * P.n := by
-        rw [ncard_prod, ncard_coe_finset, Finset.card_range, ncard_pair (by norm_num), mul_comm]
+        rw [ncard_prod, ncard_coe_finset, Finset.card_range, ncard_pair (⊛), mul_comm]
 
 /-- Every chord is a closed segment with boundary endpoints and interior open part. -/
 theorem chords_spec {P : Polygon} (hP : P.Simple) {S : Set Point} (hS : S ∈ chords P) :

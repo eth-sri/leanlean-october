@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreValid
 
 /-!
@@ -46,7 +48,7 @@ theorem cut_dichotomy (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : �
       0 < sideCross ((τ, 0) : Point) (M.W.vtx ((p + M.W.n - 1) % M.W.n) - M.W.vtx p) := by
   have hne := hM.nd p hp
   obtain ⟨d, hd, -, hcD, -⟩ := attached_opposite hM hc hA hτ hav
-  have hn0 : 0 < M.W.n := by omega
+  have hn0 : 0 < M.W.n := ⋄
   have hwv : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero _ _
   set v := M.W.vtx p with hv
   set a := M.W.vtx ((p + M.W.n - 1) % M.W.n) with ha
@@ -62,7 +64,7 @@ theorem cut_dichotomy (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : �
     rintro ⟨h1, h2⟩
     simp only [sideCross, sideDot, Prod.fst_sub, Prod.snd_sub] at h1 h2
     have hb2 : b.2 = v.2 := by
-      have h1' : (b.2 - v.2) * τ = 0 := by linarith
+      have h1' : (b.2 - v.2) * τ = 0 := ⟡
       rcases mul_eq_zero.1 h1' with h | h
       · linarith
       · rcases hτ with rfl | rfl <;> norm_num at h
@@ -78,12 +80,12 @@ theorem cut_dichotomy (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : �
     have e : sidePt M.W p (s / k) = rayPt v (-τ) s := by
       unfold sidePt
       apply point_ext
-      · simp only [lerp_fst, rayPt_fst]
+      · ϴ lerp_fst, rayPt_fst
         have h3 : s / k * (b.1 - v.1) = -τ * s := by
-          rw [div_mul_eq_mul_div, div_eq_iff hk0.ne', hk]
+          Ξ div_mul_eq_mul_div, div_eq_iff hk0.ne', hk
           linear_combination (-(s * (b.1 - v.1))) * hττ
-        rw [← h3]
-      · simp only [lerp_snd, rayPt_snd]
+        Ξ ← h3
+      · ϴ lerp_snd, rayPt_snd
         rw [show (M.W.vtx ((p + 1) % M.W.n)).2 = b.2 from rfl, hb2]; ring
     rw [e]; exact hmem
   rcases hdp with ⟨-, h2, -⟩ | ⟨-, h2⟩ | ⟨-, -, h3⟩ | ⟨h1, h2, h3⟩
@@ -95,8 +97,8 @@ theorem cut_dichotomy (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : �
     · exfalso; apply hBdm
       rcases h3 with h3 | h3
       · exact absurd h4 h3
-      · rw [sideCross_neg_dir, sideDot_neg_dir, h4]
-        exact ⟨by ring, by linarith⟩
+      · Ξ sideCross_neg_dir, sideDot_neg_dir, h4
+        exact ⟨⋆, ⟡⟩
     · exact Or.inl h4
 
 /-- The ray along an admissible chord `e ∉ S` from its end meets no chord of `S` in the domain
@@ -137,7 +139,7 @@ theorem valid_complete (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point)}
   -- the ray points are in `R`
   have hrayR : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p 0) σ s ∈ R := by
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hT] with s hs hsT
-    have hs0 : (0 : ℝ) < s := hs
+    have hs0 := hs
     refine heR ⟨?_, hdom s hs0 hsT.2⟩
     rw [heq]; exact (mem_chordOf hσ hT.le).2 ⟨s, hs0.le, hsT.2.le, rfl⟩
   have same : ∀ X ∈ M.regions S, (∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p 0) σ s ∈ X) →

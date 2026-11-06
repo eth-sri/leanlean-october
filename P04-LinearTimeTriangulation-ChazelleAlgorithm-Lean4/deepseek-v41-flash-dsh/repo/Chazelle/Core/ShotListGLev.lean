@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShotListGLeaf
 
 /-!
@@ -34,11 +38,11 @@ def levCostG (G f : ℕ) : ℕ := (2 ^ (f + 1) - 1) * G
 theorem levCostG_succ (G f : ℕ) : levCostG G (f + 1) = 2 * levCostG G f + G := by
   unfold levCostG
   have : 1 ≤ 2 ^ (f + 1) := Nat.one_le_two_pow
-  rw [pow_succ]
+  Ξ pow_succ
   zify [this, show 1 ≤ 2 ^ (f + 1) * 2 by omega]
   ring
 
-theorem levCostG_zero (G : ℕ) : levCostG G 0 = G := by simp [levCostG]
+theorem levCostG_zero (G : ℕ) : levCostG G 0 = G := ⊚ levCostG
 
 /-- **The cutting recursion**: from level `ℓ` (`f + ℓ = 3`), the running minimum extends to the
 pieces `levLeaves` of the arc of level `ℓ`. -/
@@ -150,8 +154,8 @@ theorem levG_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
         subst hp; exact ⟨na, nb, ea, eb, ia, ib⟩
     obtain ⟨hcnt, hlen, hp0, hp1⟩ := pc₁
     have w₁ := e₁.wb_right
-    have z₁ : c₁.nreg (R + 30) = 0 := ctx₁.1.2.2.2.2.2.1
-    have o₁ : c₁.nreg (R + 31) = 1 := ctx₁.1.2.2.2.2.2.2.1
+    have z₁ := ctx₁.1.2.2.2.2.2.1
+    have o₁ := ctx₁.1.2.2.2.2.2.2.1
     -- the recursive call on a piece in the registers of level `ℓ + 1`
     have call : ∀ (cc : Config) (S' : Set Point) (p : WPos × WPos), p ∈ ps → WordsBounded W cc →
         ShotCtxG P W X Ok R M E cc → OriginIn cc (R + 3) o →

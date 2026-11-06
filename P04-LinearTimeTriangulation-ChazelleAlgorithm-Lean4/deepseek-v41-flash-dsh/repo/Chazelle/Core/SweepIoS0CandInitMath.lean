@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoS0CandAux
 public import Chazelle.Core.SweepIoCand1G
 public import Chazelle.Core.SweepEvShot
@@ -39,7 +41,7 @@ theorem iniLogKey (P : Polygon) (J : Merge.Junction) (N : NF) {m : ℕ → ℕ} 
         ((logOf J (Qof P) N ls).getD j (0, 0, ∅)).2.1 := by
   obtain ⟨a1, a2, -⟩ := hrec j hj
   obtain ⟨l1, l2⟩ := logOf_getD J (Qof P) N hj
-  rw [l1, l2, ← a1, ← a2]
+  Ξ l1, l2, ← a1, ← a2
   rfl
 
 /-- **The search in the log**: `lsPr` is downward closed, and an answer of the search is the
@@ -60,28 +62,28 @@ theorem search_exact {P : Polygon} {J : Merge.Junction} {N : NF} {S₂ : Set (Se
         oW J ((chainModel J.whole).key (Qof P) x)) := by
     intro j hj
     unfold lsPr
-    rw [iniLogKey P J N hrec hj, hG]
+    Ξ iniLogKey P J N hrec hj, hG
     rfl
   have hlt : ∀ a b, a < b → b < ls.length →
       oW J ((es.getD a (0, 0, ∅)).1 + (es.getD a (0, 0, ∅)).2.1) <
         oW J ((es.getD b (0, 0, ∅)).1 + (es.getD b (0, 0, ∅)).2.1) := by
     intro a b hab hb
-    have ha' : a < es.length := by omega
-    have hb' : b < es.length := by omega
-    rw [List.getD_eq_getElem _ _ ha', List.getD_eq_getElem _ _ hb']
+    have ha' : a < es.length := ⋄
+    have hb' : b < es.length := ⋄
+    Ξ List.getD_eq_getElem _ _ ha', List.getD_eq_getElem _ _ hb'
     exact List.pairwise_iff_getElem.1 hsort a b ha' hb' hab
   refine ⟨fun a b hab hb h => ?_, fun i hi he hp t h1 h2 => ?_⟩
   · rcases hab.lt_or_eq with hab | rfl
-    · rw [hpr a (by omega)]
+    · rw [hpr a (⋄)]
       rw [hpr b hb] at h
       exact lt_trans (hlt a b hab hb) h
     · exact h
   · have hki : (chainModel J.whole).key (Qof P) (logPos m AL i) =
         (chainModel J.whole).key (Qof P) x := by
       unfold Model.key
-      rw [hp]
+      Ξ hp
       show ((m (AL + 7 * i) : ℕ) : ℝ) + _ = _
-      rw [he]
+      Ξ he
     have hni : ¬ lsPr P J m AL G x i := by
       unfold lsPr
       show ¬ off _ _ ((chainModel J.whole).key (Qof P) (logPos m AL i)) < _
@@ -91,8 +93,8 @@ theorem search_exact {P : Polygon} {J : Merge.Junction} {N : NF} {S₂ : Set (Se
       rw [← iniLogKey P J N hrec hi, ← hki]; rfl
     rcases lt_trichotomy t i with h | h | h
     · exfalso
-      apply h2 t le_rfl (by omega)
-      rw [hpr t (by omega), ← hKi]
+      apply h2 t le_rfl (⋄)
+      rw [hpr t (⋄), ← hKi]
       exact hlt t i h hi
     · exact h
     · exact absurd (h1 i h) hni
@@ -131,11 +133,11 @@ def slotW (m : ℕ → ℕ) (B t s e h : ℕ) : ℕ → ℕ :=
 theorem slotW_other {m : ℕ → ℕ} {B t s e h a : ℕ} (ha : a < slotA B t s ∨ slotA B t s + 2 < a) :
     slotW m B t s e h a = m a := by
   unfold slotW
-  rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega)]
+  rw [upd_other _ _ _ (⋄), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega)]
 
 theorem slotW_flag {m : ℕ → ℕ} {B t s e h : ℕ} : slotW m B t s e h (slotA B t s) = 1 := by
   unfold slotW
-  rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_same]
+  rw [upd_other _ _ _ (⋄), upd_other _ _ _ (by omega), upd_same]
 
 /-- Two different slots do not overlap. -/
 theorem slot_sep {B i s t s' d : ℕ} (hs : s ≤ 1) (hs' : s' ≤ 1) (hd : d < 3)
@@ -158,23 +160,23 @@ theorem slotOK_store {P : Polygon} {J : Merge.Junction} {m : ℕ → ℕ} {B AL 
     have h1 : slotW m B t s e h (AL + 7 * j + 1) = m (AL + 7 * j + 1) :=
       slotW_other (Or.inl (by unfold slotA; omega))
     unfold logPt logPos
-    rw [h0, h1]
+    Ξ h0, h1
   by_cases hit : i = t ∧ s' = s
   · obtain ⟨rfl, rfl⟩ := hit
     have f0 : slotW m B i s' e h (slotA B i s') = 1 := slotW_flag
     have f1 : slotW m B i s' e h (slotA B i s' + 1) = e := by
-      unfold slotW; rw [upd_other _ _ _ (by omega), upd_same]
+      unfold slotW; rw [upd_other _ _ _ (⋄), upd_same]
     have f2 : slotW m B i s' e h (slotA B i s' + 2) = h := by
       unfold slotW; rw [upd_same]
     unfold SlotOK
-    rw [f0, f1, f2, hL i hi]
+    Ξ f0, f1, f2, hL i hi
     exact ⟨le_rfl, fun _ => hv⟩
   · have g : ∀ d, d < 3 → slotW m B t s e h (slotA B i s' + d) = m (slotA B i s' + d) :=
       fun d hd => slotW_other (slot_sep hs' hs hd hit)
     have g0 : slotW m B t s e h (slotA B i s') = m (slotA B i s') := by
-      simpa using g 0 (by norm_num)
+      simpa using g 0 (⊛)
     unfold SlotOK
-    rw [g0, g 1 (by norm_num), g 2 (by norm_num), hL i hi]
+    rw [g0, g 1 (⊛), g 2 (by norm_num), hL i hi]
     exact hok i hi s' hs'
 
 /-! ## Origin positions -/

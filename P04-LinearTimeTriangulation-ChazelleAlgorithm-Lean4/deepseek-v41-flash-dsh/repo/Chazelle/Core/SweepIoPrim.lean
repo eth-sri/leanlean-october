@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoRun
 public import Chazelle.Core.SweepPrimArr
 public import Chazelle.Core.SweepPrimAbs
@@ -34,7 +36,7 @@ open Chazelle.Chain (sidePt sideLeft)
 /-- A block of register copies `d := s`. -/
 def cps (l : List (ℕ × ℕ)) : List Instr := l.map fun p => .copyN p.1 p.2
 
-theorem cps_length (l : List (ℕ × ℕ)) : (cps l).length = l.length := by simp [cps]
+theorem cps_length (l : List (ℕ × ℕ)) : (cps l).length = l.length := ⊚ cps
 
 /-- **The effect of a block of copies** with distinct targets, no source being a target. -/
 theorem regB_cps (m : ℕ → ℕ) : ∀ (l : List (ℕ × ℕ)) (f : ℕ → ℕ),
@@ -48,18 +50,18 @@ theorem regB_cps (m : ℕ → ℕ) : ∀ (l : List (ℕ × ℕ)) (f : ℕ → �
       hsrc p (List.mem_cons_of_mem _ hp) q (List.mem_cons_of_mem _ hq)
     obtain ⟨ih1, ih2⟩ := regB_cps m l (upd f d (f s)) hnd'.2 hsrc'
     have hcps : cps ((d, s) :: l) = .copyN d s :: cps l := rfl
-    rw [hcps]
-    simp only [regB, regI]
+    Ξ hcps
+    ϴ regB, regI
     refine ⟨fun p hp => ?_, fun r hr => ?_⟩
     · rcases List.mem_cons.1 hp with rfl | hp
-      · rw [ih2 _ (by simpa using hnd'.1)]
+      · Ξ ih2 _ (by simpa using hnd'.1)
         simp
-      · rw [ih1 p hp]
+      · Ξ ih1 p hp
         have : p.2 ≠ d := hsrc p (List.mem_cons_of_mem _ hp) (d, s) List.mem_cons_self
-        simp [upd, this]
-    · simp only [List.map_cons, List.mem_cons, not_or] at hr
-      rw [ih2 r hr.2]
-      simp [upd, hr.1]
+        Θ upd, this
+    · ϴ' List.map_cons, List.mem_cons, not_or at hr
+      Ξ ih2 r hr.2
+      Θ upd, hr.1
 
 /-- The side conditions of a block of copies into scratch registers. -/
 theorem okB_cps (W : ℕ) (m : ℕ → ℕ) : ∀ (l : List (ℕ × ℕ)) (f : ℕ → ℕ),
@@ -90,7 +92,7 @@ theorem ChainCtx.transport {P : Polygon} {W : ℕ} {c c' : Config} {dsc dsc' : �
     ChainCtx P W c' dsc' C := by
   obtain ⟨hG, hW, hwf, ⟨H, hC, hreg⟩, hP, hWm⟩ := h
   obtain ⟨hC', hwf'⟩ := chainDesc_keep hwf hC hm hA
-  rw [← hr] at hC' hwf'
+  Ξ' ← hr at hC' hwf'
   exact ⟨hG, hW, hwf', ⟨H, hC', hreg⟩, hP, hWm⟩
 
 /-- The primitive's precondition from the chain context, at `50200`. -/
@@ -106,7 +108,7 @@ theorem ChainCtx.hostReg {P : Polygon} {W : ℕ} {c : Config} {dsc : ℕ} {C : C
     ∀ H', HostAt c.nmem (c.nmem (c.nreg dsc)) H' → HostRegular P.n H' := by
   obtain ⟨-, -, -, ⟨H, hC, hreg⟩, -, -⟩ := h
   intro H' hH'
-  rw [← NFLoc.hostAt_unique hC.1 hH']
+  Ξ ← NFLoc.hostAt_unique hC.1 hH'
   exact hreg
 
 /-! ## A generic call -/
@@ -150,22 +152,22 @@ theorem callP_irs {ins outs : List (ℕ × ℕ)} {s : Stmt} {B' : Finset ℕ}
     e2 ALLOC (fun h => by
       obtain ⟨p, hp, hpa⟩ := List.mem_map.1 h
       have := hin3 p hp
-      rw [hpa] at this
-      exact absurd this (by decide))
+      Ξ' hpa at this
+      exact absurd this (⌖))
   set c₁ : Config := { c with nreg := regB c.nmem (cps ins) c.nreg } with hc₁def
   have hpre₁ : Pre P W c₁ := hpre c₁ rfl hA1 e1 e2
   refine IRS.seq (IRS.callO hs hB hI₁ hpre₁ (by
     show regB c.nmem (cps ins) c.nreg ALLOC + K ≤ W
-    rw [hA1]; rw [cps_length] at hA₁'; omega)) ?_
+    rw [hA1]; Ξ' cps_length at hA₁'; omega)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨hpost, -, hm₂, hk₂⟩
-  refine (IRS.block (P := P) (cps outs) hI₂ (okB_cps W _ outs _ hsc2)).mono (by rw [cps_length])
+  refine (IRS.block (P := P) (cps outs) hI₂ (okB_cps W _ outs _ hsc2)).mono (Ρ cps_length)
     ?_
   intro c' hc'
   subst hc'
   obtain ⟨f1, f2⟩ := regB_cps c₂.nmem outs c₂.nreg hout1 hout2
   refine ⟨c₁, c₂, rfl, e1, e2, hpost, f1, fun r hr ho hra => ?_, ?_, ?_⟩
   · show regB c₂.nmem (cps outs) c₂.nreg r = c.nreg r
-    rw [f2 r ho, hk₂ r hr hra]
+    Ξ f2 r ho, hk₂ r hr hra
     show regB c.nmem (cps ins) c.nreg r = c.nreg r
     exact e2 r (fun h => by
       obtain ⟨p, hp, rfl⟩ := List.mem_map.1 h
@@ -173,7 +175,7 @@ theorem callP_irs {ins outs : List (ℕ × ℕ)} {s : Stmt} {B' : Finset ℕ}
   · show c.nreg ALLOC ≤ regB c₂.nmem (cps outs) c₂.nreg ALLOC
     rw [f2 ALLOC (fun h => by
       obtain ⟨p, hp, hpa⟩ := List.mem_map.1 h
-      have := hout3 p hp; rw [hpa] at this; unfold ALLOC at this; omega)]
+      have := hout3 p hp; Ξ' hpa at this; unfold ALLOC at this; omega)]
     have : c₁.nreg ALLOC = c.nreg ALLOC := hA1
     omega
   · intro a ha
@@ -197,20 +199,20 @@ open Chazelle.Chain (sidePt sideLeft)
 
 variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 
-theorem nodup2 {a b : ℕ} (h1 : a ≠ b) : [a, b].Nodup := by simp [h1]
+theorem nodup2 {a b : ℕ} (h1 : a ≠ b) : [a, b].Nodup := ⊚ h1
 
-theorem primBands_oracle : primBands ⊆ oracleBands := by decide
+theorem primBands_oracle : primBands ⊆ oracleBands := ⌖
 
 theorem band5_oracle {r : ℕ} (h1 : 50000 ≤ r) (h2 : r < 60000) : bandOf r ∈ oracleBands := by
   have : bandOf r = bLocate := by unfold bandOf bLocate; omega
   rw [this]; decide
 
 theorem nodup3 {a b d : ℕ} (h1 : a ≠ b) (h2 : a ≠ d) (h3 : b ≠ d) : [a, b, d].Nodup := by
-  simp [h1, h2, h3]
+  Θ h1, h2, h3
 
 theorem nodup4 {a b d e : ℕ} (h1 : a ≠ b) (h2 : a ≠ d) (h3 : a ≠ e) (h4 : b ≠ d) (h5 : b ≠ e)
     (h6 : d ≠ e) : [a, b, d, e].Nodup := by
-  simp [h1, h2, h3, h4, h5, h6]
+  Θ h1, h2, h3, h4, h5, h6
 
 /-! ## `arrivalPos` -/
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvBatch
 
 /-!
@@ -83,20 +85,20 @@ theorem orgDo_batch (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {g : Stmt} {KG
     fun x h1 h2 => hB.memT x h2 (Or.inr h1)
   have harcs' : ∀ k, k < L.length → ShotList.arcAt c.nmem (c.nreg wGB) k =
       nArc (chainModel J.left) (Qof P) N₁ (L.getD k 0) := fun k hk' => by
-    rw [eGB, ← harcs k hk']
+    Ξ eGB, ← harcs k hk'
     unfold ShotList.arcAt
-    rw [hmc _ (by omega) (by omega), hmc _ (by omega) (by omega), hmc _ (by omega) (by omega),
-      hmc _ (by omega) (by omega)]
+    rw [hmc _ (⋄) (⋄), hmc _ (⋄) (⋄), hmc _ (⋄) (⋄),
+      hmc _ (⋄) (⋄)]
   have hlo : ShotList.loSet (chainModel J.left) (Qof P) c.nmem (c.nreg wGB) L.length [] =
       ShotList.loSet (chainModel J.left) (Qof P) cs.nmem (cs.nreg wGB) L.length [] := by
-    rw [eGB]; exact loSet_congr (fun x h1 h2 => hmc x (by omega) (by omega))
+    rw [eGB]; exact loSet_congr (fun x h1 h2 => hmc x (⋄) (⋄))
   have hb : c.nreg bF = 1 → PosW P J (c.nreg bE) (c.nreg bH) := fun h => by
     obtain ⟨⟨j, hj⟩, -⟩ := hB.bAcc h
     exact (hB.acc _ hj).2.2.2.2.2.2.2.1
-  refine (orgDo_irs E hI hgen hL (by rw [eGK, hgK]) (by rw [eGB]; omega) harcs' rfl rfl hk hs
+  refine (orgDo_irs E hI hgen hL (Ρ eGK, hgK) (by rw [eGB]; omega) harcs' rfl rfl hk hs
     (by rw [eKE, eKH]; exact hkey) hb hB.fF hB.fN hroom).mono le_rfl ?_
   rintro c' ⟨hres, hcomp, hrej, hfr, hA'⟩
-  refine ⟨batch_step hInv' (by omega) hs (up_ne_dn E hk) hT hres
+  refine ⟨batch_step hInv' (⋄) hs (up_ne_dn E hk) hT hres
     (fun hv => hlo ▸ hcomp hv.1 hv.2.1 hv.2.2) hrej hfr hA', fun r hr => ?_, fun x h1 h2 => ?_⟩
   · refine hfr r (band_sw_not ?_) (not_orgR hr) (by
       rcases hr with ⟨h, -, -⟩ | h
@@ -113,8 +115,8 @@ theorem orgDo_batch (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {g : Stmt} {KG
       (by unfold LR sC oK oS sw; omega)
     rw [eaB] at h1; rw [eaB, eC] at h2
     rcases hres with ⟨hm, -⟩ | ⟨e, h, -, hm, -⟩
-    · exact hm x (by omega)
-    · rw [hm x (by omega), tabUpd_o _ (by rw [eTB]; omega) (by rw [eTB]; omega)
+    · exact hm x (⋄)
+    · rw [hm x (⋄), tabUpd_o _ (by rw [eTB]; omega) (by rw [eTB]; omega)
         (by rw [eTB]; omega)]
 
 end

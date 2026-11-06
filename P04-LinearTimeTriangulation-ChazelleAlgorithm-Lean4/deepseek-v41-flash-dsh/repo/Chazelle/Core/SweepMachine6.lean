@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepMachine5
 
 /-!
@@ -140,7 +142,7 @@ theorem cand_cases {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.
     · have hc'S : c' ∈ S₂ := by simpa using hc'
       have := s2_eq_of_sub J hS₂ hcS hc'S hA hhc (by
         obtain ⟨y, l, r, hH, hy, hceq, hl, -⟩ := Merge.augChords_spec (hS₂ hc'S)
-        rw [hl, hceq]
+        Ξ hl, hceq
         exact Merge.shoot_subset_pos J.whole hH.lt (fun hd => hH.right_not
           (dom_right J hd hy)))
       subst this
@@ -148,7 +150,7 @@ theorem cand_cases {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.
     · have hc'S : c' ∈ S₂ := by simpa using hc'
       have := s2_eq_of_sub J hS₂ hcS hc'S hA hhc (by
         obtain ⟨y, l, r, hH, hy, hceq, -, hr⟩ := Merge.augChords_spec (hS₂ hc'S)
-        rw [hr, hceq]
+        Ξ hr, hceq
         exact Merge.shoot_subset_neg J.whole hH.lt (fun hd => hH.left_not
           (dom_right J hd hy)))
       subst this

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepMachine19
 
 /-!
@@ -76,19 +78,19 @@ theorem left_top_eq (hv : ¬ VNotTop J) : J.left.top = J.shared := by
   have hm1 : J.left.m = J.m₁ := rfl
   have hv1 : J.whole.vertex J.m₁ = J.shared := rfl
   have hkm : J.whole.topIdx ≤ J.m₁ :=
-    J.whole.topIdx_min (j := J.m₁) (by omega) fun i hi => by
+    J.whole.topIdx_min (j := J.m₁) (⋄) fun i hi => by
       rw [hv1, h]; exact J.whole.vertex_snd_le_top hi
   have hle : J.left.topIdx ≤ J.whole.topIdx :=
-    J.left.topIdx_min (j := J.whole.topIdx) (by omega) fun i hi => by
-      rw [← J.whole_vertex, ← J.whole_vertex]
-      exact J.whole.vertex_snd_le_top (by omega)
+    J.left.topIdx_min (j := J.whole.topIdx) (⋄) fun i hi => by
+      Ξ ← J.whole_vertex, ← J.whole_vertex
+      exact J.whole.vertex_snd_le_top (⋄)
   have hge : J.whole.topIdx ≤ J.left.topIdx := by
     have hlt := J.left.topIdx_le
-    refine J.whole.topIdx_min (j := J.left.topIdx) (by omega) fun i hi => ?_
-    rw [J.whole_vertex J.left.topIdx]
+    refine J.whole.topIdx_min (j := J.left.topIdx) (⋄) fun i hi => ?_
+    Ξ J.whole_vertex J.left.topIdx
     have h3 : (J.left.vertex J.m₁).2 ≤ (J.left.vertex J.left.topIdx).2 :=
-      J.left.vertex_snd_le_top (by omega)
-    have h4 : J.left.vertex J.m₁ = J.whole.top := by rw [← J.whole_vertex, hv1, h]
+      J.left.vertex_snd_le_top (⋄)
+    have h4 : J.left.vertex J.m₁ = J.whole.top := Ρ ← J.whole_vertex, hv1, h
     rw [h4] at h3
     exact (J.whole.vertex_snd_le_top hi).trans h3
   show J.left.vertex J.left.topIdx = J.shared
@@ -107,9 +109,9 @@ theorem box_agree (hv : ¬ VNotTop J) :
     omega] at h1
   rw [show 6 + tpos J.left 0 + (2 * J.left.m - tpos J.left 0) + e = 2 * J.left.m + 6 + e by
     omega] at h2
-  rw [h1, h2]
+  Ξ h1, h2
   refine boxPt_congr ?_ ?_ e
-  · rw [← shared_eq_top J hv, left_top_eq J hv]
+  · Ξ ← shared_eq_top J hv, left_top_eq J hv
   · exact (FuseMath.radius_of_P J (C' := J.left) rfl).symm
 
 /-! ## Offsets of the left stretch in all cases -/
@@ -144,14 +146,14 @@ theorem lOff_add_llen : lOff J + llen J ≤ (chainModel J.whole).W.n := by
   have hτ := tpos_lt J.whole J.m₁
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
   have h1 := J.one_le_m₁
-  rw [lOff_eq, hn]
+  Ξ lOff_eq, hn
   unfold llen
-  rw [tpos_second J]
+  Ξ tpos_second J
   by_cases h : tpos J.whole J.m₁ + 2 * J.m₂ < 2 * J.whole.m
   · rw [Nat.mod_eq_of_lt h]; split_ifs <;> omega
   · have e : (tpos J.whole J.m₁ + 2 * J.m₂) % (2 * J.whole.m) =
         tpos J.whole J.m₁ + 2 * J.m₂ - 2 * J.whole.m := by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+      rw [Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (by omega)]
     rw [e]; split_ifs <;> omega
 
 /-- `lOff = L` when the shared vertex is not the top of `C`. -/
@@ -170,16 +172,16 @@ theorem off_left_gen {d : ℕ} (hd : d < llen J) {t : ℝ} (ht : 0 ≤ t) (ht1 :
   have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
   have hτ := tpos_lt J.whole J.m₁
   have hτ' := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
-  have hg : 6 + tpos J.whole J.m₁ < (chainModel J.whole).W.n := by omega
-  have hgL : 6 + tpos J.whole (J.m₁ + 2 * J.m₂) < (chainModel J.whole).W.n := by omega
+  have hg : 6 + tpos J.whole J.m₁ < (chainModel J.whole).W.n := ⋄
+  have hgL : 6 + tpos J.whole (J.m₁ + 2 * J.m₂) < (chainModel J.whole).W.n := ⋄
   have hsum := lOff_add_llen J
   have e : (6 + tpos J.whole (J.m₁ + 2 * J.m₂) + d) % (chainModel J.whole).W.n =
       (6 + tpos J.whole J.m₁ + (lOff J + d)) % (chainModel J.whole).W.n := by
     have hb := add_dOf hg hgL
     unfold lOff
-    rw [← add_assoc]
+    Ξ ← add_assoc
     conv_rhs => rw [← Nat.mod_add_mod, hb]
-  rw [e, off_key hg (by omega) ht ht1]
+  rw [e, off_key hg (⋄) ht ht1]
   push_cast; ring
 
 /-- **A genuine hit on the left stretch is a cut at offset `lOff + d + t`** (all cases; see
@@ -196,7 +198,7 @@ theorem cut_of_genuine_gen (hP : J.P.Simple) {a : Point}
         (lOff J : ℝ) + d + t := by
   refine ⟨?_, ?_⟩
   · unfold Merge.shoot
-    rw [hhit]
+    Ξ hhit
     exact attach_whole_of_arrival J hP hσ hτ hd hsec hA
   · exact off_left_gen J (by rw [← lL1_add_lL2 J]; exact hd) hA.2.1 hA.2.2.1
 
@@ -249,7 +251,7 @@ theorem genuine_of_attach_box (hP : J.P.Simple) (hv : ¬ VNotTop J)
   have hn : 0 < (chainModel J.whole).W.n := by rw [cm_n]; omega
   have hn₁ : 0 < (chainModel J.left).W.n := by rw [cm_n]; omega
   have hC := corr_left0 J hP (S₁ := ∅) (empty_subset _) finite_empty
-  have hM₁ : WalkAx (chainModel J.left) := hC.hM₂
+  have hM₁ := hC.hM₂
   set T := J.whole.hitParam a σ with hT
   have hz' : a.2 ≤ J.whole.top.2 := ha₁.trans J.left_top_le
   obtain ⟨hT0, -, hdom⟩ := Merge.hit_of_freeAt J.whole hz' hσ hfree
@@ -258,21 +260,21 @@ theorem genuine_of_attach_box (hP : J.P.Simple) (hv : ¬ VNotTop J)
       ((2 * J.left.m + 6 + d) % (chainModel J.left).W.n) t = rayPt a σ T := by
     rw [← hB.sidePt_eq hd t]; exact hend
   refine ⟨⟨hT0, fun s h0 h1 => dom_left J (hdom s h0 h1) (by simpa [rayPt] using ha₁), ?_⟩, ?_⟩
-  · rw [← hpt]
+  · Ξ ← hpt
     exact hM₁.trace _ hA₁.1 t hA₁.2.1 hA₁.2.2.1.le
   · refine ⟨hA₁.1, hA₁.2.1, hA₁.2.2.1, hpt, ?_⟩
     obtain ⟨r, hr, hnear⟩ := hA₁.2.2.2.2
     set s := min (T / 2) (r / 2) with hs
-    have hs0 : 0 < s := lt_min (by linarith) (by linarith)
-    have hsT : s < T := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-    have hsr : s < r := lt_of_le_of_lt (min_le_right _ _) (by linarith)
+    have hs0 : 0 < s := lt_min (⟡) (by linarith)
+    have hsT : s < T := lt_of_le_of_lt (min_le_left _ _) (⟡)
+    have hsr : s < r := lt_of_le_of_lt (min_le_right _ _) (⟡)
     have hmem : rayPt (rayPt a σ T) (-σ) s ∈ Merge.shoot J.whole a σ := by
       unfold Merge.shoot
-      rw [← hT, rayPt_back]
+      Ξ ← hT, rayPt_back
       have hT' : T ≠ 0 := hT0.ne'
       have e : rayPt a σ (T - s) = lerp a (rayPt a σ T) ((T - s) / T) := by
         apply point_ext <;> simp [rayPt, lerp]; field_simp
-      rw [e]
+      Ξ e
       exact Geometry.lerp_mem_segment _ _ (by apply div_nonneg <;> linarith)
         (by rw [div_le_one hT0]; linarith)
     have hne : rayPt (rayPt a σ T) (-σ) s ≠ rayPt a σ T := by
@@ -305,7 +307,7 @@ theorem cut_of_genuine_box (hv : ¬ VNotTop J) {a : Point}
         ((2 * J.whole.m - tpos J.whole J.m₁ : ℕ) : ℝ) + d + t := by
   refine ⟨?_, off_box_pos J hd hA.2.1 hA.2.2.1⟩
   unfold Merge.shoot
-  rw [hhit]
+  Ξ hhit
   exact attach_box_of_arrival J hv hσ hτ hd hsec hA
 
 end Machine

@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Existence.Split
 public import Chazelle.Existence.Combine
 
@@ -43,16 +47,16 @@ theorem vtx_eq_chord_endpoint_of_common {P : Polygon} (hP : P.Simple) {s L : ℕ
   have hn : 0 < P.n := by have := hP.1; omega
   have hidx := hP.2.1 _ _ (Nat.mod_lt _ hn) (Nat.mod_lt _ hn) h
   by_cases hkL : k = L
-  · exact Or.inr (by rw [hkL])
+  · exact Or.inr (Ρ hkL)
   rcases Nat.lt_or_ge m P.n with hm | hm
-  · have := rot_index_inj (n := P.n) (s := s) (i := k) (j := m) (by omega) hm hidx
+  · have := rot_index_inj (n := P.n) (s := s) (i := k) (j := m) (⋄) hm hidx
     omega
-  · have hmn : m = P.n := by omega
-    rw [hmn, Nat.add_mod_right] at hidx
-    have := rot_index_inj (n := P.n) (s := s) (i := k) (j := 0) (by omega) hn
-      (by rw [hidx, Nat.add_zero])
+  · have hmn : m = P.n := ⋄
+    Ξ' hmn, Nat.add_mod_right at hidx
+    have := rot_index_inj (n := P.n) (s := s) (i := k) (j := 0) (⋄) hn
+      (Ρ hidx, Nat.add_zero)
     subst this
-    exact Or.inl (by rw [Nat.add_zero])
+    exact Or.inl (Ρ Nat.add_zero)
 
 /-- **The boundaries of the two arcs meet only on the chord.** -/
 theorem boundary_arc_inter {P : Polygon} (hP : P.Simple) {s L : ℕ} (hL : L ≤ P.n) :
@@ -69,7 +73,7 @@ theorem boundary_arc_inter {P : Polygon} (hP : P.Simple) {s L : ℕ} (hL : L ≤
       have hij : (s + i) % P.n ≠ (s + L + j) % P.n := by
         intro h
         rw [Nat.add_assoc] at h
-        have := rot_index_inj (by omega) (by omega) h
+        have := rot_index_inj (⋄) (⋄) h
         omega
       have hmem : p ∈ P.edge ((s + i) % P.n) ∩ P.edge ((s + L + j) % P.n) := ⟨hpi, hpj⟩
       rw [hP.2.2 _ _ (Nat.mod_lt _ hn) (Nat.mod_lt _ hn) hij] at hmem
@@ -81,15 +85,15 @@ theorem boundary_arc_inter {P : Polygon} (hP : P.Simple) {s L : ℕ} (hL : L ≤
           p = P.vtx ((s + m) % P.n) →
           p ∈ segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) := by
         intro k m hk hm₁ hm₂ hpk hpm
-        rw [hpk]
+        Ξ hpk
         rcases vtx_eq_chord_endpoint_of_common hP hL hk hm₁ hm₂ (hpk ▸ hpm) with h | h
         · rw [h]; exact left_mem_segment _ _
         · rw [h]; exact right_mem_segment _ _
       rcases h₁ with h₁ | h₁ <;> rcases h₂ with h₂ | h₂
-      · exact key i (L + j) hi.le (by omega) (by omega) h₁ h₂
-      · exact key i (L + (j + 1)) hi.le (by omega) (by omega) h₁ h₂
-      · exact key (i + 1) (L + j) (by omega) (by omega) (by omega) h₁ h₂
-      · exact key (i + 1) (L + (j + 1)) (by omega) (by omega) (by omega) h₁ h₂
+      · exact key i (L + j) hi.le (⋄) (⋄) h₁ h₂
+      · exact key i (L + (j + 1)) hi.le (⋄) (⋄) h₁ h₂
+      · exact key (i + 1) (L + j) (⋄) (⋄) (⋄) h₁ h₂
+      · exact key (i + 1) (L + (j + 1)) (⋄) (⋄) (⋄) h₁ h₂
     · exact hpc
   · rw [segment_comm]; exact hpc
 
@@ -102,10 +106,10 @@ theorem boundary_arcs_subset_filled (hn : 0 < P.n) (hL : L ≤ P.n)
   rintro p (hp | hp)
   · rcases boundary_arc_subset P s L hn hp with h | h
     · exact boundary_subset_filled P h
-    · rw [segment_comm] at h; exact hin h
+    · Ξ' segment_comm at h; exact hin h
   · rcases boundary_arc_subset P _ _ hn hp with h | h
     · exact boundary_subset_filled P h
-    · rw [compl_arc_last_index P s L hL, Nat.mod_mod] at h
+    · Ξ' compl_arc_last_index P s L hL, Nat.mod_mod at h
       exact hin h
 
 /-- Off the three boundaries, a point is filled in `P` exactly when it is filled in exactly one

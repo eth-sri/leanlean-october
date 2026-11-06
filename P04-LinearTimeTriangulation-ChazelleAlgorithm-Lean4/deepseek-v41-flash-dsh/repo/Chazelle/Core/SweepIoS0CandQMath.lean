@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoS0CandAux
 
 /-!
@@ -91,7 +93,7 @@ theorem query_h6 {z : Point} {σ : ℝ} (hz : z ∈ J.left.set) {e h : ℕ}
 /-- `AEnv` gives the base of the offsets at `sw 40`. -/
 theorem aenv_gW (hA : AEnv P W X Ok J H N₁ N₂ E c₀) : c₀.nreg (sw 40) = gW J := by
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, h40, -⟩ := hA.hst
-  have := h40 0 (by norm_num)
+  have := h40 0 (⊛)
   simpa [cstR, gW] using this
 
 /-- **The log keys increase strictly in offset.** -/
@@ -102,21 +104,21 @@ theorem log_sorted (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {i j : ℕ} (hij : 
       off (chainModel J.whole).W.n (c₀.nreg (sw 40))
         ((chainModel J.whole).key (Qof P) (logPos c₀.nmem (rd c₀ bSweep 300) j)) := by
   obtain ⟨rs, ls, -, -, -, -, hlsl, hls, hL, -, -, -⟩ := hA.hout
-  have hi : i < ls.length := by omega
-  have hj' : j < ls.length := by omega
+  have hi : i < ls.length := ⋄
+  have hj' : j < ls.length := ⋄
   have hsort := hL.2.2.2.1
   have hlen : (logOf J (Qof P) N₂ ls).length = ls.length := by unfold logOf; simp
-  have hp := List.pairwise_iff_getElem.1 hsort i j (by omega) (by omega) hij
+  have hp := List.pairwise_iff_getElem.1 hsort i j (⋄) (⋄) hij
   rw [← List.getD_eq_getElem _ (0, 0, ∅), ← List.getD_eq_getElem _ (0, 0, ∅)] at hp
   obtain ⟨a1, a2⟩ := logOf_getD J (Qof P) N₂ hi
   obtain ⟨b1, b2⟩ := logOf_getD J (Qof P) N₂ hj'
   rw [a1, a2, b1, b2] at hp
   obtain ⟨m1, m2, -⟩ := hls i hi
   obtain ⟨n1, n2, -⟩ := hls j hj'
-  rw [aenv_gW hA]
+  Ξ aenv_gW hA
   unfold logPos Model.key
   simp only
-  rw [m1, m2, n1, n2]
+  Ξ m1, m2, n1, n2
   exact hp
 
 /-- The PosW facts of the log records. -/
@@ -124,9 +126,9 @@ theorem log_posW (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {i : ℕ} (hi : i < r
     SweepEv.PosW P J (c₀.nmem (rd c₀ bSweep 300 + 7 * i))
       (c₀.nmem (rd c₀ bSweep 300 + 7 * i + 1)) := by
   obtain ⟨rs, ls, -, -, -, -, hlsl, hls, -, hlsW, -, -⟩ := hA.hout
-  have hi' : i < ls.length := by omega
+  have hi' : i < ls.length := ⋄
   obtain ⟨m1, m2, -⟩ := hls i hi'
-  rw [m1, m2]
+  Ξ m1, m2
   exact (hlsW _ (by rw [List.getD_eq_getElem _ _ hi']; exact List.getElem_mem _)).1
 
 /-! ## The binary search -/
@@ -143,12 +145,12 @@ theorem search_eq (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {x : WPos} {t i : �
     unfold lsPr; rw [show (⟨c₀.nmem (rd c₀ bSweep 300 + 7 * i), c₀.nmem (rd c₀ bSweep 300 + 7 * i + 1)⟩ :
       WPos) = logPos c₀.nmem (rd c₀ bSweep 300) i from rfl, hkey]; exact lt_irrefl _
   have h1 : t ≤ i := by
-    by_contra h; exact hnot (ht1 i (by omega))
+    by_contra h; exact hnot (ht1 i (⋄))
   by_contra hne
-  have hlt : t < i := by omega
-  apply ht2 t le_rfl (by omega)
+  have hlt : t < i := ⋄
+  apply ht2 t le_rfl (⋄)
   unfold lsPr
-  rw [← hkey]
+  Ξ ← hkey
   exact log_sorted hA hlt hi
 
 /-- The predicate of the search is downward closed. -/
@@ -185,7 +187,7 @@ theorem bits_eq (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {x y : WPos}
     unfold Model.key; have := hpy.2.1
     have : (y.edge : ℝ) + 1 ≤ (chainModel J.whole).W.n := by exact_mod_cast hy
     linarith
-  have hk := off_inj (by positivity) (gW_lt J) kx0 kxn ky0 kyn heq
+  have hk := off_inj (⟢) (gW_lt J) kx0 kxn ky0 kyn heq
   unfold Model.key at hk
   exact key_split hpx.1 hpx.2.1 hpy.1 hpy.2.1 hk
 
@@ -219,14 +221,14 @@ theorem stop_match (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N
       c₀.nmem (slotA (c₀.nreg sB) i (sOf r.2.2.2.2)) = 1 ∧
       CandAt J (stopOrig J (Qof P) N₂ r.2.2.1 r.2.2.2.1 r.2.2.2.2) (dirOf r.2.2.2.2) z := by
   obtain ⟨rs₀, ls₀, hl0, hrs0, hS, hW0, -⟩ := hA.hout
-  have heq : rs = rs₀ := stopRecs_unique hrs hrs0 (by rw [hrsl, hl0])
+  have heq : rs = rs₀ := stopRecs_unique hrs hrs0 (Ρ hrsl, hl0)
   subst heq
   obtain ⟨x, hx, hxr⟩ := List.getElem_of_mem hr
   have hfx := hrs x hx
   rw [List.getD_eq_getElem _ _ hx, hxr] at hfx
   obtain ⟨f1, f2, -, -, f5⟩ := hfx
   obtain ⟨-, -, -, -, -, hst, -⟩ := hX
-  obtain ⟨i, hi, e1, e2, e3⟩ := hst x (by omega)
+  obtain ⟨i, hi, e1, e2, e3⟩ := hst x (⋄)
   rw [f1, f2] at e2
   rw [f1, hr1] at e1
   rw [f5] at e3

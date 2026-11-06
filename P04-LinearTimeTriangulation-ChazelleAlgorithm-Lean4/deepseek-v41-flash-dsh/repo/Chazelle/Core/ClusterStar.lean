@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Separator.Clusters
 
 /-!
@@ -53,8 +57,8 @@ def starOpp : Perm (D ⊕ D ⊕ D) where
     | .inl d => .inl (M.opp d)
     | .inr (.inl d) => .inr (.inr d)
     | .inr (.inr d) => .inr (.inl d)
-  left_inv x := by rcases x with d | d | d <;> simp [M.opp_opp]
-  right_inv x := by rcases x with d | d | d <;> simp [M.opp_opp]
+  left_inv x := by rcases x with d | d | d <;> Θ M.opp_opp
+  right_inv x := by rcases x with d | d | d <;> Θ M.opp_opp
 
 @[simp] theorem starRot_inl (d : D) : starRot M (.inl d) = .inr (.inr (M.rot d)) := rfl
 @[simp] theorem starRot_inl_inr (d : D) : starRot M (.inr (.inl d)) = .inr (.inl (M.fperm⁻¹ d)) :=
@@ -85,14 +89,14 @@ def starFace : D ⊕ D ⊕ D → D
 
 /-- The face permutation of the star map, explicitly. -/
 theorem starFperm_inl (d : D) : (starRot M * starOpp M) (.inl d) = .inr (.inr (M.fperm d)) := by
-  simp [Perm.mul_apply, M.fperm_apply]
+  Θ Perm.mul_apply, M.fperm_apply
 
 theorem starFperm_inr_inr (d : D) :
     (starRot M * starOpp M) (.inr (.inr d)) = .inr (.inl (M.fperm⁻¹ d)) := by
-  simp [Perm.mul_apply]
+  Θ Perm.mul_apply
 
 theorem starFperm_inl_inr (d : D) : (starRot M * starOpp M) (.inr (.inl d)) = .inl d := by
-  simp [Perm.mul_apply]
+  Θ Perm.mul_apply
 
 variable [Finite D]
 
@@ -189,15 +193,15 @@ theorem star_faceDeg [Fintype D] [DecidableEq D] (g : D) : (star M).faceDeg g = 
       {.inl g, .inr (.inl g), .inr (.inr (M.fperm g))} := by
     ext x
     rcases x with d | d | d
-    · simp [eq_comm]
-    · simp [eq_comm]
+    · Θ eq_comm
+    · Θ eq_comm
     · simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_insert,
         Finset.mem_singleton]
       show M.fperm⁻¹ d = g ↔ _
-      rw [Perm.inv_eq_iff_eq]
+      Ξ Perm.inv_eq_iff_eq
       simp
-  rw [this]
-  rw [Finset.card_insert_of_notMem (by simp), Finset.card_insert_of_notMem (by simp),
+  Ξ this
+  rw [Finset.card_insert_of_notMem (✓), Finset.card_insert_of_notMem (✓),
     Finset.card_singleton]
 
 /-- **Connectivity is preserved.** -/
@@ -227,7 +231,7 @@ theorem star_euler [Fintype V] [Fintype F] [Fintype D] [DecidableEq D] :
     (star M).euler = M.euler := by
   have h1 := (star M).two_mul_euler
   have h2 := M.two_mul_euler
-  simp only [Fintype.card_sum] at h1
+  ϴ' Fintype.card_sum at h1
   push_cast at h1
   omega
 
@@ -252,12 +256,12 @@ def starTree {M : CombMap V F D} (T : CombMap.SpanTree M) (a : F → D)
   level_root := T.level_root
   vert_par x hx := by
     rcases x with v | g
-    · have : v ≠ T.root := fun h => hx (by rw [h])
-      simp [T.vert_par v this]
-    · simp [ha g]
+    · have : v ≠ T.root := fun h => hx (Ρ h)
+      Θ T.vert_par v this
+    · Θ ha g
   level_head_par x hx := by
     rcases x with v | g
-    · have : v ≠ T.root := fun h => hx (by rw [h])
+    · have : v ≠ T.root := fun h => hx (Ρ h)
       show T.level (M.head (T.par v)) + 1 = T.level v
       exact T.level_head_par v this
     · rfl

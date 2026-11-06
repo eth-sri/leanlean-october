@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecMerge
 public import Chazelle.Core.Facts2
 public import Chazelle.Core.FactsL23
@@ -46,25 +48,25 @@ theorem off_nonneg {n g x : ℝ} (hx : 0 ≤ x) (hg : g < n) : 0 ≤ off n g x :
 theorem off_lt {n g x : ℝ} (hx : x < n) (hg : 0 ≤ g) : off n g x < n := by
   unfold off; split_ifs <;> linarith
 
-theorem off_self (n g : ℝ) : off n g g = 0 := by simp [off]
+theorem off_self (n g : ℝ) : off n g g = 0 := ⊚ off
 
 /-- The offset of a walk position: vertex `(g + d) mod n`, parameter `t`. -/
 theorem off_key {n g d : ℕ} (hg : g < n) (hd : d < n) {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
     off n g (((g + d) % n : ℕ) + t) = d + t := by
   unfold off
   by_cases h : g + d < n
-  · rw [Nat.mod_eq_of_lt h]
+  · Ξ Nat.mod_eq_of_lt h
     push_cast
-    rw [ite_eq_left (by linarith)]
+    Ξ ite_eq_left (⟡)
     ring
-  · obtain ⟨k, hk⟩ : ∃ k, g + d = n + k := ⟨g + d - n, by omega⟩
-    have hkg : k + 1 ≤ g := by omega
+  · obtain ⟨k, hk⟩ : ∃ k, g + d = n + k := ⟨g + d - n, ⋄⟩
+    have hkg : k + 1 ≤ g := ⋄
     have e : (g + d) % n = k := by
-      rw [hk, Nat.add_mod_left, Nat.mod_eq_of_lt (show k < n by omega)]
-    rw [e]
+      Ξ hk, Nat.add_mod_left, Nat.mod_eq_of_lt (show k < n by omega)
+    Ξ e
     have hlt' : (k : ℝ) + 1 ≤ g := by exact_mod_cast hkg
     have hk' : (g : ℝ) + d = n + k := by exact_mod_cast hk
-    rw [ite_eq_right (by linarith)]
+    Ξ ite_eq_right (⟡)
     linarith
 
 /-- The offset (as a natural number) of the walk vertex `p` from the walk vertex `g`. -/
@@ -76,15 +78,15 @@ theorem add_dOf {n g p : ℕ} (hg : g < n) (hp : p < n) : (g + dOf n g p) % n = 
   unfold dOf
   by_cases h : g ≤ p
   · have e : (p + n - g) % n = p - g := by
-      rw [show p + n - g = (p - g) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
-    rw [e, show g + (p - g) = p by omega, Nat.mod_eq_of_lt hp]
+      Ξ show p + n - g = (p - g) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (⋄)
+    Ξ e, show g + (p - g) = p by omega, Nat.mod_eq_of_lt hp
   · have e : (p + n - g) % n = p + n - g := Nat.mod_eq_of_lt (show p + n - g < n by omega)
-    rw [e, show g + (p + n - g) = p + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt hp]
+    Ξ e, show g + (p + n - g) = p + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt hp
 
 /-- The offset of a key on the walk vertex `p`. -/
 theorem off_key' {n g p : ℕ} (hg : g < n) (hp : p < n) {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
     off n g ((p : ℝ) + t) = dOf n g p + t := by
-  have h := off_key hg (dOf_lt (by omega) g p) ht ht1
+  have h := off_key hg (dOf_lt (⋄) g p) ht ht1
   rwa [add_dOf hg hp] at h
 
 /-- Injectivity of `d ↦ (g + d) mod n` on `[0, n)`. -/
@@ -112,16 +114,16 @@ theorem sideInArc_convex {n g a b x y w : ℝ} (_hg : 0 ≤ g) (_hgn : g < n) (h
     (h1 : off n g x < off n g w) (h2 : off n g w < off n g y) : sideInArc a b w := by
   by_cases hab : a < b
   · have hg' : g ≤ a ∨ b ≤ g := by
-      unfold sideInArc at hga; rw [ite_eq_left hab] at hga
+      unfold sideInArc at hga; Ξ' ite_eq_left hab at hga
       by_contra h; push Not at h; exact hga ⟨h.1, h.2⟩
-    unfold sideInArc at hxa hya ⊢; rw [ite_eq_left hab] at hxa hya ⊢
+    unfold sideInArc at hxa hya ⊢; Ξ' ite_eq_left hab at hxa hya ⊢
     unfold off at h1 h2
     rcases hg' with hg' | hg' <;> split_ifs at h1 h2 <;>
       first | (constructor <;> linarith)
   · have hg' : b ≤ g ∧ g ≤ a := by
-      unfold sideInArc at hga; rw [ite_eq_right hab] at hga
+      unfold sideInArc at hga; Ξ' ite_eq_right hab at hga
       push Not at hga; exact ⟨hga.2, hga.1⟩
-    unfold sideInArc at hxa hya ⊢; rw [ite_eq_right hab] at hxa hya ⊢
+    unfold sideInArc at hxa hya ⊢; Ξ' ite_eq_right hab at hxa hya ⊢
     unfold off at h1 h2
     rcases hxa with hxa | hxa <;> rcases hya with hya | hya <;> split_ifs at h1 h2 <;>
       first | (left; linarith) | (right; linarith)
@@ -131,28 +133,28 @@ theorem sideInArc_right {l r z x : ℝ} (hlr : l ≠ r) (hz : sideInArc l r z) (
     (hxr : x ≠ r) : sideInArc z x r := by
   rcases lt_or_gt_of_ne hlr with h | h
   · unfold sideInArc at *
-    rw [ite_eq_left h] at hz hx
+    Ξ' ite_eq_left h at hz hx
     have hx' : x ≤ l ∨ r < x := by
       by_contra hc; push Not at hc
       exact hx ⟨lt_of_le_of_ne' hc.1.le (by intro e; subst e; linarith [hc.1]),
         lt_of_le_of_ne hc.2 hxr⟩
     rcases hx' with hx' | hx'
-    · rw [ite_eq_right (by linarith)]; left; linarith [hz.2]
-    · rw [ite_eq_left (by linarith)]; exact ⟨hz.2, hx'⟩
+    · rw [ite_eq_right (⟡)]; left; linarith [hz.2]
+    · rw [ite_eq_left (⟡)]; exact ⟨hz.2, hx'⟩
   · unfold sideInArc at *
-    rw [ite_eq_right (by linarith)] at hz hx
+    Ξ' ite_eq_right (⟡) at hz hx
     push Not at hx
     have hx' : r < x := lt_of_le_of_ne hx.2 (Ne.symm hxr)
     rcases hz with hz | hz
-    · rw [ite_eq_right (by linarith)]; right; exact hx'
-    · rw [ite_eq_left (by linarith)]; exact ⟨hz, hx'⟩
+    · rw [ite_eq_right (⟡)]; right; exact hx'
+    · rw [ite_eq_left (⟡)]; exact ⟨hz, hx'⟩
 
 /-- If `z` is inside `(l, r)` and `x` is not (and `x ≠ l`), then `l` lies between `x` and `z`. -/
 theorem sideInArc_left {l r z x : ℝ} (hlr : l ≠ r) (hz : sideInArc l r z) (hx : ¬ sideInArc l r x)
     (hxl : x ≠ l) : sideInArc x z l := by
   rcases lt_or_gt_of_ne hlr with h | h
   · unfold sideInArc at *
-    rw [ite_eq_left h] at hz hx
+    Ξ' ite_eq_left h at hz hx
     have hx' : x < l ∨ r ≤ x := by
       by_contra hc; push Not at hc
       exact hx ⟨lt_of_le_of_ne hc.1 (Ne.symm hxl), hc.2⟩
@@ -160,12 +162,12 @@ theorem sideInArc_left {l r z x : ℝ} (hlr : l ≠ r) (hz : sideInArc l r z) (h
     · rw [ite_eq_left (by linarith [hz.1])]; exact ⟨hx', hz.1⟩
     · rw [ite_eq_right (by linarith [hz.2])]; right; exact hz.1
   · unfold sideInArc at *
-    rw [ite_eq_right (by linarith)] at hz hx
+    Ξ' ite_eq_right (⟡) at hz hx
     push Not at hx
     have hx' : x < l := lt_of_le_of_ne hx.1 hxl
     rcases hz with hz | hz
-    · rw [ite_eq_left (by linarith)]; exact ⟨hx', hz⟩
-    · rw [ite_eq_right (by linarith)]; left; exact hx'
+    · rw [ite_eq_left (⟡)]; exact ⟨hx', hz⟩
+    · rw [ite_eq_right (⟡)]; left; exact hx'
 
 /-! ## Agreeing stretches of two walks -/
 
@@ -176,7 +178,7 @@ def Agree (W W' : Polygon) (g g' L : ℕ) : Prop :=
   ∀ d, d ≤ L → W.vtx ((g + d) % W.n) = W'.vtx ((g' + d) % W'.n)
 
 theorem mod_succ_mod (n g d : ℕ) : ((g + d) % n + 1) % n = (g + (d + 1)) % n := by
-  rw [Nat.mod_add_mod, Nat.add_assoc]
+  Ξ Nat.mod_add_mod, Nat.add_assoc
 
 theorem mod_pred_mod {n : ℕ} (hn : 0 < n) (g : ℕ) {d : ℕ} (hd : 1 ≤ d) :
     ((g + d) % n + n - 1) % n = (g + (d - 1)) % n := by
@@ -191,13 +193,13 @@ variable {W W' : Polygon} {g g' L : ℕ}
 theorem sidePt_eq (hA : Agree W W' g g' L) {d : ℕ} (hd : d < L) (t : ℝ) :
     sidePt W ((g + d) % W.n) t = sidePt W' ((g' + d) % W'.n) t := by
   unfold sidePt
-  rw [mod_succ_mod, mod_succ_mod, hA d hd.le, hA (d + 1) hd]
+  Ξ mod_succ_mod, mod_succ_mod, hA d hd.le, hA (d + 1) hd
 
 /-- Agreeing stretches have the same next vertex at the same offset. -/
 theorem sideNext_eq (hA : Agree W W' g g' L) {d : ℕ} (hd : d < L) :
     sideNext W ((g + d) % W.n) = sideNext W' ((g' + d) % W'.n) := by
   unfold sideNext
-  rw [mod_succ_mod, mod_succ_mod, hA (d + 1) hd]
+  Ξ mod_succ_mod, mod_succ_mod, hA (d + 1) hd
 
 /-- Agreeing stretches have the same previous point at the same offset, away from the start. -/
 theorem sidePrev_eq (hA : Agree W W' g g' L) (hn : 0 < W.n) (hn' : 0 < W'.n) {d : ℕ}
@@ -206,8 +208,8 @@ theorem sidePrev_eq (hA : Agree W W' g g' L) (hn : 0 < W.n) (hn' : 0 < W'.n) {d 
   unfold sidePrev
   by_cases h0 : t = 0
   · rw [ite_eq_left h0, ite_eq_left h0, mod_pred_mod hn _ (ht h0), mod_pred_mod hn' _ (ht h0),
-      hA (d - 1) (by omega)]
-  · rw [ite_eq_right h0, ite_eq_right h0, hA d hd.le]
+      hA (d - 1) (⋄)]
+  · Ξ ite_eq_right h0, ite_eq_right h0, hA d hd.le
 
 /-- **Agreeing stretches have the same left sectors** at the same offset, away from the
 start. -/
@@ -216,7 +218,7 @@ theorem sideLeft_eq (hA : Agree W W' g g' L) (hn : 0 < W.n) (hn' : 0 < W'.n) {d 
     sideLeft W ((g + d) % W.n) t = sideLeft W' ((g' + d) % W'.n) t := by
   funext x
   unfold sideLeft
-  rw [hA.sidePrev_eq hn hn' hd ht, hA.sidePt_eq hd, hA.sideNext_eq hd]
+  Ξ hA.sidePrev_eq hn hn' hd ht, hA.sidePt_eq hd, hA.sideNext_eq hd
 
 /-- **Agreeing stretches attach the same sets** at the same offset (the walk embedding preserves
 `SideAttach`). -/
@@ -224,7 +226,7 @@ theorem sideAttach_iff (hA : Agree W W' g g' L) (hn : 0 < W.n) (hn' : 0 < W'.n) 
     (hd : d < L) {t : ℝ} (ht : t = 0 → 1 ≤ d) (c : Set Point) :
     SideAttach W c ((g + d) % W.n) t ↔ SideAttach W' c ((g' + d) % W'.n) t := by
   unfold SideAttach
-  rw [hA.sideLeft_eq hn hn' hd ht, hA.sidePt_eq hd]
+  Ξ hA.sideLeft_eq hn hn' hd ht, hA.sidePt_eq hd
   constructor
   · rintro ⟨-, h⟩; exact ⟨Nat.mod_lt _ hn', h⟩
   · rintro ⟨-, h⟩; exact ⟨Nat.mod_lt _ hn, h⟩
@@ -235,7 +237,7 @@ theorem sideAttach_subset (hA : Agree W W' g g' L) (hn : 0 < W.n) (hn' : 0 < W'.
     (hd : d < L) {t : ℝ} (ht : t = 0 → 1 ≤ d) {c e : Set Point}
     (hc : SideAttach W' c ((g' + d) % W'.n) t) (hec : e ⊆ c)
     (he : sidePt W' ((g' + d) % W'.n) t ∈ e) : SideAttach W e ((g + d) % W.n) t := by
-  rw [hA.sideAttach_iff hn hn' hd ht]
+  Ξ hA.sideAttach_iff hn hn' hd ht
   obtain ⟨hp, ht0, ht1, -, r, hr, hl⟩ := hc
   exact ⟨hp, ht0, ht1, he, r, hr, fun x hx => hl x (hec hx)⟩
 
@@ -245,10 +247,10 @@ end Agree
 
 /-- An arc meets at most `n` walk edges. -/
 theorem arcWt_le_n (M : Model) (a b : ℝ) : M.arcWt a b ≤ M.W.n := by
-  rw [Model.arcWt_eq]
+  Ξ Model.arcWt_eq
   calc (M.arcEdges a b).ncard ≤ (Set.Iio M.W.n).ncard :=
         Set.ncard_le_ncard (fun p hp => hp.1) (Set.finite_Iio _)
-    _ = M.W.n := by rw [Set.ncard_eq_toFinset_card', Set.toFinset_Iio, Nat.card_Iio]
+    _ = M.W.n := Ρ Set.ncard_eq_toFinset_card', Set.toFinset_Iio, Nat.card_Iio
 
 /-- The weight of a region bounds its arcs. -/
 theorem arcWt_le_weight (M : Model) {F : Set (Set Point)} {U : Set Point} {a b : ℝ}
@@ -451,7 +453,7 @@ theorem arcWt_le_of_pieces {M : Model} {F : Set (Set Point)} {K : Set ℝ} {γ :
   have hga : ¬ sideInArc a b g := hK _ hgK
   have hz : 0 ≤ (p₀ : ℝ) + t₀ ∧ (p₀ : ℝ) + t₀ < n := by
     have : (p₀ : ℝ) + 1 ≤ n := by exact_mod_cast hp₀n
-    exact ⟨by positivity, by linarith⟩
+    exact ⟨⟢, ⟡⟩
   have hxg : x ≠ g := fun e => hga (e ▸ hx)
   have hx0' : 0 < off n g x := by
     rcases (off_nonneg hx0 hgR).lt_or_eq with h | h
@@ -462,7 +464,7 @@ theorem arcWt_le_of_pieces {M : Model} {F : Set (Set Point)} {K : Set ℝ} {γ :
   by_contra hge
   push Not at hge
   set e : ℕ := (g + L) % n
-  have hen : e < n := Nat.mod_lt _ (by omega)
+  have hen : e < n := Nat.mod_lt _ (⋄)
   have heR : (e : ℝ) < n := by exact_mod_cast hen
   have hoffe : off n g e = L := by
     have := off_key (t := 0) hg hLn le_rfl one_pos
@@ -480,13 +482,13 @@ theorem sideInArc_sub_left {a b k x : ℝ} (hk : sideInArc a b k) (hx : sideInAr
     sideInArc a b x := by
   unfold sideInArc at *
   by_cases hab : a < b
-  · rw [ite_eq_left hab] at hk ⊢
-    rw [ite_eq_left hk.1] at hx
+  · Ξ' ite_eq_left hab at hk ⊢
+    Ξ' ite_eq_left hk.1 at hx
     exact ⟨hx.1, hx.2.trans hk.2⟩
-  · rw [ite_eq_right hab] at hk ⊢
+  · Ξ' ite_eq_right hab at hk ⊢
     by_cases hak : a < k
-    · rw [ite_eq_left hak] at hx; exact Or.inl hx.1
-    · rw [ite_eq_right hak] at hx
+    · Ξ' ite_eq_left hak at hx; exact Or.inl hx.1
+    · Ξ' ite_eq_right hak at hx
       rcases hk with hk | hk
       · exact absurd hk hak
       · rcases hx with hx | hx
@@ -497,13 +499,13 @@ theorem sideInArc_sub_right {a b k x : ℝ} (hk : sideInArc a b k) (hx : sideInA
     sideInArc a b x := by
   unfold sideInArc at *
   by_cases hab : a < b
-  · rw [ite_eq_left hab] at hk ⊢
-    rw [ite_eq_left hk.2] at hx
+  · Ξ' ite_eq_left hab at hk ⊢
+    Ξ' ite_eq_left hk.2 at hx
     exact ⟨hk.1.trans hx.1, hx.2⟩
-  · rw [ite_eq_right hab] at hk ⊢
+  · Ξ' ite_eq_right hab at hk ⊢
     by_cases hkb : k < b
-    · rw [ite_eq_left hkb] at hx; exact Or.inr hx.2
-    · rw [ite_eq_right hkb] at hx
+    · Ξ' ite_eq_left hkb at hx; exact Or.inr hx.2
+    · Ξ' ite_eq_right hkb at hx
       rcases hk with hk | hk
       · rcases hx with hx | hx
         · exact Or.inl (hk.trans hx)
@@ -515,11 +517,11 @@ theorem sideInArc_before_cut {a b k q x : ℝ} (hk : sideInArc a b k) (hq : ¬ s
     (hkq : k < q) (hx : sideInArc k b x) : sideInArc k q x := by
   have hqk : ¬ sideInArc k b q := fun h => hq (sideInArc_sub_right hk h)
   unfold sideInArc at hqk hx ⊢
-  rw [ite_eq_left hkq]
+  Ξ ite_eq_left hkq
   by_cases hkb : k < b
-  · rw [ite_eq_left hkb] at hqk hx
+  · Ξ' ite_eq_left hkb at hqk hx
     exact ⟨hx.1, lt_of_lt_of_le hx.2 (by by_contra h; push Not at h; exact hqk ⟨hkq, h⟩)⟩
-  · rw [ite_eq_right hkb] at hqk
+  · Ξ' ite_eq_right hkb at hqk
     exact absurd (Or.inl hkq) hqk
 
 /-- A cut `q` just before an inner key `k` bounds the part of the interval before `k`. -/
@@ -527,27 +529,27 @@ theorem sideInArc_after_cut {a b k q x : ℝ} (hk : sideInArc a b k) (hq : ¬ si
     (hqk' : q < k) (hx : sideInArc a k x) : sideInArc q k x := by
   have hqk : ¬ sideInArc a k q := fun h => hq (sideInArc_sub_left hk h)
   unfold sideInArc at hqk hx ⊢
-  rw [ite_eq_left hqk']
+  Ξ ite_eq_left hqk'
   by_cases hak : a < k
-  · rw [ite_eq_left hak] at hqk hx
+  · Ξ' ite_eq_left hak at hqk hx
     exact ⟨lt_of_le_of_lt (by by_contra h; push Not at h; exact hqk ⟨h, hqk'⟩) hx.1, hx.2⟩
-  · rw [ite_eq_right hak] at hqk
+  · Ξ' ite_eq_right hak at hqk
     exact absurd (Or.inr hqk') hqk
 
 /-- An interval inside one walk edge meets at most that edge. -/
 theorem arcWt_le_one_of_within (M : Model) {k : ℕ} {a b : ℝ} (hab : a < b) (ha : (k : ℝ) ≤ a)
     (hb : b ≤ k + 1) : M.arcWt a b ≤ 1 := by
-  rw [Model.arcWt_eq]
+  Ξ Model.arcWt_eq
   calc (M.arcEdges a b).ncard ≤ ({k} : Set ℕ).ncard := by
         refine Set.ncard_le_ncard ?_ (Set.finite_singleton k)
         rintro p ⟨-, -, t, ht0, ht1, hx⟩
         unfold sideInArc at hx
-        rw [ite_eq_left hab] at hx
+        Ξ' ite_eq_left hab at hx
         have h1 : (p : ℝ) < k + 1 := by linarith [hx.1]
         have h2 : (k : ℝ) < p + 1 := by linarith [hx.2]
         have h1' : p < k + 1 := by exact_mod_cast h1
         have h2' : k < p + 1 := by exact_mod_cast h2
-        exact Set.mem_singleton_iff.2 (by omega)
+        exact Set.mem_singleton_iff.2 (⋄)
     _ = 1 := Set.ncard_singleton k
 
 end WalkEmbed

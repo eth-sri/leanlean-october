@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFDecompGlue
 
 /-!
@@ -45,14 +47,14 @@ theorem fcBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       c'.nmem = upd (upd (upd c.nmem (A + 12 + 19 * R + 3 * j) (fv c.nmem A R 16 j))
         (A + 12 + 19 * R + 3 * j + 1) (fv c.nmem A R 17 j))
         (A + 12 + 19 * R + 3 * j + 2) (fv c.nmem A R 18 j) := by
-  have b16 := hR.b 16 (by norm_num); have b17 := hR.b 17 (by norm_num)
-  have b18 := hR.b 18 (by norm_num); have b19 := hR.b 19 (by norm_num)
+  have b16 := hR.b 16 (⊛); have b17 := hR.b 17 (⊛)
+  have b18 := hR.b 18 (⊛); have b19 := hR.b 19 (⊛)
   simp only [Nat.reduceAdd] at b16 b17 b18 b19
   have o := hR.one
-  have h16 : 16 * R + j < 19 * R := by omega
-  have hjR : 3 * j + 3 ≤ 3 * K := by omega
+  have h16 : 16 * R + j < 19 * R := ⋄
+  have hjR : 3 * j + 3 ≤ 3 * K := ⋄
   unfold fcBody ldF fb
-  simp only [Nat.reduceAdd]
+  ϴ Nat.reduceAdd
   refine spec_seq ?_
   exec_block
   side_tac
@@ -75,20 +77,20 @@ theorem fcBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
   refine spec_instr (Machine.Exec.addN ‹WordsBounded _ _› _ _ _ ?_) fun _hw => ?_
   rotate_left
   side_tac
-  refine ⟨by norm_num, ⟨fun r hr hra => ?_, rfl, rfl, rfl, fun a ha => ?_⟩, ?_, ?_⟩
+  refine ⟨⊛, ⟨fun r hr hra => ?_, rfl, rfl, rfl, fun a ha => ?_⟩, ?_, ?_⟩
   · unfold Prot at hr
     config_simp
     simp (disch := omega) only [Machine.upd_other]
   · config_simp
-    simp only [b16, b17, b18, b19, h20, o]
+    ϴ b16, b17, b18, b19, h20, o
     simp (disch := omega) only [Machine.upd_other]
   · config_simp; rw [h20, o]
   · config_simp
-    simp only [b16, b17, b18, b19, h20, o]
+    ϴ b16, b17, b18, b19, h20, o
     simp (disch := omega) only [Machine.upd_other]
     unfold fv
     funext a
-    simp only [Machine.upd_apply]
+    ϴ Machine.upd_apply
     split_ifs <;> first | rfl | omega
 
 /-- The node table value at address `a` (relative to `DB = A + 12 + 19 R`). -/
@@ -165,17 +167,17 @@ theorem hdrS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
       c'.nmem (A + 7) = c.nmem (B + 7) ∧ c'.nmem (A + 8) = A + 12 + 19 * R ∧
       c'.nmem (A + 9) = c.nreg 60024 ∧ c'.nmem (A + 10) = A + 12 ∧ c'.nmem (A + 11) = K ∧
       ∀ a, (a < A ∨ A + 12 ≤ a) → c'.nmem a = c.nmem a := by
-  have b0 := hR.b 0 (by norm_num); have b19 := hR.b 19 (by norm_num)
+  have b0 := hR.b 0 (⊛); have b19 := hR.b 19 (⊛)
   simp only [Nat.reduceAdd, Nat.zero_mul, Nat.add_zero] at b0 b19
   have o := hR.one; have t := hR.two; have rA := hR.rA; have rK := hR.rK; have rR := hR.rR
   unfold hdrS
   exec_block
   side_tac
-  refine ⟨by omega, ?_, fun r h1 h2 h3 h4 => ?_, rfl, rfl, rfl, ?_⟩
+  refine ⟨⋄, ?_, fun r h1 h2 h3 h4 => ?_, rfl, rfl, rfl, ?_⟩
   · config_simp; exact rA
   · config_simp; simp (disch := omega) only [Machine.upd_other]
   · config_simp
-    simp only [b0, b19, o, t, rA, rK, rR, hB]
+    ϴ b0, b19, o, t, rA, rK, rR, hB
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun a ha => ?_⟩ <;>
       simp (disch := omega) only [Machine.upd_other, Machine.upd_same]
 

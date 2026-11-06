@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseHostDom
 public import Chazelle.Core.DownPhaseTourA
 
@@ -31,7 +33,7 @@ theorem sideLeftOf_scale {a a' v b b' x : Point} {l m : ℝ} (hl : 0 < l) (hm : 
     (ha : a' - v = l • (a - v)) (hb : b' - v = m • (b - v)) :
     sideLeftOf a' v b' x ↔ sideLeftOf a v b x := by
   unfold sideLeftOf
-  rw [ha, hb]
+  Ξ ha, hb
   have := BoxT.sideCcw_smul hm one_pos hl (b - v) (x - v) (a - v)
   rwa [one_smul] at this
 

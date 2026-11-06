@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildValid
 
 /-!
@@ -37,7 +39,7 @@ theorem evOf_fst (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (c : �
 theorem word_eq (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) :
     word M Q L E = E.map (· / 2) := by
   unfold word evs
-  rw [map_map]
+  Ξ map_map
   exact map_congr_left fun c _ => evOf_fst M Q L c
 
 namespace Input
@@ -58,27 +60,27 @@ theorem first_e1 {i : ℕ} (hi : i < L.length) :
   have hSk : S[k] = e1 M Q L i := getElem_idxOf hkl
   have hsplit : S = S.take k ++ e1 M Q L i :: S.drop (k + 1) := by
     conv_lhs => rw [← take_append_drop k S]
-    rw [drop_eq_getElem_cons hkl, hSk]
+    Ξ drop_eq_getElem_cons hkl, hSk
   have hcnt := hc.count_prefix_self hsplit hi
   have hni : i ∉ (S.take k).map Prod.fst := fun h' => by
     rw [← count_pos_iff] at h'; omega
   have hw : word M Q L E = (S.take k).map Prod.fst ++ i :: (S.drop (k + 1)).map Prod.fst := by
     show S.map Prod.fst = _
     conv_lhs => rw [hsplit]
-    rw [map_append, map_cons]
+    Ξ map_append, map_cons
     rfl
   have hidx : (word M Q L E).idxOf i = k := by
-    rw [hw, idxOf_append_of_notMem hni, idxOf_cons_self, length_map, length_take]
+    Ξ hw, idxOf_append_of_notMem hni, idxOf_cons_self, length_map, length_take
     omega
   have hlen : S.length = E.length := length_map _
   refine ⟨by rw [hidx]; omega, ?_, hidx.symm⟩
-  rw [hidx, getElem?_eq_getElem hkl, hSk]
+  Ξ hidx, getElem?_eq_getElem hkl, hSk
 
 /-- **The label outside chord `i`** is the label before its first occurrence. -/
 theorem outside_eq {i : ℕ} (hi : i < L.length) :
     outside M Q L E i = BuildStack.label (word M Q L E) ((word M Q L E).idxOf i) := by
   unfold outside
-  rw [(h.first_e1 hi).2.2]
+  Ξ (h.first_e1 hi).2.2
 
 /-- The code at the first occurrence of chord `i`. -/
 theorem first_code {i : ℕ} (hi : i < L.length) :
@@ -86,7 +88,7 @@ theorem first_code {i : ℕ} (hi : i < L.length) :
   obtain ⟨hlt, hget, -⟩ := h.first_e1 hi
   unfold evs at hget
   rw [getElem?_map, getElem?_eq_getElem hlt, Option.map_some, Option.some_inj] at hget
-  rw [List.getD_eq_getElem?_getD, getElem?_eq_getElem hlt, Option.getD_some]
+  Ξ List.getD_eq_getElem?_getD, getElem?_eq_getElem hlt, Option.getD_some
   exact hget
 
 /-- The first occurrence of chord `i` is an event of chord `i`. -/
@@ -134,15 +136,15 @@ theorem chordRec_eq {i : ℕ} (hi : i < L.length) :
   have hp := h.first_parity hi
   rw [word_eq] at hp
   unfold chordRec
-  rw [h.outside_eq hi, word_eq]
+  Ξ h.outside_eq hi, word_eq
   by_cases hk : kl M Q L i < kr M Q L i
-  · rw [ite_eq_left hk, ite_eq_left hk, ite_eq_left (hp.2 hk), ite_eq_left (hp.2 hk)]
-  · rw [ite_eq_right hk, ite_eq_right hk, ite_eq_right (fun h' => hk (hp.1 h')), ite_eq_right (fun h' => hk (hp.1 h'))]
+  · Ξ ite_eq_left hk, ite_eq_left hk, ite_eq_left (hp.2 hk), ite_eq_left (hp.2 hk)
+  · Ξ ite_eq_right hk, ite_eq_right hk, ite_eq_right (fun h' => hk (hp.1 h')), ite_eq_right (fun h' => hk (hp.1 h'))
 
 /-- The word is a parenthesis word. -/
 theorem word_ok : BuildStack.NoCross (E.map (· / 2)) ∧ BuildStack.Twice (E.map (· / 2)) := by
   have := h.ctx.word
-  rw [← word_eq M Q L E]
+  Ξ ← word_eq M Q L E
   exact this
 
 end Input
@@ -154,18 +156,18 @@ theorem push_iff {w : List ℕ} (htw : BuildStack.Twice w) (hnc : BuildStack.NoC
     (hm : m < w.length) :
     (BuildStack.run (w.take m)).head? = some w[m] ↔ w[m] ∈ w.take m := by
   have hpre : w.take m ++ [w[m]] ++ w.drop (m + 1) = w := by
-    rw [append_assoc, singleton_append, ← drop_eq_getElem_cons hm, take_append_drop]
+    Ξ append_assoc, singleton_append, ← drop_eq_getElem_cons hm, take_append_drop
   have hxw : w.count w[m] = 2 := htw _ (getElem_mem hm)
   have hcx : (w.take m).count w[m] ≤ 1 := by
     have := congrArg (count w[m]) hpre
     rw [count_append, count_append, count_singleton_self] at this; omega
-  rw [BuildStack.run_eq_openList htw hnc (take_prefix m w), ← count_pos_iff]
+  Ξ BuildStack.run_eq_openList htw hnc (take_prefix m w), ← count_pos_iff
   constructor
   · intro hh
     have := BuildStack.mem_openList.1 (mem_of_mem_head? hh)
     omega
   · intro hpos
-    obtain ⟨rest, hrest⟩ := BuildStack.head_openList htw hnc hpre.symm (by omega)
+    obtain ⟨rest, hrest⟩ := BuildStack.head_openList htw hnc hpre.symm (⋄)
     rw [hrest]; rfl
 
 /-- The first occurrence of a new letter. -/
@@ -173,8 +175,8 @@ theorem idxOf_new {w : List ℕ} {m : ℕ} (hm : m < w.length) (hn : w[m] ∉ w.
     w.idxOf w[m] = m := by
   generalize hx : w[m] = x at hn
   have hw : w = w.take m ++ x :: w.drop (m + 1) := by
-    rw [← hx, ← drop_eq_getElem_cons hm, take_append_drop]
-  rw [hw, idxOf_append_of_notMem hn, idxOf_cons_self, length_take]
+    Ξ ← hx, ← drop_eq_getElem_cons hm, take_append_drop
+  Ξ hw, idxOf_append_of_notMem hn, idxOf_cons_self, length_take
   omega
 
 /-! ## The gaps -/
@@ -184,19 +186,19 @@ theorem Input.gap_iff (h : Input M Q L E) {m : ℕ} (hm : m < E.length) :
     m ∈ gapStarts M Q L E ↔ (m + 1 = E.length ∨
       M.key Q (wposOf L (E.getD m 0)) < M.key Q (wposOf L (E.getD (m + 1) 0))) := by
   unfold gapStarts
-  rw [mem_filter, decide_eq_true_iff]
-  simp only [mem_range, hm, true_and]
+  Ξ mem_filter, decide_eq_true_iff
+  ϴ mem_range, hm, true_and
   constructor
   · rintro (h1 | h1)
     · exact Or.inl h1
     · by_cases hm1 : m + 1 = E.length
       · exact Or.inl hm1
-      · right; rw [h.key_s hm, h.key_s (by omega)]; exact h1
+      · right; rw [h.key_s hm, h.key_s (⋄)]; exact h1
   · rintro (h1 | h1)
     · exact Or.inl h1
     · by_cases hm1 : m + 1 = E.length
       · exact Or.inl hm1
-      · right; rw [← h.key_s hm, ← h.key_s (by omega)]; exact h1
+      · right; rw [← h.key_s hm, ← h.key_s (⋄)]; exact h1
 
 end
 

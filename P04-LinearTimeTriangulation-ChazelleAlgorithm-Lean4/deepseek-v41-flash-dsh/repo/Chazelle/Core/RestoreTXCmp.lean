@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTShotOps
 public import Chazelle.Core.RestoreTIRec
 
@@ -54,28 +56,28 @@ def BxR (r : ℕ) : Bool :=
   Bprim r || decide (50200 ≤ r ∧ r < 50210) || decide (10700 ≤ r ∧ r < 10704)
 
 theorem wr_gRec (a b : ℕ) : wr BgK (gRec a b) = true := by
-  have h1 : wr BgK absKey = true := wr_mono wr_absKey (fun r h => by simp [BgK, h])
+  have h1 : wr BgK absKey = true := wr_mono wr_absKey (fun r h => ⊚ BgK, h)
   have h2 : wr BgK (iRec a b) = true := wr_mono (wr_iRec a b) (fun r h => by
-    simp only [BiR, decide_eq_true_eq] at h
+    ϴ' BiR, decide_eq_true_eq at h
     simp only [BgK, Bprim, Bool.or_eq_true, decide_eq_true_eq]; omega)
   simp only [gRec, cRec, cRecL, copies, wr, block, wrOK, h1, h2, List.map_cons, List.map_nil,
     Bool.and_true]
   decide
 
 theorem wr_xcR (a b d e : ℕ) : wr BxR (xcR a b d e) = true := by
-  have h1 : wr BxR absCmp = true := wr_mono wr_absCmp (fun r h => by simp [BxR, h])
+  have h1 : wr BxR absCmp = true := wr_mono wr_absCmp (fun r h => ⊚ BxR, h)
   have h2 : ∀ a b, wr BxR (gRec a b) = true := fun a b =>
     wr_mono (wr_gRec a b) (fun r h => by
-      simp only [BgK, Bool.or_eq_true] at h; simp only [BxR, Bool.or_eq_true]; tauto)
-  simp only [xcR, wr, h2, h1, Bool.and_true, Bool.true_and]
-  simp only [recSave, recLoad, copies, block, wr, wrOK, List.map_cons, List.map_nil]
+      ϴ' BgK, Bool.or_eq_true at h; simp only [BxR, Bool.or_eq_true]; tauto)
+  ϴ xcR, wr, h2, h1, Bool.and_true, Bool.true_and
+  ϴ recSave, recLoad, copies, block, wr, wrOK, List.map_cons, List.map_nil
   decide
 
 theorem opW_BxR : OpW BxR := fun r hr => by
-  simp only [BxR, Bool.or_eq_true, decide_eq_true_eq] at hr
+  ϴ' BxR, Bool.or_eq_true, decide_eq_true_eq at hr
   rcases hr with (hr | hr) | hr
-  · exact (opW_BgK r (by simp [BgK, hr]))
-  · exact (opW_BgK r (by simp [BgK, hr]))
+  · exact (opW_BgK r (⊚ BgK, hr))
+  · exact (opW_BgK r (⊚ BgK, hr))
   · refine ⟨?_, by unfold ALLOC; omega⟩
     have : bandOf r = bSign := by unfold bandOf bSign; omega
     rw [this]; decide

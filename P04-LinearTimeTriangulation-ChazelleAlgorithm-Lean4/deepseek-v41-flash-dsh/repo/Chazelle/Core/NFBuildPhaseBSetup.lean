@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildFinal
 public import Chazelle.Core.NFBuildPassStep
 
@@ -103,7 +105,7 @@ def BsetupB (r : ℕ) : Bool :=
     44004, 44005, 43244, 44006, 44007, 44008, 43245, 44011, 44012, 9999, 43100, 43101,
     43102, 43103, 43104])
 
-theorem wr_setupB : wr BsetupB setupB = true := by decide
+theorem wr_setupB : wr BsetupB setupB = true := ⌖
 
 /-- **The setup of phase B.** -/
 theorem setupB_exec (d : Config) (hw : WordsBounded W d) {K H SE : ℕ}
@@ -119,7 +121,7 @@ theorem setupB_exec (d : Config) (hw : WordsBounded W d) {K H SE : ℕ}
       d'.nreg 9999 = H + sizeB K ∧ d'.nreg 43100 = 0 ∧ d'.nreg 43101 = 0 ∧
       d'.nreg 43102 = 0 ∧ d'.nreg 43103 = SE ∧ d'.nreg 43104 = SE := by
   unfold sizeB at hW
-  have hW1 : 12 ≤ W := by omega
+  have hW1 : 12 ≤ W := ⋄
   unfold setupB
   exec_block
   all_goals first

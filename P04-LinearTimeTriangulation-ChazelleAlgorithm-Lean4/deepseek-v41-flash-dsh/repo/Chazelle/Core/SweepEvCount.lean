@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvTasks3
 public import Chazelle.Core.SweepEvCand3
 public import Chazelle.Core.GranSize
@@ -40,7 +42,7 @@ theorem finite_ncard_le_of_rel {α β : Type*} {A : Set α} {B : Set β} (hB : B
     (huniq : ∀ a a' b, R a b → R a' b → a = a') : A.Finite ∧ A.ncard ≤ B.ncard := by
   classical
   rcases A.eq_empty_or_nonempty with hA | ⟨a₀, ha₀⟩
-  · rw [hA]; exact ⟨finite_empty, by simp⟩
+  · rw [hA]; exact ⟨finite_empty, ✓⟩
   obtain ⟨b₀, -, -⟩ := hcov a₀ ha₀
   have : Nonempty β := ⟨b₀⟩
   choose! f hfB hfR using hcov
@@ -80,7 +82,7 @@ theorem cut_keys_ncard {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F
   calc {x : ℝ | M.IsCut F x}.ncard ≤ (fx '' F ∪ fy '' F).ncard := ncard_le_ncard hsub hfu
     _ ≤ (fx '' F).ncard + (fy '' F).ncard := ncard_union_le _ _
     _ ≤ F.ncard + F.ncard := Nat.add_le_add (ncard_image_le hfin) (ncard_image_le hfin)
-    _ = 2 * F.ncard := by ring
+    _ = 2 * F.ncard := ⋆
 
 /-! ## The size of `F₂⁺` -/
 
@@ -94,7 +96,7 @@ theorem topChords₂_ncard_le (J : Merge.Junction) : (topChords₂ J).ncard ≤ 
       ≤ ((fun σ => J.whole.chordSet (J.m₁ + J.right.topIdx) σ) '' ({1, -1} : Set ℝ)).ncard :=
         ncard_le_ncard hsub ((toFinite _).image _)
     _ ≤ ({1, -1} : Set ℝ).ncard := ncard_image_le (toFinite _)
-    _ = 2 := ncard_pair (by norm_num)
+    _ = 2 := ncard_pair (⊛)
 
 /-- **`|F₂⁺| ≤ 2 |S₂| + 4`.** -/
 theorem F₂plus_ncard_le (J : Merge.Junction) {S₂ : Set (Set Point)} (hS₂f : S₂.Finite) :
@@ -103,7 +105,7 @@ theorem F₂plus_ncard_le (J : Merge.Junction) {S₂ : Set (Set Point)} (hS₂f 
   rw [ncard_empty, zero_add] at h1
   have h2 := topChords₂_ncard_le J
   calc (F₂plus J S₂).ncard ≤ (J.fusion ∅ S₂).ncard + (topChords₂ J).ncard := ncard_union_le _ _
-    _ ≤ 2 * S₂.ncard + 4 := by omega
+    _ ≤ 2 * S₂.ncard + 4 := ⋄
 
 /-- **The offsets of the cut keys of `F₂⁺`**: finitely many, at most `4 |S₂| + 8`. -/
 theorem cutOffs_ncard (J : Merge.Junction) (hP : J.P.Simple) {S₂ : Set (Set Point)}
@@ -120,19 +122,19 @@ theorem cutOffs_ncard (J : Merge.Junction) (hP : J.P.Simple) {S₂ : Set (Set Po
       ≤ (oW J '' {x : ℝ | (chainModel J.whole).IsCut (F₂plus J S₂) x}).ncard :=
         ncard_le_ncard hsub (hfin.image _)
     _ ≤ {x : ℝ | (chainModel J.whole).IsCut (F₂plus J S₂) x}.ncard := ncard_image_le hfin
-    _ ≤ 4 * S₂.ncard + 8 := by omega
+    _ ≤ 4 * S₂.ncard + 8 := ⋄
 
 /-! ## The window offsets -/
 
 /-- The point of the walk of `C₁` at `b₁` is the shared vertex. -/
 theorem b₁_pt (J : Merge.Junction) :
     sidePt (chainModel J.left).W ((b₁ J + 0) % (chainModel J.left).W.n) 0 = J.shared := by
-  rw [add_zero, Nat.mod_eq_of_lt (b₁_lt (J := J))]
+  Ξ add_zero, Nat.mod_eq_of_lt (b₁_lt (J := J))
   unfold b₁
   split_ifs with h
-  · rw [(sidePt_top_copies J.left).2]
+  · Ξ (sidePt_top_copies J.left).2
     exact left_top_eq J (caseB_facts J h).1
-  · rw [Chazelle.Chain.sidePt_zero, vtx_tpos' J.left (k := J.m₁) (le_refl _)]
+  · Ξ Chazelle.Chain.sidePt_zero, vtx_tpos' J.left (k := J.m₁) (le_refl _)
     rfl
 
 /-- The predecessor of a nonzero residue. -/
@@ -140,9 +142,9 @@ theorem pred_mod' {b d n e : ℕ} (hb : b < n) (hd : d < n) (h1 : 1 ≤ d)
     (he : (b + d) % n = e) (he0 : e ≠ 0) : (b + (d - 1)) % n + 1 = e := by
   by_cases h : b + d < n
   · rw [Nat.mod_eq_of_lt h] at he
-    rw [Nat.mod_eq_of_lt (by omega)]; omega
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at he
-    rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]; omega
+    rw [Nat.mod_eq_of_lt (⋄)]; omega
+  · rw [Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (⋄)] at he
+    rw [Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (⋄)]; omega
 
 /-- The two readings `(d, 1)` and `(d + 1, 0)` of a vertex key give the same offset. -/
 theorem win_uniq_step (J : Merge.Junction) (hP : J.P.Simple) {d d' : ℕ}
@@ -157,8 +159,8 @@ theorem win_uniq_step (J : Merge.Junction) (hP : J.P.Simple) {d d' : ℕ}
     rcases Nat.eq_zero_or_pos d' with h0 | h0
     · subst h0; exact absurd (b₁_pt J) (hv'.2.2.2 rfl)
     · exact h0
-  have hpm := pred_mod' hb hd' hd'1 hk (by omega)
-  have hdd : d = d' - 1 := add_mod_inj (g := b₁ J) hd (by omega) (by omega)
+  have hpm := pred_mod' hb hd' hd'1 hk (⋄)
+  have hdd : d = d' - 1 := add_mod_inj (g := b₁ J) hd (⋄) (⋄)
   subst hdd
   obtain ⟨-, hg, hl, -⟩ := hv
   obtain ⟨-, hg', -, -⟩ := hv'

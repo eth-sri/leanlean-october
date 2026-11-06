@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreSearch
 
 /-!
@@ -40,7 +42,7 @@ theorem cyc_cases {a b x : ℝ} (hab : a ≠ b) :
   right; right
   unfold sideInArc
   rcases lt_or_gt_of_ne hab with h | h
-  · rw [ite_eq_left h, ite_eq_right (not_lt.2 h.le)]
+  · Ξ ite_eq_left h, ite_eq_right (not_lt.2 h.le)
     by_cases h1 : a < x ∧ x < b
     · exact Or.inl h1
     · right
@@ -49,7 +51,7 @@ theorem cyc_cases {a b x : ℝ} (hab : a ≠ b) :
       · left
         have : ¬ x < b := fun h3 => h1 ⟨h2, h3⟩
         exact lt_of_le_of_ne (not_lt.1 this) (Ne.symm hxb)
-  · rw [ite_eq_right (not_lt.2 h.le), ite_eq_left h]
+  · Ξ ite_eq_right (not_lt.2 h.le), ite_eq_left h
     by_cases h1 : b < x ∧ x < a
     · exact Or.inr h1
     · left
@@ -109,7 +111,7 @@ theorem exists_attach_off (hM : WalkAx M) {e c : Set Point} (he : e ∈ M.Adm) (
   rw [h₁] at ha
   rw [h₂] at hb
   apply hce
-  rw [hcab, heq]
+  Ξ hcab, heq
   -- `{a, b} = {ea, eb}`
   have hpts : (a = ea ∧ b = eb) ∨ (a = eb ∧ b = ea) := by
     rcases ha with ha | ha <;> rcases hb with hb | hb
@@ -184,7 +186,7 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
   -- a half lies in one component
   have hin : ∀ Q ∈ regionsIn M.D F, Q ⊆ R → 2 ≤ (exitsIn M.D S Q).ncard → Q ⊆ K₁ ∨ Q ⊆ K₂ := by
     intro Q hQ _ h2
-    obtain ⟨c, hc⟩ := nonempty_of_ncard_ne_zero (s := exitsIn M.D S Q) (by omega)
+    obtain ⟨c, hc⟩ := nonempty_of_ncard_ne_zero (s := exitsIn M.D S Q) (⋄)
     rcases hside Q hQ c hc with h | h
     · exact Or.inl h.1
     · exact Or.inr h.1
@@ -212,32 +214,32 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
   have hdiff : ¬ ((R₁ ⊆ K₁ ∧ R₂ ⊆ K₁) ∨ (R₁ ⊆ K₂ ∧ R₂ ⊆ K₂)) := by
     obtain ⟨ea, eb, heab, heq, -, heopen, -, -⟩ := hM.ends e he
     set z := Geometry.lerp ea eb (1 / 2) with hz
-    have hzD : z ∈ M.D := heopen _ ⟨by norm_num, by norm_num⟩
+    have hzD : z ∈ M.D := heopen _ ⟨⊛, ⊛⟩
     have hze : z ∈ e := by
-      rw [heq]; exact Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)
+      rw [heq]; exact Geometry.lerp_mem_segment _ _ (⊛) (⊛)
     have hRo : IsOpen R := hF.regionsIn_open hSF hR
     obtain ⟨ρ, hρ, hball⟩ := Metric.isOpen_iff.1 hRo z (heR ⟨hze, hzD⟩)
     have hsys : ({e} : Set (Set Point)) ⊆ F := singleton_subset_iff.2 heF
     obtain ⟨ε₀, hε₀, hsep⟩ := hF.chord_separates_in hsys (mem_singleton e) hze hzD
     set ε := min (ε₀ / 2) (ρ / 2) with hε
-    have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
-    obtain ⟨hu, hd, hne⟩ := hsep ε hε0 (lt_of_le_of_lt (min_le_left _ _) (by linarith))
+    have hε0 : 0 < ε := lt_min (⟡) (⟡)
+    obtain ⟨hu, hd, hne⟩ := hsep ε hε0 (lt_of_le_of_lt (min_le_left _ _) (⟡))
     have hfe : freeIn M.D {e} = M.D \ e := by
       ext w; simp [freeIn]
     rw [hfe] at hu hd hne
     have hmemR : ∀ w : Point, dist w z < ρ → w ∈ M.D \ e → w ∈ R₁ ∪ R₂ := by
       intro w hw hwe
-      rw [hs.union]
+      Ξ hs.union
       exact ⟨hball hw, hwe.2⟩
     have hdu : dist ((z.1, z.2 + ε) : Point) z < ρ := by
-      rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq]
-      simp only [sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hε0]
-      rw [max_eq_right hε0.le]
+      Ξ Prod.dist_eq, Real.dist_eq, Real.dist_eq
+      ϴ sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hε0
+      Ξ max_eq_right hε0.le
       linarith [min_le_right (ε₀ / 2) (ρ / 2)]
     have hdd : dist ((z.1, z.2 - ε) : Point) z < ρ := by
-      rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq]
-      simp only [sub_self, abs_zero, sub_sub_cancel_left, abs_neg, abs_of_pos hε0]
-      rw [max_eq_right hε0.le]
+      Ξ Prod.dist_eq, Real.dist_eq, Real.dist_eq
+      ϴ sub_self, abs_zero, sub_sub_cancel_left, abs_neg, abs_of_pos hε0
+      Ξ max_eq_right hε0.le
       linarith [min_le_right (ε₀ / 2) (ρ / 2)]
     have hU12 := hmemR _ hdu hu
     have hD12 := hmemR _ hdd hd

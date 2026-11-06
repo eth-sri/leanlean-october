@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvTasks4
 public import Chazelle.Core.SweepEvStartM
 public import Chazelle.Core.SweepEvCount
@@ -68,10 +70,10 @@ noncomputable def soff (P : Polygon) (J : Merge.Junction) (r : ℕ × ℕ × ℕ
   oW J (r.1 + (chainModel J.whole).param (Qof P) ⟨r.1, r.2.1⟩)
 
 theorem stopsOf_getElem {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)} {i : ℕ} (hi : i < rs.length) :
-    (stopsOf J (Qof P) N₂ rs)[i]'(by simp [stopsOf, hi]) =
+    (stopsOf J (Qof P) N₂ rs)[i]'(⊚ stopsOf, hi) =
       ((rs[i]).1, (chainModel J.whole).param (Qof P) ⟨(rs[i]).1, (rs[i]).2.1⟩,
         stopSet J (Qof P) N₂ (rs[i]).2.2.1 (rs[i]).2.2.2.1 (rs[i]).2.2.2.2) := by
-  simp [stopsOf]
+  Θ stopsOf
 
 /-- The facts of the stop `i`: its chord, attached at its position, on the `C₁` part. -/
 theorem stop_facts {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
@@ -85,7 +87,7 @@ theorem stop_facts {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
         (stopSet J (Qof P) N₂ (rs[i]).2.2.1 (rs[i]).2.2.2.1 (rs[i]).2.2.2.2) (rs[i]).1
         ((chainModel J.whole).param (Qof P) ⟨(rs[i]).1, (rs[i]).2.1⟩) ∧
       (Lst J : ℝ) ≤ soff P J rs[i] := by
-  have hi' : i < (stopsOf J (Qof P) N₂ rs).length := by simp [stopsOf, hi]
+  have hi' : i < (stopsOf J (Qof P) N₂ rs).length := ⊚ stopsOf, hi
   have h := hst.1 _ (List.getElem_mem hi')
   rw [stopsOf_getElem hi] at h
   exact h
@@ -94,10 +96,10 @@ theorem stop_facts {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
 theorem stops_sorted {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
     (hst : StopsOK J (N₂.F (chainModel J.right) (Qof P)) (stopsOf J (Qof P) N₂ rs)) {i i' : ℕ}
     (hii : i ≤ i') (hi' : i' < rs.length) :
-    soff P J (rs[i]'(by omega)) ≤ soff P J rs[i'] := by
+    soff P J (rs[i]'(⋄)) ≤ soff P J rs[i'] := by
   rcases hii.lt_or_eq with h | rfl
-  · have hl : (stopsOf J (Qof P) N₂ rs).length = rs.length := by simp [stopsOf]
-    have := List.pairwise_iff_getElem.1 hst.2.2.1 i i' (by omega) (by omega) h
+  · have hl : (stopsOf J (Qof P) N₂ rs).length = rs.length := ⊚ stopsOf
+    have := List.pairwise_iff_getElem.1 hst.2.2.1 i i' (⋄) (⋄) h
     rw [stopsOf_getElem, stopsOf_getElem] at this
     exact this
   · exact le_rfl
@@ -107,24 +109,24 @@ theorem stops_two (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂
     {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
     (hst : StopsOK J (N₂.F (chainModel J.right) (Qof P)) (stopsOf J (Qof P) N₂ rs)) {i : ℕ}
     (hi : i + 2 < rs.length) :
-    soff P J (rs[i]'(by omega)) < soff P J rs[i + 2] := by
+    soff P J (rs[i]'(⋄)) < soff P J rs[i + 2] := by
   set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
-  have hS₂ : S₂ ⊆ Merge.augChords J.right := hN.1.2.1
+  have hS₂ := hN.1.2.1
   have hS₂f : S₂.Finite := hN.1.1
   have hC := corr_right0 J hP hS₂ hS₂f
-  have h01 := stops_sorted hst (i := i) (i' := i + 1) (by omega) (by omega)
-  have h12 := stops_sorted hst (i := i + 1) (i' := i + 2) (by omega) (by omega)
+  have h01 := stops_sorted hst (i := i) (i' := i + 1) (⋄) (⋄)
+  have h12 := stops_sorted hst (i := i + 1) (i' := i + 2) (⋄) (⋄)
   by_contra hlt
   push Not at hlt
-  have e01 : soff P J (rs[i]'(by omega)) = soff P J (rs[i + 1]'(by omega)) := by linarith
-  have e02 : soff P J (rs[i]'(by omega)) = soff P J rs[i + 2] := by linarith
-  obtain ⟨f0, -, a0, -⟩ := stop_facts hst (i := i) (by omega)
-  obtain ⟨f1, -, a1, -⟩ := stop_facts hst (i := i + 1) (by omega)
-  obtain ⟨f2, -, a2, -⟩ := stop_facts hst (i := i + 2) (by omega)
+  have e01 : soff P J (rs[i]'(⋄)) = soff P J (rs[i + 1]'(⋄)) := ⟡
+  have e02 : soff P J (rs[i]'(⋄)) = soff P J rs[i + 2] := ⟡
+  obtain ⟨f0, -, a0, -⟩ := stop_facts hst (i := i) (⋄)
+  obtain ⟨f1, -, a1, -⟩ := stop_facts hst (i := i + 1) (⋄)
+  obtain ⟨f2, -, a2, -⟩ := stop_facts hst (i := i + 2) (⋄)
   obtain ⟨p01, t01⟩ := pos_eq_of_oW hP hS₂ hS₂f a0.1 a1.1 a0.2.1 a0.2.2.1 a1.2.1 a1.2.2.1 e01
   obtain ⟨p02, t02⟩ := pos_eq_of_oW hP hS₂ hS₂f a0.1 a2.1 a0.2.1 a0.2.2.1 a2.2.1 a2.2.2.1 e02
   -- the chords are pairwise distinct (no duplicate stops)
-  have hl : (stopsOf J (Qof P) N₂ rs).length = rs.length := by simp [stopsOf]
+  have hl : (stopsOf J (Qof P) N₂ rs).length = rs.length := ⊚ stopsOf
   have hnd := hst.2.2.2
   have dist : ∀ a b (ha : a < rs.length) (hb : b < rs.length), a ≠ b →
       (rs[a]).1 = (rs[b]).1 →
@@ -137,9 +139,9 @@ theorem stops_two (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂
     have := (List.Nodup.getElem_inj_iff hnd (hi := by rw [hl]; exact ha) (hj := by rw [hl]; exact hb)).1 (by
       rw [stopsOf_getElem ha, stopsOf_getElem hb, h2, h1, h3])
     exact this
-  have d01 := dist i (i + 1) (by omega) (by omega) (by omega) p01 t01
-  have d02 := dist i (i + 2) (by omega) (by omega) (by omega) p02 t02
-  have d12 := dist (i + 1) (i + 2) (by omega) (by omega) (by omega) (p01.symm.trans p02)
+  have d01 := dist i (i + 1) (⋄) (⋄) (⋄) p01 t01
+  have d02 := dist i (i + 2) (⋄) (⋄) (⋄) p02 t02
+  have d12 := dist (i + 1) (i + 2) (⋄) (⋄) (⋄) (p01.symm.trans p02)
     (t01.symm.trans t02)
   rw [← t01, ← p01] at a1
   rw [← t02, ← p02] at a2
@@ -167,7 +169,7 @@ noncomputable def pK0 (J : Merge.Junction) : ℕ := (gW J + Lst J) % (chainModel
 
 /-! ## The invariant at the start -/
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The invariant at the start key.**  The label set contains the labels of every anchored stop
 at the start key; if there is none, it is `{V}` for the region `V` faced before the end of the
 right stretch. -/
@@ -176,17 +178,17 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
     (hlen : ax.length = rs.length)
     (hst : StopsOK J (N₂.F (chainModel J.right) (Qof P)) (stopsOf J (Qof P) N₂ rs))
     (haux : ∀ i (hi : i < rs.length), AuxOK P J N₂
-      (stopSet J (Qof P) N₂ (rs[i]).2.2.1 (rs[i]).2.2.2.1 (rs[i]).2.2.2.2) (ax[i]'(by omega)))
+      (stopSet J (Qof P) N₂ (rs[i]).2.2.1 (rs[i]).2.2.2.1 (rs[i]).2.2.2.2) (ax[i]'(⋄)))
     {Λ : Set (Set Point)}
-    (hΛ : ∀ i (hi : i < rs.length), soff P J rs[i] = Lst J → (ax[i]'(by omega)).1 = 1 →
-      labSet J (Qof P) N₂ (ax[i]'(by omega)).2.1 (ax[i]'(by omega)).2.2.1
-        (ax[i]'(by omega)).2.2.2.1 0 0 ⊆ Λ)
-    (hB : (∀ i (hi : i < rs.length), soff P J rs[i] = Lst J → (ax[i]'(by omega)).1 ≠ 1) →
+    (hΛ : ∀ i (hi : i < rs.length), soff P J rs[i] = Lst J → (ax[i]'(⋄)).1 = 1 →
+      labSet J (Qof P) N₂ (ax[i]'(⋄)).2.1 (ax[i]'(⋄)).2.2.1
+        (ax[i]'(⋄)).2.2.2.1 0 0 ⊆ Λ)
+    (hB : (∀ i (hi : i < rs.length), soff P J rs[i] = Lst J → (ax[i]'(⋄)).1 ≠ 1) →
       ∃ V ∈ (chainModel J.right).regions (N₂.F (chainModel J.right) (Qof P)),
         BeforeFaces (chainModel J.right) (vEnd J) 0 V ∧ Λ = {V}) :
     EvInv J (N₂.F (chainModel J.right) (Qof P)) (Lst J) Λ := by
   set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
-  have hS₂ : S₂ ⊆ Merge.augChords J.right := hN.1.2.1
+  have hS₂ := hN.1.2.1
   have hS₂f : S₂.Finite := hN.1.1
   have hC := corr_right0 J hP hS₂ hS₂f
   obtain ⟨Q', hQ₂, hQF⟩ := chordFamily_pair J hS₂ hS₂f
@@ -199,7 +201,7 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
       ∃ i, ∃ hi : i < rs.length, soff P J rs[i] = Lst J ∧
         stopSet J (Qof P) N₂ (rs[i]).2.2.1 (rs[i]).2.2.2.1 (rs[i]).2.2.2.2 = e := by
     intro e he hA
-    have hmem := hst.2.1 e he (hstop e he hA) pK 0 hA (by rw [hoK'])
+    have hmem := hst.2.1 e he (hstop e he hA) pK 0 hA (Ρ hoK')
     obtain ⟨k, hk, hkx⟩ := List.mem_iff_getElem.1 hmem
     have hk' : k < rs.length := by simpa [stopsOf] using hk
     rw [stopsOf_getElem hk'] at hkx
@@ -207,7 +209,7 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
     obtain ⟨h1, h2, h3⟩ := hkx
     refine ⟨k, hk', ?_, h3⟩
     unfold soff
-    rw [h2, h1]
+    Ξ h2, h1
     exact hoK'
   -- a stop at the start key is attached at the start key
   have stopAt : ∀ i (hi : i < rs.length), soff P J rs[i] = Lst J →
@@ -215,17 +217,17 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
         (stopSet J (Qof P) N₂ (rs[i]).2.2.1 (rs[i]).2.2.2.1 (rs[i]).2.2.2.2) pK 0 := by
     intro i hi ho
     obtain ⟨-, -, hA, -⟩ := stop_facts hst hi
-    have e : soff P J rs[i] = oW J ((pK : ℝ) + 0) := by rw [ho, hoK']
+    have e : soff P J rs[i] = oW J ((pK : ℝ) + 0) := Ρ ho, hoK'
     obtain ⟨h1, h2⟩ := pos_eq_of_oW hP hS₂ hS₂f hA.1 hpKn hA.2.1 hA.2.2.1 le_rfl one_pos e
     rw [h2, h1] at hA
     exact hA
-  by_cases hanc : ∃ i, ∃ hi : i < rs.length, soff P J rs[i] = Lst J ∧ (ax[i]'(by omega)).1 = 1
+  by_cases hanc : ∃ i, ∃ hi : i < rs.length, soff P J rs[i] = Lst J ∧ (ax[i]'(⋄)).1 = 1
   · obtain ⟨i₀, hi₀, ho₀, ha₀⟩ := hanc
     have hZ := (stop_facts hst hi₀).1
     have hZK := stopAt i₀ hi₀ ho₀
     have hZb : ¬ EvBrk J (stopSet J (Qof P) N₂ (rs[i₀]).2.2.1 (rs[i₀]).2.2.2.1
         (rs[i₀]).2.2.2.2) := ((haux i₀ hi₀).2.1).1 ha₀
-    rw [← hoK']
+    Ξ ← hoK'
     by_cases hpock : ∃ e ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e pK 0 ∧
         ∃ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s ∧ oW J (q + s) = 0
     · obtain ⟨e, he, heK, q, s, hQ, hQ0⟩ := hpock
@@ -234,15 +236,15 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
         obtain ⟨rfl, rfl⟩ := hC.hM.attach_unique (hC.hF he) heK hQ h
         rw [hoK'] at hQ0
         linarith
-      exact evInv_pocket he heK hQ hne (by rw [hoK']) hQ0 Λ
+      exact evInv_pocket he heK hQ hne (Ρ hoK') hQ0 Λ
     push Not at hpock
     unfold EvBrk at hZb
     push Not at hZb
     obtain ⟨pz, tz, hZz, hzL⟩ := hZb
-    exact evInv_anchor hP hQ₂ hQF (noTieV hP hS₂) hpKn le_rfl one_pos (by rw [hoK']) hZ hZK hZz
+    exact evInv_anchor hP hQ₂ hQF (noTieV hP hS₂) hpKn le_rfl one_pos (Ρ hoK') hZ hZK hZz
       hzL (fun e he heK q s hQ => hpock e he heK q s hQ) (fun e he heK hnb _ => by
         obtain ⟨j, hj, hoj, rfl⟩ := atKey e he heK
-        have haj : (ax[j]'(by omega)).1 = 1 := ((haux j hj).2.1).2 hnb
+        have haj : (ax[j]'(⋄)).1 = 1 := ((haux j hj).2.1).2 hnb
         exact evSideLab_mono (hΛ j hj hoj haj)
           ((haux j hj).2.2.2.2.2.1 haj (fun q s hQ => hpock _ he heK q s hQ)))
   · push Not at hanc

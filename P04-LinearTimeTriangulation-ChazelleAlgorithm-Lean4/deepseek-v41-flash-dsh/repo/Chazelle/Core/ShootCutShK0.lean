@@ -1,5 +1,11 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutShP0
 
 /-!
@@ -63,14 +69,14 @@ variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {z : Point} {σ : ℝ}
 
 theorem CandAt.keep {c c' : Config} {b : ℕ} {S : Set Point} (h : CandAt P C c b S z σ)
     (hk : ∀ j, j < 7 → c'.nreg (b + j) = c.nreg (b + j)) : CandAt P C c' b S z σ := by
-  have h0 := hk 0 (by norm_num)
-  simp only [Nat.add_zero] at h0
+  have h0 := hk 0 (⊛)
+  ϴ' Nat.add_zero at h0
   obtain ⟨hb, hn, hy⟩ := h
   refine ⟨by rw [h0]; exact hb, fun hne => hn (by rw [← h0]; exact hne), fun h1 => ?_⟩
   obtain ⟨x, a, f, p, n, q⟩ := hy (by rw [← h0]; exact h1)
-  rw [hk 5 (by norm_num), hk 6 (by norm_num)]
-  exact ⟨x, absRec_copy' a (hk 1 (by norm_num)) (hk 2 (by norm_num)) (hk 3 (by norm_num))
-    (hk 4 (by norm_num)), f, p, n, q⟩
+  Ξ hk 5 (⊛), hk 6 (⊛)
+  exact ⟨x, absRec_copy' a (hk 1 (⊛)) (hk 2 (⊛)) (hk 3 (⊛))
+    (hk 4 (⊛)), f, p, n, q⟩
 
 theorem CandAt.of_eq {c : Config} {b : ℕ} {S S' : Set Point} (h : CandAt P C c b S z σ)
     (hS : S = S') : CandAt P C c b S' z σ := hS ▸ h
@@ -124,7 +130,7 @@ theorem k0Init_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {n
 
 /-! ## One segment's ends, and the next segment -/
 
-theorem wr_setUV : wr (fun r => decide (140262 ≤ r ∧ r < 140267)) setUV = true := by decide
+theorem wr_setUV : wr (fun r => decide (140262 ≤ r ∧ r < 140267)) setUV = true := ⌖
 
 theorem setUV_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {n : ℕ} {x y : WPos}
     {d D : ℕ} (h30 : c.nreg 140330 = d) (h31 : c.nreg 140331 = D)
@@ -227,7 +233,7 @@ theorem setUV_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {n 
     · rfl
   · rw [g₃ _ (by decide) (by decide), q64]
 
-theorem wr_adv : wr (fun r => r == 140330 || r == 140333) adv = true := by decide
+theorem wr_adv : wr (fun r => r == 140330 || r == 140333) adv = true := ⌖
 
 theorem adv_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {n j d : ℕ}
     (h30 : c.nreg 140330 = d) (h33 : c.nreg 140333 = j) (h34 : c.nreg 140334 = n) (hj : j < n)
@@ -368,13 +374,13 @@ theorem pieceK0_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
       obtain ⟨c₂', k₂', e₂', hk₂', ca, fe⟩ := edgeH_exec c₁' e₁'.wb_right E₁' iU iV u62 geo hzd
         (by rw [hA₁']; omega)
       have E₂' := E₁'.frame fe Bedge_env
-      have ke : ∀ r, Bedge r = false → c₂'.nreg r = c₁'.nreg r := fe.1
+      have ke := fe.1
       have iB' : CandAt P C c₂' 140210 (S₀ ∪ segSet C (Qof P) x y d) z σ := by
         refine iB.keep fun j hj => ?_
         rw [ke _ (by simp [Bedge, Bprim]; omega), ku _ (by omega)]
       obtain ⟨c₃', k₃', e₃', hk₃', cb, fm⟩ := mrg_exec c₂' e₂'.wb_right E₂' iB' ca
       have E₃' := E₂'.frame fm Bmrg_env
-      have km : ∀ r, Bmrg r = false → c₃'.nreg r = c₂'.nreg r := fm.1
+      have km := fm.1
       -- registers kept through the segment
       have keep3 : ∀ r, (140330 ≤ r ∧ r < 140335) ∨ (140250 ≤ r ∧ r < 140254) ∨ r = ALLOC →
           c₃'.nreg r = c₀.nreg r := fun r hr => by

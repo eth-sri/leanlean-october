@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Ram10
 
 /-!
@@ -50,7 +52,7 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
+
 theorem lvInit_exec {c : Config} (hw : WordsBounded W c) {B j γ₀ : ℕ}
     (h66 : c.nreg 160066 = B) (h14 : c.nreg 160014 = j) (h33 : c.nreg 160033 = γ₀)
     (h24 : c.nreg 160024 = 1) (hW : γ₀ + 1 ≤ W) :
@@ -67,9 +69,9 @@ theorem lvInit_exec {c : Config} (hw : WordsBounded W c) {B j γ₀ : ℕ}
     by config_simp; simp only [h14, h24], by config_simp; simp only [h33, h24],
     fun r a1 a2 a3 a4 a5 => ?_, rfl, rfl, rfl, rfl⟩
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
-set_option maxHeartbeats 8000000 in
+
 theorem tgtS_exec {c : Config} (hw : WordsBounded W c) :
     ∃ c' k, Exec P W tgtS c c' k ∧ k ≤ 2 ∧ WordsBounded W c' ∧
       c'.nreg 160034 = (if c.nreg 160014 < c.nreg 160083 then c.nreg 160032 else c.nreg 160034) ∧
@@ -89,7 +91,7 @@ theorem tgtS_exec {c : Config} (hw : WordsBounded W c) :
   · exact ⟨c, 2, .ifLtN_false h (.skip hw), le_rfl, hw, by rw [ite_eq_right h], fun _ _ => rfl, rfl,
       rfl, rfl, rfl⟩
 
-set_option maxHeartbeats 8000000 in
+
 theorem lvFin_exec {c : Config} (hw : WordsBounded W c) :
     ∃ c' k, Exec P W lvFin c c' k ∧ k = 3 ∧ WordsBounded W c' ∧
       c'.nreg 160066 = c.nreg 160094 ∧ c'.nreg 160014 = c.nreg 160064 ∧
@@ -101,9 +103,9 @@ theorem lvFin_exec {c : Config} (hw : WordsBounded W c) :
   refine ⟨rfl, ‹_›, by config_simp, by config_simp, by config_simp, fun r a1 a2 a3 => ?_, rfl,
     rfl, rfl, rfl⟩
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
-set_option maxHeartbeats 16000000 in
+
 /-- **One level of the merge tree on the RAM.** -/
 theorem level_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 ≤ W)
     {sM : Stmt} {κ F G H : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
@@ -220,7 +222,7 @@ theorem level_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
     rw [fr65 _ (by rw [hAl]; omega) (by rw [hAl]; omega) (by rw [hAl]; omega)]; exact a5
   have mem64 : ∀ a, a < B' → c6.nmem a = c4.nmem a := fun a ha => by
     rw [hm65]; exact hout a (Or.inl ha)
-  have hA3 : A0 ≤ c3.nreg ALLOC := s3A0
+  have hA3 := s3A0
   have f33' : c6.nreg 160033 = t := by
     rw [f33, fr54 _ (by unfold RbRG; omega) (by rw [hAl]; omega),
       fr43 _ (not_pairRG (by omega)) (by rw [hAl]; omega),

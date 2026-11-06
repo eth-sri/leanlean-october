@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepMap
 public import Chazelle.Core.ClusterMeets
 
@@ -42,12 +44,12 @@ theorem kBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
     (hone : c.nreg 120011 = 1) (hj : 1 ≤ j) (hlt : j ^ 3 < μ) (hW : 8 * μ ≤ W) :
     ∃ c' k, Exec P W kBody c c' k ∧ k = 11 ∧ FrameB BK3 c c' ∧ c'.nreg 60090 = j + 1 ∧
       c'.nreg 60091 = (j + 1) ^ 2 ∧ c'.nreg 60092 = (j + 1) ^ 3 := by
-  have hwr : wr BK3 kBody = true := by decide
+  have hwr : wr BK3 kBody = true := ⌖
   suffices H : ∃ c' k, Exec P W kBody c c' k ∧ k = 11 ∧ c'.nreg 60090 = j + 1 ∧
       c'.nreg 60091 = (j + 1) ^ 2 ∧ c'.nreg 60092 = (j + 1) ^ 3 by
     obtain ⟨c', k, ex, hk, a, b, d⟩ := H
     exact ⟨c', k, ex, hk, exec_frameB ex hwr, a, b, d⟩
-  have e3 : (j + 1) ^ 3 = j ^ 3 + 3 * j ^ 2 + 3 * j + 1 := by ring
+  have e3 : (j + 1) ^ 3 = j ^ 3 + 3 * j ^ 2 + 3 * j + 1 := ⋆
   have hb : (j + 1) ^ 3 ≤ 8 * j ^ 3 := by nlinarith [sq_nonneg j, pow_pos (by omega : 0 < j) 2]
   have hsq : 0 ≤ j ^ 2 := Nat.zero_le _
   unfold kBody
@@ -62,7 +64,7 @@ theorem kS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {μ
     ∃ c' k, Exec P W kS c c' k ∧ k ≤ 16 * μ + 5 ∧ FrameB BK3 c c' ∧
       1 ≤ c'.nreg 60090 ∧ μ ≤ c'.nreg 60090 ^ 3 ∧
       (c'.nreg 60090 = 1 ∨ (c'.nreg 60090 - 1) ^ 3 < μ) := by
-  have hwr : wr BK3 kS = true := by decide
+  have hwr : wr BK3 kS = true := ⌖
   obtain ⟨c₁, k₁, e₁, hk₁, a0, a1, a2, R₁⟩ : ∃ c₁ k₁, Exec P W
       (block [.constN 60090 1, .constN 60091 1, .constN 60092 1]) c c₁ k₁ ∧ k₁ = 3 ∧
       c₁.nreg 60090 = 1 ∧ c₁.nreg 60091 = 1 ∧ c₁.nreg 60092 = 1 ∧
@@ -73,27 +75,27 @@ theorem kS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {μ
     · omega
     · refine ⟨rfl, by config_simp, by config_simp, by config_simp, fun r hr => ?_⟩
       unfold BK3 at hr; simp only [decide_eq_false_iff_not] at hr
-      config_simp; simp only [upd_apply]; rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega)]
+      config_simp; simp only [upd_apply]; rw [ite_eq_right (⋄), ite_eq_right (by omega), ite_eq_right (by omega)]
   let I : Config → Prop := fun d => WordsBounded W d ∧ d.nreg 60034 = μ ∧ d.nreg 120011 = 1 ∧
     ∃ j, 1 ≤ j ∧ d.nreg 60090 = j ∧ d.nreg 60091 = j ^ 2 ∧ d.nreg 60092 = j ^ 3 ∧
       (j = 1 ∨ (j - 1) ^ 3 < μ)
-  have hI₁ : I c₁ := ⟨e₁.wb_right, by rw [R₁ _ (by decide), hμ], by rw [R₁ _ (by decide), hone],
+  have hI₁ : I c₁ := ⟨e₁.wb_right, by rw [R₁ _ (⌖), hμ], by rw [R₁ _ (by decide), hone],
     1, le_rfl, a0, by rw [a1]; norm_num, by rw [a2]; norm_num, Or.inl rfl⟩
   obtain ⟨c₂, k₂, e₂, ⟨-, -, -, j, hj1, b0, -, b2, hjm⟩, hn, hk₂, -⟩ :=
     SortR.whileLtN_potential_lb (P := P) (W := W) (a := 60092) (b := 60034) (body := kBody) I
       (fun d => 16 * (μ - d.nreg 60090)) (fun _ => 0) (fun d h => h.1)
       (fun d ⟨hwd, dμ, d1, j, hj1, d0, dsq, dcu, _⟩ ht => by
         rw [dcu, dμ] at ht
-        obtain ⟨d', k, ex, hk, F, v0, v1, v2⟩ := kBody_exec (P := P) hwd d0 dsq dcu d1 hj1 ht (by omega)
+        obtain ⟨d', k, ex, hk, F, v0, v1, v2⟩ := kBody_exec (P := P) hwd d0 dsq dcu d1 hj1 ht (⋄)
         have hjμ : j < μ := lt_of_le_of_lt (by nlinarith [pow_pos (by omega : 0 < j) 2]) ht
-        refine ⟨d', k, ex, ⟨ex.wb_right, by rw [F.1 _ (by decide), dμ], by rw [F.1 _ (by decide), d1],
-          j + 1, by omega, v0, v1, v2, Or.inr (by simpa using ht)⟩, ?_, Nat.zero_le _⟩
+        refine ⟨d', k, ex, ⟨ex.wb_right, by rw [F.1 _ (⌖), dμ], by rw [F.1 _ (by decide), d1],
+          j + 1, ⋄, v0, v1, v2, Or.inr (by simpa using ht)⟩, ?_, Nat.zero_le _⟩
         rw [v0, d0]; omega) hI₁
   refine ⟨c₂, _, .seq e₁ e₂, ?_, exec_frameB (.seq e₁ e₂) hwr, by rw [b0]; exact hj1, ?_, ?_⟩
   · rw [a0] at hk₂; omega
   · rw [b0]; rw [b2] at hn
     have : c₂.nreg 60034 = μ := by
-      rw [(exec_frameB e₂ (B := BK3) (by decide)).1 _ (by decide), R₁ _ (by decide), hμ]
+      rw [(exec_frameB e₂ (B := BK3) (⌖)).1 _ (by decide), R₁ _ (by decide), hμ]
     rw [this] at hn; omega
   · rw [b0]; exact hjm
 
@@ -112,7 +114,7 @@ def clCost (μ E : ℕ) : ℕ := Cluster.clusterK * ((μ + E) * (Nat.clog 2 (μ 
 theorem card_fin_filter (n : ℕ) (p : ℕ → Prop) [DecidablePred p]
     [DecidablePred (fun v : Fin n => p v)] :
     (Finset.univ.filter (fun v : Fin n => p v)).card = ((Finset.range n).filter p).card := by
-  rw [← Finset.card_map Fin.valEmbedding]
+  Ξ ← Finset.card_map Fin.valEmbedding
   congr 1
   ext x
   simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and, Fin.valEmbedding_apply,

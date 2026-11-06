@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseBoxMap
 public import Chazelle.Chain.Sides
 public import Mathlib.Data.List.GetD
@@ -67,16 +71,16 @@ include h
 theorem set_eq : C.set = C'.set := by
   have hm := h.m_eq
   ext p
-  simp only [Chain.set, mem_ofPred_eq]
+  ϴ Chain.set, mem_ofPred_eq
   constructor
   · rintro ⟨k, hk, hp⟩
     refine ⟨k, h.m_eq ▸ hk, ?_⟩
-    rw [Chain.chainEdge_eq] at hp ⊢
-    rwa [← h.vtx_eq k (by omega), ← h.vtx_eq (k + 1) (by omega)]
+    Ξ' Chain.chainEdge_eq at hp ⊢
+    rwa [← h.vtx_eq k (⋄), ← h.vtx_eq (k + 1) (⋄)]
   · rintro ⟨k, hk, hp⟩
     refine ⟨k, h.m_eq ▸ hk, ?_⟩
-    rw [Chain.chainEdge_eq] at hp ⊢
-    rwa [h.vtx_eq k (by omega), h.vtx_eq (k + 1) (by omega)]
+    Ξ' Chain.chainEdge_eq at hp ⊢
+    rwa [h.vtx_eq k (⋄), h.vtx_eq (k + 1) (⋄)]
 
 /-- Points of the chain are well inside the fixed band. -/
 theorem abs_le_of_mem {p : Point} (hp : p ∈ C.set) :
@@ -93,10 +97,10 @@ theorem topIdx_eq : C.topIdx = C'.topIdx := by
   have hm := h.m_eq
   apply le_antisymm
   · refine C.topIdx_min (hm ▸ C'.topIdx_le) fun i hi => ?_
-    rw [h.vtx_eq i hi, h.vtx_eq _ (hm ▸ C'.topIdx_le)]
+    Ξ h.vtx_eq i hi, h.vtx_eq _ (hm ▸ C'.topIdx_le)
     exact C'.topIdx_spec.2 i (hm ▸ hi)
   · refine C'.topIdx_min (hm ▸ C.topIdx_le) fun i hi => ?_
-    rw [← h.vtx_eq i (hm ▸ hi), ← h.vtx_eq _ C.topIdx_le]
+    Ξ ← h.vtx_eq i (hm ▸ hi), ← h.vtx_eq _ C.topIdx_le
     exact C.topIdx_spec.2 i (hm ▸ hi)
 
 theorem top_eq : C.top = C'.top := by
@@ -119,11 +123,11 @@ theorem stretch_radius_eq (_h : Twin C C') : stretch (bnd C C') (kk C C') C.radi
   stretch_radius bnd_nonneg bnd_lt
 
 theorem stretch_neg_radius_eq : stretch (bnd C C') (kk C C') (-C.radius) = -C'.radius := by
-  rw [stretch_neg bnd_nonneg, h.stretch_radius_eq]
+  Ξ stretch_neg bnd_nonneg, h.stretch_radius_eq
 
 theorem phi_slitTop : phi C C' C.slitTop = C'.slitTop := by
   unfold phi stretchPt Chain.slitTop
-  rw [h.stretch_fix (by linarith [h.top_abs.1]), h.stretch_radius_eq, h.top_eq]
+  Ξ h.stretch_fix (by linarith [h.top_abs.1]), h.stretch_radius_eq, h.top_eq
 
 omit h in
 theorem stretch_inj (_h : Twin C C') {x y : ℝ} (hxy : stretch (bnd C C')
@@ -150,7 +154,7 @@ theorem eq_of_phi_mem {p : Point} (hp : phi C C' p ∈ C.set) : phi C C' p = p :
 theorem phi_mem_set_iff (p : Point) : phi C C' p ∈ C'.set ↔ p ∈ C.set := by
   constructor
   · intro hp
-    rw [← h.set_eq] at hp
+    Ξ' ← h.set_eq at hp
     rwa [h.eq_of_phi_mem hp] at hp
   · intro hp; rw [h.phi_fix hp, ← h.set_eq]; exact hp
 
@@ -237,7 +241,7 @@ theorem sideIdx_le (_h : Twin C C') (i : ℕ) : C.sideIdx C.sideBeta i ≤ C.m :
   exact sideE_le (Nat.mod_lt _ (by have := C.one_le; omega)).le
 
 theorem walk_n : (C'.sideWalk C'.sideBeta).n = (C.sideWalk C.sideBeta).n := by
-  rw [Chain.sideWalk_n, Chain.sideWalk_n, h.m_eq]
+  Ξ Chain.sideWalk_n, Chain.sideWalk_n, h.m_eq
 
 /-- **The walk vertices correspond under the stretch.** -/
 theorem phi_walk_vtx (i : ℕ) :
@@ -247,19 +251,19 @@ theorem phi_walk_vtx (i : ℕ) :
   have hRn := h.stretch_neg_radius_eq
   rcases Nat.lt_or_ge i 6 with hi | hi
   · interval_cases i
-    · rw [Chain.sideWalk_vtx_zero, Chain.sideWalk_vtx_zero, h.phi_slitTop]
-    · rw [Chain.sideWalk_vtx_one, Chain.sideWalk_vtx_one]
-      simp only [phi, stretchPt, hR, hRn]
-    · rw [Chain.sideWalk_vtx_two, Chain.sideWalk_vtx_two]
-      simp only [phi, stretchPt, hRn]
-    · rw [Chain.sideWalk_vtx_three, Chain.sideWalk_vtx_three]
-      simp only [phi, stretchPt, hR, hRn]
-    · rw [Chain.sideWalk_vtx_four, Chain.sideWalk_vtx_four]
-      simp only [phi, stretchPt, hR]
-    · rw [Chain.sideWalk_vtx_five, Chain.sideWalk_vtx_five, h.phi_slitTop]
+    · Ξ Chain.sideWalk_vtx_zero, Chain.sideWalk_vtx_zero, h.phi_slitTop
+    · Ξ Chain.sideWalk_vtx_one, Chain.sideWalk_vtx_one
+      ϴ phi, stretchPt, hR, hRn
+    · Ξ Chain.sideWalk_vtx_two, Chain.sideWalk_vtx_two
+      ϴ phi, stretchPt, hRn
+    · Ξ Chain.sideWalk_vtx_three, Chain.sideWalk_vtx_three
+      ϴ phi, stretchPt, hR, hRn
+    · Ξ Chain.sideWalk_vtx_four, Chain.sideWalk_vtx_four
+      ϴ phi, stretchPt, hR
+    · Ξ Chain.sideWalk_vtx_five, Chain.sideWalk_vtx_five, h.phi_slitTop
   · rcases Nat.lt_or_ge (i - 6) (2 * C.m + 1) with hi' | hi'
-    · have e : i = (i - 6) + 6 := by omega
-      rw [e, C.sideWalk_vtx_tour _ (by omega), C'.sideWalk_vtx_tour _ (by omega)]
+    · have e : i = (i - 6) + 6 := ⋄
+      rw [e, C.sideWalk_vtx_tour _ (⋄), C'.sideWalk_vtx_tour _ (⋄)]
       unfold Chain.sideTour
       rw [← h.sideIdx_eq, ← h.vtx_eq _ (h.sideIdx_le _),
         h.phi_fix (C.vertex_mem_set (h.sideIdx_le _))]
@@ -267,8 +271,8 @@ theorem phi_walk_vtx (i : ℕ) :
       have hn : (C.sideWalk C.sideBeta).n ≤ i := by rw [Chain.sideWalk_n]; omega
       have hn' : (C'.sideWalk C'.sideBeta).n ≤ i := by rw [Chain.sideWalk_n]; omega
       unfold Polygon.vtx
-      rw [List.getD_eq_default _ _ hn, List.getD_eq_default _ _ hn']
-      exact (stretchPt_of_le bnd_nonneg (by simp [bnd_nonneg]) (by simp [bnd_nonneg])).symm
+      Ξ List.getD_eq_default _ _ hn, List.getD_eq_default _ _ hn'
+      exact (stretchPt_of_le bnd_nonneg (⊚ bnd_nonneg) (⊚ bnd_nonneg)).symm
 
 end Twin
 

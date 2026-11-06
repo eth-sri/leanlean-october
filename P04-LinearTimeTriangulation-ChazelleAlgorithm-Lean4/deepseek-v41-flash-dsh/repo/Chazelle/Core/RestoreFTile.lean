@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseHostArc
 public import Chazelle.Core.RestorePrune
 
@@ -97,8 +99,8 @@ theorem tile_cover (h : Tile n a b q s e) {x : ℝ} (_hx : 0 ≤ x ∧ x < n)
   · have hmax := Nat.le_findGreatest (P := fun i => i < q ∧ unwrapK n a (s i) ≤ unwrapK n a x)
       (m := i + 1) hl.le ⟨hl, by rw [← h.hse i hl]; exact hc.le⟩
     omega
-  · have : i = q - 1 := by omega
-    have he' : e i = b := by rw [this, h.eq]
+  · have : i = q - 1 := ⋄
+    have he' : e i = b := Ρ this, h.eq
     rw [he'] at hc
     linarith
 

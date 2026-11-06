@@ -1,5 +1,11 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutProg
 
 /-!
@@ -26,7 +32,7 @@ open Machine Machine.Stmt Programs SignK NFLoc
 def Bit : ℕ → Bool := Bl [150065, 150066, 150067, 150068, 150069, 150073, 150074, 150075,
   150077, 150078, 150079]
 
-theorem wr_itLook : wr Bit itLook = true := by decide
+theorem wr_itLook : wr Bit itLook = true := ⌖
 
 /-- What the item search keeps. -/
 structure ItEnv (W Hh u L : ℕ) (m : ℕ → ℕ) (d : Config) : Prop where
@@ -225,7 +231,7 @@ theorem itLook_exec {P : Polygon} {W Hh u : ℕ} {H : Host} {m : ℕ → ℕ} (c
 def Bloc : ℕ → Bool := Bl [150060, 150061, 150062, 150063, 150064, 150065, 150066, 150067,
   150068, 150069, 150073, 150074, 150075, 150077, 150078, 150079]
 
-theorem wr_locV : wr Bloc locV = true := by decide
+theorem wr_locV : wr Bloc locV = true := ⌖
 
 /-- The tour coordinate by one conditional subtraction. -/
 def jOf (S i m2 : ℕ) : ℕ := if S + i < m2 then S + i else S + i - m2
@@ -234,17 +240,17 @@ theorem jOf_eq {S i m2 : ℕ} (hS : S ≤ m2) (hi : i < m2) : jOf S i m2 = (S + 
   unfold jOf
   split_ifs with h
   · exact (Nat.mod_eq_of_lt h).symm
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  · Ξ Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (⋄)
 
 theorem sideE_jOf {S i m : ℕ} (hS : S ≤ 2 * m) (hi : i ≤ 2 * m) (hm : 1 ≤ m) :
     Chazelle.Chain.sideE m (jOf S i (2 * m)) = Chazelle.Chain.sideE m ((S + i) % (2 * m)) := by
   rcases hi.lt_or_eq with hi | rfl
-  · rw [jOf_eq hS hi]
+  · Ξ jOf_eq hS hi
   · unfold jOf
-    rw [ite_eq_right (by omega), Nat.add_mod_right]
+    Ξ ite_eq_right (⋄), Nat.add_mod_right
     rcases hS.lt_or_eq with hS | rfl
-    · rw [Nat.mod_eq_of_lt hS, show S + 2 * m - 2 * m = S by omega]
-    · rw [Nat.mod_self, show 2 * m + 2 * m - 2 * m = 2 * m by omega]
+    · Ξ Nat.mod_eq_of_lt hS, show S + 2 * m - 2 * m = S by omega
+    · Ξ Nat.mod_self, show 2 * m + 2 * m - 2 * m = 2 * m by omega
       unfold Chazelle.Chain.sideE; split_ifs <;> omega
 
 /-- The chain index as the machine computes it. -/
@@ -266,9 +272,9 @@ structure ChainRegs (C : Chain) (N Hh : ℕ) (c : Config) : Prop where
 theorem ChainRegs.of_frame {C : Chain} {N Hh : ℕ} {c c' : Config} (h : ChainRegs C N Hh c)
     (hr : ∀ r, r ∈ [150021, 150022, 150023, 150026, 150028, 150029, 150091, 150093, 150096] →
       c'.nreg r = c.nreg r) : ChainRegs C N Hh c' :=
-  ⟨(hr _ (by simp)).trans h.h21, (hr _ (by simp)).trans h.h22, (hr _ (by simp)).trans h.h23,
-    (hr _ (by simp)).trans h.h26, (hr _ (by simp)).trans h.h28, (hr _ (by simp)).trans h.h29,
-    (hr _ (by simp)).trans h.h91, (hr _ (by simp)).trans h.h93, (hr _ (by simp)).trans h.h96⟩
+  ⟨(hr _ (✓)).trans h.h21, (hr _ (✓)).trans h.h22, (hr _ (✓)).trans h.h23,
+    (hr _ (✓)).trans h.h26, (hr _ (✓)).trans h.h28, (hr _ (✓)).trans h.h29,
+    (hr _ (✓)).trans h.h91, (hr _ (✓)).trans h.h93, (hr _ (✓)).trans h.h96⟩
 
 /-- **A walk vertex of the double boundary**: tour position `i = v - 6`, coordinate `J`, chain
 index `k = sideE m J`, climbing bit, host point `u = (C.s + k) mod N` and its item. -/

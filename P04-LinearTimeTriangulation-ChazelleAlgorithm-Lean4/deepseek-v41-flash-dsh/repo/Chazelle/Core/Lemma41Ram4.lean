@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Ram3
 public import Chazelle.Core.Lemma41Junc
 public import Chazelle.Core.SweepPrimKer
@@ -77,7 +79,7 @@ theorem descLoadB_exec {c : Config} (hw : WordsBounded W c) {pl pr : ℕ}
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => by
       unfold DescRG at hr
       simp only
-      repeat (rw [Machine.upd_other _ _ _ (by omega)]),
+      repeat (rw [Machine.upd_other _ _ _ (⋄)]),
     rfl, rfl, rfl, rfl⟩
   all_goals (config_simp; try simp only [h35, h36, h24, Nat.add_assoc, Nat.reduceAdd])
 
@@ -96,17 +98,17 @@ theorem descHeadB_exec {c : Config} (hw : WordsBounded W c) {pl TD sl ml mr : �
   exec_block
   all_goals try (config_simp; simp only [h35, h37, h24, h50, h51, h54]; omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, fun a a1 a2 a3 => ?_, ?_, fun r a1 a2 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [h35, h37, h24, Machine.upd_apply]
+  · config_simp; ϴ h35, h37, h24, Machine.upd_apply
     split_ifs <;> first | omega
-  · config_simp; simp only [h35, h37, h24, h50, Machine.upd_apply]
+  · config_simp; ϴ h35, h37, h24, h50, Machine.upd_apply
     split_ifs <;> first | omega
-  · config_simp; simp only [h35, h37, h24, h50, h51, h54, Machine.upd_apply]
+  · config_simp; ϴ h35, h37, h24, h50, h51, h54, Machine.upd_apply
     split_ifs <;> first | omega
-  · config_simp; simp only [h35, h37, h24, Machine.upd_apply]
+  · config_simp; ϴ h35, h37, h24, Machine.upd_apply
     split_ifs <;> first | omega
-  · config_simp; simp only [h37, h24]
+  · config_simp; ϴ h37, h24
   · simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 8000000 in
 theorem descTopS_exec {c : Config} (hw : WordsBounded W c) {TD f tl bl ml tr br : ℕ}
@@ -122,7 +124,7 @@ theorem descTopS_exec {c : Config} (hw : WordsBounded W c) {TD f tl bl ml tr br 
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold descTopS
   by_cases hf : c.nreg 160049 < c.nreg 160024
-  · rw [h49, h24] at hf
+  · Ξ' h49, h24 at hf
     obtain ⟨c', k, e, hk, hw', r1, r2, r3, r4, r5, r6, r7⟩ : ∃ c' k, Exec P W
         (block [.addN 160038 160038 160024, .storeN 160038 160052,
           .addN 160038 160038 160024, .storeN 160038 160053]) c c' k ∧ k = 4 ∧
@@ -133,17 +135,17 @@ theorem descTopS_exec {c : Config} (hw : WordsBounded W c) {TD f tl bl ml tr br 
       exec_block
       all_goals try (config_simp; simp only [h38, h24]; omega)
       refine ⟨rfl, ‹_›, ?_, ?_, fun a a1 a2 => ?_, fun r a1 a2 => ?_, rfl, rfl, rfl⟩
-      · config_simp; simp only [h38, h24, h52, h53, Machine.upd_apply]
+      · config_simp; ϴ h38, h24, h52, h53, Machine.upd_apply
         split_ifs <;> first | omega
-      · config_simp; simp only [h38, h24, h52, h53, Machine.upd_apply]
+      · config_simp; ϴ h38, h24, h52, h53, Machine.upd_apply
         split_ifs <;> first | omega
-      · config_simp; simp only [h38, h24, Machine.upd_apply]
+      · config_simp; ϴ h38, h24, Machine.upd_apply
         split_ifs <;> first | omega
       · simp only
-        repeat (rw [Machine.upd_other _ _ _ (by omega)])
-    refine ⟨c', k + 1, .ifLtN_true (by rw [h49, h24]; exact hf) e, by omega, hw',
+        repeat (rw [Machine.upd_other _ _ _ (⋄)])
+    refine ⟨c', k + 1, .ifLtN_true (by rw [h49, h24]; exact hf) e, ⋄, hw',
       by rw [ite_eq_left hf]; exact r1, by rw [ite_eq_left hf]; exact r2, r3, r4, r5, r6, r7⟩
-  · rw [h49, h24] at hf
+  · Ξ' h49, h24 at hf
     obtain ⟨c', k, e, hk, hw', r1, r2, r3, r4, r5, r6, r7⟩ : ∃ c' k, Exec P W
         (block [.addN 160039 160051 160055, .addN 160038 160038 160024, .storeN 160038 160039,
           .addN 160038 160038 160024, .storeN 160038 160056]) c c' k ∧ k = 5 ∧
@@ -154,15 +156,15 @@ theorem descTopS_exec {c : Config} (hw : WordsBounded W c) {TD f tl bl ml tr br 
       exec_block
       all_goals try (config_simp; simp only [h38, h24, h51, h55]; omega)
       refine ⟨rfl, ‹_›, ?_, ?_, fun a a1 a2 => ?_, fun r a1 a2 => ?_, rfl, rfl, rfl⟩
-      · config_simp; simp only [h38, h24, h51, h55, h56, Machine.upd_apply]
+      · config_simp; ϴ h38, h24, h51, h55, h56, Machine.upd_apply
         split_ifs <;> first | omega
-      · config_simp; simp only [h38, h24, h51, h55, h56, Machine.upd_apply]
+      · config_simp; ϴ h38, h24, h51, h55, h56, Machine.upd_apply
         split_ifs <;> first | omega
-      · config_simp; simp only [h38, h24, Machine.upd_apply]
+      · config_simp; ϴ h38, h24, Machine.upd_apply
         split_ifs <;> first | omega
       · simp only
-        repeat (rw [Machine.upd_other _ _ _ (by omega)])
-    refine ⟨c', k + 2, .ifLtN_false (by rw [h49, h24]; exact hf) e, by omega, hw',
+        repeat (rw [Machine.upd_other _ _ _ (⋄)])
+    refine ⟨c', k + 2, .ifLtN_false (by rw [h49, h24]; exact hf) e, ⋄, hw',
       by rw [ite_eq_right hf]; exact r1, by rw [ite_eq_right hf]; exact r2, r3, r4, r5, r6, r7⟩
 
 theorem top_eq {P : Polygon} {C : Chain} (hC : C.P = Qof P) (hn : C.s + C.m < P.n) :
@@ -171,7 +173,7 @@ theorem top_eq {P : Polygon} {C : Chain} (hC : C.P = Qof P) (hn : C.s + C.m < P.
   have hQn : (Qof P).n = P.n := shear_n _ _
   show C.vertex C.topIdx = _
   unfold Chain.vertex Chain.edgeIdx
-  rw [hC, hQn, Nat.mod_eq_of_lt (by omega)]
+  Ξ hC, hQn, Nat.mod_eq_of_lt (⋄)
 
 set_option maxHeartbeats 16000000 in
 /-- **The descriptor of the union on the RAM.** -/

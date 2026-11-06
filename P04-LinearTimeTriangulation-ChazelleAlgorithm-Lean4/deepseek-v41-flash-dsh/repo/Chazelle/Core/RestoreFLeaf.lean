@@ -1,5 +1,15 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFRef
 public import Chazelle.Core.RestoreFKind0
 public import Chazelle.Core.RestoreFSide
@@ -60,9 +70,9 @@ theorem arcLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
     Robust.transport hN (fun a ha => hI.hm a ha)
   have hNA := hN'.nfAt
   obtain ⟨hB7, -, hab, hrb, hlb, -⟩ := nf_bounds hN'
-  have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
+  have hA0 := hI.hA
   have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
-  have hrl : c.nreg 81121 < N.regions.length := hr
+  have hrl := hr
   obtain ⟨-, -, -, hl, -⟩ := hNA.2.2.2.2.2.2.2.1 _ hrl
   have rj := hl _ ht
   obtain ⟨-, s1, s2, s3, s4⟩ := hNA.2.2.2.2.2.2.1 _ hj
@@ -135,14 +145,14 @@ def ifEq (a b : ℕ) (S : Stmt) : Stmt := .ifLtN a b .skip (.ifLtN b a .skip S)
 theorem FRS.ifEq_eq {B : Finset ℕ} {P : Polygon} {W : ℕ} {a b : ℕ} {S : Stmt} {K : ℕ}
     {Q : Config → Prop} (h : c.nreg a = c.nreg b) (hS : FRS B P W c₀ S c K Q) :
     FRS B P W c₀ (ifEq a b S) c (K + 4) Q :=
-  (FRS.ifF (by omega) (FRS.ifF (by omega) hS)).mono (by omega) (fun _ h => h)
+  (FRS.ifF (⋄) (FRS.ifF (⋄) hS)).mono (⋄) (fun _ h => h)
 
 theorem FRS.ifEq_ne {B : Finset ℕ} {P : Polygon} {W : ℕ} {a b : ℕ} {S : Stmt} {K : ℕ}
     {Q : Config → Prop} (hI : FInv W c₀ c) (h : c.nreg a ≠ c.nreg b) (hq : Q c) :
     FRS B P W c₀ (ifEq a b S) c (K + 4) Q := by
   by_cases h1 : c.nreg a < c.nreg b
-  · exact (FRS.ifT h1 (FRS.skip (K := 0) hI hq)).mono (by omega) (fun _ h => h)
-  · exact (FRS.ifF h1 (FRS.ifT (by omega) (FRS.skip (K := 0) hI hq))).mono (by omega)
+  · exact (FRS.ifT h1 (FRS.skip (K := 0) hI hq)).mono (⋄) (fun _ h => h)
+  · exact (FRS.ifF h1 (FRS.ifT (⋄) (FRS.skip (K := 0) hI hq))).mono (⋄)
       (fun _ h => h)
 
 /-- **The count of an arc**: `w` (`81110`), the count (`81104`), the next arc index. -/
@@ -572,35 +582,35 @@ theorem leafInit_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI
   have hNA := hN'.nfAt
   obtain ⟨hB7, -, -, hrb, -, -⟩ := nf_bounds hN'
   obtain ⟨hC', hwf'⟩ := chain_keep hwf hC (fun a ha => hI.hm a ha) hI.hA
-  have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
+  have hA0 := hI.hA
   have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
   have hD5 := hwf.1
-  have hrl : c.nreg 81121 < N.regions.length := hr
+  have hrl := hr
   obtain ⟨hna, -⟩ := hNA.2.2.2.2.2.2.2.1 _ hrl
   have b1 := hrb _ hr
-  have hm : c.nmem (c.nreg 81133 + 2) = Cα.m := hC'.2.2.2.1
-  have k5 : c.nreg 81015 = 5 := by rw [hI.hin _ (by unfold FFix; omega), hE.k5]
-  have k7 : c.nreg 81016 = 7 := by rw [hI.hin _ (by unfold FFix; omega), hE.k7]
-  have k2 : c.nreg 81013 = 2 := by rw [hI.hin _ (by unfold FFix; omega), hE.k2]
+  have hm := hC'.2.2.2.1
+  have k5 : c.nreg 81015 = 5 := Ρ hI.hin _ (by unfold FFix; omega), hE.k5
+  have k7 : c.nreg 81016 = 7 := Ρ hI.hin _ (by unfold FFix; omega), hE.k7
+  have k2 : c.nreg 81013 = 2 := Ρ hI.hin _ (by unfold FFix; omega), hE.k2
   have e5 : c.nmem (c.nreg 81134 + 5) + c.nreg 81121 + c.nreg 81121 + c.nreg 81121 +
-      c.nreg 81121 + c.nreg 81121 = c.nmem (c.nreg 81134 + 5) + 5 * c.nreg 81121 := by ring
+      c.nreg 81121 + c.nreg 81121 = c.nmem (c.nreg 81134 + 5) + 5 * c.nreg 81121 := ⋆
   have ok : okB E.W c.nmem leafInitL c.nreg := by
-    simp only [leafInitL, okB, okI, regI, upd]
-    simp only [FScr, FOut, k5, k7, k2]
+    ϴ leafInitL, okB, okI, regI, upd
+    ϴ FScr, FOut, k5, k7, k2
     norm_num
     try rw [e5]
     try rw [hm]
     (repeat' apply And.intro) <;> omega
-  refine (FRS.block hB _ hI ok).mono (by simp [leafInitL]) (fun c' h' => ?_)
-  have e' : ∀ q, c'.nreg q = regB c.nmem leafInitL c.nreg q := fun q => by rw [h']
+  refine (FRS.block hB _ hI ok).mono (⊚ leafInitL) (fun c' h' => ?_)
+  have e' : ∀ q, c'.nreg q = regB c.nmem leafInitL c.nreg q := fun q => Ρ h'
   refine ⟨?_, ?_, ?_, ?_, ?_, fun q h1 h2 h3 h4 h5 h6 h7 => ?_⟩
   · rw [e']; simp [leafInitL, regB, regI, upd, k5]; rw [e5]; exact hna
-  · rw [e']; simp [leafInitL, regB, regI, upd]
-  · rw [e']; simp [leafInitL, regB, regI, upd]
+  · rw [e']; Θ leafInitL, regB, regI, upd
+  · rw [e']; Θ leafInitL, regB, regI, upd
   · rw [e']; simp [leafInitL, regB, regI, upd, k2, k7, hm]; ring
   · rw [e']; simp [leafInitL, regB, regI, upd, k5]; rw [e5]; exact hna
-  · rw [e', regB_other _ _ _ (fun i hi => ?_)]
-    simp only [leafInitL, List.mem_cons, List.not_mem_nil, or_false] at hi
+  · Ξ e', regB_other _ _ _ (fun i hi => ?_)
+    ϴ' leafInitL, List.mem_cons, List.not_mem_nil, or_false at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
       rfl | rfl <;> simp only [dstI] <;> omega
 
@@ -648,14 +658,14 @@ theorem LInv0.congr {cs d d' : Config} {Cα : Chain} {Nα : NF} {r g g' L : ℕ}
     (h : LInv0 E cs Cα Nα r g g' L d) (he : ∀ q, q ≠ 81109 → d'.nreg q = d.nreg q) :
     LInv0 E cs Cα Nα r g g' L d' := by
   obtain ⟨hw, fr, mo, l01, l05, l00, l0, lc, ldone, lcur⟩ := h
-  have e00 := he 81100 (by norm_num)
-  have e01 := he 81101 (by norm_num)
-  have e03 := he 81103 (by norm_num)
-  have e04 := he 81104 (by norm_num)
-  have e05 := he 81105 (by norm_num)
-  have e07 := he 81007 (by norm_num)
-  refine ⟨hw.congr' (fun q a b => he q (by omega)), fun q a b hq => by
-    rw [he q (fun e => hq (Or.inr (Or.inr (Or.inr (by omega))))), fr q a b hq],
+  have e00 := he 81100 (⊛)
+  have e01 := he 81101 (⊛)
+  have e03 := he 81103 (⊛)
+  have e04 := he 81104 (⊛)
+  have e05 := he 81105 (⊛)
+  have e07 := he 81007 (⊛)
+  refine ⟨hw.congr' (fun q a b => he q (⋄)), fun q a b hq => by
+    rw [he q (fun e => hq (Or.inr (Or.inr (Or.inr (⋄))))), fr q a b hq],
     fun h => by rw [e07]; exact mo h, by rw [e01]; exact l01, by rw [e05]; exact l05,
     by rw [e00]; exact l00, by rw [e00, e04]; exact l0, by rw [e00, e04, e03]; exact lc,
     by rw [e00, e04, e07]; exact ldone, by rw [e00, e04, e07]; exact lcur⟩
@@ -669,14 +679,14 @@ theorem guard_fs {B : Finset ℕ} (hB : dBands ⊆ B) {cs : Config} {Cα : Chain
   have l01 := h.2.2.2.1
   have ok : okB E.W c.nmem guardL c.nreg := by
     simp only [guardL, okB, okI, regI, upd, FScr, FOut]; norm_num; omega
-  refine (FRS.block hB _ hI ok).mono (by simp [guardL]) (fun c' h' => ?_)
-  have e' : ∀ q, c'.nreg q = regB c.nmem guardL c.nreg q := fun q => by rw [h']
+  refine (FRS.block hB _ hI ok).mono (⊚ guardL) (fun c' h' => ?_)
+  have e' : ∀ q, c'.nreg q = regB c.nmem guardL c.nreg q := fun q => Ρ h'
   have f' : ∀ q, q ≠ 81109 → c'.nreg q = c.nreg q := fun q hq => by
-    rw [e']; simp [guardL, regB, regI, upd, hq]
+    rw [e']; Θ guardL, regB, regI, upd, hq
   refine ⟨⟨h.congr f', ?_⟩, ?_⟩
-  · rw [f' 81104 (by norm_num), f' 81100 (by norm_num), e']
+  · Ξ f' 81104 (⊛), f' 81100 (⊛), e'
     simp [guardL, regB, regI, upd, l01]; omega
-  · unfold lmuAt; rw [f' _ (by norm_num), f' _ (by norm_num)]
+  · unfold lmuAt; Ξ f' _ (⊛), f' _ (⊛)
 
 /-- The body of the leaf loop. -/
 def leafBody (sT : Stmt) : Stmt :=
@@ -884,42 +894,42 @@ theorem leaf_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   refine FRS.seq (K₁ := 15) (leafInit_fs hE hB hI (N := Nα) (by rw [r34]; exact hP.hNW)
     (by rw [hr]; exact hrn) (by rw [r33]; exact hP.hwf) (by rw [r33]; exact hP.hD) hP.hWm)
     (fun c₁ hI₁ hA₁ ⟨i01, i00, i04, i05, i09, fi⟩ => ?_)
-  rw [hr] at i01 i09
+  Ξ' hr at i01 i09
   have fr₁ : ∀ q, 81011 ≤ q → q < 83000 → ¬ LeafW q → c₁.nreg q = c.nreg q := fun q a b hq =>
-    fi q (fun h => hq (Or.inr (Or.inr (Or.inr (by omega)))))
-      (fun h => hq (Or.inr (Or.inr (Or.inr (by omega)))))
-      (fun h => hq (Or.inr (Or.inr (Or.inr (by omega)))))
-      (fun h => hq (Or.inr (Or.inr (Or.inr (by omega)))))
-      (fun h => hq (Or.inr (Or.inr (Or.inr (by omega)))))
-      (fun h => hq (Or.inr (Or.inr (Or.inr (by omega)))))
-      (fun h => hq (Or.inr (Or.inr (Or.inr (by omega)))))
-  have e07 : c₁.nreg 81007 = c.nreg 81007 := fi _ (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+    fi q (fun h => hq (Or.inr (Or.inr (Or.inr (⋄)))))
+      (fun h => hq (Or.inr (Or.inr (Or.inr (⋄)))))
+      (fun h => hq (Or.inr (Or.inr (Or.inr (⋄)))))
+      (fun h => hq (Or.inr (Or.inr (Or.inr (⋄)))))
+      (fun h => hq (Or.inr (Or.inr (Or.inr (⋄)))))
+      (fun h => hq (Or.inr (Or.inr (Or.inr (⋄)))))
+      (fun h => hq (Or.inr (Or.inr (Or.inr (⋄)))))
+  have e07 : c₁.nreg 81007 = c.nreg 81007 := fi _ (⊛) (⊛) (⊛)
+    (⊛) (⊛) (⊛) (⊛)
   have hL₁ : LInv E c Cα Nα r g g' L c₁ := by
-    refine ⟨⟨hw.congr' (fun q a b => fi q (by omega) (by omega) (by omega) (by omega) (by omega)
-      (by omega) (by omega)), fr₁, fun h => by rw [e07]; exact h, i01, i05,
-      by rw [i00]; omega, fun _ => i04, fun h => by omega, fun t' h => by omega,
-      fun h => by omega⟩, by rw [i09, i04, i00]; simp⟩
+    refine ⟨⟨hw.congr' (fun q a b => fi q (⋄) (⋄) (⋄) (⋄) (⋄)
+      (⋄) (⋄)), fr₁, fun h => by rw [e07]; exact h, i01, i05,
+      by rw [i00]; omega, fun _ => i04, fun h => ⋄, fun t' h => ⋄,
+      fun h => ⋄⟩, by rw [i09, i04, i00]; simp⟩
   have hμ₁ : lmuAt Cα (Qof E.P) Nα r (2 * Cα.m + 7) c₁ = lmu Cα (Qof E.P) Nα r (2 * Cα.m + 7) := by
     unfold lmuAt lmu; rw [i04, i00, Finset.range_eq_Ico]; simp
   have k0 := k0_of hE hI₁
   refine (FRS.while (a := 81011) (b := 81109) (body := leafBody E.sT) (LInv E c Cα Nα r g g' L)
     (lmuAt Cα (Qof E.P) Nα r (2 * Cα.m + 7)) (lbK E) (fun d hd hgd => ?_)
     (fun d hId hd hgd hroomd => leaf_body hE hB hBT hP hR' hr hrn hnW h2α hWa hId hd hgd hroomd)
-    hI₁ hL₁ (by rw [hμ₁]; omega)).mono (by rw [hμ₁]) (fun c' ⟨hL', hex⟩ => ?_)
+    hI₁ hL₁ (by rw [hμ₁]; omega)).mono (Ρ hμ₁) (fun c' ⟨hL', hex⟩ => ?_)
   · obtain ⟨⟨-, -, -, -, -, l00, -, -, -, -⟩, l09⟩ := hd
     unfold lmuAt
     by_cases hc : 0 < d.nreg 81104
     · omega
-    · have htn : d.nreg 81100 < (Nα.region r).arcs.length := by omega
-      rw [Finset.sum_eq_sum_Ico_succ_bot htn]
+    · have htn : d.nreg 81100 < (Nα.region r).arcs.length := ⋄
+      Ξ Finset.sum_eq_sum_Ico_succ_bot htn
       omega
   · obtain ⟨⟨hw', fr', mo', l01, l05, l00, l0, lc, ldone, lcur⟩, l09⟩ := hL'
     have z11 : c'.nreg 81011 = 0 := by
-      rw [fr' _ (by norm_num) (by norm_num) (by unfold LeafW KeyW VertW; omega)]
+      Ξ fr' _ (⊛) (⊛) (by unfold LeafW KeyW VertW; omega)
       exact k0_of hE hI
     refine ⟨hw', fr', mo', fun t' ht' x₀ hx hcov => ldone t' ?_ x₀ hx hcov⟩
-    rw [z11] at hex
+    Ξ' z11 at hex
     omega
 
 end

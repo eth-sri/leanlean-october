@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildInit
 public import Chazelle.Core.SortRam
 
@@ -55,7 +57,7 @@ variable {P : Polygon} {W : ℕ}
 theorem band_out {r : ℕ} (hr : bandOf r ∉ ({bBuild, bSort, bSign} : Finset ℕ)) :
     bandOf r ∉ insert bSort ({bSign, bBuild} : Finset ℕ) ∧
       (r < 10000 ∨ (20000 ≤ r ∧ r < 30000) ∨ 50000 ≤ r) := by
-  simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bBuild, bSort, bSign] at hr ⊢
+  ϴ' Finset.mem_insert, Finset.mem_singleton, bandOf, bBuild, bSort, bSign at hr ⊢
   omega
 
 /-- The setup of phase A. -/

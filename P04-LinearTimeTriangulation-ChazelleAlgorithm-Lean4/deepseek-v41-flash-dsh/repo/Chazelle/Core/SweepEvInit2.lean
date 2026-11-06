@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvInit
 
 /-!
@@ -51,7 +53,7 @@ theorem frame_regs {c c' : Config} (k : ℕ) (hr : ∀ r, bandOf r ∉ ioBands �
 
 theorem frame_ioB {B : Finset ℕ} {c c' : Config} {k : ℕ} (h : Frame (B ∪ B) c c' k) :
     Frame B c c' k := by
-  rw [Finset.union_self] at h; exact h
+  Ξ' Finset.union_self at h; exact h
 
 /-- Registers of the sweep's band are in `ioBands`. -/
 theorem sw_io {r : ℕ} (h1 : 240000 ≤ r) (h2 : r < 250000) : bandOf r ∈ ioBands := by
@@ -66,7 +68,7 @@ def symCp : List Instr := [.copyN cT1 iY, .copyN (cT1 + 1) (iY + 1), .copyN (cT1
 def symS : Stmt :=
   .seq (block [.constN iE 6, .constN iH 0]) (.seq (callSym (sw 20) iE iH iY) (block symCp))
 
-set_option maxRecDepth 20000 in
+
 /-- **The top of `C₁`**: a symbolic point in `cT1`; only the oracle bands, the allocator and
 `sw 645 … 647`, `sw 705 … 709` change. -/
 theorem symS_exec {P : Polygon} {W : ℕ} {c : Config} {J : Merge.Junction}
@@ -160,7 +162,7 @@ theorem mdCpW_step {P : Polygon} {W : ℕ} {c c₁ : Config} {A S j k : ℕ}
   have n20 : c₁.nreg (sw 20) = S := by
     rw [h6 _ (by swoInit2) (by swoInit2) (by swoInit2)
       (by swoInit2), hS]
-  have nk : c₁.nreg k = j := by rw [h6 _ hk1 hk2 hk3 hk4, hk]
+  have nk : c₁.nreg k = j := Ρ h6 _ hk1 hk2 hk3 hk4, hk
   have e₁ := Exec.addN (P := P) hw iA (sw 20) k (by rw [n20, nk]; omega)
   have e₂ := Exec.loadN (P := P) e₁.wb_right iV iA
   have e₃ := Exec.addN (P := P) e₂.wb_right iA CD₁ k (by
@@ -181,39 +183,39 @@ theorem mdCpW_step {P : Polygon} {W : ℕ} {c c₁ : Config} {A S j k : ℕ}
       ((upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) CD₁ +
         (upd (upd c₁.nreg iA (c₁.nreg (sw 20) + c₁.nreg k)) iV v) k) iV = v := by
     intro v
-    rw [upd_other _ _ _ (by swoInit2), upd_same]
+    Ξ upd_other _ _ _ (by swoInit2), upd_same
   simp only
-  rw [vA, vV, upd_same, n20, nk]
-  have hsrc : c₁.nmem (S + j) = c.nmem (S + j) := h5 _ (by omega)
+  Ξ vA, vV, upd_same, n20, nk
+  have hsrc : c₁.nmem (S + j) = c.nmem (S + j) := h5 _ (⋄)
   refine ⟨?_, ?_, ?_, fun i hi => ?_, fun a ha => ?_, fun r r1 r2 r3 r4 => ?_, h7, h8, h9⟩ <;>
     simp only
   · rw [upd_other _ _ _ (by swoInit2), upd_other _ _ _ (by swoInit2),
       upd_other _ _ _ (by swoInit2), h1]
   · rw [upd_other _ _ _ (by swoInit2), upd_other _ _ _ (by swoInit2),
       upd_other _ _ _ (by swoInit2), h2]
-  · rw [upd_other _ _ _ (by omega), h3]
+  · Ξ upd_other _ _ _ (⋄), h3
   · rcases Nat.lt_or_ge i j with h | h
-    · rw [upd_other _ _ _ (by omega), h4 i h]
-    · rw [show i = j by omega, upd_same, hsrc]
-  · rw [upd_other _ _ _ (by omega), h5 a ha]
-  · rw [upd_other _ _ _ r3, upd_other _ _ _ r4, upd_other _ _ _ r3, h6 r r1 r2 r3 r4]
+    · Ξ upd_other _ _ _ (⋄), h4 i h
+    · Ξ show i = j by omega, upd_same, hsrc
+  · Ξ upd_other _ _ _ (⋄), h5 a ha
+  · Ξ upd_other _ _ _ r3, upd_other _ _ _ r4, upd_other _ _ _ r3, h6 r r1 r2 r3 r4
 
-set_option maxRecDepth 20000 in
+
 theorem mdHead_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     (k0 : c.nreg K0 = 0) (k1 : c.nreg K1 = 1) (hW : c.nreg ALLOC + 6 ≤ W) :
     ∃ c₁ k, Exec P W (block mdHead) c c₁ k ∧ k = 3 ∧
       MdInv c (c.nreg ALLOC) (c.nreg (sw 20)) 0 c₁ := by
   unfold mdHead MdInv
-  simp only [MD₁, CD₁, K0, K1, ALLOC, iA, iV, sw, Nat.reduceAdd] at *
+  ϴ' MD₁, CD₁, K0, K1, ALLOC, iA, iV, sw, Nat.reduceAdd at *
   exec_block
   · config_simp; rw [k1]; omega
   · refine ⟨rfl, by config_simp, by config_simp; rw [k1], by config_simp; rw [k0],
       fun i hi => absurd hi (Nat.not_lt_zero _), fun a ha => ?_, fun r h1 h2 _ _ => ?_,
       rfl, rfl, rfl⟩
-    · config_simp; rw [upd_other _ _ _ (by omega)]
-    · config_simp; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
+    · config_simp; Ξ upd_other _ _ _ (⋄)
+    · config_simp; Ξ upd_other _ _ _ h2, upd_other _ _ _ h1
 
-set_option maxRecDepth 20000 in
+
 /-- **The model descriptor of `C₁`** at the allocator `A`: `0` at `A`, the five words of the
 descriptor at `sw 20` at `A + 1 …`; `MD₁ = A`, `CD₁ = A + 1`, the allocator at `A + 6`. -/
 theorem md1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (hK : Consts c)
@@ -228,20 +230,20 @@ theorem md1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
   set A := c.nreg ALLOC with hA
   set S := c.nreg (sw 20) with hSd
   obtain ⟨c₁, kH, eH, hkH, I₁⟩ := mdHead_exec (P := P) hw k0 k1 hW
-  have hSA : S + 5 ≤ A := hS
+  have hSA := hS
   have nk : ∀ q, (q = K0 ∨ q = K1 ∨ q = K2 ∨ q = K3 ∨ q = K4) →
       q ≠ MD₁ ∧ q ≠ CD₁ ∧ q ≠ iA ∧ q ≠ iV := by
     rintro q (rfl | rfl | rfl | rfl | rfl) <;> refine ⟨?_, ?_, ?_, ?_⟩ <;> swoInit2
-  obtain ⟨c₂, e₄, I₂⟩ := mdCpW_step (P := P) eH.wb_right I₁ rfl hSA (by omega) (by norm_num) k0
-    (nk K0 (by simp)).1 (nk K0 (by simp)).2.1 (nk K0 (by simp)).2.2.1 (nk K0 (by simp)).2.2.2
-  obtain ⟨c₃, e₅, I₃⟩ := mdCpW_step (P := P) e₄.wb_right I₂ rfl hSA (by omega) (by norm_num) k1
-    (nk K1 (by simp)).1 (nk K1 (by simp)).2.1 (nk K1 (by simp)).2.2.1 (nk K1 (by simp)).2.2.2
-  obtain ⟨c₄, e₆, I₄⟩ := mdCpW_step (P := P) e₅.wb_right I₃ rfl hSA (by omega) (by norm_num) k2
-    (nk K2 (by simp)).1 (nk K2 (by simp)).2.1 (nk K2 (by simp)).2.2.1 (nk K2 (by simp)).2.2.2
-  obtain ⟨c₅, e₇, I₅⟩ := mdCpW_step (P := P) e₆.wb_right I₄ rfl hSA (by omega) (by norm_num) k3
-    (nk K3 (by simp)).1 (nk K3 (by simp)).2.1 (nk K3 (by simp)).2.2.1 (nk K3 (by simp)).2.2.2
-  obtain ⟨c₆, e₈, I₆⟩ := mdCpW_step (P := P) e₇.wb_right I₅ rfl hSA (by omega) (by norm_num) k4
-    (nk K4 (by simp)).1 (nk K4 (by simp)).2.1 (nk K4 (by simp)).2.2.1 (nk K4 (by simp)).2.2.2
+  obtain ⟨c₂, e₄, I₂⟩ := mdCpW_step (P := P) eH.wb_right I₁ rfl hSA (⋄) (⊛) k0
+    (nk K0 (✓)).1 (nk K0 (✓)).2.1 (nk K0 (✓)).2.2.1 (nk K0 (✓)).2.2.2
+  obtain ⟨c₃, e₅, I₃⟩ := mdCpW_step (P := P) e₄.wb_right I₂ rfl hSA (⋄) (⊛) k1
+    (nk K1 (✓)).1 (nk K1 (✓)).2.1 (nk K1 (✓)).2.2.1 (nk K1 (✓)).2.2.2
+  obtain ⟨c₄, e₆, I₄⟩ := mdCpW_step (P := P) e₅.wb_right I₃ rfl hSA (⋄) (⊛) k2
+    (nk K2 (✓)).1 (nk K2 (✓)).2.1 (nk K2 (✓)).2.2.1 (nk K2 (✓)).2.2.2
+  obtain ⟨c₅, e₇, I₅⟩ := mdCpW_step (P := P) e₆.wb_right I₄ rfl hSA (⋄) (⊛) k3
+    (nk K3 (✓)).1 (nk K3 (✓)).2.1 (nk K3 (✓)).2.2.1 (nk K3 (✓)).2.2.2
+  obtain ⟨c₆, e₈, I₆⟩ := mdCpW_step (P := P) e₇.wb_right I₅ rfl hSA (⋄) (⊛) k4
+    (nk K4 (✓)).1 (nk K4 (✓)).2.1 (nk K4 (✓)).2.2.1 (nk K4 (✓)).2.2.2
   obtain ⟨g1, g2, g3, g4, g5, g6, g7, g8, g9⟩ := I₆
   have gA : c₆.nreg ALLOC = A := g6 _ (by swoInit2)
     (by swoInit2) (by swoInit2) (by swoInit2)
@@ -249,12 +251,12 @@ theorem md1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
     rw [g6 _ (by swoInit2) (by swoInit2) (by swoInit2)
       (by swoInit2), k6]
   have e₉ := Exec.addN (P := P) e₈.wb_right ALLOC ALLOC K6 (by rw [gA, g6']; omega)
-  refine ⟨_, _, .seq eH (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉))))), by omega, ?_, ?_, ?_,
+  refine ⟨_, _, .seq eH (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉))))), ⋄, ?_, ?_, ?_,
     g3, g4, g5, fun r h0 h1 h2 h3 h4 => ?_, g7, g8, g9⟩
-  · simp only [upd_same]; rw [gA, g6']
-  · simp only; rw [upd_other _ _ _ (by swoInit2), g1]
-  · simp only; rw [upd_other _ _ _ (by swoInit2), g2]
-  · simp only; rw [upd_other _ _ _ h0, g6 r h1 h2 h3 h4]
+  · simp only [upd_same]; Ξ gA, g6'
+  · simp only; Ξ upd_other _ _ _ (by swoInit2), g1
+  · simp only; Ξ upd_other _ _ _ (by swoInit2), g2
+  · simp only; Ξ upd_other _ _ _ h0, g6 r h1 h2 h3 h4
 
 end
 

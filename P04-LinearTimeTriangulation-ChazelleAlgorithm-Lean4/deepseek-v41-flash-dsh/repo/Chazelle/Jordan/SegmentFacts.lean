@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Spec
 public import Mathlib.Topology.Compactness.Compact
 public import Mathlib.Topology.Instances.Real.Lemmas
@@ -34,15 +36,15 @@ theorem mem_segment_iff {u v p : Point} :
 
 /-- The first endpoint lies on the segment. -/
 theorem left_mem_segment (u v : Point) : u ∈ segment u v :=
-  ⟨0, le_rfl, zero_le_one, by simp⟩
+  ⟨0, le_rfl, zero_le_one, ✓⟩
 
 /-- The second endpoint lies on the segment. -/
 theorem right_mem_segment (u v : Point) : v ∈ segment u v :=
-  ⟨1, zero_le_one, le_rfl, by simp⟩
+  ⟨1, zero_le_one, le_rfl, ✓⟩
 
 theorem segment_subset_comm {u v : Point} : segment u v ⊆ segment v u := by
   rintro p ⟨t, ht0, ht1, rfl⟩
-  refine ⟨1 - t, by linarith, by linarith, ?_⟩
+  refine ⟨1 - t, ⟡, ⟡, ?_⟩
   ext <;> simp <;> ring
 
 /-- A segment does not depend on the order of its endpoints. -/
@@ -66,8 +68,8 @@ theorem mem_segment_iff_of_lt {u v p : Point} (huv : u.1 < v.1) :
       ring
   · rintro ⟨h0, h1, hl⟩
     have hd : 0 < v.1 - u.1 := sub_pos.2 huv
-    refine ⟨(p.1 - u.1) / (v.1 - u.1), div_nonneg (by linarith) hd.le,
-      (div_le_one hd).2 (by linarith), ?_⟩
+    refine ⟨(p.1 - u.1) / (v.1 - u.1), div_nonneg (⟡) hd.le,
+      (div_le_one hd).2 (⟡), ?_⟩
     ext
     · simp only
       field_simp
@@ -82,13 +84,13 @@ theorem mem_segment_of_vertical {u v p : Point} (huv : u.1 = v.1) (hp : p.1 = u.
   by_cases hd : u.2 = v.2
   · refine ⟨0, le_rfl, zero_le_one, ?_⟩
     ext
-    · simp [hp]
+    · Θ hp
     · simp; linarith
   · have hd' : 0 < v.2 - u.2 := sub_pos.2 (lt_of_le_of_ne (h0.trans h1) hd)
-    refine ⟨(p.2 - u.2) / (v.2 - u.2), div_nonneg (by linarith) hd'.le,
-      (div_le_one hd').2 (by linarith), ?_⟩
+    refine ⟨(p.2 - u.2) / (v.2 - u.2), div_nonneg (⟡) hd'.le,
+      (div_le_one hd').2 (⟡), ?_⟩
     ext
-    · simp [hp, huv]
+    · Θ hp, huv
     · simp only
       field_simp
       ring
@@ -97,18 +99,18 @@ theorem mem_segment_of_vertical {u v p : Point} (huv : u.1 = v.1) (hp : p.1 = u.
 theorem fst_eq_of_mem_segment_vertical {u v p : Point} (huv : u.1 = v.1) (hp : p ∈ segment u v) :
     p.1 = u.1 := by
   obtain ⟨t, -, -, rfl⟩ := hp
-  simp [huv]
+  Θ huv
 
 /-- A segment is the continuous image of `[0,1]`, hence compact. -/
 theorem isCompact_segment (u v : Point) : IsCompact (segment u v) := by
   have : segment u v =
       (fun t : ℝ => ((u.1 + t * (v.1 - u.1), u.2 + t * (v.2 - u.2)) : Point)) '' Icc 0 1 := by
     ext p
-    simp only [mem_segment_iff, mem_image, mem_Icc]
+    ϴ mem_segment_iff, mem_image, mem_Icc
     constructor
     · rintro ⟨t, h0, h1, rfl⟩; exact ⟨t, ⟨h0, h1⟩, rfl⟩
     · rintro ⟨t, ⟨h0, h1⟩, rfl⟩; exact ⟨t, h0, h1, rfl⟩
-  rw [this]
+  Ξ this
   exact isCompact_Icc.image (by fun_prop)
 
 /-- A segment is a closed set. -/
@@ -119,7 +121,7 @@ theorem isClosed_segment (u v : Point) : IsClosed (segment u v) :=
 theorem boundary_eq_biUnion (P : Polygon) :
     P.boundary = ⋃ i ∈ Finset.range P.n, P.edge i := by
   ext p
-  simp [Polygon.boundary]
+  Θ Polygon.boundary
 
 /-- Every edge of a polygon is closed. -/
 theorem isClosed_edge (P : Polygon) (i : ℕ) : IsClosed (P.edge i) :=
@@ -127,7 +129,7 @@ theorem isClosed_edge (P : Polygon) (i : ℕ) : IsClosed (P.edge i) :=
 
 /-- The boundary of a polygon is a closed set (a finite union of closed segments). -/
 theorem isClosed_boundary (P : Polygon) : IsClosed P.boundary := by
-  rw [boundary_eq_biUnion]
+  Ξ boundary_eq_biUnion
   exact isClosed_biUnion_finset fun i _ => isClosed_edge P i
 
 /-- The complement of the boundary of a polygon is open. -/

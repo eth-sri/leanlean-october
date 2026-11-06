@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Separator.Perm
 public import Mathlib.GroupTheory.Perm.Cycle.Type
 public import Mathlib.Combinatorics.SimpleGraph.Basic
@@ -82,14 +84,14 @@ theorem vert_fperm (d : D) : M.vert (M.fperm d) = M.head d := M.vert_rot _
 
 /-- The head of the opposite dart is the tail. -/
 theorem head_opp (d : D) : M.head (M.opp d) = M.vert d := by
-  simp [head, M.opp_opp]
+  Θ head, M.opp_opp
 
 /-- `opp` is injective. -/
 theorem opp_injective : Function.Injective M.opp := M.opp.injective
 
 /-- The rotation in terms of the face permutation. -/
 theorem rot_eq_fperm_opp (d : D) : M.rot d = M.fperm (M.opp d) := by
-  rw [fperm_apply, M.opp_opp]
+  Ξ fperm_apply, M.opp_opp
 
 section Finite
 
@@ -197,7 +199,7 @@ def dual : CombMap F V D where
   sameCycle_of_vert := M.sameCycle_of_face
   face_fperm d := by
     show M.vert (M.fperm (M.opp d)) = M.vert d
-    rw [fperm_apply, M.opp_opp, M.vert_rot]
+    Ξ fperm_apply, M.opp_opp, M.vert_rot
   sameCycle_of_face d e h := by rw [M.fperm_mul_opp]; exact M.sameCycle_of_vert d e h
   vert_surj := M.face_surj
   face_surj := M.vert_surj

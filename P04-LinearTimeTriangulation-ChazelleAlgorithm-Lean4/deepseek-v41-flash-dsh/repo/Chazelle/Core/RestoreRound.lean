@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreLink
 
 /-!
@@ -40,7 +42,7 @@ theorem region_of_subset_free {S T : Set (Set Point)} (hST : S ⊆ T) {R : Set P
   have hzT := hfree hz
   refine ⟨z, hzT, Subset.antisymm ?_ ?_⟩
   · exact (regionsIn_isPreconnected hR).subset_connectedComponentIn hz hfree
-  · rw [regionsIn_eq_component hR hz]
+  · Ξ regionsIn_eq_component hR hz
     exact (isPreconnected_connectedComponentIn).subset_connectedComponentIn
       (mem_connectedComponentIn hzT)
       ((connectedComponentIn_subset _ _).trans (freeIn_anti M.D hST))
@@ -81,7 +83,7 @@ theorem half_old (hM : WalkAx M) {S T : Set (Set Point)} (hST : S ⊆ T) (hT : T
     have hPe : P = connectedComponentIn (freeIn M.D (insert e T)) z :=
       regionsIn_eq_component hP hz
     have : R₁' ⊆ P := by
-      rw [hPe]
+      Ξ hPe
       exact (regionsIn_isPreconnected hs'.mem₁).subset_connectedComponentIn (h hz) hR₁
     rw [Subset.antisymm h this]; exact hs'.mem₁
   · have hR₂ : R₂' ⊆ freeIn M.D (insert e T) := by
@@ -97,7 +99,7 @@ theorem half_old (hM : WalkAx M) {S T : Set (Set Point)} (hST : S ⊆ T) (hT : T
     have hPe : P = connectedComponentIn (freeIn M.D (insert e T)) z :=
       regionsIn_eq_component hP hz
     have : R₂' ⊆ P := by
-      rw [hPe]
+      Ξ hPe
       exact (regionsIn_isPreconnected hs'.mem₂).subset_connectedComponentIn (h hz) hR₂
     rw [Subset.antisymm h this]; exact hs'.mem₂
 
@@ -157,7 +159,7 @@ theorem round_classify (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm
       rw [hTd]; ext x; simp only [mem_union, mem_insert_iff]; tauto
     obtain ⟨R, hR, hw⟩ := hE.split e heE
     have he := hE.adm heE
-    have heS : e ∉ S := hw.1
+    have heS := hw.1
     have heT : e ∉ T := by
       rintro (h | h)
       · exact heS h
@@ -237,7 +239,7 @@ theorem round_degLe (hM : WalkAx M) {S E : Set (Set Point)} (hS : S ⊆ M.Adm)
   intro U hU
   rcases round_classify hM hS hfin hE U hU with ⟨hUS, hex, hno⟩ | ⟨R, hR, e, he, hw, -, -, hlt⟩
   · show (exitsIn M.D (S ∪ E) U).ncard ≤ _
-    rw [hex]
+    Ξ hex
     by_contra hcon
     push Not at hcon
     obtain ⟨e, he, hw⟩ := hall U hUS (lt_of_le_of_lt (le_max_left _ _) hcon)

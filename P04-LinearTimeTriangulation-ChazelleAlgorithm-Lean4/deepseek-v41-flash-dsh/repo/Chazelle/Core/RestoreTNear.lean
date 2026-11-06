@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTHoleMath
 public import Chazelle.Core.ShotListMath
 
@@ -42,13 +44,13 @@ theorem key_eq_nat {p e : ℕ} {τ : ℝ} (h0 : 0 ≤ τ) (h1 : τ ≤ 1) (h : (
     (p = e ∧ τ = 0) ∨ (p + 1 = e ∧ τ = 1) := by
   rcases h1.lt_or_eq with h1 | h1
   · left
-    have a1 : (p : ℝ) ≤ e := by linarith
-    have a2 : (e : ℝ) < p + 1 := by linarith
+    have a1 : (p : ℝ) ≤ e := ⟡
+    have a2 : (e : ℝ) < p + 1 := ⟡
     have b1 : p ≤ e := by exact_mod_cast a1
     have b2 : e < p + 1 := by exact_mod_cast a2
-    have hp : p = e := by omega
+    have hp : p = e := ⋄
     subst hp
-    exact ⟨rfl, by linarith⟩
+    exact ⟨rfl, ⟡⟩
   · right
     subst h1
     have : ((p + 1 : ℕ) : ℝ) = e := by push_cast; linarith
@@ -57,8 +59,8 @@ theorem key_eq_nat {p e : ℕ} {τ : ℝ} (h0 : 0 ≤ τ) (h1 : τ ≤ 1) (h : (
 /-- A key strictly between `e` and `e + 1` at a position `(p, τ)`: the position is on edge `e`. -/
 theorem key_between {p e : ℕ} {τ : ℝ} (h0 : 0 ≤ τ) (h1 : τ ≤ 1) (ha : (e : ℝ) < p + τ)
     (hb : (p : ℝ) + τ < e + 1) : p = e := by
-  have a1 : (p : ℝ) < e + 1 := by linarith
-  have a2 : (e : ℝ) < p + 1 := by linarith
+  have a1 : (p : ℝ) < e + 1 := ⟡
+  have a2 : (e : ℝ) < p + 1 := ⟡
   have b1 : p < e + 1 := by exact_mod_cast a1
   have b2 : e < p + 1 := by exact_mod_cast a2
   omega
@@ -73,33 +75,33 @@ theorem edge_keys (W : Polygon) {e : ℕ} (he : e < W.n) {p : ℕ} (hp : p < W.n
     rcases key_eq_nat h0 h1 h with ⟨rfl, rfl⟩ | ⟨hpe, rfl⟩
     · exact ⟨0, le_rfl, zero_le_one, rfl⟩
     · refine ⟨0, le_rfl, zero_le_one, ?_⟩
-      rw [sidePt_zero, sidePt_one', ← hpe, Nat.mod_eq_of_lt (by omega)]
+      rw [sidePt_zero, sidePt_one', ← hpe, Nat.mod_eq_of_lt (⋄)]
   -- the end vertex of the edge
   have at_f : (p : ℝ) + τ = (((e + 1) % W.n : ℕ) : ℝ) →
       ∃ t₂ : ℝ, 0 ≤ t₂ ∧ t₂ ≤ 1 ∧ sidePt W e t₂ = sidePt W p τ := by
     intro h
     refine ⟨1, zero_le_one, le_rfl, ?_⟩
-    rw [sidePt_one']
+    Ξ sidePt_one'
     rcases key_eq_nat h0 h1 h with ⟨hpe, rfl⟩ | ⟨hpe, rfl⟩
-    · rw [sidePt_zero, hpe]
+    · Ξ sidePt_zero, hpe
     · -- `p + 1 = (e + 1) % n`: then `p = e` (the edge itself, at its end)
-      rw [sidePt_one', hpe, Nat.mod_mod_of_dvd _ (dvd_refl _)]
+      Ξ sidePt_one', hpe, Nat.mod_mod_of_dvd _ (dvd_refl _)
   rcases hk with hin | h | h
   · unfold sideInArc at hin
     rcases Nat.lt_or_ge (e + 1) W.n with hlt | hge
     · rw [Nat.mod_eq_of_lt hlt] at hin
       push_cast at hin
-      rw [ite_eq_left (by linarith)] at hin
+      rw [ite_eq_left (⟡)] at hin
       have := key_between h0 h1 hin.1 hin.2
       subst this
       exact ⟨τ, h0, h1, rfl⟩
-    · have hn : e + 1 = W.n := by omega
+    · have hn : e + 1 = W.n := ⋄
       rw [hn, Nat.mod_self] at hin
       push_cast at hin
       rw [ite_eq_right (by have : (0 : ℝ) ≤ e := Nat.cast_nonneg _; linarith)] at hin
       rcases hin with hin | hin
       · have hpe : p = e := by
-          have a1 : (e : ℝ) < p + 1 := by linarith
+          have a1 : (e : ℝ) < p + 1 := ⟡
           have b1 : e < p + 1 := by exact_mod_cast a1
           omega
         subst hpe
@@ -201,12 +203,12 @@ theorem near_vHole (M : Model) (Q : Polygon) (hn : 3 ≤ M.W.n) {q : ℕ} (hq : 
   have hkn : (p : ℝ) + τ ≤ M.W.n := by
     have : ((p + 1 : ℕ) : ℝ) ≤ M.W.n := by exact_mod_cast hp
     push_cast at this; linarith
-  have hpv : prevV M.W.n q < M.W.n := by unfold prevV; exact Nat.mod_lt _ (by omega)
-  have hpq : (prevV M.W.n q + 1) % M.W.n = q := prevV_succ (by omega) hq
+  have hpv : prevV M.W.n q < M.W.n := by unfold prevV; exact Nat.mod_lt _ (⋄)
+  have hpq : (prevV M.W.n q + 1) % M.W.n = q := prevV_succ (⋄) hq
   rcases vtx_keys_split hn hq hk0 hkn hk with h | h
   · refine ⟨prevV M.W.n q, hpv, ⟨1, zero_le_one, le_rfl, ?_⟩, edge_keys M.W hpv hp h0 h1 h⟩
-    rw [sidePt_one', hpq, hz]
-  · exact ⟨q, hq, ⟨0, le_rfl, zero_le_one, by rw [sidePt_zero, hz]⟩, edge_keys M.W hq hp h0 h1 h⟩
+    Ξ sidePt_one', hpq, hz
+  · exact ⟨q, hq, ⟨0, le_rfl, zero_le_one, Ρ sidePt_zero, hz⟩, edge_keys M.W hq hp h0 h1 h⟩
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepRotSort
 
 /-!
@@ -37,7 +39,7 @@ theorem fpBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     ∃ c' k, Exec P W fpBody c c' k ∧ k ≤ 7 ∧ FrameB BR c c' ∧
       c'.nreg 60064 = FPb + c.nmem (VT + c.nmem (Sb + (M - 1 - i))) ∧
       c'.nreg 60065 = M - 1 - i := by
-  have hwr : wr BR fpBody = true := by decide
+  have hwr : wr BR fpBody = true := ⌖
   suffices H : ∃ c' k, Exec P W fpBody c c' k ∧ k ≤ 7 ∧
       c'.nreg 60064 = FPb + c.nmem (VT + c.nmem (Sb + (M - 1 - i))) ∧
       c'.nreg 60065 = M - 1 - i by
@@ -48,7 +50,7 @@ theorem fpBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   · config_simp; rw [h7, h60, hi, h1]; omega
   · config_simp; rw [h7, h60, hi, h1, h50, show M - i - 1 = M - 1 - i by omega]; omega
   · config_simp; rw [h7, h60, hi, h1, h50, h61, show M - i - 1 = M - 1 - i by omega]; exact hFW
-  · exact ⟨by omega, by config_simp; rw [h7, h60, hi, h1, h50, h61,
+  · exact ⟨⋄, by config_simp; rw [h7, h60, hi, h1, h50, h61,
       show M - i - 1 = M - 1 - i by omega], by config_simp; rw [h60, hi, h1]; omega⟩
 
 /-- The environment of `fpS`. -/
@@ -100,7 +102,7 @@ theorem fpN_spec' {M : ℕ} {G s : ℕ → ℕ} {t : ℕ} (ht : t < M) :
   classical
   have hex : ∃ t', t' < M ∧ G (s t') = G (s t) := ⟨t, ht, rfl⟩
   unfold fpN
-  rw [dite_eq_left hex]
+  Ξ dite_eq_left hex
   obtain ⟨a, b⟩ := Nat.find_spec hex
   exact ⟨a, b, fun t' ht' e => Nat.find_min' hex ⟨ht', e⟩⟩
 
@@ -113,10 +115,10 @@ theorem fpN_congr {M : ℕ} {G s G' s' : ℕ → ℕ} (h : ∀ t, t < M → G (s
     obtain ⟨a1, a2, a3⟩ := fpN_spec' (G := G) (s := s) ht
     obtain ⟨b1, b2, b3⟩ := fpN_spec' (G := G') (s := s') ht
     conv_rhs => rw [e]
-    exact le_antisymm (a3 _ b1 (by rw [h _ b1, b2, e]))
-      (b3 _ a1 (by rw [← h _ a1, a2, e]))
+    exact le_antisymm (a3 _ b1 (Ρ h _ b1, b2, e))
+      (b3 _ a1 (Ρ ← h _ a1, a2, e))
   · have hex' : ¬ ∃ t, t < M ∧ G' (s' t) = v := fun ⟨t, ht, e⟩ => hex ⟨t, ht, by rw [h t ht]; exact e⟩
-    unfold fpN; rw [dite_eq_right hex, dite_eq_right hex']
+    unfold fpN; Ξ dite_eq_right hex, dite_eq_right hex'
 
 /-- **The first-position array** holds `fpN`. -/
 theorem fp_scat {M FPb : ℕ} {G s g : ℕ → ℕ} (hg : ∀ i, i < M → g i = FPb + G (s (M - 1 - i)))
@@ -125,10 +127,10 @@ theorem fp_scat {M FPb : ℕ} {G s g : ℕ → ℕ} (hg : ∀ i, i < M → g i =
   obtain ⟨f1, f2, f3⟩ := fpN_spec' (G := G) (s := s) ht
   set t₀ := fpN M G s (G (s t))
   have ha : FPb + G (s t) = g (M - 1 - t₀) := by
-    rw [hg _ (by omega), show M - 1 - (M - 1 - t₀) = t₀ by omega, f2]
-  rw [ha, scat_at (by omega) fun j hj hij e => by
-    rw [hg _ hj, hg _ (by omega), show M - 1 - (M - 1 - t₀) = t₀ by omega, f2] at e
-    have := f3 (M - 1 - j) (by omega) (by omega)
+    Ξ hg _ (⋄), show M - 1 - (M - 1 - t₀) = t₀ by omega, f2
+  rw [ha, scat_at (⋄) fun j hj hij e => by
+    Ξ' hg _ hj, hg _ (⋄), show M - 1 - (M - 1 - t₀) = t₀ by omega, f2 at e
+    have := f3 (M - 1 - j) (⋄) (⋄)
     omega]
   omega
 
@@ -139,7 +141,7 @@ theorem rotN_congr {M : ℕ} {G s G' s' : ℕ → ℕ} (hs : ∀ t, t < M → s 
   have e1 := fpN_congr h (G (s t))
   have hf := (fpN_spec' (G := G) (s := s) ht).1
   by_cases hc : t + 1 < M ∧ G (s (t + 1)) = G (s t)
-  · rw [ite_eq_left hc, ite_eq_left ⟨hc.1, by rw [← h _ hc.1, ← h _ ht]; exact hc.2⟩, hs _ hc.1]
+  · Ξ ite_eq_left hc, ite_eq_left ⟨hc.1, by rw [← h _ hc.1, ← h _ ht]; exact hc.2⟩, hs _ hc.1
   · rw [ite_eq_right hc, ite_eq_right (fun hc' => hc ⟨hc'.1, by rw [h _ hc'.1, h _ ht]; exact hc'.2⟩),
       ← h _ ht, ← e1, hs _ hf]
 
@@ -148,7 +150,7 @@ theorem SortedSeq.congr {pr pr' s : ℕ → ℕ} {n : ℕ} (h : SortedSeq (fun i
     SortedSeq (fun i => (q i, q' i)) s n := fun t t' htt ht' => by
   have := h t t' htt ht'
   simp only at this ⊢
-  rw [(hq t (by omega)).1, (hq t (by omega)).2, (hq t' ht').1, (hq t' ht').2] at this
+  Ξ' (hq t (⋄)).1, (hq t (⋄)).2, (hq t' ht').1, (hq t' ht').2 at this
   exact this
 
 /-! ## The rotation -/
@@ -187,7 +189,7 @@ theorem rPre_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       c'.nreg 60066 = Sb + t ∧ c'.nreg 60064 = ROTb + c.nmem (Sb + t) ∧
       c'.nreg 60067 = c.nmem (VT + c.nmem (Sb + t)) ∧ c'.nreg 60069 = t + 1 := by
   have hwr : wr (fun r => decide (r = 60064 ∨ r = 60066 ∨ r = 60067 ∨ r = 60068 ∨ r = 60069))
-    rPre = true := by decide
+    rPre = true := ⌖
   suffices H : ∃ c' k, Exec P W rPre c c' k ∧ k = 6 ∧
       c'.nreg 60066 = Sb + t ∧ c'.nreg 60064 = ROTb + c.nmem (Sb + t) ∧
       c'.nreg 60067 = c.nmem (VT + c.nmem (Sb + t)) ∧ c'.nreg 60069 = t + 1 by
@@ -208,7 +210,7 @@ theorem rNext_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     ∃ c' k, Exec P W rNext c c' k ∧ k = 4 ∧
       FrameB (fun r => decide (r = 60065 ∨ r = 60066 ∨ r = 60070)) c c' ∧
       c'.nreg 60065 = c.nmem (a + 1) ∧ c'.nreg 60070 = c.nmem (VT + c.nmem (a + 1)) := by
-  have hwr : wr (fun r => decide (r = 60065 ∨ r = 60066 ∨ r = 60070)) rNext = true := by decide
+  have hwr : wr (fun r => decide (r = 60065 ∨ r = 60066 ∨ r = 60070)) rNext = true := ⌖
   suffices H : ∃ c' k, Exec P W rNext c c' k ∧ k = 4 ∧
       c'.nreg 60065 = c.nmem (a + 1) ∧ c'.nreg 60070 = c.nmem (VT + c.nmem (a + 1)) by
     obtain ⟨c', k, ex, hk, x, y⟩ := H
@@ -225,7 +227,7 @@ theorem rFb_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     ∃ c' k, Exec P W rFb c c' k ∧ k = 4 ∧
       FrameB (fun r => decide (r = 60065 ∨ r = 60070)) c c' ∧
       c'.nreg 60065 = c.nmem (Sb + c.nmem (FPb + g)) := by
-  have hwr : wr (fun r => decide (r = 60065 ∨ r = 60070)) rFb = true := by decide
+  have hwr : wr (fun r => decide (r = 60065 ∨ r = 60070)) rFb = true := ⌖
   suffices H : ∃ c' k, Exec P W rFb c c' k ∧ k = 4 ∧
       c'.nreg 60065 = c.nmem (Sb + c.nmem (FPb + g)) by
     obtain ⟨c', k, ex, hk, x⟩ := H
@@ -340,22 +342,22 @@ theorem rotS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       c'.rmem = c.rmem ∧ c'.output = c.output ∧ RotJ Sb VT M FPb ROTb c.nmem c' := by
   obtain ⟨c', k, ex, hk, r', rr', mm, rm, o, J', -⟩ := scatS_exec (P := P) (W := W)
     (ri := 60063) (rn := 60060) (r1 := 120011) (ra := 60064) (rv := 60065) (body := rotBody)
-    (B := BR) (by decide) (by decide) (by decide) (by decide) (by decide)
+    (B := BR) (⌖) (⌖) (⌖) (⌖) (⌖)
     (RotJ Sb VT M FPb ROTb c.nmem) ROTb
-    (fun d d' hJ hr hm => ⟨by rw [hr _ (by decide) (by decide)]; exact hJ.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.2.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.2.2.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.2.2.2.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.2.2.2.2.1,
+    (fun d d' hJ hr hm => ⟨by rw [hr _ (⌖) (⌖)]; exact hJ.1,
+      by rw [hr _ (⌖) (⌖)]; exact hJ.2.1,
+      by rw [hr _ (⌖) (⌖)]; exact hJ.2.2.1,
+      by rw [hr _ (⌖) (⌖)]; exact hJ.2.2.2.1,
+      by rw [hr _ (⌖) (⌖)]; exact hJ.2.2.2.2.1,
+      by rw [hr _ (⌖) (⌖)]; exact hJ.2.2.2.2.2.1,
       fun a ha => by rw [hm a ha]; exact hJ.2.2.2.2.2.2 a ha⟩)
     (n := M) (κ := 24) (fun t => ROTb + c.nmem (Sb + t))
-    (fun t => rotN M (fun d => c.nmem (VT + d)) (fun t => c.nmem (Sb + t)) t) (fun i _ => by omega)
+    (fun t => rotN M (fun d => c.nmem (VT + d)) (fun t => c.nmem (Sb + t)) t) (fun i _ => ⋄)
     (fun i d hi hJd hwd hri => by
       obtain ⟨d', k, ex, hk, F, v1, v2⟩ := rotBody_exec hwd hJd hri hi hSR hVR hFR hRW hs hG hfp hfpl
       exact ⟨d', k, ex, hk, F, v1, v2⟩)
-    hw hJ hJ.2.2.1 hJ.2.2.2.2.2.1 (by omega)
-  exact ⟨c', k, ex, by nlinarith, r', rr', mm, rm, o, J'⟩
+    hw hJ hJ.2.2.1 hJ.2.2.2.2.2.1 (⋄)
+  exact ⟨c', k, ex, ⊞, r', rr', mm, rm, o, J'⟩
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.EarClip.SubPoly
 
 /-!
@@ -48,7 +50,7 @@ theorem prevIdx_subPoly (l : List ℕ) (p : ℕ) :
 /-- `getD` of a rotated list. -/
 theorem getD_rotate (l : List ℕ) (r k : ℕ) (hk : k < l.length) (d : ℕ) :
     (l.rotate r).getD k d = l.getD ((k + r) % l.length) d := by
-  rw [List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_rotate hk]
+  Ξ List.getD_eq_getElem?_getD, List.getD_eq_getElem?_getD, List.getElem?_rotate hk
 
 /-! ### Finding an ear: scan order `1, 2, …, m - 1, 0` -/
 
@@ -62,7 +64,7 @@ def earTri (l : List ℕ) (p : ℕ) : Polygon.Triangle :=
 theorem relabelList_earTriangle (l : List ℕ) (p : ℕ) :
     relabelList l (earTriangle (subPoly P l) p) = earTri l p := by
   unfold relabelList earTriangle earTri
-  rw [prevIdx_subPoly, n_subPoly]
+  Ξ prevIdx_subPoly, n_subPoly
 
 /-! ### The invariant -/
 

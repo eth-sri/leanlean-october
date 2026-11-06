@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildMain
 
 /-!
@@ -68,7 +70,7 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
+
 /-- **The records and the event pointer.** -/
 theorem phaseAS_exec (hWn : hostWords P.n ≤ W) (c : Config)
     (hw : WordsBounded W c) {M : Model} {L : List (ℕ × ℕ × ℕ)} {D B SE : ℕ}
@@ -142,7 +144,7 @@ theorem phaseAS_exec (hWn : hostWords P.n ≤ W) (c : Config)
   · rw [s₃, hc₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
       (by norm_num) (by norm_num) (by norm_num), hSE]
 
-set_option maxHeartbeats 4000000 in
+
 /-- **L1: `BuildNFSortedSpec`.** -/
 theorem buildNFSorted : BuildNFSortedSpec := by
   refine ⟨sortedStmt, κSorted, ?_⟩

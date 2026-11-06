@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterMap
 public import Chazelle.Separator.Maps
 
@@ -47,7 +51,7 @@ theorem iterate_rot (h : EnvEnc G M' eV eD) (n : ℕ) (d : D') :
   induction n generalizing d with
   | zero => rfl
   | succ n ih =>
-    rw [Function.iterate_succ_apply, h.rot, ih, pow_succ, Equiv.Perm.mul_apply]
+    Ξ Function.iterate_succ_apply, h.rot, ih, pow_succ, Equiv.Perm.mul_apply
 
 /-- **The encoded rotation system is well formed.** -/
 theorem ok [Finite D'] (h : EnvEnc G M' eV eD) : G.OK := by
@@ -58,24 +62,24 @@ theorem ok [Finite D'] (h : EnvEnc G M' eV eD) : G.OK := by
   · obtain ⟨d, rfl⟩ := h.eD_surj e he; rw [h.vert]; exact h.eV_lt _
   · obtain ⟨d, rfl⟩ := h.eD_surj e he
     obtain ⟨d', rfl⟩ := h.eD_surj e' he'
-    rw [h.rot, h.rot] at hee
-    rw [M'.rot.injective (h.eD_inj hee)]
-  · obtain ⟨d, rfl⟩ := h.eD_surj e he; rw [h.rot, h.vert, h.vert, M'.vert_rot]
+    Ξ' h.rot, h.rot at hee
+    Ξ M'.rot.injective (h.eD_inj hee)
+  · obtain ⟨d, rfl⟩ := h.eD_surj e he; Ξ h.rot, h.vert, h.vert, M'.vert_rot
   · obtain ⟨d, rfl⟩ := h.eD_surj e he
     obtain ⟨d', rfl⟩ := h.eD_surj e' he'
-    rw [h.vert, h.vert] at hee
+    Ξ' h.vert, h.vert at hee
     obtain ⟨n, hn⟩ := (M'.sameCycle_of_vert d d' (h.eV_inj hee)).exists_nat_pow_eq
-    exact ⟨n, by rw [h.iterate_rot, hn]⟩
+    exact ⟨n, Ρ h.iterate_rot, hn⟩
   · obtain ⟨v, rfl⟩ := h.eV_surj u hu
     obtain ⟨d, hd, -⟩ := h.first v
     rw [hd]; exact h.eD_lt _
   · obtain ⟨v, rfl⟩ := h.eV_surj u hu
     obtain ⟨d, hd, hvd⟩ := h.first v
-    rw [hd, h.vert, hvd]
+    Ξ hd, h.vert, hvd
 
 theorem head (h : EnvEnc G M' eV eD) (d : D') : G.head (eD d) = eV (M'.head d) := by
   unfold Env.head CombMap.head
-  rw [h.opp, h.vert]
+  Ξ h.opp, h.vert
 
 /-- **Steps between encoded vertices.** -/
 theorem step_iff (h : EnvEnc G M' eV eD) (u w : V') :
@@ -84,8 +88,8 @@ theorem step_iff (h : EnvEnc G M' eV eD) (u w : V') :
   constructor
   · rintro ⟨e, he, hdb, hve, hhe, hu, hw⟩
     obtain ⟨d, rfl⟩ := h.eD_surj e he
-    rw [h.vert] at hve
-    rw [h.head] at hhe
+    Ξ' h.vert at hve
+    Ξ' h.head at hhe
     exact ⟨d, hdb, h.eV_inj hve, h.eV_inj hhe, hu, hw⟩
   · rintro ⟨d, hdb, rfl, rfl, hu, hw⟩
     exact ⟨eD d, h.eD_lt d, hdb, h.vert d, h.head d, hu, hw⟩
@@ -109,9 +113,9 @@ theorem reach_iff (h : EnvEnc G M' eV eD) (u w : V') :
         obtain ⟨w', rfl, hw'⟩ := ih
         obtain ⟨e, he, hdb, hve, hhe, hu, hw⟩ := hs
         obtain ⟨d, rfl⟩ := h.eD_surj e he
-        rw [h.head] at hhe
+        Ξ' h.head at hhe
         subst hhe
-        rw [h.vert] at hve
+        Ξ' h.vert at hve
         refine ⟨M'.head d, rfl, Relation.ReflTransGen.tail hw' ⟨d, hdb, h.eV_inj hve, rfl,
           by first | exact hu, hw⟩⟩
     obtain ⟨w', hw', hr'⟩ := key _ hr

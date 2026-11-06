@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleCand
 
 /-!
@@ -51,10 +53,10 @@ theorem mem_nodeScan (hN : IsNF (chainModel C) Q N) {reg : ℕ → Set Point}
   obtain ⟨p, hp, hpj⟩ := NFLoc.seq_surj hN hj
   have hsk : sk (chainModel C) Q N p = a := by
     show (chainModel C).key Q (N.arc (N.seq.getD p 0)).s = a
-    rw [hpj, hja]
+    Ξ hpj, hja
   have hek : ek (chainModel C) Q N p = b := by
     show (chainModel C).key Q (N.arc (N.seq.getD p 0)).e = b
-    rw [hpj, hjb]
+    Ξ hpj, hjb
   refine ⟨hv, p, hp, ?_, ?_⟩
   · show (N.arc (N.seq.getD p 0)).reg = rgi N v
     rw [hpj, hjr]; rfl
@@ -90,7 +92,7 @@ theorem mem_set_of_arcSet {x : Point} (hbox : x ∈ Chain.box C.radius) (hy : x.
 /-- Near `0`, the points of a finite set are only `0`. -/
 theorem eventually_not_mem_of_finite {X : Set ℝ} (hX : X.Finite) : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∉ X := by
   have hc : IsClosed (X \ {0}) := (hX.sdiff).isClosed
-  have ho : (X \ {0})ᶜ ∈ 𝓝 (0 : ℝ) := hc.isOpen_compl.mem_nhds (by simp)
+  have ho : (X \ {0})ᶜ ∈ 𝓝 (0 : ℝ) := hc.isOpen_compl.mem_nhds (✓)
   filter_upwards [nhdsWithin_le_nhds ho, self_mem_nhdsWithin] with t h1 h2
   intro ht
   exact h1 ⟨ht, by simp only [Set.mem_singleton_iff]; exact ne_of_gt h2⟩
@@ -164,7 +166,7 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
     {best : Option ℝ} (hbest : Sweep.FirstHitOpt S z σ best) :
     (∀ t, best = some t → FirstHit C.set z σ t) ∧ (best = none → NoHit C.set z σ) := by
   set F := N.F (chainModel C) Q with hFdef
-  have hFam : (chainModel C).ChordFamily Q F := hN.1
+  have hFam := hN.1
   have hfin := finite_crossings C (fun k _ => vertex_snd_ne C hD) z hσ
   -- the initial part of the ray is free
   have hini : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt z σ t ∈ freeIn C.dom F := by
@@ -189,19 +191,19 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
     have hpN : p < B.N := lt_of_lt_of_le hp hB.arcs_le
     have hrp : rgi N p = r := by
       show (N.arc (N.seq.getD p 0)).reg = r
-      rw [hpj, hjr]
+      Ξ hpj, hjr
     let iR : Fin B.N := ⟨p, hpN⟩
     have hrgR : rgNode reg N B iR = reg r := by
       show (if p < N.arcs.length then reg (rgi N p) else ∅) = reg r
-      rw [BookData.ite_t hp, hrp]
+      Ξ BookData.ite_t hp, hrp
     have hcandR : Cand iR := by
       refine hcand iR hp ?_
       have hsk : sk (chainModel C) Q N p = a := by
         show (chainModel C).key Q (N.arc (N.seq.getD p 0)).s = a
-        rw [hpj, hja]
+        Ξ hpj, hja
       have hek : ek (chainModel C) Q N p = b := by
         show (chainModel C).key Q (N.arc (N.seq.getD p 0)).e = b
-        rw [hpj, hjb]
+        Ξ hpj, hjb
       show rayPt z σ T ∈ (chainModel C).arcSet (sk (chainModel C) Q N p) (ek (chainModel C) Q N p)
       rw [hsk, hek]; exact hmem
     -- no node of `D*` is hit before `T`
@@ -211,14 +213,14 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
       by_cases hiA : i.1 < N.arcs.length
       · have e : rgNode reg N B i = reg (rgi N i) := by
           show (if i.1 < N.arcs.length then reg (rgi N i) else ∅) = _
-          rw [BookData.ite_t hiA]
+          Ξ BookData.ite_t hiA
         rw [e] at hh
         obtain ⟨a', b', harc', hmem'⟩ := hh
         have hxC := mem_set_of_arcSet (hbox s hs0 hsT) (by simpa using hz) hmem' hP
         exact hnoD i hi s hs0 hsT (mem_nodeScan hN hR hA hiA hxC ⟨a', b', harc', hmem'⟩)
       · have e : rgNode reg N B i = ∅ := by
           show (if i.1 < N.arcs.length then reg (rgi N i) else ∅) = _
-          rw [BookData.ite_f hiA]
+          Ξ BookData.ite_f hiA
         rw [e] at hh
         exact not_arcHit_empty hh
     obtain ⟨iU, hiU, hsel⟩ := cluster_query_nodes C hP hFam (rgNode reg N B) (bookGraph B)
@@ -234,14 +236,14 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
       by_contra hc
       have e : rgNode reg N B iU = ∅ := by
         show (if iU.1 < N.arcs.length then reg (rgi N iU) else ∅) = _
-        rw [BookData.ite_f hc]
+        Ξ BookData.ite_f hc
       rw [e] at hiU
       rw [← hiU] at hU
       exact (Chazelle.Chain.regionsIn_nonempty (D := C.dom) hU).ne_empty rfl
     have hiU' : reg (rgi N iU) = U := by
-      rw [← hiU]
+      Ξ ← hiU
       show reg (rgi N iU) = (if iU.1 < N.arcs.length then reg (rgi N iU) else ∅)
-      rw [BookData.ite_t hiUA]
+      Ξ BookData.ite_t hiUA
     have hinS : rayPt z σ t₀ ∈ S :=
       hS1 iU hSN (mem_nodeScan hN hR hA hiUA hon (by rw [hiU']; exact ⟨a₁, b₁, harc₁, hmem₁⟩))
     have hSfirst : FirstHit S z σ t₀ := Sweep.firstHit_of_subset hSC hfirst hinS

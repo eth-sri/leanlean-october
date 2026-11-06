@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreNodeDec
 
 /-!
@@ -137,7 +139,7 @@ theorem arc_of_target (hGα : GoodModel (chainModel Cα)) {Nα : NF}
   have hget : (Nα.region T).arcs.getD t 0 = j := by
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, htj]; rfl
   refine ⟨t, ht, by rw [hget]; exact hj, ?_⟩
-  rw [hget, hjs, hje]
+  Ξ hget, hjs, hje
   exact hcl
 
 end

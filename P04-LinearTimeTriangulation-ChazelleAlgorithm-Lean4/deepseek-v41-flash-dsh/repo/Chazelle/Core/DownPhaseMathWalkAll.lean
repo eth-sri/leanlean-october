@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMathGroup3
 
 /-!
@@ -40,30 +42,30 @@ theorem flatMap_rot {α : Type*} (A B : ℕ → List α) {k : ℕ} (hk : 0 < k) 
       rw [List.range_succ, List.flatMap_append, List.flatMap_append, List.flatMap_singleton,
         List.flatMap_singleton, List.append_assoc, List.append_assoc, ← List.append_assoc (f m),
         ← List.append_assoc _ (f m ++ B m)]
-      rw [← List.append_assoc, ih]
-      simp only [List.append_assoc]
+      Ξ ← List.append_assoc, ih
+      ϴ List.append_assoc
   have h1 : (List.range k).flatMap (fun t => f t ++ B t) =
       (List.range k).flatMap (fun t => A t ++ B t) := by
     apply List.flatMap_congr
     intro t ht
     rw [List.mem_range] at ht
-    simp only [hf, Nat.mod_eq_of_lt ht]
+    ϴ hf, Nat.mod_eq_of_lt ht
   have h2 : (List.range k).flatMap (fun t => B t ++ f (t + 1)) =
       (List.range k).flatMap (fun t => B t ++ A ((t + 1) % k)) := rfl
-  have hk0 : f k = A 0 := by simp [hf]
-  have hf0 : f 0 = A 0 := by simp [hf, Nat.zero_mod]
+  have hk0 : f k = A 0 := ⊚ hf
+  have hf0 : f 0 = A 0 := ⊚ hf, Nat.zero_mod
   have e := key k
   rw [h1, h2, hk0, hf0] at e
   -- the concatenation starts with `A 0`
-  obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 := ⟨k - 1, by omega⟩
+  obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 := ⟨k - 1, ⋄⟩
   obtain ⟨W', hW'⟩ : ∃ W', (List.range (k' + 1)).flatMap (fun t => A t ++ B t) = A 0 ++ W' := by
-    rw [List.range_succ_eq_map, List.flatMap_cons]
+    Ξ List.range_succ_eq_map, List.flatMap_cons
     exact ⟨B 0 ++ List.flatMap (fun t => A t ++ B t) (List.map Nat.succ (List.range k')),
-      by simp only [List.append_assoc]⟩
+      ⍟ List.append_assoc⟩
   rw [hW'] at e ⊢
   rw [List.append_assoc] at e
   have := List.append_cancel_left e
-  rw [← this, List.rotate_append_length_eq]
+  Ξ ← this, List.rotate_append_length_eq
 
 /-- **Every region has an arc.** -/
 theorem exists_arc {Q : Polygon} {S : Set (Set Point)} {R : Set Point} (hQ : Q.Simple)
@@ -89,7 +91,7 @@ theorem arcItems_wpts (li : Bool) (n : ℕ) (N : NF) (r jp j : ℕ) :
         (runItems li n (N.arc j).s (N.arc j).e).flatMap (wpts li n) ++
         [ptSym li n (N.arc j).e true]) := by
   unfold arcItems
-  simp only [List.flatMap_append, ptI_eq, List.flatMap_singleton, wpts_pt, List.append_assoc]
+  ϴ List.flatMap_append, ptI_eq, List.flatMap_singleton, wpts_pt, List.append_assoc
   congr 1
   split_ifs <;> simp [wpts_pt]
 
@@ -115,7 +117,7 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
   have hQ := X.hQ
   have hdh := X.hdh
   have hN : IsNF I Q N := isNF_build X.hQ X.hL X.hperm X.hsort
-  have hFam : I.ChordFamily Q S := hN.1
+  have hFam := hN.1
   have hnc : N.nChords = L.length := nChords_build X.hQ X.hL X.hperm X.hsort
   have hne : S.Nonempty :=
     ⟨_, (chordPos_attach hN (show 0 < N.nChords by rw [hnc]; exact X.hK) (Or.inl rfl)).1⟩
@@ -148,10 +150,10 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
     have hst : i t + d t + 1 + J t = i 0 + grpOff d J (t + 1) := by
       rw [grpOff_succ, hoff t ht]; unfold grpLen; ring
     by_cases ht1 : t + 1 < k
-    · rw [Nat.mod_eq_of_lt ht1, hst, ← hoff (t + 1) ht1, Nat.mod_eq_of_lt (hil (t + 1) ht1)]
+    · Ξ Nat.mod_eq_of_lt ht1, hst, ← hoff (t + 1) ht1, Nat.mod_eq_of_lt (hil (t + 1) ht1)
       exact (hD (t + 1) ht1).hl.symm
-    · have hkt : t + 1 = k := by omega
-      rw [hkt, Nat.mod_self, hst, hkt, htot, Nat.add_mod_right, Nat.mod_eq_of_lt (hil 0 hk1)]
+    · have hkt : t + 1 = k := ⋄
+      Ξ hkt, Nat.mod_self, hst, hkt, htot, Nat.add_mod_right, Nat.mod_eq_of_lt (hil 0 hk1)
       exact (hD 0 hk1).hl.symm
   -- the groups
   have hgrp : ∀ t, t < k →
@@ -171,28 +173,28 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
   obtain ⟨hWrep, hWlen⟩ := repFrom_flatMap (li := li) (Q := Q) (S := S) (R := R)
     (fun t => A t ++ B t) d J (i 0) k fun t ht => by
       obtain ⟨h1, h2, -⟩ := hgrp t ht
-      rw [← hGAB, ← hoff t ht]
+      Ξ ← hGAB, ← hoff t ht
       exact ⟨h1, h2⟩
   rw [htot] at hWlen
   -- the driver's list is a rotation
   have hWP : (walkItems li Q.n N r).flatMap (wpts li Q.n) =
       ((List.range k).flatMap fun t => A t ++ B t).rotate (A 0).length := by
-    rw [← flatMap_rot A B hk1]
+    Ξ ← flatMap_rot A B hk1
     unfold walkItems
-    rw [List.flatMap_assoc]
+    Ξ List.flatMap_assoc
     apply List.flatMap_congr
     intro t ht
-    rw [arcItems_wpts]
+    Ξ arcItems_wpts
   have hA0 : (A 0).length = d 0 + 1 := by
     obtain ⟨-, -, h3', -⟩ := hgrp 0 hk1
-    simp only [hA, List.length_append, List.length_singleton, h3']
+    ϴ hA, List.length_append, List.length_singleton, h3'
     have := (hD 0 hk1).hd0
     omega
-  refine ⟨i 0 + (A 0).length, (i 0 + d 0) % K, ?_, ?_, Nat.mod_lt _ (by omega),
+  refine ⟨i 0 + (A 0).length, (i 0 + d 0) % K, ?_, ?_, Nat.mod_lt _ (⋄),
     (hgrp 0 hk1).2.2.2.1, ?_, ?_⟩
   · rw [hWP]; exact repFrom_rotate hWlen hWrep _
-  · rw [hWP, List.length_rotate, hWlen]
-  · rw [Nat.mod_add_mod, hA0, Nat.add_assoc]
+  · Ξ hWP, List.length_rotate, hWlen
+  · Ξ Nat.mod_add_mod, hA0, Nat.add_assoc
   · -- well formed
     intro it hit
     unfold walkItems at hit
@@ -213,7 +215,7 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
       show qE li Q.n _ < Q.n ∧ x.hgt - 1 < Q.n
       refine ⟨qE_lt li ?_, by rw [eh]; simpa using hh⟩
       split_ifs
-      · exact Nat.mod_lt _ (by omega)
+      · exact Nat.mod_lt _ (⋄)
       · exact hxn
     unfold arcItems at hit
     simp only [List.mem_append, List.mem_singleton] at hit
@@ -230,13 +232,13 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
         obtain ⟨-, hAx, -, -, -, -⟩ := chordPos_attach hN hc hxc
         exact walk_n Q ▸ hAx.1
       have hcn : runCnt li Q.n (N.arc (as.getD ((t + 1) % k) 0)).s
-          (N.arc (as.getD ((t + 1) % k) 0)).e < Q.n := Nat.mod_lt _ (by omega)
+          (N.arc (as.getD ((t + 1) % k) 0)).e < Q.n := Nat.mod_lt _ (⋄)
       split_ifs at hrun with h0 h1
       · simp at hrun
       · rw [List.mem_singleton] at hrun; subst hrun
-        exact ⟨Nat.mod_lt _ (by omega), by omega⟩
+        exact ⟨Nat.mod_lt _ (⋄), ⋄⟩
       · rw [List.mem_singleton] at hrun; subst hrun
-        exact ⟨by omega, by omega⟩
+        exact ⟨⋄, ⋄⟩
     · exact hptI _ _ (hpos _ (Nat.mod_lt (t + 1) hk1)).2
 
 end

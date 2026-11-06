@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseLocal
 
 /-!
@@ -43,32 +45,32 @@ theorem tourA_lt (k : ℕ) : tourA C β k < 2 * C.m := Nat.mod_lt _ C.two_m_pos
 theorem mod_tourA {k : ℕ} (hk : k < 2 * C.m) : (C.sideS β + tourA C β k) % (2 * C.m) = k := by
   have hs := sA_lt (C := C) (β := β)
   unfold tourA
-  rw [Nat.add_mod, show C.sideS β % (2 * C.m) = sA C β from rfl, Nat.mod_mod]
+  Ξ Nat.add_mod, show C.sideS β % (2 * C.m) = sA C β from rfl, Nat.mod_mod
   have e : sA C β + (k + 2 * C.m - sA C β) % (2 * C.m) ≡ k [MOD 2 * C.m] := by
     have h1 : sA C β + (k + 2 * C.m - sA C β) % (2 * C.m) ≡
         sA C β + (k + 2 * C.m - sA C β) [MOD 2 * C.m] :=
       Nat.ModEq.add_left _ (Nat.mod_modEq _ _)
-    have h2 : sA C β + (k + 2 * C.m - sA C β) = k + 2 * C.m := by omega
+    have h2 : sA C β + (k + 2 * C.m - sA C β) = k + 2 * C.m := ⋄
     rw [h2] at h1
-    exact h1.trans (by simp [Nat.ModEq])
-  rw [e, Nat.mod_eq_of_lt hk]
+    exact h1.trans (⊚ Nat.ModEq)
+  Ξ e, Nat.mod_eq_of_lt hk
 
 theorem sideIdx_tourA {k : ℕ} (hk : k < C.m) : C.sideIdx β (tourA C β k) = k := by
-  rw [Chain.sideIdx_eq, mod_tourA (by omega)]
+  rw [Chain.sideIdx_eq, mod_tourA (⋄)]
   unfold sideE; rw [ite_eq_left hk.le]
 
 theorem sideIdx_tourA_succ {k : ℕ} (hk : k < C.m) : C.sideIdx β (tourA C β k + 1) = k + 1 := by
-  rw [C.sideIdx_succ, mod_tourA (by omega)]
-  unfold sideE; rw [ite_eq_left (by omega)]
+  rw [C.sideIdx_succ, mod_tourA (⋄)]
+  unfold sideE; rw [ite_eq_left (⋄)]
 
 theorem vtx_tourA {k : ℕ} (hk : k < C.m) :
     (C.sideWalk β).vtx (tourA C β k + 6) = C.vertex k := by
-  rw [C.sideWalk_vtx_tour β (tourA_lt k).le]
+  Ξ C.sideWalk_vtx_tour β (tourA_lt k).le
   unfold Chain.sideTour; rw [sideIdx_tourA hk]
 
 theorem vtx_tourA_succ {k : ℕ} (hk : k < C.m) :
     (C.sideWalk β).vtx ((tourA C β k + 6 + 1) % (C.sideWalk β).n) = C.vertex (k + 1) := by
-  rw [C.sideWalk_next_tour β (tourA_lt k), C.sideWalk_vtx_tour β (tourA_lt k)]
+  Ξ C.sideWalk_next_tour β (tourA_lt k), C.sideWalk_vtx_tour β (tourA_lt k)
   unfold Chain.sideTour; rw [sideIdx_tourA_succ hk]
 
 /-- **The points of side `A`.** -/
@@ -96,7 +98,7 @@ theorem tourA_succ {k : ℕ} (hk : k + 1 < 2 * C.m) (hne : k + 1 ≠ sA C β) :
 theorem tourA_pos {k : ℕ} (hk : k < 2 * C.m) (hne : k ≠ sA C β) : 0 < tourA C β k := by
   by_contra h
   push Not at h
-  have h0 : tourA C β k = 0 := by omega
+  have h0 : tourA C β k = 0 := ⋄
   have := mod_tourA (C := C) (β := β) hk
   rw [h0, add_zero] at this
   exact hne (this.symm.trans rfl)
@@ -122,7 +124,7 @@ theorem sideLeft_tourA_edge (hP : C.P.Simple) {k : ℕ} (hk : k < C.m) {s : ℝ}
   have hne : (C.sideWalk β).vtx (tourA C β k + 6) ≠
       (C.sideWalk β).vtx ((tourA C β k + 6 + 1) % (C.sideWalk β).n) := by
     rw [vtx_tourA hk, vtx_tourA_succ hk]; exact C.sideVertex_succ_ne hP k
-  rw [Chazelle.Chain.sideLeft_edge hne hs, vtx_tourA hk, vtx_tourA_succ hk]
+  Ξ Chazelle.Chain.sideLeft_edge hne hs, vtx_tourA hk, vtx_tourA_succ hk
 
 /-- The side-`A` walk edges are counted. -/
 theorem counted_tourA (k : ℕ) : (chainModel C).counted (tourA C β k + 6) := by

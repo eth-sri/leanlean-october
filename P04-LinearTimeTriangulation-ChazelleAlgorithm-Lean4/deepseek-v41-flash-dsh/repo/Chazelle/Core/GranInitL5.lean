@@ -1,5 +1,11 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranInitL4
 
 /-!
@@ -43,24 +49,24 @@ theorem exec_natOnly {P : Polygon} {W : ℕ} {s : Stmt} {c c' : Config} {k : ℕ
   induction h with
   | skip _ => exact ⟨rfl, rfl, rfl⟩
   | @instr ins c c' _ he _ _ =>
-    simp only [natOnly] at hs
-    cases ins <;> simp only [natOK, Bool.false_eq_true] at hs <;>
-      simp only [Instr.effect, Option.some.injEq] at he <;>
+    ϴ' natOnly at hs
+    cases ins <;> ϴ' natOK, Bool.false_eq_true at hs <;>
+      ϴ' Instr.effect, Option.some.injEq at he <;>
       subst he <;>
       exact ⟨rfl, rfl, rfl⟩
   | seq _ _ ih₁ ih₂ =>
-    simp only [natOnly, Bool.and_eq_true] at hs
+    ϴ' natOnly, Bool.and_eq_true at hs
     obtain ⟨a1, a2, a3⟩ := ih₁ hs.1
     obtain ⟨b1, b2, b3⟩ := ih₂ hs.2
     exact ⟨b1.trans a1, b2.trans a2, b3.trans a3⟩
   | ifLtN_true _ _ ih =>
-    simp only [natOnly, Bool.and_eq_true] at hs; exact ih hs.1
+    ϴ' natOnly, Bool.and_eq_true at hs; exact ih hs.1
   | ifLtN_false _ _ ih =>
-    simp only [natOnly, Bool.and_eq_true] at hs; exact ih hs.2
+    ϴ' natOnly, Bool.and_eq_true at hs; exact ih hs.2
   | ifLtR_true _ _ ih =>
-    simp only [natOnly, Bool.and_eq_true] at hs; exact ih hs.1
+    ϴ' natOnly, Bool.and_eq_true at hs; exact ih hs.1
   | ifLtR_false _ _ ih =>
-    simp only [natOnly, Bool.and_eq_true] at hs; exact ih hs.2
+    ϴ' natOnly, Bool.and_eq_true at hs; exact ih hs.2
   | whileLtN_false _ _ => exact ⟨rfl, rfl, rfl⟩
   | whileLtN_true _ _ _ ih₁ ih₂ =>
     obtain ⟨a1, a2, a3⟩ := ih₁ hs
@@ -78,9 +84,9 @@ theorem cntInit_succ (i : ℕ) (f g : ℕ → ℕ) (j : ℕ) :
     cntInit (i + 1) f g j = cntInit i f g j + (if f i = j then 1 else 0) +
       (if g i = j then 1 else 0) := by
   unfold cntInit
-  rw [Finset.range_add_one, Finset.filter_insert, Finset.filter_insert]
-  have h1 : i ∉ Finset.filter (fun u => f u = j) (Finset.range i) := by simp
-  have h2 : i ∉ Finset.filter (fun u => g u = j) (Finset.range i) := by simp
+  Ξ Finset.range_add_one, Finset.filter_insert, Finset.filter_insert
+  have h1 : i ∉ Finset.filter (fun u => f u = j) (Finset.range i) := ✓
+  have h2 : i ∉ Finset.filter (fun u => g u = j) (Finset.range i) := ✓
   split_ifs with a b b
   · rw [Finset.card_insert_of_notMem h1, Finset.card_insert_of_notMem h2]; ring
   · rw [Finset.card_insert_of_notMem h1]; ring
@@ -91,8 +97,8 @@ theorem cntInit_congr {i : ℕ} {f g f' g' : ℕ → ℕ} (hf : ∀ u, u < i →
     (hg : ∀ u, u < i → g' u = g u) (j : ℕ) : cntInit i f' g' j = cntInit i f g j := by
   unfold cntInit
   congr 2
-  · exact Finset.filter_congr fun u hu => by rw [hf u (Finset.mem_range.1 hu)]
-  · exact Finset.filter_congr fun u hu => by rw [hg u (Finset.mem_range.1 hu)]
+  · exact Finset.filter_congr fun u hu => Ρ hf u (Finset.mem_range.1 hu)
+  · exact Finset.filter_congr fun u hu => Ρ hg u (Finset.mem_range.1 hu)
 
 /-! ## The program -/
 
@@ -155,31 +161,31 @@ theorem srchStore_exec {P : Polygon} {W MD NFH b0 : ℕ} {M : Model} {N : NF} {x
   obtain ⟨b1, b2, b3, b4, b5, b6, b7, b8, b9⟩ := hbs
   have hA0 : 0 < N.arcs.length := by
     obtain ⟨j, hj, -⟩ := cut_pk hNF hGM hcut; omega
-  have hN : NFAt c.nmem NFH N := hNW.holds
+  have hN := hNW.holds
   obtain ⟨hNB, hNAB, hNSB⟩ := NFLoc.nfWithin_bounds hNW hNF hA0
-  obtain ⟨hDW, hCWf⟩ := NFLoc.locChainWF_of hwf (by omega) hWh
+  obtain ⟨hDW, hCWf⟩ := NFLoc.locChainWF_of hwf (⋄) hWh
   have hW3 : P.n + 3 ≤ W := by unfold hostWords at hWh; omega
   have hst : ∀ j, j < N.arcs.length → ProperPos M (Qof P) P.n (N.arc j).s := fun j hj => by
     obtain ⟨-, -, -, -, -, -, -, -, -, -, hpp⟩ := hNF
     have := (hpp j hj).1
     have hQn : (Qof P).n = P.n := shear_n _ _
     rwa [hQn] at this
-  have hxe : x = ⟨c.nreg 50002, c.nreg 50003⟩ := by rw [h52, h53]
+  have hxe : x = ⟨c.nreg 50002, c.nreg 50003⟩ := Ρ h52, h53
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, t0, tlt, tpk⟩ := pos_exec (P := P) (W := W) (c := c) hw
     ⟨hG, hW3, by rw [h50]; exact hDW, by rw [h50]; exact hCWf, M, by rw [h50]; exact hMD,
       by rw [h52]; exact he⟩ hG hW3 (M := M) (N := N) (by rw [h50]; exact hMD) hGM
     (by rw [h51]; exact hN) hNF hne (by rw [← hxe]; exact hx) (by rw [h53]; exact hx1)
     (by rw [← hxe]; exact hcut) hst (by rw [h51]; omega) (by rw [h51]; omega)
     (by rw [h51]; omega) hroom
-  rw [← hxe] at tpk
+  Ξ' ← hxe at tpk
   obtain ⟨fr, frr, fm, frm, fo, fa1, fa2⟩ := F₁
   have w₁ := e₁.wb_right
   have g : ∀ r, 90000 ≤ r → r < 100000 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
     fr r (band_ne h1 h2) (by unfold ALLOC; omega)
-  have c19 : c₁.nreg 90019 = 1 := by rw [g _ (by norm_num) (by norm_num), h19]
-  have c70 : c₁.nreg 90070 = i := by rw [g _ (by norm_num) (by norm_num), h70]
-  have c38 : c₁.nreg 90038 = Cb := by rw [g _ (by norm_num) (by norm_num), h38]
-  have cbs : c₁.nreg bs = BS := by rw [g _ b8 b9, hBS]
+  have c19 : c₁.nreg 90019 = 1 := Ρ g _ (⊛) (⊛), h19
+  have c70 : c₁.nreg 90070 = i := Ρ g _ (⊛) (⊛), h70
+  have c38 : c₁.nreg 90038 = Cb := Ρ g _ (⊛) (⊛), h38
+  have cbs : c₁.nreg bs = BS := Ρ g _ b8 b9, hBS
   have hne' := hdis (c₁.nreg 50105 - 1) tlt
   obtain ⟨c₂, k₂, e₂, hk₂, q⟩ : ∃ c₂ k₂, Exec P W (ndStore bs) c₁ c₂ k₂ ∧ k₂ = 7 ∧
       (c₂.nmem = upd (upd c₁.nmem (BS + i) (c₁.nreg 50105 - 1)) (Cb + (c₁.nreg 50105 - 1))
@@ -193,19 +199,19 @@ theorem srchStore_exec {P : Polygon} {W MD NFH b0 : ℕ} {M : Model} {N : NF} {x
       omega
     · simp (disch := omega) only [Machine.upd_same,
         Machine.upd_other, cbs, c70, c38, c19]
-      rw [fm _ (by omega)]
+      Ξ fm _ (⋄)
       exact hcntW _ tlt
     · refine ⟨rfl, ?_, fun r a1 a2 a3 => ?_⟩
       · simp (disch := omega) only [Machine.upd_other, cbs, c70, c38, c19]
       · simp (disch := omega) only [Machine.upd_other]
   obtain ⟨q1, q2⟩ := q
-  have NO := exec_natOnly e₂ (by simp [ndStore, natOnly, natOK, block])
+  have NO := exec_natOnly e₂ (⊚ ndStore, natOnly, natOK, block)
   have a2' : c₂.nreg ALLOC = c₁.nreg ALLOC :=
     q2 _ (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
-  refine ⟨c₂, _, c₁.nreg 50105 - 1, .seq e₁ e₂, by omega, tlt, tpk, fun a ha => ?_,
+  refine ⟨c₂, _, c₁.nreg 50105 - 1, .seq e₁ e₂, ⋄, tlt, tpk, fun a ha => ?_,
     fun r a1 a2 a3 a4 a5 => ?_, fun r hr => ?_, fun a ha => ?_, ?_, by rw [a2']; exact fa1, ?_⟩
-  · rw [q1, fm (Cb + (c₁.nreg 50105 - 1)) (by omega)]
-    simp only [upd]
+  · Ξ q1, fm (Cb + (c₁.nreg 50105 - 1)) (⋄)
+    ϴ upd
     split_ifs
     · rfl
     · rfl
@@ -319,10 +325,10 @@ theorem cntInit_le (i : ℕ) (f g : ℕ → ℕ) (j : ℕ) : cntInit i f g j ≤
   unfold cntInit
   have h1 := Finset.card_filter_le (Finset.range i) (fun u => f u = j)
   have h2 := Finset.card_filter_le (Finset.range i) (fun u => g u = j)
-  rw [Finset.card_range] at h1 h2
+  Ξ' Finset.card_range at h1 h2
   omega
 
-set_option maxHeartbeats 4000000 in
+
 theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : NF}
     {c₀ c : Config} (hE : NdEnv P W MD NFH CB d M N c₀) (hI : NdI P W d M N c₀ c)
     (ht : c.nreg 90070 < N.nChords) :
@@ -342,61 +348,61 @@ theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
   set K := N.nChords with hKdef
   set A := N.arcs.length with hAdef
   generalize hii : c.nreg 90070 = i at ht hle hp al2 hnd0 hnd1 hcnt
-  have hi1 : (i + 1) * (2 * L + 30) ≤ K * (2 * L + 30) := Nat.mul_le_mul_right _ (by omega)
-  have hmi : i * (2 * L + 30) + (2 * L + 30) = (i + 1) * (2 * L + 30) := by ring
+  have hi1 : (i + 1) * (2 * L + 30) ≤ K * (2 * L + 30) := Nat.mul_le_mul_right _ (⋄)
+  have hmi : i * (2 * L + 30) + (2 * L + 30) = (i + 1) * (2 * L + 30) := ⋆
   have hK1 : 30 ≤ K * (2 * L + 30) := by
-    have : 1 * 30 ≤ K * (2 * L + 30) := Nat.mul_le_mul (by omega) (by omega)
+    have : 1 * 30 ≤ K * (2 * L + 30) := Nat.mul_le_mul (⋄) (by omega)
     omega
   have hQn : (Qof P).n = P.n := shear_n _ _
   -- memory below `b0`
   have hb0 : ∀ a, a < d.b0 → c.nmem a = c₀.nmem a := fun a ha =>
-    hm a (by omega) (by left; omega) (by left; omega)
+    hm a (⋄) (by left; omega) (by left; omega)
   obtain ⟨ch0, ch1, ch2⟩ := hE.chords i ht
   rw [hE.r13] at hp
-  have v0 : c.nmem (CB + 5 * i) = (N.chord i).h := by rw [hb0 _ (by omega), ch0]
-  have v1 : c.nmem (CB + 5 * i + 1) = (N.chord i).lp := by rw [hb0 _ (by omega), ch1]
-  have v2 : c.nmem (CB + 5 * i + 2) = (N.chord i).rp := by rw [hb0 _ (by omega), ch2]
-  have hBc : Bases c d := hE.bases.frame fun q a1 a2 => r9 q (by omega) (by omega)
+  have v0 : c.nmem (CB + 5 * i) = (N.chord i).h := by rw [hb0 _ (⋄), ch0]
+  have v1 : c.nmem (CB + 5 * i + 1) = (N.chord i).lp := by rw [hb0 _ (⋄), ch1]
+  have v2 : c.nmem (CB + 5 * i + 2) = (N.chord i).rp := by rw [hb0 _ (⋄), ch2]
+  have hBc : Bases c d := hE.bases.frame fun q a1 a2 => r9 q (⋄) (by omega)
     (by simp [Binit]; omega)
-  have c00 : c.nreg 90000 = MD := by rw [r9 _ (by norm_num) (by norm_num) (by decide), hE.r00]
-  have c01 : c.nreg 90001 = NFH := by rw [r9 _ (by norm_num) (by norm_num) (by decide), hE.r01]
-  have c19 : c.nreg 90019 = 1 := by rw [r9 _ (by norm_num) (by norm_num) (by decide), hE.r19]
-  have c21 : c.nreg 90021 = 2 := by rw [r9 _ (by norm_num) (by norm_num) (by decide), hE.r21]
+  have c00 : c.nreg 90000 = MD := by rw [r9 _ (⊛) (by norm_num) (by decide), hE.r00]
+  have c01 : c.nreg 90001 = NFH := by rw [r9 _ (⊛) (by norm_num) (by decide), hE.r01]
+  have c19 : c.nreg 90019 = 1 := by rw [r9 _ (⊛) (by norm_num) (by decide), hE.r19]
+  have c21 : c.nreg 90021 = 2 := by rw [r9 _ (⊛) (by norm_num) (by decide), hE.r21]
   have hhlt : (N.chord i).h < P.n := by
     obtain ⟨-, -, -, -, -, -, -, -, -, hh, -⟩ := hE.hNF
     rw [← hQn]; exact hh i ht
   have hWP : P.n + 3 ≤ W := by have := hE.hWh; unfold hostWords at this; omega
   -- 1. the left query
   obtain ⟨c₁, k₁, e₁, hk₁, a00, a01, a02, a03, a91, am, ar⟩ := ndA_exec (P := P) c hw c00 c01 hp
-    c19 v0 v1 (by omega) (by omega)
+    c19 v0 v1 (⋄) (by omega)
   have w₁ := e₁.wb_right
   have g₁ : ∀ r, 90000 ≤ r → r < 100000 → Binit r = false → c₁.nreg r = c.nreg r :=
-    fun r h1 h2 h3 => ar r (by omega) (by omega) (by omega) (by omega)
+    fun r h1 h2 h3 => ar r (⋄) (by omega) (by omega) (by omega)
       (by simp [Binit] at h3; omega) (by simp [Binit] at h3; omega) (by simp [Binit] at h3; omega)
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := ar _ (by unfold ALLOC; omega)
     (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
     (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
-  have hag₁ : ∀ a, a < d.b0 → c₁.nmem a = c₀.nmem a := fun a ha => by rw [am, hb0 a ha]
+  have hag₁ : ∀ a, a < d.b0 → c₁.nmem a = c₀.nmem a := fun a ha => Ρ am, hb0 a ha
   obtain ⟨hdesc₁, hwf₁⟩ := desc_agree' hE.wf hE.desc hag₁
   have hNW₁ : NFWithin c₁.nmem NFH d.b0 N := hE.nfw.transport hag₁
-  have hi' : i < N.nChords := ht
+  have hi' := ht
   have hlp := lpos_proper hE.hNF hi'
   rw [hQn] at hlp
   obtain ⟨c₂, k₂, x0, e₂, hk₂, x0lt, x0pk, M2, R2, RR2, RM2, O2, A21, A22⟩ :=
     srchStore_exec (P := P) (W := W) (b0 := d.b0) (M := M) (N := N) (x := (N.chord i).lpos)
     (c := c₁) w₁ (bs := 90033) (BS := d.b0 + d.oNd0) (i := i) (Cb := d.b0 + d.oCnt) hE.hG hE.hWh
-    hE.hGM hwf₁ hdesc₁ hNW₁ hE.hNF hE.hne a00 a01 a02 a03 hlp (by simp [CRec.lpos])
+    hE.hGM hwf₁ hdesc₁ hNW₁ hE.hNF hE.hne a00 a01 a02 a03 hlp (⊚ CRec.lpos)
     (lkey_cut hE.hNF hi') (attach_l hE.hNF hi').1
-    ⟨by decide, by decide, by decide, by decide, by decide, by decide, by decide, by decide,
-      by decide⟩
-    (by rw [g₁ _ (by norm_num) (by norm_num) (by decide), hBc.bNd0])
-    (by rw [ar 90070 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide), hii])
-    (by rw [g₁ _ (by norm_num) (by norm_num) (by decide), hBc.bCnt])
-    (by rw [g₁ _ (by norm_num) (by norm_num) (by decide), c19]) (by omega)
-    (fun v hv => by omega) (by omega) (by omega) (by omega)
+    ⟨⌖, by decide, by decide, by decide, by decide, by decide, by decide, by decide,
+      ⌖⟩
+    (by rw [g₁ _ (⊛) (by norm_num) (by decide), hBc.bNd0])
+    (by rw [ar 90070 (⌖) (by decide) (by decide) (by decide) (by decide) (by decide)
+      (⌖), hii])
+    (by rw [g₁ _ (⊛) (by norm_num) (by decide), hBc.bCnt])
+    (by rw [g₁ _ (⊛) (by norm_num) (by decide), c19]) (by omega)
+    (fun v hv => ⋄) (by omega) (by omega) (by omega)
     (fun v hv => by
-      rw [am, hcnt v hv]
+      Ξ am, hcnt v hv
       have := cntInit_le i (fun u => c.nmem (d.b0 + d.oNd0 + u))
         (fun u => c.nmem (d.b0 + d.oNd1 + u)) v
       omega)
@@ -406,61 +412,61 @@ theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
       rw [R2 r (band_ne h1 h2) (by unfold ALLOC; omega) (by simp [Binit] at h3; omega)
         (by simp [Binit] at h3; omega) (by simp [Binit] at h3; omega), g₁ r h1 h2 h3]
   have c2_71 : c₂.nreg 90071 = CB + 5 * i := by
-    rw [R2 _ (band_ne (by norm_num) (by norm_num)) (by unfold ALLOC; omega) (by decide)
-      (by decide) (by decide), ar _ (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide) (by decide), hp]
+    rw [R2 _ (band_ne (⊛) (by norm_num)) (by unfold ALLOC; omega) (by decide)
+      (⌖) (by decide), ar _ (by decide) (by decide) (by decide) (by decide) (by decide)
+      (⌖) (by decide), hp]
   have c2_91 : c₂.nreg 90091 = (N.chord i).h + 1 := by
-    rw [R2 _ (band_ne (by norm_num) (by norm_num)) (by unfold ALLOC; omega) (by decide)
-      (by decide) (by decide), a91]
+    rw [R2 _ (band_ne (⊛) (by norm_num)) (by unfold ALLOC; omega) (by decide)
+      (⌖) (by decide), a91]
   have c2_70 : c₂.nreg 90070 = i := by
-    rw [R2 _ (band_ne (by norm_num) (by norm_num)) (by unfold ALLOC; omega) (by decide)
-      (by decide) (by decide), ar _ (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide) (by decide), hii]
+    rw [R2 _ (band_ne (⊛) (by norm_num)) (by unfold ALLOC; omega) (by decide)
+      (⌖) (by decide), ar _ (by decide) (by decide) (by decide) (by decide) (by decide)
+      (⌖) (by decide), hii]
   have m2b : ∀ a, a < d.b0 → c₂.nmem a = c₀.nmem a := fun a ha => by
-    rw [M2 a (by omega), Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
+    rw [M2 a (⋄), Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
       hag₁ a ha]
   -- 2. the right query
   obtain ⟨c₃, k₃, e₃, hk₃, b00, b01, b02, b03, bm, br⟩ := ndC_exec (P := P) c₂ w₂
-    (by rw [g₂ _ (by norm_num) (by norm_num) (by decide), c00])
-    (by rw [g₂ _ (by norm_num) (by norm_num) (by decide), c01]) c2_71
-    (by rw [g₂ _ (by norm_num) (by norm_num) (by decide), c21])
-    (by rw [m2b _ (by omega), ch2]) (by omega)
+    (by rw [g₂ _ (⊛) (by norm_num) (by decide), c00])
+    (by rw [g₂ _ (⊛) (by norm_num) (by decide), c01]) c2_71
+    (by rw [g₂ _ (⊛) (by norm_num) (by decide), c21])
+    (by rw [m2b _ (⋄), ch2]) (by omega)
   rw [c2_91] at b03
   have w₃ := e₃.wb_right
   have hA₃ : c₃.nreg ALLOC = c₂.nreg ALLOC := br _ (by unfold ALLOC; omega)
     (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
     (by unfold ALLOC; omega)
-  have hag₃ : ∀ a, a < d.b0 → c₃.nmem a = c₀.nmem a := fun a ha => by rw [bm, m2b a ha]
+  have hag₃ : ∀ a, a < d.b0 → c₃.nmem a = c₀.nmem a := fun a ha => Ρ bm, m2b a ha
   obtain ⟨hdesc₃, hwf₃⟩ := desc_agree' hE.wf hE.desc hag₃
   have hNW₃ : NFWithin c₃.nmem NFH d.b0 N := hE.nfw.transport hag₃
   have hrp := rpos_proper hE.hNF hi'
   rw [hQn] at hrp
   have g₃ : ∀ r, 90000 ≤ r → r < 100000 → Binit r = false → c₃.nreg r = c.nreg r :=
     fun r h1 h2 h3 => by
-      rw [br r (by omega) (by omega) (by omega) (by omega) (by simp [Binit] at h3; omega),
+      rw [br r (⋄) (by omega) (by omega) (by omega) (by simp [Binit] at h3; omega),
         g₂ r h1 h2 h3]
   obtain ⟨c₄, k₄, x1, e₄, hk₄, x1lt, x1pk, M4, R4, RR4, RM4, O4, A41, A42⟩ :=
     srchStore_exec (P := P) (W := W) (b0 := d.b0) (M := M) (N := N) (x := (N.chord i).rpos)
     (c := c₃) w₃ (bs := 90034) (BS := d.b0 + d.oNd1) (i := i) (Cb := d.b0 + d.oCnt) hE.hG hE.hWh
-    hE.hGM hwf₃ hdesc₃ hNW₃ hE.hNF hE.hne b00 b01 b02 b03 hrp (by simp [CRec.rpos])
+    hE.hGM hwf₃ hdesc₃ hNW₃ hE.hNF hE.hne b00 b01 b02 b03 hrp (⊚ CRec.rpos)
     (rkey_cut hE.hNF hi') (attach_r hE.hNF hi').1
-    ⟨by decide, by decide, by decide, by decide, by decide, by decide, by decide, by decide,
-      by decide⟩
-    (by rw [g₃ _ (by norm_num) (by norm_num) (by decide), hBc.bNd1])
-    (by rw [br _ (by decide) (by decide) (by decide) (by decide) (by decide), c2_70])
-    (by rw [g₃ _ (by norm_num) (by norm_num) (by decide), hBc.bCnt])
-    (by rw [g₃ _ (by norm_num) (by norm_num) (by decide), c19]) (by omega)
-    (fun v hv => by omega) (by omega) (by omega) (by omega)
+    ⟨⌖, by decide, by decide, by decide, by decide, by decide, by decide, by decide,
+      ⌖⟩
+    (by rw [g₃ _ (⊛) (by norm_num) (by decide), hBc.bNd1])
+    (by rw [br _ (⌖) (by decide) (by decide) (by decide) (by decide), c2_70])
+    (by rw [g₃ _ (⊛) (by norm_num) (by decide), hBc.bCnt])
+    (by rw [g₃ _ (⊛) (by norm_num) (by decide), c19]) (by omega)
+    (fun v hv => ⋄) (by omega) (by omega) (by omega)
     (fun v hv => by
-      rw [bm, M2 _ (by omega), am]
+      rw [bm, M2 _ (⋄), am]
       have hc := hcnt v hv
       have hc' := hcnt x0 x0lt
       have := cntInit_le i (fun u => c.nmem (d.b0 + d.oNd0 + u))
         (fun u => c.nmem (d.b0 + d.oNd1 + u)) v
       have := cntInit_le i (fun u => c.nmem (d.b0 + d.oNd0 + u))
         (fun u => c.nmem (d.b0 + d.oNd1 + u)) x0
-      have hK30 : K * 30 ≤ K * (2 * L + 30) := Nat.mul_le_mul_left _ (by omega)
-      simp only [upd]
+      have hK30 : K * 30 ≤ K * (2 * L + 30) := Nat.mul_le_mul_left _ (⋄)
+      ϴ upd
       split_ifs <;> omega)
   have w₄ := e₄.wb_right
   have g₄ : ∀ r, 90000 ≤ r → r < 100000 → Binit r = false → c₄.nreg r = c.nreg r :=
@@ -468,49 +474,49 @@ theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
       rw [R4 r (band_ne h1 h2) (by unfold ALLOC; omega) (by simp [Binit] at h3; omega)
         (by simp [Binit] at h3; omega) (by simp [Binit] at h3; omega), g₃ r h1 h2 h3]
   have c4_71 : c₄.nreg 90071 = CB + 5 * i := by
-    rw [R4 _ (band_ne (by norm_num) (by norm_num)) (by unfold ALLOC; omega) (by decide)
-      (by decide) (by decide), br _ (by decide) (by decide) (by decide) (by decide) (by decide),
+    rw [R4 _ (band_ne (⊛) (by norm_num)) (by unfold ALLOC; omega) (by decide)
+      (⌖) (by decide), br _ (by decide) (by decide) (by decide) (by decide) (by decide),
       c2_71]
   have c4_70 : c₄.nreg 90070 = i := by
-    rw [R4 _ (band_ne (by norm_num) (by norm_num)) (by unfold ALLOC; omega) (by decide)
-      (by decide) (by decide), br _ (by decide) (by decide) (by decide) (by decide) (by decide),
+    rw [R4 _ (band_ne (⊛) (by norm_num)) (by unfold ALLOC; omega) (by decide)
+      (⌖) (by decide), br _ (by decide) (by decide) (by decide) (by decide) (by decide),
       c2_70]
   have c4_76 : c₄.nreg 90076 = 5 := by
-    rw [R4 _ (band_ne (by norm_num) (by norm_num)) (by unfold ALLOC; omega) (by decide)
-      (by decide) (by decide), br _ (by decide) (by decide) (by decide) (by decide) (by decide),
-      R2 _ (band_ne (by norm_num) (by norm_num)) (by unfold ALLOC; omega) (by decide)
-      (by decide) (by decide), ar _ (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide) (by decide), h76]
+    rw [R4 _ (band_ne (⊛) (by norm_num)) (by unfold ALLOC; omega) (by decide)
+      (⌖) (by decide), br _ (by decide) (by decide) (by decide) (by decide) (by decide),
+      R2 _ (band_ne (⊛) (by norm_num)) (by unfold ALLOC; omega) (by decide)
+      (⌖) (by decide), ar _ (by decide) (by decide) (by decide) (by decide) (by decide)
+      (⌖) (by decide), h76]
   -- 3. advance
   obtain ⟨c₅, k₅, e₅, hk₅, d71, d70, dm, dr⟩ := ndE_exec (P := P) c₄ w₄ c4_71 c4_70 c4_76
-    (by rw [g₄ _ (by norm_num) (by norm_num) (by decide), c19]) (by omega) (by omega)
+    (by rw [g₄ _ (⊛) (by norm_num) (by decide), c19]) (by omega) (by omega)
   -- the memory
   set m1 := upd (upd c.nmem (d.b0 + d.oNd0 + i) x0) (d.b0 + d.oCnt + x0)
     (c.nmem (d.b0 + d.oCnt + x0) + 1) with hm1
-  have H2 : ∀ a, a < c₁.nreg ALLOC → c₂.nmem a = m1 a := fun a ha => by rw [M2 a ha, am]
+  have H2 : ∀ a, a < c₁.nreg ALLOC → c₂.nmem a = m1 a := fun a ha => Ρ M2 a ha, am
   have M5 : ∀ a, a < c₀.nreg ALLOC → c₅.nmem a =
       upd (upd m1 (d.b0 + d.oNd1 + i) x1) (d.b0 + d.oCnt + x1) (m1 (d.b0 + d.oCnt + x1) + 1) a := by
     intro a ha
-    rw [dm, M4 a (by omega), bm]
-    simp only [upd]
+    rw [dm, M4 a (⋄), bm]
+    ϴ upd
     split_ifs
-    · rw [H2 _ (by omega)]
+    · rw [H2 _ (⋄)]
     · rfl
-    · exact H2 a (by omega)
-  have NA := exec_natOnly e₁ (by simp [ndA, natOnly, natOK, block])
-  have NC := exec_natOnly e₃ (by simp [ndC, natOnly, natOK, block])
-  have NE := exec_natOnly e₅ (by simp [ndE, natOnly, natOK, block])
+    · exact H2 a (⋄)
+  have NA := exec_natOnly e₁ (⊚ ndA, natOnly, natOK, block)
+  have NC := exec_natOnly e₃ (⊚ ndC, natOnly, natOK, block)
+  have NE := exec_natOnly e₅ (⊚ ndE, natOnly, natOK, block)
   have hA₅ : c₅.nreg ALLOC = c₄.nreg ALLOC := dr _ (by unfold ALLOC; omega)
     (by unfold ALLOC; omega)
   refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))),
-    ⟨e₅.wb_right, by omega, by rw [d71, d70, hE.r13]; ring, ?_, fun r h1 h2 h3 => ?_,
+    ⟨e₅.wb_right, ⋄, by rw [d71, d70, hE.r13]; ring, ?_, fun r h1 h2 h3 => ?_,
       fun r h1 h2 => ?_, fun r h1 => ?_, fun a ha => ?_, ?_, ?_, ?_,
       fun u hu => ?_, fun u hu => ?_, fun j hj => ?_, fun a ha b1 b2 => ?_⟩, ?_,
-    by rw [d70], by omega⟩
-  · rw [dr _ (by decide) (by decide), c4_76]
+    by rw [d70], ⋄⟩
+  · rw [dr _ (⌖) (by decide), c4_76]
   · have h3' := h3
     simp only [Binit, decide_eq_false_iff_not] at h3'
-    rw [dr r (by omega) (by omega), g₄ r h1 h2 h3, r9 r h1 h2 h3]
+    rw [dr r (⋄) (by omega), g₄ r h1 h2 h3, r9 r h1 h2 h3]
   · have hb9 : ¬ (90000 ≤ r ∧ r < 100000) := by
       intro h; apply h1; simp only [bandOf, bGran, Finset.mem_insert, Finset.mem_singleton]
       omega
@@ -523,49 +529,49 @@ theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
     have hn5 : ¬ (50000 ≤ r ∧ r < 60000) := by
       intro h; apply h15; simp only [bandOf, bLocate, Finset.mem_insert, Finset.mem_singleton]
       omega
-    rw [dr r (by omega) (by omega), R4 r h15 h2 (by omega) (by omega) (by omega),
-      br r (by omega) (by omega) (by omega) (by omega) (by omega),
-      R2 r h15 h2 (by omega) (by omega) (by omega),
-      ar r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
+    rw [dr r (⋄) (by omega), R4 r h15 h2 (by omega) (by omega) (by omega),
+      br r (⋄) (by omega) (by omega) (by omega) (by omega),
+      R2 r h15 h2 (⋄) (by omega) (by omega),
+      ar r (⋄) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
       fr r h1 h2]
-  · rw [NE.1, RR4 r h1, NC.1, RR2 r h1, NA.1, frr r h1]
-  · rw [NE.2.1, RM4 a (by omega), NC.2.1, RM2 a (by omega), NA.2.1, frm a ha]
-  · rw [NE.2.2, O4, NC.2.2, O2, NA.2.2, fro]
+  · Ξ NE.1, RR4 r h1, NC.1, RR2 r h1, NA.1, frr r h1
+  · rw [NE.2.1, RM4 a (⋄), NC.2.1, RM2 a (by omega), NA.2.1, frm a ha]
+  · Ξ NE.2.2, O4, NC.2.2, O2, NA.2.2, fro
   · omega
   · rw [d70, ← hL]; omega
   · rw [d70] at hu
-    rw [M5 _ (by omega), Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
+    rw [M5 _ (⋄), Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
       hm1]
     by_cases hui : u = i
     · subst hui
-      rw [Machine.upd_other _ _ _ (by omega)]; simp only [Machine.upd_same]
+      rw [Machine.upd_other _ _ _ (⋄)]; simp only [Machine.upd_same]
       exact ⟨x0lt, x0pk⟩
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
-      exact hnd0 u (by omega)
+    · rw [Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega)]
+      exact hnd0 u (⋄)
   · rw [d70] at hu
-    rw [M5 _ (by omega), Machine.upd_other _ _ _ (by omega)]
+    rw [M5 _ (⋄), Machine.upd_other _ _ _ (by omega)]
     by_cases hui : u = i
     · subst hui
-      simp only [Machine.upd_same]
+      ϴ Machine.upd_same
       exact ⟨x1lt, x1pk⟩
-    · rw [Machine.upd_other _ _ _ (by omega), hm1, Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
-      exact hnd1 u (by omega)
+    · rw [Machine.upd_other _ _ _ (⋄), hm1, Machine.upd_other _ _ _ (by omega),
+        Machine.upd_other _ _ _ (⋄)]
+      exact hnd1 u (⋄)
   · -- the counts
     have f0 : ∀ u, u < i → c₅.nmem (d.b0 + d.oNd0 + u) = c.nmem (d.b0 + d.oNd0 + u) := by
       intro u hu
-      rw [M5 _ (by omega), Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        hm1, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
+      rw [M5 _ (⋄), Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
+        hm1, Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega)]
     have g0 : ∀ u, u < i → c₅.nmem (d.b0 + d.oNd1 + u) = c.nmem (d.b0 + d.oNd1 + u) := by
       intro u hu
-      rw [M5 _ (by omega), Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        hm1, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
+      rw [M5 _ (⋄), Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
+        hm1, Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega)]
     have fi : c₅.nmem (d.b0 + d.oNd0 + i) = x0 := by
-      rw [M5 _ (by omega), Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        hm1, Machine.upd_other _ _ _ (by omega)]; simp
+      rw [M5 _ (⋄), Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
+        hm1, Machine.upd_other _ _ _ (⋄)]; simp
     have gi : c₅.nmem (d.b0 + d.oNd1 + i) = x1 := by
-      rw [M5 _ (by omega), Machine.upd_other _ _ _ (by omega)]; simp
-    rw [d70, cntInit_succ, cntInit_congr f0 g0, fi, gi, ← hcnt j hj, M5 _ (by omega), hm1]
+      rw [M5 _ (⋄), Machine.upd_other _ _ _ (by omega)]; simp
+    rw [d70, cntInit_succ, cntInit_congr f0 g0, fi, gi, ← hcnt j hj, M5 _ (⋄), hm1]
     by_cases e1 : x1 = j
     · subst e1
       by_cases e0 : x0 = x1
@@ -577,8 +583,8 @@ theorem ndBody_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
         simp (disch := omega) only [Machine.upd_same, Machine.upd_other, ite_true, e1, ite_false]
       · simp (disch := omega) only [Machine.upd_other, e1, e0, ite_false,
           Nat.add_zero]
-  · rw [M5 _ ha, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega), hm1,
-      Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
+  · rw [M5 _ ha, Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega), hm1,
+      Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (by omega)]
     exact hm a ha b1 b2
   · omega
 
@@ -592,13 +598,13 @@ theorem ndLoop_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
     exec_block
     · omega
     · omega
-    · refine ⟨rfl, ⟨by assumption, ?_, ?_, ?_, fun r h1 h2 h3 => ?_, fun r h1 h2 => ?_,
+    · refine ⟨rfl, ⟨⟁, ?_, ?_, ?_, fun r h1 h2 h3 => ?_, fun r h1 h2 => ?_,
         fun r _ => rfl, fun a _ => rfl, rfl, ?_, ?_, fun u hu => ?_, fun u hu => ?_,
         fun j hj => ?_, fun a _ _ _ => rfl⟩, ?_⟩
       · config_simp; omega
       · config_simp; omega
       · config_simp
-      · simp only [Binit, decide_eq_false_iff_not] at h3
+      · ϴ' Binit, decide_eq_false_iff_not at h3
         config_simp; simp only [upd]; split_ifs <;> first | rfl | omega
       · have : r < 90000 ∨ 100000 ≤ r := by
           by_contra hc; apply h1; simp only [bandOf, bGran, Finset.mem_insert,
@@ -606,9 +612,9 @@ theorem ndLoop_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
         config_simp; simp only [upd]; split_ifs <;> first | rfl | omega
       · config_simp; simp only [upd, ALLOC]; simp
       · config_simp; simp only [upd, ALLOC]; simp
-      · simp [upd] at hu
-      · simp [upd] at hu
-      · config_simp; rw [hE.cnt0 j hj]; simp [cntInit]
+      · Θ' upd at hu
+      · Θ' upd at hu
+      · config_simp; rw [hE.cnt0 j hj]; Θ cntInit
       · config_simp
   obtain ⟨c', k, e, I', hx, hk, hA'⟩ := SortR.whileLtN_potential_lb (P := P) (W := W)
     (a := 90070) (b := 90010) (body := ndBody) (NdI P W d M N c₀)
@@ -616,22 +622,22 @@ theorem ndLoop_exec {P : Polygon} {W MD NFH CB : ℕ} {d : Dm} {M : Model} {N : 
     (fun c => c.nreg ALLOC) (fun _ h => h.wb)
     (fun c I ht => by
       have t : c.nreg 90070 < N.nChords := by
-        rw [I.r9 90010 (by norm_num) (by norm_num) (by decide), hE.r10] at ht; exact ht
+        Ξ' I.r9 90010 (⊛) (⊛) (⌖), hE.r10 at ht; exact ht
       obtain ⟨c', k, e, I', hk, hi, ha⟩ := ndBody_exec (P := P) hE I t
       refine ⟨c', k, e, I', ?_, ha⟩
-      rw [hi]
-      have : N.nChords - c.nreg 90070 = (N.nChords - (c.nreg 90070 + 1)) + 1 := by omega
-      rw [this, Nat.add_mul, one_mul]
+      Ξ hi
+      have : N.nChords - c.nreg 90070 = (N.nChords - (c.nreg 90070 + 1)) + 1 := ⋄
+      Ξ this, Nat.add_mul, one_mul
       omega) q
   have hK' : c'.nreg 90070 = N.nChords := by
-    rw [I'.r9 90010 (by norm_num) (by norm_num) (by decide), hE.r10] at hx
+    Ξ' I'.r9 90010 (⊛) (⊛) (⌖), hE.r10 at hx
     have := I'.i_le; omega
   refine ⟨c', _, .seq e₁ e, ?_, I', hK', ?_⟩
-  · rw [q0, Nat.sub_zero] at hk
+  · Ξ' q0, Nat.sub_zero at hk
     omega
   · have h1 := q.al1
     have h2 := q.al2
-    rw [q0, Nat.zero_mul, Nat.add_zero] at h2
+    Ξ' q0, Nat.zero_mul, Nat.add_zero at h2
     omega
 
 end

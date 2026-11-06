@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Mountain.RamSub
 public import Chazelle.Mountain.RamTheorem
 
@@ -86,22 +90,22 @@ theorem sOuterInv_push {σ : ℝ} {c₀ : Config} {out : List Polygon.Triangle} 
         41 ≤ subOuterPot P l σ c := by
   have hs' : stackS c' = c.nreg 64 :: (popLoop (subPoly P l) σ (c.nreg 64) (stackS c)).2.1 := by
     unfold stackS
-    rw [e61, e63, enm, stk_shift_push]
+    Ξ e61, e63, enm, stk_shift_push
     exact congrArg _ hst₂
   have hkQ : c.nreg 64 < (subPoly P l).n := by rw [n_subPoly]; exact hk
   have hwalk := walk_of_lt (subPoly P l) σ hkQ (stackS c)
-  refine ⟨⟨hw', hC', hT', hF', by omega, ?_, ?_⟩, ?_⟩
+  refine ⟨⟨hw', hC', hT', hF', ⋄, ?_, ?_⟩, ?_⟩
   · intro x hx
-    rw [hs'] at hx
+    Ξ' hs' at hx
     rcases List.mem_cons.1 hx with rfl | hx
     · exact hk
     · exact hlt₂ x (by rw [hst₂]; exact hx)
-  · rw [e64, hs', eout, hout₂, List.append_assoc, ← List.map_append, ← hout, hwalk]
+  · Ξ e64, hs', eout, hout₂, List.append_assoc, ← List.map_append, ← hout, hwalk
   · unfold subOuterPot
-    rw [e64, hs', hwalk, List.length_append]
+    Ξ e64, hs', hwalk, List.length_append
     omega
 
-set_option maxHeartbeats 800000 in
+
 /-- **One iteration of the walk** (`k < m`) preserves `SOuterInv` and decreases the potential
 `subOuterPot` by at least its cost plus `2`. -/
 theorem subOuterBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {c₀ : Config}
@@ -115,11 +119,11 @@ theorem subOuterBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {c₀ :
   obtain ⟨h60, h61, h62, h65, h68, h70, hr70, hr72⟩ := hC
   have hk : c.nreg 64 < l.length := by rw [h62] at ht; exact ht
   unfold subOuterBody
-  refine spec_seq (spec_instr (Exec.constN hw 69 1 (by omega)) fun hw₁ => ?_)
+  refine spec_seq (spec_instr (Exec.constN hw 69 1 (⋄)) fun hw₁ => ?_)
   have hs₁ : stackS { c with nreg := upd c.nreg 69 1 } = stackS c :=
     stackS_congr (by config_simp) (by config_simp) rfl
   have hF₁ : SFrame c { c with nreg := upd c.nreg 69 1 } := sFrame_of_regs
-    (fun r hr => by config_simp; exact Machine.upd_other _ _ _ (by omega)) (fun r _ => rfl) rfl rfl
+    (fun r hr => by config_simp; exact Machine.upd_other _ _ _ (⋄)) (fun r _ => rfl) rfl rfl
   refine spec_seq (spec_use (subInnerLoop_exec (P := P) (σ := σ) (k := c.nreg 64) hL' hk _ hw₁
     ⟨by config_simp; exact h60, by config_simp; exact h61, by config_simp; exact h62,
       by config_simp; exact h65, by config_simp; exact h68, by config_simp; exact h70,
@@ -127,7 +131,7 @@ theorem subOuterBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {c₀ :
     hT (by config_simp) (by config_simp; exact htop) (by rw [hs₁]; exact hlt)
     (by config_simp)) ?_)
   rintro c₂ k₂ hk₂ hw₂ ⟨hC₂, hT₂, hF₂, h64₂, htop₂, hlt₂, hout₂, hst₂⟩
-  rw [hs₁] at hk₂ hout₂ hst₂
+  Ξ' hs₁ at hk₂ hout₂ hst₂
   config_simp at hout₂
   obtain ⟨g60, g61, g62, g65, g68, g70, gr70, gr72⟩ := hC₂
   unfold subPushStmt
@@ -143,25 +147,25 @@ theorem subOuterBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {c₀ :
           64 (c₂.nreg 64 + c₂.nreg 65),
         nmem := upd c₂.nmem (c₂.nreg 61 + c₂.nreg 63) (c₂.nreg 64) } := by
       refine ⟨fun r hr => ?_, fun r _ => rfl, fun a ha => ?_, rfl⟩
-      · have h1 : r ≠ 71 := by omega
-        have h2 : r ≠ 63 := by omega
-        have h3 : r ≠ 64 := by omega
-        simp [h1, h2, h3]
+      · have h1 : r ≠ 71 := ⋄
+        have h2 : r ≠ 63 := ⋄
+        have h3 : r ≠ 64 := ⋄
+        Θ h1, h2, h3
       · config_simp
-        exact Machine.upd_other _ _ _ (by omega)
+        exact Machine.upd_other _ _ _ (⋄)
     obtain ⟨hI', hp'⟩ := sOuterInv_push (P := P) (W := W) (c₀ := c₀) ‹WordsBounded _ _›
       ⟨by config_simp; exact g60, by config_simp; exact g61, by config_simp; exact g62,
         by config_simp; exact g65, by config_simp; exact g68, by config_simp; exact g70,
         by config_simp; exact gr70, by config_simp; exact gr72⟩
       (fun i hi => by
         config_simp
-        rw [Machine.upd_other _ _ _ (by rw [g61]; omega)]
+        Ξ Machine.upd_other _ _ _ (by rw [g61]; omega)
         exact hT₂ i hi)
       (sFrame_trans hF (sFrame_trans hF₁ (sFrame_trans hF₂ hF₃)))
       hk htop₂ hlt₂ hout hout₂ hst₂ (by config_simp)
       (by config_simp; rw [g65]) (by config_simp; rw [g65, h64₂]) (by config_simp; rw [h64₂])
       (by config_simp)
-    exact ⟨hI', by omega⟩
+    exact ⟨hI', ⋄⟩
 
 /-- **Spec lemma for the walk.**  From a configuration with the constants, the index table,
 `top ≤ k` (`k = nreg 64`) and stack entries `< m`, the walk appends
@@ -181,7 +185,7 @@ theorem subOuterLoop_exec (hL : SLayout W base sbase l.length) {σ : ℝ} (c : C
     (subOuterPot P l σ) (fun _ h => h.1) (fun d hd ht => subOuterBody_inv hL d hd ht)
     ⟨hw, hC, hT, sFrame_refl c, htop, hlt, rfl⟩
   have hkn : (subPoly P l).n ≤ c'.nreg 64 := by rw [n_subPoly, ← hC'.2.2.1]; omega
-  rw [walk_of_le _ σ hkn, List.map_nil, List.append_nil] at hout'
+  Ξ' walk_of_le _ σ hkn, List.map_nil, List.append_nil at hout'
   exact ⟨c', k', ex, hk, hout', hC', hT', hF'⟩
 
 end walkLoop
@@ -191,7 +195,7 @@ end walkLoop
 section init
 variable {P : Polygon} {W : ℕ} {l : List ℕ}
 
-set_option maxHeartbeats 800000 in
+
 /-- **Spec lemma for `subInitBlock`.**  With `3 ≤ m`, the layout hypothesis and the index
 table: cost `≤ 21` (exactly `21`); `top = 2`, `k = 2`, the constants `nreg 65 = 1`,
 `nreg 68 = 2`, `nreg 70 = 0`, the inputs `nreg 60, 61, 62` kept, the stack `[1, 0]`, the table
@@ -213,16 +217,16 @@ theorem subInitBlock_exec (h3 : 3 ≤ l.length) (c : Config) (hc : WordsBounded 
   have hg : ∀ i, i < l.length →
       upd (upd c.nmem (c.nreg 61) 0) (c.nreg 61 + 1) 1 (c.nreg 60 + i) = l.getD i 0 := by
     intro i hi
-    rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega), hT i hi]
+    Ξ Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (⋄), hT i hi
   have gA : upd (upd c.nmem (c.nreg 61) 0) (c.nreg 61 + 1) 1 (c.nreg 60 + c.nreg 62 - 1) =
       l.getD (l.length - 1) 0 := by
-    rw [show c.nreg 60 + c.nreg 62 - 1 = c.nreg 60 + (l.length - 1) by omega]
-    exact hg _ (by omega)
+    Ξ show c.nreg 60 + c.nreg 62 - 1 = c.nreg 60 + (l.length - 1) by omega
+    exact hg _ (⋄)
   have gB : upd (upd c.nmem (c.nreg 61) 0) (c.nreg 61 + 1) 1 (c.nreg 60) = l.getD 0 0 := by
-    have := hg 0 (by omega)
+    have := hg 0 (⋄)
     rwa [Nat.add_zero] at this
   have gC : upd (upd c.nmem (c.nreg 61) 0) (c.nreg 61 + 1) 1 (c.nreg 60 + 1) = l.getD 1 0 :=
-    hg 1 (by omega)
+    hg 1 (⋄)
   unfold subInitBlock
   exec_block
   · omega
@@ -231,35 +235,35 @@ theorem subInitBlock_exec (h3 : 3 ≤ l.length) (c : Config) (hc : WordsBounded 
   · config_simp; omega
   · config_simp; omega
   · config_simp; omega
-  · refine ⟨by omega, by config_simp, by config_simp, by config_simp; exact h62, by config_simp,
+  · refine ⟨⋄, by config_simp, by config_simp, by config_simp; exact h62, by config_simp,
       by config_simp, by config_simp, by config_simp, by config_simp, ?_,
       fun i hi => by config_simp; exact hg i hi, ?_, by config_simp; rw [gA],
       by config_simp; rw [gA], by config_simp; rw [gB], by config_simp; rw [gB],
       by config_simp; rw [gC], by config_simp; rw [gC], by config_simp; norm_num, rfl⟩
     · unfold stackS
       config_simp
-      simp [stk, upd]
+      Θ stk, upd
     · refine ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => ?_, rfl⟩
-      · have h63 : r ≠ 63 := by omega
-        have h64 : r ≠ 64 := by omega
-        have h65 : r ≠ 65 := by omega
-        have h68 : r ≠ 68 := by omega
-        have h70 : r ≠ 70 := by omega
-        have h71 : r ≠ 71 := by omega
-        have h72 : r ≠ 72 := by omega
-        have h73 : r ≠ 73 := by omega
-        have h74 : r ≠ 74 := by omega
-        simp [h63, h64, h65, h68, h70, h71, h72, h73, h74]
-      · have h61 : r ≠ 61 := by omega
-        have h62 : r ≠ 62 := by omega
-        have h63 : r ≠ 63 := by omega
-        have h64 : r ≠ 64 := by omega
-        have h65 : r ≠ 65 := by omega
-        have h66 : r ≠ 66 := by omega
-        have h72 : r ≠ 72 := by omega
-        simp [h61, h62, h63, h64, h65, h66, h72]
+      · have h63 : r ≠ 63 := ⋄
+        have h64 : r ≠ 64 := ⋄
+        have h65 : r ≠ 65 := ⋄
+        have h68 : r ≠ 68 := ⋄
+        have h70 : r ≠ 70 := ⋄
+        have h71 : r ≠ 71 := ⋄
+        have h72 : r ≠ 72 := ⋄
+        have h73 : r ≠ 73 := ⋄
+        have h74 : r ≠ 74 := ⋄
+        Θ h63, h64, h65, h68, h70, h71, h72, h73, h74
+      · have h61 : r ≠ 61 := ⋄
+        have h62 : r ≠ 62 := ⋄
+        have h63 : r ≠ 63 := ⋄
+        have h64 : r ≠ 64 := ⋄
+        have h65 : r ≠ 65 := ⋄
+        have h66 : r ≠ 66 := ⋄
+        have h72 : r ≠ 72 := ⋄
+        Θ h61, h62, h63, h64, h65, h66, h72
       · config_simp
-        rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
+        Ξ Machine.upd_other _ _ _ (⋄), Machine.upd_other _ _ _ (⋄)
 
 set_option linter.unusedSimpArgs false in
 /-- **Spec lemma for `subSignStmt`.**  With `rreg 72 = 0`: cost `≤ 10`;
@@ -273,32 +277,32 @@ theorem subSignStmt_exec (c : Config) (hc : WordsBounded W c) (h72 : c.rreg 72 =
       c'.rreg 72 = c.rreg 72 ∧ (∀ r, (r < 61 ∨ 72 < r) → c'.rreg r = c.rreg r) ∧
       c'.nreg = c.nreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold subSignStmt
-  refine spec_seq (spec_use (detInto_exec (P := P) 67 68 69 61 62 63 64 65 66 (by decide)
-    (by decide) (by decide)
+  refine spec_seq (spec_use (detInto_exec (P := P) 67 68 69 61 62 63 64 65 66 (⌖)
+    (⌖) (⌖)
     (fun r hr => by rcases hr with rfl | rfl | rfl | rfl | rfl | rfl <;> decide) c hc) ?_)
   rintro c₁ k₁ hk₁ hw₁ ⟨hdet, hfr, hn, hnm, hrm, hout⟩
-  have e72 : c₁.rreg 72 = c.rreg 72 := hfr 72 (by decide) (by decide) (by decide)
+  have e72 : c₁.rreg 72 = c.rreg 72 := hfr 72 (⌖) (⌖) (⌖)
   by_cases hpos : 0 < det (c.rreg 61, c.rreg 62) (c.rreg 63, c.rreg 64) (c.rreg 65, c.rreg 66)
   · refine spec_ifLtR_true (by rw [e72, h72, hdet]; exact hpos)
       (spec_instr (Exec.constR hw₁ 70 1) fun hw₂ => ?_)
-    refine ⟨by omega, ?_, by config_simp; exact e72, fun r hr => ?_, by config_simp; exact hn,
+    refine ⟨⋄, ?_, by config_simp; exact e72, fun r hr => ?_, by config_simp; exact hn,
       by config_simp; exact hnm, by config_simp; exact hrm, by config_simp; exact hout⟩
     · config_simp
-      rw [ite_eq_left hpos]
+      Ξ ite_eq_left hpos
       norm_num
     · config_simp
-      rw [Machine.upd_other _ _ _ (by omega)]
-      exact hfr r (by omega) (by omega) (by omega)
+      Ξ Machine.upd_other _ _ _ (⋄)
+      exact hfr r (⋄) (⋄) (⋄)
   · refine spec_ifLtR_false (by rw [e72, h72, hdet]; exact hpos)
       (spec_instr (Exec.constR hw₁ 70 (-1)) fun hw₂ => ?_)
-    refine ⟨by omega, ?_, by config_simp; exact e72, fun r hr => ?_, by config_simp; exact hn,
+    refine ⟨⋄, ?_, by config_simp; exact e72, fun r hr => ?_, by config_simp; exact hn,
       by config_simp; exact hnm, by config_simp; exact hrm, by config_simp; exact hout⟩
     · config_simp
-      rw [ite_eq_right hpos]
+      Ξ ite_eq_right hpos
       norm_num
     · config_simp
-      rw [Machine.upd_other _ _ _ (by omega)]
-      exact hfr r (by omega) (by omega) (by omega)
+      Ξ Machine.upd_other _ _ _ (⋄)
+      exact hfr r (⋄) (⋄) (⋄)
 
 end init
 
@@ -372,14 +376,14 @@ theorem mountainSub_exec (hM : IsMountain (subPoly P l)) (c : Config) (hc : Word
       (∀ r, (r < 61 ∨ 72 < r) → c'.rreg r = c.rreg r) ∧
       (∀ a, (a < c.nreg 61 ∨ c.nreg 61 + l.length ≤ a) → c'.nmem a = c.nmem a) ∧
       c'.rmem = c.rmem := by
-  have h3 : 3 ≤ l.length := by have := hM.1.1; rw [n_subPoly] at this; exact this
+  have h3 : 3 ≤ l.length := by have := hM.1.1; Ξ' n_subPoly at this; exact this
   obtain ⟨hσ, hpos⟩ := mountainSign_spec (subPoly P l) hM
   obtain ⟨c', k, ex, hk, hout, hF⟩ :=
     mountainSubStmt_exec_sign (P := P) h3 c hc ⟨hdisj, hWb, hWs⟩ hm htab
   have hlen := (mountain_triangulates_of_sign (subPoly P l) hM hσ hpos).1.2.1
-  rw [n_subPoly] at hlen
+  Ξ' n_subPoly at hlen
   obtain ⟨hn, hr, hnm, hrm⟩ := hF
-  refine ⟨c', k, mountainSign (subPoly P l), ex, hσ, hpos, by omega, hout, hn, hr,
+  refine ⟨c', k, mountainSign (subPoly P l), ex, hσ, hpos, ⋄, hout, hn, hr,
     fun a ha => hnm a (by rw [hm]; exact ha), hrm⟩
 
 end main
@@ -396,7 +400,7 @@ theorem weakTriangulates_mountainTriangulation_of_sign {Q : Polygon} (hM : IsMou
     have h := mountain_orient_det Q hM
     rcases sign_eq_or_eq_neg hσ (orient_eq Q) with h' | h'
     · exact h'
-    · rw [h', neg_mul] at hpos; linarith
+    · Ξ' h', neg_mul at hpos; linarith
   exact mountain_weakTriangulates Q hM hor
 
 /-- **Spec lemma for `mountainSubStmt`, composable form**: under the hypotheses of

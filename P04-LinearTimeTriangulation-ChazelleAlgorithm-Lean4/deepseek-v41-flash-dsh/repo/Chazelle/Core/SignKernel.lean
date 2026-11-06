@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SignKernelRam
 
 /-!
@@ -66,19 +68,19 @@ theorem symPtIn_of_eq {c c' : Config} {r : ℕ} {s : SymPt} (h : SymPtIn c r s)
     (he : ∀ j, r ≤ j → j < r + 3 → c'.nreg j = c.nreg j) : SymPtIn c' r s := by
   cases s with
   | vtx i =>
-    exact ⟨(he r le_rfl (by omega)).trans h.1, (he (r + 1) (by omega) (by omega)).trans h.2⟩
+    exact ⟨(he r le_rfl (⋄)).trans h.1, (he (r + 1) (⋄) (⋄)).trans h.2⟩
   | onEdge e hh =>
-    exact ⟨(he r le_rfl (by omega)).trans h.1, (he (r + 1) (by omega) (by omega)).trans h.2.1,
-      (he (r + 2) (by omega) (by omega)).trans h.2.2⟩
+    exact ⟨(he r le_rfl (⋄)).trans h.1, (he (r + 1) (⋄) (⋄)).trans h.2.1,
+      (he (r + 2) (⋄) (⋄)).trans h.2.2⟩
 
 /-- A representation in registers survives when its six registers do. -/
 theorem repAt_of_eq {c c' : Config} {ob : ℕ} {r : Rep} (h : RepAt c ob r)
     (he : ∀ j, ob ≤ j → j < ob + 6 → c'.rreg j = c.rreg j) : RepAt c' ob r :=
-  ⟨(he ob le_rfl (by omega)).trans h.1, (he (ob + 1) (by omega) (by omega)).trans h.2.1,
-    (he (ob + 2) (by omega) (by omega)).trans h.2.2.1,
-    (he (ob + 3) (by omega) (by omega)).trans h.2.2.2.1,
-    (he (ob + 4) (by omega) (by omega)).trans h.2.2.2.2.1,
-    (he (ob + 5) (by omega) (by omega)).trans h.2.2.2.2.2⟩
+  ⟨(he ob le_rfl (⋄)).trans h.1, (he (ob + 1) (⋄) (⋄)).trans h.2.1,
+    (he (ob + 2) (⋄) (⋄)).trans h.2.2.1,
+    (he (ob + 3) (⋄) (⋄)).trans h.2.2.2.1,
+    (he (ob + 4) (⋄) (⋄)).trans h.2.2.2.2.1,
+    (he (ob + 5) (⋄) (⋄)).trans h.2.2.2.2.2⟩
 
 end
 

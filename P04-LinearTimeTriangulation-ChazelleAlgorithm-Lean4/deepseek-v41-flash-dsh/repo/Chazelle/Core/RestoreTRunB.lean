@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTShot
 public import Chazelle.Core.RestoreTShotMath
 
@@ -39,7 +41,7 @@ theorem RSB.of_RS {B : Finset ℕ} (hB : dBands ⊆ B) {s : Stmt} {K : ℕ} {Q :
 theorem RSB.mono {B : Finset ℕ} {s : Stmt} {K K' : ℕ} {Q Q' : Config → Prop}
     (h : RSB B P W c₀ s c K Q) (hK : K ≤ K') (hQ : ∀ c', Q c' → Q' c') : RSB B P W c₀ s c K' Q' := by
   obtain ⟨c', k, ex, hk, hI, hrf, hq⟩ := h
-  exact ⟨c', k, ex, by omega, hI, hrf, hQ c' hq⟩
+  exact ⟨c', k, ex, ⋄, hI, hrf, hQ c' hq⟩
 
 theorem RSB.seq {B : Finset ℕ} {s t : Stmt} {K₁ K₂ : ℕ} {Q₁ Q₂ : Config → Prop}
     (h₁ : RSB B P W c₀ s c K₁ Q₁)
@@ -47,23 +49,23 @@ theorem RSB.seq {B : Finset ℕ} {s t : Stmt} {K₁ K₂ : ℕ} {Q₁ Q₂ : Con
       RSB B P W c₀ t c₁ K₂ Q₂) : RSB B P W c₀ (.seq s t) c (K₁ + K₂) Q₂ := by
   obtain ⟨c₁, k₁, e₁, hk₁, hI₁, hrf₁, hq₁⟩ := h₁
   obtain ⟨c', k₂, e₂, hk₂, hI', hrf₂, hq⟩ := h₂ c₁ hI₁ (by have := hrf₁.2.2.2.2.2.2; omega) hq₁
-  exact ⟨c', k₁ + k₂, .seq e₁ e₂, by omega, hI', hrf₁.trans hrf₂, hq⟩
+  exact ⟨c', k₁ + k₂, .seq e₁ e₂, ⋄, hI', hrf₁.trans hrf₂, hq⟩
 
 theorem RSB.ifT {B : Finset ℕ} {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
     (ht : c.nreg a < c.nreg b) (h : RSB B P W c₀ t c K Q) :
     RSB B P W c₀ (.ifLtN a b t e) c (K + 2) Q := by
   obtain ⟨c', k, ex, hk, hI, hrf, hq⟩ := h
-  exact ⟨c', k + 1, .ifLtN_true ht ex, by omega, hI, hrf.mono subset_rfl (by omega), hq⟩
+  exact ⟨c', k + 1, .ifLtN_true ht ex, ⋄, hI, hrf.mono subset_rfl (by omega), hq⟩
 
 theorem RSB.ifF {B : Finset ℕ} {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
     (ht : ¬ c.nreg a < c.nreg b) (h : RSB B P W c₀ e c K Q) :
     RSB B P W c₀ (.ifLtN a b t e) c (K + 2) Q := by
   obtain ⟨c', k, ex, hk, hI, hrf, hq⟩ := h
-  exact ⟨c', k + 2, .ifLtN_false ht ex, by omega, hI, hrf.mono subset_rfl (by omega), hq⟩
+  exact ⟨c', k + 2, .ifLtN_false ht ex, ⋄, hI, hrf.mono subset_rfl (by omega), hq⟩
 
 theorem RSB.skip {B : Finset ℕ} {K : ℕ} {Q : Config → Prop} (hI : TInv W c₀ c) (hq : Q c) :
     RSB B P W c₀ .skip c K Q :=
-  ⟨c, 0, .skip hI.hw, by omega, hI, RF.refl c 0, hq⟩
+  ⟨c, 0, .skip hI.hw, ⋄, hI, RF.refl c 0, hq⟩
 
 /-! ## Larger cost bounds -/
 
@@ -72,16 +74,16 @@ theorem KeyG.mono {M : Model} {R : ℕ} {E : Config → Prop} {kc : ℕ → ℕ 
     KeyG P W M R E kc Bk K' := by
   intro a b d e ha hb hd he c hw hctx hx hxe hx0 hy hye hy0 hroom
   obtain ⟨c', k, ex, hk, b1, f⟩ := h a b d e ha hb hd he c hw hctx hx hxe hx0 hy hye hy0
-    (by omega)
-  exact ⟨c', k, ex, by omega, b1, f⟩
+    (⋄)
+  exact ⟨c', k, ex, ⋄, b1, f⟩
 
 theorem XG.mono {M : Model} {R : ℕ} {E : Config → Prop} {Y : ℝ → Prop}
     {xc : ℕ → ℕ → ℕ → ℕ → Stmt} {Bx : ℕ → Bool} {K K' : ℕ} (h : XG P W M R E Y xc Bx K)
     (hK : K ≤ K') : XG P W M R E Y xc Bx K' := by
   intro a b d e ha hb hd he c hw hctx hp1 he1 hp2 he2 hyy hY hroom
   obtain ⟨c', k, ex, hk, b1, f⟩ := h a b d e ha hb hd he c hw hctx hp1 he1 hp2 he2 hyy hY
-    (by omega)
-  exact ⟨c', k, ex, by omega, b1, f⟩
+    (⋄)
+  exact ⟨c', k, ex, ⋄, b1, f⟩
 
 /-! ## The shot -/
 
@@ -104,20 +106,20 @@ theorem shot_rsb {M : Model} {N : NF} {X : MemCtx} {Ok : Polygon → Model → P
     (XG.mono (xcR_xG hE) (by unfold shK; omega)) opW_BxR c hI.hw hpre hroom
   obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := fT
   have keep : ∀ q, 80000 ≤ q → q < 84000 → c'.nreg q = c.nreg q := fun q h1 h2 =>
-    r₁ q (by rw [band8 h1 (by omega)]; exact hB8) (by unfold ALLOC; omega) (by unfold RS0; omega)
+    r₁ q (by rw [band8 h1 (⋄)]; exact hB8) (by unfold ALLOC; omega) (by unfold RS0; omega)
   have hI' : TInv W c₀ c' := by
-    refine ⟨ex.wb_right, fun q h1 h2 => by rw [keep q h1 (by omega)]; exact hI.hin q h1 h2,
+    refine ⟨ex.wb_right, fun q h1 h2 => by rw [keep q h1 (⋄)]; exact hI.hin q h1 h2,
       le_trans hI.hA a₁, fun a ha => by rw [m₁ a (by have := hI.hA; omega)]; exact hI.hm a ha,
-      by rw [keep _ (by norm_num) (by norm_num)]; exact hI.h20,
-      by rw [keep _ (by norm_num) (by norm_num)]; exact hI.h21,
-      by rw [keep _ (by norm_num) (by norm_num)]; exact hI.h22,
-      by rw [keep _ (by norm_num) (by norm_num)]; exact hI.h23⟩
-  have hb8 : bRestore ∈ dBands := by decide
+      by rw [keep _ (⊛) (by norm_num)]; exact hI.h20,
+      by rw [keep _ (⊛) (by norm_num)]; exact hI.h21,
+      by rw [keep _ (⊛) (by norm_num)]; exact hI.h22,
+      by rw [keep _ (⊛) (by norm_num)]; exact hI.h23⟩
+  have hb8 : bRestore ∈ dBands := ⌖
   have hblk : ∀ r, (RS0 ≤ r ∧ r < RS0 + 300) → bandOf r ∈ dBands ∪ Bo := by
     intro r h
     unfold RS0 at h
     refine Finset.mem_union_left _ ?_
-    rw [band8 (by omega) (by omega)]
+    rw [band8 (⋄) (by omega)]
     exact hb8
   refine ⟨c', k, ex, hk, hI', ⟨fun r hr ha => r₁ r (fun h => hr (Finset.mem_union_right _ h)) ha
     (fun h => hr (hblk r h)),

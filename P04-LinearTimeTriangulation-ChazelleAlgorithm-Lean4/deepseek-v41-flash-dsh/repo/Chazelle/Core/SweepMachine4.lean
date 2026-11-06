@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepMachine3
 public import Chazelle.Core.SweepWalkL
 public import Chazelle.Core.SweepLabelJL0
@@ -45,7 +47,7 @@ theorem tpos_second : tpos J.whole (J.m₁ + 2 * J.m₂) =
     (tpos J.whole J.m₁ + 2 * J.m₂) % (2 * J.whole.m) := by
   unfold tpos
   have hb := bS_le J.whole
-  rw [Nat.mod_add_mod]
+  Ξ Nat.mod_add_mod
   congr 1
   have : J.whole.m = J.m₁ + J.m₂ := rfl
   omega
@@ -151,7 +153,7 @@ theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
       Arrival (chainModel J.left).W (rayPt a σ (J.whole.hitParam a σ)) σ
         ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t := by
   have hC := corr_left0 J hP (S₁ := ∅) (empty_subset _) finite_empty
-  have hM₁ : WalkAx (chainModel J.left) := hC.hM₂
+  have hM₁ := hC.hM₂
   set T := J.whole.hitParam a σ with hT
   have hz' : a.2 ≤ J.whole.top.2 := ha₁.trans J.left_top_le
   obtain ⟨hT0, hwD, hdom⟩ := Merge.hit_of_freeAt J.whole hz' hσ hfree
@@ -161,21 +163,21 @@ theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
         rayPt a σ T := by
     rw [← hC.sidePt_eq hd t]; exact hend
   refine ⟨⟨hT0, fun s h0 h1 => dom_left J (hdom s h0 h1) (by simpa [rayPt] using ha₁), ?_⟩, ?_⟩
-  · rw [← hpt]
+  · Ξ ← hpt
     exact hM₁.trace _ hA₁.1 t hA₁.2.1 hA₁.2.2.1.le
   · refine ⟨hA₁.1, hA₁.2.1, hA₁.2.2.1, hpt, ?_⟩
     obtain ⟨r, hr, hnear⟩ := hA₁.2.2.2.2
     set s := min (T / 2) (r / 2) with hs
-    have hs0 : 0 < s := lt_min (by linarith) (by linarith)
-    have hsT : s < T := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-    have hsr : s < r := lt_of_le_of_lt (min_le_right _ _) (by linarith)
+    have hs0 : 0 < s := lt_min (⟡) (by linarith)
+    have hsT : s < T := lt_of_le_of_lt (min_le_left _ _) (⟡)
+    have hsr : s < r := lt_of_le_of_lt (min_le_right _ _) (⟡)
     have hmem : rayPt (rayPt a σ T) (-σ) s ∈ Merge.shoot J.whole a σ := by
       unfold Merge.shoot
-      rw [← hT, rayPt_back]
+      Ξ ← hT, rayPt_back
       have hT' : T ≠ 0 := hT0.ne'
       have e : rayPt a σ (T - s) = lerp a (rayPt a σ T) ((T - s) / T) := by
         apply point_ext <;> simp [rayPt, lerp]; field_simp
-      rw [e]
+      Ξ e
       exact Geometry.lerp_mem_segment _ _ (by apply div_nonneg <;> linarith)
         (by rw [div_le_one hT0]; linarith)
     have hne : rayPt (rayPt a σ T) (-σ) s ≠ rayPt a σ T := by

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutBox
 
 /-!
@@ -27,7 +29,7 @@ def Bd (r : ℕ) : Bool :=
   decide (150044 ≤ r ∧ r < 150090) || decide (10000 ≤ r ∧ r < 20000) ||
     decide (50000 ≤ r ∧ r < 60000)
 
-theorem wr_decideS : wr Bd decideS = true := by decide
+theorem wr_decideS : wr Bd decideS = true := ⌖
 
 theorem FrameB.mono' {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B' r = false → B r = false) : FrameB B' c c' :=
@@ -88,19 +90,19 @@ theorem decVtx_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
       (d'.nreg 150048 = 1 ↔ 0 < (chainModel C).param (Qof P) ⟨p, hh⟩) ∧ d'.nreg 150048 ≤ 1 := by
   have hWn := S.hW
   unfold hostWords at hWn
-  obtain ⟨j, rfl⟩ : ∃ j, hh = j + 1 := ⟨hh - 1, by omega⟩
+  obtain ⟨j, rfl⟩ : ∃ j, hh = j + 1 := ⟨hh - 1, ⋄⟩
   unfold decVtx
   by_cases hp6 : p < 6
   · obtain ⟨d', k, ex, hk, h1, h2, -, -⟩ := decBox_exec (P := P) d hw h01 hp6 h48 R.h91 h92 R.h93
-      (by omega)
-    refine ⟨d', _, .ifLtN_true (by rw [h01, R.h96]; exact hp6) ex, by omega, ?_, h2⟩
-    rw [h1]
+      (⋄)
+    refine ⟨d', _, .ifLtN_true (by rw [h01, R.h96]; exact hp6) ex, ⋄, ?_, h2⟩
+    Ξ h1
     constructor
     · intro hb; exact box_param_pos C (Qof P) hb hx hin
     · intro hpos
       by_contra hb
-      have hb' : p = 0 ∨ p = 2 ∨ p = 4 := by omega
-      rw [param_succ, ite_eq_left (box_horizontal C hb')] at hpos
+      have hb' : p = 0 ∨ p = 2 ∨ p = 4 := ⋄
+      Ξ' param_succ, ite_eq_left (box_horizontal C hb') at hpos
       exact lt_irrefl 0 hpos
   · obtain ⟨d₁, k₁, e₁, hk₁, o49, o76, r₁, m₁⟩ : ∃ d₁ k₁, Exec P W
         (block [.copyN 150049 150001, .subN 150076 150004 150091]) d d₁ k₁ ∧ k₁ = 2 ∧
@@ -111,16 +113,16 @@ theorem decVtx_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
         fun x h1 h2 => ?_, rfl⟩
       simp only [upd]; split_ifs <;> first | rfl | omega
     have R₁ : ChainRegs C (H.pts P.n).length Hh d₁ := R.of_frame fun r hr => r₁ r (by
-      simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega) (by
-      simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega)
+      ϴ' List.mem_cons, List.not_mem_nil, or_false at hr; omega) (by
+      ϴ' List.mem_cons, List.not_mem_nil, or_false at hr; omega)
     obtain ⟨d₂, k₂, e₂, hk₂, fr₂, i₂, l₂⟩ := posP_exec S hD hMD hHh d₁ e₁.wb_right
-      (fun a ha => by rw [m₁]; exact hm a ha) R₁ (by rw [r₁ _ (by omega) (by omega), h00])
-      (by rw [r₁ _ (by omega) (by omega), h27]) (by rw [r₁ _ (by omega) (by omega), h90])
-      (by rw [r₁ _ (by omega) (by omega), h92]) o49 o76 (by omega) (by omega) (by omega)
+      (fun a ha => by rw [m₁]; exact hm a ha) R₁ (Ρ r₁ _ (⋄) (⋄), h00)
+      (Ρ r₁ _ (⋄) (⋄), h27) (Ρ r₁ _ (⋄) (⋄), h90)
+      (Ρ r₁ _ (⋄) (⋄), h92) o49 o76 (⋄) (⋄) (⋄)
     have e₃ := Exec.copyN (P := P) e₂.wb_right 150048 150089
     refine ⟨_, _, .ifLtN_false
       (show ¬ d.nreg 150001 < d.nreg 150096 by rw [h01, R.h96]; exact hp6)
-      (.seq e₁ (.seq e₂ e₃)), by omega, ?_, ?_⟩
+      (.seq e₁ (.seq e₂ e₃)), ⋄, ?_, ?_⟩
     · config_simp
       exact i₂.trans (param_pos_iff _ _ hx).symm
     · config_simp; exact l₂
@@ -148,20 +150,20 @@ theorem decSame_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {MD : ℕ}
     subst hz
     obtain ⟨d', k, ex, hk, h1, h2⟩ := decVtx_exec S hD hMD hHh d hw hm R h00 h27 h48 h90 h92
       h01 h04 hp hh₂ hh₂n he hin
-    refine ⟨d', _, .ifLtN_true h0 ex, by omega, ?_, h2⟩
-    rw [h1, key_hgt0]
+    refine ⟨d', _, .ifLtN_true h0 ex, ⋄, ?_, h2⟩
+    Ξ h1, key_hgt0
     unfold Model.key
     constructor <;> intro h <;> linarith
   · have hh₁ : 1 ≤ h₁ := by rw [h02, R.h91] at h0; omega
     have e₁ := Exec.copyN (P := P) hw 150049 150001
     set d₁ := ({ d with nreg := upd d.nreg 150049 (d.nreg 150001) } : Config) with hd₁
-    have g₁ : ∀ x, x ≠ 150049 → d₁.nreg x = d.nreg x := fun x hx => by simp [hd₁, upd, hx]
+    have g₁ : ∀ x, x ≠ 150049 → d₁.nreg x = d.nreg x := fun x hx => ⊚ hd₁, upd, hx
     obtain ⟨d₂, k₂, e₂, hk₂, fr₂, i₂, l₂⟩ := keyLess_exec S hD hMD hHh d₁ e₁.wb_right
-      (fun a ha => hm a ha) (by rw [g₁ _ (by omega), h00]) (by rw [g₁ _ (by omega), R.h91])
-      (by simp [hd₁, upd, h01]) (by rw [g₁ _ (by omega), h02]) (by rw [g₁ _ (by omega), h04])
+      (fun a ha => hm a ha) (Ρ g₁ _ (⋄), h00) (Ρ g₁ _ (⋄), R.h91)
+      (⊚ hd₁, upd, h01) (Ρ g₁ _ (⋄), h02) (Ρ g₁ _ (⋄), h04)
       hp hh₁ hh₁n hh₂ hh₂n
     have e₃ := Exec.copyN (P := P) e₂.wb_right 150048 150089
-    refine ⟨_, _, .ifLtN_false h0 (.seq e₁ (.seq e₂ e₃)), by omega, ?_, ?_⟩
+    refine ⟨_, _, .ifLtN_false h0 (.seq e₁ (.seq e₂ e₃)), ⋄, ?_, ?_⟩
     · config_simp
       exact i₂.trans (key_lt_iff _ _ hh₁ hh₂).symm
     · config_simp; exact l₂

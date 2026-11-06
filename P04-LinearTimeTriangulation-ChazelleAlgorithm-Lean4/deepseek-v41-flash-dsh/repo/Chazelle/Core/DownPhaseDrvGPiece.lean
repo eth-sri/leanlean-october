@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvGProg
 public import Chazelle.Core.DownPhaseDrvRPieceSpec
 
@@ -92,7 +94,7 @@ theorem pcArgs_exec (d : Config) (hw : WordsBounded W d) (hW : 130 ≤ W) :
     exec_block
     · exact hW
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp
-  exact ⟨d', k, ex, hk, h1, h2, h3, h4, h5, h6, h7, h8, h9, hm, exec_frameM ex (by decide)⟩
+  exact ⟨d', k, ex, hk, h1, h2, h3, h4, h5, h6, h7, h8, h9, hm, exec_frameM ex (⌖)⟩
 
 /-- **One call of the piece procedure.** -/
 theorem pcCall_exec {O : OracleIface} {sp : Stmt} {κP : ℕ} (hsp : PcMeets O sp κP)
@@ -125,7 +127,7 @@ theorem pcCall_exec {O : OracleIface} {sp : Stmt} {κP : ℕ} (hsp : PcMeets O s
   have hW130 : 130 ≤ W := by have : hostWords P.n = 256 * P.n + 16 := rfl; have := hG.1.1; omega
   obtain ⟨d₁, k₁, e₁, hk₁, a0, a1, a2, a3, a4, a5, a6, a7, a8, m₁, f₁⟩ :=
     pcArgs_exec (P := P) d hw hW130
-  have hA₁ : d₁.nreg ALLOC = d.nreg ALLOC := f₁.1 ALLOC (by decide)
+  have hA₁ : d₁.nreg ALLOC = d.nreg ALLOC := f₁.1 ALLOC (⌖)
   have fr₁ : Frame drvBands d d₁ k₁ := frame_band (fun q hq => by
     simp only [decide_eq_true_eq] at hq; simp only [bandOf, bDownDrv]; omega) f₁ m₁ k₁
   have hHA : HostAt d.nmem HB H := hH.holds
@@ -136,7 +138,7 @@ theorem pcCall_exec {O : OracleIface} {sp : Stmt} {κP : ℕ} (hsp : PcMeets O s
     fun h1 => by
       rw [a3, h42] at h1
       obtain ⟨b1, b2, b3, b4, b5⟩ := hleaf h1
-      rw [a2, a5, a8, a4, a7, a1, h41, h02, h05, h43, h04, h40, m₁]
+      Ξ a2, a5, a8, a4, a7, a1, h41, h02, h05, h43, h04, h40, m₁
       exact ⟨b1, b2, b3, b4, b5⟩,
     fun h0 => by
       rw [a3, h42] at h0
@@ -144,10 +146,10 @@ theorem pcCall_exec {O : OracleIface} {sp : Stmt} {κP : ℕ} (hsp : PcMeets O s
   obtain ⟨d', k₂, e₂, hk₂, ⟨q1, q2, q3, q4, q5⟩, fr₂⟩ := hpre
   beta_reduce at hk₂
   rw [a5, h02] at hk₂
-  refine ⟨d', k₁ + k₂, .seq e₁ e₂, by omega, fun q hq hq' => ?_, by rw [← hA₁]; exact q2,
+  refine ⟨d', k₁ + k₂, .seq e₁ e₂, ⋄, fun q hq hq' => ?_, by rw [← hA₁]; exact q2,
     by rw [← hA₁]; exact q3, q4, fun C hP hs hm => ?_, by
       have := fr₁.trans fr₂; rwa [Finset.union_self] at this⟩
-  · rw [q1 q hq hq', f₁.1 q (by simp only [decide_eq_false_iff_not]; omega)]
+  · Ξ q1 q hq hq', f₁.1 q (by simp only [decide_eq_false_iff_not]; omega)
   · obtain ⟨r1, N, r2, r3⟩ := q5 H C (by rw [a0, h00, m₁]; exact hHA) hP (by rw [a1, h40]; exact hs)
       (by rw [a2, h41]; exact hm)
     rw [a7, a6, h04] at r3

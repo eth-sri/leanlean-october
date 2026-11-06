@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopLH
 
 /-!
@@ -51,13 +53,13 @@ theorem MCtx.transport {C : Chain} {N : NF} {E md cd nf : ℕ} {c c' : Config}
   have rTL := hr TLR (Or.inr (Or.inr (Or.inr (Or.inr rfl))))
   rcases hmd with ⟨-, H, C', hC', hMC⟩ | ⟨h1, -⟩
   swap
-  · rw [hm0] at h1; omega
+  · Ξ' hm0 at h1; omega
   obtain ⟨w1, w2, w3⟩ := ShotList.modelDesc_keep hmwf hm0 hC' hm hA
   refine ⟨hctx.transport rCD hm hA, by rw [rCD, rMD]; exact hcd,
     by rw [rMD]; exact Or.inl ⟨w2, H, C', w3, hMC⟩, by rw [rMD]; exact w1, by rw [rMD]; exact w2,
-    by rw [rNF]; exact hNW.transport fun b hb => hm b (by omega), le_trans hE hA,
+    by rw [rNF]; exact hNW.transport fun b hb => hm b (⋄), le_trans hE hA,
     fun j hj => by
-      rw [rTL] at hj; rw [rTB, hm _ (by omega)]; exact htab j hj,
+      Ξ' rTL at hj; rw [rTB, hm _ (⋄)]; exact htab j hj,
     by rw [rTL]; exact hbig, by rw [rTB]; exact hTB, by rw [rTB, rTL]; omega⟩
 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
@@ -110,10 +112,10 @@ theorem md2Init_exec (c : Config) (hw : WordsBounded W c) (k0 : c.nreg 240610 = 
   all_goals try (config_simp; omega)
   refine ⟨rfl, by config_simp; omega, by config_simp, by config_simp; omega, fun r h1 h2 h3 h4 h5 => ?_,
     ?_, fun j hj => ?_, fun a ha => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp [upd, h1, h2, h3, h4, h5]
+  · config_simp; Θ upd, h1, h2, h3, h4, h5
   · config_simp; simp only [upd]; split_ifs <;> first | omega
   · config_simp
-    simp only [upd]
+    ϴ upd
     interval_cases j <;> split_ifs <;> first | omega | (· simp_all)
   · config_simp; simp only [upd]; split_ifs <;> first | omega
 

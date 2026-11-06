@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopM1C
 
 /-!
@@ -97,29 +99,29 @@ theorem m1cL0_val (m f : ℕ → ℕ) :
       regB m m1cL0 f lD = f oB ∧
       (∀ q, q ≠ lE → q ≠ lH → q ≠ lD → regB m m1cL0 f q = f q) := by
   refine ⟨?_, ?_, ?_, fun q h1 h2 h3 => ?_⟩
-  · simp [m1cL0, regB, regI, upd, lE, lH, lD, m1o, oB, sw]
-  · simp [m1cL0, regB, regI, upd, lE, lH, lD, m1o, oB, sw]
-  · simp [m1cL0, regB, regI, upd, lE, lH, lD, m1o, oB, sw]
-  · simp only [m1cL0, regB, regI]
-    rw [upd_other _ _ _ h3, upd_other _ _ _ h2, upd_other _ _ _ h1]
+  · Θ m1cL0, regB, regI, upd, lE, lH, lD, m1o, oB, sw
+  · Θ m1cL0, regB, regI, upd, lE, lH, lD, m1o, oB, sw
+  · Θ m1cL0, regB, regI, upd, lE, lH, lD, m1o, oB, sw
+  · ϴ m1cL0, regB, regI
+    Ξ upd_other _ _ _ h3, upd_other _ _ _ h2, upd_other _ _ _ h1
 
 theorem m1cL1_val (m f : ℕ → ℕ) :
     regB m m1cL1 f lE = f oPE ∧ regB m m1cL1 f lH = f oPH ∧ regB m m1cL1 f lD = f oB ∧
       (∀ q, q ≠ lE → q ≠ lH → q ≠ lD → regB m m1cL1 f q = f q) := by
   refine ⟨?_, ?_, ?_, fun q h1 h2 h3 => ?_⟩
-  · simp [m1cL1, regB, regI, upd, lE, lH, lD, oPE, oPH, oB, sw]
-  · simp [m1cL1, regB, regI, upd, lE, lH, lD, oPE, oPH, oB, sw]
-  · simp [m1cL1, regB, regI, upd, lE, lH, lD, oPE, oPH, oB, sw]
-  · simp only [m1cL1, regB, regI]
-    rw [upd_other _ _ _ h3, upd_other _ _ _ h2, upd_other _ _ _ h1]
+  · Θ m1cL1, regB, regI, upd, lE, lH, lD, oPE, oPH, oB, sw
+  · Θ m1cL1, regB, regI, upd, lE, lH, lD, oPE, oPH, oB, sw
+  · Θ m1cL1, regB, regI, upd, lE, lH, lD, oPE, oPH, oB, sw
+  · ϴ m1cL1, regB, regI
+    Ξ upd_other _ _ _ h3, upd_other _ _ _ h2, upd_other _ _ _ h1
 
 theorem m1cL_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m m1cL0 f ∧ okB W m m1cL1 f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (sw j) := fun j h1 h2 =>
     iscr_sw (by unfold sw; omega) (by unfold sw; omega)
-  simp only [m1cL0, m1cL1, okB, okI]
-  exact ⟨⟨s 1103 (by norm_num) (by norm_num), s 1104 (by norm_num) (by norm_num),
-    s 1105 (by norm_num) (by norm_num), trivial⟩, ⟨s 1103 (by norm_num) (by norm_num),
-    s 1104 (by norm_num) (by norm_num), s 1105 (by norm_num) (by norm_num), trivial⟩⟩
+  ϴ m1cL0, m1cL1, okB, okI
+  exact ⟨⟨s 1103 (⊛) (⊛), s 1104 (⊛) (⊛),
+    s 1105 (⊛) (⊛), trivial⟩, ⟨s 1103 (⊛) (⊛),
+    s 1104 (⊛) (⊛), s 1105 (⊛) (⊛), trivial⟩⟩
 
 theorem m1cCp_val (m f : ℕ → ℕ) :
     (∀ i, i < 7 → regB m m1cCp f (r1F + i) = f (brF + i)) ∧
@@ -135,11 +137,11 @@ theorem m1cCp_val (m f : ℕ → ℕ) :
 theorem m1cCp_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m m1cCp f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (sw j) := fun j h1 h2 =>
     iscr_sw (by unfold sw; omega) (by unfold sw; omega)
-  simp only [m1cCp, okB, okI]
-  exact ⟨s 4030 (by norm_num) (by norm_num), s 4031 (by norm_num) (by norm_num),
-    s 4032 (by norm_num) (by norm_num), s 4033 (by norm_num) (by norm_num),
-    s 4034 (by norm_num) (by norm_num), s 4035 (by norm_num) (by norm_num),
-    s 4036 (by norm_num) (by norm_num), trivial⟩
+  ϴ m1cCp, okB, okI
+  exact ⟨s 4030 (⊛) (⊛), s 4031 (⊛) (⊛),
+    s 4032 (⊛) (⊛), s 4033 (⊛) (⊛),
+    s 4034 (⊛) (⊛), s 4035 (⊛) (⊛),
+    s 4036 (⊛) (⊛), trivial⟩
 
 theorem stOrig_zero (J : Merge.Junction) (Q : Polygon) (N : NF) (k b : ℕ) :
     stOrig J Q N 0 k b = J.shared := by unfold stOrig; simp

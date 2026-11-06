@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRSplF
 public import Chazelle.Core.DownPhaseDrvRPad
 
@@ -29,12 +31,12 @@ def splS (sB : Stmt) : Stmt :=
     (.seq (.seq spl2 (.seq DownNF.phaseAS spl3))
       (.seq (.seq bktS (.seq (.instr (.constN 210050 0)) bsLoop)) (splT sB)))
 
-theorem wrM_spl7 : wrM (fun r => decide (40000 ≤ r ∧ r ≤ 40004)) spl7 = true := by decide
+theorem wrM_spl7 : wrM (fun r => decide (40000 ≤ r ∧ r ≤ 40004)) spl7 = true := ⌖
 theorem wrM2_spl7 : wrM2 (fun r => decide (40000 ≤ r ∧ r ≤ 40004)) (fun _ => false) spl7 = true := by
   decide
-theorem wrM_spl8 : wrM (fun r => decide (210002 ≤ r ∧ r ≤ 210005)) spl8 = true := by decide
+theorem wrM_spl8 : wrM (fun r => decide (210002 ≤ r ∧ r ≤ 210005)) spl8 = true := ⌖
 theorem wrM2_spl8 :
-    wrM2 (fun r => decide (210002 ≤ r ∧ r ≤ 210005)) (fun _ => false) spl8 = true := by decide
+    wrM2 (fun r => decide (210002 ≤ r ∧ r ≤ 210005)) (fun _ => false) spl8 = true := ⌖
 
 /-- Registers of `bDownDrv` are outside the bands of the sorted build. -/
 theorem band21_notin {r : ℕ} (h1 : 210000 ≤ r) (h2 : r < 220000) :

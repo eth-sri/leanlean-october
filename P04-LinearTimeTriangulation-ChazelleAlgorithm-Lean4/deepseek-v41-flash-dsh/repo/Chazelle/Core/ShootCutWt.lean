@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutPiece
 
 /-!
@@ -81,38 +83,38 @@ theorem le_keyCeil (e : ℕ) (f : ℝ) : e ≤ keyCeil e f := by
 
 /-- The vertex position `⟨p, 0⟩` is proper. -/
 theorem proper_vtx (M : Model) (Q : Polygon) (n p : ℕ) : ProperPos M Q n ⟨p, 0⟩ :=
-  ⟨le_rfl, by simp, Nat.zero_le _⟩
+  ⟨le_rfl, ✓, Nat.zero_le _⟩
 
 /-- **From a position of `U` to the walk vertex `6`**: weight `0`. -/
 theorem wt_U_to_six (Q : Polygon) {n : ℕ} {x : WPos} (hx : ProperPos (chainModel C) Q n x)
     (hU : InU C x.edge) :
     (chainModel C).arcWt ((chainModel C).key Q x) (6 : ℕ) = 0 := by
-  have e6 : ((6 : ℕ) : ℝ) = (chainModel C).key Q ⟨6, 0⟩ := by simp
-  rw [e6, arcWt_chain C Q hx (proper_vtx _ Q n 6)]
+  have e6 : ((6 : ℕ) : ℝ) = (chainModel C).key Q ⟨6, 0⟩ := ✓
+  Ξ e6, arcWt_chain C Q hx (proper_vtx _ Q n 6)
   have hc := le_keyCeil 6 ((chainModel C).param Q ⟨6, 0⟩)
   have hc' := keyCeil_le 6 ((chainModel C).param Q ⟨6, 0⟩)
   have hk : keyCeil 6 ((chainModel C).param Q ⟨6, 0⟩) = 6 := by
-    unfold keyCeil; rw [ite_eq_left (by simp)]
+    unfold keyCeil; rw [ite_eq_left (✓)]
   unfold arcWtNat
-  rw [hk]
+  Ξ hk
   split_ifs with h
   · omega
   · rcases hU with hU | hU
     · exfalso
       apply h
       have : (x.edge : ℝ) + 1 ≤ 6 := by exact_mod_cast (by omega : x.edge + 1 ≤ 6)
-      simp only [param_hgt0, add_zero]
+      ϴ param_hgt0, add_zero
       push_cast
       linarith [hx.2.1]
-    · simp only [hU]
+    · ϴ hU
       omega
 
 /-- **From the walk vertex `2m + 5` to a position of `U`**: weight at most `1`. -/
 theorem wt_last_to_U (Q : Polygon) {n : ℕ} {y : WPos} (hy : ProperPos (chainModel C) Q n y)
     (hU : InU C y.edge) :
     (chainModel C).arcWt ((2 * C.m + 5 : ℕ) : ℝ) ((chainModel C).key Q y) ≤ 1 := by
-  have e5 : ((2 * C.m + 5 : ℕ) : ℝ) = (chainModel C).key Q ⟨2 * C.m + 5, 0⟩ := by simp
-  rw [e5, arcWt_chain C Q (proper_vtx _ Q n _) hy]
+  have e5 : ((2 * C.m + 5 : ℕ) : ℝ) = (chainModel C).key Q ⟨2 * C.m + 5, 0⟩ := ✓
+  Ξ e5, arcWt_chain C Q (proper_vtx _ Q n _) hy
   have hc := le_keyCeil y.edge ((chainModel C).param Q y)
   have hc' := keyCeil_le y.edge ((chainModel C).param Q y)
   have hm := C.one_le
@@ -130,8 +132,8 @@ theorem wt_last_to_U (Q : Polygon) {n : ℕ} {y : WPos} (hy : ProperPos (chainMo
     · omega
     · exfalso
       apply h
-      simp only [param_hgt0, add_zero]
-      rw [hU]
+      ϴ param_hgt0, add_zero
+      Ξ hU
       push_cast
       linarith [hy.1]
 
@@ -144,7 +146,7 @@ theorem wt_U_U (Q : Polygon) {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel 
     (hy : ProperPos (chainModel C) Q n y) (hxU : InU C x.edge) (hyU : InU C y.edge)
     (hlt : uIdx C x.edge < uIdx C y.edge) :
     (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) = 0 := by
-  rw [arcWt_chain C Q hx hy]
+  Ξ arcWt_chain C Q hx hy
   have hc := le_keyCeil y.edge ((chainModel C).param Q y)
   have hc' := keyCeil_le y.edge ((chainModel C).param Q y)
   have hm := C.one_le
@@ -155,11 +157,11 @@ theorem wt_U_U (Q : Polygon) {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel 
   rcases hxU with hxU | hxU <;> rcases hyU with hyU | hyU
   · rw [ite_eq_right (by omega : x.edge ≠ 2 * C.m + 6), ite_eq_right (by omega : y.edge ≠ 2 * C.m + 6)] at hlt
     have : (x.edge : ℝ) + 1 ≤ y.edge := by exact_mod_cast (by omega : x.edge + 1 ≤ y.edge)
-    rw [ite_eq_left (by linarith)]
+    rw [ite_eq_left (⟡)]
     omega
   · rw [ite_eq_left hyU] at hlt; omega
   · have : (y.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast (by omega : y.edge + 1 ≤ x.edge)
-    rw [ite_eq_right (by linarith [hx.1, hy.2.1])]
+    Ξ ite_eq_right (by linarith [hx.1, hy.2.1])
     omega
   · rw [ite_eq_left hyU] at hlt; omega
 

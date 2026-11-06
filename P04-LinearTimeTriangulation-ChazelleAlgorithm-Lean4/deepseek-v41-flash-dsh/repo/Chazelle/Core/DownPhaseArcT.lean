@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDropWt
 
 /-!
@@ -164,14 +168,14 @@ theorem linear_sub_arc {l r y₀ c d : ℝ} (hy₀ : sideInArc l r y₀) (hc : c
   split_ifs at * with hlr
   · constructor
     · by_contra h'; push Not at h'
-      exact hl ⟨by linarith, by linarith⟩
+      exact hl ⟨⟡, ⟡⟩
     · by_contra h'; push Not at h'
-      exact hr ⟨by linarith, by linarith⟩
+      exact hr ⟨⟡, ⟡⟩
   · rcases hy₀ with h1 | h1
     · left; by_contra h'; push Not at h'
-      exact hl ⟨by linarith, by linarith⟩
+      exact hl ⟨⟡, ⟡⟩
     · right; by_contra h'; push Not at h'
-      exact hr ⟨by linarith, by linarith⟩
+      exact hr ⟨⟡, ⟡⟩
 
 /-! ## The arc transfer -/
 
@@ -207,22 +211,22 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
   have hgspec : ∀ p ∈ edgesIn M₂ a b,
       g p ∈ Ioo aa bb ∧ NonVtx (g p) ∧ ⌊wrapK n₂ (g p)⌋₊ = p := by
     rintro p ⟨hp, -, t, ht0, ht1, hx⟩
-    have hxn : (0 : ℝ) ≤ p + t := by positivity
+    have hxn : (0 : ℝ) ≤ p + t := ⟢
     have hxlt : (p : ℝ) + t < n₂ := by
       have : (p : ℝ) + 1 ≤ n₂ := by exact_mod_cast hp
       linarith
     obtain ⟨xx, hxx, hw⟩ := hin _ hxn hxlt hx
     have hvw : NonVtx (wrapK n₂ xx) := by
       rw [hw]; intro k e
-      have hk1 : (p : ℝ) < k := by linarith
+      have hk1 : (p : ℝ) < k := ⟡
       have hk2 : (k : ℝ) < ((p + 1 : ℕ) : ℝ) := by push_cast; linarith
       have := Nat.cast_lt.1 hk1; have := Nat.cast_lt.1 hk2; omega
     have hex : ∃ xx ∈ Ioo aa bb, NonVtx xx ∧ ⌊wrapK n₂ xx⌋₊ = p := by
       refine ⟨xx, hxx, nonVtx_of_wrapK hvw, ?_⟩
-      rw [hw, Nat.floor_eq_iff hxn]
-      exact ⟨by linarith, by linarith⟩
+      Ξ hw, Nat.floor_eq_iff hxn
+      exact ⟨⟡, ⟡⟩
     have e : g p = hex.choose := by rw [hg]; simp only [dite_eq_left hex]
-    rw [e]
+    Ξ e
     exact hex.choose_spec
   by_cases hE : (edgesIn M₂ a b).Nonempty
   swap
@@ -313,13 +317,13 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
         rw [← hXU]; exact hfX
       · intro y hy
         unfold sideInArc
-        rw [ite_eq_right (lt_irrefl _)]
+        Ξ ite_eq_right (lt_irrefl _)
         left
         linarith [hy.1, (h.range aa hIa).1]
   -- the injection of edges
-  rw [arcWt_eq']
+  Ξ arcWt_eq'
   refine le_trans ?_ (arcWt_le_weight harc)
-  rw [arcWt_eq']
+  Ξ arcWt_eq'
   refine Set.ncard_le_ncard_of_injOn (fun p => ⌊κ (g p)⌋₊) ?_ ?_ (edgesIn_finite l r)
   · intro p hp
     obtain ⟨hx, hv, -⟩ := hgspec p hp
@@ -330,18 +334,18 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
       by linarith [hfl.2], ?_⟩
     · have : (⌊κ (g p)⌋₊ : ℝ) < M₁.W.n := lt_of_le_of_lt (Nat.floor_le hr.1) hr.2
       exact_mod_cast this
-    · rw [add_sub_cancel]
+    · Ξ add_sub_cancel
       exact hlr _ ⟨h.mono hIa (hIcc _ hx) hx.1, h.mono (hIcc _ hx) hIb hx.2⟩
   · intro p hp q hq e
     obtain ⟨hx, hv, hpe⟩ := hgspec p hp
     obtain ⟨hy, hw, hqe⟩ := hgspec q hq
     have hfl := h.floor_eq (hIoo _ hx) (hIoo _ hy) hv hw e
-    rw [← hpe, ← hqe]
+    Ξ ← hpe, ← hqe
     -- equal floors give equal wrapped floors
     have hx0' := hx0 _ hx; have hy0' := hx0 _ hy
     unfold wrapK
     by_cases h1 : g p < n₂ <;> by_cases h2 : g q < n₂
-    · simp only [h1, h2, ↓reduceIte, hfl]
+    · ϴ h1, h2, ↓reduceIte, hfl
     · exfalso
       have a1 : ⌊g p⌋₊ < n₂ := by
         have := Nat.floor_lt hx0' |>.2 h1; exact_mod_cast this
@@ -352,13 +356,13 @@ theorem arcWt_le (hM₁ : WalkAx M₁) (hF₁ : F₁ ⊆ M₁.Adm) (hfin₁ : F�
         have := Nat.floor_lt hy0' |>.2 h2; exact_mod_cast this
       have a2 : n₂ ≤ ⌊g p⌋₊ := Nat.le_floor (by push Not at h1; exact_mod_cast h1)
       omega
-    · simp only [h1, h2, ↓reduceIte]
+    · ϴ h1, h2, ↓reduceIte
       push Not at h1 h2
       have e1 : ⌊g p - n₂⌋₊ = ⌊g p⌋₊ - n₂ := by
         simp
       have e2 : ⌊g q - n₂⌋₊ = ⌊g q⌋₊ - n₂ := by
         simp
-      rw [e1, e2, hfl]
+      Ξ e1, e2, hfl
 
 end
 

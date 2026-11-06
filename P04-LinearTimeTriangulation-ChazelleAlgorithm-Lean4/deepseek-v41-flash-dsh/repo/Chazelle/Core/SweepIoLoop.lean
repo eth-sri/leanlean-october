@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoLoopM
 
 /-!
@@ -41,7 +43,7 @@ def loopS (qry : Stmt → Stmt) (sh : Stmt) : Stmt :=
 
 theorem getD_snoc_lt {α : Type} {R : List α} {r d : α} {k : ℕ} (hk : k < R.length) :
     (R ++ [r]).getD k d = R.getD k d := by
-  rw [List.getD_eq_getElem?_getD, List.getElem?_append_left hk, ← List.getD_eq_getElem?_getD]
+  Ξ List.getD_eq_getElem?_getD, List.getElem?_append_left hk, ← List.getD_eq_getElem?_getD
 
 theorem getD_snoc_eq {α : Type} {R : List α} {r d : α} : (R ++ [r]).getD R.length d = r := by
   rw [List.getD_eq_getElem?_getD, List.getElem?_append_right le_rfl]; simp
@@ -51,17 +53,17 @@ theorem loop_cost_le {n A₁ Fg T κ S : ℕ}
     1 + (6 * n + 2 + (3 + (S + 2))) ≤
       (5 * κ + 21) * (n + 1) * (Fg + T + 1) + (5 * κ + 21) * (A₁ + 1) * (Fg + 1) := by
   have h1 : n * (κ * (Fg + T + 1)) ≤ (5 * κ) * (n + 1) * (Fg + T + 1) := by
-    have : n * (κ * (Fg + T + 1)) = κ * n * (Fg + T + 1) := by ring
-    rw [this]
+    have : n * (κ * (Fg + T + 1)) = κ * n * (Fg + T + 1) := ⋆
+    Ξ this
     apply Nat.mul_le_mul_right
     nlinarith
-  have h2 : 21 * (n + 1) ≤ 21 * (n + 1) * (Fg + T + 1) := Nat.le_mul_of_pos_right _ (by omega)
-  have h3 : 5 * (κ * (A₁ + 1) * (Fg + 1)) = 5 * κ * (A₁ + 1) * (Fg + 1) := by ring
+  have h2 : 21 * (n + 1) ≤ 21 * (n + 1) * (Fg + T + 1) := Nat.le_mul_of_pos_right _ (⋄)
+  have h3 : 5 * (κ * (A₁ + 1) * (Fg + 1)) = 5 * κ * (A₁ + 1) * (Fg + 1) := ⋆
   have e1 : (5 * κ + 21) * (n + 1) * (Fg + T + 1) =
-      5 * κ * (n + 1) * (Fg + T + 1) + 21 * (n + 1) * (Fg + T + 1) := by ring
+      5 * κ * (n + 1) * (Fg + T + 1) + 21 * (n + 1) * (Fg + T + 1) := ⋆
   have e2 : (5 * κ + 21) * (A₁ + 1) * (Fg + 1) =
-      5 * κ * (A₁ + 1) * (Fg + 1) + 21 * (A₁ + 1) * (Fg + 1) := by ring
-  rw [e1, e2]
+      5 * κ * (A₁ + 1) * (Fg + 1) + 21 * (A₁ + 1) * (Fg + 1) := ⋆
+  Ξ e1, e2
   omega
 
 section exec
@@ -87,16 +89,16 @@ theorem allocB_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 
     exec_block
     all_goals try (config_simp; omega)
     refine ⟨rfl, ?_, ?_, fun r h1 h2 h3 h4 => ?_, rfl, rfl, rfl, rfl⟩
-    · config_simp; rw [k4]
-    · config_simp; rw [k1]
-    · config_simp; simp [upd, h1, h2, h3, h4]
+    · config_simp; Ξ k4
+    · config_simp; Ξ k1
+    · config_simp; Θ upd, h1, h2, h3, h4
   obtain ⟨c', k, ex, hk, h1, h2, h3, h4, h5, h6, h7⟩ := ex
-  refine IRS.ofExec hI ex (by omega) (fun r hr hra => h3 r hra ?_ ?_ ?_) h5
-    (fun a _ => by rw [h4]) h6 h7 (by show c.nreg 9999 ≤ c'.nreg 9999; omega)
+  refine IRS.ofExec hI ex (⋄) (fun r hr hra => h3 r hra ?_ ?_ ?_) h5
+    (fun a _ => Ρ h4) h6 h7 (by show c.nreg 9999 ≤ c'.nreg 9999; omega)
     (by show c'.nreg 9999 ≤ c.nreg 9999 + k; omega) ⟨h1, h2, fun r a b d e => h3 r a b d e, h4⟩
-  · intro h; subst h; exact hr (iscr_sw (by norm_num) (by norm_num))
-  · intro h; subst h; exact hr (iscr_sw (by norm_num) (by norm_num))
-  · intro h; subst h; exact hr (iscr_sw (by norm_num) (by norm_num))
+  · intro h; subst h; exact hr (iscr_sw (⊛) (⊛))
+  · intro h; subst h; exact hr (iscr_sw (⊛) (⊛))
+  · intro h; subst h; exact hr (iscr_sw (⊛) (⊛))
 
 theorem incB_irs (hI : IInv W c₀ c) (hK : Consts c) (h1 : c.nreg pJ + 1 ≤ W)
     (h2 : c.nreg pA + 3 ≤ W) (h3 : c.nreg pR + 4 ≤ W) :
@@ -118,25 +120,25 @@ theorem incB_irs (hI : IInv W c₀ c) (hK : Consts c) (h1 : c.nreg pJ + 1 ≤ W)
     exec_block
     all_goals try (config_simp; omega)
     refine ⟨rfl, ?_, ?_, ?_, fun r h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
-    · config_simp; rw [k1]
-    · config_simp; rw [k3]
-    · config_simp; rw [k4]
-    · config_simp; simp [upd, h1, h2, h3]
+    · config_simp; Ξ k1
+    · config_simp; Ξ k3
+    · config_simp; Ξ k4
+    · config_simp; Θ upd, h1, h2, h3
   obtain ⟨c', k, ex, hk, e1, e2, e3, e4, e5, e6, e7, e8⟩ := ex
-  refine IRS.ofExec hI ex (by omega) (fun r hr hra => e4 r ?_ ?_ ?_) e6
-    (fun a _ => by rw [e5]) e7 e8 (by rw [e4 _ (by decide) (by decide) (by decide)])
-    (by rw [e4 _ (by decide) (by decide) (by decide)]; omega)
+  refine IRS.ofExec hI ex (⋄) (fun r hr hra => e4 r ?_ ?_ ?_) e6
+    (fun a _ => Ρ e5) e7 e8 (Ρ e4 _ (⌖) (⌖) (⌖))
+    (by rw [e4 _ (⌖) (⌖) (⌖)]; omega)
     ⟨e1, e2, e3, fun r a b d => e4 r a b d, e5⟩
-  · intro h; subst h; exact hr (iscr_sw (by norm_num) (by norm_num))
-  · intro h; subst h; exact hr (iscr_sw (by norm_num) (by norm_num))
-  · intro h; subst h; exact hr (iscr_sw (by norm_num) (by norm_num))
+  · intro h; subst h; exact hr (iscr_sw (⊛) (⊛))
+  · intro h; subst h; exact hr (iscr_sw (⊛) (⊛))
+  · intro h; subst h; exact hr (iscr_sw (⊛) (⊛))
 
 end exec
 
 /-! ## The loop -/
 
-set_option maxHeartbeats 8000000 in
-set_option maxRecDepth 40000 in
+
+
 open Classical in
 /-- **The query loop** from the per-query procedure (piece H). -/
 theorem loopSpec_of {Aux : Polygon → Merge.Junction → NF → Config → Prop} (hq : QrySpec Aux)
@@ -239,7 +241,7 @@ theorem loopSpec_of {Aux : Polygon → Merge.Junction → NF → Config → Prop
       N₁ N₂ E L i j hB hI hj hlt hpA hpR (by rw [hpR]; omega) hrq) ?_).mono le_rfl
       (fun _ h => h)⟩
     rintro c' hI' hA' hA'' ⟨⟨r, q0, q1, q2, q3, hsee⟩, hmem, hreg, hAm⟩
-    have kreg : ∀ r, sw 5000 ≤ r → r < sw 6000 → c'.nreg r = c.nreg r := hreg
+    have kreg := hreg
     have cJ : c'.nreg pJ = j := (kreg pJ (by unfold pJ sw; omega) (by unfold pJ sw; omega)).trans hj
     have cA : c'.nreg pA = c₀.nreg (sw 8) + 3 * j :=
       (kreg pA (by unfold pA sw; omega) (by unfold pA sw; omega)).trans hpA

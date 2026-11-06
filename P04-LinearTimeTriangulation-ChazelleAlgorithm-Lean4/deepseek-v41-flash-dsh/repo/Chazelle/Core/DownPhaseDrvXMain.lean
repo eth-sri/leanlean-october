@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvXRamK
 public import Chazelle.Core.DownPhaseDrvXContracts
 public import Chazelle.Core.DownPhaseDrvHMain
@@ -33,7 +35,7 @@ theorem keyBkt_congr {Q : Polygon} {N N' : NF} (ha : N.arcs = N'.arcs) (x : WPos
 theorem liV_decide {x : ℕ} (hx : x ≤ 1) : liV (decide (x = 1)) = x := by
   unfold liV; by_cases h : x = 1 <;> simp [h]; omega
 
-set_option maxHeartbeats 8000000 in
+
 /-- **The extraction meets its contract**, given the two pieces of glue. -/
 theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec := by
   refine ⟨xS, xKappa, ?_⟩
@@ -99,7 +101,7 @@ theorem extractRamSpec_of (hA : XEGlue) (hB : PostMath) : DrvR.ExtractRamSpec :=
     rw [g4 9999 (by decide) (by decide) (by decide), f3.1 9999 (by decide), o2 9999 (by decide)]
     exact a99
   have hlen := xL_length_le P v NR v.K
-  have hKc : c.nmem (c.nreg 217006) = NR.chords.length := sBR
+  have hKc := sBR
   refine ⟨d4, k1 + (k2 + (k3 + k4)), ex, ?_, ⟨fun q hq1 hq2 => ?_, ?_⟩, ?_⟩
   · -- cost
     show _ ≤ xKappa * (c.nmem (c.nreg 217006) + 1)

@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShotListGCut
 
 /-!
@@ -65,14 +69,14 @@ theorem leafAccG_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : Words
   have r₁ : ∀ r, r ≠ R + 20 → c₁.nreg r = c.nreg r := fun r hr => by rw [hc₁]; simp [upd, hr]
   obtain ⟨c₂, e₂, v₂, f₂⟩ := copies_run (P := P) [(R + 21, R + 244), (R + 22, R + 245)] c₁
     e₁.wb_right (by
-      simp only [List.mem_cons, List.not_mem_nil, or_false]
+      ϴ List.mem_cons, List.not_mem_nil, or_false
       rintro p (rfl | rfl) q (rfl | rfl) <;> simp)
-    (by simp)
+    (✓)
   simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at v₂
   obtain ⟨a1, a2⟩ := v₂
-  refine ⟨c₂, _, .seq e₁ e₂, rfl, ?_, by rw [a1, r₁ _ (by omega)], by rw [a2, r₁ _ (by omega)],
+  refine ⟨c₂, _, .seq e₁ e₂, rfl, ?_, by rw [a1, r₁ _ (⋄)], by rw [a2, r₁ _ (by omega)],
     ?_⟩
-  · rw [f₂.1 _ (by simp), hc₁]; simp
+  · rw [f₂.1 _ (✓), hc₁]; simp
   · have fa : FrameB (fun r => decide (R + 20 ≤ r ∧ r < R + 23)) c c₁ :=
       frameB_mono (exec_frameB e₁ (show wr (Bone (R + 20)) (.instr (.constN (R + 20) 1)) = true by
         simp [wr, wrOK, Bone])) (fun r hr => by simp only [Bone, beq_iff_eq] at hr; simp [hr])
@@ -105,10 +109,10 @@ theorem leafCmpG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
         (M.pos (Qof P) ⟨c.nreg (R + 244), c.nreg (R + 245)⟩).1) ∧
       FrameB (BcmpG R Bx) c c' := by
   have h := hR; unfold RegsOK at h
-  have iB : ∀ i, i < 300 → InB R (R + i) := fun i hi => ⟨by omega, by omega⟩
+  have iB : ∀ i, i < 300 → InB R (R + i) := fun i hi => ⟨⋄, ⋄⟩
   -- first comparison
-  obtain ⟨c₁, k₁, e₁, hk₁, b₁, f₁⟩ := hx (R + 244) (R + 245) (R + 21) (R + 22) (iB _ (by omega))
-    (iB _ (by omega)) (iB _ (by omega)) (iB _ (by omega)) c hw hctx hpc hec hpb heb hy hY hroom
+  obtain ⟨c₁, k₁, e₁, hk₁, b₁, f₁⟩ := hx (R + 244) (R + 245) (R + 21) (R + 22) (iB _ (⋄))
+    (iB _ (⋄)) (iB _ (⋄)) (iB _ (⋄)) c hw hctx hpc hec hpb heb hy hY hroom
   have e₂ := Exec.copyN (P := P) e₁.wb_right (R + 246) 50210
   set c₂ : Config := { c₁ with nreg := upd c₁.nreg (R + 246) (c₁.nreg 50210) } with hc₂
   have w₂ := e₂.wb_right
@@ -118,51 +122,51 @@ theorem leafCmpG_exec {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsOK
     fun r h1 h2 h3 => by
       rw [hc₂]; simp only [upd, h3, ↓reduceIte]; exact kR1 r h1 h2
   have hA2 : c₂.nreg ALLOC = c.nreg ALLOC := by
-    rw [hc₂]; simp only [upd, show ALLOC ≠ R + 246 by unfold ALLOC; omega, ↓reduceIte]
+    rw [hc₂]; ϴ upd, show ALLOC ≠ R + 246 by unfold ALLOC; omega, ↓reduceIte
     exact f₁.1 _ (opW_alloc hBx)
   have F12 : FrameB (BcmpG R Bx) c c₂ := by
-    have g1 : FrameB (BcmpG R Bx) c c₁ := frameB_mono f₁ (fun r hr => by simp [BcmpG, hr])
+    have g1 : FrameB (BcmpG R Bx) c c₁ := frameB_mono f₁ (fun r hr => ⊚ BcmpG, hr)
     have g2 : FrameB (BcmpG R Bx) c₁ c₂ := frameB_mono (exec_frameB e₂
       (show wr (Bone (R + 246)) (.instr (.copyN (R + 246) 50210)) = true by
         simp [wr, wrOK, Bone])) (fun r hr => by
-          simp only [Bone, beq_iff_eq] at hr; subst hr; simp [BcmpG])
+          ϴ' Bone, beq_iff_eq at hr; subst hr; simp [BcmpG])
     exact g1.trans g2
   have ctx₂ : KCtx P W M R E c₂ := KCtx.of_frameB hR hBo hS hctx w₂ F12 (fun r hr => by
-    simp only [BcmpG, Bool.or_eq_true, decide_eq_true_eq] at hr
+    ϴ' BcmpG, Bool.or_eq_true, decide_eq_true_eq at hr
     rcases hr with hr | hr
-    · exact Or.inr (Or.inl ⟨by omega, by omega⟩)
+    · exact Or.inr (Or.inl ⟨⋄, ⋄⟩)
     · exact Or.inr (Or.inr (hBx r hr)))
   -- second comparison
-  have q := fun i (hi : i < 300) (hne : i ≠ 246) => keep2 (R + i) (by omega) (by omega) (by omega)
-  obtain ⟨c₃, k₃, e₃, hk₃, b₃, f₃⟩ := hx (R + 21) (R + 22) (R + 244) (R + 245) (iB _ (by omega))
-    (iB _ (by omega)) (iB _ (by omega)) (iB _ (by omega)) c₂ w₂ ctx₂
-    (by rw [q 21 (by omega) (by omega), q 22 (by omega) (by omega)]; exact hpb)
-    (by rw [q 21 (by omega) (by omega)]; exact heb)
-    (by rw [q 244 (by omega) (by omega), q 245 (by omega) (by omega)]; exact hpc)
-    (by rw [q 244 (by omega) (by omega)]; exact hec)
-    (by rw [q 21 (by omega) (by omega), q 22 (by omega) (by omega), q 244 (by omega) (by omega),
-      q 245 (by omega) (by omega)]; exact hy.symm)
-    (by rw [q 21 (by omega) (by omega), q 22 (by omega) (by omega), ← hy]; exact hY)
+  have q := fun i (hi : i < 300) (hne : i ≠ 246) => keep2 (R + i) (⋄) (⋄) (⋄)
+  obtain ⟨c₃, k₃, e₃, hk₃, b₃, f₃⟩ := hx (R + 21) (R + 22) (R + 244) (R + 245) (iB _ (⋄))
+    (iB _ (⋄)) (iB _ (⋄)) (iB _ (⋄)) c₂ w₂ ctx₂
+    (by rw [q 21 (⋄) (⋄), q 22 (⋄) (⋄)]; exact hpb)
+    (by rw [q 21 (⋄) (⋄)]; exact heb)
+    (by rw [q 244 (⋄) (⋄), q 245 (⋄) (⋄)]; exact hpc)
+    (by rw [q 244 (⋄) (⋄)]; exact hec)
+    (by rw [q 21 (⋄) (⋄), q 22 (⋄) (⋄), q 244 (⋄) (⋄),
+      q 245 (⋄) (⋄)]; exact hy.symm)
+    (by rw [q 21 (⋄) (⋄), q 22 (⋄) (⋄), ← hy]; exact hY)
     (by rw [hA2]; exact hroom)
-  rw [q 21 (by omega) (by omega), q 22 (by omega) (by omega), q 244 (by omega) (by omega),
-    q 245 (by omega) (by omega)] at b₃
+  rw [q 21 (⋄) (⋄), q 22 (⋄) (⋄), q 244 (⋄) (⋄),
+    q 245 (⋄) (⋄)] at b₃
   have e₄ := Exec.copyN (P := P) e₃.wb_right (R + 247) 50210
   have ex : Exec P W (leafCmpG xc R) c _ _ := .seq e₁ (.seq e₂ (.seq e₃ e₄))
-  refine ⟨_, _, ex, by omega, ?_, ?_, ?_⟩
+  refine ⟨_, _, ex, ⋄, ?_, ?_, ?_⟩
   · -- the first bit survives
     have b2 : BitIs c₂ (R + 246) ((M.pos (Qof P) ⟨c.nreg (R + 244), c.nreg (R + 245)⟩).1 <
         (M.pos (Qof P) ⟨c.nreg (R + 21), c.nreg (R + 22)⟩).1) :=
       ⟨by rw [hc₂]; simp only [upd_same]; exact b₁.1,
         by rw [hc₂]; simp only [upd_same]; exact b₁.2⟩
     refine b2.of_eq ?_
-    simp only [upd, show R + 246 ≠ R + 247 by omega, ↓reduceIte]
-    exact f₃.1 _ (opW_R hBx hR (by omega) (by omega))
+    ϴ upd, show R + 246 ≠ R + 247 by omega, ↓reduceIte
+    exact f₃.1 _ (opW_R hBx hR (⋄) (⋄))
   · exact ⟨by simp only [upd_same]; exact b₃.1, by simp only [upd_same]; exact b₃.2⟩
-  · have g3 : FrameB (BcmpG R Bx) c₂ c₃ := frameB_mono f₃ (fun r hr => by simp [BcmpG, hr])
+  · have g3 : FrameB (BcmpG R Bx) c₂ c₃ := frameB_mono f₃ (fun r hr => ⊚ BcmpG, hr)
     have g4 : FrameB (BcmpG R Bx) c₃ _ := frameB_mono (exec_frameB e₄
       (show wr (Bone (R + 247)) (.instr (.copyN (R + 247) 50210)) = true by
         simp [wr, wrOK, Bone])) (fun r hr => by
-          simp only [Bone, beq_iff_eq] at hr; subst hr; simp [BcmpG])
+          ϴ' Bone, beq_iff_eq at hr; subst hr; simp [BcmpG])
     exact F12.trans (g3.trans g4)
 
 /-! ## The running minimum after one hit -/
@@ -172,10 +176,10 @@ def BhitG (R : ℕ) (Bx : ℕ → Bool) (r : ℕ) : Bool :=
   decide (R + 20 ≤ r ∧ r < R + 23) || decide (R + 244 ≤ r ∧ r < R + 248) || Bx r
 
 theorem wrG_hit {R : ℕ} {Bx : ℕ → Bool} (hBx : OpW Bx) : WrG R (BhitG R Bx) := fun r hr => by
-  simp only [BhitG, Bool.or_eq_true, decide_eq_true_eq] at hr
+  ϴ' BhitG, Bool.or_eq_true, decide_eq_true_eq at hr
   rcases hr with (hr | hr) | hr
-  · exact Or.inl ⟨by omega, by omega⟩
-  · exact Or.inr (Or.inl ⟨by omega, by omega⟩)
+  · exact Or.inl ⟨⋄, ⋄⟩
+  · exact Or.inr (Or.inl ⟨⋄, ⋄⟩)
   · exact Or.inr (Or.inr (hBx r hr))
 
 /-- **A hit updates the running minimum.** -/
@@ -348,8 +352,8 @@ theorem leafG_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have k1 : ∀ r, ¬ (140000 ≤ r ∧ r < 140014) → c₁.nreg r = c.nreg r := fun r hr =>
     f₁.1 r (by simp [setList]; omega)
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by unfold ALLOC; omega)
-  have hM1 : c₁.nmem = c.nmem := f₁.2.2.1
-  have hR1 : ∀ i, i < 300 → c₁.nreg (R + i) = c.nreg (R + i) := fun i hi => k1 _ (by omega)
+  have hM1 := f₁.2.2.1
+  have hR1 : ∀ i, i < 300 → c₁.nreg (R + i) = c.nreg (R + i) := fun i hi => k1 _ (⋄)
   have hctx0 := hctx
   obtain ⟨⟨hE, hG, hHW, hMD, hmwf, h30, h31, h34⟩, hX, hcap, hOk, hσb, hreg⟩ := hctx0
   have hO1 : OriginIn c₁ (bandReg bShoot 5) o := by
@@ -371,29 +375,29 @@ theorem leafG_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     (by rw [hA1]; show _ + F (rd c₁ bShoot 9) ≤ W; rw [rd_shoot, s9]; omega)
   replace hk₂ : k₂ ≤ F (c.nreg (R + 7)) := by
     have h2 : k₂ ≤ F (rd c₁ bShoot 9) := hk₂
-    rw [rd_shoot, s9] at h2; exact h2
+    Ξ' rd_shoot, s9 at h2; exact h2
   have post := post₂ M o (by rw [rd_shoot, s0, hM1]; exact hMD) hO1
-  simp only [rd_shoot, Nat.reduceAdd, s1, s2, s3, s4, s8] at post
+  ϴ' rd_shoot, Nat.reduceAdd, s1, s2, s3, s4, s8 at post
   obtain ⟨hhit, hnoh⟩ := post
   -- registers of the caller's block survive the shot
   have hR2 : ∀ i, i < 300 → c₂.nreg (R + i) = c.nreg (R + i) := fun i hi => by
-    rw [fr₂.1 _ (fun hb => band_RB hR hRB hi (hBs hb)) (by unfold ALLOC; omega), hR1 i hi]
+    Ξ fr₂.1 _ (fun hb => band_RB hR hRB hi (hBs hb)) (by unfold ALLOC; omega), hR1 i hi
   have F01 : FrameR Bo (fun _ => False) c c₁ k₁ := FrameR.of_frameB f₁ (fun r hr => by
-    right; simp [setList] at hr; exact hBo (band_shoot (by omega))) (by simp [setList, ALLOC]) _
+    right; Θ' setList at hr; exact hBo (band_shoot (⋄))) (⊚ setList, ALLOC) _
   have F12 : FrameR Bo (fun _ => False) c₁ c₂ k₂ :=
     (FrameR.of_frame fr₂).mono hBs (fun _ h => h) le_rfl
   have F02 := F01.trans F12
   have w₂ := e₂.wb_right
   have ctx₂ : ShotCtxG P W X Ok R M E c₂ :=
-    ShotCtxG.frame hXl hS hctx w₂ F02 (fun _ h => h.elim) (fun i hi => hR2 i (by omega))
-  have best₂ : BestG P M R c₂ S z σ := hbest.congr (hR2 20 (by omega)) (hR2 21 (by omega))
-    (hR2 22 (by omega))
+    ShotCtxG.frame hXl hS hctx w₂ F02 (fun _ h => h.elim) (fun i hi => hR2 i (⋄))
+  have best₂ : BestG P M R c₂ S z σ := hbest.congr (hR2 20 (⋄)) (hR2 21 (⋄))
+    (hR2 22 (⋄))
   have hA2 : c₂.nreg ALLOC ≤ c.nreg ALLOC + F (c.nreg (R + 7)) := by
-    have := F12.2.2.2.2.2.2; rw [hA1] at this; omega
+    have := F12.2.2.2.2.2.2; Ξ' hA1 at this; omega
   have Fw : ∀ {cc cc' : Config} {kk : ℕ}, FrameR Bo (fun _ => False) cc cc' kk →
       FrameR Bo (fun r => (R + 20 ≤ r ∧ r < R + 23) ∨ (R + 244 ≤ r ∧ r < R + 248))
         cc cc' kk := fun hf => hf.mono le_rfl (fun _ h => h.elim) le_rfl
-  have c31 : c₂.nreg (R + 31) = 1 := by rw [hR2 31 (by omega), h31]
+  have c31 : c₂.nreg (R + 31) = 1 := Ρ hR2 31 (⋄), h31
   -- no hit
   have nohit : c₂.nreg 140010 ≠ 1 → BestG P M R c₂ (S ∪ A) z σ := fun hne => by
     have hNA : NoHit A z σ := hnoh hne
@@ -401,27 +405,27 @@ theorem leafG_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     obtain ⟨t, ht, rest⟩ := best₂.2.1 hf
     exact ⟨t, firstHit_union_left ht hNA, rest⟩
   by_cases g1 : c₂.nreg (R + 31) < c₂.nreg 140010
-  · refine ⟨c₂, _, .seq e₁ (.seq e₂ (.ifLtN_true g1 (.skip w₂))), by omega,
-      nohit (by omega), ?_⟩
-    exact (Fw F02).mono le_rfl (fun _ h => h) (by omega)
+  · refine ⟨c₂, _, .seq e₁ (.seq e₂ (.ifLtN_true g1 (.skip w₂))), ⋄,
+      nohit (⋄), ?_⟩
+    exact (Fw F02).mono le_rfl (fun _ h => h) (⋄)
   by_cases g2 : c₂.nreg 140010 < c₂.nreg (R + 31)
-  · refine ⟨c₂, _, .seq e₁ (.seq e₂ (.ifLtN_false g1 (.ifLtN_true g2 (.skip w₂)))), by omega,
-      nohit (by omega), ?_⟩
-    exact (Fw F02).mono le_rfl (fun _ h => h) (by omega)
+  · refine ⟨c₂, _, .seq e₁ (.seq e₂ (.ifLtN_false g1 (.ifLtN_true g2 (.skip w₂)))), ⋄,
+      nohit (⋄), ?_⟩
+    exact (Fw F02).mono le_rfl (fun _ h => h) (⋄)
   -- a hit
-  have hflag : c₂.nreg 140010 = 1 := by omega
+  have hflag : c₂.nreg 140010 = 1 := ⋄
   obtain ⟨t, htA, hpp, hpe, hpos⟩ := hhit hflag
   obtain ⟨c₃, k₃, e₃, hk₃, best₃, f₃⟩ := leafHitG_exec (P := P) hR hBo hS hx hBx c₂ w₂ ctx₂.1 htA
-    hpe hpp hpos hoy ctx₂.2.2.2.2.1 (by rw [hR2 6 (by omega)]) best₂ (by omega)
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ (.ifLtN_false g1 (.ifLtN_false g2 e₃))), by omega, best₃, ?_⟩
+    hpe hpp hpos hoy ctx₂.2.2.2.2.1 (Ρ hR2 6 (⋄)) best₂ (⋄)
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ (.ifLtN_false g1 (.ifLtN_false g2 e₃))), ⋄, best₃, ?_⟩
   have F23 : FrameR Bo (fun r => (R + 20 ≤ r ∧ r < R + 23) ∨ (R + 244 ≤ r ∧ r < R + 248))
       c₂ c₃ k₃ := FrameR.of_frameB f₃ (fun r hr => by
-    simp only [BhitG, Bool.or_eq_true, decide_eq_true_eq] at hr
+    ϴ' BhitG, Bool.or_eq_true, decide_eq_true_eq at hr
     rcases hr with (h' | h') | h'
     · exact Or.inl (Or.inl h')
     · exact Or.inl (Or.inr h')
     · exact Or.inr (hBo (hBx r h').1)) ((wrG_hit hBx).alloc hR) _
-  exact ((Fw F02).trans F23).mono le_rfl (fun _ h => h) (by omega)
+  exact ((Fw F02).trans F23).mono le_rfl (fun _ h => h) (⋄)
 
 end
 

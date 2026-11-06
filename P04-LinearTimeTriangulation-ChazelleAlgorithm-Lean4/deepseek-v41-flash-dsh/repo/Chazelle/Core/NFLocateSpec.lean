@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFLocateChain
 
 /-!
@@ -57,7 +59,7 @@ open Chazelle.Chain (sideInArc)
 def locDir : Stmt :=
   .seq (block [.constN 50032 1, .loadN 50033 50000]) (.ifLtN 50033 50032 chainDir intDir)
 
-theorem wr_locDir : wr Bdir locDir = true := by decide
+theorem wr_locDir : wr Bdir locDir = true := ⌖
 
 /-- **Well-formed chain descriptors** for the direction procedure, for a model descriptor at
 `D`: if it describes a chain model, at most `64` host items, the host well formed and
@@ -77,7 +79,7 @@ def LocDPre (P : Polygon) (W : ℕ) (c : Config) : Prop :=
 theorem chain_eq_of_desc {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {H H' : Host} {C C' : Chain}
     (h : ChainDescAt m B Q H C) (h' : ChainDescAt m B Q H' C') : C = C' := by
   have hH : H = H' := hostAt_unique h.1 h'.1
-  have hP : C.P = C'.P := by rw [h.2.1, h'.2.1, hH]
+  have hP : C.P = C'.P := Ρ h.2.1, h'.2.1, hH
   have hs : C.s = C'.s := h.2.2.1.symm.trans h'.2.2.1
   have hm : C.m = C'.m := h.2.2.2.1.symm.trans h'.2.2.2.1
   cases C
@@ -91,7 +93,7 @@ theorem modelDesc_unique {m : ℕ → ℕ} {D : ℕ} {Q : Polygon} {M M' : Model
     (h : ModelDescAt m D Q M) (h' : ModelDescAt m D Q M') : M = M' := by
   rcases h with ⟨h0, H, C, hC, rfl⟩ | ⟨h1, -, rfl⟩ <;>
     rcases h' with ⟨h0', H', C', hC', rfl⟩ | ⟨h1', -, rfl⟩
-  · rw [chain_eq_of_desc hC hC']
+  · Ξ chain_eq_of_desc hC hC'
   · omega
   · omega
   · rfl
@@ -145,7 +147,7 @@ theorem robust_addr {E : ℕ} {m : ℕ → ℕ} {a v : ℕ} (h : Robust E m fun 
     a < E := by
   by_contra hge
   have := h (Function.update m a (v + 1)) (fun b hb => by
-    rw [Function.update_of_ne (by omega)])
+    rw [Function.update_of_ne (⋄)])
   simp at this
 
 /-- A word reached through a pointer that robustly holds a value: the pointer and the word lie
@@ -177,14 +179,14 @@ theorem nfWithin_bounds {m : ℕ → ℕ} {B E : ℕ} {M : Model} {Q : Polygon} 
   have hsl := seq_length hNF
   have h1 : Robust E m fun m' => m' (m' (B + 4) + 5 * (N.arcs.length - 1) + 4) =
       (N.arc (N.arcs.length - 1)).e.hgt := fun m' hm' =>
-    ((h m' hm').2.2.2.2.2.2.1 _ (by omega)).2.2.2.2
+    ((h m' hm').2.2.2.2.2.2.1 _ (⋄)).2.2.2.2
   have h2 : Robust E m fun m' => m' (m' (B + 6) + (N.arcs.length - 1)) =
       N.seq.getD (N.arcs.length - 1) 0 := fun m' hm' =>
-    (h m' hm').2.2.2.2.2.2.2.2.1 _ (by omega)
+    (h m' hm').2.2.2.2.2.2.2.2.1 _ (⋄)
   have a1 := robust_addr2 (b := B + 4) (o := 5 * (N.arcs.length - 1) + 4)
     (by simpa only [Nat.add_assoc] using h1)
   have a2 := robust_addr2 h2
-  refine ⟨by omega, by omega, by omega⟩
+  refine ⟨⋄, ⋄, ⋄⟩
 
 /-- A well-formed host of a chain of the geometry polygon has at most `64 n` points. -/
 theorem chain_n_le {P : Polygon} {m : ℕ → ℕ} {B : ℕ} {H : Host} {C : Chain}
@@ -192,10 +194,10 @@ theorem chain_n_le {P : Polygon} {m : ℕ → ℕ} {B : ℕ} {H : Host} {C : Cha
     C.P.n ≤ 64 * P.n := by
   have hQn : (Qof P).n = P.n := shear_n _ _
   have e : C.P.n = (H.pts P.n).length := by
-    rw [hC.2.1]
+    Ξ hC.2.1
     show ((H.pts (Qof P).n).map (SymPt.eval (Qof P))).length = _
-    rw [List.length_map, hQn]
-  rw [e]
+    Ξ List.length_map, hQn
+  Ξ e
   exact (Host.pts_length_le hwf).trans (Nat.mul_le_mul_right _ hlen)
 
 /-- **The specification's descriptor conditions give the direction procedure's.** -/
@@ -205,7 +207,7 @@ theorem locChainWF_of {P : Polygon} {W E : ℕ} {m : ℕ → ℕ} {D : ℕ} (h :
   obtain ⟨h1, h2, h3, h4⟩ := (h.2 h0).2 H C hC
   have hN := chain_n_le hC h1 h2
   unfold hostWords at hW
-  exact ⟨h1, h2, by omega, h4, by omega⟩
+  exact ⟨h1, h2, ⋄, h4, ⋄⟩
 
 end
 

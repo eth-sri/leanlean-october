@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutPos
 
 /-!
@@ -53,35 +55,35 @@ theorem param_pos_iff (M : Model) (Q : Polygon) {n p j : ℕ} (hx : ProperPos M 
 theorem key_lt_iff (M : Model) (Q : Polygon) {p h₁ h₂ : ℕ} (hh₁ : 1 ≤ h₁) (hh₂ : 1 ≤ h₂) :
     M.key Q ⟨p, h₁⟩ < M.key Q ⟨p, h₂⟩ ↔ ((M.wa p).2 ≠ (M.wb p).2 ∧
       NFLoc.dirOf (Q.vtx (h₁ - 1)).2 (Q.vtx (h₂ - 1)).2 = NFLoc.dirOf (M.wa p).2 (M.wb p).2) := by
-  obtain ⟨a, rfl⟩ : ∃ a, h₁ = a + 1 := ⟨h₁ - 1, by omega⟩
-  obtain ⟨b, rfl⟩ : ∃ b, h₂ = b + 1 := ⟨h₂ - 1, by omega⟩
-  simp only [Nat.add_sub_cancel]
+  obtain ⟨a, rfl⟩ : ∃ a, h₁ = a + 1 := ⟨h₁ - 1, ⋄⟩
+  obtain ⟨b, rfl⟩ : ∃ b, h₂ = b + 1 := ⟨h₂ - 1, ⋄⟩
+  ϴ Nat.add_sub_cancel
   unfold Model.key
-  simp only [param_succ]
+  ϴ param_succ
   set A := (M.wa p).2
   set B := (M.wb p).2
   set y₁ := (Q.vtx a).2
   set y₂ := (Q.vtx b).2
   by_cases hh : A = B
-  · rw [ite_eq_left hh, ite_eq_left hh]
+  · Ξ ite_eq_left hh, ite_eq_left hh
     simp only [lt_irrefl, false_iff, not_and, not_not]; intro h; exact absurd hh h
-  · rw [ite_eq_right hh, ite_eq_right hh]
+  · Ξ ite_eq_right hh, ite_eq_right hh
     unfold NFLoc.dirOf
     rcases lt_or_gt_of_ne hh with hAB | hAB
-    · have hd : 0 < B - A := by linarith
-      rw [ite_eq_left hAB, add_lt_add_iff_left, div_lt_div_iff_of_pos_right hd]
+    · have hd : 0 < B - A := ⟡
+      Ξ ite_eq_left hAB, add_lt_add_iff_left, div_lt_div_iff_of_pos_right hd
       constructor
-      · intro h; refine ⟨hh, ?_⟩; rw [ite_eq_left (by linarith)]
+      · intro h; refine ⟨hh, ?_⟩; rw [ite_eq_left (⟡)]
       · rintro ⟨-, h⟩
         by_contra hc
         push Not at hc
         split_ifs at h with h1 h2 <;> first | omega | linarith
-    · have hd : B - A < 0 := by linarith
+    · have hd : B - A < 0 := ⟡
       rw [ite_eq_right (not_lt.2 hAB.le), ite_eq_left hAB, add_lt_add_iff_left,
         div_lt_div_right_of_neg hd]
       constructor
       · intro h; refine ⟨hh, ?_⟩
-        rw [ite_eq_right (by linarith), ite_eq_left (by linarith)]
+        rw [ite_eq_right (⟡), ite_eq_left (by linarith)]
       · rintro ⟨-, h⟩
         by_contra hc
         push Not at hc
@@ -120,12 +122,12 @@ theorem box_horizontal {p : ℕ} (hp : p = 0 ∨ p = 2 ∨ p = 4) :
     ((chainModel C).wa p).2 = ((chainModel C).wb p).2 := by
   have hn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
   unfold Model.wa Model.wb
-  rw [hn]
+  Ξ hn
   show ((C.sideWalk C.sideBeta).vtx p).2 = ((C.sideWalk C.sideBeta).vtx ((p + 1) % (2 * C.m + 7))).2
   rcases hp with rfl | rfl | rfl
-  · rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_zero, C.sideWalk_vtx_one]; rfl
-  · rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_two, C.sideWalk_vtx_three]
-  · rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_four, C.sideWalk_vtx_five]; rfl
+  · rw [Nat.mod_eq_of_lt (⋄), C.sideWalk_vtx_zero, C.sideWalk_vtx_one]; rfl
+  · rw [Nat.mod_eq_of_lt (⋄), C.sideWalk_vtx_two, C.sideWalk_vtx_three]
+  · rw [Nat.mod_eq_of_lt (⋄), C.sideWalk_vtx_four, C.sideWalk_vtx_five]; rfl
 
 /-- **An inner position on the box edges `1, 3, 5`** has a positive parameter. -/
 theorem box_param_pos {n p j : ℕ} (hp : p = 1 ∨ p = 3 ∨ p = 5)
@@ -137,21 +139,21 @@ theorem box_param_pos {n p j : ℕ} (hp : p = 1 ∨ p = 3 ∨ p = 5)
   have hm := C.one_le
   have hwa : (chainModel C).wa p = (C.sideWalk C.sideBeta).vtx p := rfl
   have hwb : (chainModel C).wb p = (C.sideWalk C.sideBeta).vtx (p + 1) := by
-    unfold Model.wb; rw [hn, Nat.mod_eq_of_lt (by omega)]; rfl
+    unfold Model.wb; rw [hn, Nat.mod_eq_of_lt (⋄)]; rfl
   -- the edge is not horizontal
   have hnh : ((chainModel C).wa p).2 ≠ ((chainModel C).wb p).2 := by
-    rw [hwa, hwb]
+    Ξ hwa, hwb
     rcases hp with rfl | rfl | rfl
     · rw [C.sideWalk_vtx_one, C.sideWalk_vtx_two]; simp only; intro h; linarith
     · rw [C.sideWalk_vtx_three, C.sideWalk_vtx_four]; simp only; intro h; linarith
     · rw [C.sideWalk_vtx_five, show (5 + 1 : ℕ) = 0 + 6 from rfl,
-        C.sideWalk_vtx_tour _ (by omega), C.sideTour_zero]
+        C.sideWalk_vtx_tour _ (⋄), C.sideTour_zero]
       have := C.top_snd_lt_radius
       intro h; rw [Chazelle.Chain.slitTop_snd] at h; linarith
   -- the point of the position is at the height of `Q.vtx j`
   have hpos : ((chainModel C).pos Q ⟨p, j + 1⟩).2 = (Q.vtx j).2 := by
     unfold Model.pos
-    rw [Geometry.lerp_snd, param_succ, ite_eq_right hnh]
+    Ξ Geometry.lerp_snd, param_succ, ite_eq_right hnh
     have hd : ((chainModel C).wb p).2 - ((chainModel C).wa p).2 ≠ 0 :=
       sub_ne_zero.2 (Ne.symm hnh)
     field_simp

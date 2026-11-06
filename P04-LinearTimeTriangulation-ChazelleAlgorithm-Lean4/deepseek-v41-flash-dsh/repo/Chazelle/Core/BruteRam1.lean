@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.BruteSig
 
 /-!
@@ -41,10 +45,10 @@ open Machine Machine.Stmt Programs SignK WalkKey
 
 /-- A chain vertex is the vertex `s + k` of the host (no wrap-around). -/
 theorem vertex_eq {C : Chain} {k : ℕ} (hk : C.s + k < C.P.n) : C.vertex k = C.P.vtx (C.s + k) := by
-  unfold Chain.vertex Chain.edgeIdx; rw [Nat.mod_eq_of_lt hk]
+  unfold Chain.vertex Chain.edgeIdx; Ξ Nat.mod_eq_of_lt hk
 
 theorem edgeIdx_eq {C : Chain} {k : ℕ} (hk : C.s + k < C.P.n) : C.edgeIdx k = C.s + k := by
-  unfold Chain.edgeIdx; rw [Nat.mod_eq_of_lt hk]
+  unfold Chain.edgeIdx; Ξ Nat.mod_eq_of_lt hk
 
 /-- The write set of the brute-force procedure's own statements: the kernel's registers and
 band `18`. -/
@@ -84,7 +88,7 @@ theorem initS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       | (simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]; omega)
       | simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
       | skip
-    simp only [decide_eq_false_iff_not] at hr
+    ϴ' decide_eq_false_iff_not at hr
     simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
 
 
@@ -109,8 +113,8 @@ theorem andS_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) (c : Config) (hw : Word
   · config_simp; omega
   · refine ⟨rfl, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
     · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
-      rw [h1]
-    · simp only [decide_eq_false_iff_not] at hr
+      Ξ h1
+    · ϴ' decide_eq_false_iff_not at hr
       simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
 
 theorem orS_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) (c : Config) (hw : WordsBounded W c)
@@ -124,8 +128,8 @@ theorem orS_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) (c : Config) (hw : Words
   · config_simp; omega
   · refine ⟨rfl, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
     · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
-      rw [h1]
-    · simp only [decide_eq_false_iff_not, not_or] at hr
+      Ξ h1
+    · ϴ' decide_eq_false_iff_not, not_or at hr
       simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
 
 theorem notS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
@@ -136,8 +140,8 @@ theorem notS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   exec_block
   refine ⟨rfl, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
   · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
-    rw [h1]
-  · simp only [decide_eq_false_iff_not] at hr
+    Ξ h1
+  · ϴ' decide_eq_false_iff_not at hr
     simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
 
 /-! ## The top index -/
@@ -239,12 +243,12 @@ theorem topS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
     · omega
     · refine ⟨rfl, by config_simp, by config_simp, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
       unfold Btop at hr
-      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
+      ϴ' Bool.or_eq_false_iff, decide_eq_false_iff_not at hr
       simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
   let I : Config → Prop := fun d => WordsBounded W d ∧ FrameB Btop c d ∧
     1 ≤ d.nreg 180020 ∧ d.nreg 180020 ≤ m + 1 ∧ d.nreg 180013 < d.nreg 180020 ∧
     ∀ i, i < d.nreg 180020 → ((Qof P).vtx (a + i)).2 ≤ ((Qof P).vtx (a + d.nreg 180013)).2
-  have hI₁ : I c₁ := ⟨e₁.wb_right, R₁, by omega, by omega, by omega, fun i hi => by
+  have hI₁ : I c₁ := ⟨e₁.wb_right, R₁, ⋄, ⋄, ⋄, fun i hi => by
     rw [q13, show i = 0 by omega]⟩
   have keep : ∀ d r, FrameB Btop c d → Btop r = false → d.nreg r = c.nreg r := fun d r h hr =>
     h.1 r hr
@@ -253,16 +257,16 @@ theorem topS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
       (fun d => m + 1 - d.nreg 180020) 253 (fun d hd => hd.1)
       (by
         intro d ⟨wd, Fd, d1, d2, d3, d4⟩ hlt
-        have d23 : d.nreg 180023 = m + 1 := by rw [keep d _ Fd (by decide), h23]
-        rw [d23] at hlt
+        have d23 : d.nreg 180023 = m + 1 := Ρ keep d _ Fd (⌖), h23
+        Ξ' d23 at hlt
         obtain ⟨d', k', e', hk', F', q20', q13'⟩ := topBody_exec hG hW d wd
-          (by rw [keep d _ Fd (by decide), h0]) (by rw [keep d _ Fd (by decide), h11]) rfl rfl
-          (by omega) (by omega)
-        refine ⟨d', k', e', ⟨e'.wb_right, Fd.trans F', by omega, by omega, ?_, ?_⟩, hk', by omega⟩
+          (Ρ keep d _ Fd (⌖), h0) (Ρ keep d _ Fd (⌖), h11) rfl rfl
+          (⋄) (⋄)
+        refine ⟨d', k', e', ⟨e'.wb_right, Fd.trans F', ⋄, ⋄, ?_, ?_⟩, hk', ⋄⟩
         · rw [q13', q20']; split_ifs <;> omega
         · intro i hi
-          rw [q20'] at hi
-          rw [q13']
+          Ξ' q20' at hi
+          Ξ q13'
           split_ifs with ht
           · rcases Nat.lt_succ_iff_lt_or_eq.1 hi with hi | rfl
             · exact (d4 i hi).trans ht.le
@@ -271,10 +275,10 @@ theorem topS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
             · exact d4 i hi
             · exact not_lt.1 ht)
       hI₁
-  have c23 : c₂.nreg 180023 = m + 1 := by rw [keep c₂ _ F₂ (by decide), h23]
-  rw [c23] at hex
-  refine ⟨c₂, _, .seq e₁ e₂, ?_, F₂, by omega, fun i hi => h₄ i (by omega)⟩
-  rw [q20] at hk₂; omega
+  have c23 : c₂.nreg 180023 = m + 1 := Ρ keep c₂ _ F₂ (⌖), h23
+  Ξ' c23 at hex
+  refine ⟨c₂, _, .seq e₁ e₂, ?_, F₂, ⋄, fun i hi => h₄ i (⋄)⟩
+  Ξ' q20 at hk₂; omega
 
 end
 

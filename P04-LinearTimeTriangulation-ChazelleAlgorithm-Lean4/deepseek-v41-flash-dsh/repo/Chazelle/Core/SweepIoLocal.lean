@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoAns
 public import Chazelle.Core.OracleCand
 public import Chazelle.Core.RestoreTNear
@@ -52,7 +54,7 @@ theorem nf_chord_of_mem {e : Set Point} (he : e ∈ N.F M Q) :
   obtain ⟨k, hk, rfl⟩ := List.getElem_of_mem hr
   refine ⟨k, hk, ?_⟩
   unfold NF.chord
-  rw [NFLoc.getD_of_lt _ hk]
+  Ξ NFLoc.getD_of_lt _ hk
 
 /-- Two horizontal segments with a nondegenerate second one are equal only with equal ends. -/
 theorem hseg_eq_ends {y L R y' a b : ℝ} (h : hseg y L R = hseg y' a b) (hab : a < b) :
@@ -62,8 +64,8 @@ theorem hseg_eq_ends {y L R y' a b : ℝ} (h : hseg y L R = hseg y' a b) (hab : 
   obtain ⟨hy, haL, haR⟩ := ha
   obtain ⟨-, hbL, hbR⟩ := hb
   simp only at hy haL haR hbL hbR
-  have hL : ((L, y) : Point) ∈ hseg y' a b := by rw [← h]; exact ⟨rfl, le_rfl, by linarith⟩
-  have hR : ((R, y) : Point) ∈ hseg y' a b := by rw [← h]; exact ⟨rfl, by linarith, le_rfl⟩
+  have hL : ((L, y) : Point) ∈ hseg y' a b := by rw [← h]; exact ⟨rfl, le_rfl, ⟡⟩
+  have hR : ((R, y) : Point) ∈ hseg y' a b := by rw [← h]; exact ⟨rfl, ⟡, le_rfl⟩
   obtain ⟨-, hL1, -⟩ := hL
   obtain ⟨-, -, hR2⟩ := hR
   simp only at hL1 hR2
@@ -73,8 +75,8 @@ theorem hseg_eq_ends {y L R y' a b : ℝ} (h : hseg y L R = hseg y' a b) (hab : 
 theorem rec_pos_ends {c : CRec} (hA : c.Attached M Q) {y a b : ℝ}
     (hc : c.toSet M Q = hseg y a b) (hab : a < b) :
     M.pos Q c.lpos = (a, y) ∧ M.pos Q c.rpos = (b, y) ∧ (Q.vtx c.h).2 = y := by
-  have hl : M.pos Q c.lpos ∈ c.toSet M Q := hA.1.2.2.2.1
-  have hr : M.pos Q c.rpos ∈ c.toSet M Q := hA.2.2.2.2.1
+  have hl := hA.1.2.2.2.1
+  have hr := hA.2.2.2.2.1
   have hset : c.toSet M Q = hseg (Q.vtx c.h).2 (M.pos Q c.lpos).1 (M.pos Q c.rpos).1 := rfl
   obtain ⟨hL, hR, hy⟩ := hseg_eq_ends (hset.symm.trans hc) hab
   have hl2 : (M.pos Q c.lpos).2 = (Q.vtx c.h).2 := by rw [hset] at hl; exact hl.1
@@ -95,7 +97,7 @@ theorem touchesIn_of_sideOf {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c 
   have hlim : Tendsto (fun δ : ℝ => ((z.1, z.2 + ρ * δ) : Point)) (𝓝[>] (0 : ℝ)) (𝓝 z) := by
     have hc0 : Continuous (fun δ : ℝ => ((z.1, z.2 + ρ * δ) : Point)) := by fun_prop
     have := hc0.tendsto 0
-    simp only [mul_zero, add_zero] at this
+    ϴ' mul_zero, add_zero at this
     exact this.mono_left nhdsWithin_le_nhds
   exact mem_closure_of_tendsto hlim hev
 
@@ -122,7 +124,7 @@ theorem spine_end {κ : ℝ} {j : ℕ} (hj : j < N.arcs.length)
   rcases hloc with h | h
   · left
     have := OracleQ.end_start_adj hN hGM hne hp hj (he.trans h.symm)
-    rw [this, OracleQ.predP_succP hp]
+    Ξ this, OracleQ.predP_succP hp
   · exact Or.inr (OracleQ.end_unique hN hGM hne hp hj (he.trans h.symm))
 
 end Spine
@@ -149,18 +151,18 @@ theorem region_of_arc_at (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F M Q).
   have hsj : sj N p = i := hpi
   have hA := N.arcs.length
   rcases hab with rfl | rfl
-  · have hs : sk M Q N p = a := by unfold sk; rw [hsj, his]
+  · have hs : sk M Q N p = a := by unfold sk; Ξ hsj, his
     rcases spine_start hN hGM hne hj hloc hp hs with rfl | rfl
-    · simp only [nbrRegs, List.mem_cons, List.not_mem_nil, or_false]
-      right; left; rw [hsj, hir]
-    · simp only [nbrRegs, List.mem_cons, List.not_mem_nil, or_false]
-      right; right; rw [hsj, hir]
-  · have he : ek M Q N p = b := by unfold ek; rw [hsj, hie]
+    · ϴ nbrRegs, List.mem_cons, List.not_mem_nil, or_false
+      right; left; Ξ hsj, hir
+    · ϴ nbrRegs, List.mem_cons, List.not_mem_nil, or_false
+      right; right; Ξ hsj, hir
+  · have he : ek M Q N p = b := by unfold ek; Ξ hsj, hie
     rcases spine_end hN hGM hne hj hloc hp he with rfl | rfl
-    · simp only [nbrRegs, List.mem_cons, List.not_mem_nil, or_false]
-      left; rw [hsj, hir]
-    · simp only [nbrRegs, List.mem_cons, List.not_mem_nil, or_false]
-      right; left; rw [hsj, hir]
+    · ϴ nbrRegs, List.mem_cons, List.not_mem_nil, or_false
+      left; Ξ hsj, hir
+    · ϴ nbrRegs, List.mem_cons, List.not_mem_nil, or_false
+      right; left; Ξ hsj, hir
 
 /-- A region of the family is `regOf` of an index. -/
 theorem regOf_surj (hN : IsNF M Q N) {U : Set Point} (hU : U ∈ M.regions (N.F M Q)) :
@@ -182,8 +184,8 @@ theorem beforeFaces_of_arc_end' {F : Set (Set Point)} {U : Set Point} {l : ℝ} 
   obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 (sideInArc_before_end hlr)
   refine ⟨δ, hδ, fun _ s hs0 hs1 hst => ?_, fun h => absurd h ht0.ne'⟩
   have := hsub ⟨hs0, hs1⟩
-  refine harc.2.2.2.2.2.2 p (t - s) hp (by linarith) (by linarith) ?_
-  have e : (p : ℝ) + (t - s) = (p : ℝ) + t - s := by ring
+  refine harc.2.2.2.2.2.2 p (t - s) hp (⟡) (⟡) ?_
+  have e : (p : ℝ) + (t - s) = (p : ℝ) + t - s := ⋆
   rw [e]; exact this
 
 /-- **The regions faced just after and just before a cut** have arcs starting and ending at the
@@ -200,7 +202,7 @@ theorem faced_arcs (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
   refine ⟨fun hW => ⟨r, ?_⟩, fun hW => ⟨l, ?_⟩⟩
   · have hW' : AfterFaces M p' t' U' := afterFaces_of_arc harcU hp ht0
       (WalkAx.eventually_after_start (WalkAx.arc_cuts hne harcU).2.2)
-    rw [after_unique ht1 hU hU' hW hW']
+    Ξ after_unique ht1 hU hU' hW hW'
     exact harcU
   · have hlr := (WalkAx.arc_cuts hne harcV).2.2
     have hW' : BeforeFaces M p' t' V' := by
@@ -208,7 +210,7 @@ theorem faced_arcs (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
       · exact beforeFaces_of_arc_end' hp htp ht1 harcV hlr
       · subst ht00
         exact beforeFaces_of_arc_end hp (hp1 rfl) harcV hlr
-    rw [before_unique ht0 hU hV' hW hW']
+    Ξ before_unique ht0 hU hV' hW hW'
     exact harcV
 
 end Facing
@@ -232,13 +234,13 @@ theorem key_pos_of_band {Q : Polygon} {x : WPos}
     (hzR : |((chainModel C).pos Q x).2| < C.radius) (h0 : (chainModel C).param Q x = 0) :
     1 ≤ x.edge := by
   by_contra hc
-  have hp0 : x.edge = 0 := by omega
+  have hp0 : x.edge = 0 := ⋄
   have e : (chainModel C).pos Q x = C.slitTop := by
     show sidePt (chainModel C).W x.edge ((chainModel C).param Q x) = C.slitTop
     rw [hp0, h0, Chazelle.Chain.sidePt_zero]; rfl
-  rw [e] at hzR
-  simp only [Chain.slitTop] at hzR
-  rw [abs_of_pos C.radius_pos] at hzR
+  Ξ' e at hzR
+  ϴ' Chain.slitTop at hzR
+  Ξ' abs_of_pos C.radius_pos at hzR
   exact lt_irrefl _ hzR
 
 /-- **The local hit** (completeness).  For a walk position `x` of the chain model whose height code
@@ -281,11 +283,11 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
   have hσ : σ = 1 ∨ σ = -1 := dirOf_cases d
   have hGM : GoodModel M := Or.inl ⟨C, hP, rfl⟩
   have hM : WalkAx M := walkAx_of_goodModel hGM
-  have hFam : M.ChordFamily Q F := hN.1
-  have hF : F ⊆ M.Adm := hFam.2.1
+  have hFam := hN.1
+  have hF := hFam.2.1
   have hfin : F.Finite := hFam.1
   have hpt : sidePt M.W p t = z := rfl
-  have hsec' : sideLeft M.W p t (rayPt (sidePt M.W p t) σ 1) := hsec
+  have hsec' := hsec
   have hfree : FreeAt C z σ := freeAt_of_leave C hP hσ hx hx0 hx1 hpt hsec
   obtain ⟨hT, hwD, hdom⟩ := Merge.hit_of_freeAt C hzt hσ hfree
   set T := C.hitParam z σ with hTdef
@@ -363,7 +365,7 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
         ((b, y) : Point) ∉ C.dom ∧ ((a, y) : Point) ∉ C.dom ∧ True := by
       refine ⟨?_, hH.right_not, hH.left_not, trivial⟩
       obtain ⟨s₁, hs₁, hs₁0⟩ := (hev.and self_mem_nhdsWithin).exists
-      have hs₁0' : (0 : ℝ) < s₁ := hs₁0
+      have hs₁0' := hs₁0
       rw [hey] at hs₁
       obtain ⟨-, hs₁a, hs₁b⟩ := hs₁
       simp only [rayPt_fst] at hs₁a hs₁b

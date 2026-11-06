@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvPCost
 
 /-!
@@ -151,7 +153,7 @@ theorem clogS_exec (c : Config) (hw : WordsBounded W c) {m : ℕ} (h02 : c.nreg 
     exec_block
     all_goals first | omega | skip
     refine ⟨rfl, by config_simp, by config_simp, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2]
+    ϴ Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2
   let I : Config → Prop := fun d => WordsBounded W d ∧ d.nreg 218023 = 2 ^ d.nreg 218019 ∧
     (1 ≤ d.nreg 218019 → 2 ^ (d.nreg 218019 - 1) < m) ∧
     (∀ r, r ≠ 218019 → r ≠ 218023 → d.nreg r = c.nreg r) ∧ d.nmem = c.nmem ∧
@@ -161,8 +163,8 @@ theorem clogS_exec (c : Config) (hw : WordsBounded W c) {m : ℕ} (h02 : c.nreg 
     Exec.whileLtN_bounded (P := P) (W := W) (a := 218023) (b := 218002)
     (body := block [.addN 218023 218023 218023, .addN 218019 218019 218021]) I
     (fun d => Nat.clog 2 m - d.nreg 218019) 2 (fun d hd => hd.1) (fun d ⟨wd, pd, ld, rd', md, rrd, rmd, od⟩ ht => by
-      have h2 : d.nreg 218002 = m := by rw [rd' _ (by norm_num) (by norm_num), h02]
-      have h21' : d.nreg 218021 = 1 := by rw [rd' _ (by norm_num) (by norm_num), h21]
+      have h2 : d.nreg 218002 = m := by rw [rd' _ (⊛) (by norm_num), h02]
+      have h21' : d.nreg 218021 = 1 := by rw [rd' _ (⊛) (by norm_num), h21]
       rw [h2] at ht
       have hw := wd
       obtain ⟨d', k, e, hk, v23', v19', r', m'⟩ : ∃ d' k, Exec P W
@@ -177,36 +179,36 @@ theorem clogS_exec (c : Config) (hw : WordsBounded W c) {m : ℕ} (h02 : c.nreg 
           omega
         refine ⟨rfl, by config_simp; ring, by config_simp; rw [h21'], fun r h1 h2 => ?_,
           rfl, rfl, rfl, rfl⟩
-        simp only [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2]
+        ϴ Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2
       obtain ⟨m'', rr'', rm'', o''⟩ := m'
       refine ⟨d', k, e, ⟨e.wb_right, ?_, ?_, fun r h1 h2 => (r' r h1 h2).trans (rd' r h1 h2),
-        m''.trans md, rr''.trans rrd, rm''.trans rmd, o''.trans od⟩, by omega, ?_⟩
+        m''.trans md, rr''.trans rrd, rm''.trans rmd, o''.trans od⟩, ⋄, ?_⟩
       · rw [v23', v19', pd, pow_succ]; ring
       · intro _; rw [v19', Nat.add_sub_cancel, ← pd]; exact ht
-      · rw [v19']
+      · Ξ v19'
         rw [pd] at ht
         have : d.nreg 218019 < Nat.clog 2 m := by
           by_contra hc
           push Not at hc
-          have h3 : m ≤ 2 ^ Nat.clog 2 m := Nat.le_pow_clog (by norm_num) m
-          have h4 : 2 ^ Nat.clog 2 m ≤ 2 ^ d.nreg 218019 := Nat.pow_le_pow_right (by norm_num) hc
+          have h3 : m ≤ 2 ^ Nat.clog 2 m := Nat.le_pow_clog (⊛) m
+          have h4 : 2 ^ Nat.clog 2 m ≤ 2 ^ d.nreg 218019 := Nat.pow_le_pow_right (⊛) hc
           omega
         omega) hI₁
-  have h2 : c₂.nreg 218002 = m := by rw [r₂ _ (by norm_num) (by norm_num), h02]
+  have h2 : c₂.nreg 218002 = m := by rw [r₂ _ (⊛) (by norm_num), h02]
   rw [h2, p₂] at hx₂
   have hg : c₂.nreg 218019 = Nat.clog 2 m := by
     apply le_antisymm
     · by_contra hlt
       push Not at hlt
-      have := l₂ (by omega)
-      have h3 : m ≤ 2 ^ Nat.clog 2 m := Nat.le_pow_clog (by norm_num) m
+      have := l₂ (⋄)
+      have h3 : m ≤ 2 ^ Nat.clog 2 m := Nat.le_pow_clog (⊛) m
       have h4 : 2 ^ Nat.clog 2 m ≤ 2 ^ (c₂.nreg 218019 - 1) :=
-        Nat.pow_le_pow_right (by norm_num) (by omega)
+        Nat.pow_le_pow_right (⊛) (by omega)
       omega
-    · exact Nat.clog_le_of_le_pow (by omega)
+    · exact Nat.clog_le_of_le_pow (⋄)
   have hk₂' : k₂ ≤ 4 * Nat.clog 2 m + 2 := by
     rw [v19, Nat.sub_zero] at hk₂; omega
-  refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by omega, hg, r₂, m₂, rr₂, rm₂, o₂⟩
+  refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, ⋄, hg, r₂, m₂, rr₂, rm₂, o₂⟩
 
 end exec
 

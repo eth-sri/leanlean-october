@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvXDef
 
 /-!
@@ -158,42 +160,42 @@ theorem ctx (X : XHyp P li L E reg r C NR) : ∃ i0 g, XCtx P li L E reg r C NR 
     · rw [ite_eq_right hl] at hpts ⊢
       rw [hpts, List.getD_eq_getElem _ _ (by rw [List.length_reverse, ← hWP, hlen]; exact hk),
         List.getElem_reverse, List.getD_eq_getElem _ _ (by rw [hlen]; omega)]
-      simp only [← hWP, hlen]
+      ϴ ← hWP, hlen
   have hHlen : ((regHost li Q.n N r).pts Q.n).length = K := by
     by_cases hl : li = true
     · rw [ite_eq_left hl] at hpts; rw [hpts, ← hWP, hlen]
     · rw [ite_eq_right hl] at hpts; rw [hpts, List.length_reverse, ← hWP, hlen]
   have hn : C.P.n = K := by
     rw [X.hCP]; show (((regHost li Q.n N r).pts Q.n).map (SymPt.eval Q)).length = K
-    rw [List.length_map, hHlen]
+    Ξ List.length_map, hHlen
   have hrepH : ∀ k, k < K → RepPt li Q S (reg r) ((i0 + rho li K k) % K)
       (hpt Q.n (regHost li Q.n N r) k) := by
     intro k hk
-    rw [hHp k hk]
+    Ξ hHp k hk
     exact hrep' _ (rho_lt li hk)
   have hvtx : ∀ k, k < K → C.P.vtx k = (hostPoly Q S (reg r)).vtx ((i0 + rho li K k) % K) := by
     intro k hk
-    have hι : (i0 + rho li K k) % K < K := Nat.mod_lt _ (by omega)
-    rw [hostPoly_vtx hι, ← rep_eval hQ hFam hne hR hli hdh hι (hrepH k hk), X.hCP]
+    have hι : (i0 + rho li K k) % K < K := Nat.mod_lt _ (⋄)
+    Ξ hostPoly_vtx hι, ← rep_eval hQ hFam hne hR hli hdh hι (hrepH k hk), X.hCP
     show (((regHost li Q.n N r).pts Q.n).map (SymPt.eval Q)).getD k (0, 0) = _
-    rw [List.getD_eq_getElem _ _ (by rw [List.length_map, hHlen]; exact hk), List.getElem_map]
+    Ξ List.getD_eq_getElem _ _ (by rw [List.length_map, hHlen]; exact hk), List.getElem_map
     unfold hpt
-    rw [List.getD_eq_getElem _ _ (by rw [hHlen]; exact hk)]
+    Ξ List.getD_eq_getElem _ _ (by rw [hHlen]; exact hk)
   -- polygon facts and extraction facts
   have hrn : ((hostPoly Q S (reg r)).rotate i0).n = K := by
-    rw [Existence.n_rotate, hostPoly_n]
+    Ξ Existence.n_rotate, hostPoly_n
   by_cases hLI : Mountain.LeftInside Q
   · have hl : li = true := hli.2 hLI
     have hpoly : C.P = (hostPoly Q S (reg r)).rotate i0 := by
-      apply poly_eq_of_vtx (by rw [hn, hrn])
+      apply poly_eq_of_vtx (Ρ hn, hrn)
       intro k hk
       rw [hn] at hk
-      rw [hvtx k hk, Existence.vtx_rotate _ _ (by rw [hostPoly_n]; exact hk), hostPoly_n]
+      Ξ hvtx k hk, Existence.vtx_rotate _ _ (by rw [hostPoly_n]; exact hk), hostPoly_n
       unfold rho; rw [ite_eq_left hl]
     refine ⟨i0, g, ⟨X, hgK, hgc, hgi, hn, hrepH, hvtx, ?_, ?_, ?_⟩⟩
     · rw [hpoly]; exact polyFacts_rotate hQ hFam hne hR i0
     · exact extractOK_rot Xc hgK hgc hgi hpoly X.hCs X.hCm
-    · rw [hpoly, Existence.boundary_rotate]
+    · Ξ hpoly, Existence.boundary_rotate
   · have hl : li = false := by
       cases h : li
       · rfl
@@ -201,17 +203,17 @@ theorem ctx (X : XHyp P li L E reg r C NR) : ∃ i0 g, XCtx P li L E reg r C NR 
     have hPv : ∀ k, k < K → C.P.vtx k = ((hostPoly Q S (reg r)).rotate i0).vtx
         (((hostPoly Q S (reg r)).rotate i0).n - 1 - k) := by
       intro k hk
-      rw [hvtx k hk, hrn, Existence.vtx_rotate _ _ (by rw [hostPoly_n]; omega), hostPoly_n]
+      Ξ hvtx k hk, hrn, Existence.vtx_rotate _ _ (by rw [hostPoly_n]; omega), hostPoly_n
       unfold rho; rw [hl]; rfl
     refine ⟨i0, g, ⟨X, hgK, hgc, hgi, hn, hrepH, hvtx, ?_, ?_, ?_⟩⟩
-    · exact polyFacts_rev hQ hFam hne hR i0 (by rw [hn, hrn])
+    · exact polyFacts_rev hQ hFam hne hR i0 (Ρ hn, hrn)
         (fun k hk => hPv k (by rw [hrn] at hk; exact hk))
     · refine extractOK_rev Xc hgK hgc hgi hn (fun k hk => ?_)
-        (polyFacts_rev hQ hFam hne hR i0 (by rw [hn, hrn])
+        (polyFacts_rev hQ hFam hne hR i0 (Ρ hn, hrn)
           (fun k hk => hPv k (by rw [hrn] at hk; exact hk))).1 X.hCs X.hCm
-      rw [hvtx k hk]
+      Ξ hvtx k hk
       unfold rho; rw [hl]; rfl
-    · rw [Mountain.rev_boundary (by rw [hn, hrn]) (fun k hk => hPv k (by rw [hrn] at hk; exact hk)),
+    · rw [Mountain.rev_boundary (Ρ hn, hrn) (fun k hk => hPv k (by rw [hrn] at hk; exact hk)),
         Existence.boundary_rotate]
 
 end XHyp

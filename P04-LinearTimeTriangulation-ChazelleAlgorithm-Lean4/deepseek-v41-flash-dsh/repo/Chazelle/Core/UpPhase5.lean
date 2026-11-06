@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase4
 
 /-!
@@ -19,7 +21,7 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 16000000 in
+
 /-- **Lemma 4.1, called from the up phase.** -/
 theorem l41Call_exec {O : OracleIface} {sL : Stmt} {κL : ℕ}
     (hL : Meets sL l41Bands
@@ -101,7 +103,7 @@ theorem l41Call_exec {O : OracleIface} {sL : Stmt} {κL : ℕ}
   have := hbb r h1
   rw [fr3 r h2, fr2r r h1 h3, fr1 r (by omega) (by omega) (by omega) (by omega)]
 
-set_option maxHeartbeats 16000000 in
+
 /-- **The oracle preprocessing, called from the up phase.** -/
 theorem prepCall_exec {O : OracleIface} (hV : O.Valid) (hG : GoodEnv P)
     (hWh : hostWords P.n ≤ W) {c : Config} (hw : WordsBounded W c) {B F γ : ℕ} {H : Host}

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Chain.Basic
 
 /-!
@@ -99,7 +101,7 @@ theorem hit_of_initial {v : Point} (hv : v ∈ box C.radius) {σ : ℝ} (hσ : �
     · intro ht; exact ⟨hge t ht, ht.2⟩
     · intro ht; exact ⟨lt_of_lt_of_le ht₀ ht.1, ht.2⟩
   have hclosed : IsClosed (C.hitSet v σ) := by
-    rw [hset]
+    Ξ hset
     exact isClosed_Ici.inter (C.isClosed_dom_compl.preimage (continuous_rayPt v σ))
   have h2 : rayPt v σ (C.hitParam v σ) ∈ C.domᶜ :=
     (hclosed.csInf_mem hne (C.hitSet_bddBelow v σ)).2
@@ -176,7 +178,7 @@ theorem chordEnd_ne_vertex {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 �
   have := congrArg Prod.fst heq
   simp only [chordEnd_fst] at this
   have hpos := C.chordParam_pos hk hσ h
-  have : σ * C.chordParam k σ = 0 := by linarith
+  have : σ * C.chordParam k σ = 0 := ⟡
   rcases mul_eq_zero.1 this with h' | h'
   · rcases hσ with rfl | rfl <;> norm_num at h'
   · exact hpos.ne' h'
@@ -204,7 +206,7 @@ theorem chordEnd_fst_eq_of_not_mem_box {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (h�
         rcases lt_abs.1 hgt with h | h
         · exact h
         · linarith
-      have := hcase ((T + C.radius - (C.vertex k).1) / 2) (by linarith) (by linarith)
+      have := hcase ((T + C.radius - (C.vertex k).1) / 2) (⟡) (⟡)
       rw [one_mul, abs_lt] at this
       linarith [this.2]
     · simp only [chordEnd_fst, neg_one_mul] at hgt
@@ -212,7 +214,7 @@ theorem chordEnd_fst_eq_of_not_mem_box {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (h�
         rcases lt_abs.1 hgt with h | h
         · linarith
         · exact h
-      have := hcase ((T + C.radius + (C.vertex k).1) / 2) (by linarith) (by linarith)
+      have := hcase ((T + C.radius + (C.vertex k).1) / 2) (⟡) (⟡)
       rw [neg_one_mul, abs_lt] at this
       linarith [this.1]
   have hnot : ¬ |(C.chordEnd k σ).1| < C.radius := fun hlt => hbox ⟨hlt, by
@@ -258,7 +260,7 @@ theorem chordSet_eq_image {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 �
   have hpos := C.chordParam_pos hk hσ h
   ext p
   unfold chordSet Chazelle.segment
-  simp only [mem_ofPred_eq, mem_image, mem_Icc, chordEnd_fst, chordEnd_snd]
+  ϴ mem_ofPred_eq, mem_image, mem_Icc, chordEnd_fst, chordEnd_snd
   constructor
   · rintro ⟨t, ht0, ht1, rfl⟩
     refine ⟨t * C.chordParam k σ, ⟨mul_nonneg ht0 hpos.le, ?_⟩, ?_⟩
@@ -276,7 +278,7 @@ theorem chordSet_eq_image {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 �
 theorem chordSet_eq_openChordSet_union {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
     (h : C.DirFree k σ) :
     C.chordSet k σ = C.openChordSet k σ ∪ {C.vertex k, C.chordEnd k σ} := by
-  rw [chordSet_eq_image C hk hσ h]
+  Ξ chordSet_eq_image C hk hσ h
   ext p
   simp only [openChordSet, mem_union, mem_image, mem_Icc, mem_Ioo, mem_insert_iff,
     mem_singleton_iff]
@@ -384,17 +386,17 @@ theorem isHChordIn_chord {k : ℕ} (hk : k ≤ C.m) {σ : ℝ} (hσ : σ = 1 ∨
   rcases hσ with rfl | rfl
   · have hlt : (C.vertex k).1 < (C.chordEnd k 1).1 := by
       simp only [chordEnd_fst, one_mul]; linarith
-    rw [min_eq_left hlt.le, max_eq_right hlt.le]
+    Ξ min_eq_left hlt.le, max_eq_right hlt.le
     refine ⟨hlt, hv ▸ hvD, he ▸ hend, fun x hx1 hx2 => ?_⟩
-    have := hint (x - (C.vertex k).1) (by linarith)
+    have := hint (x - (C.vertex k).1) (⟡)
       (by simp only [chordEnd_fst, one_mul] at hx2; linarith)
     simp only [rayPt, one_mul, add_sub_cancel] at this
     exact this
   · have hlt : (C.chordEnd k (-1)).1 < (C.vertex k).1 := by
       simp only [chordEnd_fst, neg_one_mul]; linarith
-    rw [min_eq_right hlt.le, max_eq_left hlt.le]
+    Ξ min_eq_right hlt.le, max_eq_left hlt.le
     refine ⟨hlt, he ▸ hend, hv ▸ hvD, fun x hx1 hx2 => ?_⟩
-    have := hint ((C.vertex k).1 - x) (by linarith)
+    have := hint ((C.vertex k).1 - x) (⟡)
       (by simp only [chordEnd_fst, neg_one_mul] at hx1; linarith)
     simp only [rayPt, neg_one_mul, neg_sub, add_sub_cancel] at this
     exact this

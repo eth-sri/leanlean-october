@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepDetect
 public import Chazelle.Core.SweepQuery
 
@@ -85,7 +87,7 @@ theorem arrival_exists (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C.top.2) {σ 
   set w := rayPt a σ T with hw
   have hback : ∀ s, rayPt w (-σ) s = rayPt a σ (T - s) := fun s => rayPt_back a σ T s
   have hzR : |a.2| < C.radius := by
-    have := C.dom_subset_box (hdom (T / 2) (by linarith) (by linarith))
+    have := C.dom_subset_box (hdom (T / 2) (⟡) (⟡))
     simpa [rayPt] using this.2
   have he : w ∈ C.set ∨ (|w.1| = C.radius ∧ |w.2| < C.radius) := by
     rcases (Merge.not_mem_dom_iff C (p := w) (by simpa [hw] using ha)).1 hwD with h | h
@@ -94,13 +96,13 @@ theorem arrival_exists (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C.top.2) {σ 
       · by_contra hgt
         push Not at hgt
         set ε := min (T / 2) ((|w.1| - C.radius) / 2) with hε
-        have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
-        have hεT : ε < T := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-        have hbox := C.dom_subset_box (hdom (T - ε) (by linarith) (by linarith))
-        have h1 : |(rayPt a σ (T - ε)).1| < C.radius := hbox.1
+        have hε0 : 0 < ε := lt_min (⟡) (⟡)
+        have hεT : ε < T := lt_of_le_of_lt (min_le_left _ _) (⟡)
+        have hbox := C.dom_subset_box (hdom (T - ε) (⟡) (⟡))
+        have h1 := hbox.1
         have h2 : |w.1| ≤ |(rayPt a σ (T - ε)).1| + ε := by
           have e : w.1 = (rayPt a σ (T - ε)).1 + σ * ε := by simp [hw, rayPt]; ring
-          rw [e]
+          Ξ e
           refine (abs_add_le _ _).trans ?_
           rcases hσ with rfl | rfl <;> simp [abs_of_pos hε0]
         have h3 : ε ≤ (|w.1| - C.radius) / 2 := min_le_right _ _
@@ -109,7 +111,7 @@ theorem arrival_exists (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C.top.2) {σ 
         push Not at hlt
         exact h ⟨hlt, by simpa [hw] using hzR⟩
     · exact Or.inl h
-  have hT2 : (0 : ℝ) < T / 2 := by linarith
+  have hT2 : (0 : ℝ) < T / 2 := ⟡
   have hee : w ≠ rayPt w (-σ) (T / 2) := by
     intro h
     have := congrArg Prod.fst h
@@ -119,10 +121,10 @@ theorem arrival_exists (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C.top.2) {σ 
     intro s hs
     have e : lerp w (rayPt w (-σ) (T / 2)) s = rayPt a σ (T - s * (T / 2)) := by
       apply point_ext <;> simp [lerp, rayPt, hw]; ring
-    rw [e]
+    Ξ e
     exact hdom _ (by nlinarith [hs.2]) (by nlinarith [hs.1])
   obtain ⟨p, t, hp, ht, ht1, hpt, hl⟩ :=
-    C.sideSees_chordEnd hP C.sideBeta hee (by simp [rayPt]) hopen he
+    C.sideSees_chordEnd hP C.sideBeta hee (⊚ rayPt) hopen he
   refine ⟨p, t, hp, ht, ht1, hpt, ?_⟩
   have hl' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) (-σ) (T / 2)) := by
     rw [show sidePt (chainModel C).W p t = w from hpt]; exact hl
@@ -199,7 +201,7 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
   have hne := hM.nd p hp
   set u := (chainModel C).W.vtx p with hu
   set v := (chainModel C).W.vtx ((p + 1) % (chainModel C).W.n) with hv
-  have hwlerp : w = lerp u v t := hpt.symm
+  have hwlerp := hpt.symm
   have hedge : ∀ x, sideLeft (chainModel C).W p t x ↔ 0 < det u v x :=
     fun x => Chazelle.Chain.sideLeft_edge hne ⟨ht0, ht1⟩ x
   have hshift : ∀ α, det u v ((w.1 + α, w.2) : Point) = -α * (v.2 - u.2) := by

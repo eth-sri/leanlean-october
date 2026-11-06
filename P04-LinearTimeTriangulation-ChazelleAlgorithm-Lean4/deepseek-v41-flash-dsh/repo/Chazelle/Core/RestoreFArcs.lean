@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFStart
 
 /-!
@@ -67,7 +69,7 @@ theorem FGood.arc_abs (hE : FGood E c₀) (hne : (E.N.F E.M (Qof E.P)).Nonempty)
     have hNF := hE.hNF
     rw [hM'] at hNF hne
     have := arc_abs_lt hs hNF hne hj
-    rw [radius_eq_of_model (hM.symm.trans hM'), hM']
+    Ξ radius_eq_of_model (hM.symm.trans hM'), hM'
     first | exact this.1 | exact this.2
 
 /-- **The arcs of a region with an exit chord.** -/
@@ -82,12 +84,12 @@ theorem FGood.arcOK (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {
     obtain ⟨hi', -⟩ := ((hRg E.r hr).1 i).1 hi
     have hmem : E.N.chord i ∈ E.N.chords := by
       unfold NF.chord
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi', Option.getD_some]
+      Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi', Option.getD_some
       exact List.getElem_mem hi'
     exact ⟨_, E.N.chord i, hmem, rfl⟩
   set j := (E.N.region E.r).arcs.getD t 0 with hjdef
   have hjm : j ∈ (E.N.region E.r).arcs := by
-    rw [hjdef, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
+    Ξ hjdef, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some
     exact List.getElem_mem ht
   obtain ⟨hj, -⟩ := (hArcs.2.2.2 E.r hr j).1 hjm
   obtain ⟨hjr, harc⟩ := hArcs.1 j hj

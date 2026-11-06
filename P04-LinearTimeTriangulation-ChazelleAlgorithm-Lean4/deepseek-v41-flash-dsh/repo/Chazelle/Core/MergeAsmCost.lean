@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.MergeAsmMath
 
 /-!
@@ -28,7 +30,7 @@ theorem clog_S {S β m : ℕ} (h : S ≤ β * (m + 1)) : Nat.clog 2 S ≤ β + N
 
 theorem clog_8 (x : ℕ) : Nat.clog 2 (8 * x) ≤ 3 + Nat.clog 2 x := by
   refine (clog_mul_le 8 x).trans ?_
-  have : Nat.clog 2 8 = 3 := by decide
+  have : Nat.clog 2 8 = 3 := ⌖
   omega
 
 /-- The fusion stage. -/
@@ -39,16 +41,16 @@ theorem fuse_le {κ S β m F₀ F G H : ℕ} (hS : S ≤ β * (m + 1)) (hF : F�
   have hc := clog_S hS
   set L := Nat.clog 2 (m + 1)
   have hY1 : F ≤ F * G * (H + L + 1) := by
-    calc F = F * 1 * 1 := by ring
+    calc F = F * 1 * 1 := ⋆
       _ ≤ F * G * (H + L + 1) := by gcongr; omega
   have hY2 : L + 1 ≤ F * G * (H + L + 1) := by
-    calc L + 1 = 1 * 1 * (L + 1) := by ring
+    calc L + 1 = 1 * 1 * (L + 1) := ⋆
       _ ≤ F * G * (H + L + 1) := by gcongr; omega
-  have hY3 : 1 ≤ F * G * (H + L + 1) := by omega
+  have hY3 : 1 ≤ F * G * (H + L + 1) := ⋄
   set Y := F * G * (H + L + 1)
-  have : F₀ + Nat.clog 2 S + 1 ≤ (β + 2) * Y := by nlinarith
+  have : F₀ + Nat.clog 2 S + 1 ≤ (β + 2) * Y := ⊞
   calc κ * S * (F₀ + Nat.clog 2 S + 1) ≤ κ * S * ((β + 2) * Y) := Nat.mul_le_mul_left _ this
-    _ = κ * (β + 2) * S * Y := by ring
+    _ = κ * (β + 2) * S * Y := ⋆
 
 /-- The restoration stage. -/
 theorem restore_le {κ K S β m γ F₀ G₀ H₀ F G H : ℕ} (hS : S ≤ β * (m + 1)) (hK : K + 1 ≤ 8 * S)
@@ -59,10 +61,10 @@ theorem restore_le {κ K S β m γ F₀ G₀ H₀ F G H : ℕ} (hS : S ≤ β * 
   have h1 : Nat.clog 2 γ ≤ 3 + L := (clog_mono hγ).trans (clog_8 _)
   have h2 : Nat.clog 2 (K + 1) ≤ 3 + β + L :=
     (clog_mono hK).trans ((clog_8 S).trans (by have := clog_S hS; omega))
-  have hp : H₀ + Nat.clog 2 γ + Nat.clog 2 (K + 1) + 1 ≤ (β + 7) * (H + L + 1) := by nlinarith
+  have hp : H₀ + Nat.clog 2 γ + Nat.clog 2 (K + 1) + 1 ≤ (β + 7) * (H + L + 1) := ⊞
   calc κ * (K + 1) * F₀ * G₀ * (H₀ + Nat.clog 2 γ + Nat.clog 2 (K + 1) + 1)
       ≤ κ * (8 * S) * F * G * ((β + 7) * (H + L + 1)) := by gcongr
-    _ = 8 * (β + 7) * κ * S * (F * G * (H + L + 1)) := by ring
+    _ = 8 * (β + 7) * κ * S * (F * G * (H + L + 1)) := ⋆
 
 /-- The granularity stage. -/
 theorem gran_le {κ K c S β m F G H : ℕ} (hS : S ≤ β * (m + 1)) (hK : K ≤ 8 * c * S)

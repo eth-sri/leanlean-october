@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBSpec
 public import Chazelle.Core.DownPhaseDrvDRound3
 public import Chazelle.Core.DownPhaseBaseMain
@@ -93,22 +95,22 @@ theorem bargs_false {r : ℕ} (h1 : r < 210020 ∨ 210024 < r) (h2 : r < 219300 
 theorem inDrv_pre : DrvD.InDrv Bpre := by
   intro r hr
   simp only [Bpre, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (⋄) (⋄), by unfold ALLOC; omega⟩
 
 theorem inDrv_args : DrvD.InDrv Bargs := by
   intro r hr
   simp only [Bargs, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (⋄) (⋄), by unfold ALLOC; omega⟩
 
 theorem inDrv_drop : DrvD.InDrv (fun r => decide (200000 ≤ r ∧ r ≤ 200003)) := by
   intro r hr
   simp only [decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (⋄) (⋄), by unfold ALLOC; omega⟩
 
 theorem inDrv_bld : DrvD.InDrv (fun r => decide (40000 ≤ r ∧ r ≤ 40004)) := by
   intro r hr
   simp only [decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands (⋄) (⋄), by unfold ALLOC; omega⟩
 
 section exec
 
@@ -130,7 +132,7 @@ theorem tPre_exec (c : Config) (hw : WordsBounded W c) (hW : 2 * P.n + 1 ≤ W) 
     all_goals config_simp
     all_goals (try rfl)
     all_goals omega
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (⌖)⟩
 
 /-- **The reservation** of `5 R` words. -/
 theorem tRes_exec {c : Config} (hw : WordsBounded W c) {R : ℕ} (h03 : c.nreg 219303 = R)
@@ -192,7 +194,7 @@ theorem tArgs_exec (c : Config) (hw : WordsBounded W c) {B₂ H MX K₂ : ℕ}
     all_goals try (config_simp; (try simp only [h19, h05, h18, h20]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> (try simp only [h19, h05, h18, h20]) <;>
       (try omega)
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex (⌖)⟩
 
 set_option maxHeartbeats 1000000 in
 /-- `tDrop`. -/
@@ -207,7 +209,7 @@ theorem tDrop_exec (c : Config) (hw : WordsBounded W c) :
     unfold tDrop
     exec_block
     refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (⌖)⟩
 
 set_option maxHeartbeats 1000000 in
 /-- `tBld`. -/
@@ -222,7 +224,7 @@ theorem tBld_exec (c : Config) (hw : WordsBounded W c) :
     unfold tBld
     exec_block
     refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (⌖)⟩
 
 /-- `tOut`. -/
 theorem tOut_exec (c : Config) (hw : WordsBounded W c) :
@@ -233,7 +235,7 @@ theorem tOut_exec (c : Config) (hw : WordsBounded W c) :
     unfold tOut
     exec_block
     refine ⟨rfl, ?_⟩; config_simp
-  exact ⟨c', k, ex, hk, q, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q, exec_frameB ex (⌖)⟩
 
 end exec
 

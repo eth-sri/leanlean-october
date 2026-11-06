@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvXContracts
 public import Chazelle.Core.DownPhaseDrvXPos2
 public import Chazelle.Core.DownPhaseDrvXKept
@@ -62,13 +64,13 @@ theorem postMath : PostMath := by
       (NR.chord t).toSet (chainModel C) (Qof P) := by
     intro t ht
     obtain ⟨htK, hk⟩ := mem_kl.1 ht
-    rw [hxT]
+    Ξ hxT
     exact (Y.kept_pos htK ((hkR t htK).1 hk)).1
   have hatt : ∀ t ∈ kl P v NR K, (recOf (xT P v NR t)).Attached (interiorModel (Qof P)) (Qof P) ∧
       (xT P v NR t).1 < (Qof P).n := by
     intro t ht
     obtain ⟨htK, hk⟩ := mem_kl.1 ht
-    rw [hxT]
+    Ξ hxT
     have hp := Y.kept_pos htK ((hkR t htK).1 hk)
     exact ⟨hp.2.1, hp.2.2.1⟩
   have hon : ∀ t ∈ kl P v NR K,
@@ -80,7 +82,7 @@ theorem postMath : PostMath := by
           (recOf (xT P v NR t)).rpos) := by
     intro t ht
     obtain ⟨htK, hk⟩ := mem_kl.1 ht
-    rw [hxT]
+    Ξ hxT
     have hp := Y.kept_pos htK ((hkR t htK).1 hk)
     exact ⟨hp.2.2.2.2.2.1, hp.2.2.2.2.2.2⟩
   refine ⟨?_, ?_, ?_, ?_⟩
@@ -91,7 +93,7 @@ theorem postMath : PostMath := by
       unfold xL at hy
       obtain ⟨t, ht, rfl⟩ := List.mem_map.1 hy
       obtain ⟨htK, hk⟩ := mem_kl.1 ht
-      rw [hset t ht]
+      Ξ hset t ht
       exact ⟨⟨NR.chord t, chord_mem_chords htK, rfl⟩, (hkR t htK).1 hk⟩
     · rintro ⟨⟨c, hc, rfl⟩, hne⟩
       obtain ⟨t, htK, rfl⟩ := List.getElem_of_mem hc
@@ -99,14 +101,14 @@ theorem postMath : PostMath := by
         unfold NF.chord; rw [List.getD_eq_getElem _ _ htK]
       have ht : t ∈ kl P v NR K := mem_kl.2 ⟨htK, (hkR t htK).2 (by rw [hct]; exact hne)⟩
       refine ⟨xT P v NR t, List.mem_map.2 ⟨t, ht, rfl⟩, ?_⟩
-      rw [hset t ht, hct]
+      Ξ hset t ht, hct
   · -- no repetition
     have e : (xL P v NR K).map (fun y => (recOf y).toSet (interiorModel (Qof P)) (Qof P)) =
         (kl P v NR K).map (fun t => (NR.chord t).toSet (chainModel C) (Qof P)) := by
       unfold xL
-      rw [List.map_map]
+      Ξ List.map_map
       exact List.map_congr_left fun t ht => hset t ht
-    rw [e]
+    Ξ e
     exact (kl_nodup K).map_on fun t ht t' ht' h =>
       X.hNR.2.1 t t' (mem_kl.1 ht).1 (mem_kl.1 ht').1 h
   · -- attached, in range
@@ -118,13 +120,13 @@ theorem postMath : PostMath := by
     intro q hq
     have hlen : (xL P v NR K).length = (kl P v NR K).length := by
       unfold xL; rw [List.length_map]
-    have hq2 : q / 2 < (kl P v NR K).length := by omega
+    have hq2 : q / 2 < (kl P v NR K).length := ⋄
     have ht : (kl P v NR K)[q / 2] ∈ kl P v NR K := List.getElem_mem hq2
     have hget : (xL P v NR K).getD (q / 2) (0, 0, 0) = xT P v NR ((kl P v NR K)[q / 2]) := by
       unfold xL
-      rw [List.getD_eq_getElem _ _ (by rw [List.length_map]; exact hq2), List.getElem_map]
+      Ξ List.getD_eq_getElem _ _ (by rw [List.length_map]; exact hq2), List.getElem_map
     unfold endPos
-    rw [hget]
+    Ξ hget
     split_ifs
     · exact (hon _ ht).1
     · exact (hon _ ht).2

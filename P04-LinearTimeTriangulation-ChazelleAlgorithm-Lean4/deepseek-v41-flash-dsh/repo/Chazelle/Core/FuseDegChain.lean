@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseDegPiece
 
 /-!
@@ -49,7 +51,7 @@ theorem halfIn_side (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
   obtain ⟨r₃, hr₃, hsl⟩ : ∃ r₃ > 0, ∀ y ∈ ball ((x, h) : Point) r₃,
       0 < τ * (y.2 - h) → y ∉ C'.slit := by
     rcases hcol with hc | ⟨hτ1, hc⟩ | hc
-    · refine ⟨C'.top.2 - h, by linarith, fun y hy _ hys => ?_⟩
+    · refine ⟨C'.top.2 - h, ⟡, fun y hy _ hys => ?_⟩
       have h1 := (C'.mem_slit_iff.1 hys).2.1
       rw [mem_ball, Prod.dist_eq, max_lt_iff, Real.dist_eq, Real.dist_eq] at hy
       have := (abs_lt.1 hy.2).2
@@ -99,13 +101,13 @@ theorem between_open {M : Model} (hM : WalkAx M) {f : Set Point} (hf : f ∈ M.A
       exact hwD (this ▸ hyD)
   obtain ⟨hz2, hzq, hzw⟩ := hstrict hz hzD
   obtain ⟨-, hz'q, hz'w⟩ := hstrict hz' hz'D
-  rw [hz2]
+  Ξ hz2
   refine (open_pt hqy (Or.inl rfl) hop ?_ ?_).2
-  · simp only [one_mul]
+  · ϴ one_mul
     rcases le_total z.1 z'.1 with h | h
     · rw [min_eq_left h] at hx1; linarith
     · rw [min_eq_right h] at hx1; linarith
-  · simp only [one_mul]
+  · ϴ one_mul
     rcases le_total z.1 z'.1 with h | h
     · rw [max_eq_right h] at hx2; linarith
     · rw [max_eq_left h] at hx2; linarith
@@ -338,7 +340,7 @@ theorem parents_ncard_le (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
     rintro c ⟨hc, e, ⟨he, hRe⟩, hec⟩
     obtain ⟨f, hf, hRf, hadj, hcf⟩ :=
       parent_touch J hP hC'P hset hSi hF hfin hends hR he hRe hc hec
-    simp only [Set.mem_iUnion]
+    ϴ Set.mem_iUnion
     exact ⟨f, ⟨⟨hf, hRf⟩, hadj⟩, hcf⟩
   refine (Set.ncard_le_ncard hsub (hSi.1.subset ?_)).trans ?_
   · intro c hc
@@ -349,9 +351,9 @@ theorem parents_ncard_le (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
     rcases phi_mem_or_empty M M' Si R f with h | h
     · exact hdeg _ h
     · have : exits M' Si (Phi M M' Si R f) = ∅ := by
-        rw [h]
+        Ξ h
         ext c
-        simp only [exits, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and]
+        ϴ exits, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_and
         rintro - ⟨z, -, hz⟩
         rw [closure_empty] at hz
         exact hz

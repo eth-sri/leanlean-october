@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRPlC
 
 /-!
@@ -22,7 +24,7 @@ theorem hostLeaves_take_drop (n C : ℕ) (H : Host) (i : ℕ) :
     hostLeaves n C 0 H = hostLeaves n C 0 (H.take i) ++
       hostLeaves n C (Host.pts n (H.take i)).length (H.drop i) := by
   conv_lhs => rw [← List.take_append_drop i H]
-  rw [hostLeaves_append, Nat.zero_add]
+  Ξ hostLeaves_append, Nat.zero_add
 
 theorem hostLeaves_take_le (n C : ℕ) (H : Host) (i : ℕ) :
     (hostLeaves n C 0 (H.take i)).length ≤ (hostLeaves n C 0 H).length := by

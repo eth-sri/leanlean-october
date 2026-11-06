@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FactsAttach
 public import Chazelle.Core.ShearInv
 
@@ -99,11 +101,11 @@ theorem vertex_of_side (hQ : Q.Simple) (hDH : DistinctHeights Q) {w : Point}
   set u := Q.vtx e
   set v := Q.vtx ((e + 1) % Q.n)
   have hn := simple_three_le hQ
-  have huv : u.2 ≠ v.2 := hDH e _ he (Nat.mod_lt _ (by omega)) (succIdx_ne Q hn he).symm
+  have huv : u.2 ≠ v.2 := hDH e _ he (Nat.mod_lt _ (⋄)) (succIdx_ne Q hn he).symm
   have hd : v.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm huv)
   obtain ⟨ε, hε, hball⟩ := Metric.eventually_nhds_iff.1 hnear
   set L := dist u v + 1 with hL
-  have hL0 : 0 < L := by positivity
+  have hL0 : 0 < L := ⟢
   set δ := min (min t (1 - t)) (ε / L) / 2 with hδ
   have hδ0 : 0 < δ := by
     rw [hδ]; have := lt_min (lt_min ht.1 (sub_pos.2 ht.2)) (div_pos hε hL0); linarith
@@ -117,7 +119,7 @@ theorem vertex_of_side (hQ : Q.Simple) (hDH : DistinctHeights Q) {w : Point}
   set σ : ℝ := if 0 < τ * (v.2 - u.2) then 1 else -1 with hσ
   have hσ1 : σ = 1 ∨ σ = -1 := by rw [hσ]; split_ifs <;> simp
   have hσpos : 0 < τ * (σ * (v.2 - u.2)) := by
-    rw [hσ]
+    Ξ hσ
     have hτd : τ * (v.2 - u.2) ≠ 0 := mul_ne_zero (by rcases hτ with rfl | rfl <;> norm_num) hd
     split_ifs with h
     · linarith
@@ -128,18 +130,18 @@ theorem vertex_of_side (hQ : Q.Simple) (hDH : DistinctHeights Q) {w : Point}
   have hs1 : s ≤ 1 := by rcases hσ1 with h | h <;> rw [hs, h] <;> linarith
   have hpt : lerp u v s ∈ Q.boundary := ⟨e, he, lerp_mem_segment _ _ hs0 hs1⟩
   apply (hball ?_ ?_).2 hpt
-  · rw [dist_eq_norm]
+  · Ξ dist_eq_norm
     have : lerp u v s - lerp u v t = (σ * δ) • (v - u) := by
       apply point_ext <;> simp [lerp, hs] <;> ring
-    rw [this, norm_smul, Real.norm_eq_abs, abs_mul, abs_of_pos hδ0, ← dist_eq_norm, dist_comm]
+    Ξ this, norm_smul, Real.norm_eq_abs, abs_mul, abs_of_pos hδ0, ← dist_eq_norm, dist_comm
     have : |σ| = 1 := by rcases hσ1 with h | h <;> rw [h] <;> norm_num
-    rw [this, one_mul]
+    Ξ this, one_mul
     calc δ * dist u v ≤ δ * L := by rw [hL]; nlinarith
       _ < ε := hδε
-  · simp only [lerp_snd, hs]
+  · ϴ lerp_snd, hs
     have : u.2 + (t + σ * δ) * (v.2 - u.2) - (u.2 + t * (v.2 - u.2)) =
-        δ * (σ * (v.2 - u.2)) := by ring
-    rw [this]
+        δ * (σ * (v.2 - u.2)) := ⋆
+    Ξ this
     nlinarith
 
 /-- A vertex at a given height is unique. -/
@@ -166,9 +168,9 @@ theorem side_chords_eq (hQ : Q.Simple) (hDH : DistinctHeights Q) {T : Set Point}
       (z.1 < (Q.vtx k₀).1 ↔ z'.1 < (Q.vtx k₀).1) → c = c' := by
     intro c c' z z' hc hc' hz hz' hzD hz'D hzy hz'y hzl hz'r hle hside
     obtain ⟨y, a, b, h, rfl⟩ := hc
-    have hy : y = y₀ := by rw [← hzy, hz.1]
+    have hy : y = y₀ := Ρ ← hzy, hz.1
     by_cases hall : ∀ s : ℝ, z.1 ≤ s → s ≤ z'.1 → ((s, y₀) : Point) ∈ Q.filled \ Q.boundary
-    · have hz'c : z' ∈ hseg y a b := mem_of_joined h hz hzD (by rw [hz'y, hy]) (fun s h1 h2 => by
+    · have hz'c : z' ∈ hseg y a b := mem_of_joined h hz hzD (Ρ hz'y, hy) (fun s h1 h2 => by
         rw [min_eq_left hle] at h1; rw [max_eq_right hle] at h2
         rw [hy]; exact hall s h1 h2)
       exact eq_of_common ⟨y, a, b, h, rfl⟩ hc' hz'c hz' hz'D
@@ -179,15 +181,15 @@ theorem side_chords_eq (hQ : Q.Simple) (hDH : DistinctHeights Q) {T : Set Point}
         rw [← e, ← hzy]; exact hzD)
       have hs2' : s < z'.1 := lt_of_le_of_ne hs2 fun e => hsD (by
         rw [e, ← hz'y]; exact hz'D)
-      have hsl : xl < s := by linarith
-      have hsr : s < xr := by linarith
+      have hsl : xl < s := ⟡
+      have hsr : s < xr := ⟡
       have hb : ((s, y₀) : Point) ∈ Q.boundary := by
         by_contra hb; exact hsD ⟨hcl s hsl hsr, hb⟩
       obtain ⟨m, hm, hwm⟩ := vertex_of_side hQ hDH hb hτ
         ((hnear s hsl hsr).mono fun p' hp' hpos => hT (hp' hpos))
-      have hmk : m = k₀ := vtx_eq_of_height hDH hm hk₀ (by rw [← hwm, hk₀y])
+      have hmk : m = k₀ := vtx_eq_of_height hDH hm hk₀ (Ρ ← hwm, hk₀y)
       subst hmk
-      have hsx : s = (Q.vtx m).1 := by rw [← hwm]
+      have hsx : s = (Q.vtx m).1 := Ρ ← hwm
       rw [hsx] at hs1' hs2'
       by_cases h1 : z.1 < (Q.vtx m).1
       · have := hside.1 h1; linarith
@@ -202,7 +204,7 @@ theorem side_iff {c : Set Point} (hc : HC Q c) {y₀ : ℝ} {w₀ : Point}
     (hzD : z ∈ Q.filled \ Q.boundary) (hzy : z.2 = y₀) :
     (∃ z' ∈ c, z' ∈ Q.filled \ Q.boundary ∧ z'.2 = y₀ ∧ z'.1 < w₀.1) ↔ z.1 < w₀.1 := by
   obtain ⟨y, a, b, h, rfl⟩ := hc
-  have hy : y = y₀ := by rw [← hzy, hz.1]
+  have hy : y = y₀ := Ρ ← hzy, hz.1
   constructor
   · rintro ⟨z', hz', hz'D, -, hlt⟩
     by_contra hge
@@ -211,7 +213,7 @@ theorem side_iff {c : Set Point} (hc : HC Q c) {y₀ : ℝ} {w₀ : Point}
       have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rw [this]; exact hzD)
     have := between_mem h hz' hz'D hz hzD hlt.le (lt_of_le_of_ne hge (Ne.symm hne)).le
     apply hw₀
-    have e : ((w₀.1, y) : Point) = w₀ := point_ext rfl (by rw [hy, hw₀y])
+    have e : ((w₀.1, y) : Point) = w₀ := point_ext rfl (Ρ hy, hw₀y)
     rw [← e]; exact this
   · intro hlt; exact ⟨z, hz, hzD, hzy, hlt⟩
 
@@ -231,7 +233,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
   set T := trapSet Q i j y₁ y₂ with hTdef
   set U := connectedComponentIn (freeIn D G) q with hUdef
   have hUT : U ⊆ T := by
-    rw [hTdef, ← h.region_eq hQ hqR]
+    Ξ hTdef, ← h.region_eq hQ hqR
     exact isPreconnected_connectedComponentIn.subset_connectedComponentIn
       (mem_connectedComponentIn hqf) ((connectedComponentIn_subset _ _).trans hfreeR)
   have hTD : T ⊆ D := h.trapSet_subset_interior hQ hqR
@@ -239,8 +241,8 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
   have hfreeU : U ⊆ freeIn D G := connectedComponentIn_subset _ _
   have hcl : closure U ⊆ closedTrap Q i j y₁ y₂ :=
     (closure_mono hUT).trans (Visibility.closure_trapSet_subset _ _ _ _ _)
-  have hqy₁ : y₁ < q.2 := hqT.1
-  have hqy₂ : q.2 < y₂ := hqT.2.1
+  have hqy₁ := hqT.1
+  have hqy₂ := hqT.2.1
   -- a domain point of the closed trapezoid at a middle height is inside
   have hmid : ∀ z ∈ D, z ∈ closedTrap Q i j y₁ y₂ → y₁ < z.2 → z.2 < y₂ → z ∈ T := by
     intro z hzD hzC hz1 hz2
@@ -251,12 +253,12 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
   have hslice : ∀ c ∈ G, ∀ z ∈ c, z ∈ T → ∀ w ∈ T, w.2 = z.2 → w ∈ c := by
     intro c hc z hz hzT w hwT hwz
     obtain ⟨y, a, b, hh, rfl⟩ := hG c hc
-    have hzy : z.2 = y := hz.1
+    have hzy := hz.1
     refine mem_of_joined hh hz (hTD hzT) (hwz.trans hzy) fun s h1 h2 => hTD ?_
     have hseg : Chazelle.segment z w ⊆ T :=
       Geometry.segment_subset_of_convex (Visibility.convex_trapSet _ _ _ _ _) hzT hwT
     apply hseg
-    rw [Visibility.segment_horizontal_eq_hseg hwz.symm]
+    Ξ Visibility.segment_horizontal_eq_hseg hwz.symm
     exact ⟨hzy.symm, h1, h2⟩
   -- `U` is on one side of a chord crossing `T`
   have hno : ∀ c ∈ G, ∀ z ∈ c, z ∈ T → ∀ p ∈ U, p.2 ≠ z.2 := fun c hc z hz hzT p hp he =>
@@ -343,7 +345,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         have h1 := side_iff (hG c hc.1) hw₀D hk₀y hz hzD hzy
         have h2 := side_iff (hG c' hc'.1) hw₀D hk₀y hz' hz'D hz'y
         have hside : z.1 < w₀.1 ↔ z'.1 < w₀.1 := by
-          rw [← h1, ← h2]
+          Ξ ← h1, ← h2
           simp only [f, decide_eq_decide] at hff
           exact hff
         obtain ⟨-, -, hzl, hzr⟩ := hcl hzU
@@ -396,7 +398,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         have h1 := side_iff (hG c hc.1) hw₀D hk₀y hz hzD hzy
         have h2 := side_iff (hG c' hc'.1) hw₀D hk₀y hz' hz'D hz'y
         have hside : z.1 < w₀.1 ↔ z'.1 < w₀.1 := by
-          rw [← h1, ← h2]
+          Ξ ← h1, ← h2
           simp only [f, decide_eq_decide] at hff
           exact hff
         obtain ⟨-, -, hzl, hzr⟩ := hcl hzU
@@ -414,7 +416,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
     (hGfin.subset fun c hc => hc.1).union (hGfin.subset fun c hc => hc.1)
   calc {c | c ∈ G ∧ TouchesIn D c U}.ncard ≤ (E₁ ∪ E₂).ncard := ncard_le_ncard hsub hfin12
     _ ≤ E₁.ncard + E₂.ncard := ncard_union_le _ _
-    _ ≤ 4 := by omega
+    _ ≤ 4 := ⋄
 
 end FullDegInt
 

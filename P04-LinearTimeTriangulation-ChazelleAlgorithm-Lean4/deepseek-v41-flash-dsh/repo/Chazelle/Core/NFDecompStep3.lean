@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFDecompStep2
 
 /-!
@@ -41,7 +43,7 @@ local notation "cr'" => crNext K chOf top best σ j cr
 /-- At round `0` the root component is everything. -/
 theorem sub_root0 (hj : j = 0) : sub R prg pch σ.rem 0 = range R := by
   ext v
-  rw [mem_sub, Finset.mem_range]
+  Ξ mem_sub, Finset.mem_range
   exact ⟨fun hh => hh.1, fun hv => ⟨hv, anc_root_of h hv (hI.i7 hj).1⟩⟩
 
 /-- A component with a proper member has at least two regions. -/
@@ -183,39 +185,39 @@ theorem next_i4 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t = 1 →
   right
   by_cases htop : IsTop pch σ.rem t
   · -- an old top: it must be a cut component
-    rw [act_top h hch hT hB hI ht htop] at hact'
+    Ξ' act_top h hch hT hB hI ht htop at hact'
     have hact : σ.act t = 1 := by
-      by_contra hh; rw [ite_eq_right hh] at hact'; exact hh hact'
-    rw [ite_eq_left hact] at hact'
+      by_contra hh; Ξ' ite_eq_right hh at hact'; exact hh hact'
+    Ξ' ite_eq_left hact at hact'
     have hbt : best t ≠ t := by
-      intro hh; rw [ite_eq_left hh] at hact'; exact absurd hact' (by norm_num)
+      intro hh; Ξ' ite_eq_left hh at hact'; exact absurd hact' (⊛)
     obtain ⟨b1, b2, b3, b4, b5, b6, b7, b8⟩ := cut_chosen h hch hT hB hI ht htop hact hbt
     have hcp : (σ').cpar t = pch (best t) := by
-      rw [cpar_top h hch hT hB hI ht htop, ite_eq_left hact, ite_eq_right hbt]
+      Ξ cpar_top h hch hT hB hI ht htop, ite_eq_left hact, ite_eq_right hbt
     have hsd : (σ').side t = (if isdn (best t) = 1 then 1 else 0) := by
-      rw [side_top h hch hT hB hI ht htop, ite_eq_left hact, ite_eq_right hbt]
-    rw [hcp, hsd]
+      Ξ side_top h hch hT hB hI ht htop, ite_eq_left hact, ite_eq_right hbt
+    Ξ hcp, hsd
     refine ⟨by split_ifs <;> omega, b4, (pend_next h hch hT hB hI b4).2 b7, ?_⟩
     have := (sub_new_sides h hch hT hB hI (s := if isdn (best t) = 1 then 1 else 0) b4 b7).2
-    rw [b5, b6] at this
+    Ξ' b5, b6 at this
     apply this
     by_cases hd : isdn (best t) = 1
-    · rw [ite_eq_left hd]; exact fun hh => absurd (hh.1 hd) (by norm_num)
+    · rw [ite_eq_left hd]; exact fun hh => absurd (hh.1 hd) (⊛)
     · rw [ite_eq_right hd]; exact fun hh => hd (hh.2 rfl)
   · -- a new top
     obtain ⟨ht0, hc⟩ := ((istop_next h hch hT hB hI ht).1 htop').resolve_left htop
     have hpk := h.pch_lt t ht ht0
     have hco := chOf_pch h hch hT hB hI ht ht0
     obtain ⟨n1, n2, n3⟩ := new_top_facts h hch hT hB hI hpk hc
-    rw [hco] at n2 n3
-    rw [n2, n3]
+    Ξ' hco at n2 n3
+    Ξ n2, n3
     refine ⟨by split_ifs <;> omega, hpk, (pend_next h hch hT hB hI hpk).2 hc, ?_⟩
     have := (sub_new_sides h hch hT hB hI (s := if isdn t = 1 then 0 else 1) hpk hc).1
-    rw [hco] at this
+    Ξ' hco at this
     apply this
     by_cases hd : isdn t = 1
     · rw [ite_eq_left hd]; exact ⟨fun _ => rfl, fun _ => hd⟩
-    · rw [ite_eq_right hd]; exact ⟨fun hh => absurd hh hd, fun hh => absurd hh (by norm_num)⟩
+    · rw [ite_eq_right hd]; exact ⟨fun hh => absurd hh hd, fun hh => absurd hh (⊛)⟩
 
 theorem next_i5 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t ≠ 1 →
     sub R prg pch (σ').rem t = {t} ∧
@@ -305,50 +307,50 @@ theorem next_i6 (hdeg : ∀ v, v < R → (kids R prg pch rem0 v).card + (if v = 
     have h6 := (hI.i6 t ht htop hact).1
     have hD : 1 ≤ D := by
       have := hdeg _ b1
-      rw [ite_eq_right b3] at this
+      Ξ' ite_eq_right b3 at this
       omega
     obtain ⟨c, hc, htc, hct, hgood⟩ := exists_good h hdeg ht htop hn
     have hmax := (hB t ht htop).1 c hc htc hct
     rcases (hB t ht htop).2 with ⟨e, -⟩ | ⟨-, -, -, hbv⟩
     · exact absurd e hbt
-    rw [hbv] at hmax
+    Ξ' hbv at hmax
     have hm : sz R prg pch σ.rem (best t) + (sz R prg pch σ.rem t - sz R prg pch σ.rem (best t)) - 1 ≤
         D * min (sz R prg pch σ.rem (best t)) (sz R prg pch σ.rem t - sz R prg pch σ.rem (best t)) := by
       have : sz R prg pch σ.rem (best t) + (sz R prg pch σ.rem t - sz R prg pch σ.rem (best t)) =
-          sz R prg pch σ.rem t := by omega
-      rw [this]
+          sz R prg pch σ.rem t := ⋄
+      Ξ this
       exact hgood.trans (Nat.mul_le_mul_left _ hmax)
     have ha := sz_pos h (rem := σ.rem) b1
-    obtain ⟨s1, s2⟩ := split_bound hD ha (by omega) hm
+    obtain ⟨s1, s2⟩ := split_bound hD ha (⋄) hm
     have e1 : sz R prg pch σ.rem (best t) + (sz R prg pch σ.rem t - sz R prg pch σ.rem (best t)) - 1 =
-        sz R prg pch σ.rem t - 1 := by omega
-    rw [e1] at s1 s2
+        sz R prg pch σ.rem t - 1 := ⋄
+    Ξ' e1 at s1 s2
     have m1 := le_hstep hD s1
     have m2 := le_hstep hD s2
     have m3 := hstep_mono D (show sz R prg pch σ.rem t - 1 ≤ (hstep D)^[j] K by omega)
     have m4 : hstep D (sz R prg pch σ.rem t - 1) ≤ (hstep D)^[j + 1] K := by
       rw [Function.iterate_succ_apply']; exact m3
-    refine ⟨?_, ?_, by omega⟩
+    refine ⟨?_, ?_, ⋄⟩
     · omega
     · omega
   intro t ht htop' hact'
   by_cases htop : IsTop pch σ.rem t
-  · rw [act_top h hch hT hB hI ht htop] at hact'
+  · Ξ' act_top h hch hT hB hI ht htop at hact'
     have hact : σ.act t = 1 := by
-      by_contra hh; rw [ite_eq_right hh] at hact'; exact hh hact'
-    rw [ite_eq_left hact] at hact'
+      by_contra hh; Ξ' ite_eq_right hh at hact'; exact hh hact'
+    Ξ' ite_eq_left hact at hact'
     have hbt : best t ≠ t := by
-      intro hh; rw [ite_eq_left hh] at hact'; exact absurd hact' (by norm_num)
+      intro hh; Ξ' ite_eq_left hh at hact'; exact absurd hact' (⊛)
     obtain ⟨k1, -, k3⟩ := key t ht htop hact hbt
     exact ⟨k1, Or.inr (by simpa using k3)⟩
   · obtain ⟨ht0, hc⟩ := ((istop_next h hch hT hB hI ht).1 htop').resolve_left htop
     have hpk := h.pch_lt t ht ht0
     have hco := chOf_pch h hch hT hB hI ht ht0
     obtain ⟨t1, t2, t3, t4, t5, -, -, -, -, -, -⟩ := chosen_facts h hch hT hB hI hpk hc
-    rw [hco] at t1 t2 t3 t4 t5
+    Ξ' hco at t1 t2 t3 t4 t5
     have hbt : best (top t) ≠ top t := by rw [t4]; exact t5
     obtain ⟨-, k2, k3⟩ := key (top t) t1 t2 t3 hbt
-    rw [t4] at k2
+    Ξ' t4 at k2
     exact ⟨k2, Or.inr (by simpa using k3)⟩
 
 theorem next_i8 : 1 ≤ j + 1 → ValidC R K pch (σ') (σ').root ∧ compOf gc' (σ').root = range R ∧
@@ -357,11 +359,11 @@ theorem next_i8 : 1 ≤ j + 1 → ValidC R K pch (σ') (σ').root ∧ compOf gc'
   rcases Nat.eq_zero_or_pos j with hj | hj
   · obtain ⟨-, a0, s0⟩ := hI.i7 hj
     have hroot : (σ').root = code best pch 0 := by
-      simp only [next, ite_eq_left a0, ite_eq_left s0]
-    rw [hroot]
+      ϴ next, ite_eq_left a0, ite_eq_left s0
+    Ξ hroot
     obtain ⟨v1, v2, v3⟩ := code_next h hch hT hB hI h.R_pos (Or.inl rfl) a0
-    refine ⟨v1, by rw [v2]; exact sub_root0 h hch hT hB hI hj, by rw [v3, ite_eq_left s0]⟩
-  · rw [root_next_pos h hch hT hB hI hj]
+    refine ⟨v1, by rw [v2]; exact sub_root0 h hch hT hB hI hj, Ρ v3, ite_eq_left s0⟩
+  · Ξ root_next_pos h hch hT hB hI hj
     obtain ⟨o1, o2, o3⟩ := hI.i8 hj
     obtain ⟨v1, v2, v3⟩ := valid_next h hch hT hB hI o1
     exact ⟨v1, v2.trans o2, v3.trans o3⟩
@@ -372,22 +374,22 @@ theorem next_i9 : (σ').fin =
       (range R).filter (fun t => IsTop pch σ.rem t ∧ σ.act t ≠ 1) ∪
         (range R).filter (fun r => top r = r ∧ σ.act r = 1 ∧ best r = r) := by
     ext t
-    simp only [Finset.mem_union, Finset.mem_filter, Finset.mem_range]
+    ϴ Finset.mem_union, Finset.mem_filter, Finset.mem_range
     constructor
     · rintro ⟨ht, htop', hact'⟩
       by_cases htop : IsTop pch σ.rem t
-      · rw [act_top h hch hT hB hI ht htop] at hact'
+      · Ξ' act_top h hch hT hB hI ht htop at hact'
         by_cases hact : σ.act t = 1
-        · rw [ite_eq_left hact] at hact'
+        · Ξ' ite_eq_left hact at hact'
           have hbt : best t = t := by
-            by_contra hh; rw [ite_eq_right hh] at hact'; exact hact' hact
+            by_contra hh; Ξ' ite_eq_right hh at hact'; exact hact' hact
           exact Or.inr ⟨ht, top_self h hch hT hB hI ht htop, hact, hbt⟩
         · exact Or.inl ⟨ht, htop, hact⟩
       · obtain ⟨ht0, hc⟩ := ((istop_next h hch hT hB hI ht).1 htop').resolve_left htop
         have hpk := h.pch_lt t ht ht0
         have hco := chOf_pch h hch hT hB hI ht ht0
         obtain ⟨n1, -, -⟩ := new_top_facts h hch hT hB hI hpk hc
-        rw [hco] at n1
+        Ξ' hco at n1
         exact absurd n1 hact'
     · rintro (⟨ht, htop, hact⟩ | ⟨ht, htt, hact, hbt⟩)
       · refine ⟨ht, (istop_next h hch hT hB hI ht).2 (Or.inl htop), ?_⟩
@@ -397,10 +399,10 @@ theorem next_i9 : (σ').fin =
         rw [act_top h hch hT hB hI ht htop, ite_eq_left hact, ite_eq_left hbt]; norm_num
   have hdisj : Disjoint ((range R).filter (fun t => IsTop pch σ.rem t ∧ σ.act t ≠ 1))
       ((range R).filter (fun r => top r = r ∧ σ.act r = 1 ∧ best r = r)) := by
-    rw [Finset.disjoint_filter]
+    Ξ Finset.disjoint_filter
     intro t _ h1 h2
     exact h1.2 h2.2.1
-  rw [hsplit, Finset.card_union_of_disjoint hdisj, ← hI.i9]
+  Ξ hsplit, Finset.card_union_of_disjoint hdisj, ← hI.i9
   rfl
 
 /-- **Preservation of the round invariant.** -/
@@ -414,7 +416,7 @@ theorem rinv_next (hdeg : ∀ v, v < R → (kids R prg pch rem0 v).card + (if v 
   i4 := next_i4 h hch hT hB hI
   i5 := next_i5 h hch hT hB hI
   i6 := next_i6 h hch hT hB hI hdeg
-  i7 hj := absurd hj (by omega)
+  i7 hj := absurd hj (⋄)
   i8 := next_i8 h hch hT hB hI
   i9 := next_i9 h hch hT hB hI
 

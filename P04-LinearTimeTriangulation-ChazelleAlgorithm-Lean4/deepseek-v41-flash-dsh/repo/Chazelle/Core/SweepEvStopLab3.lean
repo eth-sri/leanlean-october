@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopLab2
 public import Chazelle.Core.SweepEvStep
 
@@ -62,11 +64,11 @@ theorem slb_nonfused_pt {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChor
   have haa : a = a' := by
     rcases ha with rfl | rfl <;> rcases ha' with rfl | rfl
     · rfl
-    · exact shared_eq_top_of_snd J (by rw [← h2', h2])
-    · exact (shared_eq_top_of_snd J (by rw [← h2, h2'])).symm
+    · exact shared_eq_top_of_snd J (Ρ ← h2', h2)
+    · exact (shared_eq_top_of_snd J (Ρ ← h2, h2')).symm
     · rfl
   subst haa
-  have hσσ : σ' ≠ σ := fun h => hne (by rw [h])
+  have hσσ : σ' ≠ σ := fun h => hne (Ρ h)
   have hσ' : σ' = -σ := by
     rcases hσ with rfl | rfl <;> rcases hσ' with rfl | rfl <;> simp_all
   have hss : σ * (s + s') = 0 := by rw [hσ'] at h1'; linarith

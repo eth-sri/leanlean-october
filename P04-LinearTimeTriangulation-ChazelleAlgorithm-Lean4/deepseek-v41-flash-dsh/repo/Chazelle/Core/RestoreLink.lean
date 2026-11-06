@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreMath
 
 /-!
@@ -50,22 +52,22 @@ theorem exists_lerp_near {a b : Point} (hab : a ≠ b) {ρ : ℝ} (hρ : 0 < ρ)
     ∃ s : ℝ, 0 < s ∧ s < 1 ∧ lerp a b s ≠ a ∧ dist (lerp a b s) a < ρ := by
   have hd : 0 < dist b a := dist_pos.2 hab.symm
   set s := min (1 / 2) (ρ / (2 * dist b a)) with hs
-  have hs0 : 0 < s := lt_min (by norm_num) (div_pos hρ (by positivity))
-  have hs1 : s < 1 := lt_of_le_of_lt (min_le_left _ _) (by norm_num)
+  have hs0 : 0 < s := lt_min (⊛) (div_pos hρ (⟢))
+  have hs1 : s < 1 := lt_of_le_of_lt (min_le_left _ _) (⊛)
   have hdist : dist (lerp a b s) a = s * dist b a := by
     rw [Geometry.lerp_eq_add_smul, dist_eq_norm, add_sub_cancel_left, norm_smul,
       Real.norm_eq_abs, abs_of_pos hs0, dist_eq_norm]
   refine ⟨s, hs0, hs1, ?_, ?_⟩
   · intro h
-    have h' : dist (lerp a b s) a = 0 := by rw [h, dist_self]
+    have h' : dist (lerp a b s) a = 0 := Ρ h, dist_self
     rw [hdist] at h'
     exact (mul_pos hs0 hd).ne' h'
-  · rw [hdist]
+  · Ξ hdist
     have : s ≤ ρ / (2 * dist b a) := min_le_right _ _
     calc s * dist b a ≤ ρ / (2 * dist b a) * dist b a :=
           mul_le_mul_of_nonneg_right this hd.le
       _ = ρ / 2 := by field_simp
-      _ < ρ := by linarith
+      _ < ρ := ⟡
 
 /-- **An attached admissible chord enters the left sector**: for every set `K` containing the
 small left sector at the attachment, the chord has a point in the domain lying in `K`. -/
@@ -106,20 +108,20 @@ theorem subset_component_of_touches (hD : IsOpen M.D) {F : Set (Set Point)}
   have hcD : c ∩ M.D ⊆ M.D \ e := fun z hz =>
     ⟨hz.2, fun hze => hF.inter_subset_compl hc he hce ⟨hz.1, hze⟩ hz.2⟩
   have hcK : c ∩ M.D ⊆ connectedComponentIn (M.D \ e) c₀ := by
-    rw [hK]
+    Ξ hK
     exact (hF.chord_inter_nonempty_isPreconnected hc).2.subset_connectedComponentIn hx hcD
   have hopen : IsOpen (connectedComponentIn (M.D \ e) c₀) :=
     (hD.sdiff (hF.isClosed_chord he)).connectedComponentIn
   obtain ⟨z, hz, hzU⟩ := ht
   obtain ⟨u, huK, huU⟩ := mem_closure_iff.1 hzU _ hopen (hcK hz)
-  rw [connectedComponentIn_eq huK]
+  Ξ connectedComponentIn_eq huK
   exact hUc.subset_connectedComponentIn huU hU
 
 /-- Two distinct components of one set are disjoint. -/
 theorem components_disjoint {A : Set Point} {c₁ c₂ : Point}
     (hne : connectedComponentIn A c₁ ≠ connectedComponentIn A c₂) :
     Disjoint (connectedComponentIn A c₁) (connectedComponentIn A c₂) := by
-  rw [Set.disjoint_left]
+  Ξ Set.disjoint_left
   intro x h1 h2
   exact hne ((connectedComponentIn_eq h1).trans (connectedComponentIn_eq h2).symm)
 
@@ -175,9 +177,9 @@ theorem splitsWell_of_sideExits (hM : WalkAx M) {S : Set (Set Point)} (hS : S �
   have hs2 := side c₂ _ _ hsec₂
   -- pick one exit chord on each side
   have hne1 : (sideExits M S R (pa + ta) (pb + tb)).Nonempty :=
-    nonempty_of_ncard_ne_zero (by omega)
+    nonempty_of_ncard_ne_zero (⋄)
   have hne2 : (sideExits M S R (pb + tb) (pa + ta)).Nonempty :=
-    nonempty_of_ncard_ne_zero (by omega)
+    nonempty_of_ncard_ne_zero (⋄)
   obtain ⟨d₁, hd₁⟩ := hne1
   obtain ⟨d₂, hd₂⟩ := hne2
   have hR12 : ∀ Q, Q = R₁ ∨ Q = R₂ → Q ∈ regionsIn M.D F := by

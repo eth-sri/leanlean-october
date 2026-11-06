@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Separator.Maps
 public import Mathlib.Combinatorics.SimpleGraph.Metric
 
@@ -57,11 +59,11 @@ def parent (v : V) : V := if v = T.root then T.root else M.head (T.par v)
 def IsAnc (v u : V) : Prop := ∃ n : ℕ, T.parent^[n] u = v
 
 /-- The root is its own parent. -/
-theorem parent_root : T.parent T.root = T.root := by simp [parent]
+theorem parent_root : T.parent T.root = T.root := ⊚ parent
 
 /-- The parent of a non-root vertex is the head of its parent dart. -/
 theorem parent_of_ne {v : V} (hv : v ≠ T.root) : T.parent v = M.head (T.par v) := by
-  simp [parent, hv]
+  Θ parent, hv
 
 omit [DecidableEq V] in
 /-- Non-root vertices have positive level. -/
@@ -100,7 +102,7 @@ theorem isAnc_parent_self (u : V) : T.IsAnc (T.parent u) u := ⟨1, rfl⟩
 theorem IsAnc.trans {w v u : V} (h1 : T.IsAnc w v) (h2 : T.IsAnc v u) : T.IsAnc w u := by
   obtain ⟨m, rfl⟩ := h1
   obtain ⟨n, rfl⟩ := h2
-  exact ⟨m + n, by rw [Function.iterate_add_apply]⟩
+  exact ⟨m + n, Ρ Function.iterate_add_apply⟩
 
 /-- Ancestors have smaller levels. -/
 theorem IsAnc.level_le {v u : V} (h : T.IsAnc v u) : T.level v ≤ T.level u := by
@@ -134,11 +136,11 @@ theorem eq_of_isAnc_of_level_eq {v v' u : V} (h : T.IsAnc v u) (h' : T.IsAnc v' 
   obtain ⟨n', rfl⟩ := h'
   rw [T.level_iterate_parent, T.level_iterate_parent] at hl
   by_cases hn : T.level u ≤ n
-  · rw [T.iterate_parent_eq_root hn, T.iterate_parent_eq_root (by omega)]
+  · rw [T.iterate_parent_eq_root hn, T.iterate_parent_eq_root (⋄)]
   · by_cases hn' : T.level u ≤ n'
     · omega
-    · have : n = n' := by omega
-      rw [this]
+    · have : n = n' := ⋄
+      Ξ this
 
 end Basic
 
@@ -158,14 +160,14 @@ theorem par_ne_opp_par {v w : V} (hv : v ≠ T.root) (hw : w ≠ T.root) :
   have e1 : M.head (T.par w) = v := by
     rw [← T.vert_par v hv, h]; rfl
   have e2 : M.head (T.par v) = w := by
-    rw [← T.vert_par w hw, h, head, M.opp_opp]
+    Ξ ← T.vert_par w hw, h, head, M.opp_opp
   rw [e1] at h1; rw [e2] at h2
   omega
 
 /-- Parent darts of distinct vertices are distinct. -/
 theorem par_injective {v w : V} (hv : v ≠ T.root) (hw : w ≠ T.root) (h : T.par v = T.par w) :
     v = w := by
-  rw [← T.vert_par v hv, ← T.vert_par w hw, h]
+  Ξ ← T.vert_par v hv, ← T.vert_par w hw, h
 
 variable [Fintype V] [DecidableEq V] [DecidableEq D]
 
@@ -196,8 +198,8 @@ theorem opp_mem_treeDarts {d : D} (hd : d ∈ T.treeDarts) : M.opp d ∈ T.treeD
 /-- A spanning tree has `V - 1` edges: `|treeDarts| = 2 (V - 1)`. -/
 theorem card_treeDarts : T.treeDarts.card = 2 * (Fintype.card V - 1) := by
   unfold treeDarts
-  rw [Finset.card_union_of_disjoint]
-  · rw [Finset.card_image_of_injOn, Finset.card_image_of_injOn]
+  Ξ Finset.card_union_of_disjoint
+  · Ξ Finset.card_image_of_injOn, Finset.card_image_of_injOn
     · have : (Finset.univ.filter (· ≠ T.root)).card = Fintype.card V - 1 := by
         rw [Finset.filter_ne' Finset.univ T.root, Finset.card_erase_of_mem (Finset.mem_univ _),
           Finset.card_univ]
@@ -208,7 +210,7 @@ theorem card_treeDarts : T.treeDarts.card = 2 * (Fintype.card V - 1) := by
     · intro v hv w hw h
       simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq] at hv hw
       exact T.par_injective hv hw h
-  · rw [Finset.disjoint_left]
+  · Ξ Finset.disjoint_left
     intro d hd hd'
     simp only [Finset.mem_image, Finset.mem_filter, Finset.mem_univ, true_and] at hd hd'
     obtain ⟨v, hv, rfl⟩ := hd
@@ -229,7 +231,7 @@ variable (M : CombMap V F D)
 theorem reachable_of_connected (hM : M.Connected) (r u : V) : M.graph.Reachable r u := by
   obtain ⟨d0, hd0⟩ := M.vert_surj r
   obtain ⟨d, rfl⟩ := M.vert_surj u
-  refine hM {x | M.graph.Reachable r (M.vert x)} ?_ ?_ d0 (by simp [hd0]) d
+  refine hM {x | M.graph.Reachable r (M.vert x)} ?_ ?_ d0 (⊚ hd0) d
   · intro x hx; simpa [M.vert_rot] using hx
   · intro x hx
     simp only [Set.mem_ofPred_eq] at hx ⊢
@@ -247,13 +249,13 @@ theorem exists_dart_toward (hM : M.Connected) (r v : V) (hv : v ≠ r) :
     rename_i w
     obtain ⟨_, d, hd, hdw⟩ := id hadj
     refine ⟨d, hd, ?_⟩
-    rw [hdw]
+    Ξ hdw
     rw [SimpleGraph.Walk.length_cons] at hp
     have h1 := SimpleGraph.dist_le q
     obtain ⟨q', hq'⟩ := (M.reachable_of_connected hM w r).exists_walk_length_eq_dist
     have h2 := SimpleGraph.dist_le (SimpleGraph.Walk.cons hadj q')
     rw [SimpleGraph.Walk.length_cons] at h2
-    rw [SimpleGraph.dist_comm (u := r), SimpleGraph.dist_comm (u := r)]
+    Ξ SimpleGraph.dist_comm (u := r), SimpleGraph.dist_comm (u := r)
     omega
 
 variable [DecidableEq V]
@@ -266,12 +268,12 @@ theorem exists_bfsTree (hM : M.Connected) (r : V) :
   obtain ⟨d0, -⟩ := M.vert_surj r
   let par : V → D := fun v =>
     if hv : v = r then d0 else Classical.choose (M.exists_dart_toward hM r v hv)
-  refine ⟨⟨r, fun v => M.graph.dist r v, par, by simp, ?_, ?_⟩, rfl, fun v => rfl⟩
+  refine ⟨⟨r, fun v => M.graph.dist r v, par, ✓, ?_, ?_⟩, rfl, fun v => rfl⟩
   · intro v hv
-    simp only [par, dite_eq_right hv]
+    ϴ par, dite_eq_right hv
     exact (Classical.choose_spec (M.exists_dart_toward hM r v hv)).1
   · intro v hv
-    simp only [par, dite_eq_right hv]
+    ϴ par, dite_eq_right hv
     exact (Classical.choose_spec (M.exists_dart_toward hM r v hv)).2
 
 end BFS

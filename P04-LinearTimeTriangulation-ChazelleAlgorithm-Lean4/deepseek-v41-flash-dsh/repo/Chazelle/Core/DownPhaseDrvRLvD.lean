@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRLvC
 public import Chazelle.Core.DownPhaseDrvRCostSpec
 public import Chazelle.Core.DownPhaseMathLevel
@@ -27,15 +29,15 @@ section exec
 variable {P : Polygon} {W : ℕ}
 
 def BregA (r : ℕ) : Bool := decide (215000 ≤ r ∧ r ≤ 215002)
-theorem wr_lvRegA : wr BregA lvRegA = true := by decide
+theorem wr_lvRegA : wr BregA lvRegA = true := ⌖
 def BregB (r : ℕ) : Bool := decide (219200 ≤ r ∧ r ≤ 219205)
-theorem wr_lvRegB : wr BregB lvRegB = true := by decide
+theorem wr_lvRegB : wr BregB lvRegB = true := ⌖
 def BregC (r : ℕ) : Bool := decide (217000 ≤ r ∧ r ≤ 217006)
-theorem wr_lvRegC : wr BregC lvRegC = true := by decide
+theorem wr_lvRegC : wr BregC lvRegC = true := ⌖
 def BregE (r : ℕ) : Bool := decide (r = 211013)
-theorem wr_lvRegE : wr BregE lvRegE = true := by decide
+theorem wr_lvRegE : wr BregE lvRegE = true := ⌖
 def BregD (r : ℕ) : Bool := decide (r = 211020 ∨ r = 211012 ∨ r = 211010)
-theorem wrM_lvRegD : wrM BregD lvRegD = true := by decide
+theorem wrM_lvRegD : wrM BregD lvRegD = true := ⌖
 
 theorem lvRegA_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W lvRegA c c' k ∧ k = 3 ∧ c'.nreg 215000 = c.nreg 210005 ∧
@@ -68,9 +70,9 @@ theorem lvRegE_exec (c : Config) (hw : WordsBounded W c) :
   unfold lvRegE
   by_cases h : c.nreg 211013 < c.nreg 217011
   · have e := Exec.copyN (P := P) hw 211013 217011
-    refine ⟨_, _, .ifLtN_true h e, by omega, ?_⟩
+    refine ⟨_, _, .ifLtN_true h e, ⋄, ?_⟩
     simp only [Machine.upd_same]; omega
-  · exact ⟨_, _, .ifLtN_false h (.skip hw), by omega, by omega⟩
+  · exact ⟨_, _, .ifLtN_false h (.skip hw), ⋄, by omega⟩
 
 theorem lvRegD_exec (c : Config) (hw : WordsBounded W c) {T j p ℓ b tot : ℕ}
     (h09 : c.nreg 211009 = T) (h10 : c.nreg 211010 = j) (h14 : c.nreg 211014 = 1)
@@ -125,7 +127,7 @@ theorem mu_le_grades {n x lam : ℕ} (hcap : n - 1 ≤ 2 ^ (x - 1)) (h16 : 16 �
 
 /-- The chain of a host with at least three points. -/
 noncomputable def hostChainOf (Q : Polygon) (H : Host) (h : 3 ≤ (H.pts Q.n).length) : Chain :=
-  ⟨H.poly Q, 0, (H.pts Q.n).length - 1, by omega,
+  ⟨H.poly Q, 0, (H.pts Q.n).length - 1, ⋄,
     by rw [DownMath.host_poly_n]; omega⟩
 
 theorem hostChainOf_P (Q : Polygon) (H : Host) (h : 3 ≤ (H.pts Q.n).length) :
@@ -147,11 +149,11 @@ theorem nch_le {Q : Polygon} {C : Chain} (hP : C.P.Simple) {N : NF} {γ γ₀ μ
   obtain ⟨hNF, hdeg, hgran, -⟩ := hc
   have h23 := DownMath.lemma23_chain hP hNF.1 hdeg hgran
   rw [Gran.ncard_F hNF] at h23
-  have h2 : N.nChords * (γ₀ + 1) ≤ N.nChords * (γ + 1) := Nat.mul_le_mul_left _ (by omega)
+  have h2 : N.nChords * (γ₀ + 1) ≤ N.nChords * (γ + 1) := Nat.mul_le_mul_left _ (⋄)
   have h3 : 140 * (regCap + 2) * (2 * C.m + 1) ≤ 140 * (regCap + 2) * (20 * 2 ^ μ + 17) :=
-    Nat.mul_le_mul_left _ (by omega)
+    Nat.mul_le_mul_left _ (⋄)
   unfold lvNch
-  rw [← hγ₀, Nat.le_div_iff_mul_le (by omega)]
+  rw [← hγ₀, Nat.le_div_iff_mul_le (⋄)]
   exact le_trans h2 (le_trans h23 h3)
 
 end

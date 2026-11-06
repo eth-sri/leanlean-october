@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutFirst
 
 /-!
@@ -238,8 +240,8 @@ theorem leafVE_exec {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop} {I : List 
       (∀ r, Keep r → d'.nreg r = d.nreg r) ∧ (∀ a, a < A₀ → d'.nmem a = d.nmem a) := by
   obtain ⟨d₁, k₁, e₁, hk₁, hR, fr₁, kp₁⟩ := pcVE_exec (P := P) d hw hW h75 h03 h04
   obtain ⟨d₂, k₂, e₂, hk₂, hI₂, kp₂, mem₂⟩ := hE.run _ _ d₁ e₁.wb_right (hE.stable _ _ _ hI fr₁) hR hpv
-  exact ⟨d₂, k₁ + k₂, .seq e₁ e₂, by omega, hI₂, fun r hr => (kp₂ r hr).trans (kp₁ r hr),
-    fun a ha => by rw [mem₂ a ha, fr₁.2.2.1]⟩
+  exact ⟨d₂, k₁ + k₂, .seq e₁ e₂, ⋄, hI₂, fun r hr => (kp₂ r hr).trans (kp₁ r hr),
+    fun a ha => Ρ mem₂ a ha, fr₁.2.2.1⟩
 
 /-- **The last piece**: from the walk vertex `2m + 5` into the uncounted block, or from the start
 vertex of the edge of the end when its parameter is positive, or none. -/

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoS0CandQ2
 public import Chazelle.Core.SweepIoPipe
 
@@ -37,8 +39,8 @@ theorem onCB_whole_of_right {x : Point} (h : OnCB J.right x) : OnCB J.whole x :=
   · exact Or.inr (Or.inl h)
   · exact Or.inr (Or.inr h)
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
+
+
 /-- **The slot part.** -/
 theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂ c₀) (hI : IInv W c₀ c)
     {z : Point} {L : Set ℝ} (ht : c.nreg lsI < rd c₀ bSweep 301)
@@ -67,7 +69,7 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
   obtain ⟨b1, -, -, -, hsl, -, -⟩ := hX
   rw [rd_sw] at b1
   have hBc : c.nreg sB = B := hI.hin _ (by unfold IFix sB sw; omega)
-  have hm : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a := hI.hm
+  have hm := hI.hm
   have hAW : c.nreg ALLOC ≤ W := hI.hw.1 ALLOC
   have hA0 := hI.hA
   have hE' : t < c₀.nreg (sw 301) := ht
@@ -77,7 +79,7 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
   -- the slot address
   have hok1 : okB W c.nmem cSlot c.nreg := cSlot_ok _ _ (by rw [hBc]; nlinarith)
   refine IRS.mono (K := cSlot.length + (5 + (5 + (offerFK + 2)))) (IRS.seq
-    (IRS.block cSlot hI hok1) ?_) (by simp [cSlot, hitK]) (fun _ h => h)
+    (IRS.block cSlot hI hok1) ?_) (⊚ cSlot, hitK) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' rfl
   obtain ⟨v1S, k1⟩ := cSlot_val c.nmem c.nreg
   rw [hBc] at v1S
@@ -100,18 +102,18 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
   obtain ⟨v3F, v3E, v3H, k3⟩ := cRead_val c₂.nmem c₂.nreg hK₂.2.1
   set c₃ : Config := { c₂ with nreg := regB c₂.nmem cRead c₂.nreg } with hc₃
   rw [v2S'] at v3F v3E v3H
-  have hm₂ : ∀ a, a < c₀.nreg ALLOC → c₂.nmem a = c₀.nmem a := hI₂.hm
+  have hm₂ := hI₂.hm
   have hF : c₃.nreg kF = c₀.nmem S := by
-    show regB c₂.nmem cRead c₂.nreg kF = _; rw [v3F, hm₂ S (by omega)]
+    show regB c₂.nmem cRead c₂.nreg kF = _; rw [v3F, hm₂ S (⋄)]
   have hPe : c₃.nreg kPe = c₀.nmem (S + 1) := by
-    show regB c₂.nmem cRead c₂.nreg kPe = _; rw [v3E, hm₂ (S + 1) (by omega)]
+    show regB c₂.nmem cRead c₂.nreg kPe = _; rw [v3E, hm₂ (S + 1) (⋄)]
   have hPh : c₃.nreg kPh = c₀.nmem (S + 2) := by
-    show regB c₂.nmem cRead c₂.nreg kPh = _; rw [v3H, hm₂ (S + 2) (by omega)]
+    show regB c₂.nmem cRead c₂.nreg kPh = _; rw [v3H, hm₂ (S + 2) (⋄)]
   -- registers through the three steps
   have keep : ∀ q, q ≠ kS → q ≠ kF → q ≠ kPe → q ≠ kPh → c₃.nreg q = c.nreg q := by
     intro q h1 h2 h3 h4
     show regB c₂.nmem cRead c₂.nreg q = c.nreg q
-    rw [k3 q h1 h2 h3 h4, k2 q h1]
+    Ξ k3 q h1 h2 h3 h4, k2 q h1
     exact k1 q h1
   have nk : ∀ q, (q < sw 4100 ∨ sw 4111 < q) → c₃.nreg q = c.nreg q := fun q hq =>
     keep q (by unfold kS sw at *; omega) (by unfold kF sw at *; omega)
@@ -126,26 +128,26 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
       (fun h => hr (by subst h; right; unfold kF sw; omega))
       (fun h => hr (by subst h; right; unfold kPe sw; omega))
       (fun h => hr (by subst h; right; unfold kPh sw; omega)), hAc₃.ge,
-    fun a ha => by rw [hm2]⟩
+    fun a ha => Ρ hm2⟩
   have hfl : c₀.nmem S ≤ 1 := hslot.1
   unfold cOffer
   by_cases hf : c₃.nreg K0 < c₃.nreg kF
   · -- a flagged slot: offer its origin
     rw [hk0₃, hF] at hf
-    have hf1 : c₀.nmem S = 1 := by omega
+    have hf1 : c₀.nmem S = 1 := ⋄
     obtain ⟨he, hpp, hc⟩ := hslot.2 hf1
     rw [hpt] at hc
     obtain ⟨hτ, hpos⟩ := cand_ray (dS_eq s) hc (z_mem_right_dom hA.hP hz hzs hz2)
       (z_not_mem_whole_dom hz)
     set τs := J.whole.hitParam ((chainModel J.right).pos (Qof P) ⟨c₀.nmem (S + 1), c₀.nmem (S + 2)⟩)
       (dS s) with hτs
-    have hds : -dS s = σ := by rw [hsdef, dS_qS, neg_neg]
+    have hds : -dS s = σ := Ρ hsdef, dS_qS, neg_neg
     rw [hds] at hpos
     have hMod : ModB J 1 1 (c₃.nreg K1) = J.right := by rw [hk1₃]; simp [ModB]
     have hctx₃ : ChainCtx P W c₃ (sw 21) (ModB J 1 1 (c₃.nreg K1)) := by
       rw [hMod]; exact hA.ctxR hI₃
     have hn₃ : c₃.nreg (sw 34) = 2 * (ModB J 1 1 (c₃.nreg K1)).m + 7 := by
-      rw [hMod, hI₃.hin _ (by unfold IFix sw; omega)]
+      Ξ hMod, hI₃.hin _ (by unfold IFix sw; omega)
       obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, h34, -⟩ := hA.hst
       exact h34
     have hy : |z.2| < J.whole.radius := (J.left.set_subset_box hz).2
@@ -170,7 +172,7 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
       (by rw [hd₃]; exact hacc₃) (by rw [hk1₃]; norm_num) hctx₃ (by rw [hMod]; rfl) hn₃
       (by rw [hMod, hPe]; exact he) (by rw [hMod, hPe, hPh]; exact hpp)
       (by rw [hMod, hPe, hPh, hd₃]; exact hpos) hy
-      (by rw [hAc₃]; unfold hitK at hroom; omega))).mono (by omega) ?_
+      (by rw [hAc₃]; unfold hitK at hroom; omega))).mono (⋄) ?_
     rintro c' ⟨⟨L', hacc', hL', hins⟩, hk', hal', hm'⟩
     rw [hd₃] at hacc'
     have hL'eq : L' = insert τs L := hins (by rw [hMod]; exact hz2)
@@ -182,8 +184,8 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
         rcases hτ' with rfl | h
         · rw [hMod, hd₃] at hon; exact Or.inr ⟨hτ, onCB_whole_of_right hon⟩
         · exact Or.inl h
-    · rw [hL'eq]
-      have : τ = τs := rayPt_param hσ (by rw [← hτe, ← hpos])
+    · Ξ hL'eq
+      have : τ = τs := rayPt_param hσ (Ρ ← hτe, ← hpos)
       rw [this]; exact Set.mem_insert _ _
     · refine hfr₃.trans ⟨fun r hr hq hra => hk' r hr (by
           unfold QSet at hq; unfold accA sw at *; omega)
@@ -193,7 +195,7 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
   · -- an empty slot
     have hf0 : c₀.nmem S = 0 := by rw [hk0₃, hF] at hf; omega
     refine (IRS.ifF hf (IRS.skip (K := 0) hI₃ ⟨L, hacc₃, le_rfl, fun τ h => Or.inl h,
-      fun h => absurd (hf0 ▸ h) (by norm_num), hfr₃⟩)).mono (by unfold offerFK offerK; omega)
+      fun h => absurd (hf0 ▸ h) (⊛), hfr₃⟩)).mono (by unfold offerFK offerK; omega)
       (fun _ h => h)
 
 end

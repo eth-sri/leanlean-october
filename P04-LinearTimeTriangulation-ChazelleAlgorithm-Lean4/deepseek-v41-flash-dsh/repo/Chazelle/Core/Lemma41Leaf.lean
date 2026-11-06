@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Pro
 
 /-!
@@ -42,28 +44,28 @@ theorem cover_getD_succ {lam b : ℕ} (x : ℕ) : ∀ k, k + 1 < (cover lam b x)
       rcases k with _ | k
       · have hx' : x + 2 ^ nextG lam b x < b := by
           by_contra hc
-          rw [cover_of_ge (by omega)] at hk; simp at hk
-        simp only [List.getD_cons_succ, List.getD_cons_zero]
+          rw [cover_of_ge (⋄)] at hk; simp at hk
+        ϴ List.getD_cons_succ, List.getD_cons_zero
         exact cover_getD_zero hx'
-      · simp only [List.getD_cons_succ]
+      · ϴ List.getD_cons_succ
         simp only [List.length_cons] at hk
-        exact ih _ (step_lt hx) k (by omega)
-    · rw [cover_of_ge (by omega)] at hk; simp at hk
+        exact ih _ (step_lt hx) k (⋄)
+    · rw [cover_of_ge (⋄)] at hk; simp at hk
 
 theorem leafShp_length (lam b a : ℕ) : (leafShp lam b a).length = (cover lam b a).length := by
-  simp [leafShp]
+  Θ leafShp
 
 theorem leafShp_consec (lam b a : ℕ) : Consec (leafShp lam b a) := by
   intro k hk
   rw [leafShp_length] at hk
   unfold leafShp
-  rw [nd_map_of_lt hk, nd_map_of_lt (by omega)]
+  rw [nd_map_of_lt hk, nd_map_of_lt (⋄)]
   exact cover_getD_succ a k hk
 
 theorem leafShp_first {lam b a : ℕ} (h : a < b) : (nd (leafShp lam b a) 0).1 = a := by
   have hl : 0 < (cover lam b a).length := by rw [cover_of_lt h]; simp
   unfold leafShp
-  rw [nd_map_of_lt hl]
+  Ξ nd_map_of_lt hl
   exact cover_getD_zero h
 
 theorem leafShp_sum (lam b a : ℕ) :
@@ -91,12 +93,12 @@ theorem leafShp_gran {lam b a : ℕ} : ∀ k, k < (leafShp lam b a).length →
   intro k hk
   rw [leafShp_length] at hk
   unfold leafShp
-  rw [nd_map_of_lt hk]
+  Ξ nd_map_of_lt hk
   have hq := mem_cover (lam := lam) (b := b) a ((cover lam b a).getD k (0, 0)) (by rw [List.getD_eq_getElem _ _ hk]; exact List.getElem_mem hk)
   refine ⟨gradeGran_mono hq.1, ?_⟩
   exact le_trans (Nat.one_le_two_pow) (two_pow_ceilBeta_le_gradeGran _)
 
-set_option maxHeartbeats 8000000 in
+
 /-- **The leaves form a level.** -/
 theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → ℕ}
     {A h lam a b : ℕ} (hR : Robust A m0 fun m' => GradeRaw O P m' h A) (hn : 2 ≤ P.n)
@@ -113,13 +115,13 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
       (leafShp lam b a) := by
   set j := (cover lam b a).length with hj
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hΛ : 1 ≤ m0 h := by omega
+  have hΛ : 1 ≤ m0 h := ⋄
   obtain ⟨-, -, h2, -, -, -, -, -, -, hent⟩ := tab_lt hR hn hΛ
   have hG := hR.holds
   intro k hk
   rw [leafShp_length] at hk
   unfold leafShp
-  rw [nd_map_of_lt hk]
+  Ξ nd_map_of_lt hk
   have hmem0 : (cover lam b a).getD k (0, 0) ∈ cover lam b a := by
     rw [List.getD_eq_getElem _ _ hk]; exact List.getElem_mem hk
   set q := (cover lam b a).getD k (0, 0) with hq
@@ -128,9 +130,9 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
   set g := q.1 with hgdef
   set x := q.2 with hxdef
   obtain ⟨i, hi⟩ := hdvd
-  have hpos : 0 < 2 ^ g := by positivity
-  have hxi : x / 2 ^ g = i := by rw [hi, Nat.mul_div_cancel_left _ hpos]
-  have hgΛ : g < m0 h := by omega
+  have hpos : 0 < 2 ^ g := ⟢
+  have hxi : x / 2 ^ g = i := Ρ hi, Nat.mul_div_cancel_left _ hpos
+  have hgΛ : g < m0 h := ⋄
   have hic : i < gradeCount P.n g := by
     unfold gradeCount
     have : i * 2 ^ g ≤ P.n - 2 := by
@@ -142,39 +144,39 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
   have hCs' : C.s = x := by rw [hCs]; unfold gradeStart; rw [hi]; ring
   have hCm' : C.m = 2 ^ g := by
     rw [hCm]; unfold gradeLen
-    have : x + 2 ^ g ≤ P.n - 1 := by omega
+    have : x + 2 ^ g ≤ P.n - 1 := ⋄
     rw [hi] at this
     apply min_eq_left; rw [mul_comm]; omega
   set R := m0 (m0 (h + 2) + g) with hRdef
   set B := m0 (R + 3 * i) with hBdef
-  have hB5 : B + 5 ≤ A := hwf.1
-  have hR3 : R + 3 * i + 1 < A := by omega
+  have hB5 := hwf.1
+  have hR3 : R + 3 * i + 1 < A := ⋄
   -- the record, read in `m0`
   obtain ⟨r0, rj, r5⟩ := h6rec k hk
   rw [← hq, hxi] at rj r5
   have e5 : m5 (m0 (h + 2) + g) = R := h5 _ hT
-  have eR : m5 (R + 3 * i) = B := h5 _ (by omega)
+  have eR : m5 (R + 3 * i) = B := h5 _ (⋄)
   have eF : m5 (R + 3 * i + 1) = m0 (R + 3 * i + 1) := h5 _ hR3
   have hwords : ∀ t, 1 ≤ t → t ≤ 4 → m8 (A + 7 + 6 * k + t) = m0 (B + t) := fun t t1 t4 => by
-    rw [h86 _ (by omega), rj t t1 t4, e5, eR, h5 _ (by omega)]
-  have hd0 : m8 (A + 7 + 6 * k) = A := by rw [h86 _ (by omega), r0]
+    rw [h86 _ (⋄), rj t t1 t4, e5, eR, h5 _ (by omega)]
+  have hd0 : m8 (A + 7 + 6 * k) = A := by rw [h86 _ (⋄), r0]
   have hf : m8 (A + 7 + 6 * j + 2 * k + 1) = m0 (R + 3 * i + 1) := by
-    rw [(h8ent k hk).2, r5, e5, eF]
+    Ξ (h8ent k hk).2, r5, e5, eF
   have h8m0 : ∀ y, y < A → m8 y = m0 y := fun y hy => by
-    rw [h86 _ (by omega), h65 _ (by omega), h5 _ hy]
+    rw [h86 _ (⋄), h65 _ (by omega), h5 _ hy]
   refine ⟨C, hCs', hCm', ?_⟩
-  rw [(h8ent k hk).1, hf]
+  Ξ (h8ent k hk).1, hf
   obtain ⟨-, -, d1, d2, d3, d4⟩ := hd
-  refine ⟨⟨?_, ?_, ?_, ?_, ?_, ?_⟩, hCP, hd0, by omega, by omega, by omega, N,
-    (hN.transport h8m0).mono (by omega), hc⟩
-  · rw [hd0]
-    exact hostAt_agree (A := A + 7) hhost rfl (by omega) fun y hy => by
-      rw [h86 _ (by omega), h65 _ (by omega)]
-  · rw [hCP]; have := poly_whole (Qof P) (by omega); rw [hQn] at this; exact this.symm
-  · rw [hwords 1 le_rfl (by norm_num)]; exact d1
-  · rw [hwords 2 (by norm_num) (by norm_num)]; exact d2
-  · rw [hwords 3 (by norm_num) (by norm_num)]; exact d3
-  · rw [hwords 4 (by norm_num) le_rfl]; exact d4
+  refine ⟨⟨?_, ?_, ?_, ?_, ?_, ?_⟩, hCP, hd0, ⋄, by omega, by omega, N,
+    (hN.transport h8m0).mono (⋄), hc⟩
+  · Ξ hd0
+    exact hostAt_agree (A := A + 7) hhost rfl (⋄) fun y hy => by
+      rw [h86 _ (⋄), h65 _ (by omega)]
+  · rw [hCP]; have := poly_whole (Qof P) (⋄); rw [hQn] at this; exact this.symm
+  · rw [hwords 1 le_rfl (⊛)]; exact d1
+  · rw [hwords 2 (⊛) (by norm_num)]; exact d2
+  · rw [hwords 3 (⊛) (by norm_num)]; exact d3
+  · rw [hwords 4 (⊛) le_rfl]; exact d4
 
 end
 

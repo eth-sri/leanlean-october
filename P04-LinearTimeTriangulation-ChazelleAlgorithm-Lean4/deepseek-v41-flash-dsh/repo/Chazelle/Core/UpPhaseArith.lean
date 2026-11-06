@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecPhases
 
 /-!
@@ -27,7 +29,7 @@ theorem gradeCount_succ (n g : ℕ) : gradeCount n (g + 1) = (n - 2) / 2 ^ g / 2
 /-- A chain of a grade has at least one edge and fits in the curve. -/
 theorem gradeLen_pos (hn : 2 ≤ n) (hi : i < gradeCount n g) : 1 ≤ gradeLen n g i := by
   unfold gradeLen gradeCount at *
-  have hpos : 0 < 2 ^ g := by positivity
+  have hpos : 0 < 2 ^ g := ⟢
   have : i * 2 ^ g ≤ n - 2 := by
     by_contra hc
     have : (n - 2) / 2 ^ g < i := by
@@ -41,7 +43,7 @@ theorem gradeLen_le (n g i : ℕ) : gradeLen n g i ≤ 2 ^ g := min_le_left _ _
 theorem gradeLen_fit (hn : 2 ≤ n) (hi : i < gradeCount n g) :
     gradeStart g i + gradeLen n g i + 1 ≤ n := by
   unfold gradeLen gradeStart gradeCount at *
-  have hpos : 0 < 2 ^ g := by positivity
+  have hpos : 0 < 2 ^ g := ⟢
   have : i * 2 ^ g ≤ n - 2 := by
     by_contra hc
     have : (n - 2) / 2 ^ g < i := by
@@ -88,13 +90,13 @@ theorem gradeLen_succ_one (hn : 2 ≤ n) (_hi : i < gradeCount n (g + 1))
 /-- The top grade has a single chain. -/
 theorem gradeCount_top (hn : 2 ≤ n) : gradeCount n (topGrade n) = 1 := by
   unfold gradeCount topGrade
-  have := Nat.le_pow_clog (b := 2) (by norm_num) (n - 1)
-  rw [Nat.div_eq_of_lt (by omega)]
+  have := Nat.le_pow_clog (b := 2) (⊛) (n - 1)
+  rw [Nat.div_eq_of_lt (⋄)]
 
 theorem gradeLen_top (_hn : 2 ≤ n) : gradeLen n (topGrade n) 0 = n - 1 := by
   unfold gradeLen topGrade
-  have := Nat.le_pow_clog (b := 2) (by norm_num) (n - 1)
-  simp only [Nat.zero_mul, Nat.sub_zero]
+  have := Nat.le_pow_clog (b := 2) (⊛) (n - 1)
+  ϴ Nat.zero_mul, Nat.sub_zero
   exact min_eq_right this
 
 end

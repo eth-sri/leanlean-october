@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepPhA
 
 /-!
@@ -22,8 +24,8 @@ open Machine Machine.Stmt Programs SignK WalkKey
 theorem RgMem.congr {m m' : ℕ → ℕ} {AB SB A : ℕ} {σ rg : ℕ → ℕ} (h : RgMem m AB SB A σ rg)
     {X : ℕ} (hX : ∀ a, a < X → m' a = m a) (hS : SB + A ≤ X) (hA : AB + 5 * A ≤ X) :
     RgMem m' AB SB A σ rg :=
-  ⟨fun p hp => by rw [hX _ (by omega)]; exact h.seq p hp, h.σ_lt,
-    fun j hj => by rw [hX _ (by omega)]; exact h.reg j hj⟩
+  ⟨fun p hp => by rw [hX _ (⋄)]; exact h.seq p hp, h.σ_lt,
+    fun j hj => by rw [hX _ (⋄)]; exact h.reg j hj⟩
 
 /-! ## The star chords -/
 
@@ -43,15 +45,15 @@ theorem starStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W
       c'.nreg 110074 = (starList (fun q => rg (σ q)) A).length ∧
       PairsAt c'.nmem (A₁ + R) (A₁ + R + chCap A) (starList (fun q => rg (σ q)) A) := by
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, a9, a60, afr⟩ := frS_exec (P := P) hw hM hNB h2 hR hAB hSB hA h1 hAl
-    hNBA hSA hABA hρR (by omega)
+    hNBA hSA hABA hρR (⋄)
   have hM₁ : RgMem c₁.nmem AB SB A σ rg := hM.congr (X := A₁) F₁.2.2.1 hSA hABA
-  have K : ∀ r, BFR r = false → c₁.nreg r = c.nreg r := F₁.1
+  have K := F₁.1
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, b9, b72, b73, -, b74, pairs⟩ := iS_exec (P := P) e₁.wb_right hM₁
-    (by rw [K _ (by decide), hAB]) (by rw [K _ (by decide), hSB]) (by rw [K _ (by decide), hA])
-    (by rw [K _ (by decide), h1]) a60 a9 (by omega) (by omega) (by omega) hρR afr (by omega)
-  refine ⟨c₂, _, .seq e₁ e₂, by omega,
-    (F₁.mono (fun r hr => by simp [hr]) le_rfl).trans
-      (F₂.mono (fun r hr => by simp [hr]) (by omega)), b9, b72, b73, b74, pairs⟩
+    (Ρ K _ (⌖), hAB) (Ρ K _ (⌖), hSB) (Ρ K _ (⌖), hA)
+    (Ρ K _ (⌖), h1) a60 a9 (⋄) (⋄) (⋄) hρR afr (⋄)
+  refine ⟨c₂, _, .seq e₁ e₂, ⋄,
+    (F₁.mono (fun r hr => ⊚ hr) le_rfl).trans
+      (F₂.mono (fun r hr => ⊚ hr) (⋄)), b9, b72, b73, b74, pairs⟩
 
 /-! ## The raw zipper pairs -/
 
@@ -69,7 +71,7 @@ theorem zipStage_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {
       PairsAt c'.nmem A₃ (A₃ + zCap V.A) (OracleQ.zipRaw C (Qof P) N) ∧ ZEnv P W lo C N V c' := by
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, a9, a93, a94, a97, a95, pairs₁, Z₁⟩ :=
     zS_exec (P := P) hw h hAl hlo (by omega)
-  have hA : V.A = N.arcs.length := h.loc.holds.1.A
+  have hA := h.loc.holds.1.A
   have hlen : (emitted (OracleQ.zipSk C (Qof P) N) V.A ++ emitted (OracleQ.zipEk C (Qof P) N) V.A).length ≤
       2 * V.A := by
     rw [List.length_append]
@@ -116,16 +118,16 @@ theorem GF.trans {S : Finset ℕ} {lo : ℕ} {c₁ c₂ c₃ : Config} (h₁ : G
 
 theorem FrameN.gf {S : Finset ℕ} {lo : ℕ} {c c' : Config} (h : FrameN S c c')
     (hlo : lo ≤ c.nreg ALLOC) : GF S lo c c' :=
-  ⟨h.1, h.2.1, fun a ha => h.2.2.1 a (by omega), fun a ha => h.2.2.2.1 a (by omega), h.2.2.2.2⟩
+  ⟨h.1, h.2.1, fun a ha => h.2.2.1 a (⋄), fun a ha => h.2.2.2.1 a (⋄), h.2.2.2.2⟩
 
 /-- A stage frame with the written registers in the bands (or the allocator), whose real registers
 are preserved. -/
 theorem PF.gf {B : ℕ → Bool} {S : Finset ℕ} {lo lo' : ℕ} {c c' : Config} (h : PF B lo' c c')
     (hB : ∀ r, B r = true → bandOf r ∈ S ∨ r = ALLOC) (hrr : ∀ r, c'.rreg r = c.rreg r)
     (hlo : lo ≤ lo') : GF S lo c c' := by
-  refine ⟨fun r hr hra => h.1 r ?_, fun r _ => hrr r, fun a ha => h.2.2.1 a (by omega),
-    fun a ha => h.2.2.2.1 a (by omega), h.2.2.2.2⟩
-  by_contra h'; simp only [Bool.not_eq_false] at h'
+  refine ⟨fun r hr hra => h.1 r ?_, fun r _ => hrr r, fun a ha => h.2.2.1 a (⋄),
+    fun a ha => h.2.2.2.1 a (⋄), h.2.2.2.2⟩
+  by_contra h'; ϴ' Bool.not_eq_false at h'
   rcases hB r h' with h'' | h''
   · exact hr h''
   · exact hra h''
@@ -135,7 +137,7 @@ theorem PF.gf {B : ℕ → Bool} {S : Finset ℕ} {lo lo' : ℕ} {c c' : Config}
 /-- **The sorted, deduplicated zipper pairs after the star chords.** -/
 def dedupStage : Stmt := .seq dSort (.seq (.instr (.copyN 60008 60003)) dEmit)
 
-set_option maxHeartbeats 2000000 in
+
 theorem dedupStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     {CH1 CH2 nI Z1 Z2 n A₄ : ℕ} (h72 : c.nreg 110072 = CH1) (h73 : c.nreg 110073 = CH2)
     (h74 : c.nreg 110074 = nI) (h93 : c.nreg 110293 = Z1) (h94 : c.nreg 110294 = Z2)

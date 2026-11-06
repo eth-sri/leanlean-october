@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvTie
 
 /-!
@@ -122,9 +124,9 @@ theorem dirAt_other (hP : J.P.Simple) {e : Set Point} (he : e ∈ Merge.augChord
   have hy : (sidePt (chainModel J.whole).W pa ta).2 = (sidePt (chainModel J.whole).W pb tb).2 :=
     (attach_snd_eq hP he hB hA.2.2.2.1)
   rcases h with ⟨rfl, h⟩ | ⟨rfl, h⟩
-  · exact Or.inr ⟨by norm_num, dir_opposite hM he hA hB hAB h⟩
+  · exact Or.inr ⟨⊛, dir_opposite hM he hA hB hAB h⟩
   · rcases hM.attach_dir he hB with h' | h'
-    · exact Or.inl ⟨by norm_num, h'⟩
+    · exact Or.inl ⟨⊛, h'⟩
     · exfalso
       have e1 := h' _ hA.2.2.2.1
       have e2 := h _ hB.2.2.2.1
@@ -179,7 +181,7 @@ theorem noEncl_of_closed (hP : J.P.Simple) {S₂ : Set (Set Point)}
     have hbx : oW J (qb + sb) ≤ ox := by
       by_contra h
       push Not at h
-      exact hEx ⟨e, he, qa, qb, sa, sb, hA, hB, hAB, hLa, by linarith, Or.inl h⟩
+      exact hEx ⟨e, he, qa, qb, sa, sb, hA, hB, hAB, hLa, ⟡, Or.inl h⟩
     by_cases heZ : e = Z
     · subst heZ
       -- `Z` has an attachment below `Lst`: it is `qa` or `qb`
@@ -188,12 +190,12 @@ theorem noEncl_of_closed (hP : J.P.Simple) {S₂ : Set (Set Point)}
       · linarith
       · linarith
     rcases lt_or_ge (oW J (qa + sa)) (oW J (pK + tK)) with h | h
-    · exact anchor_not_inside hP hS₂ hS₂f hZ he (Ne.symm heZ) hZK hZz hA hB h (by linarith)
-        (by linarith)
+    · exact anchor_not_inside hP hS₂ hS₂f hZ he (Ne.symm heZ) hZK hZz hA hB h (⟡)
+        (⟡)
     · have := (hcl e he heZ qa sa hA h hA' qb sb hB).2
       linarith
   · -- a pocket: `x` is enclosed too
-    exact hEx ⟨e, he, qa, qb, sa, sb, hA, hB, hAB, hLa, by linarith, Or.inr hby⟩
+    exact hEx ⟨e, he, qa, qb, sa, sb, hA, hB, hAB, hLa, ⟡, Or.inr hby⟩
 
 /-- **A chord nested in another**: a chord `e ≠ c` attached strictly between the two attachments
 of `c` has all its attachments between them. -/

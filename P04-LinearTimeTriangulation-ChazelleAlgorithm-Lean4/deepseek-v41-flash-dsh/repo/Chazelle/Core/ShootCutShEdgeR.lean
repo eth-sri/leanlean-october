@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutShLoad
 
 /-!
@@ -38,15 +40,15 @@ def CandAt (P : Polygon) (C : Chain) (c : Config) (b : ℕ) (S : Set Point) (z :
 
 theorem FrameB.wk {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' :=
-  ⟨fun r hr => h.1 r (by cases hb : B r; rfl; exact absurd (hB r hb) (by simp [hr])),
-    fun r hr => h.2.1 r (by cases hb : B r; rfl; exact absurd (hB r hb) (by simp [hr])),
+  ⟨fun r hr => h.1 r (by cases hb : B r; rfl; exact absurd (hB r hb) (⊚ hr)),
+    fun r hr => h.2.1 r (by cases hb : B r; rfl; exact absurd (hB r hb) (⊚ hr)),
     h.2.2⟩
 
 /-- One register update is framed by any set containing the register. -/
 theorem frameB_upd {B : ℕ → Bool} (c : Config) {r : ℕ} (v : ℕ) (hB : B r = true) :
     FrameB B c ({ c with nreg := upd c.nreg r v } : Config) :=
   ⟨fun r' hr' => by
-    have : r' ≠ r := fun h => by rw [h, hB] at hr'; exact absurd hr' (by decide)
+    have : r' ≠ r := fun h => by rw [h, hB] at hr'; exact absurd hr' (⌖)
     simp [upd_other _ _ _ this], fun _ _ => rfl, rfl, rfl, rfl⟩
 
 /-- The registers written by the segment machine. -/
@@ -70,7 +72,7 @@ theorem cand0_exec (c : Config) (hw : WordsBounded W c) {S : Set Point} (h : NoH
     ∃ c' k, Exec P W cand0 c c' k ∧ k = 1 ∧ CandAt P C c' 140220 S z σ ∧
       FrameB Bedge c c' := by
   refine ⟨_, _, Exec.constN hw 140220 0 (by have := hw; exact Nat.zero_le _), rfl,
-    ⟨by simp, fun _ => h, fun h' => by simp at h'⟩, frameB_upd c 0 (by decide)⟩
+    ⟨✓, fun _ => h, fun h' => by simp at h'⟩, frameB_upd c 0 (by decide)⟩
 
 /-- The candidate from the record at `A` and the position in `e`, `h`. -/
 def candFrom (A e h : ℕ) : Stmt :=
@@ -123,14 +125,14 @@ theorem aheadT_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ
       rcases E.hσ with h | h
       · have := E.sig.2.2 h; rw [E.k1] at hs; omega
       · exact h
-    obtain ⟨c', k, ex, hk, bt, f⟩ := xLess_exec E.hG hW c hw hA (by norm_num) hdst E.k1 (AbsRec.weak hx)
+    obtain ⟨c', k, ex, hk, bt, f⟩ := xLess_exec E.hG hW c hw hA (⊛) hdst E.k1 (AbsRec.weak hx)
       E.ox (Or.inl hne)
-    refine ⟨c', _, .ifLtN_true hs ex, by omega, bt.congr ?_, f⟩
+    refine ⟨c', _, .ifLtN_true hs ex, ⋄, bt.congr ?_, f⟩
     rw [hσ]; constructor <;> intro h <;> linarith
   · have hσ : σ = 1 := E.sig.2.1 (by rw [E.k1] at hs; have := E.sig.1; omega)
-    obtain ⟨c', k, ex, hk, bt, f⟩ := xLess_exec E.hG hW c hw (by norm_num) hA hdst E.k1 E.ox
+    obtain ⟨c', k, ex, hk, bt, f⟩ := xLess_exec E.hG hW c hw (⊛) hA hdst E.k1 E.ox
       (AbsRec.weak hx) (Or.inl (Ne.symm hne))
-    refine ⟨c', _, .ifLtN_false hs ex, by omega, bt.congr ?_, f⟩
+    refine ⟨c', _, .ifLtN_false hs ex, ⋄, bt.congr ?_, f⟩
     rw [hσ]; constructor <;> intro h <;> linarith
 
 /-- The bit "`V` is nearer than `U`" (the negation of `σ U.1 ≤ σ V.1`). -/
@@ -151,16 +153,16 @@ theorem nearT_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
       rcases E.hσ with h | h
       · have := E.sig.2.2 h; rw [E.k1] at hs; omega
       · exact h
-    obtain ⟨c', k, ex, hk, bt, f⟩ := xLess_exec E.hG hW c hw (by norm_num) (by norm_num) hdst E.k1
+    obtain ⟨c', k, ex, hk, bt, f⟩ := xLess_exec E.hG hW c hw (⊛) (by norm_num) hdst E.k1
       (AbsRec.weak hU) (AbsRec.weak hV) (Or.inr ⟨st hU, st hV⟩)
-    refine ⟨c', _, .ifLtN_true hs ex, by omega, bt.congr ?_, f⟩
+    refine ⟨c', _, .ifLtN_true hs ex, ⋄, bt.congr ?_, f⟩
     rw [hσ]; constructor <;> intro h
     · intro h'; linarith
     · push Not at h; linarith
   · have hσ : σ = 1 := E.sig.2.1 (by rw [E.k1] at hs; have := E.sig.1; omega)
-    obtain ⟨c', k, ex, hk, bt, f⟩ := xLess_exec E.hG hW c hw (by norm_num) (by norm_num) hdst E.k1
+    obtain ⟨c', k, ex, hk, bt, f⟩ := xLess_exec E.hG hW c hw (⊛) (by norm_num) hdst E.k1
       (AbsRec.weak hV) (AbsRec.weak hU) (Or.inr ⟨st hV, st hU⟩)
-    refine ⟨c', _, .ifLtN_false hs ex, by omega, bt.congr ?_, f⟩
+    refine ⟨c', _, .ifLtN_false hs ex, ⋄, bt.congr ?_, f⟩
     rw [hσ]; constructor <;> intro h
     · intro h'; linarith
     · push Not at h; linarith

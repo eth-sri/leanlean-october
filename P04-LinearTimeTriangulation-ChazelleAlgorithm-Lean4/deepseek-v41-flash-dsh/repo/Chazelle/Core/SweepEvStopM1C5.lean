@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopM1C4
 public import Chazelle.Core.SweepEvGen
 

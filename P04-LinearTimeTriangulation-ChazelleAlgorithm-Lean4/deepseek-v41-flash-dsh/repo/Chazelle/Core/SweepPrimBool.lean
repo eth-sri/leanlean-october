@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SignKernel
 
 /-!
@@ -34,14 +36,14 @@ theorem wr_mono {B B' : ℕ → Bool} {s : Stmt} (h : wr B s = true)
   induction s with
   | skip => rfl
   | instr i =>
-    simp only [wr] at h ⊢
-    cases i <;> simp only [wrOK] at h ⊢ <;> first | exact hB _ h | exact h
+    ϴ' wr at h ⊢
+    cases i <;> ϴ' wrOK at h ⊢ <;> first | exact hB _ h | exact h
   | seq s t ihs iht =>
-    simp only [wr, Bool.and_eq_true] at h ⊢; exact ⟨ihs h.1, iht h.2⟩
+    ϴ' wr, Bool.and_eq_true at h ⊢; exact ⟨ihs h.1, iht h.2⟩
   | ifLtN a b t e iht ihe =>
-    simp only [wr, Bool.and_eq_true] at h ⊢; exact ⟨iht h.1, ihe h.2⟩
+    ϴ' wr, Bool.and_eq_true at h ⊢; exact ⟨iht h.1, ihe h.2⟩
   | ifLtR a b t e iht ihe =>
-    simp only [wr, Bool.and_eq_true] at h ⊢; exact ⟨iht h.1, ihe h.2⟩
+    ϴ' wr, Bool.and_eq_true at h ⊢; exact ⟨iht h.1, ihe h.2⟩
   | whileLtN a b body ih => simp only [wr] at h ⊢; exact ih h
   | whileLtR a b body ih => simp only [wr] at h ⊢; exact ih h
 
@@ -118,46 +120,46 @@ def compile : BF → ℕ → Stmt
 def wset (f : BF) (d : ℕ) (r : ℕ) : Bool := decide (d ≤ r ∧ r ≤ d + f.size)
 
 theorem wr_compile : ∀ (f : BF) (d : ℕ), wr (f.wset d) (f.compile d) = true
-  | var r, d => by simp [compile, wr, wrOK, wset]
-  | const b, d => by simp [compile, wr, wrOK, wset]
+  | var r, d => ⊚ compile, wr, wrOK, wset
+  | const b, d => ⊚ compile, wr, wrOK, wset
   | not f, d => by
     have h := wr_mono (wr_compile f d) (B' := (not f).wset d) (fun r hr => by
-      unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
+      unfold wset at hr ⊢; have := of_decide_eq_true hr; ϴ' size at this ⊢
+      exact decide_eq_true (⋄))
     have h1 := one_le_size f
-    simp only [compile, wr]
-    rw [h]
-    simp only [block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
+    ϴ compile, wr
+    Ξ h
+    ϴ block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true
     refine ⟨?_, ?_⟩ <;>
-      exact decide_eq_true (by omega)
+      exact decide_eq_true (⋄)
   | and f g, d => by
     have hf := wr_mono (wr_compile f d) (B' := (and f g).wset d) (fun r hr => by
-      unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
+      unfold wset at hr ⊢; have := of_decide_eq_true hr; ϴ' size at this ⊢
+      exact decide_eq_true (⋄))
     have hg := wr_mono (wr_compile g (d + 1)) (B' := (and f g).wset d) (fun r hr => by
-      unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
+      unfold wset at hr ⊢; have := of_decide_eq_true hr; ϴ' size at this ⊢
+      exact decide_eq_true (⋄))
     have h1 := one_le_size f
     have h2 := one_le_size g
-    simp only [compile, wr]
-    rw [hf, hg]
-    simp only [block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
+    ϴ compile, wr
+    Ξ hf, hg
+    ϴ block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true
     refine ⟨?_, ?_⟩ <;> (try refine ⟨?_, ?_⟩) <;>
-      exact decide_eq_true (by omega)
+      exact decide_eq_true (⋄)
   | or f g, d => by
     have hf := wr_mono (wr_compile f d) (B' := (or f g).wset d) (fun r hr => by
-      unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
+      unfold wset at hr ⊢; have := of_decide_eq_true hr; ϴ' size at this ⊢
+      exact decide_eq_true (⋄))
     have hg := wr_mono (wr_compile g (d + 1)) (B' := (or f g).wset d) (fun r hr => by
-      unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
+      unfold wset at hr ⊢; have := of_decide_eq_true hr; ϴ' size at this ⊢
+      exact decide_eq_true (⋄))
     have h1 := one_le_size f
     have h2 := one_le_size g
-    simp only [compile, wr]
-    rw [hf, hg]
-    simp only [block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
+    ϴ compile, wr
+    Ξ hf, hg
+    ϴ block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true
     refine ⟨?_, ?_⟩ <;> (try refine ⟨?_, ?_⟩) <;> (try refine ⟨?_, ?_⟩) <;>
-      exact decide_eq_true (by omega)
+      exact decide_eq_true (⋄)
 /-- **The compiled formula computes its value.**  If every variable is a register below `d`
 holding a bit, the block writes `(f.eval …).toNat` into `d` (at most `4 · size f` steps) and
 changes only the registers `d … d + size f`. -/

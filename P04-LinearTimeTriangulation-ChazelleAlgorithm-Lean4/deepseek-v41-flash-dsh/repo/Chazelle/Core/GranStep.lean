@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranState
 
 /-!
@@ -106,26 +108,26 @@ theorem card_filter_two (K : ℕ) (P₀ P₁ : ℕ → Prop) [DecidablePred P₀
     (hcK : c < K) (h0 : P₀ c) (h1 : ¬ P₁ c) :
     ((Finset.range K).filter P₀).card + ((Finset.range K).filter P₁).card = 1 ↔
       ∀ i, i < K → i ≠ c → ¬ P₀ i ∧ ¬ P₁ i := by
-  have hc0 : c ∈ (Finset.range K).filter P₀ := by simp [hcK, h0]
+  have hc0 : c ∈ (Finset.range K).filter P₀ := ⊚ hcK, h0
   constructor
   · intro h i hi hic
     have hpos := Finset.card_pos.2 ⟨c, hc0⟩
-    have h1' : ((Finset.range K).filter P₁).card = 0 := by omega
-    have h0' : ((Finset.range K).filter P₀).card = 1 := by omega
+    have h1' : ((Finset.range K).filter P₁).card = 0 := ⋄
+    have h0' : ((Finset.range K).filter P₀).card = 1 := ⋄
     rw [Finset.card_eq_zero] at h1'
     obtain ⟨a, ha⟩ := Finset.card_eq_one.1 h0'
     refine ⟨fun hp => ?_, fun hp => ?_⟩
-    · have hi0 : i ∈ (Finset.range K).filter P₀ := by simp [hi, hp]
+    · have hi0 : i ∈ (Finset.range K).filter P₀ := ⊚ hi, hp
       rw [ha] at hi0 hc0
       simp only [Finset.mem_singleton] at hi0 hc0
       exact hic (hi0.trans hc0.symm)
-    · have : i ∈ (Finset.range K).filter P₁ := by simp [hi, hp]
+    · have : i ∈ (Finset.range K).filter P₁ := ⊚ hi, hp
       rw [h1'] at this
       exact absurd this (Finset.notMem_empty _)
   · intro h
     have e0 : (Finset.range K).filter P₀ = {c} := by
       ext i
-      simp only [Finset.mem_filter, Finset.mem_range, Finset.mem_singleton]
+      ϴ Finset.mem_filter, Finset.mem_range, Finset.mem_singleton
       constructor
       · rintro ⟨hi, hp⟩
         by_contra hic
@@ -133,7 +135,7 @@ theorem card_filter_two (K : ℕ) (P₀ P₁ : ℕ → Prop) [DecidablePred P₀
       · rintro rfl; exact ⟨hcK, h0⟩
     have e1 : (Finset.range K).filter P₁ = ∅ := by
       ext i
-      simp only [Finset.mem_filter, Finset.mem_range, Finset.notMem_empty, iff_false, not_and]
+      ϴ Finset.mem_filter, Finset.mem_range, Finset.notMem_empty, iff_false, not_and
       intro hi hp
       by_cases hic : i = c
       · subst hic; exact h1 hp
@@ -157,18 +159,18 @@ theorem Inv.cnt_eq_one_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st
     rcases hj with rfl | rfl
     · exact (h.stat.nd0 c hc.1).1
     · exact (h.stat.nd1 c hc.1).1
-  rw [h.cnt j hjA]
+  Ξ h.cnt j hjA
   unfold St.cntOf
   have hne := h.nd_ne hE hc
   rcases hj with rfl | rfl
-  · rw [card_filter_two E.K _ _ hc.1 ⟨hc.2, rfl⟩ (fun hp => hne hp.2.symm)]
+  · Ξ card_filter_two E.K _ _ hc.1 ⟨hc.2, rfl⟩ (fun hp => hne hp.2.symm)
     constructor
     · intro h' i hi hic
       obtain ⟨a, b⟩ := h' i hi.1 hic
       exact ⟨fun e => a ⟨hi.2, e⟩, fun e => b ⟨hi.2, e⟩⟩
     · intro h' i hi hic
       refine ⟨fun hp => (h' i ⟨hi, hp.1⟩ hic).1 hp.2, fun hp => (h' i ⟨hi, hp.1⟩ hic).2 hp.2⟩
-  · rw [add_comm, card_filter_two E.K _ _ hc.1 ⟨hc.2, rfl⟩ (fun hp => hne hp.2)]
+  · Ξ add_comm, card_filter_two E.K _ _ hc.1 ⟨hc.2, rfl⟩ (fun hp => hne hp.2)
     constructor
     · intro h' i hi hic
       obtain ⟨a, b⟩ := h' i hi.1 hic
@@ -193,20 +195,20 @@ theorem fam_diff (hE : E.Good) {c : ℕ} (hc : c ∈ st.L E) :
 theorem Inv.cut_sdiff_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) (k : ℝ) :
     E.M.IsCut (st.F E \ {cs E.M E.Q E.N c}) k ↔
       ∃ j, j < E.A ∧ st.Lv j ∧ st.dd c j = false ∧ E.key j = k := by
-  rw [← fam_diff hE hc, isCut_fam_iff hE.hNF hE.hM]
+  Ξ ← fam_diff hE hc, isCut_fam_iff hE.hNF hE.hM
   constructor
   · rintro ⟨i, ⟨hiL, hic⟩, hi, hk⟩
     have hic' : i ≠ c := fun e => hic (by rw [e]; rfl)
     -- the position of the attachment
     have hpos : ∃ j, (j = st.nd0 i ∨ j = st.nd1 i) ∧ j < E.A ∧ E.key j = k := by
       rcases hk with hk | hk
-      · exact ⟨st.nd0 i, Or.inl rfl, (h.stat.nd0 i hi).1, by rw [(h.stat.nd0 i hi).2, hk]⟩
-      · exact ⟨st.nd1 i, Or.inr rfl, (h.stat.nd1 i hi).1, by rw [(h.stat.nd1 i hi).2, hk]⟩
+      · exact ⟨st.nd0 i, Or.inl rfl, (h.stat.nd0 i hi).1, Ρ (h.stat.nd0 i hi).2, hk⟩
+      · exact ⟨st.nd1 i, Or.inr rfl, (h.stat.nd1 i hi).1, Ρ (h.stat.nd1 i hi).2, hk⟩
     obtain ⟨j, hji, hj, hkj⟩ := hpos
     refine ⟨j, hj, (h.lv_iff hj).2 ⟨i, hiL, hji.elim (fun e => Or.inl e.symm)
       (fun e => Or.inr e.symm)⟩, ?_, hkj⟩
     unfold St.dd
-    simp only [Bool.or_eq_false_iff, Bool.and_eq_false_iff, decide_eq_false_iff_not]
+    ϴ Bool.or_eq_false_iff, Bool.and_eq_false_iff, decide_eq_false_iff_not
     refine ⟨?_, ?_⟩
     · by_cases hj0 : j = st.nd0 c
       · right
@@ -330,7 +332,7 @@ theorem Inv.dd_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {n
     (hn : n = st.nd0 c ∨ n = st.nd1 c) : st.dd c n = true ↔ st.cnt n = 1 := by
   have hne := h.nd_ne hE hc
   unfold St.dd
-  simp only [Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq]
+  ϴ Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq
   rcases hn with rfl | rfl
   · constructor
     · rintro (⟨-, h1⟩ | ⟨e, -⟩)
@@ -363,12 +365,12 @@ theorem Inv.lost_iff (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) 
     have hkeys := attach_keys hE.hNF hE.hM hc.1 hA
     have hpos : ∃ n, (n = st.nd0 c ∨ n = st.nd1 c) ∧ (p : ℝ) + t = E.key n := by
       rcases hkeys with e | e
-      · exact ⟨st.nd0 c, Or.inl rfl, by rw [e, (h.stat.nd0 c hc.1).2]⟩
-      · exact ⟨st.nd1 c, Or.inr rfl, by rw [e, (h.stat.nd1 c hc.1).2]⟩
+      · exact ⟨st.nd0 c, Or.inl rfl, Ρ e, (h.stat.nd0 c hc.1).2⟩
+      · exact ⟨st.nd1 c, Or.inr rfl, Ρ e, (h.stat.nd1 c hc.1).2⟩
     obtain ⟨n, hn, hkn⟩ := hpos
     obtain ⟨hnA, hL, -⟩ := h.key_nd_cut hE hc hn
     refine ⟨n, hn, ?_, hkn⟩
-    rw [← h.dd_iff hE hc hn]
+    Ξ ← h.dd_iff hE hc hn
     by_contra hdd
     exact hk.2 ((h.cut_sdiff_iff hE hc _).2 ⟨n, hnA, hL, by simpa using hdd, hkn.symm⟩)
   · rintro ⟨n, hn, h1, rfl⟩
@@ -404,7 +406,7 @@ theorem Inv.dead_gap (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E)
   obtain ⟨k₁, k₂, hk₁, hk₂, hk⟩ := hE.hM.two_cuts hS'adm hne'
   obtain ⟨j₁, hj₁, hL₁, hd₁, rfl⟩ := (h.cut_sdiff_iff hE hc _).1 hk₁
   obtain ⟨j₂, hj₂, hL₂, hd₂, rfl⟩ := (h.cut_sdiff_iff hE hc _).1 hk₂
-  have hex : ∃ i, i < E.A ∧ st.Lv i ∧ ¬ st.dd c i = true := ⟨j₁, hj₁, hL₁, by simp [hd₁]⟩
+  have hex : ∃ i, i < E.A ∧ st.Lv i ∧ ¬ st.dd c i = true := ⟨j₁, hj₁, hL₁, ⊚ hd₁⟩
   have hp := pred_skip (Dd := fun j => st.dd c j = true) h.ring hnA hnL hDn hD hex
   have hs := succ_skip (Dd := fun j => st.dd c j = true) h.ring hnA hnL hDn hD hex
   have hpe : st.prD c n = (if st.dd c (st.prv n) = true then st.prv (st.prv n) else st.prv n) :=
@@ -416,9 +418,9 @@ theorem Inv.dead_gap (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E)
   have hps : st.prD c n ≠ st.suD c n := by
     intro e
     rw [← e] at hs
-    have e1 := only_of_pred_eq_succ hnA (fun h' => h'.2 hDn) hp hs hj₁ ⟨hL₁, by simp [hd₁]⟩
-    have e2 := only_of_pred_eq_succ hnA (fun h' => h'.2 hDn) hp hs hj₂ ⟨hL₂, by simp [hd₂]⟩
-    exact hk (by rw [e1, e2])
+    have e1 := only_of_pred_eq_succ hnA (fun h' => h'.2 hDn) hp hs hj₁ ⟨hL₁, ⊚ hd₁⟩
+    have e2 := only_of_pred_eq_succ hnA (fun h' => h'.2 hDn) hp hs hj₂ ⟨hL₂, ⊚ hd₂⟩
+    exact hk (Ρ e1, e2)
   obtain ⟨hin, hfree⟩ := gap_of_pred_succ hnA (fun h' => h'.2 hDn) hp hs hps
   have hpA := hp.1
   have hsA := hs.1
@@ -427,7 +429,7 @@ theorem Inv.dead_gap (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E)
     fun e => hps (key_inj hE hpA hsA e), fun k hk' hcut => ?_⟩,
     (key_cyc_iff hE hpA hsA hnA).2 hin⟩
   obtain ⟨j, hj, hjL, hjd, rfl⟩ := (h.cut_sdiff_iff hE hc _).1 hcut
-  exact hfree j hj ⟨hjL, by simp [hjd]⟩ ((key_cyc_iff hE hpA hsA hj).1 hk')
+  exact hfree j hj ⟨hjL, ⊚ hjd⟩ ((key_cyc_iff hE hpA hsA hj).1 hk')
 
 /-- **The merged weight** computed by the state is the weight of the merged region. -/
 theorem Inv.mu_eq (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {P : Set Point}
@@ -439,19 +441,19 @@ theorem Inv.mu_eq (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {P 
   have hcS := St.cs_mem_F hc
   unfold St.mu
   by_cases h1 : st.nlive = 1
-  · rw [ite_eq_left h1]
+  · Ξ ite_eq_left h1
     -- the only live chord is `c`
     have hL1 : st.L E = {c} := by
       have hfin : (st.L E).Finite := (Set.finite_lt_nat E.K).subset fun i hi => hi.1
       rw [h.nlive] at h1
       obtain ⟨a, ha⟩ := Set.ncard_eq_one.1 h1
       rw [ha] at hc ⊢
-      rw [mem_singleton_iff.1 hc]
+      Ξ mem_singleton_iff.1 hc
     have he : st.F E \ {cs E.M E.Q E.N c} = ∅ := by
-      rw [← fam_diff hE hc, hL1, sdiff_self]
+      Ξ ← fam_diff hE hc, hL1, sdiff_self
       ext d; simp [fam]
-    rw [weight_merged_empty hE.hM hs he, size_eq hE]
-  · rw [ite_eq_right h1]
+    Ξ weight_merged_empty hE.hM hs he, size_eq hE
+  · Ξ ite_eq_right h1
     have hne' : (st.F E \ {cs E.M E.Q E.N c}).Nonempty := by
       have hfin : (st.L E).Finite := (Set.finite_lt_nat E.K).subset fun i hi => hi.1
       have h2 : 1 < (st.L E).ncard := by
@@ -459,7 +461,7 @@ theorem Inv.mu_eq (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {P 
         rw [h.nlive] at h1
         omega
       obtain ⟨a, ha, hac⟩ := Set.exists_ne_of_one_lt_ncard h2 c
-      rw [← fam_diff hE hc]
+      Ξ ← fam_diff hE hc
       exact ⟨cs E.M E.Q E.N a, a, ⟨ha, by rw [mem_singleton_iff]; exact hac⟩, ha.1, rfl⟩
     have wX : st.wt (st.s0 c) = E.M.weight (st.F E) (st.cl E (st.s0 c)) :=
       (h.cls _ ⟨c, hc, Or.inl rfl⟩).2.1
@@ -472,7 +474,7 @@ theorem Inv.mu_eq (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {P 
       unfold St.jw
       split_ifs with hcnt
       · obtain ⟨hpA, hsA, hgap, hin⟩ := h.dead_gap hE hc hne' hn hcnt
-        rw [gw_eq hE h.stat hpA hsA]
+        Ξ gw_eq hE h.stat hpA hsA
         exact gap_le_merged hE.hM hSadm hSfin hcS hs ((h.lost_iff hE hc).2 ⟨n, hn, hcnt, rfl⟩)
           hgap hin
       · exact Nat.zero_le _
@@ -489,7 +491,7 @@ theorem Inv.mu_eq (hE : E.Good) (h : Inv E st) {c : ℕ} (hc : c ∈ st.L E) {P 
       obtain ⟨rfl, rfl⟩ := gap_unique hg hgap hkin hin
       have : E.M.arcWt (E.key (st.prD c n)) (E.key (st.suD c n)) = st.jw E c n := by
         unfold St.jw; rw [ite_eq_left hcnt, gw_eq hE h.stat hpA hsA]
-      rw [this]
+      Ξ this
       rcases hn with rfl | rfl
       · exact le_max_of_le_right (le_max_left _ _)
       · exact le_max_of_le_right (le_max_right _ _)

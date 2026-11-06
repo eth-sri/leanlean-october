@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Split.Once
 
 /-!
@@ -46,7 +48,7 @@ def sideTest (m : List ℕ) (d : ℕ × ℕ) : Bool := decide (d.1 ∈ m) && dec
 
 theorem sideTest_eq_true {m : List ℕ} {d : ℕ × ℕ} :
     sideTest m d = true ↔ d.1 ∈ m ∧ d.2 ∈ m := by
-  simp [sideTest]
+  Θ sideTest
 
 /-- The diagonals of `D` sent to the first piece of `l` cut along `d`: those with both endpoints
 in `splitFst l d`. -/
@@ -59,11 +61,11 @@ def diagsSnd (l : List ℕ) (d : ℕ × ℕ) (D : List (ℕ × ℕ)) : List (ℕ
 
 theorem mem_diagsFst {l : List ℕ} {d d' : ℕ × ℕ} {D : List (ℕ × ℕ)} :
     d' ∈ diagsFst l d D ↔ d' ∈ D ∧ d'.1 ∈ splitFst l d ∧ d'.2 ∈ splitFst l d := by
-  rw [diagsFst, List.mem_filter, sideTest_eq_true]
+  Ξ diagsFst, List.mem_filter, sideTest_eq_true
 
 theorem mem_diagsSnd {l : List ℕ} {d d' : ℕ × ℕ} {D : List (ℕ × ℕ)} :
     d' ∈ diagsSnd l d D ↔ d' ∈ D ∧ ¬ (d'.1 ∈ splitFst l d ∧ d'.2 ∈ splitFst l d) := by
-  rw [diagsSnd, List.mem_filter, Bool.not_eq_true', ← sideTest_eq_true, Bool.not_eq_true]
+  Ξ diagsSnd, List.mem_filter, Bool.not_eq_true', ← sideTest_eq_true, Bool.not_eq_true
 
 /-- **Splitting `l` along all the diagonals of `D`**: cut along the head diagonal, distribute the
 remaining diagonals to the two pieces, and recurse. -/
@@ -74,7 +76,7 @@ def splitAll : List ℕ → List (ℕ × ℕ) → List (List ℕ)
 termination_by _ D => D.length
 decreasing_by
   all_goals
-    simp only [diagsFst, diagsSnd, List.length_cons]
+    ϴ diagsFst, diagsSnd, List.length_cons
     exact Nat.lt_succ_of_le (List.length_filter_le _ _)
 
 /-- **Assembling triangulations of the pieces.**  Given triangles `T m` for each piece `m` (in
@@ -88,27 +90,27 @@ def combineTri (T : List ℕ → List Polygon.Triangle) :
 termination_by _ D => D.length
 decreasing_by
   all_goals
-    simp only [diagsFst, diagsSnd, List.length_cons]
+    ϴ diagsFst, diagsSnd, List.length_cons
     exact Nat.lt_succ_of_le (List.length_filter_le _ _)
 
 @[simp] theorem splitAll_nil (l : List ℕ) : splitAll l [] = [l] := by
-  rw [splitAll]
+  Ξ splitAll
 
 theorem splitAll_cons (l : List ℕ) (d : ℕ × ℕ) (D : List (ℕ × ℕ)) :
     splitAll l (d :: D) =
       splitAll (splitFst l d) (diagsFst l d D) ++ splitAll (splitSnd l d) (diagsSnd l d D) := by
-  rw [splitAll]
+  Ξ splitAll
 
 @[simp] theorem combineTri_nil (T : List ℕ → List Polygon.Triangle) (l : List ℕ) :
     combineTri T l [] = T l := by
-  rw [combineTri]
+  Ξ combineTri
 
 theorem combineTri_cons (T : List ℕ → List Polygon.Triangle) (l : List ℕ) (d : ℕ × ℕ)
     (D : List (ℕ × ℕ)) :
     combineTri T l (d :: D) =
       (combineTri T (splitFst l d) (diagsFst l d D)).map (relabel (l.idxOf d.1) l.length) ++
         (combineTri T (splitSnd l d) (diagsSnd l d D)).map (relabel (l.idxOf d.2) l.length) := by
-  rw [combineTri]
+  Ξ combineTri
 
 /-- Induction principle following the recursion of `splitAll`. -/
 theorem splitAll_induction {motive : List ℕ → List (ℕ × ℕ) → Prop}
@@ -130,8 +132,8 @@ theorem splitAll_induction {motive : List ℕ → List (ℕ × ℕ) → Prop}
     | nil => exact nil l
     | cons d D =>
       rw [List.length_cons] at hD
-      exact cons l d D (ih _ _ ((List.length_filter_le _ _).trans (by omega)))
-        (ih _ _ ((List.length_filter_le _ _).trans (by omega)))
+      exact cons l d D (ih _ _ ((List.length_filter_le _ _).trans (⋄)))
+        (ih _ _ ((List.length_filter_le _ _).trans (⋄)))
 
 /-! ### Diagonal systems -/
 
@@ -288,10 +290,10 @@ theorem weakTriangulates_combineTri {l : List ℕ} {D : List (ℕ × ℕ)} (h : 
     (∀ m ∈ splitAll l D, WeakTriangulates (subPoly P m) (T m)) →
       WeakTriangulates (subPoly P l) (combineTri T l D)) ?_ ?_ l D
   · intro l _ hT
-    rw [combineTri_nil]
+    Ξ combineTri_nil
     exact hT l (by rw [splitAll_nil]; exact List.mem_singleton_self l)
   · intro l d D ih₁ ih₂ h hT
-    rw [combineTri_cons]
+    Ξ combineTri_cons
     exact weakTriangulates_split h.simple (h.diag d List.mem_cons_self)
       (ih₁ h.fst fun m hm => hT m (by rw [splitAll_cons]; exact List.mem_append_left _ hm))
       (ih₂ h.snd fun m hm => hT m (by rw [splitAll_cons]; exact List.mem_append_right _ hm))
@@ -310,7 +312,7 @@ theorem map_relabelList_combineTri {l : List ℕ} {D : List (ℕ × ℕ)} (h : D
       (combineTri T l D).map (relabelList l) =
         (splitAll l D).flatMap (fun m => (T m).map (relabelList m))) ?_ ?_ l D
   · intro l _ _
-    rw [combineTri_nil, splitAll_nil, List.flatMap_singleton]
+    Ξ combineTri_nil, splitAll_nil, List.flatMap_singleton
   · intro l d D ih₁ ih₂ h hT
     have hd := h.diag d List.mem_cons_self
     have hT₁ : ∀ m ∈ splitAll (splitFst l d) (diagsFst l d D),

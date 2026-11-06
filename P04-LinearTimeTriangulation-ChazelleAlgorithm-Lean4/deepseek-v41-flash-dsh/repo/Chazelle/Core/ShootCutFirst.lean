@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutGen
 
 /-!
@@ -36,32 +38,32 @@ theorem uFlag_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
   unfold uFlag uIx
   by_cases hp6 : p < 6
   · refine spec_ifLtN_true (by rw [hs, h96]; exact hp6) ?_
-    refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
+    refine spec_step (Exec.constN hw _ _ (⋄)) fun w₁ => ?_
     refine spec_step (Exec.addN w₁ _ _ _ (by
       simp only [upd, h1, Ne.symm h3, ite_false]; rw [hs, h91]; omega))
-      fun w₂ => spec_nil w₂ ⟨by omega, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
-    · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_left (by omega)]
-    · simp only [upd, ite_true, h1, Ne.symm h3, ite_false]
-      rw [hs, h91, ite_eq_left (by omega)]
-    · simp only [upd, hx1, hx2, ite_false]
+      fun w₂ => spec_nil w₂ ⟨⋄, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
+    · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_left (⋄)]
+    · ϴ upd, ite_true, h1, Ne.symm h3, ite_false
+      rw [hs, h91, ite_eq_left (⋄)]
+    · ϴ upd, hx1, hx2, ite_false
   · by_cases hpm : p < 2 * m + 6
     · refine spec_ifLtN_false (by rw [hs, h96]; exact hp6)
         (spec_ifLtN_true (by rw [hs, h32]; exact hpm) ?_)
-      refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
-      refine spec_step (Exec.constN w₁ _ _ (by omega))
-        fun w₂ => spec_nil w₂ ⟨by omega, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
-      · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_right (by omega)]
-      · simp only [upd, ite_true]; rw [ite_eq_right (by omega)]
-      · simp only [upd, hx1, hx2, ite_false]
+      refine spec_step (Exec.constN hw _ _ (⋄)) fun w₁ => ?_
+      refine spec_step (Exec.constN w₁ _ _ (⋄))
+        fun w₂ => spec_nil w₂ ⟨⋄, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
+      · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_right (⋄)]
+      · simp only [upd, ite_true]; rw [ite_eq_right (⋄)]
+      · ϴ upd, hx1, hx2, ite_false
     · refine spec_ifLtN_false (by rw [hs, h96]; exact hp6)
         (spec_ifLtN_false (by rw [hs, h32]; exact hpm)
           (spec_ifLtN_false (by rw [hs, h32]; omega) ?_))
-      refine spec_step (Exec.constN hw _ _ (by omega)) fun w₁ => ?_
-      refine spec_step (Exec.constN w₁ _ _ (by omega))
-        fun w₂ => spec_nil w₂ ⟨by omega, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
-      · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_left (by omega)]
-      · simp only [upd, ite_true]; rw [ite_eq_right (by omega)]
-      · simp only [upd, hx1, hx2, ite_false]
+      refine spec_step (Exec.constN hw _ _ (⋄)) fun w₁ => ?_
+      refine spec_step (Exec.constN w₁ _ _ (⋄))
+        fun w₂ => spec_nil w₂ ⟨⋄, ?_, ?_, fun x hx1 hx2 => ?_, rfl⟩
+      · simp only [upd, h2, ite_false, ite_true]; rw [ite_eq_left (⋄)]
+      · simp only [upd, ite_true]; rw [ite_eq_right (⋄)]
+      · ϴ upd, hx1, hx2, ite_false
 
 /-! ## The pieces of kind `0` -/
 
@@ -80,20 +82,20 @@ theorem wt_last_edge (C : Chain) (Q : Polygon) {n : ℕ} {x y : WPos}
     (hx : ProperPos (chainModel C) Q n x) (hy : ProperPos (chainModel C) Q n y)
     (hxe : x.edge = 2 * C.m + 5) (hU : InU C y.edge) :
     (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) ≤ 1 := by
-  rw [arcWt_chain C Q hx hy]
+  Ξ arcWt_chain C Q hx hy
   have hc := le_keyCeil y.edge ((chainModel C).param Q y)
   have hc' := keyCeil_le y.edge ((chainModel C).param Q y)
   have hm := C.one_le
   unfold arcWtNat
 
-  rw [hxe]
+  Ξ hxe
   split_ifs with h
   · omega
   · rcases hU with hU | hU
     · omega
     · exfalso
       apply h
-      rw [hU]
+      Ξ hU
       push_cast
       linarith [hx.2.1, hy.1]
 
@@ -174,8 +176,8 @@ theorem pcSV_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) 
     all_goals first | (config_simp; first | exact h01 | exact h02 | exact h75; done) |
       (config_simp; done) | skip
     simp only [upd]; split_ifs <;> first | rfl | omega
-  exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by simp [pSV] at h⟩,
-    exec_frameB e₁ (by decide), fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
+  exact ⟨d₁, k₁, e₁, ⋄, ⟨v50, v51, v52, v53, v54, fun h => by simp [pSV] at h⟩,
+    exec_frameB e₁ (⌖), fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
 
 theorem pcVE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) {e : WPos} {v : ℕ}
     (h75 : d.nreg 150075 = v) (h03 : d.nreg 150003 = e.edge) (h04 : d.nreg 150004 = e.hgt) :
@@ -192,8 +194,8 @@ theorem pcVE_exec {W : ℕ} (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) 
     all_goals first | (config_simp; first | exact h03 | exact h04 | exact h75; done) |
       (config_simp; done) | skip
     simp only [upd]; split_ifs <;> first | rfl | omega
-  exact ⟨d₁, k₁, e₁, by omega, ⟨v50, v51, v52, v53, v54, fun h => by simp [pVE] at h⟩,
-    exec_frameB e₁ (by decide), fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
+  exact ⟨d₁, k₁, e₁, ⋄, ⟨v50, v51, v52, v53, v54, fun h => by simp [pVE] at h⟩,
+    exec_frameB e₁ (⌖), fun r hr => r₁ r (by unfold Keep at hr; omega)⟩
 
 end
 

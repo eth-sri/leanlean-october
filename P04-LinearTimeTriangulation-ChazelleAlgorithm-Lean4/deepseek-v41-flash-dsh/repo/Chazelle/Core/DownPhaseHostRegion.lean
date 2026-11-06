@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseHostKey
 public import Chazelle.Core.FactsTie
 public import Chazelle.Core.FactsL23

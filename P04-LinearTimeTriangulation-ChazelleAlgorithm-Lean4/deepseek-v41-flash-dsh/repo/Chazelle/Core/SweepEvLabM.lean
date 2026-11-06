@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvCand3
 public import Chazelle.Core.SweepMachine17
 public import Chazelle.Core.SweepMachine9
@@ -60,7 +62,7 @@ theorem evSideLab_fused (hP : J.P.Simple) {Q : Polygon} {N : NF}
   have hchm : ch ∈ S₂ := by
     refine ⟨N.chord k, ?_, rfl⟩
     unfold NF.chord
-    rw [NFLoc.getD_of_lt _ hk]
+    Ξ NFLoc.getD_of_lt _ hk
     exact List.getElem_mem _
   have hf : Merge.shoot J.whole a σ ∈ F₂plus J S₂ := shoot_end_mem hchm ha hfree
   have hfc : Merge.shoot J.whole a σ ⊆ ch := shoot_sub_end hS₂a hchm ha
@@ -79,11 +81,11 @@ theorem evSideLab_fused (hP : J.P.Simple) {Q : Polygon} {N : NF}
   intro G hG ρ hρ hS
   rcases hρ with rfl | rfl
   · refine ⟨regOf (chainModel J.right) Q N (N.chord k).up, Or.inl ⟨(N.chord k).up,
-      Or.inl ⟨by norm_num, rfl⟩, rfl⟩, hreg.1 _ hup', ?_⟩
+      Or.inl ⟨⊛, rfl⟩, rfl⟩, hreg.1 _ hup', ?_⟩
     exact sideLabel_sub J hP hS₂ hF hchm hf hfc hB hoff.1 hoff.2 hns (Or.inl rfl) (hreg.1 _ hup')
       hup G hG hS
   · refine ⟨regOf (chainModel J.right) Q N (N.chord k).dn, Or.inl ⟨(N.chord k).dn,
-      Or.inr (Or.inl ⟨by norm_num, rfl⟩), rfl⟩, hreg.1 _ hdn', ?_⟩
+      Or.inr (Or.inl ⟨⊛, rfl⟩), rfl⟩, hreg.1 _ hdn', ?_⟩
     exact sideLabel_sub J hP hS₂ hF hchm hf hfc hB hoff.1 hoff.2 hns (Or.inr rfl) (hreg.1 _ hdn')
       hdn G hG hS
 

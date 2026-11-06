@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepRamTie
 
 /-!
@@ -45,7 +47,7 @@ theorem faces_near_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm
   obtain ⟨δ, hδ, hW'⟩ := hW
   obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
     (eventually_not_cut_after hM hF hfin ((p : ℝ) + t))
-  have hδ₁' : (0 : ℝ) < δ₁ := hδ₁
+  have hδ₁' := hδ₁
   set s := min (min δ δ₁) (min ε (1 - t)) / 2 with hs
   have hm : 0 < min (min δ δ₁) (min ε (1 - t)) :=
     lt_min (lt_min hδ hδ₁') (lt_min hε (by linarith))
@@ -112,7 +114,7 @@ theorem faces_near_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Ad
   rcases ht0.lt_or_eq with htp | rfl
   · obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
       (eventually_not_cut_before hM hF hfin ((p : ℝ) + t))
-    have hδ₁' : (0 : ℝ) < δ₁ := hδ₁
+    have hδ₁' := hδ₁
     set s := min (min δ δ₁) (min ε t) / 2 with hs
     have hm : 0 < min (min δ δ₁) (min ε t) := lt_min (lt_min hδ hδ₁') (lt_min hε htp)
     have h1 := min_le_left (min δ δ₁) (min ε t)
@@ -146,7 +148,7 @@ theorem faces_near_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Ad
     obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
       ((eventually_not_cut_before hM hF hfin (p : ℝ)).and
         (eventually_not_cut_before hM hF hfin (M.W.n : ℝ)))
-    have hδ₁' : (0 : ℝ) < δ₁ := hδ₁
+    have hδ₁' := hδ₁
     set s := min (min δ δ₁) (min ε 1) / 2 with hs
     have hm : 0 < min (min δ δ₁) (min ε 1) := lt_min (lt_min hδ hδ₁') (lt_min hε one_pos)
     have h1 := min_le_left (min δ δ₁) (min ε 1)

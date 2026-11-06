@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvHItems
 public import Chazelle.Core.DownPhaseDrvRLib
 public import Chazelle.Core.NFBuildMain
@@ -222,11 +224,11 @@ def Bjun (q : ℕ) : Bool := Bem q || decide (215060 ≤ q ∧ q ≤ 215065)
 /-- The registers `ldS` writes. -/
 def Bld (q : ℕ) : Bool := decide (215042 ≤ q ∧ q ≤ 215051)
 
-theorem wrM_setupS : wrM Ball setupS = true := by decide
-theorem wrM_chBody : wrM Bpart chBody = true := by decide
-theorem wrM_ldS : wrM Bld ldS = true := by decide
-theorem wrM_hostS : wrM Ball hostS = true := by decide
-theorem wrM2_hostS : wrM2 Ball (fun _ => false) hostS = true := by decide
+theorem wrM_setupS : wrM Ball setupS = true := ⌖
+theorem wrM_chBody : wrM Bpart chBody = true := ⌖
+theorem wrM_ldS : wrM Bld ldS = true := ⌖
+theorem wrM_hostS : wrM Ball hostS = true := ⌖
+theorem wrM2_hostS : wrM2 Ball (fun _ => false) hostS = true := ⌖
 
 end
 

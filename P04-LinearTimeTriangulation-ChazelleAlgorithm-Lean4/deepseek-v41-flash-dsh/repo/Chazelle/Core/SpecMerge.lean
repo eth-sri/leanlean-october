@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecKernels
 public import Chazelle.Core.SpecFacts
 
@@ -76,7 +78,7 @@ theorem arcEdges_finite (a b : ℝ) : (M.arcEdges a b).Finite :=
 /-- A smaller key interval meets fewer counted edges. -/
 theorem arcWt_mono {a b a' b' : ℝ} (h : ∀ x, sideInArc a' b' x → sideInArc a b x) :
     M.arcWt a' b' ≤ M.arcWt a b := by
-  rw [arcWt_eq, arcWt_eq]
+  Ξ arcWt_eq, arcWt_eq
   refine Set.ncard_le_ncard ?_ (M.arcEdges_finite a b)
   rintro p ⟨hp, hc, t, ht0, ht1, hx⟩
   exact ⟨hp, hc, t, ht0, ht1, h _ hx⟩
@@ -121,10 +123,10 @@ def keyEdges (g : ℝ) : Set ℕ := {p : ℕ | ∃ t : ℝ, 0 < t ∧ t < 1 ∧ 
 /-- A natural key is the open part of no walk edge. -/
 theorem keyEdges_natCast (k : ℕ) : keyEdges (k : ℝ) = ∅ := by
   ext p
-  simp only [keyEdges, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_exists, not_and]
+  ϴ keyEdges, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_exists, not_and
   intro t ht0 ht1 hp
-  have h1 : (p : ℝ) < k := by linarith
-  have h2 : (k : ℝ) < p + 1 := by linarith
+  have h1 : (p : ℝ) < k := ⟡
+  have h2 : (k : ℝ) < p + 1 := ⟡
   have h1' : p < k := by exact_mod_cast h1
   have h2' : k < p + 1 := by exact_mod_cast h2
   omega
@@ -141,7 +143,7 @@ theorem arcEdges_subset_split {a b g : ℝ} (hg : sideInArc a b g) :
 `arcWt a b ≤ arcWt a k + arcWt k b`. -/
 theorem arcWt_le_split_vertex {a b : ℝ} {k : ℕ} (hg : sideInArc a b k) :
     M.arcWt a b ≤ M.arcWt a k + M.arcWt k b := by
-  rw [arcWt_eq, arcWt_eq, arcWt_eq]
+  Ξ arcWt_eq, arcWt_eq, arcWt_eq
   have hsub := M.arcEdges_subset_split hg
   rw [keyEdges_natCast, Set.union_empty] at hsub
   calc (M.arcEdges a b).ncard ≤ (M.arcEdges a k ∪ M.arcEdges k b).ncard :=

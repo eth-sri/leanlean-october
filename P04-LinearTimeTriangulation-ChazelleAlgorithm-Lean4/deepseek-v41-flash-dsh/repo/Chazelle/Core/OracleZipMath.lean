@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleQueryMeets
 
 /-!
@@ -29,7 +33,7 @@ theorem same_point_of_opp {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m) {
     (h : ((tj C i + tj C i' : ℕ) : ℝ) + t + t' = 2 * C.m ∨
       ((tj C i + tj C i' : ℕ) : ℝ) + t + t' = 0) :
     sidePt (C.sideWalk C.sideBeta) (i + 6) t = sidePt (C.sideWalk C.sideBeta) (i' + 6) t' := by
-  rw [tour_pt C i hi, tour_pt C i' hi']
+  Ξ tour_pt C i hi, tour_pt C i' hi'
   have ha := tj_lt C i
   have hb := tj_lt C i'
   set a := tj C i with hadef
@@ -51,34 +55,34 @@ theorem same_point_of_opp {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m) {
   have hm := C.one_le
   rcases h with h | h
   · rcases hint (2 * C.m) (by push_cast; linarith) with h0 | h1
-    · have ht0 : t = 0 := by linarith
-      have ht0' : t' = 0 := by linarith
+    · have ht0 : t = 0 := ⟡
+      have ht0' : t' = 0 := ⟡
       subst ht0 ht0'
       have hab : a + b = 2 * C.m := by
         have : ((a + b : ℕ) : ℝ) = ((2 * C.m : ℕ) : ℝ) := by push_cast; linarith
         exact_mod_cast this
       unfold tk
-      rw [← hadef, ← hbdef]
+      Ξ ← hadef, ← hbdef
       split_ifs <;> simp only at * <;> first | (exfalso; omega) | (congr 1; omega) | simp_all
     · have htp : 0 < t := by
         by_contra hc; push Not at hc
         have : t = 0 := le_antisymm hc ht
-        rw [this] at h1; linarith
+        Ξ' this at h1; linarith
       have htp' : 0 < t' := by
         by_contra hc; push Not at hc
         have : t' = 0 := le_antisymm hc ht'
-        rw [this] at h1; linarith
+        Ξ' this at h1; linarith
       have hab : a + b + 1 = 2 * C.m := by
         have : ((a + b + 1 : ℕ) : ℝ) = ((2 * C.m : ℕ) : ℝ) := by push_cast; linarith
         exact_mod_cast this
       unfold tk
-      rw [← hadef, ← hbdef, ite_eq_right htp.ne', ite_eq_right htp'.ne']
+      Ξ ← hadef, ← hbdef, ite_eq_right htp.ne', ite_eq_right htp'.ne'
       split_ifs with h1' h2'
       · exfalso; omega
       · show cp C a t = cp C (2 * C.m - b - 1) (1 - t')
-        rw [show 2 * C.m - b - 1 = a by omega, show 1 - t' = t by linarith]
+        Ξ show 2 * C.m - b - 1 = a by omega, show 1 - t' = t by linarith
       · show cp C (2 * C.m - a - 1) (1 - t) = cp C b t'
-        rw [show 2 * C.m - a - 1 = b by omega, show 1 - t = t' by linarith]
+        Ξ show 2 * C.m - a - 1 = b by omega, show 1 - t = t' by linarith
       · exfalso; omega
   · have ht0 : t = 0 := by
       have : (0 : ℝ) ≤ a := Nat.cast_nonneg a
@@ -93,8 +97,8 @@ theorem same_point_of_opp {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m) {
       have : ((a + b : ℕ) : ℝ) = 0 := by push_cast; linarith
       exact_mod_cast this
     unfold tk
-    rw [← hadef, ← hbdef]
-    rw [show a = 0 by omega, show b = 0 by omega]
+    Ξ ← hadef, ← hbdef
+    Ξ show a = 0 by omega, show b = 0 by omega
 
 /-- A walk position with key in `[6, 2 m + 6]` is a tour position, up to the closing vertex. -/
 theorem tour_norm {p : ℕ} (hp : p < 2 * C.m + 7) {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1)
@@ -103,17 +107,17 @@ theorem tour_norm {p : ℕ} (hp : p < 2 * C.m + 7) {t : ℝ} (ht : 0 ≤ t) (ht1
       sidePt (C.sideWalk C.sideBeta) p t = sidePt (C.sideWalk C.sideBeta) (i + 6) t := by
   have hm := C.one_le
   have hp6 : 6 ≤ p := by
-    have : (5 : ℝ) < p := by linarith
+    have : (5 : ℝ) < p := ⟡
     have : 5 < p := by exact_mod_cast this
     omega
   rcases Nat.lt_or_ge p (2 * C.m + 6) with h | h
-  · refine ⟨p - 6, 0, by omega, Or.inl rfl, ?_, by rw [show p - 6 + 6 = p by omega]⟩
+  · refine ⟨p - 6, 0, ⋄, Or.inl rfl, ?_, Ρ show p - 6 + 6 = p by omega⟩
     rw [Nat.cast_sub hp6]; push_cast; ring
-  · have hp' : p = 2 * C.m + 6 := by omega
+  · have hp' : p = 2 * C.m + 6 := ⋄
     subst hp'
     have ht0 : t = 0 := by push_cast at h7; linarith
     subst ht0
-    exact ⟨0, 2 * C.m, by omega, Or.inr rfl, by push_cast; ring, sidePt_last C⟩
+    exact ⟨0, 2 * C.m, ⋄, Or.inr rfl, by push_cast; ring, sidePt_last C⟩
 
 /-- **Keys with sum `12 - 2 S` modulo `2 m` have the same point.** -/
 theorem same_point_of_sum {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : p' < 2 * C.m + 7)
@@ -125,7 +129,7 @@ theorem same_point_of_sum {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : p' < 2 * C.
   have hm := C.one_le
   obtain ⟨i, e, hi, he, hk, hpt⟩ := tour_norm C hp ht ht1 h6 h7
   obtain ⟨i', e', hi', he', hk', hpt'⟩ := tour_norm C hp' ht' ht1' h6' h7'
-  rw [hpt, hpt']
+  Ξ hpt, hpt'
   refine same_point_of_opp C hi hi' ht ht1 ht' ht1' ?_
   -- the tour indices
   have e1 := Nat.mod_add_div (C.sideS C.sideBeta + i) (2 * C.m)
@@ -198,16 +202,16 @@ theorem mk_facts {κ : ℝ} (h6 : 6 ≤ κ) (h7 : κ ≤ 2 * C.m + 6) :
   set q := (4 * C.m - 2 * C.sideS C.sideBeta) / (2 * C.m)
   have hrr : ((rT C : ℕ) : ℝ) + 2 * C.m * q = 4 * C.m - 2 * C.sideS C.sideBeta := by
     have : ((rT C + 2 * C.m * q : ℕ) : ℝ) = ((4 * C.m - 2 * C.sideS C.sideBeta : ℕ) : ℝ) := by
-      unfold rT; rw [hr]
-    rw [Nat.cast_sub (by omega)] at this; push_cast at this; linarith
+      unfold rT; Ξ hr
+    Ξ' Nat.cast_sub (⋄) at this; push_cast at this; linarith
   have hT6 := κT_ge C
   have hT7 := κT_lt C
   unfold mk
   split_ifs with h
-  · refine ⟨by linarith, by linarith, 2 - q, ?_⟩
+  · refine ⟨⟡, ⟡, 2 - q, ?_⟩
     unfold κT at *; push_cast; linarith
   · push Not at h
-    refine ⟨by linarith, by linarith, 3 - q, ?_⟩
+    refine ⟨⟡, ⟡, 3 - q, ?_⟩
     unfold κT at *; push_cast; linarith
 
 /-- **Keys of one point**: a key with sum `12 - 2 S` (mod `2 m`) with `κ` is `mk κ`, up to `2 m`. -/
@@ -218,11 +222,11 @@ theorem eq_mk_of_sum {κ κ' : ℝ} (h6 : 6 ≤ κ) (h7 : κ ≤ 2 * C.m + 6) (h
   obtain ⟨a1, a2, z0, hz0⟩ := mk_facts C h6 h7
   have hm : (0 : ℝ) < C.m := by exact_mod_cast C.one_le
   have hd : κ' - mk C κ = 2 * C.m * ((z - z0 : ℤ) : ℝ) := by push_cast; linarith
-  have hlt : ((z - z0 : ℤ) : ℝ) < 2 := by nlinarith
-  have hgt : -2 < ((z - z0 : ℤ) : ℝ) := by nlinarith
+  have hlt : ((z - z0 : ℤ) : ℝ) < 2 := ⊞
+  have hgt : -2 < ((z - z0 : ℤ) : ℝ) := ⊞
   have h1 : z - z0 < 2 := by exact_mod_cast hlt
   have h2 : -2 < z - z0 := by exact_mod_cast hgt
-  rcases (by omega : z - z0 = 0 ∨ z - z0 = 1 ∨ z - z0 = -1) with e | e | e <;> rw [e] at hd <;>
+  rcases (by omega : z - z0 = 0 ∨ z - z0 = 1 ∨ z - z0 = -1) with e | e | e <;> Ξ' e at hd <;>
     push_cast at hd
   · left; linarith
   · right; right; linarith
@@ -266,10 +270,10 @@ theorem int_of_noCut_left (hN : IsNF (chainModel C) Q N) (hne : (N.F (chainModel
   unfold sideInArc at hκ ⊢
   split_ifs at hκ ⊢ with h
   · constructor
-    · by_contra hc; push Not at hc; exact hsL ⟨by linarith, by linarith⟩
+    · by_contra hc; push Not at hc; exact hsL ⟨⟡, ⟡⟩
     · linarith [hκ.2]
   · rcases hκ with hk | hk
-    · left; by_contra hc; push Not at hc; exact hsL ⟨by linarith, by linarith⟩
+    · left; by_contra hc; push Not at hc; exact hsL ⟨⟡, ⟡⟩
     · right; linarith
 
 /-- **An interval starting at an interior key and free of cuts lies in the arc.** -/
@@ -288,10 +292,10 @@ theorem int_of_noCut_right (hN : IsNF (chainModel C) Q N) (hne : (N.F (chainMode
   split_ifs at hκ ⊢ with h
   · constructor
     · linarith [hκ.1]
-    · by_contra hc; push Not at hc; exact heL ⟨by linarith, by linarith⟩
+    · by_contra hc; push Not at hc; exact heL ⟨⟡, ⟡⟩
   · rcases hκ with hk | hk
     · left; linarith
-    · right; by_contra hc; push Not at hc; exact heL ⟨by linarith, by linarith⟩
+    · right; by_contra hc; push Not at hc; exact heL ⟨⟡, ⟡⟩
 
 /-- A cut just before an interval inside an arc is the start of the arc. -/
 theorem start_eq_of (hN : IsNF (chainModel C) Q N) (hne : (N.F (chainModel C) Q).Nonempty)
@@ -374,11 +378,11 @@ theorem zip_core (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
   have hLa : a ≤ L := Z.le_max' a haZ
   have hZlt : ∀ x ∈ Z, x < κ := by
     intro x hx
-    rw [hZ, Finset.mem_insert, Finset.mem_union, Finset.mem_filter, Finset.mem_image] at hx
+    Ξ' hZ, Finset.mem_insert, Finset.mem_union, Finset.mem_filter, Finset.mem_image at hx
     rcases hx with rfl | ⟨-, -, h⟩ | ⟨c, hc, rfl⟩
     · exact haκ
     · exact h
-    · rw [Finset.mem_filter] at hc; exact hc.2.2.2
+    · Ξ' Finset.mem_filter at hc; exact hc.2.2.2
   have hLκ : L < κ := hZlt L (Z.max'_mem _)
   have hcutκ : ¬ (chainModel C).IsCut F κ := not_cut_of_int hN hne hp hκp
   have hcutκ' : ¬ (chainModel C).IsCut F (a + b - κ) := not_cut_of_int hN hne hq hκq
@@ -386,22 +390,22 @@ theorem zip_core (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
   have hno1 : ∀ x, L < x → x ≤ κ → ¬ (chainModel C).IsCut F x := by
     intro x h1 h2 hx
     rcases eq_or_lt_of_le h2 with e | e
-    · rw [e] at hx; exact hcutκ hx
+    · Ξ' e at hx; exact hcutκ hx
     have : x ∈ Z := by
-      rw [hZ, Finset.mem_insert, Finset.mem_union, Finset.mem_filter]
-      exact Or.inr (Or.inl ⟨hCu.mem_toFinset.2 hx, by linarith, e⟩)
+      Ξ hZ, Finset.mem_insert, Finset.mem_union, Finset.mem_filter
+      exact Or.inr (Or.inl ⟨hCu.mem_toFinset.2 hx, ⟡, e⟩)
     have := Z.le_max' x this
     linarith
   -- no cut before the reflection of `L`
   have hno2 : ∀ x, a + b - κ ≤ x → x < a + b - L → ¬ (chainModel C).IsCut F x := by
     intro x h1 h2 hx
     rcases eq_or_lt_of_le h1 with e | e
-    · rw [← e] at hx; exact hcutκ' hx
+    · Ξ' ← e at hx; exact hcutκ' hx
     have : a + b - x ∈ Z := by
-      rw [hZ, Finset.mem_insert, Finset.mem_union, Finset.mem_image]
+      Ξ hZ, Finset.mem_insert, Finset.mem_union, Finset.mem_image
       refine Or.inr (Or.inr ⟨x, ?_, rfl⟩)
-      rw [Finset.mem_filter]
-      exact ⟨hCu.mem_toFinset.2 hx, by linarith, by linarith, by linarith⟩
+      Ξ Finset.mem_filter
+      exact ⟨hCu.mem_toFinset.2 hx, ⟡, ⟡, ⟡⟩
     have := Z.le_max' _ this
     linarith
   have hin1 : ∀ x, L < x → x ≤ κ →
@@ -412,30 +416,30 @@ theorem zip_core (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
     fun x h1 h2 => int_of_noCut_right hN hne hq hκq hno2 h1 h2
   -- the origin of `L`
   have hLZ := Z.max'_mem ⟨a, haZ⟩
-  rw [← hL, hZ, Finset.mem_insert, Finset.mem_union, Finset.mem_filter, Finset.mem_image] at hLZ
+  Ξ' ← hL, hZ, Finset.mem_insert, Finset.mem_union, Finset.mem_filter, Finset.mem_image at hLZ
   rcases hLZ with hLa' | ⟨hc, h1, h2⟩ | ⟨c, hc, hcL⟩
   · -- the end of the interval
     left
-    refine ⟨⟨κ - a, by linarith, fun ε h1 h2 => hin1 _ (by linarith) (by linarith)⟩,
-      ⟨κ - a, by linarith, fun ε h1 h2 => hin2 _ (by linarith) (by linarith)⟩⟩
+    refine ⟨⟨κ - a, ⟡, fun ε h1 h2 => hin1 _ (⟡) (⟡)⟩,
+      ⟨κ - a, ⟡, fun ε h1 h2 => hin2 _ (⟡) (⟡)⟩⟩
   · -- the start of `p`
     right; left
     have hs := start_eq_of hN hne hp (hCu.mem_toFinset.1 hc) hLκ hin1
-    rw [hs]
-    refine ⟨h1, by linarith, κ - L, by linarith, fun ε e1 e2 => ?_⟩
-    rw [hmk L h1 (by linarith)]
-    exact hin2 _ (by linarith) (by linarith)
+    Ξ hs
+    refine ⟨h1, ⟡, κ - L, ⟡, fun ε e1 e2 => ?_⟩
+    Ξ hmk L h1 (⟡)
+    exact hin2 _ (⟡) (⟡)
   · -- the end of `q`
     right; right
-    rw [Finset.mem_filter] at hc
+    Ξ' Finset.mem_filter at hc
     obtain ⟨hc, c1, c2, c3⟩ := hc
-    have hcL' : c = a + b - L := by linarith
+    have hcL' : c = a + b - L := ⟡
     have he := end_eq_of hN hne hq (hCu.mem_toFinset.1 hc) (show a + b - κ < c by linarith)
-      (fun x h1 h2 => hin2 x h1 (by linarith))
-    rw [he]
-    refine ⟨c1, c2, κ - L, by linarith, fun ε e1 e2 => ?_⟩
-    rw [hmk c c1 c2]
-    exact hin1 _ (by linarith) (by linarith)
+      (fun x h1 h2 => hin2 x h1 (⟡))
+    Ξ he
+    refine ⟨c1, c2, κ - L, ⟡, fun ε e1 e2 => ?_⟩
+    Ξ hmk c c1 c2
+    exact hin1 _ (⟡) (⟡)
 
 /-- The keys of the top. -/
 def TopKey (C : Chain) (x : ℝ) : Prop := x = 6 ∨ x = κT C ∨ x = 2 * C.m + 6
@@ -460,7 +464,7 @@ theorem zip_cases (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
   obtain ⟨p₁, p₂, t₁, t₂, h1, h2, h3, h4, h5, h6, hx, he, i1, i2⟩ := hZ
   have hnW : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
-  rw [hnW] at h1 h2
+  Ξ' hnW at h1 h2
   have hx' : sidePt (chainModel C).W p₂ t₂ ∈ C.set := he ▸ hx
   obtain ⟨r1, r2⟩ := key_range C h1 h3 h4 hx
   obtain ⟨r1', r2'⟩ := key_range C h2 h5 h6 hx'
@@ -476,14 +480,14 @@ theorem zip_cases (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
     fun x y a b c d e => Or.inl ⟨x, y, a, b, c, d, e⟩
   rcases ms with ⟨z, hz⟩ | ⟨e1, e2⟩ | ⟨e1, e2⟩
   swap
-  · exact top κ κ' (Or.inl e1) (Or.inr (Or.inr (by rw [e2]))) hkk i1 i2
+  · exact top κ κ' (Or.inl e1) (Or.inr (Or.inr (Ρ e2))) hkk i1 i2
   swap
-  · exact top κ κ' (Or.inr (Or.inr (by rw [e1]))) (Or.inl e2) hkk i1 i2
+  · exact top κ κ' (Or.inr (Or.inr (Ρ e1))) (Or.inl e2) hkk i1 i2
   have hmk6 : mk C 6 = κT C := by unfold mk; rw [ite_eq_left hT6]; ring
   have hmkT : mk C (κT C) = 6 := by unfold mk; rw [ite_eq_left le_rfl]; ring
   have hmkl : mk C (2 * C.m + 6) = κT C := by
-    unfold mk; rw [ite_eq_right (by linarith)]; ring
-  rcases eq_mk_of_sum C (by linarith) (by linarith) (by linarith) (by linarith) hz with e | e | e
+    unfold mk; rw [ite_eq_right (⟡)]; ring
+  rcases eq_mk_of_sum C (⟡) (⟡) (⟡) (⟡) hz with e | e | e
   swap
   · -- `κ' + 2 m = mk κ`: impossible
     exfalso
@@ -494,30 +498,30 @@ theorem zip_cases (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
     unfold mk at e
     split_ifs at e with h
     swap
-    · exfalso; exact hkk (le_antisymm (by linarith) (by linarith))
-    have hk : κ = κT C := le_antisymm h (by linarith)
+    · exfalso; exact hkk (le_antisymm (⟡) (⟡))
+    have hk : κ = κT C := le_antisymm h (⟡)
     have hk' : κ' = 2 * C.m + 6 := by rw [e, hk]; ring
     exact top κ κ' (Or.inr (Or.inl hk)) (Or.inr (Or.inr hk')) hkk i1 i2
   -- the mirror
   by_cases h6k : κ = 6
-  · exact top κ κ' (Or.inl h6k) (Or.inr (Or.inl (by rw [e, h6k, hmk6]))) hkk i1 i2
+  · exact top κ κ' (Or.inl h6k) (Or.inr (Or.inl (Ρ e, h6k, hmk6))) hkk i1 i2
   by_cases hTk : κ = κT C
-  · exact top κ κ' (Or.inr (Or.inl hTk)) (Or.inl (by rw [e, hTk, hmkT])) hkk i1 i2
+  · exact top κ κ' (Or.inr (Or.inl hTk)) (Or.inl (Ρ e, hTk, hmkT)) hkk i1 i2
   by_cases hlk : κ = 2 * C.m + 6
-  · exact top κ κ' (Or.inr (Or.inr hlk)) (Or.inr (Or.inl (by rw [e, hlk, hmkl]))) hkk i1 i2
+  · exact top κ κ' (Or.inr (Or.inr hlk)) (Or.inr (Or.inl (Ρ e, hlk, hmkl))) hkk i1 i2
   rcases lt_or_gt_of_ne hTk with hlt | hgt
   · -- the first half
-    have h6' : 6 < κ := lt_of_le_of_ne (by linarith) (Ne.symm h6k)
+    have h6' : 6 < κ := lt_of_le_of_ne (⟡) (Ne.symm h6k)
     have hmk : ∀ x, 6 < x → x < κT C → mk C x = 6 + κT C - x := fun x a b => by
-      unfold mk; rw [ite_eq_left b.le]
+      unfold mk; Ξ ite_eq_left b.le
     have hq' : sideInArc (sk (chainModel C) Q N q) (ek (chainModel C) Q N q) (6 + κT C - κ) := by
       rw [← hmk κ h6' hlt, ← e]; exact i2
     rcases zip_core hN hP hne hp hq h6' hlt hmk i1 hq' with ⟨a1, a2⟩ | ⟨a1, a2, a3⟩ | ⟨a1, a2, a3⟩
-    · exact Or.inr (Or.inr (Or.inr (Or.inl ⟨by linarith, a1, a2⟩)))
+    · exact Or.inr (Or.inr (Or.inr (Or.inl ⟨⟡, a1, a2⟩)))
     · exact Or.inr (Or.inl ⟨Or.inl ⟨a1, a2⟩, a3⟩)
     · exact Or.inr (Or.inr (Or.inl ⟨Or.inl ⟨a1, a2⟩, a3⟩))
   · -- the second half
-    have hl' : κ < 2 * C.m + 6 := lt_of_le_of_ne (by linarith) hlk
+    have hl' : κ < 2 * C.m + 6 := lt_of_le_of_ne (⟡) hlk
     have hmk : ∀ x, κT C < x → x < 2 * C.m + 6 → mk C x = κT C + (2 * C.m + 6) - x :=
       fun x a b => by unfold mk; rw [ite_eq_right (not_le.2 a)]; ring
     have hq' : sideInArc (sk (chainModel C) Q N q) (ek (chainModel C) Q N q)
@@ -531,9 +535,9 @@ theorem zip_cases (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
 /-- A key of the tour range is the key of a walk position. -/
 theorem key_decomp {κ : ℝ} (h6 : 6 ≤ κ) (h7 : κ ≤ 2 * C.m + 6) :
     ∃ p : ℕ, ∃ t : ℝ, p < 2 * C.m + 7 ∧ 0 ≤ t ∧ t < 1 ∧ (p : ℝ) + t = κ := by
-  have h0 : 0 ≤ κ := by linarith
+  have h0 : 0 ≤ κ := ⟡
   refine ⟨⌊κ⌋₊, κ - ⌊κ⌋₊, ?_, by linarith [Nat.floor_le h0], by
-    linarith [Nat.lt_floor_add_one κ], by ring⟩
+    linarith [Nat.lt_floor_add_one κ], ⋆⟩
   have : (⌊κ⌋₊ : ℝ) ≤ 2 * C.m + 6 := (Nat.floor_le h0).trans h7
   have : ⌊κ⌋₊ ≤ 2 * C.m + 6 := by exact_mod_cast this
   omega
@@ -543,7 +547,7 @@ theorem pt_on_chain {p : ℕ} (hp : p < 2 * C.m + 7) {t : ℝ} (ht : 0 ≤ t) (h
     (h6 : (6 : ℝ) ≤ p + t) (h7 : (p : ℝ) + t ≤ 2 * C.m + 6) :
     sidePt (C.sideWalk C.sideBeta) p t ∈ C.set := by
   obtain ⟨i, e, hi, -, -, hpt⟩ := tour_norm C hp ht ht1 h6 h7
-  rw [hpt, C.sidePt_tour C.sideBeta hi]
+  Ξ hpt, C.sidePt_tour C.sideBeta hi
   refine ⟨tci C i, tci_lt C i, ?_⟩
   rw [← tour_seg C i]; exact ⟨t, ht, ht1.le, rfl⟩
 
@@ -555,7 +559,7 @@ theorem zipRel_of_mk {p q : ℕ} {κ : ℝ} (h6 : 6 ≤ κ) (h7 : κ ≤ 2 * C.m
   obtain ⟨a1, a2, z, hz⟩ := mk_facts C h6 h7
   obtain ⟨p₁, t₁, h1, h2, h3, e1⟩ := key_decomp h6 h7
   obtain ⟨p₂, t₂, h1', h2', h3', e2⟩ := key_decomp a1 a2
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
+  have hnW := walk_n C
   refine ⟨p₁, p₂, t₁, t₂, by rw [hnW]; exact h1, by rw [hnW]; exact h1', h2, h3, h2', h3',
     pt_on_chain h1 h2 h3 (by rw [e1]; exact h6) (by rw [e1]; exact h7), ?_,
     by rw [e1]; exact hp, by rw [e2]; exact hq⟩
@@ -573,20 +577,20 @@ theorem top_keys_same {x y : ℝ} (hx : TopKey C x) (hy : TopKey C y) :
       sidePt (C.sideWalk C.sideBeta) p 0 = sidePt (C.sideWalk C.sideBeta) 6 0 := by
     intro x hx
     rcases hx with rfl | rfl | rfl
-    · exact ⟨6, by omega, by norm_num, rfl⟩
-    · refine ⟨6 + rT C, by omega, by unfold κT; push_cast; ring, ?_⟩
+    · exact ⟨6, ⋄, ⊛, rfl⟩
+    · refine ⟨6 + rT C, ⋄, by unfold κT; push_cast; ring, ?_⟩
       have hsum := mk_facts C (κT_ge C) (le_of_lt (κT_lt C))
       obtain ⟨-, -, z, hz⟩ := hsum
       have hmkT : mk C (κT C) = 6 := by unfold mk; rw [ite_eq_left le_rfl]; ring
-      rw [hmkT] at hz
-      refine same_point_of_sum C (by omega) (by omega) le_rfl one_pos le_rfl one_pos
+      Ξ' hmkT at hz
+      refine same_point_of_sum C (⋄) (⋄) le_rfl one_pos le_rfl one_pos
         (by push_cast; linarith [(Nat.cast_nonneg (rT C) : (0:ℝ) ≤ _)])
         (by
           have hrR : ((rT C : ℕ) : ℝ) + 1 ≤ 2 * C.m := by exact_mod_cast hr
           push_cast; linarith [hrR])
-        (by norm_num) (by push_cast; linarith) (z := z) ?_
+        (⊛) (by push_cast; linarith) (z := z) ?_
       push_cast; unfold κT at hz; linarith
-    · refine ⟨2 * C.m + 6, by omega, by push_cast; ring, ?_⟩
+    · refine ⟨2 * C.m + 6, ⋄, by push_cast; ring, ?_⟩
       have := sidePt_last C; simpa using this
   obtain ⟨p₁, a1, b1, c1⟩ := key x hx
   obtain ⟨p₂, a2, b2, c2⟩ := key y hy
@@ -606,7 +610,7 @@ theorem zipRel_of_gen (hN : IsNF (chainModel C) Q N) (_hP : C.P.Simple)
     intro r hr
     obtain ⟨-, -, hne', -⟩ := arc_facts hN hne hr
     by_cases h : sk (chainModel C) Q N r < ek (chainModel C) Q N r
-    · refine ⟨ek (chainModel C) Q N r - sk (chainModel C) Q N r, by linarith, fun ε e1 e2 => ?_⟩
+    · refine ⟨ek (chainModel C) Q N r - sk (chainModel C) Q N r, ⟡, fun ε e1 e2 => ?_⟩
       unfold sideInArc; rw [ite_eq_left h]; constructor <;> linarith
     · refine ⟨1, one_pos, fun ε e1 e2 => ?_⟩
       unfold sideInArc; rw [ite_eq_right h]; left; linarith
@@ -614,12 +618,12 @@ theorem zipRel_of_gen (hN : IsNF (chainModel C) Q N) (_hP : C.P.Simple)
     intro r hr
     obtain ⟨-, -, hne', -⟩ := arc_facts hN hne hr
     by_cases h : sk (chainModel C) Q N r < ek (chainModel C) Q N r
-    · refine ⟨ek (chainModel C) Q N r - sk (chainModel C) Q N r, by linarith, fun ε e1 e2 => ?_⟩
+    · refine ⟨ek (chainModel C) Q N r - sk (chainModel C) Q N r, ⟡, fun ε e1 e2 => ?_⟩
       unfold sideInArc; rw [ite_eq_left h]; constructor <;> linarith
     · refine ⟨1, one_pos, fun ε e1 e2 => ?_⟩
       unfold sideInArc; rw [ite_eq_right h]; right; linarith
   have mk1 : ∀ x, 6 < x → x < κT C → mk C x = 6 + κT C - x := fun x a b => by
-    unfold mk; rw [ite_eq_left b.le]
+    unfold mk; Ξ ite_eq_left b.le
   have mk2 : ∀ x, κT C < x → x < 2 * C.m + 6 → mk C x = κT C + (2 * C.m + 6) - x :=
     fun x a b => by unfold mk; rw [ite_eq_right (not_le.2 a)]; ring
   rcases hG with ⟨x, y, hx, hy, -, i1, i2⟩ | ⟨hI, δ, hδ, hB⟩ | ⟨hI, δ, hδ, hA⟩ |
@@ -647,10 +651,10 @@ theorem zipRel_of_gen (hN : IsNF (chainModel C) Q N) (_hP : C.P.Simple)
     have hε2 : ε < δ' := by
       have := min_le_left (min δ δ') (b - s); have := min_le_right δ δ'; linarith
     have hε3 : ε < b - s := by have := min_le_right (min δ δ') (b - s); linarith
-    refine zipRel_of_mk (κ := s + ε) (by linarith) (by linarith) (hAs ε hε0 hε2) ?_
-    rw [hmk _ (by linarith) (by linarith)]
+    refine zipRel_of_mk (κ := s + ε) (⟡) (⟡) (hAs ε hε0 hε2) ?_
+    Ξ hmk _ (⟡) (⟡)
     have := hB ε hε0 hε1
-    rw [hmk s has hsb] at this
+    Ξ' hmk s has hsb at this
     convert this using 1; ring
   · -- the end of `q`
     obtain ⟨δ', hδ', hBe⟩ := before_end q hq
@@ -670,7 +674,7 @@ theorem zipRel_of_gen (hN : IsNF (chainModel C) Q N) (_hP : C.P.Simple)
     have hme : mk C e = a + b - e := hmk e has hsb
     refine zipRel_of_mk (κ := mk C e + ε) (by rw [hme]; linarith) (by rw [hme]; linarith)
       (hA ε hε0 hε1) ?_
-    rw [hmk _ (by rw [hme]; linarith) (by rw [hme]; linarith), hme]
+    Ξ hmk _ (by rw [hme]; linarith) (by rw [hme]; linarith), hme
     convert hBe ε hε0 hε2 using 1; ring
   · -- the first half from its ends
     have hmk6 : mk C 6 = κT C := by unfold mk; rw [ite_eq_left hT6]; ring
@@ -682,8 +686,8 @@ theorem zipRel_of_gen (hN : IsNF (chainModel C) Q N) (_hP : C.P.Simple)
     have hε2 : ε < δ' := by
       have := min_le_left (min δ δ') (κT C - 6); have := min_le_right δ δ'; linarith
     have hε3 : ε < κT C - 6 := by have := min_le_right (min δ δ') (κT C - 6); linarith
-    refine zipRel_of_mk (κ := 6 + ε) (by linarith) (by linarith) (hA ε hε0 hε1) ?_
-    rw [mk1 _ (by linarith) (by linarith)]
+    refine zipRel_of_mk (κ := 6 + ε) (⟡) (⟡) (hA ε hε0 hε1) ?_
+    Ξ mk1 _ (⟡) (⟡)
     convert hB ε hε0 hε2 using 1; ring
   · -- the second half from its ends
     set ε := min (min δ δ') (2 * C.m + 6 - κT C) / 2 with hε
@@ -695,8 +699,8 @@ theorem zipRel_of_gen (hN : IsNF (chainModel C) Q N) (_hP : C.P.Simple)
       have := min_le_left (min δ δ') (2 * C.m + 6 - κT C); have := min_le_right δ δ'; linarith
     have hε3 : ε < 2 * C.m + 6 - κT C := by
       have := min_le_right (min δ δ') (2 * C.m + 6 - κT C); linarith
-    refine zipRel_of_mk (κ := κT C + ε) (by linarith) (by linarith) (hA ε hε0 hε1) ?_
-    rw [mk2 _ (by linarith) (by linarith)]
+    refine zipRel_of_mk (κ := κT C + ε) (⟡) (⟡) (hA ε hε0 hε1) ?_
+    Ξ mk2 _ (⟡) (⟡)
     convert hB ε hε0 hε2 using 1; ring
 
 theorem succP_predP {A p : ℕ} (hp : p < A) : succP A (predP A p) = p := by
@@ -713,16 +717,16 @@ theorem ek_eq_sk_succ (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
   obtain ⟨r, hr, hrj⟩ := NFLoc.seq_surj hN hj
   have hsr : sk (chainModel C) Q N r = ek (chainModel C) Q N p := by
     show (chainModel C).key Q (N.arc (N.seq.getD r 0)).s = _
-    rw [hrj, hjs]
+    Ξ hrj, hjs
   have := end_start_adj hN hGM hne hp hr hsr.symm
-  rw [← this, hsr]
+  Ξ ← this, hsr
 
 /-- Points just after the start of an arc are inside it. -/
 theorem after_start (hN : IsNF (chainModel C) Q N) (hne : (N.F (chainModel C) Q).Nonempty)
     {r : ℕ} (hr : r < N.arcs.length) : After C Q N r (sk (chainModel C) Q N r) := by
   obtain ⟨-, -, hne', -⟩ := arc_facts hN hne hr
   by_cases h : sk (chainModel C) Q N r < ek (chainModel C) Q N r
-  · refine ⟨ek (chainModel C) Q N r - sk (chainModel C) Q N r, by linarith, fun ε e1 e2 => ?_⟩
+  · refine ⟨ek (chainModel C) Q N r - sk (chainModel C) Q N r, ⟡, fun ε e1 e2 => ?_⟩
     unfold sideInArc; rw [ite_eq_left h]; constructor <;> linarith
   · refine ⟨1, one_pos, fun ε e1 e2 => ?_⟩
     unfold sideInArc; rw [ite_eq_right h]; left; linarith
@@ -732,7 +736,7 @@ theorem before_end (hN : IsNF (chainModel C) Q N) (hne : (N.F (chainModel C) Q).
     {r : ℕ} (hr : r < N.arcs.length) : Before C Q N r (ek (chainModel C) Q N r) := by
   obtain ⟨-, -, hne', -⟩ := arc_facts hN hne hr
   by_cases h : sk (chainModel C) Q N r < ek (chainModel C) Q N r
-  · refine ⟨ek (chainModel C) Q N r - sk (chainModel C) Q N r, by linarith, fun ε e1 e2 => ?_⟩
+  · refine ⟨ek (chainModel C) Q N r - sk (chainModel C) Q N r, ⟡, fun ε e1 e2 => ?_⟩
     unfold sideInArc; rw [ite_eq_left h]; constructor <;> linarith
   · refine ⟨1, one_pos, fun ε e1 e2 => ?_⟩
     unfold sideInArc; rw [ite_eq_right h]; right; linarith
@@ -744,10 +748,10 @@ theorem int_nhd {s e x : ℝ} (h : sideInArc s e x) : ∃ δ > (0 : ℝ), ∀ ε
   split_ifs at h ⊢ with hse
   · refine ⟨min (x - s) (e - x), lt_min (by linarith [h.1]) (by linarith [h.2]), fun ε e1 e2 => ?_⟩
     have := min_le_left (x - s) (e - x); have := min_le_right (x - s) (e - x)
-    exact ⟨⟨by linarith, by linarith⟩, ⟨by linarith, by linarith⟩⟩
+    exact ⟨⟨⟡, ⟡⟩, ⟨⟡, ⟡⟩⟩
   · rcases h with h | h
-    · refine ⟨x - s, by linarith, fun ε e1 e2 => ⟨Or.inl (by linarith), Or.inl (by linarith)⟩⟩
-    · refine ⟨e - x, by linarith, fun ε e1 e2 => ⟨Or.inr (by linarith), Or.inr (by linarith)⟩⟩
+    · refine ⟨x - s, ⟡, fun ε e1 e2 => ⟨Or.inl (⟡), Or.inl (⟡)⟩⟩
+    · refine ⟨e - x, ⟡, fun ε e1 e2 => ⟨Or.inr (⟡), Or.inr (⟡)⟩⟩
 
 open Classical in
 /-- **The arc just before a located key.** -/
@@ -762,16 +766,16 @@ theorem before_of_loc (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
   · split_ifs with hs
     · have hpj := predP_lt hj
       have := ek_eq_sk_succ hN hP hne hpj
-      rw [succP_predP hj, hs] at this
+      Ξ' succP_predP hj, hs at this
       rw [← this]; exact before_end hN hne hpj
     · rcases hl2 hc with h | h
       · exact absurd h hs
       · rw [← h]; exact before_end hN hne hj
   · have hin := hl1 hc
     have hs : ¬ sk (chainModel C) Q N j = y := by
-      intro h; rw [← h] at hin; unfold sideInArc at hin; split_ifs at hin <;> simp at hin
+      intro h; Ξ' ← h at hin; unfold sideInArc at hin; split_ifs at hin <;> simp at hin
       linarith
-    rw [ite_eq_right hs]
+    Ξ ite_eq_right hs
     obtain ⟨δ, hδ, h⟩ := int_nhd hin
     exact ⟨δ, hδ, fun ε e1 e2 => (h ε e1 e2).1⟩
 
@@ -787,16 +791,16 @@ theorem after_of_loc (hN : IsNF (chainModel C) Q N) (hP : C.P.Simple)
   by_cases hc : (chainModel C).IsCut (N.F (chainModel C) Q) y
   · split_ifs with he
     · have := ek_eq_sk_succ hN hP hne hj
-      rw [he] at this
+      Ξ' he at this
       rw [this]; exact after_start hN hne (succP_lt hj)
     · rcases hl2 hc with h | h
       · rw [← h]; exact after_start hN hne hj
       · exact absurd h he
   · have hin := hl1 hc
     have he : ¬ ek (chainModel C) Q N j = y := by
-      intro h; rw [← h] at hin; unfold sideInArc at hin; split_ifs at hin <;> simp at hin
+      intro h; Ξ' ← h at hin; unfold sideInArc at hin; split_ifs at hin <;> simp at hin
       linarith
-    rw [ite_eq_right he]
+    Ξ ite_eq_right he
     obtain ⟨δ, hδ, h⟩ := int_nhd hin
     exact ⟨δ, hδ, fun ε e1 e2 => (h ε e1 e2).2⟩
 

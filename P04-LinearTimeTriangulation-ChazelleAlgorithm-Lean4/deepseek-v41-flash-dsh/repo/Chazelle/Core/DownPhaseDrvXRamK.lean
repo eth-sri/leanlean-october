@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvXRamJ
 public import Chazelle.Core.NFBuildMain
 
@@ -68,9 +70,9 @@ def Bx (r : ℕ) : Bool := decide ((217000 ≤ r ∧ r < 218000) ∨ r = 9999)
 /-- The real registers the extraction writes. -/
 def BxR (r : ℕ) : Bool := decide (217000 ≤ r ∧ r < 218000)
 
-theorem wrM_x : wrM Bx xS = true := by decide
+theorem wrM_x : wrM Bx xS = true := ⌖
 
-theorem wrM2_x : wrM2 Bx BxR xS = true := by decide
+theorem wrM2_x : wrM2 Bx BxR xS = true := ⌖
 
 section setup
 
@@ -165,23 +167,23 @@ theorem padS_exec (d : Config) (hw : WordsBounded W d) {N j : ℕ} (h43 : d.nreg
     ∃ d' k, Exec P W padS d d' k ∧ k = 3 * (N - j) + 2 ∧ NRegs d d' (upd d.nreg 217043 N) := by
   induction hn : N - j generalizing d j with
   | zero =>
-    have hjN : j = N := by omega
+    have hjN : j = N := ⋄
     subst hjN
-    refine ⟨d, 2, .whileLtN_false (by rw [h43, h47]; omega) hw, by omega, ?_⟩
+    refine ⟨d, 2, .whileLtN_false (by rw [h43, h47]; omega) hw, ⋄, ?_⟩
     refine ⟨?_, rfl, rfl, rfl, rfl⟩
-    rw [← h43, Machine.upd_eq_self]
+    Ξ ← h43, Machine.upd_eq_self
   | succ t ih =>
-    have hlt : j < N := by omega
+    have hlt : j < N := ⋄
     have hb : d.nreg 217043 + d.nreg 217027 ≤ W := by rw [h43, h27]; omega
     have ea := Machine.Exec.addN (P := P) hw 217043 217043 217027 hb
     have e1 : Exec P W (block [.addN 217043 217043 217027]) d
         { d with nreg := upd d.nreg 217043 (d.nreg 217043 + d.nreg 217027) } (0 + 1) :=
       Exec.block_cons ea (Exec.block_nil ea.wb_right)
     have b43 : ({ d with nreg := upd d.nreg 217043 (d.nreg 217043 + d.nreg 217027) } : Config).nreg
-        217043 = j + 1 := by simp [h43, h27]
-    obtain ⟨d', k', e', hk', n'⟩ := ih _ e1.wb_right b43 (by simp [h47]) (by simp [h27]) (by omega)
-      (by omega)
-    refine ⟨d', 0 + 1 + 2 + k', .whileLtN_true (by rw [h43, h47]; exact hlt) e1 e', by omega, ?_⟩
+        217043 = j + 1 := ⊚ h43, h27
+    obtain ⟨d', k', e', hk', n'⟩ := ih _ e1.wb_right b43 (⊚ h47) (⊚ h27) (⋄)
+      (⋄)
+    refine ⟨d', 0 + 1 + 2 + k', .whileLtN_true (by rw [h43, h47]; exact hlt) e1 e', ⋄, ?_⟩
     obtain ⟨n1, n2, n3, n4, n5⟩ := n'
     refine ⟨?_, n2, n3, n4, n5⟩
     rw [n1]; simp

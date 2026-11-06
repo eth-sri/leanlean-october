@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepGraph
 
 /-!
@@ -47,7 +49,7 @@ theorem fpN_spec (_h : SortedDarts M G K s) {t : ℕ} (ht : t < M) :
   classical
   have hex : ∃ t', t' < M ∧ G (s t') = G (s t) := ⟨t, ht, rfl⟩
   unfold fpN
-  rw [dite_eq_left hex]
+  Ξ dite_eq_left hex
   obtain ⟨a, b⟩ := Nat.find_spec hex
   exact ⟨a, b, fun t' ht' e => Nat.find_min' hex ⟨ht', e⟩⟩
 

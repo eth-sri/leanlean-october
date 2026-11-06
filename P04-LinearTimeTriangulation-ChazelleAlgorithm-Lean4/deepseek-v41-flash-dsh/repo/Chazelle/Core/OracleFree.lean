@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleDeg
 
 /-!
@@ -35,10 +37,10 @@ theorem ChordRecOK.surj (h : ChordRecOK P C V m N) {i : ℕ} (hi : i < V.K) :
     obtain ⟨q, hq, rfl⟩ := Finset.mem_image.1 hx
     exact Finset.mem_range.2 (h.lt q (Finset.mem_range.1 hq))
   have hcard : ((Finset.range V.K).image (chAt m V)).card = V.K := by
-    rw [Finset.card_image_of_injOn, Finset.card_range]
+    Ξ Finset.card_image_of_injOn, Finset.card_range
     intro a ha b hb hab
     exact h.inj a b (Finset.mem_range.1 ha) (Finset.mem_range.1 hb) hab
-  have heq := Finset.eq_of_subset_of_card_le hsub (by rw [hcard, Finset.card_range])
+  have heq := Finset.eq_of_subset_of_card_le hsub (Ρ hcard, Finset.card_range)
   have : i ∈ (Finset.range V.K).image (chAt m V) := by rw [heq]; exact Finset.mem_range.2 hi
   obtain ⟨q, hq, hqi⟩ := Finset.mem_image.1 this
   exact ⟨q, Finset.mem_range.1 hq, hqi⟩
@@ -52,85 +54,85 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
   rintro ⟨c, ⟨r, hr, rfl⟩, hmem⟩
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hr
   have hiK : i < V.K := by rw [h.K]; exact hi
-  have hrec : N.chords[i] = N.chord i := by unfold NF.chord; rw [NFLoc.getD_of_lt _ hi]
-  rw [hrec] at hmem
+  have hrec : N.chords[i] = N.chord i := by unfold NF.chord; Ξ NFLoc.getD_of_lt _ hi
+  Ξ' hrec at hmem
   obtain ⟨q, hq, rfl⟩ := h.surj hiK
   obtain ⟨hhn, -, hC, hS, EL, ER⟩ := h.facts (h.lt q hq)
-  rw [hS] at hmem
+  Ξ' hS at hmem
   obtain ⟨hy, hxa, hxb⟩ := hmem
   simp only at hy hxa hxb
   have hhz : chH m V (chAt m V q) = V.hz :=
     ((heights_ne h.hT hhn hs.hv.hz_lt).1 hy.symm)
-  rw [hhz] at hxa hxb EL ER hC
+  Ξ' hhz at hxa hxb EL ER hC
   obtain ⟨ht, hpre, hpost⟩ := hpart
   by_cases hσ : V.σb = 1
-  · rw [sgnOf_one hσ, one_mul] at h1
-    rw [sgnOf_one hσ, one_mul] at h2
+  · Ξ' sgnOf_one hσ, one_mul at h1
+    Ξ' sgnOf_one hσ, one_mul at h2
     by_cases hqt : q < t
     · -- behind the origin: the right end is not ahead
       have := hpre q hqt
-      rw [chPr_iff] at this
+      Ξ' chPr_iff at this
       rcases this.2 with h' | ⟨-, h', -⟩
       · omega
       · have hb := not_lt.1 (fun hh => h' hσ ((endGtZ_iff hσ hs.zo hnp ER.good).2 hh))
         linarith
     · -- ahead: the chord at `t` is found, and its left end is not after ours
       push Not at hqt
-      have htK : t < V.K := by omega
+      have htK : t < V.K := ⋄
       have hle := h.sorted t q hqt hq
       have hnot := hpost htK
-      rw [← Bool.not_eq_true, chPr_iff] at hnot
+      Ξ' ← Bool.not_eq_true, chPr_iff at hnot
       have hHt : chH m V (chAt m V t) = V.hz := by
         rcases hle with hlt | ⟨hh, -⟩
         · by_contra hne
-          exact hnot ⟨h.lt t htK, Or.inl (by omega)⟩
-        · rw [hh, hhz]
+          exact hnot ⟨h.lt t htK, Or.inl (⋄)⟩
+        · Ξ hh, hhz
       have hf : FoundC V m t := by
         refine ⟨by rw [ite_eq_left hσ]; exact htK, ?_⟩
         unfold jCOf; rw [ite_eq_left hσ]; exact hHt
       have hnear := h2 hf
-      unfold nearC jCOf at hnear; rw [ite_eq_left hσ, ite_eq_left hσ] at hnear
+      unfold nearC jCOf at hnear; Ξ' ite_eq_left hσ, ite_eq_left hσ at hnear
       obtain ⟨-, -, -, -, ELt, -⟩ := h.facts (h.lt t htK)
-      have hx := chLe_xv ELt.good (by rw [hhz]; exact EL.good) hle (by rw [hHt, hhz])
-      rw [hHt, hhz] at hx
+      have hx := chLe_xv ELt.good (by rw [hhz]; exact EL.good) hle (Ρ hHt, hhz)
+      Ξ' hHt, hhz at hx
       linarith
-  · rw [sgnOf_ne hσ] at h1 h2
+  · Ξ' sgnOf_ne hσ at h1 h2
     by_cases hqt : t ≤ q
     · -- behind the origin: the left end is not ahead (the predicate fails from `t` on)
       have hnot : chPr P C V m (chAt m V q) = false := by
         by_contra hc
-        rw [Bool.not_eq_false] at hc
+        Ξ' Bool.not_eq_false at hc
         have := chPr_mono h t q hqt hq hc
-        rw [hpost (by omega)] at this; exact Bool.false_ne_true this
-      rw [← Bool.not_eq_true, chPr_iff] at hnot
+        Ξ' hpost (⋄) at this; exact Bool.false_ne_true this
+      Ξ' ← Bool.not_eq_true, chPr_iff at hnot
       have ha : ¬ EndLtZ P C V (chL m V (chAt m V q)) V.hz := fun hh =>
         hnot ⟨h.lt q hq, Or.inr ⟨hhz, fun h' => absurd h' hσ, fun _ => hh⟩⟩
       have ha' := not_lt.1 (fun hh => ha ((endLtZ_iff hσ hs.zo hnp EL.good).2 hh))
       linarith
     · push Not at hqt
-      have hle := h.sorted q (t - 1) (by omega) (by omega)
-      have hpt := hpre (t - 1) (by omega)
-      rw [chPr_iff] at hpt
+      have hle := h.sorted q (t - 1) (⋄) (⋄)
+      have hpt := hpre (t - 1) (⋄)
+      Ξ' chPr_iff at hpt
       have hHt : chH m V (chAt m V (t - 1)) = V.hz := by
         rcases hle with hlt | ⟨hh, -⟩
         · rcases hpt.2 with h' | ⟨h', -⟩ <;> omega
-        · rw [← hh, hhz]
+        · Ξ ← hh, hhz
       have hf : FoundC V m t := by
         refine ⟨by rw [ite_eq_right hσ]; omega, ?_⟩
         unfold jCOf; rw [ite_eq_right hσ]; exact hHt
       have hnear := h2 hf
-      unfold nearC jCOf at hnear; rw [ite_eq_right hσ, ite_eq_right hσ] at hnear
-      obtain ⟨-, -, hCt, -, ELt, ERt⟩ := h.facts (h.lt (t - 1) (by omega))
-      rw [hHt] at ELt ERt hCt
-      have hx := chLe_xv (by rw [hhz]; exact EL.good) (by rw [hHt]; exact ELt.good) hle (by rw [hHt, hhz])
-      rw [hHt, hhz] at hx
+      unfold nearC jCOf at hnear; Ξ' ite_eq_right hσ, ite_eq_right hσ at hnear
+      obtain ⟨-, -, hCt, -, ELt, ERt⟩ := h.facts (h.lt (t - 1) (⋄))
+      Ξ' hHt at ELt ERt hCt
+      have hx := chLe_xv (by rw [hhz]; exact EL.good) (by rw [hHt]; exact ELt.good) hle (Ρ hHt, hhz)
+      Ξ' hHt, hhz at hx
       -- the right end of our chord is not after the right end of the found chord
       have hr : xv P C V (chR m V (chAt m V q)) V.hz ≤ xv P C V (chR m V (chAt m V (t - 1))) V.hz := by
         by_cases hq' : chAt m V q = chAt m V (t - 1)
-        · rw [hq']
-        · have := chord_disjoint h (h.lt q hq) (h.lt (t - 1) (by omega)) hq' (by rw [hhz, hHt])
+        · Ξ hq'
+        · have := chord_disjoint h (h.lt q hq) (h.lt (t - 1) (⋄)) hq' (Ρ hhz, hHt)
             (by rw [hhz, hHt]; exact hx)
-          rw [hhz, hHt] at this
+          Ξ' hhz, hHt at this
           linarith [hCt.lt]
       linarith
 
@@ -145,15 +147,15 @@ theorem cand_of_stop (hN : IsNF (chainModel C) (Qof P) N) (hP : C.P.Simple)
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
   by_cases hne : (N.F (chainModel C) (Qof P)).Nonempty
   · obtain ⟨p, t, hp, ht0, ht1, hin, rfl⟩ := hX
-    rw [walk_n] at hp
+    Ξ' walk_n at hp
     obtain ⟨k, hk, hkey⟩ := hst.2 p t hp ht0 ht1 rfl
-    rw [hkey] at hin
+    Ξ' hkey at hin
     obtain ⟨hpk, l1, l2⟩ := hloc k hk
     exact ⟨k, hk, candidate hN hGM hne hv hpk hin l1 l2⟩
-  · rw [Set.not_nonempty_iff_eq_empty] at hne
+  · Ξ' Set.not_nonempty_iff_eq_empty at hne
     have h1 := arcs_le_one_of_empty hN hGM hne
-    have := (hloc 0 (by omega)).1
-    exact ⟨0, by omega, Or.inl (by omega)⟩
+    have := (hloc 0 (⋄)).1
+    exact ⟨0, ⋄, Or.inl (⋄)⟩
 
 /-- The facts of the stopping point of the main phase. -/
 structure SelFacts (P : Polygon) (C : Chain) (V : QV) (m : ℕ → ℕ) (t : ℕ) (bD : Option ℕ)
@@ -171,7 +173,7 @@ theorem xe_mem_edge (hT : TopOK P C V) {e : ℕ} (he : e < P.n) (hsp : Spans (Qo
     ((xe (Qof P) e V.hz, ((Qof P).vtx V.hz).2) : Point) ∈ (Qof P).edge e := by
   have := (rayPt_mem_edge_iff (Qof P) (edge_nonhoriz hT.hD he hn2)
     (z := ((xe (Qof P) e V.hz, ((Qof P).vtx V.hz).2) : Point)) rfl (Or.inl rfl) 0).2
-    ⟨hsp, by simp⟩
+    ⟨hsp, ✓⟩
   simpa [rayPt] using this
 
 /-- **The stopping point of the main phase.** -/
@@ -186,7 +188,7 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
   have hR := C.radius_pos
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hn2 : 2 ≤ P.n := by
-    have := C.add_one_le; have := C.one_le; rw [hv.CQ, hQn] at *; omega
+    have := C.add_one_le; have := C.one_le; Ξ' hv.CQ, hQn at *; omega
   -- the hit on `D*`
   have hDf : ∀ cD, bD = some cD → Spans (Qof P) (eIdx P.n V.s cD) V.hz ∧
       0 < sgnOf V.σb * (xe (Qof P) (eIdx P.n V.s cD) V.hz - z.1) ∧
@@ -196,43 +198,43 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
     subst hcD
     have hpos : 0 < vOf (Qof P) V.s V.hz (sgnOf V.σb) z cD := (show FirstHit _ _ _ _ from hD).1
     have hsp := spans_of_vOf_pos hpos
-    rw [vOf_of_spans hsp] at hpos
-    rw [hQn] at hsp hpos
+    Ξ' vOf_of_spans hsp at hpos
+    Ξ' hQn at hsp hpos
     have hmem : ((xe (Qof P) (eIdx P.n V.s cD) V.hz, ((Qof P).vtx V.hz).2) : Point) ∈
         C.chainEdge cD := by
-      rw [chainEdge_eq_edge hv]
-      exact xe_mem_edge hT (Nat.mod_lt _ (by omega)) hsp hn2
+      Ξ chainEdge_eq_edge hv
+      exact xe_mem_edge hT (Nat.mod_lt _ (⋄)) hsp hn2
     have hc := hbD cD rfl
-    rw [hv.m] at hc
+    Ξ' hv.m at hc
     exact ⟨hsp, hpos, hmem, abs_fst_lt_radius_of_mem ⟨cD, hc, hmem⟩⟩
   have hsσ := sgnOf_cases V.σb
   have htK := hpart.1
   by_cases hA : FoundC V m t ∧ (bD = none ∨ CBof P C V bD (nearC V m t))
   · -- the near end of the chord next to the origin
     have hsel : selOf C V bD (FoundC V m t) (nearC V m t) (CBof P C V bD (nearC V m t)) =
-        chordSel C V (nearC V m t) := by unfold selOf; rw [ite_eq_left hA]
+        chordSel C V (nearC V m t) := by unfold selOf; Ξ ite_eq_left hA
     obtain ⟨hK, hH⟩ := hA.1
     have hj : jCOf V t < V.K := by
       unfold jCOf; split_ifs at hK ⊢ with hσ <;> omega
     obtain ⟨-, -, hC, -, EL, ER⟩ := h.facts (h.lt _ hj)
-    rw [hH] at hC EL ER
+    Ξ' hH at hC EL ER
     have hnd' : ¬ DegC P C V m t := fun hd => hnd ⟨hA.1, hd⟩
     unfold DegC at hnd'
     have hEN : EndFacts P C V (nearC V m t) V.hz ∧ xpClass (nearC V m t) = 1 := by
       unfold nearC
       by_cases hσ : V.σb = 1
-      · rw [ite_eq_left hσ] at hnd' ⊢
+      · Ξ' ite_eq_left hσ at hnd' ⊢
         refine ⟨EL, ?_⟩
-        unfold nearC at hnd'; rw [ite_eq_left hσ, not_not] at hnd'
+        unfold nearC at hnd'; Ξ' ite_eq_left hσ, not_not at hnd'
         rcases hnd' with h2 | ⟨h1, -⟩
         · exfalso
           have := xv_c2 (P := P) (C := C) (V := V) (h := V.hz) h2
           have := xv_le P C V ER.good
           linarith [hC.lt]
         · exact h1
-      · rw [ite_eq_right hσ] at hnd' ⊢
+      · Ξ' ite_eq_right hσ at hnd' ⊢
         refine ⟨ER, ?_⟩
-        unfold nearC at hnd'; rw [ite_eq_right hσ, not_not] at hnd'
+        unfold nearC at hnd'; Ξ' ite_eq_right hσ, not_not at hnd'
         rcases hnd' with h0 | ⟨h1, -⟩
         · exfalso
           have := xv_c0 (P := P) (C := C) (V := V) (h := V.hz) h0
@@ -243,45 +245,45 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
     obtain ⟨c, hc, hsel2, hmem⟩ := near_stop hv EN hc1
     have hX := EN.1
     refine ⟨(chainModel C).pos (Qof P) ⟨nearC V m t, V.hz + 1⟩, ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩⟩
-    · unfold mainPos; rw [hsel, hsel2]; exact stop_chain hT hP hc hmem (by rw [hX])
-    · rw [hX]
+    · unfold mainPos; rw [hsel, hsel2]; exact stop_chain hT hP hc hmem (Ρ hX)
+    · Ξ hX
     · exact Or.inl ⟨c, hc, hmem⟩
     · exact (abs_fst_lt_radius_of_mem ⟨c, hc, hmem⟩).le
     · intro hnp
       rw [hX]; simp only
       by_cases hσ : V.σb = 1
-      · rw [ite_eq_left hσ, not_not] at hnd'
-        rw [sgnOf_one hσ, one_mul]
+      · Ξ' ite_eq_left hσ, not_not at hnd'
+        Ξ sgnOf_one hσ, one_mul
         linarith [(endGtZ_iff hσ hs.zo hnp EN.good).1 hnd']
-      · rw [ite_eq_right hσ, not_not] at hnd'
-        rw [sgnOf_ne hσ]
+      · Ξ' ite_eq_right hσ, not_not at hnd'
+        Ξ sgnOf_ne hσ
         linarith [(endLtZ_iff hσ hs.zo hnp EN.good).1 hnd']
     · intro cD hcD
       obtain ⟨-, -, -, hxD⟩ := hDf cD hcD
       have hcb : CBof P C V bD (nearC V m t) := by
         rcases hA.2 with h0 | h0
-        · rw [hcD] at h0; exact absurd h0 (by simp)
+        · Ξ' hcD at h0; exact absurd h0 (✓)
         · exact h0
-      rw [hcD] at hcb
+      Ξ' hcD at hcb
       have hcb' : if V.σb = 1 then EndLtD P C V (eIdx P.n V.s cD) (nearC V m t) V.hz
           else EndGtD P C V (eIdx P.n V.s cD) (nearC V m t) V.hz := hcb
       clear hcb
       have hcb := hcb'
       rw [hX]; simp only
       by_cases hσ : V.σb = 1
-      · rw [ite_eq_left hσ] at hcb
-        rw [sgnOf_one hσ, one_mul, one_mul]
+      · Ξ' ite_eq_left hσ at hcb
+        Ξ sgnOf_one hσ, one_mul, one_mul
         exact ((endLtD_iff EN.good hxD).1 hcb).le
-      · rw [ite_eq_right hσ] at hcb
-        rw [sgnOf_ne hσ]
+      · Ξ' ite_eq_right hσ at hcb
+        Ξ sgnOf_ne hσ
         linarith [(endGtD_iff EN.good hxD).1 hcb]
-    · intro _; rw [hX]
+    · intro _; Ξ hX
   by_cases hB : ∃ cD, bD = some cD
   · -- the hit on `D*`
     obtain ⟨cD, rfl⟩ := hB
     have hsel : selOf C V (some cD) (FoundC V m t) (nearC V m t)
         (CBof P C V (some cD) (nearC V m t)) = (0, cD) := by
-      unfold selOf; rw [ite_eq_right hA]
+      unfold selOf; Ξ ite_eq_right hA
     obtain ⟨hsp, hpos, hmem, hxD⟩ := hDf cD rfl
     refine ⟨((xe (Qof P) (eIdx P.n V.s cD) V.hz, ((Qof P).vtx V.hz).2) : Point),
       ⟨?_, rfl, Or.inl ⟨cD, (by rw [← hv.m]; exact hbD cD rfl), hmem⟩, hxD.le, ?_, ?_, ?_⟩⟩
@@ -291,10 +293,10 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
       have hx := abs_lt.1 hxD
       unfold ζOf
       by_cases hσ : V.σb = 1
-      · rw [ite_eq_left hσ]; rw [sgnOf_one hσ, one_mul] at hpos ⊢
+      · rw [ite_eq_left hσ]; Ξ' sgnOf_one hσ, one_mul at hpos ⊢
         have := max_lt (show z.1 < _ by linarith) hx.1
         linarith
-      · rw [ite_eq_right hσ]; rw [sgnOf_ne hσ] at hpos ⊢
+      · rw [ite_eq_right hσ]; Ξ' sgnOf_ne hσ at hpos ⊢
         have := lt_min (show _ < z.1 by linarith) hx.2
         linarith
     · intro cD' hcD'; cases hcD'; exact le_rfl
@@ -305,18 +307,18 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
       have hj : jCOf V t < V.K := by
         unfold jCOf; split_ifs at hK ⊢ with hσ <;> omega
       obtain ⟨-, -, -, -, EL, ER⟩ := h.facts (h.lt _ hj)
-      rw [hH] at EL ER
+      Ξ' hH at EL ER
       have hcb' : ¬ (if V.σb = 1 then EndLtD P C V (eIdx P.n V.s cD) (nearC V m t) V.hz
           else EndGtD P C V (eIdx P.n V.s cD) (nearC V m t) V.hz) := hcb
       clear hcb
       have hcb := hcb'
       unfold nearC at hcb ⊢
       by_cases hσ : V.σb = 1
-      · rw [ite_eq_left hσ] at hcb ⊢; rw [ite_eq_left hσ] at hcb
-        rw [sgnOf_one hσ, one_mul, one_mul]
+      · Ξ' ite_eq_left hσ at hcb ⊢; Ξ' ite_eq_left hσ at hcb
+        Ξ sgnOf_one hσ, one_mul, one_mul
         exact not_lt.1 (fun hh => hcb ((endLtD_iff EL.good hxD).2 hh))
-      · rw [ite_eq_right hσ] at hcb ⊢; rw [ite_eq_right hσ] at hcb
-        rw [sgnOf_ne hσ]
+      · Ξ' ite_eq_right hσ at hcb ⊢; Ξ' ite_eq_right hσ at hcb
+        Ξ sgnOf_ne hσ
         have := not_lt.1 (fun hh => hcb ((endGtD_iff ER.good hxD).2 hh))
         linarith
   · -- the side of the box
@@ -333,18 +335,18 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
     have hw : (if V.σb = 1 then 3 else 1) = 1 ∨ (if V.σb = 1 then 3 else 1) = 3 := by
       split_ifs <;> simp
     refine ⟨((if (if V.σb = 1 then 3 else 1) = 3 then C.radius else -C.radius),
-      ((Qof P).vtx V.hz).2), ⟨?_, rfl, Or.inr ?_, ?_, ?_, fun cD h' => absurd h' (by simp),
+      ((Qof P).vtx V.hz).2), ⟨?_, rfl, Or.inr ?_, ?_, ?_, fun cD h' => absurd h' (✓),
       fun hf => absurd hf hnf⟩⟩
     · unfold mainPos; rw [hsel]; exact stop_box hT hw rfl
-    · split_ifs <;> simp [abs_of_pos hR]
-    · split_ifs <;> simp [abs_of_pos hR]
+    · split_ifs <;> Θ abs_of_pos hR
+    · split_ifs <;> Θ abs_of_pos hR
     · intro hnp
       unfold ζOf
       by_cases hσ : V.σb = 1
-      · simp only [ite_eq_left hσ, ite_true]; rw [sgnOf_one hσ, one_mul]
+      · simp only [ite_eq_left hσ, ite_true]; Ξ sgnOf_one hσ, one_mul
         have := max_lt (hnp.1 hσ) (show -C.radius < C.radius by linarith)
         linarith
-      · simp only [ite_eq_right hσ, show ¬ (1 : ℕ) = 3 by omega, ite_false]; rw [sgnOf_ne hσ]
+      · simp only [ite_eq_right hσ, show ¬ (1 : ℕ) = 3 by omega, ite_false]; Ξ sgnOf_ne hσ
         have := lt_min (hnp.2 hσ) (show -C.radius < C.radius by linarith)
         linarith
 

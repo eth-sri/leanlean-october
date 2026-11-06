@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseHostArc
 
 /-!
@@ -28,15 +30,15 @@ noncomputable def hostPoly (Q : Polygon) (S : Set (Set Point)) (R : Set Point) :
   ⟨hostPts (interiorModel Q) S R⟩
 
 theorem hostPoly_n : (hostPoly Q S R).n = nk (interiorModel Q) S R := by
-  simp [hostPoly, Polygon.n, hostPts, nk]
+  Θ hostPoly, Polygon.n, hostPts, nk
 
 theorem hostPoly_vtx {i : ℕ} (hi : i < nk (interiorModel Q) S R) :
     (hostPoly Q S R).vtx i = hostPt (interiorModel Q).W (hk (interiorModel Q) S R i) := by
   have hi' : i < (hostPts (interiorModel Q) S R).length := by simpa [hostPts, nk] using hi
   unfold hostPoly Polygon.vtx
-  rw [List.getD_eq_getElem _ _ hi']
-  simp only [hostPts, List.getElem_map, hk]
-  rw [List.getD_eq_getElem _ _ (by simpa [hostPts] using hi')]
+  Ξ List.getD_eq_getElem _ _ hi'
+  ϴ hostPts, List.getElem_map, hk
+  Ξ List.getD_eq_getElem _ _ (by simpa [hostPts] using hi')
 
 /-- At least three host keys. -/
 theorem three_le_nk (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
@@ -45,7 +47,7 @@ theorem three_le_nk (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hS := hostKeys_finite (U := R) hM hFam.2.1 hFam.1
   obtain ⟨x, hx, y, hy, z, hz, hxy, hxz, hyz⟩ := three_le hQ hFam hne hR
   unfold nk
-  rw [hostKeyList_eq hS, Finset.length_sort]
+  Ξ hostKeyList_eq hS, Finset.length_sort
   exact Finset.two_lt_card.2 ⟨x, by simpa using hx, y, by simpa using hy, z, by simpa using hz,
     hxy, hxz, hyz⟩
 
@@ -55,7 +57,7 @@ noncomputable def hostChain (Q : Polygon) (S : Set (Set Point)) (R : Set Point) 
   P := hostPoly Q S R
   s := (g + 1) % nk (interiorModel Q) S R
   m := nk (interiorModel Q) S R - 1
-  one_le := by omega
+  one_le := ⋄
   add_one_le := by rw [hostPoly_n]; omega
 
 variable {g : ℕ} {h3 : 3 ≤ nk (interiorModel Q) S R}
@@ -68,12 +70,12 @@ theorem hostChain_vertex (k : ℕ) :
       (hk (interiorModel Q) S R (((g + 1) % nk (interiorModel Q) S R + k) %
         nk (interiorModel Q) S R)) := by
   show (hostPoly Q S R).vtx (((g + 1) % nk (interiorModel Q) S R + k) % (hostPoly Q S R).n) = _
-  rw [hostPoly_n, hostPoly_vtx (Nat.mod_lt _ (by omega))]
+  rw [hostPoly_n, hostPoly_vtx (Nat.mod_lt _ (⋄))]
 
 /-- Mod arithmetic of chain indices. -/
 theorem chain_idx {N s i j : ℕ} (hs : s < N) (hi : i < N) :
     (s + (i + N - s) % N + j) % N = (i + j) % N := by
-  rw [Nat.add_mod (s + (i + N - s) % N) j, add_steps_mod hs hi, Nat.add_mod_mod]
+  Ξ Nat.add_mod (s + (i + N - s) % N) j, add_steps_mod hs hi, Nat.add_mod_mod
 
 /-- **An arc is a run of chain edges without wrap-around**: for a chord gap `g`, the chain index
 `k_l` of the start `l = hk i_l` of an arc and its number `d` of gaps satisfy `k_l + d ≤ m`. -/

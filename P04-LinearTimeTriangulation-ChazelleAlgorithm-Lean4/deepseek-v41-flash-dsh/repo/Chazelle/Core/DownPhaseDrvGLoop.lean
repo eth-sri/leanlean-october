@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvGLeaf
 
 /-!
@@ -49,7 +51,7 @@ section exec
 
 variable {O : OracleIface} {P : Polygon} {W : ℕ} {R : RData}
 
-set_option maxHeartbeats 8000000 in
+
 /-- **One iteration of the leaf loop.** -/
 theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets O sp κP)
     (hM : L41.MergeMeets sM κ (L41.scF κs) (L41.scG κs) cutGran (gradeCtx O) OkModel)
@@ -62,7 +64,7 @@ theorem lfBody_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
   set x := (R.leaves P).getD i (0, 0, 0) with hx
   have hxL : x ∈ R.leaves P := by rw [hx, List.getD_eq_getElem _ _ hi]; exact List.getElem_mem hi
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hn3 : 3 ≤ P.n := hF.hG.1.1
+  have hn3 := hF.hG.1.1
   obtain ⟨x1, x2, x3, x4, x5, x6, x7, x8⟩ := leaf_facts (n := (Qof P).n) (C := 2 ^ R.μ)
     Nat.one_le_two_pow (by omega) hF.hwf hxL
   have hNP := hF.hNP
@@ -288,7 +290,7 @@ theorem lfLoop_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcM
     (fun j c hj h => lfBody_exec hsp hM hF c hj h) hI (Nat.zero_le _)
   exact ⟨e', k, ex, hI', by simpa using hk, fr⟩
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The last connector.** -/
 theorem finCon_exec {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets O sp κP)
     (hM : L41.MergeMeets sM κ (L41.scF κs) (L41.scG κs) cutGran (gradeCtx O) OkModel)

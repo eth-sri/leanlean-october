@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvGL
 
 /-!
@@ -58,7 +60,7 @@ theorem side_regions_ne (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   have hS1 : SideOf M 1 c U' := fun z hz hzD => (hside z hz hzD).mono fun δ h => by simpa using h.1
   have hS2 : SideOf M (-1) c V' := fun z hz hzD => (hside z hz hzD).mono fun δ h => by
     simpa [sub_eq_add_neg] using h.2
-  rw [sideOf_eq hU hU' hSU hS1 hz hzD, sideOf_eq hV hV' hSV hS2 hz hzD]
+  Ξ sideOf_eq hU hU' hSU hS1 hz hzD, sideOf_eq hV hV' hSV hS2 hz hzD
   exact hne
 
 /-- **The local structure at a key.** -/
@@ -73,7 +75,7 @@ theorem keyStruct {Q : Polygon} {F : Set (Set Point)} (hGM : GoodModel M)
       (X ≠ Y → ∀ R ∈ M.regions F, (SideOf M dY Y R ↔ SideOf M (-dX) X R)) ∧
       (X = Y → dX = dY) := by
   have hM := walkAx_of_goodModel hGM
-  have hF : F ⊆ M.Adm := hFam.2.1
+  have hF := hFam.2.1
   by_cases htie : ∃ e' ∈ F, e' ≠ e ∧ SideAttach M.W e' p t
   · obtain ⟨e', he', hne, hA'⟩ := htie
     -- the east chord and the west chord
@@ -94,7 +96,7 @@ theorem keyStruct {Q : Polygon} {F : Set (Set Point)} (hGM : GoodModel M)
       refine ⟨cw, ce, -1, 1, hcw, hce, hAw, hAe, Or.inr ⟨rfl, hW⟩, Or.inl ⟨rfl, hE⟩,
         fun c hc hc' => (hall c hc hc').symm, fun R hR hR' => (hT hR).1 hdn hR',
         fun R hR hR' => (hT hR).2.1 hdn hR', fun _ R hR => ?_, fun h => absurd h hnew⟩
-      rw [neg_neg]
+      Ξ neg_neg
       exact ⟨fun h => ((mid (Or.inl rfl) hR h).2.2.1 hdn).1 rfl,
         fun h => ((mid' (Or.inl rfl) hR h).2.2.1 hdn).1 rfl⟩
     · -- ascending: `Y = cw`, `X = ce`
@@ -173,7 +175,7 @@ theorem before_region_exists' (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hC := corr_right0 J hP hS₂ hS₂f
   have hM := hC.hM
   set n := (chainModel J.whole).W.n with hndef
-  have hg : 6 + tpos J.whole J.m₁ < n := hC.hg
+  have hg := hC.hg
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < n := by exact_mod_cast hg
   have hn0 : 0 < n := by omega
@@ -201,7 +203,7 @@ theorem before_region_exists' (hP : J.P.Simple) {S₂ : Set (Set Point)}
         push_cast; ring
   obtain ⟨δ₀, hδ₀, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
     (eventually_not_cut_before hM hC.hF hC.hfin X)
-  have hδ₀' : (0 : ℝ) < δ₀ := hδ₀
+  have hδ₀' := hδ₀
   set δ := min (min δ₀ ε) (min 1 (if 0 < t then t else 1)) with hδ
   have hT : 0 < (if 0 < t then t else 1) := by split_ifs with h <;> linarith
   have hδ0 : 0 < δ := lt_min (lt_min hδ₀' hε) (lt_min one_pos hT)

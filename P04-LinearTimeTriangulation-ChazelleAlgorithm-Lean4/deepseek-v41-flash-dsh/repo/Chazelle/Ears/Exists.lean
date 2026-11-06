@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Ears.Basic
 public import Chazelle.Existence.Diagonal
 
@@ -50,11 +54,11 @@ theorem isEar_of_arc {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
     (hin : Chazelle.segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled)
     {k : ℕ} (hk0 : 0 < k) (hkL : k < L) (he : IsEar (P.arc s L) k) :
     IsEar P ((s + k) % P.n) := by
-  have hLn : L + 2 ≤ P.n := hd.2.1
+  have hLn := hd.2.1
   have hn : 0 < P.n := by omega
   have hL : L ≤ P.n := by omega
   have hAn : (P.arc s L).n = L + 1 := n_arc P s L
-  have h4 : 4 ≤ (P.arc s L).n := he.1.2.1
+  have h4 := he.1.2.1
   have hprev : prevIdx (P.arc s L) k = k - 1 := by
     rw [prevIdx_eq _ (by omega)]; simp [Nat.pos_iff_ne_zero.1 hk0]
   have e1 : (P.arc s L).vtx (prevIdx (P.arc s L) k) = P.vtx ((s + (k - 1)) % P.n) := by
@@ -92,38 +96,38 @@ theorem apex_not_both_endpoints {N L s' L' k₁ k₂ : ℕ} (hN : N = L + 1)
     (hk₁0 : 0 < k₁) (hk₁ : k₁ < L') (hk₂0 : 0 < k₂) (hk₂ : k₂ < N - L') (hL' : L' + 2 ≤ N) :
     (0 < (s' + k₁) % N ∧ (s' + k₁) % N < L) ∨
       (0 < (s' + (L' + k₂)) % N ∧ (s' + (L' + k₂)) % N < L) := by
-  have hN0 : 0 < N := by omega
+  have hN0 : 0 < N := ⋄
   have ha₁ : (s' + k₁) % N < N := Nat.mod_lt _ hN0
   have ha₂ : (s' + (L' + k₂)) % N < N := Nat.mod_lt _ hN0
   by_contra hcon
   rw [not_or] at hcon
   obtain ⟨h₁, h₂⟩ := hcon
-  have c₁ : (s' + k₁) % N = 0 ∨ (s' + k₁) % N = L := by omega
-  have c₂ : (s' + (L' + k₂)) % N = 0 ∨ (s' + (L' + k₂)) % N = L := by omega
+  have c₁ : (s' + k₁) % N = 0 ∨ (s' + k₁) % N = L := ⋄
+  have c₂ : (s' + (L' + k₂)) % N = 0 ∨ (s' + (L' + k₂)) % N = L := ⋄
   rcases c₁ with c₁ | c₁ <;> rcases c₂ with c₂ | c₂
   · -- equal apexes
-    have := rot_index_inj (n := N) (s := s') (i := k₁) (j := L' + k₂) (by omega) (by omega)
-      (by rw [c₁, c₂])
+    have := rot_index_inj (n := N) (s := s') (i := k₁) (j := L' + k₂) (⋄) (by omega)
+      (Ρ c₁, c₂)
     omega
   · -- `a₁ = 0` is the successor of `a₂ = L`
     have e : (s' + (L' + k₂ + 1)) % N = (s' + k₁) % N := by
-      rw [← mod_add_one_mod, c₂, c₁, hN, Nat.mod_self]
+      Ξ ← mod_add_one_mod, c₂, c₁, hN, Nat.mod_self
     rcases Nat.lt_or_ge (L' + k₂ + 1) N with h | h
-    · have := rot_index_inj (n := N) (s := s') h (by omega) e
+    · have := rot_index_inj (n := N) (s := s') h (⋄) e
       omega
-    · have hEq : L' + k₂ + 1 = N := by omega
+    · have hEq : L' + k₂ + 1 = N := ⋄
       rw [hEq, Nat.add_mod_right] at e
-      have := rot_index_inj (n := N) (s := s') (i := 0) (j := k₁) hN0 (by omega)
+      have := rot_index_inj (n := N) (s := s') (i := 0) (j := k₁) hN0 (⋄)
         (by rw [Nat.add_zero]; exact e)
       omega
   · -- `a₂ = 0` is the successor of `a₁ = L`
     have e : (s' + (k₁ + 1)) % N = (s' + (L' + k₂)) % N := by
-      rw [← mod_add_one_mod, c₁, c₂, hN, Nat.mod_self]
-    have := rot_index_inj (n := N) (s := s') (i := k₁ + 1) (j := L' + k₂) (by omega) (by omega) e
+      Ξ ← mod_add_one_mod, c₁, c₂, hN, Nat.mod_self
+    have := rot_index_inj (n := N) (s := s') (i := k₁ + 1) (j := L' + k₂) (⋄) (by omega) e
     omega
   · -- equal apexes
-    have := rot_index_inj (n := N) (s := s') (i := k₁) (j := L' + k₂) (by omega) (by omega)
-      (by rw [c₁, c₂])
+    have := rot_index_inj (n := N) (s := s') (i := k₁) (j := L' + k₂) (⋄) (by omega)
+      (Ρ c₁, c₂)
     omega
 
 /-- **Ears in every chain** (auxiliary form, for the strong induction on the number of
@@ -143,7 +147,7 @@ theorem exists_ear_in_arc_aux (m : ℕ) : ∀ Q : Polygon, Q.n = m → Q.Simple 
     set A := Q.arc s L with hAdef
     have hA : A.Simple := simple_arc Q s L hQ hd
     have hAn : A.n = L + 1 := n_arc Q s L
-    have hA4 : 4 ≤ A.n := by omega
+    have hA4 : 4 ≤ A.n := ⋄
     have hAm : A.n < m := by have := hd.2.1; omega
     obtain ⟨s', L', hd', hin'⟩ := exists_diagonal hA hA4
     obtain ⟨k₁, hk₁0, hk₁, he₁⟩ := ih A.n hAm A rfl hA s' L' hd' hin'

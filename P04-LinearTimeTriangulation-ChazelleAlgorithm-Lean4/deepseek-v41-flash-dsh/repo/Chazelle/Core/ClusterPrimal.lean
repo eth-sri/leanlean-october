@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterLabel
 public import Chazelle.Core.SpecKernels
 
@@ -46,10 +50,10 @@ theorem MapArrays.iterate_rot (h : MapArrays m bO bR bV μ N M) (n : ℕ) (d : F
   induction n generalizing d with
   | zero => simp
   | succ n ih =>
-    rw [Function.iterate_succ_apply, pow_succ, Equiv.Perm.mul_apply]
+    Ξ Function.iterate_succ_apply, pow_succ, Equiv.Perm.mul_apply
     have : view m bR N (d : ℕ) = ((M.rot d : Fin N) : ℕ) := by
-      rw [view_lt d.2, h.rot d.2]
-    rw [this, ih]
+      Ξ view_lt d.2, h.rot d.2
+    Ξ this, ih
 
 end arrays
 
@@ -79,18 +83,18 @@ theorem primalEnv_ok [Fintype F] (h : MapArrays m bO bR bV μ N M)
   · rw [view_lt hd, h.opp hd]; exact (M.opp ⟨d, hd⟩).2
   · rw [view_lt hd, h.rot hd]; exact (M.rot ⟨d, hd⟩).2
   · rw [view_lt hd, h.vert hd]; exact (M.vert ⟨d, hd⟩).2
-  · rw [view_lt hd, view_lt he, h.rot hd, h.rot he] at hde
+  · Ξ' view_lt hd, view_lt he, h.rot hd, h.rot he at hde
     have := M.rot.injective (Fin.ext hde)
     exact congrArg Fin.val this
   · rw [view_lt hd, h.rot hd, view_lt (M.rot ⟨d, hd⟩).2, h.vert (M.rot ⟨d, hd⟩).2,
       view_lt hd, h.vert hd]
-    simp [M.vert_rot]
-  · rw [view_lt hd, view_lt he, h.vert hd, h.vert he] at hde
+    Θ M.vert_rot
+  · Ξ' view_lt hd, view_lt he, h.vert hd, h.vert he at hde
     have hsc := M.sameCycle_of_vert ⟨d, hd⟩ ⟨e, he⟩ (Fin.ext hde)
     obtain ⟨n, hn⟩ := hsc.exists_nat_pow_eq
     refine ⟨n, ?_⟩
     have := h.iterate_rot n ⟨d, hd⟩
-    rw [this, hn]
+    Ξ this, hn
   · rw [view_lt hu]; exact (hF u hu).1
   · rw [view_lt hu, view_lt (hF u hu).1]; exact (hF u hu).2
 
@@ -102,10 +106,10 @@ theorem primalEnv_sym (h : MapArrays m bO bR bV μ N M)
   change d < N at hd
   have ho : m (bO + d) < N := by rw [h.opp hd]; exact (M.opp ⟨d, hd⟩).2
   show view m bO N (view m bO N d) = d ∧ view m bDB N (view m bO N d) = view m bDB N d
-  rw [view_lt hd, view_lt ho, view_lt ho, view_lt hd]
+  Ξ view_lt hd, view_lt ho, view_lt ho, view_lt hd
   refine ⟨?_, hdb d hd⟩
-  rw [h.opp hd, h.opp (M.opp ⟨d, hd⟩).2]
-  simp [M.opp_opp]
+  Ξ h.opp hd, h.opp (M.opp ⟨d, hd⟩).2
+  Θ M.opp_opp
 
 /-- **Walks of the stored graph avoiding the flagged vertices are reachabilities** (for dart
 flags never equal to `1`). -/
@@ -116,15 +120,15 @@ theorem reach_of_walk (h : MapArrays m bO bR bV μ N M) (hdb : ∀ d, d < N → 
   induction w with
   | nil => exact Relation.ReflTransGen.refl
   | @cons a b c hadj w ih =>
-    have ha : m (bVB + a) ≠ 1 := hw a (by simp)
-    have hb : m (bVB + b) ≠ 1 := hw b (by simp)
-    have hrest := ih (fun x hx => hw x (by simp [hx]))
+    have ha := hw a (✓)
+    have hb := hw b (✓)
+    have hrest := ih (fun x hx => hw x (⊚ hx))
     have hstep : (primalEnv m bO bR bV bF bDB bVB μ N).Step a b := by
       obtain ⟨-, hd⟩ := hadj
       rcases hd with ⟨d, hd, h1, h2⟩ | ⟨d, hd, h1, h2⟩
-      · rw [← hN] at hd
-        rw [hB2] at h1 h2
-        rw [hB] at h2
+      · Ξ' ← hN at hd
+        Ξ' hB2 at h1 h2
+        Ξ' hB at h2
         have ho : m (bO + d) < N := by rw [h.opp hd]; exact (M.opp ⟨d, hd⟩).2
         refine ⟨d, hd, ?_, ?_, ?_, ?_, ?_⟩
         · simp only [primalEnv, view_lt hd]; exact hdb d hd
@@ -133,17 +137,17 @@ theorem reach_of_walk (h : MapArrays m bO bR bV μ N M) (hdb : ∀ d, d < N → 
         · simp only [primalEnv, view_lt a.2]; exact ha
         · simp only [primalEnv, view_lt b.2]; exact hb
       · -- the opposite dart goes from `a` to `b`
-        rw [← hN] at hd
-        rw [hB2] at h1 h2
-        rw [hB] at h2
+        Ξ' ← hN at hd
+        Ξ' hB2 at h1 h2
+        Ξ' hB at h2
         have ho : m (bO + d) < N := by rw [h.opp hd]; exact (M.opp ⟨d, hd⟩).2
         have hoo : m (bO + m (bO + d)) = d := by
-          rw [h.opp ho]; simp only [h.opp hd, Fin.eta, M.opp_opp]
+          rw [h.opp ho]; ϴ h.opp hd, Fin.eta, M.opp_opp
         refine ⟨m (bO + d), ho, ?_, ?_, ?_, ?_, ?_⟩
         · simp only [primalEnv, view_lt ho]; exact hdb _ ho
         · simp only [primalEnv, view_lt ho]; exact h2
         · show view m bV N (view m bO N (m (bO + d))) = _
-          rw [view_lt ho, hoo, view_lt hd]
+          Ξ view_lt ho, hoo, view_lt hd
           exact h1
         · simp only [primalEnv, view_lt a.2]; exact ha
         · simp only [primalEnv, view_lt b.2]; exact hb

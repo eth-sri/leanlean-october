@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFTile
 public import Chazelle.Core.RestoreFPieceGeo
 

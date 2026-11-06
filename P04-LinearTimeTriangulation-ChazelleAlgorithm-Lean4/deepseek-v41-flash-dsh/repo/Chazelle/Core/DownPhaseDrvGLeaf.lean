@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvGStep
 
 /-!
@@ -22,7 +24,7 @@ open Machine Machine.Stmt Programs BuildRam DrvR
 @[expose] public section
 
 theorem frame_refl (B : Finset ℕ) (c : Config) (k : ℕ) : Frame B c c k :=
-  ⟨fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_refl _, by omega⟩
+  ⟨fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_refl _, ⋄⟩
 
 /-- **A counted loop with frames.** -/
 theorem forLoopF {P : Polygon} {W : ℕ} {ir nr : ℕ} {body : Stmt} {B : Finset ℕ}
@@ -35,20 +37,20 @@ theorem forLoopF {P : Polygon} {W : ℕ} {ir nr : ℕ} {body : Stmt} {B : Finset
       k ≤ (Kb + 2) * (N - j) + 2 ∧ Frame B c c' k := by
   induction hn : N - j generalizing j c with
   | zero =>
-    have hjN : j = N := by omega
+    have hjN : j = N := ⋄
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by omega, frame_refl B c 2⟩
+    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, ⋄, frame_refl B c 2⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    have hlt : j < N := by omega
+    have hlt : j < N := ⋄
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁, f₁⟩ := hbody j c hlt hc
-    obtain ⟨c', k₂, e₂, hI', hk₂, f₂⟩ := ih hI₁ (by omega) (by omega)
+    obtain ⟨c', k₂, e₂, hI', hk₂, f₂⟩ := ih hI₁ (⋄) (⋄)
     refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_, ?_⟩
     · rw [Nat.mul_succ]; omega
     · have := f₁.trans f₂
       rw [Finset.union_self] at this
-      exact this.mono (le_refl _) (by omega)
+      exact this.mono (le_refl _) (⋄)
 
 /-- **A junction**: the host point `s` is strictly inside a run item. -/
 def JunOK (n : ℕ) (H : Host) (s : ℕ) : Prop :=

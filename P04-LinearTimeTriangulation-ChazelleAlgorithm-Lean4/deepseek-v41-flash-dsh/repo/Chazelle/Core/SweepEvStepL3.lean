@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStepL2
 public import Chazelle.Core.SweepEvCount
 
@@ -39,7 +41,7 @@ theorem stp_co_keep (hI : IterRel P J N₁ N₂ c cw cs co c') {k : ℕ}
   obtain ⟨hW, -, hR, hB, -⟩ := hI
   obtain ⟨hkp, -, -, -⟩ := stp_pre_frame hW hR
   obtain ⟨hregB, -, -⟩ := hB
-  have h := stp_batch_keep hR hregB (k := k) (by omega)
+  have h := stp_batch_keep hR hregB (k := k) (⋄)
   exact (h.2.trans h.1.symm).trans (hkp k hk)
 
 /-- The registers kept by the next-key step. -/
@@ -53,7 +55,7 @@ theorem stp_key_keep (hK : KeyOut P J co c') {k : ℕ}
 theorem stp_iter_keep (hI : IterRel P J N₁ N₂ c cw cs co c') {k : ℕ}
     (hk : (600 ≤ k ∧ k < 700) ∨ k = 2430 ∨ (2432 ≤ k ∧ k ≤ 2449) ∨ (2452 ≤ k ∧ k ≤ 2459) ∨
       (2600 ≤ k ∧ k ≤ 2699)) : c'.nreg (sw k) = c.nreg (sw k) :=
-  (stp_key_keep hI.2.2.2.2 (by omega)).trans (stp_co_keep hI (by omega))
+  (stp_key_keep hI.2.2.2.2 (⋄)).trans (stp_co_keep hI (by omega))
 
 /-- The memory beyond the table, below the allocator, up to the configuration after the
 origins. -/
@@ -62,11 +64,11 @@ theorem stp_co_mem (_L : LoopInv P J N₁ N₂ c₀ c) (hI : IterRel P J N₁ N�
   obtain ⟨hW, hAl, hR, hB, -⟩ := hI
   obtain ⟨hkp, hmem, -, -⟩ := stp_pre_frame hW hR
   obtain ⟨-, -, A, hBA⟩ := hB
-  have eTB : cs.nreg cTB = c.nreg cTB := hkp 661 (by omega)
+  have eTB : cs.nreg cTB = c.nreg cTB := hkp 661 (⋄)
   have eAs : cs.nreg ALLOC = cw.nreg ALLOC := hR.2.2.2 _ (by unfold ALLOC bF sw; omega)
     (by unfold ALLOC bN sw; omega)
   intro x hx hx'
-  rw [hBA.memT x (by omega) (Or.inr (by omega)), hmem x hx]
+  rw [hBA.memT x (⋄) (Or.inr (by omega)), hmem x hx]
 
 /-- The allocator grows. -/
 theorem stp_alloc_mono (hI : IterRel P J N₁ N₂ c cw cs co c') :
@@ -81,7 +83,7 @@ theorem stp_key_some (hI : IterRel P J N₁ N₂ c cw cs co c') (hd : c'.nreg dF
     co.nreg bF = 1 ∨ co.nreg sP < co.nreg sC ∨ co.nreg wX = 0 := by
   by_contra h
   push Not at h
-  have := (hI.2.2.2.2.2.2.1 ⟨h.1, by omega, h.2.2⟩).1
+  have := (hI.2.2.2.2.2.2.1 ⟨h.1, ⋄, h.2.2⟩).1
   omega
 
 /-- The memory beyond the table, below the allocator, outside the new log record, through the
@@ -93,11 +95,11 @@ theorem stp_c'_mem (L : LoopInv P J N₁ N₂ c₀ c) (hI : IterRel P J N₁ N�
       c'.nmem x = c.nmem x := by
   intro x hx h1 h2
   have hA := stp_alloc_mono hI
-  have elB : co.nreg lB = c.nreg lB := stp_co_keep hI (k := 2430) (by omega)
-  have elC : co.nreg lC = c.nreg lC := stp_co_keep hI (k := 2431) (by omega)
+  have elB : co.nreg lB = c.nreg lB := stp_co_keep hI (k := 2430) (⋄)
+  have elC : co.nreg lC = c.nreg lC := stp_co_keep hI (k := 2431) (⋄)
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, hmK⟩ :=
     hI.2.2.2.2.2.2.2 (stp_key_some hI hd)
-  rw [hmK x (by omega) (by rw [elB, elC]; exact h2), stp_co_mem L hI x hx h1]
+  rw [hmK x (⋄) (by rw [elB, elC]; exact h2), stp_co_mem L hI x hx h1]
 
 /-- The stop offsets after the origins. -/
 theorem stp_stopOff_co (L : LoopInv P J N₁ N₂ c₀ c) (hI : IterRel P J N₁ N₂ c cw cs co c') {i : ℕ}
@@ -107,12 +109,12 @@ theorem stp_stopOff_co (L : LoopInv P J N₁ N₂ c₀ c) (hI : IterRel P J N₁
 /-- The stop records after the origins. -/
 theorem stp_stopEH_co (L : LoopInv P J N₁ N₂ c₀ c) (hI : IterRel P J N₁ N₂ c cw cs co c') {i : ℕ}
     (hi : i < c.nreg sC) : stopE co i = stopE c i ∧ stopH co i = stopH c i := by
-  have esB : co.nreg sB = c.nreg sB := stp_co_keep hI (k := 2600) (by omega)
+  have esB : co.nreg sB = c.nreg sB := stp_co_keep hI (k := 2600) (⋄)
   have hlay := L.lay1
   have hlay2 := L.lay2
   have hlay4 := L.lay4
   unfold stopE stopH
-  rw [esB, stp_co_mem L hI _ (by omega) (by omega), stp_co_mem L hI _ (by omega) (by omega)]
+  rw [esB, stp_co_mem L hI _ (⋄) (by omega), stp_co_mem L hI _ (by omega) (by omega)]
   exact ⟨rfl, rfl⟩
 
 /-- **The next key**: beyond the key, a word position, one of the possible keys. -/
@@ -127,8 +129,8 @@ theorem stp_next_key (_E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv
   obtain ⟨hkp, -, -, -⟩ := stp_pre_frame hW hR
   obtain ⟨-, -, A, hBA⟩ := hB
   obtain ⟨-, hkey, -⟩ := hK.2.2.2 hsome
-  have ekE : cs.nreg kE = c.nreg kE := hkp 2400 (by omega)
-  have ekH : cs.nreg kH = c.nreg kH := hkp 2401 (by omega)
+  have ekE : cs.nreg kE = c.nreg kE := hkp 2400 (⋄)
+  have ekH : cs.nreg kH = c.nreg kH := hkp 2401 (⋄)
   rcases hkey with ⟨hbF, h1, h2⟩ | ⟨hsp, h1, h2⟩ | ⟨hwx, h1, h2⟩
   · -- the best candidate
     obtain ⟨⟨j, hj⟩, hlt⟩ := hBA.bAcc hbF
@@ -137,11 +139,11 @@ theorem stp_next_key (_E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv
       unfold keyOff; rw [h1, h2]
     refine ⟨?_, by rw [h1, h2]; exact hpw, ?_⟩
     · rw [ho']; rw [ekE, ekH] at hlt; exact hlt
-    · rw [ho']
+    · Ξ ho'
       have hp0 := hpw.2.1.1
       have hp1 := hpw.2.1.2.1
       have hpn := hpw.1
-      refine Or.inl ⟨_, ⟨_, hmemF, _, _, hAt, rfl⟩, by positivity, ?_, rfl⟩
+      refine Or.inl ⟨_, ⟨_, hmemF, _, _, hAt, rfl⟩, ⟢, ?_, rfl⟩
       have : ((co.nreg bE : ℕ) : ℝ) + 1 ≤ (chainModel J.whole).W.n := by exact_mod_cast hpn
       linarith
   · -- the next stop
@@ -150,20 +152,20 @@ theorem stp_next_key (_E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv
     have ho' : keyOff P J c' = stopOff P J c (c.nreg sP) := by
       unfold keyOff stopOff; rw [h1, h2, esP, eE, eH]
     refine ⟨?_, ?_, ?_⟩
-    · rw [ho']
+    · Ξ ho'
       by_contra h
       have := (L.ptrL _ hi).2 (not_lt.1 h)
       omega
-    · rw [h1, h2, esP, eE, eH]
+    · Ξ h1, h2, esP, eE, eH
       obtain ⟨rs, ax, hlen, -, hrec, -, -, hpw, -⟩ := L.stops
       have hi' : c.nreg sP < rs.length := hlen ▸ hi
       obtain ⟨e0, e1, -⟩ := hrec _ hi'
       unfold stopE stopH
-      rw [e0, e1, List.getD_eq_getElem _ _ hi']
+      Ξ e0, e1, List.getD_eq_getElem _ _ hi'
       exact (hpw _ (List.getElem_mem hi')).1
-    · rw [ho']
+    · Ξ ho'
       obtain ⟨e, he, p, t, hA, hoff, -⟩ := stp_stop_cut L hi
-      rw [hoff]
+      Ξ hoff
       refine Or.inl ⟨_, ⟨e, he, p, t, hA, rfl⟩, by have := hA.2.1; positivity, ?_, rfl⟩
       have : ((p : ℕ) : ℝ) + 1 ≤ (chainModel J.whole).W.n := by exact_mod_cast hA.1
       linarith [hA.2.2.1]
@@ -174,7 +176,7 @@ theorem stp_next_key (_E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv
     have ho' : keyOff P J c' = offK P J (cw.nreg wE) (cw.nreg wH) := by
       unfold keyOff; rw [h1, h2, ewE, ewH]
     refine ⟨by rw [ho']; exact hlt, by rw [h1, h2, ewE, ewH]; exact hpw, ?_⟩
-    rw [ho']
+    Ξ ho'
     right
     rcases hcut with h | ⟨d, t, hv, ht0, ht1, ho, hc⟩
     · exact Or.inl h
@@ -188,17 +190,17 @@ theorem stp_meas_step (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv
     c.nreg lC + 1 ≤ logCap N₁ N₂ ∧ c'.nreg lC = c.nreg lC + 1 := by
   obtain ⟨hlt, -, hmem⟩ := stp_next_key E L hI hd
   obtain ⟨hfin, hcard⟩ := countTask P J N₁ N₂ E.hP E.hNF₁ E.hNF₂
-  have hfin' : (keyS P J N₁ N₂).Finite := hfin
+  have hfin' := hfin
   have hsub : keyS P J N₁ N₂ ∩ Ioi (keyOff P J c') ⊂ keyS P J N₁ N₂ ∩ Ioi (keyOff P J c) :=
     ⟨fun x hx => ⟨hx.1, lt_trans hlt hx.2⟩, fun h => lt_irrefl _ (h ⟨hmem, hlt⟩).2⟩
   have hlt' := ncard_lt_ncard hsub (hfin'.subset inter_subset_left)
   have hpos : 0 < (keyS P J N₁ N₂ ∩ Ioi (keyOff P J c)).ncard :=
     (ncard_pos (hfin'.subset inter_subset_left)).2 ⟨_, hmem, hlt⟩
-  have elC : co.nreg lC = c.nreg lC := stp_co_keep hI (k := 2431) (by omega)
+  have elC : co.nreg lC = c.nreg lC := stp_co_keep hI (k := 2431) (⋄)
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, hlC, -⟩ := hI.2.2.2.2.2.2.2 (stp_key_some hI hd)
   have hm := L.meas
   have hcard' : (keyS P J N₁ N₂).ncard ≤ 4 * N₂.nChords + 2 * N₁.nChords + 9 := hcard
-  refine ⟨hlt', by omega, ?_, by omega⟩
+  refine ⟨hlt', ⋄, ?_, by omega⟩
   unfold logCap
   omega
 
@@ -214,10 +216,10 @@ theorem stp_arrays_c' (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv
   have l3 := L.lay3
   have l4 := L.lay4
   have l5 := L.lay5
-  refine ⟨stp_iter_keep hI (k := 2600) (by omega), stp_iter_keep hI (k := 2602) (by omega),
-    stp_iter_keep hI (k := 2601) (by omega), fun x h1 h2 => ?_, fun x h1 h2 => ?_⟩
-  · exact stp_c'_mem L hI hd x (by omega) (by omega) (Or.inr (by omega))
-  · exact stp_c'_mem L hI hd x (by omega) (by omega) (Or.inr (by omega))
+  refine ⟨stp_iter_keep hI (k := 2600) (⋄), stp_iter_keep hI (k := 2602) (by omega),
+    stp_iter_keep hI (k := 2601) (⋄), fun x h1 h2 => ?_, fun x h1 h2 => ?_⟩
+  · exact stp_c'_mem L hI hd x (⋄) (by omega) (Or.inr (by omega))
+  · exact stp_c'_mem L hI hd x (⋄) (by omega) (Or.inr (by omega))
 
 /-- **The stops at the next key.** -/
 theorem stp_stops_c' (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P J N₁ N₂ c₀ c)
@@ -230,29 +232,29 @@ theorem stp_stops_c' (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv 
   have hEH : ∀ i, i < c.nreg sC → stopE c' i = stopE c i ∧ stopH c' i = stopH c i := by
     intro i hi
     unfold stopE stopH
-    rw [esB, hmS _ (by omega) (by omega), hmS _ (by omega) (by omega)]
+    rw [esB, hmS _ (⋄) (by omega), hmS _ (by omega) (by omega)]
     exact ⟨rfl, rfl⟩
   refine ⟨⟨rs, ax, by rw [esC]; exact hlen, hax, fun i hi => ?_, fun i hi => ?_, hok, hpw,
     hauxOK, hbd⟩, fun i hi => ⟨(hEH i hi).1, (hEH i hi).2, by
       unfold stopOff; rw [(hEH i hi).1, (hEH i hi).2]⟩⟩
   · have hi' : i < c.nreg sC := hlen ▸ hi
     obtain ⟨a0, a1, a2, a3, a4⟩ := hrec i hi
-    rw [esB]
+    Ξ esB
     refine ⟨?_, ?_, ?_, ?_, ?_⟩
-    · rw [hmS _ (by omega) (by omega)]; exact a0
-    · rw [hmS _ (by omega) (by omega)]; exact a1
-    · rw [hmS _ (by omega) (by omega)]; exact a2
-    · rw [hmS _ (by omega) (by omega)]; exact a3
-    · rw [hmS _ (by omega) (by omega)]; exact a4
+    · rw [hmS _ (⋄) (by omega)]; exact a0
+    · rw [hmS _ (⋄) (by omega)]; exact a1
+    · rw [hmS _ (⋄) (by omega)]; exact a2
+    · rw [hmS _ (⋄) (by omega)]; exact a3
+    · rw [hmS _ (⋄) (by omega)]; exact a4
   · have hi' : i < c.nreg sC := by rw [← hlen, ← hax]; exact hi
     obtain ⟨a0, a1, a2, a3, a4⟩ := hrecA i hi
-    rw [eaB]
+    Ξ eaB
     refine ⟨?_, ?_, ?_, ?_, ?_⟩
-    · rw [hmA _ (by omega) (by omega)]; exact a0
-    · rw [hmA _ (by omega) (by omega)]; exact a1
-    · rw [hmA _ (by omega) (by omega)]; exact a2
-    · rw [hmA _ (by omega) (by omega)]; exact a3
-    · rw [hmA _ (by omega) (by omega)]; exact a4
+    · rw [hmA _ (⋄) (by omega)]; exact a0
+    · rw [hmA _ (⋄) (by omega)]; exact a1
+    · rw [hmA _ (⋄) (by omega)]; exact a2
+    · rw [hmA _ (⋄) (by omega)]; exact a3
+    · rw [hmA _ (⋄) (by omega)]; exact a4
 
 /-- **The stop pointer at the next key.** -/
 theorem stp_ptr_c' (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P J N₁ N₂ c₀ c)

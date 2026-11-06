@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopTasks2
 public import Chazelle.Core.SweepEvKey2Sel
 
@@ -75,34 +77,34 @@ theorem prR_par {r : ℕ} (h1 : sw 4068 ≤ r) (h2 : r < sw 4080) : ParR r := Or
 theorem prAdr_irs (hI : IInv W c₀ d) (hW : d.nreg prB + 5 * d.nreg prI ≤ W) :
     IRS P W c₀ (block prAdrL) d 5 (fun d' => d'.nreg prX = d.nreg prB + 5 * d.nreg prI ∧
       (∀ q, q ≠ prX → d'.nreg q = d.nreg q) ∧ d'.nmem = d.nmem) := by
-  simp only [prB, prI, sw, Nat.reduceAdd] at hW
+  ϴ' prB, prI, sw, Nat.reduceAdd at hW
   refine (IRS.block prAdrL hI ?_).mono le_rfl ?_
-  · simp [prAdrL, okB, okI, regI, upd, prX, prB, prI, sw, IScr]
+  · Θ prAdrL, okB, okI, regI, upd, prX, prB, prI, sw, IScr
     omega
   · rintro d' rfl
-    simp [prAdrL, regB, regI, upd, prX, prB, prI, sw]
+    Θ prAdrL, regB, regI, upd, prX, prB, prI, sw
     refine ⟨by ring_nf, ?_⟩
     intro r ha
-    simp [ha]
+    Θ ha
 
 theorem prEnd_irs (hI : IInv W c₀ d) (hK1 : d.nreg K1 = 1) (hK2 : d.nreg K2 = 2)
     (hW : d.nreg prX + 2 ≤ W) (hh : d.nmem (d.nreg prX) + 1 ≤ W) :
     IRS P W c₀ (block prEndL) d 5 (fun d' => d'.nreg prH = d.nmem (d.nreg prX) + 1 ∧
       d'.nreg prE = d.nmem (d.nreg prX + 2 - d.nreg oB) ∧
       (∀ q, q ≠ prX → q ≠ prH → q ≠ prE → d'.nreg q = d.nreg q) ∧ d'.nmem = d.nmem) := by
-  simp only [prX, K1, K2, sw, Nat.reduceAdd] at hK1 hK2 hW hh
+  ϴ' prX, K1, K2, sw, Nat.reduceAdd at hK1 hK2 hW hh
   refine (IRS.block prEndL hI ?_).mono le_rfl ?_
-  · simp [prEndL, okB, okI, regI, upd, prX, prH, prE, oB, K1, K2, sw, IScr, hK1, hK2]
+  · Θ prEndL, okB, okI, regI, upd, prX, prH, prE, oB, K1, K2, sw, IScr, hK1, hK2
     omega
   · rintro d' rfl
-    simp [prEndL, regB, regI, upd, prX, prH, prE, oB, K1, K2, sw, hK1, hK2]
+    Θ prEndL, regB, regI, upd, prX, prH, prE, oB, K1, K2, sw, hK1, hK2
     intro r ha hb hc
-    simp [ha, hb, hc]
+    Θ ha, hb, hc
 
 /-! ## One chord -/
 
-set_option maxHeartbeats 16000000 in
-set_option maxRecDepth 100000 in
+
+
 theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
     (hpe : c.nreg pE2 < (chainModel J.right).W.n)
     (hpp : ProperPos (chainModel J.right) (Qof P) P.n ⟨c.nreg pE2, c.nreg pH2⟩)
@@ -128,7 +130,7 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have eH2 : d.nreg pH2 = c.nreg pH2 := kp _ (nPar _ (by simp)).1 (nPar _ (by simp)).2
   -- the normal form
   have hNW := E.nw₂' hI
-  have hNA : NFAt c.nmem (c.nreg (sw 4)) N₂ := hNW.holds
+  have hNA := hNW.holds
   obtain ⟨-, hb2, -⟩ := Restore.nf_bounds hNW
   obtain ⟨r0, r1, r2, -, -⟩ := hNA.2.2.2.2.2.1 i hlt
   have hb2i := hb2 i hlt
@@ -136,7 +138,7 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have hhn := (regOf_spec E.hNF₂).2.2.2.2.2.1 i hlt
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hPn : P.n ≤ W := by have := E.hWh; unfold hostWords at this; omega
-  have hmem : ∀ x, x < c.nreg ALLOC → d.nmem x = c.nmem x := fr.2.2
+  have hmem := fr.2.2
   set Xa := c.nmem (c.nreg (sw 4) + 3) + 5 * i with hXa
   -- 1. the address
   refine IRS.seq (K₁ := 5) (K₂ := 11025) (prAdr_irs hId (by rw [hB]; omega)) ?_
@@ -244,7 +246,7 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       by rw [w2 _ (by unfold prB prI sw; omega), eB4], by rw [w1]; omega, by rw [w1, eP]; exact hP1,
       fun h => by rw [eP] at h ⊢; exact hP2 h, fun h => by rw [w1]; rw [eP] at h; exact hP3 h⟩,
       by rw [w1]; omega⟩
-  have k01 : d₃.nreg K0 = 0 := hK₃.1
+  have k01 := hK₃.1
   by_cases h1 : d₃.nreg K0 < d₃.nreg prO
   · -- the end is before the position
     have h1' := h1
@@ -302,7 +304,7 @@ theorem prBody_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
 
 /-! ## The scan -/
 
-set_option maxHeartbeats 16000000 in
+
 theorem parScan_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
     (hpe : c.nreg pE2 < (chainModel J.right).W.n)
     (hpp : ProperPos (chainModel J.right) (Qof P) P.n ⟨c.nreg pE2, c.nreg pH2⟩)
@@ -311,11 +313,11 @@ theorem parScan_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
     IRS P W c₀ parScan c (11040 * (N₂.nChords + 1)) (ParOut P J N₂ c) := by
   have hK := E.hK.fix hI
   have hNW := E.nw₂' hI
-  have hNA : NFAt c.nmem (c.nreg (sw 4)) N₂ := hNW.holds
+  have hNA := hNW.holds
   obtain ⟨hb0, -⟩ := Restore.nf_bounds hNW
   have hAW := hI.hw.1 ALLOC
   unfold parScan
-  have k3 : c.nreg K3 = 3 := hK.2.2.2.2.2.2
+  have k3 := hK.2.2.2.2.2.2
   refine (IRS.seq (K₁ := 5) (K₂ := 11032 * N₂.nChords + 2) (IRS.block prInitL hI (by
     simp only [sw, K3, Nat.reduceAdd] at k3 hb0 hAW
     simp [prInitL, okB, okI, regI, upd, oPar, prI, prK, prB, K3, sw, IScr, k3]

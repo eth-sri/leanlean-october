@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseRegionBox
 
 /-!
@@ -42,12 +44,12 @@ theorem hostEdge_not_mem (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q
   have hF := hFam.2.1
   have hfin := hFam.1
   have h3 : 3 ≤ nk M S R := three_le_nk hQ hFam hne hR
-  have hN2 : 2 ≤ nk M S R := le_trans (by norm_num) h3
+  have hN2 : 2 ≤ nk M S R := le_trans (⊛) h3
   intro hzR
   have hzfree := Chazelle.Chain.regionsIn_subset hR hzR
   rcases gap_cases hM hF hfin hne hR hN2 hi with ⟨a', b', harc, hsub⟩ | ⟨c, hc, p, p', t, t', hA, hB,
     ha, hb, hAB⟩
-  · have hsi : (i + 1) % nk M S R < nk M S R := Nat.mod_lt _ (by omega)
+  · have hsi : (i + 1) % nk M S R < nk M S R := Nat.mod_lt _ (⋄)
     have hb1 := hostKeys_bounds (hk_mem hM hF hfin hi)
     have hb2 := hostKeys_bounds (hk_mem hM hF hfin hsi)
     have hnv : ∀ k : ℕ, k < M.W.n →
@@ -60,9 +62,9 @@ theorem hostEdge_not_mem (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q
       (hk_succ_ne hM hF hfin hN2 hi) hnv z hz
     exact hM.trace q hq s hs0 hs1.le (hzq ▸ hzfree.1)
   · have hPa : hostPt M.W (hk M S R i) = sidePt M.W p t := by
-      rw [ha, hostPt_eq M.W hA.2.1 hA.2.2.1]
+      Ξ ha, hostPt_eq M.W hA.2.1 hA.2.2.1
     have hPb : hostPt M.W (hk M S R ((i + 1) % nk M S R)) = sidePt M.W p' t' := by
-      rw [hb, hostPt_eq M.W hB.2.1 hB.2.2.1]
+      Ξ hb, hostPt_eq M.W hB.2.1 hB.2.2.1
     obtain ⟨hcab, -⟩ := hM.attach_seg (hF hc) hA hB hAB
     rw [hPa, hPb, ← hcab] at hz
     exact hzfree.2 ⟨c, hc, hz⟩
@@ -123,10 +125,10 @@ theorem host_vertex (_h3' : 3 ≤ nk (interiorModel Q) S R) {i : ℕ}
     ∃ k, k ≤ (hostChain Q S R g h3).m ∧
       (hostChain Q S R g h3).vertex k = hostPt (interiorModel Q).W (hk (interiorModel Q) S R i) := by
   set N := nk (interiorModel Q) S R
-  have hN : 0 < N := by omega
+  have hN : 0 < N := ⋄
   refine ⟨(i + N - (g + 1) % N) % N, by
     have := Nat.mod_lt (i + N - (g + 1) % N) hN; show _ ≤ N - 1; omega, ?_⟩
-  rw [hostChain_vertex, add_steps_mod (Nat.mod_lt _ hN) hi]
+  Ξ hostChain_vertex, add_steps_mod (Nat.mod_lt _ hN) hi
 
 /-- **The region lies below the top of its host chain.** -/
 theorem region_below_top (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)

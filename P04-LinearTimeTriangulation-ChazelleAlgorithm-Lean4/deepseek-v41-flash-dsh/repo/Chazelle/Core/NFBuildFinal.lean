@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildOut
 public import Chazelle.Core.NFBuildPassMath
 
@@ -45,8 +47,8 @@ theorem ridx_label_le {w : List ℕ} {K : ℕ} (hw : ∀ x ∈ w, x < K) (m : �
     ridx (BuildStack.label w m) ≤ K := by
   unfold BuildStack.label
   rcases hh : (BuildStack.run (w.take m)).head? with _ | x
-  · simp [ridx]
-  · simp only [ridx]
+  · Θ ridx
+  · ϴ ridx
     have hx := mem_of_mem_head? hh
     unfold BuildStack.run at hx
     rcases mem_foldl_step hx with h' | h'
@@ -66,7 +68,7 @@ theorem topR_le (h : Input M Q L E) (m : ℕ) : topR E m ≤ L.length :=
 theorem chordRec_up_le (h : Input M Q L E) {i : ℕ} (hi : i < L.length) :
     (chordRec M Q L E i).up ≤ L.length ∧ (chordRec M Q L E i).dn ≤ L.length := by
   unfold chordRec outside
-  rw [word_eq]
+  Ξ word_eq
   have := ridx_label_le (w := E.map (· / 2)) (cw_lt h)
     ((evs M Q L E).idxOf (BuildRegions.e1 M Q L i))
   split_ifs <;> constructor <;> dsimp only <;> omega
@@ -74,7 +76,7 @@ theorem chordRec_up_le (h : Input M Q L E) {i : ℕ} (hi : i < L.length) :
 /-- Every chord occurs in the word. -/
 theorem mem_cw (h : Input M Q L E) {x : ℕ} (hx : x < L.length) : x ∈ cw E := by
   unfold cw
-  exact mem_map.2 ⟨2 * x, h.perm.mem_iff.2 (mem_range.2 (by omega)), by omega⟩
+  exact mem_map.2 ⟨2 * x, h.perm.mem_iff.2 (mem_range.2 (⋄)), ⋄⟩
 
 /-! ## The machine functions -/
 
@@ -107,10 +109,10 @@ theorem arcList_getD (hK : L.length ≠ 0) {j : ℕ} (hj : j < (gapStarts M Q L 
 theorem regArcs_eq (hK : L.length ≠ 0) (r : ℕ) :
     regArcs M Q L E r = lstF (keyA M Q L E) (gapStarts M Q L E).length r := by
   unfold regArcs lstF
-  rw [arcList_pos hK, length_map]
+  Ξ arcList_pos hK, length_map
   apply filter_congr
   intro j hj
-  rw [← arcList_pos hK, arcList_getD hK (mem_range.1 hj)]
+  Ξ ← arcList_pos hK, arcList_getD hK (mem_range.1 hj)
   rfl
 
 theorem regChords_eq (r : ℕ) :
@@ -119,7 +121,7 @@ theorem regChords_eq (r : ℕ) :
 theorem regWt_eq (hK : L.length ≠ 0) (r : ℕ) :
     regWt M Q L E r = wmaxF (keyA M Q L E) (wA M Q L E) (gapStarts M Q L E).length r := by
   unfold regWt wmaxF
-  rw [← regArcs_eq hK]
+  Ξ ← regArcs_eq hK
   congr 1
   apply map_congr_left
   intro j hj
@@ -127,7 +129,7 @@ theorem regWt_eq (hK : L.length ≠ 0) (r : ℕ) :
     unfold regArcs at hj
     rw [arcList_pos hK, length_map] at hj
     exact mem_range.1 (mem_filter.1 hj).1
-  rw [arcList_getD hK hj']
+  Ξ arcList_getD hK hj'
   rfl
 
 /-! ## The layout -/
@@ -157,26 +159,26 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
     NFAt m H (buildNF M Q L E) := by
   have hlenA : (buildNF M Q L E).arcs.length = (gapStarts M Q L E).length := by
     show (arcList M Q L E).length = _
-    rw [arcList_pos hK, length_map]
-  have h0 := hH 0 (by norm_num); have h1 := hH 1 (by norm_num); have h2 := hH 2 (by norm_num)
-  have h3 := hH 3 (by norm_num); have h4 := hH 4 (by norm_num); have h5 := hH 5 (by norm_num)
-  have h6 := hH 6 (by norm_num); have h7 := hH 7 (by norm_num); have h9 := hH 9 (by norm_num)
-  have h11 := hH 11 (by norm_num)
+    Ξ arcList_pos hK, length_map
+  have h0 := hH 0 (⊛); have h1 := hH 1 (⊛); have h2 := hH 2 (⊛)
+  have h3 := hH 3 (⊛); have h4 := hH 4 (⊛); have h5 := hH 5 (⊛)
+  have h6 := hH 6 (⊛); have h7 := hH 7 (⊛); have h9 := hH 9 (⊛)
+  have h11 := hH 11 (⊛)
   simp only [hdrW, Nat.add_zero] at h0 h1 h2 h3 h4 h5 h6 h7 h9 h11
   norm_num at h0 h1 h2 h3 h4 h5 h6 h7 h9 h11
   refine ⟨?_, ?_, ?_, ?_, ?_, fun i hi => ?_, fun j hj => ?_, fun r hr => ?_, fun j hj => ?_,
     fun k hk => ?_, fun r hr => ?_⟩
   · rw [h0]; simp [buildNF]
-  · rw [h1, hlenA]
+  · Ξ h1, hlenA
   · rw [h2]; simp [buildNF]
   · rw [h9]; rfl
   · rw [h11]; rfl
   · -- chords
     have hi' : i < L.length := by simpa [buildNF] using hi
-    rw [h3, Input.chord_eq hi']
-    have c0 := hC i hi' 0 (by norm_num); have c1 := hC i hi' 1 (by norm_num)
-    have c2 := hC i hi' 2 (by norm_num); have c3 := hC i hi' 3 (by norm_num)
-    have c4 := hC i hi' 4 (by norm_num)
+    Ξ h3, Input.chord_eq hi'
+    have c0 := hC i hi' 0 (⊛); have c1 := hC i hi' 1 (⊛)
+    have c2 := hC i hi' 2 (⊛); have c3 := hC i hi' 3 (⊛)
+    have c4 := hC i hi' 4 (⊛)
     simp only [cf, Nat.add_zero] at c0 c1 c2 c3 c4
     norm_num at c0 c1 c2 c3 c4
     exact ⟨c0, c1, c2, c3, c4⟩
@@ -184,37 +186,37 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
     rw [hlenA] at hj
     have ha : (buildNF M Q L E).arc j = arcRec M Q L E ((gapStarts M Q L E).getD j 0) := by
       unfold NF.arc; exact arcList_getD hK hj
-    rw [h4, ha]
-    have c0 := hA j hj 0 (by norm_num); have c1 := hA j hj 1 (by norm_num)
-    have c2 := hA j hj 2 (by norm_num); have c3 := hA j hj 3 (by norm_num)
-    have c4 := hA j hj 4 (by norm_num)
+    Ξ h4, ha
+    have c0 := hA j hj 0 (⊛); have c1 := hA j hj 1 (⊛)
+    have c2 := hA j hj 2 (⊛); have c3 := hA j hj 3 (⊛)
+    have c4 := hA j hj 4 (⊛)
     simp only [af, Nat.add_zero] at c0 c1 c2 c3 c4
     norm_num at c0 c1 c2 c3 c4
     exact ⟨c0, c1, c2, c3, c4⟩
   · -- regions
     have hr' : r < L.length + 1 := by simpa [buildNF] using hr
-    rw [h5, h.region_eq hr']
+    Ξ h5, h.region_eq hr'
     simp only
-    have c0 := hR r hr' 0 (by norm_num); have c1 := hR r hr' 1 (by norm_num)
-    have c2 := hR r hr' 2 (by norm_num); have c3 := hR r hr' 3 (by norm_num)
-    have c4 := hR r hr' 4 (by norm_num)
-    rw [BuildRam.rtv_eq _ _ _ _ _ (by norm_num)] at c0 c1 c2 c3 c4
+    have c0 := hR r hr' 0 (⊛); have c1 := hR r hr' 1 (⊛)
+    have c2 := hR r hr' 2 (⊛); have c3 := hR r hr' 3 (⊛)
+    have c4 := hR r hr' 4 (⊛)
+    rw [BuildRam.rtv_eq _ _ _ _ _ (⊛)] at c0 c1 c2 c3 c4
     norm_num at c0 c1 c2 c3 c4
     refine ⟨?_, ?_, ?_, fun t ht => ?_, fun t ht => ?_⟩
     · rw [c0, regArcs_eq hK]; rfl
     · rw [c2, regChords_eq]; rfl
-    · rw [c4, regWt_eq hK]
-    · rw [h7, c1]
+    · Ξ c4, regWt_eq hK
+    · Ξ h7, c1
       rw [regArcs_eq hK] at ht ⊢
       exact hLa r hr' t ht
-    · rw [h7, c3]
+    · Ξ h7, c3
       rw [regChords_eq] at ht ⊢
       exact hLc r hr' t ht
   · -- seq
     have hj' : j < (gapStarts M Q L E).length := by
       have : (buildNF M Q L E).seq = range (arcList M Q L E).length := rfl
       rw [this, length_range, arcList_pos hK, length_map] at hj; exact hj
-    rw [h6, hQ j hj']
+    Ξ h6, hQ j hj'
     show j = (range (arcList M Q L E).length).getD j 0
     rw [getD_eq_getElem?_getD, getElem?_range (by rw [arcList_pos hK, length_map]; exact hj'),
       Option.getD_some]

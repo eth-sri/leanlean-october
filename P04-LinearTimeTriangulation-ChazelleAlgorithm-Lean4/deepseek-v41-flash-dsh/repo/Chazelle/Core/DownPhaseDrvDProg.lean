@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRSplH
 public import Chazelle.Core.NFBuildCmpRam
 
@@ -148,8 +150,8 @@ def Bscan (r : ℕ) : Bool :=
 /-- A register frame for fewer registers is one for more. -/
 theorem fbMono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' :=
-  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
-    fun r hr => h.2.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
+  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (✓)),
+    fun r hr => h.2.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (✓)),
     h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
 
 /-- The registers `ldArc` writes. -/
@@ -157,9 +159,9 @@ def BldArc (r : ℕ) : Bool :=
   decide (r = 216045) || decide (r = 216046) || decide (r = 216054) || decide (r = 216055) ||
     decide (42100 ≤ r ∧ r ≤ 42105)
 
-theorem wr_ldArc : wr BldArc ldArc = true := by decide
+theorem wr_ldArc : wr BldArc ldArc = true := ⌖
 
-theorem wr_decS : wr (fun r => decide (r = 216053)) decS = true := by decide
+theorem wr_decS : wr (fun r => decide (r = 216053)) decS = true := ⌖
 
 theorem bldArc_scan (r : ℕ) (h : BldArc r = true) : Bscan r = true := by
   simp only [BldArc, Bscan, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
@@ -170,7 +172,7 @@ theorem b53_scan (r : ℕ) (h : decide (r = 216053) = true) : Bscan r = true := 
 theorem bhalf_scan {dd dst : ℕ} (hdd : 42100 ≤ dd ∧ dd < 42110) (hdst : 42100 ≤ dst ∧ dst < 42110)
     (r : ℕ) (h : BuildRam.BhalfS dd dst r = true) : Bscan r = true := by
   simp only [BuildRam.BhalfS, Bool.or_eq_true, decide_eq_true_eq] at h
-  simp only [Bscan, Bool.or_eq_true, decide_eq_true_eq]
+  ϴ Bscan, Bool.or_eq_true, decide_eq_true_eq
   rcases h with (h | h) | h
   · exact Or.inr h
   · subst h; exact Or.inl (Or.inr hdd)

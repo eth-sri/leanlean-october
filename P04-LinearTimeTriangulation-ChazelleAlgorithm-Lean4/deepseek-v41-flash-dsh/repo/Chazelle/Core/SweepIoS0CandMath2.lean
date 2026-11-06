@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoS0CandMath
 
 /-!
@@ -31,7 +33,7 @@ open Sweep WalkEmbed
 /-! ## Cuts are log keys -/
 
 theorem gW_lt (J : Merge.Junction) : (gW J : ℝ) < (chainModel J.whole).W.n := by
-  rw [cm_n]
+  Ξ cm_n
   have := tpos_lt J.whole J.m₁
   unfold gW
   exact_mod_cast (by omega : 6 + tpos J.whole J.m₁ < 2 * J.whole.m + 7)
@@ -156,10 +158,10 @@ theorem tab_cand (J : Merge.Junction) {Q : Polygon} {N : NF} {T : ℕ → Option
   obtain ⟨hA, hpt, hL⟩ := hm
   obtain ⟨n1, n2⟩ := right_not_dom J hon
   refine ⟨⟨n2, n1, ?_⟩, ?_, hA, hL⟩
-  · rw [hpt]
+  · Ξ hpt
     exact ⟨1, zero_le_one, le_rfl, by ext <;> simp⟩
   · left
-    have hk : j / 2 < N.nChords := by omega
+    have hk : j / 2 < N.nChords := ⋄
     have hc := chord_mem_F (M := chainModel J.right) (Q := Q) hk
     unfold endOrigin endDir at hfree ⊢
     by_cases h : j % 2 = 0
@@ -187,7 +189,7 @@ theorem valid_iff (J : Merge.Junction) (hP : J.right.P.Simple) (Q : Polygon) {x 
   have hsh := atEnd_iff J.right hP (k := 0) (Or.inl rfl) Q hx h0 h1
   have htop := atTop_iff J.right hP Q hx h0 h1
   rw [Merge.Junction.right_vertex_zero] at hsh
-  rw [hmem]
+  Ξ hmem
   constructor
   · rintro ⟨hm, hs, ht⟩
     rcases hm with ⟨h6, h5⟩ | ⟨he, hh⟩

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleCuR6
 
 /-!
@@ -26,33 +28,33 @@ open ShootCut (Pc KPath)
 
 set_option maxRecDepth 20000 in
 theorem roomC_one {A lg Gg cl W : ℕ} (h : A + (172 * Gg + 2408 * (cl + 1) + 6300) ≤ W)
-    (hl : lg ≤ cl + 1) : A + 2 * Gg + 1204 * lg + 2600 ≤ W := by omega
+    (hl : lg ≤ cl + 1) : A + 2 * Gg + 1204 * lg + 2600 ≤ W := ⋄
 
 set_option maxRecDepth 20000 in
 theorem roomC_two {A A' k₃ lg lg₁ Gg cl W : ℕ}
     (h : A + (172 * Gg + 2408 * (cl + 1) + 6300) ≤ W) (hA : A' ≤ A + k₃)
     (hk : k₃ ≤ 2 * Gg + 1204 * lg₁ + 2600) (hl₁ : lg₁ ≤ cl + 1)
-    (hl : lg ≤ cl + 1) : A' + 2 * Gg + 1204 * lg + 2600 ≤ W := by omega
+    (hl : lg ≤ cl + 1) : A' + 2 * Gg + 1204 * lg + 2600 ≤ W := ⋄
 
 set_option maxRecDepth 20000 in
 theorem costC_one {k₂ k₃ lg Gg cl : ℕ} (h2 : k₂ = 5) (h3 : k₃ ≤ 2 * Gg + 1204 * lg + 2600)
-    (hl : lg ≤ cl + 1) : k₂ + k₃ + 1 ≤ 4 * Gg + 2408 * (cl + 1) + 5300 := by omega
+    (hl : lg ≤ cl + 1) : k₂ + k₃ + 1 ≤ 4 * Gg + 2408 * (cl + 1) + 5300 := ⋄
 
 set_option maxRecDepth 20000 in
 theorem costC_two {k₂ k₃ k₄ k₅ lg lg₁ Gg cl : ℕ} (h2 : k₂ = 5)
     (h3 : k₃ ≤ 2 * Gg + 1204 * lg₁ + 2600) (h4 : k₄ ≤ 8) (h5 : k₅ ≤ 2 * Gg + 1204 * lg + 2600)
     (hl₁ : lg₁ ≤ cl + 1) (hl : lg ≤ cl + 1) :
-    k₂ + (k₃ + (k₄ + k₅)) + 2 ≤ 4 * Gg + 2408 * (cl + 1) + 5300 := by omega
+    k₂ + (k₃ + (k₄ + k₅)) + 2 ≤ 4 * Gg + 2408 * (cl + 1) + 5300 := ⋄
 
 set_option maxRecDepth 20000 in
 theorem roomC_asm {A k₁ k₂ len Gg cl W : ℕ} (h : A + (172 * Gg + 2408 * (cl + 1) + 6300) ≤ W)
     (hk₁ : k₁ ≤ 900) (hk₂ : k₂ ≤ 4 * Gg + 2408 * (cl + 1) + 5300) (hl : len ≤ 4 * Gg) :
-    A + k₁ + k₂ + 42 * len + 60 ≤ W := by omega
+    A + k₁ + k₂ + 42 * len + 60 ≤ W := ⋄
 
 set_option maxRecDepth 20000 in
 theorem costC_q {k₁ k₂ k₃ len Gg cl : ℕ} (hk₁ : k₁ ≤ 900)
     (hk₂ : k₂ ≤ 4 * Gg + 2408 * (cl + 1) + 5300) (hk₃ : k₃ ≤ 42 * len + 60) (hl : len ≤ 4 * Gg) :
-    k₁ + (k₂ + k₃) ≤ 172 * Gg + 2408 * (cl + 1) + 6300 := by omega
+    k₁ + (k₂ + k₃) ≤ 172 * Gg + 2408 * (cl + 1) + 6300 := ⋄
 
 section exec
 

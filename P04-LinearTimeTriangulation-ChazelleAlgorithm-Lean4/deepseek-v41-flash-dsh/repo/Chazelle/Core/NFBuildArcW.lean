@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildGlue
 public import Chazelle.Core.NFBuildWtRam
 public import Chazelle.Core.NFBuildEvCmp
@@ -26,7 +28,7 @@ variable {M : Model} {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
 /-- The codes of a permutation of `range N` are below `N`. -/
 theorem getD_lt_of_perm {N : ℕ} (hp : E.Perm (range N)) {m : ℕ} (hm : m < E.length) :
     E.getD m 0 < N := by
-  rw [getD_eq_getElem?_getD, getElem?_eq_getElem hm, Option.getD_some]
+  Ξ getD_eq_getElem?_getD, getElem?_eq_getElem hm, Option.getD_some
   exact mem_range.1 (hp.mem_iff.1 (getElem_mem hm))
 
 /-- The key of the first sorted code is at most the key of any later one. -/
@@ -34,7 +36,7 @@ theorem Input.key_first_le (h : Input M (Qof P) L E) {m : ℕ} (hm : m < E.lengt
     M.key (Qof P) (wposOf L (E.getD 0 0)) ≤ M.key (Qof P) (wposOf L (E.getD m 0)) := by
   rcases Nat.eq_zero_or_pos m with rfl | hpos
   · exact le_rfl
-  rw [h.key_s (by omega), h.key_s hm, BuildSort.kap_eq (by rw [h.length_evs]; omega),
+  rw [h.key_s (⋄), h.key_s hm, BuildSort.kap_eq (by rw [h.length_evs]; omega),
     BuildSort.kap_eq (by rw [h.length_evs]; exact hm)]
   exact BuildSort.key_le_of_evLe (List.pairwise_iff_getElem.1 h.sorted 0 m (by
     rw [length_map]; omega) (by rw [length_map]; exact hm) hpos)

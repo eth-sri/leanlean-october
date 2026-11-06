@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepZipSp2
 
 /-!
@@ -35,12 +37,12 @@ theorem PInv.step {m₀ m m' : ℕ → ℕ} {R1 R2 c₀ : ℕ} {l L : List (ℕ 
       a < R2 + (c₀ + l.length)) ∨ R2 + (c₀ + l.length) + L.length ≤ a) → m' a = m a) :
     PInv m₀ m' R1 R2 c₀ (l ++ L) := by
   obtain ⟨p, o⟩ := h
-  refine ⟨PairsAt.append (PairsAt.congr p fun t ht => ⟨hm _ (Or.inl (by omega)),
-    hm _ (Or.inr (Or.inl ⟨by omega, by omega⟩))⟩) (by
+  refine ⟨PairsAt.append (PairsAt.congr p fun t ht => ⟨hm _ (Or.inl (⋄)),
+    hm _ (Or.inr (Or.inl ⟨⋄, ⋄⟩))⟩) (by
       rw [show R1 + c₀ + l.length = R1 + (c₀ + l.length) by omega,
         show R2 + c₀ + l.length = R2 + (c₀ + l.length) by omega]; exact hp), fun a ha => ?_⟩
-  rw [List.length_append] at ha
-  rw [hm a (by omega)]; exact o a (by omega)
+  Ξ' List.length_append at ha
+  rw [hm a (⋄)]; exact o a (⋄)
 
 /-! ## The guards -/
 
@@ -82,7 +84,7 @@ theorem g1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {R
     (h6 : c.nreg 120028 = 6) (hR : c.nreg 110050 = 6 + R) (hW : 1 ≤ W) :
     ∃ c' k, Exec P W g1S c c' k ∧ k ≤ 6 ∧
       GRes c c' (c.nreg 110231) (c.nreg 110234) (if 0 < R then 1 else 0) := by
-  have hwr : wr BG g1S = true := by decide
+  have hwr : wr BG g1S = true := ⌖
   suffices H : ∃ c' k, Exec P W g1S c c' k ∧ k ≤ 6 ∧ c'.nreg 110299 = c.nreg 110231 ∧
       c'.nreg 110214 = c.nreg 110234 ∧ c'.nreg 110245 = (if 0 < R then 1 else 0) by
     obtain ⟨c', k, e, hk, a, b, g⟩ := H
@@ -93,15 +95,15 @@ theorem g1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {R
   · omega
   · by_cases h : 0 < R
     · refine spec_ifLtN_true (by config_simp; rw [h6, hR]; omega) ?_
-      refine spec_instr (Exec.constN ‹_› _ _ hW) fun _ => ⟨by omega, ?_, ?_, ?_⟩ <;> config_simp
-      rw [ite_eq_left h]
+      refine spec_instr (Exec.constN ‹_› _ _ hW) fun _ => ⟨⋄, ?_, ?_, ?_⟩ <;> config_simp
+      Ξ ite_eq_left h
     · refine spec_ifLtN_false (by config_simp; rw [h6, hR]; omega) ?_
-      refine spec_skip ‹_› ⟨by omega, ?_, ?_, ?_⟩ <;> config_simp
-      rw [ite_eq_right h]
+      refine spec_skip ‹_› ⟨⋄, ?_, ?_, ?_⟩ <;> config_simp
+      Ξ ite_eq_right h
 
 theorem g2S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (hW : 1 ≤ W) :
     ∃ c' k, Exec P W g2S c c' k ∧ k ≤ 6 ∧ GRes c c' (c.nreg 110235) (c.nreg 110238) 1 := by
-  have hwr : wr BG g2S = true := by decide
+  have hwr : wr BG g2S = true := ⌖
   suffices H : ∃ c' k, Exec P W g2S c c' k ∧ k ≤ 6 ∧ c'.nreg 110299 = c.nreg 110235 ∧
       c'.nreg 110214 = c.nreg 110238 ∧ c'.nreg 110245 = 1 by
     obtain ⟨c', k, e, hk, a, b, g⟩ := H
@@ -109,7 +111,7 @@ theorem g2S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   unfold g2S
   exec_block
   · omega
-  · refine ⟨by omega, ?_, ?_, ?_⟩ <;> config_simp
+  · refine ⟨⋄, ?_, ?_, ?_⟩ <;> config_simp
 
 /-- A guard from a sum of flags (and optionally `0 < rT`). -/
 theorem gSum_exec {P : Polygon} {W : ℕ} {c₁ : Config} {s : Stmt} (hw₁ : WordsBounded W c₁)
@@ -122,18 +124,18 @@ theorem gSum_exec {P : Polygon} {W : ℕ} {c₁ : Config} {s : Stmt} (hw₁ : Wo
   subst hs
   by_cases h : c₁.nreg 110246 = 0
   · have ht : ¬ c₁.nreg 120012 < c₁.nreg 110246 := by rw [h0, h]; exact Nat.lt_irrefl 0
-    exact ⟨_, _, .ifLtN_false ht (Exec.constN hw₁ 110245 1 hW), by omega,
+    exact ⟨_, _, .ifLtN_false ht (Exec.constN hw₁ 110245 1 hW), ⋄,
       fun r hr => by config_simp; rw [upd_other _ _ _ hr], rfl, rfl, rfl, rfl,
       by rw [ite_eq_left h]; config_simp⟩
   · have ht : c₁.nreg 120012 < c₁.nreg 110246 := by rw [h0]; omega
-    exact ⟨_, _, .ifLtN_true ht (.skip hw₁), by omega, fun _ _ => rfl, rfl, rfl, rfl, rfl,
+    exact ⟨_, _, .ifLtN_true ht (.skip hw₁), ⋄, fun _ _ => rfl, rfl, rfl, rfl, rfl,
       by rw [ite_eq_right h]; exact hg⟩
 
 theorem g4S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     (h0 : c.nreg 120012 = 0) (hb : c.nreg 110237 + c.nreg 110241 ≤ W) (hW : 1 ≤ W) :
     ∃ c' k, Exec P W g4S c c' k ∧ k ≤ 8 ∧ GRes c c' (c.nreg 110236) (c.nreg 110240)
       (if c.nreg 110237 + c.nreg 110241 = 0 then 1 else 0) := by
-  have hwr : wr BG g4S = true := by decide
+  have hwr : wr BG g4S = true := ⌖
   obtain ⟨c₁, k₁, e₁, hk₁, n₁⟩ : ∃ c₁ k₁, Exec P W (block [.copyN 110299 110236,
       .copyN 110214 110240, .addN 110246 110237 110241, .constN 110245 0]) c c₁ k₁ ∧ k₁ = 4 ∧
       c₁.nreg = upd (upd (upd (upd c.nreg 110299 (c.nreg 110236)) 110214 (c.nreg 110240)) 110246
@@ -145,16 +147,16 @@ theorem g4S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   obtain ⟨c₂, k₂, e₂, hk₂, r₂, -, -, -, -, v₂⟩ := gSum_exec (P := P) e₁.wb_right
     (by rw [n₁]; config_simp; exact h0) rfl (by rw [n₁]; config_simp) hW
   have ex : Exec P W g4S c c₂ _ := .seq e₁ e₂
-  refine ⟨c₂, _, ex, by omega, exec_frameB ex hwr, ?_, ?_, ?_⟩
-  · rw [r₂ _ (by decide), n₁]; config_simp
-  · rw [r₂ _ (by decide), n₁]; config_simp
+  refine ⟨c₂, _, ex, ⋄, exec_frameB ex hwr, ?_, ?_, ?_⟩
+  · rw [r₂ _ (⌖), n₁]; config_simp
+  · rw [r₂ _ (⌖), n₁]; config_simp
   · rw [v₂, n₁]; config_simp
 
 theorem g5S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     (h0 : c.nreg 120012 = 0) (hb : c.nreg 110233 + c.nreg 110241 ≤ W) (hW : 1 ≤ W) :
     ∃ c' k, Exec P W g5S c c' k ∧ k ≤ 8 ∧ GRes c c' (c.nreg 110232) (c.nreg 110240)
       (if c.nreg 110233 + c.nreg 110241 = 0 then 1 else 0) := by
-  have hwr : wr BG g5S = true := by decide
+  have hwr : wr BG g5S = true := ⌖
   obtain ⟨c₁, k₁, e₁, hk₁, n₁⟩ : ∃ c₁ k₁, Exec P W (block [.copyN 110299 110232,
       .copyN 110214 110240, .addN 110246 110233 110241, .constN 110245 0]) c c₁ k₁ ∧ k₁ = 4 ∧
       c₁.nreg = upd (upd (upd (upd c.nreg 110299 (c.nreg 110232)) 110214 (c.nreg 110240)) 110246
@@ -166,9 +168,9 @@ theorem g5S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   obtain ⟨c₂, k₂, e₂, hk₂, r₂, -, -, -, -, v₂⟩ := gSum_exec (P := P) e₁.wb_right
     (by rw [n₁]; config_simp; exact h0) rfl (by rw [n₁]; config_simp) hW
   have ex : Exec P W g5S c c₂ _ := .seq e₁ e₂
-  refine ⟨c₂, _, ex, by omega, exec_frameB ex hwr, ?_, ?_, ?_⟩
-  · rw [r₂ _ (by decide), n₁]; config_simp
-  · rw [r₂ _ (by decide), n₁]; config_simp
+  refine ⟨c₂, _, ex, ⋄, exec_frameB ex hwr, ?_, ?_, ?_⟩
+  · rw [r₂ _ (⌖), n₁]; config_simp
+  · rw [r₂ _ (⌖), n₁]; config_simp
   · rw [v₂, n₁]; config_simp
 
 theorem g3S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {R : ℕ}
@@ -176,7 +178,7 @@ theorem g3S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {R
     (hb : c.nreg 110233 + c.nreg 110237 ≤ W) (hW : 1 ≤ W) :
     ∃ c' k, Exec P W g3S c c' k ∧ k ≤ 10 ∧ GRes c c' (c.nreg 110232) (c.nreg 110236)
       (if 0 < R ∧ c.nreg 110233 + c.nreg 110237 = 0 then 1 else 0) := by
-  have hwr : wr BG g3S = true := by decide
+  have hwr : wr BG g3S = true := ⌖
   obtain ⟨c₁, k₁, e₁, hk₁, n₁⟩ : ∃ c₁ k₁, Exec P W (block [.copyN 110299 110232,
       .copyN 110214 110236, .addN 110246 110233 110237, .constN 110245 0]) c c₁ k₁ ∧ k₁ = 4 ∧
       c₁.nreg = upd (upd (upd (upd c.nreg 110299 (c.nreg 110232)) 110214 (c.nreg 110236)) 110246
@@ -196,17 +198,17 @@ theorem g3S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {R
     obtain ⟨c₂, k₂, e₂, hk₂, r₂, -, -, -, -, v₂⟩ := gSum_exec (P := P) w₁
       (by rw [n₁]; config_simp; exact h0) rfl (by rw [n₁]; config_simp) hW
     have ex : Exec P W g3S c c₂ _ := .seq e₁ (.ifLtN_true (e := .skip) ht e₂)
-    refine ⟨c₂, _, ex, by omega, exec_frameB ex hwr, ?_, ?_, ?_⟩
-    · rw [r₂ _ (by decide), g299]
-    · rw [r₂ _ (by decide), g214]
-    · rw [v₂, g246]
+    refine ⟨c₂, _, ex, ⋄, exec_frameB ex hwr, ?_, ?_, ?_⟩
+    · Ξ r₂ _ (⌖), g299
+    · Ξ r₂ _ (⌖), g214
+    · Ξ v₂, g246
       by_cases hs : c.nreg 110233 + c.nreg 110237 = 0
-      · rw [ite_eq_left hs, ite_eq_left ⟨hr, hs⟩]
-      · rw [ite_eq_right hs, ite_eq_right (fun h => hs h.2)]
+      · Ξ ite_eq_left hs, ite_eq_left ⟨hr, hs⟩
+      · Ξ ite_eq_right hs, ite_eq_right (fun h => hs h.2)
   · have ht : ¬ c₁.nreg 120028 < c₁.nreg 110050 := by rw [x28, x50]; omega
     have ex : Exec P W g3S c c₁ _ := .seq e₁ (.ifLtN_false (t := .ifLtN 120012 110246 .skip
       (.instr (.constN 110245 1))) ht (.skip w₁))
-    refine ⟨c₁, _, ex, by omega, exec_frameB ex hwr, g299, g214, ?_⟩
+    refine ⟨c₁, _, ex, ⋄, exec_frameB ex hwr, g299, g214, ?_⟩
     rw [ite_eq_right (fun h => hr h.1), n₁]; config_simp
 
 /-! ## The analyses of the three top keys -/
@@ -230,8 +232,8 @@ def spA : Stmt :=
 def BSA (r : ℕ) : Bool := BKI r || decide (r = 110220) || decide (110230 ≤ r ∧ r ≤ 110241)
 
 theorem BSA_keep {r : ℕ} (h : ZKeep r = true ∨ (110242 ≤ r ∧ r ≤ 110299)) : BSA r = false := by
-  simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at h
-  simp [BSA, BKI, BLZ, BTS, BL, Bdir, Bloc, Bcmp, Bk]
+  ϴ' ZKeep, Bool.or_eq_true, decide_eq_true_eq at h
+  Θ BSA, BKI, BLZ, BTS, BL, Bdir, Bloc, Bcmp, Bk
   omega
 
 /-- One analysis and its saving. -/
@@ -261,7 +263,7 @@ theorem kiCp_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
         (b + 2) (c₁.nreg 110227)) (b + 3) (c₁.nreg 110228) := by
     rcases hb with rfl | rfl | rfl <;> (exec_block; exact ⟨rfl, rfl⟩)
   have fr₂ : FrameB BSA c₁ c₂ := by
-    rcases hb with rfl | rfl | rfl <;> exact exec_frameB e₂ (by decide)
+    rcases hb with rfl | rfl | rfl <;> exact exec_frameB e₂ (⌖)
   have ex := Exec.seq e₁ e₂
   have e0 : c₂.nreg b = c₁.nreg 110223 := by
     rw [n₂]; simp only [upd]; split_ifs <;> first | omega
@@ -271,15 +273,15 @@ theorem kiCp_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
     rw [n₂]; simp only [upd]; split_ifs <;> first | omega
   have e3 : c₂.nreg (b + 3) = c₁.nreg 110228 := by
     rw [n₂]; simp only [upd]; split_ifs <;> first | omega
-  refine ⟨c₂, _, ex, by omega, (FrameB.mono f₁ fun r hr => by simp [BSA, hr]).trans fr₂,
+  refine ⟨c₂, _, ex, ⋄, (FrameB.mono f₁ fun r hr => ⊚ BSA, hr).trans fr₂,
     fun r a1 a2 a3 a4 a5 a6 => ?_, by rw [e3]; exact s₁, by rw [e0, e1, e2', e3]; exact KI⟩
-  rw [n₂]; simp only [upd]
-  rw [ite_eq_right a4, ite_eq_right a3, ite_eq_right a2, ite_eq_right a1]
+  rw [n₂]; ϴ upd
+  Ξ ite_eq_right a4, ite_eq_right a3, ite_eq_right a2, ite_eq_right a1
   exact f₁.1 r a6
 
 theorem ZEnv.of_BSA {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c c' : Config}
     (h : ZEnv P W lo C N V c) (f : FrameB BSA c c') : ZEnv P W lo C N V c' :=
-  h.stable (fun r hr => f.1 r (BSA_keep (Or.inl hr))) (fun a _ => by rw [f.2.2.1])
+  h.stable (fun r hr => f.1 r (BSA_keep (Or.inl hr))) (fun a _ => Ρ f.2.2.1)
 
 theorem spA_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : Config}
     (hw : WordsBounded W c) (h : ZEnv P W lo C N V c) :
@@ -295,44 +297,44 @@ theorem spA_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : C
   -- the first key
   have e₀ := Exec.constN (P := P) hw 110220 6 (by have := h.hW; omega)
   set c₀ : Config := { c with nreg := upd c.nreg 110220 6 } with hc₀
-  have f₀ : FrameB BSA c c₀ := exec_frameB e₀ (by decide)
+  have f₀ : FrameB BSA c c₀ := exec_frameB e₀ (⌖)
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, r₁, s₁, K₁⟩ := kiCp_exec e₀.wb_right (h.of_BSA f₀) (X := 6)
-    (by rw [hc₀]; config_simp) le_rfl (by omega) cp1 110230 rfl (Or.inl rfl)
+    (by rw [hc₀]; config_simp) le_rfl (⋄) cp1 110230 rfl (Or.inl rfl)
   have h₁ := (h.of_BSA f₀).of_BSA f₁
   -- the second key
   have e₂ := Exec.copyN (P := P) e₁.wb_right 110220 110050
   set c₂ : Config := { c₁ with nreg := upd c₁.nreg 110220 (c₁.nreg 110050) } with hc₂
-  have f₂ : FrameB BSA c₁ c₂ := exec_frameB e₂ (by decide)
+  have f₂ : FrameB BSA c₁ c₂ := exec_frameB e₂ (⌖)
   obtain ⟨c₃, k₃, e₃, hk₃, f₃, r₃, s₃, K₃⟩ := kiCp_exec e₂.wb_right (h₁.of_BSA f₂)
-    (X := 6 + rT C) (by rw [hc₂]; config_simp; exact h₁.pk.k0) (by omega) (by omega) cp2 110234 rfl
+    (X := 6 + rT C) (by rw [hc₂]; config_simp; exact h₁.pk.k0) (⋄) (⋄) cp2 110234 rfl
     (Or.inr (Or.inl rfl))
   have h₃ := (h₁.of_BSA f₂).of_BSA f₃
   -- the third key
   have e₄ := Exec.copyN (P := P) e₃.wb_right 110220 120029
   set c₄ : Config := { c₃ with nreg := upd c₃.nreg 110220 (c₃.nreg 120029) } with hc₄
-  have f₄ : FrameB BSA c₃ c₄ := exec_frameB e₄ (by decide)
+  have f₄ : FrameB BSA c₃ c₄ := exec_frameB e₄ (⌖)
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, r₅, s₅, K₅⟩ := kiCp_exec e₄.wb_right (h₃.of_BSA f₄)
-    (X := 2 * C.m + 6) (by rw [hc₄]; config_simp; exact h₃.pk.tEnd) (by omega) le_rfl cp3 110238 rfl
+    (X := 2 * C.m + 6) (by rw [hc₄]; config_simp; exact h₃.pk.tEnd) (⋄) le_rfl cp3 110238 rfl
     (Or.inr (Or.inr rfl))
   have ex : Exec P W spA c c₅ _ := .seq e₀ (.seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))))
   -- the saved values survive
   have keep35 : ∀ r, 110230 ≤ r → r ≤ 110237 → c₅.nreg r = c₃.nreg r := fun r a b => by
-    rw [r₅ r (by omega) (by omega) (by omega) (by omega) (by omega) (BKI_keep (Or.inr ⟨by omega,
-      by omega⟩)), hc₄]; config_simp; rw [upd_other _ _ _ (by omega)]
+    rw [r₅ r (⋄) (⋄) (⋄) (⋄) (⋄) (BKI_keep (Or.inr ⟨⋄,
+      ⋄⟩)), hc₄]; config_simp; Ξ upd_other _ _ _ (⋄)
   have keep13 : ∀ r, 110230 ≤ r → r ≤ 110233 → c₃.nreg r = c₁.nreg r := fun r a b => by
-    rw [r₃ r (by omega) (by omega) (by omega) (by omega) (by omega) (BKI_keep (Or.inr ⟨by omega,
-      by omega⟩)), hc₂]; config_simp; rw [upd_other _ _ _ (by omega)]
-  refine ⟨c₅, _, ex, by omega, f₀.trans (f₁.trans (f₂.trans (f₃.trans (f₄.trans f₅)))), ?_, ?_,
+    rw [r₃ r (⋄) (⋄) (⋄) (⋄) (⋄) (BKI_keep (Or.inr ⟨⋄,
+      ⋄⟩)), hc₂]; config_simp; Ξ upd_other _ _ _ (⋄)
+  refine ⟨c₅, _, ex, ⋄, f₀.trans (f₁.trans (f₂.trans (f₃.trans (f₄.trans f₅)))), ?_, ?_,
     s₅, ?_, ?_, K₅⟩
-  · rw [keep35 _ (by norm_num) (by norm_num), keep13 _ (by norm_num) (by norm_num)]; exact s₁
-  · rw [keep35 _ (by norm_num) (by norm_num)]; exact s₃
-  · rw [keep35 _ (by norm_num) (by norm_num), keep13 _ (by norm_num) (by norm_num),
-      keep35 _ (by norm_num) (by norm_num), keep13 _ (by norm_num) (by norm_num),
-      keep35 _ (by norm_num) (by norm_num), keep13 _ (by norm_num) (by norm_num),
-      keep35 _ (by norm_num) (by norm_num), keep13 _ (by norm_num) (by norm_num)]
+  · rw [keep35 _ (⊛) (⊛), keep13 _ (⊛) (⊛)]; exact s₁
+  · rw [keep35 _ (⊛) (⊛)]; exact s₃
+  · rw [keep35 _ (⊛) (⊛), keep13 _ (⊛) (⊛),
+      keep35 _ (⊛) (⊛), keep13 _ (⊛) (⊛),
+      keep35 _ (⊛) (⊛), keep13 _ (⊛) (⊛),
+      keep35 _ (⊛) (⊛), keep13 _ (⊛) (⊛)]
     exact K₁
-  · rw [keep35 _ (by norm_num) (by norm_num), keep35 _ (by norm_num) (by norm_num),
-      keep35 _ (by norm_num) (by norm_num), keep35 _ (by norm_num) (by norm_num)]
+  · rw [keep35 _ (⊛) (⊛), keep35 _ (⊛) (⊛),
+      keep35 _ (⊛) (⊛), keep35 _ (⊛) (⊛)]
     exact K₃
 
 /-! ## The five emissions -/
@@ -359,7 +361,7 @@ theorem emitStep_exec {P : Polygon} {W : ℕ} {c c₁ : Config} {m₀ : ℕ → 
       (∀ r, BEm r = false → c₂.rreg r = c.rreg r) ∧ c₂.rmem = c.rmem ∧ c₂.output = c.output ∧
       EmSt m₀ R1 R2 c₀ (l ++ (gOpt g a b).toList) c₂ := by
   obtain ⟨f, va, vb, vg⟩ := hG
-  have gg : ∀ r, BG r = false → c₁.nreg r = c.nreg r := f.1
+  have gg := f.1
   obtain ⟨c₂, k, e, hk, r₂, rr₂, rm₂, o₂, cnt₂, pr₂, mm₂⟩ := emitG_exec (P := P) (R1 := R1)
     (R2 := R2) (c₀ := c₀ + l.length) hw₁
     (by rw [gg 120011 (by decide)]; exact hs.one) (by rw [gg 120012 (by decide)]; exact hs.zero)
@@ -367,7 +369,7 @@ theorem emitStep_exec {P : Polygon} {W : ℕ} {c c₁ : Config} {m₀ : ℕ → 
     (by rw [gg 110295 (by decide)]; exact hs.cnt) (by omega) (by omega) (by rw [va]; exact ha)
     (by rw [vb]; exact hb)
   rw [vg, va, vb] at cnt₂ pr₂ mm₂
-  have hm₁ : c₁.nmem = c.nmem := f.2.2.1
+  have hm₁ := f.2.2.1
   have hlen : (gOpt g a b).toList.length ≤ 1 := by cases gOpt g a b <;> simp
   refine ⟨c₂, k, e, hk, fun r hr => ?_, fun r hr => ?_, by rw [rm₂, f.2.2.2.1],
     by rw [o₂, f.2.2.2.2], ⟨?_, ?_, ?_, ?_, ?_, ?_⟩⟩
@@ -406,7 +408,7 @@ structure SpVals (c : Config) (R : ℕ) (v : Fin 12 → ℕ) : Prop where
 theorem SpVals.congr {c c' : Config} {R : ℕ} {v : Fin 12 → ℕ} (h : SpVals c R v)
     (hr : ∀ r, BEm r = false → c'.nreg r = c.nreg r) : SpVals c' R v :=
   ⟨fun i => by rw [hr _ (by simp [BEm, BG]; omega)]; exact h.val i,
-    by rw [hr _ (by decide)]; exact h.six, by rw [hr _ (by decide)]; exact h.k0⟩
+    by rw [hr _ (⌖)]; exact h.six, by rw [hr _ (⌖)]; exact h.k0⟩
 
 theorem spB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {R R1 R2 c₀ : ℕ}
     {v : Fin 12 → ℕ} (hv : SpVals c R v) (hs : EmSt c.nmem R1 R2 c₀ [] c)
@@ -418,23 +420,23 @@ theorem spB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {R
         (v 10) (v 11)).filterMap id) c' := by
   have len1 : ∀ o : Option (ℕ × ℕ), o.toList.length ≤ 1 := fun o => by cases o <;> simp
   -- 1
-  obtain ⟨c₁, k₁, e₁, hk₁, G₁⟩ := g1S_exec (P := P) hw hv.six hv.k0 (by omega)
+  obtain ⟨c₁, k₁, e₁, hk₁, G₁⟩ := g1S_exec (P := P) hw hv.six hv.k0 (⋄)
   obtain ⟨c₂, k₂, e₂, hk₂, R₂, rr₂, rm₂, o₂, S₂⟩ := emitStep_exec (P := P) hs e₁.wb_right G₁
     (by simp only [List.length_nil]; omega) (by simp only [List.length_nil]; omega) (by rw [(show c.nreg 110231 = v 1 from hv.val 1)]; exact hvW 1) (by rw [(show c.nreg 110234 = v 4 from hv.val 4)]; exact hvW 4)
   have hv₂ := hv.congr R₂
-  rw [(show c.nreg 110231 = v 1 from hv.val 1), (show c.nreg 110234 = v 4 from hv.val 4)] at S₂
+  Ξ' (show c.nreg 110231 = v 1 from hv.val 1), (show c.nreg 110234 = v 4 from hv.val 4) at S₂
   -- 2
-  obtain ⟨c₃, k₃, e₃, hk₃, G₃⟩ := g2S_exec (P := P) e₂.wb_right (by omega)
+  obtain ⟨c₃, k₃, e₃, hk₃, G₃⟩ := g2S_exec (P := P) e₂.wb_right (⋄)
   obtain ⟨c₄, k₄, e₄, hk₄, R₄, rr₄, rm₄, o₄, S₄⟩ := emitStep_exec (P := P) S₂ e₃.wb_right G₃
     (by simp only [List.length_append, List.length_nil]; have := len1 (gOpt (if 0 < R then 1 else 0) (v 1) (v 4)); omega)
     (by simp only [List.length_append, List.length_nil]; have := len1 (gOpt (if 0 < R then 1 else 0) (v 1) (v 4)); omega)
     (by rw [(show c₂.nreg 110235 = v 5 from hv₂.val 5)]; exact hvW 5) (by rw [(show c₂.nreg 110238 = v 8 from hv₂.val 8)]; exact hvW 8)
   have hv₄ := hv₂.congr R₄
-  rw [(show c₂.nreg 110235 = v 5 from hv₂.val 5), (show c₂.nreg 110238 = v 8 from hv₂.val 8)] at S₄
+  Ξ' (show c₂.nreg 110235 = v 5 from hv₂.val 5), (show c₂.nreg 110238 = v 8 from hv₂.val 8) at S₄
   -- 3
   obtain ⟨c₅, k₅, e₅, hk₅, G₅⟩ := g3S_exec (P := P) e₄.wb_right S₄.zero hv₄.six hv₄.k0
-    (by rw [(show c₄.nreg 110233 = v 3 from hv₄.val 3), (show c₄.nreg 110237 = v 7 from hv₄.val 7)]; omega) (by omega)
-  rw [(show c₄.nreg 110232 = v 2 from hv₄.val 2), (show c₄.nreg 110236 = v 6 from hv₄.val 6), (show c₄.nreg 110233 = v 3 from hv₄.val 3), (show c₄.nreg 110237 = v 7 from hv₄.val 7)] at G₅
+    (by rw [(show c₄.nreg 110233 = v 3 from hv₄.val 3), (show c₄.nreg 110237 = v 7 from hv₄.val 7)]; omega) (⋄)
+  Ξ' (show c₄.nreg 110232 = v 2 from hv₄.val 2), (show c₄.nreg 110236 = v 6 from hv₄.val 6), (show c₄.nreg 110233 = v 3 from hv₄.val 3), (show c₄.nreg 110237 = v 7 from hv₄.val 7) at G₅
   obtain ⟨c₆, k₆, e₆, hk₆, R₆, rr₆, rm₆, o₆, S₆⟩ := emitStep_exec (P := P) S₄ e₅.wb_right G₅
     (by simp only [List.length_append, List.length_nil]; have := len1 (gOpt (if 0 < R then 1 else 0) (v 1) (v 4))
         have := len1 (gOpt 1 (v 5) (v 8)); omega)
@@ -444,8 +446,8 @@ theorem spB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {R
   have hv₆ := hv₄.congr R₆
   -- 4
   obtain ⟨c₇, k₇, e₇, hk₇, G₇⟩ := g4S_exec (P := P) e₆.wb_right S₆.zero
-    (by rw [(show c₆.nreg 110237 = v 7 from hv₆.val 7), (show c₆.nreg 110241 = v 11 from hv₆.val 11)]; omega) (by omega)
-  rw [(show c₆.nreg 110236 = v 6 from hv₆.val 6), (show c₆.nreg 110240 = v 10 from hv₆.val 10), (show c₆.nreg 110237 = v 7 from hv₆.val 7), (show c₆.nreg 110241 = v 11 from hv₆.val 11)] at G₇
+    (by rw [(show c₆.nreg 110237 = v 7 from hv₆.val 7), (show c₆.nreg 110241 = v 11 from hv₆.val 11)]; omega) (⋄)
+  Ξ' (show c₆.nreg 110236 = v 6 from hv₆.val 6), (show c₆.nreg 110240 = v 10 from hv₆.val 10), (show c₆.nreg 110237 = v 7 from hv₆.val 7), (show c₆.nreg 110241 = v 11 from hv₆.val 11) at G₇
   obtain ⟨c₈, k₈, e₈, hk₈, R₈, rr₈, rm₈, o₈, S₈⟩ := emitStep_exec (P := P) S₆ e₇.wb_right G₇
     (by simp only [List.length_append, List.length_nil]; have := len1 (gOpt (if 0 < R then 1 else 0) (v 1) (v 4))
         have := len1 (gOpt 1 (v 5) (v 8))
@@ -457,8 +459,8 @@ theorem spB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {R
   have hv₈ := hv₆.congr R₈
   -- 5
   obtain ⟨c₉, k₉, e₉, hk₉, G₉⟩ := g5S_exec (P := P) e₈.wb_right S₈.zero
-    (by rw [(show c₈.nreg 110233 = v 3 from hv₈.val 3), (show c₈.nreg 110241 = v 11 from hv₈.val 11)]; omega) (by omega)
-  rw [(show c₈.nreg 110232 = v 2 from hv₈.val 2), (show c₈.nreg 110240 = v 10 from hv₈.val 10), (show c₈.nreg 110233 = v 3 from hv₈.val 3), (show c₈.nreg 110241 = v 11 from hv₈.val 11)] at G₉
+    (by rw [(show c₈.nreg 110233 = v 3 from hv₈.val 3), (show c₈.nreg 110241 = v 11 from hv₈.val 11)]; omega) (⋄)
+  Ξ' (show c₈.nreg 110232 = v 2 from hv₈.val 2), (show c₈.nreg 110240 = v 10 from hv₈.val 10), (show c₈.nreg 110233 = v 3 from hv₈.val 3), (show c₈.nreg 110241 = v 11 from hv₈.val 11) at G₉
   obtain ⟨c₁₀, k₁₀, e₁₀, hk₁₀, R₁₀, rr₁₀, rm₁₀, o₁₀, S₁₀⟩ := emitStep_exec (P := P) S₈ e₉.wb_right G₉
     (by simp only [List.length_append, List.length_nil]; have := len1 (gOpt (if 0 < R then 1 else 0) (v 1) (v 4))
         have := len1 (gOpt 1 (v 5) (v 8))
@@ -471,11 +473,11 @@ theorem spB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {R
     (hvW 2) (hvW 10)
   have ex : Exec P W spB c c₁₀ _ := .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇
     (.seq e₈ (.seq e₉ e₁₀))))))))
-  refine ⟨c₁₀, _, ex, by omega, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
-  · rw [R₁₀ r hr, R₈ r hr, R₆ r hr, R₄ r hr, R₂ r hr]
-  · rw [rr₁₀ r hr, rr₈ r hr, rr₆ r hr, rr₄ r hr, rr₂ r hr]
-  · rw [rm₁₀, rm₈, rm₆, rm₄, rm₂]
-  · rw [o₁₀, o₈, o₆, o₄, o₂]
+  refine ⟨c₁₀, _, ex, ⋄, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
+  · Ξ R₁₀ r hr, R₈ r hr, R₆ r hr, R₄ r hr, R₂ r hr
+  · Ξ rr₁₀ r hr, rr₈ r hr, rr₆ r hr, rr₄ r hr, rr₂ r hr
+  · Ξ rm₁₀, rm₈, rm₆, rm₄, rm₂
+  · Ξ o₁₀, o₈, o₆, o₄, o₂
   · convert S₁₀ using 2
     unfold spRam
     exact fm5 _ _ _ _ _
@@ -529,7 +531,7 @@ theorem spS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : C
   have heq := spRam_eq h.isNF h.simple K6' KT' K2'
   rw [show (spRam (rT C) (v 0) (v 1) (v 2) (v 3) (v 4) (v 5) (v 6) (v 7) (v 8) (v 9) (v 10)
     (v 11)).filterMap id = zipSp C (Qof P) N from heq] at ES₂
-  have hm₁ : c₁.nmem = c.nmem := f₁.2.2.1
+  have hm₁ := f₁.2.2.1
   rw [hm₁] at ES₂
   refine ⟨c₂, _, .seq e₁ e₂, by omega, fun r hr => ?_, fun r hr => ?_, by rw [rm₂, f₁.2.2.2.1],
     by rw [o₂, f₁.2.2.2.2], ES₂.cnt, ES₂.inv, ?_⟩

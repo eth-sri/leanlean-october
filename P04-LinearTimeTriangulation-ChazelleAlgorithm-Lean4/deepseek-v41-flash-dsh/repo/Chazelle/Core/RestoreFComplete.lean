@@ -29,7 +29,7 @@ theorem arc_index (hE : FGood E c₀) {reg : ℕ → Set Point}
     ∃ t, t < (E.N.region E.r).arcs.length ∧ E.M.key (Qof E.P) (arcOf E.N E.r t).s = a ∧
       E.M.key (Qof E.P) (arcOf E.N E.r t).e = b := by
   obtain ⟨-, -, hArcs, -⟩ := hregs
-  have hr : E.r < E.N.nRegions := hE.hr
+  have hr := hE.hr
   obtain ⟨j, hj, hjr, hs, he⟩ := hArcs.2.2.1 E.r hr a b h
   have hjm : j ∈ (E.N.region E.r).arcs := (hArcs.2.2.2 E.r hr j).2 ⟨hj, hjr⟩
   obtain ⟨t, ht, htj⟩ := List.mem_iff_getElem.1 hjm
@@ -153,7 +153,7 @@ theorem good_set (hE : FGood E c₀) {reg : ℕ → Set Point}
   obtain ⟨hFam, -, -, -⟩ := hE.hNF
   have hregs' := hregs
   obtain ⟨hRC, -, hArcs, hRg⟩ := hregs'
-  have hr : E.r < E.N.nRegions := hE.hr
+  have hr := hE.hr
   have hU := hRC.1 E.r hr
   set S := E.N.F E.M (Qof E.P)
   -- the region has an exit chord
@@ -214,7 +214,7 @@ theorem good_set (hE : FGood E c₀) {reg : ℕ → Set Point}
     rw [hai, haj] at hab
     subst hab
     -- the two arcs are one record
-    have hr' : E.r < E.N.nRegions := hr
+    have hr' := hr
     have mem : ∀ t, t < (E.N.region E.r).arcs.length →
         (E.N.region E.r).arcs.getD t 0 < E.N.arcs.length ∧
           (E.N.arc ((E.N.region E.r).arcs.getD t 0)).reg = E.r := fun t ht => by

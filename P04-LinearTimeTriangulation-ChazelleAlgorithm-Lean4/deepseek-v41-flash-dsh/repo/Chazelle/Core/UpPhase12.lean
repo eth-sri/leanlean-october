@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase11
 public import Chazelle.Core.MergeAsmMath
 
@@ -42,7 +44,7 @@ theorem l23c_spec (M : Model) (Q : Polygon) (F : Set (Set Point)) (γ D : ℕ) (
     · simp
     · exact absurd hgran.1 (hW.not_semigranular_zero hAdm hfin hne hp₀ hc₀)
   · have h := hW.lemma23_walk hAdm hfin hdeg hgran
-    calc F.ncard * (γ + 1) ≤ 2 * (F.ncard * γ) := by nlinarith
+    calc F.ncard * (γ + 1) ≤ 2 * (F.ncard * γ) := ⊞
       _ ≤ 2 * (2 * (D + 2) * (5 * M.W.n)) := Nat.mul_le_mul_left _ h
       _ ≤ 2 * (2 * (D + 2) * (5 * (7 * (M.size + 1)))) := by gcongr
       _ = l23c D * (M.size + 1) := by unfold l23c; ring
@@ -58,7 +60,7 @@ theorem nChords_mul_le {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF} {γ 
   have hs := MergeAsm.size_le_n (chainModel C)
   rw [MergeAsm.chainModel_n] at hs
   calc N.nChords * (γ + 1) ≤ l23c 4 * ((chainModel C).size + 1) := h
-    _ ≤ l23c 4 * (2 * C.m + 8) := Nat.mul_le_mul_left _ (by omega)
+    _ ≤ l23c 4 * (2 * C.m + 8) := Nat.mul_le_mul_left _ (⋄)
 
 theorem one_le_gradeGran (g : ℕ) : 1 ≤ gradeGran g := by
   unfold gradeGran; have := Nat.one_le_two_pow (n := Cost.ceilBeta g); omega
@@ -66,7 +68,7 @@ theorem one_le_gradeGran (g : ℕ) : 1 ≤ gradeGran g := by
 theorem two_le_gradeGran {g : ℕ} (hg : 1 ≤ g) : 2 ≤ gradeGran g := by
   unfold gradeGran
   have h1 := Cost.one_le_ceilBeta hg
-  have : 2 ^ 1 ≤ 2 ^ Cost.ceilBeta g := Nat.pow_le_pow_right (by norm_num) h1
+  have : 2 ^ 1 ≤ 2 ^ Cost.ceilBeta g := Nat.pow_le_pow_right (⊛) h1
   omega
 
 theorem clogCost_mono (κ : ℕ) {x y : ℕ} (h : x ≤ y) :
@@ -80,15 +82,15 @@ theorem clogCost_mono (κ : ℕ) {x y : ℕ} (h : x ≤ y) :
 theorem single_child {n g i : ℕ} (hn : 2 ≤ n) (hg : 1 ≤ g) (hi : i < gradeCount n g)
     (hl : gradeLen n g i ≤ 2 ^ (g - 1)) :
     gradeCount n (g - 1) ≤ 2 * i + 1 ∧ gradeLen n (g - 1) (2 * i) = gradeLen n g i := by
-  have hgg : g - 1 + 1 = g := by omega
+  have hgg : g - 1 + 1 = g := ⋄
   by_cases h : 2 * i + 1 < gradeCount n (g - 1)
   · exfalso
     obtain ⟨h1, h2, -⟩ := gradeLen_succ_two (g := g - 1) hn h
     rw [hgg] at h2
     have := gradeLen_pos (g := g - 1) (i := 2 * i + 1) hn h
     omega
-  · refine ⟨by omega, ?_⟩
-    have := gradeLen_succ_one (g := g - 1) (i := i) hn (by rw [hgg]; exact hi) (by omega)
+  · refine ⟨⋄, ?_⟩
+    have := gradeLen_succ_one (g := g - 1) (i := i) hn (by rw [hgg]; exact hi) (⋄)
     rw [hgg] at this; exact this.symm
 
 set_option maxHeartbeats 32000000 in

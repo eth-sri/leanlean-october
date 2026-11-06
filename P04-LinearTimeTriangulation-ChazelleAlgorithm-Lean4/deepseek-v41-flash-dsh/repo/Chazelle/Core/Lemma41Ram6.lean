@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Node
 public import Chazelle.Core.Lemma41Ram5
 
@@ -72,7 +74,7 @@ theorem preB_exec {c : Config} (hw : WordsBounded W c) {ptr A : ℕ}
   · config_simp; simp only [hA]
   · config_simp; simp only [hA, h81]
   · simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 8000000 in
 theorem setupB_exec {c : Config} (hw : WordsBounded W c) :
@@ -85,13 +87,13 @@ theorem setupB_exec {c : Config} (hw : WordsBounded W c) :
       (∀ r, (r < 100000 ∨ 100009 < r) → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold setupB
-  simp only [rd_merge, Nat.reduceAdd]
+  ϴ rd_merge, Nat.reduceAdd
   exec_block
   refine ⟨rfl, ‹_›, by config_simp, by config_simp, by config_simp, by config_simp,
     by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
     fun r hr => ?_, rfl, rfl, rfl, rfl⟩
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 8000000 in
 theorem postB_exec {c : Config} (hw : WordsBounded W c) {E TD f prev ptr i j : ℕ}
@@ -126,7 +128,7 @@ theorem postB_exec {c : Config} (hw : WordsBounded W c) {E TD f prev ptr i j : �
   · config_simp; simp only [h62, h80]
   · config_simp; simp only [h64, h24]
   · simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 end proofs
 

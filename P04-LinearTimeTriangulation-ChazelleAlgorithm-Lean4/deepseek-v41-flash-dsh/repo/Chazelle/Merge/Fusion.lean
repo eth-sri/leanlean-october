@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Merge.Augmented
 
 /-!
@@ -90,7 +92,7 @@ variable (J : Junction)
 /-- A point off the domain of `C₁` at height `≤ C₁.top.2` is off the domain of `C`. -/
 theorem not_mem_whole_dom_of_left {p : Point} (hp : p.2 ≤ J.left.top.2) (h : p ∉ J.left.dom) :
     p ∉ J.whole.dom := by
-  rw [not_mem_dom_iff J.whole (hp.trans J.left_top_le)]
+  Ξ not_mem_dom_iff J.whole (hp.trans J.left_top_le)
   rcases (not_mem_dom_iff J.left hp).1 h with h' | h'
   · exact Or.inl h'
   · exact Or.inr (J.left_set_subset h')
@@ -98,7 +100,7 @@ theorem not_mem_whole_dom_of_left {p : Point} (hp : p.2 ≤ J.left.top.2) (h : p
 /-- A point off the domain of `C₂` at height `≤ C₂.top.2` is off the domain of `C`. -/
 theorem not_mem_whole_dom_of_right {p : Point} (hp : p.2 ≤ J.right.top.2)
     (h : p ∉ J.right.dom) : p ∉ J.whole.dom := by
-  rw [not_mem_dom_iff J.whole (hp.trans J.right_top_le)]
+  Ξ not_mem_dom_iff J.whole (hp.trans J.right_top_le)
   rcases (not_mem_dom_iff J.right hp).1 h with h' | h'
   · exact Or.inl h'
   · exact Or.inr (J.right_set_subset h')
@@ -170,7 +172,7 @@ theorem ends_left {c : Set Point} (hc : c ∈ augChords J.left) :
     (lend c).2 ≤ J.left.top.2 ∧ lend c ∉ J.whole.dom ∧ (rend c).2 ≤ J.left.top.2 ∧
       rend c ∉ J.whole.dom := by
   obtain ⟨y, a, b, h, hy, -, hl, hr⟩ := augChords_spec hc
-  rw [hl, hr]
+  Ξ hl, hr
   exact ⟨hy, J.not_mem_whole_dom_of_left hy h.left_not, hy,
     J.not_mem_whole_dom_of_left hy h.right_not⟩
 
@@ -180,7 +182,7 @@ theorem ends_right {c : Set Point} (hc : c ∈ augChords J.right) :
     (lend c).2 ≤ J.right.top.2 ∧ lend c ∉ J.whole.dom ∧ (rend c).2 ≤ J.right.top.2 ∧
       rend c ∉ J.whole.dom := by
   obtain ⟨y, a, b, h, hy, -, hl, hr⟩ := augChords_spec hc
-  rw [hl, hr]
+  Ξ hl, hr
   exact ⟨hy, J.not_mem_whole_dom_of_right hy h.left_not, hy,
     J.not_mem_whole_dom_of_right hy h.right_not⟩
 
@@ -217,7 +219,7 @@ theorem sharedChords_ncard_le : J.sharedChords.ncard ≤ 2 := by
       ≤ ((fun σ => J.whole.chordSet J.m₁ σ) '' ({1, -1} : Set ℝ)).ncard :=
         ncard_le_ncard hsub ((toFinite _).image _)
     _ ≤ ({1, -1} : Set ℝ).ncard := ncard_image_le (toFinite _)
-    _ = 2 := ncard_pair (by norm_num)
+    _ = 2 := ncard_pair (⊛)
 
 /-- The fusion is covered by the two shooting images of `S₁ ∪ S₂` and the shared chords. -/
 theorem fusion_subset_image (S₁ S₂ : Set (Set Point)) :
@@ -251,7 +253,7 @@ theorem ncard_fusion_le {S₁ S₂ : Set (Set Point)} (h₁ : S₁.Finite) (h₂
     _ ≤ (S₁ ∪ S₂).ncard + (S₁ ∪ S₂).ncard + 2 :=
         Nat.add_le_add (Nat.add_le_add (ncard_image_le h12) (ncard_image_le h12))
           J.sharedChords_ncard_le
-    _ ≤ 2 * (S₁.ncard + S₂.ncard) + 2 := by omega
+    _ ≤ 2 * (S₁.ncard + S₂.ncard) + 2 := ⋄
 
 /-! ### Endpoints are preserved -/
 
@@ -260,10 +262,10 @@ theorem shoot_lend_subset {c : Set Point} (hc : c ∈ augChords J.left ∪ augCh
     shoot J.whole (lend c) 1 ⊆ c := by
   rcases hc with hc | hc
   · obtain ⟨y, a, b, h, hy, rfl, hl, -⟩ := augChords_spec hc
-    rw [hl]
+    Ξ hl
     exact shoot_subset_pos J.whole h.lt (J.not_mem_whole_dom_of_left hy h.right_not)
   · obtain ⟨y, a, b, h, hy, rfl, hl, -⟩ := augChords_spec hc
-    rw [hl]
+    Ξ hl
     exact shoot_subset_pos J.whole h.lt (J.not_mem_whole_dom_of_right hy h.right_not)
 
 /-- A chord of `C₁` or `C₂` shot from its right endpoint along itself w.r.t. `C` stays
@@ -272,10 +274,10 @@ theorem shoot_rend_subset {c : Set Point} (hc : c ∈ augChords J.left ∪ augCh
     shoot J.whole (rend c) (-1) ⊆ c := by
   rcases hc with hc | hc
   · obtain ⟨y, a, b, h, hy, rfl, -, hr⟩ := augChords_spec hc
-    rw [hr]
+    Ξ hr
     exact shoot_subset_neg J.whole h.lt (J.not_mem_whole_dom_of_left hy h.left_not)
   · obtain ⟨y, a, b, h, hy, rfl, -, hr⟩ := augChords_spec hc
-    rw [hr]
+    Ξ hr
     exact shoot_subset_neg J.whole h.lt (J.not_mem_whole_dom_of_right hy h.left_not)
 
 /-- An endpoint of an augmented chord of `C₁` lies on `C₂` only if it is the shared vertex. -/
@@ -308,7 +310,7 @@ theorem lend_freeAt_left (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChords
   have hnr := J.end_not_mem_right_of_left hP hy h.left_not hne
   have hev := eventually_not_mem_of_not_mem J.right.isClosed_set hnr 1
   filter_upwards [hev, Ioo_mem_nhdsGT (show (0 : ℝ) < b - a by linarith [h.lt])] with t ht1 ht2
-  have e : rayPt ((a, y) : Point) 1 t = ((a + t, y) : Point) := by simp [rayPt]
+  have e : rayPt ((a, y) : Point) 1 t = ((a + t, y) : Point) := ⊚ rayPt
   rw [e] at ht1 ⊢
   exact J.mem_whole_dom_of_left hy (h.open_mem _ (by linarith [ht2.1]) (by linarith [ht2.2])) ht1
 
@@ -321,7 +323,7 @@ theorem rend_freeAt_left (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChords
   have hev := eventually_not_mem_of_not_mem J.right.isClosed_set hnr (-1)
   filter_upwards [hev, Ioo_mem_nhdsGT (show (0 : ℝ) < b - a by linarith [h.lt])] with t ht1 ht2
   have e : rayPt ((b, y) : Point) (-1) t = ((b - t, y) : Point) := by
-    simp [rayPt, sub_eq_add_neg]
+    Θ rayPt, sub_eq_add_neg
   rw [e] at ht1 ⊢
   exact J.mem_whole_dom_of_left hy (h.open_mem _ (by linarith [ht2.2]) (by linarith [ht2.1])) ht1
 
@@ -333,7 +335,7 @@ theorem lend_freeAt_right (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChord
   have hnl := J.end_not_mem_left_of_right hP hy h.left_not hne
   have hev := eventually_not_mem_of_not_mem J.left.isClosed_set hnl 1
   filter_upwards [hev, Ioo_mem_nhdsGT (show (0 : ℝ) < b - a by linarith [h.lt])] with t ht1 ht2
-  have e : rayPt ((a, y) : Point) 1 t = ((a + t, y) : Point) := by simp [rayPt]
+  have e : rayPt ((a, y) : Point) 1 t = ((a + t, y) : Point) := ⊚ rayPt
   rw [e] at ht1 ⊢
   exact J.mem_whole_dom_of_right hy (h.open_mem _ (by linarith [ht2.1]) (by linarith [ht2.2])) ht1
 
@@ -346,7 +348,7 @@ theorem rend_freeAt_right (hP : J.P.Simple) {c : Set Point} (hc : c ∈ augChord
   have hev := eventually_not_mem_of_not_mem J.left.isClosed_set hnl (-1)
   filter_upwards [hev, Ioo_mem_nhdsGT (show (0 : ℝ) < b - a by linarith [h.lt])] with t ht1 ht2
   have e : rayPt ((b, y) : Point) (-1) t = ((b - t, y) : Point) := by
-    simp [rayPt, sub_eq_add_neg]
+    Θ rayPt, sub_eq_add_neg
   rw [e] at ht1 ⊢
   exact J.mem_whole_dom_of_right hy (h.open_mem _ (by linarith [ht2.2]) (by linarith [ht2.1])) ht1
 

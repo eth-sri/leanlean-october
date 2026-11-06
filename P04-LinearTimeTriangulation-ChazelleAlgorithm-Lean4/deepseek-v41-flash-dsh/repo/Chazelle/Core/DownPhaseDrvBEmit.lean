@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBCtx
 
 /-!
@@ -45,9 +49,9 @@ theorem qvx_eval {s : SymPt} {i : ℕ} (h : qvx Q s = some i) : s.eval Q = Q.vtx
   cases s with
   | vtx j => simp only [qvx, Option.some.injEq] at h; subst h; rfl
   | onEdge e h' =>
-    simp only [qvx] at h
+    ϴ' qvx at h
     split_ifs at h with hx
-    simp only [Option.some.injEq] at h
+    ϴ' Option.some.injEq at h
     subst h
     exact Prod.ext hx rfl
 
@@ -55,9 +59,9 @@ theorem qvx_lt {s : SymPt} {i : ℕ} (hs : s.Lt Q.n) (h : qvx Q s = some i) : i 
   cases s with
   | vtx j => simp only [qvx, Option.some.injEq] at h; subst h; exact hs
   | onEdge e h' =>
-    simp only [qvx] at h
+    ϴ' qvx at h
     split_ifs at h
-    simp only [Option.some.injEq] at h
+    ϴ' Option.some.injEq at h
     subst h
     exact hs.2
 
@@ -65,7 +69,7 @@ theorem qvx_of_eval (hQ : Q.Simple) (hDH : DistinctHeights Q) {s : SymPt} (hs : 
     (hi : i < Q.n) (h : s.eval Q = Q.vtx i) : qvx Q s = some i := by
   cases s with
   | vtx j =>
-    simp only [qvx]
+    ϴ qvx
     exact congrArg some (hQ.2.1 _ _ hs hi h)
   | onEdge e h' =>
     have hy : (Q.vtx h').2 = (Q.vtx i).2 := by
@@ -75,8 +79,8 @@ theorem qvx_of_eval (hQ : Q.Simple) (hDH : DistinctHeights Q) {s : SymPt} (hs : 
     subst hh
     have hx : edgeXAt Q e h' = (Q.vtx h').1 := by
       have := congrArg Prod.fst h; simpa [SymPt.eval] using this
-    simp only [qvx]
-    rw [ite_eq_left hx]
+    ϴ qvx
+    Ξ ite_eq_left hx
 
 /-! ## The corner test on the walk-order list -/
 
@@ -90,13 +94,13 @@ theorem emitAt_iff {l : List SymPt} (hW : (polyOf Q l).Simple)
     (hL : Mountain.orient (polyOf Q l) = 1) {k : ℕ} (hk : k < l.length) (d : ℕ) :
     emitAt Q l k d ↔ DirInterior (polyOf Q l) k (sgnD d) := by
   have hn := Chazelle.Jordan.simple_three_le hW
-  rw [polyOf_n] at hn
-  rw [dirInterior_iff_emitG hW hL (by rw [polyOf_n]; exact hk) (sgnD_cases d)]
+  Ξ' polyOf_n at hn
+  Ξ dirInterior_iff_emitG hW hL (by rw [polyOf_n]; exact hk) (sgnD_cases d)
   unfold emitAt
   have hp : Chazelle.Jordan.prevIdx (polyOf Q l) k = (k + l.length - 1) % l.length := by
-    unfold Chazelle.Jordan.prevIdx; rw [polyOf_n]
-  rw [hp, polyOf_vtx Q (Nat.mod_lt _ (by omega)), polyOf_vtx Q hk, polyOf_n,
-    polyOf_vtx Q (Nat.mod_lt _ (by omega))]
+    unfold Chazelle.Jordan.prevIdx; Ξ polyOf_n
+  rw [hp, polyOf_vtx Q (Nat.mod_lt _ (⋄)), polyOf_vtx Q hk, polyOf_n,
+    polyOf_vtx Q (Nat.mod_lt _ (⋄))]
 
 /-! ## The far walk edge -/
 
@@ -112,9 +116,9 @@ theorem farW_spec (hQ : Q.Simple) (hDH : DistinctHeights Q) (li : Bool) {i d : �
   have hn := Chazelle.Jordan.simple_three_le hQ
   have hex : ∃ w, w < Q.n ∧ OpenEdgePt Q (qE li Q.n w) (chordEnd Q i (sgnD d)) := by
     obtain ⟨q, hc, -, ho⟩ := far_cand hQ hDH hi (sgnD_cases d) hdir
-    exact ⟨qEi li Q.n q, qEi_lt li hc.1, by rw [qE_qEi li (by omega) hc.1]; exact ho⟩
+    exact ⟨qEi li Q.n q, qEi_lt li hc.1, by rw [qE_qEi li (⋄) hc.1]; exact ho⟩
   unfold farW
-  rw [dite_eq_left hex]
+  Ξ dite_eq_left hex
   exact Classical.choose_spec hex
 
 /-- **Any walk edge whose edge of `Q` carries the far end is `farW`.** -/
@@ -147,47 +151,47 @@ theorem mem_emIdx {l : List SymPt} {kd : ℕ × ℕ} :
       emitAt Q l kd.1 kd.2 := by
   classical
   unfold emIdx
-  simp only [List.mem_flatMap, List.mem_range, List.mem_filterMap]
+  ϴ List.mem_flatMap, List.mem_range, List.mem_filterMap
   constructor
   · rintro ⟨k, hk, d, hd, h⟩
     split_ifs at h with hc
-    simp only [Option.some.injEq] at h
+    ϴ' Option.some.injEq at h
     subst h
     exact ⟨hk, hd, hc.1, hc.2⟩
   · rintro ⟨h1, h2, h3, h4⟩
-    exact ⟨kd.1, h1, kd.2, h2, by rw [ite_eq_left ⟨h3, h4⟩]⟩
+    exact ⟨kd.1, h1, kd.2, h2, Ρ ite_eq_left ⟨h3, h4⟩⟩
 
 theorem emIdx_nodup (l : List SymPt) : (emIdx Q l).Nodup := by
   classical
   unfold emIdx
-  rw [List.nodup_flatMap]
+  Ξ List.nodup_flatMap
   refine ⟨fun k _ => ?_, ?_⟩
   · apply List.Nodup.filterMap _ List.nodup_range
     intro d d' x hx hx'
-    split_ifs at hx hx' <;> simp only [Option.mem_def, Option.some.injEq, reduceCtorEq] at hx hx'
-    rw [← hx] at hx'
+    split_ifs at hx hx' <;> ϴ' Option.mem_def, Option.some.injEq, reduceCtorEq at hx hx'
+    Ξ' ← hx at hx'
     exact (Prod.ext_iff.1 hx').2.symm
   · refine List.nodup_range.pairwise_of_forall_ne fun a _ b _ hab => ?_
     refine List.disjoint_left.2 fun x hx hx' => hab ?_
-    simp only [List.mem_filterMap, List.mem_range] at hx hx'
+    ϴ' List.mem_filterMap, List.mem_range at hx hx'
     obtain ⟨d, -, hd⟩ := hx
     obtain ⟨d', -, hd'⟩ := hx'
     split_ifs at hd hd'
-    simp only [Option.some.injEq] at hd hd'
-    rw [← hd] at hd'
+    ϴ' Option.some.injEq at hd hd'
+    Ξ' ← hd at hd'
     exact (Prod.ext_iff.1 hd').1.symm
 
 theorem emIdx_length_le (l : List SymPt) : (emIdx Q l).length ≤ 2 * l.length := by
   classical
   unfold emIdx
-  rw [List.length_flatMap]
+  Ξ List.length_flatMap
   calc ((List.range l.length).map fun k => ((List.range 2).filterMap fun d =>
         if (qvx Q (l.getD k (.vtx 0))).isSome ∧ emitAt Q l k d then some (k, d) else none).length).sum
       ≤ ((List.range l.length).map fun _ => 2).sum := by
         apply List.sum_le_sum
         intro k _
-        exact (List.length_filterMap_le _ _).trans (by simp)
-    _ = 2 * l.length := by simp [mul_comm]
+        exact (List.length_filterMap_le _ _).trans (✓)
+    _ = 2 * l.length := ⊚ mul_comm
 
 theorem regList_length_le (li : Bool) (l : List SymPt) : (regList li Q l).length ≤ 2 * l.length := by
   unfold regList; rw [List.length_map]; exact emIdx_length_le l
@@ -208,13 +212,13 @@ theorem emIdx_facts (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   obtain ⟨hk, hd, hsome, hem⟩ := mem_emIdx.1 hkd
   obtain ⟨i, hi⟩ := Option.isSome_iff_exists.1 hsome
   have hmem : l.getD kd.1 (.vtx 0) ∈ l := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk, Option.getD_some]
+    Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk, Option.getD_some
     exact List.getElem_mem hk
-  have hin : i < Q.n := qvx_lt (hl _ hmem) hi
+  have hin := qvx_lt (hl _ hmem) hi
   have hv : (polyOf Q l).vtx kd.1 = Q.vtx i := by rw [polyOf_vtx Q hk]; exact qvx_eval hi
   have hdirW := (emitAt_iff hR.simple hR.orient hk kd.2).1 hem
   obtain ⟨hdir, -, hc, hcS, hcR⟩ := hR.sound hQ hFam hin hv (sgnD_cases _) hdirW
-  exact ⟨i, hi, hin, hk, by omega, hv, hdirW, hdir, hc, hcS, hcR⟩
+  exact ⟨i, hi, hin, hk, ⋄, hv, hdirW, hdir, hc, hcS, hcR⟩
 
 /-- **Soundness**: every emitted record is that of a vertex chord of `Q` missing from `S`, with its
 domain part in the region, attached, with proper ends. -/
@@ -234,9 +238,9 @@ theorem regList_sound (hQ : Q.Simple) (hDH : DistinctHeights Q)
   obtain ⟨hf, hfo⟩ := farW_spec hQ hDH li hin hdir
   have hrec : recAt li Q l kd = vtrip li Q.n i kd.2 (farW li Q i kd.2) := by
     unfold recAt; rw [hi]; rfl
-  rw [hrec]
+  Ξ hrec
   obtain ⟨hset, hatt, hpl, hpr, hlt⟩ := vtrip_ok hQ hDH hli hin hd hdir hf hfo
-  rw [hset]
+  Ξ hset
   exact ⟨hc, hcS, hcR, hatt, hpl, hpr, hlt⟩
 
 /-- **Completeness**: every vertex chord of `Q` missing from `S` with its domain part in the
@@ -248,24 +252,24 @@ theorem regList_complete (hQ : Q.Simple) (hDH : DistinctHeights Q)
     ∃ x ∈ regList li Q l, (recOf x).toSet (interiorModel Q) Q = c := by
   obtain ⟨i, σ, hi, hσ, hdir, rfl⟩ := hc
   obtain ⟨k, hk, hv, hdirW⟩ := hR.complete i σ hi hσ hdir hcS hcR
-  rw [polyOf_n] at hk
+  Ξ' polyOf_n at hk
   obtain ⟨d, hd, hσd⟩ : ∃ d, d ≤ 1 ∧ sgnD d = σ := by
     rcases hσ with rfl | rfl
-    · exact ⟨0, by omega, rfl⟩
+    · exact ⟨0, ⋄, rfl⟩
     · exact ⟨1, le_rfl, rfl⟩
   subst hσd
   have hmem : l.getD k (.vtx 0) ∈ l := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk, Option.getD_some]
+    Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk, Option.getD_some
     exact List.getElem_mem hk
   have hq : qvx Q (l.getD k (.vtx 0)) = some i :=
     qvx_of_eval hQ hDH (hl _ hmem) hi (by rw [← polyOf_vtx Q hk]; exact hv)
   have hkd : (k, d) ∈ emIdx Q l :=
-    mem_emIdx.2 ⟨hk, by omega, by rw [hq]; rfl, (emitAt_iff hR.simple hR.orient hk d).2 hdirW⟩
+    mem_emIdx.2 ⟨hk, ⋄, by rw [hq]; rfl, (emitAt_iff hR.simple hR.orient hk d).2 hdirW⟩
   refine ⟨recAt li Q l (k, d), List.mem_map.2 ⟨(k, d), hkd, rfl⟩, ?_⟩
   have hrec : recAt li Q l (k, d) = vtrip li Q.n i d (farW li Q i d) := by
     unfold recAt; rw [hq]; rfl
   obtain ⟨hf, hfo⟩ := farW_spec hQ hDH li hi hdir
-  rw [hrec]
+  Ξ hrec
   exact (vtrip_ok hQ hDH hli hi hd hdir hf hfo).1
 
 /-- **Distinctness**: the emitted chords are pairwise distinct. -/
@@ -274,7 +278,7 @@ theorem regList_nodup (hQ : Q.Simple) (hDH : DistinctHeights Q)
     (hR : RegOK Q S R (polyOf Q l)) (hl : ∀ s ∈ l, s.Lt Q.n) :
     ((regList li Q l).map fun x => (recOf x).toSet (interiorModel Q) Q).Nodup := by
   unfold regList
-  rw [List.map_map]
+  Ξ List.map_map
   refine (emIdx_nodup l).map_on ?_
   intro a ha b hb hab
   obtain ⟨i, hi, hin, hak, had, hva, -, hdir, -⟩ := emIdx_facts hQ hFam hR hl ha
@@ -285,7 +289,7 @@ theorem regList_nodup (hQ : Q.Simple) (hDH : DistinctHeights Q)
     unfold recAt; rw [hi]; rfl
   have hb' : recAt li Q l b = vtrip li Q.n i' b.2 (farW li Q i' b.2) := by
     unfold recAt; rw [hi']; rfl
-  simp only [Function.comp] at hab
+  ϴ' Function.comp at hab
   rw [ha', hb', (vtrip_ok hQ hDH hli hin had hdir hf hfo).1,
     (vtrip_ok hQ hDH hli hin' hbd hdir' hf' hfo').1] at hab
   obtain ⟨rfl, hσ⟩ := DownDrv.chordSet_inj hQ hDH hin hin' (sgnD_cases _) (sgnD_cases _) hdir

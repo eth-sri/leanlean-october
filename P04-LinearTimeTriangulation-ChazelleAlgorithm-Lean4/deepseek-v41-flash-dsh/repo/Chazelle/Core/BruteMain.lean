@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.BruteRam8
 public import Chazelle.Core.Granularize
 public import Chazelle.Core.NFBuildMain
@@ -51,21 +53,21 @@ def bruteStmt (sB sG : Stmt) : Stmt :=
 
 theorem bandOf_of_bm {r : ℕ} (h : Bm r = true) : bandOf r = bSign ∨ bandOf r = bBrute := by
   unfold Bm Bk at h
-  simp only [Bool.or_eq_true, decide_eq_true_eq] at h
+  ϴ' Bool.or_eq_true, decide_eq_true_eq at h
   unfold bandOf bSign bBrute
   omega
 
 theorem bm_false_of_band {r : ℕ} (h : bandOf r ∉ bruteBands) : Bm r = false := by
   by_contra h'
-  simp only [Bool.not_eq_false] at h'
-  rcases bandOf_of_bm h' with e | e <;> rw [e] at h <;> exact h (by decide)
+  ϴ' Bool.not_eq_false at h'
+  rcases bandOf_of_bm h' with e | e <;> Ξ' e at h <;> exact h (⌖)
 
 theorem bbd_bm {r : ℕ} (h : Bm r = false) : Bbd r = false := by
   unfold Bm Bk at h; unfold Bbd Bk
-  simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at h ⊢
+  ϴ' Bool.or_eq_false_iff, decide_eq_false_iff_not at h ⊢
   omega
 
-set_option maxHeartbeats 4000000 in
+
 /-- **Set-up, loop and hand-over.** -/
 theorem prep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) {C : Chain}
     (hC : C.P = Qof P) (hsn : C.s + C.m + 1 ≤ P.n) (c : Config) (hw : WordsBounded W c)
@@ -82,12 +84,12 @@ theorem prep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWh : hostWords P.n 
   have hWn : P.n + 2 * C.m + 8 ≤ W := by unfold hostWords at hWh; omega
   set A₀ := c.nreg ALLOC with hA₀
   obtain ⟨c₁, k₁, e₁, hk₁, lb₁, X₁, D₁, low₁, s19, s24, R₁, RR₁, RM₁, O₁⟩ := setup_exec (P := P) hG
-    (by omega) (by omega) hC hsn c hw h0 h1 (by omega)
+    (⋄) (⋄) hC hsn c hw h0 h1 (⋄)
   obtain ⟨c₂, k₂, e₂, hk₂, lb₂, X₂, t19, t24, tL, tM, R₂, RR₂, RM₂, O₂⟩ := loopS_exec (P := P) hG
-    hWn (by unfold hostWords at hWh; omega) hC hsn (γ := c.nreg 180002) (A₀ := A₀) (by omega) c₁
+    hWn (by unfold hostWords at hWh; omega) hC hsn (γ := c.nreg 180002) (A₀ := A₀) (⋄) c₁
     e₁.wb_right X₁ s19 s24
   have hlen := pre_length_le C (2 * C.m + 1)
-  rw [pre_full] at hlen
+  Ξ' pre_full at hlen
   obtain ⟨c₃, k₃, e₃, hk₃, q9999, q0, q1, q2, R₃, RR₃, M₃, RM₃, O₃⟩ : ∃ c₃ k₃, Exec P W finS c₂ c₃ k₃ ∧ k₃ = 4 ∧
       c₃.nreg 9999 = A₀ + 10 + 3 * (bruteList C).length ∧ c₃.nreg 40000 = A₀ + 4 ∧
       c₃.nreg 40001 = A₀ + 10 ∧ c₃.nreg 40002 = (bruteList C).length ∧
@@ -103,21 +105,21 @@ theorem prep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWh : hostWords P.n 
     · exact X₂.2.2.2.2.2.2.2.2.2.2.1
     · exact t19
   have x17 := X₂.2.2.2.2.2.2.2.2.2.1
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, q0, q1, q2, ?_, ?_, q9999, ?_, ?_, ?_⟩
-  · rw [R₃ _ (by decide) (by decide) (by decide) (by decide), x17]
-  · rw [R₃ _ (by decide) (by decide) (by decide) (by decide), X₂.2.2.1]
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ⋄, q0, q1, q2, ?_, ?_, q9999, ?_, ?_, ?_⟩
+  · Ξ R₃ _ (⌖) (⌖) (⌖) (⌖), x17
+  · Ξ R₃ _ (⌖) (⌖) (⌖) (⌖), X₂.2.2.1
   · rw [M₃]; exact tL
   · rw [M₃]; exact descMem_agree D₁ fun a ha => tM a ha
   · refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩
     · have hb := bm_false_of_band hr
       have h4 : r ≠ 40000 ∧ r ≠ 40001 ∧ r ≠ 40002 := by
-        refine ⟨?_, ?_, ?_⟩ <;> rintro rfl <;> exact hr (by decide)
-      rw [R₃ r hra h4.1 h4.2.1 h4.2.2, R₂ r (bbd_bm hb), R₁ r hb]
+        refine ⟨?_, ?_, ?_⟩ <;> rintro rfl <;> exact hr (⌖)
+      Ξ R₃ r hra h4.1 h4.2.1 h4.2.2, R₂ r (bbd_bm hb), R₁ r hb
     · have hb := bm_false_of_band hr
-      rw [RR₃, RR₂ r (bbd_bm hb), RR₁ r hb]
-    · rw [M₃, tM a (by omega), low₁ a ha]
-    · rw [RM₃, RM₂, RM₁]
-    · rw [O₃, O₂, O₁]
+      Ξ RR₃, RR₂ r (bbd_bm hb), RR₁ r hb
+    · Ξ M₃, tM a (⋄), low₁ a ha
+    · Ξ RM₃, RM₂, RM₁
+    · Ξ O₃, O₂, O₁
     · have : c₃.nreg ALLOC = A₀ + 10 + 3 * (bruteList C).length := q9999
       rw [this]; omega
     · have : c₃.nreg ALLOC = A₀ + 10 + 3 * (bruteList C).length := q9999
@@ -128,9 +130,9 @@ theorem prep_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hWh : hostWords P.n 
 theorem f_le {m K : ℕ} (hK : K ≤ 2 * (2 * m + 1)) :
     K * (Nat.clog 2 K + 1) + 1 ≤ 30 * (m + 1) ^ 2 := by
   have hc := Cost.clog_two_le_self K
-  have h1 : K * (Nat.clog 2 K + 1) ≤ K * (K + 1) := Nat.mul_le_mul_left _ (by omega)
+  have h1 : K * (Nat.clog 2 K + 1) ≤ K * (K + 1) := Nat.mul_le_mul_left _ (⋄)
   have h2 : K * (K + 1) ≤ (4 * m + 2) * (4 * m + 3) :=
-    Nat.mul_le_mul (by omega) (by omega)
+    Nat.mul_le_mul (⋄) (⋄)
   nlinarith
 
 theorem cost_ok {m K κB κG : ℕ} (hm : 1 ≤ m) (hK : K ≤ 2 * (2 * m + 1)) :
@@ -138,17 +140,17 @@ theorem cost_ok {m K κB κG : ℕ} (hm : 1 ≤ m) (hK : K ≤ 2 * (2 * m + 1)) 
       κB * (K * (Nat.clog 2 K + 1) + 1) + 4 + κG * (K * (Nat.clog 2 K + 1) + 1) + 1 ≤
       (20000 + 30 * κB + 30 * κG) * (m + 1) ^ 3 := by
   have hf := f_le hK
-  have hsq : (m + 1) ^ 2 ≤ (m + 1) ^ 3 := Nat.pow_le_pow_right (by omega) (by omega)
+  have hsq : (m + 1) ^ 2 ≤ (m + 1) ^ 3 := Nat.pow_le_pow_right (⋄) (⋄)
   have hB : κB * (K * (Nat.clog 2 K + 1) + 1) ≤ 30 * κB * (m + 1) ^ 3 := by
     calc κB * (K * (Nat.clog 2 K + 1) + 1) ≤ κB * (30 * (m + 1) ^ 2) := Nat.mul_le_mul_left _ hf
-      _ ≤ κB * (30 * (m + 1) ^ 3) := Nat.mul_le_mul_left _ (by omega)
-      _ = 30 * κB * (m + 1) ^ 3 := by ring
+      _ ≤ κB * (30 * (m + 1) ^ 3) := Nat.mul_le_mul_left _ (⋄)
+      _ = 30 * κB * (m + 1) ^ 3 := ⋆
   have hG : κG * (K * (Nat.clog 2 K + 1) + 1) ≤ 30 * κG * (m + 1) ^ 3 := by
     calc κG * (K * (Nat.clog 2 K + 1) + 1) ≤ κG * (30 * (m + 1) ^ 2) := Nat.mul_le_mul_left _ hf
-      _ ≤ κG * (30 * (m + 1) ^ 3) := Nat.mul_le_mul_left _ (by omega)
-      _ = 30 * κG * (m + 1) ^ 3 := by ring
+      _ ≤ κG * (30 * (m + 1) ^ 3) := Nat.mul_le_mul_left _ (⋄)
+      _ = 30 * κG * (m + 1) ^ 3 := ⋆
   have hsmall : 260 * m + 1900 + ((3300 * m + 1402) * (2 * m + 1) + 10) + 4 + 10 + 3 * K + 4 + 1 ≤
-      20000 * (m + 1) ^ 3 := by nlinarith
+      20000 * (m + 1) ^ 3 := ⊞
   nlinarith
 
 /-- The chord family of a normal form built from a list is the family of the list. -/
@@ -156,7 +158,7 @@ theorem nfF_eq {M : Model} {Q : Polygon} {N : NF} {L : List (ℕ × ℕ × ℕ)}
     (h : N.chords.map (fun r => (r.h, r.lp, r.rp)) = L) :
     N.F M Q = {c | ∃ x ∈ L, c = (recOf x).toSet M Q} := by
   ext c
-  simp only [NF.F, Set.mem_ofPred_eq, ← h, List.mem_map]
+  ϴ NF.F, Set.mem_ofPred_eq, ← h, List.mem_map
   constructor
   · rintro ⟨r, hr, rfl⟩; exact ⟨_, ⟨r, hr, rfl⟩, rfl⟩
   · rintro ⟨_, ⟨r, hr, rfl⟩, rfl⟩; exact ⟨r, hr, rfl⟩

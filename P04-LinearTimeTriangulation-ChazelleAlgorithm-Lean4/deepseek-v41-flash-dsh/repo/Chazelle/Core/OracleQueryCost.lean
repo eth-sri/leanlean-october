@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleCostB
 public import Chazelle.Core.OracleCost
 public import Chazelle.Cost.Oracle

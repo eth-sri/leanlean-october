@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseExtractTop
 
 /-!
@@ -64,8 +66,8 @@ theorem faces_after {l r : ℝ} (harc : (interiorModel Q).IsArc S R l r) {p : �
   have h1 := (Loc.tendsto_mul_const_nhdsGT (show 0 < 1 - t by linarith)).eventually
     (cyc_open hin)
   filter_upwards [h1, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)] with s h1 hs1
-  have hs0 : 0 < s := hs1.1
-  refine harc.2.2.2.2.2.2 p _ hp (by nlinarith) (by nlinarith [hs1.2]) ?_
+  have hs0 := hs1.1
+  refine harc.2.2.2.2.2.2 p _ hp (⊞) (by nlinarith [hs1.2]) ?_
   rw [← add_assoc]; exact h1
 
 /-- A point of a horizontal segment near a given point of it. -/
@@ -79,21 +81,21 @@ theorem exists_near_mem {y₀ a b : ℝ} (hab : a < b) {P : Point} (hP : P ∈ h
       rw [hεd]; have := min_le_left (b - P.1) ρ; have := lt_min (show 0 < b - P.1 by linarith) hρ; linarith
     have hε2 : ε < ρ := by
       rw [hεd]; have := min_le_right (b - P.1) ρ; have := lt_min (show 0 < b - P.1 by linarith) hρ; linarith
-    refine ⟨(P.1 + ε, y₀), ⟨rfl, by linarith, by linarith⟩, fun e => ?_, ?_⟩
+    refine ⟨(P.1 + ε, y₀), ⟨rfl, ⟡, ⟡⟩, fun e => ?_, ?_⟩
     · have := congrArg Prod.fst e; simp only at this; linarith
-    · rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq]
-      simp only [add_sub_cancel_left, hP2, sub_self, abs_zero, abs_of_pos hε0]
+    · Ξ Prod.dist_eq, Real.dist_eq, Real.dist_eq
+      ϴ add_sub_cancel_left, hP2, sub_self, abs_zero, abs_of_pos hε0
       exact max_lt hε2 hρ
-  · have hPa' : a < P.1 := by linarith
+  · have hPa' : a < P.1 := ⟡
     set ε := min (P.1 - a) ρ / 2 with hεd
     have hε0 : 0 < ε := by rw [hεd]; have := lt_min (show 0 < P.1 - a by linarith) hρ; linarith
     have hε1 : ε < P.1 - a := by
       rw [hεd]; have := min_le_left (P.1 - a) ρ; have := lt_min (show 0 < P.1 - a by linarith) hρ; linarith
     have hε2 : ε < ρ := by
       rw [hεd]; have := min_le_right (P.1 - a) ρ; have := lt_min (show 0 < P.1 - a by linarith) hρ; linarith
-    refine ⟨(P.1 - ε, y₀), ⟨rfl, by linarith, by linarith⟩, fun e => ?_, ?_⟩
+    refine ⟨(P.1 - ε, y₀), ⟨rfl, ⟡, ⟡⟩, fun e => ?_, ?_⟩
     · have := congrArg Prod.fst e; simp only at this; linarith
-    · rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq]
+    · Ξ Prod.dist_eq, Real.dist_eq, Real.dist_eq
       simp only [hP2, sub_self, abs_zero, show P.1 - ε - P.1 = -ε by ring, abs_neg,
         abs_of_pos hε0]
       exact max_lt hε2 hρ
@@ -153,7 +155,7 @@ theorem pos_data (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
           (ukey (interiorModel Q) S R i_l (j + 1) - p) ∧
       wrapK (interiorModel Q).W.n x = (((p % (interiorModel Q).W.n : ℕ)) : ℝ) + (x - p) := by
   have hinc := brkInc X hA
-  have hd1 : 1 ≤ d := hA.hd0
+  have hd1 := hA.hd0
   obtain ⟨hjd, hj1, hj2⟩ := ArcT.seg_spec hinc hd1 hx.1.le hx.2
   obtain ⟨p, hpn, hp1, hp2, hv0, hv1, -⟩ := piece (g := g) (h3 := h3) X hA hjd
   have hb0 := hostKeys_bounds (hk_mem (U := R) X.walkAx X.hFam.2.1 X.hFam.1 hA.hil)
@@ -171,14 +173,14 @@ theorem pos_data (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
   have hf0 : 0 ≤ (x - ukey (interiorModel Q) S R i_l (ArcT.seg (ukey (interiorModel Q) S R i_l) d x)) /
       (ukey (interiorModel Q) S R i_l (ArcT.seg (ukey (interiorModel Q) S R i_l) d x + 1) -
         ukey (interiorModel Q) S R i_l (ArcT.seg (ukey (interiorModel Q) S R i_l) d x)) :=
-    div_nonneg (by linarith) (by linarith)
+    div_nonneg (⟡) (⟡)
   have hf1 : (x - ukey (interiorModel Q) S R i_l (ArcT.seg (ukey (interiorModel Q) S R i_l) d x)) /
       (ukey (interiorModel Q) S R i_l (ArcT.seg (ukey (interiorModel Q) S R i_l) d x + 1) -
         ukey (interiorModel Q) S R i_l (ArcT.seg (ukey (interiorModel Q) S R i_l) d x)) < 1 := by
-    rw [div_lt_one (by linarith)]; linarith
+    rw [div_lt_one (⟡)]; linarith
   have hfl : ⌊kmap Q S R g h3 i_l d x⌋₊ =
       cStart Q S R g h3 i_l + ArcT.seg (ukey (interiorModel Q) S R i_l) d x := by
-    rw [hκ, Nat.floor_eq_iff (by positivity)]
+    Ξ hκ, Nat.floor_eq_iff (⟢)
     push_cast
     constructor <;> linarith
   have htour := tourA_arc (h3 := h3) X hg hgc harc hA hjd
@@ -199,14 +201,14 @@ theorem arcCorr (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
   have hM := X.walkAx
   have hF := X.hFam.2.1
   have hfin := X.hFam.1
-  have hdN : d < nk (interiorModel Q) S R := hA.hdN
-  have hd1 : 1 ≤ d := hA.hd0
+  have hdN := hA.hdN
+  have hd1 := hA.hd0
   have hinc := brkInc X hA
-  have hl0 : ukey (interiorModel Q) S R i_l 0 = l := by rw [ukey_zero hA.hil, hA.hl]
+  have hl0 : ukey (interiorModel Q) S R i_l 0 = l := Ρ ukey_zero hA.hil, hA.hl
   have hlb : 0 ≤ l ∧ l < (interiorModel Q).W.n :=
     hA.hl ▸ hostKeys_bounds (hk_mem (U := R) hM hF hfin hA.hil)
   have hrb : 0 ≤ r ∧ r < (interiorModel Q).W.n :=
-    hA.hr ▸ hostKeys_bounds (hk_mem (U := R) hM hF hfin (Nat.mod_lt _ (by omega)))
+    hA.hr ▸ hostKeys_bounds (hk_mem (U := R) hM hF hfin (Nat.mod_lt _ (⋄)))
   have hwn : 0 < (interiorModel Q).W.n := by
     have : (0 : ℝ) < (interiorModel Q).W.n := lt_of_le_of_lt hlb.1 hlb.2
     exact_mod_cast this
@@ -231,13 +233,13 @@ theorem arcCorr (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
   have hn₁ : (chainModel (hostChain Q S R g h3)).W.n = 2 * (hostChain Q S R g h3).m + 7 :=
     Chain.sideWalk_n _ _
   have hlr' : unwrapK (interiorModel Q).W.n l l < unwrapK (interiorModel Q).W.n l r := by
-    rw [unwrapK_self, ← hA.hud, ← hl0]
+    Ξ unwrapK_self, ← hA.hud, ← hl0
     exact ukey_mono hM hF hfin hA.hil hA.hd0 hdN
   -- the interior position of a key of the arc lies inside the arc
   have hinarc : ∀ x ∈ Ioo (ukey (interiorModel Q) S R i_l 0) (ukey (interiorModel Q) S R i_l d),
       sideInArc l r (wrapK (interiorModel Q).W.n x) := by
     intro x hx
-    rw [hl0, hA.hud] at hx
+    Ξ' hl0, hA.hud at hx
     have hx0 : 0 ≤ x := le_trans hlb.1 hx.1.le
     have hxl : x < l + (interiorModel Q).W.n := lt_trans hx.2 (unwrapK_bounds hlb hrb).2
     have hx2 : x < 2 * ((interiorModel Q).W.n : ℝ) := by linarith [hlb.2]
@@ -254,15 +256,15 @@ theorem arcCorr (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
     intro x hx
     have h1 := hmono.monotoneOn ⟨le_rfl, le_trans hx.1 hx.2⟩ hx hx.1
     have h2 := hmono.monotoneOn hx ⟨le_trans hx.1 hx.2, le_rfl⟩ hx.2
-    rw [hbot] at h1
-    rw [htop] at h2
+    Ξ' hbot at h1
+    Ξ' htop at h2
     refine ⟨le_trans (Nat.cast_nonneg _) h1, lt_of_le_of_lt h2 ?_⟩
-    rw [hn₁]
+    Ξ hn₁
     exact_mod_cast (show cStart Q S R g h3 i_l + d < 2 * (hostChain Q S R g h3).m + 7 by omega)
   · -- onto
     intro y h1 h2
-    rw [hbot] at h1
-    rw [htop] at h2
+    Ξ' hbot at h1
+    Ξ' htop at h2
     exact ArcT.brk_onto hinc hd1 h1 h2
   · -- vertices to vertices
     intro x hx hv k hk
@@ -274,10 +276,10 @@ theorem arcCorr (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
       exact hv K hK
   · -- vertex keys to vertex keys
     intro x hx hnv hnv'
-    simp only [NonVtx, not_forall, not_not] at hnv
+    ϴ' NonVtx, not_forall, not_not at hnv
     obtain ⟨K, hK⟩ := hnv
     have hx' := hx
-    rw [hl0, hA.hud] at hx'
+    Ξ' hl0, hA.hud at hx'
     have hx0 : 0 ≤ x := le_trans hlb.1 hx'.1.le
     have hxl : x < l + (interiorModel Q).W.n := lt_trans hx'.2 (unwrapK_bounds hlb hrb).2
     have hx2 : x < 2 * ((interiorModel Q).W.n : ℝ) := by linarith [hlb.2]
@@ -287,9 +289,9 @@ theorem arcCorr (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
       have : (K : ℝ) < ((2 * (interiorModel Q).W.n : ℕ) : ℝ) := by push_cast; rw [← hK]; exact hx2
       exact_mod_cast this
     obtain ⟨j, hj0, hjd, hjx⟩ := hA.vtx _ hw0 hwl (hinarc x hx)
-      ⟨K % (interiorModel Q).W.n, by rw [hK, wrapK_nat hwn hK2]⟩
+      ⟨K % (interiorModel Q).W.n, Ρ hK, wrapK_nat hwn hK2⟩
     have hu : ukey (interiorModel Q) S R i_l j = x := by
-      rw [ukey_eq_unwrap hM hF hfin hA.hil (by omega), hA.hl, hjx,
+      rw [ukey_eq_unwrap hM hF hfin hA.hil (⋄), hA.hl, hjx,
         unwrapK_wrapK hlb.1 (by exact_mod_cast hwn) hx'.1.le hxl]
     obtain ⟨k, hk⟩ := (ArcT.brk_int_iff hinc hd1 (c₀ := cStart Q S R g h3 i_l) hx.1.le
       hx.2).2 ⟨j, hjd, hu.symm⟩
@@ -304,9 +306,9 @@ theorem arcCorr (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
       (ukey (interiorModel Q) S R i_l (j + 1) - ukey (interiorModel Q) S R i_l j) with hs
     have hjj : ukey (interiorModel Q) S R i_l j < ukey (interiorModel Q) S R i_l (j + 1) := by
       linarith
-    have hs0 : 0 ≤ s := div_nonneg (by linarith) (by linarith)
-    have hs1 : s < 1 := by rw [hs, div_lt_one (by linarith)]; linarith
-    have hkm : kIdx (nk (interiorModel Q) S R) g i_l + j < C.m := by omega
+    have hs0 : 0 ≤ s := div_nonneg (⟡) (⟡)
+    have hs1 : s < 1 := by rw [hs, div_lt_one (⟡)]; linarith
+    have hkm : kIdx (nk (interiorModel Q) S R) g i_l + j < C.m := ⋄
     -- the chain position
     have hkey : ((p₁ : ℕ) : ℝ) + t₁ =
         ((TourA.tourA C C.sideBeta (kIdx (nk (interiorModel Q) S R) g i_l + j) + 6 : ℕ) : ℝ) + s := by
@@ -326,7 +328,7 @@ theorem arcCorr (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
     -- the points agree
     have hpt : sidePt W p₂ t₂ = sidePt (C.sideWalk C.sideBeta)
         (TourA.tourA C C.sideBeta (kIdx (nk (interiorModel Q) S R) g i_l + j) + 6) s := by
-      rw [TourA.sidePt_tourA hkm, hv0, hv1, lerp_lerp]
+      Ξ TourA.sidePt_tourA hkm, hv0, hv1, lerp_lerp
       unfold sidePt
       rw [hpar]; ring_nf
     -- the sectors agree
@@ -337,31 +339,31 @@ theorem arcCorr (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
       rcases hs0.lt_or_eq with hs0' | hs0'
       · -- inside a piece
         have ht₂0' : 0 < t₂ := by rw [hpar]; nlinarith
-        rw [TourA.sideLeft_tourA_edge hP hkm ⟨hs0', hs1⟩, hv0, hv1, ExtG.det_lerp_pair] at hy
-        rw [Chazelle.Chain.sideLeft_edge (hM.nd p₂ hp₂n) ⟨ht₂0', ht₂1⟩]
+        Ξ' TourA.sideLeft_tourA_edge hP hkm ⟨hs0', hs1⟩, hv0, hv1, ExtG.det_lerp_pair at hy
+        Ξ Chazelle.Chain.sideLeft_edge (hM.nd p₂ hp₂n) ⟨ht₂0', ht₂1⟩
         have hτ : 0 < ukey (interiorModel Q) S R i_l (j + 1) - p -
-            (ukey (interiorModel Q) S R i_l j - p) := by linarith
+            (ukey (interiorModel Q) S R i_l j - p) := ⟡
         exact pos_of_mul_pos_right hy hτ.le
       · -- at an inner host key
         have hxj : x = ukey (interiorModel Q) S R i_l j := by
           have := hs0'.symm
-          rw [hs, div_eq_zero_iff] at this
+          Ξ' hs, div_eq_zero_iff at this
           rcases this with h | h
           · linarith
           · linarith
         have hj0 : 0 < j := by
           by_contra h0; push Not at h0
-          have : j = 0 := by omega
-          rw [this] at hxj; rw [hxj] at hx; exact lt_irrefl _ hx.1
+          have : j = 0 := ⋄
+          Ξ' this at hxj; Ξ' hxj at hx; exact lt_irrefl _ hx.1
         obtain ⟨P, hPn, hPkey, hvP, hcorner⟩ := corner_inner (g := g) (h3 := h3) X hA hj0 hjd
         have hP₂ : p₂ = P ∧ t₂ = 0 := by
           have e : ((p₂ : ℕ) : ℝ) + t₂ = ((P : ℕ) : ℝ) + 0 := by
-            rw [add_zero, hPkey, ← hxj, hwr]
+            Ξ add_zero, hPkey, ← hxj, hwr
           exact Chazelle.Chain.sideKey_inj ht₂0 ht₂1 le_rfl zero_lt_one e
-        rw [← hs0'] at hy
-        rw [TourA.sideLeft_tourA_vtx (by omega) hkm
+        Ξ' ← hs0' at hy
+        rw [TourA.sideLeft_tourA_vtx (⋄) hkm
           (no_split (h3 := h3) X hg hgc harc hA hj0 hjd)] at hy
-        rw [hP₂.1, hP₂.2, ← hcorner]
+        Ξ hP₂.1, hP₂.2, ← hcorner
         rwa [show kIdx (nk (interiorModel Q) S R) g i_l + j - 1 =
           kIdx (nk (interiorModel Q) S R) g i_l + (j - 1) by omega] at hy
     have hA₂ : SideAttach W c p₂ t₂ :=
@@ -381,31 +383,31 @@ theorem arcCorr (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
     set C := hostChain Q S R g h3 with hC
     have hjj : ukey (interiorModel Q) S R i_l j < ukey (interiorModel Q) S R i_l (j + 1) := by
       linarith
-    have hkm : kIdx (nk (interiorModel Q) S R) g i_l + j < C.m := by omega
+    have hkm : kIdx (nk (interiorModel Q) S R) g i_l + j < C.m := ⋄
     -- a non-vertex key is inside a piece
     have hxj : ukey (interiorModel Q) S R i_l j < x := by
       rcases hj1.lt_or_eq with h | h
       · exact h
       · exfalso
         rcases Nat.eq_zero_or_pos j with h0 | h0
-        · rw [h0] at h; rw [← h] at hx; exact lt_irrefl _ hx.1
+        · Ξ' h0 at h; Ξ' ← h at hx; exact lt_irrefl _ hx.1
         · obtain ⟨K, hK⟩ := ukey_inner_int X hA h0 hjd
-          exact hv K (by rw [← h, hK])
+          exact hv K (Ρ ← h, hK)
     set t₂ := x - p with ht₂
     have ht₂0 : 0 ≤ t₂ := by rw [ht₂]; linarith
     have ht₂1 : t₂ < 1 := by rw [ht₂]; linarith
     have hfl2 : ⌊wrapK W.n x⌋₊ = p % W.n := by rw [hwr]; exact floor_add ht₂0 ht₂1
     have hfr2 : wrapK W.n x - ⌊wrapK W.n x⌋₊ = t₂ := by rw [hfl2, hwr]; ring
-    rw [hfr2, hfl2] at hfa
-    rw [hfr, hfl]
+    Ξ' hfr2, hfl2 at hfa
+    Ξ hfr, hfl
     refine ExtG.faces_of_offset (c := ukey (interiorModel Q) S R i_l (j + 1) - p -
-      (ukey (interiorModel Q) S R i_l j - p)) (by linarith) (fun δ => ?_) hVU hfa
+      (ukey (interiorModel Q) S R i_l j - p)) (⟡) (fun δ => ?_) hVU hfa
     show Chazelle.Jordan.offset ((C.sideWalk C.sideBeta).vtx
         (TourA.tourA C C.sideBeta (kIdx (nk (interiorModel Q) S R) g i_l + j) + 6))
       ((C.sideWalk C.sideBeta).vtx
         ((TourA.tourA C C.sideBeta (kIdx (nk (interiorModel Q) S R) g i_l + j) + 6 + 1) %
           (C.sideWalk C.sideBeta).n)) _ δ = _
-    rw [TourA.vtx_tourA hkm, TourA.vtx_tourA_succ hkm, hv0, hv1, ExtG.offset_lerp_pair]
+    Ξ TourA.vtx_tourA hkm, TourA.vtx_tourA_succ hkm, hv0, hv1, ExtG.offset_lerp_pair
     congr 1
     have hne : ukey (interiorModel Q) S R i_l (j + 1) - ukey (interiorModel Q) S R i_l j ≠ 0 :=
       sub_ne_zero.2 hjj.ne'
@@ -413,7 +415,7 @@ theorem arcCorr (X : Ctx Q S R) (hg : g < nk (interiorModel Q) S R)
   · -- counted
     intro x hx _
     obtain ⟨j, p, hjd, -, -, -, -, -, hfl, -⟩ := pos_data (h3 := h3) X hg hgc harc hA hx
-    rw [hfl]
+    Ξ hfl
     exact TourA.counted_tourA _
 
 end

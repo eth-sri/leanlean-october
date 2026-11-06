@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFLocateDir
 
 /-!
@@ -37,29 +39,29 @@ def itemCnt : HostItem → ℕ
   | .pt _ => 1
 
 theorem pts_length_item (n : ℕ) (it : HostItem) : (it.pts n).length = itemCnt it := by
-  cases it <;> simp [HostItem.pts, itemCnt]
+  cases it <;> Θ HostItem.pts, itemCnt
 
 /-- The number of symbolic points of the first `i` items. -/
 def preLen (n : ℕ) (H : Host) (i : ℕ) : ℕ := ((H.take i).flatMap (HostItem.pts n)).length
 
-theorem preLen_zero (n : ℕ) (H : Host) : preLen n H 0 = 0 := by simp [preLen]
+theorem preLen_zero (n : ℕ) (H : Host) : preLen n H 0 = 0 := ⊚ preLen
 
 theorem preLen_succ (n : ℕ) (H : Host) {i : ℕ} (hi : i < H.length) :
     preLen n H (i + 1) = preLen n H i + itemCnt H[i] := by
   unfold preLen
   rw [List.take_add_one, List.getElem?_eq_getElem hi, Option.toList_some, List.flatMap_append,
     List.length_append]
-  simp [pts_length_item]
+  Θ pts_length_item
 
 theorem preLen_length (n : ℕ) (H : Host) : preLen n H H.length = (H.pts n).length := by
   unfold preLen Host.pts
-  rw [List.take_length]
+  Ξ List.take_length
 
 theorem preLen_le_succ (n : ℕ) (H : Host) (i : ℕ) : preLen n H i ≤ preLen n H (i + 1) := by
   by_cases hi : i < H.length
   · rw [preLen_succ n H hi]; omega
   · unfold preLen
-    rw [List.take_of_length_le (by omega), List.take_of_length_le (by omega)]
+    Ξ List.take_of_length_le (⋄), List.take_of_length_le (⋄)
 
 theorem preLen_mono (n : ℕ) (H : Host) {i j : ℕ} (hij : i ≤ j) : preLen n H i ≤ preLen n H j := by
   induction j, hij using Nat.le_induction with
@@ -74,16 +76,16 @@ theorem pts_getElem? (n : ℕ) (H : Host) {i p : ℕ} (hi : i < H.length) (h1 : 
       (H[i].pts n ++ (H.drop (i + 1)).flatMap (HostItem.pts n)) := by
     unfold Host.pts
     conv_lhs => rw [← List.take_append_drop i H, List.drop_eq_getElem_cons hi]
-    rw [List.flatMap_append, List.flatMap_cons]
+    Ξ List.flatMap_append, List.flatMap_cons
   unfold preLen at h1 h2 ⊢
-  rw [e, List.getElem?_append_right h1, List.getElem?_append_left]
-  rw [pts_length_item]
+  Ξ e, List.getElem?_append_right h1, List.getElem?_append_left
+  Ξ pts_length_item
   omega
 
 /-- The points of a run. -/
 theorem run_pts_getElem? (n a ℓ : ℕ) {k : ℕ} (hk : k ≤ ℓ) :
     ((HostItem.run a ℓ).pts n)[k]? = some (SymPt.vtx ((a + k) % n)) := by
-  simp [HostItem.pts, List.getElem?_map, List.getElem?_range (by omega : k < ℓ + 1)]
+  Θ HostItem.pts, List.getElem?_map, List.getElem?_range (by omega : k < ℓ + 1)
 
 /-! ## Decoding the layout -/
 
@@ -97,20 +99,20 @@ theorem hostAt_item {m : ℕ → ℕ} {B : ℕ} {H : Host} (h : HostAt m B H) {i
     H[i] = itemOf (m (B + 1 + 3 * i)) (m (B + 2 + 3 * i)) (m (B + 3 + 3 * i)) ∧
       m (B + 1 + 3 * i) ≤ 2 := by
   have hh := h.2 i hi
-  rw [getD_of_lt _ hi] at hh
+  Ξ' getD_of_lt _ hi at hh
   generalize H[i] = it at hh ⊢
   cases it with
   | run a l =>
     obtain ⟨h1, h2, h3⟩ := hh
-    simp [itemOf, h1, h2, h3]
+    Θ itemOf, h1, h2, h3
   | pt x =>
     cases x with
     | vtx j =>
       obtain ⟨h1, h2⟩ := hh
-      simp [itemOf, h1, h2]
+      Θ itemOf, h1, h2
     | onEdge e hh' =>
       obtain ⟨h1, h2, h3⟩ := hh
-      simp [itemOf, h1, h2, h3]
+      Θ itemOf, h1, h2, h3
 
 /-- The layout determines the host. -/
 theorem hostAt_unique {m : ℕ → ℕ} {B : ℕ} {H H' : Host} (h : HostAt m B H)
@@ -118,7 +120,7 @@ theorem hostAt_unique {m : ℕ → ℕ} {B : ℕ} {H H' : Host} (h : HostAt m B 
   have hl : H.length = H'.length := h.1.symm.trans h'.1
   apply List.ext_getElem hl
   intro i hi hi'
-  rw [(hostAt_item h hi).1, (hostAt_item h' hi').1]
+  Ξ (hostAt_item h hi).1, (hostAt_item h' hi').1
 
 /-- The count of the item coded by `k, a, b`, as the machine computes it. -/
 theorem itemCnt_itemOf (k a b : ℕ) : itemCnt (itemOf k a b) = if k < 1 then b + 1 else 1 := by
@@ -134,11 +136,11 @@ theorem hostWF_pts {n : ℕ} {H : Host} (h : HostWF n H) (hn : 0 < n) :
   have := h it hit
   cases it with
   | run a l =>
-    simp only [HostItem.pts, List.mem_map, List.mem_range] at hx
+    ϴ' HostItem.pts, List.mem_map, List.mem_range at hx
     obtain ⟨k, -, rfl⟩ := hx
     exact Nat.mod_lt _ hn
   | pt y =>
-    simp only [HostItem.pts, List.mem_singleton] at hx
+    ϴ' HostItem.pts, List.mem_singleton at hx
     subst hx
     exact this
 
@@ -162,7 +164,7 @@ def cntStmt : Stmt := .seq hostInit (.whileLtN 50062 50061 cntBody)
 /-- The registers written by the host routines. -/
 def Bhost (r : ℕ) : Bool := decide (50046 ≤ r ∧ r < 50049) || decide (50061 ≤ r ∧ r < 50077)
 
-theorem wr_cntStmt : wr Bhost cntStmt = true := by decide
+theorem wr_cntStmt : wr Bhost cntStmt = true := ⌖
 
 /-- The facts the host loops keep. -/
 structure HostEnv (W Hh len : ℕ) (m : ℕ → ℕ) (c : Config) : Prop where
@@ -191,11 +193,11 @@ theorem cntBody_exec {P : Polygon} {W : ℕ} {Hh len : ℕ} {m : ℕ → ℕ} {c
   have h68 := h.h68
   have h69 := h.h69
   have hm := h.mem
-  have ad : Hh + 1 + 3 * i + 2 = Hh + 3 + 3 * i := by omega
+  have ad : Hh + 1 + 3 * i + 2 = Hh + 3 + 3 * i := ⋄
   unfold cntBody
   refine spec_seq (spec_instr (Exec.loadN hw 50065 50064) fun hw₁ => ?_)
   by_cases hk : m (Hh + 1 + 3 * i) < 1
-  · rw [ite_eq_left hk] at hacc ⊢
+  · Ξ' ite_eq_left hk at hacc ⊢
     refine spec_seq (spec_ifLtN_true (by config_simp; rw [ha, hm, h67]; exact hk) ?_)
     exec_block
     · config_simp; rw [ha, h68]; omega
@@ -203,30 +205,30 @@ theorem cntBody_exec {P : Polygon} {W : ℕ} {Hh len : ℕ} {m : ℕ → ℕ} {c
     · config_simp; rw [ha, h68, hm, ad, h67]; omega
     · config_simp; rw [hi, h67]; omega
     · config_simp; rw [ha, h69]; omega
-    refine ⟨by omega, ⟨‹_›, by config_simp; exact h60, by config_simp; exact h61,
+    refine ⟨⋄, ⟨‹_›, by config_simp; exact h60, by config_simp; exact h61,
       by config_simp; exact h67, by config_simp; exact h68, by config_simp; exact h69,
       by config_simp; exact hm⟩, by config_simp; rw [hi, h67], by config_simp; rw [ha, h69]; ring,
       by config_simp; rw [ha, h68, hm, ad, h67]; ring, fun r hr => ?_⟩
-    simp only [upd]
+    ϴ upd
     split_ifs <;> first | rfl | omega
-  · rw [ite_eq_right hk] at hacc ⊢
+  · Ξ' ite_eq_right hk at hacc ⊢
     refine spec_seq (spec_ifLtN_false (by config_simp; rw [ha, hm, h67]; exact hk)
       (spec_instr (Exec.addN hw₁ _ _ _ (by config_simp; rw [h67]; omega)) fun hw₂ => ?_))
     exec_block
     · config_simp; rw [hi, h67]; omega
     · config_simp; rw [ha, h69]; omega
-    refine ⟨by omega, ⟨‹_›, by config_simp; exact h60, by config_simp; exact h61,
+    refine ⟨⋄, ⟨‹_›, by config_simp; exact h60, by config_simp; exact h61,
       by config_simp; exact h67, by config_simp; exact h68, by config_simp; exact h69,
       by config_simp; exact hm⟩, by config_simp; rw [hi, h67], by config_simp; rw [ha, h69]; ring,
       by config_simp; rw [h67], fun r hr => ?_⟩
-    simp only [upd]
+    ϴ upd
     split_ifs <;> first | rfl | omega
 
 /-- The count the machine adds for item `i` is the number of its points. -/
 theorem machineCnt_eq {m : ℕ → ℕ} {Hh : ℕ} {H : Host} (hH : HostAt m Hh H) {i : ℕ}
     (hi : i < H.length) :
     (if m (Hh + 1 + 3 * i) < 1 then m (Hh + 3 + 3 * i) + 1 else 1) = itemCnt H[i] := by
-  rw [(hostAt_item hH hi).1, itemCnt_itemOf]
+  Ξ (hostAt_item hH hi).1, itemCnt_itemOf
 
 /-- **The count of the symbolic points of a host** (at most `12 |H| + 12` steps). -/
 theorem cnt_exec {P : Polygon} {W : ℕ} {Hh n : ℕ} {H : Host} (c : Config) (hw : WordsBounded W c)
@@ -234,7 +236,7 @@ theorem cnt_exec {P : Polygon} {W : ℕ} {Hh n : ℕ} {H : Host} (c : Config) (h
     (hN : (H.pts n).length ≤ W) :
     ∃ c' k, Exec P W cntStmt c c' k ∧ k ≤ 12 * H.length + 12 ∧ FrameB Bhost c c' ∧
       c'.nreg 50063 = (H.pts n).length ∧ HostEnv W Hh H.length c.nmem c' := by
-  have hlen : c.nmem Hh = H.length := hH.1
+  have hlen := hH.1
   obtain ⟨c₁, k₁, e₁, hk₁, I₁⟩ : ∃ c₁ k₁, Exec P W hostInit c c₁ k₁ ∧ k₁ = 7 ∧
       (HostEnv W Hh H.length c.nmem c₁ ∧ c₁.nreg 50062 = 0 ∧ c₁.nreg 50063 = 0 ∧
         c₁.nreg 50064 = Hh + 1) := by
@@ -284,14 +286,14 @@ def Bl (l : List ℕ) (r : ℕ) : Bool := l.contains r
 
 theorem ne_of_Bl {l : List ℕ} {r a : ℕ} (h : Bl l r = false) (ha : a ∈ l) : r ≠ a := by
   rintro rfl
-  rw [Bl, List.contains_iff_mem.2 ha] at h
+  Ξ' Bl, List.contains_iff_mem.2 ha at h
   exact Bool.noConfusion h
 
 theorem Bl_mono {l l' : List ℕ} {r : ℕ} (h : Bl l' r = false) (hs : l ⊆ l') : Bl l r = false := by
   unfold Bl at *
   by_contra h'
-  rw [Bool.not_eq_false, List.contains_iff_mem] at h'
-  rw [List.contains_iff_mem.2 (hs h')] at h
+  Ξ' Bool.not_eq_false, List.contains_iff_mem at h'
+  Ξ' List.contains_iff_mem.2 (hs h') at h
   exact Bool.noConfusion h
 
 /-- Advance to the next item: count `:= lr 73`, `i := i + 1`, address `+ 3`. -/
@@ -322,7 +324,7 @@ def lookStmt : Stmt :=
   .seq (block [.constN 50062 0, .constN 50063 0, .addN 50064 50060 50067])
     (.whileLtN 50062 50061 lookBody)
 
-theorem wr_lookStmt : wr Bhost lookStmt = true := by decide
+theorem wr_lookStmt : wr Bhost lookStmt = true := ⌖
 
 /-- The invariant of the lookup. -/
 def LkI (W n Hh p : ℕ) (H : Host) (m : ℕ → ℕ) (d : Config) : Prop :=
@@ -335,8 +337,8 @@ def LkI (W n Hh p : ℕ) (H : Host) (m : ℕ → ℕ) (d : Config) : Prop :=
 theorem mod_of_lt_two {a k n : ℕ} (ha : a < n) (hk : k < n) :
     (a + k) % n = if k < n - a then a + k else k - (n - a) := by
   split_ifs with h
-  · exact Nat.mod_eq_of_lt (by omega)
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  · exact Nat.mod_eq_of_lt (⋄)
+  · Ξ Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt (⋄)
     omega
 
 /-- One step of the lookup. -/
@@ -562,24 +564,24 @@ theorem look_exec {P : Polygon} {W Hh p : ℕ} {H : Host} {m : ℕ → ℕ} (c :
     · refine ⟨rfl, ⟨⟨‹_›, by config_simp; exact E.h60, by config_simp; exact E.h61,
         by config_simp; exact E.h67, by config_simp; exact E.h68, by config_simp; exact E.h69,
         E.mem⟩, by config_simp; exact h71, by config_simp; omega, Or.inl ⟨?_, ?_, ?_⟩⟩⟩
-      · config_simp; rw [preLen_zero]
+      · config_simp; Ξ preLen_zero
       · config_simp; rw [preLen_zero]; omega
-      · config_simp; rw [E.h60, E.h67]
+      · config_simp; Ξ E.h60, E.h67
   obtain ⟨c₂, k₂, e₂, I₂, hx₂, hk₂⟩ := Exec.whileLtN_bounded (P := P) (a := 50062) (b := 50061)
     (body := lookBody) (LkI W P.n Hh p H m) (fun d => H.length - d.nreg 50062) 25
     (fun d hd => hd.1.wb) (fun d hd ht => by
       obtain ⟨d', k, e, I', hk, hμ⟩ := lookBody_exec hH hwf hW haW hN hd ht
       exact ⟨d', k, e, I', hk, hμ⟩) I₁
   obtain ⟨E₂, p₂, hi₂, hs₂⟩ := I₂
-  rw [E₂.h61] at hx₂
+  Ξ' E₂.h61 at hx₂
   have ex : Exec P W lookStmt c c₂ (k₁ + k₂) := .seq e₁ e₂
   refine ⟨c₂, _, ex, ?_, exec_frameB ex wr_lookStmt, E₂, p₂, ?_⟩
   · have : (25 + 2) * (H.length - c₁.nreg 50062) ≤ 27 * H.length :=
       Nat.mul_le_mul_left _ (Nat.sub_le _ _)
     omega
   · rcases hs₂ with ⟨-, hle, -⟩ | ⟨-, hd⟩
-    · have : c₂.nreg 50062 = H.length := by omega
-      rw [this, preLen_length] at hle
+    · have : c₂.nreg 50062 = H.length := ⋄
+      Ξ' this, preLen_length at hle
       omega
     · exact hd
 

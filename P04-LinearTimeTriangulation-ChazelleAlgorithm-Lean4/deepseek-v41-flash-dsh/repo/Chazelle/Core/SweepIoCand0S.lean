@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoCand0L
 
 /-!
@@ -68,9 +70,9 @@ theorem candFr_of_set {c c' : Config} {S : ℕ → Prop}
   ⟨fun r h1 _ h3 h4 h5 => h r h1 (fun h' => by rcases hS r h' with h'' | h'' <;> tauto) h5,
     hA, hm⟩
 
-theorem modB_left (J : Merge.Junction) (r : ℕ) : ModB J 1 r 0 = J.left := by simp [ModB]
+theorem modB_left (J : Merge.Junction) (r : ℕ) : ModB J 1 r 0 = J.left := ⊚ ModB
 
-theorem modB_right (J : Merge.Junction) : ModB J 1 1 1 = J.right := by simp [ModB]
+theorem modB_right (J : Merge.Junction) : ModB J 1 1 1 = J.right := ⊚ ModB
 
 /-! ## The facts of a side-0 query -/
 
@@ -141,12 +143,12 @@ theorem start_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hXl
     · exact Or.inl h
     · exact Or.inr ⟨h6, q.hpos ▸ posClass_mem q.hcls h6 q.hP0 q.hP1⟩
     · have h6' : c.nreg qE = 2 * J.left.m + 6 := h6
-      exact Or.inr ⟨by omega, q.hpos ▸ posClass_mem q.hcls (by show 6 ≤ c.nreg qE; omega)
+      exact Or.inr ⟨⋄, q.hpos ▸ posClass_mem q.hcls (by show 6 ≤ c.nreg qE; omega)
         q.hP0 q.hP1⟩
   refine (lhs_irs hsh hBs hXl hA (sideD₁ hA) ⟨by unfold IFix sw; omega, by unfold IFix sw; omega,
     by unfold IFix sw; omega⟩ (by unfold OutL qE sw; omega) hI (L := ∅)
     (Mod := ModB J (c.nreg bL) (c.nreg bR)) (R₀ := J.whole.radius) (t := 0) q.he q.hpp q.hpos q.hy
-    hloc (accOK_init _ _ _ _ _ h0) (by norm_num) (by rw [q.hbL]; exact modB_left J _) rfl
+    hloc (accOK_init _ _ _ _ _ h0) (⊛) (by rw [q.hbL]; exact modB_left J _) rfl
     hroom).mono le_rfl ?_
   rintro c' ⟨⟨L', a', -, g', geo'⟩, fr, hA', hm'⟩
   refine ⟨L', ⟨a', fun τ hτ => ?_⟩, geo' q.hgeo, candFr_of_lh fr hA' hm'⟩
@@ -184,7 +186,7 @@ theorem box_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hXl :
     (by rw [eE]; exact hn₂)
     (by rw [eE, eH]; exact ⟨hpar ▸ q.hpp.1, hpar ▸ q.hpp.2.1, q.hpp.2.2⟩)
     (by rw [eE, eH]; exact hpos₂) q.hy (by rw [eE]; exact Or.inl h13)
-    (by rw [eD]; exact hst.1) (by norm_num) (by rw [q.hbL, hbR]; exact modB_right J) rfl
+    (by rw [eD]; exact hst.1) (⊛) (by rw [q.hbL, hbR]; exact modB_right J) rfl
     hroom).mono le_rfl ?_
   rintro c'' ⟨⟨L', a', s', g', geo'⟩, fr, hA', hm'⟩
   rw [eD] at a' g' geo'

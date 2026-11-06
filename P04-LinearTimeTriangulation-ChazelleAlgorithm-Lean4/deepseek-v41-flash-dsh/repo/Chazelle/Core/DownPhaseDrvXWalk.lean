@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvXDef
 
 /-!
@@ -37,9 +39,9 @@ theorem chain_vertex_eq (hs : C.s = 0) {k : ℕ} (hk : k < C.P.n) : C.vertex k =
   unfold Chain.vertex Chain.edgeIdx; rw [hs, zero_add, Nat.mod_eq_of_lt hk]
 
 theorem sideIdx_eq_tK (β : Bool) (i : ℕ) : C.sideIdx β i = tK C.m C.topIdx β (i + 6) := by
-  rw [Chain.sideIdx_eq]
+  Ξ Chain.sideIdx_eq
   unfold tK tU tS
-  rw [Nat.add_sub_cancel]
+  Ξ Nat.add_sub_cancel
   rfl
 
 theorem tU_eq (β : Bool) (i : ℕ) :
@@ -49,10 +51,10 @@ theorem tU_eq (β : Bool) (i : ℕ) :
 /-- **The tour vertex at the start of walk edge `p`.** -/
 theorem walk_vtx (hs : C.s = 0) (hm : C.m + 1 = C.P.n) (β : Bool) {p : ℕ} (h6 : 6 ≤ p)
     (hp : p ≤ 2 * C.m + 6) : (C.sideWalk β).vtx p = C.P.vtx (tK C.m C.topIdx β p) := by
-  obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by omega⟩
-  rw [C.sideWalk_vtx_tour β (by omega)]
+  obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, ⋄⟩
+  rw [C.sideWalk_vtx_tour β (⋄)]
   unfold Chain.sideTour
-  rw [sideIdx_eq_tK, chain_vertex_eq hs (by have := tK_le β C.one_le (i + 6) (T := C.topIdx); omega)]
+  Ξ sideIdx_eq_tK, chain_vertex_eq hs (by have := tK_le β C.one_le (i + 6) (T := C.topIdx); omega)
 
 theorem sideE_succ' {m u : ℕ} (hu : u < 2 * m) :
     sideE m (u + 1) = kNext (decide (u < m)) (sideE m u) := by
@@ -83,25 +85,25 @@ theorem sideE_pred' {m u : ℕ} (hu0 : 1 ≤ u) (hu : u < 2 * m) (hum : u ≠ m)
 
 theorem mod_pred {x M : ℕ} (hM : 0 < M) (hx : 1 ≤ x % M) : (x - 1) % M = x % M - 1 := by
   have h1 := Nat.div_add_mod x M
-  have h2 : x - 1 = M * (x / M) + (x % M - 1) := by omega
-  rw [h2, Nat.mul_add_mod, Nat.mod_eq_of_lt (by have := Nat.mod_lt x hM; omega)]
+  have h2 : x - 1 = M * (x / M) + (x % M - 1) := ⋄
+  Ξ h2, Nat.mul_add_mod, Nat.mod_eq_of_lt (by have := Nat.mod_lt x hM; omega)
 
 /-- **The tour vertex before walk edge `p`** (away from the chain ends). -/
 theorem walk_prev (hs : C.s = 0) (hm : C.m + 1 = C.P.n) (β : Bool) {p : ℕ} (h7 : 7 ≤ p)
     (hp : p ≤ 2 * C.m + 6) (hu0 : tU C.m C.topIdx β p ≠ 0) (hum : tU C.m C.topIdx β p ≠ C.m) :
     (C.sideWalk β).vtx ((p + (C.sideWalk β).n - 1) % (C.sideWalk β).n) =
       C.P.vtx (kPrev (decide (tU C.m C.topIdx β p < C.m)) (tK C.m C.topIdx β p)) := by
-  obtain ⟨i, rfl⟩ : ∃ i, p = (i + 1) + 6 := ⟨p - 7, by omega⟩
+  obtain ⟨i, rfl⟩ : ∃ i, p = (i + 1) + 6 := ⟨p - 7, ⋄⟩
   have hm1 := C.one_le
-  rw [C.sideWalk_prev_tour β (by omega) (by omega), C.sideWalk_vtx_tour β (by omega)]
+  rw [C.sideWalk_prev_tour β (⋄) (by omega), C.sideWalk_vtx_tour β (by omega)]
   unfold Chain.sideTour
   have hle := C.sideIdx_le β (i + 1 - 1)
-  rw [chain_vertex_eq hs (by omega), Nat.add_sub_cancel, Chain.sideIdx_eq, tK]
+  rw [chain_vertex_eq hs (⋄), Nat.add_sub_cancel, Chain.sideIdx_eq, tK]
   have hu := tU_lt (T := C.topIdx) β hm1 (i + 1 + 6)
-  rw [← sideE_pred' (by omega) hu hum]
+  rw [← sideE_pred' (⋄) hu hum]
   congr 1
   rw [tU_eq] at hu0 ⊢
-  rw [← mod_pred (by omega) (by omega), show C.sideS β + (i + 1) - 1 = C.sideS β + i by omega]
+  rw [← mod_pred (⋄) (by omega), show C.sideS β + (i + 1) - 1 = C.sideS β + i by omega]
 
 /-! ## Sectors -/
 
@@ -112,14 +114,14 @@ theorem walk_sector_edge (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n)
       0 < det (C.P.vtx (tK C.m C.topIdx β p))
         (C.P.vtx (kNext (decide (tU C.m C.topIdx β p < C.m)) (tK C.m C.topIdx β p))) x := by
   have hne : (C.sideWalk β).vtx p ≠ (C.sideWalk β).vtx ((p + 1) % (C.sideWalk β).n) := by
-    obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by omega⟩
-    rw [C.sideWalk_next_tour β (by omega), C.sideWalk_vtx_tour β (by omega),
-      C.sideWalk_vtx_tour β (by omega)]
+    obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, ⋄⟩
+    rw [C.sideWalk_next_tour β (⋄), C.sideWalk_vtx_tour β (by omega),
+      C.sideWalk_vtx_tour β (⋄)]
     unfold Chain.sideTour
     rcases C.sideTour_step β i with h | h
     · rw [h]; exact C.sideVertex_succ_ne hP _
     · rw [← h]; exact (C.sideVertex_succ_ne hP _).symm
-  rw [Chazelle.Chain.sideLeft_edge hne ht, walk_vtx hs hm β h6 hp.le, walk_next hs hm β h6 hp]
+  Ξ Chazelle.Chain.sideLeft_edge hne ht, walk_vtx hs hm β h6 hp.le, walk_next hs hm β h6 hp
 
 /-- **At a tour vertex** away from the chain ends, the left sector lies in the corner of the
 chain on the side of the position (at the top vertex: the sub-corner beside the slit). -/

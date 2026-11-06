@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseBoxChain
 public import Chazelle.Core.NFBuildWt
 
@@ -35,19 +39,19 @@ theorem ratio_mem_iff {a b y : ℝ} (hab : a ≠ b) :
     (0 ≤ ratio a b y ∧ ratio a b y < 1) ↔ (if a < b then a ≤ y ∧ y < b else b < y ∧ y ≤ a) := by
   unfold ratio
   rcases lt_or_gt_of_ne hab with h | h
-  · rw [ite_eq_left h, le_div_iff₀ (by linarith), div_lt_one (by linarith)]
+  · rw [ite_eq_left h, le_div_iff₀ (⟡), div_lt_one (⟡)]
     constructor <;> rintro ⟨h1, h2⟩ <;> constructor <;> linarith
-  · rw [ite_eq_right (not_lt.2 h.le), div_nonneg_iff, div_lt_one_of_neg (by linarith)]
+  · Ξ ite_eq_right (not_lt.2 h.le), div_nonneg_iff, div_lt_one_of_neg (⟡)
     constructor
     · rintro ⟨h1 | h1, h2⟩
       · exfalso; linarith [h1.2]
-      · exact ⟨by linarith, by linarith [h1.1]⟩
+      · exact ⟨⟡, by linarith [h1.1]⟩
     · rintro ⟨h1, h2⟩
-      exact ⟨Or.inr ⟨by linarith, by linarith⟩, by linarith⟩
+      exact ⟨Or.inr ⟨⟡, ⟡⟩, by linarith⟩
 
 theorem ratio_eq_zero_iff {a b y : ℝ} (hab : a ≠ b) : ratio a b y = 0 ↔ y = a := by
   unfold ratio
-  rw [div_eq_zero_iff]
+  Ξ div_eq_zero_iff
   constructor
   · rintro (h | h)
     · linarith
@@ -58,9 +62,9 @@ theorem ratio_lt_iff {a b y y' : ℝ} (hab : a ≠ b) :
     ratio a b y < ratio a b y' ↔ (if a < b then y < y' else y' < y) := by
   unfold ratio
   rcases lt_or_gt_of_ne hab with h | h
-  · rw [ite_eq_left h, div_lt_div_iff_of_pos_right (by linarith)]
+  · Ξ ite_eq_left h, div_lt_div_iff_of_pos_right (⟡)
     constructor <;> intro h' <;> linarith
-  · rw [ite_eq_right (not_lt.2 h.le), div_lt_div_right_of_neg (by linarith)]
+  · Ξ ite_eq_right (not_lt.2 h.le), div_lt_div_right_of_neg (⟡)
     constructor <;> intro h' <;> linarith
 
 variable {C C' : Chain}
@@ -76,18 +80,18 @@ theorem sig_inj {x y : ℝ} : stretch (bnd C C') (kk C C') x = stretch (bnd C C'
 theorem ratio_mem_sig_iff {a b y : ℝ} (hab : a ≠ b) :
     (0 ≤ ratio (stretch (bnd C C') (kk C C') a) (stretch (bnd C C') (kk C C') b) (stretch (bnd C C') (kk C C') y) ∧
       ratio (stretch (bnd C C') (kk C C') a) (stretch (bnd C C') (kk C C') b) (stretch (bnd C C') (kk C C') y) < 1) ↔ (0 ≤ ratio a b y ∧ ratio a b y < 1) := by
-  rw [ratio_mem_iff (by rwa [Ne, sig_inj]), ratio_mem_iff hab]
-  simp only [sig_lt_iff, sig_le_iff]
+  Ξ ratio_mem_iff (by rwa [Ne, sig_inj]), ratio_mem_iff hab
+  ϴ sig_lt_iff, sig_le_iff
 
 theorem ratio_eq_zero_sig_iff {a b y : ℝ} (hab : a ≠ b) :
     ratio (stretch (bnd C C') (kk C C') a) (stretch (bnd C C') (kk C C') b) (stretch (bnd C C') (kk C C') y) = 0 ↔ ratio a b y = 0 := by
-  rw [ratio_eq_zero_iff (by rwa [Ne, sig_inj]), ratio_eq_zero_iff hab, sig_inj]
+  Ξ ratio_eq_zero_iff (by rwa [Ne, sig_inj]), ratio_eq_zero_iff hab, sig_inj
 
 theorem ratio_lt_sig_iff {a b y y' : ℝ} (hab : a ≠ b) :
     ratio (stretch (bnd C C') (kk C C') a) (stretch (bnd C C') (kk C C') b) (stretch (bnd C C') (kk C C') y) < ratio (stretch (bnd C C') (kk C C') a) (stretch (bnd C C') (kk C C') b) (stretch (bnd C C') (kk C C') y') ↔
       ratio a b y < ratio a b y' := by
-  rw [ratio_lt_iff (by rwa [Ne, sig_inj]), ratio_lt_iff hab]
-  simp only [sig_lt_iff]
+  Ξ ratio_lt_iff (by rwa [Ne, sig_inj]), ratio_lt_iff hab
+  ϴ sig_lt_iff
 
 /-! ## Positions -/
 
@@ -100,7 +104,7 @@ def BandPos (C C' : Chain) (Q : Polygon) (x : WPos) : Prop :=
 theorem param_eq (M : Model) (Q : Polygon) (x : WPos) (k : ℕ) (hk : x.hgt = k + 1) :
     M.param Q x = if (M.wa x.edge).2 = (M.wb x.edge).2 then 0
       else ratio (M.wa x.edge).2 (M.wb x.edge).2 (Q.vtx k).2 := by
-  unfold Model.param ratio; rw [hk]
+  unfold Model.param ratio; Ξ hk
 
 /-- Keys of positions with parameters in `[0, 1)` compare lexicographically. -/
 theorem key_lt_iff_lex (M : Model) (Q : Polygon) {x x' : WPos}
@@ -111,7 +115,7 @@ theorem key_lt_iff_lex (M : Model) (Q : Polygon) {x x' : WPos}
   · intro hlt
     rcases lt_trichotomy x.edge x'.edge with h1 | h1 | h1
     · exact Or.inl h1
-    · right; refine ⟨h1, ?_⟩; rw [h1] at hlt; linarith
+    · right; refine ⟨h1, ?_⟩; Ξ' h1 at hlt; linarith
     · exfalso
       have : (x'.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast h1
       linarith [hm'.2, hm.1]
@@ -143,20 +147,20 @@ theorem param'_eq {Q : Polygon} {x : WPos} {k : ℕ} (hk : x.hgt = k + 1)
     (chainModel C').param Q x = if ((chainModel C).wa x.edge).2 = ((chainModel C).wb x.edge).2
       then 0 else ratio (stretch (bnd C C') (kk C C') ((chainModel C).wa x.edge).2)
         (stretch (bnd C C') (kk C C') ((chainModel C).wb x.edge).2) (stretch (bnd C C') (kk C C') (Q.vtx k).2) := by
-  rw [param_eq _ Q x k hk, h.wa_eq, h.wb_eq, sig_band hy]
-  simp only [phi, stretchPt]
+  Ξ param_eq _ Q x k hk, h.wa_eq, h.wb_eq, sig_band hy
+  ϴ phi, stretchPt
   by_cases hh : ((chainModel C).wa x.edge).2 = ((chainModel C).wb x.edge).2
-  · simp [hh]
+  · Θ hh
   · have hh' : ¬ stretch (bnd C C') (kk C C') ((chainModel C).wa x.edge).2 =
         stretch (bnd C C') (kk C C') ((chainModel C).wb x.edge).2 := fun e => hh (sig_inj.1 e)
-    simp only [hh, hh', ↓reduceIte]
+    ϴ hh, hh', ↓reduceIte
 
 theorem param_mem_iff {Q : Polygon} {x : WPos} (hx : BandPos C C' Q x) :
     (0 ≤ (chainModel C').param Q x ∧ (chainModel C').param Q x < 1) ↔
       (0 ≤ (chainModel C).param Q x ∧ (chainModel C).param Q x < 1) := by
   rcases hx with h0 | ⟨k, hk, hy⟩
-  · simp [Model.param, h0]
-  · rw [h.param'_eq hk hy, param_eq _ Q x k hk]
+  · Θ Model.param, h0
+  · Ξ h.param'_eq hk hy, param_eq _ Q x k hk
     split_ifs with hh
     · exact Iff.rfl
     · exact ratio_mem_sig_iff hh
@@ -164,8 +168,8 @@ theorem param_mem_iff {Q : Polygon} {x : WPos} (hx : BandPos C C' Q x) :
 theorem param_eq_zero_iff {Q : Polygon} {x : WPos} (hx : BandPos C C' Q x) :
     (chainModel C').param Q x = 0 ↔ (chainModel C).param Q x = 0 := by
   rcases hx with h0 | ⟨k, hk, hy⟩
-  · simp [Model.param, h0]
-  · rw [h.param'_eq hk hy, param_eq _ Q x k hk]
+  · Θ Model.param, h0
+  · Ξ h.param'_eq hk hy, param_eq _ Q x k hk
     split_ifs with hh
     · exact Iff.rfl
     · exact ratio_eq_zero_sig_iff hh
@@ -185,23 +189,23 @@ theorem param_lt_iff {Q : Polygon} {x x' : WPos} (hx : BandPos C C' Q x) (hx' : 
       (v' = 0 ↔ v = 0) → (u = 0 ∨ v = 0) → (u' < v' ↔ u < v) := by
     intro u v u' v' hu hv hu' hv' hu0 hv0 h0
     rcases h0 with h0 | h0
-    · rw [h0, hu0.2 h0]
+    · Ξ h0, hu0.2 h0
       exact ⟨fun h1 => lt_of_le_of_ne hv (fun e => h1.ne (hv0.2 e.symm).symm),
         fun h1 => lt_of_le_of_ne hv' (fun e => h1.ne (hv0.1 e.symm).symm)⟩
-    · rw [h0, hv0.2 h0]
+    · Ξ h0, hv0.2 h0
       exact ⟨fun h1 => absurd h1 (not_lt.2 hu'), fun h1 => absurd h1 (not_lt.2 hu)⟩
   by_cases h0 : (chainModel C).param Q x = 0 ∨ (chainModel C).param Q x' = 0
   · exact hzero _ _ _ _ hm.1 hm'.1 r1.1 r2.1 z1 z2 h0
   push Not at h0
   rcases hx with hx0 | ⟨k, hk, hy⟩
-  · exact absurd (by simp [Model.param, hx0]) h0.1
+  · exact absurd (⊚ Model.param, hx0) h0.1
   rcases hx' with hx0 | ⟨k', hk', hy'⟩
-  · exact absurd (by simp [Model.param, hx0]) h0.2
+  · exact absurd (⊚ Model.param, hx0) h0.2
   have hne0 := h0.1
-  rw [param_eq _ Q x k hk] at hne0
-  rw [h.param'_eq hk hy, h.param'_eq hk' hy', param_eq _ Q x k hk, param_eq _ Q x' k' hk', ← he]
+  Ξ' param_eq _ Q x k hk at hne0
+  Ξ h.param'_eq hk hy, h.param'_eq hk' hy', param_eq _ Q x k hk, param_eq _ Q x' k' hk', ← he
   by_cases hh : ((chainModel C).wa x.edge).2 = ((chainModel C).wb x.edge).2
-  · simp only [hh, ↓reduceIte] at hne0; exact absurd rfl hne0
+  · ϴ' hh, ↓reduceIte at hne0; exact absurd rfl hne0
   · simp only [hh, ↓reduceIte]; exact ratio_lt_sig_iff hh
 
 /-- **Keys are ordered alike in the two models.** -/
@@ -226,8 +230,8 @@ theorem arcWt_eq {Q : Polygon} {x x' : WPos} (hx : BandPos C C' Q x) (hx' : Band
     (hm' : 0 ≤ (chainModel C).param Q x' ∧ (chainModel C).param Q x' < 1) :
     (chainModel C').arcWt ((chainModel C').key Q x) ((chainModel C').key Q x') =
       (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q x') := by
-  have hn : (chainModel C).W.n = 2 * C.m + 6 + 1 := by rw [chainModel_n]
-  have hn' : (chainModel C').W.n = 2 * C.m + 6 + 1 := by rw [chainModel_n, ← h.m_eq]
+  have hn : (chainModel C).W.n = 2 * C.m + 6 + 1 := Ρ chainModel_n
+  have hn' : (chainModel C').W.n = 2 * C.m + 6 + 1 := Ρ chainModel_n, ← h.m_eq
   have hc : ∀ p, p < (chainModel C).W.n →
       ((chainModel C).counted p ↔ 6 ≤ p ∧ p < 2 * C.m + 6) := fun p _ => Iff.rfl
   have hc' : ∀ p, p < (chainModel C').W.n →
@@ -235,11 +239,11 @@ theorem arcWt_eq {Q : Polygon} {x x' : WPos} (hx : BandPos C C' Q x) (hx' : Band
     intro p _; show (6 ≤ p ∧ p < 2 * C'.m + 6) ↔ _; rw [h.m_eq]
   have r1 := (h.param_mem_iff hx).2 hm
   have r2 := (h.param_mem_iff hx').2 hm'
-  rw [Model.arcWt_key _ hc (by omega) Q hm hm', Model.arcWt_key _ hc' (by omega) Q r1 r2]
+  rw [Model.arcWt_key _ hc (⋄) Q hm hm', Model.arcWt_key _ hc' (by omega) Q r1 r2]
   unfold arcWtNat keyCeil
   have hlt := h.key_lt_iff hx hx' hm hm'
   unfold Model.key at hlt
-  simp only [hlt, h.param_eq_zero_iff hx']
+  ϴ hlt, h.param_eq_zero_iff hx'
 
 end Twin
 

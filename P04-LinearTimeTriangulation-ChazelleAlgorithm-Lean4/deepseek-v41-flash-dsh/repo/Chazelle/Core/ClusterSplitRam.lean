@@ -242,7 +242,7 @@ theorem markStep_other {m : ℕ → ℕ} {S : SS} {lo hi lbot ltop : ℕ} {up : 
   unfold markStep
   split_ifs
   · unfold markMem
-    rw [ite_eq_right]
+    Ξ ite_eq_right
     rintro ⟨x, rfl, -, -, i', -, rfl⟩
     have := iterate_lt_of hup i' (iterate_lt_of hup (m (S.bLEV + u) - min (m (S.bLEV + u)) ltop) hu)
     omega
@@ -256,13 +256,13 @@ theorem MarkMem.congr {m m' : ℕ → ℕ} {W bLEV bUPT bPOW L bPV bPOS bDF μ :
   refine ⟨h.up_lt, fun x hx => ?_, fun j hj x hx => ?_, fun j hj => ?_, fun x hx => ?_,
     fun x hx => ?_, h.wLEV, h.wUPT, h.wPOW, h.wPV, h.wPOS, h.wDF, h.dLEV, h.dUPT, h.dPOW, h.dPV,
     h.dPOS⟩
-  · rw [hm _ (by omega)]; exact h.pv x hx
+  · rw [hm _ (⋄)]; exact h.pv x hx
   · have : j * μ + μ ≤ L * μ := by
       have := Nat.mul_le_mul_right μ (show j + 1 ≤ L by omega); rwa [Nat.succ_mul] at this
-    rw [hm _ (by omega)]; exact h.tab j hj x hx
-  · rw [hm _ (by omega)]; exact h.pow j hj
-  · rw [hm _ (by omega)]; exact h.lev_lt x hx
-  · rw [hm _ (by omega)]; exact h.lev_mu x hx
+    rw [hm _ (⋄)]; exact h.tab j hj x hx
+  · rw [hm _ (⋄)]; exact h.pow j hj
+  · rw [hm _ (⋄)]; exact h.lev_lt x hx
+  · rw [hm _ (⋄)]; exact h.lev_mu x hx
 
 section proofs
 
@@ -409,7 +409,7 @@ theorem classPass_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c
     funext i
     unfold SelP SelI
     rw [htest]
-  have r1 : ∀ r, ¬ CpRG r → c1.nreg r = c.nreg r := hr1
+  have r1 := hr1
   have hC : PassCtx c1 lo hi (c1.nreg 130637) (c1.nreg 130638) (c1.nreg 130639) S.bTMP S.bACT
       S.bPOS S.bDF S.bFIRST S.bFPRE := by
     refine ⟨?_, ?_, ?_, ?_, rfl, rfl, rfl, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
@@ -437,27 +437,27 @@ theorem SelI_congr {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m' : ℕ → ℕ
   have := hL.hDF; have := hL.hμU; have := hL.hNU; have := hL.hSO; have := hL.hSF
   have := hL.hFPAR; have := hL.hFSZ
   have hv := hit i h1 h2
-  have e1 : m' (S.bTMP + i) = m (S.bTMP + i) := hm _ (by omega) (by omega)
-  have e2 : m' (S.bDF + m (S.bTMP + i)) = m (S.bDF + m (S.bTMP + i)) := hm _ (by omega) (by omega)
+  have e1 : m' (S.bTMP + i) = m (S.bTMP + i) := hm _ (⋄) (⋄)
+  have e2 : m' (S.bDF + m (S.bTMP + i)) = m (S.bDF + m (S.bTMP + i)) := hm _ (⋄) (⋄)
   have hfv := hfirst _ hv
   have e3 : m' (S.bFIRST + m (S.bTMP + i)) = m (S.bFIRST + m (S.bTMP + i)) :=
-    hm _ (by omega) (by omega)
+    hm _ (⋄) (⋄)
   have e4 : m' (S.bFPRE + m (S.bFIRST + m (S.bTMP + i))) =
-      m (S.bFPRE + m (S.bFIRST + m (S.bTMP + i))) := hm _ (by omega) (by omega)
+      m (S.bFPRE + m (S.bFIRST + m (S.bTMP + i))) := hm _ (⋄) (⋄)
   have hso := hCp.so_lt X hXN
-  have e5 : m' (S.bSO + X) = m (S.bSO + X) := hm _ (by omega) (by omega)
+  have e5 : m' (S.bSO + X) = m (S.bSO + X) := hm _ (⋄) (⋄)
   have hsf := hCp.sf_lt _ hso
-  have e6 : m' (S.bSF + m (S.bSO + X)) = m (S.bSF + m (S.bSO + X)) := hm _ (by omega) (by omega)
+  have e6 : m' (S.bSF + m (S.bSO + X)) = m (S.bSF + m (S.bSO + X)) := hm _ (⋄) (⋄)
   have e7 : ∀ g, g < S.N → m' (S.bFPAR + g) = m (S.bFPAR + g) ∧
       m' (S.bFPRE + g) = m (S.bFPRE + g) ∧ m' (S.bFSZ + g) = m (S.bFSZ + g) := fun g hg =>
-    ⟨hm _ (by omega) (by omega), hm _ (by omega) (by omega), hm _ (by omega) (by omega)⟩
+    ⟨hm _ (⋄) (⋄), hm _ (⋄) (⋄), hm _ (⋄) (⋄)⟩
   obtain ⟨g1, g2, g3⟩ := e7 _ hsf
   obtain ⟨f1, f2, f3⟩ := e7 f hfN
   have hfp := hCp.fp_lt f hfN
   have e8 : m' (S.bSO + m (S.bFPAR + f)) = m (S.bSO + m (S.bFPAR + f)) :=
-    hm _ (by omega) (by omega)
+    hm _ (⋄) (⋄)
   unfold SelI inClass
-  simp only [e1, e2, e3, e4, e5, e6, g1, g2, g3, f1, f2, f3, e8]
+  ϴ e1, e2, e3, e4, e5, e6, g1, g2, g3, f1, f2, f3, e8
 
 theorem CpMem.congr_lay {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m' : ℕ → ℕ}
     (hCp : CpMem m W S.bSO S.bSF S.bFPAR S.bFPRE S.bFSZ S.N)
@@ -467,10 +467,10 @@ theorem CpMem.congr_lay {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m' : ℕ �
   have := hL.hSO; have := hL.hSF; have := hL.hFPAR; have := hL.hFSZ
   refine ⟨hCp.wSO, hCp.wSF, hCp.wFP, hCp.wPR, hCp.wSZ, fun x hx => ?_, fun x hx => ?_,
     fun g hg => ?_, fun g hg => ?_⟩
-  · rw [hm _ (by omega) (by omega)]; exact hCp.so_lt x hx
-  · rw [hm _ (by omega) (by omega)]; exact hCp.sf_lt x hx
-  · rw [hm _ (by omega) (by omega)]; exact hCp.fp_lt g hg
-  · rw [hm _ (by omega) (by omega), hm _ (by omega) (by omega)]; exact hCp.prsz g hg
+  · rw [hm _ (⋄) (⋄)]; exact hCp.so_lt x hx
+  · rw [hm _ (⋄) (⋄)]; exact hCp.sf_lt x hx
+  · rw [hm _ (⋄) (⋄)]; exact hCp.fp_lt g hg
+  · rw [hm _ (⋄) (⋄), hm _ (⋄) (⋄)]; exact hCp.prsz g hg
 
 /-- A pass keeps everything outside `ACT` and `POS`. -/
 theorem passMem_out {S : SS} {A0 U : ℕ} (_hL : S.Lay A0 U W) {m : ℕ → ℕ} {sel : ℕ → Prop}
@@ -479,8 +479,8 @@ theorem passMem_out {S : SS} {A0 U : ℕ} (_hL : S.Lay A0 U W) {m : ℕ → ℕ}
     ∀ a, ¬ (S.bACT ≤ a ∧ a < S.bACT + S.μ) → ¬ (S.bPOS ≤ a ∧ a < S.bPOS + S.μ) →
       (passMem m sel S.bACT S.bPOS S.bTMP lo e (hi - lo)).1 a = m a := by
   intro a h1 h2
-  refine passMem_other m sel (hi - lo) (fun i a b => hit i a (by omega)) ⟨fun h => h1 ?_, h2⟩
-  rw [passMem_ptr_eq, show lo + (hi - lo) = hi by omega] at h
+  refine passMem_other m sel (hi - lo) (fun i a b => hit i a (⋄)) ⟨fun h => h1 ?_, h2⟩
+  Ξ' passMem_ptr_eq, show lo + (hi - lo) = hi by omega at h
   omega
 
 /-- The three class passes. -/
@@ -584,7 +584,7 @@ theorem passesS_exec {S : SS} {A0 U : ℕ} {c : Config} (hw : WordsBounded W c) 
   rw [hm1] at hm2 hp2
   rw [hsp] at hp2
   have hA : (passA m S lo hi f).2 = lo + cntS sl0 lo hi := by unfold passA; rw [hsp]
-  have hm2' : c2.nmem = (passA m S lo hi f).1 := hm2
+  have hm2' := hm2
   have hout1 : ∀ a, ¬ (S.bACT ≤ a ∧ a < S.bACT + S.μ) → ¬ (S.bPOS ≤ a ∧ a < S.bPOS + S.μ) →
       c2.nmem a = m a := by
     rw [hm2]; exact passMem_out hL hhiμ hit hs0 hlh

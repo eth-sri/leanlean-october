@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRLib
 public import Chazelle.Core.DownPhaseDrvRBktM
 public import Chazelle.Core.NFBuildMain
@@ -94,47 +96,47 @@ structure BkR (c₀ : Config) (BB n A base A₀ : ℕ) (d : Config) : Prop where
   out : d.output = c₀.output
 
 theorem Bbody_imp {r : ℕ} (h : Bbody r = true) : Bbkt r = true := by
-  simp only [Bbody, Bbkt, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  ϴ' Bbody, Bbkt, Bool.or_eq_true, decide_eq_true_eq at h ⊢; omega
 
 /-- The register facts survive a body (its writes are in `Bbody`). -/
 theorem BkR.body {c₀ d d' : Config} {BB n A base A₀ : ℕ} (h : BkR c₀ BB n A base A₀ d)
     (hf : FrameM Bbody d d') : BkR c₀ BB n A base A₀ d' := by
-  have e : ∀ r, Bbody r = false → d'.nreg r = d.nreg r := hf.1
-  refine ⟨(e _ (by decide)).trans h.r22, (e _ (by decide)).trans h.r31,
-    (e _ (by decide)).trans h.r32, (e _ (by decide)).trans h.r33, (e _ (by decide)).trans h.r34,
-    (e _ (by decide)).trans h.r35, (e _ (by decide)).trans h.r36, (e _ (by decide)).trans h.r37,
-    (e _ (by decide)).trans h.r39, (e _ (by decide)).trans h.r48, fun r hr => ?_,
-    (e _ (by decide)).trans h.alloc, fun r hr => ?_, hf.2.2.1.trans h.rm, hf.2.2.2.trans h.out⟩
+  have e := hf.1
+  refine ⟨(e _ (⌖)).trans h.r22, (e _ (⌖)).trans h.r31,
+    (e _ (⌖)).trans h.r32, (e _ (⌖)).trans h.r33, (e _ (⌖)).trans h.r34,
+    (e _ (⌖)).trans h.r35, (e _ (⌖)).trans h.r36, (e _ (⌖)).trans h.r37,
+    (e _ (⌖)).trans h.r39, (e _ (⌖)).trans h.r48, fun r hr => ?_,
+    (e _ (⌖)).trans h.alloc, fun r hr => ?_, hf.2.2.1.trans h.rm, hf.2.2.2.trans h.out⟩
   · have hb : Bbody r = false := by
       cases hh : Bbody r
       · rfl
-      · rw [Bbody_imp hh] at hr; exact absurd hr (by decide)
+      · Ξ' Bbody_imp hh at hr; exact absurd hr (⌖)
     exact (e r hb).trans (h.fr r hr)
   · have hb : Bbody r = false := by
       cases hh : Bbody r
       · rfl
-      · rw [Bbody_imp hh] at hr; exact absurd hr (by decide)
+      · Ξ' Bbody_imp hh at hr; exact absurd hr (⌖)
     exact (hf.2.1 r hb).trans (h.rr r hr)
 
 theorem wrM_L1 : wrM Bbody
     (block [.addN 210040 210036 210038, .storeN 210040 210035, .addN 210038 210038 210034]) =
-      true := by decide
+      true := ⌖
 
 theorem wrM_L2 : wrM Bbody
     (block [.addN 210040 210022 210038, .loadN 210041 210040, .addN 210042 210036 210041,
       .loadN 210043 210042, .addN 210043 210043 210034, .storeN 210042 210043,
-      .addN 210038 210038 210034]) = true := by decide
+      .addN 210038 210038 210034]) = true := ⌖
 
 theorem wrM_L3 : wrM Bbody
     (block [.addN 210040 210036 210038, .loadN 210041 210040, .storeN 210040 210044,
       .addN 210042 210037 210038, .storeN 210042 210044, .addN 210044 210044 210041,
-      .addN 210038 210038 210034]) = true := by decide
+      .addN 210038 210038 210034]) = true := ⌖
 
 theorem wrM_L4 : wrM Bbody
     (block [.addN 210040 210022 210038, .loadN 210041 210040, .addN 210042 210036 210041,
       .loadN 210043 210042, .addN 210046 210048 210043, .addN 210047 210033 210038,
       .storeN 210046 210047, .addN 210043 210043 210034, .storeN 210042 210043,
-      .addN 210038 210038 210034]) = true := by decide
+      .addN 210038 210038 210034]) = true := ⌖
 
 /-! ## The bodies -/
 
@@ -142,7 +144,7 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 1000000 in
+
 theorem body1_exec (d : Config) (hw : WordsBounded W d) {j Cb : ℕ} (h36 : d.nreg 210036 = Cb)
     (h38 : d.nreg 210038 = j) (h34 : d.nreg 210034 = 1) (h35 : d.nreg 210035 = 0)
     (hW : Cb + j + 1 ≤ W) :
@@ -155,10 +157,10 @@ theorem body1_exec (d : Config) (hw : WordsBounded W d) {j Cb : ℕ} (h36 : d.nr
     exec_block
     · omega
     · config_simp; omega
-    · refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp [h34, h35, h36, h38]
+    · refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> Θ h34, h35, h36, h38
   exact ⟨d', k, ex, hk, h1, h2, exec_frameM ex wrM_L1⟩
 
-set_option maxHeartbeats 1000000 in
+
 theorem body2_exec (d : Config) (hw : WordsBounded W d) {j Cb BB x v : ℕ}
     (h36 : d.nreg 210036 = Cb) (h22 : d.nreg 210022 = BB) (h38 : d.nreg 210038 = j)
     (h34 : d.nreg 210034 = 1) (hx : d.nmem (BB + j) = x) (hv : d.nmem (Cb + x) = v)
@@ -173,10 +175,10 @@ theorem body2_exec (d : Config) (hw : WordsBounded W d) {j Cb BB x v : ℕ}
       k = 7 ∧ d'.nreg 210038 = j + 1 ∧ d'.nmem = upd d.nmem (Cb + x) (v + 1) := by
     exec_block
     all_goals try (config_simp; simp only [h22, h38, h36, h34, hx, hv]; omega)
-    refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp [h22, h38, h36, h34, hx, hv]
+    refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> Θ h22, h38, h36, h34, hx, hv
   exact ⟨d', k, ex, hk, h1, h2, exec_frameM ex wrM_L2⟩
 
-set_option maxHeartbeats 1000000 in
+
 theorem body3_exec (d : Config) (hw : WordsBounded W d) {j Cb Sb sv t : ℕ}
     (h36 : d.nreg 210036 = Cb) (h37 : d.nreg 210037 = Sb) (h38 : d.nreg 210038 = j)
     (h34 : d.nreg 210034 = 1) (h44 : d.nreg 210044 = sv) (ht : d.nmem (Cb + j) = t)
@@ -194,10 +196,10 @@ theorem body3_exec (d : Config) (hw : WordsBounded W d) {j Cb Sb sv t : ℕ}
       d'.nmem = upd (upd d.nmem (Cb + j) sv) (Sb + j) sv := by
     exec_block
     all_goals try (config_simp; simp only [h36, h37, h38, h34, h44, ht]; omega)
-    refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> simp [h36, h37, h38, h34, h44, ht]
+    refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;> Θ h36, h37, h38, h34, h44, ht
   exact ⟨d', k, ex, hk, h1, h2, h3, exec_frameM ex wrM_L3⟩
 
-set_option maxHeartbeats 1000000 in
+
 theorem body4_exec (d : Config) (hw : WordsBounded W d) {j Cb BB Rb base x v : ℕ}
     (h36 : d.nreg 210036 = Cb) (h22 : d.nreg 210022 = BB) (h38 : d.nreg 210038 = j)
     (h48 : d.nreg 210048 = Rb) (h33 : d.nreg 210033 = base)
@@ -221,7 +223,7 @@ theorem body4_exec (d : Config) (hw : WordsBounded W d) {j Cb BB Rb base x v : �
     all_goals try (config_simp; simp only [h22, h38, h36, h34, h48, h33, hx, hv]; omega)
     refine ⟨rfl, ?_⟩
     config_simp
-    simp only [h22, h38, h36, h34, h48, h33, hx, hv, true_and]
+    ϴ h22, h38, h36, h34, h48, h33, hx, hv, true_and
   exact ⟨d', k, ex, hk, h1, h2, exec_frameM ex wrM_L4⟩
 
 /-! ## The memory during the loops -/
@@ -248,12 +250,12 @@ def memCS (m₀ bk : ℕ → ℕ) (n A₀ A j a : ℕ) : ℕ :=
 
 theorem bcnt_le (bk : ℕ → ℕ) (q b : ℕ) : bcnt bk q b ≤ q := by
   unfold bcnt bfilt
-  exact (List.length_filter_le _ _).trans (by simp)
+  exact (List.length_filter_le _ _).trans (✓)
 
 theorem bstart_le {bk : ℕ → ℕ} {n A b : ℕ} (hA : ∀ q, q < n → bk q ≤ A) (hb : b ≤ A + 1) :
     bstart bk n b ≤ n := by
   have := bstart_mono (bk := bk) n hb
-  rw [bstart_all hA] at this; exact this
+  Ξ' bstart_all hA at this; exact this
 
 /-! ## The loops -/
 
@@ -270,14 +272,14 @@ theorem loop1_exec {c₀ d : Config} {BB n A base A₀ : ℕ} {m₀ : ℕ → �
     (fun j d ⟨hw, hR, h38, _⟩ => ⟨hw, h38, hR.r39⟩)
     (fun j d hj ⟨hw, hR, h38, hm⟩ => by
       obtain ⟨d', k, ex, hk, h38', hm', hf⟩ := body1_exec (P := P) d hw hR.r36 h38 hR.r34 hR.r35
-        (by omega)
-      refine ⟨d', k, ex, ⟨ex.wb_right, hR.body hf, h38', fun a => ?_⟩, by omega⟩
-      rw [hm', Machine.upd_apply, hm]
+        (⋄)
+      refine ⟨d', k, ex, ⟨ex.wb_right, hR.body hf, h38', fun a => ?_⟩, ⋄⟩
+      Ξ hm', Machine.upd_apply, hm
       unfold mem1
       by_cases ha : a = A₀ + j
-      · rw [ite_eq_left ha, ite_eq_left (by omega)]
+      · Ξ ite_eq_left ha, ite_eq_left (⋄)
       · rw [ite_eq_right ha]; split_ifs <;> omega) h (Nat.zero_le _)
-  exact ⟨d', k, ex, hI, by omega⟩
+  exact ⟨d', k, ex, hI, ⋄⟩
 
 /-- The loop invariant of the second loop. -/
 def I2 (W : ℕ) (c₀ : Config) (BB n A base A₀ : ℕ) (m₀ bk : ℕ → ℕ) (j : ℕ) (d : Config) :
@@ -295,23 +297,23 @@ theorem loop2_exec {c₀ d : Config} {BB n A base A₀ : ℕ} {m₀ bk : ℕ →
     (fun j d ⟨hw, hR, h38, _⟩ => ⟨hw, h38, hR.r31⟩)
     (fun j d hj ⟨hw, hR, h38, hm⟩ => by
       have hx : d.nmem (BB + j) = bk j := by
-        rw [hm]; unfold mem2; rw [ite_eq_right (by omega), hbkd j hj]
+        rw [hm]; unfold mem2; Ξ ite_eq_right (⋄), hbkd j hj
       have hxA := hbk j hj
       have hv : d.nmem (A₀ + bk j) = bcnt bk j (bk j) := by
-        rw [hm]; unfold mem2; rw [ite_eq_left (by omega)]; congr 1; omega
+        rw [hm]; unfold mem2; rw [ite_eq_left (⋄)]; congr 1; omega
       have hvb := bcnt_le bk j (bk j)
       obtain ⟨d', k, ex, hk, h38', hm', hf⟩ := body2_exec (P := P) d hw hR.r36 hR.r22 h38 hR.r34
-        hx hv (by omega) (by omega) (by omega) (by omega)
-      refine ⟨d', k, ex, ⟨ex.wb_right, hR.body hf, h38', fun a => ?_⟩, by omega⟩
-      rw [hm', Machine.upd_apply, hm]
+        hx hv (⋄) (⋄) (⋄) (⋄)
+      refine ⟨d', k, ex, ⟨ex.wb_right, hR.body hf, h38', fun a => ?_⟩, ⋄⟩
+      Ξ hm', Machine.upd_apply, hm
       unfold mem2
       by_cases ha : a = A₀ + bk j
-      · rw [ite_eq_left ha, ite_eq_left (by omega), show a - A₀ = bk j by omega, bcnt_succ, ite_eq_left rfl]
-      · rw [ite_eq_right ha]
+      · Ξ ite_eq_left ha, ite_eq_left (⋄), show a - A₀ = bk j by omega, bcnt_succ, ite_eq_left rfl
+      · Ξ ite_eq_right ha
         split_ifs with h1
-        · rw [bcnt_succ, ite_eq_right (by omega), Nat.add_zero]
+        · Ξ bcnt_succ, ite_eq_right (⋄), Nat.add_zero
         · rfl) h (Nat.zero_le _)
-  exact ⟨d', k, ex, hI, by omega⟩
+  exact ⟨d', k, ex, hI, ⋄⟩
 
 /-- The loop invariant of the third loop. -/
 def I3 (W : ℕ) (c₀ : Config) (BB n A base A₀ : ℕ) (m₀ bk : ℕ → ℕ) (j : ℕ) (d : Config) :
@@ -365,43 +367,43 @@ theorem loop4_exec {c₀ d : Config} {BB n A base A₀ : ℕ} {m₀ bk : ℕ →
     (fun j d ⟨hw, hR, h38, _⟩ => ⟨hw, h38, hR.r31⟩)
     (fun j d hj ⟨hw, hR, h38, hm, hq⟩ => by
       have hx : d.nmem (BB + j) = bk j := by
-        rw [hm _ (by omega)]; unfold memCS; rw [ite_eq_right (by omega), ite_eq_right (by omega), hbkd j hj]
+        rw [hm _ (⋄)]; unfold memCS; Ξ ite_eq_right (⋄), ite_eq_right (⋄), hbkd j hj
       have hxA := hbk j hj
       have hv : d.nmem (A₀ + bk j) = slot bk n j := by
-        rw [hm _ (by omega)]; unfold memCS; rw [ite_eq_left (by omega)]
+        rw [hm _ (⋄)]; unfold memCS; Ξ ite_eq_left (⋄)
         unfold slot; congr 2 <;> omega
       have hsl := slot_lt (bk := bk) hj hbk
       obtain ⟨d', k, ex, hk, h38', hm', hf⟩ := body4_exec (P := P) d hw hR.r36 hR.r22 h38 hR.r48
-        hR.r33 hR.r34 hx hv (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-      refine ⟨d', k, ex, ⟨ex.wb_right, hR.body hf, h38', fun a ha => ?_, fun q hq' => ?_⟩, by omega⟩
-      · rw [hm', Machine.upd_apply, Machine.upd_apply]
+        hR.r33 hR.r34 hx hv (⋄) (⋄) (⋄) (⋄) (⋄) (⋄)
+      refine ⟨d', k, ex, ⟨ex.wb_right, hR.body hf, h38', fun a ha => ?_, fun q hq' => ?_⟩, ⋄⟩
+      · Ξ hm', Machine.upd_apply, Machine.upd_apply
         by_cases hb : a = A₀ + bk j
-        · rw [ite_eq_left hb]
+        · Ξ ite_eq_left hb
           unfold memCS
-          rw [ite_eq_left (by omega), show a - A₀ = bk j by omega, bcnt_succ, ite_eq_left rfl]
+          Ξ ite_eq_left (⋄), show a - A₀ = bk j by omega, bcnt_succ, ite_eq_left rfl
           unfold slot; omega
-        · rw [ite_eq_right hb, ite_eq_right (by omega), hm _ ha]
+        · Ξ ite_eq_right hb, ite_eq_right (⋄), hm _ ha
           unfold memCS
           split_ifs with h1
-          all_goals first | rfl | rw [bcnt_succ, ite_eq_right (by omega), Nat.add_zero]
-      · have hqn : q < n := by omega
+          all_goals first | rfl | Ξ bcnt_succ, ite_eq_right (⋄), Nat.add_zero
+      · have hqn : q < n := ⋄
         have hsq := slot_lt (bk := bk) hqn hbk
-        rw [hm', Machine.upd_apply, Machine.upd_apply]
-        rw [ite_eq_right (by omega)]
+        Ξ hm', Machine.upd_apply, Machine.upd_apply
+        Ξ ite_eq_right (⋄)
         by_cases hqj : q = j
-        · subst hqj; rw [ite_eq_left rfl]
+        · subst hqj; Ξ ite_eq_left rfl
         · have hne : slot bk n q ≠ slot bk n j := fun h' => hqj (slot_inj hqn hj h')
-          have hqj' : q < j := by omega
-          rw [ite_eq_right (by omega), hq q hqj']) h (Nat.zero_le _)
-  exact ⟨d', k, ex, hI, by omega⟩
+          have hqj' : q < j := ⋄
+          rw [ite_eq_right (⋄), hq q hqj']) h (Nat.zero_le _)
+  exact ⟨d', k, ex, hI, ⋄⟩
 
-theorem wrM_init : wrM Bbkt bkInit = true := by decide
+theorem wrM_init : wrM Bbkt bkInit = true := ⌖
 
-theorem wrM_reset1 : wrM Bbody (.instr (.constN 210038 0)) = true := by decide
+theorem wrM_reset1 : wrM Bbody (.instr (.constN 210038 0)) = true := ⌖
 
-theorem wrM_reset2 : wrM Bbody (block [.constN 210038 0, .constN 210044 0]) = true := by decide
+theorem wrM_reset2 : wrM Bbody (block [.constN 210038 0, .constN 210044 0]) = true := ⌖
 
-set_option maxHeartbeats 2000000 in
+
 /-- **The bucket distribution.** -/
 theorem bktS_exec (c : Config) (hw : WordsBounded W c) {BB n A base : ℕ} {bk : ℕ → ℕ}
     (h22 : c.nreg 210022 = BB) (h31 : c.nreg 210031 = n) (h32 : c.nreg 210032 = A)
@@ -434,22 +436,22 @@ theorem bktS_exec (c : Config) (hw : WordsBounded W c) {BB n A base : ℕ} {bk :
       (try simp only [h32, h31, show c.nreg 9999 = A₀ from rfl])
   have f₁ := exec_frameM e₁ wrM_init
   have hR₁ : BkR c BB n A base A₀ c₁ :=
-    { r22 := (f₁.1 _ (by decide)).trans h22, r31 := (f₁.1 _ (by decide)).trans h31,
-      r32 := (f₁.1 _ (by decide)).trans h32, r33 := (f₁.1 _ (by decide)).trans h33,
+    { r22 := (f₁.1 _ (⌖)).trans h22, r31 := (f₁.1 _ (⌖)).trans h31,
+      r32 := (f₁.1 _ (⌖)).trans h32, r33 := (f₁.1 _ (⌖)).trans h33,
       r34 := v34, r35 := v35, r36 := v36, r37 := v37, r39 := v39, r48 := v48, fr := f₁.1,
       alloc := vA, rr := f₁.2.1, rm := f₁.2.2.1, out := f₁.2.2.2 }
   have w₁ := e₁.wb_right
   -- the first loop
   obtain ⟨c₂, k₂, e₂, ⟨w₂, hR₂, h38₂, hm₂⟩, hk₂⟩ := loop1_exec (P := P) (m₀ := c.nmem)
-    (by omega) ⟨w₁, hR₁, v38, fun a => by rw [hm₁]; unfold mem1; rw [ite_eq_right (by omega)]⟩
+    (⋄) ⟨w₁, hR₁, v38, fun a => by rw [hm₁]; unfold mem1; rw [ite_eq_right (⋄)]⟩
   -- reset
   have e₃ := Exec.constN (P := P) w₂ 210038 0 (Nat.zero_le _)
   have f₃ := exec_frameM e₃ wrM_reset1
   have hR₃ := hR₂.body f₃
   -- the second loop
   obtain ⟨c₄, k₄, e₄, ⟨w₄, hR₄, h38₄, hm₄⟩, hk₄⟩ := loop2_exec (P := P) (m₀ := c.nmem)
-    (bk := bk) (by omega) hbkd hbk (by omega)
-    ⟨e₃.wb_right, hR₃, by simp, fun a => by
+    (bk := bk) (⋄) hbkd hbk (⋄)
+    ⟨e₃.wb_right, hR₃, ✓, fun a => by
       show c₂.nmem a = _
       rw [hm₂]; unfold mem1 mem2; split_ifs <;> first | rfl⟩
   -- reset
@@ -464,7 +466,7 @@ theorem bktS_exec (c : Config) (hw : WordsBounded W c) {BB n A base : ℕ} {bk :
   have hR₅ := hR₄.body f₅
   -- the third loop
   obtain ⟨c₆, k₆, e₆, ⟨w₆, hR₆, h38₆, h44₆, hm₆⟩, hk₆⟩ := loop3_exec (P := P) (m₀ := c.nmem)
-    (bk := bk) hbk (by omega)
+    (bk := bk) hbk (⋄)
     ⟨e₅.wb_right, hR₅, v38₅, by rw [v44₅]; rfl, fun a => by
       rw [hm₅, hm₄]; unfold mem2 mem3; split_ifs <;> first | rfl | omega⟩
   -- reset
@@ -473,25 +475,25 @@ theorem bktS_exec (c : Config) (hw : WordsBounded W c) {BB n A base : ℕ} {bk :
   have hR₇ := hR₆.body f₇
   -- the fourth loop
   obtain ⟨c₈, k₈, e₈, ⟨w₈, hR₈, h38₈, hm₈, hq₈⟩, hk₈⟩ := loop4_exec (P := P) (m₀ := c.nmem)
-    (bk := bk) (by omega) hbkd hbk (by omega) hbase
-    ⟨e₇.wb_right, hR₇, by simp, fun a ha => by
+    (bk := bk) (⋄) hbkd hbk (⋄) hbase
+    ⟨e₇.wb_right, hR₇, ✓, fun a ha => by
       show c₆.nmem a = _
       rw [hm₆]; unfold mem3 memCS
-      split_ifs <;> first | rfl | omega, fun q hq => absurd hq (by omega)⟩
+      split_ifs <;> first | rfl | omega, fun q hq => absurd hq (⋄)⟩
   refine ⟨c₈, k₁ + (k₂ + (1 + (k₄ + (k₅ + (k₆ + (1 + k₈)))))),
-    .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ e₈)))))), by omega,
+    .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ e₈)))))), ⋄,
     hR₈.r36, hR₈.r37, hR₈.r48, hR₈.alloc, hR₈.r34, hR₈.r39, ?_, fun b hb => ?_, fun b hb => ?_,
     fun a ha => ?_,
     hR₈.fr, ?_, hR₈.rm, hR₈.out⟩
   · exact seg_eq_bktList hbk fun q hq => hq₈ q hq
-  · rw [hm₈ _ (by omega)]; unfold memCS
-    rw [ite_eq_right (by omega), ite_eq_left (by omega)]; congr 1; omega
-  · rw [hm₈ _ (by omega)]; unfold memCS
-    rw [ite_eq_left (by omega), show c.nreg ALLOC + b - A₀ = b by omega, bstart_succ]
-  · rw [hm₈ _ (by omega)]; unfold memCS; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+  · rw [hm₈ _ (⋄)]; unfold memCS
+    rw [ite_eq_right (⋄), ite_eq_left (⋄)]; congr 1; omega
+  · rw [hm₈ _ (⋄)]; unfold memCS
+    Ξ ite_eq_left (⋄), show c.nreg ALLOC + b - A₀ = b by omega, bstart_succ
+  · rw [hm₈ _ (⋄)]; unfold memCS; Ξ ite_eq_right (⋄), ite_eq_right (⋄)
   · funext r
     exact exec_frameM2 (.seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ e₈)))))))
-      (BN := Bbkt) (BR := fun _ => false) (by decide) r rfl
+      (BN := Bbkt) (BR := fun _ => false) (⌖) r rfl
 
 end exec
 

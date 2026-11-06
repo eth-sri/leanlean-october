@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepLoad
 public import Mathlib.Data.List.GetD
 
@@ -56,29 +58,29 @@ theorem forS_exec {P : Polygon} {W : ℕ} {ri rn r1 : ℕ} {body : Stmt} (_hir :
     (fun d ⟨i, h, _⟩ => (hI i d h).1)
     (fun d ⟨i, hId, hri, hin⟩ ht => by
       obtain ⟨hwd, hrn, hr1⟩ := hI i d hId
-      rw [hri, hrn] at ht
+      Ξ' hri, hrn at ht
       obtain ⟨d₁, k₁, e₁, hk₁, hr₁, hI₁⟩ := hbody i d ht hId hri
       obtain ⟨hw₁, hrn₁, hr1₁⟩ := hI (i + 1) d₁ hI₁
       have e₂ := Exec.addN (P := P) hw₁ ri ri r1 (by rw [hr₁, hr1₁]; omega)
-      refine ⟨_, _, .seq e₁ e₂, ⟨i + 1, ?_, ?_, by omega⟩, ?_, ?_⟩
+      refine ⟨_, _, .seq e₁ e₂, ⟨i + 1, ?_, ?_, ⋄⟩, ?_, ?_⟩
       · exact hstab _ _ _ hI₁ e₂.wb_right
-      · simp only [upd_same]; rw [hr₁, hr1₁]
-      · simp only [upd_same]; rw [hr₁, hr1₁, hri]
+      · simp only [upd_same]; Ξ hr₁, hr1₁
+      · simp only [upd_same]; Ξ hr₁, hr1₁, hri
         have : (n - (i + 1)) * (κ + 3) + (κ + 3) = (n - i) * (κ + 3) := by
           rw [← Nat.succ_mul]; congr 1; omega
         omega
       · simp only [upd_same]; rw [hr₁, hr1₁, hri]; omega)
     ⟨0, I₀, by rw [hc₀]; simp, Nat.zero_le _⟩
   obtain ⟨-, hrn, -⟩ := hI i c' hI'
-  rw [hi, hrn] at hstop
-  have hin' : i = n := by omega
+  Ξ' hi, hrn at hstop
+  have hin' : i = n := ⋄
   subst hin'
   have : c₀.nreg ri = 0 := by rw [hc₀]; simp
-  rw [this] at hk hψ
+  Ξ' this at hk hψ
   refine ⟨c', _, .seq x₀ ex, ?_, hI', hi, ?_⟩
-  · simp only [Nat.sub_zero] at hk
+  · ϴ' Nat.sub_zero at hk
     omega
-  · rw [hi] at hψ; omega
+  · Ξ' hi at hψ; omega
 
 /-! ## Scattering values into memory -/
 
@@ -92,20 +94,20 @@ theorem scat_other {m : ℕ → ℕ} {g f : ℕ → ℕ} {n a : ℕ} (h : ∀ i,
   induction n with
   | zero => rfl
   | succ n ih =>
-    simp only [scat]
-    rw [upd_other _ _ _ (fun e => h n (by omega) e.symm)]
-    exact ih fun i hi => h i (by omega)
+    ϴ scat
+    Ξ upd_other _ _ _ (fun e => h n (⋄) e.symm)
+    exact ih fun i hi => h i (⋄)
 
 theorem scat_at {m : ℕ → ℕ} {g f : ℕ → ℕ} {n i : ℕ} (hi : i < n)
     (hg : ∀ j, j < n → i < j → g j ≠ g i) : scat m g f n (g i) = f i := by
   induction n with
   | zero => omega
   | succ n ih =>
-    simp only [scat]
+    ϴ scat
     by_cases hin : i = n
     · subst hin; exact upd_same _ _ _
-    · rw [upd_other _ _ _ (fun e => hg n (by omega) (by omega) e.symm)]
-      exact ih (by omega) fun j hj hij => hg j (by omega) hij
+    · Ξ upd_other _ _ _ (fun e => hg n (⋄) (⋄) e.symm)
+      exact ih (⋄) fun j hj hij => hg j (⋄) hij
 
 theorem scat_below {m : ℕ → ℕ} {g f : ℕ → ℕ} {n lo : ℕ} (hg : ∀ i, i < n → lo ≤ g i) {a : ℕ}
     (ha : a < lo) : scat m g f n a = m a :=
@@ -170,8 +172,8 @@ def emitted (φ : ℕ → Option (ℕ × ℕ)) (i : ℕ) : List (ℕ × ℕ) := 
 theorem emitted_succ (φ : ℕ → Option (ℕ × ℕ)) (i : ℕ) :
     emitted φ (i + 1) = emitted φ i ++ (φ i).toList := by
   unfold emitted
-  rw [List.range_succ, List.filterMap_append]
-  cases h : φ i <;> simp [h]
+  Ξ List.range_succ, List.filterMap_append
+  cases h : φ i <;> Θ h
 
 theorem emitted_length_le (φ : ℕ → Option (ℕ × ℕ)) (i : ℕ) : (emitted φ i).length ≤ i := by
   induction i with
@@ -180,7 +182,7 @@ theorem emitted_length_le (φ : ℕ → Option (ℕ × ℕ)) (i : ℕ) : (emitte
 
 theorem mem_emitted {φ : ℕ → Option (ℕ × ℕ)} {i : ℕ} {x : ℕ × ℕ} :
     x ∈ emitted φ i ↔ ∃ j, j < i ∧ φ j = some x := by
-  unfold emitted; simp [List.mem_filterMap]
+  unfold emitted; Θ List.mem_filterMap
 
 /-- Pairs stored in two arrays from the given bases. -/
 def PairsAt (m : ℕ → ℕ) (R1 R2 : ℕ) (l : List (ℕ × ℕ)) : Prop :=
@@ -338,11 +340,11 @@ theorem emitS_exec {P : Polygon} {W : ℕ} {ri rn r1 rf rv1 rv2 rR1 rR2 rc rt : 
 theorem PairsAt.append {m : ℕ → ℕ} {R1 R2 : ℕ} {l l' : List (ℕ × ℕ)} (h : PairsAt m R1 R2 l)
     (h' : PairsAt m (R1 + l.length) (R2 + l.length) l') : PairsAt m R1 R2 (l ++ l') := by
   intro t ht
-  rw [List.length_append] at ht
+  Ξ' List.length_append at ht
   rcases Nat.lt_or_ge t l.length with h1 | h1
   · rw [List.getD_append _ _ _ _ h1]; exact h t h1
-  · rw [List.getD_append_right _ _ _ _ h1]
-    have := h' (t - l.length) (by omega)
+  · Ξ List.getD_append_right _ _ _ _ h1
+    have := h' (t - l.length) (⋄)
     rwa [show R1 + l.length + (t - l.length) = R1 + t by omega,
       show R2 + l.length + (t - l.length) = R2 + t by omega] at this
 
@@ -387,9 +389,9 @@ theorem PF.trans {B : ℕ → Bool} {lo : ℕ} {c₁ c₂ c₃ : Config} (h₁ :
 theorem PF.mono {B B' : ℕ → Bool} {lo lo' : ℕ} {c c' : Config} (h : PF B lo c c')
     (hB : ∀ r, B r = true → B' r = true) (hlo : lo' ≤ lo) : PF B' lo' c c' := by
   have hf : ∀ r, B' r = false → B r = false := fun r hr => by
-    by_contra h'; simp only [Bool.not_eq_false] at h'; rw [hB r h'] at hr; exact Bool.noConfusion hr
+    by_contra h'; ϴ' Bool.not_eq_false at h'; Ξ' hB r h' at hr; exact Bool.noConfusion hr
   exact ⟨fun r hr => h.1 r (hf r hr), fun r hr => h.2.1 r (hf r hr),
-    fun a ha => h.2.2.1 a (by omega), fun a ha => h.2.2.2.1 a (by omega), h.2.2.2.2⟩
+    fun a ha => h.2.2.1 a (⋄), fun a ha => h.2.2.2.1 a (⋄), h.2.2.2.2⟩
 
 /-- **A frame without the allocator bounds.** -/
 def FrameN (S : Finset ℕ) (c c' : Config) : Prop :=
@@ -400,8 +402,8 @@ def FrameN (S : Finset ℕ) (c c' : Config) : Prop :=
 theorem FrameN.trans {S : Finset ℕ} {c c₁ c₂ : Config} (h₁ : FrameN S c c₁) (h₂ : FrameN S c₁ c₂)
     (hA : c.nreg ALLOC ≤ c₁.nreg ALLOC) : FrameN S c c₂ :=
   ⟨fun r hr ha => (h₂.1 r hr ha).trans (h₁.1 r hr ha), fun r hr => (h₂.2.1 r hr).trans (h₁.2.1 r hr),
-    fun a ha => (h₂.2.2.1 a (by omega)).trans (h₁.2.2.1 a ha),
-    fun a ha => (h₂.2.2.2.1 a (by omega)).trans (h₁.2.2.2.1 a ha), h₂.2.2.2.2.trans h₁.2.2.2.2⟩
+    fun a ha => (h₂.2.2.1 a (⋄)).trans (h₁.2.2.1 a ha),
+    fun a ha => (h₂.2.2.2.1 a (⋄)).trans (h₁.2.2.2.1 a ha), h₂.2.2.2.2.trans h₁.2.2.2.2⟩
 
 theorem FrameN.mono {S S' : Finset ℕ} {c c' : Config} (h : FrameN S c c') (hS : S ⊆ S') :
     FrameN S' c c' :=
@@ -416,14 +418,14 @@ theorem PF.frameN {B : ℕ → Bool} {S : Finset ℕ} {c c' : Config} (h : PF B 
     (hB : ∀ r, B r = true → bandOf r ∈ S ∨ r = ALLOC) (hrA : c'.rreg ALLOC = c.rreg ALLOC) :
     FrameN S c c' := by
   refine ⟨fun r hr hra => h.1 r ?_, fun r hr => ?_, h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
-  · by_contra h'; simp only [Bool.not_eq_false] at h'
+  · by_contra h'; ϴ' Bool.not_eq_false at h'
     rcases hB r h' with h'' | h''
     · exact hr h''
     · exact hra h''
   · by_cases hra : r = ALLOC
     · rw [hra]; exact hrA
     refine h.2.1 r ?_
-    by_contra h'; simp only [Bool.not_eq_false] at h'
+    by_contra h'; ϴ' Bool.not_eq_false at h'
     rcases hB r h' with h'' | h''
     · exact hr h''
     · exact hra h''

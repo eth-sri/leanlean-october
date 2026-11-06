@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildRen
 public import Chazelle.Core.NFBuildSpec
 public import Chazelle.Core.SortRam
@@ -34,7 +36,7 @@ def cmpR : Stmt := Stmt.ren σ cmpPos
 /-- The registers `dirR` writes. -/
 def BdirR (r : ℕ) : Bool := Bdir (σ r)
 
-theorem σ_10502 : σ 10502 = 10502 := by decide
+theorem σ_10502 : σ 10502 = 10502 := ⌖
 
 /-- **The direction procedure in band `bBuild`.** -/
 theorem dirR_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (d : Config)
@@ -54,13 +56,13 @@ theorem dirR_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
   · have := hfr.2.1 (σ r) hr
     simp only [cfgRen, σ_σ] at this ⊢
     exact this
-  · rw [cfgRen_nreg, σ_10502, hdir M hM]
+  · Ξ cfgRen_nreg, σ_10502, hdir M hM
     rfl
 
 /-- The registers `cmpR` writes. -/
 def BcmpR (r : ℕ) : Bool := decide (10000 ≤ r ∧ r < 10500) || decide (r = 40102)
 
-theorem wr_cmpPos' : wr (fun r => BcmpR (σ r)) cmpPos = true := by decide
+theorem wr_cmpPos' : wr (fun r => BcmpR (σ r)) cmpPos = true := ⌖
 
 theorem wr_cmpR : wr BcmpR cmpR = true := by
   rw [cmpR, wr_ren σ_σ]; exact wr_cmpPos'
@@ -98,8 +100,8 @@ theorem BcmpR_true {r : ℕ} (h : BcmpR r = true) : (10000 ≤ r ∧ r < 10500) 
   unfold BcmpR at h; simp at h; omega
 
 theorem wr_dirR : wr BdirR dirR = true := by
-  rw [dirR, wr_ren σ_σ]
-  simp only [BdirR, σ_σ]
+  Ξ dirR, wr_ren σ_σ
+  ϴ BdirR, σ_σ
   exact wr_locDir
 
 /-! ## One half of the comparison -/
@@ -126,8 +128,8 @@ theorem wr_halfS {qe qh se sh dd dst : ℕ} : wr (BhalfS dd dst) (halfS qe qh se
   have h2 : wr (BhalfS dd dst) cmpR = true :=
     wr_mono (fun r hr => by
       rcases BcmpR_true hr with h | h <;> simp [BhalfS, Bhalf] <;> omega) wr_cmpR
-  simp only [halfS, wr, block, wrOK, h1, h2, Bool.and_true, Bool.true_and]
-  simp [BhalfS, Bhalf]
+  ϴ halfS, wr, block, wrOK, h1, h2, Bool.and_true, Bool.true_and
+  Θ BhalfS, Bhalf
 
 /-- **One half of the comparison.**  The registers `qe, qh, se, sh, dd, dst` lie in
 `42100 … 42199`, the outputs are distinct from each other and from the inputs. -/
@@ -154,14 +156,14 @@ theorem halfS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
   have w₁ : WordsBounded W d₁ := x₁.wb_right
   have r₁ : ∀ r, r ≠ 40002 → d₁.nreg r = d.nreg r := fun r hr => by rw [hd₁]; simp [hr]
   obtain ⟨d₂, k₂, x₂, hk₂, f₂, dir₂⟩ := dirR_exec (P := P) hG hW d₁ w₁
-    (by rw [r₁ _ (by omega)]; exact hDW) (by rw [r₁ _ (by omega)]; exact hCW)
-    (M := M) (by rw [r₁ _ (by omega)]; exact hM) (by rw [hd₁]; simp; exact he)
+    (by rw [r₁ _ (⋄)]; exact hDW) (by rw [r₁ _ (by omega)]; exact hCW)
+    (M := M) (by rw [r₁ _ (⋄)]; exact hM) (by rw [hd₁]; simp; exact he)
   have r₂ : ∀ r, BdirR r = false → d₂.nreg r = d₁.nreg r := f₂.1
   have nb : ∀ r, 42100 ≤ r → BdirR r = false := fun r hr => by
     by_contra h; have := BdirR_true (Bool.not_eq_false _ ▸ h); omega
   have w₂ := x₂.wb_right
   have v : ∀ r, 42100 ≤ r → r < 42200 → d₂.nreg r = d.nreg r := fun r h1 h2 => by
-    rw [r₂ r (nb r h1), r₁ r (by omega)]
+    rw [r₂ r (nb r h1), r₁ r (⋄)]
   rw [show d₁.nreg 40002 = d.nreg qe by rw [hd₁]; simp] at dir₂
   -- the loads
   obtain ⟨d₃, k₃, x₃, hk₃, q⟩ : ∃ d₃ k₃, Exec P W (block [.copyN dd 10502, .copyN 10500 qe,
@@ -177,7 +179,7 @@ theorem halfS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
         simp (disch := omega) only [upd_same, upd_other]
       all_goals first
         | exact dir₂
-        | (rw [v _ (by omega) (by omega)])
+        | (rw [v _ (⋄) (by omega)])
   obtain ⟨q1, q2, q3, q4, q5, q6, q7, q8⟩ := q.1
   have w₃ := x₃.wb_right
   obtain ⟨d₄, k₄, x₄, hk₄, f₄, bit₄⟩ := cmpR_exec (P := P) hG hW d₃ w₃ q6 (by rw [q3]; exact hqh)
@@ -187,23 +189,23 @@ theorem halfS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
       { d₄ with nreg := upd d₄.nreg dst (d₄.nreg 40102) } (1 + (k₂ + (k₃ + (k₄ + 1)))) :=
     x₁.seq (x₂.seq (x₃.seq (x₄.seq (Exec.copyN w₄ dst 40102))))
   have hwr := wr_halfS (qe := qe) (qh := qh) (se := se) (sh := sh) (dd := dd) (dst := dst)
-  refine ⟨_, _, ex, by omega, ?_, ?_, exec_frameB ex hwr⟩
-  · simp only [upd_other _ _ _ n5]
+  refine ⟨_, _, ex, ⋄, ?_, ?_, exec_frameB ex hwr⟩
+  · ϴ upd_other _ _ _ n5
     rw [f₄.1 _ (by
       unfold BcmpR; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega), q1]
-  · simp only [upd_same]
-    rw [bit₄]
+  · ϴ upd_same
+    Ξ bit₄
 
 /-! ## Descriptors survive changes of memory above them -/
 
 /-- A host layout depends only on the memory below its end. -/
 theorem hostAt_agree {m m' : ℕ → ℕ} {B E : ℕ} {H : Host} (h : HostAt m B H)
     (hE : B + 3 * H.length + 4 ≤ E) (hm : ∀ a, a < E → m' a = m a) : HostAt m' B H := by
-  refine ⟨by rw [hm _ (by omega)]; exact h.1, fun i hi => ?_⟩
+  refine ⟨by rw [hm _ (⋄)]; exact h.1, fun i hi => ?_⟩
   have hh := h.2 i hi
-  have e1 := hm (B + 1 + 3 * i) (by omega)
-  have e2 := hm (B + 2 + 3 * i) (by omega)
-  have e3 := hm (B + 3 + 3 * i) (by omega)
+  have e1 := hm (B + 1 + 3 * i) (⋄)
+  have e2 := hm (B + 2 + 3 * i) (⋄)
+  have e3 := hm (B + 3 + 3 * i) (⋄)
   generalize H.getD i (.run 0 0) = it at hh ⊢
   cases it with
   | run a l => obtain ⟨h1, h2, h3⟩ := hh; exact ⟨e1.trans h1, e2.trans h2, e3.trans h3⟩
@@ -217,25 +219,25 @@ theorem desc_agree {P : Polygon} {E : ℕ} {m m' : ℕ → ℕ} {D : ℕ} {M : M
     (hwf : ModelDescWF P E m D) (hM : ModelDescAt m D (Qof P) M)
     (hm : ∀ a, a < E → m' a = m a) : ModelDescAt m' D (Qof P) M ∧ ModelDescWF P E m' D := by
   have hD := hwf.1
-  have e0 := hm D (by omega)
+  have e0 := hm D (⋄)
   rcases hM with ⟨h0, H, C, hC, rfl⟩ | ⟨h1, hbit, rfl⟩
   · obtain ⟨hC6, hCW⟩ := hwf.2 h0
     obtain ⟨hl, hwfH, hHE, hs⟩ := hCW H C hC
     obtain ⟨hH, hP, h2, h3, h4, h5⟩ := hC
-    have e1 := hm (D + 1) (by omega)
+    have e1 := hm (D + 1) (⋄)
     have hH' : HostAt m' (m' (D + 1)) H := by
-      rw [e1]; exact hostAt_agree hH (by omega) hm
+      rw [e1]; exact hostAt_agree hH (⋄) hm
     have hC' : ChainDescAt m' (D + 1) (Qof P) H C :=
-      ⟨hH', hP, by rw [hm _ (by omega)]; exact h2, by rw [hm _ (by omega)]; exact h3,
-        by rw [hm _ (by omega)]; exact h4, by rw [hm _ (by omega)]; exact h5⟩
+      ⟨hH', hP, by rw [hm _ (⋄)]; exact h2, by rw [hm _ (by omega)]; exact h3,
+        by rw [hm _ (⋄)]; exact h4, by rw [hm _ (by omega)]; exact h5⟩
     refine ⟨Or.inl ⟨by rw [e0]; exact h0, H, C, hC', rfl⟩, hD, fun _ => ⟨hC6, fun H' C' hC'' => ?_⟩⟩
     have hHH := hostAt_unique hC''.1 hC'.1
     subst hHH
     have hCC := chain_eq_of_desc hC'' hC'
     subst hCC
     exact ⟨hl, hwfH, by rw [e1]; exact hHE, hs⟩
-  · refine ⟨Or.inr ⟨by rw [e0]; exact h1, by rw [hm _ (by omega)]; exact hbit, rfl⟩, hD,
-      fun h0 => absurd (e0.symm.trans h0) (by omega)⟩
+  · refine ⟨Or.inr ⟨by rw [e0]; exact h1, by rw [hm _ (⋄)]; exact hbit, rfl⟩, hD,
+      fun h0 => absurd (e0.symm.trans h0) (⋄)⟩
 
 
 end

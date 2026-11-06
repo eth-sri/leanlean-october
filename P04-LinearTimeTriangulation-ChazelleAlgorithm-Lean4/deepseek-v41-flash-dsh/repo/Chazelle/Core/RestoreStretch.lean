@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreNodeMath
 
 /-!
@@ -55,7 +57,7 @@ theorem memα (hS : Stretch M Cα g g' L) {d : ℕ} (hd : d < L) {t : ℝ} (ht0 
 /-- The points of `M`'s walk inside the stretch lie on `Cα`. -/
 theorem memM (hS : Stretch M Cα g g' L) {d : ℕ} (hd : d < L) {t : ℝ} (ht0 : 0 ≤ t)
     (ht1 : t < 1) : sidePt M.W ((g + d) % M.W.n) t ∈ Cα.set := by
-  rw [hS.hA.sidePt_eq hd, hS.mod' hd.le]
+  Ξ hS.hA.sidePt_eq hd, hS.mod' hd.le
   exact hS.memα hd ht0 ht1
 
 theorem rayPt_inj {a : Point} {σ s s' : ℝ} (hσ : σ = 1 ∨ σ = -1)
@@ -80,21 +82,21 @@ theorem arrive (hS : Stretch M Cα g g' L) (hGα : WalkAx (chainModel Cα)) {c :
   set o := rayPt a σ L₀ with ho
   have hoD : o ∉ Cα.dom := by
     rw [hoB]; exact hGα.trace _ hB.1 _ hB.2.1 hB.2.2.1.le
-  have hoy : o.2 = a.2 := by rw [ho, rayPt_snd]
+  have hoy : o.2 = a.2 := Ρ ho, rayPt_snd
   have hdir : 0 < σ * (o.1 - a.1) := by
     rw [ho, rayPt_fst]; rcases hσ with rfl | rfl <;> linarith
   have hfarC : rayPt a σ T ∈ Cα.set := by rw [← hfar]; exact hS.memM hd ht0 ht1
   have harr := arrive_other hsetD hoy haC hkopen hoD hσ hdir hT hdom hfarC
   have hTL : T = L₀ := rayPt_inj hσ harr
   subst hTL
-  have hch : chordOf a σ T = c := by rw [chordOf_eq_segment hσ hT, hceq]
+  have hch : chordOf a σ T = c := Ρ chordOf_eq_segment hσ hT, hceq
   rw [hch] at hFA
   have hn : 0 < M.W.n := by have := hS.hg; omega
   have hnα : 0 < (chainModel Cα).W.n := by rw [nα]; omega
   have hAα := (hS.hA.sideAttach_iff hn hnα hd hdt c).1 hFA
   rw [hS.mod' hd.le] at hAα
   have heq : sidePt (chainModel Cα).W (g' + d) t = sidePt (chainModel Cα).W pB tB := by
-    rw [← hS.mod' hd.le, ← hS.hA.sidePt_eq hd, hfar, harr, hoB]
+    Ξ ← hS.mod' hd.le, ← hS.hA.sidePt_eq hd, hfar, harr, hoB
   obtain ⟨h1, h2⟩ := attach_unique hGα hc hAα hB heq
   exact ⟨h1.symm, h2.symm⟩
 

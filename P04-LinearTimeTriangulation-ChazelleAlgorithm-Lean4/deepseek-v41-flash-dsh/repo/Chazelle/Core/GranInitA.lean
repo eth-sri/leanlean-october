@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranInitEnv
 
 /-!
@@ -31,12 +35,12 @@ theorem GF.trans {b : ℕ} {c₁ c₂ c₃ : Config} {k₁ k₂ : ℕ} (h₁ : G
   obtain ⟨b1, b2, b3, b4, b5, b6, b7⟩ := h₂
   exact ⟨fun r hr ha => (b1 r hr ha).trans (a1 r hr ha), fun r hr => (b2 r hr).trans (a2 r hr),
     fun a ha => (b3 a ha).trans (a3 a ha), fun a ha => (b4 a ha).trans (a4 a ha), b5.trans a5,
-    a6.trans b6, by omega⟩
+    a6.trans b6, ⋄⟩
 
 theorem GF.mono {b : ℕ} {c c' : Config} {k k' : ℕ} (h : GF b c c' k) (hk : k ≤ k') :
     GF b c c' k' := by
   obtain ⟨a1, a2, a3, a4, a5, a6, a7⟩ := h
-  exact ⟨a1, a2, a3, a4, a5, a6, by omega⟩
+  exact ⟨a1, a2, a3, a4, a5, a6, ⋄⟩
 
 /-- A natural-only statement writing registers of band `9` or `5` (`Bw`) and storing only at or
 above `b` gives `GF b`. -/
@@ -118,7 +122,7 @@ def costA (K A R D : ℕ) : ℕ :=
   30 + (4 * R + 4 * D + 32 + 3 * (dmOf K A R D 0).oEnd) + (15 * K + 5) +
     (5 * (dmOf K A R D 0).cap + 4) + ((9 * D + 24) * R + 6)
 
-set_option maxHeartbeats 4000000 in
+
 theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     {MD NFH D γ : ℕ} {M : Model} {N : NF} {reg : ℕ → Set Point}
     (h0 : c.nreg 90000 = MD) (h1 : c.nreg 90001 = NFH) (h2 : c.nreg 90002 = D)
@@ -142,7 +146,7 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have hdR : d.R = R := rfl
   have hdD : d.D = D := rfl
   have hEnd : d.oEnd = (dmOf K A R D 0).oEnd := rfl
-  have hN : NFAt c.nmem NFH N := hNW.holds
+  have hN := hNW.holds
   obtain ⟨aB, aCh, aRg, aLst, aArc, aSeq⟩ := nf_areas hNW
   have hW5 : 5 ≤ W := by unfold hostWords at hWh; have := hwf.1; omega
   have hWn : P.n ≤ W := by unfold hostWords at hWh; omega
@@ -154,7 +158,7 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     (fun h0' => by have := chain_m_le hwf hMD h0'; unfold hostWords at hWh; omega)
   have w₁ := e₁.wb_right
   rw [hN.1] at q10; rw [hN.2.1] at q11; rw [hN.2.2.1] at q12
-  have g₁ : ∀ r, Bhdr r = false → c₁.nreg r = c.nreg r := F₁.1
+  have g₁ := F₁.1
   have hA₁ : c₁.nreg ALLOC = b0 := g₁ _ (by decide)
   -- 2. the layout
   obtain ⟨c₂, k₂, e₂, hk₂, B₂, a₂, x27, x28, x26, ab₂, r₂, m₂, F₂⟩ := base_exec (P := P) c₁ w₁
@@ -162,7 +166,7 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     (by rw [g₁ _ (by decide), h2]) q19 (by rw [hA₁]; exact hroom)
   rw [hA₁] at hk₂ B₂ a₂ x27 x28
   have w₂ := e₂.wb_right
-  have g₂ : ∀ r, (r < 90025 ∨ 90045 ≤ r) → r ≠ 90061 → r ≠ ALLOC → c₂.nreg r = c₁.nreg r := r₂
+  have g₂ := r₂
   have mem₂ : c₂.nmem = c.nmem := by rw [m₂, F₁.2.2.1]
   -- the entry records
   have hrec : ∀ i, i < K → c₂.nmem (c.nmem (NFH + 3) + 5 * i + 3) = (N.chord i).up ∧
@@ -185,7 +189,7 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   obtain ⟨c₃, k₃, e₃, hk₃, L₃, M₃, F₃⟩ := chLoop_exec (P := P) (d := d) (chords := N.chord) w₂ B₂
     rfl t10 t13 t19 t20 hrec hCB hbW hW5
   have w₃ := e₃.wb_right
-  have g₃ : ∀ r, Binit r = false → c₃.nreg r = c₂.nreg r := F₃.1
+  have g₃ := F₃.1
   have B₃ : Bases c₃ d := B₂.frame fun r a1 a2 => g₃ r (by simp [Binit]; omega)
   -- 4. the worklist
   obtain ⟨c₄, k₄, e₄, hk₄, S₄, M₄, F₄⟩ := stkLoop_exec (P := P) (d := d) w₃ B₃
@@ -193,7 +197,7 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     (by rw [g₃ _ (by decide), x26, hdD, hdK])
     (by rw [g₃ _ (by decide), t19]) hbW
   have w₄ := e₄.wb_right
-  have g₄ : ∀ r, Binit r = false → c₄.nreg r = c₃.nreg r := F₄.1
+  have g₄ := F₄.1
   have B₄ : Bases c₄ d := B₃.frame fun r a1 a2 => g₄ r (by simp [Binit]; omega)
   have t4 : ∀ r, Binit r = false → c₄.nreg r = c₂.nreg r := fun r h => by rw [g₄ r h, g₃ r h]
   -- 5. the classes

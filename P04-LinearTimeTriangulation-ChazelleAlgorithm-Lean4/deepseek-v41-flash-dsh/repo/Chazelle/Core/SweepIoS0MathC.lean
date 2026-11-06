@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoS0MathB
 
 /-!
@@ -165,9 +167,9 @@ theorem arrival_of_attach {W : Polygon} {e : Set Point} {p : ℕ} {t : ℝ} {z :
     (hev : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt z σ s ∈ e) : Arrival W z (-σ) p t := by
   obtain ⟨hp, ht0, ht1, -, r, hr, hcl⟩ := hA
   refine ⟨hp, ht0, ht1, hpt, ?_⟩
-  rw [neg_neg]
+  Ξ neg_neg
   obtain ⟨s, ⟨hse, hsr⟩, hs0⟩ := ((hev.and (Ioo_mem_nhdsGT hr)).and self_mem_nhdsWithin).exists
-  have hs0' : (0 : ℝ) < s := hs0
+  have hs0' := hs0
   have hdist : dist (rayPt z σ s) z = s := dist_rayPt z hσ hs0'.le
   have h1 : sideLeft W p t (rayPt z σ s) := by
     refine hcl _ hse ?_ ?_
@@ -193,20 +195,20 @@ theorem endOrigin_big (Q : Polygon) (N : NF) {j : ℕ} (hj : N.nChords ≤ j / 2
     have hwa : (chainModel J.right).wa 0 = J.right.slitTop := rfl
     have hwb : (chainModel J.right).wb 0 = ((-J.right.radius, J.right.radius) : Point) := by
       show (chainModel J.right).W.vtx ((0 + 1) % (chainModel J.right).W.n) = _
-      rw [show (0 + 1) % (chainModel J.right).W.n = 1 by rw [hn]; exact Nat.mod_eq_of_lt (by omega)]
+      rw [show (0 + 1) % (chainModel J.right).W.n = 1 by rw [hn]; exact Nat.mod_eq_of_lt (⋄)]
       rfl
     have hpar : (chainModel J.right).param Q ⟨0, 0 + 1⟩ = 0 := by
       show (if ((chainModel J.right).wa 0).2 = ((chainModel J.right).wb 0).2 then 0 else _) = _
-      rw [ite_eq_left (by rw [hwa, hwb]; rfl)]
+      Ξ ite_eq_left (by rw [hwa, hwb]; rfl)
     unfold Model.pos
-    simp only [hpar, Geometry.lerp_zero]
+    ϴ hpar, Geometry.lerp_zero
     exact hwa
   have hset : (N.chord (j / 2)).toSet (chainModel J.right) Q =
       hseg (Q.vtx 0).2 J.right.slitTop.1 J.right.slitTop.1 := by
-    rw [hch]
+    Ξ hch
     unfold CRec.toSet CRec.lpos CRec.rpos
     simp only
-    rw [hpos]
+    Ξ hpos
   unfold endOrigin
   split_ifs
   · rw [hset, Merge.lend_hseg le_rfl]; rfl

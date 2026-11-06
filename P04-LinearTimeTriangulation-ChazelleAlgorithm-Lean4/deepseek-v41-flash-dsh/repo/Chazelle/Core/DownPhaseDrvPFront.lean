@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvPCalls
 public import Chazelle.Core.DownPhaseDrvTMain
 
@@ -33,23 +35,23 @@ def Btp (r : ℕ) : Bool :=
 def Ball (r : ℕ) : Bool := Bsc r || Btp r || Bbit r
 
 theorem bscan_btp {r : ℕ} (h : Bscan r = true) : Btp r = true := by
-  simp only [Bscan, Btp, Bhost, Bk, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega
+  ϴ' Bscan, Btp, Bhost, Bk, Bool.or_eq_true, decide_eq_true_eq at h ⊢; omega
 
 theorem bg_btp {r : ℕ} (h : Bg r = true) : Btp r = true := by
-  simp only [Bg, Btp, Bk, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq] at h ⊢; omega
+  ϴ' Bg, Btp, Bk, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq at h ⊢; omega
 
 theorem frameB_mono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' := by
   refine ⟨fun r hr => h.1 r ?_, fun r hr => h.2.1 r ?_, h.2.2⟩
   · cases hb : B r
     · rfl
-    · rw [hB r hb] at hr; exact absurd hr (by decide)
+    · Ξ' hB r hb at hr; exact absurd hr (⌖)
   · cases hb : B r
     · rfl
-    · rw [hB r hb] at hr; exact absurd hr (by decide)
+    · Ξ' hB r hb at hr; exact absurd hr (⌖)
 
 theorem ball_band {r : ℕ} (h : Ball r = true) : bandOf r ∈ DrvR.drvBands := by
-  simp only [Ball, Bsc, Btp, Bbit, Bk, Bool.or_eq_true, decide_eq_true_eq] at h
+  ϴ' Ball, Bsc, Btp, Bbit, Bk, Bool.or_eq_true, decide_eq_true_eq at h
   rw [DrvT.mem_drvBands]; unfold bandOf; omega
 
 theorem ball_false {r : ℕ} (h1 : r < 10000 ∨ 10500 ≤ r) (h2 : r < 50046 ∨ 50080 ≤ r)
@@ -60,7 +62,7 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The descriptor part of a piece.** -/
 theorem frontS_exec {O : OracleIface} (c : Config) (hw : WordsBounded W c)
     (hG : GoodEnv P) (hW : hostWords P.n ≤ W)
@@ -107,7 +109,7 @@ theorem frontS_exec {O : OracleIface} (c : Config) (hw : WordsBounded W c)
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, v12, v20, v21, v22, E₁⟩ := cntS_exec (P := P) c hw (H := H)
     (by rw [hHB]; exact hH.holds) (by rw [hHB]; omega) E.hN (by omega)
   rw [hHB] at E₁
-  have k₁' : ∀ r, Bsc r = false → c₁.nreg r = c.nreg r := F₁.1
+  have k₁' := F₁.1
   have g₁ : ∀ r, 218000 ≤ r → r < 218012 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
     k₁' r (by simp only [Bsc, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
   have w₁ := e₁.wb_right
@@ -147,7 +149,7 @@ theorem frontS_exec {O : OracleIface} (c : Config) (hw : WordsBounded W c)
             exact ham)
       rw [g₁ 218002 (by norm_num) (by norm_num), hm] at hT hle
       rw [g₁ 218004 (by norm_num) (by norm_num)] at hle
-      have hg : ∀ r, Bg r = false → c₂.nreg r = c₁.nreg r := F₂.1
+      have hg := F₂.1
       have E₂ : HostEnv W HB H.length c.nmem c₂ := by
         have g : ∀ r, 50060 ≤ r → r < 50070 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
           hg r (by simp only [Bg, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,

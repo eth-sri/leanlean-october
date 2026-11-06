@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecPhases
 
 /-!
@@ -23,7 +25,7 @@ def pad (m : ℕ → ℕ) (A Z : ℕ) : ℕ → ℕ := fun a => if a < A then m 
 
 theorem pad_lt {m : ℕ → ℕ} {A Z a : ℕ} (h : a < A) : pad m A Z a = m a := ite_eq_left h
 
-theorem pad_ge {m : ℕ → ℕ} {A Z a : ℕ} (h : A ≤ a) : pad m A Z a = Z := ite_eq_right (by omega)
+theorem pad_ge {m : ℕ → ℕ} {A Z a : ℕ} (h : A ≤ a) : pad m A Z a = Z := ite_eq_right (⋄)
 
 theorem robust_pad {A : ℕ} {m : ℕ → ℕ} {Φ : (ℕ → ℕ) → Prop} (h : Robust A m Φ) (Z : ℕ) :
     Φ (pad m A Z) := h _ fun _ ha => pad_lt ha

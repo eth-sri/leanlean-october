@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMirrorBase
 public import Chazelle.Core.DownPhaseMirrorKey
 
@@ -49,7 +51,7 @@ theorem sideCcw_mir (B X A : Point) : sideCcw (mir A) (mir X) (mir B) ↔ sideCc
     rw [h1, h2]; ring
   have hdAB : sideDot A B = sideDot B A := by unfold sideDot; ring
   unfold sideCcw
-  simp only [sideCross_mir, sideDot_mir, hdAB]
+  ϴ sideCross_mir, sideDot_mir, hdAB
   constructor
   · rintro (⟨h1, h2, h3⟩ | ⟨h1, h2⟩ | ⟨h1, h2, h3⟩ | ⟨h1, h2, h3⟩)
     · exact Or.inl ⟨h1, h3, h2⟩
@@ -86,7 +88,7 @@ theorem sideCcw_mir (B X A : Point) : sideCcw (mir A) (mir X) (mir B) ↔ sideCc
       · rcases h3 with h3 | h3
         · left; intro h0
           rw [h0, zero_mul] at e1
-          have : sideCross B X * sideDot B A = 0 := by linarith
+          have : sideCross B X * sideDot B A = 0 := ⟡
           rcases mul_eq_zero.1 this with h | h
           · exact h3 h
           · linarith
@@ -96,7 +98,7 @@ theorem sideCcw_mir (B X A : Point) : sideCcw (mir A) (mir X) (mir B) ↔ sideCc
 theorem sideLeftOf_mir (a v b x : Point) :
     sideLeftOf (mir b) (mir v) (mir a) (mir x) ↔ sideLeftOf a v b x := by
   unfold sideLeftOf
-  rw [mir_sub, mir_sub, mir_sub, sideCcw_mir]
+  Ξ mir_sub, mir_sub, mir_sub, sideCcw_mir
 
 /-- Reversing an edge flips the offset side. -/
 theorem offset_rev (u v : Point) (t δ : ℝ) : offset v u t (-δ) = offset u v (1 - t) δ := by
@@ -194,11 +196,11 @@ theorem posMir_posMir {n c p' : ℕ} (hc : c < n) (hp : p' < n) {t' : ℝ} (ht1 
     posMir n c (posMir n c p' t').1 (posMir n c p' t').2 = (p', t') := by
   unfold posMir
   by_cases ht : t' = 0
-  · simp only [ht, ↓reduceIte]
-    rw [idx_invol hc hp]
+  · ϴ ht, ↓reduceIte
+    Ξ idx_invol hc hp
   · have h1 : (1 : ℝ) - t' ≠ 0 := by intro h; apply ht; linarith
-    simp only [ht, ↓reduceIte, h1]
-    rw [idx_q_invol hc hp, sub_sub_cancel]
+    ϴ ht, ↓reduceIte, h1
+    Ξ idx_q_invol hc hp, sub_sub_cancel
 
 /-- **The key of the corresponding position is the reflected key.** -/
 theorem posMir_key {n c p' : ℕ} (hc : c < n) (hp : p' < n) {t' : ℝ} (ht0 : 0 ≤ t')
@@ -206,9 +208,9 @@ theorem posMir_key {n c p' : ℕ} (hc : c < n) (hp : p' < n) {t' : ℝ} (ht0 : 0
     ((posMir n c p' t').1 : ℝ) + (posMir n c p' t').2 = rk n c (p' + t') := by
   unfold posMir
   by_cases ht : t' = 0
-  · simp only [ht, ↓reduceIte, add_zero]
+  · ϴ ht, ↓reduceIte, add_zero
     exact (rk_nat hc hp).symm
-  · simp only [ht, ↓reduceIte]
+  · ϴ ht, ↓reduceIte
     exact (rk_edge hc hp (lt_of_le_of_ne ht0 (Ne.symm ht)) ht1).symm
 
 namespace WalkMir
@@ -222,16 +224,16 @@ theorem n_pos : 0 < W.n := lt_of_le_of_lt (Nat.zero_le _) h.c_lt
 theorem symm : WalkMir W' W c := by
   refine ⟨h.n_eq.symm, by rw [h.n_eq]; exact h.c_lt, fun j hj => ?_⟩
   rw [h.n_eq] at hj ⊢
-  rw [h.vtx _ (Nat.mod_lt _ h.n_pos), idx_invol h.c_lt hj, mir_mir]
+  Ξ h.vtx _ (Nat.mod_lt _ h.n_pos), idx_invol h.c_lt hj, mir_mir
 
 /-- **Points correspond.** -/
 theorem sidePt_mir {p' : ℕ} (hp : p' < W.n) (t' : ℝ) :
     sidePt W' p' t' = mir (sidePt W (posMir W.n c p' t').1 (posMir W.n c p' t').2) := by
   unfold posMir
   by_cases ht : t' = 0
-  · simp only [ht, ↓reduceIte]
-    rw [Chazelle.Chain.sidePt_zero, Chazelle.Chain.sidePt_zero, h.vtx p' hp]
-  · simp only [ht, ↓reduceIte]
+  · ϴ ht, ↓reduceIte
+    Ξ Chazelle.Chain.sidePt_zero, Chazelle.Chain.sidePt_zero, h.vtx p' hp
+  · ϴ ht, ↓reduceIte
     unfold sidePt
     rw [h.n_eq, h.vtx p' hp, h.vtx ((p' + 1) % W.n) (Nat.mod_lt _ h.n_pos),
       idx_next h.n_pos hp, idx_succ h.n_pos hp, ← Chazelle.Geometry.lerp_symm, mir_lerp]
@@ -241,15 +243,15 @@ theorem sideLeft_mir {p' : ℕ} (hp : p' < W.n) {t' : ℝ} (ht1 : t' < 1) (x : P
     sideLeft W' p' t' (mir x) ↔
       sideLeft W (posMir W.n c p' t').1 (posMir W.n c p' t').2 x := by
   unfold sideLeft
-  rw [h.sidePt_mir hp]
+  Ξ h.sidePt_mir hp
   unfold posMir sidePrev sideNext
   by_cases ht : t' = 0
-  · simp only [ht, ↓reduceIte]
+  · ϴ ht, ↓reduceIte
     rw [h.n_eq, h.vtx _ (Nat.mod_lt _ h.n_pos), h.vtx _ (Nat.mod_lt _ h.n_pos),
       idx_prev h.n_pos hp, idx_prev2 h.n_pos hp]
     exact sideLeftOf_mir _ _ _ _
   · have h1 : (1 : ℝ) - t' ≠ 0 := by intro h; apply ht; linarith
-    simp only [ht, ↓reduceIte, h1]
+    ϴ ht, ↓reduceIte, h1
     rw [h.n_eq, h.vtx p' hp, h.vtx _ (Nat.mod_lt _ h.n_pos), idx_next h.n_pos hp,
       idx_succ h.n_pos hp]
     exact sideLeftOf_mir _ _ _ _
@@ -261,8 +263,8 @@ theorem sideAttach_mir {p' : ℕ} (hp : p' < W.n) {t' : ℝ} (ht0 : 0 ≤ t') (h
       SideAttach W d (posMir W.n c p' t').1 (posMir W.n c p' t').2 := by
   obtain ⟨b1, b2, b3⟩ := posMir_bounds (c := c) (p' := p') h.n_pos ht0 ht1
   unfold SideAttach
-  rw [h.sidePt_mir hp, mem_image_mir, mir_mir, h.n_eq]
-  simp only [Set.forall_mem_image, mir_injective.ne_iff, dist_mir, h.sideLeft_mir hp ht1]
+  Ξ h.sidePt_mir hp, mem_image_mir, mir_mir, h.n_eq
+  ϴ Set.forall_mem_image, mir_injective.ne_iff, dist_mir, h.sideLeft_mir hp ht1
   constructor
   · rintro ⟨-, -, -, h4, h5⟩; exact ⟨b1, b2, b3, h4, h5⟩
   · rintro ⟨-, -, -, h4, h5⟩; exact ⟨hp, ht0, ht1, h4, h5⟩

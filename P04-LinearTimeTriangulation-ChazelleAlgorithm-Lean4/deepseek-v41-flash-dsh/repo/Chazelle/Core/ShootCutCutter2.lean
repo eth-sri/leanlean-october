@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutCutter
 
 /-!
@@ -63,9 +65,9 @@ theorem whileLtN_potential_lb' {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt}
   | _ n ih =>
     by_cases ht : c.nreg a < c.nreg b
     · obtain ⟨c₁, k₁, hb, hI₁, hΦ, hψ⟩ := hbody c hc ht
-      obtain ⟨c', k₂, hl, hI', ht', hk₂, hψ'⟩ := ih (Φ c₁) (by omega) hI₁ rfl
-      exact ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht', by omega, by omega⟩
-    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, by omega, by omega⟩
+      obtain ⟨c', k₂, hl, hI', ht', hk₂, hψ'⟩ := ih (Φ c₁) (⋄) hI₁ rfl
+      exact ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht', ⋄, ⋄⟩
+    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, ⋄, ⋄⟩
 
 /-- **The set-up of the arc-cutter.** -/
 theorem cutInit_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) {γ A₀ : ℕ}
@@ -202,7 +204,7 @@ theorem cutFin_exec {P : Polygon} {W A₀ Nmax : ℕ} {m₀ : ℕ → ℕ} {ps :
       d₁.output = d.output := by
     exec_block
     refine ⟨rfl, by config_simp; exact hB, ?_, fun a ha => ?_, fun x hx => ?_, rfl, rfl, rfl⟩
-    · simp only [upd, Config.nmem_mk, hB, ↓reduceIte, hc]
+    · ϴ upd, Config.nmem_mk, hB, ↓reduceIte, hc
     · simp only [upd, Config.nmem_mk, hB]; rw [ite_eq_right ha]
     · simp only [upd, Config.nreg_mk]; rw [ite_eq_right hx]
   set E := A₀ + 1 + 7 * ps.length with hE
@@ -215,8 +217,8 @@ theorem cutFin_exec {P : Polygon} {W A₀ Nmax : ℕ} {m₀ : ℕ → ℕ} {ps :
     (body := .instr (.addN ALLOC ALLOC 140003)) Inv (fun c => 3 * (E - c.nreg ALLOC))
     (fun c => c.nreg ALLOC) (fun c h => h.1)
     (fun c ⟨hw', hA', hr', hm', hrr', hrm', ho'⟩ ht => by
-      have e3 : c.nreg 140003 = 1 := by rw [hr' _ (by rw [hAl]; omega), r₁ _ (by omega), h1]
-      have e0 : c.nreg 140000 = E := by rw [hr' _ (by rw [hAl]; omega), r₁ _ (by omega), hp]
+      have e3 : c.nreg 140003 = 1 := by rw [hr' _ (by rw [hAl]; omega), r₁ _ (⋄), h1]
+      have e0 : c.nreg 140000 = E := by rw [hr' _ (by rw [hAl]; omega), r₁ _ (⋄), hp]
       rw [e0] at ht
       have ex := Exec.addN (P := P) hw' ALLOC ALLOC 140003 (by rw [e3]; omega)
       refine ⟨_, 1, ex, ⟨ex.wb_right, ?_, fun x hx => ?_, hm', hrr', hrm', ho'⟩, ?_, ?_⟩
@@ -225,16 +227,16 @@ theorem cutFin_exec {P : Polygon} {W A₀ Nmax : ℕ} {m₀ : ℕ → ℕ} {ps :
       · simp only [Config.nreg_mk, Machine.upd_same]; rw [e3]; omega
       · simp only [Config.nreg_mk, Machine.upd_same]; rw [e3])
     ⟨e₁.wb_right, by rw [a0]; omega, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
-  have e0 : d₂.nreg 140000 = E := by rw [hr₂ _ (by rw [hAl]; omega), r₁ _ (by omega), hp]
+  have e0 : d₂.nreg 140000 = E := by rw [hr₂ _ (by rw [hAl]; omega), r₁ _ (⋄), hp]
   rw [e0] at hx₂
   refine ⟨d₂, k₁ + k₂, by unfold cutFin cutBump; exact .seq e₁ e₂, ?_, ?_, ?_, fun a ha => ?_,
-    by omega, ?_, fun x h1 h2 => ?_, by rw [hrr₂, rr₁], by rw [hrm₂, rm₁], by rw [ho₂, oo₁]⟩
+    ⋄, ?_, fun x h1 h2 => ?_, by rw [hrr₂, rr₁], by rw [hrm₂, rm₁], by rw [ho₂, oo₁]⟩
   · rw [a0] at hk₂; omega
-  · rw [hr₂ _ (by rw [hAl]; omega), o10]
-  · rw [hm₂, om]
-  · rw [hm₂, omo a ha]
+  · Ξ hr₂ _ (by rw [hAl]; omega), o10
+  · Ξ hm₂, om
+  · Ξ hm₂, omo a ha
   · rw [a0] at hψ; omega
-  · rw [hr₂ x h1, r₁ x h2]
+  · Ξ hr₂ x h1, r₁ x h2
 
 end
 

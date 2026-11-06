@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvKey2Sel
 
 /-!
@@ -41,22 +43,22 @@ variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 theorem kqLblOf_eq {c c' : Config} {N L : ℕ} (h : ∀ q, LblR N L q → c'.nreg q = c.nreg q) :
     lblOf c' N L = lblOf c N L := by
   unfold lblOf
-  rw [h N (Or.inl rfl)]
+  Ξ h N (Or.inl rfl)
   apply List.map_congr_left
   intro i hi
-  rw [List.mem_range] at hi
-  exact h _ (Or.inr ⟨by omega, by omega⟩)
+  Ξ' List.mem_range at hi
+  exact h _ (Or.inr ⟨⋄, ⋄⟩)
 
 theorem kqAddLs_nil (l : List ℕ) : addLs l [] = l := rfl
 
 theorem kqAddLs_append (l a b : List ℕ) : addLs l (a ++ b) = addLs (addLs l a) b := by
-  unfold addLs; rw [List.foldl_append]
+  unfold addLs; Ξ List.foldl_append
 
 theorem addLabK_irs (hI : IInv W c₀ c) (hK : Consts c) (hN : c.nreg kqN ≤ 4) (hW : 4 ≤ W) :
     IRS P W c₀ (addLab kqN kqL kqV) c 30 (fun c' => c'.nreg kqN ≤ 4 ∧
       lblOf c' kqN kqL = addL (lblOf c kqN kqL) (c.nreg kqV) ∧
       (∀ q, ¬ LblR kqN kqL q → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) :=
-  addLab_irs hI hK (iscr_sw' (by norm_num) (by norm_num))
+  addLab_irs hI hK (iscr_sw' (⊛) (⊛))
     (fun i hi => iscr_sw (by unfold kqL sw; omega) (by unfold kqL sw; omega))
     (fun i hi => by unfold kqN kqL sw; omega) (by kqr) (fun i hi => by unfold kqV kqL sw; omega)
     (by rintro k (rfl | rfl | rfl | rfl) <;> unfold LblR <;> kqr) hN hW
@@ -65,14 +67,14 @@ theorem anchHead_irs (hI : IInv W c₀ c) (hK1 : c.nreg K1 = 1) (hW : c.nreg kqX
     IRS P W c₀ (block [.constN kqA 1, .addN kqX kqX K1, .loadN kqY kqX]) c 3 (fun c' =>
       c'.nreg kqA = 1 ∧ c'.nreg kqX = c.nreg kqX + 1 ∧ c'.nreg kqY = c.nmem (c.nreg kqX + 1) ∧
       (∀ q, q ≠ kqA → q ≠ kqX → q ≠ kqY → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
-  simp only [sw, K1, kqX, Nat.reduceAdd] at hK1 hW
+  ϴ' sw, K1, kqX, Nat.reduceAdd at hK1 hW
   refine (IRS.block _ hI ?_).mono le_rfl ?_
-  · simp [okB, okI, regI, upd, kqX, kqA, kqY, K1, sw, IScr, hK1]
+  · Θ okB, okI, regI, upd, kqX, kqA, kqY, K1, sw, IScr, hK1
     omega
   · rintro c' rfl
-    simp [regB, regI, upd, kqX, kqA, kqY, K1, sw, hK1]
+    Θ regB, regI, upd, kqX, kqA, kqY, K1, sw, hK1
     intro r ha hb hc
-    simp [ha, hb, hc]
+    Θ ha, hb, hc
 
 set_option maxHeartbeats 8000000 in
 /-- **The labels of an anchored record.** -/

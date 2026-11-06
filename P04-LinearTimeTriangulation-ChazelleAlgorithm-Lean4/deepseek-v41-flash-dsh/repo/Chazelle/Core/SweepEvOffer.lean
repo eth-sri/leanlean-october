@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvLab
 public import Chazelle.Core.SweepEvSpec
 
@@ -87,34 +89,34 @@ theorem takeL_val (m f : ℕ → ℕ) :
   · simp only [takeL, regB, regI, upd, bF, bE, bH, bN, bL, cME, eA, oUp, oDn, sw]; simp
   · simp only [takeL, regB, regI, upd, bF, bE, bH, bN, bL, cME, eA, oUp, oDn, sw]; simp
   · simp only [takeL, regB, regI, upd, bF, bE, bH, bN, bL, cME, eA, oUp, oDn, sw]; simp
-  · simp only [takeL, List.mem_cons, List.not_mem_nil, or_false] at hi
+  · ϴ' takeL, List.mem_cons, List.not_mem_nil, or_false at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;> intro h <;> apply hq
     · exact Or.inl h.symm
     · exact Or.inr (Or.inl h.symm)
     · exact Or.inr (Or.inr (Or.inl h.symm))
     · exact Or.inr (Or.inr (Or.inr (Or.inl h.symm)))
-    · exact Or.inr (Or.inr (Or.inr (Or.inr ⟨by omega, by omega⟩)))
-    · exact Or.inr (Or.inr (Or.inr (Or.inr ⟨by omega, by omega⟩)))
+    · exact Or.inr (Or.inr (Or.inr (Or.inr ⟨⋄, ⋄⟩)))
+    · exact Or.inr (Or.inr (Or.inr (Or.inr ⟨⋄, ⋄⟩)))
 
 theorem lblOf_take {c c' : Config} (h1 : c'.nreg bN = 2) (h2 : c'.nreg bL = c.nreg oUp)
     (h3 : c'.nreg (bL + 1) = c.nreg oDn) : lblOf c' bN bL = [c.nreg oUp, c.nreg oDn] := by
-  unfold lblOf; rw [h1]; simp [List.range_succ, h2, h3]
+  unfold lblOf; rw [h1]; Θ List.range_succ, h2, h3
 
 theorem lblOf_congr {c c' : Config} (h : ∀ q, LblR bN bL q → c'.nreg q = c.nreg q) :
     lblOf c' bN bL = lblOf c bN bL := by
   unfold lblOf
-  rw [h bN (Or.inl rfl)]
+  Ξ h bN (Or.inl rfl)
   apply List.map_congr_left
   intro i hi
-  rw [List.mem_range] at hi
-  exact h _ (Or.inr ⟨by omega, by omega⟩)
+  Ξ' List.mem_range at hi
+  exact h _ (Or.inr ⟨⋄, ⋄⟩)
 
 theorem bestR_reg {q : ℕ} (h : BestR q ∨ (cO ≤ q ∧ q ≤ cO2 + 1)) : sw 2280 ≤ q ∧ q ≤ sw 2417 := by
   unfold BestR LblR bF bE bH bN bL cO cO2 sw at h
   unfold sw; omega
 
-set_option maxHeartbeats 8000000 in
-set_option maxRecDepth 100000 in
+
+
 /-- **The offer of a candidate.** -/
 theorem offerC_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c₀)
     (hctx : ChainCtx P W c (sw 2) J.whole) (hgw : c.nreg cGW = gW J)
@@ -202,15 +204,15 @@ theorem offerC_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
   · rw [k01] at h2
     have hlt : ok < oc := b2.2.1 (by have := b2.1; omega)
     refine IRS.mono (K := 11190 + 2) (IRS.ifT (by rw [k01]; exact h2) ?_) (by norm_num) (fun _ h => h)
-    have bF1 : c₁.nreg bF = c.nreg bF := bs1.1
+    have bF1 := bs1.1
     by_cases h3 : c₁.nreg K0 < c₁.nreg bF
     · rw [k01, bF1] at h3
       have hbF1 : c.nreg bF = 1 := by omega
       refine IRS.mono (K := 11188 + 2) (IRS.ifT (by rw [k01, bF1]; exact h3) ?_) le_rfl (fun _ h => h)
       have hbP := hb hbF1
-      have eBE : c₁.nreg bE = c.nreg bE := bs1.2.1
-      have eBH : c₁.nreg bH = c.nreg bH := bs1.2.2.1
-      have hctx₁ : ChainCtx P W c₁ (sw 2) J.whole := hctx.transport
+      have eBE := bs1.2.1
+      have eBH := bs1.2.2.1
+      have hctx₁ := hctx.transport
         (ksw₁ _ (by norm_num [sw]) (by norm_num [sw]) (by unfold cO sw; omega)) hm₁ ha₁
       have egw : c₁.nreg cGW = gW J := (ksw₁ _ (by unfold cGW sw; norm_num)
         (by unfold cGW sw; norm_num) (by unfold cGW cO cO2 sw; omega)).trans hgw
@@ -232,7 +234,7 @@ theorem offerC_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
       change BitIs c₂ (cO2 + 1) (ob < oc) at d2
       have kk₂ : ∀ r, 240000 ≤ r → r < 250000 → r ≠ cO2 → r ≠ cO2 + 1 → c₂.nreg r = c₁.nreg r :=
         fun r h1 h2 h3 h4 => k₂ r (not_oracle_sw h1 h2) h3 h4 (by unfold ALLOC; omega)
-      have fr2 : EFr (fun q => BestR q ∨ (cO ≤ q ∧ q ≤ cO2 + 1)) c c₂ := fr1.trans
+      have fr2 := fr1.trans
         ⟨fun r hr hX hra => k₂ r hr (fun h => hX (Or.inr ⟨by rw [h]; unfold cO cO2 sw; omega,
           by rw [h]; omega⟩)) (fun h => hX (Or.inr ⟨by rw [h]; unfold cO cO2 sw; omega, by rw [h]⟩))
           hra, ha₂, hm₂⟩

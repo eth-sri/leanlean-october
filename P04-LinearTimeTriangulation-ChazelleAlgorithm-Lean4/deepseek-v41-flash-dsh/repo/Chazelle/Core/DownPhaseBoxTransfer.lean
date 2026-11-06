@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseBoxAttach
 public import Chazelle.Core.DownPhaseBoxBuild
 
@@ -35,7 +39,7 @@ def InBand (C C' : Chain) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) : Prop :=
 /-- The walk position of an event code is an end of a chord of the list. -/
 theorem wposOf_mem {c : ℕ} (hc : c < 2 * L.length) :
     ∃ x ∈ L, wposOf L c = (recOf x).lpos ∨ wposOf L c = (recOf x).rpos := by
-  have hi : c / 2 < L.length := by omega
+  have hi : c / 2 < L.length := ⋄
   refine ⟨L[c / 2], getElem_mem _, ?_⟩
   have hcr : crec L (c / 2) = recOf L[c / 2] := by
     unfold crec; rw [getD_eq_getElem _ _ hi]
@@ -50,7 +54,7 @@ theorem end_facts (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) 
     w.edge < (chainModel C).W.n ∧ BandPos C C' Q w ∧
       (0 ≤ (chainModel C).param Q w ∧ (chainModel C).param Q w < 1) := by
   obtain ⟨hl, hr⟩ := hL.2.2.1 x hx
-  have hb : |(Q.vtx x.1).2| < bnd C C' := hband x hx
+  have hb := hband x hx
   rcases hw with rfl | rfl
   · exact ⟨hl.1, Or.inr ⟨x.1, rfl, hb⟩, hl.2.1, hl.2.2.1⟩
   · exact ⟨hr.1, Or.inr ⟨x.1, rfl, hb⟩, hr.2.1, hr.2.2.1⟩
@@ -88,17 +92,17 @@ theorem chordTriplesOK (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainMode
         (stretch (bnd C C') (kk C C') ((chainModel C).pos Q (recOf x).lpos).1)
         (stretch (bnd C C') (kk C C') ((chainModel C).pos Q (recOf x).rpos).1) := by
       unfold CRec.toSet
-      rw [h.pos_eq hl hbl hml, h.pos_eq hr hbr hmr]
+      Ξ h.pos_eq hl hbl hml, h.pos_eq hr hbr hmr
       rfl
-    rw [e]
+    Ξ e
     exact h.augChords_transfer (hband x hx) hc
   · rintro c ⟨x, hx, rfl⟩
     exact ⟨x.1, hh x hx, _, _, rfl⟩
   · have e : L.map (fun x => (recOf x).toSet (chainModel C') Q) =
         (L.map fun x => (recOf x).toSet (chainModel C) Q).map (image (phi C C')) := by
-      rw [map_map]
+      Ξ map_map
       exact map_congr_left fun x hx => h.toSet_rec hband hL0 hx
-    rw [e]
+    Ξ e
     exact hnd.map (Set.image_injective.2 phi_injective)
   · intro x hx
     have hL := hL0
@@ -106,7 +110,7 @@ theorem chordTriplesOK (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainMode
     obtain ⟨hr, hbr, hmr⟩ := end_facts hband hL hx (Or.inr rfl)
     have hdy : ∀ z ∈ (recOf x).toSet (chainModel C) Q, z.2 = (Q.vtx (recOf x).h).2 :=
       fun z hz => hz.1
-    rw [CRec.Attached, h.toSet_rec hband hL hx]
+    Ξ CRec.Attached, h.toSet_rec hband hL hx
     exact ⟨h.attach_transfer hdy (h.pos_eq hl hbl hml) ((h.param_mem_iff hbl).2 hml)
         (h.param_eq_zero_iff hbl).symm (hatt x hx).1,
       h.attach_transfer hdy (h.pos_eq hr hbr hmr) ((h.param_mem_iff hbr).2 hmr)
@@ -130,10 +134,10 @@ theorem keyCongr (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) Q
   wt0 _ := by
     have hb : BandPos C C' Q ⟨0, 0⟩ := Or.inl rfl
     have hm : 0 ≤ (chainModel C).param Q ⟨0, 0⟩ ∧ (chainModel C).param Q ⟨0, 0⟩ < 1 := by
-      simp [Model.param]
+      Θ Model.param
     exact h.arcWt_eq hb hb hm hm
   dir c _ := by
-    rw [h.wa_eq, h.wb_eq]
+    Ξ h.wa_eq, h.wb_eq
     exact sig_lt_iff
 
 end Twin
@@ -146,7 +150,7 @@ theorem F_eq_famOf {M : Model} {N : NF}
   · rintro ⟨r, hr, rfl⟩
     exact ⟨(r.h, r.lp, r.rp), hmap ▸ mem_map_of_mem hr, rfl⟩
   · rintro ⟨x, hx, rfl⟩
-    rw [← hmap] at hx
+    Ξ' ← hmap at hx
     obtain ⟨r, hr, rfl⟩ := mem_map.1 hx
     exact ⟨r, hr, rfl⟩
 
@@ -178,7 +182,7 @@ theorem transport (h : Twin C C') (hP : C.P.Simple) (hP' : C'.P.Simple)
   have e1 := F_eq_famOf (M := chainModel C) (Q := Q) hmap
   have e2 := F_eq_famOf (M := chainModel C') (Q := Q) hmap
   rw [← e1] at hd hγ
-  rw [← e2]
+  Ξ ← e2
   exact ⟨hL', IsNFRec.transfer hN hN' hd hγ⟩
 
 end

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvTasks
 public import Chazelle.Core.SweepEvKey
 
@@ -34,7 +36,7 @@ theorem Lst_lt_n (J : Merge.Junction) : Lst J < (chainModel J.whole).W.n := by
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
   have h1 := J.one_le_m₁
   have hL : Lst J = rlen J := rL1_add_rL2 J
-  rw [hn, hL, hm]
+  Ξ hn, hL, hm
   unfold rlen
   split_ifs <;> omega
 
@@ -45,7 +47,7 @@ theorem oW_start (J : Merge.Junction) (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hC := corr_right0 J hP hS₂ hS₂f
   have h := off_key (n := (chainModel J.whole).W.n) (g := gW J) (d := Lst J) hC.hg (Lst_lt_n J)
     (t := 0) le_rfl one_pos
-  rw [oW_def]
+  Ξ oW_def
   simpa only [add_zero] using h
 
 /-- **Task D2: the invariant at the start.** -/
@@ -82,7 +84,7 @@ theorem startTask : StartTask := by
       obtain ⟨rfl, rfl⟩ := pos_eq_of_oW hP hS₂a hS₂f hA.1 hpK hA.2.1 hA.2.2.1 le_rfl one_pos heq
       exact hbrk e he hA
     · exact hbr e he q' s hA hgt hb
-  have hRG : R = G := evGL hP hS₂a hS₂f hq hp hu ht hncq hnc (by linarith) hEq hEx hbr' hR hG hfq hf
+  have hRG : R = G := evGL hP hS₂a hS₂f hq hp hu ht hncq hnc (⟡) hEq hEx hbr' hR hG hfq hf
   subst hRG
   refine ⟨V, Or.inl rfl, hV, ?_⟩
   exact valid_start J hP hS₂a hS₂f (by have := Lst_pos J; unfold Lst at this; exact_mod_cast this)

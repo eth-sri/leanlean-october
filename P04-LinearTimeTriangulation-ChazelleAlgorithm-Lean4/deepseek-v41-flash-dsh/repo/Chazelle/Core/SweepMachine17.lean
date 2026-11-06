@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepMachine16
 
 /-!
@@ -56,9 +58,9 @@ theorem sideLabel_sub (hP : J.P.Simple) {Q : Polygon}
   have hsec : tB = 0 → d ≠ 0 ∧ d ≠ rL1 J := by
     intro ht
     refine ⟨hd0 ht, fun hdr => ?_⟩
-    have hlt : rL1 J < rL1 J + rL2 J := by omega
+    have hlt : rL1 J < rL1 J + rL2 J := ⋄
     apply hns' ht
-    rw [ht, hdr]
+    Ξ ht, hdr
     exact sidePt_split J hP hS₂a hS₂.1 hlt
   exact sideLabel_fused J hP hS₂ hF hf hc hfc hd hB.2.1 hB.2.2.1 hsec hB hρ hV hVs
 

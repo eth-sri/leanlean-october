@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmPtQ
 public import Chazelle.Core.FuseAsmFin
 public import Chazelle.Core.FuseAsmList
@@ -62,8 +64,8 @@ theorem geo_ptAns {i : ℕ} {z : Point} {σ : ℝ} {l : List (ℕ × ℕ × ℕ)
   · cases l with
     | nil => exact absurd hf (h.2 rfl)
     | cons q l =>
-      obtain ⟨-, -, hp, hd⟩ := h.1 q (by simp)
-      exact ⟨q, by simp, by rw [hp, hd]⟩
+      obtain ⟨-, -, hp, hd⟩ := h.1 q (✓)
+      exact ⟨q, ✓, Ρ hp, hd⟩
 
 theorem ok_ptAns {i : ℕ} {z : Point} {σ : ℝ} {l : List (ℕ × ℕ × ℕ)} (h : PtAns J Q i z σ l) :
     ∀ q ∈ l, QueryOK J Q i q ∧ HeightOK J Q i q := fun q hq =>
@@ -75,15 +77,15 @@ theorem endQL_height (i : ℕ) {N : NF} (hN : IsNF (chainModel (sideChain J i)) 
   intro q hq
   simp only [endQL, List.mem_map, List.mem_range] at hq
   obtain ⟨j, hj, rfl⟩ := hq
-  have hk : j / 2 < N.chords.length := by omega
+  have hk : j / 2 < N.chords.length := ⋄
   have hA := hN.2.2.1 (j / 2) hk
   unfold NF.chord at hA
   obtain ⟨⟨-, -, -, hml, -⟩, ⟨-, -, -, hmr, -⟩⟩ := hA
   unfold HeightOK
   split_ifs
-  · simp only [Nat.add_sub_cancel]
+  · ϴ Nat.add_sub_cancel
     exact hml.1
-  · simp only [Nat.add_sub_cancel]
+  · ϴ Nat.add_sub_cancel
     exact hmr.1
 
 /-- The nearer arm of the cap is `u` (the far arm `[v, w]` is on `C₂`). -/
@@ -114,8 +116,8 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
       (∀ q ∈ endQL N₁.chords ++ (v₁ ++ v₀ ++ t₁ ++ t₀ ++ k₀),
         QueryOK J Q 0 q ∧ HeightOK J Q 0 q) ∧
       (∀ q ∈ endQL N₂.chords ++ (t'₁ ++ t'₀ ++ k₁), QueryOK J Q 1 q ∧ HeightOK J Q 1 q) := by
-  have hN₁' : IsNF (chainModel (sideChain J 0)) Q N₁ := hN₁
-  have hN₂' : IsNF (chainModel (sideChain J 1)) Q N₂ := hN₂
+  have hN₁' := hN₁
+  have hN₂' := hN₂
   obtain ⟨ok₁, ge₁⟩ := endQL_ok J Q 0 hN₁'
   obtain ⟨ok₂, ge₂⟩ := endQL_ok J Q 1 hN₂'
   have ge₁' : geoQ J Q 0 (endQL N₁.chords) = endQ (N₁.F (chainModel J.left) Q) := ge₁
@@ -216,19 +218,19 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
     obtain ((he | hv) | ht) | hk := hx
     · rw [endQ_union] at he
       rcases he with h | h
-      · rw [← ge₁'] at h; exact m₀ (fun q hq => by simp [hq]) h
-      · rw [← ge₂'] at h; exact m₁ (fun q hq => by simp [hq]) h
+      · rw [← ge₁'] at h; exact m₀ (fun q hq => ⊚ hq) h
+      · rw [← ge₂'] at h; exact m₁ (fun q hq => ⊚ hq) h
     · rcases hv with h | h <;> (try rw [Set.mem_singleton_iff] at h) <;> subst h
-      · exact m₀ (fun q hq => by simp [hq]) (fv₁ hf)
-      · exact m₀ (fun q hq => by simp [hq]) (fv₀ hf)
+      · exact m₀ (fun q hq => ⊚ hq) (fv₁ hf)
+      · exact m₀ (fun q hq => ⊚ hq) (fv₀ hf)
     · rcases ht with (h | h) | (h | h) <;> (try rw [Set.mem_singleton_iff] at h) <;> subst h
-      · exact m₀ (fun q hq => by simp [hq]) (ft₁ hf)
-      · exact m₀ (fun q hq => by simp [hq]) (ft₀ hf)
-      · exact m₁ (fun q hq => by simp [hq]) (fs₁ hf)
-      · exact m₁ (fun q hq => by simp [hq]) (fs₀ hf)
+      · exact m₀ (fun q hq => ⊚ hq) (ft₁ hf)
+      · exact m₀ (fun q hq => ⊚ hq) (ft₀ hf)
+      · exact m₁ (fun q hq => ⊚ hq) (fs₁ hf)
+      · exact m₁ (fun q hq => ⊚ hq) (fs₀ hf)
     · rcases gk.2 x hk hf with h' | h'
-      · exact m₀ (fun q hq => by simp [hq]) h'
-      · exact m₁ (fun q hq => by simp [hq]) h'
+      · exact m₀ (fun q hq => ⊚ hq) h'
+      · exact m₁ (fun q hq => ⊚ hq) h'
   · intro q hq
     simp only [List.mem_append] at hq
     rcases hq with h | ((((h | h) | h) | h) | h)

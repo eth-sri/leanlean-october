@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleCuM3
 
 /-!
@@ -32,7 +34,7 @@ open Machine
 /-- Consecutive ends of a path of unwrapped keys are congruent. -/
 theorem kpath_idx {M : Model} {Q : Polygon} {n : ℝ} : ∀ {V : ℝ} {ps : List Pc} {V' : ℝ},
     KPath M Q n V ps V' → ∀ i (hi : i + 1 < ps.length), ∃ (j j' : ℤ),
-      M.key Q (ps[i]'(by omega)).e + j * n = M.key Q (ps[i + 1]'hi).s + j' * n
+      M.key Q (ps[i]'(⋄)).e + j * n = M.key Q (ps[i + 1]'hi).s + j' * n
   | _, [], _, _, i, hi => by simp at hi
   | _, [_], _, _, i, hi => by simp at hi
   | _, pc :: q :: qs, _, ⟨_, V₁, _, ⟨j, hj⟩, hp⟩, i, hi => by
@@ -65,10 +67,10 @@ theorem cut_out {P : Polygon} {ps : List Pc} {V0 V1 : ℝ} {m : ℕ → ℕ} {E 
         (interiorModel (Qof P)).key (Qof P) s ∧
       (interiorModel (Qof P)).key (Qof P) (ps[ps.length - 1]'(by
         have := List.length_pos_iff.2 hne; omega)).e = (interiorModel (Qof P)).key (Qof P) e ∧
-      (∀ i (hi : i + 1 < ps.length), (interiorModel (Qof P)).key (Qof P) (ps[i]'(by omega)).e =
+      (∀ i (hi : i + 1 < ps.length), (interiorModel (Qof P)).key (Qof P) (ps[i]'(⋄)).e =
         (interiorModel (Qof P)).key (Qof P) (ps[i + 1]'hi).s) ∧
-      (∀ i (hi : i + 1 < ps.length), sideInArc ((interiorModel (Qof P)).key (Qof P) (ps[i]'(by omega)).s)
-        ((interiorModel (Qof P)).key (Qof P) e) ((interiorModel (Qof P)).key (Qof P) (ps[i]'(by omega)).e)) := by
+      (∀ i (hi : i + 1 < ps.length), sideInArc ((interiorModel (Qof P)).key (Qof P) (ps[i]'(⋄)).s)
+        ((interiorModel (Qof P)).key (Qof P) e) ((interiorModel (Qof P)).key (Qof P) (ps[i]'(⋄)).e)) := by
   set M := interiorModel (Qof P) with hM
   set Q := Qof P with hQd
   have hmi : M.W.n = Q.n := mi_n
@@ -88,23 +90,23 @@ theorem cut_out {P : Polygon} {ps : List Pc} {V0 V1 : ℝ} {m : ℕ → ℕ} {E 
   · -- the first key
     obtain ⟨pc, qs, rfl⟩ : ∃ pc qs, ps = pc :: qs := List.exists_cons_of_ne_nil hne
     obtain ⟨⟨i, hi⟩, -⟩ := hk
-    simp only [List.getElem_cons_zero]
-    exact (ShootCut.key_eq_of_unw hn0 (hb pc (by simp)).1 hsb (i := i) (j := 0)
+    ϴ List.getElem_cons_zero
+    exact (ShootCut.key_eq_of_unw hn0 (hb pc (✓)).1 hsb (i := i) (j := 0)
       (by rw [← hi, hs]; simp)).symm.symm
   · -- the last key
     obtain ⟨j, hj⟩ := KPath.last hk hne
     obtain ⟨j', hj'⟩ := he
-    rw [← List.getLast_eq_getElem hne]
+    Ξ ← List.getLast_eq_getElem hne
     exact ShootCut.key_eq_of_unw hn0 (hb _ (List.getLast_mem hne)).2 heb (i := j) (j := j')
-      (by rw [← hj, ← hj'])
+      (Ρ ← hj, ← hj')
   · obtain ⟨j, j', h⟩ := kpath_idx hk i hi
-    exact ShootCut.key_eq_of_unw hn0 (hb _ (hget i (by omega))).2 (hb _ (hget (i + 1) hi)).1 h
+    exact ShootCut.key_eq_of_unw hn0 (hb _ (hget i (⋄))).2 (hb _ (hget (i + 1) hi)).1 h
   · have := ShootCut.e6_of_kpath hn0 hk hle hb hne i hi
     have hl : M.key Q (ps.getLast hne).e = M.key Q e := by
       obtain ⟨j, hj⟩ := KPath.last hk hne
       obtain ⟨j', hj'⟩ := he
       exact ShootCut.key_eq_of_unw hn0 (hb _ (List.getLast_mem hne)).2 heb (i := j) (j := j')
-        (by rw [← hj, ← hj'])
+        (Ρ ← hj, ← hj')
     rw [hl] at this
     exact this
 
@@ -121,23 +123,23 @@ theorem slotOK_edges {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} {Va Vb :
   have hQ : (Qof P).n = P.n := qn'
   refine ⟨S.hu, hLE, hq, hq1, fun i hi => ?_⟩
   set ps := (List.range sl.q).map (rdPc m sl.L) with hps
-  have hlen : ps.length = sl.q := by simp [hps]
+  have hlen : ps.length = sl.q := ⊚ hps
   have hne : ps ≠ [] := by
     intro h; have := congrArg List.length h; rw [hlen] at this; simp at this; omega
   have hget : ∀ i (hi : i < ps.length), ps[i]'hi = rdPc m sl.L i := fun i hi => by
-    simp [hps]
+    Θ hps
   have h0' : (chainModel C).key (Qof P) (ps[0]'(List.length_pos_iff.2 hne)).s =
       (chainModel C).key (Qof P) sa := by rw [hget]; exact h0
   have hl' : (chainModel C).key (Qof P) (ps[ps.length - 1]'(by
       have := List.length_pos_iff.2 hne; omega)).e = (chainModel C).key (Qof P) ea := by
     rw [hget, hlen]; exact hl
-  have hc' : ∀ i (hi : i + 1 < ps.length), (chainModel C).key (Qof P) (ps[i]'(by omega)).e =
+  have hc' : ∀ i (hi : i + 1 < ps.length), (chainModel C).key (Qof P) (ps[i]'(⋄)).e =
       (chainModel C).key (Qof P) (ps[i + 1]'hi).s := fun i hi => by
-    rw [hget, hget]; exact hc i (by omega)
-  have ht' : ∀ i (hi : i + 1 < ps.length), sideInArc ((chainModel C).key (Qof P) (ps[i]'(by omega)).s)
-      ((chainModel C).key (Qof P) ea) ((chainModel C).key (Qof P) (ps[i]'(by omega)).e) :=
-    fun i hi => by rw [hget]; exact ht i (by omega)
-  obtain ⟨m1, m2, m3⟩ := chain_mono hne r3 h0' hl' hc' ht' i (by omega)
+    rw [hget, hget]; exact hc i (⋄)
+  have ht' : ∀ i (hi : i + 1 < ps.length), sideInArc ((chainModel C).key (Qof P) (ps[i]'(⋄)).s)
+      ((chainModel C).key (Qof P) ea) ((chainModel C).key (Qof P) (ps[i]'(⋄)).e) :=
+    fun i hi => by rw [hget]; exact ht i (⋄)
+  obtain ⟨m1, m2, m3⟩ := chain_mono hne r3 h0' hl' hc' ht' i (⋄)
   rw [hget] at m1 m2 m3
   have hp := hv i hi
   have hsP : ProperPos (chainModel C) (Qof P) (Qof P).n (rdPc m sl.L i).s := by rw [hQ]; exact hp.1
@@ -145,7 +147,7 @@ theorem slotOK_edges {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} {Va Vb :
   obtain ⟨a1, a2, -⟩ := str_edge S hsP (r1.trans m1) ((m2.le.trans m3).trans r2)
   obtain ⟨b1, b2, -⟩ := str_edge S heP (r1.trans (m1.trans m2.le)) (m3.trans r2)
   have hℓ := S.hℓ
-  exact ⟨by omega, by omega⟩
+  exact ⟨⋄, by omega⟩
 
 /-! ## The slot registers -/
 
@@ -197,9 +199,9 @@ theorem slotsOf_rec {c c' : Config} {k : ℕ} (hk : k < 4)
     (hr : ∀ r, r < 170200 + 5 * k → c'.nreg r = c.nreg r)
     (hf : c'.nreg (170200 + 5 * k) = 1) :
     slotsOf c' 4 = slotsOf c 4 ++ [slotAt c' k] := by
-  rw [slotsOf_free (k := k + 1) (by omega) hfree', slotsOf_free (k := k) (by omega) hfree]
-  simp only [slotsOf, hf, ite_true]
-  rw [slotsOf_congr (fun j f hj hf => hr _ (by omega))]
+  rw [slotsOf_free (k := k + 1) (⋄) hfree', slotsOf_free (k := k) (by omega) hfree]
+  ϴ slotsOf, hf, ite_true
+  rw [slotsOf_congr (fun j f hj hf => hr _ (⋄))]
 
 /-- **The slot state**: the recorded slots form a chain of valid slots from `V0` to `V`, the
 slots from `k` on are free, the flags are bits, each slot has at most `Gγ` pieces. -/
@@ -215,12 +217,12 @@ theorem SlotSt.keep {P : Polygon} {Hγ Gγ e₁ : ℕ} {V0 V : ℝ} {k : ℕ} {c
     (h : SlotSt P Hγ Gγ e₁ V0 V k c) (hr : ∀ r, 170200 ≤ r → r < 170220 → c'.nreg r = c.nreg r)
     (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) (ha : c.nreg ALLOC ≤ c'.nreg ALLOC) :
     SlotSt P Hγ Gγ e₁ V0 V k c' := by
-  have hs : slotsOf c' 4 = slotsOf c 4 := slotsOf_congr (fun j f hj hf => hr _ (by omega)
-    (by omega))
+  have hs : slotsOf c' 4 = slotsOf c 4 := slotsOf_congr (fun j f hj hf => hr _ (⋄)
+    (⋄))
   refine ⟨?_, fun j h1 h2 => ?_, fun j hj => ?_, fun sl hsl => h.qG sl (by rw [← hs]; exact hsl)⟩
   · rw [hs]; exact h.ok.keep hm ha
-  · rw [hr _ (by omega) (by omega)]; exact h.free j h1 h2
-  · rw [hr _ (by omega) (by omega)]; exact h.bit j hj
+  · rw [hr _ (⋄) (by omega)]; exact h.free j h1 h2
+  · rw [hr _ (⋄) (by omega)]; exact h.bit j hj
 
 /-- **Recording slot `k`**: a valid slot from `V` to `V'` with at most `Gγ` pieces. -/
 theorem SlotSt.add {P : Polygon} {Hγ Gγ e₁ : ℕ} {V0 V V' : ℝ} {k : ℕ} {c c' : Config}
@@ -249,7 +251,7 @@ theorem slotsOf_length {c : Config} : ∀ {k : ℕ}, (slotsOf c k).length ≤ k
   | 0 => le_rfl
   | k + 1 => by
     have := slotsOf_length (c := c) (k := k)
-    simp only [slotsOf, List.length_append]
+    ϴ slotsOf, List.length_append
     split_ifs <;> simp <;> omega
 
 /-! ## One lap -/
@@ -266,7 +268,7 @@ theorem ee_bound {Q : Polygon} {e₁ h₁ e₂ h₂ : ℕ} (hn : 1 ≤ Q.n)
     linarith
   · push Not at h1; linarith
   · have hd : WalkEmbed.dOf Q.n e₁ e₂ < Q.n := by
-      unfold WalkEmbed.dOf; exact Nat.mod_lt _ (by omega)
+      unfold WalkEmbed.dOf; exact Nat.mod_lt _ (⋄)
     have : ((WalkEmbed.dOf Q.n e₁ e₂ : ℕ) : ℝ) + 1 ≤ Q.n := by exact_mod_cast hd
     linarith
 

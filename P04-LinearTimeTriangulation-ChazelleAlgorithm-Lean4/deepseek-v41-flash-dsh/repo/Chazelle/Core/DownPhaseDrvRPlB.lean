@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRPlA
 public import Mathlib.Data.List.GetD
 
@@ -27,30 +29,30 @@ def itemLeaves (n C p : ℕ) : HostItem → List (ℕ × ℕ × ℕ)
 
 theorem hostLeaves_append (n C : ℕ) : ∀ (H₁ H₂ : Host) (p : ℕ),
     hostLeaves n C p (H₁ ++ H₂) = hostLeaves n C p H₁ ++ hostLeaves n C (p + (H₁.pts n).length) H₂
-  | [], H₂, p => by simp [hostLeaves, Host.pts]
+  | [], H₂, p => ⊚ hostLeaves, Host.pts
   | .run a ℓ :: H₁, H₂, p => by
-    simp only [List.cons_append, hostLeaves, hostLeaves_append n C H₁ H₂, List.append_assoc]
+    ϴ List.cons_append, hostLeaves, hostLeaves_append n C H₁ H₂, List.append_assoc
     congr 3
     rw [DownMath.pts_cons, List.length_append, DownMath.run_pts_length]; ring
   | .pt x :: H₁, H₂, p => by
-    simp only [List.cons_append, hostLeaves, hostLeaves_append n C H₁ H₂]
+    ϴ List.cons_append, hostLeaves, hostLeaves_append n C H₁ H₂
     congr 2
     rw [DownMath.pts_cons, List.length_append]; simp [HostItem.pts]; omega
 
 theorem hostLeaves_single (n C p : ℕ) (it : HostItem) :
     hostLeaves n C p [it] = itemLeaves n C p it := by
-  cases it <;> simp [hostLeaves, itemLeaves]
+  cases it <;> Θ hostLeaves, itemLeaves
 
 /-- A chord list written in two parts. -/
 theorem clAt_append {m : ℕ → ℕ} {A : ℕ} {L L₂ : List (ℕ × ℕ × ℕ)}
     (h₁ : ChordListAt m A L) (h₂ : ChordListAt m (A + 3 * L.length) L₂) :
     ChordListAt m A (L ++ L₂) := by
   intro i hi
-  rw [List.length_append] at hi
+  Ξ' List.length_append at hi
   rcases Nat.lt_or_ge i L.length with h | h
   · rw [List.getD_append _ _ _ _ h]; exact h₁ i h
-  · obtain ⟨a1, a2, a3⟩ := h₂ (i - L.length) (by omega)
-    rw [List.getD_append_right _ _ _ _ h]
+  · obtain ⟨a1, a2, a3⟩ := h₂ (i - L.length) (⋄)
+    Ξ List.getD_append_right _ _ _ _ h
     refine ⟨?_, ?_, ?_⟩
     · rw [← a1]; congr 1; omega
     · rw [← a2]; congr 1; omega
@@ -61,8 +63,8 @@ theorem clAt_congr {m m' : ℕ → ℕ} {A : ℕ} {L : List (ℕ × ℕ × ℕ)}
     (hm : ∀ x, A ≤ x → x < A + 3 * L.length → m' x = m x) : ChordListAt m' A L := by
   intro i hi
   obtain ⟨a1, a2, a3⟩ := h i hi
-  exact ⟨by rw [hm _ (by omega) (by omega)]; exact a1, by rw [hm _ (by omega) (by omega)]; exact a2,
-    by rw [hm _ (by omega) (by omega)]; exact a3⟩
+  exact ⟨by rw [hm _ (⋄) (⋄)]; exact a1, by rw [hm _ (⋄) (⋄)]; exact a2,
+    by rw [hm _ (⋄) (⋄)]; exact a3⟩
 
 /-- The wrap-around case: two chunk loops around the edge `v_{n-1} v_0`. -/
 def plRunW : Stmt :=
@@ -104,16 +106,16 @@ structure PlConst (n C : ℕ) (d : Config) : Prop where
 theorem PlConst.keep {n C : ℕ} {d d' : Config} (h : PlConst n C d)
     (hk : ∀ r, (r = 219001 ∨ r = 219002 ∨ (219017 ≤ r ∧ r ≤ 219020) ∨ r = 219026) →
       d'.nreg r = d.nreg r) : PlConst n C d' :=
-  ⟨by rw [hk _ (by omega)]; exact h.r01, by rw [hk _ (by omega)]; exact h.r02,
-    by rw [hk _ (by omega)]; exact h.r17, by rw [hk _ (by omega)]; exact h.r18,
-    by rw [hk _ (by omega)]; exact h.r19, by rw [hk _ (by omega)]; exact h.r20,
-    by rw [hk _ (by omega)]; exact h.r26⟩
+  ⟨by rw [hk _ (⋄)]; exact h.r01, by rw [hk _ (⋄)]; exact h.r02,
+    by rw [hk _ (⋄)]; exact h.r17, by rw [hk _ (⋄)]; exact h.r18,
+    by rw [hk _ (⋄)]; exact h.r19, by rw [hk _ (⋄)]; exact h.r20,
+    by rw [hk _ (⋄)]; exact h.r26⟩
 
 theorem brun_const {r : ℕ} (h : r = 219001 ∨ r = 219002 ∨ (219017 ≤ r ∧ r ≤ 219020) ∨ r = 219026) :
     Brun r = false := by
   simp only [Brun, Bch, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
 
-set_option maxHeartbeats 4000000 in
+
 /-- **The leaves of a run item** are written at the pointer. -/
 theorem plRun_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw : WordsBounded W d)
     (hK : PlConst n C d) {a ℓ p k ptr : ℕ} (h10 : d.nreg 219010 = a) (h11 : d.nreg 219011 = ℓ)
@@ -238,7 +240,7 @@ theorem plRun_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw : 
       (by rw [g₂ _ (by decide), k16]) (by rw [g₂ _ (by decide), k04]) kK₂.r17 kK₂.r18 kK₂.r20
       (by omega) (by omega) (by rw [← hch₁]; omega) (by rw [← hch₁]; omega)
     rw [← hch₁] at c16 c04 cL cm hj₃
-    have g₃ : ∀ r, Bch r = false → d₃.nreg r = d₂.nreg r := cf.1
+    have g₃ := cf.1
     have kK₃ : PlConst n C d₃ := kK₂.keep fun r hr => g₃ r (by
       simp only [Bch, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
     have t07 : d₃.nreg 219007 = p := by

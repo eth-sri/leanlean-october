@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecBase
 
 /-!
@@ -21,7 +23,7 @@ open Set
 /-- The shear by `-ε` undoes the shear by `ε`. -/
 theorem shearPt_neg_shearPt (ε : ℝ) (p : Point) : shearPt (-ε) (shearPt ε p) = p := by
   refine Prod.ext rfl ?_
-  simp only [shearPt]
+  ϴ shearPt
   ring
 
 /-- The shear by `ε` undoes the shear by `-ε`. -/
@@ -44,7 +46,7 @@ theorem shearPt_bijective (ε : ℝ) : Function.Bijective (shearPt ε) :=
 theorem shear_shear (ε : ℝ) (P : Polygon) : shear (-ε) (shear ε P) = P := by
   cases P with
   | mk l =>
-    simp only [shear, List.map_map]
+    ϴ shear, List.map_map
     congr 1
     conv_rhs => rw [← List.map_id l]
     exact List.map_congr_left (fun p _ => shearPt_neg_shearPt ε p)
@@ -53,11 +55,11 @@ theorem shear_shear (ε : ℝ) (P : Polygon) : shear (-ε) (shear ε P) = P := b
 theorem isLinearMap_shearPt (ε : ℝ) : IsLinearMap ℝ (shearPt ε) where
   map_add p q := by
     refine Prod.ext rfl ?_
-    simp only [shearPt, Prod.snd_add, Prod.fst_add]
+    ϴ shearPt, Prod.snd_add, Prod.fst_add
     ring
   map_smul c p := by
     refine Prod.ext rfl ?_
-    simp only [shearPt, Prod.smul_fst, Prod.smul_snd, smul_eq_mul]
+    ϴ shearPt, Prod.smul_fst, Prod.smul_snd, smul_eq_mul
     ring
 
 /-- The shear is continuous. -/
@@ -109,20 +111,20 @@ theorem image_shearPt_segment (ε : ℝ) (a b : Point) :
     ring
   · rintro ⟨t, ht0, ht1, hp⟩
     refine ⟨(a.1 + t * (b.1 - a.1), a.2 + t * (b.2 - a.2)), ⟨t, ht0, ht1, rfl⟩, ?_⟩
-    rw [hp]
+    Ξ hp
     refine Prod.ext ?_ ?_ <;> simp only [shearPt]
     ring
 
 /-- The edges of the sheared polygon are the sheared edges. -/
 theorem shear_edge (ε : ℝ) (P : Polygon) (i : ℕ) :
     (shear ε P).edge i = shearPt ε '' P.edge i := by
-  simp only [Polygon.edge, shear_vtx, shear_n, image_shearPt_segment]
+  ϴ Polygon.edge, shear_vtx, shear_n, image_shearPt_segment
 
 /-- The boundary of the sheared polygon is the sheared boundary. -/
 theorem shear_boundary (ε : ℝ) (P : Polygon) :
     (shear ε P).boundary = shearPt ε '' P.boundary := by
   ext p
-  simp only [Polygon.boundary, mem_ofPred_eq, shear_edge, shear_n, mem_image_shearPt]
+  ϴ Polygon.boundary, mem_ofPred_eq, shear_edge, shear_n, mem_image_shearPt
 
 /-- The common endpoints of two sheared edges are the sheared common endpoints. -/
 theorem shear_commonEndpoints (ε : ℝ) (P : Polygon) (i j : ℕ) :
@@ -150,11 +152,11 @@ theorem isBoundedSet_image_shearPt {ε : ℝ} {S : Set Point} (h : IsBoundedSet 
   obtain ⟨h1, h2⟩ := hR q hq
   have hR0 : 0 ≤ R := (abs_nonneg _).trans h1
   refine ⟨?_, ?_⟩
-  · simp only [shearPt]
+  · ϴ shearPt
     nlinarith [abs_nonneg ε]
-  · simp only [shearPt]
+  · ϴ shearPt
     calc |q.2 + ε * q.1| ≤ |q.2| + |ε * q.1| := abs_add_le _ _
-      _ = |q.2| + |ε| * |q.1| := by rw [abs_mul]
+      _ = |q.2| + |ε| * |q.1| := Ρ abs_mul
       _ ≤ R + |ε| * R := by gcongr
 
 /-- A set is bounded iff its shear is. -/
@@ -174,7 +176,7 @@ theorem connectedComponentIn_image_shearPt (ε : ℝ) (U : Set Point) (q : Point
   · have := (shearHomeo ε).image_connectedComponentIn hq
     rw [coe_shearHomeo] at this
     exact this.symm
-  · rw [connectedComponentIn_eq_empty hq, image_empty, connectedComponentIn_eq_empty]
+  · Ξ connectedComponentIn_eq_empty hq, image_empty, connectedComponentIn_eq_empty
     rwa [(shearPt_injective ε).mem_set_image]
 
 /-- **The filled region of the sheared polygon is the sheared filled region.** -/
@@ -183,15 +185,15 @@ theorem shear_filled (ε : ℝ) (P : Polygon) :
   ext p
   obtain ⟨q, rfl⟩ := shearPt_surjective ε p
   have hc : (shear ε P).boundaryᶜ = shearPt ε '' P.boundaryᶜ := by
-    rw [shear_boundary, image_compl_eq (shearPt_bijective ε)]
-  rw [Polygon.filled, Polygon.filled, hc, shear_boundary, image_union]
+    Ξ shear_boundary, image_compl_eq (shearPt_bijective ε)
+  Ξ Polygon.filled, Polygon.filled, hc, shear_boundary, image_union
   simp only [mem_union, mem_ofPred_eq, connectedComponentIn_image_shearPt,
     isBoundedSet_image_shearPt_iff, (shearPt_injective ε).mem_set_image]
 
 /-- The vertices of a triangle of the sheared polygon are the sheared vertices. -/
 theorem shear_triVertices (ε : ℝ) (P : Polygon) (t : Polygon.Triangle) :
     (shear ε P).triVertices t = shearPt ε '' P.triVertices t := by
-  simp only [Polygon.triVertices, shear_vtx, image_insert_eq, image_singleton]
+  ϴ Polygon.triVertices, shear_vtx, image_insert_eq, image_singleton
 
 /-- The convex hull commutes with the shear. -/
 theorem convexHull_image_shearPt (ε : ℝ) (S : Set Point) :
@@ -201,7 +203,7 @@ theorem convexHull_image_shearPt (ε : ℝ) (S : Set Point) :
 /-- A triangle of the sheared polygon is the sheared triangle. -/
 theorem shear_triSet (ε : ℝ) (P : Polygon) (t : Polygon.Triangle) :
     (shear ε P).triSet t = shearPt ε '' P.triSet t := by
-  rw [Polygon.triSet, Polygon.triSet, shear_triVertices, convexHull_image_shearPt]
+  Ξ Polygon.triSet, Polygon.triSet, shear_triVertices, convexHull_image_shearPt
 
 /-- The interior commutes with the shear. -/
 theorem interior_image_shearPt (ε : ℝ) (S : Set Point) :
@@ -213,19 +215,19 @@ theorem interior_image_shearPt (ε : ℝ) (S : Set Point) :
 /-- Validity of a triangle is shear invariant. -/
 theorem shear_validTriangle_iff (ε : ℝ) (P : Polygon) (t : Polygon.Triangle) :
     (shear ε P).validTriangle t ↔ P.validTriangle t := by
-  simp only [Polygon.validTriangle, shear_n, shear_vtx, det_shearPt]
+  ϴ Polygon.validTriangle, shear_n, shear_vtx, det_shearPt
 
 /-- The union of the triangles of the sheared polygon is the sheared union. -/
 theorem shear_union_triSet (ε : ℝ) (P : Polygon) (T : List Polygon.Triangle) :
     {p | ∃ t ∈ T, p ∈ (shear ε P).triSet t} = shearPt ε '' {p | ∃ t ∈ T, p ∈ P.triSet t} := by
   ext p
-  simp only [mem_ofPred_eq, shear_triSet, mem_image_shearPt]
+  ϴ mem_ofPred_eq, shear_triSet, mem_image_shearPt
 
 /-- **The shear preserves triangulations** (both ways). -/
 theorem shear_triangulates_iff (ε : ℝ) (P : Polygon) (T : List Polygon.Triangle) :
     (shear ε P).Triangulates T ↔ P.Triangulates T := by
   unfold Polygon.Triangulates
-  rw [shear_union_triSet, shear_filled, image_shearPt_inj, shear_n]
+  Ξ shear_union_triSet, shear_filled, image_shearPt_inj, shear_n
   simp only [shear_validTriangle_iff, shear_triSet, interior_image_shearPt,
     disjoint_image_iff (shearPt_injective ε), shear_triVertices,
     ← image_inter (shearPt_injective ε), convexHull_image_shearPt, image_shearPt_inj]

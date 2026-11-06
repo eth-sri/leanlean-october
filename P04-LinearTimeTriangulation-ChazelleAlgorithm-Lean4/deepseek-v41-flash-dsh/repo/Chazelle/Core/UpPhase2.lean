@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase1
 public import Chazelle.Core.BruteRam3
 
@@ -28,12 +30,12 @@ theorem topIdx_one {C : Chain} (h1 : C.m = 1) :
   have hspec := C.topIdx_spec.2
   split_ifs with h
   · by_contra hc
-    have h0 : C.topIdx = 0 := by omega
-    have := hspec 1 (by omega)
-    rw [h0] at this; linarith
-  · have := C.topIdx_min (j := 0) (by omega) (fun i hi => by
+    have h0 : C.topIdx = 0 := ⋄
+    have := hspec 1 (⋄)
+    Ξ' h0 at this; linarith
+  · have := C.topIdx_min (j := 0) (⋄) (fun i hi => by
       rcases Nat.lt_or_ge i 1 with h2 | h2
-      · rw [show i = 0 by omega]
+      · Ξ show i = 0 by omega
       · rw [show i = 1 by omega]; exact not_lt.mp h)
     omega
 
@@ -62,7 +64,7 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
+
 theorem d0PtsB_exec {c : Config} (hw : WordsBounded W c) {s : ℕ}
     (h16 : c.nreg 170016 = s) (h20 : c.nreg 170020 = 1) (hW : s + 1 ≤ W) :
     ∃ c' k, Exec P W d0PtsB c c' k ∧ k = 6 ∧ WordsBounded W c' ∧
@@ -78,9 +80,9 @@ theorem d0PtsB_exec {c : Config} (hw : WordsBounded W c) {s : ℕ}
     fun r hr => ?_, rfl, rfl, rfl, rfl⟩
   unfold D0RG at hr
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
-set_option maxHeartbeats 8000000 in
+
 theorem d0BitB_exec {c : Config} (hw : WordsBounded W c) (hW : 1 ≤ W) :
     ∃ c' k, Exec P W d0BitB c c' k ∧ k = 5 ∧ WordsBounded W c' ∧
       c'.nreg 180000 = c.nreg 170016 ∧ c'.nreg 180010 = c.nreg 170001 ∧ c'.nreg 180011 = 1 ∧
@@ -94,9 +96,9 @@ theorem d0BitB_exec {c : Config} (hw : WordsBounded W c) (hW : 1 ≤ W) :
   refine ⟨rfl, ‹_›, by config_simp, by config_simp, by config_simp, by config_simp,
     by config_simp, fun r a1 a2 a3 a4 a5 => ?_, rfl, rfl, rfl, rfl⟩
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
-set_option maxHeartbeats 8000000 in
+
 theorem d0StoreB_exec {c : Config} (hw : WordsBounded W c) {TD hp s t b : ℕ}
     (hA : c.nreg ALLOC = TD) (h04 : c.nreg 170004 = hp) (h16 : c.nreg 170016 = s)
     (h59 : c.nreg 170059 = t) (h14 : c.nreg 180014 = b) (h20 : c.nreg 170020 = 1)
@@ -108,13 +110,13 @@ theorem d0StoreB_exec {c : Config} (hw : WordsBounded W c) {TD hp s t b : ℕ}
       (∀ r, ¬ D0RG r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   have hAl : ALLOC = 9999 := rfl
-  rw [hAl] at hA ⊢
+  Ξ' hAl at hA ⊢
   unfold d0StoreB
   exec_block
   all_goals try (config_simp; (try simp only [hA, h20, h23]); omega)
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun a ha => ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
-  · config_simp; simp only [hA, h23]
-  · config_simp; simp only [hA]
+  · config_simp; ϴ hA, h23
+  · config_simp; ϴ hA
   · config_simp; simp only [hA, h04, h20, Machine.upd_apply]; split_ifs <;> omega
   · config_simp; simp only [hA, h16, h20, Machine.upd_apply]; split_ifs <;> omega
   · config_simp; simp only [hA, h20, Machine.upd_apply]; split_ifs <;> omega
@@ -123,9 +125,9 @@ theorem d0StoreB_exec {c : Config} (hw : WordsBounded W c) {TD hp s t b : ℕ}
   · config_simp; simp only [hA, h20, Machine.upd_apply]; split_ifs <;> first | omega
   · unfold D0RG at h1
     simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
-set_option maxHeartbeats 16000000 in
+
 /-- **The descriptor of a grade-0 chain on the RAM.** -/
 theorem desc0S_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : WordsBounded W c)
     {TD hp s : ℕ} (hA : c.nreg ALLOC = TD) (h04 : c.nreg 170004 = hp) (h16 : c.nreg 170016 = s)
@@ -188,7 +190,7 @@ theorem desc0S_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wo
     (by rw [c3_13, hsn C0 hC0P hC0s hC0m]) b28
   obtain ⟨fr4, frr4, hm4, hrm4, ho4⟩ := fb4
   have hw4 := e4.wb_right
-  have k4r : ∀ r, Bbit r = false → c4.nreg r = c3.nreg r := fr4
+  have k4r := fr4
   have bb : ∀ r, 160000 ≤ r → r < 170061 → Bbit r = false := fun r a b => by
     simp [Bbit, Bk]; omega
   -- the stores

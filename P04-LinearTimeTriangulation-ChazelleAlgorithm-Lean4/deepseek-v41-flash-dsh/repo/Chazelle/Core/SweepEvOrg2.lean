@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvOrg
 
 /-!
@@ -51,11 +53,11 @@ theorem OrgK.fix {P : Polygon} {J : Merge.Junction} {W : ℕ} {c₀ c : Config} 
   have k : ∀ i, 640 ≤ i → i ≤ 647 → c.nreg (sw i) = c₀.nreg (sw i) := fun i h1 h2 =>
     hI.hin _ (by unfold IFix sw; omega)
   obtain ⟨a, b, d, e, f, s, hs, hl, he⟩ := h
-  refine ⟨(k 640 le_rfl (by norm_num)).trans a, (k 641 (by norm_num) (by norm_num)).trans b,
-    (k 642 (by norm_num) (by norm_num)).trans d, (k 643 (by norm_num) (by norm_num)).trans e,
-    (k 644 (by norm_num) (by norm_num)).trans f, s, ?_, hl, he⟩
-  exact symPtIn_transport hs (k 645 (by norm_num) (by norm_num))
-    (k 646 (by norm_num) (by norm_num)) (k 647 (by norm_num) (by norm_num))
+  refine ⟨(k 640 le_rfl (⊛)).trans a, (k 641 (⊛) (⊛)).trans b,
+    (k 642 (⊛) (⊛)).trans d, (k 643 (⊛) (⊛)).trans e,
+    (k 644 (⊛) (⊛)).trans f, s, ?_, hl, he⟩
+  exact symPtIn_transport hs (k 645 (⊛) (⊛))
+    (k 646 (⊛) (⊛)) (k 647 (⊛) (⊛))
 
 /-! ## Exact executions as run steps -/
 
@@ -68,7 +70,7 @@ theorem irs_of_out {s : Stmt} {c' : Config} {k K : ℕ} {L : List ℕ} (hI : IIn
   obtain ⟨hr, hrr, hm, hrm, hout⟩ := ho
   have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (fun h => alloc_not_scr (hL _ h))
   exact IRS.ofExec hI ex hk (fun r hr' _ => hr r (fun h => hr' (hL r h))) hrr
-    (fun a _ => by rw [hm]) hrm hout (by rw [hA]) (by rw [hA]; omega) rfl
+    (fun a _ => Ρ hm) hrm hout (Ρ hA) (by rw [hA]; omega) rfl
 
 /-! ## The vertex index -/
 
@@ -94,9 +96,9 @@ theorem orgIdx_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO
   set S := J.right.sideS J.right.sideBeta with hSdef
   set m := J.right.m with hmdef
   -- the block
-  have e6 : c.nreg 240612 = 6 := k6
-  have eS : c.nreg 240643 = S := hS
-  have e2 : c.nreg 240640 = 2 * m := m2
+  have e6 := k6
+  have eS := hS
+  have e2 := m2
   have eE : c.nreg 242210 = c.nreg oE := rfl
   have hb := IRS.block (P := P) [.subN oT oE K6, .subN oU c2m cS] hI (by
     simp only [okB, okI, oT, oU, sw]

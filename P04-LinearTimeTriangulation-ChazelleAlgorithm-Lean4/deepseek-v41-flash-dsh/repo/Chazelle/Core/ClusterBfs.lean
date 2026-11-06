@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterMap
 
 /-!
@@ -82,8 +86,8 @@ theorem Done.mono {lev q lev' q' : ℕ → ℕ} {t t' u e : ℕ} (h : G.Done lev
     (hu : lev' u = lev u) : G.Done lev' q' t' u e := by
   intro h1 h2
   obtain ⟨⟨j, hj, hqj⟩, hl⟩ := h h1 h2
-  refine ⟨⟨j, by omega, by rw [hq j hj, hqj]⟩, ?_⟩
-  rw [hu, ← hqj, hlev j hj, hqj]
+  refine ⟨⟨j, ⋄, Ρ hq j hj, hqj⟩, ?_⟩
+  Ξ hu, ← hqj, hlev j hj, hqj
   exact hl
 
 /-- A dart leaving a reached vertex through an unblocked dart to an unblocked vertex is a step. -/
@@ -122,17 +126,17 @@ theorem Inv.t_lt_of_notMem {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t :
     (hnot : ∀ i, i < t → q i ≠ w) : t < G.nv := by
   classical
   by_contra hge
-  have ht : t = G.nv := le_antisymm hI.tn (by omega)
+  have ht := le_antisymm hI.tn (⋄)
   have hsub : (Finset.range t).image q ⊆ Finset.range G.nv := by
     intro x hx
     obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hx
     exact Finset.mem_range.mpr (hI.qlt i (Finset.mem_range.mp hi))
   have hcard : ((Finset.range t).image q).card = t := by
-    rw [Finset.card_image_of_injOn, Finset.card_range]
+    Ξ Finset.card_image_of_injOn, Finset.card_range
     intro i hi j hj hij
     exact hI.qinj i (Finset.mem_range.mp hi) j (Finset.mem_range.mp hj) hij
   have heq : (Finset.range t).image q = Finset.range G.nv :=
-    Finset.eq_of_subset_of_card_le hsub (by rw [hcard, Finset.card_range, ht])
+    Finset.eq_of_subset_of_card_le hsub (Ρ hcard, Finset.card_range, ht)
   have : w ∈ (Finset.range t).image q := by rw [heq]; exact Finset.mem_range.mpr hw
   obtain ⟨i, hi, hqi⟩ := Finset.mem_image.mp this
   exact hnot i (Finset.mem_range.mp hi) hqi
@@ -155,7 +159,7 @@ theorem InvIn.visited_iff {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j 
     rw [hI.inv.lab_out _ hwn hnot, hp.fresh _ hwn hreach] at hlt
     exact lt_irrefl _ hlt
   · rintro ⟨i, hi, hqi⟩
-    rw [← hqi, hI.inv.lab_in i hi]
+    Ξ ← hqi, hI.inv.lab_in i hi
     exact hp.L_lt
 
 /-- **Skip** a dart that is blocked, leads to a blocked vertex, or to a vertex already queued. -/
@@ -173,7 +177,7 @@ theorem InvIn.skip {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
     · exact absurd hc h1
     · exact absurd hc h2
     · refine ⟨⟨i', hi', hq⟩, ?_⟩
-      rw [← hq]
+      Ξ ← hq
       exact hI.inv.span i' hi' hI.hlt
 
 /-- **Push** the head `w` of an unblocked dart `e` (the `j`-th dart at the head entry) to an
@@ -304,12 +308,12 @@ theorem InvIn.finish {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ
   obtain ⟨hI0, hht, _, hcur⟩ := hI
   refine { hI0 with ht := hht, span := ?_, done := ?_ }
   · intro i hi hh
-    exact (hI0.span i hi hht).trans (by have := hI0.mono h (h + 1) (by omega) hh; omega)
+    exact (hI0.span i hi hht).trans (by have := hI0.mono h (h + 1) (⋄) hh; omega)
   · intro i hi e he hve
     rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hi | rfl
     · exact hI0.done i hi e he hve
     · obtain ⟨k, hk, rfl⟩ := (hp.ok.orbit_iff (hI0.qlt i hht)).mp ⟨he, hve⟩
-      exact hcur k (by omega)
+      exact hcur k (⋄)
 
 /-- Levels are bounded by queue positions. -/
 theorem Inv.lev_le {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t : ℕ}
@@ -319,9 +323,9 @@ theorem Inv.lev_le {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t : ℕ}
   | _ i ih =>
     intro hi
     rcases Nat.eq_zero_or_pos i with rfl | hpos
-    · rw [hI.q0, hI.lev0]
+    · Ξ hI.q0, hI.lev0
     · obtain ⟨-, -, -, j, hj, -, hl⟩ := hI.par i hi hpos
-      have := ih j hj (by omega)
+      have := ih j hj (⋄)
       omega
 
 /-- The degree sum of the processed queue entries is at most `N`. -/
@@ -329,13 +333,13 @@ theorem Inv.sum_deg_le {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t : ℕ
     (hI : G.Inv s L lab0 lab lev par q h t) (hok : G.OK) {n : ℕ} (hn : n ≤ t) :
     ∑ i ∈ Finset.range n, G.deg (q i) ≤ G.N := by
   classical
-  rw [← Finset.sum_image (f := G.deg) (g := q) (s := Finset.range n)]
+  Ξ ← Finset.sum_image (f := G.deg) (g := q) (s := Finset.range n)
   · refine hok.sum_deg_le _ (fun u hu => ?_)
     obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hu
     exact hI.qlt i (by rw [Finset.mem_range] at hi; omega)
   · intro i hi j hj hij
-    simp only [Finset.coe_range, Set.mem_Iio] at hi hj
-    exact hI.qinj i (by omega) j (by omega) hij
+    ϴ' Finset.coe_range, Set.mem_Iio at hi hj
+    exact hI.qinj i (⋄) j (⋄) hij
 
 /-! ## The end of the search -/
 

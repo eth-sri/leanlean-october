@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterSplitRam
 
 /-!
@@ -41,10 +45,10 @@ theorem CpMem.of_static (hL : S.Lay A0 U W) {m m' : ℕ → ℕ} (h : StaticEq A
   have := hL.hSO; have := hL.hSF; have := hL.hFPAR; have := hL.hFSZ
   refine ⟨hCp.wSO, hCp.wSF, hCp.wFP, hCp.wPR, hCp.wSZ, fun x hx => ?_, fun x hx => ?_,
     fun g hg => ?_, fun g hg => ?_⟩
-  · rw [h _ (by omega)]; exact hCp.so_lt x hx
-  · rw [h _ (by omega)]; exact hCp.sf_lt x hx
-  · rw [h _ (by omega)]; exact hCp.fp_lt g hg
-  · rw [h _ (by omega), h _ (by omega)]; exact hCp.prsz g hg
+  · rw [h _ (⋄)]; exact hCp.so_lt x hx
+  · rw [h _ (⋄)]; exact hCp.sf_lt x hx
+  · rw [h _ (⋄)]; exact hCp.fp_lt g hg
+  · rw [h _ (⋄), h _ (⋄)]; exact hCp.prsz g hg
 
 end
 
@@ -71,7 +75,7 @@ theorem passMem_tmp {W : ℕ} {S : SS} {A0 U : ℕ} (_hL : S.Lay A0 U W) {m0 : �
     (hx : ¬ (S.bACT ≤ x ∧ x < S.bACT + 2 * S.μ) ∧ ¬ (S.bPOS ≤ x ∧ x < S.bPOS + S.μ)) :
     (passMem m0 sel S.bACT S.bPOS S.bTMP lo e (hi - lo)).1 x = m0 x := by
   have := passMem_ptr m0 sel S.bACT S.bPOS S.bTMP lo e (hi - lo)
-  refine passMem_other m0 sel (hi - lo) (fun i a b => hit i a (by omega)) ⟨fun h => hx.1 ?_, hx.2⟩
+  refine passMem_other m0 sel (hi - lo) (fun i a b => hit i a (⋄)) ⟨fun h => hx.1 ?_, hx.2⟩
   omega
 
 theorem passC_tmp {W : ℕ} {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m : ℕ → ℕ} {lo hi f : ℕ}
@@ -81,17 +85,17 @@ theorem passC_tmp {W : ℕ} {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m : ℕ �
     (passC m S lo hi f).1 x = m x := by
   have := hL.hACT; have := hL.hPOS; have := hL.hTMP; have := hL.hμU
   have tA : ∀ i, lo ≤ i → i < hi → (passA m S lo hi f).1 (S.bTMP + i) = m (S.bTMP + i) :=
-    fun i h1 h2 => passMem_tmp hL hhi hlh hit ⟨by omega, by omega⟩
+    fun i h1 h2 => passMem_tmp hL hhi hlh hit ⟨⋄, ⋄⟩
   have tB : ∀ i, lo ≤ i → i < hi → (passB m S lo hi f).1 (S.bTMP + i) = m (S.bTMP + i) := by
     intro i h1 h2
     unfold passB
     rw [passMem_tmp hL hhi hsum.2 (fun i a b => by rw [tA i a b]; exact hit i a b)
-      ⟨by omega, by omega⟩]
+      ⟨⋄, ⋄⟩]
     exact tA i h1 h2
   unfold passC
-  rw [passMem_tmp hL hhi hsum.1 (fun i a b => by rw [tB i a b]; exact hit i a b) hx]
+  Ξ passMem_tmp hL hhi hsum.1 (fun i a b => by rw [tB i a b]; exact hit i a b) hx
   unfold passB
-  rw [passMem_tmp hL hhi hsum.2 (fun i a b => by rw [tA i a b]; exact hit i a b) hx]
+  Ξ passMem_tmp hL hhi hsum.2 (fun i a b => by rw [tA i a b]; exact hit i a b) hx
   exact passMem_tmp hL hhi hlh hit hx
 
 section proofs

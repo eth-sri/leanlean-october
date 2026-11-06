@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Lemma41Cost1
 public import Chazelle.Core.SpecPhases
 
@@ -25,7 +27,7 @@ theorem addr_lt (h : Robust A m Φ) {x v : ℕ}
     (hΦ : ∀ m', (∀ a, a < A → m' a = m a) → Φ m' → m' x = v) : x < A := by
   by_contra hx
   let m' : ℕ → ℕ := fun a => if a = x then v + 1 else m a
-  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right (by omega)]
+  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right (⋄)]
   have := hΦ m' he (h m' he)
   simp [m'] at this
 
@@ -34,7 +36,7 @@ theorem le_lt (h : Robust A m Φ) {x v : ℕ}
     (hΦ : ∀ m', (∀ a, a < A → m' a = m a) → Φ m' → m' x ≤ v) : x < A := by
   by_contra hx
   let m' : ℕ → ℕ := fun a => if a = x then v + 1 else m a
-  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right (by omega)]
+  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right (⋄)]
   have := hΦ m' he (h m' he)
   simp [m'] at this
 
@@ -45,7 +47,7 @@ theorem ptr_lt (h : Robust A m Φ) {p y v : ℕ}
   let V := p + A + 1
   let m' : ℕ → ℕ := fun a => if a = p then V else if a = V + y then v + 1 else m a
   have he : ∀ a, a < A → m' a = m a := fun a ha => by
-    simp only [m', V]; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+    simp only [m', V]; rw [ite_eq_right (⋄), ite_eq_right (⋄)]
   have := hΦ m' he (h m' he)
   simp only [m', V] at this
   split_ifs at this <;> omega
@@ -57,7 +59,7 @@ theorem bound2_lt (h : Robust A m Φ) {p u : ℕ}
   let V := p + A + 1
   let m' : ℕ → ℕ := fun a => if a = p then V else if a = V + u then A else m a
   have he : ∀ a, a < A → m' a = m a := fun a ha => by
-    simp only [m', V]; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+    simp only [m', V]; rw [ite_eq_right (⋄), ite_eq_right (⋄)]
   have := hΦ m' he (h m' he)
   simp only [m', V] at this
   split_ifs at this <;> omega
@@ -71,7 +73,7 @@ theorem bound3_lt (h : Robust A m Φ) {p u w : ℕ}
   let m' : ℕ → ℕ := fun a =>
     if a = p then V else if a = V + u then V2 else if a = V2 + w then A else m a
   have he : ∀ a, a < A → m' a = m a := fun a ha => by
-    simp only [m', V, V2]; rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega)]
+    simp only [m', V, V2]; rw [ite_eq_right (⋄), ite_eq_right (⋄), ite_eq_right (⋄)]
   have := hΦ m' he (h m' he)
   simp only [m', V, V2] at this
   split_ifs at this <;> omega
@@ -80,7 +82,7 @@ theorem bound3_lt (h : Robust A m Φ) {p u w : ℕ}
 theorem nfWithin_lt {f : ℕ} {N : NF} (hN : NFWithin m f A N) : f < A := by
   by_contra hf
   let m' : ℕ → ℕ := fun a => if a = f then m f + 1 else m a
-  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right (by omega)]
+  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right (⋄)]
   have h1 := (hN m' he).1
   have h2 := hN.holds.1
   simp only [m', ite_true] at h1

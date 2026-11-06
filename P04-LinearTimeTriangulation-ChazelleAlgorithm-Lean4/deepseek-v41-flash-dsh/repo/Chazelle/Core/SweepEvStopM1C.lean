@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopTasks3
 public import Chazelle.Core.SweepEvStopBrute2
 public import Chazelle.Core.SweepIoCand1G
@@ -52,7 +54,7 @@ theorem m1c_wall (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N) {k
   obtain ⟨-, -, hy, -, hx1⟩ := stOrig_facts hP hN hok'
   obtain ⟨ha, hbw, hpar, hposT⟩ :=
     boxTwin_pos (C₁ := J.right) (C₂ := J.left) rfl hbox (Qof P) h
-  have hR : 0 < J.whole.radius := J.whole.radius_pos
+  have hR := J.whole.radius_pos
   -- the ray in the left sector in the walk of `C₂`
   have hA := endPos_attach hN hk (1 - b)
   rw [← hx] at hA

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Chain.Sides
 public import Chazelle.Merge.Fusion
 public import Chazelle.Mountain.Orientation
@@ -68,7 +70,7 @@ def shear (ε : ℝ) (P : Polygon) : Polygon := ⟨P.vertices.map (shearPt ε)�
 
 /-- The shear does not change the number of vertices. -/
 theorem shear_n (ε : ℝ) (P : Polygon) : (shear ε P).n = P.n := by
-  simp [shear, Polygon.n]
+  Θ shear, Polygon.n
 
 theorem getD_map_point (f : Point → Point) (l : List Point) (i : ℕ) (d : Point) :
     (l.map f).getD i (f d) = f (l.getD i d) := by
@@ -79,14 +81,14 @@ theorem getD_map_point (f : Point → Point) (l : List Point) (i : ℕ) (d : Poi
 /-- Vertex `i` of the sheared polygon is the sheared vertex `i` (for every `i`: the default
 vertex `(0, 0)` is fixed by the shear). -/
 theorem shear_vtx (ε : ℝ) (P : Polygon) (i : ℕ) : (shear ε P).vtx i = shearPt ε (P.vtx i) := by
-  have h0 : shearPt ε ((0 : ℝ), (0 : ℝ)) = ((0 : ℝ), (0 : ℝ)) := by simp [shearPt]
+  have h0 : shearPt ε ((0 : ℝ), (0 : ℝ)) = ((0 : ℝ), (0 : ℝ)) := ⊚ shearPt
   unfold Polygon.vtx shear
-  rw [← getD_map_point (shearPt ε) P.vertices i, h0]
+  Ξ ← getD_map_point (shearPt ε) P.vertices i, h0
 
 /-- **Orientation tests are exact under the shear**: the shear has determinant `1`. -/
 theorem det_shearPt (ε : ℝ) (a b c : Point) :
     det (shearPt ε a) (shearPt ε b) (shearPt ε c) = det a b c := by
-  simp only [det, shearPt]
+  ϴ det, shearPt
   ring
 
 /-- The `x`-coordinate of the point of edge `e` of `Q` at the height of vertex `h` of `Q`
@@ -154,7 +156,7 @@ noncomputable def Qof (P : Polygon) : Polygon := shear (epsOf P) P
 theorem goodShear_epsOf {P : Polygon} (h : ∃ ε, GoodShear P ε) : GoodShear P (epsOf P) := by
   classical
   unfold epsOf
-  rw [dite_eq_left_of_eq_true (eq_true h)]
+  Ξ dite_eq_left_of_eq_true (eq_true h)
   exact h.choose_spec
 
 /-- `Q` is a shear of `P` by a nonnegative parameter whose height order is `P`'s lexicographic

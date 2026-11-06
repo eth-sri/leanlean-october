@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutLoop2
 
 /-!
@@ -54,7 +56,7 @@ theorem sideInArc_unw {n a b x A B X : ℝ} (hn : 0 < n) (ha0 : 0 ≤ a) (han : 
   unfold sideInArc
   rcases hj with hj | hj <;> rcases hk with hk | hk <;> rw [hj] at ej <;> rw [hk] at ek <;>
     push_cast at ej ek <;> rw [ej] at h1 h2 <;> rw [ek] at h2 h3
-  · have hab : a < b := by nlinarith
+  · have hab : a < b := ⊞
     rw [ite_eq_left hab]; constructor <;> nlinarith
   · have hab : ¬ a < b := by intro h; nlinarith
     rw [ite_eq_right hab]; left; nlinarith
@@ -92,7 +94,7 @@ theorem KPath.last {n : ℝ} : ∀ {V : ℝ} {ps : List Pc} {V' : ℝ} (_ : KPat
     (hne : ps ≠ []), ∃ j : ℤ, V' = M.key Q (ps.getLast hne).e + j * n
   | _, [pc], _, ⟨_, V₁, _, h3, h4⟩, _ => by simp only [KPath] at h4; subst h4; exact h3
   | _, _ :: q :: qs, _, ⟨_, _, _, _, h4⟩, _ => by
-    rw [List.getLast_cons (List.cons_ne_nil q qs)]
+    Ξ List.getLast_cons (List.cons_ne_nil q qs)
     exact KPath.last h4 (List.cons_ne_nil q qs)
 
 /-- **The tiling conjunct**: along a path of pieces within one lap, the end of every piece but
@@ -102,22 +104,22 @@ theorem e6_of_kpath {n : ℝ} (hn : 0 < n) :
       (_ : ∀ pc ∈ ps, (0 ≤ M.key Q pc.s ∧ M.key Q pc.s < n) ∧ (0 ≤ M.key Q pc.e ∧ M.key Q pc.e < n))
       (hne : ps ≠ []),
       ∀ i, (hi : i + 1 < ps.length) →
-        sideInArc (M.key Q (ps[i]'(by omega)).s) (M.key Q (ps.getLast hne).e)
-          (M.key Q (ps[i]'(by omega)).e)
+        sideInArc (M.key Q (ps[i]'(⋄)).s) (M.key Q (ps.getLast hne).e)
+          (M.key Q (ps[i]'(⋄)).e)
   | _, [], _, _, _, _, hne, _, _ => absurd rfl hne
   | V, pc :: ps, T, ⟨hs, V₁, hV, he, hp⟩, hT, hb, hne, i, hi => by
     have hne' : ps ≠ [] := by rintro rfl; simp at hi
     have hlast : (pc :: ps).getLast hne = ps.getLast hne' := List.getLast_cons hne'
     rcases i with _ | i
-    · simp only [List.getElem_cons_zero]
-      rw [hlast]
-      have hbp := hb pc (by simp)
-      have hbl := hb (ps.getLast hne') (by simp [List.getLast_mem])
+    · ϴ List.getElem_cons_zero
+      Ξ hlast
+      have hbp := hb pc (✓)
+      have hbl := hb (ps.getLast hne') (⊚ List.getLast_mem)
       exact sideInArc_unw hn hbp.1.1 hbp.1.2 hbl.2.1 hbl.2.2 hbp.2.1 hbp.2.2 hs he
         (KPath.last hp hne') hV (hp.lt hne') hT
-    · simp only [List.getElem_cons_succ]
-      rw [hlast]
-      exact e6_of_kpath hn hp (by linarith) (fun q hq => hb q (by simp [hq])) hne' i
+    · ϴ List.getElem_cons_succ
+      Ξ hlast
+      exact e6_of_kpath hn hp (⟡) (fun q hq => hb q (⊚ hq)) hne' i
         (by simp at hi; omega)
 
 /-- **A path of walk vertices** is a path of unwrapped keys. -/

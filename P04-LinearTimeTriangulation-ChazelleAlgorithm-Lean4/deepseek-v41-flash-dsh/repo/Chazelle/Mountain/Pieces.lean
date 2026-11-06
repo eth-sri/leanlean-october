@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Mountain.Decompose
 public import Chazelle.Mountain.Stack
 
@@ -69,19 +73,19 @@ theorem exists_minimal_idx {r : α → α → Prop} (hr : StrictTotal r) {f : �
   | zero => omega
   | succ N ih =>
     rcases Nat.eq_zero_or_pos N with rfl | hN
-    · exact ⟨0, by omega, fun j hj hjk => by omega⟩
-    · obtain ⟨k, hk, hmin⟩ := ih hN (fun i j hi hj h => hinj i j (by omega) (by omega) h)
+    · exact ⟨0, ⋄, fun j hj hjk => ⋄⟩
+    · obtain ⟨k, hk, hmin⟩ := ih hN (fun i j hi hj h => hinj i j (⋄) (⋄) h)
       have hne : f k ≠ f N := fun h => by
-        have := hinj k N (by omega) (by omega) h
+        have := hinj k N (⋄) (⋄) h
         omega
       rcases hr.total _ _ hne with h | h
-      · refine ⟨k, by omega, fun j hj hjk => ?_⟩
+      · refine ⟨k, ⋄, fun j hj hjk => ?_⟩
         rcases Nat.lt_or_ge j N with hjN | hjN
         · exact hmin j hjN hjk
-        · obtain rfl : j = N := by omega
+        · obtain rfl : j = N := ⋄
           exact h
-      · refine ⟨N, by omega, fun j hj hjk => ?_⟩
-        have hjN : j < N := by omega
+      · refine ⟨N, ⋄, fun j hj hjk => ?_⟩
+        have hjN : j < N := ⋄
         by_cases hjk' : j = k
         · subst hjk'; exact h
         · exact hr.trans _ _ _ h (hmin j hjN hjk')
@@ -89,16 +93,16 @@ theorem exists_minimal_idx {r : α → α → Prop} (hr : StrictTotal r) {f : �
 /-- Cyclic predecessor is different from the index (for `2 ≤ n`). -/
 theorem pred_mod_ne {n k : ℕ} (hn : 2 ≤ n) (hk : k < n) : (k + n - 1) % n ≠ k := by
   rcases Nat.eq_zero_or_pos k with rfl | hk0
-  · rw [show 0 + n - 1 = n - 1 by omega, Nat.mod_eq_of_lt (by omega)]
+  · Ξ show 0 + n - 1 = n - 1 by omega, Nat.mod_eq_of_lt (⋄)
     omega
-  · rw [show k + n - 1 = (k - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+  · Ξ show k + n - 1 = (k - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (⋄)
     omega
 
 /-- Cyclic successor is different from the index (for `2 ≤ n`). -/
 theorem succ_mod_ne {n k : ℕ} (hn : 2 ≤ n) (hk : k < n) : (k + 1) % n ≠ k := by
   by_cases h : k + 1 = n
   · rw [h, Nat.mod_self]; omega
-  · rw [Nat.mod_eq_of_lt (by omega)]; omega
+  · rw [Nat.mod_eq_of_lt (⋄)]; omega
 
 end Cyclic
 
@@ -130,8 +134,8 @@ def IsMonoAt (Q : Polygon) (a : ℕ) : Prop :=
 /-- Simplicity transfers back along a rotation. -/
 theorem simple_of_simple_rotate {Q : Polygon} {s : ℕ} (h : (Q.rotate s).Simple) : Q.Simple := by
   have e : Q.rotate s = subPoly Q ((List.range Q.n).rotate s) := by
-    rw [subPoly_rotate, subPoly_range]
-  rw [e] at h
+    Ξ subPoly_rotate, subPoly_range
+  Ξ' e at h
   have := simple_subPoly_of_rotate Q h
   rwa [subPoly_range] at this
 
@@ -142,26 +146,26 @@ theorem isMountainAt_iff {Q : Polygon} {a : ℕ} (ha : a < Q.n) :
     IsMountainAt Q a ↔ IsMountain (Q.rotate ((a + 1) % Q.n)) := by
   have key : ∀ i, i < Q.n → (Q.rotate ((a + 1) % Q.n)).vtx i = Q.vtx ((a + 1 + i) % Q.n) := by
     intro i hi
-    rw [vtx_rotate Q _ hi, Nat.mod_add_mod]
+    Ξ vtx_rotate Q _ hi, Nat.mod_add_mod
   constructor
   · rintro ⟨hQ, -, hc⟩
     refine ⟨simple_rotate Q _ hQ, fun i hi => ?_⟩
-    rw [n_rotate] at hi
-    rw [key i (by omega), key (i + 1) hi]
+    Ξ' n_rotate at hi
+    Ξ key i (⋄), key (i + 1) hi
     exact hc i hi
   · rintro ⟨hR, hc⟩
     refine ⟨simple_of_simple_rotate hR, ha, fun p hp => ?_⟩
     have := hc p (by rw [n_rotate]; exact hp)
-    rwa [key p (by omega), key (p + 1) hp] at this
+    rwa [key p (⋄), key (p + 1) hp] at this
 
 /-- The global `ylexLT`-minimum of a simple polygon is a strict local minimum. -/
 theorem exists_isLocMin {Q : Polygon} (hQ : Q.Simple) :
     ∃ k, IsLocMin Q k ∧ ∀ j < Q.n, j ≠ k → ylexLT (Q.vtx k) (Q.vtx j) := by
   have h3 := hQ.1
-  obtain ⟨k, hk, hmin⟩ := exists_minimal_idx strictTotal_ylexLT (f := Q.vtx) (by omega)
+  obtain ⟨k, hk, hmin⟩ := exists_minimal_idx strictTotal_ylexLT (f := Q.vtx) (⋄)
     (fun i j hi hj h => hQ.2.1 i j hi hj h)
-  exact ⟨k, ⟨hk, hmin _ (prevIdx_lt Q hk) (pred_mod_ne (by omega) hk),
-    hmin _ (Nat.mod_lt _ (by omega)) (succ_mod_ne (by omega) hk)⟩, hmin⟩
+  exact ⟨k, ⟨hk, hmin _ (prevIdx_lt Q hk) (pred_mod_ne (⋄) hk),
+    hmin _ (Nat.mod_lt _ (⋄)) (succ_mod_ne (⋄) hk)⟩, hmin⟩
 
 /-! ### Pieces -/
 
@@ -194,7 +198,7 @@ theorem IsPieceEdge.segment_cases {P : Polygon} {x y : ℕ} (hx : x < P.n) (hy :
   · left; rw [h]; exact Chazelle.Existence.edge_subset_boundary P hx
   · left; rw [h, Geometry.segment_comm]; exact Chazelle.Existence.edge_subset_boundary P hy
   · exact Or.inr ⟨_, h, rfl⟩
-  · exact Or.inr ⟨_, h, by rw [diagSeg, Geometry.segment_comm]⟩
+  · exact Or.inr ⟨_, h, Ρ diagSeg, Geometry.segment_comm⟩
 
 /-! ### (b) Free points are dense in the interior -/
 
@@ -205,7 +209,7 @@ theorem chordUnion_snd {P : Polygon} {p : Point} (hp : p ∈ chordUnion P) :
   obtain ⟨i, σ, hi, -, -, rfl⟩ := hS
   refine ⟨i, hi, ?_⟩
   obtain ⟨t, -, -, rfl⟩ := hpS
-  simp [chordEnd_snd]
+  Θ chordEnd_snd
 
 /-- A finite family of reals has a positive lower bound on its positive members. -/
 theorem exists_pos_le_of_pos (f : ℕ → ℝ) (n : ℕ) : ∃ g > 0, ∀ j < n, 0 < f j → g ≤ f j := by
@@ -229,21 +233,21 @@ above the given point. -/
 theorem exists_free_of_isOpen {P : Polygon} (hP : P.Simple) {U : Set Point} (hU : IsOpen U)
     {z : Point} (hz : z ∈ U) (hzi : z ∈ P.filled \ P.boundary) :
     ∃ p ∈ U, p ∈ freeRegion P ∧ p.1 = z.1 ∧ z.2 < p.2 := by
-  have hV : IsOpen (U ∩ (P.filled \ P.boundary)) := hU.inter (isOpen_filled_sdiff_boundary hP)
+  have hV := hU.inter (isOpen_filled_sdiff_boundary hP)
   obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.1 hV z ⟨hz, hzi⟩
   have hfin : (((Finset.range P.n).image (fun k => (P.vtx k).2 - z.2) : Finset ℝ) :
       Set ℝ).Finite := Finset.finite_toSet _
   obtain ⟨s, hs, hsnot⟩ := ((Set.Ioo_infinite hε).sdiff hfin).nonempty
   have hmem : ((z.1, z.2 + s) : Point) ∈ ball z ε := by
-    rw [mem_ball_iff_abs]
-    simp only [sub_self, abs_zero, add_sub_cancel_left]
+    Ξ mem_ball_iff_abs
+    ϴ sub_self, abs_zero, add_sub_cancel_left
     exact ⟨hε, by rw [abs_of_pos hs.1]; exact hs.2⟩
   refine ⟨(z.1, z.2 + s), (hball hmem).1, ⟨(hball hmem).2, ?_⟩, rfl, by
     simp only; linarith [hs.1]⟩
   intro hc
   obtain ⟨k, hk, hks⟩ := chordUnion_snd hc
   apply hsnot
-  simp only [Finset.coe_image, Finset.coe_range, Set.mem_image, Set.mem_Iio]
+  ϴ Finset.coe_image, Finset.coe_range, Set.mem_image, Set.mem_Iio
   exact ⟨k, hk, by simp only at hks; linarith⟩
 
 /-! ### (c) The regions touching a vertex -/
@@ -254,22 +258,22 @@ theorem mem_segment_or_far {p v c : Point} {t : ℝ} (ht1 : t < 1)
     (hx : Geometry.lerp p v t ∈ Chazelle.segment v c) :
     p ∈ Chazelle.segment v c ∨ dist c v ≤ dist p v := by
   obtain ⟨s, hs0, hs1, hxs⟩ := hx
-  have h1t : 0 < 1 - t := by linarith
+  have h1t : 0 < 1 - t := ⟡
   have e1 : p.1 - v.1 = (s / (1 - t)) * (c.1 - v.1) := by
     have := congrArg Prod.fst hxs
-    simp only [Geometry.lerp] at this
+    ϴ' Geometry.lerp at this
     field_simp
     linarith
   have e2 : p.2 - v.2 = (s / (1 - t)) * (c.2 - v.2) := by
     have := congrArg Prod.snd hxs
-    simp only [Geometry.lerp] at this
+    ϴ' Geometry.lerp at this
     field_simp
     linarith
   have hμ : 0 ≤ s / (1 - t) := div_nonneg hs0 h1t.le
   rcases le_or_gt (s / (1 - t)) 1 with hle | hgt
   · left
     refine ⟨s / (1 - t), hμ, hle, ?_⟩
-    rw [Geometry.point_ext_iff]
+    Ξ Geometry.point_ext_iff
     constructor <;> simp only <;> linarith
   · right
     rw [Prod.dist_eq, Prod.dist_eq, Real.dist_eq, Real.dist_eq, Real.dist_eq, Real.dist_eq, e1, e2,
@@ -305,16 +309,16 @@ theorem exists_ball_vtx_mem_closure {P : Polygon} (hP : P.Simple) {k : ℕ} (hk 
     set S := Geometry.lerp p v '' Ico (0 : ℝ) 1 with hS
     have hSball : S ⊆ ball v r := by
       rintro _ ⟨t, ht, rfl⟩
-      rw [Geometry.lerp_eq_smul_add_smul]
-      exact (convex_ball v r) hp (mem_ball_self hr0) (by linarith [ht.2]) ht.1 (by ring)
+      Ξ Geometry.lerp_eq_smul_add_smul
+      exact (convex_ball v r) hp (mem_ball_self hr0) (by linarith [ht.2]) ht.1 (⋆)
     have hSb : ∀ x ∈ S, x ∉ P.boundary := by
       rintro _ ⟨t, ht, rfl⟩ hxb
       rcases hball _ (ball_subset_ball hrr₁ (hSball ⟨t, ht, rfl⟩)) hxb with hx | hx
-      · rw [Geometry.segment_comm] at hx
+      · Ξ' Geometry.segment_comm at hx
         rcases mem_segment_or_far ht.2 hx with h | h
         · apply hpf.1.2
           refine ⟨prevIdx P k, prevIdx_lt P hk, ?_⟩
-          rw [edge_prevIdx P hk, Geometry.segment_comm]
+          Ξ edge_prevIdx P hk, Geometry.segment_comm
           exact h
         · linarith
       · rcases mem_segment_or_far ht.2 hx with h | h
@@ -331,11 +335,11 @@ theorem exists_ball_vtx_mem_closure {P : Polygon} (hP : P.Simple) {k : ℕ} (hk 
       obtain ⟨t, ht, rfl⟩ := hx
       obtain ⟨j, hj, hjy⟩ := chordUnion_snd hxc
       have hxv := hSball ⟨t, ht, rfl⟩
-      rw [mem_ball_iff_abs] at hxv
+      Ξ' mem_ball_iff_abs at hxv
       have hne : (Geometry.lerp p v t).2 - v.2 ≠ 0 := by
-        rw [Geometry.lerp_snd]
-        have : p.2 + t * (v.2 - p.2) - v.2 = (1 - t) * (p.2 - v.2) := by ring
-        rw [this]
+        Ξ Geometry.lerp_snd
+        have : p.2 + t * (v.2 - p.2) - v.2 = (1 - t) * (p.2 - v.2) := ⋆
+        Ξ this
         exact mul_ne_zero (by linarith [ht.2]) (sub_ne_zero.2 hpy)
       have h1 := hgle j hj (by
         show 0 < |(P.vtx j).2 - v.2|
@@ -346,7 +350,7 @@ theorem exists_ball_vtx_mem_closure {P : Polygon} (hP : P.Simple) {k : ℕ} (hk 
       hSc.subset_connectedComponentIn hpS hSf
     have htend : Tendsto (Geometry.lerp p v) (𝓝[<] 1) (𝓝 v) := by
       have := ((Geometry.continuous_lerp p v).tendsto 1)
-      rw [Geometry.lerp_one] at this
+      Ξ' Geometry.lerp_one at this
       exact this.mono_left nhdsWithin_le_nhds
     refine mem_closure_of_tendsto htend ?_
     filter_upwards [Ioo_mem_nhdsLT (show (0 : ℝ) < 1 by norm_num)] with t ht
@@ -359,9 +363,9 @@ theorem exists_ball_vtx_mem_closure {P : Polygon} (hP : P.Simple) {k : ℕ} (hk 
     obtain ⟨δ, hδ, hδsub⟩ := Metric.isOpen_iff.1 (hCo.inter isOpen_ball) p
       ⟨mem_connectedComponentIn hpf, hp⟩
     have hp' : ((p.1, p.2 + δ / 2) : Point) ∈ ball p δ := by
-      rw [mem_ball_iff_abs]
-      simp only [sub_self, abs_zero, add_sub_cancel_left]
-      exact ⟨hδ, by rw [abs_of_pos (by linarith)]; linarith⟩
+      Ξ mem_ball_iff_abs
+      ϴ sub_self, abs_zero, add_sub_cancel_left
+      exact ⟨hδ, by rw [abs_of_pos (⟡)]; linarith⟩
     obtain ⟨hp'C, hp'b⟩ := hδsub hp'
     have hp'f : ((p.1, p.2 + δ / 2) : Point) ∈ freeRegion P := connectedComponentIn_subset _ _ hp'C
     have := key _ hp'b hp'f (by simp only; rw [hpy]; linarith)
@@ -393,7 +397,7 @@ theorem TrapData.mem_bot_of_lt {P : Polygon} (D : TrapData P) {k : ℕ}
   · exact h
   · exfalso
     have := hp.2.1
-    rw [← h.2.1] at this
+    Ξ' ← h.2.1 at this
     linarith
 
 /-- A vertex in the closure of a region, strictly above one of its points, is on the closed top
@@ -404,7 +408,7 @@ theorem TrapData.mem_top_of_lt {P : Polygon} (D : TrapData P) {k : ℕ}
   rcases D.vtx_mem_closure_region hk hv with h | h
   · exfalso
     have := hp.1
-    rw [← h.2.1] at this
+    Ξ' ← h.2.1 at this
     linarith
   · exact h
 
@@ -413,7 +417,7 @@ theorem TrapData.mem_top_of_lt {P : Polygon} (D : TrapData P) {k : ℕ}
 /-- A point of the plane at the height of a vertex set strictly between two abscissae. -/
 theorem horiz_mem_segment {a b p : Point} (ha : a.2 = p.2) (hb : b.2 = p.2)
     (h1 : min a.1 b.1 ≤ p.1) (h2 : p.1 ≤ max a.1 b.1) : p ∈ Chazelle.segment a b := by
-  rw [segment_horizontal_eq_hseg (ha.trans hb.symm)]
+  Ξ segment_horizontal_eq_hseg (ha.trans hb.symm)
   exact ⟨ha.symm, h1, h2⟩
 
 /-- **The gap lemma.**  Let `m`, `k` be vertices at the same height `y₀`, `m` to the left of `k`,
@@ -450,7 +454,7 @@ theorem gap_adjacent_or_chord {P : Polygon} (hP : P.Simple) {y₀ ε : ℝ} (hε
       have hx1e : x = e1.1 + t * (e2.1 - e1.1) := congrArg Prod.fst hxe
       have hy1e : y₀ = e1.2 + t * (e2.2 - e1.2) := congrArg Prod.snd hxe
       have he1y : e1.2 = y₀ := by rw [hy1e, ← hh]; ring
-      have he2y : e2.2 = y₀ := by rw [← hh, he1y]
+      have he2y : e2.2 = y₀ := Ρ ← hh, he1y
       have hne12 : e1.1 ≠ e2.1 := by
         intro h
         exact simple_vtx_succ_ne hP hg (Geometry.point_ext h (he1y.trans he2y.symm))
@@ -465,38 +469,38 @@ theorem gap_adjacent_or_chord {P : Polygon} (hP : P.Simple) {y₀ ε : ℝ} (hε
         intro c hc hcy hc1 hc2
         apply horiz_mem_segment (he1y.trans hcy.symm) (he2y.trans hcy.symm)
         · rcases lt_or_gt_of_ne hne12 with h12 | h12
-          · rw [min_eq_left h12.le]
+          · Ξ min_eq_left h12.le
             by_contra hcon
             push Not at hcon
             have : e1.1 < x := by rw [hx1e]; nlinarith [ht.1]
-            exact hout1 ⟨by linarith, by linarith⟩
-          · rw [min_eq_right h12.le]
+            exact hout1 ⟨⟡, ⟡⟩
+          · Ξ min_eq_right h12.le
             by_contra hcon
             push Not at hcon
             have : e2.1 < x := by rw [hx1e]; nlinarith [ht.2]
-            exact hout2 ⟨by linarith, by linarith⟩
+            exact hout2 ⟨⟡, ⟡⟩
         · rcases lt_or_gt_of_ne hne12 with h12 | h12
-          · rw [max_eq_right h12.le]
+          · Ξ max_eq_right h12.le
             by_contra hcon
             push Not at hcon
             have : x < e2.1 := by rw [hx1e]; nlinarith [ht.2]
-            exact hout2 ⟨by linarith, by linarith⟩
-          · rw [max_eq_left h12.le]
+            exact hout2 ⟨⟡, ⟡⟩
+          · Ξ max_eq_left h12.le
             by_contra hcon
             push Not at hcon
             have : x < e1.1 := by rw [hx1e]; nlinarith [ht.1]
-            exact hout1 ⟨by linarith, by linarith⟩
+            exact hout1 ⟨⟡, ⟡⟩
       have hkg := (simple_vtx_mem_edge_iff hP hk hg).1 (hmem k hk hky hlt.le le_rfl)
       have hmg := (simple_vtx_mem_edge_iff hP hm hg).1 (hmem m hm hmy le_rfl hlt.le)
       rcases hkg with hkg | hkg <;> rcases hmg with hmg | hmg
       · exact absurd (hmg.symm.trans hkg) hmk
       · right
-        rw [← hkg, hmg, prevIdx_succ P hm]
+        Ξ ← hkg, hmg, prevIdx_succ P hm
       · left
-        rw [← prevIdx_succ P hk, ← hkg, hmg]
+        Ξ ← prevIdx_succ P hk, ← hkg, hmg
       · exfalso
         apply hmk
-        rw [← prevIdx_succ P hm, ← prevIdx_succ P hk, ← hmg, ← hkg]
+        Ξ ← prevIdx_succ P hm, ← prevIdx_succ P hk, ← hmg, ← hkg
   · -- no boundary point in the gap: a vertex-to-vertex chord
     right
     push Not at hB
@@ -507,17 +511,17 @@ theorem gap_adjacent_or_chord {P : Polygon} (hP : P.Simple) {y₀ ε : ℝ} (hε
       have htend : Tendsto (fun s : ℝ => ((x, y₀ + ε * s) : Point)) (𝓝[>] 0) (𝓝 (x, y₀)) := by
         have hc : Continuous fun s : ℝ => ((x, y₀ + ε * s) : Point) := by fun_prop
         have := hc.tendsto 0
-        simp only [mul_zero, add_zero] at this
+        ϴ' mul_zero, add_zero at this
         exact this.mono_left nhdsWithin_le_nhds
       have hcl : ((x, y₀) : Point) ∈ closure U := by
         refine mem_closure_of_tendsto htend ?_
         filter_upwards [htend.eventually (hnear x hx1 hx2), self_mem_nhdsWithin] with s hs hs0
         apply hs
         have hs0' : (0 : ℝ) < s := hs0
-        simp only [add_sub_cancel_left]
+        ϴ add_sub_cancel_left
         rcases hε with rfl | rfl <;> nlinarith
       exact (isClosed_filled P).closure_subset (closure_mono (fun _ h => (hU h).1) hcl)
-    have hd : 0 < (P.vtx k).1 - (P.vtx m).1 := by linarith
+    have hd : 0 < (P.vtx k).1 - (P.vtx m).1 := ⟡
     constructor
     · -- the chord of `k` to the left ends at `m`
       have hdir : DirInterior P k (-1) := by
@@ -525,42 +529,42 @@ theorem gap_adjacent_or_chord {P : Polygon} (hP : P.Simple) {y₀ ε : ℝ} (hε
         filter_upwards [Ioo_mem_nhdsGT hd] with t ht
         have : rayPt (P.vtx k) (-1) t = (((P.vtx k).1 - t, y₀) : Point) := by
           rw [Geometry.point_ext_iff]; simp [hky]; ring
-        rw [this]
+        Ξ this
         exact hint _ (by linarith [ht.2]) (by linarith [ht.1])
       have hpar : chordParam P k (-1) = (P.vtx k).1 - (P.vtx m).1 := by
         apply chordParam_eq_of_first P k (-1) hd
         · have : rayPt (P.vtx k) (-1) ((P.vtx k).1 - (P.vtx m).1) = P.vtx m := by
-            rw [Geometry.point_ext_iff]; simp [hky, hmy]
+            rw [Geometry.point_ext_iff]; Θ hky, hmy
           rw [this]; exact vtx_mem_boundary P hm
         · intro s hs0 hs1
           have : rayPt (P.vtx k) (-1) s = (((P.vtx k).1 - s, y₀) : Point) := by
             rw [Geometry.point_ext_iff]; simp [hky]; ring
-          rw [this]
-          exact hB _ (by linarith) (by linarith)
+          Ξ this
+          exact hB _ (⟡) (⟡)
       refine ⟨hk, hm, -1, Or.inr rfl, hdir, ?_⟩
-      rw [Geometry.point_ext_iff]
-      simp [chordEnd, hpar, hky, hmy]
+      Ξ Geometry.point_ext_iff
+      Θ chordEnd, hpar, hky, hmy
     · -- the chord of `m` to the right ends at `k`
       have hdir : DirInterior P m 1 := by
         unfold DirInterior
         filter_upwards [Ioo_mem_nhdsGT hd] with t ht
         have : rayPt (P.vtx m) 1 t = (((P.vtx m).1 + t, y₀) : Point) := by
-          rw [Geometry.point_ext_iff]; simp [hmy]
-        rw [this]
+          rw [Geometry.point_ext_iff]; Θ hmy
+        Ξ this
         exact hint _ (by linarith [ht.1]) (by linarith [ht.2])
       have hpar : chordParam P m 1 = (P.vtx k).1 - (P.vtx m).1 := by
         apply chordParam_eq_of_first P m 1 hd
         · have : rayPt (P.vtx m) 1 ((P.vtx k).1 - (P.vtx m).1) = P.vtx k := by
-            rw [Geometry.point_ext_iff]; simp [hky, hmy]
+            rw [Geometry.point_ext_iff]; Θ hky, hmy
           rw [this]; exact vtx_mem_boundary P hk
         · intro s hs0 hs1
           have : rayPt (P.vtx m) 1 s = (((P.vtx m).1 + s, y₀) : Point) := by
-            rw [Geometry.point_ext_iff]; simp [hmy]
-          rw [this]
-          exact hB _ (by linarith) (by linarith)
+            rw [Geometry.point_ext_iff]; Θ hmy
+          Ξ this
+          exact hB _ (⟡) (⟡)
       refine ⟨hm, hk, 1, Or.inl rfl, hdir, ?_⟩
-      rw [Geometry.point_ext_iff]
-      simp [chordEnd, hpar, hky, hmy]
+      Ξ Geometry.point_ext_iff
+      Θ chordEnd, hpar, hky, hmy
 
 /-- **(d) The attached segment at a vertex of the closed top side.**  If vertex `k` lies on the
 closed top side of the trapezoid `D`, some vertex `m` strictly `ylexLT`-below `k` is joined to
@@ -576,7 +580,7 @@ theorem TrapData.attached_top {P : Polygon} (hP : P.Simple) (D : TrapData P) {k 
     by_cases hna : D.NonAdj
     · exact Or.inr (Or.inr (Or.inl (Or.inl (D.diag_mem_trapDiagonals hna))))
     · unfold TrapData.NonAdj at hna
-      rw [not_and_or, not_not, not_not] at hna
+      Ξ' not_and_or, not_not, not_not at hna
       rcases hna with h | h
       · exact Or.inl h
       · exact Or.inr (Or.inl h)
@@ -621,8 +625,8 @@ theorem ylexLT_lerp_lower {x c : Point} (hc : ylexLT c x) {s : ℝ} (hs : 0 < s)
     ylexLT (Geometry.lerp x c s) x := by
   rcases hc with h | ⟨h1, h2⟩
   · left; simp only [Geometry.lerp_snd]; nlinarith
-  · right; simp only [Geometry.lerp_snd, Geometry.lerp_fst]
-    exact ⟨by rw [h1]; ring, by nlinarith⟩
+  · right; ϴ Geometry.lerp_snd, Geometry.lerp_fst
+    exact ⟨by rw [h1]; ring, ⊞⟩
 
 /-- The strict `ylexLT`-lower set of a point is convex. -/
 theorem convex_ylexLT_lower (x : Point) : Convex ℝ {y : Point | ylexLT y x} := by
@@ -630,11 +634,11 @@ theorem convex_ylexLT_lower (x : Point) : Convex ℝ {y : Point | ylexLT y x} :=
   change ylexLT _ _ at hy
   change ylexLT _ _ at hz
   show (a • y + b • z).2 < x.2 ∨ ((a • y + b • z).2 = x.2 ∧ (a • y + b • z).1 < x.1)
-  have e2 : a * x.2 + b * x.2 = x.2 := by rw [← add_mul, hab, one_mul]
-  have e1 : a * x.1 + b * x.1 = x.1 := by rw [← add_mul, hab, one_mul]
+  have e2 : a * x.2 + b * x.2 = x.2 := Ρ ← add_mul, hab, one_mul
+  have e1 : a * x.1 + b * x.1 = x.1 := Ρ ← add_mul, hab, one_mul
   rcases ha.lt_or_eq with ha' | ha'
   · rcases hb.lt_or_eq with hb' | hb'
-    · simp only [Prod.fst_add, Prod.snd_add, Prod.smul_fst, Prod.smul_snd, smul_eq_mul]
+    · ϴ Prod.fst_add, Prod.snd_add, Prod.smul_fst, Prod.smul_snd, smul_eq_mul
       rcases hy with hy | ⟨hy1, hy2⟩ <;> rcases hz with hz | ⟨hz1, hz2⟩
       · left
         linarith [mul_lt_mul_of_pos_left hy ha', mul_lt_mul_of_pos_left hz hb']
@@ -643,13 +647,13 @@ theorem convex_ylexLT_lower (x : Point) : Convex ℝ {y : Point | ylexLT y x} :=
       · left
         rw [hy1]; linarith [mul_lt_mul_of_pos_left hz hb']
       · right
-        rw [hy1, hz1]
+        Ξ hy1, hz1
         exact ⟨e2, by linarith [mul_lt_mul_of_pos_left hy2 ha', mul_lt_mul_of_pos_left hz2 hb']⟩
     · subst hb'
-      have : a = 1 := by linarith
+      have : a = 1 := ⟡
       subst this; simpa [ylexLT] using hy
   · subst ha'
-    have : b = 1 := by linarith
+    have : b = 1 := ⟡
     subst this; simpa [ylexLT] using hz
 
 /-- Near a vertex of a simple polygon both of whose neighbours are `ylexLT`-greater, the
@@ -659,7 +663,7 @@ theorem lower_halfBall_not_boundary {Q : Polygon} (hQ : Q.Simple) {k : ℕ} (hk 
   obtain ⟨r, hr, hball⟩ := Chazelle.Existence.boundary_near_vtx hQ hk.1
   refine ⟨r, hr, fun y hy hlt hyb => ?_⟩
   rcases hball y hy hyb with h | h
-  · rw [Geometry.segment_comm] at h
+  · Ξ' Geometry.segment_comm at h
     exact not_ylexLE_of_ylexLT hlt (ylexLE_of_mem_segment (ylexLE_of_ylexLT hk.2.1) h)
   · exact not_ylexLE_of_ylexLT hlt (ylexLE_of_mem_segment (ylexLE_of_ylexLT hk.2.2) h)
 
@@ -670,7 +674,7 @@ theorem IsPiece.interior_subset {P : Polygon} {l : List ℕ} (hl : IsPiece P l) 
     (subPoly P l).filled \ (subPoly P l).boundary ⊆ P.filled \ P.boundary := by
   intro y hy
   refine ⟨hl.filled_subset hy.1, hl.not_boundary y ?_⟩
-  rw [interior_filled hl.simple]
+  Ξ interior_filled hl.simple
   exact hy
 
 /-- A point of the segment attached at a vertex of a piece that is interior to the piece yields
@@ -699,7 +703,7 @@ theorem IsPiece.locMin_lower_exterior {P : Polygon} (hP : P.Simple) {l : List �
   set K := l.getD k 0 with hKdef
   have hK : K < P.n := by
     apply hl.lt
-    rw [hKdef, EarClip.getD_eq_getElem_of_lt _ _ hkQ]
+    Ξ hKdef, EarClip.getD_eq_getElem_of_lt _ _ hkQ
     exact List.getElem_mem hkQ
   have hxK : Q.vtx k = P.vtx K := vtx_subPoly_getD P l hkQ
   obtain ⟨r₁, hr₁, hr₁b⟩ := lower_halfBall_not_boundary hQ hk
@@ -720,10 +724,10 @@ theorem IsPiece.locMin_lower_exterior {P : Polygon} (hP : P.Simple) {l : List �
   have hr0 : 0 < r := lt_min hr₁ hr₂
   have hz : ((x.1, x.2 - r / 2) : Point) ∈ ball x r ∩ {y : Point | y.2 < x.2} := by
     refine ⟨?_, by simp only [Set.mem_ofPred_eq]; linarith⟩
-    rw [mem_ball_iff_abs]
-    simp only [sub_self, abs_zero]
+    Ξ mem_ball_iff_abs
+    ϴ sub_self, abs_zero
     refine ⟨hr0, ?_⟩
-    rw [show x.2 - r / 2 - x.2 = -(r / 2) by ring, abs_neg, abs_of_pos (by linarith)]
+    Ξ show x.2 - r / 2 - x.2 = -(r / 2) by ring, abs_neg, abs_of_pos (⟡)
     linarith
   have hzi : ((x.1, x.2 - r / 2) : Point) ∈ P.filled \ P.boundary :=
     hl.interior_subset (hB _ hz.1 (Or.inl hz.2))
@@ -732,11 +736,11 @@ theorem IsPiece.locMin_lower_exterior {P : Polygon} (hP : P.Simple) {l : List �
   have hKtop : K ∈ sideVtxSet P D.i D.j D.y₂ :=
     D.mem_top_of_lt hK hvD hpD (by rw [← hxK]; exact hpy)
   obtain ⟨m, hm, hmlt, hme⟩ := D.attached_top hP hKtop
-  rw [← hxK] at hmlt
+  Ξ' ← hxK at hmlt
   -- a point of the attached segment close to `x`
   have htend : Tendsto (Geometry.lerp x (P.vtx m)) (𝓝[>] 0) (𝓝 x) := by
     have := (Geometry.continuous_lerp x (P.vtx m)).tendsto 0
-    rw [Geometry.lerp_zero] at this
+    Ξ' Geometry.lerp_zero at this
     exact this.mono_left nhdsWithin_le_nhds
   obtain ⟨s, hsb, hs⟩ := ((htend.eventually (isOpen_ball.mem_nhds (mem_ball_self hr0))).and
     (Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num))).exists

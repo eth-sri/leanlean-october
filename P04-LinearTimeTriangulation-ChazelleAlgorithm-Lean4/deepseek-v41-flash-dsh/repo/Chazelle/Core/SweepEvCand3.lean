@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvCand
 public import Chazelle.Core.SweepEvMap4
 public import Chazelle.Core.SweepMachine5
@@ -50,10 +52,10 @@ theorem arrival_unique {C : Chain} (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C
   have hev : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w (-σ) s ∈ Merge.shoot C w (-σ) := by
     filter_upwards [Ioo_mem_nhdsGT hT] with s hs
     unfold Merge.shoot
-    rw [Geometry.mem_segment_iff_lerp]
+    Ξ Geometry.mem_segment_iff_lerp
     refine ⟨s / C.hitParam w (-σ), div_nonneg hs.1.le hT.le, (div_le_one hT).2 hs.2.le, ?_⟩
     apply point_ext
-    · simp only [Geometry.lerp_fst, rayPt_fst]
+    · ϴ Geometry.lerp_fst, rayPt_fst
       field_simp
       ring
     · simp only [Geometry.lerp_snd, rayPt_snd]; ring
@@ -67,7 +69,7 @@ theorem arrival_unique {C : Chain} (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C
     have := sideAttach_of_along C hP he' hq hu0 hu1 hnσ hsec hev'
     rwa [hpt] at this
   have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
-  exact hM.attach_unique he (att hA) (att hA') (by rw [hA.2.2.2.1, hA'.2.2.2.1])
+  exact hM.attach_unique he (att hA) (att hA') (Ρ hA.2.2.2.1, hA'.2.2.2.1)
 
 /-- **A walk position strictly inside the height band of the box** is a `PosW` position. -/
 theorem posW_of_inner {P : Polygon} {e h : ℕ} (he : e < (chainModel J.whole).W.n)
@@ -79,7 +81,7 @@ theorem posW_of_inner {P : Polygon} {e h : ℕ} (he : e < (chainModel J.whole).W
   subst h0
   have hv : (chainModel J.whole).pos (Qof P) ⟨e, 0⟩ = (chainModel J.whole).W.vtx e := by
     show sidePt _ _ ((chainModel J.whole).param (Qof P) ⟨e, 0⟩) = _
-    rw [show (chainModel J.whole).param (Qof P) ⟨e, 0⟩ = 0 from rfl, Chazelle.Chain.sidePt_zero]
+    Ξ show (chainModel J.whole).param (Qof P) ⟨e, 0⟩ = 0 from rfl, Chazelle.Chain.sidePt_zero
   rw [hv, Restore.chain_box_vtx_abs J.whole h6] at hy
   exact lt_irrefl _ hy
 

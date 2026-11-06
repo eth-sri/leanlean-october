@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFLeaf
 public import Chazelle.Core.RestoreNodeDec
 
@@ -53,18 +57,18 @@ theorem rootLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI
   obtain ⟨hB7, -⟩ := nf_bounds hN'
   have hB11 : c.nreg 81134 + 11 < c₀.nreg ALLOC :=
     robust_addr (v := N.dec.length) fun m' hm' => (hN m' hm').2.2.2.2.1
-  have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
+  have hA0 := hI.hA
   have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
-  have k7 : c.nreg 81016 = 7 := by rw [hI.hin _ (by unfold FFix; omega), hE.k7]
-  have k2 : c.nreg 81013 = 2 := by rw [hI.hin _ (by unfold FFix; omega), hE.k2]
+  have k7 : c.nreg 81016 = 7 := Ρ hI.hin _ (by unfold FFix; omega), hE.k7
+  have k2 : c.nreg 81013 = 2 := Ρ hI.hin _ (by unfold FFix; omega), hE.k2
   have ok : okB E.W c.nmem rootL c.nreg := by
     simp only [rootL, okB, okI, regI, upd, FScr, FOut, k7, k2]; norm_num; omega
-  refine (FRS.block hB _ hI ok).mono (by simp [rootL]) (fun c' h' => ?_)
-  have e' : ∀ q, c'.nreg q = regB c.nmem rootL c.nreg q := fun q => by rw [h']
+  refine (FRS.block hB _ hI ok).mono (⊚ rootL) (fun c' h' => ?_)
+  have e' : ∀ q, c'.nreg q = regB c.nmem rootL c.nreg q := fun q => Ρ h'
   refine ⟨?_, ?_, fun q h1 h2 => ?_⟩
   · rw [e']; simp [rootL, regB, regI, upd, k7, k2]; exact hNA.2.2.2.1
-  · rw [e']; simp [rootL, regB, regI, upd]
-  · rw [e']; simp [rootL, regB, regI, upd, h1, h2]
+  · rw [e']; Θ rootL, regB, regI, upd
+  · rw [e']; Θ rootL, regB, regI, upd, h1, h2
 
 theorem parS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FInv E.W c₀ c)
     (hroom : c.nreg ALLOC + paK E (c.nreg 81150) ≤ E.W) :
@@ -75,24 +79,24 @@ theorem parS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
     simp only [okB, okI, FScr, FOut]; norm_num
   refine FRS.seq (K₂ := halfK E.P.n (c.nreg 81150) + 1) (FRS.block hB _ hI ok1)
     (fun c₁ hI₁ hA₁ h₁ => ?_) |>.mono (by unfold paK; simp; omega) (fun _ h => h)
-  have e₁ : ∀ q, c₁.nreg q = regB c.nmem [.copyN 81120 81150] c.nreg q := fun q => by rw [h₁]
-  have v20 : c₁.nreg 81120 = c.nreg 81150 := by rw [e₁]; simp [regB, regI, upd]
+  have e₁ : ∀ q, c₁.nreg q = regB c.nmem [.copyN 81120 81150] c.nreg q := fun q => Ρ h₁
+  have v20 : c₁.nreg 81120 = c.nreg 81150 := by rw [e₁]; Θ regB, regI, upd
   have f₁ : ∀ q, q ≠ 81120 → c₁.nreg q = c.nreg q := fun q h => by
-    rw [e₁]; simp [regB, regI, upd, h]
+    rw [e₁]; Θ regB, regI, upd, h
   have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by unfold ALLOC; omega)
   refine FRS.seq (K₂ := 1) (halfS_fs hE hB hI₁ v20 (by rw [hA₁']; unfold paK at hroom; omega))
     (fun c₂ hI₂ hA₂ ⟨h21, h22, f₂⟩ => ?_)
-  have k1 : c₂.nreg 81012 = 1 := by rw [hI₂.hin _ (by unfold FFix; omega), hE.k1]
+  have k1 : c₂.nreg 81012 = 1 := Ρ hI₂.hin _ (by unfold FFix; omega), hE.k1
   have ok3 : okB E.W c₂.nmem [.subN 81151 81012 81122] c₂.nreg := by
     simp only [okB, okI, FScr, FOut]; norm_num
-  refine (FRS.block hB _ hI₂ ok3).mono (by simp) (fun c' h' => ?_)
+  refine (FRS.block hB _ hI₂ ok3).mono (✓) (fun c' h' => ?_)
   have e' : ∀ q, c'.nreg q = regB c₂.nmem [.subN 81151 81012 81122] c₂.nreg q := fun q => by
-    rw [h']
+    Ξ h'
   refine ⟨?_, ?_, fun q h1 h2 => ?_⟩
   · rw [e']; simp [regB, regI, upd]; exact h21
-  · rw [e']; simp [regB, regI, upd, k1, h22]
-  · rw [e']; simp [regB, regI, upd, h2]
-    rw [f₂ q (by omega) (by omega) (by omega) (by omega) (by omega), f₁ q (by omega)]
+  · rw [e']; Θ regB, regI, upd, k1, h22
+  · rw [e']; Θ regB, regI, upd, h2
+    Ξ f₂ q (⋄) (⋄) (⋄) (⋄) (⋄), f₁ q (⋄)
 
 /-- A valid decomposition code. -/
 def VCode (N : NF) (x : ℕ) : Prop :=
@@ -145,27 +149,27 @@ theorem desc_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have k0 := k0_of hE hI
   have hev : c.nreg 81150 % 2 = 0 := by rw [k0, h51] at hg; omega
   have hk : c.nreg 81150 / 2 < Nα.nChords := by rcases hv with h | h <;> omega
-  have hx : c.nreg 81150 = 2 * (c.nreg 81150 / 2) := by omega
+  have hx : c.nreg 81150 = 2 * (c.nreg 81150 / 2) := ⋄
   -- the depth bound
   have hdep : c.nreg 81142 ≤ dd := by
     obtain ⟨j, hj, hjr⟩ := hDd.2.2.2.2.2.2.1 (c.nreg 81150) (fun _ => hk)
     by_contra h
-    exact hnot j (by omega) hjr
+    exact hnot j (⋄) hjr
   have nd : ∀ q, 81011 ≤ q → q < 83000 → ¬ DescW q → ¬ NodeW q := fun q _ _ h h' => h (Or.inl h')
   have rg : ∀ q, (81130 ≤ q ∧ q ≤ 81141) → c.nreg q = cs.nreg q := fun q h =>
-    fr q (by omega) (by omega) (fun h' => by
+    fr q (⋄) (by omega) (fun h' => by
       rcases h' with h' | h' | h' | h'
       · unfold NodeW KeyW VertW at h'; omega
       · unfold LeafW KeyW VertW at h'; omega
       · omega
       · omega)
   obtain ⟨r30, r31, r32, r33, r34, r35⟩ := hR
-  have hRc : SRegs c g g' L Dα Bα := ⟨by rw [rg _ (by omega), r30], by rw [rg _ (by omega), r31],
-    by rw [rg _ (by omega), r32], by rw [rg _ (by omega), r33], by rw [rg _ (by omega), r34],
-    by rw [rg _ (by omega), r35]⟩
+  have hRc : SRegs c g g' L Dα Bα := ⟨by rw [rg _ (⋄), r30], by rw [rg _ (by omega), r31],
+    by rw [rg _ (⋄), r32], by rw [rg _ (by omega), r33], by rw [rg _ (by omega), r34],
+    by rw [rg _ (⋄), r35]⟩
   have hJc : c.nreg 81140 < E.M.W.n ∧
       ProperPos E.M (Qof E.P) E.P.n ⟨c.nreg 81140, c.nreg 81141⟩ := by
-    rw [rg _ (by omega), rg 81141 (by omega)]; exact hJ
+    rw [rg _ (⋄), rg 81141 (by omega)]; exact hJ
   have hx' : 2 * (c.nreg 81150 / 2) ≤ maxCode Nα := by unfold maxCode; omega
   refine FRS.seq (K₁ := ndK E (2 * (c.nreg 81150 / 2))) (K₂ := paK E (maxCode Nα) + 1)
     (node_fs hE hB hBT hI hw hP hRc hJc hx hk (by
@@ -190,38 +194,38 @@ theorem desc_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   refine FRS.seq (K₂ := 1) (parS_fs hE hB hI₂ hroom2)
     (fun c₃ hI₃ hA₃ ⟨p21, p51, f₃⟩ => ?_) |>.mono
     (by unfold paK; have := halfK_mono (n := E.P.n) hx₂; omega) (fun _ h => h)
-  have k1 : c₃.nreg 81012 = 1 := by rw [hI₃.hin _ (by unfold FFix; omega), hE.k1]
+  have k1 : c₃.nreg 81012 = 1 := Ρ hI₃.hin _ (by unfold FFix; omega), hE.k1
   have y42 : c₃.nreg 81142 = c.nreg 81142 := by
-    rw [f₃ _ (by omega) (by norm_num), f₂ _ (by norm_num) (by norm_num)
+    rw [f₃ _ (⋄) (by norm_num), f₂ _ (by norm_num) (by norm_num)
       (by unfold NodeW KeyW VertW; omega)]
   have ok : okB E.W c₃.nmem [.addN 81142 81142 81012] c₃.nreg := by
     simp only [okB, okI, FScr, FOut, k1, y42]; norm_num; omega
-  refine (FRS.block hB _ hI₃ ok).mono (by simp) (fun c₄ h₄ => ?_)
+  refine (FRS.block hB _ hI₃ ok).mono (✓) (fun c₄ h₄ => ?_)
   have e₄ : ∀ q, c₄.nreg q = regB c₃.nmem [.addN 81142 81142 81012] c₃.nreg q := fun q => by
-    rw [h₄]
+    Ξ h₄
   have f₄ : ∀ q, q ≠ 81142 → c₄.nreg q = c₃.nreg q := fun q h => by
     rw [e₄]; simp [regB, regI, upd, h]
   have v42 : c₄.nreg 81142 = c.nreg 81142 + 1 := by rw [e₄]; simp [regB, regI, upd, k1, y42]
   have z50 : c₄.nreg 81150 = c₂.nreg 81150 := by
-    rw [f₄ _ (by norm_num), f₃ _ (by omega) (by norm_num)]
+    rw [f₄ _ (⊛), f₃ _ (by omega) (by norm_num)]
   have z07 : c₄.nreg 81007 = c₂.nreg 81007 := by
-    rw [f₄ _ (by norm_num), f₃ _ (by omega) (by norm_num)]
-  refine ⟨⟨w₂.congr' (fun q a b => by rw [f₄ q (by omega), f₃ q (by omega) (by omega)]),
+    rw [f₄ _ (⊛), f₃ _ (by omega) (by norm_num)]
+  refine ⟨⟨w₂.congr' (fun q a b => by rw [f₄ q (⋄), f₃ q (by omega) (by omega)]),
     fun q a b hq => ?_, fun h => by rw [z07]; exact m₂ (mo h), by rw [z50]; exact hv₂,
-    by rw [f₄ _ (by norm_num), p51, z50], by rw [f₄ _ (by norm_num), p21, z50],
+    by rw [f₄ _ (⊛), p51, z50], by rw [f₄ _ (by norm_num), p21, z50],
     by rw [v42, z50, Function.iterate_succ_apply, hpar₂, ← hx]; exact hpath, fun t ht => ?_,
     fun reg ai bi aj bj dX regα T hD hJ' hJr' => ?_⟩, by rw [v42]; omega⟩
   · rw [f₄ q (fun h => hq (Or.inr (Or.inr (Or.inr h)))),
-      f₃ q (fun h => hq (Or.inl (Or.inr (Or.inr (Or.inl ⟨by omega, by omega⟩)))))
+      f₃ q (fun h => hq (Or.inl (Or.inr (Or.inr (Or.inl ⟨⋄, by omega⟩)))))
         (fun h => hq (Or.inr (Or.inr (Or.inl h)))), f₂ q a b (nd q a b hq), fr q a b hq]
   · rw [v42] at ht
-    rw [z50]
+    Ξ z50
     rcases Nat.eq_zero_or_pos t with rfl | htp
     · exact hnr₂
-    · obtain ⟨s, rfl⟩ : ∃ s, t = s + 1 := ⟨t - 1, by omega⟩
-      rw [Function.iterate_succ_apply, hpar₂, ← hx]
-      exact hnot s (by omega)
-  · rw [z07, z50]
+    · obtain ⟨s, rfl⟩ : ∃ s, t = s + 1 := ⟨t - 1, ⋄⟩
+      Ξ Function.iterate_succ_apply, hpar₂, ← hx
+      exact hnot s (⋄)
+  · Ξ z07, z50
     rcases hcomp reg ai bi aj bj dX regα T hD hJ' hJr' with h | hb
     · exact Or.inl (m₂ h)
     · by_cases hf₂ : c₂.nreg 81007 = 1
@@ -229,8 +233,8 @@ theorem desc_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       · right
         have h0 : c₂.nreg 81007 = 0 := by have := w₂.1; omega
         rw [hx] at hb
-        exact node_dec hE hP hRc hD (by rw [rg 81140 (by omega), rg 81141 (by omega)]; exact hJ')
-          (by rw [rg 81140 (by omega), rg 81141 (by omega)]; exact hJr') hw hk hb raw₂ h0
+        exact node_dec hE hP hRc hD (by rw [rg 81140 (⋄), rg 81141 (by omega)]; exact hJ')
+          (by rw [rg 81140 (⋄), rg 81141 (by omega)]; exact hJr') hw hk hb raw₂ h0
 
 /-- **The descent of a stretch.** -/
 def descS (sT : Stmt) : Stmt :=

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.MergeAsmMath
 public import Chazelle.Core.GranNFBounds
 
@@ -96,12 +98,12 @@ def mergeMk (fMk : Stmt → Stmt) (rMk : Stmt → Stmt → Stmt) (gS : Stmt) (sh
 /-- A band predicate. -/
 def inBand (b : ℕ) (r : ℕ) : Bool := decide (bandOf r = b)
 
-theorem wr_setF : wr (inBand bFuse) setF = true := by decide
-theorem wr_setR : wr (inBand bRestore) setR = true := by decide
-theorem wr_setG : wr (inBand bGran) setG = true := by decide
-theorem wr_mdInit : wr (inBand bMerge) mdInit = true := by decide
-theorem wr_mdLoop : wr (inBand bMerge) mdLoop = true := by decide
-theorem wr_gamS : wr (inBand bMerge) gamS = true := by decide
+theorem wr_setF : wr (inBand bFuse) setF = true := ⌖
+theorem wr_setR : wr (inBand bRestore) setR = true := ⌖
+theorem wr_setG : wr (inBand bGran) setG = true := ⌖
+theorem wr_mdInit : wr (inBand bMerge) mdInit = true := ⌖
+theorem wr_mdLoop : wr (inBand bMerge) mdLoop = true := ⌖
+theorem wr_gamS : wr (inBand bMerge) gamS = true := ⌖
 
 theorem setF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W setF c c' k ∧ k = 8 ∧
@@ -117,7 +119,7 @@ theorem setF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
       rd c' bFuse 6 = rd c bMerge 7 ∧ rd c' bFuse 8 = rd c bMerge 9) := by
     unfold setF
     exec_block
-    exact ⟨rfl, by simp [rd, bandReg, bFuse, bMerge]⟩
+    exact ⟨rfl, ⊚ rd, bandReg, bFuse, bMerge⟩
   exact ⟨c', k, e, hk, h.1, h.2.1, h.2.2.1, h.2.2.2.1, h.2.2.2.2.1, h.2.2.2.2.2.1,
     h.2.2.2.2.2.2.1, h.2.2.2.2.2.2.2, exec_frameB e wr_setF⟩
 
@@ -133,7 +135,7 @@ theorem setR_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
       rd c' bRestore 4 = c.nreg 100045 ∧ rd c' bRestore 6 = rd c bMerge 9) := by
     unfold setR
     exec_block
-    exact ⟨rfl, by simp [rd, bandReg, bFuse, bMerge, bRestore]⟩
+    exact ⟨rfl, ⊚ rd, bandReg, bFuse, bMerge, bRestore⟩
   exact ⟨c', k, e, hk, h.1, h.2.1, h.2.2.1, h.2.2.2.1, h.2.2.2.2.1, h.2.2.2.2.2,
     exec_frameB e wr_setR⟩
 
@@ -147,7 +149,7 @@ theorem setG_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
       rd c' bGran 2 = rd c bMerge 7 ∧ rd c' bGran 3 = rd c bMerge 6) := by
     unfold setG
     exec_block
-    exact ⟨rfl, by simp [rd, bandReg, bGran, bMerge, bRestore]⟩
+    exact ⟨rfl, ⊚ rd, bandReg, bGran, bMerge, bRestore⟩
   exact ⟨c', k, e, hk, h.1, h.2.1, h.2.2.1, h.2.2.2, exec_frameB e wr_setG⟩
 
 theorem outS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
@@ -157,8 +159,8 @@ theorem outS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
       rd c' bMerge 8 = rd c bGran 4 := by
     unfold outS
     exec_block
-    exact ⟨rfl, by simp [rd, bandReg, bGran, bMerge]⟩
-  exact ⟨c', k, e, hk, h, exec_frameB e (by decide)⟩
+    exact ⟨rfl, ⊚ rd, bandReg, bGran, bMerge⟩
+  exact ⟨c', k, e, hk, h, exec_frameB e (⌖)⟩
 
 /-! ## `γ_R` -/
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepPrimLeft
 
 /-!
@@ -62,11 +64,11 @@ theorem cand_vertex (C : Chain) (β : Bool) {k : ℕ} (hk : k ≤ C.m) :
     (candIdx C.m (C.sideS β) k ≤ 2 * C.m ∧ C.sideIdx β (candIdx C.m (C.sideS β) k) = k) ∧
       (candIdx C.m (C.sideS β) (2 * C.m - k) ≤ 2 * C.m ∧
         C.sideIdx β (candIdx C.m (C.sideS β) (2 * C.m - k)) = k) := by
-  obtain ⟨a1, a2⟩ := sideIdx_candIdx C β (j := k) (by omega)
-  obtain ⟨b1, b2⟩ := sideIdx_candIdx C β (j := 2 * C.m - k) (by omega)
+  obtain ⟨a1, a2⟩ := sideIdx_candIdx C β (j := k) (⋄)
+  obtain ⟨b1, b2⟩ := sideIdx_candIdx C β (j := 2 * C.m - k) (⋄)
   refine ⟨⟨a1, ?_⟩, ⟨b1, ?_⟩⟩
   · rw [a2]; unfold sideE; split_ifs; omega
-  · rw [b2, sideE_rev hk]
+  · Ξ b2, sideE_rev hk
 
 /-- **Every tour step of a chain vertex is a candidate.** -/
 theorem cand_complete (C : Chain) (β : Bool) {i k : ℕ} (hi : i ≤ 2 * C.m)
@@ -99,19 +101,19 @@ height codes, with the complementary parameter. -/
 theorem twin_pos_param (M : Model) (Q : Polygon) {p p' h : ℕ} (hh : 1 ≤ h)
     (h1 : M.wa p' = M.wb p) (h2 : M.wb p' = M.wa p) (hne : (M.wa p).2 ≠ (M.wb p).2) :
     M.pos Q ⟨p', h⟩ = M.pos Q ⟨p, h⟩ ∧ M.param Q ⟨p', h⟩ = 1 - M.param Q ⟨p, h⟩ := by
-  obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
+  obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, ⋄⟩
   have hne' : (M.wb p).2 - (M.wa p).2 ≠ 0 := sub_ne_zero.2 hne.symm
   have hne'' : (M.wa p).2 - (M.wb p).2 ≠ 0 := sub_ne_zero.2 hne
   have hpar : M.param Q ⟨p', h' + 1⟩ = 1 - M.param Q ⟨p, h' + 1⟩ := by
     unfold Model.param
     simp only
-    rw [h1, h2, ite_eq_right (Ne.symm hne), ite_eq_right hne]
+    Ξ h1, h2, ite_eq_right (Ne.symm hne), ite_eq_right hne
     field_simp
     ring
   refine ⟨?_, hpar⟩
   unfold Model.pos
   simp only
-  rw [hpar, h1, h2]
+  Ξ hpar, h1, h2
   apply Geometry.point_ext <;> simp [Geometry.lerp] <;> ring
 
 /-- The two slit edges are twins. -/
@@ -120,10 +122,10 @@ theorem slit_twin (C : Chain) :
       (chainModel C).wb 5 = (chainModel C).wa (2 * C.m + 6) := by
   have hm := C.one_le
   have hn := C.sideWalk_n C.sideBeta
-  simp only [Model.wa, Model.wb, chainModel]
+  ϴ Model.wa, Model.wb, chainModel
   refine ⟨?_, ?_⟩
-  · rw [C.sideWalk_next_last, C.sideWalk_vtx_five, C.sideWalk_vtx_zero]
-  · rw [hn, Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_six, C.sideWalk_vtx_tour _ le_rfl,
+  · Ξ C.sideWalk_next_last, C.sideWalk_vtx_five, C.sideWalk_vtx_zero
+  · rw [hn, Nat.mod_eq_of_lt (⋄), C.sideWalk_vtx_six, C.sideWalk_vtx_tour _ le_rfl,
       C.sideTour_two_m]
 
 theorem slit_twin' (C : Chain) :
@@ -181,9 +183,9 @@ theorem wall_unique (C : Chain) (hP : C.P.Simple) {e : ℕ} (he : e = 1 ∨ e = 
         (e = 3 ∧ (sidePt (C.sideWalk C.sideBeta) e t₀).1 = C.radius)) := by
     rcases he with rfl | rfl
     · rw [e1]; simp only [abs_neg, abs_of_pos hR, true_and]
-      refine ⟨abs_lt.2 ⟨by nlinarith, by nlinarith⟩, by simp⟩
+      refine ⟨abs_lt.2 ⟨⊞, by nlinarith⟩, by simp⟩
     · rw [e3]; simp only [abs_of_pos hR, true_and]
-      refine ⟨abs_lt.2 ⟨by nlinarith, by nlinarith⟩, by simp⟩
+      refine ⟨abs_lt.2 ⟨⊞, by nlinarith⟩, by simp⟩
   rw [← heq] at hw
   obtain ⟨hw1, hw2, hw3⟩ := hw
   rcases C.sideWalk_pos_cases C.sideBeta hp ht with hbox | ⟨i, hi, rfl, hit⟩

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvDCall3
 
 /-!
@@ -27,10 +29,10 @@ theorem RegI.deg_word {E : REnv} {c₀ : Config} {newL : List (ℕ × (ℕ × �
     c.nmem (c.nreg 216031) = Restore.degOf E.N (c.nreg 216030) := by
   have hrN : c.nreg 216030 < E.N.nRegions := by rw [E.nRegions_N]; exact hr
   have hareas := (Gran.nf_areas hE.hNW).2.2.1 _ hrN
-  rw [hI.ptr, hI.low _ (by omega)]
+  Ξ hI.ptr, hI.low _ (⋄)
   have := ((hE.hNW.nfAt).2.2.2.2.2.2.2.1 _ hrN).2.1
   unfold Restore.degOf
-  rw [← this]
+  Ξ ← this
   congr 1
   ring
 
@@ -38,21 +40,21 @@ theorem RegI.deg_word {E : REnv} {c₀ : Config} {newL : List (ℕ × (ℕ × �
 theorem RegI.load {E : REnv} {c₀ : Config} {newL : List (ℕ × (ℕ × ℕ × ℕ))} {c : Config}
     (hI : RegI E c₀ newL c) (v : ℕ) (hv : v ≤ E.W) :
     RegI E c₀ newL { c with nreg := upd c.nreg 216032 v } := by
-  have g : ∀ q, q ≠ 216032 → (upd c.nreg 216032 v) q = c.nreg q := fun q hq => by simp [hq]
+  have g : ∀ q, q ≠ 216032 → (upd c.nreg 216032 v) q = c.nreg q := fun q hq => ⊚ hq
   refine ⟨Machine.WordsBounded.upd_nreg hI.wb hv c.pc, ?_, ?_, ?_, hI.hgood, hI.hbk, ?_, ?_, ?_,
     hI.list, hI.low, fun q hq => ?_, ?_, ?_, ?_⟩ <;> simp only
-  · rw [g _ (by norm_num)]; exact hI.r_le
-  · rw [g _ (by norm_num), g _ (by norm_num)]; exact hI.ptr
-  · rw [g _ (by norm_num)]; exact hI.hfst
-  · rw [g _ (by norm_num)]; exact hI.cnt
-  · rw [g _ (by norm_num)]; exact hI.dst
-  · rw [g _ (by norm_num)]; exact hI.dstB
+  · rw [g _ (⊛)]; exact hI.r_le
+  · rw [g _ (⊛), g _ (⊛)]; exact hI.ptr
+  · rw [g _ (⊛)]; exact hI.hfst
+  · rw [g _ (⊛)]; exact hI.cnt
+  · rw [g _ (⊛)]; exact hI.dst
+  · rw [g _ (⊛)]; exact hI.dstB
   · rw [g q (by unfold FixR at hq; omega)]; exact hI.regs q hq
-  · rw [g _ (by norm_num)]; exact hI.rctx
+  · rw [g _ (⊛)]; exact hI.rctx
   · rw [g _ (by unfold ALLOC; norm_num)]; exact hI.alloc
-  · rw [g _ (by unfold ALLOC; norm_num), g _ (by norm_num)]; exact hI.room
+  · rw [g _ (by unfold ALLOC; norm_num), g _ (⊛)]; exact hI.room
 
-set_option maxHeartbeats 8000000 in
+
 /-- **One step of the region loop.** -/
 theorem regBody_step {E : REnv} {c₀ : Config} (hE : RGood E c₀)
     {newL : List (ℕ × (ℕ × ℕ × ℕ))} {c : Config} (hI : RegI E c₀ newL c)
@@ -187,15 +189,15 @@ theorem reg_exec {E : REnv} {c₀ : Config} (hE : RGood E c₀) :
     (fun c ⟨_, h⟩ => h.wb)
     (fun c ⟨newL, I⟩ ht => by
       have t : c.nreg 216030 < E.R := by
-        rw [I.regs 216013 (Or.inl ⟨by norm_num, by norm_num⟩), hE.r13] at ht
+        Ξ' I.regs 216013 (Or.inl ⟨⊛, ⊛⟩), hE.r13 at ht
         exact ht
       obtain ⟨c', k, newL', e, I', RF', hk, h30⟩ := regBody_step hE I t
-      exact ⟨c', k, e, ⟨newL', I'⟩, RF', hk, by omega⟩) ⟨[], hE.regI⟩
+      exact ⟨c', k, e, ⟨newL', I'⟩, RF', hk, ⋄⟩) ⟨[], hE.regI⟩
   have hR' : c'.nreg 216030 = E.R := by
-    rw [I'.regs 216013 (Or.inl ⟨by norm_num, by norm_num⟩), hE.r13] at hx
+    Ξ' I'.regs 216013 (Or.inl ⟨⊛, ⊛⟩), hE.r13 at hx
     have := I'.r_le; omega
   refine ⟨c', k, newL, e, I', hR', RFl, ?_⟩
-  rw [hE.r30] at hk
+  Ξ' hE.r30 at hk
   simpa using hk
 
 end

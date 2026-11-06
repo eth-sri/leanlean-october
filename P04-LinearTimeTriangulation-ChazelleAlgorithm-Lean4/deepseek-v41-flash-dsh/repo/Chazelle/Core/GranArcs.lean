@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.Facts2
 public import Chazelle.Core.FactsL23
 public import Chazelle.Merge.Granularity
@@ -114,7 +116,7 @@ theorem le_weight (hM : WalkAx M) {G : Set (Set Point)} (hG : G ⊆ M.Adm) (hfin
 /-- A bound on all arcs bounds the weight. -/
 theorem weight_le {G : Set (Set Point)} {U : Set Point} {w : ℕ}
     (h : ∀ a b, M.IsArc G U a b → M.arcWt a b ≤ w) : M.weight G U ≤ w := by
-  rw [weight_eq]
+  Ξ weight_eq
   rcases (arcWts M G U).eq_empty_or_nonempty with he | hne
   · rw [he, csSup_empty]; exact Nat.zero_le _
   · refine csSup_le hne ?_
@@ -125,12 +127,12 @@ theorem weight_le {G : Set (Set Point)} {U : Set Point} {w : ℕ}
 
 /-- The pinned arc `(0, 0)` meets every counted edge: it weighs the most. -/
 theorem arcWt_le_zero_zero (a b : ℝ) : M.arcWt a b ≤ M.arcWt 0 0 := by
-  rw [Model.arcWt_eq, Model.arcWt_eq]
+  Ξ Model.arcWt_eq, Model.arcWt_eq
   refine Set.ncard_le_ncard ?_ (M.arcEdges_finite 0 0)
   rintro p ⟨hp, hc, t, ht0, ht1, -⟩
   refine ⟨hp, hc, t, ht0, ht1, ?_⟩
   unfold sideInArc
-  rw [ite_eq_right (lt_irrefl (0:ℝ))]
+  Ξ ite_eq_right (lt_irrefl (0:ℝ))
   left
   positivity
 
@@ -139,13 +141,13 @@ theorem arcWt_zero_zero : M.arcWt 0 0 = M.size := by
   unfold Model.arcWt Model.size
   congr 1
   ext p
-  simp only [mem_ofPred_eq]
+  ϴ mem_ofPred_eq
   constructor
   · rintro ⟨hp, hc, -⟩; exact ⟨hp, hc⟩
   · rintro ⟨hp, hc⟩
-    refine ⟨hp, hc, 1 / 2, by norm_num, by norm_num, ?_⟩
+    refine ⟨hp, hc, 1 / 2, ⊛, ⊛, ?_⟩
     unfold sideInArc
-    rw [ite_eq_right (lt_irrefl (0:ℝ))]
+    Ξ ite_eq_right (lt_irrefl (0:ℝ))
     left
     positivity
 
@@ -162,7 +164,7 @@ theorem isArc_empty_iff (hM : WalkAx M) {U : Set Point} (hU : U ∈ M.regions �
       have : 0 < M.W.n := by
         by_contra h0
         obtain ⟨z, hz⟩ := hM.nonempty
-        obtain ⟨s, -, -, p, hp, -⟩ := hM.reach z hz (fun i hi => absurd hi (by omega))
+        obtain ⟨s, -, -, p, hp, -⟩ := hM.reach z hz (fun i hi => absurd hi (⋄))
         omega
       exact_mod_cast this
     refine ⟨le_rfl, hn, le_rfl, hn, Or.inr ⟨rfl, rfl, rfl⟩, fun x _ ⟨c, hc, _⟩ => ?_, ?_⟩
@@ -180,7 +182,7 @@ theorem weight_empty (hM : WalkAx M) {U : Set Point} (hU : U ∈ M.regions ∅) 
     M.weight ∅ U = M.size := by
   refine le_antisymm (weight_le fun a b h => ?_) ?_
   · rw [← arcWt_zero_zero]; exact arcWt_le_zero_zero a b
-  · rw [← arcWt_zero_zero]
+  · Ξ ← arcWt_zero_zero
     exact le_weight hM (empty_subset _) finite_empty hU ((isArc_empty_iff hM hU).2 ⟨rfl, rfl⟩)
 
 end

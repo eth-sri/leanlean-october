@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterStepMem
 
 /-!
@@ -40,29 +44,29 @@ theorem SFacts.of_static {S : SS} {A0 U : ℕ} {m m' : ℕ → ℕ}
     h.r0, fun g hg => ?_, fun g hg => ?_, h.R_ok, h.R_n, h.R_up, h.R_root, h.R_pre,
     fun j hj g hg => ?_, h.upT_eq, h.upT_lt, fun x hx => ?_, fun j hj x hx => ?_,
     fun j hj => ?_, h.pow_big, h.pow_U, h.L_pos, fun w hw => ?_, fun v x hvx => ?_, fun v => ?_⟩
-  · have := hltN d; rw [he _ (by omega)]; exact h.vert d
-  · have := hltN d; rw [he _ (by omega)]; exact h.opp d
-  · have := hlt v; rw [he _ (by omega)]; exact h.first v
-  · have := hlt v; rw [he _ (by omega)]; exact h.lev v
-  · have := hltN d; rw [he _ (by omega)]; exact h.att d
-  · have := hltN d; rw [he _ (by omega)]; exact h.fp d
+  · have := hltN d; rw [he _ (⋄)]; exact h.vert d
+  · have := hltN d; rw [he _ (⋄)]; exact h.opp d
+  · have := hlt v; rw [he _ (⋄)]; exact h.first v
+  · have := hlt v; rw [he _ (⋄)]; exact h.lev v
+  · have := hltN d; rw [he _ (⋄)]; exact h.att d
+  · have := hltN d; rw [he _ (⋄)]; exact h.fp d
   · have := enc_lt x
-    rw [he _ (by omega)]; exact h.so x
+    rw [he _ (⋄)]; exact h.so x
   · have := enc_lt x
-    rw [he _ (by omega)]; exact h.sf x
-  · have := hltN g; rw [he _ (by omega)]; exact h.fpar g hg
-  · rw [he _ (by omega)]; exact h.fpar_lt g hg
-  · rw [he _ (by omega)]; exact h.pre g hg
-  · rw [he _ (by omega)]; exact h.sz g hg
-  · rw [he _ (by omega)]; exact h.up_tab j hj g hg
-  · rw [he _ (by omega)]; exact h.pv x hx
-  · rw [he _ (by omega)]; exact h.upt_tab j hj x hx
-  · rw [he _ (by omega)]; exact h.pow j hj
-  · rw [he _ (by omega)]; exact h.half w hw
+    rw [he _ (⋄)]; exact h.sf x
+  · have := hltN g; rw [he _ (⋄)]; exact h.fpar g hg
+  · rw [he _ (⋄)]; exact h.fpar_lt g hg
+  · rw [he _ (⋄)]; exact h.pre g hg
+  · rw [he _ (⋄)]; exact h.sz g hg
+  · rw [he _ (⋄)]; exact h.up_tab j hj g hg
+  · rw [he _ (⋄)]; exact h.pv x hx
+  · rw [he _ (⋄)]; exact h.upt_tab j hj x hx
+  · rw [he _ (⋄)]; exact h.pow j hj
+  · rw [he _ (⋄)]; exact h.half w hw
   · have := h.lev_lt v
-    rw [he (S.bLBOT + _) (by omega), he (S.bLTOP + _) (by omega)]; exact h.win v x hvx
+    rw [he (S.bLBOT + _) (⋄), he (S.bLTOP + _) (by omega)]; exact h.win v x hvx
   · have := h.lev_lt v
-    rw [he (S.bLBOT + _) (by omega), he (S.bLTOP + _) (by omega)]; exact h.win_k v
+    rw [he (S.bLBOT + _) (⋄), he (S.bLTOP + _) (by omega)]; exact h.win_k v
 
 end static
 
@@ -79,7 +83,7 @@ theorem SInv.length_le {act : ℕ → ℕ} {stk : List (ℕ × ℕ)} {fin : Fins
   have hge : ∑ p ∈ stk.toFinset, 2 ≤ ∑ p ∈ stk.toFinset, (2 * len p - s) :=
     Finset.sum_le_sum (fun p hp => by
       have := hI.big p (List.mem_toFinset.mp hp); omega)
-  rw [Finset.sum_const, List.toFinset_card_of_nodup hI.nodup, smul_eq_mul] at hge
+  Ξ' Finset.sum_const, List.toFinset_card_of_nodup hI.nodup, smul_eq_mul at hge
   omega
 
 end stack
@@ -117,7 +121,7 @@ theorem m2_facts {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : L
   have hmk := fun (y : ℕ) (hy : y < μ) => marksF_df (m0 := m) (S := S) (lo := lo) (hi := hi)
     (lbot := lbot) (ltop := ltop) T hSF.upT_eq (fun x hx => by rw [hμ] at hx ⊢; exact hSF.upT_lt x hx)
     hμ (fun x hx => hD.pos_iff hlv hx) hwin hSF.lev hSF.vert hSF.opp hSF.att
-    (fun y hy => ⟨by omega, by omega⟩) f ⟨y, hy⟩
+    (fun y hy => ⟨⋄, by omega⟩) f ⟨y, hy⟩
   have hmo : ∀ x, ¬ (S.bDF ≤ x ∧ x < S.bDF + S.μ) → marksF m S lo hi lbot ltop upT f x = m x := by
     intro x hx
     have hup : ∀ x, x < S.μ → upT x < S.μ := fun x hx => by
@@ -132,18 +136,18 @@ theorem m2_facts {S : SS} {A0 U : ℕ} {m : ℕ → ℕ} {lo hi : ℕ} {rest : L
     intro x h1 h2
     show copyF _ S lo hi x = m x
     unfold copyF
-    rw [ite_eq_right h2, hmo x h1]
+    Ξ ite_eq_right h2, hmo x h1
   refine ⟨hm2, fun i h1 h2 => ?_, fun y hy => ?_, ?_⟩
   · show copyF _ S lo hi _ = _
     unfold copyF
-    rw [ite_eq_left ⟨by omega, by omega⟩, hmo _ (by omega)]
+    rw [ite_eq_left ⟨⋄, by omega⟩, hmo _ (by omega)]
     congr 2; omega
   · show copyF _ S lo hi _ = _
     unfold copyF
-    rw [ite_eq_right (by omega)]
+    rw [ite_eq_right (⋄)]
     exact hmk y hy
   · have hf : (f : ℕ) < N := f.2
-    rw [hm2 _ (by omega) (by omega)]; exact hSF.fp f
+    rw [hm2 _ (⋄) (by omega)]; exact hSF.fp f
 
 end m2
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleChordGeo
 
 /-!
@@ -52,24 +54,24 @@ theorem ChordRecOK.facts (h : ChordRecOK P C V m N) {i : ℕ} (hi : i < V.K) :
       (xv P C V (chL m V i) (chH m V i)) (xv P C V (chR m V i) (chH m V i)) ∧
     EndFacts P C V (chL m V i) (chH m V i) ∧ EndFacts P C V (chR m V i) (chH m V i) := by
   obtain ⟨e1, e2, e3⟩ := h.recs hi
-  rw [e1, e2, e3]
+  Ξ e1, e2, e3
   exact chord_facts h.hT h.hN (by rw [← h.K]; exact hi)
 
 theorem xv_c0 {w h : ℕ} (hc : xpClass w = 0) : xv P C V w h = -C.radius := by
   unfold xv; rw [ite_eq_left hc]
 theorem xv_c1 {w h : ℕ} (hc : xpClass w = 1) : xv P C V w h = xpX P C V w h := by
-  unfold xv; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+  unfold xv; rw [ite_eq_right (⋄), ite_eq_right (by omega)]
 theorem xv_c2 {w h : ℕ} (hc : xpClass w = 2) : xv P C V w h = C.radius := by
-  unfold xv; rw [ite_eq_right (by omega), ite_eq_left hc]
+  unfold xv; rw [ite_eq_right (⋄), ite_eq_left hc]
 
 theorem xv_ge (P : Polygon) (C : Chain) (V : QV) {w h : ℕ} (he : EndGood P C V w h) :
     -C.radius ≤ xv P C V w h := by
   have hR := C.radius_pos
   unfold xv
   rcases xpClass_cases w with h0 | h1 | h2
-  · rw [ite_eq_left h0]
-  · rw [ite_eq_right (by omega), ite_eq_right (by omega)]; exact (abs_lt.1 (he h1)).1.le
-  · rw [ite_eq_right (by omega), ite_eq_left h2]; linarith
+  · Ξ ite_eq_left h0
+  · rw [ite_eq_right (⋄), ite_eq_right (by omega)]; exact (abs_lt.1 (he h1)).1.le
+  · rw [ite_eq_right (⋄), ite_eq_left h2]; linarith
 
 theorem xv_le (P : Polygon) (C : Chain) (V : QV) {w h : ℕ} (he : EndGood P C V w h) :
     xv P C V w h ≤ C.radius := by
@@ -77,8 +79,8 @@ theorem xv_le (P : Polygon) (C : Chain) (V : QV) {w h : ℕ} (he : EndGood P C V
   unfold xv
   rcases xpClass_cases w with h0 | h1 | h2
   · rw [ite_eq_left h0]; linarith
-  · rw [ite_eq_right (by omega), ite_eq_right (by omega)]; exact (abs_lt.1 (he h1)).2.le
-  · rw [ite_eq_right (by omega), ite_eq_left h2]
+  · rw [ite_eq_right (⋄), ite_eq_right (by omega)]; exact (abs_lt.1 (he h1)).2.le
+  · rw [ite_eq_right (⋄), ite_eq_left h2]
 
 /-- The order of the table on the left ends is the order of their abscissae. -/
 theorem chLe_xv {a b : ℕ} (ha : EndGood P C V (chL m V a) (chH m V a))
@@ -127,7 +129,7 @@ theorem chord_disjoint (h : ChordRecOK P C V m N) {a b : ℕ} (ha : a < V.K) (hb
   rcases Chazelle.Chain.hchordIn_inter Ha Hb hxa hxb with ⟨-, e1, e2⟩ | ⟨-, hp⟩
   · -- the same chord
     have hs : (N.chord a).toSet (chainModel C) (Qof P) = (N.chord b).toSet (chainModel C) (Qof P) := by
-      rw [Sa, Sb, e1, e2]
+      Ξ Sa, Sb, e1, e2
     obtain ⟨-, hinj, -⟩ := h.hN
     exact hab (hinj a b (show a < N.chords.length by rw [← h.K]; exact ha)
       (show b < N.chords.length by rw [← h.K]; exact hb) hs)
@@ -140,9 +142,9 @@ theorem endGtZ_mono {w h w' h' : ℕ} (he : EndGood P C V w h) (he' : EndGood P 
     (hle : xv P C V w h ≤ xv P C V w' h') (hg : EndGtZ P C V w h) : EndGtZ P C V w' h' := by
   have hR := C.radius_pos
   have c1 : ∀ {u k : ℕ}, xpClass u = 1 → xv P C V u k = xpX P C V u k := fun hc => by
-    unfold xv; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+    unfold xv; rw [ite_eq_right (⋄), ite_eq_right (by omega)]
   have c2 : ∀ {u k : ℕ}, xpClass u = 2 → xv P C V u k = C.radius := fun hc => by
-    unfold xv; rw [ite_eq_right (by omega), ite_eq_left hc]
+    unfold xv; rw [ite_eq_right (⋄), ite_eq_left hc]
   have c0 : ∀ {u k : ℕ}, xpClass u = 0 → xv P C V u k = -C.radius := fun hc => by
     unfold xv; rw [ite_eq_left hc]
   unfold EndGtZ at hg ⊢
@@ -166,9 +168,9 @@ theorem endLtZ_mono {w h w' h' : ℕ} (he : EndGood P C V w h) (he' : EndGood P 
     (hle : xv P C V w h ≤ xv P C V w' h') (hg : EndLtZ P C V w' h') : EndLtZ P C V w h := by
   have hR := C.radius_pos
   have c1 : ∀ {u k : ℕ}, xpClass u = 1 → xv P C V u k = xpX P C V u k := fun hc => by
-    unfold xv; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+    unfold xv; rw [ite_eq_right (⋄), ite_eq_right (by omega)]
   have c2 : ∀ {u k : ℕ}, xpClass u = 2 → xv P C V u k = C.radius := fun hc => by
-    unfold xv; rw [ite_eq_right (by omega), ite_eq_left hc]
+    unfold xv; rw [ite_eq_right (⋄), ite_eq_left hc]
   have c0 : ∀ {u k : ℕ}, xpClass u = 0 → xv P C V u k = -C.radius := fun hc => by
     unfold xv; rw [ite_eq_left hc]
   unfold EndLtZ at hg ⊢
@@ -193,10 +195,10 @@ theorem chPr_iff (x : ℕ) : chPr P C V m x = true ↔ (x < V.K ∧ (chH m V x <
       (V.σb ≠ 1 → EndLtZ P C V (chL m V x) V.hz))))) := by
   classical
   unfold chPr
-  rw [decide_eq_true_iff]
+  Ξ decide_eq_true_iff
   by_cases hσ : V.σb = 1
   · simp only [hσ, ite_true]; tauto
-  · rw [ite_eq_right hσ]
+  · Ξ ite_eq_right hσ
     constructor
     · rintro ⟨h1, h2 | ⟨h3, h4⟩⟩
       · exact ⟨h1, Or.inl h2⟩
@@ -209,7 +211,7 @@ theorem chPr_mono (h : ChordRecOK P C V m N) :
     ∀ i j, i ≤ j → j < V.K → chPr P C V m (chAt m V j) = true →
       chPr P C V m (chAt m V i) = true := by
   intro i j hij hj hpj
-  have hi : i < V.K := by omega
+  have hi : i < V.K := ⋄
   have hle := h.sorted i j hij hj
   obtain ⟨a, hadef⟩ : ∃ a, chAt m V i = a := ⟨_, rfl⟩
   obtain ⟨b, hbdef⟩ : ∃ b, chAt m V j = b := ⟨_, rfl⟩
@@ -217,7 +219,7 @@ theorem chPr_mono (h : ChordRecOK P C V m N) :
   have hb : b < V.K := hbdef ▸ h.lt j hj
   rw [hadef, hbdef] at hle
   rw [hbdef] at hpj
-  rw [hadef]
+  Ξ hadef
   obtain ⟨-, -, -, -, ELa, ERa⟩ := h.facts ha
   obtain ⟨-, -, Hb, -, ELb, ERb⟩ := h.facts hb
   rw [chPr_iff] at hpj ⊢
@@ -230,7 +232,7 @@ theorem chPr_mono (h : ChordRecOK P C V m N) :
   · left; omega
   right
   have hx := chLe_xv ELa.good ELb.good hle' hh
-  have hA' : chH m V a = V.hz := by omega
+  have hA' : chH m V a = V.hz := ⋄
   rw [hA'] at ELa ERa hx
   rw [h1] at ELb ERb hx Hb
   refine ⟨hA', ?_, ?_⟩

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepMachine21
 public import Chazelle.Core.SweepRamLog
 
@@ -150,7 +152,7 @@ theorem regOf_spec {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) :
       ∀ j, j < N.arcs.length → ProperPos M Q Q.n (N.arc j).s ∧ ProperPos M Q Q.n (N.arc j).e := by
   classical
   unfold regOf
-  rw [dite_eq_left h]
+  Ξ dite_eq_left h
   exact Classical.choose_spec h.2.2.2
 
 /-! ## Memory layouts -/

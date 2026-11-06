@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoS0CandQ3
 
 /-!
@@ -50,8 +52,8 @@ theorem key_of_match {i zp zh : ℕ} {m : ℕ → ℕ} {AL : ℕ} (h1 : m (AL + 
 theorem gW_lt_nat (J : Merge.Junction) : gW J < (chainModel J.whole).W.n := by
   have := gW_lt J; exact_mod_cast this
 
-set_option maxHeartbeats 4000000 in
-set_option maxRecDepth 20000 in
+
+
 /-- **The check of the record found and the slot part.** -/
 theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂ c₀)
     (hI : IInv W c₀ c) {z : Point} {L : Set ℝ} {zp zh : ℕ}
@@ -82,9 +84,9 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   obtain ⟨-, b2, -, -, hsl, -, -⟩ := hX
   have hAW : c.nreg ALLOC ≤ W := hI.hw.1 ALLOC
   have hA0 := hI.hA
-  have hm : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a := hI.hm
+  have hm := hI.hm
   have hALc : c.nreg (sw 300) = AL := hI.hin _ (by unfold IFix sw; omega)
-  have hb2 : AL + 7 * rd c₀ bSweep 301 ≤ c₀.nreg ALLOC := b2
+  have hb2 := b2
   -- the search result is the log record at the query position, if there is one
   have hmatch : ∀ i, i < rd c₀ bSweep 301 → c₀.nmem (AL + 7 * i) = zp →
       (chainModel J.whole).param (Qof P) (logPos c₀.nmem AL i) =
@@ -93,7 +95,7 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   -- the address block
   have hok1 : okB W c.nmem cAddr c.nreg := cAddr_ok _ _ hKc.2.1 (by rw [hALc]; nlinarith)
   refine IRS.seq (K₁ := cAddr.length) (K₂ := 11008 + (2 + (2 + hitK)))
-    (IRS.block cAddr hI hok1) ?_ |>.mono (by simp [cAddr, checkK]) (fun _ h => h)
+    (IRS.block cAddr hI hok1) ?_ |>.mono (⊚ cAddr, checkK) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' rfl
   obtain ⟨v1E, v1H, k1⟩ := cAddr_val c.nmem c.nreg hKc.2.1
   rw [hALc] at v1E v1H
@@ -102,9 +104,9 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
     k1 q (by unfold kA sw at *; omega) (by unfold kE sw at *; omega) (by unfold kH sw at *; omega)
   have hlp := log_posW hA ht
   have hE1 : c₁.nreg kE = c₀.nmem (AL + 7 * t) := by
-    show regB c.nmem cAddr c.nreg kE = _; rw [v1E, hm _ (by nlinarith)]
+    show regB c.nmem cAddr c.nreg kE = _; rw [v1E, hm _ (⊞)]
   have hH1 : c₁.nreg kH = c₀.nmem (AL + 7 * t + 1) := by
-    show regB c.nmem cAddr c.nreg kH = _; rw [v1H, hm _ (by nlinarith)]
+    show regB c.nmem cAddr c.nreg kH = _; rw [v1H, hm _ (⊞)]
   have hxE1 : c₁.nreg lsxE = zp := by rw [nk1 _ (by unfold lsxE sw; omega)]; exact hxE
   have hxH1 : c₁.nreg lsxH = zh := by rw [nk1 _ (by unfold lsxH sw; omega)]; exact hxH
   have hG1 : c₁.nreg (sw 40) = G := hI₁.hin _ (by unfold IFix sw; omega)
@@ -129,7 +131,7 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   have nk2 : ∀ q, (q < sw 4100 ∨ sw 4105 < q) → bandOf q ∉ oracleBands → q ≠ ALLOC →
       c₂.nreg q = c.nreg q :=
     fun q hq hb hqa => by
-      rw [k2 q hb (by unfold kO sw at *; omega) (by unfold kO sw at *; omega) hqa]
+      Ξ k2 q hb (by unfold kO sw at *; omega) (by unfold kO sw at *; omega) hqa
       exact nk1 q (by unfold sw at *; omega)
   have hfr2 : FrQ c c₂ := ⟨fun r hr hq hra => by
       rw [k2 r hr (fun h => hq (by subst h; right; unfold kO sw; omega))
@@ -155,14 +157,14 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
     intro i hi h1 h2 _ o τ _ _ _
     exfalso; apply hne
     have := hmatch i hi h1 h2
-    rw [hkt, this, key_of_match h1 h2]
+    Ξ hkt, this, key_of_match h1 h2
   by_cases hc1 : c₂.nreg K0 < c₂.nreg kO
   · rw [hk0₂] at hc1
     have hlt : off (chainModel J.whole).W.n G kt < off (chainModel J.whole).W.n G kx :=
       hb1.2.1 (by have := hb1.1; omega)
-    exact (IRS.ifT (by rw [hk0₂]; exact hc1) (noOffer (ne_of_lt hlt) 0)).mono (by omega)
+    exact (IRS.ifT (by rw [hk0₂]; exact hc1) (noOffer (ne_of_lt hlt) 0)).mono (⋄)
       (fun _ h => h)
-  · refine (IRS.ifF hc1 ?_).mono (K := 2 + hitK + 2) (by omega) (fun _ h => h)
+  · refine (IRS.ifF hc1 ?_).mono (K := 2 + hitK + 2) (⋄) (fun _ h => h)
     rw [hk0₂] at hc1
     have hn1 : ¬ off (chainModel J.whole).W.n G kt < off (chainModel J.whole).W.n G kx :=
       fun h => by have := hb1.2.2 h; omega
@@ -170,9 +172,9 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
     · rw [hk0₂] at hc2
       have hlt : off (chainModel J.whole).W.n G kx < off (chainModel J.whole).W.n G kt :=
         hb2'.2.1 (by have := hb2'.1; omega)
-      exact (IRS.ifT (by rw [hk0₂]; exact hc2) (noOffer (ne_of_gt hlt) 0)).mono (by omega)
+      exact (IRS.ifT (by rw [hk0₂]; exact hc2) (noOffer (ne_of_gt hlt) 0)).mono (⋄)
         (fun _ h => h)
-    · refine (IRS.ifF (K := hitK) hc2 ?_).mono (by omega) (fun _ h => h)
+    · refine (IRS.ifF (K := hitK) hc2 ?_).mono (⋄) (fun _ h => h)
       rw [hk0₂] at hc2
       have hn2 : ¬ off (chainModel J.whole).W.n G kx < off (chainModel J.whole).W.n G kt :=
         fun h => by have := hb2'.2.2 h; omega
@@ -198,7 +200,7 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
       have hti := hmatch i hi h1 h2
       rw [← hti] at hf
       have hslot := hsl t ht (qS d) (qS_le d)
-      have hpt' : logPt P J c₀.nmem (rd c₀ bSweep 300) t = z := hpt
+      have hpt' := hpt
       have heq := slot_eq hA.hP hslot hf hpt' hz hzs hz2 hc
       exact hcmp hf τ hτ (heq.trans ho)
 

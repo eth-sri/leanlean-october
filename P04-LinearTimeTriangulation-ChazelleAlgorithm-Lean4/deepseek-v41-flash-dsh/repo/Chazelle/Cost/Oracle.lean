@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Cost.UpPhase
 
 /-!
@@ -34,38 +36,38 @@ public section
 /-- The binary search of the query is dominated: `⌈log₂ μ⌉ ≤ 8 μ^(2/3)` for every natural `μ`. -/
 theorem clog_le_eight_rpow (μ : ℕ) : (Nat.clog 2 μ : ℝ) ≤ 8 * (μ : ℝ) ^ ((2 : ℝ) / 3) := by
   rcases Nat.lt_or_ge μ 2 with hμ | hμ
-  · have : Nat.clog 2 μ = 0 := Nat.clog_of_right_le_one (by omega) 2
-    rw [this, Nat.cast_zero]
+  · have : Nat.clog 2 μ = 0 := Nat.clog_of_right_le_one (⋄) 2
+    Ξ this, Nat.cast_zero
     have : (0 : ℝ) ≤ (μ : ℝ) ^ ((2 : ℝ) / 3) := Real.rpow_nonneg (Nat.cast_nonneg μ) _
     linarith
   · set k := Nat.clog 2 μ with hk
-    have hlt : 2 ^ k.pred < μ := Nat.pow_pred_clog_lt_self (by norm_num) (by omega)
+    have hlt : 2 ^ k.pred < μ := Nat.pow_pred_clog_lt_self (⊛) (by omega)
     have hk1 : 1 ≤ k := by
       by_contra hcon
-      have hk0 : k = 0 := by omega
-      have := Nat.le_pow_clog (b := 2) (by norm_num) μ
+      have hk0 : k = 0 := ⋄
+      have := Nat.le_pow_clog (b := 2) (⊛) μ
       rw [← hk, hk0] at this
       omega
     -- k ≤ 4 · 2^(k/2)
-    have h1 := nat_le_two_rpow 2 (by norm_num) k
+    have h1 := nat_le_two_rpow 2 (⊛) k
     push_cast at h1
     -- 2^(k/2) ≤ 2 · 2^(2(k-1)/3)
     have h2 : (2 : ℝ) ^ ((k : ℝ) / 2) ≤ 2 * (2 : ℝ) ^ (2 * ((k : ℝ) - 1) / 3) := by
       have hk1R : (1 : ℝ) ≤ k := by exact_mod_cast hk1
       calc (2 : ℝ) ^ ((k : ℝ) / 2) ≤ (2 : ℝ) ^ (1 + 2 * ((k : ℝ) - 1) / 3) :=
-            two_rpow_le_two_rpow (by linarith)
+            two_rpow_le_two_rpow (⟡)
         _ = 2 * (2 : ℝ) ^ (2 * ((k : ℝ) - 1) / 3) := by
-            rw [← two_rpow_mul_two_rpow, Real.rpow_one]
+            Ξ ← two_rpow_mul_two_rpow, Real.rpow_one
     -- 2^(2(k-1)/3) ≤ μ^(2/3)
     have h3 : (2 : ℝ) ^ (2 * ((k : ℝ) - 1) / 3) ≤ (μ : ℝ) ^ ((2 : ℝ) / 3) := by
       have hpred : ((k.pred : ℕ) : ℝ) = (k : ℝ) - 1 := by
-        rw [Nat.pred_eq_sub_one, Nat.cast_sub hk1, Nat.cast_one]
+        Ξ Nat.pred_eq_sub_one, Nat.cast_sub hk1, Nat.cast_one
       have hltR : (2 : ℝ) ^ (k.pred) ≤ (μ : ℝ) := by exact_mod_cast hlt.le
       calc (2 : ℝ) ^ (2 * ((k : ℝ) - 1) / 3) = ((2 : ℝ) ^ (k.pred)) ^ ((2 : ℝ) / 3) := by
-            rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num), hpred]
+            rw [← Real.rpow_natCast, ← Real.rpow_mul (⊛), hpred]
             congr 1
             ring
-        _ ≤ (μ : ℝ) ^ ((2 : ℝ) / 3) := Real.rpow_le_rpow (by positivity) hltR (by norm_num)
+        _ ≤ (μ : ℝ) ^ ((2 : ℝ) / 3) := Real.rpow_le_rpow (⟢) hltR (by norm_num)
     have : (0 : ℝ) ≤ (2 : ℝ) ^ (2 * ((k : ℝ) - 1) / 3) := (two_rpow_pos _).le
     nlinarith
 

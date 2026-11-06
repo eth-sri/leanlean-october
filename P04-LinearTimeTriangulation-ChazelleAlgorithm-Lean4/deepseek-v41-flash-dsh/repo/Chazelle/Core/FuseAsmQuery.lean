@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepLocal
 public import Chazelle.Core.GranNF
 public import Chazelle.Core.SpecMerge
@@ -28,7 +30,7 @@ open Chazelle.Merge (lend rend lend_hseg rend_hseg hseg_inj)
 
 /-- The point `(z.1 + σ, z.2)` is the ray point at parameter `1`. -/
 theorem ray_one (z : Point) (σ : ℝ) : ((z.1 + σ, z.2) : Point) = rayPt z σ 1 := by
-  simp [rayPt]
+  Θ rayPt
 
 /-- **The chord-end queries.** -/
 theorem queryOK_ends (J : Merge.Junction) (Q : Polygon) (i : ℕ) (r : CRec)
@@ -41,7 +43,7 @@ theorem queryOK_ends (J : Merge.Junction) (Q : Polygon) (i : ℕ) (r : CRec)
   set C := sideChain J i
   set M := chainModel C
   obtain ⟨y, a, b, hIH, hytop, hc⟩ := hadm
-  have hab : a < b := hIH.lt
+  have hab := hIH.lt
   have hdef : r.toSet M Q = hseg (Q.vtx r.h).2 (M.pos Q r.lpos).1 (M.pos Q r.rpos).1 := rfl
   obtain ⟨⟨hpl, htl0, htl1, hml, rl, hrl, hsl⟩, ⟨hpr, htr0, htr1, hmr, rr, hrr, hsr⟩⟩ := hA
   have el : M.pos Q r.lpos = sidePt M.W r.lp (M.param Q r.lpos) := rfl
@@ -127,9 +129,9 @@ theorem rec_eq_of_toSet {M : Model} (hM : WalkAx M) {Q : Polygon} (hQ : Distinct
   have hhh : r.h = r'.h := by
     by_contra hne'; exact hQ _ _ hh hh' hne' hy
   have ptl : sidePt M.W r.lp (M.param Q r.lpos) = sidePt M.W r'.lp (M.param Q r'.lpos) := by
-    rw [← el, ← el]; exact Prod.ext hl (by rw [pyl, pyl', hhh])
+    rw [← el, ← el]; exact Prod.ext hl (Ρ pyl, pyl', hhh)
   have ptr : sidePt M.W r.rp (M.param Q r.rpos) = sidePt M.W r'.rp (M.param Q r'.rpos) := by
-    rw [← er, ← er]; exact Prod.ext hr (by rw [pyr, pyr', hhh])
+    rw [← er, ← er]; exact Prod.ext hr (Ρ pyr, pyr', hhh)
   have hA'l : SideAttach M.W (r.toSet M Q) r'.lp (M.param Q r'.lpos) := he ▸ hA'.1
   have hA'r : SideAttach M.W (r.toSet M Q) r'.rp (M.param Q r'.rpos) := he ▸ hA'.2
   exact ⟨hhh, (hM.attach_unique hadm hA.1 hA'l ptl).1, (hM.attach_unique hadm hA.2 hA'r ptr).1⟩
@@ -161,29 +163,29 @@ theorem arrival_of_free (J : Merge.Junction) (hP : J.P.Simple) (i : ℕ) {z : Po
   obtain ⟨u, hu, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hf
   have hu0 : (0 : ℝ) < u := hu
   set T := u / 2
-  have hT : 0 < T := by positivity
+  have hT : 0 < T := ⟢
   have hσ0 : σ ≠ 0 := by rcases hσ with h | h <;> rw [h] <;> norm_num
   have hee : z ≠ rayPt z σ T := by
     intro h
     have h' := congrArg Prod.fst h
-    simp only [rayPt] at h'
-    have hm0 : σ * T = 0 := by linarith
+    ϴ' rayPt at h'
+    have hm0 : σ * T = 0 := ⟡
     rcases mul_eq_zero.1 hm0 with h1 | h1
     · exact hσ0 h1
     · linarith
   have hopen : ∀ s ∈ Set.Ioo (0 : ℝ) 1, Geometry.lerp z (rayPt z σ T) s ∈ C.dom := by
     intro s hs
-    rw [lerp_rayPt]
+    Ξ lerp_rayPt
     have hTu : T = u / 2 := rfl
     have hm : rayPt z σ (s * T) ∈ J.whole.dom := hsub ⟨mul_pos hs.1 hT, by
       have := hs.2; rw [hTu]; nlinarith⟩
     exact dom_side J i hm (by simpa [rayPt] using hz2)
   obtain ⟨p, t, hp, ht0, ht1, hpt, hl⟩ :=
-    C.sideSees_chordEnd hPC C.sideBeta hee (by simp [rayPt]) hopen (Or.inl hz)
+    C.sideSees_chordEnd hPC C.sideBeta hee (⊚ rayPt) hopen (Or.inl hz)
   have hpt' : sidePt (chainModel C).W p t = z := hpt
   have hl' : sideLeft (chainModel C).W p t (rayPt z σ T) := hl
   refine ⟨p, t, hp, ht0, ht1, hpt', ?_⟩
-  rw [neg_neg]
+  Ξ neg_neg
   have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ T) := by
     rw [hpt']; exact hl'
   have := (Sweep.sideLeft_rayPt_iff _ p t σ hT one_pos).1 h1
@@ -198,7 +200,7 @@ theorem param_of_vertex (M : Model) (Q : Polygon) (p h : ℕ) (hy : (Q.vtx h).2 
   simp only
   split_ifs
   · rfl
-  · rw [hy, sub_self, zero_div]
+  · Ξ hy, sub_self, zero_div
 
 /-- **A query from a departure position**: a position with the direction `dirOf ρ` in its left
 sector (`Sweep.Arrival` for `-dirOf ρ`, as `arrivalPos` reports it), written with the height code
@@ -210,11 +212,11 @@ theorem queryOK_of_arrival (J : Merge.Junction) (Q : Polygon) (i : ℕ) {p h ρ 
     QueryOK J Q i (p, h + 1, ρ) ∧ (chainModel (sideChain J i)).pos Q ⟨p, h + 1⟩ = z := by
   obtain ⟨hp, ht0, ht1, hpt, hl⟩ := hA
   have hpos : (chainModel (sideChain J i)).pos Q ⟨p, h + 1⟩ = z := by
-    rw [Gran.pos_eq_sidePt]; simp only; rw [hpar, hpt]
+    rw [Gran.pos_eq_sidePt]; simp only; Ξ hpar, hpt
   refine ⟨⟨hp, by show 1 ≤ h + 1; omega, hh, by simp only; rw [hpar]; exact ht0, by simp only; rw [hpar]; exact ht1,
     by simp only; rw [hpos]; exact hz2, ?_⟩, hpos⟩
   simp only
-  rw [hpos, hpar, ray_one]
+  Ξ hpos, hpar, ray_one
   simpa using hl
 
 end

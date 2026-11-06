@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildCmp
 public import Chazelle.Core.NFLocateSpec
 
@@ -54,9 +56,9 @@ theorem chordListAt_unique {m : ℕ → ℕ} {A : ℕ} {L L' : List (ℕ × ℕ 
   obtain ⟨a1, a2, a3⟩ := h i hi
   obtain ⟨b1, b2, b3⟩ := h' i hi'
   have e1 : L.getD i (0, 0, 0) = L[i] := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+    Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some
   have e2 : L'.getD i (0, 0, 0) = L'[i] := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi', Option.getD_some]
+    Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi', Option.getD_some
   rw [e1] at a1 a2 a3
   rw [e2] at b1 b2 b3
   exact Prod.ext (a1.symm.trans b1) (Prod.ext (a2.symm.trans b2) (a3.symm.trans b3))

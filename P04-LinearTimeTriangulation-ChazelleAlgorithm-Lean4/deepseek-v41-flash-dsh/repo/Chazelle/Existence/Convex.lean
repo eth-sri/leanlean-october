@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Jordan.Jordan
 public import Chazelle.Geometry.Triangle
 public import Chazelle.Existence.Rotate
@@ -69,32 +73,32 @@ theorem rotate_lexMin (P : Polygon) {m : ℕ} (hm : m < P.n)
     (hmin : ∀ i, i < P.n → lexLE (P.vtx m) (P.vtx i)) :
     ∀ i, i < P.n → lexLE ((P.rotate m).vtx 0) ((P.rotate m).vtx i) := by
   intro i hi
-  rw [vtx_rotate P m (by omega), vtx_rotate P m hi, Nat.add_zero, Nat.mod_eq_of_lt hm]
-  exact hmin _ (Nat.mod_lt _ (by omega))
+  Ξ vtx_rotate P m (⋄), vtx_rotate P m hi, Nat.add_zero, Nat.mod_eq_of_lt hm
+  exact hmin _ (Nat.mod_lt _ (⋄))
 
 /-! ### Index bookkeeping at vertex `0` -/
 
 /-- The successor of vertex `0` is vertex `1`. -/
 theorem succ_zero_mod (P : Polygon) (hn : 2 ≤ P.n) : (0 + 1) % P.n = 1 :=
-  Nat.mod_eq_of_lt (by omega)
+  Nat.mod_eq_of_lt (⋄)
 
 /-- The successor of vertex `n - 1` is vertex `0`. -/
 theorem succ_last_mod (P : Polygon) (hn : 1 ≤ P.n) : (P.n - 1 + 1) % P.n = 0 := by
-  rw [Nat.sub_add_cancel hn, Nat.mod_self]
+  Ξ Nat.sub_add_cancel hn, Nat.mod_self
 
 /-- The edge entering vertex `0` is edge `n - 1`. -/
 theorem prevIdx_zero (P : Polygon) (hn : 1 ≤ P.n) : prevIdx P 0 = P.n - 1 := by
-  rw [prevIdx_eq P (by omega)]; simp
+  rw [prevIdx_eq P (⋄)]; simp
 
 /-- Edge `0` is the segment from vertex `0` to vertex `1`. -/
 theorem edge_zero (P : Polygon) (hn : 2 ≤ P.n) :
     P.edge 0 = Chazelle.segment (P.vtx 0) (P.vtx 1) := by
-  unfold Polygon.edge; rw [succ_zero_mod P hn]
+  unfold Polygon.edge; Ξ succ_zero_mod P hn
 
 /-- Edge `n - 1` is the segment from vertex `n - 1` to vertex `0`. -/
 theorem edge_last (P : Polygon) (hn : 1 ≤ P.n) :
     P.edge (P.n - 1) = Chazelle.segment (P.vtx (P.n - 1)) (P.vtx 0) := by
-  unfold Polygon.edge; rw [succ_last_mod P hn]
+  unfold Polygon.edge; Ξ succ_last_mod P hn
 
 /-- The two edges at vertex `0` of a simple polygon meet only in vertex `0`. -/
 theorem edges_at_zero_meet {P : Polygon} (hP : P.Simple) :
@@ -103,15 +107,15 @@ theorem edges_at_zero_meet {P : Polygon} (hP : P.Simple) :
   have hn := simple_three_le hP
   intro p hp
   have hmem : p ∈ P.edge (P.n - 1) ∩ P.edge 0 := by
-    rw [edge_last P (by omega), edge_zero P (by omega)]; exact hp
-  rw [simple_edge_inter hP (by omega) (by omega) (by omega)] at hmem
+    rw [edge_last P (⋄), edge_zero P (⋄)]; exact hp
+  rw [simple_edge_inter hP (⋄) (⋄) (by omega)] at hmem
   obtain ⟨h1, h2⟩ := hmem
-  rw [succ_last_mod P (by omega)] at h1
-  rw [succ_zero_mod P (by omega)] at h2
+  Ξ' succ_last_mod P (⋄) at h1
+  Ξ' succ_zero_mod P (⋄) at h2
   rcases h1 with rfl | rfl
   · rcases h2 with h2 | h2
     · exact h2
-    · exact absurd (simple_vtx_inj hP (by omega) (by omega) h2) (by omega)
+    · exact absurd (simple_vtx_inj hP (⋄) (⋄) h2) (by omega)
   · rfl
 
 /-! ### Points to the left of the smallest vertex are exterior -/
@@ -120,14 +124,14 @@ theorem edges_at_zero_meet {P : Polygon} (hP : P.Simple) :
 theorem parity_eq_false_of_fst_lt (P : Polygon)
     (hmin : ∀ i, i < P.n → lexLE (P.vtx 0) (P.vtx i)) {z : Point} (hz : z.1 < (P.vtx 0).1) :
     parity P z = false := by
-  rw [parity_eq_false_iff]
+  Ξ parity_eq_false_iff
   unfold crossSum
   apply Finset.sum_eq_zero
   intro i hi
-  have hi' : i < P.n := Finset.mem_range.1 hi
+  have hi' := Finset.mem_range.1 hi
   apply crossInd_of_not_crosses
   exact not_crosses_of_lt (hz.trans_le (fst_le_of_lexLE (hmin i hi')))
-    (hz.trans_le (fst_le_of_lexLE (hmin _ (Nat.mod_lt (i + 1) (by omega)))))
+    (hz.trans_le (fst_le_of_lexLE (hmin _ (Nat.mod_lt (i + 1) (⋄)))))
 
 /-! ### Strict convexity at the smallest vertex -/
 
@@ -138,28 +142,28 @@ theorem det_ne_zero_of_lexMin {P : Polygon} (hP : P.Simple)
     det (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) ≠ 0 := by
   intro h
   have hn := simple_three_le hP
-  have hav : P.vtx (P.n - 1) ≠ P.vtx 0 := simple_vtx_ne hP (by omega) (by omega) (by omega)
-  have hvb : P.vtx 0 ≠ P.vtx 1 := simple_vtx_ne hP (by omega) (by omega) (by omega)
+  have hav : P.vtx (P.n - 1) ≠ P.vtx 0 := simple_vtx_ne hP (⋄) (⋄) (by omega)
+  have hvb : P.vtx 0 ≠ P.vtx 1 := simple_vtx_ne hP (⋄) (⋄) (by omega)
   have hdir := dir_pos_of_collinear hav hvb (edges_at_zero_meet hP) h
-  have hu := hmin (P.n - 1) (by omega)
-  have hw := hmin 1 (by omega)
+  have hu := hmin (P.n - 1) (⋄)
+  have hw := hmin 1 (⋄)
   set u := P.vtx (P.n - 1)
   set v := P.vtx 0
   set w := P.vtx 1
-  have hu1 : v.1 ≤ u.1 := fst_le_of_lexLE hu
-  have hw1 : v.1 ≤ w.1 := fst_le_of_lexLE hw
+  have hu1 := fst_le_of_lexLE hu
+  have hw1 := fst_le_of_lexLE hw
   unfold det at h
   rcases hu1.lt_or_eq with hu1 | hu1 <;> rcases hw1.lt_or_eq with hw1 | hw1
   · -- both neighbours strictly to the right: the dot product is negative
-    have hb : 0 < w.1 - v.1 := sub_pos.2 hw1
+    have hb := sub_pos.2 hw1
     have hkey : (w.1 - v.1) * ((v.1 - u.1) * (w.1 - v.1) + (v.2 - u.2) * (w.2 - v.2)) =
         (v.1 - u.1) * ((w.1 - v.1) ^ 2 + (w.2 - v.2) ^ 2) := by
       linear_combination (-(w.2 - v.2)) * h
     have hneg : (v.1 - u.1) * ((w.1 - v.1) ^ 2 + (w.2 - v.2) ^ 2) < 0 :=
-      mul_neg_of_neg_of_pos (by linarith) (by positivity)
+      mul_neg_of_neg_of_pos (⟡) (⟢)
     nlinarith [mul_pos hb hdir]
   · -- `w` on the vertical line through `v`, above it; `u` strictly to the right
-    have hw2 : v.2 ≤ w.2 := snd_le_of_lexLE_of_fst_eq hw hw1
+    have hw2 := snd_le_of_lexLE_of_fst_eq hw hw1
     have hw2' : v.2 < w.2 := by
       rcases hw2.lt_or_eq with h' | h'
       · exact h'
@@ -169,7 +173,7 @@ theorem det_ne_zero_of_lexMin {P : Polygon} (hP : P.Simple)
     · linarith
     · linarith
   · -- `u` on the vertical line through `v`, above it; `w` strictly to the right
-    have hu2 : v.2 ≤ u.2 := snd_le_of_lexLE_of_fst_eq hu hu1
+    have hu2 := snd_le_of_lexLE_of_fst_eq hu hu1
     have hu2' : v.2 < u.2 := by
       rcases hu2.lt_or_eq with h' | h'
       · exact h'
@@ -179,10 +183,10 @@ theorem det_ne_zero_of_lexMin {P : Polygon} (hP : P.Simple)
     · linarith
     · linarith
   · -- all three on a vertical line
-    have hu2 : v.2 ≤ u.2 := snd_le_of_lexLE_of_fst_eq hu hu1
-    have hw2 : v.2 ≤ w.2 := snd_le_of_lexLE_of_fst_eq hw hw1
-    rw [hu1] at hdir
-    rw [← hw1] at hdir
+    have hu2 := snd_le_of_lexLE_of_fst_eq hu hu1
+    have hw2 := snd_le_of_lexLE_of_fst_eq hw hw1
+    Ξ' hu1 at hdir
+    Ξ' ← hw1 at hdir
     nlinarith [mul_nonneg (sub_nonneg.2 hu2) (sub_nonneg.2 hw2)]
 
 /-! ### The boundary near a vertex -/
@@ -196,7 +200,7 @@ theorem boundary_near_vtx {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n)
   set j := prevIdx P i with hj
   have hother : ∀ k ∈ ((Finset.range P.n).erase i).erase j, P.vtx i ∉ P.edge k := by
     intro k hk hmem
-    simp only [Finset.mem_erase, Finset.mem_range] at hk
+    ϴ' Finset.mem_erase, Finset.mem_range at hk
     rcases (simple_vtx_mem_edge_iff hP hi hk.2.2).1 hmem with h | h
     · exact hk.2.1 h
     · exact hk.1 h
@@ -208,9 +212,9 @@ theorem boundary_near_vtx {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n)
   · by_cases hkj : k = j
     · subst hkj
       left
-      rw [← edge_prevIdx P hi]
+      Ξ ← edge_prevIdx P hi
       exact hxk
-    · exact absurd hxk (hball x hx k (by simp [Finset.mem_erase, hki, hkj, hk]))
+    · exact absurd hxk (hball x hx k (⊚ Finset.mem_erase, hki, hkj, hk))
 
 /-! ### The convex sector at the smallest vertex is interior -/
 
@@ -282,7 +286,7 @@ theorem sector_subset_interior {P : Polygon} (hP : P.Simple)
     exact this.mono_left nhdsWithin_le_nhds
   obtain ⟨ε, hεb, hε0⟩ :=
     ((htq.eventually (isOpen_ball.mem_nhds (mem_ball_self hr))).and self_mem_nhdsWithin).exists
-  have hε0' : (0 : ℝ) < ε := hε0
+  have hε0' := hε0
   have hqD : v + ε • ((v - u) - (w - v)) ∈ D := by
     refine ⟨hεb, ?_⟩
     show 0 < (-σ) * det v w (v + ε • ((v - u) - (w - v)))
@@ -308,7 +312,7 @@ theorem sector_subset_interior {P : Polygon} (hP : P.Simple)
   obtain ⟨δ, hplus, hminus, hsides, hδ0⟩ :=
     ((eventually_offset_mem σ hW1 htW).and ((eventually_offset_mem (-σ) isOpen_ball htW.1).and
       ((edge_sides hP h0 ht01).and self_mem_nhdsWithin))).exists
-  have hδ0' : (0 : ℝ) < δ := hδ0
+  have hδ0' := hδ0
   unfold leftPoint rightPoint at hsides
   rw [h1n] at hsides
   have hxplus : offset v w t (σ * δ) ∈ Splus := by

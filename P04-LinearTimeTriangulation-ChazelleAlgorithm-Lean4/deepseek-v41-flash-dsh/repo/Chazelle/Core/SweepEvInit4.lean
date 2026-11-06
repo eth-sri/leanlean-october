@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvInit3
 
 /-!
@@ -56,8 +58,8 @@ structure InitRes (P : Polygon) (J : Merge.Junction) (c c₀ : Config) : Prop wh
 theorem nfWithin_lt' {m : ℕ → ℕ} {B E : ℕ} {N : NF} (h : NFWithin m B E N) : B + 1 < E := by
   by_contra hc
   have := (h (upd m (B + 1) (N.arcs.length + 1)) (fun a ha => by
-    rw [upd_other _ _ _ (by omega)])).2.1
-  rw [upd_same] at this
+    rw [upd_other _ _ _ (⋄)])).2.1
+  Ξ' upd_same at this
   omega
 
 /-- The number of edges of a chain with a well-formed descriptor. -/
@@ -84,7 +86,7 @@ theorem chainCtx_of {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.J
     ChainCtx P W c d C := by
   have := chain_m_le' hw hd
   unfold hostWords at hWh
-  exact ⟨hG, by unfold hostWords; omega, hw, ⟨H, hd, hJW.2.2.2 H hJ.2.2.1⟩, hP, by omega⟩
+  exact ⟨hG, by unfold hostWords; omega, hw, ⟨H, hd, hJW.2.2.2 H hJ.2.2.1⟩, hP, ⋄⟩
 
 set_option maxRecDepth 20000 in
 /-- **The run of the initialisation** from the stage-0 state. -/
@@ -111,8 +113,8 @@ theorem initE_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.Ju
   -- the top of `C₁`
   have k20 : c₁.nreg (sw 20) = c.nreg (sw 20) := keepA _ (by unfold sw; omega)
   have hctx : ChainCtx P W c₁ (sw 20) J.left :=
-    (chainCtx_of hG hWh hP hJ hJW d20 w20).transport k20 (fun a _ => by rw [mA])
-      (by rw [hA₁])
+    (chainCtx_of hG hWh hP hJ hJW d20 w20).transport k20 (fun a _ => Ρ mA)
+      (Ρ hA₁)
   obtain ⟨c₂, kS, eS, hkS, fS, ⟨s, hs, hsl, hse⟩, keepS⟩ :=
     symS_exec (P := P) eA.wb_right hctx (by rw [hA₁]; omega)
   have hA₂ := fS.2.2.2.2.2.2
@@ -127,13 +129,13 @@ theorem initE_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.Ju
     [rw [← a]; rw [← b]; rw [← d]; rw [← e]; rw [← f]; rw [← g]; rw [← i]] <;>
     exact kS' _ (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2)
   have k20' : c₂.nreg (sw 20) = c.nreg (sw 20) := by
-    rw [kS' _ (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2), k20]
+    Ξ kS' _ (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2), k20
   obtain ⟨c₃, kM, eM, hkM, aM, mdM, cdM, m0M, mcM, mlM, keepM, rrM, rmM, oM⟩ :=
     md1S_exec (P := P) eS.wb_right KS (by rw [k20']; have := w20.1; omega)
-      (by omega)
+      (⋄)
   have fM : Frame ioBands c₂ c₃ kM := ⟨fun r hb hr => by
       refine keepM r hr ?_ ?_ ?_ ?_ <;> rintro rfl <;> exact hb (sw_io (by swoInit2) (by swoInit2)),
-    fun r _ => by rw [rrM], mlM, fun a _ => by rw [rmM], oM, by omega, by omega⟩
+    fun r _ => by rw [rrM], mlM, fun a _ => by rw [rmM], oM, ⋄, by omega⟩
   -- the table
   have kM' : ∀ r, 240000 ≤ r → r < 250000 → r ≠ MD₁ → r ≠ CD₁ → r ≠ iA → r ≠ iV →
       c₃.nreg r = c₂.nreg r := fun r h1 h2 a b d e => keepM r (by unfold ALLOC; omega) a b d e
@@ -145,9 +147,9 @@ theorem initE_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.Ju
     rw [kM' _ (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2),
       kS' _ (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2), keepA _ (by swoInit2)]
   have mem₃ : ∀ a, a < c.nreg ALLOC → c₃.nmem a = c.nmem a := fun a ha => by
-    rw [mlM a (by omega), fS.2.2.1 a (by omega), mA]
-  have ea₁ : c₃.nmem (c₃.nreg (sw 3) + 1) = a₁ := by rw [s3, mem₃ _ h3]
-  have ea₂ : c₃.nmem (c₃.nreg (sw 4) + 1) = a₂ := by rw [s4, mem₃ _ h4]
+    rw [mlM a (⋄), fS.2.2.1 a (by omega), mA]
+  have ea₁ : c₃.nmem (c₃.nreg (sw 3) + 1) = a₁ := Ρ s3, mem₃ _ h3
+  have ea₂ : c₃.nmem (c₃.nreg (sw 4) + 1) = a₂ := Ρ s4, mem₃ _ h4
   have hw₃ := eM.wb_right
   obtain ⟨c₄, kT, eT, hkT, tB, tL, tA, ttab, tmem, keepT, rrT, rmT, oT⟩ :=
     tabS_exec (P := P) hw₃ K1₃ (by rw [s3]; have := hw.1 ALLOC; omega)
@@ -156,7 +158,7 @@ theorem initE_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.Ju
   have fT : Frame ioBands c₃ c₄ kT := ⟨fun r hr hrA => by
       refine keepT r hrA ?_ ?_ ?_ ?_ ?_ ?_ ?_ <;> rintro rfl <;>
         exact hr (sw_io (by swoInit4) (by swoInit4)),
-    fun r _ => by rw [rrT], tmem, fun a _ => by rw [rmT], oT, by omega, by omega⟩
+    fun r _ => by rw [rrT], tmem, fun a _ => by rw [rmT], oT, ⋄, by omega⟩
   -- the table base
   have hw₄ := eT.wb_right
   have eC := Exec.copyN (P := P) hw₄ cTB ALLOC
@@ -185,57 +187,57 @@ theorem initE_exec {P : Polygon} {W : ℕ} {c : Config} {H : Host} {J : Merge.Ju
       (by rintro rfl; swoInit2) (by rintro rfl; swoInit2) (by rintro rfl; swoInit2)]
     exact keepA r (by swoInit2)
   · show c₄.nmem a = c.nmem a
-    rw [tmem a (by omega), mem₃ a ha]
+    rw [tmem a (⋄), mem₃ a ha]
   · rw [k5 MD₁ (by swoInit2), keepT MD₁ (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4)
       (by swoInit4) (by swoInit4), mdM]; omega
   · obtain ⟨a, b, d, e, f, g, i⟩ := KA
-    exact ⟨(kc 610 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans a,
-      (kc 611 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans b,
-      (kc 612 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans d,
-      (kc 613 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans e,
-      (kc 614 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans f,
-      (kc 615 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans g,
-      (kc 616 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans i⟩
+    exact ⟨(kc 610 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans a,
+      (kc 611 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans b,
+      (kc 612 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans d,
+      (kc 613 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans e,
+      (kc 614 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans f,
+      (kc 615 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans g,
+      (kc 616 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans i⟩
   · obtain ⟨a, b, d, e, f, g, i, j⟩ := MA
-    exact ⟨(kc 652 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans a,
-      (kc 653 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans b,
-      (kc 654 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans d,
-      (kc 655 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans e,
-      (kc 656 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans f,
-      (kc 657 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans g,
-      (kc 658 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans i,
-      (kc 660 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans j⟩
-  · refine ⟨(kc 640 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans o2m,
-      (kc 641 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans om,
-      (kc 642 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans otop,
-      (kc 643 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans oS,
-      (kc 644 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans o2m6,
+    exact ⟨(kc 652 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans a,
+      (kc 653 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans b,
+      (kc 654 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans d,
+      (kc 655 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans e,
+      (kc 656 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans f,
+      (kc 657 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans g,
+      (kc 658 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans i,
+      (kc 660 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans j⟩
+  · refine ⟨(kc 640 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans o2m,
+      (kc 641 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans om,
+      (kc 642 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans otop,
+      (kc 643 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans oS,
+      (kc 644 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans o2m6,
       s, ?_, hsl, hse⟩
     have t : ∀ i, 645 ≤ i → i ≤ 647 → c₅.nreg (sw i) = c₂.nreg (sw i) := fun i h1 h2 => by
       rw [k5 (sw i) (by swoInit2), keepT (sw i) (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4)
         (by swoInit4) (by swoInit4) (by swoInit4), keepM (sw i) (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2) (by swoInit2)]
-    exact symPtIn_transport hs (t 645 (by norm_num) (by norm_num))
-      (t 646 (by norm_num) (by norm_num)) (t 647 (by norm_num) (by norm_num))
-  · exact (kc 659 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans gwA
+    exact symPtIn_transport hs (t 645 (⊛) (by norm_num))
+      (t 646 (⊛) (by norm_num)) (t 647 (by norm_num) (by norm_num))
+  · exact (kc 659 (⊛) (by norm_num) (by norm_num) (by norm_num) (by norm_num)).trans gwA
   · show c₄.nmem (c₅.nreg MD₁) = 0
     rw [k5 MD₁ (by swoInit2), keepT MD₁ (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4)
-      (by swoInit4) (by swoInit4), mdM, tmem _ (by omega), m0M]
+      (by swoInit4) (by swoInit4), mdM, tmem _ (⋄), m0M]
   · intro i hi
     show c₄.nmem (c₅.nreg MD₁ + 1 + i) = _
     rw [k5 MD₁ (by swoInit2), keepT MD₁ (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4)
-      (by swoInit4) (by swoInit4), mdM, tmem _ (by omega), mcM i hi, k20', fS.2.2.1 _ (by
+      (by swoInit4) (by swoInit4), mdM, tmem _ (⋄), mcM i hi, k20', fS.2.2.1 _ (by
         have := w20.1; omega), mA]
   · rw [k5 CD₁ (by swoInit2), k5 MD₁ (by swoInit2), keepT CD₁ (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4)
       (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4), keepT MD₁ (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4)
       (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4), mdM, cdM]
   · rw [k5 TBR (by swoInit2), k5 MD₁ (by swoInit2), keepT MD₁ (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4)
       (by swoInit4) (by swoInit4) (by swoInit4) (by swoInit4), tB, aM, mdM]
-  · rw [k5 TLR (by swoInit2), tL]
+  · Ξ k5 TLR (by swoInit2), tL
   · intro j hj
     rw [k5 TLR (by swoInit2)] at hj
-    rw [k5 TBR (by swoInit2), tB]
+    Ξ k5 TBR (by swoInit2), tB
     exact ttab j hj
-  · rw [k5 ALLOC (by swoInit2), k5 TBR (by swoInit2), k5 TLR (by swoInit2), tA, tB]
+  · Ξ k5 ALLOC (by swoInit2), k5 TBR (by swoInit2), k5 TLR (by swoInit2), tA, tB
   · simp only [hc₅]; rw [upd_same, upd_other _ _ _ (by swoInit2)]
 
 end

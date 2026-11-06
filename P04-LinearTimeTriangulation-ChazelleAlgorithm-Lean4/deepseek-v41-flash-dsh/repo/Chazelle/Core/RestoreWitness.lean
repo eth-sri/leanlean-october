@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreNodeMath
 
 /-!
@@ -35,7 +37,7 @@ theorem side_same {a b u x : ℝ} (hux : u ≤ x) (ha : a < u ∨ x < a) (hb : b
     first
     | (left; linarith)
     | (right; linarith)
-    | (exact ⟨by linarith, by linarith⟩)
+    | (exact ⟨⟡, ⟡⟩)
     | (exfalso; rcases h' with h' | h' <;> linarith)
 
 variable {L da db αa αb : ℝ} {sa sb : Prop}
@@ -50,7 +52,7 @@ theorem gend_transfer {d d' α : ℝ} {s : Prop} (hα0 : 0 ≤ α) (hα : 0 < α
     · left; linarith
     · right; push Not at h; by_contra h'; push Not at h'; exact hd ⟨h, h'⟩
   · by_cases hin : 0 < α ∧ α < L
-    · rw [hα hin.1 hin.2]
+    · Ξ hα hin.1 hin.2
       by_cases h : d' ≤ ℓ
       · left; linarith
       · right; push Not at h; by_contra h'; push Not at h'; exact hd' ⟨h, h'⟩
@@ -65,7 +67,7 @@ theorem wok_transfer (hαa0 : 0 ≤ αa) (hαa : 0 < αa → αa < L → αa = d
     (hda : ¬ (ℓ < da ∧ da ≤ x)) (hdb : ¬ (ℓ < db ∧ db ≤ x))
     (hx : WOK L da db αa αb sa sb x) : WOK L da db αa αb sa sb u := by
   obtain ⟨hx0, hxL, -, -, ga, gb⟩ := hx
-  refine ⟨by linarith, by linarith, fun h => hda ⟨by rw [← h]; exact hℓu, by rw [← h]; exact hux⟩,
+  refine ⟨⟡, ⟡, fun h => hda ⟨by rw [← h]; exact hℓu, by rw [← h]; exact hux⟩,
     fun h => hdb ⟨by rw [← h]; exact hℓu, by rw [← h]; exact hux⟩,
     gend_transfer hαa0 hαa hℓ hℓu hux hxL hda hdb ga,
     gend_transfer hαb0 hαb hℓ hℓu hux hxL hdb hda gb⟩
@@ -88,16 +90,16 @@ theorem witness_exists (hαa0 : 0 ≤ αa) (hαa : 0 < αa → αa < L → αa =
   by_cases hA : 0 < da ∧ da < x
   · by_cases hB : 0 < db ∧ db < x ∧ da < db
     · obtain ⟨h1, h2⟩ := fl db hdb0 hB.2.1
-      exact Or.inr (Or.inr ⟨hB.1, by linarith, wok_transfer hαa0 hαa hαb0 hαb hdb0 h1 h2
+      exact Or.inr (Or.inr ⟨hB.1, ⟡, wok_transfer hαa0 hαa hαb0 hαb hdb0 h1 h2
         (fun h => by linarith [h.1, hB.2.2]) (fun h => by linarith [h.1]) ⟨hx0, hxL, hxa, hxb,
           ga, gb⟩⟩)
     · obtain ⟨h1, h2⟩ := fl da hda0 hA.2
-      refine Or.inr (Or.inl ⟨hA.1, by linarith, wok_transfer hαa0 hαa hαb0 hαb hda0 h1 h2
+      refine Or.inr (Or.inl ⟨hA.1, ⟡, wok_transfer hαa0 hαa hαb0 hαb hda0 h1 h2
         (fun h => by linarith [h.1]) (fun h => ?_) ⟨hx0, hxL, hxa, hxb, ga, gb⟩⟩)
       exact hB ⟨by linarith [h.1], lt_of_le_of_ne h.2 (Ne.symm hxb), by linarith [h.1]⟩
   · by_cases hB : 0 < db ∧ db < x
     · obtain ⟨h1, h2⟩ := fl db hdb0 hB.2
-      refine Or.inr (Or.inr ⟨hB.1, by linarith, wok_transfer hαa0 hαa hαb0 hαb hdb0 h1 h2
+      refine Or.inr (Or.inr ⟨hB.1, ⟡, wok_transfer hαa0 hαa hαb0 hαb hdb0 h1 h2
         (fun h => ?_) (fun h => by linarith [h.1]) ⟨hx0, hxL, hxa, hxb, ga, gb⟩⟩)
       exact hA ⟨by linarith [h.1], lt_of_le_of_ne h.2 (Ne.symm hxa)⟩
     · refine Or.inl (wok_transfer hαa0 hαa hαb0 hαb le_rfl zero_lt_one hx1 (fun h => ?_)

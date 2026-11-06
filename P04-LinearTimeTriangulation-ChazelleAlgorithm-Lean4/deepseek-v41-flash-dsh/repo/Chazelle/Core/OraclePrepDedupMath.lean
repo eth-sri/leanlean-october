@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepZipSp3
 
 /-!
@@ -41,8 +43,8 @@ theorem dedup_key {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hs : So
   obtain ⟨ha', c2⟩ := c2
   rcases c2 with c2 | c2
   · omega
-  · have e1 := hs a (a' - 1) (by omega) (by omega)
-    have e2 := hs (a' - 1) a' (by omega) ha'
+  · have e1 := hs a (a' - 1) (⋄) (⋄)
+    have e2 := hs (a' - 1) a' (⋄) ha'
     rw [e] at e1
     exact c2 (PLe.antisymm e2 e1).symm
 

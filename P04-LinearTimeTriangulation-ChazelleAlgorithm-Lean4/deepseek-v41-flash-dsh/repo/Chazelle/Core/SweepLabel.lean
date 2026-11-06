@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepAnswer
 
 /-!
@@ -107,7 +109,7 @@ theorem eq_of_ends {M M₂ : Model} (hM : WalkAx M) (hM₂ : WalkAx M₂) {e c :
   have hyc := hend y (hec hy) hyD
   have hconv : Convex ℝ e := by rw [heab]; exact Geometry.segment_convex _ _
   refine Set.Subset.antisymm hec ?_
-  rw [hcab]
+  Ξ hcab
   rcases hqc with rfl | rfl <;> rcases hyc with rfl | rfl
   · exact absurd rfl hqy
   · exact Geometry.segment_subset_of_convex hconv hq hy
@@ -166,21 +168,21 @@ theorem psi_dq {L1 δ d : ℕ} {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
     psi L1 δ ((dq L1 δ d : ℕ) + t) = d + t := by
   unfold psi dq
   by_cases h : d < L1
-  · rw [ite_eq_left h, ite_eq_left]
+  · Ξ ite_eq_left h, ite_eq_left
     have : (d : ℝ) + 1 ≤ L1 := by exact_mod_cast h
     linarith
-  · rw [ite_eq_right h]
+  · Ξ ite_eq_right h
     push_cast
     have hL : (L1 : ℝ) ≤ d := by exact_mod_cast (not_lt.1 h)
     by_cases h1 : (d : ℝ) + δ + t ≤ L1
-    · rw [ite_eq_left h1]
+    · Ξ ite_eq_left h1
       have hδ : (0 : ℝ) ≤ δ := Nat.cast_nonneg _
-      have : (d : ℝ) = L1 := by linarith
+      have : (d : ℝ) = L1 := ⟡
       rw [this]; linarith
-    · rw [ite_eq_right h1]
+    · Ξ ite_eq_right h1
       by_cases h2 : (d : ℝ) + δ + t ≤ L1 + δ
-      · rw [ite_eq_left h2]
-        have : (d : ℝ) = L1 ∧ t = 0 := ⟨by linarith, by linarith⟩
+      · Ξ ite_eq_left h2
+        have : (d : ℝ) = L1 ∧ t = 0 := ⟨⟡, ⟡⟩
         rw [this.1, this.2]; ring
       · rw [ite_eq_right h2]; ring
 
@@ -199,7 +201,7 @@ theorem psi_strict {L1 δ : ℕ} {o o' : ℝ} (h : o < o') (hg : ¬ InGap L1 δ 
   rcases hg with hg | hg <;> (unfold InGap at hg; push Not at hg) <;> split_ifs <;>
     first
     | linarith
-    | (by_contra hc; push Not at hc; have := hg (by linarith); linarith)
+    | (by_contra hc; push Not at hc; have := hg (⟡); linarith)
 
 theorem btw_psi {L1 δ : ℕ} {a b o : ℝ} (ha : ¬ InGap L1 δ a) (hb : ¬ InGap L1 δ b)
     (h : Btw a b o) : Btw (psi L1 δ a) (psi L1 δ b) (psi L1 δ o) := by
@@ -250,7 +252,7 @@ variable {M M₂ : Model} {F S : Set (Set Point)} {g g' L1 L2 δ : ℕ}
 theorem key_mem {W : Polygon} {p : ℕ} (hp : p < W.n) {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
     0 ≤ (p : ℝ) + t ∧ (p : ℝ) + t < W.n := by
   have : (p : ℝ) + 1 ≤ W.n := by exact_mod_cast hp
-  exact ⟨by positivity, by linarith⟩
+  exact ⟨⟢, ⟡⟩
 
 end Corr
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase19
 
 /-!
@@ -34,7 +36,7 @@ theorem sq_le_two_pow (p : ℕ) : (p + 3) ^ 2 ≤ 16 * 2 ^ p := by
   induction p with
   | zero => norm_num
   | succ k ih =>
-    rw [pow_succ 2 k]
+    Ξ pow_succ 2 k
     have h : (k + 1 + 3) ^ 2 ≤ 2 * (k + 3) ^ 2 := by ring_nf; omega
     linarith
 
@@ -44,11 +46,11 @@ theorem gradeGran_succ_le {n g : ℕ} (hn : 2 ≤ n) (hg : g ≤ topGrade n) :
   have h2 := two_pow_le_of_le_top hn hg
   have hp := two_pow_le_of_le_top hn (le_refl (topGrade n))
   have hsq := sq_le_two_pow g
-  have hgp : 2 ^ g ≤ 2 ^ topGrade n := Nat.pow_le_pow_right (by norm_num) hg
+  have hgp : 2 ^ g ≤ 2 ^ topGrade n := Nat.pow_le_pow_right (⊛) hg
   have hcb : Cost.ceilBeta (g + 1) ≤ g + 1 := Cost.ceilBeta_le _
-  have h3 : 2 ^ Cost.ceilBeta (g + 1) ≤ 2 ^ (g + 1) := Nat.pow_le_pow_right (by norm_num) hcb
+  have h3 : 2 ^ Cost.ceilBeta (g + 1) ≤ 2 ^ (g + 1) := Nat.pow_le_pow_right (⊛) hcb
   have hcl : Nat.clog 2 (g + 1) ≤ g + 1 := Nat.clog_le_of_le_pow Nat.lt_two_pow_self.le
-  have h4 : (g + 1) * (Nat.clog 2 (g + 1) + 2) ≤ (g + 3) ^ 2 := by nlinarith
+  have h4 : (g + 1) * (Nat.clog 2 (g + 1) + 2) ≤ (g + 3) ^ 2 := ⊞
   unfold gradeGran fuseLoss
   rw [pow_succ 2 g] at h3
   have hg2 : g ≤ 2 ^ g := Nat.lt_two_pow_self.le

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShearGood
 public import Chazelle.Core.SpecKernels
 
@@ -76,7 +78,7 @@ theorem continuous_pe (L : List ℝ) : Continuous (pe L) := by
 
 /-- `pe (c :: L) 0 = c`. -/
 theorem pe_cons_zero (c : ℝ) (L : List ℝ) : pe (c :: L) 0 = c := by
-  simp [pe]
+  Θ pe
 
 /-- The zero coefficient list gives the zero function. -/
 theorem pe_of_allZero {L : List ℝ} (h : allZero L) (ε : ℝ) : pe L ε = 0 := by
@@ -84,7 +86,7 @@ theorem pe_of_allZero {L : List ℝ} (h : allZero L) (ε : ℝ) : pe L ε = 0 :=
   | nil => rfl
   | cons c L ih =>
     obtain ⟨h1, h2⟩ := h
-    simp [pe, h1, ih h2]
+    Θ pe, h1, ih h2
 
 /-- A lexicographically positive list gives an eventually positive function. -/
 theorem pe_pos_of_lexPos {L : List ℝ} (h : lexPos L) :
@@ -98,7 +100,7 @@ theorem pe_pos_of_lexPos {L : List ℝ} (h : lexPos L) :
           (by rw [pe_cons_zero]; exact h)
       exact nhdsWithin_le_nhds hc
     · filter_upwards [ih h2, self_mem_nhdsWithin] with ε hε hε0
-      simp only [pe, h1, zero_add]
+      ϴ pe, h1, zero_add
       exact mul_pos hε0 hε
 
 /-- A lexicographically negative list gives an eventually negative function. -/
@@ -113,7 +115,7 @@ theorem pe_neg_of_lexNeg {L : List ℝ} (h : lexNeg L) :
           (by rw [pe_cons_zero]; exact h)
       exact nhdsWithin_le_nhds hc
     · filter_upwards [ih h2, self_mem_nhdsWithin] with ε hε hε0
-      simp only [pe, h1, zero_add]
+      ϴ pe, h1, zero_add
       exact mul_neg_of_pos_of_neg hε0 hε
 
 /-- **Eventual sign of a coefficient polynomial**: for all small `ε > 0` the sign of `pe L ε`
@@ -207,8 +209,8 @@ theorem edge_x_mul (u w v : Point) (ε : ℝ) (hne : (w.2 - u.2) + ε * (w.1 - u
       ((w.2 - u.2) + ε * (w.1 - u.1)) =
     u.1 * (w.2 - u.2) + (v.2 - u.2) * (w.1 - u.1) +
       ε * (u.1 * (w.1 - u.1) + (v.1 - u.1) * (w.1 - u.1)) := by
-  have e : (w.2 + ε * w.1) - (u.2 + ε * u.1) = (w.2 - u.2) + ε * (w.1 - u.1) := by ring
-  rw [e]
+  have e : (w.2 + ε * w.1) - (u.2 + ε * u.1) = (w.2 - u.2) + ε * (w.1 - u.1) := ⋆
+  Ξ e
   field_simp
   ring
 
@@ -221,7 +223,7 @@ theorem edgeRep_spec (u w v : Point) :
   have hcont : Continuous fun ε : ℝ => (w.2 - u.2) + ε * (w.1 - u.1) := by fun_prop
   unfold edgeRep
   by_cases h1 : w.2 - u.2 < 0
-  · simp only [h1, ↓reduceIte]
+  · ϴ h1, ↓reduceIte
     have hc : ∀ᶠ ε in 𝓝 (0 : ℝ), (w.2 - u.2) + ε * (w.1 - u.1) < 0 :=
       hcont.continuousAt.eventually_lt continuous_const.continuousAt (by simpa using h1)
     filter_upwards [nhdsWithin_le_nhds hc] with ε hε
@@ -229,9 +231,9 @@ theorem edgeRep_spec (u w v : Point) :
     refine ⟨by dsimp only [Rep.neg]; linarith, ?_, rfl⟩
     dsimp only [Rep.neg]
     linear_combination this
-  simp only [h1, ↓reduceIte]
+  ϴ h1, ↓reduceIte
   by_cases h2 : 0 < w.2 - u.2
-  · simp only [h2, ↓reduceIte]
+  · ϴ h2, ↓reduceIte
     have hc : ∀ᶠ ε in 𝓝 (0 : ℝ), (0 : ℝ) < (w.2 - u.2) + ε * (w.1 - u.1) :=
       continuous_const.continuousAt.eventually_lt hcont.continuousAt (by simpa using h2)
     filter_upwards [nhdsWithin_le_nhds hc] with ε hε
@@ -239,10 +241,10 @@ theorem edgeRep_spec (u w v : Point) :
     refine ⟨hε, ?_, rfl⟩
     dsimp only
     linear_combination (-1 : ℝ) * this
-  simp only [h2, ↓reduceIte]
+  ϴ h2, ↓reduceIte
   have h0 : w.2 - u.2 = 0 := le_antisymm (not_lt.1 h2) (not_lt.1 h1)
   by_cases h3 : w.1 - u.1 < 0
-  · simp only [h3, ↓reduceIte]
+  · ϴ h3, ↓reduceIte
     filter_upwards [self_mem_nhdsWithin] with ε (hε : 0 < ε)
     have hlt : (w.2 - u.2) + ε * (w.1 - u.1) < 0 := by
       rw [h0, zero_add]; exact mul_neg_of_pos_of_neg hε h3
@@ -250,20 +252,20 @@ theorem edgeRep_spec (u w v : Point) :
     refine ⟨by dsimp only [Rep.neg]; linarith, ?_, rfl⟩
     dsimp only [Rep.neg]
     linear_combination this
-  simp only [h3, ↓reduceIte]
+  ϴ h3, ↓reduceIte
   by_cases h4 : 0 < w.1 - u.1
-  · simp only [h4, ↓reduceIte]
+  · ϴ h4, ↓reduceIte
     filter_upwards [self_mem_nhdsWithin] with ε (hε : 0 < ε)
     have hlt : 0 < (w.2 - u.2) + ε * (w.1 - u.1) := by rw [h0, zero_add]; exact mul_pos hε h4
     have := edge_x_mul u w v ε hlt.ne'
     refine ⟨hlt, ?_, rfl⟩
     dsimp only
     linear_combination (-1 : ℝ) * this
-  simp only [h4, ↓reduceIte]
+  ϴ h4, ↓reduceIte
   have h5 : w.1 - u.1 = 0 := le_antisymm (not_lt.1 h4) (not_lt.1 h3)
-  refine Eventually.of_forall fun ε => ⟨by norm_num, ?_, rfl⟩
+  refine Eventually.of_forall fun ε => ⟨⊛, ?_, rfl⟩
   dsimp only
-  rw [h5]
+  Ξ h5
   simp
 
 /-- **Correctness of `symRep`**: for all small `ε > 0`, `symRep P s` represents the symbolic
@@ -330,7 +332,7 @@ def testPoly (op : ℕ) (a b c : Rep) : List ℝ :=
 /-- The value of `pe` on a five-coefficient list. -/
 theorem pe_five (c0 c1 c2 c3 c4 ε : ℝ) :
     pe [c0, c1, c2, c3, c4] ε = c0 + ε * c1 + ε ^ 2 * c2 + ε ^ 3 * c3 + ε ^ 4 * c4 := by
-  simp only [pe]
+  ϴ pe
   ring
 
 /-- Where the representations are correct, `xPoly` is `(x_b - x_a) d_a d_b`. -/
@@ -339,13 +341,13 @@ theorem pe_xPoly {a b : Rep} {p q : Point} {ε : ℝ} (ha : RepOK a p ε) (hb : 
   have e : pe (xPoly a b) ε =
       (b.x0 + ε * b.x1) * (a.d0 + ε * a.d1) - (a.x0 + ε * a.x1) * (b.d0 + ε * b.d1) := by
     rw [xPoly, pe_five]; ring
-  rw [e, ha.2.1, hb.2.1]
+  Ξ e, ha.2.1, hb.2.1
   ring
 
 /-- Where the representations are correct, `yPoly` is `y_b - y_a`. -/
 theorem pe_yPoly {a b : Rep} {p q : Point} {ε : ℝ} (ha : RepOK a p ε) (hb : RepOK b q ε) :
     pe (yPoly a b) ε = q.2 - p.2 := by
-  rw [yPoly, pe_five, ha.2.2, hb.2.2]
+  Ξ yPoly, pe_five, ha.2.2, hb.2.2
   ring
 
 /-- Where the representations are correct, `dPoly` is `det · d_a d_b d_c`. -/
@@ -359,8 +361,8 @@ theorem pe_dPoly {a b c : Rep} {p q r : Point} {ε : ℝ} (ha : RepOK a p ε) (h
         ((c.x0 + ε * c.x1) * (a.d0 + ε * a.d1) - (a.x0 + ε * a.x1) * (c.d0 + ε * c.d1)) *
           ((b.d0 + ε * b.d1) * ((b.y0 + ε * b.y1) - (a.y0 + ε * a.y1))) := by
     rw [dPoly, pe_five]; ring
-  rw [e, ha.2.1, hb.2.1, hc.2.1, ← ha.2.2, ← hb.2.2, ← hc.2.2]
-  simp only [det]
+  Ξ e, ha.2.1, hb.2.1, hc.2.1, ← ha.2.2, ← hb.2.2, ← hc.2.2
+  ϴ det
   ring
 
 /-! ## From the eventual value to the value at `epsOf P` -/
@@ -387,17 +389,17 @@ theorem signTest_iff_pe {a b c : Rep} {p q r : Point} {ε : ℝ} (ha : RepOK a p
   refine ⟨fun hop => ?_, fun hop => ?_⟩
   · match op, hop with
     | 0, _ =>
-      simp only [SignTest, testPoly]
-      rw [pe_xPoly ha hb, mul_pos_iff_of_pos_right hab, sub_pos]
+      ϴ SignTest, testPoly
+      Ξ pe_xPoly ha hb, mul_pos_iff_of_pos_right hab, sub_pos
     | 1, _ =>
-      simp only [SignTest, testPoly]
-      rw [pe_yPoly ha hb, sub_pos]
+      ϴ SignTest, testPoly
+      Ξ pe_yPoly ha hb, sub_pos
     | 2, _ =>
-      simp only [SignTest, testPoly]
-      rw [pe_dPoly ha hb hc, mul_pos_iff_of_pos_right habc]
+      ϴ SignTest, testPoly
+      Ξ pe_dPoly ha hb hc, mul_pos_iff_of_pos_right habc
   · subst hop
-    simp only [SignTest, testPoly]
-    rw [pe_dPoly ha hb hc, mul_eq_zero, or_iff_left habc.ne']
+    ϴ SignTest, testPoly
+    Ξ pe_dPoly ha hb hc, mul_eq_zero, or_iff_left habc.ne'
 
 /-- **The sign tests in `Qof P` are lexicographic sign conditions** on coefficient lists
 computed from `P` (tests `0, 1, 2`: positivity). -/
@@ -413,8 +415,8 @@ theorem signTest_iff_lex (P : Polygon) (hG : ∃ ε, GoodShear P ε) (s₁ s₂ 
   obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hev
   have hδ0 : (0 : ℝ) < δ := hδ
   set ε' := min (δ / 2) (epsOf P)
-  have hε'0 : 0 < ε' := lt_min (by linarith) hε0
-  have hε'δ : ε' < δ := lt_of_le_of_lt (min_le_left _ _) (by linarith)
+  have hε'0 : 0 < ε' := lt_min (⟡) hε0
+  have hε'δ : ε' < δ := lt_of_le_of_lt (min_le_left _ _) (⟡)
   obtain ⟨⟨r1, r2⟩, r3, hl⟩ := hsub (show ε' ∈ Ioo 0 δ from ⟨hε'0, hε'δ⟩)
   have hSF := hstab ε' hε'0 (min_le_right _ _) s₁ s₂ s₃ h₁ h₂ h₃
   have hT := signTest_congr hSF op

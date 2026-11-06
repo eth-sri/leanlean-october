@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTPos
 
 /-!
@@ -83,7 +85,7 @@ theorem mem_F_iff {M : Model} {Q : Polygon} {c : Set Point} (hc : c ∈ N.F M Q)
   obtain ⟨i, hi, rfl⟩ := List.getElem_of_mem hrr
   refine ⟨i, hi, ?_⟩
   unfold NF.chord
-  rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
+  Ξ List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some
 
 /-- The ends of the chord records are proper positions. -/
 theorem chord_proper {M : Model} (hNF : IsNF M (Qof P) N) {i : ℕ} (hi : i < N.nChords) :
@@ -174,7 +176,7 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
   obtain ⟨i₀, hi₀⟩ : ∃ i, i ∈ (N.region r).chords := by
     rcases hl : (N.region r).chords with _ | ⟨a, l⟩
     · exact absurd hl hex
-    · exact ⟨a, by simp⟩
+    · exact ⟨a, ✓⟩
   have hne : (N.F M Q).Nonempty := by
     have := (((hregsOK r hr).1 i₀).1 hi₀).1
     exact ⟨_, chord_toSet_mem' this⟩
@@ -193,7 +195,7 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
     obtain ⟨j, hj, ha, hb⟩ := listed a b hab
     exact Or.inl ⟨j, hj, by rw [ha, hb]; exact hin⟩
   · -- at a walk vertex
-    have h0 : M.param Q x = 0 := ht0.symm
+    have h0 := ht0.symm
     have hkx : M.key Q x = (x.edge : ℝ) + 0 := by unfold Model.key; rw [h0]
     rw [hpos, h0] at hdom hadm hnF hsub
     have hL' := hL
@@ -226,9 +228,9 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
     · obtain ⟨j, hj, ha, hb⟩ := listed a b hab
       exact Or.inl ⟨j, hj, by rw [ha, hb, hkx]; exact hin⟩
     · obtain ⟨j, hj, ha, -⟩ := listed _ b hab
-      exact Or.inr ⟨h0, Or.inl ⟨⟨j, hj, by rw [ha, hkx]⟩, hcr⟩, hcl⟩
+      exact Or.inr ⟨h0, Or.inl ⟨⟨j, hj, Ρ ha, hkx⟩, hcr⟩, hcl⟩
     · obtain ⟨j, hj, -, hb⟩ := listed a _ hab
-      exact Or.inr ⟨h0, Or.inr ⟨⟨j, hj, by rw [hb, hkx]⟩, hcr⟩, hcl⟩
+      exact Or.inr ⟨h0, Or.inr ⟨⟨j, hj, Ρ hb, hkx⟩, hcr⟩, hcl⟩
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFVert
 public import Chazelle.Core.RestoreKind0
 
@@ -62,28 +64,28 @@ theorem vTest_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have r19 : c.nreg 81019 = c₀.nreg 81019 := hI.hin _ (by unfold FFix; omega)
   by_cases h1 : c.nreg 81071 < c.nreg 81021
   · refine (FRS.ifT h1 (FRS.skip (K := 0) hI ⟨hw, fun _ _ _ _ => rfl, id,
-      fun reg _ _ hs _ _ _ => ?_⟩)).mono (by omega) (fun _ h => h)
+      fun reg _ _ hs _ _ _ => ?_⟩)).mono (⋄) (fun _ h => h)
     have := (hE.hvc _ hv hs).1
     omega
-  refine (FRS.ifF h1 ?_).mono (K := tvK E + 4) (by omega) (fun _ h => h)
+  refine (FRS.ifF h1 ?_).mono (K := tvK E + 4) (⋄) (fun _ h => h)
   by_cases h2 : c.nreg 81019 < c.nreg 81071
   · refine (FRS.ifT h2 (FRS.skip (K := 0) hI ⟨hw, fun _ _ _ _ => rfl, id,
-      fun reg _ _ hs _ _ _ => ?_⟩)).mono (by omega) (fun _ h => h)
+      fun reg _ _ hs _ _ _ => ?_⟩)).mono (⋄) (fun _ h => h)
     have := (hE.hvc _ hv hs).2
     omega
-  refine (FRS.ifF h2 ?_).mono (K := tvK E + 2) (by omega) (fun _ h => h)
-  refine (tVert_fs hE hB hBT hI hw hv (hE.hvr _ hv (by omega) (by omega)) hroom).mono le_rfl
+  refine (FRS.ifF h2 ?_).mono (K := tvK E + 2) (⋄) (fun _ h => h)
+  refine (tVert_fs hE hB hBT hI hw hv (hE.hvr _ hv (⋄) (⋄)) hroom).mono le_rfl
     (fun c' ⟨h1', h2', h3', h4'⟩ => ⟨h1', h2', h3', fun reg hr hch _ => h4' reg hr hch⟩)
 
 theorem mod_step {n a : ℕ} (hn : 0 < n) :
     (if a % n + 1 < n then a % n + 1 else 0) = (a + 1) % n := by
   have hlt := Nat.mod_lt a hn
   have e := WalkEmbed.mod_succ_mod n a 0
-  simp only [Nat.add_zero] at e
+  ϴ' Nat.add_zero at e
   split_ifs with h
-  · rw [← e, Nat.mod_eq_of_lt h]
-  · have : a % n + 1 = n := by omega
-    rw [← e, this, Nat.mod_self]
+  · Ξ ← e, Nat.mod_eq_of_lt h
+  · have : a % n + 1 = n := ⋄
+    Ξ ← e, this, Nat.mod_self
 
 /-- **A light piece** as a run step of the search. -/
 theorem kind0_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)

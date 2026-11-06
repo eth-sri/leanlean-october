@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Jordan.Jordan
 public import Chazelle.Programs.RayScanSpec
 public import Mathlib.Topology.Homeomorph.Lemmas
@@ -49,20 +51,20 @@ open Chazelle.Jordan
 def transpose (P : Polygon) : Polygon := ⟨P.vertices.map Prod.swap⟩
 
 @[simp] theorem transpose_n (P : Polygon) : (transpose P).n = P.n := by
-  simp [transpose, Polygon.n]
+  Θ transpose, Polygon.n
 
 @[simp] theorem transpose_vtx (P : Polygon) (i : ℕ) : (transpose P).vtx i = (P.vtx i).swap := by
-  simp only [transpose, Polygon.vtx, List.getD_eq_getElem?_getD, List.getElem?_map]
+  ϴ transpose, Polygon.vtx, List.getD_eq_getElem?_getD, List.getElem?_map
   rcases P.vertices[i]? with _ | p <;> rfl
 
 @[simp] theorem transpose_transpose (P : Polygon) : transpose (transpose P) = P := by
-  simp [transpose, List.map_map]
+  Θ transpose, List.map_map
 
 /-- Swapping the coordinates of both endpoints transports a segment. -/
 theorem segment_swap (a b : Point) :
     Chazelle.segment a.swap b.swap = Prod.swap ⁻¹' Chazelle.segment a b := by
   ext p
-  simp only [Chazelle.segment, mem_ofPred_eq, mem_preimage, Prod.swap, Geometry.point_ext_iff]
+  ϴ Chazelle.segment, mem_ofPred_eq, mem_preimage, Prod.swap, Geometry.point_ext_iff
   constructor
   · rintro ⟨t, h0, h1, h⟩
     exact ⟨t, h0, h1, h.2, h.1⟩
@@ -71,17 +73,17 @@ theorem segment_swap (a b : Point) :
 
 theorem transpose_edge (P : Polygon) (i : ℕ) :
     (transpose P).edge i = Prod.swap ⁻¹' P.edge i := by
-  simp only [Polygon.edge, transpose_n, transpose_vtx, segment_swap]
+  ϴ Polygon.edge, transpose_n, transpose_vtx, segment_swap
 
 /-- The boundary of the transpose is the transposed boundary. -/
 theorem transpose_boundary (P : Polygon) : (transpose P).boundary = Prod.swap ⁻¹' P.boundary := by
   ext p
-  simp only [Polygon.boundary, mem_ofPred_eq, mem_preimage, transpose_n, transpose_edge]
+  ϴ Polygon.boundary, mem_ofPred_eq, mem_preimage, transpose_n, transpose_edge
 
 theorem transpose_commonEndpoints (P : Polygon) (i j : ℕ) :
     (transpose P).commonEndpoints i j = Prod.swap ⁻¹' P.commonEndpoints i j := by
   ext p
-  simp only [Polygon.commonEndpoints, mem_ofPred_eq, mem_preimage, transpose_n, transpose_vtx]
+  ϴ Polygon.commonEndpoints, mem_ofPred_eq, mem_preimage, transpose_n, transpose_vtx
   constructor
   · rintro ⟨h1, h2⟩
     refine ⟨?_, ?_⟩
@@ -132,10 +134,10 @@ theorem connectedComponentIn_swap (S : Set Point) (z : Point) :
     have hcoe : ⇑swapHomeo = Prod.swap := rfl
     rw [hcoe, swap_image_eq_preimage, swap_image_eq_preimage, preimage_preimage] at this
     simp only [Prod.swap_swap, preimage_id'] at this
-    rw [← this, preimage_preimage]
+    Ξ ← this, preimage_preimage
     simp
   · have hz' : z.swap ∉ S := hz
-    rw [connectedComponentIn_eq_empty hz, connectedComponentIn_eq_empty hz']
+    Ξ connectedComponentIn_eq_empty hz, connectedComponentIn_eq_empty hz'
     simp
 
 /-- Boundedness is invariant under transposition. -/
@@ -153,8 +155,8 @@ theorem isBoundedSet_swap_iff (S : Set Point) : IsBoundedSet (Prod.swap ⁻¹' S
 /-- The filled region of the transpose is the transposed filled region. -/
 theorem transpose_filled (P : Polygon) : (transpose P).filled = Prod.swap ⁻¹' P.filled := by
   ext p
-  simp only [Polygon.filled, transpose_boundary, mem_union, mem_preimage, mem_ofPred_eq]
-  rw [← preimage_compl, connectedComponentIn_swap, isBoundedSet_swap_iff]
+  ϴ Polygon.filled, transpose_boundary, mem_union, mem_preimage, mem_ofPred_eq
+  Ξ ← preimage_compl, connectedComponentIn_swap, isBoundedSet_swap_iff
 
 theorem mem_transpose_filled_iff (P : Polygon) (p : Point) :
     p ∈ (transpose P).filled ↔ p.swap ∈ P.filled := by
@@ -174,7 +176,7 @@ def rayPt (p : Point) (σ t : ℝ) : Point := (p.1 + σ * t, p.2)
 @[simp] theorem rayPt_fst (p : Point) (σ t : ℝ) : (rayPt p σ t).1 = p.1 + σ * t := rfl
 @[simp] theorem rayPt_snd (p : Point) (σ t : ℝ) : (rayPt p σ t).2 = p.2 := rfl
 @[simp] theorem rayPt_zero (p : Point) (σ : ℝ) : rayPt p σ 0 = p := by
-  simp [rayPt]
+  Θ rayPt
 
 theorem continuous_rayPt (p : Point) (σ : ℝ) : Continuous (rayPt p σ) := by
   unfold rayPt; fun_prop
@@ -183,7 +185,7 @@ theorem rayPt_injective (p : Point) {σ : ℝ} (hσ : σ ≠ 0) : Function.Injec
   intro s t h
   have := congrArg Prod.fst h
   simp only [rayPt_fst] at this
-  exact mul_left_cancel₀ hσ (by linarith)
+  exact mul_left_cancel₀ hσ (⟡)
 
 /-- The parameters `t > 0` at which the ray meets the boundary. -/
 def hitSet (P : Polygon) (p : Point) (σ : ℝ) : Set ℝ :=
@@ -208,7 +210,7 @@ theorem rayPt_mem_interior_of_isPreconnected {P : Polygon} (hP : P.Simple) {p : 
     rintro _ ⟨s, hs, rfl⟩; exact hIb s hs
   have hpar := parity_eq_of_isPreconnected P himg hsub (mem_image_of_mem _ ht₀) (mem_image_of_mem _ ht)
   refine ⟨?_, hIb t ht⟩
-  rw [mem_filled_iff hP (hIb t ht), ← hpar, ← mem_filled_iff hP hint.2]
+  Ξ mem_filled_iff hP (hIb t ht), ← hpar, ← mem_filled_iff hP hint.2
   exact hint.1
 
 /-- If the open ray never met the boundary it would be an unbounded connected subset of the
@@ -230,7 +232,7 @@ theorem hitSet_nonempty {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ} (h�
   have hs : t₀ + s ∈ Ioi (0 : ℝ) := by simp only [mem_Ioi]; linarith
   have h3 := (hR _ (hall _ hs).1).1
   simp only [rayPt_fst] at h3
-  have : p.1 + σ * (t₀ + s) = p.1 + σ * t₀ + s * σ := by ring
+  have : p.1 + σ * (t₀ + s) = p.1 + σ * t₀ + s * σ := ⋆
   rw [this] at h3
   exact absurd h3 (not_le.2 hRs)
 
@@ -241,7 +243,7 @@ theorem hit_of_initial {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ} (hσ
     {t₀ : ℝ} (ht₀ : 0 < t₀) (hint : ∀ t, 0 < t → t < t₀ → rayPt p σ t ∈ P.filled \ P.boundary) :
     t₀ ≤ hitParam P p σ ∧ rayPt p σ (hitParam P p σ) ∈ P.boundary ∧
       ∀ t, 0 < t → t < hitParam P p σ → rayPt p σ t ∈ P.filled \ P.boundary := by
-  have hmid : rayPt p σ (t₀ / 2) ∈ P.filled \ P.boundary := hint _ (by linarith) (by linarith)
+  have hmid : rayPt p σ (t₀ / 2) ∈ P.filled \ P.boundary := hint _ (⟡) (⟡)
   have hne := hitSet_nonempty hP hσ (by linarith : 0 < t₀ / 2) hmid
   -- every hit parameter is `≥ t₀`
   have hge : ∀ t ∈ hitSet P p σ, t₀ ≤ t := by
@@ -256,7 +258,7 @@ theorem hit_of_initial {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ} (hσ
     · intro ht; exact ⟨hge t ht, ht.2⟩
     · intro ht; exact ⟨lt_of_lt_of_le ht₀ ht.1, ht.2⟩
   have hclosed : IsClosed (hitSet P p σ) := by
-    rw [hset]
+    Ξ hset
     exact (isClosed_Ici).inter ((isClosed_boundary P).preimage (continuous_rayPt p σ))
   have h2 : rayPt p σ (hitParam P p σ) ∈ P.boundary :=
     (hclosed.csInf_mem hne (hitSet_bddBelow P p σ)).2
@@ -265,7 +267,7 @@ theorem hit_of_initial {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ} (hσ
     intro t ht hmem
     have : t ∈ hitSet P p σ := ⟨ht.1, hmem⟩
     exact absurd (csInf_le (hitSet_bddBelow P p σ) this) (not_le.2 ht.2)
-  have hmid' : t₀ / 2 ∈ Ioo (0 : ℝ) (hitParam P p σ) := ⟨by linarith, by linarith⟩
+  have hmid' : t₀ / 2 ∈ Ioo (0 : ℝ) (hitParam P p σ) := ⟨⟡, ⟡⟩
   exact fun t ht1 ht2 =>
     rayPt_mem_interior_of_isPreconnected hP isPreconnected_Ioo hIb hmid' hmid t ⟨ht1, ht2⟩
 
@@ -295,7 +297,7 @@ theorem exists_initial_interior {P : Polygon} (hP : P.Simple) {q : Point}
   have := hcont.preimage_mem_nhds hmem
   obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.1 this
   refine ⟨ε, hε, fun t ht1 ht2 => hball ?_⟩
-  rw [Metric.mem_ball, Real.dist_eq, sub_zero, abs_of_pos ht1]
+  Ξ Metric.mem_ball, Real.dist_eq, sub_zero, abs_of_pos ht1
   exact ht2
 
 /-! ### The interior-point specialisations -/
@@ -307,10 +309,10 @@ noncomputable def rightHitParam (P : Polygon) (q : Point) : ℝ := hitParam P q 
 noncomputable def leftHitParam (P : Polygon) (q : Point) : ℝ := hitParam P q (-1)
 
 theorem rayPt_one (q : Point) (t : ℝ) : rayPt q 1 t = (q.1 + t, q.2) := by
-  simp [rayPt]
+  Θ rayPt
 
 theorem rayPt_neg_one (q : Point) (t : ℝ) : rayPt q (-1) t = (q.1 - t, q.2) := by
-  simp [rayPt, sub_eq_add_neg]
+  Θ rayPt, sub_eq_add_neg
 
 /-- The full first-hit package for the right ray from an interior point. -/
 theorem rightHit_spec {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ P.filled \ P.boundary) :

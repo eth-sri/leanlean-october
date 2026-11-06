@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFEndP
 public import Chazelle.Core.RestoreFWit
 public import Chazelle.Core.RestoreFSide

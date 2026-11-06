@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase7
 
 /-!
@@ -70,7 +72,7 @@ theorem nfU_brute {sB sL sG : Stmt} {κB : ℕ}
       (∀ r, bandOf r ∉ pkgBands → c'.rreg r = c.rreg r) := by
   obtain ⟨c', k, e, hk, hw', a1, a2, hpost, m1, m2, o, fr, frr⟩ :=
     bruteCall_exec hB hG hWh hw h16 h17 h11 hl hsl hγ hlγ hbud
-  exact ⟨c', k + 1, .ifLtN_true (by rw [h07, h37]; exact hg) e, by omega, hw', a1, by omega,
+  exact ⟨c', k + 1, .ifLtN_true (by rw [h07, h37]; exact hg) e, ⋄, hw', a1, ⋄,
     hpost, m1, m2, o, fun r h1 _ h3 _ h5 => fr r (not_brute_of h1) h3 h5,
     fun r h1 => frr r (not_brute_of h1)⟩
 
@@ -107,7 +109,7 @@ theorem nfU_l41 {O : OracleIface} {sB sL sG : Stmt} {κL : ℕ}
   obtain ⟨c', k, e, hk, hw', a1, a2, hpost, m1, m2, o, fr, frr⟩ :=
     l41Call_exec hL hG hWh hw h05 h16 h17 h07 hX hgΛ h7 hsl hl1 hl2 hbud
   exact ⟨c', k + 1 + 2, .ifLtN_false (by rw [h07, h37]; omega)
-      (.ifLtN_true (by rw [h19, h17]; exact hl1) e), by omega, hw', a1, by omega,
+      (.ifLtN_true (by rw [h19, h17]; exact hl1) e), ⋄, hw', a1, ⋄,
     hpost, m1, m2, o, fun r h1 _ h3 _ h5 => fr r (not_l41_of h1) h3 h5,
     fun r h1 => frr r (not_l41_of h1)⟩
 

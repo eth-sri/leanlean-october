@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepLabelGap
 public import Chazelle.Core.FuseMath
 
@@ -90,7 +92,7 @@ theorem pos_eq_vertex (hP : C.P.Simple) (β : Bool) {p : ℕ} (hp : p < (C.sideW
             (1 - t) := by
           apply Geometry.point_ext <;> simp [Geometry.lerp] <;> ring
         rw [e] at h
-        exact C.sideOpen_ne_vertex hP ⟨by linarith, by linarith⟩ h
+        exact C.sideOpen_ne_vertex hP ⟨⟡, by linarith⟩ h
     · refine ⟨rfl, i, hi, rfl, ?_⟩
       rw [Chazelle.Chain.sidePt_zero, C.sideWalk_vtx_tour β hi] at h
       exact C.sideVertex_inj hP (C.sideIdx_le β i) hk h
@@ -127,7 +129,7 @@ theorem off_vertex0 (hP : C.P.Simple) {p : ℕ} (hp : p < (chainModel C).W.n) {t
   have hn := cm_n C
   have hτ := tpos_lt C 0
   have hm := C.two_m_pos
-  rw [off_key' (by rw [hn]; omega) hp le_rfl zero_lt_one, add_zero]
+  Ξ off_key' (by rw [hn]; omega) hp le_rfl zero_lt_one, add_zero
   have h0 : (bS C + i) % (2 * C.m) = 0 := by
     rw [Chain.sideIdx_eq] at hidx
     unfold Chain.sideE at hidx
@@ -135,9 +137,9 @@ theorem off_vertex0 (hP : C.P.Simple) {p : ℕ} (hp : p < (chainModel C).W.n) {t
     split_ifs at hidx
     · exact hidx
     · omega
-  have := vertex0_arith (m := C.m) (b := bS C) (i := i) (by omega) (bS_le C) hi h0
+  have := vertex0_arith (m := C.m) (b := bS C) (i := i) (⋄) (bS_le C) hi h0
   unfold dOf
-  rw [hn]
+  Ξ hn
   unfold tpos
   rcases this with h | ⟨h1, h2⟩
   · left; rw [h]; simp

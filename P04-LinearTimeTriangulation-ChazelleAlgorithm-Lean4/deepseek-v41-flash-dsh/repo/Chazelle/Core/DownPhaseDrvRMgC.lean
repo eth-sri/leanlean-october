@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRMgB
 public import Chazelle.Core.DownPhaseDrvRInv
 
@@ -57,22 +61,22 @@ def mgCostV (κ F G H : ℕ → ℕ) (D x y γ M : ℕ) : ℕ :=
 /-- The bands of a merge step. -/
 def mgBands : Finset ℕ := insert bDownDrv (mergeBands ∪ oracleBands)
 
-theorem mgBands_subset : mgBands ⊆ drvBands := by decide
+theorem mgBands_subset : mgBands ⊆ drvBands := ⌖
 
 /-- The registers `mgDesc` writes. -/
 def Bdesc (r : ℕ) : Bool := decide (r = 219126 ∨ r = 219127 ∨ r = 219137 ∨ r = 9999)
 
-theorem wrM_mgDesc : wrM Bdesc mgDesc = true := by decide
+theorem wrM_mgDesc : wrM Bdesc mgDesc = true := ⌖
 
 /-- The registers `mgArgs` writes. -/
 def Bargs (r : ℕ) : Bool := decide (100000 ≤ r ∧ r ≤ 100009)
 
-theorem wr_mgArgs : wr Bargs mgArgs = true := by decide
+theorem wr_mgArgs : wr Bargs mgArgs = true := ⌖
 
 /-- The registers `mgOut` writes. -/
 def Bout (r : ℕ) : Bool := decide (219110 ≤ r ∧ r ≤ 219113)
 
-theorem wr_mgOut : wr Bout mgOut = true := by decide
+theorem wr_mgOut : wr Bout mgOut = true := ⌖
 
 section exec
 
@@ -93,15 +97,15 @@ theorem mgDesc_exec (c : Config) (hw : WordsBounded W c) {A HB ma mp : ℕ}
   exec_block
   all_goals try (config_simp; (try simp only [a40, a41, a46, a00, a12, a16, aA]); omega)
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · config_simp; simp only [aA]
-  · config_simp; simp only [aA, a46]
+  · config_simp; ϴ aA
+  · config_simp; ϴ aA, a46
   · config_simp; simp only [aA, a41, a40, Machine.upd_apply]; split_ifs <;> omega
   · config_simp; simp only [aA, a41, a40, a00, Machine.upd_apply]; split_ifs <;> omega
   · config_simp; simp only [aA, a41, a40, a00, Machine.upd_apply]; split_ifs <;> omega
   · config_simp; simp only [aA, a41, a40, a00, a12, a16, Machine.upd_apply]; split_ifs <;> omega
   · config_simp; simp only [aA, a41, a40, a00, a12, a16, Machine.upd_apply]; split_ifs <;> omega
   · config_simp; simp only [aA, a41, a40, a00, a12, a16, Machine.upd_apply]; split_ifs <;> omega
-  · intro a ha; config_simp; simp only [aA, a41, Machine.upd_apply]
+  · intro a ha; config_simp; ϴ aA, a41, Machine.upd_apply
     split_ifs <;> first | rfl | omega
   · config_simp
   · config_simp
@@ -132,7 +136,7 @@ theorem mgOut_exec (c : Config) (hw : WordsBounded W c) {A ma mp γ : ℕ}
   all_goals try (config_simp; (try simp only [b37, b12, b16, b13, b41]); omega)
   refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> (try simp only [b37, b12, b16, b13, b41])
 
-set_option maxHeartbeats 8000000 in
+
 /-- **One merge step**: the union of the accumulated chain `C₁ = ⟨H.poly Q, 0, m₁⟩` (descriptor
 at `r219110 + 1`, normal form at `r219111`, granularity `≤ r219113`) and the next piece `C₂`
 (at `r219114 + 1`, `r219115`, `r219116` edges): a model descriptor of the union at the
@@ -186,8 +190,8 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
   set D2 := c.nreg 219114 with hD2
   set f1 := c.nreg 219111 with hf1
   set f2 := c.nreg 219115 with hf2
-  have hP1 : C1.P = H.poly (Qof P) := hd1.holds.2.2.1
-  have hP2 : C2.P = H.poly (Qof P) := hd2.holds.2.2.1
+  have hP1 := hd1.holds.2.2.1
+  have hP2 := hd2.holds.2.2.1
   have hC1n : C1.P.n = NP := by rw [hP1, DownMath.host_poly_n, hQn, hNP]
   have hlen' : ma + C2.m + 1 ≤ NP := by rw [← hC1n, ← hm1]; exact hlen
   have hNW : NP ≤ 64 * P.n := by
@@ -199,8 +203,8 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
   obtain ⟨c₁, k₁, e₁, hk₁, t38, t39, g₁⟩ := mgTop_exec hG hWn c hw hK h00 h01 h07 h12 hHA.holds
     hwf hHok (by omega) hNP hd1.holds.2 hd2.holds.2 hs1 hm1 hs2 hlen' (by omega) (by omega)
   have hw₁ := e₁.wb_right
-  have u : ∀ r, Btop r = false → c₁.nreg r = c.nreg r := g₁.1
-  have hm₁ : c₁.nmem = c.nmem := g₁.2.2.1
+  have u := g₁.1
+  have hm₁ := g₁.2.2.1
   -- the descriptor of the union
   have a40 : c₁.nreg 219140 = 0 := by rw [u _ (by decide), hK.r40]
   have a41 : c₁.nreg 219141 = 1 := by rw [u _ (by decide), hK.r41]
@@ -278,8 +282,8 @@ theorem mgStep_exec {sM : Stmt} {κ F G Hf : ℕ → ℕ} {X : MemCtx}
       (by rw [show rd c₃ bMerge 7 = D from r7]; exact hfd)
   have hmc : mergeCost κ F G Hf c₃ =
       mgCostV κ F G Hf D N1.chords.length N2.chords.length γ (ma + mp) := by
-    have x1 : c₃.nmem f1 = N1.chords.length := hN1₃.nfAt.1
-    have x2 : c₃.nmem f2 = N2.chords.length := hN2₃.nfAt.1
+    have x1 := hN1₃.nfAt.1
+    have x2 := hN2₃.nfAt.1
     have x3 : c₃.nmem (A₀ + 1 + 2) = ma + mp := by
       rw [m₃, show A₀ + 1 + 2 = A₀ + 3 by omega]; exact w3
     unfold mergeCost mgCostV

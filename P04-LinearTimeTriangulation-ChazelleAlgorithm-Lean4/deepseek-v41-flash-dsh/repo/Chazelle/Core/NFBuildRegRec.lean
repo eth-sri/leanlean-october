@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildRegCnt
 public import Chazelle.Core.SortRam
 
@@ -28,8 +30,8 @@ def offF (cA cC : ℕ → ℕ) (r : ℕ) : ℕ := ((List.range r).map fun r' => 
 
 theorem offF_succ (cA cC : ℕ → ℕ) (r : ℕ) : offF cA cC (r + 1) = offF cA cC r + cA r + cC r := by
   unfold offF
-  rw [List.range_succ, List.map_append, List.sum_append]
-  simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+  Ξ List.range_succ, List.map_append, List.sum_append
+  ϴ List.map_cons, List.map_nil, List.sum_cons, List.sum_nil
   try omega
 
 theorem offF_mono (cA cC : ℕ → ℕ) {r r' : ℕ} (h : r ≤ r') : offF cA cC r ≤ offF cA cC r' := by
@@ -134,7 +136,7 @@ def regRecLoop : Stmt :=
 /-- The registers `regRecLoop` writes. -/
 def BregRec (r : ℕ) : Bool := decide (r = 43201) || decide (43210 ≤ r ∧ r < 43218)
 
-theorem wr_regRecLoop : wrM BregRec regRecLoop = true := by decide
+theorem wr_regRecLoop : wrM BregRec regRecLoop = true := ⌖
 
 section exec
 

@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMathHost
 
 /-!
@@ -45,13 +49,13 @@ theorem two_chords_vertex (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily 
   have ht : t ∈ Ioo (0 : ℝ) 1 := ⟨lt_of_le_of_ne hA.2.1 (Ne.symm ht0), hA.2.2.1⟩
   have hWs : I.W.Simple := (FactsInterior.interiorWalk_spec hQ).1
   have hn3 : 3 ≤ I.W.n := Chazelle.Jordan.simple_three_le hWs
-  have hp : p < I.W.n := hA.1
+  have hp := hA.1
   have hne : I.W.vtx p ≠ I.W.vtx ((p + 1) % I.W.n) := by
     intro h
-    have := Chazelle.Jordan.simple_vtx_inj hWs hp (Nat.mod_lt _ (by omega)) h
+    have := Chazelle.Jordan.simple_vtx_inj hWs hp (Nat.mod_lt _ (⋄)) h
     by_cases h1 : p + 1 < I.W.n
-    · rw [Nat.mod_eq_of_lt h1] at this; omega
-    · rw [show p + 1 = I.W.n by omega, Nat.mod_self] at this; omega
+    · Ξ' Nat.mod_eq_of_lt h1 at this; omega
+    · Ξ' show p + 1 = I.W.n by omega, Nat.mod_self at this; omega
   set y := sidePt I.W p t with hy
   have hyD : y ∉ I.D := hM.trace p hp t hA.2.1 hA.2.2.1.le
   obtain ⟨Y, a, b, hch, rfl⟩ := hF hc
@@ -77,7 +81,7 @@ theorem two_chords_vertex (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily 
   have hba' := hch'.lt
   have hε0 : 0 < ε := by
     have : 0 < min (min r r') (min (b - a) (b' - a')) :=
-      lt_min (lt_min hr hr') (lt_min (by linarith) (by linarith))
+      lt_min (lt_min hr hr') (lt_min (⟡) (⟡))
     linarith
   have hεr : ε < r := by
     have := min_le_left (min r r') (min (b - a) (b' - a'))
@@ -95,15 +99,15 @@ theorem two_chords_vertex (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily 
   set zp : Point := (y.1 + ε, Y) with hzp
   set zm : Point := (y.1 - ε, Y) with hzm
   have hdp : dist zp y = ε := by
-    rw [Prod.dist_eq]
-    simp [hzp, hyc.1, abs_of_pos hε0, hε0.le]
+    Ξ Prod.dist_eq
+    Θ hzp, hyc.1, abs_of_pos hε0, hε0.le
   have hdm : dist zm y = ε := by
-    rw [Prod.dist_eq]
-    simp [hzm, hyc.1, abs_of_pos hε0, hε0.le]
+    Ξ Prod.dist_eq
+    Θ hzm, hyc.1, abs_of_pos hε0, hε0.le
   have hzpy : zp ≠ y := by
-    intro h; have := congrArg Prod.fst h; simp [hzp] at this; linarith
+    intro h; have := congrArg Prod.fst h; Θ' hzp at this; linarith
   have hzmy : zm ≠ y := by
-    intro h; have := congrArg Prod.fst h; simp [hzm] at this; linarith
+    intro h; have := congrArg Prod.fst h; Θ' hzm at this; linarith
   -- the determinant of the edge at `y ± ε`
   have hdet0 : det (I.W.vtx p) (I.W.vtx ((p + 1) % I.W.n)) y = 0 := by
     rw [hy]; unfold sidePt det Geometry.lerp; simp only; ring
@@ -111,26 +115,26 @@ theorem two_chords_vertex (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily 
       det (I.W.vtx p) (I.W.vtx ((p + 1) % I.W.n)) zm =
         2 * det (I.W.vtx p) (I.W.vtx ((p + 1) % I.W.n)) y := by
     rw [hyY]; unfold det; simp only [hzp, hzm]; ring
-  rw [hdet0] at hsum
+  Ξ' hdet0 at hsum
   have hleft : ∀ {z : Point}, sideLeft I.W p t z → 0 < det (I.W.vtx p) (I.W.vtx ((p + 1) % I.W.n)) z :=
     fun h => (Chazelle.Chain.sideLeft_edge hne ht _).1 h
   have hcommon : ∀ z, z ∈ Visibility.hseg Y a b → z ∈ Visibility.hseg Y a' b' → z ∈ I.D → False :=
     fun z hz hz' hzD => chord_disj hM hF hfin hc hc' hcc hz hz' hzD
   rcases hend hch hyc with e1 | e1 <;> rcases hend hch' hyc' with e2 | e2
   · -- both to the right
-    apply hcommon zp ⟨rfl, by linarith, by linarith⟩ ⟨rfl, by linarith, by linarith⟩
-    exact hch.open_mem _ (by linarith) (by linarith)
+    apply hcommon zp ⟨rfl, ⟡, ⟡⟩ ⟨rfl, ⟡, ⟡⟩
+    exact hch.open_mem _ (⟡) (⟡)
   · -- `c` to the right, `c'` to the left
-    have h1 := hleft (hsec zp ⟨rfl, by linarith, by linarith⟩ hzpy (by rw [hdp]; exact hεr))
-    have h2 := hleft (hsec' zm ⟨rfl, by linarith, by linarith⟩ hzmy (by rw [hdm]; exact hεr'))
+    have h1 := hleft (hsec zp ⟨rfl, ⟡, ⟡⟩ hzpy (by rw [hdp]; exact hεr))
+    have h2 := hleft (hsec' zm ⟨rfl, ⟡, ⟡⟩ hzmy (by rw [hdm]; exact hεr'))
     linarith
   · -- `c` to the left, `c'` to the right
-    have h1 := hleft (hsec zm ⟨rfl, by linarith, by linarith⟩ hzmy (by rw [hdm]; exact hεr))
-    have h2 := hleft (hsec' zp ⟨rfl, by linarith, by linarith⟩ hzpy (by rw [hdp]; exact hεr'))
+    have h1 := hleft (hsec zm ⟨rfl, ⟡, ⟡⟩ hzmy (by rw [hdm]; exact hεr))
+    have h2 := hleft (hsec' zp ⟨rfl, ⟡, ⟡⟩ hzpy (by rw [hdp]; exact hεr'))
     linarith
   · -- both to the left
-    apply hcommon zm ⟨rfl, by linarith, by linarith⟩ ⟨rfl, by linarith, by linarith⟩
-    exact hch.open_mem _ (by linarith) (by linarith)
+    apply hcommon zm ⟨rfl, ⟡, ⟡⟩ ⟨rfl, ⟡, ⟡⟩
+    exact hch.open_mem _ (⟡) (⟡)
 
 /-- Attachment points of a chord of `S` are at the height of the chord. -/
 theorem attach_height (hFam : (interiorModel Q).ChordFamily Q S) {c : Set Point} (hc : c ∈ S)
@@ -145,7 +149,7 @@ theorem walk_distinct (hdh : DistinctHeights Q) {k k' : ℕ} (hk : k < Q.n) (hk'
     (h : ((interiorWalk Q).vtx k).2 = ((interiorWalk Q).vtx k').2) : k = k' := by
   classical
   have hli : decide (Mountain.LeftInside Q) = true ↔ Mountain.LeftInside Q := decide_eq_true_iff
-  rw [walk_vtx hli hk, walk_vtx hli hk'] at h
+  Ξ' walk_vtx hli hk, walk_vtx hli hk' at h
   by_contra hne
   exact hdh _ _ (ivB_lt _ hk) (ivB_lt _ hk') (fun e => hne (ivB_inj _ hk hk' e)) h
 
@@ -158,26 +162,26 @@ theorem attach_floor_ne (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
   have hy := attach_height hFam hc hA hA'
   have hp := hA.1
   have hWn : (interiorModel Q).W.n = Q.n := walk_n Q
-  rw [hWn] at hp
+  Ξ' hWn at hp
   have hn3 : 3 ≤ Q.n := Chazelle.Jordan.simple_three_le hQ
-  have hp1 : (p + 1) % Q.n < Q.n := Nat.mod_lt _ (by omega)
+  have hp1 : (p + 1) % Q.n < Q.n := Nat.mod_lt _ (⋄)
   have hd : ((interiorWalk Q).vtx p).2 ≠ ((interiorWalk Q).vtx ((p + 1) % Q.n)).2 := by
     intro h
     have := walk_distinct hdh hp hp1 h
     by_cases h1 : p + 1 < Q.n
-    · rw [Nat.mod_eq_of_lt h1] at this; omega
-    · rw [show p + 1 = Q.n by omega, Nat.mod_self] at this; omega
+    · Ξ' Nat.mod_eq_of_lt h1 at this; omega
+    · Ξ' show p + 1 = Q.n by omega, Nat.mod_self at this; omega
   unfold sidePt at hy
   change (Geometry.lerp ((interiorWalk Q).vtx p) ((interiorWalk Q).vtx ((p + 1) % (interiorWalk Q).n)) t).2 =
     (Geometry.lerp ((interiorWalk Q).vtx p) ((interiorWalk Q).vtx ((p + 1) % (interiorWalk Q).n)) t').2 at hy
-  rw [walk_n] at hy
-  simp only [Geometry.lerp_snd] at hy
+  Ξ' walk_n at hy
+  ϴ' Geometry.lerp_snd at hy
   apply hne
   have : (t - t') * (((interiorWalk Q).vtx ((p + 1) % Q.n)).2 - ((interiorWalk Q).vtx p).2) = 0 := by
     linarith
   rcases mul_eq_zero.1 this with h | h
   · linarith
-  · exact absurd (by linarith) hd
+  · exact absurd (⟡) hd
 
 section
 
@@ -202,10 +206,10 @@ theorem exit_chord_side {i : ℕ} (hi : i < nk (interiorModel Q) S R) {c : Set P
   have hfin := hFam.1
   have h3 : 3 ≤ N := three_le_nk hQ hFam hne hR
   obtain ⟨j, hj, pa, pb, ta, tb, hAa, hAb, ea, eb, hne', -⟩ :=
-    exit_chordGap hM hF hfin hR (by omega) hc ht
+    exit_chordGap hM hF hfin hR (⋄) hc ht
   have hgap : ChordGap I S R j := ⟨c, hc, pa, pb, ta, tb, hAa, hAb, ea, eb, hne'⟩
   obtain ⟨k₁, k₂, hsub⟩ := DownDrv.attachKeys_sub hM (hF hc)
-  have hsj : (j + 1) % N < N := Nat.mod_lt _ (by omega)
+  have hsj : (j + 1) % N < N := Nat.mod_lt _ (⋄)
   have hkne := hk_succ_ne hM hF hfin (by omega : 2 ≤ N) hj
   have hxa : hk I S R i ∈ DownDrv.attachKeys I c := ⟨p, t, hA, hx⟩
   have h1 : hk I S R j ∈ DownDrv.attachKeys I c := ⟨pa, ta, hAa, ea⟩
@@ -214,7 +218,7 @@ theorem exit_chord_side {i : ℕ} (hi : i < nk (interiorModel Q) S R) {c : Set P
     have m0 := hsub hxa
     have m1 := hsub h1
     have m2 := hsub h2
-    simp only [mem_insert_iff, mem_singleton_iff] at m0 m1 m2
+    ϴ' mem_insert_iff, mem_singleton_iff at m0 m1 m2
     rcases m0 with e0 | e0 <;> rcases m1 with e1 | e1 <;> rcases m2 with e2 | e2
     all_goals first
       | exact Or.inl (e0.trans e1.symm)
@@ -226,7 +230,7 @@ theorem exit_chord_side {i : ℕ} (hi : i < nk (interiorModel Q) S R) {c : Set P
     exact Or.inl ⟨hgap, pb, tb, hAb, eb⟩
   · have := hk_inj hM hF hfin hi hsj e
     subst this
-    rw [prevIdx_succ hj]
+    Ξ prevIdx_succ hj
     exact Or.inr ⟨hgap, pa, ta, hAa, ea⟩
 
 /-- **After the end of an arc comes a chord gap**, along every exit chord attached at the end. -/
@@ -240,7 +244,7 @@ theorem end_chord {i : ℕ} (hi : i < nk (interiorModel Q) S R)
           hk (interiorModel Q) S R ((i + 1) % nk (interiorModel Q) S R) = p' + t' := by
   have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
   have h3 := three_le_nk hQ hFam hne hR
-  have hpl := prevIdx_lt (N := nk (interiorModel Q) S R) (i := i) (by omega)
+  have hpl := prevIdx_lt (N := nk (interiorModel Q) S R) (i := i) (⋄)
   have key : ∀ c ∈ S, TouchesIn (interiorModel Q).D c R → ∀ (p : ℕ) (t : ℝ),
       SideAttach (interiorModel Q).W c p t → hk (interiorModel Q) S R i = p + t →
       ChordGap (interiorModel Q) S R i ∧ ∃ (p' : ℕ) (t' : ℝ), SideAttach (interiorModel Q).W c p' t' ∧
@@ -248,7 +252,7 @@ theorem end_chord {i : ℕ} (hi : i < nk (interiorModel Q) S R)
     intro c hc ht p t hAt hxt
     rcases exit_chord_side hQ hFam hne hR hi hc ht hAt hxt with h | ⟨hC, -⟩
     · exact h
-    · exact absurd hC fun hC => not_arc_and_chord hM hFam.2.1 hFam.1 (by omega) hpl hA hC
+    · exact absurd hC fun hC => not_arc_and_chord hM hFam.2.1 hFam.1 (⋄) hpl hA hC
   obtain ⟨c, hc, ht, p, t, hAt, hxt⟩ := hx
   exact ⟨(key c hc ht p t hAt hxt).1, fun c hc ht p t hAt hxt => (key c hc ht p t hAt hxt).2⟩
 
@@ -263,10 +267,10 @@ theorem vertex_of_two_gaps {j : ℕ} (hj : j < nk (interiorModel Q) S R)
   have hF := hFam.2.1
   have hfin := hFam.1
   have h3 : 3 ≤ N := three_le_nk hQ hFam hne hR
-  have hpl : prevIdx N j < N := prevIdx_lt (by omega)
-  have hsj : (j + 1) % N < N := Nat.mod_lt _ (by omega)
+  have hpl : prevIdx N j < N := prevIdx_lt (⋄)
+  have hsj : (j + 1) % N < N := Nat.mod_lt _ (⋄)
   obtain ⟨c', hc', p1, p2, t1, t2, hA1, hA2, e1, e2, -⟩ := hC1
-  rw [succ_prevIdx hj] at e2
+  Ξ' succ_prevIdx hj at e2
   obtain ⟨c'', hc'', q1, q2, s1, s2, hB1, hB2, f1, f2, -⟩ := hC2
   -- the two chords are distinct
   have hcc : c' ≠ c'' := by
@@ -278,24 +282,24 @@ theorem vertex_of_two_gaps {j : ℕ} (hj : j < nk (interiorModel Q) S R)
     have d01 : hk I S R (prevIdx N j) ≠ hk I S R j := by
       have := hk_succ_ne hM hF hfin (by omega : 2 ≤ N) hpl
       rwa [succ_prevIdx hj] at this
-    have d12 : hk I S R j ≠ hk I S R ((j + 1) % N) := hk_succ_ne hM hF hfin (by omega) hj
+    have d12 : hk I S R j ≠ hk I S R ((j + 1) % N) := hk_succ_ne hM hF hfin (⋄) hj
     have d02 : hk I S R (prevIdx N j) ≠ hk I S R ((j + 1) % N) := by
       intro h
       have := hk_inj hM hF hfin hpl hsj h
       have e := succ_prevIdx (N := N) hj
       unfold prevIdx at this e
       by_cases h1 : j + 1 < N
-      · rw [Nat.mod_eq_of_lt h1] at this
+      · Ξ' Nat.mod_eq_of_lt h1 at this
         rcases Nat.eq_zero_or_pos j with h0 | h0
-        · subst h0; rw [show 0 + N - 1 = N - 1 by omega, Nat.mod_eq_of_lt (by omega)] at this
+        · subst h0; Ξ' show 0 + N - 1 = N - 1 by omega, Nat.mod_eq_of_lt (⋄) at this
           omega
         · rw [show j + N - 1 = (j - 1) + N by omega, Nat.add_mod_right,
-            Nat.mod_eq_of_lt (by omega)] at this
+            Nat.mod_eq_of_lt (⋄)] at this
           omega
       · rw [show j + 1 = N by omega, Nat.mod_self, show j + N - 1 = (j - 1) + N by omega,
-          Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)] at this
+          Nat.add_mod_right, Nat.mod_eq_of_lt (⋄)] at this
         omega
-    simp only [mem_insert_iff, mem_singleton_iff] at m0 m1 m2
+    ϴ' mem_insert_iff, mem_singleton_iff at m0 m1 m2
     rcases m0 with e0 | e0 <;> rcases m1 with e1' | e1' <;> rcases m2 with e2' | e2'
     all_goals first
       | exact d01 (e0.trans e1'.symm)
@@ -304,7 +308,7 @@ theorem vertex_of_two_gaps {j : ℕ} (hj : j < nk (interiorModel Q) S R)
   -- both are attached at `hk j`
   obtain ⟨rfl, rfl⟩ := DownHost.key_inj hA2.2.1 hA2.2.2.1 hB1.2.1 hB1.2.2.1 (e2.symm.trans f1)
   have ht := two_chords_vertex hQ hFam hc' hc'' hcc hA2 hB1
-  rw [e2, ht, add_zero, Nat.floor_natCast]
+  Ξ e2, ht, add_zero, Nat.floor_natCast
 
 /-- **Junctions** (distinct heights): a host key after a chord gap that does not start an arc
 gap is a walk vertex, and the key after it starts an arc gap. -/
@@ -319,35 +323,35 @@ theorem junction (hdh : DistinctHeights Q) {i : ℕ} (hi : i < nk (interiorModel
   have hF := hFam.2.1
   have hfin := hFam.1
   have h3 : 3 ≤ N := three_le_nk hQ hFam hne hR
-  have hsi : (i + 1) % N < N := Nat.mod_lt _ (by omega)
+  have hsi : (i + 1) % N < N := Nat.mod_lt _ (⋄)
   have hCi : ChordGap I S R i :=
-    (gap_cases hM hF hfin hne hR (by omega) hi).resolve_left hnA
+    (gap_cases hM hF hfin hne hR (⋄) hi).resolve_left hnA
   have hv := vertex_of_two_gaps hQ hFam hne hR hi hC hCi
   refine ⟨hv, ?_⟩
   by_contra hnA2
   have hCi2 : ChordGap I S R ((i + 1) % N) :=
-    (gap_cases hM hF hfin hne hR (by omega) hsi).resolve_left hnA2
+    (gap_cases hM hF hfin hne hR (⋄) hsi).resolve_left hnA2
   have hv2 := vertex_of_two_gaps hQ hFam hne hR hsi (by rw [prevIdx_succ hi]; exact hCi) hCi2
   obtain ⟨c, hc, q1, q2, s1, s2, hB1, hB2, f1, f2, -⟩ := hCi
   have hs1 : s1 = 0 := by
     have h1 := floor_add (p := q1) hB1.2.1 hB1.2.2.1
-    rw [← f1] at h1
-    have : hk I S R i = q1 := by rw [hv, h1]
+    Ξ' ← f1 at h1
+    have : hk I S R i = q1 := Ρ hv, h1
     linarith
   have hs2 : s2 = 0 := by
     have h1 := floor_add (p := q2) hB2.2.1 hB2.2.2.1
-    rw [← f2] at h1
-    have : hk I S R ((i + 1) % N) = q2 := by rw [hv2, h1]
+    Ξ' ← f2 at h1
+    have : hk I S R ((i + 1) % N) = q2 := Ρ hv2, h1
     linarith
   subst hs1 hs2
   have hy := attach_height hFam hc hB1 hB2
-  simp only [Chazelle.Chain.sidePt_zero] at hy
+  ϴ' Chazelle.Chain.sidePt_zero at hy
   have hWn : I.W.n = Q.n := walk_n Q
   have hq1 : q1 < Q.n := hWn ▸ hB1.1
   have hq2 : q2 < Q.n := hWn ▸ hB2.1
   have := walk_distinct hdh hq1 hq2 hy
   subst this
-  exact hk_succ_ne hM hF hfin (by omega) hi (by rw [f1, f2])
+  exact hk_succ_ne hM hF hfin (⋄) hi (Ρ f1, f2)
 
 /-- **One step along an arc gap**: the next key is the next walk vertex or on the same walk
 edge. -/
@@ -367,21 +371,21 @@ theorem arcGap_step {i : ℕ} (hi : i < nk (interiorModel Q) S R)
   have hF := hFam.2.1
   have hfin := hFam.1
   have h3 : 3 ≤ N := three_le_nk hQ hFam hne hR
-  have hsi : (i + 1) % N < N := Nat.mod_lt _ (by omega)
+  have hsi : (i + 1) % N < N := Nat.mod_lt _ (⋄)
   have hWn : I.W.n = Q.n := walk_n Q
   have hbx := hostKeys_bounds (hk_mem hM hF hfin hi)
   have hby := hostKeys_bounds (hk_mem hM hF hfin hsi)
-  rw [hWn] at hbx hby
+  Ξ' hWn at hbx hby
   have hnoint : ∀ k : ℕ, k < Q.n → ¬ sideInArc (hk I S R i) (hk I S R ((i + 1) % N)) k :=
     fun k hk => arcGap_noInt hQ hFam hne hR hi hA k (by rw [hWn]; exact hk)
-  rcases noInt_cases hbx.1 hbx.2 hby.1 hby.2 (hk_succ_ne hM hF hfin (by omega) hi) hnoint with
+  rcases noInt_cases hbx.1 hbx.2 hby.1 hby.2 (hk_succ_ne hM hF hfin (⋄) hi) hnoint with
     ⟨hlt, hfl⟩ | hyv
   · refine ⟨fun hint => ?_, fun _ => hfl⟩
     exfalso
     have : (⌊hk I S R i⌋₊ : ℝ) ≤ hk I S R i := Nat.floor_le hbx.1
-    rw [hint, hfl] at hlt
+    Ξ' hint, hfl at hlt
     linarith
-  · exact ⟨fun _ => hyv, fun hni => absurd (by rw [hyv, Nat.floor_natCast]) hni⟩
+  · exact ⟨fun _ => hyv, fun hni => absurd (Ρ hyv, Nat.floor_natCast) hni⟩
 
 omit hQ hFam hne hR in
 /-- The gaps of an arc are arc gaps. -/
@@ -415,11 +419,11 @@ theorem arc_run (hdh : DistinctHeights Q) {l r : ℝ} {i_l d : ℕ}
   have hdN := hD.hdN
   have hd0 := hD.hd0
   have hlb : 0 ≤ l ∧ l < Q.n := by
-    have := hostKeys_bounds (hk_mem hM hF hfin hil); rw [hD.hl, hWn] at this; exact this
+    have := hostKeys_bounds (hk_mem hM hF hfin hil); Ξ' hD.hl, hWn at this; exact this
   have hfl : ⌊l⌋₊ < Q.n := by
     have : (⌊l⌋₊ : ℝ) < Q.n := lt_of_le_of_lt (Nat.floor_le hlb.1) hlb.2
     exact_mod_cast this
-  have hmod : ∀ j, (i_l + j) % N < N := fun j => Nat.mod_lt _ (by omega)
+  have hmod : ∀ j, (i_l + j) % N < N := fun j => Nat.mod_lt _ (⋄)
   have hsucc : ∀ j, ((i_l + j) % N + 1) % N = (i_l + (j + 1)) % N :=
     fun j => Existence.mod_add_one_mod _ _ _
   -- the inner keys
@@ -430,29 +434,29 @@ theorem arc_run (hdh : DistinctHeights Q) {l r : ℝ} {i_l d : ℕ}
     | succ j ih =>
       have hA := arcData_gap hQ hFam hne hR harc hD (show j < d by omega)
       obtain ⟨hint, -⟩ := arcGap_step hQ hFam hne hR (hmod j) hA
-      rw [hsucc j] at hint
+      Ξ' hsucc j at hint
       obtain ⟨k, hkk⟩ := (hD.inner (j + 1) hj0 hjd).1
       have hkI : hk I S R ((i_l + (j + 1)) % N) = ⌊hk I S R ((i_l + (j + 1)) % N)⌋₊ := by
-        rw [hkk, Nat.floor_natCast]
-      rw [hint hkI]
+        Ξ hkk, Nat.floor_natCast
+      Ξ hint hkI
       rcases Nat.eq_zero_or_pos j with rfl | hj
-      · rw [add_zero, Nat.mod_eq_of_lt hil, hD.hl]
-      · rw [ih hj (by omega), Nat.floor_natCast, Existence.mod_add_one_mod]
+      · Ξ add_zero, Nat.mod_eq_of_lt hil, hD.hl
+      · Ξ ih hj (⋄), Nat.floor_natCast, Existence.mod_add_one_mod
   -- the floor of the key before the end
   have hlast : ⌊hk I S R ((i_l + (d - 1)) % N)⌋₊ = (⌊l⌋₊ + (d - 1)) % Q.n := by
     rcases Nat.eq_zero_or_pos (d - 1) with h0 | h0
-    · rw [h0, add_zero, add_zero, Nat.mod_eq_of_lt hil, hD.hl, Nat.mod_eq_of_lt hfl]
-    · rw [hinner (d - 1) h0 (by omega), Nat.floor_natCast]
+    · Ξ h0, add_zero, add_zero, Nat.mod_eq_of_lt hil, hD.hl, Nat.mod_eq_of_lt hfl
+    · Ξ hinner (d - 1) h0 (⋄), Nat.floor_natCast
   have hend : (r = ⌊r⌋₊ ∧ ⌊r⌋₊ = (⌊l⌋₊ + d) % Q.n) ∨
       (r ≠ ⌊r⌋₊ ∧ ⌊r⌋₊ = (⌊l⌋₊ + (d - 1)) % Q.n) := by
     have hA := arcData_gap hQ hFam hne hR harc hD (show d - 1 < d by omega)
     obtain ⟨hint, hni⟩ := arcGap_step hQ hFam hne hR (hmod (d - 1)) hA
-    rw [hsucc, show d - 1 + 1 = d by omega, hD.hr, hlast] at hint hni
+    Ξ' hsucc, show d - 1 + 1 = d by omega, hD.hr, hlast at hint hni
     by_cases hr : r = ⌊r⌋₊
     · left
       refine ⟨hr, ?_⟩
       have := hint hr
-      rw [this, Nat.floor_natCast, Existence.mod_add_one_mod, Nat.sub_add_cancel (by omega : 1 ≤ d)]
+      Ξ this, Nat.floor_natCast, Existence.mod_add_one_mod, Nat.sub_add_cancel (by omega : 1 ≤ d)
     · exact Or.inr ⟨hr, hni hr⟩
   refine ⟨hinner, hend, ?_⟩
   -- at most `n` gaps
@@ -466,35 +470,35 @@ theorem arc_run (hdh : DistinctHeights Q) {l r : ℝ} {i_l d : ℕ}
   -- two inner keys coincide if `d > n + 1`
   have hd1 : d = Q.n + 1 := by
     by_contra hne1
-    have h1 := hinner 1 one_pos (by omega)
-    have h2 := hinner (Q.n + 1) (by omega) (by omega)
-    rw [show ⌊l⌋₊ + (Q.n + 1) = (⌊l⌋₊ + 1) + Q.n * 1 by ring, Nat.add_mul_mod_self_left] at h2
-    have := hinj 1 (Q.n + 1) (by omega) (by omega) (h1.trans h2.symm)
+    have h1 := hinner 1 one_pos (⋄)
+    have h2 := hinner (Q.n + 1) (⋄) (⋄)
+    Ξ' show ⌊l⌋₊ + (Q.n + 1) = (⌊l⌋₊ + 1) + Q.n * 1 by ring, Nat.add_mul_mod_self_left at h2
+    have := hinj 1 (Q.n + 1) (⋄) (⋄) (h1.trans h2.symm)
     omega
   subst hd1
   -- the vertex `⌊l⌋` is the inner key `n`
-  have hvn := hinner Q.n (by omega) (by omega)
-  rw [Nat.add_mod_right, Nat.mod_eq_of_lt hfl] at hvn
+  have hvn := hinner Q.n (⋄) (⋄)
+  Ξ' Nat.add_mod_right, Nat.mod_eq_of_lt hfl at hvn
   have hlni : l ≠ ⌊l⌋₊ := by
     intro h
     have e : hk I S R ((i_l + 0) % N) = hk I S R ((i_l + Q.n) % N) := by
       rw [add_zero, Nat.mod_eq_of_lt hil, hD.hl, hvn]; exact h
-    have := hinj 0 Q.n (by omega) (by omega) e
+    have := hinj 0 Q.n (⋄) (⋄) e
     omega
   rcases hend with ⟨hr, hrv⟩ | ⟨hrni, hrfl⟩
   · -- `r` would be the inner key `1`
-    rw [show ⌊l⌋₊ + (Q.n + 1) = (⌊l⌋₊ + 1) + Q.n * 1 by ring, Nat.add_mul_mod_self_left] at hrv
-    have h1 := hinner 1 one_pos (by omega)
+    Ξ' show ⌊l⌋₊ + (Q.n + 1) = (⌊l⌋₊ + 1) + Q.n * 1 by ring, Nat.add_mul_mod_self_left at hrv
+    have h1 := hinner 1 one_pos (⋄)
     have e : hk I S R ((i_l + 1) % N) = hk I S R ((i_l + (Q.n + 1)) % N) := by
-      rw [h1, hD.hr, hr, hrv]
-    have := hinj 1 (Q.n + 1) (by omega) (by omega) e
+      Ξ h1, hD.hr, hr, hrv
+    have := hinj 1 (Q.n + 1) (⋄) (⋄) e
     omega
   · -- `l` and `r` are on one walk edge: the chord after `r` returns to that edge
-    rw [Nat.add_sub_cancel, Nat.add_mod_right, Nat.mod_eq_of_lt hfl] at hrfl
+    Ξ' Nat.add_sub_cancel, Nat.add_mod_right, Nat.mod_eq_of_lt hfl at hrfl
     set p := ⌊l⌋₊ with hp
     have hrb : 0 ≤ r ∧ r < Q.n := by
       have := hostKeys_bounds (hk_mem hM hF hfin (hmod (Q.n + 1)))
-      rw [hD.hr, hWn] at this; exact this
+      Ξ' hD.hr, hWn at this; exact this
     have hlp : (p : ℝ) < l := lt_of_le_of_ne (Nat.floor_le hlb.1) (Ne.symm hlni)
     have hlp1 : l < p + 1 := Nat.lt_floor_add_one l
     have hrp : (p : ℝ) < r := by
@@ -504,12 +508,12 @@ theorem arc_run (hdh : DistinctHeights Q) {l r : ℝ} {i_l d : ℕ}
     have hrl : r < l := by
       by_contra h
       push Not at h
-      obtain ⟨k, hkk⟩ := (hD.inner 1 one_pos (by omega)).1
-      have hin := (hD.inner 1 one_pos (by omega)).2
-      rw [hkk] at hin
+      obtain ⟨k, hkk⟩ := (hD.inner 1 one_pos (⋄)).1
+      have hin := (hD.inner 1 one_pos (⋄)).2
+      Ξ' hkk at hin
       have hlr : l < r := lt_of_le_of_ne h (fun e => (WalkAx.arc_cuts hne harc).2.2 e)
       unfold sideInArc at hin
-      rw [ite_eq_left hlr] at hin
+      Ξ' ite_eq_left hlr at hin
       have h1 : (p : ℝ) < k := lt_trans hlp hin.1
       have h2 : (k : ℝ) < p + 1 := lt_trans hin.2 hrp1
       have h1' : p < k := by exact_mod_cast h1
@@ -521,29 +525,29 @@ theorem arc_run (hdh : DistinctHeights Q) {l r : ℝ} {i_l d : ℕ}
       obtain ⟨c, ⟨hc, ht⟩, p', t', hA', he⟩ := hM.exists_exit_at_end hF hfin hne hR harc
       exact ⟨c, hc, ht, p', t', hA', by rw [hD.hr]; exact he⟩
     have hprev : prevIdx N ((i_l + (Q.n + 1)) % N) = (i_l + Q.n) % N := by
-      rw [← hsucc Q.n, prevIdx_succ (hmod Q.n)]
+      Ξ ← hsucc Q.n, prevIdx_succ (hmod Q.n)
     have hAprev : ArcGap I S R (prevIdx N ((i_l + (Q.n + 1)) % N)) := by
-      rw [hprev]; exact arcData_gap hQ hFam hne hR harc hD (by omega)
+      rw [hprev]; exact arcData_gap hQ hFam hne hR harc hD (⋄)
     obtain ⟨-, hnext⟩ := end_chord hQ hFam hne hR hiN hx hAprev
     obtain ⟨c, ⟨hc, ht⟩, pr, tr, hAr, her⟩ := hM.exists_exit_at_end hF hfin hne hR harc
     obtain ⟨pz, tz, hAz, hez⟩ := hnext c hc ht pr tr hAr (by rw [hD.hr]; exact her)
     set z := hk I S R (((i_l + (Q.n + 1)) % N + 1) % N) with hz
     have hzr : r ≠ z := by
-      rw [← hD.hr]; exact hk_succ_ne hM hF hfin (by omega) hiN
+      rw [← hD.hr]; exact hk_succ_ne hM hF hfin (⋄) hiN
     -- `z` is a cut, so not inside the arc: `r < z ≤ l`
     have hzcut : I.IsCut S z := ⟨c, hc, pz, tz, hAz, hez⟩
     have hzin : ¬ sideInArc l r z := fun h => harc.2.2.2.2.2.1 _ h hzcut
     unfold sideInArc at hzin
-    rw [ite_eq_right (not_lt.2 hrl.le)] at hzin
+    Ξ' ite_eq_right (not_lt.2 hrl.le) at hzin
     push Not at hzin
     have hrz : r < z := lt_of_le_of_ne hzin.2 hzr
     have hzfl : ⌊z⌋₊ = p := by
-      rw [Nat.floor_eq_iff (by linarith)]
-      exact ⟨by linarith, by linarith⟩
-    have hpz : pz = p := by rw [← hzfl, hez, floor_add hAz.2.1 hAz.2.2.1]
-    have hpr : pr = p := by rw [← hrfl, her, floor_add hAr.2.1 hAr.2.2.1]
+      Ξ Nat.floor_eq_iff (⟡)
+      exact ⟨⟡, ⟡⟩
+    have hpz : pz = p := Ρ ← hzfl, hez, floor_add hAz.2.1 hAz.2.2.1
+    have hpr : pr = p := Ρ ← hrfl, her, floor_add hAr.2.1 hAr.2.2.1
     exact attach_floor_ne hQ hFam hdh hc hAr hAz (by rw [← her, ← hez]; exact hzr)
-      (by rw [hpr, hpz])
+      (Ρ hpr, hpz)
 
 end
 

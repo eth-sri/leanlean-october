@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvTasks4
 public import Chazelle.Core.SweepEvOrigin
 public import Chazelle.Core.SweepEvCount
@@ -54,7 +56,7 @@ theorem done_iter_keep (hIt : IterRel P J N₁ N₂ c cw cs co c') {r : ℕ} (hr
     co.nreg r = c.nreg r := by
   obtain ⟨⟨rs, -, -, -, -, -, -, -, -, -, -, hWr⟩, -, ⟨-, -, -, hRr⟩, ⟨hBr, -, -⟩, -⟩ := hIt
   have hA : r ≠ ALLOC := by unfold ALLOC; omega
-  rw [hBr r (band_sw_not hr) hO hL hA, hRr r hb.1 hb.2, hWr r (band_sw_not hr) hW hA]
+  Ξ hBr r (band_sw_not hr) hO hL hA, hRr r hb.1 hb.2, hWr r (band_sw_not hr) hW hA
 
 /-- **The memory kept by the iteration**, below the allocator of `c` and outside the table. -/
 theorem done_iter_mem (hIt : IterRel P J N₁ N₂ c cw cs co c')
@@ -65,7 +67,7 @@ theorem done_iter_mem (hIt : IterRel P J N₁ N₂ c cw cs co c')
     hIt
   have hAs : cs.nreg ALLOC = cw.nreg ALLOC := hRr ALLOC (by unfold ALLOC bF sw; omega)
     (by unfold ALLOC bN sw; omega)
-  rw [hB.memT x (by omega) (by rw [hT', ← hT]; exact hxT), hRm, hWm x hx]
+  rw [hB.memT x (⋄) (by rw [hT', ← hT]; exact hxT), hRm, hWm x hx]
 
 end done
 

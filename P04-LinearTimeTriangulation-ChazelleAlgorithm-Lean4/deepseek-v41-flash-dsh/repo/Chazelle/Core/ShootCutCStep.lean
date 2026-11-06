@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutStepR
 
 /-!
@@ -72,10 +74,10 @@ theorem swEnv_of (S : SEnv O P C H Hh h γ m₀ A₀ W) :
   obtain ⟨-, hpow, hhalf⟩ := grade_low S.hR
   refine ⟨fun x hx => ⟨hG.2.2.1 x hx, hhalf x hx⟩, fun j hj => ⟨?_, hpow j hj⟩, S.hAW⟩
   have := (hG.2.1.2.2.1 j hj).1
-  rw [show m₀ (h + 1) + 2 + j = m₀ (h + 1) + 2 + j from rfl]
+  Ξ show m₀ (h + 1) + 2 + j = m₀ (h + 1) + 2 + j from rfl
   exact this
 
-theorem tg_ok (_hn : 2 ≤ P.n) : P.n - 1 ≤ 2 ^ topGrade P.n := Nat.le_pow_clog (by norm_num) _
+theorem tg_ok (_hn : 2 ≤ P.n) : P.n - 1 ≤ 2 ^ topGrade P.n := Nat.le_pow_clog (⊛) _
 
 /-- **The outcome of a step** from the walk vertex `c` (pieces `ps'`, length `L`). -/
 structure StepPost (Pv : Pc → Prop) (I : List Pc → Config → Prop) (ps : List Pc) (A₀ W : ℕ)
@@ -110,17 +112,17 @@ theorem single_post (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       StepPost (VPc P C m₀ h γ) I ps A₀ W m₀ B c lim d d' [sgPc c] 1 := by
   have hWc : c + 1 ≤ W := by have := S.hm2; have := S.hW; omega
   have hpv : VPc P C m₀ h γ (sgPc c) :=
-    ⟨single_ok (P := P) (C := C) (m := m₀) (h := h) (γ := γ) 0 0 0 0 (c := c) (by omega),
-      rfl, rfl, by simp [sgPc]⟩
+    ⟨single_ok (P := P) (C := C) (m := m₀) (h := h) (γ := γ) 0 0 0 0 (c := c) (⋄),
+      rfl, rfl, ⊚ sgPc⟩
   obtain ⟨d', k, ex, hk', hI', o40, kp, mem'⟩ := single_exec hE e hw h40 h91 hWc hI hpv
   have kk : ∀ r, 150089 ≤ r → r < 150100 → d'.nreg r = e.nreg r := fun r h1 h2 =>
-    kp r (Or.inr ⟨by omega, h2⟩) (by omega)
+    kp r (Or.inr ⟨⋄, h2⟩) (by omega)
   refine ⟨d', k, ex, hk', ⟨hI', ⟨rfl, rfl⟩, fun p hp => by
-      simp only [List.mem_singleton] at hp; rw [hp]; exact hpv, by simp, le_rfl, hlim,
+      simp only [List.mem_singleton] at hp; rw [hp]; exact hpv, ✓, le_rfl, hlim,
     Or.inr (Or.inr ⟨rfl, hb⟩), o40, fun r h1 h2 h3 => (kp r (Or.inl ⟨h1, h2⟩) h3).trans
-      (hk r h1 h2 h3), by rw [kk _ (by omega) (by omega)]; exact h90,
-    by rw [kk _ (by omega) (by omega)]; exact h91, by rw [kk _ (by omega) (by omega)]; exact h92,
-    by rw [kk _ (by omega) (by omega)]; exact h93, by rw [kk _ (by omega) (by omega)]; exact h96,
+      (hk r h1 h2 h3), by rw [kk _ (⋄) (by omega)]; exact h90,
+    by rw [kk _ (⋄) (by omega)]; exact h91, by rw [kk _ (by omega) (by omega)]; exact h92,
+    by rw [kk _ (⋄) (by omega)]; exact h93, by rw [kk _ (by omega) (by omega)]; exact h96,
     ex.wb_right, fun a ha => by rw [mem' a ha]; exact hm a ha⟩⟩
 
 /-- `(a + t + L) mod n` from `q = (a + t) mod n` without wrap. -/
@@ -134,8 +136,8 @@ theorem mod_sub_of {n a t q L : ℕ} (hn : 0 < n) (hq : (a + t) % n = q) (hLq : 
     (hLt : L ≤ t) : (a + (t - L)) % n = q - L := by
   have e := Nat.div_add_mod (a + t) n
   rw [hq] at e
-  have e2 : a + (t - L) = n * ((a + t) / n) + (q - L) := by omega
-  rw [e2, Nat.mul_add_mod, Nat.mod_eq_of_lt (by have := Nat.mod_lt (a + t) hn; omega)]
+  have e2 : a + (t - L) = n * ((a + t) / n) + (q - L) := ⋄
+  Ξ e2, Nat.mul_add_mod, Nat.mod_eq_of_lt (by have := Nat.mod_lt (a + t) hn; omega)
 
 /-- **A climbing stretch** from the walk vertex `c` (tour position `i = c - 6`, host point in the
 run `H[r] = run a ℓ` at offset `t < ℓ`, `q = (a + t) mod n`). -/

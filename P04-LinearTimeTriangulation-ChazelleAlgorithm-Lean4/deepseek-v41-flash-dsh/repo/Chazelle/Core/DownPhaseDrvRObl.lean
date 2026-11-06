@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFind
 public import Chazelle.Core.SpecPhases
 public import Chazelle.Core.DownPhaseMirrorExtract
@@ -103,7 +105,7 @@ def IntOraclesSpec (O : OracleIface) : Prop :=
     ShooterOK sh ioBandsD (shCost κ) (gradeCtx O) OkInt ∧
     CutterOK cu ioBandsD (cuCost κ) cutGran (gradeCtx O) OkInt
 
-theorem bRestore_notin_ioBandsD : bRestore ∉ ioBandsD := by decide
+theorem bRestore_notin_ioBandsD : bRestore ∉ ioBandsD := ⌖
 
 theorem oracleBands_subset_ioBandsD : oracleBands ⊆ ioBandsD := Finset.subset_insert _ _
 

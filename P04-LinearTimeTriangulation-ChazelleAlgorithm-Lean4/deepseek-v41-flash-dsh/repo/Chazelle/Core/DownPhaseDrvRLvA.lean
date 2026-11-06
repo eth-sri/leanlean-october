@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRLvlSpec
 public import Chazelle.Core.DownPhaseDrvRPad
 public import Chazelle.Core.DownPhaseDrvRProg
@@ -48,9 +50,9 @@ variable {P : Polygon} {W : ℕ}
 /-- The registers `lvParA` writes. -/
 def Bpar (r : ℕ) : Bool := decide (211000 ≤ r ∧ r < 211030)
 
-theorem wr_lvParA : SignK.wr Bpar lvParA = true := by decide
+theorem wr_lvParA : SignK.wr Bpar lvParA = true := ⌖
 
-set_option maxHeartbeats 4000000 in
+
 theorem lvParA_exec (c : Config) (hw : WordsBounded W c) {S n lam MD : ℕ}
     (h0 : c.nreg 230000 = S) (hl : c.nreg 210000 = lam) (h1 : c.nreg 210001 = MD)
     (hS : SetupAt c.nmem S n (c.nreg ALLOC)) (h16 : 16 ≤ lam) (hlp : lam ≤ topGrade n)
@@ -67,7 +69,7 @@ theorem lvParA_exec (c : Config) (hw : WordsBounded W c) {S n lam MD : ℕ}
   obtain ⟨hS0, hS1, hT, hSE⟩ := hS
   set p := topGrade n with hp
   have hμl : nextLvl lam < lam := nextLvl_lt h16
-  have hcb : ∀ i, Cost.ceilBeta i = (i + 4) / 5 := Setup.ceilBeta_eq
+  have hcb := Setup.ceilBeta_eq
   have hμ : nextLvl lam = (lam + 4) / 5 + 11 := by unfold nextLvl; rw [hcb]
   have hb12 : Cost.ceilBeta (nextLvl lam) + 12 ≤ nextLvl lam := by rw [hcb]; omega
   have t1 : c.nmem (S + p + 4 + lam) = Cost.ceilBeta lam := (hT lam (by omega)).2
@@ -125,13 +127,13 @@ theorem lvParB_exec (c : Config) (hw : WordsBounded W c) (h16 : c.nreg 211016 = 
   by_cases ha : c.nreg 211025 < c.nreg 211017
   · by_cases hb : c.nreg 211016 < c.nreg 211025
     · have e := Exec.constN (P := P) hw 211008 1 hW
-      refine ⟨_, _, .ifLtN_true ha (.ifLtN_true hb e), by omega, by simp, ?_, fun r hr => by
+      refine ⟨_, _, .ifLtN_true ha (.ifLtN_true hb e), ⋄, ✓, ?_, fun r hr => by
         simp [hr], rfl, rfl, rfl, rfl⟩
       simp only [Machine.upd_same, true_iff]; omega
-    · refine ⟨_, _, .ifLtN_true ha (.ifLtN_false hb (.skip hw)), by omega, by omega, ?_,
+    · refine ⟨_, _, .ifLtN_true ha (.ifLtN_false hb (.skip hw)), ⋄, ⋄, ?_,
         fun r _ => rfl, rfl, rfl, rfl, rfl⟩
       rw [h08]; omega
-  · refine ⟨_, _, .ifLtN_false ha (.skip hw), by omega, by omega, ?_, fun r _ => rfl, rfl, rfl,
+  · refine ⟨_, _, .ifLtN_false ha (.skip hw), ⋄, ⋄, ?_, fun r _ => rfl, rfl, rfl,
       rfl, rfl⟩
     rw [h08]; omega
 
@@ -139,7 +141,7 @@ theorem lvParB_exec (c : Config) (hw : WordsBounded W c) (h16 : c.nreg 211016 = 
 def BparC (r : ℕ) : Bool :=
   decide (211009 ≤ r ∧ r ≤ 211013) || decide (r = 211026) || decide (r = 9999)
 
-theorem wr_lvParC : SignK.wr BparC lvParC = true := by decide
+theorem wr_lvParC : SignK.wr BparC lvParC = true := ⌖
 
 theorem lvParC_exec (c : Config) (hw : WordsBounded W c) {K : ℕ} (h03 : c.nreg 210003 = K)
     (h14 : c.nreg 211014 = 1) (hW : c.nreg ALLOC + 3 * (K + 1) ≤ W) :
@@ -201,7 +203,7 @@ theorem lvPar_exec (c : Config) (hw : WordsBounded W c) {S n lam MD K : ℕ}
   rw [k4] at e₄
   have ex : Exec P W lvPar c c₄ (k₁ + (k₂ + (k₃ + (9 * (K + 1) + 4)))) :=
     .seq e₁ (.seq e₂ (.seq e₃ e₄))
-  have w₃ : ∀ r, BparC r = false → c₃.nreg r = c₂.nreg r := g₃.1
+  have w₃ := g₃.1
   have v32 : ∀ r, BparC r = false → r ≠ 210068 → r ≠ 210069 → c₄.nreg r = c₂.nreg r :=
     fun r h1 h2 h3 => (g₄ r h2 h3).trans (w₃ r h1)
   have hmm : c₄.nmem = c.nmem := by rw [m₄, m₃, m₂, m₁]

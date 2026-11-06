@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterDInit
 
 /-!
@@ -31,7 +35,7 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
+
 theorem flagS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     (hlt : ∀ v, v < g.μ → c.nmem (g.base 3 + v) < g.μ) (hW : g.END ≤ W) :
     ∃ c' k, Exec P W flagS c c' k ∧ k ≤ 14 * g.μ + 3 ∧ WordsBounded W c' ∧

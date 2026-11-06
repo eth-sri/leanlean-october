@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvPBit
 
 /-!
@@ -50,7 +52,7 @@ theorem descS_exec (c : Config) (hw : WordsBounded W c) (h20 : c.nreg 218020 = 0
   have e : ALLOC = 9999 := rfl
   rw [e] at hA'
   unfold descS
-  rw [e]
+  Ξ e
   exec_block
   all_goals first | (config_simp; rw [hA', h21]; omega) | skip
   refine ⟨rfl, ?_, ?_, fun r h1 h2 h3 => ?_, rfl, rfl, rfl, fun a ha => ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩

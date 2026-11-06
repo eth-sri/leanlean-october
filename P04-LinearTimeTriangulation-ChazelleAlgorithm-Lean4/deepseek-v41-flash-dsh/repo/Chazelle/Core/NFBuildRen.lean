@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SpecRam
 public import Chazelle.Core.SignKernelRam
 
@@ -71,11 +73,11 @@ variable {f : ℕ → ℕ}
 theorem upd_ren {α : Type} (hf : ∀ r, f (f r) = r) (g : ℕ → α) (i : ℕ) (v : α) :
     (fun r => upd g i v (f r)) = upd (fun r => g (f r)) (f i) v := by
   funext r
-  simp only [upd_apply]
+  ϴ upd_apply
   by_cases h : r = f i
   · subst h; rw [hf]; simp
-  · have : f r ≠ i := fun h' => h (by rw [← h', hf])
-    simp [h, this]
+  · have : f r ≠ i := fun h' => h (Ρ ← h', hf)
+    Θ h, this
 
 theorem cfgRen_cfgRen (hf : ∀ r, f (f r) = r) (c : Config) : cfgRen f (cfgRen f c) = c := by
   cases c; simp [cfgRen, hf]

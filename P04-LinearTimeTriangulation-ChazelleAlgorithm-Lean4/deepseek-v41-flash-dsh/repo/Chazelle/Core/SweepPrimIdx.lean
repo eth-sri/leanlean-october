@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepPrimJun
 public import Chazelle.Core.SweepLabelJG
 public import Chazelle.Core.SweepLabelJL0
@@ -78,7 +80,7 @@ theorem boxTwin_pos {C₁ C₂ : Chain} (hR : C₁.radius = C₂.radius) {e : �
       (chainModel C₁).param Q ⟨e, h⟩ = (chainModel C₂).param Q ⟨e, h⟩ ∧
       (chainModel C₁).pos Q ⟨e, h⟩ = (chainModel C₂).pos Q ⟨e, h⟩ := by
   have ha : (chainModel C₁).wa e = (chainModel C₂).wa e := by
-    simp only [Model.wa]
+    ϴ Model.wa
     rcases he with rfl | rfl
     · rw [show (chainModel C₁).W = C₁.sideWalk C₁.sideBeta from rfl,
         show (chainModel C₂).W = C₂.sideWalk C₂.sideBeta from rfl, C₁.sideWalk_vtx_one,
@@ -87,14 +89,14 @@ theorem boxTwin_pos {C₁ C₂ : Chain} (hR : C₁.radius = C₂.radius) {e : �
         show (chainModel C₂).W = C₂.sideWalk C₂.sideBeta from rfl, C₁.sideWalk_vtx_three,
         C₂.sideWalk_vtx_three, hR]
   have hb : (chainModel C₁).wb e = (chainModel C₂).wb e := by
-    simp only [Model.wb]
+    ϴ Model.wb
     rw [show (chainModel C₁).W = C₁.sideWalk C₁.sideBeta from rfl,
       show (chainModel C₂).W = C₂.sideWalk C₂.sideBeta from rfl,
       C₁.sideWalk_mod_small _ (by rcases he with rfl | rfl <;> norm_num),
       C₂.sideWalk_mod_small _ (by rcases he with rfl | rfl <;> norm_num)]
     rcases he with rfl | rfl
-    · rw [C₁.sideWalk_vtx_two, C₂.sideWalk_vtx_two, hR]
-    · rw [C₁.sideWalk_vtx_four, C₂.sideWalk_vtx_four, hR]
+    · Ξ C₁.sideWalk_vtx_two, C₂.sideWalk_vtx_two, hR
+    · Ξ C₁.sideWalk_vtx_four, C₂.sideWalk_vtx_four, hR
   have hp : (chainModel C₁).param Q ⟨e, h⟩ = (chainModel C₂).param Q ⟨e, h⟩ := by
     unfold Model.param; simp only; rw [ha, hb]
   refine ⟨ha, hb, hp, ?_⟩

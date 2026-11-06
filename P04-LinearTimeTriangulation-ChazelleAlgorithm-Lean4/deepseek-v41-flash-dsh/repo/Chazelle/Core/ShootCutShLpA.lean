@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutShRec
 public import Chazelle.Core.ShootCutShK0
 
@@ -63,9 +65,9 @@ def Blpi (r : ℕ) : Bool := decide (140110 ≤ r ∧ r < 140116) || r == 140334
 /-- The registers written by `lpLoad`. -/
 def Blpl (r : ℕ) : Bool := decide (140250 ≤ r ∧ r < 140259) || r == 140110
 
-theorem wr_lpInit : wr Blpi lpInit = true := by decide
+theorem wr_lpInit : wr Blpi lpInit = true := ⌖
 
-theorem wr_lpLoad : wr Blpl lpLoad = true := by decide
+theorem wr_lpLoad : wr Blpl lpLoad = true := ⌖
 
 /-! ## The set-up and the loads -/
 
@@ -97,7 +99,7 @@ theorem lpLoadA_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {
       c'.nreg 140254 = c.nmem (p + 4) := by
   have h1' : c.nreg 140401 = 1 := h1
   unfold lpLoadA
-  simp only [K1]
+  ϴ K1
   exec_block
   all_goals first | (config_simp; rw [h10, h1']; omega) | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_⟩
@@ -111,7 +113,7 @@ theorem lpLoadB_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {
       c'.nreg 140257 = c.nmem (p + 2) ∧ c'.nreg 140258 = c.nmem (p + 3) := by
   have h1' : c.nreg 140401 = 1 := h1
   unfold lpLoadB
-  simp only [K1]
+  ϴ K1
   exec_block
   all_goals first | (config_simp; rw [h10, h1']; omega) | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩
@@ -157,7 +159,7 @@ noncomputable def pcSetOf (C : Chain) (Q : Polygon) (pc : Pc) : Set Point :=
 noncomputable def psSet (C : Chain) (Q : Polygon) (l : List Pc) : Set Point :=
   ⋃ pc ∈ l, pcSetOf C Q pc
 
-theorem psSet_nil (C : Chain) (Q : Polygon) : psSet C Q [] = ∅ := by simp [psSet]
+theorem psSet_nil (C : Chain) (Q : Polygon) : psSet C Q [] = ∅ := ⊚ psSet
 
 theorem psSet_append (C : Chain) (Q : Polygon) (l : List Pc) (pc : Pc) :
     psSet C Q (l ++ [pc]) = psSet C Q l ∪ pcSetOf C Q pc := by

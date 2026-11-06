@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Separator.Cotree
 
 /-!
@@ -42,12 +44,12 @@ abbrev Keep (x : D) : Prop := x ≠ n ∧ x ≠ M.opp n
 omit [Fintype D] [DecidableEq D] [DecidableEq F] in
 /-- The remaining darts are closed under `opp`. -/
 theorem keep_opp_iff (x : D) : M.Keep n (M.opp x) ↔ M.Keep n x := by
-  simp only [Keep]
+  ϴ Keep
   constructor
   · rintro ⟨h1, h2⟩
-    exact ⟨fun h => h2 (by rw [h]), fun h => h1 (by rw [h, M.opp_opp])⟩
+    exact ⟨fun h => h2 (Ρ h), fun h => h1 (by rw [h, M.opp_opp])⟩
   · rintro ⟨h1, h2⟩
-    exact ⟨fun h => h2 (by rw [← h, M.opp_opp]), fun h => h1 (M.opp_injective h)⟩
+    exact ⟨fun h => h2 (Ρ ← h, M.opp_opp), fun h => h1 (M.opp_injective h)⟩
 
 /-- The face permutation with the two faces of `n` merged. -/
 def mergePerm : Perm D := M.fperm * swap n (M.opp n)
@@ -67,13 +69,13 @@ omit [Fintype D] [DecidableEq F] in
 theorem mergePerm_bad {z : D} (hz : ¬ M.Keep n z) : M.mergePerm n z = M.rot z := by
   simp only [Keep, not_and_or, not_not] at hz
   rcases hz with rfl | rfl
-  · simp [mergePerm, fperm_apply, M.opp_opp]
-  · simp [mergePerm, fperm_apply]
+  · Θ mergePerm, fperm_apply, M.opp_opp
+  · Θ mergePerm, fperm_apply
 
 omit [Fintype D] [DecidableEq F] in
 /-- On the remaining darts, the merged face permutation is the face permutation. -/
 theorem mergePerm_good {z : D} (hz : M.Keep n z) : M.mergePerm n z = M.fperm z := by
-  simp [mergePerm, swap_apply_of_ne_of_ne hz.1 hz.2]
+  Θ mergePerm, swap_apply_of_ne_of_ne hz.1 hz.2
 
 omit [DecidableEq F] in
 /-- **The new face permutation is the first-return map of the merged face permutation.** -/
@@ -90,18 +92,18 @@ theorem deleteEdge_fperm_eq : M.delRot n * M.delOpp n = firstReturn (M.mergePerm
       intro _ hbad
       rcases Nat.eq_zero_or_pos j with h0 | hpos
       · subst h0
-        simp only [zero_add, pow_one]
-        rw [M.mergePerm_good n x.2, fperm_apply, delOpp_apply]
-      · rw [pow_succ', Perm.mul_apply, ih hpos (fun i hi0 hi => hbad i hi0 (by omega)),
-          M.mergePerm_bad n (hbad j hpos (by omega)), pow_succ', Perm.mul_apply]
+        ϴ zero_add, pow_one
+        Ξ M.mergePerm_good n x.2, fperm_apply, delOpp_apply
+      · rw [pow_succ', Perm.mul_apply, ih hpos (fun i hi0 hi => hbad i hi0 (⋄)),
+          M.mergePerm_bad n (hbad j hpos (⋄)), pow_succ', Perm.mul_apply]
   have hm := returnTime_pos M.rot (M.Keep n) y
   have hkey := key _ hm (fun i hi0 hi => not_pow_of_lt_returnTime _ _ y hi0 hi)
   show ((firstReturn M.rot (M.Keep n)) y).1 = ((firstReturn (M.mergePerm n) (M.Keep n)) x).1
-  rw [firstReturn_apply, firstReturn_eq (M.mergePerm n) (M.Keep n) x hm, hkey]
-  · rw [hkey]
+  Ξ firstReturn_apply, firstReturn_eq (M.mergePerm n) (M.Keep n) x hm, hkey
+  · Ξ hkey
     exact pow_returnTime _ _ y
   · intro i hi0 hi
-    rw [key i hi0 (fun i' hi0' hi' => not_pow_of_lt_returnTime _ _ y hi0' (by omega))]
+    rw [key i hi0 (fun i' hi0' hi' => not_pow_of_lt_returnTime _ _ y hi0' (⋄))]
     exact not_pow_of_lt_returnTime _ _ y hi0 hi
 
 variable {n}
@@ -132,11 +134,11 @@ theorem sameCycle_mergePerm_iff (hn : M.face n ≠ M.face (M.opp n)) (x y : D) :
 theorem delFace_eq_iff (hn : M.face n ≠ M.face (M.opp n)) (x y : {x // M.Keep n x}) :
     M.delFace hn x = M.delFace hn y ↔
     (M.mergePerm n).SameCycle x.1 y.1 := by
-  rw [M.sameCycle_mergePerm_iff hn]
+  Ξ M.sameCycle_mergePerm_iff hn
   unfold delFace
   by_cases hx : M.face x.1 = M.face (M.opp n) <;> by_cases hy : M.face y.1 = M.face (M.opp n)
-  · simp only [dite_eq_left_of_eq_true (eq_true hx), dite_eq_left_of_eq_true (eq_true hy)]
-    simp [hx, hy]
+  · ϴ dite_eq_left_of_eq_true (eq_true hx), dite_eq_left_of_eq_true (eq_true hy)
+    Θ hx, hy
   · simp only [dite_eq_left_of_eq_true (eq_true hx), dite_eq_right_of_eq_false (eq_false hy),
       Subtype.mk.injEq]
     constructor
@@ -159,7 +161,7 @@ theorem delFace_eq_iff (hn : M.face n ≠ M.face (M.opp n)) (x y : {x // M.Keep 
     · intro h; exact Or.inl h
     · rintro (h | ⟨h1 | h1, h2 | h2⟩)
       · exact h
-      · rw [h1, h2]
+      · Ξ h1, h2
       · exact absurd h2 hy
       · exact absurd h1 hx
       · exact absurd h1 hx
@@ -190,13 +192,13 @@ theorem exists_keep_vert (hn : M.face n ≠ M.face (M.opp n))
   · by_cases h : M.rot d = M.opp d
     · have h' : M.rot (M.opp d) ≠ d := fun h' => hloop ⟨h, h'⟩
       refine ⟨M.rot (M.opp d), ⟨h', hr2⟩, ?_⟩
-      rw [M.vert_rot, ← h, M.vert_rot]
+      Ξ M.vert_rot, ← h, M.vert_rot
     · exact ⟨M.rot d, ⟨hr1, h⟩, M.vert_rot d⟩
   · by_cases h : M.rot (M.opp n) = n
     · have h' : M.rot n ≠ M.opp n := fun h' => hloop ⟨h', h⟩
       refine ⟨M.rot n, ⟨hr1, h'⟩, ?_⟩
       calc M.vert (M.rot n) = M.vert n := M.vert_rot n
-        _ = M.vert (M.rot (M.opp n)) := by rw [h]
+        _ = M.vert (M.rot (M.opp n)) := Ρ h
         _ = M.vert (M.opp n) := M.vert_rot _
     · exact ⟨M.rot (M.opp n), ⟨h, hr2⟩, M.vert_rot _⟩
 
@@ -205,8 +207,8 @@ omit [Fintype D] [DecidableEq F] in
 theorem exists_keep_merged (hn : M.face n ≠ M.face (M.opp n))
     (hloop : ¬ (M.rot n = M.opp n ∧ M.rot (M.opp n) = n)) : ∃ x, M.Keep n x ∧
     (M.face x = M.face n ∨ M.face x = M.face (M.opp n)) := by
-  have hf1 : M.fperm n ≠ M.opp n := fun h => hn (by rw [← h, M.face_fperm_apply])
-  have hf2 : M.fperm (M.opp n) ≠ n := fun h => hn (by rw [← M.face_fperm_apply (M.opp n), h])
+  have hf1 : M.fperm n ≠ M.opp n := fun h => hn (Ρ ← h, M.face_fperm_apply)
+  have hf2 : M.fperm (M.opp n) ≠ n := fun h => hn (Ρ ← M.face_fperm_apply (M.opp n), h)
   by_cases h1 : M.fperm n = n
   · have h2 : M.fperm (M.opp n) ≠ M.opp n := by
       intro h2
@@ -229,18 +231,18 @@ noncomputable def deleteEdge (hn : M.face n ≠ M.face (M.opp n))
   opp_ne x h := M.opp_ne x.1 (congrArg Subtype.val h)
   vert_rot x := by
     show M.vert ((M.delRot n x).1) = M.vert x.1
-    rw [delRot, firstReturn_apply]
+    Ξ delRot, firstReturn_apply
     exact (eq_of_sameCycle M.rot M.vert M.vert_rot ⟨(returnTime M.rot (M.Keep n) x : ℤ),
-      by rw [zpow_natCast]⟩).symm
+      Ρ zpow_natCast⟩).symm
   sameCycle_of_vert x y h := by
-    rw [delRot, sameCycle_firstReturn_iff]
+    Ξ delRot, sameCycle_firstReturn_iff
     exact M.sameCycle_of_vert _ _ h
   face_fperm x := by
     show M.delFace hn ((M.delRot n * M.delOpp n) x) = M.delFace hn x
-    rw [M.deleteEdge_fperm_eq n, M.delFace_eq_iff hn, ← sameCycle_firstReturn_iff]
-    exact (Perm.SameCycle.refl _ _).symm.trans ⟨1, by rw [zpow_one]⟩ |>.symm
+    Ξ M.deleteEdge_fperm_eq n, M.delFace_eq_iff hn, ← sameCycle_firstReturn_iff
+    exact (Perm.SameCycle.refl _ _).symm.trans ⟨1, Ρ zpow_one⟩ |>.symm
   sameCycle_of_face x y h := by
-    rw [M.deleteEdge_fperm_eq n, sameCycle_firstReturn_iff]
+    Ξ M.deleteEdge_fperm_eq n, sameCycle_firstReturn_iff
     exact (M.delFace_eq_iff hn x y).mp h
   vert_surj v := by
     obtain ⟨x, hx, hv⟩ := M.exists_keep_vert hn hloop v
@@ -256,10 +258,10 @@ noncomputable def deleteEdge (hn : M.face n ≠ M.face (M.opp n))
         · exact hxf.trans hg.symm
         · exact absurd hxf h
     · obtain ⟨d, hd⟩ := M.face_surj g.1
-      have hk : M.Keep n d := ⟨fun h => hg (by rw [← hd, h]), fun h => g.2 (by rw [← hd, h])⟩
+      have hk : M.Keep n d := ⟨fun h => hg (Ρ ← hd, h), fun h => g.2 (by rw [← hd, h])⟩
       refine ⟨⟨d, hk⟩, Subtype.ext ?_⟩
       unfold delFace
-      rw [dite_eq_right_of_eq_false (eq_false (by rw [hd]; exact g.2))]
+      Ξ dite_eq_right_of_eq_false (eq_false (by rw [hd]; exact g.2))
       exact hd
 
 /-- Deletion keeps the vertices of the remaining darts. -/

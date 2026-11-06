@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreFEndS
 
 /-!
@@ -226,8 +230,8 @@ def TailW (s q : ℕ) : Prop := RunW s q ∨ SdW s q
 theorem FWin.congr' {c c' : Config} (h : FWin E c)
     (hq : ∀ q, 81007 ≤ q → q ≤ 81010 → c'.nreg q = c.nreg q) : FWin E c' := by
   unfold FWin
-  rw [hq 81007 (by norm_num) (by norm_num), hq 81008 (by norm_num) (by norm_num),
-    hq 81009 (by norm_num) (by norm_num), hq 81010 (by norm_num) (by norm_num)]
+  rw [hq 81007 (⊛) (⊛), hq 81008 (⊛) (⊛),
+    hq 81009 (⊛) (⊛), hq 81010 (⊛) (⊛)]
   exact h
 
 /-- The edge range of the candidates. -/

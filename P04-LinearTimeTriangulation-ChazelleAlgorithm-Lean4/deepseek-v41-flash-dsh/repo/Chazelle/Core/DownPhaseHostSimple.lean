@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseHostGap
 public import Chazelle.Core.WalkEmbed
 public import Mathlib.Data.List.GetD
@@ -50,15 +52,15 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   have hBfin : B.Finite := by
     refine Set.Finite.union ?_ (WalkAx.finite_chord_heights hsys)
     have : {y | ∃ i < M.W.n, (M.W.vtx i).2 = y} = (fun i => (M.W.vtx i).2) '' Iio M.W.n := by
-      ext y; simp [mem_Iio]
+      ext y; Θ mem_Iio
     rw [this]; exact (finite_Iio _).image _
   obtain ⟨y, hyI, hyB⟩ := ((Ioo_infinite (lt_add_of_pos_right z₀.2 hr)).sdiff hBfin).nonempty
   set z : Point := (z₀.1, y) with hz
   have hzU : z ∈ U := by
     apply hball
-    rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq]
-    simp only [hz, sub_self, abs_zero]
-    rw [max_lt_iff, abs_of_pos (by linarith [hyI.1])]
+    Ξ mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq
+    ϴ hz, sub_self, abs_zero
+    Ξ max_lt_iff, abs_of_pos (by linarith [hyI.1])
     exact ⟨hr, by linarith [hyI.2]⟩
   have hUfree : U ⊆ freeIn M.D F := Chazelle.Chain.regionsIn_subset hU
   have hzD : z ∈ M.D := (hUfree hzU).1
@@ -75,9 +77,9 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   have hLF : L ⊆ freeIn M.D F := by
     rintro _ ⟨s', hs', rfl⟩
     exact ⟨hseg s' hs', hzc _ rfl⟩
-  have hzL : z ∈ L := ⟨0, ⟨le_rfl, hs⟩, by simp [hz]⟩
+  have hzL : z ∈ L := ⟨0, ⟨le_rfl, hs⟩, ⊚ hz⟩
   have hLU : L ⊆ U := by
-    rw [Chazelle.Chain.regionsIn_eq_component hU hzU]
+    Ξ Chazelle.Chain.regionsIn_eq_component hU hzU
     exact hLc.subset_connectedComponentIn hzL hLF
   -- a half-disk on the left of the edge at `q` is free
   have hqF : q ∉ ⋃₀ F := hzc q rfl
@@ -90,7 +92,7 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   have hHc : IsPreconnected H := ((convex_ball _ _).inter (convex_det_pos _ _ 1)).isPreconnected
   have hHF : H ⊆ freeIn M.D F := by
     rintro x ⟨hx1, hx2⟩
-    simp only [mem_ofPred_eq, one_mul] at hx2
+    ϴ' mem_ofPred_eq, one_mul at hx2
     refine ⟨?_, hb₁ (ball_subset_ball (min_le_left _ _) hx1)⟩
     by_contra hxD
     refine hcl x ?_ hxD ?_
@@ -105,29 +107,29 @@ theorem exists_faces_nc (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
   have hεs : ε < s := by rw [hε]; have := min_le_right (min r₁ r₂) s; linarith
   have hw : ((z.1 + (s - ε), z.2) : Point) ∈ H := by
     refine ⟨?_, ?_⟩
-    · rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq]
-      simp only [hqdef, sub_self, abs_zero]
-      rw [max_lt_iff, show z.1 + (s - ε) - (z.1 + s) = -ε by ring, abs_neg, abs_of_pos hε0]
+    · Ξ mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq
+      ϴ hqdef, sub_self, abs_zero
+      Ξ max_lt_iff, show z.1 + (s - ε) - (z.1 + s) = -ε by ring, abs_neg, abs_of_pos hε0
       exact ⟨hεr, lt_of_le_of_lt le_rfl (lt_min (lt_min hr₁ hr₂) hr₂ |>.trans_le (min_le_left _ _))⟩
-    · simp only [mem_ofPred_eq, one_mul]
+    · ϴ mem_ofPred_eq, one_mul
       have e : det u v ((z.1 + (s - ε), z.2) : Point) = det u v q + ε * (v.2 - u.2) := by
         simp only [hqdef, det]; ring
-      rw [e, hq0]
-      have : 0 < v.2 - u.2 := by linarith
+      Ξ e, hq0
+      have : 0 < v.2 - u.2 := ⟡
       nlinarith
-  have hwL : ((z.1 + (s - ε), z.2) : Point) ∈ L := ⟨s - ε, ⟨by linarith, by linarith⟩, rfl⟩
+  have hwL : ((z.1 + (s - ε), z.2) : Point) ∈ L := ⟨s - ε, ⟨⟡, ⟡⟩, rfl⟩
   have hHU : H ⊆ U := by
-    rw [Chazelle.Chain.regionsIn_eq_component hU (hLU hwL)]
+    Ξ Chazelle.Chain.regionsIn_eq_component hU (hLU hwL)
     exact hHc.subset_connectedComponentIn hw hHF
   refine ⟨p, t, hp, ht.1, ht.2, ?_, ?_⟩
   · rintro ⟨c, hc, p', t', hA', heq⟩
     obtain ⟨rfl, rfl⟩ := key_inj ht.1.le ht.2 hA'.2.1 hA'.2.2.1 heq
-    exact hyB (Or.inr ⟨c, hc, _, hA'.2.2.2.1, by rw [hq]⟩)
+    exact hyB (Or.inr ⟨c, hc, _, hA'.2.2.2.1, Ρ hq⟩)
   filter_upwards [hM.eventually_offset_left hp ht (lt_min hr₁ hr₂)] with δ hδ
   apply hHU
   refine ⟨by rw [← hq]; exact hδ.1, ?_⟩
-  simp only [mem_ofPred_eq, one_mul]
-  rw [← sideLeft_edge hne ht]
+  ϴ mem_ofPred_eq, one_mul
+  Ξ ← sideLeft_edge hne ht
   exact hδ.2
 
 /-! ## Walk points of keys -/
@@ -140,8 +142,8 @@ theorem lerp_lerp (u v : Point) (t t' s : ℝ) :
 noncomputable def hostPt (W : Polygon) (x : ℝ) : Point := sidePt W ⌊x⌋₊ (x - ⌊x⌋₊)
 
 theorem floor_add {p : ℕ} {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) : ⌊(p : ℝ) + t⌋₊ = p := by
-  rw [Nat.floor_eq_iff (by positivity)]
-  exact ⟨by linarith, by linarith⟩
+  Ξ Nat.floor_eq_iff (⟢)
+  exact ⟨⟡, ⟡⟩
 
 theorem hostPt_eq (W : Polygon) {p : ℕ} {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
     hostPt W (p + t) = sidePt W p t := by
@@ -177,9 +179,9 @@ theorem arcEdge_of_noVertex (W : Polygon) {a b : ℝ} (ha0 : 0 ≤ a) (han : a <
           exact_mod_cast this
         apply hnv (p + 1) hk
         unfold sideInArc; rw [ite_eq_left hlt]; push_cast; exact ⟨hp1, h⟩
-      refine ⟨b - p, by linarith, by linarith, ?_, by rw [ite_eq_left hlt]; ring⟩
+      refine ⟨b - p, ⟡, ⟡, ?_, by rw [ite_eq_left hlt]; ring⟩
       rcases hbp.lt_or_eq with hbp | hbp
-      · have := hostPt_eq W (p := p) (t := b - p) (by linarith) (by linarith)
+      · have := hostPt_eq W (p := p) (t := b - p) (⟡) (⟡)
         rwa [show (p : ℝ) + (b - p) = b by ring] at this
       · have hk : p + 1 < W.n := by
           have : ((p + 1 : ℕ) : ℝ) < W.n := by push_cast; linarith
@@ -191,34 +193,34 @@ theorem arcEdge_of_noVertex (W : Polygon) {a b : ℝ} (ha0 : 0 ≤ a) (han : a <
     · have hb0' : b = 0 := by
         by_contra h
         have hbpos : 0 < b := lt_of_le_of_ne hb0 (Ne.symm h)
-        apply hnv 0 (by omega)
+        apply hnv 0 (⋄)
         unfold sideInArc; rw [ite_eq_right hlt]; right; simpa using hbpos
       have hpn1 : p + 1 = W.n := by
         by_contra h
-        have hk : p + 1 < W.n := by omega
+        have hk : p + 1 < W.n := ⋄
         apply hnv (p + 1) hk
         unfold sideInArc; rw [ite_eq_right hlt]; left; push_cast; exact hp1
-      refine ⟨1, by linarith, le_rfl, ?_, by rw [ite_eq_right hlt]; exact ⟨hb0', hpn1, rfl⟩⟩
+      refine ⟨1, ⟡, le_rfl, ?_, by rw [ite_eq_right hlt]; exact ⟨hb0', hpn1, rfl⟩⟩
       rw [hb0', show (0 : ℝ) = ((0 : ℕ) : ℝ) + 0 by simp, hostPt_eq W le_rfl one_pos,
         Chazelle.Chain.sidePt_zero, sidePt_one, hpn1, Nat.mod_self]
   -- the points of the segment
   intro z hz
-  rw [hA, hB] at hz
+  Ξ' hA, hB at hz
   obtain ⟨s, hs0, hs1, rfl⟩ := Chazelle.Geometry.mem_segment_iff_lerp.1 hz
   have hlerp : lerp (sidePt W p (a - p)) (sidePt W p t'') s =
       sidePt W p (a - p + s * (t'' - (a - p))) := lerp_lerp _ _ _ _ _
-  rw [hlerp]
+  Ξ hlerp
   set u := a - p + s * (t'' - (a - p)) with hu
-  have hu0 : a - p ≤ u := by nlinarith
-  have hu1 : u ≤ t'' := by nlinarith
+  have hu0 : a - p ≤ u := ⊞
+  have hu1 : u ≤ t'' := ⊞
   rcases (hu1.trans ht''1).lt_or_eq with hlt1 | heq1
-  · refine ⟨p, hpn, u, by linarith, hlt1, rfl, ?_⟩
+  · refine ⟨p, hpn, u, ⟡, hlt1, rfl, ?_⟩
     split_ifs at hkey ⊢ with hab'
     · rw [hkey]; constructor <;> linarith
     · left; linarith
   · have ht1 : t'' = 1 := le_antisymm ht''1 (heq1 ▸ hu1)
-    refine ⟨(p + 1) % W.n, Nat.mod_lt _ (by omega), 0, le_rfl, one_pos, ?_, ?_⟩
-    · rw [heq1, sidePt_one, Chazelle.Chain.sidePt_zero]
+    refine ⟨(p + 1) % W.n, Nat.mod_lt _ (⋄), 0, le_rfl, one_pos, ?_, ?_⟩
+    · Ξ heq1, sidePt_one, Chazelle.Chain.sidePt_zero
     · split_ifs at hkey ⊢ with hab'
       · have hk : p + 1 < W.n := by
           have : ((p + 1 : ℕ) : ℝ) < W.n := by push_cast; linarith
@@ -241,7 +243,7 @@ noncomputable def hostPts (M : Model) (F : Set (Set Point)) (U : Set Point) : Li
 theorem hostKeyList_eq {F : Set (Set Point)} {U : Set Point} (h : (hostKeys M F U).Finite) :
     hostKeyList M F U = h.toFinset.sort (· ≤ ·) := by
   classical
-  unfold hostKeyList; rw [dite_eq_left h]
+  unfold hostKeyList; Ξ dite_eq_left h
 
 /-- A strictly sorted list: no element lies strictly (cyclically) between two consecutive
 entries. -/
@@ -250,7 +252,7 @@ theorem sorted_gap {L : List ℝ} (hmono : ∀ i j, i < j → j < L.length → L
     ¬ sideInArc (L.getD i 0) (L.getD ((i + 1) % L.length) 0) x := by
   obtain ⟨j, hj, rfl⟩ := List.getElem_of_mem hx
   have hxj : L[j] = L.getD j 0 := (List.getD_eq_getElem _ _ hj).symm
-  rw [hxj]
+  Ξ hxj
   have hle : ∀ a b, a < L.length → b < L.length → L.getD a 0 < L.getD b 0 → a < b := by
     intro a b ha hb h
     by_contra h'
@@ -259,16 +261,16 @@ theorem sorted_gap {L : List ℝ} (hmono : ∀ i j, i < j → j < L.length → L
     · exact lt_irrefl _ h
   unfold sideInArc
   by_cases hi1 : i + 1 < L.length
-  · rw [Nat.mod_eq_of_lt hi1, ite_eq_left (hmono i (i + 1) (by omega) hi1)]
+  · Ξ Nat.mod_eq_of_lt hi1, ite_eq_left (hmono i (i + 1) (⋄) hi1)
     rintro ⟨h1, h2'⟩
     have := hle i j hi hj h1
     have := hle j (i + 1) hj hi1 h2'
     omega
-  · have e : (i + 1) % L.length = 0 := by rw [show i + 1 = L.length by omega, Nat.mod_self]
-    rw [e, ite_eq_right (not_lt.2 (hmono 0 i (by omega) hi).le)]
+  · have e : (i + 1) % L.length = 0 := Ρ show i + 1 = L.length by omega, Nat.mod_self
+    Ξ e, ite_eq_right (not_lt.2 (hmono 0 i (⋄) hi).le)
     rintro (h1 | h1)
     · have := hle i j hi hj h1; omega
-    · have := hle j 0 hj (by omega) h1; omega
+    · have := hle j 0 hj (⋄) h1; omega
 
 /-- Index arithmetic: with at least three entries, two distinct consecutive pairs of a cyclic
 list are distinct as sets. -/
@@ -278,9 +280,9 @@ theorem pair_ne {N i j : ℕ} (hN : 3 ≤ N) (hi : i < N) (hj : j < N) (hij : i 
     intro k hk
     rcases Nat.lt_or_ge (k + 1) N with h | h
     · exact Or.inl ⟨h, Nat.mod_eq_of_lt h⟩
-    · exact Or.inr ⟨by omega, by rw [show k + 1 = N by omega, Nat.mod_self]⟩
+    · exact Or.inr ⟨⋄, Ρ show k + 1 = N by omega, Nat.mod_self⟩
   rcases hs i hi with ⟨hi1, ei⟩ | ⟨hi1, ei⟩ <;> rcases hs j hj with ⟨hj1, ej⟩ | ⟨hj1, ej⟩ <;>
-    rw [ei] at h1 h2 <;> rw [ej] at h2 <;> omega
+    Ξ' ei at h1 h2 <;> Ξ' ej at h2 <;> omega
 
 /-! ## The host polygon of a region of the interior model -/
 
@@ -312,7 +314,7 @@ theorem three_le (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q F) (hne
   have hGM : GoodModel M := Or.inr ⟨Q, hQ, rfl⟩
   obtain ⟨p, t, hp, ht0, ht1, hcut, hfac⟩ := exists_faces_nc hM hF hfin hU
   obtain ⟨X, hX, l, r, harc, hin⟩ :=
-    WalkEmbed.exists_arc_around hGM hFam (by positivity) hcut
+    WalkEmbed.exists_arc_around hGM hFam (⟢) hcut
   have hXU : X = U := WalkAx.faces_unique hX hU (harc.2.2.2.2.2.2 p t hp ht0 ht1 hin) hfac
   subst hXU
   have hl : l ∈ hostKeys M F X := by
@@ -339,19 +341,19 @@ theorem three_le (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q F) (hne
       hmid k (Or.inr ⟨k, hk, rfl, l, r, harc, hkin⟩) hkin
     have hseg := arcEdge_of_noVertex M.W hb.1 hb.2.1 hb.2.2.1 hb.2.2.2 hlr hnv
     obtain ⟨-, -, hopen, -, -⟩ := hM.attach_seg (hF hc) hA₂ hB (fun h => hBne h.symm)
-    have hmidD := hopen (1 / 2) ⟨by norm_num, by norm_num⟩
-    have hPr : sidePt M.W p₂ t₂ = hostPt M.W r := by rw [hr, hostPt_eq M.W hA₂.2.1 hA₂.2.2.1]
-    have hPl : sidePt M.W pb tb = hostPt M.W l := by rw [← hfl, hostPt_eq M.W hB.2.1 hB.2.2.1]
-    rw [hPr, hPl] at hmidD
+    have hmidD := hopen (1 / 2) ⟨⊛, ⊛⟩
+    have hPr : sidePt M.W p₂ t₂ = hostPt M.W r := Ρ hr, hostPt_eq M.W hA₂.2.1 hA₂.2.2.1
+    have hPl : sidePt M.W pb tb = hostPt M.W l := Ρ ← hfl, hostPt_eq M.W hB.2.1 hB.2.2.1
+    Ξ' hPr, hPl at hmidD
     have hmem : lerp (hostPt M.W r) (hostPt M.W l) (1 / 2) ∈
         Chazelle.segment (hostPt M.W l) (hostPt M.W r) := by
-      rw [Chazelle.Geometry.segment_comm]
-      exact lerp_mem_segment _ _ (by norm_num) (by norm_num)
+      Ξ Chazelle.Geometry.segment_comm
+      exact lerp_mem_segment _ _ (⊛) (⊛)
     obtain ⟨q, hq, τ, hτ0, hτ1, hzq, -⟩ := hseg _ hmem
     have hbd : lerp (hostPt M.W r) (hostPt M.W l) (1 / 2) ∈ M.W.boundary := by
       rw [hzq]; exact sidePt_mem_boundary hq hτ0 hτ1.le
     have hWb : M.W.boundary = Q.boundary := (FactsInterior.interiorWalk_spec hQ).2.1
-    rw [hWb] at hbd
+    Ξ' hWb at hbd
     exact hmidD.2 hbd
   · exact ⟨l, hl, r, hrk, _, hf, hlr, Ne.symm hfl, Ne.symm hfr⟩
 
@@ -371,20 +373,20 @@ theorem hostPts_simple (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q F
   set L := hostKeyList M F U with hLdef
   have hL : L = hS.toFinset.sort (· ≤ ·) := hostKeyList_eq hS
   have hmemL : ∀ x, x ∈ L ↔ x ∈ hostKeys M F U := by
-    intro x; rw [hL, Finset.mem_sort, Set.Finite.mem_toFinset]
+    intro x; Ξ hL, Finset.mem_sort, Set.Finite.mem_toFinset
   have hsorted : L.Pairwise (· ≤ ·) := by rw [hL]; exact Finset.pairwise_sort _ _
   have hnodup : L.Nodup := by rw [hL]; exact Finset.sort_nodup _ _
   set N := L.length with hN
   have hmono : ∀ i j, i < j → j < N → L.getD i 0 < L.getD j 0 := by
     intro i j hij hj
-    rw [List.getD_eq_getElem _ _ (by omega), List.getD_eq_getElem _ _ hj]
-    refine lt_of_le_of_ne (List.pairwise_iff_getElem.1 hsorted i j (by omega) hj hij) ?_
+    Ξ List.getD_eq_getElem _ _ (⋄), List.getD_eq_getElem _ _ hj
+    refine lt_of_le_of_ne (List.pairwise_iff_getElem.1 hsorted i j (⋄) hj hij) ?_
     intro h
     have := (List.Nodup.getElem_inj_iff hnodup).1 h
     omega
   have hN3 : 3 ≤ N := by
     obtain ⟨x, hx, y, hy, z, hz, hxy, hxz, hyz⟩ := three_le hQ hFam hne hU
-    rw [hN, hL, Finset.length_sort]
+    Ξ hN, hL, Finset.length_sort
     exact Finset.two_lt_card.2 ⟨x, by simpa using hx, y, by simpa using hy, z, by simpa using hz,
       hxy, hxz, hyz⟩
   set κ : ℕ → ℝ := fun i => L.getD i 0 with hκ
@@ -397,17 +399,17 @@ theorem hostPts_simple (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q F
   have hκmem : ∀ i, i < N → κ i ∈ hostKeys M F U := by
     intro i hi
     rw [← hmemL]; simp only [hκ]; rw [List.getD_eq_getElem _ _ hi]; exact List.getElem_mem hi
-  have hsucc : ∀ i, i < N → (i + 1) % N < N := fun i _ => Nat.mod_lt _ (by omega)
-  have hVlen : (hostPts M F U).length = N := by simp [hostPts, hLdef, hN]
+  have hsucc : ∀ i, i < N → (i + 1) % N < N := fun i _ => Nat.mod_lt _ (⋄)
+  have hVlen : (hostPts M F U).length = N := ⊚ hostPts, hLdef, hN
   have hVget : ∀ i, i < N → (hostPts M F U).getD i (0, 0) = hostPt M.W (κ i) := by
     intro i hi
     have hi' : i < (hostPts M F U).length := by rw [hVlen]; exact hi
-    rw [List.getD_eq_getElem _ _ hi']
-    simp only [hostPts, List.getElem_map, hκ]
-    rw [List.getD_eq_getElem _ _ hi]
+    Ξ List.getD_eq_getElem _ _ hi'
+    ϴ hostPts, List.getElem_map, hκ
+    Ξ List.getD_eq_getElem _ _ hi
   have hWb : M.W.boundary = Q.boundary := hWspec.2.1
   have hbd : ∀ z ∈ M.D, z ∉ M.W.boundary := by
-    intro z hz hzb; rw [hWb] at hzb; exact hz.2 hzb
+    intro z hz hzb; Ξ' hWb at hzb; exact hz.2 hzb
   -- the classification of the edges
   have hcases : ∀ i, i < N →
       (∀ z ∈ Chazelle.segment (hostPt M.W (κ i)) (hostPt M.W (κ ((i + 1) % N))),
@@ -425,10 +427,10 @@ theorem hostPts_simple (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q F
     have hab : κ i ≠ κ ((i + 1) % N) := fun h => by
       have := hinj _ _ hi hsi h
       by_cases h1 : i + 1 < N
-      · rw [Nat.mod_eq_of_lt h1] at this; omega
-      · rw [show i + 1 = N by omega, Nat.mod_self] at this; omega
+      · Ξ' Nat.mod_eq_of_lt h1 at this; omega
+      · Ξ' show i + 1 = N by omega, Nat.mod_self at this; omega
     have hgapS : ∀ x ∈ hostKeys M F U, ¬ sideInArc (κ i) (κ ((i + 1) % N)) x :=
-      fun x hx => sorted_gap hmono (by omega) hi ((hmemL x).2 hx)
+      fun x hx => sorted_gap hmono (⋄) hi ((hmemL x).2 hx)
     rcases gap hM hF hfin hne hU (hκmem i hi) (hκmem _ hsi) hab hgapS with
       ⟨a', b', harc', hsub⟩ | ⟨c, hc, p, p', t, t', hA, hB, ha, hb, hAB⟩
     · left
@@ -442,21 +444,21 @@ theorem hostPts_simple (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q F
       refine ⟨p, hp, t, ht0, ht1, hzp, ?_⟩
       unfold InKeyIv
       by_cases h1 : i + 1 < N
-      · rw [ite_eq_left h1]
-        rw [Nat.mod_eq_of_lt h1] at hkey
-        rwa [ite_eq_left (hmono i (i + 1) (by omega) h1)] at hkey
-      · rw [ite_eq_right h1]
-        rw [show i + 1 = N by omega, Nat.mod_self] at hkey
-        rwa [ite_eq_right (not_lt.2 (hmono 0 i (by omega) hi).le)] at hkey
+      · Ξ ite_eq_left h1
+        Ξ' Nat.mod_eq_of_lt h1 at hkey
+        rwa [ite_eq_left (hmono i (i + 1) (⋄) h1)] at hkey
+      · Ξ ite_eq_right h1
+        Ξ' show i + 1 = N by omega, Nat.mod_self at hkey
+        rwa [ite_eq_right (not_lt.2 (hmono 0 i (⋄) hi).le)] at hkey
     · right
-      have hPa : hostPt M.W (κ i) = sidePt M.W p t := by rw [ha, hostPt_eq M.W hA.2.1 hA.2.2.1]
+      have hPa : hostPt M.W (κ i) = sidePt M.W p t := Ρ ha, hostPt_eq M.W hA.2.1 hA.2.2.1
       have hPb : hostPt M.W (κ ((i + 1) % N)) = sidePt M.W p' t' := by
-        rw [hb, hostPt_eq M.W hB.2.1 hB.2.2.1]
+        Ξ hb, hostPt_eq M.W hB.2.1 hB.2.2.1
       obtain ⟨hcab, -, hopen, -, -⟩ := hM.attach_seg (hF hc) hA hB hAB
-      rw [hPa, hPb]
+      Ξ hPa, hPb
       refine ⟨c, hc, hcab, hopen, ⟨p, t, hA, ha.symm⟩, ⟨p', t', hB, hb.symm⟩, ?_⟩
       intro pc tc hC
-      rw [ha, hb]
+      Ξ ha, hb
       exact attach_key_cases hM (hF hc) hA hB hAB hC
   -- an edge of the chord kind is not an arc edge
   have hnotarc : ∀ i, i < N →
@@ -467,19 +469,19 @@ theorem hostPts_simple (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q F
           InKeyIv κ N i ((p : ℝ) + t)) := by
     intro i hi hD harc
     obtain ⟨p, hp, t, ht0, ht1, hzp, -⟩ := harc _ (lerp_mem_segment _ _ (show (0 : ℝ) ≤ 1 / 2 by
-      norm_num) (by norm_num))
-    exact hbd _ (hD (1 / 2) (by norm_num) (by norm_num))
+      norm_num) (⊛))
+    exact hbd _ (hD (1 / 2) (⊛) (⊛))
       (hzp ▸ sidePt_mem_boundary hp ht0 ht1.le)
   refine KeyHost.simple (W := M.W) (D := M.D) (pp := fun i => ⌊κ i⌋₊)
     (tt := fun i => κ i - ⌊κ i⌋₊) ⟨?_, hWspec.1, ?_, ?_, ?_, ?_, ?_, hbd, ?_, ?_⟩
   · rw [hVlen]; exact hN3
   · intro i hi
-    rw [hVlen] at hi
+    Ξ' hVlen at hi
     have hb := hostKeys_bounds (hκmem i hi)
     have : (⌊κ i⌋₊ : ℝ) < M.W.n := lt_of_le_of_lt (Nat.floor_le hb.1) hb.2
     exact_mod_cast this
   · intro i hi
-    rw [hVlen] at hi
+    Ξ' hVlen at hi
     have hb := hostKeys_bounds (hκmem i hi)
     show 0 ≤ κ i - ⌊κ i⌋₊
     linarith [Nat.floor_le hb.1]
@@ -487,26 +489,26 @@ theorem hostPts_simple (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q F
     show κ i - ⌊κ i⌋₊ < 1
     linarith [Nat.lt_floor_add_one (κ i)]
   · intro i hi
-    rw [hVlen] at hi
+    Ξ' hVlen at hi
     rw [hVget i hi]; rfl
   · intro i j hij hj
-    rw [hVlen] at hj
-    unfold keyOf; simp only [add_sub_cancel]
+    Ξ' hVlen at hj
+    unfold keyOf; ϴ add_sub_cancel
     exact hmono i j hij hj
   · intro i hi
-    rw [hVlen] at hi
+    Ξ' hVlen at hi
     unfold ArcEdge ChordEdge keyOf
-    simp only [add_sub_cancel]
-    rw [hVlen, hVget i hi, hVget _ (hsucc i hi)]
+    ϴ add_sub_cancel
+    Ξ hVlen, hVget i hi, hVget _ (hsucc i hi)
     rcases hcases i hi with h | ⟨c, -, -, hopen, -⟩
     · exact Or.inl h
     · exact Or.inr fun s hs0 hs1 => hopen s ⟨hs0, hs1⟩
   · intro i j hi hj hij hci hcj s s' hs0 hs1 hs0' hs1'
-    rw [hVlen] at hi hj
+    Ξ' hVlen at hi hj
     unfold ChordEdge at hci hcj
-    rw [hVlen] at hci hcj ⊢
-    rw [hVget i hi, hVget _ (hsucc i hi)] at hci ⊢
-    rw [hVget j hj, hVget _ (hsucc j hj)] at hcj ⊢
+    Ξ' hVlen at hci hcj ⊢
+    Ξ' hVget i hi, hVget _ (hsucc i hi) at hci ⊢
+    Ξ' hVget j hj, hVget _ (hsucc j hj) at hcj ⊢
     rcases hcases i hi with h | ⟨ci, hci', hcieq, -, ⟨pi₁, ti₁, hAi₁, hki₁⟩, ⟨pi₂, ti₂, hAi₂, hki₂⟩,
       hallI⟩
     · exact absurd h (hnotarc i hi hci)
@@ -518,8 +520,8 @@ theorem hostPts_simple (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q F
     · subst hcc
       have e1 := hallI pj₁ tj₁ hAj₁
       have e2 := hallI pj₂ tj₂ hAj₂
-      rw [hkj₁] at e1
-      rw [hkj₂] at e2
+      Ξ' hkj₁ at e1
+      Ξ' hkj₂ at e2
       have hsj := hsucc j hj
       have hsi := hsucc i hi
       refine pair_ne hN3 hi hj hij ?_ ?_
@@ -533,7 +535,7 @@ theorem hostPts_simple (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q F
         rw [hcieq]; exact lerp_mem_segment _ _ hs0.le hs1.le
       have hz2 : lerp (hostPt M.W (κ j)) (hostPt M.W (κ ((j + 1) % N))) s' ∈ cj := by
         rw [hcjeq]; exact lerp_mem_segment _ _ hs0'.le hs1'.le
-      rw [heq] at hz1
+      Ξ' heq at hz1
       exact chord_disj hM hF hfin hci' hcj' hcc hz1 hz2 (hcj s' hs0' hs1')
 
 end

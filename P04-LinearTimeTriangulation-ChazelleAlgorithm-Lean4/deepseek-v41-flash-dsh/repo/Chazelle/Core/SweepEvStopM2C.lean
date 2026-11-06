@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopTasks3
 public import Chazelle.Core.SweepEvStopRC
 public import Chazelle.Core.SweepEvGen
@@ -102,10 +104,10 @@ theorem m2cK_le (T Fg D : ℕ) : m2cK T Fg D + 4 ≤ (κGen D + 40000) * (Fg + T
   have h3 : (κGen D + 40000) * (Fg + T + 1) = κGen D * (Fg + T + 1) + 40000 * (Fg + T + 1) := by
     ring
   have h4 : 40000 ≤ 40000 * (Fg + T + 1) := Nat.le_mul_of_pos_right _ (Nat.succ_pos _)
-  rw [h3]
+  Ξ h3
   have e : m2cK T Fg D + 4 = (lhRunK T Fg D + 7) + 35016 := by unfold m2cK; ring
-  rw [e]
-  exact Nat.add_le_add (h1.trans h2) (le_trans (by norm_num) h4)
+  Ξ e
+  exact Nat.add_le_add (h1.trans h2) (le_trans (⊛) h4)
 
 end
 

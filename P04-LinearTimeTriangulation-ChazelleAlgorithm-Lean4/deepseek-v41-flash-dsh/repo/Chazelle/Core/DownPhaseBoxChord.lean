@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseBoxPos
 public import Chazelle.Merge.Augmented
 
@@ -29,8 +33,8 @@ variable {C C' : Chain}
 
 theorem tour_mem (C : Chain) {j : ℕ} (hj6 : 6 ≤ j) (hj : j ≤ 2 * C.m + 6) :
     (C.sideWalk C.sideBeta).vtx j ∈ C.set := by
-  have e : j = (j - 6) + 6 := by omega
-  rw [e, C.sideWalk_vtx_tour _ (by omega)]
+  have e : j = (j - 6) + 6 := ⋄
+  rw [e, C.sideWalk_vtx_tour _ (⋄)]
   exact C.vertex_mem_set (C.sideIdx_le _ _)
 
 theorem walk_last (C : Chain) : (C.sideWalk C.sideBeta).vtx (2 * C.m + 6) = C.top := by
@@ -49,8 +53,8 @@ theorem edge_kind (C : Chain) {p : ℕ} (hp : p < (C.sideWalk C.sideBeta).n) :
   rw [hn] at hp
   rcases Nat.lt_or_ge p 6 with h6 | h6
   · have hmod : (p + 1) % (C.sideWalk C.sideBeta).n = p + 1 := by
-      rw [hn]; exact Nat.mod_eq_of_lt (by omega)
-    rw [hmod]
+      rw [hn]; exact Nat.mod_eq_of_lt (⋄)
+    Ξ hmod
     interval_cases p
     · left; rw [C.sideWalk_vtx_zero, C.sideWalk_vtx_one]; rfl
     · right; left; rw [C.sideWalk_vtx_one, C.sideWalk_vtx_two]
@@ -61,11 +65,11 @@ theorem edge_kind (C : Chain) {p : ℕ} (hp : p < (C.sideWalk C.sideBeta).n) :
   · rcases Nat.lt_or_ge p (2 * C.m + 6) with h' | h'
     · right; right
       have hmod : (p + 1) % (C.sideWalk C.sideBeta).n = p + 1 := by
-        rw [hn]; exact Nat.mod_eq_of_lt (by omega)
-      rw [hmod]
-      exact ⟨tour_mem C h6 (by omega), tour_mem C (by omega) (by omega)⟩
+        rw [hn]; exact Nat.mod_eq_of_lt (⋄)
+      Ξ hmod
+      exact ⟨tour_mem C h6 (⋄), tour_mem C (by omega) (by omega)⟩
     · right; left
-      have hp' : p = 2 * C.m + 6 := by omega
+      have hp' : p = 2 * C.m + 6 := ⋄
       subst hp'
       rw [C.sideWalk_vtx_wrap, walk_last]; rfl
 
@@ -75,10 +79,10 @@ theorem edge_kind (C : Chain) {p : ℕ} (hp : p < (C.sideWalk C.sideBeta).n) :
 theorem abs_lerp_le {u v : Point} {c : ℝ} (hu : |u.1| ≤ c ∧ |u.2| ≤ c) (hv : |v.1| ≤ c ∧ |v.2| ≤ c)
     {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1) :
     |(Geometry.lerp u v t).1| ≤ c ∧ |(Geometry.lerp u v t).2| ≤ c := by
-  simp only [Geometry.lerp]
+  ϴ Geometry.lerp
   have key : ∀ a b : ℝ, |a| ≤ c → |b| ≤ c → |a + t * (b - a)| ≤ c := by
     intro a b ha hb
-    rw [abs_le] at *
+    Ξ' abs_le at *
     constructor <;> nlinarith [ha.1, ha.2, hb.1, hb.2]
   exact ⟨key _ _ hu.1 hv.1, key _ _ hu.2 hv.2⟩
 
@@ -92,15 +96,15 @@ theorem pos_eq {Q : Polygon} {x : WPos} (hxn : x.edge < (chainModel C).W.n)
     (hx : BandPos C C' Q x) (hm : 0 ≤ (chainModel C).param Q x ∧ (chainModel C).param Q x < 1) :
     (chainModel C').pos Q x = phi C C' ((chainModel C).pos Q x) := by
   unfold Model.pos
-  rw [h.wa_eq, h.wb_eq]
+  Ξ h.wa_eq, h.wb_eq
   set u := (chainModel C).wa x.edge with hu
   set v := (chainModel C).wb x.edge with hv
   rcases hx with h0 | ⟨k, hk, hy⟩
-  · simp [Model.param, h0, Geometry.lerp_zero]
-  rw [h.param'_eq hk hy, param_eq _ Q x k hk]
+  · Θ Model.param, h0, Geometry.lerp_zero
+  Ξ h.param'_eq hk hy, param_eq _ Q x k hk
   rw [param_eq _ Q x k hk] at hm
   by_cases hh : u.2 = v.2
-  · simp only [← hu, ← hv, hh, ↓reduceIte, Geometry.lerp_zero]
+  · ϴ ← hu, ← hv, hh, ↓reduceIte, Geometry.lerp_zero
   simp only [← hu, ← hv, hh, ↓reduceIte] at hm ⊢
   have hy' := sig_band hy (C := C) (C' := C')
   rcases edge_kind C hxn with hk2 | hk1 | ⟨hua, hvb⟩
@@ -111,7 +115,7 @@ theorem pos_eq {Q : Polygon} {x : WPos} (hxn : x.edge < (chainModel C).W.n)
     have hne' : (phi C C' v).2 - (phi C C' u).2 ≠ 0 := by
       simp only [phi, stretchPt]; exact sub_ne_zero.2 (fun e => hh (sig_inj.1 e).symm)
     apply Prod.ext
-    · simp only [Geometry.lerp, phi, stretchPt, ← hk1', sub_self, mul_zero, add_zero]
+    · ϴ Geometry.lerp, phi, stretchPt, ← hk1', sub_self, mul_zero, add_zero
     · have hne2 : stretch (bnd C C') (kk C C') v.2 - stretch (bnd C C') (kk C C') u.2 ≠ 0 :=
         hne'
       have e1 : u.2 + ratio u.2 v.2 (Q.vtx k).2 * (v.2 - u.2) = (Q.vtx k).2 := by
@@ -121,17 +125,17 @@ theorem pos_eq {Q : Polygon} {x : WPos} (hxn : x.edge < (chainModel C).W.n)
           (stretch (bnd C C') (kk C C') v.2 - stretch (bnd C C') (kk C C') u.2) =
           stretch (bnd C C') (kk C C') (Q.vtx k).2 := by
         unfold ratio; field_simp; ring
-      simp only [Geometry.lerp, phi, stretchPt]
-      rw [e1, e2]
+      ϴ Geometry.lerp, phi, stretchPt
+      Ξ e1, e2
   · -- an edge between two chain vertices: nothing moves
     have hu' : phi C C' u = u := h.phi_fix hua
     have hv' : phi C C' v = v := h.phi_fix hvb
-    rw [hu', hv']
+    Ξ hu', hv'
     have hsu : stretch (bnd C C') (kk C C') u.2 = u.2 := by
       have := congrArg Prod.snd hu'; simpa [phi, stretchPt] using this
     have hsv : stretch (bnd C C') (kk C C') v.2 = v.2 := by
       have := congrArg Prod.snd hv'; simpa [phi, stretchPt] using this
-    rw [hsu, hsv, hy']
+    Ξ hsu, hsv, hy'
     have hb := abs_lerp_le (u := u) (v := v) (h.abs_le_of_mem hua) (h.abs_le_of_mem hvb) hm.1
       hm.2.le
     exact (stretchPt_of_le bnd_nonneg (by linarith [hb.1]) (by linarith [hb.2])).symm
@@ -171,7 +175,7 @@ theorem toSet_eq {Q : Polygon} {r : CRec} (hy : |(Q.vtx r.h).2| < bnd C C')
   have hbl : BandPos C C' Q r.lpos := Or.inr ⟨r.h, rfl, hy⟩
   have hbr : BandPos C C' Q r.rpos := Or.inr ⟨r.h, rfl, hy⟩
   unfold CRec.toSet
-  rw [image_hseg hy, h.pos_eq hl hbl hml, h.pos_eq hr hbr hmr]
+  Ξ image_hseg hy, h.pos_eq hl hbl hml, h.pos_eq hr hbr hmr
   rfl
 
 /-- **Admissibility transfers**: the stretch of an augmented chord of `C` at a band height is an

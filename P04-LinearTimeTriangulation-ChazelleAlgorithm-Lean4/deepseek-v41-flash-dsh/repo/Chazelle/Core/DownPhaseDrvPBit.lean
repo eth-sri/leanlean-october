@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvPScan
 public import Chazelle.Core.DownPhaseOracleChR2
 public import Chazelle.Core.DownPhaseMathJunc
@@ -59,33 +61,33 @@ theorem sideCcw_up' {a v b : Point} {h : ℝ} (hh : 0 < h) (ha : a.2 < v.2) :
   have e5 : sideDot (b - v) (a - v) = (b.1 - v.1) * (a.1 - v.1) := by
     unfold sideDot; simp only [Prod.fst_sub, Prod.snd_sub]; rw [hb]; ring
   unfold sideCcw
-  rw [e1, e2, e3, e4, e5, hdet, hb]
+  Ξ e1, e2, e3, e4, e5, hdet, hb
   rcases lt_trichotomy b.1 v.1 with h1 | h1 | h1
-  · have p1 : 0 < (b.1 - v.1) * (a.2 - v.2) := mul_pos_of_neg_of_neg (by linarith) (by linarith)
-    have p2 : h * (b.1 - v.1) < 0 := mul_neg_of_pos_of_neg hh (by linarith)
+  · have p1 : 0 < (b.1 - v.1) * (a.2 - v.2) := mul_pos_of_neg_of_neg (⟡) (⟡)
+    have p2 : h * (b.1 - v.1) < 0 := mul_neg_of_pos_of_neg hh (⟡)
     constructor
     · rintro (⟨-, h2, -⟩ | ⟨h2, -⟩ | ⟨h2, -⟩ | ⟨h2, -⟩) <;> linarith
     · rintro (⟨-, h2, -⟩ | ⟨h2, -⟩ | ⟨h2, -⟩ | ⟨h2, -⟩) <;> linarith
   · rw [h1]; simp
-  · have p1 : (b.1 - v.1) * (a.2 - v.2) < 0 := mul_neg_of_pos_of_neg (by linarith) (by linarith)
-    have p2 : 0 < h * (b.1 - v.1) := mul_pos hh (by linarith)
+  · have p1 : (b.1 - v.1) * (a.2 - v.2) < 0 := mul_neg_of_pos_of_neg (⟡) (⟡)
+    have p2 : 0 < h * (b.1 - v.1) := mul_pos hh (⟡)
     exact iff_of_true (Or.inr (Or.inl ⟨p1, Or.inl p2⟩)) (Or.inr (Or.inl ⟨p1, Or.inl h1⟩))
 
 /-- **The orientation bit of a chain** whose top is not its first vertex (no distinct heights
 needed). -/
 theorem sideBeta_iff' (C : Chain) (h0 : 0 < C.topIdx) :
     C.sideBeta = true ↔ IOrc.BetaF (C.vertex (C.topIdx - 1)) C.top (C.vertex (C.topIdx + 1)) := by
-  rw [C.sideBeta_eq_true_iff]
+  Ξ C.sideBeta_eq_true_iff
   have hsl : C.slitTop - C.top = ((0 : ℝ), C.radius - C.top.2) := by
     unfold Chain.slitTop; ext <;> simp
-  rw [hsl]
+  Ξ hsl
   have hT := C.topIdx_le
   have ha : (C.vertex (C.topIdx - 1)).2 < C.top.2 := by
-    refine lt_of_le_of_ne (C.vertex_snd_le_top (by omega)) (fun e => ?_)
-    have := C.topIdx_min (j := C.topIdx - 1) (by omega) (fun i hi => by
+    refine lt_of_le_of_ne (C.vertex_snd_le_top (⋄)) (fun e => ?_)
+    have := C.topIdx_min (j := C.topIdx - 1) (⋄) (fun i hi => by
       rw [e]; exact C.vertex_snd_le_top hi)
     omega
-  rw [sideCcw_up' (by linarith [C.top_snd_lt_radius]) ha]
+  Ξ sideCcw_up' (by linarith [C.top_snd_lt_radius]) ha
   unfold IOrc.BetaF
   constructor
   · rintro (h | ⟨h1, h3⟩ | h | h)
@@ -108,7 +110,7 @@ variable {P : Polygon} {H : Host} {C : Chain}
 theorem qof_n (P : Polygon) : (Qof P).n = P.n := shear_n _ _
 
 theorem hchain_n (hC : C.P = H.poly (Qof P)) : C.P.n = (H.pts P.n).length := by
-  rw [hC, DownMath.host_poly_n, qof_n]
+  Ξ hC, DownMath.host_poly_n, qof_n
 
 /-- The vertices of a host chain are evaluated host points. -/
 theorem hchain_vertex (hC : C.P = H.poly (Qof P)) (k : ℕ) :
@@ -117,26 +119,26 @@ theorem hchain_vertex (hC : C.P = H.poly (Qof P)) (k : ℕ) :
   have hpos := C.n_pos
   show C.P.vtx ((C.s + k) % C.P.n) = _
   have hlt : (C.s + k) % (H.pts P.n).length < (H.pts (Qof P).n).length := by
-    rw [qof_n]; exact Nat.mod_lt _ (by omega)
-  rw [hn, hC, DownMath.host_poly_vtx _ _ hlt, qof_n]
+    rw [qof_n]; exact Nat.mod_lt _ (⋄)
+  Ξ hn, hC, DownMath.host_poly_vtx _ _ hlt, qof_n
   rfl
 
 theorem hchain_vertex_lt (hC : C.P = H.poly (Qof P)) {k : ℕ}
     (hk : C.s + k < (H.pts P.n).length) : C.vertex k = (pt H P.n (C.s + k)).eval (Qof P) := by
-  rw [hchain_vertex hC, Nat.mod_eq_of_lt hk]
+  Ξ hchain_vertex hC, Nat.mod_eq_of_lt hk
 
 /-- **The top index of a host chain** is the least offset of a highest point. -/
 theorem hchain_topIdx (hC : C.P = H.poly (Qof P)) (hsm : C.s + C.m < (H.pts P.n).length)
     {T : ℕ} (hT : T ≤ C.m) (hle : ∀ j, j ≤ C.m → Yh P H (C.s + j) ≤ Yh P H (C.s + T))
     (hlt : ∀ j, j < T → Yh P H (C.s + j) < Yh P H (C.s + T)) : C.topIdx = T := by
   have ev : ∀ j, j ≤ C.m → (C.vertex j).2 = Yh P H (C.s + j) := fun j hj => by
-    rw [hchain_vertex_lt hC (by omega)]; rfl
+    rw [hchain_vertex_lt hC (⋄)]; rfl
   have h1 : C.topIdx ≤ T := C.topIdx_min hT (fun i hi => by rw [ev i hi, ev T hT]; exact hle i hi)
   by_contra hne
   have h2 := C.vertex_snd_le_top hT
   unfold Chain.top at h2
-  rw [ev T hT, ev _ C.topIdx_le] at h2
-  have := hlt C.topIdx (by omega)
+  Ξ' ev T hT, ev _ C.topIdx_le at h2
+  have := hlt C.topIdx (⋄)
   linarith
 
 /-- **The top index of a leaf** (its points are the vertices `a, …, a + m` of `Q`, of distinct
@@ -146,16 +148,16 @@ theorem hchain_topIdx_leaf (hC : C.P = H.poly (Qof P)) (hsm : C.s + C.m < (H.pts
     (hpt : ∀ k, k ≤ C.m → pt H P.n (C.s + k) = .vtx (a + k)) {T : ℕ} (hT : T ≤ C.m)
     (hle : ∀ j, j ≤ C.m → IOrc.Y P (a + j) ≤ IOrc.Y P (a + T)) : C.topIdx = T := by
   have ev : ∀ j, j ≤ C.m → (C.vertex j).2 = IOrc.Y P (a + j) := fun j hj => by
-    rw [hchain_vertex_lt hC (by omega), hpt j hj]; rfl
+    rw [hchain_vertex_lt hC (⋄), hpt j hj]; rfl
   have h1 : C.topIdx ≤ T := C.topIdx_min hT (fun i hi => by rw [ev i hi, ev T hT]; exact hle i hi)
   by_contra hne
   have h2 := C.vertex_snd_le_top hT
   unfold Chain.top at h2
-  rw [ev T hT, ev _ C.topIdx_le] at h2
+  Ξ' ev T hT, ev _ C.topIdx_le at h2
   have h3 := hle _ C.topIdx_le
   have hn : (Qof P).n = P.n := shear_n _ _
   exact hD (a + C.topIdx) (a + T) (by rw [hn]; have := C.topIdx_le; omega) (by rw [hn]; omega)
-    (by omega) (le_antisymm h3 h2)
+    (⋄) (le_antisymm h3 h2)
 
 /-- **The orientation bit of a host chain** from the host points before, at and after the top. -/
 theorem hchain_beta (hC : C.P = H.poly (Qof P)) (hT0 : 0 < C.topIdx)
@@ -163,10 +165,10 @@ theorem hchain_beta (hC : C.P = H.poly (Qof P)) (hT0 : 0 < C.topIdx)
     C.sideBeta = true ↔ IOrc.BetaF ((pt H P.n (C.s + C.topIdx - 1)).eval (Qof P))
       ((pt H P.n (C.s + C.topIdx)).eval (Qof P))
       ((pt H P.n ((C.s + C.topIdx + 1) % (H.pts P.n).length)).eval (Qof P)) := by
-  rw [sideBeta_iff' C hT0, hchain_vertex_lt hC (by omega),
+  rw [sideBeta_iff' C hT0, hchain_vertex_lt hC (⋄),
     show C.s + (C.topIdx - 1) = C.s + C.topIdx - 1 by omega]
   unfold Chain.top
-  rw [hchain_vertex_lt hC hsT, hchain_vertex hC, ← Nat.add_assoc]
+  Ξ hchain_vertex_lt hC hsT, hchain_vertex hC, ← Nat.add_assoc
 
 end hostchain
 
@@ -204,21 +206,21 @@ def Bbit (r : ℕ) : Bool :=
 
 theorem wr_betaS : wr Bbit betaS = true := by
   have h : wr Bbit lookStmt = true := SweepPrim.wr_mono wr_lookStmt (fun r hr => by
-    simp only [Bhost, Bool.or_eq_true, decide_eq_true_eq] at hr
+    ϴ' Bhost, Bool.or_eq_true, decide_eq_true_eq at hr
     simp only [Bbit, Bool.or_eq_true, decide_eq_true_eq]; omega)
   have hk : ∀ a b d op dst, 170000 ≤ dst → dst < 170100 → wr Bbit (kbit a b d op dst) = true :=
     fun a b d op dst h1 h2 => SweepPrim.wr_mono (SweepPrim.wr_kbit _ _ _ _ _) (fun r hr => by
-      simp only [SweepPrim.Bkb, Bool.or_eq_true, beq_iff_eq] at hr
-      simp only [Bbit, Bool.or_eq_true, decide_eq_true_eq]
+      ϴ' SweepPrim.Bkb, Bool.or_eq_true, beq_iff_eq at hr
+      ϴ Bbit, Bool.or_eq_true, decide_eq_true_eq
       rcases hr with hr | hr
       · exact Or.inl (Or.inl (Or.inl (Or.inr hr)))
       · subst hr; left; left; right; omega)
   have hl : wr Bbit IOrc.logI = true := by
     simp only [IOrc.logI, IOrc.setB, wr, block, wrOK]; decide
   simp only [betaS, bitI, nbrS, lkTo, testsS, wr, block, wrOK, h, hl,
-    hk _ _ _ _ 170082 (by norm_num) (by norm_num), hk _ _ _ _ 170083 (by norm_num) (by norm_num),
-    hk _ _ _ _ 170085 (by norm_num) (by norm_num), hk _ _ _ _ 170086 (by norm_num) (by norm_num),
-    hk _ _ _ _ 170087 (by norm_num) (by norm_num), hk _ _ _ _ 170088 (by norm_num) (by norm_num),
+    hk _ _ _ _ 170082 (⊛) (⊛), hk _ _ _ _ 170083 (⊛) (⊛),
+    hk _ _ _ _ 170085 (⊛) (⊛), hk _ _ _ _ 170086 (⊛) (⊛),
+    hk _ _ _ _ 170087 (⊛) (⊛), hk _ _ _ _ 170088 (⊛) (⊛),
     Bool.and_true, Bool.true_and]
   decide
 
@@ -242,10 +244,10 @@ theorem lkTo_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m₀
       c₁.nmem = c.nmem := by
     exec_block
     refine ⟨rfl, by config_simp; exact hsrc, fun r hr => ?_, rfl⟩
-    simp only [Config.nreg_mk, upd, ite_eq_right hr]
-  have E₁ : HostEnv W HB H.length m₀ c₁ := ⟨e₁.wb_right, by rw [r₁ _ (by decide)]; exact hE.h60,
-    by rw [r₁ _ (by decide)]; exact hE.h61, by rw [r₁ _ (by decide)]; exact hE.h67,
-    by rw [r₁ _ (by decide)]; exact hE.h68, by rw [r₁ _ (by decide)]; exact hE.h69,
+    ϴ Config.nreg_mk, upd, ite_eq_right hr
+  have E₁ : HostEnv W HB H.length m₀ c₁ := ⟨e₁.wb_right, by rw [r₁ _ (⌖)]; exact hE.h60,
+    by rw [r₁ _ (⌖)]; exact hE.h61, by rw [r₁ _ (⌖)]; exact hE.h67,
+    by rw [r₁ _ (⌖)]; exact hE.h68, by rw [r₁ _ (⌖)]; exact hE.h69,
     by rw [m₁]; exact hE.mem⟩
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, E₂, s₂⟩ := look_pt E c₁ E₁ v71 hp
   have w₂ := e₂.wb_right
@@ -258,17 +260,17 @@ theorem lkTo_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m₀
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
     · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
-    · simp only [Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2, ite_eq_right h3]
+    · ϴ Config.nreg_mk, upd, ite_eq_right h1, ite_eq_right h2, ite_eq_right h3
   have ex : Exec P W (lkTo src d) c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
-  refine ⟨c₃, _, ex, by omega, ⟨e₃.wb_right, ?_, ?_, ?_, ?_, ?_, by rw [m₃]; exact E₂.mem⟩, s₃,
-    fun r h0 h1 h2 h3 => ?_, by rw [m₃, F₂.2.2.1, m₁]⟩
-  all_goals try (rw [r₃ _ (by omega) (by omega) (by omega)])
+  refine ⟨c₃, _, ex, ⋄, ⟨e₃.wb_right, ?_, ?_, ?_, ?_, ?_, by rw [m₃]; exact E₂.mem⟩, s₃,
+    fun r h0 h1 h2 h3 => ?_, Ρ m₃, F₂.2.2.1, m₁⟩
+  all_goals try (rw [r₃ _ (⋄) (⋄) (⋄)])
   · exact E₂.h60
   · exact E₂.h61
   · exact E₂.h67
   · exact E₂.h68
   · exact E₂.h69
-  · rw [F₂.1 r h0, r₁ r (by rintro rfl; simp [Bhost] at h0)]
+  · Ξ F₂.1 r h0, r₁ r (by rintro rfl; Θ' Bhost at h0)
 
 /-- The indices of the neighbours of the top. -/
 theorem nbrS_exec (c : Config) (hw : WordsBounded W c) {s T N : ℕ} (h01 : c.nreg 218001 = s)
@@ -288,25 +290,25 @@ theorem nbrS_exec (c : Config) (hw : WordsBounded W c) {s T N : ℕ} (h01 : c.nr
     · config_simp; rw [h01, h13, h21]; omega
     refine ⟨rfl, by config_simp; rw [h01, h13], by config_simp; rw [h01, h13, h21],
       by config_simp; rw [h01, h13, h21], fun r a b d => ?_, rfl⟩
-    simp only [Config.nreg_mk, upd, ite_eq_right a, ite_eq_right b, ite_eq_right d]
+    ϴ Config.nreg_mk, upd, ite_eq_right a, ite_eq_right b, ite_eq_right d
   have w₁ := e₁.wb_right
-  have n₁ : c₁.nreg 218012 = N := by rw [r₁ _ (by norm_num) (by norm_num) (by norm_num), h12]
+  have n₁ : c₁.nreg 218012 = N := Ρ r₁ _ (⊛) (⊛) (⊛), h12
   by_cases hc : c₁.nreg 218052 < c₁.nreg 218012
-  · refine spec_seq ⟨c₁, k₁, e₁, spec_ifLtN_true hc (spec_skip w₁ ⟨by omega, v50, v51, ?_, r₁, m₁⟩)⟩
-    rw [v52, Nat.mod_eq_of_lt (by rw [v52, n₁] at hc; exact hc)]
+  · refine spec_seq ⟨c₁, k₁, e₁, spec_ifLtN_true hc (spec_skip w₁ ⟨⋄, v50, v51, ?_, r₁, m₁⟩)⟩
+    Ξ v52, Nat.mod_eq_of_lt (by rw [v52, n₁] at hc; exact hc)
   · refine spec_seq ⟨c₁, k₁, e₁, spec_ifLtN_false hc ?_⟩
     exec_block
     · omega
-    refine ⟨by omega, by config_simp; exact v50, by config_simp; exact v51, ?_, fun r a b d => ?_,
+    refine ⟨⋄, by config_simp; exact v50, by config_simp; exact v51, ?_, fun r a b d => ?_,
       m₁⟩
     · config_simp
-      rw [v52, n₁] at hc
-      rw [show s + T + 1 = N by omega, Nat.mod_self]
+      Ξ' v52, n₁ at hc
+      Ξ show s + T + 1 = N by omega, Nat.mod_self
     · simp only [Config.nreg_mk, upd, ite_eq_right d]; exact r₁ r a b d
 
 theorem bkb_ne {r d : ℕ} (h : r < 10000 ∨ 10500 ≤ r) (hd : r ≠ d) : SweepPrim.Bkb d r = false := by
   simp only [SweepPrim.Bkb, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,
-    beq_eq_false_iff_ne]; exact ⟨by omega, hd⟩
+    beq_eq_false_iff_ne]; exact ⟨⋄, hd⟩
 
 /-- One kernel bit into a register of band `17`, with its frame. -/
 theorem kbit17 (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : WordsBounded W c)
@@ -318,7 +320,7 @@ theorem kbit17 (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : WordsBou
       BitIs c' dst (SignTest op (sa.eval (Qof P)) (sb.eval (Qof P)) (sd.eval (Qof P))) ∧
       (∀ r, (r < 10000 ∨ 10500 ≤ r) → r ≠ dst → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem := by
   obtain ⟨c', k, e, hk, F, b1, b2⟩ := kbit_exec hG hW c hw (a := a) (b := b) (d := d) (op := op)
-    (dst := dst) (by omega) (by omega) (by omega) (by omega) hop hla hlb hld hsa hsb hsd
+    (dst := dst) (⋄) (⋄) (⋄) (⋄) hop hla hlb hld hsa hsb hsd
   exact ⟨c', k, e, hk, ⟨b1, b2⟩, fun r h1 h2 => F.1 r (bkb_ne h1 h2), F.2.2.1⟩
 
 /-- **The six sign tests** on the slots `218053` (`A`), `218056` (`V`), `218059` (`B`). -/
@@ -337,56 +339,56 @@ theorem testsS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wor
   -- slots survive every kernel bit
   have keep : ∀ {d d' : Config} {x : ℕ} {sp : SymPt}, SymPtIn d x sp → 218000 ≤ x →
       (∀ r, (r < 10000 ∨ 10500 ≤ r) → (r < 170082 ∨ 170089 ≤ r) → d'.nreg r = d.nreg r) →
-      SymPtIn d' x sp := fun h hx hr => symPtIn_copy h (hr _ (by omega) (by omega))
-        (hr _ (by omega) (by omega)) (hr _ (by omega) (by omega))
+      SymPtIn d' x sp := fun h hx hr => symPtIn_copy h (hr _ (⋄) (⋄))
+        (hr _ (⋄) (⋄)) (hr _ (⋄) (⋄))
   obtain ⟨c₁, k₁, e₁, hk₁, b₁, r₁, m₁⟩ := kbit17 (op := 2) (dst := 170082) hG hW c hw
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) hA hV hB
+    (⊛) (⊛) (⊛) (⊛) (⊛) (⊛) hA hV hB
     sA sV sB
   have f₁ : ∀ r, (r < 10000 ∨ 10500 ≤ r) → (r < 170082 ∨ 170089 ≤ r) → c₁.nreg r = c.nreg r :=
-    fun r h1 h2 => r₁ r h1 (by omega)
+    fun r h1 h2 => r₁ r h1 (⋄)
   obtain ⟨c₂, k₂, e₂, hk₂, b₂, r₂, m₂⟩ := kbit17 (op := 3) (dst := 170083) hG hW c₁ e₁.wb_right
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) hA hV hB
-    (keep sA (by norm_num) f₁) (keep sV (by norm_num) f₁) (keep sB (by norm_num) f₁)
+    (⊛) (⊛) (⊛) (⊛) (⊛) (⊛) hA hV hB
+    (keep sA (⊛) f₁) (keep sV (⊛) f₁) (keep sB (⊛) f₁)
   have f₂ : ∀ r, (r < 10000 ∨ 10500 ≤ r) → (r < 170082 ∨ 170089 ≤ r) → c₂.nreg r = c.nreg r :=
-    fun r h1 h2 => (r₂ r h1 (by omega)).trans (f₁ r h1 h2)
+    fun r h1 h2 => (r₂ r h1 (⋄)).trans (f₁ r h1 h2)
   obtain ⟨c₃, k₃, e₃, hk₃, b₃, r₃, m₃⟩ := kbit17 (op := 0) (dst := 170085) hG hW c₂ e₂.wb_right
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) hV hB hV
-    (keep sV (by norm_num) f₂) (keep sB (by norm_num) f₂) (keep sV (by norm_num) f₂)
+    (⊛) (⊛) (⊛) (⊛) (⊛) (⊛) hV hB hV
+    (keep sV (⊛) f₂) (keep sB (⊛) f₂) (keep sV (⊛) f₂)
   have f₃ : ∀ r, (r < 10000 ∨ 10500 ≤ r) → (r < 170082 ∨ 170089 ≤ r) → c₃.nreg r = c.nreg r :=
-    fun r h1 h2 => (r₃ r h1 (by omega)).trans (f₂ r h1 h2)
+    fun r h1 h2 => (r₃ r h1 (⋄)).trans (f₂ r h1 h2)
   obtain ⟨c₄, k₄, e₄, hk₄, b₄, r₄, m₄⟩ := kbit17 (op := 0) (dst := 170086) hG hW c₃ e₃.wb_right
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) hA hV hA
-    (keep sA (by norm_num) f₃) (keep sV (by norm_num) f₃) (keep sA (by norm_num) f₃)
+    (⊛) (⊛) (⊛) (⊛) (⊛) (⊛) hA hV hA
+    (keep sA (⊛) f₃) (keep sV (⊛) f₃) (keep sA (⊛) f₃)
   have f₄ : ∀ r, (r < 10000 ∨ 10500 ≤ r) → (r < 170082 ∨ 170089 ≤ r) → c₄.nreg r = c.nreg r :=
-    fun r h1 h2 => (r₄ r h1 (by omega)).trans (f₃ r h1 h2)
+    fun r h1 h2 => (r₄ r h1 (⋄)).trans (f₃ r h1 h2)
   obtain ⟨c₅, k₅, e₅, hk₅, b₅, r₅, m₅⟩ := kbit17 (op := 1) (dst := 170087) hG hW c₄ e₄.wb_right
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) hV hB hV
-    (keep sV (by norm_num) f₄) (keep sB (by norm_num) f₄) (keep sV (by norm_num) f₄)
+    (⊛) (⊛) (⊛) (⊛) (⊛) (⊛) hV hB hV
+    (keep sV (⊛) f₄) (keep sB (⊛) f₄) (keep sV (⊛) f₄)
   have f₅ : ∀ r, (r < 10000 ∨ 10500 ≤ r) → (r < 170082 ∨ 170089 ≤ r) → c₅.nreg r = c.nreg r :=
-    fun r h1 h2 => (r₅ r h1 (by omega)).trans (f₄ r h1 h2)
+    fun r h1 h2 => (r₅ r h1 (⋄)).trans (f₄ r h1 h2)
   obtain ⟨c₆, k₆, e₆, hk₆, b₆, r₆, m₆⟩ := kbit17 (op := 1) (dst := 170088) hG hW c₅ e₅.wb_right
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) hB hV hB
-    (keep sB (by norm_num) f₅) (keep sV (by norm_num) f₅) (keep sB (by norm_num) f₅)
+    (⊛) (⊛) (⊛) (⊛) (⊛) (⊛) hB hV hB
+    (keep sB (⊛) f₅) (keep sV (⊛) f₅) (keep sB (⊛) f₅)
   have ex : Exec P W testsS c c₆ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k₆))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
-  refine ⟨c₆, _, ex, by omega, ?_, ?_, ?_, ?_, ?_, b₆, fun r h1 h2 => (r₆ r h1 (by omega)).trans
-    (f₅ r h1 h2), by rw [m₆, m₅, m₄, m₃, m₂, m₁]⟩
+  refine ⟨c₆, _, ex, ⋄, ?_, ?_, ?_, ?_, ?_, b₆, fun r h1 h2 => (r₆ r h1 (⋄)).trans
+    (f₅ r h1 h2), Ρ m₆, m₅, m₄, m₃, m₂, m₁⟩
   · refine b₁.of_eq ?_
-    rw [r₆ _ (by norm_num) (by norm_num), r₅ _ (by norm_num) (by norm_num),
-      r₄ _ (by norm_num) (by norm_num), r₃ _ (by norm_num) (by norm_num),
-      r₂ _ (by norm_num) (by norm_num)]
+    rw [r₆ _ (⊛) (⊛), r₅ _ (⊛) (⊛),
+      r₄ _ (⊛) (⊛), r₃ _ (⊛) (⊛),
+      r₂ _ (⊛) (⊛)]
   · refine b₂.of_eq ?_
-    rw [r₆ _ (by norm_num) (by norm_num), r₅ _ (by norm_num) (by norm_num),
-      r₄ _ (by norm_num) (by norm_num), r₃ _ (by norm_num) (by norm_num)]
+    rw [r₆ _ (⊛) (⊛), r₅ _ (⊛) (⊛),
+      r₄ _ (⊛) (⊛), r₃ _ (⊛) (⊛)]
   · refine b₃.of_eq ?_
-    rw [r₆ _ (by norm_num) (by norm_num), r₅ _ (by norm_num) (by norm_num),
-      r₄ _ (by norm_num) (by norm_num)]
+    rw [r₆ _ (⊛) (⊛), r₅ _ (⊛) (⊛),
+      r₄ _ (⊛) (⊛)]
   · refine b₄.of_eq ?_
-    rw [r₆ _ (by norm_num) (by norm_num), r₅ _ (by norm_num) (by norm_num)]
+    Ξ r₆ _ (⊛) (⊛), r₅ _ (⊛) (⊛)
   · refine b₅.of_eq ?_
-    rw [r₆ _ (by norm_num) (by norm_num)]
+    Ξ r₆ _ (⊛) (⊛)
 
-set_option maxHeartbeats 2000000 in
+
 /-- **The orientation bit**: `218014 := 1` iff the top offset `T` (`218013`) is positive and the
 six sign tests at the host points `s + T - 1`, `s + T`, `(s + T + 1) mod N` give `BetaF`. -/
 theorem betaS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m₀ HB) (c : Config)
@@ -405,8 +407,8 @@ theorem betaS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m�
   obtain ⟨s, hs⟩ : ∃ s, c.nreg 218001 = s := ⟨_, rfl⟩
   obtain ⟨T, hT⟩ : ∃ T, c.nreg 218013 = T := ⟨_, rfl⟩
   obtain ⟨N, hN⟩ : ∃ N, (H.pts P.n).length = N := ⟨_, rfl⟩
-  rw [hs, hT, hN] at hsT ⊢
-  rw [hN] at h12 hNW
+  Ξ' hs, hT, hN at hsT ⊢
+  Ξ' hN at h12 hNW
   unfold betaS
   by_cases hc : c.nreg 218020 < c.nreg 218013
   swap
@@ -417,7 +419,7 @@ theorem betaS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m�
       exec_block
       · omega
       exact ⟨rfl, by config_simp⟩
-    exact ⟨c', k, e, by omega, exec_frameB (Exec.ifLtN_false hc e) wr_betaS, by omega,
+    exact ⟨c', k, e, ⋄, exec_frameB (Exec.ifLtN_false hc e) wr_betaS, ⋄,
       by rw [v]; simp [hT0]⟩
   have hT1 : 1 ≤ T := by rw [h20, hT] at hc; omega
   refine spec_ifLtN_true hc ?_
@@ -425,32 +427,32 @@ theorem betaS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m�
   obtain ⟨c₁, k₁, e₁, hk₁, v50, v51, v52, r₁, m₁⟩ := nbrS_exec (P := P) c hw hs hT h21 h12 hT1
     hsT hNW
   have E₁ : HostEnv W HB H.length m₀ c₁ := ⟨e₁.wb_right,
-    by rw [r₁ _ (by decide) (by decide) (by decide)]; exact hE.h60,
-    by rw [r₁ _ (by decide) (by decide) (by decide)]; exact hE.h61,
-    by rw [r₁ _ (by decide) (by decide) (by decide)]; exact hE.h67,
-    by rw [r₁ _ (by decide) (by decide) (by decide)]; exact hE.h68,
-    by rw [r₁ _ (by decide) (by decide) (by decide)]; exact hE.h69, by rw [m₁]; exact hE.mem⟩
-  have hNpos : 0 < N := by omega
+    by rw [r₁ _ (⌖) (⌖) (⌖)]; exact hE.h60,
+    by rw [r₁ _ (⌖) (⌖) (⌖)]; exact hE.h61,
+    by rw [r₁ _ (⌖) (⌖) (⌖)]; exact hE.h67,
+    by rw [r₁ _ (⌖) (⌖) (⌖)]; exact hE.h68,
+    by rw [r₁ _ (⌖) (⌖) (⌖)]; exact hE.h69, by rw [m₁]; exact hE.mem⟩
+  have hNpos : 0 < N := ⋄
   -- the three points
-  obtain ⟨c₂, k₂, e₂, hk₂, E₂, sA₂, r₂, m₂⟩ := lkTo_exec E c₁ E₁ v51 (by omega)
-    (d := 218053) (by norm_num)
+  obtain ⟨c₂, k₂, e₂, hk₂, E₂, sA₂, r₂, m₂⟩ := lkTo_exec E c₁ E₁ v51 (⋄)
+    (d := 218053) (⊛)
   obtain ⟨c₃, k₃, e₃, hk₃, E₃, sV₃, r₃, m₃⟩ := lkTo_exec E c₂ E₂ (src := 218050) (p := s + T)
-    (by rw [r₂ _ (by decide) (by decide) (by decide) (by decide)]; exact v50)
-    (by omega) (d := 218056) (by norm_num)
+    (by rw [r₂ _ (⌖) (⌖) (⌖) (⌖)]; exact v50)
+    (⋄) (d := 218056) (⊛)
   obtain ⟨c₄, k₄, e₄, hk₄, E₄, sB₄, r₄, m₄⟩ := lkTo_exec E c₃ E₃ (src := 218052)
     (p := (s + T + 1) % N)
-    (by rw [r₃ _ (by decide) (by decide) (by decide) (by decide),
-      r₂ _ (by decide) (by decide) (by decide) (by decide)]; exact v52)
-    (by rw [hN]; exact Nat.mod_lt _ hNpos) (d := 218059) (by norm_num)
+    (by rw [r₃ _ (⌖) (⌖) (⌖) (⌖),
+      r₂ _ (⌖) (⌖) (⌖) (⌖)]; exact v52)
+    (by rw [hN]; exact Nat.mod_lt _ hNpos) (d := 218059) (⊛)
   have sA₃ : SymPtIn c₃ 218053 (pt H P.n (s + T - 1)) := by
     refine symPtIn_copy sA₂ ?_ ?_ ?_
-    all_goals exact r₃ _ (by decide) (by decide) (by decide) (by decide)
+    all_goals exact r₃ _ (⌖) (⌖) (⌖) (⌖)
   have sA₄ : SymPtIn c₄ 218053 (pt H P.n (s + T - 1)) := by
     refine symPtIn_copy sA₃ ?_ ?_ ?_
-    all_goals exact r₄ _ (by decide) (by decide) (by decide) (by decide)
+    all_goals exact r₄ _ (⌖) (⌖) (⌖) (⌖)
   have sV₄ : SymPtIn c₄ 218056 (pt H P.n (s + T)) := by
     refine symPtIn_copy sV₃ ?_ ?_ ?_
-    all_goals exact r₄ _ (by decide) (by decide) (by decide) (by decide)
+    all_goals exact r₄ _ (⌖) (⌖) (⌖) (⌖)
   have hA := pt_lt (n := P.n) (i := s + T - 1) E.hwf E.npos (by rw [hN]; omega)
   have hV := pt_lt (n := P.n) (i := s + T) E.hwf E.npos (by rw [hN]; omega)
   have hB := pt_lt (n := P.n) (i := (s + T + 1) % N) E.hwf E.npos
@@ -467,9 +469,9 @@ theorem betaS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m�
   have w₆ := e₆.wb_right
   have bit6 : ∀ {r : ℕ} {p : Prop}, BitIs c₅ r p → r ≠ 170012 → BitIs c₆ r p :=
     fun h hr => h.of_eq (by rw [r₆]; simp only [upd, ite_eq_right hr])
-  obtain ⟨c₇, k₇, e₇, hk₇, b, hb, rfl, hbit⟩ := IOrc.logI_exec (P := P) c₆ w₆ v12 (by omega)
-    (bit6 bpp (by decide)) (bit6 bp0 (by decide)) (bit6 bbx (by decide)) (bit6 bax (by decide))
-    (bit6 bby (by decide)) (bit6 bby' (by decide)) (fun h0 hp => by rw [h0] at hp; exact lt_irrefl _ hp)
+  obtain ⟨c₇, k₇, e₇, hk₇, b, hb, rfl, hbit⟩ := IOrc.logI_exec (P := P) c₆ w₆ v12 (⋄)
+    (bit6 bpp (⌖)) (bit6 bp0 (⌖)) (bit6 bbx (⌖)) (bit6 bax (⌖))
+    (bit6 bby (⌖)) (bit6 bby' (⌖)) (fun h0 hp => by rw [h0] at hp; exact lt_irrefl _ hp)
   have w₇ := e₇.wb_right
   obtain ⟨c₈, k₈, e₈, hk₈, v14⟩ : ∃ c₈ k₈, Exec P W (block [.copyN 218014 170075])
       { c₆ with nreg := upd c₆.nreg 170075 b } c₈ k₈ ∧ k₈ = 1 ∧ c₈.nreg 218014 = b := by
@@ -477,8 +479,8 @@ theorem betaS_exec {H : Host} {m₀ : ℕ → ℕ} {HB : ℕ} (E : ScE P W H m�
     exact ⟨rfl, by config_simp⟩
   have ex : Exec P W bitI c c₈ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + (k₇ + k₈))))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ e₈))))))
-  refine ⟨c₈, _, ex, by omega, exec_frameB (Exec.ifLtN_true hc ex) wr_betaS, by omega, ?_⟩
-  rw [v14, hbit]
+  refine ⟨c₈, _, ex, ⋄, exec_frameB (Exec.ifLtN_true hc ex) wr_betaS, ⋄, ?_⟩
+  Ξ v14, hbit
   unfold IOrc.BetaF
   exact ⟨fun h => ⟨hT1, h⟩, fun h => h.2⟩
 

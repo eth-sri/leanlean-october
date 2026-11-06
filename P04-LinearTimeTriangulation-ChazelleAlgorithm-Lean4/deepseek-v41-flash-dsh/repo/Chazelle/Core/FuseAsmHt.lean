@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmPt
 public import Chazelle.Core.SweepMachine8
 public import Chazelle.Core.FuseAsmSet
@@ -34,7 +36,7 @@ theorem pos_congr (M : Model) (Q : Polygon) (e : ℕ) {h h' : ℕ}
 theorem toSet_congr (M : Model) (Q : Polygon) {r r' : CRec} (hh : (Q.vtx r.h).2 = (Q.vtx r'.h).2)
     (hl : r.lp = r'.lp) (hr : r.rp = r'.rp) : r.toSet M Q = r'.toSet M Q := by
   unfold CRec.toSet CRec.lpos CRec.rpos
-  rw [hh, pos_congr M Q r.lp hh, pos_congr M Q r.rp hh, hl, hr]
+  Ξ hh, pos_congr M Q r.lp hh, pos_congr M Q r.rp hh, hl, hr
 
 theorem attached_congr (M : Model) (Q : Polygon) {r r' : CRec}
     (hh : (Q.vtx r.h).2 = (Q.vtx r'.h).2) (hl : r.lp = r'.lp) (hr : r.rp = r'.rp)
@@ -61,7 +63,7 @@ theorem collectQ_append {L : List (ℕ × ℕ × ℕ)} {R : List (ℕ × ℕ × 
     collectQ (L ++ [q]) (R ++ [r]) =
       collectQ L R ++ (if r.1 = 1 then [(q.2.1 - 1, r.2.2.1, r.2.2.2)] else []) := by
   unfold collectQ
-  rw [List.zip_append hlen, List.filter_append, List.map_append]
+  Ξ List.zip_append hlen, List.filter_append, List.map_append
   by_cases h : r.1 = 1 <;> simp [h, qtrip]
 
 theorem collectQ_length_le (L : List (ℕ × ℕ × ℕ)) (R : List (ℕ × ℕ × ℕ × ℕ)) :
@@ -79,7 +81,7 @@ theorem qtrip_eq (J : Merge.Junction) (Q : Polygon) (i : ℕ) {q : ℕ × ℕ ×
   have hz := Sweep.origin_mem J (a := (chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩)
     (σ := dirOf q.2.2)
   rw [← hset] at hz
-  have hy : ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩).2 = (Q.vtx (recOf r.2).h).2 := hz.1
+  have hy := hz.1
   have hh : (Q.vtx (recOf r.2).h).2 = (Q.vtx (recOf (qtrip (q, r))).h).2 := by
     rw [← hy]; exact hH
   exact ⟨(toSet_congr _ Q hh rfl rfl).symm, attached_congr _ Q hh rfl rfl hatt⟩
@@ -99,29 +101,29 @@ theorem collectQ_spec (J : Merge.Junction) (Q : Polygon) (i : ℕ) (L : List (�
     obtain ⟨p, ⟨hp, h1⟩, rfl⟩ := ht
     obtain ⟨j, hj, rfl⟩ := List.getElem_of_mem hp
     have hjL : j < L.length := by rw [List.length_zip] at hj; omega
-    have hjR : j < R.length := by omega
+    have hjR : j < R.length := ⋄
     refine ⟨j, hjL, ?_, ?_⟩
     · rw [getD_lt hjR]; simpa using h1
     · rw [getD_lt hjL, getD_lt hjR]; simp
   have memk : ∀ j, j < L.length → (R.getD j (0, 0, 0, 0)).1 = 1 →
       qtrip (L.getD j (0, 0, 0), R.getD j (0, 0, 0, 0)) ∈ collectQ L R := by
     intro j hj h1
-    have hjR : j < R.length := by omega
-    simp only [collectQ, List.mem_map, List.mem_filter, beq_iff_eq]
+    have hjR : j < R.length := ⋄
+    ϴ collectQ, List.mem_map, List.mem_filter, beq_iff_eq
     refine ⟨(L[j], R[j]), ⟨?_, ?_⟩, ?_⟩
-    · have : (L.zip R)[j]'(by rw [List.length_zip]; omega) = (L[j], R[j]) := by simp
+    · have : (L.zip R)[j]'(by rw [List.length_zip]; omega) = (L[j], R[j]) := ✓
       rw [← this]; exact List.getElem_mem _
     · rw [getD_lt hjR] at h1; exact h1
-    · rw [getD_lt hj, getD_lt hjR]
+    · Ξ getD_lt hj, getD_lt hjR
   refine ⟨?_, fun t ht => ?_⟩
   · ext d
-    simp only [shots, geoQ, Set.mem_ofPred_eq]
+    ϴ shots, geoQ, Set.mem_ofPred_eq
     constructor
     · rintro ⟨t, ht, rfl⟩
       obtain ⟨j, hj, h1, rfl⟩ := key t ht
       have hmem : L.getD j (0, 0, 0) ∈ L := by rw [getD_lt hj]; exact List.getElem_mem hj
       obtain ⟨e1, -⟩ := qtrip_eq J Q i (hs j hj) (hq _ hmem).2 h1
-      rw [e1]
+      Ξ e1
       obtain ⟨hf, hrec⟩ := hs j hj
       exact ⟨_, ⟨_, hmem, rfl⟩, hf.1 h1, (hrec h1).1⟩
     · rintro ⟨x, ⟨q, hq', rfl⟩, hf, rfl⟩
@@ -131,13 +133,13 @@ theorem collectQ_spec (J : Merge.Junction) (Q : Polygon) (i : ℕ) (L : List (�
       have h1 := hs'.1.2 hf
       refine ⟨_, memk j hj h1, ?_⟩
       obtain ⟨e1, -⟩ := qtrip_eq J Q i hs' (hq _ (List.getElem_mem hj)).2 h1
-      rw [getD_lt hj, e1, (hs'.2 h1).1]
+      Ξ getD_lt hj, e1, (hs'.2 h1).1
   · obtain ⟨j, hj, h1, rfl⟩ := key t ht
     have hmem : L.getD j (0, 0, 0) ∈ L := by rw [getD_lt hj]; exact List.getElem_mem hj
     obtain ⟨hQ, hH⟩ := hq _ hmem
     refine ⟨(qtrip_eq J Q i (hs j hj) hH h1).2, ?_⟩
     obtain ⟨-, h1', h2', -⟩ := hQ
-    simp only [qtrip]
+    ϴ qtrip
     omega
 
 end

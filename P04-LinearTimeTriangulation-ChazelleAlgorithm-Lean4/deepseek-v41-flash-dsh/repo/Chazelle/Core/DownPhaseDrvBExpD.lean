@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvBExpC
 
 /-!
@@ -28,7 +32,7 @@ def initS : Stmt := .seq (block [.addN 212023 212022 212000, .copyN 212024 21200
 /-- **The expansion of a host block** into the point array. -/
 def expS : Stmt := .seq initS (.whileLtN 212024 212021 itemS)
 
-theorem wr_initS : wrM Bexp initS = true := by decide
+theorem wr_initS : wrM Bexp initS = true := ⌖
 
 /-- The final state is the point array in walk order. -/
 theorem ESt.arr {W n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c : Config}
@@ -66,16 +70,16 @@ theorem initS_exec (c : Config) (hw : WordsBounded W c) (li : Bool) (NP : ℕ)
       · config_simp; rw [h16]; omega
       · config_simp; rw [h16]; omega
       · config_simp; rw [h16]; omega
-      · refine ⟨by omega, ?_, ?_, ?_, rfl⟩ <;> config_simp
-        · rw [h0]
-        · rw [h1]
+      · refine ⟨⋄, ?_, ?_, ?_, rfl⟩ <;> config_simp
+        · Ξ h0
+        · Ξ h1
         · rw [h16]; simp only [ptrE, Bool.false_eq_true, ↓reduceIte]; omega
     · refine spec_ifLtN_true (by config_simp; rw [h1, h11]; simp) ?_
       refine spec_instr (Machine.Exec.copyN ‹_› _ _) fun _ => ?_
-      refine ⟨by omega, ?_, ?_, ?_, rfl⟩ <;> config_simp
-      · rw [h0]
-      · rw [h1]
-      · simp [ptrE]
+      refine ⟨⋄, ?_, ?_, ?_, rfl⟩ <;> config_simp
+      · Ξ h0
+      · Ξ h1
+      · Θ ptrE
 
 end exec
 

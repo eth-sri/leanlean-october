@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.WalkKey
 
 /-!
@@ -99,11 +101,11 @@ theorem load_exec {P : Polygon} {W : ℕ} (t : ℕ) (hW : 1 ≤ W) (s : SymSrc) 
     simp only [SymSrc.Holds] at hp
     subst hp
     have h1 := hts r hs
-    simp only [SymSrc.load]
+    ϴ SymSrc.load
     exec_block
     · omega
-    · refine ⟨by omega, ?_, fun r' h1' h2' h3' => ?_⟩
-      · simp only [SymPtIn]
+    · refine ⟨⋄, ?_, fun r' h1' h2' h3' => ?_⟩
+      · ϴ SymPtIn
         config_simp
         refine ⟨?_, ?_⟩ <;> upd_solve
       · config_simp
@@ -113,11 +115,11 @@ theorem load_exec {P : Polygon} {W : ℕ} (t : ℕ) (hW : 1 ≤ W) (s : SymSrc) 
     subst hp
     have h1 := hts re hs.1
     have h2 := hts rh hs.2
-    simp only [SymSrc.load]
+    ϴ SymSrc.load
     exec_block
     · omega
-    · refine ⟨by omega, ?_, fun r' h1' h2' h3' => ?_⟩
-      · simp only [SymPtIn]
+    · refine ⟨⋄, ?_, fun r' h1' h2' h3' => ?_⟩
+      · ϴ SymPtIn
         config_simp
         refine ⟨?_, ?_, ?_⟩ <;> upd_solve
       · config_simp
@@ -127,9 +129,9 @@ theorem load_exec {P : Polygon} {W : ℕ} (t : ℕ) (hW : 1 ≤ W) (s : SymSrc) 
     have h1 := hts r hs.1
     have h2 := hts (r + 1) hs.2.1
     have h3 := hts (r + 2) hs.2.2
-    simp only [SymSrc.load]
+    ϴ SymSrc.load
     exec_block
-    refine ⟨by omega, ?_, fun r' h1' h2' h3' => ?_⟩
+    refine ⟨⋄, ?_, fun r' h1' h2' h3' => ?_⟩
     · cases p with
       | vtx i =>
         simp only [SymPtIn] at hp ⊢

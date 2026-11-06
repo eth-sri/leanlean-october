@@ -80,7 +80,7 @@ theorem chainPre_exec (hw : WordsBounded W c) {B m top bit : ℕ} (hB : c.nreg 8
       c'.nreg 83090 = 2 * m + 7 ∧ c'.nreg 83096 = 2 ∧ c'.nreg 83103 = 6 ∧
       c'.nreg 83104 = c.nreg 83005 - 6 ∧ Out c c' chainHL := by
   unfold chainPre
-  have hB' : c.nreg 83020 = B := hB
+  have hB' := hB
   obtain ⟨c', k, ex, hk, q97, q98, q99, q100, q101, q90, q96, q103, q104, hr, rr, mm, rm, oo⟩ :
       ∃ c' k, Exec P W (block [.constN 83096 2, .addN 83095 83020 83096, .loadN 83097 83095,
         .addN 83095 83095 83023, .loadN 83098 83095, .addN 83095 83095 83023,
@@ -91,7 +91,7 @@ theorem chainPre_exec (hw : WordsBounded W c) {B m top bit : ℕ} (hB : c.nreg 8
         c'.nreg 83096 = 2 ∧ c'.nreg 83103 = 6 ∧ c'.nreg 83104 = c.nreg 83005 - 6 ∧
         (∀ r, r ∉ chainHL → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧ c'.nmem = c.nmem ∧
         c'.rmem = c.rmem ∧ c'.output = c.output := by
-    have ht' : c.nmem (B + 3) = top := ht
+    have ht' := ht
     have hb' : c.nmem (B + 3 + 1) = bit := by rw [show B + 3 + 1 = B + 4 by omega]; exact hb
     exec_block
     all_goals try (simp (disch := omega) only [Machine.upd_same,
@@ -107,9 +107,9 @@ theorem chainPre_exec (hw : WordsBounded W c) {B m top bit : ℕ} (hB : c.nreg 8
     · simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
     · simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
     · simp (disch := omega) only [Machine.upd_same]
-    · simp only [chainHL, List.mem_cons, List.not_mem_nil, or_false, not_or] at hr
+    · ϴ' chainHL, List.mem_cons, List.not_mem_nil, or_false, not_or at hr
       simp (disch := omega) only [Machine.upd_other]
-  exact ⟨c', k, by omega, ex, q97, q98, q99, q100, q101, q90, q96, q103, q104,
+  exact ⟨c', k, ⋄, ex, q97, q98, q99, q100, q101, q90, q96, q103, q104,
     ⟨hr, rr, mm, rm, oo⟩⟩
 
 theorem sS_exec (hw : WordsBounded W c) {m top bit : ℕ} (h99 : c.nreg 83099 = bit)
@@ -118,15 +118,15 @@ theorem sS_exec (hw : WordsBounded W c) {m top bit : ℕ} (h99 : c.nreg 83099 = 
   unfold sS sOf
   by_cases g1 : c.nreg 83099 < c.nreg 83023
   · obtain ⟨c', e, v, o⟩ := out_instr (P := P) (Exec.subN hw 83102 83100 83098)
-    refine ⟨c', _, by omega, .ifLtN_true g1 e, ?_, o⟩
-    rw [v, h100, h98, ite_eq_right (by omega)]
+    refine ⟨c', _, ⋄, .ifLtN_true g1 e, ?_, o⟩
+    Ξ v, h100, h98, ite_eq_right (⋄)
   by_cases g2 : c.nreg 83023 < c.nreg 83099
   · obtain ⟨c', e, v, o⟩ := out_instr (P := P) (Exec.subN hw 83102 83100 83098)
-    refine ⟨c', _, by omega, .ifLtN_false g1 (.ifLtN_true g2 e), ?_, o⟩
-    rw [v, h100, h98, ite_eq_right (by omega)]
+    refine ⟨c', _, ⋄, .ifLtN_false g1 (.ifLtN_true g2 e), ?_, o⟩
+    Ξ v, h100, h98, ite_eq_right (⋄)
   · obtain ⟨c', e, v, o⟩ := out_instr (P := P) (Exec.copyN hw 83102 83098)
-    refine ⟨c', _, by omega, .ifLtN_false g1 (.ifLtN_false g2 e), ?_, o⟩
-    rw [v, h98, ite_eq_left (by omega)]
+    refine ⟨c', _, ⋄, .ifLtN_false g1 (.ifLtN_false g2 e), ?_, o⟩
+    Ξ v, h98, ite_eq_left (⋄)
 
 theorem jS_exec (hw : WordsBounded W c) {m S i : ℕ} (_hm : 0 < m) (h102 : c.nreg 83102 = S)
     (h104 : c.nreg 83104 = i) (h100 : c.nreg 83100 = 2 * m) (hS : S ≤ 2 * m) (hi : i ≤ 2 * m)
@@ -134,27 +134,27 @@ theorem jS_exec (hw : WordsBounded W c) {m S i : ℕ} (_hm : 0 < m) (h102 : c.nr
     ∃ c', ∃ k ≤ 8, Exec P W jS c c' k ∧ c'.nreg 83106 = (S + i) % (2 * m) ∧
       Out c c' [83105, 83106] := by
   obtain ⟨c₁, e₁, v₁, o₁⟩ := out_instr (P := P) (Exec.subN hw 83105 83100 83102)
-  have g : ∀ r, r ≠ 83105 → c₁.nreg r = c.nreg r := fun r hr => o₁.1 r (by simp [hr])
-  have u : c₁.nreg 83105 = 2 * m - S := by rw [v₁, h100, h102]
+  have g : ∀ r, r ≠ 83105 → c₁.nreg r = c.nreg r := fun r hr => o₁.1 r (⊚ hr)
+  have u : c₁.nreg 83105 = 2 * m - S := Ρ v₁, h100, h102
   by_cases hlt : c₁.nreg 83104 < c₁.nreg 83105
-  · rw [g _ (by omega), h104, u] at hlt
+  · Ξ' g _ (⋄), h104, u at hlt
     obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.addN e₁.wb_right 83106 83102 83104
-      (by rw [g _ (by omega), g _ (by omega), h102, h104]; omega))
-    refine ⟨c₂, _, by omega, .seq e₁ (.ifLtN_true (by rw [g _ (by omega), h104, u]; exact hlt) e₂),
-      ?_, (o₁.trans o₂).mono (by simp)⟩
-    rw [v₂, g _ (by omega), g _ (by omega), h102, h104, Nat.mod_eq_of_lt (by omega)]
-  · rw [g _ (by omega), h104, u] at hlt
+      (by rw [g _ (⋄), g _ (⋄), h102, h104]; omega))
+    refine ⟨c₂, _, ⋄, .seq e₁ (.ifLtN_true (by rw [g _ (⋄), h104, u]; exact hlt) e₂),
+      ?_, (o₁.trans o₂).mono (✓)⟩
+    Ξ v₂, g _ (⋄), g _ (⋄), h102, h104, Nat.mod_eq_of_lt (⋄)
+  · Ξ' g _ (⋄), h104, u at hlt
     obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.subN e₁.wb_right 83106 83104 83105)
     obtain ⟨c₃, k₃, hk₃, e₃, v₃, o₃⟩ := condSub_exec (P := P) e₂.wb_right 83106 83106 83100
-    refine ⟨c₃, _, by omega, .seq e₁ (.ifLtN_false (by rw [g _ (by omega), h104, u]; exact hlt)
-      (.seq e₂ e₃)), ?_, ((o₁.trans o₂).trans o₃).mono (by simp)⟩
+    refine ⟨c₃, _, ⋄, .seq e₁ (.ifLtN_false (by rw [g _ (⋄), h104, u]; exact hlt)
+      (.seq e₂ e₃)), ?_, ((o₁.trans o₂).trans o₃).mono (✓)⟩
     have w6 : c₂.nreg 83106 = S + i - 2 * m := by
-      rw [v₂, g _ (by omega), h104, u]; omega
-    have w100 : c₂.nreg 83100 = 2 * m := by rw [o₂.1 _ (by simp), g _ (by omega), h100]
-    rw [v₃, w6, w100]
+      rw [v₂, g _ (⋄), h104, u]; omega
+    have w100 : c₂.nreg 83100 = 2 * m := Ρ o₂.1 _ (✓), g _ (⋄), h100
+    Ξ v₃, w6, w100
     by_cases h2 : S + i - 2 * m < 2 * m
-    · rw [ite_eq_left h2, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt h2]
-    · rw [ite_eq_right h2, show S + i = 2 * m + 2 * m by omega, Nat.add_mod_right, Nat.mod_self]
+    · Ξ ite_eq_left h2, Nat.mod_eq_sub_mod (⋄), Nat.mod_eq_of_lt h2
+    · Ξ ite_eq_right h2, show S + i = 2 * m + 2 * m by omega, Nat.add_mod_right, Nat.mod_self
       omega
 
 theorem edgeH_exec (hw : WordsBounded W c) {m S j e : ℕ} (h100 : c.nreg 83100 = 2 * m)
@@ -168,48 +168,48 @@ theorem edgeH_exec (hw : WordsBounded W c) {m S j e : ℕ} (h100 : c.nreg 83100 
   obtain ⟨c₁, e₁, v₁, o₁⟩ := out_instr (P := P) (Exec.subN hw 83107 83100 83023)
   obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.subN e₁.wb_right 83107 83107 83106)
   have g : ∀ r, r ≠ 83107 → c₂.nreg r = c.nreg r := fun r hr => by
-    rw [o₂.1 r (by simp [hr]), o₁.1 r (by simp [hr])]
+    Ξ o₂.1 r (by simp [hr]), o₁.1 r (by simp [hr])
   have q107 : c₂.nreg 83107 = 2 * m - 1 - j := by
-    rw [v₂, v₁, o₁.1 _ (by simp), h100, h23, h106]
+    Ξ v₂, v₁, o₁.1 _ (✓), h100, h23, h106
   obtain ⟨c₃, k₃, hk₃, e₃, v₃, o₃⟩ := candS_exec (P := P) e₂.wb_right (dst := 83108) (jr := 83107)
-    (sr := 83102) (mr := 83100) (by omega) (by omega) (by omega) q107
-    (by rw [g _ (by omega), h102]) (by rw [g _ (by omega), h100]) hS (by omega) (by omega)
+    (sr := 83102) (mr := 83100) (⋄) (⋄) (⋄) q107
+    (Ρ g _ (⋄), h102) (Ρ g _ (⋄), h100) hS (⋄) (⋄)
   have g3 : ∀ r, r ≠ 83107 → r ≠ 83108 → c₃.nreg r = c.nreg r := fun r h1 h2 => by
-    rw [o₃.1 r (by simp [h2]), g r h1]
-  obtain ⟨c₄, e₄, v₄, o₄⟩ := out_instr (P := P) (Exec.constN e₃.wb_right 84009 2 (by omega))
+    Ξ o₃.1 r (by simp [h2]), g r h1
+  obtain ⟨c₄, e₄, v₄, o₄⟩ := out_instr (P := P) (Exec.constN e₃.wb_right 84009 2 (⋄))
   obtain ⟨c₅, e₅, v₅, o₅⟩ := out_instr (P := P) (Exec.copyN e₄.wb_right 84010 83005)
   obtain ⟨c₆, e₆, v₆, o₆⟩ := out_instr (P := P) (Exec.addN e₅.wb_right 84011 83005 83023
-    (by rw [o₅.1 _ (by simp), o₄.1 _ (by simp), o₅.1 _ (by simp), o₄.1 _ (by simp),
-      g3 _ (by omega) (by omega), g3 _ (by omega) (by omega), h05, h23]; exact heW))
+    (by rw [o₅.1 _ (✓), o₄.1 _ (✓), o₅.1 _ (✓), o₄.1 _ (✓),
+      g3 _ (⋄) (⋄), g3 _ (⋄) (⋄), h05, h23]; exact heW))
   have c1 : ∀ r, r ≠ 84009 → r ≠ 84010 → r ≠ 84011 → c₆.nreg r = c₃.nreg r := fun r a b d => by
-    rw [o₆.1 r (by simp [d]), o₅.1 r (by simp [b]), o₄.1 r (by simp [a])]
+    Ξ o₆.1 r (by simp [d]), o₅.1 r (by simp [b]), o₄.1 r (by simp [a])
   have hc : candIdx m S (2 * m - 1 - j) ≤ 2 * m := by unfold candIdx; split_ifs <;> omega
   have a108 : c₆.nreg 83108 = candIdx m S (2 * m - 1 - j) := by
-    rw [c1 _ (by omega) (by omega) (by omega), v₃]
-  have a103 : c₆.nreg 83103 = 6 := by rw [c1 _ (by omega) (by omega) (by omega),
-    g3 _ (by omega) (by omega), h103]
-  have a23 : c₆.nreg 83023 = 1 := by rw [c1 _ (by omega) (by omega) (by omega),
-    g3 _ (by omega) (by omega), h23]
+    Ξ c1 _ (⋄) (⋄) (⋄), v₃
+  have a103 : c₆.nreg 83103 = 6 := by rw [c1 _ (⋄) (⋄) (⋄),
+    g3 _ (⋄) (⋄), h103]
+  have a23 : c₆.nreg 83023 = 1 := by rw [c1 _ (⋄) (⋄) (⋄),
+    g3 _ (⋄) (⋄), h23]
   obtain ⟨c₇, e₇, v₇, o₇⟩ := out_instr (P := P) (Exec.addN e₆.wb_right 84012 83108 83103
     (by rw [a108, a103]; omega))
-  have b12 : c₇.nreg 84012 = candIdx m S (2 * m - 1 - j) + 6 := by rw [v₇, a108, a103]
-  have b23 : c₇.nreg 83023 = 1 := by rw [o₇.1 _ (by simp), a23]
+  have b12 : c₇.nreg 84012 = candIdx m S (2 * m - 1 - j) + 6 := Ρ v₇, a108, a103
+  have b23 : c₇.nreg 83023 = 1 := Ρ o₇.1 _ (✓), a23
   obtain ⟨c₈, e₈, v₈, o₈⟩ := out_instr (P := P) (Exec.addN e₇.wb_right 84013 84012 83023
     (by rw [b12, b23]; omega))
   have ex : Exec P W edgeH c c₈ _ :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ e₈))))))
-  have a05 : c₄.nreg 83005 = e := by rw [o₄.1 _ (by simp), g3 _ (by omega) (by omega), h05]
-  have a23' : c₅.nreg 83023 = 1 := by rw [o₅.1 _ (by simp), o₄.1 _ (by simp),
-    g3 _ (by omega) (by omega), h23]
-  have a05' : c₅.nreg 83005 = e := by rw [o₅.1 _ (by simp), a05]
-  refine ⟨c₈, _, by omega, ex, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [o₈.1 _ (by simp), o₇.1 _ (by simp), o₆.1 _ (by simp), o₅.1 _ (by simp), v₄]
-  · rw [o₈.1 _ (by simp), o₇.1 _ (by simp), o₆.1 _ (by simp), v₅, a05]
-  · rw [o₈.1 _ (by simp), o₇.1 _ (by simp), v₆, a05', a23']
-  · rw [o₈.1 _ (by simp), b12]
-  · rw [v₈, b12, b23]
+  have a05 : c₄.nreg 83005 = e := Ρ o₄.1 _ (✓), g3 _ (⋄) (⋄), h05
+  have a23' : c₅.nreg 83023 = 1 := by rw [o₅.1 _ (✓), o₄.1 _ (✓),
+    g3 _ (⋄) (⋄), h23]
+  have a05' : c₅.nreg 83005 = e := Ρ o₅.1 _ (✓), a05
+  refine ⟨c₈, _, ⋄, ex, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · Ξ o₈.1 _ (✓), o₇.1 _ (✓), o₆.1 _ (✓), o₅.1 _ (✓), v₄
+  · Ξ o₈.1 _ (✓), o₇.1 _ (✓), o₆.1 _ (✓), v₅, a05
+  · Ξ o₈.1 _ (✓), o₇.1 _ (✓), v₆, a05', a23'
+  · Ξ o₈.1 _ (✓), b12
+  · Ξ v₈, b12, b23
   · exact (((((((o₁.trans o₂).trans o₃).trans o₄).trans o₅).trans o₆).trans o₇).trans o₈).mono
-      (by intro r hr; simp only [List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hr
+      (by intro r hr; ϴ' List.mem_append, List.mem_cons, List.not_mem_nil, or_false at hr
           simp only [List.mem_cons, List.not_mem_nil, or_false]; omega)
 
 theorem candIdx_le {m S j : ℕ} (hS : S ≤ 2 * m) (hj : j ≤ 2 * m) : candIdx m S j ≤ 2 * m := by

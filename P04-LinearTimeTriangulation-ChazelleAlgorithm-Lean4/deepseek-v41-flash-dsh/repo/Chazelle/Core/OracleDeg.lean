@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleShift
 
 /-!
@@ -53,7 +55,7 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
   have hR := C.radius_pos
   obtain ⟨ht, hpre, hpost⟩ := hpart
   obtain ⟨hK, hH⟩ := hf
-  have hcs : C.set ⊆ Chain.box C.radius := C.set_subset_box
+  have hcs := C.set_subset_box
   by_cases hσ : V.σb = 1
   · -- rightwards: the chord `CH[t]`
     have hσ1 := sgnOf_one hσ
@@ -73,8 +75,8 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
       rw [← Bool.not_eq_true, chPr_iff] at this
       by_contra hc
       exact this ⟨hi, Or.inr ⟨hH, fun _ => hc, fun h' => absurd hσ h'⟩⟩
-    have hy : z.2 = ((Qof P).vtx V.hz).2 := hs.zy
-    rw [hσ1]
+    have hy := hs.zy
+    Ξ hσ1
     by_cases hp : C.radius ≤ z.1
     · -- past the box
       have hnh := noHit_past hcs (Or.inl rfl) (by rw [one_mul]; exact hp) (A := C.set) (z := z)
@@ -98,12 +100,12 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
     -- no chain point strictly between the origin and the far end
     have hfree : ∀ s, 0 < s → z.1 + s < b → rayPt z 1 s ∉ C.set := by
       intro s hs0 hsb
-      rw [rayPt_right, hy]
+      Ξ rayPt_right, hy
       by_cases hx : z.1 + s ≤ -C.radius
-      · exact not_mem_set_of_abs (by rw [abs_of_neg (by linarith)]; linarith)
+      · exact not_mem_set_of_abs (by rw [abs_of_neg (⟡)]; linarith)
       · push Not at hx
         exact not_mem_set_of_chord hC (by
-          have : max z.1 (-C.radius) < z.1 + s := max_lt (by linarith) hx
+          have : max z.1 (-C.radius) < z.1 + s := max_lt (⟡) hx
           linarith) hsb
     have hpos := ER.1
     refine ⟨fun hf1 => ?_, fun hf1 => ?_⟩
@@ -114,7 +116,7 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
       rw [hpos] at hmem hedge
       have hpt : rayPt z 1 (b - z.1) = ((b, ((Qof P).vtx V.hz).2) : Point) := by
         rw [rayPt_right, hy]; ring_nf
-      refine ⟨b - z.1, ⟨by linarith, by rw [hpt]; exact hmem, fun s hs0 hsl => hfree s hs0 (by
+      refine ⟨b - z.1, ⟨⟡, by rw [hpt]; exact hmem, fun s hs0 hsl => hfree s hs0 (by
         linarith)⟩, by rw [he]; exact hlt, by rw [hpt, he]; exact hedge⟩
     · have hc : xpClass (chR m V i) ≠ 1 := fun hc1 => hf1 (h1 hc1).1
       have hbR : b = C.radius := by
@@ -127,8 +129,8 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
       intro s hs0
       by_cases hsb : z.1 + s < b
       · exact hfree s hs0 hsb
-      · rw [rayPt_right]
-        exact not_mem_set_of_abs (by rw [abs_of_pos (by linarith)]; linarith)
+      · Ξ rayPt_right
+        exact not_mem_set_of_abs (by rw [abs_of_pos (⟡)]; linarith)
   · -- leftwards: the chord `CH[t - 1]`
     have hσ1 := sgnOf_ne hσ
     rw [ite_eq_right hσ] at hK
@@ -139,19 +141,19 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
     rw [ite_eq_right hσ] at hdeg
     rw [hj] at hH
     set i := chAt m V (t - 1)
-    have hi := h.lt (t - 1) (by omega)
+    have hi := h.lt (t - 1) (⋄)
     obtain ⟨-, -, hC, -, EL, ER⟩ := h.facts hi
     rw [hH] at hC EL ER
     have hlt' : EndLtZ P C V (chL m V i) V.hz := by
-      have := hpre (t - 1) (by omega)
+      have := hpre (t - 1) (⋄)
       rw [chPr_iff] at this
       rcases this.2 with h' | ⟨-, -, h'⟩
       · exact absurd hH (ne_of_lt h')
       · exact h' hσ
-    have hy : z.2 = ((Qof P).vtx V.hz).2 := hs.zy
-    rw [hσ1]
+    have hy := hs.zy
+    Ξ hσ1
     by_cases hp : z.1 ≤ -C.radius
-    · have hnh := noHit_past hcs (Or.inr rfl) (by linarith) (A := C.set) (z := z)
+    · have hnh := noHit_past hcs (Or.inr rfl) (⟡) (A := C.set) (z := z)
       have hc2 : xpClass (chL m V i) ≠ 1 := by
         intro hc1
         rcases hlt' with h2 | ⟨-, hz⟩
@@ -171,12 +173,12 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
     have hRa := min_le_right z.1 C.radius
     have hfree : ∀ s, 0 < s → a < z.1 - s → rayPt z (-1) s ∉ C.set := by
       intro s hs0 hsa
-      rw [rayPt_left, hy]
+      Ξ rayPt_left, hy
       by_cases hx : C.radius ≤ z.1 - s
-      · exact not_mem_set_of_abs (by rw [abs_of_pos (by linarith)]; linarith)
+      · exact not_mem_set_of_abs (by rw [abs_of_pos (⟡)]; linarith)
       · push Not at hx
         exact not_mem_set_of_chord hC hsa (by
-          have : z.1 - s < min z.1 C.radius := lt_min (by linarith) hx
+          have : z.1 - s < min z.1 C.radius := lt_min (⟡) hx
           linarith)
     have hpos := EL.1
     refine ⟨fun hf1 => ?_, fun hf1 => ?_⟩
@@ -187,7 +189,7 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
       rw [hpos] at hmem hedge
       have hpt : rayPt z (-1) (z.1 - a) = ((a, ((Qof P).vtx V.hz).2) : Point) := by
         rw [rayPt_left, hy]; ring_nf
-      refine ⟨z.1 - a, ⟨by linarith, by rw [hpt]; exact hmem, fun s hs0 hsl => hfree s hs0 (by
+      refine ⟨z.1 - a, ⟨⟡, by rw [hpt]; exact hmem, fun s hs0 hsl => hfree s hs0 (by
         linarith)⟩, by rw [he]; exact hlt, by rw [hpt, he]; exact hedge⟩
     · have hc : xpClass (chL m V i) ≠ 1 := fun hc1 => hf1 (h1 hc1).1
       have haR : a = -C.radius := by
@@ -200,8 +202,8 @@ theorem deg_answer {m : ℕ → ℕ} {N : NF} (h : ChordRecOK P C V m N) {z : Po
       intro s hs0
       by_cases hsa : a < z.1 - s
       · exact hfree s hs0 hsa
-      · rw [rayPt_left]
-        exact not_mem_set_of_abs (by rw [abs_of_neg (by linarith)]; linarith)
+      · Ξ rayPt_left
+        exact not_mem_set_of_abs (by rw [abs_of_neg (⟡)]; linarith)
 
 end
 

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.GranRamRm3
 
 /-!
@@ -25,21 +27,21 @@ section Cases
 variable {E : Env} {st : St}
 
 theorem step_dead (h : st.live st.cur ≠ 1) : st.step E = st.pop := by
-  unfold St.step; rw [ite_eq_right h]
+  unfold St.step; Ξ ite_eq_right h
 
 theorem step_keep (h : st.live st.cur = 1)
     (hd : 3 ≤ st.deg (st.s0 st.cur) ∧ 3 ≤ st.deg (st.s1 st.cur)) : st.step E = st.pop := by
-  unfold St.step; rw [ite_eq_left h, ite_eq_left hd]
+  unfold St.step; Ξ ite_eq_left h, ite_eq_left hd
 
 theorem step_heavy (h : st.live st.cur = 1)
     (hd : ¬ (3 ≤ st.deg (st.s0 st.cur) ∧ 3 ≤ st.deg (st.s1 st.cur)))
     (hm : E.γ < st.mu E st.cur) : st.step E = st.pop := by
-  unfold St.step; rw [ite_eq_left h, ite_eq_right hd, ite_eq_left hm]
+  unfold St.step; Ξ ite_eq_left h, ite_eq_right hd, ite_eq_left hm
 
 theorem step_rm (h : st.live st.cur = 1)
     (hd : ¬ (3 ≤ st.deg (st.s0 st.cur) ∧ 3 ≤ st.deg (st.s1 st.cur)))
     (hm : ¬ E.γ < st.mu E st.cur) : st.step E = st.remove st.cur (st.mu E st.cur) := by
-  unfold St.step; rw [ite_eq_left h, ite_eq_right hd, ite_eq_right hm]
+  unfold St.step; Ξ ite_eq_left h, ite_eq_right hd, ite_eq_right hm
 
 end Cases
 
@@ -48,8 +50,8 @@ theorem MS.frameT {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : ℕ → ℕ}
     (h : MS W E d A₀ m₀ c st) (hw : WordsBounded W c')
     (hr : ∀ r, r < 90060 → c'.nreg r = c.nreg r) (hm : c'.nmem = c.nmem) :
     MS W E d A₀ m₀ c' st :=
-  ⟨hw, h.cst.frame fun r hr' _ => hr r (by omega), by rw [hm]; exact h.enc,
-    by rw [hr _ (by decide)]; exact h.top, by rw [hr _ (by decide)]; exact h.nlive,
+  ⟨hw, h.cst.frame fun r hr' _ => hr r (⋄), by rw [hm]; exact h.enc,
+    by rw [hr _ (⌖)]; exact h.top, by rw [hr _ (⌖)]; exact h.nlive,
     fun a ha => by rw [hm]; exact h.low a ha⟩
 
 /-! ## The body -/
@@ -65,18 +67,18 @@ def bodyStmt : Stmt :=
 /-- The registers `muStmt` writes. -/
 def Bmu (r : ℕ) : Bool := decide (r = 90061) || decide (90074 ≤ r ∧ r < 90100)
 
-theorem wr_mu_fine : wr Bmu muStmt = true := by decide
+theorem wr_mu_fine : wr Bmu muStmt = true := ⌖
 
 /-- The registers `ndStmt` writes. -/
 def Bnd (r : ℕ) : Bool := decide (r = 90061) || decide (90068 ≤ r ∧ r < 90074)
 
-theorem wr_nd_fine : wr Bnd ndStmt = true := by decide
+theorem wr_nd_fine : wr Bnd ndStmt = true := ⌖
 
 /-- The registers of the body. -/
 def Bbody (r : ℕ) : Bool := decide (90060 ≤ r ∧ r < 90110) || decide (r = 90050) ||
   decide (r = 90051)
 
-theorem wrS_body : wrS Bbody bodyStmt = true := by decide
+theorem wrS_body : wrS Bbody bodyStmt = true := ⌖
 
 theorem try_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : ℕ → ℕ} {c : Config}
     {st : St} (hE : E.Good) (hM : MS W E d A₀ m₀ c st) (hI : Inv E st) (hD : DimOK E d W)
@@ -94,27 +96,27 @@ theorem try_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ :
   have F₁ := exec_frameB e₁ wr_mu_fine
   have g : ∀ r, r < 90100 → r ≠ 90061 → (r < 90074) → c₁.nreg r = c.nreg r := fun r a1 a2 a3 =>
     F₁.1 r (by simp [Bmu]; omega)
-  have hM₁ : MS W E d A₀ m₀ c₁ st := hM.frameT e₁.wb_right (fun r hr => g r (by omega) (by omega)
-    (by omega)) F₁.2.2.1
+  have hM₁ : MS W E d A₀ m₀ c₁ st := hM.frameT e₁.wb_right (fun r hr => g r (⋄) (⋄)
+    (⋄)) F₁.2.2.1
   by_cases hm : E.γ < st.mu E st.cur
   · obtain ⟨c₂, k₂, e₂, hk₂, hM₂, -, -⟩ := hM₁.pop (P := P)
-    refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rw [hM₁.cst.γ, m78]; exact hm) e₂), by omega, ?_⟩
+    refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rw [hM₁.cst.γ, m78]; exact hm) e₂), ⋄, ?_⟩
     rw [step_heavy hc.2 hlow hm]; exact hM₂
-  · have hlow' : st.deg (st.s0 st.cur) < 3 ∨ st.deg (st.s1 st.cur) < 3 := by omega
+  · have hlow' : st.deg (st.s0 st.cur) < 3 ∨ st.deg (st.s1 st.cur) < 3 := ⋄
     have hI' := hI.step hE htop
-    rw [step_rm hc.2 hlow hm] at hI' ⊢
+    Ξ' step_rm hc.2 hlow hm at hI' ⊢
     obtain ⟨c₂, k₂, e₂, hk₂, hM₂, -⟩ := rm_exec (P := P) (μ := st.mu E st.cur) hE hM₁ hI hD hA hc
       htop hlow' hI'
-      (by rw [g _ (by decide) (by decide) (by decide), h62])
-      (by rw [g _ (by decide) (by decide) (by decide), h64])
-      (by rw [g _ (by decide) (by decide) (by decide), h65])
-      (by rw [g _ (by decide) (by decide) (by decide), h66])
-      (by rw [g _ (by decide) (by decide) (by decide), h67])
-      (by rw [g _ (by decide) (by decide) (by decide), h68])
-      (by rw [g _ (by decide) (by decide) (by decide), h69])
-      (by rw [g _ (by decide) (by decide) (by decide), h72])
-      (by rw [g _ (by decide) (by decide) (by decide), h73]) m78
-    exact ⟨c₂, _, .seq e₁ (.ifLtN_false (by rw [hM₁.cst.γ, m78]; exact hm) e₂), by omega, hM₂⟩
+      (Ρ g _ (⌖) (⌖) (⌖), h62)
+      (Ρ g _ (⌖) (⌖) (⌖), h64)
+      (Ρ g _ (⌖) (⌖) (⌖), h65)
+      (Ρ g _ (⌖) (⌖) (⌖), h66)
+      (Ρ g _ (⌖) (⌖) (⌖), h67)
+      (Ρ g _ (⌖) (⌖) (⌖), h68)
+      (Ρ g _ (⌖) (⌖) (⌖), h69)
+      (Ρ g _ (⌖) (⌖) (⌖), h72)
+      (Ρ g _ (⌖) (⌖) (⌖), h73) m78
+    exact ⟨c₂, _, .seq e₁ (.ifLtN_false (by rw [hM₁.cst.γ, m78]; exact hm) e₂), ⋄, hM₂⟩
 
 /-- **One step of the worklist on the RAM.** -/
 theorem body_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ : ℕ → ℕ} {c : Config}
@@ -127,33 +129,33 @@ theorem body_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ 
     obtain ⟨c', k, e, h1, h2⟩ := hh
     exact ⟨c', k, e, h1, h2, exec_frameS e wrS_body⟩
   obtain ⟨c₁, k₁, e₁, hk₁, f62, f63, hcK, fr, fm⟩ := front_exec (P := P) hM hI hD htop
-  have hM₁ : MS W E d A₀ m₀ c₁ st := hM.frameT e₁.wb_right (fun r hr => fr r (by omega)
-    (by omega) (by omega) (by omega)) fm
+  have hM₁ : MS W E d A₀ m₀ c₁ st := hM.frameT e₁.wb_right (fun r hr => fr r (⋄)
+    (⋄) (⋄) (⋄)) fm
   have hl01 := hI.live01 _ hcK
   by_cases hl : st.live st.cur = 1
   swap
   · obtain ⟨c₂, k₂, e₂, hk₂, hM₂, -, -⟩ := hM₁.pop (P := P)
-    refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rw [f63, hM₁.cst.one]; omega) e₂), by omega, ?_⟩
+    refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rw [f63, hM₁.cst.one]; omega) e₂), ⋄, ?_⟩
     rw [step_dead hl]; exact hM₂
   have hc : st.cur ∈ st.L E := ⟨hcK, hl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, x64, x65, x66, x67, xr, xm⟩ := xy_exec (P := P) hM₁.wb hM₁.cst
     hM₁.enc hI hD hc f62
-  have hM₂ : MS W E d A₀ m₀ c₂ st := hM₁.frameT e₂.wb_right (fun r hr => xr r (by omega)
-    (by omega) (by omega) (by omega) (by omega)) xm
+  have hM₂ : MS W E d A₀ m₀ c₂ st := hM₁.frameT e₂.wb_right (fun r hr => xr r (⋄)
+    (⋄) (⋄) (⋄) (⋄)) xm
   obtain ⟨c₃, k₃, e₃, hk₃, n68, n69, n72, n73, F₃⟩ := nd_exec (P := P) hM₂.wb hM₂.cst hM₂.enc hI hD
-    hc (by rw [xr _ (by decide) (by decide) (by decide) (by decide) (by decide), f62])
+    hc (Ρ xr _ (⌖) (⌖) (⌖) (⌖) (⌖), f62)
   have hM₃ : MS W E d A₀ m₀ c₃ st := hM₂.frameT e₃.wb_right (fun r hr => F₃.1 r (Bin_false
-    (by omega))) F₃.2.2.1
+    (⋄))) F₃.2.2.1
   have F₃' := exec_frameB e₃ wr_nd_fine
   have g : ∀ r, 90061 < r → r < 90068 → c₃.nreg r = c₂.nreg r := fun r a1 a2 =>
     F₃'.1 r (by simp [Bnd]; omega)
   have t62 : c₃.nreg 90062 = st.cur := by
-    rw [g _ (by decide) (by decide), xr _ (by decide) (by decide) (by decide) (by decide)
-      (by decide), f62]
-  have t64 : c₃.nreg 90064 = st.s0 st.cur := by rw [g _ (by decide) (by decide), x64]
-  have t65 : c₃.nreg 90065 = st.s1 st.cur := by rw [g _ (by decide) (by decide), x65]
-  have t66 : c₃.nreg 90066 = st.deg (st.s0 st.cur) := by rw [g _ (by decide) (by decide), x66]
-  have t67 : c₃.nreg 90067 = st.deg (st.s1 st.cur) := by rw [g _ (by decide) (by decide), x67]
+    rw [g _ (⌖) (⌖), xr _ (⌖) (⌖) (⌖) (⌖)
+      (⌖), f62]
+  have t64 : c₃.nreg 90064 = st.s0 st.cur := Ρ g _ (⌖) (⌖), x64
+  have t65 : c₃.nreg 90065 = st.s1 st.cur := Ρ g _ (⌖) (⌖), x65
+  have t66 : c₃.nreg 90066 = st.deg (st.s0 st.cur) := Ρ g _ (⌖) (⌖), x66
+  have t67 : c₃.nreg 90067 = st.deg (st.s1 st.cur) := Ρ g _ (⌖) (⌖), x67
   have tryE := fun (hlow : ¬ (3 ≤ st.deg (st.s0 st.cur) ∧ 3 ≤ st.deg (st.s1 st.cur))) =>
     try_exec (P := P) hE hM₃ hI hD hA hc htop hlow t62 t64 t65 t66 t67 n68 n69 n72 n73
   have hnl : ¬ c₁.nreg 90063 < c₁.nreg 90019 := by rw [f63, hM₁.cst.one, hl]; omega
@@ -162,15 +164,15 @@ theorem body_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ 
     · obtain ⟨c₄, k₄, e₄, hk₄, hM₄, -, -⟩ := hM₃.pop (P := P)
       refine ⟨c₄, _, .seq e₁ (.ifLtN_false hnl (.seq e₂ (.seq e₃ (.ifLtN_false
         (by rw [t66, hM₃.cst.three]; omega) (.ifLtN_false (by rw [t67, hM₃.cst.three]; omega)
-          e₄))))), by omega, ?_⟩
+          e₄))))), ⋄, ?_⟩
       rw [step_keep hl ⟨h3X, h3Y⟩]; exact hM₄
-    · obtain ⟨c₄, k₄, e₄, hk₄, hM₄⟩ := tryE (by omega)
+    · obtain ⟨c₄, k₄, e₄, hk₄, hM₄⟩ := tryE (⋄)
       exact ⟨c₄, _, .seq e₁ (.ifLtN_false hnl (.seq e₂ (.seq e₃ (.ifLtN_false
         (by rw [t66, hM₃.cst.three]; omega) (.ifLtN_true (by rw [t67, hM₃.cst.three]; omega)
-          e₄))))), by omega, hM₄⟩
-  · obtain ⟨c₄, k₄, e₄, hk₄, hM₄⟩ := tryE (by omega)
+          e₄))))), ⋄, hM₄⟩
+  · obtain ⟨c₄, k₄, e₄, hk₄, hM₄⟩ := tryE (⋄)
     exact ⟨c₄, _, .seq e₁ (.ifLtN_false hnl (.seq e₂ (.seq e₃ (.ifLtN_true
-      (by rw [t66, hM₃.cst.three]; omega) e₄)))), by omega, hM₄⟩
+      (by rw [t66, hM₃.cst.three]; omega) e₄)))), ⋄, hM₄⟩
 
 /-! ## The loop -/
 
@@ -194,10 +196,10 @@ theorem loop_exec {P : Polygon} {W : ℕ} {E : Env} {d : Dm} {A₀ : ℕ} {m₀ 
       obtain ⟨c₂, k₂, e₂, hk₂, hM₂, F₂⟩ := body_exec (P := P) hE hM₁ hI₁ hD hA htop
       have hI₂ := hI₁.step hE htop
       have hms := measure_step hE hI₁ htop
-      refine ⟨c₂, k₂, e₂, ⟨_, hM₂, hI₂, by rw [F₂.1 _ (by decide), h52₁],
-        fun r hr => by rw [F₂.1 r hr, hr₁ r hr]⟩, hk₂, ?_⟩
+      refine ⟨c₂, k₂, e₂, ⟨_, hM₂, hI₂, by rw [F₂.1 _ (⌖), h52₁],
+        fun r hr => Ρ F₂.1 r hr, hr₁ r hr⟩, hk₂, ?_⟩
       unfold St.meas at hms
-      rw [hM₂.top, hM₂.nlive, hM₁.top, hM₁.nlive]
+      Ξ hM₂.top, hM₂.nlive, hM₁.top, hM₁.nlive
       exact hms) ⟨st, hM, hI, h52, fun _ _ => rfl⟩
   refine ⟨c', k, st', e, ?_, hM', hI', ?_, hr'⟩
   · rw [hM.top, hM.nlive] at hk

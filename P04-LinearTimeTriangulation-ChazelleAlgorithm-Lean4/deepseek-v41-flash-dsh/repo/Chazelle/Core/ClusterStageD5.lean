@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterInit
 
 /-!
@@ -33,16 +37,16 @@ theorem surj_range {N : ℕ} {f : ℕ → ℕ} (hlt : ∀ i, i < N → f i < N)
   have := Finset.surjOn_of_injOn_of_card_le f (s := Finset.range N) (t := Finset.range N)
     (fun i hi => by simp only [Finset.coe_range, Set.mem_Iio] at hi ⊢; exact hlt i hi)
     (fun i hi j hj h => by
-      simp only [Finset.coe_range, Set.mem_Iio] at hi hj; exact hinj i j hi hj h) le_rfl
+      ϴ' Finset.coe_range, Set.mem_Iio at hi hj; exact hinj i j hi hj h) le_rfl
   obtain ⟨i, hi, hfi⟩ := this (by simp [hp] : p ∈ (Finset.range N : Set ℕ))
-  simp only [Finset.coe_range, Set.mem_Iio] at hi
+  ϴ' Finset.coe_range, Set.mem_Iio at hi
   exact ⟨i, hi, hfi⟩
 
 section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 8000000 in
+
 /-- **Stage D.** -/
 theorem stageD_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     {lev hl blk : ℕ → ℕ}
@@ -71,7 +75,7 @@ theorem stageD_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have b36 := g.base_eq 36; have b42 := g.base_eq 42; have b43 := g.base_eq 43
   have b44 := g.base_eq 44; have b45 := g.base_eq 45; have b48 := g.base_eq 48
   have b49 := g.base_eq 49
-  have hA0 : g.A0 = g.base 0 := by omega
+  have hA0 : g.A0 = g.base 0 := ⋄
   set bo := blkOf g.μ lev hl blk with hbo
   set key : ℕ → ℕ := fun v => c.nmem (g.base 29 + c.nmem (g.base 0 + v)) with hkey
   -- the memory reads survive every step
@@ -83,8 +87,8 @@ theorem stageD_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   unfold stageD
   -- POS := μ
   obtain ⟨c1, k1, x1, hk1, hw1, hf1, hz1⟩ := fillWith_exec (P := P) hw hG.one
-    (hG.rbase 44 (by omega)) hG.rμ hG.rμ (by unfold FillRG; omega) (by unfold FillRG; omega)
-    (by unfold FillRG; omega) (by omega) (by omega)
+    (hG.rbase 44 (⋄)) hG.rμ hG.rμ (by unfold FillRG; omega) (by unfold FillRG; omega)
+    (by unfold FillRG; omega) (⋄) (by omega)
   have f1 : PFr StDRG (DMem g) c c1 := hf1.mono (fun r h => by unfold FillRG at h; unfold StDRG; omega)
     (fun a h => by unfold DMem; omega)
   have hG1 : GR g c1 := hG.frame (fun r hr => f1.1 r (by unfold GRReg at hr; unfold StDRG; omega))
@@ -93,37 +97,37 @@ theorem stageD_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       (block [.copyN 130800 130059, .copyN 130801 130062, .copyN 130802 130014]) c1 c2 k2 ∧
       k2 = 3 ∧ WordsBounded W c2 ∧ c2.nreg 130800 = g.base 29 ∧ c2.nreg 130801 = g.base 32 ∧
       c2.nreg 130802 = g.N ∧ PFr StDRG (DMem g) c1 c2 ∧ c2.nmem = c1.nmem := by
-    have r59 := hG1.rbase 29 (by omega); have r62 := hG1.rbase 32 (by omega); have rN := hG1.rN
+    have r59 := hG1.rbase 29 (⋄); have r62 := hG1.rbase 32 (⋄); have rN := hG1.rN
     exec_block
     refine ⟨rfl, ‹_›, by config_simp; exact r59, by config_simp; exact r62, by config_simp; exact rN,
       ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩, rfl⟩
     simp only; unfold StDRG at hr
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
   have f2 := f1.trans hf2
   have hG2 : GR g c2 := hG.frame (fun r hr => f2.1 r (by unfold GRReg at hr; unfold StDRG; omega))
   have rd2 := rd c2 f2
   obtain ⟨c3, k3, e3, hk3, hw3, hf3, hinv3⟩ := invStmt_exec (P := P) hw2 hG2.one h800 h801 h802
-    (fun i hi => by rw [rd2.1 _ (by omega)]; exact hpre_lt i hi)
-    (fun i j hi hj h => hpre_inj i j hi hj (by rwa [rd2.1 _ (by omega), rd2.1 _ (by omega)] at h))
-    (by omega) (by omega) (by omega) (by omega)
+    (fun i hi => by rw [rd2.1 _ (⋄)]; exact hpre_lt i hi)
+    (fun i j hi hj h => hpre_inj i j hi hj (by rwa [rd2.1 _ (⋄), rd2.1 _ (by omega)] at h))
+    (⋄) (by omega) (by omega) (by omega)
   have f3 : PFr StDRG (DMem g) c c3 := f2.trans (hf3.mono (fun r h => by
     unfold InvRG at h; unfold StDRG; omega) (fun a h => by unfold DMem; omega))
   have hG3 : GR g c3 := hG.frame (fun r hr => f3.1 r (by unfold GRReg at hr; unfold StDRG; omega))
   have rd3 := rd c3 f3
   set inv : ℕ → ℕ := fun p => c3.nmem (g.base 32 + p) with hinvd
   have hinvpre : ∀ i, i < g.N → inv (c.nmem (g.base 29 + i)) = i := fun i hi => by
-    have := hinv3 i hi; rw [rd2.1 _ (by omega)] at this; exact this
+    have := hinv3 i hi; rw [rd2.1 _ (⋄)] at this; exact this
   have hsurj := surj_range hpre_lt hpre_inj
   have hinv_lt : ∀ p, p < g.N → inv p < g.N ∧ c.nmem (g.base 29 + inv p) = p := fun p hp => by
     obtain ⟨i, hi, rfl⟩ := hsurj p hp
     rw [hinvpre i hi]; exact ⟨hi, rfl⟩
   -- block sizes and starts
   have hlev3 : ∀ v, v < g.μ → c3.nmem (g.base 3 + v) = lev v := fun v hv => by
-    rw [rd3.1 _ (by omega)]; exact hlev v hv
+    rw [rd3.1 _ (⋄)]; exact hlev v hv
   have hhl3 : ∀ l, l < g.μ → c3.nmem (g.base 36 + l) = hl l := fun l hl' => by
-    rw [rd3.2 _ (by omega) (by omega)]; exact hhl l hl'
+    rw [rd3.2 _ (⋄) (by omega)]; exact hhl l hl'
   have hblk3 : ∀ l, l < g.μ → c3.nmem (g.base 35 + l) = blk l := fun l hl' => by
-    rw [rd3.2 _ (by omega) (by omega)]; exact hblk l hl'
+    rw [rd3.2 _ (⋄) (by omega)]; exact hblk l hl'
   obtain ⟨c4, k4, e4, hk4, hw4, hf4, hcnt4⟩ := bcS_exec (P := P) hw3 hG3 hlev3 hlt hhl3 hhl1 hblk3
     hblt hW
   have f4 : PFr StDRG (DMem g) c c4 := f3.trans (hf4.mono (fun r h => h)
@@ -136,18 +140,18 @@ theorem stageD_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have hG5 : GR g c5 := hG.frame (fun r hr => f5.1 r (by unfold GRReg at hr; unfold StDRG; omega))
   have rd5 := rd c5 f5
   have k35 : ∀ a, (a < g.base 42 ∨ g.base 42 + g.μ ≤ a) → c5.nmem a = c3.nmem a := fun a ha =>
-    f45.2.2.2.2 a (by omega)
+    f45.2.2.2.2 a (⋄)
   -- the placement
   obtain ⟨c6, k6, e6, hk6, hw6, hf6, hI6⟩ := placeS_exec (P := P) hw5 hG5 (inv := inv)
     (vert := fun i => c.nmem (g.bV + i)) (first := fun v => c.nmem (g.base 0 + v)) (key := key)
-    (fun p hp => by rw [k35 _ (by omega)])
+    (fun p hp => by rw [k35 _ (⋄)])
     (fun p hp => by have := (hinv_lt p hp).1; omega)
-    (fun p hp => by have := (hinv_lt p hp).1; rw [rd5.1 _ (by omega)])
+    (fun p hp => by have := (hinv_lt p hp).1; rw [rd5.1 _ (⋄)])
     (fun p hp => hvlt _ (hinv_lt p hp).1)
-    (fun v hv => by rw [rd5.1 _ (by omega)])
-    (fun v hv => by rw [rd5.1 _ (by omega)]; exact hlev v hv) hlt
-    (fun l hl' => by rw [rd5.2 _ (by omega) (by omega)]; exact hhl l hl') hhl1
-    (fun l hl' => by rw [rd5.2 _ (by omega) (by omega)]; exact hblk l hl') hblt
+    (fun v hv => by rw [rd5.1 _ (⋄)])
+    (fun v hv => by rw [rd5.1 _ (⋄)]; exact hlev v hv) hlt
+    (fun l hl' => by rw [rd5.2 _ (⋄) (by omega)]; exact hhl l hl') hhl1
+    (fun l hl' => by rw [rd5.2 _ (⋄) (by omega)]; exact hblk l hl') hblt
     (fun v hv => ⟨hpre_lt _ (hfst_lt v hv), hinvpre _ (hfst_lt v hv), hvf v hv⟩)
     (fun p hp h => by
       simp only [hkey]; rw [h]; exact (hinv_lt p hp).2)
@@ -157,25 +161,25 @@ theorem stageD_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have hG6 : GR g c6 := hG.frame (fun r hr => f6.1 r (by unfold GRReg at hr; unfold StDRG; omega))
   -- DF := 0
   obtain ⟨c7, k7, x7, hk7, hw7, hf7, hz7⟩ := fillWith_exec (P := P) hw6 hG6.one
-    (hG6.rbase 48 (by omega)) hG6.rμ hG6.zero (by unfold FillRG; omega) (by unfold FillRG; omega)
-    (by unfold FillRG; omega) (by omega) (by omega)
+    (hG6.rbase 48 (⋄)) hG6.rμ hG6.zero (by unfold FillRG; omega) (by unfold FillRG; omega)
+    (by unfold FillRG; omega) (⋄) (by omega)
   have f7 : PFr StDRG (DMem g) c c7 := f6.trans (hf7.mono (fun r h => by
     unfold FillRG at h; unfold StDRG; omega) (fun a h => by unfold DMem; omega))
   have k67 : ∀ a, a < g.base 48 → c7.nmem a = c6.nmem a := fun a ha =>
-    hf7.2.2.2.2 a (by omega)
+    hf7.2.2.2.2 a (⋄)
   have hnk : ∀ w, w < g.μ → key w < g.N := fun w hw => hpre_lt _ (hfst_lt w hw)
   refine ⟨c7, k1 + (k2 + (k3 + (k4 + (k5 + (k6 + k7))))),
-    .seq x1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 (.seq e6 x7))))), by omega, hw7, f7,
+    .seq x1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 (.seq e6 x7))))), ⋄, hw7, f7,
     fun b hb => ?_, fun v hv => ?_, fun v hv hbv => ?_, fun v hv => hz7 v hv⟩
-  · rw [k67 _ (by omega)]; exact hI6.full hnk hb
-  · rw [k67 _ (by omega), hI6.pos v hv]
+  · rw [k67 _ (⋄)]; exact hI6.full hnk hb
+  · rw [k67 _ (⋄), hI6.pos v hv]
     by_cases h : bo v < g.μ
-    · rw [ite_eq_left ⟨h, hnk v hv⟩, ite_eq_left h]
-    · rw [ite_eq_right (fun h' => h h'.1), ite_eq_right h, k35 _ (by omega)]
-      rw [hf3.2.2.2.2 _ (by omega), hm2]
+    · Ξ ite_eq_left ⟨h, hnk v hv⟩, ite_eq_left h
+    · rw [ite_eq_right (fun h' => h h'.1), ite_eq_right h, k35 _ (⋄)]
+      rw [hf3.2.2.2.2 _ (⋄), hm2]
       exact hz1 v hv
   · have := plPos_lt_μ (key := key) hv hbv
-    rw [k67 _ (by omega)]; exact hI6.act v hv hbv (hnk v hv)
+    rw [k67 _ (⋄)]; exact hI6.act v hv hbv (hnk v hv)
 
 end proofs
 

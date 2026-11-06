@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreDescGeo
 public import Chazelle.Core.RestoreTestSpec
 public import Chazelle.Core.RestoreTEnv
@@ -50,30 +52,30 @@ variable {B : Finset ℕ} {P : Polygon} {W : ℕ} {c₀ c : Config}
 theorem FRS.mono {s : Stmt} {K K' : ℕ} {Q Q' : Config → Prop} (h : FRS B P W c₀ s c K Q)
     (hK : K ≤ K') (hQ : ∀ c', Q c' → Q' c') : FRS B P W c₀ s c K' Q' := by
   obtain ⟨c', k, ex, hk, hI, hrf, hq⟩ := h
-  exact ⟨c', k, ex, by omega, hI, hrf, hQ c' hq⟩
+  exact ⟨c', k, ex, ⋄, hI, hrf, hQ c' hq⟩
 
 theorem FRS.seq {s t : Stmt} {K₁ K₂ : ℕ} {Q₁ Q₂ : Config → Prop} (h₁ : FRS B P W c₀ s c K₁ Q₁)
     (h₂ : ∀ c₁, FInv W c₀ c₁ → c₁.nreg ALLOC ≤ c.nreg ALLOC + K₁ → Q₁ c₁ →
       FRS B P W c₀ t c₁ K₂ Q₂) : FRS B P W c₀ (.seq s t) c (K₁ + K₂) Q₂ := by
   obtain ⟨c₁, k₁, e₁, hk₁, hI₁, hrf₁, hq₁⟩ := h₁
   obtain ⟨c', k₂, e₂, hk₂, hI', hrf₂, hq⟩ := h₂ c₁ hI₁ (by have := hrf₁.2.2.2.2.2.2; omega) hq₁
-  exact ⟨c', k₁ + k₂, .seq e₁ e₂, by omega, hI', hrf₁.trans hrf₂, hq⟩
+  exact ⟨c', k₁ + k₂, .seq e₁ e₂, ⋄, hI', hrf₁.trans hrf₂, hq⟩
 
 theorem FRS.ifT {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
     (ht : c.nreg a < c.nreg b) (h : FRS B P W c₀ t c K Q) :
     FRS B P W c₀ (.ifLtN a b t e) c (K + 2) Q := by
   obtain ⟨c', k, ex, hk, hI, hrf, hq⟩ := h
-  exact ⟨c', k + 1, .ifLtN_true ht ex, by omega, hI, hrf.mono subset_rfl (by omega), hq⟩
+  exact ⟨c', k + 1, .ifLtN_true ht ex, ⋄, hI, hrf.mono subset_rfl (⋄), hq⟩
 
 theorem FRS.ifF {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
     (ht : ¬ c.nreg a < c.nreg b) (h : FRS B P W c₀ e c K Q) :
     FRS B P W c₀ (.ifLtN a b t e) c (K + 2) Q := by
   obtain ⟨c', k, ex, hk, hI, hrf, hq⟩ := h
-  exact ⟨c', k + 2, .ifLtN_false ht ex, by omega, hI, hrf.mono subset_rfl (by omega), hq⟩
+  exact ⟨c', k + 2, .ifLtN_false ht ex, ⋄, hI, hrf.mono subset_rfl (⋄), hq⟩
 
 theorem FRS.skip {K : ℕ} {Q : Config → Prop} (hI : FInv W c₀ c) (hq : Q c) :
     FRS B P W c₀ .skip c K Q :=
-  ⟨c, 0, .skip hI.hw, by omega, hI, RF.refl c 0, hq⟩
+  ⟨c, 0, .skip hI.hw, ⋄, hI, RF.refl c 0, hq⟩
 
 /-- A scratch register of the search: band `bRestore` from `81028` on, or a register of an
 oracle band (the arguments of the cutter). -/
@@ -91,18 +93,18 @@ theorem FInv.regs (hB : dBands ⊆ B) {c' : Config} {k : ℕ} (hI : FInv W c₀ 
     (by unfold FOut; unfold FFix at hq; omega)
     (by unfold FScr; unfold FFix at hq; rintro (h | h)
         · omega
-        · exact band8_not_oracle (by omega) (by omega) h)
+        · exact band8_not_oracle (⋄) (⋄) h)
   have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold FOut ALLOC; omega)
     (by unfold FScr ALLOC; rintro (h | h)
         · omega
-        · exact absurd h (by decide))
+        · exact absurd h (⌖))
   refine ⟨⟨hw, fun q hq => (keep q hq).trans (hI.hin q hq), by rw [hA]; exact hI.hA,
     fun a ha => by rw [hm]; exact hI.hm a ha⟩,
     (rf_of_regs' (fun r hr' => hr r ?_ ?_) hrr hm hrm ho).mono hB le_rfl⟩
   · unfold FOut; intro h
-    exact hr' (by rw [band8 (by omega) (by omega)]; decide)
+    exact hr' (by rw [band8 (⋄) (⋄)]; decide)
   · unfold FScr; rintro (h | h)
-    · exact hr' (by rw [band8 (by omega) (by omega)]; decide)
+    · exact hr' (by rw [band8 (⋄) (⋄)]; decide)
     · exact hr' (Finset.mem_union_right _ h)
 
 /-- **One register instruction** on a scratch or output register. -/
@@ -112,7 +114,7 @@ theorem FRS.reg (hB : dBands ⊆ B) {i : Instr} {r v : ℕ} (hI : FInv W c₀ c)
     FRS B P W c₀ (.instr i) c 1 (fun c' => c' = { c with nreg := upd c.nreg r v }) := by
   obtain ⟨hI', hrf⟩ := hI.regs hB (c' := { c with nreg := upd c.nreg r v }) (k := 1) hex.wb_right
     (fun q h1 h2 => by
-      simp only [upd]
+      ϴ upd
       split_ifs with h
       · subst h; rcases hr with hr | hr
         · exact absurd hr h2
@@ -134,20 +136,20 @@ theorem FRS.while {a b : ℕ} {body : Stmt} (I : Config → Prop) (μ : Config �
     by_cases ht : c.nreg a < c.nreg b
     · have hμ : 0 < μ c := hpos c hc ht
       obtain ⟨c₁, k₁, e₁, hk₁, hI₁, hrf₁, hc₁, hμ₁⟩ := hbody c hI hc ht (by
-        have : Kb ≤ (Kb + 2) * μ c := by nlinarith
+        have : Kb ≤ (Kb + 2) * μ c := ⊞
         omega)
       have hA₁ := hrf₁.2.2.2.2.2.2
       have hroom₁ : c₁.nreg ALLOC + (Kb + 2) * μ c₁ ≤ W := by
         have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * μ c := Nat.mul_le_mul_left _ hμ₁
         rw [Nat.mul_add, Nat.mul_one] at this
         omega
-      obtain ⟨c', k₂, e₂, hk₂, hI', hrf₂, hq⟩ := ih (μ c₁) (by omega) hI₁ hc₁ hroom₁ rfl
+      obtain ⟨c', k₂, e₂, hk₂, hI', hrf₂, hq⟩ := ih (μ c₁) (⋄) hI₁ hc₁ hroom₁ rfl
       refine ⟨c', k₁ + 2 + k₂, .whileLtN_true ht e₁ e₂, ?_, hI',
-        (hrf₁.trans hrf₂).mono subset_rfl (by omega), hq⟩
-      have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * n := Nat.mul_le_mul_left _ (by omega)
+        (hrf₁.trans hrf₂).mono subset_rfl (⋄), hq⟩
+      have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * n := Nat.mul_le_mul_left _ (⋄)
       rw [Nat.mul_add, Nat.mul_one] at this
       omega
-    · exact ⟨c, 2, .whileLtN_false ht hI.hw, by omega, hI, RF.refl c 2, hc, ht⟩
+    · exact ⟨c, 2, .whileLtN_false ht hI.hw, ⋄, hI, RF.refl c 2, hc, ht⟩
 
 /-- **A call of a statement with a `Meets` contract** whose postcondition keeps the inputs and
 the constants of the search. -/
@@ -205,7 +207,7 @@ theorem FRS.instr1 (hB : dBands ⊆ B) {i : Instr} (hI : FInv W c₀ c) (hi : ok
   | addN r a b => exact FRS.reg hB hI hi.1 (Exec.addN hI.hw r a b hi.2)
   | subN r a b => exact FRS.reg hB hI hi (Exec.subN hI.hw r a b)
   | loadN r a => exact FRS.reg hB hI hi (Exec.loadN hI.hw r a)
-  | _ => exact absurd hi (by simp [okI])
+  | _ => exact absurd hi (⊚ okI)
 
 /-- **A straight-line block** of register instructions. -/
 theorem FRS.block (hB : dBands ⊆ B) : ∀ (l : List Instr) {c : Config}, FInv W c₀ c →
@@ -218,8 +220,8 @@ theorem FRS.block (hB : dBands ⊆ B) : ∀ (l : List Instr) {c : Config}, FInv 
     have h := FRS.seq (FRS.instr1 (P := P) hB hI hi) (fun c₁ hI₁ _ h₁ => by
       subst h₁
       exact FRS.block hB l hI₁ hl)
-    simp only [List.length_cons]
-    rw [Nat.add_comm]
+    ϴ List.length_cons
+    Ξ Nat.add_comm
     exact h.mono le_rfl (fun c' h' => h')
 
 /-- The destination register of a covered instruction. -/
@@ -240,7 +242,7 @@ theorem regB_other (m : ℕ → ℕ) : ∀ (l : List Instr) (f : ℕ → ℕ) {q
     (∀ i ∈ l, dstI i ≠ q) → regB m l f q = f q
   | [], _, _, _ => rfl
   | i :: l, f, q, h => by
-    rw [regB, regB_other m l _ (fun j hj => h j (List.mem_cons_of_mem _ hj))]
+    Ξ regB, regB_other m l _ (fun j hj => h j (List.mem_cons_of_mem _ hj))
     exact regI_other m f i (h i List.mem_cons_self)
 
 /-- **A primitive call** (a step framed by the bands of the primitives). -/
@@ -253,13 +255,13 @@ theorem FRS.prim (hB : dBands ⊆ B) {s : Stmt} {c' : Config} {k k' K : ℕ} {Q 
     hf₀.2.2.2.2.2.1, by have := hf₀.2.2.2.2.2.2; omega⟩
   have h8 : ∀ q, 80000 ≤ q → q < 90000 → c'.nreg q = c.nreg q := fun q h1 h2 =>
     hf.1 q (by
-      rw [band8 h1 h2]
+      Ξ band8 h1 h2
       simp [SweepPrim.primBands, bRestore, bSign, bLocate]) (by unfold ALLOC; omega)
   refine ⟨c', k, hex, hk, ⟨hex.wb_right, fun q hq => ?_, hI.hA.trans hf.2.2.2.2.2.1,
     fun a ha => (hf.2.2.1 a (by have := hI.hA; omega)).trans (hI.hm a ha)⟩,
     (RF.of_frame hf hI.hA).mono (primBands_sub.trans hB) le_rfl, hq⟩
   unfold FFix at hq
-  rw [h8 q (by omega) (by omega)]; exact hI.hin q (by unfold FFix; omega)
+  rw [h8 q (⋄) (⋄)]; exact hI.hin q (by unfold FFix; omega)
 
 end
 

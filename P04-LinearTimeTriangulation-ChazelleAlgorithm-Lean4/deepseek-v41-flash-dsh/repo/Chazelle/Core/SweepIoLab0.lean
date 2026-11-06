@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoLab0L
 public import Chazelle.Core.SweepIoS0CandBsMain
 
@@ -60,7 +64,7 @@ theorem lab0_cost (κL T Fg D : ℕ) :
     lab0Kt κL T Fg D ≤ (κL + 20000000) * (D + 2) * (Fg + T + 1) := by
   unfold lab0Kt gapK lh1K slotK gB regK arcK symShotK ShotList.shotCost offerK
   have h1 : κL * (T + 1) ≤ κL * (D + 2) * (Fg + T + 1) := by
-    rw [mul_assoc]
+    Ξ mul_assoc
     apply Nat.mul_le_mul_left
     nlinarith
   have h2 : (18 * (D + 1) + 1) * (16 * Fg + 500000) ≤ 9500000 * (D + 2) * (Fg + 1) := by
@@ -68,17 +72,17 @@ theorem lab0_cost (κL T Fg D : ℕ) :
   have h3 : 9500000 * (D + 2) * (Fg + 1) ≤ 9500000 * (D + 2) * (Fg + T + 1) := by
     apply Nat.mul_le_mul_left; omega
   have h4 : 5500 * (T + 1) ≤ 5500 * (D + 2) * (Fg + T + 1) := by
-    rw [mul_assoc]
+    Ξ mul_assoc
     apply Nat.mul_le_mul_left
     nlinarith
-  have h5 : (D + 2) ≤ (D + 2) * (Fg + T + 1) := Nat.le_mul_of_pos_right _ (by omega)
+  have h5 : (D + 2) ≤ (D + 2) * (Fg + T + 1) := Nat.le_mul_of_pos_right _ (⋄)
   have e : (κL + 20000000) * (D + 2) * (Fg + T + 1) =
-      κL * (D + 2) * (Fg + T + 1) + 20000000 * ((D + 2) * (Fg + T + 1)) := by ring
-  rw [e]
-  have e2 : 9500000 * (D + 2) * (Fg + T + 1) = 9500000 * ((D + 2) * (Fg + T + 1)) := by ring
-  have e3 : 5500 * (D + 2) * (Fg + T + 1) = 5500 * ((D + 2) * (Fg + T + 1)) := by ring
-  rw [e2] at h3
-  rw [e3] at h4
+      κL * (D + 2) * (Fg + T + 1) + 20000000 * ((D + 2) * (Fg + T + 1)) := ⋆
+  Ξ e
+  have e2 : 9500000 * (D + 2) * (Fg + T + 1) = 9500000 * ((D + 2) * (Fg + T + 1)) := ⋆
+  have e3 : 5500 * (D + 2) * (Fg + T + 1) = 5500 * ((D + 2) * (Fg + T + 1)) := ⋆
+  Ξ' e2 at h3
+  Ξ' e3 at h4
   nlinarith
 
 theorem symShotK_mono {Fg K K' : ℕ} (h : K ≤ K') : symShotK Fg K ≤ symShotK Fg K' := by
@@ -96,24 +100,24 @@ theorem eIn_val (m f : ℕ → ℕ) (hk : f K1 = 1) :
     ∀ q, q ≠ eR0 → q ≠ eR1 → q ≠ eR2 → regB m eIn f q = f q := by
   have hk' : f 240611 = 1 := hk
   refine ⟨?_, ?_, ?_, fun q h0 h1 h2 => regB_other _ _ _ (fun i hi => ?_)⟩
-  · simp only [eIn, regB, regI, upd, eR0, eR1, eR2, S0C.lsI, K1, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [eIn, regB, regI, upd, eR0, eR1, eR2, S0C.lsI, K1, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, hk']
-  · simp only [eIn, regB, regI, upd, eR0, eR1, eR2, S0C.lsI, K1, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, hk']
-  · simp only [eIn, List.mem_cons, List.not_mem_nil, or_false] at hi
+  · ϴ eIn, regB, regI, upd, eR0, eR1, eR2, S0C.lsI, K1, sw
+    ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
+  · ϴ eIn, regB, regI, upd, eR0, eR1, eR2, S0C.lsI, K1, sw
+    ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, hk'
+  · ϴ eIn, regB, regI, upd, eR0, eR1, eR2, S0C.lsI, K1, sw
+    ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, hk'
+  · ϴ' eIn, List.mem_cons, List.not_mem_nil, or_false at hi
     rcases hi with rfl | rfl | rfl <;> simp only [dstI] <;> intro h <;> subst h <;> simp_all
 
 theorem gIn_val (m f : ℕ → ℕ) :
     regB m gIn f gNF = f (sw 4) ∧ regB m gIn f gC = 18 ∧
     ∀ q, q ≠ gNF → q ≠ gC → regB m gIn f q = f q := by
   refine ⟨?_, ?_, fun q h0 h1 => regB_other _ _ _ (fun i hi => ?_)⟩
-  · simp only [gIn, regB, regI, upd, gNF, gC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gIn, regB, regI, upd, gNF, gC, sw]
-    simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  · simp only [gIn, List.mem_cons, List.not_mem_nil, or_false] at hi
+  · ϴ gIn, regB, regI, upd, gNF, gC, sw
+    ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
+  · ϴ gIn, regB, regI, upd, gNF, gC, sw
+    ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false
+  · ϴ' gIn, List.mem_cons, List.not_mem_nil, or_false at hi
     rcases hi with rfl | rfl <;> simp only [dstI] <;> intro h <;> subst h <;> simp_all
 
 end Run
@@ -125,8 +129,8 @@ theorem acc_regs {j : ℕ} (hj : j ≤ 12) : 240000 ≤ accA + j ∧ accA + j < 
     accA + j ≠ ALLOC := by
   unfold accA sw ALLOC; omega
 
-set_option maxHeartbeats 32000000 in
-set_option maxRecDepth 40000 in
+
+
 /-- **The label candidates of a side-0 query** from the binary search in the log. -/
 theorem lab0_of (hLS : S0C.LSearchSpec) : Lab0Spec := by
   obtain ⟨ls, κL, hls⟩ := lsBody_of hLS

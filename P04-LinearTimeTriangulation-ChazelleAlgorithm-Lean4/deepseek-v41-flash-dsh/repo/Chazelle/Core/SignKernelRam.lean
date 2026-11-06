@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SignKernelMath
 public import Chazelle.Programs.Tactics
 
@@ -117,14 +119,14 @@ theorem lexStmt_spec {P : Polygon} {W : ℕ} (Z Pb Zb : ℕ) (hne : Pb ≠ Zb) (
   induction rs with
   | nil =>
     intro c hc hZ
-    simp only [lexStmt]
+    ϴ lexStmt
     exec_block
     · omega
     · omega
-    · simp [hne, lexPos, allZero]
+    · Θ hne, lexPos, allZero
   | cons r rs ih =>
     intro c hc hZ
-    simp only [lexStmt]
+    ϴ lexStmt
     by_cases h1 : c.rreg Z < c.rreg r
     · refine spec_ifLtR_true h1 ?_
       have hp : 0 < c.rreg r := hZ ▸ h1
@@ -132,7 +134,7 @@ theorem lexStmt_spec {P : Polygon} {W : ℕ} (Z Pb Zb : ℕ) (hne : Pb ≠ Zb) (
       · omega
       · omega
       · refine ⟨by simp only [List.length_cons]; omega, ?_⟩
-        simp [hne, lexPos, allZero, hp, hp.ne']
+        Θ hne, lexPos, allZero, hp, hp.ne'
     · by_cases h2 : c.rreg r < c.rreg Z
       · refine spec_ifLtR_false h1 (spec_ifLtR_true h2 ?_)
         have hn : c.rreg r < 0 := hZ ▸ h2
@@ -140,15 +142,15 @@ theorem lexStmt_spec {P : Polygon} {W : ℕ} (Z Pb Zb : ℕ) (hne : Pb ≠ Zb) (
         · omega
         · omega
         · refine ⟨by simp only [List.length_cons]; omega, ?_⟩
-          simp [hne, lexPos, allZero, hn.ne, not_lt.2 hn.le]
+          Θ hne, lexPos, allZero, hn.ne, not_lt.2 hn.le
       · refine spec_ifLtR_false h1 (spec_ifLtR_false h2 ?_)
         have h0 : c.rreg r = 0 := by
           rw [hZ] at h1 h2
           exact le_antisymm (not_lt.1 h1) (not_lt.1 h2)
         obtain ⟨c', k, ex, hk, a, b, e1, e2⟩ := ih c hc hZ
         refine ⟨c', k, ex, by simp only [List.length_cons]; omega, a, b, ?_, ?_⟩
-        · simp [lexPos, h0, e1]
-        · simp [allZero, h0, e2]
+        · Θ lexPos, h0, e1
+        · Θ allZero, h0, e2
 
 /-! ## Loading a symbolic point -/
 
@@ -169,13 +171,13 @@ theorem succIdx_spec {P : Polygon} {W : ℕ} (a : ℕ) (c : Config) (hc : WordsB
   · by_cases hlt : c.nreg a + 1 < P.n
     · refine spec_ifLtN_true (by config_simp; rw [h1, hn]; exact hlt) ?_
       refine spec_skip ‹_› ?_
-      refine ⟨by omega, by config_simp; rw [h1, Nat.mod_eq_of_lt hlt], rfl,
+      refine ⟨⋄, by config_simp; rw [h1, Nat.mod_eq_of_lt hlt], rfl,
         fun r hr => by config_simp; simp [hr]⟩
     · refine spec_ifLtN_false (by config_simp; rw [h1, hn]; exact hlt) ?_
-      have he : c.nreg a + 1 = P.n := by omega
+      have he : c.nreg a + 1 = P.n := ⋄
       exec_block
       · omega
-      · exact ⟨by omega, by config_simp; rw [he, Nat.mod_self], rfl,
+      · exact ⟨⋄, by config_simp; rw [he, Nat.mod_self], rfl,
           fun r hr => by config_simp; simp [hr]⟩
 
 /-- A representation held in the six real registers from `ob` on. -/
@@ -220,19 +222,19 @@ theorem normR_spec {P : Polygon} {W : ℕ} (ob : ℕ) (hob : ob = 10100 ∨ ob =
   rcases hob with rfl | rfl | rfl <;>
   · obtain ⟨r0, r1, r2, r3, r4, r5⟩ := hr
     simp only [Nat.reduceAdd] at r0 r1 r2 r3 r4 r5
-    simp only [normR, negR, degR, Nat.reduceAdd]
+    ϴ normR, negR, degR, Nat.reduceAdd
     by_cases h1 : dy < 0
     · refine spec_ifLtR_true (by rw [hdy, hZ]; exact h1) ?_
       exec_block
-      refine ⟨by omega, ?_⟩
-      simp only [normRep, h1, ↓reduceIte, RepAt, Rep.neg, Nat.reduceAdd]
+      refine ⟨⋄, ?_⟩
+      ϴ normRep, h1, ↓reduceIte, RepAt, Rep.neg, Nat.reduceAdd
       config_simp
-      simp only [hZ, r0, r1, r2, r3, r4, r5, and_self]
+      ϴ hZ, r0, r1, r2, r3, r4, r5, and_self
     by_cases h2 : 0 < dy
     · refine spec_ifLtR_false (by rw [hdy, hZ]; exact h1) ?_
       refine spec_ifLtR_true (by rw [hdy, hZ]; exact h2) ?_
-      refine spec_skip hc ⟨by omega, ?_⟩
-      simp only [normRep, h1, h2, ↓reduceIte, RepAt, Nat.reduceAdd]
+      refine spec_skip hc ⟨⋄, ?_⟩
+      ϴ normRep, h1, h2, ↓reduceIte, RepAt, Nat.reduceAdd
       exact ⟨r0, r1, r2, r3, r4, r5⟩
     have h0 : dy = 0 := le_antisymm (not_lt.1 h2) (not_lt.1 h1)
     by_cases h3 : dx < 0
@@ -240,27 +242,27 @@ theorem normR_spec {P : Polygon} {W : ℕ} (ob : ℕ) (hob : ob = 10100 ∨ ob =
       refine spec_ifLtR_false (by rw [hdy, hZ]; exact h2) ?_
       refine spec_ifLtR_true (by rw [hdx, hZ]; exact h3) ?_
       exec_block
-      refine ⟨by omega, ?_⟩
-      simp only [normRep, h1, h2, h3, ↓reduceIte, RepAt, Rep.neg, Nat.reduceAdd]
+      refine ⟨⋄, ?_⟩
+      ϴ normRep, h1, h2, h3, ↓reduceIte, RepAt, Rep.neg, Nat.reduceAdd
       config_simp
-      simp only [hZ, r0, r1, r2, r3, r4, r5, and_self]
+      ϴ hZ, r0, r1, r2, r3, r4, r5, and_self
     by_cases h4 : 0 < dx
     · refine spec_ifLtR_false (by rw [hdy, hZ]; exact h1) ?_
       refine spec_ifLtR_false (by rw [hdy, hZ]; exact h2) ?_
       refine spec_ifLtR_false (by rw [hdx, hZ]; exact h3) ?_
       refine spec_ifLtR_true (by rw [hdx, hZ]; exact h4) ?_
-      refine spec_skip hc ⟨by omega, ?_⟩
-      simp only [normRep, h1, h2, h3, h4, ↓reduceIte, RepAt, Nat.reduceAdd]
+      refine spec_skip hc ⟨⋄, ?_⟩
+      ϴ normRep, h1, h2, h3, h4, ↓reduceIte, RepAt, Nat.reduceAdd
       exact ⟨r0, r1, r2, r3, r4, r5⟩
     · refine spec_ifLtR_false (by rw [hdy, hZ]; exact h1) ?_
       refine spec_ifLtR_false (by rw [hdy, hZ]; exact h2) ?_
       refine spec_ifLtR_false (by rw [hdx, hZ]; exact h3) ?_
       refine spec_ifLtR_false (by rw [hdx, hZ]; exact h4) ?_
       exec_block
-      refine ⟨by omega, ?_⟩
-      simp only [normRep, h1, h2, h3, h4, ↓reduceIte, RepAt, Nat.reduceAdd]
+      refine ⟨⋄, ?_⟩
+      ϴ normRep, h1, h2, h3, h4, ↓reduceIte, RepAt, Nat.reduceAdd
       config_simp
-      simp only [hu, r4, r5, Int.cast_zero, Int.cast_one, and_self]
+      ϴ hu, r4, r5, Int.cast_zero, Int.cast_one, and_self
 
 
 /-- Load a vertex: `x0 = x`, `x1 = 0`, `d = 1`, `y0 = y`, `y1 = x`. -/
@@ -295,27 +297,27 @@ theorem loadPt_spec {P : Polygon} {W : ℕ} (nb ob : ℕ)
     | vtx i =>
       obtain ⟨hk, hi⟩ := hin
       simp only [Nat.reduceAdd] at hi
-      simp only [loadPt, loadVtx, Nat.reduceAdd]
+      ϴ loadPt, loadVtx, Nat.reduceAdd
       refine spec_ifLtN_true (by rw [hk, h1]; norm_num) ?_
       exec_block
-      refine ⟨by omega, ?_⟩
-      simp only [RepAt, symRep, Nat.reduceAdd]
+      refine ⟨⋄, ?_⟩
+      ϴ RepAt, symRep, Nat.reduceAdd
       config_simp
-      simp only [hi, Int.cast_zero, Int.cast_one, and_self]
+      ϴ hi, Int.cast_zero, Int.cast_one, and_self
     | onEdge e h =>
       obtain ⟨hk, he, hh⟩ := hin
       simp only [Nat.reduceAdd] at he hh
-      simp only [loadPt, loadEdge, Nat.reduceAdd]
+      ϴ loadPt, loadEdge, Nat.reduceAdd
       refine spec_ifLtN_false (by rw [hk, h1]; norm_num) ?_
       refine spec_seq ?_
       refine spec_use (succIdx_spec _ c hc (by rw [he]; exact hs.1) h1 hn hW) ?_
       rintro c1 k1 hk1 hw1 ⟨hidx, hrr, hnr⟩
-      have e1 : c1.nreg _ = e := (hnr _ (by norm_num)).trans he
-      have e2 : c1.nreg _ = h := (hnr _ (by norm_num)).trans hh
+      have e1 : c1.nreg _ = e := (hnr _ (⊛)).trans he
+      have e2 : c1.nreg _ = h := (hnr _ (⊛)).trans hh
       rw [he] at hidx
       refine spec_seq ?_
       exec_block
-      refine spec_use (normR_spec _ (by norm_num) _ ‹_›
+      refine spec_use (normR_spec _ (⊛) _ ‹_›
         (u1 := (P.vtx e).1) (dx := (P.vtx ((e + 1) % P.n)).1 - (P.vtx e).1)
         (dy := (P.vtx ((e + 1) % P.n)).2 - (P.vtx e).2)
         (x0 := (P.vtx e).1 * ((P.vtx ((e + 1) % P.n)).2 - (P.vtx e).2) +
@@ -328,8 +330,8 @@ theorem loadPt_spec {P : Polygon} {W : ℕ} (nb ob : ℕ)
         (by simp only [RepAt, Nat.reduceAdd]; config_simp; simp only [hidx, e1, e2, and_self]))
         ?_
       intro c' k2 hk2 _ hrep
-      refine ⟨by omega, ?_⟩
-      rw [symRep, edgeRep_eq]
+      refine ⟨⋄, ?_⟩
+      Ξ symRep, edgeRep_eq
       exact hrep
 
 
@@ -350,7 +352,7 @@ theorem prelude_spec {P : Polygon} {W : ℕ} (c : Config) (hc : WordsBounded W c
   · omega
   · omega
   · omega
-  · refine ⟨by omega, ?_⟩
+  · refine ⟨⋄, ?_⟩
     config_simp
     simp
 
@@ -399,9 +401,9 @@ theorem polyStmt_spec {P : Polygon} {W : ℕ} (c : Config) (hc : WordsBounded W 
   simp only [Nat.reduceAdd] at a1 a2 a3 a4 a5 b1 b2 b3 b4 b5 c1 c2 c3 c4 c5
   unfold polyStmt
   exec_block
-  refine ⟨by omega, ?_, ?_, ?_⟩ <;>
+  refine ⟨⋄, ?_, ?_, ?_⟩ <;>
     simp only [xPoly, yPoly, dPoly, List.cons.injEq, and_true] <;> config_simp <;>
-    simp only [a0, a1, a2, a3, a4, a5, b0, b1, b2, b3, b4, b5, c0, c1, c2, c3, c4, c5, and_self]
+    ϴ a0, a1, a2, a3, a4, a5, b0, b1, b2, b3, b4, b5, c0, c1, c2, c3, c4, c5, and_self
 
 /-- Select the coefficient list of test `nreg 10009` into `rreg 10400 … 10404`. -/
 def selStmt : Stmt :=
@@ -430,25 +432,25 @@ theorem selStmt_spec {P : Polygon} {W : ℕ} (c : Config) (hc : WordsBounded W c
   unfold selStmt
   by_cases hA : c.nreg 10009 < 1
   · refine spec_ifLtN_true (by rw [h1]; exact hA) ?_
-    have hop : c.nreg 10009 = 0 := by omega
+    have hop : c.nreg 10009 = 0 := ⋄
     exec_block
-    refine ⟨by omega, ?_⟩
-    rw [hop, testPoly, ← hx]
+    refine ⟨⋄, ?_⟩
+    Ξ hop, testPoly, ← hx
     config_simp
     simp
   · refine spec_ifLtN_false (by rw [h1]; exact hA) ?_
     by_cases hB : c.nreg 10009 < 2
     · refine spec_ifLtN_true (by rw [h2]; exact hB) ?_
-      have hop : c.nreg 10009 = 1 := by omega
+      have hop : c.nreg 10009 = 1 := ⋄
       exec_block
-      refine ⟨by omega, ?_⟩
-      rw [hop, testPoly, ← hy]
+      refine ⟨⋄, ?_⟩
+      Ξ hop, testPoly, ← hy
       config_simp
       simp
     · refine spec_ifLtN_false (by rw [h2]; exact hB) ?_
       exec_block
-      refine ⟨by omega, ?_⟩
-      rw [testPoly_of_two_le (by omega), ← hd]
+      refine ⟨⋄, ?_⟩
+      rw [testPoly_of_two_le (⋄), ← hd]
       config_simp
       simp
 
@@ -465,10 +467,10 @@ theorem finStmt_spec {P : Polygon} {W : ℕ} (c : Config) (hc : WordsBounded W c
   unfold finStmt
   by_cases h : c.nreg 10009 < 3
   · refine spec_ifLtN_true (by rw [h3]; exact h) ?_
-    refine spec_instr (Exec.copyN hc _ _) fun _ => ⟨by omega, fun _ => by config_simp, fun h' =>
+    refine spec_instr (Exec.copyN hc _ _) fun _ => ⟨⋄, fun _ => by config_simp, fun h' =>
       (h' h).elim⟩
   · refine spec_ifLtN_false (by rw [h3]; exact h) ?_
-    refine spec_instr (Exec.copyN hc _ _) fun _ => ⟨by omega, fun h' => (h h').elim,
+    refine spec_instr (Exec.copyN hc _ _) fun _ => ⟨⋄, fun h' => (h h').elim,
       fun _ => by config_simp⟩
 
 end

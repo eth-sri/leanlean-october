@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutShLpB
 public import Chazelle.Core.ShootCutCutterOK
 
@@ -50,23 +54,23 @@ def Bph (r : ℕ) : Bool :=
   decide (r / 10000 = 1) || decide (r / 10000 = 5) || decide (r / 10000 = 15) ||
     decide (140100 ≤ r ∧ r < 140110) || decide (r = 9999)
 
-theorem wrM_shPh : BuildRam.wrM Bph shPh = true := by decide
+theorem wrM_shPh : BuildRam.wrM Bph shPh = true := ⌖
 
 /-- The real registers written by the piece records: bands `1, 5, 15`. -/
 def BphR (r : ℕ) : Bool :=
   decide (r / 10000 = 1) || decide (r / 10000 = 5) || decide (r / 10000 = 15)
 
-theorem wrM2_shPh : BuildRam.wrM2 Bph BphR shPh = true := by decide
+theorem wrM2_shPh : BuildRam.wrM2 Bph BphR shPh = true := ⌖
 
 theorem BphR_false {r : ℕ} (hr : bandOf r ∉ oracleBands) : BphR r = false := by
-  have h1 : (1 : ℕ) ∈ oracleBands := by decide
-  have h5 : (5 : ℕ) ∈ oracleBands := by decide
-  have h15 : (15 : ℕ) ∈ oracleBands := by decide
+  have h1 : (1 : ℕ) ∈ oracleBands := ⌖
+  have h5 : (5 : ℕ) ∈ oracleBands := ⌖
+  have h15 : (15 : ℕ) ∈ oracleBands := ⌖
   unfold bandOf at hr
   have a1 : r / 10000 ≠ 1 := fun h => hr (h ▸ h1)
   have a5 : r / 10000 ≠ 5 := fun h => hr (h ▸ h5)
   have a15 : r / 10000 ≠ 15 := fun h => hr (h ▸ h15)
-  simp only [BphR, Bool.or_eq_false_iff, decide_eq_false_iff_not]
+  ϴ BphR, Bool.or_eq_false_iff, decide_eq_false_iff_not
   omega
 
 /-! ## Small facts -/
@@ -80,13 +84,13 @@ theorem originIn_unique {c : Config} {r : ℕ} {o o' : Origin} (h : OriginIn c r
       cases s with
       | vtx i =>
         cases s' with
-        | vtx i' => obtain ⟨a, b⟩ := h; obtain ⟨a', b'⟩ := h'; rw [← b, ← b']
+        | vtx i' => obtain ⟨a, b⟩ := h; obtain ⟨a', b'⟩ := h'; Ξ ← b, ← b'
         | onEdge e' h'' => obtain ⟨a, -⟩ := h; obtain ⟨a', -⟩ := h'; omega
       | onEdge e hh =>
         cases s' with
         | vtx i' => obtain ⟨a, -⟩ := h; obtain ⟨a', -⟩ := h'; omega
         | onEdge e' h'' =>
-          obtain ⟨-, b, d⟩ := h; obtain ⟨-, b', d'⟩ := h'; rw [← b, ← b', ← d, ← d']
+          obtain ⟨-, b, d⟩ := h; obtain ⟨-, b', d'⟩ := h'; Ξ ← b, ← b', ← d, ← d'
     | walk x =>
       obtain ⟨a', -⟩ := h'
       cases s with
@@ -104,18 +108,18 @@ theorem originIn_unique {c : Config} {r : ℕ} {o o' : Origin} (h : OriginIn c r
       obtain ⟨xe, xh⟩ := x
       obtain ⟨xe', xh'⟩ := x'
       simp only at b d b' d'
-      rw [← b, ← b', ← d, ← d']
+      Ξ ← b, ← b', ← d, ← d'
 
 theorem one_le_rpowCeil (γ : ℕ) : 1 ≤ rpowCeil (cutGran γ * (γ + 1) ^ 2) ((1 : ℝ) / 3) := by
   have h1 : 1 ≤ cutGran γ := by
     unfold cutGran gradeGran
     have := Nat.one_le_two_pow (n := Cost.ceilBeta (Nat.clog 2 γ))
     omega
-  have h2 : 1 ≤ cutGran γ * (γ + 1) ^ 2 := Nat.mul_le_mul h1 (Nat.one_le_pow _ _ (by omega))
+  have h2 : 1 ≤ cutGran γ * (γ + 1) ^ 2 := Nat.mul_le_mul h1 (Nat.one_le_pow _ _ (⋄))
   unfold rpowCeil
   apply Nat.one_le_iff_ne_zero.2
   intro h0
-  rw [Nat.ceil_eq_zero] at h0
+  Ξ' Nat.ceil_eq_zero at h0
   have : (0 : ℝ) < ((cutGran γ * (γ + 1) ^ 2 : ℕ) : ℝ) ^ ((1 : ℝ) / 3) := by
     apply Real.rpow_pos_of_pos; exact_mod_cast h2
   linarith
@@ -147,20 +151,20 @@ theorem shooter_cost {κO T L R q k₁ k₂ k₃ k₄ k₅ k₆ k₇ : ℕ} (hR 
     have : κO ≤ κO * R := Nat.le_mul_of_pos_right _ hR
     have : 600503 ≤ 600503 * R := Nat.le_mul_of_pos_right _ hR
     nlinarith
-  have hqT : q ≤ 2100 * T := by omega
+  have hqT : q ≤ 2100 * T := ⋄
   have h6' : k₆ ≤ 9 * (2100 * T) * ((2 * κO + 600503) * R) + 20 := by
     have := Nat.mul_le_mul (Nat.mul_le_mul_left 9 hqT) hKR
     omega
   have hTR : T ≤ T * R := Nat.le_mul_of_pos_right _ hR
   have e : 9 * (2100 * T) * ((2 * κO + 600503) * R) = 18900 * (2 * κO + 600503) * (T * R) := by
     ring
-  rw [e] at h6'
+  Ξ' e at h6'
   have e2 : (18900 * (2 * κO + 600503) + 3000000) * T * R =
-      18900 * (2 * κO + 600503) * (T * R) + 3000000 * (T * R) := by ring
-  rw [e2]
-  have : 3 * (1 + 9 * q) ≤ 3 + 27 * (2100 * T) := by omega
-  have hT1 : 1 ≤ T := by omega
-  have hk4 : k₄ ≤ 165000 * T + 1912290 := by linarith
+      18900 * (2 * κO + 600503) * (T * R) + 3000000 * (T * R) := ⋆
+  Ξ e2
+  have : 3 * (1 + 9 * q) ≤ 3 + 27 * (2100 * T) := ⋄
+  have hT1 : 1 ≤ T := ⋄
+  have hk4 : k₄ ≤ 165000 * T + 1912290 := ⟡
   clear h4 e e2
   set Y := 18900 * (2 * κO + 600503) * (T * R)
   set Z := T * R
@@ -172,27 +176,27 @@ theorem originIn_of_eq {c c' : Config} {r : ℕ} {o : Origin} (h : OriginIn c r 
   | sym s => exact symPtIn_of_eq h he
   | walk x =>
     obtain ⟨a, b, d⟩ := h
-    exact ⟨by rw [he r le_rfl (by omega), a], by rw [he (r + 1) (by omega) (by omega), b],
-      by rw [he (r + 2) (by omega) (by omega), d]⟩
+    exact ⟨by rw [he r le_rfl (⋄), a], by rw [he (r + 1) (⋄) (by omega), b],
+      by rw [he (r + 2) (⋄) (⋄), d]⟩
 
 theorem Borg_ob (r : ℕ) (h : Borg r = true) :
     (bandOf r = 1 ∨ bandOf r = 5 ∨ bandOf r = 12 ∨ bandOf r = 14) ∧ r ≠ ALLOC := by
-  simp only [Borg, Bld, Bprim, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq] at h
+  ϴ' Borg, Bld, Bprim, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq at h
   unfold bandOf ALLOC
   omega
 
 theorem Bph_false {r : ℕ} (hr : bandOf r ∉ oracleBands) (ha : r ≠ ALLOC) : Bph r = false := by
-  have h1 : (1 : ℕ) ∈ oracleBands := by decide
-  have h5 : (5 : ℕ) ∈ oracleBands := by decide
-  have h14 : (14 : ℕ) ∈ oracleBands := by decide
-  have h15 : (15 : ℕ) ∈ oracleBands := by decide
+  have h1 : (1 : ℕ) ∈ oracleBands := ⌖
+  have h5 : (5 : ℕ) ∈ oracleBands := ⌖
+  have h14 : (14 : ℕ) ∈ oracleBands := ⌖
+  have h15 : (15 : ℕ) ∈ oracleBands := ⌖
   unfold bandOf at hr
   have a1 : r / 10000 ≠ 1 := fun h => hr (h ▸ h1)
   have a5 : r / 10000 ≠ 5 := fun h => hr (h ▸ h5)
   have a14 : r / 10000 ≠ 14 := fun h => hr (h ▸ h14)
   have a15 : r / 10000 ≠ 15 := fun h => hr (h ▸ h15)
   have a9 : r ≠ 9999 := ha
-  simp only [Bph, Bool.or_eq_false_iff, decide_eq_false_iff_not]
+  ϴ Bph, Bool.or_eq_false_iff, decide_eq_false_iff_not
   omega
 
 /-- **The ray-shooter meets `ShooterOK`.** -/
@@ -272,7 +276,7 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
   obtain ⟨v00, v01, v02, v03, v04, v09, v13⟩ := v₁
   have g₁ : ∀ r, r / 10000 ≠ 15 → c₁.nreg r = c.nreg r := fun r hr =>
     k₁ r (by simp; omega)
-  have ex₁ : Exec P W shPro c c₁ 7 := e₁
+  have ex₁ := e₁
   have fb₁ : FrameB (fun r => decide (r / 10000 = 15)) c c₁ :=
     ⟨fun r hr => g₁ r (by simpa using hr), fun r _ => by rw [rr₁], m₁, rm₁, o₁⟩
   -- the origin
@@ -290,7 +294,7 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
   obtain ⟨c₂, k₂, e₂, hk₂, E₂, Og₂, f₂, h403⟩ := orig_exec (P := P) (W := W) (H := H) (C := C)
     c₁ e₁.wb_right hG hHW hD₁ hwf₁ hreg₁ hoIn₁ hoLt hoK hroom₁ hMD₁
   rw [g₁ _ (by norm_num)] at E₂ Og₂
-  have k₂' : ∀ r, Borg r = false → c₂.nreg r = c₁.nreg r := f₂.1
+  have k₂' := f₂.1
   have mem₂ : c₂.nmem = m₀ := by rw [f₂.2.2.1, m₁]
   have A₂ : c₂.nreg ALLOC = A₀ := by rw [k₂' _ (by decide), g₁ ALLOC (by decide)]
   -- the set-up of the records
@@ -323,7 +327,7 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
   have mem₅ : c₅.nmem = c₄.nmem := by rw [m₅]
   have exph : Exec P W shPh c₂ c₅ (k₃ + (k₄ + k₅)) := by unfold shPh; exact .seq e₃ (.seq e₄ e₅)
   have FM := BuildRam.exec_frameM exph wrM_shPh
-  have hA₄ : c₄.nreg ALLOC = A₀ := hI₄.alloc
+  have hA₄ := hI₄.alloc
   have hmem₅ : ∀ a, a < A₀ → c₅.nmem a = m₀ a := fun a ha => by rw [mem₅]; exact hm₄ a ha
   have Fph : Frame oracleBands c₂ c₅ (k₃ + (k₄ + k₅)) :=
     ⟨fun r hr ha => FM.1 r (Bph_false hr ha),
@@ -352,7 +356,7 @@ theorem shooter_ok {O : OracleIface} (hV : O.Valid) :
   have X : LpCtx O P W C (o.eval (chainModel C) (Qof P)) m₀ h γ A₀ s e ps :=
     ⟨hV, arc, hok, hsP, heP, hs1, he1, hsin, hein, hwt, hzA, hX, hQs, by
       unfold hostWords at hHW; omega⟩
-  have kph : ∀ r, Bph r = false → c₅.nreg r = c₂.nreg r := FM.1
+  have kph := FM.1
   have kenv : ∀ r, envR r → r ≠ ALLOC → c₅.nreg r = c₂.nreg r := fun r hr ha => by
     have hb : Bph r = false := by
       unfold envR at hr; unfold ALLOC at ha

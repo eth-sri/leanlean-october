@@ -135,7 +135,7 @@ theorem Br_le (E : DEnv) (hA : 1 ≤ E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog
 
 /-! ## The contract -/
 
-set_option maxHeartbeats 16000000 in
+
 /-- **The restoration rounds meet their contract**, for a splitting step with the interior
 oracles' bands and a sorted build. -/
 theorem roundsSpec_of {sF sB : Stmt} {κf : ℕ → ℕ} {κB : ℕ} {F G H : ℕ → ℕ} {X : MemCtx}
@@ -157,7 +157,7 @@ theorem roundsSpec_of {sF sB : Stmt} {κf : ℕ → ℕ} {κB : ℕ} {F G H : �
     c.nreg 216000, c.nreg 230001, sF, sB, κf, κB, F, G, H, X,
     (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L₀ E₀).F (interiorModel (Qof P)) (Qof P),
     L₀.length⟩ with hEd
-  have hMD : ModelDescAt c.nmem (c.nreg 210001) (Qof P) (interiorModel (Qof P)) := hDa.holds
+  have hMD := hDa.holds
   have hone : c.nmem (c.nreg 210001) = 1 := desc_one hMD
   have hE : DGood E := by
     refine ⟨hF, hB, hG, hWh, hXh, fun m hm => ?_, ⟨hD6, fun h0 => ?_⟩, hMD, hd4⟩
@@ -192,7 +192,7 @@ theorem roundsSpec_of {sF sB : Stmt} {κf : ℕ → ℕ} {κB : ℕ} {F G H : �
   obtain ⟨c₁, k₁, e₁, hk₁, i02, i03, i04, i05, i06, i10, f₁⟩ := initS_exec (P := P) c hw hW5
   have g₁ : ∀ q, ¬ (216002 ≤ q ∧ q ≤ 216010) → c₁.nreg q = c.nreg q := fun q hq =>
     f₁.1 q (by simpa using hq)
-  have m₁ : c₁.nmem = c.nmem := f₁.2.2.1
+  have m₁ := f₁.2.2.1
   have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ (by unfold ALLOC; omega)
   have hI0 : RInv E 0 c₁ := by
     refine ⟨e₁.wb_right, g₁ _ (by omega), g₁ _ (by omega), g₁ _ (by omega), i02, i03, i04, i05,

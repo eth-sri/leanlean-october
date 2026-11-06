@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OracleQueryCost
 
 /-!
@@ -71,13 +73,13 @@ theorem query_meets {bands : Finset ℕ} (hb : bSign ∈ bands ∧ bLocate ∈ b
     have hk' : (k' : ℝ) ≤ ((100 + (715 * V.L + 700 + dstarCost c.nmem V +
         4 * candCost V (NCof (min (c.nmem (O + 2)) (2 * V.m + 7))) (8 * k ^ 2) + 500) : ℕ) : ℝ) := by
       exact_mod_cast hk
-    have hD : c.nmem (c.nmem (rd c bOQuery 0) + 2) = V.m := by rw [hA.lD, hA.dm]
-    rw [hD]
+    have hD : c.nmem (c.nmem (rd c bOQuery 0) + 2) = V.m := Ρ hA.lD, hA.dm
+    Ξ hD
     have hG0 : (0 : ℝ) ≤ (c.nmem (O + 2) : ℝ) ^ ((1 : ℝ) / 3) * ((V.m : ℝ) + 1) ^ ((2 : ℝ) / 3) + 1 :=
-      by positivity
+      ⟢
     have hκR : (κq : ℝ) ≤ κ := by exact_mod_cast hκ
     have : (k' : ℝ) ≤ (κ : ℝ) * ((c.nmem (O + 2) : ℝ) ^ ((1 : ℝ) / 3) *
-        ((V.m : ℝ) + 1) ^ ((2 : ℝ) / 3) + 1) := by nlinarith
+        ((V.m : ℝ) + 1) ^ ((2 : ℝ) / 3) + 1) := ⊞
     exact_mod_cast this.trans (Nat.le_ceil _)
   · -- the answer
     intro H' C' o' hC' ho'

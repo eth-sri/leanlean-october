@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseOracleShD
 
 /-!
@@ -42,7 +44,7 @@ variable {e₁ h₁ e₂ h₂ : ℕ} (q : QFacts Q e₁ h₁ e₂ h₂)
 include q in
 /-- The end of the normalized query has the key of the end of the query. -/
 theorem qkey_nh : (interiorModel Q).key Q ⟨e₂, nh Q e₂ h₂⟩ = (interiorModel Q).key Q ⟨e₂, h₂⟩ := by
-  rw [key_eq, key_eq, param_nh q.he₂]
+  Ξ key_eq, key_eq, param_nh q.he₂
 
 include q in
 /-- **The plan of a normalized query.** -/
@@ -88,12 +90,12 @@ theorem plan_one (hL : spanL (eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂)) (nh Q e₂
     (interiorModel Q).arcWt ((interiorModel Q).key Q ⟨e₁, h₁⟩)
       ((interiorModel Q).key Q ⟨e₂, h₂⟩) = spanL (eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂)) (nh Q e₂ h₂) := by
   obtain ⟨hS, hxy, hmod, -, hee, h1, hwt, -⟩ := qplan q
-  rw [hmod]
+  Ξ hmod
   have hpe : ProperPos (interiorModel Q) Q Q.n ⟨e₂, nh Q e₂ h₂⟩ :=
     ⟨by rw [param_nh q.he₂]; exact q.he.1, by rw [param_nh q.he₂]; exact q.he.2.1,
       le_trans nh_le q.he.2.2⟩
   refine ⟨⟨q.he₁, h1, hL, q.hs, by rw [hmod]; exact hpe, by rw [hmod]; exact hee,
-    by rw [hmod]; exact hxy⟩, hS, hwt (by omega)⟩
+    by rw [hmod]; exact hxy⟩, hS, hwt (⋄)⟩
 
 include q in
 /-- **Two sub-queries** (`L ≥ n`): two edges to the vertex `(e₁ + 2) mod n`, then the rest. -/

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SortList
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 public import Mathlib.Data.Fintype.Card
@@ -53,7 +55,7 @@ variable {bk}
 theorem bfilt_succ (q b : ℕ) :
     bfilt bk (q + 1) b = bfilt bk q b ++ (if bk q = b then [q] else []) := by
   unfold bfilt
-  rw [List.range_succ, List.filter_append]
+  Ξ List.range_succ, List.filter_append
   congr 1
   by_cases h : bk q = b <;> simp [h]
 
@@ -84,11 +86,11 @@ theorem bstart_all {n A : ℕ} (hA : ∀ q, q < n → bk q ≤ A) : bstart bk n 
   induction n with
   | zero => unfold bstart; simp [bcnt_zero]
   | succ n ih =>
-    have ih' := ih fun q hq => hA q (by omega)
+    have ih' := ih fun q hq => hA q (⋄)
     unfold bstart at ih' ⊢
-    simp only [bcnt_succ, Finset.sum_add_distrib, ih']
+    ϴ bcnt_succ, Finset.sum_add_distrib, ih'
     rw [Finset.sum_eq_single (bk n) (fun b _ hb => ite_eq_right (Ne.symm hb))
-      (fun h => absurd (Finset.mem_range.2 (by have := hA n (by omega); omega)) h), ite_eq_left rfl]
+      (fun h => absurd (Finset.mem_range.2 (by have := hA n (⋄); omega)) h), ite_eq_left rfl]
 
 /-- The first `b` buckets. -/
 def bktPre (bk : ℕ → ℕ) (n b base : ℕ) : List ℕ :=
@@ -96,7 +98,7 @@ def bktPre (bk : ℕ → ℕ) (n b base : ℕ) : List ℕ :=
 
 theorem getD_append_right' {l₁ l₂ : List ℕ} {i d : ℕ} (h : l₁.length ≤ i) :
     (l₁ ++ l₂).getD i d = l₂.getD (i - l₁.length) d := by
-  simp only [List.getD_eq_getElem?_getD, List.getElem?_append_right h]
+  ϴ List.getD_eq_getElem?_getD, List.getElem?_append_right h
 
 theorem bktPre_succ (n b base : ℕ) :
     bktPre bk n (b + 1) base = bktPre bk n b base ++ (bfilt bk n b).map (base + ·) := by
@@ -111,7 +113,7 @@ theorem bktList_eq (n A base : ℕ) : bktList bk n A base = bktPre bk n (A + 1) 
 
 theorem bktList_length {n A base : ℕ} (hA : ∀ q, q < n → bk q ≤ A) :
     (bktList bk n A base).length = n := by
-  rw [bktList_eq, bktPre_length, bstart_all hA]
+  Ξ bktList_eq, bktPre_length, bstart_all hA
 
 /-- `bfilt n b` at index `bcnt q b` is `q`, for `q < n` in bucket `b`. -/
 theorem bfilt_getD {n q b : ℕ} (hq : q < n) (hb : bk q = b) :
@@ -124,14 +126,14 @@ theorem bfilt_getD {n q b : ℕ} (hq : q < n) (hb : bk q = b) :
       intro hm
       rcases Nat.lt_or_ge q m with h | h
       · obtain ⟨t, ht⟩ := ih h
-        rw [bfilt_succ, ht]
-        exact ⟨t ++ (if bk m = b then [m] else []), by simp⟩
-      · have hqm : q = m := by omega
+        Ξ bfilt_succ, ht
+        exact ⟨t ++ (if bk m = b then [m] else []), ✓⟩
+      · have hqm : q = m := ⋄
         subst hqm
-        exact ⟨[], by rw [bfilt_succ, ite_eq_left hb]⟩
+        exact ⟨[], Ρ bfilt_succ, ite_eq_left hb⟩
   obtain ⟨t, ht⟩ := hsplit n hq
   unfold bcnt
-  rw [ht, getD_append_right' le_rfl, Nat.sub_self]
+  Ξ ht, getD_append_right' le_rfl, Nat.sub_self
   rfl
 
 /-- **The slot of a code.** -/
@@ -207,15 +209,15 @@ theorem exists_slot {n A p : ℕ} (hA : ∀ q, q < n → bk q ≤ A) (hp : p < n
 /-- **A memory segment with `base + q` at every slot is the bucket list.** -/
 theorem seg_eq_bktList {m : ℕ → ℕ} {R n A base : ℕ} (hA : ∀ q, q < n → bk q ≤ A)
     (h : ∀ q, q < n → m (R + slot bk n q) = base + q) : seg m R n = bktList bk n A base := by
-  apply List.ext_getElem (by rw [seg_length, bktList_length hA])
+  apply List.ext_getElem (Ρ seg_length, bktList_length hA)
   intro p hp _
   rw [seg_length] at hp
   obtain ⟨q, hq, rfl⟩ := exists_slot hA hp
   have e1 : (seg m R n)[slot bk n q]'(by rw [seg_length]; exact hp) = m (R + slot bk n q) := by
-    simp [seg]
+    Θ seg
   have e2 := bktList_getD_slot (bk := bk) (base := base) hq (hA q hq)
   rw [List.getD_eq_getElem _ _ (by rw [bktList_length hA]; exact hp)] at e2
-  rw [e1, e2, h q hq]
+  Ξ e1, e2, h q hq
 
 end
 

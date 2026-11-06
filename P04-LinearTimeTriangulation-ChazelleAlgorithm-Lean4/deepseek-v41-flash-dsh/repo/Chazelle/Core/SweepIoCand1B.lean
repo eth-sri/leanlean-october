@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoCand1P
 
 /-!
@@ -110,7 +112,7 @@ theorem bL_zero (hq : QState P J 1 z c) (hK : Consts c₂) (fr : CandFr c c₂)
     (hb : ¬ c₂.nreg K0 < c₂.nreg bL) : ¬ z.2 ≤ J.left.top.2 := fun h => by
   have := (hq.hbL.2).2 h; rw [hK.1, candFr_bL fr] at hb; omega
 
-theorem modB_left {l r : ℕ} (h : l = 1) : ModB J l r 0 = J.left := by simp [ModB, h]
+theorem modB_left {l r : ℕ} (h : l = 1) : ModB J l r 0 = J.left := ⊚ ModB, h
 
 /-- **The box class.** -/
 theorem boxB_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hXl : X.CapLocal)
@@ -135,10 +137,10 @@ theorem boxB_irs (hsh : ShooterOK sh Bs F X Ok) (hBs : Bs ⊆ oracleBands) (hXl 
       (Mod := ModB J (c.nreg bL) (c.nreg bR)) (R₀ := J.whole.radius) (L := L) (z := z)
       (by rw [eE, cm_n]; rcases hbox with h | h <;> rw [h] <;> omega)
       (by rw [eE, eH]; unfold ProperPos; rw [hparL]; exact hpp)
-      (by rw [eE, eH, hposL, hzpos])
+      (Ρ eE, eH, hposL, hzpos)
       (by rw [show J.left.radius = J.right.radius from rfl]; exact habs)
       (Or.inl (by rw [eE]; exact hbox))
-      (by rw [eD]; exact hM.1) (by norm_num) (modB_left hb1) rfl hroom
+      (by rw [eD]; exact hM.1) (⊛) (modB_left hb1) rfl hroom
     refine h.mono le_rfl ?_
     rintro c' ⟨⟨L', a', s', g', geo'⟩, fr', hA', hm'⟩
     rw [eD] at a' g' geo'
@@ -174,7 +176,7 @@ theorem bruteB_irs {bruteS : Stmt → Stmt} {κB : ℕ} (hBr : BruteBody bruteS 
     have hsym := callSym_irs (dsc := sw 21) (re := qE) (rh := qH) (o := sw 3230) hI₂
       (AEnv.ctxR hA hI₂) (by unfold qE qH sw; omega) (by unfold sw; omega)
       (by rw [eE]; exact hqE) (by rw [eE, eH]; exact hpp)
-      (by rw [eE, eH, hzpos]; exact habs) (by rw [eE, eH]; exact hcls) (by omega)
+      (by rw [eE, eH, hzpos]; exact habs) (by rw [eE, eH]; exact hcls) (⋄)
     refine IRS.seq hsym ?_
     rintro c₃ hI₃ hA₃ hA₃' ⟨sp, hsp, hlt, hev, hfr3, hal3, hm3⟩
     have fr3 : CandFr c₂ c₃ := candFr_regs (S := fun r => sw 3230 ≤ r ∧ r ≤ sw 3233)
@@ -187,14 +189,14 @@ theorem bruteB_irs {bruteS : Stmt → Stmt} {κB : ℕ} (hBr : BruteBody bruteS 
     rw [eE, eH, hzpos] at hev
     have hacc3 : AccOK P accA (ModB J (c₃.nreg bL) (c₃.nreg bR)) J.whole.radius z
         (dirOf (c₃.nreg qD)) L c₃ := by
-      rw [eD3, eL3, eR3]
+      Ξ eD3, eL3, eR3
       exact hM.1.transport (fun j hj => by
         rw [hfr3 _ (not_oracle_sw (by unfold accA sw; omega) (by unfold accA sw; omega))
           (by unfold accA sw; omega) (by unfold accA ALLOC sw; omega)])
     have hab := abs_lt_whole hzC
     have h := hBr sh Bs F X Ok hsh hBs hXl P W c₀ c₃ J H N₁ N₂ E L sp z hA hI₃
       (by rw [show sO = sw 3230 + 1 from rfl]; exact hsp) hlt hev (not_mem_left hA.hP hzC hns)
-      hab.1 hab.2 h₁ (by rw [eL3]; exact hb1) hacc3 (by omega)
+      hab.1 hab.2 h₁ (by rw [eL3]; exact hb1) hacc3 (⋄)
     refine h.mono le_rfl ?_
     rintro c' ⟨⟨L', a', s', g', geo'⟩, pf⟩
     rw [eD3, eL3, eR3] at a'

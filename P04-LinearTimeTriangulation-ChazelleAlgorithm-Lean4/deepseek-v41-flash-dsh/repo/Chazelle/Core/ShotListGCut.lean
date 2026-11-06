@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShotListG
 
 /-!
@@ -46,15 +50,15 @@ theorem WrG.keep {R : ℕ} (hR : RegsOK R) {B : ℕ → Bool} (h : WrG R B) {i :
     rcases this with h1 | h1 | h1
     · omega
     · omega
-    · exact absurd h1.1 (band_R hR (by omega))
+    · exact absurd h1.1 (band_R hR (⋄))
 
 theorem WrG.frameR {R : ℕ} (hR : RegsOK R) {B : ℕ → Bool} (h : WrG R B) {Bo : Finset ℕ}
     (hBo : oracleBands ⊆ Bo) {c c' : Config} (hf : FrameB B c c') (k : ℕ) :
     FrameR Bo (fun r => R + 9 ≤ r ∧ r < R + 300) c c' k :=
   FrameR.of_frameB hf (fun r hr => by
     rcases h r hr with h1 | h1 | h1
-    · exact Or.inl ⟨h1.1, by omega⟩
-    · exact Or.inl ⟨by omega, h1.2⟩
+    · exact Or.inl ⟨h1.1, ⋄⟩
+    · exact Or.inl ⟨⋄, h1.2⟩
     · exact Or.inr (hBo h1.1)) (h.alloc hR) k
 
 /-- **The operations' context survives** a register frame of the wrapper's blocks. -/
@@ -65,12 +69,12 @@ theorem KCtx.of_frameB {P : Polygon} {W : ℕ} {M : Model} {R : ℕ} (hR : RegsO
   obtain ⟨hE, hG, hHW, hMD, hmwf, h30, h31, h34⟩ := h
   have k : ∀ i, (i < 9 ∨ (30 ≤ i ∧ i < 36)) → c'.nreg (R + i) = c.nreg (R + i) := fun i hi =>
     hf.1 _ (hB.keep hR hi)
-  have r0 : c'.nreg R = c.nreg R := by simpa using k 0 (by omega)
+  have r0 : c'.nreg R = c.nreg R := by simpa using k 0 (⋄)
   have hA : c'.nreg ALLOC = c.nreg ALLOC := hf.1 _ (hB.alloc hR)
-  have hm : c'.nmem = c.nmem := hf.2.2.1
+  have hm := hf.2.2.1
   exact ⟨hS c c' 0 hE hw' (hB.frameR hR hBo hf 0), hG, hHW, by rw [hm, r0]; exact hMD,
-    by rw [hm, r0, hA]; exact hmwf, by rw [k 30 (by omega), h30], by rw [k 31 (by omega), h31],
-    by rw [k 34 (by omega), r0, h34]⟩
+    by rw [hm, r0, hA]; exact hmwf, by rw [k 30 (⋄), h30], by rw [k 31 (by omega), h31],
+    by rw [k 34 (⋄), r0, h34]⟩
 
 /-! ## The correction of `a < b` -/
 
@@ -100,43 +104,43 @@ theorem offBG_exec {P : Polygon} {W : ℕ} {M : Model} {R ℓ : ℕ} {E : Config
         M.key (Qof P) (posR c (rL R ℓ + 2, rL R ℓ + 3))) ∧
       FrameB (BoffG R Bk) c c' := by
   set L := rL R ℓ with hL
-  have hz : c.nreg (R + 30) = 0 := hctx.2.2.2.2.2.1
+  have hz := hctx.2.2.2.2.2.1
   have hne_of : ¬ (c.nreg L = c.nreg (L + 2) ∧ 0 < c.nreg (L + 1) ∧ 0 < c.nreg (L + 3)) →
       BitIs c (R + 100) (M.key (Qof P) (posR c (L, L + 1)) <
         M.key (Qof P) (posR c (L + 2, L + 3))) := fun hne => by
     have := lexLt_iff_key ha hb hne
-    simp only [posR] at this ⊢
+    ϴ' posR at this ⊢
     exact ⟨hbit.1, hbit.2.trans this⟩
   have fr0 : FrameB (BoffG R Bk) c c := FrameB.refl _ _
   unfold offBG
   by_cases h1 : c.nreg L < c.nreg (L + 2)
-  · exact ⟨c, _, .ifLtN_true h1 (.skip hw), by omega, hne_of (by omega), fr0⟩
+  · exact ⟨c, _, .ifLtN_true h1 (.skip hw), ⋄, hne_of (⋄), fr0⟩
   by_cases h2 : c.nreg (L + 2) < c.nreg L
-  · exact ⟨c, _, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw)), by omega, hne_of (by omega), fr0⟩
+  · exact ⟨c, _, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw)), ⋄, hne_of (⋄), fr0⟩
   by_cases h3 : c.nreg (R + 30) < c.nreg (L + 1)
   swap
-  · exact ⟨c, _, .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_false h3 (.skip hw))), by omega,
-      hne_of (by omega), fr0⟩
+  · exact ⟨c, _, .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_false h3 (.skip hw))), ⋄,
+      hne_of (⋄), fr0⟩
   by_cases h4 : c.nreg (R + 30) < c.nreg (L + 3)
   swap
   · exact ⟨c, _, .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true h3 (.ifLtN_false h4 (.skip hw)))),
-      by omega, hne_of (by omega), fr0⟩
+      ⋄, hne_of (⋄), fr0⟩
   -- two interior positions of one edge: the key comparison
   have iL : ∀ i, i < 4 → InB R (L + i) := fun i hi => by rw [hL]; unfold InB rL; omega
-  obtain ⟨c₁, k₁, e₁, hk₁, b₁, f₁⟩ := hk L (L + 1) (L + 2) (L + 3) (iL 0 (by omega))
-    (iL 1 (by omega)) (iL 2 (by omega)) (iL 3 (by omega)) c hw hctx ha.1 hae
-    (by omega) hb.1 hbe (by omega) hroom
+  obtain ⟨c₁, k₁, e₁, hk₁, b₁, f₁⟩ := hk L (L + 1) (L + 2) (L + 3) (iL 0 (⋄))
+    (iL 1 (⋄)) (iL 2 (⋄)) (iL 3 (⋄)) c hw hctx ha.1 hae
+    (⋄) hb.1 hbe (⋄) hroom
   have e₂ := Exec.copyN (P := P) e₁.wb_right (R + 100) 50210
   have ex : Exec P W (offBG kc R ℓ) c _ _ :=
     .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true h3 (.ifLtN_true h4 (.seq e₁ e₂))))
-  refine ⟨_, _, ex, by omega, ⟨?_, ?_⟩, ?_⟩
+  refine ⟨_, _, ex, ⋄, ⟨?_, ?_⟩, ?_⟩
   · simp only [upd_same]; exact b₁.1
   · simp only [upd_same]; exact b₁.2
-  · have g1 : FrameB (BoffG R Bk) c c₁ := frameB_mono f₁ (fun r hr => by simp [BoffG, hr])
+  · have g1 : FrameB (BoffG R Bk) c c₁ := frameB_mono f₁ (fun r hr => ⊚ BoffG, hr)
     have g2 : FrameB (BoffG R Bk) c₁ _ := frameB_mono (exec_frameB e₂
       (show wr (Bone (R + 100)) (.instr (.copyN (R + 100) 50210)) = true by
         simp [wr, wrOK, Bone])) (fun r hr => by
-          simp only [Bone, beq_iff_eq] at hr; subst hr; simp [BoffG])
+          ϴ' Bone, beq_iff_eq at hr; subst hr; simp [BoffG])
     exact g1.trans g2
 
 /-! ## The cutting block -/
@@ -160,13 +164,13 @@ theorem bouts_range {R ℓ r : ℕ} (h : Bouts (cmpList R ℓ) r = true) : R + 1
 /-- The cutting block writes scratch registers and registers of the key comparison. -/
 theorem wrG_cut {R ℓ : ℕ} (hℓ : ℓ ≤ 2) {Bk : ℕ → Bool} (hBk : OpW Bk) : WrG R (BcutG R ℓ Bk) :=
   fun r hr => by
-    simp only [BcutG, BoffG, Bool.or_eq_true, beq_iff_eq] at hr
+    ϴ' BcutG, BoffG, Bool.or_eq_true, beq_iff_eq at hr
     rcases hr with ((h | h | h) | h) | h
-    · have := bouts_range h; exact Or.inr (Or.inl ⟨by omega, by omega⟩)
-    · exact Or.inr (Or.inl ⟨by omega, by omega⟩)
+    · have := bouts_range h; exact Or.inr (Or.inl ⟨⋄, ⋄⟩)
+    · exact Or.inr (Or.inl ⟨⋄, ⋄⟩)
     · exact Or.inr (Or.inr (hBk r h))
-    · simp only [Bform, decide_eq_true_eq] at h; exact Or.inr (Or.inl ⟨by omega, by omega⟩)
-    · simp only [decide_eq_true_eq] at h; unfold rL at h; exact Or.inr (Or.inl ⟨by omega, by omega⟩)
+    · ϴ' Bform, decide_eq_true_eq at h; exact Or.inr (Or.inl ⟨⋄, ⋄⟩)
+    · ϴ' decide_eq_true_eq at h; unfold rL at h; exact Or.inr (Or.inl ⟨⋄, ⋄⟩)
 
 /-- **The cutting block of level `ℓ`**: the pieces `levPieces` in the registers of the next
 level (`rL R ℓ + 10 …`, `rL R ℓ + 4 …`, their number in `rL R ℓ + 8`). -/
@@ -191,7 +195,7 @@ theorem cutBG_exec {P : Polygon} {W : ℕ} {M : Model} {R ℓ : ℕ} (hR : RegsO
   set b := posR c (L + 2, L + 3) with hb_def
   set x := c.nreg (R + 10 + 2 * ℓ)
   set y := c.nreg (R + 11 + 2 * ℓ)
-  have hz : c.nreg (R + 30) = 0 := hctx.2.2.2.2.2.1
+  have hz := hctx.2.2.2.2.2.1
   have hX : NormPos M Q P.n ⟨x, 0⟩ := normPos_vtx M Q P.n x
   have hY : NormPos M Q P.n ⟨y, 0⟩ := normPos_vtx M Q P.n y
   -- the comparisons

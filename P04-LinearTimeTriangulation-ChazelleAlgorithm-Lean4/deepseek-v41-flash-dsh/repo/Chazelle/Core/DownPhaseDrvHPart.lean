@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvHEmit
 
 /-!
@@ -23,10 +25,10 @@ section exec
 variable {P : Polygon} {W : ℕ}
 
 theorem lpos_eq_iff {c : CRec} {x : WPos} : c.lpos = x ↔ c.lp = x.edge ∧ c.h + 1 = x.hgt := by
-  cases x; simp [CRec.lpos]
+  cases x; Θ CRec.lpos
 
 theorem rpos_eq_iff {c : CRec} {x : WPos} : c.rpos = x ↔ c.rp = x.edge ∧ c.h + 1 = x.hgt := by
-  cases x; simp [CRec.rpos]
+  cases x; Θ CRec.rpos
 
 theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N : NF} {x : WPos}
     {i v : ℕ} (hK : Kst n li d) (h46 : d.nreg 215046 = x.edge) (h47 : d.nreg 215047 = x.hgt)
@@ -50,7 +52,7 @@ theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {
       d'.nmem = d.nmem ∧ FrameM (fun q => decide (q = 215045) || decide (215052 ≤ q ∧ q ≤ 215054) ||
         decide (215056 ≤ q ∧ q ≤ 215063)) d d' := by
 
-  have e5 : ∀ a b : ℕ, a + (b + b + (b + b) + b) = a + 5 * b := fun a b => by ring
+  have e5 : ∀ a b : ℕ, a + (b + b + (b + b) + b) = a + 5 * b := fun a b => ⋆
   obtain ⟨d', k, ex, hk, hpost, hm⟩ : ∃ d' k, Exec P W chTest d d' k ∧ k ≤ 30 ∧
       (if (N.chord i).lpos = x then
         d'.nreg 215052 = (N.chord i).rpos.edge ∧ d'.nreg 215053 = (N.chord i).rpos.hgt ∧
@@ -69,8 +71,8 @@ theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {
       refine spec_ifLtN_true (by config_simp; simp only [h55, hi, hK.one, e5, hh, hlp, h46, h47]; omega) ?_
       exec_block
       · omega
-      refine ⟨by omega, ?_, rfl⟩
-      simp only [hL, ↓reduceIte]
+      refine ⟨⋄, ?_, rfl⟩
+      ϴ hL, ↓reduceIte
       refine ⟨?_, ?_, ?_⟩ <;> config_simp <;>
         (try simp only [h55, hi, hK.one, e5, hh, hrp]) <;> rfl
     · have hL' : ¬ ((N.chord i).lp = x.edge ∧ (N.chord i).h + 1 = x.hgt) := fun h => hL (lpos_eq_iff.2 h)
@@ -80,16 +82,16 @@ theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {
         refine spec_ifLtN_true (by config_simp; simp only [h55, hi, hK.one, e5, hh, hrp, h46, h47]; omega) ?_
         exec_block
         · omega
-        refine ⟨by omega, ?_, rfl⟩
-        simp only [hL, hR, ↓reduceIte]
+        refine ⟨⋄, ?_, rfl⟩
+        ϴ hL, hR, ↓reduceIte
         refine ⟨?_, ?_, ?_⟩ <;> config_simp <;>
           (try simp only [h55, hi, hK.one, e5, hh, hlp]) <;> rfl
       · have hR' : ¬ ((N.chord i).rp = x.edge ∧ (N.chord i).h + 1 = x.hgt) := fun h => hR (rpos_eq_iff.2 h)
         refine spec_ifLtN_false (by config_simp; simp only [h55, hi, hK.one, e5, hh, hrp, h46, h47]; omega) ?_
-        refine spec_skip ‹_› ⟨by omega, ?_, rfl⟩
-        simp only [hL, hR, ↓reduceIte]
+        refine spec_skip ‹_› ⟨⋄, ?_, rfl⟩
+        ϴ hL, hR, ↓reduceIte
         refine ⟨?_, ?_, ?_⟩ <;> config_simp
-  exact ⟨d', k, ex, hk, hpost, hm, exec_frameM ex (by decide)⟩
+  exact ⟨d', k, ex, hk, hpost, hm, exec_frameM ex (⌖)⟩
 
 
 /-- The search predicate of `partner`. -/

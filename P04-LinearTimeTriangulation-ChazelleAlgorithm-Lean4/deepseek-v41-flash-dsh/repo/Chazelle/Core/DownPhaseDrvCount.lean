@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseHostSimple
 public import Chazelle.Core.DownPhaseHostData
 
@@ -39,9 +41,9 @@ def attachKeys (M : Model) (c : Set Point) : Set ℝ :=
 theorem near_end {a b : Point} (hab : a ≠ b) {ρ : ℝ} (hρ : 0 < ρ) (e : Point)
     (he : e = a ∨ e = b) : ∃ x ∈ Chazelle.segment a b, x ≠ e ∧ dist x e < ρ := by
   set L := |b.1 - a.1| + |b.2 - a.2| + 1 with hL
-  have hL0 : 0 < L := by positivity
+  have hL0 : 0 < L := ⟢
   set s := min (1 / 2 : ℝ) (ρ / (2 * L)) with hs
-  have hs0 : 0 < s := lt_min (by norm_num) (by positivity)
+  have hs0 : 0 < s := lt_min (⊛) (⟢)
   have hs1 : s ≤ 1 / 2 := min_le_left _ _
   have hsL : s * L ≤ ρ / 2 := by
     have := min_le_right (1 / 2 : ℝ) (ρ / (2 * L))
@@ -58,30 +60,30 @@ theorem near_end {a b : Point} (hab : a ≠ b) {ρ : ℝ} (hρ : 0 < ρ) (e : Po
     · exact absurd h1 hu
     rcases mul_eq_zero.1 h2 with h2 | h2
     · exact absurd h2 hu
-    exact Prod.ext (by linarith) (by linarith)
+    exact Prod.ext (⟡) (⟡)
   rcases he with rfl | rfl
-  · refine ⟨(e.1 + s * (b.1 - e.1), e.2 + s * (b.2 - e.2)), ⟨s, hs0.le, by linarith, rfl⟩, ?_, ?_⟩
+  · refine ⟨(e.1 + s * (b.1 - e.1), e.2 + s * (b.2 - e.2)), ⟨s, hs0.le, ⟡, rfl⟩, ?_, ?_⟩
     · intro h
       apply hne s hs0.ne'
       have h1 := congrArg Prod.fst h; have h2 := congrArg Prod.snd h
       simp only at h1 h2
       exact Prod.ext (by simp only; linear_combination h1) (by simp only; linear_combination h2)
-    · rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq]
-      simp only [add_sub_cancel_left, abs_mul, abs_of_pos hs0]
+    · Ξ Prod.dist_eq, Real.dist_eq, Real.dist_eq
+      ϴ add_sub_cancel_left, abs_mul, abs_of_pos hs0
       refine max_lt ?_ ?_
       · nlinarith [abs_nonneg (b.1 - e.1)]
       · nlinarith [abs_nonneg (b.2 - e.2)]
   · refine ⟨(a.1 + (1 - s) * (e.1 - a.1), a.2 + (1 - s) * (e.2 - a.2)),
-      ⟨1 - s, by linarith, by linarith, rfl⟩, ?_, ?_⟩
+      ⟨1 - s, ⟡, ⟡, rfl⟩, ?_, ?_⟩
     · intro h
       apply hne s hs0.ne'
       have h1 := congrArg Prod.fst h; have h2 := congrArg Prod.snd h
       simp only at h1 h2
       exact Prod.ext (by simp only; linear_combination -h1) (by simp only; linear_combination -h2)
-    · rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq]
-      have e1 : a.1 + (1 - s) * (e.1 - a.1) - e.1 = -(s * (e.1 - a.1)) := by ring
-      have e2 : a.2 + (1 - s) * (e.2 - a.2) - e.2 = -(s * (e.2 - a.2)) := by ring
-      rw [e1, e2, abs_neg, abs_neg, abs_mul, abs_mul, abs_of_pos hs0]
+    · Ξ Prod.dist_eq, Real.dist_eq, Real.dist_eq
+      have e1 : a.1 + (1 - s) * (e.1 - a.1) - e.1 = -(s * (e.1 - a.1)) := ⋆
+      have e2 : a.2 + (1 - s) * (e.2 - a.2) - e.2 = -(s * (e.2 - a.2)) := ⋆
+      Ξ e1, e2, abs_neg, abs_neg, abs_mul, abs_mul, abs_of_pos hs0
       refine max_lt ?_ ?_
       · nlinarith [abs_nonneg (e.1 - a.1)]
       · nlinarith [abs_nonneg (e.2 - a.2)]
@@ -94,7 +96,7 @@ theorem attachKeys_sub (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
   obtain ⟨pb, tb, hAb, hPb⟩ := hEb.1
   refine ⟨pa + ta, pb + tb, ?_⟩
   rintro x ⟨p, t, hA, rfl⟩
-  have hPc : sidePt M.W p t ∈ c := hA.2.2.2.1
+  have hPc := hA.2.2.2.1
   have hend : sidePt M.W p t = a ∨ sidePt M.W p t = b := by
     rw [hcab] at hPc
     obtain ⟨s, hs0, hs1, hs⟩ := hPc
@@ -131,7 +133,7 @@ theorem attachKeys_ncard_le (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
   obtain ⟨k₁, k₂, hsub⟩ := attachKeys_sub hM hc
   refine (ncard_le_ncard hsub (toFinite _)).trans ?_
   refine (ncard_insert_le _ _).trans ?_
-  rw [ncard_singleton]
+  Ξ ncard_singleton
 
 /-- A union of sets of at most two elements over a finite index set. -/
 theorem ncard_biUnion_le_two {E : Set (Set Point)} (hE : E.Finite) (f : Set Point → Set ℝ)
@@ -139,7 +141,7 @@ theorem ncard_biUnion_le_two {E : Set (Set Point)} (hE : E.Finite) (f : Set Poin
   induction E, hE using Set.Finite.induction_on with
   | empty => simp
   | @insert c E hcE hE ih =>
-    rw [Set.biUnion_insert, ncard_insert_of_notMem hcE hE]
+    Ξ Set.biUnion_insert, ncard_insert_of_notMem hcE hE
     refine (ncard_union_le _ _).trans ?_
     have h1 := hf c (mem_insert c E)
     have h2 := ih fun d hd => hf d (mem_insert_of_mem c hd)
@@ -172,7 +174,7 @@ theorem vtxKeys_eq (U : Set Point) : vtxKeys M F U = (fun k : ℕ => (k : ℝ)) 
     exact ⟨k, hk, rfl, a, b, harc, hin⟩
 
 theorem vtxKeys_ncard (U : Set Point) : (vtxKeys M F U).ncard = (vtxIdx M F U).ncard := by
-  rw [vtxKeys_eq, ncard_image_of_injective _ Nat.cast_injective]
+  Ξ vtxKeys_eq, ncard_image_of_injective _ Nat.cast_injective
 
 /-- **The inner vertices of distinct regions are disjoint.** -/
 theorem vtxIdx_disjoint {U U' : Set Point} (hU : U ∈ M.regions F) (hU' : U' ∈ M.regions F)
@@ -198,10 +200,10 @@ theorem nk_le (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (U : Set Poin
   have hS := hostKeys_finite (U := U) hM hF hfin
   have e : nk M F U = (hostKeys M F U).ncard := by
     unfold nk
-    rw [hostKeyList_eq hS, Finset.length_sort, Set.ncard_eq_toFinset_card _ hS]
-  rw [e]
+    Ξ hostKeyList_eq hS, Finset.length_sort, Set.ncard_eq_toFinset_card _ hS
+  Ξ e
   refine (ncard_union_le _ _).trans ?_
-  rw [vtxKeys_ncard]
+  Ξ vtxKeys_ncard
   have := exitKeys_ncard_le hM hF hfin U
   omega
 
@@ -215,8 +217,8 @@ theorem sum_vtxIdx_eq {T : Set (Set Point)} (hT : T.Finite) (hTR : T ⊆ M.regio
   | @insert U T hUT hT ih =>
     rw [finsum_mem_insert _ hUT hT, Set.biUnion_insert,
       ih (fun V hV => hTR (mem_insert_of_mem U hV))]
-    rw [ncard_union_eq _ (hVfin U) (hT.biUnion fun V _ => hVfin V)]
-    rw [Set.disjoint_iUnion₂_right]
+    Ξ ncard_union_eq _ (hVfin U) (hT.biUnion fun V _ => hVfin V)
+    Ξ Set.disjoint_iUnion₂_right
     intro V hV
     exact vtxIdx_disjoint (hTR (mem_insert U T)) (hTR (mem_insert_of_mem U hV))
       (fun e => hUT (e ▸ hV))
@@ -234,19 +236,19 @@ theorem sum_nk_le (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) :
     exact this
   -- the inner vertices
   have hvtx : ∑ᶠ U ∈ M.regions F, (vtxIdx M F U).ncard ≤ M.W.n := by
-    rw [sum_vtxIdx_eq hRfin subset_rfl]
+    Ξ sum_vtxIdx_eq hRfin subset_rfl
     calc (⋃ U ∈ M.regions F, vtxIdx M F U).ncard ≤ ((Finset.range M.W.n : Finset ℕ) : Set ℕ).ncard :=
           ncard_le_ncard (fun k hk => by
             obtain ⟨U, -, hk⟩ := mem_iUnion₂.1 hk
             simpa using hk.1) (Finset.finite_toSet _)
-      _ = M.W.n := by rw [ncard_coe_finset, Finset.card_range]
+      _ = M.W.n := Ρ ncard_coe_finset, Finset.card_range
   rw [finsum_mem_eq_finite_toFinset_sum _ hRfin] at hdeg hvtx ⊢
   calc ∑ U ∈ hRfin.toFinset, nk M F U
       ≤ ∑ U ∈ hRfin.toFinset, ((vtxIdx M F U).ncard + 2 * M.deg F U) :=
         Finset.sum_le_sum fun U _ => nk_le hM hF hfin U
     _ = ∑ U ∈ hRfin.toFinset, (vtxIdx M F U).ncard + 2 * ∑ U ∈ hRfin.toFinset, M.deg F U := by
-        rw [Finset.sum_add_distrib, Finset.mul_sum]
-    _ ≤ M.W.n + 4 * F.ncard := by omega
+        Ξ Finset.sum_add_distrib, Finset.mul_sum
+    _ ≤ M.W.n + 4 * F.ncard := ⋄
 
 end
 

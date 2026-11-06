@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvFace
 public import Chazelle.Core.SweepEvTasks
 public import Chazelle.Core.SweepIoLHit
@@ -59,9 +61,9 @@ theorem faceRead_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
     regB m faceRead f fEE = m (f lAB + 5 * m (f lSB + f lJ) + 3) ∧
     regB m faceRead f fEH = m (f lAB + 5 * m (f lSB + f lJ) + 4) := by
   have e1 : f 240611 = 1 := hk1
-  simp only [faceRead, regB, regI, upd, lX, lY, lSB, lAB, lJ, fSE, fSH, fEE, fEH, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  refine ⟨congrArg m (by ring), congrArg m (by ring), congrArg m (by ring), congrArg m (by ring)⟩
+  ϴ faceRead, regB, regI, upd, lX, lY, lSB, lAB, lJ, fSE, fSH, fEE, fEH, K1, sw
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1
+  refine ⟨congrArg m (⋆), congrArg m (⋆), congrArg m (⋆), congrArg m (⋆)⟩
 
 theorem faceRead_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb1 : f lSB + f lJ ≤ W)
     (hb2 : f lAB + 5 * m (f lSB + f lJ) + 4 ≤ W) : okB W m faceRead f := by
@@ -69,21 +71,21 @@ theorem faceRead_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb1 : f lSB + f lJ ≤
   have hb1' : f 241115 + f 241108 ≤ W := hb1
   have hb2' : f 241116 + 5 * m (f 241115 + f 241108) + 4 ≤ W := hb2
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
-  simp only [faceRead, okB, okI, regI, upd, lX, lY, lSB, lAB, lJ, fSE, fSH, fEE, fEH, K1, sw]
-  simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  refine ⟨⟨s 1112 (by norm_num) (by norm_num), hb1'⟩, s 1112 (by norm_num) (by norm_num),
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, s 1200 (by norm_num) (by norm_num),
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, s 1201 (by norm_num) (by norm_num),
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, s 1202 (by norm_num) (by norm_num),
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, s 1203 (by norm_num) (by norm_num), trivial⟩
+    iscr_sw (⋄) (⋄)
+  ϴ faceRead, okB, okI, regI, upd, lX, lY, lSB, lAB, lJ, fSE, fSH, fEE, fEH, K1, sw
+  ϴ Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1
+  refine ⟨⟨s 1112 (⊛) (⊛), hb1'⟩, s 1112 (⊛) (⊛),
+    ⟨s 1113 (⊛) (⊛), ⋄⟩, ⟨s 1113 (⊛) (⊛), ⋄⟩,
+    ⟨s 1113 (⊛) (⊛), ⋄⟩, ⟨s 1113 (⊛) (⊛), ⋄⟩,
+    ⟨s 1113 (⊛) (⊛), ⋄⟩, s 1200 (⊛) (⊛),
+    ⟨s 1113 (⊛) (⊛), ⋄⟩, s 1201 (⊛) (⊛),
+    ⟨s 1113 (⊛) (⊛), ⋄⟩, s 1202 (⊛) (⊛),
+    ⟨s 1113 (⊛) (⊛), ⋄⟩, s 1203 (⊛) (⊛), trivial⟩
 
 theorem faceRead_other (m f : ℕ → ℕ) {q : ℕ} (h1 : q ≠ lX) (h2 : q ≠ lY) (h3 : q ≠ fSE)
     (h4 : q ≠ fSH) (h5 : q ≠ fEE) (h6 : q ≠ fEH) : regB m faceRead f q = f q :=
   regB_other m faceRead f (fun i hi => by
-    simp only [faceRead, List.mem_cons, List.not_mem_nil, or_false] at hi
+    ϴ' faceRead, List.mem_cons, List.not_mem_nil, or_false at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
       rfl <;> simp only [dstI] <;> intro h <;> subst h <;> simp_all)
 
@@ -91,13 +93,13 @@ theorem faceRead_other (m f : ℕ → ℕ) {q : ℕ} (h1 : q ≠ lX) (h2 : q ≠
 theorem regB_out (m f : ℕ → ℕ) (l : List Instr)
     (hl : ∀ i ∈ l, sw 1102 ≤ dstI i ∧ dstI i ≤ sw 1203) {q : ℕ} (hq : q < sw 1102 ∨ sw 1203 < q) :
     regB m l f q = f q :=
-  regB_other m l f (fun i hi h => by have := hl i hi; rw [h] at this; omega)
+  regB_other m l f (fun i hi h => by have := hl i hi; Ξ' h at this; omega)
 
 theorem faceRead_dst : ∀ i ∈ faceRead, sw 1102 ≤ dstI i ∧ dstI i ≤ sw 1203 := by
   intro i hi
-  simp only [faceRead, List.mem_cons, List.not_mem_nil, or_false] at hi
+  ϴ' faceRead, List.mem_cons, List.not_mem_nil, or_false at hi
   rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-    simp [dstI, lX, lY, fSE, fSH, fEE, fEH, sw]
+    Θ dstI, lX, lY, fSE, fSH, fEE, fEH, sw
 
 /-! ## The environment at a run configuration -/
 
@@ -110,9 +112,9 @@ theorem modelDesc_transport {m m' : ℕ → ℕ} {D E E' : ℕ} {M : Model}
   · obtain ⟨w1, w2, w3⟩ := ShotList.modelDesc_keep hwf h0 hC he hE
     exact ⟨Or.inl ⟨w2, H, C, w3, rfl⟩, w1⟩
   · have hD6 := hwf.1
-    have e0 : m' D = m D := he _ (by omega)
-    have e1 : m' (D + 1) = m (D + 1) := he _ (by omega)
-    refine ⟨Or.inr ⟨by rw [e0, h1], by rw [e1]; exact hL, hM⟩, by omega, fun h => ?_⟩
+    have e0 : m' D = m D := he _ (⋄)
+    have e1 : m' (D + 1) = m (D + 1) := he _ (⋄)
+    refine ⟨Or.inr ⟨by rw [e0, h1], by rw [e1]; exact hL, hM⟩, ⋄, fun h => ?_⟩
     rw [e0, h1] at h; exact absurd h one_ne_zero
 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
@@ -125,7 +127,7 @@ theorem EvEnv.md₂ (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   obtain ⟨H, -, hst⟩ := E.hst
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, d31, w31⟩ := hst
   have e : c.nreg (sw 31) = c₀.nreg (sw 31) := hI.hin _ (by unfold IFix sw; omega)
-  rw [e]
+  Ξ e
   exact modelDesc_transport d31 w31 (fun a ha => hI.hm a ha) hI.hA
 
 /-- The normal form `N₂` is protected below the power table. -/
@@ -134,7 +136,7 @@ theorem EvEnv.nt₂ (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   rw [hI.hin _ (show IFix (sw 4) by unfold IFix sw; omega),
     hI.hin _ (show IFix TBR by unfold IFix TBR sw; omega)]
   have h := E.hTBR
-  exact Robust.transport E.hNT₂ (fun a ha => hI.hm a (by omega))
+  exact Robust.transport E.hNT₂ (fun a ha => hI.hm a (⋄))
 
 /-- The power table at a run configuration. -/
 theorem EvEnv.tab (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c) :
@@ -144,8 +146,8 @@ theorem EvEnv.tab (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have eL : c.nreg TLR = c₀.nreg TLR := hI.hin _ (by unfold IFix TLR sw; omega)
   have h := E.hTBR
   refine ⟨fun j hj => ?_, by rw [eL]; exact E.hbig₂, by rw [eB, eL]; exact h, eL⟩
-  rw [eL] at hj
-  rw [eB, hI.hm _ (by omega)]
+  Ξ' eL at hj
+  Ξ eB, hI.hm _ (⋄)
   exact E.htab j hj
 
 /-! ## The prefix -/

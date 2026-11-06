@@ -62,7 +62,7 @@ theorem m1c_n33 (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ 
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, h33, -⟩ := hst
   rw [hI.hin _ (by unfold IFix sw; omega)]; exact h33
 
-set_option maxRecDepth 20000 in
+
 /-- **The wall code.** -/
 theorem m1cK1_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
     (hD : OrgD P J N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))
@@ -74,7 +74,7 @@ theorem m1cK1_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have hok : StOK P J N₂ 1 (c.nreg oKk) (c.nreg oB) := hk ▸ hD.ok
   have hps : OrgPos P J N₂ 1 (c.nreg oKk) (c.nreg oB) (c.nreg oPE) (c.nreg oPH) := hk ▸ hpos
   obtain ⟨hbx, hlt, hpp, hz, hy, hx1, hsl⟩ := m1c_wall E.hP E.hNF₂ hok hps
-  have hb : c.nreg oB ≤ 1 := hok.2.1
+  have hb := hok.2.1
   obtain ⟨v1, v2, v3, vo⟩ := m1cL1_val c.nmem c.nreg
   obtain ⟨d1, d2, d3, d4⟩ := dr_m1
   unfold m1cK1 M1Post
@@ -109,7 +109,7 @@ theorem efr_noRes {c c' : Config} (h : ∀ r, r ≠ r1F → c'.nreg r = c.nreg r
   ⟨fun r _ hr _ => h r (fun e => hr (by rw [e]; unfold M1R r1F sw; omega)),
     by rw [h ALLOC (by unfold ALLOC r1F sw; omega)], fun a _ => by rw [hm]⟩
 
-set_option maxRecDepth 20000 in
+
 /-- **The shared code.** -/
 theorem m1cK0_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
     (hD : OrgD P J N₂ (c.nreg oKd) (c.nreg oKk) (c.nreg oB))
@@ -117,7 +117,7 @@ theorem m1cK0_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     (hK : lhRunK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) + 35020 ≤ K)
     (hroom : c.nreg ALLOC + K ≤ W) :
     IRS P W c₀ (m1cK0 sh) c K (M1Post P J N₂ c) := by
-  have hb : c.nreg oB ≤ 1 := hD.ok.2.1
+  have hb := hD.ok.2.1
   have hσ := SweepStop.dirOf_cases' (c.nreg oB)
   obtain ⟨H₀, -, hst⟩ := E.hst
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, h45, -⟩ := hst
@@ -125,7 +125,7 @@ theorem m1cK0_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     rw [hI.hin _ (by unfold IFix sw; omega)]; exact h45 1 (by norm_num)
   obtain ⟨sl, spp, spos⟩ := Cand1.shared_posL E.hP (Qof P) P.n
   have k0 : c.nreg K0 = 0 := (E.hK.fix hI).1
-  have hshL : J.shared ∈ J.left.set := J.shared_mem_left
+  have hshL := J.shared_mem_left
   have hsy : |J.shared.2| < J.left.radius := absy_lt J.left hshL
   have hst1 : J.shared.2 ≤ J.left.top.2 := J.left.snd_le_top_of_mem_set hshL
   obtain ⟨d1, d2, d3, d4⟩ := dr_m1

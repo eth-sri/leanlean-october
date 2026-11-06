@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseBoxChord
 
 /-!
@@ -29,7 +33,7 @@ open Set Chazelle.Chain Chazelle.Visibility
 theorem pos_mul_iff {p c : ℝ} (hp : 0 < p) :
     (0 < p * c ↔ 0 < c) ∧ (p * c < 0 ↔ c < 0) ∧ (p * c = 0 ↔ c = 0) := by
   refine ⟨⟨fun h => ?_, fun h => mul_pos hp h⟩,
-    ⟨fun h => ?_, fun h => mul_neg_of_pos_of_neg hp h⟩, ⟨fun h => ?_, fun h => by rw [h, mul_zero]⟩⟩
+    ⟨fun h => ?_, fun h => mul_neg_of_pos_of_neg hp h⟩, ⟨fun h => ?_, fun h => Ρ h, mul_zero⟩⟩
   · by_contra h'; nlinarith
   · by_contra h'; nlinarith
   · rcases mul_eq_zero.1 h with h | h
@@ -48,13 +52,13 @@ theorem sideDot_smul (a b : ℝ) (u v : Point) :
 theorem sideCcw_smul {l k m : ℝ} (hl : 0 < l) (hk : 0 < k) (hm : 0 < m) (B X A : Point) :
     sideCcw (l • B) (k • X) (m • A) ↔ sideCcw B X A := by
   unfold sideCcw
-  rw [sideCross_smul, sideCross_smul, sideCross_smul, sideDot_smul, sideDot_smul]
+  Ξ sideCross_smul, sideCross_smul, sideCross_smul, sideDot_smul, sideDot_smul
   obtain ⟨a1, a2, a3⟩ := pos_mul_iff (c := sideCross B A) (mul_pos hl hm)
   obtain ⟨b1, -, b3⟩ := pos_mul_iff (c := sideCross B X) (mul_pos hl hk)
   obtain ⟨c1, -, -⟩ := pos_mul_iff (c := sideCross X A) (mul_pos hk hm)
   obtain ⟨d1, d2, -⟩ := pos_mul_iff (c := sideDot B A) (mul_pos hl hm)
   obtain ⟨-, e2, -⟩ := pos_mul_iff (c := sideDot B X) (mul_pos hl hk)
-  simp only [a1, a2, a3, b1, b3, c1, d1, d2, e2, ne_eq]
+  ϴ a1, a2, a3, b1, b3, c1, d1, d2, e2, ne_eq
 
 /-- The left sector test at a walk position, in terms of the corner vectors. -/
 theorem sideLeft_eq (W : Polygon) (p : ℕ) (t : ℝ) (x : Point) :
@@ -69,15 +73,15 @@ theorem next_sub_pt (W : Polygon) (p : ℕ) (t : ℝ) :
 theorem prev_sub_pt (W : Polygon) (p : ℕ) {t : ℝ} (ht : t ≠ 0) :
     sidePrev W p t - sidePt W p t = (-t) • (W.vtx ((p + 1) % W.n) - W.vtx p) := by
   unfold sidePrev sidePt
-  rw [ite_eq_right ht]
-  apply Prod.ext <;> simp [Geometry.lerp]
+  Ξ ite_eq_right ht
+  apply Prod.ext <;> Θ Geometry.lerp
 
 theorem prev_sub_pt_zero (W : Polygon) (p : ℕ) :
     sidePrev W p 0 - sidePt W p 0 =
       (-1 : ℝ) • (W.vtx p - W.vtx ((p + W.n - 1) % W.n)) := by
   unfold sidePrev sidePt
-  rw [ite_eq_left rfl]
-  apply Prod.ext <;> simp [Geometry.lerp]
+  Ξ ite_eq_left rfl
+  apply Prod.ext <;> Θ Geometry.lerp
 
 theorem prev_succ {n p : ℕ} (hp : p < n) : ((p + n - 1) % n + 1) % n = p := by
   rcases Nat.eq_zero_or_pos p with h0 | h0
@@ -118,12 +122,12 @@ theorem scale_pt {u v : Point} (hk : u.2 = v.2 ∨ u.1 = v.1 ∨ (u ∈ C.set �
   · obtain ⟨l, hl, e⟩ := sig_slope (C := C) (C' := C') u.1 v.1
     refine ⟨l, hl, Prod.ext ?_ ?_⟩
     · simpa [phi, stretchPt] using e
-    · simp [phi, stretchPt, hk]
+    · Θ phi, stretchPt, hk
   · obtain ⟨l, hl, e⟩ := sig_slope (C := C) (C' := C') u.2 v.2
     refine ⟨l, hl, Prod.ext ?_ ?_⟩
-    · simp [phi, stretchPt, hk]
+    · Θ phi, stretchPt, hk
     · simpa [phi, stretchPt] using e
-  · exact ⟨1, one_pos, by rw [h.phi_fix hu, h.phi_fix hv, one_smul]⟩
+  · exact ⟨1, one_pos, Ρ h.phi_fix hu, h.phi_fix hv, one_smul⟩
 
 /-- **Walk edges scale positively.** -/
 theorem edge_scale {q : ℕ} (hq : q < (C.sideWalk C.sideBeta).n) :
@@ -131,7 +135,7 @@ theorem edge_scale {q : ℕ} (hq : q < (C.sideWalk C.sideBeta).n) :
         (C'.sideWalk C'.sideBeta).vtx q =
       l • ((C.sideWalk C.sideBeta).vtx ((q + 1) % (C.sideWalk C.sideBeta).n) -
         (C.sideWalk C.sideBeta).vtx q) := by
-  rw [h.phi_walk_vtx, h.phi_walk_vtx]
+  Ξ h.phi_walk_vtx, h.phi_walk_vtx
   exact h.scale_pt (edge_kind C hq)
 
 /-- **The corner vectors of corresponding walk positions scale positively.** -/
@@ -193,11 +197,11 @@ theorem attach_transfer {d : Set Point} {y : ℝ} (hdy : ∀ z ∈ d, z.2 = y) {
   have hzd : dist z s < r := by
     have := hball _ hdist
     rwa [hψ z, hpt, hψ s] at this
-  have hzne : z ≠ s := fun e => hne (by rw [e, hpt])
+  have hzne : z ≠ s := fun e => hne (Ρ e, hpt)
   have hL := hnear z hz hzne hzd
   have hz2 : s.2 = z.2 := (hdy s hmem).trans (hdy z hz).symm
   obtain ⟨κ, hκ, eX⟩ := h.scale_pt (Or.inl hz2)
-  rw [sideLeft_eq, eN, eP, hpt, eX, sideCcw_smul hα hκ hβ]
+  Ξ sideLeft_eq, eN, eP, hpt, eX, sideCcw_smul hα hκ hβ
   exact hL
 
 end Twin

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepBook
 
 /-!
@@ -17,8 +19,8 @@ namespace OracleR
 @[expose] public section
 
 theorem clog_mul_le (a b : ℕ) : Nat.clog 2 (a * b) ≤ Nat.clog 2 a + Nat.clog 2 b := by
-  rw [Nat.clog_le_iff_le_pow (by norm_num), pow_add]
-  exact Nat.mul_le_mul (Nat.le_pow_clog (by norm_num) a) (Nat.le_pow_clog (by norm_num) b)
+  rw [Nat.clog_le_iff_le_pow (⊛), pow_add]
+  exact Nat.mul_le_mul (Nat.le_pow_clog (⊛) a) (Nat.le_pow_clog (by norm_num) b)
 
 /-- The unit of the costs. -/
 def Fb (K : ℕ) : ℕ := (K + 1) * (Nat.clog 2 (64 * (K + 1)) + 1)
@@ -27,41 +29,41 @@ theorem nclog_le {n K : ℕ} (h : n ≤ 64 * (K + 1)) : n * (Nat.clog 2 n + 1) �
   unfold Fb
   have := Nat.clog_mono_right 2 h
   calc n * (Nat.clog 2 n + 1) ≤ (64 * (K + 1)) * (Nat.clog 2 (64 * (K + 1)) + 1) :=
-        Nat.mul_le_mul h (by omega)
-    _ = 64 * ((K + 1) * (Nat.clog 2 (64 * (K + 1)) + 1)) := by ring
+        Nat.mul_le_mul h (⋄)
+    _ = 64 * ((K + 1) * (Nat.clog 2 (64 * (K + 1)) + 1)) := ⋆
 
 theorem sortCost_le {κ n K : ℕ} (h : n ≤ 64 * (K + 1)) :
     SortR.sortCost κ n ≤ (κ + 30) * (64 * Fb K + 1) := by
   unfold SortR.sortCost
   have := nclog_le h
-  exact Nat.mul_le_mul_left _ (by omega)
+  exact Nat.mul_le_mul_left _ (⋄)
 
 theorem clCost_le {μ E K : ℕ} (h : μ + E ≤ 64 * (K + 1)) :
     clCost μ E ≤ Cluster.clusterK * (64 * Fb K + 1) := by
   unfold clCost
   have := nclog_le h
-  exact Nat.mul_le_mul_left _ (by omega)
+  exact Nat.mul_le_mul_left _ (⋄)
 
 theorem clog_le_Fb {x K : ℕ} (h : x ≤ 64 * (K + 1)) : Nat.clog 2 x ≤ Fb K := by
   unfold Fb
   have := Nat.clog_mono_right 2 h
   calc Nat.clog 2 x ≤ Nat.clog 2 (64 * (K + 1)) := this
-    _ ≤ 1 * (Nat.clog 2 (64 * (K + 1)) + 1) := by omega
-    _ ≤ (K + 1) * (Nat.clog 2 (64 * (K + 1)) + 1) := Nat.mul_le_mul_right _ (by omega)
+    _ ≤ 1 * (Nat.clog 2 (64 * (K + 1)) + 1) := ⋄
+    _ ≤ (K + 1) * (Nat.clog 2 (64 * (K + 1)) + 1) := Nat.mul_le_mul_right _ (⋄)
 
 theorem mul_clog_le_Fb {a x K : ℕ} (ha : a ≤ 5 * (K + 1)) (h : x ≤ 64 * (K + 1)) :
     a * (Nat.clog 2 x + 1) ≤ 5 * Fb K := by
   unfold Fb
   have := Nat.clog_mono_right 2 h
   calc a * (Nat.clog 2 x + 1) ≤ (5 * (K + 1)) * (Nat.clog 2 (64 * (K + 1)) + 1) :=
-        Nat.mul_le_mul ha (by omega)
-    _ = 5 * ((K + 1) * (Nat.clog 2 (64 * (K + 1)) + 1)) := by ring
+        Nat.mul_le_mul ha (⋄)
+    _ = 5 * ((K + 1) * (Nat.clog 2 (64 * (K + 1)) + 1)) := ⋆
 
 theorem one_le_Fb (K : ℕ) : 1 ≤ Fb K := by
-  unfold Fb; exact Nat.mul_pos (by omega) (by omega)
+  unfold Fb; exact Nat.mul_pos (⋄) (by omega)
 
 theorem K_le_Fb (K : ℕ) : K + 1 ≤ Fb K := by
-  unfold Fb; exact Nat.le_mul_of_pos_right _ (by omega)
+  unfold Fb; exact Nat.le_mul_of_pos_right _ (⋄)
 
 /-- **The unit against the budget of the specification.** -/
 theorem Fb_le {K m : ℕ} (hm : 1 ≤ m) (hK : K ≤ 60 * (2 * m + 7)) :

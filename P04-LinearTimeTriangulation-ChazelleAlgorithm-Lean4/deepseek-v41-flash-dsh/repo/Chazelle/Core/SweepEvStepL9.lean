@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStepL8
 
 /-!
@@ -65,46 +67,46 @@ theorem tab' : TabInv P J N₂ c' (keyOff P J c') := by
     S.hI.2.2.2.2.2.2.2 hsome
   obtain ⟨hW, -, hR, -, -⟩ := S.hI
   obtain ⟨hkp, hmemS, -, -⟩ := stp_pre_frame hW hR
-  have eTBs : cs.nreg cTB = c.nreg cTB := hkp 661 (by omega)
-  have eTB' : c'.nreg cTB = c.nreg cTB := stp_iter_keep S.hI (k := 661) (by omega)
-  have elB : co.nreg lB = c.nreg lB := stp_co_keep S.hI (k := 2430) (by omega)
-  have elC : co.nreg lC = c.nreg lC := stp_co_keep S.hI (k := 2431) (by omega)
+  have eTBs : cs.nreg cTB = c.nreg cTB := hkp 661 (⋄)
+  have eTB' : c'.nreg cTB = c.nreg cTB := stp_iter_keep S.hI (k := 661) (⋄)
+  have elB : co.nreg lB = c.nreg lB := stp_co_keep S.hI (k := 2430) (⋄)
+  have elC : co.nreg lC = c.nreg lC := stp_co_keep S.hI (k := 2431) (⋄)
   have hAl := (stp_alloc_mono S.hI).1
   have l1 := S.L.lay1
   have l2 := S.L.lay2
   have l4 := S.L.lay4
   have hTc : ∀ x, x < c.nreg cTB + 6 * N₂.nChords → c'.nmem x = co.nmem x := fun x hx =>
-    hmK x (by omega) (Or.inl (by rw [elB, elC]; omega))
+    hmK x (⋄) (Or.inl (by rw [elB, elC]; omega))
   have hTs : ∀ x, x < c.nreg cTB + 6 * N₂.nChords → cs.nmem x = c.nmem x := fun x hx =>
-    hmemS x (by omega)
+    hmemS x (⋄)
   have hlt := (stp_next_key S.E S.L S.hI S.hd).1
   intro j hj
-  rw [eTB']
+  Ξ eTB'
   obtain ⟨o0, o1, o2⟩ := S.L.tab j hj
   have hslot := S.hBA.slot j hj
   rw [eTBs] at hslot
-  have hT0 : c'.nmem (c.nreg cTB + 3 * j) = co.nmem (c.nreg cTB + 3 * j) := hTc _ (by omega)
+  have hT0 : c'.nmem (c.nreg cTB + 3 * j) = co.nmem (c.nreg cTB + 3 * j) := hTc _ (⋄)
   have hT1 : c'.nmem (c.nreg cTB + 3 * j + 1) = co.nmem (c.nreg cTB + 3 * j + 1) :=
-    hTc _ (by omega)
+    hTc _ (⋄)
   have hT2 : c'.nmem (c.nreg cTB + 3 * j + 2) = co.nmem (c.nreg cTB + 3 * j + 2) :=
-    hTc _ (by omega)
-  rw [hT0, hT1, hT2]
+    hTc _ (⋄)
+  Ξ hT0, hT1, hT2
   -- a flag of the key stays
   have hkeep : c.nmem (c.nreg cTB + 3 * j) = 1 → co.nmem (c.nreg cTB + 3 * j) = 1 := by
     intro h
     rcases hslot with ⟨s0, -, -⟩ | ⟨e, h', -, f0, -⟩
-    · rw [s0, hTs _ (by omega), h]
+    · rw [s0, hTs _ (⋄), h]
     · exact f0
   refine ⟨?_, ?_, fun hv hlt' p t hA hpt hL hle => ?_⟩
   · rcases hslot with ⟨s0, -, -⟩ | ⟨e, h', -, f0, -⟩
-    · rw [s0, hTs _ (by omega)]; exact o0
-    · rw [f0]
+    · rw [s0, hTs _ (⋄)]; exact o0
+    · Ξ f0
   · intro hf
     rcases hslot with ⟨s0, s1, s2⟩ | ⟨e, h', hmA, f0, f1, f2⟩
-    · rw [s0, hTs _ (by omega)] at hf
-      rw [s1, s2, hTs _ (by omega), hTs _ (by omega)]
+    · rw [s0, hTs _ (⋄)] at hf
+      rw [s1, s2, hTs _ (⋄), hTs _ (by omega)]
       exact o1 hf
-    · rw [f1, f2]
+    · Ξ f1, f2
       exact (S.hBA.acc _ hmA).2.2
   · by_cases hc : oW J (p + t) ≤ keyOff P J c
     · exact hkeep (o2 hv hlt' p t hA hpt hL hc)

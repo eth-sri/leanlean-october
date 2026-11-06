@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.UpPhase21
 public import Chazelle.Core.UpPhaseCost2
 public import Chazelle.Core.Granularize
@@ -48,7 +50,7 @@ theorem outS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
   refine ⟨rfl, ‹_›, by config_simp; exact h05, by config_simp; simp only [h14, h20],
     fun r a1 a2 a3 => ?_, rfl, rfl, rfl, rfl⟩
   simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  repeat (rw [Machine.upd_other _ _ _ (⋄)])
 
 set_option maxHeartbeats 64000000 in
 set_option maxRecDepth 8192 in

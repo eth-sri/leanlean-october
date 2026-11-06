@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.OraclePrepPosRam
 
 /-!
@@ -201,7 +203,7 @@ def BTB (r : ℕ) : Bool :=
   decide (r = 9999) || decide (r = 120041) || decide (r = 120042) || decide (110040 ≤ r ∧ r ≤ 110042)
 
 theorem clog_succ_le (x : ℕ) : Nat.clog 2 (x + 1) ≤ Nat.clog 2 x + 1 := by
-  rw [Nat.clog_le_iff_le_pow (by norm_num), pow_succ]
+  Ξ Nat.clog_le_iff_le_pow (⊛), pow_succ
   rcases Nat.eq_zero_or_pos x with rfl | hx
   · simp
   · have := Nat.le_pow_clog (by norm_num : 1 < 2) x

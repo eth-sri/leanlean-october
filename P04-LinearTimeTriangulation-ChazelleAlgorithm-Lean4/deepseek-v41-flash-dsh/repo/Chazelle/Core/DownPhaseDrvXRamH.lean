@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvXRamG
 
 /-!
@@ -68,15 +70,15 @@ def xgRegs : List ℕ := [217020, 217021, 217022, 217025, 217026, 217027, 217028
 
 theorem XG.congr {P : Polygon} {v : XV} {d d' : Config} (h : XG P v d)
     (hr : ∀ r ∈ xgRegs, d'.nreg r = d.nreg r) : XG P v d' :=
-  ⟨(hr _ (by simp [xgRegs])).trans h.r20, (hr _ (by simp [xgRegs])).trans h.r21,
-    (hr _ (by simp [xgRegs])).trans h.r22, (hr _ (by simp [xgRegs])).trans h.r25,
-    (hr _ (by simp [xgRegs])).trans h.r26, (hr _ (by simp [xgRegs])).trans h.r27,
-    (hr _ (by simp [xgRegs])).trans h.r28, (hr _ (by simp [xgRegs])).trans h.r30,
-    (hr _ (by simp [xgRegs])).trans h.r31, (hr _ (by simp [xgRegs])).trans h.r32,
-    (hr _ (by simp [xgRegs])).trans h.r33, (hr _ (by simp [xgRegs])).trans h.r34,
-    (hr _ (by simp [xgRegs])).trans h.r35, (hr _ (by simp [xgRegs])).trans h.r36,
-    (hr _ (by simp [xgRegs])).trans h.r37, (hr _ (by simp [xgRegs])).trans h.r41,
-    (hr _ (by simp [xgRegs])).trans h.r42, (hr _ (by simp [xgRegs])).trans h.r44⟩
+  ⟨(hr _ (⊚ xgRegs)).trans h.r20, (hr _ (⊚ xgRegs)).trans h.r21,
+    (hr _ (⊚ xgRegs)).trans h.r22, (hr _ (⊚ xgRegs)).trans h.r25,
+    (hr _ (⊚ xgRegs)).trans h.r26, (hr _ (⊚ xgRegs)).trans h.r27,
+    (hr _ (⊚ xgRegs)).trans h.r28, (hr _ (⊚ xgRegs)).trans h.r30,
+    (hr _ (⊚ xgRegs)).trans h.r31, (hr _ (⊚ xgRegs)).trans h.r32,
+    (hr _ (⊚ xgRegs)).trans h.r33, (hr _ (⊚ xgRegs)).trans h.r34,
+    (hr _ (⊚ xgRegs)).trans h.r35, (hr _ (⊚ xgRegs)).trans h.r36,
+    (hr _ (⊚ xgRegs)).trans h.r37, (hr _ (⊚ xgRegs)).trans h.r41,
+    (hr _ (⊚ xgRegs)).trans h.r42, (hr _ (⊚ xgRegs)).trans h.r44⟩
 
 theorem XG.frameM {P : Polygon} {v : XV} {d d' : Config} {B : ℕ → Bool} (h : XG P v d)
     (hf : FrameM B d d') (hB : xgRegs.all (fun r => !B r) = true) : XG P v d' :=
@@ -151,7 +153,7 @@ structure XE (P : Polygon) (W : ℕ) (v : XV) (N NR : NF) (ras : ℕ → ℕ) (A
 def Bch (r : ℕ) : Bool :=
   decide ((217038 ≤ r ∧ r ≤ 217040) ∨ (217045 ≤ r ∧ r ≤ 217046) ∨ (217050 ≤ r ∧ r ≤ 217199))
 
-theorem wrM_ch : wrM Bch chS = true := by decide
+theorem wrM_ch : wrM Bch chS = true := ⌖
 
 /-- The host point at the start of walk edge `p`. -/
 noncomputable def sPt (P : Polygon) (v : XV) (p : ℕ) : SymPt := hpt (Qof P).n v.H (tK v.m v.T v.β p)

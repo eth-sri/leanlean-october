@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvDGlue
 public import Chazelle.Core.DownPhaseDrvRObl
 public import Chazelle.Core.DownPhaseDrvRInv
@@ -164,14 +166,14 @@ theorem argS_exec (c : Config) (hw : WordsBounded W c) :
     exec_block
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
-    q.2.2.2.2.2.2, exec_frameB ex (by decide)⟩
+    q.2.2.2.2.2.2, exec_frameB ex (⌖)⟩
 
 /-- The registers `appT` writes. -/
 def BappT (r : ℕ) : Bool :=
   decide (r = 216020) || decide (r = 216021) || decide (r = 216033) || decide (r = 216034) ||
     decide (216040 ≤ r ∧ r ≤ 216043) || decide (r = 40000)
 
-theorem wrM_appT : wrM BappT appT = true := by decide
+theorem wrM_appT : wrM BappT appT = true := ⌖
 
 set_option maxHeartbeats 2000000 in
 /-- Appending the triple and the region data of the scans. -/
@@ -209,7 +211,7 @@ theorem appT_exec (c : Config) (hw : WordsBounded W c) {d n p LB : ℕ}
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
     q.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2, exec_frameM ex wrM_appT⟩
 
-theorem wrM_stB : wrM (fun r => decide (r = 216022)) stB = true := by decide
+theorem wrM_stB : wrM (fun r => decide (r = 216022)) stB = true := ⌖
 
 /-- Storing a bucket. -/
 theorem stB_exec (c : Config) (hw : WordsBounded W c) {d : ℕ} (h22 : c.nreg 216022 = d)

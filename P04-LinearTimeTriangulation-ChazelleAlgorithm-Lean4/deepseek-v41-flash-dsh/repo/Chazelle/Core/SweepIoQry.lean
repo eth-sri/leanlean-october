@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoPipe2
 
 /-!
@@ -58,24 +60,24 @@ theorem convQ_sem {J : Merge.Junction} {H : Host} (hI : IInv W c₀ c) (hK : Con
   have hpo : IScr zE ∧ zE ≠ cX ∧ zE ≠ cT ∧ zE ≠ cDd :=
     ⟨iscr_sw (by unfold zE sw; norm_num) (by unfold zE sw; norm_num), by unfold zE cX sw; omega,
       by unfold zE cT sw; omega, by unfold zE cDd sw; omega⟩
-  have v35 : c.nreg (sw 35) = 2 * J.whole.m + 7 := by rw [r 35 (by norm_num), h35]
+  have v35 : c.nreg (sw 35) = 2 * J.whole.m + 7 := Ρ r 35 (⊛), h35
   have hnC : ∀ C : Chain, (chainModel C).W.n = 2 * C.m + 7 := fun C => cm_n C
   rcases sideChain_cases J hi with ⟨rfl, hC⟩ | ⟨rfl, hC⟩
-  · rw [hC] at hcls ⊢
+  · Ξ' hC at hcls ⊢
     have ht : c.nreg sSide < c.nreg K1 := by rw [hs, k1]; norm_num
     have hqE : c.nreg qE < 2 * J.left.m + 6 + 1 := by
       rcases hcls with (h | h) | ⟨-, h⟩ | ⟨h, -⟩ <;> simp only at h <;> omega
-    have v33 : c.nreg (sw 33) = 2 * J.left.m + 7 := by rw [r 33 (by norm_num), h33]
+    have v33 : c.nreg (sw 33) = 2 * J.left.m + 7 := Ρ r 33 (⊛), h33
     have v45 : c.nreg (sw 45) = 6 + tpos J.whole (J.m₁ + 2 * J.m₂) := by
-      rw [r 45 (by norm_num), show (45 : ℕ) = 45 + 0 from rfl, h45 0 (by norm_num)]; rfl
+      rw [r 45 (⊛), show (45 : ℕ) = 45 + 0 from rfl, h45 0 (⊛)]; rfl
     have v46 : c.nreg (sw 45 + 1) = 6 + tpos J.left J.m₁ := by
-      rw [show sw 45 + 1 = sw 46 from rfl, r 46 (by norm_num), show (46 : ℕ) = 45 + 1 from rfl,
-        h45 1 (by norm_num)]; rfl
+      rw [show sw 45 + 1 = sw 46 from rfl, r 46 (⊛), show (46 : ℕ) = 45 + 1 from rfl,
+        h45 1 (⊛)]; rfl
     have t1 := tpos_lt J.left J.m₁
     have t2 := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
     refine (IRS.ifT ht (convS_irs (Or.inr rfl) (Or.inl rfl) hpe hpo hI hK (by rw [v33]; omega)
       (by rw [v46, v33]; omega) (by rw [v33]; omega) (by rw [v45, v35]; omega)
-      (by rw [v35]; exact hWm))).mono (by norm_num) ?_
+      (by rw [v35]; exact hWm))).mono (⊛) ?_
     rintro c' ⟨h1, h2, h3⟩
     obtain ⟨a1, a2, a3⟩ := convL_val hst hP hcls
     simp only [rr (sw 45) (by unfold sw; norm_num) (by unfold sw; norm_num),
@@ -84,23 +86,23 @@ theorem convQ_sem {J : Merge.Junction} {H : Host} (hI : IInv W c₀ c) (hK : Con
       rr (sw 45 + 4) (by unfold sw; norm_num) (by unfold sw; norm_num),
       rr (sw 33) (by unfold sw; norm_num) (by unfold sw; norm_num),
       rr (sw 35) (by unfold sw; norm_num) (by unfold sw; norm_num)] at h1
-    rw [h1]
+    Ξ h1
     exact ⟨a1, a2, a3, fun r hr => h2 r hr, h3⟩
-  · rw [hC] at hcls ⊢
+  · Ξ' hC at hcls ⊢
     have ht : ¬ c.nreg sSide < c.nreg K1 := by rw [hs, k1]; norm_num
     have hqE : c.nreg qE < 2 * J.right.m + 6 + 1 := by
       rcases hcls with (h | h) | ⟨-, h⟩ | ⟨h, -⟩ <;> simp only at h <;> omega
-    have v34 : c.nreg (sw 34) = 2 * J.right.m + 7 := by rw [r 34 (by norm_num), h34]
+    have v34 : c.nreg (sw 34) = 2 * J.right.m + 7 := Ρ r 34 (⊛), h34
     have v40 : c.nreg (sw 40) = 6 + tpos J.whole J.m₁ := by
-      rw [r 40 (by norm_num), show (40 : ℕ) = 40 + 0 from rfl, h40 0 (by norm_num)]; rfl
+      rw [r 40 (⊛), show (40 : ℕ) = 40 + 0 from rfl, h40 0 (⊛)]; rfl
     have v41 : c.nreg (sw 40 + 1) = 6 + tpos J.right 0 := by
-      rw [show sw 40 + 1 = sw 41 from rfl, r 41 (by norm_num), show (41 : ℕ) = 40 + 1 from rfl,
-        h40 1 (by norm_num)]; rfl
+      rw [show sw 40 + 1 = sw 41 from rfl, r 41 (⊛), show (41 : ℕ) = 40 + 1 from rfl,
+        h40 1 (⊛)]; rfl
     have t1 := tpos_lt J.right 0
     have t2 := tpos_lt J.whole J.m₁
     refine (IRS.ifF ht (convS_irs (Or.inl rfl) (Or.inr rfl) hpe hpo hI hK (by rw [v34]; omega)
       (by rw [v41, v34]; omega) (by rw [v34]; omega) (by rw [v40, v35]; omega)
-      (by rw [v35]; exact hWm))).mono (by norm_num) ?_
+      (by rw [v35]; exact hWm))).mono (⊛) ?_
     rintro c' ⟨h1, h2, h3⟩
     obtain ⟨a1, a2, a3⟩ := convR_val hst hP hcls
     simp only [rr (sw 40) (by unfold sw; norm_num) (by unfold sw; norm_num),
@@ -109,7 +111,7 @@ theorem convQ_sem {J : Merge.Junction} {H : Host} (hI : IInv W c₀ c) (hK : Con
       rr (sw 40 + 4) (by unfold sw; norm_num) (by unfold sw; norm_num),
       rr (sw 34) (by unfold sw; norm_num) (by unfold sw; norm_num),
       rr (sw 35) (by unfold sw; norm_num) (by unfold sw; norm_num)] at h1
-    rw [h1]
+    Ξ h1
     exact ⟨a1, a2, a3, fun r hr => h2 r hr, h3⟩
 
 set_option maxHeartbeats 4000000 in
@@ -133,8 +135,8 @@ theorem winVal_sem {J : Merge.Junction} {H : Host} (hI : IInv W c₀ c)
   unfold winVal
   split_ifs with h1 h2
   · have hM : ModB J (c.nreg bL) (c.nreg bR) (c.nreg (accA + 3)) = J.left := by
-      unfold ModB; rw [ite_eq_left h1]
-    rw [hM] at hpp he hpos
+      unfold ModB; Ξ ite_eq_left h1
+    Ξ' hM at hpp he hpos
     have hcls : PosClass J.left (Qof P) ⟨c.nreg (accA + 1), c.nreg (accA + 2)⟩ :=
       posClass_of he hpp.1 hpp.2.1
         (by rw [hpos, Chazelle.Visibility.rayPt_snd, FuseMath.radius_of_P J (C' := J.left) rfl];
@@ -147,10 +149,10 @@ theorem winVal_sem {J : Merge.Junction} {H : Host} (hI : IInv W c₀ c)
       rr (sw 45 + 4) (by unfold sw; norm_num) (by unfold sw; norm_num),
       rr (sw 33) (by unfold sw; norm_num) (by unfold sw; norm_num),
       rr (sw 35) (by unfold sw; norm_num) (by unfold sw; norm_num)]
-    exact ⟨a1, ⟨by rw [a2]; exact hpp.1, by rw [a2]; exact hpp.2.1, hpp.2.2⟩, by rw [a3, hpos]⟩
+    exact ⟨a1, ⟨by rw [a2]; exact hpp.1, by rw [a2]; exact hpp.2.1, hpp.2.2⟩, Ρ a3, hpos⟩
   · have hM : ModB J (c.nreg bL) (c.nreg bR) (c.nreg (accA + 3)) = J.right := by
-      unfold ModB; rw [ite_eq_right h1, ite_eq_left h2]
-    rw [hM] at hpp he hpos
+      unfold ModB; Ξ ite_eq_right h1, ite_eq_left h2
+    Ξ' hM at hpp he hpos
     have hcls : PosClass J.right (Qof P) ⟨c.nreg (accA + 1), c.nreg (accA + 2)⟩ :=
       posClass_of he hpp.1 hpp.2.1
         (by rw [hpos, Chazelle.Visibility.rayPt_snd, FuseMath.radius_of_P J (C' := J.right) rfl];
@@ -163,10 +165,10 @@ theorem winVal_sem {J : Merge.Junction} {H : Host} (hI : IInv W c₀ c)
       rr (sw 40 + 4) (by unfold sw; norm_num) (by unfold sw; norm_num),
       rr (sw 34) (by unfold sw; norm_num) (by unfold sw; norm_num),
       rr (sw 35) (by unfold sw; norm_num) (by unfold sw; norm_num)]
-    exact ⟨a1, ⟨by rw [a2]; exact hpp.1, by rw [a2]; exact hpp.2.1, hpp.2.2⟩, by rw [a3, hpos]⟩
+    exact ⟨a1, ⟨by rw [a2]; exact hpp.1, by rw [a2]; exact hpp.2.1, hpp.2.2⟩, Ρ a3, hpos⟩
   · have hM : ModB J (c.nreg bL) (c.nreg bR) (c.nreg (accA + 3)) = J.whole := by
-      unfold ModB; rw [ite_eq_right h1, ite_eq_right h2]
-    rw [hM] at hpp he hpos
+      unfold ModB; Ξ ite_eq_right h1, ite_eq_right h2
+    Ξ' hM at hpp he hpos
     exact ⟨he, hpp, hpos⟩
 
 /-- The postcondition of a query. -/
@@ -531,10 +533,10 @@ theorem candK_le (κ0 κ1 F : ℕ → ℕ) (c₀ : Config) (J : Merge.Junction) 
   generalize hG : F (c₀.nreg (sw 5)) + 1 = G
   generalize ha : κ0 (c₀.nreg (sw 6)) = a
   generalize hb : κ1 (c₀.nreg (sw 6)) = b
-  have hX1 : 1 ≤ X := by omega
+  have hX1 : 1 ≤ X := ⋄
   rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hi with rfl | rfl
   · simp only [↓reduceIte, ite_eq_right (show ¬ ((0 : ℕ) = 1 ∧ BruteQ J N₂ j (qPt J P 0 L j)) from
-      fun h => absurd h.1 (by norm_num))]
+      fun h => absurd h.1 (⊛))]
     nlinarith
   · by_cases hq : BruteQ J N₂ j (qPt J P 1 L j)
     · simp only [ite_eq_right (show ¬ ((1 : ℕ) = 0) by norm_num), ite_eq_left hq,
@@ -558,25 +560,25 @@ theorem qry_of_cands (h0 : Cand0Spec) (h1 : Cand1Spec) :
   intro sh Bs F X Ok hsh hBs hXl P W c₀ c J H N₁ N₂ E L i j hB hI hpJ hj hpA hpR hslot hroom
   have hle := candK_le κ0 κ1 F c₀ J P N₁ N₂ L hB.hi j
   refine (qry_run (c0 := cand0 sh) (c1 := cand1 sh) (Kc := candK κ0 κ1 F c₀ J P N₁ N₂ L i j) hB
-    hI hpJ hj hpA hpR hslot ?_ (by omega)).mono hle (fun c' h => h)
+    hI hpJ hj hpA hpR hslot ?_ (⋄)).mono hle (fun c' h => h)
   intro c' hI' hQS hqJ hend hacc hroom'
   rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hB.hi with h0 | h0
   · subst h0
-    rw [ite_eq_left rfl]
+    Ξ ite_eq_left rfl
     have hk : candK κ0 κ1 F c₀ J P N₁ N₂ L 0 j =
         κ0 (c₀.nreg (sw 6)) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) := by
-      unfold candK; rw [ite_eq_left rfl]
-    rw [hk] at hroom' ⊢
+      unfold candK; Ξ ite_eq_left rfl
+    Ξ' hk at hroom' ⊢
     exact hC0 sh Bs F X Ok hsh hBs hXl P W c₀ c' J H N₁ N₂ E _ hB.hA (hB.hAux rfl) hI' hQS hacc
       hroom'
   · subst h0
-    rw [ite_eq_right (by norm_num)]
+    Ξ ite_eq_right (⊛)
     have hk : candK κ0 κ1 F c₀ J P N₁ N₂ L 1 j =
         κ1 (c₀.nreg (sw 6)) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) +
           (if BruteQ J N₂ (c'.nreg qJ) (qPt J P 1 L j) then
             κ1 (c₀.nreg (sw 6)) * (N₁.arcs.length + 1) * (F (c₀.nreg (sw 5)) + 1) else 0) := by
-      unfold candK; rw [ite_eq_right (by norm_num), hqJ]
-    rw [hk] at hroom' ⊢
+      unfold candK; Ξ ite_eq_right (⊛), hqJ
+    Ξ' hk at hroom' ⊢
     exact hC1 sh Bs F X Ok hsh hBs hXl P W c₀ c' J H N₁ N₂ E _ hB.hA hI' hQS (hend rfl) hacc
       hroom'
 

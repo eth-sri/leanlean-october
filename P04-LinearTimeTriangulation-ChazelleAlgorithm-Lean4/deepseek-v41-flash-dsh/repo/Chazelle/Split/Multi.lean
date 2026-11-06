@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Split.All
 public import Chazelle.Mountain.Pieces
 
@@ -79,7 +81,7 @@ theorem isDiag_range_of_mem_allDiagonals (hP : P.Simple) {d : ℕ × ℕ}
   obtain ⟨h1, h2, hne⟩ := allDiagonals_lt hP hd
   obtain ⟨s, L, hdiag, hs, hsL, hsub⟩ := allDiagonals_isDiagonal hP hd
   unfold IsDiag
-  rw [subPoly_range]
+  Ξ subPoly_range
   refine ⟨List.mem_range.2 h1, List.mem_range.2 h2, hne, ?_, hsub⟩
   have hch := hdiag.2.2
   rw [hs, hsL] at hch
@@ -109,7 +111,7 @@ theorem eq_or_eq_swap_of_pairSeg_eq (hP : P.Simple) {d d' : ℕ × ℕ}
     rw [not_or] at hcon
     apply hD.2.2.2.1 _ hxs (fun e => hcon.1 (eq_of_vtx_eq P hQ hxl hD.1 e))
       (fun e => hcon.2 (eq_of_vtx_eq P hQ hxl hD.2.1 e))
-    rw [subPoly_range]
+    Ξ subPoly_range
     exact Chazelle.Existence.vtx_mem_boundary P (List.mem_range.1 hxl)
   have e1 := key d'.1 hD'.1 (by rw [h]; exact Chazelle.Geometry.left_mem_segment _ _)
   have e2 := key d'.2 hD'.2.1 (by rw [h]; exact Chazelle.Geometry.right_mem_segment _ _)
@@ -130,12 +132,12 @@ theorem nonCross_of_mem_or_swap (hP : P.Simple) {d d' : ℕ × ℕ}
     intro h
     rcases eq_or_eq_swap_of_pairSeg_eq hP hd hd' h with e | e
     · exact hne.1 e.symm
-    · exact hne.2 (by rw [e, Prod.swap_swap])
+    · exact hne.2 (Ρ e, Prod.swap_swap)
   have key : ∀ e e', e ∈ allDiagonals P → e' ∈ allDiagonals P →
       pairSeg P e = pairSeg P d → pairSeg P e' = pairSeg P d' → NonCross P e e' := by
     intro e e' he he' h1 h2
     apply allDiagonals_inter hP he he'
-    rw [diagSeg_eq_pairSeg, diagSeg_eq_pairSeg, h1, h2]
+    Ξ diagSeg_eq_pairSeg, diagSeg_eq_pairSeg, h1, h2
     exact hseg
   rcases hd with h | h <;> rcases hd' with h' | h'
   · exact key _ _ h h' rfl rfl
@@ -168,7 +170,7 @@ theorem EnumDiags.diagSystem (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : EnumD
 theorem cycEdge_range {n x y : ℕ} (h : CycEdge (List.range n) x y) : y = (x + 1) % n := by
   obtain ⟨k, hk, rfl, rfl⟩ := h
   rw [List.length_range] at hk ⊢
-  rw [getD_range hk, getD_range (Nat.mod_lt _ (by omega))]
+  rw [getD_range hk, getD_range (Nat.mod_lt _ (⋄))]
 
 /-- **Every output piece is a piece of the subdivision of `P` by `allDiagonals P`.** -/
 theorem EnumDiags.isPiece (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : EnumDiags P D) {m : List ℕ}
@@ -187,7 +189,7 @@ theorem EnumDiags.isPiece (hP : P.Simple) {D : List (ℕ × ℕ)} (hD : EnumDiag
       · exact Or.inr (Or.inr (Or.inr h'))
       · exact Or.inr (Or.inr (Or.inl h'))
   · intro d hd p hp
-    rw [diagSeg_eq_pairSeg]
+    Ξ diagSeg_eq_pairSeg
     rcases hD.complete d hd with h' | h'
     · exact hdiag d h' p hp
     · rw [← pairSeg_swap]; exact hdiag _ h' p hp
@@ -211,7 +213,7 @@ theorem EnumDiags.weakTriangulates (hP : P.Simple) {D : List (ℕ × ℕ)} (hD :
   have hsys := hD.diagSystem hP
   have hw := weakTriangulates_combineTri hsys hT
   rw [subPoly_range] at hw
-  rw [← map_relabelList_combineTri hsys hT, map_relabelList_range hw]
+  Ξ ← map_relabelList_combineTri hsys hT, map_relabelList_range hw
   exact hw
 
 /-! ### A canonical enumeration -/

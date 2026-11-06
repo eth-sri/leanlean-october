@@ -41,7 +41,7 @@ theorem transCnt_cnt {A : ℕ} (hA : 1 ≤ A) (B : ℕ) : TransCnt (DownMath.cnt
 
 theorem mem_drvBands {b : ℕ} : b ∈ DrvR.drvBands ↔ 1 ≤ b ∧ b ≤ 24 ∧ b ≠ 23 := by
   unfold DrvR.drvBands phaseBands bCore
-  simp only [Finset.mem_erase, Finset.mem_Icc]
+  ϴ Finset.mem_erase, Finset.mem_Icc
   omega
 
 /-- A frame of the driver's bands from a write-set frame not touching the allocator. -/
@@ -69,10 +69,10 @@ theorem bit_eq {b : ℕ} {p : Prop} [Decidable p] (hb : b ≤ 1) (h : b = 1 ↔ 
     b = if decide p then 1 else 0 := by
   by_cases hp : p
   · simp only [hp, decide_true, ite_true]; exact h.2 hp
-  · simp only [hp, decide_false, Bool.false_eq_true, ite_false]
-    by_contra hb0; exact hp (h.1 (by omega))
+  · ϴ hp, decide_false, Bool.false_eq_true, ite_false
+    by_contra hb0; exact hp (h.1 (⋄))
 
-set_option maxHeartbeats 8000000 in
+
 /-- **The transition meets its contract**, for every count function satisfying the
 transition count condition. -/
 theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
@@ -150,7 +150,7 @@ theorem transSpec_of {X : MemCtx} {cnt : ℕ → ℕ} (hcnt : TransCnt cnt) :
     rw [w2, h5 _ (by norm_num) (by norm_num), F₄.1 _ (by decide), f22]
   have r3 : c₆.nreg 210003 = L.length := by
     rw [w3, h5 _ (by norm_num) (by norm_num), F₄.1 _ (by decide), f36]
-  have hA₅ : c₄.nreg ALLOC ≤ c₅.nreg ALLOC := F₅.2.2.2.2.2.1
+  have hA₅ := F₅.2.2.2.2.2.1
   have hlow₅ : ∀ a, a < c₄.nreg ALLOC → c₆.nmem a = c₃.nmem a := fun a ha => by
     rw [m₆, F₅.2.2.1 a ha, m₄]
   refine ⟨c₆, k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k₆)))),

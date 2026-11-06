@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepIoLab0A
 
 /-!
@@ -44,15 +46,15 @@ theorem label_valid (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {e k : ℕ} (he : 
     (hk : k < c₀.nmem (rd c₀ bSweep 300 + 7 * e + 2)) (hk3 : k ≤ 3) :
     c₀.nmem (rd c₀ bSweep 300 + 7 * e + 3 + k) < N₂.nRegions := by
   obtain ⟨rs, ls, -, -, -, -, hlsl, hls, -, hlsW, -, -⟩ := hA.hout
-  have he' : e < ls.length := by omega
+  have he' : e < ls.length := ⋄
   obtain ⟨n2, hlab⟩ := logRec_labels hls he'
-  rw [hlab k hk3]
+  Ξ hlab k hk3
   rw [n2] at hk
   have hmem : ls.getD e (0, 0, 0, 0, 0, 0, 0) ∈ ls := by
     rw [List.getD_eq_getElem _ _ he']; exact List.getElem_mem _
   obtain ⟨-, -, b0, b1, b2, b3⟩ := hlsW _ hmem
   interval_cases k
-  · exact b0 (by omega)
+  · exact b0 (⋄)
   · exact b1 (by simpa using hk)
   · exact b2 (by simpa using hk)
   · exact b3 (by simpa using hk)
@@ -79,28 +81,28 @@ theorem label_mem {ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ)} {m
   obtain ⟨n2, hlab⟩ := logRec_labels hls hi
   obtain ⟨l, hl, rfl⟩ := hV
   rcases hl with ⟨h0, rfl⟩ | ⟨h1, rfl⟩ | ⟨h2, rfl⟩ | ⟨h3, rfl⟩
-  · exact ⟨0, by norm_num, by omega, by rw [hlab 0 (by norm_num)]; rfl⟩
-  · exact ⟨1, by norm_num, by omega, by rw [hlab 1 (by norm_num)]; rfl⟩
-  · exact ⟨2, by norm_num, by omega, by rw [hlab 2 (by norm_num)]; rfl⟩
-  · exact ⟨3, le_rfl, by omega, by rw [hlab 3 le_rfl]; rfl⟩
+  · exact ⟨0, ⊛, ⋄, by rw [hlab 0 (⊛)]; rfl⟩
+  · exact ⟨1, ⊛, ⋄, by rw [hlab 1 (⊛)]; rfl⟩
+  · exact ⟨2, ⊛, ⋄, by rw [hlab 2 (⊛)]; rfl⟩
+  · exact ⟨3, le_rfl, ⋄, by rw [hlab 3 le_rfl]; rfl⟩
 
 /-- **Every entry register and label place has a slot.** -/
 theorem slotPairs_cover {e k : ℕ} (he : e = eR0 ∨ e = eR1 ∨ e = eR2) (hk : k ≤ 3) :
     ∃ idx, idx < 12 ∧ (slotPairs.getD idx (0, 0)).1 = e ∧
       ∀ c : Config, Consts c → c.nreg (slotPairs.getD idx (0, 0)).2 = k := by
   rcases he with rfl | rfl | rfl <;> interval_cases k
-  · exact ⟨0, by norm_num, rfl, fun c h => h.1⟩
-  · exact ⟨1, by norm_num, rfl, fun c h => h.2.1⟩
-  · exact ⟨2, by norm_num, rfl, fun c h => h.2.2.2.2.2.1⟩
-  · exact ⟨3, by norm_num, rfl, fun c h => h.2.2.2.2.2.2⟩
-  · exact ⟨4, by norm_num, rfl, fun c h => h.1⟩
-  · exact ⟨5, by norm_num, rfl, fun c h => h.2.1⟩
-  · exact ⟨6, by norm_num, rfl, fun c h => h.2.2.2.2.2.1⟩
-  · exact ⟨7, by norm_num, rfl, fun c h => h.2.2.2.2.2.2⟩
-  · exact ⟨8, by norm_num, rfl, fun c h => h.1⟩
-  · exact ⟨9, by norm_num, rfl, fun c h => h.2.1⟩
-  · exact ⟨10, by norm_num, rfl, fun c h => h.2.2.2.2.2.1⟩
-  · exact ⟨11, by norm_num, rfl, fun c h => h.2.2.2.2.2.2⟩
+  · exact ⟨0, ⊛, rfl, fun c h => h.1⟩
+  · exact ⟨1, ⊛, rfl, fun c h => h.2.1⟩
+  · exact ⟨2, ⊛, rfl, fun c h => h.2.2.2.2.2.1⟩
+  · exact ⟨3, ⊛, rfl, fun c h => h.2.2.2.2.2.2⟩
+  · exact ⟨4, ⊛, rfl, fun c h => h.1⟩
+  · exact ⟨5, ⊛, rfl, fun c h => h.2.1⟩
+  · exact ⟨6, ⊛, rfl, fun c h => h.2.2.2.2.2.1⟩
+  · exact ⟨7, ⊛, rfl, fun c h => h.2.2.2.2.2.2⟩
+  · exact ⟨8, ⊛, rfl, fun c h => h.1⟩
+  · exact ⟨9, ⊛, rfl, fun c h => h.2.1⟩
+  · exact ⟨10, ⊛, rfl, fun c h => h.2.2.2.2.2.1⟩
+  · exact ⟨11, ⊛, rfl, fun c h => h.2.2.2.2.2.2⟩
 
 /-- The slot pairs: entry registers and constant registers. -/
 theorem slotPairs_facts : ∀ p ∈ slotPairs,

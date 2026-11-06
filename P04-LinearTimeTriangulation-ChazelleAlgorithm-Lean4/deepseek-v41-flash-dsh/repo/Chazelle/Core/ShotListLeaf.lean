@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShotListCut2
 public import Chazelle.Core.SweepPrimAbs
 
@@ -71,10 +75,10 @@ theorem absRec_copy {P : Polygon} {c c' : Config} {r r' : ℕ} {x R : ℝ} (h : 
   · exact Or.inl ⟨h0.trans k, hx⟩
   · exact Or.inr (Or.inl ⟨h0.trans k, hx⟩)
   · refine Or.inr (Or.inr ⟨h0.trans k, hx, s, ?_, hl, he⟩)
-    have e1 : r' + 1 + 1 = r' + 2 := by omega
-    have e2 : r + 1 + 1 = r + 2 := by omega
-    have e3 : r' + 1 + 2 = r' + 3 := by omega
-    have e4 : r + 1 + 2 = r + 3 := by omega
+    have e1 : r' + 1 + 1 = r' + 2 := ⋄
+    have e2 : r + 1 + 1 = r + 2 := ⋄
+    have e3 : r' + 1 + 2 = r' + 3 := ⋄
+    have e4 : r + 1 + 2 = r + 3 := ⋄
     exact NFLoc.symPtIn_copy hs h1 (by rw [e1, e2]; exact h2) (by rw [e3, e4]; exact h3)
 
 /-- An origin survives a copy of its three words. -/
@@ -213,16 +217,16 @@ theorem leafSet_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
       FrameB (fun r => ((setList R).map Prod.fst).contains r) c c' := by
   have h := hR; unfold RegsOK at h
   obtain ⟨c', e, h1, h2⟩ := copies_run (P := P) (setList R) c hw (by
-    simp only [setList, List.mem_cons, List.not_mem_nil, or_false]
+    ϴ setList, List.mem_cons, List.not_mem_nil, or_false
     rintro p (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl)
       q (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;> simp <;> omega)
-    (by simp [setList])
+    (⊚ setList)
   exact ⟨c', _, e, rfl, h1, h2⟩
 
 /-- A register of the caller's block is not written by a primitive. -/
 theorem bprim_R' {R : ℕ} (hR : RegsOK R) {r : ℕ} (h1 : R ≤ r) (h2 : r < R + 300) :
     Bprim r = false := by
-  have := bprim_R hR (i := r - R) (by omega)
+  have := bprim_R hR (i := r - R) (⋄)
   rwa [show R + (r - R) = r by omega] at this
 
 /-- The write set of `leafKey`. -/
@@ -245,7 +249,7 @@ theorem leafKey_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
         C.radius ∧ FrameB (Bkey R) c c' := by
   have h := hR; unfold RegsOK at h
   obtain ⟨c₁, e₁, v₁, f₁⟩ := copies_run (P := P) (keyList R) c hw (by
-    simp only [keyList, List.mem_cons, List.not_mem_nil, or_false]
+    ϴ keyList, List.mem_cons, List.not_mem_nil, or_false
     rintro p (rfl | rfl | rfl | rfl | rfl) q (rfl | rfl | rfl | rfl | rfl) <;> simp <;> omega)
     (by simp [keyList]; omega)
   simp only [keyList, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp,
@@ -255,7 +259,7 @@ theorem leafKey_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
     fun r h1 h2 h3 => f₁.1 r (by simp [keyList]; omega)
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k₁ _ (by unfold ALLOC; omega)
     (by unfold ALLOC; omega) (by unfold ALLOC; omega)
-  have hM1 : c₁.nmem = c.nmem := f₁.2.2.1
+  have hM1 := f₁.2.2.1
   have hC1 : ChainDescAt c₁.nmem (c₁.nreg 50200) (Qof P) H C := by rw [hM1, v00]; exact hC
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, -⟩ := absKey_meets P W c₁ e₁.wb_right
     ⟨hG, hHW, by rw [hA1, hM1, v00]; exact hwf, H, C, hC1,
@@ -265,29 +269,29 @@ theorem leafKey_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
   have ar := post₂ H C hC1
   have F₂ := exec_frameB e₂ wr_absKey
   obtain ⟨c₃, e₃, v₃, f₃⟩ := copies_run (P := P) (recList R) c₂ e₂.wb_right (by
-    simp only [recList, List.mem_cons, List.not_mem_nil, or_false]
+    ϴ recList, List.mem_cons, List.not_mem_nil, or_false
     rintro p (rfl | rfl | rfl | rfl) q (rfl | rfl | rfl | rfl) <;> simp <;> omega)
-    (by simp [recList])
+    (⊚ recList)
   simp only [recList, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp,
     forall_eq] at v₃
   obtain ⟨w0, w1, w2, w3⟩ := v₃
   have k₃ : ∀ r, ¬ (R + 240 ≤ r ∧ r < R + 244) → c₃.nreg r = c₂.nreg r :=
     fun r hr => f₃.1 r (by simp [recList]; omega)
-  have r₂ : ∀ r, Bprim r = false → c₂.nreg r = c₁.nreg r := F₂.1
+  have r₂ := F₂.1
   have l1 : (keyList R).length = 5 := rfl
   have l3 : (recList R).length = 4 := rfl
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, ?_, ?_, ?_, ?_⟩
-  · rw [k₃ _ (by omega), r₂ _ (bprim_R' hR (by omega) (by omega)), v44]
-  · rw [k₃ _ (by omega), r₂ _ (bprim_R' hR (by omega) (by omega)), v45]
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ⋄, ?_, ?_, ?_, ?_⟩
+  · Ξ k₃ _ (⋄), r₂ _ (bprim_R' hR (⋄) (⋄)), v44
+  · Ξ k₃ _ (⋄), r₂ _ (bprim_R' hR (⋄) (⋄)), v45
   · have ar' : AbsRec P c₂ 50210 ((chainModel C).pos (Qof P)
         ⟨c₁.nreg 50201, c₁.nreg 50202⟩).1 C.radius := ar
-    rw [v01, v02] at ar'
-    exact absRec_copy ar' w0 (by rw [w1]) (by rw [w2]) (by rw [w3])
+    Ξ' v01, v02 at ar'
+    exact absRec_copy ar' w0 (Ρ w1) (Ρ w2) (Ρ w3)
   · refine ((frameB_mono f₁ (fun r hr => ?_)).trans (frameB_mono F₂ (fun r hr => ?_))).trans
       (frameB_mono f₃ (fun r hr => ?_))
-    · simp [keyList] at hr; simp only [Bkey, Bool.or_eq_true, decide_eq_true_eq]; omega
-    · simp only [Bkey, hr, Bool.or_true, Bool.true_or]
-    · simp [recList] at hr; simp only [Bkey, Bool.or_eq_true, decide_eq_true_eq]; omega
+    · Θ' keyList at hr; simp only [Bkey, Bool.or_eq_true, decide_eq_true_eq]; omega
+    · ϴ Bkey, hr, Bool.or_true, Bool.true_or
+    · Θ' recList at hr; simp only [Bkey, Bool.or_eq_true, decide_eq_true_eq]; omega
 
 /-- **Accepting the candidate.** -/
 theorem leafAcc_exec {P : Polygon} {W : ℕ} {R : ℕ} (_hR : RegsOK R) (c : Config)
@@ -301,18 +305,18 @@ theorem leafAcc_exec {P : Polygon} {W : ℕ} {R : ℕ} (_hR : RegsOK R) (c : Con
   set c₁ : Config := { c with nreg := upd c.nreg (R + 20) 1 } with hc₁
   have r₁ : ∀ r, r ≠ R + 20 → c₁.nreg r = c.nreg r := fun r hr => by rw [hc₁]; simp [upd, hr]
   obtain ⟨c₂, e₂, v₂, f₂⟩ := copies_run (P := P) (accList R) c₁ e₁.wb_right (by
-    simp only [accList, List.mem_cons, List.not_mem_nil, or_false]
+    ϴ accList, List.mem_cons, List.not_mem_nil, or_false
     rintro p (rfl | rfl | rfl | rfl | rfl | rfl) q (rfl | rfl | rfl | rfl | rfl | rfl) <;>
       simp)
-    (by simp [accList])
+    (⊚ accList)
   simp only [accList, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp,
     forall_eq] at v₂
   obtain ⟨a1, a2, a4, a5, a6, a7⟩ := v₂
   have ex : Exec P W (leafAcc R) c c₂ (1 + (accList R).length) := .seq e₁ e₂
-  refine ⟨c₂, _, ex, rfl, ?_, by rw [a1, r₁ _ (by omega)], by rw [a2, r₁ _ (by omega)],
-    by rw [a4, r₁ _ (by omega)], by rw [a5, r₁ _ (by omega)], by rw [a6, r₁ _ (by omega)],
-    by rw [a7, r₁ _ (by omega)], ?_⟩
-  · have g : ((accList R).map Prod.fst).contains (R + 20) = false := by simp [accList]
+  refine ⟨c₂, _, ex, rfl, ?_, by rw [a1, r₁ _ (⋄)], by rw [a2, r₁ _ (by omega)],
+    by rw [a4, r₁ _ (⋄)], by rw [a5, r₁ _ (by omega)], by rw [a6, r₁ _ (by omega)],
+    by rw [a7, r₁ _ (⋄)], ?_⟩
+  · have g : ((accList R).map Prod.fst).contains (R + 20) = false := ⊚ accList
     rw [f₂.1 _ g, hc₁]; simp
   · have fa : FrameB (fun r => decide (R + 20 ≤ r ∧ r < R + 28)) c c₁ :=
       frameB_mono (exec_frameB e₁ (show wr (Bone (R + 20)) (.instr (.constN (R + 20) 1)) = true by
@@ -334,15 +338,15 @@ theorem cmpLoad_run {P : Polygon} {W : ℕ} {R u v : ℕ} (hR : RegsOK R) (hu : 
       FrameB (fun r => decide (50200 ≤ r ∧ r < 50210)) c c' := by
   have h := hR; unfold RegsOK at h
   obtain ⟨c', e, v', f⟩ := copies_run (P := P) (cmpLoad R u v) c hw (by
-    simp only [cmpLoad, List.mem_cons, List.not_mem_nil, or_false]
+    ϴ cmpLoad, List.mem_cons, List.not_mem_nil, or_false
     rintro p (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl)
       q (rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl) <;> simp <;> omega)
-    (by simp [cmpLoad])
+    (⊚ cmpLoad)
   simp only [cmpLoad, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp,
     forall_eq] at v'
   obtain ⟨a0, a1, a2, a3, b0, b1, b2, b3⟩ := v'
   refine ⟨c', e, fun i hi => ?_, fun i hi => ?_, frameB_mono f (fun r hr => by
-    simp [cmpLoad] at hr; simp only [decide_eq_true_eq]; omega)⟩
+    Θ' cmpLoad at hr; simp only [decide_eq_true_eq]; omega)⟩
   · interval_cases i
     · exact a0
     · exact a1
@@ -357,8 +361,8 @@ theorem cmpLoad_run {P : Polygon} {W : ℕ} {R u v : ℕ} (hR : RegsOK R) (hu : 
 /-- An abscissa record read from `R + u …` into the input slot at `s`. -/
 theorem absRec_moved {P : Polygon} {c c' : Config} {r s : ℕ} {x R : ℝ} (h : AbsRec P c r x R)
     (hc : ∀ i, i < 4 → c'.nreg (s + i) = c.nreg (r + i)) : AbsRec P c' s x R :=
-  absRec_copy h (by simpa using hc 0 (by omega)) (hc 1 (by omega)) (hc 2 (by omega))
-    (hc 3 (by omega))
+  absRec_copy h (by simpa using hc 0 (⋄)) (hc 1 (⋄)) (hc 2 (⋄))
+    (hc 3 (⋄))
 
 /-- **Comparing the abscissae** of the candidate (record at `R + 240`) and of the minimum
 (record at `R + 24`). -/
@@ -370,67 +374,67 @@ theorem leafCmp_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Conf
       BitIs c' (R + 247) (xb < xc) ∧ FrameB (Bcmp2 R) c c' := by
   have h := hR; unfold RegsOK at h
   -- first comparison
-  obtain ⟨c₁, e₁, a₁, b₁, f₁⟩ := cmpLoad_run (P := P) (u := 240) (v := 24) hR (by omega)
-    (by omega) c hw
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := f₁.1 _ (by simp [ALLOC])
+  obtain ⟨c₁, e₁, a₁, b₁, f₁⟩ := cmpLoad_run (P := P) (u := 240) (v := 24) hR (⋄)
+    (⋄) c hw
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := f₁.1 _ (⊚ ALLOC)
   obtain ⟨c₂, k₂, e₂, hk₂, post₂, -⟩ := absCmp_meets P W c₁ e₁.wb_right
-    ⟨hG, hW, xc, xb, Rd, absRec_moved hc (fun i hi => by rw [a₁ i hi]),
-      absRec_moved hb (fun i hi => by rw [b₁ i hi])⟩ (by rw [hA1]; show _ + 260 ≤ W; omega)
+    ⟨hG, hW, xc, xb, Rd, absRec_moved hc (fun i hi => Ρ a₁ i hi),
+      absRec_moved hb (fun i hi => Ρ b₁ i hi)⟩ (by rw [hA1]; show _ + 260 ≤ W; omega)
   replace hk₂ : k₂ ≤ 260 := hk₂
-  have bit₂ := post₂ xc xb Rd (absRec_moved hc (fun i hi => by rw [a₁ i hi]))
-    (absRec_moved hb (fun i hi => by rw [b₁ i hi]))
+  have bit₂ := post₂ xc xb Rd (absRec_moved hc (fun i hi => Ρ a₁ i hi))
+    (absRec_moved hb (fun i hi => Ρ b₁ i hi))
   have F₂ := exec_frameB e₂ wr_absCmp
   have e₃ := Exec.copyN (P := P) e₂.wb_right (R + 246) 50210
   set c₃ : Config := { c₂ with nreg := upd c₂.nreg (R + 246) (c₂.nreg 50210) } with hc₃
   have w₃ := e₃.wb_right
   -- registers of `c` in the band of `R` survive
   have keep3 : ∀ r, R ≤ r → r < R + 300 → r ≠ R + 246 → c₃.nreg r = c.nreg r := fun r h1 h2 h3 => by
-    rw [hc₃]; simp only [upd, h3, ↓reduceIte]
-    rw [F₂.1 r (bprim_R' hR h1 h2), f₁.1 r (by simp only [decide_eq_false_iff_not]; omega)]
+    rw [hc₃]; ϴ upd, h3, ↓reduceIte
+    Ξ F₂.1 r (bprim_R' hR h1 h2), f₁.1 r (by simp only [decide_eq_false_iff_not]; omega)
   have hA3 : c₃.nreg ALLOC = c.nreg ALLOC := by
-    rw [hc₃]; simp only [upd, show ALLOC ≠ R + 246 by unfold ALLOC; omega, ↓reduceIte]
-    rw [F₂.1 _ (by simp [Bprim, ALLOC]), hA1]
+    rw [hc₃]; ϴ upd, show ALLOC ≠ R + 246 by unfold ALLOC; omega, ↓reduceIte
+    Ξ F₂.1 _ (⊚ Bprim, ALLOC), hA1
   -- second comparison
-  obtain ⟨c₄, e₄, a₄, b₄, f₄⟩ := cmpLoad_run (P := P) (u := 24) (v := 240) hR (by omega)
-    (by omega) c₃ w₃
-  have hA4 : c₄.nreg ALLOC = c.nreg ALLOC := by rw [f₄.1 _ (by simp [ALLOC]), hA3]
+  obtain ⟨c₄, e₄, a₄, b₄, f₄⟩ := cmpLoad_run (P := P) (u := 24) (v := 240) hR (⋄)
+    (⋄) c₃ w₃
+  have hA4 : c₄.nreg ALLOC = c.nreg ALLOC := Ρ f₄.1 _ (⊚ ALLOC), hA3
   have mv : ∀ {u : ℕ} {x : ℝ}, u + 4 ≤ 246 → AbsRec P c (R + u) x Rd →
       ∀ {s : ℕ} {cc : Config}, (∀ i, i < 4 → cc.nreg (s + i) = c₃.nreg (R + u + i)) →
         AbsRec P cc s x Rd := fun hu hx s cc hcc =>
     absRec_moved hx (fun i hi => by
-      rw [hcc i hi, keep3 _ (by omega) (by omega) (by omega)])
+      rw [hcc i hi, keep3 _ (⋄) (⋄) (⋄)])
   obtain ⟨c₅, k₅, e₅, hk₅, post₅, -⟩ := absCmp_meets P W c₄ e₄.wb_right
-    ⟨hG, hW, xb, xc, Rd, mv (by omega) hb a₄, mv (by omega) hc b₄⟩
+    ⟨hG, hW, xb, xc, Rd, mv (⋄) hb a₄, mv (⋄) hc b₄⟩
     (by rw [hA4]; show _ + 260 ≤ W; omega)
   replace hk₅ : k₅ ≤ 260 := hk₅
-  have bit₅ := post₅ xb xc Rd (mv (by omega) hb a₄) (mv (by omega) hc b₄)
+  have bit₅ := post₅ xb xc Rd (mv (⋄) hb a₄) (mv (⋄) hc b₄)
   have F₅ := exec_frameB e₅ wr_absCmp
   have e₆ := Exec.copyN (P := P) e₅.wb_right (R + 247) 50210
   have ex : Exec P W (leafCmp R) c _ _ :=
     .seq e₁ (.seq e₂ (.seq (Exec.block_cons e₃ (Exec.block_nil w₃))
       (.seq e₄ (.seq e₅ (Exec.block_cons e₆ (Exec.block_nil e₆.wb_right))))))
-  refine ⟨_, _, ex, by omega, ?_, ?_, ?_⟩
+  refine ⟨_, _, ex, ⋄, ?_, ?_, ?_⟩
   · -- the first bit survives
     have b3 : BitIs c₃ (R + 246) (xc < xb) :=
       ⟨by rw [hc₃]; simp only [upd_same]; exact bit₂.1,
         by rw [hc₃]; simp only [upd_same]; exact bit₂.2⟩
     refine b3.of_eq ?_
-    · simp only [upd, show R + 246 ≠ R + 247 by omega, ↓reduceIte]
-      rw [F₅.1 _ (bprim_R' hR (by omega) (by omega)),
+    · ϴ upd, show R + 246 ≠ R + 247 by omega, ↓reduceIte
+      rw [F₅.1 _ (bprim_R' hR (⋄) (⋄)),
         f₄.1 _ (by simp only [decide_eq_false_iff_not]; omega)]
   · exact ⟨by simp only [upd_same]; exact bit₅.1, by simp only [upd_same]; exact bit₅.2⟩
-  · have g1 : FrameB (Bcmp2 R) c c₁ := frameB_mono f₁ (fun r hr => by simp [Bcmp2, hr])
-    have g2 : FrameB (Bcmp2 R) c₁ c₂ := frameB_mono F₂ (fun r hr => by simp [Bcmp2, hr])
+  · have g1 : FrameB (Bcmp2 R) c c₁ := frameB_mono f₁ (fun r hr => ⊚ Bcmp2, hr)
+    have g2 : FrameB (Bcmp2 R) c₁ c₂ := frameB_mono F₂ (fun r hr => ⊚ Bcmp2, hr)
     have g3 : FrameB (Bcmp2 R) c₂ c₃ := frameB_mono (exec_frameB e₃
       (show wr (Bone (R + 246)) (.instr (.copyN (R + 246) 50210)) = true by
         simp [wr, wrOK, Bone])) (fun r hr => by
-          simp only [Bone, beq_iff_eq] at hr; subst hr; simp [Bcmp2])
-    have g4 : FrameB (Bcmp2 R) c₃ c₄ := frameB_mono f₄ (fun r hr => by simp [Bcmp2, hr])
-    have g5 : FrameB (Bcmp2 R) c₄ c₅ := frameB_mono F₅ (fun r hr => by simp [Bcmp2, hr])
+          ϴ' Bone, beq_iff_eq at hr; subst hr; simp [Bcmp2])
+    have g4 : FrameB (Bcmp2 R) c₃ c₄ := frameB_mono f₄ (fun r hr => ⊚ Bcmp2, hr)
+    have g5 : FrameB (Bcmp2 R) c₄ c₅ := frameB_mono F₅ (fun r hr => ⊚ Bcmp2, hr)
     have g6 : FrameB (Bcmp2 R) c₅ _ := frameB_mono (exec_frameB e₆
       (show wr (Bone (R + 247)) (.instr (.copyN (R + 247) 50210)) = true by
         simp [wr, wrOK, Bone])) (fun r hr => by
-          simp only [Bone, beq_iff_eq] at hr; subst hr; simp [Bcmp2])
+          ϴ' Bone, beq_iff_eq at hr; subst hr; simp [Bcmp2])
     exact g1.trans (g2.trans (g3.trans (g4.trans (g5.trans g6))))
 
 /-! ## The running minimum after one hit -/
@@ -448,9 +452,9 @@ theorem BestOK.congr {P : Polygon} {C : Chain} {R : ℕ} {c c' : Config} {S : Se
   exact ⟨t, ht, by rw [e1, e2]; exact hp, by rw [e1]; exact he, by rw [e1, e2]; exact hpos,
     absRec_copy ha e4 e5 e6 e7⟩
 
-theorem dirOf_eq_one {v : ℕ} (h : v = 1) : dirOf v = 1 := by simp [dirOf, h]
+theorem dirOf_eq_one {v : ℕ} (h : v = 1) : dirOf v = 1 := ⊚ dirOf, h
 
-theorem dirOf_ne_one {v : ℕ} (h : v ≠ 1) : dirOf v = -1 := by simp [dirOf, h]
+theorem dirOf_ne_one {v : ℕ} (h : v ≠ 1) : dirOf v = -1 := ⊚ dirOf, h
 
 /-- The write set of `leafHit`. -/
 def Bhit (R : ℕ) (r : ℕ) : Bool :=
@@ -460,9 +464,9 @@ def Bhit (R : ℕ) (r : ℕ) : Bool :=
 theorem bhit_range {R r : ℕ} (h : (R + 20 ≤ r ∧ r < R + 28) ∨ (R + 240 ≤ r ∧ r < R + 250) ∨
     (50200 ≤ r ∧ r < 50210)) : Bhit R r = true := by
   unfold Bhit
-  rcases h with h | h | h <;> simp [h]
+  rcases h with h | h | h <;> Θ h
 
-theorem bhit_prim {R r : ℕ} (h : Bprim r = true) : Bhit R r = true := by simp [Bhit, h]
+theorem bhit_prim {R r : ℕ} (h : Bprim r = true) : Bhit R r = true := ⊚ Bhit, h
 
 /-- **A hit updates the running minimum.** -/
 theorem leafHit_exec {P : Polygon} {W : ℕ} {R : ℕ} (hR : RegsOK R) (c : Config)

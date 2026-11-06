@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShotListLev
 
 /-!
@@ -44,14 +46,14 @@ theorem whileLtN_rel {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} (I : Conf
     intro c hn hc
     by_cases ht : c.nreg a < c.nreg b
     · obtain ⟨c₁, k₁, hb, hI₁, hk₁, hμ, hr₁⟩ := hbody c hc ht
-      obtain ⟨c', k₂, hl, hI', ht', hk₂, hr₂⟩ := ih (μ c₁) (by omega) c₁ rfl hI₁
+      obtain ⟨c', k₂, hl, hI', ht', hk₂, hr₂⟩ := ih (μ c₁) (⋄) c₁ rfl hI₁
       refine ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht', ?_,
-        hmono _ _ _ _ (htrans _ _ _ _ _ hr₁ hr₂) (by omega)⟩
+        hmono _ _ _ _ (htrans _ _ _ _ _ hr₁ hr₂) (⋄)⟩
       have : (B + 2) * (μ c₁ + 1) ≤ (B + 2) * μ c := Nat.mul_le_mul_left _ hμ
       rw [Nat.mul_add, Nat.mul_one] at this
       omega
-    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, by omega,
-        hmono _ _ _ _ (hrefl c) (by omega)⟩
+    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, ⋄,
+        hmono _ _ _ _ (hrefl c) (⋄)⟩
 
 /-! ## The holes -/
 
@@ -148,7 +150,7 @@ theorem holesOK_of (M : Model) (Q : Polygon) {hs : List (WPos × WPos)}
   obtain ⟨⟨e1, k1⟩, ⟨e2, k2⟩⟩ := g
   simp only at h1 h2 h3
   subst h1; subst h2
-  rw [key_vtx, key_vtx]
+  Ξ key_vtx, key_vtx
   exact_mod_cast h3
 
 /-- **The pieces lie in the arc.** -/
@@ -168,7 +170,7 @@ theorem mem_pcSet_leaves (M : Model) (Q : Polygon) {hs : List (WPos × WPos)}
     (hno : ∀ g ∈ hs, ¬ CIn (M.key Q g.1) (M.key Q g.2) (p + t)) :
     Geometry.lerp (M.wa p) (M.wb p) t ∈ pcSet M Q (leaves (M.key Q) hs q) := by
   obtain ⟨u, hu, hu'⟩ := leaves_cover (M.key Q) hh hq hno
-  simp only [pcSet, Set.mem_iUnion]
+  ϴ pcSet, Set.mem_iUnion
   exact ⟨u, hu, (arcSet_iff M _ _ _).2 ⟨p, t, hp, ht0, ht1, hu', rfl⟩⟩
 
 /-- **A piece weighs at most its arc.** -/

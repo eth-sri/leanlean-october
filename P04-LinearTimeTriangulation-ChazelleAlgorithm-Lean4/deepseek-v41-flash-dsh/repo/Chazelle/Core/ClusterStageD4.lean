@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterStageD3
 
 /-!
@@ -25,7 +29,7 @@ theorem segL_length_le (s μ : ℕ) (bo : ℕ → ℕ) (j : ℕ) : (segL s μ bo
   induction j with
   | zero => simp [segL]
   | succ j ih =>
-    simp only [segL, List.length_append, optSeg]
+    ϴ segL, List.length_append, optSeg
     split_ifs <;> simp <;> omega
 
 /-- One block of the stack scan. -/
@@ -45,7 +49,7 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
+
 theorem stkS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) {s : ℕ}
     {bo : ℕ → ℕ} (hs : c.nreg 130674 = s) (hS : c.nreg 130700 = g.base 46)
     (hcnt : ∀ b, b < g.μ → c.nmem (g.base 42 + b) = cntLt bo g.μ (b + 1)) (hW : g.END ≤ W) :
@@ -65,7 +69,7 @@ theorem stkS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) {s
     refine ⟨rfl, ‹_›, by config_simp, by config_simp, by config_simp,
       ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩⟩
     simp only; unfold StkRG at hr
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    repeat (rw [Machine.upd_other _ _ _ (⋄)])
   have hG1 : GR g c1 := hG.frame (fun r hr => hf1.1 r (by unfold GRReg at hr; unfold StkRG; omega))
   obtain ⟨c', k, e, hk', hw', hi', hn', h71', htp', hL', hf'⟩ := forN (P := P) (W := W)
     (ri := 130870) (rn := 130011) (body := stkBody)
@@ -77,7 +81,7 @@ theorem stkS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) {s
     (fun j c2 hj ⟨hw2, hi2, hn2, h712, htp2, hL2, hf2⟩ => by
       have hG2 : GR g c2 := hG.frame (fun r hr => hf2.1 r (by
         unfold GRReg at hr; unfold StkRG; omega))
-      have r72 := hG2.rbase 42 (by omega)
+      have r72 := hG2.rbase 42 (⋄)
       have r1 := hG2.one
       have hlen := segL_length_le s g.μ bo j
       have mj : c2.nmem (g.base 42 + j) = cntLt bo g.μ (j + 1) := by
@@ -95,13 +99,13 @@ theorem stkS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) {s
         · refine ⟨rfl, ‹_›, by config_simp; exact h712, by config_simp; rw [r72, hi2, mj],
             by config_simp, by config_simp; exact hi2, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
           simp only; unfold StkRG at hr
-          repeat (rw [Machine.upd_other _ _ _ (by omega)])
+          repeat (rw [Machine.upd_other _ _ _ (⋄)])
       obtain ⟨c4, k4, e4, hk4, hw4, hm4, htp4, hr4, hrr4, hrm4, ho4⟩ := pushOne_exec (P := P) hw3 0 (s := s) (bS := g.base 46)
         (tp := 2 * (segL s g.μ bo j).length)
-        (by omega) (by rw [hf3 _ (by unfold StkRG; omega), r1]) h670 h671
+        (⋄) (by rw [hf3 _ (by unfold StkRG; omega), r1]) h670 h671
         (by rw [hf3 _ (by unfold StkRG; omega), hf2.1 _ (by unfold StkRG; omega)]; exact hs)
         (by rw [hf3 _ (by unfold StkRG; omega), hf2.1 _ (by unfold StkRG; omega)]; exact hS)
-        (by rw [htp3]; exact htp2) (by omega)
+        (by rw [htp3]; exact htp2) (⋄)
       have hpush : (c4.nmem, c4.nreg 130701) = pushF (g.base 46) s (cntLt bo g.μ j)
           (cntLt bo g.μ (j + 1)) (c3.nmem, 2 * (segL s g.μ bo j).length) := by
         rw [hm4, htp4]; unfold pushF; split_ifs <;> rfl
@@ -111,11 +115,11 @@ theorem stkS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) {s
       rw [← hpush] at hL5 htp5 hout5
       have hlen' := segL_length_le s g.μ bo (j + 1)
       have r1' : c4.nreg 130001 = 1 := by
-        rw [hr4 _ (by omega) (by omega) (by omega), hf3 _ (by unfold StkRG; omega), r1]
+        rw [hr4 _ (⋄) (by omega) (by omega), hf3 _ (by unfold StkRG; omega), r1]
       have h70' : c4.nreg 130870 = j := by
-        rw [hr4 _ (by omega) (by omega) (by omega)]; exact h703
+        rw [hr4 _ (⋄) (by omega) (by omega)]; exact h703
       have h671' : c4.nreg 130671 = cntLt bo g.μ (j + 1) := by
-        rw [hr4 _ (by omega) (by omega) (by omega)]; exact h671
+        rw [hr4 _ (⋄) (by omega) (by omega)]; exact h671
       obtain ⟨c6, k6, e6, hk6, hw6, h70'', h71'', hr6, hm6, hrr6, hrm6, ho6⟩ : ∃ c6 k6, Exec P W
           (block [.copyN 130871 130671, .addN 130870 130870 130001]) c4 c6 k6 ∧ k6 = 2 ∧
           WordsBounded W c6 ∧ c6.nreg 130870 = j + 1 ∧ c6.nreg 130871 = cntLt bo g.μ (j + 1) ∧
@@ -126,31 +130,31 @@ theorem stkS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) {s
         · refine ⟨rfl, ‹_›, by config_simp; rw [h70', r1'], by config_simp; exact h671',
             fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
           simp only
-          repeat (rw [Machine.upd_other _ _ _ (by omega)])
+          repeat (rw [Machine.upd_other _ _ _ (⋄)])
       have hseg : segL s g.μ bo (j + 1) = optSeg s (cntLt bo g.μ j) (cntLt bo g.μ (j + 1)) ++
           segL s g.μ bo j := rfl
-      refine ⟨c6, k3 + (k4 + k6), .seq e3 (.seq e4 e6), by omega, hw6, h70'', ?_, h71'', ?_,
+      refine ⟨c6, k3 + (k4 + k6), .seq e3 (.seq e4 e6), ⋄, hw6, h70'', ?_, h71'', ?_,
         ?_, ?_⟩
-      · rw [hr6 _ (by omega) (by omega), hr4 _ (by omega) (by omega) (by omega),
+      · rw [hr6 _ (⋄) (by omega), hr4 _ (by omega) (by omega) (by omega),
           hf3 _ (by unfold StkRG; omega)]; exact hn2
-      · rw [hr6 _ (by omega) (by omega), hseg]; exact htp5
+      · rw [hr6 _ (⋄) (by omega), hseg]; exact htp5
       · rw [hm6, hseg]; exact hL5
       · refine hf2.trans ⟨fun r hr => ?_, ?_, ?_, ?_, fun a ha => ?_⟩
         · unfold StkRG at hr
-          rw [hr6 _ (by omega) (by omega), hr4 _ (by omega) (by omega) (by omega),
+          rw [hr6 _ (⋄) (by omega), hr4 _ (by omega) (by omega) (by omega),
             hf3 _ (by unfold StkRG; omega)]
-        · rw [hrr6, hrr4, hrr3]
-        · rw [hrm6, hrm4, hrm3]
-        · rw [ho6, ho4, ho3]
-        · rw [hm6]
+        · Ξ hrr6, hrr4, hrr3
+        · Ξ hrm6, hrm4, hrm3
+        · Ξ ho6, ho4, ho3
+        · Ξ hm6
           have := hout5 a (by
             simp only [hAm] at ha
             rw [← hseg] at *
             omega)
           simp only at this; rw [this, hm3])
     (j₀ := 0) ⟨hw1, h70, hG1.rμ, by rw [h71]; simp [cntLt], by rw [htp1]; simp [segL],
-      by simp [segL, stkList], hf1⟩ (Nat.zero_le _)
-  exact ⟨c', k1 + k, .seq e1 e, by omega, hw', hf', htp', hL'⟩
+      ⊚ segL, stkList, hf1⟩ (Nat.zero_le _)
+  exact ⟨c', k1 + k, .seq e1 e, ⋄, hw', hf', htp', hL'⟩
 
 end proofs
 

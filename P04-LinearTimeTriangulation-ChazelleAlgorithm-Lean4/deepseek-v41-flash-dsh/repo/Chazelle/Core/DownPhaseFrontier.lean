@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseExitEdge
 public import Chazelle.Core.DownPhaseHostDom
 
@@ -46,14 +48,14 @@ theorem mem_hostPoly_boundary {z : Point} :
   have hn := hostPoly_n (Q := Q) (S := S) (R := R)
   constructor
   · rintro ⟨i, hi, hz⟩
-    rw [hn] at hi
+    Ξ' hn at hi
     unfold Polygon.edge at hz
-    rw [hn, hostPoly_vtx hi, hostPoly_vtx (Nat.mod_lt _ (by omega))] at hz
+    Ξ' hn, hostPoly_vtx hi, hostPoly_vtx (Nat.mod_lt _ (⋄)) at hz
     exact ⟨i, hi, hz⟩
   · rintro ⟨i, hi, hz⟩
     refine ⟨i, by rw [hn]; exact hi, ?_⟩
     unfold Polygon.edge
-    rw [hn, hostPoly_vtx hi, hostPoly_vtx (Nat.mod_lt _ (by omega))]
+    Ξ hn, hostPoly_vtx hi, hostPoly_vtx (Nat.mod_lt _ (⋄))
     exact hz
 
 /-- **A host edge** consists of walk points and of points of chords of `S` in the domain. -/
@@ -70,11 +72,11 @@ theorem hostEdge_cases (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S
   have hF := hFam.2.1
   have hfin := hFam.1
   have h3 : 3 ≤ nk M S R := three_le_nk hQ hFam hne hR
-  have hN2 : 2 ≤ nk M S R := le_trans (by norm_num) h3
+  have hN2 : 2 ≤ nk M S R := le_trans (⊛) h3
   rcases gap_cases hM hF hfin hne hR hN2 hi with ⟨a', b', harc, hsub⟩ | ⟨c, hc, p, p', t, t', hA,
     hB, ha, hb, hAB⟩
   · left
-    have hsi : (i + 1) % nk M S R < nk M S R := Nat.mod_lt _ (by omega)
+    have hsi : (i + 1) % nk M S R < nk M S R := Nat.mod_lt _ (⋄)
     have hb1 := hostKeys_bounds (hk_mem hM hF hfin hi)
     have hb2 := hostKeys_bounds (hk_mem hM hF hfin hsi)
     have hnv : ∀ k : ℕ, k < M.W.n →
@@ -87,11 +89,11 @@ theorem hostEdge_cases (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S
       (hk_succ_ne hM hF hfin hN2 hi) hnv z hz
     exact ⟨q, hq, s, hs0, hs1, hzq⟩
   · have hPa : hostPt M.W (hk M S R i) = sidePt M.W p t := by
-      rw [ha, hostPt_eq M.W hA.2.1 hA.2.2.1]
+      Ξ ha, hostPt_eq M.W hA.2.1 hA.2.2.1
     have hPb : hostPt M.W (hk M S R ((i + 1) % nk M S R)) = sidePt M.W p' t' := by
-      rw [hb, hostPt_eq M.W hB.2.1 hB.2.2.1]
+      Ξ hb, hostPt_eq M.W hB.2.1 hB.2.2.1
     obtain ⟨hcab, -, hopen, -, -⟩ := hM.attach_seg (hF hc) hA hB hAB
-    rw [hPa, hPb] at hz
+    Ξ' hPa, hPb at hz
     obtain ⟨s, hs0, hs1, rfl⟩ := Chazelle.Geometry.mem_segment_iff_lerp.1 hz
     rcases hs0.lt_or_eq with h0 | h0
     · rcases hs1.lt_or_eq with h1 | h1
@@ -99,11 +101,11 @@ theorem hostEdge_cases (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S
         exact ⟨hopen s ⟨h0, h1⟩, c, hc, by rw [hcab]; exact lerp_mem_segment _ _ hs0 hs1⟩
       · left
         subst h1
-        rw [Chazelle.Geometry.lerp_one]
+        Ξ Chazelle.Geometry.lerp_one
         exact ⟨p', hB.1, t', hB.2.1, hB.2.2.1, rfl⟩
     · left
       subst h0
-      rw [Chazelle.Geometry.lerp_zero]
+      Ξ Chazelle.Geometry.lerp_zero
       exact ⟨p, hA.1, t, hA.2.1, hA.2.2.1, rfl⟩
 
 /-- The boundary of the host polygon lies in the filled polygon `Q`. -/
@@ -115,7 +117,7 @@ theorem hostBd_sub_filled (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily 
   obtain ⟨-, hWb, -, -⟩ := FactsInterior.interiorWalk_spec hQ
   rcases hostEdge_cases hQ hFam hne hR hi hz with ⟨p, hp, t, ht0, ht1, rfl⟩ | ⟨hzD, -⟩
   · apply Chazelle.Jordan.boundary_subset_filled
-    rw [← hWb]
+    Ξ ← hWb
     exact sidePt_mem_boundary hp ht0 ht1.le
   · exact hzD.1
 
@@ -145,7 +147,7 @@ theorem intHost_sub (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     (hne : S.Nonempty) (hR : R ∈ (interiorModel Q).regions S) :
     (hostPoly Q S R).filled \ (hostPoly Q S R).boundary ⊆ Q.filled \ Q.boundary := by
   have hH : (hostPoly Q S R).Simple := hostPts_simple hQ hFam hne hR
-  rw [← Chazelle.Jordan.interior_filled hH, ← Chazelle.Jordan.interior_filled hQ]
+  Ξ ← Chazelle.Jordan.interior_filled hH, ← Chazelle.Jordan.interior_filled hQ
   exact interior_mono (hostFilled_sub hQ hFam hne hR)
 
 /-- An open nonempty set has a point off finitely many heights. -/
@@ -156,11 +158,11 @@ theorem exists_mem_off_heights {U : Set Point} (hU : IsOpen U) (hne : U.Nonempty
   obtain ⟨η, ⟨hη0, hηρ⟩, hηV⟩ : ∃ η ∈ Ioo (0 : ℝ) ρ, η ∉ (V.image (· - z.2) : Set ℝ) :=
     ((Set.Ioo_infinite hρ).sdiff (Finset.finite_toSet _)).nonempty
   refine ⟨(z.1, z.2 + η), hball ?_, fun h => hηV ?_⟩
-  · rw [Metric.mem_ball, Prod.dist_eq]
-    simp only [Real.dist_eq, sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hη0]
+  · Ξ Metric.mem_ball, Prod.dist_eq
+    ϴ Real.dist_eq, sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hη0
     exact max_lt hρ hηρ
-  · rw [Finset.coe_image]
-    exact ⟨z.2 + η, h, by simp⟩
+  · Ξ Finset.coe_image
+    exact ⟨z.2 + η, h, ✓⟩
 
 /-- **The region lies in the interior of its host polygon.** -/
 theorem region_sub_intHost (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
@@ -204,12 +206,12 @@ theorem frontier_sub_hostBd (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamil
   have hwD : w ∈ M.D := intHost_sub hQ hFam hne hR ⟨hwf, hwb⟩
   by_cases hwc : ∃ c ∈ S, w ∈ c
   · obtain ⟨c, hc, hwc⟩ := hwc
-    have h2 : 2 ≤ nk M S R := le_trans (by norm_num) (three_le_nk hQ hFam hne hR)
+    have h2 : 2 ≤ nk M S R := le_trans (⊛) (three_le_nk hQ hFam hne hR)
     obtain ⟨i, hi, p, p', t, t', hA, hB, e1, e2, -, hcs⟩ :=
       exit_chordGap hM hF hfin hR h2 hc ⟨w, ⟨hwc, hwD⟩, hw⟩
     apply hwb
     refine mem_hostPoly_boundary.2 ⟨i, hi, ?_⟩
-    rw [e1, e2, hostPt_eq M.W hA.2.1 hA.2.2.1, hostPt_eq M.W hB.2.1 hB.2.2.1, ← hcs]
+    Ξ e1, e2, hostPt_eq M.W hA.2.1 hA.2.2.1, hostPt_eq M.W hB.2.1 hB.2.2.1, ← hcs
     exact hwc
   · push Not at hwc
     have hfree : w ∈ freeIn M.D S := ⟨hwD, fun ⟨c, hc, hwc'⟩ => hwc c hc hwc'⟩
@@ -223,9 +225,9 @@ theorem frontier_sub_hostBd (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamil
 theorem succ_mod_inj {N i j : ℕ} (hi : i < N) (hj : j < N) (h : (i + 1) % N = (j + 1) % N) :
     i = j := by
   rcases Nat.lt_or_ge (i + 1) N with h1 | h1 <;> rcases Nat.lt_or_ge (j + 1) N with h2 | h2
-  · rw [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt h2] at h; omega
-  · rw [Nat.mod_eq_of_lt h1, show j + 1 = N by omega, Nat.mod_self] at h; omega
-  · rw [Nat.mod_eq_of_lt h2, show i + 1 = N by omega, Nat.mod_self] at h; omega
+  · Ξ' Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt h2 at h; omega
+  · Ξ' Nat.mod_eq_of_lt h1, show j + 1 = N by omega, Nat.mod_self at h; omega
+  · Ξ' Nat.mod_eq_of_lt h2, show i + 1 = N by omega, Nat.mod_self at h; omega
   · omega
 
 /-- Mod arithmetic of the chain index of a host key. -/
@@ -245,7 +247,7 @@ theorem hostEdge_mem_set {i : ℕ} (hi : i < nk (interiorModel Q) S R) (hg : g <
       (hostPt (interiorModel Q).W
         (hk (interiorModel Q) S R ((i + 1) % nk (interiorModel Q) S R)))) :
     z ∈ (hostChain Q S R g h3).set := by
-  have hN : 0 < nk (interiorModel Q) S R := by omega
+  have hN : 0 < nk (interiorModel Q) S R := ⋄
   have hsN : (g + 1) % nk (interiorModel Q) S R < nk (interiorModel Q) S R := Nat.mod_lt _ hN
   obtain ⟨e0, e1⟩ := kIdx_facts hsN hi
   have hkN : (i + nk (interiorModel Q) S R - (g + 1) % nk (interiorModel Q) S R) %
@@ -255,12 +257,12 @@ theorem hostEdge_mem_set {i : ℕ} (hi : i < nk (interiorModel Q) S R) (hg : g <
   · show _ < nk (interiorModel Q) S R - 1
     by_contra hk1
     have hkeq : (i + nk (interiorModel Q) S R - (g + 1) % nk (interiorModel Q) S R) %
-        nk (interiorModel Q) S R = nk (interiorModel Q) S R - 1 := by omega
+        nk (interiorModel Q) S R = nk (interiorModel Q) S R - 1 := ⋄
     rw [hkeq, show (g + 1) % nk (interiorModel Q) S R + (nk (interiorModel Q) S R - 1 + 1) =
       (g + 1) % nk (interiorModel Q) S R + nk (interiorModel Q) S R by omega,
       Nat.add_mod_right, Nat.mod_mod] at e1
     exact hig (succ_mod_inj hi hg e1.symm)
-  · rw [Chain.chainEdge_eq, hostChain_vertex, hostChain_vertex, e0, e1]
+  · Ξ Chain.chainEdge_eq, hostChain_vertex, hostChain_vertex, e0, e1
     exact hz
 
 /-- **A kept chord**: a horizontal chord of the host chain's domain meeting `R` has its open part
@@ -304,16 +306,16 @@ theorem kept_chord (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   obtain ⟨hcab, -, hopen, -, -⟩ := hM.attach_seg (hF hcg) hA hB hAB
   have hAset : sidePt M.W p t ∈ (hostChain Q S R g h3).set := by
     obtain ⟨k, hk, e⟩ := host_vertex (g := g) (h3 := h3) h3 hg
-    rw [← hostPt_eq M.W hA.2.1 hA.2.2.1, ← ha, ← e]
+    Ξ ← hostPt_eq M.W hA.2.1 hA.2.2.1, ← ha, ← e
     exact (hostChain Q S R g h3).vertex_mem_set hk
   have hBset : sidePt M.W p' t' ∈ (hostChain Q S R g h3).set := by
     obtain ⟨k, hk, e⟩ := host_vertex (g := g) (h3 := h3) h3
       (Nat.mod_lt (g + 1) (show 0 < nk M S R by omega))
-    rw [← hostPt_eq M.W hB.2.1 hB.2.2.1, ← hb, ← e]
+    Ξ ← hostPt_eq M.W hB.2.1 hB.2.2.1, ← hb, ← e
     exact (hostChain Q S R g h3).vertex_mem_set hk
   have hend : ∀ e ∈ cg, e ∉ M.D → e ∈ (hostChain Q S R g h3).set := by
     intro e he heD
-    rw [hcab] at he
+    Ξ' hcab at he
     obtain ⟨s, hs0, hs1, rfl⟩ := Chazelle.Geometry.mem_segment_iff_lerp.1 he
     rcases hs0.lt_or_eq with h0 | h0
     · rcases hs1.lt_or_eq with h1 | h1
@@ -338,12 +340,12 @@ theorem kept_chord (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
         hend _ (by rw [hcgeq]; exact ⟨rfl, hchg.lt.le, le_rfl⟩) hchg.right_not
       have hag' : ag ≤ a := by
         by_contra h; push Not at h
-        exact (hostChain Q S R g h3).not_mem_set_of_mem_dom (hc.open_mem ag h (by linarith)) hag
+        exact (hostChain Q S R g h3).not_mem_set_of_mem_dom (hc.open_mem ag h (⟡)) hag
       have hbg' : b ≤ bg := by
         by_contra h; push Not at h
-        exact (hostChain Q S R g h3).not_mem_set_of_mem_dom (hc.open_mem bg (by linarith) h) hbg
+        exact (hostChain Q S R g h3).not_mem_set_of_mem_dom (hc.open_mem bg (⟡) h) hbg
       exact hRfree cg hcg z₀ hz₀R (by
-        rw [hcgeq]; exact ⟨hz0y, by linarith, by linarith⟩)
+        rw [hcgeq]; exact ⟨hz0y, ⟡, ⟡⟩)
     · exact (hostChain Q S R g h3).not_mem_set_of_mem_dom hxD (hostEdge_mem_set hi hg hig hxi)
   -- the open part lies in `R`
   have hcover : O ⊆ R ∪ (closure R)ᶜ := by
@@ -364,15 +366,15 @@ theorem kept_chord (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     have hecl : ((e, y) : Point) ∈ closure R := by
       refine Metric.mem_closure_iff.2 fun ε hε => ?_
       set m := min (ε / 2) ((b - a) / 2) with hm
-      have hm0 : 0 < m := lt_min (by linarith) (by linarith)
+      have hm0 : 0 < m := lt_min (⟡) (⟡)
       have hmε : m < ε := by have := min_le_left (ε / 2) ((b - a) / 2); linarith
       have hmb : m < b - a := by have := min_le_right (ε / 2) ((b - a) / 2); linarith
       rcases heab with rfl | rfl
-      · refine ⟨(e + m, y), hOR' _ (by linarith) (by linarith), ?_⟩
+      · refine ⟨(e + m, y), hOR' _ (⟡) (⟡), ?_⟩
         rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq, sub_self, abs_zero,
           show e - (e + m) = -m by ring, abs_neg, abs_of_pos hm0]
         exact max_lt hmε hε
-      · refine ⟨(e - m, y), hOR' _ (by linarith) (by linarith), ?_⟩
+      · refine ⟨(e - m, y), hOR' _ (⟡) (⟡), ?_⟩
         rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq, sub_self, abs_zero,
           show e - (e - m) = m by ring, abs_of_pos hm0]
         exact max_lt hmε hε
@@ -394,13 +396,13 @@ theorem kept_chord (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
         have h1 : 0 < δ := by have := lt_min (sub_pos.2 heb'lt) (sub_pos.2 hab); rw [hδ]; linarith
         have h2 : δ < b' - e := by have := min_le_left (b' - e) (b - e); rw [hδ]; linarith
         have : δ < b - e := by have := min_le_right (b' - e) (b - e); rw [hδ]; linarith
-        exact hRfree _ hc' _ (hOR' (e + δ) (by linarith) (by linarith))
+        exact hRfree _ hc' _ (hOR' (e + δ) (⟡) (⟡))
           ⟨rfl, by simp only; linarith, by simp only; linarith⟩
       · set δ := min (e - a') (e - a) / 2 with hδ
         have h1 : 0 < δ := by have := lt_min (sub_pos.2 ha'lt) (sub_pos.2 hab); rw [hδ]; linarith
         have h2 : δ < e - a' := by have := min_le_left (e - a') (e - a); rw [hδ]; linarith
         have : δ < e - a := by have := min_le_right (e - a') (e - a); rw [hδ]; linarith
-        exact hRfree _ hc' _ (hOR' (e - δ) (by linarith) (by linarith))
+        exact hRfree _ hc' _ (hOR' (e - δ) (⟡) (⟡))
           ⟨rfl, by simp only; linarith, by simp only; linarith⟩
   exact ⟨hOR', hendpt a (Or.inl rfl), hendpt b (Or.inr rfl)⟩
 

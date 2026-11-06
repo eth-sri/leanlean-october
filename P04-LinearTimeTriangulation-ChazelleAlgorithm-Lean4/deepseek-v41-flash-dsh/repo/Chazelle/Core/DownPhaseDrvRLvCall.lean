@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRLvD
 
 /-!
@@ -25,7 +27,7 @@ variable {P : Polygon} {W : ℕ}
 
 theorem nRegions_bnf {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} :
     (BuildNF.buildNF M Q L E).nRegions = L.length + 1 := by
-  simp [NF.nRegions, BuildNF.buildNF]
+  Θ NF.nRegions, BuildNF.buildNF
 
 open Classical in
 /-- **The host RAM of region `j`.** -/
@@ -161,7 +163,7 @@ theorem callX {sX : Stmt} {κX : ℕ} (hX : ExtMeets sX κX) (c : Config) (hw : 
       (regHost (decide (Mountain.LeftInside (Qof P))) (Qof P).n
         (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E) j) C) :=
     fun m' hm' => (hmd m' hm').2.1
-  have hNR0 : c.nmem (c.nreg 217006) = NR.chords.length := hNR.nfAt.1
+  have hNR0 := hNR.nfAt.1
   obtain ⟨c', k, ex, hk, ⟨hkeep, hpost⟩, hfr⟩ := hX P W c hw
     ⟨hG, hWh, hli, hli', L, E, C, NR, hL, hok, hperm, hsort, hdeg, hnf,
       by rw [hj0, nRegions_bnf]; exact hj, by rw [hdec, hj0, h03]; exact hHA,
@@ -184,8 +186,8 @@ theorem len_le_of_kept {α : Type*} {Lx : List α} {f : α → Set Point}
   have e : {x | ∃ y ∈ Lx, x = f y} = ((Lx.map f).toFinset : Set (Set Point)) := by
     ext x; simp [eq_comm]
   have h1 : ({x | ∃ y ∈ Lx, x = f y} : Set (Set Point)).ncard = Lx.length := by
-    rw [e, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd, List.length_map]
-  rw [← h1, hS]
+    Ξ e, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd, List.length_map
+  Ξ ← h1, hS
   exact Set.ncard_le_ncard hSF hF
 
 /-- **The kept list of a region is short** (Lemma 2.3). -/
@@ -195,7 +197,7 @@ theorem regOK_len {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {r
     (hm : C.m + 1 ≤ 10 * 2 ^ μ + 8) : Lx.length ≤ lvNch μ := by
   obtain ⟨-, -, -, hc, hγ, -, hk, hnd, -, -⟩ := h
   have h1 := nch_le hP hc hγ hm rfl
-  have hF : (NR.F (chainModel C) (Qof P)).Finite := hc.1.1.1
+  have hF := hc.1.1.1
   have h2 := len_le_of_kept hk hnd (fun x hx => hx.1) hF
   rw [Gran.ncard_F hc.1] at h2
   exact h2.trans h1

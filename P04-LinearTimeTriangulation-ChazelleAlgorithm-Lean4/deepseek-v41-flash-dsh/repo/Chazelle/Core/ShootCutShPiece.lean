@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutShSeg
 
 /-!
@@ -45,7 +47,7 @@ theorem pcSet_succ (M : Model) (sE : ℕ) (a : ℝ) (D : ℕ) (b : ℝ) (j : ℕ
     pcSet M sE a D b (j + 1) = pcSet M sE a D b j ∪
       subSeg M (pcEdge M.W.n sE (j + 1)) (pcA a (j + 1)) (pcB D b (j + 1)) := by
   unfold pcSet
-  rw [List.range_succ]
+  Ξ List.range_succ
   ext x; simp [or_comm]
 
 theorem pcSet_zero (M : Model) (sE : ℕ) (a : ℝ) (D : ℕ) (b : ℝ) :
@@ -57,10 +59,10 @@ theorem pcSet_congr (M : Model) (sE : ℕ) (a : ℝ) {D D' : ℕ} {b b' : ℝ} {
     (h : ∀ d, d ≤ j → pcB D b d = pcB D' b' d) : pcSet M sE a D b j = pcSet M sE a D' b' j := by
   unfold pcSet
   ext x
-  simp only [mem_iUnion, List.mem_range, exists_prop]
+  ϴ mem_iUnion, List.mem_range, exists_prop
   constructor
-  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rw [← h d (by omega)]; exact hx⟩
-  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rw [h d (by omega)]; exact hx⟩
+  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rw [← h d (⋄)]; exact hx⟩
+  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rw [h d (⋄)]; exact hx⟩
 
 theorem nat_split (k n : ℕ) : (k : ℝ) = ((k % n : ℕ) : ℝ) + ((k / n : ℕ) : ℤ) * (n : ℝ) := by
   rw [Int.cast_natCast]; exact_mod_cast (Nat.mod_add_div' k n).symm

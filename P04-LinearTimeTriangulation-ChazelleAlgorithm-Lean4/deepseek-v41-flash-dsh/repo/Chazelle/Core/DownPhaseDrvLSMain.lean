@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseDrvRTailSpec
 public import Chazelle.Core.DownPhaseDrvRLvC
 public import Chazelle.Core.DownPhaseDrvRCostSpec
@@ -55,7 +57,7 @@ def LoopOK (O : OracleIface) (sH sR sX : Stmt) (κH κR κX : ℕ) : Prop :=
 theorem nextLvl_ge {lam : ℕ} (h : 16 ≤ lam) : 15 ≤ nextLvl lam := by
   unfold nextLvl
   have := ceilBeta_mono h
-  have e : Cost.ceilBeta 16 = 4 := by rw [Setup.ceilBeta_eq]
+  have e : Cost.ceilBeta 16 = 4 := Ρ Setup.ceilBeta_eq
   omega
 
 /-- The arithmetic of the cost of one level. -/
@@ -64,15 +66,15 @@ theorem lv_cost (K X κH κR κX κc κT N Kb : ℕ) (hX : 1 ≤ X) (hN : N ≤ 
     9 * (K + 1) + 48 + (Kb + 2) * (K + 1) + κT * (K + 1) * X ≤
       (89 + κH + κR + κX + κX * κc + κc + κT) * ((K + 1) * X) := by
   have h1 : Kb + 2 ≤ (32 + κH + κR + κX + κX * κc + κc) * X := by
-    rw [hKb]
+    Ξ hKb
     have a1 : κH ≤ κH * X := Nat.le_mul_of_pos_right _ hX
     have a2 : κX * (N + 1) ≤ κX * κc * X + κX * X := by
-      have : κX * (N + 1) ≤ κX * (κc * X + X) := Nat.mul_le_mul_left _ (by omega)
+      have : κX * (N + 1) ≤ κX * (κc * X + X) := Nat.mul_le_mul_left _ (⋄)
       calc κX * (N + 1) ≤ κX * (κc * X + X) := this
-        _ = κX * κc * X + κX * X := by ring
+        _ = κX * κc * X + κX * X := ⋆
     have e : (32 + κH + κR + κX + κX * κc + κc) * X =
-        32 * X + κH * X + κR * X + κX * X + κX * κc * X + κc * X := by ring
-    rw [e]
+        32 * X + κH * X + κR * X + κX * X + κX * κc * X + κc * X := ⋆
+    Ξ e
     generalize κH * X = a at *
     generalize κR * X = b at *
     generalize κX * κc * X = d at *
@@ -83,14 +85,14 @@ theorem lv_cost (K X κH κR κX κc κT N Kb : ℕ) (hX : 1 ≤ X) (hN : N ≤ 
   have h2 : (Kb + 2) * (K + 1) ≤ (32 + κH + κR + κX + κX * κc + κc) * ((K + 1) * X) := by
     calc (Kb + 2) * (K + 1) ≤ (32 + κH + κR + κX + κX * κc + κc) * X * (K + 1) :=
           Nat.mul_le_mul_right _ h1
-      _ = _ := by ring
+      _ = _ := ⋆
   have h3 : 9 * (K + 1) + 48 ≤ 57 * ((K + 1) * X) := by
     have : K + 1 ≤ (K + 1) * X := Nat.le_mul_of_pos_right _ hX
     omega
   have e : (89 + κH + κR + κX + κX * κc + κc + κT) * ((K + 1) * X) =
       57 * ((K + 1) * X) + (32 + κH + κR + κX + κX * κc + κc) * ((K + 1) * X) +
-        κT * (K + 1) * X := by ring
-  rw [e]
+        κT * (K + 1) * X := ⋆
+  Ξ e
   generalize (32 + κH + κR + κX + κX * κc + κc) * ((K + 1) * X) = u at *
   generalize κT * (K + 1) * X = v at *
   generalize (Kb + 2) * (K + 1) = w at *
@@ -113,9 +115,9 @@ theorem ne_nil_of_big {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
   have h := DrvB.n_le_of_empty hQ hE hwt
   have hn : (Qof P).n = P.n := shear_n _ _
-  rw [hn] at h
+  Ξ' hn at h
   have h1 : 2 ^ (Cost.ceilBeta lam + 12) ≤ 2 ^ (Cost.ceilBeta (topGrade P.n) + 12) :=
-    Nat.pow_le_pow_right (by norm_num) (by have := ceilBeta_mono hlp; omega)
+    Nat.pow_le_pow_right (⊛) (by have := ceilBeta_mono hlp; omega)
   have h2 : 2 ^ (Cost.ceilBeta (topGrade P.n) + 13) = 2 * 2 ^ (Cost.ceilBeta (topGrade P.n) + 12) := by
     rw [pow_succ]; ring
   omega
@@ -127,9 +129,9 @@ theorem big_of {n lam : ℕ} (h16 : 16 ≤ lam) (hlp : lam ≤ topGrade n)
       2 ^ (Cost.ceilBeta (nextLvl lam) + 12) ≤ n - 1 := by
   have hμ := nextLvl_lt h16
   have hc : Cost.ceilBeta (nextLvl lam) ≤ Cost.ceilBeta (topGrade n) :=
-    ceilBeta_mono (by omega)
+    ceilBeta_mono (⋄)
   have h1 : 2 ^ (Cost.ceilBeta (nextLvl lam) + 12) ≤ 2 ^ (Cost.ceilBeta (topGrade n) + 12) :=
-    Nat.pow_le_pow_right (by norm_num) (by omega)
+    Nat.pow_le_pow_right (⊛) (⋄)
   have h2 : 2 ^ (Cost.ceilBeta (topGrade n) + 13) = 2 * 2 ^ (Cost.ceilBeta (topGrade n) + 12) := by
     rw [pow_succ]; ring
   have h3 : 2 ^ (Cost.ceilBeta (nextLvl lam) + 12) = 4 * 2 ^ (Cost.ceilBeta (nextLvl lam) + 10) := by
@@ -147,7 +149,7 @@ theorem li_of_desc {m : ℕ → ℕ} {B : ℕ} {Q : Polygon}
 /-- The constant of a level. -/
 def κLv (κH κR κX κc κT : ℕ) : ℕ := 89 + κH + κR + κX + κX * κc + κc + κT
 
-set_option maxHeartbeats 8000000 in
+
 /-- **One level from its parts**, given the region loop's contract. -/
 theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ}
     (hloop : LoopOK O sH sR sX κH κR κX) (hT : LvTailSpec O) (hC : LvCostSpec) :
@@ -213,7 +215,7 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
     · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hEb
     · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hEa
   -- 3. the loop invariant at the start
-  have hn3 : 3 ≤ (Qof P).n := hQ.1
+  have hn3 := hQ.1
   have inv0 : LvInv O P W c₁ L E reg Kb 0 c₁ := by
     refine ⟨w₁, d10, by rw [d11], fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl,
       fun _ _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, by simp,
@@ -222,7 +224,7 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
       by rw [d12]; simp, fun r hr => absurd hr (Nat.not_lt_zero r), Or.inl d13,
       fun r hr => absurd hr (Nat.not_lt_zero r)⟩
   -- 4. the loop
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC + 3 * (K + 1) := d99
+  have hA₁ := d99
   obtain ⟨c₂, k₂, e₂, I₂, hk₂, hA₂⟩ := hloop P W c₁ c₁ L E reg lam Kb ctx le_rfl
     (by rw [hA₁]
         have hkb : (K + 1) * Kb ≤ (Kb + 2) * (K + 1) := by
@@ -253,7 +255,7 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
   · simp only [rd21, Nat.reduceAdd]; rw [h00, hlam]
   · simp only [rd21, Nat.reduceAdd]; rw [hlam]; exact hInv₃
   · -- the frame
-    have hA9 : c₁.nreg 211009 = c.nreg ALLOC := d09
+    have hA9 := d09
     refine ⟨fun r hr hrA => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩
     · rw [F₃.1 r hr hrA, r₂ r hr hrA, F₁.1 r (fun h => hr (by
         simp only [Finset.mem_singleton] at h; rw [h]; exact b21)) hrA]

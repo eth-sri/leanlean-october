@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvent
 public import Chazelle.Core.FactsTie
 
@@ -65,7 +67,7 @@ theorem left_of_side {M : Model} {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1) {c U : Se
     ∀ᶠ δ in 𝓝[>] (0 : ℝ), offset a b (1 / 2) δ ∈ U := by
   have hρρ : ρ * ρ = 1 := by rcases hρ with rfl | rfl <;> norm_num
   refine (eventually_mul_pos (h _ hmid hmidD) hpos).mono fun δ hδ => ?_
-  rw [offset_mid_ab hab]
+  Ξ offset_mid_ab hab
   convert hδ using 3
   linear_combination (-(δ * (b.1 - a.1))) * hρρ
 
@@ -127,9 +129,9 @@ def FacedSide (M : Model) (p : ℕ) (t ρ dir : ℝ) (U : Set Point) : Prop :=
 theorem exists_mem_dom {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : ℕ}
     {t : ℝ} (hA : SideAttach M.W c p t) : ∃ z ∈ c, z ∈ M.D := by
   obtain ⟨e, -, -, hce, hopen, -⟩ := hM.attach_other_end hc hA
-  refine ⟨lerp (sidePt M.W p t) e (1 / 2), ?_, hopen _ ⟨by norm_num, by norm_num⟩⟩
-  rw [hce]
-  exact Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)
+  refine ⟨lerp (sidePt M.W p t) e (1 / 2), ?_, hopen _ ⟨⊛, by norm_num⟩⟩
+  Ξ hce
+  exact Geometry.lerp_mem_segment _ _ (⊛) (by norm_num)
 
 /-- An attached admissible chord is not vertical: it does not lie on both sides of the point of
 its attachment. -/
@@ -159,7 +161,7 @@ theorem faced_or_middle {M : Model} {Q : Polygon} {F : Set (Set Point)} (hGM : G
       ((M.wb p).2 < (M.wa p).2 → (ρ = 1 → SideOf M ρ e' U) ∧ (ρ = -1 → FacedSide M p t ρ dir U)) ∧
       ((M.wa p).2 < (M.wb p).2 → (ρ = -1 → SideOf M ρ e' U) ∧ (ρ = 1 → FacedSide M p t ρ dir U))) := by
   have hM := walkAx_of_goodModel hGM
-  have hF : F ⊆ M.Adm := hFam.2.1
+  have hF := hFam.2.1
   have hfin : F.Finite := hFam.1
   obtain ⟨z₀, hz₀, hz₀D⟩ := exists_mem_dom hM (hF he) hA
   have hn0 : 0 < M.W.n := by have := hA.1; omega
@@ -313,8 +315,8 @@ theorem chord_bound {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
     fun h => hkNF (off_inj hg0 hgn kN0 kNn kF0 kFn h)
   obtain ⟨hfseg, hy, hopen, -, -⟩ := hM.attach_seg (hF hf) hN hFr hNF
   have hmid : lerp (sidePt M.W pn tn) (sidePt M.W pf tf) (1 / 2) ∈ f := by
-    rw [hfseg]; exact Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)
-  have hmidD := hopen (1 / 2) ⟨by norm_num, by norm_num⟩
+    rw [hfseg]; exact Geometry.lerp_mem_segment _ _ (⊛) (by norm_num)
+  have hmidD := hopen (1 / 2) ⟨⊛, ⊛⟩
   have hsym : lerp (sidePt M.W pf tf) (sidePt M.W pn tn) (1 / 2) =
       lerp (sidePt M.W pn tn) (sidePt M.W pf tf) (1 / 2) := by
     apply Geometry.point_ext <;> simp [Geometry.lerp] <;> ring
@@ -322,14 +324,14 @@ theorem chord_bound {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
     (hpre p t hp ht hnc hfG h0 hL)
   · subst hθ1
     have hleft := left_of_side hρ hS (a := sidePt M.W pf tf) (b := sidePt M.W pn tn) hy.symm
-      (by rw [hsym]; exact hmid) (by rw [hsym]; exact hmidD) (by linarith)
+      (by rw [hsym]; exact hmid) (by rw [hsym]; exact hmidD) (⟡)
     have hnot : ¬ sideInArc (pf + tf) (pn + tn) (p + t) := fun hin =>
       hM.not_left_of_after hF hf hFr hN (Ne.symm hNF) hG hp ht hin hfG hleft
     have := off_not_arc hg0 hgn kF0 kFn kN0 kNn kx0 kxn (Ne.symm hkNF) hxF hxN hnot
     exact this
   · subst hθ1
     have hleft := left_of_side hρ hS (a := sidePt M.W pn tn) (b := sidePt M.W pf tf) hy hmid
-      hmidD (by linarith)
+      hmidD (⟡)
     have hnot : ¬ sideInArc (pn + tn) (pf + tf) (p + t) := fun hin =>
       hM.not_left_of_after hF hf hN hFr hNF hG hp ht hin hfG hleft
     exact off_not_arc hg0 hgn kN0 kNn kF0 kFn kx0 kxn hkNF hxN hxF hnot
@@ -355,7 +357,7 @@ theorem rlabel_after (hP : J.P.Simple) {S₂ : Set (Set Point)}
   obtain ⟨s, hnc, hs⟩ := ((eventually_not_cut_after hC.hM hC.hF hC.hfin
     ((((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n : ℕ) : ℝ) + t)).and
     (Ioo_mem_nhdsGT (show (0 : ℝ) < min (min δ δ₂) (1 - t) from
-      lt_min (lt_min hδ hδ₂) (by linarith)))).exists
+      lt_min (lt_min hδ hδ₂) (⟡)))).exists
   have hs1 : s < δ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_left _ _))
   have hs2 : s < δ₂ := lt_of_lt_of_le hs.2 ((min_le_left _ _).trans (min_le_right _ _))
   have hs3 : t + s < 1 := by linarith [lt_of_lt_of_le hs.2 (min_le_right _ _)]
@@ -389,8 +391,8 @@ theorem rlabel_before (hP : J.P.Simple) {S₂ : Set (Set Point)}
     exact hnc
   · subst ht00
     obtain ⟨hd0, -⟩ := hsec rfl
-    have hn0 : 0 < (chainModel J.whole).W.n := hC.n_pos
-    have hn₂ : 0 < (chainModel J.right).W.n := hC.n₂_pos
+    have hn0 := hC.n_pos
+    have hn₂ := hC.n₂_pos
     set P := (6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n with hPdef
     set P' := (P + (chainModel J.whole).W.n - 1) % (chainModel J.whole).W.n with hP'def
     have hPm : (6 + tpos J.whole J.m₁ + (d - 1)) % (chainModel J.whole).W.n = P' := by
@@ -428,17 +430,17 @@ theorem off_shared_out (hP : J.P.Simple) {S₂ : Set (Set Point)}
   set d := dOf (chainModel J.whole).W.n (6 + tpos J.whole J.m₁) p with hddef
   rw [hoff] at h0 hL
   have hdL : d < rL1 J + rL2 J := by
-    have : (d : ℝ) < ((rL1 J + rL2 J : ℕ) : ℝ) := by linarith
+    have : (d : ℝ) < ((rL1 J + rL2 J : ℕ) : ℝ) := ⟡
     exact_mod_cast this
   have hpt := hC.sidePt_eq hdL t
   rw [hpd] at hpt
   rw [hpt] at hv
   apply hC.noV _ (Nat.mod_lt _ hC.n₂_pos) t ht0 ht1
-  · rw [hC.off_M₂ hdL ht0 ht1]
+  · Ξ hC.off_M₂ hdL ht0 ht1
     have : d ≤ dq (rL1 J) (rδ J) d := by unfold dq; split_ifs <;> omega
     have : (d : ℝ) ≤ dq (rL1 J) (rδ J) d := by exact_mod_cast this
     linarith
-  · rw [hC.off_M₂ hdL ht0 ht1]
+  · Ξ hC.off_M₂ hdL ht0 ht1
     have h1 : dq (rL1 J) (rδ J) d + 1 ≤ rL1 J + rδ J + rL2 J := by
       have := hC.dq_lt hdL; have := hC.hL₂; unfold dq at *; split_ifs at * <;> omega
     have h2 : ((dq (rL1 J) (rδ J) d : ℕ) : ℝ) + 1 ≤ ((rL1 J + rδ J + rL2 J : ℕ) : ℝ) := by
@@ -454,8 +456,8 @@ theorem seg_end {D : Set Point} {a b z : Point} (hz : z ∈ Chazelle.segment a b
   rcases hs0.lt_or_eq with hs0 | hs0
   · rcases hs1.lt_or_eq with hs1 | hs1
     · exact absurd (hopen s ⟨hs0, hs1⟩) hzD
-    · rw [hs1, Geometry.lerp_one]
-  · exact absurd (by rw [← hs0, Geometry.lerp_zero]) hza
+    · Ξ hs1, Geometry.lerp_one
+  · exact absurd (Ρ ← hs0, Geometry.lerp_zero) hza
 
 /-- Two chords of `S₂` containing one chord of `F₂⁺` are equal. -/
 theorem s2_eq_of_sub {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.right)
@@ -521,10 +523,10 @@ theorem tie_opposite {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
 theorem exists_sign {ρ r : ℝ} (hρ : ρ = 1 ∨ ρ = -1) (hr : r ≠ 0) :
     ∃ θ : ℝ, (θ = 1 ∨ θ = -1) ∧ 0 < θ * ρ * r := by
   rcases lt_or_gt_of_ne hr with h | h <;> rcases hρ with rfl | rfl
-  · exact ⟨-1, Or.inr rfl, by linarith⟩
-  · exact ⟨1, Or.inl rfl, by linarith⟩
-  · exact ⟨1, Or.inl rfl, by linarith⟩
-  · exact ⟨-1, Or.inr rfl, by linarith⟩
+  · exact ⟨-1, Or.inr rfl, ⟡⟩
+  · exact ⟨1, Or.inl rfl, ⟡⟩
+  · exact ⟨1, Or.inl rfl, ⟡⟩
+  · exact ⟨-1, Or.inr rfl, ⟡⟩
 
 end Walk
 

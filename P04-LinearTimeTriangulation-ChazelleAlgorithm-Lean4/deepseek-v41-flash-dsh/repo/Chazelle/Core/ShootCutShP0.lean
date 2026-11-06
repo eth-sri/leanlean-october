@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.ShootCutShMerge
 
 /-!
@@ -60,21 +62,21 @@ theorem pc0_pts {x y : WPos} (hxn : x.edge < 2 * C.m + 7) (hyn : y.edge < 2 * C.
   · unfold pcU pcA
     by_cases h0 : d = 0
     · subst h0
-      simp only [↓reduceIte]
-      rw [show pcEdge n x.edge 0 = x.edge by unfold pcEdge; rw [Nat.add_zero, Nat.mod_eq_of_lt hxn]]
+      ϴ ↓reduceIte
+      Ξ show pcEdge n x.edge 0 = x.edge by unfold pcEdge; rw [Nat.add_zero, Nat.mod_eq_of_lt hxn]
       rfl
     · simp only [h0, ↓reduceIte]; rfl
   · unfold pcV pcB
     by_cases hD : d = D
     · subst hD
-      simp only [↓reduceIte]
+      ϴ ↓reduceIte
       rw [pcEdge_D hxn hyn]; rfl
-    · simp only [hD, ↓reduceIte]
-      rw [lerp_one']
+    · ϴ hD, ↓reduceIte
+      Ξ lerp_one'
       show lerp ((chainModel C).wa _) ((chainModel C).wb _) 0 = _
-      rw [lerp_zero']
+      Ξ lerp_zero'
       unfold Model.wa Model.wb
-      rw [hnW, pcEdge_succ]
+      Ξ hnW, pcEdge_succ
 
 theorem pc0_ab {x y : WPos} {N : ℕ} (hx : ProperPos (chainModel C) Q N x)
     (hy : ProperPos (chainModel C) Q N y) (hxn : x.edge < 2 * C.m + 7)
@@ -91,7 +93,7 @@ theorem pc0_ab {x y : WPos} {N : ℕ} (hx : ProperPos (chainModel C) Q N x)
   unfold pcA pcB
   by_cases h0 : d = 0 <;> by_cases hD : d = pcD (2 * C.m + 7) x.edge y.edge
   · -- one edge
-    rw [ite_eq_left h0, ite_eq_left hD]
+    Ξ ite_eq_left h0, ite_eq_left hD
     have hxy : x.edge = y.edge := by
       have := pcEdge_D (n := 2 * C.m + 7) hxn hyn
       rw [← hD, h0] at this
@@ -114,7 +116,7 @@ theorem segSet_succ (x y : WPos) (d : ℕ) : segSet C Q x y (d + 1) = segSet C Q
     seg ((chainModel C).pos Q (pcU (2 * C.m + 7) x d))
       ((chainModel C).pos Q (pcV (2 * C.m + 7) x y (pcD (2 * C.m + 7) x.edge y.edge) d)) := by
   unfold segSet
-  rw [List.range_succ]
+  Ξ List.range_succ
   ext p; simp [or_comm]
 
 /-- **The segments of a kind-0 piece cover it.** -/
@@ -124,20 +126,20 @@ theorem segSet_full {N : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q N x)
     (hwt : (chainModel C).arcWt ((chainModel C).key Q x) ((chainModel C).key Q y) ≤ 1) :
     segSet C Q x y (pcD (2 * C.m + 7) x.edge y.edge + 1) =
       (chainModel C).arcSet ((chainModel C).key Q x) ((chainModel C).key Q y) := by
-  rw [piece0_union hx hy hxn hyn hwt]
+  Ξ piece0_union hx hy hxn hyn hwt
   unfold segSet pcSet
   have hnW : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
   ext p
-  simp only [mem_iUnion, List.mem_range, exists_prop]
+  ϴ mem_iUnion, List.mem_range, exists_prop
   constructor
   · rintro ⟨d, hd, hp⟩
     refine ⟨d, hd, ?_⟩
-    obtain ⟨hU, hV⟩ := pc0_pts (Q := Q) hxn hyn (d := d) (by omega)
+    obtain ⟨hU, hV⟩ := pc0_pts (Q := Q) hxn hyn (d := d) (⋄)
     obtain ⟨a0, ab, b1⟩ := pc0_ab hx hy hxn hyn hwt d
     rw [hnW, subSeg_eq_seg _ _ ab, ← hU, ← hV]; exact hp
   · rintro ⟨d, hd, hp⟩
     refine ⟨d, hd, ?_⟩
-    obtain ⟨hU, hV⟩ := pc0_pts (Q := Q) hxn hyn (d := d) (by omega)
+    obtain ⟨hU, hV⟩ := pc0_pts (Q := Q) hxn hyn (d := d) (⋄)
     obtain ⟨a0, ab, b1⟩ := pc0_ab hx hy hxn hyn hwt d
     rw [hnW, subSeg_eq_seg _ _ ab, ← hU, ← hV] at hp; exact hp
 

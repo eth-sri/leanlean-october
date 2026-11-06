@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreTOps
 
 /-!
@@ -54,8 +56,8 @@ def tTurnP : Stmt :=
     (.ifLtN 83005 83023 (block [.inputSize 50002, .subN 50002 50002 50032])
       (.instr (.subN 50002 83005 50032)))) (.seq locDir turnTail)
 
-theorem wr_tTurnN : wr Bturn tTurnN = true := by decide
-theorem wr_tTurnP : wr Bturn tTurnP = true := by decide
+theorem wr_tTurnN : wr Bturn tTurnN = true := ⌖
+theorem wr_tTurnP : wr Bturn tTurnP = true := ⌖
 
 /-- The direction procedure's precondition in a run. -/
 theorem locDPre_of (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {c₁ : Config}

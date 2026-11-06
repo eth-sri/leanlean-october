@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.NFBuildPassProg
 
 /-!
@@ -19,7 +21,7 @@ open Machine Machine.Stmt Programs SignK
 
 /-- Decide the conditions of nested `if`s by `omega`. -/
 macro "ifs_omega" : tactic =>
-  `(tactic| repeat' (first | rw [ite_eq_left (by omega)] | rw [ite_eq_right (by omega)]))
+  `(tactic| repeat' (first | rw [ite_eq_left (⋄)] | rw [ite_eq_right (⋄)]))
 
 
 /-! ## Write sets allowing natural stores -/
@@ -54,8 +56,8 @@ theorem FrameM.trans {B : ℕ → Bool} {c₁ c₂ c₃ : Config} (h₁ : FrameM
 
 theorem FrameM.mono {B B' : ℕ → Bool} {c c' : Config} (h : FrameM B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameM B' c c' :=
-  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
-    fun r hr => h.2.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
+  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; Ξ' hB r h' at hr; exact absurd hr (✓)),
+    fun r hr => h.2.1 r (by cases h' : B r; rfl; Ξ' hB r h' at hr; exact absurd hr (✓)),
     h.2.2.1, h.2.2.2⟩
 
 theorem FrameB.toM {B : ℕ → Bool} {c c' : Config} (h : FrameB B c c') : FrameM B c c' :=
@@ -67,9 +69,9 @@ theorem exec_frameM {P : Polygon} {W : ℕ} {B : ℕ → Bool} {s : Stmt} {c c' 
   induction h with
   | skip _ => exact FrameM.refl B _
   | @instr ins c c' _ he _ _ =>
-    simp only [wrM] at hs
-    cases ins <;> simp only [wrOKM, wrOK, Bool.false_eq_true] at hs <;>
-      simp only [Instr.effect, Option.some.injEq] at he <;>
+    ϴ' wrM at hs
+    cases ins <;> ϴ' wrOKM, wrOK, Bool.false_eq_true at hs <;>
+      ϴ' Instr.effect, Option.some.injEq at he <;>
       (try split at he) <;> (try simp only [Option.some.injEq, reduceCtorEq] at he) <;> subst he <;>
       refine ⟨fun j hj => ?_, fun j hj => ?_, rfl, rfl⟩ <;>
       first
@@ -78,16 +80,16 @@ theorem exec_frameM {P : Polygon} {W : ℕ} {B : ℕ → Bool} {s : Stmt} {c c' 
          · subst hh; simp_all
          · rfl)
   | seq _ _ ih₁ ih₂ =>
-    simp only [wrM, Bool.and_eq_true] at hs
+    ϴ' wrM, Bool.and_eq_true at hs
     exact (ih₁ hs.1).trans (ih₂ hs.2)
   | ifLtN_true _ _ ih =>
-    simp only [wrM, Bool.and_eq_true] at hs; exact ih hs.1
+    ϴ' wrM, Bool.and_eq_true at hs; exact ih hs.1
   | ifLtN_false _ _ ih =>
-    simp only [wrM, Bool.and_eq_true] at hs; exact ih hs.2
+    ϴ' wrM, Bool.and_eq_true at hs; exact ih hs.2
   | ifLtR_true _ _ ih =>
-    simp only [wrM, Bool.and_eq_true] at hs; exact ih hs.1
+    ϴ' wrM, Bool.and_eq_true at hs; exact ih hs.1
   | ifLtR_false _ _ ih =>
-    simp only [wrM, Bool.and_eq_true] at hs; exact ih hs.2
+    ϴ' wrM, Bool.and_eq_true at hs; exact ih hs.2
   | whileLtN_false _ _ => exact FrameM.refl B _
   | whileLtN_true _ _ _ ih₁ ih₂ => exact (ih₁ hs).trans (ih₂ hs)
   | whileLtR_false _ _ => exact FrameM.refl B _
@@ -99,13 +101,13 @@ theorem wrM_of_wr {B : ℕ → Bool} {s : Stmt} (h : wr B s = true) : wrM B s = 
   | skip => rfl
   | instr i => simp only [wr] at h; simp only [wrM]; cases i <;> simp_all [wrOK, wrOKM]
   | seq s t ihs iht =>
-    simp only [wr, Bool.and_eq_true] at h; simp only [wrM, ihs h.1, iht h.2, Bool.and_self]
+    ϴ' wr, Bool.and_eq_true at h; ϴ wrM, ihs h.1, iht h.2, Bool.and_self
   | ifLtN a b s t ihs iht =>
-    simp only [wr, Bool.and_eq_true] at h; simp only [wrM, ihs h.1, iht h.2, Bool.and_self]
+    ϴ' wr, Bool.and_eq_true at h; ϴ wrM, ihs h.1, iht h.2, Bool.and_self
   | ifLtR a b s t ihs iht =>
-    simp only [wr, Bool.and_eq_true] at h; simp only [wrM, ihs h.1, iht h.2, Bool.and_self]
-  | whileLtN a b s ih => simp only [wr] at h; simp only [wrM, ih h]
-  | whileLtR a b s ih => simp only [wr] at h; simp only [wrM, ih h]
+    ϴ' wr, Bool.and_eq_true at h; ϴ wrM, ihs h.1, iht h.2, Bool.and_self
+  | whileLtN a b s ih => simp only [wr] at h; ϴ wrM, ih h
+  | whileLtR a b s ih => simp only [wr] at h; ϴ wrM, ih h
 
 theorem wrM_mono {B B' : ℕ → Bool} (hB : ∀ r, B r = true → B' r = true) {s : Stmt}
     (h : wrM B s = true) : wrM B' s = true := by
@@ -113,20 +115,20 @@ theorem wrM_mono {B B' : ℕ → Bool} (hB : ∀ r, B r = true → B' r = true) 
   | skip => rfl
   | instr i => simp only [wrM] at h ⊢; cases i <;> simp_all [wrOK, wrOKM]
   | seq s t ihs iht =>
-    simp only [wrM, Bool.and_eq_true] at h; simp only [wrM, ihs h.1, iht h.2, Bool.and_self]
+    ϴ' wrM, Bool.and_eq_true at h; ϴ wrM, ihs h.1, iht h.2, Bool.and_self
   | ifLtN a b s t ihs iht =>
-    simp only [wrM, Bool.and_eq_true] at h; simp only [wrM, ihs h.1, iht h.2, Bool.and_self]
+    ϴ' wrM, Bool.and_eq_true at h; ϴ wrM, ihs h.1, iht h.2, Bool.and_self
   | ifLtR a b s t ihs iht =>
-    simp only [wrM, Bool.and_eq_true] at h; simp only [wrM, ihs h.1, iht h.2, Bool.and_self]
-  | whileLtN a b s ih => simp only [wrM] at h; simp only [wrM, ih h]
-  | whileLtR a b s ih => simp only [wrM] at h; simp only [wrM, ih h]
+    ϴ' wrM, Bool.and_eq_true at h; ϴ wrM, ihs h.1, iht h.2, Bool.and_self
+  | whileLtN a b s ih => simp only [wrM] at h; ϴ wrM, ih h
+  | whileLtR a b s ih => simp only [wrM] at h; ϴ wrM, ih h
 
 section exec
 
 variable {P : Polygon} {W : ℕ}
 
 theorem wr_curS : wr (fun r => decide (r = 43110 ∨ r = 43111 ∨ r = 42110 ∨ r = 42111 ∨
-    r = 42112 ∨ r = 43113 ∨ r = 43114)) curS = true := by decide
+    r = 42112 ∨ r = 43113 ∨ r = 43114)) curS = true := ⌖
 
 /-- **The current code.** -/
 theorem curS_exec (d : Config) (hw : WordsBounded W d) {c T : ℕ} (hc : d.nmem (d.nreg 43103) = c)
@@ -144,13 +146,13 @@ theorem curS_exec (d : Config) (hw : WordsBounded W d) {c T : ℕ} (hc : d.nmem 
   obtain ⟨d₁, k₁, x₁, hk₁, e₁, g₁, p₁, fr₁, m₁, -, -, -, a₁⟩ := loadRec_exec (P := P) d₀ w₀
     (src := 43110) (ad := 43111) (o := 42110) (c := c) (T := T)
     (by rw [hd₀]; simp [hc]) (by rw [hd₀]; simp [hT]) (by rw [hd₀]; simp [h1])
-    (by norm_num) (by norm_num) (by norm_num) (by omega) (by norm_num) (by norm_num)
+    (⊛) (⊛) (⊛) (⋄) (⊛) (⊛)
   have w₁ := x₁.wb_right
   have o₁ : d₁.nreg 42102 = 1 := by
-    rw [fr₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num), hd₀]; simp [h1]
+    rw [fr₁ _ (⊛) (⊛) (⊛) (⊛), hd₀]; Θ h1
   have o₁' : d₁.nreg 43011 = 1 := by
-    rw [fr₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num), hd₀]; simp [h1']
-  have mm₁ : d₁.nmem = d.nmem := by rw [m₁, hd₀]
+    rw [fr₁ _ (⊛) (⊛) (⊛) (⊛), hd₀]; Θ h1'
+  have mm₁ : d₁.nmem = d.nmem := Ρ m₁, hd₀
   suffices H : ∃ d' k, Exec P W curS d d' k ∧ k = 12 ∧
       d'.nreg 42110 = d.nmem (T + 4 * c) ∧ d'.nreg 42111 = d.nmem (T + 4 * c + 1) ∧
       d'.nreg 42112 = d.nmem (T + 4 * c + 2) ∧ d'.nreg 43113 = d.nmem (T + 4 * c + 3) ∧
@@ -166,18 +168,18 @@ theorem curS_exec (d : Config) (hw : WordsBounded W d) {c T : ℕ} (hc : d.nmem 
     · rw [a₁, o₁]; omega
     · config_simp; rw [a₁, o₁, o₁', mm₁]; exact hxW
     · refine ⟨rfl, ?_, ?_, fun r r1 r2 r3 => ?_⟩ <;> config_simp
-      · rw [a₁, o₁, mm₁]
-      · rw [a₁, o₁, o₁', mm₁]
+      · Ξ a₁, o₁, mm₁
+      · Ξ a₁, o₁, o₁', mm₁
       · simp (disch := omega) only [upd_other]
   obtain ⟨b3, b4, g₂⟩ := v₂
-  refine ⟨d₂, _, .seq x₀ (.seq x₁ x₂), by omega, ?_, ?_, ?_, b3, b4⟩
-  · rw [g₂ _ (by norm_num) (by norm_num) (by norm_num), e₁, hd₀]
-  · rw [g₂ _ (by norm_num) (by norm_num) (by norm_num), g₁, hd₀]
-  · rw [g₂ _ (by norm_num) (by norm_num) (by norm_num), p₁, hd₀]
+  refine ⟨d₂, _, .seq x₀ (.seq x₁ x₂), ⋄, ?_, ?_, ?_, b3, b4⟩
+  · Ξ g₂ _ (⊛) (⊛) (⊛), e₁, hd₀
+  · Ξ g₂ _ (⊛) (⊛) (⊛), g₁, hd₀
+  · Ξ g₂ _ (⊛) (⊛) (⊛), p₁, hd₀
 
 
 theorem wr_topS (dst : ℕ) : wr (fun r => decide (r = dst ∨ r = 43116)) (topS dst) = true := by
-  simp [topS, wr, block, wrOK]
+  Θ topS, wr, block, wrOK
 
 /-- **The region index of the label.** -/
 theorem topS_exec (d : Config) (hw : WordsBounded W d) {dst : ℕ} (h0 : d.nreg 43010 = 0)
@@ -192,21 +194,21 @@ theorem topS_exec (d : Config) (hw : WordsBounded W d) {dst : ℕ} (h0 : d.nreg 
   unfold topS
   by_cases hs : d.nreg 43101 = 0
   · refine spec_ifLtN_false (by rw [h0, hs]; omega) (spec_instr (Exec.constN hw _ _ (by
-      have := hw.1 43010; omega)) fun _ => ⟨by omega, ?_⟩)
-    simp [hs]
+      have := hw.1 43010; omega)) fun _ => ⟨⋄, ?_⟩)
+    Θ hs
   · refine spec_ifLtN_true (by rw [h0]; omega) ?_
     exec_block
     · exact hSW
-    · refine ⟨by omega, ?_⟩
+    · refine ⟨⋄, ?_⟩
       config_simp
-      rw [ite_eq_right hs, h1]
+      Ξ ite_eq_right hs, h1
 
 /-- Five consecutive words written at `b`. -/
 def wr5 (m : ℕ → ℕ) (b v0 v1 v2 v3 v4 : ℕ) (a : ℕ) : ℕ :=
   if a = b then v0 else if a = b + 1 then v1 else if a = b + 2 then v2 else if a = b + 3 then v3
   else if a = b + 4 then v4 else m a
 
-theorem wr_chordS : wrM (fun r => decide (43130 ≤ r ∧ r < 43135)) chordS = true := by decide
+theorem wr_chordS : wrM (fun r => decide (43130 ≤ r ∧ r < 43135)) chordS = true := ⌖
 
 /-- **The chord record** of `x = r43113` at `CT + 5 x`. -/
 theorem chordS_exec (d : Config) (hw : WordsBounded W d) {x B CT : ℕ} (hx : d.nreg 43113 = x)
@@ -237,10 +239,10 @@ theorem chordS_exec (d : Config) (hw : WordsBounded W d) {x B CT : ℕ} (hx : d.
     all_goals first
       | (config_simp; simp (config := { failIfUnchanged := false }) only [hx, hB, hCT, h1]; omega)
       | skip
-    refine ⟨by omega, ?_⟩
+    refine ⟨⋄, ?_⟩
     config_simp
     funext a
-    simp only [hx, hB, hCT, h1, ite_eq_left hp, upd_apply, wr5]
+    ϴ hx, hB, hCT, h1, ite_eq_left hp, upd_apply, wr5
     by_cases e0 : a = CT + 5 * x
     · subst e0; ifs_omega; congr 1; omega
     by_cases e1 : a = CT + 5 * x + 1
@@ -257,10 +259,10 @@ theorem chordS_exec (d : Config) (hw : WordsBounded W d) {x B CT : ℕ} (hx : d.
     all_goals first
       | (config_simp; simp (config := { failIfUnchanged := false }) only [hx, hB, hCT, h1]; omega)
       | skip
-    refine ⟨by omega, ?_⟩
+    refine ⟨⋄, ?_⟩
     config_simp
     funext a
-    simp only [hx, hB, hCT, h1, ite_eq_right hp, upd_apply, wr5]
+    ϴ hx, hB, hCT, h1, ite_eq_right hp, upd_apply, wr5
     by_cases e0 : a = CT + 5 * x
     · subst e0; ifs_omega; congr 1; omega
     by_cases e1 : a = CT + 5 * x + 1
@@ -277,7 +279,7 @@ theorem chordS_exec (d : Config) (hw : WordsBounded W d) {x B CT : ℕ} (hx : d.
 /-- The registers of the stack step. -/
 def Bstep (r : ℕ) : Bool := decide (43130 ≤ r ∧ r < 43135) || decide (r = 43116 ∨ r = 43101)
 
-theorem wr_stepS : wrM Bstep stepS = true := by decide
+theorem wr_stepS : wrM Bstep stepS = true := ⌖
 
 /-- The memory after a push. -/
 def pushMem (d : Config) (x B CT ST : ℕ) : ℕ → ℕ :=
@@ -304,26 +306,26 @@ theorem stepS_exec (d : Config) (hw : WordsBounded W d) {x B CT ST : ℕ} (hx : 
     unfold pushS
     refine spec_seq ⟨d₁, k₁, x₁, ?_⟩
     exec_block
-    · rw [r₁ _ (by norm_num), r₁ _ (by norm_num), hST]; exact hSW
-    · config_simp; rw [r₁ _ (by norm_num), r₁ _ (by norm_num), h1]; exact hsW
-    · refine ⟨by omega, ?_, ?_⟩ <;> config_simp
-      · rw [r₁ _ (by norm_num), r₁ _ (by norm_num), h1]
-      · rw [r₁ _ (by norm_num), r₁ _ (by norm_num), r₁ _ (by norm_num), hST, m₁]; rfl
+    · rw [r₁ _ (⊛), r₁ _ (⊛), hST]; exact hSW
+    · config_simp; rw [r₁ _ (⊛), r₁ _ (⊛), h1]; exact hsW
+    · refine ⟨⋄, ?_, ?_⟩ <;> config_simp
+      · Ξ r₁ _ (⊛), r₁ _ (⊛), h1
+      · rw [r₁ _ (⊛), r₁ _ (⊛), r₁ _ (⊛), hST, m₁]; rfl
   unfold stepS
   by_cases a1 : d.nreg 43115 < d.nreg 43114
   · obtain ⟨d', k, x', hk, h2, h3⟩ := push
-    refine ⟨d', k + 1, .ifLtN_true a1 x', by omega, exec_frameM (.ifLtN_true a1 x') wr_stepS,
-      fun h => absurd h (by omega), fun _ => ⟨h2, h3⟩⟩
+    refine ⟨d', k + 1, .ifLtN_true a1 x', ⋄, exec_frameM (.ifLtN_true a1 x') wr_stepS,
+      fun h => absurd h (⋄), fun _ => ⟨h2, h3⟩⟩
   by_cases a2 : d.nreg 43114 < d.nreg 43115
   · obtain ⟨d', k, x', hk, h2, h3⟩ := push
     have X := Exec.ifLtN_false (t := pushS) a1 (Exec.ifLtN_true (e := popS) a2 x')
-    refine ⟨d', _, X, by omega, exec_frameM X wr_stepS, fun h => absurd h (by omega),
+    refine ⟨d', _, X, ⋄, exec_frameM X wr_stepS, fun h => absurd h (⋄),
       fun _ => ⟨h2, h3⟩⟩
   · have x' := Exec.subN (P := P) hw 43101 43101 43011
     have X := Exec.ifLtN_false (t := pushS) a1 (Exec.ifLtN_false (t := pushS) a2 x')
-    refine ⟨_, _, X, by omega, exec_frameM X wr_stepS, fun _ => ⟨?_, rfl⟩,
-      fun h => absurd h (by omega)⟩
-    simp [h1]
+    refine ⟨_, _, X, ⋄, exec_frameM X wr_stepS, fun _ => ⟨?_, rfl⟩,
+      fun h => absurd h (⋄)⟩
+    Θ h1
 
 end exec
 

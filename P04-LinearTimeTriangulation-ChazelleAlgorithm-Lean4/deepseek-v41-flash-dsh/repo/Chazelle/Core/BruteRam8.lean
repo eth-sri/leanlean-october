@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.BruteRam7
 
 /-!
@@ -57,21 +61,21 @@ def LI (P : Polygon) (C : Chain) (γ A₀ : ℕ) (M : ℕ → ℕ) (c₀ d : Con
 theorem bbd_of_lp {c c' : Config} (F : FrameB Blp c c') : ∀ r, Bbd r = false → c'.nreg r = c.nreg r :=
   fun r hr => F.1 r (by
     unfold Bbd Bk at hr; unfold Blp
-    simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega)
+    ϴ' Bool.or_eq_false_iff, decide_eq_false_iff_not at hr ⊢; omega)
 
 theorem bbd_of_co {c c' : Config} (F : FrameB Bco c c') : ∀ r, Bbd r = false → c'.nreg r = c.nreg r :=
   fun r hr => F.1 r (by
     unfold Bbd at hr; unfold Bco
-    simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; exact ⟨hr.1.1, by omega⟩)
+    ϴ' Bool.or_eq_false_iff, decide_eq_false_iff_not at hr ⊢; exact ⟨hr.1.1, ⋄⟩)
 
 theorem bbd_of_em {c c' : Config} (h : ∀ r, Bem r = false → c'.nreg r = c.nreg r) :
     ∀ r, Bbd r = false → c'.nreg r = c.nreg r :=
   fun r hr => h r (by
     unfold Bbd at hr; unfold Bem Bsc
-    simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢
-    exact ⟨⟨hr.1.1, by omega⟩, by omega⟩)
+    ϴ' Bool.or_eq_false_iff, decide_eq_false_iff_not at hr ⊢
+    exact ⟨⟨hr.1.1, ⋄⟩, ⋄⟩)
 
-set_option maxHeartbeats 4000000 in
+
 /-- **One iteration of the loop.** -/
 theorem bodyS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.n + 2 * C.m + 8 ≤ W)
     (hW4 : 4 * P.n ≤ W) (hC : C.P = Qof P) (hsn : C.s + C.m + 1 ≤ P.n)
@@ -84,7 +88,7 @@ theorem bodyS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
   obtain ⟨hX, -, h31, h33b, h33, h19, h24, hL, hM, hR, hRR, hRM, hO⟩ := hI
   obtain ⟨x0, x1, x2, x10, x11, x12, x13, x15, x16, x17, x18, x23, x25, x26, x27, x28⟩ := hX
   set i := c.nreg 180030 with hid
-  have hi : i ≤ 2 * C.m := by omega
+  have hi : i ≤ 2 * C.m := ⋄
   have hk := C.sideIdx_le C.sideBeta i
   -- indices
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, q32, q33, q35, q36, q37, q44, q30, q31⟩ := idxS_exec (P := P) (C := C) c hw
@@ -93,29 +97,29 @@ theorem bodyS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
   have X₁ : Ctx P C γ A₀ c₁ := ctx_of_bbd ⟨x0, x1, x2, x10, x11, x12, x13, x15, x16, x17, x18, x23,
     x25, x26, x27, x28⟩ K₁
   -- the corner
-  obtain ⟨c₂, k₂, e₂, hk₂, F₂, b41, b42, t41, t42⟩ := cornerS_exec (P := P) hG (by omega) hC hsn hi
+  obtain ⟨c₂, k₂, e₂, hk₂, F₂, b41, b42, t41, t42⟩ := cornerS_exec (P := P) hG (⋄) hC hsn hi
     c₁ e₁.wb_right X₁.2.2.2.2.1 X₁.2.2.2.2.2.1 X₁.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2 q30 q35
-    (fun h => by rw [q36, h33 h]) (fun _ => q37)
+    (fun h => Ρ q36, h33 h) (fun _ => q37)
   have K₂ := bbd_of_co F₂
   have X₂ : Ctx P C γ A₀ c₂ := ctx_of_bbd X₁ K₂
-  have c35 : c₂.nreg 180035 = C.s + C.sideIdx C.sideBeta i := by rw [F₂.1 _ (by decide), q35]
-  have c44 : c₂.nreg 180044 = i + 6 := by rw [F₂.1 _ (by decide), q44]
+  have c35 : c₂.nreg 180035 = C.s + C.sideIdx C.sideBeta i := Ρ F₂.1 _ (⌖), q35
+  have c44 : c₂.nreg 180044 = i + 6 := Ρ F₂.1 _ (⌖), q44
   have c24 : c₂.nreg 180024 = A₀ + 10 + 3 * (pre C i).length := by
-    rw [F₂.1 _ (by decide), F₁.1 _ (by decide), h24]
-  have c19 : c₂.nreg 180019 = (pre C i).length := by rw [F₂.1 _ (by decide), F₁.1 _ (by decide), h19]
-  have m₂ : c₂.nmem = c.nmem := by rw [F₂.2.2.1, F₁.2.2.1]
+    Ξ F₂.1 _ (⌖), F₁.1 _ (⌖), h24
+  have c19 : c₂.nreg 180019 = (pre C i).length := Ρ F₂.1 _ (⌖), F₁.1 _ (⌖), h19
+  have m₂ : c₂.nmem = c.nmem := Ρ F₂.2.2.1, F₁.2.2.1
   have hlen := pre_length_le C i
   -- east
   obtain ⟨c₃, k₃, e₃, hk₃, lb₃, p24, p19, pL, pM, R₃, RR₃, RM₃, O₃⟩ := emitB_exec (P := P) (d := 0) hG
-    (by omega) hW4 hC hsn (by omega) hi c₂ e₂.wb_right
+    (⋄) hW4 hC hsn (⋄) hi c₂ e₂.wb_right
     ⟨X₂.1, X₂.2.1, X₂.2.2.2.2.1, c35⟩ ⟨X₂.2.2.2.2.2.1, X₂.2.2.2.2.2.2.2.1, X₂.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1⟩
     b41 t41 c44 (L := A₀ + 10) (l := pre C i) (M := M) c24 c19 (by rw [m₂]; exact hL) (by intro x hx; rw [m₂]; exact hM x hx)
-    (by omega)
+    (⋄)
   have K₃ := bbd_of_em R₃
   have X₃ : Ctx P C γ A₀ c₃ := ctx_of_bbd X₂ K₃
-  have d35 : c₃.nreg 180035 = C.s + C.sideIdx C.sideBeta i := by rw [R₃ _ (by decide), c35]
-  have d44 : c₃.nreg 180044 = i + 6 := by rw [R₃ _ (by decide), c44]
-  have d42 : c₃.nreg 180042 = c₂.nreg 180042 := R₃ _ (by decide)
+  have d35 : c₃.nreg 180035 = C.s + C.sideIdx C.sideBeta i := Ρ R₃ _ (⌖), c35
+  have d44 : c₃.nreg 180044 = i + 6 := Ρ R₃ _ (⌖), c44
+  have d42 : c₃.nreg 180042 = c₂.nreg 180042 := R₃ _ (⌖)
   set l₁ := pre C i ++ (if Emit C i 0 then [trip C i 0] else []) with hl₁
   have hl₁len : l₁.length ≤ 2 * i + 1 := by
     rw [hl₁, List.length_append]; have : (if Emit C i 0 then [trip C i 0] else []).length ≤ 1 := by
@@ -123,51 +127,51 @@ theorem bodyS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
     omega
   -- west
   obtain ⟨c₄, k₄, e₄, hk₄, lb₄, r24, r19, rL, rM, R₄, RR₄, RM₄, O₄⟩ := emitB_exec (P := P) (d := 1) hG
-    (by omega) hW4 hC hsn (by omega) hi c₃ e₃.wb_right
+    (⋄) hW4 hC hsn (⋄) hi c₃ e₃.wb_right
     ⟨X₃.1, X₃.2.1, X₃.2.2.2.2.1, d35⟩ ⟨X₃.2.2.2.2.2.1, X₃.2.2.2.2.2.2.2.1, X₃.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1⟩
     (by rw [d42]; exact b42) (by rw [d42]; exact t42) d44 (l := l₁) (L := A₀ + 10) (M := M) p24 p19
-    pL pM (by omega)
+    pL pM (⋄)
   have K₄ := bbd_of_em R₄
   have X₄ : Ctx P C γ A₀ c₄ := ctx_of_bbd X₃ K₄
   -- advance
   have e30 : c₄.nreg 180030 = i := by
-    rw [R₄ _ (by decide), R₃ _ (by decide), F₂.1 _ (by decide), q30]
+    Ξ R₄ _ (⌖), R₃ _ (⌖), F₂.1 _ (⌖), q30
   have e31 : c₄.nreg 180031 = (tS C + i) % (2 * C.m) := by
-    rw [R₄ _ (by decide), R₃ _ (by decide), F₂.1 _ (by decide), q31]
+    Ξ R₄ _ (⌖), R₃ _ (⌖), F₂.1 _ (⌖), q31
     exact h31 hi
   have e32 : c₄.nreg 180032 = C.sideIdx C.sideBeta i := by
-    rw [R₄ _ (by decide), R₃ _ (by decide), F₂.1 _ (by decide), q32]
+    Ξ R₄ _ (⌖), R₃ _ (⌖), F₂.1 _ (⌖), q32
   obtain ⟨c₅, k₅, e₅, hk₅, F₅, s33, s30, s31⟩ := advS_exec (P := P) (C := C) c₄ e₄.wb_right
-    (by omega) hi X₄.2.2.2.2.1 X₄.2.2.2.2.2.1 e30 e31
+    (⋄) hi X₄.2.2.2.2.1 X₄.2.2.2.2.2.1 e30 e31
   have K₅ := bbd_of_lp F₅
   have X₅ : Ctx P C γ A₀ c₅ := ctx_of_bbd X₄ K₅
   have ex : Exec P W bodyS c c₅ (k₁ + (k₂ + (k₃ + (k₄ + k₅)))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
   have hpre : pre C (i + 1) = l₁ ++ (if Emit C i 1 then [trip C i 1] else []) := by
-    rw [pre_succ, hl₁, List.append_assoc]
+    Ξ pre_succ, hl₁, List.append_assoc
   have hlb : 3 * (pre C (i + 1)).length ≤ 3 * (pre C i).length + (k₁ + (k₂ + (k₃ + (k₄ + k₅)))) := by
     rw [hpre]; omega
-  refine ⟨c₅, _, ex, by omega, hlb, ⟨X₅, by rw [s30]; omega, fun h => by rw [s30]; exact s31 (by omega),
+  refine ⟨c₅, _, ex, ⋄, hlb, ⟨X₅, by rw [s30]; omega, fun h => by rw [s30]; exact s31 (⋄),
     by rw [s33, e32]; exact hk, fun _ => by rw [s33, e32, s30]; rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
     s30⟩
-  · rw [F₅.1 _ (by decide), r19, s30, hpre]
-  · rw [F₅.1 _ (by decide), r24, s30, hpre]
+  · Ξ F₅.1 _ (⌖), r19, s30, hpre
+  · Ξ F₅.1 _ (⌖), r24, s30, hpre
   · rw [F₅.2.2.1, s30, hpre]; exact rL
   · intro x hx; rw [F₅.2.2.1]; exact rM x hx
-  · intro r hr; rw [K₅ r hr, K₄ r hr, K₃ r hr, K₂ r hr, K₁ r hr, hR r hr]
+  · intro r hr; Ξ K₅ r hr, K₄ r hr, K₃ r hr, K₂ r hr, K₁ r hr, hR r hr
   · intro r hr
     have hb : Bsc r = false := by
       unfold Bbd at hr; unfold Bsc
-      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; exact ⟨hr.1.1, by omega⟩
+      ϴ' Bool.or_eq_false_iff, decide_eq_false_iff_not at hr ⊢; exact ⟨hr.1.1, ⋄⟩
     have hc : Bco r = false := by
       unfold Bbd at hr; unfold Bco
-      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; exact ⟨hr.1.1, by omega⟩
+      ϴ' Bool.or_eq_false_iff, decide_eq_false_iff_not at hr ⊢; exact ⟨hr.1.1, ⋄⟩
     have hl : Blp r = false := by
       unfold Bbd at hr; unfold Blp
-      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega
-    rw [F₅.2.1 r hl, RR₄ r hb, RR₃ r hb, F₂.2.1 r hc, F₁.2.1 r hl, hRR r hr]
-  · rw [F₅.2.2.2.1, RM₄, RM₃, F₂.2.2.2.1, F₁.2.2.2.1, hRM]
-  · rw [F₅.2.2.2.2, O₄, O₃, F₂.2.2.2.2, F₁.2.2.2.2, hO]
+      ϴ' Bool.or_eq_false_iff, decide_eq_false_iff_not at hr ⊢; omega
+    Ξ F₅.2.1 r hl, RR₄ r hb, RR₃ r hb, F₂.2.1 r hc, F₁.2.1 r hl, hRR r hr
+  · Ξ F₅.2.2.2.1, RM₄, RM₃, F₂.2.2.2.1, F₁.2.2.2.1, hRM
+  · Ξ F₅.2.2.2.2, O₄, O₃, F₂.2.2.2.2, F₁.2.2.2.2, hO
 
 /-- A loop rule with a bounded body, a decreasing measure and a lower bound on the cost in
 terms of a potential `g` (each iteration costs at least the growth of `g`). -/
@@ -183,14 +187,14 @@ theorem whileLtN_lb {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} (I : Confi
     intro c hn hc
     by_cases ht : c.nreg a < c.nreg b
     · obtain ⟨c₁, k₁, e₁, hI₁, hk₁, hμ, hg⟩ := hbody c hc ht
-      obtain ⟨c', k₂, e₂, hI', hex, hk₂, hg'⟩ := ih (μ c₁) (by omega) c₁ rfl hI₁
-      refine ⟨c', _, .whileLtN_true ht e₁ e₂, hI', hex, ?_, by omega⟩
+      obtain ⟨c', k₂, e₂, hI', hex, hk₂, hg'⟩ := ih (μ c₁) (⋄) c₁ rfl hI₁
+      refine ⟨c', _, .whileLtN_true ht e₁ e₂, hI', hex, ?_, ⋄⟩
       have : (B + 2) * (μ c₁ + 1) ≤ (B + 2) * μ c := Nat.mul_le_mul_left _ hμ
-      rw [Nat.mul_add, Nat.mul_one] at this
+      Ξ' Nat.mul_add, Nat.mul_one at this
       omega
-    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, by omega, by omega⟩
+    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, ⋄, ⋄⟩
 
-set_option maxHeartbeats 1000000 in
+
 /-- **The main loop**: from the set-up state, the list `bruteList C` is written at `A₀ + 10`. -/
 theorem loopS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.n + 2 * C.m + 8 ≤ W)
     (hW4 : 4 * P.n ≤ W) (hC : C.P = Qof P) (hsn : C.s + C.m + 1 ≤ P.n) {γ A₀ : ℕ}
@@ -267,7 +271,7 @@ theorem loopS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
   have e30 : c₃.nreg 180030 = 2 * C.m + 1 := by omega
   rw [e30, pre_full] at s19 s24 sL
   have : c₂.nreg 180030 = 0 := by rw [R₂.1 _ (by decide), q30]
-  have hg' : 3 * (pre C (c₃.nreg 180030)).length ≤ 3 * (pre C (c₂.nreg 180030)).length + k₃ := hg₃
+  have hg' := hg₃
   rw [this, e30, pre_full] at hg'
   have hp0 : (pre C 0).length = 0 := by simp [pre]
   rw [hp0] at hg'

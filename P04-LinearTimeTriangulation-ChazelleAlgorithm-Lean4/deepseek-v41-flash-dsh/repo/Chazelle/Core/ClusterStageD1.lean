@@ -1,5 +1,9 @@
 module
 
+public import Chazelle.Golf
+
+public import Chazelle.Golf
+
 public import Chazelle.Core.ClusterStageC3
 
 /-!
@@ -47,24 +51,24 @@ theorem sum_cntBelow (f : ℕ → ℕ) (n j : ℕ) :
   induction j with
   | zero => simp [cntLt]
   | succ j ih =>
-    rw [Finset.sum_range_succ, ih]
+    Ξ Finset.sum_range_succ, ih
     unfold cntLt cntBelow
-    rw [← Finset.card_union_of_disjoint]
+    Ξ ← Finset.card_union_of_disjoint
     · congr 1
-      ext v; simp only [Finset.mem_union, Finset.mem_filter, Finset.mem_range]
+      ext v; ϴ Finset.mem_union, Finset.mem_filter, Finset.mem_range
       constructor
-      · rintro (⟨a, b⟩ | ⟨a, b⟩) <;> exact ⟨a, by omega⟩
+      · rintro (⟨a, b⟩ | ⟨a, b⟩) <;> exact ⟨a, ⋄⟩
       · rintro ⟨a, b⟩
         rcases Nat.lt_or_ge (f v) j with h | h
         · exact Or.inl ⟨a, h⟩
-        · exact Or.inr ⟨a, by omega⟩
-    · rw [Finset.disjoint_left]
+        · exact Or.inr ⟨a, ⋄⟩
+    · Ξ Finset.disjoint_left
       intro v h1 h2
-      simp only [Finset.mem_filter] at h1 h2
+      ϴ' Finset.mem_filter at h1 h2
       omega
 
 theorem cntLt_le (f : ℕ → ℕ) (n j : ℕ) : cntLt f n j ≤ n := by
-  unfold cntLt; exact (Finset.card_filter_le _ _).trans (by simp)
+  unfold cntLt; exact (Finset.card_filter_le _ _).trans (✓)
 
 /-- One block of the prefix sums. -/
 def pfxBody : Stmt := block [.addN 130858 130072 130856, .loadN 130859 130858,
@@ -78,7 +82,7 @@ section proofs
 
 variable {P : Polygon} {W : ℕ}
 
-set_option maxHeartbeats 4000000 in
+
 theorem bcS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     {lev hl blk : ℕ → ℕ} (hlev : ∀ v, v < g.μ → c.nmem (g.base 3 + v) = lev v)
     (hlt : ∀ v, v < g.μ → lev v < g.μ) (hhl : ∀ l, l < g.μ → c.nmem (g.base 36 + l) = hl l)

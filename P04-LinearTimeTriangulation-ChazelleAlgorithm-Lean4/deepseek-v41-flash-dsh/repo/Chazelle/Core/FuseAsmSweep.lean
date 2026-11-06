@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.FuseAsmSideQ
 public import Chazelle.Core.SweepSpecH
 
@@ -97,9 +99,9 @@ theorem FPre.keep {P : Polygon} {X : MemCtx} {Ok : Polygon → Model → Prop} {
     (hr : ∀ r, 70005 ≤ r → r < 70009 → c'.nreg r = c.nreg r) {B : Finset ℕ} {k : ℕ}
     (hf : Frame B c c' k) : FPre P X Ok J N₁ N₂ c' := by
   obtain ⟨o1, o2, o3, d1, d2, s1, s2, hh, hc⟩ := h
-  have e5 := hr 70005 (by norm_num) (by norm_num)
-  have e6 := hr 70006 (by norm_num) (by norm_num)
-  have e8 := hr 70008 (by norm_num) (by norm_num)
+  have e5 := hr 70005 (⊛) (⊛)
+  have e6 := hr 70006 (⊛) (⊛)
+  have e8 := hr 70008 (⊛) (⊛)
   refine ⟨o1, o2, o3, by rw [e6]; exact d1, by rw [e6]; exact d2, by rw [e5]; exact s1,
     by rw [e5]; exact s2, by rw [e8]; exact holds_frameF hh hf, ?_⟩
   rw [e5, e8, cap_frameF hloc hh hf]; exact hc
@@ -143,13 +145,13 @@ def FB : Finset ℕ := fuseBands ∪ oracleBands
 
 theorem ftrF {c c₁ c₂ : Config} {k₁ k₂ : ℕ} (h₁ : Frame FB c c₁ k₁) (h₂ : Frame FB c₁ c₂ k₂) :
     Frame FB c c₂ (k₁ + k₂) :=
-  (h₁.trans h₂).mono (by rw [Finset.union_self]) le_rfl
+  (h₁.trans h₂).mono (Ρ Finset.union_self) le_rfl
 
-theorem sweep_sub : sweepBands ∪ oracleBands ⊆ FB := by decide
+theorem sweep_sub : sweepBands ∪ oracleBands ⊆ FB := ⌖
 
-theorem band7 : bFuse ∈ FB := by decide
+theorem band7 : bFuse ∈ FB := ⌖
 
-theorem band24 : bSweep ∈ FB := by decide
+theorem band24 : bSweep ∈ FB := ⌖
 
 set_option maxHeartbeats 8000000 in
 /-- **One sweep stage.** -/

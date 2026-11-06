@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.DownPhaseMirrorModel
 public import Chazelle.Core.FactsInterior
 
@@ -28,51 +30,51 @@ variable {Q : Polygon}
 /-- The interior of the mirrored polygon. -/
 theorem mir_interior (Q : Polygon) :
     Q.mir.filled \ Q.mir.boundary = mir '' (Q.filled \ Q.boundary) := by
-  rw [mir_filled, mir_boundary, image_sdiff mir_injective]
+  Ξ mir_filled, mir_boundary, image_sdiff mir_injective
 
 theorem hitSet_mir (Q : Polygon) (p : Point) (σ : ℝ) :
     Visibility.hitSet Q.mir (mir p) (-σ) = Visibility.hitSet Q p σ := by
   ext t
-  simp only [Visibility.hitSet, mem_ofPred_eq, ← mir_rayPt, mir_boundary, mem_image_mir, mir_mir]
+  ϴ Visibility.hitSet, mem_ofPred_eq, ← mir_rayPt, mir_boundary, mem_image_mir, mir_mir
 
 theorem chordSet_mir (Q : Polygon) (i : ℕ) (σ : ℝ) :
     Visibility.chordSet Q.mir i (-σ) = mir '' Visibility.chordSet Q i σ := by
   unfold Visibility.chordSet Visibility.chordEnd Visibility.chordParam Visibility.hitParam
-  rw [mir_vtx, hitSet_mir, mir_segment, mir_rayPt]
+  Ξ mir_vtx, hitSet_mir, mir_segment, mir_rayPt
 
 theorem dirInterior_mir (Q : Polygon) (i : ℕ) (σ : ℝ) :
     Visibility.DirInterior Q.mir i (-σ) ↔ Visibility.DirInterior Q i σ := by
   unfold Visibility.DirInterior
-  simp only [mir_vtx, ← mir_rayPt, mir_interior, mem_image_mir, mir_mir]
+  ϴ mir_vtx, ← mir_rayPt, mir_interior, mem_image_mir, mir_mir
 
 /-- **The vertex chords of the mirrored polygon.** -/
 theorem chords_mir (Q : Polygon) : Visibility.chords Q.mir = mirF (Visibility.chords Q) := by
   ext c
-  rw [mem_mirF]
+  Ξ mem_mirF
   constructor
   · rintro ⟨i, σ, hi, hσ, hD, rfl⟩
     rw [mir_n] at hi
     refine ⟨i, -σ, hi, by rcases hσ with rfl | rfl <;> norm_num, ?_, ?_⟩
     · rw [← dirInterior_mir, neg_neg]; exact hD
-    · rw [← neg_neg σ, chordSet_mir, image_mir_image_mir, neg_neg]
+    · Ξ ← neg_neg σ, chordSet_mir, image_mir_image_mir, neg_neg
   · rintro ⟨i, σ, hi, hσ, hD, hc⟩
     refine ⟨i, -σ, by rw [mir_n]; exact hi, by rcases hσ with rfl | rfl <;> norm_num,
       (dirInterior_mir Q i σ).2 hD, ?_⟩
-    rw [chordSet_mir, ← hc, image_mir_image_mir]
+    Ξ chordSet_mir, ← hc, image_mir_image_mir
 
 /-- **The horizontal chords of the mirrored interior.** -/
 theorem adm_mir (D : Set Point) :
     {c | ∃ y a b : ℝ, IsHChordIn (mir '' D) y a b ∧ c = hseg y a b} =
       mirF {c | ∃ y a b : ℝ, IsHChordIn D y a b ∧ c = hseg y a b} := by
   ext c
-  rw [mem_mirF]
+  Ξ mem_mirF
   constructor
   · rintro ⟨y, a, b, hch, rfl⟩
     refine ⟨y, -b, -a, ?_, hseg_mir y a b⟩
     rw [← isHChordIn_mir, neg_neg, neg_neg]; exact hch
   · rintro ⟨y, a, b, hch, hc⟩
     refine ⟨y, -b, -a, isHChordIn_mir.2 hch, ?_⟩
-    rw [← hseg_mir, ← hc, image_mir_image_mir]
+    Ξ ← hseg_mir, ← hc, image_mir_image_mir
 
 theorem interiorWalk_n (Q : Polygon) : (interiorWalk Q).n = Q.n := by
   unfold interiorWalk; split_ifs

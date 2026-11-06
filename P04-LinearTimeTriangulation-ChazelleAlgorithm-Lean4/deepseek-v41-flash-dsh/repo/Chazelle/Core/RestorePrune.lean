@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.RestoreCounts
 public import Chazelle.Core.FactsL23
 public import Chazelle.Core.WalkEmbed
@@ -98,8 +100,8 @@ theorem cyc_dom_open {A B A' B' x x' a' u : ℝ} (hA0 : 0 ≤ A) (_hB'0 : 0 ≤ 
     rw [ite_eq_left hA'B'] at hx'
     rcases hx' with h | h | h
     · exact ⟨h.1.le, h.2.le⟩
-    · exact ⟨h.ge, by linarith⟩
-    · exact ⟨by linarith, h.le⟩
+    · exact ⟨h.ge, ⟡⟩
+    · exact ⟨⟡, h.le⟩
   have huj' : u ≤ A' ∨ B' ≤ u := by
     unfold sideInArc at huj
     rw [ite_eq_left hA'B'] at huj
@@ -108,19 +110,19 @@ theorem cyc_dom_open {A B A' B' x x' a' u : ℝ} (hA0 : 0 ≤ A) (_hB'0 : 0 ≤ 
   constructor
   · intro h
     unfold sideInArc at h ⊢
-    rw [ite_eq_left ha'0]
+    Ξ ite_eq_left ha'0
     split_ifs at h with hxx'
     · rcases huj' with hu | hu <;> constructor <;> linarith [h.1, h.2]
     · have hxA : A ≤ x := by
         rcases h7 with h7 | h7
         · exact h7
-        · exfalso; exact hxx (le_antisymm (by linarith) (not_lt.1 hxx'))
+        · exfalso; exact hxx (le_antisymm (⟡) (not_lt.1 hxx'))
       rcases h with h | h
       · linarith
       · rcases huj' with hu | hu <;> constructor <;> linarith
   · intro h
     unfold sideInArc at h ⊢
-    rw [ite_eq_right (not_lt.2 ha'0.le)]
+    Ξ ite_eq_right (not_lt.2 ha'0.le)
     left
     split_ifs at h with hxx'
     · rcases huj' with hu | hu <;> linarith [h.1, h.2]
@@ -129,7 +131,7 @@ theorem cyc_dom_open {A B A' B' x x' a' u : ℝ} (hA0 : 0 ≤ A) (_hB'0 : 0 ≤ 
       · have hxB : x ≤ B := by
           rcases h7 with h7 | h7
           · exfalso
-            exact hxx (le_antisymm (not_lt.1 hxx') (by linarith))
+            exact hxx (le_antisymm (not_lt.1 hxx') (⟡))
           · exact h7
         linarith
 
@@ -141,23 +143,23 @@ theorem cyc_dom_same {A B x k u : ℝ} (hA0 : 0 ≤ A) (hAB : A ≠ B) (hi : sid
   obtain ⟨h1, h2⟩ := cyc_zero_out hBA hk
   obtain ⟨h5, h6⟩ := cyc_zero_out hBA hui
   have h7 := cyc_zero_closed hBA hx
-  have hk0 : 0 < k := by linarith
+  have hk0 : 0 < k := ⟡
   constructor
   · intro h
     unfold sideInArc at h ⊢
-    rw [ite_eq_left hk0]
+    Ξ ite_eq_left hk0
     split_ifs at h with hxk'
     · rcases h7 with h7 | h7 <;> constructor <;> linarith [h.1, h.2]
     · have hxA : A ≤ x := by
         rcases h7 with h7 | h7
         · exact h7
-        · exfalso; exact hxk (le_antisymm (by linarith) (not_lt.1 hxk'))
+        · exfalso; exact hxk (le_antisymm (⟡) (not_lt.1 hxk'))
       rcases h with h | h
       · linarith
       · constructor <;> linarith
   · intro h
     unfold sideInArc at h ⊢
-    rw [ite_eq_right (not_lt.2 hk0.le)]
+    Ξ ite_eq_right (not_lt.2 hk0.le)
     left
     split_ifs at h with hkx
     · linarith [h.1]
@@ -165,7 +167,7 @@ theorem cyc_dom_same {A B x k u : ℝ} (hA0 : 0 ≤ A) (hAB : A ≠ B) (hi : sid
       · exact h
       · have hxB : x ≤ B := by
           rcases h7 with h7 | h7
-          · exfalso; exact hxk (le_antisymm (not_lt.1 hkx) (by linarith))
+          · exfalso; exact hxk (le_antisymm (not_lt.1 hkx) (⟡))
           · exact h7
         linarith
 
@@ -223,7 +225,7 @@ theorem cyc_closed_side {a b y w k k' : ℝ} (hy : sideInArc a b y)
   have hyk' : y ≠ k' := fun h => hk' (h ▸ hy)
   rcases hw with hw | rfl | rfl
   · by_cases hyw : y = w
-    · rw [hyw]
+    · Ξ hyw
     rcases cyc_order hy hw hyw with ⟨h1, h2⟩ | ⟨h1, h2⟩
     · exact (cyc_nosep h1 (fun h => hk (h2 _ h)) (fun h => hk' (h2 _ h)) hwk hwk' hkk).symm
     · exact cyc_nosep h1 (fun h => hk (h2 _ h)) (fun h => hk' (h2 _ h)) hyk hyk' hkk
@@ -291,7 +293,7 @@ theorem closedArc_rot {n g a b x : ℝ} (hg0 : 0 ≤ g) (hgn : g < n) (ha0 : 0 �
     (hb0 : 0 ≤ b) (hbn : b < n) (hx0 : 0 ≤ x) (hxn : x < n) :
     ClosedArc a b x ↔ ClosedArc (off n g a) (off n g b) (off n g x) := by
   unfold ClosedArc
-  rw [sideInArc_rot hg0 hgn ha0 han hb0 hbn hx0 hxn]
+  Ξ sideInArc_rot hg0 hgn ha0 han hb0 hbn hx0 hxn
   constructor
   · rintro (h | rfl | rfl)
     · exact Or.inl h
@@ -317,7 +319,7 @@ theorem attach_key_cases (hM : WalkAx M) {e : Set Point} (he : e ∈ M.Adm) {pa 
       (p : ℝ) + t = q + s := by
     intro q s hq hpt
     obtain ⟨h1, h2⟩ := attach_unique hM he h hq hpt
-    rw [h1, h2]
+    Ξ h1, h2
   rcases ha with ha | ha <;> rcases hb with hb | hb
   · exact absurd (ha.trans hb.symm) hAB
   · rcases hx with hx | hx

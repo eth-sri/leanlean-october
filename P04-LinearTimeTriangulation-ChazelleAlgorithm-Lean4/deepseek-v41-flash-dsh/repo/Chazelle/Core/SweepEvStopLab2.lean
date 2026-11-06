@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Golf
+
 public import Chazelle.Core.SweepEvStopLab
 
 /-!
@@ -52,7 +54,7 @@ theorem slb_sub_same_way (_hP : J.P.Simple) {S₂ : Set (Set Point)}
       apply hH.right_not
       exact dom_right J (hH₁.open_mem b (by linarith [hH.lt]) hlt) hy1
     rintro z ⟨hzy, hza, hzb⟩
-    exact ⟨hzy, by linarith, by linarith⟩
+    exact ⟨hzy, ⟡, ⟡⟩
   · have eb : b = w.1 := le_antisymm (h2 (b, y₁) ⟨rfl, hH.lt.le, le_rfl⟩) hwb
     have eb₁ : b₁ = w.1 := le_antisymm (h1 (b₁, y₁) ⟨rfl, hH₁.lt.le, le_rfl⟩) hwb₁
     have haa : a ≤ a₁ := by
@@ -61,7 +63,7 @@ theorem slb_sub_same_way (_hP : J.P.Simple) {S₂ : Set (Set Point)}
       apply hH.left_not
       exact dom_right J (hH₁.open_mem a hlt (by linarith [hH.lt])) hy1
     rintro z ⟨hzy, hza, hzb⟩
-    exact ⟨hzy, by linarith, by linarith⟩
+    exact ⟨hzy, ⟡, ⟡⟩
 
 /-- **One chord of `S₂` at the counterpart of a tie with a stop chord.** -/
 theorem slb_U2 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
@@ -78,8 +80,8 @@ theorem slb_U2 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   have hw : sidePt (chainModel J.whole).W ((gW J + d) % (chainModel J.whole).W.n) 0 =
       sidePt (chainModel J.right).W (cpA J d) 0 := hC.sidePt_eq hd 0
   set w := sidePt (chainModel J.whole).W ((gW J + d) % (chainModel J.whole).W.n) 0 with hwd
-  have hwe : w ∈ e := hA.2.2.2.1
-  have hwe' : w ∈ e' := hA'.2.2.2.1
+  have hwe := hA.2.2.2.1
+  have hwe' := hA'.2.2.2.1
   have hwc' : w ∈ c' := by rw [hw]; exact hcA.2.2.2.1
   have hwc'' : w ∈ c'' := by rw [hw]; exact hA''.2.2.2.1
   have dE := hM.attach_dir (hC.hF he) hA
@@ -107,7 +109,7 @@ theorem slb_U2 (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
       rcases dC' with h' | h'
       · exact (dir_not_both hM (hC.hF he') hA' (fun z hz => h' z (he'c' hz)) h).elim
       · exact h'
-  have hcA' : SideAttach (chainModel J.right).W c' (cpA J d) 0 := hcA
+  have hcA' := hcA
   rcases hopp with ⟨h1, h2⟩ | ⟨h1, h2⟩
   · -- `e` east, `e'` and `c'` west
     have hc'w := hc'way.2 h2
